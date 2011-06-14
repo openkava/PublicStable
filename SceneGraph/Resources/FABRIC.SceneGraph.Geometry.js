@@ -263,7 +263,7 @@ FABRIC.SceneGraph.registerNodeType('Geometry',
         if(dynamicMember){
           redrawEventHandler.preDescendBindings.append(scene.constructOperator({
               operatorName:"genAndLoadDynamicVBO"+memberType+FABRIC.shaderAttributeTable[memberName].id,
-              srcFile:"FabricIDE/Resources/KL/genAndLoadVBO.kl",
+              srcFile:"../../../SceneGraph/Resources/KL/genAndLoadVBO.kl",
               preProcessorDefinitions:{
                 DATA_TYPE:memberType,
                 ATTRIBUTE_NAME:memberName,

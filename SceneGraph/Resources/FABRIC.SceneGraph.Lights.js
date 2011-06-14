@@ -283,7 +283,7 @@ FABRIC.SceneGraph.registerNodeType('SpotLight',
           redrawEventHandler.preDescendBindings.append(
             scene.constructOperator({
                 operatorName:"debugShadowMapBuffer",
-                srcFile:"FabricIDE/Resources/KL/shadowMaps.kl",
+                srcFile:"../../../SceneGraph/Resources/KL/shadowMaps.kl",
                 entryFunctionName:"debugShadowMapBuffer",
                 parameterBinding:[
                   "light.colorTextureID"

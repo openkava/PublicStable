@@ -346,7 +346,7 @@ FABRIC.SceneGraph.registerNodeType("NLerpCharacterVariables",
     rigVariablesNode.getDGNode().bindings.append(scene.constructOperator(
       {
         operatorName:"lerpRigVariablesOp",
-        srcFile:"FabricIDE/Resources/KL/lerpRigVariables.kl",
+        srcFile:"../../../SceneGraph/Resources/KL/lerpRigVariables.kl",
         entryFunctionName:"lerpRigVariables",
         parameterBinding:[
           "self.time",

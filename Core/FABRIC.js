@@ -133,23 +133,6 @@ FABRIC = (function() {
       throw 'missing URL';
     }
 
-    // TEMP: This will be removed once we start hosting our IDE files.
-    // Then projects can access these files via an absolute URL.
-    // Until then we prefix with "FabricIDE", and generate a URL
-    if (url.split('/')[0] === 'FabricIDE') {
-        // Remove the "FabricIDE"
-      url = url.split('/').splice(1).join('/');
-      var urlSections = document.location.href.split('/');
-      do {
-        urlSections.pop();
-      }while (urlSections[urlSections.length - 1].toLowerCase() !== 'fabric') {
-        if (!urlSections.length) {
-          throw ('Invalid document URL: ' + document.location.href + ". Missing 'Fabric' in the path.");
-        }
-      }
-      url = urlSections.join('/') + '/' + url;
-    }
-
     var result = null;
     var xhreq = new XMLHttpRequest();
     xhreq.onreadystatechange = function() {
