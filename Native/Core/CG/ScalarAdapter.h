@@ -1,0 +1,44 @@
+#ifndef _FABRIC_CG_SCALAR_ADAPTER_H
+#define _FABRIC_CG_SCALAR_ADAPTER_H
+
+#include <Fabric/Core/CG/SimpleAdapter.h>
+
+namespace llvm
+{
+  class Constant;
+};
+
+namespace Fabric
+{
+  namespace RT
+  {
+    class ScalarDesc;
+  }
+  namespace CG
+  {
+    class ScalarAdapter : public SimpleAdapter
+    {
+      friend class Manager;
+    
+    public:
+      
+      virtual std::string toString( void const *data ) const;
+    
+      virtual llvm::Constant *llvmDefaultValue( BasicBlockBuilder &basicBlockBuilder ) const;
+
+      llvm::Constant *llvmConst( float value ) const;
+      
+    protected:
+      
+      ScalarAdapter( RC::ConstHandle<Manager> const &manager, RC::ConstHandle<RT::ScalarDesc> const &scalarDesc );
+      
+      virtual void llvmPrepareModule( ModuleBuilder &moduleBuilder, bool buildFunctions ) const;
+      
+    private:
+    
+      RC::ConstHandle<RT::ScalarDesc> m_scalarDesc;
+    };
+  };
+};
+
+#endif //_FABRIC_CG_SCALAR_ADAPTER_H

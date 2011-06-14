@@ -1,0 +1,11 @@
+function entry()
+{
+  var Byte byte = 17;
+  report byte;
+  byte = 0;
+  report byte;
+  byte = 255;
+  report byte;
+  byte = 4;
+  report byte;
+}

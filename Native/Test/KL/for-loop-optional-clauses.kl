@@ -1,0 +1,10 @@
+function entry()
+{
+  Size i=0;
+  for (;;)
+  {
+    report ++i;
+    if ( i == 10 )
+      break;
+  }
+}

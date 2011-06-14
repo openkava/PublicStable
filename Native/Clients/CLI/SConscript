@@ -1,0 +1,23 @@
+#
+# Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+#
+
+import os.path
+
+Import( 'coreEnv', 'buildOS', 'buildObject', 'libeditFlags' )
+
+cliEnv = coreEnv.Clone()
+cliEnv.MergeFlags( libeditFlags )
+
+extraObjects = []
+
+if buildOS == 'Windows':
+    Import( 'getoptFlags' )
+    cliEnv.MergeFlags( getoptFlags )
+    cliEnv.Append( LINKFLAGS = [
+        '/IMPLIB:${TARGET.dir}/fabric_cmd.lib',
+        '/STACK:4194304'
+    ] )
+
+cliBin = cliEnv.Program( 'fabric', [Glob('*.cpp'),buildObject,extraObjects] )
+Alias( 'cli', cliBin )

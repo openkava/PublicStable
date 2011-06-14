@@ -1,0 +1,24 @@
+struct Vec3
+{
+  Scalar x;
+  Scalar y;
+  Scalar z;
+};
+
+function Vec3 ( Scalar x, Scalar y, Scalar z )
+{
+  self.x = x;
+  self.y = y;
+  self.z = z;
+}
+
+function Scalar Vec3.normSq()
+{
+  return self.x*self.x + self.y*self.y + self.z*self.z;
+}
+
+function entry()
+{
+  var Vec3 vec3( 1.0, 2.0, 3.0 );
+  report vec3.normSq();
+}

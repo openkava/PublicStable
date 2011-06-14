@@ -1,0 +1,35 @@
+/*
+ *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+ */
+
+#include <Fabric/Core/DG/LogCollector.h>
+#include <Fabric/Core/DG/Context.h>
+#include <Fabric/Base/JSON/String.h>
+
+namespace Fabric
+{
+  namespace DG
+  {
+    RC::Handle<LogCollector> LogCollector::Create( Context *context )
+    {
+      return new LogCollector( context );
+    }
+    
+    LogCollector::LogCollector( Context *context )
+      : m_context( context )
+    {
+    }
+    
+    LogCollector::~LogCollector()
+    {
+    }
+    
+    void LogCollector::logString( char const *data, size_t length )
+    {
+      std::vector<std::string> src;
+      src.push_back( "DG" );
+      
+      m_context->jsonNotify( src, "log", JSON::String::Create( data, length ) );
+    }
+  };
+};

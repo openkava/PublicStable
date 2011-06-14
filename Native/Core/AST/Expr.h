@@ -1,0 +1,41 @@
+/*
+ *
+ *  Created by Peter Zion on 10-12-02.
+ *  Copyright 2010 Fabric Technologies Inc. All rights reserved.
+ *
+ */
+
+#ifndef _FABRIC_AST_EXPR_H
+#define _FABRIC_AST_EXPR_H
+
+#include <Fabric/Core/AST/Node.h>
+#include <Fabric/Core/CG/ExprValue.h>
+
+namespace Fabric
+{
+  namespace CG
+  {
+    class BasicBlockBuilder;
+    class Diagnostics;
+  };
+  
+  namespace AST
+  {
+    class Expr: public Node
+    {
+    public:
+    
+      Expr( CG::Location const &location );
+    
+      virtual RC::ConstHandle<CG::Adapter> getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const = 0;
+      virtual CG::ExprValue buildExprValue( CG::BasicBlockBuilder &basicBlockBuilder, CG::Usage usage, std::string const &lValueErrorDesc ) const = 0;
+    };
+  };
+  
+  inline std::string _( RC::ConstHandle<AST::Expr> const &expr )
+  {
+    return expr->localDesc();
+  }
+};
+
+#endif //_FABRIC_AST_EXPR_H

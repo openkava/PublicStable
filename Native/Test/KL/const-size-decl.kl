@@ -1,0 +1,11 @@
+function entry()
+{
+  const Byte constByte = 42;
+  report constByte;
+
+  const Integer constInteger = 17;
+  report constInteger;
+
+  const Size constSize = 654;
+  report constSize;
+}

@@ -1,0 +1,8 @@
+function entry()
+{
+  var Integer foo[], bar[4][];
+  foo.push( 18 );
+  report foo;
+  bar[2].push( 42 );
+  report bar;
+}

@@ -1,0 +1,14 @@
+function Scalar check( Boolean foo )
+{
+	var Boolean bar = false;
+
+	if( (foo && !bar) || (!foo && bar ) )
+		return 1.0;
+	else
+		return 0.0;
+}
+
+function entry( )
+{
+	report check( true );
+}

@@ -1,0 +1,8 @@
+function entry()
+{
+  Size i=0;
+  do
+  {
+    report ++i;
+  } while ( i < 10 );
+}

@@ -1,0 +1,4 @@
+function entry()
+{
+  report 3;
+}

@@ -1,0 +1,30 @@
+import os
+Import('coreEnv', 'npapiFlags', 'npapiSources')
+
+npapiEnv = coreEnv.Clone()
+npapiEnv.MergeFlags( npapiFlags )
+
+npapiPluginName = 'npFabricPlugin'
+
+npapiBuildPath = npapiEnv.Dir('.')
+
+npapiSources.append( Glob( '*.cpp' ) )
+
+npapiEnv.Append( CPPPATH = [ os.path.join( '#NPAPI', 'Windows' ) ] )
+npapiEnv.Append( LIBS = [ 'User32', 'Gdi32' ] )
+
+npapiEnv.Append( LINKFLAGS = [ 
+  '/DEF:' + npapiBuildPath.File( 'FabricPlugin.def' ).path,
+  '/MANIFEST',
+  '/ManifestFile:${TARGET}.manifest',
+  '/MANIFESTUAC:level=\'asInvoker\' uiAccess=\'false\''
+  ] )
+
+if npapiEnv['FABRIC_BUILD_TYPE'] == 'Debug':
+  npapiEnv.Append( PDB='${TARGET.base}.pdb' )
+
+Depends( 'FabricPlugin.rc', 'resource.h' )
+npapiSources += [npapiEnv.RES( 'FabricPlugin.rc' )]
+npapiPlugin = npapiEnv.LoadableModule( 'npFabricPlugin', npapiSources, register=1 )
+
+npapiEnv.AddPostAction( npapiPlugin, 'mt.exe -nologo -manifest ${TARGET}.manifest -outputresource:$TARGET;2' )

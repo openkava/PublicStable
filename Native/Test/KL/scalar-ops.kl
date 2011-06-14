@@ -1,0 +1,35 @@
+function entry()
+{
+  var Scalar x;
+
+  // Unary ops;
+  x = 4.5;
+  report +x;
+  report -x;
+  report !x;
+
+  // Binary ops
+  x = 1.2 + 5.6; report x;
+  x = -5.2 - 9.0; report x;
+  x = 9.4 * 1.2; report x;
+  x = -9.3 / 5.4; report x;
+  x = 8.9 % 2.1; report x;
+
+  // Assignment ops
+  x = 7.1; report x;
+  x += 2.1; report x;
+  x -= -4.7; report x;
+  x *= 4.5; report x;
+  x /= -1.2; report x;
+  x %= 3.4; report x;
+
+  // Intrinsics and build-ins
+  report abs( -1.45 );
+  report abs( 1.45 );
+  report abs( -0.0 );
+  report abs( 0.0 );
+  report sin( 5.72283 );
+  report cos( 5.72283 );
+  report sqrt( 5.72283 );
+  report pow( 5.72283, 3.1452 );
+}

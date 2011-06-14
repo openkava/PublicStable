@@ -1,0 +1,6 @@
+function entry()
+{
+  report "Scalar";
+  report (Boolean)0.0;
+  report (Boolean)4.5;
+}

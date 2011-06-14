@@ -1,0 +1,16 @@
+[note] Selectors (Vec3)
+  [note] Create event, eventHandler, node
+  [pass] Create event, eventHandler, node
+  [note] Create nodeOne, operatorOne, bindingOne, eventHandlerOne
+    [note] Create nodeOne
+    [pass] Create nodeOne
+    [note] Create operatorOne
+    [pass] Create operatorOne
+    [note] Create bindingOne
+    [pass] Create bindingOne
+    [note] Create eventHandlerOne
+    [pass] Create eventHandlerOne
+  [pass] Create nodeOne, operatorOne, bindingOne, eventHandlerOne
+  [pass] Correct number of results
+  [pass] Correct result value
+[pass] Selectors (Vec3)

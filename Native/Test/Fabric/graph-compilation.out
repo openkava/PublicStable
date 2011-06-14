@@ -1,0 +1,35 @@
+[note] Graph Compilation
+  [pass] create event
+  [pass] fire event
+  [pass] event has no errors
+  [pass] create and add event handler
+  [pass] fire event
+  [pass] event has no errors
+  [pass] eventHandler has no errors
+  [pass] create node and set event handler
+  [pass] fire event
+  [pass] event has no errors
+  [pass] eventHandler has no errors
+  [pass] node has no errors
+  [pass] create and push operator
+  [pass] fire event fails
+  [pass] event has no errors
+  [pass] eventHandler has no errors
+  [pass] node has one error
+  [pass] load operator bytecode
+  [pass] fire event fails
+  [pass] event has no errors
+  [pass] eventHandler has no errors
+  [pass] node has one error
+  [pass] add node member
+  [pass] fire event
+  [pass] event has no errors
+  [pass] eventHandler has no errors
+  [pass] node has no errors
+  [pass] node.getData('foo') == 7
+  [pass] remove node member
+  [pass] fire event fails
+  [pass] event has no errors
+  [pass] eventHandler has no errors
+  [pass] node has one error
+[pass] Graph Compilation

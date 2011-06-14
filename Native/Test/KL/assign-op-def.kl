@@ -1,0 +1,26 @@
+struct Vec3
+{
+  Scalar x;
+  Scalar y;
+  Scalar z;
+};
+
+function Vec3( Scalar x, Scalar y, Scalar z )
+{
+  self.x = x;
+  self.y = y;
+  self.z = z;
+}
+
+function Vec3.+=( Vec3 other )
+{
+  self.x += other.x;
+  self.y += other.y;
+  self.z += other.z;
+}
+function entry()
+{
+  var Vec3 vec3( 1.0, 2.0, 3.0 );
+  vec3 += vec3;
+  report vec3;
+}

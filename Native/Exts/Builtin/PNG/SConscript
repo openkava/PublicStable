@@ -1,0 +1,16 @@
+#
+# Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+#
+
+Import( 'extsEnv', 'fabricExtsDistDir', 'libpngFlags' )
+
+pngPluginEnv = extsEnv.Clone()
+pngPluginEnv.MergeFlags( libpngFlags )
+pngPlugin = pngPluginEnv.SharedLibrary( 'FabricPNG', Glob('*.cpp') ),
+pngManifest = pngPluginEnv.File('FabricPNG.fpm.json'),
+
+Alias( 'pngExt', [
+  pngPlugin,
+  pngManifest,
+  Install( fabricExtsDistDir, [pngPlugin,pngManifest] )
+] )

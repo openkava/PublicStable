@@ -1,0 +1,4 @@
+undefined
+[]
+{getName:<Function>,getErrors:<Function>,getSourceCode:<Function>,setSourceCode:<Function>,getFullSourceCode:<Function>,getEntryFunctionName:<Function>,setEntryFunctionName:<Function>,getDiagnostics:<Function>}
+["self.foo"]

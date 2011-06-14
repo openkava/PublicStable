@@ -1,0 +1,74 @@
+/*
+ *
+ *  Created by Peter Zion on 10-08-09.
+ *  Copyright 2010 Fabric 3D Inc.. All rights reserved.
+ *
+ */
+
+#ifndef _FABRIC_NPAPI_INTERFACE_H
+#define _FABRIC_NPAPI_INTERFACE_H
+
+#include <Fabric/Core/DG/Client.h>
+#include <Fabric/Clients/NPAPI/ViewPort.h>
+
+namespace Fabric
+{
+  namespace JSON
+  {
+    class Value;
+    class Object;
+    class Array;
+  };
+  
+  namespace NPAPI
+  {
+    class Context;
+    
+    class Interface : public DG::Client
+    {
+    public:
+      
+      static RC::Handle<Interface> Create( NPP npp, RC::Handle<Context> const &context );
+      
+      virtual void notify( std::string const &jsonEncodedNotifications ) const;
+      
+      void setViewPort( RC::Handle<ViewPort> const &viewPort );
+      
+      NPP getNPP() const
+      {
+        return m_npp;
+      }
+      RC::Handle<Context> getContext() const;
+      
+      NPError nppGetValue( NPP npp, NPPVariable variable, void *value );
+      NPError nppSetWindow( NPP npp, NPWindow *window );
+      int16_t nppHandleEvent( NPP npp, void* event );
+      NPError nppDestroy( NPP npp, NPSavedData** save );
+
+      NPError nppNewStream( NPP npp, NPMIMEType type, NPStream *stream, NPBool seekable, uint16_t *stype );
+      void nppStreamAsFile( NPP npp, NPStream *stream, const char *fname );
+      NPError nppDestroyStream( NPP npp, NPStream *stream, NPReason reason );
+      
+    protected:
+    
+      Interface( NPP npp, RC::Handle<Context> const &context );
+      ~Interface();
+          
+      std::string jsonExec( char const *jsonEncodedCommandsData, size_t jsonEncodedCommandsLength );
+      void setJSONNotifyCallback( NPObject *npObject );
+      
+    private:
+    
+      class NPInterfaceObject;
+            
+      NPP m_npp;
+      
+      RC::Handle<Context> m_context;
+      RC::Handle<ViewPort> m_viewPort;
+      
+      NPObject *m_callbackNPObject;
+    };
+  };
+};
+
+#endif //_FABRIC_NPAPI_INTERFACE_H

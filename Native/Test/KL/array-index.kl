@@ -1,0 +1,7 @@
+function entry()
+{
+  var Scalar a[];
+  a.resize(1);
+  a[0] = 3.141;
+  report a[0];
+}

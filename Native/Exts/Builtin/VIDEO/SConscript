@@ -1,0 +1,16 @@
+#
+# Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+#
+
+Import( 'extsEnv', 'fabricExtsDistDir', 'ffmpegFlags' )
+
+videoPluginEnv = extsEnv.Clone()
+videoPluginEnv.MergeFlags( ffmpegFlags )
+videoPlugin = videoPluginEnv.SharedLibrary( 'FabricVIDEO', Glob('*.cpp') ),
+videoManifest = videoPluginEnv.File('FabricVIDEO.fpm.json'),
+
+Alias( 'videoExt', [
+  videoPlugin,
+  videoManifest,
+  Install( fabricExtsDistDir, [videoPlugin,videoManifest] )
+] )

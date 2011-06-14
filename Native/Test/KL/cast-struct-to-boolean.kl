@@ -1,0 +1,12 @@
+struct Vec3
+{
+  Scalar x;
+  Scalar y;
+  Scalar z;
+};
+
+function entry()
+{
+  var Vec3 vec3;
+  report (Boolean)vec3;
+}

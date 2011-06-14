@@ -1,0 +1,9 @@
+function myFunc( in Scalar a )
+{
+  report( a );
+}
+
+operator entry( )
+{
+  myFunc( 20 );
+}

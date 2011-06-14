@@ -1,0 +1,28 @@
+clGetDeviceIDs: 0
+clDeviceIDs[0]: <Opaque>
+clDeviceIDs[1]: <Opaque>
+clCreateContext: 0
+clContext: <Opaque>
+clCreateCommandQueue: 0
+clCommandQueue: <Opaque>
+clCreateProgramWithSource: 0
+clProgram: <Opaque>
+clBuildProgram: 0
+clCreateKernel returned 0
+clKernel = <Opaque>
+clCreateBuffer returned 0
+input = <Opaque>
+clCreateBuffer returned 0
+output = <Opaque>
+clEnqueueWriteBuffer returned 0
+event = <Opaque>
+clSetKernelArg returned 0
+clGetKernelWorkGroupInfo returned 0
+local = 512
+clEnqueueNDRangeKernel returned 0
+event = <Opaque>
+clFinish returned 0
+clEnqueueReadBuffer returned 0
+event = <Opaque>
+correctCount = 1024
+clReleaseMemObject returned 0

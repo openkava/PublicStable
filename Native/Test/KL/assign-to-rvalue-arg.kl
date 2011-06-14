@@ -1,0 +1,4 @@
+function foo( in Integer rval )
+{
+  rval = rval;
+}

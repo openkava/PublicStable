@@ -1,0 +1,5 @@
+function entry()
+{
+  var Integer a[];
+  report a + "; size " + a.size;
+}

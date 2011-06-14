@@ -1,0 +1,6 @@
+function entry()
+{
+  var Data data;
+  var Data otherData = data;
+  report data;
+}

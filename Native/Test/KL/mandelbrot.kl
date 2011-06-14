@@ -1,0 +1,42 @@
+function Byte computeDwell( Scalar x, Scalar y )
+{
+  var Scalar z_re = x;
+  var Scalar z_im = y;
+  
+  var Byte count = 0;
+  for ( count = 0; count < 255; ++count )
+  {
+    if ( z_re * z_re + z_im * z_im >= 4.0 )
+      break;
+    
+    var Scalar new_z_re = z_re*z_re - z_im*z_im + x;
+    z_im = 2.0*z_re*z_im + y;
+    z_re = new_z_re;
+  }
+  return count;
+}
+
+function entry()
+{
+  var Integer row;
+  for ( row=0; row<=40; ++row )
+  {
+    var Scalar y = 4.0 * row / 40.0 - 2.0;
+    var String rowString;
+    var Integer col;
+    for ( col=0; col<=78; ++col )
+    {
+      var Scalar x = 4.0 * col / 78.0 - 2.0;
+      var Byte dwell = computeDwell( x, y );
+      if ( dwell & 192 )
+        rowString += "#";
+      else if ( dwell & 48 )
+        rowString += "*";
+      else if ( dwell & 12 )
+        rowString += ".";
+      else
+        rowString += " ";
+    }
+    report rowString;
+  }
+}

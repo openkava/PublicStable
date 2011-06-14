@@ -1,0 +1,5 @@
+Import( 'coreEnv', 'buildOS', 'openclFlags' )
+
+if buildOS == 'Darwin' or buildOS == 'Windows':
+  coreEnv.MergeFlags( openclFlags )
+  coreEnv.Prepend( LIBS = coreEnv.StaticLibrary( 'OCL', Glob('*.cpp') ) )

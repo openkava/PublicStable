@@ -1,0 +1,13 @@
+function entry()
+{
+  var Integer integer = 42;
+  report integer;
+  integer = 0;
+  report integer;
+  integer = -56;
+  report integer;
+  integer = 2147483647;
+  report integer;
+  integer = -2147483647;
+  report integer;
+}

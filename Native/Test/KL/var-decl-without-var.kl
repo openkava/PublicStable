@@ -1,0 +1,5 @@
+function entry()
+{
+  Integer foo = 17;
+  report foo;
+}

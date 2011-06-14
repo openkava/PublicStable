@@ -1,0 +1,15 @@
+#
+# Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+#
+
+import os
+Import( 'coreEnv', 'npapiSources', 'npapiDistDir', 'buildArch', 'npapiFlags' )
+
+npapiEnv = coreEnv.Clone()
+npapiEnv.MergeFlags( npapiFlags )
+
+npapiSources.append( Glob('*.cpp') )
+npapiPluginName = 'FabricPlugin'
+npapiPlugin = npapiEnv.LoadableModule( 'FabricPlugin', npapiSources )
+
+Alias( 'npapi', Install( npapiDistDir, npapiPlugin ) )

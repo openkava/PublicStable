@@ -1,0 +1,151 @@
+#
+# Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+#
+
+SConscript( dirs=['md5-1.4','GLEW','getopt']  )
+
+import os
+Import( ['env','buildOS','buildArch','buildType'] )
+
+includeBaseDir = os.path.join( '#ThirdParty', 'Private', 'include' )
+srcBaseDir = os.path.join( '#ThirdParty', 'Private', 'src' )
+osArchIncludeBaseDir = os.path.join( '#ThirdParty', 'Private', buildOS, buildArch, buildType, 'include' )
+libBaseDir = os.path.join( '#ThirdParty', 'Private', buildOS, buildArch, buildType, 'lib' )
+
+# LLVM
+llvmFlags = {
+	'CPPDEFINES': [ '__STDC_LIMIT_MACROS', '__STDC_CONSTANT_MACROS' ],
+	'CPPPATH': [
+	  os.path.join( includeBaseDir, 'llvm' ),
+	  os.path.join( osArchIncludeBaseDir, 'llvm' ),
+	],
+	'LIBPATH': [
+	  os.path.join( libBaseDir, 'llvm' )
+	],
+	# [pzion 20110128] These *must* be in topo order since the Linux linker is stupid
+	'LIBS': [
+	  "LLVMBitWriter",
+	  "LLVMBitReader",
+	  "LLVMipo",
+	  "LLVMAsmParser",
+	  "LLVMX86AsmPrinter",
+	  "LLVMAsmPrinter",
+	  "LLVMX86CodeGen",
+	  "LLVMX86Info",
+	  "LLVMInstCombine",
+	  "LLVMSelectionDAG",
+	  "LLVMX86AsmPrinter",
+	  "LLVMAsmPrinter",
+	  "LLVMX86Utils",
+	  "LLVMMCParser",
+	  "LLVMJIT",
+	  "LLVMCodeGen",
+	  "LLVMExecutionEngine",
+	  "LLVMScalarOpts",
+	  "LLVMTransformUtils",
+	  "LLVMipa",
+	  "LLVMAnalysis",
+	  "LLVMTarget",
+	  "LLVMMC",
+	  "LLVMCore",
+	  "LLVMSupport",
+  ]
+}
+if buildOS == 'Windows':
+  llvmFlags['LIBS'] += ['Shell32']
+Export( 'llvmFlags' )
+
+# V8
+v8Flags = {
+	'CPPPATH': [
+	  os.path.join( includeBaseDir, 'v8' ),
+	],
+	'LIBPATH': [
+	  os.path.join( libBaseDir, 'v8' )
+	],
+	'LIBS': ["v8"]
+};
+if buildOS == 'Windows':
+  v8Flags['LIBS'] += ['Advapi32', 'Ws2_32', 'Winmm']
+Export( 'v8Flags' )
+
+# libedit
+if buildOS != 'Windows':
+	libeditFlags = {
+		'CPPPATH': [
+		   os.path.join( includeBaseDir, 'libedit' ),
+		 ],
+			'LIBPATH': [
+		   os.path.join( libBaseDir, 'libedit' )
+		 ],
+		'LIBS': ["edit"]
+	}
+	if buildOS == 'Linux':
+		libeditFlags['LIBS'] += ['ncurses']
+	Export( 'libeditFlags' )
+
+# NPAPI
+npapiFlags = {
+    'CPPPATH': [
+      os.path.join( includeBaseDir, 'npapi' ),
+    ]
+}
+Export( 'npapiFlags' )
+
+# ilmbase+openexr
+openexrFlags = {}
+openexrFlags['CPPPATH'] = [os.path.join( includeBaseDir, 'ilmbase' ),os.path.join( osArchIncludeBaseDir, 'ilmbase' ),os.path.join( includeBaseDir, 'openexr' )]
+openexrFlags['LIBPATH'] = [os.path.join( libBaseDir, 'ilmbase' ),os.path.join( libBaseDir, 'openexr' )]
+openexrFlags['LIBS'] = ['IlmImf','Half','Iex','IlmThread','Imath']
+if buildOS == 'Windows':
+    openexrFlags['CPPPATH'].append( os.path.join( includeBaseDir, 'zlib' ) )
+    openexrFlags['LIBPATH'].append( os.path.join( libBaseDir, 'zlib' ) )
+    openexrFlags['LIBS'].append( 'zlib' )
+else:  
+    openexrFlags['LIBS'].append( 'z' )
+    Export( openexrFlags )
+Export( 'openexrFlags' )
+
+# libpng
+if buildOS == 'Linux':
+    pngEnv = env.Clone()
+    pngEnv.ParseConfig( 'pkg-config --cflags --libs libpng' )
+    libpngFlags = {
+        'CPPPATH': pngEnv['CPPPATH'],
+        'CCFLAGS': pngEnv['CCFLAGS'],
+        'CXXFLAGS': pngEnv['CXXFLAGS'],
+        'LIBS': pngEnv['LIBS'],
+    }
+else:
+    libpngFlags = {}
+    libpngFlags['CPPPATH'] = [os.path.join( includeBaseDir, 'libpng' )]
+    libpngFlags['LIBPATH'] = [os.path.join( libBaseDir, 'libpng' )]
+    if buildOS == 'Windows':
+        libpngFlags['CPPPATH'].append( os.path.join( includeBaseDir, 'zlib' ) )
+        # libpngFlags['LIBPATH'].append( os.path.join( libBaseDir, 'zlib' ) )
+        libpngFlags['LIBS'] = ['libpng14','zlib']
+    else:  
+        libpngFlags['LIBS'] = ['png14','z']
+Export( 'libpngFlags' )
+
+# ffmpeg
+ffmpegFlags = {
+    'CPPDEFINES': [ '__STDC_LIMIT_MACROS', '__STDC_CONSTANT_MACROS' ],
+    'CPPPATH': [os.path.join( includeBaseDir, 'ffmpeg' )],
+    'LIBPATH': [os.path.join( libBaseDir, 'ffmpeg' )],
+    'LIBS': ['swscale','avformat','avcodec','avutil','z','bz2'],
+}
+Export( 'ffmpegFlags' )
+
+# OpenCL
+openclFlags = {}
+if buildOS == 'Windows':
+  openclFlags['CPPPATH'] = [os.path.join( osArchIncludeBaseDir, 'OpenCL' )]
+Export( 'openclFlags' )
+
+# Licenses
+licensesFlags = {
+    'CPPPATH': [os.path.join( includeBaseDir, 'licenses' )]
+}
+Export( 'licensesFlags' )
+

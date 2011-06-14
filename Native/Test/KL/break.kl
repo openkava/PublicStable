@@ -1,0 +1,8 @@
+function entry()
+{
+  var Integer foo;
+  for ( foo=0; foo<10; ++foo )
+    if ( foo == 7 )
+      break;
+  report foo;
+}

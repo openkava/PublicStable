@@ -1,0 +1,6 @@
+struct Foo { Integer bar; } ;
+struct Foo { Scalar bar; } ;
+
+function entry()
+{
+}

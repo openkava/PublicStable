@@ -1,0 +1,5 @@
+function entry()
+{
+  report (Integer)2147483647;
+  report (Integer)-2147483648;
+}

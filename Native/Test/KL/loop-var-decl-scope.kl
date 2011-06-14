@@ -1,0 +1,6 @@
+function entry()
+{
+  for ( var Integer i=0; i<10; ++i )
+    ;
+  report i;
+}

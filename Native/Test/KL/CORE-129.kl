@@ -1,0 +1,11 @@
+struct S
+{
+  Integer i;
+};
+
+function entry()
+{
+  S s;
+  report s.dataSize;
+  report s.data;
+}

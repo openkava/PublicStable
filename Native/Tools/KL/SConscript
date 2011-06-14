@@ -1,0 +1,22 @@
+#
+# Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+#
+
+import os.path
+Import( 'coreEnv', 'buildOS' )
+
+klEnv = coreEnv.Clone()
+
+extraObjects = []
+
+if buildOS == 'Windows':
+    Import( 'getoptFlags' )
+    klEnv.MergeFlags( getoptFlags )
+    klEnv.Append( LINKFLAGS = [
+        '/IMPLIB:${TARGET.dir}/kl_cmd.lib',
+        '/STACK:4194304'
+    ] )
+
+klBin = klEnv.Program( 'kl', [ Glob('*.cpp'), extraObjects ] )
+  
+Alias( 'kl', klBin )

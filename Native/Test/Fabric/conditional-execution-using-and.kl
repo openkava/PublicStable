@@ -1,0 +1,16 @@
+function doSomething()
+{
+  report "Did something";
+}
+
+function doSomethingElse()
+{
+  report "Did something else";
+}
+
+
+function entry()
+{
+  true && doSomething();
+  false && doSomethingElse();
+}

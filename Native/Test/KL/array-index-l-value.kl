@@ -1,0 +1,6 @@
+function entry()
+{
+  var Integer a[];
+  a.push( 17 );
+  report a[0];
+}

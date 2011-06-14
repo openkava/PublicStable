@@ -1,0 +1,50 @@
+#!/bin/sh
+
+. ../helpers.sh
+
+BUILD_OS=$(uname -s)
+BUILD_ARCH=$(uname -m)
+BUILD_TYPE=Debug
+
+WRAPPERS_FILE="../../../Web/Core/FABRIC.Wrappers.js"
+if [ $BUILD_OS == "Darwin" ]; then
+  EXTS_DIR="../../dist/$BUILD_OS/$BUILD_ARCH/$BUILD_TYPE/Fabric NPAPI Plugin/Library/Fabric/Exts"
+else
+  EXTS_DIR=../../dist/$BUILD_OS/$BUILD_ARCH/$BUILD_TYPE/Exts
+fi
+
+#if [ "$BUILD_OS" = "linux" ]; then
+#  VALGRIND_CMD="valgrind --suppressions=../../valgrind.suppressions.linux --leak-check=full -q"
+#else
+  VALGRIND_CMD=
+#fi
+
+REPLACE=0
+if [ "$1" = "-r" ]; then
+  REPLACE=1
+  shift
+fi
+
+for f in "$@"; do
+  TMPFILE=$(tmpfilename)
+
+  #echo ../../build/$BUILD_OS/$BUILD_ARCH/$BUILD_TYPE/Fabric/CLI/fabric --exts="$EXTS_DIR" $f
+  LD_LIBRARY_PATH=build/ $VALGRIND_CMD ../../build/$BUILD_OS/$BUILD_ARCH/$BUILD_TYPE/Fabric/Clients/CLI/fabric --load="$WRAPPERS_FILE" --exts="$EXTS_DIR" $f 2>&1 | grep -v '^\[FABRIC\] Loaded extension ' >$TMPFILE
+
+  if [ "$REPLACE" -eq 1 ]; then
+    mv $TMPFILE ${f%.js}.out
+    echo "REPL $(basename $f)"
+  else
+    if ! cmp $TMPFILE ${f%.js}.out; then
+      echo "FAIL $(basename $f)"
+      echo "Expected output:"
+      cat ${f%.js}.out
+      echo "Actual output ($TMPFILE):"
+      cat $TMPFILE
+      exit 1
+    else
+      echo "PASS $(basename $f)";
+      rm $TMPFILE
+    fi
+  fi
+done

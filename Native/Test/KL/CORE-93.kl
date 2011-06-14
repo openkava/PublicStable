@@ -1,0 +1,33 @@
+struct Vec3
+{
+  Scalar x;
+  Scalar y;
+  Scalar z;
+};
+
+struct Quad 
+{ 
+  Vec3 normal; 
+}; 
+
+function Vec3( Scalar x, Scalar y, Scalar z )
+{
+  self.x = x;
+  self.y = y;
+  self.z = z;
+}
+
+function Quad( in Vec3[] v ) 
+{ 
+  self.normal = v[0]; 
+} 
+
+function entry() 
+{ 
+  var Vec3 v[]; 
+  v.push( Vec3( 1.0, 2.0, 3.0 ) );
+   
+  var Quad q( v ); 
+
+  report( q ); 
+} 

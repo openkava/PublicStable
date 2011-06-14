@@ -1,0 +1,5 @@
+function entry()
+{
+  9
+  7 + foo;
+}

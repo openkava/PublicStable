@@ -1,0 +1,43 @@
+#include "Random.h"
+#include "Debug.h"
+
+#include <Fabric/Core/Util/Assert.h>
+
+#if defined(FABRIC_POSIX)
+# include <sys/stat.h>
+# include <fcntl.h>
+#elif defined(FABRIC_WIN32)
+# include <Wincrypt.h>
+#endif
+
+namespace Fabric
+{
+  namespace Util
+  {
+    void generateSecureRandomBytes( size_t count, uint8_t *bytes )
+    {
+      FABRIC_UTIL_TRACE( "generateSecureRandomBytes( %u, %p )", (unsigned)count, bytes );
+#if defined(FABRIC_POSIX)
+      int fd = open( "/dev/urandom", O_RDONLY );
+      FABRIC_ASSERT( fd != -1 );
+      int readResult = read( fd, bytes, count );
+      FABRIC_ASSERT( readResult == count );
+      close( fd );
+#elif defined(FABRIC_WIN32)
+      HCRYPTPROV  hCryptProvider = NULL;
+
+      BOOL    success;
+      success = ::CryptAcquireContext( &hCryptProvider, NULL, NULL, PROV_RSA_FULL, 0 );
+      FABRIC_ASSERT( success );
+
+      success = ::CryptGenRandom( hCryptProvider, DWORD( count ), bytes );
+      FABRIC_ASSERT( success );
+
+      success = ::CryptReleaseContext( hCryptProvider, 0 );
+      FABRIC_ASSERT( success );
+#else
+# error "Missing implementation of Fabric::Util::generateSecureRandomBytes()"
+#endif
+    }
+  };
+};

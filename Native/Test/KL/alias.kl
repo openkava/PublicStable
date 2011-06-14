@@ -1,0 +1,8 @@
+alias Integer IntArray[];
+
+function entry()
+{
+  var IntArray a;
+  a.push( 17 ).push( 42 );
+  report a;
+}

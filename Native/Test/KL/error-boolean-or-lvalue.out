@@ -1,0 +1,1 @@
+10:8: error: calling function 'foo': parameter 1: the result of a boolean 'or' operation cannot be an l-value

@@ -1,0 +1,29 @@
+function reportStats( Size n, Size count )
+{
+  report n + ": count=" + count + " n/log(n)=" + n/log(n);
+}
+
+function entry()
+{
+  Boolean prime[1000000];
+  for ( Size i=2; i<1000000; ++i )
+    prime[i] = true;
+
+  for ( Size i=2; i<1000000; ++i )
+  {
+    if ( !prime[i] )
+      continue;
+    for ( Size j=2*i; j<1000000; j+=i )
+      prime[j] = false;
+  }
+
+  Size count = 0;
+  for ( Size i=2; i<1000000; ++i )
+  {
+    if ( prime[i] )
+      ++count;
+    if ( i==10 || i==100 || i==1000 || i==10000 || i==10000 )
+      reportStats( i, count );
+  }
+  reportStats( 1000000, count );
+}

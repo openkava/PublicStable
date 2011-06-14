@@ -1,0 +1,7 @@
+function entry()
+{
+  var Boolean boolean = true;
+  report boolean;
+  boolean = false;
+  report boolean;
+}

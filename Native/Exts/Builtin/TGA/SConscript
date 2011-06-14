@@ -1,0 +1,15 @@
+#
+# Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+#
+
+Import( 'extsEnv', 'fabricExtsDistDir' )
+
+tgaPluginEnv = extsEnv.Clone()
+tgaPlugin = tgaPluginEnv.SharedLibrary( 'FabricTGA', Glob('*.cpp') ),
+tgaManifest = tgaPluginEnv.File('FabricTGA.fpm.json'),
+
+Alias( 'tgaExt', [
+  tgaPlugin,
+  tgaManifest,
+  Install( fabricExtsDistDir, [tgaPlugin,tgaManifest] )
+] )

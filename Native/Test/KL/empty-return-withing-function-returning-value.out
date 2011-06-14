@@ -1,0 +1,2 @@
+1:1: error: not all paths return a value
+3:3: error: function must return a value

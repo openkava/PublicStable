@@ -1,0 +1,33 @@
+import os.path
+
+Import('coreEnv', 'buildOS' )
+
+# OpenGL
+if buildOS == 'Linux':
+  # [pzion 20110128] Debian lenny does not have pkg-config for glew
+  #coreEnv.ParseConfig( 'pkg-config --cflags --libs glew' )
+  coreEnv.Append( LINKFLAGS = [ '-lGLEW' ] )
+  coreEnv.ParseConfig( 'pkg-config --cflags --libs gtk+-2.0' )
+  coreEnv.ParseConfig( 'pkg-config --cflags --libs gtkglext-1.0' )
+  coreEnv.ParseConfig( 'pkg-config --cflags --libs gdkglext-1.0' )
+if buildOS == 'Darwin':
+  coreEnv.Append( FRAMEWORKS = ['OpenGL','OpenCL'] )
+if buildOS == 'Windows':
+	Import( 'glewFlags' )
+	coreEnv.MergeFlags( glewFlags )
+
+# [pzion 20110329] WHO MADE THIS COMMENT???
+# ensure to insert an include prior to every header file  
+# this has to be done because the flags are parsed for unique
+# values, which removes one of the '-include' flags
+if coreEnv['FABRIC_BUILD_OS'] == 'Linux':
+  ccflags = []
+  for flag in coreEnv['CCFLAGS']:
+    if(flag.lower() == '-include'):
+      continue
+    if(flag.lower().endswith(".h")):
+      ccflags.append("-include")
+    ccflags.append(flag)
+  coreEnv['CCFLAGS'] = ccflags
+  
+coreEnv.Prepend( LIBS = coreEnv.StaticLibrary( 'OGL', Glob('*.cpp') ) )

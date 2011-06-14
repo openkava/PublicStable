@@ -1,0 +1,32 @@
+#
+# Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+#
+
+Import( 'baseEnv', 'buildOS' )
+
+extsEnv = baseEnv.Clone()
+Export( 'extsEnv' )
+
+aliases = [
+    'exrExt',
+    'hdrExt',
+    'pngExt',
+    'tgaExt',
+    'viconExt'
+]
+
+dirs = [
+    'EXR',
+    'HDR',
+    'PNG',
+    'TGA',
+    'VICON'
+]
+
+if buildOS != 'Windows':
+  dirs += ['VIDEO']
+  aliases += ['videoExt']
+
+SConscript( dirs=dirs )
+
+Alias( 'exts', aliases )

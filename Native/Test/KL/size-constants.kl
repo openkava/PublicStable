@@ -1,0 +1,5 @@
+function entry()
+{
+  // [pzion 20110228] I'm not sure how this ever worked on Linux64; commenting out for now.
+  //report (Size)4294967295;
+}

@@ -1,0 +1,16 @@
+#
+# Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+#
+
+Import( 'buildOS' )
+
+aliases = []
+
+SConscript( dirs=['NPAPI'] )
+aliases += ['npapi']
+
+if buildOS != 'Windows':
+  SConscript( dirs=['CLI'] )
+  aliases += ['cli']
+
+Alias( 'clients', aliases )

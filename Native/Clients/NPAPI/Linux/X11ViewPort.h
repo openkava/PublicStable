@@ -1,0 +1,66 @@
+/*
+ *  ViewPort.h
+ *  Fabric
+ *
+ *  Created by Peter Zion on 10-08-13.
+ *  Copyright 2010 Fabric 3D Inc.. All rights reserved.
+ *
+ */
+
+#ifndef _FABRIC_NPAPI_X11_VIEW_PORT_H
+#define _FABRIC_NPAPI_X11_VIEW_PORT_H
+
+#include <Fabric/Clients/NPAPI/ViewPort.h>
+
+#include <npapi/npapi.h>
+#include <gtk/gtk.h>
+#include <gtk/gtkgl.h>
+
+namespace Fabric
+{
+  namespace DG
+  {
+    class Context;
+  };
+
+  namespace NPAPI
+  {
+    class X11ViewPort : public ViewPort
+    {
+    public:
+    
+      static RC::Handle<ViewPort> Create( RC::ConstHandle<Interface> const &interface );
+      
+      virtual void getWindowSize( size_t &width, size_t &height ) const
+      {
+        width = m_windowWidth;
+        height = m_windowHeight;
+      }
+
+      virtual void needsRedraw();
+      
+      virtual NPError nppGetValue( NPPVariable variable, void *value );
+      virtual NPError nppSetWindow( NPWindow *window );
+      
+    protected:
+    
+      X11ViewPort( RC::ConstHandle<Interface> const &interface );
+      ~X11ViewPort();
+          
+    private:
+
+      void redraw();
+      static gboolean EventCallback( GtkWidget *widget, GdkEvent *event, gpointer user_data );
+      static void MenuItemActivateCallback( void *_popUpItem );
+      
+      RC::Handle<MT::LogCollector> m_logCollector;
+      GdkNativeWindow m_gdkNativeWindow;
+      GtkWidget *m_plug;
+      GtkWidget *m_drawingArea;
+      int m_windowLeft, m_windowTop;
+      unsigned m_windowWidth, m_windowHeight;
+    };
+  };
+};
+
+#endif //_FABRIC_NPAPI_X11_VIEW_PORT_H

@@ -1,0 +1,4 @@
+function entry()
+{
+  report (String)7 + (String)5;
+}

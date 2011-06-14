@@ -1,0 +1,7 @@
+function entry()
+{
+  var Integer a = 0, b = 0;
+  (false? a: b) = 1;
+  report a;
+  report b;
+}

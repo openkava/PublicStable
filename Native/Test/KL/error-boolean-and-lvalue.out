@@ -1,0 +1,1 @@
+10:8: error: calling function 'foo': parameter 1: the result of a boolean 'and' operation cannot be used as an io argument

@@ -1,0 +1,10 @@
+function entry() 
+{ 
+  var Integer idx[]; 
+  idx.resize( 5000000 ); 
+
+  for( var Size i = 0; i < idx.size(); i += 3 ) 
+  { 
+    var Integer val = idx[ i + 0 ]; 
+  } 
+}

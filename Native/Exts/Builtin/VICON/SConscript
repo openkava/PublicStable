@@ -1,0 +1,31 @@
+#
+# Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+#
+
+Import( 'extsEnv', 'fabricExtsDistDir' )
+
+# check if we have vicon installed
+import os.path, platform
+
+sdkPath = os.path.abspath(os.path.curdir + "/../../../../../../../../ThirdParty/vicon/datastreamsdk_"+platform.system())
+if(platform.machine() == "x86_64"):
+  sdkPath += "64"
+else:
+  sdkPath += "32"
+
+if(os.path.exists(sdkPath)):
+  viconPluginEnv = extsEnv.Clone()
+  viconPlugin = viconPluginEnv.SharedLibrary( 'FabricVICON', Glob('*.cpp') ),
+  viconManifest = viconPluginEnv.File('FabricVICON.fpm.json'),
+  
+  # vicon sdk
+  viconPluginEnv.Append( CCFLAGS = '-I'+sdkPath )
+  viconPluginEnv.Append( LINKFLAGS = '-L'+sdkPath+" -lViconDataStreamSDK_CPP" )
+    
+  Alias( 'viconExt', [
+    viconPlugin,
+    viconManifest,
+    Install( viconPluginEnv['DEST_DIR'], [viconPlugin,viconManifest] )
+  ] )
+else:
+  print("--------- Skipping VICON plugin, no VICON SDK found.")

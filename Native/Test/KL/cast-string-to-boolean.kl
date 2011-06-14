@@ -1,0 +1,5 @@
+function entry()
+{
+  report (Boolean)"";
+  report (Boolean)"foo";
+}

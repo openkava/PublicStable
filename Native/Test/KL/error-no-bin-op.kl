@@ -1,0 +1,10 @@
+struct S
+{
+  Integer i;
+};
+
+function entry()
+{
+  var S s;
+  report s + 17;
+}

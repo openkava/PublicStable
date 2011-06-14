@@ -1,0 +1,7 @@
+function entry()
+{
+  var Integer a[2];
+  a[0] = 17;
+  a[1] = 42;
+  a[2] = 64;
+}
