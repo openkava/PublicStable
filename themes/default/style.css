@@ -1,0 +1,307 @@
+@charset "utf-8";
+@import url('reset.css');
+/* CSS Document */
+
+/* HTML
+-------------------------------------------------------------------- */
+body {
+	margin: 0px;
+	padding: 0px;
+	background-color:#181818;
+	background-image: url(_img/bg-body.png);
+}
+
+h1 {
+	font: normal 30px/100% Arial, Helvetica, sans-serif;
+	color:#fff;
+	letter-spacing: -2px;
+	padding: 20px 10px;
+}
+
+p {
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 11px;
+	line-height: 16px;
+	color:#333;
+}
+
+a {
+	font-family: Arial, Helvetica, sans-serif;
+	color: #000;
+	text-decoration: none;
+	}
+	a:hover{
+		text-decoration: underline;
+	}
+	a:active{
+		color: #999;
+		text-decoration: underline;
+	}
+	
+.clear{
+	clear:both;
+}
+
+
+/* LAYOUT
+-------------------------------------------------------------------- */
+#wrapper{
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	/* I am not sure why the min with is here. 
+	 and it blocked me onthe node inspector
+	min-width: 950px;
+	*/
+}
+
+#box {
+	font: bold 13px/100% Verdana, Tahoma, sans-serif;
+	background-image:url(_img/box-bg.gif);
+	background-repeat: repeat-x;
+	background-color:#000;
+	border: solid 1px #000;
+	padding: 50px;
+	width: auto;
+	box-shadow: rgba(0,0,0, 0.5) 0px 0px 8px;
+	-moz-box-shadow: rgba(0,0,0, 0.5) 0px 0px 8px;
+	-webkit-box-shadow: rgba(0,0,0, 0.5) 0px 0px 8px;
+	-moz-border-radius: 3px;
+	-webkit-border-radius: 3px;
+	}
+
+/* NAV
+-------------------------------------------------------------------- */
+ul#nav{
+	float: left;
+	width: 100%;
+	display: block;
+	margin: 0px;
+	padding: 0px;
+	list-style: none;
+	background-color:#000;
+	height: auto;
+	background-image:url(_img/box-bg.gif);
+	box-shadow: rgba(0,0,0, 0.5) 0px 0px 8px;
+	-moz-box-shadow: rgba(0,0,0, 0.5) 0px 0px 8px;
+	-webkit-box-shadow: rgba(0,0,0, 0.5) 0px 0px 8px;
+	border-top: solid 3px #00ccff;
+	border-bottom: solid 1px #000;
+	}
+	ul#nav li{
+		display: inline;
+		float: left;
+		margin: 0px;
+		padding: 0px;
+		list-style: none;
+		font: bold 11px/100% Arial, Helvetica, sans-serif;
+		color:#fff;
+		line-height: 16px;
+		}
+		ul#nav li a{
+			display: block;
+			float: left;
+			border: 0;
+			padding: 10px;
+			height: 15px;
+			text-decoration: none;
+			border-right: solid 1px #222222;
+			color: #666;
+			}
+			ul#nav li a:hover{
+				background-color: #00ccff;
+				color: #000;
+			}
+			ul#nav li a:active{
+				background-color: #00ccff;
+				color: #000;
+			}
+		ul#nav li a#fabric-logo:hover{
+			background-color: #333;
+			color: #000;
+		}
+		ul#nav li a#fabric-logo:active{
+			background-color: #333;
+			color: #000;
+		}
+	ul#nav li#account{
+		float: right;
+		}
+		ul#nav li#account a{
+			padding-left: 25px;
+			background-image: url(_img/projects/icon-user.png);
+			background-repeat: no-repeat;
+			background-position: 5px 10px;
+			border-right: 0;	
+			border-left: solid 1px #222222;
+			}
+	ul#nav li#projectinfo{
+		float: right;
+		}
+		ul#nav li#projectinfo p{
+			display: block;
+			border: 0;
+			padding: 10px;
+			height: 15px;
+			text-decoration: none;
+			border-left: solid 1px #222222;
+			color: #fff;
+			}
+			ul#nav li#projectinfo p span{
+				color: #666;
+			}
+
+/* TOOLS
+-------------------------------------------------------------------- */
+ul#tools{
+		float: left;
+		width: 100%;
+		height: 6px;
+		display: block;
+		margin: 0px;
+		padding: 0 0 0 5px;
+		list-style: none;
+		background-color: #222;
+		background-image: url(_img/subnav-bg.jpg);
+		box-shadow: rgba(0,0,0, 0.1) 0px 0px 8px;
+		-moz-box-shadow: rgba(0,0,0, 0.1) 0px 0px 8px;
+		-webkit-box-shadow: rgba(0,0,0, 0.1) 0px 0px 8px;
+		border-bottom: solid 1px #111;
+		}
+	ul#tools li{
+		display: inline;
+		margin: 0px;
+		padding: 0px;
+		list-style: none;
+		font: bold 12px/100% Arial, Helvetica, sans-serif;
+		color:#fff;
+		line-height: 16px;
+		}
+	ul#tools li a{
+		float: left;
+		border: 0;
+		margin: 6px 2px 5px 2px;
+		padding: 8px 10px 8px 25px;
+		text-decoration: none;
+		border-right: solid 1px #111;
+		border-bottom: solid 1px #111;
+		color: #666;
+		background-repeat: no-repeat;
+		background-color:#222;
+		-moz-border-radius: 5px;
+		-webkit-border-radius: 5px;
+		}
+		ul#tools li a:hover{
+			background-color: #444;
+			color: #fff;
+		}
+		ul#tools li a:active{
+			background-color: #111;
+			color: #fff;
+			border-left: solid 1px #000;
+			border-top: solid 1px #000;
+			border-right: 0px;
+			border-bottom: 0px;
+		}
+	ul#tools li a#btn-undo{
+		background-image:url(_img/icons/icon-tools-undo.png);
+		background-position: 5px 8px
+	}
+	ul#tools li a#btn-redo{
+		background-image:url(_img/icons/icon-tools-redo.png);
+		background-position: 5px 8px
+	}
+	ul#tools li a#btn-move{
+		background-image:url(_img/icons/icon-tools-move.png);
+		background-position: 5px 8px
+	}
+	ul#tools li a#btn-select{
+		background-image:url(_img/icons/icon-tools-select.png);
+		background-position: 7px 8px
+	}
+
+
+
+/* FORM  Phil: These settings were breaking my nodeInspector
+-------------------------------------------------------------------- 
+input, textarea { 
+	padding: 5px;
+	margin: 5px;
+	border: 0;
+	outline: 0;
+	font: normal 13px/100% Arial, Helvetica, sans-serif;
+	color: #333;
+	width: 200px;
+	height: 16px;
+	background: url(_img/form-bg.gif);
+	background-color: #FFF;
+	-moz-box-shadow: rgba(0,0,0, 0.1) 0px 0px 8px;
+	-webkit-box-shadow: rgba(0,0,0, 0.1) 0px 0px 8px;
+	-moz-border-radius: 3px;
+	-webkit-border-radius: 3px;
+	}
+
+textarea { 
+	width: 400px;
+	max-width: 400px;
+	height: 150px;
+	line-height: 150%;
+	}
+
+input:hover, textarea:hover,
+input:focus, textarea:focus { 
+	-moz-box-shadow: rgba(0,0,0, 1) 0px 0px 8px;
+	-webkit-box-shadow: rgba(0, 0, 0, 1) 0px 0px 8px;
+	}
+
+input[type='button'],
+input[type='submit'],
+button {
+	width: auto;
+	height: 26px;
+	padding: 0px 10px;
+	background: url(_img/form-btn.gif);
+	background-position: 0 0;
+	border: 0;
+	font-size: 14px;
+	font-weight: bold;
+	color: #002a34;
+	letter-spacing: -1px;
+	-moz-border-radius: 3px;
+	-webkit-border-radius: 3px;
+	cursor: pointer;
+	}
+	input[type='button']:hover,
+	input[type='submit']:hover {
+		background-position: 0px -26px;
+		}
+	input[type='button']:active,
+	input[type='submit']:active {
+		background-position: 0px -52px;
+		}
+
+
+		#popup{
+			display: block;
+			width: auto;
+			height: auto;
+			padding: 10px;
+			font: normal 13px/100% Arial, Helvetica, sans-serif;
+			color: #999;
+			line-height: 120%;
+			background-color: #111;
+			-moz-border-radius-bottomright: 6px;
+			-moz-border-radius-bottomleft: 6px;
+			-webkit-border-bottom-right-radius: 6px;
+			-webkit-border-bottom-left-radius: 6px;
+		-moz-border-radius-topleft: 6px;
+		-moz-border-radius-topright: 6px;
+		-webkit-border-top-left-radius: 6px;
+		-webkit-border-top-right-radius: 6px;
+			-moz-box-shadow: rgba(0,0,0, 0.8) 0px 0px 3px;
+			-webkit-box-shadow: rgba(0, 0, 0, 0.8) 0px 0px 3px;
+			border: solid 1px #000;
+		}
+*/

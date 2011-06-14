@@ -1,0 +1,32 @@
+@charset "utf-8";
+/* CSS Document */
+
+/* HOME
+-------------------------------------------------------------------- */
+#wrapper-home{
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	margin: -100px 0 0 -270px;
+	height: auto;
+	text-align: center;
+	}
+	#wrapper-home p{
+		font: bold 13px/100% Arial, Helvetica, sans-serif;
+		color: #666;
+		padding-left: 5px;
+		}
+		#wrapper-home p a{
+			color: #FFF;
+		}
+		#wrapper-home p a:hover{
+			color: #00ccff;
+			text-decoration: none;
+		}
+		#wrapper-home p a:active{
+			color: #00ccff;
+		}
+
+img#logo{
+	padding: 0 0 25px 25px;
+}

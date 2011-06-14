@@ -1,0 +1,7 @@
+operator twistOp(io Vec3 position, io Vec3 normal, io Scalar twist) {
+  // report("twistOp");
+
+  var Quat q = axisAndAngleToQuat(Vec3(1.0, 0.0, 0.0), position.x * twist);
+  position = q.transform(position);
+  normal = q.transform(normal);
+}

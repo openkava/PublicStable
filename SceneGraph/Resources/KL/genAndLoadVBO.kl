@@ -1,0 +1,53 @@
+
+#include '../../../SceneGraph/Resources//KL/loadVBOs.kl'
+
+// These must be defined in the preprocessor definitions prior to compilation.
+// #define DATA_TYPE Vec3
+// #define ATTRIBUTE_ID 7
+// #define ATTRIBUTE_NAME "positions"
+
+// TODO: Ask Jerome about this...
+// We often store Vec3 values in attributes of type vec4.
+// in the shader code, what happens if we access the 4th component?
+// Shouldn't we be allocating arraySize * sizeof(vec4) ?
+// #define ATTRIBUTE_ELEMENT_SIZE 16 // positions are stored in a vec4
+
+function genAndLoadVBOFn(
+  DATA_TYPE bufferData[],
+  io Size bufferDataCount,
+  Integer bufferLocation,
+  Boolean dynamic,
+  Boolean forceReload,
+  io Integer bufferID
+) {
+  Data NULL;
+  if (bufferID <= 0 || dynamic || forceReload) {
+    if (bufferID != 0 && (bufferData.size() != bufferDataCount || forceReload)) {
+      glDeleteBuffers(1, bufferID.data());
+      bufferID = 0;
+    }
+    //report("Generating VBO for: ATTRIBUTE_NAME" );
+    genBuffer(bufferData.data(), bufferData.dataSize(), dynamic, bufferID);
+    bufferDataCount = bufferData.size();
+  }
+  bindBuffer(bufferData[0].dataSize(), bufferID, bufferLocation);
+}
+
+operator genAndLoadVBO(
+  io ShaderValue attributeValues[],
+
+  io DATA_TYPE bufferData[],
+  io Size bufferDataCount,
+  io Boolean dynamic,
+  io Boolean reload,
+  io Integer bufferID
+) {
+  //  report("Loading ATTRIBUTE_NAME :" + bufferID + ":" + bufferDataCount );
+  for (Integer i = 0; i < attributeValues.size(); i++) {
+    if (attributeValues[i].id == ATTRIBUTE_ID) {
+      genAndLoadVBOFn(bufferData, bufferDataCount, attributeValues[i].location, dynamic, reload, bufferID);
+      reload = false;
+      return;
+    }
+  }
+}

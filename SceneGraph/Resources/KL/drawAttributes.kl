@@ -1,0 +1,8 @@
+operator disableZBuffer() {
+  glPushAttrib(GL_ENABLE_BIT);
+  glDisable(GL_DEPTH_TEST);
+}
+
+operator popAttribs() {
+  glPopAttrib();
+}

@@ -1,0 +1,198 @@
+<html xmlns="http://www.w3.org/1999/xhtml"> 
+  <head> 
+    <title>FABRIC - Painting</title> 
+    
+    <meta charset="iso-8859-1"/>
+    <link href="../../../themes/default/style.css" rel="stylesheet" type="text/css" />
+    <link href="../../../themes/default/viewer.css" rel="stylesheet" type="text/css" />
+    
+    <script type="text/javascript" src="../../../ThirdParty/jQuery/jquery-1.4.2.min.js"></script>
+    <script type="text/javascript" src="../../../ThirdParty/jQuery/jquery-ui-1.8.5.custom.min.js"></script>
+
+    <link type="text/css" href="../../../ThirdParty/jQuery/css/vader/jquery-ui-1.8.5.custom.css" rel="stylesheet" />
+    <script type="text/javascript" src="../../../ThirdParty/jQuery/colorpicker/js/colorpicker.js"></script>
+    <link href="../../../ThirdParty/jQuery/colorpicker/css/colorpicker.css" rel="stylesheet" type="text/css" />
+
+      <script type="text/javascript" src="../../../Core/FABRIC.Wrappers.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../Core/FABRIC.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/RT/Math.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/RT/RGBA.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/RT/Vec2.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/RT/Vec3.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/RT/Vec4.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/RT/Mat33.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/RT/Mat44.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/RT/Quat.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/RT/Xfo.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/RT/Color.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/RT/Ray.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/RT/CollectedPoints.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/RT/RGBA.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/RT/Euler.js" charset="utf-8"></script>
+    
+
+    <script type="text/javascript" src="../../../SceneGraph/Resources/FABRIC.SceneGraph.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/FABRIC.SceneGraph.Geometry.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/FABRIC.SceneGraph.Primitives.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/FABRIC.SceneGraph.Lights.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/FABRIC.SceneGraph.Materials.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/FABRIC.SceneGraph.Manipulation.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/FABRIC.SceneGraph.Particles.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/FABRIC.SceneGraph.Kinematics.js" charset="utf-8"></script>
+    
+    <script type="text/javascript" src="../../../SceneGraph/Resources/Parsers/parseOBJ.js" charset="utf-8"></script>
+    
+    <script type="text/javascript" src="../../../Core/Debugger/FABRIC.Debugger.Events.js" charset="utf-8"></script>
+    
+    <style type="text/css">
+    
+#sidebar {
+  width:400px;
+}  
+#viewer {
+  right:400px;
+}
+
+  
+  </style>
+    
+    <script type="text/javascript">
+$(document).ready(function() {
+    $('#play').button({
+      text: true,
+      icons: {
+        primary: 'ui-icon-play'
+      }
+    });
+
+    $('#step').button({
+      text: true,
+      icons: {
+        primary: 'ui-icon-step'
+      }
+    });
+
+  var scene = FABRIC.SceneGraph.createScene();
+  var viewport = scene.constructNode('ViewPort', {
+    windowElement: document.getElementById('FabricContainer'),
+    backgroundColor: FABRIC.Math.rgb(0.3, 0.5, 0.7)
+  });
+
+  // Create a camera to draw the scene from
+  camera = scene.constructNode('TargetCamera', {
+      nearDistance: 0.01,
+      farDistance: 5,
+      position: FABRIC.Math.vec3(-0.03, 0.19, 0.21),
+      target: FABRIC.Math.vec3(-0.03, 0.06, -0.03)
+    });
+
+  scene.constructNode('CameraManipulator', { targetNode: camera });
+
+  viewport.setCameraNode(camera);
+
+  var light = scene.constructNode('PointLight', { position: FABRIC.Math.vec3(420.0, 1000.0, 600.0) });
+  var material = scene.constructNode('PhongVertexColorMaterial', { lightNode: light });
+
+  var assets = scene.importAssetFile('Models/bunny.obj');
+  geometry = assets['bunny'];
+
+  geometry.addVertexAttributeValue('vertexColors', 'Color', FABRIC.Math.rgb(0.0, 0.6, 0.0));
+
+  var instanceNode = scene.constructNode('Instance', { geometryNode: geometry, materialNode: material });
+
+
+  /////////////////////////////////////////////////
+  // Set up the painting manipulator
+  var brushSize = 0.1;
+  var paintManipulator = scene.constructNode('PaintManipulator', {
+      brushSize: brushSize
+      });
+  paintManipulator.addPaintableNode(instanceNode);
+  var onBeginPaintFn = function(evt) {
+    brushSize = paintManipulator.brushSize;
+  };
+
+  var onPaintFn = function(evt) {
+  /*  if( evt.paintData.points.length == 0 ){
+      return;
+    }
+    var paintData = evt.paintData,
+      attributesDGNode = geometry.getAttributesDGNode(),
+      vertexData = attributesDGNode.getSlicesBulkData( paintData.points ),
+      weight,
+      vertexId,
+      modifiedData = [];
+    // Note: Peter, it would be cool if getSlicesBulkData mirrored setSlicesBulkData
+    // so that we could pull->modifiy->set. Currently we ahve to construct a whole new
+    // data structure to set. maybe setSlicesBulkData could take an array of indices
+    // and an array of data.
+    modifiedData.length = paintData.points.length;
+    for( var i=0; i< paintData.points.length; i++ ){
+      weight = (Math.cos( Math.PI * (paintData.distances[i] / brushSize) ) * 0.5 ) + 0.5;
+      modifiedData[i] = {
+          sliceIndex: paintData.points[i],
+          data: { vertexColors:vertexData[i].vertexColors.interpTowards( brushColor, weight ) }
+        };
+    }
+    attributesDGNode.setSlicesBulkData( modifiedData );
+  */ geometry.reloadVBO('vertexColors');
+  //  viewport.redraw();
+  };
+
+  paintManipulator.addEventListener('onbeginpaint', onBeginPaintFn);
+  paintManipulator.addEventListener('onpaint', onPaintFn);
+
+  var errors = scene.getErrors();
+  if (errors.length > 0) {
+    throw (errors.toString());
+  }
+  else {
+    var brushColor = FABRIC.Math.rgb(0.3, 0.6, 0.8);
+    paintManipulator.brushColor = brushColor;
+    $('#brushColor').ColorPicker({
+        flat: true,
+        color: { r: brushColor.r * 255, g: brushColor.g * 255, b: brushColor.b * 255} ,
+        onChange: function(hsb, hex, rgb) {
+          paintManipulator.brushColor = FABRIC.Math.rgb255(rgb.r, rgb.g, rgb.b);
+        }
+      });
+
+    console.log(scene.getTimerProfiles());
+    console.log('Done');
+  }
+
+});
+
+</script>
+
+  </head> 
+  <body>
+    <div id="wrapper">
+      <ul id="nav">
+        <li><a href="#" id="fabric-logo"><img src="../../../themes/default/_img/projects/fabric-logo.png" /></a></li>
+      </ul>
+      <div id="editor">
+        <div id="viewer">
+          <div id="FabricContainer"></div> 
+        </div><!--viewer-->
+        <div id="sidebar" style="width=400px">
+        
+          <div class="box">
+                    <h2>INFO</h2>
+                    <div class="content">
+              The painting interface is built using event hanlders, and it very similar to ray casting. With ray casting, we return the intersection data back to JavaScript, whereas with painting, we return all points within range of the brush. Any data in the scene can be modified, and in this example, we simply modify the vertex colors. 
+            </div><!--content-->
+                </div><!--box-->
+
+                <div class="box">
+                    <h2>CONTROLS</h2>
+                    <div class="content">
+                 <p id="brushColor"></p>
+                    </div><!--content-->
+                </div><!--box-->
+      
+        </div><!--sidebar-->
+      </div> <!--editor-->
+    </div><!--wrapper-->
+  </body> 
+  </html>

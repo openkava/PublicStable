@@ -1,0 +1,13 @@
+
+operator drawLines(
+  io Size indicesCount,
+  io Integer indexBufferID,
+  io Boolean drawToggle
+) {
+  if (drawToggle) {
+    var Data NULL;
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferID);
+    glDrawElements(GL_LINES, indicesCount, GL_UNSIGNED_INT, NULL);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+  }
+}

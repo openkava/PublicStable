@@ -1,0 +1,76 @@
+			
+
+#define USE_SHADOW_SAMPLER 1
+
+
+#ifdef USE_SHADOW_SAMPLER
+float shadowLookupOffset( 
+		in vec2 offset, 
+		in sampler2DShadow shadowMapSampler,
+		in vec4 shadowCoord
+){
+	// Hard-coded for now. Should be added to the uniforms
+	float pixelOffset = 0.0; //1.0 / 1024.0;
+	return shadow2DProj(shadowMapSampler, shadowCoord + vec4(offset.x * shadowCoord.w, offset.y * shadowCoord.w, 0.0, 0.0) + pixelOffset  ).w;
+}
+
+float getLightFactor_PCF( 
+		in sampler2DShadow shadowMapSampler,
+		in vec4 shadowCoord
+){
+	float x, y, lightFactor, variation = 5.5;
+	float numSamples = 7.0;
+	float increment = (variation * 2.0)/numSamples;
+	for (y = -variation ; y <=variation ; y+=increment){
+		for (x = -variation ; x <=variation ; x+=increment){
+			lightFactor += shadowLookupOffset( vec2(x,y), shadowMapSampler, shadowCoord );
+		}
+	}
+
+	return lightFactor / (numSamples*numSamples);
+}
+
+float getLightFactor_Dither( 
+		in sampler2DShadow shadowMapSampler,
+		in vec4 shadowCoord
+){
+	vec2 o = mod(floor(gl_FragCoord.xy), 2.0);
+
+	float lightFactor;
+	lightFactor += shadowLookupOffset(vec2(-1.5, 1.5) + o, shadowMapSampler, shadowCoord );
+	lightFactor += shadowLookupOffset(vec2( 0.5, 1.5) + o, shadowMapSampler, shadowCoord );
+	lightFactor += shadowLookupOffset(vec2(-1.5, -0.5) + o, shadowMapSampler, shadowCoord );
+	lightFactor += shadowLookupOffset(vec2( 0.5, -0.5) + o, shadowMapSampler, shadowCoord );
+	return lightFactor * 0.25 ;
+}
+
+float getLightFactor_Hard( 
+		in sampler2DShadow shadowMapSampler,
+		in vec4 shadowCoord
+){
+	return shadow2DProj(shadowMapSampler, shadowCoord - 0.1 ).w;
+}
+
+#else
+
+float getLightFactor_Hard( 
+		in sampler2D shadowMapSampler,
+		in vec4 shadowCoord
+){
+	vec4 shadowCoordinateWdivide = shadowCoord / shadowCoord.w;
+
+	// Used to lower moir√© pattern and self-shadowing
+	shadowCoordinateWdivide.z += 0.0005;
+
+	float distanceFromLight = texture2D(shadowMapSampler,shadowCoordinateWdivide.st).z;
+
+	float lightFactor = 1.0;
+	if( shadowCoord.w > 0.0 && distanceFromLight < shadowCoordinateWdivide.z ){
+		lightFactor = 0.0;
+	}
+	return lightFactor;
+}
+
+#endif
+
+

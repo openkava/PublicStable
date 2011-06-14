@@ -1,0 +1,270 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd"> 
+<html>
+  <head>
+  <meta http-equiv="Content-Language" content="en" />
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>FABRIC Curve Editor</title>
+    
+    <meta charset="iso-8859-1"/>
+    <link href="../../themes/default/style.css" rel="stylesheet" type="text/css" />
+    <link href="../../themes/default/viewer.css" rel="stylesheet" type="text/css" />
+    
+    <script type="text/javascript" src="../../ThirdParty/jQuery/jquery-1.4.2.min.js"></script>
+    <script type="text/javascript" src="../../ThirdParty/jQuery/jquery-ui-1.8.5.custom.min.js"></script>
+
+    <link type="text/css" href="../../ThirdParty/jQuery/css/vader/jquery-ui-1.8.5.custom.css" rel="stylesheet" />
+
+    <script type="text/javascript" src="../../Core/FABRIC.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../SceneGraph/Resources/RT/Math.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../SceneGraph/Resources/RT/Vec2.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../SceneGraph/Resources/RT/Color.js" charset="utf-8"></script>
+    
+    <script type="text/javascript" src="../../SceneGraph/Resources/RT/BezierKeyframe.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../SceneGraph/Resources/RT/LinearKeyframe.js" charset="utf-8"></script>
+
+    <script type="text/javascript" src="../../SceneGraph/Resources/FABRIC.SceneGraph.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../SceneGraph/Resources/FABRIC.SceneGraph.Animation.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../SceneGraph/Resources/FABRIC.SceneGraph.Kinematics.js" charset="utf-8"></script>
+    
+    <script type="text/javascript" src="../../SceneGraph/Resources/FABRIC.SVG.js"></script>
+    
+    <style type="text/css">
+    
+path.CurvePath {
+  fill: none;
+  stroke-opacity:1.0;
+  stroke-width:1.5;
+}
+
+path.TimeStripePath {
+  fill: none;
+  stroke:white;
+  stroke-opacity:1.0;
+  stroke-width:1;
+}
+
+path.KeyframeHandle {
+  fill: none;
+  stroke:white;
+  stroke-opacity:1.0;
+  stroke-width:1.0;
+}
+
+rect.EventCatcher {
+  fill-opacity:0.0;
+  stroke-opacity:0.0;
+}
+  
+  </style>
+  
+
+    <script type="text/javascript">
+
+
+$(document).ready(function() {
+
+  var width = $('#viewer').width();
+  var height = $('#viewer').height();
+
+  svgRoot = FABRIC.createSVGRootElem('viewer');
+
+  var graphCenterGroup = svgRoot.createGroup().id('graphCenterGroup');
+  var graphSclGroup = graphCenterGroup.createGroup().id('graphSclGroup');//.scale( controller.getGraphDefZoom() );
+  var graphPosGroup = graphSclGroup.createGroup().id('graphPosGroup');//.translate( controller.getGraphDefPan() );
+  var graphHolderGroup = graphCenterGroup.createGroup().id('graphHolderGroup').translate(0, height * 0.5);
+  svgRoot.svgRoot = svgRoot;
+  svgRoot.state = 'Normal';
+/*  svgRoot.draggable( {mouseButton:0, delegateTranslateObj:graphHolderGroup, highlight:false } )
+    .addOnDragEndCallback(
+      function(evt){
+        var pos = graphPosGroup.translate();
+      } );
+
+*/  ///////////////
+
+  var bezierTrackDisplayNodes = [];
+  var trackCount = keyframeTrackNode.getTrackCount();
+  var timeRange = FABRIC.Math.vec2(0, 0);
+  var curvesData = [];
+
+  for (var i = 0; i < trackCount; i++) {
+    var keys = keyframeTrackNode.getTrackKeys(i);
+    if (timeRange.x > keys[0].time) {
+      timeRange.x = keys[0].time;
+    }
+    else if (timeRange.y < keys[keys.length - 1].time) {
+      timeRange.y = keys[keys.length - 1].time;
+    }
+
+    bezierTrackDisplayNodes[i] = scene.constructNode('TrackDisplay', {
+      animationTrackNode: keyframeTrackNode,
+      trackIndex: i,
+      timeRange: timeRange
+    });
+    curvesData[i] = bezierTrackDisplayNodes[i].getCurveData();
+  }
+
+  var yRange = FABRIC.Math.vec2(curvesData[0].value[0], curvesData[0].value[0]);
+  var getCurveYRange = function(curveData) {
+    for (var i = 1; i < curveData.time.length; i++) {
+      if (yRange.x > curveData.value[i]) {
+        yRange.x = curveData.value[i];
+      }
+      else if (yRange.y < curveData.value[i]) {
+        yRange.y = curveData.value[i];
+      }
+    }
+  }
+
+  for (var i = 0; i < trackCount; i++) {
+    getCurveYRange(curvesData[i]);
+  }
+
+  var scaleX = width / (timeRange.y - timeRange.x),
+     scaleY = -(height - 40) / (yRange.y - yRange.x),
+    scale = FABRIC.Math.vec2(scaleX, scaleX),
+    offsetY = (yRange.y + yRange.x) * -0.5;
+
+  var drawTrackCurve = function(trackIndex) {
+    var trackData = keyframeTrackNode.getTrackData(trackIndex),
+      curveData = curvesData[trackIndex],
+      lineNode = graphHolderGroup.createPath().addClass('CurvePath').stroke(trackData.color);
+
+    $('#keyframeTracks').append('<div style="margin-top:10px;">' + trackData.name + '</div>');
+
+    var setPathCurveValues = function() {
+      var path = ['M', curveData.time[0] * scaleX, (curveData.value[0] + offsetY) * scaleY, 'L', 100, 100, 300, 200];
+      for (var i = 0; i < curveData.time.length; i++) {
+        path[(i * 2) + 4] = curveData.time[i] * scaleX;
+        path[(i * 2) + 5] = (curveData.value[i] + offsetY) * scaleY;
+      }
+      lineNode.attr('d', path.join(' '));
+    }
+    setPathCurveValues();
+
+    var updateCurve = function() {
+      curveData = bezierTrackDisplayNodes[trackIndex].getCurveData();
+      setPathCurveValues();
+    }
+
+    var drawKey = function(keyIndex, keyData) {
+
+      var keyTime = keyData.time * scaleX;
+      var keyValue = (keyData.value + offsetY) * scaleY;
+
+      var keyGroupNode = graphHolderGroup.createGroup().translate(keyTime, keyValue)
+        .draggable({ mouseButton: 0 })
+        .addOnDragCallback(
+          function(evt) {
+            keyData.time = evt.localPos.x / scaleX;
+            keyData.value = (evt.localPos.y / scaleY) - offsetY;
+
+            keyframeTrackNode.setKeyData(trackIndex, keyIndex, keyData);
+            updateCurve();
+            scene.redrawAllWindows();
+          });
+       var keyNode = keyGroupNode.createRect().translate(-4, -4).size(8, 8).stroke(FABRIC.Math.rgb(1, 1, 1));
+
+      if (keyframeTrackNode.getKeyframeType() == 'BezierKeyframe') {
+
+        var keyInTangentX = keyData.intangent.x * scaleX;
+        var keyInTangentY = keyData.intangent.y * scaleY;
+         var keyInTangentNode = keyGroupNode.createRect()
+                                            .translate(keyInTangentX - 3, keyInTangentY - 3)
+                                            .size(6, 6).stroke(FABRIC.Math.rgb(1, 1, 1));
+        var keyInTangentLineNode = keyGroupNode.createPath().addClass('KeyframeHandle');
+        keyInTangentLineNode.attr('d', 'M 0 0 L ' + keyInTangentX + ' ' + keyInTangentY);
+
+        keyInTangentNode.draggable({ mouseButton: 0 })
+          .addOnDragCallback(
+            function(evt) {
+              keyInTangentLineNode.attr('d', 'M 0 0 L ' + (evt.localPos.x + 3) + ' ' + (evt.localPos.y + 3));
+              keyData.intangent.x = evt.localPos.x / scaleX;
+              keyData.intangent.y = evt.localPos.y / scaleY;
+
+              keyframeTrackNode.setKeyData(0, keyIndex, keyData);
+              updateCurve();
+              scene.redrawAllWindows();
+            });
+
+        var keyOutTangentX = keyData.outtangent.x * scaleX;
+        var keyOutTangentY = keyData.outtangent.y * scaleY;
+         var keyOutTangentNode = keyGroupNode.createRect()
+                                             .translate(keyOutTangentX - 3, keyOutTangentY - 3)
+                                             .size(6, 6).stroke(FABRIC.Math.rgb(1, 1, 1));
+        var keyOutTangentLineNode = keyGroupNode.createPath().addClass('KeyframeHandle');
+        keyOutTangentLineNode.attr('d', 'M 0 0 L ' + keyOutTangentX + ' ' + keyOutTangentY);
+
+        keyOutTangentNode.draggable({ mouseButton: 0 })
+          .addOnDragCallback(
+            function(evt) {
+              keyOutTangentLineNode.attr('d', 'M 0 0 L ' + (evt.localPos.x + 3) + ' ' + (evt.localPos.y + 3));
+              keyData.outtangent.x = evt.localPos.x / scaleX;
+              keyData.outtangent.y = evt.localPos.y / scaleY;
+
+              keyframeTrackNode.setKeyData(trackIndex, keyIndex, keyData);
+              updateCurve();
+              scene.redrawAllWindows();
+            });
+      }
+    }
+    if (window.drawKeys !== false) {
+      for (var i = 0; i < trackData.keys.length; i++) {
+        drawKey(i, trackData.keys[i]);
+      }
+    }
+  }
+
+  for (var i = 0; i < trackCount; i++) {
+    drawTrackCurve(i);
+  }
+
+  var timeStripeGroupNode = graphHolderGroup.createGroup()
+      .translate(scene.animation.time * scaleX, height * -0.5)
+      .draggable({ mouseButton: 0, axis: 'X' })
+      .addOnDragCallback(
+        function(evt) {
+          scene.animation.time = evt.localPos.x / scaleX;
+        });
+
+  timeStripeGroupNode.createRect().size(10, height).addClass('EventCatcher');
+  timeStripeGroupNode.createPath().addClass('TimeStripePath')
+      .attr('d', 'M 5 0 L 5 ' + height);
+
+  window.updateGraphTimeStripe = function() {
+    timeStripeGroupNode.translate(scene.animation.time * scaleX, height * -0.5);
+  }
+});
+
+
+
+    </script>
+
+
+
+  </head> 
+  <body>
+    <div id="wrapper">
+      <ul id="nav">
+        <li><a href="#" id="fabric-logo"><img src="../../themes/default/_img/projects/fabric-logo.png" /></a></li>
+      </ul>
+      <div id="editor">
+        
+        <div id="viewer">
+          <div id="FabricContainer"></div> 
+        </div><!--viewer-->
+        
+        <div id="sidebar">
+          
+                  <div class="box">
+                    <h2>KEYFRAME TRACKS</h2>
+                    <div class="content" id="keyframeTracks">
+                    </div><!--content-->
+                </div><!--box-->
+    
+        </div><!--sidebar-->
+        
+      </div> <!--editor-->
+    </div><!--wrapper-->
+  </body> 
+</html>

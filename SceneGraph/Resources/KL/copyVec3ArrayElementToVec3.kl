@@ -1,0 +1,3 @@
+operator copyVec3ArrayElementToVec3(io Vec3 vecArray[], io Vec3 value, in Size index) {
+  value = vecArray[index];
+}

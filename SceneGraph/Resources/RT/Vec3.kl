@@ -1,0 +1,310 @@
+
+function Vec3(Scalar x, Scalar y, Scalar z) {
+  self.x = x;
+  self.y = y;
+  self.z = z;
+}
+
+function Vec3.set(Scalar x, Scalar y, Scalar z) {
+  self.x = x;
+  self.y = y;
+  self.z = z;
+}
+
+function Vec3.setNull() {
+  self.x = self.y = self.z = 0.0;
+}
+
+function Vec3 + (Vec3 a, Vec3 b) {
+  return Vec3(a.x + b.x, a.y + b.y, a.z + b.z);
+}
+
+function Vec3. += (Vec3 other) {
+  self = self + other;
+}
+
+function Vec3 - (Vec3 a, Vec3 b) {
+  return Vec3(a.x - b.x, a.y - b.y, a.z - b.z);
+}
+
+function Vec3. -= (Vec3 other) {
+  self = self - other;
+}
+
+function Vec3 * (Scalar a, Vec3 b) {
+  return Vec3(a * b.x, a * b.y, a * b.z);
+}
+
+function Vec3 * (Vec3 a, Scalar b) {
+  return Vec3(a.x * b, a.y * b, a.z * b);
+}
+
+function Vec3 * (Vec3 a, Vec3 b) {
+  return Vec3(a.x * b.x, a.y * b.y, a.z * b.z);
+}
+
+function Vec3. *= (Scalar other) {
+  self = self * other;
+}
+
+function Vec3. *= (Vec3 other) {
+  self = self * other;
+}
+
+function Vec3 / (Vec3 a, Vec3 b) {
+  return Vec3(a.x / b.x, a.y / b.y, a.z / b.z);
+}
+
+function Vec3 / (Scalar a, Vec3 b) {
+  return Vec3(a / b.x, a / b.y, a / b.z);
+}
+
+function Vec3 / (Vec3 a, Scalar b) {
+  return Vec3(a.x / b, a.y / b, a.z / b);
+}
+
+function Vec3. /= (Scalar other) {
+  self = self / other;
+}
+
+function Vec3. /= (Vec3 other) {
+  self = self / other;
+}
+
+function Vec3 Vec3.neg() {
+  return Vec3(-self.x, - self.y, - self.z);
+}
+
+function Vec3 Vec3.inv() {
+  return Vec3(1.0 / self.x, 1.0 / self.y, 1.0 / self.z);
+}
+
+function Scalar Vec3.dot(Vec3 other) {
+  return self.x * other.x + self.y * other.y + self.z * other.z;
+}
+
+function Scalar Vec3.normSq() {
+  return self.dot(self);
+}
+
+function Scalar Vec3.norm() {
+  return sqrt(self.normSq());
+}
+
+function Vec3 Vec3.unit() {
+  var Scalar n = self.norm();
+  if (n > 0.0) {
+    return self / n;
+  }
+  return self;
+}
+
+function Vec3.setUnit() {
+  self = self.unit();
+}
+
+function Vec3 Vec3.cross(in Vec3 other) {
+  return Vec3(
+    self.y * other.z - self.z * other.y,
+    self.z * other.x - self.x * other.z,
+    self.x * other.y - self.y * other.x
+  );
+}
+
+function Scalar Vec3.angle(in Vec3 other) {
+  return acos(self.dot(other));
+}
+
+function Scalar Vec3.distSq(in Vec3 other) {
+  var Vec3 v;
+  v = self - other;
+  return v.normSq();
+}
+
+function Scalar Vec3.dist(in Vec3 other) {
+  return sqrt(self.distSq(other));
+}
+
+function Vec3 Vec3.max(in Vec3 other) {
+  var Vec3 v;
+  v.x = self.x > other.x ? self.x : other.x;
+  v.y = self.y > other.y ? self.y : other.y;
+  v.z = self.z > other.z ? self.z : other.z;
+  return v;
+}
+
+function Vec3 Vec3.min(in Vec3 other) {
+  var Vec3 v;
+  v.x = self.x < other.x ? self.x : other.x;
+  v.y = self.y < other.y ? self.y : other.y;
+  v.z = self.z < other.z ? self.z : other.z;
+  return v;
+}
+
+function Vec3 Vec3.lerp(in Vec3 other, in Scalar t) {
+  return self + ((other - self) * t);
+}
+
+function Scalar distFromPointToLine(in Vec3 P, in Vec3 lineP0, in Vec3 lineP1) {
+  var Vec3 v, w, Pb;
+  var Scalar c1, c2, b;
+  v = lineP1 - lineP0;
+  w = P - lineP0;
+
+  c1 = w.dot(v);
+  c2 = v.dot(v);
+  b = c1 / c2;
+
+  Pb = lineP0 + b * v;
+  return P.dist(Pb);
+}
+
+function Scalar distFromPointToSegment(in Vec3 P, in Vec3 segmentP0, in Vec3 segmentP1) {
+  var Vec3 v, w, Pb;
+  var Scalar c1, c2, b;
+  v = segmentP1 - segmentP0;
+  w = P - segmentP0;
+
+  c1 = w.dot(v);
+  if (c1 <= 0) {
+    return P.dist(segmentP0);
+  }
+  c2 = v.dot(v);
+  if (c2 <= c1) {
+    return P.dist(segmentP1);
+  }
+  b = c1 / c2;
+  Pb = segmentP0 + b * v;
+  return P.dist(Pb);
+}
+
+// dist3D_Line_to_Line():
+//    Input:  two 3D lines L1 and L2
+//    Return: the shortest distance between L1 and L2
+function Scalar distanceFromLineToLine(
+  in Vec3 l1_p0, in Vec3 l1_p1,
+  in Vec3 l2_p0, in Vec3 l2_p1,
+  io Scalar l1_t, io Scalar l2_t
+) {
+  Vec3 u, v, w, dP;
+  Scalar a, b, c, d, e, D;
+  u = l1_p1 - l1_p0;
+  v = l2_p1 - l2_p0;
+  w = l1_p0 - l2_p0;
+  a = u.dot(u); // always >= 0
+  b = u.dot(v);
+  c = v.dot(v); // always >= 0
+  d = u.dot(w);
+  e = v.dot(w);
+  D = a * c - b * b; // always >= 0
+
+  // com_pute the line _parameters of the two closest points
+  if (D < 0.001) {
+    // the lines are almost parallel
+    l1_t = 0.0;
+    if (b > c) {
+      // use the largest denominator
+      l2_t = d / b;
+    }else {
+      l2_t = e / c;
+    }
+  }
+  else {
+    l1_t = (b * e - c * d) / D;
+    l2_t = (a * e - b * d) / D;
+  }
+
+  // get the difference of the two closest points
+  dP = w + (l1_t * u) - (l2_t * v);
+
+  return dP.norm(); // return the closest distance
+}
+
+function Scalar distanceFromRayToLine(
+  io Vec3 r1_p, io Vec3 r1_d,
+  io Vec3 l2_p0, io Vec3 l2_p1
+) {
+  var Vec3 ray_P1;
+  ray_P1 = r1_p + r1_d;
+
+  var Scalar l1_t, l2_t, dist;
+  dist = distanceFromLineToLine(
+    r1_p, ray_P1,
+    l2_p0, l2_p1,
+    l1_t, l2_t
+  );
+
+  if (l1_t >= 0.0 && l2_t >= 0.0 && l2_t <= 1.0) {
+    return dist;
+  }
+  if (l1_t >= 0.0 && l2_t < 0.0) {
+    return distFromPointToLine(l2_p0, r1_p, ray_P1);
+  }
+  if (l1_t >= 0.0 && l2_t > 1.0) {
+    return distFromPointToLine(l2_p1, r1_p, ray_P1);
+  }
+  // The line segment is behind the ray
+  if (l2_t >= 0.0 && l2_t < 1.0) {
+    return distFromPointToSegment(r1_p, l2_p0, r1_p);
+  }
+  if (l2_t < 0.0) {
+    return l2_p0.dist(r1_p);
+  }else {
+    return l2_p1.dist(r1_p);
+  }
+}
+
+function Boolean intersectRayWithTriangle(
+  Boolean cull,
+  Vec3 rayOri,
+  Vec3 rayDir,
+  Vec3 v0,
+  Vec3 v1,
+  Vec3 v2,
+  io Scalar dist,
+  io Scalar u,
+  io Scalar v
+) {
+  var Vec3 e1 = v1 - v0;
+  var Vec3 e2 = v2 - v0;
+  var Vec3 pvec = rayDir.cross(e2);
+  var Scalar det = e1.dot(pvec);
+  if (cull) {
+    if (det < 0.00001) {
+      return false;
+    }
+    var Vec3 tvec = rayOri - v0;
+    u = tvec.dot(pvec);
+    if (u < 0.0 || u > det) {
+      return false;
+    }
+    var Vec3 qvec = tvec.cross(e1);
+    v = rayDir.dot(qvec);
+    if (v < 0.0 || (u + v) > det) {
+      return false;
+    }
+    var Scalar inv_det = 1.0 / det;
+    dist = e2.dot(qvec);
+    dist *= inv_det;
+    u *= inv_det;
+    v *= inv_det;
+  }
+  else {
+    if (det > - 0.00001 && det < 0.00001) {
+      return false;
+    }
+    var Scalar inv_det = 1.0 / det;
+    var Vec3 tvec = rayOri - v0;
+    u = tvec.dot(pvec) * inv_det;
+    if (u < 0.0 || u > 1.0) {
+      return false;
+    }
+    var Vec3 qvec = tvec.cross(e1);
+    v = rayDir.dot(qvec) * inv_det;
+    if (v < 0.0 || (u + v) > 1.0) {
+      return false;
+    }
+    dist = e2.dot(qvec) * inv_det;
+  }
+  return true;
+}

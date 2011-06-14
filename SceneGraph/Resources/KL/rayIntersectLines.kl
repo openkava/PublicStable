@@ -1,0 +1,28 @@
+operator rayIntersectLines(
+  io Boolean select,
+  io RayIntersection intersection,
+  io Ray ray,
+  io Scalar threshold,
+  io Xfo globalXfo,
+  io Vec3 positions[],
+  io Integer indices[],
+  io Vec3 bboxmin,
+  io Vec3 bboxmax
+) {
+  Mat44 globalMat44 = globalXfo;
+  intersection.distance = 1.0e20;
+  for (Integer i = 0; i < indices.size(); i += 2) {
+    Vec3 p0 = positions[indices[i + 0]] * globalMat44;
+    Vec3 p1 = positions[indices[i + 1]] * globalMat44;
+    Scalar dist = ray.distanceToLine(p0, p1);
+
+    if (dist < threshold) {
+      select = true;
+      if (dist < intersection.distance) {
+        intersection.point = ray.start + (ray.direction * dist);
+        intersection.distance = dist;
+        intersection.elementid = i;
+      }
+    }
+  }
+}

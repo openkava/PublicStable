@@ -1,0 +1,149 @@
+<html xmlns="http://www.w3.org/1999/xhtml"> 
+  <head> 
+    <title>FABRIC - Rigging - Spine</title> 
+    
+    <meta charset="iso-8859-1"/>
+    <link href="../../../themes/default/style.css" rel="stylesheet" type="text/css" />
+    <link href="../../../themes/default/viewer.css" rel="stylesheet" type="text/css" />
+    
+    <script type="text/javascript" src="../../../ThirdParty/jQuery/jquery-1.4.2.min.js"></script>
+    <script type="text/javascript" src="../../../ThirdParty/jQuery/jquery-ui-1.8.5.custom.min.js"></script>
+
+    <link type="text/css" href="../../../ThirdParty/jQuery/css/vader/jquery-ui-1.8.5.custom.css" rel="stylesheet" />
+
+      <script type="text/javascript" src="../../../Core/FABRIC.Wrappers.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../Core/FABRIC.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/RT/Math.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/RT/Vec2.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/RT/Vec3.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/RT/Vec4.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/RT/Mat33.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/RT/Mat44.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/RT/Quat.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/RT/Xfo.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/RT/Color.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/RT/RGBA.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/RT/Euler.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/RT/Ray.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/RT/BezierKeyframe.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/RT/LinearKeyframe.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/RT/Ray.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/RT/Bone.js" charset="utf-8"></script>
+
+    <script type="text/javascript" src="../../../SceneGraph/Resources/FABRIC.SceneGraph.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/FABRIC.SceneGraph.Lights.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/FABRIC.SceneGraph.Materials.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/FABRIC.SceneGraph.Geometry.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/FABRIC.SceneGraph.Manipulation.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/FABRIC.SceneGraph.Primitives.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/FABRIC.SceneGraph.Animation.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/FABRIC.SceneGraph.Characters.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/FABRIC.SceneGraph.CharacterSolvers.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/FABRIC.SceneGraph.Kinematics.js" charset="utf-8"></script>
+    
+    <script type="text/javascript" src="../../../SceneGraph/Resources/Parsers/parseCollada.js" charset="utf-8"></script>
+    
+    <script type="text/javascript" src="../../../Core/Debugger/FABRIC.Debugger.Events.js" charset="utf-8"></script>
+    
+    <script type="text/javascript">
+$(document).ready(function() {
+
+  // Create the scene.
+  var scene = FABRIC.SceneGraph.createScene();
+  var viewport = scene.constructNode('ViewPort', {
+    backgroundColor: FABRIC.Math.rgb(0.5, 0.7, 0.9),
+    enableRaycasting: true,
+    rayIntersectionThreshold: 0.1,
+    windowElement: document.getElementById('FabricContainer')
+  });
+
+  // Create a camera to draw the scene from
+  var camera = scene.constructNode('TargetCamera', {
+      position: FABRIC.Math.vec3(0, 6.5, 10).scale(1.5),
+      target: FABRIC.Math.vec3(0, 6.5, 0),
+      roll: 0,
+      nearDistance: 0.001,
+      farDistance: 20000,
+      fovY: 60.0
+  });
+
+  scene.constructNode('CameraManipulator', { targetNode: camera });
+  viewport.setCameraNode(camera);
+
+
+  // first create a skeleton
+  var skeletonNode = scene.constructNode('CharacterSkeleton');
+  var boneCount = 12;
+  var boneLength = 1;
+  var boneOri = FABRIC.Math.quat(FABRIC.Math.vec3(0, 0, 1), 90)
+                           .multiply(FABRIC.Math.quat(FABRIC.Math.vec3(0, 1, 0), 90));
+  skeletonNode.addBone({name: 'root'});
+  for (var i = 0; i < boneCount; i++)
+  {
+    skeletonNode.addBone({
+      name: 'bone' + i,
+      referencePose: FABRIC.Math.xfo({
+          tr: FABRIC.Math.vec3(0, boneLength * i, 0) ,
+          ori: boneOri
+        }),
+      length: boneLength,
+      parent: (i == 0) ? 'root' : ('bone' + (i - 1))
+    });
+  }
+
+  // create the rig
+  var rigNode = scene.constructNode('CharacterRig', {
+      skeletonNode: skeletonNode
+    });
+
+  // create the bone debug drawing
+  scene.constructNode('CharacterSkeletonDebug', {
+      characterRigNode: rigNode,
+      color: FABRIC.Math.rgba(1.0, 1.0, 1.0, 1.0)
+    });
+
+  var spineBones = [];
+  for (var i = 1; i < boneCount - 1; i++)
+    spineBones.push('bone' + i);
+
+    rigNode.addSolver('Spine', 'SpineSolver', {
+    bones: {
+      start: 'bone0',
+      end: 'bone' + (boneCount - 1),
+      vertebra: spineBones
+    }});
+
+  var errors = scene.getErrors();
+  if (errors.length > 0) {
+    throw (errors.toString());
+  }
+
+  scene.redrawAllWindows();
+  console.log('Done');
+});
+
+</script>
+
+  </head> 
+  <body>
+    <div id="wrapper">
+      <ul id="nav">
+        <li><a href="#" id="fabric-logo"><img src="../../../themes/default/_img/projects/fabric-logo.png" /></a></li>
+      </ul>
+      <div id="editor">
+        <div id="viewer">
+          <div id="FabricContainer"></div> 
+        </div><!--viewer-->
+        <div id="sidebar">
+          
+          <div class="box">
+                    <h2>INFO</h2>
+                    <div class="content">
+              Classic Bezier Spine
+            </div><!--content-->
+                </div><!--box-->
+        </div><!--sidebar-->
+      </div> <!--editor-->
+    </div><!--wrapper-->
+  </body> 
+  </html>

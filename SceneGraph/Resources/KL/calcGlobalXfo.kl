@@ -1,0 +1,4 @@
+operator calcGlobalXfo(io Xfo localXfo, io Xfo parentGlobalXfo, io Xfo globalXfo) {
+  //report( "calcGlobalXfo\n" );
+  globalXfo = localXfo * parentGlobalXfo;
+}

@@ -1,0 +1,202 @@
+<html xmlns="http://www.w3.org/1999/xhtml"> 
+  <head> 
+    <title>FABRIC - Manipulators</title> 
+    
+    <meta charset="iso-8859-1"/>
+    <link href="../../../themes/default/style.css" rel="stylesheet" type="text/css" />
+    <link href="../../../themes/default/viewer.css" rel="stylesheet" type="text/css" />
+    
+    <script type="text/javascript" src="../../../ThirdParty/jQuery/jquery-1.4.2.min.js"></script>
+    <script type="text/javascript" src="../../../ThirdParty/jQuery/jquery-ui-1.8.5.custom.min.js"></script>
+
+    <link type="text/css" href="../../../ThirdParty/jQuery/css/vader/jquery-ui-1.8.5.custom.css" rel="stylesheet" />
+
+    <script type="text/javascript" src="../../../Core/FABRIC.Wrappers.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../Core/FABRIC.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/RT/Math.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/RT/Vec2.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/RT/Vec3.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/RT/Vec4.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/RT/Mat33.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/RT/Mat44.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/RT/Quat.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/RT/Xfo.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/RT/RGBA.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/RT/Color.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/RT/Euler.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/RT/Ray.js" charset="utf-8"></script>
+
+    <script type="text/javascript" src="../../../SceneGraph/Resources/FABRIC.SceneGraph.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/FABRIC.SceneGraph.Geometry.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/FABRIC.SceneGraph.Primitives.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/FABRIC.SceneGraph.Lights.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/FABRIC.SceneGraph.Materials.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/FABRIC.SceneGraph.Manipulation.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/FABRIC.SceneGraph.Kinematics.js" charset="utf-8"></script>
+
+    <script type="text/javascript" src="../../../Core/Debugger/FABRIC.Debugger.Events.js" charset="utf-8"></script>
+    
+    <script type="text/javascript">
+$(document).ready(function() {
+  ///////////////////////////////////////////////////////////////
+  // Create the scene.
+  var scene = FABRIC.SceneGraph.createScene();
+  var viewport = scene.constructNode('ViewPort', {
+    enableRaycasting: true,
+    windowElement: document.getElementById('FabricContainer')
+  });
+
+  // Create a camera to draw the scene from
+  var camera = scene.constructNode('TargetCamera', {
+      position: FABRIC.Math.vec3(25, 60, 100),
+      target: FABRIC.Math.vec3(0, 0, 0)
+    });
+  scene.constructNode('CameraManipulator', { targetNode: camera });
+  viewport.setCameraNode(camera);
+
+  var light = scene.constructNode('PointLight', { position: FABRIC.Math.vec3(420.0, 1000.0, 600.0) });
+
+  var light = scene.constructNode('PointLight', { position: FABRIC.Math.vec3(420.0, 1000.0, 600.0) });
+  var cube = scene.constructNode('Cuboid', { length: 10, width: 10, height: 15 });
+
+  // Rotation
+  var cube1Draw = scene.constructNode('Instance', {
+      transformNode: scene.constructNode('Transform', {
+        hierarchical: false,
+        globalXfo: FABRIC.Math.xfo({ tr: FABRIC.Math.vec3(-35, 0, 0) })
+      }),
+      geometryNode: cube,
+      materialNode: scene.constructNode('PhongMaterial', {
+        diffuseColor: FABRIC.Math.rgb(0.8, 0, 0, 1),
+        lightNode: light
+      })
+    });
+  scene.constructNode('3AxisRotationManipulator', { parentNode: cube1Draw });
+
+  // Translation
+  var cube2Draw = scene.constructNode('Instance', {
+      transformNode: scene.constructNode('Transform', {
+        hierarchical: false,
+        globalXfo: FABRIC.Math.xfo({ tr: FABRIC.Math.vec3(0, 0, 0) })
+      }),
+      geometryNode: cube,
+      materialNode: scene.constructNode('PhongMaterial', {
+        diffuseColor: FABRIC.Math.rgb(0.0, 0.8, 0, 1),
+        lightNode: light
+      })
+    });
+  scene.constructNode('3AxisTranslationManipulator', { parentNode: cube2Draw });
+
+  // Pivot
+  var cube3Draw = scene.constructNode('Instance', {
+      transformNode: scene.constructNode('Transform', {
+        hierarchical: false,
+        globalXfo: FABRIC.Math.xfo({ tr: FABRIC.Math.vec3(35, 0, 0) })
+      }),
+      geometryNode: cube,
+      materialNode: scene.constructNode('PhongMaterial', {
+        diffuseColor: FABRIC.Math.rgb(0.0, 0.8, 0, 1),
+        lightNode: light
+      })
+    });
+  scene.constructNode('PivotRotationManipulator', { parentNode: cube3Draw });
+
+  // Bone
+  var bone = scene.constructNode('Cuboid', { length: 30, width: 3, height: 3 });
+  var cube4Draw = scene.constructNode('Instance', {
+      transformNode: scene.constructNode('Transform', {
+        hierarchical: false,
+        globalXfo: FABRIC.Math.xfo({ tr: FABRIC.Math.vec3(75, 0, 0) })
+      }),
+      geometryNode: bone,
+      materialNode: scene.constructNode('PhongMaterial', {
+        diffuseColor: FABRIC.Math.rgb(0.0, 0.8, 0, 1),
+        lightNode: light
+      })
+    });
+  scene.constructNode('BoneManipulator', { parentNode: cube4Draw });
+
+/*    // first create a skeleton
+    var skeletonNode = scene.constructNode("CharacterSkeleton");
+    skeletonNode.addBone({name:"root",
+      referencePose:FABRIC.Math.xfo( {
+        ori:FABRIC.Math.Quat.makeFromAxisAndAngle( FABRIC.Math.vec3(0,0,1), -25 ),
+        tr:FABRIC.Math.vec3(55,9,0)
+      })
+    });
+
+    skeletonNode.addBone({
+      name:"BoneA",
+      referencePose:FABRIC.Math.xfo( {
+        ori:FABRIC.Math.Quat.makeFromAxisAndAngle( FABRIC.Math.vec3(0,0,1), -25 ),
+        tr:FABRIC.Math.vec3(-3,9,0)
+      }),
+      length:6,
+      parent:"root"
+    });
+
+    skeletonNode.addBone({
+      name:"BoneB",
+      referenceLocalPose:FABRIC.Math.xfo( {
+        ori:FABRIC.Math.Quat.makeFromAxisAndAngle( FABRIC.Math.vec3(0,0,1), -55 ),
+        tr:FABRIC.Math.vec3(6,0,0)
+      }),
+      length:5,
+      parent:"BoneA"
+    });
+
+    skeletonNode.addBone({
+      name:"BoneC",
+      referenceLocalPose:FABRIC.Math.xfo( {
+        ori:FABRIC.Math.Quat.makeFromAxisAndAngle( FABRIC.Math.vec3(0,0,1), 65 ),
+        tr:FABRIC.Math.vec3(5,0,0)
+      }),
+      length:4,
+      parent:"BoneB"
+    });
+
+    // create the rig
+    var rigNode = scene.constructNode("CharacterRig", {
+        skeletonNode:skeletonNode,
+      });
+
+    // create the bone debug drawing
+    scene.constructNode("CharacterSkeletonDebug",{
+        characterRigNode:rigNode,
+        color:FABRIC.Math.rgb(1.0,0.0,0.0)
+      });
+  */
+
+  var errors = scene.getErrors();
+  if (errors.length > 0) {
+    throw (errors.toString());
+  }else {
+    console.log(scene.getTimerProfiles());
+    console.log('Done');
+  }
+});
+
+</script>
+
+  </head> 
+  <body>
+    <div id="wrapper">
+      <ul id="nav">
+        <li><a href="#" id="fabric-logo"><img src="../../../themes/default/_img/projects/fabric-logo.png" /></a></li>
+      </ul>
+      <div id="editor">
+        <div id="viewer">
+          <div id="FabricContainer"></div> 
+        </div><!--viewer-->
+        <div id="sidebar">
+          <div class="box">
+            <h2>INFO</h2>
+            <div class="content">
+              Manipulators convert mouse events into values that are set in the dependency graph. 
+            </div><!--content-->
+          </div><!--box-->
+        </div><!--sidebar-->
+      </div> <!--editor-->
+    </div><!--wrapper-->
+  </body> 
+</html>

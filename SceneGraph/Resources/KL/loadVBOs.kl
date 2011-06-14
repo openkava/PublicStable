@@ -1,0 +1,64 @@
+
+function genBuffer(
+  Data bufferData,
+  Size bufferSize,
+  Boolean dynamic,
+  io Integer bufferID
+) {
+  if (bufferSize > 0) {
+    if (bufferID == 0) {
+      glGenBuffers(1, bufferID.data());
+    }
+    // Now fill the buffer with the data
+    glBindBuffer(GL_ARRAY_BUFFER, bufferID);
+    glBufferData(GL_ARRAY_BUFFER, bufferSize, bufferData, dynamic ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+  }
+}
+
+function bindBuffer(
+  Integer datumSize,
+  Integer bufferID,
+  Integer shaderBufferLocation
+) {
+  if (bufferID > 0) {
+    var Data NULL;
+    glBindBuffer(GL_ARRAY_BUFFER, bufferID);
+    if (shaderBufferLocation != - 1) {
+      glEnableVertexAttribArray(shaderBufferLocation);
+      glVertexAttribPointer(shaderBufferLocation, 3, GL_FLOAT, GL_FALSE, datumSize, NULL);
+    }
+    else {
+      report('Invalid shader attribute location for VBO.');
+    }
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+  }
+}
+
+operator genAndLoadIndicesVBOs(
+  io Integer indices[],
+  io Size indicesCount,
+  io Integer indicesBufferID,
+
+  io Size instanceElementCount,
+  io Integer instanceIndicesBufferID
+) {
+  //  report("genAndLoadIndicesVBOs:" + indicesBufferID );
+  if (indicesBufferID != 0 && indices.size() != indicesCount) {
+    glDeleteBuffers(1, indicesBufferID.data());
+    indicesBufferID = 0;
+  }
+
+  genBuffer(indices.data(), indices.dataSize(), false, indicesBufferID);
+  indicesCount = indices.size();
+
+  instanceElementCount = indicesCount;
+  instanceIndicesBufferID = indicesBufferID;
+}
+
+operator setInstanceElementCount(
+  io Vec3 positions[],
+  io Size instanceElementCount
+) {
+  instanceElementCount = positions.size();
+}

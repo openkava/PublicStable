@@ -1,0 +1,137 @@
+@charset "utf-8";
+/* CSS Document */
+
+
+/* PROJECTS
+-------------------------------------------------------------------- */
+#container-projects{
+	width: auto;
+	margin: 0 auto;
+	padding: 15px;
+}
+
+#top-stripe {
+	width: 100%;
+	height: 5px;
+	background-color: #00ccff;
+}
+
+#projects-view{
+	float: left;
+	font: bold 12px/100% Arial, Helvetica, sans-serif;
+	color: #666;	
+	padding: 30px 0;
+	}
+	#projects-view a{
+		color: #666;	
+	}
+
+/* PROJECTS GRID
+-------------------------------------------------------------------- */
+#projects-grid{
+	display: block;
+	padding: 0;
+	margin: 0;
+	}
+	#projects-grid ul{
+		display: block;
+		list-style: none;
+		float: left;
+		width:300px;
+		background-color: #000;
+		height: 400px;
+		box-shadow: rgba(0,0,0, 0.5) 0px 0px 8px;
+		-moz-box-shadow: rgba(0,0,0, 0.5) 0px 0px 8px;
+		-webkit-box-shadow: rgba(0,0,0, 0.5) 0px 0px 8px;
+		border: solid 3px #333;
+		margin: 10px;
+		cursor:pointer;
+		}
+		#projects-grid ul:hover{
+			border: solid 3px #00ccff;
+		}
+		#projects-grid ul h2{
+			color:#FFF;
+			font: bold 16px/100% Arial, Helvetica, sans-serif;
+			letter-spacing: -1px;
+			padding: 10px 10px;
+		}	
+		#projects-grid ul p{
+			color:#333;
+			font: bold 11px/100% Arial, Helvetica, sans-serif;
+			line-height: 110%;
+			letter-spacing: 0;
+			padding: 0 10px 5px 10px;
+			}
+			#projects-grid ul p a{
+				color:#666;
+			}
+		#projects-grid ul form{
+			text-align:center;
+		}
+		#projects-grid ul .btn-login-red{
+			background: url(../_img/form-btn-red.gif);
+			color: #330000;
+		}
+
+
+/* PROJECTS LIST
+-------------------------------------------------------------------- */
+#projects-list{
+	display: none;
+	}	
+	#projects-list ul{
+		display: block;
+		list-style: none;
+		float: left;
+		width: 98%;
+		height: 50px;
+		margin: 0 10px;
+		padding: 10px;
+		border-top: solid 1px #666;
+		font: bold 16px/100% Arial, Helvetica, sans-serif;
+		letter-spacing: -1px;
+		color: #666;
+		cursor:pointer;
+		}
+		#projects-list ul li{
+			width: 200px;
+			display: block;
+			float: left;
+			margin: 0px;
+			padding: 15px 0 0 0;
+			list-style: none;
+			text-align: right;
+			}
+			#projects-list ul li.project-image{
+				width: 75px;
+				padding: 0;
+				text-align: left;
+				}
+			#projects-list ul li.project-name{
+				width: 450px;
+				color: #FFF;
+				font-size: 20px;
+				text-align: left;
+				}
+			#projects-list ul li.project-btn{
+				float: right;
+				width: 150px;
+				text-align:right;
+				padding: 5px;
+				}
+		#projects-list ul:hover{
+			background-color:#111;
+			}
+		#projects-list img{
+			border: solid 3px #333;
+			box-shadow: rgba(0,0,0, 0.5) 0px 0px 8px;
+			-moz-box-shadow: rgba(0,0,0, 0.5) 0px 0px 8px;
+			-webkit-box-shadow: rgba(0,0,0, 0.5) 0px 0px 8px;
+		}
+		#projects-list a{
+			color: #FFF;
+		}
+
+	
+	

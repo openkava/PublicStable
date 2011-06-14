@@ -1,0 +1,6 @@
+function RGBA(Byte r, Byte g, Byte b, Byte a) {
+  self.r = r;
+  self.g = g;
+  self.b = b;
+  self.a = a;
+}

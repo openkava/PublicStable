@@ -1,0 +1,230 @@
+<html xmlns="http://www.w3.org/1999/xhtml"> 
+  <head> 
+    <title>FABRIC - Rigging - 2 Bone IK</title> 
+    
+    <meta charset="iso-8859-1"/>
+    <link href="../../../themes/default/style.css" rel="stylesheet" type="text/css" />
+    <link href="../../../themes/default/viewer.css" rel="stylesheet" type="text/css" />
+    
+    <script type="text/javascript" src="../../../ThirdParty/jQuery/jquery-1.4.2.min.js"></script>
+    <script type="text/javascript" src="../../../ThirdParty/jQuery/jquery-ui-1.8.5.custom.min.js"></script>
+
+    <link type="text/css" href="../../../ThirdParty/jQuery/css/vader/jquery-ui-1.8.5.custom.css" rel="stylesheet" />
+
+      <script type="text/javascript" src="../../../Core/FABRIC.Wrappers.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../Core/FABRIC.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/RT/Math.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/RT/Vec2.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/RT/Vec3.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/RT/Vec4.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/RT/Mat33.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/RT/Mat44.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/RT/Quat.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/RT/Xfo.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/RT/Color.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/RT/RGBA.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/RT/Euler.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/RT/Ray.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/RT/BezierKeyframe.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/RT/LinearKeyframe.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/RT/Ray.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/RT/Bone.js" charset="utf-8"></script>
+
+    <script type="text/javascript" src="../../../SceneGraph/Resources/FABRIC.SceneGraph.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/FABRIC.SceneGraph.Lights.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/FABRIC.SceneGraph.Materials.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/FABRIC.SceneGraph.Geometry.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/FABRIC.SceneGraph.Manipulation.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/FABRIC.SceneGraph.Primitives.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/FABRIC.SceneGraph.Animation.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/FABRIC.SceneGraph.Characters.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/FABRIC.SceneGraph.CharacterSolvers.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Resources/FABRIC.SceneGraph.Kinematics.js" charset="utf-8"></script>
+    
+    <script type="text/javascript" src="../../../SceneGraph/Resources/Parsers/parseCollada.js" charset="utf-8"></script>
+    
+    <script type="text/javascript" src="../../../Core/Debugger/FABRIC.Debugger.Events.js" charset="utf-8"></script>
+    
+    <script type="text/javascript">
+$(document).ready(function() {
+
+  // Create the scene.
+  var scene = FABRIC.SceneGraph.createScene();
+  var viewport = scene.constructNode('ViewPort', {
+    backgroundColor: FABRIC.Math.rgb(0.5, 0.7, 0.9),
+    enableRaycasting: true,
+    windowElement: document.getElementById('FabricContainer')
+  });
+
+  // Create a camera to draw the scene from
+  var camera = scene.constructNode('TargetCamera', {
+      position: FABRIC.Math.vec3(0, 6, 10).scale(2.5),
+      target: FABRIC.Math.vec3(0, 12, 0),
+      roll: 0,
+      nearDistance: 0.001,
+      farDistance: 20000,
+      fovY: 60.0
+  });
+  var haveCameraManipulator = false;
+
+  // create the scene grid
+  /*
+  scene.constructNode("Instance", {
+      geometryNode:scene.constructNode("Grid", {
+        size_x:40.0,
+        size_z:40.0,
+        sections_x:20,
+        sections_z:20 } ),
+      materialNode:scene.constructNode("FlatMaterial" )
+    } );
+  */
+
+  // first create a skeleton
+  var skeletonNode = scene.constructNode('CharacterSkeleton');
+  skeletonNode.addBone({name: 'root'});
+
+  var xfo = FABRIC.Math.xfo({
+      ori: FABRIC.Math.Quat.makeFromAxisAndAngle(FABRIC.Math.vec3(0, 0, 1), -45),
+      tr: FABRIC.Math.vec3(0, 20, 0)
+    });
+  skeletonNode.addBone({name: 'firstBone', referencePose: xfo, length: 6, parent: 'root'});
+
+  xfo = FABRIC.Math.xfo({
+      ori: FABRIC.Math.Quat.makeFromAxisAndAngle(FABRIC.Math.vec3(0, 0, 1), -145),
+      tr: xfo.tr.add(xfo.ori.rotateVector(FABRIC.Math.vec3(6, 0, 0)))
+    });
+  skeletonNode.addBone({name: 'secondBone', referencePose: xfo, length: 4, parent: 'firstBone' });
+
+/*
+  skeletonNode.addBone(new FABRIC.Characters.Bone(
+    "thirdBone",
+    new FABRIC.Math.Xfo(
+      new FABRIC.Math.Quat(
+        new FABRIC.Math.Vec3(0,0,1), 40 // axis angle quat
+        ),
+      new FABRIC.Math.Vec3(4,0,0)
+      ),
+    6
+    ),"secondBone");
+  skeletonNode.addBone(new FABRIC.Characters.Bone(
+    "fourthBone",
+    new FABRIC.Math.Xfo(
+      new FABRIC.Math.Quat(
+        new FABRIC.Math.Vec3(0,0,1), -60 // axis angle quat
+        ),
+      new FABRIC.Math.Vec3(6,0,0)
+      ),
+    4
+    ),"thirdBone");
+
+  // create the variables node to drive the rig
+  var variablesNode = scene.constructNode("CharacterVariables");
+  var constantsNode = scene.constructNode("CharacterConstants");
+*/
+  // create the rig
+  var rigNode = scene.constructNode('CharacterRig', {
+      skeletonNode: skeletonNode
+    });
+
+/*  // push an offset into the first transform in the inv
+  // variables node, so that they don't draw in the same spot
+  var invVariablesNode = rigNode.constructInvVariablesNode();
+  var localxfos = invVariablesNode.getValue("localxfos");
+  localxfos[0].tr.x = -5.0;
+  invVariablesNode.setValue("localxfos",localxfos);
+
+    // let's get a constants node
+    // define a solver on it
+  constantsNode.setSkeletonNode(skeletonNode);
+  constantsNode.setVariablesNode(variablesNode);
+*/
+    rigNode.addSolver('leftLegIK', 'IK2BoneSolver', {
+    bones: {
+      boneA: 'firstBone',
+      boneB: 'secondBone',
+      targetParent: 'root',
+      upvectorParent: 'root'
+    }
+  });
+
+/*    rigNode.addSolver( "leftLeg", "IK2Bone",{
+    bones:{
+      boneA: "thirdBone",
+      boneB: "fourthBone",
+      targetParent: "secondBone",
+      upvectorParent: "secondBone"
+    }
+  });
+*/
+  // create the bone debug drawing
+  scene.constructNode('CharacterSkeletonDebug', {
+      characterRigNode: rigNode,
+      color: FABRIC.Math.rgba(1.0, 1.0, 1.0, 1.0)
+    });
+
+/*
+    // create the gizmo set
+//  constantsNode.createManipulations("screen");
+
+  // create the secondary rig, driven by inverse resolval
+  var rigNode2 = scene.constructNode("CharacterRig");
+  rigNode2.setSkeletonNode(skeletonNode);
+  rigNode2.setVariablesNode(invVariablesNode);
+  rigNode2.setConstantsNode(constantsNode);
+
+  // create the bone debug drawing for the second rig
+  scene.constructNode("CharacterSkeletonDebug",{
+      characterRigNode:rigNode2,
+      offsetpose:FABRIC.Math.xfo({tr:FABRIC.Math.vec3(-12.0,0.0,0.0)}),
+      color:FABRIC.Math.rgba(0.4,0.4,0.4,1.0)
+    });
+
+  // create a debug drawing for the inverse resolved variables
+  scene.constructNode("CharacterRigDebug",{
+      characterRigNode:rigNode2,
+      offsetpose:FABRIC.Math.xfo({tr:FABRIC.Math.vec3(-12.0,0.0,0.0)}),
+      color:FABRIC.Math.rgba(1.0,0.0,0.0,1.0),
+      size: 5.0
+    });
+*/
+  if (!haveCameraManipulator)
+  {
+    scene.constructNode('CameraManipulator', { targetNode: camera });
+    viewport.setCameraNode(camera);
+    haveCameraManipulator = true;
+  }
+
+  var errors = scene.getErrors();
+  if (errors.length > 0) {
+    throw (errors.toString());
+  }
+
+  scene.redrawAllWindows();
+  console.log('Done');
+});
+
+</script>
+
+  </head> 
+  <body>
+    <div id="wrapper">
+      <ul id="nav">
+        <li><a href="#" id="fabric-logo"><img src="../../../themes/default/_img/projects/fabric-logo.png" /></a></li>
+      </ul>
+      <div id="editor">
+        <div id="viewer">
+          <div id="FabricContainer"></div> 
+        </div><!--viewer-->
+        <div id="sidebar">
+          
+          <div class="box">
+                    <h2>INFO</h2>
+                    <div class="content">
+              Models are imported using JavaScript file parsers. Currently only the obj file is supported. 
+            </div><!--content-->
+                </div><!--box-->
+        </div><!--sidebar-->
+      </div> <!--editor-->
+    </div><!--wrapper-->
+  </body> 
+  </html>
