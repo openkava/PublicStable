@@ -62,7 +62,7 @@ namespace Fabric
         if ( !homeDir || !*homeDir )
           throw Exception("unable to obtain home directory");
 #if defined(FABRIC_POSIX)
-        s_rootPath = joinPath( homeDir, "FabricIDE" );
+        s_rootPath = joinPath( homeDir, ".fabric" );
         if ( mkdir( s_rootPath.c_str(), 0777 ) && errno != EEXIST )
           throw Exception("unable to create directory " + _(s_rootPath));
 #elif defined(FABRIC_WIN32)
