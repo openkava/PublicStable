@@ -11,24 +11,14 @@ git remote rm origin
 git remote add origin git@github.com:fabric-engine/Public.git
 git filter-branch -f --prune-empty --index-filter 'git rm -r --cached --ignore-unmatch \
   Native/ThirdParty/Private \
-  Native/JSON/ThirdParty/yajl-1.0.9 \
-  Native/BuiltinExts \
-  Native/NPAPI \
-  Native/ThirdParty/build.bat \
-  Native/ThirdParty/getopt \
-  Native/ThirdParty/md5-1.4 \
-  Native/ThirdParty/Patches \
-  Native/ThirdParty/Makefile \
-  Native/ThirdParty/GLEW \
   Native/Core \
   Native/Tools \
   Native/Clients \
   Native/Exts/Builtin \
-  Native/Exts/Wrapper \
   Native/Test \
   Native/Installer \
   Native/DevServer \
-  Web/PrivateApps \
+  Web/Apps/Private \
   Util \
   Fabric.xcodeproj' -- --all
 git filter-branch -f --tree-filter '\

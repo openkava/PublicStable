@@ -8,25 +8,32 @@ do
   if ! head -4 "$filename" | grep -q 'Copyright 2010-2011 Fabric Technologies Inc\. All rights reserved\.'
   then
     echo "Fixing $filename"
-    ext=${filename##*.}
-    if [ "$extension" == "js" ]; then
+    extension=${filename##*.}
+    if [ "$extension" = "js" -o "$extension" = "kl" -o "$extension" = "k" ]; then
       echo '
 //
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 ' >"$filename.$$"
-    elif [ "$extension" == "cpp" -o "$extension" == "h" ]; then
+    elif [ "$extension" = "cpp" -o "$extension" = "h" -o "$extension" = "cl" -o "$extension" = "css" ]; then
       echo '
 /*
  *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
  */
 ' >"$filename.$$"
-    elif [ "$extension" == "sh" ]; then
+    elif [ "$extension" = "sh" ]; then
       echo '
 #!/bin/sh
 #
 # Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 #
+' >"$filename.$$"
+    elif [ "$extension" = "html" ]; then
+      echo \
+'<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!--
+  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+  -->
 ' >"$filename.$$"
     else
       echo '
