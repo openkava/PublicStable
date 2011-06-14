@@ -581,7 +581,7 @@ FABRIC.SceneGraph = {
 
     scene.pub.displayDebugger = function() {
       var debuggerWindow = window.open(
-        '../../Debugger/FABRIC.Debugger.html?id=' + context.getContextID() , 'Fabric Debugger');
+        '../../../Core/Debugger/FABRIC.Debugger.html?id=' + context.getContextID() , 'Fabric Debugger');
       debuggerWindow.context = context;
       debuggerWindow.scene = scene;
     };
