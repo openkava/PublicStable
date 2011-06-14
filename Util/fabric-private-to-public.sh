@@ -21,12 +21,14 @@ git filter-branch -f --prune-empty --index-filter 'git rm -r --cached --ignore-u
   Web/Apps/Private \
   Util \
   Fabric.xcodeproj' -- --all
-git filter-branch -f --tree-filter '\
+if false; then
+  git filter-branch -f --tree-filter '\
   find . -wholename ./.git -prune \
     -o -name ThirdParty -prune \
     -o -type f -print0 \
     | xargs -0 ~/Fabric/Util/fix-copyright.sh \
 '
+fi
 git gc --prune=now
 git push -f origin master
 popd
