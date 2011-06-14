@@ -1,4 +1,9 @@
 
+//
+// Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+//
+
+
 function Vec3(Scalar x, Scalar y, Scalar z) {
   self.x = x;
   self.y = y;

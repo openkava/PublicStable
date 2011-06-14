@@ -1,3 +1,8 @@
+
+//
+// Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+//
+
 /**
  * The scene graph is the core implementation of Fabric's
  * node graph in javascript.

@@ -1,3 +1,8 @@
+
+//
+// Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+//
+
 FABRIC = (function() {
 
   // we keep an array of context ids,

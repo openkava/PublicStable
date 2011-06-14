@@ -1,3 +1,8 @@
+
+//
+// Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+//
+
 function Xfo * (in Xfo local, in Xfo global) {
   var Quat lcl_ori = local.ori.unit();
   var Quat glb_ori = global.ori.unit();

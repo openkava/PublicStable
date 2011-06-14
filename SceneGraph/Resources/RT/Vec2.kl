@@ -1,3 +1,8 @@
+
+//
+// Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+//
+
 function Vec2(Scalar x, Scalar y) {
   self.x = x;
   self.y = y;

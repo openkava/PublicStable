@@ -1,3 +1,8 @@
+
+//
+// Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+//
+
 /**
  * Function to determine if the given object is a quaternion object.
  * @param {object} quat The object to validate.

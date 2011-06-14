@@ -1,3 +1,8 @@
+
+//
+// Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+//
+
 // NOTE: The following primitives are examples of procedural geometry generation.
 // Geometry data is stored in 2 separate nodes that contain data of different
 // dimensions. uniforms and attributes. Currently, we can only (legally) write to a

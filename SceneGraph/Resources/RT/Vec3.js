@@ -1,3 +1,8 @@
+
+//
+// Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+//
+
 /**
  * Function to determine if an object is a valid vec3.
  * @param {object} vec3 The vec3 object to validate.

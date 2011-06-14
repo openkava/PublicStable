@@ -1,3 +1,8 @@
+
+//
+// Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+//
+
 FABRIC.SceneGraph.registerNodeType('CharacterMesh',
   function(options, scene) {
 

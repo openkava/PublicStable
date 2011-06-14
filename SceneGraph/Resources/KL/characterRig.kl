@@ -1,4 +1,9 @@
 
+//
+// Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+//
+
+
 
 operator calcSkinningMatrices(io Xfo pose[], io Mat44 invMatrices[], io Mat44 matrices[]) {
   if (invMatrices.size() != pose.size()) {

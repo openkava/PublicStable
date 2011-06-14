@@ -1,3 +1,8 @@
+
+//
+// Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+//
+
 //////////////////////////////////////////////////////////////////////////////
 // The SceneSaver is a tool for writing out all the data for a collection
 // of nodes that the developer wishes to save.

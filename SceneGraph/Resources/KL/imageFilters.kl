@@ -1,3 +1,8 @@
+
+//
+// Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+//
+
 function Integer sobelTable(in Integer x, in Integer y) {
   if (y == 0 || y == 2) {
     if (x == 0)return - 1;

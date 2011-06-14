@@ -1,3 +1,8 @@
+
+//
+// Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+//
+
 function Ray(Vec3 start, Vec3 direction) {
   self.start = start;
   self.direction = direction;

@@ -1,3 +1,8 @@
+
+//
+// Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+//
+
 function Mat44 asymmetricPerspectiveFrustum(
   Scalar l, Scalar r,
   Scalar b, Scalar t,

@@ -1,4 +1,9 @@
 
+//
+// Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+//
+
+
 #include '../../../SceneGraph/Resources//KL/loadVBOs.kl'
 
 // These must be defined in the preprocessor definitions prior to compilation.

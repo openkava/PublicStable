@@ -1,3 +1,8 @@
+
+//
+// Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+//
+
 if (!FABRIC.Math.Quat) {
   throw ('FABRIC.Math.Quat.js must be loaded first');
   }

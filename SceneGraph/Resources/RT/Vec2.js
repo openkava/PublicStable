@@ -1,3 +1,8 @@
+
+//
+// Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+//
+
 /**
  * Function to determine if an object is a valid vec2.
  * @param {object} vec2 The vec2 object to validate.

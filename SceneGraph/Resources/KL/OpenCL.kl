@@ -1,3 +1,8 @@
+
+//
+// Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+//
+
 operator OpenCL_Init(
   io Integer preferredDevice, // 0 == GPU - 1 == CPU
   io cl_context clContext,

@@ -1,3 +1,8 @@
+
+//
+// Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+//
+
 operator evaluateCharacterManipulator(in Size index, io Vec3 positions[], io Vec3 originalpositions[], io Xfo offset, io Integer boneindex, io Xfo pose[]) {
   positions.resize(originalpositions.size());
   Mat44 poseMat(pose[boneindex]);

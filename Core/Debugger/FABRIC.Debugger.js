@@ -1,3 +1,8 @@
+
+//
+// Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+//
+
 $(document).ready(function() {
   
   var contextID = document.location.search.split('?id=')[1];

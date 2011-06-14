@@ -1,3 +1,8 @@
+
+//
+// Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+//
+
 // TODO: Move this function into a namespace. FABRIC.helpers possibly.
 function clone_obj(obj, deepclone) {
     var c = obj instanceof Array ? [] : {};

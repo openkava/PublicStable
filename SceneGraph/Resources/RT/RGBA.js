@@ -1,3 +1,8 @@
+
+//
+// Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+//
+
 /**
  * Function to determine if an object is a valid rgba.
  * @param {object} rgba The rgba object to validate.

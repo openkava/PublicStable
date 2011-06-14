@@ -1,3 +1,8 @@
+
+//
+// Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+//
+
 function Euler(in Vec3 angles) {
   self.x = angles.x;
   self.y = angles.y;

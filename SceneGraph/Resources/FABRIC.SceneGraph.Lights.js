@@ -1,4 +1,9 @@
 
+//
+// Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+//
+
+
 // Note: the ids defined in this table are used in the KL/GLSL code.
 /**
  * The basic module for lights, defining the types for now.

@@ -1,4 +1,9 @@
 
+//
+// Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+//
+
+
 
 // PT - Note: This intersection test should be performed in object space,
 // removing the need for all the matrix > vector multiplications.

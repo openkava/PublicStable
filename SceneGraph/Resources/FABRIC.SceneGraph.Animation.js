@@ -1,3 +1,8 @@
+
+//
+// Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+//
+
 FABRIC.SceneGraph.registerNodeType('AnimationTrack',
   function(options, scene) {
     scene.assignDefaults(options, {

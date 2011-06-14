@@ -1,3 +1,8 @@
+
+//
+// Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+//
+
 operator swirleyMovementOp(io Scalar ms, io Integer id, io Xfo baseXfo, io Xfo xfo) {
   //  report("swirleyMovementOp(%f, %f, %f)\n", xfo.tr.x, baseXfo.tr.y, baseXfo.tr.z );
   xfo.tr = baseXfo.tr;

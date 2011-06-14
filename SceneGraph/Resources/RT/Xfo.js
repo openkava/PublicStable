@@ -1,3 +1,8 @@
+
+//
+// Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+//
+
 /**
  * Function to determine if the given object is a xfo object.
  * @param {object} xfo The object to validate.

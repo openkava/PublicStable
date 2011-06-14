@@ -1,3 +1,8 @@
+
+//
+// Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+//
+
 function Scalar rand(io Integer seed) {
   seed = 1664525 * seed + 1013904223;
   return Scalar((seed / 256) & 8388607) / 8388607.0;

@@ -1,3 +1,8 @@
+
+//
+// Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+//
+
 FABRIC.SceneGraph.registerParser("ply", function(scene, assetFile, options ) {
     
     var objText = FABRIC.loadResourceURL(assetFile, "text/plain");

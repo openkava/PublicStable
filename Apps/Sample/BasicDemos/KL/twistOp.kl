@@ -1,3 +1,8 @@
+
+//
+// Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+//
+
 operator twistOp(io Vec3 position, io Vec3 normal, io Scalar twist) {
   // report("twistOp");
 

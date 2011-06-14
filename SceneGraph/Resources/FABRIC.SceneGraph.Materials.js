@@ -1,4 +1,9 @@
 
+//
+// Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+//
+
+
 FABRIC.SceneGraph.registerNodeType('Texture',
   function(options, scene) {
     var textureNode = scene.constructNode('SceneGraphNode', options);

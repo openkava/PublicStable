@@ -1,3 +1,8 @@
+
+//
+// Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+//
+
 // The Particles node is a relative of the 'Draw' node.
 // It is bound to a 'Geometry' which it renders for each Instance.
 

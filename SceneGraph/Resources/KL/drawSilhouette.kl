@@ -1,3 +1,8 @@
+
+//
+// Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+//
+
 operator drawSilhouette(
   io Boolean enabled,
   io Mat44 globalMat,
