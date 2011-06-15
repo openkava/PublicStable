@@ -219,6 +219,11 @@ namespace Fabric
     {
       return m_interface;
     }
+    
+    RC::Handle<JSON::Value> ViewPort::jsonExecGetFPS() const
+    {
+      return JSON::Scalar::Create( m_fps );
+    }
 
     RC::Handle<JSON::Object> ViewPort::jsonDesc() const
     {
@@ -239,6 +244,8 @@ namespace Fabric
       RC::ConstHandle<JSON::Value> result;
       if ( cmd == "needsRedraw" )
         needsRedraw();
+      else if ( cmd == "getFPS" )
+        result = jsonExecGetFPS();
       else throw Exception( "unrecognized command" );
       return result;
     }
