@@ -129,10 +129,12 @@ namespace Fabric
 
         std::string   leafKeyName, subKeyPathNew;
 
+        bool last = false;
         size_t    idx = m_subKeyPath.find( '\\' );
         if( idx == -1 )
         {
           leafKeyName = m_subKeyPath;
+          last = true;
         }
         else
         {
@@ -142,15 +144,20 @@ namespace Fabric
 
         HKEY hNewKey;
 
-        if( createIfMissing )
+        //All existing non-leaf keys can be opened with KEY_READ access
+        bool missing = ::RegOpenKeyExA( m_keyPath.back(), leafKeyName.c_str(), 0, last ? KEY_ALL_ACCESS : KEY_READ, &hNewKey ) != ERROR_SUCCESS;
+
+        if( missing )
         {
-          if( ::RegCreateKeyExA( m_keyPath.back(), leafKeyName.c_str(), 0, NULL, 0, KEY_ALL_ACCESS, NULL, &hNewKey, NULL ) != ERROR_SUCCESS )
-            throw Exception( "Unable to create key" );
-        }
-        else
-        {
-          if( ::RegOpenKeyExA( m_keyPath.back(), leafKeyName.c_str(), 0, KEY_ALL_ACCESS, &hNewKey ) != ERROR_SUCCESS )
-            return( false );
+          if( createIfMissing )
+          {
+            if( ::RegCreateKeyExA( m_keyPath.back(), leafKeyName.c_str(), 0, NULL, 0, KEY_ALL_ACCESS, NULL, &hNewKey, NULL ) != ERROR_SUCCESS )
+              throw Exception( "Unable to create key" );
+          }
+          else
+          {
+              return( false );
+          }
         }
 
         m_keyPath.push_back( hNewKey );
@@ -179,7 +186,8 @@ namespace Fabric
 
 using namespace Fabric::NPAPI;
 
-static const char *s_pluginKey = "HKLM\\SOFTWARE\\MozillaPlugins\\@fabric-engine.com/Fabric,version=1.0";
+//Note: HKLM\\ won't work under Windows 7 with default UAC settings
+static const char *s_pluginKey = "HKCU\\SOFTWARE\\MozillaPlugins\\@fabric-engine.com/Fabric,version=1.0";
 static HINSTANCE  s_hDllInstance = 0;
 
 extern"C" BOOL WINAPI DllMain( HINSTANCE hDllInstance, DWORD dwReason, void *)
@@ -193,7 +201,7 @@ extern"C" BOOL WINAPI DllMain( HINSTANCE hDllInstance, DWORD dwReason, void *)
 
 STDAPI DllRegisterServer( )
 {
-/*  try
+  try
   {
     // Get own path
     char      dllPath[ _MAX_PATH ];
@@ -212,6 +220,7 @@ STDAPI DllRegisterServer( )
 
     RegistryKey   mimeKey( pluginKey, "MimeTypes\\applications/fabric" );
 
+
     if( !mimeKey.Exists() )
       mimeKey.Create( );
   }
@@ -219,10 +228,11 @@ STDAPI DllRegisterServer( )
   {
     fprintf( stderr, "Registration failed. Reason: %s\n", e.getDesc().c_str() );
     return( E_UNEXPECTED );
-  }*/
+  }
 
   return( S_OK );
 }
+
 
 STDAPI DllUnregisterServer( )
 {
