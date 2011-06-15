@@ -95,6 +95,8 @@ namespace Fabric
 
     private:
     
+      RC::Handle<JSON::Value> jsonExecGetFPS() const;
+
       void issuePendingRedrawFinishedCallbacks();
       static void IssuePendingRedrawFinishedCallbacks( void *_this )
       {
