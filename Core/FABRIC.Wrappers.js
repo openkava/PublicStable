@@ -1081,6 +1081,9 @@ var wrapFabricClient = function(fabricClient, logCallback, debugLogCallback) {
         if ('height' in diff)
           viewPort.height = diff.height;
 
+        if ('fps' in diff)
+          viewPort.fps = diff.fps;
+
         if ('windowNode' in diff)
           viewPort.windowNode = DG.namedObjects[diff.windowNode].pub;
 
@@ -1136,13 +1139,8 @@ var wrapFabricClient = function(fabricClient, logCallback, debugLogCallback) {
           return viewPort.height;
         },
         getFPS: function() {
-          var fps = 0.0;
-          viewPort.queueCommand('getFPS', null, function() {
-          }, function(result) {
-            fps = result;
-          });
           executeQueuedCommands();
-          return fps;
+          return viewPort.fps;
         },
         getWindowNode: function() {
           executeQueuedCommands();
