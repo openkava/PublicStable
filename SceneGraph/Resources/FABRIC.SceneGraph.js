@@ -54,7 +54,7 @@ FABRIC.SceneGraph = {
       },
       null);
 
-    // EAch ViewPort creates a new fabricwindow which is the origin of
+    // EAch Viewport creates a new fabricwindow which is the origin of
     // window redraw events.
     var windows = [];
 
@@ -836,7 +836,7 @@ FABRIC.SceneGraph.registerNodeType('SceneGraphNode',
     return sceneGraphNode;
   });
 
-FABRIC.SceneGraph.registerNodeType('ViewPort',
+FABRIC.SceneGraph.registerNodeType('Viewport',
   function(options, scene) {
     scene.assignDefaults(options, {
         windowElement: undefined,
@@ -908,7 +908,7 @@ FABRIC.SceneGraph.registerNodeType('ViewPort',
       // this operator calculates the rayOri and rayDir from the scopes collected so far.
       // The scopes should be the window, viewport, camera and projection.
       viewPortRayCastDgNode.bindings.append(scene.constructOperator({
-        operatorName: 'ViewPortRaycast',
+        operatorName: 'ViewportRaycast',
         srcFile: '../../../SceneGraph/Resources//KL/viewPortUpdateRayCast.kl',
         entryFunctionName: 'viewPortUpdateRayCast',
         parameterBinding: [

@@ -59,7 +59,7 @@ $(document).ready(function() {
 
   // Create the scene.
   var scene = FABRIC.SceneGraph.createScene();
-  var viewport = scene.constructNode('ViewPort', { windowElement: document.getElementById('FabricContainer') });
+  var viewport = scene.constructNode('Viewport', { windowElement: document.getElementById('FabricContainer') });
   var light = scene.constructNode('PointLight', { position: FABRIC.Math.vec3(420.0, 1000.0, 600.0) });
 
   // Create a camera to draw the scene from
