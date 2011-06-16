@@ -10,12 +10,8 @@ coreEnv.MergeFlags( llvmFlags )
 coreEnv.MergeFlags( md5Flags )
 Export( 'coreEnv' )
 
-buildObject = baseEnv.SharedObject( 'Build.cpp' )
-
-if buildOS != 'Windows': #To investigate: in Windows, .cpp won't be copied to the build dir
-  AlwaysBuild( buildObject )
-
-NoCache( buildObject )
+buildSource = baseEnv.Template( "Build.cpp", "Build.cpp.template" )
+buildObject = baseEnv.SharedObject( buildSource )
 Export( 'buildObject' )
 
 SConscript(

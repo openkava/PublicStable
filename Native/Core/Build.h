@@ -7,15 +7,10 @@
 
 #include <time.h>
 
-#define FABRIC_VERSION_STRING_BUILDER(x,y,z,t) x "." y "." z "." t
-#define FABRIC_VERSION_STRING \
-  FABRIC_VERSION_STRING_BUILDER( FABRIC_VERSION_MAJ, FABRIC_VERSION_MIN, FABRIC_VERSION_REV, FABRIC_VERSION_BUILD )
-
 namespace Fabric
 {
   extern char const *buildVersion;
   extern char const *buildDesc;
-  extern char const *buildHash;
   extern time_t const buildExpiry; 
 };
 
