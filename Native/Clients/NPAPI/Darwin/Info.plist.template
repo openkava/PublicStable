@@ -15,7 +15,7 @@
 	<key>CFBundleVersion</key>
 	<string>{{FABRIC_VERSION_MAJ}}.{{FABRIC_VERSION_MIN}}.{{FABRIC_VERSION_REV}}</string>
 	<key>CFBundleShortVersionString</key>
-	<string>{{FABRIC_VERSION_MAJ}}.{{FABRIC_VERSION_MIN}}.{{FABRIC_VERSION_REV}}.{{FABRIC_VERSION_BUILD}}</string>
+	<string>{{FABRIC_VERSION_MAJ}}.{{FABRIC_VERSION_MIN}}.{{FABRIC_VERSION_REV}}{{FABRIC_VERSION_SUFFIX}}</string>
 	<key>WebPluginDescription</key>
 	<string>http://fabric-engine.com</string>
 	<key>WebPluginMIMETypes</key>

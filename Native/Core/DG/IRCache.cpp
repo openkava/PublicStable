@@ -23,7 +23,7 @@ namespace Fabric
     
     void IRCache::subDirAndEntryFromSourceCode( std::string const &sourceCode, RC::ConstHandle<IO::Dir> &subDir, std::string &entry ) const
     {
-      std::string prefixedSourceCode = buildHash + sourceCode;
+      std::string prefixedSourceCode = buildVersion + sourceCode;
       std::string prefixedSourceCodeMD5HexDigest = Util::md5HexDigest( prefixedSourceCode.data(), prefixedSourceCode.length() );
       subDir = IO::Dir::Create( m_dir, prefixedSourceCodeMD5HexDigest.substr( 0, 2 ) );
       entry = prefixedSourceCodeMD5HexDigest.substr( 2, 30 );
