@@ -579,31 +579,6 @@ FABRIC.SceneGraph.registerNodeType('RotationManipulator',
 
     var manipulatorNode = scene.constructNode('Manipulator', options);
 
-  //  var linesNode = scene.pub.constructNode("Lines");
-  //  linesNode.setAttributeDynamic('positions');
-  //  linesNode.loadGeometryData({
-  //        positions:[ FABRIC.RT.vec3(0,0,0), FABRIC.RT.vec3(7,0,0),
-  //              FABRIC.RT.vec3(0,0,0), FABRIC.RT.vec3(5,5,0),
-  //              FABRIC.RT.vec3(0,0,0), FABRIC.RT.vec3(0,0,1)],
-  //        indices:[0,1, 2,3, 4,5]
-  //      });
-  //  var linesInstanceNode = scene.pub.constructNode("Instance", {
-  //      name:options.name+"DrawAngle",
-  //      enableRaycasting:false,
-  //      geometryNode:linesNode,
-  //      materialNode:scene.pub.constructNode("FlatMaterial", { color:FABRIC.RT.rgb255(255, 255, 0) }),
-  //      enableDrawing:false,
-  //      reloadVBOsOnRedraw:true
-  //    });
-
-  //  var axisNode = scene.pub.constructNode("Instance", {
-  //      transformNode:scene.pub.constructNode("Transform", {
-  //        hierarchical:false,
-  //        globalXfo:FABRIC.RT.xfo({ tr:FABRIC.RT.vec3(30, 0, 20) })
-  //      }),
-  //      geometryNode:scene.pub.constructNode("Axes", { size:7.0 }),
-  //      materialNode:scene.pub.constructNode("FlatMaterial", { color:FABRIC.RT.rgb255(255, 0, 0) })
-  //    });
 
     var viewportNode;
     var dragStartXFo, vec1, angle, ray1, ray2, planePoint, planeNormal, hitPoint1, hitPoint2;
@@ -617,12 +592,6 @@ FABRIC.SceneGraph.registerNodeType('RotationManipulator',
       hitPoint1 = ray1.intersectPlane(planePoint, planeNormal).point;
       angle = 0;
       vec1 = hitPoint1.subtract(planePoint).unit();
-
-    //  linesNode.loadGeometryData({
-    //    positions:[ planePoint, hitPoint1, planePoint, hitPoint1, planePoint,
-    //    planePoint.add(planeNormal.scale(3.0)) ] });
-    //  axisNode.getTransformNode().globalXfo = manipulatorNode.getManipulationSpaceXfo();
-    //  linesInstanceNode.drawToggle = true;
     }
     manipulatorNode.pub.addEventListener('dragstart', dragStartFn);
 
@@ -644,15 +613,10 @@ FABRIC.SceneGraph.registerNodeType('RotationManipulator',
       var dragXfo = dragStartXFo.clone();
       dragXfo.ori.postMultiplyInPlace(FABRIC.RT.Quat.makeFromAxisAndAngle(planeNormal, angle));
       manipulatorNode.setTargetGlobalXfo(dragXfo);
-
-    //  linesNode.loadGeometryData({
-    //    positions:[ planePoint, hitPoint1, planePoint, hitPoint2, planePoint,
-    //    planePoint.add(planeNormal.scale(3.0)) ] });
     }
     manipulatorNode.pub.addEventListener('drag', dragFn);
 
     var dragendFn = function(evt) {
-    //  linesInstanceNode.drawToggle = false;
     }
     manipulatorNode.pub.addEventListener('dragend', dragendFn);
 
