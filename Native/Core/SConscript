@@ -3,7 +3,7 @@
 #
 
 import os
-Import( 'baseEnv', 'llvmFlags', 'md5Flags' )
+Import( 'baseEnv', 'llvmFlags', 'md5Flags', 'buildOS' )
 
 coreEnv = baseEnv.Clone()
 coreEnv.MergeFlags( llvmFlags )
@@ -11,7 +11,10 @@ coreEnv.MergeFlags( md5Flags )
 Export( 'coreEnv' )
 
 buildObject = baseEnv.SharedObject( 'Build.cpp' )
-AlwaysBuild( buildObject )
+
+if buildOS != 'Windows': #To investigate: in Windows, .cpp won't be copied to the build dir
+  AlwaysBuild( buildObject )
+
 NoCache( buildObject )
 Export( 'buildObject' )
 
