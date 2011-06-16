@@ -5,7 +5,7 @@
 
 
 
-#include '../../../SceneGraph/Resources//KL/softLimitBezierCurve.kl'
+#include 'FABRIC_ROOT/SceneGraph/Resources/KL/softLimitBezierCurve.kl'
 
 function Scalar clamp(Scalar v, Scalar min, Scalar max) {
   //  return ( v > min ) ? (( v < max ) ? v : max) : min;

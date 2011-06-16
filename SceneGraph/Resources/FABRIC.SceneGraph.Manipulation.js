@@ -275,7 +275,7 @@ FABRIC.SceneGraph.registerNodeType('PaintManipulator',
       // The selector will return the node bound with the given binding name.
       paintInstanceEventHandler.setSelector('instance', scene.constructOperator({
           operatorName: 'collectPointsInsideBrush',
-          srcFile: '../../../SceneGraph/Resources//KL/collectPointsInsideVolume.kl',
+          srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/collectPointsInsideVolume.kl',
           entryFunctionName: 'collectPointsInsideBrush',
           parameterBinding: [
 
@@ -425,7 +425,7 @@ FABRIC.SceneGraph.registerNodeType('Manipulator',
 
     transformDGNode.bindings.append(scene.constructOperator({
       operatorName: 'evaluateGizmo',
-      srcFile: '../../../SceneGraph/Resources//KL/evaluateGizmo.kl',
+      srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/evaluateGizmo.kl',
       entryFunctionName: 'evaluateGizmo',
       parameterBinding: paramLayout
     }));
@@ -515,13 +515,13 @@ FABRIC.SceneGraph.registerNodeType('Manipulator',
     if (options.disableZBuffer) {
       manipulatorNode.getRedrawEventHandler().postDescendBindings.insert(scene.constructOperator({
           operatorName: 'disableZBuffer',
-          srcFile: '../../../SceneGraph/Resources//KL/drawAttributes.kl',
+          srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/drawAttributes.kl',
           entryFunctionName: 'disableZBuffer',
           parameterBinding: []
         }), 0);
       manipulatorNode.getRedrawEventHandler().postDescendBindings.append(scene.constructOperator({
           operatorName: 'popAttribs',
-          srcFile: '../../../SceneGraph/Resources//KL/drawAttributes.kl',
+          srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/drawAttributes.kl',
           entryFunctionName: 'popAttribs',
           parameterBinding: []
         }));
