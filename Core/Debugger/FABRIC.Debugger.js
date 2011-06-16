@@ -863,11 +863,11 @@ $(document).ready(function() {
     
     var eventGroup = graphHolderGroup.createNode({
       text : eventName[eventID],
-      color:FABRIC.Math.rgb255(90,200,90),
+      color:FABRIC.RT.rgb255(90,200,90),
       height: 15,
       createEditButton: false,
       draggable: false,
-      shadow: FABRIC.Math.vec2(0,0)
+      shadow: FABRIC.RT.vec2(0,0)
       });
     eventGroup.translate(x,y);
     eventGroup.elem.eventID = eventID;
@@ -875,7 +875,7 @@ $(document).ready(function() {
     
     eventGroup.addOutPort({  
         text:"",
-        color: FABRIC.Math.rgb255(0,0,0),
+        color: FABRIC.RT.rgb255(0,0,0),
         direction:"Source",
         allowMultipleConnections:true
     })
@@ -897,11 +897,11 @@ $(document).ready(function() {
     var name = eventHandlerName[eventHandlerID];
     var eventHandlerGroup = graphHolderGroup.createNode({
       text : name,
-      color:FABRIC.Math.rgb255(200,90,90),
+      color:FABRIC.RT.rgb255(200,90,90),
       height: 15,
       createEditButton: false,
       draggable: false,
-      shadow: FABRIC.Math.vec2(0,0)
+      shadow: FABRIC.RT.vec2(0,0)
       });
     eventHandlerGroup.translate(x,y);
     eventHandlerGroup.elem.eventHandlerID = eventHandlerID;
@@ -909,14 +909,14 @@ $(document).ready(function() {
     
     eventHandlerGroup.addInPort({  
         text:"",
-        color: FABRIC.Math.rgb255(0,0,0),
+        color: FABRIC.RT.rgb255(0,0,0),
         direction:"Target",
         allowMultipleConnections:true
     });
     if(parentEventHandlers[name] || eventHandlerBindings[name].length > 0){
       eventHandlerGroup.addOutPort({  
           text:"",
-          color: FABRIC.Math.rgb255(0,0,0),
+          color: FABRIC.RT.rgb255(0,0,0),
           direction:"Source",
           allowMultipleConnections:true
       });
@@ -940,11 +940,11 @@ $(document).ready(function() {
       
       var nodeGroup = graphHolderGroup.createNode({
         text : nodeName[nodeID],
-        color:FABRIC.Math.rgb255(90,90,200),
+        color:FABRIC.RT.rgb255(90,90,200),
         height: 15,
         createEditButton: false,
         draggable: false,
-        shadow: FABRIC.Math.vec2(0,0)
+        shadow: FABRIC.RT.vec2(0,0)
         });
       nodeGroup.translate(x,y);
       nodeGroup.elem.nodeID = nodeID;
@@ -954,7 +954,7 @@ $(document).ready(function() {
       if(getNodeDependents(nodeID).length > 0){
         nodeGroup.addInPort({
             text:"",
-            color: FABRIC.Math.rgb255(0,0,0),
+            color: FABRIC.RT.rgb255(0,0,0),
             direction:"Target",
             allowMultipleConnections:true
         })
@@ -962,7 +962,7 @@ $(document).ready(function() {
       if(getNodeDependencies(nodeID).length>0){
         nodeGroup.addOutPort({  
             text:"",
-            color: FABRIC.Math.rgb255(0,0,0),
+            color: FABRIC.RT.rgb255(0,0,0),
             direction:"Source",
             allowMultipleConnections:true
         })
@@ -982,7 +982,7 @@ $(document).ready(function() {
       if(!otherNodeGroup.getInPort(0)){
         otherNodeGroup.addInPort({  
             text:"",
-            color: FABRIC.Math.rgb255(0,0,0),
+            color: FABRIC.RT.rgb255(0,0,0),
             direction:"Target",
             allowMultipleConnections:true
         });
@@ -990,7 +990,7 @@ $(document).ready(function() {
       if(!nodeGroup.getOutPort(0)){
         nodeGroup.addOutPort({  
             text:"",
-            color: FABRIC.Math.rgb255(0,0,0),
+            color: FABRIC.RT.rgb255(0,0,0),
             direction:"Source",
             allowMultipleConnections:true
         });
@@ -1010,7 +1010,7 @@ $(document).ready(function() {
       if(!otherEventHandlerGroup.getOutPort(0)){
         otherEventHandlerGroup.addOutPort({  
             text:"",
-            color: FABRIC.Math.rgb255(0,0,0),
+            color: FABRIC.RT.rgb255(0,0,0),
             direction:"Source",
             allowMultipleConnections:true
         });
@@ -1024,7 +1024,7 @@ $(document).ready(function() {
       if(!eventHandlerGroup.getOutPort(0)){
         eventHandlerGroup.addOutPort({  
             text:"",
-            color: FABRIC.Math.rgb255(0,0,0),
+            color: FABRIC.RT.rgb255(0,0,0),
             direction:"Source",
             allowMultipleConnections:true
         });
@@ -1032,7 +1032,7 @@ $(document).ready(function() {
       if(!nodeGroup.getInPort(0)){
         nodeGroup.addInPort({  
             text:"",
-            color: FABRIC.Math.rgb255(0,0,0),
+            color: FABRIC.RT.rgb255(0,0,0),
             direction:"Target",
             allowMultipleConnections:true
         });
@@ -1063,9 +1063,9 @@ $(document).ready(function() {
   if($.cookie("FABRIC.Debugger.TopPane.Translate") != undefined && useCookies){
     var str = $.cookie("FABRIC.Debugger.TopPane.Translate");
     str = str.split(":");
-    graphPosGroup.translate(new FABRIC.Math.Vec2(parseInt(str[0]),parseInt(str[1])));
+    graphPosGroup.translate(new FABRIC.RT.Vec2(parseInt(str[0]),parseInt(str[1])));
   }
   else{
-    graphPosGroup.translate(new FABRIC.Math.Vec2(0,0));
+    graphPosGroup.translate(new FABRIC.RT.Vec2(0,0));
   }
 });
