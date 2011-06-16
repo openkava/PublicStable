@@ -163,7 +163,7 @@ FABRIC.SceneGraph.registerParser('obj', function(scene, assetFile, options) {
       var p2 = parseFloat(items[2]);
       var p3 = parseFloat(items[3]);
       if (!isNaN(p1) && !isNaN(p2) && !isNaN(p3)) {
-        positions.push(new FABRIC.Math.Vec3(p1, p2, p3));
+        positions.push(new FABRIC.RT.Vec3(p1, p2, p3));
       }
       else {
         throw 'Malformed vertex on line ' + lineNumber;
@@ -173,12 +173,12 @@ FABRIC.SceneGraph.registerParser('obj', function(scene, assetFile, options) {
       var tc1 = parseFloat(items[1]);
       var tc2 = parseFloat(items[2]);
       if (!isNaN(tc1) && !isNaN(tc2)) {
-        textureCoords.push(new FABRIC.Math.Vec2(tc1, tc2));
+        textureCoords.push(new FABRIC.RT.Vec2(tc1, tc2));
       }
       else {
       //  throw "Malformed texture coord on line " + lineNumber;
         console.warn('Malformed texture coord on line ' + lineNumber + ' :' + unfilteredLine);
-        textureCoords.push(new FABRIC.Math.Vec2(0.5, 0.5));
+        textureCoords.push(new FABRIC.RT.Vec2(0.5, 0.5));
       }
       break;
     case 'vn':
@@ -186,7 +186,7 @@ FABRIC.SceneGraph.registerParser('obj', function(scene, assetFile, options) {
       var n2 = parseFloat(items[2]);
       var n3 = parseFloat(items[3]);
       if (!isNaN(n1) && !isNaN(n2) && !isNaN(n3)) {
-        normals.push(new FABRIC.Math.Vec3(n1, n2, n3));
+        normals.push(new FABRIC.RT.Vec3(n1, n2, n3));
       }
       else {
         throw 'Malformed normal on line ' + lineNumber;

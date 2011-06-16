@@ -21,10 +21,10 @@ FABRIC.Animation.BezierKeyframe = function(time, value, intan, outtan) {
   this.value = typeof value === 'number' ? value : 0;
   this.intangent = (intan &&
     intan.getType &&
-    intan.getType() === 'FABRIC.Math.Vec2') ? intan : FABRIC.Math.vec2(-0.333, 0);
+    intan.getType() === 'FABRIC.RT.Vec2') ? intan : FABRIC.RT.vec2(-0.333, 0);
   this.outtangent = (outtan &&
     outtan.getType &&
-    outtan.getType() === 'FABRIC.Math.Vec2') ? outtan : FABRIC.Math.vec2(0.333, 0);
+    outtan.getType() === 'FABRIC.RT.Vec2') ? outtan : FABRIC.RT.vec2(0.333, 0);
 };
 
 FABRIC.Animation.BezierKeyframe.prototype = {

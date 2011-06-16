@@ -156,7 +156,7 @@ FABRIC.SceneGraph.constructSceneLoader = function(scene, reader) {
       //  }
 
         for (propName in nodeData.properties) {
-        //  if(nodeData.properties[propName].substring(0, 10) == "FABRIC.Math"){
+        //  if(nodeData.properties[propName].substring(0, 10) == "FABRIC.RT"){
         //    node[propName] = eval(nodeData.properties[propName]);
         //  }else{
         //

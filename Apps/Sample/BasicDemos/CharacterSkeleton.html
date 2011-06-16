@@ -67,8 +67,8 @@ $(document).ready(function() {
   // Create a camera to draw the scene from
   var camera = scene.constructNode('TargetCamera');
   var haveCameraManipulator = false;
-  camera.position = FABRIC.Math.vec3(20, 20, 20);
-  camera.target = FABRIC.Math.vec3(-10, 11, 10);
+  camera.position = FABRIC.RT.vec3(20, 20, 20);
+  camera.target = FABRIC.RT.vec3(-10, 11, 10);
   camera.roll = 0;
   camera.nearDistance = 5;
   camera.farDistance = 100;
@@ -91,7 +91,7 @@ $(document).ready(function() {
       characterRigNode: characterRig
     });
 
-  var flatMaterial = scene.constructNode('FlatMaterial', { color: FABRIC.Math.rgb(1.0, 1.0, 1.0, 1.0) });
+  var flatMaterial = scene.constructNode('FlatMaterial', { color: FABRIC.RT.rgb(1.0, 1.0, 1.0, 1.0) });
   var instanceNode = scene.constructNode('Instance', {
       geometryNode: geometryNode,
       materialNode: flatMaterial

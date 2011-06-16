@@ -19,7 +19,7 @@ FABRIC.SceneGraph.Lights = {
 FABRIC.SceneGraph.registerNodeType('Light',
   function(options, scene) {
     scene.assignDefaults(options, {
-        color: FABRIC.Math.rgb(1.0, 1.0, 1.0)
+        color: FABRIC.RT.rgb(1.0, 1.0, 1.0)
       });
 
     if (options.lightType == undefined) {
@@ -77,7 +77,7 @@ FABRIC.SceneGraph.registerNodeType('Light',
 FABRIC.SceneGraph.registerNodeType('PointLight',
   function(options, scene) {
     scene.assignDefaults(options, {
-        position: FABRIC.Math.vec3(420.0, 1000.0, 600.0)
+        position: FABRIC.RT.vec3(420.0, 1000.0, 600.0)
       });
     options.lightType = FABRIC.SceneGraph.Lights.types.PointLight;
     var pointLightNode = scene.constructNode('Light', options);
@@ -124,13 +124,13 @@ FABRIC.SceneGraph.registerNodeType('PointLight',
       scene.pub.constructNode('Instance', {
         transformNode: scene.pub.createNode('Transform', {
           hierarchical: false,
-          globalXfo: FABRIC.Math.xfo({ tr: options.position })
+          globalXfo: FABRIC.RT.xfo({ tr: options.position })
         }),
         geometryNode: scene.pub.createNode('Circle', {
           radius: 7
         }),
         materialNode: scene.pub.createNode('FlatMaterial', {
-          color: FABRIC.Math.rgb(0.2, 0.5, 0.8)
+          color: FABRIC.RT.rgb(0.2, 0.5, 0.8)
         })
       });
 
@@ -142,8 +142,8 @@ FABRIC.SceneGraph.registerNodeType('PointLight',
 FABRIC.SceneGraph.registerNodeType('DirectionalLight',
   function(options, scene) {
     scene.assignDefaults(options, {
-        position: FABRIC.Math.vec3(420.0, 1000.0, 600.0),
-        direction: FABRIC.Math.vec3(0.0, 0.737, 0.737)
+        position: FABRIC.RT.vec3(420.0, 1000.0, 600.0),
+        direction: FABRIC.RT.vec3(0.0, 0.737, 0.737)
       });
 
     options.lightType = FABRIC.SceneGraph.Lights.types.DirectionalLight;
@@ -195,12 +195,12 @@ FABRIC.SceneGraph.registerNodeType('DirectionalLight',
 FABRIC.SceneGraph.registerNodeType('SpotLight',
   function(options, scene) {
     scene.assignDefaults(options, {
-        position: FABRIC.Math.vec3(100.0, 100.0, 100.0),
-        target: FABRIC.Math.vec3(0.0, 0.0, 0.0),
-        coneAngle: 60 * FABRIC.Math.degToRad,
+        position: FABRIC.RT.vec3(100.0, 100.0, 100.0),
+        target: FABRIC.RT.vec3(0.0, 0.0, 0.0),
+        coneAngle: 60 * FABRIC.RT.degToRad,
         nearDistance: 1,
         farDistance: 1000,
-        color: FABRIC.Math.rgb(1.0, 1.0, 1.0),
+        color: FABRIC.RT.rgb(1.0, 1.0, 1.0),
         castShadows: true,
         resolution: 1024
       });
@@ -377,14 +377,14 @@ FABRIC.SceneGraph.registerNodeType('SpotLight',
       // tan(theta) = o/a
       // tan(theta)/a = o
       var coneDist = options.position.dist(options.target);
-      var coneRadius = Math.tan(options.coneAngle * FABRIC.Math.degToRad * 0.5) * coneDist;
-      var lightMaterial = scene.pub.constructNode('FlatMaterial', { color: FABRIC.Math.rgb(1.0, 0.7, 0.4) });
+      var coneRadius = Math.tan(options.coneAngle * FABRIC.RT.degToRad * 0.5) * coneDist;
+      var lightMaterial = scene.pub.constructNode('FlatMaterial', { color: FABRIC.RT.rgb(1.0, 0.7, 0.4) });
       var crossGeometry = scene.pub.constructNode('Cross', { size: coneDist * 0.05 });
 
       scene.pub.constructNode('Instance', {
         transformNode: scene.pub.constructNode('Transform', {
           hierarchical: false,
-          globalXfo: FABRIC.Math.xfo({ tr: options.position })
+          globalXfo: FABRIC.RT.xfo({ tr: options.position })
         }),
         geometryNode: crossGeometry,
         materialNode: lightMaterial
@@ -392,7 +392,7 @@ FABRIC.SceneGraph.registerNodeType('SpotLight',
       scene.pub.constructNode('Instance', {
         transformNode: scene.pub.constructNode('Transform', {
           hierarchical: false,
-          globalXfo: FABRIC.Math.xfo({ tr: options.target })
+          globalXfo: FABRIC.RT.xfo({ tr: options.target })
         }),
         geometryNode: crossGeometry,
         materialNode: lightMaterial
@@ -400,7 +400,7 @@ FABRIC.SceneGraph.registerNodeType('SpotLight',
       scene.pub.constructNode('Instance', {
         transformNode: scene.pub.constructNode('Transform', {
           hierarchical: false,
-          globalXfo: FABRIC.Math.xfo({ tr: options.target })
+          globalXfo: FABRIC.RT.xfo({ tr: options.target })
         }),
         geometryNode: scene.pub.constructNode('Circle', {
           radius: coneRadius

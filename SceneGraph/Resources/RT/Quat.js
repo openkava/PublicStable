@@ -8,10 +8,10 @@
  * @param {object} quat The object to validate.
  * @return {boolean} True if the given object is a valid quaternion.
  */
-FABRIC.Math.isQuat = function(quat) {
+FABRIC.RT.isQuat = function(quat) {
   return typeof quat === 'object' &&
     'v' in quat &&
-    FABRIC.Math.isVec3(quat.v) &&
+    FABRIC.RT.isVec3(quat.v) &&
     'w' in quat &&
     typeof quat.w === 'number';
 };
@@ -24,26 +24,26 @@ FABRIC.Math.isQuat = function(quat) {
  * @param {number} z The z component of the quaternion.
  * @param {number} w The w component of the quaternion.
  */
-FABRIC.Math.Quat = function(x, y, z, w) {
+FABRIC.RT.Quat = function(x, y, z, w) {
   if (typeof x === 'number' && typeof y === 'number' && typeof z === 'number' && typeof w === 'number') {
-    this.v = new FABRIC.Math.Vec3(x, y, z);
+    this.v = new FABRIC.RT.Vec3(x, y, z);
     this.w = w;
   }
-  else if (typeof x === 'number' && FABRIC.Math.isVec3(y) && z === undefined && w === undefined) {
+  else if (typeof x === 'number' && FABRIC.RT.isVec3(y) && z === undefined && w === undefined) {
     this.v = y.clone();
     this.w = x;
   }
-  else if (FABRIC.Math.isVec3(x) && typeof y === 'number' && z === undefined && w === undefined) {
-    var q = FABRIC.Math.Quat.makeFromAxisAndAngle(x, y);
+  else if (FABRIC.RT.isVec3(x) && typeof y === 'number' && z === undefined && w === undefined) {
+    var q = FABRIC.RT.Quat.makeFromAxisAndAngle(x, y);
     this.v = q.v.clone();
     this.w = q.w;
   }
-  else if (FABRIC.Math.isQuat(x) && y === undefined && z === undefined && w === undefined) {
-    this.v = new FABRIC.Math.Vec3(x.v);
+  else if (FABRIC.RT.isQuat(x) && y === undefined && z === undefined && w === undefined) {
+    this.v = new FABRIC.RT.Vec3(x.v);
     this.w = x.w;
   }
   else if (x === undefined && y === undefined && z === undefined && w === undefined) {
-    this.v = new FABRIC.Math.Vec3;
+    this.v = new FABRIC.RT.Vec3;
     this.w = 1;
   }
   else throw'Quat constructor: invalid arguments';
@@ -57,8 +57,8 @@ FABRIC.Math.Quat = function(x, y, z, w) {
  * @param {number} w The w component of the quaternion.
  * @return {object} The created quaternion object.
  */
-FABRIC.Math.quat = function(x, y, z, w) {
-  return new FABRIC.Math.Quat(x, y, z, w);
+FABRIC.RT.quat = function(x, y, z, w) {
+  return new FABRIC.RT.Quat(x, y, z, w);
 };
 
 /**
@@ -68,10 +68,10 @@ FABRIC.Math.quat = function(x, y, z, w) {
  * @param {number} degrees The rotation around the axis in degrees.
  * @return {object} The converted quaternion object.
  */
-FABRIC.Math.Quat.makeFromAxisAndAngle = function(vec, degrees) {
+FABRIC.RT.Quat.makeFromAxisAndAngle = function(vec, degrees) {
   var halfAngle = (degrees * Math.PI / 180.0) / 2.0;
 
-  var q = new FABRIC.Math.Quat();
+  var q = new FABRIC.RT.Quat();
   q.w = Math.cos(halfAngle);
   q.v = vec.unit();
   q.v.mulInPlace(Math.sin(halfAngle));
@@ -88,8 +88,8 @@ FABRIC.Math.Quat.makeFromAxisAndAngle = function(vec, degrees) {
  * @param {object} vec2 A Vec3 object defining the target direction.
  * @return {object} The converted quaternion object.
  */
-FABRIC.Math.Quat.makeFrom2Vectors = function(vec1, vec2) {
-  var q = new FABRIC.Math.Quat();
+FABRIC.RT.Quat.makeFrom2Vectors = function(vec1, vec2) {
+  var q = new FABRIC.RT.Quat();
   var val = vec1.dot(vec2) + 1;
   if (val <= 0.001) {
     // the vectors pointed in opposite directions.
@@ -110,8 +110,8 @@ FABRIC.Math.Quat.makeFrom2Vectors = function(vec1, vec2) {
  * @param {number} t The blend factor for the Nlerp.
  * @return {object} The converted quaternion object.
  */
-FABRIC.Math.Quat.makeNlerp = function(q1, q2, t) {
-  var q = new FABRIC.Math.Quat();
+FABRIC.RT.Quat.makeNlerp = function(q1, q2, t) {
+  var q = new FABRIC.RT.Quat();
   var angle = q1.dot(q2);
   if (angle < 0.0) {
     q2.v.negateInPlace();
@@ -132,8 +132,8 @@ FABRIC.Math.Quat.makeNlerp = function(q1, q2, t) {
  * @param {number} t The blend factor for the Slerp.
  * @return {object} The converted quaternion object.
  */
-FABRIC.Math.Quat.makeSlerp = function(q1, q2, t) {
-  var q = new FABRIC.Math.Quat();
+FABRIC.RT.Quat.makeSlerp = function(q1, q2, t) {
+  var q = new FABRIC.RT.Quat();
   var angle = q1.dot(q2);
   if (angle < 0.0) {
     q1 *= - 1.0;
@@ -166,7 +166,7 @@ FABRIC.Math.Quat.makeSlerp = function(q1, q2, t) {
   return q;
 };
 
-FABRIC.Math.Quat.prototype = {
+FABRIC.RT.Quat.prototype = {
   set: function(w, vec) {
     this.v = vec.clone();
     this.w = w;
@@ -174,14 +174,14 @@ FABRIC.Math.Quat.prototype = {
 
   // Returns true if the vector is equal to the argument
   eql: function(q) {
-    return (FABRIC.Math.isQuat(q) &&
+    return (FABRIC.RT.isQuat(q) &&
       (this.v.eql(q.v)) &&
-      (Math.abs(this.w - q.w) < FABRIC.Math.precision));
+      (Math.abs(this.w - q.w) < FABRIC.RT.precision));
   },
 
   // Returns the result of adding the argument to the qector
   add: function(q) {
-    return new FABRIC.Math.Quat(this.w + q.w, this.v.add(q.v));
+    return new FABRIC.RT.Quat(this.w + q.w, this.v.add(q.v));
   },
 
   // Quat self referenced addition.
@@ -192,7 +192,7 @@ FABRIC.Math.Quat.prototype = {
   },
 
   subtract: function(q) {
-    return new FABRIC.Math.Quat(this.w - q.w, this.v.subInPlace(q.v));
+    return new FABRIC.RT.Quat(this.w - q.w, this.v.subInPlace(q.v));
   },
 
   // Quat self referenced subtraction.
@@ -204,7 +204,7 @@ FABRIC.Math.Quat.prototype = {
 
   // Multiply on the left hand side of this Quat
   preMultiply: function(gq) {
-    return new FABRIC.Math.Quat(this.w * gq.w - this.v.dot(gq.v),
+    return new FABRIC.RT.Quat(this.w * gq.w - this.v.dot(gq.v),
       gq.v.scale(this.w)
       .addInPlace(this.v.scale(gq.w))
     .addInPlace(this.v.cross(gq.v)));
@@ -229,8 +229,8 @@ FABRIC.Math.Quat.prototype = {
   // Quat multiplication.
   multiply: function(v) {
     if (typeof v == 'number') {
-      return new FABRIC.Math.Quat(this.w * v, this.v.multiply(v));
-    }else if (FABRIC.Math.isQuat(v)) {
+      return new FABRIC.RT.Quat(this.w * v, this.v.multiply(v));
+    }else if (FABRIC.RT.isQuat(v)) {
       return this.postMultiply(v);
     }else {
       throw'Incorrect param type for Multiply';
@@ -268,14 +268,14 @@ FABRIC.Math.Quat.prototype = {
 
   // Quat cross product.
   cross: function(gq) {
-    return new FABRIC.Math.Quat(this.w * gq.w - this.v.dot(gq.v),
+    return new FABRIC.RT.Quat(this.w * gq.w - this.v.dot(gq.v),
       (gq.v.scale(this.w)).addInPlace(this.v.scale(gq.w))
     .addInPlace(this.v.cross(gq.v)));
   },
 
   // Quat complex conjugate.
   conjugate: function() {
-    return new FABRIC.Math.Quat(this.w, this.v.negate());
+    return new FABRIC.RT.Quat(this.w, this.v.negate());
   },
 
   // Quat self referenced complex conjugate.
@@ -327,7 +327,7 @@ FABRIC.Math.Quat.prototype = {
   // GLVector interface method for ease of use. THIS IS PROBABLY THE ONLY METHOD YOU WOULD NORMALLY USE.
   // NB. Don't forget to normalise the quaternion unless you want axial translation as well as rotation.
   rotateVector: function(gv) {
-    var temp = new FABRIC.Math.Quat(0, gv);
+    var temp = new FABRIC.RT.Quat(0, gv);
     temp = this.cross(temp);
     temp.mulInPlace(this.conjugate());
     return temp.v;
@@ -335,7 +335,7 @@ FABRIC.Math.Quat.prototype = {
 
   // Method for obtaining axes directly from a quaternion
   getXaxis: function() {
-    var temp = FABRIC.Math.vec3();
+    var temp = FABRIC.RT.vec3();
     var xy = this.v.x * this.v.y; var xz = this.v.x * this.v.z;
     var yy = this.v.y * this.v.y; var yw = this.v.y * this.w;
     var zz = this.v.z * this.v.z; var zw = this.v.z * this.w;
@@ -346,7 +346,7 @@ FABRIC.Math.Quat.prototype = {
     return temp;
   },
   getYaxis: function() {
-    var temp = FABRIC.Math.vec3();
+    var temp = FABRIC.RT.vec3();
     var xx = this.v.x * this.v.x; var xy = this.v.x * this.v.y; var xw = this.v.x * this.w;
     var yz = this.v.y * this.v.z;
     var zz = this.v.z * this.v.z; var zw = this.v.z * this.w;
@@ -357,7 +357,7 @@ FABRIC.Math.Quat.prototype = {
     return temp;
   },
   getZaxis: function() {
-    var temp = FABRIC.Math.vec3();
+    var temp = FABRIC.RT.vec3();
     var xx = this.v.x * this.v.x; var xz = this.v.x * this.v.z; var xw = this.v.x * this.w;
 
     var yy = this.v.y * this.v.y; var yz = this.v.y * this.v.z; var yw = this.v.y * this.w;
@@ -368,7 +368,7 @@ FABRIC.Math.Quat.prototype = {
     return temp;
   },
   makeMatrix: function() {
-    var temp = new FABRIC.Math.Mat33();
+    var temp = new FABRIC.RT.Mat33();
 
     var xx = this.v.x * this.v.x;
     var xy = this.v.x * this.v.y;
@@ -406,15 +406,15 @@ FABRIC.Math.Quat.prototype = {
 
   // Returns a copy of the quaternion
   clone: function() {
-    return new FABRIC.Math.Quat(this.w, this.v.clone());
+    return new FABRIC.RT.Quat(this.w, this.v.clone());
   },
 
   toString: function() {
-    return 'FABRIC.Math.quat({' + this.v.x + ',' + this.v.y + ',' + this.v.z + '},' + this.w + ')';
+    return 'FABRIC.RT.quat({' + this.v.x + ',' + this.v.y + ',' + this.v.z + '},' + this.w + ')';
   },
 
   getType: function() {
-    return 'FABRIC.Math.Quat';
+    return 'FABRIC.RT.Quat';
   },
   displayGUI: function($parentDiv, changeHandlerFn) {
     var val = this;
@@ -441,7 +441,7 @@ FABRIC.appendOnCreateContextCallback(function(context) {
     members: {
       v: 'Vec3', w: 'Scalar'
     },
-    constructor: FABRIC.Math.Quat,
+    constructor: FABRIC.RT.Quat,
     kBindings: FABRIC.loadResourceURL('../../../SceneGraph/Resources//RT/Quat.kl')
   });
 });

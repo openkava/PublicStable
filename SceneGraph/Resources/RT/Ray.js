@@ -9,12 +9,12 @@
  * @param {object} start A Vec3 defining the start of the ray.
  * @param {object} direction A Vec3 defining the direction of the ray.
  */
-FABRIC.Math.Ray = function(start, direction) {
-  this.start = FABRIC.Math.isVec3(start) ? start : FABRIC.Math.vec3();
-  this.direction = FABRIC.Math.isVec3(direction) ? direction : FABRIC.Math.vec3(1, 0, 0);
+FABRIC.RT.Ray = function(start, direction) {
+  this.start = FABRIC.RT.isVec3(start) ? start : FABRIC.RT.vec3();
+  this.direction = FABRIC.RT.isVec3(direction) ? direction : FABRIC.RT.vec3(1, 0, 0);
 };
 
-FABRIC.Math.Ray.prototype = {
+FABRIC.RT.Ray.prototype = {
   intersectPlane: function(planePoint, planeNormal) {
     var w, D, N;
     w = this.start.subtract(planePoint);
@@ -111,7 +111,7 @@ FABRIC.Math.Ray.prototype = {
  * @param {object} projectionMat44 The projection matrix(44).
  * @return {object} The converted ray object.
  */
-FABRIC.Math.Ray.calculateRayFromViewportData = function(
+FABRIC.RT.Ray.calculateRayFromViewportData = function(
   width,
   height,
   x,
@@ -119,7 +119,7 @@ FABRIC.Math.Ray.calculateRayFromViewportData = function(
   cameraMat44,
   projectionMat44
 ) {
-  var ray = new FABRIC.Math.Ray();
+  var ray = new FABRIC.RT.Ray();
   // Convert the raster coordinates to screen space ([0,{w|h}] -> [-1,1]
   // - Note: The raster vertical is inverted wrt OGL screenspace Y
   var sx = x / width;
@@ -131,15 +131,15 @@ FABRIC.Math.Ray.calculateRayFromViewportData = function(
   // Transform the origin from camera local to world space
   var camInv = cameraMat44.inverse();
 
-  //  ray.start = camInv.mul(FABRIC.Math.vec3(0.0, 0.0, 0.0));
-  ray.start = FABRIC.Math.vec3(camInv.row3.x, camInv.row3.y, camInv.row3.z);
+  //  ray.start = camInv.mul(FABRIC.RT.vec3(0.0, 0.0, 0.0));
+  ray.start = FABRIC.RT.vec3(camInv.row3.x, camInv.row3.y, camInv.row3.z);
 
   // Get the projected window coordinate on the near plane
   // See http://www.songho.ca/opengl/gl_projectionmatrix.html
   // for details.
   var projInv = projectionMat44.inverse();
 
-  ray.direction = projInv.mul(FABRIC.Math.vec3(sx, - sy, - 1.0));
+  ray.direction = projInv.mul(FABRIC.RT.vec3(sx, - sy, - 1.0));
 
   // And from projection space to camera local.
   // - We nuke the translation part since we're transforming a vector.
@@ -155,7 +155,7 @@ FABRIC.appendOnCreateContextCallback(function(context) {
     members: {
       start: 'Vec3', direction: 'Vec3'
     },
-    constructor: FABRIC.Math.Ray,
+    constructor: FABRIC.RT.Ray,
     kBindings: FABRIC.loadResourceURL('../../../SceneGraph/Resources//RT/Ray.kl')
   });
 });
@@ -164,9 +164,9 @@ FABRIC.appendOnCreateContextCallback(function(context) {
  * Constructor of a RayIntersection object.
  * @constructor
  */
-FABRIC.Math.RayIntersection = function() {
-  this.point = FABRIC.Math.vec3();
-  this.normal = FABRIC.Math.vec3();
+FABRIC.RT.RayIntersection = function() {
+  this.point = FABRIC.RT.vec3();
+  this.normal = FABRIC.RT.vec3();
   this.distance = 0;
   this.elementid = - 1;
 };
@@ -176,6 +176,6 @@ FABRIC.appendOnCreateContextCallback(function(context) {
     members: {
       point: 'Vec3', normal: 'Vec3', distance: 'Scalar', elementid: 'Integer'
     },
-    constructor: FABRIC.Math.RayIntersection
+    constructor: FABRIC.RT.RayIntersection
   });
 });

@@ -55,8 +55,8 @@ FABRIC.SceneGraph.registerNodeType('Transform',
 
       // use a custom getter
       transformNode.pub.__defineSetter__('globalXfo', function(val) {
-          if (!val.getType || val.getType() !== 'FABRIC.Math.Xfo') {
-            throw ('Incorrect type assignment. Must assign a FABRIC.Math.Xfo');
+          if (!val.getType || val.getType() !== 'FABRIC.RT.Xfo') {
+            throw ('Incorrect type assignment. Must assign a FABRIC.RT.Xfo');
           }
           if (parentTransformNode) {
             var parentXfo = parentTransformNode.globalXfo;
@@ -97,8 +97,8 @@ FABRIC.SceneGraph.registerNodeType('Transform',
       }
     }else {
       transformNode.pub.__defineSetter__('globalXfo', function(val) {
-          if (!val.getType || val.getType() !== 'FABRIC.Math.Xfo') {
-            throw ('Incorrect type assignment. Must assign a FABRIC.Math.Xfo');
+          if (!val.getType || val.getType() !== 'FABRIC.RT.Xfo') {
+            throw ('Incorrect type assignment. Must assign a FABRIC.RT.Xfo');
           }
           dgnode.setData('globalXfo', 0, val);
         });
@@ -112,8 +112,8 @@ FABRIC.SceneGraph.registerNodeType('AimTransform',
   function(options, scene) {
 
     scene.assignDefaults(options, {
-        position: FABRIC.Math.vec3(1, 0, 0),
-        target: FABRIC.Math.vec3(0, 0, 0),
+        position: FABRIC.RT.vec3(1, 0, 0),
+        target: FABRIC.RT.vec3(0, 0, 0),
         roll: 0.0
       });
 

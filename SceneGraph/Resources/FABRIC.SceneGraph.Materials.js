@@ -293,7 +293,7 @@ FABRIC.SceneGraph.OpenGLConstants = {
  * @param {string} code The source code of the shader.
  * @param {string} type The type of the shader.
  */
-FABRIC.Math.ShaderSource = function(code, type) {
+FABRIC.RT.ShaderSource = function(code, type) {
   this.code = (code !== undefined) ? code : '';
   this.type = (type !== undefined) ? type : 0;
 };
@@ -301,7 +301,7 @@ FABRIC.Math.ShaderSource = function(code, type) {
 FABRIC.appendOnCreateContextCallback(function(context) {
   context.RegisteredTypesManager.registerType('ShaderSource', {
       members: { code: 'String', type: 'Integer' },
-      constructor: FABRIC.Math.ShaderSource
+      constructor: FABRIC.RT.ShaderSource
     });
 });
 
@@ -312,7 +312,7 @@ FABRIC.appendOnCreateContextCallback(function(context) {
  * @param {string} id The id of the shader's value.
  * @param {array} state The state of the shader's value.
  */
-FABRIC.Math.ShaderValue = function(name, id, state) {
+FABRIC.RT.ShaderValue = function(name, id, state) {
   this.name = (name !== undefined) ? name : '';
   this.id = (id !== undefined) ? id : 0;
   this.state = (state !== undefined) ? state : [];
@@ -322,7 +322,7 @@ FABRIC.Math.ShaderValue = function(name, id, state) {
 FABRIC.appendOnCreateContextCallback(function(context) {
   context.RegisteredTypesManager.registerType('ShaderValue', {
       members: { name: 'String', id: 'Integer', state: 'String[]', location: 'Integer' },
-      constructor: FABRIC.Math.ShaderValue
+      constructor: FABRIC.RT.ShaderValue
     });
 });
 
@@ -332,7 +332,7 @@ FABRIC.appendOnCreateContextCallback(function(context) {
  * @param {string} id The id of the parameter.
  * @param {number} value The value of the parameter.
  */
-FABRIC.Math.ShaderProgramParam = function(id, value) {
+FABRIC.RT.ShaderProgramParam = function(id, value) {
   this.id = (id !== undefined) ? id : 0;
   this.value = (value !== undefined) ? value : -1;
 };
@@ -340,7 +340,7 @@ FABRIC.Math.ShaderProgramParam = function(id, value) {
 FABRIC.appendOnCreateContextCallback(function(context) {
   context.RegisteredTypesManager.registerType('ShaderProgramParam', {
       members: { id: 'Integer', value: 'Integer' },
-      constructor: FABRIC.Math.ShaderProgramParam
+      constructor: FABRIC.RT.ShaderProgramParam
     });
 });
 
@@ -419,15 +419,15 @@ FABRIC.SceneGraph.registerNodeType('Shader',
       i;
 
     if (options.fragmentShader) {
-      shaderSources.push(new FABRIC.Math.ShaderSource(
+      shaderSources.push(new FABRIC.RT.ShaderSource(
         options.fragmentShader, FABRIC.SceneGraph.OpenGLConstants.GL_FRAGMENT_SHADER));
     }
     if (options.vertexShader) {
-      shaderSources.push(new FABRIC.Math.ShaderSource(
+      shaderSources.push(new FABRIC.RT.ShaderSource(
         options.vertexShader, FABRIC.SceneGraph.OpenGLConstants.GL_VERTEX_SHADER));
     }
     if (options.geometryShader) {
-      shaderSources.push(new FABRIC.Math.ShaderSource(
+      shaderSources.push(new FABRIC.RT.ShaderSource(
         options.geometryShader, FABRIC.SceneGraph.OpenGLConstants.GL_GEOMETRY_SHADER_EXT));
     }
 
@@ -441,7 +441,7 @@ FABRIC.SceneGraph.registerNodeType('Shader',
       if (!FABRIC.shaderAttributeTable[i]) {
         throw ('Error defining ' + options.name + '. Attribute not defined in the AttributeTable:' + i);
       }
-      uniformValues.push(new FABRIC.Math.ShaderValue(
+      uniformValues.push(new FABRIC.RT.ShaderValue(
         options.shaderUniforms[i].name, FABRIC.shaderAttributeTable[i].id));
     }
     dgnode.addMember('uniformValues', 'ShaderValue[]', uniformValues);
@@ -453,7 +453,7 @@ FABRIC.SceneGraph.registerNodeType('Shader',
       if (!FABRIC.shaderAttributeTable[i]) {
         throw ('Attribute not defined in the AttributeTable:' + i);
       }
-      attributeValues.push(new FABRIC.Math.ShaderValue(
+      attributeValues.push(new FABRIC.RT.ShaderValue(
         options.shaderAttributes[i].name, FABRIC.shaderAttributeTable[i].id));
     }
     dgnode.addMember('attributeValues', 'ShaderValue[]', attributeValues);
@@ -461,7 +461,7 @@ FABRIC.SceneGraph.registerNodeType('Shader',
     ///////////////////////////////////////////////////
     // EXT Params
     for (i in options.programParams) {
-      programParams.push(new FABRIC.Math.ShaderProgramParam(
+      programParams.push(new FABRIC.RT.ShaderProgramParam(
         FABRIC.SceneGraph.OpenGLConstants[i], options.programParams[i]));
     }
     dgnode.addMember('programParams', 'ShaderProgramParam[]', programParams);

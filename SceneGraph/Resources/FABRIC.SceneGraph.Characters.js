@@ -233,7 +233,7 @@ FABRIC.SceneGraph.registerNodeType('CharacterSkeletonDebug',
 
     scene.assignDefaults(options, {
       boneradius: 1.0,
-      color: FABRIC.Math.rgba(1.0, 1.0, 1.0, 1.0),
+      color: FABRIC.RT.rgba(1.0, 1.0, 1.0, 1.0),
       drawOverlayed: true
       });
 
@@ -543,9 +543,9 @@ FABRIC.SceneGraph.registerNodeType('CharacterRigDebug',
 
     scene.assignDefaults(options, {
       dynamic: true,
-      color: FABRIC.Math.rgba(0.0, 1.0, 1.0, 1.0),
+      color: FABRIC.RT.rgba(0.0, 1.0, 1.0, 1.0),
       size: 5.0,
-      offsetpose: FABRIC.Math.xfo(),
+      offsetpose: FABRIC.RT.xfo(),
       constructInstanceNode: true
       });
 
@@ -607,7 +607,7 @@ FABRIC.SceneGraph.registerNodeType('CharacterRigDebug',
       var material = scene.constructNode('VertexColorMaterial', {
         prototypeMaterialType: 'PointMaterial',
         pointSize: 10.0,
-        color: FABRIC.Math.rgb(0.8, 0, 0, 1)
+        color: FABRIC.RT.rgb(0.8, 0, 0, 1)
       });
 
       instanceNode = scene.constructNode('Instance', {

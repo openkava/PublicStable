@@ -8,7 +8,7 @@
  * @param {object} vec2 The vec2 object to validate.
  * @return {boolean} true if the given object is a valid vec2.
  */
-FABRIC.Math.isVec2 = function(vec2) {
+FABRIC.RT.isVec2 = function(vec2) {
   return typeof vec2 === 'object' &&
     'x' in vec2 &&
     typeof vec2.x === 'number' &&
@@ -22,12 +22,12 @@ FABRIC.Math.isVec2 = function(vec2) {
  * @param {number} x The x component.
  * @param {number} y The y component.
  */
-FABRIC.Math.Vec2 = function(x, y) {
+FABRIC.RT.Vec2 = function(x, y) {
   if (typeof x === 'number' && typeof y === 'number') {
     this.x = x;
     this.y = y;
   }
-  else if (FABRIC.Math.isVec2(x) && y === undefined) {
+  else if (FABRIC.RT.isVec2(x) && y === undefined) {
     this.x = x.x;
     this.y = x.y;
   }
@@ -44,23 +44,23 @@ FABRIC.Math.Vec2 = function(x, y) {
  * @param {number} y The y component.
  * @return {object} The created vec2 object.
  */
-FABRIC.Math.vec2 = function(x, y) {
-  return new FABRIC.Math.Vec2(x, y);
+FABRIC.RT.vec2 = function(x, y) {
+  return new FABRIC.RT.Vec2(x, y);
 };
 
-FABRIC.Math.Vec2.prototype = {
+FABRIC.RT.Vec2.prototype = {
   set: function(x, y) {
     return this.x = x; this.y = y;
   },
   // Returns true if the vector is equal to the argument
   eql: function(v) {
-    return FABRIC.Math.isVec2(v) &&
-      (Math.abs(this.x - v.x) < FABRIC.Math.precision) &&
-      (Math.abs(this.y - v.y) < FABRIC.Math.precision);
+    return FABRIC.RT.isVec2(v) &&
+      (Math.abs(this.x - v.x) < FABRIC.RT.precision) &&
+      (Math.abs(this.y - v.y) < FABRIC.RT.precision);
   },
 
   scale: function(s) {
-    return new FABRIC.Math.Vec2(this.x * s, this.y * s);
+    return new FABRIC.RT.Vec2(this.x * s, this.y * s);
   },
   scaleInPlace: function(s) {
     this.x *= s; this.y *= s;
@@ -69,7 +69,7 @@ FABRIC.Math.Vec2.prototype = {
 
   // Returns the result of adding the argument to the vector
   add: function(v) {
-    return new FABRIC.Math.Vec2(this.x + v.x, this.y + v.y);
+    return new FABRIC.RT.Vec2(this.x + v.x, this.y + v.y);
   },
 
   addInPlace: function(v) {
@@ -78,7 +78,7 @@ FABRIC.Math.Vec2.prototype = {
   },
 
   subtract: function(v) {
-    return new FABRIC.Math.Vec2(this.x - v.x, this.y - v.y);
+    return new FABRIC.RT.Vec2(this.x - v.x, this.y - v.y);
   },
 
   subInPlace: function(v) {
@@ -88,9 +88,9 @@ FABRIC.Math.Vec2.prototype = {
 
   multiply: function(v) {
     if (typeof v == 'number') {
-      return new FABRIC.Math.Vec2(this.x * v, this.y * v);
-    }else if (FABRIC.Math.isVec2(v)) {
-      return new FABRIC.Math.Vec2(this.x * v.x, this.y * v.y);
+      return new FABRIC.RT.Vec2(this.x * v, this.y * v);
+    }else if (FABRIC.RT.isVec2(v)) {
+      return new FABRIC.RT.Vec2(this.x * v.x, this.y * v.y);
     }else {
       throw'Incorrect param type for Multiply';
       }
@@ -99,7 +99,7 @@ FABRIC.Math.Vec2.prototype = {
   mulInPlace: function(v) {
     if (typeof v == 'number') {
       this.x *= v; this.y *= v;
-    }else if (FABRIC.Math.isVec2(v)) {
+    }else if (FABRIC.RT.isVec2(v)) {
       this.x *= v.x; this.y *= v.y;
     }else {
       throw'Incorrect param type for Multiply';
@@ -116,7 +116,7 @@ FABRIC.Math.Vec2.prototype = {
   },
 
   negate: function(v) {
-    return new FABRIC.Math.Vec2(-this.x, - this.y);
+    return new FABRIC.RT.Vec2(-this.x, - this.y);
   },
 
   negateInPlace: function(v) {
@@ -157,13 +157,13 @@ FABRIC.Math.Vec2.prototype = {
     return len;
   },
   min: function(minVal) {
-    return FABRIC.Math.vec2(Math.min(this.x, minVal.x), Math.min(this.y, minVal.y));
+    return FABRIC.RT.vec2(Math.min(this.x, minVal.x), Math.min(this.y, minVal.y));
   },
   max: function(maxVal) {
-    return FABRIC.Math.vec2(Math.max(this.x, maxVal.x), Math.max(this.y, maxVal.y));
+    return FABRIC.RT.vec2(Math.max(this.x, maxVal.x), Math.max(this.y, maxVal.y));
   },
   clamp: function(min, max) {
-    return FABRIC.Math.vec2((this.x < (min.x) ? (min.x) : (this.x > (max.x) ? (max.x) : this.x)),
+    return FABRIC.RT.vec2((this.x < (min.x) ? (min.x) : (this.x > (max.x) ? (max.x) : this.x)),
     (this.y < (min.y) ? (min.y) : (this.y > (max.y) ? (max.y) : this.y)));
   },
   insideRect: function(rectTL, rectBR) {
@@ -175,14 +175,14 @@ FABRIC.Math.Vec2.prototype = {
 
   // Returns a copy of the vector
   clone: function() {
-    return (new FABRIC.Math.Vec2(this.x, this.y));
+    return (new FABRIC.RT.Vec2(this.x, this.y));
   },
 
   toString: function() {
-    return 'FABRIC.Math.vec2(' + this.x + ',' + this.y + ')';
+    return 'FABRIC.RT.vec2(' + this.x + ',' + this.y + ')';
   },
   getType: function() {
-    return 'FABRIC.Math.Vec2';
+    return 'FABRIC.RT.Vec2';
   },
   displayGUI: function($parentDiv, changeHandlerFn) {
     var val = this;
@@ -212,20 +212,20 @@ FABRIC.Math.Vec2.prototype = {
  * Overloaded Constructor for a vec2
  * @return {object} A preset vec2 for the x axis.
  */
-FABRIC.Math.Vec2.xAxis = new FABRIC.Math.Vec2(1, 0);
+FABRIC.RT.Vec2.xAxis = new FABRIC.RT.Vec2(1, 0);
 
 /**
  * Overloaded Constructor for a vec2
  * @return {object} A preset vec2 for the y axis.
  */
-FABRIC.Math.Vec2.yAxis = new FABRIC.Math.Vec2(0, 1);
+FABRIC.RT.Vec2.yAxis = new FABRIC.RT.Vec2(0, 1);
 
 FABRIC.appendOnCreateContextCallback(function(context) {
   context.RegisteredTypesManager.registerType('Vec2', {
     members: {
       x: 'Scalar', y: 'Scalar'
     },
-    constructor: FABRIC.Math.Vec2,
+    constructor: FABRIC.RT.Vec2,
     kBindings: FABRIC.loadResourceURL('../../../SceneGraph/Resources//RT/Vec2.kl')
   });
 });

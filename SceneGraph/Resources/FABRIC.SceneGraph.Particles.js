@@ -11,7 +11,7 @@ FABRIC.SceneGraph.registerNodeType('Particles',
   function(options, scene) {
     scene.assignDefaults(options, {
       materialNode: undefined,
-      color: FABRIC.Math.rgb(0.75, 0.75, 0.75),
+      color: FABRIC.RT.rgb(0.75, 0.75, 0.75),
       size: 3.0,
       animated: false,
       simulated: false,
@@ -75,7 +75,7 @@ FABRIC.SceneGraph.registerNodeType('Particles',
               sections_x: options.x_count + 1,
               sections_z: options.z_count + 1
             }),
-            materialNode: scene.pub.constructNode('FlatMaterial', { color: FABRIC.Math.rgb(0.3, 0.3, 0.3) })
+            materialNode: scene.pub.constructNode('FlatMaterial', { color: FABRIC.RT.rgb(0.3, 0.3, 0.3) })
           });
       }
 

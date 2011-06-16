@@ -84,7 +84,7 @@ $(document).ready(function() {
 
   var bezierTrackDisplayNodes = [];
   var trackCount = keyframeTrackNode.getTrackCount();
-  var timeRange = FABRIC.Math.vec2(0, 0);
+  var timeRange = FABRIC.RT.vec2(0, 0);
   var curvesData = [];
 
   for (var i = 0; i < trackCount; i++) {
@@ -104,7 +104,7 @@ $(document).ready(function() {
     curvesData[i] = bezierTrackDisplayNodes[i].getCurveData();
   }
 
-  var yRange = FABRIC.Math.vec2(curvesData[0].value[0], curvesData[0].value[0]);
+  var yRange = FABRIC.RT.vec2(curvesData[0].value[0], curvesData[0].value[0]);
   var getCurveYRange = function(curveData) {
     for (var i = 1; i < curveData.time.length; i++) {
       if (yRange.x > curveData.value[i]) {
@@ -122,7 +122,7 @@ $(document).ready(function() {
 
   var scaleX = width / (timeRange.y - timeRange.x),
      scaleY = -(height - 40) / (yRange.y - yRange.x),
-    scale = FABRIC.Math.vec2(scaleX, scaleX),
+    scale = FABRIC.RT.vec2(scaleX, scaleX),
     offsetY = (yRange.y + yRange.x) * -0.5;
 
   var drawTrackCurve = function(trackIndex) {
@@ -163,7 +163,7 @@ $(document).ready(function() {
             updateCurve();
             scene.redrawAllWindows();
           });
-       var keyNode = keyGroupNode.createRect().translate(-4, -4).size(8, 8).stroke(FABRIC.Math.rgb(1, 1, 1));
+       var keyNode = keyGroupNode.createRect().translate(-4, -4).size(8, 8).stroke(FABRIC.RT.rgb(1, 1, 1));
 
       if (keyframeTrackNode.getKeyframeType() == 'BezierKeyframe') {
 
@@ -171,7 +171,7 @@ $(document).ready(function() {
         var keyInTangentY = keyData.intangent.y * scaleY;
          var keyInTangentNode = keyGroupNode.createRect()
                                             .translate(keyInTangentX - 3, keyInTangentY - 3)
-                                            .size(6, 6).stroke(FABRIC.Math.rgb(1, 1, 1));
+                                            .size(6, 6).stroke(FABRIC.RT.rgb(1, 1, 1));
         var keyInTangentLineNode = keyGroupNode.createPath().addClass('KeyframeHandle');
         keyInTangentLineNode.attr('d', 'M 0 0 L ' + keyInTangentX + ' ' + keyInTangentY);
 
@@ -191,7 +191,7 @@ $(document).ready(function() {
         var keyOutTangentY = keyData.outtangent.y * scaleY;
          var keyOutTangentNode = keyGroupNode.createRect()
                                              .translate(keyOutTangentX - 3, keyOutTangentY - 3)
-                                             .size(6, 6).stroke(FABRIC.Math.rgb(1, 1, 1));
+                                             .size(6, 6).stroke(FABRIC.RT.rgb(1, 1, 1));
         var keyOutTangentLineNode = keyGroupNode.createPath().addClass('KeyframeHandle');
         keyOutTangentLineNode.attr('d', 'M 0 0 L ' + keyOutTangentX + ' ' + keyOutTangentY);
 
