@@ -4,7 +4,7 @@
 //
 
 
-#include '../../../SceneGraph/Resources//KL/loadVBOs.kl'
+#include 'FABRIC_ROOT/SceneGraph/Resources/KL/loadVBOs.kl'
 
 // These must be defined in the preprocessor definitions prior to compilation.
 // #define DATA_TYPE Vec3

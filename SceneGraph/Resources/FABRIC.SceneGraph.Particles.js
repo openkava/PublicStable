@@ -82,7 +82,7 @@ FABRIC.SceneGraph.registerNodeType('Particles',
       // Calculate our cell index based on the back buffer data.
       particlesNode.getAttributesDGNode().bindings.append(scene.constructOperator({
         operatorName: 'calcCellIndex',
-        srcFile: '../../../SceneGraph/Resources//KL/spatialHashTable.kl',
+        srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/spatialHashTable.kl',
         entryFunctionName: 'calcCellIndex',
         parameterBinding: [
           'self.index',
@@ -97,7 +97,7 @@ FABRIC.SceneGraph.registerNodeType('Particles',
       // and we will calculate the front buffer this update.
       particlesNode.getAttributesDGNode().bindings.append(scene.constructOperator({
         operatorName: 'copyCurrentFrameDataToPrevFrameData',
-        srcFile: '../../../SceneGraph/Resources//KL/spatialHashTable.kl',
+        srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/spatialHashTable.kl',
         entryFunctionName: 'copyCurrentFrameDataToPrevFrameData',
         parameterBinding: [
           'self.positions',
@@ -113,7 +113,7 @@ FABRIC.SceneGraph.registerNodeType('Particles',
       // is single threaded and should be the last to execute.
       particlesNode.getAttributesDGNode().bindings.append(scene.constructOperator({
         operatorName: 'populateHashTable',
-        srcFile: '../../../SceneGraph/Resources//KL/spatialHashTable.kl',
+        srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/spatialHashTable.kl',
         entryFunctionName: 'populateHashTable',
         parameterBinding: [
           'hashtable.hashtable',
@@ -141,7 +141,7 @@ FABRIC.SceneGraph.registerNodeType('Flock',
     flockNode.pub.addVertexAttributeValue('neighborDistances', 'Scalar[]');
     flockNode.getAttributesDGNode().bindings.append(scene.constructOperator({
       operatorName: 'simulateParticles',
-      srcFile: '../../../SceneGraph/Resources//KL/flocking.kl',
+      srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/flocking.kl',
       entryFunctionName: 'simulateParticles',
       parameterBinding: [
         'self.index',

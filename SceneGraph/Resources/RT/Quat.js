@@ -442,6 +442,6 @@ FABRIC.appendOnCreateContextCallback(function(context) {
       v: 'Vec3', w: 'Scalar'
     },
     constructor: FABRIC.RT.Quat,
-    kBindings: FABRIC.loadResourceURL('../../../SceneGraph/Resources//RT/Quat.kl')
+    kBindings: FABRIC.loadResourceURL('FABRIC_ROOT/SceneGraph/Resources/RT/Quat.kl')
   });
 });

@@ -174,7 +174,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('FKHierarchySolver',
       var opBindings = scene.getPrivateInterface(rigNode).getDGNode().bindings;
       opBindings.insert(scene.constructOperator({
           operatorName: 'solveFKHierarchy',
-          srcFile: '../../../SceneGraph/Resources//KL/solveFKHierarchy.kl',
+          srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/solveFKHierarchy.kl',
           entryFunctionName: 'solveFKHierarchy',
           parameterBinding: solver.setParameterBinding([
             'self.pose',
@@ -227,7 +227,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('ReferencePoseSolver',
       var opBindings = scene.getPrivateInterface(rigNode).getDGNode().bindings;
       opBindings.insert(scene.constructOperator({
           operatorName: 'solveReferencePose',
-          srcFile: '../../../SceneGraph/Resources//KL/solveReferencePose.kl',
+          srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/solveReferencePose.kl',
           entryFunctionName: 'solveReferencePose',
           parameterBinding: solver.setParameterBinding([
             'self.pose',
@@ -303,7 +303,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('FKChainSolver',
       var opBindings = rigNode.getDGNode().bindings;
       opBindings.insert(scene.constructOperator({
           operatorName: 'solveChain',
-          srcFile: '../../../SceneGraph/Resources//KL/solveFKHierarchy.kl',
+          srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/solveFKHierarchy.kl',
           entryFunctionName: 'solveChain',
           parameterBinding: solver.setParameterBinding([
             'self.pose',
@@ -385,7 +385,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('RootBoneSolver',
       var opBindings = rigNode.getDGNode().bindings;
       opBindings.insert(scene.constructOperator({
           operatorName: 'solveFKBone',
-          srcFile: '../../../SceneGraph/Resources//KL/solveFKHierarchy.kl',
+          srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/solveFKHierarchy.kl',
           entryFunctionName: 'solveFKBone',
           parameterBinding: solver.setParameterBinding([
             'self.pose',
@@ -503,7 +503,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('IK2BoneSolver',
       var opBindings = rigNode.getDGNode().bindings;
       opBindings.insert(scene.constructOperator({
           operatorName: 'solveIK2Bone',
-          srcFile: '../../../SceneGraph/Resources//KL/solveIK2Bone.kl',
+          srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/solveIK2Bone.kl',
           entryFunctionName: 'solveIK2Bone',
           parameterBinding: solver.setParameterBinding([
             'self.pose',
@@ -607,7 +607,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('SpineSolver',
       var opBindings = rigNode.getDGNode().bindings;
       opBindings.insert(scene.constructOperator({
           operatorName: 'solveSpine',
-          srcFile: '../../../SceneGraph/Resources//KL/solveSpine.kl',
+          srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/solveSpine.kl',
           entryFunctionName: 'solveSpine',
           parameterBinding: solver.setParameterBinding([
             'self.pose',
@@ -761,7 +761,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('TwistBoneSolver',
       var opBindings = rigNode.getDGNode().bindings;
       opBindings.insert(scene.constructOperator({
           operatorName: 'solveTwistBones',
-          srcFile: '../../../SceneGraph/Resources//KL/solveTwistBones.kl',
+          srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/solveTwistBones.kl',
           entryFunctionName: 'solveTwistBones',
           parameterBinding: [
             'self.pose',
@@ -832,7 +832,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('BlendBoneSolver',
       var opBindings = rigNode.getDGNode().bindings;
       opBindings.insert(scene.constructOperator({
           operatorName: 'solveBlendBones',
-          srcFile: '../../../SceneGraph/Resources//KL/solveTwistBones.kl',
+          srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/solveTwistBones.kl',
           entryFunctionName: 'solveBlendBones',
           parameterBinding: [
             'self.pose',
@@ -904,7 +904,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('FishingRodSolver',
       var opBindings = rigNode.getDGNode().bindings;
       opBindings.insert(scene.constructOperator({
           operatorName: 'solveFishingRod',
-          srcFile: '../../../SceneGraph/Resources//KL/solveFishingRod.kl',
+          srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/solveFishingRod.kl',
           entryFunctionName: 'fishingRodOp',
           parameterBinding: solver.setParameterBinding([
             'self.pose',
@@ -980,7 +980,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('NCFIKSolver',
       var opBindings = rigNode.getDGNode().bindings;
       opBindings.insert(scene.constructOperator({
           operatorName: 'solveNCFIK',
-          srcFile: '../../../SceneGraph/Resources//KL/solveNCFIK.kl',
+          srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/solveNCFIK.kl',
           entryFunctionName: 'solveNCFIK',
           parameterBinding: solver.setParameterBinding([
             'self.pose',
@@ -1072,7 +1072,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('ArmSolver',
       var opBindings = rigNode.getDGNode().bindings;
       opBindings.insert(scene.constructOperator({
           operatorName: 'solveArmRig',
-          srcFile: '../../../SceneGraph/Resources//KL/solveLimbIK.kl',
+          srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/solveLimbIK.kl',
           entryFunctionName: 'solveArmRig',
           parameterBinding: solver.setParameterBinding([
             'self.pose',
@@ -1201,7 +1201,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('LegSolver',
       var opBindings = rigNode.getDGNode().bindings;
       opBindings.insert(scene.constructOperator({
           operatorName: 'solveLegRig',
-          srcFile: '../../../SceneGraph/Resources//KL/solveLimbIK.kl',
+          srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/solveLimbIK.kl',
           entryFunctionName: 'solveLegRig',
           parameterBinding: solver.setParameterBinding([
             'self.pose',

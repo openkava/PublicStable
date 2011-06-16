@@ -48,7 +48,7 @@ FABRIC.SceneGraph.registerNodeType('Cross',
     crossNode.setGeneratorOps([
       scene.constructOperator({
         operatorName: 'generateCross',
-        srcFile: '../../../SceneGraph/Resources//KL/generateCross.kl',
+        srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/generateCross.kl',
         entryFunctionName: 'generateCross',
         parameterBinding: [
           'self.positions[]',
@@ -75,7 +75,7 @@ FABRIC.SceneGraph.registerNodeType('Rectangle',
     rectangleNode.setGeneratorOps([
       scene.constructOperator({
         operatorName: 'generateRectangle',
-        srcFile: '../../../SceneGraph/Resources//KL/generateRectangle.kl',
+        srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/generateRectangle.kl',
         entryFunctionName: 'generateRectangle',
         parameterBinding: [
           'self.positions[]',
@@ -104,7 +104,7 @@ FABRIC.SceneGraph.registerNodeType('BoundingBox',
     boundingBoxNode.setGeneratorOps([
       scene.constructOperator({
         operatorName: 'generateBoundingBox',
-        srcFile: '../../../SceneGraph/Resources//KL/generateBoundingBox.kl',
+        srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/generateBoundingBox.kl',
         entryFunctionName: 'generateBoundingBox',
         parameterBinding: [
           'self.positions[]',
@@ -140,7 +140,7 @@ FABRIC.SceneGraph.registerNodeType('Grid',
     gridNode.setGeneratorOps([
       scene.constructOperator({
         operatorName: 'setGridVertexCount',
-        srcFile: '../../../SceneGraph/Resources//KL/generateGrid.kl',
+        srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/generateGrid.kl',
         entryFunctionName: 'setGridVertexCount',
         parameterBinding: [
           'uniforms.sections_x',
@@ -151,7 +151,7 @@ FABRIC.SceneGraph.registerNodeType('Grid',
       }),
       scene.constructOperator({
         operatorName: 'generateGrid',
-        srcFile: '../../../SceneGraph/Resources//KL/generateGrid.kl',
+        srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/generateGrid.kl',
         entryFunctionName: 'generateGrid',
         parameterBinding: [
           'self.positions[]',
@@ -181,7 +181,7 @@ FABRIC.SceneGraph.registerNodeType('Axes',
     axesNode.setGeneratorOps([
       scene.constructOperator({
         operatorName: 'setAxesVertexCount',
-        srcFile: '../../../SceneGraph/Resources//KL/generateAxes.kl',
+        srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/generateAxes.kl',
         entryFunctionName: 'setAxesVertexCount',
         parameterBinding: [
           'self.newCount'
@@ -189,7 +189,7 @@ FABRIC.SceneGraph.registerNodeType('Axes',
       }),
       scene.constructOperator({
         operatorName: 'generateAxes',
-        srcFile: '../../../SceneGraph/Resources//KL/generateAxes.kl',
+        srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/generateAxes.kl',
         entryFunctionName: 'generateAxes',
         parameterBinding: [
           'self.positions[]',
@@ -224,7 +224,7 @@ FABRIC.SceneGraph.registerNodeType('Circle',
     circleNode.setGeneratorOps([
       scene.constructOperator({
         operatorName: 'setCircleVertexCount',
-        srcFile: '../../../SceneGraph/Resources//KL/generateCircle.kl',
+        srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/generateCircle.kl',
         entryFunctionName: 'setCircleVertexCount',
         parameterBinding: [
           'uniforms.numSegments',
@@ -233,7 +233,7 @@ FABRIC.SceneGraph.registerNodeType('Circle',
       }),
       scene.constructOperator({
         operatorName: 'generateCircle',
-        srcFile: '../../../SceneGraph/Resources//KL/generateCircle.kl',
+        srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/generateCircle.kl',
         entryFunctionName: 'generateCircle',
         parameterBinding: [
           'self.positions[]',
@@ -275,7 +275,7 @@ FABRIC.SceneGraph.registerNodeType('Plane',
     planeNode.setGeneratorOps([
       scene.constructOperator({
         operatorName: 'setPlaneVertexCount',
-        srcFile: '../../../SceneGraph/Resources//KL/generatePlane.kl',
+        srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/generatePlane.kl',
         entryFunctionName: 'setPlaneVertexCount',
         parameterBinding: [
           'uniforms.lengthSections',
@@ -285,7 +285,7 @@ FABRIC.SceneGraph.registerNodeType('Plane',
       }),
       scene.constructOperator({
         operatorName: 'generatePlane',
-        srcFile: '../../../SceneGraph/Resources//KL/generatePlane.kl',
+        srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/generatePlane.kl',
         entryFunctionName: 'generatePlane',
         parameterBinding: [
           'uniforms.indices',
@@ -332,7 +332,7 @@ FABRIC.SceneGraph.registerNodeType('Cuboid',
     cubeNode.setGeneratorOps([
       scene.constructOperator({
         operatorName: 'generateCuboid',
-        srcFile: '../../../SceneGraph/Resources//KL/generateCuboid.kl',
+        srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/generateCuboid.kl',
         entryFunctionName: 'generateCuboid',
         parameterBinding: [
           'self.positions[]',
@@ -369,7 +369,7 @@ FABRIC.SceneGraph.registerNodeType('Sphere',
     sphereNode.setGeneratorOps([
       scene.constructOperator({
         operatorName: 'setSphereVertexCount',
-        srcFile: '../../../SceneGraph/Resources//KL/generateSphere.kl',
+        srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/generateSphere.kl',
         entryFunctionName: 'setSphereVertexCount',
         parameterBinding: [
           'uniforms.detail',
@@ -378,7 +378,7 @@ FABRIC.SceneGraph.registerNodeType('Sphere',
       }),
       scene.constructOperator({
         operatorName: 'generateSphere',
-        srcFile: '../../../SceneGraph/Resources//KL/generateSphere.kl',
+        srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/generateSphere.kl',
         entryFunctionName: 'generateSphere',
         parameterBinding: [
           'uniforms.radius',
@@ -417,7 +417,7 @@ FABRIC.SceneGraph.registerNodeType('Torus',
     torusNode.setGeneratorOps([
       scene.constructOperator({
         operatorName: 'setTorusVertexCount',
-        srcFile: '../../../SceneGraph/Resources//KL/generateTorus.kl',
+        srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/generateTorus.kl',
         entryFunctionName: 'setTorusVertexCount',
         parameterBinding: [
           'uniforms.inner_radius',
@@ -428,7 +428,7 @@ FABRIC.SceneGraph.registerNodeType('Torus',
       }),
       scene.constructOperator({
         operatorName: 'generateTorus',
-        srcFile: '../../../SceneGraph/Resources//KL/generateTorus.kl',
+        srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/generateTorus.kl',
         entryFunctionName: 'generateTorus',
         parameterBinding: [
           'uniforms.inner_radius',
@@ -470,7 +470,7 @@ FABRIC.SceneGraph.registerNodeType('Cone',
     coneNode.setGeneratorOps([
       scene.constructOperator({
         operatorName: 'setConeVertexCount',
-        srcFile: '../../../SceneGraph/Resources//KL/generateCone.kl',
+        srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/generateCone.kl',
         entryFunctionName: 'setConeVertexCount',
         parameterBinding: [
           'uniforms.cap',
@@ -480,7 +480,7 @@ FABRIC.SceneGraph.registerNodeType('Cone',
       }),
       scene.constructOperator({
         operatorName: 'generateCone',
-        srcFile: '../../../SceneGraph/Resources//KL/generateCone.kl',
+        srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/generateCone.kl',
         entryFunctionName: 'generateCone',
         parameterBinding: [
           'uniforms.radius',
@@ -523,7 +523,7 @@ FABRIC.SceneGraph.registerNodeType('Cylinder',
     cylinderNode.setGeneratorOps([
       scene.constructOperator({
         operatorName: 'setCylinderVertexCount',
-        srcFile: '../../../SceneGraph/Resources//KL/generateCylinder.kl',
+        srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/generateCylinder.kl',
         entryFunctionName: 'setCylinderVertexCount',
         parameterBinding: [
           'uniforms.caps',
@@ -533,7 +533,7 @@ FABRIC.SceneGraph.registerNodeType('Cylinder',
       }),
       scene.constructOperator({
         operatorName: 'generateCylinder',
-        srcFile: '../../../SceneGraph/Resources//KL/generateCylinder.kl',
+        srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/generateCylinder.kl',
         entryFunctionName: 'generateCylinder',
         parameterBinding: [
           'uniforms.radius',
@@ -571,7 +571,7 @@ FABRIC.SceneGraph.registerNodeType('Teapot',
     teapotNode.setGeneratorOps([
       scene.constructOperator({
         operatorName: 'generateTeapot',
-        srcFile: '../../../SceneGraph/Resources//KL/generateTeapot.kl',
+        srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/generateTeapot.kl',
         entryFunctionName: 'generateTeapot',
         parameterBinding: [
           'uniforms.size',
