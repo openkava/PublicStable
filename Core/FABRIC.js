@@ -56,9 +56,11 @@ FABRIC = (function() {
     document.body.appendChild(embedTag);
 
     var context = bindContextToEmbedTag(embedTag);
-    for (var i = 0; i < onCreateContextCallbacks.length; ++i)
-      onCreateContextCallbacks[i](context);
-
+    if(!contextID){
+      // only fire the callbacks if a new context is being created.
+      for (var i = 0; i < onCreateContextCallbacks.length; ++i)
+        onCreateContextCallbacks[i](context);
+    }
     contextIDs.push(context.getContextID());
 
     context.createWindow = function(element, options) {
