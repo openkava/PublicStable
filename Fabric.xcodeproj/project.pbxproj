@@ -71,6 +71,8 @@
 		DB0F54C913A7C8A50019FBE6 /* FullScreen.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = FullScreen.html; sourceTree = "<group>"; };
 		DB0F54CA13A7C8A50019FBE6 /* OnGeometry.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = OnGeometry.html; sourceTree = "<group>"; };
 		DB1B2EDF13AA8E40008A3950 /* Build.cpp.template */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Build.cpp.template; sourceTree = "<group>"; };
+		DB1B2EF413AA9229008A3950 /* SConscript */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = SConscript; sourceTree = "<group>"; };
+		DB1B2EF513AA9271008A3950 /* SConscript */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = SConscript; sourceTree = "<group>"; };
 		DB39AF9513425B40007026BA /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
 		DB966DC513A5422000616143 /* .gitignore */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 		DB96713E13A5423100616143 /* Config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Config.h; sourceTree = "<group>"; };
@@ -528,7 +530,6 @@
 		DB96735413A5423300616143 /* SConscript */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = SConscript; sourceTree = "<group>"; };
 		DB96735513A5423300616143 /* video.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = video.cpp; sourceTree = "<group>"; };
 		DB96735613A5423300616143 /* SConscript */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = SConscript; sourceTree = "<group>"; };
-		DB96735913A5423300616143 /* .gitignore */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 		DB96735A13A5423300616143 /* build.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = build.sh; sourceTree = "<group>"; };
 		DB967E0013A543F600616143 /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
 		DB967E0113A543F600616143 /* SConstruct */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = SConstruct; sourceTree = "<group>"; };
@@ -1958,6 +1959,7 @@
 		DB96735713A5423300616143 /* Installer */ = {
 			isa = PBXGroup;
 			children = (
+				DB1B2EF413AA9229008A3950 /* SConscript */,
 				DB96735813A5423300616143 /* Darwin */,
 			);
 			path = Installer;
@@ -1966,7 +1968,7 @@
 		DB96735813A5423300616143 /* Darwin */ = {
 			isa = PBXGroup;
 			children = (
-				DB96735913A5423300616143 /* .gitignore */,
+				DB1B2EF513AA9271008A3950 /* SConscript */,
 				DB96735A13A5423300616143 /* build.sh */,
 			);
 			path = Darwin;
@@ -1975,11 +1977,11 @@
 		DB967E0213A543F600616143 /* Test */ = {
 			isa = PBXGroup;
 			children = (
-				DB967E0313A543F600616143 /* Fabric */,
-				DB967E5113A543FD00616143 /* helpers.sh */,
-				DB967E5213A543FD00616143 /* KL */,
 				DB967F5E13A5440A00616143 /* Makefile */,
+				DB967E5113A543FD00616143 /* helpers.sh */,
 				DB967F5F13A5440A00616143 /* valgrind.suppressions.linux */,
+				DB967E0313A543F600616143 /* Fabric */,
+				DB967E5213A543FD00616143 /* KL */,
 			);
 			path = Test;
 			sourceTree = "<group>";
@@ -2381,8 +2383,8 @@
 		DB96842313A5445100616143 /* Tools */ = {
 			isa = PBXGroup;
 			children = (
-				DB96842413A5445100616143 /* KL */,
 				DB96842713A5445100616143 /* SConscript */,
+				DB96842413A5445100616143 /* KL */,
 			);
 			path = Tools;
 			sourceTree = "<group>";

@@ -15,7 +15,7 @@ if buildArch != 'x86_64':
 
 npapiPlugin = npapiEnv.LoadableModule( 'FabricNPAPI', npapiSources )
 
-npapiPluginBundleDir = Dir( os.path.join( npapiDistDir, 'Fabric.'+npapiEnv['FABRIC_BUILD_ARCH']+'.plugin' ) )
+npapiPluginBundleDir = npapiDistDir.Dir( 'Fabric.'+npapiEnv['FABRIC_BUILD_ARCH']+'.plugin' )
 npapiPluginBundleContentsDir = npapiPluginBundleDir.Dir('Contents')
 
 npapiPluginBundleBinary = npapiPluginBundleContentsDir.File( 'MacOS/FabricNPAPI' )

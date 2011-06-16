@@ -1,0 +1,28 @@
+<pkmkdoc spec="1.12">
+  <properties>
+    <title>Fabric NPAPI Plugin (32 Bit)</title>
+    <build>/Users/pzion/Fabric/Native/dist/Darwin/i386/Debug/Fabric NPAPI Plugin (32 Bit).pkg</build>
+    <organization>com.fabric-engine</organization>
+    <userSees ui="easy"/>
+    <min-target os="3"/>
+    <domain system="true" user="true"/>
+  </properties>
+  <distribution>
+    <versions min-spec="1.000000"/>
+    <scripts></scripts>
+  </distribution>
+  <contents>
+    <choice title="Fabric NPAPI Plugin" id="choice4" starts_selected="true" starts_enabled="true" starts_hidden="false">
+      <pkgref id="com.fabric-engine.fabricNpapiPlugin32Bit.pkg"/>
+    </choice>
+  </contents>
+  <resources bg-scale="none" bg-align="topleft">
+    <locale lang="en"/>
+  </resources>
+  <flags/>
+  <item type="file">01fabric.xml</item>
+  <mod>properties.title</mod>
+  <mod>properties.userDomain</mod>
+  <mod>properties.anywhereDomain</mod>
+  <mod>properties.systemDomain</mod>
+</pkmkdoc>
