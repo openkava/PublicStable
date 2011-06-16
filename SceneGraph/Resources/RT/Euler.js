@@ -3,8 +3,8 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
-if (!FABRIC.Math.Quat) {
-  throw ('FABRIC.Math.Quat.js must be loaded first');
+if (!FABRIC.RT.Quat) {
+  throw ('FABRIC.RT.Quat.js must be loaded first');
   }
 
 /**
@@ -12,7 +12,7 @@ if (!FABRIC.Math.Quat) {
  * @param {object} ro The object to validate.
  * @return {boolean} True if the given object is a valid rotation order.
  */
-FABRIC.Math.isRotationOrder = function(ro) {
+FABRIC.RT.isRotationOrder = function(ro) {
   return typeof ro === 'object' && typeof ro.order === 'number' && ro.order >= 0 && ro.order <= 5;
 };
 
@@ -21,7 +21,7 @@ FABRIC.Math.isRotationOrder = function(ro) {
  * @constructor
  * @param {string / number} order The rotation order to use.
  */
-FABRIC.Math.RotationOrder = function(order) {
+FABRIC.RT.RotationOrder = function(order) {
   if (typeof order === 'number') {
     this.order = parseInt(order);
     if (this.order < 0 || this.order > 5)
@@ -44,7 +44,7 @@ FABRIC.Math.RotationOrder = function(order) {
     throw'RotationOrder: invalid arguments';
   };
 
-FABRIC.Math.RotationOrder.prototype = {
+FABRIC.RT.RotationOrder.prototype = {
   isXYZ: function() {
     return this.order == 0;
   },
@@ -68,7 +68,7 @@ FABRIC.Math.RotationOrder.prototype = {
     return this.isXZY() || this.isZYX() || this.isYXZ();
   },
   clone: function() {
-    return (new FABRIC.Math.RotationOrder(this.order));
+    return (new FABRIC.RT.RotationOrder(this.order));
   },
   toString: function() {
     var o = '<undefined>';
@@ -81,7 +81,7 @@ FABRIC.Math.RotationOrder.prototype = {
       return this.getType() + '(' + o + ')';
   },
   getType: function() {
-    return 'FABRIC.Math.RotationOrder';
+    return 'FABRIC.RT.RotationOrder';
   }
 };
 
@@ -90,8 +90,8 @@ FABRIC.appendOnCreateContextCallback(function(context) {
     members: {
       order: 'Integer'
     },
-    constructor: FABRIC.Math.RotationOrder,
-    kBindings: FABRIC.loadResourceURL('../../../SceneGraph/Resources//RT/RotationOrder.kl')
+    constructor: FABRIC.RT.RotationOrder,
+    kBindings: FABRIC.loadResourceURL('FABRIC_ROOT/SceneGraph/Resources/RT/RotationOrder.kl')
   });
 });
 
@@ -100,7 +100,7 @@ FABRIC.appendOnCreateContextCallback(function(context) {
  * @param {object} euler The object to validate.
  * @return {boolean} True if the given object is a valid euler rotation.
  */
-FABRIC.Math.isEuler = function(euler) {
+FABRIC.RT.isEuler = function(euler) {
   return typeof euler === 'object' &&
     'x' in euler &&
     typeof euler.x === 'number' &&
@@ -109,7 +109,7 @@ FABRIC.Math.isEuler = function(euler) {
     'z' in euler &&
     typeof euler.z === 'number' &&
     'order' in euler &&
-    FABRIC.Math.isRotationOrder(order);
+    FABRIC.RT.isRotationOrder(order);
 };
 
 /**
@@ -120,37 +120,37 @@ FABRIC.Math.isEuler = function(euler) {
  * @param {number} z The z angle rotation.
  * @param {object} ro The rotation order for this rotation.
  */
-FABRIC.Math.Euler = function(x, y, z, ro) {
+FABRIC.RT.Euler = function(x, y, z, ro) {
   if (typeof x === 'number' && typeof y === 'number' && typeof z == 'number') {
     this.x = x;
     this.y = y;
     this.z = z;
-    if (FABRIC.Math.isRotationOrder(ro))
+    if (FABRIC.RT.isRotationOrder(ro))
       this.ro = ro.clone();
     else
-      this.ro = new FABRIC.Math.RotationOrder(ro);
+      this.ro = new FABRIC.RT.RotationOrder(ro);
   }
-  else if (FABRIC.Math.isVec3(x) && z === undefined && ro === undefined) {
+  else if (FABRIC.RT.isVec3(x) && z === undefined && ro === undefined) {
     this.x = x.x;
     this.y = x.y;
     this.z = x.z;
-    if (FABRIC.Math.isRotationOrder(y))
+    if (FABRIC.RT.isRotationOrder(y))
       this.ro = y.clone();
     else
-      this.ro = new FABRIC.Math.RotationOrder(y);
+      this.ro = new FABRIC.RT.RotationOrder(y);
   }
   else if (x === undefined && y === undefined && z === undefined) {
     this.x = this.y = this.z = 0.0;
-    if (FABRIC.Math.isRotationOrder(ro))
+    if (FABRIC.RT.isRotationOrder(ro))
       this.ro = ro.clone();
     else
-      this.ro = new FABRIC.Math.RotationOrder(ro);
+      this.ro = new FABRIC.RT.RotationOrder(ro);
   }
   else
     throw'new Euler: invalid arguments';
 
     // [hi Remove when binding order has been fixed]
-  this.dummy = new FABRIC.Math.Quat();
+  this.dummy = new FABRIC.RT.Quat();
 };
 
 /**
@@ -161,11 +161,11 @@ FABRIC.Math.Euler = function(x, y, z, ro) {
  * @param {object} order The rotation order for this rotation.
  * @return {object} the euler rotation object.
  */
-FABRIC.Math.euler = function(x, y, z, order) {
-  return new FABRIC.Math.Euler(x, y, z, order);
+FABRIC.RT.euler = function(x, y, z, order) {
+  return new FABRIC.RT.Euler(x, y, z, order);
 };
 
-FABRIC.Math.Euler.prototype = {
+FABRIC.RT.Euler.prototype = {
   setAngles: function(x, y, z) {
     return this.x = parseFloat(x); this.y = parseFloat(y); this.z = parseFloat(z);
   },
@@ -184,7 +184,7 @@ FABRIC.Math.Euler.prototype = {
     ak = cj * cs - sj * sc;
     if (this.ro.isReversed())
       aj = - aj;
-    var r = new FABRIC.Math.Quat();
+    var r = new FABRIC.RT.Quat();
     r.w = cj * cc + sj * ss;
 
     if (this.ro.isXYZ()) {
@@ -209,27 +209,27 @@ FABRIC.Math.Euler.prototype = {
     return r;
   },
   setRotationOrder: function(ro) {
-    this.ro = new FABRIC.Math.RotationOrder(ro);
+    this.ro = new FABRIC.RT.RotationOrder(ro);
   },
   // Returns true if the vector is equal to the argument
   eql: function(e) {
-    return FABRIC.Math.isEuler(e) &&
-      (Math.abs(this.x - e.x) < FABRIC.Math.precision) &&
-      (Math.abs(this.y - e.y) < FABRIC.Math.precision) &&
-      (Math.abs(this.z - e.z) < FABRIC.Math.precision) &&
+    return FABRIC.RT.isEuler(e) &&
+      (Math.abs(this.x - e.x) < FABRIC.RT.precision) &&
+      (Math.abs(this.y - e.y) < FABRIC.RT.precision) &&
+      (Math.abs(this.z - e.z) < FABRIC.RT.precision) &&
       (this.ro.order == e.ro.order);
   },
 
   // Returns a copy of the vector
   clone: function() {
-    return (new FABRIC.Math.Euler(this.x, this.y, this.z, this.ro));
+    return (new FABRIC.RT.Euler(this.x, this.y, this.z, this.ro));
   },
 
   toString: function() {
     return this.getType() + '(' + this.x + ',' + this.y + ',' + this.z + ',' + this.ro.toString() + ')';
   },
   getType: function() {
-    return 'FABRIC.Math.Euler';
+    return 'FABRIC.RT.Euler';
   },
   displayGUI: function($parentDiv, changeHandlerFn) {
     var val = this;
@@ -266,7 +266,7 @@ FABRIC.appendOnCreateContextCallback(function(context) {
     members: {
       x: 'Scalar', y: 'Scalar', z: 'Scalar', ro: 'RotationOrder', dummy: 'Quat'
     },
-    constructor: FABRIC.Math.Euler,
-    kBindings: FABRIC.loadResourceURL('../../../SceneGraph/Resources//RT/Euler.kl')
+    constructor: FABRIC.RT.Euler,
+    kBindings: FABRIC.loadResourceURL('FABRIC_ROOT/SceneGraph/Resources/RT/Euler.kl')
   });
 });

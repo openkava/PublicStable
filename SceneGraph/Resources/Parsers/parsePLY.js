@@ -64,8 +64,8 @@ FABRIC.SceneGraph.registerParser("ply", function(scene, assetFile, options ) {
           while (lineNumber < (lines.length-1)) {
             var line = lines[ lineNumber ].replace(/^\s+|\s+$/g, '').replace(/#.*/, '');
             items = line.split(' ');
-            var pos = FABRIC.Math.vec3(parseFloat(items[0]), parseFloat(items[1]), parseFloat(items[2]));
-            var color = FABRIC.Math.rgb255(parseFloat(items[6]), parseFloat(items[7]), parseFloat(items[8]));
+            var pos = FABRIC.RT.vec3(parseFloat(items[0]), parseFloat(items[1]), parseFloat(items[2]));
+            var color = FABRIC.RT.rgb255(parseFloat(items[6]), parseFloat(items[7]), parseFloat(items[8]));
             pos = options.xfo.ori.rotateVector(pos);
             pos.mulInPlace(options.xfo.sc);
             pos.addInPlace(options.xfo.tr);

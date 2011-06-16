@@ -8,67 +8,67 @@
  * @param {object} value The object to validate.
  * @return {boolean} True if the given object is a valid matrix44.
  */
-FABRIC.Math.isMat44 = function(value) {
+FABRIC.RT.isMat44 = function(value) {
   return typeof value === 'object' &&
     'row0' in value &&
-    FABRIC.Math.isVec4(value.row0) &&
+    FABRIC.RT.isVec4(value.row0) &&
     'row1' in value &&
-    FABRIC.Math.isVec4(value.row1) &&
+    FABRIC.RT.isVec4(value.row1) &&
     'row2' in value &&
-    FABRIC.Math.isVec4(value.row2) &&
+    FABRIC.RT.isVec4(value.row2) &&
     'row3' in value &&
-    FABRIC.Math.isVec4(value.row3);
+    FABRIC.RT.isVec4(value.row3);
 };
 
 /**
  * Constructor for a matrix44 object.
  * @constructor
  */
-FABRIC.Math.Mat44 = function() {
+FABRIC.RT.Mat44 = function() {
   if (arguments.length == 4 &&
-      FABRIC.Math.isVec4(arguments[0]) &&
-      FABRIC.Math.isVec4(arguments[1]) &&
-      FABRIC.Math.isVec4(arguments[2]) &&
-      FABRIC.Math.isVec4(arguments[3])) {
+      FABRIC.RT.isVec4(arguments[0]) &&
+      FABRIC.RT.isVec4(arguments[1]) &&
+      FABRIC.RT.isVec4(arguments[2]) &&
+      FABRIC.RT.isVec4(arguments[3])) {
     this.row0 = arguments[0].clone();
     this.row1 = arguments[1].clone();
     this.row2 = arguments[2].clone();
     this.row3 = arguments[3].clone();
   }
   else if (arguments.length = 16 &&
-      FABRIC.Math.isScalar(arguments[0]) &&
-      FABRIC.Math.isScalar(arguments[1]) &&
-      FABRIC.Math.isScalar(arguments[2]) &&
-      FABRIC.Math.isScalar(arguments[3]) &&
-      FABRIC.Math.isScalar(arguments[4]) &&
-      FABRIC.Math.isScalar(arguments[5]) &&
-      FABRIC.Math.isScalar(arguments[6]) &&
-      FABRIC.Math.isScalar(arguments[7]) &&
-      FABRIC.Math.isScalar(arguments[8]) &&
-      FABRIC.Math.isScalar(arguments[9]) &&
-      FABRIC.Math.isScalar(arguments[10]) &&
-      FABRIC.Math.isScalar(arguments[11]) &&
-      FABRIC.Math.isScalar(arguments[12]) &&
-      FABRIC.Math.isScalar(arguments[13]) &&
-      FABRIC.Math.isScalar(arguments[14]) &&
-      FABRIC.Math.isScalar(arguments[15])) {
-    this.row0 = new FABRIC.Math.Vec4(arguments[0], arguments[1], arguments[2], arguments[3]);
-    this.row1 = new FABRIC.Math.Vec4(arguments[4], arguments[5], arguments[6], arguments[7]);
-    this.row2 = new FABRIC.Math.Vec4(arguments[8], arguments[9], arguments[10], arguments[11]);
-    this.row3 = new FABRIC.Math.Vec4(arguments[12], arguments[13], arguments[14], arguments[15]);
+      FABRIC.RT.isScalar(arguments[0]) &&
+      FABRIC.RT.isScalar(arguments[1]) &&
+      FABRIC.RT.isScalar(arguments[2]) &&
+      FABRIC.RT.isScalar(arguments[3]) &&
+      FABRIC.RT.isScalar(arguments[4]) &&
+      FABRIC.RT.isScalar(arguments[5]) &&
+      FABRIC.RT.isScalar(arguments[6]) &&
+      FABRIC.RT.isScalar(arguments[7]) &&
+      FABRIC.RT.isScalar(arguments[8]) &&
+      FABRIC.RT.isScalar(arguments[9]) &&
+      FABRIC.RT.isScalar(arguments[10]) &&
+      FABRIC.RT.isScalar(arguments[11]) &&
+      FABRIC.RT.isScalar(arguments[12]) &&
+      FABRIC.RT.isScalar(arguments[13]) &&
+      FABRIC.RT.isScalar(arguments[14]) &&
+      FABRIC.RT.isScalar(arguments[15])) {
+    this.row0 = new FABRIC.RT.Vec4(arguments[0], arguments[1], arguments[2], arguments[3]);
+    this.row1 = new FABRIC.RT.Vec4(arguments[4], arguments[5], arguments[6], arguments[7]);
+    this.row2 = new FABRIC.RT.Vec4(arguments[8], arguments[9], arguments[10], arguments[11]);
+    this.row3 = new FABRIC.RT.Vec4(arguments[12], arguments[13], arguments[14], arguments[15]);
   }
   else if (arguments.length == 1 &&
-      FABRIC.Math.isMat44(arguments[0])) {
+      FABRIC.RT.isMat44(arguments[0])) {
     this.row0 = arguments[0].row0.clone();
     this.row1 = arguments[0].row1.clone();
     this.row2 = arguments[0].row2.clone();
     this.row3 = arguments[0].row3.clone();
   }
   else if (arguments.length == 0) {
-    this.row0 = FABRIC.Math.Vec4.xAxis.clone();
-    this.row1 = FABRIC.Math.Vec4.yAxis.clone();
-    this.row2 = FABRIC.Math.Vec4.zAxis.clone();
-    this.row3 = FABRIC.Math.Vec4.tAxis.clone();
+    this.row0 = FABRIC.RT.Vec4.xAxis.clone();
+    this.row1 = FABRIC.RT.Vec4.yAxis.clone();
+    this.row2 = FABRIC.RT.Vec4.zAxis.clone();
+    this.row3 = FABRIC.RT.Vec4.tAxis.clone();
   }
   else throw'new Mat44: invalid arguments';
   };
@@ -81,13 +81,13 @@ FABRIC.Math.Mat44 = function() {
  * @param {object} row3 The fourth row of the matrix44 as a Vec4 object.
  * @return {object} The matrix44 object.
  */
-FABRIC.Math.mat44 = function(row0, row1, row2, row3) {
-  return new FABRIC.Math.Mat44(row0, row1, row2, row3);
+FABRIC.RT.mat44 = function(row0, row1, row2, row3) {
+  return new FABRIC.RT.Mat44(row0, row1, row2, row3);
 };
 
-FABRIC.Math.Mat44.prototype = {
+FABRIC.RT.Mat44.prototype = {
   eql: function(that) {
-    return FABRIC.Math.isMat44(that) &&
+    return FABRIC.RT.isMat44(that) &&
       this.row0.eql(that.row0) &&
       this.row1.eql(that.row1) &&
       this.row2.eql(that.row2) &&
@@ -97,28 +97,28 @@ FABRIC.Math.Mat44.prototype = {
   // PT - Note: Everywhere else in our math library we use 'multiply'.
   // Why is it so hard to follow a convention??
   mul: function(that) {
-    if (FABRIC.Math.isScalar(that)) {
-      return new FABRIC.Math.Mat44(
+    if (FABRIC.RT.isScalar(that)) {
+      return new FABRIC.RT.Mat44(
         this.row0.multiply(that),
         this.row1.multiply(that),
         this.row2.multiply(that),
         this.row3.multiply(that)
       );
     }
-    else if (FABRIC.Math.isVec4(that)) {
-      return new FABRIC.Math.Vec4(
+    else if (FABRIC.RT.isVec4(that)) {
+      return new FABRIC.RT.Vec4(
         this.row0.dot(that),
         this.row1.dot(that),
         this.row2.dot(that),
         this.row3.dot(that)
       );
     }
-    else if (FABRIC.Math.isVec3(that)) {
-      var temp = this.mul(FABRIC.Math.vec4(that.x, that.y, that.z, 1.0));
-      return FABRIC.Math.vec3(temp.x / temp.t, temp.y / temp.t, temp.z / temp.t);
+    else if (FABRIC.RT.isVec3(that)) {
+      var temp = this.mul(FABRIC.RT.vec4(that.x, that.y, that.z, 1.0));
+      return FABRIC.RT.vec3(temp.x / temp.t, temp.y / temp.t, temp.z / temp.t);
     }
-    else if (FABRIC.Math.isMat44(that)) {
-      return new FABRIC.Math.Mat44(
+    else if (FABRIC.RT.isMat44(that)) {
+      return new FABRIC.RT.Mat44(
         this.row0.x * that.row0.x + this.row0.y * that.row1.x + this.row0.z * that.row2.x + this.row0.t * that.row3.x,
         this.row0.x * that.row0.y + this.row0.y * that.row1.y + this.row0.z * that.row2.y + this.row0.t * that.row3.y,
         this.row0.x * that.row0.z + this.row0.y * that.row1.z + this.row0.z * that.row2.z + this.row0.t * that.row3.z,
@@ -145,7 +145,7 @@ FABRIC.Math.Mat44.prototype = {
       }
   },
   transpose: function() {
-    var r = new FABRIC.Math.Mat44();
+    var r = new FABRIC.RT.Mat44();
     r.row0.x = this.row0.x; r.row1.x = this.row0.y; r.row2.x = this.row0.z; r.row3.x = this.row0.t;
     r.row0.y = this.row1.x; r.row1.y = this.row1.y; r.row2.y = this.row1.z; r.row3.y = this.row1.t;
     r.row0.z = this.row2.x; r.row1.z = this.row2.y; r.row2.z = this.row2.z; r.row3.z = this.row2.t;
@@ -171,7 +171,7 @@ FABRIC.Math.Mat44.prototype = {
     // Compute the determinant of the matrix.
     var det = this.det();
 
-    var result = new FABRIC.Math.Mat44();
+    var result = new FABRIC.RT.Mat44();
 
     if (Math.abs(det) < 0.00001) {
       return result;
@@ -211,7 +211,7 @@ FABRIC.Math.Mat44.prototype = {
     return result;
   },
   setDiagonal: function(v) {
-    if (v.getType && v.getType() == 'FABRIC.Math.Vec4') {
+    if (v.getType && v.getType() == 'FABRIC.RT.Vec4') {
       this.row0.x = v.x;
       this.row1.y = v.y;
       this.row2.z = v.z;
@@ -222,14 +222,14 @@ FABRIC.Math.Mat44.prototype = {
     }
   },
   clone: function() {
-    return new FABRIC.Math.Mat44(this);
+    return new FABRIC.RT.Mat44(this);
   },
   toString: function() {
-    return 'FABRIC.Math.mat44(' + this.row0.toString() + ',' + this.row1.toString() + ',' +
+    return 'FABRIC.RT.mat44(' + this.row0.toString() + ',' + this.row1.toString() + ',' +
       this.row2.toString() + ',' + this.row3.toString() + ')';
   },
   getType: function() {
-    return 'FABRIC.Math.Mat44';
+    return 'FABRIC.RT.Mat44';
   },
   displayGUI: function($parentDiv, changeHandlerFn) {
     var val = this;
@@ -258,7 +258,7 @@ FABRIC.appendOnCreateContextCallback(function(context) {
       row2: 'Vec4',
       row3: 'Vec4'
     },
-    constructor: FABRIC.Math.Mat44,
-    kBindings: FABRIC.loadResourceURL('../../../SceneGraph/Resources//RT/Mat44.kl')
+    constructor: FABRIC.RT.Mat44,
+    kBindings: FABRIC.loadResourceURL('FABRIC_ROOT/SceneGraph/Resources/RT/Mat44.kl')
   });
 });

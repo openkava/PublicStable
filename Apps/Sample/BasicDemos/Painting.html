@@ -76,30 +76,30 @@ $(document).ready(function() {
     });
 
   var scene = FABRIC.SceneGraph.createScene();
-  var viewport = scene.constructNode('ViewPort', {
+  var viewport = scene.constructNode('Viewport', {
     windowElement: document.getElementById('FabricContainer'),
-    backgroundColor: FABRIC.Math.rgb(0.3, 0.5, 0.7)
+    backgroundColor: FABRIC.RT.rgb(0.3, 0.5, 0.7)
   });
 
   // Create a camera to draw the scene from
   camera = scene.constructNode('TargetCamera', {
       nearDistance: 0.01,
       farDistance: 5,
-      position: FABRIC.Math.vec3(-0.03, 0.19, 0.21),
-      target: FABRIC.Math.vec3(-0.03, 0.06, -0.03)
+      position: FABRIC.RT.vec3(-0.03, 0.19, 0.21),
+      target: FABRIC.RT.vec3(-0.03, 0.06, -0.03)
     });
 
   scene.constructNode('CameraManipulator', { targetNode: camera });
 
   viewport.setCameraNode(camera);
 
-  var light = scene.constructNode('PointLight', { position: FABRIC.Math.vec3(420.0, 1000.0, 600.0) });
+  var light = scene.constructNode('PointLight', { position: FABRIC.RT.vec3(420.0, 1000.0, 600.0) });
   var material = scene.constructNode('PhongVertexColorMaterial', { lightNode: light });
 
   var assets = scene.importAssetFile('Models/bunny.obj');
   geometry = assets['bunny'];
 
-  geometry.addVertexAttributeValue('vertexColors', 'Color', FABRIC.Math.rgb(0.0, 0.6, 0.0));
+  geometry.addVertexAttributeValue('vertexColors', 'Color', FABRIC.RT.rgb(0.0, 0.6, 0.0));
 
   var instanceNode = scene.constructNode('Instance', { geometryNode: geometry, materialNode: material });
 
@@ -150,13 +150,13 @@ $(document).ready(function() {
     throw (errors.toString());
   }
   else {
-    var brushColor = FABRIC.Math.rgb(0.3, 0.6, 0.8);
+    var brushColor = FABRIC.RT.rgb(0.3, 0.6, 0.8);
     paintManipulator.brushColor = brushColor;
     $('#brushColor').ColorPicker({
         flat: true,
         color: { r: brushColor.r * 255, g: brushColor.g * 255, b: brushColor.b * 255} ,
         onChange: function(hsb, hex, rgb) {
-          paintManipulator.brushColor = FABRIC.Math.rgb255(rgb.r, rgb.g, rgb.b);
+          paintManipulator.brushColor = FABRIC.RT.rgb255(rgb.r, rgb.g, rgb.b);
         }
       });
 

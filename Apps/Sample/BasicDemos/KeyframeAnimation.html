@@ -51,12 +51,12 @@ $(document).ready(function() { var $globalTimeSlider = $('#globalTime').slider({
   $('#curveEditor').button();
 
   var scene = FABRIC.SceneGraph.createScene();
-  var viewport = scene.constructNode('ViewPort', { windowElement: document.getElementById('FabricContainer') });
+  var viewport = scene.constructNode('Viewport', { windowElement: document.getElementById('FabricContainer') });
 
   // Create a camera to draw the scene from
   var camera = scene.constructNode('TargetCamera');
-  camera.position = FABRIC.Math.vec3(271.35863603830336, 321.9770694518089, 480.3632724285126).scale(0.23);
-  camera.target = FABRIC.Math.vec3(0, 0, 0);
+  camera.position = FABRIC.RT.vec3(271.35863603830336, 321.9770694518089, 480.3632724285126).scale(0.23);
+  camera.target = FABRIC.RT.vec3(0, 0, 0);
 
   scene.constructNode('CameraManipulator', { targetNode: camera });
 
@@ -64,14 +64,14 @@ $(document).ready(function() { var $globalTimeSlider = $('#globalTime').slider({
 
   // Scene
   var light = scene.constructNode('PointLight', {
-    position: FABRIC.Math.vec3(420.0, 1000.0, 600.0)
+    position: FABRIC.RT.vec3(420.0, 1000.0, 600.0)
   });
   var redMaterial = scene.constructNode('PhongMaterial', {
-    diffuseColor: FABRIC.Math.rgb(0.8, 0, 0, 1),
+    diffuseColor: FABRIC.RT.rgb(0.8, 0, 0, 1),
     lightNode: light
   });
   var blueMaterial = scene.constructNode('PhongMaterial', {
-    diffuseColor: FABRIC.Math.rgb(0, 0.8, 0, 1),
+    diffuseColor: FABRIC.RT.rgb(0, 0.8, 0, 1),
     lightNode: light
   });
   var cube = scene.constructNode('Cuboid', {
@@ -94,11 +94,11 @@ $(document).ready(function() { var $globalTimeSlider = $('#globalTime').slider({
   linearkeyframeTrackNode.setTrackCount(2);
   var key = FABRIC.Animation.linearKeyframe;
   linearkeyframeTrackNode.setTrackData(1, { name: 'PosX',
-                        color: FABRIC.Math.rgb(1, 0, 0),
+                        color: FABRIC.RT.rgb(1, 0, 0),
                         keys: [key(0, 0), key(10, 20), key(20, -5), key(50, -5), key(75, 50), key(100, 0)]
                       });
   linearkeyframeTrackNode.setTrackData(0, { name: 'PosY',
-                        color: FABRIC.Math.rgb(1, 0, 0),
+                        color: FABRIC.RT.rgb(1, 0, 0),
                         keys: [key(0, 0), key(50, 0), key(75, 20), key(100, 0)]
                       });
 
@@ -107,7 +107,7 @@ $(document).ready(function() { var $globalTimeSlider = $('#globalTime').slider({
     animationTrackNode: linearkeyframeTrackNode
   });
 
-  var xfo = FABRIC.Math.xfo({ tr: FABRIC.Math.vec3(-50, 0, 0) });
+  var xfo = FABRIC.RT.xfo({ tr: FABRIC.RT.vec3(-50, 0, 0) });
   var linearAnimatedTransformNode = scene.constructNode('Transform', {
     hierarchical: false,
     globalXfo: xfo
@@ -128,23 +128,23 @@ $(document).ready(function() { var $globalTimeSlider = $('#globalTime').slider({
   bezierKeyframeTrackNode.setTrackCount(2);
   var key = FABRIC.Animation.bezierKeyframe;
   bezierKeyframeTrackNode.setTrackData(0, { name: 'PosX',
-                        color: FABRIC.Math.rgb(1, 0, 0),
+                        color: FABRIC.RT.rgb(1, 0, 0),
                         keys: [
-                             key(0, -20, null, FABRIC.Math.vec2(3, 0)),
-                            key(10, 0, FABRIC.Math.vec2(-3, 0), FABRIC.Math.vec2(3, 0)),
-                            key(20, 20, FABRIC.Math.vec2(-3, 0), FABRIC.Math.vec2(10, 0)),
-                            key(50, 0, FABRIC.Math.vec2(-10, 0), FABRIC.Math.vec2(7, 0)),
-                            key(75, -20, FABRIC.Math.vec2(-7, 0), null)
+                             key(0, -20, null, FABRIC.RT.vec2(3, 0)),
+                            key(10, 0, FABRIC.RT.vec2(-3, 0), FABRIC.RT.vec2(3, 0)),
+                            key(20, 20, FABRIC.RT.vec2(-3, 0), FABRIC.RT.vec2(10, 0)),
+                            key(50, 0, FABRIC.RT.vec2(-10, 0), FABRIC.RT.vec2(7, 0)),
+                            key(75, -20, FABRIC.RT.vec2(-7, 0), null)
                           ]
                       });
   bezierKeyframeTrackNode.setTrackData(1, { name: 'PosY',
-                        color: FABRIC.Math.rgb(1, 0, 0),
+                        color: FABRIC.RT.rgb(1, 0, 0),
                         keys: [
-                             key(0, 0, null, FABRIC.Math.vec2(3, 0)),
-                            key(10, 20, FABRIC.Math.vec2(-3, 0), FABRIC.Math.vec2(3, 0)),
-                            key(20, 0, FABRIC.Math.vec2(-3, 0), FABRIC.Math.vec2(10, 0)),
-                            key(50, -20, FABRIC.Math.vec2(-10, 0), FABRIC.Math.vec2(7, 0)),
-                            key(75, 0, FABRIC.Math.vec2(-7, 0), null)
+                             key(0, 0, null, FABRIC.RT.vec2(3, 0)),
+                            key(10, 20, FABRIC.RT.vec2(-3, 0), FABRIC.RT.vec2(3, 0)),
+                            key(20, 0, FABRIC.RT.vec2(-3, 0), FABRIC.RT.vec2(10, 0)),
+                            key(50, -20, FABRIC.RT.vec2(-10, 0), FABRIC.RT.vec2(7, 0)),
+                            key(75, 0, FABRIC.RT.vec2(-7, 0), null)
                           ]
                       });
 
@@ -153,7 +153,7 @@ $(document).ready(function() { var $globalTimeSlider = $('#globalTime').slider({
     animationTrackNode: bezierKeyframeTrackNode
   });
 
-  var xfo = FABRIC.Math.xfo({ tr: FABRIC.Math.vec3(0, 0, 0) });
+  var xfo = FABRIC.RT.xfo({ tr: FABRIC.RT.vec3(0, 0, 0) });
   var bezierAnimatedTransformNode = scene.constructNode('Transform', {
     hierarchical: false,
     globalXfo: xfo
@@ -174,22 +174,22 @@ $(document).ready(function() { var $globalTimeSlider = $('#globalTime').slider({
   bezierKeyframeTrackNode.setTrackCount(2);
   var key = FABRIC.Animation.bezierKeyframe;
   bezierKeyframeTrackNode.setTrackData(0, { name: 'EulerX',
-                        color: FABRIC.Math.rgb(1, 0, 0),
+                        color: FABRIC.RT.rgb(1, 0, 0),
                         keys: [
-                          key(0, 0, null, FABRIC.Math.vec2(3, 0)),
-                          key(10, 0, FABRIC.Math.vec2(-3, 0), FABRIC.Math.vec2(3, 0)),
-                          key(20, 2, FABRIC.Math.vec2(-3, 0), FABRIC.Math.vec2(10, 0)),
-                          key(50, 2, FABRIC.Math.vec2(-10, 0), FABRIC.Math.vec2(7, 0)),
-                          key(75, 0, FABRIC.Math.vec2(-7, 0), null)
+                          key(0, 0, null, FABRIC.RT.vec2(3, 0)),
+                          key(10, 0, FABRIC.RT.vec2(-3, 0), FABRIC.RT.vec2(3, 0)),
+                          key(20, 2, FABRIC.RT.vec2(-3, 0), FABRIC.RT.vec2(10, 0)),
+                          key(50, 2, FABRIC.RT.vec2(-10, 0), FABRIC.RT.vec2(7, 0)),
+                          key(75, 0, FABRIC.RT.vec2(-7, 0), null)
                         ]
                       });
   bezierKeyframeTrackNode.setTrackData(1, { name: 'EulerY',
-                        color: FABRIC.Math.rgb(0, 1, 0),
+                        color: FABRIC.RT.rgb(0, 1, 0),
                         keys: [
-                           key(0, 0, null, FABRIC.Math.vec2(3, 0)),
-                          key(20, 0, FABRIC.Math.vec2(-3, 0), FABRIC.Math.vec2(10, 0)),
-                          key(50, -2, FABRIC.Math.vec2(-10, 0), FABRIC.Math.vec2(7, 0)),
-                          key(75, 0, FABRIC.Math.vec2(-7, 0), null)
+                           key(0, 0, null, FABRIC.RT.vec2(3, 0)),
+                          key(20, 0, FABRIC.RT.vec2(-3, 0), FABRIC.RT.vec2(10, 0)),
+                          key(50, -2, FABRIC.RT.vec2(-10, 0), FABRIC.RT.vec2(7, 0)),
+                          key(75, 0, FABRIC.RT.vec2(-7, 0), null)
                         ]
                       });
 
@@ -198,7 +198,7 @@ $(document).ready(function() { var $globalTimeSlider = $('#globalTime').slider({
     animationTrackNode: bezierKeyframeTrackNode
   });
 
-  var xfo = FABRIC.Math.xfo({ tr: FABRIC.Math.vec3(50, 0, 0) });
+  var xfo = FABRIC.RT.xfo({ tr: FABRIC.RT.vec3(50, 0, 0) });
   var bezierAnimatedTransformNode = scene.constructNode('Transform', {
     hierarchical: false,
     globalXfo: xfo

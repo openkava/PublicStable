@@ -8,49 +8,49 @@
  * @param {object} xfo The object to validate.
  * @return {boolean} True if the given object is a valid xfo.
  */
-FABRIC.Math.isXfo = function(xfo) {
+FABRIC.RT.isXfo = function(xfo) {
   return typeof xfo === 'object' &&
-    'ori' in xfo && FABRIC.Math.isQuat(xfo.ori) &&
-    'tr' in xfo && FABRIC.Math.isVec3(xfo.tr) &&
-    'sc' in xfo && FABRIC.Math.isVec3(xfo.sc);
+    'ori' in xfo && FABRIC.RT.isQuat(xfo.ori) &&
+    'tr' in xfo && FABRIC.RT.isVec3(xfo.tr) &&
+    'sc' in xfo && FABRIC.RT.isVec3(xfo.sc);
 };
 
 /**
  * Constructor for a xfo object.
  * @constructor
  */
-FABRIC.Math.Xfo = function() {
+FABRIC.RT.Xfo = function() {
   if (arguments.length == 1 && typeof arguments[0] === 'object') {
     var obj = arguments[0];
-    if (obj.getType && obj.getType() == 'FABRIC.Math.Quat') {
-      console.warn(' Please migrate code to pass an inilialization object. e.g. { ori:FABRIC.Math.Quat(x,x,x,x) }.');
+    if (obj.getType && obj.getType() == 'FABRIC.RT.Quat') {
+      console.warn(' Please migrate code to pass an inilialization object. e.g. { ori:FABRIC.RT.Quat(x,x,x,x) }.');
       this.ori = obj;
-      this.tr = new FABRIC.Math.Vec3(0, 0, 0);
-      this.sc = new FABRIC.Math.Vec3(1, 1, 1);
+      this.tr = new FABRIC.RT.Vec3(0, 0, 0);
+      this.sc = new FABRIC.RT.Vec3(1, 1, 1);
     }
     else {
       if (!obj.ori && !obj.tr && !obj.sc) {
-        throw'Error, you must pass in an inilialization object. e.g. { ori:FABRIC.Math.Quat(x,x,x,x) }.';
+        throw'Error, you must pass in an inilialization object. e.g. { ori:FABRIC.RT.Quat(x,x,x,x) }.';
         }
-      this.ori = obj.ori ? new FABRIC.Math.Quat(obj.ori) : new FABRIC.Math.Quat(0, 0, 0, 1);
-      this.tr = obj.tr ? new FABRIC.Math.Vec3(obj.tr) : new FABRIC.Math.Vec3(0, 0, 0);
-      this.sc = obj.sc ? new FABRIC.Math.Vec3(obj.sc) : new FABRIC.Math.Vec3(1, 1, 1);
+      this.ori = obj.ori ? new FABRIC.RT.Quat(obj.ori) : new FABRIC.RT.Quat(0, 0, 0, 1);
+      this.tr = obj.tr ? new FABRIC.RT.Vec3(obj.tr) : new FABRIC.RT.Vec3(0, 0, 0);
+      this.sc = obj.sc ? new FABRIC.RT.Vec3(obj.sc) : new FABRIC.RT.Vec3(1, 1, 1);
     }
   }
   else {
-    this.ori = (arguments.length > 0 ? arguments[0] : new FABRIC.Math.Quat(0, 0, 0, 1));
-    this.tr = (arguments.length > 1 ? arguments[1] : new FABRIC.Math.Vec3(0, 0, 0));
-    this.sc = (arguments.length > 2 ? arguments[2] : new FABRIC.Math.Vec3(1, 1, 1));
+    this.ori = (arguments.length > 0 ? arguments[0] : new FABRIC.RT.Quat(0, 0, 0, 1));
+    this.tr = (arguments.length > 1 ? arguments[1] : new FABRIC.RT.Vec3(0, 0, 0));
+    this.sc = (arguments.length > 2 ? arguments[2] : new FABRIC.RT.Vec3(1, 1, 1));
   }
 };
 
-FABRIC.Math.Xfo.prototype = {
+FABRIC.RT.Xfo.prototype = {
   setFromMat44: function(m, ro) {
-    if (!FABRIC.Math.isMat44(m))
+    if (!FABRIC.RT.isMat44(m))
       throw'Invalid matrix object for setFromMat44';
 
-      if (!FABRIC.Math.isRotationOrder(ro))
-      ro = new FABRIC.Math.RotationOrder();
+      if (!FABRIC.RT.isRotationOrder(ro))
+      ro = new FABRIC.RT.RotationOrder();
 
     // We're going out on a limb and assuming this is a
     // straight homogenous transformation matrix. No
@@ -59,9 +59,9 @@ FABRIC.Math.Xfo.prototype = {
     this.tr.y = m.row3.y;
     this.tr.z = m.row3.z;
 
-    var row0 = new FABRIC.Math.Vec3(m.row0.x, m.row0.y, m.row0.z);
-    var row1 = new FABRIC.Math.Vec3(m.row1.x, m.row1.y, m.row1.z);
-    var row2 = new FABRIC.Math.Vec3(m.row2.x, m.row2.y, m.row2.z);
+    var row0 = new FABRIC.RT.Vec3(m.row0.x, m.row0.y, m.row0.z);
+    var row1 = new FABRIC.RT.Vec3(m.row1.x, m.row1.y, m.row1.z);
+    var row2 = new FABRIC.RT.Vec3(m.row2.x, m.row2.y, m.row2.z);
 
     // Grab the X scale and normalize the first row
     this.sc.x = row0.norm();
@@ -82,7 +82,7 @@ FABRIC.Math.Xfo.prototype = {
     this.sc.z = row2.norm();
     row2.normalize();
 
-    var rot = new FABRIC.Math.Vec3();
+    var rot = new FABRIC.RT.Vec3();
 
     if (ro.isXYZ()) {
       rot.y = Math.asin(row0.z);
@@ -100,16 +100,16 @@ FABRIC.Math.Xfo.prototype = {
       throw'Xfo.setFromMat44 only implemented for XYZ rotation order';
       }
 
-    var e = new FABRIC.Math.Euler(rot, ro);
+    var e = new FABRIC.RT.Euler(rot, ro);
     this.ori = e.toQuat();
   },
   makeMat44: function() {
-    var scl = FABRIC.Math.mat44(),
-    rot = FABRIC.Math.mat44(),
-    trn = FABRIC.Math.mat44(),
+    var scl = FABRIC.RT.mat44(),
+    rot = FABRIC.RT.mat44(),
+    trn = FABRIC.RT.mat44(),
     q = this.ori;
 
-    scl.setDiagonal(FABRIC.Math.vec4(this.sc.x, this.sc.y, this.sc.z, 1.0));
+    scl.setDiagonal(FABRIC.RT.vec4(this.sc.x, this.sc.y, this.sc.z, 1.0));
 
     // [hi 20110311 this transpose shouldn't be needed but we do]
     rot.row0.x = 1.0 - 2.0 * (q.v.y * q.v.y + q.v.z * q.v.z);
@@ -136,8 +136,8 @@ FABRIC.Math.Xfo.prototype = {
     //  self = scl * rot * trn;
   },
   multiply: function(xf) {
-    if (FABRIC.Math.isXfo(xf)) {
-      var result = new FABRIC.Math.Xfo();
+    if (FABRIC.RT.isXfo(xf)) {
+      var result = new FABRIC.RT.Xfo();
       result.sc = this.sc.multiply(xf.sc);
       result.ori = xf.ori.multiply(this.ori);
       //  result.ori = this.ori.multiply(xf.ori);
@@ -150,8 +150,8 @@ FABRIC.Math.Xfo.prototype = {
       }
   },
   multiplyInv: function(xf) {
-    if (FABRIC.Math.isXfo(xf)) {
-      var result = new FABRIC.Math.Xfo();
+    if (FABRIC.RT.isXfo(xf)) {
+      var result = new FABRIC.RT.Xfo();
       result.tr = xf.tr.subtract(this.tr);
       result.tr = this.sc.invert().multiply(result.tr);
       result.tr = this.ori.invert().rotateVector(result.tr);
@@ -170,31 +170,31 @@ FABRIC.Math.Xfo.prototype = {
     return this.multiplyInv(xf);
   },
   invert: function() {
-    var result = new FABRIC.Math.Xfo();
+    var result = new FABRIC.RT.Xfo();
     result.sc = this.sc.invert();
     result.ori = this.ori.invert();
     result.tr = this.tr.negate();
     return result;
   },
   transform: function(v) {
-    if (FABRIC.Math.isVec3(v)) {
+    if (FABRIC.RT.isVec3(v)) {
       return this.tr.add(this.ori.rotateVector(this.sc.multiply(v)));
     }else {
       throw'Incorrect param type for transform';
       }
   },
   clone: function() {
-    var newXfo = new FABRIC.Math.Xfo;
+    var newXfo = new FABRIC.RT.Xfo;
     newXfo.ori = this.ori.clone();
     newXfo.tr = this.tr.clone();
     newXfo.sc = this.sc.clone();
     return newXfo;
   },
   toString: function() {
-    return 'FABRIC.Math.xfo(' + this.ori.toString() + ',' + this.tr.toString() + ',' + this.sc.toString() + ')';
+    return 'FABRIC.RT.xfo(' + this.ori.toString() + ',' + this.tr.toString() + ',' + this.sc.toString() + ')';
   },
   getType: function() {
-    return 'FABRIC.Math.Xfo';
+    return 'FABRIC.RT.Xfo';
   },
   displayGUI: function($parentDiv, changeHandlerFn) {
     var val = this;
@@ -217,12 +217,12 @@ FABRIC.Math.Xfo.prototype = {
  * Overloaded Constructor for a xfo object.
  * @return {object} The xfo object.
  */
-FABRIC.Math.xfo = function() {
+FABRIC.RT.xfo = function() {
   // The following is a bit of a hack. Not sure if we can combine new and apply.
-  if (arguments.length === 0)return new FABRIC.Math.Xfo();
-    if (arguments.length === 1)return new FABRIC.Math.Xfo(arguments[0]);
-    if (arguments.length === 2)return new FABRIC.Math.Xfo(arguments[0], arguments[1]);
-    if (arguments.length === 3)return new FABRIC.Math.Xfo(arguments[0], arguments[1], arguments[2]);
+  if (arguments.length === 0)return new FABRIC.RT.Xfo();
+    if (arguments.length === 1)return new FABRIC.RT.Xfo(arguments[0]);
+    if (arguments.length === 2)return new FABRIC.RT.Xfo(arguments[0], arguments[1]);
+    if (arguments.length === 3)return new FABRIC.RT.Xfo(arguments[0], arguments[1], arguments[2]);
   };
 
 FABRIC.appendOnCreateContextCallback(function(context) {
@@ -230,7 +230,7 @@ FABRIC.appendOnCreateContextCallback(function(context) {
     members: {
       ori: 'Quat', tr: 'Vec3', sc: 'Vec3'
     },
-    constructor: FABRIC.Math.Xfo,
-    kBindings: FABRIC.loadResourceURL('../../../SceneGraph/Resources//RT/Xfo.kl')
+    constructor: FABRIC.RT.Xfo,
+    kBindings: FABRIC.loadResourceURL('FABRIC_ROOT/SceneGraph/Resources/RT/Xfo.kl')
   });
 });

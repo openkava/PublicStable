@@ -51,16 +51,16 @@ $(document).ready(function() {
 
   // Create the scene.
   var scene = FABRIC.SceneGraph.createScene();
-  var viewport = scene.constructNode('ViewPort', {
-    backgroundColor: FABRIC.Math.rgb(0.5, 0.7, 0.9),
+  var viewport = scene.constructNode('Viewport', {
+    backgroundColor: FABRIC.RT.rgb(0.5, 0.7, 0.9),
     enableRaycasting: true,
     windowElement: document.getElementById('FabricContainer')
   });
 
   // Create a camera to draw the scene from
   var camera = scene.constructNode('TargetCamera', {
-      position: FABRIC.Math.vec3(0, 14, 14),
-      target: FABRIC.Math.vec3(0, 6, 0),
+      position: FABRIC.RT.vec3(0, 14, 14),
+      target: FABRIC.RT.vec3(0, 6, 0),
       roll: 0,
       nearDistance: 0.001,
       farDistance: 20000,
@@ -76,34 +76,34 @@ $(document).ready(function() {
         size_z: 40.0,
         sections_x: 20,
         sections_z: 20 }),
-      materialNode: scene.constructNode('FlatMaterial', { color: FABRIC.Math.rgb(0.4, 0.4, 0.4) })
+      materialNode: scene.constructNode('FlatMaterial', { color: FABRIC.RT.rgb(0.4, 0.4, 0.4) })
     });
 
   // first create a skeleton
   var skeletonNode = scene.constructNode('CharacterSkeleton');
   skeletonNode.addBone({name: 'root'});
 
-  var xfo = FABRIC.Math.xfo({
-      ori: FABRIC.Math.Quat.makeFromAxisAndAngle(FABRIC.Math.vec3(0, 0, 1), -75),
-        tr: FABRIC.Math.vec3(0, 11, 0)
+  var xfo = FABRIC.RT.xfo({
+      ori: FABRIC.RT.Quat.makeFromAxisAndAngle(FABRIC.RT.vec3(0, 0, 1), -75),
+        tr: FABRIC.RT.vec3(0, 11, 0)
     });
   skeletonNode.addBone({name: 'thighBone', referencePose: xfo, length: 6, parent: 'root'});
 
-  xfo = FABRIC.Math.xfo({
-      ori: FABRIC.Math.Quat.makeFromAxisAndAngle(FABRIC.Math.vec3(0, 0, 1), -115),
-      tr: xfo.tr.add(xfo.ori.rotateVector(FABRIC.Math.vec3(6, 0, 0)))
+  xfo = FABRIC.RT.xfo({
+      ori: FABRIC.RT.Quat.makeFromAxisAndAngle(FABRIC.RT.vec3(0, 0, 1), -115),
+      tr: xfo.tr.add(xfo.ori.rotateVector(FABRIC.RT.vec3(6, 0, 0)))
     });
   skeletonNode.addBone({name: 'calfBone', referencePose: xfo, length: 5, parent: 'thighBone' });
 
-  xfo = FABRIC.Math.xfo({
-      ori: FABRIC.Math.Quat.makeFromAxisAndAngle(FABRIC.Math.vec3(0, 0, 1), -20),
-      tr: xfo.tr.add(xfo.ori.rotateVector(FABRIC.Math.vec3(5, 0, 0)))
+  xfo = FABRIC.RT.xfo({
+      ori: FABRIC.RT.Quat.makeFromAxisAndAngle(FABRIC.RT.vec3(0, 0, 1), -20),
+      tr: xfo.tr.add(xfo.ori.rotateVector(FABRIC.RT.vec3(5, 0, 0)))
     });
   skeletonNode.addBone({name: 'ankleBone', referencePose: xfo, length: 1.5, parent: 'calfBone' });
 
-  xfo = FABRIC.Math.xfo({
-      ori: FABRIC.Math.Quat.makeFromAxisAndAngle(FABRIC.Math.vec3(0, 0, 1), 0),
-      tr: xfo.tr.add(xfo.ori.rotateVector(FABRIC.Math.vec3(1.5, 0, 0)))
+  xfo = FABRIC.RT.xfo({
+      ori: FABRIC.RT.Quat.makeFromAxisAndAngle(FABRIC.RT.vec3(0, 0, 1), 0),
+      tr: xfo.tr.add(xfo.ori.rotateVector(FABRIC.RT.vec3(1.5, 0, 0)))
     });
   skeletonNode.addBone({name: 'toeBone', referencePose: xfo, length: 1.5, parent: 'ankleBone' });
 
@@ -122,7 +122,7 @@ $(document).ready(function() {
   // create the bone debug drawing
   scene.constructNode('CharacterSkeletonDebug', {
       characterRigNode: rigNode,
-      color: FABRIC.Math.rgba(1.0, 1.0, 1.0, 1.0)
+      color: FABRIC.RT.rgba(1.0, 1.0, 1.0, 1.0)
     });
 
   var errors = scene.getErrors();

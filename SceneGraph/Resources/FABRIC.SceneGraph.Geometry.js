@@ -39,7 +39,7 @@ FABRIC.SceneGraph.registerNodeType('Geometry',
       bboxdgnode.addDependency(attributesdgnode, 'attributes');
       bboxdgnode.bindings.append(scene.constructOperator({
         operatorName: 'calcBoundingBox',
-        srcFile: '../../../SceneGraph/Resources//KL/calcBoundingBox.kl',
+        srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/calcBoundingBox.kl',
         entryFunctionName: 'calcBoundingBox',
         parameterBinding: [
           'attributes.positions[]',
@@ -217,7 +217,7 @@ FABRIC.SceneGraph.registerNodeType('Geometry',
 
         redrawEventHandler.preDescendBindings.append(scene.constructOperator({
           operatorName: 'genAndLoadIndicesVBOs',
-          srcFile: '../../../SceneGraph/Resources//KL/loadVBOs.kl',
+          srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/loadVBOs.kl',
           entryFunctionName: 'genAndLoadIndicesVBOs',
           parameterBinding: [
             'uniforms.indices',
@@ -232,7 +232,7 @@ FABRIC.SceneGraph.registerNodeType('Geometry',
       else {
         redrawEventHandler.preDescendBindings.append(scene.constructOperator({
           operatorName: 'setInstanceElementCount',
-          srcFile: '../../../SceneGraph/Resources//KL/loadVBOs.kl',
+          srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/loadVBOs.kl',
           entryFunctionName: 'setInstanceElementCount',
           parameterBinding: [
             'attributes.positions[]',
@@ -291,7 +291,7 @@ FABRIC.SceneGraph.registerNodeType('Geometry',
 
           redrawEventHandler.preDescendBindings.append(scene.constructOperator({
             operatorName: 'genAndLoadVBO' + memberType + FABRIC.shaderAttributeTable[memberName].id,
-            srcFile: '../../../SceneGraph/Resources//KL/genAndLoadVBO.kl',
+            srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/genAndLoadVBO.kl',
             preProcessorDefinitions: {
               DATA_TYPE: memberType,
               ATTRIBUTE_NAME: memberName,
@@ -406,7 +406,7 @@ FABRIC.SceneGraph.registerNodeType('Points',
     pointsNode.getDrawOperator = function() {
       return scene.constructOperator({
           operatorName: 'drawPoints',
-          srcFile: '../../../SceneGraph/Resources//KL/drawPoints.kl',
+          srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/drawPoints.kl',
           entryFunctionName: 'drawPoints',
           parameterBinding: [
             'instance.elementCount',
@@ -417,7 +417,7 @@ FABRIC.SceneGraph.registerNodeType('Points',
     pointsNode.getRayintersectionOperator = function(transformNodeMember) {
       return scene.constructOperator({
           operatorName: 'rayIntersectPoints',
-          srcFile: '../../../SceneGraph/Resources//KL/rayIntersectPoints.kl',
+          srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/rayIntersectPoints.kl',
           entryFunctionName: 'rayIntersectPoints',
           parameterBinding: [
             'raycastData.ray',
@@ -444,7 +444,7 @@ FABRIC.SceneGraph.registerNodeType('Lines',
     linesNode.getDrawOperator = function() {
       return scene.constructOperator({
           operatorName: 'drawLines',
-          srcFile: '../../../SceneGraph/Resources//KL/drawLines.kl',
+          srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/drawLines.kl',
           parameterBinding: [
             'instance.elementCount',
             'instance.indicesBufferID',
@@ -456,7 +456,7 @@ FABRIC.SceneGraph.registerNodeType('Lines',
     linesNode.getRayintersectionOperator = function(transformNodeMember) {
       return scene.constructOperator({
           operatorName: 'rayIntersectLines',
-          srcFile: '../../../SceneGraph/Resources//KL/rayIntersectLines.kl',
+          srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/rayIntersectLines.kl',
           entryFunctionName: 'rayIntersectLines',
           parameterBinding: [
             'raycastData.ray',
@@ -491,7 +491,7 @@ FABRIC.SceneGraph.registerNodeType('Triangles',
     trianglesNode.getDrawOperator = function() {
       return scene.constructOperator({
           operatorName: 'drawTriangles',
-          srcFile: '../../../SceneGraph/Resources//KL/drawTriangles.kl',
+          srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/drawTriangles.kl',
           parameterBinding: [
             'instance.elementCount',
             'instance.indicesBufferID',
@@ -503,7 +503,7 @@ FABRIC.SceneGraph.registerNodeType('Triangles',
     trianglesNode.getRayintersectionOperator = function(transformNodeMember) {
       return scene.constructOperator({
           operatorName: 'rayIntersectTriangles',
-          srcFile: '../../../SceneGraph/Resources//KL/rayIntersectTriangles.kl',
+          srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/rayIntersectTriangles.kl',
           entryFunctionName: 'rayIntersectTriangles',
           parameterBinding: [
             'raycastData.ray',
@@ -544,7 +544,7 @@ FABRIC.SceneGraph.registerNodeType('Triangles',
         trianglesNode.pub.addVertexAttributeValue('tangents', 'Vec4');
         trianglesNode.getAttributesDGNode().bindings.append(scene.constructOperator({
           operatorName: 'computeTriangleTangents',
-          srcFile: '../../../SceneGraph/Resources//KL/generateTangents.kl',
+          srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/generateTangents.kl',
           entryFunctionName: 'computeTriangleTangents',
           parameterBinding: [
             'uniforms.indices',
@@ -594,7 +594,7 @@ FABRIC.SceneGraph.registerNodeType('Instance',
 
       redrawEventHandler.preDescendBindings.append(scene.constructOperator({
           operatorName: 'loadCameraMatrices',
-          srcFile: '../../../SceneGraph/Resources//KL/loadCameraMatrices.kl',
+          srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/loadCameraMatrices.kl',
           entryFunctionName: 'loadCameraMatrices',
           preProcessorDefinitions: {
             MODELMATRIX_ATTRIBUTE_ID: FABRIC.shaderAttributeTable.modelMatrix.id,

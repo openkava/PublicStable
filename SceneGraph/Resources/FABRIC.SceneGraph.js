@@ -54,7 +54,7 @@ FABRIC.SceneGraph = {
       },
       null);
 
-    // EAch ViewPort creates a new fabricwindow which is the origin of
+    // EAch Viewport creates a new fabricwindow which is the origin of
     // window redraw events.
     var windows = [];
 
@@ -581,7 +581,7 @@ FABRIC.SceneGraph = {
 
     scene.pub.displayDebugger = function() {
       var debuggerWindow = window.open(
-        '../../../Core/Debugger/FABRIC.Debugger.html?id=' + context.getContextID() , 'Fabric Debugger');
+        'FABRIC_ROOT/Core/Debugger/FABRIC.Debugger.html?id=' + context.getContextID() , 'Fabric Debugger');
       debuggerWindow.context = context;
       debuggerWindow.scene = scene;
     };
@@ -836,7 +836,7 @@ FABRIC.SceneGraph.registerNodeType('SceneGraphNode',
     return sceneGraphNode;
   });
 
-FABRIC.SceneGraph.registerNodeType('ViewPort',
+FABRIC.SceneGraph.registerNodeType('Viewport',
   function(options, scene) {
     scene.assignDefaults(options, {
         windowElement: undefined,
@@ -846,7 +846,7 @@ FABRIC.SceneGraph.registerNodeType('ViewPort',
         mouseUpEvents: true,
         mouseMoveEvents: true,
         redrawOnMouseMove: true, // This option is usefull on OsX where drawing is always a frame behind.
-        backgroundColor: FABRIC.Math.rgb(0.1, 0.1, 0.1),
+        backgroundColor: FABRIC.RT.rgb(0.1, 0.1, 0.1),
         postProcessEffect: undefined,
         rayIntersectionThreshold: 0.8
       });
@@ -870,7 +870,7 @@ FABRIC.SceneGraph.registerNodeType('ViewPort',
 
     redrawEventHandler.preDescendBindings.append(scene.constructOperator({
           operatorName: 'viewPortBeginRender',
-          srcFile: '../../../SceneGraph/Resources//KL/viewPortBeginRender.kl',
+          srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/viewPortBeginRender.kl',
           entryFunctionName: 'viewPortBeginRender',
           parameterBinding: [
             'window.width',
@@ -908,8 +908,8 @@ FABRIC.SceneGraph.registerNodeType('ViewPort',
       // this operator calculates the rayOri and rayDir from the scopes collected so far.
       // The scopes should be the window, viewport, camera and projection.
       viewPortRayCastDgNode.bindings.append(scene.constructOperator({
-        operatorName: 'ViewPortRaycast',
-        srcFile: '../../../SceneGraph/Resources//KL/viewPortUpdateRayCast.kl',
+        operatorName: 'ViewportRaycast',
+        srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/viewPortUpdateRayCast.kl',
         entryFunctionName: 'viewPortUpdateRayCast',
         parameterBinding: [
           'camera.cameraMat44',
@@ -940,10 +940,10 @@ FABRIC.SceneGraph.registerNodeType('ViewPort',
 
     var getElementCoords = function(evt) {
       if (evt.offsetX) {
-        return FABRIC.Math.vec2(evt.offsetX, evt.offsetY);
+        return FABRIC.RT.vec2(evt.offsetX, evt.offsetY);
       }
       else if (evt.layerX) {
-        return FABRIC.Math.vec2(evt.layerX, evt.layerY);
+        return FABRIC.RT.vec2(evt.layerX, evt.layerY);
       }
     }
 
@@ -988,7 +988,7 @@ FABRIC.SceneGraph.registerNodeType('ViewPort',
         textureStub.postDescendBindings.append(
           scene.constructOperator({
               operatorName: 'renderTextureToView',
-              srcFile: '../../../SceneGraph/Resources//KL/OffscreenRendering.kl',
+              srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/OffscreenRendering.kl',
               entryFunctionName: 'renderTextureToView',
               parameterBinding: [
                 'textureStub.textureUnit',
@@ -1260,7 +1260,7 @@ FABRIC.SceneGraph.registerNodeType('Camera',
     var dgnode = cameraNode.getDGNode();
     dgnode.addMember('nearDistance', 'Scalar', options.nearDistance);
     dgnode.addMember('farDistance', 'Scalar', options.farDistance);
-    dgnode.addMember('fovY', 'Scalar', options.fovY * FABRIC.Math.degToRad);
+    dgnode.addMember('fovY', 'Scalar', options.fovY * FABRIC.RT.degToRad);
     dgnode.addMember('focalDistance', 'Scalar', options.focalDistance);
     dgnode.addMember('cameraMat44', 'Mat44');
     dgnode.addMember('orthographic', 'Boolean', options.orthographic);
@@ -1271,7 +1271,7 @@ FABRIC.SceneGraph.registerNodeType('Camera',
 
     redrawEventHandler.preDescendBindings.append(scene.constructOperator({
       operatorName: 'UpdateCameraProjection',
-      srcFile: '../../../SceneGraph/Resources//KL/updateCameraProjection.kl',
+      srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/updateCameraProjection.kl',
       entryFunctionName: 'updateCameraProjection',
       parameterBinding: [
         'camera.projectionMat44',
@@ -1343,12 +1343,12 @@ FABRIC.SceneGraph.registerNodeType('Camera',
 FABRIC.SceneGraph.registerNodeType('FreeCamera',
   function(options, scene) {
     scene.assignDefaults(options, {
-        position: FABRIC.Math.vec3(1, 0, 0),
-        orientation: FABRIC.Math.quat()
+        position: FABRIC.RT.vec3(1, 0, 0),
+        orientation: FABRIC.RT.quat()
       });
 
     options.transformNode = scene.constructNode('Transform', {
-      globalXfo: FABRIC.Math.xfo({ tr: options.position, ori: options.orientation })
+      globalXfo: FABRIC.RT.xfo({ tr: options.position, ori: options.orientation })
     });
 
     var freeCameraNode = scene.constructNode('Camera', options);
@@ -1364,8 +1364,8 @@ FABRIC.SceneGraph.registerNodeType('FreeCamera',
 FABRIC.SceneGraph.registerNodeType('TargetCamera',
   function(options, scene) {
     scene.assignDefaults(options, {
-        position: FABRIC.Math.vec3(1, 0, 0),
-        target: FABRIC.Math.vec3(0, 0, 0),
+        position: FABRIC.RT.vec3(1, 0, 0),
+        target: FABRIC.RT.vec3(0, 0, 0),
         roll: 0.0
       });
 
@@ -1377,10 +1377,10 @@ FABRIC.SceneGraph.registerNodeType('TargetCamera',
     var dirVec = options.target.subtract(options.position);
     dirVec.y = 0;
     dirVec.setUnit();
-    var angle = dirVec.getAngleTo(FABRIC.Math.vec3(0, 0, -1));
-    transformNodeOptions.globalXfo = new FABRIC.Math.xfo({
+    var angle = dirVec.getAngleTo(FABRIC.RT.vec3(0, 0, -1));
+    transformNodeOptions.globalXfo = new FABRIC.RT.xfo({
       tr: options.position,
-      ori: FABRIC.Math.Quat.makeFromAxisAndAngle(FABRIC.Math.vec3(0, 1, 0), angle)
+      ori: FABRIC.RT.Quat.makeFromAxisAndAngle(FABRIC.RT.vec3(0, 1, 0), angle)
     });
     options.transformNode = scene.pub.constructNode('AimTransform', transformNodeOptions);
 
@@ -1391,8 +1391,8 @@ FABRIC.SceneGraph.registerNodeType('TargetCamera',
       freeCameraNode.pub.getTransformNode().globalXfo.tr;
     });
     targetCameraNode.pub.__defineSetter__('position', function(val) {
-      if (!val.getType || val.getType() !== 'FABRIC.Math.Vec3') {
-        throw ('Incorrect type assignment. Must assign a FABRIC.Math.Vec3');
+      if (!val.getType || val.getType() !== 'FABRIC.RT.Vec3') {
+        throw ('Incorrect type assignment. Must assign a FABRIC.RT.Vec3');
       }
       var xfo = targetCameraNode.pub.getTransformNode().globalXfo;
       xfo.tr = val;

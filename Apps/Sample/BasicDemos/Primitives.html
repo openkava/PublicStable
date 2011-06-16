@@ -41,46 +41,46 @@
     
     <script type="text/javascript">
 $(document).ready(function() { var scene = FABRIC.SceneGraph.createScene();
-  var viewport = scene.constructNode('ViewPort', {
+  var viewport = scene.constructNode('Viewport', {
     enableRaycasting: false,
     windowElement: document.getElementById('FabricContainer')
   });
 
   // Create a camera to draw the scene from
   var camera = scene.constructNode('TargetCamera', {
-      position: FABRIC.Math.vec3(40, 70, 100),
-      target: FABRIC.Math.vec3(0, 0, 0)
+      position: FABRIC.RT.vec3(40, 70, 100),
+      target: FABRIC.RT.vec3(0, 0, 0)
     });
 
   scene.constructNode('CameraManipulator', { targetNode: camera });
 
   viewport.setCameraNode(camera);
 
-  var light = scene.constructNode('PointLight', { position: FABRIC.Math.vec3(420.0, 1000.0, 600.0) });
+  var light = scene.constructNode('PointLight', { position: FABRIC.RT.vec3(420.0, 1000.0, 600.0) });
 
   var redFlatMaterial = scene.constructNode('FlatMaterial', {
-    color: FABRIC.Math.rgb(0.8, 0, 0)
+    color: FABRIC.RT.rgb(0.8, 0, 0)
   });
   var blueFlatMaterial = scene.constructNode('FlatMaterial', {
-    color: FABRIC.Math.rgb(0, 0.8, 0)
+    color: FABRIC.RT.rgb(0, 0.8, 0)
   });
   var greenFlatMaterial = scene.constructNode('FlatMaterial', {
-    color: FABRIC.Math.rgb(0, 0, 0.8)
+    color: FABRIC.RT.rgb(0, 0, 0.8)
   });
   var greyFlatMaterial = scene.constructNode('FlatMaterial', {
-    color: FABRIC.Math.rgb(0.7, 0.7, 0.7)
+    color: FABRIC.RT.rgb(0.7, 0.7, 0.7)
   });
 
   var redPhongMaterial = scene.constructNode('PhongMaterial', {
-    diffuseColor: FABRIC.Math.rgb(0.8, 0, 0),
+    diffuseColor: FABRIC.RT.rgb(0.8, 0, 0),
     lightNode: light
   });
   var greenPhongMaterial = scene.constructNode('PhongMaterial', {
-    diffuseColor: FABRIC.Math.rgb(0, 0.8, 0),
+    diffuseColor: FABRIC.RT.rgb(0, 0.8, 0),
     lightNode: light
   });
   var bluePhongMaterial = scene.constructNode('PhongMaterial', {
-    diffuseColor: FABRIC.Math.rgb(0, 0, 0.8),
+    diffuseColor: FABRIC.RT.rgb(0, 0, 0.8),
     lightNode: light
   });
 
@@ -88,7 +88,7 @@ $(document).ready(function() { var scene = FABRIC.SceneGraph.createScene();
   scene.constructNode('Instance', {
       transformNode: scene.constructNode('Transform', {
         hierarchical: false,
-        globalXfo: FABRIC.Math.xfo({ tr: FABRIC.Math.vec3(-30, 0, 20) })
+        globalXfo: FABRIC.RT.xfo({ tr: FABRIC.RT.vec3(-30, 0, 20) })
       }),
       geometryNode: scene.constructNode('Cross', {
         size: 7.0
@@ -100,7 +100,7 @@ $(document).ready(function() { var scene = FABRIC.SceneGraph.createScene();
   scene.constructNode('Instance', {
       transformNode: scene.constructNode('Transform', {
         hierarchical: false,
-        globalXfo: FABRIC.Math.xfo({ tr: FABRIC.Math.vec3(-10, 0, 20) })
+        globalXfo: FABRIC.RT.xfo({ tr: FABRIC.RT.vec3(-10, 0, 20) })
       }),
       geometryNode: scene.constructNode('Circle', {
         radius: 7
@@ -112,7 +112,7 @@ $(document).ready(function() { var scene = FABRIC.SceneGraph.createScene();
   scene.constructNode('Instance', {
       transformNode: scene.constructNode('Transform', {
         hierarchical: false,
-        globalXfo: FABRIC.Math.xfo({ tr: FABRIC.Math.vec3(10, 0, 20) })
+        globalXfo: FABRIC.RT.xfo({ tr: FABRIC.RT.vec3(10, 0, 20) })
       }),
       geometryNode: scene.constructNode('Rectangle', {
         length: 7,
@@ -125,7 +125,7 @@ $(document).ready(function() { var scene = FABRIC.SceneGraph.createScene();
   scene.constructNode('Instance', {
       transformNode: scene.constructNode('Transform', {
         hierarchical: false,
-        globalXfo: FABRIC.Math.xfo({ tr: FABRIC.Math.vec3(30, 0, 20) })
+        globalXfo: FABRIC.RT.xfo({ tr: FABRIC.RT.vec3(30, 0, 20) })
       }),
       geometryNode: scene.constructNode('Axes', {
         size: 7.0
@@ -137,7 +137,7 @@ $(document).ready(function() { var scene = FABRIC.SceneGraph.createScene();
   scene.constructNode('Instance', {
       transformNode: scene.constructNode('Transform', {
         hierarchical: false,
-        globalXfo: FABRIC.Math.xfo({ tr: FABRIC.Math.vec3(50, 0, 20) })
+        globalXfo: FABRIC.RT.xfo({ tr: FABRIC.RT.vec3(50, 0, 20) })
       }),
       geometryNode: scene.constructNode('Grid', {
           size_x: 15.0,
@@ -153,7 +153,7 @@ $(document).ready(function() { var scene = FABRIC.SceneGraph.createScene();
   scene.constructNode('Instance', {
       transformNode: scene.constructNode('Transform', {
         hierarchical: false,
-        globalXfo: FABRIC.Math.xfo({ tr: FABRIC.Math.vec3(70, 0, 20) })
+        globalXfo: FABRIC.RT.xfo({ tr: FABRIC.RT.vec3(70, 0, 20) })
       }),
       geometryNode: scene.constructNode('BoundingBox', {
         length: 7,
@@ -166,7 +166,7 @@ $(document).ready(function() { var scene = FABRIC.SceneGraph.createScene();
   scene.constructNode('Instance', {
       transformNode: scene.constructNode('Transform', {
         hierarchical: false,
-        globalXfo: FABRIC.Math.xfo({ tr: FABRIC.Math.vec3(-70, 0, 0) })
+        globalXfo: FABRIC.RT.xfo({ tr: FABRIC.RT.vec3(-70, 0, 0) })
       }),
       geometryNode: scene.constructNode('Plane', {
         length: 15,
@@ -181,7 +181,7 @@ $(document).ready(function() { var scene = FABRIC.SceneGraph.createScene();
   scene.constructNode('Instance', {
       transformNode: scene.constructNode('Transform', {
         hierarchical: false,
-        globalXfo: FABRIC.Math.xfo({ tr: FABRIC.Math.vec3(-50, 0, 0) })
+        globalXfo: FABRIC.RT.xfo({ tr: FABRIC.RT.vec3(-50, 0, 0) })
       }),
       geometryNode: scene.constructNode('Cuboid', {
         length: 15,
@@ -195,7 +195,7 @@ $(document).ready(function() { var scene = FABRIC.SceneGraph.createScene();
   scene.constructNode('Instance', {
       transformNode: scene.constructNode('Transform', {
         hierarchical: false,
-        globalXfo: FABRIC.Math.xfo({ tr: FABRIC.Math.vec3(-30, 0, 0) })
+        globalXfo: FABRIC.RT.xfo({ tr: FABRIC.RT.vec3(-30, 0, 0) })
       }),
       geometryNode: scene.constructNode('Cone', {
         radius: 4.0,
@@ -209,7 +209,7 @@ $(document).ready(function() { var scene = FABRIC.SceneGraph.createScene();
   scene.constructNode('Instance', {
       transformNode: scene.constructNode('Transform', {
         hierarchical: false,
-        globalXfo: FABRIC.Math.xfo({ tr: FABRIC.Math.vec3(-10, 0, 0) })
+        globalXfo: FABRIC.RT.xfo({ tr: FABRIC.RT.vec3(-10, 0, 0) })
       }),
       geometryNode: scene.constructNode('Sphere', {
         radius: 10,
@@ -222,7 +222,7 @@ $(document).ready(function() { var scene = FABRIC.SceneGraph.createScene();
   scene.constructNode('Instance', {
       transformNode: scene.constructNode('Transform', {
         hierarchical: false,
-        globalXfo: FABRIC.Math.xfo({ tr: FABRIC.Math.vec3(10, 0, 0) })
+        globalXfo: FABRIC.RT.xfo({ tr: FABRIC.RT.vec3(10, 0, 0) })
       }),
       geometryNode: scene.constructNode('Torus', {
         inner_radius: 3.0,
@@ -236,7 +236,7 @@ $(document).ready(function() { var scene = FABRIC.SceneGraph.createScene();
   scene.constructNode('Instance', {
       transformNode: scene.constructNode('Transform', {
         hierarchical: false,
-        globalXfo: FABRIC.Math.xfo({ tr: FABRIC.Math.vec3(30, 0, 0) })
+        globalXfo: FABRIC.RT.xfo({ tr: FABRIC.RT.vec3(30, 0, 0) })
       }),
       geometryNode: scene.constructNode('Cylinder', {
         radius: 4.0,
@@ -249,7 +249,7 @@ $(document).ready(function() { var scene = FABRIC.SceneGraph.createScene();
   scene.constructNode('Instance', {
       transformNode: scene.constructNode('Transform', {
         hierarchical: false,
-        globalXfo: FABRIC.Math.xfo({ tr: FABRIC.Math.vec3(50, 0, 0) })
+        globalXfo: FABRIC.RT.xfo({ tr: FABRIC.RT.vec3(50, 0, 0) })
       }),
       geometryNode: scene.constructNode('Teapot', {
         size: 7,

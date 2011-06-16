@@ -28,7 +28,7 @@ FABRIC.SceneGraph.registerNodeType('AnimationTrack',
     var animationTrackNode = scene.constructNode('SceneGraphNode', options);
     var dgnode = animationTrackNode.getDGNode();
     dgnode.addMember('name', 'String', 'keyframeAnimationTrack');
-    dgnode.addMember('color', 'Color', FABRIC.Math.rgb(1, 1, 1));
+    dgnode.addMember('color', 'Color', FABRIC.RT.rgb(1, 1, 1));
     dgnode.addMember('keys', options.keyframetype + '[]');
 
     // extend the public interface
@@ -78,7 +78,7 @@ FABRIC.SceneGraph.registerNodeType('AnimationTrack',
     animationTrackNode.getInterpolatorOperator = function() {
       return scene.constructOperator({
           operatorName: 'evaluateKeyframeAnimationTrack',
-          srcFile: '../../../SceneGraph/Resources//KL/evaluateKeyframeAnimationTrack.kl',
+          srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/evaluateKeyframeAnimationTrack.kl',
           preProcessorDefinitions: {
             KEYFRAMETYPE: options.keyframetype,
             KEYFRAME_EVALUATEDTYPE: defaultKeyframeValue.valueType
@@ -96,7 +96,7 @@ FABRIC.SceneGraph.registerNodeType('AnimationTrack',
     animationTrackNode.getDrawOperator = function() {
       return scene.constructOperator({
           operatorName: 'evaluateCurve',
-          srcFile: '../../../SceneGraph/Resources//KL/evaluateKeyframeAnimationTrack.kl',
+          srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/evaluateKeyframeAnimationTrack.kl',
           preProcessorDefinitions: {
             KEYFRAMETYPE: options.keyframetype,
             KEYFRAME_EVALUATEDTYPE: defaultKeyframeValue.valueType
@@ -173,7 +173,7 @@ FABRIC.SceneGraph.registerNodeType('AnimationController',
   /*  dgnode.bindings.append(scene.constructOperator(
       {
         operatorName:'incrementControllerLocalTime',
-        srcFile:'../../../SceneGraph/Resources//KL/incrementControllerLocalTime.kl',
+        srcFile:'FABRIC_ROOT/SceneGraph/Resources/KL/incrementControllerLocalTime.kl',
         entryFunctionName:'incrementControllerLocalTime',
         parameterBinding:[
           'globals.time',
@@ -398,7 +398,7 @@ FABRIC.SceneGraph.registerNodeType('TrackDisplay',
     scene.assignDefaults(options, {
         animationTrackNode: undefined,
         trackIndex: 0,
-        timeRange: FABRIC.Math.vec2(0, 100),
+        timeRange: FABRIC.RT.vec2(0, 100),
         segmentCount: 100
       });
     options.dgnodenames.push('DGNode');

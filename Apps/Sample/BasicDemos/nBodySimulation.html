@@ -160,12 +160,12 @@ $(document).ready(function() { $('#play').button({
 
   // Create the scene.
   var scene = FABRIC.SceneGraph.createScene();
-  var viewport = scene.constructNode('ViewPort', { windowElement: document.getElementById('FabricContainer') });
+  var viewport = scene.constructNode('Viewport', { windowElement: document.getElementById('FabricContainer') });
 
   // Create a camera to draw the scene from
   camera = scene.constructNode('TargetCamera', {
-      position: FABRIC.Math.vec3(0, 0, -100),
-      target: FABRIC.Math.vec3(0, 0, 0)
+      position: FABRIC.RT.vec3(0, 0, -100),
+      target: FABRIC.RT.vec3(0, 0, 0)
     });
 
   scene.constructNode('CameraManipulator', { targetNode: camera });

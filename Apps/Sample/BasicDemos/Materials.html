@@ -40,33 +40,33 @@
     
     <script type="text/javascript">
 $(document).ready(function() { var scene = FABRIC.SceneGraph.createScene();
-  var viewport = scene.constructNode('ViewPort', {
+  var viewport = scene.constructNode('Viewport', {
     windowElement: document.getElementById('FabricContainer'),
-    backgroundColor: FABRIC.Math.rgb(0.0, 0.05, 0.15)
+    backgroundColor: FABRIC.RT.rgb(0.0, 0.05, 0.15)
   });
 
   // Create a camera to draw the scene from
   var camera = scene.constructNode('TargetCamera', {
-      position: FABRIC.Math.vec3(40, 70, 100),
-      target: FABRIC.Math.vec3(0, 0, 0)
+      position: FABRIC.RT.vec3(40, 70, 100),
+      target: FABRIC.RT.vec3(0, 0, 0)
     });
 
   scene.constructNode("CameraManipulator", { targetNode:camera } );
 
   viewport.setCameraNode(camera);
 
-  var light = scene.constructNode('PointLight', { position: FABRIC.Math.vec3(420.0, 1000.0, 600.0) });
+  var light = scene.constructNode('PointLight', { position: FABRIC.RT.vec3(420.0, 1000.0, 600.0) });
   var sphere = scene.constructNode('Sphere', { radius: 10, detail: 10, needUVs: true, tangentsFromUV: 0 });
 
   // Flat Shader
   var flatMaterial = scene.constructNode('FlatMaterial', {
-      color: FABRIC.Math.rgb(0.8, 0, 0, 1)
+      color: FABRIC.RT.rgb(0.8, 0, 0, 1)
     });
 
   scene.constructNode('Instance', {
       transformNode: scene.constructNode('Transform', {
           hierarchical: false,
-          globalXfo: FABRIC.Math.xfo({ tr: FABRIC.Math.vec3(-30, 0, 0) })
+          globalXfo: FABRIC.RT.xfo({ tr: FABRIC.RT.vec3(-30, 0, 0) })
         }),
       geometryNode: sphere,
       materialNode: flatMaterial
@@ -74,14 +74,14 @@ $(document).ready(function() { var scene = FABRIC.SceneGraph.createScene();
 
   // Phong Shader
   var phongMaterial = scene.constructNode('PhongMaterial', {
-      diffuseColor: FABRIC.Math.rgb(0.8, 0, 0, 1),
+      diffuseColor: FABRIC.RT.rgb(0.8, 0, 0, 1),
       lightNode: light
     });
 
   scene.constructNode('Instance', {
       transformNode: scene.constructNode('Transform', {
           hierarchical: false,
-          globalXfo: FABRIC.Math.xfo({ tr: FABRIC.Math.vec3(-10, 0, 0) })
+          globalXfo: FABRIC.RT.xfo({ tr: FABRIC.RT.vec3(-10, 0, 0) })
         }),
       geometryNode: sphere,
       materialNode: phongMaterial
@@ -95,7 +95,7 @@ $(document).ready(function() { var scene = FABRIC.SceneGraph.createScene();
   scene.constructNode('Instance', {
       transformNode: scene.constructNode('Transform', {
         hierarchical: false,
-        globalXfo: FABRIC.Math.xfo({ tr: FABRIC.Math.vec3(10, 0, 0) })
+        globalXfo: FABRIC.RT.xfo({ tr: FABRIC.RT.vec3(10, 0, 0) })
       }),
       geometryNode: sphere,
       materialNode: flatTexturedMaterial
@@ -112,7 +112,7 @@ $(document).ready(function() { var scene = FABRIC.SceneGraph.createScene();
   scene.constructNode('Instance', {
       transformNode: scene.constructNode('Transform', {
           hierarchical: false,
-          globalXfo: FABRIC.Math.xfo({ tr: FABRIC.Math.vec3(30, 0, 0) })
+          globalXfo: FABRIC.RT.xfo({ tr: FABRIC.RT.vec3(30, 0, 0) })
         }),
       geometryNode: sphere,
       materialNode: phongBumpReflectMaterial
@@ -120,13 +120,13 @@ $(document).ready(function() { var scene = FABRIC.SceneGraph.createScene();
 
   // Normal Geometry Shader
   var normalMaterial = scene.constructNode('NormalMaterial', {
-      color: FABRIC.Math.rgb(0.8, .8, 0.8, 1)
+      color: FABRIC.RT.rgb(0.8, .8, 0.8, 1)
     });
 
   scene.constructNode('Instance', {
       transformNode: scene.constructNode('Transform', {
         hierarchical: false,
-        globalXfo: FABRIC.Math.xfo({ tr: FABRIC.Math.vec3(30, 0, 0) })
+        globalXfo: FABRIC.RT.xfo({ tr: FABRIC.RT.vec3(30, 0, 0) })
       }),
       geometryNode: sphere,
       materialNode: normalMaterial
