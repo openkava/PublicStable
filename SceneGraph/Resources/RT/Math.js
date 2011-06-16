@@ -7,26 +7,26 @@
 /**
  * The basic math module.
  */
-FABRIC.Math = FABRIC.Math ? FABRIC.Math : {};
+FABRIC.RT = FABRIC.RT ? FABRIC.RT : {};
 
 /**
  * The precision of the math module.
  */
-FABRIC.Math.precision = 1e-5;
+FABRIC.RT.precision = 1e-5;
 /**
  * The factor to project radians to degrees.
  */
-FABRIC.Math.radToDeg = 57.2957795;
+FABRIC.RT.radToDeg = 57.2957795;
 /**
  * The factor to project degrees to radians.
  */
-FABRIC.Math.degToRad = 0.0174532925;
+FABRIC.RT.degToRad = 0.0174532925;
 /**
  * Function to test if a given value is a scalar.
  * @param {value} value The value to validate.
  * @return {boolean} True if the given value is a scalar.
  */
-FABRIC.Math.isScalar = function(value) {
+FABRIC.RT.isScalar = function(value) {
   return typeof value === 'number';
 };
 
@@ -37,15 +37,15 @@ FABRIC.Math.isScalar = function(value) {
  * @param {value} str The string to validate.
  * @return {boolean} True if the given string is a string.
  */
-FABRIC.Math.isRTString = function(str) {
-  return (str.substring(0, 10) == 'FABRIC.Math');
+FABRIC.RT.isRTString = function(str) {
+  return (str.substring(0, 10) == 'FABRIC.RT');
 };
 /**
  * Function to evaluate a string to a value.
  * @param {string} str The string to evaluate.
  * @return {value} The evaluated result of the string.
  */
-FABRIC.Math.fromString = function(str) {
+FABRIC.RT.fromString = function(str) {
   // TODO: impliment this method without eval...
   return eval(str);
 };
@@ -57,5 +57,5 @@ FABRIC.Math.fromString = function(str) {
  * @return {boolean} True if the numbers are equal.
  */
 Number.prototype.eql = function(that) {
-  return Math.abs(this - that) < FABRIC.Math.precision;
+  return Math.abs(this - that) < FABRIC.RT.precision;
 };

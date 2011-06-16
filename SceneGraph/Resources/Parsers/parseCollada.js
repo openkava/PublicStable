@@ -152,15 +152,15 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
       switch (tokens[1]) {
       case 'x':
         binding[target][0] = i;
-        jsonData.color.push(FABRIC.Math.rgb(1, 0, 0));
+        jsonData.color.push(FABRIC.RT.rgb(1, 0, 0));
         break;
        case 'y':
         binding[target][1] = i;
-        jsonData.color.push(FABRIC.Math.rgb(0, 1, 0));
+        jsonData.color.push(FABRIC.RT.rgb(0, 1, 0));
         break;
        case 'z':
         binding[target][2] = i;
-        jsonData.color.push(FABRIC.Math.rgb(0, 0, 1));
+        jsonData.color.push(FABRIC.RT.rgb(0, 0, 1));
         break;
       }
 
@@ -207,7 +207,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
       }
       camera.matrix = assetData.data.matrix;
       camera.position = camera.matrix.tr;
-      camera.target = camera.matrix.ori.rotateVector(FABRIC.Math.vec3(0, 0, -30)).add(camera.matrix.tr);
+      camera.target = camera.matrix.ori.rotateVector(FABRIC.RT.vec3(0, 0, -30)).add(camera.matrix.tr);
       camera.roll = 0;
 
       // let's find the perspective technique
@@ -227,7 +227,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
         var fovx = parseFloat(persp.xfov);
         fovx *= 3.1416 / 180.0;
         var fovy = Math.tan(Math.atan(0.5 * fovx) * aspect) * 2.0;
-        camera.fovY = fovy * FABRIC.Math.radToDeg;
+        camera.fovY = fovy * FABRIC.RT.radToDeg;
       }
       else {
         camera.nearDistance = 5;
@@ -361,7 +361,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
             // set inverse binding matrices
             var invmatrices = [];
             for (var i = 0; i < skelNames.length; i++) {
-              invmatrices.push(FABRIC.Math.mat44());
+              invmatrices.push(FABRIC.RT.mat44());
             }
             for (var i = 0; i < skin.joints.names.length; i++) {
               invmatrices[defID[i]] = skin.joints.inv_matrices[i];
@@ -612,7 +612,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
         // Why do we have an array of 'Xfos' called 'matricies'?
         // A Matrix is a partucular math type, as is an Xfo. Surely
         // the corrent name is 'xfos'??
-        matrices.push(FABRIC.Math.xfo());
+        matrices.push(FABRIC.RT.xfo());
 
         // store the parent pointer
         data[id].parent = undefined;
@@ -657,7 +657,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
       case 'translate': {
         // compute a translated matrix and
         var str = node.textContent.split(' ');
-        var vec = FABRIC.Math.vec3(parseFloat(str[0]), parseFloat(str[1]), parseFloat(str[2]));
+        var vec = FABRIC.RT.vec3(parseFloat(str[0]), parseFloat(str[1]), parseFloat(str[2]));
         var m = matrices[matrices.length - 1].clone();
         m.tr.addInPlace(vec);
         matrices.push(m);
@@ -666,8 +666,8 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
       case 'rotate': {
         // compute a rotated matrix and
         var str = node.textContent.split(' ');
-        var q = FABRIC.Math.Quat.makeFromAxisAndAngle(
-                  FABRIC.Math.vec3(
+        var q = FABRIC.RT.Quat.makeFromAxisAndAngle(
+                  FABRIC.RT.vec3(
                     parseFloat(str[0]),
                     parseFloat(str[1]),
                     parseFloat(str[2])),
@@ -680,7 +680,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
       case 'scale': {
         // compute a scaled matrix and
         var str = node.textContent.split(' ');
-        var vec = FABRIC.Math.vec3(parseFloat(str[0]), parseFloat(str[1]), parseFloat(str[2]));
+        var vec = FABRIC.RT.vec3(parseFloat(str[0]), parseFloat(str[1]), parseFloat(str[2]));
         var m = matrices[matrices.length - 1].clone();
         m.sc.mulInPlace(vec);
         matrices.push(m);
@@ -799,7 +799,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
 
             container.vertices.positions = [];
             for (var i = 0; i < source.length; i += 3)
-              container.vertices.positions.push(FABRIC.Math.vec3(source[i], source[i + 1], source[i + 2]));
+              container.vertices.positions.push(FABRIC.RT.vec3(source[i], source[i + 1], source[i + 2]));
           }
         }
         break;
@@ -1205,7 +1205,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
                     storage[i].push(indices[offset + offsets[i]]);
                 }
                 else if (types[i] == 'vec3') {
-                  var vec3 = FABRIC.Math.vec3();
+                  var vec3 = FABRIC.RT.vec3();
                   if (sources[i])
                   {
                     var index = (indices[offset + offsets[i]]) * 3;
@@ -1216,7 +1216,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
                   storage[i].push(vec3);
                 }
                 else if (types[i] == 'vec2') {
-                  var vec2 = FABRIC.Math.vec2();
+                  var vec2 = FABRIC.RT.vec2();
                   if (sources[i])
                   {
                     var index = (indices[offset + offsets[i]]) * 2;
@@ -1452,7 +1452,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
           if (str[0] == '')
             str.splice(0, 1);
 
-          var matrix44 = FABRIC.Math.mat44();
+          var matrix44 = FABRIC.RT.mat44();
           matrix44.row0.x = parseFloat(str[0]);
           matrix44.row0.y = parseFloat(str[1]);
           matrix44.row0.z = parseFloat(str[2]);
@@ -1497,7 +1497,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
               var floats = container[semantic.source].float_array;
               var count = floats.length / 16;
               for (var i = 0; i < count; i++) {
-                var matrix44 = FABRIC.Math.mat44();
+                var matrix44 = FABRIC.RT.mat44();
                 matrix44.row0.x = floats[i * 16 + 0];
                 matrix44.row1.x = floats[i * 16 + 1];
                 matrix44.row2.x = floats[i * 16 + 2];

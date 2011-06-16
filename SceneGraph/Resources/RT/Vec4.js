@@ -8,7 +8,7 @@
  * @param {object} vec4 The vec4 object to validate.
  * @return {boolean} true if the given object is a valid vec4.
  */
-FABRIC.Math.isVec4 = function(vec4) {
+FABRIC.RT.isVec4 = function(vec4) {
   return typeof vec4 === 'object' &&
     'x' in vec4 &&
     typeof vec4.x === 'number' &&
@@ -28,14 +28,14 @@ FABRIC.Math.isVec4 = function(vec4) {
  * @param {number} z The z component.
  * @param {number} t The t component.
  */
-FABRIC.Math.Vec4 = function(x, y, z, t) {
+FABRIC.RT.Vec4 = function(x, y, z, t) {
   if (typeof x === 'number' && typeof y === 'number' && typeof z === 'number' && typeof t === 'number') {
     this.x = x;
     this.y = y;
     this.z = z;
     this.t = t;
   }
-  else if (FABRIC.Math.isVec3(x) && y === undefined && z === undefined && t === undefined) {
+  else if (FABRIC.RT.isVec3(x) && y === undefined && z === undefined && t === undefined) {
     this.x = x.x;
     this.y = x.y;
     this.z = x.z;
@@ -58,25 +58,25 @@ FABRIC.Math.Vec4 = function(x, y, z, t) {
  * @param {number} t The t component.
  * @return {object} The created vec4 object.
  */
-FABRIC.Math.vec4 = function(x, y, z, t) {
-  return new FABRIC.Math.Vec4(x, y, z, t);
+FABRIC.RT.vec4 = function(x, y, z, t) {
+  return new FABRIC.RT.Vec4(x, y, z, t);
 };
 
-FABRIC.Math.Vec4.prototype = {
+FABRIC.RT.Vec4.prototype = {
   set: function(x, y, z, t) {
     return this.x = x; this.y = y; this.z = z; this.t = t;
   },
   // Returns true if the vector is equal to the argument
   eql: function(v) {
-    return (FABRIC.Math.isVec4(v) &&
-      (Math.abs(this.x - v.x) < FABRIC.Math.precision) &&
-      (Math.abs(this.y - v.y) < FABRIC.Math.precision) &&
-      (Math.abs(this.z - v.z) < FABRIC.Math.precision) &&
-      (Math.abs(this.t - v.t) < FABRIC.Math.precision));
+    return (FABRIC.RT.isVec4(v) &&
+      (Math.abs(this.x - v.x) < FABRIC.RT.precision) &&
+      (Math.abs(this.y - v.y) < FABRIC.RT.precision) &&
+      (Math.abs(this.z - v.z) < FABRIC.RT.precision) &&
+      (Math.abs(this.t - v.t) < FABRIC.RT.precision));
   },
 
   scale: function(s) {
-    return new FABRIC.Math.Vec4(this.x * s, this.y * s, this.z * s, this.t * s);
+    return new FABRIC.RT.Vec4(this.x * s, this.y * s, this.z * s, this.t * s);
   },
   scaleInPlace: function(s) {
     this.x *= s; this.y *= s; this.z *= s; this.t *= s;
@@ -84,7 +84,7 @@ FABRIC.Math.Vec4.prototype = {
 
   // Returns the result of adding the argument to the vector
   add: function(v) {
-    return new FABRIC.Math.Vec4(this.x + v.x, this.y + v.y, this.z + v.z, this.t + v.t);
+    return new FABRIC.RT.Vec4(this.x + v.x, this.y + v.y, this.z + v.z, this.t + v.t);
   },
 
   addInPlace: function(v) {
@@ -93,7 +93,7 @@ FABRIC.Math.Vec4.prototype = {
   },
 
   subtract: function(v) {
-    return new FABRIC.Math.Vec4(this.x - v.x, this.y - v.y, this.z - v.z, this.t - v.t);
+    return new FABRIC.RT.Vec4(this.x - v.x, this.y - v.y, this.z - v.z, this.t - v.t);
   },
 
   subInPlace: function(v) {
@@ -103,9 +103,9 @@ FABRIC.Math.Vec4.prototype = {
 
   multiply: function(v) {
     if (typeof v == 'number') {
-      return new FABRIC.Math.Vec4(this.x * v, this.y * v, this.z * v, this.t * v);
-    }else if (FABRIC.Math.isVec4(v)) {
-      return new FABRIC.Math.Vec4(this.x * v.x, this.y * v.y, this.z * v.z, this.t * v.t);
+      return new FABRIC.RT.Vec4(this.x * v, this.y * v, this.z * v, this.t * v);
+    }else if (FABRIC.RT.isVec4(v)) {
+      return new FABRIC.RT.Vec4(this.x * v.x, this.y * v.y, this.z * v.z, this.t * v.t);
     }else {
       throw'Incorrect param type for Multiply';
       }
@@ -114,7 +114,7 @@ FABRIC.Math.Vec4.prototype = {
   mulInPlace: function(v) {
     if (typeof v == 'number') {
       this.x *= v; this.y *= v; this.z *= v; this.t *= v;
-    }else if (FABRIC.Math.isVec4(v)) {
+    }else if (FABRIC.RT.isVec4(v)) {
       this.x *= v.x; this.y *= v.y; this.z *= v.z; this.t *= v.t;
     }else {
       throw'Incorrect param type for Multiply';
@@ -131,7 +131,7 @@ FABRIC.Math.Vec4.prototype = {
   },
 
   negate: function(v) {
-    return new FABRIC.Math.Vec4(-this.x, - this.y, - this.z, - this.t);
+    return new FABRIC.RT.Vec4(-this.x, - this.y, - this.z, - this.t);
   },
 
   negateInPlace: function(v) {
@@ -175,14 +175,14 @@ FABRIC.Math.Vec4.prototype = {
 
   // Returns a copy of the vector
   clone: function() {
-    return (new FABRIC.Math.Vec4(this.x, this.y, this.z, this.t));
+    return (new FABRIC.RT.Vec4(this.x, this.y, this.z, this.t));
   },
 
   toString: function() {
-    return 'FABRIC.Math.vec4(' + this.x + ',' + this.y + ',' + this.z + ',' + this.t + ')';
+    return 'FABRIC.RT.vec4(' + this.x + ',' + this.y + ',' + this.z + ',' + this.t + ')';
   },
   getType: function() {
-    return 'FABRIC.Math.Vec4';
+    return 'FABRIC.RT.Vec4';
   },
   displayGUI: function($parentDiv, changeHandlerFn) {
     var val = this;
@@ -225,32 +225,32 @@ FABRIC.Math.Vec4.prototype = {
  * Overloaded Constructor for a vec4
  * @return {object} A preset vec4 for the x axis.
  */
-FABRIC.Math.Vec4.xAxis = new FABRIC.Math.Vec4(1, 0, 0, 0);
+FABRIC.RT.Vec4.xAxis = new FABRIC.RT.Vec4(1, 0, 0, 0);
 
 /**
  * Overloaded Constructor for a vec4
  * @return {object} A preset vec4 for the y axis.
  */
-FABRIC.Math.Vec4.yAxis = new FABRIC.Math.Vec4(0, 1, 0, 0);
+FABRIC.RT.Vec4.yAxis = new FABRIC.RT.Vec4(0, 1, 0, 0);
 
 /**
  * Overloaded Constructor for a vec4
  * @return {object} A preset vec4 for the z axis.
  */
-FABRIC.Math.Vec4.zAxis = new FABRIC.Math.Vec4(0, 0, 1, 0);
+FABRIC.RT.Vec4.zAxis = new FABRIC.RT.Vec4(0, 0, 1, 0);
 
 /**
  * Overloaded Constructor for a vec4
  * @return {object} A preset vec4 for the t axis.
  */
-FABRIC.Math.Vec4.tAxis = new FABRIC.Math.Vec4(0, 0, 0, 1);
+FABRIC.RT.Vec4.tAxis = new FABRIC.RT.Vec4(0, 0, 0, 1);
 
 FABRIC.appendOnCreateContextCallback(function(context) {
   context.RegisteredTypesManager.registerType('Vec4', {
     members: {
       x: 'Scalar', y: 'Scalar', z: 'Scalar', t: 'Scalar'
     },
-    constructor: FABRIC.Math.Vec4,
+    constructor: FABRIC.RT.Vec4,
     kBindings: FABRIC.loadResourceURL('../../../SceneGraph/Resources//RT/Vec4.kl')
   });
 });

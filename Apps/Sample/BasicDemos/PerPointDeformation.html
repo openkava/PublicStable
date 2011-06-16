@@ -68,14 +68,14 @@ $(document).ready(function() {
     windowElement: document.getElementById('FabricContainer')
   });
   var light = scene.constructNode('PointLight', {
-    position: FABRIC.Math.vec3(420.0, 1000.0, 600.0)
+    position: FABRIC.RT.vec3(420.0, 1000.0, 600.0)
   });
 
   // Create a camera to draw the scene from
   var camera = scene.constructNode('TargetCamera', {
       nearDistance: 1,
       farDistance: 20,
-      position: FABRIC.Math.vec3(0, 5, 10)
+      position: FABRIC.RT.vec3(0, 5, 10)
     });
   scene.constructNode('CameraManipulator', { targetNode: camera });
 
@@ -97,7 +97,7 @@ $(document).ready(function() {
   });
 
   var material = scene.constructNode('PhongMaterial', {
-      diffuseColor: FABRIC.Math.rgb(0.8, 0, 0, 1),
+      diffuseColor: FABRIC.RT.rgb(0.8, 0, 0, 1),
       lightNode: light
     });
 

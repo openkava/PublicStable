@@ -6,14 +6,14 @@
 /**
  * The basic math module.
  */
-FABRIC.Math = FABRIC.Math ? FABRIC.Math : {};
+FABRIC.RT = FABRIC.RT ? FABRIC.RT : {};
 
 /**
  * Function to determine if an object is a valid color.
  * @param {object} color The color object to validate.
  * @return {boolean} true if the given object is a valid color.
  */
-FABRIC.Math.isColor = function(color) {
+FABRIC.RT.isColor = function(color) {
   return typeof color === 'object' &&
     'r' in color &&
     typeof color.r === 'number' &&
@@ -33,7 +33,7 @@ FABRIC.Math.isColor = function(color) {
  * @param {number} b The blue  component.
  * @param {number} a The alpha component.
  */
-FABRIC.Math.Color = function(r, g, b, a) {
+FABRIC.RT.Color = function(r, g, b, a) {
   if (typeof r === 'number' && typeof g === 'number' && typeof b === 'number' && typeof a === 'number') {
     this.r = r;
     this.g = g;
@@ -46,7 +46,7 @@ FABRIC.Math.Color = function(r, g, b, a) {
     this.b = b;
     this.a = 1.0;
   }
-  else if (FABRIC.Math.isColor(r) && g === undefined && b === undefined && a === undefined) {
+  else if (FABRIC.RT.isColor(r) && g === undefined && b === undefined && a === undefined) {
     this.r = r.r;
     this.g = r.g;
     this.b = r.b;
@@ -62,64 +62,64 @@ FABRIC.Math.Color = function(r, g, b, a) {
   };
 
 /**
- * Overloaded constructor function for FABRIC.Math.Color
+ * Overloaded constructor function for FABRIC.RT.Color
  * @param {number} r The red component.
  * @param {number} g The green component.
  * @param {number} b The blue  component.
  * @param {number} a The alpha component.
  * @return {object} The color object.
  */
-FABRIC.Math.color = function(r, g, b, a) {
-  return new FABRIC.Math.Color(r, g, b, a);
+FABRIC.RT.color = function(r, g, b, a) {
+  return new FABRIC.RT.Color(r, g, b, a);
 };
 
 /**
- * Overloaded constructor function for FABRIC.Math.Color
+ * Overloaded constructor function for FABRIC.RT.Color
  * @param {number} r The red component.
  * @param {number} g The green component.
  * @param {number} b The blue  component.
  * @return {object} The color object.
  */
-FABRIC.Math.rgb = function(r, g, b) {
-  return new FABRIC.Math.Color(r, g, b, 1);
+FABRIC.RT.rgb = function(r, g, b) {
+  return new FABRIC.RT.Color(r, g, b, 1);
 };
 
 /**
- * Overloaded constructor function for FABRIC.Math.Color
- * @param {number} r The red component.
- * @param {number} g The green component.
- * @param {number} b The blue  component.
- * @param {number} a The alpha component.
- * @return {object} The color object.
- */
-FABRIC.Math.rgba = function(r, g, b, a) {
-  return new FABRIC.Math.Color(r, g, b, a);
-};
-
-/**
- * Overloaded constructor function for FABRIC.Math.Color
- * @param {number} r The red component.
- * @param {number} g The green component.
- * @param {number} b The blue  component.
- * @return {object} The color object.
- */
-FABRIC.Math.rgb255 = function(r, g, b) {
-  return new FABRIC.Math.Color(r / 255, g / 255, b / 255, 1);
-};
-
-/**
- * Overloaded constructor function for FABRIC.Math.Color
+ * Overloaded constructor function for FABRIC.RT.Color
  * @param {number} r The red component.
  * @param {number} g The green component.
  * @param {number} b The blue  component.
  * @param {number} a The alpha component.
  * @return {object} The color object.
  */
-FABRIC.Math.rgba255 = function(r, g, b, a) {
-  return new FABRIC.Math.Color(r / 255, g / 255, b / 255, a / 255);
+FABRIC.RT.rgba = function(r, g, b, a) {
+  return new FABRIC.RT.Color(r, g, b, a);
 };
 
-FABRIC.Math.Color.prototype = {
+/**
+ * Overloaded constructor function for FABRIC.RT.Color
+ * @param {number} r The red component.
+ * @param {number} g The green component.
+ * @param {number} b The blue  component.
+ * @return {object} The color object.
+ */
+FABRIC.RT.rgb255 = function(r, g, b) {
+  return new FABRIC.RT.Color(r / 255, g / 255, b / 255, 1);
+};
+
+/**
+ * Overloaded constructor function for FABRIC.RT.Color
+ * @param {number} r The red component.
+ * @param {number} g The green component.
+ * @param {number} b The blue  component.
+ * @param {number} a The alpha component.
+ * @return {object} The color object.
+ */
+FABRIC.RT.rgba255 = function(r, g, b, a) {
+  return new FABRIC.RT.Color(r / 255, g / 255, b / 255, a / 255);
+};
+
+FABRIC.RT.Color.prototype = {
   setRGB: function(r, g, b) {
     this.r = r;
     this.g = g;
@@ -152,16 +152,16 @@ FABRIC.Math.Color.prototype = {
 
   // Returns true if the vector is equal to the argument
   eql: function(color) {
-    return (FABRIC.Math.isColor(color) &&
-      (Math.abs(this.r - color.r) < FABRIC.Math.precision) &&
-      (Math.abs(this.g - color.g) < FABRIC.Math.precision) &&
-      (Math.abs(this.b - color.b) < FABRIC.Math.precision) &&
-      (Math.abs(this.a - color.a) < FABRIC.Math.precision));
+    return (FABRIC.RT.isColor(color) &&
+      (Math.abs(this.r - color.r) < FABRIC.RT.precision) &&
+      (Math.abs(this.g - color.g) < FABRIC.RT.precision) &&
+      (Math.abs(this.b - color.b) < FABRIC.RT.precision) &&
+      (Math.abs(this.a - color.a) < FABRIC.RT.precision));
   },
 
   // Returns the result of adding the argument to the vector
   add: function(col) {
-    var c = new FABRIC.Math.Color(this.r + col.r, this.g + col.g, this.b + col.b, this.a + col.a);
+    var c = new FABRIC.RT.Color(this.r + col.r, this.g + col.g, this.b + col.b, this.a + col.a);
     c.clampColorValues();
     return c;
   },
@@ -172,7 +172,7 @@ FABRIC.Math.Color.prototype = {
   },
 
   subtract: function(col) {
-    var c = (new FABRIC.Math.Color(this.r - col.r, this.g - col.g, this.b - col.b, this.a - col.a)).clampColorValues();
+    var c = (new FABRIC.RT.Color(this.r - col.r, this.g - col.g, this.b - col.b, this.a - col.a)).clampColorValues();
     c.clampColorValues();
     return c;
   },
@@ -184,10 +184,10 @@ FABRIC.Math.Color.prototype = {
 
   multiply: function(col) {
     if (typeof col == 'number') {
-      var c = new FABRIC.Math.Color(this.r * col, this.g * col, this.b * col, this.a * col);
+      var c = new FABRIC.RT.Color(this.r * col, this.g * col, this.b * col, this.a * col);
       return c.clampColorValues();
     }else if (isColor(col)) {
-      var c = new FABRIC.Math.Color(this.r * col.r, this.g * col.g, this.b * col.b, this.a * col.a);
+      var c = new FABRIC.RT.Color(this.r * col.r, this.g * col.g, this.b * col.b, this.a * col.a);
       return c.clampColorValues();
     }else {
       log('Incorrect param type for Multiply');
@@ -248,20 +248,20 @@ FABRIC.Math.Color.prototype = {
   },
 
   toRGBStr: function() {
-    return 'FABRIC.Math.rgb(' + this.r + ',' + this.g + ',' + this.b + ')';
+    return 'FABRIC.RT.rgb(' + this.r + ',' + this.g + ',' + this.b + ')';
   },
   // Used to convert FABRIC color values to DOM color values.
   toRGB255Str: function() {
     return 'rgb(' + Math.round(this.r * 255) + ',' + Math.round(this.g * 255) + ',' + Math.round(this.b * 255) + ')';
   },
   clone: function() {
-    return new FABRIC.Math.Color(this);
+    return new FABRIC.RT.Color(this);
   },
   toString: function() {
-    return 'FABRIC.Math.rgba(' + this.r + ',' + this.g + ',' + this.b + ',' + this.a + ')';
+    return 'FABRIC.RT.rgba(' + this.r + ',' + this.g + ',' + this.b + ',' + this.a + ')';
   },
   getType: function() {
-    return 'FABRIC.Math.Color';
+    return 'FABRIC.RT.Color';
   }/*,
   displayGUI:function($parentDiv, changeHandlerFn, size){
     var val = this;
@@ -283,83 +283,83 @@ FABRIC.Math.Color.prototype = {
 };
 
 /**
- * Overloaded constructor function for FABRIC.Math.Color
+ * Overloaded constructor function for FABRIC.RT.Color
  * @return {object} The color object.
  */
-FABRIC.Math.Color.white = FABRIC.Math.rgb255(255, 255, 255);
+FABRIC.RT.Color.white = FABRIC.RT.rgb255(255, 255, 255);
 
 /**
- * Overloaded constructor function for FABRIC.Math.Color
+ * Overloaded constructor function for FABRIC.RT.Color
  * @return {object} The color object.
  */
-FABRIC.Math.Color.red = FABRIC.Math.rgb255(255, 0, 0);
+FABRIC.RT.Color.red = FABRIC.RT.rgb255(255, 0, 0);
 
 /**
- * Overloaded constructor function for FABRIC.Math.Color
+ * Overloaded constructor function for FABRIC.RT.Color
  * @return {object} The color object.
  */
-FABRIC.Math.Color.green = FABRIC.Math.rgb255(0, 255, 0);
+FABRIC.RT.Color.green = FABRIC.RT.rgb255(0, 255, 0);
 
 /**
- * Overloaded constructor function for FABRIC.Math.Color
+ * Overloaded constructor function for FABRIC.RT.Color
  * @return {object} The color object.
  */
-FABRIC.Math.Color.blue = FABRIC.Math.rgb255(0, 0, 255);
+FABRIC.RT.Color.blue = FABRIC.RT.rgb255(0, 0, 255);
 
 /**
- * Overloaded constructor function for FABRIC.Math.Color
+ * Overloaded constructor function for FABRIC.RT.Color
  * @return {object} The color object.
  */
-FABRIC.Math.Color.cyan = FABRIC.Math.rgb255(0, 255, 255);
+FABRIC.RT.Color.cyan = FABRIC.RT.rgb255(0, 255, 255);
 
 /**
- * Overloaded constructor function for FABRIC.Math.Color
+ * Overloaded constructor function for FABRIC.RT.Color
  * @return {object} The color object.
  */
-FABRIC.Math.Color.magenta = FABRIC.Math.rgb255(255, 0, 255);
+FABRIC.RT.Color.magenta = FABRIC.RT.rgb255(255, 0, 255);
 
 /**
- * Overloaded constructor function for FABRIC.Math.Color
+ * Overloaded constructor function for FABRIC.RT.Color
  * @return {object} The color object.
  */
-FABRIC.Math.Color.yellow = FABRIC.Math.rgb255(255, 255, 0);
+FABRIC.RT.Color.yellow = FABRIC.RT.rgb255(255, 255, 0);
 
 /**
- * Overloaded constructor function for FABRIC.Math.Color
+ * Overloaded constructor function for FABRIC.RT.Color
  * @return {object} The color object.
  */
-FABRIC.Math.Color.brown = FABRIC.Math.rgb255(50, 100, 155);
+FABRIC.RT.Color.brown = FABRIC.RT.rgb255(50, 100, 155);
 
 /**
- * Overloaded constructor function for FABRIC.Math.Color
+ * Overloaded constructor function for FABRIC.RT.Color
  * @return {object} The color object.
  */
-FABRIC.Math.Color.lightgrey = FABRIC.Math.rgb255(155, 155, 155);
+FABRIC.RT.Color.lightgrey = FABRIC.RT.rgb255(155, 155, 155);
 
 /**
- * Overloaded constructor function for FABRIC.Math.Color
+ * Overloaded constructor function for FABRIC.RT.Color
  * @return {object} The color object.
  */
-FABRIC.Math.Color.grey = FABRIC.Math.rgb255(100, 100, 100);
+FABRIC.RT.Color.grey = FABRIC.RT.rgb255(100, 100, 100);
 
 /**
- * Overloaded constructor function for FABRIC.Math.Color
+ * Overloaded constructor function for FABRIC.RT.Color
  * @return {object} The color object.
  */
-FABRIC.Math.Color.darkgrey = FABRIC.Math.rgb255(50, 50, 50);
+FABRIC.RT.Color.darkgrey = FABRIC.RT.rgb255(50, 50, 50);
 
 /**
- * Overloaded constructor function for FABRIC.Math.Color
+ * Overloaded constructor function for FABRIC.RT.Color
  * @return {object} The color object.
  */
-FABRIC.Math.Color.black = FABRIC.Math.rgb255(0, 0, 0);
+FABRIC.RT.Color.black = FABRIC.RT.rgb255(0, 0, 0);
 
 FABRIC.appendOnCreateContextCallback(function(context) {
   context.RegisteredTypesManager.registerType('Color', {
     members: {
       r: 'Scalar', g: 'Scalar', b: 'Scalar', a: 'Scalar'
     },
-    constructor: FABRIC.Math.Color,
+    constructor: FABRIC.RT.Color,
     kBindings: FABRIC.loadResourceURL('../../../SceneGraph/Resources//RT/Color.kl')
   });
 });

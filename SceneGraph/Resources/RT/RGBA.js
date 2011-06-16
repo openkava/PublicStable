@@ -8,7 +8,7 @@
  * @param {object} rgba The rgba object to validate.
  * @return {boolean} true if the given object is a valid rgba.
  */
-FABRIC.Math.isRGBA = function(rgba) {
+FABRIC.RT.isRGBA = function(rgba) {
   return typeof rgba === 'object' &&
     'r' in rgba &&
     typeof rgba.r === 'number' &&
@@ -28,7 +28,7 @@ FABRIC.Math.isRGBA = function(rgba) {
  * @param {number} b The blue  component.
  * @param {number} a The alpha component.
  */
-FABRIC.Math.RGBA = function(r, g, b, a) {
+FABRIC.RT.RGBA = function(r, g, b, a) {
   if (typeof r === 'number' && typeof g === 'number' && typeof b === 'number' && typeof a === 'number') {
     this.r = r;
     this.g = g;
@@ -41,7 +41,7 @@ FABRIC.Math.RGBA = function(r, g, b, a) {
     this.b = b;
     this.a = 255;
   }
-  else if (FABRIC.Math.isRGBA(r) && g === undefined && b === undefined && a === undefined) {
+  else if (FABRIC.RT.isRGBA(r) && g === undefined && b === undefined && a === undefined) {
     this.r = r.r;
     this.g = r.g;
     this.b = r.b;
@@ -56,7 +56,7 @@ FABRIC.Math.RGBA = function(r, g, b, a) {
   else throw'new RGBA: invalid arguments';
   };
 
-FABRIC.Math.RGBA.prototype = {
+FABRIC.RT.RGBA.prototype = {
 
   clampRGBAValues: function() {
     this.r = parseInt(Math.min(Math.max(this.r, 0), 255));
@@ -68,7 +68,7 @@ FABRIC.Math.RGBA.prototype = {
 
   // Returns the result of adding the argument to the vector
   add: function(rgba) {
-    var c = new FABRIC.Math.RGBA(this.r + rgba.r, this.g + rgba.g, this.b + rgba.b, this.a + rgba.a);
+    var c = new FABRIC.RT.RGBA(this.r + rgba.r, this.g + rgba.g, this.b + rgba.b, this.a + rgba.a);
     c.clampRGBAValues();
     return c;
   },
@@ -79,7 +79,7 @@ FABRIC.Math.RGBA.prototype = {
   },
 
   subtract: function(rgba) {
-    var c = (new FABRIC.Math.RGBA(this.r - rgba.r,
+    var c = (new FABRIC.RT.RGBA(this.r - rgba.r,
       this.g - rgba.g,
       this.b - rgba.b,
     this.a - rgba.a)).clampRGBAValues();
@@ -94,10 +94,10 @@ FABRIC.Math.RGBA.prototype = {
 
   multiply: function(rgba) {
     if (typeof rgba == 'number') {
-      var c = new FABRIC.Math.RGBA(this.r * rgba, this.g * rgba, this.b * rgba, this.a * rgba);
+      var c = new FABRIC.RT.RGBA(this.r * rgba, this.g * rgba, this.b * rgba, this.a * rgba);
       return c.clampRGBAValues();
     }else if (isRGBA(rgba)) {
-      var c = new FABRIC.Math.RGBA(this.r * rgba.r, this.g * rgba.g, this.b * rgba.b, this.a * rgba.a);
+      var c = new FABRIC.RT.RGBA(this.r * rgba.r, this.g * rgba.g, this.b * rgba.b, this.a * rgba.a);
       return c.clampRGBAValues();
     }else {
       log('Incorrect param type for Multiply');
@@ -122,7 +122,7 @@ FABRIC.Math.RGBA.prototype = {
 
   // Returns true if the vector is equal to the argument
   eql: function(rgba) {
-    return (FABRIC.Math.isRGBA(rgba) &&
+    return (FABRIC.RT.isRGBA(rgba) &&
       (this.r === rgba.r) &&
       (this.g === rgba.g) &&
       (this.b === rgba.b) &&
@@ -130,15 +130,15 @@ FABRIC.Math.RGBA.prototype = {
   },
 
   clone: function() {
-    return new FABRIC.Math.RGBA(this);
+    return new FABRIC.RT.RGBA(this);
   },
 
   toString: function() {
-    return 'FABRIC.Math.RGBA(' + this.r + ',' + this.g + ',' + this.b + ',' + this.a + ')';
+    return 'FABRIC.RT.RGBA(' + this.r + ',' + this.g + ',' + this.b + ',' + this.a + ')';
   },
 
   getType: function() {
-    return 'FABRIC.Math.RGBA';
+    return 'FABRIC.RT.RGBA';
   }
 };
 
@@ -147,7 +147,7 @@ FABRIC.appendOnCreateContextCallback(function(context) {
     members: {
       r: 'Byte', g: 'Byte', b: 'Byte', a: 'Byte'
     },
-    constructor: FABRIC.Math.RGBA,
+    constructor: FABRIC.RT.RGBA,
     kBindings: FABRIC.loadResourceURL('../../../SceneGraph/Resources//RT/RGBA.kl')
   });
 });

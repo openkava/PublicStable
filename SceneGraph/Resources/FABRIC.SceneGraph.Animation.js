@@ -28,7 +28,7 @@ FABRIC.SceneGraph.registerNodeType('AnimationTrack',
     var animationTrackNode = scene.constructNode('SceneGraphNode', options);
     var dgnode = animationTrackNode.getDGNode();
     dgnode.addMember('name', 'String', 'keyframeAnimationTrack');
-    dgnode.addMember('color', 'Color', FABRIC.Math.rgb(1, 1, 1));
+    dgnode.addMember('color', 'Color', FABRIC.RT.rgb(1, 1, 1));
     dgnode.addMember('keys', options.keyframetype + '[]');
 
     // extend the public interface
@@ -398,7 +398,7 @@ FABRIC.SceneGraph.registerNodeType('TrackDisplay',
     scene.assignDefaults(options, {
         animationTrackNode: undefined,
         trackIndex: 0,
-        timeRange: FABRIC.Math.vec2(0, 100),
+        timeRange: FABRIC.RT.vec2(0, 100),
         segmentCount: 100
       });
     options.dgnodenames.push('DGNode');

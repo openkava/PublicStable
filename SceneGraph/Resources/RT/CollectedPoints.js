@@ -7,7 +7,7 @@
  * Constructor for a collected points object.
  * @constructor
  */
-FABRIC.Math.CollectedPoints = function() {
+FABRIC.RT.CollectedPoints = function() {
   this.points = [];
   this.distances = [];
 };
@@ -17,6 +17,6 @@ FABRIC.appendOnCreateContextCallback(function(context) {
     members: {
       points: 'Integer[]', distances: 'Scalar[]'
     },
-    constructor: FABRIC.Math.CollectedPoints
+    constructor: FABRIC.RT.CollectedPoints
   });
 });

@@ -21,8 +21,8 @@
 FABRIC.SceneGraph.registerNodeType('LineVector',
   function(options, scene) {
     scene.assignDefaults(options, {
-        from: FABRIC.Math.vec3(0, 0, 0),
-        to: FABRIC.Math.vec3(1, 0, 0),
+        from: FABRIC.RT.vec3(0, 0, 0),
+        to: FABRIC.RT.vec3(1, 0, 0),
         width: 1,
         arrowhead: false
       });
@@ -93,8 +93,8 @@ FABRIC.SceneGraph.registerNodeType('Rectangle',
 FABRIC.SceneGraph.registerNodeType('BoundingBox',
   function(options, scene) {
     scene.assignDefaults(options, {
-      bboxmin: FABRIC.Math.vec3(-2, -3, -4),
-      bboxmax: FABRIC.Math.vec3(4, 3, 2)
+      bboxmin: FABRIC.RT.vec3(-2, -3, -4),
+      bboxmax: FABRIC.RT.vec3(4, 3, 2)
     });
 
     var boundingBoxNode = scene.constructNode('Lines', options);

@@ -51,7 +51,7 @@ $(document).ready(function() {
   // Create the scene.
   var scene = FABRIC.SceneGraph.createScene();
   var viewport = scene.constructNode('Viewport', {
-    backgroundColor: FABRIC.Math.rgb(0.5, 0.7, 0.9),
+    backgroundColor: FABRIC.RT.rgb(0.5, 0.7, 0.9),
     enableRaycasting: true,
     rayIntersectionThreshold: 0.1,
     windowElement: document.getElementById('FabricContainer')
@@ -59,8 +59,8 @@ $(document).ready(function() {
 
   // Create a camera to draw the scene from
   var camera = scene.constructNode('TargetCamera', {
-      position: FABRIC.Math.vec3(0, 6.5, 10).scale(1.5),
-      target: FABRIC.Math.vec3(0, 6.5, 0),
+      position: FABRIC.RT.vec3(0, 6.5, 10).scale(1.5),
+      target: FABRIC.RT.vec3(0, 6.5, 0),
       roll: 0,
       nearDistance: 0.001,
       farDistance: 20000,
@@ -75,15 +75,15 @@ $(document).ready(function() {
   var skeletonNode = scene.constructNode('CharacterSkeleton');
   var boneCount = 12;
   var boneLength = 1;
-  var boneOri = FABRIC.Math.quat(FABRIC.Math.vec3(0, 0, 1), 90)
-                           .multiply(FABRIC.Math.quat(FABRIC.Math.vec3(0, 1, 0), 90));
+  var boneOri = FABRIC.RT.quat(FABRIC.RT.vec3(0, 0, 1), 90)
+                           .multiply(FABRIC.RT.quat(FABRIC.RT.vec3(0, 1, 0), 90));
   skeletonNode.addBone({name: 'root'});
   for (var i = 0; i < boneCount; i++)
   {
     skeletonNode.addBone({
       name: 'bone' + i,
-      referencePose: FABRIC.Math.xfo({
-          tr: FABRIC.Math.vec3(0, boneLength * i, 0) ,
+      referencePose: FABRIC.RT.xfo({
+          tr: FABRIC.RT.vec3(0, boneLength * i, 0) ,
           ori: boneOri
         }),
       length: boneLength,
@@ -99,7 +99,7 @@ $(document).ready(function() {
   // create the bone debug drawing
   scene.constructNode('CharacterSkeletonDebug', {
       characterRigNode: rigNode,
-      color: FABRIC.Math.rgba(1.0, 1.0, 1.0, 1.0)
+      color: FABRIC.RT.rgba(1.0, 1.0, 1.0, 1.0)
     });
 
   var spineBones = [];

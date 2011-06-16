@@ -164,8 +164,8 @@ $(document).ready(function() { $('#play').button({
 
   // Create a camera to draw the scene from
   camera = scene.constructNode('TargetCamera', {
-      position: FABRIC.Math.vec3(0, 0, -100),
-      target: FABRIC.Math.vec3(0, 0, 0)
+      position: FABRIC.RT.vec3(0, 0, -100),
+      target: FABRIC.RT.vec3(0, 0, 0)
     });
 
   scene.constructNode('CameraManipulator', { targetNode: camera });
