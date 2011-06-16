@@ -4,6 +4,7 @@
 
 #include <Fabric/Core/Build.h>
 
+#define FABRIC_VERSION_STRING "{{FABRIC_VERSION_MAJ}}.{{FABRIC_VERSION_MIN}}.{{FABRIC_VERSION_REV}}{{FABRIC_VERSION_SUFFIX}}"
 #define FABRIC_COPYRIGHT_YEARS "2010-2011"
 
 namespace Fabric
@@ -11,8 +12,6 @@ namespace Fabric
   char const *buildVersion = FABRIC_VERSION_STRING;
   char const *buildDesc = 
     "Fabric version " FABRIC_VERSION_STRING "\n"
-    "Built on " __DATE__ " at " __TIME__ "\n"
     "Copyright " FABRIC_COPYRIGHT_YEARS " Fabric Technologies Inc. All rights reserved.\n";
-  char const *buildHash = FABRIC_VERSION_STRING " - " __DATE__ " - " __TIME__;
   time_t const buildExpiry = 1310318166;
 };
