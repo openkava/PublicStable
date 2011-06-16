@@ -9,8 +9,11 @@ videoPluginEnv.MergeFlags( ffmpegFlags )
 videoPlugin = videoPluginEnv.SharedLibrary( 'FabricVIDEO', Glob('*.cpp') ),
 videoManifest = videoPluginEnv.File('FabricVIDEO.fpm.json'),
 
+installAction = Install( fabricExtsDistDir, [videoPlugin,videoManifest] )
+extsEnv.CopyToAppdataIfWindows( installAction )
+
 Alias( 'videoExt', [
   videoPlugin,
   videoManifest,
-  Install( fabricExtsDistDir, [videoPlugin,videoManifest] )
+  installAction
 ] )

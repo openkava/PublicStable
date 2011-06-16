@@ -9,8 +9,11 @@ pngPluginEnv.MergeFlags( libpngFlags )
 pngPlugin = pngPluginEnv.SharedLibrary( 'FabricPNG', Glob('*.cpp') ),
 pngManifest = pngPluginEnv.File('FabricPNG.fpm.json'),
 
+installAction = Install( fabricExtsDistDir, [pngPlugin,pngManifest] )
+extsEnv.CopyToAppdataIfWindows( installAction )
+
 Alias( 'pngExt', [
   pngPlugin,
   pngManifest,
-  Install( fabricExtsDistDir, [pngPlugin,pngManifest] )
+  installAction
 ] )

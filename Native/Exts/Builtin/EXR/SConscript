@@ -9,8 +9,11 @@ exrPluginEnv.MergeFlags( openexrFlags )
 exrPlugin = exrPluginEnv.SharedLibrary( 'FabricEXR', Glob('*.cpp') ),
 exrManifest = exrPluginEnv.File('FabricEXR.fpm.json'),
 
+installAction = Install( fabricExtsDistDir, [exrPlugin,exrManifest] )
+extsEnv.CopyToAppdataIfWindows( installAction )
+
 Alias( 'exrExt', [
   exrPlugin,
   exrManifest,
-  Install( fabricExtsDistDir, [exrPlugin,exrManifest] )
+  installAction
 ] )

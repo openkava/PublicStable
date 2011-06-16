@@ -21,11 +21,14 @@ if(os.path.exists(sdkPath)):
   # vicon sdk
   viconPluginEnv.Append( CCFLAGS = '-I'+sdkPath )
   viconPluginEnv.Append( LINKFLAGS = '-L'+sdkPath+" -lViconDataStreamSDK_CPP" )
-    
+
+  installAction = Install( viconPluginEnv['DEST_DIR'], [viconPlugin,viconManifest] )
+  extsEnv.CopyToAppdataIfWindows( installAction )
+
   Alias( 'viconExt', [
     viconPlugin,
     viconManifest,
-    Install( viconPluginEnv['DEST_DIR'], [viconPlugin,viconManifest] )
+    installAction
   ] )
 else:
   print("--------- Skipping VICON plugin, no VICON SDK found.")
