@@ -5,8 +5,8 @@
 
 
 
-#include '../../../SceneGraph/Resources//KL/solveFishingRod.kl'
-#include '../../../SceneGraph/Resources//KL/solveNCFIK.kl'
+#include 'FABRIC_ROOT/SceneGraph/Resources/KL/solveFishingRod.kl'
+#include 'FABRIC_ROOT/SceneGraph/Resources/KL/solveNCFIK.kl'
 
 operator solveArmRig(
   io Xfo pose[],

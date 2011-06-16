@@ -581,7 +581,7 @@ FABRIC.SceneGraph = {
 
     scene.pub.displayDebugger = function() {
       var debuggerWindow = window.open(
-        '../../../Core/Debugger/FABRIC.Debugger.html?id=' + context.getContextID() , 'Fabric Debugger');
+        'FABRIC_ROOT/Core/Debugger/FABRIC.Debugger.html?id=' + context.getContextID() , 'Fabric Debugger');
       debuggerWindow.context = context;
       debuggerWindow.scene = scene;
     };
@@ -870,7 +870,7 @@ FABRIC.SceneGraph.registerNodeType('Viewport',
 
     redrawEventHandler.preDescendBindings.append(scene.constructOperator({
           operatorName: 'viewPortBeginRender',
-          srcFile: '../../../SceneGraph/Resources//KL/viewPortBeginRender.kl',
+          srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/viewPortBeginRender.kl',
           entryFunctionName: 'viewPortBeginRender',
           parameterBinding: [
             'window.width',
@@ -909,7 +909,7 @@ FABRIC.SceneGraph.registerNodeType('Viewport',
       // The scopes should be the window, viewport, camera and projection.
       viewPortRayCastDgNode.bindings.append(scene.constructOperator({
         operatorName: 'ViewportRaycast',
-        srcFile: '../../../SceneGraph/Resources//KL/viewPortUpdateRayCast.kl',
+        srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/viewPortUpdateRayCast.kl',
         entryFunctionName: 'viewPortUpdateRayCast',
         parameterBinding: [
           'camera.cameraMat44',
@@ -988,7 +988,7 @@ FABRIC.SceneGraph.registerNodeType('Viewport',
         textureStub.postDescendBindings.append(
           scene.constructOperator({
               operatorName: 'renderTextureToView',
-              srcFile: '../../../SceneGraph/Resources//KL/OffscreenRendering.kl',
+              srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/OffscreenRendering.kl',
               entryFunctionName: 'renderTextureToView',
               parameterBinding: [
                 'textureStub.textureUnit',
@@ -1271,7 +1271,7 @@ FABRIC.SceneGraph.registerNodeType('Camera',
 
     redrawEventHandler.preDescendBindings.append(scene.constructOperator({
       operatorName: 'UpdateCameraProjection',
-      srcFile: '../../../SceneGraph/Resources//KL/updateCameraProjection.kl',
+      srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/updateCameraProjection.kl',
       entryFunctionName: 'updateCameraProjection',
       parameterBinding: [
         'camera.projectionMat44',

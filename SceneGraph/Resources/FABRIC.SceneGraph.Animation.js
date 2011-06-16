@@ -78,7 +78,7 @@ FABRIC.SceneGraph.registerNodeType('AnimationTrack',
     animationTrackNode.getInterpolatorOperator = function() {
       return scene.constructOperator({
           operatorName: 'evaluateKeyframeAnimationTrack',
-          srcFile: '../../../SceneGraph/Resources//KL/evaluateKeyframeAnimationTrack.kl',
+          srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/evaluateKeyframeAnimationTrack.kl',
           preProcessorDefinitions: {
             KEYFRAMETYPE: options.keyframetype,
             KEYFRAME_EVALUATEDTYPE: defaultKeyframeValue.valueType
@@ -96,7 +96,7 @@ FABRIC.SceneGraph.registerNodeType('AnimationTrack',
     animationTrackNode.getDrawOperator = function() {
       return scene.constructOperator({
           operatorName: 'evaluateCurve',
-          srcFile: '../../../SceneGraph/Resources//KL/evaluateKeyframeAnimationTrack.kl',
+          srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/evaluateKeyframeAnimationTrack.kl',
           preProcessorDefinitions: {
             KEYFRAMETYPE: options.keyframetype,
             KEYFRAME_EVALUATEDTYPE: defaultKeyframeValue.valueType
@@ -173,7 +173,7 @@ FABRIC.SceneGraph.registerNodeType('AnimationController',
   /*  dgnode.bindings.append(scene.constructOperator(
       {
         operatorName:'incrementControllerLocalTime',
-        srcFile:'../../../SceneGraph/Resources//KL/incrementControllerLocalTime.kl',
+        srcFile:'FABRIC_ROOT/SceneGraph/Resources/KL/incrementControllerLocalTime.kl',
         entryFunctionName:'incrementControllerLocalTime',
         parameterBinding:[
           'globals.time',

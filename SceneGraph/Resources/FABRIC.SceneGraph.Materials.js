@@ -60,7 +60,7 @@ FABRIC.SceneGraph.registerNodeType('Image',
               'image.pixels'
             ],
             entryFunctionName: (options.wantHDR ? 'loadImageHDR' : 'loadImageLDR'),
-            srcFile: '../../../SceneGraph/Resources//KL/loadTexture.kl'
+            srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/loadTexture.kl'
           }));
     }
 
@@ -71,7 +71,7 @@ FABRIC.SceneGraph.registerNodeType('Image',
     if (options.createLoadTextureEventHandler) {
         redrawEventHandler.preDescendBindings.append(scene.constructOperator({
             operatorName: 'loadTexture',
-            srcFile: '../../../SceneGraph/Resources//KL/loadTexture.kl',
+            srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/loadTexture.kl',
             entryFunctionName: 'createTextureFromImageLDR',
             parameterBinding: [
               'image.width',
@@ -160,7 +160,7 @@ FABRIC.SceneGraph.registerNodeType('Video',
 
     dgnode.bindings.append(scene.constructOperator({
       operatorName: 'videoLoadInfo',
-      srcFile: '../../../SceneGraph/Resources//KL/loadVideo.kl',
+      srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/loadVideo.kl',
       entryFunctionName: 'videoLoadInfo',
       parameterBinding: [
         'self.filename',
@@ -174,7 +174,7 @@ FABRIC.SceneGraph.registerNodeType('Video',
 
     dgnode.bindings.append(scene.constructOperator({
       operatorName: 'videoSeekTime',
-      srcFile: '../../../SceneGraph/Resources//KL/loadVideo.kl',
+      srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/loadVideo.kl',
       entryFunctionName: 'videoSeekTime',
       parameterBinding: [
         'self.stream',
@@ -184,7 +184,7 @@ FABRIC.SceneGraph.registerNodeType('Video',
 
     dgnode.bindings.append(scene.constructOperator({
       operatorName: 'videoGetPixels',
-      srcFile: '../../../SceneGraph/Resources//KL/loadVideo.kl',
+      srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/loadVideo.kl',
       entryFunctionName: 'videoGetPixels',
       parameterBinding: [
         'self.stream',
@@ -196,7 +196,7 @@ FABRIC.SceneGraph.registerNodeType('Video',
 
     videoNode.getRedrawEventHandler().preDescendBindings.append(scene.constructOperator({
         operatorName: 'videoLoadToGPU',
-        srcFile: '../../../SceneGraph/Resources//KL/loadVideo.kl',
+        srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/loadVideo.kl',
         entryFunctionName: 'videoLoadToGPU',
         parameterBinding: [
           'image.width',
@@ -226,7 +226,7 @@ FABRIC.SceneGraph.registerNodeType('PointSpriteTexture',
     redrawEventHandler.addMember('bufferID', 'Integer', 0);
     redrawEventHandler.preDescendBindings.append(scene.constructOperator({
             operatorName: 'createSpriteTexture',
-            srcFile: '../../../SceneGraph/Resources//KL/loadTexture.kl',
+            srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/loadTexture.kl',
             entryFunctionName: 'createSpriteTexture',
             parameterBinding: [
               'image.resolution',
@@ -470,7 +470,7 @@ FABRIC.SceneGraph.registerNodeType('Shader',
 
     redrawEventHandler.preDescendBindings.append(scene.constructOperator({
       operatorName: 'loadShader',
-      srcFile: '../../../SceneGraph/Resources//KL/loadShader.kl',
+      srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/loadShader.kl',
       entryFunctionName: 'loadShader',
       parameterBinding: [
         'shader.name',
@@ -578,7 +578,7 @@ FABRIC.SceneGraph.registerNodeType('Material',
     if (options.autoSetProgram) {
       operators.append(scene.constructOperator({
         operatorName: 'useProgramOp',
-        srcFile: '../../../SceneGraph/Resources//KL/loadShader.kl',
+        srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/loadShader.kl',
         entryFunctionName: 'useProgram',
         parameterBinding: ['shader.program']
       }));
@@ -605,7 +605,7 @@ FABRIC.SceneGraph.registerNodeType('Material',
       operatorFunction = 'load' + uniformType + 'Uniform';
       operators.append(scene.constructOperator({
         operatorName: operatorFunction + uniformName,
-        srcFile: '../../../SceneGraph/Resources//KL/loadUniforms.kl',
+        srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/loadUniforms.kl',
         preProcessorDefinitions: {
           ATTRIBUTE_ID: FABRIC.shaderAttributeTable[uniformName].id
         },
@@ -662,7 +662,7 @@ FABRIC.SceneGraph.registerNodeType('Material',
 
         textureStub.preDescendBindings.append(scene.constructOperator({
           operatorName: 'loadIntegerUniform',
-          srcFile: '../../../SceneGraph/Resources//KL/loadUniforms.kl',
+          srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/loadUniforms.kl',
           preProcessorDefinitions: {
             ATTRIBUTE_ID: FABRIC.shaderAttributeTable[textureName].id,
             ATTRIBUTE_NAME: textureName
@@ -721,7 +721,7 @@ FABRIC.SceneGraph.registerNodeType('PointMaterial',
     // TODO: Define a new effect and use material uniforms.
     pointMaterial.getRedrawEventHandler().preDescendBindings.append(scene.constructOperator({
         operatorName: 'setPointSize',
-        srcFile: '../../../SceneGraph/Resources//KL/drawPoints.kl',
+        srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/drawPoints.kl',
         entryFunctionName: 'setPointSize',
         parameterBinding: ['material.pointSize']
       }));
@@ -773,7 +773,7 @@ FABRIC.SceneGraph.registerNodeType('PostProcessEffect',
     redrawEventHandler.preDescendBindings.append(
       scene.constructOperator({
           operatorName: 'prepareOffscreenRenderingOp',
-          srcFile: '../../../SceneGraph/Resources//KL/OffscreenRendering.kl',
+          srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/OffscreenRendering.kl',
           entryFunctionName: 'prepareOffscreenRendering',
           parameterBinding: [
             'window.width',
@@ -789,7 +789,7 @@ FABRIC.SceneGraph.registerNodeType('PostProcessEffect',
     redrawEventHandler.postDescendBindings.append(
       scene.constructOperator({
           operatorName: 'renderOffscreenToViewOp',
-          srcFile: '../../../SceneGraph/Resources//KL/OffscreenRendering.kl',
+          srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/OffscreenRendering.kl',
           entryFunctionName: 'renderOffscreenToView',
           parameterBinding: [
             'window.width',
@@ -1082,22 +1082,22 @@ FABRIC.SceneGraph.defineEffectFromFile = function(effectfile) {
     });
 };
 
-FABRIC.SceneGraph.defineEffectFromFile('../../../SceneGraph/Resources//Shaders/FlatShader.xml');
-FABRIC.SceneGraph.defineEffectFromFile('../../../SceneGraph/Resources//Shaders/FlatScreenSpaceShader.xml');
-FABRIC.SceneGraph.defineEffectFromFile('../../../SceneGraph/Resources//Shaders/PhongShader.xml');
-FABRIC.SceneGraph.defineEffectFromFile('../../../SceneGraph/Resources//Shaders/ShadowMapShader.xml');
+FABRIC.SceneGraph.defineEffectFromFile('FABRIC_ROOT/SceneGraph/Resources/Shaders/FlatShader.xml');
+FABRIC.SceneGraph.defineEffectFromFile('FABRIC_ROOT/SceneGraph/Resources/Shaders/FlatScreenSpaceShader.xml');
+FABRIC.SceneGraph.defineEffectFromFile('FABRIC_ROOT/SceneGraph/Resources/Shaders/PhongShader.xml');
+FABRIC.SceneGraph.defineEffectFromFile('FABRIC_ROOT/SceneGraph/Resources/Shaders/ShadowMapShader.xml');
 
-FABRIC.SceneGraph.defineEffectFromFile('../../../SceneGraph/Resources//Shaders/NormalShader.xml');
-FABRIC.SceneGraph.defineEffectFromFile('../../../SceneGraph/Resources//Shaders/FlatTextureShader.xml');
-FABRIC.SceneGraph.defineEffectFromFile('../../../SceneGraph/Resources//Shaders/PhongTextureShader.xml');
-FABRIC.SceneGraph.defineEffectFromFile('../../../SceneGraph/Resources//Shaders/PhongBumpReflectShader.xml');
-FABRIC.SceneGraph.defineEffectFromFile('../../../SceneGraph/Resources//Shaders/PhongSkinningShader.xml');
+FABRIC.SceneGraph.defineEffectFromFile('FABRIC_ROOT/SceneGraph/Resources/Shaders/NormalShader.xml');
+FABRIC.SceneGraph.defineEffectFromFile('FABRIC_ROOT/SceneGraph/Resources/Shaders/FlatTextureShader.xml');
+FABRIC.SceneGraph.defineEffectFromFile('FABRIC_ROOT/SceneGraph/Resources/Shaders/PhongTextureShader.xml');
+FABRIC.SceneGraph.defineEffectFromFile('FABRIC_ROOT/SceneGraph/Resources/Shaders/PhongBumpReflectShader.xml');
+FABRIC.SceneGraph.defineEffectFromFile('FABRIC_ROOT/SceneGraph/Resources/Shaders/PhongSkinningShader.xml');
 
-FABRIC.SceneGraph.defineEffectFromFile('../../../SceneGraph/Resources//Shaders/ShadowReceivingPhongShader.xml');
-FABRIC.SceneGraph.defineEffectFromFile('../../../SceneGraph/Resources//Shaders/PhongBumpReflectSkinningShader.xml');
+FABRIC.SceneGraph.defineEffectFromFile('FABRIC_ROOT/SceneGraph/Resources/Shaders/ShadowReceivingPhongShader.xml');
+FABRIC.SceneGraph.defineEffectFromFile('FABRIC_ROOT/SceneGraph/Resources/Shaders/PhongBumpReflectSkinningShader.xml');
 
-FABRIC.SceneGraph.defineEffectFromFile('../../../SceneGraph/Resources//Shaders/VertexColorShader.xml');
-FABRIC.SceneGraph.defineEffectFromFile('../../../SceneGraph/Resources//Shaders/PhongVertexColorShader.xml');
+FABRIC.SceneGraph.defineEffectFromFile('FABRIC_ROOT/SceneGraph/Resources/Shaders/VertexColorShader.xml');
+FABRIC.SceneGraph.defineEffectFromFile('FABRIC_ROOT/SceneGraph/Resources/Shaders/PhongVertexColorShader.xml');
 
 
 
@@ -1124,8 +1124,8 @@ FABRIC.SceneGraph.registerNodeType('PointSpriteMaterial',
     options.textures = {
       spriteTexture: { node: pointSpriteTextureNode.pub }
     };
-    options.vertexShader = FABRIC.loadResourceURL('../../../SceneGraph/Resources//Shaders/PointSpriteVertexShader.glsl');
-    options.fragmentShader = FABRIC.loadResourceURL('../../../SceneGraph/Resources//Shaders/PointSpriteFragmentShader.glsl');
+    options.vertexShader = FABRIC.loadResourceURL('FABRIC_ROOT/SceneGraph/Resources/Shaders/PointSpriteVertexShader.glsl');
+    options.fragmentShader = FABRIC.loadResourceURL('FABRIC_ROOT/SceneGraph/Resources/Shaders/PointSpriteFragmentShader.glsl');
 
     var pointSpriteMaterialNode = scene.constructNode('Material', options);
     var dgnode = pointSpriteMaterialNode.getDGNode();
@@ -1135,13 +1135,13 @@ FABRIC.SceneGraph.registerNodeType('PointSpriteMaterial',
     
     pointSpriteMaterialNode.getRedrawEventHandler().preDescendBindings.append(scene.constructOperator({
         operatorName: 'preDrawSpritePoints',
-        srcFile: '../../../SceneGraph/Resources//KL/drawPoints.kl',
+        srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/drawPoints.kl',
         entryFunctionName: 'preDrawSpritePoints',
         parameterBinding: ['material.pointSize']
       }));
     pointSpriteMaterialNode.getRedrawEventHandler().postDescendBindings.append(scene.constructOperator({
         operatorName: 'postDrawSpritePoints',
-        srcFile: '../../../SceneGraph/Resources//KL/drawPoints.kl',
+        srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/drawPoints.kl',
         entryFunctionName: 'postDrawSpritePoints',
         parameterBinding: []
       }));
@@ -1168,7 +1168,7 @@ FABRIC.SceneGraph.registerNodeType('StupidPostProcessEffect',
 
 FABRIC.SceneGraph.registerNodeType('BloomPostProcessEffect',
   function(options, scene) {
-    options.fragmentShader = FABRIC.loadResourceURL('../../../SceneGraph/Resources//Shaders/BloomPixelShader.glsl');
+    options.fragmentShader = FABRIC.loadResourceURL('FABRIC_ROOT/SceneGraph/Resources/Shaders/BloomPixelShader.glsl');
 
     var bloomPostProcessEffect = scene.constructNode('PostProcessEffect', options);
     return bloomPostProcessEffect;
@@ -1177,7 +1177,7 @@ FABRIC.SceneGraph.registerNodeType('BloomPostProcessEffect',
 
 FABRIC.SceneGraph.registerNodeType('FilmicTonemapperPostProcessEffect',
   function(options, scene) {
-    options.fragmentShader = FABRIC.loadResourceURL('../../../SceneGraph/Resources//Shaders/FilmicTonemapper.glsl');
+    options.fragmentShader = FABRIC.loadResourceURL('FABRIC_ROOT/SceneGraph/Resources/Shaders/FilmicTonemapper.glsl');
 
     var filmicTonemapperEffect = scene.constructNode('PostProcessEffect', options);
     return filmicTonemapperEffect;
@@ -1186,7 +1186,7 @@ FABRIC.SceneGraph.registerNodeType('FilmicTonemapperPostProcessEffect',
 
 FABRIC.SceneGraph.registerNodeType('EdgeDetectionPostProcessEffect',
   function(options, scene) {
-    options.fragmentShader = FABRIC.loadResourceURL('../../../SceneGraph/Resources//Shaders/EdgeDetectionPixelShader.glsl');
+    options.fragmentShader = FABRIC.loadResourceURL('FABRIC_ROOT/SceneGraph/Resources/Shaders/EdgeDetectionPixelShader.glsl');
 
     options.shaderUniforms = {
       width: { name: 'u_width', owner: 'window' },
@@ -1202,7 +1202,7 @@ FABRIC.SceneGraph.registerNodeType('EdgeDetectionPostProcessEffect',
 
 FABRIC.SceneGraph.registerNodeType('GaussianBlurPostProcessEffect',
   function(options, scene) {
-    options.fragmentShader = FABRIC.loadResourceURL('../../../SceneGraph/Resources//Shaders/GaussianBlurFragmentShader.glsl');
+    options.fragmentShader = FABRIC.loadResourceURL('FABRIC_ROOT/SceneGraph/Resources/Shaders/GaussianBlurFragmentShader.glsl');
 
     options.shaderUniforms = {
       blurSize: { name: 'u_blurSize', defaultValue: 1.0 / 512.0 }

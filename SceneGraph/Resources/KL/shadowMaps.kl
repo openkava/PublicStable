@@ -3,7 +3,7 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
-#include '../../../SceneGraph/Resources//KL/loadShader.kl'
+#include 'FABRIC_ROOT/SceneGraph/Resources/KL/loadShader.kl'
 
 function Mat44 symmetricFrustum(Scalar r, Scalar t, Scalar n, Scalar f) {
   var Mat44 result(
