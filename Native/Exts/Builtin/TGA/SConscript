@@ -8,8 +8,11 @@ tgaPluginEnv = extsEnv.Clone()
 tgaPlugin = tgaPluginEnv.SharedLibrary( 'FabricTGA', Glob('*.cpp') ),
 tgaManifest = tgaPluginEnv.File('FabricTGA.fpm.json'),
 
+installAction = Install( fabricExtsDistDir, [tgaPlugin,tgaManifest] )
+extsEnv.CopyToAppdataIfWindows( installAction )
+
 Alias( 'tgaExt', [
   tgaPlugin,
   tgaManifest,
-  Install( fabricExtsDistDir, [tgaPlugin,tgaManifest] )
+  installAction
 ] )

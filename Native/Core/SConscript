@@ -3,7 +3,7 @@
 #
 
 import os
-Import( 'baseEnv', 'llvmFlags', 'md5Flags' )
+Import( 'baseEnv', 'llvmFlags', 'md5Flags', 'buildOS' )
 
 coreEnv = baseEnv.Clone()
 coreEnv.MergeFlags( llvmFlags )

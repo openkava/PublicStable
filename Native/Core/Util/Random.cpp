@@ -28,6 +28,11 @@ namespace Fabric
 
       BOOL    success;
       success = ::CryptAcquireContext( &hCryptProvider, NULL, NULL, PROV_RSA_FULL, 0 );
+      if( success == NTE_BAD_KEYSET )
+      {
+        //On the very first run, a container might have to be created.
+        success = ::CryptAcquireContext( &hCryptProvider, NULL, NULL, PROV_RSA_FULL, CRYPT_NEWKEYSET );
+      }
       FABRIC_ASSERT( success );
 
       success = ::CryptGenRandom( hCryptProvider, DWORD( count ), bytes );
