@@ -77,8 +77,8 @@ $(document).ready(function() {
           lightNode: light
         });
 
-  var assets = scene.importAssetFile('Models/Cow.obj');
-  var instanceNode = scene.constructNode('Instance', { geometryNode: assets['Cow'], materialNode: redMaterial });
+  var assets = scene.importAssetFile('Models/cow.obj');
+  var instanceNode = scene.constructNode('Instance', { geometryNode: assets['cow'], materialNode: redMaterial });
 
   var errors = scene.getErrors();
   if (errors.length > 0) {
@@ -105,11 +105,15 @@ $(document).ready(function() {
         <div id="sidebar">
           
           <div class="box">
-                    <h2>INFO</h2>
-                    <div class="content">
-              Models are imported using JavaScript file parsers. Currently only the obj file is supported. 
+            <h2>INFO</h2>
+            <div class="content">
+              ModelViewer.<br>
+              The model seen in this sample is imported using FABRIC's OBJ parser, and then drawn using
+              a phong material. This very basic sample makes use of FABRIC's parser features, and illustrates
+              how to utilize external models for visualization resp. inspection.
             </div><!--content-->
-                </div><!--box-->
+          </div><!--box-->
+
 <!--
 // TODO: Figure out how to load files from HTML
           <div class="box">
