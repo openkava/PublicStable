@@ -102,6 +102,7 @@ namespace Fabric
         char const *home = getenv("HOME");
         if ( home && *home )
           pluginDirs.push_back( IO::joinPath( IO::joinPath( std::string(home), ".fabric" ), "Exts" ) );
+        pluginDirs.push_back( "/usr/lib/fabric/Exts" );
 #elif defined(FABRIC_OS_WINDOWS)
         char const *appData = getenv("APPDATA");
         if ( appData && *appData )
