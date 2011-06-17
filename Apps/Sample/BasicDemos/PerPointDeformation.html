@@ -136,11 +136,15 @@ $(document).ready(function() {
         <div id="sidebar">
           
           <div class="box">
-                    <h2>INFO</h2>
-                    <div class="content">
-              Points are transformed on the CPU in parallel buy the nmulti-threaded Fabric engine.
+            <h2>INFO</h2>
+            <div class="content">
+              Per Point Deformation.<br>
+              This scenes illustrates the use of FABRIC's geometry pipeline. The model is imported using
+              the OBJ parser, and then is deformed using the deformation buffer. Each deformation is processed
+              using a separate slice, to utilize FABRIC's multithreading framework. Play with the slider below
+              to see it in action.
             </div><!--content-->
-                </div><!--box-->
+          </div><!--box-->
 
                 <div class="box">
                     <h2>CONTROLS</h2>
