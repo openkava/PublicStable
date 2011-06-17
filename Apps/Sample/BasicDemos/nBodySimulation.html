@@ -110,7 +110,7 @@ $(document).ready(function() { $('#play').button({
         scene.constructOperator({
             operatorName: 'nBodyInitOp',
             entryFunctionName: 'nBodyInit',
-            srcCode: FABRIC.loadResourceURL('KL/nBodyOp.kl'),
+            srcFile: 'KL/nBodyOp.kl',
             parameterBinding: [
               'self.index',
               'self.count',
@@ -132,7 +132,7 @@ $(document).ready(function() { $('#play').button({
       deformationBuffer.assignOperator({
           operatorName: 'nBodySimulateGPUOp',
           entryFunctionName: 'nBodySimulateGPU',
-          srcCode: FABRIC.loadResourceURL('KL/nBodyOpGPU.kl'),
+          srcFile: 'KL/nBodyOpGPU.kl',
           parameterBinding: [
             'globals.ms',
             'parentattributes.positions[]',
