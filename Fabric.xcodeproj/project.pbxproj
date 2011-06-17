@@ -1079,6 +1079,11 @@
 		DB96860F13A79CE700616143 /* twistOp.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = twistOp.kl; sourceTree = "<group>"; };
 		DBCCD55C13ABE93D00024113 /* install.sh.template */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = install.sh.template; sourceTree = "<group>"; };
 		DBCCD55D13ABE93D00024113 /* SConscript */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = SConscript; sourceTree = "<group>"; };
+		DBCCD56613ABFAE300024113 /* SConscript */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = SConscript; sourceTree = "<group>"; };
+		DBCCD56813ABFAE300024113 /* SConscript */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = SConscript; sourceTree = "<group>"; };
+		DBCCD56913ABFAE300024113 /* timeSample.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = timeSample.cpp; sourceTree = "<group>"; };
+		DBCCD56A13ABFAE300024113 /* TimeSample.fpm.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = TimeSample.fpm.json; sourceTree = "<group>"; };
+		DBCCD57B13AC007D00024113 /* currentTime.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = currentTime.html; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -1868,8 +1873,8 @@
 		DB96733813A5423300616143 /* EDK */ = {
 			isa = PBXGroup;
 			children = (
-				DB96733913A5423300616143 /* EDK.h */,
 				DB96733A13A5423300616143 /* SConscript */,
+				DB96733913A5423300616143 /* EDK.h */,
 			);
 			path = EDK;
 			sourceTree = "<group>";
@@ -1877,8 +1882,9 @@
 		DB96733B13A5423300616143 /* Exts */ = {
 			isa = PBXGroup;
 			children = (
-				DB96733C13A5423300616143 /* Builtin */,
 				DB96735613A5423300616143 /* SConscript */,
+				DB96733C13A5423300616143 /* Builtin */,
+				DBCCD56513ABFAE300024113 /* Sample */,
 			);
 			path = Exts;
 			sourceTree = "<group>";
@@ -1886,10 +1892,10 @@
 		DB96733C13A5423300616143 /* Builtin */ = {
 			isa = PBXGroup;
 			children = (
+				DB96734913A5423300616143 /* SConscript */,
 				DB96733D13A5423300616143 /* EXR */,
 				DB96734113A5423300616143 /* HDR */,
 				DB96734513A5423300616143 /* PNG */,
-				DB96734913A5423300616143 /* SConscript */,
 				DB96734A13A5423300616143 /* TGA */,
 				DB96734E13A5423300616143 /* VICON */,
 				DB96735213A5423300616143 /* VIDEO */,
@@ -2674,6 +2680,7 @@
 			children = (
 				DB96855913A79BC700616143 /* BasicDemos */,
 				DB9685BE13A79BCB00616143 /* Rigging */,
+				DBCCD57A13AC007D00024113 /* SampleExts */,
 			);
 			path = Sample;
 			sourceTree = "<group>";
@@ -2744,6 +2751,33 @@
 				DBCCD55C13ABE93D00024113 /* install.sh.template */,
 			);
 			path = Linux;
+			sourceTree = "<group>";
+		};
+		DBCCD56513ABFAE300024113 /* Sample */ = {
+			isa = PBXGroup;
+			children = (
+				DBCCD56613ABFAE300024113 /* SConscript */,
+				DBCCD56713ABFAE300024113 /* Time */,
+			);
+			path = Sample;
+			sourceTree = "<group>";
+		};
+		DBCCD56713ABFAE300024113 /* Time */ = {
+			isa = PBXGroup;
+			children = (
+				DBCCD56813ABFAE300024113 /* SConscript */,
+				DBCCD56913ABFAE300024113 /* timeSample.cpp */,
+				DBCCD56A13ABFAE300024113 /* TimeSample.fpm.json */,
+			);
+			path = Time;
+			sourceTree = "<group>";
+		};
+		DBCCD57A13AC007D00024113 /* SampleExts */ = {
+			isa = PBXGroup;
+			children = (
+				DBCCD57B13AC007D00024113 /* currentTime.html */,
+			);
+			path = SampleExts;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
