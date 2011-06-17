@@ -530,7 +530,6 @@
 		DB96735413A5423300616143 /* SConscript */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = SConscript; sourceTree = "<group>"; };
 		DB96735513A5423300616143 /* video.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = video.cpp; sourceTree = "<group>"; };
 		DB96735613A5423300616143 /* SConscript */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = SConscript; sourceTree = "<group>"; };
-		DB96735A13A5423300616143 /* build.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = build.sh; sourceTree = "<group>"; };
 		DB967E0013A543F600616143 /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
 		DB967E0113A543F600616143 /* SConstruct */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = SConstruct; sourceTree = "<group>"; };
 		DB967E0413A543F600616143 /* access-restrictions.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "access-restrictions.js"; sourceTree = "<group>"; };
@@ -1078,6 +1077,8 @@
 		DB96860D13A79CE700616143 /* swirleyMovementOp.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = swirleyMovementOp.kl; sourceTree = "<group>"; };
 		DB96860E13A79CE700616143 /* turningOp.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = turningOp.kl; sourceTree = "<group>"; };
 		DB96860F13A79CE700616143 /* twistOp.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = twistOp.kl; sourceTree = "<group>"; };
+		DBCCD55C13ABE93D00024113 /* install.sh.template */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = install.sh.template; sourceTree = "<group>"; };
+		DBCCD55D13ABE93D00024113 /* SConscript */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = SConscript; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -1961,6 +1962,7 @@
 			children = (
 				DB1B2EF413AA9229008A3950 /* SConscript */,
 				DB96735813A5423300616143 /* Darwin */,
+				DBCCD55B13ABE93D00024113 /* Linux */,
 			);
 			path = Installer;
 			sourceTree = "<group>";
@@ -1969,7 +1971,6 @@
 			isa = PBXGroup;
 			children = (
 				DB1B2EF513AA9271008A3950 /* SConscript */,
-				DB96735A13A5423300616143 /* build.sh */,
 			);
 			path = Darwin;
 			sourceTree = "<group>";
@@ -2734,6 +2735,15 @@
 				DB96860F13A79CE700616143 /* twistOp.kl */,
 			);
 			path = KL;
+			sourceTree = "<group>";
+		};
+		DBCCD55B13ABE93D00024113 /* Linux */ = {
+			isa = PBXGroup;
+			children = (
+				DBCCD55D13ABE93D00024113 /* SConscript */,
+				DBCCD55C13ABE93D00024113 /* install.sh.template */,
+			);
+			path = Linux;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */

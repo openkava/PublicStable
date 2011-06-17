@@ -7,7 +7,7 @@ Import( 'env', 'installerName', 'archDistDir', 'installerRootDistDir', 'buildArc
 
 pkgID = "com.fabric-engine.FabricNPAPIPlugin." + buildArch
 pkgBuilder = Builder(
-  action = "mkdir -p $TARGET && /Developer/Applications/Utilities/PackageMaker.app/Contents/MacOS/PackageMaker --root $SOURCE --out $TARGET --id " + pkgID + " --version " + FABRIC_VERSION + " --title '" + installerName + "' --install-to '~'"
+  action = "mkdir -p $TARGET && /Developer/Applications/Utilities/PackageMaker.app/Contents/MacOS/PackageMaker --root $SOURCE --out $TARGET --id " + pkgID + " --version " + FABRIC_VERSION + " --title '" + packageName + "'"
 )
 dmgBuilder = Builder(
   action = "hdiutil create $TARGET -volname '" + installerName + "' -fs HFS+ -srcfolder $SOURCE"
