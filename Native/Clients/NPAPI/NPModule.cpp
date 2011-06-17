@@ -94,10 +94,10 @@ FABRIC_NPAPI_EXPORT NPError OSCALL NP_GetValue(NPP instance, NPPVariable variabl
   switch (variable)
   {
     case NPPVpluginNameString:
-      *(static_cast<const char**>(value)) = "Fabric v" FABRIC_VERSION_STRING;
+      *(static_cast<const char**>(value)) = Fabric::buildName;
       break;
     case NPPVpluginDescriptionString:
-      *(static_cast<const char**>(value)) = "http://fabric-engine.com";
+      *(static_cast<const char**>(value)) = Fabric::buildDesc;
       break;
     default:
       err = NPP_GetValue(instance, variable, value);
@@ -106,13 +106,11 @@ FABRIC_NPAPI_EXPORT NPError OSCALL NP_GetValue(NPP instance, NPPVariable variabl
   return err;
 }
 
-// Called by the browser to get the MIME Type for this plugin.
-// Note that this MIME type has to match the type in the <embed> tag used to
-// load the develop version of the module.  See the Mozilla docs for more info
-// on the MIME type format:
-//   https://developer.mozilla.org/En/NP_GetMIMEDescription
-// Declaration: npupp.h
-// Documentation URL: https://developer.mozilla.org/En/NP_GetMIMEDescription
+FABRIC_NPAPI_EXPORT const char * OSCALL NP_GetPluginVersion(void)
+{
+  return Fabric::buildVersion;
+}
+
 FABRIC_NPAPI_EXPORT const char* OSCALL NP_GetMIMEDescription(void)
 {
   return "application/fabric::Fabric application";
