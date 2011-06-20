@@ -642,15 +642,10 @@ FABRIC.SceneGraph.registerNodeType('Material',
     }
     if (options.textures) {
       addTextureInterface = function(textureName, textureDef, textureUnit) {
-        var textureStub, textureStubdgnode, setTextureFn;
-        textureStub = scene.constructEventHandlerNode(options.name + textureName + '_stub');
+        var textureStub = scene.constructEventHandlerNode(options.name + textureName + '_stub');
+        textureStub.setBindingName('textureStub');
+        textureStub.addMember('textureUnit', 'Integer', textureUnit);
         redrawEventHandler.appendChildEventHandler(textureStub);
-
-        // TODO: once we can propagate redraw evet data to child handlers, finish this code off.
-      //  textureStub.addMember(textureName, "Integer", textureUnit);
-        textureStubdgnode = scene.constructDependencyGraphNode(options.name + textureName + '_stubDgNode');
-        textureStubdgnode.addMember('textureUnit', 'Integer', textureUnit);
-        textureStub.addScope('textureStub', textureStubdgnode);
 
         textureStub.preDescendBindings.append(scene.constructOperator({
           operatorName: 'loadIntegerUniform',
@@ -662,12 +657,12 @@ FABRIC.SceneGraph.registerNodeType('Material',
           entryFunctionName: 'loadIntegerUniform',
           parameterBinding: [
             'shader.uniformValues',
-            'textureStub.textureUnit'
+            'self.textureUnit'
           ]
         }));
 
         // Now add a method to assign the texture to the material
-        setTextureFn = function(node) {
+        var setTextureFn = function(node) {
           if (!node.isTypeOf('Texture')) {
             throw ('Incorrect type assignment. Must assign a Texture');
           }
