@@ -206,6 +206,17 @@ FABRIC.SceneGraph.registerNodeType('Video',
           'textureStub.textureUnit'
         ]
     }));
+    
+    // extend public interface
+    videoNode.pub.forceEvaluate = function(){
+      dgnode.evaluate();
+    };
+    videoNode.pub.getDuration = function(){
+      return dgnode.getData("duration");
+    };
+    videoNode.pub.getFps = function(){
+      return dgnode.getData("fps");
+    };
 
     return videoNode;
   });
