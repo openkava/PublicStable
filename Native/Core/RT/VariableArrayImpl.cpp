@@ -151,9 +151,7 @@ namespace Fabric
     void VariableArrayImpl::split( void *data ) const
     {
       bits_t *&bits = *reinterpret_cast<bits_t **>(data);
-      FABRIC_ASSERT( bits->refCount.getValue() > 1 );
-      Util::AtomicSize &oldRefCount = bits->refCount;
-      bits_t const *srcBits = bits;
+      bits_t *srcBits = bits;
       size_t allocNumMembers = AllocNumMembersForNumMembers( srcBits->numMembers );
       bits = static_cast<bits_t *>( malloc( sizeof(bits_t) + m_memberSize * allocNumMembers ) );
       bits->refCount = 1;
@@ -162,7 +160,18 @@ namespace Fabric
       if ( !m_memberIsShallow )
         memset( bits->memberDatas, 0, m_memberSize * srcBits->numMembers );
       copyMemberDatas( bits, 0, srcBits, 0, srcBits->numMembers, false );
-      oldRefCount.decrementAndGetValue();
+      if ( srcBits->refCount.decrementAndGetValue() == 0 )
+      {
+        if ( !m_memberIsShallow )
+        {
+          uint8_t *memberData = srcBits->memberDatas;
+          uint8_t *memberDataEnd = memberData + m_memberSize * srcBits->numMembers;
+          for ( ; memberData != memberDataEnd; memberData += m_memberSize )
+            getMemberImpl()->disposeData( memberData );
+        }
+        
+        free( srcBits );
+      }
     }
 
     void VariableArrayImpl::push( void *dst, void const *src ) const
