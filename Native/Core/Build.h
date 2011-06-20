@@ -9,7 +9,9 @@
 
 namespace Fabric
 {
+  extern char const *buildName;
   extern char const *buildVersion;
+  extern char const *buildNameAndVersion;
   extern char const *buildDesc;
   extern time_t const buildExpiry; 
 };

@@ -3,26 +3,24 @@
 #
 
 import os
-Import( 'env', 'packageName', 'archDistDir', 'installerRootDistDir', 'buildArch', 'FABRIC_VERSION' )
-
-installerName = packageName + ' ' + buildArch + ' ' + FABRIC_VERSION
+Import( 'env', 'installerName', 'archDistDir', 'installerRootDistDir', 'buildArch', 'FABRIC_VERSION' )
 
 pkgID = "com.fabric-engine.FabricNPAPIPlugin." + buildArch
 pkgBuilder = Builder(
-  action = "mkdir -p $TARGET && /Developer/Applications/Utilities/PackageMaker.app/Contents/MacOS/PackageMaker --root $SOURCE --out $TARGET --id " + pkgID + " --version " + FABRIC_VERSION + " --title '" + packageName + "' --install-to '~'"
+  action = "mkdir -p $TARGET && /Developer/Applications/Utilities/PackageMaker.app/Contents/MacOS/PackageMaker --root $SOURCE --out $TARGET --id " + pkgID + " --version " + FABRIC_VERSION + " --title '" + installerName + "'"
 )
 dmgBuilder = Builder(
   action = "hdiutil create $TARGET -volname '" + installerName + "' -fs HFS+ -srcfolder $SOURCE"
 )
 env.Append( BUILDERS = { 'Pkg': pkgBuilder, 'Dmg': dmgBuilder } )
 
-installerDistDir = env.Dir( os.path.join( archDistDir, 'installer' ) )
+installerDistDir = archDistDir.Dir( 'installer' )
 pkgDir = installerDistDir.Dir( installerName + ".pkg" )
 installerPkg = env.Pkg(
   target = pkgDir,
   source = installerRootDistDir,
 )
-installerDmgFile = os.path.join( archDistDir, installerName + ".dmg" )
+installerDmgFile = archDistDir.File( installerName + ".dmg" )
 installerDmg = env.Dmg(
   target = installerDmgFile,
   source = installerDistDir,
