@@ -20,7 +20,7 @@ installerPkg = env.Pkg(
   target = pkgDir,
   source = installerRootDistDir,
 )
-installerDmgFile = archDistDir.Dir( installerName + ".dmg" )
+installerDmgFile = archDistDir.File( installerName + ".dmg" )
 installerDmg = env.Dmg(
   target = installerDmgFile,
   source = installerDistDir,
