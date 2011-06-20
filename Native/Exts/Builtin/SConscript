@@ -2,7 +2,7 @@
 # Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 #
 
-import os, shutil
+import os
 Import( 'baseEnv', 'buildOS' )
 
 aliases = [
