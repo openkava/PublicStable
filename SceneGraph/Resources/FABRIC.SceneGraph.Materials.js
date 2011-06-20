@@ -558,6 +558,7 @@ FABRIC.SceneGraph.registerNodeType('Material',
       };
     }
     else {
+      options.dgnodenames.push('DGNode');
       materialNode = scene.constructNode('Shader', options);
       dgnode = materialNode.getDGNode();
       redrawEventHandler = materialNode.getRedrawEventHandler();
@@ -576,7 +577,7 @@ FABRIC.SceneGraph.registerNodeType('Material',
         operatorName: 'useProgramOp',
         srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/loadShader.kl',
         entryFunctionName: 'useProgram',
-        parameterBinding: ['shader.program']
+        parameterBinding: ['self.program']
       }));
     }
 
@@ -783,7 +784,7 @@ FABRIC.SceneGraph.registerNodeType('PostProcessEffect',
             'window.height',
             'self.offscreenPrevFBO',
             'self.offscreenColorID',
-            'shader.program'
+            'self.program'
           ]
         }
      ));
