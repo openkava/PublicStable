@@ -409,9 +409,7 @@ FABRIC.SceneGraph.registerNodeType('Shader',
     scene.assignDefaults(options, {
         parentEventHandler: scene.getSceneRedrawEventHandler()
       });
-    options.dgnodenames.push('DGNode');
     var shaderNode = scene.constructNode('SceneGraphNode', options),
-      dgnode = shaderNode.getDGNode(),
       redrawEventHandler = scene.constructEventHandlerNode(options.name + '_draw'),
       shaderSources = [],
       uniformValues = [],
@@ -431,9 +429,10 @@ FABRIC.SceneGraph.registerNodeType('Shader',
         options.geometryShader, FABRIC.SceneGraph.OpenGLConstants.GL_GEOMETRY_SHADER_EXT));
     }
 
-    dgnode.addMember('shaderSources', 'ShaderSource[]', shaderSources);
-    dgnode.addMember('name', 'String', options.name);
-    dgnode.addMember('program', 'Integer', 0);
+    redrawEventHandler.setBindingName('shader');
+    redrawEventHandler.addMember('shaderSources', 'ShaderSource[]', shaderSources);
+    redrawEventHandler.addMember('name', 'String', options.name);
+    redrawEventHandler.addMember('program', 'Integer', 0);
 
     ///////////////////////////////////////////////////
     // Uniform Values
@@ -444,7 +443,7 @@ FABRIC.SceneGraph.registerNodeType('Shader',
       uniformValues.push(new FABRIC.RT.ShaderValue(
         options.shaderUniforms[i].name, FABRIC.shaderAttributeTable[i].id));
     }
-    dgnode.addMember('uniformValues', 'ShaderValue[]', uniformValues);
+    redrawEventHandler.addMember('uniformValues', 'ShaderValue[]', uniformValues);
 
     ///////////////////////////////////////////////////
     // Attribute Values
@@ -456,7 +455,7 @@ FABRIC.SceneGraph.registerNodeType('Shader',
       attributeValues.push(new FABRIC.RT.ShaderValue(
         options.shaderAttributes[i].name, FABRIC.shaderAttributeTable[i].id));
     }
-    dgnode.addMember('attributeValues', 'ShaderValue[]', attributeValues);
+    redrawEventHandler.addMember('attributeValues', 'ShaderValue[]', attributeValues);
 
     ///////////////////////////////////////////////////
     // EXT Params
@@ -464,21 +463,19 @@ FABRIC.SceneGraph.registerNodeType('Shader',
       programParams.push(new FABRIC.RT.ShaderProgramParam(
         FABRIC.SceneGraph.OpenGLConstants[i], options.programParams[i]));
     }
-    dgnode.addMember('programParams', 'ShaderProgramParam[]', programParams);
-
-    redrawEventHandler.addScope('shader', dgnode);
+    redrawEventHandler.addMember('programParams', 'ShaderProgramParam[]', programParams);
 
     redrawEventHandler.preDescendBindings.append(scene.constructOperator({
       operatorName: 'loadShader',
       srcFile: 'FABRIC_ROOT/SceneGraph/Resources/KL/loadShader.kl',
       entryFunctionName: 'loadShader',
       parameterBinding: [
-        'shader.name',
-        'shader.shaderSources',
-        'shader.uniformValues',
-        'shader.attributeValues',
-        'shader.programParams',
-        'shader.program'
+        'self.name',
+        'self.shaderSources',
+        'self.uniformValues',
+        'self.attributeValues',
+        'self.programParams',
+        'self.program'
       ]
     }));
 
@@ -526,8 +523,7 @@ FABRIC.SceneGraph.registerNodeType('Material',
       addLightInterface,
       textureNodes = {},
       addTextureInterface,
-      textureUnit = 0,
-      setCharAt;
+      textureUnit = 0;
 
     if (options.separateShaderNode) {
       shaderName = materialType + 'Shader' + (options.shaderNameDecoration !== undefined ?
@@ -617,11 +613,8 @@ FABRIC.SceneGraph.registerNodeType('Material',
       }));
     }
 
-    setCharAt = function(str, index, chr) {
-      if (index > str.length - 1) {
-        return str;
-      }
-      return (str.substr(0, index) + chr + str.substr(index + 1));
+    var capitalizeFirstLetter = function(str) {
+      return str[0].toUpperCase() + str.substr(1);
     };
 
     if (options.lights) {
@@ -638,8 +631,7 @@ FABRIC.SceneGraph.registerNodeType('Material',
           lightNodes[lightName] = node;
           lightStub.appendChildEventHandler(node.getRedrawEventHandler());
         };
-        setterName = 'set' + setCharAt(lightName, 0, lightName[0].toUpperCase()) + 'Node';
-        materialNode.pub[setterName] = setLightNodeFn;
+        materialNode.pub['set' + capitalizeFirstLetter(lightName) + 'Node'] = setLightNodeFn;
         if (lightDef.node !== undefined) {
           setLightNodeFn(lightDef.node);
         }
@@ -683,7 +675,7 @@ FABRIC.SceneGraph.registerNodeType('Material',
           textureNodes[textureName] = node;
           textureStub.appendChildEventHandler(node.getRedrawEventHandler());
         };
-        materialNode.pub['set' + setCharAt(textureName, 0, textureName[0].toUpperCase()) + 'Node'] = setTextureFn;
+        materialNode.pub['set' + capitalizeFirstLetter(textureName) + 'Node'] = setTextureFn;
 
         if (textureDef.node !== undefined) {
           setTextureFn(textureDef.node);
@@ -1017,8 +1009,7 @@ FABRIC.SceneGraph.defineEffectFromFile = function(effectfile) {
         uniformName,
         lightName,
         textureName,
-        setterName,
-        setCharAt;
+        setterName;
 
       effectInstanceParameters = scene.cloneObj(effectParameters);
       effectInstanceParameters.name = options.name;
@@ -1052,12 +1043,9 @@ FABRIC.SceneGraph.defineEffectFromFile = function(effectfile) {
       }
 
       materialNode = scene.constructNode(options.prototypeMaterialType, effectInstanceParameters);
-
-      setCharAt = function(str, index, chr) {
-        if (index > str.length - 1) {
-          return str;
-        }
-        return str.substr(0, index) + chr + str.substr(index + 1);
+      
+      var capitalizeFirstLetter = function(str) {
+        return str[0].toUpperCase() + str.substr(1);
       };
       for (uniformName in effectParameters.shaderUniforms) {
         if (options[uniformName] !== undefined) {
@@ -1066,14 +1054,12 @@ FABRIC.SceneGraph.defineEffectFromFile = function(effectfile) {
       }
       for (lightName in effectParameters.lights) {
         if (options[lightName + 'Node']) {
-          setterName = 'set' + setCharAt(lightName, 0, lightName[0].toUpperCase()) + 'Node';
-          materialNode.pub[setterName](options[lightName + 'Node']);
+          materialNode.pub['set' + capitalizeFirstLetter(lightName) + 'Node'](options[lightName + 'Node']);
         }
       }
       for (textureName in effectParameters.textures) {
         if (options[textureName + 'Node']) {
-          setterName = 'set' + setCharAt(textureName, 0, textureName[0].toUpperCase()) + 'Node';
-          materialNode.pub[setterName](options[textureName + 'Node']);
+          materialNode.pub['set' + capitalizeFirstLetter(textureName) + 'Node'](options[textureName + 'Node']);
         }
       }
 
