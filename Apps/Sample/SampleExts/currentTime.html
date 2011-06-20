@@ -1,0 +1,40 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html style='height: 100%'>
+  <head>
+    <title>Fabric Plugin Example</title>
+    <script type="text/javascript" src="../../../ThirdParty/jQuery/jquery-1.4.2.min.js"></script>
+    <script type="text/javascript" src="../../../Core/FABRIC.Wrappers.js"></script>
+    <script type="text/javascript" src="../../../Core/FABRIC.js"></script>
+  </head>
+  <body style='height: 100%'>
+    <h1>Fabric Time Sample Ext</h1>
+    <p>The current local date and time is <span id=currentTime>...</span></p>
+    <div id="fabricWindowContainer"></div>
+    <script type="text/javascript">
+$(document).ready(function() {
+  
+  FABRIC = FABRIC.createContext();
+  
+  var op = FABRIC.DG.createOperator( "getCurrentTimeString" );
+  op.setEntryFunctionName( "entry" );
+  op.setSourceCode( "operator entry( io String result ) { currentTimeString( result ); }" );
+  
+  var binding = FABRIC.DG.createBinding();
+  binding.setOperator( op );
+  binding.setParameterLayout( ["self.timeString"] );
+  
+  var node = FABRIC.DG.createNode( "timeNode" );
+  node.addMember( "timeString", "String" );
+  node.bindings.append( binding );
+  
+  window.setInterval( function() {
+    node.setData( "timeString", "<dirty>" );
+    node.evaluate();
+    document.getElementById( 'currentTime' ).innerHTML = node.getData( "timeString" );
+  }, 1000 );
+  
+}); 
+    </script>
+  </body>
+</HTML>
