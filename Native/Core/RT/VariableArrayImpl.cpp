@@ -150,7 +150,7 @@ namespace Fabric
       
     void VariableArrayImpl::split( void *data ) const
     {
-      bits_t *bits = *reinterpret_cast<bits_t **>(data);
+      bits_t *&bits = *reinterpret_cast<bits_t **>(data);
       
       bits_t *srcBits = bits;
       
