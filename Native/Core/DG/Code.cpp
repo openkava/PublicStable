@@ -26,6 +26,7 @@
 #include <llvm/Function.h>
 #include <llvm/Target/TargetData.h>
 #include <llvm/Target/TargetSelect.h>
+#include <llvm/Target/TargetOptions.h>
 #include <llvm/ExecutionEngine/JIT.h>
 #include <llvm/Assembly/Parser.h>
 #include <llvm/Support/SourceMgr.h>
@@ -124,6 +125,7 @@ namespace Fabric
           return;
         }
         
+        llvm::NoFramePointerElim = true;
         llvm::OwningPtr<llvm::PassManager> passManager( new llvm::PassManager );
         if ( optimize )
         {

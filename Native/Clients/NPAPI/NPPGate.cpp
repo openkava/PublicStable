@@ -36,6 +36,10 @@
 #include <npapi/npapi.h>
 #include <npapi/npfunctions.h>
 #include <new>
+#if defined(FABRIC_POSIX)
+# include <signal.h>
+# include <execinfo.h>
+#endif
 
 class CALayer;
 
@@ -43,6 +47,38 @@ namespace Fabric
 {
   namespace NPAPI
   {
+#if defined(FABRIC_POSIX)
+    static const size_t signalStackSize = 65536;
+    static uint8_t signalStack[signalStackSize];
+
+    static void fatalSignalTrap( int signum )
+    {
+      char const *msg1 = "Caught fatal signal ";
+      write( 2, msg1, strlen(msg1) );
+      char const *signame;
+      switch ( signum )
+      {
+        case SIGILL: signame = "SIGILL"; break;
+        case SIGTRAP: signame = "SIGTRAP"; break;
+        case SIGABRT: signame = "SIGABRT"; break;
+        case SIGBUS: signame = "SIGBUS"; break;
+        case SIGFPE: signame = "SIGFPE"; break;
+        case SIGSEGV: signame = "SIGSEGV"; break;
+        default: signame = "<unknown>"; break;
+      }
+      write( 2, signame, strlen(signame) );
+      char const *msg2 = "\n---- Backtrace:\n";
+      write( 2, msg2, strlen(msg2) );
+
+      static const int maxNumBacktracePtrs = 64;
+      void *backtracePtrs[maxNumBacktracePtrs];
+      int numBacktracePtrs = backtrace( backtracePtrs, maxNumBacktracePtrs );
+      backtrace_symbols_fd( backtracePtrs, numBacktracePtrs, 2 );
+
+      _exit( 0 );
+    }
+#endif
+
     NPError NPP_New(
       NPMIMEType mime_type,
       NPP npp,
@@ -55,6 +91,25 @@ namespace Fabric
     {
       if ( !npp )
         return NPERR_INVALID_INSTANCE_ERROR;
+
+#if defined(FABRIC_POSIX)
+      stack_t stack;
+      stack.ss_sp = &signalStack[0];
+      stack.ss_flags = 0;
+      stack.ss_size = signalStackSize;
+      sigaltstack( &stack, NULL );
+
+      struct sigaction sa;
+      sa.sa_handler = &fatalSignalTrap;
+      sigemptyset( &sa.sa_mask );
+      sa.sa_flags = SA_ONSTACK;
+      sigaction( SIGILL, &sa, NULL );
+      sigaction( SIGTRAP, &sa, NULL );
+      sigaction( SIGABRT, &sa, NULL );
+      sigaction( SIGBUS, &sa, NULL );
+      sigaction( SIGFPE, &sa, NULL );
+      sigaction( SIGSEGV, &sa, NULL );
+#endif
 
       FABRIC_LOG( "Fabric version %s", buildVersion );
       struct tm const *lt = localtime( &buildExpiry );
@@ -234,7 +289,20 @@ namespace Fabric
       if( !npp )
         return NPERR_INVALID_INSTANCE_ERROR;
       Interface *interface = static_cast<Interface *>( npp->pdata );
-      return interface->nppNewStream( npp, type, stream, seekable, stype );
+      NPError result = NPERR_NO_ERROR;
+      try
+      {
+        result = interface->nppNewStream( npp, type, stream, seekable, stype );
+      }
+      catch ( Fabric::Exception e )
+      {
+        FABRIC_DEBUG_LOG( "NPP_NewStream: caught Fabric exception: " + e );
+      }
+      catch ( ... )
+      {
+        FABRIC_DEBUG_LOG( "NPP_NewStream: caught unknown exception" );
+      }
+      return result;
     }
 
     void NPP_StreamAsFile( NPP npp, NPStream *stream, const char *fname )
@@ -258,10 +326,20 @@ namespace Fabric
         CFRelease( pathRef );
         fname = newfname;
       }
-      
 #endif
 
-      interface->nppStreamAsFile( npp, stream, fname );
+      try
+      {
+        interface->nppStreamAsFile( npp, stream, fname );
+      }
+      catch ( Fabric::Exception e )
+      {
+        FABRIC_DEBUG_LOG( "NPP_StreamAsFile: caught Fabric exception: " + e );
+      }
+      catch ( ... )
+      {
+        FABRIC_DEBUG_LOG( "NPP_StreamAsFile: caught unknown exception" );
+      }
     }
     
     NPError NPP_DestroyStream( NPP npp, NPStream *stream, NPReason reason )
@@ -269,7 +347,20 @@ namespace Fabric
       if( !npp )
         return NPERR_INVALID_INSTANCE_ERROR;
       Interface *interface = static_cast<Interface *>( npp->pdata );
-      return interface->nppDestroyStream( npp, stream, reason );
+      NPError result = NPERR_NO_ERROR;
+      try
+      {
+        result = interface->nppDestroyStream( npp, stream, reason );
+      }
+      catch ( Fabric::Exception e )
+      {
+        FABRIC_DEBUG_LOG( "NPP_DestroyStream: caught Fabric exception: " + e );
+      }
+      catch ( ... )
+      {
+        FABRIC_DEBUG_LOG( "NPP_DestroyStream: caught unknown exception" );
+      }
+      return result;
     }
     
     void NPP_URLNotify(NPP npp, const char* url, NPReason reason, void* notifyData)
