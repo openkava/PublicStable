@@ -289,7 +289,20 @@ namespace Fabric
       if( !npp )
         return NPERR_INVALID_INSTANCE_ERROR;
       Interface *interface = static_cast<Interface *>( npp->pdata );
-      return interface->nppNewStream( npp, type, stream, seekable, stype );
+      NPError result = NPERR_NO_ERROR;
+      try
+      {
+        result = interface->nppNewStream( npp, type, stream, seekable, stype );
+      }
+      catch ( Fabric::Exception e )
+      {
+        FABRIC_DEBUG_LOG( "NPP_NewStream: caught Fabric exception: " + e );
+      }
+      catch ( ... )
+      {
+        FABRIC_DEBUG_LOG( "NPP_NewStream: caught unknown exception" );
+      }
+      return result;
     }
 
     void NPP_StreamAsFile( NPP npp, NPStream *stream, const char *fname )
@@ -313,10 +326,20 @@ namespace Fabric
         CFRelease( pathRef );
         fname = newfname;
       }
-      
 #endif
 
-      interface->nppStreamAsFile( npp, stream, fname );
+      try
+      {
+        interface->nppStreamAsFile( npp, stream, fname );
+      }
+      catch ( Fabric::Exception e )
+      {
+        FABRIC_DEBUG_LOG( "NPP_StreamAsFile: caught Fabric exception: " + e );
+      }
+      catch ( ... )
+      {
+        FABRIC_DEBUG_LOG( "NPP_StreamAsFile: caught unknown exception" );
+      }
     }
     
     NPError NPP_DestroyStream( NPP npp, NPStream *stream, NPReason reason )
@@ -324,7 +347,20 @@ namespace Fabric
       if( !npp )
         return NPERR_INVALID_INSTANCE_ERROR;
       Interface *interface = static_cast<Interface *>( npp->pdata );
-      return interface->nppDestroyStream( npp, stream, reason );
+      NPError result = NPERR_NO_ERROR;
+      try
+      {
+        result = interface->nppDestroyStream( npp, stream, reason );
+      }
+      catch ( Fabric::Exception e )
+      {
+        FABRIC_DEBUG_LOG( "NPP_DestroyStream: caught Fabric exception: " + e );
+      }
+      catch ( ... )
+      {
+        FABRIC_DEBUG_LOG( "NPP_DestroyStream: caught unknown exception" );
+      }
+      return result;
     }
     
     void NPP_URLNotify(NPP npp, const char* url, NPReason reason, void* notifyData)
