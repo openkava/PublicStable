@@ -49,7 +49,7 @@ namespace Fabric
     
     Node::Node( std::string const &name, RC::Handle<Context> const &context )
       : Container( name, context )
-      , m_context( context )
+      , m_context( context.ptr() )
       , m_dirty( true )
       , m_globalDependencyRank( 0 )
       , m_evaluateLocalTask( this, &Node::evaluateLocal )

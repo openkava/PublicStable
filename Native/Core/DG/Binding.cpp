@@ -24,7 +24,7 @@ namespace Fabric
     Binding::Binding( RC::Handle<Context> const &context )
       : CompiledObject( context )
       , m_prototype( 0 )
-      , m_context( context )
+      , m_context( context.ptr() )
     {
     }
     

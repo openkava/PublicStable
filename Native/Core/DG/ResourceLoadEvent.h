@@ -53,7 +53,7 @@ namespace Fabric
       
     private:
     
-      RC::ConstHandle<Context> m_context;
+      Context *m_context;
       NamedScope m_namedScope;
       RC::Handle<IO::Stream> m_stream;
     };

@@ -48,7 +48,7 @@ namespace Fabric
       
     private:
     
-      RC::Handle<Context> m_context;
+      Context *m_context;
       std::string m_name;
     };
   };

@@ -110,7 +110,7 @@ namespace Fabric
 
     private:
     
-      RC::ConstHandle<Context> m_context;
+      Context *m_context;
     
       std::string m_entryFunctionName;
       std::string m_sourceCode;

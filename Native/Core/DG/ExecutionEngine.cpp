@@ -118,7 +118,7 @@ namespace Fabric
     }
     
     ExecutionEngine::ExecutionEngine( RC::ConstHandle<Context> const &context, llvm::Module *llvmModule )
-      : m_context( context )
+      : m_context( context.ptr() )
     {
       std::string errStr;
       m_llvmExecutionEngine.reset(

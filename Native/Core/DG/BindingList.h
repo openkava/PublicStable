@@ -66,7 +66,7 @@ namespace Fabric
       
     private:
       
-      RC::Handle<Context> m_context;
+      Context *m_context;
       Bindings m_bindings;
       std::string m_subName;
       NamedObject *m_owner;

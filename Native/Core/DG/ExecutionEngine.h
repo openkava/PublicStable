@@ -54,7 +54,7 @@ namespace Fabric
       static void *LazyFunctionCreator( std::string const &functionName );
       static void Report( char const *data, size_t length );
     
-      RC::ConstHandle<Context> m_context;
+      Context const *m_context;
       llvm::OwningPtr<llvm::ExecutionEngine> m_llvmExecutionEngine;
       
       static RC::ConstHandle<Context> s_currentContext;

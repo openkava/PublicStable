@@ -17,7 +17,7 @@ namespace Fabric
   {
     NamedObject::NamedObject( std::string const &name, RC::Handle<Context> const &context )
       : CompiledObject( context )
-      , m_context( context )
+      , m_context( context.ptr() )
       , m_name( name )
     {
       if ( name.length() == 0 )
