@@ -43,7 +43,7 @@ namespace Fabric
     public:
     
       Prototype( RC::ConstHandle<RT::Manager> const &rtManager );
-      ~Prototype();
+      virtual ~Prototype();
       
       void setDescs( std::vector<std::string> const &descs );
       void clear();
@@ -65,7 +65,7 @@ namespace Fabric
       class ArrayParam;
     
       size_t m_paramCount;
-      std::map< std::string, std::map< std::string, Param * > > m_params;
+      std::map< std::string, std::multimap< std::string, Param * > > m_params;
       
       RC::ConstHandle<RT::Desc> m_rtSizeDesc;
       RC::ConstHandle<RT::Impl> m_rtSizeImpl;

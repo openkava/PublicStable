@@ -120,6 +120,7 @@ namespace Fabric
       {
         if ( m_childEventHandlers[i] == eventHandler )
         {
+          m_childEventHandlers[i]->removeParent( this );
           for ( size_t j=i+1; j<m_childEventHandlers.size(); ++j )
             m_childEventHandlers[j-1] = m_childEventHandlers[j];
           m_childEventHandlers.resize( m_childEventHandlers.size() - 1 );

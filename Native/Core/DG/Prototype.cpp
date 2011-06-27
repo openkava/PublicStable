@@ -26,8 +26,6 @@
 
 namespace Fabric
 {
-  
-
   namespace DG
   {
     class Prototype::Param
@@ -214,7 +212,7 @@ namespace Fabric
             param = new ArrayParam( i, memberName );
           else
             param = new ElementParam( i, memberName );
-          m_params[nodeName].insert( std::map< std::string, Param * >::value_type( memberName, param ) );
+          m_params[nodeName].insert( std::multimap< std::string, Param * >::value_type( memberName, param ) );
         }
         catch ( Exception e )
         {
@@ -229,8 +227,8 @@ namespace Fabric
     {
       while ( !m_params.empty() )
       {
-        std::map< std::string, std::map< std::string, Param * > >::iterator it=m_params.begin();
-        for ( std::map< std::string, Param * >::const_iterator jt=it->second.begin(); jt!=it->second.end(); ++jt )
+        std::map< std::string, std::multimap< std::string, Param * > >::iterator it=m_params.begin();
+        for ( std::multimap< std::string, Param * >::const_iterator jt=it->second.begin(); jt!=it->second.end(); ++jt )
           delete jt->second;
         m_params.erase( it );
         --m_paramCount;
@@ -256,7 +254,7 @@ namespace Fabric
       MT::ParallelCall &result = *resultPtr;
       for ( unsigned i=0; i<prefixCount; ++i )
         result.setBaseAddress( i, prefixes[i] );
-      for ( std::map< std::string, std::map< std::string, Param * > >::const_iterator it=m_params.begin(); it!=m_params.end(); ++it )
+      for ( std::map< std::string, std::multimap< std::string, Param * > >::const_iterator it=m_params.begin(); it!=m_params.end(); ++it )
       {
         std::string const &nodeName = it->first;
         try
@@ -271,7 +269,7 @@ namespace Fabric
           std::set<void *> elementAccessSet;
           std::set<void *> arrayAccessSet;
           
-          for ( std::map< std::string, Param * >::const_iterator jt=it->second.begin(); jt!=it->second.end(); ++jt )
+          for ( std::multimap< std::string, Param * >::const_iterator jt=it->second.begin(); jt!=it->second.end(); ++jt )
           {
             Param const *param = jt->second;
 
@@ -382,10 +380,10 @@ namespace Fabric
     {
       std::vector<std::string> result;
       result.resize( m_paramCount );
-      for ( std::map< std::string, std::map< std::string, Param * > >::const_iterator it=m_params.begin(); it!=m_params.end(); ++it )
+      for ( std::map< std::string, std::multimap< std::string, Param * > >::const_iterator it=m_params.begin(); it!=m_params.end(); ++it )
       {
         std::string const &nodeName = it->first;
-        for ( std::map< std::string, Param * >::const_iterator jt=it->second.begin(); jt!=it->second.end(); ++jt )
+        for ( std::multimap< std::string, Param * >::const_iterator jt=it->second.begin(); jt!=it->second.end(); ++jt )
         {
           Param const *param = jt->second;
           result[param->index()] = nodeName + "." + param->desc();
