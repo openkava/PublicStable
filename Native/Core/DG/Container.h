@@ -127,7 +127,7 @@ namespace Fabric
     
     private:
     
-      RC::Handle<Context> m_context;
+      Context *m_context;
       
       static const uint64_t sk_encodingCookie = UINT64_C(0x295C163724B3CD01);
       static const uint32_t sk_encodingVersion = UINT32_C(0x20110325);

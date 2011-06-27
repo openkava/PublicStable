@@ -27,7 +27,7 @@ namespace Fabric
     
     ResourceLoadEvent::ResourceLoadEvent( std::string const &name, std::string const &url, RC::Handle<Context> const &context )
       : Event( name, context )
-      , m_context( context )
+      , m_context( context.ptr() )
       , m_namedScope( "resource", this )
     {
       RC::ConstHandle<RT::SizeDesc> sizeDesc = m_context->getRTManager()->getSizeDesc();

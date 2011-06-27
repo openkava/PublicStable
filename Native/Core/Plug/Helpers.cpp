@@ -102,7 +102,7 @@ namespace Fabric
       FABRIC_ASSERT( soLibHandle != invalidSOLibHandle );
 #if defined(FABRIC_OS_MACOSX) || defined(FABRIC_OS_LINUX)
       int result = dlclose( soLibHandle );
-      if ( !result )
+      if ( result != 0 )
         FABRIC_LOG( "Warning: unable to close dynamic library '%s'", resolvedName.c_str() );
 #elif defined(FABRIC_OS_WINDOWS)
       if( !::FreeLibrary( soLibHandle ) )

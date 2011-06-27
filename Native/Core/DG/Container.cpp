@@ -75,7 +75,7 @@ namespace Fabric
 
     Container::Container( std::string const &name, RC::Handle<Context> const &context )
       : NamedObject( name, context )
-      , m_context( context )
+      , m_context( context.ptr() )
       , m_count( 1 )
     {
     }

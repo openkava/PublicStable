@@ -22,8 +22,6 @@
 
 namespace Fabric
 {
-  
-
   namespace DG
   {
     RC::Handle<Operator> Operator::Create( std::string const &name, RC::Handle<Context> const &context )
@@ -35,7 +33,7 @@ namespace Fabric
 
     Operator::Operator( std::string const &name, RC::Handle<Context> const &context )
       : NamedObject( name, context )
-      , m_context( context )
+      , m_context( context.ptr() )
     {
     }
     

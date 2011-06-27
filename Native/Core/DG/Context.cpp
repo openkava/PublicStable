@@ -34,8 +34,6 @@
 
 namespace Fabric
 {
-  
-  
   namespace DG
   {
     Context::ContextMap Context::s_contextMap;

@@ -31,7 +31,7 @@ namespace Fabric
     
     EventHandler::EventHandler( std::string const &name, RC::Handle<Context> const &context )
       : Container( name, context )
-      , m_context( context )
+      , m_context( context.ptr() )
       , m_runState( 0 )
     {
       m_preDescendBindings = BindingList::Create( context );

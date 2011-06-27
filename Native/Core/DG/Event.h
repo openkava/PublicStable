@@ -74,7 +74,7 @@ namespace Fabric
 
     private:
     
-      RC::ConstHandle<Context> m_context;
+      Context *m_context;
     
       EventHandlers m_eventHandlers;
       

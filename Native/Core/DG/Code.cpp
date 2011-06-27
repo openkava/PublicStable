@@ -55,7 +55,7 @@ namespace Fabric
     }
 
     Code::Code( RC::ConstHandle<Context> const &context, std::string const &sourceCode, RC::Handle<IRCache> const &irCache )
-      : m_context( context )
+      : m_context( context.ptr() )
       , m_sourceCode( sourceCode )
       , m_registeredFunctionSetMutex( "DG::Code::m_registeredFunctionSet" )
       , m_irCache( irCache )

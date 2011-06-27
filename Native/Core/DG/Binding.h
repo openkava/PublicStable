@@ -71,7 +71,7 @@ namespace Fabric
       Prototype *m_prototype;
       RC::Handle<Operator> m_operator;
       
-      RC::Handle<Context> m_context;
+      Context *m_context;
     };
   };
 };

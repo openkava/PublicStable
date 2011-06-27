@@ -120,7 +120,7 @@ namespace Fabric
 
     private:
     
-      RC::Handle<Context> m_context;
+      Context *m_context;
       
       bool m_dirty;
     
