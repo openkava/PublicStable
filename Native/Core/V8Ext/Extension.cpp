@@ -16,8 +16,6 @@
 
 namespace Fabric
 {
-  
-  
   namespace V8Ext
   {
     class IOStream : public IO::Stream
@@ -120,6 +118,7 @@ namespace Fabric
       v8ClientObjectTemplate->SetInternalFieldCount( 1 );
       v8ClientObjectTemplate->Set( "jsonExec", v8::FunctionTemplate::New( &Client::V8JSONExec ) );
       v8ClientObjectTemplate->Set( "setJSONNotifyCallback", v8::FunctionTemplate::New( &Client::V8SetJSONNotifyCallback ) );
+      v8ClientObjectTemplate->Set( "dispose", v8::FunctionTemplate::New( &Client::V8Dispose ) );
       m_v8ClientObjectTemplate = v8::Persistent<v8::ObjectTemplate>::New( v8ClientObjectTemplate );
     }
     

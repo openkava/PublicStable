@@ -69,5 +69,12 @@ namespace Fabric
     {
       return static_cast<Client *>( args.This()->GetPointerFromInternalField( 0 ) )->v8SetJSONNotifyCallback( args );
     }
+    
+    v8::Handle<v8::Value> Client::V8Dispose( v8::Arguments const &args )
+    {
+      Client *client = static_cast<Client *>( args.This()->GetPointerFromInternalField( 0 ) );
+      args.This()->SetPointerInInternalField( 0, 0 );
+      client->release();
+    }
   };
 };
