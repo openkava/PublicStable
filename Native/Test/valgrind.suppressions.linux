@@ -80,3 +80,13 @@
    fun:_Znwj
    fun:_ZN4llvm15SmallVectorBase8grow_podEjj
 }
+{
+   v8_handle_api_call_1
+   Memcheck:Cond
+   fun:_ZN2v88internalL21Builtin_HandleApiCallENS0_9ArgumentsE
+}
+{
+   v8_handle_api_call_2
+   Memcheck:Value4
+   fun:_ZN2v88internalL21Builtin_HandleApiCallENS0_9ArgumentsE
+}

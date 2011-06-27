@@ -7,17 +7,17 @@ BUILD_ARCH=$(uname -m)
 BUILD_TYPE=Debug
 
 WRAPPERS_FILE="../../../Web/Core/FABRIC.Wrappers.js"
-if [ $BUILD_OS == "Darwin" ]; then
+if [ "$BUILD_OS" = "Darwin" ]; then
   EXTS_DIR="../../dist/$BUILD_OS/$BUILD_ARCH/$BUILD_TYPE/Fabric NPAPI Plugin/Library/Fabric/Exts"
 else
-  EXTS_DIR=../../dist/$BUILD_OS/$BUILD_ARCH/$BUILD_TYPE/Exts
+  EXTS_DIR="../../dist/$BUILD_OS/$BUILD_ARCH/$BUILD_TYPE/Exts"
 fi
 
-#if [ "$BUILD_OS" = "linux" ]; then
-#  VALGRIND_CMD="valgrind --suppressions=../../valgrind.suppressions.linux --leak-check=full -q"
-#else
+if [ -n "$FABRIC_TEST_WITH_VALGRIND" -a "$BUILD_OS" = "Linux" ]; then
+  VALGRIND_CMD="valgrind --suppressions=../valgrind.suppressions.linux --leak-check=full -q"
+else
   VALGRIND_CMD=
-#fi
+fi
 
 REPLACE=0
 if [ "$1" = "-r" ]; then
@@ -28,7 +28,7 @@ fi
 for f in "$@"; do
   TMPFILE=$(tmpfilename)
 
-  #echo ../../build/$BUILD_OS/$BUILD_ARCH/$BUILD_TYPE/Fabric/CLI/fabric --exts="$EXTS_DIR" $f
+  #echo $VALGRIND_CMD ../../build/$BUILD_OS/$BUILD_ARCH/$BUILD_TYPE/Fabric/Clients/CLI/fabric --load="$WRAPPERS_FILE" --exts="$EXTS_DIR" $f
   LD_LIBRARY_PATH=build/ $VALGRIND_CMD ../../build/$BUILD_OS/$BUILD_ARCH/$BUILD_TYPE/Fabric/Clients/CLI/fabric --load="$WRAPPERS_FILE" --exts="$EXTS_DIR" $f 2>&1 | grep -v '^\[FABRIC\] Loaded extension ' >$TMPFILE
 
   if [ "$REPLACE" -eq 1 ]; then

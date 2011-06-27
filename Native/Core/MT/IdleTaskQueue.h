@@ -34,13 +34,13 @@ namespace Fabric
 {
   namespace MT
   {
-    class IdleTaskQueue
+    class IdleTaskQueue : public RC::Object
     {
     public:
     
       typedef void (*Callback)( void *userdata );
     
-      static IdleTaskQueue *Instance();
+      static RC::Handle<IdleTaskQueue> Instance();
     
       void submit( Callback callback, void *userdata );
       void wait() const;

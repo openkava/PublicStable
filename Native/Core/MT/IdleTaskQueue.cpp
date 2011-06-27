@@ -13,18 +13,16 @@
 
 namespace Fabric
 {
-  
-  
   namespace MT
   {
-    IdleTaskQueue *IdleTaskQueue::Instance()
+    RC::Handle<IdleTaskQueue> IdleTaskQueue::Instance()
     {
-      static IdleTaskQueue *idleTaskQueue = 0;
+      static RC::Handle<IdleTaskQueue> idleTaskQueue;
       if ( !idleTaskQueue )
         idleTaskQueue = new IdleTaskQueue;
-      return idleTaskQueue;
+      return idleTaskQueue.ptr();
     }
-    
+
     IdleTaskQueue::IdleTaskQueue()
     {
 #if defined(FABRIC_MT_IDLE_TASK_QUEUE_GCD)
@@ -80,6 +78,9 @@ namespace Fabric
       pthread_join( m_thread, &result );
       
       pthread_attr_destroy( &m_threadAttr );
+
+      pthread_cond_destroy( &m_stateCond );
+      pthread_mutex_destroy( &m_stateMutex );
 #elif defined(FABRIC_MT_IDLE_TASK_QUEUE_WIN32)
       m_exiting = true;
       ::SetEvent( m_hWakeup );
