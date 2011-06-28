@@ -1,0 +1,160 @@
+/*
+ *
+ *  Created by Peter Zion on 2010-08-03.
+ *  Copyright 2010 Fabric 3D Inc. All rights reserved.
+ *
+ */
+
+#include "OGL.h"
+#include "Debug.h"
+#include <Fabric/Core/CG/IntegerAdapter.h>
+#include <Fabric/Core/CG/BooleanAdapter.h>
+#include <Fabric/Core/CG/Manager.h>
+#include <Fabric/Core/CG/Scope.h>
+#include <Fabric/Core/CG/ModuleBuilder.h>
+#include <Fabric/Core/CG/FunctionBuilder.h>
+#include <Fabric/Core/MT/LogCollector.h>
+#include <Fabric/Core/RT/BooleanDesc.h>
+#include <Fabric/Core/RT/ByteDesc.h>
+#include <Fabric/Core/RT/IntegerDesc.h>
+#include <Fabric/Core/RT/ScalarDesc.h>
+#include <Fabric/Core/RT/StringDesc.h>
+#include <Fabric/Core/RT/StructDesc.h>
+#include <Fabric/Core/RT/VariableArrayDesc.h>
+#include <Fabric/Core/RT/StructMemberInfo.h>
+#include <Fabric/Core/RT/Manager.h>
+#include <Fabric/Core/Util/Log.h>
+#include <Fabric/Core/Util/UnorderedMap.h>
+#include <stdio.h>
+
+namespace Fabric
+{
+  
+  
+  namespace OGL
+  {
+    static RC::Handle<RT::Manager> rtManager;
+
+    typedef Util::UnorderedMap< std::string, void * > FuncTable;
+    static FuncTable  llvmFuncTable;
+    
+    static RC::ConstHandle<RT::StringDesc> stringDesc;
+
+    class ErrorReporter
+    {
+    public:
+    
+      ErrorReporter( char const *desc )
+        : m_desc( desc )
+      {
+        //FABRIC_OGL_TRACE( "ErrorReporter::ErrorReporter( '%s' )", desc );
+#if defined(FABRIC_OS_LINUX) || defined(FABRIC_OS_WINDOWS)
+        if( !s_glewInitialized )
+        {
+          GLenum err = glewInit();
+          FABRIC_ASSERT( err == GLEW_OK );
+          //FABRIC_OGL_TRACE_NOTE( "OpenGL 2.0 is %s", GLEW_VERSION_2_0? "supported": "NOT SUPPORTED" );
+          s_glewInitialized = true;
+        }
+#endif
+        
+        if ( s_bracketCount == 0 )
+          glGetError(); // Throw away last error
+      }
+      
+      ~ErrorReporter()
+      {
+        //FABRIC_OGL_TRACE( "ErrorReporter::~ErrorReporter()" );
+        if ( s_bracketCount == 0 )
+        {
+          GLenum error = glGetError();
+          if ( error != GL_NO_ERROR )
+          {
+            const char *errorStr;
+            switch ( error )
+            {
+              case GL_INVALID_ENUM: errorStr = "GL_INVALID_ENUM"; break;
+              case GL_INVALID_VALUE: errorStr = "GL_INVALID_VALUE"; break;
+              case GL_INVALID_OPERATION: errorStr = "GL_INVALID_OPERATION"; break;
+              case GL_STACK_OVERFLOW: errorStr = "GL_STACK_OVERFLOW"; break;
+              case GL_STACK_UNDERFLOW: errorStr = "GL_STACK_UNDERFLOW"; break;
+              case GL_OUT_OF_MEMORY: errorStr = "GL_OUT_OF_MEMORY"; break;
+              case GL_TABLE_TOO_LARGE: errorStr = "GL_TABLE_TOO_LARGE"; break;
+              default: errorStr = "(unknown error)"; break;
+            }
+#if defined( FABRIC_OS_WINDOWS )
+            ::OutputDebugStringA( "*** The OpenGL error '" );
+            ::OutputDebugStringA( errorStr );
+            ::OutputDebugStringA( "' (0x%04X) occurred calling " );
+            ::OutputDebugStringA( m_desc );
+            ::OutputDebugStringA( "()\n" );
+#else
+            FABRIC_DEBUG_LOG( "The OpenGL error '%s' (0x%04X) occurred calling %s()", errorStr, (unsigned)error, m_desc );
+#endif
+          }
+        }
+      }
+    
+      void incBracket()
+      {
+        ++s_bracketCount;
+      }
+      
+      void decBracket()
+      {
+        --s_bracketCount;
+      }
+    
+    private:
+    
+      char const *m_desc;
+      static size_t s_bracketCount;
+#if defined(FABRIC_OS_LINUX) || defined(FABRIC_OS_WINDOWS)
+      static bool s_glewInitialized;
+#endif
+    };
+    size_t ErrorReporter::s_bracketCount = 0;
+
+#if defined(FABRIC_OS_LINUX) || defined(FABRIC_OS_WINDOWS)
+    bool ErrorReporter::s_glewInitialized = false;
+#endif
+    
+####FUNCTIONS####
+
+#define ADD_CONST_BOOL( name, value ) \
+  scope.put( name, CG::ConstantSymbol::Create( CG::ExprValue( booleanAdapter, CG::USAGE_RVALUE, booleanAdapter->llvmConst( value ) ) ) )
+#define ADD_CONST_INT( name, value ) \
+  scope.put( name, CG::ConstantSymbol::Create( CG::ExprValue( integerAdapter, CG::USAGE_RVALUE, integerAdapter->llvmConst( value ) ) ) )
+#define ADD_FUNC_QUOTE( x ) #x
+#define ADD_FUNC( name, paramLayout ) \
+  CG::FunctionBuilder( moduleBuilder, ADD_FUNC_QUOTE(gl##name), paramLayout); \
+  llvmFuncTable[ ADD_FUNC_QUOTE(gl##name) ] = (void *)&name;
+    
+    void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, RC::Handle<RT::Manager> const &rtManager )
+    {
+      FABRIC_OGL_TRACE( "llvmPrepareModule()" );
+            
+      stringDesc = rtManager->getStringDesc();
+
+      llvmFuncTable.clear();
+      
+      CG::ModuleScope &scope = moduleBuilder.getScope();
+      RC::ConstHandle<CG::BooleanAdapter> booleanAdapter = moduleBuilder.getManager()->getBooleanAdapter();
+      RC::ConstHandle<CG::IntegerAdapter> integerAdapter = moduleBuilder.getManager()->getIntegerAdapter();
+
+####CONSTANTADDS####
+
+####FUNCTIONADDS####
+    }
+    
+    void *llvmResolveExternalFunction( std::string const &name )
+    {
+      FuncTable::const_iterator   it;
+      it = llvmFuncTable.find( name );
+      if( it != llvmFuncTable.end() )
+        return( it->second );
+
+      return 0;
+    }
+  };
+};
