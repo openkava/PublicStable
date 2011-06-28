@@ -640,6 +640,9 @@ namespace Fabric
       }
       
       addMember( name, desc, defaultValue.size()>0? &defaultValue[0]: 0 );
+
+      if ( defaultValue.size() > 0 )
+        desc->disposeData( &defaultValue[0] );
     }
 
     void Container::jsonExecRemoveMember( RC::ConstHandle<JSON::Value> const &arg )

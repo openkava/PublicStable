@@ -1,5 +1,5 @@
-
-FABRIC = wrapFabricClient(createFabricClient());
+FC = createFabricClient();
+FABRIC = wrapFabricClient(FC);
 
 node = FABRIC.DependencyGraph.createNode("foo");
 node.addMember( "foo", "Integer", 17 );
@@ -20,3 +20,6 @@ printDeep(node.getBulkData());
 printDeep(node.getSliceBulkData(0));
 printDeep(node.getSliceBulkData(1));
 printDeep(node.getSlicesBulkData([1,0,1]));
+
+FABRIC.flush();
+FC.dispose();
