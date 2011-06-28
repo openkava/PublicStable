@@ -11,6 +11,8 @@
 #include <Fabric/Core/MT/Debug.h>
 #include <Fabric/Core/MT/Impl.h>
 #include <Fabric/Core/MT/Function.h>
+#include <Fabric/Base/RC/Object.h>
+#include <Fabric/Base/RC/Handle.h>
 #include <Fabric/Base/RC/ConstHandle.h>
 #include <Fabric/Core/MT/Util.h>
 #include <Fabric/Core/Util/Timer.h>
@@ -30,27 +32,23 @@ namespace Fabric
 {
   namespace MT
   {
-    class ParallelCall
+    class ParallelCall : public RC::Object
     {
     public:
     
       typedef void (*FunctionPtr)( ... );
+
+      static RC::Handle<ParallelCall> Create( RC::ConstHandle<Function> const &function, size_t paramCount, std::string const &debugDesc )
+      {
+        return new ParallelCall( function, paramCount, debugDesc );
+      }
     
-      ParallelCall( RC::ConstHandle<Function> const &function, size_t paramCount, std::string const &debugDesc )
-        : m_function( function )
-        , m_paramCount( paramCount )
-        , m_totalParallelCalls( 1 )
-        , m_debugDesc( debugDesc )
-      {
-        m_function->registerParallelCall( this );
-        m_functionPtr = m_function->getFunctionPtr();
-        m_objectOwningFunctionPtr = m_function->getObjectOwningFunctionPtr();
-      }
+    protected:
+
+      ParallelCall( RC::ConstHandle<Function> const &function, size_t paramCount, std::string const &debugDesc );
+      ~ParallelCall();
       
-      ~ParallelCall()
-      {
-        m_function->unregisterParallelCall( this );
-      }
+    public:
       
       void setBaseAddress( size_t index, void *baseAddress )
       {

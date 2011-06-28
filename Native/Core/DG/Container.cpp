@@ -340,7 +340,7 @@ namespace Fabric
       }
     }
       
-    MT::ParallelCall *Container::bind( RC::ConstHandle<Binding> const &binding, Scope const &scope, size_t *newCount, unsigned prefixCount, void * const *prefixes )
+    RC::Handle<MT::ParallelCall> Container::bind( RC::ConstHandle<Binding> const &binding, Scope const &scope, size_t *newCount, unsigned prefixCount, void * const *prefixes )
     {
       SelfScope selfScope( this, &scope );
 
