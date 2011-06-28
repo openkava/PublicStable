@@ -11,7 +11,9 @@
 #include <Fabric/Base/Config.h>
 
 #if defined(FABRIC_OS_LINUX)
+# define GL_GLEXT_PROTOTYPES 1
 # include <GL/glew.h>
+# include <GL/glxew.h>
 # include <GL/gl.h>
 # include <GL/glx.h>
 # include <GL/glext.h>
