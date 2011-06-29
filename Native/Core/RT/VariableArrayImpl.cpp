@@ -318,7 +318,20 @@ namespace Fabric
         else
         {
           if ( oldNumMembers )
-            bits->refCount.decrementAndGetValue();
+          {
+            if ( bits->refCount.decrementAndGetValue() == 0 )
+            {
+              if ( !m_memberIsShallow )
+              {
+                uint8_t *dstMemberData = bits->memberDatas;
+                uint8_t *dstMemberDataEnd = dstMemberData + bits->numMembers * m_memberSize;
+                for ( ; dstMemberData != dstMemberDataEnd; dstMemberData += m_memberSize )
+                  getMemberImpl()->disposeData( dstMemberData );
+              }
+              free( bits );
+            }
+          }
+
           if ( newNumMembers )
           {
             bits_t const *srcBits = bits;
