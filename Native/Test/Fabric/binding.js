@@ -1,5 +1,5 @@
-
-F = wrapFabricClient(createFabricClient());
+FC = createFabricClient();
+F = wrapFabricClient(FC);
 
 b = F.DG.createBinding();
 printDeep(b.getOperator());
@@ -11,3 +11,6 @@ printDeep(b.getOperator());
 
 b.setParameterLayout(["self.foo"]);
 printDeep(b.getParameterLayout());
+
+F.flush();
+FC.dispose();

@@ -95,7 +95,7 @@ namespace Fabric
       
       virtual void setOutOfDate();
       
-      MT::ParallelCall *bind( RC::ConstHandle<Binding> const &binding, Scope const &scope, size_t *newCount, unsigned prefixCount=0, void * const *prefixes = 0 );
+      RC::Handle<MT::ParallelCall> bind( RC::ConstHandle<Binding> const &binding, Scope const &scope, size_t *newCount, unsigned prefixCount=0, void * const *prefixes = 0 );
       
       void recalculateGlobalDependencyRank();
       void maybeIncreaseGlobalDependencyRank( size_t dependencyGlobalDependencyRank );

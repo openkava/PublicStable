@@ -54,7 +54,7 @@ namespace Fabric
     
     void *ExecutionEngine::LazyFunctionCreator( std::string const &functionName )
     {
-      static Util::UnorderedMap< std::string, void * > *functionMapPtr = 0;
+      static Util::AutoPtr< Util::UnorderedMap< std::string, void * > > functionMapPtr;
       if ( !functionMapPtr )
       {
         functionMapPtr = new Util::UnorderedMap< std::string, void * >;

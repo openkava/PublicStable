@@ -26,8 +26,6 @@
 
 namespace Fabric
 {
-  
-
   namespace DG
   {
     class Prototype::Param
@@ -214,7 +212,7 @@ namespace Fabric
             param = new ArrayParam( i, memberName );
           else
             param = new ElementParam( i, memberName );
-          m_params[nodeName].insert( std::map< std::string, Param * >::value_type( memberName, param ) );
+          m_params[nodeName].insert( std::multimap< std::string, Param * >::value_type( memberName, param ) );
         }
         catch ( Exception e )
         {
@@ -229,8 +227,8 @@ namespace Fabric
     {
       while ( !m_params.empty() )
       {
-        std::map< std::string, std::map< std::string, Param * > >::iterator it=m_params.begin();
-        for ( std::map< std::string, Param * >::const_iterator jt=it->second.begin(); jt!=it->second.end(); ++jt )
+        std::map< std::string, std::multimap< std::string, Param * > >::iterator it=m_params.begin();
+        for ( std::multimap< std::string, Param * >::const_iterator jt=it->second.begin(); jt!=it->second.end(); ++jt )
           delete jt->second;
         m_params.erase( it );
         --m_paramCount;
@@ -242,7 +240,7 @@ namespace Fabric
       clear();
     }
 
-    MT::ParallelCall *Prototype::bind( RC::ConstHandle<AST::Operator> const &astOperator, Scope const &scope, RC::ConstHandle<Function> const &function, size_t *newSize, unsigned prefixCount, void * const *prefixes )
+    RC::Handle<MT::ParallelCall> Prototype::bind( RC::ConstHandle<AST::Operator> const &astOperator, Scope const &scope, RC::ConstHandle<Function> const &function, size_t *newSize, unsigned prefixCount, void * const *prefixes )
     {
       FABRIC_ASSERT( function );
       
@@ -252,11 +250,10 @@ namespace Fabric
       if ( numASTParams != expectedNumASTParams )
         throw Exception( "operator takes incorrect number of parameters (expected "+_(expectedNumASTParams)+", actual "+_(numASTParams)+")" );
 
-      MT::ParallelCall *resultPtr = new MT::ParallelCall( function, prefixCount+m_paramCount, astOperator->getName() );
-      MT::ParallelCall &result = *resultPtr;
+      RC::Handle<MT::ParallelCall> result = MT::ParallelCall::Create( function, prefixCount+m_paramCount, astOperator->getName() );
       for ( unsigned i=0; i<prefixCount; ++i )
-        result.setBaseAddress( i, prefixes[i] );
-      for ( std::map< std::string, std::map< std::string, Param * > >::const_iterator it=m_params.begin(); it!=m_params.end(); ++it )
+        result->setBaseAddress( i, prefixes[i] );
+      for ( std::map< std::string, std::multimap< std::string, Param * > >::const_iterator it=m_params.begin(); it!=m_params.end(); ++it )
       {
         std::string const &nodeName = it->first;
         try
@@ -271,7 +268,7 @@ namespace Fabric
           std::set<void *> elementAccessSet;
           std::set<void *> arrayAccessSet;
           
-          for ( std::map< std::string, Param * >::const_iterator jt=it->second.begin(); jt!=it->second.end(); ++jt )
+          for ( std::multimap< std::string, Param * >::const_iterator jt=it->second.begin(); jt!=it->second.end(); ++jt )
           {
             Param const *param = jt->second;
 
@@ -287,7 +284,7 @@ namespace Fabric
                 if ( astParamImpl != m_rtSizeImpl
                   || astParamExprType.getUsage() != CG::USAGE_RVALUE )
                   throw Exception( "'size' parmeters must bind to operator in parameters of type "+_(m_rtSizeDesc->getName()) );
-                result.setBaseAddress( prefixCount+param->index(), (void *)container->getCount() );
+                result->setBaseAddress( prefixCount+param->index(), (void *)container->getCount() );
               }
               else if ( param->isNewSizeParam() )
               {
@@ -296,22 +293,22 @@ namespace Fabric
                   throw Exception( "'newSize' parmeters must bind to operator io parameters of type "+_(m_rtSizeDesc->getName()) );
                 if ( !newSize )
                   throw Exception( "can't access count" );
-                result.setBaseAddress( prefixCount+param->index(), newSize );
+                result->setBaseAddress( prefixCount+param->index(), newSize );
               }
               else if ( param->isIndexParam() )
               {
                 if ( astParamImpl != m_rtSizeImpl
                   || astParamExprType.getUsage() != CG::USAGE_RVALUE )
                   throw Exception( "'index' parmeters must bind to operator in parameters of type "+_(m_rtSizeDesc->getName()) );
-                result.setBaseAddress( prefixCount+param->index(), (void *)0 );
+                result->setBaseAddress( prefixCount+param->index(), (void *)0 );
                 if ( container->getCount() != 1 )
                 {
                   if ( !haveAdjustmentIndex )
                   {
-                    adjustmentIndex = result.addAdjustment( container->getCount(), std::max<size_t>( 1, container->getCount()/MT::getNumCores() ) );
+                    adjustmentIndex = result->addAdjustment( container->getCount(), std::max<size_t>( 1, container->getCount()/MT::getNumCores() ) );
                     haveAdjustmentIndex = true;
                   }
-                  result.setAdjustmentOffset( adjustmentIndex, prefixCount+param->index(), 1 );
+                  result->setAdjustmentOffset( adjustmentIndex, prefixCount+param->index(), 1 );
                 }
               }
               else if ( param->isMemberParam() )
@@ -335,15 +332,15 @@ namespace Fabric
                       throw Exception( "parameter type mismatch: member element type is "+_(memberDesc->getName())+", operator parameter type is "+_(astParamDesc->getName()) );
                     if ( astParamExprType.getUsage() != CG::USAGE_LVALUE )
                       throw Exception( "element parmeters must bind to operator io parameters" );
-                    result.setBaseAddress( prefixCount+param->index(), memberArrayImpl->getMemberData( memberArrayData, 0 ) );
+                    result->setBaseAddress( prefixCount+param->index(), memberArrayImpl->getMemberData( memberArrayData, 0 ) );
                     if ( container->getCount() != 1 )
                     {
                       if ( !haveAdjustmentIndex )
                       {
-                        adjustmentIndex = result.addAdjustment( container->getCount(), std::max<size_t>( 1, container->getCount()/MT::getNumCores() ) );
+                        adjustmentIndex = result->addAdjustment( container->getCount(), std::max<size_t>( 1, container->getCount()/MT::getNumCores() ) );
                         haveAdjustmentIndex = true;
                       }
-                      result.setAdjustmentOffset( adjustmentIndex, prefixCount+param->index(), memberImpl->getSize() );
+                      result->setAdjustmentOffset( adjustmentIndex, prefixCount+param->index(), memberImpl->getSize() );
                     }
                   }
                   else
@@ -356,7 +353,7 @@ namespace Fabric
                       throw Exception( "parameter type mismatch: member array type is "+_(memberArrayDesc->getName())+", operator parameter type is "+_(astParamDesc->getName()) );
                     if ( astParamExprType.getUsage() != CG::USAGE_LVALUE )
                       throw Exception( "array parmeters must bind to operator io parameters" );
-                    result.setBaseAddress( prefixCount+param->index(), memberArrayData );
+                    result->setBaseAddress( prefixCount+param->index(), memberArrayData );
                   }
                 }
                 catch ( Exception e ) {
@@ -375,17 +372,17 @@ namespace Fabric
           throw "node " + _(nodeName) + ": " + e;
         }
       }
-      return resultPtr;
+      return result;
     }
     
     std::vector<std::string> Prototype::desc() const
     {
       std::vector<std::string> result;
       result.resize( m_paramCount );
-      for ( std::map< std::string, std::map< std::string, Param * > >::const_iterator it=m_params.begin(); it!=m_params.end(); ++it )
+      for ( std::map< std::string, std::multimap< std::string, Param * > >::const_iterator it=m_params.begin(); it!=m_params.end(); ++it )
       {
         std::string const &nodeName = it->first;
-        for ( std::map< std::string, Param * >::const_iterator jt=it->second.begin(); jt!=it->second.end(); ++jt )
+        for ( std::multimap< std::string, Param * >::const_iterator jt=it->second.begin(); jt!=it->second.end(); ++jt )
         {
           Param const *param = jt->second;
           result[param->index()] = nodeName + "." + param->desc();

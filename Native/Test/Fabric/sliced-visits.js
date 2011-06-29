@@ -1,5 +1,5 @@
-
-FABRIC = wrapFabricClient(createFabricClient());
+FC = createFabricClient();
+FABRIC = wrapFabricClient(FC);
 
 parentOp = FABRIC.DependencyGraph.createOperator( "parentOp" );
 parentOp.setEntryFunctionName('entry');
@@ -78,3 +78,6 @@ childEH.postDescendBindings.append( childEHPostBinding );
 event = FABRIC.DependencyGraph.createEvent( "event" );
 event.appendEventHandler( childEH );
 event.fire();
+
+FABRIC.flush();
+FC.dispose();

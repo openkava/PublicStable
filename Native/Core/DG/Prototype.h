@@ -43,12 +43,12 @@ namespace Fabric
     public:
     
       Prototype( RC::ConstHandle<RT::Manager> const &rtManager );
-      ~Prototype();
+      virtual ~Prototype();
       
       void setDescs( std::vector<std::string> const &descs );
       void clear();
     
-      MT::ParallelCall *bind( RC::ConstHandle<AST::Operator> const &astOperator, Scope const &scope, RC::ConstHandle<Function> const &function, size_t *newSize, unsigned prefixCount=0, void * const *prefixes = 0 );
+      RC::Handle<MT::ParallelCall> bind( RC::ConstHandle<AST::Operator> const &astOperator, Scope const &scope, RC::ConstHandle<Function> const &function, size_t *newSize, unsigned prefixCount=0, void * const *prefixes = 0 );
       
       std::vector<std::string> desc() const;
 
@@ -65,7 +65,7 @@ namespace Fabric
       class ArrayParam;
     
       size_t m_paramCount;
-      std::map< std::string, std::map< std::string, Param * > > m_params;
+      std::map< std::string, std::multimap< std::string, Param * > > m_params;
       
       RC::ConstHandle<RT::Desc> m_rtSizeDesc;
       RC::ConstHandle<RT::Impl> m_rtSizeImpl;
