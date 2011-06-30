@@ -1,3 +1,0 @@
-conditional-execution-using-and.kl:3: SyntaxError: Unexpected string
-  report "Did something";
-         ^^^^^^^^^^^^^^^

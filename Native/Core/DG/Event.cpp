@@ -35,7 +35,7 @@ namespace Fabric
     
     Event::Event( std::string const &name, RC::Handle<Context> const &context )
       : Container( name, context )
-      , m_context( context )
+      , m_context( context.ptr() )
       , m_runState( 0 )
     {
     }

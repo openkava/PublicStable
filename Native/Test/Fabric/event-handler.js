@@ -1,5 +1,5 @@
-
-F = wrapFabricClient(createFabricClient());
+FC = createFabricClient();
+F = wrapFabricClient(FC);
 
 eh = F.DG.createEventHandler("event handler");
 print(eh.getName());
@@ -12,6 +12,7 @@ var mapNamedObjectsToNames = function (namedObjects) {
   return result;
 };
 
+
 printDeep(mapNamedObjectsToNames(eh.getChildEventHandlers()));
 var childEventHandler = F.DG.createEventHandler("child event handler");
 eh.appendChildEventHandler(childEventHandler);
@@ -20,3 +21,6 @@ eh.appendChildEventHandler(F.DG.createEventHandler("another child event handler"
 printDeep(mapNamedObjectsToNames(eh.getChildEventHandlers()));
 eh.removeChildEventHandler(childEventHandler);
 printDeep(mapNamedObjectsToNames(eh.getChildEventHandlers()));
+
+F.flush();
+FC.dispose();

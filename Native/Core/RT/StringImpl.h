@@ -121,13 +121,14 @@ namespace Fabric
         bits_t *&bits = *static_cast<bits_t **>(dst);
         if ( length )
         {
-          bits_t const *retainedBits = 0;
+          bits_t *retainedBits = 0;
           
           if ( bits && bits->refCount.getValue() > 1 )
           {
-            bits->refCount.decrement();
             if ( retain )
               retainedBits = bits;
+            else if ( bits->refCount.decrementAndGetValue() == 0 )
+              free( bits );
             bits = 0;
           }
           FABRIC_ASSERT( !bits || bits->refCount.getValue() == 1 );
@@ -143,6 +144,8 @@ namespace Fabric
               FABRIC_ASSERT( retainedBits->length + 1 < allocSize );
               memcpy( bits->cStr, retainedBits->cStr, retainedBits->length + 1 );
               bits->length = retainedBits->length;
+              if ( retainedBits->refCount.decrementAndGetValue() == 0 )
+                free( retainedBits );
             }
           }
           else if ( length + 1 > bits->allocSize )

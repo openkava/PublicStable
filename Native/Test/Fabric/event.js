@@ -1,5 +1,5 @@
-
-F = wrapFabricClient(createFabricClient());
+FC = createFabricClient();
+F = wrapFabricClient(FC);
 
 var mapNamedObjectsToNames = function (namedObjects) {
   var result = [];
@@ -23,3 +23,5 @@ e.setDidFireCallback(function () {
 });
 print(e.getDidFireCallback());
 e.fire();
+
+FC.dispose();

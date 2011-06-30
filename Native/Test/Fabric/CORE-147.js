@@ -1,5 +1,5 @@
-
-FABRIC = wrapFabricClient(createFabricClient());
+FC = createFabricClient();
+FABRIC = wrapFabricClient(FC);
 
 op = FABRIC.DependencyGraph.createOperator( "op" );
 op.setEntryFunctionName('entry');
@@ -14,3 +14,5 @@ node.addMember( "input", "Scalar" );
 node.bindings.append( binding );
 node.setData( "input", 17 );
 node.evaluate();
+
+FC.dispose();

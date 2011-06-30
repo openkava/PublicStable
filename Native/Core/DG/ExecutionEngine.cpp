@@ -54,7 +54,7 @@ namespace Fabric
     
     void *ExecutionEngine::LazyFunctionCreator( std::string const &functionName )
     {
-      static Util::UnorderedMap< std::string, void * > *functionMapPtr = 0;
+      static Util::AutoPtr< Util::UnorderedMap< std::string, void * > > functionMapPtr;
       if ( !functionMapPtr )
       {
         functionMapPtr = new Util::UnorderedMap< std::string, void * >;
@@ -118,7 +118,7 @@ namespace Fabric
     }
     
     ExecutionEngine::ExecutionEngine( RC::ConstHandle<Context> const &context, llvm::Module *llvmModule )
-      : m_context( context )
+      : m_context( context.ptr() )
     {
       std::string errStr;
       m_llvmExecutionEngine.reset(

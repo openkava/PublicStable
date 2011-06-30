@@ -26,8 +26,6 @@
 
 namespace Fabric
 {
-  
-
   namespace DG
   {
     struct Node::RunState
@@ -35,7 +33,7 @@ namespace Fabric
       bool canEvaluate;
       MT::TaskGroupStream taskGroupStream;
       size_t m_newCount;
-      std::vector<MT::ParallelCall const *> m_evaluateParallelCallsPerOperator;
+      std::vector< RC::Handle<MT::ParallelCall> > m_evaluateParallelCallsPerOperator;
     };
     
     size_t Node::s_globalColorGeneration = 0;
@@ -49,7 +47,7 @@ namespace Fabric
     
     Node::Node( std::string const &name, RC::Handle<Context> const &context )
       : Container( name, context )
-      , m_context( context )
+      , m_context( context.ptr() )
       , m_dirty( true )
       , m_globalDependencyRank( 0 )
       , m_evaluateLocalTask( this, &Node::evaluateLocal )
@@ -146,10 +144,7 @@ namespace Fabric
       if ( m_runState )
       {
         for ( size_t i=0; i<m_runState->m_evaluateParallelCallsPerOperator.size(); ++i )
-        {
-          delete m_runState->m_evaluateParallelCallsPerOperator[i];
           m_runState->m_evaluateParallelCallsPerOperator[i] = 0;
-        }
       }
       
       setOutOfDate();
@@ -212,7 +207,7 @@ namespace Fabric
         {
           RC::ConstHandle<Binding> binding = m_bindingList->get(i);
           
-          MT::ParallelCall const *opParallelCall = m_runState->m_evaluateParallelCallsPerOperator[i];
+          RC::Handle<MT::ParallelCall> opParallelCall = m_runState->m_evaluateParallelCallsPerOperator[i];
           if ( !opParallelCall )
           {
             BindingsScope dependenciesScope( m_dependencies );
@@ -231,7 +226,7 @@ namespace Fabric
       }
     }
       
-    MT::ParallelCall *Node::bind( RC::ConstHandle<Binding> const &binding, Scope const &scope, size_t *newCount, unsigned prefixCount, void * const *prefixes )
+    RC::Handle<MT::ParallelCall> Node::bind( RC::ConstHandle<Binding> const &binding, Scope const &scope, size_t *newCount, unsigned prefixCount, void * const *prefixes )
     {
       BindingsScope dependenciesScope( m_dependencies, &scope );
       return Container::bind( binding, dependenciesScope, newCount, prefixCount, prefixes );
@@ -323,7 +318,7 @@ namespace Fabric
         size_t newCount;
         try
         {
-          Util::AutoPtr<MT::ParallelCall>( binding->bind( selfScope, &newCount ) );
+          RC::Handle<MT::ParallelCall>( binding->bind( selfScope, &newCount ) );
         }
         catch ( Exception e )
         {
@@ -370,9 +365,6 @@ namespace Fabric
     {
       if ( m_runState )
       {
-        for ( size_t i=0; i<m_runState->m_evaluateParallelCallsPerOperator.size(); ++i )
-          delete m_runState->m_evaluateParallelCallsPerOperator[i];
-
         delete m_runState;
         m_runState = 0;
       }

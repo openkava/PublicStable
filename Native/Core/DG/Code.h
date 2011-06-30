@@ -76,7 +76,7 @@ namespace Fabric
         code->compileAST( true );
       }
     
-      RC::ConstHandle<Context> m_context;
+      Context const *m_context;
       std::string m_sourceCode;
 #if defined(FABRIC_BUILD_DEBUG)
       std::string m_byteCode;

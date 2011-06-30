@@ -51,6 +51,7 @@ namespace Fabric
     
     StructImpl::~StructImpl()
     {
+      disposeData( m_defaultData );
       free( m_defaultData );
     }
     

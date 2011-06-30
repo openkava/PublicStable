@@ -47,7 +47,7 @@ namespace Fabric
       void addBindingList( BindingList *bindingList );
       void removeBindingList( BindingList *bindingList );
 
-      MT::ParallelCall *bind( Scope const &scope, size_t *newSize, unsigned prefixCount=0, void * const *prefixes = 0 ) const;
+      RC::Handle<MT::ParallelCall> bind( Scope const &scope, size_t *newSize, unsigned prefixCount=0, void * const *prefixes = 0 ) const;
       
       RC::ConstHandle<JSON::Value> jsonDesc() const;
       
@@ -71,7 +71,7 @@ namespace Fabric
       Prototype *m_prototype;
       RC::Handle<Operator> m_operator;
       
-      RC::Handle<Context> m_context;
+      Context *m_context;
     };
   };
 };

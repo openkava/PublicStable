@@ -30,6 +30,7 @@ namespace Fabric
     
     FixedArrayImpl::~FixedArrayImpl()
     {
+      disposeData( m_defaultData );
       free( m_defaultData );
     }
     

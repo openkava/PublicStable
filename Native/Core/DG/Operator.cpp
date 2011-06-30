@@ -22,8 +22,6 @@
 
 namespace Fabric
 {
-  
-
   namespace DG
   {
     RC::Handle<Operator> Operator::Create( std::string const &name, RC::Handle<Context> const &context )
@@ -35,7 +33,7 @@ namespace Fabric
 
     Operator::Operator( std::string const &name, RC::Handle<Context> const &context )
       : NamedObject( name, context )
-      , m_context( context )
+      , m_context( context.ptr() )
     {
     }
     
@@ -122,7 +120,7 @@ namespace Fabric
       markForRecompile();
     }
     
-    MT::ParallelCall *Operator::bind( Prototype *prototype, Scope const &scope, size_t *newSize, unsigned prefixCount, void * const *prefixes ) const
+    RC::Handle<MT::ParallelCall> Operator::bind( Prototype *prototype, Scope const &scope, size_t *newSize, unsigned prefixCount, void * const *prefixes ) const
     {
       if ( !m_sourceCode.length() )
         throw Exception( "no source code loaded" );

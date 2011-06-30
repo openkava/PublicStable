@@ -78,7 +78,7 @@ namespace Fabric
       
       CG::Diagnostics const &getDiagnostics() const;
 
-      MT::ParallelCall *bind( Prototype *prototype, Scope const &scope, size_t *newSize, unsigned prefixCount=0, void * const *prefixes = 0 ) const;
+      RC::Handle<MT::ParallelCall> bind( Prototype *prototype, Scope const &scope, size_t *newSize, unsigned prefixCount=0, void * const *prefixes = 0 ) const;
 
       virtual RC::ConstHandle<JSON::Value> jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg );
       static void jsonExecCreate( RC::ConstHandle<JSON::Value> const &arg, RC::Handle<Context> const &context );
@@ -110,7 +110,7 @@ namespace Fabric
 
     private:
     
-      RC::ConstHandle<Context> m_context;
+      Context *m_context;
     
       std::string m_entryFunctionName;
       std::string m_sourceCode;

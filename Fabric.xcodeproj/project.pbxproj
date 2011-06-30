@@ -2787,6 +2787,7 @@
 			isa = PBXProject;
 			buildConfigurationList = DB39A76A13425AEB007026BA /* Build configuration list for PBXProject "Fabric" */;
 			compatibilityVersion = "Xcode 2.4";
+			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				English,

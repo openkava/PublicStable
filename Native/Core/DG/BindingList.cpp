@@ -27,13 +27,19 @@ namespace Fabric
 
     BindingList::BindingList( RC::Handle<Context> const &context )
       : CompiledObject( context )
-      , m_context( context )
+      , m_context( context.ptr() )
       , m_owner( 0 )
     {
     }
 
     BindingList::~BindingList()
     {
+      for ( Bindings::iterator it = m_bindings.begin(); it != m_bindings.end(); ++it )
+      {
+        RC::Handle<Binding> binding = *it;
+        binding->removeBindingList( this );
+      }
+      
       FABRIC_ASSERT( !m_owner );
     }
 

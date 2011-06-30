@@ -114,7 +114,7 @@ namespace Fabric
       
       virtual void setOutOfDate() = 0;
       
-      virtual MT::ParallelCall *bind( RC::ConstHandle<Binding> const &binding, Scope const &scope, size_t *newCount, unsigned prefixCount=0, void * const *prefixes = 0 );
+      virtual RC::Handle<MT::ParallelCall> bind( RC::ConstHandle<Binding> const &binding, Scope const &scope, size_t *newCount, unsigned prefixCount=0, void * const *prefixes = 0 );
       
       class Member;
       typedef std::map< std::string, Member * > Members;
@@ -127,7 +127,7 @@ namespace Fabric
     
     private:
     
-      RC::Handle<Context> m_context;
+      Context *m_context;
       
       static const uint64_t sk_encodingCookie = UINT64_C(0x295C163724B3CD01);
       static const uint32_t sk_encodingVersion = UINT32_C(0x20110325);

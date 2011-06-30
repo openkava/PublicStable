@@ -1,5 +1,5 @@
-
-FABRIC = wrapFabricClient(createFabricClient());
+FC = createFabricClient();
+FABRIC = wrapFabricClient(FC);
 load( "UnitTest.js.inc" );
 ut = new FABRIC.UnitTest;
         ut.test( "Selectors", function() {
@@ -37,3 +37,5 @@ ut = new FABRIC.UnitTest;
           ut.expect( "Correct number of results", result.length, 1 );
           ut.expect( "Correct result value", result[0].value, 7 );
         } );
+FABRIC.flush();
+FC.dispose();

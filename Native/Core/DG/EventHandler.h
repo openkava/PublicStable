@@ -99,7 +99,7 @@ namespace Fabric
       
     private:
     
-      RC::Handle<Context> m_context;
+      Context *m_context;
       
       std::set<Event *> m_events;
 
