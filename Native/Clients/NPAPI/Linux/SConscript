@@ -8,6 +8,19 @@ Import( 'coreEnv', 'npapiSources', 'npapiDistDir', 'buildArch', 'npapiFlags' )
 npapiEnv = coreEnv.Clone()
 npapiEnv.MergeFlags( npapiFlags )
 
+npapiEnv.Append( LINKFLAGS = [ '-lGLEW' ] )
+npapiEnv.ParseConfig( 'pkg-config --cflags --libs gtk+-2.0' )
+npapiEnv.ParseConfig( 'pkg-config --cflags --libs gtkglext-1.0' )
+npapiEnv.ParseConfig( 'pkg-config --cflags --libs gdkglext-1.0' )
+ccflags = []
+for flag in npapiEnv['CCFLAGS']:
+  if(flag.lower() == '-include'):
+    continue
+  if(flag.lower().endswith(".h")):
+    ccflags.append("-include")
+  ccflags.append(flag)
+npapiEnv['CCFLAGS'] = ccflags
+  
 npapiSources.append( Glob('*.cpp') )
 npapiPluginName = 'FabricPlugin'
 npapiPlugin = npapiEnv.LoadableModule( 'FabricPlugin', npapiSources )

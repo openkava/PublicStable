@@ -12,6 +12,8 @@ npapiEnv.Append( FRAMEWORKS = ['AppKit', 'AGL', 'QuartzCore'] )
 npapiSources.append( ['WindowedCAViewPort.mm','WindowedInvalidatingCAViewPort.mm'] )
 if buildArch != 'x86_64':
   npapiSources.append( ['WindowlessCGViewPort.cpp'] )
+  
+npapiEnv.Append( FRAMEWORKS = ['OpenGL','OpenCL'] )
 
 npapiPlugin = npapiEnv.LoadableModule( 'FabricNPAPI', npapiSources )
 

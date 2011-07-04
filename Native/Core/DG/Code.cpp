@@ -39,7 +39,7 @@
 
 // [pzion 20110307] Include this last because it does lots of
 // #defines on Linux that mess up llvm
-#include <Fabric/Core/OGL/OGL.h>
+// #include <Fabric/Core/OGL/OGL.h>
 
 namespace Fabric
 {
@@ -94,9 +94,9 @@ namespace Fabric
 
       cgManager->llvmPrepareModule( moduleBuilder );
       m_context->getPlugManager()->llvmPrepareModule( moduleBuilder );
-      OGL::llvmPrepareModule( moduleBuilder, m_context->getRTManager() );
+      //OGL::llvmPrepareModule( moduleBuilder, m_context->getRTManager() );
 #if defined(FABRIC_MODULE_OCL)
-      OCL::llvmPrepareModule( moduleBuilder, m_context->getRTManager() );
+      //OCL::llvmPrepareModule( moduleBuilder, m_context->getRTManager() );
 #endif
       
       CG::Diagnostics optimizeDiagnostics;

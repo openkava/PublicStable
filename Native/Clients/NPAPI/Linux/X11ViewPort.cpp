@@ -10,7 +10,7 @@
 #include <Fabric/Clients/NPAPI/Linux/X11ViewPort.h>
 #include <Fabric/Clients/NPAPI/Interface.h>
 #include <Fabric/Base/Exception.h>
-#include <Fabric/Core/OGL/OGL.h>
+#include <GL/gl.h>
 #include <Fabric/Clients/NPAPI/Context.h>
 #include <Fabric/Core/DG/Event.h>
 #include <Fabric/Core/MT/LogCollector.h>

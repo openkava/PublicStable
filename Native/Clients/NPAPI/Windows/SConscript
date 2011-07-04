@@ -22,6 +22,9 @@ npapiEnv.Append( LINKFLAGS = [
 
 if npapiEnv['FABRIC_BUILD_TYPE'] == 'Debug':
   npapiEnv.Append( PDB='${TARGET.base}.pdb' )
+  
+Import( 'glewFlags' )
+npapiEnv.MergeFlags( glewFlags )
 
 Depends( 'FabricPlugin.rc', 'resource.h' )
 npapiSources += [npapiEnv.RES( 'FabricPlugin.rc' )]
