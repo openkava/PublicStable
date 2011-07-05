@@ -1,5 +1,5 @@
 import os
-Import('coreEnv', 'npapiFlags', 'npapiSources')
+Import('coreEnv', 'npapiFlags', 'npapiSources', 'npapiDistDir')
 
 npapiEnv = coreEnv.Clone()
 npapiEnv.MergeFlags( npapiFlags )
@@ -28,3 +28,5 @@ npapiSources += [npapiEnv.RES( 'FabricPlugin.rc' )]
 npapiPlugin = npapiEnv.LoadableModule( 'npFabricPlugin', npapiSources, register=1 )
 
 npapiEnv.AddPostAction( npapiPlugin, 'mt.exe -nologo -manifest ${TARGET}.manifest -outputresource:$TARGET;2' )
+
+Alias( 'npapi', Install( npapiDistDir, npapiPlugin + Glob('*.bat') ) )
