@@ -38,6 +38,13 @@ namespace Fabric
         
         for ( size_t ch='0'; ch<='9'; ++ch )
           s_charAttribs[ch] |= k_charAttribDigit;
+        
+        for ( size_t ch='0'; ch<='9'; ++ch )
+          s_charAttribs[ch] |= k_charAttribHexDigit;
+        for ( size_t ch='a'; ch<='f'; ++ch )
+          s_charAttribs[ch] |= k_charAttribHexDigit;
+        for ( size_t ch='A'; ch<='F'; ++ch )
+          s_charAttribs[ch] |= k_charAttribHexDigit;
           
         s_charAttribs[' '] |= k_charAttribSpace;
         s_charAttribs['\n'] |= k_charAttribSpace;
@@ -332,32 +339,43 @@ namespace Fabric
       
       m_source.advance( &text );
       
-      while ( IsDigit( m_source.peek() ) )
-        m_source.advance( &text );
-      
       Token token = TK_CONST_UI;
       
-      if ( m_source.peek() == '.' )
+      if ( text[0] == '0' && tolower( m_source.peek() ) == 'x' )
       {
         m_source.advance( &text );
-        token = TK_CONST_FP;
-        
-        while ( IsDigit( m_source.peek() ) )
+        if ( !IsHexDigit( m_source.peek() ) )
+          throw Exception("malformed hexadecimal constant");
+        while ( IsHexDigit( m_source.peek() ) )
           m_source.advance( &text );
       }
-      
-      if ( m_source.peek() == 'e' || m_source.peek() == 'E' )
+      else
       {
-        m_source.advance( &text );
-        token = TK_CONST_FP;
-        
-        if ( m_source.peek() == '+' || m_source.peek() == '-' )
-          m_source.advance( &text );
-        
-        if ( !IsDigit( m_source.peek() ) )
-          throw Exception("malformed floating point exponent");
         while ( IsDigit( m_source.peek() ) )
           m_source.advance( &text );
+        
+        if ( m_source.peek() == '.' )
+        {
+          m_source.advance( &text );
+          token = TK_CONST_FP;
+          
+          while ( IsDigit( m_source.peek() ) )
+            m_source.advance( &text );
+        }
+        
+        if ( m_source.peek() == 'e' || m_source.peek() == 'E' )
+        {
+          m_source.advance( &text );
+          token = TK_CONST_FP;
+          
+          if ( m_source.peek() == '+' || m_source.peek() == '-' )
+            m_source.advance( &text );
+          
+          if ( !IsDigit( m_source.peek() ) )
+            throw Exception("malformed floating point exponent");
+          while ( IsDigit( m_source.peek() ) )
+            m_source.advance( &text );
+        }
       }
       
       yys->valueStringPtr = new std::string( text );
