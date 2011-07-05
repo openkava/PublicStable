@@ -16,6 +16,7 @@ aliases = [
 dirs = [
     'EXR',
     'HDR',
+    'OGL',
     'PNG',
     'TGA',
     'VICON'

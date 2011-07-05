@@ -18,8 +18,9 @@ if platform.system() == "Linux":
 else:
   raise(Exception("THIS PLATFORM HAS NOT YET BEEN IMPLEMENTED."))
   
-templatePath = basePath+'/../../../Core/OGL/OGL.cpp_template'
-sourcePath = basePath+'/../../../Core/OGL/OGL.cpp'
+jsonsourcePath = basePath+'/../../../Exts/Builtin/OGL/FabricOGL.fpm.json'
+cpptemplatePath = basePath+'/../../../Exts/Builtin/OGL/ogl.cpp_template'
+cppsourcePath = basePath+'/../../../Exts/Builtin/OGL/ogl.cpp'
 
 verbose = False
 
@@ -120,7 +121,7 @@ def main():
       while(exports.has_key(macro)):
         macro = exports[macro]
       constants[i] = '#define '+name+' '+macro
-
+      
     split = constants[i].strip(';').split(' ')
     if(len(split) == 3):
       name = split[1]
@@ -134,20 +135,18 @@ def main():
         registeredConstants[name] = value;
         
   # CREATE THE SOURCE CODE FOR EACH CONSTANT
-  addConstantsCode = []
+  jsonConstants = []
   for name in registeredConstants:
     value = registeredConstants[name]
-    addConstantsCode.append('      #if defined( '+name+' )')
     if value.startswith('0x') or value.isdigit:
-      addConstantsCode.append('        ADD_CONST_INT( "'+name+'", '+name+' );')
+      jsonConstants.append('var const Integer '+name+' = '+value+';')
     else:
-      addConstantsCode.append('        ADD_CONST_BOOL( "'+name+'", '+name+' );')
-    addConstantsCode.append('      #endif')
+      jsonConstants.append('var const Boolean '+name+' = '+value+';')
     
   # DEFINE A MAPPING FOR THE DATATYPE
   # oglTYPE: [C++type, trace format, trace cast, KL Type]
   knownCTypes = {
-    'void':['void','void*','',''],
+    'void':['void','void*','','Data'],
     'bool':['bool','%b','bool','Boolean'],
     'int':['int','%d','int','Integer'],
     'char':['char','%s','const char*','String'],
@@ -157,7 +156,7 @@ def main():
     'GLint':['GLint','%d','int','Integer'],
     'GLsizei':['GLsizei','%d','int','Size'],
     'GLushort':['unsigned','0x%04X','unsigned','Integer'],
-    'GLvoid':['GLvoid','void*','',''],
+    'GLvoid':['GLvoid','void*','','Data'],
     'GLboolean':['GLboolean','%b','bool','Boolean'],
     'GLint':['GLint','%d','int','Integer'],
     'GLuint':['GLuint','0x%04X','unsigned','Size'],
@@ -177,7 +176,7 @@ def main():
   
   # LOOP ALL FUNCTIONS AND DEFINE THEIR CODE
   functionsCode = []
-  addFunctionsCode = []
+  klFunctionsCode = []
   knownFunctions = {}
   for i in range(len(functions)):
 
@@ -214,6 +213,10 @@ def main():
     if not name.startswith('gl'):
       continue
     
+    if not name == "glGetTransformFeedbackVaryingEXT":
+      #continue
+      pass
+    
     # CHECK IF THIS IS A HARDWARE SPECIFIC FUNCTION AND SKIP THOSE
     hardwareSpecific = False
     for i in range(len(suffixes)):
@@ -231,10 +234,10 @@ def main():
         print("Warning: Skipped function '"+name+"' due to unknown return type '"+returnType+ "'.")
       continue
 
-    # DEFINE THE PARAMETER LAYOUT, STARTING WITH THE RETURN TYPE
-    parameterLayout = []
-    if returnType.find('void') == -1:
-      parameterLayout.append('='+knownCTypes[returnTypeKey][3])
+    # DEFINE KL FUNCTIONS
+    klParameters = []
+    klCast = []
+    cParameters = []
     
     # EXTRACT ALL OF THE VARIABLES (BETWEEN BRACES)
     variables = function.partition('(')[2].rpartition(')')[0].split(',')
@@ -245,9 +248,7 @@ def main():
     allTypesValid = True
     traceFormat = []        # THE PRINTF FORMAT TOKENS (USED FOR TRACE)
     traceVars = []          # THE NAME OF THE VARIABLES TO PASS TO PRINTF (TRACE)
-    varTypes = []           # THE TYPES OF THE VARIABLES
     varNamesHead = []       # THE NAMES OF THE VARIABLES FOR THE FUNCTION DEFINITION
-    varNames = []           # THE NAMES OF THE VARIABLES FOR THE GL CALL
     additionalCodePre = []  # CODE TO RUN PRE THE GL CALL
     additionalCodePost = [] # CODE TO RUN POST THE GL CALL
     for i in range(len(variables)):
@@ -283,30 +284,26 @@ def main():
 
           # DEAL WITH A STIRNG ARRAY
           traceFormat.append('char*')
-          fulltype = fulltype.replace('**','*')
           if(variables[i].find('const') > -1):
             
             # IF WE HAVE A CONST CHAR, WE WANT TO JUST READ IT
-            varTypes.append('void*')
-            additionalCodePre.append('      '+fulltype.strip()+' '+varname+'Str = ('+fulltype+')stringDesc->getValueData( &'+varname+' );')
-            varTypes.append('void*')
-            if variables[i].find('**') > -1:
-              varNames.append('&'+varname+'Str')
+            if fulltype.find('**') > -1:
+              klParameters.append('io String '+varname+'[]')
+              cParameters.append('const KL::VariableArray<KL::String> &'+varname)
+              klCast.append('('+fulltype+')&'+varname+'[0]')
             else:
-              varNames.append(varname+'Str')
-            parameterLayout.append('<String '+varname)
+              klParameters.append('io String '+varname)
+              cParameters.append('const KL::String &'+varname)
+              klCast.append('('+fulltype+')'+varname+'.data()')
           else:
             
             # IF WE DON'T HAVE A CONST CHAR, WE NEED TO WRITE TO IT
-            varTypes.append('void*')
-            if variables[i].find('**') > -1:
-              varNames.append('&'+varname+'Str')
-            else:
-              varNames.append(varname+'Str')
-            additionalCodePre.append('      char * '+varname+'Str = new char[1024];')
-            additionalCodePost.append('      stringDesc->setValue( '+varname+'Str, strlen('+varname+'Str), '+varname+' );')
-            additionalCodePost.append('      delete( '+varname+'Str );')
-            parameterLayout.append('>String '+varname)
+            additionalCodePre.append('  char * '+varname+'Str = new char[1024];')
+            additionalCodePost.append('  '+varname+' = KL::String('+varname+'Str);')
+            additionalCodePost.append('  delete( '+varname+'Str );')
+            klParameters.append('io String '+varname)
+            cParameters.append('KL::String & '+varname)
+            klCast.append('('+fulltype+')'+varname+'Str')
         else:
           # BAIL OUT, NO DUAL POINTERS ARE ALLOWED. SKIP THIS FUNCTION
           if verbose:
@@ -314,7 +311,6 @@ def main():
           allTypesValid = False
           break
       else:
-        
         # IF WE HAVE A TRACE FORMAT TYPE, AND WE ARE NOT A POINTER, LET'S TRACE US
         if len(knownCTypes[type][2]) > 0 and variables[i].find('*') == -1:
           traceFormat.append(knownCTypes[type][1])
@@ -324,72 +320,99 @@ def main():
           
         # IF WE HAVE A POINTER
         if variables[i].find('*') > -1:
-          if variables[i].startswith('const'):
-            # IF WE ARE CONST, LET'S CREATE A DATA PTR
-            parameterLayout.append('<Data '+varname)
+          if knownCTypes[type][3] == 'Data':
+            klParameters.append('io Data '+varname)
+            cParameters.append('KL::Data '+varname)
+            klCast.append(varname)
+          elif variables[i].startswith('const'):
+            # THIS CAN BE DONE BASED ON THE DIGITS
+            digit = ''
+            for k in range(len(name)-1,0,-1):
+              if name[k:k+1].isdigit():
+                digit = name[k:k+1]
+                break
+            klParameters.append('io '+knownCTypes[type][3]+' '+varname+'['+digit+']')
+            cParameters.append('const KL::VariableArray<KL::'+knownCTypes[type][3]+'> & '+varname)
+            klCast.append('('+fulltype+')&'+varname+'[0]')
           else:
             # this is really flaky, it should be >Data, but that's not possible.
             # the rvalue is still able to write to though.
-            parameterLayout.append('<Data '+varname)
+            klParameters.append('io '+knownCTypes[type][3]+' '+varname+'[]')
+            cParameters.append('KL::VariableArray<KL::'+knownCTypes[type][3]+'> & '+varname)
+            klCast.append('('+fulltype+')&'+varname+'[0]')
         else:
-          parameterLayout.append('<'+knownCTypes[type][3]+' '+varname)
-        varTypes.append(fulltype)
-        varNames.append(varname)
+          klParameters.append('io '+knownCTypes[type][3]+' '+varname)
+          cParameters.append('const KL::'+knownCTypes[type][3]+' & '+varname)
+          klCast.append('('+fulltype+')'+varname)
       varNamesHead.append(varname)
     if not allTypesValid:
       continue
-
+    
     # REMEMBER THE FUNCTION
     knownFunctions[name] = function
     
+    klReturnType = returnType
+    if klReturnType.find('void') == -1:
+      klReturnType = 'KL::'+knownCTypes[returnTypeKey][3]
+      
     # IF WE HAVE VARIABLES
-    if len(varNames) > 0:
-      functionsCode.append('    static '+returnType+' '+name[2:1000]+'(')
-      for i in range(len(varNamesHead)-1):
-        functionsCode.append('      '+varTypes[i]+' '+varNamesHead[i]+',')
-      functionsCode.append('      '+varTypes[len(varTypes)-1]+' '+varNamesHead[len(varNamesHead)-1])
-      functionsCode.append('    ){')
-      if len(traceVars) > 0:
-        functionsCode.append('      FABRIC_OGL_TRACE( "'+name+'( '+str(', ').join(traceFormat)+' )",')
-        for i in range(len(traceVars)-1):
-          functionsCode.append('        '+traceVars[i]+',')
-        functionsCode.append('        '+traceVars[len(traceVars)-1])
-        functionsCode.append('      );')
+    if len(cParameters) > 0:
+      if returnType.find('void') > -1:
+        functionsCode.append('FABRIC_EXT_EXPORT '+klReturnType+' kl'+name[2:1000]+'(')
       else:
-        functionsCode.append('      FABRIC_OGL_TRACE( "'+name+'( '+str(', ').join(traceFormat)+' )" );')
+        functionsCode.append('FABRIC_EXT_EXPORT '+klReturnType+' kl'+name[2:1000]+'(')
+      for i in range(len(cParameters)-1):
+        functionsCode.append('  '+cParameters[i]+',')
+      functionsCode.append('  '+cParameters[len(cParameters)-1])
+      functionsCode.append('){')
     else:
-      functionsCode.append('    static '+returnType+' '+name[2:1000]+'()')
-      functionsCode.append('    {')
-      functionsCode.append('      FABRIC_OGL_TRACE( "'+name+'()" );')
-    functionsCode.append('      ErrorReporter errorReporter( "'+name+'" );')
+      if returnType.find('void') > -1:
+        functionsCode.append('FABRIC_EXT_EXPORT '+returnType+' kl'+name[2:1000]+'()')
+      else:
+        functionsCode.append('FABRIC_EXT_EXPORT KL::'+knownCTypes[returnTypeKey][3]+' kl'+name[2:1000]+'()')
+      functionsCode.append('{')
     functionsCode.extend(additionalCodePre)
     prefix = ''
     if returnType.find('void') == -1:
       prefix = returnType+' result = '
-    if len(varNames) > 0:
-      functionsCode.append('      '+prefix+name+'( '+str(', ').join(varNames)+' );')
+    if len(klCast) > 0:
+      functionsCode.append('  '+prefix+name+'( '+str(', ').join(klCast)+' );')
     else:
-      functionsCode.append('      '+prefix+name+'();')
+      functionsCode.append('  '+prefix+name+'();')
     functionsCode.extend(additionalCodePost)
 
     # IF WE HAVE A RETURN TYPE
     if returnType.find('void') == -1:
       traceFormat = knownCTypes[returnTypeKey][1]
       traceVar = knownCTypes[returnTypeKey][2]
-      if len(traceVar) > 0 and returnType.find('*') == -1:
-        functionsCode.append('      FABRIC_OGL_TRACE_NOTE( "Returning '+traceFormat+'", ('+traceVar+')result );')
-      functionsCode.append('      return result;')
+      functionsCode.append('  return ('+klReturnType+')result;')
     
-    functionsCode.append('    }')
-    addFunctionsCode.append('      ADD_FUNC( '+name[2:1000]+', "'+str(',').join(parameterLayout)+'" );')
+    functionsCode.append('}\n')
+    klFunction = 'function ';
+    if returnTypeKey.find('void') == -1:
+      klFunction = klFunction + knownCTypes[returnTypeKey][3]+' '
+    klFunction = klFunction + name+'( '
+    klFunction = klFunction + ', '.join(klParameters) + ' );'
+    klFunctionsCode.append(klFunction)
+    
+    #break
+  
+  #jsonConstants = []
+  open(jsonsourcePath,'w').write('{\n  "libs": "FabricOGL",\n  "code": "'+str('\\n').join(jsonConstants)+'\\n'+str('\\n').join(klFunctionsCode)+'"\n}\n')
+  
+  headers = []
+  for file in files:
+    parts = file.split('/')
+    headers.append('#include <'+parts[len(parts)-2]+'/'+parts[len(parts)-1]+'>')
     
   # LOAD THE TEMPLATE AND FILL IT
-  template = open(templatePath).read();
+  template = open(cpptemplatePath).read();
+  template = template.replace("####HEADERS####",str('\n').join(headers))
   template = template.replace("####FUNCTIONS####",str('\n').join(functionsCode))
-  template = template.replace("####CONSTANTADDS####",str('\n').join(addConstantsCode))
-  template = template.replace("####FUNCTIONADDS####",str('\n').join(addFunctionsCode))
   # WRITE OUT TO OUR SOURCE FILE
-  open(sourcePath,"w").write(template)
+  open(cppsourcePath,"w").write(template)
+  
+  print("Created")
   
 if __name__ == '__main__':
   main()
