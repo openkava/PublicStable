@@ -186,6 +186,7 @@ def main():
   functionsCode = []
   klFunctionsCode = []
   knownFunctions = {}
+  
   for i in range(len(functions)):
 
     # FIRST CHECK IF THE FUNCTION USES A MACRO
@@ -230,9 +231,6 @@ def main():
     if hardwareSpecific:
       continue
           
-    if name.lower().find('string') == -1:
-      continue
-
     # LET'S FIGURE OUT THE RETURN TYPE
     returnType = function.partition('(')[0].rpartition(' ')[0]
     returnTypeKey = returnType.rpartition(' ')[2].strip('*')
@@ -318,7 +316,7 @@ def main():
             
             # IF WE DON'T HAVE A CONST CHAR, WE NEED TO WRITE TO IT
             additionalCodePre.append('  char * '+varname+'Str = new char[1024];')
-            additionalCodePost.append('  '+varname+' = KL::String('+varname+'Str);')
+            additionalCodePost.append('  '+varname+' = KL::String((const char*)'+varname+'Str);')
             additionalCodePost.append('  delete( '+varname+'Str );')
             klParameters.append('io String '+klvarname)
             cParameters.append('KL::String & '+varname)
@@ -382,19 +380,23 @@ def main():
     # IF WE HAVE VARIABLES
     if len(cParameters) > 0:
       if returnType.find('void') > -1:
-        functionsCode.append('FABRIC_EXT_EXPORT '+klReturnType+' kl'+name[2:1000]+'(')
+        functionsCode.append('FABRIC_EXT_EXPORT '+klReturnType+' '+name+'_wrapper(')
       else:
-        functionsCode.append('FABRIC_EXT_EXPORT '+klReturnType+' kl'+name[2:1000]+'(')
+        functionsCode.append('FABRIC_EXT_EXPORT '+klReturnType+' '+name+'_wrapper(')
       for i in range(len(cParameters)-1):
         functionsCode.append('  '+cParameters[i]+',')
       functionsCode.append('  '+cParameters[len(cParameters)-1])
       functionsCode.append('){')
     else:
       if returnType.find('void') > -1:
-        functionsCode.append('FABRIC_EXT_EXPORT '+returnType+' kl'+name[2:1000]+'()')
+        functionsCode.append('FABRIC_EXT_EXPORT '+returnType+' '+name+'_wrapper()')
       else:
-        functionsCode.append('FABRIC_EXT_EXPORT KL::'+knownCTypes[returnTypeKey][3]+' kl'+name[2:1000]+'()')
+        functionsCode.append('FABRIC_EXT_EXPORT KL::'+knownCTypes[returnTypeKey][3]+' '+name+'_wrapper()')
       functionsCode.append('{')
+    if not name == 'glGetError' and not name == 'gluErrorString':
+      functionsCode.append('  _clearError();')
+    if name.lower() == 'glbegin':
+      functionsCode.append('  _incBracket();')
     functionsCode.extend(additionalCodePre)
     prefix = ''
     if returnType.find('void') == -1:
@@ -403,11 +405,11 @@ def main():
       functionsCode.append('  '+prefix+name+'( '+str(', ').join(klCast)+' );')
     else:
       functionsCode.append('  '+prefix+name+'();')
-    
+
+    if name.lower() == 'glend':
+      functionsCode.append('  _decBracket();')
     if not name == 'glGetError' and not name == 'gluErrorString':
-      functionsCode.append('  GLenum errorCode = glGetError();')
-      functionsCode.append('  if ( errorCode != GL_NO_ERROR )')
-      functionsCode.append('    throw Fabric::Exception( "Fabric::OGL::'+name+'( '+str(', ').join(traceFormat)+' )", '+str(', ').join(traceVars)+', gluGetErrorString(errorCode));')
+      functionsCode.append('  _checkError("'+name+'");')
     functionsCode.extend(additionalCodePost)
 
     # IF WE HAVE A RETURN TYPE
@@ -421,8 +423,8 @@ def main():
     klFunction = 'function ';
     if returnTypeKey.find('void') == -1:
       klFunction = klFunction + knownCTypes[returnTypeKey][3]+' '
-    klFunction = klFunction + 'kl'+name[2:10000]+'( '
-    klFunction = klFunction + ', '.join(klParameters) + ' );'
+    klFunction = klFunction + name+'( '
+    klFunction = klFunction + ', '.join(klParameters) + ' ) = '+"'"+name+'_wrapper'+"'"+';'
     klFunctionsCode.append(klFunction)
   
   open(jsonsourcePath,'w').write('{\n  "libs": "FabricOGL",\n  "code": "'+str('').join(jsonConstants)+''+str('').join(klFunctionsCode)+'"\n}\n')
