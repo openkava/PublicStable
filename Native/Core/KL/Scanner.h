@@ -51,6 +51,11 @@ namespace Fabric
         return ch != -1 && s_charAttribs[uint8_t(ch)] & k_charAttribDigit;
       }
       
+      static bool IsHexDigit( int ch )
+      {
+        return ch != -1 && s_charAttribs[uint8_t(ch)] & k_charAttribHexDigit;
+      }
+      
       static bool IsSpace( int ch )
       {
         return ch != -1 && s_charAttribs[uint8_t(ch)] & k_charAttribSpace;
@@ -72,6 +77,7 @@ namespace Fabric
       static const uint8_t k_charAttribDigit = 2;
       static const uint8_t k_charAttribSpace = 4;
       static const uint8_t k_charAttribSymbol = 8;
+      static const uint8_t k_charAttribHexDigit = 16;
     };
   };
 };
