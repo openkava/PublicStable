@@ -38,6 +38,18 @@ namespace Fabric
         return new Function( location, friendlyName, entryName, returnExprType, params, body );
       }
       
+      static RC::Handle<Function> Create(
+        CG::Location const &location,
+        std::string const &friendlyName,
+        std::string const *entryName,
+        CG::ExprType const &returnExprType,
+        RC::ConstHandle<ParamList> const &params,
+        RC::ConstHandle<CompoundStatement> const &body
+        )
+      {
+        return new Function( location, friendlyName, entryName? *entryName: friendlyName, returnExprType, params, body );
+      }
+      
       virtual bool isFunction() const { return true; }
           
       std::string const &getFriendlyName() const
