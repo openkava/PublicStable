@@ -121,7 +121,7 @@ def main():
       while(exports.has_key(macro)):
         macro = exports[macro]
       constants[i] = '#define '+name+' '+macro
-      
+
     split = constants[i].strip(';').split(' ')
     if(len(split) == 3):
       name = split[1]
@@ -220,10 +220,6 @@ def main():
       continue
     if not name.startswith('gl'):
       continue
-    
-    if not name == "glGetTransformFeedbackVaryingEXT":
-      #continue
-      pass
     
     # CHECK IF THIS IS A HARDWARE SPECIFIC FUNCTION AND SKIP THOSE
     hardwareSpecific = False
