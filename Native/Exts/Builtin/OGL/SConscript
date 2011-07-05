@@ -1,0 +1,54 @@
+#
+# Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+#
+
+Import( 'extsEnv', 'fabricExtsDistDir', 'buildOS', 'buildArch', 'buildType' )
+
+oglPluginEnv = extsEnv.Clone()
+
+# OpenGL
+oglEnv = Environment(
+  FABRIC_BUILD_OS=buildOS,
+  FABRIC_BUILD_ARCH=buildArch,
+  FABRIC_BUILD_TYPE=buildType,
+  TARGET_ARCH = buildArch
+  )
+oglFlags = {}
+if buildOS == 'Linux':
+  oglEnv.Append( LINKFLAGS = [ '-lGLEW' ] )
+  oglEnv.ParseConfig( 'pkg-config --cflags --libs gtk+-2.0' )
+  oglEnv.ParseConfig( 'pkg-config --cflags --libs gtkglext-1.0' )
+  oglEnv.ParseConfig( 'pkg-config --cflags --libs gdkglext-1.0' )
+if buildOS == 'Darwin':
+  oglEnv.Append( FRAMEWORKS = ['OpenGL','OpenCL'] )
+if buildOS == 'Windows':
+	Import( 'glewFlags' )
+	oglEnv.MergeFlags( glewFlags )
+
+# [pzion 20110329] WHO MADE THIS COMMENT???
+# ensure to insert an include prior to every header file  
+# this has to be done because the flags are parsed for unique
+# values, which removes one of the '-include' flags
+if oglEnv['FABRIC_BUILD_OS'] == 'Linux':
+  ccflags = []
+  for flag in oglEnv['CCFLAGS']:
+    if(flag.lower() == '-include'):
+      continue
+    if(flag.lower().endswith(".h")):
+      ccflags.append("-include")
+    ccflags.append(flag)
+  oglEnv['CCFLAGS'] = ccflags
+
+Export( 'oglEnv' )
+
+oglPlugin = oglPluginEnv.SharedLibrary( 'FabricOGL', Glob('*.cpp') ),
+oglManifest = oglPluginEnv.File('FabricOGL.fpm.json'),
+
+installAction = Install( fabricExtsDistDir, [oglPlugin,oglManifest] )
+extsEnv.CopyToAppdataIfWindows( installAction )
+
+Alias( 'oglExt', [
+  oglPlugin,
+  oglManifest,
+  installAction
+] )
