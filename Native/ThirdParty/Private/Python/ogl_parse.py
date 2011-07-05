@@ -405,12 +405,9 @@ def main():
       functionsCode.append('  '+prefix+name+'();')
     
     if not name == 'glGetError' and not name == 'gluErrorString':
-      functionsCode.append('  GLenum error = glGetError();')
-      functionsCode.append('  if ( error != GL_NO_ERROR )')
-      throwCode = '    throw Fabric::Exception( "Fabric::OGL::'+name+'( '+str(', ').join(traceFormat)+' )"'
-      if len(traceVars) > 0:
-        throwCode = throwCode + ', '+str(', ').join(traceVars)
-      functionsCode.append(throwCode+');')
+      functionsCode.append('  GLenum errorCode = glGetError();')
+      functionsCode.append('  if ( errorCode != GL_NO_ERROR )')
+      functionsCode.append('    throw Fabric::Exception( "Fabric::OGL::'+name+'( '+str(', ').join(traceFormat)+' )", '+str(', ').join(traceVars)+', gluGetErrorString(errorCode));')
     functionsCode.extend(additionalCodePost)
 
     # IF WE HAVE A RETURN TYPE
