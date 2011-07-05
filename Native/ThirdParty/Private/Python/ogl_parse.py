@@ -230,6 +230,9 @@ def main():
     if hardwareSpecific:
       continue
           
+    if name.lower().find('string') == -1:
+      continue
+
     # LET'S FIGURE OUT THE RETURN TYPE
     returnType = function.partition('(')[0].rpartition(' ')[0]
     returnTypeKey = returnType.rpartition(' ')[2].strip('*')
@@ -278,13 +281,22 @@ def main():
         if verbose:
           print("Warning: Skipped function '"+name+"' due to unknown parameter type '"+variables[i]+ "'.")
         break
+      
+      # deal with special case functions
+      if name.lower().find('string') > -1 and len(variables) == 1 and variables[i].count('*') == 1:
+        # this means we have a string!
+        traceFormat.append(fulltype)
+        klParameters.append('io String '+klvarname+'')
+        cParameters.append('KL::String &'+varname)
+        klCast.append('('+fulltype+')'+varname+'.data()')
+        continue
 
       # EXTRACT THE NAME OF THE VARIABLE
       varname = variables[i].rpartition(' ')[2]
       klvarname = varname
       if klKeyWords.has_key(klvarname):
         klvarname = klKeyWords[klvarname]
-      
+        
       # DEAL WITH STRINGS OR DUAL POINTERS
       if variables[i].count('*') == 2 or type == 'char' or type == 'GLchar':
         if type == 'char' or type == 'GLchar':
@@ -305,9 +317,9 @@ def main():
           else:
             
             # IF WE DON'T HAVE A CONST CHAR, WE NEED TO WRITE TO IT
-            additionalCodePre.append('    char * '+varname+'Str = new char[1024];')
-            additionalCodePost.append('    '+varname+' = KL::String('+varname+'Str);')
-            additionalCodePost.append('    delete( '+varname+'Str );')
+            additionalCodePre.append('  char * '+varname+'Str = new char[1024];')
+            additionalCodePost.append('  '+varname+' = KL::String('+varname+'Str);')
+            additionalCodePost.append('  delete( '+varname+'Str );')
             klParameters.append('io String '+klvarname)
             cParameters.append('KL::String & '+varname)
             klCast.append('('+fulltype+')'+varname+'Str')
@@ -349,7 +361,7 @@ def main():
             klCast.append('('+fulltype+')&'+varname+'[0]')
         else:
           klParameters.append('io '+knownCTypes[type][3]+' '+klvarname)
-          cParameters.append('const KL::'+knownCTypes[type][3]+' & '+varname)
+          cParameters.append('KL::'+knownCTypes[type][3]+' '+varname)
           klCast.append('('+fulltype+')'+varname)
       varNamesHead.append(varname)
     if not allTypesValid:
@@ -360,7 +372,12 @@ def main():
     
     klReturnType = returnType
     if klReturnType.find('void') == -1:
-      klReturnType = 'KL::'+knownCTypes[returnTypeKey][3]
+      # special case, string returning functions
+      if name.lower().find('string') > -1 and len(variables) == 1 and returnType.count('*') == 1:
+        returnTypeKey = "char"
+        klReturnType = 'KL::String'
+      else:
+        klReturnType = 'KL::'+knownCTypes[returnTypeKey][3]
       
     # IF WE HAVE VARIABLES
     if len(cParameters) > 0:
@@ -378,29 +395,30 @@ def main():
       else:
         functionsCode.append('FABRIC_EXT_EXPORT KL::'+knownCTypes[returnTypeKey][3]+' kl'+name[2:1000]+'()')
       functionsCode.append('{')
-    functionsCode.append('  try')
-    functionsCode.append('  {')
     functionsCode.extend(additionalCodePre)
     prefix = ''
     if returnType.find('void') == -1:
       prefix = returnType+' result = '
     if len(klCast) > 0:
-      functionsCode.append('    '+prefix+name+'( '+str(', ').join(klCast)+' );')
+      functionsCode.append('  '+prefix+name+'( '+str(', ').join(klCast)+' );')
     else:
-      functionsCode.append('    '+prefix+name+'();')
+      functionsCode.append('  '+prefix+name+'();')
+    
+    if not name == 'glGetError' and not name == 'gluErrorString':
+      functionsCode.append('  GLenum error = glGetError();')
+      functionsCode.append('  if ( error != GL_NO_ERROR )')
+      throwCode = '    throw Fabric::Exception( "Fabric::OGL::'+name+'( '+str(', ').join(traceFormat)+' )"'
+      if len(traceVars) > 0:
+        throwCode = throwCode + ', '+str(', ').join(traceVars)
+      functionsCode.append(throwCode+');')
     functionsCode.extend(additionalCodePost)
 
     # IF WE HAVE A RETURN TYPE
     if returnType.find('void') == -1:
-      functionsCode.append('  return ('+klReturnType+')result;')
-    functionsCode.append('  }')
-    functionsCode.append('  catch(Exception e)')
-    functionsCode.append('  {')
-    throwCode = '    throw Fabric::Exception( "Fabric::OGL::'+name+'( '+str(', ').join(traceFormat)+' )"'
-    if len(traceVars) > 0:
-      throwCode = throwCode + ', '+str(', ').join(traceVars)
-    functionsCode.append(throwCode+');')
-    functionsCode.append('  }')
+      if klReturnType == "KL::String":
+        functionsCode.append('  return ('+klReturnType+')(const char*)result;')
+      else:
+        functionsCode.append('  return ('+klReturnType+')result;')
     
     functionsCode.append('}\n')
     klFunction = 'function ';
