@@ -127,9 +127,11 @@ def main():
       name = split[1]
       hardwareSpecific = False
       for j in range(len(suffixes)):
-        if name.find('_'+suffixes[j]+'_') > -1:
+        if name.find('_'+suffixes[j]) > -1:
           hardwareSpecific = True
           break
+      if hardwareSpecific:
+        continue
       value = split[2]
       if not hardwareSpecific and not registeredConstants.has_key(name) and not value == '0xFFFFFFFFFFFFFFFF':
         registeredConstants[name] = value;
@@ -138,10 +140,10 @@ def main():
   jsonConstants = []
   for name in registeredConstants:
     value = registeredConstants[name]
-    if value.startswith('0x') or value.isdigit:
-      jsonConstants.append('var const Integer '+name+' = '+value+';')
-    else:
-      jsonConstants.append('var const Boolean '+name+' = '+value+';')
+    if value.startswith('0x'):
+      jsonConstants.append('const Size '+name+' = '+str(int(value,0))+';')
+    elif value.isdigit():
+      jsonConstants.append('const Size '+name+' = '+value+';')
     
   # DEFINE A MAPPING FOR THE DATATYPE
   # oglTYPE: [C++type, trace format, trace cast, KL Type]
@@ -172,6 +174,12 @@ def main():
     'GLclampf':['GLclampf','%f','float','Scalar'],
     'GLclampd':['GLclampd','%f','float','Scalar'],
     'GLbitfield':['GLbitfield','0x%04X','unsigned','Integer'],
+  }
+  
+  klKeyWords = {
+    'in':'inValue',
+    'io':'ioValue',
+    'var':'varValue',
   }
   
   # LOOP ALL FUNCTIONS AND DEFINE THEIR CODE
@@ -277,6 +285,9 @@ def main():
 
       # EXTRACT THE NAME OF THE VARIABLE
       varname = variables[i].rpartition(' ')[2]
+      klvarname = varname
+      if klKeyWords.has_key(klvarname):
+        klvarname = klKeyWords[klvarname]
       
       # DEAL WITH STRINGS OR DUAL POINTERS
       if variables[i].count('*') == 2 or type == 'char' or type == 'GLchar':
@@ -288,11 +299,11 @@ def main():
             
             # IF WE HAVE A CONST CHAR, WE WANT TO JUST READ IT
             if fulltype.find('**') > -1:
-              klParameters.append('io String '+varname+'[]')
+              klParameters.append('io String '+klvarname+'[]')
               cParameters.append('const KL::VariableArray<KL::String> &'+varname)
               klCast.append('('+fulltype+')&'+varname+'[0]')
             else:
-              klParameters.append('io String '+varname)
+              klParameters.append('io String '+klvarname)
               cParameters.append('const KL::String &'+varname)
               klCast.append('('+fulltype+')'+varname+'.data()')
           else:
@@ -301,7 +312,7 @@ def main():
             additionalCodePre.append('  char * '+varname+'Str = new char[1024];')
             additionalCodePost.append('  '+varname+' = KL::String('+varname+'Str);')
             additionalCodePost.append('  delete( '+varname+'Str );')
-            klParameters.append('io String '+varname)
+            klParameters.append('io String '+klvarname)
             cParameters.append('KL::String & '+varname)
             klCast.append('('+fulltype+')'+varname+'Str')
         else:
@@ -321,7 +332,7 @@ def main():
         # IF WE HAVE A POINTER
         if variables[i].find('*') > -1:
           if knownCTypes[type][3] == 'Data':
-            klParameters.append('io Data '+varname)
+            klParameters.append('io Data '+klvarname)
             cParameters.append('KL::Data '+varname)
             klCast.append(varname)
           elif variables[i].startswith('const'):
@@ -331,17 +342,17 @@ def main():
               if name[k:k+1].isdigit():
                 digit = name[k:k+1]
                 break
-            klParameters.append('io '+knownCTypes[type][3]+' '+varname+'['+digit+']')
+            klParameters.append('io '+knownCTypes[type][3]+' '+klvarname+'['+digit+']')
             cParameters.append('const KL::VariableArray<KL::'+knownCTypes[type][3]+'> & '+varname)
             klCast.append('('+fulltype+')&'+varname+'[0]')
           else:
             # this is really flaky, it should be >Data, but that's not possible.
             # the rvalue is still able to write to though.
-            klParameters.append('io '+knownCTypes[type][3]+' '+varname+'[]')
+            klParameters.append('io '+knownCTypes[type][3]+' '+klvarname+'[]')
             cParameters.append('KL::VariableArray<KL::'+knownCTypes[type][3]+'> & '+varname)
             klCast.append('('+fulltype+')&'+varname+'[0]')
         else:
-          klParameters.append('io '+knownCTypes[type][3]+' '+varname)
+          klParameters.append('io '+knownCTypes[type][3]+' '+klvarname)
           cParameters.append('const KL::'+knownCTypes[type][3]+' & '+varname)
           klCast.append('('+fulltype+')'+varname)
       varNamesHead.append(varname)
@@ -391,14 +402,14 @@ def main():
     klFunction = 'function ';
     if returnTypeKey.find('void') == -1:
       klFunction = klFunction + knownCTypes[returnTypeKey][3]+' '
-    klFunction = klFunction + name+'( '
+    klFunction = klFunction + 'kl'+name[2:10000]+'( '
     klFunction = klFunction + ', '.join(klParameters) + ' );'
     klFunctionsCode.append(klFunction)
-    
-    #break
   
   #jsonConstants = []
-  open(jsonsourcePath,'w').write('{\n  "libs": "FabricOGL",\n  "code": "'+str('\\n').join(jsonConstants)+'\\n'+str('\\n').join(klFunctionsCode)+'"\n}\n')
+  #open(jsonsourcePath,'w').write('{\n  "libs": "FabricOGL",\n  "code": "'+str('\\n').join(jsonConstants)+'\\n'+str('\\n').join(klFunctionsCode)+'"\n}\n')
+  open(jsonsourcePath,'w').write('{\n  "libs": "FabricOGL",\n  "code": "'+str('').join(jsonConstants)+''+str('').join(klFunctionsCode)+'"\n}\n')
+  #open("/development/temp/test.kl",'w').write(str('\n').join(jsonConstants)+'\n\n'+str('\n').join(klFunctionsCode)+'\n\nfunction entry()\n{\n}\n')
   
   headers = []
   for file in files:
@@ -411,8 +422,6 @@ def main():
   template = template.replace("####FUNCTIONS####",str('\n').join(functionsCode))
   # WRITE OUT TO OUR SOURCE FILE
   open(cppsourcePath,"w").write(template)
-  
-  print("Created")
   
 if __name__ == '__main__':
   main()
