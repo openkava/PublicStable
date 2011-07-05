@@ -74,7 +74,7 @@ namespace Fabric
     {
       Client *client = static_cast<Client *>( args.This()->GetPointerFromInternalField( 0 ) );
       args.This()->SetPointerInInternalField( 0, 0 );
-      client->release();
+      return v8::Handle<v8::Value>();
     }
   };
 };
