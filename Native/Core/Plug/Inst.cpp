@@ -21,7 +21,7 @@ namespace Fabric
     //typedef void (*OnLoadFn)( SDK::Value FABRIC );
     //typedef void (*OnUnloadFn)( SDK::Value FABRIC );
     
-    Inst::Inst( std::string const &jsonDesc, RC::Handle<DG::Context> const &dgContext, std::vector<std::string> const &pluginDirs )
+    Inst::Inst( std::string const &name, std::string const &jsonDesc, RC::Handle<DG::Context> const &dgContext, std::vector<std::string> const &pluginDirs )
       : m_cgManager( dgContext->getCGManager() )
       , m_jsonDesc( jsonDesc )
     {
@@ -86,6 +86,17 @@ namespace Fabric
       Fabric::KL::Source source( m_code.data(), m_code.length() );
       m_diagnostics.clear();
       Fabric::KL::Parse( source, m_cgManager, m_diagnostics, &m_ast, false );
+      
+      for ( CG::Diagnostics::const_iterator it=m_diagnostics.begin(); it!=m_diagnostics.end(); ++it )
+      {
+        CG::Location const &location = it->first;
+        CG::Diagnostic const &diagnostic = it->second;
+        FABRIC_LOG( "[%s] %u:%u: %s: %s", name.c_str(), (unsigned)location.getLine(), (unsigned)location.getColumn(), diagnostic.getLevelDesc(), diagnostic.getDesc().c_str() );
+      }
+      
+      if ( m_diagnostics.containsError() )
+        throw Exception( "unable to compile KL code" );
+      FABRIC_ASSERT( m_ast );
       
       size_t numItems = m_ast->numItems();
       for ( size_t i=0; i<numItems; ++i )

@@ -101,7 +101,7 @@ namespace Fabric
       }
       else
       {
-        result = Inst::Create( jsonDesc, m_dgContext, m_pluginDirs );
+        result = Inst::Create( name, jsonDesc, m_dgContext, m_pluginDirs );
         m_nameToInstMap.insert( NameToInstMap::value_type( name, result ) );
       }
       

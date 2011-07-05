@@ -1733,6 +1733,7 @@
 		DB9672AF13A5423200616143 /* Plug */ = {
 			isa = PBXGroup;
 			children = (
+				DB9672B813A5423200616143 /* SConscript */,
 				DB9672B013A5423200616143 /* Desc.cpp */,
 				DB9672B113A5423200616143 /* Desc.h */,
 				DB9672B213A5423200616143 /* Helpers.cpp */,
@@ -1741,7 +1742,6 @@
 				DB9672B513A5423200616143 /* Inst.h */,
 				DB9672B613A5423200616143 /* Manager.cpp */,
 				DB9672B713A5423200616143 /* Manager.h */,
-				DB9672B813A5423200616143 /* SConscript */,
 			);
 			path = Plug;
 			sourceTree = "<group>";
