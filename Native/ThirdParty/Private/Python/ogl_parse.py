@@ -141,7 +141,7 @@ def main():
   for name in registeredConstants:
     value = registeredConstants[name]
     if value.startswith('0x'):
-      jsonConstants.append('const Size '+name+' = '+str(int(value,0))+';')
+      jsonConstants.append('const Size '+name+' = '+value+';')
     elif value.isdigit():
       jsonConstants.append('const Size '+name+' = '+value+';')
     
@@ -414,10 +414,7 @@ def main():
     klFunction = klFunction + ', '.join(klParameters) + ' );'
     klFunctionsCode.append(klFunction)
   
-  #jsonConstants = []
-  #open(jsonsourcePath,'w').write('{\n  "libs": "FabricOGL",\n  "code": "'+str('\\n').join(jsonConstants)+'\\n'+str('\\n').join(klFunctionsCode)+'"\n}\n')
   open(jsonsourcePath,'w').write('{\n  "libs": "FabricOGL",\n  "code": "'+str('').join(jsonConstants)+''+str('').join(klFunctionsCode)+'"\n}\n')
-  #open("/development/temp/test.kl",'w').write(str('\n').join(jsonConstants)+'\n\n'+str('\n').join(klFunctionsCode)+'\n\nfunction entry()\n{\n}\n')
   
   headers = []
   for file in files:
