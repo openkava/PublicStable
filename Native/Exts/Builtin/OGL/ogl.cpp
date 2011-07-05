@@ -17,14 +17,28 @@ FABRIC_EXT_EXPORT void klAccum(
   const KL::Size & op,
   const KL::Scalar & value
 ){
-  glAccum( (GLenum)op, (GLfloat)value );
+  try
+  {
+    glAccum( (GLenum)op, (GLfloat)value );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glAccum( %d, %f )", (int)op, (float)value);
+  }
 }
 
 FABRIC_EXT_EXPORT void klAlphaFunc(
   const KL::Size & func,
   const KL::Scalar & ref
 ){
-  glAlphaFunc( (GLenum)func, (GLclampf)ref );
+  try
+  {
+    glAlphaFunc( (GLenum)func, (GLclampf)ref );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glAlphaFunc( %d, %f )", (int)func, (float)ref);
+  }
 }
 
 FABRIC_EXT_EXPORT KL::Boolean klAreTexturesResident(
@@ -32,27 +46,55 @@ FABRIC_EXT_EXPORT KL::Boolean klAreTexturesResident(
   const KL::VariableArray<KL::Size> & textures,
   KL::VariableArray<KL::Boolean> & residences
 ){
-  GLboolean result = glAreTexturesResident( (GLsizei)n, (const GLuint*)&textures[0], (GLboolean*)&residences[0] );
+  try
+  {
+    GLboolean result = glAreTexturesResident( (GLsizei)n, (const GLuint*)&textures[0], (GLboolean*)&residences[0] );
   return (KL::Boolean)result;
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glAreTexturesResident( %d, GLuint*, GLboolean* )", (int)n);
+  }
 }
 
 FABRIC_EXT_EXPORT void klArrayElement(
   const KL::Integer & i
 ){
-  glArrayElement( (GLint)i );
+  try
+  {
+    glArrayElement( (GLint)i );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glArrayElement( %d )", (int)i);
+  }
 }
 
 FABRIC_EXT_EXPORT void klBegin(
   const KL::Size & mode
 ){
-  glBegin( (GLenum)mode );
+  try
+  {
+    glBegin( (GLenum)mode );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glBegin( %d )", (int)mode);
+  }
 }
 
 FABRIC_EXT_EXPORT void klBindTexture(
   const KL::Size & target,
   const KL::Size & texture
 ){
-  glBindTexture( (GLenum)target, (GLuint)texture );
+  try
+  {
+    glBindTexture( (GLenum)target, (GLuint)texture );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glBindTexture( %d, 0x%04X )", (int)target, (unsigned)texture);
+  }
 }
 
 FABRIC_EXT_EXPORT void klBitmap(
@@ -64,20 +106,41 @@ FABRIC_EXT_EXPORT void klBitmap(
   const KL::Scalar & ymove,
   const KL::VariableArray<KL::Size> & bitmap
 ){
-  glBitmap( (GLsizei)width, (GLsizei)height, (GLfloat)xorig, (GLfloat)yorig, (GLfloat)xmove, (GLfloat)ymove, (const GLubyte*)&bitmap[0] );
+  try
+  {
+    glBitmap( (GLsizei)width, (GLsizei)height, (GLfloat)xorig, (GLfloat)yorig, (GLfloat)xmove, (GLfloat)ymove, (const GLubyte*)&bitmap[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glBitmap( %d, %d, %f, %f, %f, %f, GLubyte* )", (int)width, (int)height, (float)xorig, (float)yorig, (float)xmove, (float)ymove);
+  }
 }
 
 FABRIC_EXT_EXPORT void klBlendFunc(
   const KL::Size & sfactor,
   const KL::Size & dfactor
 ){
-  glBlendFunc( (GLenum)sfactor, (GLenum)dfactor );
+  try
+  {
+    glBlendFunc( (GLenum)sfactor, (GLenum)dfactor );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glBlendFunc( %d, %d )", (int)sfactor, (int)dfactor);
+  }
 }
 
 FABRIC_EXT_EXPORT void klCallList(
   const KL::Size & list
 ){
-  glCallList( (GLuint)list );
+  try
+  {
+    glCallList( (GLuint)list );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glCallList( 0x%04X )", (unsigned)list);
+  }
 }
 
 FABRIC_EXT_EXPORT void klCallLists(
@@ -85,13 +148,27 @@ FABRIC_EXT_EXPORT void klCallLists(
   const KL::Size & type,
   KL::Data lists
 ){
-  glCallLists( (GLsizei)n, (GLenum)type, lists );
+  try
+  {
+    glCallLists( (GLsizei)n, (GLenum)type, lists );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glCallLists( %d, %d, GLvoid* )", (int)n, (int)type);
+  }
 }
 
 FABRIC_EXT_EXPORT void klClear(
-  const KL::Integer & mask
+  const KL::Size & mask
 ){
-  glClear( (GLbitfield)mask );
+  try
+  {
+    glClear( (GLbitfield)mask );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glClear( 0x%04X )", (unsigned)mask);
+  }
 }
 
 FABRIC_EXT_EXPORT void klClearAccum(
@@ -100,7 +177,14 @@ FABRIC_EXT_EXPORT void klClearAccum(
   const KL::Scalar & blue,
   const KL::Scalar & alpha
 ){
-  glClearAccum( (GLfloat)red, (GLfloat)green, (GLfloat)blue, (GLfloat)alpha );
+  try
+  {
+    glClearAccum( (GLfloat)red, (GLfloat)green, (GLfloat)blue, (GLfloat)alpha );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glClearAccum( %f, %f, %f, %f )", (float)red, (float)green, (float)blue, (float)alpha);
+  }
 }
 
 FABRIC_EXT_EXPORT void klClearColor(
@@ -109,32 +193,67 @@ FABRIC_EXT_EXPORT void klClearColor(
   const KL::Scalar & blue,
   const KL::Scalar & alpha
 ){
-  glClearColor( (GLclampf)red, (GLclampf)green, (GLclampf)blue, (GLclampf)alpha );
+  try
+  {
+    glClearColor( (GLclampf)red, (GLclampf)green, (GLclampf)blue, (GLclampf)alpha );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glClearColor( %f, %f, %f, %f )", (float)red, (float)green, (float)blue, (float)alpha);
+  }
 }
 
 FABRIC_EXT_EXPORT void klClearDepth(
   const KL::Scalar & depth
 ){
-  glClearDepth( (GLclampd)depth );
+  try
+  {
+    glClearDepth( (GLclampd)depth );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glClearDepth( %f )", (float)depth);
+  }
 }
 
 FABRIC_EXT_EXPORT void klClearIndex(
   const KL::Scalar & c
 ){
-  glClearIndex( (GLfloat)c );
+  try
+  {
+    glClearIndex( (GLfloat)c );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glClearIndex( %f )", (float)c);
+  }
 }
 
 FABRIC_EXT_EXPORT void klClearStencil(
   const KL::Integer & s
 ){
-  glClearStencil( (GLint)s );
+  try
+  {
+    glClearStencil( (GLint)s );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glClearStencil( %d )", (int)s);
+  }
 }
 
 FABRIC_EXT_EXPORT void klClipPlane(
   const KL::Size & plane,
   const KL::VariableArray<KL::Scalar> & equation
 ){
-  glClipPlane( (GLenum)plane, (const GLdouble*)&equation[0] );
+  try
+  {
+    glClipPlane( (GLenum)plane, (const GLdouble*)&equation[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glClipPlane( %d, GLdouble* )", (int)plane);
+  }
 }
 
 FABRIC_EXT_EXPORT void klColor3b(
@@ -142,13 +261,27 @@ FABRIC_EXT_EXPORT void klColor3b(
   const KL::Byte & green,
   const KL::Byte & blue
 ){
-  glColor3b( (GLbyte)red, (GLbyte)green, (GLbyte)blue );
+  try
+  {
+    glColor3b( (GLbyte)red, (GLbyte)green, (GLbyte)blue );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glColor3b( %d, %d, %d )", (int)red, (int)green, (int)blue);
+  }
 }
 
 FABRIC_EXT_EXPORT void klColor3bv(
   const KL::VariableArray<KL::Byte> & v
 ){
-  glColor3bv( (const GLbyte*)&v[0] );
+  try
+  {
+    glColor3bv( (const GLbyte*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glColor3bv( GLbyte* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klColor3d(
@@ -156,13 +289,27 @@ FABRIC_EXT_EXPORT void klColor3d(
   const KL::Scalar & green,
   const KL::Scalar & blue
 ){
-  glColor3d( (GLdouble)red, (GLdouble)green, (GLdouble)blue );
+  try
+  {
+    glColor3d( (GLdouble)red, (GLdouble)green, (GLdouble)blue );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glColor3d( %f, %f, %f )", (float)red, (float)green, (float)blue);
+  }
 }
 
 FABRIC_EXT_EXPORT void klColor3dv(
   const KL::VariableArray<KL::Scalar> & v
 ){
-  glColor3dv( (const GLdouble*)&v[0] );
+  try
+  {
+    glColor3dv( (const GLdouble*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glColor3dv( GLdouble* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klColor3f(
@@ -170,13 +317,27 @@ FABRIC_EXT_EXPORT void klColor3f(
   const KL::Scalar & green,
   const KL::Scalar & blue
 ){
-  glColor3f( (GLfloat)red, (GLfloat)green, (GLfloat)blue );
+  try
+  {
+    glColor3f( (GLfloat)red, (GLfloat)green, (GLfloat)blue );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glColor3f( %f, %f, %f )", (float)red, (float)green, (float)blue);
+  }
 }
 
 FABRIC_EXT_EXPORT void klColor3fv(
   const KL::VariableArray<KL::Scalar> & v
 ){
-  glColor3fv( (const GLfloat*)&v[0] );
+  try
+  {
+    glColor3fv( (const GLfloat*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glColor3fv( GLfloat* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klColor3i(
@@ -184,13 +345,27 @@ FABRIC_EXT_EXPORT void klColor3i(
   const KL::Integer & green,
   const KL::Integer & blue
 ){
-  glColor3i( (GLint)red, (GLint)green, (GLint)blue );
+  try
+  {
+    glColor3i( (GLint)red, (GLint)green, (GLint)blue );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glColor3i( %d, %d, %d )", (int)red, (int)green, (int)blue);
+  }
 }
 
 FABRIC_EXT_EXPORT void klColor3iv(
   const KL::VariableArray<KL::Integer> & v
 ){
-  glColor3iv( (const GLint*)&v[0] );
+  try
+  {
+    glColor3iv( (const GLint*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glColor3iv( GLint* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klColor3s(
@@ -198,13 +373,27 @@ FABRIC_EXT_EXPORT void klColor3s(
   const KL::Integer & green,
   const KL::Integer & blue
 ){
-  glColor3s( (GLshort)red, (GLshort)green, (GLshort)blue );
+  try
+  {
+    glColor3s( (GLshort)red, (GLshort)green, (GLshort)blue );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glColor3s( %d, %d, %d )", (int)red, (int)green, (int)blue);
+  }
 }
 
 FABRIC_EXT_EXPORT void klColor3sv(
   const KL::VariableArray<KL::Integer> & v
 ){
-  glColor3sv( (const GLshort*)&v[0] );
+  try
+  {
+    glColor3sv( (const GLshort*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glColor3sv( GLshort* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klColor3ub(
@@ -212,13 +401,27 @@ FABRIC_EXT_EXPORT void klColor3ub(
   const KL::Size & green,
   const KL::Size & blue
 ){
-  glColor3ub( (GLubyte)red, (GLubyte)green, (GLubyte)blue );
+  try
+  {
+    glColor3ub( (GLubyte)red, (GLubyte)green, (GLubyte)blue );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glColor3ub( 0x%04X, 0x%04X, 0x%04X )", (unsigned)red, (unsigned)green, (unsigned)blue);
+  }
 }
 
 FABRIC_EXT_EXPORT void klColor3ubv(
   const KL::VariableArray<KL::Size> & v
 ){
-  glColor3ubv( (const GLubyte*)&v[0] );
+  try
+  {
+    glColor3ubv( (const GLubyte*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glColor3ubv( GLubyte* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klColor3ui(
@@ -226,13 +429,27 @@ FABRIC_EXT_EXPORT void klColor3ui(
   const KL::Size & green,
   const KL::Size & blue
 ){
-  glColor3ui( (GLuint)red, (GLuint)green, (GLuint)blue );
+  try
+  {
+    glColor3ui( (GLuint)red, (GLuint)green, (GLuint)blue );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glColor3ui( 0x%04X, 0x%04X, 0x%04X )", (unsigned)red, (unsigned)green, (unsigned)blue);
+  }
 }
 
 FABRIC_EXT_EXPORT void klColor3uiv(
   const KL::VariableArray<KL::Size> & v
 ){
-  glColor3uiv( (const GLuint*)&v[0] );
+  try
+  {
+    glColor3uiv( (const GLuint*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glColor3uiv( GLuint* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klColor3us(
@@ -240,13 +457,27 @@ FABRIC_EXT_EXPORT void klColor3us(
   const KL::Integer & green,
   const KL::Integer & blue
 ){
-  glColor3us( (GLushort)red, (GLushort)green, (GLushort)blue );
+  try
+  {
+    glColor3us( (GLushort)red, (GLushort)green, (GLushort)blue );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glColor3us( 0x%04X, 0x%04X, 0x%04X )", (unsigned)red, (unsigned)green, (unsigned)blue);
+  }
 }
 
 FABRIC_EXT_EXPORT void klColor3usv(
   const KL::VariableArray<KL::Integer> & v
 ){
-  glColor3usv( (const GLushort*)&v[0] );
+  try
+  {
+    glColor3usv( (const GLushort*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glColor3usv( GLushort* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klColor4b(
@@ -255,13 +486,27 @@ FABRIC_EXT_EXPORT void klColor4b(
   const KL::Byte & blue,
   const KL::Byte & alpha
 ){
-  glColor4b( (GLbyte)red, (GLbyte)green, (GLbyte)blue, (GLbyte)alpha );
+  try
+  {
+    glColor4b( (GLbyte)red, (GLbyte)green, (GLbyte)blue, (GLbyte)alpha );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glColor4b( %d, %d, %d, %d )", (int)red, (int)green, (int)blue, (int)alpha);
+  }
 }
 
 FABRIC_EXT_EXPORT void klColor4bv(
   const KL::VariableArray<KL::Byte> & v
 ){
-  glColor4bv( (const GLbyte*)&v[0] );
+  try
+  {
+    glColor4bv( (const GLbyte*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glColor4bv( GLbyte* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klColor4d(
@@ -270,13 +515,27 @@ FABRIC_EXT_EXPORT void klColor4d(
   const KL::Scalar & blue,
   const KL::Scalar & alpha
 ){
-  glColor4d( (GLdouble)red, (GLdouble)green, (GLdouble)blue, (GLdouble)alpha );
+  try
+  {
+    glColor4d( (GLdouble)red, (GLdouble)green, (GLdouble)blue, (GLdouble)alpha );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glColor4d( %f, %f, %f, %f )", (float)red, (float)green, (float)blue, (float)alpha);
+  }
 }
 
 FABRIC_EXT_EXPORT void klColor4dv(
   const KL::VariableArray<KL::Scalar> & v
 ){
-  glColor4dv( (const GLdouble*)&v[0] );
+  try
+  {
+    glColor4dv( (const GLdouble*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glColor4dv( GLdouble* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klColor4f(
@@ -285,13 +544,27 @@ FABRIC_EXT_EXPORT void klColor4f(
   const KL::Scalar & blue,
   const KL::Scalar & alpha
 ){
-  glColor4f( (GLfloat)red, (GLfloat)green, (GLfloat)blue, (GLfloat)alpha );
+  try
+  {
+    glColor4f( (GLfloat)red, (GLfloat)green, (GLfloat)blue, (GLfloat)alpha );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glColor4f( %f, %f, %f, %f )", (float)red, (float)green, (float)blue, (float)alpha);
+  }
 }
 
 FABRIC_EXT_EXPORT void klColor4fv(
   const KL::VariableArray<KL::Scalar> & v
 ){
-  glColor4fv( (const GLfloat*)&v[0] );
+  try
+  {
+    glColor4fv( (const GLfloat*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glColor4fv( GLfloat* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klColor4i(
@@ -300,13 +573,27 @@ FABRIC_EXT_EXPORT void klColor4i(
   const KL::Integer & blue,
   const KL::Integer & alpha
 ){
-  glColor4i( (GLint)red, (GLint)green, (GLint)blue, (GLint)alpha );
+  try
+  {
+    glColor4i( (GLint)red, (GLint)green, (GLint)blue, (GLint)alpha );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glColor4i( %d, %d, %d, %d )", (int)red, (int)green, (int)blue, (int)alpha);
+  }
 }
 
 FABRIC_EXT_EXPORT void klColor4iv(
   const KL::VariableArray<KL::Integer> & v
 ){
-  glColor4iv( (const GLint*)&v[0] );
+  try
+  {
+    glColor4iv( (const GLint*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glColor4iv( GLint* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klColor4s(
@@ -315,13 +602,27 @@ FABRIC_EXT_EXPORT void klColor4s(
   const KL::Integer & blue,
   const KL::Integer & alpha
 ){
-  glColor4s( (GLshort)red, (GLshort)green, (GLshort)blue, (GLshort)alpha );
+  try
+  {
+    glColor4s( (GLshort)red, (GLshort)green, (GLshort)blue, (GLshort)alpha );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glColor4s( %d, %d, %d, %d )", (int)red, (int)green, (int)blue, (int)alpha);
+  }
 }
 
 FABRIC_EXT_EXPORT void klColor4sv(
   const KL::VariableArray<KL::Integer> & v
 ){
-  glColor4sv( (const GLshort*)&v[0] );
+  try
+  {
+    glColor4sv( (const GLshort*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glColor4sv( GLshort* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klColor4ub(
@@ -330,13 +631,27 @@ FABRIC_EXT_EXPORT void klColor4ub(
   const KL::Size & blue,
   const KL::Size & alpha
 ){
-  glColor4ub( (GLubyte)red, (GLubyte)green, (GLubyte)blue, (GLubyte)alpha );
+  try
+  {
+    glColor4ub( (GLubyte)red, (GLubyte)green, (GLubyte)blue, (GLubyte)alpha );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glColor4ub( 0x%04X, 0x%04X, 0x%04X, 0x%04X )", (unsigned)red, (unsigned)green, (unsigned)blue, (unsigned)alpha);
+  }
 }
 
 FABRIC_EXT_EXPORT void klColor4ubv(
   const KL::VariableArray<KL::Size> & v
 ){
-  glColor4ubv( (const GLubyte*)&v[0] );
+  try
+  {
+    glColor4ubv( (const GLubyte*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glColor4ubv( GLubyte* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klColor4ui(
@@ -345,13 +660,27 @@ FABRIC_EXT_EXPORT void klColor4ui(
   const KL::Size & blue,
   const KL::Size & alpha
 ){
-  glColor4ui( (GLuint)red, (GLuint)green, (GLuint)blue, (GLuint)alpha );
+  try
+  {
+    glColor4ui( (GLuint)red, (GLuint)green, (GLuint)blue, (GLuint)alpha );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glColor4ui( 0x%04X, 0x%04X, 0x%04X, 0x%04X )", (unsigned)red, (unsigned)green, (unsigned)blue, (unsigned)alpha);
+  }
 }
 
 FABRIC_EXT_EXPORT void klColor4uiv(
   const KL::VariableArray<KL::Size> & v
 ){
-  glColor4uiv( (const GLuint*)&v[0] );
+  try
+  {
+    glColor4uiv( (const GLuint*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glColor4uiv( GLuint* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klColor4us(
@@ -360,13 +689,27 @@ FABRIC_EXT_EXPORT void klColor4us(
   const KL::Integer & blue,
   const KL::Integer & alpha
 ){
-  glColor4us( (GLushort)red, (GLushort)green, (GLushort)blue, (GLushort)alpha );
+  try
+  {
+    glColor4us( (GLushort)red, (GLushort)green, (GLushort)blue, (GLushort)alpha );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glColor4us( 0x%04X, 0x%04X, 0x%04X, 0x%04X )", (unsigned)red, (unsigned)green, (unsigned)blue, (unsigned)alpha);
+  }
 }
 
 FABRIC_EXT_EXPORT void klColor4usv(
   const KL::VariableArray<KL::Integer> & v
 ){
-  glColor4usv( (const GLushort*)&v[0] );
+  try
+  {
+    glColor4usv( (const GLushort*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glColor4usv( GLushort* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klColorMask(
@@ -375,14 +718,28 @@ FABRIC_EXT_EXPORT void klColorMask(
   const KL::Boolean & blue,
   const KL::Boolean & alpha
 ){
-  glColorMask( (GLboolean)red, (GLboolean)green, (GLboolean)blue, (GLboolean)alpha );
+  try
+  {
+    glColorMask( (GLboolean)red, (GLboolean)green, (GLboolean)blue, (GLboolean)alpha );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glColorMask( %b, %b, %b, %b )", (bool)red, (bool)green, (bool)blue, (bool)alpha);
+  }
 }
 
 FABRIC_EXT_EXPORT void klColorMaterial(
   const KL::Size & face,
   const KL::Size & mode
 ){
-  glColorMaterial( (GLenum)face, (GLenum)mode );
+  try
+  {
+    glColorMaterial( (GLenum)face, (GLenum)mode );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glColorMaterial( %d, %d )", (int)face, (int)mode);
+  }
 }
 
 FABRIC_EXT_EXPORT void klColorPointer(
@@ -391,7 +748,14 @@ FABRIC_EXT_EXPORT void klColorPointer(
   const KL::Size & stride,
   KL::Data pointer
 ){
-  glColorPointer( (GLint)size, (GLenum)type, (GLsizei)stride, pointer );
+  try
+  {
+    glColorPointer( (GLint)size, (GLenum)type, (GLsizei)stride, pointer );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glColorPointer( %d, %d, %d, GLvoid* )", (int)size, (int)type, (int)stride);
+  }
 }
 
 FABRIC_EXT_EXPORT void klCopyPixels(
@@ -401,7 +765,14 @@ FABRIC_EXT_EXPORT void klCopyPixels(
   const KL::Size & height,
   const KL::Size & type
 ){
-  glCopyPixels( (GLint)x, (GLint)y, (GLsizei)width, (GLsizei)height, (GLenum)type );
+  try
+  {
+    glCopyPixels( (GLint)x, (GLint)y, (GLsizei)width, (GLsizei)height, (GLenum)type );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glCopyPixels( %d, %d, %d, %d, %d )", (int)x, (int)y, (int)width, (int)height, (int)type);
+  }
 }
 
 FABRIC_EXT_EXPORT void klCopyTexImage1D(
@@ -413,7 +784,14 @@ FABRIC_EXT_EXPORT void klCopyTexImage1D(
   const KL::Size & width,
   const KL::Integer & border
 ){
-  glCopyTexImage1D( (GLenum)target, (GLint)level, (GLenum)internalFormat, (GLint)x, (GLint)y, (GLsizei)width, (GLint)border );
+  try
+  {
+    glCopyTexImage1D( (GLenum)target, (GLint)level, (GLenum)internalFormat, (GLint)x, (GLint)y, (GLsizei)width, (GLint)border );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glCopyTexImage1D( %d, %d, %d, %d, %d, %d, %d )", (int)target, (int)level, (int)internalFormat, (int)x, (int)y, (int)width, (int)border);
+  }
 }
 
 FABRIC_EXT_EXPORT void klCopyTexImage2D(
@@ -426,7 +804,14 @@ FABRIC_EXT_EXPORT void klCopyTexImage2D(
   const KL::Size & height,
   const KL::Integer & border
 ){
-  glCopyTexImage2D( (GLenum)target, (GLint)level, (GLenum)internalFormat, (GLint)x, (GLint)y, (GLsizei)width, (GLsizei)height, (GLint)border );
+  try
+  {
+    glCopyTexImage2D( (GLenum)target, (GLint)level, (GLenum)internalFormat, (GLint)x, (GLint)y, (GLsizei)width, (GLsizei)height, (GLint)border );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glCopyTexImage2D( %d, %d, %d, %d, %d, %d, %d, %d )", (int)target, (int)level, (int)internalFormat, (int)x, (int)y, (int)width, (int)height, (int)border);
+  }
 }
 
 FABRIC_EXT_EXPORT void klCopyTexSubImage1D(
@@ -437,7 +822,14 @@ FABRIC_EXT_EXPORT void klCopyTexSubImage1D(
   const KL::Integer & y,
   const KL::Size & width
 ){
-  glCopyTexSubImage1D( (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)x, (GLint)y, (GLsizei)width );
+  try
+  {
+    glCopyTexSubImage1D( (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)x, (GLint)y, (GLsizei)width );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glCopyTexSubImage1D( %d, %d, %d, %d, %d, %d )", (int)target, (int)level, (int)xoffset, (int)x, (int)y, (int)width);
+  }
 }
 
 FABRIC_EXT_EXPORT void klCopyTexSubImage2D(
@@ -450,58 +842,121 @@ FABRIC_EXT_EXPORT void klCopyTexSubImage2D(
   const KL::Size & width,
   const KL::Size & height
 ){
-  glCopyTexSubImage2D( (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLint)x, (GLint)y, (GLsizei)width, (GLsizei)height );
+  try
+  {
+    glCopyTexSubImage2D( (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLint)x, (GLint)y, (GLsizei)width, (GLsizei)height );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glCopyTexSubImage2D( %d, %d, %d, %d, %d, %d, %d, %d )", (int)target, (int)level, (int)xoffset, (int)yoffset, (int)x, (int)y, (int)width, (int)height);
+  }
 }
 
 FABRIC_EXT_EXPORT void klCullFace(
   const KL::Size & mode
 ){
-  glCullFace( (GLenum)mode );
+  try
+  {
+    glCullFace( (GLenum)mode );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glCullFace( %d )", (int)mode);
+  }
 }
 
 FABRIC_EXT_EXPORT void klDeleteLists(
   const KL::Size & list,
   const KL::Size & range
 ){
-  glDeleteLists( (GLuint)list, (GLsizei)range );
+  try
+  {
+    glDeleteLists( (GLuint)list, (GLsizei)range );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glDeleteLists( 0x%04X, %d )", (unsigned)list, (int)range);
+  }
 }
 
 FABRIC_EXT_EXPORT void klDeleteTextures(
   const KL::Size & n,
   const KL::VariableArray<KL::Size> & textures
 ){
-  glDeleteTextures( (GLsizei)n, (const GLuint*)&textures[0] );
+  try
+  {
+    glDeleteTextures( (GLsizei)n, (const GLuint*)&textures[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glDeleteTextures( %d, GLuint* )", (int)n);
+  }
 }
 
 FABRIC_EXT_EXPORT void klDepthFunc(
   const KL::Size & func
 ){
-  glDepthFunc( (GLenum)func );
+  try
+  {
+    glDepthFunc( (GLenum)func );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glDepthFunc( %d )", (int)func);
+  }
 }
 
 FABRIC_EXT_EXPORT void klDepthMask(
   const KL::Boolean & flag
 ){
-  glDepthMask( (GLboolean)flag );
+  try
+  {
+    glDepthMask( (GLboolean)flag );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glDepthMask( %b )", (bool)flag);
+  }
 }
 
 FABRIC_EXT_EXPORT void klDepthRange(
   const KL::Scalar & zNear,
   const KL::Scalar & zFar
 ){
-  glDepthRange( (GLclampd)zNear, (GLclampd)zFar );
+  try
+  {
+    glDepthRange( (GLclampd)zNear, (GLclampd)zFar );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glDepthRange( %f, %f )", (float)zNear, (float)zFar);
+  }
 }
 
 FABRIC_EXT_EXPORT void klDisable(
   const KL::Size & cap
 ){
-  glDisable( (GLenum)cap );
+  try
+  {
+    glDisable( (GLenum)cap );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glDisable( %d )", (int)cap);
+  }
 }
 
 FABRIC_EXT_EXPORT void klDisableClientState(
   const KL::Size & array
 ){
-  glDisableClientState( (GLenum)array );
+  try
+  {
+    glDisableClientState( (GLenum)array );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glDisableClientState( %d )", (int)array);
+  }
 }
 
 FABRIC_EXT_EXPORT void klDrawArrays(
@@ -509,13 +964,27 @@ FABRIC_EXT_EXPORT void klDrawArrays(
   const KL::Integer & first,
   const KL::Size & count
 ){
-  glDrawArrays( (GLenum)mode, (GLint)first, (GLsizei)count );
+  try
+  {
+    glDrawArrays( (GLenum)mode, (GLint)first, (GLsizei)count );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glDrawArrays( %d, %d, %d )", (int)mode, (int)first, (int)count);
+  }
 }
 
 FABRIC_EXT_EXPORT void klDrawBuffer(
   const KL::Size & mode
 ){
-  glDrawBuffer( (GLenum)mode );
+  try
+  {
+    glDrawBuffer( (GLenum)mode );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glDrawBuffer( %d )", (int)mode);
+  }
 }
 
 FABRIC_EXT_EXPORT void klDrawElements(
@@ -524,7 +993,14 @@ FABRIC_EXT_EXPORT void klDrawElements(
   const KL::Size & type,
   KL::Data indices
 ){
-  glDrawElements( (GLenum)mode, (GLsizei)count, (GLenum)type, indices );
+  try
+  {
+    glDrawElements( (GLenum)mode, (GLsizei)count, (GLenum)type, indices );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glDrawElements( %d, %d, %d, GLvoid* )", (int)mode, (int)count, (int)type);
+  }
 }
 
 FABRIC_EXT_EXPORT void klDrawPixels(
@@ -534,98 +1010,210 @@ FABRIC_EXT_EXPORT void klDrawPixels(
   const KL::Size & type,
   KL::Data pixels
 ){
-  glDrawPixels( (GLsizei)width, (GLsizei)height, (GLenum)format, (GLenum)type, pixels );
+  try
+  {
+    glDrawPixels( (GLsizei)width, (GLsizei)height, (GLenum)format, (GLenum)type, pixels );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glDrawPixels( %d, %d, %d, %d, GLvoid* )", (int)width, (int)height, (int)format, (int)type);
+  }
 }
 
 FABRIC_EXT_EXPORT void klEdgeFlag(
   const KL::Boolean & flag
 ){
-  glEdgeFlag( (GLboolean)flag );
+  try
+  {
+    glEdgeFlag( (GLboolean)flag );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glEdgeFlag( %b )", (bool)flag);
+  }
 }
 
 FABRIC_EXT_EXPORT void klEdgeFlagPointer(
   const KL::Size & stride,
   KL::Data pointer
 ){
-  glEdgeFlagPointer( (GLsizei)stride, pointer );
+  try
+  {
+    glEdgeFlagPointer( (GLsizei)stride, pointer );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glEdgeFlagPointer( %d, GLvoid* )", (int)stride);
+  }
 }
 
 FABRIC_EXT_EXPORT void klEdgeFlagv(
   const KL::VariableArray<KL::Boolean> & flag
 ){
-  glEdgeFlagv( (const GLboolean*)&flag[0] );
+  try
+  {
+    glEdgeFlagv( (const GLboolean*)&flag[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glEdgeFlagv( GLboolean* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klEnable(
   const KL::Size & cap
 ){
-  glEnable( (GLenum)cap );
+  try
+  {
+    glEnable( (GLenum)cap );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glEnable( %d )", (int)cap);
+  }
 }
 
 FABRIC_EXT_EXPORT void klEnableClientState(
   const KL::Size & array
 ){
-  glEnableClientState( (GLenum)array );
+  try
+  {
+    glEnableClientState( (GLenum)array );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glEnableClientState( %d )", (int)array);
+  }
 }
 
 FABRIC_EXT_EXPORT void klEnd()
 {
-  glEnd();
+  try
+  {
+    glEnd();
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glEnd(  )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klEndList()
 {
-  glEndList();
+  try
+  {
+    glEndList();
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glEndList(  )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klEvalCoord1d(
   const KL::Scalar & u
 ){
-  glEvalCoord1d( (GLdouble)u );
+  try
+  {
+    glEvalCoord1d( (GLdouble)u );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glEvalCoord1d( %f )", (float)u);
+  }
 }
 
 FABRIC_EXT_EXPORT void klEvalCoord1dv(
   const KL::VariableArray<KL::Scalar> & u
 ){
-  glEvalCoord1dv( (const GLdouble*)&u[0] );
+  try
+  {
+    glEvalCoord1dv( (const GLdouble*)&u[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glEvalCoord1dv( GLdouble* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klEvalCoord1f(
   const KL::Scalar & u
 ){
-  glEvalCoord1f( (GLfloat)u );
+  try
+  {
+    glEvalCoord1f( (GLfloat)u );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glEvalCoord1f( %f )", (float)u);
+  }
 }
 
 FABRIC_EXT_EXPORT void klEvalCoord1fv(
   const KL::VariableArray<KL::Scalar> & u
 ){
-  glEvalCoord1fv( (const GLfloat*)&u[0] );
+  try
+  {
+    glEvalCoord1fv( (const GLfloat*)&u[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glEvalCoord1fv( GLfloat* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klEvalCoord2d(
   const KL::Scalar & u,
   const KL::Scalar & v
 ){
-  glEvalCoord2d( (GLdouble)u, (GLdouble)v );
+  try
+  {
+    glEvalCoord2d( (GLdouble)u, (GLdouble)v );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glEvalCoord2d( %f, %f )", (float)u, (float)v);
+  }
 }
 
 FABRIC_EXT_EXPORT void klEvalCoord2dv(
   const KL::VariableArray<KL::Scalar> & u
 ){
-  glEvalCoord2dv( (const GLdouble*)&u[0] );
+  try
+  {
+    glEvalCoord2dv( (const GLdouble*)&u[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glEvalCoord2dv( GLdouble* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klEvalCoord2f(
   const KL::Scalar & u,
   const KL::Scalar & v
 ){
-  glEvalCoord2f( (GLfloat)u, (GLfloat)v );
+  try
+  {
+    glEvalCoord2f( (GLfloat)u, (GLfloat)v );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glEvalCoord2f( %f, %f )", (float)u, (float)v);
+  }
 }
 
 FABRIC_EXT_EXPORT void klEvalCoord2fv(
   const KL::VariableArray<KL::Scalar> & u
 ){
-  glEvalCoord2fv( (const GLfloat*)&u[0] );
+  try
+  {
+    glEvalCoord2fv( (const GLfloat*)&u[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glEvalCoord2fv( GLfloat* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klEvalMesh1(
@@ -633,7 +1221,14 @@ FABRIC_EXT_EXPORT void klEvalMesh1(
   const KL::Integer & i1,
   const KL::Integer & i2
 ){
-  glEvalMesh1( (GLenum)mode, (GLint)i1, (GLint)i2 );
+  try
+  {
+    glEvalMesh1( (GLenum)mode, (GLint)i1, (GLint)i2 );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glEvalMesh1( %d, %d, %d )", (int)mode, (int)i1, (int)i2);
+  }
 }
 
 FABRIC_EXT_EXPORT void klEvalMesh2(
@@ -643,20 +1238,41 @@ FABRIC_EXT_EXPORT void klEvalMesh2(
   const KL::Integer & j1,
   const KL::Integer & j2
 ){
-  glEvalMesh2( (GLenum)mode, (GLint)i1, (GLint)i2, (GLint)j1, (GLint)j2 );
+  try
+  {
+    glEvalMesh2( (GLenum)mode, (GLint)i1, (GLint)i2, (GLint)j1, (GLint)j2 );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glEvalMesh2( %d, %d, %d, %d, %d )", (int)mode, (int)i1, (int)i2, (int)j1, (int)j2);
+  }
 }
 
 FABRIC_EXT_EXPORT void klEvalPoint1(
   const KL::Integer & i
 ){
-  glEvalPoint1( (GLint)i );
+  try
+  {
+    glEvalPoint1( (GLint)i );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glEvalPoint1( %d )", (int)i);
+  }
 }
 
 FABRIC_EXT_EXPORT void klEvalPoint2(
   const KL::Integer & i,
   const KL::Integer & j
 ){
-  glEvalPoint2( (GLint)i, (GLint)j );
+  try
+  {
+    glEvalPoint2( (GLint)i, (GLint)j );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glEvalPoint2( %d, %d )", (int)i, (int)j);
+  }
 }
 
 FABRIC_EXT_EXPORT void klFeedbackBuffer(
@@ -664,51 +1280,107 @@ FABRIC_EXT_EXPORT void klFeedbackBuffer(
   const KL::Size & type,
   KL::VariableArray<KL::Scalar> & buffer
 ){
-  glFeedbackBuffer( (GLsizei)size, (GLenum)type, (GLfloat*)&buffer[0] );
+  try
+  {
+    glFeedbackBuffer( (GLsizei)size, (GLenum)type, (GLfloat*)&buffer[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glFeedbackBuffer( %d, %d, GLfloat* )", (int)size, (int)type);
+  }
 }
 
 FABRIC_EXT_EXPORT void klFinish()
 {
-  glFinish();
+  try
+  {
+    glFinish();
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glFinish(  )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klFlush()
 {
-  glFlush();
+  try
+  {
+    glFlush();
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glFlush(  )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klFogf(
   const KL::Size & pname,
   const KL::Scalar & param
 ){
-  glFogf( (GLenum)pname, (GLfloat)param );
+  try
+  {
+    glFogf( (GLenum)pname, (GLfloat)param );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glFogf( %d, %f )", (int)pname, (float)param);
+  }
 }
 
 FABRIC_EXT_EXPORT void klFogfv(
   const KL::Size & pname,
   const KL::VariableArray<KL::Scalar> & params
 ){
-  glFogfv( (GLenum)pname, (const GLfloat*)&params[0] );
+  try
+  {
+    glFogfv( (GLenum)pname, (const GLfloat*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glFogfv( %d, GLfloat* )", (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klFogi(
   const KL::Size & pname,
   const KL::Integer & param
 ){
-  glFogi( (GLenum)pname, (GLint)param );
+  try
+  {
+    glFogi( (GLenum)pname, (GLint)param );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glFogi( %d, %d )", (int)pname, (int)param);
+  }
 }
 
 FABRIC_EXT_EXPORT void klFogiv(
   const KL::Size & pname,
   const KL::VariableArray<KL::Integer> & params
 ){
-  glFogiv( (GLenum)pname, (const GLint*)&params[0] );
+  try
+  {
+    glFogiv( (GLenum)pname, (const GLint*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glFogiv( %d, GLint* )", (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klFrontFace(
   const KL::Size & mode
 ){
-  glFrontFace( (GLenum)mode );
+  try
+  {
+    glFrontFace( (GLenum)mode );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glFrontFace( %d )", (int)mode);
+  }
 }
 
 FABRIC_EXT_EXPORT void klFrustum(
@@ -719,62 +1391,125 @@ FABRIC_EXT_EXPORT void klFrustum(
   const KL::Scalar & zNear,
   const KL::Scalar & zFar
 ){
-  glFrustum( (GLdouble)left, (GLdouble)right, (GLdouble)bottom, (GLdouble)top, (GLdouble)zNear, (GLdouble)zFar );
+  try
+  {
+    glFrustum( (GLdouble)left, (GLdouble)right, (GLdouble)bottom, (GLdouble)top, (GLdouble)zNear, (GLdouble)zFar );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glFrustum( %f, %f, %f, %f, %f, %f )", (float)left, (float)right, (float)bottom, (float)top, (float)zNear, (float)zFar);
+  }
 }
 
 FABRIC_EXT_EXPORT KL::Size klGenLists(
   const KL::Size & range
 ){
-  GLuint result = glGenLists( (GLsizei)range );
+  try
+  {
+    GLuint result = glGenLists( (GLsizei)range );
   return (KL::Size)result;
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGenLists( %d )", (int)range);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGenTextures(
   const KL::Size & n,
   KL::VariableArray<KL::Size> & textures
 ){
-  glGenTextures( (GLsizei)n, (GLuint*)&textures[0] );
+  try
+  {
+    glGenTextures( (GLsizei)n, (GLuint*)&textures[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGenTextures( %d, GLuint* )", (int)n);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetBooleanv(
   const KL::Size & pname,
   KL::VariableArray<KL::Boolean> & params
 ){
-  glGetBooleanv( (GLenum)pname, (GLboolean*)&params[0] );
+  try
+  {
+    glGetBooleanv( (GLenum)pname, (GLboolean*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetBooleanv( %d, GLboolean* )", (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetClipPlane(
   const KL::Size & plane,
   KL::VariableArray<KL::Scalar> & equation
 ){
-  glGetClipPlane( (GLenum)plane, (GLdouble*)&equation[0] );
+  try
+  {
+    glGetClipPlane( (GLenum)plane, (GLdouble*)&equation[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetClipPlane( %d, GLdouble* )", (int)plane);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetDoublev(
   const KL::Size & pname,
   KL::VariableArray<KL::Scalar> & params
 ){
-  glGetDoublev( (GLenum)pname, (GLdouble*)&params[0] );
+  try
+  {
+    glGetDoublev( (GLenum)pname, (GLdouble*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetDoublev( %d, GLdouble* )", (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT KL::Size klGetError()
 {
-  GLenum result = glGetError();
+  try
+  {
+    GLenum result = glGetError();
   return (KL::Size)result;
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetError(  )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetFloatv(
   const KL::Size & pname,
   KL::VariableArray<KL::Scalar> & params
 ){
-  glGetFloatv( (GLenum)pname, (GLfloat*)&params[0] );
+  try
+  {
+    glGetFloatv( (GLenum)pname, (GLfloat*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetFloatv( %d, GLfloat* )", (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetIntegerv(
   const KL::Size & pname,
   KL::VariableArray<KL::Integer> & params
 ){
-  glGetIntegerv( (GLenum)pname, (GLint*)&params[0] );
+  try
+  {
+    glGetIntegerv( (GLenum)pname, (GLint*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetIntegerv( %d, GLint* )", (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetLightfv(
@@ -782,7 +1517,14 @@ FABRIC_EXT_EXPORT void klGetLightfv(
   const KL::Size & pname,
   KL::VariableArray<KL::Scalar> & params
 ){
-  glGetLightfv( (GLenum)light, (GLenum)pname, (GLfloat*)&params[0] );
+  try
+  {
+    glGetLightfv( (GLenum)light, (GLenum)pname, (GLfloat*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetLightfv( %d, %d, GLfloat* )", (int)light, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetLightiv(
@@ -790,7 +1532,14 @@ FABRIC_EXT_EXPORT void klGetLightiv(
   const KL::Size & pname,
   KL::VariableArray<KL::Integer> & params
 ){
-  glGetLightiv( (GLenum)light, (GLenum)pname, (GLint*)&params[0] );
+  try
+  {
+    glGetLightiv( (GLenum)light, (GLenum)pname, (GLint*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetLightiv( %d, %d, GLint* )", (int)light, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetMapdv(
@@ -798,7 +1547,14 @@ FABRIC_EXT_EXPORT void klGetMapdv(
   const KL::Size & query,
   KL::VariableArray<KL::Scalar> & v
 ){
-  glGetMapdv( (GLenum)target, (GLenum)query, (GLdouble*)&v[0] );
+  try
+  {
+    glGetMapdv( (GLenum)target, (GLenum)query, (GLdouble*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetMapdv( %d, %d, GLdouble* )", (int)target, (int)query);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetMapfv(
@@ -806,7 +1562,14 @@ FABRIC_EXT_EXPORT void klGetMapfv(
   const KL::Size & query,
   KL::VariableArray<KL::Scalar> & v
 ){
-  glGetMapfv( (GLenum)target, (GLenum)query, (GLfloat*)&v[0] );
+  try
+  {
+    glGetMapfv( (GLenum)target, (GLenum)query, (GLfloat*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetMapfv( %d, %d, GLfloat* )", (int)target, (int)query);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetMapiv(
@@ -814,7 +1577,14 @@ FABRIC_EXT_EXPORT void klGetMapiv(
   const KL::Size & query,
   KL::VariableArray<KL::Integer> & v
 ){
-  glGetMapiv( (GLenum)target, (GLenum)query, (GLint*)&v[0] );
+  try
+  {
+    glGetMapiv( (GLenum)target, (GLenum)query, (GLint*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetMapiv( %d, %d, GLint* )", (int)target, (int)query);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetMaterialfv(
@@ -822,7 +1592,14 @@ FABRIC_EXT_EXPORT void klGetMaterialfv(
   const KL::Size & pname,
   KL::VariableArray<KL::Scalar> & params
 ){
-  glGetMaterialfv( (GLenum)face, (GLenum)pname, (GLfloat*)&params[0] );
+  try
+  {
+    glGetMaterialfv( (GLenum)face, (GLenum)pname, (GLfloat*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetMaterialfv( %d, %d, GLfloat* )", (int)face, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetMaterialiv(
@@ -830,41 +1607,83 @@ FABRIC_EXT_EXPORT void klGetMaterialiv(
   const KL::Size & pname,
   KL::VariableArray<KL::Integer> & params
 ){
-  glGetMaterialiv( (GLenum)face, (GLenum)pname, (GLint*)&params[0] );
+  try
+  {
+    glGetMaterialiv( (GLenum)face, (GLenum)pname, (GLint*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetMaterialiv( %d, %d, GLint* )", (int)face, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetPixelMapfv(
   const KL::Size & map,
   KL::VariableArray<KL::Scalar> & values
 ){
-  glGetPixelMapfv( (GLenum)map, (GLfloat*)&values[0] );
+  try
+  {
+    glGetPixelMapfv( (GLenum)map, (GLfloat*)&values[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetPixelMapfv( %d, GLfloat* )", (int)map);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetPixelMapuiv(
   const KL::Size & map,
   KL::VariableArray<KL::Size> & values
 ){
-  glGetPixelMapuiv( (GLenum)map, (GLuint*)&values[0] );
+  try
+  {
+    glGetPixelMapuiv( (GLenum)map, (GLuint*)&values[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetPixelMapuiv( %d, GLuint* )", (int)map);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetPixelMapusv(
   const KL::Size & map,
   KL::VariableArray<KL::Integer> & values
 ){
-  glGetPixelMapusv( (GLenum)map, (GLushort*)&values[0] );
+  try
+  {
+    glGetPixelMapusv( (GLenum)map, (GLushort*)&values[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetPixelMapusv( %d, GLushort* )", (int)map);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetPolygonStipple(
   KL::VariableArray<KL::Size> & mask
 ){
-  glGetPolygonStipple( (GLubyte*)&mask[0] );
+  try
+  {
+    glGetPolygonStipple( (GLubyte*)&mask[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetPolygonStipple( GLubyte* )");
+  }
 }
 
 FABRIC_EXT_EXPORT KL::Size klGetString(
   const KL::Size & name
 ){
-  const GLubyte* result = glGetString( (GLenum)name );
+  try
+  {
+    const GLubyte* result = glGetString( (GLenum)name );
   return (KL::Size)result;
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetString( %d )", (int)name);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetTexEnvfv(
@@ -872,7 +1691,14 @@ FABRIC_EXT_EXPORT void klGetTexEnvfv(
   const KL::Size & pname,
   KL::VariableArray<KL::Scalar> & params
 ){
-  glGetTexEnvfv( (GLenum)target, (GLenum)pname, (GLfloat*)&params[0] );
+  try
+  {
+    glGetTexEnvfv( (GLenum)target, (GLenum)pname, (GLfloat*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetTexEnvfv( %d, %d, GLfloat* )", (int)target, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetTexEnviv(
@@ -880,7 +1706,14 @@ FABRIC_EXT_EXPORT void klGetTexEnviv(
   const KL::Size & pname,
   KL::VariableArray<KL::Integer> & params
 ){
-  glGetTexEnviv( (GLenum)target, (GLenum)pname, (GLint*)&params[0] );
+  try
+  {
+    glGetTexEnviv( (GLenum)target, (GLenum)pname, (GLint*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetTexEnviv( %d, %d, GLint* )", (int)target, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetTexGendv(
@@ -888,7 +1721,14 @@ FABRIC_EXT_EXPORT void klGetTexGendv(
   const KL::Size & pname,
   KL::VariableArray<KL::Scalar> & params
 ){
-  glGetTexGendv( (GLenum)coord, (GLenum)pname, (GLdouble*)&params[0] );
+  try
+  {
+    glGetTexGendv( (GLenum)coord, (GLenum)pname, (GLdouble*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetTexGendv( %d, %d, GLdouble* )", (int)coord, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetTexGenfv(
@@ -896,7 +1736,14 @@ FABRIC_EXT_EXPORT void klGetTexGenfv(
   const KL::Size & pname,
   KL::VariableArray<KL::Scalar> & params
 ){
-  glGetTexGenfv( (GLenum)coord, (GLenum)pname, (GLfloat*)&params[0] );
+  try
+  {
+    glGetTexGenfv( (GLenum)coord, (GLenum)pname, (GLfloat*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetTexGenfv( %d, %d, GLfloat* )", (int)coord, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetTexGeniv(
@@ -904,7 +1751,14 @@ FABRIC_EXT_EXPORT void klGetTexGeniv(
   const KL::Size & pname,
   KL::VariableArray<KL::Integer> & params
 ){
-  glGetTexGeniv( (GLenum)coord, (GLenum)pname, (GLint*)&params[0] );
+  try
+  {
+    glGetTexGeniv( (GLenum)coord, (GLenum)pname, (GLint*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetTexGeniv( %d, %d, GLint* )", (int)coord, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetTexImage(
@@ -914,7 +1768,14 @@ FABRIC_EXT_EXPORT void klGetTexImage(
   const KL::Size & type,
   KL::Data pixels
 ){
-  glGetTexImage( (GLenum)target, (GLint)level, (GLenum)format, (GLenum)type, pixels );
+  try
+  {
+    glGetTexImage( (GLenum)target, (GLint)level, (GLenum)format, (GLenum)type, pixels );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetTexImage( %d, %d, %d, %d, GLvoid* )", (int)target, (int)level, (int)format, (int)type);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetTexLevelParameterfv(
@@ -923,7 +1784,14 @@ FABRIC_EXT_EXPORT void klGetTexLevelParameterfv(
   const KL::Size & pname,
   KL::VariableArray<KL::Scalar> & params
 ){
-  glGetTexLevelParameterfv( (GLenum)target, (GLint)level, (GLenum)pname, (GLfloat*)&params[0] );
+  try
+  {
+    glGetTexLevelParameterfv( (GLenum)target, (GLint)level, (GLenum)pname, (GLfloat*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetTexLevelParameterfv( %d, %d, %d, GLfloat* )", (int)target, (int)level, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetTexLevelParameteriv(
@@ -932,7 +1800,14 @@ FABRIC_EXT_EXPORT void klGetTexLevelParameteriv(
   const KL::Size & pname,
   KL::VariableArray<KL::Integer> & params
 ){
-  glGetTexLevelParameteriv( (GLenum)target, (GLint)level, (GLenum)pname, (GLint*)&params[0] );
+  try
+  {
+    glGetTexLevelParameteriv( (GLenum)target, (GLint)level, (GLenum)pname, (GLint*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetTexLevelParameteriv( %d, %d, %d, GLint* )", (int)target, (int)level, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetTexParameterfv(
@@ -940,7 +1815,14 @@ FABRIC_EXT_EXPORT void klGetTexParameterfv(
   const KL::Size & pname,
   KL::VariableArray<KL::Scalar> & params
 ){
-  glGetTexParameterfv( (GLenum)target, (GLenum)pname, (GLfloat*)&params[0] );
+  try
+  {
+    glGetTexParameterfv( (GLenum)target, (GLenum)pname, (GLfloat*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetTexParameterfv( %d, %d, GLfloat* )", (int)target, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetTexParameteriv(
@@ -948,20 +1830,41 @@ FABRIC_EXT_EXPORT void klGetTexParameteriv(
   const KL::Size & pname,
   KL::VariableArray<KL::Integer> & params
 ){
-  glGetTexParameteriv( (GLenum)target, (GLenum)pname, (GLint*)&params[0] );
+  try
+  {
+    glGetTexParameteriv( (GLenum)target, (GLenum)pname, (GLint*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetTexParameteriv( %d, %d, GLint* )", (int)target, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klHint(
   const KL::Size & target,
   const KL::Size & mode
 ){
-  glHint( (GLenum)target, (GLenum)mode );
+  try
+  {
+    glHint( (GLenum)target, (GLenum)mode );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glHint( %d, %d )", (int)target, (int)mode);
+  }
 }
 
 FABRIC_EXT_EXPORT void klIndexMask(
   const KL::Size & mask
 ){
-  glIndexMask( (GLuint)mask );
+  try
+  {
+    glIndexMask( (GLuint)mask );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glIndexMask( 0x%04X )", (unsigned)mask);
+  }
 }
 
 FABRIC_EXT_EXPORT void klIndexPointer(
@@ -969,72 +1872,156 @@ FABRIC_EXT_EXPORT void klIndexPointer(
   const KL::Size & stride,
   KL::Data pointer
 ){
-  glIndexPointer( (GLenum)type, (GLsizei)stride, pointer );
+  try
+  {
+    glIndexPointer( (GLenum)type, (GLsizei)stride, pointer );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glIndexPointer( %d, %d, GLvoid* )", (int)type, (int)stride);
+  }
 }
 
 FABRIC_EXT_EXPORT void klIndexd(
   const KL::Scalar & c
 ){
-  glIndexd( (GLdouble)c );
+  try
+  {
+    glIndexd( (GLdouble)c );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glIndexd( %f )", (float)c);
+  }
 }
 
 FABRIC_EXT_EXPORT void klIndexdv(
   const KL::VariableArray<KL::Scalar> & c
 ){
-  glIndexdv( (const GLdouble*)&c[0] );
+  try
+  {
+    glIndexdv( (const GLdouble*)&c[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glIndexdv( GLdouble* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klIndexf(
   const KL::Scalar & c
 ){
-  glIndexf( (GLfloat)c );
+  try
+  {
+    glIndexf( (GLfloat)c );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glIndexf( %f )", (float)c);
+  }
 }
 
 FABRIC_EXT_EXPORT void klIndexfv(
   const KL::VariableArray<KL::Scalar> & c
 ){
-  glIndexfv( (const GLfloat*)&c[0] );
+  try
+  {
+    glIndexfv( (const GLfloat*)&c[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glIndexfv( GLfloat* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klIndexi(
   const KL::Integer & c
 ){
-  glIndexi( (GLint)c );
+  try
+  {
+    glIndexi( (GLint)c );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glIndexi( %d )", (int)c);
+  }
 }
 
 FABRIC_EXT_EXPORT void klIndexiv(
   const KL::VariableArray<KL::Integer> & c
 ){
-  glIndexiv( (const GLint*)&c[0] );
+  try
+  {
+    glIndexiv( (const GLint*)&c[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glIndexiv( GLint* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klIndexs(
   const KL::Integer & c
 ){
-  glIndexs( (GLshort)c );
+  try
+  {
+    glIndexs( (GLshort)c );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glIndexs( %d )", (int)c);
+  }
 }
 
 FABRIC_EXT_EXPORT void klIndexsv(
   const KL::VariableArray<KL::Integer> & c
 ){
-  glIndexsv( (const GLshort*)&c[0] );
+  try
+  {
+    glIndexsv( (const GLshort*)&c[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glIndexsv( GLshort* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klIndexub(
   const KL::Size & c
 ){
-  glIndexub( (GLubyte)c );
+  try
+  {
+    glIndexub( (GLubyte)c );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glIndexub( 0x%04X )", (unsigned)c);
+  }
 }
 
 FABRIC_EXT_EXPORT void klIndexubv(
   const KL::VariableArray<KL::Size> & c
 ){
-  glIndexubv( (const GLubyte*)&c[0] );
+  try
+  {
+    glIndexubv( (const GLubyte*)&c[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glIndexubv( GLubyte* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klInitNames()
 {
-  glInitNames();
+  try
+  {
+    glInitNames();
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glInitNames(  )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klInterleavedArrays(
@@ -1042,56 +2029,112 @@ FABRIC_EXT_EXPORT void klInterleavedArrays(
   const KL::Size & stride,
   KL::Data pointer
 ){
-  glInterleavedArrays( (GLenum)format, (GLsizei)stride, pointer );
+  try
+  {
+    glInterleavedArrays( (GLenum)format, (GLsizei)stride, pointer );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glInterleavedArrays( %d, %d, GLvoid* )", (int)format, (int)stride);
+  }
 }
 
 FABRIC_EXT_EXPORT KL::Boolean klIsEnabled(
   const KL::Size & cap
 ){
-  GLboolean result = glIsEnabled( (GLenum)cap );
+  try
+  {
+    GLboolean result = glIsEnabled( (GLenum)cap );
   return (KL::Boolean)result;
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glIsEnabled( %d )", (int)cap);
+  }
 }
 
 FABRIC_EXT_EXPORT KL::Boolean klIsList(
   const KL::Size & list
 ){
-  GLboolean result = glIsList( (GLuint)list );
+  try
+  {
+    GLboolean result = glIsList( (GLuint)list );
   return (KL::Boolean)result;
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glIsList( 0x%04X )", (unsigned)list);
+  }
 }
 
 FABRIC_EXT_EXPORT KL::Boolean klIsTexture(
   const KL::Size & texture
 ){
-  GLboolean result = glIsTexture( (GLuint)texture );
+  try
+  {
+    GLboolean result = glIsTexture( (GLuint)texture );
   return (KL::Boolean)result;
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glIsTexture( 0x%04X )", (unsigned)texture);
+  }
 }
 
 FABRIC_EXT_EXPORT void klLightModelf(
   const KL::Size & pname,
   const KL::Scalar & param
 ){
-  glLightModelf( (GLenum)pname, (GLfloat)param );
+  try
+  {
+    glLightModelf( (GLenum)pname, (GLfloat)param );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glLightModelf( %d, %f )", (int)pname, (float)param);
+  }
 }
 
 FABRIC_EXT_EXPORT void klLightModelfv(
   const KL::Size & pname,
   const KL::VariableArray<KL::Scalar> & params
 ){
-  glLightModelfv( (GLenum)pname, (const GLfloat*)&params[0] );
+  try
+  {
+    glLightModelfv( (GLenum)pname, (const GLfloat*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glLightModelfv( %d, GLfloat* )", (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klLightModeli(
   const KL::Size & pname,
   const KL::Integer & param
 ){
-  glLightModeli( (GLenum)pname, (GLint)param );
+  try
+  {
+    glLightModeli( (GLenum)pname, (GLint)param );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glLightModeli( %d, %d )", (int)pname, (int)param);
+  }
 }
 
 FABRIC_EXT_EXPORT void klLightModeliv(
   const KL::Size & pname,
   const KL::VariableArray<KL::Integer> & params
 ){
-  glLightModeliv( (GLenum)pname, (const GLint*)&params[0] );
+  try
+  {
+    glLightModeliv( (GLenum)pname, (const GLint*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glLightModeliv( %d, GLint* )", (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klLightf(
@@ -1099,7 +2142,14 @@ FABRIC_EXT_EXPORT void klLightf(
   const KL::Size & pname,
   const KL::Scalar & param
 ){
-  glLightf( (GLenum)light, (GLenum)pname, (GLfloat)param );
+  try
+  {
+    glLightf( (GLenum)light, (GLenum)pname, (GLfloat)param );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glLightf( %d, %d, %f )", (int)light, (int)pname, (float)param);
+  }
 }
 
 FABRIC_EXT_EXPORT void klLightfv(
@@ -1107,7 +2157,14 @@ FABRIC_EXT_EXPORT void klLightfv(
   const KL::Size & pname,
   const KL::VariableArray<KL::Scalar> & params
 ){
-  glLightfv( (GLenum)light, (GLenum)pname, (const GLfloat*)&params[0] );
+  try
+  {
+    glLightfv( (GLenum)light, (GLenum)pname, (const GLfloat*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glLightfv( %d, %d, GLfloat* )", (int)light, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klLighti(
@@ -1115,7 +2172,14 @@ FABRIC_EXT_EXPORT void klLighti(
   const KL::Size & pname,
   const KL::Integer & param
 ){
-  glLighti( (GLenum)light, (GLenum)pname, (GLint)param );
+  try
+  {
+    glLighti( (GLenum)light, (GLenum)pname, (GLint)param );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glLighti( %d, %d, %d )", (int)light, (int)pname, (int)param);
+  }
 }
 
 FABRIC_EXT_EXPORT void klLightiv(
@@ -1123,55 +2187,118 @@ FABRIC_EXT_EXPORT void klLightiv(
   const KL::Size & pname,
   const KL::VariableArray<KL::Integer> & params
 ){
-  glLightiv( (GLenum)light, (GLenum)pname, (const GLint*)&params[0] );
+  try
+  {
+    glLightiv( (GLenum)light, (GLenum)pname, (const GLint*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glLightiv( %d, %d, GLint* )", (int)light, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klLineStipple(
   const KL::Integer & factor,
   const KL::Integer & pattern
 ){
-  glLineStipple( (GLint)factor, (GLushort)pattern );
+  try
+  {
+    glLineStipple( (GLint)factor, (GLushort)pattern );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glLineStipple( %d, 0x%04X )", (int)factor, (unsigned)pattern);
+  }
 }
 
 FABRIC_EXT_EXPORT void klLineWidth(
   const KL::Scalar & width
 ){
-  glLineWidth( (GLfloat)width );
+  try
+  {
+    glLineWidth( (GLfloat)width );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glLineWidth( %f )", (float)width);
+  }
 }
 
 FABRIC_EXT_EXPORT void klListBase(
   const KL::Size & base
 ){
-  glListBase( (GLuint)base );
+  try
+  {
+    glListBase( (GLuint)base );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glListBase( 0x%04X )", (unsigned)base);
+  }
 }
 
 FABRIC_EXT_EXPORT void klLoadIdentity()
 {
-  glLoadIdentity();
+  try
+  {
+    glLoadIdentity();
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glLoadIdentity(  )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klLoadMatrixd(
   const KL::VariableArray<KL::Scalar> & m
 ){
-  glLoadMatrixd( (const GLdouble*)&m[0] );
+  try
+  {
+    glLoadMatrixd( (const GLdouble*)&m[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glLoadMatrixd( GLdouble* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klLoadMatrixf(
   const KL::VariableArray<KL::Scalar> & m
 ){
-  glLoadMatrixf( (const GLfloat*)&m[0] );
+  try
+  {
+    glLoadMatrixf( (const GLfloat*)&m[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glLoadMatrixf( GLfloat* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klLoadName(
   const KL::Size & name
 ){
-  glLoadName( (GLuint)name );
+  try
+  {
+    glLoadName( (GLuint)name );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glLoadName( 0x%04X )", (unsigned)name);
+  }
 }
 
 FABRIC_EXT_EXPORT void klLogicOp(
   const KL::Size & opcode
 ){
-  glLogicOp( (GLenum)opcode );
+  try
+  {
+    glLogicOp( (GLenum)opcode );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glLogicOp( %d )", (int)opcode);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMap1d(
@@ -1182,7 +2309,14 @@ FABRIC_EXT_EXPORT void klMap1d(
   const KL::Integer & order,
   const KL::VariableArray<KL::Scalar> & points
 ){
-  glMap1d( (GLenum)target, (GLdouble)u1, (GLdouble)u2, (GLint)stride, (GLint)order, (const GLdouble*)&points[0] );
+  try
+  {
+    glMap1d( (GLenum)target, (GLdouble)u1, (GLdouble)u2, (GLint)stride, (GLint)order, (const GLdouble*)&points[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMap1d( %d, %f, %f, %d, %d, GLdouble* )", (int)target, (float)u1, (float)u2, (int)stride, (int)order);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMap1f(
@@ -1193,7 +2327,14 @@ FABRIC_EXT_EXPORT void klMap1f(
   const KL::Integer & order,
   const KL::VariableArray<KL::Scalar> & points
 ){
-  glMap1f( (GLenum)target, (GLfloat)u1, (GLfloat)u2, (GLint)stride, (GLint)order, (const GLfloat*)&points[0] );
+  try
+  {
+    glMap1f( (GLenum)target, (GLfloat)u1, (GLfloat)u2, (GLint)stride, (GLint)order, (const GLfloat*)&points[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMap1f( %d, %f, %f, %d, %d, GLfloat* )", (int)target, (float)u1, (float)u2, (int)stride, (int)order);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMap2d(
@@ -1208,7 +2349,14 @@ FABRIC_EXT_EXPORT void klMap2d(
   const KL::Integer & vorder,
   const KL::VariableArray<KL::Scalar> & points
 ){
-  glMap2d( (GLenum)target, (GLdouble)u1, (GLdouble)u2, (GLint)ustride, (GLint)uorder, (GLdouble)v1, (GLdouble)v2, (GLint)vstride, (GLint)vorder, (const GLdouble*)&points[0] );
+  try
+  {
+    glMap2d( (GLenum)target, (GLdouble)u1, (GLdouble)u2, (GLint)ustride, (GLint)uorder, (GLdouble)v1, (GLdouble)v2, (GLint)vstride, (GLint)vorder, (const GLdouble*)&points[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMap2d( %d, %f, %f, %d, %d, %f, %f, %d, %d, GLdouble* )", (int)target, (float)u1, (float)u2, (int)ustride, (int)uorder, (float)v1, (float)v2, (int)vstride, (int)vorder);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMap2f(
@@ -1223,7 +2371,14 @@ FABRIC_EXT_EXPORT void klMap2f(
   const KL::Integer & vorder,
   const KL::VariableArray<KL::Scalar> & points
 ){
-  glMap2f( (GLenum)target, (GLfloat)u1, (GLfloat)u2, (GLint)ustride, (GLint)uorder, (GLfloat)v1, (GLfloat)v2, (GLint)vstride, (GLint)vorder, (const GLfloat*)&points[0] );
+  try
+  {
+    glMap2f( (GLenum)target, (GLfloat)u1, (GLfloat)u2, (GLint)ustride, (GLint)uorder, (GLfloat)v1, (GLfloat)v2, (GLint)vstride, (GLint)vorder, (const GLfloat*)&points[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMap2f( %d, %f, %f, %d, %d, %f, %f, %d, %d, GLfloat* )", (int)target, (float)u1, (float)u2, (int)ustride, (int)uorder, (float)v1, (float)v2, (int)vstride, (int)vorder);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMapGrid1d(
@@ -1231,7 +2386,14 @@ FABRIC_EXT_EXPORT void klMapGrid1d(
   const KL::Scalar & u1,
   const KL::Scalar & u2
 ){
-  glMapGrid1d( (GLint)un, (GLdouble)u1, (GLdouble)u2 );
+  try
+  {
+    glMapGrid1d( (GLint)un, (GLdouble)u1, (GLdouble)u2 );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMapGrid1d( %d, %f, %f )", (int)un, (float)u1, (float)u2);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMapGrid1f(
@@ -1239,7 +2401,14 @@ FABRIC_EXT_EXPORT void klMapGrid1f(
   const KL::Scalar & u1,
   const KL::Scalar & u2
 ){
-  glMapGrid1f( (GLint)un, (GLfloat)u1, (GLfloat)u2 );
+  try
+  {
+    glMapGrid1f( (GLint)un, (GLfloat)u1, (GLfloat)u2 );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMapGrid1f( %d, %f, %f )", (int)un, (float)u1, (float)u2);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMapGrid2d(
@@ -1250,7 +2419,14 @@ FABRIC_EXT_EXPORT void klMapGrid2d(
   const KL::Scalar & v1,
   const KL::Scalar & v2
 ){
-  glMapGrid2d( (GLint)un, (GLdouble)u1, (GLdouble)u2, (GLint)vn, (GLdouble)v1, (GLdouble)v2 );
+  try
+  {
+    glMapGrid2d( (GLint)un, (GLdouble)u1, (GLdouble)u2, (GLint)vn, (GLdouble)v1, (GLdouble)v2 );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMapGrid2d( %d, %f, %f, %d, %f, %f )", (int)un, (float)u1, (float)u2, (int)vn, (float)v1, (float)v2);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMapGrid2f(
@@ -1261,7 +2437,14 @@ FABRIC_EXT_EXPORT void klMapGrid2f(
   const KL::Scalar & v1,
   const KL::Scalar & v2
 ){
-  glMapGrid2f( (GLint)un, (GLfloat)u1, (GLfloat)u2, (GLint)vn, (GLfloat)v1, (GLfloat)v2 );
+  try
+  {
+    glMapGrid2f( (GLint)un, (GLfloat)u1, (GLfloat)u2, (GLint)vn, (GLfloat)v1, (GLfloat)v2 );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMapGrid2f( %d, %f, %f, %d, %f, %f )", (int)un, (float)u1, (float)u2, (int)vn, (float)v1, (float)v2);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMaterialf(
@@ -1269,7 +2452,14 @@ FABRIC_EXT_EXPORT void klMaterialf(
   const KL::Size & pname,
   const KL::Scalar & param
 ){
-  glMaterialf( (GLenum)face, (GLenum)pname, (GLfloat)param );
+  try
+  {
+    glMaterialf( (GLenum)face, (GLenum)pname, (GLfloat)param );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMaterialf( %d, %d, %f )", (int)face, (int)pname, (float)param);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMaterialfv(
@@ -1277,7 +2467,14 @@ FABRIC_EXT_EXPORT void klMaterialfv(
   const KL::Size & pname,
   const KL::VariableArray<KL::Scalar> & params
 ){
-  glMaterialfv( (GLenum)face, (GLenum)pname, (const GLfloat*)&params[0] );
+  try
+  {
+    glMaterialfv( (GLenum)face, (GLenum)pname, (const GLfloat*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMaterialfv( %d, %d, GLfloat* )", (int)face, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMateriali(
@@ -1285,7 +2482,14 @@ FABRIC_EXT_EXPORT void klMateriali(
   const KL::Size & pname,
   const KL::Integer & param
 ){
-  glMateriali( (GLenum)face, (GLenum)pname, (GLint)param );
+  try
+  {
+    glMateriali( (GLenum)face, (GLenum)pname, (GLint)param );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMateriali( %d, %d, %d )", (int)face, (int)pname, (int)param);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMaterialiv(
@@ -1293,32 +2497,67 @@ FABRIC_EXT_EXPORT void klMaterialiv(
   const KL::Size & pname,
   const KL::VariableArray<KL::Integer> & params
 ){
-  glMaterialiv( (GLenum)face, (GLenum)pname, (const GLint*)&params[0] );
+  try
+  {
+    glMaterialiv( (GLenum)face, (GLenum)pname, (const GLint*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMaterialiv( %d, %d, GLint* )", (int)face, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMatrixMode(
   const KL::Size & mode
 ){
-  glMatrixMode( (GLenum)mode );
+  try
+  {
+    glMatrixMode( (GLenum)mode );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMatrixMode( %d )", (int)mode);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMultMatrixd(
   const KL::VariableArray<KL::Scalar> & m
 ){
-  glMultMatrixd( (const GLdouble*)&m[0] );
+  try
+  {
+    glMultMatrixd( (const GLdouble*)&m[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMultMatrixd( GLdouble* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klMultMatrixf(
   const KL::VariableArray<KL::Scalar> & m
 ){
-  glMultMatrixf( (const GLfloat*)&m[0] );
+  try
+  {
+    glMultMatrixf( (const GLfloat*)&m[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMultMatrixf( GLfloat* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klNewList(
   const KL::Size & list,
   const KL::Size & mode
 ){
-  glNewList( (GLuint)list, (GLenum)mode );
+  try
+  {
+    glNewList( (GLuint)list, (GLenum)mode );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glNewList( 0x%04X, %d )", (unsigned)list, (int)mode);
+  }
 }
 
 FABRIC_EXT_EXPORT void klNormal3b(
@@ -1326,13 +2565,27 @@ FABRIC_EXT_EXPORT void klNormal3b(
   const KL::Byte & ny,
   const KL::Byte & nz
 ){
-  glNormal3b( (GLbyte)nx, (GLbyte)ny, (GLbyte)nz );
+  try
+  {
+    glNormal3b( (GLbyte)nx, (GLbyte)ny, (GLbyte)nz );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glNormal3b( %d, %d, %d )", (int)nx, (int)ny, (int)nz);
+  }
 }
 
 FABRIC_EXT_EXPORT void klNormal3bv(
   const KL::VariableArray<KL::Byte> & v
 ){
-  glNormal3bv( (const GLbyte*)&v[0] );
+  try
+  {
+    glNormal3bv( (const GLbyte*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glNormal3bv( GLbyte* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klNormal3d(
@@ -1340,13 +2593,27 @@ FABRIC_EXT_EXPORT void klNormal3d(
   const KL::Scalar & ny,
   const KL::Scalar & nz
 ){
-  glNormal3d( (GLdouble)nx, (GLdouble)ny, (GLdouble)nz );
+  try
+  {
+    glNormal3d( (GLdouble)nx, (GLdouble)ny, (GLdouble)nz );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glNormal3d( %f, %f, %f )", (float)nx, (float)ny, (float)nz);
+  }
 }
 
 FABRIC_EXT_EXPORT void klNormal3dv(
   const KL::VariableArray<KL::Scalar> & v
 ){
-  glNormal3dv( (const GLdouble*)&v[0] );
+  try
+  {
+    glNormal3dv( (const GLdouble*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glNormal3dv( GLdouble* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klNormal3f(
@@ -1354,13 +2621,27 @@ FABRIC_EXT_EXPORT void klNormal3f(
   const KL::Scalar & ny,
   const KL::Scalar & nz
 ){
-  glNormal3f( (GLfloat)nx, (GLfloat)ny, (GLfloat)nz );
+  try
+  {
+    glNormal3f( (GLfloat)nx, (GLfloat)ny, (GLfloat)nz );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glNormal3f( %f, %f, %f )", (float)nx, (float)ny, (float)nz);
+  }
 }
 
 FABRIC_EXT_EXPORT void klNormal3fv(
   const KL::VariableArray<KL::Scalar> & v
 ){
-  glNormal3fv( (const GLfloat*)&v[0] );
+  try
+  {
+    glNormal3fv( (const GLfloat*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glNormal3fv( GLfloat* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klNormal3i(
@@ -1368,13 +2649,27 @@ FABRIC_EXT_EXPORT void klNormal3i(
   const KL::Integer & ny,
   const KL::Integer & nz
 ){
-  glNormal3i( (GLint)nx, (GLint)ny, (GLint)nz );
+  try
+  {
+    glNormal3i( (GLint)nx, (GLint)ny, (GLint)nz );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glNormal3i( %d, %d, %d )", (int)nx, (int)ny, (int)nz);
+  }
 }
 
 FABRIC_EXT_EXPORT void klNormal3iv(
   const KL::VariableArray<KL::Integer> & v
 ){
-  glNormal3iv( (const GLint*)&v[0] );
+  try
+  {
+    glNormal3iv( (const GLint*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glNormal3iv( GLint* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klNormal3s(
@@ -1382,13 +2677,27 @@ FABRIC_EXT_EXPORT void klNormal3s(
   const KL::Integer & ny,
   const KL::Integer & nz
 ){
-  glNormal3s( (GLshort)nx, (GLshort)ny, (GLshort)nz );
+  try
+  {
+    glNormal3s( (GLshort)nx, (GLshort)ny, (GLshort)nz );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glNormal3s( %d, %d, %d )", (int)nx, (int)ny, (int)nz);
+  }
 }
 
 FABRIC_EXT_EXPORT void klNormal3sv(
   const KL::VariableArray<KL::Integer> & v
 ){
-  glNormal3sv( (const GLshort*)&v[0] );
+  try
+  {
+    glNormal3sv( (const GLshort*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glNormal3sv( GLshort* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klNormalPointer(
@@ -1396,7 +2705,14 @@ FABRIC_EXT_EXPORT void klNormalPointer(
   const KL::Size & stride,
   KL::Data pointer
 ){
-  glNormalPointer( (GLenum)type, (GLsizei)stride, pointer );
+  try
+  {
+    glNormalPointer( (GLenum)type, (GLsizei)stride, pointer );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glNormalPointer( %d, %d, GLvoid* )", (int)type, (int)stride);
+  }
 }
 
 FABRIC_EXT_EXPORT void klOrtho(
@@ -1407,13 +2723,27 @@ FABRIC_EXT_EXPORT void klOrtho(
   const KL::Scalar & zNear,
   const KL::Scalar & zFar
 ){
-  glOrtho( (GLdouble)left, (GLdouble)right, (GLdouble)bottom, (GLdouble)top, (GLdouble)zNear, (GLdouble)zFar );
+  try
+  {
+    glOrtho( (GLdouble)left, (GLdouble)right, (GLdouble)bottom, (GLdouble)top, (GLdouble)zNear, (GLdouble)zFar );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glOrtho( %f, %f, %f, %f, %f, %f )", (float)left, (float)right, (float)bottom, (float)top, (float)zNear, (float)zFar);
+  }
 }
 
 FABRIC_EXT_EXPORT void klPassThrough(
   const KL::Scalar & token
 ){
-  glPassThrough( (GLfloat)token );
+  try
+  {
+    glPassThrough( (GLfloat)token );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glPassThrough( %f )", (float)token);
+  }
 }
 
 FABRIC_EXT_EXPORT void klPixelMapfv(
@@ -1421,7 +2751,14 @@ FABRIC_EXT_EXPORT void klPixelMapfv(
   const KL::Size & mapsize,
   const KL::VariableArray<KL::Scalar> & values
 ){
-  glPixelMapfv( (GLenum)map, (GLsizei)mapsize, (const GLfloat*)&values[0] );
+  try
+  {
+    glPixelMapfv( (GLenum)map, (GLsizei)mapsize, (const GLfloat*)&values[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glPixelMapfv( %d, %d, GLfloat* )", (int)map, (int)mapsize);
+  }
 }
 
 FABRIC_EXT_EXPORT void klPixelMapuiv(
@@ -1429,7 +2766,14 @@ FABRIC_EXT_EXPORT void klPixelMapuiv(
   const KL::Size & mapsize,
   const KL::VariableArray<KL::Size> & values
 ){
-  glPixelMapuiv( (GLenum)map, (GLsizei)mapsize, (const GLuint*)&values[0] );
+  try
+  {
+    glPixelMapuiv( (GLenum)map, (GLsizei)mapsize, (const GLuint*)&values[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glPixelMapuiv( %d, %d, GLuint* )", (int)map, (int)mapsize);
+  }
 }
 
 FABRIC_EXT_EXPORT void klPixelMapusv(
@@ -1437,88 +2781,186 @@ FABRIC_EXT_EXPORT void klPixelMapusv(
   const KL::Size & mapsize,
   const KL::VariableArray<KL::Integer> & values
 ){
-  glPixelMapusv( (GLenum)map, (GLsizei)mapsize, (const GLushort*)&values[0] );
+  try
+  {
+    glPixelMapusv( (GLenum)map, (GLsizei)mapsize, (const GLushort*)&values[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glPixelMapusv( %d, %d, GLushort* )", (int)map, (int)mapsize);
+  }
 }
 
 FABRIC_EXT_EXPORT void klPixelStoref(
   const KL::Size & pname,
   const KL::Scalar & param
 ){
-  glPixelStoref( (GLenum)pname, (GLfloat)param );
+  try
+  {
+    glPixelStoref( (GLenum)pname, (GLfloat)param );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glPixelStoref( %d, %f )", (int)pname, (float)param);
+  }
 }
 
 FABRIC_EXT_EXPORT void klPixelStorei(
   const KL::Size & pname,
   const KL::Integer & param
 ){
-  glPixelStorei( (GLenum)pname, (GLint)param );
+  try
+  {
+    glPixelStorei( (GLenum)pname, (GLint)param );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glPixelStorei( %d, %d )", (int)pname, (int)param);
+  }
 }
 
 FABRIC_EXT_EXPORT void klPixelTransferf(
   const KL::Size & pname,
   const KL::Scalar & param
 ){
-  glPixelTransferf( (GLenum)pname, (GLfloat)param );
+  try
+  {
+    glPixelTransferf( (GLenum)pname, (GLfloat)param );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glPixelTransferf( %d, %f )", (int)pname, (float)param);
+  }
 }
 
 FABRIC_EXT_EXPORT void klPixelTransferi(
   const KL::Size & pname,
   const KL::Integer & param
 ){
-  glPixelTransferi( (GLenum)pname, (GLint)param );
+  try
+  {
+    glPixelTransferi( (GLenum)pname, (GLint)param );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glPixelTransferi( %d, %d )", (int)pname, (int)param);
+  }
 }
 
 FABRIC_EXT_EXPORT void klPixelZoom(
   const KL::Scalar & xfactor,
   const KL::Scalar & yfactor
 ){
-  glPixelZoom( (GLfloat)xfactor, (GLfloat)yfactor );
+  try
+  {
+    glPixelZoom( (GLfloat)xfactor, (GLfloat)yfactor );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glPixelZoom( %f, %f )", (float)xfactor, (float)yfactor);
+  }
 }
 
 FABRIC_EXT_EXPORT void klPointSize(
   const KL::Scalar & size
 ){
-  glPointSize( (GLfloat)size );
+  try
+  {
+    glPointSize( (GLfloat)size );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glPointSize( %f )", (float)size);
+  }
 }
 
 FABRIC_EXT_EXPORT void klPolygonMode(
   const KL::Size & face,
   const KL::Size & mode
 ){
-  glPolygonMode( (GLenum)face, (GLenum)mode );
+  try
+  {
+    glPolygonMode( (GLenum)face, (GLenum)mode );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glPolygonMode( %d, %d )", (int)face, (int)mode);
+  }
 }
 
 FABRIC_EXT_EXPORT void klPolygonOffset(
   const KL::Scalar & factor,
   const KL::Scalar & units
 ){
-  glPolygonOffset( (GLfloat)factor, (GLfloat)units );
+  try
+  {
+    glPolygonOffset( (GLfloat)factor, (GLfloat)units );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glPolygonOffset( %f, %f )", (float)factor, (float)units);
+  }
 }
 
 FABRIC_EXT_EXPORT void klPolygonStipple(
   const KL::VariableArray<KL::Size> & mask
 ){
-  glPolygonStipple( (const GLubyte*)&mask[0] );
+  try
+  {
+    glPolygonStipple( (const GLubyte*)&mask[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glPolygonStipple( GLubyte* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klPopAttrib()
 {
-  glPopAttrib();
+  try
+  {
+    glPopAttrib();
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glPopAttrib(  )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klPopClientAttrib()
 {
-  glPopClientAttrib();
+  try
+  {
+    glPopClientAttrib();
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glPopClientAttrib(  )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klPopMatrix()
 {
-  glPopMatrix();
+  try
+  {
+    glPopMatrix();
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glPopMatrix(  )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klPopName()
 {
-  glPopName();
+  try
+  {
+    glPopName();
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glPopName(  )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klPrioritizeTextures(
@@ -1526,82 +2968,173 @@ FABRIC_EXT_EXPORT void klPrioritizeTextures(
   const KL::VariableArray<KL::Size> & textures,
   const KL::VariableArray<KL::Scalar> & priorities
 ){
-  glPrioritizeTextures( (GLsizei)n, (const GLuint*)&textures[0], (const GLclampf*)&priorities[0] );
+  try
+  {
+    glPrioritizeTextures( (GLsizei)n, (const GLuint*)&textures[0], (const GLclampf*)&priorities[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glPrioritizeTextures( %d, GLuint*, GLclampf* )", (int)n);
+  }
 }
 
 FABRIC_EXT_EXPORT void klPushAttrib(
-  const KL::Integer & mask
+  const KL::Size & mask
 ){
-  glPushAttrib( (GLbitfield)mask );
+  try
+  {
+    glPushAttrib( (GLbitfield)mask );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glPushAttrib( 0x%04X )", (unsigned)mask);
+  }
 }
 
 FABRIC_EXT_EXPORT void klPushClientAttrib(
-  const KL::Integer & mask
+  const KL::Size & mask
 ){
-  glPushClientAttrib( (GLbitfield)mask );
+  try
+  {
+    glPushClientAttrib( (GLbitfield)mask );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glPushClientAttrib( 0x%04X )", (unsigned)mask);
+  }
 }
 
 FABRIC_EXT_EXPORT void klPushMatrix()
 {
-  glPushMatrix();
+  try
+  {
+    glPushMatrix();
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glPushMatrix(  )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klPushName(
   const KL::Size & name
 ){
-  glPushName( (GLuint)name );
+  try
+  {
+    glPushName( (GLuint)name );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glPushName( 0x%04X )", (unsigned)name);
+  }
 }
 
 FABRIC_EXT_EXPORT void klRasterPos2d(
   const KL::Scalar & x,
   const KL::Scalar & y
 ){
-  glRasterPos2d( (GLdouble)x, (GLdouble)y );
+  try
+  {
+    glRasterPos2d( (GLdouble)x, (GLdouble)y );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glRasterPos2d( %f, %f )", (float)x, (float)y);
+  }
 }
 
 FABRIC_EXT_EXPORT void klRasterPos2dv(
   const KL::VariableArray<KL::Scalar> & v
 ){
-  glRasterPos2dv( (const GLdouble*)&v[0] );
+  try
+  {
+    glRasterPos2dv( (const GLdouble*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glRasterPos2dv( GLdouble* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klRasterPos2f(
   const KL::Scalar & x,
   const KL::Scalar & y
 ){
-  glRasterPos2f( (GLfloat)x, (GLfloat)y );
+  try
+  {
+    glRasterPos2f( (GLfloat)x, (GLfloat)y );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glRasterPos2f( %f, %f )", (float)x, (float)y);
+  }
 }
 
 FABRIC_EXT_EXPORT void klRasterPos2fv(
   const KL::VariableArray<KL::Scalar> & v
 ){
-  glRasterPos2fv( (const GLfloat*)&v[0] );
+  try
+  {
+    glRasterPos2fv( (const GLfloat*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glRasterPos2fv( GLfloat* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klRasterPos2i(
   const KL::Integer & x,
   const KL::Integer & y
 ){
-  glRasterPos2i( (GLint)x, (GLint)y );
+  try
+  {
+    glRasterPos2i( (GLint)x, (GLint)y );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glRasterPos2i( %d, %d )", (int)x, (int)y);
+  }
 }
 
 FABRIC_EXT_EXPORT void klRasterPos2iv(
   const KL::VariableArray<KL::Integer> & v
 ){
-  glRasterPos2iv( (const GLint*)&v[0] );
+  try
+  {
+    glRasterPos2iv( (const GLint*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glRasterPos2iv( GLint* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klRasterPos2s(
   const KL::Integer & x,
   const KL::Integer & y
 ){
-  glRasterPos2s( (GLshort)x, (GLshort)y );
+  try
+  {
+    glRasterPos2s( (GLshort)x, (GLshort)y );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glRasterPos2s( %d, %d )", (int)x, (int)y);
+  }
 }
 
 FABRIC_EXT_EXPORT void klRasterPos2sv(
   const KL::VariableArray<KL::Integer> & v
 ){
-  glRasterPos2sv( (const GLshort*)&v[0] );
+  try
+  {
+    glRasterPos2sv( (const GLshort*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glRasterPos2sv( GLshort* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klRasterPos3d(
@@ -1609,13 +3142,27 @@ FABRIC_EXT_EXPORT void klRasterPos3d(
   const KL::Scalar & y,
   const KL::Scalar & z
 ){
-  glRasterPos3d( (GLdouble)x, (GLdouble)y, (GLdouble)z );
+  try
+  {
+    glRasterPos3d( (GLdouble)x, (GLdouble)y, (GLdouble)z );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glRasterPos3d( %f, %f, %f )", (float)x, (float)y, (float)z);
+  }
 }
 
 FABRIC_EXT_EXPORT void klRasterPos3dv(
   const KL::VariableArray<KL::Scalar> & v
 ){
-  glRasterPos3dv( (const GLdouble*)&v[0] );
+  try
+  {
+    glRasterPos3dv( (const GLdouble*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glRasterPos3dv( GLdouble* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klRasterPos3f(
@@ -1623,13 +3170,27 @@ FABRIC_EXT_EXPORT void klRasterPos3f(
   const KL::Scalar & y,
   const KL::Scalar & z
 ){
-  glRasterPos3f( (GLfloat)x, (GLfloat)y, (GLfloat)z );
+  try
+  {
+    glRasterPos3f( (GLfloat)x, (GLfloat)y, (GLfloat)z );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glRasterPos3f( %f, %f, %f )", (float)x, (float)y, (float)z);
+  }
 }
 
 FABRIC_EXT_EXPORT void klRasterPos3fv(
   const KL::VariableArray<KL::Scalar> & v
 ){
-  glRasterPos3fv( (const GLfloat*)&v[0] );
+  try
+  {
+    glRasterPos3fv( (const GLfloat*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glRasterPos3fv( GLfloat* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klRasterPos3i(
@@ -1637,13 +3198,27 @@ FABRIC_EXT_EXPORT void klRasterPos3i(
   const KL::Integer & y,
   const KL::Integer & z
 ){
-  glRasterPos3i( (GLint)x, (GLint)y, (GLint)z );
+  try
+  {
+    glRasterPos3i( (GLint)x, (GLint)y, (GLint)z );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glRasterPos3i( %d, %d, %d )", (int)x, (int)y, (int)z);
+  }
 }
 
 FABRIC_EXT_EXPORT void klRasterPos3iv(
   const KL::VariableArray<KL::Integer> & v
 ){
-  glRasterPos3iv( (const GLint*)&v[0] );
+  try
+  {
+    glRasterPos3iv( (const GLint*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glRasterPos3iv( GLint* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klRasterPos3s(
@@ -1651,13 +3226,27 @@ FABRIC_EXT_EXPORT void klRasterPos3s(
   const KL::Integer & y,
   const KL::Integer & z
 ){
-  glRasterPos3s( (GLshort)x, (GLshort)y, (GLshort)z );
+  try
+  {
+    glRasterPos3s( (GLshort)x, (GLshort)y, (GLshort)z );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glRasterPos3s( %d, %d, %d )", (int)x, (int)y, (int)z);
+  }
 }
 
 FABRIC_EXT_EXPORT void klRasterPos3sv(
   const KL::VariableArray<KL::Integer> & v
 ){
-  glRasterPos3sv( (const GLshort*)&v[0] );
+  try
+  {
+    glRasterPos3sv( (const GLshort*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glRasterPos3sv( GLshort* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klRasterPos4d(
@@ -1666,13 +3255,27 @@ FABRIC_EXT_EXPORT void klRasterPos4d(
   const KL::Scalar & z,
   const KL::Scalar & w
 ){
-  glRasterPos4d( (GLdouble)x, (GLdouble)y, (GLdouble)z, (GLdouble)w );
+  try
+  {
+    glRasterPos4d( (GLdouble)x, (GLdouble)y, (GLdouble)z, (GLdouble)w );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glRasterPos4d( %f, %f, %f, %f )", (float)x, (float)y, (float)z, (float)w);
+  }
 }
 
 FABRIC_EXT_EXPORT void klRasterPos4dv(
   const KL::VariableArray<KL::Scalar> & v
 ){
-  glRasterPos4dv( (const GLdouble*)&v[0] );
+  try
+  {
+    glRasterPos4dv( (const GLdouble*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glRasterPos4dv( GLdouble* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klRasterPos4f(
@@ -1681,13 +3284,27 @@ FABRIC_EXT_EXPORT void klRasterPos4f(
   const KL::Scalar & z,
   const KL::Scalar & w
 ){
-  glRasterPos4f( (GLfloat)x, (GLfloat)y, (GLfloat)z, (GLfloat)w );
+  try
+  {
+    glRasterPos4f( (GLfloat)x, (GLfloat)y, (GLfloat)z, (GLfloat)w );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glRasterPos4f( %f, %f, %f, %f )", (float)x, (float)y, (float)z, (float)w);
+  }
 }
 
 FABRIC_EXT_EXPORT void klRasterPos4fv(
   const KL::VariableArray<KL::Scalar> & v
 ){
-  glRasterPos4fv( (const GLfloat*)&v[0] );
+  try
+  {
+    glRasterPos4fv( (const GLfloat*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glRasterPos4fv( GLfloat* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klRasterPos4i(
@@ -1696,13 +3313,27 @@ FABRIC_EXT_EXPORT void klRasterPos4i(
   const KL::Integer & z,
   const KL::Integer & w
 ){
-  glRasterPos4i( (GLint)x, (GLint)y, (GLint)z, (GLint)w );
+  try
+  {
+    glRasterPos4i( (GLint)x, (GLint)y, (GLint)z, (GLint)w );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glRasterPos4i( %d, %d, %d, %d )", (int)x, (int)y, (int)z, (int)w);
+  }
 }
 
 FABRIC_EXT_EXPORT void klRasterPos4iv(
   const KL::VariableArray<KL::Integer> & v
 ){
-  glRasterPos4iv( (const GLint*)&v[0] );
+  try
+  {
+    glRasterPos4iv( (const GLint*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glRasterPos4iv( GLint* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klRasterPos4s(
@@ -1711,19 +3342,40 @@ FABRIC_EXT_EXPORT void klRasterPos4s(
   const KL::Integer & z,
   const KL::Integer & w
 ){
-  glRasterPos4s( (GLshort)x, (GLshort)y, (GLshort)z, (GLshort)w );
+  try
+  {
+    glRasterPos4s( (GLshort)x, (GLshort)y, (GLshort)z, (GLshort)w );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glRasterPos4s( %d, %d, %d, %d )", (int)x, (int)y, (int)z, (int)w);
+  }
 }
 
 FABRIC_EXT_EXPORT void klRasterPos4sv(
   const KL::VariableArray<KL::Integer> & v
 ){
-  glRasterPos4sv( (const GLshort*)&v[0] );
+  try
+  {
+    glRasterPos4sv( (const GLshort*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glRasterPos4sv( GLshort* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klReadBuffer(
   const KL::Size & mode
 ){
-  glReadBuffer( (GLenum)mode );
+  try
+  {
+    glReadBuffer( (GLenum)mode );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glReadBuffer( %d )", (int)mode);
+  }
 }
 
 FABRIC_EXT_EXPORT void klReadPixels(
@@ -1735,7 +3387,14 @@ FABRIC_EXT_EXPORT void klReadPixels(
   const KL::Size & type,
   KL::Data pixels
 ){
-  glReadPixels( (GLint)x, (GLint)y, (GLsizei)width, (GLsizei)height, (GLenum)format, (GLenum)type, pixels );
+  try
+  {
+    glReadPixels( (GLint)x, (GLint)y, (GLsizei)width, (GLsizei)height, (GLenum)format, (GLenum)type, pixels );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glReadPixels( %d, %d, %d, %d, %d, %d, GLvoid* )", (int)x, (int)y, (int)width, (int)height, (int)format, (int)type);
+  }
 }
 
 FABRIC_EXT_EXPORT void klRectd(
@@ -1744,14 +3403,28 @@ FABRIC_EXT_EXPORT void klRectd(
   const KL::Scalar & x2,
   const KL::Scalar & y2
 ){
-  glRectd( (GLdouble)x1, (GLdouble)y1, (GLdouble)x2, (GLdouble)y2 );
+  try
+  {
+    glRectd( (GLdouble)x1, (GLdouble)y1, (GLdouble)x2, (GLdouble)y2 );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glRectd( %f, %f, %f, %f )", (float)x1, (float)y1, (float)x2, (float)y2);
+  }
 }
 
 FABRIC_EXT_EXPORT void klRectdv(
   const KL::VariableArray<KL::Scalar> & v1,
   const KL::VariableArray<KL::Scalar> & v2
 ){
-  glRectdv( (const GLdouble*)&v1[0], (const GLdouble*)&v2[0] );
+  try
+  {
+    glRectdv( (const GLdouble*)&v1[0], (const GLdouble*)&v2[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glRectdv( GLdouble*, GLdouble* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klRectf(
@@ -1760,14 +3433,28 @@ FABRIC_EXT_EXPORT void klRectf(
   const KL::Scalar & x2,
   const KL::Scalar & y2
 ){
-  glRectf( (GLfloat)x1, (GLfloat)y1, (GLfloat)x2, (GLfloat)y2 );
+  try
+  {
+    glRectf( (GLfloat)x1, (GLfloat)y1, (GLfloat)x2, (GLfloat)y2 );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glRectf( %f, %f, %f, %f )", (float)x1, (float)y1, (float)x2, (float)y2);
+  }
 }
 
 FABRIC_EXT_EXPORT void klRectfv(
   const KL::VariableArray<KL::Scalar> & v1,
   const KL::VariableArray<KL::Scalar> & v2
 ){
-  glRectfv( (const GLfloat*)&v1[0], (const GLfloat*)&v2[0] );
+  try
+  {
+    glRectfv( (const GLfloat*)&v1[0], (const GLfloat*)&v2[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glRectfv( GLfloat*, GLfloat* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klRecti(
@@ -1776,14 +3463,28 @@ FABRIC_EXT_EXPORT void klRecti(
   const KL::Integer & x2,
   const KL::Integer & y2
 ){
-  glRecti( (GLint)x1, (GLint)y1, (GLint)x2, (GLint)y2 );
+  try
+  {
+    glRecti( (GLint)x1, (GLint)y1, (GLint)x2, (GLint)y2 );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glRecti( %d, %d, %d, %d )", (int)x1, (int)y1, (int)x2, (int)y2);
+  }
 }
 
 FABRIC_EXT_EXPORT void klRectiv(
   const KL::VariableArray<KL::Integer> & v1,
   const KL::VariableArray<KL::Integer> & v2
 ){
-  glRectiv( (const GLint*)&v1[0], (const GLint*)&v2[0] );
+  try
+  {
+    glRectiv( (const GLint*)&v1[0], (const GLint*)&v2[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glRectiv( GLint*, GLint* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klRects(
@@ -1792,21 +3493,42 @@ FABRIC_EXT_EXPORT void klRects(
   const KL::Integer & x2,
   const KL::Integer & y2
 ){
-  glRects( (GLshort)x1, (GLshort)y1, (GLshort)x2, (GLshort)y2 );
+  try
+  {
+    glRects( (GLshort)x1, (GLshort)y1, (GLshort)x2, (GLshort)y2 );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glRects( %d, %d, %d, %d )", (int)x1, (int)y1, (int)x2, (int)y2);
+  }
 }
 
 FABRIC_EXT_EXPORT void klRectsv(
   const KL::VariableArray<KL::Integer> & v1,
   const KL::VariableArray<KL::Integer> & v2
 ){
-  glRectsv( (const GLshort*)&v1[0], (const GLshort*)&v2[0] );
+  try
+  {
+    glRectsv( (const GLshort*)&v1[0], (const GLshort*)&v2[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glRectsv( GLshort*, GLshort* )");
+  }
 }
 
 FABRIC_EXT_EXPORT KL::Integer klRenderMode(
   const KL::Size & mode
 ){
-  GLint result = glRenderMode( (GLenum)mode );
+  try
+  {
+    GLint result = glRenderMode( (GLenum)mode );
   return (KL::Integer)result;
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glRenderMode( %d )", (int)mode);
+  }
 }
 
 FABRIC_EXT_EXPORT void klRotated(
@@ -1815,7 +3537,14 @@ FABRIC_EXT_EXPORT void klRotated(
   const KL::Scalar & y,
   const KL::Scalar & z
 ){
-  glRotated( (GLdouble)angle, (GLdouble)x, (GLdouble)y, (GLdouble)z );
+  try
+  {
+    glRotated( (GLdouble)angle, (GLdouble)x, (GLdouble)y, (GLdouble)z );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glRotated( %f, %f, %f, %f )", (float)angle, (float)x, (float)y, (float)z);
+  }
 }
 
 FABRIC_EXT_EXPORT void klRotatef(
@@ -1824,7 +3553,14 @@ FABRIC_EXT_EXPORT void klRotatef(
   const KL::Scalar & y,
   const KL::Scalar & z
 ){
-  glRotatef( (GLfloat)angle, (GLfloat)x, (GLfloat)y, (GLfloat)z );
+  try
+  {
+    glRotatef( (GLfloat)angle, (GLfloat)x, (GLfloat)y, (GLfloat)z );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glRotatef( %f, %f, %f, %f )", (float)angle, (float)x, (float)y, (float)z);
+  }
 }
 
 FABRIC_EXT_EXPORT void klScaled(
@@ -1832,7 +3568,14 @@ FABRIC_EXT_EXPORT void klScaled(
   const KL::Scalar & y,
   const KL::Scalar & z
 ){
-  glScaled( (GLdouble)x, (GLdouble)y, (GLdouble)z );
+  try
+  {
+    glScaled( (GLdouble)x, (GLdouble)y, (GLdouble)z );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glScaled( %f, %f, %f )", (float)x, (float)y, (float)z);
+  }
 }
 
 FABRIC_EXT_EXPORT void klScalef(
@@ -1840,7 +3583,14 @@ FABRIC_EXT_EXPORT void klScalef(
   const KL::Scalar & y,
   const KL::Scalar & z
 ){
-  glScalef( (GLfloat)x, (GLfloat)y, (GLfloat)z );
+  try
+  {
+    glScalef( (GLfloat)x, (GLfloat)y, (GLfloat)z );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glScalef( %f, %f, %f )", (float)x, (float)y, (float)z);
+  }
 }
 
 FABRIC_EXT_EXPORT void klScissor(
@@ -1849,20 +3599,41 @@ FABRIC_EXT_EXPORT void klScissor(
   const KL::Size & width,
   const KL::Size & height
 ){
-  glScissor( (GLint)x, (GLint)y, (GLsizei)width, (GLsizei)height );
+  try
+  {
+    glScissor( (GLint)x, (GLint)y, (GLsizei)width, (GLsizei)height );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glScissor( %d, %d, %d, %d )", (int)x, (int)y, (int)width, (int)height);
+  }
 }
 
 FABRIC_EXT_EXPORT void klSelectBuffer(
   const KL::Size & size,
   KL::VariableArray<KL::Size> & buffer
 ){
-  glSelectBuffer( (GLsizei)size, (GLuint*)&buffer[0] );
+  try
+  {
+    glSelectBuffer( (GLsizei)size, (GLuint*)&buffer[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glSelectBuffer( %d, GLuint* )", (int)size);
+  }
 }
 
 FABRIC_EXT_EXPORT void klShadeModel(
   const KL::Size & mode
 ){
-  glShadeModel( (GLenum)mode );
+  try
+  {
+    glShadeModel( (GLenum)mode );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glShadeModel( %d )", (int)mode);
+  }
 }
 
 FABRIC_EXT_EXPORT void klStencilFunc(
@@ -1870,13 +3641,27 @@ FABRIC_EXT_EXPORT void klStencilFunc(
   const KL::Integer & ref,
   const KL::Size & mask
 ){
-  glStencilFunc( (GLenum)func, (GLint)ref, (GLuint)mask );
+  try
+  {
+    glStencilFunc( (GLenum)func, (GLint)ref, (GLuint)mask );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glStencilFunc( %d, %d, 0x%04X )", (int)func, (int)ref, (unsigned)mask);
+  }
 }
 
 FABRIC_EXT_EXPORT void klStencilMask(
   const KL::Size & mask
 ){
-  glStencilMask( (GLuint)mask );
+  try
+  {
+    glStencilMask( (GLuint)mask );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glStencilMask( 0x%04X )", (unsigned)mask);
+  }
 }
 
 FABRIC_EXT_EXPORT void klStencilOp(
@@ -1884,107 +3669,226 @@ FABRIC_EXT_EXPORT void klStencilOp(
   const KL::Size & zfail,
   const KL::Size & zpass
 ){
-  glStencilOp( (GLenum)fail, (GLenum)zfail, (GLenum)zpass );
+  try
+  {
+    glStencilOp( (GLenum)fail, (GLenum)zfail, (GLenum)zpass );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glStencilOp( %d, %d, %d )", (int)fail, (int)zfail, (int)zpass);
+  }
 }
 
 FABRIC_EXT_EXPORT void klTexCoord1d(
   const KL::Scalar & s
 ){
-  glTexCoord1d( (GLdouble)s );
+  try
+  {
+    glTexCoord1d( (GLdouble)s );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTexCoord1d( %f )", (float)s);
+  }
 }
 
 FABRIC_EXT_EXPORT void klTexCoord1dv(
   const KL::VariableArray<KL::Scalar> & v
 ){
-  glTexCoord1dv( (const GLdouble*)&v[0] );
+  try
+  {
+    glTexCoord1dv( (const GLdouble*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTexCoord1dv( GLdouble* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klTexCoord1f(
   const KL::Scalar & s
 ){
-  glTexCoord1f( (GLfloat)s );
+  try
+  {
+    glTexCoord1f( (GLfloat)s );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTexCoord1f( %f )", (float)s);
+  }
 }
 
 FABRIC_EXT_EXPORT void klTexCoord1fv(
   const KL::VariableArray<KL::Scalar> & v
 ){
-  glTexCoord1fv( (const GLfloat*)&v[0] );
+  try
+  {
+    glTexCoord1fv( (const GLfloat*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTexCoord1fv( GLfloat* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klTexCoord1i(
   const KL::Integer & s
 ){
-  glTexCoord1i( (GLint)s );
+  try
+  {
+    glTexCoord1i( (GLint)s );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTexCoord1i( %d )", (int)s);
+  }
 }
 
 FABRIC_EXT_EXPORT void klTexCoord1iv(
   const KL::VariableArray<KL::Integer> & v
 ){
-  glTexCoord1iv( (const GLint*)&v[0] );
+  try
+  {
+    glTexCoord1iv( (const GLint*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTexCoord1iv( GLint* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klTexCoord1s(
   const KL::Integer & s
 ){
-  glTexCoord1s( (GLshort)s );
+  try
+  {
+    glTexCoord1s( (GLshort)s );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTexCoord1s( %d )", (int)s);
+  }
 }
 
 FABRIC_EXT_EXPORT void klTexCoord1sv(
   const KL::VariableArray<KL::Integer> & v
 ){
-  glTexCoord1sv( (const GLshort*)&v[0] );
+  try
+  {
+    glTexCoord1sv( (const GLshort*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTexCoord1sv( GLshort* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klTexCoord2d(
   const KL::Scalar & s,
   const KL::Scalar & t
 ){
-  glTexCoord2d( (GLdouble)s, (GLdouble)t );
+  try
+  {
+    glTexCoord2d( (GLdouble)s, (GLdouble)t );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTexCoord2d( %f, %f )", (float)s, (float)t);
+  }
 }
 
 FABRIC_EXT_EXPORT void klTexCoord2dv(
   const KL::VariableArray<KL::Scalar> & v
 ){
-  glTexCoord2dv( (const GLdouble*)&v[0] );
+  try
+  {
+    glTexCoord2dv( (const GLdouble*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTexCoord2dv( GLdouble* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klTexCoord2f(
   const KL::Scalar & s,
   const KL::Scalar & t
 ){
-  glTexCoord2f( (GLfloat)s, (GLfloat)t );
+  try
+  {
+    glTexCoord2f( (GLfloat)s, (GLfloat)t );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTexCoord2f( %f, %f )", (float)s, (float)t);
+  }
 }
 
 FABRIC_EXT_EXPORT void klTexCoord2fv(
   const KL::VariableArray<KL::Scalar> & v
 ){
-  glTexCoord2fv( (const GLfloat*)&v[0] );
+  try
+  {
+    glTexCoord2fv( (const GLfloat*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTexCoord2fv( GLfloat* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klTexCoord2i(
   const KL::Integer & s,
   const KL::Integer & t
 ){
-  glTexCoord2i( (GLint)s, (GLint)t );
+  try
+  {
+    glTexCoord2i( (GLint)s, (GLint)t );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTexCoord2i( %d, %d )", (int)s, (int)t);
+  }
 }
 
 FABRIC_EXT_EXPORT void klTexCoord2iv(
   const KL::VariableArray<KL::Integer> & v
 ){
-  glTexCoord2iv( (const GLint*)&v[0] );
+  try
+  {
+    glTexCoord2iv( (const GLint*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTexCoord2iv( GLint* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klTexCoord2s(
   const KL::Integer & s,
   const KL::Integer & t
 ){
-  glTexCoord2s( (GLshort)s, (GLshort)t );
+  try
+  {
+    glTexCoord2s( (GLshort)s, (GLshort)t );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTexCoord2s( %d, %d )", (int)s, (int)t);
+  }
 }
 
 FABRIC_EXT_EXPORT void klTexCoord2sv(
   const KL::VariableArray<KL::Integer> & v
 ){
-  glTexCoord2sv( (const GLshort*)&v[0] );
+  try
+  {
+    glTexCoord2sv( (const GLshort*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTexCoord2sv( GLshort* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klTexCoord3d(
@@ -1992,13 +3896,27 @@ FABRIC_EXT_EXPORT void klTexCoord3d(
   const KL::Scalar & t,
   const KL::Scalar & r
 ){
-  glTexCoord3d( (GLdouble)s, (GLdouble)t, (GLdouble)r );
+  try
+  {
+    glTexCoord3d( (GLdouble)s, (GLdouble)t, (GLdouble)r );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTexCoord3d( %f, %f, %f )", (float)s, (float)t, (float)r);
+  }
 }
 
 FABRIC_EXT_EXPORT void klTexCoord3dv(
   const KL::VariableArray<KL::Scalar> & v
 ){
-  glTexCoord3dv( (const GLdouble*)&v[0] );
+  try
+  {
+    glTexCoord3dv( (const GLdouble*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTexCoord3dv( GLdouble* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klTexCoord3f(
@@ -2006,13 +3924,27 @@ FABRIC_EXT_EXPORT void klTexCoord3f(
   const KL::Scalar & t,
   const KL::Scalar & r
 ){
-  glTexCoord3f( (GLfloat)s, (GLfloat)t, (GLfloat)r );
+  try
+  {
+    glTexCoord3f( (GLfloat)s, (GLfloat)t, (GLfloat)r );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTexCoord3f( %f, %f, %f )", (float)s, (float)t, (float)r);
+  }
 }
 
 FABRIC_EXT_EXPORT void klTexCoord3fv(
   const KL::VariableArray<KL::Scalar> & v
 ){
-  glTexCoord3fv( (const GLfloat*)&v[0] );
+  try
+  {
+    glTexCoord3fv( (const GLfloat*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTexCoord3fv( GLfloat* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klTexCoord3i(
@@ -2020,13 +3952,27 @@ FABRIC_EXT_EXPORT void klTexCoord3i(
   const KL::Integer & t,
   const KL::Integer & r
 ){
-  glTexCoord3i( (GLint)s, (GLint)t, (GLint)r );
+  try
+  {
+    glTexCoord3i( (GLint)s, (GLint)t, (GLint)r );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTexCoord3i( %d, %d, %d )", (int)s, (int)t, (int)r);
+  }
 }
 
 FABRIC_EXT_EXPORT void klTexCoord3iv(
   const KL::VariableArray<KL::Integer> & v
 ){
-  glTexCoord3iv( (const GLint*)&v[0] );
+  try
+  {
+    glTexCoord3iv( (const GLint*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTexCoord3iv( GLint* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klTexCoord3s(
@@ -2034,13 +3980,27 @@ FABRIC_EXT_EXPORT void klTexCoord3s(
   const KL::Integer & t,
   const KL::Integer & r
 ){
-  glTexCoord3s( (GLshort)s, (GLshort)t, (GLshort)r );
+  try
+  {
+    glTexCoord3s( (GLshort)s, (GLshort)t, (GLshort)r );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTexCoord3s( %d, %d, %d )", (int)s, (int)t, (int)r);
+  }
 }
 
 FABRIC_EXT_EXPORT void klTexCoord3sv(
   const KL::VariableArray<KL::Integer> & v
 ){
-  glTexCoord3sv( (const GLshort*)&v[0] );
+  try
+  {
+    glTexCoord3sv( (const GLshort*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTexCoord3sv( GLshort* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klTexCoord4d(
@@ -2049,13 +4009,27 @@ FABRIC_EXT_EXPORT void klTexCoord4d(
   const KL::Scalar & r,
   const KL::Scalar & q
 ){
-  glTexCoord4d( (GLdouble)s, (GLdouble)t, (GLdouble)r, (GLdouble)q );
+  try
+  {
+    glTexCoord4d( (GLdouble)s, (GLdouble)t, (GLdouble)r, (GLdouble)q );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTexCoord4d( %f, %f, %f, %f )", (float)s, (float)t, (float)r, (float)q);
+  }
 }
 
 FABRIC_EXT_EXPORT void klTexCoord4dv(
   const KL::VariableArray<KL::Scalar> & v
 ){
-  glTexCoord4dv( (const GLdouble*)&v[0] );
+  try
+  {
+    glTexCoord4dv( (const GLdouble*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTexCoord4dv( GLdouble* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klTexCoord4f(
@@ -2064,13 +4038,27 @@ FABRIC_EXT_EXPORT void klTexCoord4f(
   const KL::Scalar & r,
   const KL::Scalar & q
 ){
-  glTexCoord4f( (GLfloat)s, (GLfloat)t, (GLfloat)r, (GLfloat)q );
+  try
+  {
+    glTexCoord4f( (GLfloat)s, (GLfloat)t, (GLfloat)r, (GLfloat)q );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTexCoord4f( %f, %f, %f, %f )", (float)s, (float)t, (float)r, (float)q);
+  }
 }
 
 FABRIC_EXT_EXPORT void klTexCoord4fv(
   const KL::VariableArray<KL::Scalar> & v
 ){
-  glTexCoord4fv( (const GLfloat*)&v[0] );
+  try
+  {
+    glTexCoord4fv( (const GLfloat*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTexCoord4fv( GLfloat* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klTexCoord4i(
@@ -2079,13 +4067,27 @@ FABRIC_EXT_EXPORT void klTexCoord4i(
   const KL::Integer & r,
   const KL::Integer & q
 ){
-  glTexCoord4i( (GLint)s, (GLint)t, (GLint)r, (GLint)q );
+  try
+  {
+    glTexCoord4i( (GLint)s, (GLint)t, (GLint)r, (GLint)q );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTexCoord4i( %d, %d, %d, %d )", (int)s, (int)t, (int)r, (int)q);
+  }
 }
 
 FABRIC_EXT_EXPORT void klTexCoord4iv(
   const KL::VariableArray<KL::Integer> & v
 ){
-  glTexCoord4iv( (const GLint*)&v[0] );
+  try
+  {
+    glTexCoord4iv( (const GLint*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTexCoord4iv( GLint* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klTexCoord4s(
@@ -2094,13 +4096,27 @@ FABRIC_EXT_EXPORT void klTexCoord4s(
   const KL::Integer & r,
   const KL::Integer & q
 ){
-  glTexCoord4s( (GLshort)s, (GLshort)t, (GLshort)r, (GLshort)q );
+  try
+  {
+    glTexCoord4s( (GLshort)s, (GLshort)t, (GLshort)r, (GLshort)q );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTexCoord4s( %d, %d, %d, %d )", (int)s, (int)t, (int)r, (int)q);
+  }
 }
 
 FABRIC_EXT_EXPORT void klTexCoord4sv(
   const KL::VariableArray<KL::Integer> & v
 ){
-  glTexCoord4sv( (const GLshort*)&v[0] );
+  try
+  {
+    glTexCoord4sv( (const GLshort*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTexCoord4sv( GLshort* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klTexCoordPointer(
@@ -2109,7 +4125,14 @@ FABRIC_EXT_EXPORT void klTexCoordPointer(
   const KL::Size & stride,
   KL::Data pointer
 ){
-  glTexCoordPointer( (GLint)size, (GLenum)type, (GLsizei)stride, pointer );
+  try
+  {
+    glTexCoordPointer( (GLint)size, (GLenum)type, (GLsizei)stride, pointer );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTexCoordPointer( %d, %d, %d, GLvoid* )", (int)size, (int)type, (int)stride);
+  }
 }
 
 FABRIC_EXT_EXPORT void klTexEnvf(
@@ -2117,7 +4140,14 @@ FABRIC_EXT_EXPORT void klTexEnvf(
   const KL::Size & pname,
   const KL::Scalar & param
 ){
-  glTexEnvf( (GLenum)target, (GLenum)pname, (GLfloat)param );
+  try
+  {
+    glTexEnvf( (GLenum)target, (GLenum)pname, (GLfloat)param );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTexEnvf( %d, %d, %f )", (int)target, (int)pname, (float)param);
+  }
 }
 
 FABRIC_EXT_EXPORT void klTexEnvfv(
@@ -2125,7 +4155,14 @@ FABRIC_EXT_EXPORT void klTexEnvfv(
   const KL::Size & pname,
   const KL::VariableArray<KL::Scalar> & params
 ){
-  glTexEnvfv( (GLenum)target, (GLenum)pname, (const GLfloat*)&params[0] );
+  try
+  {
+    glTexEnvfv( (GLenum)target, (GLenum)pname, (const GLfloat*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTexEnvfv( %d, %d, GLfloat* )", (int)target, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klTexEnvi(
@@ -2133,7 +4170,14 @@ FABRIC_EXT_EXPORT void klTexEnvi(
   const KL::Size & pname,
   const KL::Integer & param
 ){
-  glTexEnvi( (GLenum)target, (GLenum)pname, (GLint)param );
+  try
+  {
+    glTexEnvi( (GLenum)target, (GLenum)pname, (GLint)param );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTexEnvi( %d, %d, %d )", (int)target, (int)pname, (int)param);
+  }
 }
 
 FABRIC_EXT_EXPORT void klTexEnviv(
@@ -2141,7 +4185,14 @@ FABRIC_EXT_EXPORT void klTexEnviv(
   const KL::Size & pname,
   const KL::VariableArray<KL::Integer> & params
 ){
-  glTexEnviv( (GLenum)target, (GLenum)pname, (const GLint*)&params[0] );
+  try
+  {
+    glTexEnviv( (GLenum)target, (GLenum)pname, (const GLint*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTexEnviv( %d, %d, GLint* )", (int)target, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klTexGend(
@@ -2149,7 +4200,14 @@ FABRIC_EXT_EXPORT void klTexGend(
   const KL::Size & pname,
   const KL::Scalar & param
 ){
-  glTexGend( (GLenum)coord, (GLenum)pname, (GLdouble)param );
+  try
+  {
+    glTexGend( (GLenum)coord, (GLenum)pname, (GLdouble)param );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTexGend( %d, %d, %f )", (int)coord, (int)pname, (float)param);
+  }
 }
 
 FABRIC_EXT_EXPORT void klTexGendv(
@@ -2157,7 +4215,14 @@ FABRIC_EXT_EXPORT void klTexGendv(
   const KL::Size & pname,
   const KL::VariableArray<KL::Scalar> & params
 ){
-  glTexGendv( (GLenum)coord, (GLenum)pname, (const GLdouble*)&params[0] );
+  try
+  {
+    glTexGendv( (GLenum)coord, (GLenum)pname, (const GLdouble*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTexGendv( %d, %d, GLdouble* )", (int)coord, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klTexGenf(
@@ -2165,7 +4230,14 @@ FABRIC_EXT_EXPORT void klTexGenf(
   const KL::Size & pname,
   const KL::Scalar & param
 ){
-  glTexGenf( (GLenum)coord, (GLenum)pname, (GLfloat)param );
+  try
+  {
+    glTexGenf( (GLenum)coord, (GLenum)pname, (GLfloat)param );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTexGenf( %d, %d, %f )", (int)coord, (int)pname, (float)param);
+  }
 }
 
 FABRIC_EXT_EXPORT void klTexGenfv(
@@ -2173,7 +4245,14 @@ FABRIC_EXT_EXPORT void klTexGenfv(
   const KL::Size & pname,
   const KL::VariableArray<KL::Scalar> & params
 ){
-  glTexGenfv( (GLenum)coord, (GLenum)pname, (const GLfloat*)&params[0] );
+  try
+  {
+    glTexGenfv( (GLenum)coord, (GLenum)pname, (const GLfloat*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTexGenfv( %d, %d, GLfloat* )", (int)coord, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klTexGeni(
@@ -2181,7 +4260,14 @@ FABRIC_EXT_EXPORT void klTexGeni(
   const KL::Size & pname,
   const KL::Integer & param
 ){
-  glTexGeni( (GLenum)coord, (GLenum)pname, (GLint)param );
+  try
+  {
+    glTexGeni( (GLenum)coord, (GLenum)pname, (GLint)param );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTexGeni( %d, %d, %d )", (int)coord, (int)pname, (int)param);
+  }
 }
 
 FABRIC_EXT_EXPORT void klTexGeniv(
@@ -2189,7 +4275,14 @@ FABRIC_EXT_EXPORT void klTexGeniv(
   const KL::Size & pname,
   const KL::VariableArray<KL::Integer> & params
 ){
-  glTexGeniv( (GLenum)coord, (GLenum)pname, (const GLint*)&params[0] );
+  try
+  {
+    glTexGeniv( (GLenum)coord, (GLenum)pname, (const GLint*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTexGeniv( %d, %d, GLint* )", (int)coord, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klTexImage1D(
@@ -2202,7 +4295,14 @@ FABRIC_EXT_EXPORT void klTexImage1D(
   const KL::Size & type,
   KL::Data pixels
 ){
-  glTexImage1D( (GLenum)target, (GLint)level, (GLint)internalformat, (GLsizei)width, (GLint)border, (GLenum)format, (GLenum)type, pixels );
+  try
+  {
+    glTexImage1D( (GLenum)target, (GLint)level, (GLint)internalformat, (GLsizei)width, (GLint)border, (GLenum)format, (GLenum)type, pixels );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTexImage1D( %d, %d, %d, %d, %d, %d, %d, GLvoid* )", (int)target, (int)level, (int)internalformat, (int)width, (int)border, (int)format, (int)type);
+  }
 }
 
 FABRIC_EXT_EXPORT void klTexImage2D(
@@ -2216,7 +4316,14 @@ FABRIC_EXT_EXPORT void klTexImage2D(
   const KL::Size & type,
   KL::Data pixels
 ){
-  glTexImage2D( (GLenum)target, (GLint)level, (GLint)internalformat, (GLsizei)width, (GLsizei)height, (GLint)border, (GLenum)format, (GLenum)type, pixels );
+  try
+  {
+    glTexImage2D( (GLenum)target, (GLint)level, (GLint)internalformat, (GLsizei)width, (GLsizei)height, (GLint)border, (GLenum)format, (GLenum)type, pixels );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTexImage2D( %d, %d, %d, %d, %d, %d, %d, %d, GLvoid* )", (int)target, (int)level, (int)internalformat, (int)width, (int)height, (int)border, (int)format, (int)type);
+  }
 }
 
 FABRIC_EXT_EXPORT void klTexParameterf(
@@ -2224,7 +4331,14 @@ FABRIC_EXT_EXPORT void klTexParameterf(
   const KL::Size & pname,
   const KL::Scalar & param
 ){
-  glTexParameterf( (GLenum)target, (GLenum)pname, (GLfloat)param );
+  try
+  {
+    glTexParameterf( (GLenum)target, (GLenum)pname, (GLfloat)param );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTexParameterf( %d, %d, %f )", (int)target, (int)pname, (float)param);
+  }
 }
 
 FABRIC_EXT_EXPORT void klTexParameterfv(
@@ -2232,7 +4346,14 @@ FABRIC_EXT_EXPORT void klTexParameterfv(
   const KL::Size & pname,
   const KL::VariableArray<KL::Scalar> & params
 ){
-  glTexParameterfv( (GLenum)target, (GLenum)pname, (const GLfloat*)&params[0] );
+  try
+  {
+    glTexParameterfv( (GLenum)target, (GLenum)pname, (const GLfloat*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTexParameterfv( %d, %d, GLfloat* )", (int)target, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klTexParameteri(
@@ -2240,7 +4361,14 @@ FABRIC_EXT_EXPORT void klTexParameteri(
   const KL::Size & pname,
   const KL::Integer & param
 ){
-  glTexParameteri( (GLenum)target, (GLenum)pname, (GLint)param );
+  try
+  {
+    glTexParameteri( (GLenum)target, (GLenum)pname, (GLint)param );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTexParameteri( %d, %d, %d )", (int)target, (int)pname, (int)param);
+  }
 }
 
 FABRIC_EXT_EXPORT void klTexParameteriv(
@@ -2248,7 +4376,14 @@ FABRIC_EXT_EXPORT void klTexParameteriv(
   const KL::Size & pname,
   const KL::VariableArray<KL::Integer> & params
 ){
-  glTexParameteriv( (GLenum)target, (GLenum)pname, (const GLint*)&params[0] );
+  try
+  {
+    glTexParameteriv( (GLenum)target, (GLenum)pname, (const GLint*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTexParameteriv( %d, %d, GLint* )", (int)target, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klTexSubImage1D(
@@ -2260,7 +4395,14 @@ FABRIC_EXT_EXPORT void klTexSubImage1D(
   const KL::Size & type,
   KL::Data pixels
 ){
-  glTexSubImage1D( (GLenum)target, (GLint)level, (GLint)xoffset, (GLsizei)width, (GLenum)format, (GLenum)type, pixels );
+  try
+  {
+    glTexSubImage1D( (GLenum)target, (GLint)level, (GLint)xoffset, (GLsizei)width, (GLenum)format, (GLenum)type, pixels );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTexSubImage1D( %d, %d, %d, %d, %d, %d, GLvoid* )", (int)target, (int)level, (int)xoffset, (int)width, (int)format, (int)type);
+  }
 }
 
 FABRIC_EXT_EXPORT void klTexSubImage2D(
@@ -2274,7 +4416,14 @@ FABRIC_EXT_EXPORT void klTexSubImage2D(
   const KL::Size & type,
   KL::Data pixels
 ){
-  glTexSubImage2D( (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLsizei)width, (GLsizei)height, (GLenum)format, (GLenum)type, pixels );
+  try
+  {
+    glTexSubImage2D( (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLsizei)width, (GLsizei)height, (GLenum)format, (GLenum)type, pixels );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTexSubImage2D( %d, %d, %d, %d, %d, %d, %d, %d, GLvoid* )", (int)target, (int)level, (int)xoffset, (int)yoffset, (int)width, (int)height, (int)format, (int)type);
+  }
 }
 
 FABRIC_EXT_EXPORT void klTranslated(
@@ -2282,7 +4431,14 @@ FABRIC_EXT_EXPORT void klTranslated(
   const KL::Scalar & y,
   const KL::Scalar & z
 ){
-  glTranslated( (GLdouble)x, (GLdouble)y, (GLdouble)z );
+  try
+  {
+    glTranslated( (GLdouble)x, (GLdouble)y, (GLdouble)z );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTranslated( %f, %f, %f )", (float)x, (float)y, (float)z);
+  }
 }
 
 FABRIC_EXT_EXPORT void klTranslatef(
@@ -2290,59 +4446,122 @@ FABRIC_EXT_EXPORT void klTranslatef(
   const KL::Scalar & y,
   const KL::Scalar & z
 ){
-  glTranslatef( (GLfloat)x, (GLfloat)y, (GLfloat)z );
+  try
+  {
+    glTranslatef( (GLfloat)x, (GLfloat)y, (GLfloat)z );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTranslatef( %f, %f, %f )", (float)x, (float)y, (float)z);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertex2d(
   const KL::Scalar & x,
   const KL::Scalar & y
 ){
-  glVertex2d( (GLdouble)x, (GLdouble)y );
+  try
+  {
+    glVertex2d( (GLdouble)x, (GLdouble)y );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertex2d( %f, %f )", (float)x, (float)y);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertex2dv(
   const KL::VariableArray<KL::Scalar> & v
 ){
-  glVertex2dv( (const GLdouble*)&v[0] );
+  try
+  {
+    glVertex2dv( (const GLdouble*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertex2dv( GLdouble* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertex2f(
   const KL::Scalar & x,
   const KL::Scalar & y
 ){
-  glVertex2f( (GLfloat)x, (GLfloat)y );
+  try
+  {
+    glVertex2f( (GLfloat)x, (GLfloat)y );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertex2f( %f, %f )", (float)x, (float)y);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertex2fv(
   const KL::VariableArray<KL::Scalar> & v
 ){
-  glVertex2fv( (const GLfloat*)&v[0] );
+  try
+  {
+    glVertex2fv( (const GLfloat*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertex2fv( GLfloat* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertex2i(
   const KL::Integer & x,
   const KL::Integer & y
 ){
-  glVertex2i( (GLint)x, (GLint)y );
+  try
+  {
+    glVertex2i( (GLint)x, (GLint)y );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertex2i( %d, %d )", (int)x, (int)y);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertex2iv(
   const KL::VariableArray<KL::Integer> & v
 ){
-  glVertex2iv( (const GLint*)&v[0] );
+  try
+  {
+    glVertex2iv( (const GLint*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertex2iv( GLint* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertex2s(
   const KL::Integer & x,
   const KL::Integer & y
 ){
-  glVertex2s( (GLshort)x, (GLshort)y );
+  try
+  {
+    glVertex2s( (GLshort)x, (GLshort)y );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertex2s( %d, %d )", (int)x, (int)y);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertex2sv(
   const KL::VariableArray<KL::Integer> & v
 ){
-  glVertex2sv( (const GLshort*)&v[0] );
+  try
+  {
+    glVertex2sv( (const GLshort*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertex2sv( GLshort* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertex3d(
@@ -2350,13 +4569,27 @@ FABRIC_EXT_EXPORT void klVertex3d(
   const KL::Scalar & y,
   const KL::Scalar & z
 ){
-  glVertex3d( (GLdouble)x, (GLdouble)y, (GLdouble)z );
+  try
+  {
+    glVertex3d( (GLdouble)x, (GLdouble)y, (GLdouble)z );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertex3d( %f, %f, %f )", (float)x, (float)y, (float)z);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertex3dv(
   const KL::VariableArray<KL::Scalar> & v
 ){
-  glVertex3dv( (const GLdouble*)&v[0] );
+  try
+  {
+    glVertex3dv( (const GLdouble*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertex3dv( GLdouble* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertex3f(
@@ -2364,13 +4597,27 @@ FABRIC_EXT_EXPORT void klVertex3f(
   const KL::Scalar & y,
   const KL::Scalar & z
 ){
-  glVertex3f( (GLfloat)x, (GLfloat)y, (GLfloat)z );
+  try
+  {
+    glVertex3f( (GLfloat)x, (GLfloat)y, (GLfloat)z );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertex3f( %f, %f, %f )", (float)x, (float)y, (float)z);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertex3fv(
   const KL::VariableArray<KL::Scalar> & v
 ){
-  glVertex3fv( (const GLfloat*)&v[0] );
+  try
+  {
+    glVertex3fv( (const GLfloat*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertex3fv( GLfloat* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertex3i(
@@ -2378,13 +4625,27 @@ FABRIC_EXT_EXPORT void klVertex3i(
   const KL::Integer & y,
   const KL::Integer & z
 ){
-  glVertex3i( (GLint)x, (GLint)y, (GLint)z );
+  try
+  {
+    glVertex3i( (GLint)x, (GLint)y, (GLint)z );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertex3i( %d, %d, %d )", (int)x, (int)y, (int)z);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertex3iv(
   const KL::VariableArray<KL::Integer> & v
 ){
-  glVertex3iv( (const GLint*)&v[0] );
+  try
+  {
+    glVertex3iv( (const GLint*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertex3iv( GLint* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertex3s(
@@ -2392,13 +4653,27 @@ FABRIC_EXT_EXPORT void klVertex3s(
   const KL::Integer & y,
   const KL::Integer & z
 ){
-  glVertex3s( (GLshort)x, (GLshort)y, (GLshort)z );
+  try
+  {
+    glVertex3s( (GLshort)x, (GLshort)y, (GLshort)z );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertex3s( %d, %d, %d )", (int)x, (int)y, (int)z);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertex3sv(
   const KL::VariableArray<KL::Integer> & v
 ){
-  glVertex3sv( (const GLshort*)&v[0] );
+  try
+  {
+    glVertex3sv( (const GLshort*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertex3sv( GLshort* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertex4d(
@@ -2407,13 +4682,27 @@ FABRIC_EXT_EXPORT void klVertex4d(
   const KL::Scalar & z,
   const KL::Scalar & w
 ){
-  glVertex4d( (GLdouble)x, (GLdouble)y, (GLdouble)z, (GLdouble)w );
+  try
+  {
+    glVertex4d( (GLdouble)x, (GLdouble)y, (GLdouble)z, (GLdouble)w );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertex4d( %f, %f, %f, %f )", (float)x, (float)y, (float)z, (float)w);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertex4dv(
   const KL::VariableArray<KL::Scalar> & v
 ){
-  glVertex4dv( (const GLdouble*)&v[0] );
+  try
+  {
+    glVertex4dv( (const GLdouble*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertex4dv( GLdouble* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertex4f(
@@ -2422,13 +4711,27 @@ FABRIC_EXT_EXPORT void klVertex4f(
   const KL::Scalar & z,
   const KL::Scalar & w
 ){
-  glVertex4f( (GLfloat)x, (GLfloat)y, (GLfloat)z, (GLfloat)w );
+  try
+  {
+    glVertex4f( (GLfloat)x, (GLfloat)y, (GLfloat)z, (GLfloat)w );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertex4f( %f, %f, %f, %f )", (float)x, (float)y, (float)z, (float)w);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertex4fv(
   const KL::VariableArray<KL::Scalar> & v
 ){
-  glVertex4fv( (const GLfloat*)&v[0] );
+  try
+  {
+    glVertex4fv( (const GLfloat*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertex4fv( GLfloat* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertex4i(
@@ -2437,13 +4740,27 @@ FABRIC_EXT_EXPORT void klVertex4i(
   const KL::Integer & z,
   const KL::Integer & w
 ){
-  glVertex4i( (GLint)x, (GLint)y, (GLint)z, (GLint)w );
+  try
+  {
+    glVertex4i( (GLint)x, (GLint)y, (GLint)z, (GLint)w );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertex4i( %d, %d, %d, %d )", (int)x, (int)y, (int)z, (int)w);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertex4iv(
   const KL::VariableArray<KL::Integer> & v
 ){
-  glVertex4iv( (const GLint*)&v[0] );
+  try
+  {
+    glVertex4iv( (const GLint*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertex4iv( GLint* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertex4s(
@@ -2452,13 +4769,27 @@ FABRIC_EXT_EXPORT void klVertex4s(
   const KL::Integer & z,
   const KL::Integer & w
 ){
-  glVertex4s( (GLshort)x, (GLshort)y, (GLshort)z, (GLshort)w );
+  try
+  {
+    glVertex4s( (GLshort)x, (GLshort)y, (GLshort)z, (GLshort)w );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertex4s( %d, %d, %d, %d )", (int)x, (int)y, (int)z, (int)w);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertex4sv(
   const KL::VariableArray<KL::Integer> & v
 ){
-  glVertex4sv( (const GLshort*)&v[0] );
+  try
+  {
+    glVertex4sv( (const GLshort*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertex4sv( GLshort* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexPointer(
@@ -2467,7 +4798,14 @@ FABRIC_EXT_EXPORT void klVertexPointer(
   const KL::Size & stride,
   KL::Data pointer
 ){
-  glVertexPointer( (GLint)size, (GLenum)type, (GLsizei)stride, pointer );
+  try
+  {
+    glVertexPointer( (GLint)size, (GLenum)type, (GLsizei)stride, pointer );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexPointer( %d, %d, %d, GLvoid* )", (int)size, (int)type, (int)stride);
+  }
 }
 
 FABRIC_EXT_EXPORT void klViewport(
@@ -2476,7 +4814,14 @@ FABRIC_EXT_EXPORT void klViewport(
   const KL::Size & width,
   const KL::Size & height
 ){
-  glViewport( (GLint)x, (GLint)y, (GLsizei)width, (GLsizei)height );
+  try
+  {
+    glViewport( (GLint)x, (GLint)y, (GLsizei)width, (GLsizei)height );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glViewport( %d, %d, %d, %d )", (int)x, (int)y, (int)width, (int)height);
+  }
 }
 
 FABRIC_EXT_EXPORT void klCopyTexSubImage3D(
@@ -2490,7 +4835,14 @@ FABRIC_EXT_EXPORT void klCopyTexSubImage3D(
   const KL::Size & width,
   const KL::Size & height
 ){
-  glCopyTexSubImage3D( (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLint)zoffset, (GLint)x, (GLint)y, (GLsizei)width, (GLsizei)height );
+  try
+  {
+    glCopyTexSubImage3D( (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLint)zoffset, (GLint)x, (GLint)y, (GLsizei)width, (GLsizei)height );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glCopyTexSubImage3D( %d, %d, %d, %d, %d, %d, %d, %d, %d )", (int)target, (int)level, (int)xoffset, (int)yoffset, (int)zoffset, (int)x, (int)y, (int)width, (int)height);
+  }
 }
 
 FABRIC_EXT_EXPORT void klDrawRangeElements(
@@ -2501,7 +4853,14 @@ FABRIC_EXT_EXPORT void klDrawRangeElements(
   const KL::Size & type,
   KL::Data indices
 ){
-  glDrawRangeElements( (GLenum)mode, (GLuint)start, (GLuint)end, (GLsizei)count, (GLenum)type, indices );
+  try
+  {
+    glDrawRangeElements( (GLenum)mode, (GLuint)start, (GLuint)end, (GLsizei)count, (GLenum)type, indices );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glDrawRangeElements( %d, 0x%04X, 0x%04X, %d, %d, GLvoid* )", (int)mode, (unsigned)start, (unsigned)end, (int)count, (int)type);
+  }
 }
 
 FABRIC_EXT_EXPORT void klTexImage3D(
@@ -2516,7 +4875,14 @@ FABRIC_EXT_EXPORT void klTexImage3D(
   const KL::Size & type,
   KL::Data pixels
 ){
-  glTexImage3D( (GLenum)target, (GLint)level, (GLint)internalFormat, (GLsizei)width, (GLsizei)height, (GLsizei)depth, (GLint)border, (GLenum)format, (GLenum)type, pixels );
+  try
+  {
+    glTexImage3D( (GLenum)target, (GLint)level, (GLint)internalFormat, (GLsizei)width, (GLsizei)height, (GLsizei)depth, (GLint)border, (GLenum)format, (GLenum)type, pixels );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTexImage3D( %d, %d, %d, %d, %d, %d, %d, %d, %d, GLvoid* )", (int)target, (int)level, (int)internalFormat, (int)width, (int)height, (int)depth, (int)border, (int)format, (int)type);
+  }
 }
 
 FABRIC_EXT_EXPORT void klTexSubImage3D(
@@ -2532,19 +4898,40 @@ FABRIC_EXT_EXPORT void klTexSubImage3D(
   const KL::Size & type,
   KL::Data pixels
 ){
-  glTexSubImage3D( (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLint)zoffset, (GLsizei)width, (GLsizei)height, (GLsizei)depth, (GLenum)format, (GLenum)type, pixels );
+  try
+  {
+    glTexSubImage3D( (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLint)zoffset, (GLsizei)width, (GLsizei)height, (GLsizei)depth, (GLenum)format, (GLenum)type, pixels );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTexSubImage3D( %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, GLvoid* )", (int)target, (int)level, (int)xoffset, (int)yoffset, (int)zoffset, (int)width, (int)height, (int)depth, (int)format, (int)type);
+  }
 }
 
 FABRIC_EXT_EXPORT void klActiveTexture(
   const KL::Size & texture
 ){
-  glActiveTexture( (GLenum)texture );
+  try
+  {
+    glActiveTexture( (GLenum)texture );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glActiveTexture( %d )", (int)texture);
+  }
 }
 
 FABRIC_EXT_EXPORT void klClientActiveTexture(
   const KL::Size & texture
 ){
-  glClientActiveTexture( (GLenum)texture );
+  try
+  {
+    glClientActiveTexture( (GLenum)texture );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glClientActiveTexture( %d )", (int)texture);
+  }
 }
 
 FABRIC_EXT_EXPORT void klCompressedTexImage1D(
@@ -2556,7 +4943,14 @@ FABRIC_EXT_EXPORT void klCompressedTexImage1D(
   const KL::Size & imageSize,
   KL::Data data
 ){
-  glCompressedTexImage1D( (GLenum)target, (GLint)level, (GLenum)internalformat, (GLsizei)width, (GLint)border, (GLsizei)imageSize, data );
+  try
+  {
+    glCompressedTexImage1D( (GLenum)target, (GLint)level, (GLenum)internalformat, (GLsizei)width, (GLint)border, (GLsizei)imageSize, data );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glCompressedTexImage1D( %d, %d, %d, %d, %d, %d, GLvoid* )", (int)target, (int)level, (int)internalformat, (int)width, (int)border, (int)imageSize);
+  }
 }
 
 FABRIC_EXT_EXPORT void klCompressedTexImage2D(
@@ -2569,7 +4963,14 @@ FABRIC_EXT_EXPORT void klCompressedTexImage2D(
   const KL::Size & imageSize,
   KL::Data data
 ){
-  glCompressedTexImage2D( (GLenum)target, (GLint)level, (GLenum)internalformat, (GLsizei)width, (GLsizei)height, (GLint)border, (GLsizei)imageSize, data );
+  try
+  {
+    glCompressedTexImage2D( (GLenum)target, (GLint)level, (GLenum)internalformat, (GLsizei)width, (GLsizei)height, (GLint)border, (GLsizei)imageSize, data );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glCompressedTexImage2D( %d, %d, %d, %d, %d, %d, %d, GLvoid* )", (int)target, (int)level, (int)internalformat, (int)width, (int)height, (int)border, (int)imageSize);
+  }
 }
 
 FABRIC_EXT_EXPORT void klCompressedTexImage3D(
@@ -2583,7 +4984,14 @@ FABRIC_EXT_EXPORT void klCompressedTexImage3D(
   const KL::Size & imageSize,
   KL::Data data
 ){
-  glCompressedTexImage3D( (GLenum)target, (GLint)level, (GLenum)internalformat, (GLsizei)width, (GLsizei)height, (GLsizei)depth, (GLint)border, (GLsizei)imageSize, data );
+  try
+  {
+    glCompressedTexImage3D( (GLenum)target, (GLint)level, (GLenum)internalformat, (GLsizei)width, (GLsizei)height, (GLsizei)depth, (GLint)border, (GLsizei)imageSize, data );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glCompressedTexImage3D( %d, %d, %d, %d, %d, %d, %d, %d, GLvoid* )", (int)target, (int)level, (int)internalformat, (int)width, (int)height, (int)depth, (int)border, (int)imageSize);
+  }
 }
 
 FABRIC_EXT_EXPORT void klCompressedTexSubImage1D(
@@ -2595,7 +5003,14 @@ FABRIC_EXT_EXPORT void klCompressedTexSubImage1D(
   const KL::Size & imageSize,
   KL::Data data
 ){
-  glCompressedTexSubImage1D( (GLenum)target, (GLint)level, (GLint)xoffset, (GLsizei)width, (GLenum)format, (GLsizei)imageSize, data );
+  try
+  {
+    glCompressedTexSubImage1D( (GLenum)target, (GLint)level, (GLint)xoffset, (GLsizei)width, (GLenum)format, (GLsizei)imageSize, data );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glCompressedTexSubImage1D( %d, %d, %d, %d, %d, %d, GLvoid* )", (int)target, (int)level, (int)xoffset, (int)width, (int)format, (int)imageSize);
+  }
 }
 
 FABRIC_EXT_EXPORT void klCompressedTexSubImage2D(
@@ -2609,7 +5024,14 @@ FABRIC_EXT_EXPORT void klCompressedTexSubImage2D(
   const KL::Size & imageSize,
   KL::Data data
 ){
-  glCompressedTexSubImage2D( (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLsizei)width, (GLsizei)height, (GLenum)format, (GLsizei)imageSize, data );
+  try
+  {
+    glCompressedTexSubImage2D( (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLsizei)width, (GLsizei)height, (GLenum)format, (GLsizei)imageSize, data );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glCompressedTexSubImage2D( %d, %d, %d, %d, %d, %d, %d, %d, GLvoid* )", (int)target, (int)level, (int)xoffset, (int)yoffset, (int)width, (int)height, (int)format, (int)imageSize);
+  }
 }
 
 FABRIC_EXT_EXPORT void klCompressedTexSubImage3D(
@@ -2625,7 +5047,14 @@ FABRIC_EXT_EXPORT void klCompressedTexSubImage3D(
   const KL::Size & imageSize,
   KL::Data data
 ){
-  glCompressedTexSubImage3D( (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLint)zoffset, (GLsizei)width, (GLsizei)height, (GLsizei)depth, (GLenum)format, (GLsizei)imageSize, data );
+  try
+  {
+    glCompressedTexSubImage3D( (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLint)zoffset, (GLsizei)width, (GLsizei)height, (GLsizei)depth, (GLenum)format, (GLsizei)imageSize, data );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glCompressedTexSubImage3D( %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, GLvoid* )", (int)target, (int)level, (int)xoffset, (int)yoffset, (int)zoffset, (int)width, (int)height, (int)depth, (int)format, (int)imageSize);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetCompressedTexImage(
@@ -2633,63 +5062,126 @@ FABRIC_EXT_EXPORT void klGetCompressedTexImage(
   const KL::Integer & lod,
   KL::Data img
 ){
-  glGetCompressedTexImage( (GLenum)target, (GLint)lod, img );
+  try
+  {
+    glGetCompressedTexImage( (GLenum)target, (GLint)lod, img );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetCompressedTexImage( %d, %d, GLvoid* )", (int)target, (int)lod);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMultiTexCoord1d(
   const KL::Size & target,
   const KL::Scalar & s
 ){
-  glMultiTexCoord1d( (GLenum)target, (GLdouble)s );
+  try
+  {
+    glMultiTexCoord1d( (GLenum)target, (GLdouble)s );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMultiTexCoord1d( %d, %f )", (int)target, (float)s);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMultiTexCoord1dv(
   const KL::Size & target,
   const KL::VariableArray<KL::Scalar> & v
 ){
-  glMultiTexCoord1dv( (GLenum)target, (const GLdouble*)&v[0] );
+  try
+  {
+    glMultiTexCoord1dv( (GLenum)target, (const GLdouble*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMultiTexCoord1dv( %d, GLdouble* )", (int)target);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMultiTexCoord1f(
   const KL::Size & target,
   const KL::Scalar & s
 ){
-  glMultiTexCoord1f( (GLenum)target, (GLfloat)s );
+  try
+  {
+    glMultiTexCoord1f( (GLenum)target, (GLfloat)s );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMultiTexCoord1f( %d, %f )", (int)target, (float)s);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMultiTexCoord1fv(
   const KL::Size & target,
   const KL::VariableArray<KL::Scalar> & v
 ){
-  glMultiTexCoord1fv( (GLenum)target, (const GLfloat*)&v[0] );
+  try
+  {
+    glMultiTexCoord1fv( (GLenum)target, (const GLfloat*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMultiTexCoord1fv( %d, GLfloat* )", (int)target);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMultiTexCoord1i(
   const KL::Size & target,
   const KL::Integer & s
 ){
-  glMultiTexCoord1i( (GLenum)target, (GLint)s );
+  try
+  {
+    glMultiTexCoord1i( (GLenum)target, (GLint)s );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMultiTexCoord1i( %d, %d )", (int)target, (int)s);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMultiTexCoord1iv(
   const KL::Size & target,
   const KL::VariableArray<KL::Integer> & v
 ){
-  glMultiTexCoord1iv( (GLenum)target, (const GLint*)&v[0] );
+  try
+  {
+    glMultiTexCoord1iv( (GLenum)target, (const GLint*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMultiTexCoord1iv( %d, GLint* )", (int)target);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMultiTexCoord1s(
   const KL::Size & target,
   const KL::Integer & s
 ){
-  glMultiTexCoord1s( (GLenum)target, (GLshort)s );
+  try
+  {
+    glMultiTexCoord1s( (GLenum)target, (GLshort)s );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMultiTexCoord1s( %d, %d )", (int)target, (int)s);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMultiTexCoord1sv(
   const KL::Size & target,
   const KL::VariableArray<KL::Integer> & v
 ){
-  glMultiTexCoord1sv( (GLenum)target, (const GLshort*)&v[0] );
+  try
+  {
+    glMultiTexCoord1sv( (GLenum)target, (const GLshort*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMultiTexCoord1sv( %d, GLshort* )", (int)target);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMultiTexCoord2d(
@@ -2697,14 +5189,28 @@ FABRIC_EXT_EXPORT void klMultiTexCoord2d(
   const KL::Scalar & s,
   const KL::Scalar & t
 ){
-  glMultiTexCoord2d( (GLenum)target, (GLdouble)s, (GLdouble)t );
+  try
+  {
+    glMultiTexCoord2d( (GLenum)target, (GLdouble)s, (GLdouble)t );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMultiTexCoord2d( %d, %f, %f )", (int)target, (float)s, (float)t);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMultiTexCoord2dv(
   const KL::Size & target,
   const KL::VariableArray<KL::Scalar> & v
 ){
-  glMultiTexCoord2dv( (GLenum)target, (const GLdouble*)&v[0] );
+  try
+  {
+    glMultiTexCoord2dv( (GLenum)target, (const GLdouble*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMultiTexCoord2dv( %d, GLdouble* )", (int)target);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMultiTexCoord2f(
@@ -2712,14 +5218,28 @@ FABRIC_EXT_EXPORT void klMultiTexCoord2f(
   const KL::Scalar & s,
   const KL::Scalar & t
 ){
-  glMultiTexCoord2f( (GLenum)target, (GLfloat)s, (GLfloat)t );
+  try
+  {
+    glMultiTexCoord2f( (GLenum)target, (GLfloat)s, (GLfloat)t );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMultiTexCoord2f( %d, %f, %f )", (int)target, (float)s, (float)t);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMultiTexCoord2fv(
   const KL::Size & target,
   const KL::VariableArray<KL::Scalar> & v
 ){
-  glMultiTexCoord2fv( (GLenum)target, (const GLfloat*)&v[0] );
+  try
+  {
+    glMultiTexCoord2fv( (GLenum)target, (const GLfloat*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMultiTexCoord2fv( %d, GLfloat* )", (int)target);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMultiTexCoord2i(
@@ -2727,14 +5247,28 @@ FABRIC_EXT_EXPORT void klMultiTexCoord2i(
   const KL::Integer & s,
   const KL::Integer & t
 ){
-  glMultiTexCoord2i( (GLenum)target, (GLint)s, (GLint)t );
+  try
+  {
+    glMultiTexCoord2i( (GLenum)target, (GLint)s, (GLint)t );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMultiTexCoord2i( %d, %d, %d )", (int)target, (int)s, (int)t);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMultiTexCoord2iv(
   const KL::Size & target,
   const KL::VariableArray<KL::Integer> & v
 ){
-  glMultiTexCoord2iv( (GLenum)target, (const GLint*)&v[0] );
+  try
+  {
+    glMultiTexCoord2iv( (GLenum)target, (const GLint*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMultiTexCoord2iv( %d, GLint* )", (int)target);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMultiTexCoord2s(
@@ -2742,14 +5276,28 @@ FABRIC_EXT_EXPORT void klMultiTexCoord2s(
   const KL::Integer & s,
   const KL::Integer & t
 ){
-  glMultiTexCoord2s( (GLenum)target, (GLshort)s, (GLshort)t );
+  try
+  {
+    glMultiTexCoord2s( (GLenum)target, (GLshort)s, (GLshort)t );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMultiTexCoord2s( %d, %d, %d )", (int)target, (int)s, (int)t);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMultiTexCoord2sv(
   const KL::Size & target,
   const KL::VariableArray<KL::Integer> & v
 ){
-  glMultiTexCoord2sv( (GLenum)target, (const GLshort*)&v[0] );
+  try
+  {
+    glMultiTexCoord2sv( (GLenum)target, (const GLshort*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMultiTexCoord2sv( %d, GLshort* )", (int)target);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMultiTexCoord3d(
@@ -2758,14 +5306,28 @@ FABRIC_EXT_EXPORT void klMultiTexCoord3d(
   const KL::Scalar & t,
   const KL::Scalar & r
 ){
-  glMultiTexCoord3d( (GLenum)target, (GLdouble)s, (GLdouble)t, (GLdouble)r );
+  try
+  {
+    glMultiTexCoord3d( (GLenum)target, (GLdouble)s, (GLdouble)t, (GLdouble)r );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMultiTexCoord3d( %d, %f, %f, %f )", (int)target, (float)s, (float)t, (float)r);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMultiTexCoord3dv(
   const KL::Size & target,
   const KL::VariableArray<KL::Scalar> & v
 ){
-  glMultiTexCoord3dv( (GLenum)target, (const GLdouble*)&v[0] );
+  try
+  {
+    glMultiTexCoord3dv( (GLenum)target, (const GLdouble*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMultiTexCoord3dv( %d, GLdouble* )", (int)target);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMultiTexCoord3f(
@@ -2774,14 +5336,28 @@ FABRIC_EXT_EXPORT void klMultiTexCoord3f(
   const KL::Scalar & t,
   const KL::Scalar & r
 ){
-  glMultiTexCoord3f( (GLenum)target, (GLfloat)s, (GLfloat)t, (GLfloat)r );
+  try
+  {
+    glMultiTexCoord3f( (GLenum)target, (GLfloat)s, (GLfloat)t, (GLfloat)r );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMultiTexCoord3f( %d, %f, %f, %f )", (int)target, (float)s, (float)t, (float)r);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMultiTexCoord3fv(
   const KL::Size & target,
   const KL::VariableArray<KL::Scalar> & v
 ){
-  glMultiTexCoord3fv( (GLenum)target, (const GLfloat*)&v[0] );
+  try
+  {
+    glMultiTexCoord3fv( (GLenum)target, (const GLfloat*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMultiTexCoord3fv( %d, GLfloat* )", (int)target);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMultiTexCoord3i(
@@ -2790,14 +5366,28 @@ FABRIC_EXT_EXPORT void klMultiTexCoord3i(
   const KL::Integer & t,
   const KL::Integer & r
 ){
-  glMultiTexCoord3i( (GLenum)target, (GLint)s, (GLint)t, (GLint)r );
+  try
+  {
+    glMultiTexCoord3i( (GLenum)target, (GLint)s, (GLint)t, (GLint)r );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMultiTexCoord3i( %d, %d, %d, %d )", (int)target, (int)s, (int)t, (int)r);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMultiTexCoord3iv(
   const KL::Size & target,
   const KL::VariableArray<KL::Integer> & v
 ){
-  glMultiTexCoord3iv( (GLenum)target, (const GLint*)&v[0] );
+  try
+  {
+    glMultiTexCoord3iv( (GLenum)target, (const GLint*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMultiTexCoord3iv( %d, GLint* )", (int)target);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMultiTexCoord3s(
@@ -2806,14 +5396,28 @@ FABRIC_EXT_EXPORT void klMultiTexCoord3s(
   const KL::Integer & t,
   const KL::Integer & r
 ){
-  glMultiTexCoord3s( (GLenum)target, (GLshort)s, (GLshort)t, (GLshort)r );
+  try
+  {
+    glMultiTexCoord3s( (GLenum)target, (GLshort)s, (GLshort)t, (GLshort)r );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMultiTexCoord3s( %d, %d, %d, %d )", (int)target, (int)s, (int)t, (int)r);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMultiTexCoord3sv(
   const KL::Size & target,
   const KL::VariableArray<KL::Integer> & v
 ){
-  glMultiTexCoord3sv( (GLenum)target, (const GLshort*)&v[0] );
+  try
+  {
+    glMultiTexCoord3sv( (GLenum)target, (const GLshort*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMultiTexCoord3sv( %d, GLshort* )", (int)target);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMultiTexCoord4d(
@@ -2823,14 +5427,28 @@ FABRIC_EXT_EXPORT void klMultiTexCoord4d(
   const KL::Scalar & r,
   const KL::Scalar & q
 ){
-  glMultiTexCoord4d( (GLenum)target, (GLdouble)s, (GLdouble)t, (GLdouble)r, (GLdouble)q );
+  try
+  {
+    glMultiTexCoord4d( (GLenum)target, (GLdouble)s, (GLdouble)t, (GLdouble)r, (GLdouble)q );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMultiTexCoord4d( %d, %f, %f, %f, %f )", (int)target, (float)s, (float)t, (float)r, (float)q);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMultiTexCoord4dv(
   const KL::Size & target,
   const KL::VariableArray<KL::Scalar> & v
 ){
-  glMultiTexCoord4dv( (GLenum)target, (const GLdouble*)&v[0] );
+  try
+  {
+    glMultiTexCoord4dv( (GLenum)target, (const GLdouble*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMultiTexCoord4dv( %d, GLdouble* )", (int)target);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMultiTexCoord4f(
@@ -2840,14 +5458,28 @@ FABRIC_EXT_EXPORT void klMultiTexCoord4f(
   const KL::Scalar & r,
   const KL::Scalar & q
 ){
-  glMultiTexCoord4f( (GLenum)target, (GLfloat)s, (GLfloat)t, (GLfloat)r, (GLfloat)q );
+  try
+  {
+    glMultiTexCoord4f( (GLenum)target, (GLfloat)s, (GLfloat)t, (GLfloat)r, (GLfloat)q );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMultiTexCoord4f( %d, %f, %f, %f, %f )", (int)target, (float)s, (float)t, (float)r, (float)q);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMultiTexCoord4fv(
   const KL::Size & target,
   const KL::VariableArray<KL::Scalar> & v
 ){
-  glMultiTexCoord4fv( (GLenum)target, (const GLfloat*)&v[0] );
+  try
+  {
+    glMultiTexCoord4fv( (GLenum)target, (const GLfloat*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMultiTexCoord4fv( %d, GLfloat* )", (int)target);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMultiTexCoord4i(
@@ -2857,14 +5489,28 @@ FABRIC_EXT_EXPORT void klMultiTexCoord4i(
   const KL::Integer & r,
   const KL::Integer & q
 ){
-  glMultiTexCoord4i( (GLenum)target, (GLint)s, (GLint)t, (GLint)r, (GLint)q );
+  try
+  {
+    glMultiTexCoord4i( (GLenum)target, (GLint)s, (GLint)t, (GLint)r, (GLint)q );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMultiTexCoord4i( %d, %d, %d, %d, %d )", (int)target, (int)s, (int)t, (int)r, (int)q);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMultiTexCoord4iv(
   const KL::Size & target,
   const KL::VariableArray<KL::Integer> & v
 ){
-  glMultiTexCoord4iv( (GLenum)target, (const GLint*)&v[0] );
+  try
+  {
+    glMultiTexCoord4iv( (GLenum)target, (const GLint*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMultiTexCoord4iv( %d, GLint* )", (int)target);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMultiTexCoord4s(
@@ -2874,21 +5520,42 @@ FABRIC_EXT_EXPORT void klMultiTexCoord4s(
   const KL::Integer & r,
   const KL::Integer & q
 ){
-  glMultiTexCoord4s( (GLenum)target, (GLshort)s, (GLshort)t, (GLshort)r, (GLshort)q );
+  try
+  {
+    glMultiTexCoord4s( (GLenum)target, (GLshort)s, (GLshort)t, (GLshort)r, (GLshort)q );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMultiTexCoord4s( %d, %d, %d, %d, %d )", (int)target, (int)s, (int)t, (int)r, (int)q);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMultiTexCoord4sv(
   const KL::Size & target,
   const KL::VariableArray<KL::Integer> & v
 ){
-  glMultiTexCoord4sv( (GLenum)target, (const GLshort*)&v[0] );
+  try
+  {
+    glMultiTexCoord4sv( (GLenum)target, (const GLshort*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMultiTexCoord4sv( %d, GLshort* )", (int)target);
+  }
 }
 
 FABRIC_EXT_EXPORT void klSampleCoverage(
   const KL::Scalar & value,
   const KL::Boolean & invert
 ){
-  glSampleCoverage( (GLclampf)value, (GLboolean)invert );
+  try
+  {
+    glSampleCoverage( (GLclampf)value, (GLboolean)invert );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glSampleCoverage( %f, %b )", (float)value, (bool)invert);
+  }
 }
 
 FABRIC_EXT_EXPORT void klBlendColor(
@@ -2897,13 +5564,27 @@ FABRIC_EXT_EXPORT void klBlendColor(
   const KL::Scalar & blue,
   const KL::Scalar & alpha
 ){
-  glBlendColor( (GLclampf)red, (GLclampf)green, (GLclampf)blue, (GLclampf)alpha );
+  try
+  {
+    glBlendColor( (GLclampf)red, (GLclampf)green, (GLclampf)blue, (GLclampf)alpha );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glBlendColor( %f, %f, %f, %f )", (float)red, (float)green, (float)blue, (float)alpha);
+  }
 }
 
 FABRIC_EXT_EXPORT void klBlendEquation(
   const KL::Size & mode
 ){
-  glBlendEquation( (GLenum)mode );
+  try
+  {
+    glBlendEquation( (GLenum)mode );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glBlendEquation( %d )", (int)mode);
+  }
 }
 
 FABRIC_EXT_EXPORT void klBlendFuncSeparate(
@@ -2912,7 +5593,14 @@ FABRIC_EXT_EXPORT void klBlendFuncSeparate(
   const KL::Size & sfactorAlpha,
   const KL::Size & dfactorAlpha
 ){
-  glBlendFuncSeparate( (GLenum)sfactorRGB, (GLenum)dfactorRGB, (GLenum)sfactorAlpha, (GLenum)dfactorAlpha );
+  try
+  {
+    glBlendFuncSeparate( (GLenum)sfactorRGB, (GLenum)dfactorRGB, (GLenum)sfactorAlpha, (GLenum)dfactorAlpha );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glBlendFuncSeparate( %d, %d, %d, %d )", (int)sfactorRGB, (int)dfactorRGB, (int)sfactorAlpha, (int)dfactorAlpha);
+  }
 }
 
 FABRIC_EXT_EXPORT void klFogCoordPointer(
@@ -2920,31 +5608,66 @@ FABRIC_EXT_EXPORT void klFogCoordPointer(
   const KL::Size & stride,
   KL::Data pointer
 ){
-  glFogCoordPointer( (GLenum)type, (GLsizei)stride, pointer );
+  try
+  {
+    glFogCoordPointer( (GLenum)type, (GLsizei)stride, pointer );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glFogCoordPointer( %d, %d, GLvoid* )", (int)type, (int)stride);
+  }
 }
 
 FABRIC_EXT_EXPORT void klFogCoordd(
   const KL::Scalar & coord
 ){
-  glFogCoordd( (GLdouble)coord );
+  try
+  {
+    glFogCoordd( (GLdouble)coord );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glFogCoordd( %f )", (float)coord);
+  }
 }
 
 FABRIC_EXT_EXPORT void klFogCoorddv(
   const KL::VariableArray<KL::Scalar> & coord
 ){
-  glFogCoorddv( (const GLdouble*)&coord[0] );
+  try
+  {
+    glFogCoorddv( (const GLdouble*)&coord[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glFogCoorddv( GLdouble* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klFogCoordf(
   const KL::Scalar & coord
 ){
-  glFogCoordf( (GLfloat)coord );
+  try
+  {
+    glFogCoordf( (GLfloat)coord );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glFogCoordf( %f )", (float)coord);
+  }
 }
 
 FABRIC_EXT_EXPORT void klFogCoordfv(
   const KL::VariableArray<KL::Scalar> & coord
 ){
-  glFogCoordfv( (const GLfloat*)&coord[0] );
+  try
+  {
+    glFogCoordfv( (const GLfloat*)&coord[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glFogCoordfv( GLfloat* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klMultiDrawArrays(
@@ -2953,35 +5676,70 @@ FABRIC_EXT_EXPORT void klMultiDrawArrays(
   KL::VariableArray<KL::Size> & count,
   const KL::Size & primcount
 ){
-  glMultiDrawArrays( (GLenum)mode, (GLint*)&first[0], (GLsizei*)&count[0], (GLsizei)primcount );
+  try
+  {
+    glMultiDrawArrays( (GLenum)mode, (GLint*)&first[0], (GLsizei*)&count[0], (GLsizei)primcount );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMultiDrawArrays( %d, GLint*, GLsizei*, %d )", (int)mode, (int)primcount);
+  }
 }
 
 FABRIC_EXT_EXPORT void klPointParameterf(
   const KL::Size & pname,
   const KL::Scalar & param
 ){
-  glPointParameterf( (GLenum)pname, (GLfloat)param );
+  try
+  {
+    glPointParameterf( (GLenum)pname, (GLfloat)param );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glPointParameterf( %d, %f )", (int)pname, (float)param);
+  }
 }
 
 FABRIC_EXT_EXPORT void klPointParameterfv(
   const KL::Size & pname,
   KL::VariableArray<KL::Scalar> & params
 ){
-  glPointParameterfv( (GLenum)pname, (GLfloat*)&params[0] );
+  try
+  {
+    glPointParameterfv( (GLenum)pname, (GLfloat*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glPointParameterfv( %d, GLfloat* )", (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klPointParameteri(
   const KL::Size & pname,
   const KL::Integer & param
 ){
-  glPointParameteri( (GLenum)pname, (GLint)param );
+  try
+  {
+    glPointParameteri( (GLenum)pname, (GLint)param );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glPointParameteri( %d, %d )", (int)pname, (int)param);
+  }
 }
 
 FABRIC_EXT_EXPORT void klPointParameteriv(
   const KL::Size & pname,
   KL::VariableArray<KL::Integer> & params
 ){
-  glPointParameteriv( (GLenum)pname, (GLint*)&params[0] );
+  try
+  {
+    glPointParameteriv( (GLenum)pname, (GLint*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glPointParameteriv( %d, GLint* )", (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klSecondaryColor3b(
@@ -2989,13 +5747,27 @@ FABRIC_EXT_EXPORT void klSecondaryColor3b(
   const KL::Byte & green,
   const KL::Byte & blue
 ){
-  glSecondaryColor3b( (GLbyte)red, (GLbyte)green, (GLbyte)blue );
+  try
+  {
+    glSecondaryColor3b( (GLbyte)red, (GLbyte)green, (GLbyte)blue );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glSecondaryColor3b( %d, %d, %d )", (int)red, (int)green, (int)blue);
+  }
 }
 
 FABRIC_EXT_EXPORT void klSecondaryColor3bv(
   const KL::VariableArray<KL::Byte> & v
 ){
-  glSecondaryColor3bv( (const GLbyte*)&v[0] );
+  try
+  {
+    glSecondaryColor3bv( (const GLbyte*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glSecondaryColor3bv( GLbyte* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klSecondaryColor3d(
@@ -3003,13 +5775,27 @@ FABRIC_EXT_EXPORT void klSecondaryColor3d(
   const KL::Scalar & green,
   const KL::Scalar & blue
 ){
-  glSecondaryColor3d( (GLdouble)red, (GLdouble)green, (GLdouble)blue );
+  try
+  {
+    glSecondaryColor3d( (GLdouble)red, (GLdouble)green, (GLdouble)blue );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glSecondaryColor3d( %f, %f, %f )", (float)red, (float)green, (float)blue);
+  }
 }
 
 FABRIC_EXT_EXPORT void klSecondaryColor3dv(
   const KL::VariableArray<KL::Scalar> & v
 ){
-  glSecondaryColor3dv( (const GLdouble*)&v[0] );
+  try
+  {
+    glSecondaryColor3dv( (const GLdouble*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glSecondaryColor3dv( GLdouble* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klSecondaryColor3f(
@@ -3017,13 +5803,27 @@ FABRIC_EXT_EXPORT void klSecondaryColor3f(
   const KL::Scalar & green,
   const KL::Scalar & blue
 ){
-  glSecondaryColor3f( (GLfloat)red, (GLfloat)green, (GLfloat)blue );
+  try
+  {
+    glSecondaryColor3f( (GLfloat)red, (GLfloat)green, (GLfloat)blue );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glSecondaryColor3f( %f, %f, %f )", (float)red, (float)green, (float)blue);
+  }
 }
 
 FABRIC_EXT_EXPORT void klSecondaryColor3fv(
   const KL::VariableArray<KL::Scalar> & v
 ){
-  glSecondaryColor3fv( (const GLfloat*)&v[0] );
+  try
+  {
+    glSecondaryColor3fv( (const GLfloat*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glSecondaryColor3fv( GLfloat* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klSecondaryColor3i(
@@ -3031,13 +5831,27 @@ FABRIC_EXT_EXPORT void klSecondaryColor3i(
   const KL::Integer & green,
   const KL::Integer & blue
 ){
-  glSecondaryColor3i( (GLint)red, (GLint)green, (GLint)blue );
+  try
+  {
+    glSecondaryColor3i( (GLint)red, (GLint)green, (GLint)blue );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glSecondaryColor3i( %d, %d, %d )", (int)red, (int)green, (int)blue);
+  }
 }
 
 FABRIC_EXT_EXPORT void klSecondaryColor3iv(
   const KL::VariableArray<KL::Integer> & v
 ){
-  glSecondaryColor3iv( (const GLint*)&v[0] );
+  try
+  {
+    glSecondaryColor3iv( (const GLint*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glSecondaryColor3iv( GLint* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klSecondaryColor3s(
@@ -3045,13 +5859,27 @@ FABRIC_EXT_EXPORT void klSecondaryColor3s(
   const KL::Integer & green,
   const KL::Integer & blue
 ){
-  glSecondaryColor3s( (GLshort)red, (GLshort)green, (GLshort)blue );
+  try
+  {
+    glSecondaryColor3s( (GLshort)red, (GLshort)green, (GLshort)blue );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glSecondaryColor3s( %d, %d, %d )", (int)red, (int)green, (int)blue);
+  }
 }
 
 FABRIC_EXT_EXPORT void klSecondaryColor3sv(
   const KL::VariableArray<KL::Integer> & v
 ){
-  glSecondaryColor3sv( (const GLshort*)&v[0] );
+  try
+  {
+    glSecondaryColor3sv( (const GLshort*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glSecondaryColor3sv( GLshort* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klSecondaryColor3ub(
@@ -3059,13 +5887,27 @@ FABRIC_EXT_EXPORT void klSecondaryColor3ub(
   const KL::Size & green,
   const KL::Size & blue
 ){
-  glSecondaryColor3ub( (GLubyte)red, (GLubyte)green, (GLubyte)blue );
+  try
+  {
+    glSecondaryColor3ub( (GLubyte)red, (GLubyte)green, (GLubyte)blue );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glSecondaryColor3ub( 0x%04X, 0x%04X, 0x%04X )", (unsigned)red, (unsigned)green, (unsigned)blue);
+  }
 }
 
 FABRIC_EXT_EXPORT void klSecondaryColor3ubv(
   const KL::VariableArray<KL::Size> & v
 ){
-  glSecondaryColor3ubv( (const GLubyte*)&v[0] );
+  try
+  {
+    glSecondaryColor3ubv( (const GLubyte*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glSecondaryColor3ubv( GLubyte* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klSecondaryColor3ui(
@@ -3073,13 +5915,27 @@ FABRIC_EXT_EXPORT void klSecondaryColor3ui(
   const KL::Size & green,
   const KL::Size & blue
 ){
-  glSecondaryColor3ui( (GLuint)red, (GLuint)green, (GLuint)blue );
+  try
+  {
+    glSecondaryColor3ui( (GLuint)red, (GLuint)green, (GLuint)blue );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glSecondaryColor3ui( 0x%04X, 0x%04X, 0x%04X )", (unsigned)red, (unsigned)green, (unsigned)blue);
+  }
 }
 
 FABRIC_EXT_EXPORT void klSecondaryColor3uiv(
   const KL::VariableArray<KL::Size> & v
 ){
-  glSecondaryColor3uiv( (const GLuint*)&v[0] );
+  try
+  {
+    glSecondaryColor3uiv( (const GLuint*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glSecondaryColor3uiv( GLuint* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klSecondaryColor3us(
@@ -3087,13 +5943,27 @@ FABRIC_EXT_EXPORT void klSecondaryColor3us(
   const KL::Integer & green,
   const KL::Integer & blue
 ){
-  glSecondaryColor3us( (GLushort)red, (GLushort)green, (GLushort)blue );
+  try
+  {
+    glSecondaryColor3us( (GLushort)red, (GLushort)green, (GLushort)blue );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glSecondaryColor3us( 0x%04X, 0x%04X, 0x%04X )", (unsigned)red, (unsigned)green, (unsigned)blue);
+  }
 }
 
 FABRIC_EXT_EXPORT void klSecondaryColor3usv(
   const KL::VariableArray<KL::Integer> & v
 ){
-  glSecondaryColor3usv( (const GLushort*)&v[0] );
+  try
+  {
+    glSecondaryColor3usv( (const GLushort*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glSecondaryColor3usv( GLushort* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klSecondaryColorPointer(
@@ -3102,59 +5972,122 @@ FABRIC_EXT_EXPORT void klSecondaryColorPointer(
   const KL::Size & stride,
   KL::Data pointer
 ){
-  glSecondaryColorPointer( (GLint)size, (GLenum)type, (GLsizei)stride, pointer );
+  try
+  {
+    glSecondaryColorPointer( (GLint)size, (GLenum)type, (GLsizei)stride, pointer );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glSecondaryColorPointer( %d, %d, %d, GLvoid* )", (int)size, (int)type, (int)stride);
+  }
 }
 
 FABRIC_EXT_EXPORT void klWindowPos2d(
   const KL::Scalar & x,
   const KL::Scalar & y
 ){
-  glWindowPos2d( (GLdouble)x, (GLdouble)y );
+  try
+  {
+    glWindowPos2d( (GLdouble)x, (GLdouble)y );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glWindowPos2d( %f, %f )", (float)x, (float)y);
+  }
 }
 
 FABRIC_EXT_EXPORT void klWindowPos2dv(
   const KL::VariableArray<KL::Scalar> & p
 ){
-  glWindowPos2dv( (const GLdouble*)&p[0] );
+  try
+  {
+    glWindowPos2dv( (const GLdouble*)&p[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glWindowPos2dv( GLdouble* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klWindowPos2f(
   const KL::Scalar & x,
   const KL::Scalar & y
 ){
-  glWindowPos2f( (GLfloat)x, (GLfloat)y );
+  try
+  {
+    glWindowPos2f( (GLfloat)x, (GLfloat)y );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glWindowPos2f( %f, %f )", (float)x, (float)y);
+  }
 }
 
 FABRIC_EXT_EXPORT void klWindowPos2fv(
   const KL::VariableArray<KL::Scalar> & p
 ){
-  glWindowPos2fv( (const GLfloat*)&p[0] );
+  try
+  {
+    glWindowPos2fv( (const GLfloat*)&p[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glWindowPos2fv( GLfloat* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klWindowPos2i(
   const KL::Integer & x,
   const KL::Integer & y
 ){
-  glWindowPos2i( (GLint)x, (GLint)y );
+  try
+  {
+    glWindowPos2i( (GLint)x, (GLint)y );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glWindowPos2i( %d, %d )", (int)x, (int)y);
+  }
 }
 
 FABRIC_EXT_EXPORT void klWindowPos2iv(
   const KL::VariableArray<KL::Integer> & p
 ){
-  glWindowPos2iv( (const GLint*)&p[0] );
+  try
+  {
+    glWindowPos2iv( (const GLint*)&p[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glWindowPos2iv( GLint* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klWindowPos2s(
   const KL::Integer & x,
   const KL::Integer & y
 ){
-  glWindowPos2s( (GLshort)x, (GLshort)y );
+  try
+  {
+    glWindowPos2s( (GLshort)x, (GLshort)y );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glWindowPos2s( %d, %d )", (int)x, (int)y);
+  }
 }
 
 FABRIC_EXT_EXPORT void klWindowPos2sv(
   const KL::VariableArray<KL::Integer> & p
 ){
-  glWindowPos2sv( (const GLshort*)&p[0] );
+  try
+  {
+    glWindowPos2sv( (const GLshort*)&p[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glWindowPos2sv( GLshort* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klWindowPos3d(
@@ -3162,13 +6095,27 @@ FABRIC_EXT_EXPORT void klWindowPos3d(
   const KL::Scalar & y,
   const KL::Scalar & z
 ){
-  glWindowPos3d( (GLdouble)x, (GLdouble)y, (GLdouble)z );
+  try
+  {
+    glWindowPos3d( (GLdouble)x, (GLdouble)y, (GLdouble)z );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glWindowPos3d( %f, %f, %f )", (float)x, (float)y, (float)z);
+  }
 }
 
 FABRIC_EXT_EXPORT void klWindowPos3dv(
   const KL::VariableArray<KL::Scalar> & p
 ){
-  glWindowPos3dv( (const GLdouble*)&p[0] );
+  try
+  {
+    glWindowPos3dv( (const GLdouble*)&p[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glWindowPos3dv( GLdouble* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klWindowPos3f(
@@ -3176,13 +6123,27 @@ FABRIC_EXT_EXPORT void klWindowPos3f(
   const KL::Scalar & y,
   const KL::Scalar & z
 ){
-  glWindowPos3f( (GLfloat)x, (GLfloat)y, (GLfloat)z );
+  try
+  {
+    glWindowPos3f( (GLfloat)x, (GLfloat)y, (GLfloat)z );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glWindowPos3f( %f, %f, %f )", (float)x, (float)y, (float)z);
+  }
 }
 
 FABRIC_EXT_EXPORT void klWindowPos3fv(
   const KL::VariableArray<KL::Scalar> & p
 ){
-  glWindowPos3fv( (const GLfloat*)&p[0] );
+  try
+  {
+    glWindowPos3fv( (const GLfloat*)&p[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glWindowPos3fv( GLfloat* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klWindowPos3i(
@@ -3190,13 +6151,27 @@ FABRIC_EXT_EXPORT void klWindowPos3i(
   const KL::Integer & y,
   const KL::Integer & z
 ){
-  glWindowPos3i( (GLint)x, (GLint)y, (GLint)z );
+  try
+  {
+    glWindowPos3i( (GLint)x, (GLint)y, (GLint)z );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glWindowPos3i( %d, %d, %d )", (int)x, (int)y, (int)z);
+  }
 }
 
 FABRIC_EXT_EXPORT void klWindowPos3iv(
   const KL::VariableArray<KL::Integer> & p
 ){
-  glWindowPos3iv( (const GLint*)&p[0] );
+  try
+  {
+    glWindowPos3iv( (const GLint*)&p[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glWindowPos3iv( GLint* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klWindowPos3s(
@@ -3204,27 +6179,55 @@ FABRIC_EXT_EXPORT void klWindowPos3s(
   const KL::Integer & y,
   const KL::Integer & z
 ){
-  glWindowPos3s( (GLshort)x, (GLshort)y, (GLshort)z );
+  try
+  {
+    glWindowPos3s( (GLshort)x, (GLshort)y, (GLshort)z );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glWindowPos3s( %d, %d, %d )", (int)x, (int)y, (int)z);
+  }
 }
 
 FABRIC_EXT_EXPORT void klWindowPos3sv(
   const KL::VariableArray<KL::Integer> & p
 ){
-  glWindowPos3sv( (const GLshort*)&p[0] );
+  try
+  {
+    glWindowPos3sv( (const GLshort*)&p[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glWindowPos3sv( GLshort* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klBeginQuery(
   const KL::Size & target,
   const KL::Size & id
 ){
-  glBeginQuery( (GLenum)target, (GLuint)id );
+  try
+  {
+    glBeginQuery( (GLenum)target, (GLuint)id );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glBeginQuery( %d, 0x%04X )", (int)target, (unsigned)id);
+  }
 }
 
 FABRIC_EXT_EXPORT void klBindBuffer(
   const KL::Size & target,
   const KL::Size & buffer
 ){
-  glBindBuffer( (GLenum)target, (GLuint)buffer );
+  try
+  {
+    glBindBuffer( (GLenum)target, (GLuint)buffer );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glBindBuffer( %d, 0x%04X )", (int)target, (unsigned)buffer);
+  }
 }
 
 FABRIC_EXT_EXPORT void klBufferData(
@@ -3233,7 +6236,14 @@ FABRIC_EXT_EXPORT void klBufferData(
   KL::Data data,
   const KL::Size & usage
 ){
-  glBufferData( (GLenum)target, (GLsizeiptr)size, data, (GLenum)usage );
+  try
+  {
+    glBufferData( (GLenum)target, (GLsizeiptr)size, data, (GLenum)usage );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glBufferData( %d, %d, GLvoid*, %d )", (int)target, (int)size, (int)usage);
+  }
 }
 
 FABRIC_EXT_EXPORT void klBufferSubData(
@@ -3242,41 +6252,83 @@ FABRIC_EXT_EXPORT void klBufferSubData(
   const KL::Size & size,
   KL::Data data
 ){
-  glBufferSubData( (GLenum)target, (GLintptr)offset, (GLsizeiptr)size, data );
+  try
+  {
+    glBufferSubData( (GLenum)target, (GLintptr)offset, (GLsizeiptr)size, data );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glBufferSubData( %d, %d, %d, GLvoid* )", (int)target, (int)offset, (int)size);
+  }
 }
 
 FABRIC_EXT_EXPORT void klDeleteBuffers(
   const KL::Size & n,
   const KL::VariableArray<KL::Size> & buffers
 ){
-  glDeleteBuffers( (GLsizei)n, (const GLuint*)&buffers[0] );
+  try
+  {
+    glDeleteBuffers( (GLsizei)n, (const GLuint*)&buffers[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glDeleteBuffers( %d, GLuint* )", (int)n);
+  }
 }
 
 FABRIC_EXT_EXPORT void klDeleteQueries(
   const KL::Size & n,
   const KL::VariableArray<KL::Size> & ids
 ){
-  glDeleteQueries( (GLsizei)n, (const GLuint*)&ids[0] );
+  try
+  {
+    glDeleteQueries( (GLsizei)n, (const GLuint*)&ids[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glDeleteQueries( %d, GLuint* )", (int)n);
+  }
 }
 
 FABRIC_EXT_EXPORT void klEndQuery(
   const KL::Size & target
 ){
-  glEndQuery( (GLenum)target );
+  try
+  {
+    glEndQuery( (GLenum)target );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glEndQuery( %d )", (int)target);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGenBuffers(
   const KL::Size & n,
   KL::VariableArray<KL::Size> & buffers
 ){
-  glGenBuffers( (GLsizei)n, (GLuint*)&buffers[0] );
+  try
+  {
+    glGenBuffers( (GLsizei)n, (GLuint*)&buffers[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGenBuffers( %d, GLuint* )", (int)n);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGenQueries(
   const KL::Size & n,
   KL::VariableArray<KL::Size> & ids
 ){
-  glGenQueries( (GLsizei)n, (GLuint*)&ids[0] );
+  try
+  {
+    glGenQueries( (GLsizei)n, (GLuint*)&ids[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGenQueries( %d, GLuint* )", (int)n);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetBufferParameteriv(
@@ -3284,7 +6336,14 @@ FABRIC_EXT_EXPORT void klGetBufferParameteriv(
   const KL::Size & pname,
   KL::VariableArray<KL::Integer> & params
 ){
-  glGetBufferParameteriv( (GLenum)target, (GLenum)pname, (GLint*)&params[0] );
+  try
+  {
+    glGetBufferParameteriv( (GLenum)target, (GLenum)pname, (GLint*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetBufferParameteriv( %d, %d, GLint* )", (int)target, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetBufferSubData(
@@ -3293,7 +6352,14 @@ FABRIC_EXT_EXPORT void klGetBufferSubData(
   const KL::Size & size,
   KL::Data data
 ){
-  glGetBufferSubData( (GLenum)target, (GLintptr)offset, (GLsizeiptr)size, data );
+  try
+  {
+    glGetBufferSubData( (GLenum)target, (GLintptr)offset, (GLsizeiptr)size, data );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetBufferSubData( %d, %d, %d, GLvoid* )", (int)target, (int)offset, (int)size);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetQueryObjectiv(
@@ -3301,7 +6367,14 @@ FABRIC_EXT_EXPORT void klGetQueryObjectiv(
   const KL::Size & pname,
   KL::VariableArray<KL::Integer> & params
 ){
-  glGetQueryObjectiv( (GLuint)id, (GLenum)pname, (GLint*)&params[0] );
+  try
+  {
+    glGetQueryObjectiv( (GLuint)id, (GLenum)pname, (GLint*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetQueryObjectiv( 0x%04X, %d, GLint* )", (unsigned)id, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetQueryObjectuiv(
@@ -3309,7 +6382,14 @@ FABRIC_EXT_EXPORT void klGetQueryObjectuiv(
   const KL::Size & pname,
   KL::VariableArray<KL::Size> & params
 ){
-  glGetQueryObjectuiv( (GLuint)id, (GLenum)pname, (GLuint*)&params[0] );
+  try
+  {
+    glGetQueryObjectuiv( (GLuint)id, (GLenum)pname, (GLuint*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetQueryObjectuiv( 0x%04X, %d, GLuint* )", (unsigned)id, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetQueryiv(
@@ -3317,42 +6397,84 @@ FABRIC_EXT_EXPORT void klGetQueryiv(
   const KL::Size & pname,
   KL::VariableArray<KL::Integer> & params
 ){
-  glGetQueryiv( (GLenum)target, (GLenum)pname, (GLint*)&params[0] );
+  try
+  {
+    glGetQueryiv( (GLenum)target, (GLenum)pname, (GLint*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetQueryiv( %d, %d, GLint* )", (int)target, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT KL::Boolean klIsBuffer(
   const KL::Size & buffer
 ){
-  GLboolean result = glIsBuffer( (GLuint)buffer );
+  try
+  {
+    GLboolean result = glIsBuffer( (GLuint)buffer );
   return (KL::Boolean)result;
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glIsBuffer( 0x%04X )", (unsigned)buffer);
+  }
 }
 
 FABRIC_EXT_EXPORT KL::Boolean klIsQuery(
   const KL::Size & id
 ){
-  GLboolean result = glIsQuery( (GLuint)id );
+  try
+  {
+    GLboolean result = glIsQuery( (GLuint)id );
   return (KL::Boolean)result;
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glIsQuery( 0x%04X )", (unsigned)id);
+  }
 }
 
 FABRIC_EXT_EXPORT GLvoid* klMapBuffer(
   const KL::Size & target,
   const KL::Size & access
 ){
-  glMapBuffer( (GLenum)target, (GLenum)access );
+  try
+  {
+    glMapBuffer( (GLenum)target, (GLenum)access );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMapBuffer( %d, %d )", (int)target, (int)access);
+  }
 }
 
 FABRIC_EXT_EXPORT KL::Boolean klUnmapBuffer(
   const KL::Size & target
 ){
-  GLboolean result = glUnmapBuffer( (GLenum)target );
+  try
+  {
+    GLboolean result = glUnmapBuffer( (GLenum)target );
   return (KL::Boolean)result;
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glUnmapBuffer( %d )", (int)target);
+  }
 }
 
 FABRIC_EXT_EXPORT void klAttachShader(
   const KL::Size & program,
   const KL::Size & shader
 ){
-  glAttachShader( (GLuint)program, (GLuint)shader );
+  try
+  {
+    glAttachShader( (GLuint)program, (GLuint)shader );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glAttachShader( 0x%04X, 0x%04X )", (unsigned)program, (unsigned)shader);
+  }
 }
 
 FABRIC_EXT_EXPORT void klBindAttribLocation(
@@ -3360,71 +6482,148 @@ FABRIC_EXT_EXPORT void klBindAttribLocation(
   const KL::Size & index,
   const KL::String &name
 ){
-  glBindAttribLocation( (GLuint)program, (GLuint)index, (const GLchar*)name.data() );
+  try
+  {
+    glBindAttribLocation( (GLuint)program, (GLuint)index, (const GLchar*)name.data() );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glBindAttribLocation( 0x%04X, 0x%04X, char* )", (unsigned)program, (unsigned)index);
+  }
 }
 
 FABRIC_EXT_EXPORT void klBlendEquationSeparate(
   const KL::Size & var0,
   const KL::Size & var1
 ){
-  glBlendEquationSeparate( (GLenum)var0, (GLenum)var1 );
+  try
+  {
+    glBlendEquationSeparate( (GLenum)var0, (GLenum)var1 );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glBlendEquationSeparate( %d, %d )", (int)var0, (int)var1);
+  }
 }
 
 FABRIC_EXT_EXPORT void klCompileShader(
   const KL::Size & shader
 ){
-  glCompileShader( (GLuint)shader );
+  try
+  {
+    glCompileShader( (GLuint)shader );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glCompileShader( 0x%04X )", (unsigned)shader);
+  }
 }
 
 FABRIC_EXT_EXPORT KL::Size klCreateProgram()
 {
-  GLuint result = glCreateProgram();
+  try
+  {
+    GLuint result = glCreateProgram();
   return (KL::Size)result;
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glCreateProgram(  )");
+  }
 }
 
 FABRIC_EXT_EXPORT KL::Size klCreateShader(
   const KL::Size & type
 ){
-  GLuint result = glCreateShader( (GLenum)type );
+  try
+  {
+    GLuint result = glCreateShader( (GLenum)type );
   return (KL::Size)result;
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glCreateShader( %d )", (int)type);
+  }
 }
 
 FABRIC_EXT_EXPORT void klDeleteProgram(
   const KL::Size & program
 ){
-  glDeleteProgram( (GLuint)program );
+  try
+  {
+    glDeleteProgram( (GLuint)program );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glDeleteProgram( 0x%04X )", (unsigned)program);
+  }
 }
 
 FABRIC_EXT_EXPORT void klDeleteShader(
   const KL::Size & shader
 ){
-  glDeleteShader( (GLuint)shader );
+  try
+  {
+    glDeleteShader( (GLuint)shader );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glDeleteShader( 0x%04X )", (unsigned)shader);
+  }
 }
 
 FABRIC_EXT_EXPORT void klDetachShader(
   const KL::Size & program,
   const KL::Size & shader
 ){
-  glDetachShader( (GLuint)program, (GLuint)shader );
+  try
+  {
+    glDetachShader( (GLuint)program, (GLuint)shader );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glDetachShader( 0x%04X, 0x%04X )", (unsigned)program, (unsigned)shader);
+  }
 }
 
 FABRIC_EXT_EXPORT void klDisableVertexAttribArray(
   const KL::Size & var0
 ){
-  glDisableVertexAttribArray( (GLuint)var0 );
+  try
+  {
+    glDisableVertexAttribArray( (GLuint)var0 );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glDisableVertexAttribArray( 0x%04X )", (unsigned)var0);
+  }
 }
 
 FABRIC_EXT_EXPORT void klDrawBuffers(
   const KL::Size & n,
   const KL::VariableArray<KL::Size> & bufs
 ){
-  glDrawBuffers( (GLsizei)n, (const GLenum*)&bufs[0] );
+  try
+  {
+    glDrawBuffers( (GLsizei)n, (const GLenum*)&bufs[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glDrawBuffers( %d, GLenum* )", (int)n);
+  }
 }
 
 FABRIC_EXT_EXPORT void klEnableVertexAttribArray(
   const KL::Size & var0
 ){
-  glEnableVertexAttribArray( (GLuint)var0 );
+  try
+  {
+    glEnableVertexAttribArray( (GLuint)var0 );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glEnableVertexAttribArray( 0x%04X )", (unsigned)var0);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetActiveAttrib(
@@ -3436,10 +6635,17 @@ FABRIC_EXT_EXPORT void klGetActiveAttrib(
   KL::VariableArray<KL::Size> & type,
   KL::String & name
 ){
-  char * nameStr = new char[1024];
-  glGetActiveAttrib( (GLuint)program, (GLuint)index, (GLsizei)maxLength, (GLsizei*)&length[0], (GLint*)&size[0], (GLenum*)&type[0], (GLchar*)nameStr );
-  name = KL::String(nameStr);
-  delete( nameStr );
+  try
+  {
+    char * nameStr = new char[1024];
+    glGetActiveAttrib( (GLuint)program, (GLuint)index, (GLsizei)maxLength, (GLsizei*)&length[0], (GLint*)&size[0], (GLenum*)&type[0], (GLchar*)nameStr );
+    name = KL::String(nameStr);
+    delete( nameStr );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetActiveAttrib( 0x%04X, 0x%04X, %d, GLsizei*, GLint*, GLenum*, char* )", (unsigned)program, (unsigned)index, (int)maxLength);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetActiveUniform(
@@ -3451,10 +6657,17 @@ FABRIC_EXT_EXPORT void klGetActiveUniform(
   KL::VariableArray<KL::Size> & type,
   KL::String & name
 ){
-  char * nameStr = new char[1024];
-  glGetActiveUniform( (GLuint)program, (GLuint)index, (GLsizei)maxLength, (GLsizei*)&length[0], (GLint*)&size[0], (GLenum*)&type[0], (GLchar*)nameStr );
-  name = KL::String(nameStr);
-  delete( nameStr );
+  try
+  {
+    char * nameStr = new char[1024];
+    glGetActiveUniform( (GLuint)program, (GLuint)index, (GLsizei)maxLength, (GLsizei*)&length[0], (GLint*)&size[0], (GLenum*)&type[0], (GLchar*)nameStr );
+    name = KL::String(nameStr);
+    delete( nameStr );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetActiveUniform( 0x%04X, 0x%04X, %d, GLsizei*, GLint*, GLenum*, char* )", (unsigned)program, (unsigned)index, (int)maxLength);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetAttachedShaders(
@@ -3463,15 +6676,29 @@ FABRIC_EXT_EXPORT void klGetAttachedShaders(
   KL::VariableArray<KL::Size> & count,
   KL::VariableArray<KL::Size> & shaders
 ){
-  glGetAttachedShaders( (GLuint)program, (GLsizei)maxCount, (GLsizei*)&count[0], (GLuint*)&shaders[0] );
+  try
+  {
+    glGetAttachedShaders( (GLuint)program, (GLsizei)maxCount, (GLsizei*)&count[0], (GLuint*)&shaders[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetAttachedShaders( 0x%04X, %d, GLsizei*, GLuint* )", (unsigned)program, (int)maxCount);
+  }
 }
 
 FABRIC_EXT_EXPORT KL::Integer klGetAttribLocation(
   const KL::Size & program,
   const KL::String &name
 ){
-  GLint result = glGetAttribLocation( (GLuint)program, (const GLchar*)name.data() );
+  try
+  {
+    GLint result = glGetAttribLocation( (GLuint)program, (const GLchar*)name.data() );
   return (KL::Integer)result;
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetAttribLocation( 0x%04X, char* )", (unsigned)program);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetProgramInfoLog(
@@ -3480,10 +6707,17 @@ FABRIC_EXT_EXPORT void klGetProgramInfoLog(
   KL::VariableArray<KL::Size> & length,
   KL::String & infoLog
 ){
-  char * infoLogStr = new char[1024];
-  glGetProgramInfoLog( (GLuint)program, (GLsizei)bufSize, (GLsizei*)&length[0], (GLchar*)infoLogStr );
-  infoLog = KL::String(infoLogStr);
-  delete( infoLogStr );
+  try
+  {
+    char * infoLogStr = new char[1024];
+    glGetProgramInfoLog( (GLuint)program, (GLsizei)bufSize, (GLsizei*)&length[0], (GLchar*)infoLogStr );
+    infoLog = KL::String(infoLogStr);
+    delete( infoLogStr );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetProgramInfoLog( 0x%04X, %d, GLsizei*, char* )", (unsigned)program, (int)bufSize);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetProgramiv(
@@ -3491,7 +6725,14 @@ FABRIC_EXT_EXPORT void klGetProgramiv(
   const KL::Size & pname,
   KL::VariableArray<KL::Integer> & param
 ){
-  glGetProgramiv( (GLuint)program, (GLenum)pname, (GLint*)&param[0] );
+  try
+  {
+    glGetProgramiv( (GLuint)program, (GLenum)pname, (GLint*)&param[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetProgramiv( 0x%04X, %d, GLint* )", (unsigned)program, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetShaderInfoLog(
@@ -3500,10 +6741,17 @@ FABRIC_EXT_EXPORT void klGetShaderInfoLog(
   KL::VariableArray<KL::Size> & length,
   KL::String & infoLog
 ){
-  char * infoLogStr = new char[1024];
-  glGetShaderInfoLog( (GLuint)shader, (GLsizei)bufSize, (GLsizei*)&length[0], (GLchar*)infoLogStr );
-  infoLog = KL::String(infoLogStr);
-  delete( infoLogStr );
+  try
+  {
+    char * infoLogStr = new char[1024];
+    glGetShaderInfoLog( (GLuint)shader, (GLsizei)bufSize, (GLsizei*)&length[0], (GLchar*)infoLogStr );
+    infoLog = KL::String(infoLogStr);
+    delete( infoLogStr );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetShaderInfoLog( 0x%04X, %d, GLsizei*, char* )", (unsigned)shader, (int)bufSize);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetShaderSource(
@@ -3512,10 +6760,17 @@ FABRIC_EXT_EXPORT void klGetShaderSource(
   KL::VariableArray<KL::Size> & length,
   KL::String & source
 ){
-  char * sourceStr = new char[1024];
-  glGetShaderSource( (GLint)obj, (GLsizei)maxLength, (GLsizei*)&length[0], (GLchar*)sourceStr );
-  source = KL::String(sourceStr);
-  delete( sourceStr );
+  try
+  {
+    char * sourceStr = new char[1024];
+    glGetShaderSource( (GLint)obj, (GLsizei)maxLength, (GLsizei*)&length[0], (GLchar*)sourceStr );
+    source = KL::String(sourceStr);
+    delete( sourceStr );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetShaderSource( %d, %d, GLsizei*, char* )", (int)obj, (int)maxLength);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetShaderiv(
@@ -3523,15 +6778,29 @@ FABRIC_EXT_EXPORT void klGetShaderiv(
   const KL::Size & pname,
   KL::VariableArray<KL::Integer> & param
 ){
-  glGetShaderiv( (GLuint)shader, (GLenum)pname, (GLint*)&param[0] );
+  try
+  {
+    glGetShaderiv( (GLuint)shader, (GLenum)pname, (GLint*)&param[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetShaderiv( 0x%04X, %d, GLint* )", (unsigned)shader, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT KL::Integer klGetUniformLocation(
   const KL::Size & program,
   const KL::String &name
 ){
-  GLint result = glGetUniformLocation( (GLuint)program, (const GLchar*)name.data() );
+  try
+  {
+    GLint result = glGetUniformLocation( (GLuint)program, (const GLchar*)name.data() );
   return (KL::Integer)result;
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetUniformLocation( 0x%04X, char* )", (unsigned)program);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetUniformfv(
@@ -3539,7 +6808,14 @@ FABRIC_EXT_EXPORT void klGetUniformfv(
   const KL::Integer & location,
   KL::VariableArray<KL::Scalar> & params
 ){
-  glGetUniformfv( (GLuint)program, (GLint)location, (GLfloat*)&params[0] );
+  try
+  {
+    glGetUniformfv( (GLuint)program, (GLint)location, (GLfloat*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetUniformfv( 0x%04X, %d, GLfloat* )", (unsigned)program, (int)location);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetUniformiv(
@@ -3547,7 +6823,14 @@ FABRIC_EXT_EXPORT void klGetUniformiv(
   const KL::Integer & location,
   KL::VariableArray<KL::Integer> & params
 ){
-  glGetUniformiv( (GLuint)program, (GLint)location, (GLint*)&params[0] );
+  try
+  {
+    glGetUniformiv( (GLuint)program, (GLint)location, (GLint*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetUniformiv( 0x%04X, %d, GLint* )", (unsigned)program, (int)location);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetVertexAttribPointerv(
@@ -3555,7 +6838,14 @@ FABRIC_EXT_EXPORT void klGetVertexAttribPointerv(
   const KL::Size & var1,
   KL::Data var2
 ){
-  glGetVertexAttribPointerv( (GLuint)var0, (GLenum)var1, var2 );
+  try
+  {
+    glGetVertexAttribPointerv( (GLuint)var0, (GLenum)var1, var2 );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetVertexAttribPointerv( 0x%04X, %d, GLvoid* )", (unsigned)var0, (int)var1);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetVertexAttribdv(
@@ -3563,7 +6853,14 @@ FABRIC_EXT_EXPORT void klGetVertexAttribdv(
   const KL::Size & var1,
   KL::VariableArray<KL::Scalar> & var2
 ){
-  glGetVertexAttribdv( (GLuint)var0, (GLenum)var1, (GLdouble*)&var2[0] );
+  try
+  {
+    glGetVertexAttribdv( (GLuint)var0, (GLenum)var1, (GLdouble*)&var2[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetVertexAttribdv( 0x%04X, %d, GLdouble* )", (unsigned)var0, (int)var1);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetVertexAttribfv(
@@ -3571,7 +6868,14 @@ FABRIC_EXT_EXPORT void klGetVertexAttribfv(
   const KL::Size & var1,
   KL::VariableArray<KL::Scalar> & var2
 ){
-  glGetVertexAttribfv( (GLuint)var0, (GLenum)var1, (GLfloat*)&var2[0] );
+  try
+  {
+    glGetVertexAttribfv( (GLuint)var0, (GLenum)var1, (GLfloat*)&var2[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetVertexAttribfv( 0x%04X, %d, GLfloat* )", (unsigned)var0, (int)var1);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetVertexAttribiv(
@@ -3579,27 +6883,55 @@ FABRIC_EXT_EXPORT void klGetVertexAttribiv(
   const KL::Size & var1,
   KL::VariableArray<KL::Integer> & var2
 ){
-  glGetVertexAttribiv( (GLuint)var0, (GLenum)var1, (GLint*)&var2[0] );
+  try
+  {
+    glGetVertexAttribiv( (GLuint)var0, (GLenum)var1, (GLint*)&var2[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetVertexAttribiv( 0x%04X, %d, GLint* )", (unsigned)var0, (int)var1);
+  }
 }
 
 FABRIC_EXT_EXPORT KL::Boolean klIsProgram(
   const KL::Size & program
 ){
-  GLboolean result = glIsProgram( (GLuint)program );
+  try
+  {
+    GLboolean result = glIsProgram( (GLuint)program );
   return (KL::Boolean)result;
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glIsProgram( 0x%04X )", (unsigned)program);
+  }
 }
 
 FABRIC_EXT_EXPORT KL::Boolean klIsShader(
   const KL::Size & shader
 ){
-  GLboolean result = glIsShader( (GLuint)shader );
+  try
+  {
+    GLboolean result = glIsShader( (GLuint)shader );
   return (KL::Boolean)result;
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glIsShader( 0x%04X )", (unsigned)shader);
+  }
 }
 
 FABRIC_EXT_EXPORT void klLinkProgram(
   const KL::Size & program
 ){
-  glLinkProgram( (GLuint)program );
+  try
+  {
+    glLinkProgram( (GLuint)program );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glLinkProgram( 0x%04X )", (unsigned)program);
+  }
 }
 
 FABRIC_EXT_EXPORT void klShaderSource(
@@ -3608,7 +6940,14 @@ FABRIC_EXT_EXPORT void klShaderSource(
   const KL::VariableArray<KL::String> &strings,
   const KL::VariableArray<KL::Integer> & lengths
 ){
-  glShaderSource( (GLuint)shader, (GLsizei)count, (const GLchar**)&strings[0], (const GLint*)&lengths[0] );
+  try
+  {
+    glShaderSource( (GLuint)shader, (GLsizei)count, (const GLchar**)&strings[0], (const GLint*)&lengths[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glShaderSource( 0x%04X, %d, char*, GLint* )", (unsigned)shader, (int)count);
+  }
 }
 
 FABRIC_EXT_EXPORT void klStencilFuncSeparate(
@@ -3617,14 +6956,28 @@ FABRIC_EXT_EXPORT void klStencilFuncSeparate(
   const KL::Integer & ref,
   const KL::Size & mask
 ){
-  glStencilFuncSeparate( (GLenum)frontfunc, (GLenum)backfunc, (GLint)ref, (GLuint)mask );
+  try
+  {
+    glStencilFuncSeparate( (GLenum)frontfunc, (GLenum)backfunc, (GLint)ref, (GLuint)mask );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glStencilFuncSeparate( %d, %d, %d, 0x%04X )", (int)frontfunc, (int)backfunc, (int)ref, (unsigned)mask);
+  }
 }
 
 FABRIC_EXT_EXPORT void klStencilMaskSeparate(
   const KL::Size & var0,
   const KL::Size & var1
 ){
-  glStencilMaskSeparate( (GLenum)var0, (GLuint)var1 );
+  try
+  {
+    glStencilMaskSeparate( (GLenum)var0, (GLuint)var1 );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glStencilMaskSeparate( %d, 0x%04X )", (int)var0, (unsigned)var1);
+  }
 }
 
 FABRIC_EXT_EXPORT void klStencilOpSeparate(
@@ -3633,14 +6986,28 @@ FABRIC_EXT_EXPORT void klStencilOpSeparate(
   const KL::Size & dpfail,
   const KL::Size & dppass
 ){
-  glStencilOpSeparate( (GLenum)face, (GLenum)sfail, (GLenum)dpfail, (GLenum)dppass );
+  try
+  {
+    glStencilOpSeparate( (GLenum)face, (GLenum)sfail, (GLenum)dpfail, (GLenum)dppass );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glStencilOpSeparate( %d, %d, %d, %d )", (int)face, (int)sfail, (int)dpfail, (int)dppass);
+  }
 }
 
 FABRIC_EXT_EXPORT void klUniform1f(
   const KL::Integer & location,
   const KL::Scalar & v0
 ){
-  glUniform1f( (GLint)location, (GLfloat)v0 );
+  try
+  {
+    glUniform1f( (GLint)location, (GLfloat)v0 );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glUniform1f( %d, %f )", (int)location, (float)v0);
+  }
 }
 
 FABRIC_EXT_EXPORT void klUniform1fv(
@@ -3648,14 +7015,28 @@ FABRIC_EXT_EXPORT void klUniform1fv(
   const KL::Size & count,
   const KL::VariableArray<KL::Scalar> & value
 ){
-  glUniform1fv( (GLint)location, (GLsizei)count, (const GLfloat*)&value[0] );
+  try
+  {
+    glUniform1fv( (GLint)location, (GLsizei)count, (const GLfloat*)&value[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glUniform1fv( %d, %d, GLfloat* )", (int)location, (int)count);
+  }
 }
 
 FABRIC_EXT_EXPORT void klUniform1i(
   const KL::Integer & location,
   const KL::Integer & v0
 ){
-  glUniform1i( (GLint)location, (GLint)v0 );
+  try
+  {
+    glUniform1i( (GLint)location, (GLint)v0 );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glUniform1i( %d, %d )", (int)location, (int)v0);
+  }
 }
 
 FABRIC_EXT_EXPORT void klUniform1iv(
@@ -3663,7 +7044,14 @@ FABRIC_EXT_EXPORT void klUniform1iv(
   const KL::Size & count,
   const KL::VariableArray<KL::Integer> & value
 ){
-  glUniform1iv( (GLint)location, (GLsizei)count, (const GLint*)&value[0] );
+  try
+  {
+    glUniform1iv( (GLint)location, (GLsizei)count, (const GLint*)&value[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glUniform1iv( %d, %d, GLint* )", (int)location, (int)count);
+  }
 }
 
 FABRIC_EXT_EXPORT void klUniform2f(
@@ -3671,7 +7059,14 @@ FABRIC_EXT_EXPORT void klUniform2f(
   const KL::Scalar & v0,
   const KL::Scalar & v1
 ){
-  glUniform2f( (GLint)location, (GLfloat)v0, (GLfloat)v1 );
+  try
+  {
+    glUniform2f( (GLint)location, (GLfloat)v0, (GLfloat)v1 );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glUniform2f( %d, %f, %f )", (int)location, (float)v0, (float)v1);
+  }
 }
 
 FABRIC_EXT_EXPORT void klUniform2fv(
@@ -3679,7 +7074,14 @@ FABRIC_EXT_EXPORT void klUniform2fv(
   const KL::Size & count,
   const KL::VariableArray<KL::Scalar> & value
 ){
-  glUniform2fv( (GLint)location, (GLsizei)count, (const GLfloat*)&value[0] );
+  try
+  {
+    glUniform2fv( (GLint)location, (GLsizei)count, (const GLfloat*)&value[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glUniform2fv( %d, %d, GLfloat* )", (int)location, (int)count);
+  }
 }
 
 FABRIC_EXT_EXPORT void klUniform2i(
@@ -3687,7 +7089,14 @@ FABRIC_EXT_EXPORT void klUniform2i(
   const KL::Integer & v0,
   const KL::Integer & v1
 ){
-  glUniform2i( (GLint)location, (GLint)v0, (GLint)v1 );
+  try
+  {
+    glUniform2i( (GLint)location, (GLint)v0, (GLint)v1 );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glUniform2i( %d, %d, %d )", (int)location, (int)v0, (int)v1);
+  }
 }
 
 FABRIC_EXT_EXPORT void klUniform2iv(
@@ -3695,7 +7104,14 @@ FABRIC_EXT_EXPORT void klUniform2iv(
   const KL::Size & count,
   const KL::VariableArray<KL::Integer> & value
 ){
-  glUniform2iv( (GLint)location, (GLsizei)count, (const GLint*)&value[0] );
+  try
+  {
+    glUniform2iv( (GLint)location, (GLsizei)count, (const GLint*)&value[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glUniform2iv( %d, %d, GLint* )", (int)location, (int)count);
+  }
 }
 
 FABRIC_EXT_EXPORT void klUniform3f(
@@ -3704,7 +7120,14 @@ FABRIC_EXT_EXPORT void klUniform3f(
   const KL::Scalar & v1,
   const KL::Scalar & v2
 ){
-  glUniform3f( (GLint)location, (GLfloat)v0, (GLfloat)v1, (GLfloat)v2 );
+  try
+  {
+    glUniform3f( (GLint)location, (GLfloat)v0, (GLfloat)v1, (GLfloat)v2 );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glUniform3f( %d, %f, %f, %f )", (int)location, (float)v0, (float)v1, (float)v2);
+  }
 }
 
 FABRIC_EXT_EXPORT void klUniform3fv(
@@ -3712,7 +7135,14 @@ FABRIC_EXT_EXPORT void klUniform3fv(
   const KL::Size & count,
   const KL::VariableArray<KL::Scalar> & value
 ){
-  glUniform3fv( (GLint)location, (GLsizei)count, (const GLfloat*)&value[0] );
+  try
+  {
+    glUniform3fv( (GLint)location, (GLsizei)count, (const GLfloat*)&value[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glUniform3fv( %d, %d, GLfloat* )", (int)location, (int)count);
+  }
 }
 
 FABRIC_EXT_EXPORT void klUniform3i(
@@ -3721,7 +7151,14 @@ FABRIC_EXT_EXPORT void klUniform3i(
   const KL::Integer & v1,
   const KL::Integer & v2
 ){
-  glUniform3i( (GLint)location, (GLint)v0, (GLint)v1, (GLint)v2 );
+  try
+  {
+    glUniform3i( (GLint)location, (GLint)v0, (GLint)v1, (GLint)v2 );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glUniform3i( %d, %d, %d, %d )", (int)location, (int)v0, (int)v1, (int)v2);
+  }
 }
 
 FABRIC_EXT_EXPORT void klUniform3iv(
@@ -3729,7 +7166,14 @@ FABRIC_EXT_EXPORT void klUniform3iv(
   const KL::Size & count,
   const KL::VariableArray<KL::Integer> & value
 ){
-  glUniform3iv( (GLint)location, (GLsizei)count, (const GLint*)&value[0] );
+  try
+  {
+    glUniform3iv( (GLint)location, (GLsizei)count, (const GLint*)&value[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glUniform3iv( %d, %d, GLint* )", (int)location, (int)count);
+  }
 }
 
 FABRIC_EXT_EXPORT void klUniform4f(
@@ -3739,7 +7183,14 @@ FABRIC_EXT_EXPORT void klUniform4f(
   const KL::Scalar & v2,
   const KL::Scalar & v3
 ){
-  glUniform4f( (GLint)location, (GLfloat)v0, (GLfloat)v1, (GLfloat)v2, (GLfloat)v3 );
+  try
+  {
+    glUniform4f( (GLint)location, (GLfloat)v0, (GLfloat)v1, (GLfloat)v2, (GLfloat)v3 );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glUniform4f( %d, %f, %f, %f, %f )", (int)location, (float)v0, (float)v1, (float)v2, (float)v3);
+  }
 }
 
 FABRIC_EXT_EXPORT void klUniform4fv(
@@ -3747,7 +7198,14 @@ FABRIC_EXT_EXPORT void klUniform4fv(
   const KL::Size & count,
   const KL::VariableArray<KL::Scalar> & value
 ){
-  glUniform4fv( (GLint)location, (GLsizei)count, (const GLfloat*)&value[0] );
+  try
+  {
+    glUniform4fv( (GLint)location, (GLsizei)count, (const GLfloat*)&value[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glUniform4fv( %d, %d, GLfloat* )", (int)location, (int)count);
+  }
 }
 
 FABRIC_EXT_EXPORT void klUniform4i(
@@ -3757,7 +7215,14 @@ FABRIC_EXT_EXPORT void klUniform4i(
   const KL::Integer & v2,
   const KL::Integer & v3
 ){
-  glUniform4i( (GLint)location, (GLint)v0, (GLint)v1, (GLint)v2, (GLint)v3 );
+  try
+  {
+    glUniform4i( (GLint)location, (GLint)v0, (GLint)v1, (GLint)v2, (GLint)v3 );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glUniform4i( %d, %d, %d, %d, %d )", (int)location, (int)v0, (int)v1, (int)v2, (int)v3);
+  }
 }
 
 FABRIC_EXT_EXPORT void klUniform4iv(
@@ -3765,7 +7230,14 @@ FABRIC_EXT_EXPORT void klUniform4iv(
   const KL::Size & count,
   const KL::VariableArray<KL::Integer> & value
 ){
-  glUniform4iv( (GLint)location, (GLsizei)count, (const GLint*)&value[0] );
+  try
+  {
+    glUniform4iv( (GLint)location, (GLsizei)count, (const GLint*)&value[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glUniform4iv( %d, %d, GLint* )", (int)location, (int)count);
+  }
 }
 
 FABRIC_EXT_EXPORT void klUniformMatrix2fv(
@@ -3774,7 +7246,14 @@ FABRIC_EXT_EXPORT void klUniformMatrix2fv(
   const KL::Boolean & transpose,
   const KL::VariableArray<KL::Scalar> & value
 ){
-  glUniformMatrix2fv( (GLint)location, (GLsizei)count, (GLboolean)transpose, (const GLfloat*)&value[0] );
+  try
+  {
+    glUniformMatrix2fv( (GLint)location, (GLsizei)count, (GLboolean)transpose, (const GLfloat*)&value[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glUniformMatrix2fv( %d, %d, %b, GLfloat* )", (int)location, (int)count, (bool)transpose);
+  }
 }
 
 FABRIC_EXT_EXPORT void klUniformMatrix3fv(
@@ -3783,7 +7262,14 @@ FABRIC_EXT_EXPORT void klUniformMatrix3fv(
   const KL::Boolean & transpose,
   const KL::VariableArray<KL::Scalar> & value
 ){
-  glUniformMatrix3fv( (GLint)location, (GLsizei)count, (GLboolean)transpose, (const GLfloat*)&value[0] );
+  try
+  {
+    glUniformMatrix3fv( (GLint)location, (GLsizei)count, (GLboolean)transpose, (const GLfloat*)&value[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glUniformMatrix3fv( %d, %d, %b, GLfloat* )", (int)location, (int)count, (bool)transpose);
+  }
 }
 
 FABRIC_EXT_EXPORT void klUniformMatrix4fv(
@@ -3792,61 +7278,124 @@ FABRIC_EXT_EXPORT void klUniformMatrix4fv(
   const KL::Boolean & transpose,
   const KL::VariableArray<KL::Scalar> & value
 ){
-  glUniformMatrix4fv( (GLint)location, (GLsizei)count, (GLboolean)transpose, (const GLfloat*)&value[0] );
+  try
+  {
+    glUniformMatrix4fv( (GLint)location, (GLsizei)count, (GLboolean)transpose, (const GLfloat*)&value[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glUniformMatrix4fv( %d, %d, %b, GLfloat* )", (int)location, (int)count, (bool)transpose);
+  }
 }
 
 FABRIC_EXT_EXPORT void klUseProgram(
   const KL::Size & program
 ){
-  glUseProgram( (GLuint)program );
+  try
+  {
+    glUseProgram( (GLuint)program );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glUseProgram( 0x%04X )", (unsigned)program);
+  }
 }
 
 FABRIC_EXT_EXPORT void klValidateProgram(
   const KL::Size & program
 ){
-  glValidateProgram( (GLuint)program );
+  try
+  {
+    glValidateProgram( (GLuint)program );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glValidateProgram( 0x%04X )", (unsigned)program);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttrib1d(
   const KL::Size & index,
   const KL::Scalar & x
 ){
-  glVertexAttrib1d( (GLuint)index, (GLdouble)x );
+  try
+  {
+    glVertexAttrib1d( (GLuint)index, (GLdouble)x );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttrib1d( 0x%04X, %f )", (unsigned)index, (float)x);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttrib1dv(
   const KL::Size & index,
   const KL::VariableArray<KL::Scalar> & v
 ){
-  glVertexAttrib1dv( (GLuint)index, (const GLdouble*)&v[0] );
+  try
+  {
+    glVertexAttrib1dv( (GLuint)index, (const GLdouble*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttrib1dv( 0x%04X, GLdouble* )", (unsigned)index);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttrib1f(
   const KL::Size & index,
   const KL::Scalar & x
 ){
-  glVertexAttrib1f( (GLuint)index, (GLfloat)x );
+  try
+  {
+    glVertexAttrib1f( (GLuint)index, (GLfloat)x );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttrib1f( 0x%04X, %f )", (unsigned)index, (float)x);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttrib1fv(
   const KL::Size & index,
   const KL::VariableArray<KL::Scalar> & v
 ){
-  glVertexAttrib1fv( (GLuint)index, (const GLfloat*)&v[0] );
+  try
+  {
+    glVertexAttrib1fv( (GLuint)index, (const GLfloat*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttrib1fv( 0x%04X, GLfloat* )", (unsigned)index);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttrib1s(
   const KL::Size & index,
   const KL::Integer & x
 ){
-  glVertexAttrib1s( (GLuint)index, (GLshort)x );
+  try
+  {
+    glVertexAttrib1s( (GLuint)index, (GLshort)x );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttrib1s( 0x%04X, %d )", (unsigned)index, (int)x);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttrib1sv(
   const KL::Size & index,
   const KL::VariableArray<KL::Integer> & v
 ){
-  glVertexAttrib1sv( (GLuint)index, (const GLshort*)&v[0] );
+  try
+  {
+    glVertexAttrib1sv( (GLuint)index, (const GLshort*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttrib1sv( 0x%04X, GLshort* )", (unsigned)index);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttrib2d(
@@ -3854,14 +7403,28 @@ FABRIC_EXT_EXPORT void klVertexAttrib2d(
   const KL::Scalar & x,
   const KL::Scalar & y
 ){
-  glVertexAttrib2d( (GLuint)index, (GLdouble)x, (GLdouble)y );
+  try
+  {
+    glVertexAttrib2d( (GLuint)index, (GLdouble)x, (GLdouble)y );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttrib2d( 0x%04X, %f, %f )", (unsigned)index, (float)x, (float)y);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttrib2dv(
   const KL::Size & index,
   const KL::VariableArray<KL::Scalar> & v
 ){
-  glVertexAttrib2dv( (GLuint)index, (const GLdouble*)&v[0] );
+  try
+  {
+    glVertexAttrib2dv( (GLuint)index, (const GLdouble*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttrib2dv( 0x%04X, GLdouble* )", (unsigned)index);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttrib2f(
@@ -3869,14 +7432,28 @@ FABRIC_EXT_EXPORT void klVertexAttrib2f(
   const KL::Scalar & x,
   const KL::Scalar & y
 ){
-  glVertexAttrib2f( (GLuint)index, (GLfloat)x, (GLfloat)y );
+  try
+  {
+    glVertexAttrib2f( (GLuint)index, (GLfloat)x, (GLfloat)y );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttrib2f( 0x%04X, %f, %f )", (unsigned)index, (float)x, (float)y);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttrib2fv(
   const KL::Size & index,
   const KL::VariableArray<KL::Scalar> & v
 ){
-  glVertexAttrib2fv( (GLuint)index, (const GLfloat*)&v[0] );
+  try
+  {
+    glVertexAttrib2fv( (GLuint)index, (const GLfloat*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttrib2fv( 0x%04X, GLfloat* )", (unsigned)index);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttrib2s(
@@ -3884,14 +7461,28 @@ FABRIC_EXT_EXPORT void klVertexAttrib2s(
   const KL::Integer & x,
   const KL::Integer & y
 ){
-  glVertexAttrib2s( (GLuint)index, (GLshort)x, (GLshort)y );
+  try
+  {
+    glVertexAttrib2s( (GLuint)index, (GLshort)x, (GLshort)y );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttrib2s( 0x%04X, %d, %d )", (unsigned)index, (int)x, (int)y);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttrib2sv(
   const KL::Size & index,
   const KL::VariableArray<KL::Integer> & v
 ){
-  glVertexAttrib2sv( (GLuint)index, (const GLshort*)&v[0] );
+  try
+  {
+    glVertexAttrib2sv( (GLuint)index, (const GLshort*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttrib2sv( 0x%04X, GLshort* )", (unsigned)index);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttrib3d(
@@ -3900,14 +7491,28 @@ FABRIC_EXT_EXPORT void klVertexAttrib3d(
   const KL::Scalar & y,
   const KL::Scalar & z
 ){
-  glVertexAttrib3d( (GLuint)index, (GLdouble)x, (GLdouble)y, (GLdouble)z );
+  try
+  {
+    glVertexAttrib3d( (GLuint)index, (GLdouble)x, (GLdouble)y, (GLdouble)z );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttrib3d( 0x%04X, %f, %f, %f )", (unsigned)index, (float)x, (float)y, (float)z);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttrib3dv(
   const KL::Size & index,
   const KL::VariableArray<KL::Scalar> & v
 ){
-  glVertexAttrib3dv( (GLuint)index, (const GLdouble*)&v[0] );
+  try
+  {
+    glVertexAttrib3dv( (GLuint)index, (const GLdouble*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttrib3dv( 0x%04X, GLdouble* )", (unsigned)index);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttrib3f(
@@ -3916,14 +7521,28 @@ FABRIC_EXT_EXPORT void klVertexAttrib3f(
   const KL::Scalar & y,
   const KL::Scalar & z
 ){
-  glVertexAttrib3f( (GLuint)index, (GLfloat)x, (GLfloat)y, (GLfloat)z );
+  try
+  {
+    glVertexAttrib3f( (GLuint)index, (GLfloat)x, (GLfloat)y, (GLfloat)z );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttrib3f( 0x%04X, %f, %f, %f )", (unsigned)index, (float)x, (float)y, (float)z);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttrib3fv(
   const KL::Size & index,
   const KL::VariableArray<KL::Scalar> & v
 ){
-  glVertexAttrib3fv( (GLuint)index, (const GLfloat*)&v[0] );
+  try
+  {
+    glVertexAttrib3fv( (GLuint)index, (const GLfloat*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttrib3fv( 0x%04X, GLfloat* )", (unsigned)index);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttrib3s(
@@ -3932,35 +7551,70 @@ FABRIC_EXT_EXPORT void klVertexAttrib3s(
   const KL::Integer & y,
   const KL::Integer & z
 ){
-  glVertexAttrib3s( (GLuint)index, (GLshort)x, (GLshort)y, (GLshort)z );
+  try
+  {
+    glVertexAttrib3s( (GLuint)index, (GLshort)x, (GLshort)y, (GLshort)z );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttrib3s( 0x%04X, %d, %d, %d )", (unsigned)index, (int)x, (int)y, (int)z);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttrib3sv(
   const KL::Size & index,
   const KL::VariableArray<KL::Integer> & v
 ){
-  glVertexAttrib3sv( (GLuint)index, (const GLshort*)&v[0] );
+  try
+  {
+    glVertexAttrib3sv( (GLuint)index, (const GLshort*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttrib3sv( 0x%04X, GLshort* )", (unsigned)index);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttrib4Nbv(
   const KL::Size & index,
   const KL::VariableArray<KL::Byte> & v
 ){
-  glVertexAttrib4Nbv( (GLuint)index, (const GLbyte*)&v[0] );
+  try
+  {
+    glVertexAttrib4Nbv( (GLuint)index, (const GLbyte*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttrib4Nbv( 0x%04X, GLbyte* )", (unsigned)index);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttrib4Niv(
   const KL::Size & index,
   const KL::VariableArray<KL::Integer> & v
 ){
-  glVertexAttrib4Niv( (GLuint)index, (const GLint*)&v[0] );
+  try
+  {
+    glVertexAttrib4Niv( (GLuint)index, (const GLint*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttrib4Niv( 0x%04X, GLint* )", (unsigned)index);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttrib4Nsv(
   const KL::Size & index,
   const KL::VariableArray<KL::Integer> & v
 ){
-  glVertexAttrib4Nsv( (GLuint)index, (const GLshort*)&v[0] );
+  try
+  {
+    glVertexAttrib4Nsv( (GLuint)index, (const GLshort*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttrib4Nsv( 0x%04X, GLshort* )", (unsigned)index);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttrib4Nub(
@@ -3970,35 +7624,70 @@ FABRIC_EXT_EXPORT void klVertexAttrib4Nub(
   const KL::Size & z,
   const KL::Size & w
 ){
-  glVertexAttrib4Nub( (GLuint)index, (GLubyte)x, (GLubyte)y, (GLubyte)z, (GLubyte)w );
+  try
+  {
+    glVertexAttrib4Nub( (GLuint)index, (GLubyte)x, (GLubyte)y, (GLubyte)z, (GLubyte)w );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttrib4Nub( 0x%04X, 0x%04X, 0x%04X, 0x%04X, 0x%04X )", (unsigned)index, (unsigned)x, (unsigned)y, (unsigned)z, (unsigned)w);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttrib4Nubv(
   const KL::Size & index,
   const KL::VariableArray<KL::Size> & v
 ){
-  glVertexAttrib4Nubv( (GLuint)index, (const GLubyte*)&v[0] );
+  try
+  {
+    glVertexAttrib4Nubv( (GLuint)index, (const GLubyte*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttrib4Nubv( 0x%04X, GLubyte* )", (unsigned)index);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttrib4Nuiv(
   const KL::Size & index,
   const KL::VariableArray<KL::Size> & v
 ){
-  glVertexAttrib4Nuiv( (GLuint)index, (const GLuint*)&v[0] );
+  try
+  {
+    glVertexAttrib4Nuiv( (GLuint)index, (const GLuint*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttrib4Nuiv( 0x%04X, GLuint* )", (unsigned)index);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttrib4Nusv(
   const KL::Size & index,
   const KL::VariableArray<KL::Integer> & v
 ){
-  glVertexAttrib4Nusv( (GLuint)index, (const GLushort*)&v[0] );
+  try
+  {
+    glVertexAttrib4Nusv( (GLuint)index, (const GLushort*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttrib4Nusv( 0x%04X, GLushort* )", (unsigned)index);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttrib4bv(
   const KL::Size & index,
   const KL::VariableArray<KL::Byte> & v
 ){
-  glVertexAttrib4bv( (GLuint)index, (const GLbyte*)&v[0] );
+  try
+  {
+    glVertexAttrib4bv( (GLuint)index, (const GLbyte*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttrib4bv( 0x%04X, GLbyte* )", (unsigned)index);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttrib4d(
@@ -4008,14 +7697,28 @@ FABRIC_EXT_EXPORT void klVertexAttrib4d(
   const KL::Scalar & z,
   const KL::Scalar & w
 ){
-  glVertexAttrib4d( (GLuint)index, (GLdouble)x, (GLdouble)y, (GLdouble)z, (GLdouble)w );
+  try
+  {
+    glVertexAttrib4d( (GLuint)index, (GLdouble)x, (GLdouble)y, (GLdouble)z, (GLdouble)w );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttrib4d( 0x%04X, %f, %f, %f, %f )", (unsigned)index, (float)x, (float)y, (float)z, (float)w);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttrib4dv(
   const KL::Size & index,
   const KL::VariableArray<KL::Scalar> & v
 ){
-  glVertexAttrib4dv( (GLuint)index, (const GLdouble*)&v[0] );
+  try
+  {
+    glVertexAttrib4dv( (GLuint)index, (const GLdouble*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttrib4dv( 0x%04X, GLdouble* )", (unsigned)index);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttrib4f(
@@ -4025,21 +7728,42 @@ FABRIC_EXT_EXPORT void klVertexAttrib4f(
   const KL::Scalar & z,
   const KL::Scalar & w
 ){
-  glVertexAttrib4f( (GLuint)index, (GLfloat)x, (GLfloat)y, (GLfloat)z, (GLfloat)w );
+  try
+  {
+    glVertexAttrib4f( (GLuint)index, (GLfloat)x, (GLfloat)y, (GLfloat)z, (GLfloat)w );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttrib4f( 0x%04X, %f, %f, %f, %f )", (unsigned)index, (float)x, (float)y, (float)z, (float)w);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttrib4fv(
   const KL::Size & index,
   const KL::VariableArray<KL::Scalar> & v
 ){
-  glVertexAttrib4fv( (GLuint)index, (const GLfloat*)&v[0] );
+  try
+  {
+    glVertexAttrib4fv( (GLuint)index, (const GLfloat*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttrib4fv( 0x%04X, GLfloat* )", (unsigned)index);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttrib4iv(
   const KL::Size & index,
   const KL::VariableArray<KL::Integer> & v
 ){
-  glVertexAttrib4iv( (GLuint)index, (const GLint*)&v[0] );
+  try
+  {
+    glVertexAttrib4iv( (GLuint)index, (const GLint*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttrib4iv( 0x%04X, GLint* )", (unsigned)index);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttrib4s(
@@ -4049,35 +7773,70 @@ FABRIC_EXT_EXPORT void klVertexAttrib4s(
   const KL::Integer & z,
   const KL::Integer & w
 ){
-  glVertexAttrib4s( (GLuint)index, (GLshort)x, (GLshort)y, (GLshort)z, (GLshort)w );
+  try
+  {
+    glVertexAttrib4s( (GLuint)index, (GLshort)x, (GLshort)y, (GLshort)z, (GLshort)w );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttrib4s( 0x%04X, %d, %d, %d, %d )", (unsigned)index, (int)x, (int)y, (int)z, (int)w);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttrib4sv(
   const KL::Size & index,
   const KL::VariableArray<KL::Integer> & v
 ){
-  glVertexAttrib4sv( (GLuint)index, (const GLshort*)&v[0] );
+  try
+  {
+    glVertexAttrib4sv( (GLuint)index, (const GLshort*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttrib4sv( 0x%04X, GLshort* )", (unsigned)index);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttrib4ubv(
   const KL::Size & index,
   const KL::VariableArray<KL::Size> & v
 ){
-  glVertexAttrib4ubv( (GLuint)index, (const GLubyte*)&v[0] );
+  try
+  {
+    glVertexAttrib4ubv( (GLuint)index, (const GLubyte*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttrib4ubv( 0x%04X, GLubyte* )", (unsigned)index);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttrib4uiv(
   const KL::Size & index,
   const KL::VariableArray<KL::Size> & v
 ){
-  glVertexAttrib4uiv( (GLuint)index, (const GLuint*)&v[0] );
+  try
+  {
+    glVertexAttrib4uiv( (GLuint)index, (const GLuint*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttrib4uiv( 0x%04X, GLuint* )", (unsigned)index);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttrib4usv(
   const KL::Size & index,
   const KL::VariableArray<KL::Integer> & v
 ){
-  glVertexAttrib4usv( (GLuint)index, (const GLushort*)&v[0] );
+  try
+  {
+    glVertexAttrib4usv( (GLuint)index, (const GLushort*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttrib4usv( 0x%04X, GLushort* )", (unsigned)index);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttribPointer(
@@ -4088,7 +7847,14 @@ FABRIC_EXT_EXPORT void klVertexAttribPointer(
   const KL::Size & stride,
   KL::Data pointer
 ){
-  glVertexAttribPointer( (GLuint)index, (GLint)size, (GLenum)type, (GLboolean)normalized, (GLsizei)stride, pointer );
+  try
+  {
+    glVertexAttribPointer( (GLuint)index, (GLint)size, (GLenum)type, (GLboolean)normalized, (GLsizei)stride, pointer );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttribPointer( 0x%04X, %d, %d, %b, %d, GLvoid* )", (unsigned)index, (int)size, (int)type, (bool)normalized, (int)stride);
+  }
 }
 
 FABRIC_EXT_EXPORT void klUniformMatrix2x3fv(
@@ -4097,7 +7863,14 @@ FABRIC_EXT_EXPORT void klUniformMatrix2x3fv(
   const KL::Boolean & transpose,
   const KL::VariableArray<KL::Scalar> & value
 ){
-  glUniformMatrix2x3fv( (GLint)location, (GLsizei)count, (GLboolean)transpose, (const GLfloat*)&value[0] );
+  try
+  {
+    glUniformMatrix2x3fv( (GLint)location, (GLsizei)count, (GLboolean)transpose, (const GLfloat*)&value[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glUniformMatrix2x3fv( %d, %d, %b, GLfloat* )", (int)location, (int)count, (bool)transpose);
+  }
 }
 
 FABRIC_EXT_EXPORT void klUniformMatrix2x4fv(
@@ -4106,7 +7879,14 @@ FABRIC_EXT_EXPORT void klUniformMatrix2x4fv(
   const KL::Boolean & transpose,
   const KL::VariableArray<KL::Scalar> & value
 ){
-  glUniformMatrix2x4fv( (GLint)location, (GLsizei)count, (GLboolean)transpose, (const GLfloat*)&value[0] );
+  try
+  {
+    glUniformMatrix2x4fv( (GLint)location, (GLsizei)count, (GLboolean)transpose, (const GLfloat*)&value[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glUniformMatrix2x4fv( %d, %d, %b, GLfloat* )", (int)location, (int)count, (bool)transpose);
+  }
 }
 
 FABRIC_EXT_EXPORT void klUniformMatrix3x2fv(
@@ -4115,7 +7895,14 @@ FABRIC_EXT_EXPORT void klUniformMatrix3x2fv(
   const KL::Boolean & transpose,
   const KL::VariableArray<KL::Scalar> & value
 ){
-  glUniformMatrix3x2fv( (GLint)location, (GLsizei)count, (GLboolean)transpose, (const GLfloat*)&value[0] );
+  try
+  {
+    glUniformMatrix3x2fv( (GLint)location, (GLsizei)count, (GLboolean)transpose, (const GLfloat*)&value[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glUniformMatrix3x2fv( %d, %d, %b, GLfloat* )", (int)location, (int)count, (bool)transpose);
+  }
 }
 
 FABRIC_EXT_EXPORT void klUniformMatrix3x4fv(
@@ -4124,7 +7911,14 @@ FABRIC_EXT_EXPORT void klUniformMatrix3x4fv(
   const KL::Boolean & transpose,
   const KL::VariableArray<KL::Scalar> & value
 ){
-  glUniformMatrix3x4fv( (GLint)location, (GLsizei)count, (GLboolean)transpose, (const GLfloat*)&value[0] );
+  try
+  {
+    glUniformMatrix3x4fv( (GLint)location, (GLsizei)count, (GLboolean)transpose, (const GLfloat*)&value[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glUniformMatrix3x4fv( %d, %d, %b, GLfloat* )", (int)location, (int)count, (bool)transpose);
+  }
 }
 
 FABRIC_EXT_EXPORT void klUniformMatrix4x2fv(
@@ -4133,7 +7927,14 @@ FABRIC_EXT_EXPORT void klUniformMatrix4x2fv(
   const KL::Boolean & transpose,
   const KL::VariableArray<KL::Scalar> & value
 ){
-  glUniformMatrix4x2fv( (GLint)location, (GLsizei)count, (GLboolean)transpose, (const GLfloat*)&value[0] );
+  try
+  {
+    glUniformMatrix4x2fv( (GLint)location, (GLsizei)count, (GLboolean)transpose, (const GLfloat*)&value[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glUniformMatrix4x2fv( %d, %d, %b, GLfloat* )", (int)location, (int)count, (bool)transpose);
+  }
 }
 
 FABRIC_EXT_EXPORT void klUniformMatrix4x3fv(
@@ -4142,20 +7943,41 @@ FABRIC_EXT_EXPORT void klUniformMatrix4x3fv(
   const KL::Boolean & transpose,
   const KL::VariableArray<KL::Scalar> & value
 ){
-  glUniformMatrix4x3fv( (GLint)location, (GLsizei)count, (GLboolean)transpose, (const GLfloat*)&value[0] );
+  try
+  {
+    glUniformMatrix4x3fv( (GLint)location, (GLsizei)count, (GLboolean)transpose, (const GLfloat*)&value[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glUniformMatrix4x3fv( %d, %d, %b, GLfloat* )", (int)location, (int)count, (bool)transpose);
+  }
 }
 
 FABRIC_EXT_EXPORT void klBeginConditionalRender(
   const KL::Size & var0,
   const KL::Size & var1
 ){
-  glBeginConditionalRender( (GLuint)var0, (GLenum)var1 );
+  try
+  {
+    glBeginConditionalRender( (GLuint)var0, (GLenum)var1 );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glBeginConditionalRender( 0x%04X, %d )", (unsigned)var0, (int)var1);
+  }
 }
 
 FABRIC_EXT_EXPORT void klBeginTransformFeedback(
   const KL::Size & var0
 ){
-  glBeginTransformFeedback( (GLenum)var0 );
+  try
+  {
+    glBeginTransformFeedback( (GLenum)var0 );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glBeginTransformFeedback( %d )", (int)var0);
+  }
 }
 
 FABRIC_EXT_EXPORT void klBindFragDataLocation(
@@ -4163,14 +7985,28 @@ FABRIC_EXT_EXPORT void klBindFragDataLocation(
   const KL::Size & var1,
   const KL::String &var2
 ){
-  glBindFragDataLocation( (GLuint)var0, (GLuint)var1, (const GLchar*)var2.data() );
+  try
+  {
+    glBindFragDataLocation( (GLuint)var0, (GLuint)var1, (const GLchar*)var2.data() );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glBindFragDataLocation( 0x%04X, 0x%04X, char* )", (unsigned)var0, (unsigned)var1);
+  }
 }
 
 FABRIC_EXT_EXPORT void klClampColor(
   const KL::Size & var0,
   const KL::Size & var1
 ){
-  glClampColor( (GLenum)var0, (GLenum)var1 );
+  try
+  {
+    glClampColor( (GLenum)var0, (GLenum)var1 );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glClampColor( %d, %d )", (int)var0, (int)var1);
+  }
 }
 
 FABRIC_EXT_EXPORT void klClearBufferfi(
@@ -4179,7 +8015,14 @@ FABRIC_EXT_EXPORT void klClearBufferfi(
   const KL::Scalar & var2,
   const KL::Integer & var3
 ){
-  glClearBufferfi( (GLenum)var0, (GLint)var1, (GLfloat)var2, (GLint)var3 );
+  try
+  {
+    glClearBufferfi( (GLenum)var0, (GLint)var1, (GLfloat)var2, (GLint)var3 );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glClearBufferfi( %d, %d, %f, %d )", (int)var0, (int)var1, (float)var2, (int)var3);
+  }
 }
 
 FABRIC_EXT_EXPORT void klClearBufferfv(
@@ -4187,7 +8030,14 @@ FABRIC_EXT_EXPORT void klClearBufferfv(
   const KL::Integer & var1,
   const KL::VariableArray<KL::Scalar> & var2
 ){
-  glClearBufferfv( (GLenum)var0, (GLint)var1, (const GLfloat*)&var2[0] );
+  try
+  {
+    glClearBufferfv( (GLenum)var0, (GLint)var1, (const GLfloat*)&var2[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glClearBufferfv( %d, %d, GLfloat* )", (int)var0, (int)var1);
+  }
 }
 
 FABRIC_EXT_EXPORT void klClearBufferiv(
@@ -4195,7 +8045,14 @@ FABRIC_EXT_EXPORT void klClearBufferiv(
   const KL::Integer & var1,
   const KL::VariableArray<KL::Integer> & var2
 ){
-  glClearBufferiv( (GLenum)var0, (GLint)var1, (const GLint*)&var2[0] );
+  try
+  {
+    glClearBufferiv( (GLenum)var0, (GLint)var1, (const GLint*)&var2[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glClearBufferiv( %d, %d, GLint* )", (int)var0, (int)var1);
+  }
 }
 
 FABRIC_EXT_EXPORT void klClearBufferuiv(
@@ -4203,7 +8060,14 @@ FABRIC_EXT_EXPORT void klClearBufferuiv(
   const KL::Integer & var1,
   const KL::VariableArray<KL::Size> & var2
 ){
-  glClearBufferuiv( (GLenum)var0, (GLint)var1, (const GLuint*)&var2[0] );
+  try
+  {
+    glClearBufferuiv( (GLenum)var0, (GLint)var1, (const GLuint*)&var2[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glClearBufferuiv( %d, %d, GLuint* )", (int)var0, (int)var1);
+  }
 }
 
 FABRIC_EXT_EXPORT void klColorMaski(
@@ -4213,31 +8077,66 @@ FABRIC_EXT_EXPORT void klColorMaski(
   const KL::Boolean & var3,
   const KL::Boolean & var4
 ){
-  glColorMaski( (GLuint)var0, (GLboolean)var1, (GLboolean)var2, (GLboolean)var3, (GLboolean)var4 );
+  try
+  {
+    glColorMaski( (GLuint)var0, (GLboolean)var1, (GLboolean)var2, (GLboolean)var3, (GLboolean)var4 );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glColorMaski( 0x%04X, %b, %b, %b, %b )", (unsigned)var0, (bool)var1, (bool)var2, (bool)var3, (bool)var4);
+  }
 }
 
 FABRIC_EXT_EXPORT void klDisablei(
   const KL::Size & var0,
   const KL::Size & var1
 ){
-  glDisablei( (GLenum)var0, (GLuint)var1 );
+  try
+  {
+    glDisablei( (GLenum)var0, (GLuint)var1 );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glDisablei( %d, 0x%04X )", (int)var0, (unsigned)var1);
+  }
 }
 
 FABRIC_EXT_EXPORT void klEnablei(
   const KL::Size & var0,
   const KL::Size & var1
 ){
-  glEnablei( (GLenum)var0, (GLuint)var1 );
+  try
+  {
+    glEnablei( (GLenum)var0, (GLuint)var1 );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glEnablei( %d, 0x%04X )", (int)var0, (unsigned)var1);
+  }
 }
 
 FABRIC_EXT_EXPORT void klEndConditionalRender()
 {
-  glEndConditionalRender();
+  try
+  {
+    glEndConditionalRender();
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glEndConditionalRender(  )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klEndTransformFeedback()
 {
-  glEndTransformFeedback();
+  try
+  {
+    glEndTransformFeedback();
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glEndTransformFeedback(  )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetBooleani_v(
@@ -4245,15 +8144,29 @@ FABRIC_EXT_EXPORT void klGetBooleani_v(
   const KL::Size & var1,
   KL::VariableArray<KL::Boolean> & var2
 ){
-  glGetBooleani_v( (GLenum)var0, (GLuint)var1, (GLboolean*)&var2[0] );
+  try
+  {
+    glGetBooleani_v( (GLenum)var0, (GLuint)var1, (GLboolean*)&var2[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetBooleani_v( %d, 0x%04X, GLboolean* )", (int)var0, (unsigned)var1);
+  }
 }
 
 FABRIC_EXT_EXPORT KL::Integer klGetFragDataLocation(
   const KL::Size & var0,
   const KL::String &var1
 ){
-  GLint result = glGetFragDataLocation( (GLuint)var0, (const GLchar*)var1.data() );
+  try
+  {
+    GLint result = glGetFragDataLocation( (GLuint)var0, (const GLchar*)var1.data() );
   return (KL::Integer)result;
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetFragDataLocation( 0x%04X, char* )", (unsigned)var0);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetTexParameterIiv(
@@ -4261,7 +8174,14 @@ FABRIC_EXT_EXPORT void klGetTexParameterIiv(
   const KL::Size & var1,
   KL::VariableArray<KL::Integer> & var2
 ){
-  glGetTexParameterIiv( (GLenum)var0, (GLenum)var1, (GLint*)&var2[0] );
+  try
+  {
+    glGetTexParameterIiv( (GLenum)var0, (GLenum)var1, (GLint*)&var2[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetTexParameterIiv( %d, %d, GLint* )", (int)var0, (int)var1);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetTexParameterIuiv(
@@ -4269,7 +8189,14 @@ FABRIC_EXT_EXPORT void klGetTexParameterIuiv(
   const KL::Size & var1,
   KL::VariableArray<KL::Size> & var2
 ){
-  glGetTexParameterIuiv( (GLenum)var0, (GLenum)var1, (GLuint*)&var2[0] );
+  try
+  {
+    glGetTexParameterIuiv( (GLenum)var0, (GLenum)var1, (GLuint*)&var2[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetTexParameterIuiv( %d, %d, GLuint* )", (int)var0, (int)var1);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetTransformFeedbackVarying(
@@ -4277,7 +8204,14 @@ FABRIC_EXT_EXPORT void klGetTransformFeedbackVarying(
   const KL::Size & var1,
   KL::VariableArray<KL::Integer> & var2
 ){
-  glGetTransformFeedbackVarying( (GLuint)var0, (GLuint)var1, (GLint*)&var2[0] );
+  try
+  {
+    glGetTransformFeedbackVarying( (GLuint)var0, (GLuint)var1, (GLint*)&var2[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetTransformFeedbackVarying( 0x%04X, 0x%04X, GLint* )", (unsigned)var0, (unsigned)var1);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetUniformuiv(
@@ -4285,7 +8219,14 @@ FABRIC_EXT_EXPORT void klGetUniformuiv(
   const KL::Integer & var1,
   KL::VariableArray<KL::Size> & var2
 ){
-  glGetUniformuiv( (GLuint)var0, (GLint)var1, (GLuint*)&var2[0] );
+  try
+  {
+    glGetUniformuiv( (GLuint)var0, (GLint)var1, (GLuint*)&var2[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetUniformuiv( 0x%04X, %d, GLuint* )", (unsigned)var0, (int)var1);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetVertexAttribIiv(
@@ -4293,7 +8234,14 @@ FABRIC_EXT_EXPORT void klGetVertexAttribIiv(
   const KL::Size & var1,
   KL::VariableArray<KL::Integer> & var2
 ){
-  glGetVertexAttribIiv( (GLuint)var0, (GLenum)var1, (GLint*)&var2[0] );
+  try
+  {
+    glGetVertexAttribIiv( (GLuint)var0, (GLenum)var1, (GLint*)&var2[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetVertexAttribIiv( 0x%04X, %d, GLint* )", (unsigned)var0, (int)var1);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetVertexAttribIuiv(
@@ -4301,15 +8249,29 @@ FABRIC_EXT_EXPORT void klGetVertexAttribIuiv(
   const KL::Size & var1,
   KL::VariableArray<KL::Size> & var2
 ){
-  glGetVertexAttribIuiv( (GLuint)var0, (GLenum)var1, (GLuint*)&var2[0] );
+  try
+  {
+    glGetVertexAttribIuiv( (GLuint)var0, (GLenum)var1, (GLuint*)&var2[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetVertexAttribIuiv( 0x%04X, %d, GLuint* )", (unsigned)var0, (int)var1);
+  }
 }
 
 FABRIC_EXT_EXPORT KL::Boolean klIsEnabledi(
   const KL::Size & var0,
   const KL::Size & var1
 ){
-  GLboolean result = glIsEnabledi( (GLenum)var0, (GLuint)var1 );
+  try
+  {
+    GLboolean result = glIsEnabledi( (GLenum)var0, (GLuint)var1 );
   return (KL::Boolean)result;
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glIsEnabledi( %d, 0x%04X )", (int)var0, (unsigned)var1);
+  }
 }
 
 FABRIC_EXT_EXPORT void klTexParameterIiv(
@@ -4317,7 +8279,14 @@ FABRIC_EXT_EXPORT void klTexParameterIiv(
   const KL::Size & var1,
   const KL::VariableArray<KL::Integer> & var2
 ){
-  glTexParameterIiv( (GLenum)var0, (GLenum)var1, (const GLint*)&var2[0] );
+  try
+  {
+    glTexParameterIiv( (GLenum)var0, (GLenum)var1, (const GLint*)&var2[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTexParameterIiv( %d, %d, GLint* )", (int)var0, (int)var1);
+  }
 }
 
 FABRIC_EXT_EXPORT void klTexParameterIuiv(
@@ -4325,7 +8294,14 @@ FABRIC_EXT_EXPORT void klTexParameterIuiv(
   const KL::Size & var1,
   const KL::VariableArray<KL::Size> & var2
 ){
-  glTexParameterIuiv( (GLenum)var0, (GLenum)var1, (const GLuint*)&var2[0] );
+  try
+  {
+    glTexParameterIuiv( (GLenum)var0, (GLenum)var1, (const GLuint*)&var2[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTexParameterIuiv( %d, %d, GLuint* )", (int)var0, (int)var1);
+  }
 }
 
 FABRIC_EXT_EXPORT void klTransformFeedbackVaryings(
@@ -4334,14 +8310,28 @@ FABRIC_EXT_EXPORT void klTransformFeedbackVaryings(
   const KL::VariableArray<KL::String> &var2,
   const KL::Size & var3
 ){
-  glTransformFeedbackVaryings( (GLuint)var0, (GLsizei)var1, (const GLchar**)&var2[0], (GLenum)var3 );
+  try
+  {
+    glTransformFeedbackVaryings( (GLuint)var0, (GLsizei)var1, (const GLchar**)&var2[0], (GLenum)var3 );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTransformFeedbackVaryings( 0x%04X, %d, char*, %d )", (unsigned)var0, (int)var1, (int)var3);
+  }
 }
 
 FABRIC_EXT_EXPORT void klUniform1ui(
   const KL::Integer & var0,
   const KL::Size & var1
 ){
-  glUniform1ui( (GLint)var0, (GLuint)var1 );
+  try
+  {
+    glUniform1ui( (GLint)var0, (GLuint)var1 );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glUniform1ui( %d, 0x%04X )", (int)var0, (unsigned)var1);
+  }
 }
 
 FABRIC_EXT_EXPORT void klUniform1uiv(
@@ -4349,7 +8339,14 @@ FABRIC_EXT_EXPORT void klUniform1uiv(
   const KL::Size & var1,
   const KL::VariableArray<KL::Size> & var2
 ){
-  glUniform1uiv( (GLint)var0, (GLsizei)var1, (const GLuint*)&var2[0] );
+  try
+  {
+    glUniform1uiv( (GLint)var0, (GLsizei)var1, (const GLuint*)&var2[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glUniform1uiv( %d, %d, GLuint* )", (int)var0, (int)var1);
+  }
 }
 
 FABRIC_EXT_EXPORT void klUniform2ui(
@@ -4357,7 +8354,14 @@ FABRIC_EXT_EXPORT void klUniform2ui(
   const KL::Size & var1,
   const KL::Size & var2
 ){
-  glUniform2ui( (GLint)var0, (GLuint)var1, (GLuint)var2 );
+  try
+  {
+    glUniform2ui( (GLint)var0, (GLuint)var1, (GLuint)var2 );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glUniform2ui( %d, 0x%04X, 0x%04X )", (int)var0, (unsigned)var1, (unsigned)var2);
+  }
 }
 
 FABRIC_EXT_EXPORT void klUniform2uiv(
@@ -4365,7 +8369,14 @@ FABRIC_EXT_EXPORT void klUniform2uiv(
   const KL::Size & var1,
   const KL::VariableArray<KL::Size> & var2
 ){
-  glUniform2uiv( (GLint)var0, (GLsizei)var1, (const GLuint*)&var2[0] );
+  try
+  {
+    glUniform2uiv( (GLint)var0, (GLsizei)var1, (const GLuint*)&var2[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glUniform2uiv( %d, %d, GLuint* )", (int)var0, (int)var1);
+  }
 }
 
 FABRIC_EXT_EXPORT void klUniform3ui(
@@ -4374,7 +8385,14 @@ FABRIC_EXT_EXPORT void klUniform3ui(
   const KL::Size & var2,
   const KL::Size & var3
 ){
-  glUniform3ui( (GLint)var0, (GLuint)var1, (GLuint)var2, (GLuint)var3 );
+  try
+  {
+    glUniform3ui( (GLint)var0, (GLuint)var1, (GLuint)var2, (GLuint)var3 );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glUniform3ui( %d, 0x%04X, 0x%04X, 0x%04X )", (int)var0, (unsigned)var1, (unsigned)var2, (unsigned)var3);
+  }
 }
 
 FABRIC_EXT_EXPORT void klUniform3uiv(
@@ -4382,7 +8400,14 @@ FABRIC_EXT_EXPORT void klUniform3uiv(
   const KL::Size & var1,
   const KL::VariableArray<KL::Size> & var2
 ){
-  glUniform3uiv( (GLint)var0, (GLsizei)var1, (const GLuint*)&var2[0] );
+  try
+  {
+    glUniform3uiv( (GLint)var0, (GLsizei)var1, (const GLuint*)&var2[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glUniform3uiv( %d, %d, GLuint* )", (int)var0, (int)var1);
+  }
 }
 
 FABRIC_EXT_EXPORT void klUniform4ui(
@@ -4392,7 +8417,14 @@ FABRIC_EXT_EXPORT void klUniform4ui(
   const KL::Size & var3,
   const KL::Size & var4
 ){
-  glUniform4ui( (GLint)var0, (GLuint)var1, (GLuint)var2, (GLuint)var3, (GLuint)var4 );
+  try
+  {
+    glUniform4ui( (GLint)var0, (GLuint)var1, (GLuint)var2, (GLuint)var3, (GLuint)var4 );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glUniform4ui( %d, 0x%04X, 0x%04X, 0x%04X, 0x%04X )", (int)var0, (unsigned)var1, (unsigned)var2, (unsigned)var3, (unsigned)var4);
+  }
 }
 
 FABRIC_EXT_EXPORT void klUniform4uiv(
@@ -4400,35 +8432,70 @@ FABRIC_EXT_EXPORT void klUniform4uiv(
   const KL::Size & var1,
   const KL::VariableArray<KL::Size> & var2
 ){
-  glUniform4uiv( (GLint)var0, (GLsizei)var1, (const GLuint*)&var2[0] );
+  try
+  {
+    glUniform4uiv( (GLint)var0, (GLsizei)var1, (const GLuint*)&var2[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glUniform4uiv( %d, %d, GLuint* )", (int)var0, (int)var1);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttribI1i(
   const KL::Size & var0,
   const KL::Integer & var1
 ){
-  glVertexAttribI1i( (GLuint)var0, (GLint)var1 );
+  try
+  {
+    glVertexAttribI1i( (GLuint)var0, (GLint)var1 );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttribI1i( 0x%04X, %d )", (unsigned)var0, (int)var1);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttribI1iv(
   const KL::Size & var0,
   const KL::VariableArray<KL::Integer> & var1
 ){
-  glVertexAttribI1iv( (GLuint)var0, (const GLint*)&var1[0] );
+  try
+  {
+    glVertexAttribI1iv( (GLuint)var0, (const GLint*)&var1[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttribI1iv( 0x%04X, GLint* )", (unsigned)var0);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttribI1ui(
   const KL::Size & var0,
   const KL::Size & var1
 ){
-  glVertexAttribI1ui( (GLuint)var0, (GLuint)var1 );
+  try
+  {
+    glVertexAttribI1ui( (GLuint)var0, (GLuint)var1 );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttribI1ui( 0x%04X, 0x%04X )", (unsigned)var0, (unsigned)var1);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttribI1uiv(
   const KL::Size & var0,
   const KL::VariableArray<KL::Size> & var1
 ){
-  glVertexAttribI1uiv( (GLuint)var0, (const GLuint*)&var1[0] );
+  try
+  {
+    glVertexAttribI1uiv( (GLuint)var0, (const GLuint*)&var1[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttribI1uiv( 0x%04X, GLuint* )", (unsigned)var0);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttribI2i(
@@ -4436,14 +8503,28 @@ FABRIC_EXT_EXPORT void klVertexAttribI2i(
   const KL::Integer & var1,
   const KL::Integer & var2
 ){
-  glVertexAttribI2i( (GLuint)var0, (GLint)var1, (GLint)var2 );
+  try
+  {
+    glVertexAttribI2i( (GLuint)var0, (GLint)var1, (GLint)var2 );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttribI2i( 0x%04X, %d, %d )", (unsigned)var0, (int)var1, (int)var2);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttribI2iv(
   const KL::Size & var0,
   const KL::VariableArray<KL::Integer> & var1
 ){
-  glVertexAttribI2iv( (GLuint)var0, (const GLint*)&var1[0] );
+  try
+  {
+    glVertexAttribI2iv( (GLuint)var0, (const GLint*)&var1[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttribI2iv( 0x%04X, GLint* )", (unsigned)var0);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttribI2ui(
@@ -4451,14 +8532,28 @@ FABRIC_EXT_EXPORT void klVertexAttribI2ui(
   const KL::Size & var1,
   const KL::Size & var2
 ){
-  glVertexAttribI2ui( (GLuint)var0, (GLuint)var1, (GLuint)var2 );
+  try
+  {
+    glVertexAttribI2ui( (GLuint)var0, (GLuint)var1, (GLuint)var2 );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttribI2ui( 0x%04X, 0x%04X, 0x%04X )", (unsigned)var0, (unsigned)var1, (unsigned)var2);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttribI2uiv(
   const KL::Size & var0,
   const KL::VariableArray<KL::Size> & var1
 ){
-  glVertexAttribI2uiv( (GLuint)var0, (const GLuint*)&var1[0] );
+  try
+  {
+    glVertexAttribI2uiv( (GLuint)var0, (const GLuint*)&var1[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttribI2uiv( 0x%04X, GLuint* )", (unsigned)var0);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttribI3i(
@@ -4467,14 +8562,28 @@ FABRIC_EXT_EXPORT void klVertexAttribI3i(
   const KL::Integer & var2,
   const KL::Integer & var3
 ){
-  glVertexAttribI3i( (GLuint)var0, (GLint)var1, (GLint)var2, (GLint)var3 );
+  try
+  {
+    glVertexAttribI3i( (GLuint)var0, (GLint)var1, (GLint)var2, (GLint)var3 );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttribI3i( 0x%04X, %d, %d, %d )", (unsigned)var0, (int)var1, (int)var2, (int)var3);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttribI3iv(
   const KL::Size & var0,
   const KL::VariableArray<KL::Integer> & var1
 ){
-  glVertexAttribI3iv( (GLuint)var0, (const GLint*)&var1[0] );
+  try
+  {
+    glVertexAttribI3iv( (GLuint)var0, (const GLint*)&var1[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttribI3iv( 0x%04X, GLint* )", (unsigned)var0);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttribI3ui(
@@ -4483,21 +8592,42 @@ FABRIC_EXT_EXPORT void klVertexAttribI3ui(
   const KL::Size & var2,
   const KL::Size & var3
 ){
-  glVertexAttribI3ui( (GLuint)var0, (GLuint)var1, (GLuint)var2, (GLuint)var3 );
+  try
+  {
+    glVertexAttribI3ui( (GLuint)var0, (GLuint)var1, (GLuint)var2, (GLuint)var3 );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttribI3ui( 0x%04X, 0x%04X, 0x%04X, 0x%04X )", (unsigned)var0, (unsigned)var1, (unsigned)var2, (unsigned)var3);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttribI3uiv(
   const KL::Size & var0,
   const KL::VariableArray<KL::Size> & var1
 ){
-  glVertexAttribI3uiv( (GLuint)var0, (const GLuint*)&var1[0] );
+  try
+  {
+    glVertexAttribI3uiv( (GLuint)var0, (const GLuint*)&var1[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttribI3uiv( 0x%04X, GLuint* )", (unsigned)var0);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttribI4bv(
   const KL::Size & var0,
   const KL::VariableArray<KL::Byte> & var1
 ){
-  glVertexAttribI4bv( (GLuint)var0, (const GLbyte*)&var1[0] );
+  try
+  {
+    glVertexAttribI4bv( (GLuint)var0, (const GLbyte*)&var1[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttribI4bv( 0x%04X, GLbyte* )", (unsigned)var0);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttribI4i(
@@ -4507,28 +8637,56 @@ FABRIC_EXT_EXPORT void klVertexAttribI4i(
   const KL::Integer & var3,
   const KL::Integer & var4
 ){
-  glVertexAttribI4i( (GLuint)var0, (GLint)var1, (GLint)var2, (GLint)var3, (GLint)var4 );
+  try
+  {
+    glVertexAttribI4i( (GLuint)var0, (GLint)var1, (GLint)var2, (GLint)var3, (GLint)var4 );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttribI4i( 0x%04X, %d, %d, %d, %d )", (unsigned)var0, (int)var1, (int)var2, (int)var3, (int)var4);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttribI4iv(
   const KL::Size & var0,
   const KL::VariableArray<KL::Integer> & var1
 ){
-  glVertexAttribI4iv( (GLuint)var0, (const GLint*)&var1[0] );
+  try
+  {
+    glVertexAttribI4iv( (GLuint)var0, (const GLint*)&var1[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttribI4iv( 0x%04X, GLint* )", (unsigned)var0);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttribI4sv(
   const KL::Size & var0,
   const KL::VariableArray<KL::Integer> & var1
 ){
-  glVertexAttribI4sv( (GLuint)var0, (const GLshort*)&var1[0] );
+  try
+  {
+    glVertexAttribI4sv( (GLuint)var0, (const GLshort*)&var1[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttribI4sv( 0x%04X, GLshort* )", (unsigned)var0);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttribI4ubv(
   const KL::Size & var0,
   const KL::VariableArray<KL::Size> & var1
 ){
-  glVertexAttribI4ubv( (GLuint)var0, (const GLubyte*)&var1[0] );
+  try
+  {
+    glVertexAttribI4ubv( (GLuint)var0, (const GLubyte*)&var1[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttribI4ubv( 0x%04X, GLubyte* )", (unsigned)var0);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttribI4ui(
@@ -4538,21 +8696,42 @@ FABRIC_EXT_EXPORT void klVertexAttribI4ui(
   const KL::Size & var3,
   const KL::Size & var4
 ){
-  glVertexAttribI4ui( (GLuint)var0, (GLuint)var1, (GLuint)var2, (GLuint)var3, (GLuint)var4 );
+  try
+  {
+    glVertexAttribI4ui( (GLuint)var0, (GLuint)var1, (GLuint)var2, (GLuint)var3, (GLuint)var4 );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttribI4ui( 0x%04X, 0x%04X, 0x%04X, 0x%04X, 0x%04X )", (unsigned)var0, (unsigned)var1, (unsigned)var2, (unsigned)var3, (unsigned)var4);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttribI4uiv(
   const KL::Size & var0,
   const KL::VariableArray<KL::Size> & var1
 ){
-  glVertexAttribI4uiv( (GLuint)var0, (const GLuint*)&var1[0] );
+  try
+  {
+    glVertexAttribI4uiv( (GLuint)var0, (const GLuint*)&var1[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttribI4uiv( 0x%04X, GLuint* )", (unsigned)var0);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttribI4usv(
   const KL::Size & var0,
   const KL::VariableArray<KL::Integer> & var1
 ){
-  glVertexAttribI4usv( (GLuint)var0, (const GLushort*)&var1[0] );
+  try
+  {
+    glVertexAttribI4usv( (GLuint)var0, (const GLushort*)&var1[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttribI4usv( 0x%04X, GLushort* )", (unsigned)var0);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttribIPointer(
@@ -4562,7 +8741,14 @@ FABRIC_EXT_EXPORT void klVertexAttribIPointer(
   const KL::Size & var3,
   KL::Data var4
 ){
-  glVertexAttribIPointer( (GLuint)var0, (GLint)var1, (GLenum)var2, (GLsizei)var3, var4 );
+  try
+  {
+    glVertexAttribIPointer( (GLuint)var0, (GLint)var1, (GLenum)var2, (GLsizei)var3, var4 );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttribIPointer( 0x%04X, %d, %d, %d, GLvoid* )", (unsigned)var0, (int)var1, (int)var2, (int)var3);
+  }
 }
 
 FABRIC_EXT_EXPORT void klDrawArraysInstanced(
@@ -4571,7 +8757,14 @@ FABRIC_EXT_EXPORT void klDrawArraysInstanced(
   const KL::Size & var2,
   const KL::Size & var3
 ){
-  glDrawArraysInstanced( (GLenum)var0, (GLint)var1, (GLsizei)var2, (GLsizei)var3 );
+  try
+  {
+    glDrawArraysInstanced( (GLenum)var0, (GLint)var1, (GLsizei)var2, (GLsizei)var3 );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glDrawArraysInstanced( %d, %d, %d, %d )", (int)var0, (int)var1, (int)var2, (int)var3);
+  }
 }
 
 FABRIC_EXT_EXPORT void klDrawElementsInstanced(
@@ -4581,13 +8774,27 @@ FABRIC_EXT_EXPORT void klDrawElementsInstanced(
   KL::Data var3,
   const KL::Size & var4
 ){
-  glDrawElementsInstanced( (GLenum)var0, (GLsizei)var1, (GLenum)var2, var3, (GLsizei)var4 );
+  try
+  {
+    glDrawElementsInstanced( (GLenum)var0, (GLsizei)var1, (GLenum)var2, var3, (GLsizei)var4 );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glDrawElementsInstanced( %d, %d, %d, GLvoid*, %d )", (int)var0, (int)var1, (int)var2, (int)var4);
+  }
 }
 
 FABRIC_EXT_EXPORT void klPrimitiveRestartIndex(
   const KL::Size & var0
 ){
-  glPrimitiveRestartIndex( (GLuint)var0 );
+  try
+  {
+    glPrimitiveRestartIndex( (GLuint)var0 );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glPrimitiveRestartIndex( 0x%04X )", (unsigned)var0);
+  }
 }
 
 FABRIC_EXT_EXPORT void klTexBuffer(
@@ -4595,7 +8802,14 @@ FABRIC_EXT_EXPORT void klTexBuffer(
   const KL::Size & var1,
   const KL::Size & var2
 ){
-  glTexBuffer( (GLenum)var0, (GLenum)var1, (GLuint)var2 );
+  try
+  {
+    glTexBuffer( (GLenum)var0, (GLenum)var1, (GLuint)var2 );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTexBuffer( %d, %d, 0x%04X )", (int)var0, (int)var1, (unsigned)var2);
+  }
 }
 
 FABRIC_EXT_EXPORT void klFramebufferTexture(
@@ -4604,13 +8818,27 @@ FABRIC_EXT_EXPORT void klFramebufferTexture(
   const KL::Size & var2,
   const KL::Integer & var3
 ){
-  glFramebufferTexture( (GLenum)var0, (GLenum)var1, (GLuint)var2, (GLint)var3 );
+  try
+  {
+    glFramebufferTexture( (GLenum)var0, (GLenum)var1, (GLuint)var2, (GLint)var3 );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glFramebufferTexture( %d, %d, 0x%04X, %d )", (int)var0, (int)var1, (unsigned)var2, (int)var3);
+  }
 }
 
 FABRIC_EXT_EXPORT void klTbufferMask3DFX(
   const KL::Size & mask
 ){
-  glTbufferMask3DFX( (GLuint)mask );
+  try
+  {
+    glTbufferMask3DFX( (GLuint)mask );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTbufferMask3DFX( 0x%04X )", (unsigned)mask);
+  }
 }
 
 FABRIC_EXT_EXPORT void klCopyBufferSubData(
@@ -4620,7 +8848,14 @@ FABRIC_EXT_EXPORT void klCopyBufferSubData(
   const KL::Integer & writeoffset,
   const KL::Size & size
 ){
-  glCopyBufferSubData( (GLenum)readtarget, (GLenum)writetarget, (GLintptr)readoffset, (GLintptr)writeoffset, (GLsizeiptr)size );
+  try
+  {
+    glCopyBufferSubData( (GLenum)readtarget, (GLenum)writetarget, (GLintptr)readoffset, (GLintptr)writeoffset, (GLsizeiptr)size );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glCopyBufferSubData( %d, %d, %d, %d, %d )", (int)readtarget, (int)writetarget, (int)readoffset, (int)writeoffset, (int)size);
+  }
 }
 
 FABRIC_EXT_EXPORT void klDrawElementsBaseVertex(
@@ -4630,7 +8865,14 @@ FABRIC_EXT_EXPORT void klDrawElementsBaseVertex(
   KL::Data indices,
   const KL::Integer & basevertex
 ){
-  glDrawElementsBaseVertex( (GLenum)mode, (GLsizei)count, (GLenum)type, indices, (GLint)basevertex );
+  try
+  {
+    glDrawElementsBaseVertex( (GLenum)mode, (GLsizei)count, (GLenum)type, indices, (GLint)basevertex );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glDrawElementsBaseVertex( %d, %d, %d, void*, %d )", (int)mode, (int)count, (int)type, (int)basevertex);
+  }
 }
 
 FABRIC_EXT_EXPORT void klDrawElementsInstancedBaseVertex(
@@ -4641,7 +8883,14 @@ FABRIC_EXT_EXPORT void klDrawElementsInstancedBaseVertex(
   const KL::Size & primcount,
   const KL::Integer & basevertex
 ){
-  glDrawElementsInstancedBaseVertex( (GLenum)mode, (GLsizei)count, (GLenum)type, indices, (GLsizei)primcount, (GLint)basevertex );
+  try
+  {
+    glDrawElementsInstancedBaseVertex( (GLenum)mode, (GLsizei)count, (GLenum)type, indices, (GLsizei)primcount, (GLint)basevertex );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glDrawElementsInstancedBaseVertex( %d, %d, %d, void*, %d, %d )", (int)mode, (int)count, (int)type, (int)primcount, (int)basevertex);
+  }
 }
 
 FABRIC_EXT_EXPORT void klDrawRangeElementsBaseVertex(
@@ -4653,21 +8902,42 @@ FABRIC_EXT_EXPORT void klDrawRangeElementsBaseVertex(
   KL::Data indices,
   const KL::Integer & basevertex
 ){
-  glDrawRangeElementsBaseVertex( (GLenum)mode, (GLuint)start, (GLuint)end, (GLsizei)count, (GLenum)type, indices, (GLint)basevertex );
+  try
+  {
+    glDrawRangeElementsBaseVertex( (GLenum)mode, (GLuint)start, (GLuint)end, (GLsizei)count, (GLenum)type, indices, (GLint)basevertex );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glDrawRangeElementsBaseVertex( %d, 0x%04X, 0x%04X, %d, %d, void*, %d )", (int)mode, (unsigned)start, (unsigned)end, (int)count, (int)type, (int)basevertex);
+  }
 }
 
 FABRIC_EXT_EXPORT void klBindFramebuffer(
   const KL::Size & target,
   const KL::Size & framebuffer
 ){
-  glBindFramebuffer( (GLenum)target, (GLuint)framebuffer );
+  try
+  {
+    glBindFramebuffer( (GLenum)target, (GLuint)framebuffer );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glBindFramebuffer( %d, 0x%04X )", (int)target, (unsigned)framebuffer);
+  }
 }
 
 FABRIC_EXT_EXPORT void klBindRenderbuffer(
   const KL::Size & target,
   const KL::Size & renderbuffer
 ){
-  glBindRenderbuffer( (GLenum)target, (GLuint)renderbuffer );
+  try
+  {
+    glBindRenderbuffer( (GLenum)target, (GLuint)renderbuffer );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glBindRenderbuffer( %d, 0x%04X )", (int)target, (unsigned)renderbuffer);
+  }
 }
 
 FABRIC_EXT_EXPORT void klBlitFramebuffer(
@@ -4679,31 +8949,59 @@ FABRIC_EXT_EXPORT void klBlitFramebuffer(
   const KL::Integer & dstY0,
   const KL::Integer & dstX1,
   const KL::Integer & dstY1,
-  const KL::Integer & mask,
+  const KL::Size & mask,
   const KL::Size & filter
 ){
-  glBlitFramebuffer( (GLint)srcX0, (GLint)srcY0, (GLint)srcX1, (GLint)srcY1, (GLint)dstX0, (GLint)dstY0, (GLint)dstX1, (GLint)dstY1, (GLbitfield)mask, (GLenum)filter );
+  try
+  {
+    glBlitFramebuffer( (GLint)srcX0, (GLint)srcY0, (GLint)srcX1, (GLint)srcY1, (GLint)dstX0, (GLint)dstY0, (GLint)dstX1, (GLint)dstY1, (GLbitfield)mask, (GLenum)filter );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glBlitFramebuffer( %d, %d, %d, %d, %d, %d, %d, %d, 0x%04X, %d )", (int)srcX0, (int)srcY0, (int)srcX1, (int)srcY1, (int)dstX0, (int)dstY0, (int)dstX1, (int)dstY1, (unsigned)mask, (int)filter);
+  }
 }
 
 FABRIC_EXT_EXPORT KL::Size klCheckFramebufferStatus(
   const KL::Size & target
 ){
-  GLenum result = glCheckFramebufferStatus( (GLenum)target );
+  try
+  {
+    GLenum result = glCheckFramebufferStatus( (GLenum)target );
   return (KL::Size)result;
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glCheckFramebufferStatus( %d )", (int)target);
+  }
 }
 
 FABRIC_EXT_EXPORT void klDeleteFramebuffers(
   const KL::Size & n,
   const KL::VariableArray<KL::Size> & framebuffers
 ){
-  glDeleteFramebuffers( (GLsizei)n, (const GLuint*)&framebuffers[0] );
+  try
+  {
+    glDeleteFramebuffers( (GLsizei)n, (const GLuint*)&framebuffers[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glDeleteFramebuffers( %d, GLuint* )", (int)n);
+  }
 }
 
 FABRIC_EXT_EXPORT void klDeleteRenderbuffers(
   const KL::Size & n,
   const KL::VariableArray<KL::Size> & renderbuffers
 ){
-  glDeleteRenderbuffers( (GLsizei)n, (const GLuint*)&renderbuffers[0] );
+  try
+  {
+    glDeleteRenderbuffers( (GLsizei)n, (const GLuint*)&renderbuffers[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glDeleteRenderbuffers( %d, GLuint* )", (int)n);
+  }
 }
 
 FABRIC_EXT_EXPORT void klFramebufferRenderbuffer(
@@ -4712,7 +9010,14 @@ FABRIC_EXT_EXPORT void klFramebufferRenderbuffer(
   const KL::Size & renderbuffertarget,
   const KL::Size & renderbuffer
 ){
-  glFramebufferRenderbuffer( (GLenum)target, (GLenum)attachment, (GLenum)renderbuffertarget, (GLuint)renderbuffer );
+  try
+  {
+    glFramebufferRenderbuffer( (GLenum)target, (GLenum)attachment, (GLenum)renderbuffertarget, (GLuint)renderbuffer );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glFramebufferRenderbuffer( %d, %d, %d, 0x%04X )", (int)target, (int)attachment, (int)renderbuffertarget, (unsigned)renderbuffer);
+  }
 }
 
 FABRIC_EXT_EXPORT void klFramebufferTexture1D(
@@ -4722,7 +9027,14 @@ FABRIC_EXT_EXPORT void klFramebufferTexture1D(
   const KL::Size & texture,
   const KL::Integer & level
 ){
-  glFramebufferTexture1D( (GLenum)target, (GLenum)attachment, (GLenum)textarget, (GLuint)texture, (GLint)level );
+  try
+  {
+    glFramebufferTexture1D( (GLenum)target, (GLenum)attachment, (GLenum)textarget, (GLuint)texture, (GLint)level );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glFramebufferTexture1D( %d, %d, %d, 0x%04X, %d )", (int)target, (int)attachment, (int)textarget, (unsigned)texture, (int)level);
+  }
 }
 
 FABRIC_EXT_EXPORT void klFramebufferTexture2D(
@@ -4732,7 +9044,14 @@ FABRIC_EXT_EXPORT void klFramebufferTexture2D(
   const KL::Size & texture,
   const KL::Integer & level
 ){
-  glFramebufferTexture2D( (GLenum)target, (GLenum)attachment, (GLenum)textarget, (GLuint)texture, (GLint)level );
+  try
+  {
+    glFramebufferTexture2D( (GLenum)target, (GLenum)attachment, (GLenum)textarget, (GLuint)texture, (GLint)level );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glFramebufferTexture2D( %d, %d, %d, 0x%04X, %d )", (int)target, (int)attachment, (int)textarget, (unsigned)texture, (int)level);
+  }
 }
 
 FABRIC_EXT_EXPORT void klFramebufferTexture3D(
@@ -4743,7 +9062,14 @@ FABRIC_EXT_EXPORT void klFramebufferTexture3D(
   const KL::Integer & level,
   const KL::Integer & layer
 ){
-  glFramebufferTexture3D( (GLenum)target, (GLenum)attachment, (GLenum)textarget, (GLuint)texture, (GLint)level, (GLint)layer );
+  try
+  {
+    glFramebufferTexture3D( (GLenum)target, (GLenum)attachment, (GLenum)textarget, (GLuint)texture, (GLint)level, (GLint)layer );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glFramebufferTexture3D( %d, %d, %d, 0x%04X, %d, %d )", (int)target, (int)attachment, (int)textarget, (unsigned)texture, (int)level, (int)layer);
+  }
 }
 
 FABRIC_EXT_EXPORT void klFramebufferTextureLayer(
@@ -4753,27 +9079,55 @@ FABRIC_EXT_EXPORT void klFramebufferTextureLayer(
   const KL::Integer & level,
   const KL::Integer & layer
 ){
-  glFramebufferTextureLayer( (GLenum)target, (GLenum)attachment, (GLuint)texture, (GLint)level, (GLint)layer );
+  try
+  {
+    glFramebufferTextureLayer( (GLenum)target, (GLenum)attachment, (GLuint)texture, (GLint)level, (GLint)layer );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glFramebufferTextureLayer( %d, %d, 0x%04X, %d, %d )", (int)target, (int)attachment, (unsigned)texture, (int)level, (int)layer);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGenFramebuffers(
   const KL::Size & n,
   KL::VariableArray<KL::Size> & framebuffers
 ){
-  glGenFramebuffers( (GLsizei)n, (GLuint*)&framebuffers[0] );
+  try
+  {
+    glGenFramebuffers( (GLsizei)n, (GLuint*)&framebuffers[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGenFramebuffers( %d, GLuint* )", (int)n);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGenRenderbuffers(
   const KL::Size & n,
   KL::VariableArray<KL::Size> & renderbuffers
 ){
-  glGenRenderbuffers( (GLsizei)n, (GLuint*)&renderbuffers[0] );
+  try
+  {
+    glGenRenderbuffers( (GLsizei)n, (GLuint*)&renderbuffers[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGenRenderbuffers( %d, GLuint* )", (int)n);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGenerateMipmap(
   const KL::Size & target
 ){
-  glGenerateMipmap( (GLenum)target );
+  try
+  {
+    glGenerateMipmap( (GLenum)target );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGenerateMipmap( %d )", (int)target);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetFramebufferAttachmentParameteriv(
@@ -4782,7 +9136,14 @@ FABRIC_EXT_EXPORT void klGetFramebufferAttachmentParameteriv(
   const KL::Size & pname,
   KL::VariableArray<KL::Integer> & params
 ){
-  glGetFramebufferAttachmentParameteriv( (GLenum)target, (GLenum)attachment, (GLenum)pname, (GLint*)&params[0] );
+  try
+  {
+    glGetFramebufferAttachmentParameteriv( (GLenum)target, (GLenum)attachment, (GLenum)pname, (GLint*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetFramebufferAttachmentParameteriv( %d, %d, %d, GLint* )", (int)target, (int)attachment, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetRenderbufferParameteriv(
@@ -4790,21 +9151,42 @@ FABRIC_EXT_EXPORT void klGetRenderbufferParameteriv(
   const KL::Size & pname,
   KL::VariableArray<KL::Integer> & params
 ){
-  glGetRenderbufferParameteriv( (GLenum)target, (GLenum)pname, (GLint*)&params[0] );
+  try
+  {
+    glGetRenderbufferParameteriv( (GLenum)target, (GLenum)pname, (GLint*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetRenderbufferParameteriv( %d, %d, GLint* )", (int)target, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT KL::Boolean klIsFramebuffer(
   const KL::Size & framebuffer
 ){
-  GLboolean result = glIsFramebuffer( (GLuint)framebuffer );
+  try
+  {
+    GLboolean result = glIsFramebuffer( (GLuint)framebuffer );
   return (KL::Boolean)result;
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glIsFramebuffer( 0x%04X )", (unsigned)framebuffer);
+  }
 }
 
 FABRIC_EXT_EXPORT KL::Boolean klIsRenderbuffer(
   const KL::Size & renderbuffer
 ){
-  GLboolean result = glIsRenderbuffer( (GLuint)renderbuffer );
+  try
+  {
+    GLboolean result = glIsRenderbuffer( (GLuint)renderbuffer );
   return (KL::Boolean)result;
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glIsRenderbuffer( 0x%04X )", (unsigned)renderbuffer);
+  }
 }
 
 FABRIC_EXT_EXPORT void klRenderbufferStorage(
@@ -4813,7 +9195,14 @@ FABRIC_EXT_EXPORT void klRenderbufferStorage(
   const KL::Size & width,
   const KL::Size & height
 ){
-  glRenderbufferStorage( (GLenum)target, (GLenum)internalformat, (GLsizei)width, (GLsizei)height );
+  try
+  {
+    glRenderbufferStorage( (GLenum)target, (GLenum)internalformat, (GLsizei)width, (GLsizei)height );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glRenderbufferStorage( %d, %d, %d, %d )", (int)target, (int)internalformat, (int)width, (int)height);
+  }
 }
 
 FABRIC_EXT_EXPORT void klRenderbufferStorageMultisample(
@@ -4823,7 +9212,14 @@ FABRIC_EXT_EXPORT void klRenderbufferStorageMultisample(
   const KL::Size & width,
   const KL::Size & height
 ){
-  glRenderbufferStorageMultisample( (GLenum)target, (GLsizei)samples, (GLenum)internalformat, (GLsizei)width, (GLsizei)height );
+  try
+  {
+    glRenderbufferStorageMultisample( (GLenum)target, (GLsizei)samples, (GLenum)internalformat, (GLsizei)width, (GLsizei)height );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glRenderbufferStorageMultisample( %d, %d, %d, %d, %d )", (int)target, (int)samples, (int)internalformat, (int)width, (int)height);
+  }
 }
 
 FABRIC_EXT_EXPORT void klColorSubTable(
@@ -4834,7 +9230,14 @@ FABRIC_EXT_EXPORT void klColorSubTable(
   const KL::Size & type,
   KL::Data data
 ){
-  glColorSubTable( (GLenum)target, (GLsizei)start, (GLsizei)count, (GLenum)format, (GLenum)type, data );
+  try
+  {
+    glColorSubTable( (GLenum)target, (GLsizei)start, (GLsizei)count, (GLenum)format, (GLenum)type, data );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glColorSubTable( %d, %d, %d, %d, %d, GLvoid* )", (int)target, (int)start, (int)count, (int)format, (int)type);
+  }
 }
 
 FABRIC_EXT_EXPORT void klColorTable(
@@ -4845,7 +9248,14 @@ FABRIC_EXT_EXPORT void klColorTable(
   const KL::Size & type,
   KL::Data table
 ){
-  glColorTable( (GLenum)target, (GLenum)internalformat, (GLsizei)width, (GLenum)format, (GLenum)type, table );
+  try
+  {
+    glColorTable( (GLenum)target, (GLenum)internalformat, (GLsizei)width, (GLenum)format, (GLenum)type, table );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glColorTable( %d, %d, %d, %d, %d, GLvoid* )", (int)target, (int)internalformat, (int)width, (int)format, (int)type);
+  }
 }
 
 FABRIC_EXT_EXPORT void klColorTableParameterfv(
@@ -4853,7 +9263,14 @@ FABRIC_EXT_EXPORT void klColorTableParameterfv(
   const KL::Size & pname,
   const KL::VariableArray<KL::Scalar> & params
 ){
-  glColorTableParameterfv( (GLenum)target, (GLenum)pname, (const GLfloat*)&params[0] );
+  try
+  {
+    glColorTableParameterfv( (GLenum)target, (GLenum)pname, (const GLfloat*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glColorTableParameterfv( %d, %d, GLfloat* )", (int)target, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klColorTableParameteriv(
@@ -4861,7 +9278,14 @@ FABRIC_EXT_EXPORT void klColorTableParameteriv(
   const KL::Size & pname,
   const KL::VariableArray<KL::Integer> & params
 ){
-  glColorTableParameteriv( (GLenum)target, (GLenum)pname, (const GLint*)&params[0] );
+  try
+  {
+    glColorTableParameteriv( (GLenum)target, (GLenum)pname, (const GLint*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glColorTableParameteriv( %d, %d, GLint* )", (int)target, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klConvolutionFilter1D(
@@ -4872,7 +9296,14 @@ FABRIC_EXT_EXPORT void klConvolutionFilter1D(
   const KL::Size & type,
   KL::Data image
 ){
-  glConvolutionFilter1D( (GLenum)target, (GLenum)internalformat, (GLsizei)width, (GLenum)format, (GLenum)type, image );
+  try
+  {
+    glConvolutionFilter1D( (GLenum)target, (GLenum)internalformat, (GLsizei)width, (GLenum)format, (GLenum)type, image );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glConvolutionFilter1D( %d, %d, %d, %d, %d, GLvoid* )", (int)target, (int)internalformat, (int)width, (int)format, (int)type);
+  }
 }
 
 FABRIC_EXT_EXPORT void klConvolutionFilter2D(
@@ -4884,7 +9315,14 @@ FABRIC_EXT_EXPORT void klConvolutionFilter2D(
   const KL::Size & type,
   KL::Data image
 ){
-  glConvolutionFilter2D( (GLenum)target, (GLenum)internalformat, (GLsizei)width, (GLsizei)height, (GLenum)format, (GLenum)type, image );
+  try
+  {
+    glConvolutionFilter2D( (GLenum)target, (GLenum)internalformat, (GLsizei)width, (GLsizei)height, (GLenum)format, (GLenum)type, image );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glConvolutionFilter2D( %d, %d, %d, %d, %d, %d, GLvoid* )", (int)target, (int)internalformat, (int)width, (int)height, (int)format, (int)type);
+  }
 }
 
 FABRIC_EXT_EXPORT void klConvolutionParameterf(
@@ -4892,7 +9330,14 @@ FABRIC_EXT_EXPORT void klConvolutionParameterf(
   const KL::Size & pname,
   const KL::Scalar & params
 ){
-  glConvolutionParameterf( (GLenum)target, (GLenum)pname, (GLfloat)params );
+  try
+  {
+    glConvolutionParameterf( (GLenum)target, (GLenum)pname, (GLfloat)params );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glConvolutionParameterf( %d, %d, %f )", (int)target, (int)pname, (float)params);
+  }
 }
 
 FABRIC_EXT_EXPORT void klConvolutionParameterfv(
@@ -4900,7 +9345,14 @@ FABRIC_EXT_EXPORT void klConvolutionParameterfv(
   const KL::Size & pname,
   const KL::VariableArray<KL::Scalar> & params
 ){
-  glConvolutionParameterfv( (GLenum)target, (GLenum)pname, (const GLfloat*)&params[0] );
+  try
+  {
+    glConvolutionParameterfv( (GLenum)target, (GLenum)pname, (const GLfloat*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glConvolutionParameterfv( %d, %d, GLfloat* )", (int)target, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klConvolutionParameteri(
@@ -4908,7 +9360,14 @@ FABRIC_EXT_EXPORT void klConvolutionParameteri(
   const KL::Size & pname,
   const KL::Integer & params
 ){
-  glConvolutionParameteri( (GLenum)target, (GLenum)pname, (GLint)params );
+  try
+  {
+    glConvolutionParameteri( (GLenum)target, (GLenum)pname, (GLint)params );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glConvolutionParameteri( %d, %d, %d )", (int)target, (int)pname, (int)params);
+  }
 }
 
 FABRIC_EXT_EXPORT void klConvolutionParameteriv(
@@ -4916,7 +9375,14 @@ FABRIC_EXT_EXPORT void klConvolutionParameteriv(
   const KL::Size & pname,
   const KL::VariableArray<KL::Integer> & params
 ){
-  glConvolutionParameteriv( (GLenum)target, (GLenum)pname, (const GLint*)&params[0] );
+  try
+  {
+    glConvolutionParameteriv( (GLenum)target, (GLenum)pname, (const GLint*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glConvolutionParameteriv( %d, %d, GLint* )", (int)target, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klCopyColorSubTable(
@@ -4926,7 +9392,14 @@ FABRIC_EXT_EXPORT void klCopyColorSubTable(
   const KL::Integer & y,
   const KL::Size & width
 ){
-  glCopyColorSubTable( (GLenum)target, (GLsizei)start, (GLint)x, (GLint)y, (GLsizei)width );
+  try
+  {
+    glCopyColorSubTable( (GLenum)target, (GLsizei)start, (GLint)x, (GLint)y, (GLsizei)width );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glCopyColorSubTable( %d, %d, %d, %d, %d )", (int)target, (int)start, (int)x, (int)y, (int)width);
+  }
 }
 
 FABRIC_EXT_EXPORT void klCopyColorTable(
@@ -4936,7 +9409,14 @@ FABRIC_EXT_EXPORT void klCopyColorTable(
   const KL::Integer & y,
   const KL::Size & width
 ){
-  glCopyColorTable( (GLenum)target, (GLenum)internalformat, (GLint)x, (GLint)y, (GLsizei)width );
+  try
+  {
+    glCopyColorTable( (GLenum)target, (GLenum)internalformat, (GLint)x, (GLint)y, (GLsizei)width );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glCopyColorTable( %d, %d, %d, %d, %d )", (int)target, (int)internalformat, (int)x, (int)y, (int)width);
+  }
 }
 
 FABRIC_EXT_EXPORT void klCopyConvolutionFilter1D(
@@ -4946,7 +9426,14 @@ FABRIC_EXT_EXPORT void klCopyConvolutionFilter1D(
   const KL::Integer & y,
   const KL::Size & width
 ){
-  glCopyConvolutionFilter1D( (GLenum)target, (GLenum)internalformat, (GLint)x, (GLint)y, (GLsizei)width );
+  try
+  {
+    glCopyConvolutionFilter1D( (GLenum)target, (GLenum)internalformat, (GLint)x, (GLint)y, (GLsizei)width );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glCopyConvolutionFilter1D( %d, %d, %d, %d, %d )", (int)target, (int)internalformat, (int)x, (int)y, (int)width);
+  }
 }
 
 FABRIC_EXT_EXPORT void klCopyConvolutionFilter2D(
@@ -4957,7 +9444,14 @@ FABRIC_EXT_EXPORT void klCopyConvolutionFilter2D(
   const KL::Size & width,
   const KL::Size & height
 ){
-  glCopyConvolutionFilter2D( (GLenum)target, (GLenum)internalformat, (GLint)x, (GLint)y, (GLsizei)width, (GLsizei)height );
+  try
+  {
+    glCopyConvolutionFilter2D( (GLenum)target, (GLenum)internalformat, (GLint)x, (GLint)y, (GLsizei)width, (GLsizei)height );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glCopyConvolutionFilter2D( %d, %d, %d, %d, %d, %d )", (int)target, (int)internalformat, (int)x, (int)y, (int)width, (int)height);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetColorTable(
@@ -4966,7 +9460,14 @@ FABRIC_EXT_EXPORT void klGetColorTable(
   const KL::Size & type,
   KL::Data table
 ){
-  glGetColorTable( (GLenum)target, (GLenum)format, (GLenum)type, table );
+  try
+  {
+    glGetColorTable( (GLenum)target, (GLenum)format, (GLenum)type, table );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetColorTable( %d, %d, %d, GLvoid* )", (int)target, (int)format, (int)type);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetColorTableParameterfv(
@@ -4974,7 +9475,14 @@ FABRIC_EXT_EXPORT void klGetColorTableParameterfv(
   const KL::Size & pname,
   KL::VariableArray<KL::Scalar> & params
 ){
-  glGetColorTableParameterfv( (GLenum)target, (GLenum)pname, (GLfloat*)&params[0] );
+  try
+  {
+    glGetColorTableParameterfv( (GLenum)target, (GLenum)pname, (GLfloat*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetColorTableParameterfv( %d, %d, GLfloat* )", (int)target, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetColorTableParameteriv(
@@ -4982,7 +9490,14 @@ FABRIC_EXT_EXPORT void klGetColorTableParameteriv(
   const KL::Size & pname,
   KL::VariableArray<KL::Integer> & params
 ){
-  glGetColorTableParameteriv( (GLenum)target, (GLenum)pname, (GLint*)&params[0] );
+  try
+  {
+    glGetColorTableParameteriv( (GLenum)target, (GLenum)pname, (GLint*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetColorTableParameteriv( %d, %d, GLint* )", (int)target, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetConvolutionFilter(
@@ -4991,7 +9506,14 @@ FABRIC_EXT_EXPORT void klGetConvolutionFilter(
   const KL::Size & type,
   KL::Data image
 ){
-  glGetConvolutionFilter( (GLenum)target, (GLenum)format, (GLenum)type, image );
+  try
+  {
+    glGetConvolutionFilter( (GLenum)target, (GLenum)format, (GLenum)type, image );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetConvolutionFilter( %d, %d, %d, GLvoid* )", (int)target, (int)format, (int)type);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetConvolutionParameterfv(
@@ -4999,7 +9521,14 @@ FABRIC_EXT_EXPORT void klGetConvolutionParameterfv(
   const KL::Size & pname,
   KL::VariableArray<KL::Scalar> & params
 ){
-  glGetConvolutionParameterfv( (GLenum)target, (GLenum)pname, (GLfloat*)&params[0] );
+  try
+  {
+    glGetConvolutionParameterfv( (GLenum)target, (GLenum)pname, (GLfloat*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetConvolutionParameterfv( %d, %d, GLfloat* )", (int)target, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetConvolutionParameteriv(
@@ -5007,7 +9536,14 @@ FABRIC_EXT_EXPORT void klGetConvolutionParameteriv(
   const KL::Size & pname,
   KL::VariableArray<KL::Integer> & params
 ){
-  glGetConvolutionParameteriv( (GLenum)target, (GLenum)pname, (GLint*)&params[0] );
+  try
+  {
+    glGetConvolutionParameteriv( (GLenum)target, (GLenum)pname, (GLint*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetConvolutionParameteriv( %d, %d, GLint* )", (int)target, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetHistogram(
@@ -5017,7 +9553,14 @@ FABRIC_EXT_EXPORT void klGetHistogram(
   const KL::Size & type,
   KL::Data values
 ){
-  glGetHistogram( (GLenum)target, (GLboolean)reset, (GLenum)format, (GLenum)type, values );
+  try
+  {
+    glGetHistogram( (GLenum)target, (GLboolean)reset, (GLenum)format, (GLenum)type, values );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetHistogram( %d, %b, %d, %d, GLvoid* )", (int)target, (bool)reset, (int)format, (int)type);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetHistogramParameterfv(
@@ -5025,7 +9568,14 @@ FABRIC_EXT_EXPORT void klGetHistogramParameterfv(
   const KL::Size & pname,
   KL::VariableArray<KL::Scalar> & params
 ){
-  glGetHistogramParameterfv( (GLenum)target, (GLenum)pname, (GLfloat*)&params[0] );
+  try
+  {
+    glGetHistogramParameterfv( (GLenum)target, (GLenum)pname, (GLfloat*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetHistogramParameterfv( %d, %d, GLfloat* )", (int)target, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetHistogramParameteriv(
@@ -5033,7 +9583,14 @@ FABRIC_EXT_EXPORT void klGetHistogramParameteriv(
   const KL::Size & pname,
   KL::VariableArray<KL::Integer> & params
 ){
-  glGetHistogramParameteriv( (GLenum)target, (GLenum)pname, (GLint*)&params[0] );
+  try
+  {
+    glGetHistogramParameteriv( (GLenum)target, (GLenum)pname, (GLint*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetHistogramParameteriv( %d, %d, GLint* )", (int)target, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetMinmax(
@@ -5043,7 +9600,14 @@ FABRIC_EXT_EXPORT void klGetMinmax(
   const KL::Size & types,
   KL::Data values
 ){
-  glGetMinmax( (GLenum)target, (GLboolean)reset, (GLenum)format, (GLenum)types, values );
+  try
+  {
+    glGetMinmax( (GLenum)target, (GLboolean)reset, (GLenum)format, (GLenum)types, values );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetMinmax( %d, %b, %d, %d, GLvoid* )", (int)target, (bool)reset, (int)format, (int)types);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetMinmaxParameterfv(
@@ -5051,7 +9615,14 @@ FABRIC_EXT_EXPORT void klGetMinmaxParameterfv(
   const KL::Size & pname,
   KL::VariableArray<KL::Scalar> & params
 ){
-  glGetMinmaxParameterfv( (GLenum)target, (GLenum)pname, (GLfloat*)&params[0] );
+  try
+  {
+    glGetMinmaxParameterfv( (GLenum)target, (GLenum)pname, (GLfloat*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetMinmaxParameterfv( %d, %d, GLfloat* )", (int)target, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetMinmaxParameteriv(
@@ -5059,7 +9630,14 @@ FABRIC_EXT_EXPORT void klGetMinmaxParameteriv(
   const KL::Size & pname,
   KL::VariableArray<KL::Integer> & params
 ){
-  glGetMinmaxParameteriv( (GLenum)target, (GLenum)pname, (GLint*)&params[0] );
+  try
+  {
+    glGetMinmaxParameteriv( (GLenum)target, (GLenum)pname, (GLint*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetMinmaxParameteriv( %d, %d, GLint* )", (int)target, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetSeparableFilter(
@@ -5070,7 +9648,14 @@ FABRIC_EXT_EXPORT void klGetSeparableFilter(
   KL::Data column,
   KL::Data span
 ){
-  glGetSeparableFilter( (GLenum)target, (GLenum)format, (GLenum)type, row, column, span );
+  try
+  {
+    glGetSeparableFilter( (GLenum)target, (GLenum)format, (GLenum)type, row, column, span );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetSeparableFilter( %d, %d, %d, GLvoid*, GLvoid*, GLvoid* )", (int)target, (int)format, (int)type);
+  }
 }
 
 FABRIC_EXT_EXPORT void klHistogram(
@@ -5079,7 +9664,14 @@ FABRIC_EXT_EXPORT void klHistogram(
   const KL::Size & internalformat,
   const KL::Boolean & sink
 ){
-  glHistogram( (GLenum)target, (GLsizei)width, (GLenum)internalformat, (GLboolean)sink );
+  try
+  {
+    glHistogram( (GLenum)target, (GLsizei)width, (GLenum)internalformat, (GLboolean)sink );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glHistogram( %d, %d, %d, %b )", (int)target, (int)width, (int)internalformat, (bool)sink);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMinmax(
@@ -5087,19 +9679,40 @@ FABRIC_EXT_EXPORT void klMinmax(
   const KL::Size & internalformat,
   const KL::Boolean & sink
 ){
-  glMinmax( (GLenum)target, (GLenum)internalformat, (GLboolean)sink );
+  try
+  {
+    glMinmax( (GLenum)target, (GLenum)internalformat, (GLboolean)sink );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMinmax( %d, %d, %b )", (int)target, (int)internalformat, (bool)sink);
+  }
 }
 
 FABRIC_EXT_EXPORT void klResetHistogram(
   const KL::Size & target
 ){
-  glResetHistogram( (GLenum)target );
+  try
+  {
+    glResetHistogram( (GLenum)target );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glResetHistogram( %d )", (int)target);
+  }
 }
 
 FABRIC_EXT_EXPORT void klResetMinmax(
   const KL::Size & target
 ){
-  glResetMinmax( (GLenum)target );
+  try
+  {
+    glResetMinmax( (GLenum)target );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glResetMinmax( %d )", (int)target);
+  }
 }
 
 FABRIC_EXT_EXPORT void klSeparableFilter2D(
@@ -5112,7 +9725,14 @@ FABRIC_EXT_EXPORT void klSeparableFilter2D(
   KL::Data row,
   KL::Data column
 ){
-  glSeparableFilter2D( (GLenum)target, (GLenum)internalformat, (GLsizei)width, (GLsizei)height, (GLenum)format, (GLenum)type, row, column );
+  try
+  {
+    glSeparableFilter2D( (GLenum)target, (GLenum)internalformat, (GLsizei)width, (GLsizei)height, (GLenum)format, (GLenum)type, row, column );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glSeparableFilter2D( %d, %d, %d, %d, %d, %d, GLvoid*, GLvoid* )", (int)target, (int)internalformat, (int)width, (int)height, (int)format, (int)type);
+  }
 }
 
 FABRIC_EXT_EXPORT void klFlushMappedBufferRange(
@@ -5120,22 +9740,43 @@ FABRIC_EXT_EXPORT void klFlushMappedBufferRange(
   const KL::Integer & offset,
   const KL::Size & length
 ){
-  glFlushMappedBufferRange( (GLenum)target, (GLintptr)offset, (GLsizeiptr)length );
+  try
+  {
+    glFlushMappedBufferRange( (GLenum)target, (GLintptr)offset, (GLsizeiptr)length );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glFlushMappedBufferRange( %d, %d, %d )", (int)target, (int)offset, (int)length);
+  }
 }
 
 FABRIC_EXT_EXPORT GLvoid klMapBufferRange(
   const KL::Size & target,
   const KL::Integer & offset,
   const KL::Size & length,
-  const KL::Integer & access
+  const KL::Size & access
 ){
-  glMapBufferRange( (GLenum)target, (GLintptr)offset, (GLsizeiptr)length, (GLbitfield)access );
+  try
+  {
+    glMapBufferRange( (GLenum)target, (GLintptr)offset, (GLsizeiptr)length, (GLbitfield)access );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMapBufferRange( %d, %d, %d, 0x%04X )", (int)target, (int)offset, (int)length, (unsigned)access);
+  }
 }
 
 FABRIC_EXT_EXPORT void klProvokingVertex(
   const KL::Size & mode
 ){
-  glProvokingVertex( (GLenum)mode );
+  try
+  {
+    glProvokingVertex( (GLenum)mode );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glProvokingVertex( %d )", (int)mode);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetMultisamplefv(
@@ -5143,14 +9784,28 @@ FABRIC_EXT_EXPORT void klGetMultisamplefv(
   const KL::Size & index,
   KL::VariableArray<KL::Scalar> & val
 ){
-  glGetMultisamplefv( (GLenum)pname, (GLuint)index, (GLfloat*)&val[0] );
+  try
+  {
+    glGetMultisamplefv( (GLenum)pname, (GLuint)index, (GLfloat*)&val[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetMultisamplefv( %d, 0x%04X, GLfloat* )", (int)pname, (unsigned)index);
+  }
 }
 
 FABRIC_EXT_EXPORT void klSampleMaski(
   const KL::Size & index,
-  const KL::Integer & mask
+  const KL::Size & mask
 ){
-  glSampleMaski( (GLuint)index, (GLbitfield)mask );
+  try
+  {
+    glSampleMaski( (GLuint)index, (GLbitfield)mask );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glSampleMaski( 0x%04X, 0x%04X )", (unsigned)index, (unsigned)mask);
+  }
 }
 
 FABRIC_EXT_EXPORT void klTexImage2DMultisample(
@@ -5161,7 +9816,14 @@ FABRIC_EXT_EXPORT void klTexImage2DMultisample(
   const KL::Size & height,
   const KL::Boolean & fixedsamplelocations
 ){
-  glTexImage2DMultisample( (GLenum)target, (GLsizei)samples, (GLint)internalformat, (GLsizei)width, (GLsizei)height, (GLboolean)fixedsamplelocations );
+  try
+  {
+    glTexImage2DMultisample( (GLenum)target, (GLsizei)samples, (GLint)internalformat, (GLsizei)width, (GLsizei)height, (GLboolean)fixedsamplelocations );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTexImage2DMultisample( %d, %d, %d, %d, %d, %b )", (int)target, (int)samples, (int)internalformat, (int)width, (int)height, (bool)fixedsamplelocations);
+  }
 }
 
 FABRIC_EXT_EXPORT void klTexImage3DMultisample(
@@ -5173,7 +9835,14 @@ FABRIC_EXT_EXPORT void klTexImage3DMultisample(
   const KL::Size & depth,
   const KL::Boolean & fixedsamplelocations
 ){
-  glTexImage3DMultisample( (GLenum)target, (GLsizei)samples, (GLint)internalformat, (GLsizei)width, (GLsizei)height, (GLsizei)depth, (GLboolean)fixedsamplelocations );
+  try
+  {
+    glTexImage3DMultisample( (GLenum)target, (GLsizei)samples, (GLint)internalformat, (GLsizei)width, (GLsizei)height, (GLsizei)depth, (GLboolean)fixedsamplelocations );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTexImage3DMultisample( %d, %d, %d, %d, %d, %d, %b )", (int)target, (int)samples, (int)internalformat, (int)width, (int)height, (int)depth, (bool)fixedsamplelocations);
+  }
 }
 
 FABRIC_EXT_EXPORT void klBindBufferBase(
@@ -5181,7 +9850,14 @@ FABRIC_EXT_EXPORT void klBindBufferBase(
   const KL::Size & index,
   const KL::Size & buffer
 ){
-  glBindBufferBase( (GLenum)target, (GLuint)index, (GLuint)buffer );
+  try
+  {
+    glBindBufferBase( (GLenum)target, (GLuint)index, (GLuint)buffer );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glBindBufferBase( %d, 0x%04X, 0x%04X )", (int)target, (unsigned)index, (unsigned)buffer);
+  }
 }
 
 FABRIC_EXT_EXPORT void klBindBufferRange(
@@ -5191,7 +9867,14 @@ FABRIC_EXT_EXPORT void klBindBufferRange(
   const KL::Integer & offset,
   const KL::Size & size
 ){
-  glBindBufferRange( (GLenum)target, (GLuint)index, (GLuint)buffer, (GLintptr)offset, (GLsizeiptr)size );
+  try
+  {
+    glBindBufferRange( (GLenum)target, (GLuint)index, (GLuint)buffer, (GLintptr)offset, (GLsizeiptr)size );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glBindBufferRange( %d, 0x%04X, 0x%04X, %d, %d )", (int)target, (unsigned)index, (unsigned)buffer, (int)offset, (int)size);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetActiveUniformBlockName(
@@ -5201,10 +9884,17 @@ FABRIC_EXT_EXPORT void klGetActiveUniformBlockName(
   KL::VariableArray<KL::Size> & length,
   KL::String & uniformBlockName
 ){
-  char * uniformBlockNameStr = new char[1024];
-  glGetActiveUniformBlockName( (GLuint)program, (GLuint)uniformBlockIndex, (GLsizei)bufSize, (GLsizei*)&length[0], (char*)uniformBlockNameStr );
-  uniformBlockName = KL::String(uniformBlockNameStr);
-  delete( uniformBlockNameStr );
+  try
+  {
+    char * uniformBlockNameStr = new char[1024];
+    glGetActiveUniformBlockName( (GLuint)program, (GLuint)uniformBlockIndex, (GLsizei)bufSize, (GLsizei*)&length[0], (char*)uniformBlockNameStr );
+    uniformBlockName = KL::String(uniformBlockNameStr);
+    delete( uniformBlockNameStr );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetActiveUniformBlockName( 0x%04X, 0x%04X, %d, GLsizei*, char* )", (unsigned)program, (unsigned)uniformBlockIndex, (int)bufSize);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetActiveUniformBlockiv(
@@ -5213,7 +9903,14 @@ FABRIC_EXT_EXPORT void klGetActiveUniformBlockiv(
   const KL::Size & pname,
   KL::VariableArray<KL::Integer> & params
 ){
-  glGetActiveUniformBlockiv( (GLuint)program, (GLuint)uniformBlockIndex, (GLenum)pname, (GLint*)&params[0] );
+  try
+  {
+    glGetActiveUniformBlockiv( (GLuint)program, (GLuint)uniformBlockIndex, (GLenum)pname, (GLint*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetActiveUniformBlockiv( 0x%04X, 0x%04X, %d, GLint* )", (unsigned)program, (unsigned)uniformBlockIndex, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetActiveUniformName(
@@ -5223,10 +9920,17 @@ FABRIC_EXT_EXPORT void klGetActiveUniformName(
   KL::VariableArray<KL::Size> & length,
   KL::String & uniformName
 ){
-  char * uniformNameStr = new char[1024];
-  glGetActiveUniformName( (GLuint)program, (GLuint)uniformIndex, (GLsizei)bufSize, (GLsizei*)&length[0], (char*)uniformNameStr );
-  uniformName = KL::String(uniformNameStr);
-  delete( uniformNameStr );
+  try
+  {
+    char * uniformNameStr = new char[1024];
+    glGetActiveUniformName( (GLuint)program, (GLuint)uniformIndex, (GLsizei)bufSize, (GLsizei*)&length[0], (char*)uniformNameStr );
+    uniformName = KL::String(uniformNameStr);
+    delete( uniformNameStr );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetActiveUniformName( 0x%04X, 0x%04X, %d, GLsizei*, char* )", (unsigned)program, (unsigned)uniformIndex, (int)bufSize);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetActiveUniformsiv(
@@ -5236,7 +9940,14 @@ FABRIC_EXT_EXPORT void klGetActiveUniformsiv(
   const KL::Size & pname,
   KL::VariableArray<KL::Integer> & params
 ){
-  glGetActiveUniformsiv( (GLuint)program, (GLsizei)uniformCount, (const GLuint*)&uniformIndices[0], (GLenum)pname, (GLint*)&params[0] );
+  try
+  {
+    glGetActiveUniformsiv( (GLuint)program, (GLsizei)uniformCount, (const GLuint*)&uniformIndices[0], (GLenum)pname, (GLint*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetActiveUniformsiv( 0x%04X, %d, GLuint*, %d, GLint* )", (unsigned)program, (int)uniformCount, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetIntegeri_v(
@@ -5244,15 +9955,29 @@ FABRIC_EXT_EXPORT void klGetIntegeri_v(
   const KL::Size & index,
   KL::VariableArray<KL::Integer> & data
 ){
-  glGetIntegeri_v( (GLenum)target, (GLuint)index, (GLint*)&data[0] );
+  try
+  {
+    glGetIntegeri_v( (GLenum)target, (GLuint)index, (GLint*)&data[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetIntegeri_v( %d, 0x%04X, GLint* )", (int)target, (unsigned)index);
+  }
 }
 
 FABRIC_EXT_EXPORT KL::Size klGetUniformBlockIndex(
   const KL::Size & program,
   const KL::String &uniformBlockName
 ){
-  GLuint result = glGetUniformBlockIndex( (GLuint)program, (const char*)uniformBlockName.data() );
+  try
+  {
+    GLuint result = glGetUniformBlockIndex( (GLuint)program, (const char*)uniformBlockName.data() );
   return (KL::Size)result;
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetUniformBlockIndex( 0x%04X, char* )", (unsigned)program);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetUniformIndices(
@@ -5261,7 +9986,14 @@ FABRIC_EXT_EXPORT void klGetUniformIndices(
   const KL::VariableArray<KL::String> &uniformNames,
   KL::VariableArray<KL::Size> & uniformIndices
 ){
-  glGetUniformIndices( (GLuint)program, (GLsizei)uniformCount, (const char**)&uniformNames[0], (GLuint*)&uniformIndices[0] );
+  try
+  {
+    glGetUniformIndices( (GLuint)program, (GLsizei)uniformCount, (const char**)&uniformNames[0], (GLuint*)&uniformIndices[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetUniformIndices( 0x%04X, %d, char*, GLuint* )", (unsigned)program, (int)uniformCount);
+  }
 }
 
 FABRIC_EXT_EXPORT void klUniformBlockBinding(
@@ -5269,50 +10001,99 @@ FABRIC_EXT_EXPORT void klUniformBlockBinding(
   const KL::Size & uniformBlockIndex,
   const KL::Size & uniformBlockBinding
 ){
-  glUniformBlockBinding( (GLuint)program, (GLuint)uniformBlockIndex, (GLuint)uniformBlockBinding );
+  try
+  {
+    glUniformBlockBinding( (GLuint)program, (GLuint)uniformBlockIndex, (GLuint)uniformBlockBinding );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glUniformBlockBinding( 0x%04X, 0x%04X, 0x%04X )", (unsigned)program, (unsigned)uniformBlockIndex, (unsigned)uniformBlockBinding);
+  }
 }
 
 FABRIC_EXT_EXPORT void klBindVertexArray(
   const KL::Size & array
 ){
-  glBindVertexArray( (GLuint)array );
+  try
+  {
+    glBindVertexArray( (GLuint)array );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glBindVertexArray( 0x%04X )", (unsigned)array);
+  }
 }
 
 FABRIC_EXT_EXPORT void klDeleteVertexArrays(
   const KL::Size & n,
   const KL::VariableArray<KL::Size> & arrays
 ){
-  glDeleteVertexArrays( (GLsizei)n, (const GLuint*)&arrays[0] );
+  try
+  {
+    glDeleteVertexArrays( (GLsizei)n, (const GLuint*)&arrays[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glDeleteVertexArrays( %d, GLuint* )", (int)n);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGenVertexArrays(
   const KL::Size & n,
   KL::VariableArray<KL::Size> & arrays
 ){
-  glGenVertexArrays( (GLsizei)n, (GLuint*)&arrays[0] );
+  try
+  {
+    glGenVertexArrays( (GLsizei)n, (GLuint*)&arrays[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGenVertexArrays( %d, GLuint* )", (int)n);
+  }
 }
 
 FABRIC_EXT_EXPORT KL::Boolean klIsVertexArray(
   const KL::Size & array
 ){
-  GLboolean result = glIsVertexArray( (GLuint)array );
+  try
+  {
+    GLboolean result = glIsVertexArray( (GLuint)array );
   return (KL::Boolean)result;
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glIsVertexArray( 0x%04X )", (unsigned)array);
+  }
 }
 
 FABRIC_EXT_EXPORT KL::Integer klGetUniformBufferSizeEXT(
   const KL::Size & program,
   const KL::Integer & location
 ){
-  GLint result = glGetUniformBufferSizeEXT( (GLuint)program, (GLint)location );
+  try
+  {
+    GLint result = glGetUniformBufferSizeEXT( (GLuint)program, (GLint)location );
   return (KL::Integer)result;
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetUniformBufferSizeEXT( 0x%04X, %d )", (unsigned)program, (int)location);
+  }
 }
 
 FABRIC_EXT_EXPORT KL::Integer klGetUniformOffsetEXT(
   const KL::Size & program,
   const KL::Integer & location
 ){
-  GLintptr result = glGetUniformOffsetEXT( (GLuint)program, (GLint)location );
+  try
+  {
+    GLintptr result = glGetUniformOffsetEXT( (GLuint)program, (GLint)location );
   return (KL::Integer)result;
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetUniformOffsetEXT( 0x%04X, %d )", (unsigned)program, (int)location);
+  }
 }
 
 FABRIC_EXT_EXPORT void klUniformBufferEXT(
@@ -5320,7 +10101,14 @@ FABRIC_EXT_EXPORT void klUniformBufferEXT(
   const KL::Integer & location,
   const KL::Size & buffer
 ){
-  glUniformBufferEXT( (GLuint)program, (GLint)location, (GLuint)buffer );
+  try
+  {
+    glUniformBufferEXT( (GLuint)program, (GLint)location, (GLuint)buffer );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glUniformBufferEXT( 0x%04X, %d, 0x%04X )", (unsigned)program, (int)location, (unsigned)buffer);
+  }
 }
 
 FABRIC_EXT_EXPORT void klBlendColorEXT(
@@ -5329,14 +10117,28 @@ FABRIC_EXT_EXPORT void klBlendColorEXT(
   const KL::Scalar & blue,
   const KL::Scalar & alpha
 ){
-  glBlendColorEXT( (GLclampf)red, (GLclampf)green, (GLclampf)blue, (GLclampf)alpha );
+  try
+  {
+    glBlendColorEXT( (GLclampf)red, (GLclampf)green, (GLclampf)blue, (GLclampf)alpha );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glBlendColorEXT( %f, %f, %f, %f )", (float)red, (float)green, (float)blue, (float)alpha);
+  }
 }
 
 FABRIC_EXT_EXPORT void klBlendEquationSeparateEXT(
   const KL::Size & modeRGB,
   const KL::Size & modeAlpha
 ){
-  glBlendEquationSeparateEXT( (GLenum)modeRGB, (GLenum)modeAlpha );
+  try
+  {
+    glBlendEquationSeparateEXT( (GLenum)modeRGB, (GLenum)modeAlpha );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glBlendEquationSeparateEXT( %d, %d )", (int)modeRGB, (int)modeAlpha);
+  }
 }
 
 FABRIC_EXT_EXPORT void klBlendFuncSeparateEXT(
@@ -5345,13 +10147,27 @@ FABRIC_EXT_EXPORT void klBlendFuncSeparateEXT(
   const KL::Size & sfactorAlpha,
   const KL::Size & dfactorAlpha
 ){
-  glBlendFuncSeparateEXT( (GLenum)sfactorRGB, (GLenum)dfactorRGB, (GLenum)sfactorAlpha, (GLenum)dfactorAlpha );
+  try
+  {
+    glBlendFuncSeparateEXT( (GLenum)sfactorRGB, (GLenum)dfactorRGB, (GLenum)sfactorAlpha, (GLenum)dfactorAlpha );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glBlendFuncSeparateEXT( %d, %d, %d, %d )", (int)sfactorRGB, (int)dfactorRGB, (int)sfactorAlpha, (int)dfactorAlpha);
+  }
 }
 
 FABRIC_EXT_EXPORT void klBlendEquationEXT(
   const KL::Size & mode
 ){
-  glBlendEquationEXT( (GLenum)mode );
+  try
+  {
+    glBlendEquationEXT( (GLenum)mode );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glBlendEquationEXT( %d )", (int)mode);
+  }
 }
 
 FABRIC_EXT_EXPORT void klColorSubTableEXT(
@@ -5362,7 +10178,14 @@ FABRIC_EXT_EXPORT void klColorSubTableEXT(
   const KL::Size & type,
   KL::Data data
 ){
-  glColorSubTableEXT( (GLenum)target, (GLsizei)start, (GLsizei)count, (GLenum)format, (GLenum)type, data );
+  try
+  {
+    glColorSubTableEXT( (GLenum)target, (GLsizei)start, (GLsizei)count, (GLenum)format, (GLenum)type, data );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glColorSubTableEXT( %d, %d, %d, %d, %d, void* )", (int)target, (int)start, (int)count, (int)format, (int)type);
+  }
 }
 
 FABRIC_EXT_EXPORT void klCopyColorSubTableEXT(
@@ -5372,19 +10195,40 @@ FABRIC_EXT_EXPORT void klCopyColorSubTableEXT(
   const KL::Integer & y,
   const KL::Size & width
 ){
-  glCopyColorSubTableEXT( (GLenum)target, (GLsizei)start, (GLint)x, (GLint)y, (GLsizei)width );
+  try
+  {
+    glCopyColorSubTableEXT( (GLenum)target, (GLsizei)start, (GLint)x, (GLint)y, (GLsizei)width );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glCopyColorSubTableEXT( %d, %d, %d, %d, %d )", (int)target, (int)start, (int)x, (int)y, (int)width);
+  }
 }
 
 FABRIC_EXT_EXPORT void klLockArraysEXT(
   const KL::Integer & first,
   const KL::Size & count
 ){
-  glLockArraysEXT( (GLint)first, (GLsizei)count );
+  try
+  {
+    glLockArraysEXT( (GLint)first, (GLsizei)count );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glLockArraysEXT( %d, %d )", (int)first, (int)count);
+  }
 }
 
 FABRIC_EXT_EXPORT void klUnlockArraysEXT()
 {
-  glUnlockArraysEXT();
+  try
+  {
+    glUnlockArraysEXT();
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glUnlockArraysEXT(  )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klConvolutionFilter1DEXT(
@@ -5395,7 +10239,14 @@ FABRIC_EXT_EXPORT void klConvolutionFilter1DEXT(
   const KL::Size & type,
   KL::Data image
 ){
-  glConvolutionFilter1DEXT( (GLenum)target, (GLenum)internalformat, (GLsizei)width, (GLenum)format, (GLenum)type, image );
+  try
+  {
+    glConvolutionFilter1DEXT( (GLenum)target, (GLenum)internalformat, (GLsizei)width, (GLenum)format, (GLenum)type, image );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glConvolutionFilter1DEXT( %d, %d, %d, %d, %d, void* )", (int)target, (int)internalformat, (int)width, (int)format, (int)type);
+  }
 }
 
 FABRIC_EXT_EXPORT void klConvolutionFilter2DEXT(
@@ -5407,7 +10258,14 @@ FABRIC_EXT_EXPORT void klConvolutionFilter2DEXT(
   const KL::Size & type,
   KL::Data image
 ){
-  glConvolutionFilter2DEXT( (GLenum)target, (GLenum)internalformat, (GLsizei)width, (GLsizei)height, (GLenum)format, (GLenum)type, image );
+  try
+  {
+    glConvolutionFilter2DEXT( (GLenum)target, (GLenum)internalformat, (GLsizei)width, (GLsizei)height, (GLenum)format, (GLenum)type, image );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glConvolutionFilter2DEXT( %d, %d, %d, %d, %d, %d, void* )", (int)target, (int)internalformat, (int)width, (int)height, (int)format, (int)type);
+  }
 }
 
 FABRIC_EXT_EXPORT void klConvolutionParameterfEXT(
@@ -5415,7 +10273,14 @@ FABRIC_EXT_EXPORT void klConvolutionParameterfEXT(
   const KL::Size & pname,
   const KL::Scalar & param
 ){
-  glConvolutionParameterfEXT( (GLenum)target, (GLenum)pname, (GLfloat)param );
+  try
+  {
+    glConvolutionParameterfEXT( (GLenum)target, (GLenum)pname, (GLfloat)param );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glConvolutionParameterfEXT( %d, %d, %f )", (int)target, (int)pname, (float)param);
+  }
 }
 
 FABRIC_EXT_EXPORT void klConvolutionParameterfvEXT(
@@ -5423,7 +10288,14 @@ FABRIC_EXT_EXPORT void klConvolutionParameterfvEXT(
   const KL::Size & pname,
   const KL::VariableArray<KL::Scalar> & params
 ){
-  glConvolutionParameterfvEXT( (GLenum)target, (GLenum)pname, (const GLfloat*)&params[0] );
+  try
+  {
+    glConvolutionParameterfvEXT( (GLenum)target, (GLenum)pname, (const GLfloat*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glConvolutionParameterfvEXT( %d, %d, GLfloat* )", (int)target, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klConvolutionParameteriEXT(
@@ -5431,7 +10303,14 @@ FABRIC_EXT_EXPORT void klConvolutionParameteriEXT(
   const KL::Size & pname,
   const KL::Integer & param
 ){
-  glConvolutionParameteriEXT( (GLenum)target, (GLenum)pname, (GLint)param );
+  try
+  {
+    glConvolutionParameteriEXT( (GLenum)target, (GLenum)pname, (GLint)param );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glConvolutionParameteriEXT( %d, %d, %d )", (int)target, (int)pname, (int)param);
+  }
 }
 
 FABRIC_EXT_EXPORT void klConvolutionParameterivEXT(
@@ -5439,7 +10318,14 @@ FABRIC_EXT_EXPORT void klConvolutionParameterivEXT(
   const KL::Size & pname,
   const KL::VariableArray<KL::Integer> & params
 ){
-  glConvolutionParameterivEXT( (GLenum)target, (GLenum)pname, (const GLint*)&params[0] );
+  try
+  {
+    glConvolutionParameterivEXT( (GLenum)target, (GLenum)pname, (const GLint*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glConvolutionParameterivEXT( %d, %d, GLint* )", (int)target, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klCopyConvolutionFilter1DEXT(
@@ -5449,7 +10335,14 @@ FABRIC_EXT_EXPORT void klCopyConvolutionFilter1DEXT(
   const KL::Integer & y,
   const KL::Size & width
 ){
-  glCopyConvolutionFilter1DEXT( (GLenum)target, (GLenum)internalformat, (GLint)x, (GLint)y, (GLsizei)width );
+  try
+  {
+    glCopyConvolutionFilter1DEXT( (GLenum)target, (GLenum)internalformat, (GLint)x, (GLint)y, (GLsizei)width );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glCopyConvolutionFilter1DEXT( %d, %d, %d, %d, %d )", (int)target, (int)internalformat, (int)x, (int)y, (int)width);
+  }
 }
 
 FABRIC_EXT_EXPORT void klCopyConvolutionFilter2DEXT(
@@ -5460,7 +10353,14 @@ FABRIC_EXT_EXPORT void klCopyConvolutionFilter2DEXT(
   const KL::Size & width,
   const KL::Size & height
 ){
-  glCopyConvolutionFilter2DEXT( (GLenum)target, (GLenum)internalformat, (GLint)x, (GLint)y, (GLsizei)width, (GLsizei)height );
+  try
+  {
+    glCopyConvolutionFilter2DEXT( (GLenum)target, (GLenum)internalformat, (GLint)x, (GLint)y, (GLsizei)width, (GLsizei)height );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glCopyConvolutionFilter2DEXT( %d, %d, %d, %d, %d, %d )", (int)target, (int)internalformat, (int)x, (int)y, (int)width, (int)height);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetConvolutionFilterEXT(
@@ -5469,7 +10369,14 @@ FABRIC_EXT_EXPORT void klGetConvolutionFilterEXT(
   const KL::Size & type,
   KL::Data image
 ){
-  glGetConvolutionFilterEXT( (GLenum)target, (GLenum)format, (GLenum)type, image );
+  try
+  {
+    glGetConvolutionFilterEXT( (GLenum)target, (GLenum)format, (GLenum)type, image );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetConvolutionFilterEXT( %d, %d, %d, void* )", (int)target, (int)format, (int)type);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetConvolutionParameterfvEXT(
@@ -5477,7 +10384,14 @@ FABRIC_EXT_EXPORT void klGetConvolutionParameterfvEXT(
   const KL::Size & pname,
   KL::VariableArray<KL::Scalar> & params
 ){
-  glGetConvolutionParameterfvEXT( (GLenum)target, (GLenum)pname, (GLfloat*)&params[0] );
+  try
+  {
+    glGetConvolutionParameterfvEXT( (GLenum)target, (GLenum)pname, (GLfloat*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetConvolutionParameterfvEXT( %d, %d, GLfloat* )", (int)target, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetConvolutionParameterivEXT(
@@ -5485,7 +10399,14 @@ FABRIC_EXT_EXPORT void klGetConvolutionParameterivEXT(
   const KL::Size & pname,
   KL::VariableArray<KL::Integer> & params
 ){
-  glGetConvolutionParameterivEXT( (GLenum)target, (GLenum)pname, (GLint*)&params[0] );
+  try
+  {
+    glGetConvolutionParameterivEXT( (GLenum)target, (GLenum)pname, (GLint*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetConvolutionParameterivEXT( %d, %d, GLint* )", (int)target, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetSeparableFilterEXT(
@@ -5496,7 +10417,14 @@ FABRIC_EXT_EXPORT void klGetSeparableFilterEXT(
   KL::Data column,
   KL::Data span
 ){
-  glGetSeparableFilterEXT( (GLenum)target, (GLenum)format, (GLenum)type, row, column, span );
+  try
+  {
+    glGetSeparableFilterEXT( (GLenum)target, (GLenum)format, (GLenum)type, row, column, span );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetSeparableFilterEXT( %d, %d, %d, void*, void*, void* )", (int)target, (int)format, (int)type);
+  }
 }
 
 FABRIC_EXT_EXPORT void klSeparableFilter2DEXT(
@@ -5509,7 +10437,14 @@ FABRIC_EXT_EXPORT void klSeparableFilter2DEXT(
   KL::Data row,
   KL::Data column
 ){
-  glSeparableFilter2DEXT( (GLenum)target, (GLenum)internalformat, (GLsizei)width, (GLsizei)height, (GLenum)format, (GLenum)type, row, column );
+  try
+  {
+    glSeparableFilter2DEXT( (GLenum)target, (GLenum)internalformat, (GLsizei)width, (GLsizei)height, (GLenum)format, (GLenum)type, row, column );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glSeparableFilter2DEXT( %d, %d, %d, %d, %d, %d, void*, void* )", (int)target, (int)internalformat, (int)width, (int)height, (int)format, (int)type);
+  }
 }
 
 FABRIC_EXT_EXPORT void klBinormalPointerEXT(
@@ -5517,7 +10452,14 @@ FABRIC_EXT_EXPORT void klBinormalPointerEXT(
   const KL::Size & stride,
   KL::Data pointer
 ){
-  glBinormalPointerEXT( (GLenum)type, (GLsizei)stride, pointer );
+  try
+  {
+    glBinormalPointerEXT( (GLenum)type, (GLsizei)stride, pointer );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glBinormalPointerEXT( %d, %d, void* )", (int)type, (int)stride);
+  }
 }
 
 FABRIC_EXT_EXPORT void klTangentPointerEXT(
@@ -5525,7 +10467,14 @@ FABRIC_EXT_EXPORT void klTangentPointerEXT(
   const KL::Size & stride,
   KL::Data pointer
 ){
-  glTangentPointerEXT( (GLenum)type, (GLsizei)stride, pointer );
+  try
+  {
+    glTangentPointerEXT( (GLenum)type, (GLsizei)stride, pointer );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTangentPointerEXT( %d, %d, void* )", (int)type, (int)stride);
+  }
 }
 
 FABRIC_EXT_EXPORT void klCopyTexImage1DEXT(
@@ -5537,7 +10486,14 @@ FABRIC_EXT_EXPORT void klCopyTexImage1DEXT(
   const KL::Size & width,
   const KL::Integer & border
 ){
-  glCopyTexImage1DEXT( (GLenum)target, (GLint)level, (GLenum)internalformat, (GLint)x, (GLint)y, (GLsizei)width, (GLint)border );
+  try
+  {
+    glCopyTexImage1DEXT( (GLenum)target, (GLint)level, (GLenum)internalformat, (GLint)x, (GLint)y, (GLsizei)width, (GLint)border );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glCopyTexImage1DEXT( %d, %d, %d, %d, %d, %d, %d )", (int)target, (int)level, (int)internalformat, (int)x, (int)y, (int)width, (int)border);
+  }
 }
 
 FABRIC_EXT_EXPORT void klCopyTexImage2DEXT(
@@ -5550,7 +10506,14 @@ FABRIC_EXT_EXPORT void klCopyTexImage2DEXT(
   const KL::Size & height,
   const KL::Integer & border
 ){
-  glCopyTexImage2DEXT( (GLenum)target, (GLint)level, (GLenum)internalformat, (GLint)x, (GLint)y, (GLsizei)width, (GLsizei)height, (GLint)border );
+  try
+  {
+    glCopyTexImage2DEXT( (GLenum)target, (GLint)level, (GLenum)internalformat, (GLint)x, (GLint)y, (GLsizei)width, (GLsizei)height, (GLint)border );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glCopyTexImage2DEXT( %d, %d, %d, %d, %d, %d, %d, %d )", (int)target, (int)level, (int)internalformat, (int)x, (int)y, (int)width, (int)height, (int)border);
+  }
 }
 
 FABRIC_EXT_EXPORT void klCopyTexSubImage1DEXT(
@@ -5561,7 +10524,14 @@ FABRIC_EXT_EXPORT void klCopyTexSubImage1DEXT(
   const KL::Integer & y,
   const KL::Size & width
 ){
-  glCopyTexSubImage1DEXT( (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)x, (GLint)y, (GLsizei)width );
+  try
+  {
+    glCopyTexSubImage1DEXT( (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)x, (GLint)y, (GLsizei)width );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glCopyTexSubImage1DEXT( %d, %d, %d, %d, %d, %d )", (int)target, (int)level, (int)xoffset, (int)x, (int)y, (int)width);
+  }
 }
 
 FABRIC_EXT_EXPORT void klCopyTexSubImage2DEXT(
@@ -5574,7 +10544,14 @@ FABRIC_EXT_EXPORT void klCopyTexSubImage2DEXT(
   const KL::Size & width,
   const KL::Size & height
 ){
-  glCopyTexSubImage2DEXT( (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLint)x, (GLint)y, (GLsizei)width, (GLsizei)height );
+  try
+  {
+    glCopyTexSubImage2DEXT( (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLint)x, (GLint)y, (GLsizei)width, (GLsizei)height );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glCopyTexSubImage2DEXT( %d, %d, %d, %d, %d, %d, %d, %d )", (int)target, (int)level, (int)xoffset, (int)yoffset, (int)x, (int)y, (int)width, (int)height);
+  }
 }
 
 FABRIC_EXT_EXPORT void klCopyTexSubImage3DEXT(
@@ -5588,28 +10565,56 @@ FABRIC_EXT_EXPORT void klCopyTexSubImage3DEXT(
   const KL::Size & width,
   const KL::Size & height
 ){
-  glCopyTexSubImage3DEXT( (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLint)zoffset, (GLint)x, (GLint)y, (GLsizei)width, (GLsizei)height );
+  try
+  {
+    glCopyTexSubImage3DEXT( (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLint)zoffset, (GLint)x, (GLint)y, (GLsizei)width, (GLsizei)height );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glCopyTexSubImage3DEXT( %d, %d, %d, %d, %d, %d, %d, %d, %d )", (int)target, (int)level, (int)xoffset, (int)yoffset, (int)zoffset, (int)x, (int)y, (int)width, (int)height);
+  }
 }
 
 FABRIC_EXT_EXPORT void klCullParameterdvEXT(
   const KL::Size & pname,
   KL::VariableArray<KL::Scalar> & params
 ){
-  glCullParameterdvEXT( (GLenum)pname, (GLdouble*)&params[0] );
+  try
+  {
+    glCullParameterdvEXT( (GLenum)pname, (GLdouble*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glCullParameterdvEXT( %d, GLdouble* )", (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klCullParameterfvEXT(
   const KL::Size & pname,
   KL::VariableArray<KL::Scalar> & params
 ){
-  glCullParameterfvEXT( (GLenum)pname, (GLfloat*)&params[0] );
+  try
+  {
+    glCullParameterfvEXT( (GLenum)pname, (GLfloat*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glCullParameterfvEXT( %d, GLfloat* )", (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klDepthBoundsEXT(
   const KL::Scalar & zmin,
   const KL::Scalar & zmax
 ){
-  glDepthBoundsEXT( (GLclampd)zmin, (GLclampd)zmax );
+  try
+  {
+    glDepthBoundsEXT( (GLclampd)zmin, (GLclampd)zmax );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glDepthBoundsEXT( %f, %f )", (float)zmin, (float)zmax);
+  }
 }
 
 FABRIC_EXT_EXPORT void klBindMultiTextureEXT(
@@ -5617,21 +10622,42 @@ FABRIC_EXT_EXPORT void klBindMultiTextureEXT(
   const KL::Size & target,
   const KL::Size & texture
 ){
-  glBindMultiTextureEXT( (GLenum)texunit, (GLenum)target, (GLuint)texture );
+  try
+  {
+    glBindMultiTextureEXT( (GLenum)texunit, (GLenum)target, (GLuint)texture );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glBindMultiTextureEXT( %d, %d, 0x%04X )", (int)texunit, (int)target, (unsigned)texture);
+  }
 }
 
 FABRIC_EXT_EXPORT KL::Size klCheckNamedFramebufferStatusEXT(
   const KL::Size & framebuffer,
   const KL::Size & target
 ){
-  GLenum result = glCheckNamedFramebufferStatusEXT( (GLuint)framebuffer, (GLenum)target );
+  try
+  {
+    GLenum result = glCheckNamedFramebufferStatusEXT( (GLuint)framebuffer, (GLenum)target );
   return (KL::Size)result;
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glCheckNamedFramebufferStatusEXT( 0x%04X, %d )", (unsigned)framebuffer, (int)target);
+  }
 }
 
 FABRIC_EXT_EXPORT void klClientAttribDefaultEXT(
-  const KL::Integer & mask
+  const KL::Size & mask
 ){
-  glClientAttribDefaultEXT( (GLbitfield)mask );
+  try
+  {
+    glClientAttribDefaultEXT( (GLbitfield)mask );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glClientAttribDefaultEXT( 0x%04X )", (unsigned)mask);
+  }
 }
 
 FABRIC_EXT_EXPORT void klCompressedMultiTexImage1DEXT(
@@ -5644,7 +10670,14 @@ FABRIC_EXT_EXPORT void klCompressedMultiTexImage1DEXT(
   const KL::Size & imageSize,
   KL::Data data
 ){
-  glCompressedMultiTexImage1DEXT( (GLenum)texunit, (GLenum)target, (GLint)level, (GLenum)internalformat, (GLsizei)width, (GLint)border, (GLsizei)imageSize, data );
+  try
+  {
+    glCompressedMultiTexImage1DEXT( (GLenum)texunit, (GLenum)target, (GLint)level, (GLenum)internalformat, (GLsizei)width, (GLint)border, (GLsizei)imageSize, data );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glCompressedMultiTexImage1DEXT( %d, %d, %d, %d, %d, %d, %d, void* )", (int)texunit, (int)target, (int)level, (int)internalformat, (int)width, (int)border, (int)imageSize);
+  }
 }
 
 FABRIC_EXT_EXPORT void klCompressedMultiTexImage2DEXT(
@@ -5658,7 +10691,14 @@ FABRIC_EXT_EXPORT void klCompressedMultiTexImage2DEXT(
   const KL::Size & imageSize,
   KL::Data data
 ){
-  glCompressedMultiTexImage2DEXT( (GLenum)texunit, (GLenum)target, (GLint)level, (GLenum)internalformat, (GLsizei)width, (GLsizei)height, (GLint)border, (GLsizei)imageSize, data );
+  try
+  {
+    glCompressedMultiTexImage2DEXT( (GLenum)texunit, (GLenum)target, (GLint)level, (GLenum)internalformat, (GLsizei)width, (GLsizei)height, (GLint)border, (GLsizei)imageSize, data );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glCompressedMultiTexImage2DEXT( %d, %d, %d, %d, %d, %d, %d, %d, void* )", (int)texunit, (int)target, (int)level, (int)internalformat, (int)width, (int)height, (int)border, (int)imageSize);
+  }
 }
 
 FABRIC_EXT_EXPORT void klCompressedMultiTexImage3DEXT(
@@ -5673,7 +10713,14 @@ FABRIC_EXT_EXPORT void klCompressedMultiTexImage3DEXT(
   const KL::Size & imageSize,
   KL::Data data
 ){
-  glCompressedMultiTexImage3DEXT( (GLenum)texunit, (GLenum)target, (GLint)level, (GLenum)internalformat, (GLsizei)width, (GLsizei)height, (GLsizei)depth, (GLint)border, (GLsizei)imageSize, data );
+  try
+  {
+    glCompressedMultiTexImage3DEXT( (GLenum)texunit, (GLenum)target, (GLint)level, (GLenum)internalformat, (GLsizei)width, (GLsizei)height, (GLsizei)depth, (GLint)border, (GLsizei)imageSize, data );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glCompressedMultiTexImage3DEXT( %d, %d, %d, %d, %d, %d, %d, %d, %d, void* )", (int)texunit, (int)target, (int)level, (int)internalformat, (int)width, (int)height, (int)depth, (int)border, (int)imageSize);
+  }
 }
 
 FABRIC_EXT_EXPORT void klCompressedMultiTexSubImage1DEXT(
@@ -5686,7 +10733,14 @@ FABRIC_EXT_EXPORT void klCompressedMultiTexSubImage1DEXT(
   const KL::Size & imageSize,
   KL::Data data
 ){
-  glCompressedMultiTexSubImage1DEXT( (GLenum)texunit, (GLenum)target, (GLint)level, (GLint)xoffset, (GLsizei)width, (GLenum)format, (GLsizei)imageSize, data );
+  try
+  {
+    glCompressedMultiTexSubImage1DEXT( (GLenum)texunit, (GLenum)target, (GLint)level, (GLint)xoffset, (GLsizei)width, (GLenum)format, (GLsizei)imageSize, data );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glCompressedMultiTexSubImage1DEXT( %d, %d, %d, %d, %d, %d, %d, void* )", (int)texunit, (int)target, (int)level, (int)xoffset, (int)width, (int)format, (int)imageSize);
+  }
 }
 
 FABRIC_EXT_EXPORT void klCompressedMultiTexSubImage2DEXT(
@@ -5701,7 +10755,14 @@ FABRIC_EXT_EXPORT void klCompressedMultiTexSubImage2DEXT(
   const KL::Size & imageSize,
   KL::Data data
 ){
-  glCompressedMultiTexSubImage2DEXT( (GLenum)texunit, (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLsizei)width, (GLsizei)height, (GLenum)format, (GLsizei)imageSize, data );
+  try
+  {
+    glCompressedMultiTexSubImage2DEXT( (GLenum)texunit, (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLsizei)width, (GLsizei)height, (GLenum)format, (GLsizei)imageSize, data );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glCompressedMultiTexSubImage2DEXT( %d, %d, %d, %d, %d, %d, %d, %d, %d, void* )", (int)texunit, (int)target, (int)level, (int)xoffset, (int)yoffset, (int)width, (int)height, (int)format, (int)imageSize);
+  }
 }
 
 FABRIC_EXT_EXPORT void klCompressedMultiTexSubImage3DEXT(
@@ -5718,7 +10779,14 @@ FABRIC_EXT_EXPORT void klCompressedMultiTexSubImage3DEXT(
   const KL::Size & imageSize,
   KL::Data data
 ){
-  glCompressedMultiTexSubImage3DEXT( (GLenum)texunit, (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLint)zoffset, (GLsizei)width, (GLsizei)height, (GLsizei)depth, (GLenum)format, (GLsizei)imageSize, data );
+  try
+  {
+    glCompressedMultiTexSubImage3DEXT( (GLenum)texunit, (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLint)zoffset, (GLsizei)width, (GLsizei)height, (GLsizei)depth, (GLenum)format, (GLsizei)imageSize, data );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glCompressedMultiTexSubImage3DEXT( %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, void* )", (int)texunit, (int)target, (int)level, (int)xoffset, (int)yoffset, (int)zoffset, (int)width, (int)height, (int)depth, (int)format, (int)imageSize);
+  }
 }
 
 FABRIC_EXT_EXPORT void klCompressedTextureImage1DEXT(
@@ -5731,7 +10799,14 @@ FABRIC_EXT_EXPORT void klCompressedTextureImage1DEXT(
   const KL::Size & imageSize,
   KL::Data data
 ){
-  glCompressedTextureImage1DEXT( (GLuint)texture, (GLenum)target, (GLint)level, (GLenum)internalformat, (GLsizei)width, (GLint)border, (GLsizei)imageSize, data );
+  try
+  {
+    glCompressedTextureImage1DEXT( (GLuint)texture, (GLenum)target, (GLint)level, (GLenum)internalformat, (GLsizei)width, (GLint)border, (GLsizei)imageSize, data );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glCompressedTextureImage1DEXT( 0x%04X, %d, %d, %d, %d, %d, %d, void* )", (unsigned)texture, (int)target, (int)level, (int)internalformat, (int)width, (int)border, (int)imageSize);
+  }
 }
 
 FABRIC_EXT_EXPORT void klCompressedTextureImage2DEXT(
@@ -5745,7 +10820,14 @@ FABRIC_EXT_EXPORT void klCompressedTextureImage2DEXT(
   const KL::Size & imageSize,
   KL::Data data
 ){
-  glCompressedTextureImage2DEXT( (GLuint)texture, (GLenum)target, (GLint)level, (GLenum)internalformat, (GLsizei)width, (GLsizei)height, (GLint)border, (GLsizei)imageSize, data );
+  try
+  {
+    glCompressedTextureImage2DEXT( (GLuint)texture, (GLenum)target, (GLint)level, (GLenum)internalformat, (GLsizei)width, (GLsizei)height, (GLint)border, (GLsizei)imageSize, data );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glCompressedTextureImage2DEXT( 0x%04X, %d, %d, %d, %d, %d, %d, %d, void* )", (unsigned)texture, (int)target, (int)level, (int)internalformat, (int)width, (int)height, (int)border, (int)imageSize);
+  }
 }
 
 FABRIC_EXT_EXPORT void klCompressedTextureImage3DEXT(
@@ -5760,7 +10842,14 @@ FABRIC_EXT_EXPORT void klCompressedTextureImage3DEXT(
   const KL::Size & imageSize,
   KL::Data data
 ){
-  glCompressedTextureImage3DEXT( (GLuint)texture, (GLenum)target, (GLint)level, (GLenum)internalformat, (GLsizei)width, (GLsizei)height, (GLsizei)depth, (GLint)border, (GLsizei)imageSize, data );
+  try
+  {
+    glCompressedTextureImage3DEXT( (GLuint)texture, (GLenum)target, (GLint)level, (GLenum)internalformat, (GLsizei)width, (GLsizei)height, (GLsizei)depth, (GLint)border, (GLsizei)imageSize, data );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glCompressedTextureImage3DEXT( 0x%04X, %d, %d, %d, %d, %d, %d, %d, %d, void* )", (unsigned)texture, (int)target, (int)level, (int)internalformat, (int)width, (int)height, (int)depth, (int)border, (int)imageSize);
+  }
 }
 
 FABRIC_EXT_EXPORT void klCompressedTextureSubImage1DEXT(
@@ -5773,7 +10862,14 @@ FABRIC_EXT_EXPORT void klCompressedTextureSubImage1DEXT(
   const KL::Size & imageSize,
   KL::Data data
 ){
-  glCompressedTextureSubImage1DEXT( (GLuint)texture, (GLenum)target, (GLint)level, (GLint)xoffset, (GLsizei)width, (GLenum)format, (GLsizei)imageSize, data );
+  try
+  {
+    glCompressedTextureSubImage1DEXT( (GLuint)texture, (GLenum)target, (GLint)level, (GLint)xoffset, (GLsizei)width, (GLenum)format, (GLsizei)imageSize, data );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glCompressedTextureSubImage1DEXT( 0x%04X, %d, %d, %d, %d, %d, %d, void* )", (unsigned)texture, (int)target, (int)level, (int)xoffset, (int)width, (int)format, (int)imageSize);
+  }
 }
 
 FABRIC_EXT_EXPORT void klCompressedTextureSubImage2DEXT(
@@ -5788,7 +10884,14 @@ FABRIC_EXT_EXPORT void klCompressedTextureSubImage2DEXT(
   const KL::Size & imageSize,
   KL::Data data
 ){
-  glCompressedTextureSubImage2DEXT( (GLuint)texture, (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLsizei)width, (GLsizei)height, (GLenum)format, (GLsizei)imageSize, data );
+  try
+  {
+    glCompressedTextureSubImage2DEXT( (GLuint)texture, (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLsizei)width, (GLsizei)height, (GLenum)format, (GLsizei)imageSize, data );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glCompressedTextureSubImage2DEXT( 0x%04X, %d, %d, %d, %d, %d, %d, %d, %d, void* )", (unsigned)texture, (int)target, (int)level, (int)xoffset, (int)yoffset, (int)width, (int)height, (int)format, (int)imageSize);
+  }
 }
 
 FABRIC_EXT_EXPORT void klCompressedTextureSubImage3DEXT(
@@ -5805,7 +10908,14 @@ FABRIC_EXT_EXPORT void klCompressedTextureSubImage3DEXT(
   const KL::Size & imageSize,
   KL::Data data
 ){
-  glCompressedTextureSubImage3DEXT( (GLuint)texture, (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLint)zoffset, (GLsizei)width, (GLsizei)height, (GLsizei)depth, (GLenum)format, (GLsizei)imageSize, data );
+  try
+  {
+    glCompressedTextureSubImage3DEXT( (GLuint)texture, (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLint)zoffset, (GLsizei)width, (GLsizei)height, (GLsizei)depth, (GLenum)format, (GLsizei)imageSize, data );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glCompressedTextureSubImage3DEXT( 0x%04X, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, void* )", (unsigned)texture, (int)target, (int)level, (int)xoffset, (int)yoffset, (int)zoffset, (int)width, (int)height, (int)depth, (int)format, (int)imageSize);
+  }
 }
 
 FABRIC_EXT_EXPORT void klCopyMultiTexImage1DEXT(
@@ -5818,7 +10928,14 @@ FABRIC_EXT_EXPORT void klCopyMultiTexImage1DEXT(
   const KL::Size & width,
   const KL::Integer & border
 ){
-  glCopyMultiTexImage1DEXT( (GLenum)texunit, (GLenum)target, (GLint)level, (GLenum)internalformat, (GLint)x, (GLint)y, (GLsizei)width, (GLint)border );
+  try
+  {
+    glCopyMultiTexImage1DEXT( (GLenum)texunit, (GLenum)target, (GLint)level, (GLenum)internalformat, (GLint)x, (GLint)y, (GLsizei)width, (GLint)border );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glCopyMultiTexImage1DEXT( %d, %d, %d, %d, %d, %d, %d, %d )", (int)texunit, (int)target, (int)level, (int)internalformat, (int)x, (int)y, (int)width, (int)border);
+  }
 }
 
 FABRIC_EXT_EXPORT void klCopyMultiTexImage2DEXT(
@@ -5832,7 +10949,14 @@ FABRIC_EXT_EXPORT void klCopyMultiTexImage2DEXT(
   const KL::Size & height,
   const KL::Integer & border
 ){
-  glCopyMultiTexImage2DEXT( (GLenum)texunit, (GLenum)target, (GLint)level, (GLenum)internalformat, (GLint)x, (GLint)y, (GLsizei)width, (GLsizei)height, (GLint)border );
+  try
+  {
+    glCopyMultiTexImage2DEXT( (GLenum)texunit, (GLenum)target, (GLint)level, (GLenum)internalformat, (GLint)x, (GLint)y, (GLsizei)width, (GLsizei)height, (GLint)border );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glCopyMultiTexImage2DEXT( %d, %d, %d, %d, %d, %d, %d, %d, %d )", (int)texunit, (int)target, (int)level, (int)internalformat, (int)x, (int)y, (int)width, (int)height, (int)border);
+  }
 }
 
 FABRIC_EXT_EXPORT void klCopyMultiTexSubImage1DEXT(
@@ -5844,7 +10968,14 @@ FABRIC_EXT_EXPORT void klCopyMultiTexSubImage1DEXT(
   const KL::Integer & y,
   const KL::Size & width
 ){
-  glCopyMultiTexSubImage1DEXT( (GLenum)texunit, (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)x, (GLint)y, (GLsizei)width );
+  try
+  {
+    glCopyMultiTexSubImage1DEXT( (GLenum)texunit, (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)x, (GLint)y, (GLsizei)width );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glCopyMultiTexSubImage1DEXT( %d, %d, %d, %d, %d, %d, %d )", (int)texunit, (int)target, (int)level, (int)xoffset, (int)x, (int)y, (int)width);
+  }
 }
 
 FABRIC_EXT_EXPORT void klCopyMultiTexSubImage2DEXT(
@@ -5858,7 +10989,14 @@ FABRIC_EXT_EXPORT void klCopyMultiTexSubImage2DEXT(
   const KL::Size & width,
   const KL::Size & height
 ){
-  glCopyMultiTexSubImage2DEXT( (GLenum)texunit, (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLint)x, (GLint)y, (GLsizei)width, (GLsizei)height );
+  try
+  {
+    glCopyMultiTexSubImage2DEXT( (GLenum)texunit, (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLint)x, (GLint)y, (GLsizei)width, (GLsizei)height );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glCopyMultiTexSubImage2DEXT( %d, %d, %d, %d, %d, %d, %d, %d, %d )", (int)texunit, (int)target, (int)level, (int)xoffset, (int)yoffset, (int)x, (int)y, (int)width, (int)height);
+  }
 }
 
 FABRIC_EXT_EXPORT void klCopyMultiTexSubImage3DEXT(
@@ -5873,7 +11011,14 @@ FABRIC_EXT_EXPORT void klCopyMultiTexSubImage3DEXT(
   const KL::Size & width,
   const KL::Size & height
 ){
-  glCopyMultiTexSubImage3DEXT( (GLenum)texunit, (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLint)zoffset, (GLint)x, (GLint)y, (GLsizei)width, (GLsizei)height );
+  try
+  {
+    glCopyMultiTexSubImage3DEXT( (GLenum)texunit, (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLint)zoffset, (GLint)x, (GLint)y, (GLsizei)width, (GLsizei)height );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glCopyMultiTexSubImage3DEXT( %d, %d, %d, %d, %d, %d, %d, %d, %d, %d )", (int)texunit, (int)target, (int)level, (int)xoffset, (int)yoffset, (int)zoffset, (int)x, (int)y, (int)width, (int)height);
+  }
 }
 
 FABRIC_EXT_EXPORT void klCopyTextureImage1DEXT(
@@ -5886,7 +11031,14 @@ FABRIC_EXT_EXPORT void klCopyTextureImage1DEXT(
   const KL::Size & width,
   const KL::Integer & border
 ){
-  glCopyTextureImage1DEXT( (GLuint)texture, (GLenum)target, (GLint)level, (GLenum)internalformat, (GLint)x, (GLint)y, (GLsizei)width, (GLint)border );
+  try
+  {
+    glCopyTextureImage1DEXT( (GLuint)texture, (GLenum)target, (GLint)level, (GLenum)internalformat, (GLint)x, (GLint)y, (GLsizei)width, (GLint)border );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glCopyTextureImage1DEXT( 0x%04X, %d, %d, %d, %d, %d, %d, %d )", (unsigned)texture, (int)target, (int)level, (int)internalformat, (int)x, (int)y, (int)width, (int)border);
+  }
 }
 
 FABRIC_EXT_EXPORT void klCopyTextureImage2DEXT(
@@ -5900,7 +11052,14 @@ FABRIC_EXT_EXPORT void klCopyTextureImage2DEXT(
   const KL::Size & height,
   const KL::Integer & border
 ){
-  glCopyTextureImage2DEXT( (GLuint)texture, (GLenum)target, (GLint)level, (GLenum)internalformat, (GLint)x, (GLint)y, (GLsizei)width, (GLsizei)height, (GLint)border );
+  try
+  {
+    glCopyTextureImage2DEXT( (GLuint)texture, (GLenum)target, (GLint)level, (GLenum)internalformat, (GLint)x, (GLint)y, (GLsizei)width, (GLsizei)height, (GLint)border );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glCopyTextureImage2DEXT( 0x%04X, %d, %d, %d, %d, %d, %d, %d, %d )", (unsigned)texture, (int)target, (int)level, (int)internalformat, (int)x, (int)y, (int)width, (int)height, (int)border);
+  }
 }
 
 FABRIC_EXT_EXPORT void klCopyTextureSubImage1DEXT(
@@ -5912,7 +11071,14 @@ FABRIC_EXT_EXPORT void klCopyTextureSubImage1DEXT(
   const KL::Integer & y,
   const KL::Size & width
 ){
-  glCopyTextureSubImage1DEXT( (GLuint)texture, (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)x, (GLint)y, (GLsizei)width );
+  try
+  {
+    glCopyTextureSubImage1DEXT( (GLuint)texture, (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)x, (GLint)y, (GLsizei)width );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glCopyTextureSubImage1DEXT( 0x%04X, %d, %d, %d, %d, %d, %d )", (unsigned)texture, (int)target, (int)level, (int)xoffset, (int)x, (int)y, (int)width);
+  }
 }
 
 FABRIC_EXT_EXPORT void klCopyTextureSubImage2DEXT(
@@ -5926,7 +11092,14 @@ FABRIC_EXT_EXPORT void klCopyTextureSubImage2DEXT(
   const KL::Size & width,
   const KL::Size & height
 ){
-  glCopyTextureSubImage2DEXT( (GLuint)texture, (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLint)x, (GLint)y, (GLsizei)width, (GLsizei)height );
+  try
+  {
+    glCopyTextureSubImage2DEXT( (GLuint)texture, (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLint)x, (GLint)y, (GLsizei)width, (GLsizei)height );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glCopyTextureSubImage2DEXT( 0x%04X, %d, %d, %d, %d, %d, %d, %d, %d )", (unsigned)texture, (int)target, (int)level, (int)xoffset, (int)yoffset, (int)x, (int)y, (int)width, (int)height);
+  }
 }
 
 FABRIC_EXT_EXPORT void klCopyTextureSubImage3DEXT(
@@ -5941,63 +11114,126 @@ FABRIC_EXT_EXPORT void klCopyTextureSubImage3DEXT(
   const KL::Size & width,
   const KL::Size & height
 ){
-  glCopyTextureSubImage3DEXT( (GLuint)texture, (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLint)zoffset, (GLint)x, (GLint)y, (GLsizei)width, (GLsizei)height );
+  try
+  {
+    glCopyTextureSubImage3DEXT( (GLuint)texture, (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLint)zoffset, (GLint)x, (GLint)y, (GLsizei)width, (GLsizei)height );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glCopyTextureSubImage3DEXT( 0x%04X, %d, %d, %d, %d, %d, %d, %d, %d, %d )", (unsigned)texture, (int)target, (int)level, (int)xoffset, (int)yoffset, (int)zoffset, (int)x, (int)y, (int)width, (int)height);
+  }
 }
 
 FABRIC_EXT_EXPORT void klDisableClientStateIndexedEXT(
   const KL::Size & array,
   const KL::Size & index
 ){
-  glDisableClientStateIndexedEXT( (GLenum)array, (GLuint)index );
+  try
+  {
+    glDisableClientStateIndexedEXT( (GLenum)array, (GLuint)index );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glDisableClientStateIndexedEXT( %d, 0x%04X )", (int)array, (unsigned)index);
+  }
 }
 
 FABRIC_EXT_EXPORT void klDisableClientStateiEXT(
   const KL::Size & array,
   const KL::Size & index
 ){
-  glDisableClientStateiEXT( (GLenum)array, (GLuint)index );
+  try
+  {
+    glDisableClientStateiEXT( (GLenum)array, (GLuint)index );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glDisableClientStateiEXT( %d, 0x%04X )", (int)array, (unsigned)index);
+  }
 }
 
 FABRIC_EXT_EXPORT void klDisableVertexArrayAttribEXT(
   const KL::Size & vaobj,
   const KL::Size & index
 ){
-  glDisableVertexArrayAttribEXT( (GLuint)vaobj, (GLuint)index );
+  try
+  {
+    glDisableVertexArrayAttribEXT( (GLuint)vaobj, (GLuint)index );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glDisableVertexArrayAttribEXT( 0x%04X, 0x%04X )", (unsigned)vaobj, (unsigned)index);
+  }
 }
 
 FABRIC_EXT_EXPORT void klDisableVertexArrayEXT(
   const KL::Size & vaobj,
   const KL::Size & array
 ){
-  glDisableVertexArrayEXT( (GLuint)vaobj, (GLenum)array );
+  try
+  {
+    glDisableVertexArrayEXT( (GLuint)vaobj, (GLenum)array );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glDisableVertexArrayEXT( 0x%04X, %d )", (unsigned)vaobj, (int)array);
+  }
 }
 
 FABRIC_EXT_EXPORT void klEnableClientStateIndexedEXT(
   const KL::Size & array,
   const KL::Size & index
 ){
-  glEnableClientStateIndexedEXT( (GLenum)array, (GLuint)index );
+  try
+  {
+    glEnableClientStateIndexedEXT( (GLenum)array, (GLuint)index );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glEnableClientStateIndexedEXT( %d, 0x%04X )", (int)array, (unsigned)index);
+  }
 }
 
 FABRIC_EXT_EXPORT void klEnableClientStateiEXT(
   const KL::Size & array,
   const KL::Size & index
 ){
-  glEnableClientStateiEXT( (GLenum)array, (GLuint)index );
+  try
+  {
+    glEnableClientStateiEXT( (GLenum)array, (GLuint)index );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glEnableClientStateiEXT( %d, 0x%04X )", (int)array, (unsigned)index);
+  }
 }
 
 FABRIC_EXT_EXPORT void klEnableVertexArrayAttribEXT(
   const KL::Size & vaobj,
   const KL::Size & index
 ){
-  glEnableVertexArrayAttribEXT( (GLuint)vaobj, (GLuint)index );
+  try
+  {
+    glEnableVertexArrayAttribEXT( (GLuint)vaobj, (GLuint)index );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glEnableVertexArrayAttribEXT( 0x%04X, 0x%04X )", (unsigned)vaobj, (unsigned)index);
+  }
 }
 
 FABRIC_EXT_EXPORT void klEnableVertexArrayEXT(
   const KL::Size & vaobj,
   const KL::Size & array
 ){
-  glEnableVertexArrayEXT( (GLuint)vaobj, (GLenum)array );
+  try
+  {
+    glEnableVertexArrayEXT( (GLuint)vaobj, (GLenum)array );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glEnableVertexArrayEXT( 0x%04X, %d )", (unsigned)vaobj, (int)array);
+  }
 }
 
 FABRIC_EXT_EXPORT void klFlushMappedNamedBufferRangeEXT(
@@ -6005,14 +11241,28 @@ FABRIC_EXT_EXPORT void klFlushMappedNamedBufferRangeEXT(
   const KL::Integer & offset,
   const KL::Size & length
 ){
-  glFlushMappedNamedBufferRangeEXT( (GLuint)buffer, (GLintptr)offset, (GLsizeiptr)length );
+  try
+  {
+    glFlushMappedNamedBufferRangeEXT( (GLuint)buffer, (GLintptr)offset, (GLsizeiptr)length );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glFlushMappedNamedBufferRangeEXT( 0x%04X, %d, %d )", (unsigned)buffer, (int)offset, (int)length);
+  }
 }
 
 FABRIC_EXT_EXPORT void klFramebufferDrawBufferEXT(
   const KL::Size & framebuffer,
   const KL::Size & mode
 ){
-  glFramebufferDrawBufferEXT( (GLuint)framebuffer, (GLenum)mode );
+  try
+  {
+    glFramebufferDrawBufferEXT( (GLuint)framebuffer, (GLenum)mode );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glFramebufferDrawBufferEXT( 0x%04X, %d )", (unsigned)framebuffer, (int)mode);
+  }
 }
 
 FABRIC_EXT_EXPORT void klFramebufferDrawBuffersEXT(
@@ -6020,28 +11270,56 @@ FABRIC_EXT_EXPORT void klFramebufferDrawBuffersEXT(
   const KL::Size & n,
   const KL::VariableArray<KL::Size> & bufs
 ){
-  glFramebufferDrawBuffersEXT( (GLuint)framebuffer, (GLsizei)n, (const GLenum*)&bufs[0] );
+  try
+  {
+    glFramebufferDrawBuffersEXT( (GLuint)framebuffer, (GLsizei)n, (const GLenum*)&bufs[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glFramebufferDrawBuffersEXT( 0x%04X, %d, GLenum* )", (unsigned)framebuffer, (int)n);
+  }
 }
 
 FABRIC_EXT_EXPORT void klFramebufferReadBufferEXT(
   const KL::Size & framebuffer,
   const KL::Size & mode
 ){
-  glFramebufferReadBufferEXT( (GLuint)framebuffer, (GLenum)mode );
+  try
+  {
+    glFramebufferReadBufferEXT( (GLuint)framebuffer, (GLenum)mode );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glFramebufferReadBufferEXT( 0x%04X, %d )", (unsigned)framebuffer, (int)mode);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGenerateMultiTexMipmapEXT(
   const KL::Size & texunit,
   const KL::Size & target
 ){
-  glGenerateMultiTexMipmapEXT( (GLenum)texunit, (GLenum)target );
+  try
+  {
+    glGenerateMultiTexMipmapEXT( (GLenum)texunit, (GLenum)target );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGenerateMultiTexMipmapEXT( %d, %d )", (int)texunit, (int)target);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGenerateTextureMipmapEXT(
   const KL::Size & texture,
   const KL::Size & target
 ){
-  glGenerateTextureMipmapEXT( (GLuint)texture, (GLenum)target );
+  try
+  {
+    glGenerateTextureMipmapEXT( (GLuint)texture, (GLenum)target );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGenerateTextureMipmapEXT( 0x%04X, %d )", (unsigned)texture, (int)target);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetCompressedMultiTexImageEXT(
@@ -6050,7 +11328,14 @@ FABRIC_EXT_EXPORT void klGetCompressedMultiTexImageEXT(
   const KL::Integer & level,
   KL::Data img
 ){
-  glGetCompressedMultiTexImageEXT( (GLenum)texunit, (GLenum)target, (GLint)level, img );
+  try
+  {
+    glGetCompressedMultiTexImageEXT( (GLenum)texunit, (GLenum)target, (GLint)level, img );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetCompressedMultiTexImageEXT( %d, %d, %d, void* )", (int)texunit, (int)target, (int)level);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetCompressedTextureImageEXT(
@@ -6059,7 +11344,14 @@ FABRIC_EXT_EXPORT void klGetCompressedTextureImageEXT(
   const KL::Integer & level,
   KL::Data img
 ){
-  glGetCompressedTextureImageEXT( (GLuint)texture, (GLenum)target, (GLint)level, img );
+  try
+  {
+    glGetCompressedTextureImageEXT( (GLuint)texture, (GLenum)target, (GLint)level, img );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetCompressedTextureImageEXT( 0x%04X, %d, %d, void* )", (unsigned)texture, (int)target, (int)level);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetDoubleIndexedvEXT(
@@ -6067,7 +11359,14 @@ FABRIC_EXT_EXPORT void klGetDoubleIndexedvEXT(
   const KL::Size & index,
   KL::VariableArray<KL::Scalar> & params
 ){
-  glGetDoubleIndexedvEXT( (GLenum)target, (GLuint)index, (GLdouble*)&params[0] );
+  try
+  {
+    glGetDoubleIndexedvEXT( (GLenum)target, (GLuint)index, (GLdouble*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetDoubleIndexedvEXT( %d, 0x%04X, GLdouble* )", (int)target, (unsigned)index);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetDoublei_vEXT(
@@ -6075,7 +11374,14 @@ FABRIC_EXT_EXPORT void klGetDoublei_vEXT(
   const KL::Size & index,
   KL::VariableArray<KL::Scalar> & params
 ){
-  glGetDoublei_vEXT( (GLenum)pname, (GLuint)index, (GLdouble*)&params[0] );
+  try
+  {
+    glGetDoublei_vEXT( (GLenum)pname, (GLuint)index, (GLdouble*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetDoublei_vEXT( %d, 0x%04X, GLdouble* )", (int)pname, (unsigned)index);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetFloatIndexedvEXT(
@@ -6083,7 +11389,14 @@ FABRIC_EXT_EXPORT void klGetFloatIndexedvEXT(
   const KL::Size & index,
   KL::VariableArray<KL::Scalar> & params
 ){
-  glGetFloatIndexedvEXT( (GLenum)target, (GLuint)index, (GLfloat*)&params[0] );
+  try
+  {
+    glGetFloatIndexedvEXT( (GLenum)target, (GLuint)index, (GLfloat*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetFloatIndexedvEXT( %d, 0x%04X, GLfloat* )", (int)target, (unsigned)index);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetFloati_vEXT(
@@ -6091,7 +11404,14 @@ FABRIC_EXT_EXPORT void klGetFloati_vEXT(
   const KL::Size & index,
   KL::VariableArray<KL::Scalar> & params
 ){
-  glGetFloati_vEXT( (GLenum)pname, (GLuint)index, (GLfloat*)&params[0] );
+  try
+  {
+    glGetFloati_vEXT( (GLenum)pname, (GLuint)index, (GLfloat*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetFloati_vEXT( %d, 0x%04X, GLfloat* )", (int)pname, (unsigned)index);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetFramebufferParameterivEXT(
@@ -6099,7 +11419,14 @@ FABRIC_EXT_EXPORT void klGetFramebufferParameterivEXT(
   const KL::Size & pname,
   KL::VariableArray<KL::Integer> & param
 ){
-  glGetFramebufferParameterivEXT( (GLuint)framebuffer, (GLenum)pname, (GLint*)&param[0] );
+  try
+  {
+    glGetFramebufferParameterivEXT( (GLuint)framebuffer, (GLenum)pname, (GLint*)&param[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetFramebufferParameterivEXT( 0x%04X, %d, GLint* )", (unsigned)framebuffer, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetMultiTexEnvfvEXT(
@@ -6108,7 +11435,14 @@ FABRIC_EXT_EXPORT void klGetMultiTexEnvfvEXT(
   const KL::Size & pname,
   KL::VariableArray<KL::Scalar> & params
 ){
-  glGetMultiTexEnvfvEXT( (GLenum)texunit, (GLenum)target, (GLenum)pname, (GLfloat*)&params[0] );
+  try
+  {
+    glGetMultiTexEnvfvEXT( (GLenum)texunit, (GLenum)target, (GLenum)pname, (GLfloat*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetMultiTexEnvfvEXT( %d, %d, %d, GLfloat* )", (int)texunit, (int)target, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetMultiTexEnvivEXT(
@@ -6117,7 +11451,14 @@ FABRIC_EXT_EXPORT void klGetMultiTexEnvivEXT(
   const KL::Size & pname,
   KL::VariableArray<KL::Integer> & params
 ){
-  glGetMultiTexEnvivEXT( (GLenum)texunit, (GLenum)target, (GLenum)pname, (GLint*)&params[0] );
+  try
+  {
+    glGetMultiTexEnvivEXT( (GLenum)texunit, (GLenum)target, (GLenum)pname, (GLint*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetMultiTexEnvivEXT( %d, %d, %d, GLint* )", (int)texunit, (int)target, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetMultiTexGendvEXT(
@@ -6126,7 +11467,14 @@ FABRIC_EXT_EXPORT void klGetMultiTexGendvEXT(
   const KL::Size & pname,
   KL::VariableArray<KL::Scalar> & params
 ){
-  glGetMultiTexGendvEXT( (GLenum)texunit, (GLenum)coord, (GLenum)pname, (GLdouble*)&params[0] );
+  try
+  {
+    glGetMultiTexGendvEXT( (GLenum)texunit, (GLenum)coord, (GLenum)pname, (GLdouble*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetMultiTexGendvEXT( %d, %d, %d, GLdouble* )", (int)texunit, (int)coord, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetMultiTexGenfvEXT(
@@ -6135,7 +11483,14 @@ FABRIC_EXT_EXPORT void klGetMultiTexGenfvEXT(
   const KL::Size & pname,
   KL::VariableArray<KL::Scalar> & params
 ){
-  glGetMultiTexGenfvEXT( (GLenum)texunit, (GLenum)coord, (GLenum)pname, (GLfloat*)&params[0] );
+  try
+  {
+    glGetMultiTexGenfvEXT( (GLenum)texunit, (GLenum)coord, (GLenum)pname, (GLfloat*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetMultiTexGenfvEXT( %d, %d, %d, GLfloat* )", (int)texunit, (int)coord, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetMultiTexGenivEXT(
@@ -6144,7 +11499,14 @@ FABRIC_EXT_EXPORT void klGetMultiTexGenivEXT(
   const KL::Size & pname,
   KL::VariableArray<KL::Integer> & params
 ){
-  glGetMultiTexGenivEXT( (GLenum)texunit, (GLenum)coord, (GLenum)pname, (GLint*)&params[0] );
+  try
+  {
+    glGetMultiTexGenivEXT( (GLenum)texunit, (GLenum)coord, (GLenum)pname, (GLint*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetMultiTexGenivEXT( %d, %d, %d, GLint* )", (int)texunit, (int)coord, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetMultiTexImageEXT(
@@ -6155,7 +11517,14 @@ FABRIC_EXT_EXPORT void klGetMultiTexImageEXT(
   const KL::Size & type,
   KL::Data pixels
 ){
-  glGetMultiTexImageEXT( (GLenum)texunit, (GLenum)target, (GLint)level, (GLenum)format, (GLenum)type, pixels );
+  try
+  {
+    glGetMultiTexImageEXT( (GLenum)texunit, (GLenum)target, (GLint)level, (GLenum)format, (GLenum)type, pixels );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetMultiTexImageEXT( %d, %d, %d, %d, %d, void* )", (int)texunit, (int)target, (int)level, (int)format, (int)type);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetMultiTexLevelParameterfvEXT(
@@ -6165,7 +11534,14 @@ FABRIC_EXT_EXPORT void klGetMultiTexLevelParameterfvEXT(
   const KL::Size & pname,
   KL::VariableArray<KL::Scalar> & params
 ){
-  glGetMultiTexLevelParameterfvEXT( (GLenum)texunit, (GLenum)target, (GLint)level, (GLenum)pname, (GLfloat*)&params[0] );
+  try
+  {
+    glGetMultiTexLevelParameterfvEXT( (GLenum)texunit, (GLenum)target, (GLint)level, (GLenum)pname, (GLfloat*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetMultiTexLevelParameterfvEXT( %d, %d, %d, %d, GLfloat* )", (int)texunit, (int)target, (int)level, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetMultiTexLevelParameterivEXT(
@@ -6175,7 +11551,14 @@ FABRIC_EXT_EXPORT void klGetMultiTexLevelParameterivEXT(
   const KL::Size & pname,
   KL::VariableArray<KL::Integer> & params
 ){
-  glGetMultiTexLevelParameterivEXT( (GLenum)texunit, (GLenum)target, (GLint)level, (GLenum)pname, (GLint*)&params[0] );
+  try
+  {
+    glGetMultiTexLevelParameterivEXT( (GLenum)texunit, (GLenum)target, (GLint)level, (GLenum)pname, (GLint*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetMultiTexLevelParameterivEXT( %d, %d, %d, %d, GLint* )", (int)texunit, (int)target, (int)level, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetMultiTexParameterIivEXT(
@@ -6184,7 +11567,14 @@ FABRIC_EXT_EXPORT void klGetMultiTexParameterIivEXT(
   const KL::Size & pname,
   KL::VariableArray<KL::Integer> & params
 ){
-  glGetMultiTexParameterIivEXT( (GLenum)texunit, (GLenum)target, (GLenum)pname, (GLint*)&params[0] );
+  try
+  {
+    glGetMultiTexParameterIivEXT( (GLenum)texunit, (GLenum)target, (GLenum)pname, (GLint*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetMultiTexParameterIivEXT( %d, %d, %d, GLint* )", (int)texunit, (int)target, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetMultiTexParameterIuivEXT(
@@ -6193,7 +11583,14 @@ FABRIC_EXT_EXPORT void klGetMultiTexParameterIuivEXT(
   const KL::Size & pname,
   KL::VariableArray<KL::Size> & params
 ){
-  glGetMultiTexParameterIuivEXT( (GLenum)texunit, (GLenum)target, (GLenum)pname, (GLuint*)&params[0] );
+  try
+  {
+    glGetMultiTexParameterIuivEXT( (GLenum)texunit, (GLenum)target, (GLenum)pname, (GLuint*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetMultiTexParameterIuivEXT( %d, %d, %d, GLuint* )", (int)texunit, (int)target, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetMultiTexParameterfvEXT(
@@ -6202,7 +11599,14 @@ FABRIC_EXT_EXPORT void klGetMultiTexParameterfvEXT(
   const KL::Size & pname,
   KL::VariableArray<KL::Scalar> & params
 ){
-  glGetMultiTexParameterfvEXT( (GLenum)texunit, (GLenum)target, (GLenum)pname, (GLfloat*)&params[0] );
+  try
+  {
+    glGetMultiTexParameterfvEXT( (GLenum)texunit, (GLenum)target, (GLenum)pname, (GLfloat*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetMultiTexParameterfvEXT( %d, %d, %d, GLfloat* )", (int)texunit, (int)target, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetMultiTexParameterivEXT(
@@ -6211,7 +11615,14 @@ FABRIC_EXT_EXPORT void klGetMultiTexParameterivEXT(
   const KL::Size & pname,
   KL::VariableArray<KL::Integer> & params
 ){
-  glGetMultiTexParameterivEXT( (GLenum)texunit, (GLenum)target, (GLenum)pname, (GLint*)&params[0] );
+  try
+  {
+    glGetMultiTexParameterivEXT( (GLenum)texunit, (GLenum)target, (GLenum)pname, (GLint*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetMultiTexParameterivEXT( %d, %d, %d, GLint* )", (int)texunit, (int)target, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetNamedBufferParameterivEXT(
@@ -6219,7 +11630,14 @@ FABRIC_EXT_EXPORT void klGetNamedBufferParameterivEXT(
   const KL::Size & pname,
   KL::VariableArray<KL::Integer> & params
 ){
-  glGetNamedBufferParameterivEXT( (GLuint)buffer, (GLenum)pname, (GLint*)&params[0] );
+  try
+  {
+    glGetNamedBufferParameterivEXT( (GLuint)buffer, (GLenum)pname, (GLint*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetNamedBufferParameterivEXT( 0x%04X, %d, GLint* )", (unsigned)buffer, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetNamedBufferSubDataEXT(
@@ -6228,7 +11646,14 @@ FABRIC_EXT_EXPORT void klGetNamedBufferSubDataEXT(
   const KL::Size & size,
   KL::Data data
 ){
-  glGetNamedBufferSubDataEXT( (GLuint)buffer, (GLintptr)offset, (GLsizeiptr)size, data );
+  try
+  {
+    glGetNamedBufferSubDataEXT( (GLuint)buffer, (GLintptr)offset, (GLsizeiptr)size, data );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetNamedBufferSubDataEXT( 0x%04X, %d, %d, void* )", (unsigned)buffer, (int)offset, (int)size);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetNamedFramebufferAttachmentParameterivEXT(
@@ -6237,7 +11662,14 @@ FABRIC_EXT_EXPORT void klGetNamedFramebufferAttachmentParameterivEXT(
   const KL::Size & pname,
   KL::VariableArray<KL::Integer> & params
 ){
-  glGetNamedFramebufferAttachmentParameterivEXT( (GLuint)framebuffer, (GLenum)attachment, (GLenum)pname, (GLint*)&params[0] );
+  try
+  {
+    glGetNamedFramebufferAttachmentParameterivEXT( (GLuint)framebuffer, (GLenum)attachment, (GLenum)pname, (GLint*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetNamedFramebufferAttachmentParameterivEXT( 0x%04X, %d, %d, GLint* )", (unsigned)framebuffer, (int)attachment, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetNamedProgramLocalParameterIivEXT(
@@ -6246,7 +11678,14 @@ FABRIC_EXT_EXPORT void klGetNamedProgramLocalParameterIivEXT(
   const KL::Size & index,
   KL::VariableArray<KL::Integer> & params
 ){
-  glGetNamedProgramLocalParameterIivEXT( (GLuint)program, (GLenum)target, (GLuint)index, (GLint*)&params[0] );
+  try
+  {
+    glGetNamedProgramLocalParameterIivEXT( (GLuint)program, (GLenum)target, (GLuint)index, (GLint*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetNamedProgramLocalParameterIivEXT( 0x%04X, %d, 0x%04X, GLint* )", (unsigned)program, (int)target, (unsigned)index);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetNamedProgramLocalParameterIuivEXT(
@@ -6255,7 +11694,14 @@ FABRIC_EXT_EXPORT void klGetNamedProgramLocalParameterIuivEXT(
   const KL::Size & index,
   KL::VariableArray<KL::Size> & params
 ){
-  glGetNamedProgramLocalParameterIuivEXT( (GLuint)program, (GLenum)target, (GLuint)index, (GLuint*)&params[0] );
+  try
+  {
+    glGetNamedProgramLocalParameterIuivEXT( (GLuint)program, (GLenum)target, (GLuint)index, (GLuint*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetNamedProgramLocalParameterIuivEXT( 0x%04X, %d, 0x%04X, GLuint* )", (unsigned)program, (int)target, (unsigned)index);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetNamedProgramLocalParameterdvEXT(
@@ -6264,7 +11710,14 @@ FABRIC_EXT_EXPORT void klGetNamedProgramLocalParameterdvEXT(
   const KL::Size & index,
   KL::VariableArray<KL::Scalar> & params
 ){
-  glGetNamedProgramLocalParameterdvEXT( (GLuint)program, (GLenum)target, (GLuint)index, (GLdouble*)&params[0] );
+  try
+  {
+    glGetNamedProgramLocalParameterdvEXT( (GLuint)program, (GLenum)target, (GLuint)index, (GLdouble*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetNamedProgramLocalParameterdvEXT( 0x%04X, %d, 0x%04X, GLdouble* )", (unsigned)program, (int)target, (unsigned)index);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetNamedProgramLocalParameterfvEXT(
@@ -6273,7 +11726,14 @@ FABRIC_EXT_EXPORT void klGetNamedProgramLocalParameterfvEXT(
   const KL::Size & index,
   KL::VariableArray<KL::Scalar> & params
 ){
-  glGetNamedProgramLocalParameterfvEXT( (GLuint)program, (GLenum)target, (GLuint)index, (GLfloat*)&params[0] );
+  try
+  {
+    glGetNamedProgramLocalParameterfvEXT( (GLuint)program, (GLenum)target, (GLuint)index, (GLfloat*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetNamedProgramLocalParameterfvEXT( 0x%04X, %d, 0x%04X, GLfloat* )", (unsigned)program, (int)target, (unsigned)index);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetNamedProgramStringEXT(
@@ -6282,7 +11742,14 @@ FABRIC_EXT_EXPORT void klGetNamedProgramStringEXT(
   const KL::Size & pname,
   KL::Data string
 ){
-  glGetNamedProgramStringEXT( (GLuint)program, (GLenum)target, (GLenum)pname, string );
+  try
+  {
+    glGetNamedProgramStringEXT( (GLuint)program, (GLenum)target, (GLenum)pname, string );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetNamedProgramStringEXT( 0x%04X, %d, %d, void* )", (unsigned)program, (int)target, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetNamedProgramivEXT(
@@ -6291,7 +11758,14 @@ FABRIC_EXT_EXPORT void klGetNamedProgramivEXT(
   const KL::Size & pname,
   KL::VariableArray<KL::Integer> & params
 ){
-  glGetNamedProgramivEXT( (GLuint)program, (GLenum)target, (GLenum)pname, (GLint*)&params[0] );
+  try
+  {
+    glGetNamedProgramivEXT( (GLuint)program, (GLenum)target, (GLenum)pname, (GLint*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetNamedProgramivEXT( 0x%04X, %d, %d, GLint* )", (unsigned)program, (int)target, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetNamedRenderbufferParameterivEXT(
@@ -6299,7 +11773,14 @@ FABRIC_EXT_EXPORT void klGetNamedRenderbufferParameterivEXT(
   const KL::Size & pname,
   KL::VariableArray<KL::Integer> & params
 ){
-  glGetNamedRenderbufferParameterivEXT( (GLuint)renderbuffer, (GLenum)pname, (GLint*)&params[0] );
+  try
+  {
+    glGetNamedRenderbufferParameterivEXT( (GLuint)renderbuffer, (GLenum)pname, (GLint*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetNamedRenderbufferParameterivEXT( 0x%04X, %d, GLint* )", (unsigned)renderbuffer, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetTextureImageEXT(
@@ -6310,7 +11791,14 @@ FABRIC_EXT_EXPORT void klGetTextureImageEXT(
   const KL::Size & type,
   KL::Data pixels
 ){
-  glGetTextureImageEXT( (GLuint)texture, (GLenum)target, (GLint)level, (GLenum)format, (GLenum)type, pixels );
+  try
+  {
+    glGetTextureImageEXT( (GLuint)texture, (GLenum)target, (GLint)level, (GLenum)format, (GLenum)type, pixels );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetTextureImageEXT( 0x%04X, %d, %d, %d, %d, void* )", (unsigned)texture, (int)target, (int)level, (int)format, (int)type);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetTextureLevelParameterfvEXT(
@@ -6320,7 +11808,14 @@ FABRIC_EXT_EXPORT void klGetTextureLevelParameterfvEXT(
   const KL::Size & pname,
   KL::VariableArray<KL::Scalar> & params
 ){
-  glGetTextureLevelParameterfvEXT( (GLuint)texture, (GLenum)target, (GLint)level, (GLenum)pname, (GLfloat*)&params[0] );
+  try
+  {
+    glGetTextureLevelParameterfvEXT( (GLuint)texture, (GLenum)target, (GLint)level, (GLenum)pname, (GLfloat*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetTextureLevelParameterfvEXT( 0x%04X, %d, %d, %d, GLfloat* )", (unsigned)texture, (int)target, (int)level, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetTextureLevelParameterivEXT(
@@ -6330,7 +11825,14 @@ FABRIC_EXT_EXPORT void klGetTextureLevelParameterivEXT(
   const KL::Size & pname,
   KL::VariableArray<KL::Integer> & params
 ){
-  glGetTextureLevelParameterivEXT( (GLuint)texture, (GLenum)target, (GLint)level, (GLenum)pname, (GLint*)&params[0] );
+  try
+  {
+    glGetTextureLevelParameterivEXT( (GLuint)texture, (GLenum)target, (GLint)level, (GLenum)pname, (GLint*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetTextureLevelParameterivEXT( 0x%04X, %d, %d, %d, GLint* )", (unsigned)texture, (int)target, (int)level, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetTextureParameterIivEXT(
@@ -6339,7 +11841,14 @@ FABRIC_EXT_EXPORT void klGetTextureParameterIivEXT(
   const KL::Size & pname,
   KL::VariableArray<KL::Integer> & params
 ){
-  glGetTextureParameterIivEXT( (GLuint)texture, (GLenum)target, (GLenum)pname, (GLint*)&params[0] );
+  try
+  {
+    glGetTextureParameterIivEXT( (GLuint)texture, (GLenum)target, (GLenum)pname, (GLint*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetTextureParameterIivEXT( 0x%04X, %d, %d, GLint* )", (unsigned)texture, (int)target, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetTextureParameterIuivEXT(
@@ -6348,7 +11857,14 @@ FABRIC_EXT_EXPORT void klGetTextureParameterIuivEXT(
   const KL::Size & pname,
   KL::VariableArray<KL::Size> & params
 ){
-  glGetTextureParameterIuivEXT( (GLuint)texture, (GLenum)target, (GLenum)pname, (GLuint*)&params[0] );
+  try
+  {
+    glGetTextureParameterIuivEXT( (GLuint)texture, (GLenum)target, (GLenum)pname, (GLuint*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetTextureParameterIuivEXT( 0x%04X, %d, %d, GLuint* )", (unsigned)texture, (int)target, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetTextureParameterfvEXT(
@@ -6357,7 +11873,14 @@ FABRIC_EXT_EXPORT void klGetTextureParameterfvEXT(
   const KL::Size & pname,
   KL::VariableArray<KL::Scalar> & params
 ){
-  glGetTextureParameterfvEXT( (GLuint)texture, (GLenum)target, (GLenum)pname, (GLfloat*)&params[0] );
+  try
+  {
+    glGetTextureParameterfvEXT( (GLuint)texture, (GLenum)target, (GLenum)pname, (GLfloat*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetTextureParameterfvEXT( 0x%04X, %d, %d, GLfloat* )", (unsigned)texture, (int)target, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetTextureParameterivEXT(
@@ -6366,7 +11889,14 @@ FABRIC_EXT_EXPORT void klGetTextureParameterivEXT(
   const KL::Size & pname,
   KL::VariableArray<KL::Integer> & params
 ){
-  glGetTextureParameterivEXT( (GLuint)texture, (GLenum)target, (GLenum)pname, (GLint*)&params[0] );
+  try
+  {
+    glGetTextureParameterivEXT( (GLuint)texture, (GLenum)target, (GLenum)pname, (GLint*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetTextureParameterivEXT( 0x%04X, %d, %d, GLint* )", (unsigned)texture, (int)target, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetVertexArrayIntegeri_vEXT(
@@ -6375,7 +11905,14 @@ FABRIC_EXT_EXPORT void klGetVertexArrayIntegeri_vEXT(
   const KL::Size & pname,
   KL::VariableArray<KL::Integer> & param
 ){
-  glGetVertexArrayIntegeri_vEXT( (GLuint)vaobj, (GLuint)index, (GLenum)pname, (GLint*)&param[0] );
+  try
+  {
+    glGetVertexArrayIntegeri_vEXT( (GLuint)vaobj, (GLuint)index, (GLenum)pname, (GLint*)&param[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetVertexArrayIntegeri_vEXT( 0x%04X, 0x%04X, %d, GLint* )", (unsigned)vaobj, (unsigned)index, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetVertexArrayIntegervEXT(
@@ -6383,23 +11920,44 @@ FABRIC_EXT_EXPORT void klGetVertexArrayIntegervEXT(
   const KL::Size & pname,
   KL::VariableArray<KL::Integer> & param
 ){
-  glGetVertexArrayIntegervEXT( (GLuint)vaobj, (GLenum)pname, (GLint*)&param[0] );
+  try
+  {
+    glGetVertexArrayIntegervEXT( (GLuint)vaobj, (GLenum)pname, (GLint*)&param[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetVertexArrayIntegervEXT( 0x%04X, %d, GLint* )", (unsigned)vaobj, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT GLvoid klMapNamedBufferEXT(
   const KL::Size & buffer,
   const KL::Size & access
 ){
-  glMapNamedBufferEXT( (GLuint)buffer, (GLenum)access );
+  try
+  {
+    glMapNamedBufferEXT( (GLuint)buffer, (GLenum)access );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMapNamedBufferEXT( 0x%04X, %d )", (unsigned)buffer, (int)access);
+  }
 }
 
 FABRIC_EXT_EXPORT GLvoid klMapNamedBufferRangeEXT(
   const KL::Size & buffer,
   const KL::Integer & offset,
   const KL::Size & length,
-  const KL::Integer & access
+  const KL::Size & access
 ){
-  glMapNamedBufferRangeEXT( (GLuint)buffer, (GLintptr)offset, (GLsizeiptr)length, (GLbitfield)access );
+  try
+  {
+    glMapNamedBufferRangeEXT( (GLuint)buffer, (GLintptr)offset, (GLsizeiptr)length, (GLbitfield)access );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMapNamedBufferRangeEXT( 0x%04X, %d, %d, 0x%04X )", (unsigned)buffer, (int)offset, (int)length, (unsigned)access);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMatrixFrustumEXT(
@@ -6411,69 +11969,139 @@ FABRIC_EXT_EXPORT void klMatrixFrustumEXT(
   const KL::Scalar & n,
   const KL::Scalar & f
 ){
-  glMatrixFrustumEXT( (GLenum)matrixMode, (GLdouble)l, (GLdouble)r, (GLdouble)b, (GLdouble)t, (GLdouble)n, (GLdouble)f );
+  try
+  {
+    glMatrixFrustumEXT( (GLenum)matrixMode, (GLdouble)l, (GLdouble)r, (GLdouble)b, (GLdouble)t, (GLdouble)n, (GLdouble)f );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMatrixFrustumEXT( %d, %f, %f, %f, %f, %f, %f )", (int)matrixMode, (float)l, (float)r, (float)b, (float)t, (float)n, (float)f);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMatrixLoadIdentityEXT(
   const KL::Size & matrixMode
 ){
-  glMatrixLoadIdentityEXT( (GLenum)matrixMode );
+  try
+  {
+    glMatrixLoadIdentityEXT( (GLenum)matrixMode );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMatrixLoadIdentityEXT( %d )", (int)matrixMode);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMatrixLoadTransposedEXT(
   const KL::Size & matrixMode,
   const KL::VariableArray<KL::Scalar> & m
 ){
-  glMatrixLoadTransposedEXT( (GLenum)matrixMode, (const GLdouble*)&m[0] );
+  try
+  {
+    glMatrixLoadTransposedEXT( (GLenum)matrixMode, (const GLdouble*)&m[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMatrixLoadTransposedEXT( %d, GLdouble* )", (int)matrixMode);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMatrixLoadTransposefEXT(
   const KL::Size & matrixMode,
   const KL::VariableArray<KL::Scalar> & m
 ){
-  glMatrixLoadTransposefEXT( (GLenum)matrixMode, (const GLfloat*)&m[0] );
+  try
+  {
+    glMatrixLoadTransposefEXT( (GLenum)matrixMode, (const GLfloat*)&m[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMatrixLoadTransposefEXT( %d, GLfloat* )", (int)matrixMode);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMatrixLoaddEXT(
   const KL::Size & matrixMode,
   const KL::VariableArray<KL::Scalar> & m
 ){
-  glMatrixLoaddEXT( (GLenum)matrixMode, (const GLdouble*)&m[0] );
+  try
+  {
+    glMatrixLoaddEXT( (GLenum)matrixMode, (const GLdouble*)&m[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMatrixLoaddEXT( %d, GLdouble* )", (int)matrixMode);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMatrixLoadfEXT(
   const KL::Size & matrixMode,
   const KL::VariableArray<KL::Scalar> & m
 ){
-  glMatrixLoadfEXT( (GLenum)matrixMode, (const GLfloat*)&m[0] );
+  try
+  {
+    glMatrixLoadfEXT( (GLenum)matrixMode, (const GLfloat*)&m[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMatrixLoadfEXT( %d, GLfloat* )", (int)matrixMode);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMatrixMultTransposedEXT(
   const KL::Size & matrixMode,
   const KL::VariableArray<KL::Scalar> & m
 ){
-  glMatrixMultTransposedEXT( (GLenum)matrixMode, (const GLdouble*)&m[0] );
+  try
+  {
+    glMatrixMultTransposedEXT( (GLenum)matrixMode, (const GLdouble*)&m[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMatrixMultTransposedEXT( %d, GLdouble* )", (int)matrixMode);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMatrixMultTransposefEXT(
   const KL::Size & matrixMode,
   const KL::VariableArray<KL::Scalar> & m
 ){
-  glMatrixMultTransposefEXT( (GLenum)matrixMode, (const GLfloat*)&m[0] );
+  try
+  {
+    glMatrixMultTransposefEXT( (GLenum)matrixMode, (const GLfloat*)&m[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMatrixMultTransposefEXT( %d, GLfloat* )", (int)matrixMode);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMatrixMultdEXT(
   const KL::Size & matrixMode,
   const KL::VariableArray<KL::Scalar> & m
 ){
-  glMatrixMultdEXT( (GLenum)matrixMode, (const GLdouble*)&m[0] );
+  try
+  {
+    glMatrixMultdEXT( (GLenum)matrixMode, (const GLdouble*)&m[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMatrixMultdEXT( %d, GLdouble* )", (int)matrixMode);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMatrixMultfEXT(
   const KL::Size & matrixMode,
   const KL::VariableArray<KL::Scalar> & m
 ){
-  glMatrixMultfEXT( (GLenum)matrixMode, (const GLfloat*)&m[0] );
+  try
+  {
+    glMatrixMultfEXT( (GLenum)matrixMode, (const GLfloat*)&m[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMatrixMultfEXT( %d, GLfloat* )", (int)matrixMode);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMatrixOrthoEXT(
@@ -6485,19 +12113,40 @@ FABRIC_EXT_EXPORT void klMatrixOrthoEXT(
   const KL::Scalar & n,
   const KL::Scalar & f
 ){
-  glMatrixOrthoEXT( (GLenum)matrixMode, (GLdouble)l, (GLdouble)r, (GLdouble)b, (GLdouble)t, (GLdouble)n, (GLdouble)f );
+  try
+  {
+    glMatrixOrthoEXT( (GLenum)matrixMode, (GLdouble)l, (GLdouble)r, (GLdouble)b, (GLdouble)t, (GLdouble)n, (GLdouble)f );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMatrixOrthoEXT( %d, %f, %f, %f, %f, %f, %f )", (int)matrixMode, (float)l, (float)r, (float)b, (float)t, (float)n, (float)f);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMatrixPopEXT(
   const KL::Size & matrixMode
 ){
-  glMatrixPopEXT( (GLenum)matrixMode );
+  try
+  {
+    glMatrixPopEXT( (GLenum)matrixMode );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMatrixPopEXT( %d )", (int)matrixMode);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMatrixPushEXT(
   const KL::Size & matrixMode
 ){
-  glMatrixPushEXT( (GLenum)matrixMode );
+  try
+  {
+    glMatrixPushEXT( (GLenum)matrixMode );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMatrixPushEXT( %d )", (int)matrixMode);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMatrixRotatedEXT(
@@ -6507,7 +12156,14 @@ FABRIC_EXT_EXPORT void klMatrixRotatedEXT(
   const KL::Scalar & y,
   const KL::Scalar & z
 ){
-  glMatrixRotatedEXT( (GLenum)matrixMode, (GLdouble)angle, (GLdouble)x, (GLdouble)y, (GLdouble)z );
+  try
+  {
+    glMatrixRotatedEXT( (GLenum)matrixMode, (GLdouble)angle, (GLdouble)x, (GLdouble)y, (GLdouble)z );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMatrixRotatedEXT( %d, %f, %f, %f, %f )", (int)matrixMode, (float)angle, (float)x, (float)y, (float)z);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMatrixRotatefEXT(
@@ -6517,7 +12173,14 @@ FABRIC_EXT_EXPORT void klMatrixRotatefEXT(
   const KL::Scalar & y,
   const KL::Scalar & z
 ){
-  glMatrixRotatefEXT( (GLenum)matrixMode, (GLfloat)angle, (GLfloat)x, (GLfloat)y, (GLfloat)z );
+  try
+  {
+    glMatrixRotatefEXT( (GLenum)matrixMode, (GLfloat)angle, (GLfloat)x, (GLfloat)y, (GLfloat)z );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMatrixRotatefEXT( %d, %f, %f, %f, %f )", (int)matrixMode, (float)angle, (float)x, (float)y, (float)z);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMatrixScaledEXT(
@@ -6526,7 +12189,14 @@ FABRIC_EXT_EXPORT void klMatrixScaledEXT(
   const KL::Scalar & y,
   const KL::Scalar & z
 ){
-  glMatrixScaledEXT( (GLenum)matrixMode, (GLdouble)x, (GLdouble)y, (GLdouble)z );
+  try
+  {
+    glMatrixScaledEXT( (GLenum)matrixMode, (GLdouble)x, (GLdouble)y, (GLdouble)z );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMatrixScaledEXT( %d, %f, %f, %f )", (int)matrixMode, (float)x, (float)y, (float)z);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMatrixScalefEXT(
@@ -6535,7 +12205,14 @@ FABRIC_EXT_EXPORT void klMatrixScalefEXT(
   const KL::Scalar & y,
   const KL::Scalar & z
 ){
-  glMatrixScalefEXT( (GLenum)matrixMode, (GLfloat)x, (GLfloat)y, (GLfloat)z );
+  try
+  {
+    glMatrixScalefEXT( (GLenum)matrixMode, (GLfloat)x, (GLfloat)y, (GLfloat)z );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMatrixScalefEXT( %d, %f, %f, %f )", (int)matrixMode, (float)x, (float)y, (float)z);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMatrixTranslatedEXT(
@@ -6544,7 +12221,14 @@ FABRIC_EXT_EXPORT void klMatrixTranslatedEXT(
   const KL::Scalar & y,
   const KL::Scalar & z
 ){
-  glMatrixTranslatedEXT( (GLenum)matrixMode, (GLdouble)x, (GLdouble)y, (GLdouble)z );
+  try
+  {
+    glMatrixTranslatedEXT( (GLenum)matrixMode, (GLdouble)x, (GLdouble)y, (GLdouble)z );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMatrixTranslatedEXT( %d, %f, %f, %f )", (int)matrixMode, (float)x, (float)y, (float)z);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMatrixTranslatefEXT(
@@ -6553,7 +12237,14 @@ FABRIC_EXT_EXPORT void klMatrixTranslatefEXT(
   const KL::Scalar & y,
   const KL::Scalar & z
 ){
-  glMatrixTranslatefEXT( (GLenum)matrixMode, (GLfloat)x, (GLfloat)y, (GLfloat)z );
+  try
+  {
+    glMatrixTranslatefEXT( (GLenum)matrixMode, (GLfloat)x, (GLfloat)y, (GLfloat)z );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMatrixTranslatefEXT( %d, %f, %f, %f )", (int)matrixMode, (float)x, (float)y, (float)z);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMultiTexBufferEXT(
@@ -6562,7 +12253,14 @@ FABRIC_EXT_EXPORT void klMultiTexBufferEXT(
   const KL::Size & internalformat,
   const KL::Size & buffer
 ){
-  glMultiTexBufferEXT( (GLenum)texunit, (GLenum)target, (GLenum)internalformat, (GLuint)buffer );
+  try
+  {
+    glMultiTexBufferEXT( (GLenum)texunit, (GLenum)target, (GLenum)internalformat, (GLuint)buffer );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMultiTexBufferEXT( %d, %d, %d, 0x%04X )", (int)texunit, (int)target, (int)internalformat, (unsigned)buffer);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMultiTexCoordPointerEXT(
@@ -6572,7 +12270,14 @@ FABRIC_EXT_EXPORT void klMultiTexCoordPointerEXT(
   const KL::Size & stride,
   KL::Data pointer
 ){
-  glMultiTexCoordPointerEXT( (GLenum)texunit, (GLint)size, (GLenum)type, (GLsizei)stride, pointer );
+  try
+  {
+    glMultiTexCoordPointerEXT( (GLenum)texunit, (GLint)size, (GLenum)type, (GLsizei)stride, pointer );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMultiTexCoordPointerEXT( %d, %d, %d, %d, void* )", (int)texunit, (int)size, (int)type, (int)stride);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMultiTexEnvfEXT(
@@ -6581,7 +12286,14 @@ FABRIC_EXT_EXPORT void klMultiTexEnvfEXT(
   const KL::Size & pname,
   const KL::Scalar & param
 ){
-  glMultiTexEnvfEXT( (GLenum)texunit, (GLenum)target, (GLenum)pname, (GLfloat)param );
+  try
+  {
+    glMultiTexEnvfEXT( (GLenum)texunit, (GLenum)target, (GLenum)pname, (GLfloat)param );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMultiTexEnvfEXT( %d, %d, %d, %f )", (int)texunit, (int)target, (int)pname, (float)param);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMultiTexEnvfvEXT(
@@ -6590,7 +12302,14 @@ FABRIC_EXT_EXPORT void klMultiTexEnvfvEXT(
   const KL::Size & pname,
   const KL::VariableArray<KL::Scalar> & params
 ){
-  glMultiTexEnvfvEXT( (GLenum)texunit, (GLenum)target, (GLenum)pname, (const GLfloat*)&params[0] );
+  try
+  {
+    glMultiTexEnvfvEXT( (GLenum)texunit, (GLenum)target, (GLenum)pname, (const GLfloat*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMultiTexEnvfvEXT( %d, %d, %d, GLfloat* )", (int)texunit, (int)target, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMultiTexEnviEXT(
@@ -6599,7 +12318,14 @@ FABRIC_EXT_EXPORT void klMultiTexEnviEXT(
   const KL::Size & pname,
   const KL::Integer & param
 ){
-  glMultiTexEnviEXT( (GLenum)texunit, (GLenum)target, (GLenum)pname, (GLint)param );
+  try
+  {
+    glMultiTexEnviEXT( (GLenum)texunit, (GLenum)target, (GLenum)pname, (GLint)param );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMultiTexEnviEXT( %d, %d, %d, %d )", (int)texunit, (int)target, (int)pname, (int)param);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMultiTexEnvivEXT(
@@ -6608,7 +12334,14 @@ FABRIC_EXT_EXPORT void klMultiTexEnvivEXT(
   const KL::Size & pname,
   const KL::VariableArray<KL::Integer> & params
 ){
-  glMultiTexEnvivEXT( (GLenum)texunit, (GLenum)target, (GLenum)pname, (const GLint*)&params[0] );
+  try
+  {
+    glMultiTexEnvivEXT( (GLenum)texunit, (GLenum)target, (GLenum)pname, (const GLint*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMultiTexEnvivEXT( %d, %d, %d, GLint* )", (int)texunit, (int)target, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMultiTexGendEXT(
@@ -6617,7 +12350,14 @@ FABRIC_EXT_EXPORT void klMultiTexGendEXT(
   const KL::Size & pname,
   const KL::Scalar & param
 ){
-  glMultiTexGendEXT( (GLenum)texunit, (GLenum)coord, (GLenum)pname, (GLdouble)param );
+  try
+  {
+    glMultiTexGendEXT( (GLenum)texunit, (GLenum)coord, (GLenum)pname, (GLdouble)param );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMultiTexGendEXT( %d, %d, %d, %f )", (int)texunit, (int)coord, (int)pname, (float)param);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMultiTexGendvEXT(
@@ -6626,7 +12366,14 @@ FABRIC_EXT_EXPORT void klMultiTexGendvEXT(
   const KL::Size & pname,
   const KL::VariableArray<KL::Scalar> & params
 ){
-  glMultiTexGendvEXT( (GLenum)texunit, (GLenum)coord, (GLenum)pname, (const GLdouble*)&params[0] );
+  try
+  {
+    glMultiTexGendvEXT( (GLenum)texunit, (GLenum)coord, (GLenum)pname, (const GLdouble*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMultiTexGendvEXT( %d, %d, %d, GLdouble* )", (int)texunit, (int)coord, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMultiTexGenfEXT(
@@ -6635,7 +12382,14 @@ FABRIC_EXT_EXPORT void klMultiTexGenfEXT(
   const KL::Size & pname,
   const KL::Scalar & param
 ){
-  glMultiTexGenfEXT( (GLenum)texunit, (GLenum)coord, (GLenum)pname, (GLfloat)param );
+  try
+  {
+    glMultiTexGenfEXT( (GLenum)texunit, (GLenum)coord, (GLenum)pname, (GLfloat)param );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMultiTexGenfEXT( %d, %d, %d, %f )", (int)texunit, (int)coord, (int)pname, (float)param);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMultiTexGenfvEXT(
@@ -6644,7 +12398,14 @@ FABRIC_EXT_EXPORT void klMultiTexGenfvEXT(
   const KL::Size & pname,
   const KL::VariableArray<KL::Scalar> & params
 ){
-  glMultiTexGenfvEXT( (GLenum)texunit, (GLenum)coord, (GLenum)pname, (const GLfloat*)&params[0] );
+  try
+  {
+    glMultiTexGenfvEXT( (GLenum)texunit, (GLenum)coord, (GLenum)pname, (const GLfloat*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMultiTexGenfvEXT( %d, %d, %d, GLfloat* )", (int)texunit, (int)coord, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMultiTexGeniEXT(
@@ -6653,7 +12414,14 @@ FABRIC_EXT_EXPORT void klMultiTexGeniEXT(
   const KL::Size & pname,
   const KL::Integer & param
 ){
-  glMultiTexGeniEXT( (GLenum)texunit, (GLenum)coord, (GLenum)pname, (GLint)param );
+  try
+  {
+    glMultiTexGeniEXT( (GLenum)texunit, (GLenum)coord, (GLenum)pname, (GLint)param );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMultiTexGeniEXT( %d, %d, %d, %d )", (int)texunit, (int)coord, (int)pname, (int)param);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMultiTexGenivEXT(
@@ -6662,7 +12430,14 @@ FABRIC_EXT_EXPORT void klMultiTexGenivEXT(
   const KL::Size & pname,
   const KL::VariableArray<KL::Integer> & params
 ){
-  glMultiTexGenivEXT( (GLenum)texunit, (GLenum)coord, (GLenum)pname, (const GLint*)&params[0] );
+  try
+  {
+    glMultiTexGenivEXT( (GLenum)texunit, (GLenum)coord, (GLenum)pname, (const GLint*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMultiTexGenivEXT( %d, %d, %d, GLint* )", (int)texunit, (int)coord, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMultiTexImage1DEXT(
@@ -6676,7 +12451,14 @@ FABRIC_EXT_EXPORT void klMultiTexImage1DEXT(
   const KL::Size & type,
   KL::Data pixels
 ){
-  glMultiTexImage1DEXT( (GLenum)texunit, (GLenum)target, (GLint)level, (GLint)internalformat, (GLsizei)width, (GLint)border, (GLenum)format, (GLenum)type, pixels );
+  try
+  {
+    glMultiTexImage1DEXT( (GLenum)texunit, (GLenum)target, (GLint)level, (GLint)internalformat, (GLsizei)width, (GLint)border, (GLenum)format, (GLenum)type, pixels );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMultiTexImage1DEXT( %d, %d, %d, %d, %d, %d, %d, %d, void* )", (int)texunit, (int)target, (int)level, (int)internalformat, (int)width, (int)border, (int)format, (int)type);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMultiTexImage2DEXT(
@@ -6691,7 +12473,14 @@ FABRIC_EXT_EXPORT void klMultiTexImage2DEXT(
   const KL::Size & type,
   KL::Data pixels
 ){
-  glMultiTexImage2DEXT( (GLenum)texunit, (GLenum)target, (GLint)level, (GLint)internalformat, (GLsizei)width, (GLsizei)height, (GLint)border, (GLenum)format, (GLenum)type, pixels );
+  try
+  {
+    glMultiTexImage2DEXT( (GLenum)texunit, (GLenum)target, (GLint)level, (GLint)internalformat, (GLsizei)width, (GLsizei)height, (GLint)border, (GLenum)format, (GLenum)type, pixels );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMultiTexImage2DEXT( %d, %d, %d, %d, %d, %d, %d, %d, %d, void* )", (int)texunit, (int)target, (int)level, (int)internalformat, (int)width, (int)height, (int)border, (int)format, (int)type);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMultiTexImage3DEXT(
@@ -6707,7 +12496,14 @@ FABRIC_EXT_EXPORT void klMultiTexImage3DEXT(
   const KL::Size & type,
   KL::Data pixels
 ){
-  glMultiTexImage3DEXT( (GLenum)texunit, (GLenum)target, (GLint)level, (GLint)internalformat, (GLsizei)width, (GLsizei)height, (GLsizei)depth, (GLint)border, (GLenum)format, (GLenum)type, pixels );
+  try
+  {
+    glMultiTexImage3DEXT( (GLenum)texunit, (GLenum)target, (GLint)level, (GLint)internalformat, (GLsizei)width, (GLsizei)height, (GLsizei)depth, (GLint)border, (GLenum)format, (GLenum)type, pixels );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMultiTexImage3DEXT( %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, void* )", (int)texunit, (int)target, (int)level, (int)internalformat, (int)width, (int)height, (int)depth, (int)border, (int)format, (int)type);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMultiTexParameterIivEXT(
@@ -6716,7 +12512,14 @@ FABRIC_EXT_EXPORT void klMultiTexParameterIivEXT(
   const KL::Size & pname,
   const KL::VariableArray<KL::Integer> & params
 ){
-  glMultiTexParameterIivEXT( (GLenum)texunit, (GLenum)target, (GLenum)pname, (const GLint*)&params[0] );
+  try
+  {
+    glMultiTexParameterIivEXT( (GLenum)texunit, (GLenum)target, (GLenum)pname, (const GLint*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMultiTexParameterIivEXT( %d, %d, %d, GLint* )", (int)texunit, (int)target, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMultiTexParameterIuivEXT(
@@ -6725,7 +12528,14 @@ FABRIC_EXT_EXPORT void klMultiTexParameterIuivEXT(
   const KL::Size & pname,
   const KL::VariableArray<KL::Size> & params
 ){
-  glMultiTexParameterIuivEXT( (GLenum)texunit, (GLenum)target, (GLenum)pname, (const GLuint*)&params[0] );
+  try
+  {
+    glMultiTexParameterIuivEXT( (GLenum)texunit, (GLenum)target, (GLenum)pname, (const GLuint*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMultiTexParameterIuivEXT( %d, %d, %d, GLuint* )", (int)texunit, (int)target, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMultiTexParameterfEXT(
@@ -6734,7 +12544,14 @@ FABRIC_EXT_EXPORT void klMultiTexParameterfEXT(
   const KL::Size & pname,
   const KL::Scalar & param
 ){
-  glMultiTexParameterfEXT( (GLenum)texunit, (GLenum)target, (GLenum)pname, (GLfloat)param );
+  try
+  {
+    glMultiTexParameterfEXT( (GLenum)texunit, (GLenum)target, (GLenum)pname, (GLfloat)param );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMultiTexParameterfEXT( %d, %d, %d, %f )", (int)texunit, (int)target, (int)pname, (float)param);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMultiTexParameterfvEXT(
@@ -6743,7 +12560,14 @@ FABRIC_EXT_EXPORT void klMultiTexParameterfvEXT(
   const KL::Size & pname,
   const KL::VariableArray<KL::Scalar> & param
 ){
-  glMultiTexParameterfvEXT( (GLenum)texunit, (GLenum)target, (GLenum)pname, (const GLfloat*)&param[0] );
+  try
+  {
+    glMultiTexParameterfvEXT( (GLenum)texunit, (GLenum)target, (GLenum)pname, (const GLfloat*)&param[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMultiTexParameterfvEXT( %d, %d, %d, GLfloat* )", (int)texunit, (int)target, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMultiTexParameteriEXT(
@@ -6752,7 +12576,14 @@ FABRIC_EXT_EXPORT void klMultiTexParameteriEXT(
   const KL::Size & pname,
   const KL::Integer & param
 ){
-  glMultiTexParameteriEXT( (GLenum)texunit, (GLenum)target, (GLenum)pname, (GLint)param );
+  try
+  {
+    glMultiTexParameteriEXT( (GLenum)texunit, (GLenum)target, (GLenum)pname, (GLint)param );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMultiTexParameteriEXT( %d, %d, %d, %d )", (int)texunit, (int)target, (int)pname, (int)param);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMultiTexParameterivEXT(
@@ -6761,7 +12592,14 @@ FABRIC_EXT_EXPORT void klMultiTexParameterivEXT(
   const KL::Size & pname,
   const KL::VariableArray<KL::Integer> & param
 ){
-  glMultiTexParameterivEXT( (GLenum)texunit, (GLenum)target, (GLenum)pname, (const GLint*)&param[0] );
+  try
+  {
+    glMultiTexParameterivEXT( (GLenum)texunit, (GLenum)target, (GLenum)pname, (const GLint*)&param[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMultiTexParameterivEXT( %d, %d, %d, GLint* )", (int)texunit, (int)target, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMultiTexRenderbufferEXT(
@@ -6769,7 +12607,14 @@ FABRIC_EXT_EXPORT void klMultiTexRenderbufferEXT(
   const KL::Size & target,
   const KL::Size & renderbuffer
 ){
-  glMultiTexRenderbufferEXT( (GLenum)texunit, (GLenum)target, (GLuint)renderbuffer );
+  try
+  {
+    glMultiTexRenderbufferEXT( (GLenum)texunit, (GLenum)target, (GLuint)renderbuffer );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMultiTexRenderbufferEXT( %d, %d, 0x%04X )", (int)texunit, (int)target, (unsigned)renderbuffer);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMultiTexSubImage1DEXT(
@@ -6782,7 +12627,14 @@ FABRIC_EXT_EXPORT void klMultiTexSubImage1DEXT(
   const KL::Size & type,
   KL::Data pixels
 ){
-  glMultiTexSubImage1DEXT( (GLenum)texunit, (GLenum)target, (GLint)level, (GLint)xoffset, (GLsizei)width, (GLenum)format, (GLenum)type, pixels );
+  try
+  {
+    glMultiTexSubImage1DEXT( (GLenum)texunit, (GLenum)target, (GLint)level, (GLint)xoffset, (GLsizei)width, (GLenum)format, (GLenum)type, pixels );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMultiTexSubImage1DEXT( %d, %d, %d, %d, %d, %d, %d, void* )", (int)texunit, (int)target, (int)level, (int)xoffset, (int)width, (int)format, (int)type);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMultiTexSubImage2DEXT(
@@ -6797,7 +12649,14 @@ FABRIC_EXT_EXPORT void klMultiTexSubImage2DEXT(
   const KL::Size & type,
   KL::Data pixels
 ){
-  glMultiTexSubImage2DEXT( (GLenum)texunit, (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLsizei)width, (GLsizei)height, (GLenum)format, (GLenum)type, pixels );
+  try
+  {
+    glMultiTexSubImage2DEXT( (GLenum)texunit, (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLsizei)width, (GLsizei)height, (GLenum)format, (GLenum)type, pixels );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMultiTexSubImage2DEXT( %d, %d, %d, %d, %d, %d, %d, %d, %d, void* )", (int)texunit, (int)target, (int)level, (int)xoffset, (int)yoffset, (int)width, (int)height, (int)format, (int)type);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMultiTexSubImage3DEXT(
@@ -6814,7 +12673,14 @@ FABRIC_EXT_EXPORT void klMultiTexSubImage3DEXT(
   const KL::Size & type,
   KL::Data pixels
 ){
-  glMultiTexSubImage3DEXT( (GLenum)texunit, (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLint)zoffset, (GLsizei)width, (GLsizei)height, (GLsizei)depth, (GLenum)format, (GLenum)type, pixels );
+  try
+  {
+    glMultiTexSubImage3DEXT( (GLenum)texunit, (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLint)zoffset, (GLsizei)width, (GLsizei)height, (GLsizei)depth, (GLenum)format, (GLenum)type, pixels );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMultiTexSubImage3DEXT( %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, void* )", (int)texunit, (int)target, (int)level, (int)xoffset, (int)yoffset, (int)zoffset, (int)width, (int)height, (int)depth, (int)format, (int)type);
+  }
 }
 
 FABRIC_EXT_EXPORT void klNamedBufferDataEXT(
@@ -6823,7 +12689,14 @@ FABRIC_EXT_EXPORT void klNamedBufferDataEXT(
   KL::Data data,
   const KL::Size & usage
 ){
-  glNamedBufferDataEXT( (GLuint)buffer, (GLsizeiptr)size, data, (GLenum)usage );
+  try
+  {
+    glNamedBufferDataEXT( (GLuint)buffer, (GLsizeiptr)size, data, (GLenum)usage );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glNamedBufferDataEXT( 0x%04X, %d, void*, %d )", (unsigned)buffer, (int)size, (int)usage);
+  }
 }
 
 FABRIC_EXT_EXPORT void klNamedBufferSubDataEXT(
@@ -6832,7 +12705,14 @@ FABRIC_EXT_EXPORT void klNamedBufferSubDataEXT(
   const KL::Size & size,
   KL::Data data
 ){
-  glNamedBufferSubDataEXT( (GLuint)buffer, (GLintptr)offset, (GLsizeiptr)size, data );
+  try
+  {
+    glNamedBufferSubDataEXT( (GLuint)buffer, (GLintptr)offset, (GLsizeiptr)size, data );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glNamedBufferSubDataEXT( 0x%04X, %d, %d, void* )", (unsigned)buffer, (int)offset, (int)size);
+  }
 }
 
 FABRIC_EXT_EXPORT void klNamedCopyBufferSubDataEXT(
@@ -6842,7 +12722,14 @@ FABRIC_EXT_EXPORT void klNamedCopyBufferSubDataEXT(
   const KL::Integer & writeOffset,
   const KL::Size & size
 ){
-  glNamedCopyBufferSubDataEXT( (GLuint)readBuffer, (GLuint)writeBuffer, (GLintptr)readOffset, (GLintptr)writeOffset, (GLsizeiptr)size );
+  try
+  {
+    glNamedCopyBufferSubDataEXT( (GLuint)readBuffer, (GLuint)writeBuffer, (GLintptr)readOffset, (GLintptr)writeOffset, (GLsizeiptr)size );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glNamedCopyBufferSubDataEXT( 0x%04X, 0x%04X, %d, %d, %d )", (unsigned)readBuffer, (unsigned)writeBuffer, (int)readOffset, (int)writeOffset, (int)size);
+  }
 }
 
 FABRIC_EXT_EXPORT void klNamedFramebufferRenderbufferEXT(
@@ -6851,7 +12738,14 @@ FABRIC_EXT_EXPORT void klNamedFramebufferRenderbufferEXT(
   const KL::Size & renderbuffertarget,
   const KL::Size & renderbuffer
 ){
-  glNamedFramebufferRenderbufferEXT( (GLuint)framebuffer, (GLenum)attachment, (GLenum)renderbuffertarget, (GLuint)renderbuffer );
+  try
+  {
+    glNamedFramebufferRenderbufferEXT( (GLuint)framebuffer, (GLenum)attachment, (GLenum)renderbuffertarget, (GLuint)renderbuffer );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glNamedFramebufferRenderbufferEXT( 0x%04X, %d, %d, 0x%04X )", (unsigned)framebuffer, (int)attachment, (int)renderbuffertarget, (unsigned)renderbuffer);
+  }
 }
 
 FABRIC_EXT_EXPORT void klNamedFramebufferTexture1DEXT(
@@ -6861,7 +12755,14 @@ FABRIC_EXT_EXPORT void klNamedFramebufferTexture1DEXT(
   const KL::Size & texture,
   const KL::Integer & level
 ){
-  glNamedFramebufferTexture1DEXT( (GLuint)framebuffer, (GLenum)attachment, (GLenum)textarget, (GLuint)texture, (GLint)level );
+  try
+  {
+    glNamedFramebufferTexture1DEXT( (GLuint)framebuffer, (GLenum)attachment, (GLenum)textarget, (GLuint)texture, (GLint)level );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glNamedFramebufferTexture1DEXT( 0x%04X, %d, %d, 0x%04X, %d )", (unsigned)framebuffer, (int)attachment, (int)textarget, (unsigned)texture, (int)level);
+  }
 }
 
 FABRIC_EXT_EXPORT void klNamedFramebufferTexture2DEXT(
@@ -6871,7 +12772,14 @@ FABRIC_EXT_EXPORT void klNamedFramebufferTexture2DEXT(
   const KL::Size & texture,
   const KL::Integer & level
 ){
-  glNamedFramebufferTexture2DEXT( (GLuint)framebuffer, (GLenum)attachment, (GLenum)textarget, (GLuint)texture, (GLint)level );
+  try
+  {
+    glNamedFramebufferTexture2DEXT( (GLuint)framebuffer, (GLenum)attachment, (GLenum)textarget, (GLuint)texture, (GLint)level );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glNamedFramebufferTexture2DEXT( 0x%04X, %d, %d, 0x%04X, %d )", (unsigned)framebuffer, (int)attachment, (int)textarget, (unsigned)texture, (int)level);
+  }
 }
 
 FABRIC_EXT_EXPORT void klNamedFramebufferTexture3DEXT(
@@ -6882,7 +12790,14 @@ FABRIC_EXT_EXPORT void klNamedFramebufferTexture3DEXT(
   const KL::Integer & level,
   const KL::Integer & zoffset
 ){
-  glNamedFramebufferTexture3DEXT( (GLuint)framebuffer, (GLenum)attachment, (GLenum)textarget, (GLuint)texture, (GLint)level, (GLint)zoffset );
+  try
+  {
+    glNamedFramebufferTexture3DEXT( (GLuint)framebuffer, (GLenum)attachment, (GLenum)textarget, (GLuint)texture, (GLint)level, (GLint)zoffset );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glNamedFramebufferTexture3DEXT( 0x%04X, %d, %d, 0x%04X, %d, %d )", (unsigned)framebuffer, (int)attachment, (int)textarget, (unsigned)texture, (int)level, (int)zoffset);
+  }
 }
 
 FABRIC_EXT_EXPORT void klNamedFramebufferTextureEXT(
@@ -6891,7 +12806,14 @@ FABRIC_EXT_EXPORT void klNamedFramebufferTextureEXT(
   const KL::Size & texture,
   const KL::Integer & level
 ){
-  glNamedFramebufferTextureEXT( (GLuint)framebuffer, (GLenum)attachment, (GLuint)texture, (GLint)level );
+  try
+  {
+    glNamedFramebufferTextureEXT( (GLuint)framebuffer, (GLenum)attachment, (GLuint)texture, (GLint)level );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glNamedFramebufferTextureEXT( 0x%04X, %d, 0x%04X, %d )", (unsigned)framebuffer, (int)attachment, (unsigned)texture, (int)level);
+  }
 }
 
 FABRIC_EXT_EXPORT void klNamedFramebufferTextureFaceEXT(
@@ -6901,7 +12823,14 @@ FABRIC_EXT_EXPORT void klNamedFramebufferTextureFaceEXT(
   const KL::Integer & level,
   const KL::Size & face
 ){
-  glNamedFramebufferTextureFaceEXT( (GLuint)framebuffer, (GLenum)attachment, (GLuint)texture, (GLint)level, (GLenum)face );
+  try
+  {
+    glNamedFramebufferTextureFaceEXT( (GLuint)framebuffer, (GLenum)attachment, (GLuint)texture, (GLint)level, (GLenum)face );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glNamedFramebufferTextureFaceEXT( 0x%04X, %d, 0x%04X, %d, %d )", (unsigned)framebuffer, (int)attachment, (unsigned)texture, (int)level, (int)face);
+  }
 }
 
 FABRIC_EXT_EXPORT void klNamedFramebufferTextureLayerEXT(
@@ -6911,7 +12840,14 @@ FABRIC_EXT_EXPORT void klNamedFramebufferTextureLayerEXT(
   const KL::Integer & level,
   const KL::Integer & layer
 ){
-  glNamedFramebufferTextureLayerEXT( (GLuint)framebuffer, (GLenum)attachment, (GLuint)texture, (GLint)level, (GLint)layer );
+  try
+  {
+    glNamedFramebufferTextureLayerEXT( (GLuint)framebuffer, (GLenum)attachment, (GLuint)texture, (GLint)level, (GLint)layer );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glNamedFramebufferTextureLayerEXT( 0x%04X, %d, 0x%04X, %d, %d )", (unsigned)framebuffer, (int)attachment, (unsigned)texture, (int)level, (int)layer);
+  }
 }
 
 FABRIC_EXT_EXPORT void klNamedProgramLocalParameter4dEXT(
@@ -6923,7 +12859,14 @@ FABRIC_EXT_EXPORT void klNamedProgramLocalParameter4dEXT(
   const KL::Scalar & z,
   const KL::Scalar & w
 ){
-  glNamedProgramLocalParameter4dEXT( (GLuint)program, (GLenum)target, (GLuint)index, (GLdouble)x, (GLdouble)y, (GLdouble)z, (GLdouble)w );
+  try
+  {
+    glNamedProgramLocalParameter4dEXT( (GLuint)program, (GLenum)target, (GLuint)index, (GLdouble)x, (GLdouble)y, (GLdouble)z, (GLdouble)w );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glNamedProgramLocalParameter4dEXT( 0x%04X, %d, 0x%04X, %f, %f, %f, %f )", (unsigned)program, (int)target, (unsigned)index, (float)x, (float)y, (float)z, (float)w);
+  }
 }
 
 FABRIC_EXT_EXPORT void klNamedProgramLocalParameter4dvEXT(
@@ -6932,7 +12875,14 @@ FABRIC_EXT_EXPORT void klNamedProgramLocalParameter4dvEXT(
   const KL::Size & index,
   const KL::VariableArray<KL::Scalar> & params
 ){
-  glNamedProgramLocalParameter4dvEXT( (GLuint)program, (GLenum)target, (GLuint)index, (const GLdouble*)&params[0] );
+  try
+  {
+    glNamedProgramLocalParameter4dvEXT( (GLuint)program, (GLenum)target, (GLuint)index, (const GLdouble*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glNamedProgramLocalParameter4dvEXT( 0x%04X, %d, 0x%04X, GLdouble* )", (unsigned)program, (int)target, (unsigned)index);
+  }
 }
 
 FABRIC_EXT_EXPORT void klNamedProgramLocalParameter4fEXT(
@@ -6944,7 +12894,14 @@ FABRIC_EXT_EXPORT void klNamedProgramLocalParameter4fEXT(
   const KL::Scalar & z,
   const KL::Scalar & w
 ){
-  glNamedProgramLocalParameter4fEXT( (GLuint)program, (GLenum)target, (GLuint)index, (GLfloat)x, (GLfloat)y, (GLfloat)z, (GLfloat)w );
+  try
+  {
+    glNamedProgramLocalParameter4fEXT( (GLuint)program, (GLenum)target, (GLuint)index, (GLfloat)x, (GLfloat)y, (GLfloat)z, (GLfloat)w );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glNamedProgramLocalParameter4fEXT( 0x%04X, %d, 0x%04X, %f, %f, %f, %f )", (unsigned)program, (int)target, (unsigned)index, (float)x, (float)y, (float)z, (float)w);
+  }
 }
 
 FABRIC_EXT_EXPORT void klNamedProgramLocalParameter4fvEXT(
@@ -6953,7 +12910,14 @@ FABRIC_EXT_EXPORT void klNamedProgramLocalParameter4fvEXT(
   const KL::Size & index,
   const KL::VariableArray<KL::Scalar> & params
 ){
-  glNamedProgramLocalParameter4fvEXT( (GLuint)program, (GLenum)target, (GLuint)index, (const GLfloat*)&params[0] );
+  try
+  {
+    glNamedProgramLocalParameter4fvEXT( (GLuint)program, (GLenum)target, (GLuint)index, (const GLfloat*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glNamedProgramLocalParameter4fvEXT( 0x%04X, %d, 0x%04X, GLfloat* )", (unsigned)program, (int)target, (unsigned)index);
+  }
 }
 
 FABRIC_EXT_EXPORT void klNamedProgramLocalParameterI4iEXT(
@@ -6965,7 +12929,14 @@ FABRIC_EXT_EXPORT void klNamedProgramLocalParameterI4iEXT(
   const KL::Integer & z,
   const KL::Integer & w
 ){
-  glNamedProgramLocalParameterI4iEXT( (GLuint)program, (GLenum)target, (GLuint)index, (GLint)x, (GLint)y, (GLint)z, (GLint)w );
+  try
+  {
+    glNamedProgramLocalParameterI4iEXT( (GLuint)program, (GLenum)target, (GLuint)index, (GLint)x, (GLint)y, (GLint)z, (GLint)w );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glNamedProgramLocalParameterI4iEXT( 0x%04X, %d, 0x%04X, %d, %d, %d, %d )", (unsigned)program, (int)target, (unsigned)index, (int)x, (int)y, (int)z, (int)w);
+  }
 }
 
 FABRIC_EXT_EXPORT void klNamedProgramLocalParameterI4ivEXT(
@@ -6974,7 +12945,14 @@ FABRIC_EXT_EXPORT void klNamedProgramLocalParameterI4ivEXT(
   const KL::Size & index,
   const KL::VariableArray<KL::Integer> & params
 ){
-  glNamedProgramLocalParameterI4ivEXT( (GLuint)program, (GLenum)target, (GLuint)index, (const GLint*)&params[0] );
+  try
+  {
+    glNamedProgramLocalParameterI4ivEXT( (GLuint)program, (GLenum)target, (GLuint)index, (const GLint*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glNamedProgramLocalParameterI4ivEXT( 0x%04X, %d, 0x%04X, GLint* )", (unsigned)program, (int)target, (unsigned)index);
+  }
 }
 
 FABRIC_EXT_EXPORT void klNamedProgramLocalParameterI4uiEXT(
@@ -6986,7 +12964,14 @@ FABRIC_EXT_EXPORT void klNamedProgramLocalParameterI4uiEXT(
   const KL::Size & z,
   const KL::Size & w
 ){
-  glNamedProgramLocalParameterI4uiEXT( (GLuint)program, (GLenum)target, (GLuint)index, (GLuint)x, (GLuint)y, (GLuint)z, (GLuint)w );
+  try
+  {
+    glNamedProgramLocalParameterI4uiEXT( (GLuint)program, (GLenum)target, (GLuint)index, (GLuint)x, (GLuint)y, (GLuint)z, (GLuint)w );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glNamedProgramLocalParameterI4uiEXT( 0x%04X, %d, 0x%04X, 0x%04X, 0x%04X, 0x%04X, 0x%04X )", (unsigned)program, (int)target, (unsigned)index, (unsigned)x, (unsigned)y, (unsigned)z, (unsigned)w);
+  }
 }
 
 FABRIC_EXT_EXPORT void klNamedProgramLocalParameterI4uivEXT(
@@ -6995,7 +12980,14 @@ FABRIC_EXT_EXPORT void klNamedProgramLocalParameterI4uivEXT(
   const KL::Size & index,
   const KL::VariableArray<KL::Size> & params
 ){
-  glNamedProgramLocalParameterI4uivEXT( (GLuint)program, (GLenum)target, (GLuint)index, (const GLuint*)&params[0] );
+  try
+  {
+    glNamedProgramLocalParameterI4uivEXT( (GLuint)program, (GLenum)target, (GLuint)index, (const GLuint*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glNamedProgramLocalParameterI4uivEXT( 0x%04X, %d, 0x%04X, GLuint* )", (unsigned)program, (int)target, (unsigned)index);
+  }
 }
 
 FABRIC_EXT_EXPORT void klNamedProgramLocalParameters4fvEXT(
@@ -7005,7 +12997,14 @@ FABRIC_EXT_EXPORT void klNamedProgramLocalParameters4fvEXT(
   const KL::Size & count,
   const KL::VariableArray<KL::Scalar> & params
 ){
-  glNamedProgramLocalParameters4fvEXT( (GLuint)program, (GLenum)target, (GLuint)index, (GLsizei)count, (const GLfloat*)&params[0] );
+  try
+  {
+    glNamedProgramLocalParameters4fvEXT( (GLuint)program, (GLenum)target, (GLuint)index, (GLsizei)count, (const GLfloat*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glNamedProgramLocalParameters4fvEXT( 0x%04X, %d, 0x%04X, %d, GLfloat* )", (unsigned)program, (int)target, (unsigned)index, (int)count);
+  }
 }
 
 FABRIC_EXT_EXPORT void klNamedProgramLocalParametersI4ivEXT(
@@ -7015,7 +13014,14 @@ FABRIC_EXT_EXPORT void klNamedProgramLocalParametersI4ivEXT(
   const KL::Size & count,
   const KL::VariableArray<KL::Integer> & params
 ){
-  glNamedProgramLocalParametersI4ivEXT( (GLuint)program, (GLenum)target, (GLuint)index, (GLsizei)count, (const GLint*)&params[0] );
+  try
+  {
+    glNamedProgramLocalParametersI4ivEXT( (GLuint)program, (GLenum)target, (GLuint)index, (GLsizei)count, (const GLint*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glNamedProgramLocalParametersI4ivEXT( 0x%04X, %d, 0x%04X, %d, GLint* )", (unsigned)program, (int)target, (unsigned)index, (int)count);
+  }
 }
 
 FABRIC_EXT_EXPORT void klNamedProgramLocalParametersI4uivEXT(
@@ -7025,7 +13031,14 @@ FABRIC_EXT_EXPORT void klNamedProgramLocalParametersI4uivEXT(
   const KL::Size & count,
   const KL::VariableArray<KL::Size> & params
 ){
-  glNamedProgramLocalParametersI4uivEXT( (GLuint)program, (GLenum)target, (GLuint)index, (GLsizei)count, (const GLuint*)&params[0] );
+  try
+  {
+    glNamedProgramLocalParametersI4uivEXT( (GLuint)program, (GLenum)target, (GLuint)index, (GLsizei)count, (const GLuint*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glNamedProgramLocalParametersI4uivEXT( 0x%04X, %d, 0x%04X, %d, GLuint* )", (unsigned)program, (int)target, (unsigned)index, (int)count);
+  }
 }
 
 FABRIC_EXT_EXPORT void klNamedProgramStringEXT(
@@ -7035,7 +13048,14 @@ FABRIC_EXT_EXPORT void klNamedProgramStringEXT(
   const KL::Size & len,
   KL::Data string
 ){
-  glNamedProgramStringEXT( (GLuint)program, (GLenum)target, (GLenum)format, (GLsizei)len, string );
+  try
+  {
+    glNamedProgramStringEXT( (GLuint)program, (GLenum)target, (GLenum)format, (GLsizei)len, string );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glNamedProgramStringEXT( 0x%04X, %d, %d, %d, void* )", (unsigned)program, (int)target, (int)format, (int)len);
+  }
 }
 
 FABRIC_EXT_EXPORT void klNamedRenderbufferStorageEXT(
@@ -7044,7 +13064,14 @@ FABRIC_EXT_EXPORT void klNamedRenderbufferStorageEXT(
   const KL::Size & width,
   const KL::Size & height
 ){
-  glNamedRenderbufferStorageEXT( (GLuint)renderbuffer, (GLenum)internalformat, (GLsizei)width, (GLsizei)height );
+  try
+  {
+    glNamedRenderbufferStorageEXT( (GLuint)renderbuffer, (GLenum)internalformat, (GLsizei)width, (GLsizei)height );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glNamedRenderbufferStorageEXT( 0x%04X, %d, %d, %d )", (unsigned)renderbuffer, (int)internalformat, (int)width, (int)height);
+  }
 }
 
 FABRIC_EXT_EXPORT void klNamedRenderbufferStorageMultisampleCoverageEXT(
@@ -7055,7 +13082,14 @@ FABRIC_EXT_EXPORT void klNamedRenderbufferStorageMultisampleCoverageEXT(
   const KL::Size & width,
   const KL::Size & height
 ){
-  glNamedRenderbufferStorageMultisampleCoverageEXT( (GLuint)renderbuffer, (GLsizei)coverageSamples, (GLsizei)colorSamples, (GLenum)internalformat, (GLsizei)width, (GLsizei)height );
+  try
+  {
+    glNamedRenderbufferStorageMultisampleCoverageEXT( (GLuint)renderbuffer, (GLsizei)coverageSamples, (GLsizei)colorSamples, (GLenum)internalformat, (GLsizei)width, (GLsizei)height );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glNamedRenderbufferStorageMultisampleCoverageEXT( 0x%04X, %d, %d, %d, %d, %d )", (unsigned)renderbuffer, (int)coverageSamples, (int)colorSamples, (int)internalformat, (int)width, (int)height);
+  }
 }
 
 FABRIC_EXT_EXPORT void klNamedRenderbufferStorageMultisampleEXT(
@@ -7065,7 +13099,14 @@ FABRIC_EXT_EXPORT void klNamedRenderbufferStorageMultisampleEXT(
   const KL::Size & width,
   const KL::Size & height
 ){
-  glNamedRenderbufferStorageMultisampleEXT( (GLuint)renderbuffer, (GLsizei)samples, (GLenum)internalformat, (GLsizei)width, (GLsizei)height );
+  try
+  {
+    glNamedRenderbufferStorageMultisampleEXT( (GLuint)renderbuffer, (GLsizei)samples, (GLenum)internalformat, (GLsizei)width, (GLsizei)height );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glNamedRenderbufferStorageMultisampleEXT( 0x%04X, %d, %d, %d, %d )", (unsigned)renderbuffer, (int)samples, (int)internalformat, (int)width, (int)height);
+  }
 }
 
 FABRIC_EXT_EXPORT void klProgramUniform1fEXT(
@@ -7073,7 +13114,14 @@ FABRIC_EXT_EXPORT void klProgramUniform1fEXT(
   const KL::Integer & location,
   const KL::Scalar & v0
 ){
-  glProgramUniform1fEXT( (GLuint)program, (GLint)location, (GLfloat)v0 );
+  try
+  {
+    glProgramUniform1fEXT( (GLuint)program, (GLint)location, (GLfloat)v0 );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glProgramUniform1fEXT( 0x%04X, %d, %f )", (unsigned)program, (int)location, (float)v0);
+  }
 }
 
 FABRIC_EXT_EXPORT void klProgramUniform1fvEXT(
@@ -7082,7 +13130,14 @@ FABRIC_EXT_EXPORT void klProgramUniform1fvEXT(
   const KL::Size & count,
   const KL::VariableArray<KL::Scalar> & value
 ){
-  glProgramUniform1fvEXT( (GLuint)program, (GLint)location, (GLsizei)count, (const GLfloat*)&value[0] );
+  try
+  {
+    glProgramUniform1fvEXT( (GLuint)program, (GLint)location, (GLsizei)count, (const GLfloat*)&value[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glProgramUniform1fvEXT( 0x%04X, %d, %d, GLfloat* )", (unsigned)program, (int)location, (int)count);
+  }
 }
 
 FABRIC_EXT_EXPORT void klProgramUniform1iEXT(
@@ -7090,7 +13145,14 @@ FABRIC_EXT_EXPORT void klProgramUniform1iEXT(
   const KL::Integer & location,
   const KL::Integer & v0
 ){
-  glProgramUniform1iEXT( (GLuint)program, (GLint)location, (GLint)v0 );
+  try
+  {
+    glProgramUniform1iEXT( (GLuint)program, (GLint)location, (GLint)v0 );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glProgramUniform1iEXT( 0x%04X, %d, %d )", (unsigned)program, (int)location, (int)v0);
+  }
 }
 
 FABRIC_EXT_EXPORT void klProgramUniform1ivEXT(
@@ -7099,7 +13161,14 @@ FABRIC_EXT_EXPORT void klProgramUniform1ivEXT(
   const KL::Size & count,
   const KL::VariableArray<KL::Integer> & value
 ){
-  glProgramUniform1ivEXT( (GLuint)program, (GLint)location, (GLsizei)count, (const GLint*)&value[0] );
+  try
+  {
+    glProgramUniform1ivEXT( (GLuint)program, (GLint)location, (GLsizei)count, (const GLint*)&value[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glProgramUniform1ivEXT( 0x%04X, %d, %d, GLint* )", (unsigned)program, (int)location, (int)count);
+  }
 }
 
 FABRIC_EXT_EXPORT void klProgramUniform1uiEXT(
@@ -7107,7 +13176,14 @@ FABRIC_EXT_EXPORT void klProgramUniform1uiEXT(
   const KL::Integer & location,
   const KL::Size & v0
 ){
-  glProgramUniform1uiEXT( (GLuint)program, (GLint)location, (GLuint)v0 );
+  try
+  {
+    glProgramUniform1uiEXT( (GLuint)program, (GLint)location, (GLuint)v0 );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glProgramUniform1uiEXT( 0x%04X, %d, 0x%04X )", (unsigned)program, (int)location, (unsigned)v0);
+  }
 }
 
 FABRIC_EXT_EXPORT void klProgramUniform1uivEXT(
@@ -7116,7 +13192,14 @@ FABRIC_EXT_EXPORT void klProgramUniform1uivEXT(
   const KL::Size & count,
   const KL::VariableArray<KL::Size> & value
 ){
-  glProgramUniform1uivEXT( (GLuint)program, (GLint)location, (GLsizei)count, (const GLuint*)&value[0] );
+  try
+  {
+    glProgramUniform1uivEXT( (GLuint)program, (GLint)location, (GLsizei)count, (const GLuint*)&value[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glProgramUniform1uivEXT( 0x%04X, %d, %d, GLuint* )", (unsigned)program, (int)location, (int)count);
+  }
 }
 
 FABRIC_EXT_EXPORT void klProgramUniform2fEXT(
@@ -7125,7 +13208,14 @@ FABRIC_EXT_EXPORT void klProgramUniform2fEXT(
   const KL::Scalar & v0,
   const KL::Scalar & v1
 ){
-  glProgramUniform2fEXT( (GLuint)program, (GLint)location, (GLfloat)v0, (GLfloat)v1 );
+  try
+  {
+    glProgramUniform2fEXT( (GLuint)program, (GLint)location, (GLfloat)v0, (GLfloat)v1 );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glProgramUniform2fEXT( 0x%04X, %d, %f, %f )", (unsigned)program, (int)location, (float)v0, (float)v1);
+  }
 }
 
 FABRIC_EXT_EXPORT void klProgramUniform2fvEXT(
@@ -7134,7 +13224,14 @@ FABRIC_EXT_EXPORT void klProgramUniform2fvEXT(
   const KL::Size & count,
   const KL::VariableArray<KL::Scalar> & value
 ){
-  glProgramUniform2fvEXT( (GLuint)program, (GLint)location, (GLsizei)count, (const GLfloat*)&value[0] );
+  try
+  {
+    glProgramUniform2fvEXT( (GLuint)program, (GLint)location, (GLsizei)count, (const GLfloat*)&value[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glProgramUniform2fvEXT( 0x%04X, %d, %d, GLfloat* )", (unsigned)program, (int)location, (int)count);
+  }
 }
 
 FABRIC_EXT_EXPORT void klProgramUniform2iEXT(
@@ -7143,7 +13240,14 @@ FABRIC_EXT_EXPORT void klProgramUniform2iEXT(
   const KL::Integer & v0,
   const KL::Integer & v1
 ){
-  glProgramUniform2iEXT( (GLuint)program, (GLint)location, (GLint)v0, (GLint)v1 );
+  try
+  {
+    glProgramUniform2iEXT( (GLuint)program, (GLint)location, (GLint)v0, (GLint)v1 );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glProgramUniform2iEXT( 0x%04X, %d, %d, %d )", (unsigned)program, (int)location, (int)v0, (int)v1);
+  }
 }
 
 FABRIC_EXT_EXPORT void klProgramUniform2ivEXT(
@@ -7152,7 +13256,14 @@ FABRIC_EXT_EXPORT void klProgramUniform2ivEXT(
   const KL::Size & count,
   const KL::VariableArray<KL::Integer> & value
 ){
-  glProgramUniform2ivEXT( (GLuint)program, (GLint)location, (GLsizei)count, (const GLint*)&value[0] );
+  try
+  {
+    glProgramUniform2ivEXT( (GLuint)program, (GLint)location, (GLsizei)count, (const GLint*)&value[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glProgramUniform2ivEXT( 0x%04X, %d, %d, GLint* )", (unsigned)program, (int)location, (int)count);
+  }
 }
 
 FABRIC_EXT_EXPORT void klProgramUniform2uiEXT(
@@ -7161,7 +13272,14 @@ FABRIC_EXT_EXPORT void klProgramUniform2uiEXT(
   const KL::Size & v0,
   const KL::Size & v1
 ){
-  glProgramUniform2uiEXT( (GLuint)program, (GLint)location, (GLuint)v0, (GLuint)v1 );
+  try
+  {
+    glProgramUniform2uiEXT( (GLuint)program, (GLint)location, (GLuint)v0, (GLuint)v1 );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glProgramUniform2uiEXT( 0x%04X, %d, 0x%04X, 0x%04X )", (unsigned)program, (int)location, (unsigned)v0, (unsigned)v1);
+  }
 }
 
 FABRIC_EXT_EXPORT void klProgramUniform2uivEXT(
@@ -7170,7 +13288,14 @@ FABRIC_EXT_EXPORT void klProgramUniform2uivEXT(
   const KL::Size & count,
   const KL::VariableArray<KL::Size> & value
 ){
-  glProgramUniform2uivEXT( (GLuint)program, (GLint)location, (GLsizei)count, (const GLuint*)&value[0] );
+  try
+  {
+    glProgramUniform2uivEXT( (GLuint)program, (GLint)location, (GLsizei)count, (const GLuint*)&value[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glProgramUniform2uivEXT( 0x%04X, %d, %d, GLuint* )", (unsigned)program, (int)location, (int)count);
+  }
 }
 
 FABRIC_EXT_EXPORT void klProgramUniform3fEXT(
@@ -7180,7 +13305,14 @@ FABRIC_EXT_EXPORT void klProgramUniform3fEXT(
   const KL::Scalar & v1,
   const KL::Scalar & v2
 ){
-  glProgramUniform3fEXT( (GLuint)program, (GLint)location, (GLfloat)v0, (GLfloat)v1, (GLfloat)v2 );
+  try
+  {
+    glProgramUniform3fEXT( (GLuint)program, (GLint)location, (GLfloat)v0, (GLfloat)v1, (GLfloat)v2 );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glProgramUniform3fEXT( 0x%04X, %d, %f, %f, %f )", (unsigned)program, (int)location, (float)v0, (float)v1, (float)v2);
+  }
 }
 
 FABRIC_EXT_EXPORT void klProgramUniform3fvEXT(
@@ -7189,7 +13321,14 @@ FABRIC_EXT_EXPORT void klProgramUniform3fvEXT(
   const KL::Size & count,
   const KL::VariableArray<KL::Scalar> & value
 ){
-  glProgramUniform3fvEXT( (GLuint)program, (GLint)location, (GLsizei)count, (const GLfloat*)&value[0] );
+  try
+  {
+    glProgramUniform3fvEXT( (GLuint)program, (GLint)location, (GLsizei)count, (const GLfloat*)&value[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glProgramUniform3fvEXT( 0x%04X, %d, %d, GLfloat* )", (unsigned)program, (int)location, (int)count);
+  }
 }
 
 FABRIC_EXT_EXPORT void klProgramUniform3iEXT(
@@ -7199,7 +13338,14 @@ FABRIC_EXT_EXPORT void klProgramUniform3iEXT(
   const KL::Integer & v1,
   const KL::Integer & v2
 ){
-  glProgramUniform3iEXT( (GLuint)program, (GLint)location, (GLint)v0, (GLint)v1, (GLint)v2 );
+  try
+  {
+    glProgramUniform3iEXT( (GLuint)program, (GLint)location, (GLint)v0, (GLint)v1, (GLint)v2 );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glProgramUniform3iEXT( 0x%04X, %d, %d, %d, %d )", (unsigned)program, (int)location, (int)v0, (int)v1, (int)v2);
+  }
 }
 
 FABRIC_EXT_EXPORT void klProgramUniform3ivEXT(
@@ -7208,7 +13354,14 @@ FABRIC_EXT_EXPORT void klProgramUniform3ivEXT(
   const KL::Size & count,
   const KL::VariableArray<KL::Integer> & value
 ){
-  glProgramUniform3ivEXT( (GLuint)program, (GLint)location, (GLsizei)count, (const GLint*)&value[0] );
+  try
+  {
+    glProgramUniform3ivEXT( (GLuint)program, (GLint)location, (GLsizei)count, (const GLint*)&value[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glProgramUniform3ivEXT( 0x%04X, %d, %d, GLint* )", (unsigned)program, (int)location, (int)count);
+  }
 }
 
 FABRIC_EXT_EXPORT void klProgramUniform3uiEXT(
@@ -7218,7 +13371,14 @@ FABRIC_EXT_EXPORT void klProgramUniform3uiEXT(
   const KL::Size & v1,
   const KL::Size & v2
 ){
-  glProgramUniform3uiEXT( (GLuint)program, (GLint)location, (GLuint)v0, (GLuint)v1, (GLuint)v2 );
+  try
+  {
+    glProgramUniform3uiEXT( (GLuint)program, (GLint)location, (GLuint)v0, (GLuint)v1, (GLuint)v2 );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glProgramUniform3uiEXT( 0x%04X, %d, 0x%04X, 0x%04X, 0x%04X )", (unsigned)program, (int)location, (unsigned)v0, (unsigned)v1, (unsigned)v2);
+  }
 }
 
 FABRIC_EXT_EXPORT void klProgramUniform3uivEXT(
@@ -7227,7 +13387,14 @@ FABRIC_EXT_EXPORT void klProgramUniform3uivEXT(
   const KL::Size & count,
   const KL::VariableArray<KL::Size> & value
 ){
-  glProgramUniform3uivEXT( (GLuint)program, (GLint)location, (GLsizei)count, (const GLuint*)&value[0] );
+  try
+  {
+    glProgramUniform3uivEXT( (GLuint)program, (GLint)location, (GLsizei)count, (const GLuint*)&value[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glProgramUniform3uivEXT( 0x%04X, %d, %d, GLuint* )", (unsigned)program, (int)location, (int)count);
+  }
 }
 
 FABRIC_EXT_EXPORT void klProgramUniform4fEXT(
@@ -7238,7 +13405,14 @@ FABRIC_EXT_EXPORT void klProgramUniform4fEXT(
   const KL::Scalar & v2,
   const KL::Scalar & v3
 ){
-  glProgramUniform4fEXT( (GLuint)program, (GLint)location, (GLfloat)v0, (GLfloat)v1, (GLfloat)v2, (GLfloat)v3 );
+  try
+  {
+    glProgramUniform4fEXT( (GLuint)program, (GLint)location, (GLfloat)v0, (GLfloat)v1, (GLfloat)v2, (GLfloat)v3 );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glProgramUniform4fEXT( 0x%04X, %d, %f, %f, %f, %f )", (unsigned)program, (int)location, (float)v0, (float)v1, (float)v2, (float)v3);
+  }
 }
 
 FABRIC_EXT_EXPORT void klProgramUniform4fvEXT(
@@ -7247,7 +13421,14 @@ FABRIC_EXT_EXPORT void klProgramUniform4fvEXT(
   const KL::Size & count,
   const KL::VariableArray<KL::Scalar> & value
 ){
-  glProgramUniform4fvEXT( (GLuint)program, (GLint)location, (GLsizei)count, (const GLfloat*)&value[0] );
+  try
+  {
+    glProgramUniform4fvEXT( (GLuint)program, (GLint)location, (GLsizei)count, (const GLfloat*)&value[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glProgramUniform4fvEXT( 0x%04X, %d, %d, GLfloat* )", (unsigned)program, (int)location, (int)count);
+  }
 }
 
 FABRIC_EXT_EXPORT void klProgramUniform4iEXT(
@@ -7258,7 +13439,14 @@ FABRIC_EXT_EXPORT void klProgramUniform4iEXT(
   const KL::Integer & v2,
   const KL::Integer & v3
 ){
-  glProgramUniform4iEXT( (GLuint)program, (GLint)location, (GLint)v0, (GLint)v1, (GLint)v2, (GLint)v3 );
+  try
+  {
+    glProgramUniform4iEXT( (GLuint)program, (GLint)location, (GLint)v0, (GLint)v1, (GLint)v2, (GLint)v3 );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glProgramUniform4iEXT( 0x%04X, %d, %d, %d, %d, %d )", (unsigned)program, (int)location, (int)v0, (int)v1, (int)v2, (int)v3);
+  }
 }
 
 FABRIC_EXT_EXPORT void klProgramUniform4ivEXT(
@@ -7267,7 +13455,14 @@ FABRIC_EXT_EXPORT void klProgramUniform4ivEXT(
   const KL::Size & count,
   const KL::VariableArray<KL::Integer> & value
 ){
-  glProgramUniform4ivEXT( (GLuint)program, (GLint)location, (GLsizei)count, (const GLint*)&value[0] );
+  try
+  {
+    glProgramUniform4ivEXT( (GLuint)program, (GLint)location, (GLsizei)count, (const GLint*)&value[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glProgramUniform4ivEXT( 0x%04X, %d, %d, GLint* )", (unsigned)program, (int)location, (int)count);
+  }
 }
 
 FABRIC_EXT_EXPORT void klProgramUniform4uiEXT(
@@ -7278,7 +13473,14 @@ FABRIC_EXT_EXPORT void klProgramUniform4uiEXT(
   const KL::Size & v2,
   const KL::Size & v3
 ){
-  glProgramUniform4uiEXT( (GLuint)program, (GLint)location, (GLuint)v0, (GLuint)v1, (GLuint)v2, (GLuint)v3 );
+  try
+  {
+    glProgramUniform4uiEXT( (GLuint)program, (GLint)location, (GLuint)v0, (GLuint)v1, (GLuint)v2, (GLuint)v3 );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glProgramUniform4uiEXT( 0x%04X, %d, 0x%04X, 0x%04X, 0x%04X, 0x%04X )", (unsigned)program, (int)location, (unsigned)v0, (unsigned)v1, (unsigned)v2, (unsigned)v3);
+  }
 }
 
 FABRIC_EXT_EXPORT void klProgramUniform4uivEXT(
@@ -7287,7 +13489,14 @@ FABRIC_EXT_EXPORT void klProgramUniform4uivEXT(
   const KL::Size & count,
   const KL::VariableArray<KL::Size> & value
 ){
-  glProgramUniform4uivEXT( (GLuint)program, (GLint)location, (GLsizei)count, (const GLuint*)&value[0] );
+  try
+  {
+    glProgramUniform4uivEXT( (GLuint)program, (GLint)location, (GLsizei)count, (const GLuint*)&value[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glProgramUniform4uivEXT( 0x%04X, %d, %d, GLuint* )", (unsigned)program, (int)location, (int)count);
+  }
 }
 
 FABRIC_EXT_EXPORT void klProgramUniformMatrix2fvEXT(
@@ -7297,7 +13506,14 @@ FABRIC_EXT_EXPORT void klProgramUniformMatrix2fvEXT(
   const KL::Boolean & transpose,
   const KL::VariableArray<KL::Scalar> & value
 ){
-  glProgramUniformMatrix2fvEXT( (GLuint)program, (GLint)location, (GLsizei)count, (GLboolean)transpose, (const GLfloat*)&value[0] );
+  try
+  {
+    glProgramUniformMatrix2fvEXT( (GLuint)program, (GLint)location, (GLsizei)count, (GLboolean)transpose, (const GLfloat*)&value[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glProgramUniformMatrix2fvEXT( 0x%04X, %d, %d, %b, GLfloat* )", (unsigned)program, (int)location, (int)count, (bool)transpose);
+  }
 }
 
 FABRIC_EXT_EXPORT void klProgramUniformMatrix2x3fvEXT(
@@ -7307,7 +13523,14 @@ FABRIC_EXT_EXPORT void klProgramUniformMatrix2x3fvEXT(
   const KL::Boolean & transpose,
   const KL::VariableArray<KL::Scalar> & value
 ){
-  glProgramUniformMatrix2x3fvEXT( (GLuint)program, (GLint)location, (GLsizei)count, (GLboolean)transpose, (const GLfloat*)&value[0] );
+  try
+  {
+    glProgramUniformMatrix2x3fvEXT( (GLuint)program, (GLint)location, (GLsizei)count, (GLboolean)transpose, (const GLfloat*)&value[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glProgramUniformMatrix2x3fvEXT( 0x%04X, %d, %d, %b, GLfloat* )", (unsigned)program, (int)location, (int)count, (bool)transpose);
+  }
 }
 
 FABRIC_EXT_EXPORT void klProgramUniformMatrix2x4fvEXT(
@@ -7317,7 +13540,14 @@ FABRIC_EXT_EXPORT void klProgramUniformMatrix2x4fvEXT(
   const KL::Boolean & transpose,
   const KL::VariableArray<KL::Scalar> & value
 ){
-  glProgramUniformMatrix2x4fvEXT( (GLuint)program, (GLint)location, (GLsizei)count, (GLboolean)transpose, (const GLfloat*)&value[0] );
+  try
+  {
+    glProgramUniformMatrix2x4fvEXT( (GLuint)program, (GLint)location, (GLsizei)count, (GLboolean)transpose, (const GLfloat*)&value[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glProgramUniformMatrix2x4fvEXT( 0x%04X, %d, %d, %b, GLfloat* )", (unsigned)program, (int)location, (int)count, (bool)transpose);
+  }
 }
 
 FABRIC_EXT_EXPORT void klProgramUniformMatrix3fvEXT(
@@ -7327,7 +13557,14 @@ FABRIC_EXT_EXPORT void klProgramUniformMatrix3fvEXT(
   const KL::Boolean & transpose,
   const KL::VariableArray<KL::Scalar> & value
 ){
-  glProgramUniformMatrix3fvEXT( (GLuint)program, (GLint)location, (GLsizei)count, (GLboolean)transpose, (const GLfloat*)&value[0] );
+  try
+  {
+    glProgramUniformMatrix3fvEXT( (GLuint)program, (GLint)location, (GLsizei)count, (GLboolean)transpose, (const GLfloat*)&value[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glProgramUniformMatrix3fvEXT( 0x%04X, %d, %d, %b, GLfloat* )", (unsigned)program, (int)location, (int)count, (bool)transpose);
+  }
 }
 
 FABRIC_EXT_EXPORT void klProgramUniformMatrix3x2fvEXT(
@@ -7337,7 +13574,14 @@ FABRIC_EXT_EXPORT void klProgramUniformMatrix3x2fvEXT(
   const KL::Boolean & transpose,
   const KL::VariableArray<KL::Scalar> & value
 ){
-  glProgramUniformMatrix3x2fvEXT( (GLuint)program, (GLint)location, (GLsizei)count, (GLboolean)transpose, (const GLfloat*)&value[0] );
+  try
+  {
+    glProgramUniformMatrix3x2fvEXT( (GLuint)program, (GLint)location, (GLsizei)count, (GLboolean)transpose, (const GLfloat*)&value[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glProgramUniformMatrix3x2fvEXT( 0x%04X, %d, %d, %b, GLfloat* )", (unsigned)program, (int)location, (int)count, (bool)transpose);
+  }
 }
 
 FABRIC_EXT_EXPORT void klProgramUniformMatrix3x4fvEXT(
@@ -7347,7 +13591,14 @@ FABRIC_EXT_EXPORT void klProgramUniformMatrix3x4fvEXT(
   const KL::Boolean & transpose,
   const KL::VariableArray<KL::Scalar> & value
 ){
-  glProgramUniformMatrix3x4fvEXT( (GLuint)program, (GLint)location, (GLsizei)count, (GLboolean)transpose, (const GLfloat*)&value[0] );
+  try
+  {
+    glProgramUniformMatrix3x4fvEXT( (GLuint)program, (GLint)location, (GLsizei)count, (GLboolean)transpose, (const GLfloat*)&value[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glProgramUniformMatrix3x4fvEXT( 0x%04X, %d, %d, %b, GLfloat* )", (unsigned)program, (int)location, (int)count, (bool)transpose);
+  }
 }
 
 FABRIC_EXT_EXPORT void klProgramUniformMatrix4fvEXT(
@@ -7357,7 +13608,14 @@ FABRIC_EXT_EXPORT void klProgramUniformMatrix4fvEXT(
   const KL::Boolean & transpose,
   const KL::VariableArray<KL::Scalar> & value
 ){
-  glProgramUniformMatrix4fvEXT( (GLuint)program, (GLint)location, (GLsizei)count, (GLboolean)transpose, (const GLfloat*)&value[0] );
+  try
+  {
+    glProgramUniformMatrix4fvEXT( (GLuint)program, (GLint)location, (GLsizei)count, (GLboolean)transpose, (const GLfloat*)&value[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glProgramUniformMatrix4fvEXT( 0x%04X, %d, %d, %b, GLfloat* )", (unsigned)program, (int)location, (int)count, (bool)transpose);
+  }
 }
 
 FABRIC_EXT_EXPORT void klProgramUniformMatrix4x2fvEXT(
@@ -7367,7 +13625,14 @@ FABRIC_EXT_EXPORT void klProgramUniformMatrix4x2fvEXT(
   const KL::Boolean & transpose,
   const KL::VariableArray<KL::Scalar> & value
 ){
-  glProgramUniformMatrix4x2fvEXT( (GLuint)program, (GLint)location, (GLsizei)count, (GLboolean)transpose, (const GLfloat*)&value[0] );
+  try
+  {
+    glProgramUniformMatrix4x2fvEXT( (GLuint)program, (GLint)location, (GLsizei)count, (GLboolean)transpose, (const GLfloat*)&value[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glProgramUniformMatrix4x2fvEXT( 0x%04X, %d, %d, %b, GLfloat* )", (unsigned)program, (int)location, (int)count, (bool)transpose);
+  }
 }
 
 FABRIC_EXT_EXPORT void klProgramUniformMatrix4x3fvEXT(
@@ -7377,13 +13642,27 @@ FABRIC_EXT_EXPORT void klProgramUniformMatrix4x3fvEXT(
   const KL::Boolean & transpose,
   const KL::VariableArray<KL::Scalar> & value
 ){
-  glProgramUniformMatrix4x3fvEXT( (GLuint)program, (GLint)location, (GLsizei)count, (GLboolean)transpose, (const GLfloat*)&value[0] );
+  try
+  {
+    glProgramUniformMatrix4x3fvEXT( (GLuint)program, (GLint)location, (GLsizei)count, (GLboolean)transpose, (const GLfloat*)&value[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glProgramUniformMatrix4x3fvEXT( 0x%04X, %d, %d, %b, GLfloat* )", (unsigned)program, (int)location, (int)count, (bool)transpose);
+  }
 }
 
 FABRIC_EXT_EXPORT void klPushClientAttribDefaultEXT(
-  const KL::Integer & mask
+  const KL::Size & mask
 ){
-  glPushClientAttribDefaultEXT( (GLbitfield)mask );
+  try
+  {
+    glPushClientAttribDefaultEXT( (GLbitfield)mask );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glPushClientAttribDefaultEXT( 0x%04X )", (unsigned)mask);
+  }
 }
 
 FABRIC_EXT_EXPORT void klTextureBufferEXT(
@@ -7392,7 +13671,14 @@ FABRIC_EXT_EXPORT void klTextureBufferEXT(
   const KL::Size & internalformat,
   const KL::Size & buffer
 ){
-  glTextureBufferEXT( (GLuint)texture, (GLenum)target, (GLenum)internalformat, (GLuint)buffer );
+  try
+  {
+    glTextureBufferEXT( (GLuint)texture, (GLenum)target, (GLenum)internalformat, (GLuint)buffer );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTextureBufferEXT( 0x%04X, %d, %d, 0x%04X )", (unsigned)texture, (int)target, (int)internalformat, (unsigned)buffer);
+  }
 }
 
 FABRIC_EXT_EXPORT void klTextureImage1DEXT(
@@ -7406,7 +13692,14 @@ FABRIC_EXT_EXPORT void klTextureImage1DEXT(
   const KL::Size & type,
   KL::Data pixels
 ){
-  glTextureImage1DEXT( (GLuint)texture, (GLenum)target, (GLint)level, (GLint)internalformat, (GLsizei)width, (GLint)border, (GLenum)format, (GLenum)type, pixels );
+  try
+  {
+    glTextureImage1DEXT( (GLuint)texture, (GLenum)target, (GLint)level, (GLint)internalformat, (GLsizei)width, (GLint)border, (GLenum)format, (GLenum)type, pixels );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTextureImage1DEXT( 0x%04X, %d, %d, %d, %d, %d, %d, %d, void* )", (unsigned)texture, (int)target, (int)level, (int)internalformat, (int)width, (int)border, (int)format, (int)type);
+  }
 }
 
 FABRIC_EXT_EXPORT void klTextureImage2DEXT(
@@ -7421,7 +13714,14 @@ FABRIC_EXT_EXPORT void klTextureImage2DEXT(
   const KL::Size & type,
   KL::Data pixels
 ){
-  glTextureImage2DEXT( (GLuint)texture, (GLenum)target, (GLint)level, (GLint)internalformat, (GLsizei)width, (GLsizei)height, (GLint)border, (GLenum)format, (GLenum)type, pixels );
+  try
+  {
+    glTextureImage2DEXT( (GLuint)texture, (GLenum)target, (GLint)level, (GLint)internalformat, (GLsizei)width, (GLsizei)height, (GLint)border, (GLenum)format, (GLenum)type, pixels );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTextureImage2DEXT( 0x%04X, %d, %d, %d, %d, %d, %d, %d, %d, void* )", (unsigned)texture, (int)target, (int)level, (int)internalformat, (int)width, (int)height, (int)border, (int)format, (int)type);
+  }
 }
 
 FABRIC_EXT_EXPORT void klTextureImage3DEXT(
@@ -7437,7 +13737,14 @@ FABRIC_EXT_EXPORT void klTextureImage3DEXT(
   const KL::Size & type,
   KL::Data pixels
 ){
-  glTextureImage3DEXT( (GLuint)texture, (GLenum)target, (GLint)level, (GLint)internalformat, (GLsizei)width, (GLsizei)height, (GLsizei)depth, (GLint)border, (GLenum)format, (GLenum)type, pixels );
+  try
+  {
+    glTextureImage3DEXT( (GLuint)texture, (GLenum)target, (GLint)level, (GLint)internalformat, (GLsizei)width, (GLsizei)height, (GLsizei)depth, (GLint)border, (GLenum)format, (GLenum)type, pixels );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTextureImage3DEXT( 0x%04X, %d, %d, %d, %d, %d, %d, %d, %d, %d, void* )", (unsigned)texture, (int)target, (int)level, (int)internalformat, (int)width, (int)height, (int)depth, (int)border, (int)format, (int)type);
+  }
 }
 
 FABRIC_EXT_EXPORT void klTextureParameterIivEXT(
@@ -7446,7 +13753,14 @@ FABRIC_EXT_EXPORT void klTextureParameterIivEXT(
   const KL::Size & pname,
   const KL::VariableArray<KL::Integer> & params
 ){
-  glTextureParameterIivEXT( (GLuint)texture, (GLenum)target, (GLenum)pname, (const GLint*)&params[0] );
+  try
+  {
+    glTextureParameterIivEXT( (GLuint)texture, (GLenum)target, (GLenum)pname, (const GLint*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTextureParameterIivEXT( 0x%04X, %d, %d, GLint* )", (unsigned)texture, (int)target, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klTextureParameterIuivEXT(
@@ -7455,7 +13769,14 @@ FABRIC_EXT_EXPORT void klTextureParameterIuivEXT(
   const KL::Size & pname,
   const KL::VariableArray<KL::Size> & params
 ){
-  glTextureParameterIuivEXT( (GLuint)texture, (GLenum)target, (GLenum)pname, (const GLuint*)&params[0] );
+  try
+  {
+    glTextureParameterIuivEXT( (GLuint)texture, (GLenum)target, (GLenum)pname, (const GLuint*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTextureParameterIuivEXT( 0x%04X, %d, %d, GLuint* )", (unsigned)texture, (int)target, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klTextureParameterfEXT(
@@ -7464,7 +13785,14 @@ FABRIC_EXT_EXPORT void klTextureParameterfEXT(
   const KL::Size & pname,
   const KL::Scalar & param
 ){
-  glTextureParameterfEXT( (GLuint)texture, (GLenum)target, (GLenum)pname, (GLfloat)param );
+  try
+  {
+    glTextureParameterfEXT( (GLuint)texture, (GLenum)target, (GLenum)pname, (GLfloat)param );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTextureParameterfEXT( 0x%04X, %d, %d, %f )", (unsigned)texture, (int)target, (int)pname, (float)param);
+  }
 }
 
 FABRIC_EXT_EXPORT void klTextureParameterfvEXT(
@@ -7473,7 +13801,14 @@ FABRIC_EXT_EXPORT void klTextureParameterfvEXT(
   const KL::Size & pname,
   const KL::VariableArray<KL::Scalar> & param
 ){
-  glTextureParameterfvEXT( (GLuint)texture, (GLenum)target, (GLenum)pname, (const GLfloat*)&param[0] );
+  try
+  {
+    glTextureParameterfvEXT( (GLuint)texture, (GLenum)target, (GLenum)pname, (const GLfloat*)&param[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTextureParameterfvEXT( 0x%04X, %d, %d, GLfloat* )", (unsigned)texture, (int)target, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klTextureParameteriEXT(
@@ -7482,7 +13817,14 @@ FABRIC_EXT_EXPORT void klTextureParameteriEXT(
   const KL::Size & pname,
   const KL::Integer & param
 ){
-  glTextureParameteriEXT( (GLuint)texture, (GLenum)target, (GLenum)pname, (GLint)param );
+  try
+  {
+    glTextureParameteriEXT( (GLuint)texture, (GLenum)target, (GLenum)pname, (GLint)param );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTextureParameteriEXT( 0x%04X, %d, %d, %d )", (unsigned)texture, (int)target, (int)pname, (int)param);
+  }
 }
 
 FABRIC_EXT_EXPORT void klTextureParameterivEXT(
@@ -7491,7 +13833,14 @@ FABRIC_EXT_EXPORT void klTextureParameterivEXT(
   const KL::Size & pname,
   const KL::VariableArray<KL::Integer> & param
 ){
-  glTextureParameterivEXT( (GLuint)texture, (GLenum)target, (GLenum)pname, (const GLint*)&param[0] );
+  try
+  {
+    glTextureParameterivEXT( (GLuint)texture, (GLenum)target, (GLenum)pname, (const GLint*)&param[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTextureParameterivEXT( 0x%04X, %d, %d, GLint* )", (unsigned)texture, (int)target, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klTextureRenderbufferEXT(
@@ -7499,7 +13848,14 @@ FABRIC_EXT_EXPORT void klTextureRenderbufferEXT(
   const KL::Size & target,
   const KL::Size & renderbuffer
 ){
-  glTextureRenderbufferEXT( (GLuint)texture, (GLenum)target, (GLuint)renderbuffer );
+  try
+  {
+    glTextureRenderbufferEXT( (GLuint)texture, (GLenum)target, (GLuint)renderbuffer );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTextureRenderbufferEXT( 0x%04X, %d, 0x%04X )", (unsigned)texture, (int)target, (unsigned)renderbuffer);
+  }
 }
 
 FABRIC_EXT_EXPORT void klTextureSubImage1DEXT(
@@ -7512,7 +13868,14 @@ FABRIC_EXT_EXPORT void klTextureSubImage1DEXT(
   const KL::Size & type,
   KL::Data pixels
 ){
-  glTextureSubImage1DEXT( (GLuint)texture, (GLenum)target, (GLint)level, (GLint)xoffset, (GLsizei)width, (GLenum)format, (GLenum)type, pixels );
+  try
+  {
+    glTextureSubImage1DEXT( (GLuint)texture, (GLenum)target, (GLint)level, (GLint)xoffset, (GLsizei)width, (GLenum)format, (GLenum)type, pixels );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTextureSubImage1DEXT( 0x%04X, %d, %d, %d, %d, %d, %d, void* )", (unsigned)texture, (int)target, (int)level, (int)xoffset, (int)width, (int)format, (int)type);
+  }
 }
 
 FABRIC_EXT_EXPORT void klTextureSubImage2DEXT(
@@ -7527,7 +13890,14 @@ FABRIC_EXT_EXPORT void klTextureSubImage2DEXT(
   const KL::Size & type,
   KL::Data pixels
 ){
-  glTextureSubImage2DEXT( (GLuint)texture, (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLsizei)width, (GLsizei)height, (GLenum)format, (GLenum)type, pixels );
+  try
+  {
+    glTextureSubImage2DEXT( (GLuint)texture, (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLsizei)width, (GLsizei)height, (GLenum)format, (GLenum)type, pixels );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTextureSubImage2DEXT( 0x%04X, %d, %d, %d, %d, %d, %d, %d, %d, void* )", (unsigned)texture, (int)target, (int)level, (int)xoffset, (int)yoffset, (int)width, (int)height, (int)format, (int)type);
+  }
 }
 
 FABRIC_EXT_EXPORT void klTextureSubImage3DEXT(
@@ -7544,14 +13914,28 @@ FABRIC_EXT_EXPORT void klTextureSubImage3DEXT(
   const KL::Size & type,
   KL::Data pixels
 ){
-  glTextureSubImage3DEXT( (GLuint)texture, (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLint)zoffset, (GLsizei)width, (GLsizei)height, (GLsizei)depth, (GLenum)format, (GLenum)type, pixels );
+  try
+  {
+    glTextureSubImage3DEXT( (GLuint)texture, (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLint)zoffset, (GLsizei)width, (GLsizei)height, (GLsizei)depth, (GLenum)format, (GLenum)type, pixels );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTextureSubImage3DEXT( 0x%04X, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, void* )", (unsigned)texture, (int)target, (int)level, (int)xoffset, (int)yoffset, (int)zoffset, (int)width, (int)height, (int)depth, (int)format, (int)type);
+  }
 }
 
 FABRIC_EXT_EXPORT KL::Boolean klUnmapNamedBufferEXT(
   const KL::Size & buffer
 ){
-  GLboolean result = glUnmapNamedBufferEXT( (GLuint)buffer );
+  try
+  {
+    GLboolean result = glUnmapNamedBufferEXT( (GLuint)buffer );
   return (KL::Boolean)result;
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glUnmapNamedBufferEXT( 0x%04X )", (unsigned)buffer);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexArrayColorOffsetEXT(
@@ -7562,7 +13946,14 @@ FABRIC_EXT_EXPORT void klVertexArrayColorOffsetEXT(
   const KL::Size & stride,
   const KL::Integer & offset
 ){
-  glVertexArrayColorOffsetEXT( (GLuint)vaobj, (GLuint)buffer, (GLint)size, (GLenum)type, (GLsizei)stride, (GLintptr)offset );
+  try
+  {
+    glVertexArrayColorOffsetEXT( (GLuint)vaobj, (GLuint)buffer, (GLint)size, (GLenum)type, (GLsizei)stride, (GLintptr)offset );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexArrayColorOffsetEXT( 0x%04X, 0x%04X, %d, %d, %d, %d )", (unsigned)vaobj, (unsigned)buffer, (int)size, (int)type, (int)stride, (int)offset);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexArrayEdgeFlagOffsetEXT(
@@ -7571,7 +13962,14 @@ FABRIC_EXT_EXPORT void klVertexArrayEdgeFlagOffsetEXT(
   const KL::Size & stride,
   const KL::Integer & offset
 ){
-  glVertexArrayEdgeFlagOffsetEXT( (GLuint)vaobj, (GLuint)buffer, (GLsizei)stride, (GLintptr)offset );
+  try
+  {
+    glVertexArrayEdgeFlagOffsetEXT( (GLuint)vaobj, (GLuint)buffer, (GLsizei)stride, (GLintptr)offset );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexArrayEdgeFlagOffsetEXT( 0x%04X, 0x%04X, %d, %d )", (unsigned)vaobj, (unsigned)buffer, (int)stride, (int)offset);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexArrayFogCoordOffsetEXT(
@@ -7581,7 +13979,14 @@ FABRIC_EXT_EXPORT void klVertexArrayFogCoordOffsetEXT(
   const KL::Size & stride,
   const KL::Integer & offset
 ){
-  glVertexArrayFogCoordOffsetEXT( (GLuint)vaobj, (GLuint)buffer, (GLenum)type, (GLsizei)stride, (GLintptr)offset );
+  try
+  {
+    glVertexArrayFogCoordOffsetEXT( (GLuint)vaobj, (GLuint)buffer, (GLenum)type, (GLsizei)stride, (GLintptr)offset );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexArrayFogCoordOffsetEXT( 0x%04X, 0x%04X, %d, %d, %d )", (unsigned)vaobj, (unsigned)buffer, (int)type, (int)stride, (int)offset);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexArrayIndexOffsetEXT(
@@ -7591,7 +13996,14 @@ FABRIC_EXT_EXPORT void klVertexArrayIndexOffsetEXT(
   const KL::Size & stride,
   const KL::Integer & offset
 ){
-  glVertexArrayIndexOffsetEXT( (GLuint)vaobj, (GLuint)buffer, (GLenum)type, (GLsizei)stride, (GLintptr)offset );
+  try
+  {
+    glVertexArrayIndexOffsetEXT( (GLuint)vaobj, (GLuint)buffer, (GLenum)type, (GLsizei)stride, (GLintptr)offset );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexArrayIndexOffsetEXT( 0x%04X, 0x%04X, %d, %d, %d )", (unsigned)vaobj, (unsigned)buffer, (int)type, (int)stride, (int)offset);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexArrayMultiTexCoordOffsetEXT(
@@ -7603,7 +14015,14 @@ FABRIC_EXT_EXPORT void klVertexArrayMultiTexCoordOffsetEXT(
   const KL::Size & stride,
   const KL::Integer & offset
 ){
-  glVertexArrayMultiTexCoordOffsetEXT( (GLuint)vaobj, (GLuint)buffer, (GLenum)texunit, (GLint)size, (GLenum)type, (GLsizei)stride, (GLintptr)offset );
+  try
+  {
+    glVertexArrayMultiTexCoordOffsetEXT( (GLuint)vaobj, (GLuint)buffer, (GLenum)texunit, (GLint)size, (GLenum)type, (GLsizei)stride, (GLintptr)offset );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexArrayMultiTexCoordOffsetEXT( 0x%04X, 0x%04X, %d, %d, %d, %d, %d )", (unsigned)vaobj, (unsigned)buffer, (int)texunit, (int)size, (int)type, (int)stride, (int)offset);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexArrayNormalOffsetEXT(
@@ -7613,7 +14032,14 @@ FABRIC_EXT_EXPORT void klVertexArrayNormalOffsetEXT(
   const KL::Size & stride,
   const KL::Integer & offset
 ){
-  glVertexArrayNormalOffsetEXT( (GLuint)vaobj, (GLuint)buffer, (GLenum)type, (GLsizei)stride, (GLintptr)offset );
+  try
+  {
+    glVertexArrayNormalOffsetEXT( (GLuint)vaobj, (GLuint)buffer, (GLenum)type, (GLsizei)stride, (GLintptr)offset );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexArrayNormalOffsetEXT( 0x%04X, 0x%04X, %d, %d, %d )", (unsigned)vaobj, (unsigned)buffer, (int)type, (int)stride, (int)offset);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexArraySecondaryColorOffsetEXT(
@@ -7624,7 +14050,14 @@ FABRIC_EXT_EXPORT void klVertexArraySecondaryColorOffsetEXT(
   const KL::Size & stride,
   const KL::Integer & offset
 ){
-  glVertexArraySecondaryColorOffsetEXT( (GLuint)vaobj, (GLuint)buffer, (GLint)size, (GLenum)type, (GLsizei)stride, (GLintptr)offset );
+  try
+  {
+    glVertexArraySecondaryColorOffsetEXT( (GLuint)vaobj, (GLuint)buffer, (GLint)size, (GLenum)type, (GLsizei)stride, (GLintptr)offset );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexArraySecondaryColorOffsetEXT( 0x%04X, 0x%04X, %d, %d, %d, %d )", (unsigned)vaobj, (unsigned)buffer, (int)size, (int)type, (int)stride, (int)offset);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexArrayTexCoordOffsetEXT(
@@ -7635,7 +14068,14 @@ FABRIC_EXT_EXPORT void klVertexArrayTexCoordOffsetEXT(
   const KL::Size & stride,
   const KL::Integer & offset
 ){
-  glVertexArrayTexCoordOffsetEXT( (GLuint)vaobj, (GLuint)buffer, (GLint)size, (GLenum)type, (GLsizei)stride, (GLintptr)offset );
+  try
+  {
+    glVertexArrayTexCoordOffsetEXT( (GLuint)vaobj, (GLuint)buffer, (GLint)size, (GLenum)type, (GLsizei)stride, (GLintptr)offset );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexArrayTexCoordOffsetEXT( 0x%04X, 0x%04X, %d, %d, %d, %d )", (unsigned)vaobj, (unsigned)buffer, (int)size, (int)type, (int)stride, (int)offset);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexArrayVertexAttribIOffsetEXT(
@@ -7647,7 +14087,14 @@ FABRIC_EXT_EXPORT void klVertexArrayVertexAttribIOffsetEXT(
   const KL::Size & stride,
   const KL::Integer & offset
 ){
-  glVertexArrayVertexAttribIOffsetEXT( (GLuint)vaobj, (GLuint)buffer, (GLuint)index, (GLint)size, (GLenum)type, (GLsizei)stride, (GLintptr)offset );
+  try
+  {
+    glVertexArrayVertexAttribIOffsetEXT( (GLuint)vaobj, (GLuint)buffer, (GLuint)index, (GLint)size, (GLenum)type, (GLsizei)stride, (GLintptr)offset );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexArrayVertexAttribIOffsetEXT( 0x%04X, 0x%04X, 0x%04X, %d, %d, %d, %d )", (unsigned)vaobj, (unsigned)buffer, (unsigned)index, (int)size, (int)type, (int)stride, (int)offset);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexArrayVertexAttribOffsetEXT(
@@ -7660,7 +14107,14 @@ FABRIC_EXT_EXPORT void klVertexArrayVertexAttribOffsetEXT(
   const KL::Size & stride,
   const KL::Integer & offset
 ){
-  glVertexArrayVertexAttribOffsetEXT( (GLuint)vaobj, (GLuint)buffer, (GLuint)index, (GLint)size, (GLenum)type, (GLboolean)normalized, (GLsizei)stride, (GLintptr)offset );
+  try
+  {
+    glVertexArrayVertexAttribOffsetEXT( (GLuint)vaobj, (GLuint)buffer, (GLuint)index, (GLint)size, (GLenum)type, (GLboolean)normalized, (GLsizei)stride, (GLintptr)offset );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexArrayVertexAttribOffsetEXT( 0x%04X, 0x%04X, 0x%04X, %d, %d, %b, %d, %d )", (unsigned)vaobj, (unsigned)buffer, (unsigned)index, (int)size, (int)type, (bool)normalized, (int)stride, (int)offset);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexArrayVertexOffsetEXT(
@@ -7671,7 +14125,14 @@ FABRIC_EXT_EXPORT void klVertexArrayVertexOffsetEXT(
   const KL::Size & stride,
   const KL::Integer & offset
 ){
-  glVertexArrayVertexOffsetEXT( (GLuint)vaobj, (GLuint)buffer, (GLint)size, (GLenum)type, (GLsizei)stride, (GLintptr)offset );
+  try
+  {
+    glVertexArrayVertexOffsetEXT( (GLuint)vaobj, (GLuint)buffer, (GLint)size, (GLenum)type, (GLsizei)stride, (GLintptr)offset );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexArrayVertexOffsetEXT( 0x%04X, 0x%04X, %d, %d, %d, %d )", (unsigned)vaobj, (unsigned)buffer, (int)size, (int)type, (int)stride, (int)offset);
+  }
 }
 
 FABRIC_EXT_EXPORT void klColorMaskIndexedEXT(
@@ -7681,21 +14142,42 @@ FABRIC_EXT_EXPORT void klColorMaskIndexedEXT(
   const KL::Boolean & b,
   const KL::Boolean & a
 ){
-  glColorMaskIndexedEXT( (GLuint)buf, (GLboolean)r, (GLboolean)g, (GLboolean)b, (GLboolean)a );
+  try
+  {
+    glColorMaskIndexedEXT( (GLuint)buf, (GLboolean)r, (GLboolean)g, (GLboolean)b, (GLboolean)a );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glColorMaskIndexedEXT( 0x%04X, %b, %b, %b, %b )", (unsigned)buf, (bool)r, (bool)g, (bool)b, (bool)a);
+  }
 }
 
 FABRIC_EXT_EXPORT void klDisableIndexedEXT(
   const KL::Size & target,
   const KL::Size & index
 ){
-  glDisableIndexedEXT( (GLenum)target, (GLuint)index );
+  try
+  {
+    glDisableIndexedEXT( (GLenum)target, (GLuint)index );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glDisableIndexedEXT( %d, 0x%04X )", (int)target, (unsigned)index);
+  }
 }
 
 FABRIC_EXT_EXPORT void klEnableIndexedEXT(
   const KL::Size & target,
   const KL::Size & index
 ){
-  glEnableIndexedEXT( (GLenum)target, (GLuint)index );
+  try
+  {
+    glEnableIndexedEXT( (GLenum)target, (GLuint)index );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glEnableIndexedEXT( %d, 0x%04X )", (int)target, (unsigned)index);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetBooleanIndexedvEXT(
@@ -7703,7 +14185,14 @@ FABRIC_EXT_EXPORT void klGetBooleanIndexedvEXT(
   const KL::Size & index,
   KL::VariableArray<KL::Boolean> & data
 ){
-  glGetBooleanIndexedvEXT( (GLenum)value, (GLuint)index, (GLboolean*)&data[0] );
+  try
+  {
+    glGetBooleanIndexedvEXT( (GLenum)value, (GLuint)index, (GLboolean*)&data[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetBooleanIndexedvEXT( %d, 0x%04X, GLboolean* )", (int)value, (unsigned)index);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetIntegerIndexedvEXT(
@@ -7711,15 +14200,29 @@ FABRIC_EXT_EXPORT void klGetIntegerIndexedvEXT(
   const KL::Size & index,
   KL::VariableArray<KL::Integer> & data
 ){
-  glGetIntegerIndexedvEXT( (GLenum)value, (GLuint)index, (GLint*)&data[0] );
+  try
+  {
+    glGetIntegerIndexedvEXT( (GLenum)value, (GLuint)index, (GLint*)&data[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetIntegerIndexedvEXT( %d, 0x%04X, GLint* )", (int)value, (unsigned)index);
+  }
 }
 
 FABRIC_EXT_EXPORT KL::Boolean klIsEnabledIndexedEXT(
   const KL::Size & target,
   const KL::Size & index
 ){
-  GLboolean result = glIsEnabledIndexedEXT( (GLenum)target, (GLuint)index );
+  try
+  {
+    GLboolean result = glIsEnabledIndexedEXT( (GLenum)target, (GLuint)index );
   return (KL::Boolean)result;
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glIsEnabledIndexedEXT( %d, 0x%04X )", (int)target, (unsigned)index);
+  }
 }
 
 FABRIC_EXT_EXPORT void klDrawArraysInstancedEXT(
@@ -7728,7 +14231,14 @@ FABRIC_EXT_EXPORT void klDrawArraysInstancedEXT(
   const KL::Size & count,
   const KL::Size & primcount
 ){
-  glDrawArraysInstancedEXT( (GLenum)mode, (GLint)start, (GLsizei)count, (GLsizei)primcount );
+  try
+  {
+    glDrawArraysInstancedEXT( (GLenum)mode, (GLint)start, (GLsizei)count, (GLsizei)primcount );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glDrawArraysInstancedEXT( %d, %d, %d, %d )", (int)mode, (int)start, (int)count, (int)primcount);
+  }
 }
 
 FABRIC_EXT_EXPORT void klDrawElementsInstancedEXT(
@@ -7738,7 +14248,14 @@ FABRIC_EXT_EXPORT void klDrawElementsInstancedEXT(
   KL::Data indices,
   const KL::Size & primcount
 ){
-  glDrawElementsInstancedEXT( (GLenum)mode, (GLsizei)count, (GLenum)type, indices, (GLsizei)primcount );
+  try
+  {
+    glDrawElementsInstancedEXT( (GLenum)mode, (GLsizei)count, (GLenum)type, indices, (GLsizei)primcount );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glDrawElementsInstancedEXT( %d, %d, %d, GLvoid*, %d )", (int)mode, (int)count, (int)type, (int)primcount);
+  }
 }
 
 FABRIC_EXT_EXPORT void klDrawRangeElementsEXT(
@@ -7749,7 +14266,14 @@ FABRIC_EXT_EXPORT void klDrawRangeElementsEXT(
   const KL::Size & type,
   KL::Data indices
 ){
-  glDrawRangeElementsEXT( (GLenum)mode, (GLuint)start, (GLuint)end, (GLsizei)count, (GLenum)type, indices );
+  try
+  {
+    glDrawRangeElementsEXT( (GLenum)mode, (GLuint)start, (GLuint)end, (GLsizei)count, (GLenum)type, indices );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glDrawRangeElementsEXT( %d, 0x%04X, 0x%04X, %d, %d, GLvoid* )", (int)mode, (unsigned)start, (unsigned)end, (int)count, (int)type);
+  }
 }
 
 FABRIC_EXT_EXPORT void klFogCoordPointerEXT(
@@ -7757,66 +14281,136 @@ FABRIC_EXT_EXPORT void klFogCoordPointerEXT(
   const KL::Size & stride,
   KL::Data pointer
 ){
-  glFogCoordPointerEXT( (GLenum)type, (GLsizei)stride, pointer );
+  try
+  {
+    glFogCoordPointerEXT( (GLenum)type, (GLsizei)stride, pointer );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glFogCoordPointerEXT( %d, %d, GLvoid* )", (int)type, (int)stride);
+  }
 }
 
 FABRIC_EXT_EXPORT void klFogCoorddEXT(
   const KL::Scalar & coord
 ){
-  glFogCoorddEXT( (GLdouble)coord );
+  try
+  {
+    glFogCoorddEXT( (GLdouble)coord );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glFogCoorddEXT( %f )", (float)coord);
+  }
 }
 
 FABRIC_EXT_EXPORT void klFogCoorddvEXT(
   const KL::VariableArray<KL::Scalar> & coord
 ){
-  glFogCoorddvEXT( (const GLdouble*)&coord[0] );
+  try
+  {
+    glFogCoorddvEXT( (const GLdouble*)&coord[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glFogCoorddvEXT( GLdouble* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klFogCoordfEXT(
   const KL::Scalar & coord
 ){
-  glFogCoordfEXT( (GLfloat)coord );
+  try
+  {
+    glFogCoordfEXT( (GLfloat)coord );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glFogCoordfEXT( %f )", (float)coord);
+  }
 }
 
 FABRIC_EXT_EXPORT void klFogCoordfvEXT(
   const KL::VariableArray<KL::Scalar> & coord
 ){
-  glFogCoordfvEXT( (const GLfloat*)&coord[0] );
+  try
+  {
+    glFogCoordfvEXT( (const GLfloat*)&coord[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glFogCoordfvEXT( GLfloat* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klFragmentColorMaterialEXT(
   const KL::Size & face,
   const KL::Size & mode
 ){
-  glFragmentColorMaterialEXT( (GLenum)face, (GLenum)mode );
+  try
+  {
+    glFragmentColorMaterialEXT( (GLenum)face, (GLenum)mode );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glFragmentColorMaterialEXT( %d, %d )", (int)face, (int)mode);
+  }
 }
 
 FABRIC_EXT_EXPORT void klFragmentLightModelfEXT(
   const KL::Size & pname,
   const KL::Scalar & param
 ){
-  glFragmentLightModelfEXT( (GLenum)pname, (GLfloat)param );
+  try
+  {
+    glFragmentLightModelfEXT( (GLenum)pname, (GLfloat)param );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glFragmentLightModelfEXT( %d, %f )", (int)pname, (float)param);
+  }
 }
 
 FABRIC_EXT_EXPORT void klFragmentLightModelfvEXT(
   const KL::Size & pname,
   KL::VariableArray<KL::Scalar> & params
 ){
-  glFragmentLightModelfvEXT( (GLenum)pname, (GLfloat*)&params[0] );
+  try
+  {
+    glFragmentLightModelfvEXT( (GLenum)pname, (GLfloat*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glFragmentLightModelfvEXT( %d, GLfloat* )", (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klFragmentLightModeliEXT(
   const KL::Size & pname,
   const KL::Integer & param
 ){
-  glFragmentLightModeliEXT( (GLenum)pname, (GLint)param );
+  try
+  {
+    glFragmentLightModeliEXT( (GLenum)pname, (GLint)param );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glFragmentLightModeliEXT( %d, %d )", (int)pname, (int)param);
+  }
 }
 
 FABRIC_EXT_EXPORT void klFragmentLightModelivEXT(
   const KL::Size & pname,
   KL::VariableArray<KL::Integer> & params
 ){
-  glFragmentLightModelivEXT( (GLenum)pname, (GLint*)&params[0] );
+  try
+  {
+    glFragmentLightModelivEXT( (GLenum)pname, (GLint*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glFragmentLightModelivEXT( %d, GLint* )", (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klFragmentLightfEXT(
@@ -7824,7 +14418,14 @@ FABRIC_EXT_EXPORT void klFragmentLightfEXT(
   const KL::Size & pname,
   const KL::Scalar & param
 ){
-  glFragmentLightfEXT( (GLenum)light, (GLenum)pname, (GLfloat)param );
+  try
+  {
+    glFragmentLightfEXT( (GLenum)light, (GLenum)pname, (GLfloat)param );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glFragmentLightfEXT( %d, %d, %f )", (int)light, (int)pname, (float)param);
+  }
 }
 
 FABRIC_EXT_EXPORT void klFragmentLightfvEXT(
@@ -7832,7 +14433,14 @@ FABRIC_EXT_EXPORT void klFragmentLightfvEXT(
   const KL::Size & pname,
   KL::VariableArray<KL::Scalar> & params
 ){
-  glFragmentLightfvEXT( (GLenum)light, (GLenum)pname, (GLfloat*)&params[0] );
+  try
+  {
+    glFragmentLightfvEXT( (GLenum)light, (GLenum)pname, (GLfloat*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glFragmentLightfvEXT( %d, %d, GLfloat* )", (int)light, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klFragmentLightiEXT(
@@ -7840,7 +14448,14 @@ FABRIC_EXT_EXPORT void klFragmentLightiEXT(
   const KL::Size & pname,
   const KL::Integer & param
 ){
-  glFragmentLightiEXT( (GLenum)light, (GLenum)pname, (GLint)param );
+  try
+  {
+    glFragmentLightiEXT( (GLenum)light, (GLenum)pname, (GLint)param );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glFragmentLightiEXT( %d, %d, %d )", (int)light, (int)pname, (int)param);
+  }
 }
 
 FABRIC_EXT_EXPORT void klFragmentLightivEXT(
@@ -7848,7 +14463,14 @@ FABRIC_EXT_EXPORT void klFragmentLightivEXT(
   const KL::Size & pname,
   KL::VariableArray<KL::Integer> & params
 ){
-  glFragmentLightivEXT( (GLenum)light, (GLenum)pname, (GLint*)&params[0] );
+  try
+  {
+    glFragmentLightivEXT( (GLenum)light, (GLenum)pname, (GLint*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glFragmentLightivEXT( %d, %d, GLint* )", (int)light, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klFragmentMaterialfEXT(
@@ -7856,7 +14478,14 @@ FABRIC_EXT_EXPORT void klFragmentMaterialfEXT(
   const KL::Size & pname,
   const KL::Scalar & param
 ){
-  glFragmentMaterialfEXT( (GLenum)face, (GLenum)pname, (const GLfloat)param );
+  try
+  {
+    glFragmentMaterialfEXT( (GLenum)face, (GLenum)pname, (const GLfloat)param );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glFragmentMaterialfEXT( %d, %d, %f )", (int)face, (int)pname, (float)param);
+  }
 }
 
 FABRIC_EXT_EXPORT void klFragmentMaterialfvEXT(
@@ -7864,7 +14493,14 @@ FABRIC_EXT_EXPORT void klFragmentMaterialfvEXT(
   const KL::Size & pname,
   const KL::VariableArray<KL::Scalar> & params
 ){
-  glFragmentMaterialfvEXT( (GLenum)face, (GLenum)pname, (const GLfloat*)&params[0] );
+  try
+  {
+    glFragmentMaterialfvEXT( (GLenum)face, (GLenum)pname, (const GLfloat*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glFragmentMaterialfvEXT( %d, %d, GLfloat* )", (int)face, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klFragmentMaterialiEXT(
@@ -7872,7 +14508,14 @@ FABRIC_EXT_EXPORT void klFragmentMaterialiEXT(
   const KL::Size & pname,
   const KL::Integer & param
 ){
-  glFragmentMaterialiEXT( (GLenum)face, (GLenum)pname, (const GLint)param );
+  try
+  {
+    glFragmentMaterialiEXT( (GLenum)face, (GLenum)pname, (const GLint)param );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glFragmentMaterialiEXT( %d, %d, %d )", (int)face, (int)pname, (int)param);
+  }
 }
 
 FABRIC_EXT_EXPORT void klFragmentMaterialivEXT(
@@ -7880,7 +14523,14 @@ FABRIC_EXT_EXPORT void klFragmentMaterialivEXT(
   const KL::Size & pname,
   const KL::VariableArray<KL::Integer> & params
 ){
-  glFragmentMaterialivEXT( (GLenum)face, (GLenum)pname, (const GLint*)&params[0] );
+  try
+  {
+    glFragmentMaterialivEXT( (GLenum)face, (GLenum)pname, (const GLint*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glFragmentMaterialivEXT( %d, %d, GLint* )", (int)face, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetFragmentLightfvEXT(
@@ -7888,7 +14538,14 @@ FABRIC_EXT_EXPORT void klGetFragmentLightfvEXT(
   const KL::Size & pname,
   KL::VariableArray<KL::Scalar> & params
 ){
-  glGetFragmentLightfvEXT( (GLenum)light, (GLenum)pname, (GLfloat*)&params[0] );
+  try
+  {
+    glGetFragmentLightfvEXT( (GLenum)light, (GLenum)pname, (GLfloat*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetFragmentLightfvEXT( %d, %d, GLfloat* )", (int)light, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetFragmentLightivEXT(
@@ -7896,7 +14553,14 @@ FABRIC_EXT_EXPORT void klGetFragmentLightivEXT(
   const KL::Size & pname,
   KL::VariableArray<KL::Integer> & params
 ){
-  glGetFragmentLightivEXT( (GLenum)light, (GLenum)pname, (GLint*)&params[0] );
+  try
+  {
+    glGetFragmentLightivEXT( (GLenum)light, (GLenum)pname, (GLint*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetFragmentLightivEXT( %d, %d, GLint* )", (int)light, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetFragmentMaterialfvEXT(
@@ -7904,7 +14568,14 @@ FABRIC_EXT_EXPORT void klGetFragmentMaterialfvEXT(
   const KL::Size & pname,
   const KL::VariableArray<KL::Scalar> & params
 ){
-  glGetFragmentMaterialfvEXT( (GLenum)face, (GLenum)pname, (const GLfloat*)&params[0] );
+  try
+  {
+    glGetFragmentMaterialfvEXT( (GLenum)face, (GLenum)pname, (const GLfloat*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetFragmentMaterialfvEXT( %d, %d, GLfloat* )", (int)face, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetFragmentMaterialivEXT(
@@ -7912,14 +14583,28 @@ FABRIC_EXT_EXPORT void klGetFragmentMaterialivEXT(
   const KL::Size & pname,
   const KL::VariableArray<KL::Integer> & params
 ){
-  glGetFragmentMaterialivEXT( (GLenum)face, (GLenum)pname, (const GLint*)&params[0] );
+  try
+  {
+    glGetFragmentMaterialivEXT( (GLenum)face, (GLenum)pname, (const GLint*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetFragmentMaterialivEXT( %d, %d, GLint* )", (int)face, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klLightEnviEXT(
   const KL::Size & pname,
   const KL::Integer & param
 ){
-  glLightEnviEXT( (GLenum)pname, (GLint)param );
+  try
+  {
+    glLightEnviEXT( (GLenum)pname, (GLint)param );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glLightEnviEXT( %d, %d )", (int)pname, (int)param);
+  }
 }
 
 FABRIC_EXT_EXPORT void klBlitFramebufferEXT(
@@ -7931,10 +14616,17 @@ FABRIC_EXT_EXPORT void klBlitFramebufferEXT(
   const KL::Integer & dstY0,
   const KL::Integer & dstX1,
   const KL::Integer & dstY1,
-  const KL::Integer & mask,
+  const KL::Size & mask,
   const KL::Size & filter
 ){
-  glBlitFramebufferEXT( (GLint)srcX0, (GLint)srcY0, (GLint)srcX1, (GLint)srcY1, (GLint)dstX0, (GLint)dstY0, (GLint)dstX1, (GLint)dstY1, (GLbitfield)mask, (GLenum)filter );
+  try
+  {
+    glBlitFramebufferEXT( (GLint)srcX0, (GLint)srcY0, (GLint)srcX1, (GLint)srcY1, (GLint)dstX0, (GLint)dstY0, (GLint)dstX1, (GLint)dstY1, (GLbitfield)mask, (GLenum)filter );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glBlitFramebufferEXT( %d, %d, %d, %d, %d, %d, %d, %d, 0x%04X, %d )", (int)srcX0, (int)srcY0, (int)srcX1, (int)srcY1, (int)dstX0, (int)dstY0, (int)dstX1, (int)dstY1, (unsigned)mask, (int)filter);
+  }
 }
 
 FABRIC_EXT_EXPORT void klRenderbufferStorageMultisampleEXT(
@@ -7944,42 +14636,84 @@ FABRIC_EXT_EXPORT void klRenderbufferStorageMultisampleEXT(
   const KL::Size & width,
   const KL::Size & height
 ){
-  glRenderbufferStorageMultisampleEXT( (GLenum)target, (GLsizei)samples, (GLenum)internalformat, (GLsizei)width, (GLsizei)height );
+  try
+  {
+    glRenderbufferStorageMultisampleEXT( (GLenum)target, (GLsizei)samples, (GLenum)internalformat, (GLsizei)width, (GLsizei)height );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glRenderbufferStorageMultisampleEXT( %d, %d, %d, %d, %d )", (int)target, (int)samples, (int)internalformat, (int)width, (int)height);
+  }
 }
 
 FABRIC_EXT_EXPORT void klBindFramebufferEXT(
   const KL::Size & target,
   const KL::Size & framebuffer
 ){
-  glBindFramebufferEXT( (GLenum)target, (GLuint)framebuffer );
+  try
+  {
+    glBindFramebufferEXT( (GLenum)target, (GLuint)framebuffer );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glBindFramebufferEXT( %d, 0x%04X )", (int)target, (unsigned)framebuffer);
+  }
 }
 
 FABRIC_EXT_EXPORT void klBindRenderbufferEXT(
   const KL::Size & target,
   const KL::Size & renderbuffer
 ){
-  glBindRenderbufferEXT( (GLenum)target, (GLuint)renderbuffer );
+  try
+  {
+    glBindRenderbufferEXT( (GLenum)target, (GLuint)renderbuffer );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glBindRenderbufferEXT( %d, 0x%04X )", (int)target, (unsigned)renderbuffer);
+  }
 }
 
 FABRIC_EXT_EXPORT KL::Size klCheckFramebufferStatusEXT(
   const KL::Size & target
 ){
-  GLenum result = glCheckFramebufferStatusEXT( (GLenum)target );
+  try
+  {
+    GLenum result = glCheckFramebufferStatusEXT( (GLenum)target );
   return (KL::Size)result;
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glCheckFramebufferStatusEXT( %d )", (int)target);
+  }
 }
 
 FABRIC_EXT_EXPORT void klDeleteFramebuffersEXT(
   const KL::Size & n,
   const KL::VariableArray<KL::Size> & framebuffers
 ){
-  glDeleteFramebuffersEXT( (GLsizei)n, (const GLuint*)&framebuffers[0] );
+  try
+  {
+    glDeleteFramebuffersEXT( (GLsizei)n, (const GLuint*)&framebuffers[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glDeleteFramebuffersEXT( %d, GLuint* )", (int)n);
+  }
 }
 
 FABRIC_EXT_EXPORT void klDeleteRenderbuffersEXT(
   const KL::Size & n,
   const KL::VariableArray<KL::Size> & renderbuffers
 ){
-  glDeleteRenderbuffersEXT( (GLsizei)n, (const GLuint*)&renderbuffers[0] );
+  try
+  {
+    glDeleteRenderbuffersEXT( (GLsizei)n, (const GLuint*)&renderbuffers[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glDeleteRenderbuffersEXT( %d, GLuint* )", (int)n);
+  }
 }
 
 FABRIC_EXT_EXPORT void klFramebufferRenderbufferEXT(
@@ -7988,7 +14722,14 @@ FABRIC_EXT_EXPORT void klFramebufferRenderbufferEXT(
   const KL::Size & renderbuffertarget,
   const KL::Size & renderbuffer
 ){
-  glFramebufferRenderbufferEXT( (GLenum)target, (GLenum)attachment, (GLenum)renderbuffertarget, (GLuint)renderbuffer );
+  try
+  {
+    glFramebufferRenderbufferEXT( (GLenum)target, (GLenum)attachment, (GLenum)renderbuffertarget, (GLuint)renderbuffer );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glFramebufferRenderbufferEXT( %d, %d, %d, 0x%04X )", (int)target, (int)attachment, (int)renderbuffertarget, (unsigned)renderbuffer);
+  }
 }
 
 FABRIC_EXT_EXPORT void klFramebufferTexture1DEXT(
@@ -7998,7 +14739,14 @@ FABRIC_EXT_EXPORT void klFramebufferTexture1DEXT(
   const KL::Size & texture,
   const KL::Integer & level
 ){
-  glFramebufferTexture1DEXT( (GLenum)target, (GLenum)attachment, (GLenum)textarget, (GLuint)texture, (GLint)level );
+  try
+  {
+    glFramebufferTexture1DEXT( (GLenum)target, (GLenum)attachment, (GLenum)textarget, (GLuint)texture, (GLint)level );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glFramebufferTexture1DEXT( %d, %d, %d, 0x%04X, %d )", (int)target, (int)attachment, (int)textarget, (unsigned)texture, (int)level);
+  }
 }
 
 FABRIC_EXT_EXPORT void klFramebufferTexture2DEXT(
@@ -8008,7 +14756,14 @@ FABRIC_EXT_EXPORT void klFramebufferTexture2DEXT(
   const KL::Size & texture,
   const KL::Integer & level
 ){
-  glFramebufferTexture2DEXT( (GLenum)target, (GLenum)attachment, (GLenum)textarget, (GLuint)texture, (GLint)level );
+  try
+  {
+    glFramebufferTexture2DEXT( (GLenum)target, (GLenum)attachment, (GLenum)textarget, (GLuint)texture, (GLint)level );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glFramebufferTexture2DEXT( %d, %d, %d, 0x%04X, %d )", (int)target, (int)attachment, (int)textarget, (unsigned)texture, (int)level);
+  }
 }
 
 FABRIC_EXT_EXPORT void klFramebufferTexture3DEXT(
@@ -8019,27 +14774,55 @@ FABRIC_EXT_EXPORT void klFramebufferTexture3DEXT(
   const KL::Integer & level,
   const KL::Integer & zoffset
 ){
-  glFramebufferTexture3DEXT( (GLenum)target, (GLenum)attachment, (GLenum)textarget, (GLuint)texture, (GLint)level, (GLint)zoffset );
+  try
+  {
+    glFramebufferTexture3DEXT( (GLenum)target, (GLenum)attachment, (GLenum)textarget, (GLuint)texture, (GLint)level, (GLint)zoffset );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glFramebufferTexture3DEXT( %d, %d, %d, 0x%04X, %d, %d )", (int)target, (int)attachment, (int)textarget, (unsigned)texture, (int)level, (int)zoffset);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGenFramebuffersEXT(
   const KL::Size & n,
   KL::VariableArray<KL::Size> & framebuffers
 ){
-  glGenFramebuffersEXT( (GLsizei)n, (GLuint*)&framebuffers[0] );
+  try
+  {
+    glGenFramebuffersEXT( (GLsizei)n, (GLuint*)&framebuffers[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGenFramebuffersEXT( %d, GLuint* )", (int)n);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGenRenderbuffersEXT(
   const KL::Size & n,
   KL::VariableArray<KL::Size> & renderbuffers
 ){
-  glGenRenderbuffersEXT( (GLsizei)n, (GLuint*)&renderbuffers[0] );
+  try
+  {
+    glGenRenderbuffersEXT( (GLsizei)n, (GLuint*)&renderbuffers[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGenRenderbuffersEXT( %d, GLuint* )", (int)n);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGenerateMipmapEXT(
   const KL::Size & target
 ){
-  glGenerateMipmapEXT( (GLenum)target );
+  try
+  {
+    glGenerateMipmapEXT( (GLenum)target );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGenerateMipmapEXT( %d )", (int)target);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetFramebufferAttachmentParameterivEXT(
@@ -8048,7 +14831,14 @@ FABRIC_EXT_EXPORT void klGetFramebufferAttachmentParameterivEXT(
   const KL::Size & pname,
   KL::VariableArray<KL::Integer> & params
 ){
-  glGetFramebufferAttachmentParameterivEXT( (GLenum)target, (GLenum)attachment, (GLenum)pname, (GLint*)&params[0] );
+  try
+  {
+    glGetFramebufferAttachmentParameterivEXT( (GLenum)target, (GLenum)attachment, (GLenum)pname, (GLint*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetFramebufferAttachmentParameterivEXT( %d, %d, %d, GLint* )", (int)target, (int)attachment, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetRenderbufferParameterivEXT(
@@ -8056,21 +14846,42 @@ FABRIC_EXT_EXPORT void klGetRenderbufferParameterivEXT(
   const KL::Size & pname,
   KL::VariableArray<KL::Integer> & params
 ){
-  glGetRenderbufferParameterivEXT( (GLenum)target, (GLenum)pname, (GLint*)&params[0] );
+  try
+  {
+    glGetRenderbufferParameterivEXT( (GLenum)target, (GLenum)pname, (GLint*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetRenderbufferParameterivEXT( %d, %d, GLint* )", (int)target, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT KL::Boolean klIsFramebufferEXT(
   const KL::Size & framebuffer
 ){
-  GLboolean result = glIsFramebufferEXT( (GLuint)framebuffer );
+  try
+  {
+    GLboolean result = glIsFramebufferEXT( (GLuint)framebuffer );
   return (KL::Boolean)result;
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glIsFramebufferEXT( 0x%04X )", (unsigned)framebuffer);
+  }
 }
 
 FABRIC_EXT_EXPORT KL::Boolean klIsRenderbufferEXT(
   const KL::Size & renderbuffer
 ){
-  GLboolean result = glIsRenderbufferEXT( (GLuint)renderbuffer );
+  try
+  {
+    GLboolean result = glIsRenderbufferEXT( (GLuint)renderbuffer );
   return (KL::Boolean)result;
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glIsRenderbufferEXT( 0x%04X )", (unsigned)renderbuffer);
+  }
 }
 
 FABRIC_EXT_EXPORT void klRenderbufferStorageEXT(
@@ -8079,7 +14890,14 @@ FABRIC_EXT_EXPORT void klRenderbufferStorageEXT(
   const KL::Size & width,
   const KL::Size & height
 ){
-  glRenderbufferStorageEXT( (GLenum)target, (GLenum)internalformat, (GLsizei)width, (GLsizei)height );
+  try
+  {
+    glRenderbufferStorageEXT( (GLenum)target, (GLenum)internalformat, (GLsizei)width, (GLsizei)height );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glRenderbufferStorageEXT( %d, %d, %d, %d )", (int)target, (int)internalformat, (int)width, (int)height);
+  }
 }
 
 FABRIC_EXT_EXPORT void klFramebufferTextureEXT(
@@ -8088,7 +14906,14 @@ FABRIC_EXT_EXPORT void klFramebufferTextureEXT(
   const KL::Size & texture,
   const KL::Integer & level
 ){
-  glFramebufferTextureEXT( (GLenum)target, (GLenum)attachment, (GLuint)texture, (GLint)level );
+  try
+  {
+    glFramebufferTextureEXT( (GLenum)target, (GLenum)attachment, (GLuint)texture, (GLint)level );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glFramebufferTextureEXT( %d, %d, 0x%04X, %d )", (int)target, (int)attachment, (unsigned)texture, (int)level);
+  }
 }
 
 FABRIC_EXT_EXPORT void klFramebufferTextureFaceEXT(
@@ -8098,7 +14923,14 @@ FABRIC_EXT_EXPORT void klFramebufferTextureFaceEXT(
   const KL::Integer & level,
   const KL::Size & face
 ){
-  glFramebufferTextureFaceEXT( (GLenum)target, (GLenum)attachment, (GLuint)texture, (GLint)level, (GLenum)face );
+  try
+  {
+    glFramebufferTextureFaceEXT( (GLenum)target, (GLenum)attachment, (GLuint)texture, (GLint)level, (GLenum)face );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glFramebufferTextureFaceEXT( %d, %d, 0x%04X, %d, %d )", (int)target, (int)attachment, (unsigned)texture, (int)level, (int)face);
+  }
 }
 
 FABRIC_EXT_EXPORT void klFramebufferTextureLayerEXT(
@@ -8108,7 +14940,14 @@ FABRIC_EXT_EXPORT void klFramebufferTextureLayerEXT(
   const KL::Integer & level,
   const KL::Integer & layer
 ){
-  glFramebufferTextureLayerEXT( (GLenum)target, (GLenum)attachment, (GLuint)texture, (GLint)level, (GLint)layer );
+  try
+  {
+    glFramebufferTextureLayerEXT( (GLenum)target, (GLenum)attachment, (GLuint)texture, (GLint)level, (GLint)layer );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glFramebufferTextureLayerEXT( %d, %d, 0x%04X, %d, %d )", (int)target, (int)attachment, (unsigned)texture, (int)level, (int)layer);
+  }
 }
 
 FABRIC_EXT_EXPORT void klProgramParameteriEXT(
@@ -8116,7 +14955,14 @@ FABRIC_EXT_EXPORT void klProgramParameteriEXT(
   const KL::Size & pname,
   const KL::Integer & value
 ){
-  glProgramParameteriEXT( (GLuint)program, (GLenum)pname, (GLint)value );
+  try
+  {
+    glProgramParameteriEXT( (GLuint)program, (GLenum)pname, (GLint)value );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glProgramParameteriEXT( 0x%04X, %d, %d )", (unsigned)program, (int)pname, (int)value);
+  }
 }
 
 FABRIC_EXT_EXPORT void klProgramEnvParameters4fvEXT(
@@ -8125,7 +14971,14 @@ FABRIC_EXT_EXPORT void klProgramEnvParameters4fvEXT(
   const KL::Size & count,
   const KL::VariableArray<KL::Scalar> & params
 ){
-  glProgramEnvParameters4fvEXT( (GLenum)target, (GLuint)index, (GLsizei)count, (const GLfloat*)&params[0] );
+  try
+  {
+    glProgramEnvParameters4fvEXT( (GLenum)target, (GLuint)index, (GLsizei)count, (const GLfloat*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glProgramEnvParameters4fvEXT( %d, 0x%04X, %d, GLfloat* )", (int)target, (unsigned)index, (int)count);
+  }
 }
 
 FABRIC_EXT_EXPORT void klProgramLocalParameters4fvEXT(
@@ -8134,7 +14987,14 @@ FABRIC_EXT_EXPORT void klProgramLocalParameters4fvEXT(
   const KL::Size & count,
   const KL::VariableArray<KL::Scalar> & params
 ){
-  glProgramLocalParameters4fvEXT( (GLenum)target, (GLuint)index, (GLsizei)count, (const GLfloat*)&params[0] );
+  try
+  {
+    glProgramLocalParameters4fvEXT( (GLenum)target, (GLuint)index, (GLsizei)count, (const GLfloat*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glProgramLocalParameters4fvEXT( %d, 0x%04X, %d, GLfloat* )", (int)target, (unsigned)index, (int)count);
+  }
 }
 
 FABRIC_EXT_EXPORT void klBindFragDataLocationEXT(
@@ -8142,15 +15002,29 @@ FABRIC_EXT_EXPORT void klBindFragDataLocationEXT(
   const KL::Size & color,
   const KL::String &name
 ){
-  glBindFragDataLocationEXT( (GLuint)program, (GLuint)color, (const GLchar*)name.data() );
+  try
+  {
+    glBindFragDataLocationEXT( (GLuint)program, (GLuint)color, (const GLchar*)name.data() );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glBindFragDataLocationEXT( 0x%04X, 0x%04X, char* )", (unsigned)program, (unsigned)color);
+  }
 }
 
 FABRIC_EXT_EXPORT KL::Integer klGetFragDataLocationEXT(
   const KL::Size & program,
   const KL::String &name
 ){
-  GLint result = glGetFragDataLocationEXT( (GLuint)program, (const GLchar*)name.data() );
+  try
+  {
+    GLint result = glGetFragDataLocationEXT( (GLuint)program, (const GLchar*)name.data() );
   return (KL::Integer)result;
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetFragDataLocationEXT( 0x%04X, char* )", (unsigned)program);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetUniformuivEXT(
@@ -8158,7 +15032,14 @@ FABRIC_EXT_EXPORT void klGetUniformuivEXT(
   const KL::Integer & location,
   KL::VariableArray<KL::Size> & params
 ){
-  glGetUniformuivEXT( (GLuint)program, (GLint)location, (GLuint*)&params[0] );
+  try
+  {
+    glGetUniformuivEXT( (GLuint)program, (GLint)location, (GLuint*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetUniformuivEXT( 0x%04X, %d, GLuint* )", (unsigned)program, (int)location);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetVertexAttribIivEXT(
@@ -8166,7 +15047,14 @@ FABRIC_EXT_EXPORT void klGetVertexAttribIivEXT(
   const KL::Size & pname,
   KL::VariableArray<KL::Integer> & params
 ){
-  glGetVertexAttribIivEXT( (GLuint)index, (GLenum)pname, (GLint*)&params[0] );
+  try
+  {
+    glGetVertexAttribIivEXT( (GLuint)index, (GLenum)pname, (GLint*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetVertexAttribIivEXT( 0x%04X, %d, GLint* )", (unsigned)index, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetVertexAttribIuivEXT(
@@ -8174,14 +15062,28 @@ FABRIC_EXT_EXPORT void klGetVertexAttribIuivEXT(
   const KL::Size & pname,
   KL::VariableArray<KL::Size> & params
 ){
-  glGetVertexAttribIuivEXT( (GLuint)index, (GLenum)pname, (GLuint*)&params[0] );
+  try
+  {
+    glGetVertexAttribIuivEXT( (GLuint)index, (GLenum)pname, (GLuint*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetVertexAttribIuivEXT( 0x%04X, %d, GLuint* )", (unsigned)index, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klUniform1uiEXT(
   const KL::Integer & location,
   const KL::Size & v0
 ){
-  glUniform1uiEXT( (GLint)location, (GLuint)v0 );
+  try
+  {
+    glUniform1uiEXT( (GLint)location, (GLuint)v0 );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glUniform1uiEXT( %d, 0x%04X )", (int)location, (unsigned)v0);
+  }
 }
 
 FABRIC_EXT_EXPORT void klUniform1uivEXT(
@@ -8189,7 +15091,14 @@ FABRIC_EXT_EXPORT void klUniform1uivEXT(
   const KL::Size & count,
   const KL::VariableArray<KL::Size> & value
 ){
-  glUniform1uivEXT( (GLint)location, (GLsizei)count, (const GLuint*)&value[0] );
+  try
+  {
+    glUniform1uivEXT( (GLint)location, (GLsizei)count, (const GLuint*)&value[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glUniform1uivEXT( %d, %d, GLuint* )", (int)location, (int)count);
+  }
 }
 
 FABRIC_EXT_EXPORT void klUniform2uiEXT(
@@ -8197,7 +15106,14 @@ FABRIC_EXT_EXPORT void klUniform2uiEXT(
   const KL::Size & v0,
   const KL::Size & v1
 ){
-  glUniform2uiEXT( (GLint)location, (GLuint)v0, (GLuint)v1 );
+  try
+  {
+    glUniform2uiEXT( (GLint)location, (GLuint)v0, (GLuint)v1 );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glUniform2uiEXT( %d, 0x%04X, 0x%04X )", (int)location, (unsigned)v0, (unsigned)v1);
+  }
 }
 
 FABRIC_EXT_EXPORT void klUniform2uivEXT(
@@ -8205,7 +15121,14 @@ FABRIC_EXT_EXPORT void klUniform2uivEXT(
   const KL::Size & count,
   const KL::VariableArray<KL::Size> & value
 ){
-  glUniform2uivEXT( (GLint)location, (GLsizei)count, (const GLuint*)&value[0] );
+  try
+  {
+    glUniform2uivEXT( (GLint)location, (GLsizei)count, (const GLuint*)&value[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glUniform2uivEXT( %d, %d, GLuint* )", (int)location, (int)count);
+  }
 }
 
 FABRIC_EXT_EXPORT void klUniform3uiEXT(
@@ -8214,7 +15137,14 @@ FABRIC_EXT_EXPORT void klUniform3uiEXT(
   const KL::Size & v1,
   const KL::Size & v2
 ){
-  glUniform3uiEXT( (GLint)location, (GLuint)v0, (GLuint)v1, (GLuint)v2 );
+  try
+  {
+    glUniform3uiEXT( (GLint)location, (GLuint)v0, (GLuint)v1, (GLuint)v2 );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glUniform3uiEXT( %d, 0x%04X, 0x%04X, 0x%04X )", (int)location, (unsigned)v0, (unsigned)v1, (unsigned)v2);
+  }
 }
 
 FABRIC_EXT_EXPORT void klUniform3uivEXT(
@@ -8222,7 +15152,14 @@ FABRIC_EXT_EXPORT void klUniform3uivEXT(
   const KL::Size & count,
   const KL::VariableArray<KL::Size> & value
 ){
-  glUniform3uivEXT( (GLint)location, (GLsizei)count, (const GLuint*)&value[0] );
+  try
+  {
+    glUniform3uivEXT( (GLint)location, (GLsizei)count, (const GLuint*)&value[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glUniform3uivEXT( %d, %d, GLuint* )", (int)location, (int)count);
+  }
 }
 
 FABRIC_EXT_EXPORT void klUniform4uiEXT(
@@ -8232,7 +15169,14 @@ FABRIC_EXT_EXPORT void klUniform4uiEXT(
   const KL::Size & v2,
   const KL::Size & v3
 ){
-  glUniform4uiEXT( (GLint)location, (GLuint)v0, (GLuint)v1, (GLuint)v2, (GLuint)v3 );
+  try
+  {
+    glUniform4uiEXT( (GLint)location, (GLuint)v0, (GLuint)v1, (GLuint)v2, (GLuint)v3 );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glUniform4uiEXT( %d, 0x%04X, 0x%04X, 0x%04X, 0x%04X )", (int)location, (unsigned)v0, (unsigned)v1, (unsigned)v2, (unsigned)v3);
+  }
 }
 
 FABRIC_EXT_EXPORT void klUniform4uivEXT(
@@ -8240,35 +15184,70 @@ FABRIC_EXT_EXPORT void klUniform4uivEXT(
   const KL::Size & count,
   const KL::VariableArray<KL::Size> & value
 ){
-  glUniform4uivEXT( (GLint)location, (GLsizei)count, (const GLuint*)&value[0] );
+  try
+  {
+    glUniform4uivEXT( (GLint)location, (GLsizei)count, (const GLuint*)&value[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glUniform4uivEXT( %d, %d, GLuint* )", (int)location, (int)count);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttribI1iEXT(
   const KL::Size & index,
   const KL::Integer & x
 ){
-  glVertexAttribI1iEXT( (GLuint)index, (GLint)x );
+  try
+  {
+    glVertexAttribI1iEXT( (GLuint)index, (GLint)x );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttribI1iEXT( 0x%04X, %d )", (unsigned)index, (int)x);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttribI1ivEXT(
   const KL::Size & index,
   const KL::VariableArray<KL::Integer> & v
 ){
-  glVertexAttribI1ivEXT( (GLuint)index, (const GLint*)&v[0] );
+  try
+  {
+    glVertexAttribI1ivEXT( (GLuint)index, (const GLint*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttribI1ivEXT( 0x%04X, GLint* )", (unsigned)index);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttribI1uiEXT(
   const KL::Size & index,
   const KL::Size & x
 ){
-  glVertexAttribI1uiEXT( (GLuint)index, (GLuint)x );
+  try
+  {
+    glVertexAttribI1uiEXT( (GLuint)index, (GLuint)x );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttribI1uiEXT( 0x%04X, 0x%04X )", (unsigned)index, (unsigned)x);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttribI1uivEXT(
   const KL::Size & index,
   const KL::VariableArray<KL::Size> & v
 ){
-  glVertexAttribI1uivEXT( (GLuint)index, (const GLuint*)&v[0] );
+  try
+  {
+    glVertexAttribI1uivEXT( (GLuint)index, (const GLuint*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttribI1uivEXT( 0x%04X, GLuint* )", (unsigned)index);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttribI2iEXT(
@@ -8276,14 +15255,28 @@ FABRIC_EXT_EXPORT void klVertexAttribI2iEXT(
   const KL::Integer & x,
   const KL::Integer & y
 ){
-  glVertexAttribI2iEXT( (GLuint)index, (GLint)x, (GLint)y );
+  try
+  {
+    glVertexAttribI2iEXT( (GLuint)index, (GLint)x, (GLint)y );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttribI2iEXT( 0x%04X, %d, %d )", (unsigned)index, (int)x, (int)y);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttribI2ivEXT(
   const KL::Size & index,
   const KL::VariableArray<KL::Integer> & v
 ){
-  glVertexAttribI2ivEXT( (GLuint)index, (const GLint*)&v[0] );
+  try
+  {
+    glVertexAttribI2ivEXT( (GLuint)index, (const GLint*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttribI2ivEXT( 0x%04X, GLint* )", (unsigned)index);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttribI2uiEXT(
@@ -8291,14 +15284,28 @@ FABRIC_EXT_EXPORT void klVertexAttribI2uiEXT(
   const KL::Size & x,
   const KL::Size & y
 ){
-  glVertexAttribI2uiEXT( (GLuint)index, (GLuint)x, (GLuint)y );
+  try
+  {
+    glVertexAttribI2uiEXT( (GLuint)index, (GLuint)x, (GLuint)y );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttribI2uiEXT( 0x%04X, 0x%04X, 0x%04X )", (unsigned)index, (unsigned)x, (unsigned)y);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttribI2uivEXT(
   const KL::Size & index,
   const KL::VariableArray<KL::Size> & v
 ){
-  glVertexAttribI2uivEXT( (GLuint)index, (const GLuint*)&v[0] );
+  try
+  {
+    glVertexAttribI2uivEXT( (GLuint)index, (const GLuint*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttribI2uivEXT( 0x%04X, GLuint* )", (unsigned)index);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttribI3iEXT(
@@ -8307,14 +15314,28 @@ FABRIC_EXT_EXPORT void klVertexAttribI3iEXT(
   const KL::Integer & y,
   const KL::Integer & z
 ){
-  glVertexAttribI3iEXT( (GLuint)index, (GLint)x, (GLint)y, (GLint)z );
+  try
+  {
+    glVertexAttribI3iEXT( (GLuint)index, (GLint)x, (GLint)y, (GLint)z );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttribI3iEXT( 0x%04X, %d, %d, %d )", (unsigned)index, (int)x, (int)y, (int)z);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttribI3ivEXT(
   const KL::Size & index,
   const KL::VariableArray<KL::Integer> & v
 ){
-  glVertexAttribI3ivEXT( (GLuint)index, (const GLint*)&v[0] );
+  try
+  {
+    glVertexAttribI3ivEXT( (GLuint)index, (const GLint*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttribI3ivEXT( 0x%04X, GLint* )", (unsigned)index);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttribI3uiEXT(
@@ -8323,21 +15344,42 @@ FABRIC_EXT_EXPORT void klVertexAttribI3uiEXT(
   const KL::Size & y,
   const KL::Size & z
 ){
-  glVertexAttribI3uiEXT( (GLuint)index, (GLuint)x, (GLuint)y, (GLuint)z );
+  try
+  {
+    glVertexAttribI3uiEXT( (GLuint)index, (GLuint)x, (GLuint)y, (GLuint)z );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttribI3uiEXT( 0x%04X, 0x%04X, 0x%04X, 0x%04X )", (unsigned)index, (unsigned)x, (unsigned)y, (unsigned)z);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttribI3uivEXT(
   const KL::Size & index,
   const KL::VariableArray<KL::Size> & v
 ){
-  glVertexAttribI3uivEXT( (GLuint)index, (const GLuint*)&v[0] );
+  try
+  {
+    glVertexAttribI3uivEXT( (GLuint)index, (const GLuint*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttribI3uivEXT( 0x%04X, GLuint* )", (unsigned)index);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttribI4bvEXT(
   const KL::Size & index,
   const KL::VariableArray<KL::Byte> & v
 ){
-  glVertexAttribI4bvEXT( (GLuint)index, (const GLbyte*)&v[0] );
+  try
+  {
+    glVertexAttribI4bvEXT( (GLuint)index, (const GLbyte*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttribI4bvEXT( 0x%04X, GLbyte* )", (unsigned)index);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttribI4iEXT(
@@ -8347,28 +15389,56 @@ FABRIC_EXT_EXPORT void klVertexAttribI4iEXT(
   const KL::Integer & z,
   const KL::Integer & w
 ){
-  glVertexAttribI4iEXT( (GLuint)index, (GLint)x, (GLint)y, (GLint)z, (GLint)w );
+  try
+  {
+    glVertexAttribI4iEXT( (GLuint)index, (GLint)x, (GLint)y, (GLint)z, (GLint)w );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttribI4iEXT( 0x%04X, %d, %d, %d, %d )", (unsigned)index, (int)x, (int)y, (int)z, (int)w);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttribI4ivEXT(
   const KL::Size & index,
   const KL::VariableArray<KL::Integer> & v
 ){
-  glVertexAttribI4ivEXT( (GLuint)index, (const GLint*)&v[0] );
+  try
+  {
+    glVertexAttribI4ivEXT( (GLuint)index, (const GLint*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttribI4ivEXT( 0x%04X, GLint* )", (unsigned)index);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttribI4svEXT(
   const KL::Size & index,
   const KL::VariableArray<KL::Integer> & v
 ){
-  glVertexAttribI4svEXT( (GLuint)index, (const GLshort*)&v[0] );
+  try
+  {
+    glVertexAttribI4svEXT( (GLuint)index, (const GLshort*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttribI4svEXT( 0x%04X, GLshort* )", (unsigned)index);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttribI4ubvEXT(
   const KL::Size & index,
   const KL::VariableArray<KL::Size> & v
 ){
-  glVertexAttribI4ubvEXT( (GLuint)index, (const GLubyte*)&v[0] );
+  try
+  {
+    glVertexAttribI4ubvEXT( (GLuint)index, (const GLubyte*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttribI4ubvEXT( 0x%04X, GLubyte* )", (unsigned)index);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttribI4uiEXT(
@@ -8378,21 +15448,42 @@ FABRIC_EXT_EXPORT void klVertexAttribI4uiEXT(
   const KL::Size & z,
   const KL::Size & w
 ){
-  glVertexAttribI4uiEXT( (GLuint)index, (GLuint)x, (GLuint)y, (GLuint)z, (GLuint)w );
+  try
+  {
+    glVertexAttribI4uiEXT( (GLuint)index, (GLuint)x, (GLuint)y, (GLuint)z, (GLuint)w );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttribI4uiEXT( 0x%04X, 0x%04X, 0x%04X, 0x%04X, 0x%04X )", (unsigned)index, (unsigned)x, (unsigned)y, (unsigned)z, (unsigned)w);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttribI4uivEXT(
   const KL::Size & index,
   const KL::VariableArray<KL::Size> & v
 ){
-  glVertexAttribI4uivEXT( (GLuint)index, (const GLuint*)&v[0] );
+  try
+  {
+    glVertexAttribI4uivEXT( (GLuint)index, (const GLuint*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttribI4uivEXT( 0x%04X, GLuint* )", (unsigned)index);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttribI4usvEXT(
   const KL::Size & index,
   const KL::VariableArray<KL::Integer> & v
 ){
-  glVertexAttribI4usvEXT( (GLuint)index, (const GLushort*)&v[0] );
+  try
+  {
+    glVertexAttribI4usvEXT( (GLuint)index, (const GLushort*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttribI4usvEXT( 0x%04X, GLushort* )", (unsigned)index);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexAttribIPointerEXT(
@@ -8402,7 +15493,14 @@ FABRIC_EXT_EXPORT void klVertexAttribIPointerEXT(
   const KL::Size & stride,
   KL::Data pointer
 ){
-  glVertexAttribIPointerEXT( (GLuint)index, (GLint)size, (GLenum)type, (GLsizei)stride, pointer );
+  try
+  {
+    glVertexAttribIPointerEXT( (GLuint)index, (GLint)size, (GLenum)type, (GLsizei)stride, pointer );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexAttribIPointerEXT( 0x%04X, %d, %d, %d, GLvoid* )", (unsigned)index, (int)size, (int)type, (int)stride);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetHistogramEXT(
@@ -8412,7 +15510,14 @@ FABRIC_EXT_EXPORT void klGetHistogramEXT(
   const KL::Size & type,
   KL::Data values
 ){
-  glGetHistogramEXT( (GLenum)target, (GLboolean)reset, (GLenum)format, (GLenum)type, values );
+  try
+  {
+    glGetHistogramEXT( (GLenum)target, (GLboolean)reset, (GLenum)format, (GLenum)type, values );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetHistogramEXT( %d, %b, %d, %d, void* )", (int)target, (bool)reset, (int)format, (int)type);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetHistogramParameterfvEXT(
@@ -8420,7 +15525,14 @@ FABRIC_EXT_EXPORT void klGetHistogramParameterfvEXT(
   const KL::Size & pname,
   KL::VariableArray<KL::Scalar> & params
 ){
-  glGetHistogramParameterfvEXT( (GLenum)target, (GLenum)pname, (GLfloat*)&params[0] );
+  try
+  {
+    glGetHistogramParameterfvEXT( (GLenum)target, (GLenum)pname, (GLfloat*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetHistogramParameterfvEXT( %d, %d, GLfloat* )", (int)target, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetHistogramParameterivEXT(
@@ -8428,7 +15540,14 @@ FABRIC_EXT_EXPORT void klGetHistogramParameterivEXT(
   const KL::Size & pname,
   KL::VariableArray<KL::Integer> & params
 ){
-  glGetHistogramParameterivEXT( (GLenum)target, (GLenum)pname, (GLint*)&params[0] );
+  try
+  {
+    glGetHistogramParameterivEXT( (GLenum)target, (GLenum)pname, (GLint*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetHistogramParameterivEXT( %d, %d, GLint* )", (int)target, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetMinmaxEXT(
@@ -8438,7 +15557,14 @@ FABRIC_EXT_EXPORT void klGetMinmaxEXT(
   const KL::Size & type,
   KL::Data values
 ){
-  glGetMinmaxEXT( (GLenum)target, (GLboolean)reset, (GLenum)format, (GLenum)type, values );
+  try
+  {
+    glGetMinmaxEXT( (GLenum)target, (GLboolean)reset, (GLenum)format, (GLenum)type, values );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetMinmaxEXT( %d, %b, %d, %d, void* )", (int)target, (bool)reset, (int)format, (int)type);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetMinmaxParameterfvEXT(
@@ -8446,7 +15572,14 @@ FABRIC_EXT_EXPORT void klGetMinmaxParameterfvEXT(
   const KL::Size & pname,
   KL::VariableArray<KL::Scalar> & params
 ){
-  glGetMinmaxParameterfvEXT( (GLenum)target, (GLenum)pname, (GLfloat*)&params[0] );
+  try
+  {
+    glGetMinmaxParameterfvEXT( (GLenum)target, (GLenum)pname, (GLfloat*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetMinmaxParameterfvEXT( %d, %d, GLfloat* )", (int)target, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetMinmaxParameterivEXT(
@@ -8454,7 +15587,14 @@ FABRIC_EXT_EXPORT void klGetMinmaxParameterivEXT(
   const KL::Size & pname,
   KL::VariableArray<KL::Integer> & params
 ){
-  glGetMinmaxParameterivEXT( (GLenum)target, (GLenum)pname, (GLint*)&params[0] );
+  try
+  {
+    glGetMinmaxParameterivEXT( (GLenum)target, (GLenum)pname, (GLint*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetMinmaxParameterivEXT( %d, %d, GLint* )", (int)target, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klHistogramEXT(
@@ -8463,7 +15603,14 @@ FABRIC_EXT_EXPORT void klHistogramEXT(
   const KL::Size & internalformat,
   const KL::Boolean & sink
 ){
-  glHistogramEXT( (GLenum)target, (GLsizei)width, (GLenum)internalformat, (GLboolean)sink );
+  try
+  {
+    glHistogramEXT( (GLenum)target, (GLsizei)width, (GLenum)internalformat, (GLboolean)sink );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glHistogramEXT( %d, %d, %d, %b )", (int)target, (int)width, (int)internalformat, (bool)sink);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMinmaxEXT(
@@ -8471,52 +15618,108 @@ FABRIC_EXT_EXPORT void klMinmaxEXT(
   const KL::Size & internalformat,
   const KL::Boolean & sink
 ){
-  glMinmaxEXT( (GLenum)target, (GLenum)internalformat, (GLboolean)sink );
+  try
+  {
+    glMinmaxEXT( (GLenum)target, (GLenum)internalformat, (GLboolean)sink );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMinmaxEXT( %d, %d, %b )", (int)target, (int)internalformat, (bool)sink);
+  }
 }
 
 FABRIC_EXT_EXPORT void klResetHistogramEXT(
   const KL::Size & target
 ){
-  glResetHistogramEXT( (GLenum)target );
+  try
+  {
+    glResetHistogramEXT( (GLenum)target );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glResetHistogramEXT( %d )", (int)target);
+  }
 }
 
 FABRIC_EXT_EXPORT void klResetMinmaxEXT(
   const KL::Size & target
 ){
-  glResetMinmaxEXT( (GLenum)target );
+  try
+  {
+    glResetMinmaxEXT( (GLenum)target );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glResetMinmaxEXT( %d )", (int)target);
+  }
 }
 
 FABRIC_EXT_EXPORT void klIndexFuncEXT(
   const KL::Size & func,
   const KL::Scalar & ref
 ){
-  glIndexFuncEXT( (GLenum)func, (GLfloat)ref );
+  try
+  {
+    glIndexFuncEXT( (GLenum)func, (GLfloat)ref );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glIndexFuncEXT( %d, %f )", (int)func, (float)ref);
+  }
 }
 
 FABRIC_EXT_EXPORT void klIndexMaterialEXT(
   const KL::Size & face,
   const KL::Size & mode
 ){
-  glIndexMaterialEXT( (GLenum)face, (GLenum)mode );
+  try
+  {
+    glIndexMaterialEXT( (GLenum)face, (GLenum)mode );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glIndexMaterialEXT( %d, %d )", (int)face, (int)mode);
+  }
 }
 
 FABRIC_EXT_EXPORT void klApplyTextureEXT(
   const KL::Size & mode
 ){
-  glApplyTextureEXT( (GLenum)mode );
+  try
+  {
+    glApplyTextureEXT( (GLenum)mode );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glApplyTextureEXT( %d )", (int)mode);
+  }
 }
 
 FABRIC_EXT_EXPORT void klTextureLightEXT(
   const KL::Size & pname
 ){
-  glTextureLightEXT( (GLenum)pname );
+  try
+  {
+    glTextureLightEXT( (GLenum)pname );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTextureLightEXT( %d )", (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klTextureMaterialEXT(
   const KL::Size & face,
   const KL::Size & mode
 ){
-  glTextureMaterialEXT( (GLenum)face, (GLenum)mode );
+  try
+  {
+    glTextureMaterialEXT( (GLenum)face, (GLenum)mode );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTextureMaterialEXT( %d, %d )", (int)face, (int)mode);
+  }
 }
 
 FABRIC_EXT_EXPORT void klMultiDrawArraysEXT(
@@ -8525,20 +15728,41 @@ FABRIC_EXT_EXPORT void klMultiDrawArraysEXT(
   KL::VariableArray<KL::Size> & count,
   const KL::Size & primcount
 ){
-  glMultiDrawArraysEXT( (GLenum)mode, (GLint*)&first[0], (GLsizei*)&count[0], (GLsizei)primcount );
+  try
+  {
+    glMultiDrawArraysEXT( (GLenum)mode, (GLint*)&first[0], (GLsizei*)&count[0], (GLsizei)primcount );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glMultiDrawArraysEXT( %d, GLint*, GLsizei*, %d )", (int)mode, (int)primcount);
+  }
 }
 
 FABRIC_EXT_EXPORT void klSampleMaskEXT(
   const KL::Scalar & value,
   const KL::Boolean & invert
 ){
-  glSampleMaskEXT( (GLclampf)value, (GLboolean)invert );
+  try
+  {
+    glSampleMaskEXT( (GLclampf)value, (GLboolean)invert );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glSampleMaskEXT( %f, %b )", (float)value, (bool)invert);
+  }
 }
 
 FABRIC_EXT_EXPORT void klSamplePatternEXT(
   const KL::Size & pattern
 ){
-  glSamplePatternEXT( (GLenum)pattern );
+  try
+  {
+    glSamplePatternEXT( (GLenum)pattern );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glSamplePatternEXT( %d )", (int)pattern);
+  }
 }
 
 FABRIC_EXT_EXPORT void klColorTableEXT(
@@ -8549,7 +15773,14 @@ FABRIC_EXT_EXPORT void klColorTableEXT(
   const KL::Size & type,
   KL::Data data
 ){
-  glColorTableEXT( (GLenum)target, (GLenum)internalFormat, (GLsizei)width, (GLenum)format, (GLenum)type, data );
+  try
+  {
+    glColorTableEXT( (GLenum)target, (GLenum)internalFormat, (GLsizei)width, (GLenum)format, (GLenum)type, data );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glColorTableEXT( %d, %d, %d, %d, %d, void* )", (int)target, (int)internalFormat, (int)width, (int)format, (int)type);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetColorTableEXT(
@@ -8558,7 +15789,14 @@ FABRIC_EXT_EXPORT void klGetColorTableEXT(
   const KL::Size & type,
   KL::Data data
 ){
-  glGetColorTableEXT( (GLenum)target, (GLenum)format, (GLenum)type, data );
+  try
+  {
+    glGetColorTableEXT( (GLenum)target, (GLenum)format, (GLenum)type, data );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetColorTableEXT( %d, %d, %d, void* )", (int)target, (int)format, (int)type);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetColorTableParameterfvEXT(
@@ -8566,7 +15804,14 @@ FABRIC_EXT_EXPORT void klGetColorTableParameterfvEXT(
   const KL::Size & pname,
   KL::VariableArray<KL::Scalar> & params
 ){
-  glGetColorTableParameterfvEXT( (GLenum)target, (GLenum)pname, (GLfloat*)&params[0] );
+  try
+  {
+    glGetColorTableParameterfvEXT( (GLenum)target, (GLenum)pname, (GLfloat*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetColorTableParameterfvEXT( %d, %d, GLfloat* )", (int)target, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetColorTableParameterivEXT(
@@ -8574,7 +15819,14 @@ FABRIC_EXT_EXPORT void klGetColorTableParameterivEXT(
   const KL::Size & pname,
   KL::VariableArray<KL::Integer> & params
 ){
-  glGetColorTableParameterivEXT( (GLenum)target, (GLenum)pname, (GLint*)&params[0] );
+  try
+  {
+    glGetColorTableParameterivEXT( (GLenum)target, (GLenum)pname, (GLint*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetColorTableParameterivEXT( %d, %d, GLint* )", (int)target, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetPixelTransformParameterfvEXT(
@@ -8582,7 +15834,14 @@ FABRIC_EXT_EXPORT void klGetPixelTransformParameterfvEXT(
   const KL::Size & pname,
   const KL::VariableArray<KL::Scalar> & params
 ){
-  glGetPixelTransformParameterfvEXT( (GLenum)target, (GLenum)pname, (const GLfloat*)&params[0] );
+  try
+  {
+    glGetPixelTransformParameterfvEXT( (GLenum)target, (GLenum)pname, (const GLfloat*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetPixelTransformParameterfvEXT( %d, %d, GLfloat* )", (int)target, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetPixelTransformParameterivEXT(
@@ -8590,7 +15849,14 @@ FABRIC_EXT_EXPORT void klGetPixelTransformParameterivEXT(
   const KL::Size & pname,
   const KL::VariableArray<KL::Integer> & params
 ){
-  glGetPixelTransformParameterivEXT( (GLenum)target, (GLenum)pname, (const GLint*)&params[0] );
+  try
+  {
+    glGetPixelTransformParameterivEXT( (GLenum)target, (GLenum)pname, (const GLint*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetPixelTransformParameterivEXT( %d, %d, GLint* )", (int)target, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klPixelTransformParameterfEXT(
@@ -8598,7 +15864,14 @@ FABRIC_EXT_EXPORT void klPixelTransformParameterfEXT(
   const KL::Size & pname,
   const KL::Scalar & param
 ){
-  glPixelTransformParameterfEXT( (GLenum)target, (GLenum)pname, (const GLfloat)param );
+  try
+  {
+    glPixelTransformParameterfEXT( (GLenum)target, (GLenum)pname, (const GLfloat)param );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glPixelTransformParameterfEXT( %d, %d, %f )", (int)target, (int)pname, (float)param);
+  }
 }
 
 FABRIC_EXT_EXPORT void klPixelTransformParameterfvEXT(
@@ -8606,7 +15879,14 @@ FABRIC_EXT_EXPORT void klPixelTransformParameterfvEXT(
   const KL::Size & pname,
   const KL::VariableArray<KL::Scalar> & params
 ){
-  glPixelTransformParameterfvEXT( (GLenum)target, (GLenum)pname, (const GLfloat*)&params[0] );
+  try
+  {
+    glPixelTransformParameterfvEXT( (GLenum)target, (GLenum)pname, (const GLfloat*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glPixelTransformParameterfvEXT( %d, %d, GLfloat* )", (int)target, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klPixelTransformParameteriEXT(
@@ -8614,7 +15894,14 @@ FABRIC_EXT_EXPORT void klPixelTransformParameteriEXT(
   const KL::Size & pname,
   const KL::Integer & param
 ){
-  glPixelTransformParameteriEXT( (GLenum)target, (GLenum)pname, (const GLint)param );
+  try
+  {
+    glPixelTransformParameteriEXT( (GLenum)target, (GLenum)pname, (const GLint)param );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glPixelTransformParameteriEXT( %d, %d, %d )", (int)target, (int)pname, (int)param);
+  }
 }
 
 FABRIC_EXT_EXPORT void klPixelTransformParameterivEXT(
@@ -8622,44 +15909,93 @@ FABRIC_EXT_EXPORT void klPixelTransformParameterivEXT(
   const KL::Size & pname,
   const KL::VariableArray<KL::Integer> & params
 ){
-  glPixelTransformParameterivEXT( (GLenum)target, (GLenum)pname, (const GLint*)&params[0] );
+  try
+  {
+    glPixelTransformParameterivEXT( (GLenum)target, (GLenum)pname, (const GLint*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glPixelTransformParameterivEXT( %d, %d, GLint* )", (int)target, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klPointParameterfEXT(
   const KL::Size & pname,
   const KL::Scalar & param
 ){
-  glPointParameterfEXT( (GLenum)pname, (GLfloat)param );
+  try
+  {
+    glPointParameterfEXT( (GLenum)pname, (GLfloat)param );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glPointParameterfEXT( %d, %f )", (int)pname, (float)param);
+  }
 }
 
 FABRIC_EXT_EXPORT void klPointParameterfvEXT(
   const KL::Size & pname,
   KL::VariableArray<KL::Scalar> & params
 ){
-  glPointParameterfvEXT( (GLenum)pname, (GLfloat*)&params[0] );
+  try
+  {
+    glPointParameterfvEXT( (GLenum)pname, (GLfloat*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glPointParameterfvEXT( %d, GLfloat* )", (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klPolygonOffsetEXT(
   const KL::Scalar & factor,
   const KL::Scalar & bias
 ){
-  glPolygonOffsetEXT( (GLfloat)factor, (GLfloat)bias );
+  try
+  {
+    glPolygonOffsetEXT( (GLfloat)factor, (GLfloat)bias );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glPolygonOffsetEXT( %f, %f )", (float)factor, (float)bias);
+  }
 }
 
 FABRIC_EXT_EXPORT void klProvokingVertexEXT(
   const KL::Size & mode
 ){
-  glProvokingVertexEXT( (GLenum)mode );
+  try
+  {
+    glProvokingVertexEXT( (GLenum)mode );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glProvokingVertexEXT( %d )", (int)mode);
+  }
 }
 
 FABRIC_EXT_EXPORT void klBeginSceneEXT()
 {
-  glBeginSceneEXT();
+  try
+  {
+    glBeginSceneEXT();
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glBeginSceneEXT(  )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klEndSceneEXT()
 {
-  glEndSceneEXT();
+  try
+  {
+    glEndSceneEXT();
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glEndSceneEXT(  )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klSecondaryColor3bEXT(
@@ -8667,13 +16003,27 @@ FABRIC_EXT_EXPORT void klSecondaryColor3bEXT(
   const KL::Byte & green,
   const KL::Byte & blue
 ){
-  glSecondaryColor3bEXT( (GLbyte)red, (GLbyte)green, (GLbyte)blue );
+  try
+  {
+    glSecondaryColor3bEXT( (GLbyte)red, (GLbyte)green, (GLbyte)blue );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glSecondaryColor3bEXT( %d, %d, %d )", (int)red, (int)green, (int)blue);
+  }
 }
 
 FABRIC_EXT_EXPORT void klSecondaryColor3bvEXT(
   const KL::VariableArray<KL::Byte> & v
 ){
-  glSecondaryColor3bvEXT( (const GLbyte*)&v[0] );
+  try
+  {
+    glSecondaryColor3bvEXT( (const GLbyte*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glSecondaryColor3bvEXT( GLbyte* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klSecondaryColor3dEXT(
@@ -8681,13 +16031,27 @@ FABRIC_EXT_EXPORT void klSecondaryColor3dEXT(
   const KL::Scalar & green,
   const KL::Scalar & blue
 ){
-  glSecondaryColor3dEXT( (GLdouble)red, (GLdouble)green, (GLdouble)blue );
+  try
+  {
+    glSecondaryColor3dEXT( (GLdouble)red, (GLdouble)green, (GLdouble)blue );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glSecondaryColor3dEXT( %f, %f, %f )", (float)red, (float)green, (float)blue);
+  }
 }
 
 FABRIC_EXT_EXPORT void klSecondaryColor3dvEXT(
   const KL::VariableArray<KL::Scalar> & v
 ){
-  glSecondaryColor3dvEXT( (const GLdouble*)&v[0] );
+  try
+  {
+    glSecondaryColor3dvEXT( (const GLdouble*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glSecondaryColor3dvEXT( GLdouble* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klSecondaryColor3fEXT(
@@ -8695,13 +16059,27 @@ FABRIC_EXT_EXPORT void klSecondaryColor3fEXT(
   const KL::Scalar & green,
   const KL::Scalar & blue
 ){
-  glSecondaryColor3fEXT( (GLfloat)red, (GLfloat)green, (GLfloat)blue );
+  try
+  {
+    glSecondaryColor3fEXT( (GLfloat)red, (GLfloat)green, (GLfloat)blue );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glSecondaryColor3fEXT( %f, %f, %f )", (float)red, (float)green, (float)blue);
+  }
 }
 
 FABRIC_EXT_EXPORT void klSecondaryColor3fvEXT(
   const KL::VariableArray<KL::Scalar> & v
 ){
-  glSecondaryColor3fvEXT( (const GLfloat*)&v[0] );
+  try
+  {
+    glSecondaryColor3fvEXT( (const GLfloat*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glSecondaryColor3fvEXT( GLfloat* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klSecondaryColor3iEXT(
@@ -8709,13 +16087,27 @@ FABRIC_EXT_EXPORT void klSecondaryColor3iEXT(
   const KL::Integer & green,
   const KL::Integer & blue
 ){
-  glSecondaryColor3iEXT( (GLint)red, (GLint)green, (GLint)blue );
+  try
+  {
+    glSecondaryColor3iEXT( (GLint)red, (GLint)green, (GLint)blue );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glSecondaryColor3iEXT( %d, %d, %d )", (int)red, (int)green, (int)blue);
+  }
 }
 
 FABRIC_EXT_EXPORT void klSecondaryColor3ivEXT(
   const KL::VariableArray<KL::Integer> & v
 ){
-  glSecondaryColor3ivEXT( (const GLint*)&v[0] );
+  try
+  {
+    glSecondaryColor3ivEXT( (const GLint*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glSecondaryColor3ivEXT( GLint* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klSecondaryColor3sEXT(
@@ -8723,13 +16115,27 @@ FABRIC_EXT_EXPORT void klSecondaryColor3sEXT(
   const KL::Integer & green,
   const KL::Integer & blue
 ){
-  glSecondaryColor3sEXT( (GLshort)red, (GLshort)green, (GLshort)blue );
+  try
+  {
+    glSecondaryColor3sEXT( (GLshort)red, (GLshort)green, (GLshort)blue );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glSecondaryColor3sEXT( %d, %d, %d )", (int)red, (int)green, (int)blue);
+  }
 }
 
 FABRIC_EXT_EXPORT void klSecondaryColor3svEXT(
   const KL::VariableArray<KL::Integer> & v
 ){
-  glSecondaryColor3svEXT( (const GLshort*)&v[0] );
+  try
+  {
+    glSecondaryColor3svEXT( (const GLshort*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glSecondaryColor3svEXT( GLshort* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klSecondaryColor3ubEXT(
@@ -8737,13 +16143,27 @@ FABRIC_EXT_EXPORT void klSecondaryColor3ubEXT(
   const KL::Size & green,
   const KL::Size & blue
 ){
-  glSecondaryColor3ubEXT( (GLubyte)red, (GLubyte)green, (GLubyte)blue );
+  try
+  {
+    glSecondaryColor3ubEXT( (GLubyte)red, (GLubyte)green, (GLubyte)blue );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glSecondaryColor3ubEXT( 0x%04X, 0x%04X, 0x%04X )", (unsigned)red, (unsigned)green, (unsigned)blue);
+  }
 }
 
 FABRIC_EXT_EXPORT void klSecondaryColor3ubvEXT(
   const KL::VariableArray<KL::Size> & v
 ){
-  glSecondaryColor3ubvEXT( (const GLubyte*)&v[0] );
+  try
+  {
+    glSecondaryColor3ubvEXT( (const GLubyte*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glSecondaryColor3ubvEXT( GLubyte* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klSecondaryColor3uiEXT(
@@ -8751,13 +16171,27 @@ FABRIC_EXT_EXPORT void klSecondaryColor3uiEXT(
   const KL::Size & green,
   const KL::Size & blue
 ){
-  glSecondaryColor3uiEXT( (GLuint)red, (GLuint)green, (GLuint)blue );
+  try
+  {
+    glSecondaryColor3uiEXT( (GLuint)red, (GLuint)green, (GLuint)blue );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glSecondaryColor3uiEXT( 0x%04X, 0x%04X, 0x%04X )", (unsigned)red, (unsigned)green, (unsigned)blue);
+  }
 }
 
 FABRIC_EXT_EXPORT void klSecondaryColor3uivEXT(
   const KL::VariableArray<KL::Size> & v
 ){
-  glSecondaryColor3uivEXT( (const GLuint*)&v[0] );
+  try
+  {
+    glSecondaryColor3uivEXT( (const GLuint*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glSecondaryColor3uivEXT( GLuint* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klSecondaryColor3usEXT(
@@ -8765,13 +16199,27 @@ FABRIC_EXT_EXPORT void klSecondaryColor3usEXT(
   const KL::Integer & green,
   const KL::Integer & blue
 ){
-  glSecondaryColor3usEXT( (GLushort)red, (GLushort)green, (GLushort)blue );
+  try
+  {
+    glSecondaryColor3usEXT( (GLushort)red, (GLushort)green, (GLushort)blue );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glSecondaryColor3usEXT( 0x%04X, 0x%04X, 0x%04X )", (unsigned)red, (unsigned)green, (unsigned)blue);
+  }
 }
 
 FABRIC_EXT_EXPORT void klSecondaryColor3usvEXT(
   const KL::VariableArray<KL::Integer> & v
 ){
-  glSecondaryColor3usvEXT( (const GLushort*)&v[0] );
+  try
+  {
+    glSecondaryColor3usvEXT( (const GLushort*)&v[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glSecondaryColor3usvEXT( GLushort* )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klSecondaryColorPointerEXT(
@@ -8780,34 +16228,69 @@ FABRIC_EXT_EXPORT void klSecondaryColorPointerEXT(
   const KL::Size & stride,
   KL::Data pointer
 ){
-  glSecondaryColorPointerEXT( (GLint)size, (GLenum)type, (GLsizei)stride, pointer );
+  try
+  {
+    glSecondaryColorPointerEXT( (GLint)size, (GLenum)type, (GLsizei)stride, pointer );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glSecondaryColorPointerEXT( %d, %d, %d, GLvoid* )", (int)size, (int)type, (int)stride);
+  }
 }
 
 FABRIC_EXT_EXPORT void klActiveProgramEXT(
   const KL::Size & program
 ){
-  glActiveProgramEXT( (GLuint)program );
+  try
+  {
+    glActiveProgramEXT( (GLuint)program );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glActiveProgramEXT( 0x%04X )", (unsigned)program);
+  }
 }
 
 FABRIC_EXT_EXPORT KL::Size klCreateShaderProgramEXT(
   const KL::Size & type,
   const KL::String &string
 ){
-  GLuint result = glCreateShaderProgramEXT( (GLenum)type, (const char*)string.data() );
+  try
+  {
+    GLuint result = glCreateShaderProgramEXT( (GLenum)type, (const char*)string.data() );
   return (KL::Size)result;
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glCreateShaderProgramEXT( %d, char* )", (int)type);
+  }
 }
 
 FABRIC_EXT_EXPORT void klUseShaderProgramEXT(
   const KL::Size & type,
   const KL::Size & program
 ){
-  glUseShaderProgramEXT( (GLenum)type, (GLuint)program );
+  try
+  {
+    glUseShaderProgramEXT( (GLenum)type, (GLuint)program );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glUseShaderProgramEXT( %d, 0x%04X )", (int)type, (unsigned)program);
+  }
 }
 
 FABRIC_EXT_EXPORT void klActiveStencilFaceEXT(
   const KL::Size & face
 ){
-  glActiveStencilFaceEXT( (GLenum)face );
+  try
+  {
+    glActiveStencilFaceEXT( (GLenum)face );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glActiveStencilFaceEXT( %d )", (int)face);
+  }
 }
 
 FABRIC_EXT_EXPORT void klTexSubImage1DEXT(
@@ -8819,7 +16302,14 @@ FABRIC_EXT_EXPORT void klTexSubImage1DEXT(
   const KL::Size & type,
   KL::Data pixels
 ){
-  glTexSubImage1DEXT( (GLenum)target, (GLint)level, (GLint)xoffset, (GLsizei)width, (GLenum)format, (GLenum)type, pixels );
+  try
+  {
+    glTexSubImage1DEXT( (GLenum)target, (GLint)level, (GLint)xoffset, (GLsizei)width, (GLenum)format, (GLenum)type, pixels );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTexSubImage1DEXT( %d, %d, %d, %d, %d, %d, void* )", (int)target, (int)level, (int)xoffset, (int)width, (int)format, (int)type);
+  }
 }
 
 FABRIC_EXT_EXPORT void klTexSubImage2DEXT(
@@ -8833,7 +16323,14 @@ FABRIC_EXT_EXPORT void klTexSubImage2DEXT(
   const KL::Size & type,
   KL::Data pixels
 ){
-  glTexSubImage2DEXT( (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLsizei)width, (GLsizei)height, (GLenum)format, (GLenum)type, pixels );
+  try
+  {
+    glTexSubImage2DEXT( (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLsizei)width, (GLsizei)height, (GLenum)format, (GLenum)type, pixels );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTexSubImage2DEXT( %d, %d, %d, %d, %d, %d, %d, %d, void* )", (int)target, (int)level, (int)xoffset, (int)yoffset, (int)width, (int)height, (int)format, (int)type);
+  }
 }
 
 FABRIC_EXT_EXPORT void klTexSubImage3DEXT(
@@ -8849,7 +16346,14 @@ FABRIC_EXT_EXPORT void klTexSubImage3DEXT(
   const KL::Size & type,
   KL::Data pixels
 ){
-  glTexSubImage3DEXT( (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLint)zoffset, (GLsizei)width, (GLsizei)height, (GLsizei)depth, (GLenum)format, (GLenum)type, pixels );
+  try
+  {
+    glTexSubImage3DEXT( (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLint)zoffset, (GLsizei)width, (GLsizei)height, (GLsizei)depth, (GLenum)format, (GLenum)type, pixels );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTexSubImage3DEXT( %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, void* )", (int)target, (int)level, (int)xoffset, (int)yoffset, (int)zoffset, (int)width, (int)height, (int)depth, (int)format, (int)type);
+  }
 }
 
 FABRIC_EXT_EXPORT void klTexImage3DEXT(
@@ -8864,7 +16368,14 @@ FABRIC_EXT_EXPORT void klTexImage3DEXT(
   const KL::Size & type,
   KL::Data pixels
 ){
-  glTexImage3DEXT( (GLenum)target, (GLint)level, (GLenum)internalformat, (GLsizei)width, (GLsizei)height, (GLsizei)depth, (GLint)border, (GLenum)format, (GLenum)type, pixels );
+  try
+  {
+    glTexImage3DEXT( (GLenum)target, (GLint)level, (GLenum)internalformat, (GLsizei)width, (GLsizei)height, (GLsizei)depth, (GLint)border, (GLenum)format, (GLenum)type, pixels );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTexImage3DEXT( %d, %d, %d, %d, %d, %d, %d, %d, %d, void* )", (int)target, (int)level, (int)internalformat, (int)width, (int)height, (int)depth, (int)border, (int)format, (int)type);
+  }
 }
 
 FABRIC_EXT_EXPORT void klTexBufferEXT(
@@ -8872,7 +16383,14 @@ FABRIC_EXT_EXPORT void klTexBufferEXT(
   const KL::Size & internalformat,
   const KL::Size & buffer
 ){
-  glTexBufferEXT( (GLenum)target, (GLenum)internalformat, (GLuint)buffer );
+  try
+  {
+    glTexBufferEXT( (GLenum)target, (GLenum)internalformat, (GLuint)buffer );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTexBufferEXT( %d, %d, 0x%04X )", (int)target, (int)internalformat, (unsigned)buffer);
+  }
 }
 
 FABRIC_EXT_EXPORT void klClearColorIiEXT(
@@ -8881,7 +16399,14 @@ FABRIC_EXT_EXPORT void klClearColorIiEXT(
   const KL::Integer & blue,
   const KL::Integer & alpha
 ){
-  glClearColorIiEXT( (GLint)red, (GLint)green, (GLint)blue, (GLint)alpha );
+  try
+  {
+    glClearColorIiEXT( (GLint)red, (GLint)green, (GLint)blue, (GLint)alpha );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glClearColorIiEXT( %d, %d, %d, %d )", (int)red, (int)green, (int)blue, (int)alpha);
+  }
 }
 
 FABRIC_EXT_EXPORT void klClearColorIuiEXT(
@@ -8890,7 +16415,14 @@ FABRIC_EXT_EXPORT void klClearColorIuiEXT(
   const KL::Size & blue,
   const KL::Size & alpha
 ){
-  glClearColorIuiEXT( (GLuint)red, (GLuint)green, (GLuint)blue, (GLuint)alpha );
+  try
+  {
+    glClearColorIuiEXT( (GLuint)red, (GLuint)green, (GLuint)blue, (GLuint)alpha );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glClearColorIuiEXT( 0x%04X, 0x%04X, 0x%04X, 0x%04X )", (unsigned)red, (unsigned)green, (unsigned)blue, (unsigned)alpha);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetTexParameterIivEXT(
@@ -8898,7 +16430,14 @@ FABRIC_EXT_EXPORT void klGetTexParameterIivEXT(
   const KL::Size & pname,
   KL::VariableArray<KL::Integer> & params
 ){
-  glGetTexParameterIivEXT( (GLenum)target, (GLenum)pname, (GLint*)&params[0] );
+  try
+  {
+    glGetTexParameterIivEXT( (GLenum)target, (GLenum)pname, (GLint*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetTexParameterIivEXT( %d, %d, GLint* )", (int)target, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetTexParameterIuivEXT(
@@ -8906,7 +16445,14 @@ FABRIC_EXT_EXPORT void klGetTexParameterIuivEXT(
   const KL::Size & pname,
   KL::VariableArray<KL::Size> & params
 ){
-  glGetTexParameterIuivEXT( (GLenum)target, (GLenum)pname, (GLuint*)&params[0] );
+  try
+  {
+    glGetTexParameterIuivEXT( (GLenum)target, (GLenum)pname, (GLuint*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetTexParameterIuivEXT( %d, %d, GLuint* )", (int)target, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klTexParameterIivEXT(
@@ -8914,7 +16460,14 @@ FABRIC_EXT_EXPORT void klTexParameterIivEXT(
   const KL::Size & pname,
   const KL::VariableArray<KL::Integer> & params
 ){
-  glTexParameterIivEXT( (GLenum)target, (GLenum)pname, (const GLint*)&params[0] );
+  try
+  {
+    glTexParameterIivEXT( (GLenum)target, (GLenum)pname, (const GLint*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTexParameterIivEXT( %d, %d, GLint* )", (int)target, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT void klTexParameterIuivEXT(
@@ -8922,7 +16475,14 @@ FABRIC_EXT_EXPORT void klTexParameterIuivEXT(
   const KL::Size & pname,
   const KL::VariableArray<KL::Size> & params
 ){
-  glTexParameterIuivEXT( (GLenum)target, (GLenum)pname, (const GLuint*)&params[0] );
+  try
+  {
+    glTexParameterIuivEXT( (GLenum)target, (GLenum)pname, (const GLuint*)&params[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTexParameterIuivEXT( %d, %d, GLuint* )", (int)target, (int)pname);
+  }
 }
 
 FABRIC_EXT_EXPORT KL::Boolean klAreTexturesResidentEXT(
@@ -8930,36 +16490,71 @@ FABRIC_EXT_EXPORT KL::Boolean klAreTexturesResidentEXT(
   const KL::VariableArray<KL::Size> & textures,
   KL::VariableArray<KL::Boolean> & residences
 ){
-  GLboolean result = glAreTexturesResidentEXT( (GLsizei)n, (const GLuint*)&textures[0], (GLboolean*)&residences[0] );
+  try
+  {
+    GLboolean result = glAreTexturesResidentEXT( (GLsizei)n, (const GLuint*)&textures[0], (GLboolean*)&residences[0] );
   return (KL::Boolean)result;
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glAreTexturesResidentEXT( %d, GLuint*, GLboolean* )", (int)n);
+  }
 }
 
 FABRIC_EXT_EXPORT void klBindTextureEXT(
   const KL::Size & target,
   const KL::Size & texture
 ){
-  glBindTextureEXT( (GLenum)target, (GLuint)texture );
+  try
+  {
+    glBindTextureEXT( (GLenum)target, (GLuint)texture );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glBindTextureEXT( %d, 0x%04X )", (int)target, (unsigned)texture);
+  }
 }
 
 FABRIC_EXT_EXPORT void klDeleteTexturesEXT(
   const KL::Size & n,
   const KL::VariableArray<KL::Size> & textures
 ){
-  glDeleteTexturesEXT( (GLsizei)n, (const GLuint*)&textures[0] );
+  try
+  {
+    glDeleteTexturesEXT( (GLsizei)n, (const GLuint*)&textures[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glDeleteTexturesEXT( %d, GLuint* )", (int)n);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGenTexturesEXT(
   const KL::Size & n,
   KL::VariableArray<KL::Size> & textures
 ){
-  glGenTexturesEXT( (GLsizei)n, (GLuint*)&textures[0] );
+  try
+  {
+    glGenTexturesEXT( (GLsizei)n, (GLuint*)&textures[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGenTexturesEXT( %d, GLuint* )", (int)n);
+  }
 }
 
 FABRIC_EXT_EXPORT KL::Boolean klIsTextureEXT(
   const KL::Size & texture
 ){
-  GLboolean result = glIsTextureEXT( (GLuint)texture );
+  try
+  {
+    GLboolean result = glIsTextureEXT( (GLuint)texture );
   return (KL::Boolean)result;
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glIsTextureEXT( 0x%04X )", (unsigned)texture);
+  }
 }
 
 FABRIC_EXT_EXPORT void klPrioritizeTexturesEXT(
@@ -8967,19 +16562,40 @@ FABRIC_EXT_EXPORT void klPrioritizeTexturesEXT(
   const KL::VariableArray<KL::Size> & textures,
   const KL::VariableArray<KL::Scalar> & priorities
 ){
-  glPrioritizeTexturesEXT( (GLsizei)n, (const GLuint*)&textures[0], (const GLclampf*)&priorities[0] );
+  try
+  {
+    glPrioritizeTexturesEXT( (GLsizei)n, (const GLuint*)&textures[0], (const GLclampf*)&priorities[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glPrioritizeTexturesEXT( %d, GLuint*, GLclampf* )", (int)n);
+  }
 }
 
 FABRIC_EXT_EXPORT void klTextureNormalEXT(
   const KL::Size & mode
 ){
-  glTextureNormalEXT( (GLenum)mode );
+  try
+  {
+    glTextureNormalEXT( (GLenum)mode );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTextureNormalEXT( %d )", (int)mode);
+  }
 }
 
 FABRIC_EXT_EXPORT void klBeginTransformFeedbackEXT(
   const KL::Size & primitiveMode
 ){
-  glBeginTransformFeedbackEXT( (GLenum)primitiveMode );
+  try
+  {
+    glBeginTransformFeedbackEXT( (GLenum)primitiveMode );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glBeginTransformFeedbackEXT( %d )", (int)primitiveMode);
+  }
 }
 
 FABRIC_EXT_EXPORT void klBindBufferBaseEXT(
@@ -8987,7 +16603,14 @@ FABRIC_EXT_EXPORT void klBindBufferBaseEXT(
   const KL::Size & index,
   const KL::Size & buffer
 ){
-  glBindBufferBaseEXT( (GLenum)target, (GLuint)index, (GLuint)buffer );
+  try
+  {
+    glBindBufferBaseEXT( (GLenum)target, (GLuint)index, (GLuint)buffer );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glBindBufferBaseEXT( %d, 0x%04X, 0x%04X )", (int)target, (unsigned)index, (unsigned)buffer);
+  }
 }
 
 FABRIC_EXT_EXPORT void klBindBufferOffsetEXT(
@@ -8996,7 +16619,14 @@ FABRIC_EXT_EXPORT void klBindBufferOffsetEXT(
   const KL::Size & buffer,
   const KL::Integer & offset
 ){
-  glBindBufferOffsetEXT( (GLenum)target, (GLuint)index, (GLuint)buffer, (GLintptr)offset );
+  try
+  {
+    glBindBufferOffsetEXT( (GLenum)target, (GLuint)index, (GLuint)buffer, (GLintptr)offset );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glBindBufferOffsetEXT( %d, 0x%04X, 0x%04X, %d )", (int)target, (unsigned)index, (unsigned)buffer, (int)offset);
+  }
 }
 
 FABRIC_EXT_EXPORT void klBindBufferRangeEXT(
@@ -9006,12 +16636,26 @@ FABRIC_EXT_EXPORT void klBindBufferRangeEXT(
   const KL::Integer & offset,
   const KL::Size & size
 ){
-  glBindBufferRangeEXT( (GLenum)target, (GLuint)index, (GLuint)buffer, (GLintptr)offset, (GLsizeiptr)size );
+  try
+  {
+    glBindBufferRangeEXT( (GLenum)target, (GLuint)index, (GLuint)buffer, (GLintptr)offset, (GLsizeiptr)size );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glBindBufferRangeEXT( %d, 0x%04X, 0x%04X, %d, %d )", (int)target, (unsigned)index, (unsigned)buffer, (int)offset, (int)size);
+  }
 }
 
 FABRIC_EXT_EXPORT void klEndTransformFeedbackEXT()
 {
-  glEndTransformFeedbackEXT();
+  try
+  {
+    glEndTransformFeedbackEXT();
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glEndTransformFeedbackEXT(  )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetTransformFeedbackVaryingEXT(
@@ -9023,10 +16667,17 @@ FABRIC_EXT_EXPORT void klGetTransformFeedbackVaryingEXT(
   KL::VariableArray<KL::Size> & type,
   KL::String & name
 ){
-  char * nameStr = new char[1024];
-  glGetTransformFeedbackVaryingEXT( (GLuint)program, (GLuint)index, (GLsizei)bufSize, (GLsizei*)&length[0], (GLsizei*)&size[0], (GLenum*)&type[0], (char*)nameStr );
-  name = KL::String(nameStr);
-  delete( nameStr );
+  try
+  {
+    char * nameStr = new char[1024];
+    glGetTransformFeedbackVaryingEXT( (GLuint)program, (GLuint)index, (GLsizei)bufSize, (GLsizei*)&length[0], (GLsizei*)&size[0], (GLenum*)&type[0], (char*)nameStr );
+    name = KL::String(nameStr);
+    delete( nameStr );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetTransformFeedbackVaryingEXT( 0x%04X, 0x%04X, %d, GLsizei*, GLsizei*, GLenum*, char* )", (unsigned)program, (unsigned)index, (int)bufSize);
+  }
 }
 
 FABRIC_EXT_EXPORT void klTransformFeedbackVaryingsEXT(
@@ -9035,13 +16686,27 @@ FABRIC_EXT_EXPORT void klTransformFeedbackVaryingsEXT(
   const KL::VariableArray<KL::String> &varyings,
   const KL::Size & bufferMode
 ){
-  glTransformFeedbackVaryingsEXT( (GLuint)program, (GLsizei)count, (const char**)&varyings[0], (GLenum)bufferMode );
+  try
+  {
+    glTransformFeedbackVaryingsEXT( (GLuint)program, (GLsizei)count, (const char**)&varyings[0], (GLenum)bufferMode );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTransformFeedbackVaryingsEXT( 0x%04X, %d, char*, %d )", (unsigned)program, (int)count, (int)bufferMode);
+  }
 }
 
 FABRIC_EXT_EXPORT void klArrayElementEXT(
   const KL::Integer & i
 ){
-  glArrayElementEXT( (GLint)i );
+  try
+  {
+    glArrayElementEXT( (GLint)i );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glArrayElementEXT( %d )", (int)i);
+  }
 }
 
 FABRIC_EXT_EXPORT void klColorPointerEXT(
@@ -9051,7 +16716,14 @@ FABRIC_EXT_EXPORT void klColorPointerEXT(
   const KL::Size & count,
   KL::Data pointer
 ){
-  glColorPointerEXT( (GLint)size, (GLenum)type, (GLsizei)stride, (GLsizei)count, pointer );
+  try
+  {
+    glColorPointerEXT( (GLint)size, (GLenum)type, (GLsizei)stride, (GLsizei)count, pointer );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glColorPointerEXT( %d, %d, %d, %d, void* )", (int)size, (int)type, (int)stride, (int)count);
+  }
 }
 
 FABRIC_EXT_EXPORT void klDrawArraysEXT(
@@ -9059,7 +16731,14 @@ FABRIC_EXT_EXPORT void klDrawArraysEXT(
   const KL::Integer & first,
   const KL::Size & count
 ){
-  glDrawArraysEXT( (GLenum)mode, (GLint)first, (GLsizei)count );
+  try
+  {
+    glDrawArraysEXT( (GLenum)mode, (GLint)first, (GLsizei)count );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glDrawArraysEXT( %d, %d, %d )", (int)mode, (int)first, (int)count);
+  }
 }
 
 FABRIC_EXT_EXPORT void klEdgeFlagPointerEXT(
@@ -9067,7 +16746,14 @@ FABRIC_EXT_EXPORT void klEdgeFlagPointerEXT(
   const KL::Size & count,
   const KL::VariableArray<KL::Boolean> & pointer
 ){
-  glEdgeFlagPointerEXT( (GLsizei)stride, (GLsizei)count, (const GLboolean*)&pointer[0] );
+  try
+  {
+    glEdgeFlagPointerEXT( (GLsizei)stride, (GLsizei)count, (const GLboolean*)&pointer[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glEdgeFlagPointerEXT( %d, %d, GLboolean* )", (int)stride, (int)count);
+  }
 }
 
 FABRIC_EXT_EXPORT void klIndexPointerEXT(
@@ -9076,7 +16762,14 @@ FABRIC_EXT_EXPORT void klIndexPointerEXT(
   const KL::Size & count,
   KL::Data pointer
 ){
-  glIndexPointerEXT( (GLenum)type, (GLsizei)stride, (GLsizei)count, pointer );
+  try
+  {
+    glIndexPointerEXT( (GLenum)type, (GLsizei)stride, (GLsizei)count, pointer );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glIndexPointerEXT( %d, %d, %d, void* )", (int)type, (int)stride, (int)count);
+  }
 }
 
 FABRIC_EXT_EXPORT void klNormalPointerEXT(
@@ -9085,7 +16778,14 @@ FABRIC_EXT_EXPORT void klNormalPointerEXT(
   const KL::Size & count,
   KL::Data pointer
 ){
-  glNormalPointerEXT( (GLenum)type, (GLsizei)stride, (GLsizei)count, pointer );
+  try
+  {
+    glNormalPointerEXT( (GLenum)type, (GLsizei)stride, (GLsizei)count, pointer );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glNormalPointerEXT( %d, %d, %d, void* )", (int)type, (int)stride, (int)count);
+  }
 }
 
 FABRIC_EXT_EXPORT void klTexCoordPointerEXT(
@@ -9095,7 +16795,14 @@ FABRIC_EXT_EXPORT void klTexCoordPointerEXT(
   const KL::Size & count,
   KL::Data pointer
 ){
-  glTexCoordPointerEXT( (GLint)size, (GLenum)type, (GLsizei)stride, (GLsizei)count, pointer );
+  try
+  {
+    glTexCoordPointerEXT( (GLint)size, (GLenum)type, (GLsizei)stride, (GLsizei)count, pointer );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glTexCoordPointerEXT( %d, %d, %d, %d, void* )", (int)size, (int)type, (int)stride, (int)count);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexPointerEXT(
@@ -9105,35 +16812,70 @@ FABRIC_EXT_EXPORT void klVertexPointerEXT(
   const KL::Size & count,
   KL::Data pointer
 ){
-  glVertexPointerEXT( (GLint)size, (GLenum)type, (GLsizei)stride, (GLsizei)count, pointer );
+  try
+  {
+    glVertexPointerEXT( (GLint)size, (GLenum)type, (GLsizei)stride, (GLsizei)count, pointer );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexPointerEXT( %d, %d, %d, %d, void* )", (int)size, (int)type, (int)stride, (int)count);
+  }
 }
 
 FABRIC_EXT_EXPORT void klBeginVertexShaderEXT()
 {
-  glBeginVertexShaderEXT();
+  try
+  {
+    glBeginVertexShaderEXT();
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glBeginVertexShaderEXT(  )");
+  }
 }
 
 FABRIC_EXT_EXPORT KL::Size klBindLightParameterEXT(
   const KL::Size & light,
   const KL::Size & value
 ){
-  GLuint result = glBindLightParameterEXT( (GLenum)light, (GLenum)value );
+  try
+  {
+    GLuint result = glBindLightParameterEXT( (GLenum)light, (GLenum)value );
   return (KL::Size)result;
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glBindLightParameterEXT( %d, %d )", (int)light, (int)value);
+  }
 }
 
 FABRIC_EXT_EXPORT KL::Size klBindMaterialParameterEXT(
   const KL::Size & face,
   const KL::Size & value
 ){
-  GLuint result = glBindMaterialParameterEXT( (GLenum)face, (GLenum)value );
+  try
+  {
+    GLuint result = glBindMaterialParameterEXT( (GLenum)face, (GLenum)value );
   return (KL::Size)result;
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glBindMaterialParameterEXT( %d, %d )", (int)face, (int)value);
+  }
 }
 
 FABRIC_EXT_EXPORT KL::Size klBindParameterEXT(
   const KL::Size & value
 ){
-  GLuint result = glBindParameterEXT( (GLenum)value );
+  try
+  {
+    GLuint result = glBindParameterEXT( (GLenum)value );
   return (KL::Size)result;
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glBindParameterEXT( %d )", (int)value);
+  }
 }
 
 FABRIC_EXT_EXPORT KL::Size klBindTexGenParameterEXT(
@@ -9141,45 +16883,94 @@ FABRIC_EXT_EXPORT KL::Size klBindTexGenParameterEXT(
   const KL::Size & coord,
   const KL::Size & value
 ){
-  GLuint result = glBindTexGenParameterEXT( (GLenum)unit, (GLenum)coord, (GLenum)value );
+  try
+  {
+    GLuint result = glBindTexGenParameterEXT( (GLenum)unit, (GLenum)coord, (GLenum)value );
   return (KL::Size)result;
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glBindTexGenParameterEXT( %d, %d, %d )", (int)unit, (int)coord, (int)value);
+  }
 }
 
 FABRIC_EXT_EXPORT KL::Size klBindTextureUnitParameterEXT(
   const KL::Size & unit,
   const KL::Size & value
 ){
-  GLuint result = glBindTextureUnitParameterEXT( (GLenum)unit, (GLenum)value );
+  try
+  {
+    GLuint result = glBindTextureUnitParameterEXT( (GLenum)unit, (GLenum)value );
   return (KL::Size)result;
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glBindTextureUnitParameterEXT( %d, %d )", (int)unit, (int)value);
+  }
 }
 
 FABRIC_EXT_EXPORT void klBindVertexShaderEXT(
   const KL::Size & id
 ){
-  glBindVertexShaderEXT( (GLuint)id );
+  try
+  {
+    glBindVertexShaderEXT( (GLuint)id );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glBindVertexShaderEXT( 0x%04X )", (unsigned)id);
+  }
 }
 
 FABRIC_EXT_EXPORT void klDeleteVertexShaderEXT(
   const KL::Size & id
 ){
-  glDeleteVertexShaderEXT( (GLuint)id );
+  try
+  {
+    glDeleteVertexShaderEXT( (GLuint)id );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glDeleteVertexShaderEXT( 0x%04X )", (unsigned)id);
+  }
 }
 
 FABRIC_EXT_EXPORT void klDisableVariantClientStateEXT(
   const KL::Size & id
 ){
-  glDisableVariantClientStateEXT( (GLuint)id );
+  try
+  {
+    glDisableVariantClientStateEXT( (GLuint)id );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glDisableVariantClientStateEXT( 0x%04X )", (unsigned)id);
+  }
 }
 
 FABRIC_EXT_EXPORT void klEnableVariantClientStateEXT(
   const KL::Size & id
 ){
-  glEnableVariantClientStateEXT( (GLuint)id );
+  try
+  {
+    glEnableVariantClientStateEXT( (GLuint)id );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glEnableVariantClientStateEXT( 0x%04X )", (unsigned)id);
+  }
 }
 
 FABRIC_EXT_EXPORT void klEndVertexShaderEXT()
 {
-  glEndVertexShaderEXT();
+  try
+  {
+    glEndVertexShaderEXT();
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glEndVertexShaderEXT(  )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klExtractComponentEXT(
@@ -9187,7 +16978,14 @@ FABRIC_EXT_EXPORT void klExtractComponentEXT(
   const KL::Size & src,
   const KL::Size & num
 ){
-  glExtractComponentEXT( (GLuint)res, (GLuint)src, (GLuint)num );
+  try
+  {
+    glExtractComponentEXT( (GLuint)res, (GLuint)src, (GLuint)num );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glExtractComponentEXT( 0x%04X, 0x%04X, 0x%04X )", (unsigned)res, (unsigned)src, (unsigned)num);
+  }
 }
 
 FABRIC_EXT_EXPORT KL::Size klGenSymbolsEXT(
@@ -9196,15 +16994,29 @@ FABRIC_EXT_EXPORT KL::Size klGenSymbolsEXT(
   const KL::Size & range,
   const KL::Size & components
 ){
-  GLuint result = glGenSymbolsEXT( (GLenum)dataType, (GLenum)storageType, (GLenum)range, (GLuint)components );
+  try
+  {
+    GLuint result = glGenSymbolsEXT( (GLenum)dataType, (GLenum)storageType, (GLenum)range, (GLuint)components );
   return (KL::Size)result;
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGenSymbolsEXT( %d, %d, %d, 0x%04X )", (int)dataType, (int)storageType, (int)range, (unsigned)components);
+  }
 }
 
 FABRIC_EXT_EXPORT KL::Size klGenVertexShadersEXT(
   const KL::Size & range
 ){
-  GLuint result = glGenVertexShadersEXT( (GLuint)range );
+  try
+  {
+    GLuint result = glGenVertexShadersEXT( (GLuint)range );
   return (KL::Size)result;
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGenVertexShadersEXT( 0x%04X )", (unsigned)range);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetInvariantBooleanvEXT(
@@ -9212,7 +17024,14 @@ FABRIC_EXT_EXPORT void klGetInvariantBooleanvEXT(
   const KL::Size & value,
   KL::VariableArray<KL::Boolean> & data
 ){
-  glGetInvariantBooleanvEXT( (GLuint)id, (GLenum)value, (GLboolean*)&data[0] );
+  try
+  {
+    glGetInvariantBooleanvEXT( (GLuint)id, (GLenum)value, (GLboolean*)&data[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetInvariantBooleanvEXT( 0x%04X, %d, GLboolean* )", (unsigned)id, (int)value);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetInvariantFloatvEXT(
@@ -9220,7 +17039,14 @@ FABRIC_EXT_EXPORT void klGetInvariantFloatvEXT(
   const KL::Size & value,
   KL::VariableArray<KL::Scalar> & data
 ){
-  glGetInvariantFloatvEXT( (GLuint)id, (GLenum)value, (GLfloat*)&data[0] );
+  try
+  {
+    glGetInvariantFloatvEXT( (GLuint)id, (GLenum)value, (GLfloat*)&data[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetInvariantFloatvEXT( 0x%04X, %d, GLfloat* )", (unsigned)id, (int)value);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetInvariantIntegervEXT(
@@ -9228,7 +17054,14 @@ FABRIC_EXT_EXPORT void klGetInvariantIntegervEXT(
   const KL::Size & value,
   KL::VariableArray<KL::Integer> & data
 ){
-  glGetInvariantIntegervEXT( (GLuint)id, (GLenum)value, (GLint*)&data[0] );
+  try
+  {
+    glGetInvariantIntegervEXT( (GLuint)id, (GLenum)value, (GLint*)&data[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetInvariantIntegervEXT( 0x%04X, %d, GLint* )", (unsigned)id, (int)value);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetLocalConstantBooleanvEXT(
@@ -9236,7 +17069,14 @@ FABRIC_EXT_EXPORT void klGetLocalConstantBooleanvEXT(
   const KL::Size & value,
   KL::VariableArray<KL::Boolean> & data
 ){
-  glGetLocalConstantBooleanvEXT( (GLuint)id, (GLenum)value, (GLboolean*)&data[0] );
+  try
+  {
+    glGetLocalConstantBooleanvEXT( (GLuint)id, (GLenum)value, (GLboolean*)&data[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetLocalConstantBooleanvEXT( 0x%04X, %d, GLboolean* )", (unsigned)id, (int)value);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetLocalConstantFloatvEXT(
@@ -9244,7 +17084,14 @@ FABRIC_EXT_EXPORT void klGetLocalConstantFloatvEXT(
   const KL::Size & value,
   KL::VariableArray<KL::Scalar> & data
 ){
-  glGetLocalConstantFloatvEXT( (GLuint)id, (GLenum)value, (GLfloat*)&data[0] );
+  try
+  {
+    glGetLocalConstantFloatvEXT( (GLuint)id, (GLenum)value, (GLfloat*)&data[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetLocalConstantFloatvEXT( 0x%04X, %d, GLfloat* )", (unsigned)id, (int)value);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetLocalConstantIntegervEXT(
@@ -9252,7 +17099,14 @@ FABRIC_EXT_EXPORT void klGetLocalConstantIntegervEXT(
   const KL::Size & value,
   KL::VariableArray<KL::Integer> & data
 ){
-  glGetLocalConstantIntegervEXT( (GLuint)id, (GLenum)value, (GLint*)&data[0] );
+  try
+  {
+    glGetLocalConstantIntegervEXT( (GLuint)id, (GLenum)value, (GLint*)&data[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetLocalConstantIntegervEXT( 0x%04X, %d, GLint* )", (unsigned)id, (int)value);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetVariantBooleanvEXT(
@@ -9260,7 +17114,14 @@ FABRIC_EXT_EXPORT void klGetVariantBooleanvEXT(
   const KL::Size & value,
   KL::VariableArray<KL::Boolean> & data
 ){
-  glGetVariantBooleanvEXT( (GLuint)id, (GLenum)value, (GLboolean*)&data[0] );
+  try
+  {
+    glGetVariantBooleanvEXT( (GLuint)id, (GLenum)value, (GLboolean*)&data[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetVariantBooleanvEXT( 0x%04X, %d, GLboolean* )", (unsigned)id, (int)value);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetVariantFloatvEXT(
@@ -9268,7 +17129,14 @@ FABRIC_EXT_EXPORT void klGetVariantFloatvEXT(
   const KL::Size & value,
   KL::VariableArray<KL::Scalar> & data
 ){
-  glGetVariantFloatvEXT( (GLuint)id, (GLenum)value, (GLfloat*)&data[0] );
+  try
+  {
+    glGetVariantFloatvEXT( (GLuint)id, (GLenum)value, (GLfloat*)&data[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetVariantFloatvEXT( 0x%04X, %d, GLfloat* )", (unsigned)id, (int)value);
+  }
 }
 
 FABRIC_EXT_EXPORT void klGetVariantIntegervEXT(
@@ -9276,7 +17144,14 @@ FABRIC_EXT_EXPORT void klGetVariantIntegervEXT(
   const KL::Size & value,
   KL::VariableArray<KL::Integer> & data
 ){
-  glGetVariantIntegervEXT( (GLuint)id, (GLenum)value, (GLint*)&data[0] );
+  try
+  {
+    glGetVariantIntegervEXT( (GLuint)id, (GLenum)value, (GLint*)&data[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glGetVariantIntegervEXT( 0x%04X, %d, GLint* )", (unsigned)id, (int)value);
+  }
 }
 
 FABRIC_EXT_EXPORT void klInsertComponentEXT(
@@ -9284,15 +17159,29 @@ FABRIC_EXT_EXPORT void klInsertComponentEXT(
   const KL::Size & src,
   const KL::Size & num
 ){
-  glInsertComponentEXT( (GLuint)res, (GLuint)src, (GLuint)num );
+  try
+  {
+    glInsertComponentEXT( (GLuint)res, (GLuint)src, (GLuint)num );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glInsertComponentEXT( 0x%04X, 0x%04X, 0x%04X )", (unsigned)res, (unsigned)src, (unsigned)num);
+  }
 }
 
 FABRIC_EXT_EXPORT KL::Boolean klIsVariantEnabledEXT(
   const KL::Size & id,
   const KL::Size & cap
 ){
-  GLboolean result = glIsVariantEnabledEXT( (GLuint)id, (GLenum)cap );
+  try
+  {
+    GLboolean result = glIsVariantEnabledEXT( (GLuint)id, (GLenum)cap );
   return (KL::Boolean)result;
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glIsVariantEnabledEXT( 0x%04X, %d )", (unsigned)id, (int)cap);
+  }
 }
 
 FABRIC_EXT_EXPORT void klSetInvariantEXT(
@@ -9300,7 +17189,14 @@ FABRIC_EXT_EXPORT void klSetInvariantEXT(
   const KL::Size & type,
   KL::Data addr
 ){
-  glSetInvariantEXT( (GLuint)id, (GLenum)type, addr );
+  try
+  {
+    glSetInvariantEXT( (GLuint)id, (GLenum)type, addr );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glSetInvariantEXT( 0x%04X, %d, GLvoid* )", (unsigned)id, (int)type);
+  }
 }
 
 FABRIC_EXT_EXPORT void klSetLocalConstantEXT(
@@ -9308,7 +17204,14 @@ FABRIC_EXT_EXPORT void klSetLocalConstantEXT(
   const KL::Size & type,
   KL::Data addr
 ){
-  glSetLocalConstantEXT( (GLuint)id, (GLenum)type, addr );
+  try
+  {
+    glSetLocalConstantEXT( (GLuint)id, (GLenum)type, addr );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glSetLocalConstantEXT( 0x%04X, %d, GLvoid* )", (unsigned)id, (int)type);
+  }
 }
 
 FABRIC_EXT_EXPORT void klShaderOp1EXT(
@@ -9316,7 +17219,14 @@ FABRIC_EXT_EXPORT void klShaderOp1EXT(
   const KL::Size & res,
   const KL::Size & arg1
 ){
-  glShaderOp1EXT( (GLenum)op, (GLuint)res, (GLuint)arg1 );
+  try
+  {
+    glShaderOp1EXT( (GLenum)op, (GLuint)res, (GLuint)arg1 );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glShaderOp1EXT( %d, 0x%04X, 0x%04X )", (int)op, (unsigned)res, (unsigned)arg1);
+  }
 }
 
 FABRIC_EXT_EXPORT void klShaderOp2EXT(
@@ -9325,7 +17235,14 @@ FABRIC_EXT_EXPORT void klShaderOp2EXT(
   const KL::Size & arg1,
   const KL::Size & arg2
 ){
-  glShaderOp2EXT( (GLenum)op, (GLuint)res, (GLuint)arg1, (GLuint)arg2 );
+  try
+  {
+    glShaderOp2EXT( (GLenum)op, (GLuint)res, (GLuint)arg1, (GLuint)arg2 );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glShaderOp2EXT( %d, 0x%04X, 0x%04X, 0x%04X )", (int)op, (unsigned)res, (unsigned)arg1, (unsigned)arg2);
+  }
 }
 
 FABRIC_EXT_EXPORT void klShaderOp3EXT(
@@ -9335,7 +17252,14 @@ FABRIC_EXT_EXPORT void klShaderOp3EXT(
   const KL::Size & arg2,
   const KL::Size & arg3
 ){
-  glShaderOp3EXT( (GLenum)op, (GLuint)res, (GLuint)arg1, (GLuint)arg2, (GLuint)arg3 );
+  try
+  {
+    glShaderOp3EXT( (GLenum)op, (GLuint)res, (GLuint)arg1, (GLuint)arg2, (GLuint)arg3 );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glShaderOp3EXT( %d, 0x%04X, 0x%04X, 0x%04X, 0x%04X )", (int)op, (unsigned)res, (unsigned)arg1, (unsigned)arg2, (unsigned)arg3);
+  }
 }
 
 FABRIC_EXT_EXPORT void klSwizzleEXT(
@@ -9346,7 +17270,14 @@ FABRIC_EXT_EXPORT void klSwizzleEXT(
   const KL::Size & outZ,
   const KL::Size & outW
 ){
-  glSwizzleEXT( (GLuint)res, (GLuint)in, (GLenum)outX, (GLenum)outY, (GLenum)outZ, (GLenum)outW );
+  try
+  {
+    glSwizzleEXT( (GLuint)res, (GLuint)in, (GLenum)outX, (GLenum)outY, (GLenum)outZ, (GLenum)outW );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glSwizzleEXT( 0x%04X, 0x%04X, %d, %d, %d, %d )", (unsigned)res, (unsigned)in, (int)outX, (int)outY, (int)outZ, (int)outW);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVariantPointerEXT(
@@ -9355,63 +17286,126 @@ FABRIC_EXT_EXPORT void klVariantPointerEXT(
   const KL::Size & stride,
   KL::Data addr
 ){
-  glVariantPointerEXT( (GLuint)id, (GLenum)type, (GLuint)stride, addr );
+  try
+  {
+    glVariantPointerEXT( (GLuint)id, (GLenum)type, (GLuint)stride, addr );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVariantPointerEXT( 0x%04X, %d, 0x%04X, GLvoid* )", (unsigned)id, (int)type, (unsigned)stride);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVariantbvEXT(
   const KL::Size & id,
   KL::VariableArray<KL::Byte> & addr
 ){
-  glVariantbvEXT( (GLuint)id, (GLbyte*)&addr[0] );
+  try
+  {
+    glVariantbvEXT( (GLuint)id, (GLbyte*)&addr[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVariantbvEXT( 0x%04X, GLbyte* )", (unsigned)id);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVariantdvEXT(
   const KL::Size & id,
   KL::VariableArray<KL::Scalar> & addr
 ){
-  glVariantdvEXT( (GLuint)id, (GLdouble*)&addr[0] );
+  try
+  {
+    glVariantdvEXT( (GLuint)id, (GLdouble*)&addr[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVariantdvEXT( 0x%04X, GLdouble* )", (unsigned)id);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVariantfvEXT(
   const KL::Size & id,
   KL::VariableArray<KL::Scalar> & addr
 ){
-  glVariantfvEXT( (GLuint)id, (GLfloat*)&addr[0] );
+  try
+  {
+    glVariantfvEXT( (GLuint)id, (GLfloat*)&addr[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVariantfvEXT( 0x%04X, GLfloat* )", (unsigned)id);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVariantivEXT(
   const KL::Size & id,
   KL::VariableArray<KL::Integer> & addr
 ){
-  glVariantivEXT( (GLuint)id, (GLint*)&addr[0] );
+  try
+  {
+    glVariantivEXT( (GLuint)id, (GLint*)&addr[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVariantivEXT( 0x%04X, GLint* )", (unsigned)id);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVariantsvEXT(
   const KL::Size & id,
   KL::VariableArray<KL::Integer> & addr
 ){
-  glVariantsvEXT( (GLuint)id, (GLshort*)&addr[0] );
+  try
+  {
+    glVariantsvEXT( (GLuint)id, (GLshort*)&addr[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVariantsvEXT( 0x%04X, GLshort* )", (unsigned)id);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVariantubvEXT(
   const KL::Size & id,
   KL::VariableArray<KL::Size> & addr
 ){
-  glVariantubvEXT( (GLuint)id, (GLubyte*)&addr[0] );
+  try
+  {
+    glVariantubvEXT( (GLuint)id, (GLubyte*)&addr[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVariantubvEXT( 0x%04X, GLubyte* )", (unsigned)id);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVariantuivEXT(
   const KL::Size & id,
   KL::VariableArray<KL::Size> & addr
 ){
-  glVariantuivEXT( (GLuint)id, (GLuint*)&addr[0] );
+  try
+  {
+    glVariantuivEXT( (GLuint)id, (GLuint*)&addr[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVariantuivEXT( 0x%04X, GLuint* )", (unsigned)id);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVariantusvEXT(
   const KL::Size & id,
   KL::VariableArray<KL::Integer> & addr
 ){
-  glVariantusvEXT( (GLuint)id, (GLushort*)&addr[0] );
+  try
+  {
+    glVariantusvEXT( (GLuint)id, (GLushort*)&addr[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVariantusvEXT( 0x%04X, GLushort* )", (unsigned)id);
+  }
 }
 
 FABRIC_EXT_EXPORT void klWriteMaskEXT(
@@ -9422,7 +17416,14 @@ FABRIC_EXT_EXPORT void klWriteMaskEXT(
   const KL::Size & outZ,
   const KL::Size & outW
 ){
-  glWriteMaskEXT( (GLuint)res, (GLuint)in, (GLenum)outX, (GLenum)outY, (GLenum)outZ, (GLenum)outW );
+  try
+  {
+    glWriteMaskEXT( (GLuint)res, (GLuint)in, (GLenum)outX, (GLenum)outY, (GLenum)outZ, (GLenum)outW );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glWriteMaskEXT( 0x%04X, 0x%04X, %d, %d, %d, %d )", (unsigned)res, (unsigned)in, (int)outX, (int)outY, (int)outZ, (int)outW);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexWeightPointerEXT(
@@ -9431,31 +17432,66 @@ FABRIC_EXT_EXPORT void klVertexWeightPointerEXT(
   const KL::Size & stride,
   KL::Data pointer
 ){
-  glVertexWeightPointerEXT( (GLint)size, (GLenum)type, (GLsizei)stride, pointer );
+  try
+  {
+    glVertexWeightPointerEXT( (GLint)size, (GLenum)type, (GLsizei)stride, pointer );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexWeightPointerEXT( %d, %d, %d, void* )", (int)size, (int)type, (int)stride);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexWeightfEXT(
   const KL::Scalar & weight
 ){
-  glVertexWeightfEXT( (GLfloat)weight );
+  try
+  {
+    glVertexWeightfEXT( (GLfloat)weight );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexWeightfEXT( %f )", (float)weight);
+  }
 }
 
 FABRIC_EXT_EXPORT void klVertexWeightfvEXT(
   KL::VariableArray<KL::Scalar> & weight
 ){
-  glVertexWeightfvEXT( (GLfloat*)&weight[0] );
+  try
+  {
+    glVertexWeightfvEXT( (GLfloat*)&weight[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glVertexWeightfvEXT( GLfloat* )");
+  }
 }
 
 FABRIC_EXT_EXPORT KL::Size klBufferRegionEnabledEXT()
 {
-  GLuint result = glBufferRegionEnabledEXT();
+  try
+  {
+    GLuint result = glBufferRegionEnabledEXT();
   return (KL::Size)result;
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glBufferRegionEnabledEXT(  )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klDeleteBufferRegionEXT(
   const KL::Size & region
 ){
-  glDeleteBufferRegionEXT( (GLenum)region );
+  try
+  {
+    glDeleteBufferRegionEXT( (GLenum)region );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glDeleteBufferRegionEXT( %d )", (int)region);
+  }
 }
 
 FABRIC_EXT_EXPORT void klDrawBufferRegionEXT(
@@ -9467,14 +17503,28 @@ FABRIC_EXT_EXPORT void klDrawBufferRegionEXT(
   const KL::Integer & xDest,
   const KL::Integer & yDest
 ){
-  glDrawBufferRegionEXT( (GLuint)region, (GLint)x, (GLint)y, (GLsizei)width, (GLsizei)height, (GLint)xDest, (GLint)yDest );
+  try
+  {
+    glDrawBufferRegionEXT( (GLuint)region, (GLint)x, (GLint)y, (GLsizei)width, (GLsizei)height, (GLint)xDest, (GLint)yDest );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glDrawBufferRegionEXT( 0x%04X, %d, %d, %d, %d, %d, %d )", (unsigned)region, (int)x, (int)y, (int)width, (int)height, (int)xDest, (int)yDest);
+  }
 }
 
 FABRIC_EXT_EXPORT KL::Size klNewBufferRegionEXT(
   const KL::Size & region
 ){
-  GLuint result = glNewBufferRegionEXT( (GLenum)region );
+  try
+  {
+    GLuint result = glNewBufferRegionEXT( (GLenum)region );
   return (KL::Size)result;
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glNewBufferRegionEXT( %d )", (int)region);
+  }
 }
 
 FABRIC_EXT_EXPORT void klReadBufferRegionEXT(
@@ -9484,31 +17534,66 @@ FABRIC_EXT_EXPORT void klReadBufferRegionEXT(
   const KL::Size & width,
   const KL::Size & height
 ){
-  glReadBufferRegionEXT( (GLuint)region, (GLint)x, (GLint)y, (GLsizei)width, (GLsizei)height );
+  try
+  {
+    glReadBufferRegionEXT( (GLuint)region, (GLint)x, (GLint)y, (GLsizei)width, (GLsizei)height );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glReadBufferRegionEXT( 0x%04X, %d, %d, %d, %d )", (unsigned)region, (int)x, (int)y, (int)width, (int)height);
+  }
 }
 
 FABRIC_EXT_EXPORT void klXWaitGL()
 {
-  glXWaitGL();
+  try
+  {
+    glXWaitGL();
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glXWaitGL(  )");
+  }
 }
 
 FABRIC_EXT_EXPORT void klXWaitX()
 {
-  glXWaitX();
+  try
+  {
+    glXWaitX();
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glXWaitX(  )");
+  }
 }
 
 FABRIC_EXT_EXPORT KL::Boolean klxewIsSupported(
   const KL::String &name
 ){
-  GLboolean result = glxewIsSupported( (const char*)name.data() );
+  try
+  {
+    GLboolean result = glxewIsSupported( (const char*)name.data() );
   return (KL::Boolean)result;
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glxewIsSupported( char* )");
+  }
 }
 
 FABRIC_EXT_EXPORT KL::Boolean klxewGetExtension(
   const KL::String &name
 ){
-  GLboolean result = glxewGetExtension( (const char*)name.data() );
+  try
+  {
+    GLboolean result = glxewGetExtension( (const char*)name.data() );
   return (KL::Boolean)result;
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::glxewGetExtension( char* )");
+  }
 }
 
 FABRIC_EXT_EXPORT KL::Integer kluBuild1DMipmapLevels(
@@ -9522,8 +17607,15 @@ FABRIC_EXT_EXPORT KL::Integer kluBuild1DMipmapLevels(
   const KL::Integer & max,
   KL::Data data
 ){
-  GLint result = gluBuild1DMipmapLevels( (GLenum)target, (GLint)internalFormat, (GLsizei)width, (GLenum)format, (GLenum)type, (GLint)level, (GLint)base, (GLint)max, data );
+  try
+  {
+    GLint result = gluBuild1DMipmapLevels( (GLenum)target, (GLint)internalFormat, (GLsizei)width, (GLenum)format, (GLenum)type, (GLint)level, (GLint)base, (GLint)max, data );
   return (KL::Integer)result;
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::gluBuild1DMipmapLevels( %d, %d, %d, %d, %d, %d, %d, %d, void* )", (int)target, (int)internalFormat, (int)width, (int)format, (int)type, (int)level, (int)base, (int)max);
+  }
 }
 
 FABRIC_EXT_EXPORT KL::Integer kluBuild1DMipmaps(
@@ -9534,8 +17626,15 @@ FABRIC_EXT_EXPORT KL::Integer kluBuild1DMipmaps(
   const KL::Size & type,
   KL::Data data
 ){
-  GLint result = gluBuild1DMipmaps( (GLenum)target, (GLint)internalFormat, (GLsizei)width, (GLenum)format, (GLenum)type, data );
+  try
+  {
+    GLint result = gluBuild1DMipmaps( (GLenum)target, (GLint)internalFormat, (GLsizei)width, (GLenum)format, (GLenum)type, data );
   return (KL::Integer)result;
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::gluBuild1DMipmaps( %d, %d, %d, %d, %d, void* )", (int)target, (int)internalFormat, (int)width, (int)format, (int)type);
+  }
 }
 
 FABRIC_EXT_EXPORT KL::Integer kluBuild2DMipmapLevels(
@@ -9550,8 +17649,15 @@ FABRIC_EXT_EXPORT KL::Integer kluBuild2DMipmapLevels(
   const KL::Integer & max,
   KL::Data data
 ){
-  GLint result = gluBuild2DMipmapLevels( (GLenum)target, (GLint)internalFormat, (GLsizei)width, (GLsizei)height, (GLenum)format, (GLenum)type, (GLint)level, (GLint)base, (GLint)max, data );
+  try
+  {
+    GLint result = gluBuild2DMipmapLevels( (GLenum)target, (GLint)internalFormat, (GLsizei)width, (GLsizei)height, (GLenum)format, (GLenum)type, (GLint)level, (GLint)base, (GLint)max, data );
   return (KL::Integer)result;
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::gluBuild2DMipmapLevels( %d, %d, %d, %d, %d, %d, %d, %d, %d, void* )", (int)target, (int)internalFormat, (int)width, (int)height, (int)format, (int)type, (int)level, (int)base, (int)max);
+  }
 }
 
 FABRIC_EXT_EXPORT KL::Integer kluBuild2DMipmaps(
@@ -9563,8 +17669,15 @@ FABRIC_EXT_EXPORT KL::Integer kluBuild2DMipmaps(
   const KL::Size & type,
   KL::Data data
 ){
-  GLint result = gluBuild2DMipmaps( (GLenum)target, (GLint)internalFormat, (GLsizei)width, (GLsizei)height, (GLenum)format, (GLenum)type, data );
+  try
+  {
+    GLint result = gluBuild2DMipmaps( (GLenum)target, (GLint)internalFormat, (GLsizei)width, (GLsizei)height, (GLenum)format, (GLenum)type, data );
   return (KL::Integer)result;
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::gluBuild2DMipmaps( %d, %d, %d, %d, %d, %d, void* )", (int)target, (int)internalFormat, (int)width, (int)height, (int)format, (int)type);
+  }
 }
 
 FABRIC_EXT_EXPORT KL::Integer kluBuild3DMipmapLevels(
@@ -9580,8 +17693,15 @@ FABRIC_EXT_EXPORT KL::Integer kluBuild3DMipmapLevels(
   const KL::Integer & max,
   KL::Data data
 ){
-  GLint result = gluBuild3DMipmapLevels( (GLenum)target, (GLint)internalFormat, (GLsizei)width, (GLsizei)height, (GLsizei)depth, (GLenum)format, (GLenum)type, (GLint)level, (GLint)base, (GLint)max, data );
+  try
+  {
+    GLint result = gluBuild3DMipmapLevels( (GLenum)target, (GLint)internalFormat, (GLsizei)width, (GLsizei)height, (GLsizei)depth, (GLenum)format, (GLenum)type, (GLint)level, (GLint)base, (GLint)max, data );
   return (KL::Integer)result;
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::gluBuild3DMipmapLevels( %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, void* )", (int)target, (int)internalFormat, (int)width, (int)height, (int)depth, (int)format, (int)type, (int)level, (int)base, (int)max);
+  }
 }
 
 FABRIC_EXT_EXPORT KL::Integer kluBuild3DMipmaps(
@@ -9594,30 +17714,58 @@ FABRIC_EXT_EXPORT KL::Integer kluBuild3DMipmaps(
   const KL::Size & type,
   KL::Data data
 ){
-  GLint result = gluBuild3DMipmaps( (GLenum)target, (GLint)internalFormat, (GLsizei)width, (GLsizei)height, (GLsizei)depth, (GLenum)format, (GLenum)type, data );
+  try
+  {
+    GLint result = gluBuild3DMipmaps( (GLenum)target, (GLint)internalFormat, (GLsizei)width, (GLsizei)height, (GLsizei)depth, (GLenum)format, (GLenum)type, data );
   return (KL::Integer)result;
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::gluBuild3DMipmaps( %d, %d, %d, %d, %d, %d, %d, void* )", (int)target, (int)internalFormat, (int)width, (int)height, (int)depth, (int)format, (int)type);
+  }
 }
 
 FABRIC_EXT_EXPORT KL::Boolean kluCheckExtension(
   const KL::VariableArray<KL::Size> & extName,
   const KL::VariableArray<KL::Size> & extString
 ){
-  GLboolean result = gluCheckExtension( (const GLubyte*)&extName[0], (const GLubyte*)&extString[0] );
+  try
+  {
+    GLboolean result = gluCheckExtension( (const GLubyte*)&extName[0], (const GLubyte*)&extString[0] );
   return (KL::Boolean)result;
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::gluCheckExtension( GLubyte*, GLubyte* )");
+  }
 }
 
 FABRIC_EXT_EXPORT KL::Size kluErrorString(
   const KL::Size & error
 ){
-  const GLubyte* result = gluErrorString( (GLenum)error );
+  try
+  {
+    const GLubyte* result = gluErrorString( (GLenum)error );
   return (KL::Size)result;
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::gluErrorString( %d )", (int)error);
+  }
 }
 
 FABRIC_EXT_EXPORT KL::Size kluGetString(
   const KL::Size & name
 ){
-  const GLubyte* result = gluGetString( (GLenum)name );
+  try
+  {
+    const GLubyte* result = gluGetString( (GLenum)name );
   return (KL::Size)result;
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::gluGetString( %d )", (int)name);
+  }
 }
 
 FABRIC_EXT_EXPORT void kluLookAt(
@@ -9631,7 +17779,14 @@ FABRIC_EXT_EXPORT void kluLookAt(
   const KL::Scalar & upY,
   const KL::Scalar & upZ
 ){
-  gluLookAt( (GLdouble)eyeX, (GLdouble)eyeY, (GLdouble)eyeZ, (GLdouble)centerX, (GLdouble)centerY, (GLdouble)centerZ, (GLdouble)upX, (GLdouble)upY, (GLdouble)upZ );
+  try
+  {
+    gluLookAt( (GLdouble)eyeX, (GLdouble)eyeY, (GLdouble)eyeZ, (GLdouble)centerX, (GLdouble)centerY, (GLdouble)centerZ, (GLdouble)upX, (GLdouble)upY, (GLdouble)upZ );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::gluLookAt( %f, %f, %f, %f, %f, %f, %f, %f, %f )", (float)eyeX, (float)eyeY, (float)eyeZ, (float)centerX, (float)centerY, (float)centerZ, (float)upX, (float)upY, (float)upZ);
+  }
 }
 
 FABRIC_EXT_EXPORT void kluOrtho2D(
@@ -9640,7 +17795,14 @@ FABRIC_EXT_EXPORT void kluOrtho2D(
   const KL::Scalar & bottom,
   const KL::Scalar & top
 ){
-  gluOrtho2D( (GLdouble)left, (GLdouble)right, (GLdouble)bottom, (GLdouble)top );
+  try
+  {
+    gluOrtho2D( (GLdouble)left, (GLdouble)right, (GLdouble)bottom, (GLdouble)top );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::gluOrtho2D( %f, %f, %f, %f )", (float)left, (float)right, (float)bottom, (float)top);
+  }
 }
 
 FABRIC_EXT_EXPORT void kluPerspective(
@@ -9649,7 +17811,14 @@ FABRIC_EXT_EXPORT void kluPerspective(
   const KL::Scalar & zNear,
   const KL::Scalar & zFar
 ){
-  gluPerspective( (GLdouble)fovy, (GLdouble)aspect, (GLdouble)zNear, (GLdouble)zFar );
+  try
+  {
+    gluPerspective( (GLdouble)fovy, (GLdouble)aspect, (GLdouble)zNear, (GLdouble)zFar );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::gluPerspective( %f, %f, %f, %f )", (float)fovy, (float)aspect, (float)zNear, (float)zFar);
+  }
 }
 
 FABRIC_EXT_EXPORT void kluPickMatrix(
@@ -9659,7 +17828,14 @@ FABRIC_EXT_EXPORT void kluPickMatrix(
   const KL::Scalar & delY,
   KL::VariableArray<KL::Integer> & viewport
 ){
-  gluPickMatrix( (GLdouble)x, (GLdouble)y, (GLdouble)delX, (GLdouble)delY, (GLint*)&viewport[0] );
+  try
+  {
+    gluPickMatrix( (GLdouble)x, (GLdouble)y, (GLdouble)delX, (GLdouble)delY, (GLint*)&viewport[0] );
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::gluPickMatrix( %f, %f, %f, %f, GLint* )", (float)x, (float)y, (float)delX, (float)delY);
+  }
 }
 
 FABRIC_EXT_EXPORT KL::Integer kluProject(
@@ -9673,8 +17849,15 @@ FABRIC_EXT_EXPORT KL::Integer kluProject(
   KL::VariableArray<KL::Scalar> & winY,
   KL::VariableArray<KL::Scalar> & winZ
 ){
-  GLint result = gluProject( (GLdouble)objX, (GLdouble)objY, (GLdouble)objZ, (const GLdouble*)&model[0], (const GLdouble*)&proj[0], (const GLint*)&view[0], (GLdouble*)&winX[0], (GLdouble*)&winY[0], (GLdouble*)&winZ[0] );
+  try
+  {
+    GLint result = gluProject( (GLdouble)objX, (GLdouble)objY, (GLdouble)objZ, (const GLdouble*)&model[0], (const GLdouble*)&proj[0], (const GLint*)&view[0], (GLdouble*)&winX[0], (GLdouble*)&winY[0], (GLdouble*)&winZ[0] );
   return (KL::Integer)result;
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::gluProject( %f, %f, %f, GLdouble*, GLdouble*, GLint*, GLdouble*, GLdouble*, GLdouble* )", (float)objX, (float)objY, (float)objZ);
+  }
 }
 
 FABRIC_EXT_EXPORT KL::Integer kluScaleImage(
@@ -9688,8 +17871,15 @@ FABRIC_EXT_EXPORT KL::Integer kluScaleImage(
   const KL::Size & typeOut,
   KL::Data dataOut
 ){
-  GLint result = gluScaleImage( (GLenum)format, (GLsizei)wIn, (GLsizei)hIn, (GLenum)typeIn, dataIn, (GLsizei)wOut, (GLsizei)hOut, (GLenum)typeOut, dataOut );
+  try
+  {
+    GLint result = gluScaleImage( (GLenum)format, (GLsizei)wIn, (GLsizei)hIn, (GLenum)typeIn, dataIn, (GLsizei)wOut, (GLsizei)hOut, (GLenum)typeOut, dataOut );
   return (KL::Integer)result;
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::gluScaleImage( %d, %d, %d, %d, void*, %d, %d, %d, GLvoid* )", (int)format, (int)wIn, (int)hIn, (int)typeIn, (int)wOut, (int)hOut, (int)typeOut);
+  }
 }
 
 FABRIC_EXT_EXPORT KL::Integer kluUnProject(
@@ -9703,8 +17893,15 @@ FABRIC_EXT_EXPORT KL::Integer kluUnProject(
   KL::VariableArray<KL::Scalar> & objY,
   KL::VariableArray<KL::Scalar> & objZ
 ){
-  GLint result = gluUnProject( (GLdouble)winX, (GLdouble)winY, (GLdouble)winZ, (const GLdouble*)&model[0], (const GLdouble*)&proj[0], (const GLint*)&view[0], (GLdouble*)&objX[0], (GLdouble*)&objY[0], (GLdouble*)&objZ[0] );
+  try
+  {
+    GLint result = gluUnProject( (GLdouble)winX, (GLdouble)winY, (GLdouble)winZ, (const GLdouble*)&model[0], (const GLdouble*)&proj[0], (const GLint*)&view[0], (GLdouble*)&objX[0], (GLdouble*)&objY[0], (GLdouble*)&objZ[0] );
   return (KL::Integer)result;
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::gluUnProject( %f, %f, %f, GLdouble*, GLdouble*, GLint*, GLdouble*, GLdouble*, GLdouble* )", (float)winX, (float)winY, (float)winZ);
+  }
 }
 
 FABRIC_EXT_EXPORT KL::Integer kluUnProject4(
@@ -9722,7 +17919,14 @@ FABRIC_EXT_EXPORT KL::Integer kluUnProject4(
   KL::VariableArray<KL::Scalar> & objZ,
   KL::VariableArray<KL::Scalar> & objW
 ){
-  GLint result = gluUnProject4( (GLdouble)winX, (GLdouble)winY, (GLdouble)winZ, (GLdouble)clipW, (const GLdouble*)&model[0], (const GLdouble*)&proj[0], (const GLint*)&view[0], (GLdouble)nearVal, (GLdouble)farVal, (GLdouble*)&objX[0], (GLdouble*)&objY[0], (GLdouble*)&objZ[0], (GLdouble*)&objW[0] );
+  try
+  {
+    GLint result = gluUnProject4( (GLdouble)winX, (GLdouble)winY, (GLdouble)winZ, (GLdouble)clipW, (const GLdouble*)&model[0], (const GLdouble*)&proj[0], (const GLint*)&view[0], (GLdouble)nearVal, (GLdouble)farVal, (GLdouble*)&objX[0], (GLdouble*)&objY[0], (GLdouble*)&objZ[0], (GLdouble*)&objW[0] );
   return (KL::Integer)result;
+  }
+  catch(Exception e)
+  {
+    throw Fabric::Exception( "Fabric::OGL::gluUnProject4( %f, %f, %f, %f, GLdouble*, GLdouble*, GLint*, %f, %f, GLdouble*, GLdouble*, GLdouble*, GLdouble* )", (float)winX, (float)winY, (float)winZ, (float)clipW, (float)nearVal, (float)farVal);
+  }
 }
 

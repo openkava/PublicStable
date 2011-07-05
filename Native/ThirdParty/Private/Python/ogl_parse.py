@@ -173,7 +173,7 @@ def main():
     'GLsizeiptr':['GLsizeiptr','%d','int','Size'],
     'GLclampf':['GLclampf','%f','float','Scalar'],
     'GLclampd':['GLclampd','%f','float','Scalar'],
-    'GLbitfield':['GLbitfield','0x%04X','unsigned','Integer'],
+    'GLbitfield':['GLbitfield','0x%04X','unsigned','Size'],
   }
   
   klKeyWords = {
@@ -309,9 +309,9 @@ def main():
           else:
             
             # IF WE DON'T HAVE A CONST CHAR, WE NEED TO WRITE TO IT
-            additionalCodePre.append('  char * '+varname+'Str = new char[1024];')
-            additionalCodePost.append('  '+varname+' = KL::String('+varname+'Str);')
-            additionalCodePost.append('  delete( '+varname+'Str );')
+            additionalCodePre.append('    char * '+varname+'Str = new char[1024];')
+            additionalCodePost.append('    '+varname+' = KL::String('+varname+'Str);')
+            additionalCodePost.append('    delete( '+varname+'Str );')
             klParameters.append('io String '+klvarname)
             cParameters.append('KL::String & '+varname)
             klCast.append('('+fulltype+')'+varname+'Str')
@@ -382,21 +382,29 @@ def main():
       else:
         functionsCode.append('FABRIC_EXT_EXPORT KL::'+knownCTypes[returnTypeKey][3]+' kl'+name[2:1000]+'()')
       functionsCode.append('{')
+    functionsCode.append('  try')
+    functionsCode.append('  {')
     functionsCode.extend(additionalCodePre)
     prefix = ''
     if returnType.find('void') == -1:
       prefix = returnType+' result = '
     if len(klCast) > 0:
-      functionsCode.append('  '+prefix+name+'( '+str(', ').join(klCast)+' );')
+      functionsCode.append('    '+prefix+name+'( '+str(', ').join(klCast)+' );')
     else:
-      functionsCode.append('  '+prefix+name+'();')
+      functionsCode.append('    '+prefix+name+'();')
     functionsCode.extend(additionalCodePost)
 
     # IF WE HAVE A RETURN TYPE
     if returnType.find('void') == -1:
-      traceFormat = knownCTypes[returnTypeKey][1]
-      traceVar = knownCTypes[returnTypeKey][2]
       functionsCode.append('  return ('+klReturnType+')result;')
+    functionsCode.append('  }')
+    functionsCode.append('  catch(Exception e)')
+    functionsCode.append('  {')
+    throwCode = '    throw Fabric::Exception( "Fabric::OGL::'+name+'( '+str(', ').join(traceFormat)+' )"'
+    if len(traceVars) > 0:
+      throwCode = throwCode + ', '+str(', ').join(traceVars)
+    functionsCode.append(throwCode+');')
+    functionsCode.append('  }')
     
     functionsCode.append('}\n')
     klFunction = 'function ';
