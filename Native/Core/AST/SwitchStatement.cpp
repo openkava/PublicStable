@@ -113,21 +113,19 @@ namespace Fabric
           
           CG::ExprValue caseExprValue = case_->getExpr()->buildExprValue( basicBlockBuilder, CG::USAGE_RVALUE, "cannot be an l-value" );
 
-          RC::ConstHandle<CG::Symbol> symbol;
           std::string eqFunctionName = CG::binOpOverloadName( CG::BIN_OP_EQ, exprValue.getAdapter(), caseExprValue.getAdapter() );
-          symbol = switchScope.get( eqFunctionName );
-          if ( !symbol )
+          RC::ConstHandle<CG::FunctionSymbol> functionSymbol;
+          functionSymbol = basicBlockBuilder.maybeGetFunction( eqFunctionName );
+          if ( !functionSymbol )
           {
             eqFunctionName = CG::binOpOverloadName( CG::BIN_OP_EQ, exprValue.getAdapter(), exprValue.getAdapter() );
-            symbol = switchScope.get( eqFunctionName );
-            if ( !symbol )
+            functionSymbol = basicBlockBuilder.maybeGetFunction( eqFunctionName );
+            if ( !functionSymbol )
               throw Exception( "binary operator " + _(CG::binOpUserName(CG::BIN_OP_EQ)) + " not supported for types " + _(exprValue.getTypeUserName()) + " and " + _(caseExprValue.getTypeUserName()) );
             CG::ExprValue newCaseExprValue( exprValue.getAdapter(), CG::USAGE_RVALUE, exprValue.getAdapter()->llvmCast( basicBlockBuilder, caseExprValue ) );
             caseExprValue.llvmDispose( basicBlockBuilder );
             caseExprValue = newCaseExprValue;
           }
-          FABRIC_ASSERT( symbol->isFunction() );
-          RC::ConstHandle<CG::FunctionSymbol> functionSymbol = RC::ConstHandle<CG::FunctionSymbol>::StaticCast( symbol );
           
           CG::ExprValue cmpExprValue = functionSymbol->llvmCreateCall( basicBlockBuilder, exprValue, caseExprValue );
           llvm::Value *cmpBooleanRValue = booleanAdapter->llvmCast( basicBlockBuilder, cmpExprValue );

@@ -108,7 +108,7 @@ namespace Fabric
         
         if ( !function->getBody() )
         {
-          std::string const &name = function->getName();
+          std::string const &name = function->getEntryName();
           void *resolvedFunction = 0;
           for ( size_t i=0; i<m_orderedSOLibHandles.size(); ++i )
           {

@@ -357,7 +357,7 @@ global
 function
   : TK_FUNCTION compound_type TK_IDENTIFIER TK_LPAREN parameter_list TK_RPAREN compound_statement
   {
-    $$ = AST::Function::Create( RTLOC, *$3, CG::ExprType( $2, CG::USAGE_RVALUE ), $5, $7 ).take();
+    $$ = AST::Function::Create( RTLOC, *$3, *$3, CG::ExprType( $2, CG::USAGE_RVALUE ), $5, $7 ).take();
     $2->release();
     delete $3;
     $5->release();
@@ -365,14 +365,14 @@ function
   }
   | TK_FUNCTION TK_IDENTIFIER TK_LPAREN parameter_list TK_RPAREN compound_statement
   {
-    $$ = AST::Function::Create( RTLOC, *$2, CG::ExprType(), $4, $6 ).take();
+    $$ = AST::Function::Create( RTLOC, *$2, *$2, CG::ExprType(), $4, $6 ).take();
     delete $2;
     $4->release();
     $6->release();
   }
   | TK_OPERATOR TK_IDENTIFIER TK_LPAREN parameter_list TK_RPAREN compound_statement
   {
-    $$ = AST::Operator::Create( RTLOC, *$2, $4, $6 ).take();
+    $$ = AST::Operator::Create( RTLOC, *$2, *$2, $4, $6 ).take();
     delete $2;
     $4->release();
     $6->release();
@@ -421,14 +421,14 @@ function
 prototype
   : TK_FUNCTION compound_type TK_IDENTIFIER TK_LPAREN parameter_list TK_RPAREN TK_SEMICOLON
   {
-    $$ = AST::Function::Create( RTLOC, *$3, CG::ExprType( $2, CG::USAGE_RVALUE ), $5, 0 ).take();
+    $$ = AST::Function::Create( RTLOC, *$3, *$3, CG::ExprType( $2, CG::USAGE_RVALUE ), $5, 0 ).take();
     $2->release();
     delete $3;
     $5->release();
   }
   | TK_FUNCTION TK_IDENTIFIER TK_LPAREN parameter_list TK_RPAREN TK_SEMICOLON
   {
-    $$ = AST::Function::Create( RTLOC, *$2, CG::ExprType(), $4, 0 ).take();
+    $$ = AST::Function::Create( RTLOC, *$2, *$2, CG::ExprType(), $4, 0 ).take();
     delete $2;
     $4->release();
   }

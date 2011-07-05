@@ -28,20 +28,26 @@ namespace Fabric
 
       static RC::Handle<Function> Create(
         CG::Location const &location,
-        std::string const &name,
+        std::string const &friendlyName,
+        std::string const &entryName,
         CG::ExprType const &returnExprType,
         RC::ConstHandle<ParamList> const &params,
         RC::ConstHandle<CompoundStatement> const &body
         )
       {
-        return new Function( location, name, returnExprType, params, body );
+        return new Function( location, friendlyName, entryName, returnExprType, params, body );
       }
       
       virtual bool isFunction() const { return true; }
           
-      std::string const &getName() const
+      std::string const &getFriendlyName() const
       {
-        return m_name;
+        return m_friendlyName;
+      }
+
+      std::string const &getEntryName() const
+      {
+        return m_entryName;
       }
 
       virtual bool isOperator() const
@@ -58,7 +64,8 @@ namespace Fabric
     
       Function(
         CG::Location const &location,
-        std::string const &name,
+        std::string const &friendlyName,
+        std::string const &entryName,
         CG::ExprType const &returnExprType,
         RC::ConstHandle<ParamList> const &params,
         RC::ConstHandle<CompoundStatement> const &body
@@ -66,7 +73,8 @@ namespace Fabric
     
     private:
     
-      std::string m_name;
+      std::string m_friendlyName;
+      std::string m_entryName;
       CG::ExprType m_returnExprType;
       RC::ConstHandle<ParamList> m_params;
       RC::ConstHandle<CompoundStatement> m_body;

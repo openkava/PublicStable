@@ -73,5 +73,10 @@ namespace Fabric
     {
       return m_functionBuilder.getLLVMContext();
     }
+
+    RC::ConstHandle<FunctionSymbol> BasicBlockBuilder::maybeGetFunction( std::string const &entryName ) const
+    {
+      return m_functionBuilder.maybeGetFunction( entryName );
+    }
   };
 };
