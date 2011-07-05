@@ -1,5 +1,5 @@
-
-FABRIC = wrapFabricClient(createFabricClient());
+FC = createFabricClient();
+FABRIC = wrapFabricClient(FC);
 
 parentOp = FABRIC.DependencyGraph.createOperator( "parentOp" );
 parentOp.setEntryFunctionName('entry');
@@ -30,3 +30,6 @@ childNode.bindings.append(childBinding);
 
 childNode.evaluate();
 print( childNode.getData( 'output', 0 ) );
+
+FABRIC.flush();
+FC.dispose();

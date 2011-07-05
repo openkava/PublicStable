@@ -25,6 +25,8 @@ namespace Fabric
       
       v8::Handle<v8::Value> v8SetJSONNotifyCallback( v8::Arguments const &args );
       static v8::Handle<v8::Value> V8SetJSONNotifyCallback( v8::Arguments const &args );
+
+      static v8::Handle<v8::Value> V8Dispose( v8::Arguments const &args );
       
     protected:
     

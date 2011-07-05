@@ -1,5 +1,5 @@
-
-FABRIC = wrapFabricClient(createFabricClient());
+FC = createFabricClient();
+FABRIC = wrapFabricClient(FC);
 
 op = FABRIC.DependencyGraph.createOperator("foo");
 op.setEntryFunctionName("entry");
@@ -17,6 +17,7 @@ node = FABRIC.DependencyGraph.createNode( "bar" );
 node.addMember( "x", "Integer" );
 node.setCount( 2 );
 node.bindings.append(binding);
+/*
 var errors = node.getErrors();
 if ( errors.length > 0 ) {
   for ( var i in errors )
@@ -25,3 +26,7 @@ if ( errors.length > 0 ) {
 else {
   node.evaluate();
 }
+*/
+
+FABRIC.flush();
+FC.dispose();

@@ -35,7 +35,12 @@ namespace Fabric
       {
         return m_ptr;
       }
-      
+
+      T &operator *()
+      {
+        return *m_ptr;
+      }
+
       operator bool() const
       {
         return m_ptr != 0;

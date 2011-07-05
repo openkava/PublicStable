@@ -459,6 +459,13 @@ namespace Fabric
       }
       
       RC::ConstHandle< RT::StructDesc > structDesc = registerStruct( name, memberInfos );
+
+      for ( size_t i=0; i<memberInfos.size(); ++i )
+      {
+        RT::StructMemberInfo &memberInfo = memberInfos[i];
+        memberInfo.desc->disposeData( &memberInfo.defaultData[0] );
+      }
+
       if ( kBindings.length() > 0 )
         structDesc->setKBindings( kBindings );
     }

@@ -100,14 +100,14 @@ namespace Fabric
       markForRecompile();
     }
     
-    MT::ParallelCall *Binding::bind( Scope const &scope, size_t *newSize, unsigned prefixCount, void * const *prefixes ) const
+    RC::Handle<MT::ParallelCall> Binding::bind( Scope const &scope, size_t *newSize, unsigned prefixCount, void * const *prefixes ) const
     {
       if ( !m_prototype )
         throw Exception( "no prototype set" );
       if ( !m_operator )
         throw Exception( "no operator set" );
         
-      MT::ParallelCall *result = 0;
+      RC::Handle<MT::ParallelCall> result;
       try
       {
         result = m_operator->bind( m_prototype, scope, newSize, prefixCount, prefixes );

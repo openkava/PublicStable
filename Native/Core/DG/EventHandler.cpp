@@ -120,6 +120,7 @@ namespace Fabric
       {
         if ( m_childEventHandlers[i] == eventHandler )
         {
+          m_childEventHandlers[i]->removeParent( this );
           for ( size_t j=i+1; j<m_childEventHandlers.size(); ++j )
             m_childEventHandlers[j-1] = m_childEventHandlers[j];
           m_childEventHandlers.resize( m_childEventHandlers.size() - 1 );
@@ -230,7 +231,7 @@ namespace Fabric
       for ( size_t i=0; i<numPreDescendBindings; ++i )
       {
         RC::Handle<Binding> binding = m_preDescendBindings->get(i);
-        Util::AutoPtr<MT::ParallelCall> parallelCall = binding->bind( selfScope, 0 );
+        RC::Handle<MT::ParallelCall> parallelCall = binding->bind( selfScope, 0 );
         parallelCall->executeSerial();
       }
       
@@ -244,7 +245,7 @@ namespace Fabric
       for ( size_t i=0; i<numPostDescendBindings; ++i )
       {
         RC::Handle<Binding> binding = m_postDescendBindings->get(i);
-        Util::AutoPtr<MT::ParallelCall> parallelCall = binding->bind( selfScope, 0 );
+        RC::Handle<MT::ParallelCall> parallelCall = binding->bind( selfScope, 0 );
         parallelCall->executeSerial();
       }
       
@@ -256,7 +257,7 @@ namespace Fabric
         bool shouldSelect = false;
         SelectedNode selectedNode( node, selectorType );
         void *prefixes[2] = { &shouldSelect, &selectedNode.data[0] };
-        Util::AutoPtr<MT::ParallelCall> parallelCall = m_selectBinding->bind( bindingsScope, 0, 2, prefixes );
+        RC::Handle<MT::ParallelCall> parallelCall = m_selectBinding->bind( bindingsScope, 0, 2, prefixes );
         parallelCall->executeSerial();
         if ( shouldSelect )
           selectedNodes->push_back( selectedNode );

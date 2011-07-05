@@ -340,7 +340,7 @@ namespace Fabric
       }
     }
       
-    MT::ParallelCall *Container::bind( RC::ConstHandle<Binding> const &binding, Scope const &scope, size_t *newCount, unsigned prefixCount, void * const *prefixes )
+    RC::Handle<MT::ParallelCall> Container::bind( RC::ConstHandle<Binding> const &binding, Scope const &scope, size_t *newCount, unsigned prefixCount, void * const *prefixes )
     {
       SelfScope selfScope( this, &scope );
 
@@ -640,6 +640,9 @@ namespace Fabric
       }
       
       addMember( name, desc, defaultValue.size()>0? &defaultValue[0]: 0 );
+
+      if ( defaultValue.size() > 0 )
+        desc->disposeData( &defaultValue[0] );
     }
 
     void Container::jsonExecRemoveMember( RC::ConstHandle<JSON::Value> const &arg )

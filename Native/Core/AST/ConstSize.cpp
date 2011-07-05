@@ -5,11 +5,12 @@
  *
  */
 
-#include "ConstSize.h"
+#include <Fabric/Core/AST/ConstSize.h>
 #include <Fabric/Core/CG/IntegerAdapter.h>
 #include <Fabric/Core/CG/SizeAdapter.h>
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/CG/BasicBlockBuilder.h>
+#include <Fabric/Core/Util/Parse.h>
 
 namespace Fabric
 {
@@ -17,10 +18,7 @@ namespace Fabric
   {
     RC::Handle<ConstSize> ConstSize::Create( CG::Location const &location, std::string const &valueString )
     {
-      unsigned long value;
-      if ( sscanf( valueString.c_str(), "%lu", &value ) != 1 )
-        throw Exception( "invalid integer constant '" + valueString + "'" );
-      return new ConstSize( location, value );
+      return new ConstSize( location, Util::parseSize( valueString ) );
     }
     
     ConstSize::ConstSize( CG::Location const &location, size_t value )

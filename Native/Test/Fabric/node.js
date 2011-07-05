@@ -1,5 +1,5 @@
-
-F = wrapFabricClient(createFabricClient());
+FC = createFabricClient();
+F = wrapFabricClient(FC);
 
 var mapNamedObjectsToNames = function (namedObjects) {
   var result = {};
@@ -22,3 +22,5 @@ print(node.getData("foo", 1));
 node2 = F.DG.createNode("node2");
 node.addDependency( node2, "parent" );
 printDeep(mapNamedObjectsToNames(node.getDependencies()));
+
+FC.dispose();

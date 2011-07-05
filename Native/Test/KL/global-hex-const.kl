@@ -1,0 +1,4 @@
+const Size foo = 0x1234;
+function entry() {
+  report foo;
+}

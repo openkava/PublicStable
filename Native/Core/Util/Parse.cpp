@@ -17,30 +17,40 @@ namespace Fabric
   {
     size_t parseSize( char const *data, size_t length )
     {
-      char *cString = static_cast<char *>( alloca( length + 1 ) );
-      memcpy( cString, data, length );
-      cString[length] = '\0';
-      return parseSize( cString );
+      size_t result = 0;
+      if ( length >= 2 && data[0] == '0' && tolower( data[1] ) == 'x' )
+      {
+        for ( size_t i=2; i<length; ++i )
+        {
+          char ch = tolower( data[i] );
+          if ( ch >= '0' && ch <= '9' )
+            result = 16 * result + ch - '0';
+          else if ( ch >= 'a' && ch <= 'f' )
+            result = 16 * result + ch - 'a' + 10;
+          else throw Exception( "malformed hexadecimal size constant" );
+        }
+      }
+      else
+      {
+        for ( size_t i=0; i<length; ++i )
+        {
+          char ch = data[i];
+          if ( ch >= '0' && ch <= '9' )
+            result = 10 * result + ch - '0';
+          else throw Exception( "malformed decimal size constant" );
+        }
+      }
+      return result;
     }
     
     size_t parseSize( char const *cString )
     {
-      char const *scanfFormat;
-      if ( sizeof(size_t) == sizeof(unsigned) )
-        scanfFormat = "%u";
-      else if ( sizeof(size_t) == sizeof(long unsigned) )
-        scanfFormat = "%lu";
-      else FABRIC_ASSERT( false && "Unable to determine scanf format for this architecture" );
-
-      size_t result;
-      if ( sscanf( cString, scanfFormat, &result ) != 1 )
-        throw Exception( "malformed size constant" );
-      return result;
+      return parseSize( cString, strlen( cString ) );
     }
     
     size_t parseSize( std::string const &string )
     {
-      return parseSize( string.c_str() );
+      return parseSize( string.data(), string.length() );
     }
 
     float parseFloat( char const *data, size_t length )

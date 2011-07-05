@@ -1,5 +1,6 @@
+FC = createFabricClient();
+FABRIC = wrapFabricClient(FC);
 
-FABRIC = wrapFabricClient(createFabricClient());
 load( "UnitTest.js.inc" );
 
 var Vec3 = function( x, y, z ) {
@@ -81,3 +82,6 @@ ut.test("Selectors (Vec3)", function() {
 	ut.expect( "Correct number of results", result.length, 1 );
 	ut.expect( "Correct result value", result[0].value.x, 7 );
 });
+
+FABRIC.flush();
+FC.dispose();

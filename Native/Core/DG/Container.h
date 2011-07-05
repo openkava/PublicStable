@@ -114,7 +114,7 @@ namespace Fabric
       
       virtual void setOutOfDate() = 0;
       
-      virtual MT::ParallelCall *bind( RC::ConstHandle<Binding> const &binding, Scope const &scope, size_t *newCount, unsigned prefixCount=0, void * const *prefixes = 0 );
+      virtual RC::Handle<MT::ParallelCall> bind( RC::ConstHandle<Binding> const &binding, Scope const &scope, size_t *newCount, unsigned prefixCount=0, void * const *prefixes = 0 );
       
       class Member;
       typedef std::map< std::string, Member * > Members;

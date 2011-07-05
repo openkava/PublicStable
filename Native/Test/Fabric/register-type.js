@@ -1,5 +1,5 @@
-
-FABRIC = wrapFabricClient(createFabricClient());
+FC = createFabricClient();
+FABRIC = wrapFabricClient(FC);
 
 var Vec2 = function( x, y ) {
   if ( typeof x === "number" && typeof y === "number" ) {
@@ -59,3 +59,6 @@ FABRIC.RT.registerType('ComplexType', complexTypeDesc);
 printDeep(FABRIC.RT.getRegisteredTypes()['ComplexType']);
 node.addMember( 'ct', 'ComplexType' );
 printDeep( node.getData( 'ct', 0 ) );
+
+FABRIC.flush();
+FC.dispose();
