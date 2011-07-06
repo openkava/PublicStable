@@ -1,6 +1,7 @@
 #include "Manager.h"
 #include "BooleanAdapter.h"
 #include "ByteAdapter.h"
+#include "ConstStringAdapter.h"
 #include "IntegerAdapter.h"
 #include "SizeAdapter.h"
 #include "ScalarAdapter.h"
@@ -17,6 +18,7 @@
 #include <Fabric/Core/RT/SizeDesc.h>
 #include <Fabric/Core/RT/ScalarDesc.h>
 #include <Fabric/Core/RT/OpaqueDesc.h>
+#include <Fabric/Core/RT/ConstStringDesc.h>
 #include <Fabric/Core/RT/StringDesc.h>
 #include <Fabric/Core/RT/StructDesc.h>
 #include <Fabric/Core/RT/FixedArrayDesc.h>
@@ -93,6 +95,13 @@ namespace Fabric
           {
             RC::ConstHandle<RT::StringDesc> stringDesc = RC::ConstHandle<RT::StringDesc>::StaticCast( desc );
             adapter = new StringAdapter( this, stringDesc );
+          }
+          break;
+          
+          case RT::DT_CONST_STRING:
+          {
+            RC::ConstHandle<RT::ConstStringDesc> constStringDesc = RC::ConstHandle<RT::ConstStringDesc>::StaticCast( desc );
+            adapter = new ConstStringAdapter( this, constStringDesc );
           }
           break;
           
@@ -184,6 +193,14 @@ namespace Fabric
         m_dataAdapter = RC::ConstHandle<OpaqueAdapter>::StaticCast( getAdapter( m_rtManager->getDataDesc() ) );
       return m_dataAdapter;
     }
+    
+    RC::ConstHandle<ConstStringAdapter> Manager::getConstStringAdapter( size_t length ) const
+    {
+      ConstStringAdapters::const_iterator it = m_constStringAdapters.find( length );
+      if ( it == m_constStringAdapters.end() )
+        it = m_constStringAdapters.insert( ConstStringAdapters::value_type( length, RC::ConstHandle<ConstStringAdapter>::StaticCast( getAdapter( m_rtManager->getConstStringDesc( length ) ) ) ) ).first;
+      return it->second;
+    }
       
     RC::ConstHandle<VariableArrayAdapter> Manager::getVariableArrayOf( RC::ConstHandle<Adapter> const &adapter ) const
     {
@@ -249,6 +266,11 @@ namespace Fabric
     llvm::LLVMContext &Manager::getLLVMContext() const
     {
       return m_llvmContext;
+    }
+
+    RC::ConstHandle<RT::Desc> Manager::getStrongerTypeOrNone( RC::ConstHandle<RT::Desc> const &lhsDesc, RC::ConstHandle<RT::Desc> const &rhsDesc ) const
+    {
+      return m_rtManager->getStrongerTypeOrNone( lhsDesc, rhsDesc );
     }
   };
 };

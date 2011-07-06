@@ -100,7 +100,7 @@ namespace Fabric
       size_t length = getValueLength(data);
       if ( length > 64 )
       {
-        result.append( length, 64 );
+        result.append( getValueData(data), 64 );
         result += "...";
       }
       else if ( length )

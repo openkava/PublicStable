@@ -50,7 +50,7 @@ namespace Fabric
       
       // [pzion 20110317] Fall back on stronger type
       
-      RC::ConstHandle<RT::Desc> castDesc = RT::getStrongerTypeOrNone( lhsType->getDesc(), rhsType->getDesc() );
+      RC::ConstHandle<RT::Desc> castDesc = basicBlockBuilder.getStrongerTypeOrNone( lhsType->getDesc(), rhsType->getDesc() );
       if ( castDesc )
       {
         RC::ConstHandle<CG::Adapter> castType = basicBlockBuilder.getManager()->getAdapter( castDesc );
@@ -60,6 +60,8 @@ namespace Fabric
         if ( functionSymbol )
           return functionSymbol;
       }
+      
+      // 
 
       throw Exception( "binary operator " + _(CG::binOpUserName( m_binOpType )) + " not supported for types " + _(lhsType->getUserName()) + " and " + _(rhsType->getUserName()) );
     }

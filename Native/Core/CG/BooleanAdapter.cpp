@@ -3,6 +3,7 @@
  */
  
 #include "BooleanAdapter.h"
+#include "ConstStringAdapter.h"
 #include "StringAdapter.h"
 #include "Manager.h"
 #include "ModuleBuilder.h"
@@ -50,11 +51,15 @@ namespace Fabric
           basicBlockBuilder->CreateCondBr( booleanRValue, trueBB, falseBB );
           
           basicBlockBuilder->SetInsertPoint( trueBB );
-          llvm::Value *trueStringRValue = stringAdapter->llvmConst( basicBlockBuilder, "true" );
+          RC::ConstHandle<ConstStringAdapter> trueConstStringAdapter = getManager()->getConstStringAdapter(4);
+          ExprValue trueExprValue( trueConstStringAdapter, USAGE_RVALUE, trueConstStringAdapter->llvmConst( basicBlockBuilder, "true", 4 ) );
+          llvm::Value *trueStringRValue = stringAdapter->llvmCast( basicBlockBuilder, trueExprValue );
           basicBlockBuilder->CreateBr( mergeBB );
           
           basicBlockBuilder->SetInsertPoint( falseBB );
-          llvm::Value *falseStringRValue = stringAdapter->llvmConst( basicBlockBuilder, "false" );
+          RC::ConstHandle<ConstStringAdapter> falseConstStringAdapter = getManager()->getConstStringAdapter(5);
+          ExprValue falseExprValue( falseConstStringAdapter, USAGE_RVALUE, falseConstStringAdapter->llvmConst( basicBlockBuilder, "false", 5 ) );
+          llvm::Value *falseStringRValue = stringAdapter->llvmCast( basicBlockBuilder, falseExprValue );
           basicBlockBuilder->CreateBr( mergeBB );
           
           basicBlockBuilder->SetInsertPoint( mergeBB );

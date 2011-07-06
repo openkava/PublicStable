@@ -432,7 +432,6 @@
 		DB9672CB13A5423200616143 /* FixedArrayImpl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FixedArrayImpl.h; sourceTree = "<group>"; };
 		DB9672CC13A5423200616143 /* Impl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Impl.cpp; sourceTree = "<group>"; };
 		DB9672CD13A5423200616143 /* Impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Impl.h; sourceTree = "<group>"; };
-		DB9672CE13A5423200616143 /* ImplType.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ImplType.cpp; sourceTree = "<group>"; };
 		DB9672CF13A5423200616143 /* ImplType.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImplType.h; sourceTree = "<group>"; };
 		DB9672D013A5423200616143 /* IntegerDesc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = IntegerDesc.cpp; sourceTree = "<group>"; };
 		DB9672D113A5423200616143 /* IntegerDesc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IntegerDesc.h; sourceTree = "<group>"; };
@@ -1084,6 +1083,12 @@
 		DBCCD56913ABFAE300024113 /* timeSample.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = timeSample.cpp; sourceTree = "<group>"; };
 		DBCCD56A13ABFAE300024113 /* TimeSample.fpm.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = TimeSample.fpm.json; sourceTree = "<group>"; };
 		DBCCD57B13AC007D00024113 /* currentTime.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = currentTime.html; sourceTree = "<group>"; };
+		DBF56D2413C4B4F800778A06 /* ConstStringImpl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ConstStringImpl.h; sourceTree = "<group>"; };
+		DBF56D2513C4B58400778A06 /* ConstStringImpl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ConstStringImpl.cpp; sourceTree = "<group>"; };
+		DBF56D5913C4BCDA00778A06 /* ConstStringDesc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ConstStringDesc.cpp; sourceTree = "<group>"; };
+		DBF56D5A13C4BCDA00778A06 /* ConstStringDesc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ConstStringDesc.h; sourceTree = "<group>"; };
+		DBF56D5F13C4CA6A00778A06 /* ConstStringAdapter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ConstStringAdapter.cpp; sourceTree = "<group>"; };
+		DBF56D6013C4CA6A00778A06 /* ConstStringAdapter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ConstStringAdapter.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -1246,6 +1251,7 @@
 		DB96714013A5423100616143 /* JSON */ = {
 			isa = PBXGroup;
 			children = (
+				DB96714B13A5423100616143 /* SConscript */,
 				DB96714113A5423100616143 /* Array.h */,
 				DB96714213A5423100616143 /* Boolean.h */,
 				DB96714313A5423100616143 /* Decode.cpp */,
@@ -1256,7 +1262,6 @@
 				DB96714813A5423100616143 /* Null.h */,
 				DB96714913A5423100616143 /* Object.h */,
 				DB96714A13A5423100616143 /* Scalar.h */,
-				DB96714B13A5423100616143 /* SConscript */,
 				DB96714C13A5423100616143 /* String.h */,
 				DB96714D13A5423100616143 /* Value.cpp */,
 				DB96714E13A5423100616143 /* Value.h */,
@@ -1545,6 +1550,8 @@
 				DB96722013A5423200616143 /* BooleanAdapter.h */,
 				DB96722113A5423200616143 /* ByteAdapter.cpp */,
 				DB96722213A5423200616143 /* ByteAdapter.h */,
+				DBF56D5F13C4CA6A00778A06 /* ConstStringAdapter.cpp */,
+				DBF56D6013C4CA6A00778A06 /* ConstStringAdapter.h */,
 				DB96722313A5423200616143 /* Diagnostics.h */,
 				DB96722413A5423200616143 /* Error.cpp */,
 				DB96722513A5423200616143 /* Error.h */,
@@ -1762,6 +1769,10 @@
 				DB9672C313A5423200616143 /* ByteDesc.h */,
 				DB9672C413A5423200616143 /* ByteImpl.cpp */,
 				DB9672C513A5423200616143 /* ByteImpl.h */,
+				DBF56D5913C4BCDA00778A06 /* ConstStringDesc.cpp */,
+				DBF56D5A13C4BCDA00778A06 /* ConstStringDesc.h */,
+				DBF56D2513C4B58400778A06 /* ConstStringImpl.cpp */,
+				DBF56D2413C4B4F800778A06 /* ConstStringImpl.h */,
 				DB9672C613A5423200616143 /* Desc.cpp */,
 				DB9672C713A5423200616143 /* Desc.h */,
 				DB9672C813A5423200616143 /* FixedArrayDesc.cpp */,
@@ -1770,7 +1781,6 @@
 				DB9672CB13A5423200616143 /* FixedArrayImpl.h */,
 				DB9672CC13A5423200616143 /* Impl.cpp */,
 				DB9672CD13A5423200616143 /* Impl.h */,
-				DB9672CE13A5423200616143 /* ImplType.cpp */,
 				DB9672CF13A5423200616143 /* ImplType.h */,
 				DB9672D013A5423200616143 /* IntegerDesc.cpp */,
 				DB9672D113A5423200616143 /* IntegerDesc.h */,
