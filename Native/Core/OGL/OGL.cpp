@@ -996,8 +996,11 @@ namespace Fabric
   scope.put( name, CG::ConstantSymbol::Create( CG::ExprValue( integerAdapter, CG::USAGE_RVALUE, integerAdapter->llvmConst( value ) ) ) )
 #define ADD_FUNC_QUOTE( x ) #x
 #define ADD_FUNC( name, paramLayout ) \
-  CG::FunctionBuilder( moduleBuilder, ADD_FUNC_QUOTE(gl##name), paramLayout); \
-  llvmFuncTable[ ADD_FUNC_QUOTE(gl##name) ] = (void *)&name;
+  do { \
+    std::string friendlyEntryName = ADD_FUNC_QUOTE(gl##name); \
+    CG::FunctionBuilder( moduleBuilder, friendlyEntryName, paramLayout, &friendlyEntryName); \
+    llvmFuncTable[friendlyEntryName] = (void *)&name; \
+  } while ( false )
     
     void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, RC::Handle<RT::Manager> const &rtManager )
     {

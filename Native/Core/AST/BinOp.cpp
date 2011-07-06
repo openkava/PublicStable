@@ -44,12 +44,9 @@ namespace Fabric
       RC::ConstHandle<CG::Adapter> rhsType = m_right->getType( basicBlockBuilder );
       
       std::string functionName = CG::binOpOverloadName( m_binOpType, lhsType, rhsType );
-      RC::ConstHandle<CG::Symbol> symbol = basicBlockBuilder.getScope().get( functionName );
-      if ( symbol )
-      {
-        FABRIC_ASSERT( symbol->isFunction() );
-        return RC::ConstHandle< CG::FunctionSymbol >::StaticCast( symbol );
-      }
+      RC::ConstHandle<CG::FunctionSymbol> functionSymbol = basicBlockBuilder.maybeGetFunction( functionName );
+      if ( functionSymbol )
+        return functionSymbol;
       
       // [pzion 20110317] Fall back on stronger type
       
@@ -59,12 +56,9 @@ namespace Fabric
         RC::ConstHandle<CG::Adapter> castType = basicBlockBuilder.getManager()->getAdapter( castDesc );
 
         functionName = CG::binOpOverloadName( m_binOpType, castType, castType );
-        symbol = basicBlockBuilder.getScope().get( functionName );
-        if ( symbol )
-        {
-          FABRIC_ASSERT( symbol->isFunction() );
-          return RC::ConstHandle< CG::FunctionSymbol >::StaticCast( symbol );
-        }
+        functionSymbol = basicBlockBuilder.maybeGetFunction( functionName );
+        if ( functionSymbol )
+          return functionSymbol;
       }
 
       throw Exception( "binary operator " + _(CG::binOpUserName( m_binOpType )) + " not supported for types " + _(lhsType->getUserName()) + " and " + _(rhsType->getUserName()) );

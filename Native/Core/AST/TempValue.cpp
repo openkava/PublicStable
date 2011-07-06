@@ -52,11 +52,9 @@ namespace Fabric
       
       std::string initializerName = constructOverloadName( result.getAdapter(), argTypes );
         
-      RC::ConstHandle<CG::Symbol> symbol = basicBlockBuilder.getScope().get( initializerName );
-      if ( !symbol )
+      RC::ConstHandle<CG::FunctionSymbol> functionSymbol = basicBlockBuilder.maybeGetFunction( initializerName );
+      if ( !functionSymbol )
         throw Exception( "initializer " + _(initializerName) + " not found" );
-      FABRIC_ASSERT( symbol->isFunction() );
-      RC::ConstHandle<CG::FunctionSymbol> functionSymbol = RC::ConstHandle<CG::FunctionSymbol>::StaticCast( symbol );
 
       std::vector<CG::FunctionParam> const functionParams = functionSymbol->getParams();
       

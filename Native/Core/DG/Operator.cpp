@@ -225,7 +225,7 @@ namespace Fabric
           continue;
         RC::ConstHandle<AST::Function> function = RC::ConstHandle<AST::Function>::StaticCast( global );
         
-        if ( function->getName() == m_entryFunctionName )
+        if ( function->getFriendlyName() == m_entryFunctionName )
         {
           if( !function->isOperator() )
             throw Exception( "attempting to use a function " + _(m_entryFunctionName) + " instead of an operator" );

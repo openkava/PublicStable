@@ -37,12 +37,10 @@ namespace Fabric
       m_argList->appendTypes( basicBlockBuilder, paramTypes );
       
       std::string functionName = CG::methodOverloadName( m_name, selfType, paramTypes );
-      RC::ConstHandle<CG::Symbol> symbol = basicBlockBuilder.getScope().get( functionName );
-      if ( !symbol )
+      RC::ConstHandle<CG::FunctionSymbol> functionSymbol = basicBlockBuilder.maybeGetFunction( functionName );
+      if ( !functionSymbol )
         throw CG::Error( getLocation(), "type " + selfType->getUserName() + " has no method named " + _(m_name) );
-
-      FABRIC_ASSERT( symbol->isFunction() );
-      return RC::ConstHandle< CG::FunctionSymbol >::StaticCast( symbol );
+      return functionSymbol;
     }
     
     RC::ConstHandle<CG::Adapter> MethodOp::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const

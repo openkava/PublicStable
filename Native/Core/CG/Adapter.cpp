@@ -124,11 +124,9 @@ namespace Fabric
     {
       // [pzion 20110204] Start by looking for operator overload
       std::string name = methodOverloadName( assignOpMethodName( ASSIGN_OP ), this, this );
-      RC::ConstHandle<Symbol> symbol = basicBlockBuilder.getScope().get( name );
-      if ( symbol )
+      RC::ConstHandle<FunctionSymbol> functionSymbol = basicBlockBuilder.maybeGetFunction( name );
+      if ( functionSymbol )
       {
-        FABRIC_ASSERT( symbol->isFunction() );
-        RC::ConstHandle<FunctionSymbol> functionSymbol = RC::ConstHandle<FunctionSymbol>::StaticCast( symbol );
         ExprValue dstExprValue = ExprValue( this, USAGE_LVALUE, dstLValue );
         ExprValue srcExprValue = ExprValue( this, USAGE_RVALUE, srcRValue );
         functionSymbol->llvmCreateCall( basicBlockBuilder, dstExprValue, srcExprValue );
@@ -158,11 +156,9 @@ namespace Fabric
       else
       {
         std::string name = constructOverloadName( this, exprValue.getAdapter() );
-        RC::ConstHandle<Symbol> symbol = basicBlockBuilder.getScope().get( name );
-        if ( !symbol )
+        RC::ConstHandle<FunctionSymbol> functionSymbol = basicBlockBuilder.maybeGetFunction( name );
+        if ( !functionSymbol )
           throw Exception( "no cast exists from " + exprValue.getTypeUserName() + " to " + getUserName() );
-        FABRIC_ASSERT( symbol->isFunction() );
-        RC::ConstHandle<FunctionSymbol> functionSymbol = RC::ConstHandle<FunctionSymbol>::StaticCast( symbol );
         
         llvm::Value *srcRValue;
         switch ( exprValue.getUsage() )

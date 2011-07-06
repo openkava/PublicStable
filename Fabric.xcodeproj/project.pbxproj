@@ -1412,6 +1412,7 @@
 		DB9671A413A5423200616143 /* AST */ = {
 			isa = PBXGroup;
 			children = (
+				DB9671FF13A5423200616143 /* SConscript */,
 				DB9671A513A5423200616143 /* Alias.cpp */,
 				DB9671A613A5423200616143 /* Alias.h */,
 				DB9671A713A5423200616143 /* AndOp.cpp */,
@@ -1502,7 +1503,6 @@
 				DB9671FC13A5423200616143 /* Report.h */,
 				DB9671FD13A5423200616143 /* ReturnStatement.cpp */,
 				DB9671FE13A5423200616143 /* ReturnStatement.h */,
-				DB9671FF13A5423200616143 /* SConscript */,
 				DB96720013A5423200616143 /* Statement.cpp */,
 				DB96720113A5423200616143 /* Statement.h */,
 				DB96720213A5423200616143 /* StatementList.cpp */,
@@ -1534,6 +1534,7 @@
 		DB96721813A5423200616143 /* CG */ = {
 			isa = PBXGroup;
 			children = (
+				DB96723D13A5423200616143 /* SConscript */,
 				DB96721913A5423200616143 /* Adapter.cpp */,
 				DB96721A13A5423200616143 /* Adapter.h */,
 				DB96721B13A5423200616143 /* ArrayAdapter.cpp */,
@@ -1570,7 +1571,6 @@
 				DB96723A13A5423200616143 /* OverloadNames.h */,
 				DB96723B13A5423200616143 /* ScalarAdapter.cpp */,
 				DB96723C13A5423200616143 /* ScalarAdapter.h */,
-				DB96723D13A5423200616143 /* SConscript */,
 				DB96723E13A5423200616143 /* Scope.h */,
 				DB96723F13A5423200616143 /* SimpleAdapter.cpp */,
 				DB96724013A5423200616143 /* SimpleAdapter.h */,
@@ -1662,6 +1662,7 @@
 		DB96728013A5423200616143 /* KL */ = {
 			isa = PBXGroup;
 			children = (
+				DB96728A13A5423200616143 /* SConscript */,
 				DB96728113A5423200616143 /* Context.h */,
 				DB96728213A5423200616143 /* Debug.cpp */,
 				DB96728313A5423200616143 /* Debug.h */,
@@ -1671,7 +1672,6 @@
 				DB96728713A5423200616143 /* Parser.yy */,
 				DB96728813A5423200616143 /* Scanner.cpp */,
 				DB96728913A5423200616143 /* Scanner.h */,
-				DB96728A13A5423200616143 /* SConscript */,
 				DB96728B13A5423200616143 /* Source.h */,
 				DB96728C13A5423200616143 /* Token.h */,
 			);
@@ -1733,6 +1733,7 @@
 		DB9672AF13A5423200616143 /* Plug */ = {
 			isa = PBXGroup;
 			children = (
+				DB9672B813A5423200616143 /* SConscript */,
 				DB9672B013A5423200616143 /* Desc.cpp */,
 				DB9672B113A5423200616143 /* Desc.h */,
 				DB9672B213A5423200616143 /* Helpers.cpp */,
@@ -1741,7 +1742,6 @@
 				DB9672B513A5423200616143 /* Inst.h */,
 				DB9672B613A5423200616143 /* Manager.cpp */,
 				DB9672B713A5423200616143 /* Manager.h */,
-				DB9672B813A5423200616143 /* SConscript */,
 			);
 			path = Plug;
 			sourceTree = "<group>";
@@ -1749,6 +1749,7 @@
 		DB9672B913A5423200616143 /* RT */ = {
 			isa = PBXGroup;
 			children = (
+				DB9672DE13A5423200616143 /* SConscript */,
 				DB9672BA13A5423200616143 /* ArrayDesc.cpp */,
 				DB9672BB13A5423200616143 /* ArrayDesc.h */,
 				DB9672BC13A5423200616143 /* ArrayImpl.cpp */,
@@ -1785,7 +1786,6 @@
 				DB9672DB13A5423200616143 /* ScalarDesc.h */,
 				DB9672DC13A5423200616143 /* ScalarImpl.cpp */,
 				DB9672DD13A5423200616143 /* ScalarImpl.h */,
-				DB9672DE13A5423200616143 /* SConscript */,
 				DB9672DF13A5423200616143 /* SimpleImpl.cpp */,
 				DB9672E013A5423200616143 /* SimpleImpl.h */,
 				DB9672E113A5423200616143 /* SizeDesc.cpp */,

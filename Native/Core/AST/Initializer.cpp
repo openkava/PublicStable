@@ -21,6 +21,7 @@ namespace Fabric
         )
       : Function(
         location,
+        "",
         CG::constructOverloadName( selfAdapter, params->getTypes() ),
         CG::ExprType(),
         ParamList::Create(

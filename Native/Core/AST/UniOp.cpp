@@ -38,11 +38,10 @@ namespace Fabric
     {
       RC::ConstHandle<CG::Adapter> childType = m_child->getType( basicBlockBuilder );
       std::string functionName = CG::uniOpOverloadName( m_uniOpType, childType );
-      RC::ConstHandle<CG::Symbol> symbol = basicBlockBuilder.getScope().get( functionName );
-      if ( !symbol )
+      RC::ConstHandle<CG::FunctionSymbol> functionSymbol = basicBlockBuilder.maybeGetFunction( functionName );
+      if ( !functionSymbol )
         throw Exception( "unary operator " + _(CG::uniOpUserName( m_uniOpType )) + " not supported for expressions of type " + _(childType->getUserName()) );
-      FABRIC_ASSERT( symbol->isFunction() );
-      return  RC::ConstHandle< CG::FunctionSymbol >::StaticCast( symbol );
+      return functionSymbol;
     }
     
     RC::ConstHandle<CG::Adapter> UniOp::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const

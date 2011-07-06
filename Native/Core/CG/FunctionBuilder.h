@@ -24,18 +24,18 @@ namespace Fabric
     
       FunctionBuilder( 
         ModuleBuilder &moduleBuilder, 
-        std::string const &name, 
+        std::string const &entryName, 
         ExprType const &returnExprType, 
         std::vector< FunctionParam > const &params, 
-        bool addToScope = true, 
+        std::string const *friendlyName = 0,
         bool returnsStaticDataPtr = false
         );
       
       FunctionBuilder( 
         ModuleBuilder &moduleBuilder, 
-        std::string const &name, 
+        std::string const &entryName, 
         std::string const &paramLayout,
-        bool addToScope = true, 
+        std::string const *friendlyName = 0, 
         bool returnsStaticDataPtr = false
         );
       ~FunctionBuilder();
@@ -51,17 +51,17 @@ namespace Fabric
       
       llvm::Value *operator[]( size_t index );
       
-      void addFunctionToModuleScope( std::string const &name, Scope &scope );
-      
       FunctionScope &getScope();
+      RC::ConstHandle<FunctionSymbol> maybeGetFunction( std::string const &entryName ) const;
       
     private:
+    
       void build( 
-        std::string const &name, 
+        std::string const &entryName, 
         ExprType const &returnExprType, 
         std::vector< FunctionParam > const &params, 
-        bool addToScope = true, 
-        bool returnsStaticDataPtr = false
+        std::string const *friendlyName, 
+        bool returnsStaticDataPtr
         );
                 
       ModuleBuilder &m_moduleBuilder;

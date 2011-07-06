@@ -1,5 +1,5 @@
-
-F = wrapFabricClient(createFabricClient());
+FC = createFabricClient();
+F = wrapFabricClient(FC);
 
 o = F.DG.createOperator("o");
 o.setEntryFunctionName("foo");
@@ -27,3 +27,6 @@ e = F.DG.createEvent("e");
 e.appendEventHandler( peh );
 
 e.fire();
+
+F.flush();
+FC.dispose();
