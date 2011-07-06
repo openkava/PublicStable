@@ -1,5 +1,5 @@
-
-FABRIC = wrapFabricClient(createFabricClient());
+FC = createFabricClient();
+FABRIC = wrapFabricClient(FC);
 
 op = FABRIC.DependencyGraph.createOperator("op");
 op.setEntryFunctionName("load");
@@ -39,3 +39,6 @@ eh.preDescendBindings.append(binding);
 rle = FABRIC.DependencyGraph.createResourceLoadEvent("exr", "file:sample.exr");
 rle.appendEventHandler(eh);
 rle.start();
+
+FABRIC.flush();
+FC.dispose();
