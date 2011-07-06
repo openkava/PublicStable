@@ -78,6 +78,7 @@ namespace Fabric
         args.This()->SetPointerInInternalField( 0, 0 );
         client->release();
       }
+      return v8::Handle<v8::Value>();
     }
   };
 };
