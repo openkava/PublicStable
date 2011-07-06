@@ -185,7 +185,7 @@ namespace Fabric
       FABRIC_OCL_TRACE( "BuildProgram()" );
       cl_uint num_devices = clDeviceIDVariableArrayDesc->getNumMembers( &clDeviceIDsRValue );
       cl_device_id const *devices = (cl_device_id const *)clDeviceIDVariableArrayDesc->getMemberData( &clDeviceIDsRValue, 0 );
-      char const *options = stringDesc->getValueData( &clDeviceIDsRValue );
+      char const *options = stringDesc->getValueData( &optionsStringRValue );
       cl_int result = clBuildProgram( clProgram, num_devices, devices, options, NULL, NULL );
       return result;
     }
