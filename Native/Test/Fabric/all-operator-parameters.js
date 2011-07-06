@@ -1,5 +1,5 @@
-
-FABRIC = wrapFabricClient(createFabricClient());
+FC = createFabricClient();
+FABRIC = wrapFabricClient(FC);
 
 for( var i = 1; i < 32; i++ )
 {
@@ -41,3 +41,6 @@ for( var i = 1; i < 32; i++ )
       print( "Parameter " + j + " fails when evaluating " + i + " params" );
   }
 }
+
+FABRIC.flush();
+FC.dispose();

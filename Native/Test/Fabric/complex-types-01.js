@@ -1,5 +1,5 @@
-
-FABRIC = wrapFabricClient(createFabricClient());
+FC = createFabricClient();
+FABRIC = wrapFabricClient(FC);
 
 var MyStruct = function( i, s ) {
   if ( typeof i === "number" && typeof s === "number" ) {
@@ -60,3 +60,6 @@ else {
     printDeep( node.getData("msaa", 0) );
   }
 }
+
+FABRIC.flush();
+FC.dispose();

@@ -1,5 +1,5 @@
-
-FABRIC = wrapFabricClient(createFabricClient());
+FC = createFabricClient();
+FABRIC = wrapFabricClient(FC);
 
 var MyStruct = function( i, s ) {
   if ( typeof i === "number" && typeof s === "number" ) {
@@ -63,3 +63,6 @@ else {
     node.evaluate();
   }
 }
+
+FABRIC.flush();
+FC.dispose();

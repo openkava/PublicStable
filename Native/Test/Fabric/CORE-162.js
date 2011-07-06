@@ -1,5 +1,5 @@
-
-FABRIC = wrapFabricClient(createFabricClient());
+FC = createFabricClient();
+FABRIC = wrapFabricClient(FC);
 
 var ShaderSource = function( code, type ) {
 	this.code = (code!=undefined) ? code : "";
@@ -51,3 +51,6 @@ if ( errors.length > 0 ) {
 else {
   node.evaluate();
 }
+
+FABRIC.flush();
+FC.dispose();
