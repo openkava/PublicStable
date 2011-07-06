@@ -1,5 +1,5 @@
-
-FABRIC = wrapFabricClient(createFabricClient());
+FC = createFabricClient();
+FABRIC = wrapFabricClient(FC);
 
 node = FABRIC.DependencyGraph.createNode( "node" );
 node.addMember( "input", "Scalar" );
@@ -27,3 +27,6 @@ print( "Errors on eh1:" );
 print( eh1.getErrors() );
 print( "Errors on eh2:" );
 print( eh2.getErrors() );
+
+FABRIC.flush();
+FC.dispose();
