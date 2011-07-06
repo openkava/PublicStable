@@ -44,9 +44,9 @@ namespace Fabric
       
     public:
     
-      static RC::Handle<Inst> Create( std::string const &jsonDesc, RC::Handle<DG::Context> const &dgContext, std::vector<std::string> const &pluginDirs )
+      static RC::Handle<Inst> Create( std::string const &name, std::string const &jsonDesc, RC::Handle<DG::Context> const &dgContext, std::vector<std::string> const &pluginDirs )
       {
-        return new Inst( jsonDesc, dgContext, pluginDirs );
+        return new Inst( name, jsonDesc, dgContext, pluginDirs );
       }
       
       std::string const &getJSONDesc() const
@@ -69,7 +69,7 @@ namespace Fabric
       
     protected:
     
-      Inst( std::string const &jsonDesc, RC::Handle<DG::Context> const &dgContext, std::vector<std::string> const &pluginDirs );
+      Inst( std::string const &name, std::string const &jsonDesc, RC::Handle<DG::Context> const &dgContext, std::vector<std::string> const &pluginDirs );
       ~Inst();
       
     private:

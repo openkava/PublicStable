@@ -62,23 +62,18 @@ namespace Fabric
         }
 
         std::string name = methodOverloadName( assignOpMethodName( m_assignOpType ), lhsExprValue.getAdapter(), rhsExprValue.getAdapter() );
-        RC::ConstHandle< CG::Symbol > symbol = basicBlockBuilder.getScope().get( name );
-        if ( symbol )
+        RC::ConstHandle<CG::FunctionSymbol> functionSymbol = basicBlockBuilder.maybeGetFunction( name );
+        if ( functionSymbol )
         {
-          FABRIC_ASSERT( symbol->isFunction() );
-          RC::ConstHandle< CG::FunctionSymbol > functionSymbol = RC::ConstHandle< CG::FunctionSymbol >::StaticCast( symbol );
           functionSymbol->llvmCreateCall( basicBlockBuilder, lhsExprValue, rhsExprValue );
           return lhsExprValue;
         }
         
         // [pzion 20110202] Fall back on binOp + simple assignOp composition              
         std::string binOpName = binOpOverloadName( CG::binOpForAssignOp( m_assignOpType ), lhsExprValue.getAdapter(), lhsExprValue.getAdapter() );
-        RC::ConstHandle< CG::Symbol > binOpSymbol = basicBlockBuilder.getScope().get( binOpName );
-        if ( binOpSymbol )
+        RC::ConstHandle<CG::FunctionSymbol> binOpFunctionSymbol = basicBlockBuilder.maybeGetFunction( binOpName );
+        if ( binOpFunctionSymbol )
         {
-          FABRIC_ASSERT( binOpSymbol->isFunction() );
-          RC::ConstHandle< CG::FunctionSymbol > binOpFunctionSymbol = RC::ConstHandle< CG::FunctionSymbol >::StaticCast( binOpSymbol );
-        
           CG::ExprValue binOpResultExprValue = binOpFunctionSymbol->llvmCreateCall( basicBlockBuilder, lhsExprValue, rhsExprValue );
           llvm::Value *rhsCastedRValue = adapter->llvmCast( basicBlockBuilder, binOpResultExprValue );
           adapter->llvmAssign( basicBlockBuilder, lhsExprValue.getValue(), rhsCastedRValue );

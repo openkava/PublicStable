@@ -19,13 +19,15 @@ namespace Fabric
   {
     Function::Function(
         CG::Location const &location,
-        std::string const &name,
+        std::string const &friendlyName,
+        std::string const &entryName,
         CG::ExprType const &returnExprType,
         RC::ConstHandle<ParamList> const &params,
         RC::ConstHandle<CompoundStatement> const &body
         )
       : Global( location )
-      , m_name( name )
+      , m_friendlyName( friendlyName )
+      , m_entryName( entryName )
       , m_returnExprType( returnExprType )
       , m_params( params )
       , m_body( body )
@@ -34,7 +36,7 @@ namespace Fabric
     
     std::string Function::localDesc() const
     {
-      return "Function( '" + m_name + "', " + m_returnExprType.desc() + " )";
+      return "Function( '" + m_friendlyName + "' ('" + m_entryName + "'), " + m_returnExprType.desc() + " )";
     }
     
     std::string Function::deepDesc( std::string const &indent ) const
@@ -57,13 +59,13 @@ namespace Fabric
     
     void Function::llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctionBodies ) const
     {
-      if ( !buildFunctionBodies && moduleBuilder.getScope().has( m_name ) )
+      if ( !buildFunctionBodies && m_friendlyName.length()>0 && moduleBuilder.getScope().has( m_friendlyName ) )
       {
-        addError( diagnostics, "symbol '" + m_name + "' already exists" );
+        addError( diagnostics, "symbol '" + m_entryName + "' already exists" );
       }
       else
       {
-        CG::FunctionBuilder functionBuilder( moduleBuilder, m_name, m_returnExprType, m_params->getFunctionParams() );
+        CG::FunctionBuilder functionBuilder( moduleBuilder, m_entryName, m_returnExprType, m_params->getFunctionParams(), m_friendlyName.length()>0? &m_friendlyName: 0 );
         if ( buildFunctionBodies && m_body )
         {
           CG::BasicBlockBuilder basicBlockBuilder( functionBuilder );

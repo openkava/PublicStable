@@ -25,7 +25,7 @@ namespace Fabric
   
   namespace AST
   {
-    class BinOpImpl: public Function
+    class BinOpImpl : public Function
     {
     public:
     

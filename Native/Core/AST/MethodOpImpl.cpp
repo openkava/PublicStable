@@ -23,6 +23,7 @@ namespace Fabric
       )
       : Function(
         location,
+        "",
         CG::methodOverloadName( methodName, selfAdapter, params->getTypes() ),
         returnExprType,
         ParamList::Create(

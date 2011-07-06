@@ -23,6 +23,7 @@ namespace Fabric
         )
       : Function(
         location,
+        "",
         CG::binOpOverloadName( binOpType, lhs->getAdapter(), rhs->getAdapter() ),
         returnExprType,
         ParamList::Create( location, lhs, ParamList::Create( location, rhs ) ),

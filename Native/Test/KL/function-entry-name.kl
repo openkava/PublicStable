@@ -1,0 +1,9 @@
+// This function is accessible from KL as "foo" but gets
+// compiled to the global symbol "bar"
+function Scalar foo( Scalar x ) = "bar" {
+  return 1.0/x;
+}
+
+function entry() {
+  report foo(2);
+}

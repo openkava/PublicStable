@@ -80,6 +80,7 @@
 #include <Fabric/Core/CG/StructAdapter.h>
 #include <Fabric/Core/CG/FixedArrayAdapter.h>
 #include <Fabric/Core/CG/VariableArrayAdapter.h>
+#include <Fabric/Core/Util/Parse.h>
 using namespace Fabric;
 
 }
@@ -220,6 +221,7 @@ int kl_lex( YYSTYPE *yys, YYLTYPE *yyl, KL::Context &ctx );
 %token <cgAdapter> TK_REGISTERED_TYPE "registered type"
 %token <valueStringPtr> TK_IDENTIFIER "identifier"
 
+%type <valueStringPtr> function_entry_name
 %type <astParamPtr> parameter
 %type <astParamPtr> input_parameter
 %type <astParamListPtr> parameter_list
@@ -355,27 +357,30 @@ global
 ;
 
 function
-  : TK_FUNCTION compound_type TK_IDENTIFIER TK_LPAREN parameter_list TK_RPAREN compound_statement
+  : TK_FUNCTION compound_type TK_IDENTIFIER TK_LPAREN parameter_list TK_RPAREN function_entry_name compound_statement
   {
-    $$ = AST::Function::Create( RTLOC, *$3, CG::ExprType( $2, CG::USAGE_RVALUE ), $5, $7 ).take();
+    $$ = AST::Function::Create( RTLOC, *$3, $7, CG::ExprType( $2, CG::USAGE_RVALUE ), $5, $8 ).take();
     $2->release();
     delete $3;
     $5->release();
+    delete $7;
+    $8->release();
+  }
+  | TK_FUNCTION TK_IDENTIFIER TK_LPAREN parameter_list TK_RPAREN function_entry_name compound_statement
+  {
+    $$ = AST::Function::Create( RTLOC, *$2, $6, CG::ExprType(), $4, $7 ).take();
+    delete $2;
+    $4->release();
+    delete $6;
     $7->release();
   }
-  | TK_FUNCTION TK_IDENTIFIER TK_LPAREN parameter_list TK_RPAREN compound_statement
+  | TK_OPERATOR TK_IDENTIFIER TK_LPAREN parameter_list TK_RPAREN function_entry_name compound_statement
   {
-    $$ = AST::Function::Create( RTLOC, *$2, CG::ExprType(), $4, $6 ).take();
+    $$ = AST::Operator::Create( RTLOC, *$2, $6, $4, $7 ).take();
     delete $2;
     $4->release();
-    $6->release();
-  }
-  | TK_OPERATOR TK_IDENTIFIER TK_LPAREN parameter_list TK_RPAREN compound_statement
-  {
-    $$ = AST::Operator::Create( RTLOC, *$2, $4, $6 ).take();
-    delete $2;
-    $4->release();
-    $6->release();
+    delete $6;
+    $7->release();
   }
   | TK_FUNCTION compound_type compound_type TK_DOT TK_IDENTIFIER TK_LPAREN parameter_list TK_RPAREN compound_statement
   {
@@ -419,19 +424,39 @@ function
 ;
 
 prototype
-  : TK_FUNCTION compound_type TK_IDENTIFIER TK_LPAREN parameter_list TK_RPAREN TK_SEMICOLON
+  : TK_FUNCTION compound_type TK_IDENTIFIER TK_LPAREN parameter_list TK_RPAREN function_entry_name TK_SEMICOLON
   {
-    $$ = AST::Function::Create( RTLOC, *$3, CG::ExprType( $2, CG::USAGE_RVALUE ), $5, 0 ).take();
+    $$ = AST::Function::Create( RTLOC, *$3, $7, CG::ExprType( $2, CG::USAGE_RVALUE ), $5, 0 ).take();
     $2->release();
     delete $3;
     $5->release();
+    delete $7;
   }
-  | TK_FUNCTION TK_IDENTIFIER TK_LPAREN parameter_list TK_RPAREN TK_SEMICOLON
+  | TK_FUNCTION TK_IDENTIFIER TK_LPAREN parameter_list TK_RPAREN function_entry_name TK_SEMICOLON
   {
-    $$ = AST::Function::Create( RTLOC, *$2, CG::ExprType(), $4, 0 ).take();
+    $$ = AST::Function::Create( RTLOC, *$2, $6, CG::ExprType(), $4, 0 ).take();
     delete $2;
     $4->release();
+    delete $6;
   }
+;
+
+function_entry_name
+  : TK_EQUALS TK_CONST_STRING_SQUOT
+  {
+    $$ = new std::string( Util::parseQuotedString( *$2 ) );
+    delete $2;
+  }
+  | TK_EQUALS TK_CONST_STRING_DQUOT
+  {
+    $$ = new std::string( Util::parseQuotedString( *$2 ) );
+    delete $2;
+  }
+  | /* empty */
+  {
+    $$ = 0;
+  }
+;
 
 alias
   : TK_ALIAS compound_type

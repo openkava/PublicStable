@@ -49,11 +49,9 @@ namespace Fabric
       else
       {
         std::string functionName = methodOverloadName( m_memberName, structType );
-        RC::ConstHandle<CG::Symbol> symbol = basicBlockBuilder.getScope().get( functionName );
-        if ( !symbol )
+        RC::ConstHandle<CG::FunctionSymbol> functionSymbol = basicBlockBuilder.maybeGetFunction( functionName );
+        if ( !functionSymbol )
           throw Exception( "type " + structType->getUserName() + " has no member or method named " + _(m_memberName) );
-        FABRIC_ASSERT( symbol->isFunction() );
-        RC::ConstHandle< CG::FunctionSymbol > functionSymbol = RC::ConstHandle< CG::FunctionSymbol >::StaticCast( symbol );
         return functionSymbol->getReturnInfo().getAdapter();
       }
     }
@@ -98,11 +96,9 @@ namespace Fabric
         }
 
         std::string functionName = methodOverloadName( m_memberName, adapter );
-        RC::ConstHandle<CG::Symbol> symbol = basicBlockBuilder.getScope().get( functionName );
-        if ( symbol )
+        RC::ConstHandle<CG::FunctionSymbol> functionSymbol = basicBlockBuilder.maybeGetFunction( functionName );
+        if ( functionSymbol )
         {
-          FABRIC_ASSERT( symbol->isFunction() );
-          RC::ConstHandle< CG::FunctionSymbol > functionSymbol = RC::ConstHandle< CG::FunctionSymbol >::StaticCast( symbol );
           std::vector<CG::FunctionParam> const &functionParams = functionSymbol->getParams();
           
           if ( functionParams.size() != 1 )

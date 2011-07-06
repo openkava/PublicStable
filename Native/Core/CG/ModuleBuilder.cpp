@@ -41,5 +41,30 @@ namespace Fabric
       bool insertResult = m_contained.insert( codeName ).second;
       return !insertResult;
     }
+
+    void ModuleBuilder::addFunction( std::string const &entryName, RC::ConstHandle<FunctionSymbol> const &functionSymbol, std::string const *friendlyName )
+    {
+      FABRIC_ASSERT( entryName.length() > 0 );
+      
+      std::pair< Functions::iterator, bool > insertResult = m_functions.insert( Functions::value_type( entryName, functionSymbol ) );
+      if ( !insertResult.second )
+      {
+        RC::ConstHandle<FunctionSymbol> const &existingFunctionSymbol = insertResult.first->second;
+        if ( existingFunctionSymbol->getLLVMFunction() != functionSymbol->getLLVMFunction() )
+          throw Exception( "function with entry name " + _(entryName) + " already exists" );
+      }
+      
+      if ( friendlyName )
+        m_moduleScope.put( *friendlyName, functionSymbol );
+    }
+    
+    RC::ConstHandle<FunctionSymbol> ModuleBuilder::maybeGetFunction( std::string const &entryName ) const
+    {
+      RC::ConstHandle<FunctionSymbol> result;
+      Functions::const_iterator it = m_functions.find( entryName );
+      if ( it != m_functions.end() )
+        result = it->second;
+      return result;
+    }
   };
 };
