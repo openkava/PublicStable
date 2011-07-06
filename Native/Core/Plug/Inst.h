@@ -78,6 +78,8 @@ namespace Fabric
       void enumerateMethods( std::vector<std::string> &result ) const;
       //RC::Handle<LIB::Value> invokeMethod( std::string const &methodName, std::vector< RC::Handle<LIB::Value> > const &args );
     
+      std::string m_name;
+      mutable bool m_disabled;
       RC::Handle<CG::Manager> m_cgManager;
       std::string m_jsonDesc;
       Desc m_desc;

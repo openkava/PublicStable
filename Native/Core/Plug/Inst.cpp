@@ -22,7 +22,9 @@ namespace Fabric
     //typedef void (*OnUnloadFn)( SDK::Value FABRIC );
     
     Inst::Inst( std::string const &name, std::string const &jsonDesc, RC::Handle<DG::Context> const &dgContext, std::vector<std::string> const &pluginDirs )
-      : m_cgManager( dgContext->getCGManager() )
+      : m_name( name )
+      , m_disabled( false )
+      , m_cgManager( dgContext->getCGManager() )
       , m_jsonDesc( jsonDesc )
     {
       try
@@ -142,15 +144,28 @@ namespace Fabric
     {
       CG::Diagnostics diagnostics;
       m_ast->llvmCompileToModule( moduleBuilder, diagnostics );
-      FABRIC_ASSERT( !diagnostics.containsError() );
+      for ( CG::Diagnostics::const_iterator it=diagnostics.begin(); it!=diagnostics.end(); ++it )
+      {
+        CG::Location const &location = it->first;
+        CG::Diagnostic const &diagnostic = it->second;
+        FABRIC_LOG( "[%s] %u:%u: %s: %s", m_name.c_str(), (unsigned)location.getLine(), (unsigned)location.getColumn(), diagnostic.getLevelDesc(), diagnostic.getDesc().c_str() );
+      }
+      if ( diagnostics.containsError() )
+      {
+        FABRIC_LOG( "[%s] KL code contains error(s), extension disabled", m_name.c_str() );
+        m_disabled = true;
+      }
     }
     
     void *Inst::llvmResolveExternalFunction( std::string const &name ) const
     {
       void *result = 0;
-      ExternalFunctionMap::const_iterator it = m_externalFunctionMap.find( name );
-      if ( it != m_externalFunctionMap.end() )
-        result = it->second;
+      if ( !m_disabled )
+      {
+        ExternalFunctionMap::const_iterator it = m_externalFunctionMap.find( name );
+        if ( it != m_externalFunctionMap.end() )
+          result = it->second;
+      }
       return result;
     }
 
