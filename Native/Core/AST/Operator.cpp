@@ -10,17 +10,18 @@ namespace Fabric
   {
     Operator::Operator( 
       CG::Location const &location,
-      std::string const &name,
+      std::string const &friendlyName,
+      std::string const &entryName,
       RC::ConstHandle<ParamList> const &params,
       RC::ConstHandle<CompoundStatement> const &body
       )
-      : Function( location, name, CG::ExprType(), params, body )
+      : Function( location, friendlyName, entryName, CG::ExprType(), params, body )
     {
     }
 
     std::string Operator::localDesc() const
     {
-      return "Operator( " + getName() + " )";
+      return "Operator( " + _(getFriendlyName()) + " (" + _(getEntryName()) + ") )";
     }
   }
 }

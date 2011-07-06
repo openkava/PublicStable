@@ -13,24 +13,24 @@ namespace Fabric
   {
     FunctionBuilder::FunctionBuilder(
       ModuleBuilder &moduleBuilder,
-      std::string const &name,
+      std::string const &entryName,
       ExprType const &returnExprType,
       std::vector< FunctionParam > const &params,
-      bool addToScope, 
+      std::string const *friendlyName, 
       bool returnsStaticDataPtr
       )
       : m_moduleBuilder( moduleBuilder )
       , m_functionScope( NULL )
     {
       
-      build( name, returnExprType, params, addToScope, returnsStaticDataPtr );
+      build( entryName, returnExprType, params, friendlyName, returnsStaticDataPtr );
     }
     
     FunctionBuilder::FunctionBuilder( 
       ModuleBuilder &moduleBuilder, 
-      std::string const &name, 
+      std::string const &entryName, 
       std::string const &paramLayout,
-      bool addToScope,
+      std::string const *friendlyName,
       bool returnsStaticDataPtr
       )
       : m_moduleBuilder( moduleBuilder )
@@ -94,14 +94,14 @@ namespace Fabric
         } while( end != std::string::npos );
       }
       
-      build( name, returnExprType, paramList, addToScope, returnsStaticDataPtr );
+      build( entryName, returnExprType, paramList, friendlyName, returnsStaticDataPtr );
     }
     
     void FunctionBuilder::build( 
-      std::string const &name, 
+      std::string const &entryName, 
       ExprType const &returnExprType, 
       std::vector< FunctionParam > const &params, 
-      bool addToScope, 
+      std::string const *friendlyName, 
       bool returnsStaticDataPtr
       )
     {
@@ -141,7 +141,7 @@ namespace Fabric
       AWI[0] = llvm::AttributeWithIndex::get( ~0u, llvm::Attribute::InlineHint );
       llvm::AttrListPtr attrListPtr = llvm::AttrListPtr::get(AWI, 1);
       
-      m_llvmFunction = llvm::cast<llvm::Function>( m_moduleBuilder->getOrInsertFunction( name.c_str(), m_llvmFunctionType, attrListPtr ) );
+      m_llvmFunction = llvm::cast<llvm::Function>( m_moduleBuilder->getOrInsertFunction( entryName.c_str(), m_llvmFunctionType, attrListPtr ) );
       m_llvmFunction->setLinkage(  llvm::GlobalValue::ExternalLinkage );
       
       llvm::Function::arg_iterator ai = m_llvmFunction->arg_begin();
@@ -163,11 +163,8 @@ namespace Fabric
         m_functionScope->put( param.getName(), ParameterSymbol::Create( CG::ExprValue( param.getExprType(), ai ) ) );
       }
       
-      if ( addToScope )
-      {
-        RC::ConstHandle< FunctionSymbol > functionSymbol = CG::FunctionSymbol::Create( m_llvmFunction, returnInfo, params );
-        m_moduleBuilder.getScope().put( name, functionSymbol );
-      }
+      RC::ConstHandle<FunctionSymbol> functionSymbol = CG::FunctionSymbol::Create( m_llvmFunction, returnInfo, params );
+      m_moduleBuilder.addFunction( entryName, functionSymbol, friendlyName );
     }
 
     ModuleBuilder &FunctionBuilder::getModuleBuilder()
@@ -223,6 +220,11 @@ namespace Fabric
     FunctionScope &FunctionBuilder::getScope()
     {
       return *m_functionScope;
+    }
+
+    RC::ConstHandle<FunctionSymbol> FunctionBuilder::maybeGetFunction( std::string const &entryName ) const
+    {
+      return m_moduleBuilder.maybeGetFunction( entryName );
     }
   };
 };

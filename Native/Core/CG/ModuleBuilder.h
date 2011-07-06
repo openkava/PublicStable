@@ -5,6 +5,7 @@
 #include <Fabric/Base/RC/Handle.h>
 
 #include <set>
+#include <map>
 
 namespace llvm
 {
@@ -35,12 +36,18 @@ namespace Fabric
       
       bool contains( std::string const &codeName );
       
+      void addFunction( std::string const &entryName, RC::ConstHandle<FunctionSymbol> const &functionSymbol, std::string const *friendlyName = 0 );
+      RC::ConstHandle<FunctionSymbol> maybeGetFunction( std::string const &entryName ) const;
+      
     private:
+    
+      typedef std::map< std::string, RC::ConstHandle<FunctionSymbol> > Functions;
     
       RC::Handle<Manager> m_manager;      
       llvm::Module *m_module;
       ModuleScope m_moduleScope;
       std::set<std::string> m_contained;
+      Functions m_functions;
     };
   };
 };

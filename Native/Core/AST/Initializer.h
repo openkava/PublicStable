@@ -24,7 +24,7 @@ namespace Fabric
   
   namespace AST
   {
-    class Initializer: public Function
+    class Initializer : public Function
     {
     public:
     

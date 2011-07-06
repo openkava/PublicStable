@@ -25,6 +25,7 @@ namespace Fabric
     class Scope;
     class ModuleBuilder;
     class FunctionBuilder;
+    class FunctionSymbol;
     
     class BasicBlockBuilder
     {
@@ -45,6 +46,8 @@ namespace Fabric
       RC::ConstHandle<Manager> getManager() const;
       RC::Handle<Manager> getManager();
       llvm::LLVMContext &getLLVMContext();
+
+      RC::ConstHandle<FunctionSymbol> maybeGetFunction( std::string const &entryName ) const;
 
     private:
     

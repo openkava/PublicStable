@@ -24,7 +24,7 @@ namespace Fabric
   
   namespace AST
   {
-    class MethodOpImpl: public Function
+    class MethodOpImpl : public Function
     {
     public:
     
