@@ -16,9 +16,9 @@ if platform.system() == "Linux":
 else:
   raise(Exception("THIS PLATFORM HAS NOT YET BEEN IMPLEMENTED."))
   
-jsonsourcePath = basePath+'/../../../Exts/Builtin/OCL/FabricOCL.fpm.json'
-cpptemplatePath = basePath+'/../../../Exts/Builtin/OCL/ocl.cpp_template'
-cppsourcePath = basePath+'/../../../Exts/Builtin/OCL/ocl.cpp'
+jsonsourcePath = os.path.join(basePath,'FabricOCL.fpm.json')
+cpptemplatePath = os.path.join(basePath,'ocl.cpp_template')
+cppsourcePath = os.path.join(basePath,'ocl.cpp')
 
 verbose = False
 
