@@ -18,10 +18,10 @@ if platform.system() == "Linux":
 else:
   raise(Exception("THIS PLATFORM HAS NOT YET BEEN IMPLEMENTED."))
   
-jsonsourcePath = basePath+'/../../../Exts/Builtin/OGL/FabricOGL.fpm.json'
-cpptemplatePath = basePath+'/../../../Exts/Builtin/OGL/ogl.cpp_template'
-cppsourcePath = basePath+'/../../../Exts/Builtin/OGL/ogl.cpp'
-sceneGraphPath = basePath+'/../../../../Web/SceneGraph/Resources/FABRIC.SceneGraph.OpenGLConstants.js'
+jsonsourcePath = os.path.join(basePath,'FabricOGL.fpm.json')
+cpptemplatePath = os.path.join(basePath,'ogl.cpp_template')
+cppsourcePath = os.path.join(basePath,'ogl.cpp')
+sceneGraphPath = os.path.join(basePath,'../../../../Web/SceneGraph/Resources/FABRIC.SceneGraph.OpenGLConstants.js')
 
 verbose = False
 
