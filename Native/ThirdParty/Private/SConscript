@@ -141,6 +141,11 @@ Export( 'ffmpegFlags' )
 openclFlags = {}
 if buildOS == 'Windows':
   openclFlags['CPPPATH'] = [os.path.join( osArchIncludeBaseDir, 'OpenCL' )]
+elif buildOS == 'Linux':
+  if os.environ.has_key('OPENCL_SDK'):
+    openclFlags['CPPPATH'] = [os.path.join(os.environ['OPENCL_SDK'],'include')]
+    openclFlags['LIBPATH'] = [os.path.join(os.environ['OPENCL_SDK'],'lib',buildArch)]
+    openclFlags['LIBS'] = ['OpenCL','GLEW','glut']
 Export( 'openclFlags' )
 
 # Licenses

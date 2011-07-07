@@ -21,6 +21,7 @@ SConscript(
     'RT',
     'CG',
     'AST',
+    'OCL',
     'KL',
     'IO',
     'Plug',
