@@ -6,6 +6,7 @@
  */
 
 #include "Impl.h"
+#include "Util.h"
 
 #if defined(FABRIC_POSIX)
 # include <stdlib.h>
@@ -14,11 +15,9 @@
 #elif defined(FABRIC_WIN32)
 # include <windows.h>
 # include <process.h>
-# include "Util.h"
 #endif
 #if defined(FABRIC_OS_LINUX)
 # include <sys/prctl.h>
-# include "Util.h"
 #endif
 
 namespace Fabric
