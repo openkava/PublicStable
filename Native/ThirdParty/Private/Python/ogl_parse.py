@@ -94,7 +94,7 @@ def main():
     'SUN',
     'SUNX',
     'NV',
-    'ARB',
+    #'ARB',
     'ATI',
     'GREMEDY',
     'IBM',
@@ -337,26 +337,36 @@ def main():
           
         # IF WE HAVE A POINTER
         if variables[i].find('*') > -1:
-          if knownCTypes[type][3] == 'Data':
-            klParameters.append('io Data '+klvarname)
-            cParameters.append('KL::Data '+varname)
-            klCast.append(varname)
-          elif variables[i].startswith('const'):
-            # THIS CAN BE DONE BASED ON THE DIGITS
-            digit = ''
-            for k in range(len(name)-1,0,-1):
-              if name[k:k+1].isdigit():
-                digit = name[k:k+1]
-                break
-            klParameters.append('io '+knownCTypes[type][3]+' '+klvarname+'['+digit+']')
-            cParameters.append('const KL::VariableArray<KL::'+knownCTypes[type][3]+'> & '+varname)
-            klCast.append('('+fulltype+')&'+varname+'[0]')
+
+          digit = ''
+          for k in range(len(name)-1,0,-1):
+            if name[k:k+1].isdigit():
+              digit = name[k:k+1]
+              break
+          if len(digit) > 0 and name.lower().find('matrix') > -1:
+            # let's convert to matrix
+            klParameters.append('io Mat'+digit+digit+' '+klvarname)
+            cParameters.append('KL::Mat'+digit+digit+' & '+varname)
+            klCast.append('('+fulltype+')&'+varname)
           else:
-            # this is really flaky, it should be >Data, but that's not possible.
-            # the rvalue is still able to write to though.
-            klParameters.append('io '+knownCTypes[type][3]+' '+klvarname+'[]')
-            cParameters.append('KL::VariableArray<KL::'+knownCTypes[type][3]+'> & '+varname)
-            klCast.append('('+fulltype+')&'+varname+'[0]')
+            if knownCTypes[type][3] == 'Data':
+              if variables[i].startswith('const'):
+                klParameters.append('in Data '+klvarname)
+              else:
+                klParameters.append('io Data '+klvarname)
+              cParameters.append('KL::Data '+varname)
+              klCast.append(varname)
+            elif variables[i].startswith('const'):
+              # THIS CAN BE DONE BASED ON THE DIGITS
+              klParameters.append('io '+knownCTypes[type][3]+' '+klvarname+'['+digit+']')
+              cParameters.append('const KL::VariableArray<KL::'+knownCTypes[type][3]+'> & '+varname)
+              klCast.append('('+fulltype+')&'+varname+'[0]')
+            else:
+              # this is really flaky, it should be >Data, but that's not possible.
+              # the rvalue is still able to write to though.
+              klParameters.append('io '+knownCTypes[type][3]+' '+klvarname+'[]')
+              cParameters.append('KL::VariableArray<KL::'+knownCTypes[type][3]+'> & '+varname)
+              klCast.append('('+fulltype+')&'+varname+'[0]')
         else:
           klParameters.append('in '+knownCTypes[type][3]+' '+klvarname)
           cParameters.append('KL::'+knownCTypes[type][3]+' '+varname)
@@ -434,7 +444,16 @@ def main():
     klFunction = klFunction + ', '.join(klParameters) + ' ) = '+"'"+name+'_wrapper'+"'"+';'
     klFunctionsCode.append(klFunction)
   
-  open(jsonsourcePath,'w').write('{\n  "libs": "FabricOGL",\n  "code": "'+str('').join(jsonConstants)+''+str('').join(klFunctionsCode)+'"\n}\n')
+  # define the core json types
+  jsonTypes = [];
+  jsonTypes.append('struct Vec2 { Scalar x; Scalar y; };')
+  jsonTypes.append('struct Vec3 { Scalar x; Scalar y; Scalar z; };')
+  jsonTypes.append('struct Vec4 { Scalar x; Scalar y; Scalar z; Scalar t; };')
+  jsonTypes.append('struct Mat22 { Vec2 row0; Vec2 row1; };')
+  jsonTypes.append('struct Mat33 { Vec3 row0; Vec3 row1; Vec3 row2; };')
+  jsonTypes.append('struct Mat44 { Vec4 row0; Vec4 row1; Vec4 row2; Vec4 row3; };')
+  
+  open(jsonsourcePath,'w').write('{\n  "libs": "FabricOGL",\n  "code": "'+str('').join(jsonTypes)+''+str('').join(jsonConstants)+''+str('').join(klFunctionsCode)+'"\n}\n')
   open('/development/temp/test.kl','w').write(str('\n').join(jsonConstants)+'\n\n'+str('\n').join(klFunctionsCode)+'\n\nfunction entry()\n{\n  report("valid");\n}\n')
   
   headers = []

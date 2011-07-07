@@ -13,7 +13,8 @@ using namespace Fabric::EDK;
 #include <GL/glext.h>
 #include <GL/glu.h>
 
-// #define FABRIC_OGL_DEBUG 1
+#define FABRIC_OGL_DEBUG 1
+
 unsigned int gBracket = 0;
 void _incBracket()
 {
@@ -6282,13 +6283,13 @@ FABRIC_EXT_EXPORT void glUniformMatrix2fv_wrapper(
   KL::Integer location,
   KL::Size count,
   KL::Boolean transpose,
-  const KL::VariableArray<KL::Scalar> & value
+  KL::Mat22 & value
 ){
   _clearError();
 #ifdef FABRIC_OGL_DEBUG
   printf("glUniformMatrix2fv( %d, %d, %d, GLfloat* )", (int)location, (int)count, (int)transpose);
 #endif
-  glUniformMatrix2fv( (GLint)location, (GLsizei)count, (GLboolean)transpose, (const GLfloat*)&value[0] );
+  glUniformMatrix2fv( (GLint)location, (GLsizei)count, (GLboolean)transpose, (const GLfloat*)&value );
   _checkError("glUniformMatrix2fv");
 }
 
@@ -6296,13 +6297,13 @@ FABRIC_EXT_EXPORT void glUniformMatrix3fv_wrapper(
   KL::Integer location,
   KL::Size count,
   KL::Boolean transpose,
-  const KL::VariableArray<KL::Scalar> & value
+  KL::Mat33 & value
 ){
   _clearError();
 #ifdef FABRIC_OGL_DEBUG
   printf("glUniformMatrix3fv( %d, %d, %d, GLfloat* )", (int)location, (int)count, (int)transpose);
 #endif
-  glUniformMatrix3fv( (GLint)location, (GLsizei)count, (GLboolean)transpose, (const GLfloat*)&value[0] );
+  glUniformMatrix3fv( (GLint)location, (GLsizei)count, (GLboolean)transpose, (const GLfloat*)&value );
   _checkError("glUniformMatrix3fv");
 }
 
@@ -6310,13 +6311,13 @@ FABRIC_EXT_EXPORT void glUniformMatrix4fv_wrapper(
   KL::Integer location,
   KL::Size count,
   KL::Boolean transpose,
-  const KL::VariableArray<KL::Scalar> & value
+  KL::Mat44 & value
 ){
   _clearError();
 #ifdef FABRIC_OGL_DEBUG
   printf("glUniformMatrix4fv( %d, %d, %d, GLfloat* )", (int)location, (int)count, (int)transpose);
 #endif
-  glUniformMatrix4fv( (GLint)location, (GLsizei)count, (GLboolean)transpose, (const GLfloat*)&value[0] );
+  glUniformMatrix4fv( (GLint)location, (GLsizei)count, (GLboolean)transpose, (const GLfloat*)&value );
   _checkError("glUniformMatrix4fv");
 }
 
@@ -6815,13 +6816,13 @@ FABRIC_EXT_EXPORT void glUniformMatrix2x3fv_wrapper(
   KL::Integer location,
   KL::Size count,
   KL::Boolean transpose,
-  const KL::VariableArray<KL::Scalar> & value
+  KL::Mat33 & value
 ){
   _clearError();
 #ifdef FABRIC_OGL_DEBUG
   printf("glUniformMatrix2x3fv( %d, %d, %d, GLfloat* )", (int)location, (int)count, (int)transpose);
 #endif
-  glUniformMatrix2x3fv( (GLint)location, (GLsizei)count, (GLboolean)transpose, (const GLfloat*)&value[0] );
+  glUniformMatrix2x3fv( (GLint)location, (GLsizei)count, (GLboolean)transpose, (const GLfloat*)&value );
   _checkError("glUniformMatrix2x3fv");
 }
 
@@ -6829,13 +6830,13 @@ FABRIC_EXT_EXPORT void glUniformMatrix2x4fv_wrapper(
   KL::Integer location,
   KL::Size count,
   KL::Boolean transpose,
-  const KL::VariableArray<KL::Scalar> & value
+  KL::Mat44 & value
 ){
   _clearError();
 #ifdef FABRIC_OGL_DEBUG
   printf("glUniformMatrix2x4fv( %d, %d, %d, GLfloat* )", (int)location, (int)count, (int)transpose);
 #endif
-  glUniformMatrix2x4fv( (GLint)location, (GLsizei)count, (GLboolean)transpose, (const GLfloat*)&value[0] );
+  glUniformMatrix2x4fv( (GLint)location, (GLsizei)count, (GLboolean)transpose, (const GLfloat*)&value );
   _checkError("glUniformMatrix2x4fv");
 }
 
@@ -6843,13 +6844,13 @@ FABRIC_EXT_EXPORT void glUniformMatrix3x2fv_wrapper(
   KL::Integer location,
   KL::Size count,
   KL::Boolean transpose,
-  const KL::VariableArray<KL::Scalar> & value
+  KL::Mat22 & value
 ){
   _clearError();
 #ifdef FABRIC_OGL_DEBUG
   printf("glUniformMatrix3x2fv( %d, %d, %d, GLfloat* )", (int)location, (int)count, (int)transpose);
 #endif
-  glUniformMatrix3x2fv( (GLint)location, (GLsizei)count, (GLboolean)transpose, (const GLfloat*)&value[0] );
+  glUniformMatrix3x2fv( (GLint)location, (GLsizei)count, (GLboolean)transpose, (const GLfloat*)&value );
   _checkError("glUniformMatrix3x2fv");
 }
 
@@ -6857,13 +6858,13 @@ FABRIC_EXT_EXPORT void glUniformMatrix3x4fv_wrapper(
   KL::Integer location,
   KL::Size count,
   KL::Boolean transpose,
-  const KL::VariableArray<KL::Scalar> & value
+  KL::Mat44 & value
 ){
   _clearError();
 #ifdef FABRIC_OGL_DEBUG
   printf("glUniformMatrix3x4fv( %d, %d, %d, GLfloat* )", (int)location, (int)count, (int)transpose);
 #endif
-  glUniformMatrix3x4fv( (GLint)location, (GLsizei)count, (GLboolean)transpose, (const GLfloat*)&value[0] );
+  glUniformMatrix3x4fv( (GLint)location, (GLsizei)count, (GLboolean)transpose, (const GLfloat*)&value );
   _checkError("glUniformMatrix3x4fv");
 }
 
@@ -6871,13 +6872,13 @@ FABRIC_EXT_EXPORT void glUniformMatrix4x2fv_wrapper(
   KL::Integer location,
   KL::Size count,
   KL::Boolean transpose,
-  const KL::VariableArray<KL::Scalar> & value
+  KL::Mat22 & value
 ){
   _clearError();
 #ifdef FABRIC_OGL_DEBUG
   printf("glUniformMatrix4x2fv( %d, %d, %d, GLfloat* )", (int)location, (int)count, (int)transpose);
 #endif
-  glUniformMatrix4x2fv( (GLint)location, (GLsizei)count, (GLboolean)transpose, (const GLfloat*)&value[0] );
+  glUniformMatrix4x2fv( (GLint)location, (GLsizei)count, (GLboolean)transpose, (const GLfloat*)&value );
   _checkError("glUniformMatrix4x2fv");
 }
 
@@ -6885,13 +6886,13 @@ FABRIC_EXT_EXPORT void glUniformMatrix4x3fv_wrapper(
   KL::Integer location,
   KL::Size count,
   KL::Boolean transpose,
-  const KL::VariableArray<KL::Scalar> & value
+  KL::Mat33 & value
 ){
   _clearError();
 #ifdef FABRIC_OGL_DEBUG
   printf("glUniformMatrix4x3fv( %d, %d, %d, GLfloat* )", (int)location, (int)count, (int)transpose);
 #endif
-  glUniformMatrix4x3fv( (GLint)location, (GLsizei)count, (GLboolean)transpose, (const GLfloat*)&value[0] );
+  glUniformMatrix4x3fv( (GLint)location, (GLsizei)count, (GLboolean)transpose, (const GLfloat*)&value );
   _checkError("glUniformMatrix4x3fv");
 }
 
@@ -7663,6 +7664,18 @@ FABRIC_EXT_EXPORT void glTbufferMask3DFX_wrapper(
   _checkError("glTbufferMask3DFX");
 }
 
+FABRIC_EXT_EXPORT void glClampColorARB_wrapper(
+  KL::Size target,
+  KL::Size clamp
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glClampColorARB( %d, %d )", (int)target, (int)clamp);
+#endif
+  glClampColorARB( (GLenum)target, (GLenum)clamp );
+  _checkError("glClampColorARB");
+}
+
 FABRIC_EXT_EXPORT void glCopyBufferSubData_wrapper(
   KL::Size readtarget,
   KL::Size writetarget,
@@ -7676,6 +7689,71 @@ FABRIC_EXT_EXPORT void glCopyBufferSubData_wrapper(
 #endif
   glCopyBufferSubData( (GLenum)readtarget, (GLenum)writetarget, (GLintptr)readoffset, (GLintptr)writeoffset, (GLsizeiptr)size );
   _checkError("glCopyBufferSubData");
+}
+
+FABRIC_EXT_EXPORT void glDrawBuffersARB_wrapper(
+  KL::Size n,
+  const KL::VariableArray<KL::Size> & bufs
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glDrawBuffersARB( %d, GLenum* )", (int)n);
+#endif
+  glDrawBuffersARB( (GLsizei)n, (const GLenum*)&bufs[0] );
+  _checkError("glDrawBuffersARB");
+}
+
+FABRIC_EXT_EXPORT void glBlendEquationSeparateiARB_wrapper(
+  KL::Size buf,
+  KL::Size modeRGB,
+  KL::Size modeAlpha
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glBlendEquationSeparateiARB( 0x%04X, %d, %d )", (unsigned)buf, (int)modeRGB, (int)modeAlpha);
+#endif
+  glBlendEquationSeparateiARB( (GLuint)buf, (GLenum)modeRGB, (GLenum)modeAlpha );
+  _checkError("glBlendEquationSeparateiARB");
+}
+
+FABRIC_EXT_EXPORT void glBlendEquationiARB_wrapper(
+  KL::Size buf,
+  KL::Size mode
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glBlendEquationiARB( 0x%04X, %d )", (unsigned)buf, (int)mode);
+#endif
+  glBlendEquationiARB( (GLuint)buf, (GLenum)mode );
+  _checkError("glBlendEquationiARB");
+}
+
+FABRIC_EXT_EXPORT void glBlendFuncSeparateiARB_wrapper(
+  KL::Size buf,
+  KL::Size srcRGB,
+  KL::Size dstRGB,
+  KL::Size srcAlpha,
+  KL::Size dstAlpha
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glBlendFuncSeparateiARB( 0x%04X, %d, %d, %d, %d )", (unsigned)buf, (int)srcRGB, (int)dstRGB, (int)srcAlpha, (int)dstAlpha);
+#endif
+  glBlendFuncSeparateiARB( (GLuint)buf, (GLenum)srcRGB, (GLenum)dstRGB, (GLenum)srcAlpha, (GLenum)dstAlpha );
+  _checkError("glBlendFuncSeparateiARB");
+}
+
+FABRIC_EXT_EXPORT void glBlendFunciARB_wrapper(
+  KL::Size buf,
+  KL::Size src,
+  KL::Size dst
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glBlendFunciARB( 0x%04X, %d, %d )", (unsigned)buf, (int)src, (int)dst);
+#endif
+  glBlendFunciARB( (GLuint)buf, (GLenum)src, (GLenum)dst );
+  _checkError("glBlendFunciARB");
 }
 
 FABRIC_EXT_EXPORT void glDrawElementsBaseVertex_wrapper(
@@ -7724,6 +7802,35 @@ FABRIC_EXT_EXPORT void glDrawRangeElementsBaseVertex_wrapper(
 #endif
   glDrawRangeElementsBaseVertex( (GLenum)mode, (GLuint)start, (GLuint)end, (GLsizei)count, (GLenum)type, indices, (GLint)basevertex );
   _checkError("glDrawRangeElementsBaseVertex");
+}
+
+FABRIC_EXT_EXPORT void glDrawArraysInstancedARB_wrapper(
+  KL::Size mode,
+  KL::Integer first,
+  KL::Size count,
+  KL::Size primcount
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glDrawArraysInstancedARB( %d, %d, %d, %d )", (int)mode, (int)first, (int)count, (int)primcount);
+#endif
+  glDrawArraysInstancedARB( (GLenum)mode, (GLint)first, (GLsizei)count, (GLsizei)primcount );
+  _checkError("glDrawArraysInstancedARB");
+}
+
+FABRIC_EXT_EXPORT void glDrawElementsInstancedARB_wrapper(
+  KL::Size mode,
+  KL::Size count,
+  KL::Size type,
+  KL::Data indices,
+  KL::Size primcount
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glDrawElementsInstancedARB( %d, %d, %d, void*, %d )", (int)mode, (int)count, (int)type, (int)primcount);
+#endif
+  glDrawElementsInstancedARB( (GLenum)mode, (GLsizei)count, (GLenum)type, indices, (GLsizei)primcount );
+  _checkError("glDrawElementsInstancedARB");
 }
 
 FABRIC_EXT_EXPORT void glBindFramebuffer_wrapper(
@@ -7994,6 +8101,63 @@ FABRIC_EXT_EXPORT void glRenderbufferStorageMultisample_wrapper(
 #endif
   glRenderbufferStorageMultisample( (GLenum)target, (GLsizei)samples, (GLenum)internalformat, (GLsizei)width, (GLsizei)height );
   _checkError("glRenderbufferStorageMultisample");
+}
+
+FABRIC_EXT_EXPORT void glFramebufferTextureARB_wrapper(
+  KL::Size target,
+  KL::Size attachment,
+  KL::Size texture,
+  KL::Integer level
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glFramebufferTextureARB( %d, %d, 0x%04X, %d )", (int)target, (int)attachment, (unsigned)texture, (int)level);
+#endif
+  glFramebufferTextureARB( (GLenum)target, (GLenum)attachment, (GLuint)texture, (GLint)level );
+  _checkError("glFramebufferTextureARB");
+}
+
+FABRIC_EXT_EXPORT void glFramebufferTextureFaceARB_wrapper(
+  KL::Size target,
+  KL::Size attachment,
+  KL::Size texture,
+  KL::Integer level,
+  KL::Size face
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glFramebufferTextureFaceARB( %d, %d, 0x%04X, %d, %d )", (int)target, (int)attachment, (unsigned)texture, (int)level, (int)face);
+#endif
+  glFramebufferTextureFaceARB( (GLenum)target, (GLenum)attachment, (GLuint)texture, (GLint)level, (GLenum)face );
+  _checkError("glFramebufferTextureFaceARB");
+}
+
+FABRIC_EXT_EXPORT void glFramebufferTextureLayerARB_wrapper(
+  KL::Size target,
+  KL::Size attachment,
+  KL::Size texture,
+  KL::Integer level,
+  KL::Integer layer
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glFramebufferTextureLayerARB( %d, %d, 0x%04X, %d, %d )", (int)target, (int)attachment, (unsigned)texture, (int)level, (int)layer);
+#endif
+  glFramebufferTextureLayerARB( (GLenum)target, (GLenum)attachment, (GLuint)texture, (GLint)level, (GLint)layer );
+  _checkError("glFramebufferTextureLayerARB");
+}
+
+FABRIC_EXT_EXPORT void glProgramParameteriARB_wrapper(
+  KL::Size program,
+  KL::Size pname,
+  KL::Integer value
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glProgramParameteriARB( 0x%04X, %d, %d )", (unsigned)program, (int)pname, (int)value);
+#endif
+  glProgramParameteriARB( (GLuint)program, (GLenum)pname, (GLint)value );
+  _checkError("glProgramParameteriARB");
 }
 
 FABRIC_EXT_EXPORT void glColorSubTable_wrapper(
@@ -8445,6 +8609,18 @@ FABRIC_EXT_EXPORT void glSeparableFilter2D_wrapper(
   _checkError("glSeparableFilter2D");
 }
 
+FABRIC_EXT_EXPORT void glVertexAttribDivisorARB_wrapper(
+  KL::Size index,
+  KL::Size divisor
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glVertexAttribDivisorARB( 0x%04X, 0x%04X )", (unsigned)index, (unsigned)divisor);
+#endif
+  glVertexAttribDivisorARB( (GLuint)index, (GLuint)divisor );
+  _checkError("glVertexAttribDivisorARB");
+}
+
 FABRIC_EXT_EXPORT void glFlushMappedBufferRange_wrapper(
   KL::Size target,
   KL::Integer offset,
@@ -8472,6 +8648,631 @@ FABRIC_EXT_EXPORT GLvoid glMapBufferRange_wrapper(
   _checkError("glMapBufferRange");
 }
 
+FABRIC_EXT_EXPORT void glCurrentPaletteMatrixARB_wrapper(
+  KL::Integer index
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glCurrentPaletteMatrixARB( %d )", (int)index);
+#endif
+  glCurrentPaletteMatrixARB( (GLint)index );
+  _checkError("glCurrentPaletteMatrixARB");
+}
+
+FABRIC_EXT_EXPORT void glMatrixIndexPointerARB_wrapper(
+  KL::Integer size,
+  KL::Size type,
+  KL::Size stride,
+  KL::Data pointer
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glMatrixIndexPointerARB( %d, %d, %d, GLvoid* )", (int)size, (int)type, (int)stride);
+#endif
+  glMatrixIndexPointerARB( (GLint)size, (GLenum)type, (GLsizei)stride, pointer );
+  _checkError("glMatrixIndexPointerARB");
+}
+
+FABRIC_EXT_EXPORT void glMatrixIndexubvARB_wrapper(
+  KL::Integer size,
+  KL::VariableArray<KL::Size> & indices
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glMatrixIndexubvARB( %d, GLubyte* )", (int)size);
+#endif
+  glMatrixIndexubvARB( (GLint)size, (GLubyte*)&indices[0] );
+  _checkError("glMatrixIndexubvARB");
+}
+
+FABRIC_EXT_EXPORT void glMatrixIndexuivARB_wrapper(
+  KL::Integer size,
+  KL::VariableArray<KL::Size> & indices
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glMatrixIndexuivARB( %d, GLuint* )", (int)size);
+#endif
+  glMatrixIndexuivARB( (GLint)size, (GLuint*)&indices[0] );
+  _checkError("glMatrixIndexuivARB");
+}
+
+FABRIC_EXT_EXPORT void glMatrixIndexusvARB_wrapper(
+  KL::Integer size,
+  KL::VariableArray<KL::Integer> & indices
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glMatrixIndexusvARB( %d, GLushort* )", (int)size);
+#endif
+  glMatrixIndexusvARB( (GLint)size, (GLushort*)&indices[0] );
+  _checkError("glMatrixIndexusvARB");
+}
+
+FABRIC_EXT_EXPORT void glSampleCoverageARB_wrapper(
+  KL::Scalar value,
+  KL::Boolean invert
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glSampleCoverageARB( %f, %d )", (float)value, (int)invert);
+#endif
+  glSampleCoverageARB( (GLclampf)value, (GLboolean)invert );
+  _checkError("glSampleCoverageARB");
+}
+
+FABRIC_EXT_EXPORT void glActiveTextureARB_wrapper(
+  KL::Size texture
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glActiveTextureARB( %d )", (int)texture);
+#endif
+  glActiveTextureARB( (GLenum)texture );
+  _checkError("glActiveTextureARB");
+}
+
+FABRIC_EXT_EXPORT void glClientActiveTextureARB_wrapper(
+  KL::Size texture
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glClientActiveTextureARB( %d )", (int)texture);
+#endif
+  glClientActiveTextureARB( (GLenum)texture );
+  _checkError("glClientActiveTextureARB");
+}
+
+FABRIC_EXT_EXPORT void glMultiTexCoord1dARB_wrapper(
+  KL::Size target,
+  KL::Scalar s
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glMultiTexCoord1dARB( %d, %f )", (int)target, (float)s);
+#endif
+  glMultiTexCoord1dARB( (GLenum)target, (GLdouble)s );
+  _checkError("glMultiTexCoord1dARB");
+}
+
+FABRIC_EXT_EXPORT void glMultiTexCoord1dvARB_wrapper(
+  KL::Size target,
+  const KL::VariableArray<KL::Scalar> & v
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glMultiTexCoord1dvARB( %d, GLdouble* )", (int)target);
+#endif
+  glMultiTexCoord1dvARB( (GLenum)target, (const GLdouble*)&v[0] );
+  _checkError("glMultiTexCoord1dvARB");
+}
+
+FABRIC_EXT_EXPORT void glMultiTexCoord1fARB_wrapper(
+  KL::Size target,
+  KL::Scalar s
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glMultiTexCoord1fARB( %d, %f )", (int)target, (float)s);
+#endif
+  glMultiTexCoord1fARB( (GLenum)target, (GLfloat)s );
+  _checkError("glMultiTexCoord1fARB");
+}
+
+FABRIC_EXT_EXPORT void glMultiTexCoord1fvARB_wrapper(
+  KL::Size target,
+  const KL::VariableArray<KL::Scalar> & v
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glMultiTexCoord1fvARB( %d, GLfloat* )", (int)target);
+#endif
+  glMultiTexCoord1fvARB( (GLenum)target, (const GLfloat*)&v[0] );
+  _checkError("glMultiTexCoord1fvARB");
+}
+
+FABRIC_EXT_EXPORT void glMultiTexCoord1iARB_wrapper(
+  KL::Size target,
+  KL::Integer s
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glMultiTexCoord1iARB( %d, %d )", (int)target, (int)s);
+#endif
+  glMultiTexCoord1iARB( (GLenum)target, (GLint)s );
+  _checkError("glMultiTexCoord1iARB");
+}
+
+FABRIC_EXT_EXPORT void glMultiTexCoord1ivARB_wrapper(
+  KL::Size target,
+  const KL::VariableArray<KL::Integer> & v
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glMultiTexCoord1ivARB( %d, GLint* )", (int)target);
+#endif
+  glMultiTexCoord1ivARB( (GLenum)target, (const GLint*)&v[0] );
+  _checkError("glMultiTexCoord1ivARB");
+}
+
+FABRIC_EXT_EXPORT void glMultiTexCoord1sARB_wrapper(
+  KL::Size target,
+  KL::Integer s
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glMultiTexCoord1sARB( %d, %d )", (int)target, (int)s);
+#endif
+  glMultiTexCoord1sARB( (GLenum)target, (GLshort)s );
+  _checkError("glMultiTexCoord1sARB");
+}
+
+FABRIC_EXT_EXPORT void glMultiTexCoord1svARB_wrapper(
+  KL::Size target,
+  const KL::VariableArray<KL::Integer> & v
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glMultiTexCoord1svARB( %d, GLshort* )", (int)target);
+#endif
+  glMultiTexCoord1svARB( (GLenum)target, (const GLshort*)&v[0] );
+  _checkError("glMultiTexCoord1svARB");
+}
+
+FABRIC_EXT_EXPORT void glMultiTexCoord2dARB_wrapper(
+  KL::Size target,
+  KL::Scalar s,
+  KL::Scalar t
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glMultiTexCoord2dARB( %d, %f, %f )", (int)target, (float)s, (float)t);
+#endif
+  glMultiTexCoord2dARB( (GLenum)target, (GLdouble)s, (GLdouble)t );
+  _checkError("glMultiTexCoord2dARB");
+}
+
+FABRIC_EXT_EXPORT void glMultiTexCoord2dvARB_wrapper(
+  KL::Size target,
+  const KL::VariableArray<KL::Scalar> & v
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glMultiTexCoord2dvARB( %d, GLdouble* )", (int)target);
+#endif
+  glMultiTexCoord2dvARB( (GLenum)target, (const GLdouble*)&v[0] );
+  _checkError("glMultiTexCoord2dvARB");
+}
+
+FABRIC_EXT_EXPORT void glMultiTexCoord2fARB_wrapper(
+  KL::Size target,
+  KL::Scalar s,
+  KL::Scalar t
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glMultiTexCoord2fARB( %d, %f, %f )", (int)target, (float)s, (float)t);
+#endif
+  glMultiTexCoord2fARB( (GLenum)target, (GLfloat)s, (GLfloat)t );
+  _checkError("glMultiTexCoord2fARB");
+}
+
+FABRIC_EXT_EXPORT void glMultiTexCoord2fvARB_wrapper(
+  KL::Size target,
+  const KL::VariableArray<KL::Scalar> & v
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glMultiTexCoord2fvARB( %d, GLfloat* )", (int)target);
+#endif
+  glMultiTexCoord2fvARB( (GLenum)target, (const GLfloat*)&v[0] );
+  _checkError("glMultiTexCoord2fvARB");
+}
+
+FABRIC_EXT_EXPORT void glMultiTexCoord2iARB_wrapper(
+  KL::Size target,
+  KL::Integer s,
+  KL::Integer t
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glMultiTexCoord2iARB( %d, %d, %d )", (int)target, (int)s, (int)t);
+#endif
+  glMultiTexCoord2iARB( (GLenum)target, (GLint)s, (GLint)t );
+  _checkError("glMultiTexCoord2iARB");
+}
+
+FABRIC_EXT_EXPORT void glMultiTexCoord2ivARB_wrapper(
+  KL::Size target,
+  const KL::VariableArray<KL::Integer> & v
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glMultiTexCoord2ivARB( %d, GLint* )", (int)target);
+#endif
+  glMultiTexCoord2ivARB( (GLenum)target, (const GLint*)&v[0] );
+  _checkError("glMultiTexCoord2ivARB");
+}
+
+FABRIC_EXT_EXPORT void glMultiTexCoord2sARB_wrapper(
+  KL::Size target,
+  KL::Integer s,
+  KL::Integer t
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glMultiTexCoord2sARB( %d, %d, %d )", (int)target, (int)s, (int)t);
+#endif
+  glMultiTexCoord2sARB( (GLenum)target, (GLshort)s, (GLshort)t );
+  _checkError("glMultiTexCoord2sARB");
+}
+
+FABRIC_EXT_EXPORT void glMultiTexCoord2svARB_wrapper(
+  KL::Size target,
+  const KL::VariableArray<KL::Integer> & v
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glMultiTexCoord2svARB( %d, GLshort* )", (int)target);
+#endif
+  glMultiTexCoord2svARB( (GLenum)target, (const GLshort*)&v[0] );
+  _checkError("glMultiTexCoord2svARB");
+}
+
+FABRIC_EXT_EXPORT void glMultiTexCoord3dARB_wrapper(
+  KL::Size target,
+  KL::Scalar s,
+  KL::Scalar t,
+  KL::Scalar r
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glMultiTexCoord3dARB( %d, %f, %f, %f )", (int)target, (float)s, (float)t, (float)r);
+#endif
+  glMultiTexCoord3dARB( (GLenum)target, (GLdouble)s, (GLdouble)t, (GLdouble)r );
+  _checkError("glMultiTexCoord3dARB");
+}
+
+FABRIC_EXT_EXPORT void glMultiTexCoord3dvARB_wrapper(
+  KL::Size target,
+  const KL::VariableArray<KL::Scalar> & v
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glMultiTexCoord3dvARB( %d, GLdouble* )", (int)target);
+#endif
+  glMultiTexCoord3dvARB( (GLenum)target, (const GLdouble*)&v[0] );
+  _checkError("glMultiTexCoord3dvARB");
+}
+
+FABRIC_EXT_EXPORT void glMultiTexCoord3fARB_wrapper(
+  KL::Size target,
+  KL::Scalar s,
+  KL::Scalar t,
+  KL::Scalar r
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glMultiTexCoord3fARB( %d, %f, %f, %f )", (int)target, (float)s, (float)t, (float)r);
+#endif
+  glMultiTexCoord3fARB( (GLenum)target, (GLfloat)s, (GLfloat)t, (GLfloat)r );
+  _checkError("glMultiTexCoord3fARB");
+}
+
+FABRIC_EXT_EXPORT void glMultiTexCoord3fvARB_wrapper(
+  KL::Size target,
+  const KL::VariableArray<KL::Scalar> & v
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glMultiTexCoord3fvARB( %d, GLfloat* )", (int)target);
+#endif
+  glMultiTexCoord3fvARB( (GLenum)target, (const GLfloat*)&v[0] );
+  _checkError("glMultiTexCoord3fvARB");
+}
+
+FABRIC_EXT_EXPORT void glMultiTexCoord3iARB_wrapper(
+  KL::Size target,
+  KL::Integer s,
+  KL::Integer t,
+  KL::Integer r
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glMultiTexCoord3iARB( %d, %d, %d, %d )", (int)target, (int)s, (int)t, (int)r);
+#endif
+  glMultiTexCoord3iARB( (GLenum)target, (GLint)s, (GLint)t, (GLint)r );
+  _checkError("glMultiTexCoord3iARB");
+}
+
+FABRIC_EXT_EXPORT void glMultiTexCoord3ivARB_wrapper(
+  KL::Size target,
+  const KL::VariableArray<KL::Integer> & v
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glMultiTexCoord3ivARB( %d, GLint* )", (int)target);
+#endif
+  glMultiTexCoord3ivARB( (GLenum)target, (const GLint*)&v[0] );
+  _checkError("glMultiTexCoord3ivARB");
+}
+
+FABRIC_EXT_EXPORT void glMultiTexCoord3sARB_wrapper(
+  KL::Size target,
+  KL::Integer s,
+  KL::Integer t,
+  KL::Integer r
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glMultiTexCoord3sARB( %d, %d, %d, %d )", (int)target, (int)s, (int)t, (int)r);
+#endif
+  glMultiTexCoord3sARB( (GLenum)target, (GLshort)s, (GLshort)t, (GLshort)r );
+  _checkError("glMultiTexCoord3sARB");
+}
+
+FABRIC_EXT_EXPORT void glMultiTexCoord3svARB_wrapper(
+  KL::Size target,
+  const KL::VariableArray<KL::Integer> & v
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glMultiTexCoord3svARB( %d, GLshort* )", (int)target);
+#endif
+  glMultiTexCoord3svARB( (GLenum)target, (const GLshort*)&v[0] );
+  _checkError("glMultiTexCoord3svARB");
+}
+
+FABRIC_EXT_EXPORT void glMultiTexCoord4dARB_wrapper(
+  KL::Size target,
+  KL::Scalar s,
+  KL::Scalar t,
+  KL::Scalar r,
+  KL::Scalar q
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glMultiTexCoord4dARB( %d, %f, %f, %f, %f )", (int)target, (float)s, (float)t, (float)r, (float)q);
+#endif
+  glMultiTexCoord4dARB( (GLenum)target, (GLdouble)s, (GLdouble)t, (GLdouble)r, (GLdouble)q );
+  _checkError("glMultiTexCoord4dARB");
+}
+
+FABRIC_EXT_EXPORT void glMultiTexCoord4dvARB_wrapper(
+  KL::Size target,
+  const KL::VariableArray<KL::Scalar> & v
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glMultiTexCoord4dvARB( %d, GLdouble* )", (int)target);
+#endif
+  glMultiTexCoord4dvARB( (GLenum)target, (const GLdouble*)&v[0] );
+  _checkError("glMultiTexCoord4dvARB");
+}
+
+FABRIC_EXT_EXPORT void glMultiTexCoord4fARB_wrapper(
+  KL::Size target,
+  KL::Scalar s,
+  KL::Scalar t,
+  KL::Scalar r,
+  KL::Scalar q
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glMultiTexCoord4fARB( %d, %f, %f, %f, %f )", (int)target, (float)s, (float)t, (float)r, (float)q);
+#endif
+  glMultiTexCoord4fARB( (GLenum)target, (GLfloat)s, (GLfloat)t, (GLfloat)r, (GLfloat)q );
+  _checkError("glMultiTexCoord4fARB");
+}
+
+FABRIC_EXT_EXPORT void glMultiTexCoord4fvARB_wrapper(
+  KL::Size target,
+  const KL::VariableArray<KL::Scalar> & v
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glMultiTexCoord4fvARB( %d, GLfloat* )", (int)target);
+#endif
+  glMultiTexCoord4fvARB( (GLenum)target, (const GLfloat*)&v[0] );
+  _checkError("glMultiTexCoord4fvARB");
+}
+
+FABRIC_EXT_EXPORT void glMultiTexCoord4iARB_wrapper(
+  KL::Size target,
+  KL::Integer s,
+  KL::Integer t,
+  KL::Integer r,
+  KL::Integer q
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glMultiTexCoord4iARB( %d, %d, %d, %d, %d )", (int)target, (int)s, (int)t, (int)r, (int)q);
+#endif
+  glMultiTexCoord4iARB( (GLenum)target, (GLint)s, (GLint)t, (GLint)r, (GLint)q );
+  _checkError("glMultiTexCoord4iARB");
+}
+
+FABRIC_EXT_EXPORT void glMultiTexCoord4ivARB_wrapper(
+  KL::Size target,
+  const KL::VariableArray<KL::Integer> & v
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glMultiTexCoord4ivARB( %d, GLint* )", (int)target);
+#endif
+  glMultiTexCoord4ivARB( (GLenum)target, (const GLint*)&v[0] );
+  _checkError("glMultiTexCoord4ivARB");
+}
+
+FABRIC_EXT_EXPORT void glMultiTexCoord4sARB_wrapper(
+  KL::Size target,
+  KL::Integer s,
+  KL::Integer t,
+  KL::Integer r,
+  KL::Integer q
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glMultiTexCoord4sARB( %d, %d, %d, %d, %d )", (int)target, (int)s, (int)t, (int)r, (int)q);
+#endif
+  glMultiTexCoord4sARB( (GLenum)target, (GLshort)s, (GLshort)t, (GLshort)r, (GLshort)q );
+  _checkError("glMultiTexCoord4sARB");
+}
+
+FABRIC_EXT_EXPORT void glMultiTexCoord4svARB_wrapper(
+  KL::Size target,
+  const KL::VariableArray<KL::Integer> & v
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glMultiTexCoord4svARB( %d, GLshort* )", (int)target);
+#endif
+  glMultiTexCoord4svARB( (GLenum)target, (const GLshort*)&v[0] );
+  _checkError("glMultiTexCoord4svARB");
+}
+
+FABRIC_EXT_EXPORT void glBeginQueryARB_wrapper(
+  KL::Size target,
+  KL::Size id
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glBeginQueryARB( %d, 0x%04X )", (int)target, (unsigned)id);
+#endif
+  glBeginQueryARB( (GLenum)target, (GLuint)id );
+  _checkError("glBeginQueryARB");
+}
+
+FABRIC_EXT_EXPORT void glDeleteQueriesARB_wrapper(
+  KL::Size n,
+  const KL::VariableArray<KL::Size> & ids
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glDeleteQueriesARB( %d, GLuint* )", (int)n);
+#endif
+  glDeleteQueriesARB( (GLsizei)n, (const GLuint*)&ids[0] );
+  _checkError("glDeleteQueriesARB");
+}
+
+FABRIC_EXT_EXPORT void glEndQueryARB_wrapper(
+  KL::Size target
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glEndQueryARB( %d )", (int)target);
+#endif
+  glEndQueryARB( (GLenum)target );
+  _checkError("glEndQueryARB");
+}
+
+FABRIC_EXT_EXPORT void glGenQueriesARB_wrapper(
+  KL::Size n,
+  KL::VariableArray<KL::Size> & ids
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glGenQueriesARB( %d, GLuint* )", (int)n);
+#endif
+  glGenQueriesARB( (GLsizei)n, (GLuint*)&ids[0] );
+  _checkError("glGenQueriesARB");
+}
+
+FABRIC_EXT_EXPORT void glGetQueryObjectivARB_wrapper(
+  KL::Size id,
+  KL::Size pname,
+  KL::VariableArray<KL::Integer> & params
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glGetQueryObjectivARB( 0x%04X, %d, GLint* )", (unsigned)id, (int)pname);
+#endif
+  glGetQueryObjectivARB( (GLuint)id, (GLenum)pname, (GLint*)&params[0] );
+  _checkError("glGetQueryObjectivARB");
+}
+
+FABRIC_EXT_EXPORT void glGetQueryObjectuivARB_wrapper(
+  KL::Size id,
+  KL::Size pname,
+  KL::VariableArray<KL::Size> & params
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glGetQueryObjectuivARB( 0x%04X, %d, GLuint* )", (unsigned)id, (int)pname);
+#endif
+  glGetQueryObjectuivARB( (GLuint)id, (GLenum)pname, (GLuint*)&params[0] );
+  _checkError("glGetQueryObjectuivARB");
+}
+
+FABRIC_EXT_EXPORT void glGetQueryivARB_wrapper(
+  KL::Size target,
+  KL::Size pname,
+  KL::VariableArray<KL::Integer> & params
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glGetQueryivARB( %d, %d, GLint* )", (int)target, (int)pname);
+#endif
+  glGetQueryivARB( (GLenum)target, (GLenum)pname, (GLint*)&params[0] );
+  _checkError("glGetQueryivARB");
+}
+
+FABRIC_EXT_EXPORT KL::Boolean glIsQueryARB_wrapper(
+  KL::Size id
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glIsQueryARB( 0x%04X )", (unsigned)id);
+#endif
+  GLboolean result = glIsQueryARB( (GLuint)id );
+  _checkError("glIsQueryARB");
+  return (KL::Boolean)result;
+}
+
+FABRIC_EXT_EXPORT void glPointParameterfARB_wrapper(
+  KL::Size pname,
+  KL::Scalar param
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glPointParameterfARB( %d, %f )", (int)pname, (float)param);
+#endif
+  glPointParameterfARB( (GLenum)pname, (GLfloat)param );
+  _checkError("glPointParameterfARB");
+}
+
+FABRIC_EXT_EXPORT void glPointParameterfvARB_wrapper(
+  KL::Size pname,
+  KL::VariableArray<KL::Scalar> & params
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glPointParameterfvARB( %d, GLfloat* )", (int)pname);
+#endif
+  glPointParameterfvARB( (GLenum)pname, (GLfloat*)&params[0] );
+  _checkError("glPointParameterfvARB");
+}
+
 FABRIC_EXT_EXPORT void glProvokingVertex_wrapper(
   KL::Size mode
 ){
@@ -8481,6 +9282,408 @@ FABRIC_EXT_EXPORT void glProvokingVertex_wrapper(
 #endif
   glProvokingVertex( (GLenum)mode );
   _checkError("glProvokingVertex");
+}
+
+FABRIC_EXT_EXPORT void glMinSampleShadingARB_wrapper(
+  KL::Scalar value
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glMinSampleShadingARB( %f )", (float)value);
+#endif
+  glMinSampleShadingARB( (GLclampf)value );
+  _checkError("glMinSampleShadingARB");
+}
+
+FABRIC_EXT_EXPORT void glUniform1fARB_wrapper(
+  KL::Integer location,
+  KL::Scalar v0
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glUniform1fARB( %d, %f )", (int)location, (float)v0);
+#endif
+  glUniform1fARB( (GLint)location, (GLfloat)v0 );
+  _checkError("glUniform1fARB");
+}
+
+FABRIC_EXT_EXPORT void glUniform1fvARB_wrapper(
+  KL::Integer location,
+  KL::Size count,
+  const KL::VariableArray<KL::Scalar> & value
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glUniform1fvARB( %d, %d, GLfloat* )", (int)location, (int)count);
+#endif
+  glUniform1fvARB( (GLint)location, (GLsizei)count, (const GLfloat*)&value[0] );
+  _checkError("glUniform1fvARB");
+}
+
+FABRIC_EXT_EXPORT void glUniform1iARB_wrapper(
+  KL::Integer location,
+  KL::Integer v0
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glUniform1iARB( %d, %d )", (int)location, (int)v0);
+#endif
+  glUniform1iARB( (GLint)location, (GLint)v0 );
+  _checkError("glUniform1iARB");
+}
+
+FABRIC_EXT_EXPORT void glUniform1ivARB_wrapper(
+  KL::Integer location,
+  KL::Size count,
+  const KL::VariableArray<KL::Integer> & value
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glUniform1ivARB( %d, %d, GLint* )", (int)location, (int)count);
+#endif
+  glUniform1ivARB( (GLint)location, (GLsizei)count, (const GLint*)&value[0] );
+  _checkError("glUniform1ivARB");
+}
+
+FABRIC_EXT_EXPORT void glUniform2fARB_wrapper(
+  KL::Integer location,
+  KL::Scalar v0,
+  KL::Scalar v1
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glUniform2fARB( %d, %f, %f )", (int)location, (float)v0, (float)v1);
+#endif
+  glUniform2fARB( (GLint)location, (GLfloat)v0, (GLfloat)v1 );
+  _checkError("glUniform2fARB");
+}
+
+FABRIC_EXT_EXPORT void glUniform2fvARB_wrapper(
+  KL::Integer location,
+  KL::Size count,
+  const KL::VariableArray<KL::Scalar> & value
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glUniform2fvARB( %d, %d, GLfloat* )", (int)location, (int)count);
+#endif
+  glUniform2fvARB( (GLint)location, (GLsizei)count, (const GLfloat*)&value[0] );
+  _checkError("glUniform2fvARB");
+}
+
+FABRIC_EXT_EXPORT void glUniform2iARB_wrapper(
+  KL::Integer location,
+  KL::Integer v0,
+  KL::Integer v1
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glUniform2iARB( %d, %d, %d )", (int)location, (int)v0, (int)v1);
+#endif
+  glUniform2iARB( (GLint)location, (GLint)v0, (GLint)v1 );
+  _checkError("glUniform2iARB");
+}
+
+FABRIC_EXT_EXPORT void glUniform2ivARB_wrapper(
+  KL::Integer location,
+  KL::Size count,
+  const KL::VariableArray<KL::Integer> & value
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glUniform2ivARB( %d, %d, GLint* )", (int)location, (int)count);
+#endif
+  glUniform2ivARB( (GLint)location, (GLsizei)count, (const GLint*)&value[0] );
+  _checkError("glUniform2ivARB");
+}
+
+FABRIC_EXT_EXPORT void glUniform3fARB_wrapper(
+  KL::Integer location,
+  KL::Scalar v0,
+  KL::Scalar v1,
+  KL::Scalar v2
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glUniform3fARB( %d, %f, %f, %f )", (int)location, (float)v0, (float)v1, (float)v2);
+#endif
+  glUniform3fARB( (GLint)location, (GLfloat)v0, (GLfloat)v1, (GLfloat)v2 );
+  _checkError("glUniform3fARB");
+}
+
+FABRIC_EXT_EXPORT void glUniform3fvARB_wrapper(
+  KL::Integer location,
+  KL::Size count,
+  const KL::VariableArray<KL::Scalar> & value
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glUniform3fvARB( %d, %d, GLfloat* )", (int)location, (int)count);
+#endif
+  glUniform3fvARB( (GLint)location, (GLsizei)count, (const GLfloat*)&value[0] );
+  _checkError("glUniform3fvARB");
+}
+
+FABRIC_EXT_EXPORT void glUniform3iARB_wrapper(
+  KL::Integer location,
+  KL::Integer v0,
+  KL::Integer v1,
+  KL::Integer v2
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glUniform3iARB( %d, %d, %d, %d )", (int)location, (int)v0, (int)v1, (int)v2);
+#endif
+  glUniform3iARB( (GLint)location, (GLint)v0, (GLint)v1, (GLint)v2 );
+  _checkError("glUniform3iARB");
+}
+
+FABRIC_EXT_EXPORT void glUniform3ivARB_wrapper(
+  KL::Integer location,
+  KL::Size count,
+  const KL::VariableArray<KL::Integer> & value
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glUniform3ivARB( %d, %d, GLint* )", (int)location, (int)count);
+#endif
+  glUniform3ivARB( (GLint)location, (GLsizei)count, (const GLint*)&value[0] );
+  _checkError("glUniform3ivARB");
+}
+
+FABRIC_EXT_EXPORT void glUniform4fARB_wrapper(
+  KL::Integer location,
+  KL::Scalar v0,
+  KL::Scalar v1,
+  KL::Scalar v2,
+  KL::Scalar v3
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glUniform4fARB( %d, %f, %f, %f, %f )", (int)location, (float)v0, (float)v1, (float)v2, (float)v3);
+#endif
+  glUniform4fARB( (GLint)location, (GLfloat)v0, (GLfloat)v1, (GLfloat)v2, (GLfloat)v3 );
+  _checkError("glUniform4fARB");
+}
+
+FABRIC_EXT_EXPORT void glUniform4fvARB_wrapper(
+  KL::Integer location,
+  KL::Size count,
+  const KL::VariableArray<KL::Scalar> & value
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glUniform4fvARB( %d, %d, GLfloat* )", (int)location, (int)count);
+#endif
+  glUniform4fvARB( (GLint)location, (GLsizei)count, (const GLfloat*)&value[0] );
+  _checkError("glUniform4fvARB");
+}
+
+FABRIC_EXT_EXPORT void glUniform4iARB_wrapper(
+  KL::Integer location,
+  KL::Integer v0,
+  KL::Integer v1,
+  KL::Integer v2,
+  KL::Integer v3
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glUniform4iARB( %d, %d, %d, %d, %d )", (int)location, (int)v0, (int)v1, (int)v2, (int)v3);
+#endif
+  glUniform4iARB( (GLint)location, (GLint)v0, (GLint)v1, (GLint)v2, (GLint)v3 );
+  _checkError("glUniform4iARB");
+}
+
+FABRIC_EXT_EXPORT void glUniform4ivARB_wrapper(
+  KL::Integer location,
+  KL::Size count,
+  const KL::VariableArray<KL::Integer> & value
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glUniform4ivARB( %d, %d, GLint* )", (int)location, (int)count);
+#endif
+  glUniform4ivARB( (GLint)location, (GLsizei)count, (const GLint*)&value[0] );
+  _checkError("glUniform4ivARB");
+}
+
+FABRIC_EXT_EXPORT void glUniformMatrix2fvARB_wrapper(
+  KL::Integer location,
+  KL::Size count,
+  KL::Boolean transpose,
+  KL::Mat22 & value
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glUniformMatrix2fvARB( %d, %d, %d, GLfloat* )", (int)location, (int)count, (int)transpose);
+#endif
+  glUniformMatrix2fvARB( (GLint)location, (GLsizei)count, (GLboolean)transpose, (const GLfloat*)&value );
+  _checkError("glUniformMatrix2fvARB");
+}
+
+FABRIC_EXT_EXPORT void glUniformMatrix3fvARB_wrapper(
+  KL::Integer location,
+  KL::Size count,
+  KL::Boolean transpose,
+  KL::Mat33 & value
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glUniformMatrix3fvARB( %d, %d, %d, GLfloat* )", (int)location, (int)count, (int)transpose);
+#endif
+  glUniformMatrix3fvARB( (GLint)location, (GLsizei)count, (GLboolean)transpose, (const GLfloat*)&value );
+  _checkError("glUniformMatrix3fvARB");
+}
+
+FABRIC_EXT_EXPORT void glUniformMatrix4fvARB_wrapper(
+  KL::Integer location,
+  KL::Size count,
+  KL::Boolean transpose,
+  KL::Mat44 & value
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glUniformMatrix4fvARB( %d, %d, %d, GLfloat* )", (int)location, (int)count, (int)transpose);
+#endif
+  glUniformMatrix4fvARB( (GLint)location, (GLsizei)count, (GLboolean)transpose, (const GLfloat*)&value );
+  _checkError("glUniformMatrix4fvARB");
+}
+
+FABRIC_EXT_EXPORT void glTexBufferARB_wrapper(
+  KL::Size target,
+  KL::Size internalformat,
+  KL::Size buffer
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glTexBufferARB( %d, %d, 0x%04X )", (int)target, (int)internalformat, (unsigned)buffer);
+#endif
+  glTexBufferARB( (GLenum)target, (GLenum)internalformat, (GLuint)buffer );
+  _checkError("glTexBufferARB");
+}
+
+FABRIC_EXT_EXPORT void glCompressedTexImage1DARB_wrapper(
+  KL::Size target,
+  KL::Integer level,
+  KL::Size internalformat,
+  KL::Size width,
+  KL::Integer border,
+  KL::Size imageSize,
+  KL::Data data
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glCompressedTexImage1DARB( %d, %d, %d, %d, %d, %d, void* )", (int)target, (int)level, (int)internalformat, (int)width, (int)border, (int)imageSize);
+#endif
+  glCompressedTexImage1DARB( (GLenum)target, (GLint)level, (GLenum)internalformat, (GLsizei)width, (GLint)border, (GLsizei)imageSize, data );
+  _checkError("glCompressedTexImage1DARB");
+}
+
+FABRIC_EXT_EXPORT void glCompressedTexImage2DARB_wrapper(
+  KL::Size target,
+  KL::Integer level,
+  KL::Size internalformat,
+  KL::Size width,
+  KL::Size height,
+  KL::Integer border,
+  KL::Size imageSize,
+  KL::Data data
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glCompressedTexImage2DARB( %d, %d, %d, %d, %d, %d, %d, void* )", (int)target, (int)level, (int)internalformat, (int)width, (int)height, (int)border, (int)imageSize);
+#endif
+  glCompressedTexImage2DARB( (GLenum)target, (GLint)level, (GLenum)internalformat, (GLsizei)width, (GLsizei)height, (GLint)border, (GLsizei)imageSize, data );
+  _checkError("glCompressedTexImage2DARB");
+}
+
+FABRIC_EXT_EXPORT void glCompressedTexImage3DARB_wrapper(
+  KL::Size target,
+  KL::Integer level,
+  KL::Size internalformat,
+  KL::Size width,
+  KL::Size height,
+  KL::Size depth,
+  KL::Integer border,
+  KL::Size imageSize,
+  KL::Data data
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glCompressedTexImage3DARB( %d, %d, %d, %d, %d, %d, %d, %d, void* )", (int)target, (int)level, (int)internalformat, (int)width, (int)height, (int)depth, (int)border, (int)imageSize);
+#endif
+  glCompressedTexImage3DARB( (GLenum)target, (GLint)level, (GLenum)internalformat, (GLsizei)width, (GLsizei)height, (GLsizei)depth, (GLint)border, (GLsizei)imageSize, data );
+  _checkError("glCompressedTexImage3DARB");
+}
+
+FABRIC_EXT_EXPORT void glCompressedTexSubImage1DARB_wrapper(
+  KL::Size target,
+  KL::Integer level,
+  KL::Integer xoffset,
+  KL::Size width,
+  KL::Size format,
+  KL::Size imageSize,
+  KL::Data data
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glCompressedTexSubImage1DARB( %d, %d, %d, %d, %d, %d, void* )", (int)target, (int)level, (int)xoffset, (int)width, (int)format, (int)imageSize);
+#endif
+  glCompressedTexSubImage1DARB( (GLenum)target, (GLint)level, (GLint)xoffset, (GLsizei)width, (GLenum)format, (GLsizei)imageSize, data );
+  _checkError("glCompressedTexSubImage1DARB");
+}
+
+FABRIC_EXT_EXPORT void glCompressedTexSubImage2DARB_wrapper(
+  KL::Size target,
+  KL::Integer level,
+  KL::Integer xoffset,
+  KL::Integer yoffset,
+  KL::Size width,
+  KL::Size height,
+  KL::Size format,
+  KL::Size imageSize,
+  KL::Data data
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glCompressedTexSubImage2DARB( %d, %d, %d, %d, %d, %d, %d, %d, void* )", (int)target, (int)level, (int)xoffset, (int)yoffset, (int)width, (int)height, (int)format, (int)imageSize);
+#endif
+  glCompressedTexSubImage2DARB( (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLsizei)width, (GLsizei)height, (GLenum)format, (GLsizei)imageSize, data );
+  _checkError("glCompressedTexSubImage2DARB");
+}
+
+FABRIC_EXT_EXPORT void glCompressedTexSubImage3DARB_wrapper(
+  KL::Size target,
+  KL::Integer level,
+  KL::Integer xoffset,
+  KL::Integer yoffset,
+  KL::Integer zoffset,
+  KL::Size width,
+  KL::Size height,
+  KL::Size depth,
+  KL::Size format,
+  KL::Size imageSize,
+  KL::Data data
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glCompressedTexSubImage3DARB( %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, void* )", (int)target, (int)level, (int)xoffset, (int)yoffset, (int)zoffset, (int)width, (int)height, (int)depth, (int)format, (int)imageSize);
+#endif
+  glCompressedTexSubImage3DARB( (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLint)zoffset, (GLsizei)width, (GLsizei)height, (GLsizei)depth, (GLenum)format, (GLsizei)imageSize, data );
+  _checkError("glCompressedTexSubImage3DARB");
+}
+
+FABRIC_EXT_EXPORT void glGetCompressedTexImageARB_wrapper(
+  KL::Size target,
+  KL::Integer lod,
+  KL::Data img
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glGetCompressedTexImageARB( %d, %d, void* )", (int)target, (int)lod);
+#endif
+  glGetCompressedTexImageARB( (GLenum)target, (GLint)lod, img );
+  _checkError("glGetCompressedTexImageARB");
 }
 
 FABRIC_EXT_EXPORT void glGetMultisamplefv_wrapper(
@@ -8732,6 +9935,1186 @@ FABRIC_EXT_EXPORT KL::Boolean glIsVertexArray_wrapper(
   GLboolean result = glIsVertexArray( (GLuint)array );
   _checkError("glIsVertexArray");
   return (KL::Boolean)result;
+}
+
+FABRIC_EXT_EXPORT void glVertexBlendARB_wrapper(
+  KL::Integer count
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glVertexBlendARB( %d )", (int)count);
+#endif
+  glVertexBlendARB( (GLint)count );
+  _checkError("glVertexBlendARB");
+}
+
+FABRIC_EXT_EXPORT void glWeightPointerARB_wrapper(
+  KL::Integer size,
+  KL::Size type,
+  KL::Size stride,
+  KL::Data pointer
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glWeightPointerARB( %d, %d, %d, GLvoid* )", (int)size, (int)type, (int)stride);
+#endif
+  glWeightPointerARB( (GLint)size, (GLenum)type, (GLsizei)stride, pointer );
+  _checkError("glWeightPointerARB");
+}
+
+FABRIC_EXT_EXPORT void glWeightbvARB_wrapper(
+  KL::Integer size,
+  KL::VariableArray<KL::Byte> & weights
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glWeightbvARB( %d, GLbyte* )", (int)size);
+#endif
+  glWeightbvARB( (GLint)size, (GLbyte*)&weights[0] );
+  _checkError("glWeightbvARB");
+}
+
+FABRIC_EXT_EXPORT void glWeightdvARB_wrapper(
+  KL::Integer size,
+  KL::VariableArray<KL::Scalar> & weights
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glWeightdvARB( %d, GLdouble* )", (int)size);
+#endif
+  glWeightdvARB( (GLint)size, (GLdouble*)&weights[0] );
+  _checkError("glWeightdvARB");
+}
+
+FABRIC_EXT_EXPORT void glWeightfvARB_wrapper(
+  KL::Integer size,
+  KL::VariableArray<KL::Scalar> & weights
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glWeightfvARB( %d, GLfloat* )", (int)size);
+#endif
+  glWeightfvARB( (GLint)size, (GLfloat*)&weights[0] );
+  _checkError("glWeightfvARB");
+}
+
+FABRIC_EXT_EXPORT void glWeightivARB_wrapper(
+  KL::Integer size,
+  KL::VariableArray<KL::Integer> & weights
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glWeightivARB( %d, GLint* )", (int)size);
+#endif
+  glWeightivARB( (GLint)size, (GLint*)&weights[0] );
+  _checkError("glWeightivARB");
+}
+
+FABRIC_EXT_EXPORT void glWeightsvARB_wrapper(
+  KL::Integer size,
+  KL::VariableArray<KL::Integer> & weights
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glWeightsvARB( %d, GLshort* )", (int)size);
+#endif
+  glWeightsvARB( (GLint)size, (GLshort*)&weights[0] );
+  _checkError("glWeightsvARB");
+}
+
+FABRIC_EXT_EXPORT void glWeightubvARB_wrapper(
+  KL::Integer size,
+  KL::VariableArray<KL::Size> & weights
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glWeightubvARB( %d, GLubyte* )", (int)size);
+#endif
+  glWeightubvARB( (GLint)size, (GLubyte*)&weights[0] );
+  _checkError("glWeightubvARB");
+}
+
+FABRIC_EXT_EXPORT void glWeightuivARB_wrapper(
+  KL::Integer size,
+  KL::VariableArray<KL::Size> & weights
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glWeightuivARB( %d, GLuint* )", (int)size);
+#endif
+  glWeightuivARB( (GLint)size, (GLuint*)&weights[0] );
+  _checkError("glWeightuivARB");
+}
+
+FABRIC_EXT_EXPORT void glWeightusvARB_wrapper(
+  KL::Integer size,
+  KL::VariableArray<KL::Integer> & weights
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glWeightusvARB( %d, GLushort* )", (int)size);
+#endif
+  glWeightusvARB( (GLint)size, (GLushort*)&weights[0] );
+  _checkError("glWeightusvARB");
+}
+
+FABRIC_EXT_EXPORT void glBindBufferARB_wrapper(
+  KL::Size target,
+  KL::Size buffer
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glBindBufferARB( %d, 0x%04X )", (int)target, (unsigned)buffer);
+#endif
+  glBindBufferARB( (GLenum)target, (GLuint)buffer );
+  _checkError("glBindBufferARB");
+}
+
+FABRIC_EXT_EXPORT void glDeleteBuffersARB_wrapper(
+  KL::Size n,
+  const KL::VariableArray<KL::Size> & buffers
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glDeleteBuffersARB( %d, GLuint* )", (int)n);
+#endif
+  glDeleteBuffersARB( (GLsizei)n, (const GLuint*)&buffers[0] );
+  _checkError("glDeleteBuffersARB");
+}
+
+FABRIC_EXT_EXPORT void glGenBuffersARB_wrapper(
+  KL::Size n,
+  KL::VariableArray<KL::Size> & buffers
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glGenBuffersARB( %d, GLuint* )", (int)n);
+#endif
+  glGenBuffersARB( (GLsizei)n, (GLuint*)&buffers[0] );
+  _checkError("glGenBuffersARB");
+}
+
+FABRIC_EXT_EXPORT void glGetBufferParameterivARB_wrapper(
+  KL::Size target,
+  KL::Size pname,
+  KL::VariableArray<KL::Integer> & params
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glGetBufferParameterivARB( %d, %d, GLint* )", (int)target, (int)pname);
+#endif
+  glGetBufferParameterivARB( (GLenum)target, (GLenum)pname, (GLint*)&params[0] );
+  _checkError("glGetBufferParameterivARB");
+}
+
+FABRIC_EXT_EXPORT KL::Boolean glIsBufferARB_wrapper(
+  KL::Size buffer
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glIsBufferARB( 0x%04X )", (unsigned)buffer);
+#endif
+  GLboolean result = glIsBufferARB( (GLuint)buffer );
+  _checkError("glIsBufferARB");
+  return (KL::Boolean)result;
+}
+
+FABRIC_EXT_EXPORT GLvoid glMapBufferARB_wrapper(
+  KL::Size target,
+  KL::Size access
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glMapBufferARB( %d, %d )", (int)target, (int)access);
+#endif
+  glMapBufferARB( (GLenum)target, (GLenum)access );
+  _checkError("glMapBufferARB");
+}
+
+FABRIC_EXT_EXPORT KL::Boolean glUnmapBufferARB_wrapper(
+  KL::Size target
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glUnmapBufferARB( %d )", (int)target);
+#endif
+  GLboolean result = glUnmapBufferARB( (GLenum)target );
+  _checkError("glUnmapBufferARB");
+  return (KL::Boolean)result;
+}
+
+FABRIC_EXT_EXPORT void glBindProgramARB_wrapper(
+  KL::Size target,
+  KL::Size program
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glBindProgramARB( %d, 0x%04X )", (int)target, (unsigned)program);
+#endif
+  glBindProgramARB( (GLenum)target, (GLuint)program );
+  _checkError("glBindProgramARB");
+}
+
+FABRIC_EXT_EXPORT void glDeleteProgramsARB_wrapper(
+  KL::Size n,
+  const KL::VariableArray<KL::Size> & programs
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glDeleteProgramsARB( %d, GLuint* )", (int)n);
+#endif
+  glDeleteProgramsARB( (GLsizei)n, (const GLuint*)&programs[0] );
+  _checkError("glDeleteProgramsARB");
+}
+
+FABRIC_EXT_EXPORT void glDisableVertexAttribArrayARB_wrapper(
+  KL::Size index
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glDisableVertexAttribArrayARB( 0x%04X )", (unsigned)index);
+#endif
+  glDisableVertexAttribArrayARB( (GLuint)index );
+  _checkError("glDisableVertexAttribArrayARB");
+}
+
+FABRIC_EXT_EXPORT void glEnableVertexAttribArrayARB_wrapper(
+  KL::Size index
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glEnableVertexAttribArrayARB( 0x%04X )", (unsigned)index);
+#endif
+  glEnableVertexAttribArrayARB( (GLuint)index );
+  _checkError("glEnableVertexAttribArrayARB");
+}
+
+FABRIC_EXT_EXPORT void glGenProgramsARB_wrapper(
+  KL::Size n,
+  KL::VariableArray<KL::Size> & programs
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glGenProgramsARB( %d, GLuint* )", (int)n);
+#endif
+  glGenProgramsARB( (GLsizei)n, (GLuint*)&programs[0] );
+  _checkError("glGenProgramsARB");
+}
+
+FABRIC_EXT_EXPORT void glGetProgramEnvParameterdvARB_wrapper(
+  KL::Size target,
+  KL::Size index,
+  KL::VariableArray<KL::Scalar> & params
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glGetProgramEnvParameterdvARB( %d, 0x%04X, GLdouble* )", (int)target, (unsigned)index);
+#endif
+  glGetProgramEnvParameterdvARB( (GLenum)target, (GLuint)index, (GLdouble*)&params[0] );
+  _checkError("glGetProgramEnvParameterdvARB");
+}
+
+FABRIC_EXT_EXPORT void glGetProgramEnvParameterfvARB_wrapper(
+  KL::Size target,
+  KL::Size index,
+  KL::VariableArray<KL::Scalar> & params
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glGetProgramEnvParameterfvARB( %d, 0x%04X, GLfloat* )", (int)target, (unsigned)index);
+#endif
+  glGetProgramEnvParameterfvARB( (GLenum)target, (GLuint)index, (GLfloat*)&params[0] );
+  _checkError("glGetProgramEnvParameterfvARB");
+}
+
+FABRIC_EXT_EXPORT void glGetProgramLocalParameterdvARB_wrapper(
+  KL::Size target,
+  KL::Size index,
+  KL::VariableArray<KL::Scalar> & params
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glGetProgramLocalParameterdvARB( %d, 0x%04X, GLdouble* )", (int)target, (unsigned)index);
+#endif
+  glGetProgramLocalParameterdvARB( (GLenum)target, (GLuint)index, (GLdouble*)&params[0] );
+  _checkError("glGetProgramLocalParameterdvARB");
+}
+
+FABRIC_EXT_EXPORT void glGetProgramLocalParameterfvARB_wrapper(
+  KL::Size target,
+  KL::Size index,
+  KL::VariableArray<KL::Scalar> & params
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glGetProgramLocalParameterfvARB( %d, 0x%04X, GLfloat* )", (int)target, (unsigned)index);
+#endif
+  glGetProgramLocalParameterfvARB( (GLenum)target, (GLuint)index, (GLfloat*)&params[0] );
+  _checkError("glGetProgramLocalParameterfvARB");
+}
+
+FABRIC_EXT_EXPORT void glGetProgramStringARB_wrapper(
+  KL::Size target,
+  KL::Size pname,
+  KL::Data string
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glGetProgramStringARB( %d, %d, void* )", (int)target, (int)pname);
+#endif
+  glGetProgramStringARB( (GLenum)target, (GLenum)pname, string );
+  _checkError("glGetProgramStringARB");
+}
+
+FABRIC_EXT_EXPORT void glGetProgramivARB_wrapper(
+  KL::Size target,
+  KL::Size pname,
+  KL::VariableArray<KL::Integer> & params
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glGetProgramivARB( %d, %d, GLint* )", (int)target, (int)pname);
+#endif
+  glGetProgramivARB( (GLenum)target, (GLenum)pname, (GLint*)&params[0] );
+  _checkError("glGetProgramivARB");
+}
+
+FABRIC_EXT_EXPORT void glGetVertexAttribdvARB_wrapper(
+  KL::Size index,
+  KL::Size pname,
+  KL::VariableArray<KL::Scalar> & params
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glGetVertexAttribdvARB( 0x%04X, %d, GLdouble* )", (unsigned)index, (int)pname);
+#endif
+  glGetVertexAttribdvARB( (GLuint)index, (GLenum)pname, (GLdouble*)&params[0] );
+  _checkError("glGetVertexAttribdvARB");
+}
+
+FABRIC_EXT_EXPORT void glGetVertexAttribfvARB_wrapper(
+  KL::Size index,
+  KL::Size pname,
+  KL::VariableArray<KL::Scalar> & params
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glGetVertexAttribfvARB( 0x%04X, %d, GLfloat* )", (unsigned)index, (int)pname);
+#endif
+  glGetVertexAttribfvARB( (GLuint)index, (GLenum)pname, (GLfloat*)&params[0] );
+  _checkError("glGetVertexAttribfvARB");
+}
+
+FABRIC_EXT_EXPORT void glGetVertexAttribivARB_wrapper(
+  KL::Size index,
+  KL::Size pname,
+  KL::VariableArray<KL::Integer> & params
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glGetVertexAttribivARB( 0x%04X, %d, GLint* )", (unsigned)index, (int)pname);
+#endif
+  glGetVertexAttribivARB( (GLuint)index, (GLenum)pname, (GLint*)&params[0] );
+  _checkError("glGetVertexAttribivARB");
+}
+
+FABRIC_EXT_EXPORT KL::Boolean glIsProgramARB_wrapper(
+  KL::Size program
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glIsProgramARB( 0x%04X )", (unsigned)program);
+#endif
+  GLboolean result = glIsProgramARB( (GLuint)program );
+  _checkError("glIsProgramARB");
+  return (KL::Boolean)result;
+}
+
+FABRIC_EXT_EXPORT void glProgramEnvParameter4dARB_wrapper(
+  KL::Size target,
+  KL::Size index,
+  KL::Scalar x,
+  KL::Scalar y,
+  KL::Scalar z,
+  KL::Scalar w
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glProgramEnvParameter4dARB( %d, 0x%04X, %f, %f, %f, %f )", (int)target, (unsigned)index, (float)x, (float)y, (float)z, (float)w);
+#endif
+  glProgramEnvParameter4dARB( (GLenum)target, (GLuint)index, (GLdouble)x, (GLdouble)y, (GLdouble)z, (GLdouble)w );
+  _checkError("glProgramEnvParameter4dARB");
+}
+
+FABRIC_EXT_EXPORT void glProgramEnvParameter4dvARB_wrapper(
+  KL::Size target,
+  KL::Size index,
+  const KL::VariableArray<KL::Scalar> & params
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glProgramEnvParameter4dvARB( %d, 0x%04X, GLdouble* )", (int)target, (unsigned)index);
+#endif
+  glProgramEnvParameter4dvARB( (GLenum)target, (GLuint)index, (const GLdouble*)&params[0] );
+  _checkError("glProgramEnvParameter4dvARB");
+}
+
+FABRIC_EXT_EXPORT void glProgramEnvParameter4fARB_wrapper(
+  KL::Size target,
+  KL::Size index,
+  KL::Scalar x,
+  KL::Scalar y,
+  KL::Scalar z,
+  KL::Scalar w
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glProgramEnvParameter4fARB( %d, 0x%04X, %f, %f, %f, %f )", (int)target, (unsigned)index, (float)x, (float)y, (float)z, (float)w);
+#endif
+  glProgramEnvParameter4fARB( (GLenum)target, (GLuint)index, (GLfloat)x, (GLfloat)y, (GLfloat)z, (GLfloat)w );
+  _checkError("glProgramEnvParameter4fARB");
+}
+
+FABRIC_EXT_EXPORT void glProgramEnvParameter4fvARB_wrapper(
+  KL::Size target,
+  KL::Size index,
+  const KL::VariableArray<KL::Scalar> & params
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glProgramEnvParameter4fvARB( %d, 0x%04X, GLfloat* )", (int)target, (unsigned)index);
+#endif
+  glProgramEnvParameter4fvARB( (GLenum)target, (GLuint)index, (const GLfloat*)&params[0] );
+  _checkError("glProgramEnvParameter4fvARB");
+}
+
+FABRIC_EXT_EXPORT void glProgramLocalParameter4dARB_wrapper(
+  KL::Size target,
+  KL::Size index,
+  KL::Scalar x,
+  KL::Scalar y,
+  KL::Scalar z,
+  KL::Scalar w
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glProgramLocalParameter4dARB( %d, 0x%04X, %f, %f, %f, %f )", (int)target, (unsigned)index, (float)x, (float)y, (float)z, (float)w);
+#endif
+  glProgramLocalParameter4dARB( (GLenum)target, (GLuint)index, (GLdouble)x, (GLdouble)y, (GLdouble)z, (GLdouble)w );
+  _checkError("glProgramLocalParameter4dARB");
+}
+
+FABRIC_EXT_EXPORT void glProgramLocalParameter4dvARB_wrapper(
+  KL::Size target,
+  KL::Size index,
+  const KL::VariableArray<KL::Scalar> & params
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glProgramLocalParameter4dvARB( %d, 0x%04X, GLdouble* )", (int)target, (unsigned)index);
+#endif
+  glProgramLocalParameter4dvARB( (GLenum)target, (GLuint)index, (const GLdouble*)&params[0] );
+  _checkError("glProgramLocalParameter4dvARB");
+}
+
+FABRIC_EXT_EXPORT void glProgramLocalParameter4fARB_wrapper(
+  KL::Size target,
+  KL::Size index,
+  KL::Scalar x,
+  KL::Scalar y,
+  KL::Scalar z,
+  KL::Scalar w
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glProgramLocalParameter4fARB( %d, 0x%04X, %f, %f, %f, %f )", (int)target, (unsigned)index, (float)x, (float)y, (float)z, (float)w);
+#endif
+  glProgramLocalParameter4fARB( (GLenum)target, (GLuint)index, (GLfloat)x, (GLfloat)y, (GLfloat)z, (GLfloat)w );
+  _checkError("glProgramLocalParameter4fARB");
+}
+
+FABRIC_EXT_EXPORT void glProgramLocalParameter4fvARB_wrapper(
+  KL::Size target,
+  KL::Size index,
+  const KL::VariableArray<KL::Scalar> & params
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glProgramLocalParameter4fvARB( %d, 0x%04X, GLfloat* )", (int)target, (unsigned)index);
+#endif
+  glProgramLocalParameter4fvARB( (GLenum)target, (GLuint)index, (const GLfloat*)&params[0] );
+  _checkError("glProgramLocalParameter4fvARB");
+}
+
+FABRIC_EXT_EXPORT void glProgramStringARB_wrapper(
+  KL::Size target,
+  KL::Size format,
+  KL::Size len,
+  KL::Data string
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glProgramStringARB( %d, %d, %d, void* )", (int)target, (int)format, (int)len);
+#endif
+  glProgramStringARB( (GLenum)target, (GLenum)format, (GLsizei)len, string );
+  _checkError("glProgramStringARB");
+}
+
+FABRIC_EXT_EXPORT void glVertexAttrib1dARB_wrapper(
+  KL::Size index,
+  KL::Scalar x
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glVertexAttrib1dARB( 0x%04X, %f )", (unsigned)index, (float)x);
+#endif
+  glVertexAttrib1dARB( (GLuint)index, (GLdouble)x );
+  _checkError("glVertexAttrib1dARB");
+}
+
+FABRIC_EXT_EXPORT void glVertexAttrib1dvARB_wrapper(
+  KL::Size index,
+  const KL::VariableArray<KL::Scalar> & v
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glVertexAttrib1dvARB( 0x%04X, GLdouble* )", (unsigned)index);
+#endif
+  glVertexAttrib1dvARB( (GLuint)index, (const GLdouble*)&v[0] );
+  _checkError("glVertexAttrib1dvARB");
+}
+
+FABRIC_EXT_EXPORT void glVertexAttrib1fARB_wrapper(
+  KL::Size index,
+  KL::Scalar x
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glVertexAttrib1fARB( 0x%04X, %f )", (unsigned)index, (float)x);
+#endif
+  glVertexAttrib1fARB( (GLuint)index, (GLfloat)x );
+  _checkError("glVertexAttrib1fARB");
+}
+
+FABRIC_EXT_EXPORT void glVertexAttrib1fvARB_wrapper(
+  KL::Size index,
+  const KL::VariableArray<KL::Scalar> & v
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glVertexAttrib1fvARB( 0x%04X, GLfloat* )", (unsigned)index);
+#endif
+  glVertexAttrib1fvARB( (GLuint)index, (const GLfloat*)&v[0] );
+  _checkError("glVertexAttrib1fvARB");
+}
+
+FABRIC_EXT_EXPORT void glVertexAttrib1sARB_wrapper(
+  KL::Size index,
+  KL::Integer x
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glVertexAttrib1sARB( 0x%04X, %d )", (unsigned)index, (int)x);
+#endif
+  glVertexAttrib1sARB( (GLuint)index, (GLshort)x );
+  _checkError("glVertexAttrib1sARB");
+}
+
+FABRIC_EXT_EXPORT void glVertexAttrib1svARB_wrapper(
+  KL::Size index,
+  const KL::VariableArray<KL::Integer> & v
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glVertexAttrib1svARB( 0x%04X, GLshort* )", (unsigned)index);
+#endif
+  glVertexAttrib1svARB( (GLuint)index, (const GLshort*)&v[0] );
+  _checkError("glVertexAttrib1svARB");
+}
+
+FABRIC_EXT_EXPORT void glVertexAttrib2dARB_wrapper(
+  KL::Size index,
+  KL::Scalar x,
+  KL::Scalar y
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glVertexAttrib2dARB( 0x%04X, %f, %f )", (unsigned)index, (float)x, (float)y);
+#endif
+  glVertexAttrib2dARB( (GLuint)index, (GLdouble)x, (GLdouble)y );
+  _checkError("glVertexAttrib2dARB");
+}
+
+FABRIC_EXT_EXPORT void glVertexAttrib2dvARB_wrapper(
+  KL::Size index,
+  const KL::VariableArray<KL::Scalar> & v
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glVertexAttrib2dvARB( 0x%04X, GLdouble* )", (unsigned)index);
+#endif
+  glVertexAttrib2dvARB( (GLuint)index, (const GLdouble*)&v[0] );
+  _checkError("glVertexAttrib2dvARB");
+}
+
+FABRIC_EXT_EXPORT void glVertexAttrib2fARB_wrapper(
+  KL::Size index,
+  KL::Scalar x,
+  KL::Scalar y
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glVertexAttrib2fARB( 0x%04X, %f, %f )", (unsigned)index, (float)x, (float)y);
+#endif
+  glVertexAttrib2fARB( (GLuint)index, (GLfloat)x, (GLfloat)y );
+  _checkError("glVertexAttrib2fARB");
+}
+
+FABRIC_EXT_EXPORT void glVertexAttrib2fvARB_wrapper(
+  KL::Size index,
+  const KL::VariableArray<KL::Scalar> & v
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glVertexAttrib2fvARB( 0x%04X, GLfloat* )", (unsigned)index);
+#endif
+  glVertexAttrib2fvARB( (GLuint)index, (const GLfloat*)&v[0] );
+  _checkError("glVertexAttrib2fvARB");
+}
+
+FABRIC_EXT_EXPORT void glVertexAttrib2sARB_wrapper(
+  KL::Size index,
+  KL::Integer x,
+  KL::Integer y
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glVertexAttrib2sARB( 0x%04X, %d, %d )", (unsigned)index, (int)x, (int)y);
+#endif
+  glVertexAttrib2sARB( (GLuint)index, (GLshort)x, (GLshort)y );
+  _checkError("glVertexAttrib2sARB");
+}
+
+FABRIC_EXT_EXPORT void glVertexAttrib2svARB_wrapper(
+  KL::Size index,
+  const KL::VariableArray<KL::Integer> & v
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glVertexAttrib2svARB( 0x%04X, GLshort* )", (unsigned)index);
+#endif
+  glVertexAttrib2svARB( (GLuint)index, (const GLshort*)&v[0] );
+  _checkError("glVertexAttrib2svARB");
+}
+
+FABRIC_EXT_EXPORT void glVertexAttrib3dARB_wrapper(
+  KL::Size index,
+  KL::Scalar x,
+  KL::Scalar y,
+  KL::Scalar z
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glVertexAttrib3dARB( 0x%04X, %f, %f, %f )", (unsigned)index, (float)x, (float)y, (float)z);
+#endif
+  glVertexAttrib3dARB( (GLuint)index, (GLdouble)x, (GLdouble)y, (GLdouble)z );
+  _checkError("glVertexAttrib3dARB");
+}
+
+FABRIC_EXT_EXPORT void glVertexAttrib3dvARB_wrapper(
+  KL::Size index,
+  const KL::VariableArray<KL::Scalar> & v
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glVertexAttrib3dvARB( 0x%04X, GLdouble* )", (unsigned)index);
+#endif
+  glVertexAttrib3dvARB( (GLuint)index, (const GLdouble*)&v[0] );
+  _checkError("glVertexAttrib3dvARB");
+}
+
+FABRIC_EXT_EXPORT void glVertexAttrib3fARB_wrapper(
+  KL::Size index,
+  KL::Scalar x,
+  KL::Scalar y,
+  KL::Scalar z
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glVertexAttrib3fARB( 0x%04X, %f, %f, %f )", (unsigned)index, (float)x, (float)y, (float)z);
+#endif
+  glVertexAttrib3fARB( (GLuint)index, (GLfloat)x, (GLfloat)y, (GLfloat)z );
+  _checkError("glVertexAttrib3fARB");
+}
+
+FABRIC_EXT_EXPORT void glVertexAttrib3fvARB_wrapper(
+  KL::Size index,
+  const KL::VariableArray<KL::Scalar> & v
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glVertexAttrib3fvARB( 0x%04X, GLfloat* )", (unsigned)index);
+#endif
+  glVertexAttrib3fvARB( (GLuint)index, (const GLfloat*)&v[0] );
+  _checkError("glVertexAttrib3fvARB");
+}
+
+FABRIC_EXT_EXPORT void glVertexAttrib3sARB_wrapper(
+  KL::Size index,
+  KL::Integer x,
+  KL::Integer y,
+  KL::Integer z
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glVertexAttrib3sARB( 0x%04X, %d, %d, %d )", (unsigned)index, (int)x, (int)y, (int)z);
+#endif
+  glVertexAttrib3sARB( (GLuint)index, (GLshort)x, (GLshort)y, (GLshort)z );
+  _checkError("glVertexAttrib3sARB");
+}
+
+FABRIC_EXT_EXPORT void glVertexAttrib3svARB_wrapper(
+  KL::Size index,
+  const KL::VariableArray<KL::Integer> & v
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glVertexAttrib3svARB( 0x%04X, GLshort* )", (unsigned)index);
+#endif
+  glVertexAttrib3svARB( (GLuint)index, (const GLshort*)&v[0] );
+  _checkError("glVertexAttrib3svARB");
+}
+
+FABRIC_EXT_EXPORT void glVertexAttrib4NbvARB_wrapper(
+  KL::Size index,
+  const KL::VariableArray<KL::Byte> & v
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glVertexAttrib4NbvARB( 0x%04X, GLbyte* )", (unsigned)index);
+#endif
+  glVertexAttrib4NbvARB( (GLuint)index, (const GLbyte*)&v[0] );
+  _checkError("glVertexAttrib4NbvARB");
+}
+
+FABRIC_EXT_EXPORT void glVertexAttrib4NivARB_wrapper(
+  KL::Size index,
+  const KL::VariableArray<KL::Integer> & v
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glVertexAttrib4NivARB( 0x%04X, GLint* )", (unsigned)index);
+#endif
+  glVertexAttrib4NivARB( (GLuint)index, (const GLint*)&v[0] );
+  _checkError("glVertexAttrib4NivARB");
+}
+
+FABRIC_EXT_EXPORT void glVertexAttrib4NsvARB_wrapper(
+  KL::Size index,
+  const KL::VariableArray<KL::Integer> & v
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glVertexAttrib4NsvARB( 0x%04X, GLshort* )", (unsigned)index);
+#endif
+  glVertexAttrib4NsvARB( (GLuint)index, (const GLshort*)&v[0] );
+  _checkError("glVertexAttrib4NsvARB");
+}
+
+FABRIC_EXT_EXPORT void glVertexAttrib4NubARB_wrapper(
+  KL::Size index,
+  KL::Size x,
+  KL::Size y,
+  KL::Size z,
+  KL::Size w
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glVertexAttrib4NubARB( 0x%04X, 0x%04X, 0x%04X, 0x%04X, 0x%04X )", (unsigned)index, (unsigned)x, (unsigned)y, (unsigned)z, (unsigned)w);
+#endif
+  glVertexAttrib4NubARB( (GLuint)index, (GLubyte)x, (GLubyte)y, (GLubyte)z, (GLubyte)w );
+  _checkError("glVertexAttrib4NubARB");
+}
+
+FABRIC_EXT_EXPORT void glVertexAttrib4NubvARB_wrapper(
+  KL::Size index,
+  const KL::VariableArray<KL::Size> & v
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glVertexAttrib4NubvARB( 0x%04X, GLubyte* )", (unsigned)index);
+#endif
+  glVertexAttrib4NubvARB( (GLuint)index, (const GLubyte*)&v[0] );
+  _checkError("glVertexAttrib4NubvARB");
+}
+
+FABRIC_EXT_EXPORT void glVertexAttrib4NuivARB_wrapper(
+  KL::Size index,
+  const KL::VariableArray<KL::Size> & v
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glVertexAttrib4NuivARB( 0x%04X, GLuint* )", (unsigned)index);
+#endif
+  glVertexAttrib4NuivARB( (GLuint)index, (const GLuint*)&v[0] );
+  _checkError("glVertexAttrib4NuivARB");
+}
+
+FABRIC_EXT_EXPORT void glVertexAttrib4NusvARB_wrapper(
+  KL::Size index,
+  const KL::VariableArray<KL::Integer> & v
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glVertexAttrib4NusvARB( 0x%04X, GLushort* )", (unsigned)index);
+#endif
+  glVertexAttrib4NusvARB( (GLuint)index, (const GLushort*)&v[0] );
+  _checkError("glVertexAttrib4NusvARB");
+}
+
+FABRIC_EXT_EXPORT void glVertexAttrib4bvARB_wrapper(
+  KL::Size index,
+  const KL::VariableArray<KL::Byte> & v
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glVertexAttrib4bvARB( 0x%04X, GLbyte* )", (unsigned)index);
+#endif
+  glVertexAttrib4bvARB( (GLuint)index, (const GLbyte*)&v[0] );
+  _checkError("glVertexAttrib4bvARB");
+}
+
+FABRIC_EXT_EXPORT void glVertexAttrib4dARB_wrapper(
+  KL::Size index,
+  KL::Scalar x,
+  KL::Scalar y,
+  KL::Scalar z,
+  KL::Scalar w
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glVertexAttrib4dARB( 0x%04X, %f, %f, %f, %f )", (unsigned)index, (float)x, (float)y, (float)z, (float)w);
+#endif
+  glVertexAttrib4dARB( (GLuint)index, (GLdouble)x, (GLdouble)y, (GLdouble)z, (GLdouble)w );
+  _checkError("glVertexAttrib4dARB");
+}
+
+FABRIC_EXT_EXPORT void glVertexAttrib4dvARB_wrapper(
+  KL::Size index,
+  const KL::VariableArray<KL::Scalar> & v
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glVertexAttrib4dvARB( 0x%04X, GLdouble* )", (unsigned)index);
+#endif
+  glVertexAttrib4dvARB( (GLuint)index, (const GLdouble*)&v[0] );
+  _checkError("glVertexAttrib4dvARB");
+}
+
+FABRIC_EXT_EXPORT void glVertexAttrib4fARB_wrapper(
+  KL::Size index,
+  KL::Scalar x,
+  KL::Scalar y,
+  KL::Scalar z,
+  KL::Scalar w
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glVertexAttrib4fARB( 0x%04X, %f, %f, %f, %f )", (unsigned)index, (float)x, (float)y, (float)z, (float)w);
+#endif
+  glVertexAttrib4fARB( (GLuint)index, (GLfloat)x, (GLfloat)y, (GLfloat)z, (GLfloat)w );
+  _checkError("glVertexAttrib4fARB");
+}
+
+FABRIC_EXT_EXPORT void glVertexAttrib4fvARB_wrapper(
+  KL::Size index,
+  const KL::VariableArray<KL::Scalar> & v
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glVertexAttrib4fvARB( 0x%04X, GLfloat* )", (unsigned)index);
+#endif
+  glVertexAttrib4fvARB( (GLuint)index, (const GLfloat*)&v[0] );
+  _checkError("glVertexAttrib4fvARB");
+}
+
+FABRIC_EXT_EXPORT void glVertexAttrib4ivARB_wrapper(
+  KL::Size index,
+  const KL::VariableArray<KL::Integer> & v
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glVertexAttrib4ivARB( 0x%04X, GLint* )", (unsigned)index);
+#endif
+  glVertexAttrib4ivARB( (GLuint)index, (const GLint*)&v[0] );
+  _checkError("glVertexAttrib4ivARB");
+}
+
+FABRIC_EXT_EXPORT void glVertexAttrib4sARB_wrapper(
+  KL::Size index,
+  KL::Integer x,
+  KL::Integer y,
+  KL::Integer z,
+  KL::Integer w
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glVertexAttrib4sARB( 0x%04X, %d, %d, %d, %d )", (unsigned)index, (int)x, (int)y, (int)z, (int)w);
+#endif
+  glVertexAttrib4sARB( (GLuint)index, (GLshort)x, (GLshort)y, (GLshort)z, (GLshort)w );
+  _checkError("glVertexAttrib4sARB");
+}
+
+FABRIC_EXT_EXPORT void glVertexAttrib4svARB_wrapper(
+  KL::Size index,
+  const KL::VariableArray<KL::Integer> & v
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glVertexAttrib4svARB( 0x%04X, GLshort* )", (unsigned)index);
+#endif
+  glVertexAttrib4svARB( (GLuint)index, (const GLshort*)&v[0] );
+  _checkError("glVertexAttrib4svARB");
+}
+
+FABRIC_EXT_EXPORT void glVertexAttrib4ubvARB_wrapper(
+  KL::Size index,
+  const KL::VariableArray<KL::Size> & v
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glVertexAttrib4ubvARB( 0x%04X, GLubyte* )", (unsigned)index);
+#endif
+  glVertexAttrib4ubvARB( (GLuint)index, (const GLubyte*)&v[0] );
+  _checkError("glVertexAttrib4ubvARB");
+}
+
+FABRIC_EXT_EXPORT void glVertexAttrib4uivARB_wrapper(
+  KL::Size index,
+  const KL::VariableArray<KL::Size> & v
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glVertexAttrib4uivARB( 0x%04X, GLuint* )", (unsigned)index);
+#endif
+  glVertexAttrib4uivARB( (GLuint)index, (const GLuint*)&v[0] );
+  _checkError("glVertexAttrib4uivARB");
+}
+
+FABRIC_EXT_EXPORT void glVertexAttrib4usvARB_wrapper(
+  KL::Size index,
+  const KL::VariableArray<KL::Integer> & v
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glVertexAttrib4usvARB( 0x%04X, GLushort* )", (unsigned)index);
+#endif
+  glVertexAttrib4usvARB( (GLuint)index, (const GLushort*)&v[0] );
+  _checkError("glVertexAttrib4usvARB");
+}
+
+FABRIC_EXT_EXPORT void glVertexAttribPointerARB_wrapper(
+  KL::Size index,
+  KL::Integer size,
+  KL::Size type,
+  KL::Boolean normalized,
+  KL::Size stride,
+  KL::Data pointer
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glVertexAttribPointerARB( 0x%04X, %d, %d, %d, %d, void* )", (unsigned)index, (int)size, (int)type, (int)normalized, (int)stride);
+#endif
+  glVertexAttribPointerARB( (GLuint)index, (GLint)size, (GLenum)type, (GLboolean)normalized, (GLsizei)stride, pointer );
+  _checkError("glVertexAttribPointerARB");
+}
+
+FABRIC_EXT_EXPORT void glWindowPos2dARB_wrapper(
+  KL::Scalar x,
+  KL::Scalar y
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glWindowPos2dARB( %f, %f )", (float)x, (float)y);
+#endif
+  glWindowPos2dARB( (GLdouble)x, (GLdouble)y );
+  _checkError("glWindowPos2dARB");
+}
+
+FABRIC_EXT_EXPORT void glWindowPos2dvARB_wrapper(
+  const KL::VariableArray<KL::Scalar> & p
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glWindowPos2dvARB( GLdouble* )");
+#endif
+  glWindowPos2dvARB( (const GLdouble*)&p[0] );
+  _checkError("glWindowPos2dvARB");
+}
+
+FABRIC_EXT_EXPORT void glWindowPos2fARB_wrapper(
+  KL::Scalar x,
+  KL::Scalar y
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glWindowPos2fARB( %f, %f )", (float)x, (float)y);
+#endif
+  glWindowPos2fARB( (GLfloat)x, (GLfloat)y );
+  _checkError("glWindowPos2fARB");
+}
+
+FABRIC_EXT_EXPORT void glWindowPos2fvARB_wrapper(
+  const KL::VariableArray<KL::Scalar> & p
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glWindowPos2fvARB( GLfloat* )");
+#endif
+  glWindowPos2fvARB( (const GLfloat*)&p[0] );
+  _checkError("glWindowPos2fvARB");
+}
+
+FABRIC_EXT_EXPORT void glWindowPos2iARB_wrapper(
+  KL::Integer x,
+  KL::Integer y
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glWindowPos2iARB( %d, %d )", (int)x, (int)y);
+#endif
+  glWindowPos2iARB( (GLint)x, (GLint)y );
+  _checkError("glWindowPos2iARB");
+}
+
+FABRIC_EXT_EXPORT void glWindowPos2ivARB_wrapper(
+  const KL::VariableArray<KL::Integer> & p
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glWindowPos2ivARB( GLint* )");
+#endif
+  glWindowPos2ivARB( (const GLint*)&p[0] );
+  _checkError("glWindowPos2ivARB");
+}
+
+FABRIC_EXT_EXPORT void glWindowPos2sARB_wrapper(
+  KL::Integer x,
+  KL::Integer y
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glWindowPos2sARB( %d, %d )", (int)x, (int)y);
+#endif
+  glWindowPos2sARB( (GLshort)x, (GLshort)y );
+  _checkError("glWindowPos2sARB");
+}
+
+FABRIC_EXT_EXPORT void glWindowPos2svARB_wrapper(
+  const KL::VariableArray<KL::Integer> & p
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glWindowPos2svARB( GLshort* )");
+#endif
+  glWindowPos2svARB( (const GLshort*)&p[0] );
+  _checkError("glWindowPos2svARB");
+}
+
+FABRIC_EXT_EXPORT void glWindowPos3dARB_wrapper(
+  KL::Scalar x,
+  KL::Scalar y,
+  KL::Scalar z
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glWindowPos3dARB( %f, %f, %f )", (float)x, (float)y, (float)z);
+#endif
+  glWindowPos3dARB( (GLdouble)x, (GLdouble)y, (GLdouble)z );
+  _checkError("glWindowPos3dARB");
+}
+
+FABRIC_EXT_EXPORT void glWindowPos3dvARB_wrapper(
+  const KL::VariableArray<KL::Scalar> & p
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glWindowPos3dvARB( GLdouble* )");
+#endif
+  glWindowPos3dvARB( (const GLdouble*)&p[0] );
+  _checkError("glWindowPos3dvARB");
+}
+
+FABRIC_EXT_EXPORT void glWindowPos3fARB_wrapper(
+  KL::Scalar x,
+  KL::Scalar y,
+  KL::Scalar z
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glWindowPos3fARB( %f, %f, %f )", (float)x, (float)y, (float)z);
+#endif
+  glWindowPos3fARB( (GLfloat)x, (GLfloat)y, (GLfloat)z );
+  _checkError("glWindowPos3fARB");
+}
+
+FABRIC_EXT_EXPORT void glWindowPos3fvARB_wrapper(
+  const KL::VariableArray<KL::Scalar> & p
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glWindowPos3fvARB( GLfloat* )");
+#endif
+  glWindowPos3fvARB( (const GLfloat*)&p[0] );
+  _checkError("glWindowPos3fvARB");
+}
+
+FABRIC_EXT_EXPORT void glWindowPos3iARB_wrapper(
+  KL::Integer x,
+  KL::Integer y,
+  KL::Integer z
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glWindowPos3iARB( %d, %d, %d )", (int)x, (int)y, (int)z);
+#endif
+  glWindowPos3iARB( (GLint)x, (GLint)y, (GLint)z );
+  _checkError("glWindowPos3iARB");
+}
+
+FABRIC_EXT_EXPORT void glWindowPos3ivARB_wrapper(
+  const KL::VariableArray<KL::Integer> & p
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glWindowPos3ivARB( GLint* )");
+#endif
+  glWindowPos3ivARB( (const GLint*)&p[0] );
+  _checkError("glWindowPos3ivARB");
+}
+
+FABRIC_EXT_EXPORT void glWindowPos3sARB_wrapper(
+  KL::Integer x,
+  KL::Integer y,
+  KL::Integer z
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glWindowPos3sARB( %d, %d, %d )", (int)x, (int)y, (int)z);
+#endif
+  glWindowPos3sARB( (GLshort)x, (GLshort)y, (GLshort)z );
+  _checkError("glWindowPos3sARB");
+}
+
+FABRIC_EXT_EXPORT void glWindowPos3svARB_wrapper(
+  const KL::VariableArray<KL::Integer> & p
+){
+  _clearError();
+#ifdef FABRIC_OGL_DEBUG
+  printf("glWindowPos3svARB( GLshort* )");
+#endif
+  glWindowPos3svARB( (const GLshort*)&p[0] );
+  _checkError("glWindowPos3svARB");
 }
 
 FABRIC_EXT_EXPORT KL::Integer glGetUniformBufferSizeEXT_wrapper(
@@ -11760,13 +14143,13 @@ FABRIC_EXT_EXPORT void glProgramUniformMatrix2fvEXT_wrapper(
   KL::Integer location,
   KL::Size count,
   KL::Boolean transpose,
-  const KL::VariableArray<KL::Scalar> & value
+  KL::Mat22 & value
 ){
   _clearError();
 #ifdef FABRIC_OGL_DEBUG
   printf("glProgramUniformMatrix2fvEXT( 0x%04X, %d, %d, %d, GLfloat* )", (unsigned)program, (int)location, (int)count, (int)transpose);
 #endif
-  glProgramUniformMatrix2fvEXT( (GLuint)program, (GLint)location, (GLsizei)count, (GLboolean)transpose, (const GLfloat*)&value[0] );
+  glProgramUniformMatrix2fvEXT( (GLuint)program, (GLint)location, (GLsizei)count, (GLboolean)transpose, (const GLfloat*)&value );
   _checkError("glProgramUniformMatrix2fvEXT");
 }
 
@@ -11775,13 +14158,13 @@ FABRIC_EXT_EXPORT void glProgramUniformMatrix2x3fvEXT_wrapper(
   KL::Integer location,
   KL::Size count,
   KL::Boolean transpose,
-  const KL::VariableArray<KL::Scalar> & value
+  KL::Mat33 & value
 ){
   _clearError();
 #ifdef FABRIC_OGL_DEBUG
   printf("glProgramUniformMatrix2x3fvEXT( 0x%04X, %d, %d, %d, GLfloat* )", (unsigned)program, (int)location, (int)count, (int)transpose);
 #endif
-  glProgramUniformMatrix2x3fvEXT( (GLuint)program, (GLint)location, (GLsizei)count, (GLboolean)transpose, (const GLfloat*)&value[0] );
+  glProgramUniformMatrix2x3fvEXT( (GLuint)program, (GLint)location, (GLsizei)count, (GLboolean)transpose, (const GLfloat*)&value );
   _checkError("glProgramUniformMatrix2x3fvEXT");
 }
 
@@ -11790,13 +14173,13 @@ FABRIC_EXT_EXPORT void glProgramUniformMatrix2x4fvEXT_wrapper(
   KL::Integer location,
   KL::Size count,
   KL::Boolean transpose,
-  const KL::VariableArray<KL::Scalar> & value
+  KL::Mat44 & value
 ){
   _clearError();
 #ifdef FABRIC_OGL_DEBUG
   printf("glProgramUniformMatrix2x4fvEXT( 0x%04X, %d, %d, %d, GLfloat* )", (unsigned)program, (int)location, (int)count, (int)transpose);
 #endif
-  glProgramUniformMatrix2x4fvEXT( (GLuint)program, (GLint)location, (GLsizei)count, (GLboolean)transpose, (const GLfloat*)&value[0] );
+  glProgramUniformMatrix2x4fvEXT( (GLuint)program, (GLint)location, (GLsizei)count, (GLboolean)transpose, (const GLfloat*)&value );
   _checkError("glProgramUniformMatrix2x4fvEXT");
 }
 
@@ -11805,13 +14188,13 @@ FABRIC_EXT_EXPORT void glProgramUniformMatrix3fvEXT_wrapper(
   KL::Integer location,
   KL::Size count,
   KL::Boolean transpose,
-  const KL::VariableArray<KL::Scalar> & value
+  KL::Mat33 & value
 ){
   _clearError();
 #ifdef FABRIC_OGL_DEBUG
   printf("glProgramUniformMatrix3fvEXT( 0x%04X, %d, %d, %d, GLfloat* )", (unsigned)program, (int)location, (int)count, (int)transpose);
 #endif
-  glProgramUniformMatrix3fvEXT( (GLuint)program, (GLint)location, (GLsizei)count, (GLboolean)transpose, (const GLfloat*)&value[0] );
+  glProgramUniformMatrix3fvEXT( (GLuint)program, (GLint)location, (GLsizei)count, (GLboolean)transpose, (const GLfloat*)&value );
   _checkError("glProgramUniformMatrix3fvEXT");
 }
 
@@ -11820,13 +14203,13 @@ FABRIC_EXT_EXPORT void glProgramUniformMatrix3x2fvEXT_wrapper(
   KL::Integer location,
   KL::Size count,
   KL::Boolean transpose,
-  const KL::VariableArray<KL::Scalar> & value
+  KL::Mat22 & value
 ){
   _clearError();
 #ifdef FABRIC_OGL_DEBUG
   printf("glProgramUniformMatrix3x2fvEXT( 0x%04X, %d, %d, %d, GLfloat* )", (unsigned)program, (int)location, (int)count, (int)transpose);
 #endif
-  glProgramUniformMatrix3x2fvEXT( (GLuint)program, (GLint)location, (GLsizei)count, (GLboolean)transpose, (const GLfloat*)&value[0] );
+  glProgramUniformMatrix3x2fvEXT( (GLuint)program, (GLint)location, (GLsizei)count, (GLboolean)transpose, (const GLfloat*)&value );
   _checkError("glProgramUniformMatrix3x2fvEXT");
 }
 
@@ -11835,13 +14218,13 @@ FABRIC_EXT_EXPORT void glProgramUniformMatrix3x4fvEXT_wrapper(
   KL::Integer location,
   KL::Size count,
   KL::Boolean transpose,
-  const KL::VariableArray<KL::Scalar> & value
+  KL::Mat44 & value
 ){
   _clearError();
 #ifdef FABRIC_OGL_DEBUG
   printf("glProgramUniformMatrix3x4fvEXT( 0x%04X, %d, %d, %d, GLfloat* )", (unsigned)program, (int)location, (int)count, (int)transpose);
 #endif
-  glProgramUniformMatrix3x4fvEXT( (GLuint)program, (GLint)location, (GLsizei)count, (GLboolean)transpose, (const GLfloat*)&value[0] );
+  glProgramUniformMatrix3x4fvEXT( (GLuint)program, (GLint)location, (GLsizei)count, (GLboolean)transpose, (const GLfloat*)&value );
   _checkError("glProgramUniformMatrix3x4fvEXT");
 }
 
@@ -11850,13 +14233,13 @@ FABRIC_EXT_EXPORT void glProgramUniformMatrix4fvEXT_wrapper(
   KL::Integer location,
   KL::Size count,
   KL::Boolean transpose,
-  const KL::VariableArray<KL::Scalar> & value
+  KL::Mat44 & value
 ){
   _clearError();
 #ifdef FABRIC_OGL_DEBUG
   printf("glProgramUniformMatrix4fvEXT( 0x%04X, %d, %d, %d, GLfloat* )", (unsigned)program, (int)location, (int)count, (int)transpose);
 #endif
-  glProgramUniformMatrix4fvEXT( (GLuint)program, (GLint)location, (GLsizei)count, (GLboolean)transpose, (const GLfloat*)&value[0] );
+  glProgramUniformMatrix4fvEXT( (GLuint)program, (GLint)location, (GLsizei)count, (GLboolean)transpose, (const GLfloat*)&value );
   _checkError("glProgramUniformMatrix4fvEXT");
 }
 
@@ -11865,13 +14248,13 @@ FABRIC_EXT_EXPORT void glProgramUniformMatrix4x2fvEXT_wrapper(
   KL::Integer location,
   KL::Size count,
   KL::Boolean transpose,
-  const KL::VariableArray<KL::Scalar> & value
+  KL::Mat22 & value
 ){
   _clearError();
 #ifdef FABRIC_OGL_DEBUG
   printf("glProgramUniformMatrix4x2fvEXT( 0x%04X, %d, %d, %d, GLfloat* )", (unsigned)program, (int)location, (int)count, (int)transpose);
 #endif
-  glProgramUniformMatrix4x2fvEXT( (GLuint)program, (GLint)location, (GLsizei)count, (GLboolean)transpose, (const GLfloat*)&value[0] );
+  glProgramUniformMatrix4x2fvEXT( (GLuint)program, (GLint)location, (GLsizei)count, (GLboolean)transpose, (const GLfloat*)&value );
   _checkError("glProgramUniformMatrix4x2fvEXT");
 }
 
@@ -11880,13 +14263,13 @@ FABRIC_EXT_EXPORT void glProgramUniformMatrix4x3fvEXT_wrapper(
   KL::Integer location,
   KL::Size count,
   KL::Boolean transpose,
-  const KL::VariableArray<KL::Scalar> & value
+  KL::Mat33 & value
 ){
   _clearError();
 #ifdef FABRIC_OGL_DEBUG
   printf("glProgramUniformMatrix4x3fvEXT( 0x%04X, %d, %d, %d, GLfloat* )", (unsigned)program, (int)location, (int)count, (int)transpose);
 #endif
-  glProgramUniformMatrix4x3fvEXT( (GLuint)program, (GLint)location, (GLsizei)count, (GLboolean)transpose, (const GLfloat*)&value[0] );
+  glProgramUniformMatrix4x3fvEXT( (GLuint)program, (GLint)location, (GLsizei)count, (GLboolean)transpose, (const GLfloat*)&value );
   _checkError("glProgramUniformMatrix4x3fvEXT");
 }
 
