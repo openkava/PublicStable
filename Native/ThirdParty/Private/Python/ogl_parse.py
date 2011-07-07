@@ -149,7 +149,7 @@ def main():
   # oglTYPE: [C++type, trace format, trace cast, KL Type]
   knownCTypes = {
     'void':['void','void*','','Data'],
-    'bool':['bool','%b','bool','Boolean'],
+    'bool':['bool','%d','int','Boolean'],
     'int':['int','%d','int','Integer'],
     'char':['char','%s','const char*','String'],
     'int64_t':['int64_t','%d','int','Integer'],
@@ -159,7 +159,7 @@ def main():
     'GLsizei':['GLsizei','%d','int','Size'],
     'GLushort':['unsigned','0x%04X','unsigned','Integer'],
     'GLvoid':['GLvoid','void*','','Data'],
-    'GLboolean':['GLboolean','%b','bool','Boolean'],
+    'GLboolean':['GLboolean','%d','int','Boolean'],
     'GLint':['GLint','%d','int','Integer'],
     'GLuint':['GLuint','0x%04X','unsigned','Size'],
     'GLenum':['GLenum','%d','int','Size'],
@@ -358,7 +358,7 @@ def main():
             cParameters.append('KL::VariableArray<KL::'+knownCTypes[type][3]+'> & '+varname)
             klCast.append('('+fulltype+')&'+varname+'[0]')
         else:
-          klParameters.append('io '+knownCTypes[type][3]+' '+klvarname)
+          klParameters.append('in '+knownCTypes[type][3]+' '+klvarname)
           cParameters.append('KL::'+knownCTypes[type][3]+' '+varname)
           klCast.append('('+fulltype+')'+varname)
       varNamesHead.append(varname)
@@ -398,6 +398,13 @@ def main():
     if name.lower() == 'glbegin':
       functionsCode.append('  _incBracket();')
     functionsCode.extend(additionalCodePre)
+    
+    functionsCode.append('#ifdef FABRIC_OGL_DEBUG')
+    if len(traceVars) > 0:
+      functionsCode.append('  printf("'+name+'( '+str(', ').join(traceFormat)+' )", '+str(', ').join(traceVars)+');')
+    else:
+      functionsCode.append('  printf("'+name+'( '+str(', ').join(traceFormat)+' )");')
+    functionsCode.append('#endif')
     prefix = ''
     if returnType.find('void') == -1:
       prefix = returnType+' result = '
@@ -428,6 +435,7 @@ def main():
     klFunctionsCode.append(klFunction)
   
   open(jsonsourcePath,'w').write('{\n  "libs": "FabricOGL",\n  "code": "'+str('').join(jsonConstants)+''+str('').join(klFunctionsCode)+'"\n}\n')
+  open('/development/temp/test.kl','w').write(str('\n').join(jsonConstants)+'\n\n'+str('\n').join(klFunctionsCode)+'\n\nfunction entry()\n{\n  report("valid");\n}\n')
   
   headers = []
   for file in files:

@@ -8,6 +8,7 @@ using namespace Fabric::EDK;
 
 ####HEADERS####
 
+// #define FABRIC_OGL_DEBUG 1
 unsigned int gBracket = 0;
 void _incBracket()
 {
