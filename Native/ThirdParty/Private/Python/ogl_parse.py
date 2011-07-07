@@ -464,14 +464,8 @@ def main():
   open(jsonsourcePath,'w').write('{\n  "libs": "FabricOGL",\n  "code": "'+str('').join(jsonTypes)+''+str('').join(jsonConstants)+''+str('').join(klFunctionsCode)+'"\n}\n')
   open('/development/temp/test.kl','w').write(str('\n').join(jsonConstants)+'\n\n'+str('\n').join(klFunctionsCode)+'\n\nfunction entry()\n{\n  report("valid");\n}\n')
   
-  headers = []
-  for file in files:
-    parts = file.split('/')
-    headers.append('#include <'+parts[len(parts)-2]+'/'+parts[len(parts)-1]+'>')
-    
   # LOAD THE TEMPLATE AND FILL IT
   template = open(cpptemplatePath).read();
-  template = template.replace("####HEADERS####",str('\n').join(headers))
   template = template.replace("####FUNCTIONS####",str('\n').join(functionsCode))
   # WRITE OUT TO OUR SOURCE FILE
   open(cppsourcePath,"w").write(template)

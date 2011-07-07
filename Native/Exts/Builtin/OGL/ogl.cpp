@@ -1,17 +1,29 @@
 /*
  *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
  */
- 
+
+// include the EDK first, since it provides the OS based defines
 #include <Fabric/EDK/EDK.h>
+ 
+#if defined(FABRIC_OS_LINUX)
+# include <GL/glew.h>
+# include <GL/glxew.h>
+# include <GL/gl.h>
+# include <GL/glx.h>
+# include <GL/glext.h>
+# include <GL/glu.h>
+# undef None
+# undef True
+# undef False
+#elif defined(FABRIC_OS_MACOSX)
+# include <OpenGL/OpenGL.h>
+#elif defined(FABRIC_OS_NACL)
+# include <GLES2/gl2.h>
+#elif defined(FABRIC_OS_WINDOWS)
+# include <GL/glew.h>
+#endif
 
 using namespace Fabric::EDK;
-
-#include <GL/glew.h>
-#include <GL/glxew.h>
-#include <GL/gl.h>
-#include <GL/glx.h>
-#include <GL/glext.h>
-#include <GL/glu.h>
 
 // #define FABRIC_OGL_DEBUG 1
 
