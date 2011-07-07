@@ -12,8 +12,7 @@
 #include <vector>
 
 #if defined(FABRIC_OS_MACOSX)
-//#  define FABRIC_MT_IMPL_GCD
-#  define FABRIC_MT_IMPL_THREADPOOL
+#  define FABRIC_MT_IMPL_GCD
 #elif defined(FABRIC_OS_LINUX) || defined(FABRIC_OS_WINDOWS)
 #  define FABRIC_MT_IMPL_THREADPOOL
 #else

@@ -19,6 +19,7 @@
 #include <Fabric/Base/JSON/String.h>
 #include <Fabric/Base/JSON/Object.h>
 #include <Fabric/Base/JSON/Array.h>
+#include <Fabric/Base/JSON/Boolean.h>
 
 namespace Fabric
 {
@@ -34,6 +35,7 @@ namespace Fabric
     Operator::Operator( std::string const &name, RC::Handle<Context> const &context )
       : NamedObject( name, context )
       , m_context( context.ptr() )
+      , m_mainThreadOnly( false )
     {
     }
     
@@ -244,6 +246,7 @@ namespace Fabric
       result->set( "fullSourceCode", jsonDescFullSourceCode() );
       result->set( "entryFunctionName", jsonDescEntryFunctionName() );
       result->set( "diagnostics", jsonDescDiagnostics() );
+      result->set( "mainThreadOnly", jsonDescMainThreadOnly() );
       return result;
     }
 
@@ -255,6 +258,8 @@ namespace Fabric
         jsonExecSetEntryFunctionName( arg );
       else if ( cmd == "setSourceCode" )
         jsonExecSetSourceCode( arg );
+      else if ( cmd == "setMainThreadOnly" )
+        jsonExecSetMainThreadOnly( arg );
       else result = NamedObject::jsonExec( cmd, arg );
       
       return result;
@@ -273,6 +278,11 @@ namespace Fabric
     void Operator::jsonExecSetEntryFunctionName( RC::ConstHandle<JSON::Value> const &arg )
     {
       setEntryFunctionName( arg->toString()->value() );
+    }
+    
+    void Operator::jsonExecSetMainThreadOnly( RC::ConstHandle<JSON::Value> const &arg )
+    {
+      setMainThreadOnly( arg->toBoolean()->value() );
     }
     
     RC::ConstHandle<JSON::Value> Operator::jsonDescType() const
@@ -317,6 +327,11 @@ namespace Fabric
         }
       }
       return result;
+    }
+    
+    RC::ConstHandle<JSON::Value> Operator::jsonDescMainThreadOnly() const
+    {
+      return JSON::Boolean::Create( m_mainThreadOnly );
     }
   };
 };

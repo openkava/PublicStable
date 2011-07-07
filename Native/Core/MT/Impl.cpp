@@ -22,8 +22,6 @@
 
 namespace Fabric
 {
-  
-
   namespace MT
   {
     void setThreadName( const char *name )

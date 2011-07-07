@@ -72,6 +72,15 @@ namespace Fabric
 #if defined(FABRIC_BUILD_DEBUG)
       std::string const &getByteCode() const;
 #endif
+
+      bool getMainThreadOnly() const
+      {
+        return m_mainThreadOnly;
+      }
+      void setMainThreadOnly( bool mainThreadOnly )
+      {
+        m_mainThreadOnly = mainThreadOnly;
+      }
       
       RC::ConstHandle<AST::GlobalList> getAST() const;
       void setAST( RC::ConstHandle<AST::GlobalList> const &ast );
@@ -84,12 +93,14 @@ namespace Fabric
       static void jsonExecCreate( RC::ConstHandle<JSON::Value> const &arg, RC::Handle<Context> const &context );
       void jsonExecSetSourceCode( RC::ConstHandle<JSON::Value> const &arg );
       void jsonExecSetEntryFunctionName( RC::ConstHandle<JSON::Value> const &arg );
+      void jsonExecSetMainThreadOnly( RC::ConstHandle<JSON::Value> const &arg );
       virtual RC::Handle<JSON::Object> jsonDesc() const;
       virtual RC::ConstHandle<JSON::Value> jsonDescType() const;
       RC::ConstHandle<JSON::Value> jsonDescSourceCode() const;
       RC::ConstHandle<JSON::Value> jsonDescFullSourceCode() const;
       RC::ConstHandle<JSON::Value> jsonDescEntryFunctionName() const;
       RC::ConstHandle<JSON::Value> jsonDescDiagnostics() const;
+      RC::ConstHandle<JSON::Value> jsonDescMainThreadOnly() const;
       
     protected:
     
@@ -117,6 +128,7 @@ namespace Fabric
       std::string m_fullSourceCode;
       RC::ConstHandle<Code> m_code;
       RC::ConstHandle<Function> m_function;
+      bool m_mainThreadOnly;
       
       RC::ConstHandle<AST::Operator> m_astOperator;
     
