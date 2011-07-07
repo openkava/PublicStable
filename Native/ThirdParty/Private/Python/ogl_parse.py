@@ -21,6 +21,7 @@ else:
 jsonsourcePath = basePath+'/../../../Exts/Builtin/OGL/FabricOGL.fpm.json'
 cpptemplatePath = basePath+'/../../../Exts/Builtin/OGL/ogl.cpp_template'
 cppsourcePath = basePath+'/../../../Exts/Builtin/OGL/ogl.cpp'
+sceneGraphPath = basePath+'/../../../../Web/SceneGraph/Resources/FABRIC.SceneGraph.OpenGLConstants.js'
 
 verbose = False
 
@@ -137,12 +138,15 @@ def main():
         
   # CREATE THE SOURCE CODE FOR EACH CONSTANT
   jsonConstants = []
+  sceneGraphConstants = []
   for name in registeredConstants:
     value = registeredConstants[name]
     if value.startswith('0x'):
       jsonConstants.append('const Size '+name+' = '+value+';')
+      sceneGraphConstants.append(name+': '+str(int(value,0))+',')
     elif value.isdigit():
       jsonConstants.append('const Size '+name+' = '+value+';')
+      sceneGraphConstants.append(name+': '+value+',')
     
   # DEFINE A MAPPING FOR THE DATATYPE
   # oglTYPE: [C++type, trace format, trace cast, KL Type]
@@ -471,6 +475,20 @@ def main():
   template = template.replace("####FUNCTIONS####",str('\n').join(functionsCode))
   # WRITE OUT TO OUR SOURCE FILE
   open(cppsourcePath,"w").write(template)
+  
+  # write out the js file
+  sceneGraphCode = []
+  sceneGraphCode.append("");
+  sceneGraphCode.append("//")
+  sceneGraphCode.append("// Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.")
+  sceneGraphCode.append("//")
+  sceneGraphCode.append("");
+  sceneGraphCode.append("FABRIC.SceneGraph.OpenGLConstants = {");
+  for i in range(len(sceneGraphConstants)):
+    sceneGraphCode.append('  '+sceneGraphConstants[i])
+  sceneGraphCode.append("};")
+  sceneGraphCode.append("")
+  open(sceneGraphPath,"w").write(str('\n').join(sceneGraphCode))
   
 if __name__ == '__main__':
   main()
