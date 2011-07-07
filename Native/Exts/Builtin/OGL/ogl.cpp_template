@@ -9,7 +9,9 @@ using namespace Fabric::EDK;
 ####HEADERS####
 
 // #define FABRIC_OGL_DEBUG 1
+
 unsigned int gBracket = 0;
+bool gGlewInitialized = false;
 void _incBracket()
 {
   gBracket++;
@@ -23,6 +25,19 @@ void _decBracket()
 }
 void _clearError()
 {
+  if(!gGlewInitialized){
+#ifdef FABRIC_OGL_DEBUG
+    printf("glewInit();\n");
+#endif
+    GLenum error = glewInit();
+    if(error != GLEW_OK)
+    {
+      printf("[Fabric::OGL::glewInit] ERROR: %s\n",(const char*)gluErrorString(error));
+      throw("[Fabric::OGL::glewInit] ERROR: %s",(const char*)gluErrorString(error));
+    }
+    gGlewInitialized = true;
+  }
+
   // throw away last error
   if(gBracket > 0)
     return;
@@ -35,7 +50,10 @@ void _checkError(const char * functionName)
     return;
   GLenum error = glGetError();
   if(error != GL_NO_ERROR)
-    throw("Fabric::OGL::%s: %s",functionName,(const char*)gluErrorString(error));
+  {
+    printf("[Fabric::OGL::%s] ERROR: %s\n",functionName,(const char*)gluErrorString(error));
+    throw("[Fabric::OGL::%s] ERROR: %s",functionName,(const char*)gluErrorString(error));
+  }
 }
 
 ####FUNCTIONS####

@@ -94,7 +94,6 @@ def main():
     'SUN',
     'SUNX',
     'NV',
-    #'ARB',
     'ATI',
     'GREMEDY',
     'IBM',
@@ -305,9 +304,13 @@ def main():
             
             # IF WE HAVE A CONST CHAR, WE WANT TO JUST READ IT
             if fulltype.find('**') > -1:
+              additionalCodePre.append('  KL::VariableArray<KL::Data> '+varname+'Data;')
+              additionalCodePre.append('  '+varname+'Data.resize('+varname+'.size());')
+              additionalCodePre.append('  for(KL::Size '+varname+'Counter = 0;'+varname+'Counter<'+varname+'.size();'+varname+'Counter++)')
+              additionalCodePre.append('    '+varname+'Data['+varname+'Counter] = (KL::Data)'+varname+'['+varname+'Counter].data();')
               klParameters.append('io String '+klvarname+'[]')
               cParameters.append('const KL::VariableArray<KL::String> &'+varname)
-              klCast.append('('+fulltype+')&'+varname+'[0]')
+              klCast.append('('+fulltype+')&'+varname+'Data[0]')
             else:
               klParameters.append('io String '+klvarname)
               cParameters.append('const KL::String &'+varname)
@@ -345,9 +348,9 @@ def main():
               break
           if len(digit) > 0 and name.lower().find('matrix') > -1:
             # let's convert to matrix
-            klParameters.append('io Mat'+digit+digit+' '+klvarname)
-            cParameters.append('KL::Mat'+digit+digit+' & '+varname)
-            klCast.append('('+fulltype+')&'+varname)
+            klParameters.append('io Mat'+digit+digit+' '+klvarname+'[]')
+            cParameters.append('KL::VariableArray<KL::Mat'+digit+digit+'> & '+varname)
+            klCast.append('('+fulltype+')&'+varname+'[0]')
           else:
             if knownCTypes[type][3] == 'Data':
               if variables[i].startswith('const'):
@@ -407,14 +410,15 @@ def main():
       functionsCode.append('  _clearError();')
     if name.lower() == 'glbegin':
       functionsCode.append('  _incBracket();')
-    functionsCode.extend(additionalCodePre)
-    
+
     functionsCode.append('#ifdef FABRIC_OGL_DEBUG')
     if len(traceVars) > 0:
-      functionsCode.append('  printf("'+name+'( '+str(', ').join(traceFormat)+' )", '+str(', ').join(traceVars)+');')
+      functionsCode.append('  printf("'+name+'( '+str(', ').join(traceFormat)+' );\\n", '+str(', ').join(traceVars)+');')
     else:
-      functionsCode.append('  printf("'+name+'( '+str(', ').join(traceFormat)+' )");')
+      functionsCode.append('  printf("'+name+'( '+str(', ').join(traceFormat)+' );\\n");')
     functionsCode.append('#endif')
+
+    functionsCode.extend(additionalCodePre)
     prefix = ''
     if returnType.find('void') == -1:
       prefix = returnType+' result = '
@@ -435,7 +439,7 @@ def main():
         functionsCode.append('  return ('+klReturnType+')(const char*)result;')
       else:
         functionsCode.append('  return ('+klReturnType+')result;')
-    
+
     functionsCode.append('}\n')
     klFunction = 'function ';
     if returnTypeKey.find('void') == -1:
