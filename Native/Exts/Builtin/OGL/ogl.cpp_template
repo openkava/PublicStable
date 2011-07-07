@@ -5,8 +5,8 @@
 // include the EDK first, since it provides the OS based defines
 #include <Fabric/EDK/EDK.h>
  
+#include <GL/glew.h>
 #if defined(FABRIC_OS_LINUX)
-# include <GL/glew.h>
 # include <GL/glxew.h>
 # include <GL/gl.h>
 # include <GL/glx.h>
@@ -20,7 +20,6 @@
 #elif defined(FABRIC_OS_NACL)
 # include <GLES2/gl2.h>
 #elif defined(FABRIC_OS_WINDOWS)
-# include <GL/glew.h>
 #endif
 
 using namespace Fabric::EDK;
