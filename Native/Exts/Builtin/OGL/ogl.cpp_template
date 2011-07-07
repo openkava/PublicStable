@@ -16,7 +16,6 @@
 # undef True
 # undef False
 #elif defined(FABRIC_OS_MACOSX)
-# include <OpenGL/OpenGL.h>
 #elif defined(FABRIC_OS_NACL)
 # include <GLES2/gl2.h>
 #elif defined(FABRIC_OS_WINDOWS)

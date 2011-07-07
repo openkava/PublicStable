@@ -6,7 +6,6 @@
 #include <Fabric/Clients/NPAPI/Interface.h>
 #include <Fabric/Clients/NPAPI/Context.h>
 #include <Fabric/Base/Exception.h>
-#include <Fabric/Core/OGL/OGL.h>
 #include <Fabric/Core/DG/Event.h>
 #include <Fabric/Core/MT/LogCollector.h>
 

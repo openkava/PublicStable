@@ -4,7 +4,6 @@
 
 #include <Fabric/Clients/NPAPI/Darwin/WindowedInvalidatingCAViewPort.h>
 #include <Fabric/Clients/NPAPI/Interface.h>
-#include <Fabric/Core/OGL/OGL.h>
 #include <Fabric/Core/DG/Event.h>
 #include <Fabric/Core/MT/LogCollector.h>
 #include <Fabric/Core/MT/Mutex.h>

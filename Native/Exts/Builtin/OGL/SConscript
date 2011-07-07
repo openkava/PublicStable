@@ -13,7 +13,10 @@ if buildOS == 'Linux':
   oglPluginEnv.ParseConfig( 'pkg-config --cflags --libs gtkglext-1.0' )
   oglPluginEnv.ParseConfig( 'pkg-config --cflags --libs gdkglext-1.0' )
 if buildOS == 'Darwin':
-  oglPluginEnv.Append( FRAMEWORKS = ['OpenGL','OpenCL'] )
+  oglPluginEnv.Append( CPPPATH = ['/opt/local/include'] )
+  oglPluginEnv.Append( LIBPATH = ['/opt/local/lib'] )
+  oglPluginEnv.Append( LIBS = ['GLEW'] )
+  oglPluginEnv.Append( FRAMEWORKS = ['OpenGL'] )
 if buildOS == 'Windows':
 	Import( 'glewFlags' )
 	oglPluginEnv.MergeFlags( glewFlags )

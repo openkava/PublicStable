@@ -1,3 +1,4 @@
+#!/usr/bin/python
 import sys
 import os
 import exceptions
@@ -15,6 +16,9 @@ if platform.system() == "Linux":
   files.append('/usr/include/GL/glx.h')
   files.append('/usr/include/GL/glext.h')
   files.append('/usr/include/GL/glu.h')
+elif platform.system() == "Darwin":
+  # the order actually matters here
+  files.append('/opt/local/include/GL/glew.h')
 else:
   raise(Exception("THIS PLATFORM HAS NOT YET BEEN IMPLEMENTED."))
   
@@ -470,7 +474,7 @@ def main():
   jsonTypes.append('struct Mat44 { Vec4 row0; Vec4 row1; Vec4 row2; Vec4 row3; };')
   
   open(jsonsourcePath,'w').write('{\n  "libs": "FabricOGL",\n  "code": "'+str('').join(jsonTypes)+''+str('').join(jsonConstants)+''+str('').join(klFunctionsCode)+'"\n}\n')
-  open('/development/temp/test.kl','w').write(str('\n').join(jsonConstants)+'\n\n'+str('\n').join(klFunctionsCode)+'\n\nfunction entry()\n{\n  report("valid");\n}\n')
+  #open('/development/temp/test.kl','w').write(str('\n').join(jsonConstants)+'\n\n'+str('\n').join(klFunctionsCode)+'\n\nfunction entry()\n{\n  report("valid");\n}\n')
   
   # LOAD THE TEMPLATE AND FILL IT
   template = open(cpptemplatePath).read();
