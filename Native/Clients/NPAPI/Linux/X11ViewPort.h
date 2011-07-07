@@ -41,6 +41,9 @@ namespace Fabric
       
       virtual NPError nppGetValue( NPPVariable variable, void *value );
       virtual NPError nppSetWindow( NPWindow *window );
+
+      virtual void pushOGLContext();
+      virtual void popOGLContext();
       
     protected:
     

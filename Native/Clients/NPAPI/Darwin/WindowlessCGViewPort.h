@@ -9,6 +9,7 @@
 
 #include <npapi/npapi.h>
 #include <AGL/agl.h>
+#include <vector>
 
 namespace Fabric
 {
@@ -31,6 +32,9 @@ namespace Fabric
 
       virtual void needsRedraw();
 
+      virtual void pushOGLContext();
+      virtual void popOGLContext();
+
     protected:
     
       WindowlessCGViewPort( RC::ConstHandle<Interface> const &interface );
@@ -50,6 +54,7 @@ namespace Fabric
       unsigned int m_windowWidth, m_windowHeight;
       void *m_offscreenData;
       CGImageRef m_offscreenCGImage;
+      std::vector<AGLContext> m_aglContextStack;
     };
   };
 };

@@ -1379,12 +1379,12 @@
 		DB96719913A5423200616143 /* Windows */ = {
 			isa = PBXGroup;
 			children = (
+				DB96719F13A5423200616143 /* SConscript */,
 				DB96719A13A5423200616143 /* FabricPlugin.aps */,
 				DB96719B13A5423200616143 /* FabricPlugin.def */,
 				DB96719C13A5423200616143 /* FabricPlugin.rc */,
 				DB96719D13A5423200616143 /* PluginRegistration.cpp */,
 				DB96719E13A5423200616143 /* resource.h */,
-				DB96719F13A5423200616143 /* SConscript */,
 				DB9671A013A5423200616143 /* WindowsViewPort.cpp */,
 				DB9671A113A5423200616143 /* WindowsViewPort.h */,
 			);

@@ -298,7 +298,12 @@ namespace Fabric
       
     std::string Interface::jsonExec( char const *jsonEncodedCommandsData, size_t jsonEncodedCommandsLength )
     {
-      return DG::Client::jsonExec( jsonEncodedCommandsData, jsonEncodedCommandsLength );
+      if ( m_viewPort )
+        m_viewPort->pushOGLContext();
+      std::string result = DG::Client::jsonExec( jsonEncodedCommandsData, jsonEncodedCommandsLength );
+      if ( m_viewPort )
+        m_viewPort->popOGLContext();
+      return result;
     }
 
     void Interface::setJSONNotifyCallback( NPObject *npObject )

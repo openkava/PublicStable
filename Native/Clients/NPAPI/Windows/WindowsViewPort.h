@@ -33,6 +33,9 @@ namespace Fabric
       
       virtual NPError nppSetWindow( NPWindow *window );
       virtual int16_t nppHandleEvent( void *event );
+
+      virtual void pushOGLContext();
+      virtual void popOGLContext();
     
     protected:
   

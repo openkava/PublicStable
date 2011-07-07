@@ -81,6 +81,9 @@ namespace Fabric
       virtual RC::ConstHandle<JSON::Value> jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg );
       virtual RC::Handle<JSON::Object> jsonDesc() const;
 
+      virtual void pushOGLContext() = 0;
+      virtual void popOGLContext() = 0;
+
     protected:
     
       ViewPort( RC::ConstHandle<Interface> const &interface, uint32_t timerInterval = 0 );
