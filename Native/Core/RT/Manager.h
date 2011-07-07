@@ -25,6 +25,7 @@ namespace Fabric
     class Desc;
     class BooleanDesc;
     class ByteDesc;
+    class ConstStringDesc;
     class IntegerDesc;
     class SizeDesc;
     class ScalarDesc;
@@ -48,11 +49,13 @@ namespace Fabric
       
       RC::ConstHandle<BooleanDesc> getBooleanDesc() const;
       RC::ConstHandle<ByteDesc> getByteDesc() const;
+      RC::ConstHandle<ConstStringDesc> getConstStringDesc() const;
       RC::ConstHandle<IntegerDesc> getIntegerDesc() const;
       RC::ConstHandle<SizeDesc> getSizeDesc() const;
       RC::ConstHandle<ScalarDesc> getScalarDesc() const;
       RC::ConstHandle<StringDesc> getStringDesc() const;
       RC::ConstHandle<OpaqueDesc> getDataDesc() const;
+      RC::ConstHandle<ConstStringDesc> getConstStringDesc( size_t length ) const;
       
       RC::ConstHandle<StructDesc> registerStruct( std::string const &name, StructMemberInfoVector const &memberInfos );
       RC::ConstHandle<OpaqueDesc> registerOpaque( std::string const &name, size_t size );
@@ -74,6 +77,8 @@ namespace Fabric
       RC::Handle<JSON::Object> jsonDesc() const;
       RC::Handle<JSON::Object> jsonDescRegisteredTypes() const;
       
+      RC::ConstHandle<Desc> getStrongerTypeOrNone( RC::ConstHandle<Desc> const &lhsDesc, RC::ConstHandle<Desc> const &rhsDesc ) const;
+
     protected:
     
       Manager();
@@ -81,6 +86,8 @@ namespace Fabric
       RC::ConstHandle<Desc> registerDesc( RC::ConstHandle< Desc > const &desc ) const;
 
     private:
+    
+      typedef std::map< size_t, RC::ConstHandle<ConstStringDesc> > ConstStringDescs;
       
       RC::ConstHandle<Desc> getComplexDesc( RC::ConstHandle<Desc> const &desc, char const *data, char const *dataEnd ) const;
 
@@ -96,6 +103,7 @@ namespace Fabric
       RC::ConstHandle<ScalarDesc> m_scalarDesc;
       RC::ConstHandle<StringDesc> m_stringDesc;
       RC::ConstHandle<OpaqueDesc> m_dataDesc;
+      mutable ConstStringDescs m_constStringDescs;
       
       JSON::CommandChannel *m_jsonCommandChannel;
     };

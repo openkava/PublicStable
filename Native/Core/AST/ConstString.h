@@ -12,6 +12,11 @@
 
 namespace Fabric
 {
+  namespace CG
+  {
+    class ConstStringAdapter;
+  };
+  
   namespace AST
   {
     class ConstString : public Expr
@@ -28,6 +33,8 @@ namespace Fabric
     protected:
     
       ConstString( CG::Location const &location, std::string const &value );
+      
+      RC::ConstHandle<CG::ConstStringAdapter> getAdapter( CG::BasicBlockBuilder const &basicBlockBuilder ) const;
       
     private:
     

@@ -26,6 +26,7 @@ namespace Fabric
     // Non-simple, non-compound types
     static const ImplType DT_STRING = size_t(1) << 8;
     static const ImplType DT_OPAQUE = size_t(1) << 9;
+    static const ImplType DT_CONST_STRING = size_t(1) << 10;
     
     // Struct type
     static const ImplType DT_STRUCT = size_t(1) << 16;
@@ -42,12 +43,11 @@ namespace Fabric
     inline bool isSimple( ImplType implType ) { return isBoolean(implType) || isByte(implType) || isInteger(implType) || isSize(implType) || isScalar(implType); }
     inline bool isString( ImplType implType ) { return implType & DT_STRING; }
     inline bool isOpaque( ImplType implType ) { return implType & DT_OPAQUE; }
+    inline bool isConstString( ImplType implType ) { return implType & DT_CONST_STRING; }
     inline bool isStruct( ImplType implType ) { return implType & DT_STRUCT; }
     inline bool isFixedArray( ImplType implType ) { return implType & DT_FIXED_ARRAY; }
     inline bool isVariableArray( ImplType implType ) { return implType & DT_VARIABLE_ARRAY; }
     inline bool isArray( ImplType implType ) { return isFixedArray(implType) || isVariableArray(implType); }
-      
-    RC::ConstHandle<Desc> getStrongerTypeOrNone( RC::ConstHandle<Desc> const &lhsDesc, RC::ConstHandle<Desc> const &rhsDesc );
   };
 };
 

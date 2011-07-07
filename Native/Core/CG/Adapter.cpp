@@ -156,6 +156,7 @@ namespace Fabric
       else
       {
         std::string name = constructOverloadName( this, exprValue.getAdapter() );
+        exprValue.getAdapter()->llvmPrepareModule( basicBlockBuilder.getModuleBuilder(), true );
         RC::ConstHandle<FunctionSymbol> functionSymbol = basicBlockBuilder.maybeGetFunction( name );
         if ( !functionSymbol )
           throw Exception( "no cast exists from " + exprValue.getTypeUserName() + " to " + getUserName() );

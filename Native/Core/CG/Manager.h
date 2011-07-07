@@ -27,6 +27,7 @@ namespace Fabric
     class Adapter;
     class BooleanAdapter;
     class ByteAdapter;
+    class ConstStringAdapter;
     class IntegerAdapter;
     class SizeAdapter;
     class ScalarAdapter;
@@ -56,6 +57,7 @@ namespace Fabric
       RC::ConstHandle<ScalarAdapter> getScalarAdapter() const;
       RC::ConstHandle<StringAdapter> getStringAdapter() const;
       RC::ConstHandle<OpaqueAdapter> getDataAdapter() const;
+      RC::ConstHandle<ConstStringAdapter> getConstStringAdapter( size_t length ) const;
       
       RC::ConstHandle<VariableArrayAdapter> getVariableArrayOf( RC::ConstHandle<Adapter> const &adapter ) const;
       RC::ConstHandle<FixedArrayAdapter> getFixedArrayOf( RC::ConstHandle<Adapter> const &adapter, size_t length ) const;
@@ -69,12 +71,16 @@ namespace Fabric
       
       void *llvmResolveExternalFunction( std::string const &functionName ) const;
       void llvmAddGlobalMappingsToExecutionEngine( llvm::ExecutionEngine *executionEngine, llvm::Module &module ) const;
+
+      RC::ConstHandle<RT::Desc> getStrongerTypeOrNone( RC::ConstHandle<RT::Desc> const &lhsDesc, RC::ConstHandle<RT::Desc> const &rhsDesc ) const;
       
     protected:
     
       Manager( RC::Handle<RT::Manager> const &rtManager );
       
     private:
+    
+      typedef std::map< size_t, RC::ConstHandle<ConstStringAdapter> > ConstStringAdapters;
       
       mutable llvm::LLVMContext m_llvmContext;
     
@@ -89,6 +95,7 @@ namespace Fabric
       mutable RC::ConstHandle<ScalarAdapter> m_scalarAdapter;
       mutable RC::ConstHandle<StringAdapter> m_stringAdapter;
       mutable RC::ConstHandle<OpaqueAdapter> m_dataAdapter;
+      mutable ConstStringAdapters m_constStringAdapters;
     };
   };
 };

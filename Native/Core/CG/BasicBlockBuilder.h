@@ -19,6 +19,11 @@ namespace llvm
 
 namespace Fabric
 {
+  namespace RT
+  {
+    class Desc;
+  };
+  
   namespace CG
   {
     class Manager;
@@ -48,6 +53,8 @@ namespace Fabric
       llvm::LLVMContext &getLLVMContext();
 
       RC::ConstHandle<FunctionSymbol> maybeGetFunction( std::string const &entryName ) const;
+
+      RC::ConstHandle<RT::Desc> getStrongerTypeOrNone( RC::ConstHandle<RT::Desc> const &lhsDesc, RC::ConstHandle<RT::Desc> const &rhsDesc ) const;
 
     private:
     

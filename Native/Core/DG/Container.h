@@ -117,10 +117,10 @@ namespace Fabric
       virtual RC::Handle<MT::ParallelCall> bind( RC::ConstHandle<Binding> const &binding, Scope const &scope, size_t *newCount, unsigned prefixCount=0, void * const *prefixes = 0 );
       
       class Member;
-      typedef std::map< std::string, Member * > Members;
+      typedef std::map< std::string, RC::Handle<Member> > Members;
       
-      Member const *getMember( std::string const &name ) const;
-      Member *getMember( std::string const &name );
+      RC::ConstHandle<Member> getMember( std::string const &name ) const;
+      RC::Handle<Member> getMember( std::string const &name );
 
       RC::ConstHandle<RT::VariableArrayDesc> getMemberArrayDesc( std::string const &name );
       void *getMemberArrayData( std::string const &name );

@@ -62,9 +62,9 @@ namespace Fabric
       FABRIC_ASSERT( src );
       bits_t const *bits = reinterpret_cast<bits_t const *>( src );
       if ( bits )
-        return encoder.putCStr( bits->cStr, bits->length );
+        return encoder.putString( bits->cStr, bits->length );
       
-      return encoder.putCStr( 0, 0 );
+      return encoder.putString( 0, 0 );
     }
     
     Util::Decoder &StringImpl::decode( Util::Decoder &decoder, void *dst ) const
@@ -72,14 +72,14 @@ namespace Fabric
       FABRIC_ASSERT( dst );
       
       size_t length;
-      decoder.getCStrLength( length );
+      decoder.getStringLength( length );
 
       Prepare( length, false, dst );
       bits_t *bits = *reinterpret_cast<bits_t **>( dst );
       if ( length )
       {
         FABRIC_ASSERT( bits && bits->refCount.getValue() == 1 && length+1 <= bits->allocSize );
-        decoder.getCStrData( bits->cStr, length );
+        decoder.getStringData( bits->cStr, length );
         bits->length = length;
       }
       else FABRIC_ASSERT( !bits );
@@ -100,7 +100,7 @@ namespace Fabric
       size_t length = getValueLength(data);
       if ( length > 64 )
       {
-        result.append( length, 64 );
+        result.append( getValueData(data), 64 );
         result += "...";
       }
       else if ( length )
