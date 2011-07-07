@@ -232,5 +232,18 @@ namespace Fabric
           return false;
       }
     }
+      
+    void WindowlessCGViewPort::pushOGLContext()
+    {
+      m_aglContextStack.push_back( aglGetCurrentContext() );
+      aglSetCurrentContext( m_windowAGLContext );
+    }
+    
+    void WindowlessCGViewPort::popOGLContext()
+    {
+      FABRIC_ASSERT( !m_aglContextStack.empty() );
+      aglSetCurrentContext( m_aglContextStack.back() );
+      m_aglContextStack.pop_back();
+    }
   };
 };

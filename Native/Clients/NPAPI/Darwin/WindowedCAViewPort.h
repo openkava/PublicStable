@@ -8,6 +8,7 @@
 #include <Fabric/Clients/NPAPI/ViewPort.h>
 
 #include <npapi/npapi.h>
+#include <vector>
 
 #ifdef __OBJC__
 @class CALayer;
@@ -35,7 +36,10 @@ namespace Fabric
 
       virtual void needsRedraw();
       virtual void redrawFinished();
-      
+
+      virtual void pushOGLContext();
+      virtual void popOGLContext();
+
     protected:
     
       WindowedCAViewPort( RC::ConstHandle<Interface> const &interface );
@@ -48,6 +52,7 @@ namespace Fabric
       NPP m_npp;
       NPCAOpenGLLayer *m_npCAOpenGLLayer;
       size_t m_width, m_height;
+      std::vector<CGLContextObj> m_cglContextStack;
     };
   };
 };

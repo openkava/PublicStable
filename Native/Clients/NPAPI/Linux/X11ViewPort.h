@@ -15,6 +15,7 @@
 #include <npapi/npapi.h>
 #include <gtk/gtk.h>
 #include <gtk/gtkgl.h>
+#include <vector>
 
 namespace Fabric
 {
@@ -41,6 +42,9 @@ namespace Fabric
       
       virtual NPError nppGetValue( NPPVariable variable, void *value );
       virtual NPError nppSetWindow( NPWindow *window );
+
+      virtual void pushOGLContext();
+      virtual void popOGLContext();
       
     protected:
     
@@ -59,6 +63,8 @@ namespace Fabric
       GtkWidget *m_drawingArea;
       int m_windowLeft, m_windowTop;
       unsigned m_windowWidth, m_windowHeight;
+      typedef std::pair< GdkGLDrawable *, GdkGLContext * > GdkGLDrawableAndContext;
+      std::vector<GdkGLDrawableAndContext> m_gdkGLStack;
     };
   };
 };

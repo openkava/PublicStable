@@ -33,6 +33,9 @@ namespace Fabric
       
       virtual NPError nppSetWindow( NPWindow *window );
       virtual int16_t nppHandleEvent( void *event );
+
+      virtual void pushOGLContext();
+      virtual void popOGLContext();
     
     protected:
   
@@ -66,6 +69,9 @@ namespace Fabric
       WNDPROC   m_oldWndProc;
 
       HGLRC     m_hGLRC;
+
+      typedef std::pair< HDC, HGLRC > WGLDCAndContext;
+      std::vector<WGLDCAndContext> m_wglStack;
     };
   }
 }
