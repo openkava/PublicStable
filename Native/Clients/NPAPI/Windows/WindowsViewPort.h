@@ -69,6 +69,9 @@ namespace Fabric
       WNDPROC   m_oldWndProc;
 
       HGLRC     m_hGLRC;
+
+      typedef std::pair< HDC, HGLRC > WGLDCAndContext;
+      std::vector<WGLDCAndContext> m_wglStack;
     };
   }
 }
