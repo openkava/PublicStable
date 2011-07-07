@@ -1084,6 +1084,9 @@
 		DBCCD56913ABFAE300024113 /* timeSample.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = timeSample.cpp; sourceTree = "<group>"; };
 		DBCCD56A13ABFAE300024113 /* TimeSample.fpm.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = TimeSample.fpm.json; sourceTree = "<group>"; };
 		DBCCD57B13AC007D00024113 /* currentTime.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = currentTime.html; sourceTree = "<group>"; };
+		DBF56E4F13C63B6000778A06 /* generate.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = generate.py; sourceTree = "<group>"; };
+		DBF56E5013C63B6000778A06 /* ogl.cpp_template */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ogl.cpp_template; sourceTree = "<group>"; };
+		DBF56E5113C63B6000778A06 /* SConscript */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = SConscript; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -1895,6 +1898,7 @@
 				DB96734913A5423300616143 /* SConscript */,
 				DB96733D13A5423300616143 /* EXR */,
 				DB96734113A5423300616143 /* HDR */,
+				DBF56E4D13C63B6000778A06 /* OGL */,
 				DB96734513A5423300616143 /* PNG */,
 				DB96734A13A5423300616143 /* TGA */,
 				DB96734E13A5423300616143 /* VICON */,
@@ -2778,6 +2782,16 @@
 				DBCCD57B13AC007D00024113 /* currentTime.html */,
 			);
 			path = SampleExts;
+			sourceTree = "<group>";
+		};
+		DBF56E4D13C63B6000778A06 /* OGL */ = {
+			isa = PBXGroup;
+			children = (
+				DBF56E5113C63B6000778A06 /* SConscript */,
+				DBF56E4F13C63B6000778A06 /* generate.py */,
+				DBF56E5013C63B6000778A06 /* ogl.cpp_template */,
+			);
+			path = OGL;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */

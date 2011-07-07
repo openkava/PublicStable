@@ -21,22 +21,19 @@ if buildOS == 'Windows':
 	Import( 'glewFlags' )
 	oglPluginEnv.MergeFlags( glewFlags )
 
-# [pzion 20110329] WHO MADE THIS COMMENT???
-# ensure to insert an include prior to every header file  
-# this has to be done because the flags are parsed for unique
-# values, which removes one of the '-include' flags
-if oglPluginEnv['FABRIC_BUILD_OS'] == 'Linux':
-  ccflags = []
-  for flag in oglPluginEnv['CCFLAGS']:
-    if(flag.lower() == '-include'):
-      continue
-    if(flag.lower().endswith(".h")):
-      ccflags.append("-include")
-    ccflags.append(flag)
-  oglPluginEnv['CCFLAGS'] = ccflags
+generator = oglPluginEnv.File("generate.py")
+template = oglPluginEnv.File("ogl.cpp_template")
 
-oglPlugin = oglPluginEnv.SharedLibrary( 'FabricOGL', Glob('*.cpp') ),
-oglManifest = oglPluginEnv.File('FabricOGL.fpm.json'),
+oglSource = oglPluginEnv.File("ogl.cpp")
+oglManifest = oglPluginEnv.File('FabricOGL.fpm.json')
+
+oglPluginEnv.Command(
+  [oglSource, oglManifest],
+  [generator, template],
+  "cd " + generator.pathname() + "; python " + generator.basename()
+  )
+
+oglPlugin = oglPluginEnv.SharedLibrary( 'FabricOGL', oglSource )
 
 installAction = Install( fabricExtsDistDir, [oglPlugin,oglManifest] )
 extsEnv.CopyToAppdataIfWindows( installAction )
