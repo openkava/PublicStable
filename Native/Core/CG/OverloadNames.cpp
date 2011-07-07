@@ -32,7 +32,16 @@ namespace Fabric
     {
       std::string result = "__method_" + name + "__" + selfType->getCodeName();
       for ( size_t i=0; i<paramTypes.size(); ++i )
-        result += "__" + paramTypes[i]->getCodeName();
+      {
+        // [pzion 20110706] Super big hack to auto cast ConstStringNN to String for methods
+        // Will go away when we have true polymorphic functions
+        std::string codeName;
+        if ( RT::isConstString( paramTypes[i]->getType() ) )
+          codeName = "String";
+        else codeName = paramTypes[i]->getCodeName();
+        
+        result += "__" + codeName;
+      }
       return result;
     }
   };

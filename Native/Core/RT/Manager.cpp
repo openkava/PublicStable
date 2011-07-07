@@ -9,6 +9,8 @@
 #include "SizeImpl.h"
 #include "ScalarDesc.h"
 #include "ScalarImpl.h"
+#include "ConstStringDesc.h"
+#include "ConstStringImpl.h"
 #include "StringDesc.h"
 #include "StringImpl.h"
 #include "FixedArrayDesc.h"
@@ -103,6 +105,9 @@ namespace Fabric
           break;
         case DT_BYTE:
           aliasDesc = new ByteDesc( name, RC::ConstHandle<ByteImpl>::StaticCast( desc->getImpl() ) );
+          break;
+        case DT_CONST_STRING:
+          aliasDesc = new ConstStringDesc( name, RC::ConstHandle<ConstStringImpl>::StaticCast( desc->getImpl() ) );
           break;
         case DT_INTEGER:
           aliasDesc = new IntegerDesc( name, RC::ConstHandle<IntegerImpl>::StaticCast( desc->getImpl() ) );
@@ -266,6 +271,17 @@ namespace Fabric
     RC::ConstHandle<OpaqueDesc> Manager::getDataDesc() const
     {
       return m_dataDesc;
+    }
+    
+    RC::ConstHandle<ConstStringDesc> Manager::getConstStringDesc( size_t length ) const
+    {
+      ConstStringDescs::const_iterator it = m_constStringDescs.find( length );
+      if ( it == m_constStringDescs.end() )
+      {
+        std::string name = "ConstString" + _(length);
+        it = m_constStringDescs.insert( ConstStringDescs::value_type( length, new ConstStringDesc( name, new ConstStringImpl( name, length ) ) ) ).first;
+      }
+      return it->second;
     }
 
     std::string Manager::buildTopoSortedKBindings( KBindings::iterator const &it, KBindings &kBindings ) const
@@ -468,6 +484,36 @@ namespace Fabric
 
       if ( kBindings.length() > 0 )
         structDesc->setKBindings( kBindings );
+    }
+    
+    RC::ConstHandle<Desc> Manager::getStrongerTypeOrNone( RC::ConstHandle<Desc> const &lhsDesc, RC::ConstHandle<Desc> const &rhsDesc ) const
+    {
+      ImplType lhsType = lhsDesc->getType(), rhsType = rhsDesc->getType();
+      if ( isSimple( lhsType ) && isSimple( rhsType ) )
+      {
+        // Arrange by casting priority.
+        if( lhsType >= rhsType )
+          return( lhsDesc );
+        else
+          return( rhsDesc );
+      }
+      else if( lhsType == rhsType )
+      {
+        return lhsDesc;
+      }
+      else if ( isConstString( lhsType ) || isConstString( rhsType ) )
+      {
+        return m_stringDesc;
+      }
+      else if ( isString( lhsType ) )
+      {
+        return lhsDesc;
+      }
+      else if ( isString( rhsType ) )
+      {
+        return rhsDesc;
+      }
+      else return 0;
     }
   };
 };

@@ -22,35 +22,35 @@ namespace Fabric
       }
       Encoder &put( uint8_t value )
       {
-        return _put( &value, sizeof(value), true );
+        return putData( &value, sizeof(value), true );
       }
       Encoder &put( int8_t value )
       {
-        return _put( &value, sizeof(value), true );
+        return putData( &value, sizeof(value), true );
       }
       Encoder &put( uint16_t value )
       {
-        return _put( &value, sizeof(value), true );
+        return putData( &value, sizeof(value), true );
       }
       Encoder &put( int16_t value )
       {
-        return _put( &value, sizeof(value), true );
+        return putData( &value, sizeof(value), true );
       }
       Encoder &put( uint32_t value )
       {
-        return _put( &value, sizeof(value), true );
+        return putData( &value, sizeof(value), true );
       }
       Encoder &put( int32_t value )
       {
-        return _put( &value, sizeof(value), true );
+        return putData( &value, sizeof(value), true );
       }
       Encoder &put( uint64_t value )
       {
-        return _put( &value, sizeof(value), true );
+        return putData( &value, sizeof(value), true );
       }
       Encoder &put( int64_t value )
       {
-        return _put( &value, sizeof(value), true );
+        return putData( &value, sizeof(value), true );
       }
       Encoder &putSize( size_t value )
       {
@@ -58,26 +58,23 @@ namespace Fabric
       }
       Encoder &put( float value )
       {
-        return _put( &value, sizeof(value), true );
+        return putData( &value, sizeof(value), true );
       }
       Encoder &put( double value )
       {
-        return _put( &value, sizeof(value), true );
+        return putData( &value, sizeof(value), true );
       }
       Encoder &put( std::string const &str )
       {
-        return putCStr( str.data(), str.length() );
+        return putString( str.data(), str.length() );
       }
-      Encoder &putCStr( char const *cStr, size_t length )
+      Encoder &putString( char const *cStr, size_t length )
       {
         uint64_t uint64Length = length;
-        return put( uint64Length )._put( cStr, length, false );
+        return put( uint64Length ).putData( cStr, length, false );
       }
 
-    protected:
-    
-      virtual Encoder &_put( void const *data, size_t count, bool endian ) = 0;
-    
+      virtual Encoder &putData( void const *data, size_t count, bool endian ) = 0;
     };
   };
 };

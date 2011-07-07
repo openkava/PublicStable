@@ -9,6 +9,7 @@
 #define _FABRIC_DG_SCOPE_H
 
 #include <Fabric/Core/DG/Node.h>
+#include <Fabric/Base/RC/WeakHandle.h>
 
 namespace Fabric
 {
@@ -93,7 +94,7 @@ namespace Fabric
       RC::Handle<Container> find( std::string const &name ) const
       {
         if ( name == m_name )
-          return m_container;
+          return m_container.makeStrong();
         else return Scope::find( name );
       }
       
@@ -105,7 +106,7 @@ namespace Fabric
     private:
     
       std::string m_name;
-      RC::Handle<Container> m_container;
+      RC::WeakHandle<Container> m_container;
     };
     
     class SelfScope : public NamedScope

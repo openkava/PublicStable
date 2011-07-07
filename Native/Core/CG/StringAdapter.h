@@ -42,16 +42,6 @@ namespace Fabric
       llvm::Value *llvmCallLength( BasicBlockBuilder &basicBlockBuilder, llvm::Value *stringRValue ) const;
       llvm::Value *llvmCallCompare( BasicBlockBuilder &basicBlockBuilder, llvm::Value *lhsRValue, llvm::Value *rhsRValue ) const;
       llvm::Value *llvmCallCast( BasicBlockBuilder &basicBlockBuilder, RC::ConstHandle<Adapter> const &adapter, llvm::Value *rValue ) const;
-      
-      llvm::Value *llvmConst( BasicBlockBuilder &basicBlockBuilder, char const *data, size_t length ) const;
-      llvm::Value *llvmConst( BasicBlockBuilder &basicBlockBuilder, char const *cString ) const
-      {
-        return llvmConst( basicBlockBuilder, cString, strlen(cString ) );
-      }
-      llvm::Value *llvmConst( BasicBlockBuilder &basicBlockBuilder, std::string const &string ) const
-      {
-        return llvmConst( basicBlockBuilder, string.data(), string.length() );
-      }
 
     protected:
       
