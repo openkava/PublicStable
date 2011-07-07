@@ -19,6 +19,9 @@ if platform.system() == "Linux":
 elif platform.system() == "Darwin":
   # the order actually matters here
   files.append('/opt/local/include/GL/glew.h')
+elif platform.system() == "Windows":
+  # the order actually matters here
+  files.append('../../../ThirdParty/Private/GLEW/GL/glew.h')
 else:
   raise(Exception("THIS PLATFORM HAS NOT YET BEEN IMPLEMENTED."))
   
