@@ -195,7 +195,7 @@ FABRIC_EXT_EXPORT void glCallLists_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glCallLists( %d, %d, GLvoid* );\n", (int)n, (int)type);
 #endif
-  glCallLists( (GLsizei)n, (GLenum)type, lists );
+  glCallLists( (GLsizei)n, (GLenum)type, (const GLvoid*)lists );
   _checkError("glCallLists");
 }
 
@@ -711,7 +711,7 @@ FABRIC_EXT_EXPORT void glColorPointer_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glColorPointer( %d, %d, %d, GLvoid* );\n", (int)size, (int)type, (int)stride);
 #endif
-  glColorPointer( (GLint)size, (GLenum)type, (GLsizei)stride, pointer );
+  glColorPointer( (GLint)size, (GLenum)type, (GLsizei)stride, (const GLvoid*)pointer );
   _checkError("glColorPointer");
 }
 
@@ -924,7 +924,7 @@ FABRIC_EXT_EXPORT void glDrawElements_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glDrawElements( %d, %d, %d, GLvoid* );\n", (int)mode, (int)count, (int)type);
 #endif
-  glDrawElements( (GLenum)mode, (GLsizei)count, (GLenum)type, indices );
+  glDrawElements( (GLenum)mode, (GLsizei)count, (GLenum)type, (const GLvoid*)indices );
   _checkError("glDrawElements");
 }
 
@@ -939,7 +939,7 @@ FABRIC_EXT_EXPORT void glDrawPixels_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glDrawPixels( %d, %d, %d, %d, GLvoid* );\n", (int)width, (int)height, (int)format, (int)type);
 #endif
-  glDrawPixels( (GLsizei)width, (GLsizei)height, (GLenum)format, (GLenum)type, pixels );
+  glDrawPixels( (GLsizei)width, (GLsizei)height, (GLenum)format, (GLenum)type, (const GLvoid*)pixels );
   _checkError("glDrawPixels");
 }
 
@@ -962,7 +962,7 @@ FABRIC_EXT_EXPORT void glEdgeFlagPointer_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glEdgeFlagPointer( %d, GLvoid* );\n", (int)stride);
 #endif
-  glEdgeFlagPointer( (GLsizei)stride, pointer );
+  glEdgeFlagPointer( (GLsizei)stride, (const GLvoid*)pointer );
   _checkError("glEdgeFlagPointer");
 }
 
@@ -1588,7 +1588,7 @@ FABRIC_EXT_EXPORT void glGetTexImage_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glGetTexImage( %d, %d, %d, %d, GLvoid* );\n", (int)target, (int)level, (int)format, (int)type);
 #endif
-  glGetTexImage( (GLenum)target, (GLint)level, (GLenum)format, (GLenum)type, pixels );
+  glGetTexImage( (GLenum)target, (GLint)level, (GLenum)format, (GLenum)type, (GLvoid*)pixels );
   _checkError("glGetTexImage");
 }
 
@@ -1678,7 +1678,7 @@ FABRIC_EXT_EXPORT void glIndexPointer_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glIndexPointer( %d, %d, GLvoid* );\n", (int)type, (int)stride);
 #endif
-  glIndexPointer( (GLenum)type, (GLsizei)stride, pointer );
+  glIndexPointer( (GLenum)type, (GLsizei)stride, (const GLvoid*)pointer );
   _checkError("glIndexPointer");
 }
 
@@ -1811,7 +1811,7 @@ FABRIC_EXT_EXPORT void glInterleavedArrays_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glInterleavedArrays( %d, %d, GLvoid* );\n", (int)format, (int)stride);
 #endif
-  glInterleavedArrays( (GLenum)format, (GLsizei)stride, pointer );
+  glInterleavedArrays( (GLenum)format, (GLsizei)stride, (const GLvoid*)pointer );
   _checkError("glInterleavedArrays");
 }
 
@@ -2395,7 +2395,7 @@ FABRIC_EXT_EXPORT void glNormalPointer_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glNormalPointer( %d, %d, GLvoid* );\n", (int)type, (int)stride);
 #endif
-  glNormalPointer( (GLenum)type, (GLsizei)stride, pointer );
+  glNormalPointer( (GLenum)type, (GLsizei)stride, (const GLvoid*)pointer );
   _checkError("glNormalPointer");
 }
 
@@ -2979,7 +2979,7 @@ FABRIC_EXT_EXPORT void glReadPixels_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glReadPixels( %d, %d, %d, %d, %d, %d, GLvoid* );\n", (int)x, (int)y, (int)width, (int)height, (int)format, (int)type);
 #endif
-  glReadPixels( (GLint)x, (GLint)y, (GLsizei)width, (GLsizei)height, (GLenum)format, (GLenum)type, pixels );
+  glReadPixels( (GLint)x, (GLint)y, (GLsizei)width, (GLsizei)height, (GLenum)format, (GLenum)type, (GLvoid*)pixels );
   _checkError("glReadPixels");
 }
 
@@ -3613,7 +3613,7 @@ FABRIC_EXT_EXPORT void glTexCoordPointer_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glTexCoordPointer( %d, %d, %d, GLvoid* );\n", (int)size, (int)type, (int)stride);
 #endif
-  glTexCoordPointer( (GLint)size, (GLenum)type, (GLsizei)stride, pointer );
+  glTexCoordPointer( (GLint)size, (GLenum)type, (GLsizei)stride, (const GLvoid*)pointer );
   _checkError("glTexCoordPointer");
 }
 
@@ -3761,7 +3761,7 @@ FABRIC_EXT_EXPORT void glTexImage1D_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glTexImage1D( %d, %d, %d, %d, %d, %d, %d, GLvoid* );\n", (int)target, (int)level, (int)internalformat, (int)width, (int)border, (int)format, (int)type);
 #endif
-  glTexImage1D( (GLenum)target, (GLint)level, (GLint)internalformat, (GLsizei)width, (GLint)border, (GLenum)format, (GLenum)type, pixels );
+  glTexImage1D( (GLenum)target, (GLint)level, (GLint)internalformat, (GLsizei)width, (GLint)border, (GLenum)format, (GLenum)type, (const GLvoid*)pixels );
   _checkError("glTexImage1D");
 }
 
@@ -3780,7 +3780,7 @@ FABRIC_EXT_EXPORT void glTexImage2D_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glTexImage2D( %d, %d, %d, %d, %d, %d, %d, %d, GLvoid* );\n", (int)target, (int)level, (int)internalformat, (int)width, (int)height, (int)border, (int)format, (int)type);
 #endif
-  glTexImage2D( (GLenum)target, (GLint)level, (GLint)internalformat, (GLsizei)width, (GLsizei)height, (GLint)border, (GLenum)format, (GLenum)type, pixels );
+  glTexImage2D( (GLenum)target, (GLint)level, (GLint)internalformat, (GLsizei)width, (GLsizei)height, (GLint)border, (GLenum)format, (GLenum)type, (const GLvoid*)pixels );
   _checkError("glTexImage2D");
 }
 
@@ -3849,7 +3849,7 @@ FABRIC_EXT_EXPORT void glTexSubImage1D_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glTexSubImage1D( %d, %d, %d, %d, %d, %d, GLvoid* );\n", (int)target, (int)level, (int)xoffset, (int)width, (int)format, (int)type);
 #endif
-  glTexSubImage1D( (GLenum)target, (GLint)level, (GLint)xoffset, (GLsizei)width, (GLenum)format, (GLenum)type, pixels );
+  glTexSubImage1D( (GLenum)target, (GLint)level, (GLint)xoffset, (GLsizei)width, (GLenum)format, (GLenum)type, (const GLvoid*)pixels );
   _checkError("glTexSubImage1D");
 }
 
@@ -3868,7 +3868,7 @@ FABRIC_EXT_EXPORT void glTexSubImage2D_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glTexSubImage2D( %d, %d, %d, %d, %d, %d, %d, %d, GLvoid* );\n", (int)target, (int)level, (int)xoffset, (int)yoffset, (int)width, (int)height, (int)format, (int)type);
 #endif
-  glTexSubImage2D( (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLsizei)width, (GLsizei)height, (GLenum)format, (GLenum)type, pixels );
+  glTexSubImage2D( (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLsizei)width, (GLsizei)height, (GLenum)format, (GLenum)type, (const GLvoid*)pixels );
   _checkError("glTexSubImage2D");
 }
 
@@ -4196,7 +4196,7 @@ FABRIC_EXT_EXPORT void glVertexPointer_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glVertexPointer( %d, %d, %d, GLvoid* );\n", (int)size, (int)type, (int)stride);
 #endif
-  glVertexPointer( (GLint)size, (GLenum)type, (GLsizei)stride, pointer );
+  glVertexPointer( (GLint)size, (GLenum)type, (GLsizei)stride, (const GLvoid*)pointer );
   _checkError("glVertexPointer");
 }
 
@@ -4245,7 +4245,7 @@ FABRIC_EXT_EXPORT void glDrawRangeElements_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glDrawRangeElements( %d, 0x%04X, 0x%04X, %d, %d, GLvoid* );\n", (int)mode, (unsigned)start, (unsigned)end, (int)count, (int)type);
 #endif
-  glDrawRangeElements( (GLenum)mode, (GLuint)start, (GLuint)end, (GLsizei)count, (GLenum)type, indices );
+  glDrawRangeElements( (GLenum)mode, (GLuint)start, (GLuint)end, (GLsizei)count, (GLenum)type, (const GLvoid*)indices );
   _checkError("glDrawRangeElements");
 }
 
@@ -4265,7 +4265,7 @@ FABRIC_EXT_EXPORT void glTexImage3D_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glTexImage3D( %d, %d, %d, %d, %d, %d, %d, %d, %d, GLvoid* );\n", (int)target, (int)level, (int)internalFormat, (int)width, (int)height, (int)depth, (int)border, (int)format, (int)type);
 #endif
-  glTexImage3D( (GLenum)target, (GLint)level, (GLint)internalFormat, (GLsizei)width, (GLsizei)height, (GLsizei)depth, (GLint)border, (GLenum)format, (GLenum)type, pixels );
+  glTexImage3D( (GLenum)target, (GLint)level, (GLint)internalFormat, (GLsizei)width, (GLsizei)height, (GLsizei)depth, (GLint)border, (GLenum)format, (GLenum)type, (const GLvoid*)pixels );
   _checkError("glTexImage3D");
 }
 
@@ -4286,7 +4286,7 @@ FABRIC_EXT_EXPORT void glTexSubImage3D_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glTexSubImage3D( %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, GLvoid* );\n", (int)target, (int)level, (int)xoffset, (int)yoffset, (int)zoffset, (int)width, (int)height, (int)depth, (int)format, (int)type);
 #endif
-  glTexSubImage3D( (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLint)zoffset, (GLsizei)width, (GLsizei)height, (GLsizei)depth, (GLenum)format, (GLenum)type, pixels );
+  glTexSubImage3D( (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLint)zoffset, (GLsizei)width, (GLsizei)height, (GLsizei)depth, (GLenum)format, (GLenum)type, (const GLvoid*)pixels );
   _checkError("glTexSubImage3D");
 }
 
@@ -4325,7 +4325,7 @@ FABRIC_EXT_EXPORT void glCompressedTexImage1D_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glCompressedTexImage1D( %d, %d, %d, %d, %d, %d, GLvoid* );\n", (int)target, (int)level, (int)internalformat, (int)width, (int)border, (int)imageSize);
 #endif
-  glCompressedTexImage1D( (GLenum)target, (GLint)level, (GLenum)internalformat, (GLsizei)width, (GLint)border, (GLsizei)imageSize, data );
+  glCompressedTexImage1D( (GLenum)target, (GLint)level, (GLenum)internalformat, (GLsizei)width, (GLint)border, (GLsizei)imageSize, (const GLvoid*)data );
   _checkError("glCompressedTexImage1D");
 }
 
@@ -4343,7 +4343,7 @@ FABRIC_EXT_EXPORT void glCompressedTexImage2D_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glCompressedTexImage2D( %d, %d, %d, %d, %d, %d, %d, GLvoid* );\n", (int)target, (int)level, (int)internalformat, (int)width, (int)height, (int)border, (int)imageSize);
 #endif
-  glCompressedTexImage2D( (GLenum)target, (GLint)level, (GLenum)internalformat, (GLsizei)width, (GLsizei)height, (GLint)border, (GLsizei)imageSize, data );
+  glCompressedTexImage2D( (GLenum)target, (GLint)level, (GLenum)internalformat, (GLsizei)width, (GLsizei)height, (GLint)border, (GLsizei)imageSize, (const GLvoid*)data );
   _checkError("glCompressedTexImage2D");
 }
 
@@ -4362,7 +4362,7 @@ FABRIC_EXT_EXPORT void glCompressedTexImage3D_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glCompressedTexImage3D( %d, %d, %d, %d, %d, %d, %d, %d, GLvoid* );\n", (int)target, (int)level, (int)internalformat, (int)width, (int)height, (int)depth, (int)border, (int)imageSize);
 #endif
-  glCompressedTexImage3D( (GLenum)target, (GLint)level, (GLenum)internalformat, (GLsizei)width, (GLsizei)height, (GLsizei)depth, (GLint)border, (GLsizei)imageSize, data );
+  glCompressedTexImage3D( (GLenum)target, (GLint)level, (GLenum)internalformat, (GLsizei)width, (GLsizei)height, (GLsizei)depth, (GLint)border, (GLsizei)imageSize, (const GLvoid*)data );
   _checkError("glCompressedTexImage3D");
 }
 
@@ -4379,7 +4379,7 @@ FABRIC_EXT_EXPORT void glCompressedTexSubImage1D_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glCompressedTexSubImage1D( %d, %d, %d, %d, %d, %d, GLvoid* );\n", (int)target, (int)level, (int)xoffset, (int)width, (int)format, (int)imageSize);
 #endif
-  glCompressedTexSubImage1D( (GLenum)target, (GLint)level, (GLint)xoffset, (GLsizei)width, (GLenum)format, (GLsizei)imageSize, data );
+  glCompressedTexSubImage1D( (GLenum)target, (GLint)level, (GLint)xoffset, (GLsizei)width, (GLenum)format, (GLsizei)imageSize, (const GLvoid*)data );
   _checkError("glCompressedTexSubImage1D");
 }
 
@@ -4398,7 +4398,7 @@ FABRIC_EXT_EXPORT void glCompressedTexSubImage2D_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glCompressedTexSubImage2D( %d, %d, %d, %d, %d, %d, %d, %d, GLvoid* );\n", (int)target, (int)level, (int)xoffset, (int)yoffset, (int)width, (int)height, (int)format, (int)imageSize);
 #endif
-  glCompressedTexSubImage2D( (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLsizei)width, (GLsizei)height, (GLenum)format, (GLsizei)imageSize, data );
+  glCompressedTexSubImage2D( (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLsizei)width, (GLsizei)height, (GLenum)format, (GLsizei)imageSize, (const GLvoid*)data );
   _checkError("glCompressedTexSubImage2D");
 }
 
@@ -4419,7 +4419,7 @@ FABRIC_EXT_EXPORT void glCompressedTexSubImage3D_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glCompressedTexSubImage3D( %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, GLvoid* );\n", (int)target, (int)level, (int)xoffset, (int)yoffset, (int)zoffset, (int)width, (int)height, (int)depth, (int)format, (int)imageSize);
 #endif
-  glCompressedTexSubImage3D( (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLint)zoffset, (GLsizei)width, (GLsizei)height, (GLsizei)depth, (GLenum)format, (GLsizei)imageSize, data );
+  glCompressedTexSubImage3D( (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLint)zoffset, (GLsizei)width, (GLsizei)height, (GLsizei)depth, (GLenum)format, (GLsizei)imageSize, (const GLvoid*)data );
   _checkError("glCompressedTexSubImage3D");
 }
 
@@ -4432,7 +4432,7 @@ FABRIC_EXT_EXPORT void glGetCompressedTexImage_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glGetCompressedTexImage( %d, %d, GLvoid* );\n", (int)target, (int)lod);
 #endif
-  glGetCompressedTexImage( (GLenum)target, (GLint)lod, img );
+  glGetCompressedTexImage( (GLenum)target, (GLint)lod, (GLvoid*)img );
   _checkError("glGetCompressedTexImage");
 }
 
@@ -4904,7 +4904,7 @@ FABRIC_EXT_EXPORT void glFogCoordPointer_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glFogCoordPointer( %d, %d, GLvoid* );\n", (int)type, (int)stride);
 #endif
-  glFogCoordPointer( (GLenum)type, (GLsizei)stride, pointer );
+  glFogCoordPointer( (GLenum)type, (GLsizei)stride, (const GLvoid*)pointer );
   _checkError("glFogCoordPointer");
 }
 
@@ -5216,7 +5216,7 @@ FABRIC_EXT_EXPORT void glSecondaryColorPointer_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glSecondaryColorPointer( %d, %d, %d, GLvoid* );\n", (int)size, (int)type, (int)stride);
 #endif
-  glSecondaryColorPointer( (GLint)size, (GLenum)type, (GLsizei)stride, pointer );
+  glSecondaryColorPointer( (GLint)size, (GLenum)type, (GLsizei)stride, (GLvoid*)pointer );
   _checkError("glSecondaryColorPointer");
 }
 
@@ -5442,7 +5442,7 @@ FABRIC_EXT_EXPORT void glBufferData_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glBufferData( %d, %d, GLvoid*, %d );\n", (int)target, (int)size, (int)usage);
 #endif
-  glBufferData( (GLenum)target, (GLsizeiptr)size, data, (GLenum)usage );
+  glBufferData( (GLenum)target, (GLsizeiptr)size, (const GLvoid*)data, (GLenum)usage );
   _checkError("glBufferData");
 }
 
@@ -5456,7 +5456,7 @@ FABRIC_EXT_EXPORT void glBufferSubData_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glBufferSubData( %d, %d, %d, GLvoid* );\n", (int)target, (int)offset, (int)size);
 #endif
-  glBufferSubData( (GLenum)target, (GLintptr)offset, (GLsizeiptr)size, data );
+  glBufferSubData( (GLenum)target, (GLintptr)offset, (GLsizeiptr)size, (const GLvoid*)data );
   _checkError("glBufferSubData");
 }
 
@@ -5542,7 +5542,7 @@ FABRIC_EXT_EXPORT void glGetBufferSubData_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glGetBufferSubData( %d, %d, %d, GLvoid* );\n", (int)target, (int)offset, (int)size);
 #endif
-  glGetBufferSubData( (GLenum)target, (GLintptr)offset, (GLsizeiptr)size, data );
+  glGetBufferSubData( (GLenum)target, (GLintptr)offset, (GLsizeiptr)size, (GLvoid*)data );
   _checkError("glGetBufferSubData");
 }
 
@@ -5964,7 +5964,7 @@ FABRIC_EXT_EXPORT void glGetVertexAttribPointerv_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glGetVertexAttribPointerv( 0x%04X, %d, GLvoid* );\n", (unsigned)var0, (int)var1);
 #endif
-  glGetVertexAttribPointerv( (GLuint)var0, (GLenum)var1, var2 );
+  glGetVertexAttribPointerv( (GLuint)var0, (GLenum)var1, (GLvoid*)var2 );
   _checkError("glGetVertexAttribPointerv");
 }
 
@@ -6841,7 +6841,7 @@ FABRIC_EXT_EXPORT void glVertexAttribPointer_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glVertexAttribPointer( 0x%04X, %d, %d, %d, %d, GLvoid* );\n", (unsigned)index, (int)size, (int)type, (int)normalized, (int)stride);
 #endif
-  glVertexAttribPointer( (GLuint)index, (GLint)size, (GLenum)type, (GLboolean)normalized, (GLsizei)stride, pointer );
+  glVertexAttribPointer( (GLuint)index, (GLint)size, (GLenum)type, (GLboolean)normalized, (GLsizei)stride, (const GLvoid*)pointer );
   _checkError("glVertexAttribPointer");
 }
 
@@ -7619,7 +7619,7 @@ FABRIC_EXT_EXPORT void glVertexAttribIPointer_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glVertexAttribIPointer( 0x%04X, %d, %d, %d, GLvoid* );\n", (unsigned)var0, (int)var1, (int)var2, (int)var3);
 #endif
-  glVertexAttribIPointer( (GLuint)var0, (GLint)var1, (GLenum)var2, (GLsizei)var3, var4 );
+  glVertexAttribIPointer( (GLuint)var0, (GLint)var1, (GLenum)var2, (GLsizei)var3, (const GLvoid*)var4 );
   _checkError("glVertexAttribIPointer");
 }
 
@@ -7648,7 +7648,7 @@ FABRIC_EXT_EXPORT void glDrawElementsInstanced_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glDrawElementsInstanced( %d, %d, %d, GLvoid*, %d );\n", (int)var0, (int)var1, (int)var2, (int)var4);
 #endif
-  glDrawElementsInstanced( (GLenum)var0, (GLsizei)var1, (GLenum)var2, var3, (GLsizei)var4 );
+  glDrawElementsInstanced( (GLenum)var0, (GLsizei)var1, (GLenum)var2, (const GLvoid*)var3, (GLsizei)var4 );
   _checkError("glDrawElementsInstanced");
 }
 
@@ -7804,7 +7804,7 @@ FABRIC_EXT_EXPORT void glDrawElementsBaseVertex_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glDrawElementsBaseVertex( %d, %d, %d, void*, %d );\n", (int)mode, (int)count, (int)type, (int)basevertex);
 #endif
-  glDrawElementsBaseVertex( (GLenum)mode, (GLsizei)count, (GLenum)type, indices, (GLint)basevertex );
+  glDrawElementsBaseVertex( (GLenum)mode, (GLsizei)count, (GLenum)type, (void*)indices, (GLint)basevertex );
   _checkError("glDrawElementsBaseVertex");
 }
 
@@ -7820,7 +7820,7 @@ FABRIC_EXT_EXPORT void glDrawElementsInstancedBaseVertex_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glDrawElementsInstancedBaseVertex( %d, %d, %d, void*, %d, %d );\n", (int)mode, (int)count, (int)type, (int)primcount, (int)basevertex);
 #endif
-  glDrawElementsInstancedBaseVertex( (GLenum)mode, (GLsizei)count, (GLenum)type, indices, (GLsizei)primcount, (GLint)basevertex );
+  glDrawElementsInstancedBaseVertex( (GLenum)mode, (GLsizei)count, (GLenum)type, (const void*)indices, (GLsizei)primcount, (GLint)basevertex );
   _checkError("glDrawElementsInstancedBaseVertex");
 }
 
@@ -7837,7 +7837,7 @@ FABRIC_EXT_EXPORT void glDrawRangeElementsBaseVertex_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glDrawRangeElementsBaseVertex( %d, 0x%04X, 0x%04X, %d, %d, void*, %d );\n", (int)mode, (unsigned)start, (unsigned)end, (int)count, (int)type, (int)basevertex);
 #endif
-  glDrawRangeElementsBaseVertex( (GLenum)mode, (GLuint)start, (GLuint)end, (GLsizei)count, (GLenum)type, indices, (GLint)basevertex );
+  glDrawRangeElementsBaseVertex( (GLenum)mode, (GLuint)start, (GLuint)end, (GLsizei)count, (GLenum)type, (void*)indices, (GLint)basevertex );
   _checkError("glDrawRangeElementsBaseVertex");
 }
 
@@ -7866,7 +7866,7 @@ FABRIC_EXT_EXPORT void glDrawElementsInstancedARB_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glDrawElementsInstancedARB( %d, %d, %d, void*, %d );\n", (int)mode, (int)count, (int)type, (int)primcount);
 #endif
-  glDrawElementsInstancedARB( (GLenum)mode, (GLsizei)count, (GLenum)type, indices, (GLsizei)primcount );
+  glDrawElementsInstancedARB( (GLenum)mode, (GLsizei)count, (GLenum)type, (const void*)indices, (GLsizei)primcount );
   _checkError("glDrawElementsInstancedARB");
 }
 
@@ -8209,7 +8209,7 @@ FABRIC_EXT_EXPORT void glColorSubTable_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glColorSubTable( %d, %d, %d, %d, %d, GLvoid* );\n", (int)target, (int)start, (int)count, (int)format, (int)type);
 #endif
-  glColorSubTable( (GLenum)target, (GLsizei)start, (GLsizei)count, (GLenum)format, (GLenum)type, data );
+  glColorSubTable( (GLenum)target, (GLsizei)start, (GLsizei)count, (GLenum)format, (GLenum)type, (const GLvoid*)data );
   _checkError("glColorSubTable");
 }
 
@@ -8225,7 +8225,7 @@ FABRIC_EXT_EXPORT void glColorTable_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glColorTable( %d, %d, %d, %d, %d, GLvoid* );\n", (int)target, (int)internalformat, (int)width, (int)format, (int)type);
 #endif
-  glColorTable( (GLenum)target, (GLenum)internalformat, (GLsizei)width, (GLenum)format, (GLenum)type, table );
+  glColorTable( (GLenum)target, (GLenum)internalformat, (GLsizei)width, (GLenum)format, (GLenum)type, (const GLvoid*)table );
   _checkError("glColorTable");
 }
 
@@ -8267,7 +8267,7 @@ FABRIC_EXT_EXPORT void glConvolutionFilter1D_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glConvolutionFilter1D( %d, %d, %d, %d, %d, GLvoid* );\n", (int)target, (int)internalformat, (int)width, (int)format, (int)type);
 #endif
-  glConvolutionFilter1D( (GLenum)target, (GLenum)internalformat, (GLsizei)width, (GLenum)format, (GLenum)type, image );
+  glConvolutionFilter1D( (GLenum)target, (GLenum)internalformat, (GLsizei)width, (GLenum)format, (GLenum)type, (const GLvoid*)image );
   _checkError("glConvolutionFilter1D");
 }
 
@@ -8284,7 +8284,7 @@ FABRIC_EXT_EXPORT void glConvolutionFilter2D_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glConvolutionFilter2D( %d, %d, %d, %d, %d, %d, GLvoid* );\n", (int)target, (int)internalformat, (int)width, (int)height, (int)format, (int)type);
 #endif
-  glConvolutionFilter2D( (GLenum)target, (GLenum)internalformat, (GLsizei)width, (GLsizei)height, (GLenum)format, (GLenum)type, image );
+  glConvolutionFilter2D( (GLenum)target, (GLenum)internalformat, (GLsizei)width, (GLsizei)height, (GLenum)format, (GLenum)type, (const GLvoid*)image );
   _checkError("glConvolutionFilter2D");
 }
 
@@ -8411,7 +8411,7 @@ FABRIC_EXT_EXPORT void glGetColorTable_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glGetColorTable( %d, %d, %d, GLvoid* );\n", (int)target, (int)format, (int)type);
 #endif
-  glGetColorTable( (GLenum)target, (GLenum)format, (GLenum)type, table );
+  glGetColorTable( (GLenum)target, (GLenum)format, (GLenum)type, (GLvoid*)table );
   _checkError("glGetColorTable");
 }
 
@@ -8451,7 +8451,7 @@ FABRIC_EXT_EXPORT void glGetConvolutionFilter_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glGetConvolutionFilter( %d, %d, %d, GLvoid* );\n", (int)target, (int)format, (int)type);
 #endif
-  glGetConvolutionFilter( (GLenum)target, (GLenum)format, (GLenum)type, image );
+  glGetConvolutionFilter( (GLenum)target, (GLenum)format, (GLenum)type, (GLvoid*)image );
   _checkError("glGetConvolutionFilter");
 }
 
@@ -8492,7 +8492,7 @@ FABRIC_EXT_EXPORT void glGetHistogram_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glGetHistogram( %d, %d, %d, %d, GLvoid* );\n", (int)target, (int)reset, (int)format, (int)type);
 #endif
-  glGetHistogram( (GLenum)target, (GLboolean)reset, (GLenum)format, (GLenum)type, values );
+  glGetHistogram( (GLenum)target, (GLboolean)reset, (GLenum)format, (GLenum)type, (GLvoid*)values );
   _checkError("glGetHistogram");
 }
 
@@ -8533,7 +8533,7 @@ FABRIC_EXT_EXPORT void glGetMinmax_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glGetMinmax( %d, %d, %d, %d, GLvoid* );\n", (int)target, (int)reset, (int)format, (int)types);
 #endif
-  glGetMinmax( (GLenum)target, (GLboolean)reset, (GLenum)format, (GLenum)types, values );
+  glGetMinmax( (GLenum)target, (GLboolean)reset, (GLenum)format, (GLenum)types, (GLvoid*)values );
   _checkError("glGetMinmax");
 }
 
@@ -8575,7 +8575,7 @@ FABRIC_EXT_EXPORT void glGetSeparableFilter_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glGetSeparableFilter( %d, %d, %d, GLvoid*, GLvoid*, GLvoid* );\n", (int)target, (int)format, (int)type);
 #endif
-  glGetSeparableFilter( (GLenum)target, (GLenum)format, (GLenum)type, row, column, span );
+  glGetSeparableFilter( (GLenum)target, (GLenum)format, (GLenum)type, (GLvoid*)row, (GLvoid*)column, (GLvoid*)span );
   _checkError("glGetSeparableFilter");
 }
 
@@ -8642,7 +8642,7 @@ FABRIC_EXT_EXPORT void glSeparableFilter2D_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glSeparableFilter2D( %d, %d, %d, %d, %d, %d, GLvoid*, GLvoid* );\n", (int)target, (int)internalformat, (int)width, (int)height, (int)format, (int)type);
 #endif
-  glSeparableFilter2D( (GLenum)target, (GLenum)internalformat, (GLsizei)width, (GLsizei)height, (GLenum)format, (GLenum)type, row, column );
+  glSeparableFilter2D( (GLenum)target, (GLenum)internalformat, (GLsizei)width, (GLsizei)height, (GLenum)format, (GLenum)type, (const GLvoid*)row, (const GLvoid*)column );
   _checkError("glSeparableFilter2D");
 }
 
@@ -8706,7 +8706,7 @@ FABRIC_EXT_EXPORT void glMatrixIndexPointerARB_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glMatrixIndexPointerARB( %d, %d, %d, GLvoid* );\n", (int)size, (int)type, (int)stride);
 #endif
-  glMatrixIndexPointerARB( (GLint)size, (GLenum)type, (GLsizei)stride, pointer );
+  glMatrixIndexPointerARB( (GLint)size, (GLenum)type, (GLsizei)stride, (GLvoid*)pointer );
   _checkError("glMatrixIndexPointerARB");
 }
 
@@ -9612,7 +9612,7 @@ FABRIC_EXT_EXPORT void glCompressedTexImage1DARB_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glCompressedTexImage1DARB( %d, %d, %d, %d, %d, %d, void* );\n", (int)target, (int)level, (int)internalformat, (int)width, (int)border, (int)imageSize);
 #endif
-  glCompressedTexImage1DARB( (GLenum)target, (GLint)level, (GLenum)internalformat, (GLsizei)width, (GLint)border, (GLsizei)imageSize, data );
+  glCompressedTexImage1DARB( (GLenum)target, (GLint)level, (GLenum)internalformat, (GLsizei)width, (GLint)border, (GLsizei)imageSize, (const void*)data );
   _checkError("glCompressedTexImage1DARB");
 }
 
@@ -9630,7 +9630,7 @@ FABRIC_EXT_EXPORT void glCompressedTexImage2DARB_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glCompressedTexImage2DARB( %d, %d, %d, %d, %d, %d, %d, void* );\n", (int)target, (int)level, (int)internalformat, (int)width, (int)height, (int)border, (int)imageSize);
 #endif
-  glCompressedTexImage2DARB( (GLenum)target, (GLint)level, (GLenum)internalformat, (GLsizei)width, (GLsizei)height, (GLint)border, (GLsizei)imageSize, data );
+  glCompressedTexImage2DARB( (GLenum)target, (GLint)level, (GLenum)internalformat, (GLsizei)width, (GLsizei)height, (GLint)border, (GLsizei)imageSize, (const void*)data );
   _checkError("glCompressedTexImage2DARB");
 }
 
@@ -9649,7 +9649,7 @@ FABRIC_EXT_EXPORT void glCompressedTexImage3DARB_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glCompressedTexImage3DARB( %d, %d, %d, %d, %d, %d, %d, %d, void* );\n", (int)target, (int)level, (int)internalformat, (int)width, (int)height, (int)depth, (int)border, (int)imageSize);
 #endif
-  glCompressedTexImage3DARB( (GLenum)target, (GLint)level, (GLenum)internalformat, (GLsizei)width, (GLsizei)height, (GLsizei)depth, (GLint)border, (GLsizei)imageSize, data );
+  glCompressedTexImage3DARB( (GLenum)target, (GLint)level, (GLenum)internalformat, (GLsizei)width, (GLsizei)height, (GLsizei)depth, (GLint)border, (GLsizei)imageSize, (const void*)data );
   _checkError("glCompressedTexImage3DARB");
 }
 
@@ -9666,7 +9666,7 @@ FABRIC_EXT_EXPORT void glCompressedTexSubImage1DARB_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glCompressedTexSubImage1DARB( %d, %d, %d, %d, %d, %d, void* );\n", (int)target, (int)level, (int)xoffset, (int)width, (int)format, (int)imageSize);
 #endif
-  glCompressedTexSubImage1DARB( (GLenum)target, (GLint)level, (GLint)xoffset, (GLsizei)width, (GLenum)format, (GLsizei)imageSize, data );
+  glCompressedTexSubImage1DARB( (GLenum)target, (GLint)level, (GLint)xoffset, (GLsizei)width, (GLenum)format, (GLsizei)imageSize, (const void*)data );
   _checkError("glCompressedTexSubImage1DARB");
 }
 
@@ -9685,7 +9685,7 @@ FABRIC_EXT_EXPORT void glCompressedTexSubImage2DARB_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glCompressedTexSubImage2DARB( %d, %d, %d, %d, %d, %d, %d, %d, void* );\n", (int)target, (int)level, (int)xoffset, (int)yoffset, (int)width, (int)height, (int)format, (int)imageSize);
 #endif
-  glCompressedTexSubImage2DARB( (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLsizei)width, (GLsizei)height, (GLenum)format, (GLsizei)imageSize, data );
+  glCompressedTexSubImage2DARB( (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLsizei)width, (GLsizei)height, (GLenum)format, (GLsizei)imageSize, (const void*)data );
   _checkError("glCompressedTexSubImage2DARB");
 }
 
@@ -9706,7 +9706,7 @@ FABRIC_EXT_EXPORT void glCompressedTexSubImage3DARB_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glCompressedTexSubImage3DARB( %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, void* );\n", (int)target, (int)level, (int)xoffset, (int)yoffset, (int)zoffset, (int)width, (int)height, (int)depth, (int)format, (int)imageSize);
 #endif
-  glCompressedTexSubImage3DARB( (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLint)zoffset, (GLsizei)width, (GLsizei)height, (GLsizei)depth, (GLenum)format, (GLsizei)imageSize, data );
+  glCompressedTexSubImage3DARB( (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLint)zoffset, (GLsizei)width, (GLsizei)height, (GLsizei)depth, (GLenum)format, (GLsizei)imageSize, (const void*)data );
   _checkError("glCompressedTexSubImage3DARB");
 }
 
@@ -9719,7 +9719,7 @@ FABRIC_EXT_EXPORT void glGetCompressedTexImageARB_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glGetCompressedTexImageARB( %d, %d, void* );\n", (int)target, (int)lod);
 #endif
-  glGetCompressedTexImageARB( (GLenum)target, (GLint)lod, img );
+  glGetCompressedTexImageARB( (GLenum)target, (GLint)lod, (void*)img );
   _checkError("glGetCompressedTexImageARB");
 }
 
@@ -9999,7 +9999,7 @@ FABRIC_EXT_EXPORT void glWeightPointerARB_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glWeightPointerARB( %d, %d, %d, GLvoid* );\n", (int)size, (int)type, (int)stride);
 #endif
-  glWeightPointerARB( (GLint)size, (GLenum)type, (GLsizei)stride, pointer );
+  glWeightPointerARB( (GLint)size, (GLenum)type, (GLsizei)stride, (GLvoid*)pointer );
   _checkError("glWeightPointerARB");
 }
 
@@ -10303,7 +10303,7 @@ FABRIC_EXT_EXPORT void glGetProgramStringARB_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glGetProgramStringARB( %d, %d, void* );\n", (int)target, (int)pname);
 #endif
-  glGetProgramStringARB( (GLenum)target, (GLenum)pname, string );
+  glGetProgramStringARB( (GLenum)target, (GLenum)pname, (void*)string );
   _checkError("glGetProgramStringARB");
 }
 
@@ -10497,7 +10497,7 @@ FABRIC_EXT_EXPORT void glProgramStringARB_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glProgramStringARB( %d, %d, %d, void* );\n", (int)target, (int)format, (int)len);
 #endif
-  glProgramStringARB( (GLenum)target, (GLenum)format, (GLsizei)len, string );
+  glProgramStringARB( (GLenum)target, (GLenum)format, (GLsizei)len, (const void*)string );
   _checkError("glProgramStringARB");
 }
 
@@ -10966,7 +10966,7 @@ FABRIC_EXT_EXPORT void glVertexAttribPointerARB_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glVertexAttribPointerARB( 0x%04X, %d, %d, %d, %d, void* );\n", (unsigned)index, (int)size, (int)type, (int)normalized, (int)stride);
 #endif
-  glVertexAttribPointerARB( (GLuint)index, (GLint)size, (GLenum)type, (GLboolean)normalized, (GLsizei)stride, pointer );
+  glVertexAttribPointerARB( (GLuint)index, (GLint)size, (GLenum)type, (GLboolean)normalized, (GLsizei)stride, (const void*)pointer );
   _checkError("glVertexAttribPointerARB");
 }
 
@@ -11260,7 +11260,7 @@ FABRIC_EXT_EXPORT void glColorSubTableEXT_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glColorSubTableEXT( %d, %d, %d, %d, %d, void* );\n", (int)target, (int)start, (int)count, (int)format, (int)type);
 #endif
-  glColorSubTableEXT( (GLenum)target, (GLsizei)start, (GLsizei)count, (GLenum)format, (GLenum)type, data );
+  glColorSubTableEXT( (GLenum)target, (GLsizei)start, (GLsizei)count, (GLenum)format, (GLenum)type, (const void*)data );
   _checkError("glColorSubTableEXT");
 }
 
@@ -11313,7 +11313,7 @@ FABRIC_EXT_EXPORT void glConvolutionFilter1DEXT_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glConvolutionFilter1DEXT( %d, %d, %d, %d, %d, void* );\n", (int)target, (int)internalformat, (int)width, (int)format, (int)type);
 #endif
-  glConvolutionFilter1DEXT( (GLenum)target, (GLenum)internalformat, (GLsizei)width, (GLenum)format, (GLenum)type, image );
+  glConvolutionFilter1DEXT( (GLenum)target, (GLenum)internalformat, (GLsizei)width, (GLenum)format, (GLenum)type, (const void*)image );
   _checkError("glConvolutionFilter1DEXT");
 }
 
@@ -11330,7 +11330,7 @@ FABRIC_EXT_EXPORT void glConvolutionFilter2DEXT_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glConvolutionFilter2DEXT( %d, %d, %d, %d, %d, %d, void* );\n", (int)target, (int)internalformat, (int)width, (int)height, (int)format, (int)type);
 #endif
-  glConvolutionFilter2DEXT( (GLenum)target, (GLenum)internalformat, (GLsizei)width, (GLsizei)height, (GLenum)format, (GLenum)type, image );
+  glConvolutionFilter2DEXT( (GLenum)target, (GLenum)internalformat, (GLsizei)width, (GLsizei)height, (GLenum)format, (GLenum)type, (const void*)image );
   _checkError("glConvolutionFilter2DEXT");
 }
 
@@ -11427,7 +11427,7 @@ FABRIC_EXT_EXPORT void glGetConvolutionFilterEXT_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glGetConvolutionFilterEXT( %d, %d, %d, void* );\n", (int)target, (int)format, (int)type);
 #endif
-  glGetConvolutionFilterEXT( (GLenum)target, (GLenum)format, (GLenum)type, image );
+  glGetConvolutionFilterEXT( (GLenum)target, (GLenum)format, (GLenum)type, (void*)image );
   _checkError("glGetConvolutionFilterEXT");
 }
 
@@ -11469,7 +11469,7 @@ FABRIC_EXT_EXPORT void glGetSeparableFilterEXT_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glGetSeparableFilterEXT( %d, %d, %d, void*, void*, void* );\n", (int)target, (int)format, (int)type);
 #endif
-  glGetSeparableFilterEXT( (GLenum)target, (GLenum)format, (GLenum)type, row, column, span );
+  glGetSeparableFilterEXT( (GLenum)target, (GLenum)format, (GLenum)type, (void*)row, (void*)column, (void*)span );
   _checkError("glGetSeparableFilterEXT");
 }
 
@@ -11487,7 +11487,7 @@ FABRIC_EXT_EXPORT void glSeparableFilter2DEXT_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glSeparableFilter2DEXT( %d, %d, %d, %d, %d, %d, void*, void* );\n", (int)target, (int)internalformat, (int)width, (int)height, (int)format, (int)type);
 #endif
-  glSeparableFilter2DEXT( (GLenum)target, (GLenum)internalformat, (GLsizei)width, (GLsizei)height, (GLenum)format, (GLenum)type, row, column );
+  glSeparableFilter2DEXT( (GLenum)target, (GLenum)internalformat, (GLsizei)width, (GLsizei)height, (GLenum)format, (GLenum)type, (const void*)row, (const void*)column );
   _checkError("glSeparableFilter2DEXT");
 }
 
@@ -11500,7 +11500,7 @@ FABRIC_EXT_EXPORT void glBinormalPointerEXT_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glBinormalPointerEXT( %d, %d, void* );\n", (int)type, (int)stride);
 #endif
-  glBinormalPointerEXT( (GLenum)type, (GLsizei)stride, pointer );
+  glBinormalPointerEXT( (GLenum)type, (GLsizei)stride, (void*)pointer );
   _checkError("glBinormalPointerEXT");
 }
 
@@ -11513,7 +11513,7 @@ FABRIC_EXT_EXPORT void glTangentPointerEXT_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glTangentPointerEXT( %d, %d, void* );\n", (int)type, (int)stride);
 #endif
-  glTangentPointerEXT( (GLenum)type, (GLsizei)stride, pointer );
+  glTangentPointerEXT( (GLenum)type, (GLsizei)stride, (void*)pointer );
   _checkError("glTangentPointerEXT");
 }
 
@@ -11692,7 +11692,7 @@ FABRIC_EXT_EXPORT void glCompressedMultiTexImage1DEXT_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glCompressedMultiTexImage1DEXT( %d, %d, %d, %d, %d, %d, %d, void* );\n", (int)texunit, (int)target, (int)level, (int)internalformat, (int)width, (int)border, (int)imageSize);
 #endif
-  glCompressedMultiTexImage1DEXT( (GLenum)texunit, (GLenum)target, (GLint)level, (GLenum)internalformat, (GLsizei)width, (GLint)border, (GLsizei)imageSize, data );
+  glCompressedMultiTexImage1DEXT( (GLenum)texunit, (GLenum)target, (GLint)level, (GLenum)internalformat, (GLsizei)width, (GLint)border, (GLsizei)imageSize, (const void*)data );
   _checkError("glCompressedMultiTexImage1DEXT");
 }
 
@@ -11711,7 +11711,7 @@ FABRIC_EXT_EXPORT void glCompressedMultiTexImage2DEXT_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glCompressedMultiTexImage2DEXT( %d, %d, %d, %d, %d, %d, %d, %d, void* );\n", (int)texunit, (int)target, (int)level, (int)internalformat, (int)width, (int)height, (int)border, (int)imageSize);
 #endif
-  glCompressedMultiTexImage2DEXT( (GLenum)texunit, (GLenum)target, (GLint)level, (GLenum)internalformat, (GLsizei)width, (GLsizei)height, (GLint)border, (GLsizei)imageSize, data );
+  glCompressedMultiTexImage2DEXT( (GLenum)texunit, (GLenum)target, (GLint)level, (GLenum)internalformat, (GLsizei)width, (GLsizei)height, (GLint)border, (GLsizei)imageSize, (const void*)data );
   _checkError("glCompressedMultiTexImage2DEXT");
 }
 
@@ -11731,7 +11731,7 @@ FABRIC_EXT_EXPORT void glCompressedMultiTexImage3DEXT_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glCompressedMultiTexImage3DEXT( %d, %d, %d, %d, %d, %d, %d, %d, %d, void* );\n", (int)texunit, (int)target, (int)level, (int)internalformat, (int)width, (int)height, (int)depth, (int)border, (int)imageSize);
 #endif
-  glCompressedMultiTexImage3DEXT( (GLenum)texunit, (GLenum)target, (GLint)level, (GLenum)internalformat, (GLsizei)width, (GLsizei)height, (GLsizei)depth, (GLint)border, (GLsizei)imageSize, data );
+  glCompressedMultiTexImage3DEXT( (GLenum)texunit, (GLenum)target, (GLint)level, (GLenum)internalformat, (GLsizei)width, (GLsizei)height, (GLsizei)depth, (GLint)border, (GLsizei)imageSize, (const void*)data );
   _checkError("glCompressedMultiTexImage3DEXT");
 }
 
@@ -11749,7 +11749,7 @@ FABRIC_EXT_EXPORT void glCompressedMultiTexSubImage1DEXT_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glCompressedMultiTexSubImage1DEXT( %d, %d, %d, %d, %d, %d, %d, void* );\n", (int)texunit, (int)target, (int)level, (int)xoffset, (int)width, (int)format, (int)imageSize);
 #endif
-  glCompressedMultiTexSubImage1DEXT( (GLenum)texunit, (GLenum)target, (GLint)level, (GLint)xoffset, (GLsizei)width, (GLenum)format, (GLsizei)imageSize, data );
+  glCompressedMultiTexSubImage1DEXT( (GLenum)texunit, (GLenum)target, (GLint)level, (GLint)xoffset, (GLsizei)width, (GLenum)format, (GLsizei)imageSize, (const void*)data );
   _checkError("glCompressedMultiTexSubImage1DEXT");
 }
 
@@ -11769,7 +11769,7 @@ FABRIC_EXT_EXPORT void glCompressedMultiTexSubImage2DEXT_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glCompressedMultiTexSubImage2DEXT( %d, %d, %d, %d, %d, %d, %d, %d, %d, void* );\n", (int)texunit, (int)target, (int)level, (int)xoffset, (int)yoffset, (int)width, (int)height, (int)format, (int)imageSize);
 #endif
-  glCompressedMultiTexSubImage2DEXT( (GLenum)texunit, (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLsizei)width, (GLsizei)height, (GLenum)format, (GLsizei)imageSize, data );
+  glCompressedMultiTexSubImage2DEXT( (GLenum)texunit, (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLsizei)width, (GLsizei)height, (GLenum)format, (GLsizei)imageSize, (const void*)data );
   _checkError("glCompressedMultiTexSubImage2DEXT");
 }
 
@@ -11791,7 +11791,7 @@ FABRIC_EXT_EXPORT void glCompressedMultiTexSubImage3DEXT_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glCompressedMultiTexSubImage3DEXT( %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, void* );\n", (int)texunit, (int)target, (int)level, (int)xoffset, (int)yoffset, (int)zoffset, (int)width, (int)height, (int)depth, (int)format, (int)imageSize);
 #endif
-  glCompressedMultiTexSubImage3DEXT( (GLenum)texunit, (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLint)zoffset, (GLsizei)width, (GLsizei)height, (GLsizei)depth, (GLenum)format, (GLsizei)imageSize, data );
+  glCompressedMultiTexSubImage3DEXT( (GLenum)texunit, (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLint)zoffset, (GLsizei)width, (GLsizei)height, (GLsizei)depth, (GLenum)format, (GLsizei)imageSize, (const void*)data );
   _checkError("glCompressedMultiTexSubImage3DEXT");
 }
 
@@ -11809,7 +11809,7 @@ FABRIC_EXT_EXPORT void glCompressedTextureImage1DEXT_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glCompressedTextureImage1DEXT( 0x%04X, %d, %d, %d, %d, %d, %d, void* );\n", (unsigned)texture, (int)target, (int)level, (int)internalformat, (int)width, (int)border, (int)imageSize);
 #endif
-  glCompressedTextureImage1DEXT( (GLuint)texture, (GLenum)target, (GLint)level, (GLenum)internalformat, (GLsizei)width, (GLint)border, (GLsizei)imageSize, data );
+  glCompressedTextureImage1DEXT( (GLuint)texture, (GLenum)target, (GLint)level, (GLenum)internalformat, (GLsizei)width, (GLint)border, (GLsizei)imageSize, (const void*)data );
   _checkError("glCompressedTextureImage1DEXT");
 }
 
@@ -11828,7 +11828,7 @@ FABRIC_EXT_EXPORT void glCompressedTextureImage2DEXT_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glCompressedTextureImage2DEXT( 0x%04X, %d, %d, %d, %d, %d, %d, %d, void* );\n", (unsigned)texture, (int)target, (int)level, (int)internalformat, (int)width, (int)height, (int)border, (int)imageSize);
 #endif
-  glCompressedTextureImage2DEXT( (GLuint)texture, (GLenum)target, (GLint)level, (GLenum)internalformat, (GLsizei)width, (GLsizei)height, (GLint)border, (GLsizei)imageSize, data );
+  glCompressedTextureImage2DEXT( (GLuint)texture, (GLenum)target, (GLint)level, (GLenum)internalformat, (GLsizei)width, (GLsizei)height, (GLint)border, (GLsizei)imageSize, (const void*)data );
   _checkError("glCompressedTextureImage2DEXT");
 }
 
@@ -11848,7 +11848,7 @@ FABRIC_EXT_EXPORT void glCompressedTextureImage3DEXT_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glCompressedTextureImage3DEXT( 0x%04X, %d, %d, %d, %d, %d, %d, %d, %d, void* );\n", (unsigned)texture, (int)target, (int)level, (int)internalformat, (int)width, (int)height, (int)depth, (int)border, (int)imageSize);
 #endif
-  glCompressedTextureImage3DEXT( (GLuint)texture, (GLenum)target, (GLint)level, (GLenum)internalformat, (GLsizei)width, (GLsizei)height, (GLsizei)depth, (GLint)border, (GLsizei)imageSize, data );
+  glCompressedTextureImage3DEXT( (GLuint)texture, (GLenum)target, (GLint)level, (GLenum)internalformat, (GLsizei)width, (GLsizei)height, (GLsizei)depth, (GLint)border, (GLsizei)imageSize, (const void*)data );
   _checkError("glCompressedTextureImage3DEXT");
 }
 
@@ -11866,7 +11866,7 @@ FABRIC_EXT_EXPORT void glCompressedTextureSubImage1DEXT_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glCompressedTextureSubImage1DEXT( 0x%04X, %d, %d, %d, %d, %d, %d, void* );\n", (unsigned)texture, (int)target, (int)level, (int)xoffset, (int)width, (int)format, (int)imageSize);
 #endif
-  glCompressedTextureSubImage1DEXT( (GLuint)texture, (GLenum)target, (GLint)level, (GLint)xoffset, (GLsizei)width, (GLenum)format, (GLsizei)imageSize, data );
+  glCompressedTextureSubImage1DEXT( (GLuint)texture, (GLenum)target, (GLint)level, (GLint)xoffset, (GLsizei)width, (GLenum)format, (GLsizei)imageSize, (const void*)data );
   _checkError("glCompressedTextureSubImage1DEXT");
 }
 
@@ -11886,7 +11886,7 @@ FABRIC_EXT_EXPORT void glCompressedTextureSubImage2DEXT_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glCompressedTextureSubImage2DEXT( 0x%04X, %d, %d, %d, %d, %d, %d, %d, %d, void* );\n", (unsigned)texture, (int)target, (int)level, (int)xoffset, (int)yoffset, (int)width, (int)height, (int)format, (int)imageSize);
 #endif
-  glCompressedTextureSubImage2DEXT( (GLuint)texture, (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLsizei)width, (GLsizei)height, (GLenum)format, (GLsizei)imageSize, data );
+  glCompressedTextureSubImage2DEXT( (GLuint)texture, (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLsizei)width, (GLsizei)height, (GLenum)format, (GLsizei)imageSize, (const void*)data );
   _checkError("glCompressedTextureSubImage2DEXT");
 }
 
@@ -11908,7 +11908,7 @@ FABRIC_EXT_EXPORT void glCompressedTextureSubImage3DEXT_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glCompressedTextureSubImage3DEXT( 0x%04X, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, void* );\n", (unsigned)texture, (int)target, (int)level, (int)xoffset, (int)yoffset, (int)zoffset, (int)width, (int)height, (int)depth, (int)format, (int)imageSize);
 #endif
-  glCompressedTextureSubImage3DEXT( (GLuint)texture, (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLint)zoffset, (GLsizei)width, (GLsizei)height, (GLsizei)depth, (GLenum)format, (GLsizei)imageSize, data );
+  glCompressedTextureSubImage3DEXT( (GLuint)texture, (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLint)zoffset, (GLsizei)width, (GLsizei)height, (GLsizei)depth, (GLenum)format, (GLsizei)imageSize, (const void*)data );
   _checkError("glCompressedTextureSubImage3DEXT");
 }
 
@@ -12278,7 +12278,7 @@ FABRIC_EXT_EXPORT void glGetCompressedMultiTexImageEXT_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glGetCompressedMultiTexImageEXT( %d, %d, %d, void* );\n", (int)texunit, (int)target, (int)level);
 #endif
-  glGetCompressedMultiTexImageEXT( (GLenum)texunit, (GLenum)target, (GLint)level, img );
+  glGetCompressedMultiTexImageEXT( (GLenum)texunit, (GLenum)target, (GLint)level, (void*)img );
   _checkError("glGetCompressedMultiTexImageEXT");
 }
 
@@ -12292,7 +12292,7 @@ FABRIC_EXT_EXPORT void glGetCompressedTextureImageEXT_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glGetCompressedTextureImageEXT( 0x%04X, %d, %d, void* );\n", (unsigned)texture, (int)target, (int)level);
 #endif
-  glGetCompressedTextureImageEXT( (GLuint)texture, (GLenum)target, (GLint)level, img );
+  glGetCompressedTextureImageEXT( (GLuint)texture, (GLenum)target, (GLint)level, (void*)img );
   _checkError("glGetCompressedTextureImageEXT");
 }
 
@@ -12443,7 +12443,7 @@ FABRIC_EXT_EXPORT void glGetMultiTexImageEXT_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glGetMultiTexImageEXT( %d, %d, %d, %d, %d, void* );\n", (int)texunit, (int)target, (int)level, (int)format, (int)type);
 #endif
-  glGetMultiTexImageEXT( (GLenum)texunit, (GLenum)target, (GLint)level, (GLenum)format, (GLenum)type, pixels );
+  glGetMultiTexImageEXT( (GLenum)texunit, (GLenum)target, (GLint)level, (GLenum)format, (GLenum)type, (void*)pixels );
   _checkError("glGetMultiTexImageEXT");
 }
 
@@ -12556,7 +12556,7 @@ FABRIC_EXT_EXPORT void glGetNamedBufferSubDataEXT_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glGetNamedBufferSubDataEXT( 0x%04X, %d, %d, void* );\n", (unsigned)buffer, (int)offset, (int)size);
 #endif
-  glGetNamedBufferSubDataEXT( (GLuint)buffer, (GLintptr)offset, (GLsizeiptr)size, data );
+  glGetNamedBufferSubDataEXT( (GLuint)buffer, (GLintptr)offset, (GLsizeiptr)size, (void*)data );
   _checkError("glGetNamedBufferSubDataEXT");
 }
 
@@ -12640,7 +12640,7 @@ FABRIC_EXT_EXPORT void glGetNamedProgramStringEXT_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glGetNamedProgramStringEXT( 0x%04X, %d, %d, void* );\n", (unsigned)program, (int)target, (int)pname);
 #endif
-  glGetNamedProgramStringEXT( (GLuint)program, (GLenum)target, (GLenum)pname, string );
+  glGetNamedProgramStringEXT( (GLuint)program, (GLenum)target, (GLenum)pname, (void*)string );
   _checkError("glGetNamedProgramStringEXT");
 }
 
@@ -12683,7 +12683,7 @@ FABRIC_EXT_EXPORT void glGetTextureImageEXT_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glGetTextureImageEXT( 0x%04X, %d, %d, %d, %d, void* );\n", (unsigned)texture, (int)target, (int)level, (int)format, (int)type);
 #endif
-  glGetTextureImageEXT( (GLuint)texture, (GLenum)target, (GLint)level, (GLenum)format, (GLenum)type, pixels );
+  glGetTextureImageEXT( (GLuint)texture, (GLenum)target, (GLint)level, (GLenum)format, (GLenum)type, (void*)pixels );
   _checkError("glGetTextureImageEXT");
 }
 
@@ -13100,7 +13100,7 @@ FABRIC_EXT_EXPORT void glMultiTexCoordPointerEXT_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glMultiTexCoordPointerEXT( %d, %d, %d, %d, void* );\n", (int)texunit, (int)size, (int)type, (int)stride);
 #endif
-  glMultiTexCoordPointerEXT( (GLenum)texunit, (GLint)size, (GLenum)type, (GLsizei)stride, pointer );
+  glMultiTexCoordPointerEXT( (GLenum)texunit, (GLint)size, (GLenum)type, (GLsizei)stride, (const void*)pointer );
   _checkError("glMultiTexCoordPointerEXT");
 }
 
@@ -13259,7 +13259,7 @@ FABRIC_EXT_EXPORT void glMultiTexImage1DEXT_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glMultiTexImage1DEXT( %d, %d, %d, %d, %d, %d, %d, %d, void* );\n", (int)texunit, (int)target, (int)level, (int)internalformat, (int)width, (int)border, (int)format, (int)type);
 #endif
-  glMultiTexImage1DEXT( (GLenum)texunit, (GLenum)target, (GLint)level, (GLint)internalformat, (GLsizei)width, (GLint)border, (GLenum)format, (GLenum)type, pixels );
+  glMultiTexImage1DEXT( (GLenum)texunit, (GLenum)target, (GLint)level, (GLint)internalformat, (GLsizei)width, (GLint)border, (GLenum)format, (GLenum)type, (const void*)pixels );
   _checkError("glMultiTexImage1DEXT");
 }
 
@@ -13279,7 +13279,7 @@ FABRIC_EXT_EXPORT void glMultiTexImage2DEXT_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glMultiTexImage2DEXT( %d, %d, %d, %d, %d, %d, %d, %d, %d, void* );\n", (int)texunit, (int)target, (int)level, (int)internalformat, (int)width, (int)height, (int)border, (int)format, (int)type);
 #endif
-  glMultiTexImage2DEXT( (GLenum)texunit, (GLenum)target, (GLint)level, (GLint)internalformat, (GLsizei)width, (GLsizei)height, (GLint)border, (GLenum)format, (GLenum)type, pixels );
+  glMultiTexImage2DEXT( (GLenum)texunit, (GLenum)target, (GLint)level, (GLint)internalformat, (GLsizei)width, (GLsizei)height, (GLint)border, (GLenum)format, (GLenum)type, (const void*)pixels );
   _checkError("glMultiTexImage2DEXT");
 }
 
@@ -13300,7 +13300,7 @@ FABRIC_EXT_EXPORT void glMultiTexImage3DEXT_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glMultiTexImage3DEXT( %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, void* );\n", (int)texunit, (int)target, (int)level, (int)internalformat, (int)width, (int)height, (int)depth, (int)border, (int)format, (int)type);
 #endif
-  glMultiTexImage3DEXT( (GLenum)texunit, (GLenum)target, (GLint)level, (GLint)internalformat, (GLsizei)width, (GLsizei)height, (GLsizei)depth, (GLint)border, (GLenum)format, (GLenum)type, pixels );
+  glMultiTexImage3DEXT( (GLenum)texunit, (GLenum)target, (GLint)level, (GLint)internalformat, (GLsizei)width, (GLsizei)height, (GLsizei)depth, (GLint)border, (GLenum)format, (GLenum)type, (const void*)pixels );
   _checkError("glMultiTexImage3DEXT");
 }
 
@@ -13415,7 +13415,7 @@ FABRIC_EXT_EXPORT void glMultiTexSubImage1DEXT_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glMultiTexSubImage1DEXT( %d, %d, %d, %d, %d, %d, %d, void* );\n", (int)texunit, (int)target, (int)level, (int)xoffset, (int)width, (int)format, (int)type);
 #endif
-  glMultiTexSubImage1DEXT( (GLenum)texunit, (GLenum)target, (GLint)level, (GLint)xoffset, (GLsizei)width, (GLenum)format, (GLenum)type, pixels );
+  glMultiTexSubImage1DEXT( (GLenum)texunit, (GLenum)target, (GLint)level, (GLint)xoffset, (GLsizei)width, (GLenum)format, (GLenum)type, (const void*)pixels );
   _checkError("glMultiTexSubImage1DEXT");
 }
 
@@ -13435,7 +13435,7 @@ FABRIC_EXT_EXPORT void glMultiTexSubImage2DEXT_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glMultiTexSubImage2DEXT( %d, %d, %d, %d, %d, %d, %d, %d, %d, void* );\n", (int)texunit, (int)target, (int)level, (int)xoffset, (int)yoffset, (int)width, (int)height, (int)format, (int)type);
 #endif
-  glMultiTexSubImage2DEXT( (GLenum)texunit, (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLsizei)width, (GLsizei)height, (GLenum)format, (GLenum)type, pixels );
+  glMultiTexSubImage2DEXT( (GLenum)texunit, (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLsizei)width, (GLsizei)height, (GLenum)format, (GLenum)type, (const void*)pixels );
   _checkError("glMultiTexSubImage2DEXT");
 }
 
@@ -13457,7 +13457,7 @@ FABRIC_EXT_EXPORT void glMultiTexSubImage3DEXT_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glMultiTexSubImage3DEXT( %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, void* );\n", (int)texunit, (int)target, (int)level, (int)xoffset, (int)yoffset, (int)zoffset, (int)width, (int)height, (int)depth, (int)format, (int)type);
 #endif
-  glMultiTexSubImage3DEXT( (GLenum)texunit, (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLint)zoffset, (GLsizei)width, (GLsizei)height, (GLsizei)depth, (GLenum)format, (GLenum)type, pixels );
+  glMultiTexSubImage3DEXT( (GLenum)texunit, (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLint)zoffset, (GLsizei)width, (GLsizei)height, (GLsizei)depth, (GLenum)format, (GLenum)type, (const void*)pixels );
   _checkError("glMultiTexSubImage3DEXT");
 }
 
@@ -13471,7 +13471,7 @@ FABRIC_EXT_EXPORT void glNamedBufferDataEXT_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glNamedBufferDataEXT( 0x%04X, %d, void*, %d );\n", (unsigned)buffer, (int)size, (int)usage);
 #endif
-  glNamedBufferDataEXT( (GLuint)buffer, (GLsizeiptr)size, data, (GLenum)usage );
+  glNamedBufferDataEXT( (GLuint)buffer, (GLsizeiptr)size, (const void*)data, (GLenum)usage );
   _checkError("glNamedBufferDataEXT");
 }
 
@@ -13485,7 +13485,7 @@ FABRIC_EXT_EXPORT void glNamedBufferSubDataEXT_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glNamedBufferSubDataEXT( 0x%04X, %d, %d, void* );\n", (unsigned)buffer, (int)offset, (int)size);
 #endif
-  glNamedBufferSubDataEXT( (GLuint)buffer, (GLintptr)offset, (GLsizeiptr)size, data );
+  glNamedBufferSubDataEXT( (GLuint)buffer, (GLintptr)offset, (GLsizeiptr)size, (const void*)data );
   _checkError("glNamedBufferSubDataEXT");
 }
 
@@ -13788,7 +13788,7 @@ FABRIC_EXT_EXPORT void glNamedProgramStringEXT_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glNamedProgramStringEXT( 0x%04X, %d, %d, %d, void* );\n", (unsigned)program, (int)target, (int)format, (int)len);
 #endif
-  glNamedProgramStringEXT( (GLuint)program, (GLenum)target, (GLenum)format, (GLsizei)len, string );
+  glNamedProgramStringEXT( (GLuint)program, (GLenum)target, (GLenum)format, (GLsizei)len, (const void*)string );
   _checkError("glNamedProgramStringEXT");
 }
 
@@ -14354,7 +14354,7 @@ FABRIC_EXT_EXPORT void glTextureImage1DEXT_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glTextureImage1DEXT( 0x%04X, %d, %d, %d, %d, %d, %d, %d, void* );\n", (unsigned)texture, (int)target, (int)level, (int)internalformat, (int)width, (int)border, (int)format, (int)type);
 #endif
-  glTextureImage1DEXT( (GLuint)texture, (GLenum)target, (GLint)level, (GLint)internalformat, (GLsizei)width, (GLint)border, (GLenum)format, (GLenum)type, pixels );
+  glTextureImage1DEXT( (GLuint)texture, (GLenum)target, (GLint)level, (GLint)internalformat, (GLsizei)width, (GLint)border, (GLenum)format, (GLenum)type, (const void*)pixels );
   _checkError("glTextureImage1DEXT");
 }
 
@@ -14374,7 +14374,7 @@ FABRIC_EXT_EXPORT void glTextureImage2DEXT_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glTextureImage2DEXT( 0x%04X, %d, %d, %d, %d, %d, %d, %d, %d, void* );\n", (unsigned)texture, (int)target, (int)level, (int)internalformat, (int)width, (int)height, (int)border, (int)format, (int)type);
 #endif
-  glTextureImage2DEXT( (GLuint)texture, (GLenum)target, (GLint)level, (GLint)internalformat, (GLsizei)width, (GLsizei)height, (GLint)border, (GLenum)format, (GLenum)type, pixels );
+  glTextureImage2DEXT( (GLuint)texture, (GLenum)target, (GLint)level, (GLint)internalformat, (GLsizei)width, (GLsizei)height, (GLint)border, (GLenum)format, (GLenum)type, (const void*)pixels );
   _checkError("glTextureImage2DEXT");
 }
 
@@ -14395,7 +14395,7 @@ FABRIC_EXT_EXPORT void glTextureImage3DEXT_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glTextureImage3DEXT( 0x%04X, %d, %d, %d, %d, %d, %d, %d, %d, %d, void* );\n", (unsigned)texture, (int)target, (int)level, (int)internalformat, (int)width, (int)height, (int)depth, (int)border, (int)format, (int)type);
 #endif
-  glTextureImage3DEXT( (GLuint)texture, (GLenum)target, (GLint)level, (GLint)internalformat, (GLsizei)width, (GLsizei)height, (GLsizei)depth, (GLint)border, (GLenum)format, (GLenum)type, pixels );
+  glTextureImage3DEXT( (GLuint)texture, (GLenum)target, (GLint)level, (GLint)internalformat, (GLsizei)width, (GLsizei)height, (GLsizei)depth, (GLint)border, (GLenum)format, (GLenum)type, (const void*)pixels );
   _checkError("glTextureImage3DEXT");
 }
 
@@ -14510,7 +14510,7 @@ FABRIC_EXT_EXPORT void glTextureSubImage1DEXT_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glTextureSubImage1DEXT( 0x%04X, %d, %d, %d, %d, %d, %d, void* );\n", (unsigned)texture, (int)target, (int)level, (int)xoffset, (int)width, (int)format, (int)type);
 #endif
-  glTextureSubImage1DEXT( (GLuint)texture, (GLenum)target, (GLint)level, (GLint)xoffset, (GLsizei)width, (GLenum)format, (GLenum)type, pixels );
+  glTextureSubImage1DEXT( (GLuint)texture, (GLenum)target, (GLint)level, (GLint)xoffset, (GLsizei)width, (GLenum)format, (GLenum)type, (const void*)pixels );
   _checkError("glTextureSubImage1DEXT");
 }
 
@@ -14530,7 +14530,7 @@ FABRIC_EXT_EXPORT void glTextureSubImage2DEXT_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glTextureSubImage2DEXT( 0x%04X, %d, %d, %d, %d, %d, %d, %d, %d, void* );\n", (unsigned)texture, (int)target, (int)level, (int)xoffset, (int)yoffset, (int)width, (int)height, (int)format, (int)type);
 #endif
-  glTextureSubImage2DEXT( (GLuint)texture, (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLsizei)width, (GLsizei)height, (GLenum)format, (GLenum)type, pixels );
+  glTextureSubImage2DEXT( (GLuint)texture, (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLsizei)width, (GLsizei)height, (GLenum)format, (GLenum)type, (const void*)pixels );
   _checkError("glTextureSubImage2DEXT");
 }
 
@@ -14552,7 +14552,7 @@ FABRIC_EXT_EXPORT void glTextureSubImage3DEXT_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glTextureSubImage3DEXT( 0x%04X, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, void* );\n", (unsigned)texture, (int)target, (int)level, (int)xoffset, (int)yoffset, (int)zoffset, (int)width, (int)height, (int)depth, (int)format, (int)type);
 #endif
-  glTextureSubImage3DEXT( (GLuint)texture, (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLint)zoffset, (GLsizei)width, (GLsizei)height, (GLsizei)depth, (GLenum)format, (GLenum)type, pixels );
+  glTextureSubImage3DEXT( (GLuint)texture, (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLint)zoffset, (GLsizei)width, (GLsizei)height, (GLsizei)depth, (GLenum)format, (GLenum)type, (const void*)pixels );
   _checkError("glTextureSubImage3DEXT");
 }
 
@@ -14846,7 +14846,7 @@ FABRIC_EXT_EXPORT void glDrawElementsInstancedEXT_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glDrawElementsInstancedEXT( %d, %d, %d, GLvoid*, %d );\n", (int)mode, (int)count, (int)type, (int)primcount);
 #endif
-  glDrawElementsInstancedEXT( (GLenum)mode, (GLsizei)count, (GLenum)type, indices, (GLsizei)primcount );
+  glDrawElementsInstancedEXT( (GLenum)mode, (GLsizei)count, (GLenum)type, (const GLvoid*)indices, (GLsizei)primcount );
   _checkError("glDrawElementsInstancedEXT");
 }
 
@@ -14862,7 +14862,7 @@ FABRIC_EXT_EXPORT void glDrawRangeElementsEXT_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glDrawRangeElementsEXT( %d, 0x%04X, 0x%04X, %d, %d, GLvoid* );\n", (int)mode, (unsigned)start, (unsigned)end, (int)count, (int)type);
 #endif
-  glDrawRangeElementsEXT( (GLenum)mode, (GLuint)start, (GLuint)end, (GLsizei)count, (GLenum)type, indices );
+  glDrawRangeElementsEXT( (GLenum)mode, (GLuint)start, (GLuint)end, (GLsizei)count, (GLenum)type, (const GLvoid*)indices );
   _checkError("glDrawRangeElementsEXT");
 }
 
@@ -14875,7 +14875,7 @@ FABRIC_EXT_EXPORT void glFogCoordPointerEXT_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glFogCoordPointerEXT( %d, %d, GLvoid* );\n", (int)type, (int)stride);
 #endif
-  glFogCoordPointerEXT( (GLenum)type, (GLsizei)stride, pointer );
+  glFogCoordPointerEXT( (GLenum)type, (GLsizei)stride, (const GLvoid*)pointer );
   _checkError("glFogCoordPointerEXT");
 }
 
@@ -15925,7 +15925,7 @@ FABRIC_EXT_EXPORT void glVertexAttribIPointerEXT_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glVertexAttribIPointerEXT( 0x%04X, %d, %d, %d, GLvoid* );\n", (unsigned)index, (int)size, (int)type, (int)stride);
 #endif
-  glVertexAttribIPointerEXT( (GLuint)index, (GLint)size, (GLenum)type, (GLsizei)stride, pointer );
+  glVertexAttribIPointerEXT( (GLuint)index, (GLint)size, (GLenum)type, (GLsizei)stride, (const GLvoid*)pointer );
   _checkError("glVertexAttribIPointerEXT");
 }
 
@@ -15940,7 +15940,7 @@ FABRIC_EXT_EXPORT void glGetHistogramEXT_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glGetHistogramEXT( %d, %d, %d, %d, void* );\n", (int)target, (int)reset, (int)format, (int)type);
 #endif
-  glGetHistogramEXT( (GLenum)target, (GLboolean)reset, (GLenum)format, (GLenum)type, values );
+  glGetHistogramEXT( (GLenum)target, (GLboolean)reset, (GLenum)format, (GLenum)type, (void*)values );
   _checkError("glGetHistogramEXT");
 }
 
@@ -15981,7 +15981,7 @@ FABRIC_EXT_EXPORT void glGetMinmaxEXT_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glGetMinmaxEXT( %d, %d, %d, %d, void* );\n", (int)target, (int)reset, (int)format, (int)type);
 #endif
-  glGetMinmaxEXT( (GLenum)target, (GLboolean)reset, (GLenum)format, (GLenum)type, values );
+  glGetMinmaxEXT( (GLenum)target, (GLboolean)reset, (GLenum)format, (GLenum)type, (void*)values );
   _checkError("glGetMinmaxEXT");
 }
 
@@ -16167,7 +16167,7 @@ FABRIC_EXT_EXPORT void glColorTableEXT_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glColorTableEXT( %d, %d, %d, %d, %d, void* );\n", (int)target, (int)internalFormat, (int)width, (int)format, (int)type);
 #endif
-  glColorTableEXT( (GLenum)target, (GLenum)internalFormat, (GLsizei)width, (GLenum)format, (GLenum)type, data );
+  glColorTableEXT( (GLenum)target, (GLenum)internalFormat, (GLsizei)width, (GLenum)format, (GLenum)type, (const void*)data );
   _checkError("glColorTableEXT");
 }
 
@@ -16181,7 +16181,7 @@ FABRIC_EXT_EXPORT void glGetColorTableEXT_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glGetColorTableEXT( %d, %d, %d, void* );\n", (int)target, (int)format, (int)type);
 #endif
-  glGetColorTableEXT( (GLenum)target, (GLenum)format, (GLenum)type, data );
+  glGetColorTableEXT( (GLenum)target, (GLenum)format, (GLenum)type, (void*)data );
   _checkError("glGetColorTableEXT");
 }
 
@@ -16558,7 +16558,7 @@ FABRIC_EXT_EXPORT void glSecondaryColorPointerEXT_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glSecondaryColorPointerEXT( %d, %d, %d, GLvoid* );\n", (int)size, (int)type, (int)stride);
 #endif
-  glSecondaryColorPointerEXT( (GLint)size, (GLenum)type, (GLsizei)stride, pointer );
+  glSecondaryColorPointerEXT( (GLint)size, (GLenum)type, (GLsizei)stride, (GLvoid*)pointer );
   _checkError("glSecondaryColorPointerEXT");
 }
 
@@ -16622,7 +16622,7 @@ FABRIC_EXT_EXPORT void glTexSubImage1DEXT_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glTexSubImage1DEXT( %d, %d, %d, %d, %d, %d, void* );\n", (int)target, (int)level, (int)xoffset, (int)width, (int)format, (int)type);
 #endif
-  glTexSubImage1DEXT( (GLenum)target, (GLint)level, (GLint)xoffset, (GLsizei)width, (GLenum)format, (GLenum)type, pixels );
+  glTexSubImage1DEXT( (GLenum)target, (GLint)level, (GLint)xoffset, (GLsizei)width, (GLenum)format, (GLenum)type, (const void*)pixels );
   _checkError("glTexSubImage1DEXT");
 }
 
@@ -16641,7 +16641,7 @@ FABRIC_EXT_EXPORT void glTexSubImage2DEXT_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glTexSubImage2DEXT( %d, %d, %d, %d, %d, %d, %d, %d, void* );\n", (int)target, (int)level, (int)xoffset, (int)yoffset, (int)width, (int)height, (int)format, (int)type);
 #endif
-  glTexSubImage2DEXT( (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLsizei)width, (GLsizei)height, (GLenum)format, (GLenum)type, pixels );
+  glTexSubImage2DEXT( (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLsizei)width, (GLsizei)height, (GLenum)format, (GLenum)type, (const void*)pixels );
   _checkError("glTexSubImage2DEXT");
 }
 
@@ -16662,7 +16662,7 @@ FABRIC_EXT_EXPORT void glTexSubImage3DEXT_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glTexSubImage3DEXT( %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, void* );\n", (int)target, (int)level, (int)xoffset, (int)yoffset, (int)zoffset, (int)width, (int)height, (int)depth, (int)format, (int)type);
 #endif
-  glTexSubImage3DEXT( (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLint)zoffset, (GLsizei)width, (GLsizei)height, (GLsizei)depth, (GLenum)format, (GLenum)type, pixels );
+  glTexSubImage3DEXT( (GLenum)target, (GLint)level, (GLint)xoffset, (GLint)yoffset, (GLint)zoffset, (GLsizei)width, (GLsizei)height, (GLsizei)depth, (GLenum)format, (GLenum)type, (const void*)pixels );
   _checkError("glTexSubImage3DEXT");
 }
 
@@ -16682,7 +16682,7 @@ FABRIC_EXT_EXPORT void glTexImage3DEXT_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glTexImage3DEXT( %d, %d, %d, %d, %d, %d, %d, %d, %d, void* );\n", (int)target, (int)level, (int)internalformat, (int)width, (int)height, (int)depth, (int)border, (int)format, (int)type);
 #endif
-  glTexImage3DEXT( (GLenum)target, (GLint)level, (GLenum)internalformat, (GLsizei)width, (GLsizei)height, (GLsizei)depth, (GLint)border, (GLenum)format, (GLenum)type, pixels );
+  glTexImage3DEXT( (GLenum)target, (GLint)level, (GLenum)internalformat, (GLsizei)width, (GLsizei)height, (GLsizei)depth, (GLint)border, (GLenum)format, (GLenum)type, (const void*)pixels );
   _checkError("glTexImage3DEXT");
 }
 
@@ -16988,7 +16988,7 @@ FABRIC_EXT_EXPORT void glColorPointerEXT_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glColorPointerEXT( %d, %d, %d, %d, void* );\n", (int)size, (int)type, (int)stride, (int)count);
 #endif
-  glColorPointerEXT( (GLint)size, (GLenum)type, (GLsizei)stride, (GLsizei)count, pointer );
+  glColorPointerEXT( (GLint)size, (GLenum)type, (GLsizei)stride, (GLsizei)count, (const void*)pointer );
   _checkError("glColorPointerEXT");
 }
 
@@ -17028,7 +17028,7 @@ FABRIC_EXT_EXPORT void glIndexPointerEXT_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glIndexPointerEXT( %d, %d, %d, void* );\n", (int)type, (int)stride, (int)count);
 #endif
-  glIndexPointerEXT( (GLenum)type, (GLsizei)stride, (GLsizei)count, pointer );
+  glIndexPointerEXT( (GLenum)type, (GLsizei)stride, (GLsizei)count, (const void*)pointer );
   _checkError("glIndexPointerEXT");
 }
 
@@ -17042,7 +17042,7 @@ FABRIC_EXT_EXPORT void glNormalPointerEXT_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glNormalPointerEXT( %d, %d, %d, void* );\n", (int)type, (int)stride, (int)count);
 #endif
-  glNormalPointerEXT( (GLenum)type, (GLsizei)stride, (GLsizei)count, pointer );
+  glNormalPointerEXT( (GLenum)type, (GLsizei)stride, (GLsizei)count, (const void*)pointer );
   _checkError("glNormalPointerEXT");
 }
 
@@ -17057,7 +17057,7 @@ FABRIC_EXT_EXPORT void glTexCoordPointerEXT_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glTexCoordPointerEXT( %d, %d, %d, %d, void* );\n", (int)size, (int)type, (int)stride, (int)count);
 #endif
-  glTexCoordPointerEXT( (GLint)size, (GLenum)type, (GLsizei)stride, (GLsizei)count, pointer );
+  glTexCoordPointerEXT( (GLint)size, (GLenum)type, (GLsizei)stride, (GLsizei)count, (const void*)pointer );
   _checkError("glTexCoordPointerEXT");
 }
 
@@ -17072,7 +17072,7 @@ FABRIC_EXT_EXPORT void glVertexPointerEXT_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glVertexPointerEXT( %d, %d, %d, %d, void* );\n", (int)size, (int)type, (int)stride, (int)count);
 #endif
-  glVertexPointerEXT( (GLint)size, (GLenum)type, (GLsizei)stride, (GLsizei)count, pointer );
+  glVertexPointerEXT( (GLint)size, (GLenum)type, (GLsizei)stride, (GLsizei)count, (const void*)pointer );
   _checkError("glVertexPointerEXT");
 }
 
@@ -17397,7 +17397,7 @@ FABRIC_EXT_EXPORT void glSetInvariantEXT_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glSetInvariantEXT( 0x%04X, %d, GLvoid* );\n", (unsigned)id, (int)type);
 #endif
-  glSetInvariantEXT( (GLuint)id, (GLenum)type, addr );
+  glSetInvariantEXT( (GLuint)id, (GLenum)type, (GLvoid*)addr );
   _checkError("glSetInvariantEXT");
 }
 
@@ -17410,7 +17410,7 @@ FABRIC_EXT_EXPORT void glSetLocalConstantEXT_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glSetLocalConstantEXT( 0x%04X, %d, GLvoid* );\n", (unsigned)id, (int)type);
 #endif
-  glSetLocalConstantEXT( (GLuint)id, (GLenum)type, addr );
+  glSetLocalConstantEXT( (GLuint)id, (GLenum)type, (GLvoid*)addr );
   _checkError("glSetLocalConstantEXT");
 }
 
@@ -17482,7 +17482,7 @@ FABRIC_EXT_EXPORT void glVariantPointerEXT_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glVariantPointerEXT( 0x%04X, %d, 0x%04X, GLvoid* );\n", (unsigned)id, (int)type, (unsigned)stride);
 #endif
-  glVariantPointerEXT( (GLuint)id, (GLenum)type, (GLuint)stride, addr );
+  glVariantPointerEXT( (GLuint)id, (GLenum)type, (GLuint)stride, (GLvoid*)addr );
   _checkError("glVariantPointerEXT");
 }
 
@@ -17608,7 +17608,7 @@ FABRIC_EXT_EXPORT void glVertexWeightPointerEXT_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("glVertexWeightPointerEXT( %d, %d, %d, void* );\n", (int)size, (int)type, (int)stride);
 #endif
-  glVertexWeightPointerEXT( (GLint)size, (GLenum)type, (GLsizei)stride, pointer );
+  glVertexWeightPointerEXT( (GLint)size, (GLenum)type, (GLsizei)stride, (void*)pointer );
   _checkError("glVertexWeightPointerEXT");
 }
 
@@ -17759,7 +17759,7 @@ FABRIC_EXT_EXPORT KL::Integer gluBuild1DMipmapLevels_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("gluBuild1DMipmapLevels( %d, %d, %d, %d, %d, %d, %d, %d, void* );\n", (int)target, (int)internalFormat, (int)width, (int)format, (int)type, (int)level, (int)base, (int)max);
 #endif
-  GLint result = gluBuild1DMipmapLevels( (GLenum)target, (GLint)internalFormat, (GLsizei)width, (GLenum)format, (GLenum)type, (GLint)level, (GLint)base, (GLint)max, data );
+  GLint result = gluBuild1DMipmapLevels( (GLenum)target, (GLint)internalFormat, (GLsizei)width, (GLenum)format, (GLenum)type, (GLint)level, (GLint)base, (GLint)max, (const void*)data );
   _checkError("gluBuild1DMipmapLevels");
   return (KL::Integer)result;
 }
@@ -17776,7 +17776,7 @@ FABRIC_EXT_EXPORT KL::Integer gluBuild1DMipmaps_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("gluBuild1DMipmaps( %d, %d, %d, %d, %d, void* );\n", (int)target, (int)internalFormat, (int)width, (int)format, (int)type);
 #endif
-  GLint result = gluBuild1DMipmaps( (GLenum)target, (GLint)internalFormat, (GLsizei)width, (GLenum)format, (GLenum)type, data );
+  GLint result = gluBuild1DMipmaps( (GLenum)target, (GLint)internalFormat, (GLsizei)width, (GLenum)format, (GLenum)type, (const void*)data );
   _checkError("gluBuild1DMipmaps");
   return (KL::Integer)result;
 }
@@ -17797,7 +17797,7 @@ FABRIC_EXT_EXPORT KL::Integer gluBuild2DMipmapLevels_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("gluBuild2DMipmapLevels( %d, %d, %d, %d, %d, %d, %d, %d, %d, void* );\n", (int)target, (int)internalFormat, (int)width, (int)height, (int)format, (int)type, (int)level, (int)base, (int)max);
 #endif
-  GLint result = gluBuild2DMipmapLevels( (GLenum)target, (GLint)internalFormat, (GLsizei)width, (GLsizei)height, (GLenum)format, (GLenum)type, (GLint)level, (GLint)base, (GLint)max, data );
+  GLint result = gluBuild2DMipmapLevels( (GLenum)target, (GLint)internalFormat, (GLsizei)width, (GLsizei)height, (GLenum)format, (GLenum)type, (GLint)level, (GLint)base, (GLint)max, (const void*)data );
   _checkError("gluBuild2DMipmapLevels");
   return (KL::Integer)result;
 }
@@ -17815,7 +17815,7 @@ FABRIC_EXT_EXPORT KL::Integer gluBuild2DMipmaps_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("gluBuild2DMipmaps( %d, %d, %d, %d, %d, %d, void* );\n", (int)target, (int)internalFormat, (int)width, (int)height, (int)format, (int)type);
 #endif
-  GLint result = gluBuild2DMipmaps( (GLenum)target, (GLint)internalFormat, (GLsizei)width, (GLsizei)height, (GLenum)format, (GLenum)type, data );
+  GLint result = gluBuild2DMipmaps( (GLenum)target, (GLint)internalFormat, (GLsizei)width, (GLsizei)height, (GLenum)format, (GLenum)type, (const void*)data );
   _checkError("gluBuild2DMipmaps");
   return (KL::Integer)result;
 }
@@ -17837,7 +17837,7 @@ FABRIC_EXT_EXPORT KL::Integer gluBuild3DMipmapLevels_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("gluBuild3DMipmapLevels( %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, void* );\n", (int)target, (int)internalFormat, (int)width, (int)height, (int)depth, (int)format, (int)type, (int)level, (int)base, (int)max);
 #endif
-  GLint result = gluBuild3DMipmapLevels( (GLenum)target, (GLint)internalFormat, (GLsizei)width, (GLsizei)height, (GLsizei)depth, (GLenum)format, (GLenum)type, (GLint)level, (GLint)base, (GLint)max, data );
+  GLint result = gluBuild3DMipmapLevels( (GLenum)target, (GLint)internalFormat, (GLsizei)width, (GLsizei)height, (GLsizei)depth, (GLenum)format, (GLenum)type, (GLint)level, (GLint)base, (GLint)max, (const void*)data );
   _checkError("gluBuild3DMipmapLevels");
   return (KL::Integer)result;
 }
@@ -17856,7 +17856,7 @@ FABRIC_EXT_EXPORT KL::Integer gluBuild3DMipmaps_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("gluBuild3DMipmaps( %d, %d, %d, %d, %d, %d, %d, void* );\n", (int)target, (int)internalFormat, (int)width, (int)height, (int)depth, (int)format, (int)type);
 #endif
-  GLint result = gluBuild3DMipmaps( (GLenum)target, (GLint)internalFormat, (GLsizei)width, (GLsizei)height, (GLsizei)depth, (GLenum)format, (GLenum)type, data );
+  GLint result = gluBuild3DMipmaps( (GLenum)target, (GLint)internalFormat, (GLsizei)width, (GLsizei)height, (GLsizei)depth, (GLenum)format, (GLenum)type, (const void*)data );
   _checkError("gluBuild3DMipmaps");
   return (KL::Integer)result;
 }
@@ -17993,7 +17993,7 @@ FABRIC_EXT_EXPORT KL::Integer gluScaleImage_wrapper(
 #ifdef FABRIC_OGL_DEBUG
   printf("gluScaleImage( %d, %d, %d, %d, void*, %d, %d, %d, GLvoid* );\n", (int)format, (int)wIn, (int)hIn, (int)typeIn, (int)wOut, (int)hOut, (int)typeOut);
 #endif
-  GLint result = gluScaleImage( (GLenum)format, (GLsizei)wIn, (GLsizei)hIn, (GLenum)typeIn, dataIn, (GLsizei)wOut, (GLsizei)hOut, (GLenum)typeOut, dataOut );
+  GLint result = gluScaleImage( (GLenum)format, (GLsizei)wIn, (GLsizei)hIn, (GLenum)typeIn, (const void*)dataIn, (GLsizei)wOut, (GLsizei)hOut, (GLenum)typeOut, (GLvoid*)dataOut );
   _checkError("gluScaleImage");
   return (KL::Integer)result;
 }

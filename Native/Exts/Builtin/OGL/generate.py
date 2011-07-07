@@ -357,12 +357,20 @@ def main():
             klCast.append('('+fulltype+')&'+varname+'[0]')
           else:
             if knownCTypes[type][3] == 'Data':
-              if variables[i].startswith('const'):
-                klParameters.append('in Data '+klvarname)
+              if(variables[i].count('*') == 2):
+                if variables[i].startswith('const'):
+                  klParameters.append('in Data '+klvarname+'[]')
+                else:
+                  klParameters.append('io Data '+klvarname+'[]')
+                cParameters.append('KL::Data '+varname+'[]')
+                klCast.append('('+fulltype+')&'+varname+'[0]')
               else:
-                klParameters.append('io Data '+klvarname)
-              cParameters.append('KL::Data '+varname)
-              klCast.append(varname)
+                if variables[i].startswith('const'):
+                  klParameters.append('in Data '+klvarname)
+                else:
+                  klParameters.append('io Data '+klvarname)
+                cParameters.append('KL::Data '+varname)
+                klCast.append('('+fulltype+')'+varname)
             elif variables[i].startswith('const'):
               # THIS CAN BE DONE BASED ON THE DIGITS
               klParameters.append('io '+knownCTypes[type][3]+' '+klvarname+'['+digit+']')
