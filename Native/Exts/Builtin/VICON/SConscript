@@ -31,4 +31,4 @@ if(os.path.exists(sdkPath)):
     installAction
   ] )
 else:
-  print("--------- Skipping VICON plugin, no VICON SDK found.")
+  print("--------- Skipping VICON extension, no VICON SDK found.")
