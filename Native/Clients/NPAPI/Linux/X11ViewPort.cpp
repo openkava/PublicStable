@@ -242,7 +242,7 @@ namespace Fabric
         );
     }
       
-    void WindowedCAViewPort::pushOGLContext()
+    void X11ViewPort::pushOGLContext()
     {
       m_gdkGLStack.push_back( GdkGLDrawableAndContext( gdk_gl_drawable_get_current(), gdk_gl_context_get_current() ) );
       
@@ -258,14 +258,14 @@ namespace Fabric
       }
     }
     
-    void WindowedCAViewPort::popOGLContext()
+    void X11ViewPort::popOGLContext()
     {
-      FABRIC_ASSERT( !m_cglContextStack.empty() );
+      FABRIC_ASSERT( !m_gdkGLStack.empty() );
 
       bool gdkGLDrawableMakeCurrentResult = gdk_gl_drawable_make_current( m_gdkGLStack.back().first, m_gdkGLStack.back().second );
       FABRIC_ASSERT( gdkGLDrawableMakeCurrentResult );
 
-      m_cglContextStack.pop_back();
+      m_gdkGLStack.pop_back();
     }
   };
 };
