@@ -401,17 +401,19 @@ def main():
     knownFunctions[name] = function
     
     klReturnType = returnType
-    if klReturnType.find('void') == -1:
+    if klReturnType.find('void') == -1 or klReturnType.count('*') > 0:
       # special case, string returning functions
       if name.lower().find('string') > -1 and len(variables) == 1 and returnType.count('*') == 1:
         returnTypeKey = "char"
         klReturnType = 'KL::String'
+      elif klReturnType.find('void') > -1 and klReturnType.count('*') > 0:
+        klReturnType = 'KL::Data'
       else:
         klReturnType = 'KL::'+knownCTypes[returnTypeKey][3]
       
     # IF WE HAVE VARIABLES
     if len(cParameters) > 0:
-      if returnType.find('void') > -1:
+      if returnType.find('void') > -1 or returnType.count('*') > 0:
         functionsCode.append('FABRIC_EXT_EXPORT '+klReturnType+' '+name+'_wrapper(')
       else:
         functionsCode.append('FABRIC_EXT_EXPORT '+klReturnType+' '+name+'_wrapper(')
@@ -420,7 +422,7 @@ def main():
       functionsCode.append('  '+cParameters[len(cParameters)-1])
       functionsCode.append('){')
     else:
-      if returnType.find('void') > -1:
+      if returnType.find('void') > -1 or returnType.count('*') > 0:
         functionsCode.append('FABRIC_EXT_EXPORT '+returnType+' '+name+'_wrapper()')
       else:
         functionsCode.append('FABRIC_EXT_EXPORT KL::'+knownCTypes[returnTypeKey][3]+' '+name+'_wrapper()')
@@ -439,7 +441,7 @@ def main():
 
     functionsCode.extend(additionalCodePre)
     prefix = ''
-    if returnType.find('void') == -1:
+    if returnType.find('void') == -1 or returnType.count('*') > 0:
       prefix = returnType+' result = '
     if len(klCast) > 0:
       functionsCode.append('  '+prefix+name+'( '+str(', ').join(klCast)+' );')
@@ -453,7 +455,7 @@ def main():
     functionsCode.extend(additionalCodePost)
 
     # IF WE HAVE A RETURN TYPE
-    if returnType.find('void') == -1:
+    if returnType.find('void') == -1 or returnType.count('*') > 0:
       if klReturnType == "KL::String":
         functionsCode.append('  return ('+klReturnType+')(const char*)result;')
       else:
@@ -461,7 +463,7 @@ def main():
 
     functionsCode.append('}\n')
     klFunction = 'function ';
-    if returnTypeKey.find('void') == -1:
+    if returnTypeKey.find('void') == -1 or returnType.count('*') > 0:
       klFunction = klFunction + knownCTypes[returnTypeKey][3]+' '
     klFunction = klFunction + name+'( '
     klFunction = klFunction + ', '.join(klParameters) + ' ) = '+"'"+name+'_wrapper'+"'"+';'
