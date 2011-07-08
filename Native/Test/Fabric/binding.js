@@ -7,7 +7,7 @@ printDeep(b.getParameterLayout());
 
 o = F.DG.createOperator("op");
 b.setOperator(o);
-printDeep(b.getOperator());
+printDeep(b.getOperator().getName());
 
 b.setParameterLayout(["self.foo"]);
 printDeep(b.getParameterLayout());
