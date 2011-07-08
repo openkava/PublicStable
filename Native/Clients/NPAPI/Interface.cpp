@@ -333,18 +333,13 @@ namespace Fabric
         char *utf8Characters = (char *)NPN_MemAlloc( jsonEncodedNotifications.length() );
         memcpy( utf8Characters, jsonEncodedNotifications.data(), jsonEncodedNotifications.length() );
         STRINGN_TO_NPVARIANT( utf8Characters, jsonEncodedNotifications.length(), arg );
-        
-        try
-        {
-          NPVariant result;
-          if ( !NPN_InvokeDefault( m_npp, m_callbackNPObject, &arg, 1, &result ) )
-            throw Exception( "JSON notify callback failure" );
+
+        // [pzion 20110708] Note that an error in NPN_InvokeDefault just means that the
+        // Javascript object on the other end no longer exists; this happens naturally 
+        // if a Window has been closed, for instance.
+        NPVariant result;
+        if ( NPN_InvokeDefault( m_npp, m_callbackNPObject, &arg, 1, &result ) )
           NPN_ReleaseVariantValue( &result );
-        }
-        catch ( Exception e )
-        {
-          FABRIC_LOG( "Failed to send notification!" );
-        }
       }
     }
   };
