@@ -517,7 +517,7 @@ namespace Fabric
         jsonExecAddScope( arg );
       else if ( cmd == "setSelector" )
         jsonExecSetSelector( arg );
-      else if ( cmd == "setBindingName" )
+      else if ( cmd == "setScopeName" )
         jsonExecSetBindingName( arg );
       else result = Container::jsonExec( cmd, arg );
       
