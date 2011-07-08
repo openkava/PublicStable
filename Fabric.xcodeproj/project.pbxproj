@@ -918,7 +918,6 @@
 		DB9684C913A79A1600616143 /* FABRIC.SceneGraph.Particles.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = FABRIC.SceneGraph.Particles.js; sourceTree = "<group>"; };
 		DB9684CA13A79A1600616143 /* FABRIC.SceneGraph.Persistence.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = FABRIC.SceneGraph.Persistence.js; sourceTree = "<group>"; };
 		DB9684CB13A79A1600616143 /* FABRIC.SceneGraph.Primitives.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = FABRIC.SceneGraph.Primitives.js; sourceTree = "<group>"; };
-		DB9684CC13A79A1600616143 /* FABRIC.SVG.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = FABRIC.SVG.js; sourceTree = "<group>"; };
 		DB9684CE13A79A1600616143 /* aimTransform.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = aimTransform.kl; sourceTree = "<group>"; };
 		DB9684CF13A79A1700616143 /* calcBoundingBox.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = calcBoundingBox.kl; sourceTree = "<group>"; };
 		DB9684D013A79A1700616143 /* calcGlobalXfo.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = calcGlobalXfo.kl; sourceTree = "<group>"; };
@@ -2485,11 +2484,11 @@
 		DB9684BE13A79A1500616143 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				DB9684C313A79A1600616143 /* FABRIC.SceneGraph.js */,
 				DB9684BF13A79A1500616143 /* FABRIC.SceneGraph.Animation.js */,
 				DB9684C013A79A1500616143 /* FABRIC.SceneGraph.Characters.js */,
 				DB9684C113A79A1500616143 /* FABRIC.SceneGraph.CharacterSolvers.js */,
 				DB9684C213A79A1600616143 /* FABRIC.SceneGraph.Geometry.js */,
-				DB9684C313A79A1600616143 /* FABRIC.SceneGraph.js */,
 				DB9684C413A79A1600616143 /* FABRIC.SceneGraph.Kinematics.js */,
 				DB9684C513A79A1600616143 /* FABRIC.SceneGraph.Lights.js */,
 				DB9684C613A79A1600616143 /* FABRIC.SceneGraph.Manipulation.js */,
@@ -2497,7 +2496,6 @@
 				DB9684C913A79A1600616143 /* FABRIC.SceneGraph.Particles.js */,
 				DB9684CA13A79A1600616143 /* FABRIC.SceneGraph.Persistence.js */,
 				DB9684CB13A79A1600616143 /* FABRIC.SceneGraph.Primitives.js */,
-				DB9684CC13A79A1600616143 /* FABRIC.SVG.js */,
 				DB9684CD13A79A1600616143 /* KL */,
 				DB96851313A79A1800616143 /* Parsers */,
 				DB96851813A79A1900616143 /* RT */,
