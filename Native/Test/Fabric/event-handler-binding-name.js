@@ -18,7 +18,7 @@ ceh = F.DG.createEventHandler("ceh");
 ceh.preDescendBindings.append(binding);
 
 peh = F.DG.createEventHandler("peh");
-peh.setBindingName("peh");
+peh.setScopeName("peh");
 peh.addMember( "string", "String" );
 peh.setData( "string", "bar" );
 peh.appendChildEventHandler( ceh );
