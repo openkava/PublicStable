@@ -57,7 +57,7 @@ namespace Fabric
       void setPreDescendBindingList( RC::Handle<BindingList> opList );
       void setPostDescendBindingList( RC::Handle<BindingList> opList );
       
-      void setSelector( std::string const &targetBindingName, RC::Handle<Binding> const &selector );
+      void setSelector( std::string const &targetScopeName, RC::Handle<Binding> const &selector );
       
       virtual RC::ConstHandle<JSON::Value> jsonRoute( std::vector<std::string> const &dst, size_t dstOffset, std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg );
       virtual RC::ConstHandle<JSON::Value> jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg );
