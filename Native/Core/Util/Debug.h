@@ -28,7 +28,8 @@ inline bool __eat_string( std::string const &string ) { return false; }
 #if defined(FABRIC_BUILD_RELEASE)
 # define FABRIC_DEBUG_LOG( format, ... )
 #else //defined(FABRIC_BUILD_DEBUG)
-# define FABRIC_DEBUG_LOG( format, ... ) FABRIC_LOG( format, __VA_ARGS__)
+# define FABRIC_DEBUG_LOG( format, ... ) \
+  FABRIC_LOG( format, ##__VA_ARGS__)
 #endif
 
 namespace Fabric
