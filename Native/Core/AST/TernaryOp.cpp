@@ -89,9 +89,11 @@ namespace Fabric
 
             basicBlockBuilder->SetInsertPoint( trueBasicBlock );
             CG::ExprValue trueExprValue = m_middle->buildExprValue( basicBlockBuilder, usage, lValueErrorDesc );
-
+            trueBasicBlock = basicBlockBuilder->GetInsertBlock();
+            
             basicBlockBuilder->SetInsertPoint( falseBasicBlock );
             CG::ExprValue falseExprValue = m_right->buildExprValue( basicBlockBuilder, usage, lValueErrorDesc );
+            falseBasicBlock = basicBlockBuilder->GetInsertBlock();
 
             RC::ConstHandle<CG::Adapter> castAdapter = getType( basicBlockBuilder );
             
