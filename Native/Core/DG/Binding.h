@@ -48,6 +48,7 @@ namespace Fabric
       void removeBindingList( BindingList *bindingList );
 
       RC::Handle<MT::ParallelCall> bind( Scope const &scope, size_t *newSize, unsigned prefixCount=0, void * const *prefixes = 0 ) const;
+      bool getMainThreadOnly() const;
       
       RC::ConstHandle<JSON::Value> jsonDesc() const;
       
