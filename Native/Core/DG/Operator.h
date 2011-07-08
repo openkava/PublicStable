@@ -44,6 +44,7 @@ namespace Fabric
     class Context;
     class CompiledObject;
     class BindingList;
+    class Binding;
     class Prototype;
     class Scope;
     class Code;
@@ -55,10 +56,11 @@ namespace Fabric
       
     public:
     
-      typedef std::multiset<CompiledObject *> CompiledObjects; 
-    
       static RC::Handle<Operator> Create( std::string const &name, RC::Handle<Context> const &context );
       
+      void addBinding( Binding *binding );
+      void removeBinding( Binding *binding );
+
       virtual bool isOperator() const { return true; }
 
       std::string const &getEntryFunctionName() const;
@@ -132,7 +134,8 @@ namespace Fabric
       
       RC::ConstHandle<AST::Operator> m_astOperator;
     
-      CompiledObjects m_compiledObjects;
+      typedef std::multiset<Binding *> Bindings; 
+      Bindings m_bindings;
     };
   };
 };
