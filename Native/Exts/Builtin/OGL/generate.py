@@ -8,32 +8,62 @@ import platform
 # construct the filepath based on this python script's path
 basePath = __file__.replace('\\','/').rpartition('/')[0]
 files = []
-if platform.system() == "Linux":
-  # the order actually matters here
-  files.append('/usr/include/GL/glew.h')
-  files.append('/usr/include/GL/glxew.h')
-  files.append('/usr/include/GL/gl.h')
-  files.append('/usr/include/GL/glx.h')
-  files.append('/usr/include/GL/glext.h')
-  files.append('/usr/include/GL/glu.h')
-elif platform.system() == "Darwin":
-  # the order actually matters here
-  files.append('/opt/local/include/GL/glew.h')
-elif platform.system() == "Windows":
-  # the order actually matters here
-  files.append('../../../ThirdParty/Private/GLEW/GL/glew.h')
-else:
-  raise(Exception("THIS PLATFORM HAS NOT YET BEEN IMPLEMENTED."))
+#if platform.system() == "Linux":
+#  # the order actually matters here
+#  files.append('/usr/include/GL/glew.h')
+#  files.append('/usr/include/GL/glxew.h')
+#  files.append('/usr/include/GL/gl.h')
+#  files.append('/usr/include/GL/glx.h')
+#  files.append('/usr/include/GL/glext.h')
+#  files.append('/usr/include/GL/glu.h')
+#elif platform.system() == "Darwin":
+#  # the order actually matters here
+#  files.append('/opt/local/include/GL/glew.h')
+#elif platform.system() == "Windows":
+#  # the order actually matters here
+#  files.append('../../../ThirdParty/Private/GLEW/GL/glew.h')
+#else:
+#  raise(Exception("THIS PLATFORM HAS NOT YET BEEN IMPLEMENTED."))
   
-jsonsourcePath = os.path.join(basePath,'FabricOGL.fpm.json')
-cpptemplatePath = os.path.join(basePath,'ogl.cpp_template')
-cppsourcePath = os.path.join(basePath,'ogl.cpp')
-sceneGraphPath = os.path.join(basePath,'../../../../Web/SceneGraph/Resources/FABRIC.SceneGraph.OpenGLConstants.js')
+#jsonsourcePath = os.path.join(basePath,'FabricOGL.fpm.json')
+#cpptemplatePath = os.path.join(basePath,'ogl.cpp_template')
+#cppsourcePath = os.path.join(basePath,'ogl.cpp')
+#sceneGraphPath = os.path.join(basePath,'../../../../Web/SceneGraph/Resources/FABRIC.SceneGraph.OpenGLConstants.js')
 
 verbose = False
 
 # RUN THE PARSER
 def main():
+  
+  jsonsourcePath = False
+  cpptemplatePath = False
+  cppsourcePath = False
+  sceneGraphPath = False
+
+  # parse the command line options
+  for i in range(1,len(sys.argv)):
+    arg = sys.argv[i]
+    if not arg.startswith('--') or arg.find('=') == -1:
+      message = "ERROR: Command line arguments need to start with a double --\nValid arguments are:\n--template=path/to/template,\n--header=path/to/single/header (can be used multiple times)\n--jsonresult=path/to/json (file will be generated)\n--cppresult=path/to/cppfile (ogl.cpp, will be generated)\n--jsresult=path/to/javascript (FABRIC.SceneGraph.OpenGLConstants.js, will be generated)."
+      print(message)
+      raise(Exception(message))
+    arg = arg[2:100000]
+    arg = arg.partition('=')
+    if arg[0].lower() == "header":
+      files.append(arg[2])
+    elif arg[0].lower() == "template":
+      cpptemplatePath = arg[2]
+    elif arg[0].lower() == "jsonresult":
+      jsonsourcePath = arg[2]
+    elif arg[0].lower() == "cppresult":
+      cppsourcePath = arg[2]
+    elif arg[0].lower() == "jsresult":
+      sceneGraphPath = arg[2]
+      
+  if len(files) == 0 or not cpptemplatePath or not jsonsourcePath or not cppsourcePath:
+      message = "Some command line options are missing\nUsage:\ngenerate.py --header=path/to/single/header --template=path/to/cpptemplate --cppresult=path/to/generated/cpp --jsonresult=path/to/generated/json\nYou can use --header multiple times to parse multiple headers.\nOptionally you can specify --jsresult=path/to/javascript to generate a JavaSCript file as well.\n"
+      print(message)
+      raise(Exception(message))
   
   # LET'S FIND THE CONSTANTS AND FUNCTIONS BASED ON KEYWORDS
   constants = []
@@ -479,6 +509,7 @@ def main():
   jsonTypes.append('struct Mat44 { Vec4 row0; Vec4 row1; Vec4 row2; Vec4 row3; };')
   
   open(jsonsourcePath,'w').write('{\n  "libs": "FabricOGL",\n  "code": "'+str('').join(jsonTypes)+''+str('').join(jsonConstants)+''+str('').join(klFunctionsCode)+'"\n}\n')
+  print("Generated JSON result: "+jsonsourcePath)
   #open('/development/temp/test.kl','w').write(str('\n').join(jsonConstants)+'\n\n'+str('\n').join(klFunctionsCode)+'\n\nfunction entry()\n{\n  report("valid");\n}\n')
   
   # LOAD THE TEMPLATE AND FILL IT
@@ -486,23 +517,23 @@ def main():
   template = template.replace("####FUNCTIONS####",str('\n').join(functionsCode))
   # WRITE OUT TO OUR SOURCE FILE
   open(cppsourcePath,"w").write(template)
+  print("Generated CPP result: "+cppsourcePath)
 
-  # skip the creation of the js file
-  return
-  
-  # write out the js file
-  sceneGraphCode = []
-  sceneGraphCode.append("");
-  sceneGraphCode.append("//")
-  sceneGraphCode.append("// Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.")
-  sceneGraphCode.append("//")
-  sceneGraphCode.append("");
-  sceneGraphCode.append("FABRIC.SceneGraph.OpenGLConstants = {");
-  for i in range(len(sceneGraphConstants)):
-    sceneGraphCode.append('  '+sceneGraphConstants[i])
-  sceneGraphCode.append("};")
-  sceneGraphCode.append("")
-  open(sceneGraphPath,"w").write(str('\n').join(sceneGraphCode))
-  
+  # write out the js file (optional)
+  if sceneGraphPath:
+    sceneGraphCode = []
+    sceneGraphCode.append("");
+    sceneGraphCode.append("//")
+    sceneGraphCode.append("// Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.")
+    sceneGraphCode.append("//")
+    sceneGraphCode.append("");
+    sceneGraphCode.append("FABRIC.SceneGraph.OpenGLConstants = {");
+    for i in range(len(sceneGraphConstants)):
+      sceneGraphCode.append('  '+sceneGraphConstants[i])
+    sceneGraphCode.append("};")
+    sceneGraphCode.append("")
+    open(sceneGraphPath,"w").write(str('\n').join(sceneGraphCode))
+    print("Generated JS result: "+sceneGraphPath)
+
 if __name__ == '__main__':
   main()
