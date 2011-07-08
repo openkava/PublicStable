@@ -484,6 +484,9 @@ def main():
   template = template.replace("####FUNCTIONS####",str('\n').join(functionsCode))
   # WRITE OUT TO OUR SOURCE FILE
   open(cppsourcePath,"w").write(template)
+
+  # skip the creation of the js file
+  return
   
   # write out the js file
   sceneGraphCode = []

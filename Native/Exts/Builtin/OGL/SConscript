@@ -27,10 +27,16 @@ template = oglPluginEnv.File("ogl.cpp_template")
 oglSource = oglPluginEnv.File("ogl.cpp")
 oglManifest = oglPluginEnv.File('FabricOGL.fpm.json')
 
+command = ""
+if buildOS == 'Linux':
+  command = "python " + generator.abspath
+else:
+  command = "cd " + generator.pathname() + "; python " + generator.basename()
+    
 oglPluginEnv.Command(
   [oglSource, oglManifest],
   [generator, template],
-  "cd " + generator.pathname() + "; python " + generator.basename()
+  command
   )
 
 oglPlugin = oglPluginEnv.SharedLibrary( 'FabricOGL', oglSource )
