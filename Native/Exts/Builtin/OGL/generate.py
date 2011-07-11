@@ -8,27 +8,6 @@ import platform
 # construct the filepath based on this python script's path
 basePath = __file__.replace('\\','/').rpartition('/')[0]
 files = []
-#if platform.system() == "Linux":
-#  # the order actually matters here
-#  files.append('/usr/include/GL/glew.h')
-#  files.append('/usr/include/GL/glxew.h')
-#  files.append('/usr/include/GL/gl.h')
-#  files.append('/usr/include/GL/glx.h')
-#  files.append('/usr/include/GL/glext.h')
-#  files.append('/usr/include/GL/glu.h')
-#elif platform.system() == "Darwin":
-#  # the order actually matters here
-#  files.append('/opt/local/include/GL/glew.h')
-#elif platform.system() == "Windows":
-#  # the order actually matters here
-#  files.append('../../../ThirdParty/Private/GLEW/GL/glew.h')
-#else:
-#  raise(Exception("THIS PLATFORM HAS NOT YET BEEN IMPLEMENTED."))
-  
-#jsonsourcePath = os.path.join(basePath,'FabricOGL.fpm.json')
-#cpptemplatePath = os.path.join(basePath,'ogl.cpp_template')
-#cppsourcePath = os.path.join(basePath,'ogl.cpp')
-#sceneGraphPath = os.path.join(basePath,'../../../../Web/SceneGraph/Resources/FABRIC.SceneGraph.OpenGLConstants.js')
 
 verbose = False
 
@@ -72,24 +51,9 @@ def main():
   for file in files:
     lines = open(file).read().split('\n')
     i = 0
-    ifdefCount = 0
-    insideProtoTypes = 0
     while(i < len(lines)):
       line = lines[i]
       line = line.replace('#if defined','#ifdef')
-      if line.startswith("#ifndef"):
-        ifdefCount += 1
-      if line.startswith("#ifdef"):
-        ifdefCount += 1
-        if line.endswith('PROTOTYPES'):
-          insideProtoTypes = ifdefCount
-      elif line.startswith("#endif"):
-        if insideProtoTypes == ifdefCount:
-          insideProtoTypes = 0
-        ifdefCount -= 1
-      if insideProtoTypes > 0:
-        i += 1
-        continue
       
       while(line.strip().endswith(',')):
         i += 1
@@ -143,7 +107,8 @@ def main():
     'INTEL',
     'OES',
     'SGI',
-    'HP'
+    'HP',
+    'INGR'
   ]
   
   # LOOP OVER ALL DEFINED FUNCTIONS, AND REGISTER THEM

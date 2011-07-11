@@ -11,7 +11,6 @@ if buildOS == 'Linux':
   oglPluginEnv.Append( LINKFLAGS = [ '-lGLEW' ] )
   oglPluginEnv.ParseConfig( 'pkg-config --cflags --libs gtk+-2.0' )
   oglPluginEnv.ParseConfig( 'pkg-config --cflags --libs gtkglext-1.0' )
-  oglPluginEnv.ParseConfig( 'pkg-config --cflags --libs gdkglext-1.0' )
 if buildOS == 'Darwin':
   oglPluginEnv.Append( CPPPATH = ['/opt/local/include'] )
   oglPluginEnv.Append( LIBPATH = ['/opt/local/lib'] )
@@ -20,7 +19,7 @@ if buildOS == 'Darwin':
 if buildOS == 'Windows':
 	Import( 'glewFlags' )
 	oglPluginEnv.MergeFlags( glewFlags )
-
+  
 generator = oglPluginEnv.File("generate.py")
 template = oglPluginEnv.File("ogl.cpp_template")
 
@@ -30,8 +29,13 @@ oglManifest = oglPluginEnv.File('FabricOGL.fpm.json')
 command = ""
 if buildOS == 'Linux':
   command = "python " + generator.abspath
+  command = command + " --header=/usr/include/GL/glew.h"
 else:
   command = "cd " + generator.pathname() + "; python " + generator.basename()
+  
+command = command + " --template=$BUILDDIR/Exts/Builtin/OGL/ogl.cpp_template"
+command = command + " --cppresult=$BUILDDIR/Exts/Builtin/OGL/ogl.cpp"
+command = command + " --jsonresult=$BUILDDIR/Exts/Builtin/OGL/FabricOGL.fpm.json"
     
 oglPluginEnv.Command(
   [oglSource, oglManifest],
