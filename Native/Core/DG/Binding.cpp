@@ -30,6 +30,8 @@ namespace Fabric
     
     Binding::~Binding()
     {
+      if ( m_operator )
+        m_operator->removeBinding( this );
       FABRIC_ASSERT( m_bindingLists.empty() );
       delete m_prototype;
     }
@@ -96,7 +98,12 @@ namespace Fabric
     
     void Binding::setOperator( RC::Handle<Operator> const &op )
     {
+      if ( m_operator )
+        m_operator->removeBinding( this );
       m_operator = op;
+      if ( m_operator )
+        m_operator->addBinding( this );
+        
       markForRecompile();
     }
     

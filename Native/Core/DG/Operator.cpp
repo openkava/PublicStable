@@ -6,6 +6,7 @@
 #include "Node.h"
 #include "Scope.h"
 #include "Prototype.h"
+#include "Binding.h"
 
 #include <Fabric/Core/DG/Context.h>
 #include <Fabric/Core/DG/CodeManager.h>
@@ -41,18 +42,30 @@ namespace Fabric
     
     Operator::~Operator()
     {
-      FABRIC_ASSERT( m_compiledObjects.empty() );
+      FABRIC_ASSERT( m_bindings.empty() );
+    }
+    
+    void Operator::addBinding( Binding *binding )
+    {
+      m_bindings.insert( binding );
+    }
+    
+    void Operator::removeBinding( Binding *binding )
+    {
+      Bindings::iterator it = m_bindings.find( binding );
+      FABRIC_ASSERT( it != m_bindings.end() );
+      m_bindings.erase( it );
     }
     
     void Operator::propagateMarkForRecompileImpl( unsigned generation )
     {
-      for ( CompiledObjects::const_iterator it=m_compiledObjects.begin(); it!=m_compiledObjects.end(); ++it )
+      for ( Bindings::const_iterator it=m_bindings.begin(); it!=m_bindings.end(); ++it )
         (*it)->markForRecompile( generation );
     }
       
     void Operator::propagateMarkForRefreshImpl( unsigned generation )
     {
-      for ( CompiledObjects::const_iterator it=m_compiledObjects.begin(); it!=m_compiledObjects.end(); ++it )
+      for ( Bindings::const_iterator it=m_bindings.begin(); it!=m_bindings.end(); ++it )
         (*it)->markForRefresh( generation );
     }
     
