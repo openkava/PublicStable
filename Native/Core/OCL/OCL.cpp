@@ -105,8 +105,18 @@ namespace Fabric
     
     static cl_context CreateContext( void const * const clDeviceIDsRValue, int32_t *clErrCode )
     {
-      FABRIC_OCL_TRACE( "CreateContext()" );
-
+      cl_uint num_devices = clDeviceIDVariableArrayDesc->getNumMembers( &clDeviceIDsRValue );
+      cl_device_id const *devices = (cl_device_id const *)clDeviceIDVariableArrayDesc->getMemberData( &clDeviceIDsRValue, 0 );
+      cl_int errcode;
+      // [pzion 20110711] FIXME: workaround for OpenGL/OpenCL interop
+      cl_context result = clCreateContext( 0, num_devices, devices, &ContextNotifyCallback, NULL, &errcode );
+      if ( clErrCode )
+        *clErrCode = errcode;
+      return result;
+    }
+    
+    static cl_context CreateContext_GL( int32_t *clErrCode )
+    {
 #if defined( FABRIC_OS_WINDOWS ) || defined( FABRIC_OS_LINUX )
       std::vector<cl_platform_id> platforms;
       cl_uint numPlatforms;
@@ -142,10 +152,7 @@ namespace Fabric
 # error Unsupported platform!
 #endif
       
-      cl_uint num_devices = clDeviceIDVariableArrayDesc->getNumMembers( &clDeviceIDsRValue );
-      cl_device_id const *devices = (cl_device_id const *)clDeviceIDVariableArrayDesc->getMemberData( &clDeviceIDsRValue, 0 );
       cl_int errcode;
-      // [pzion 20110711] FIXME: workaround for OpenGL/OpenCL interop
       cl_context result = clCreateContext( props, 0, 0, &ContextNotifyCallback, NULL, &errcode );
       if ( clErrCode )
         *clErrCode = errcode;
@@ -465,6 +472,7 @@ namespace Fabric
       ADD_FUNC( GetPlatformIDs, "=Integer,<Size clNumEntries,>cl_platform_id[] clPlatformIDs" );
       ADD_FUNC( GetDeviceIDs, "=Integer,<cl_platform_id clPlatformID,<cl_device_type clDeviceType,>cl_device_id[] clDeviceIDs" );
       ADD_FUNC( CreateContext, "=cl_context,<cl_device_id[] clDeviceIDs,>Integer clErrCode" );
+      ADD_FUNC( CreateContext_GL, "=cl_context,>Integer clErrCode" );
       ADD_FUNC( CreateCommandQueue, "=cl_command_queue,<cl_context clContext,<cl_device_id clDeviceID,<cl_command_queue_properties clCommandQueueProperties,>Integer clErrCode" );
       ADD_FUNC( CreateProgramWithSource, "=cl_program,<cl_context clContext,<String string,>Integer clErrCode" );
       ADD_FUNC( BuildProgram, "=Integer,<cl_program clProgram,<cl_device_id[] clDeviceIDs,<String options" );
