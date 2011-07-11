@@ -84,12 +84,6 @@ namespace Fabric
 
       void setJSON( RC::ConstHandle<JSON::Value> const &value );
       void setSliceJSON( size_t index, RC::ConstHandle<JSON::Value> const &value );
-      
-      Util::Encoder &encode( Util::Encoder &encoder ) const;
-      Util::Decoder &decode( Util::Decoder &decoder );
-      
-      Util::Encoder &encodeSlice( Util::Encoder &encoder, size_t index ) const;
-      Util::Decoder &decodeSlice( Util::Decoder &decoder, size_t index );
 
       virtual RC::ConstHandle<JSON::Value> jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg );
       void jsonExecAddMember( RC::ConstHandle<JSON::Value> const &arg );
@@ -128,12 +122,7 @@ namespace Fabric
     private:
     
       Context *m_context;
-      
-      static const uint64_t sk_encodingCookie = UINT64_C(0x295C163724B3CD01);
-      static const uint32_t sk_encodingVersion = UINT32_C(0x20110325);
-      static const uint64_t sk_sliceEncodingCookie = UINT64_C(0x08a926900461ef6b);
-      static const uint32_t sk_sliceEncodingVersion = UINT32_C(0x20110325);
-    
+
       size_t m_count;
       Members m_members;
     };

@@ -9,7 +9,7 @@
 #include <Fabric/Core/Plug/Manager.h>
 #include <Fabric/Core/CG/Manager.h>
 #if defined(FABRIC_MODULE_OCL)
-//# include <Fabric/Core/OCL/OCL.h>
+# include <Fabric/Core/OCL/OCL.h>
 #endif
 
 #include <llvm/ExecutionEngine/JIT.h>
@@ -94,11 +94,9 @@ namespace Fabric
         void *result = 0;
         if ( !result )
           result = s_currentContext->getPlugManager()->llvmResolveExternalFunction( functionName );
-        //if ( !result )
-        //  result = OGL::llvmResolveExternalFunction( functionName );
 #if defined(FABRIC_MODULE_OCL)
-        //if ( !result )
-        //  result = OCL::llvmResolveExternalFunction( functionName );
+        if ( !result )
+          result = OCL::llvmResolveExternalFunction( functionName );
 #endif
         if ( !result )
           result = s_currentContext->getCGManager()->llvmResolveExternalFunction( functionName );

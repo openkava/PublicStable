@@ -50,6 +50,7 @@ namespace Fabric
       void executeTask( void *userdata, unsigned index ) const;
     
       std::vector< TaskBase const * > m_tasks;
+      bool m_mainThreadOnly;
     };
   };
 };

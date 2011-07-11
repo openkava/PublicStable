@@ -87,9 +87,9 @@ namespace Fabric
         execute( 0, m_baseAddresses, NULL );
       }
       
-      void executeParallel() const
+      void executeParallel( bool mainThreadOnly ) const
       {
-        MT::executeParallel( m_totalParallelCalls, &ParallelCall::ExecuteParallel, (void *)this );
+        MT::executeParallel( m_totalParallelCalls, &ParallelCall::ExecuteParallel, (void *)this, mainThreadOnly );
       }
       
       void onFunctionPtrChange( FunctionPtr functionPtr, RC::Object const *objectOwningFunctionPtr ) const

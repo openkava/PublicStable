@@ -60,15 +60,15 @@ namespace Fabric
 #endif
     }
     
-#if defined(FABRIC_MT_IMPL_THREADPOOL)
-
     ThreadPool ThreadPool::m_singleton;
 
-# if defined( FABRIC_POSIX )
+#if defined( FABRIC_POSIX )
     ThreadPool::ThreadPool()
       : m_exiting( false )
     {
       FABRIC_MT_TRACE( "ThreadPool::ThreadPool()" );
+      
+      m_isMainThread = true;
       
       if ( pthread_mutex_init( &m_stateMutex, 0 ) != 0 )
         throw Exception( "pthread_mutex_init(): unknown failure" );
@@ -115,20 +115,23 @@ namespace Fabric
         throw Exception( "pthread_mutex_destroy(): unknown failure" );
     }
 
-    void ThreadPool::executeParallel( size_t count, void (*callback)( void *userdata, size_t index ), void *userdata )
+    void ThreadPool::executeParallel( size_t count, void (*callback)( void *userdata, size_t index ), void *userdata, bool mainThreadOnly )
     {
       FABRIC_MT_TRACE( "ThreadPool::executeParallel( %u, %p, %p )", (unsigned)count, callback, userdata );
       
-      if ( count == 1 )
+      if ( count == 1 && (!mainThreadOnly || m_isMainThread.get()) )
         callback( userdata, 0 );
-      else if ( count > 1 )
+      else
       {
         Task task( count, callback, userdata );
         
         if ( pthread_mutex_lock( &m_stateMutex ) != 0 )
           throw Exception( "pthread_mutex_lock(): unknown failure" );
-          
-        m_tasks.push_back( &task );
+        
+        if ( mainThreadOnly )
+          m_mainThreadTasks.push_back( &task );
+        else m_tasks.push_back( &task );
+        
         // [pzion 20101108] Must wake waiter because there is work to do
         if ( pthread_cond_broadcast( &m_stateCond ) != 0 )
           throw Exception( "pthread_cond_broadcast(): unknown failure" );
@@ -145,7 +148,7 @@ namespace Fabric
     {
       FABRIC_MT_TRACE( "ThreadPool::executeOneTaskIfPossible_CRITICAL_SECTION()" );
       
-      if ( m_tasks.size() == 0 )
+      if ( m_tasks.empty() && (!m_isMainThread.get() || m_mainThreadTasks.empty()) )
       {
         FABRIC_MT_TRACE_NOTE( "waiting for task.." );
         if ( pthread_cond_wait( &m_stateCond, &m_stateMutex ) != 0 )
@@ -153,7 +156,13 @@ namespace Fabric
       }
       else
       {
-        Task *task = m_tasks.back();
+        std::vector<Task *> *taskQueue;
+        if ( m_isMainThread.get() && !m_mainThreadTasks.empty() )
+          taskQueue = &m_mainThreadTasks;
+        else taskQueue = &m_tasks;
+        
+        Task *task = taskQueue->back();
+        
         FABRIC_MT_TRACE_NOTE( "task = %p", task );
         size_t index;
         bool keep;
@@ -161,7 +170,7 @@ namespace Fabric
         task->preExecute_CRITICAL_SECTION( index, keep );
         FABRIC_MT_TRACE_NOTE( "after preEecute" );
         if ( !keep )
-          m_tasks.pop_back();
+          taskQueue->pop_back();
 
         if ( pthread_mutex_unlock( &m_stateMutex ) != 0 )
           throw Exception( "pthread_mutex_unlock(): unknown failure" );
@@ -203,12 +212,14 @@ namespace Fabric
       pthread_exit(0);
       return 0;
     }
-# elif defined( FABRIC_WIN32 )
+#elif defined( FABRIC_WIN32 )
     ThreadPool::ThreadPool()
       : m_exiting( false )
       , m_running( false )
     {
       FABRIC_MT_TRACE( "ThreadPool::ThreadPool()" );
+      
+      m_isMainThread = true;
       
       ::InitializeCriticalSection( &m_cs );
 
@@ -277,14 +288,14 @@ namespace Fabric
       ::ZeroMemory( &m_cs, sizeof( m_cs ) );
     }
 
-    void ThreadPool::executeParallel( size_t count, void (*callback)( void *userdata, size_t index ), void *userdata )
+    void ThreadPool::executeParallel( size_t count, void (*callback)( void *userdata, size_t index ), void *userdata, bool mainThreadOnly )
     {
       FABRIC_MT_TRACE( "ThreadPool::executeParallel( %u, %p, %p )", (unsigned)count, callback, userdata );
 
       if( !m_running )
         throw Exception( "Thread pool no longer running." );
       
-      if ( count == 1 )
+      if ( count == 1 && (!mainThreadOnly || m_isMainThread.get()) )
         callback( userdata, 0 );
       else if ( count > 1 )
       {
@@ -292,7 +303,9 @@ namespace Fabric
         
         ::EnterCriticalSection( &m_cs );
           
-        m_tasks.push_back( &task );
+        if ( mainThreadOnly )
+          m_mainThreadTasks.push_back( &task );
+        else m_tasks.push_back( &task );
         
         if( !::SetEvent( m_hWakeup ) )
           throw Exception( "SetEvent(): unknown failure" );
@@ -310,7 +323,7 @@ namespace Fabric
     {
       FABRIC_MT_TRACE( "ThreadPool::executeOneTaskIfPossible_CRITICAL_SECTION()" );
       
-      if ( m_tasks.size() == 0 )
+      if ( m_tasks.empty() && (!m_isMainThread.get() || m_mainThreadTasks.empty()) )
       {
         ::LeaveCriticalSection( &m_cs );
 
@@ -322,7 +335,13 @@ namespace Fabric
       }
       else
       {
-        Task *task = m_tasks.back();
+        std::vector<Task *> *taskQueue;
+        if ( m_isMainThread.get() && !m_mainThreadTasks.empty() )
+          taskQueue = &m_mainThreadTasks;
+        else taskQueue = &m_tasks;
+        
+        Task *task = taskQueue->back();
+        
         FABRIC_MT_TRACE_NOTE( "task = %p", task );
         size_t index;
         bool keep;
@@ -330,7 +349,7 @@ namespace Fabric
         task->preExecute_CRITICAL_SECTION( index, keep );
         FABRIC_MT_TRACE_NOTE( "after preEecute" );
         if ( !keep )
-          m_tasks.pop_back();
+          taskQueue->pop_back();
 
         ::LeaveCriticalSection( &m_cs );
         
@@ -371,7 +390,6 @@ namespace Fabric
       delete threadData;
       return 0;
     }
-# endif
 #endif
   };
 };

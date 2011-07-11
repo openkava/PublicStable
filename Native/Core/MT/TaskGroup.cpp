@@ -68,7 +68,7 @@ namespace Fabric
         Context context;
         context.taskGroup = this;
         context.userdata = userdata;
-        executeParallel( m_tasks.size(), &TaskGroup::ExecuteTask, &context );
+        executeParallel( m_tasks.size(), &TaskGroup::ExecuteTask, &context, false );
       }
     }
 

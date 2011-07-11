@@ -1070,6 +1070,9 @@
 		DB96860D13A79CE700616143 /* swirleyMovementOp.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = swirleyMovementOp.kl; sourceTree = "<group>"; };
 		DB96860E13A79CE700616143 /* turningOp.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = turningOp.kl; sourceTree = "<group>"; };
 		DB96860F13A79CE700616143 /* twistOp.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = twistOp.kl; sourceTree = "<group>"; };
+		DB9FCD7513C7A4B200A23B69 /* operatorEditor.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = operatorEditor.html; sourceTree = "<group>"; };
+		DB9FCD7613C7A4B200A23B69 /* prettify.css */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.css; path = prettify.css; sourceTree = "<group>"; };
+		DB9FCD7713C7A4B200A23B69 /* prettify.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = prettify.js; sourceTree = "<group>"; };
 		DBCCD55C13ABE93D00024113 /* install.sh.template */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = install.sh.template; sourceTree = "<group>"; };
 		DBCCD55D13ABE93D00024113 /* SConscript */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = SConscript; sourceTree = "<group>"; };
 		DBCCD56613ABFAE300024113 /* SConscript */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = SConscript; sourceTree = "<group>"; };
@@ -1711,12 +1714,12 @@
 		DB9672A213A5423200616143 /* OCL */ = {
 			isa = PBXGroup;
 			children = (
+				DB9672A813A5423200616143 /* SConscript */,
 				DB9672A313A5423200616143 /* Debug.cpp */,
 				DB9672A413A5423200616143 /* Debug.h */,
 				DB9672A513A5423200616143 /* OCL.cpp */,
 				DB9672A613A5423200616143 /* OCL.h */,
 				DB9672A713A5423200616143 /* OpenCL_thunk.cpp */,
-				DB9672A813A5423200616143 /* SConscript */,
 			);
 			path = OCL;
 			sourceTree = "<group>";
@@ -2366,10 +2369,10 @@
 		DB967F6113A5440B00616143 /* Private */ = {
 			isa = PBXGroup;
 			children = (
+				DB96839613A5444900616143 /* SConscript */,
 				DB967F6213A5440B00616143 /* .gitignore */,
 				DB96838313A5444700616143 /* Makefile */,
 				DB967F6413A5440B00616143 /* build.bat */,
-				DB96839613A5444900616143 /* SConscript */,
 			);
 			path = Private;
 			sourceTree = "<group>";
@@ -2430,6 +2433,7 @@
 				DB9684B513A7984500616143 /* FABRIC.js */,
 				DB96843013A5445200616143 /* FABRIC.Wrappers.js */,
 				DB9684AB13A7984500616143 /* Debugger */,
+				DB9FCD7413C7A4B200A23B69 /* OperatorEditor */,
 			);
 			path = Core;
 			sourceTree = "<group>";
@@ -2470,11 +2474,11 @@
 		DB9684BE13A79A1500616143 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				DB9684C313A79A1600616143 /* FABRIC.SceneGraph.js */,
 				DB9684BF13A79A1500616143 /* FABRIC.SceneGraph.Animation.js */,
 				DB9684C013A79A1500616143 /* FABRIC.SceneGraph.Characters.js */,
 				DB9684C113A79A1500616143 /* FABRIC.SceneGraph.CharacterSolvers.js */,
 				DB9684C213A79A1600616143 /* FABRIC.SceneGraph.Geometry.js */,
-				DB9684C313A79A1600616143 /* FABRIC.SceneGraph.js */,
 				DB9684C413A79A1600616143 /* FABRIC.SceneGraph.Kinematics.js */,
 				DB9684C513A79A1600616143 /* FABRIC.SceneGraph.Lights.js */,
 				DB9684C613A79A1600616143 /* FABRIC.SceneGraph.Manipulation.js */,
@@ -2736,6 +2740,16 @@
 				DB96860F13A79CE700616143 /* twistOp.kl */,
 			);
 			path = KL;
+			sourceTree = "<group>";
+		};
+		DB9FCD7413C7A4B200A23B69 /* OperatorEditor */ = {
+			isa = PBXGroup;
+			children = (
+				DB9FCD7513C7A4B200A23B69 /* operatorEditor.html */,
+				DB9FCD7613C7A4B200A23B69 /* prettify.css */,
+				DB9FCD7713C7A4B200A23B69 /* prettify.js */,
+			);
+			path = OperatorEditor;
 			sourceTree = "<group>";
 		};
 		DBCCD55B13ABE93D00024113 /* Linux */ = {

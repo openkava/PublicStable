@@ -24,8 +24,6 @@
 #include <Fabric/Core/RT/SizeDesc.h>
 #include <Fabric/Core/RT/Manager.h>
 
-// #define FABRIC_OCL_CONTEXT_SHARING
-
 #if defined( FABRIC_OS_MACOSX )
 # include <OpenCL/OpenCL.h>
 # include <OpenGL/OpenGL.h>
@@ -107,9 +105,18 @@ namespace Fabric
     
     static cl_context CreateContext( void const * const clDeviceIDsRValue, int32_t *clErrCode )
     {
-      FABRIC_OCL_TRACE( "CreateContext()" );
-
-#if defined( FABRIC_OCL_CONTEXT_SHARING )
+      cl_uint num_devices = clDeviceIDVariableArrayDesc->getNumMembers( &clDeviceIDsRValue );
+      cl_device_id const *devices = (cl_device_id const *)clDeviceIDVariableArrayDesc->getMemberData( &clDeviceIDsRValue, 0 );
+      cl_int errcode;
+      // [pzion 20110711] FIXME: workaround for OpenGL/OpenCL interop
+      cl_context result = clCreateContext( 0, num_devices, devices, &ContextNotifyCallback, NULL, &errcode );
+      if ( clErrCode )
+        *clErrCode = errcode;
+      return result;
+    }
+    
+    static cl_context CreateContext_GL( int32_t *clErrCode )
+    {
 #if defined( FABRIC_OS_WINDOWS ) || defined( FABRIC_OS_LINUX )
       std::vector<cl_platform_id> platforms;
       cl_uint numPlatforms;
@@ -144,14 +151,9 @@ namespace Fabric
 #else
 # error Unsupported platform!
 #endif
-#else
-      cl_context_properties *props = 0;
-#endif
       
-      cl_uint num_devices = clDeviceIDVariableArrayDesc->getNumMembers( &clDeviceIDsRValue );
-      cl_device_id const *devices = (cl_device_id const *)clDeviceIDVariableArrayDesc->getMemberData( &clDeviceIDsRValue, 0 );
       cl_int errcode;
-      cl_context result = clCreateContext( props, num_devices, devices, &ContextNotifyCallback, NULL, &errcode );
+      cl_context result = clCreateContext( props, 0, 0, &ContextNotifyCallback, NULL, &errcode );
       if ( clErrCode )
         *clErrCode = errcode;
       return result;
@@ -234,7 +236,6 @@ namespace Fabric
       return result;
     }
 
-#if defined( FABRIC_OCL_CONTEXT_SHARING )
     static cl_mem CreateFromGLBuffer( cl_context clContext, size_t flags, GLuint bufobj, int32_t *clErrCode )
     {
       FABRIC_OCL_TRACE( "CreateFromGLBuffer( bufobj=" + _((int)bufobj) + " )" );
@@ -244,7 +245,6 @@ namespace Fabric
         *clErrCode = errcode;
       return result;
     }
-#endif
     
     static int32_t ReleaseMemObject( cl_mem memobj )
     {
@@ -474,14 +474,13 @@ namespace Fabric
       ADD_FUNC( GetPlatformIDs, "=Integer,<Size clNumEntries,>cl_platform_id[] clPlatformIDs" );
       ADD_FUNC( GetDeviceIDs, "=Integer,<cl_platform_id clPlatformID,<cl_device_type clDeviceType,>cl_device_id[] clDeviceIDs" );
       ADD_FUNC( CreateContext, "=cl_context,<cl_device_id[] clDeviceIDs,>Integer clErrCode" );
+      ADD_FUNC( CreateContext_GL, "=cl_context,>Integer clErrCode" );
       ADD_FUNC( CreateCommandQueue, "=cl_command_queue,<cl_context clContext,<cl_device_id clDeviceID,<cl_command_queue_properties clCommandQueueProperties,>Integer clErrCode" );
       ADD_FUNC( CreateProgramWithSource, "=cl_program,<cl_context clContext,<String string,>Integer clErrCode" );
       ADD_FUNC( BuildProgram, "=Integer,<cl_program clProgram,<cl_device_id[] clDeviceIDs,<String options" );
       ADD_FUNC( CreateKernel, "=cl_kernel,<cl_program clProgram,<String kernelName,>Integer clErrCode" );
       ADD_FUNC( CreateBuffer, "=cl_mem,<cl_context clContext,<cl_mem_flags clMemFlags,<Size size,<Data host_ptr,>Integer clErrCode" );
-#if defined( FABRIC_OCL_CONTEXT_SHARING )
       ADD_FUNC( CreateFromGLBuffer, "=cl_mem,<cl_context clContext,<cl_mem_flags clMemFlags,<Integer bufobj,>Integer clErrCode" );
-#endif
       ADD_FUNC( ReleaseMemObject, "=Integer,<cl_mem memobj" );
       ADD_FUNC( EnqueueReadBuffer, "=Integer,<cl_command_queue command_queue,<cl_mem buffer,<Boolean blocking_read,<Size offset,<Size cb,<Data ptr,<cl_event[] clEventArray,>cl_event event" );
       ADD_FUNC( EnqueueWriteBuffer, "=Integer,<cl_command_queue command_queue,<cl_mem buffer,<Boolean blocking_read,<Size offset,<Size cb,<Data ptr,<cl_event[] clEventArray,>cl_event event" );
@@ -502,5 +501,6 @@ namespace Fabric
       
       return 0;
     }
+    
   };
 };

@@ -180,9 +180,8 @@ void handleFile( FILE *fp, unsigned int runFlags )
 
   CG::ModuleBuilder moduleBuilder( cgManager, module.get() );
   cgManager->llvmPrepareModule( moduleBuilder );
-  //OGL::llvmPrepareModule( moduleBuilder, rtManager );
 #if defined(FABRIC_MODULE_OCL)
-  //OCL::llvmPrepareModule( moduleBuilder, rtManager );
+  OCL::llvmPrepareModule( moduleBuilder, rtManager );
 #endif
   
   Source source( sourceString.data(), sourceString.length() );

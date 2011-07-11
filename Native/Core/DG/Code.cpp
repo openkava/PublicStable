@@ -94,9 +94,8 @@ namespace Fabric
 
       cgManager->llvmPrepareModule( moduleBuilder );
       m_context->getPlugManager()->llvmPrepareModule( moduleBuilder );
-      //OGL::llvmPrepareModule( moduleBuilder, m_context->getRTManager() );
 #if defined(FABRIC_MODULE_OCL)
-      //OCL::llvmPrepareModule( moduleBuilder, m_context->getRTManager() );
+      OCL::llvmPrepareModule( moduleBuilder, m_context->getRTManager() );
 #endif
       
       CG::Diagnostics optimizeDiagnostics;
