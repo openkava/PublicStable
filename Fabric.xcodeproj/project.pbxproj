@@ -1075,6 +1075,9 @@
 		DB96860D13A79CE700616143 /* swirleyMovementOp.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = swirleyMovementOp.kl; sourceTree = "<group>"; };
 		DB96860E13A79CE700616143 /* turningOp.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = turningOp.kl; sourceTree = "<group>"; };
 		DB96860F13A79CE700616143 /* twistOp.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = twistOp.kl; sourceTree = "<group>"; };
+		DB9FCD7513C7A4B200A23B69 /* operatorEditor.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = operatorEditor.html; sourceTree = "<group>"; };
+		DB9FCD7613C7A4B200A23B69 /* prettify.css */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.css; path = prettify.css; sourceTree = "<group>"; };
+		DB9FCD7713C7A4B200A23B69 /* prettify.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = prettify.js; sourceTree = "<group>"; };
 		DBCCD55C13ABE93D00024113 /* install.sh.template */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = install.sh.template; sourceTree = "<group>"; };
 		DBCCD55D13ABE93D00024113 /* SConscript */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = SConscript; sourceTree = "<group>"; };
 		DBCCD56613ABFAE300024113 /* SConscript */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = SConscript; sourceTree = "<group>"; };
@@ -2444,6 +2447,7 @@
 				DB9684B513A7984500616143 /* FABRIC.js */,
 				DB96843013A5445200616143 /* FABRIC.Wrappers.js */,
 				DB9684AB13A7984500616143 /* Debugger */,
+				DB9FCD7413C7A4B200A23B69 /* OperatorEditor */,
 			);
 			path = Core;
 			sourceTree = "<group>";
@@ -2750,6 +2754,16 @@
 				DB96860F13A79CE700616143 /* twistOp.kl */,
 			);
 			path = KL;
+			sourceTree = "<group>";
+		};
+		DB9FCD7413C7A4B200A23B69 /* OperatorEditor */ = {
+			isa = PBXGroup;
+			children = (
+				DB9FCD7513C7A4B200A23B69 /* operatorEditor.html */,
+				DB9FCD7613C7A4B200A23B69 /* prettify.css */,
+				DB9FCD7713C7A4B200A23B69 /* prettify.js */,
+			);
+			path = OperatorEditor;
 			sourceTree = "<group>";
 		};
 		DBCCD55B13ABE93D00024113 /* Linux */ = {
