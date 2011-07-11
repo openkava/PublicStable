@@ -443,15 +443,8 @@ namespace Fabric
       result->set( "childEventHandlers", jsonDescChildEventHandlers() );
       result->set( "scopes", jsonDescScopes() );
       result->set( "scopeName", JSON::String::Create( m_bindingName ) );
-      
-      RC::Handle<JSON::Object> scopesJSONObject = JSON::Object::Create();
-      for ( ExternalScopes::const_iterator it=m_bindings.begin(); it!=m_bindings.end(); ++it )
-      {
-        std::string const &name = it->first;
-        RC::Handle<Node> const &node = it->second;
-        scopesJSONObject->set( name, JSON::String::Create( node->getName() ) );
-      }
-      result->set( "scopes", scopesJSONObject );
+      result->set( "preDescendBindings", m_preDescendBindings->jsonDesc() );
+      result->set( "postDescendBindings", m_postDescendBindings->jsonDesc() );
       
       RC::ConstHandle<JSON::Value> selectorJSONValue;
       if ( !m_selectBinding && m_selectNodeBindingName.empty() )
@@ -488,7 +481,11 @@ namespace Fabric
     {
       RC::Handle<JSON::Object> result = JSON::Object::Create();
       for ( ExternalScopes::const_iterator it=m_bindings.begin(); it!=m_bindings.end(); ++it )
-        result->set( it->first, JSON::String::Create( it->second->getName() ) );
+      {
+        std::string const &name = it->first;
+        RC::Handle<Node> const &node = it->second;
+        result->set( name, JSON::String::Create( node->getName() ) );
+      }
       return result;
     }
 
