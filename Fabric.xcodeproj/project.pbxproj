@@ -1717,12 +1717,12 @@
 		DB9672A213A5423200616143 /* OCL */ = {
 			isa = PBXGroup;
 			children = (
+				DB9672A813A5423200616143 /* SConscript */,
 				DB9672A313A5423200616143 /* Debug.cpp */,
 				DB9672A413A5423200616143 /* Debug.h */,
 				DB9672A513A5423200616143 /* OCL.cpp */,
 				DB9672A613A5423200616143 /* OCL.h */,
 				DB9672A713A5423200616143 /* OpenCL_thunk.cpp */,
-				DB9672A813A5423200616143 /* SConscript */,
 			);
 			path = OCL;
 			sourceTree = "<group>";
