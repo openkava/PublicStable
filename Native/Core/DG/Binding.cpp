@@ -155,5 +155,10 @@ namespace Fabric
       result->set( "operator", operatorJSONValue );
       return result;
     }
+    
+    bool Binding::getMainThreadOnly() const
+    {
+      return m_operator && m_operator->getMainThreadOnly();
+    }
   };
 };

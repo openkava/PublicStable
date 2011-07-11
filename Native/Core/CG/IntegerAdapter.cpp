@@ -3,6 +3,7 @@
 #include "ByteAdapter.h"
 #include "SizeAdapter.h"
 #include "ScalarAdapter.h"
+#include "ConstStringAdapter.h"
 #include "StringAdapter.h"
 #include "OpaqueAdapter.h"
 #include "Manager.h"
@@ -316,8 +317,12 @@ namespace Fabric
           basicBlockBuilder->CreateRet( resultRValue );
           
           basicBlockBuilder->SetInsertPoint( zeroBB );
-          llvm::Value *errorStringRValue = stringAdapter->llvmConst( basicBlockBuilder, "KL: "+getUserName()+" division by zero" );
+          std::string errorMsg = "KL: "+getUserName()+" division by zero";
+          RC::ConstHandle<ConstStringAdapter> errorConstStringAdapter = getManager()->getConstStringAdapter( errorMsg.length() );
+          ExprValue errorExprValue( errorConstStringAdapter, USAGE_RVALUE, errorConstStringAdapter->llvmConst( basicBlockBuilder, errorMsg ) );
+          llvm::Value *errorStringRValue = stringAdapter->llvmCast( basicBlockBuilder, errorExprValue );
           stringAdapter->llvmReport( basicBlockBuilder, errorStringRValue );
+          stringAdapter->llvmRelease( basicBlockBuilder, errorStringRValue );
           llvm::Value *defaultRValue = llvmDefaultRValue( basicBlockBuilder );
           basicBlockBuilder->CreateRet( defaultRValue );
         }
@@ -348,8 +353,12 @@ namespace Fabric
           basicBlockBuilder->CreateRet( resultRValue );
           
           basicBlockBuilder->SetInsertPoint( zeroBB );
-          llvm::Value *errorStringRValue = stringAdapter->llvmConst( basicBlockBuilder, "KL: "+getUserName()+" division by zero" );
+          std::string errorMsg = "KL: "+getUserName()+" division by zero";
+          RC::ConstHandle<ConstStringAdapter> errorConstStringAdapter = getManager()->getConstStringAdapter( errorMsg.length() );
+          ExprValue errorExprValue( errorConstStringAdapter, USAGE_RVALUE, errorConstStringAdapter->llvmConst( basicBlockBuilder, errorMsg ) );
+          llvm::Value *errorStringRValue = stringAdapter->llvmCast( basicBlockBuilder, errorExprValue );
           stringAdapter->llvmReport( basicBlockBuilder, errorStringRValue );
+          stringAdapter->llvmRelease( basicBlockBuilder, errorStringRValue );
           llvm::Value *defaultRValue = llvmDefaultRValue( basicBlockBuilder );
           basicBlockBuilder->CreateRet( defaultRValue );
         }

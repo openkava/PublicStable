@@ -27,35 +27,35 @@ namespace Fabric
       }
       Decoder &get( uint8_t &value )
       {
-        return _get( &value, sizeof(value), true );
+        return getData( &value, sizeof(value), true );
       }
       Decoder &get( int8_t &value )
       {
-        return _get( &value, sizeof(value), true );
+        return getData( &value, sizeof(value), true );
       }
       Decoder &get( uint16_t &value )
       {
-        return _get( &value, sizeof(value), true );
+        return getData( &value, sizeof(value), true );
       }
       Decoder &get( int16_t &value )
       {
-        return _get( &value, sizeof(value), true );
+        return getData( &value, sizeof(value), true );
       }
       Decoder &get( uint32_t &value )
       {
-        return _get( &value, sizeof(value), true );
+        return getData( &value, sizeof(value), true );
       }
       Decoder &get( int32_t &value )
       {
-        return _get( &value, sizeof(value), true );
+        return getData( &value, sizeof(value), true );
       }
       Decoder &get( uint64_t &value )
       {
-        return _get( &value, sizeof(value), true );
+        return getData( &value, sizeof(value), true );
       }
       Decoder &get( int64_t &value )
       {
-        return _get( &value, sizeof(value), true );
+        return getData( &value, sizeof(value), true );
       }
       Decoder &getSize( size_t &value )
       {
@@ -68,20 +68,20 @@ namespace Fabric
       }
       Decoder &get( float &value )
       {
-        return _get( &value, sizeof(value), true );
+        return getData( &value, sizeof(value), true );
       }
       Decoder &get( double &value )
       {
-        return _get( &value, sizeof(value), true );
+        return getData( &value, sizeof(value), true );
       }
       Decoder &get( std::string &str )
       {
         size_t length;
-        getCStrLength( length );
+        getStringLength( length );
         str.resize( length );
-        return _get( &str[0], length, false );
+        return getData( &str[0], length, false );
       }
-      Decoder &getCStrLength( size_t &length )
+      Decoder &getStringLength( size_t &length )
       {
         uint64_t uint64Length;
         get( uint64Length );
@@ -90,18 +90,16 @@ namespace Fabric
           throw Exception( "string is too large for architecture" );
         return *this;
       }
-      Decoder &getCStrData( char *data, size_t length )
+      Decoder &getStringData( char *data, size_t length )
       {
-        _get( data, length, false );
+        getData( data, length, false );
         data[length] = '\0';
         return *this;
       }
       
       virtual Decoder &skip( size_t count ) = 0;
       
-    protected:
-    
-      virtual Decoder &_get( void *data, size_t count, bool endian ) = 0;    
+      virtual Decoder &getData( void *data, size_t count, bool endian ) = 0;    
     };
   };
 };

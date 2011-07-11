@@ -19,5 +19,5 @@ namespace Fabric
     FABRIC_NAME_AND_VERSION "\n"
     FABRIC_COPYRIGHT "\n"
     FABRIC_URL "\n";
-  time_t const buildExpiry = 1310318166;
+  time_t const buildExpiry = 1312985639;
 };

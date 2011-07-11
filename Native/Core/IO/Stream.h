@@ -6,7 +6,7 @@
 #define _FABRIC_IO_STREAM_H
 
 #include <Fabric/Base/RC/Object.h>
-#include <Fabric/Base/RC/ConstHandle.h>
+#include <Fabric/Base/RC/WeakHandle.h>
 
 #include <string>
 
@@ -39,7 +39,7 @@ namespace Fabric
     
       SuccessCallback m_successCallback;
       FailureCallback m_failureCallback;
-      RC::Handle<RC::Object> m_target;
+      RC::WeakHandle<RC::Object> m_target;
     };
   };
 };

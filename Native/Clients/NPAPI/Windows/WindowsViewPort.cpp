@@ -315,6 +315,26 @@ namespace Fabric
      
       return( DefWindowProc( hWnd, message, wParam, lParam ) );
     }
+      
+    void WindowsViewPort::pushOGLContext()
+    {
+      m_wglStack.push_back( WGLDCAndContext( ::wglGetCurrentDC(), ::wglGetCurrentContext() ) );
+      
+      if ( m_hDC && m_hGLRC )
+      {
+        BOOL wglMakeCurrentResult = ::wglMakeCurrent( m_hDC, m_hGLRC );
+        FABRIC_ASSERT( wglMakeCurrentResult );
+      }
+    }
+    
+    void WindowsViewPort::popOGLContext()
+    {
+      FABRIC_ASSERT( !m_wglStack.empty() );
 
+      BOOL wglMakeCurrentResult = ::wglMakeCurrent( m_wglStack.back().first, m_wglStack.back().second );
+      FABRIC_ASSERT( wglMakeCurrentResult );
+
+      m_wglStack.pop_back();
+    }
   };
 };

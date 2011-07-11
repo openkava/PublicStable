@@ -1,12 +1,9 @@
 /*
- *
- *  Created by Peter Zion on 10-12-02.
- *  Copyright 2010 Fabric Technologies Inc. All rights reserved.
- *
+ *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
  */
-
+ 
 #include "ConstString.h"
-#include <Fabric/Core/CG/StringAdapter.h>
+#include <Fabric/Core/CG/ConstStringAdapter.h>
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/CG/BasicBlockBuilder.h>
 #include <Fabric/Core/Util/Parse.h>
@@ -33,17 +30,22 @@ namespace Fabric
       return "ConstString( " + _(m_value) + " )";
     }
     
+    RC::ConstHandle<CG::ConstStringAdapter> ConstString::getAdapter( CG::BasicBlockBuilder const &basicBlockBuilder ) const
+    {
+      return basicBlockBuilder.getManager()->getConstStringAdapter( m_value.length() );
+    }
+    
     RC::ConstHandle<CG::Adapter> ConstString::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const
     {
-      return basicBlockBuilder.getManager()->getStringAdapter();
+      return getAdapter( basicBlockBuilder );
     }
     
     CG::ExprValue ConstString::buildExprValue( CG::BasicBlockBuilder &basicBlockBuilder, CG::Usage usage, std::string const &lValueErrorDesc ) const
     {
       if ( usage == CG::USAGE_LVALUE )
         throw Exception( "constants cannot be used as l-values" );
-      RC::ConstHandle< CG::StringAdapter > stringAdapter = basicBlockBuilder.getManager()->getStringAdapter();
-      return CG::ExprValue( stringAdapter, CG::USAGE_RVALUE, stringAdapter->llvmConst( basicBlockBuilder, m_value.data(), m_value.length() ) );
+      RC::ConstHandle<CG::ConstStringAdapter> constStringAdapter = getAdapter( basicBlockBuilder );
+      return CG::ExprValue( constStringAdapter, CG::USAGE_RVALUE, constStringAdapter->llvmConst( basicBlockBuilder, m_value.data(), m_value.length() ) );
     }
   };
 };

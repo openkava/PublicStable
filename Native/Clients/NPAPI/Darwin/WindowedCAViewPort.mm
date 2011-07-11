@@ -349,5 +349,22 @@ namespace Fabric
       width = m_width;
       height = m_height;
     }
+      
+    void WindowedCAViewPort::pushOGLContext()
+    {
+      m_cglContextStack.push_back( CGLGetCurrentContext() );
+      
+      RC::Handle<DG::Context> context = getInterface()->getContext();
+      ContextToCGLContextMap::const_iterator it = s_contextToCGLContextMap.find( context.ptr() );
+      if ( it != s_contextToCGLContextMap.end() )
+        CGLSetCurrentContext( it->second );
+    }
+    
+    void WindowedCAViewPort::popOGLContext()
+    {
+      FABRIC_ASSERT( !m_cglContextStack.empty() );
+      CGLSetCurrentContext( m_cglContextStack.back() );
+      m_cglContextStack.pop_back();
+    }
   };
 };

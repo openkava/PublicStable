@@ -28,12 +28,14 @@ namespace Fabric
 
   namespace DG
   {
-    class Container::Member
+    class Container::Member : public RC::Object
     {
     public:
     
-      Member( RC::Handle<RT::Manager> const &rtManager, RC::ConstHandle<RT::Desc> memberDesc, size_t count, void const *defaultMemberData );
-      ~Member();
+      static RC::Handle<Member> Create( RC::Handle<RT::Manager> const &rtManager, RC::ConstHandle<RT::Desc> memberDesc, size_t count, void const *defaultMemberData )
+      {
+        return new Member( rtManager, memberDesc, count, defaultMemberData );
+      }
       
       void const *getDefaultData() const
       {
@@ -64,7 +66,12 @@ namespace Fabric
       {
         m_variableArrayDesc->setNumMembers( m_arrayData, newCount, m_defaultMemberData );
       }
+
+    protected:
       
+      Member( RC::Handle<RT::Manager> const &rtManager, RC::ConstHandle<RT::Desc> memberDesc, size_t count, void const *defaultMemberData );
+      ~Member();
+
     private:
     
       RC::ConstHandle<RT::Desc> m_memberDesc;
@@ -82,12 +89,6 @@ namespace Fabric
     
     Container::~Container()
     {
-      while ( !m_members.empty() )
-      {
-        Members::iterator it = m_members.begin();
-        delete it->second;
-        m_members.erase( it );
-      }
     }
     
     Container::MemberDescs Container::getMemberDescs() const
@@ -107,7 +108,7 @@ namespace Fabric
       if ( name.length() == 0 )
         throw Exception( "name must be non-empty" );
       
-      Member *member = new Member( m_context->getRTManager(), desc, m_count, defaultData );
+      RC::Handle<Member> member = Member::Create( m_context->getRTManager(), desc, m_count, defaultData );
       bool insertResult = m_members.insert( Members::value_type( name, member ) ).second;
       if ( !insertResult )
         throw Exception( "node already has a member named '"+name+"'" );
@@ -169,7 +170,7 @@ namespace Fabric
       }
     }
     
-    Container::Member const *Container::getMember( std::string const &name ) const
+    RC::ConstHandle<Container::Member> Container::getMember( std::string const &name ) const
     {
       Members::const_iterator it = m_members.find( name );
       if ( it == m_members.end() )
@@ -177,7 +178,7 @@ namespace Fabric
       return it->second;
     }
 
-    Container::Member *Container::getMember( std::string const &name )
+    RC::Handle<Container::Member> Container::getMember( std::string const &name )
     {
       Members::const_iterator it = m_members.find( name );
       if ( it == m_members.end() )
@@ -217,7 +218,7 @@ namespace Fabric
     {
       if ( index >= m_count )
         throw Exception( "index out of range" );
-      Member const *member = getMember( name );
+      RC::ConstHandle<Member> member = getMember( name );
       return member->getDesc()->setData( member->getElementData( index ), dstData );
     }
 
@@ -226,7 +227,7 @@ namespace Fabric
       if ( index >= m_count )
         throw Exception( "index out of range" );
       
-      Member *member = getMember( name );
+      RC::Handle<Member> member = getMember( name );
       setOutOfDate();
       member->getDesc()->setData( data, member->getElementData( index ) );
       
@@ -241,7 +242,7 @@ namespace Fabric
       RC::Handle<JSON::Object> result = JSON::Object::Create();
       for ( Members::const_iterator it=m_members.begin(); it!=m_members.end(); ++it )
       {
-        Member const *member = it->second;
+        RC::ConstHandle<Member> member = it->second;
         RC::ConstHandle<RT::Desc> memberDesc = member->getDesc();
         RC::Handle<JSON::Array> memberJSONArray = JSON::Array::Create();
         for ( size_t i=0; i<m_count; ++i )
@@ -261,7 +262,7 @@ namespace Fabric
       RC::Handle<JSON::Object> result = JSON::Object::Create();
       for ( Members::const_iterator it=m_members.begin(); it!=m_members.end(); ++it )
       {
-        Member const *member = it->second;
+        RC::ConstHandle<Member> member = it->second;
         RC::ConstHandle<RT::Desc> memberDesc = member->getDesc();
         std::string const &name = it->first;
         result->set( name, memberDesc->getJSONValue( member->getElementData( index ) ) );
@@ -289,7 +290,7 @@ namespace Fabric
           Members::const_iterator jt = m_members.find( name );
           if ( jt == m_members.end() )
             throw Exception( "node does not have member named '" + name + "'" );
-          Member *member = jt->second;
+          RC::Handle<Member> member = jt->second;
           
           try
           {
@@ -326,7 +327,7 @@ namespace Fabric
         Members::const_iterator jt = m_members.find( name );
         if ( jt == m_members.end() )
           throw Exception( "node does not have member named " + _(name) );
-        Member *member = jt->second;
+        RC::Handle<Member> member = jt->second;
         
         try
         {
@@ -363,7 +364,7 @@ namespace Fabric
         std::string const &name = it->first;
         encoder.put( name );
 
-        Member const *member = it->second;
+        RC::ConstHandle<Member> member = it->second;
         RC::ConstHandle<RT::Desc> desc = member->getDesc();
         size_t elementSize = desc->getSize();
         encoder.putSize( elementSize );
@@ -409,7 +410,7 @@ namespace Fabric
             size_t elementSize;
             decoder.getSize( elementSize );
             
-            Member *member;
+            RC::Handle<Member> member;
             Members::iterator it = m_members.find( name );
             if ( it != m_members.end() )
               member = it->second;
@@ -456,7 +457,7 @@ namespace Fabric
         std::string const &name = it->first;
         encoder.put( name );
 
-        Member const *member = it->second;
+        RC::ConstHandle<Member> member = it->second;
         RC::ConstHandle< RT::Desc > desc = member->getDesc();
         size_t elementSize = desc->getSize();
         encoder.putSize( elementSize );
@@ -493,7 +494,7 @@ namespace Fabric
         size_t elementSize;
         decoder.getSize( elementSize );
         
-        Member *member;
+        RC::Handle<Member> member;
         Members::iterator it = m_members.find( name );
         if ( it != m_members.end() )
           member = it->second;
@@ -542,7 +543,7 @@ namespace Fabric
       RC::Handle<JSON::Object> membersObject = JSON::Object::Create();
       for ( Members::const_iterator it=m_members.begin(); it!=m_members.end(); ++it )
       {
-        Member const *member = it->second;
+        RC::ConstHandle<Member> member = it->second;
         RC::ConstHandle<RT::Desc> memberDesc = member->getDesc();
         RC::Handle<JSON::Object> memberObject = JSON::Object::Create();
         memberObject->set( "type", JSON::String::Create( memberDesc->getName() ) );

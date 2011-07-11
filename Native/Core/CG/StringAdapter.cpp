@@ -696,42 +696,5 @@ namespace Fabric
     {
       return llvm::ConstantPointerNull::get( m_implType->getPointerTo() );
     }
-      
-    llvm::Value *StringAdapter::llvmConst( CG::BasicBlockBuilder &basicBlockBuilder, char const *data, size_t length ) const
-    {
-      if ( length )
-      {
-        llvm::Type const *charType = llvm::Type::getInt8Ty( getLLVMContext() );
-        
-        std::vector<llvm::Constant *> chars;
-        for ( size_t i=0; i<length; ++i )
-          chars.push_back( llvm::ConstantInt::get( charType, data[i] ) );
-        chars.push_back( llvm::ConstantInt::get( charType, 0 ) );
-
-        llvm::ArrayType const *cStringType = llvm::ArrayType::get( charType, length + 1 );
-        
-        RC::ConstHandle<SizeAdapter> sizeAdapter = getManager()->getSizeAdapter();
-        std::vector<llvm::Constant *> stringConstantElements;
-        stringConstantElements.push_back( sizeAdapter->llvmConst( 0x80000000u ) ); // refCount
-        stringConstantElements.push_back( sizeAdapter->llvmConst( length + 1 ) ); // allocSize
-        stringConstantElements.push_back( sizeAdapter->llvmConst( length ) ); // length
-        stringConstantElements.push_back( llvm::ConstantArray::get( cStringType, chars ) ); // cString
-        
-        llvm::Constant *stringConstant = llvm::ConstantStruct::get( getLLVMContext(), stringConstantElements, false );
-
-        llvm::GlobalVariable *globalStringConstant = new llvm::GlobalVariable(
-          *basicBlockBuilder.getModuleBuilder(),
-          stringConstant->getType(),
-          true,
-          llvm::GlobalValue::InternalLinkage,
-          stringConstant,
-          ""
-          );
-        llvm::Value *result = basicBlockBuilder->CreatePointerCast( globalStringConstant, llvmRType() );
-        llvmRetain( basicBlockBuilder, result );
-        return result;
-      }
-      else return llvm::ConstantPointerNull::get( m_implType->getPointerTo() );
-    }
   };
 };

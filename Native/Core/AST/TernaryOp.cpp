@@ -56,7 +56,7 @@ namespace Fabric
       
       // The true/false value types need to be "equivalent". We'll cast into whoever wins the
       // casting competition, or fail if they can't.
-      RC::ConstHandle<RT::Desc> castDesc = RT::getStrongerTypeOrNone( trueType->getDesc(), falseType->getDesc() );
+      RC::ConstHandle<RT::Desc> castDesc = basicBlockBuilder.getStrongerTypeOrNone( trueType->getDesc(), falseType->getDesc() );
       if ( !castDesc )
         throw CG::Error( getLocation(), "types " + _(trueType->getUserName()) + " and " + _(falseType->getUserName()) + " are unrelated" );
       return trueType->getManager()->getAdapter( castDesc );

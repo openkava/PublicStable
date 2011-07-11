@@ -78,5 +78,10 @@ namespace Fabric
     {
       return m_functionBuilder.maybeGetFunction( entryName );
     }
+
+    RC::ConstHandle<RT::Desc> BasicBlockBuilder::getStrongerTypeOrNone( RC::ConstHandle<RT::Desc> const &lhsDesc, RC::ConstHandle<RT::Desc> const &rhsDesc ) const
+    {
+      return getManager()->getStrongerTypeOrNone( lhsDesc, rhsDesc );
+    }
   };
 };

@@ -26,12 +26,11 @@ template = oglPluginEnv.File("ogl.cpp_template")
 oglSource = oglPluginEnv.File("ogl.cpp")
 oglManifest = oglPluginEnv.File('FabricOGL.fpm.json')
 
-command = ""
+command = "python " + generator.abspath
 if buildOS == 'Linux':
-  command = "python " + generator.abspath
   command = command + " --header=/usr/include/GL/glew.h"
-else:
-  command = "cd " + generator.pathname() + "; python " + generator.basename()
+if buildOS == 'Darwin':
+  command = command + " --header=/opt/local/include/GL/glew.h"
   
 command = command + " --template=$BUILDDIR/Exts/Builtin/OGL/ogl.cpp_template"
 command = command + " --cppresult=$BUILDDIR/Exts/Builtin/OGL/ogl.cpp"
