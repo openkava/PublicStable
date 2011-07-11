@@ -24,8 +24,6 @@
 #include <Fabric/Core/RT/SizeDesc.h>
 #include <Fabric/Core/RT/Manager.h>
 
-// #define FABRIC_OCL_CONTEXT_SHARING
-
 #if defined( FABRIC_OS_MACOSX )
 # include <OpenCL/OpenCL.h>
 # include <OpenGL/OpenGL.h>
@@ -109,7 +107,6 @@ namespace Fabric
     {
       FABRIC_OCL_TRACE( "CreateContext()" );
 
-#if defined( FABRIC_OCL_CONTEXT_SHARING )
 #if defined( FABRIC_OS_WINDOWS ) || defined( FABRIC_OS_LINUX )
       std::vector<cl_platform_id> platforms;
       cl_uint numPlatforms;
@@ -143,9 +140,6 @@ namespace Fabric
       };
 #else
 # error Unsupported platform!
-#endif
-#else
-      cl_context_properties *props = 0;
 #endif
       
       cl_uint num_devices = clDeviceIDVariableArrayDesc->getNumMembers( &clDeviceIDsRValue );
@@ -234,7 +228,6 @@ namespace Fabric
       return result;
     }
 
-#if defined( FABRIC_OCL_CONTEXT_SHARING )
     static cl_mem CreateFromGLBuffer( cl_context clContext, size_t flags, GLuint bufobj, int32_t *clErrCode )
     {
       FABRIC_OCL_TRACE( "CreateFromGLBuffer( bufobj=" + _((int)bufobj) + " )" );
@@ -244,7 +237,6 @@ namespace Fabric
         *clErrCode = errcode;
       return result;
     }
-#endif
     
     static int32_t ReleaseMemObject( cl_mem memobj )
     {
@@ -477,9 +469,7 @@ namespace Fabric
       ADD_FUNC( BuildProgram, "=Integer,<cl_program clProgram,<cl_device_id[] clDeviceIDs,<String options" );
       ADD_FUNC( CreateKernel, "=cl_kernel,<cl_program clProgram,<String kernelName,>Integer clErrCode" );
       ADD_FUNC( CreateBuffer, "=cl_mem,<cl_context clContext,<cl_mem_flags clMemFlags,<Size size,<Data host_ptr,>Integer clErrCode" );
-#if defined( FABRIC_OCL_CONTEXT_SHARING )
       ADD_FUNC( CreateFromGLBuffer, "=cl_mem,<cl_context clContext,<cl_mem_flags clMemFlags,<Integer bufobj,>Integer clErrCode" );
-#endif
       ADD_FUNC( ReleaseMemObject, "=Integer,<cl_mem memobj" );
       ADD_FUNC( EnqueueReadBuffer, "=Integer,<cl_command_queue command_queue,<cl_mem buffer,<Boolean blocking_read,<Size offset,<Size cb,<Data ptr,<cl_event[] clEventArray,>cl_event event" );
       ADD_FUNC( EnqueueWriteBuffer, "=Integer,<cl_command_queue command_queue,<cl_mem buffer,<Boolean blocking_read,<Size offset,<Size cb,<Data ptr,<cl_event[] clEventArray,>cl_event event" );
