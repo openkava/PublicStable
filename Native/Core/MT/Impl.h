@@ -9,43 +9,19 @@
 #define _FABRIC_MT_IMPL_H
 
 #include <Fabric/Core/MT/Debug.h>
+#include <Fabric/Core/Util/TLS.h>
 #include <vector>
 
-#if defined(FABRIC_OS_MACOSX)
-#  define FABRIC_MT_IMPL_GCD
-#elif defined(FABRIC_OS_LINUX) || defined(FABRIC_OS_WINDOWS)
-#  define FABRIC_MT_IMPL_THREADPOOL
-#else
-#  error "missing FABRIC_OS_... definition"
-#endif
-
-#if defined(FABRIC_MT_IMPL_GCD)
-#  include <dispatch/dispatch.h>
-#elif defined(FABRIC_MT_IMPL_THREADPOOL)
-#  if defined(FABRIC_POSIX)
-#    include <pthread.h>
-#  elif defined(FABRIC_WIN32)
-#    include <windows.h>
-#  endif
+#if defined(FABRIC_POSIX)
+# include <pthread.h>
+#elif defined(FABRIC_WIN32)
+# include <windows.h>
 #endif
 
 namespace Fabric
 {
   namespace MT
   {
-#if defined(FABRIC_MT_IMPL_GCD)
-    inline void executeParallel( size_t count, void (*callback)( void *userdata, size_t index ), void *userdata )
-    {
-      if ( count == 1 )
-        callback( userdata, 0 );
-      else dispatch_apply_f(
-        count,
-        dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0 ),
-        userdata,
-        callback
-        );
-    }
-#elif defined(FABRIC_MT_IMPL_THREADPOOL)
     class ThreadPool
     {
       class Task 
@@ -122,7 +98,7 @@ namespace Fabric
       ThreadPool();
       ~ThreadPool();
       
-      void executeParallel( size_t count, void (*callback)( void *userdata, size_t index ), void *userdata );
+      void executeParallel( size_t count, void (*callback)( void *userdata, size_t index ), void *userdata, bool mainThreadOnly );
         
     protected:
     
@@ -158,19 +134,15 @@ namespace Fabric
       };
 #endif
       std::vector<Task *> m_tasks;
+      Util::TLSVar<bool> m_isMainThread;
+      std::vector<Task *> m_mainThreadTasks;
       bool m_exiting;
     };
     
-    inline void executeParallel( size_t count, void (*callback)( void *userdata, size_t index ), void *userdata )
+    inline void executeParallel( size_t count, void (*callback)( void *userdata, size_t index ), void *userdata, bool mainThreadOnly )
     {
-      if ( count == 1 )
-        callback( userdata, 0 );
-      else ThreadPool::Instance()->executeParallel( count, callback, userdata );
+      ThreadPool::Instance()->executeParallel( count, callback, userdata, mainThreadOnly );
     }
-
-#else
-# error "No Fabric::MT implementation specified"
-#endif
   };
 };
 
