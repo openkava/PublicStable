@@ -9,6 +9,7 @@
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/DG/Context.h>
 #include <Fabric/Core/IO/Dir.h>
+#include <Fabric/Base/JSON/Object.h>
 
 namespace Fabric
 {
@@ -101,7 +102,7 @@ namespace Fabric
       }
       else
       {
-        result = Inst::Create( name, jsonDesc, m_dgContext, m_pluginDirs );
+        result = Inst::Create( name, jsonDesc, m_dgContext, m_pluginDirs, m_dgContext );
         m_nameToInstMap.insert( NameToInstMap::value_type( name, result ) );
       }
       
@@ -123,6 +124,14 @@ namespace Fabric
         if ( result )
           break;
       }
+      return result;
+    }
+
+    RC::Handle<JSON::Object> Manager::jsonDesc() const
+    {
+      RC::Handle<JSON::Object> result = JSON::Object::Create();
+      for ( NameToInstMap::const_iterator it=m_nameToInstMap.begin(); it!=m_nameToInstMap.end(); ++it )
+        result->set( it->first, it->second->jsonDesc() );
       return result;
     }
   };

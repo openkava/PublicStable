@@ -162,6 +162,19 @@ namespace Fabric
         throw "code: " + e;
       }
       
+      RC::ConstHandle<JSON::Value> jsConstantsJSONValue = object->maybeGet( "jsConstants" );
+      if ( jsConstantsJSONValue )
+      {
+        try
+        {
+          parseHostStringsVector( jsConstantsJSONValue, result.jsConstants );
+        }
+        catch ( Exception e )
+        {
+          throw "jsConstants: " + e;
+        }
+      }
+      
       RC::ConstHandle<JSON::Value> interfaceValue = object->maybeGet( "interface" );
       if ( interfaceValue )
       {

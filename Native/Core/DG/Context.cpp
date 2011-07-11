@@ -377,6 +377,7 @@ namespace Fabric
       result->set( "contextID", JSON::String::Create( getContextID() ) );
       result->set( "DG", jsonDescDG() );
       result->set( "RT", m_rtManager->jsonDesc() );
+      result->set( "EX", m_plugManager->jsonDesc() );
       result->set( "licenses", jsonDescLicenses() );
       return result;
     }

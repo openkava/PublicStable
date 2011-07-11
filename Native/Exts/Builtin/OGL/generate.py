@@ -17,13 +17,12 @@ def main():
   jsonsourcePath = False
   cpptemplatePath = False
   cppsourcePath = False
-  sceneGraphPath = False
 
   # parse the command line options
   for i in range(1,len(sys.argv)):
     arg = sys.argv[i]
     if not arg.startswith('--') or arg.find('=') == -1:
-      message = "ERROR: Command line arguments need to start with a double --\nValid arguments are:\n--template=path/to/template,\n--header=path/to/single/header (can be used multiple times)\n--jsonresult=path/to/json (file will be generated)\n--cppresult=path/to/cppfile (ogl.cpp, will be generated)\n--jsresult=path/to/javascript (FABRIC.SceneGraph.OpenGLConstants.js, will be generated)."
+      message = "ERROR: Command line arguments need to start with a double --\nValid arguments are:\n--template=path/to/template,\n--header=path/to/single/header (can be used multiple times)\n--jsonresult=path/to/json (file will be generated)\n--cppresult=path/to/cppfile (ogl.cpp, will be generated)"
       print(message)
       raise(Exception(message))
     arg = arg[2:100000]
@@ -36,8 +35,6 @@ def main():
       jsonsourcePath = arg[2]
     elif arg[0].lower() == "cppresult":
       cppsourcePath = arg[2]
-    elif arg[0].lower() == "jsresult":
-      sceneGraphPath = arg[2]
       
   if len(files) == 0 or not cpptemplatePath or not jsonsourcePath or not cppsourcePath:
       message = "Some command line options are missing\nUsage:\ngenerate.py --header=path/to/single/header --template=path/to/cpptemplate --cppresult=path/to/generated/cpp --jsonresult=path/to/generated/json\nYou can use --header multiple times to parse multiple headers.\nOptionally you can specify --jsresult=path/to/javascript to generate a JavaSCript file as well.\n"
@@ -145,10 +142,10 @@ def main():
     value = registeredConstants[name]
     if value.startswith('0x'):
       jsonConstants.append('const Size '+name+' = '+value+';')
-      sceneGraphConstants.append(name+': '+str(int(value,0))+',')
+      sceneGraphConstants.append('\\"'+name+'\\":'+str(int(value,0)))
     elif value.isdigit():
       jsonConstants.append('const Size '+name+' = '+value+';')
-      sceneGraphConstants.append(name+': '+value+',')
+      sceneGraphConstants.append('\\"'+name+'\\":'+value)
     
   # DEFINE A MAPPING FOR THE DATATYPE
   # oglTYPE: [C++type, trace format, trace cast, KL Type]
@@ -466,14 +463,53 @@ def main():
   
   # define the core json types
   jsonTypes = [];
-  jsonTypes.append('struct Vec2 { Scalar x; Scalar y; };')
-  jsonTypes.append('struct Vec3 { Scalar x; Scalar y; Scalar z; };')
-  jsonTypes.append('struct Vec4 { Scalar x; Scalar y; Scalar z; Scalar t; };')
-  jsonTypes.append('struct Mat22 { Vec2 row0; Vec2 row1; };')
-  jsonTypes.append('struct Mat33 { Vec3 row0; Vec3 row1; Vec3 row2; };')
-  jsonTypes.append('struct Mat44 { Vec4 row0; Vec4 row1; Vec4 row2; Vec4 row3; };')
-  
-  open(jsonsourcePath,'w').write('{\n  "libs": "FabricOGL",\n  "code": "'+str('').join(jsonTypes)+''+str('').join(jsonConstants)+''+str('').join(klFunctionsCode)+'"\n}\n')
+  jsonTypes.append(str("""
+struct Vec2 {
+  Scalar x;
+  Scalar y;
+};
+""").strip().replace("\n","\\n"))
+  jsonTypes.append(str("""
+struct Vec3 {
+  Scalar x;
+  Scalar y;
+  Scalar z;
+};
+""").strip().replace("\n","\\n"))
+  jsonTypes.append(str("""
+struct Vec4 {
+  Scalar x;
+  Scalar y;
+  Scalar z;
+  Scalar t;
+};
+""").strip().replace("\n","\\n"))
+  jsonTypes.append(str("""
+struct Mat22 {
+  Vec2 row0;
+  Vec2 row1;
+};
+""").strip().replace("\n","\\n"))
+  jsonTypes.append(str("""
+struct Mat33 {
+  Vec3 row0;
+  Vec3 row1;
+  Vec3 row2;
+};
+""").strip().replace("\n","\\n"))
+  jsonTypes.append(str("""
+struct Mat44 {
+  Vec4 row0;
+  Vec4 row1;
+  Vec4 row2;
+  Vec4 row3;
+};
+""").strip().replace("\n","\\n"))
+
+  # JSON structure for SceneGraph constants
+  jsConstants = "{"+str(",").join(sceneGraphConstants)+"}"
+
+  open(jsonsourcePath,'w').write('{\n  "libs": "FabricOGL",\n  "code": "'+str("\\n").join(jsonTypes)+''+str('').join(jsonConstants)+''+str('').join(klFunctionsCode)+'",\n  "jsConstants":"' + jsConstants + '"\n}\n')
   print("Generated JSON result: "+jsonsourcePath)
   #open('/development/temp/test.kl','w').write(str('\n').join(jsonConstants)+'\n\n'+str('\n').join(klFunctionsCode)+'\n\nfunction entry()\n{\n  report("valid");\n}\n')
   
@@ -483,22 +519,6 @@ def main():
   # WRITE OUT TO OUR SOURCE FILE
   open(cppsourcePath,"w").write(template)
   print("Generated CPP result: "+cppsourcePath)
-
-  # write out the js file (optional)
-  if sceneGraphPath:
-    sceneGraphCode = []
-    sceneGraphCode.append("");
-    sceneGraphCode.append("//")
-    sceneGraphCode.append("// Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.")
-    sceneGraphCode.append("//")
-    sceneGraphCode.append("");
-    sceneGraphCode.append("FABRIC.SceneGraph.OpenGLConstants = {");
-    for i in range(len(sceneGraphConstants)):
-      sceneGraphCode.append('  '+sceneGraphConstants[i])
-    sceneGraphCode.append("};")
-    sceneGraphCode.append("")
-    open(sceneGraphPath,"w").write(str('\n').join(sceneGraphCode))
-    print("Generated JS result: "+sceneGraphPath)
 
 if __name__ == '__main__':
   main()

@@ -120,6 +120,7 @@ namespace Fabric
     {
       HostStringsVector libs;
       HostStringsVector code;
+      HostStringsVector jsConstants;
       Interface interface;
     };
     

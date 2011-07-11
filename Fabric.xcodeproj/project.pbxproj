@@ -398,11 +398,6 @@
 		DB9672A613A5423200616143 /* OCL.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OCL.h; sourceTree = "<group>"; };
 		DB9672A713A5423200616143 /* OpenCL_thunk.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OpenCL_thunk.cpp; sourceTree = "<group>"; };
 		DB9672A813A5423200616143 /* SConscript */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = SConscript; sourceTree = "<group>"; };
-		DB9672AA13A5423200616143 /* Debug.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Debug.cpp; sourceTree = "<group>"; };
-		DB9672AB13A5423200616143 /* Debug.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Debug.h; sourceTree = "<group>"; };
-		DB9672AC13A5423200616143 /* OGL.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OGL.cpp; sourceTree = "<group>"; };
-		DB9672AD13A5423200616143 /* OGL.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OGL.h; sourceTree = "<group>"; };
-		DB9672AE13A5423200616143 /* SConscript */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = SConscript; sourceTree = "<group>"; };
 		DB9672B013A5423200616143 /* Desc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Desc.cpp; sourceTree = "<group>"; };
 		DB9672B113A5423200616143 /* Desc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Desc.h; sourceTree = "<group>"; };
 		DB9672B213A5423200616143 /* Helpers.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Helpers.cpp; sourceTree = "<group>"; };
@@ -918,7 +913,6 @@
 		DB9684C913A79A1600616143 /* FABRIC.SceneGraph.Particles.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = FABRIC.SceneGraph.Particles.js; sourceTree = "<group>"; };
 		DB9684CA13A79A1600616143 /* FABRIC.SceneGraph.Persistence.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = FABRIC.SceneGraph.Persistence.js; sourceTree = "<group>"; };
 		DB9684CB13A79A1600616143 /* FABRIC.SceneGraph.Primitives.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = FABRIC.SceneGraph.Primitives.js; sourceTree = "<group>"; };
-		DB9684CC13A79A1600616143 /* FABRIC.SVG.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = FABRIC.SVG.js; sourceTree = "<group>"; };
 		DB9684CE13A79A1600616143 /* aimTransform.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = aimTransform.kl; sourceTree = "<group>"; };
 		DB9684CF13A79A1700616143 /* calcBoundingBox.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = calcBoundingBox.kl; sourceTree = "<group>"; };
 		DB9684D013A79A1700616143 /* calcGlobalXfo.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = calcGlobalXfo.kl; sourceTree = "<group>"; };
@@ -1083,15 +1077,15 @@
 		DBCCD56913ABFAE300024113 /* timeSample.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = timeSample.cpp; sourceTree = "<group>"; };
 		DBCCD56A13ABFAE300024113 /* TimeSample.fpm.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = TimeSample.fpm.json; sourceTree = "<group>"; };
 		DBCCD57B13AC007D00024113 /* currentTime.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = currentTime.html; sourceTree = "<group>"; };
-		DBF56E4F13C63B6000778A06 /* generate.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = generate.py; sourceTree = "<group>"; };
-		DBF56E5013C63B6000778A06 /* ogl.cpp_template */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ogl.cpp_template; sourceTree = "<group>"; };
-		DBF56E5113C63B6000778A06 /* SConscript */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = SConscript; sourceTree = "<group>"; };
 		DBF56D2413C4B4F800778A06 /* ConstStringImpl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ConstStringImpl.h; sourceTree = "<group>"; };
 		DBF56D2513C4B58400778A06 /* ConstStringImpl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ConstStringImpl.cpp; sourceTree = "<group>"; };
 		DBF56D5913C4BCDA00778A06 /* ConstStringDesc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ConstStringDesc.cpp; sourceTree = "<group>"; };
 		DBF56D5A13C4BCDA00778A06 /* ConstStringDesc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ConstStringDesc.h; sourceTree = "<group>"; };
 		DBF56D5F13C4CA6A00778A06 /* ConstStringAdapter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ConstStringAdapter.cpp; sourceTree = "<group>"; };
 		DBF56D6013C4CA6A00778A06 /* ConstStringAdapter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ConstStringAdapter.h; sourceTree = "<group>"; };
+		DBF56E4F13C63B6000778A06 /* generate.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = generate.py; sourceTree = "<group>"; };
+		DBF56E5013C63B6000778A06 /* ogl.cpp_template */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ogl.cpp_template; sourceTree = "<group>"; };
+		DBF56E5113C63B6000778A06 /* SConscript */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = SConscript; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -1405,7 +1399,6 @@
 				DB9672AF13A5423200616143 /* Plug */,
 				DB96727513A5423200616143 /* IO */,
 				DB9672A213A5423200616143 /* OCL */,
-				DB9672A913A5423200616143 /* OGL */,
 				DB96728013A5423200616143 /* KL */,
 				DB9671A413A5423200616143 /* AST */,
 				DB96721813A5423200616143 /* CG */,
@@ -1726,18 +1719,6 @@
 				DB9672A813A5423200616143 /* SConscript */,
 			);
 			path = OCL;
-			sourceTree = "<group>";
-		};
-		DB9672A913A5423200616143 /* OGL */ = {
-			isa = PBXGroup;
-			children = (
-				DB9672AE13A5423200616143 /* SConscript */,
-				DB9672AA13A5423200616143 /* Debug.cpp */,
-				DB9672AB13A5423200616143 /* Debug.h */,
-				DB9672AC13A5423200616143 /* OGL.cpp */,
-				DB9672AD13A5423200616143 /* OGL.h */,
-			);
-			path = OGL;
 			sourceTree = "<group>";
 		};
 		DB9672AF13A5423200616143 /* Plug */ = {
@@ -2501,7 +2482,6 @@
 				DB9684C913A79A1600616143 /* FABRIC.SceneGraph.Particles.js */,
 				DB9684CA13A79A1600616143 /* FABRIC.SceneGraph.Persistence.js */,
 				DB9684CB13A79A1600616143 /* FABRIC.SceneGraph.Primitives.js */,
-				DB9684CC13A79A1600616143 /* FABRIC.SVG.js */,
 				DB9684CD13A79A1600616143 /* KL */,
 				DB96851313A79A1800616143 /* Parsers */,
 				DB96851813A79A1900616143 /* RT */,

@@ -333,7 +333,7 @@ namespace Fabric
     {
       FABRIC_OCL_TRACE( "registerTypes()" );
       
-      printf("registering OCL....\n");
+      //printf("registering OCL....\n");
       
       RC::ConstHandle<RT::BooleanDesc> booleanDesc = rtManager->getBooleanDesc();
       RC::ConstHandle<RT::IntegerDesc> integerDesc = rtManager->getIntegerDesc();

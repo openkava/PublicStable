@@ -12,6 +12,11 @@
  
 namespace Fabric
 {
+  namespace JSON
+  {
+    class Object;
+  };
+  
   namespace CG
   {
     class Manager;
@@ -49,6 +54,8 @@ namespace Fabric
       
       void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder ) const;
       void *llvmResolveExternalFunction( std::string const &name ) const;
+
+      virtual RC::Handle<JSON::Object> jsonDesc() const;
 
     protected:
     

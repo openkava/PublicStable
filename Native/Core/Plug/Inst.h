@@ -12,6 +12,11 @@
 
 namespace Fabric
 {
+  namespace JSON
+  {
+    class CommandChannel;
+  };
+  
   namespace CG
   {
     class Manager;
@@ -44,10 +49,7 @@ namespace Fabric
       
     public:
     
-      static RC::Handle<Inst> Create( std::string const &name, std::string const &jsonDesc, RC::Handle<DG::Context> const &dgContext, std::vector<std::string> const &pluginDirs )
-      {
-        return new Inst( name, jsonDesc, dgContext, pluginDirs );
-      }
+      static RC::Handle<Inst> Create( std::string const &name, std::string const &jsonDesc, RC::Handle<DG::Context> const &dgContext, std::vector<std::string> const &pluginDirs, RC::Handle<JSON::CommandChannel> const &jsonCommandChannel );
       
       std::string const &getJSONDesc() const
       {
@@ -66,6 +68,8 @@ namespace Fabric
       
       void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder ) const;
       void *llvmResolveExternalFunction( std::string const &name ) const;
+
+      virtual RC::Handle<JSON::Object> jsonDesc() const;
       
     protected:
     
@@ -91,6 +95,7 @@ namespace Fabric
       ExternalFunctionMap m_externalFunctionMap;
       //RC::Handle<LIB::Object> m_fabricLIBObject;
       //MethodMap m_methodMap;
+      std::string m_jsConstants;
     };
   };
 };

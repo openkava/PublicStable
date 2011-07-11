@@ -11,16 +11,33 @@
 #include <Fabric/Core/DG/Context.h>
 #include <Fabric/Core/IO/Helpers.h>
 #include <Fabric/Core/Plug/Helpers.h>
+#include <Fabric/Base/JSON/String.h>
 
 namespace Fabric
 {
-  
-  
   namespace Plug
   {
     //typedef void (*OnLoadFn)( SDK::Value FABRIC );
     //typedef void (*OnUnloadFn)( SDK::Value FABRIC );
     
+    RC::Handle<Inst> Inst::Create( std::string const &name, std::string const &jsonDesc, RC::Handle<DG::Context> const &dgContext, std::vector<std::string> const &pluginDirs, RC::Handle<JSON::CommandChannel> const &jsonCommandChannel )
+    {
+      RC::Handle<Inst> result = new Inst( name, jsonDesc, dgContext, pluginDirs );
+      
+      static std::vector<std::string> src;
+      if ( src.empty() )
+        src.push_back("EX");
+      
+      static std::string cmd = "delta";
+      
+      RC::Handle<JSON::Object> arg = JSON::Object::Create();
+      arg->set( name, result->jsonDesc() );
+      
+      jsonCommandChannel->jsonNotify( src, cmd, arg );
+      
+      return result;
+    }
+      
     Inst::Inst( std::string const &name, std::string const &jsonDesc, RC::Handle<DG::Context> const &dgContext, std::vector<std::string> const &pluginDirs )
       : m_name( name )
       , m_disabled( false )
@@ -121,6 +138,8 @@ namespace Fabric
           m_externalFunctionMap.insert( ExternalFunctionMap::value_type( name, resolvedFunction ) );
         }
       }
+      
+      m_jsConstants = m_desc.jsConstants.concatMatching( Util::getHostTriple() );
     }
     
     Inst::~Inst()
@@ -194,5 +213,13 @@ namespace Fabric
       return SDK::Value::Unbind( it->second( SDK::Value::Bind( m_fabricLIBObject ), SDK::Value::LIBArgsToSDKArgs( args ) ) );
     }
       */
+
+    RC::Handle<JSON::Object> Inst::jsonDesc() const
+    {
+      RC::Handle<JSON::Object> result = JSON::Object::Create();
+      result->set( "code", JSON::String::Create( m_code ) );
+      result->set( "jsConstants", JSON::String::Create( m_jsConstants ) );
+      return result;
+    }
   };
 };
