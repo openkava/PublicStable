@@ -145,7 +145,8 @@ namespace Fabric
       cl_uint num_devices = clDeviceIDVariableArrayDesc->getNumMembers( &clDeviceIDsRValue );
       cl_device_id const *devices = (cl_device_id const *)clDeviceIDVariableArrayDesc->getMemberData( &clDeviceIDsRValue, 0 );
       cl_int errcode;
-      cl_context result = clCreateContext( props, num_devices, devices, &ContextNotifyCallback, NULL, &errcode );
+      // [pzion 20110711] FIXME: workaround for OpenGL/OpenCL interop
+      cl_context result = clCreateContext( props, 0, 0, &ContextNotifyCallback, NULL, &errcode );
       if ( clErrCode )
         *clErrCode = errcode;
       return result;
