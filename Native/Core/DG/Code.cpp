@@ -126,6 +126,7 @@ namespace Fabric
         }
         
         llvm::NoFramePointerElim = true;
+        llvm::JITExceptionHandling = true;
         llvm::OwningPtr<llvm::PassManager> passManager( new llvm::PassManager );
         if ( optimize )
         {
