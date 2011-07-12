@@ -42,8 +42,6 @@
 
 namespace Fabric
 {
-  
-  
   namespace OCL
   {
     typedef Util::UnorderedMap< std::string, void * > FuncTable;
