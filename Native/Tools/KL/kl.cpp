@@ -6,7 +6,6 @@
 #include <Fabric/Core/KL/Debug.h>
 #include <Fabric/Core/KL/Parse.h>
 #include <Fabric/Core/AST/GlobalList.h>
-//#include <Fabric/Core/OGL/OGL.h>
 #include <Fabric/Core/RT/Manager.h>
 #include <Fabric/Core/RT/ScalarDesc.h>
 #include <Fabric/Core/RT/StringDesc.h>
@@ -14,11 +13,8 @@
 #include <Fabric/Core/RT/OpaqueDesc.h>
 #include <Fabric/Core/MT/LogCollector.h>
 #include <Fabric/Core/CG/ModuleBuilder.h>
-//#include <Fabric/Core/OGL/OGL.h>
-#if defined(FABRIC_MODULE_OCL)
-# include <Fabric/Core/OCL/OCL.h>
-# include <Fabric/Core/OCL/Debug.h>
-#endif
+#include <Fabric/Core/OCL/OCL.h>
+#include <Fabric/Core/OCL/Debug.h>
 
 #include <memory>
 
@@ -141,14 +137,9 @@ static void *LazyFunctionCreator( std::string const &functionName )
     void *result = cgManager->llvmResolveExternalFunction( functionName );
     if ( result )
       return result;
-    //result = OGL::llvmResolveExternalFunction( functionName );
-    //if ( result )
-    //  return result;
-#if defined(FABRIC_MODULE_OCL)
-    //result = OCL::llvmResolveExternalFunction( functionName );
-    //if ( result )
-    //  return result;
-#endif
+    result = OCL::llvmResolveExternalFunction( functionName );
+    if ( result )
+      return result;
   }
   fprintf( stderr, "Unable to look up symbol for '%s'\n", functionName.c_str() );
   return( NULL );
@@ -180,9 +171,7 @@ void handleFile( FILE *fp, unsigned int runFlags )
 
   CG::ModuleBuilder moduleBuilder( cgManager, module.get() );
   cgManager->llvmPrepareModule( moduleBuilder );
-#if defined(FABRIC_MODULE_OCL)
   OCL::llvmPrepareModule( moduleBuilder, rtManager );
-#endif
   
   Source source( sourceString.data(), sourceString.length() );
   RC::Handle<AST::GlobalList> globalList;
