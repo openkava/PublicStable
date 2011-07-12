@@ -28,6 +28,7 @@ namespace Fabric
   {
     ViewPort::ViewPort( RC::ConstHandle<Interface> const &interface, uint32_t timerInterval )
       : m_npp( interface->getNPP() )
+      , m_name( "viewPort" )
       , m_interface( interface.ptr() )
       , m_logCollector( interface->getContext()->getLogCollector() )
       , m_redrawFinishedCallback( 0 )
@@ -61,26 +62,31 @@ namespace Fabric
       gettimeofday( &m_fpsStart, NULL );
 #endif
 
-      m_interface->getContext()->registerViewPort( "viewPort", this );
+      m_interface->getContext()->registerViewPort( m_name, this );
     }
     
     ViewPort::~ViewPort()
     {
-      m_interface->getContext()->unregisterViewPort( "viewPort", this );
+      m_interface->getContext()->unregisterViewPort( m_name, this );
 
       if ( m_redrawFinishedCallback )
         NPN_ReleaseObject( m_redrawFinishedCallback );
+    }
+    
+    void ViewPort::jsonNotify( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg ) const
+    {
+      std::vector<std::string> src;
+      src.push_back("VP");
+      src.push_back("viewPort");
+      
+      m_interface->getContext()->jsonNotify( src, cmd, arg );
     }
     
     void ViewPort::issuePendingRedrawFinishedCallbacks()
     {
       while ( m_redrawFinishedCallbackPendingInvokeCount > 0 )
       {
-        std::vector<std::string> src;
-        src.push_back("VP");
-        src.push_back("viewPort");
-        
-        m_interface->getContext()->jsonNotify( src, "redrawFinished", 0 );
+        jsonNotify( "redrawFinished", 0 );
         
 #if defined(FABRIC_OS_WINDOWS)
         ::_InterlockedDecrement( &m_redrawFinishedCallbackPendingInvokeCount );
@@ -246,8 +252,25 @@ namespace Fabric
         needsRedraw();
       else if ( cmd == "getFPS" )
         result = jsonExecGetFPS();
+      else if ( cmd == "addPopUpMenuItem" )
+        jsonExecAddPopupItem( arg );
       else throw Exception( "unrecognized command" );
       return result;
+    }
+    
+    void ViewPort::jsonExecAddPopupItem( RC::ConstHandle<JSON::Value> const &arg )
+    {
+      RC::ConstHandle<JSON::Object> argObject = arg->toObject();
+      
+      PopUpItem popUpItem;
+      popUpItem.desc = argObject->get("desc")->toString()->value();
+      popUpItem.value = argObject->get("arg");
+      m_popUpItems.push_back( popUpItem );
+    }
+    
+    void ViewPort::jsonNotifyPopUpItem( RC::ConstHandle<JSON::Value> const &arg ) const
+    {
+      jsonNotify( "popUpMenuItemSelected", arg );
     }
   };
 };
