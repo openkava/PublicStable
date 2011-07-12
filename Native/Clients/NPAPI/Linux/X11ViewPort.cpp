@@ -9,6 +9,7 @@
 
 #include <Fabric/Clients/NPAPI/Linux/X11ViewPort.h>
 #include <Fabric/Clients/NPAPI/Interface.h>
+#include <Fabric/Base/JSON/Value.h>
 #include <Fabric/Base/Exception.h>
 #include <Fabric/Core/OGL/OGL.h>
 #include <Fabric/Clients/NPAPI/Context.h>
@@ -94,14 +95,16 @@ namespace Fabric
       }
     }
 
-    void X11ViewPort::MenuItemActivateCallback( void *_popUpItem )
+    struct ViewPortAndJSONValue
     {
-      /*
-      Context::PopUpItem const *popUpItem = (Context::PopUpItem const *)_popUpItem;
-      std::vector< RC::Handle<LIB::Value> > args;
-      args.push_back( popUpItem->arg );
-      popUpItem->callback->invoke( args );
-      */
+      ViewPort const *viewPort;
+      JSON::Value const *value;
+    };
+
+    void X11ViewPort::MenuItemActivateCallback( void *_viewPortAndJSONValue )
+    {
+      ViewPortAndJSONValue const *viewPortAndJSONValue = (ViewPortAndJSONValue const *)_viewPortAndJSONValue;
+      viewPortAndJSONValue->viewPort->jsonNotifyPopUpItem( viewPortAndJSONValue->value );
     }
 
     gboolean X11ViewPort::EventCallback( GtkWidget *widget, GdkEvent *event, gpointer user_data )
@@ -118,18 +121,23 @@ namespace Fabric
           GdkEventButton *button = (GdkEventButton *)event;
           if ( button->button == 3 )
           {
-            Context::PopUpItems const &popUpItems = x11ViewPort->getInterface()->getContext()->getPopUpItems();
-            if ( !popUpItems.empty() )
+            if ( !x11ViewPort->m_popUpItems.empty() )
             {
               GtkWidget *menu = gtk_menu_new();
 
-              for ( Context::PopUpItems::const_iterator it=popUpItems.begin(); it!=popUpItems.end(); ++it )
+              for ( PopUpItems::const_iterator it=x11ViewPort->m_popUpItems.begin(); it!=x11ViewPort->m_popUpItems.end(); ++it )
               {
-                Context::PopUpItem const &popUpItem = *it;
+                PopUpItem const &popUpItem = *it;
+
                 GtkWidget *menuItem = gtk_menu_item_new_with_label( popUpItem.desc.c_str() );
                 gtk_menu_shell_append( GTK_MENU_SHELL(menu), menuItem );
+
+                ViewPortAndJSONValue *viewPortAndJSONValue = new ViewPortAndJSONValue;
+                viewPortAndJSONValue->viewPort = x11ViewPort;
+                viewPortAndJSONValue->value = popUpItem.value.ptr();
                 g_signal_connect_swapped( G_OBJECT(menuItem), "activate",
-                  G_CALLBACK(&X11ViewPort::MenuItemActivateCallback), (void *)&popUpItem );
+                  G_CALLBACK(&X11ViewPort::MenuItemActivateCallback),
+                  viewPortAndJSONValue );
                 gtk_widget_show( menuItem );
               }
 
@@ -194,7 +202,7 @@ namespace Fabric
                events stopped to work
             | GDK_BUTTON_PRESS_MASK
             | GDK_BUTTON_RELEASE_MASK
-            //*/
+              */
             );
           
           m_plug = gtk_plug_new( gdkNativeWindow );
