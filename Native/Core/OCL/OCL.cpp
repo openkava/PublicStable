@@ -121,7 +121,7 @@ namespace Fabric
       std::vector<cl_platform_id> platforms;
       cl_uint numPlatforms;
       clGetPlatformIDs( 0, NULL, &numPlatforms );
-      platforms.resize( platforms );
+      platforms.resize( numPlatforms );
       clGetPlatformIDs( numPlatforms, &platforms[0], NULL );
 #endif
 #if defined( FABRIC_OS_MACOSX )
@@ -137,7 +137,7 @@ namespace Fabric
       {
         CL_GL_CONTEXT_KHR, (cl_context_properties)wglGetCurrentContext(), 
         CL_WGL_HDC_KHR, (cl_context_properties)wglGetCurrentDC(), 
-        CL_CONTEXT_PLATFORM, (cl_context_properties)(platforms[0])(),
+        CL_CONTEXT_PLATFORM, (cl_context_properties)(platforms[0]),
         0
       };
 #elif defined( FABRIC_OS_LINUX )
@@ -145,7 +145,7 @@ namespace Fabric
       {
         CL_GL_CONTEXT_KHR, (cl_context_properties)glXGetCurrentContext(), 
         CL_GLX_DISPLAY_KHR, (cl_context_properties)glXGetCurrentDisplay(), 
-        CL_CONTEXT_PLATFORM, (cl_context_properties)(platforms[0])(),
+        CL_CONTEXT_PLATFORM, (cl_context_properties)(platforms[0]),
         0
       };
 #else
