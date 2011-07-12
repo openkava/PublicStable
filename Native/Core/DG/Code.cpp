@@ -5,9 +5,7 @@
 #include <Fabric/Core/DG/Code.h>
 #include <Fabric/Core/DG/ExecutionEngine.h>
 #include <Fabric/Core/CG/Scope.h>
-#if defined(FABRIC_MODULE_OCL)
-# include <Fabric/Core/OCL/OCL.h>
-#endif
+#include <Fabric/Core/OCL/OCL.h>
 #include <Fabric/Core/RT/Manager.h>
 #include <Fabric/Core/CG/ModuleBuilder.h>
 #include <Fabric/Core/KL/Parse.h>
@@ -94,9 +92,7 @@ namespace Fabric
 
       cgManager->llvmPrepareModule( moduleBuilder );
       m_context->getPlugManager()->llvmPrepareModule( moduleBuilder );
-#if defined(FABRIC_MODULE_OCL)
       OCL::llvmPrepareModule( moduleBuilder, m_context->getRTManager() );
-#endif
       
       CG::Diagnostics optimizeDiagnostics;
       CG::Diagnostics &diagnostics = (false && optimize)? optimizeDiagnostics: m_diagnostics;

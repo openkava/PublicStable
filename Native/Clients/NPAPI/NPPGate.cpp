@@ -23,9 +23,7 @@
 #include <Fabric/Core/Util/Assert.h>
 #include <Fabric/Core/MT/IdleTaskQueue.h>
 #include <Fabric/Core/IO/Helpers.h>
-#if defined(FABRIC_MODULE_OCL)
-# include <Fabric/Core/OCL/OCL.h>
-#endif
+#include <Fabric/Core/OCL/OCL.h>
 #include <Fabric/Base/JSON/Object.h>
 #include <Fabric/Core/Util/Debug.h>
 #include <Fabric/Core/Build.h>
@@ -171,9 +169,7 @@ namespace Fabric
         contextID = context->getContextID();
         FABRIC_DEBUG_LOG( "Created new context '%s'", contextID.c_str() );
     
-#if defined(FABRIC_MODULE_OCL)
         OCL::registerTypes( context->getRTManager() );
-#endif
       }
       
       RC::Handle<Interface> interface = Interface::Create( npp, context );
