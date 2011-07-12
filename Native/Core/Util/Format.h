@@ -25,16 +25,16 @@ namespace Fabric
     return buffer;
   }
   
-  std::string _( char const *data, size_t length, char quote = '\'' );
+  std::string _( char const *data, size_t length, size_t maxLength = SIZE_MAX, char quote = '\'' );
   
-  inline std::string _( char const *cStr )
+  inline std::string _( char const *cStr, size_t maxLength = SIZE_MAX )
   {
-    return _( cStr, strlen(cStr) );
+    return _( cStr, strlen(cStr), maxLength, '\'' );
   }
   
-  inline std::string _( std::string const &string )
+  inline std::string _( std::string const &string, size_t maxLength = SIZE_MAX )
   {
-    return _( string.data(), string.length() );
+    return _( string.data(), string.length(), maxLength, '\'' );
   }
   
   inline std::string _( bool value )
