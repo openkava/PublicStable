@@ -74,6 +74,9 @@
 		DB1B2EF413AA9229008A3950 /* SConscript */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = SConscript; sourceTree = "<group>"; };
 		DB1B2EF513AA9271008A3950 /* SConscript */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = SConscript; sourceTree = "<group>"; };
 		DB39AF9513425B40007026BA /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
+		DB78675913CD056100DEF8DA /* SConscript */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = SConscript; sourceTree = "<group>"; };
+		DB78676313CD05AE00DEF8DA /* exceptSample.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = exceptSample.cpp; sourceTree = "<group>"; };
+		DB78676413CD05AE00DEF8DA /* ExceptSample.fpm.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ExceptSample.fpm.json; sourceTree = "<group>"; };
 		DB966DC513A5422000616143 /* .gitignore */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 		DB96713E13A5423100616143 /* Config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Config.h; sourceTree = "<group>"; };
 		DB96713F13A5423100616143 /* Exception.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Exception.h; sourceTree = "<group>"; };
@@ -1213,6 +1216,16 @@
 				DB96842E13A5445200616143 /* Web */,
 				DB96842913A5445200616143 /* Util */,
 			);
+			sourceTree = "<group>";
+		};
+		DB78675813CD056100DEF8DA /* Except */ = {
+			isa = PBXGroup;
+			children = (
+				DB78675913CD056100DEF8DA /* SConscript */,
+				DB78676413CD05AE00DEF8DA /* ExceptSample.fpm.json */,
+				DB78676313CD05AE00DEF8DA /* exceptSample.cpp */,
+			);
+			path = Except;
 			sourceTree = "<group>";
 		};
 		DB966DC413A5422000616143 /* Native */ = {
@@ -2766,6 +2779,7 @@
 			children = (
 				DBCCD56613ABFAE300024113 /* SConscript */,
 				DBCCD56713ABFAE300024113 /* Time */,
+				DB78675813CD056100DEF8DA /* Except */,
 			);
 			path = Sample;
 			sourceTree = "<group>";
