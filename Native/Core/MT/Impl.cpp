@@ -57,12 +57,15 @@ namespace Fabric
 #endif
     }
     
-    ThreadPool ThreadPool::m_singleton;
+    ThreadPool *ThreadPool::Instance()
+    {
+      static ThreadPool instance;
+      return &instance;
+    }
 
-#if defined( FABRIC_POSIX )
     ThreadPool::ThreadPool()
       : m_stateMutex( "MT::ThreadPool stateMutex" )
-      , m_exiting( false )
+      , m_running( true )
     {
       m_isMainThread = true;
       
@@ -74,15 +77,23 @@ namespace Fabric
       m_stateMutex.unlock();
     }
     
-    ThreadPool::~ThreadPool()
+    void ThreadPool::terminate()
     {
+      FABRIC_ASSERT( m_running );
+      
       m_stateMutex.lock();
-      m_exiting = true;
+      m_running = false;
       m_stateCond.broadcast();
       m_stateMutex.unlock();
       
       for ( size_t i=0; i<m_workerThreads.size(); ++i )
         m_workerThreads[i].waitUntilDone();
+    }
+
+    ThreadPool::~ThreadPool()
+    {
+      if ( m_running )
+        terminate();
     }
 
     void ThreadPool::executeParallel( size_t count, void (*callback)( void *userdata, size_t index ), void *userdata, bool mainThreadOnly )
@@ -145,7 +156,7 @@ namespace Fabric
     void ThreadPool::workerMain()
     {
       m_stateMutex.lock();
-      while ( !m_exiting )
+      while ( m_running )
         executeOneTaskIfPossible_CRITICAL_SECTION();
       m_stateMutex.unlock();
     }
@@ -154,184 +165,5 @@ namespace Fabric
     {
       static_cast<ThreadPool *>(_this)->workerMain();
     }
-#elif defined( FABRIC_WIN32 )
-    ThreadPool::ThreadPool()
-      : m_exiting( false )
-      , m_running( false )
-    {
-      FABRIC_MT_TRACE( "ThreadPool::ThreadPool()" );
-      
-      m_isMainThread = true;
-      
-      ::InitializeCriticalSection( &m_cs );
-
-      // Create a manually reset event. This is important, because
-      // signalling an auto-reset event only wakes up a single waiter.
-      m_hWakeup = ::CreateEvent( NULL, TRUE, FALSE, NULL );
-
-      m_workerThreads.resize( getNumCores() - 1 );
-      m_workerExit.resize( getNumCores() - 1 );
-      for( size_t i = 0; i < m_workerThreads.size(); i++ )
-      {
-        m_workerExit[ i ] = ::CreateEvent( NULL, FALSE, FALSE, NULL );
-
-        ThreadData    *tdata = new ThreadData;
-        tdata->m_this = this;
-        tdata->m_exitEvent = m_workerExit[ i ];
-        m_workerThreads[ i ] = (HANDLE)_beginthreadex( NULL, 0, WorkerMainCallback, tdata, 0, NULL );
-
-        if( m_workerThreads[ i ] == NULL )
-          throw Exception( "CreateThread: unknown failure" );
-
-      }
-
-      m_running = true;
-    }
-    
-    ThreadPool::~ThreadPool()
-    {
-      FABRIC_MT_TRACE( "ThreadPool::~ThreadPool()" );
-      
-      if( m_running )
-        terminate();
-
-      FABRIC_ASSERT_TEXT( !m_running, "ThreadPool still running. Who forgot to turn the lights off?" );
-    }
-
-    void ThreadPool::terminate()
-    {
-      FABRIC_MT_TRACE( "ThreadPool::terminate" );
-
-      if( !m_running )
-        return;
-
-      m_running = false;
-
-      if( !m_workerThreads.empty() )
-      {
-        ::EnterCriticalSection( &m_cs );
-        m_exiting = true;
-        ::SetEvent( m_hWakeup );
-        ::LeaveCriticalSection( &m_cs );
-        
-        if( ::WaitForMultipleObjects( 
-          DWORD( m_workerThreads.size() ), &m_workerExit[ 0 ], TRUE, INFINITE ) == WAIT_FAILED )
-          throw Exception( "Thread wait failed." );
-      }
-      
-      ::EnterCriticalSection( &m_cs );
-      for( size_t i = 0; i < m_workerExit.size(); i++ )
-        ::CloseHandle( m_workerExit[ i ] );
-      ::CloseHandle( m_hWakeup );
-      m_hWakeup = NULL;
-      ::LeaveCriticalSection( &m_cs );
-
-      ::DeleteCriticalSection( &m_cs );
-      ::ZeroMemory( &m_cs, sizeof( m_cs ) );
-    }
-
-    void ThreadPool::executeParallel( size_t count, void (*callback)( void *userdata, size_t index ), void *userdata, bool mainThreadOnly )
-    {
-      FABRIC_MT_TRACE( "ThreadPool::executeParallel( %u, %p, %p )", (unsigned)count, callback, userdata );
-
-      if( !m_running )
-        throw Exception( "Thread pool no longer running." );
-      
-      if ( count == 1 && (!mainThreadOnly || m_isMainThread.get()) )
-        callback( userdata, 0 );
-      else if ( count > 1 )
-      {
-        Task task( count, callback, userdata );
-        
-        ::EnterCriticalSection( &m_cs );
-          
-        if ( mainThreadOnly )
-          m_mainThreadTasks.push_back( &task );
-        else m_tasks.push_back( &task );
-        
-        if( !::SetEvent( m_hWakeup ) )
-          throw Exception( "SetEvent(): unknown failure" );
-        
-        while ( !task.completed_CRITICAL_SECTION() )
-          executeOneTaskIfPossible_CRITICAL_SECTION();
-        
-        ::ResetEvent( m_hWakeup );
-
-        ::LeaveCriticalSection( &m_cs );
-      }
-    }
-
-    void ThreadPool::executeOneTaskIfPossible_CRITICAL_SECTION()
-    {
-      FABRIC_MT_TRACE( "ThreadPool::executeOneTaskIfPossible_CRITICAL_SECTION()" );
-      
-      if ( m_tasks.empty() && (!m_isMainThread.get() || m_mainThreadTasks.empty()) )
-      {
-        ::LeaveCriticalSection( &m_cs );
-
-        FABRIC_MT_TRACE_NOTE( "waiting for task.." );
-        if( ::WaitForSingleObject( m_hWakeup, INFINITE ) == WAIT_FAILED )
-          throw Exception( "WaitForSingleObject(): unknown failure" );
-
-        ::EnterCriticalSection( &m_cs );
-      }
-      else
-      {
-        std::vector<Task *> *taskQueue;
-        if ( m_isMainThread.get() && !m_mainThreadTasks.empty() )
-          taskQueue = &m_mainThreadTasks;
-        else taskQueue = &m_tasks;
-        
-        Task *task = taskQueue->back();
-        
-        FABRIC_MT_TRACE_NOTE( "task = %p", task );
-        size_t index;
-        bool keep;
-        FABRIC_MT_TRACE_NOTE( "before preExecute" );
-        task->preExecute_CRITICAL_SECTION( index, keep );
-        FABRIC_MT_TRACE_NOTE( "after preEecute" );
-        if ( !keep )
-          taskQueue->pop_back();
-
-        ::LeaveCriticalSection( &m_cs );
-        
-        task->execute( index );
-        
-        ::EnterCriticalSection( &m_cs );
-        
-        task->postExecute_CRITICAL_SECTION();
-        if ( task->completed_CRITICAL_SECTION() )
-        {
-          // Wake up the other waiting threads
-          if( !::SetEvent( m_hWakeup ) )
-            throw Exception( "SetEvent(): unknown failure" );
-        }
-      }
-    }
-
-    void ThreadPool::workerMain()
-    {
-      FABRIC_MT_TRACE( "ThreadPool::workerMain()" );
-      
-      ::EnterCriticalSection( &m_cs );
-        
-      while ( !m_exiting )
-        executeOneTaskIfPossible_CRITICAL_SECTION();
-        
-      ::LeaveCriticalSection( &m_cs );
-    }
-    
-    unsigned int ThreadPool::WorkerMainCallback( void *threadDataPtr )
-    {
-      FABRIC_MT_TRACE( "ThreadPool::WorkerMainCallback( %p )", threadDataPtr );
-      ThreadData    *threadData = (ThreadData *)threadDataPtr;
-
-      setThreadName( "Fabric Worker Thread" );
-      threadData->m_this->workerMain();
-      ::SetEvent( threadData->m_exitEvent );
-      delete threadData;
-      return 0;
-    }
-#endif
   };
 };
