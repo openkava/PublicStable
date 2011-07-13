@@ -78,6 +78,7 @@
 		DB78676313CD05AE00DEF8DA /* exceptSample.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = exceptSample.cpp; sourceTree = "<group>"; };
 		DB78676413CD05AE00DEF8DA /* ExceptSample.fpm.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ExceptSample.fpm.json; sourceTree = "<group>"; };
 		DB7867F513CE38C300DEF8DA /* Cond.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Cond.h; sourceTree = "<group>"; };
+		DB78683313CE484500DEF8DA /* Thread.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Thread.h; sourceTree = "<group>"; };
 		DB966DC513A5422000616143 /* .gitignore */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 		DB96713E13A5423100616143 /* Config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Config.h; sourceTree = "<group>"; };
 		DB96713F13A5423100616143 /* Exception.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Exception.h; sourceTree = "<group>"; };
@@ -1720,6 +1721,7 @@
 				DB96729D13A5423200616143 /* TaskGroup.h */,
 				DB96729E13A5423200616143 /* TaskGroupStream.cpp */,
 				DB96729F13A5423200616143 /* TaskGroupStream.h */,
+				DB78683313CE484500DEF8DA /* Thread.h */,
 				DB9672A013A5423200616143 /* Util.cpp */,
 				DB9672A113A5423200616143 /* Util.h */,
 			);

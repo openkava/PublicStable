@@ -68,13 +68,9 @@ namespace Fabric
       
       m_stateMutex.lock();
       size_t numCores = getNumCores();
-      m_workerThreadCount = numCores - 1;
-      m_workerThreads = new pthread_t[m_workerThreadCount];
-      for ( size_t i=0; i<m_workerThreadCount; ++i )
-      {
-         if ( pthread_create( &m_workerThreads[i], 0, &ThreadPool::WorkerMainCallback, this ) != 0 )
-          throw Exception( "pthread_create(): unknown failure" );
-      }
+      m_workerThreads.resize( numCores - 1 );
+      for ( size_t i=0; i<m_workerThreads.size(); ++i )
+        m_workerThreads[i].start( &ThreadPool::WorkerMainCallback, this );
       m_stateMutex.unlock();
     }
     
@@ -85,12 +81,8 @@ namespace Fabric
       m_stateCond.broadcast();
       m_stateMutex.unlock();
       
-      for ( size_t i=0; i<m_workerThreadCount; ++i )
-      {
-        if ( pthread_join( m_workerThreads[i], 0 ) != 0 )
-          throw Exception( "pthread_join(): unknown failure" );
-      }
-      delete [] m_workerThreads;
+      for ( size_t i=0; i<m_workerThreads.size(); ++i )
+        m_workerThreads[i].waitUntilDone();
     }
 
     void ThreadPool::executeParallel( size_t count, void (*callback)( void *userdata, size_t index ), void *userdata, bool mainThreadOnly )
@@ -158,11 +150,9 @@ namespace Fabric
       m_stateMutex.unlock();
     }
     
-    void *ThreadPool::WorkerMainCallback( void *_this )
+    void ThreadPool::WorkerMainCallback( void *_this )
     {
       static_cast<ThreadPool *>(_this)->workerMain();
-      pthread_exit(0);
-      return 0;
     }
 #elif defined( FABRIC_WIN32 )
     ThreadPool::ThreadPool()

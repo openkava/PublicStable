@@ -8,6 +8,8 @@
 #include <Fabric/Core/MT/Debug.h>
 #include <Fabric/Core/MT/Mutex.h>
 #include <Fabric/Core/MT/Cond.h>
+#include <Fabric/Core/MT/Thread.h>
+#include <Fabric/Core/MT/Cond.h>
 #include <Fabric/Core/Util/TLS.h>
 
 #include <vector>
@@ -104,12 +106,11 @@ namespace Fabric
       static ThreadPool m_singleton;
 
 #if defined( FABRIC_POSIX )
-      static void *WorkerMainCallback( void *_this );
+      static void WorkerMainCallback( void *_this );
 
       Mutex m_stateMutex;
       Cond m_stateCond;
-      size_t m_workerThreadCount;
-      pthread_t *m_workerThreads;
+      std::vector<Thread> m_workerThreads;
 #elif defined( FABRIC_WIN32)
       static unsigned __stdcall WorkerMainCallback( void *_this );
 
