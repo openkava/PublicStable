@@ -1,0 +1,28 @@
+[FABRIC] [MT] clGetDeviceIDs: 0
+[FABRIC] [MT] clDeviceIDs[0]: <Opaque>
+[FABRIC] [MT] clDeviceIDs[1]: <Opaque>
+[FABRIC] [MT] clCreateContext: 0
+[FABRIC] [MT] clContext: <Opaque>
+[FABRIC] [MT] clCreateCommandQueue: 0
+[FABRIC] [MT] clCommandQueue: <Opaque>
+[FABRIC] [MT] clCreateProgramWithSource: 0
+[FABRIC] [MT] clProgram: <Opaque>
+[FABRIC] [MT] clBuildProgram: 0
+[FABRIC] [MT] clCreateKernel returned 0
+[FABRIC] [MT] clKernel = <Opaque>
+[FABRIC] [MT] clCreateBuffer returned 0
+[FABRIC] [MT] input = <Opaque>
+[FABRIC] [MT] clCreateBuffer returned 0
+[FABRIC] [MT] output = <Opaque>
+[FABRIC] [MT] clEnqueueWriteBuffer returned 0
+[FABRIC] [MT] event = <Opaque>
+[FABRIC] [MT] clSetKernelArg returned 0
+[FABRIC] [MT] clGetKernelWorkGroupInfo returned 0
+[FABRIC] [MT] local = 512
+[FABRIC] [MT] clEnqueueNDRangeKernel returned 0
+[FABRIC] [MT] event = <Opaque>
+[FABRIC] [MT] clFinish returned 0
+[FABRIC] [MT] clEnqueueReadBuffer returned 0
+[FABRIC] [MT] event = <Opaque>
+[FABRIC] [MT] correctCount = 1024
+[FABRIC] [MT] clReleaseMemObject returned 0
