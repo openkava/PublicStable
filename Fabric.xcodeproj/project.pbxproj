@@ -77,6 +77,7 @@
 		DB78675913CD056100DEF8DA /* SConscript */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = SConscript; sourceTree = "<group>"; };
 		DB78676313CD05AE00DEF8DA /* exceptSample.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = exceptSample.cpp; sourceTree = "<group>"; };
 		DB78676413CD05AE00DEF8DA /* ExceptSample.fpm.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ExceptSample.fpm.json; sourceTree = "<group>"; };
+		DB7867F513CE38C300DEF8DA /* Cond.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Cond.h; sourceTree = "<group>"; };
 		DB966DC513A5422000616143 /* .gitignore */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 		DB96713E13A5423100616143 /* Config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Config.h; sourceTree = "<group>"; };
 		DB96713F13A5423100616143 /* Exception.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Exception.h; sourceTree = "<group>"; };
@@ -1701,6 +1702,7 @@
 			isa = PBXGroup;
 			children = (
 				DB96729A13A5423200616143 /* SConscript */,
+				DB7867F513CE38C300DEF8DA /* Cond.h */,
 				DB96728E13A5423200616143 /* Debug.cpp */,
 				DB96728F13A5423200616143 /* Debug.h */,
 				DB96729013A5423200616143 /* Function.cpp */,

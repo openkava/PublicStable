@@ -1,22 +1,16 @@
 /*
- *
- *  Created by Peter Zion on 10-11-07.
- *  Copyright 2010 Fabric 3D Inc. All rights reserved.
- *
+ *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
  */
-
+ 
 #ifndef _FABRIC_MT_IMPL_H
 #define _FABRIC_MT_IMPL_H
 
 #include <Fabric/Core/MT/Debug.h>
+#include <Fabric/Core/MT/Mutex.h>
+#include <Fabric/Core/MT/Cond.h>
 #include <Fabric/Core/Util/TLS.h>
-#include <vector>
 
-#if defined(FABRIC_POSIX)
-# include <pthread.h>
-#elif defined(FABRIC_WIN32)
-# include <windows.h>
-#endif
+#include <vector>
 
 namespace Fabric
 {
@@ -112,8 +106,8 @@ namespace Fabric
 #if defined( FABRIC_POSIX )
       static void *WorkerMainCallback( void *_this );
 
-      pthread_mutex_t m_stateMutex;
-      pthread_cond_t m_stateCond;
+      Mutex m_stateMutex;
+      Cond m_stateCond;
       size_t m_workerThreadCount;
       pthread_t *m_workerThreads;
 #elif defined( FABRIC_WIN32)
