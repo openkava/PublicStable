@@ -19,7 +19,7 @@ if buildOS == 'Darwin':
 if buildOS == 'Windows':
 	Import( 'glewFlags' )
 	oglPluginEnv.MergeFlags( glewFlags )
-  
+
 generator = oglPluginEnv.File("generate.py")
 template = oglPluginEnv.File("ogl.cpp_template")
 
@@ -31,6 +31,8 @@ if buildOS == 'Linux':
   command = command + " --header=/usr/include/GL/glew.h"
 if buildOS == 'Darwin':
   command = command + " --header=/opt/local/include/GL/glew.h"
+if buildOS == 'Windows':
+  command = command + " --header="+Dir('#').abspath+"/ThirdParty/Private/GLEW/GL/glew.h"
   
 command = command + " --template=$BUILDDIR/Exts/Builtin/OGL/ogl.cpp_template"
 command = command + " --cppresult=$BUILDDIR/Exts/Builtin/OGL/ogl.cpp"

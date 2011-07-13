@@ -12,6 +12,7 @@
 #include <Fabric/Core/DG/Context.h>
 #include <Fabric/Core/IO/Stream.h>
 #include <Fabric/Core/IO/Manager.h>
+#include <Fabric/Core/OCL/OCL.h>
 #include <Fabric/Core/Plug/Manager.h>
 
 namespace Fabric
@@ -142,6 +143,8 @@ namespace Fabric
             
       RC::Handle<IO::Manager> ioManager = IOManager::Create();
       RC::Handle<DG::Context> dgContext = DG::Context::Create( ioManager, m_pluginDirs );
+      OCL::registerTypes( dgContext->getRTManager() );
+
       Client *client = Client::Create( dgContext ).take();
       dgContext->getPlugManager()->loadBuiltInPlugins();
       
