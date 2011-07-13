@@ -157,7 +157,22 @@ namespace Fabric
         *clErrCode = errcode;
       return result;
     }
-    
+        
+    static int32_t GetContextDevices( cl_context clContext, void *clDeviceIDsAsOpaqueArray )
+    {
+      size_t clNumDevices = 0;
+      cl_int result = clGetContextInfo( clContext, CL_CONTEXT_DEVICES, 0, NULL, &clNumDevices );
+      if( result == CL_SUCCESS )
+      {
+        cl_device_id *clDeviceIDs = new cl_device_id[clNumDevices];
+        result = clGetContextInfo( clContext, CL_CONTEXT_DEVICES, clNumDevices, clDeviceIDs, &clNumDevices );
+        if ( result == CL_SUCCESS )
+          clDeviceIDVariableArrayDesc->setMembers( clDeviceIDsAsOpaqueArray, clNumDevices, clDeviceIDs );
+        delete [] clDeviceIDs;
+      }
+      return result;
+    }
+
     static cl_command_queue CreateCommandQueue( cl_context clContext, cl_device_id clDeviceID, size_t clCommandQueueProperties, int32_t *clErrCode )
     {
       FABRIC_OCL_TRACE( "CreateCommandQueue()" );
@@ -183,12 +198,16 @@ namespace Fabric
     
     static int32_t BuildProgram( cl_program clProgram, void const * const clDeviceIDsRValue, void const * const optionsStringRValue )
     {
-      FABRIC_OCL_TRACE( "BuildProgram()" );
       cl_uint num_devices = clDeviceIDVariableArrayDesc->getNumMembers( &clDeviceIDsRValue );
       cl_device_id const *devices = (cl_device_id const *)clDeviceIDVariableArrayDesc->getMemberData( &clDeviceIDsRValue, 0 );
       char const *options = stringDesc->getValueData( &optionsStringRValue );
       cl_int result = clBuildProgram( clProgram, num_devices, devices, options, NULL, NULL );
       return result;
+    }
+    
+    static int32_t GetMemObjectSize( cl_mem clMem, size_t *size )
+    {
+      return clGetMemObjectInfo( clMem, CL_MEM_SIZE, sizeof(*size), size, NULL );
     }
     
     static int32_t GetProgramBuildInfoi( cl_program program, cl_device_id device, size_t param_name, int32_t *retval )
@@ -342,6 +361,7 @@ namespace Fabric
       rtManager->registerAlias( "cl_bool", booleanDesc );
       rtManager->registerAlias( "cl_int", integerDesc );
       rtManager->registerAlias( "cl_device_type", sizeDesc );
+      rtManager->registerAlias( "cl_context_info", sizeDesc );
       rtManager->registerAlias( "cl_command_queue_properties", sizeDesc );
       rtManager->registerAlias( "cl_mem_flags", sizeDesc );
       rtManager->registerAlias( "cl_kernel_work_group_info", integerDesc );
@@ -474,6 +494,7 @@ namespace Fabric
       ADD_FUNC( GetDeviceIDs, "=Integer,<cl_platform_id clPlatformID,<cl_device_type clDeviceType,>cl_device_id[] clDeviceIDs" );
       ADD_FUNC( CreateContext, "=cl_context,<cl_device_id[] clDeviceIDs,>Integer clErrCode" );
       ADD_FUNC( CreateContext_GL, "=cl_context,>Integer clErrCode" );
+      ADD_FUNC( GetContextDevices, "=Integer,<cl_context clContext,>cl_device_id[] clDeviceIDs" );
       ADD_FUNC( CreateCommandQueue, "=cl_command_queue,<cl_context clContext,<cl_device_id clDeviceID,<cl_command_queue_properties clCommandQueueProperties,>Integer clErrCode" );
       ADD_FUNC( CreateProgramWithSource, "=cl_program,<cl_context clContext,<String string,>Integer clErrCode" );
       ADD_FUNC( BuildProgram, "=Integer,<cl_program clProgram,<cl_device_id[] clDeviceIDs,<String options" );
@@ -489,6 +510,7 @@ namespace Fabric
       ADD_FUNC( Finish, "=Integer,<cl_command_queue command_queue" );
       ADD_FUNC( GetProgramBuildInfoi, "=Integer,<cl_program program,<cl_device_id device,<cl_program_build_info param_name,>Integer retval" );
       ADD_FUNC( GetProgramBuildInfoStr, "=Integer,<cl_program program,<cl_device_id device,<cl_program_build_info param_name,>String retval" );
+      ADD_FUNC( GetMemObjectSize, "=Integer,<cl_mem clMem,>Size size" );
     }
     
     void *llvmResolveExternalFunction( std::string const &name )
