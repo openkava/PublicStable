@@ -43,8 +43,8 @@ void _clearError()
     GLenum error = glewInit();
     if(error != GLEW_OK)
     {
-      printf("[Fabric::OGL::glewInit] ERROR: %s\n",(const char*)gluErrorString(error));
-      throw("[Fabric::OGL::glewInit] ERROR: %s",(const char*)gluErrorString(error));
+      printf("[Fabric::OGL::glewInit] ERROR: %s\n",(const char*)glewGetErrorString(error));
+      throw("[Fabric::OGL::glewInit] ERROR: %s",(const char*)glewGetErrorString(error));
     }
     gGlewInitialized = true;
   }
@@ -62,8 +62,8 @@ void _checkError(const char * functionName)
   GLenum error = glGetError();
   if(error != GL_NO_ERROR)
   {
-    printf("[Fabric::OGL::%s] ERROR: %s\n",functionName,(const char*)gluErrorString(error));
-    throw("[Fabric::OGL::%s] ERROR: %s",functionName,(const char*)gluErrorString(error));
+    printf("[Fabric::OGL::%s] ERROR: %s\n",functionName,(const char*) glewGetErrorString(error));
+    throw("[Fabric::OGL::%s] ERROR: %s",functionName,(const char*) glewGetErrorString(error));
   }
 }
 

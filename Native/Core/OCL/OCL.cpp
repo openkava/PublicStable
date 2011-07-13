@@ -25,12 +25,13 @@
 #include <Fabric/Core/RT/Manager.h>
 
 #if defined( FABRIC_OS_MACOSX )
-# include <OpenCL/OpenCL.h>
+# include <OpenCL/opencl.h>
 # include <OpenGL/OpenGL.h>
 # define CL_CALLBACK
 #elif defined( FABRIC_OS_WINDOWS )
 # include <windows.h>
 # include <CL/opencl.h>
+# include <GL/glew.h>
 #elif defined( FABRIC_OS_LINUX )
 # include <CL/opencl.h>
 # include <GL/glx.h>
