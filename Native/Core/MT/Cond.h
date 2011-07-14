@@ -32,6 +32,7 @@ namespace Fabric
           throw Exception( "pthread_cond_init(): unknown failure" );
 #elif defined(FABRIC_WIN32)
         ::InitializeCriticalSection( &m_windowsCS );
+        m_windowsGeneration = 0;
         m_windowsWaitCount = 0;
         m_windowsSignalCount = 0;
         m_windowsEvent = CreateEvent( NULL, TRUE, FALSE, NULL );
@@ -63,6 +64,7 @@ namespace Fabric
           throw Exception( "pthread_cond_wait(): unknown failure" );
 #elif defined(FABRIC_WIN32)
         ::EnterCriticalSection( &m_windowsCS);
+        size_t myGeneration = m_windowsGeneration;
         ++m_windowsWaitCount;
         ::LeaveCriticalSection( &m_windowsCS);
 
@@ -72,7 +74,7 @@ namespace Fabric
           ::WaitForSingleObject( m_windowsEvent, INFINITE );
 
           ::EnterCriticalSection( &m_windowsCS );
-          bool waitDone = m_windowsSignalCount > 0;
+          bool waitDone = m_windowsSignalCount > 0 && myGeneration != m_windowsGeneration;
           ::LeaveCriticalSection( &m_windowsCS );
 
           if ( waitDone )
@@ -101,6 +103,7 @@ namespace Fabric
         {
           ::SetEvent( m_windowsEvent );
           ++m_windowsSignalCount;
+          ++m_windowsGeneration;
         }
         ::LeaveCriticalSection( &m_windowsCS );
 #else
@@ -119,6 +122,7 @@ namespace Fabric
         {  
           ::SetEvent( m_windowsEvent );
           m_windowsSignalCount = m_windowsWaitCount;
+          ++m_windowsGeneration;
         }
         ::LeaveCriticalSection( &m_windowsCS );
 #else
@@ -132,6 +136,7 @@ namespace Fabric
       pthread_cond_t m_posixCond;
 #elif defined(FABRIC_WIN32)
       CRITICAL_SECTION m_windowsCS;
+      size_t m_windowsGeneration;
       size_t m_windowsWaitCount;
       size_t m_windowsSignalCount;
       HANDLE m_windowsEvent;
