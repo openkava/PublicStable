@@ -1,0 +1,2 @@
+[FABRIC] [MT] before test exception
+terminate called after throwing an instance of 'Fabric::Exception'
