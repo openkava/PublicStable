@@ -82,6 +82,11 @@ namespace Fabric
       void executeParallel( size_t count, void (*callback)( void *userdata, size_t index ), void *userdata, bool mainThreadOnly );
       
       void terminate();
+      
+      bool isMainThread() const
+      {
+        return m_isMainThread.get();
+      }
         
     protected:
     
