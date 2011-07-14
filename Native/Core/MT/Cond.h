@@ -31,10 +31,9 @@ namespace Fabric
         if ( pthread_cond_init( &m_posixCond, 0 ) != 0 )
           throw Exception( "pthread_cond_init(): unknown failure" );
 #elif defined(FABRIC_WIN32)
-        m_windowsNumWaiters = 0;
-        InitializeCriticalSection( &m_windowsNumWaitersLock );
-        m_windowsReleaseCount = 0;
-        m_windowsWaitGenerationCount = 0;
+        ::InitializeCriticalSection( &m_windowsCS );
+        m_windowsWaitCount = 0;
+        m_windowsSignalCount = 0;
         m_windowsEvent = CreateEvent( NULL, TRUE, FALSE, NULL );
         if ( !m_windowsEvent )
           throw Exception( "CreateEvent(): unknown failure" );
@@ -51,6 +50,7 @@ namespace Fabric
 #elif defined(FABRIC_WIN32)
         if ( !::CloseHandle( m_windowsEvent ) )
           throw Exception( "CloseHandle(): unknown failure" );
+        ::DestroyCriticalSection( &m_windowsCS );
 #else
 # error "missing FABRIC_PLATFORM_... definition"
 #endif
@@ -62,32 +62,29 @@ namespace Fabric
         if ( pthread_cond_wait( &m_posixCond, &mutex.m_mutex ) != 0 )
           throw Exception( "pthread_cond_wait(): unknown failure" );
 #elif defined(FABRIC_WIN32)
-        ::EnterCriticalSection( &m_windowsNumWaitersLock);
-        ++m_windowsNumWaiters;
-        size_t myGeneration = m_windowsWaitGenerationCount;
-        ::LeaveCriticalSection( &m_windowsNumWaitersLock);
+        ::EnterCriticalSection( &m_windowsCS);
+        ++m_windowsWaitCount;
+        ::LeaveCriticalSection( &m_windowsCS);
 
         ::LeaveCriticalSection( &mutex.m_cs );
         for (;;)
         {
           ::WaitForSingleObject( m_windowsEvent, INFINITE );
 
-          ::EnterCriticalSection( &m_windowsNumWaitersLock );
-          bool waitDone = m_windowsReleaseCount > 0 && m_windowsWaitGenerationCount != myGeneration;
-          ::LeaveCriticalSection( &m_windowsNumWaitersLock );
+          ::EnterCriticalSection( &m_windowsCS );
+          bool waitDone = m_windowsSignalCount > 0;
+          ::LeaveCriticalSection( &m_windowsCS );
 
           if ( waitDone )
             break;
         }
         ::EnterCriticalSection( &mutex.m_cs );
 
-        ::EnterCriticalSection( &m_windowsNumWaitersLock );
-        --m_windowsNumWaiters;
-        bool lastWaiter = --m_windowsReleaseCount == 0;
-        ::LeaveCriticalSection( &m_windowsNumWaitersLock );
-
-        if ( lastWaiter )
+        ::EnterCriticalSection( &m_windowsCS );
+        --m_windowsWaitCount;
+        if ( --m_windowsSignalCount == 0 )
           ::ResetEvent( m_windowsEvent );
+        ::LeaveCriticalSection( &m_windowsCS );
 #else
 # error "missing FABRIC_PLATFORM_... definition"
 #endif
@@ -99,14 +96,13 @@ namespace Fabric
         if ( pthread_cond_signal( &m_posixCond ) != 0 )
           throw Exception( "pthread_cond_signal(): unknown failure" );
 #elif defined(FABRIC_WIN32)
-        ::EnterCriticalSection( &m_windowsNumWaitersLock );
-        if ( m_windowsNumWaiters > m_windowsReleaseCount )
+        ::EnterCriticalSection( &m_windowsCS );
+        if ( m_windowsWaitCount > m_windowsSignalCount )
         {
           ::SetEvent( m_windowsEvent );
-          ++m_windowsReleaseCount;
-          ++m_windowsWaitGenerationCount;
+          ++m_windowsSignalCount;
         }
-        ::LeaveCriticalSection( &m_windowsNumWaitersLock );
+        ::LeaveCriticalSection( &m_windowsCS );
 #else
 # error "missing FABRIC_PLATFORM_... definition"
 #endif
@@ -118,14 +114,13 @@ namespace Fabric
         if ( pthread_cond_broadcast( &m_posixCond ) != 0 )
           throw Exception( "pthread_cond_broadcast(): unknown failure" );
 #elif defined(FABRIC_WIN32)
-        ::EnterCriticalSection( &m_windowsNumWaitersLock );
-        if ( m_windowsNumWaiters > 0 )
+        ::EnterCriticalSection( &m_windowsCS );
+        if ( m_windowsWaitCount > 0 )
         {  
           ::SetEvent( m_windowsEvent );
-          m_windowsReleaseCount = m_windowsNumWaiters;
-          ++m_windowsWaitGenerationCount;
+          m_windowsSignalCount = m_windowsWaitCount;
         }
-        ::LeaveCriticalSection( &m_windowsNumWaitersLock );
+        ::LeaveCriticalSection( &m_windowsCS );
 #else
 # error "missing FABRIC_PLATFORM_... definition"
 #endif
@@ -136,10 +131,9 @@ namespace Fabric
 #if defined(FABRIC_POSIX)
       pthread_cond_t m_posixCond;
 #elif defined(FABRIC_WIN32)
-      size_t m_windowsNumWaiters;
-      CRITICAL_SECTION m_windowsNumWaitersLock;
-      size_t m_windowsReleaseCount;
-      size_t m_windowsWaitGenerationCount;
+      CRITICAL_SECTION m_windowsCS;
+      size_t m_windowsWaitCount;
+      size_t m_windowsSignalCount;
       HANDLE m_windowsEvent;
 #else
 # error "missing FABRIC_PLATFORM_... definition"
