@@ -51,7 +51,7 @@ namespace Fabric
 #elif defined(FABRIC_WIN32)
         if ( !::CloseHandle( m_windowsEvent ) )
           throw Exception( "CloseHandle(): unknown failure" );
-        ::DestroyCriticalSection( &m_windowsCS );
+        ::DeleteCriticalSection( &m_windowsCS );
 #else
 # error "missing FABRIC_PLATFORM_... definition"
 #endif
