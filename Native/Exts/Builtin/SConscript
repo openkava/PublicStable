@@ -10,7 +10,8 @@ aliases = [
     'hdrExt',
     'pngExt',
     'tgaExt',
-    'viconExt'
+    'viconExt',
+    'mathExt',
 ]
 
 dirs = [
@@ -20,7 +21,8 @@ dirs = [
     'OGL',
     'PNG',
     'TGA',
-    'VICON'
+    'VICON',
+    'Math',
 ]
 
 if buildOS != 'Windows':
