@@ -9,8 +9,7 @@ aliases = []
 SConscript( dirs=['NPAPI'] )
 aliases += ['npapi']
 
-if buildOS != 'Windows':
-  SConscript( dirs=['CLI'] )
-  aliases += ['cli']
+SConscript( dirs=['CLI'] )
+aliases += ['cli']
 
 Alias( 'clients', aliases )
