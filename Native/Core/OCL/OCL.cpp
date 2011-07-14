@@ -61,15 +61,18 @@ namespace Fabric
     static RC::ConstHandle<RT::OpaqueDesc> clEventDesc;
     static RC::ConstHandle<RT::VariableArrayDesc> clEventVariableArrayDesc;
     
-    static int32_t GetPlatformIDs( cl_uint clNumEntries, void *clPlatformIDsAsOpaqueArray )
+    static int32_t GetPlatformIDs( void *clPlatformIDsAsOpaqueArray )
     {
       FABRIC_OCL_TRACE( "GetPlatformIDs()" );
-      cl_platform_id *clPlatformIDs = new cl_platform_id[clNumEntries];
       cl_uint clNumPlatforms;
-      cl_int result = clGetPlatformIDs( clNumEntries, clPlatformIDs, &clNumPlatforms );
+      cl_int result = clGetPlatformIDs( 0, NULL, &clNumPlatforms );
       if ( result == CL_SUCCESS )
+      {
+        cl_platform_id *clPlatformIDs = new cl_platform_id[clNumPlatforms];
+        cl_int result = clGetPlatformIDs( clNumPlatforms, clPlatformIDs, NULL );
         clPlatformIDVariableArrayDesc->setMembers( clPlatformIDsAsOpaqueArray, clNumPlatforms, clPlatformIDs );
-      delete [] clPlatformIDs;
+        delete [] clPlatformIDs;
+      }
       return result;
     }
 
@@ -490,7 +493,7 @@ namespace Fabric
       ADD_CONST_INT( CL_PROGRAM_BUILD_LOG );
       
       //
-      ADD_FUNC( GetPlatformIDs, "=Integer,<Size clNumEntries,>cl_platform_id[] clPlatformIDs" );
+      ADD_FUNC( GetPlatformIDs, "=Integer,>cl_platform_id[] clPlatformIDs" );
       ADD_FUNC( GetDeviceIDs, "=Integer,<cl_platform_id clPlatformID,<cl_device_type clDeviceType,>cl_device_id[] clDeviceIDs" );
       ADD_FUNC( CreateContext, "=cl_context,<cl_device_id[] clDeviceIDs,>Integer clErrCode" );
       ADD_FUNC( CreateContext_GL, "=cl_context,>Integer clErrCode" );
