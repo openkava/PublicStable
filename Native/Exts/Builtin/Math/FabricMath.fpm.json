@@ -1,0 +1,4 @@
+{
+  "libs": "FabricPNG",
+  "code": "Integer mathRandomInteger( Size id, Size offset );\nScalar mathRandomScalar( Size id, Size offset );\n"
+}
