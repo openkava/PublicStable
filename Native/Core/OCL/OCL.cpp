@@ -58,6 +58,7 @@ namespace Fabric
     static RC::ConstHandle<RT::OpaqueDesc> clProgramDesc;
     static RC::ConstHandle<RT::OpaqueDesc> clKernelDesc;
     static RC::ConstHandle<RT::OpaqueDesc> clMemDesc;
+    static RC::ConstHandle<RT::VariableArrayDesc> clMemVariableArrayDesc;
     static RC::ConstHandle<RT::OpaqueDesc> clEventDesc;
     static RC::ConstHandle<RT::VariableArrayDesc> clEventVariableArrayDesc;
     
@@ -291,7 +292,43 @@ namespace Fabric
       cl_int result = clEnqueueReadBuffer( command_queue, buffer, blocking_read? CL_TRUE: CL_FALSE, offset, cb, ptr, num_events_in_wait_list, event_wait_list, event );
       return result;
     }
-    
+
+    static int32_t EnqueueAcquireGLObjects(
+      cl_command_queue command_queue,
+      void const * const memObjectsArrayRValue, 
+      void const * const eventWaitListArrayRValue, 
+      cl_event *event
+      )
+    {
+      FABRIC_OCL_TRACE( "EnqueueAcquireGLObjects()" );
+      cl_uint num_mem_objects = clMemVariableArrayDesc->getNumMembers( &memObjectsArrayRValue );
+      cl_mem const *mem_objects = num_mem_objects? (cl_mem const *)clMemVariableArrayDesc->getMemberData( &memObjectsArrayRValue, 0 ): NULL;
+
+      cl_uint num_events_in_wait_list = clEventVariableArrayDesc->getNumMembers( &eventWaitListArrayRValue );
+      cl_event const *event_wait_list = num_events_in_wait_list? (cl_event const *)clEventVariableArrayDesc->getMemberData( &eventWaitListArrayRValue, 0 ): NULL;
+
+      cl_int result = clEnqueueAcquireGLObjects( command_queue, num_mem_objects, mem_objects, num_events_in_wait_list, event_wait_list, event );
+      return result;
+    }
+
+    static int32_t EnqueueReleaseGLObjects(
+      cl_command_queue command_queue,
+      void const * const memObjectsArrayRValue, 
+      void const * const eventWaitListArrayRValue, 
+      cl_event *event
+      )
+    {
+      FABRIC_OCL_TRACE( "EnqueueReleaseGLObjects()" );
+      cl_uint num_mem_objects = clMemVariableArrayDesc->getNumMembers( &memObjectsArrayRValue );
+      cl_mem const *mem_objects = num_mem_objects? (cl_mem const *)clMemVariableArrayDesc->getMemberData( &memObjectsArrayRValue, 0 ): NULL;
+
+      cl_uint num_events_in_wait_list = clEventVariableArrayDesc->getNumMembers( &eventWaitListArrayRValue );
+      cl_event const *event_wait_list = num_events_in_wait_list? (cl_event const *)clEventVariableArrayDesc->getMemberData( &eventWaitListArrayRValue, 0 ): NULL;
+
+      cl_int result = clEnqueueReleaseGLObjects( command_queue, num_mem_objects, mem_objects, num_events_in_wait_list, event_wait_list, event );
+      return result;
+    }
+
     static int32_t EnqueueWriteBuffer( cl_command_queue command_queue, cl_mem buffer, bool blocking_write, size_t offset, size_t cb, void const *ptr, void const * const eventWaitListArrayRValue, cl_event *event )
     {
       FABRIC_OCL_TRACE( "EnqueueWriteBuffer()" );
@@ -380,6 +417,7 @@ namespace Fabric
       clProgramDesc = rtManager->registerOpaque( "cl_program", sizeof(cl_program) );
       clKernelDesc = rtManager->registerOpaque( "cl_kernel", sizeof(cl_kernel) );
       clMemDesc = rtManager->registerOpaque( "cl_mem", sizeof(cl_mem) );
+      clMemVariableArrayDesc = rtManager->getVariableArrayOf( clMemDesc );
       clEventDesc = rtManager->registerOpaque( "cl_event", sizeof(cl_event) );
       clEventVariableArrayDesc = rtManager->getVariableArrayOf( clEventDesc );
     }
@@ -507,6 +545,8 @@ namespace Fabric
       ADD_FUNC( ReleaseMemObject, "=Integer,<cl_mem memobj" );
       ADD_FUNC( EnqueueReadBuffer, "=Integer,<cl_command_queue command_queue,<cl_mem buffer,<Boolean blocking_read,<Size offset,<Size cb,<Data ptr,<cl_event[] clEventArray,>cl_event event" );
       ADD_FUNC( EnqueueWriteBuffer, "=Integer,<cl_command_queue command_queue,<cl_mem buffer,<Boolean blocking_read,<Size offset,<Size cb,<Data ptr,<cl_event[] clEventArray,>cl_event event" );
+      ADD_FUNC( EnqueueAcquireGLObjects, "=Integer,<cl_command_queue command_queue,<cl_mem[] clMemArray,<cl_event[] clEventArray,>cl_event event" );
+      ADD_FUNC( EnqueueReleaseGLObjects, "=Integer,<cl_command_queue command_queue,<cl_mem[] clMemArray,<cl_event[] clEventArray,>cl_event event" );
       ADD_FUNC( SetKernelArg, "=Integer,<cl_kernel kernel,<Size arg_index,<Size arg_size,<Data arg_value" );
       ADD_FUNC( GetKernelWorkGroupInfo, "=Integer,<cl_kernel kernel,<cl_device_id device,<cl_kernel_work_group_info param_name,<Size param_value_size,<Data param_value,<Data param_value_size_ret" );
       ADD_FUNC( EnqueueNDRangeKernel, "=Integer,<cl_command_queue command_queue,<cl_kernel kernel,<Size work_dim,<Data global_work_offset,<Data global_work_size,<Data local_work_size,<cl_event[] clEventArray,>cl_event event" );

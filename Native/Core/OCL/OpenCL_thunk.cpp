@@ -118,6 +118,8 @@ CL_IMPL_6( clGetProgramBuildInfo, ERR_RET, cl_int, (cl_program a0, cl_device_id 
 CL_IMPL_5( clGetGLContextInfoKHR, ERR_RET, cl_int, ( const cl_context_properties * a0, cl_gl_context_info a1,size_t a2,void *a3,size_t *a4 ) )
 CL_IMPL_5( clGetPlatformInfo, ERR_RET, cl_int, ( cl_platform_id a0, cl_platform_info a1,size_t a2,void *a3,size_t *a4 ) )
 CL_IMPL_5( clGetDeviceInfo, ERR_RET, cl_int, ( cl_device_id a0, cl_device_info a1,size_t a2,void *a3,size_t *a4 ) )
+CL_IMPL_6( clEnqueueAcquireGLObjects, ERR_RET, cl_int, (cl_command_queue a0, cl_uint a1, const cl_mem * a2, cl_uint a3, const cl_event * a4, cl_event *a5) )
+CL_IMPL_6( clEnqueueReleaseGLObjects, ERR_RET, cl_int, (cl_command_queue a0, cl_uint a1, const cl_mem * a2, cl_uint a3, const cl_event * a4, cl_event *a5) )
 
 };
 
