@@ -11,6 +11,7 @@
 # include <pthread.h>
 #elif defined(FABRIC_WIN32) 
 # include <windows.h>
+# include <process.h>
 #else
 # error "missing FABRIC_PLATFORM_... definition"
 #endif
