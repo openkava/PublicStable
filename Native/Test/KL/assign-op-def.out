@@ -1,1 +1,69 @@
+GlobalList
+  StructDecl( 'Vec3' )
+    StructDeclMember( 'x', Scalar )
+    StructDeclMember( 'y', Scalar )
+    StructDeclMember( 'z', Scalar )
+  Function( '' ('__construct_Vec3__Scalar__Scalar__Scalar'), void )
+    ParamList
+      Param( 'self', Vec3, l-value )
+      Param( 'x', Scalar, r-value )
+      Param( 'y', Scalar, r-value )
+      Param( 'z', Scalar, r-value )
+    CompoundStatement
+      StatementList
+        ExprStatement
+          AssignOp(ASSIGN_OP)
+            StructMemberOp( 'x' )
+              Var('self')
+            Var('x')
+        ExprStatement
+          AssignOp(ASSIGN_OP)
+            StructMemberOp( 'y' )
+              Var('self')
+            Var('y')
+        ExprStatement
+          AssignOp(ASSIGN_OP)
+            StructMemberOp( 'z' )
+              Var('self')
+            Var('z')
+  Function( '' ('__method_ASSIGN_OP_ADD__Vec3__Vec3'), void )
+    ParamList
+      Param( 'self', Vec3, l-value )
+      Param( 'other', Vec3, r-value )
+    CompoundStatement
+      StatementList
+        ExprStatement
+          AssignOp(ASSIGN_OP_ADD)
+            StructMemberOp( 'x' )
+              Var('self')
+            StructMemberOp( 'x' )
+              Var('other')
+        ExprStatement
+          AssignOp(ASSIGN_OP_ADD)
+            StructMemberOp( 'y' )
+              Var('self')
+            StructMemberOp( 'y' )
+              Var('other')
+        ExprStatement
+          AssignOp(ASSIGN_OP_ADD)
+            StructMemberOp( 'z' )
+              Var('self')
+            StructMemberOp( 'z' )
+              Var('other')
+  Function( 'entry' ('entry'), void )
+    ParamList
+    CompoundStatement
+      StatementList
+        StatementList
+          InitializedVarDecl( VarDecl( 'vec3', Vec3 ), ArgList )
+            ArgList
+              ConstScalar( 1 )
+              ConstScalar( 2 )
+              ConstScalar( 3 )
+        ExprStatement
+          AssignOp(ASSIGN_OP_ADD)
+            Var('vec3')
+            Var('vec3')
+        Report
+          Var('vec3')
 {x:2,y:4,z:6}

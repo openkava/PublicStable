@@ -1,3 +1,157 @@
+GlobalList
+  Function( 'computeDwell' ('computeDwell'), Byte:r-value )
+    ParamList
+      Param( 'x', Scalar, r-value )
+      Param( 'y', Scalar, r-value )
+    CompoundStatement
+      StatementList
+        StatementList
+          AssignedVarDecl( VarDecl( 'z_re', Scalar ), Var('x') )
+            Var('x')
+        StatementList
+          AssignedVarDecl( VarDecl( 'z_im', Scalar ), Var('y') )
+            Var('y')
+        StatementList
+          AssignedVarDecl( VarDecl( 'count', Byte ), ConstSize( 0 ) )
+            ConstSize( 0 )
+        CStyleLoop
+          ExprStatement
+            AssignOp(ASSIGN_OP)
+              Var('count')
+              ConstSize( 0 )
+          BinOp( LT )
+            Var('count')
+            ConstSize( 255 )
+          UniOp( prefix ++ )
+            Var('count')
+          CompoundStatement
+            StatementList
+              ConditionalStatement
+                BinOp( GE )
+                  BinOp( ADD )
+                    BinOp( MUL )
+                      Var('z_re')
+                      Var('z_re')
+                    BinOp( MUL )
+                      Var('z_im')
+                      Var('z_im')
+                  ConstScalar( 4 )
+                BreakStatement
+              StatementList
+                AssignedVarDecl( VarDecl( 'new_z_re', Scalar ), BinOp( ADD ) )
+                  BinOp( ADD )
+                    BinOp( SUB )
+                      BinOp( MUL )
+                        Var('z_re')
+                        Var('z_re')
+                      BinOp( MUL )
+                        Var('z_im')
+                        Var('z_im')
+                    Var('x')
+              ExprStatement
+                AssignOp(ASSIGN_OP)
+                  Var('z_im')
+                  BinOp( ADD )
+                    BinOp( MUL )
+                      BinOp( MUL )
+                        ConstScalar( 2 )
+                        Var('z_re')
+                      Var('z_im')
+                    Var('y')
+              ExprStatement
+                AssignOp(ASSIGN_OP)
+                  Var('z_re')
+                  Var('new_z_re')
+        ReturnStatement
+          Var('count')
+  Function( 'entry' ('entry'), void )
+    ParamList
+    CompoundStatement
+      StatementList
+        StatementList
+          VarDecl( 'row', Integer )
+        CStyleLoop
+          ExprStatement
+            AssignOp(ASSIGN_OP)
+              Var('row')
+              ConstSize( 0 )
+          BinOp( LE )
+            Var('row')
+            ConstSize( 40 )
+          UniOp( prefix ++ )
+            Var('row')
+          CompoundStatement
+            StatementList
+              StatementList
+                AssignedVarDecl( VarDecl( 'y', Scalar ), BinOp( SUB ) )
+                  BinOp( SUB )
+                    BinOp( DIV )
+                      BinOp( MUL )
+                        ConstScalar( 4 )
+                        Var('row')
+                      ConstScalar( 40 )
+                    ConstScalar( 2 )
+              StatementList
+                VarDecl( 'rowString', String )
+              StatementList
+                VarDecl( 'col', Integer )
+              CStyleLoop
+                ExprStatement
+                  AssignOp(ASSIGN_OP)
+                    Var('col')
+                    ConstSize( 0 )
+                BinOp( LE )
+                  Var('col')
+                  ConstSize( 78 )
+                UniOp( prefix ++ )
+                  Var('col')
+                CompoundStatement
+                  StatementList
+                    StatementList
+                      AssignedVarDecl( VarDecl( 'x', Scalar ), BinOp( SUB ) )
+                        BinOp( SUB )
+                          BinOp( DIV )
+                            BinOp( MUL )
+                              ConstScalar( 4 )
+                              Var('col')
+                            ConstScalar( 78 )
+                          ConstScalar( 2 )
+                    StatementList
+                      AssignedVarDecl( VarDecl( 'dwell', Byte ), Call('computeDwell') )
+                        Call('computeDwell')
+                          ArgList
+                            Var('x')
+                            Var('y')
+                    ConditionalStatement
+                      BinOp( BIT_AND )
+                        Var('dwell')
+                        ConstSize( 192 )
+                      ExprStatement
+                        AssignOp(ASSIGN_OP_ADD)
+                          Var('rowString')
+                          ConstString( '#' )
+                      ConditionalStatement
+                        BinOp( BIT_AND )
+                          Var('dwell')
+                          ConstSize( 48 )
+                        ExprStatement
+                          AssignOp(ASSIGN_OP_ADD)
+                            Var('rowString')
+                            ConstString( '*' )
+                        ConditionalStatement
+                          BinOp( BIT_AND )
+                            Var('dwell')
+                            ConstSize( 12 )
+                          ExprStatement
+                            AssignOp(ASSIGN_OP_ADD)
+                              Var('rowString')
+                              ConstString( '.' )
+                          ExprStatement
+                            AssignOp(ASSIGN_OP_ADD)
+                              Var('rowString')
+                              ConstString( ' ' )
+              Report
+                Var('rowString')
                                                                                
                                                                                
                                                                                

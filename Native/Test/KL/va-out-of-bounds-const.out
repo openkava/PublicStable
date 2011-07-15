@@ -1,3 +1,35 @@
+GlobalList
+  Function( 'doIndex' ('doIndex'), Integer:r-value )
+    ParamList
+      Param( 'a', Integer[], r-value )
+      Param( 'i', Size, r-value )
+    CompoundStatement
+      StatementList
+        ReturnStatement
+          IndexOp
+            Var('a')
+            Var('i')
+  Function( 'entry' ('entry'), void )
+    ParamList
+    CompoundStatement
+      StatementList
+        StatementList
+          VarDecl( 'a', Integer[] )
+        ExprStatement
+          MethodOp( 'push' )
+            Var('a')
+            ArgList
+              ConstSize( 17 )
+        Report
+          Call('doIndex')
+            ArgList
+              Var('a')
+              ConstSize( 0 )
+        Report
+          Call('doIndex')
+            ArgList
+              Var('a')
+              ConstSize( 1 )
 17
 KL: Integer[] index out-of-bounds
 0

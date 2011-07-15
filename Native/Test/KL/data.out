@@ -1,1 +1,13 @@
+GlobalList
+  Function( 'entry' ('entry'), void )
+    ParamList
+    CompoundStatement
+      StatementList
+        StatementList
+          VarDecl( 'data', Data )
+        StatementList
+          AssignedVarDecl( VarDecl( 'otherData', Data ), Var('data') )
+            Var('data')
+        Report
+          Var('data')
 <Opaque>

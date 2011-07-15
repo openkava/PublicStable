@@ -1,3 +1,20 @@
+GlobalList
+  Function( 'entry' ('entry'), void )
+    ParamList
+    CompoundStatement
+      StatementList
+        Report
+          CastNode( Boolean )
+            CastNode( Byte )
+              ConstSize( 0 )
+        Report
+          CastNode( Boolean )
+            CastNode( Byte )
+              ConstSize( 1 )
+        Report
+          CastNode( Boolean )
+            CastNode( Byte )
+              ConstSize( 255 )
 false
 true
 true

@@ -1,3 +1,138 @@
+GlobalList
+  Function( 'entry' ('entry'), void )
+    ParamList
+    CompoundStatement
+      StatementList
+        StatementList
+          VarDecl( 'x', Scalar )
+        ExprStatement
+          AssignOp(ASSIGN_OP)
+            Var('x')
+            ConstScalar( 4.5 )
+        Report
+          UniOp( + )
+            Var('x')
+        Report
+          UniOp( - )
+            Var('x')
+        Report
+          NotOp
+            Var('x')
+        ExprStatement
+          AssignOp(ASSIGN_OP)
+            Var('x')
+            BinOp( ADD )
+              ConstScalar( 1.2 )
+              ConstScalar( 5.6 )
+        Report
+          Var('x')
+        ExprStatement
+          AssignOp(ASSIGN_OP)
+            Var('x')
+            BinOp( SUB )
+              UniOp( - )
+                ConstScalar( 5.2 )
+              ConstScalar( 9 )
+        Report
+          Var('x')
+        ExprStatement
+          AssignOp(ASSIGN_OP)
+            Var('x')
+            BinOp( MUL )
+              ConstScalar( 9.4 )
+              ConstScalar( 1.2 )
+        Report
+          Var('x')
+        ExprStatement
+          AssignOp(ASSIGN_OP)
+            Var('x')
+            BinOp( DIV )
+              UniOp( - )
+                ConstScalar( 9.3 )
+              ConstScalar( 5.4 )
+        Report
+          Var('x')
+        ExprStatement
+          AssignOp(ASSIGN_OP)
+            Var('x')
+            BinOp( MOD )
+              ConstScalar( 8.9 )
+              ConstScalar( 2.1 )
+        Report
+          Var('x')
+        ExprStatement
+          AssignOp(ASSIGN_OP)
+            Var('x')
+            ConstScalar( 7.1 )
+        Report
+          Var('x')
+        ExprStatement
+          AssignOp(ASSIGN_OP_ADD)
+            Var('x')
+            ConstScalar( 2.1 )
+        Report
+          Var('x')
+        ExprStatement
+          AssignOp(ASSIGN_OP_SUB)
+            Var('x')
+            UniOp( - )
+              ConstScalar( 4.7 )
+        Report
+          Var('x')
+        ExprStatement
+          AssignOp(ASSIGN_OP_MUL)
+            Var('x')
+            ConstScalar( 4.5 )
+        Report
+          Var('x')
+        ExprStatement
+          AssignOp(ASSIGN_OP_DIV)
+            Var('x')
+            UniOp( - )
+              ConstScalar( 1.2 )
+        Report
+          Var('x')
+        ExprStatement
+          AssignOp(ASSIGN_OP_MOD)
+            Var('x')
+            ConstScalar( 3.4 )
+        Report
+          Var('x')
+        Report
+          Call('abs')
+            ArgList
+              UniOp( - )
+                ConstScalar( 1.45 )
+        Report
+          Call('abs')
+            ArgList
+              ConstScalar( 1.45 )
+        Report
+          Call('abs')
+            ArgList
+              UniOp( - )
+                ConstScalar( 0 )
+        Report
+          Call('abs')
+            ArgList
+              ConstScalar( 0 )
+        Report
+          Call('sin')
+            ArgList
+              ConstScalar( 5.72283 )
+        Report
+          Call('cos')
+            ArgList
+              ConstScalar( 5.72283 )
+        Report
+          Call('sqrt')
+            ArgList
+              ConstScalar( 5.72283 )
+        Report
+          Call('pow')
+            ArgList
+              ConstScalar( 5.72283 )
+              ConstScalar( 3.1452 )
 4.5
 -4.5
 false

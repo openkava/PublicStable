@@ -1,1 +1,215 @@
+GlobalList
+  Function( 'qs_less' ('qs_less'), Boolean:r-value )
+    ParamList
+      Param( 'a', Scalar, r-value )
+      Param( 'b', Scalar, r-value )
+    CompoundStatement
+      StatementList
+        ReturnStatement
+          BinOp( LT )
+            Var('a')
+            Var('b')
+  Function( 'quicksort' ('quicksort'), Scalar[]:r-value )
+    ParamList
+      Param( 'data', Scalar[], r-value )
+    CompoundStatement
+      StatementList
+        StatementList
+          VarDecl( 'result', Scalar[] )
+        ConditionalStatement
+          BinOp( LE )
+            MethodOp( 'size' )
+              Var('data')
+              ArgList
+            ConstSize( 1 )
+          ReturnStatement
+            Var('data')
+        ConditionalStatement
+          BinOp( LE )
+            MethodOp( 'size' )
+              Var('data')
+              ArgList
+            ConstSize( 2 )
+          CompoundStatement
+            StatementList
+              ConditionalStatement
+                Call('qs_less')
+                  ArgList
+                    IndexOp
+                      Var('data')
+                      ConstSize( 0 )
+                    IndexOp
+                      Var('data')
+                      ConstSize( 1 )
+                CompoundStatement
+                  StatementList
+                    ExprStatement
+                      MethodOp( 'push' )
+                        Var('result')
+                        ArgList
+                          IndexOp
+                            Var('data')
+                            ConstSize( 0 )
+                    ExprStatement
+                      MethodOp( 'push' )
+                        Var('result')
+                        ArgList
+                          IndexOp
+                            Var('data')
+                            ConstSize( 1 )
+                CompoundStatement
+                  StatementList
+                    ExprStatement
+                      MethodOp( 'push' )
+                        Var('result')
+                        ArgList
+                          IndexOp
+                            Var('data')
+                            ConstSize( 1 )
+                    ExprStatement
+                      MethodOp( 'push' )
+                        Var('result')
+                        ArgList
+                          IndexOp
+                            Var('data')
+                            ConstSize( 0 )
+          CompoundStatement
+            StatementList
+              StatementList
+                VarDecl( 'pivot', Scalar )
+              ExprStatement
+                AssignOp(ASSIGN_OP)
+                  Var('pivot')
+                  BinOp( DIV )
+                    BinOp( ADD )
+                      BinOp( ADD )
+                        IndexOp
+                          Var('data')
+                          ConstSize( 0 )
+                        IndexOp
+                          Var('data')
+                          BinOp( DIV )
+                            MethodOp( 'size' )
+                              Var('data')
+                              ArgList
+                            ConstSize( 2 )
+                      IndexOp
+                        Var('data')
+                        BinOp( SUB )
+                          MethodOp( 'size' )
+                            Var('data')
+                            ArgList
+                          ConstSize( 1 )
+                    ConstSize( 3 )
+              StatementList
+                VarDecl( 'above', Scalar[] )
+                VarDecl( 'below', Scalar[] )
+              StatementList
+                AssignedVarDecl( VarDecl( 'nbItems', Size ), MethodOp( 'size' ) )
+                  MethodOp( 'size' )
+                    Var('data')
+                    ArgList
+              CStyleLoop
+                AssignedVarDecl( VarDecl( 'i', Size ), ConstSize( 0 ) )
+                  ConstSize( 0 )
+                BinOp( LT )
+                  Var('i')
+                  Var('nbItems')
+                UniOp( postfix ++ )
+                  Var('i')
+                CompoundStatement
+                  StatementList
+                    ConditionalStatement
+                      Call('qs_less')
+                        ArgList
+                          IndexOp
+                            Var('data')
+                            Var('i')
+                          Var('pivot')
+                      ExprStatement
+                        MethodOp( 'push' )
+                          Var('below')
+                          ArgList
+                            IndexOp
+                              Var('data')
+                              Var('i')
+                      ExprStatement
+                        MethodOp( 'push' )
+                          Var('above')
+                          ArgList
+                            IndexOp
+                              Var('data')
+                              Var('i')
+              ExprStatement
+                AssignOp(ASSIGN_OP)
+                  Var('result')
+                  BinOp( ADD )
+                    Call('quicksort')
+                      ArgList
+                        Var('below')
+                    Call('quicksort')
+                      ArgList
+                        Var('above')
+        ReturnStatement
+          Var('result')
+  Function( 'rand' ('rand'), Scalar:r-value )
+    ParamList
+      Param( 'seed', Integer, l-value )
+    CompoundStatement
+      StatementList
+        ExprStatement
+          AssignOp(ASSIGN_OP)
+            Var('seed')
+            BinOp( ADD )
+              BinOp( MUL )
+                ConstSize( 1664525 )
+                Var('seed')
+              ConstSize( 1013904223 )
+        ReturnStatement
+          BinOp( DIV )
+            TempValue( Scalar )
+              ArgList
+                BinOp( BIT_AND )
+                  BinOp( DIV )
+                    Var('seed')
+                    ConstSize( 256 )
+                  ConstSize( 8388607 )
+            ConstScalar( 8.38861e+06 )
+  Function( 'entry' ('entry'), void )
+    ParamList
+    CompoundStatement
+      StatementList
+        StatementList
+          VarDecl( 'a', Scalar[] )
+        StatementList
+          VarDecl( 'seed', Integer )
+        ExprStatement
+          AssignOp(ASSIGN_OP)
+            Var('seed')
+            ConstSize( 314159625 )
+        CStyleLoop
+          AssignedVarDecl( VarDecl( 'i', Size ), ConstSize( 0 ) )
+            ConstSize( 0 )
+          BinOp( LT )
+            Var('i')
+            ConstSize( 30 )
+          UniOp( postfix ++ )
+            Var('i')
+          ExprStatement
+            MethodOp( 'push' )
+              Var('a')
+              ArgList
+                TempValue( Scalar )
+                  ArgList
+                    TempValue( Integer )
+                      ArgList
+                        BinOp( MUL )
+                          Call('rand')
+                            ArgList
+                              Var('seed')
+                          ConstScalar( 1000 )
+        Report
+          Call('quicksort')
+            ArgList
+              Var('a')
 [106,114,122,134,150,185,211,243,256,257,289,366,404,454,468,504,530,544,564,601,626,667,762,784,818,948,976,993,994,999]

@@ -1,3 +1,39 @@
+GlobalList
+  Function( 'entry' ('entry'), void )
+    ParamList
+    CompoundStatement
+      StatementList
+        StatementList
+          AssignedVarDecl( VarDecl( 'integer', Integer ), ConstSize( 42 ) )
+            ConstSize( 42 )
+        Report
+          Var('integer')
+        ExprStatement
+          AssignOp(ASSIGN_OP)
+            Var('integer')
+            ConstSize( 0 )
+        Report
+          Var('integer')
+        ExprStatement
+          AssignOp(ASSIGN_OP)
+            Var('integer')
+            UniOp( - )
+              ConstSize( 56 )
+        Report
+          Var('integer')
+        ExprStatement
+          AssignOp(ASSIGN_OP)
+            Var('integer')
+            ConstSize( 2147483647 )
+        Report
+          Var('integer')
+        ExprStatement
+          AssignOp(ASSIGN_OP)
+            Var('integer')
+            UniOp( - )
+              ConstSize( 2147483647 )
+        Report
+          Var('integer')
 42
 0
 -56

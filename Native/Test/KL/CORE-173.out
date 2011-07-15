@@ -1,1 +1,50 @@
+GlobalList
+  Function( 'test' ('test'), void )
+    ParamList
+      Param( 'val', Integer, r-value )
+    CompoundStatement
+      StatementList
+        ConditionalStatement
+          BinOp( GT )
+            Var('val')
+            ConstSize( 1 )
+          CompoundStatement
+            StatementList
+              Report
+                ConstString( 'Value is greater than 1' )
+              ReturnStatement
+        Report
+          ConstString( 'Value is less than or equal to 1' )
+  Function( 'getInteger' ('getInteger'), Integer:r-value )
+    ParamList
+      Param( 'v', Integer, r-value )
+    CompoundStatement
+      StatementList
+        StatementList
+          VarDecl( 'arr', Integer[] )
+        ExprStatement
+          MethodOp( 'resize' )
+            Var('arr')
+            ArgList
+              ConstSize( 1 )
+        ExprStatement
+          AssignOp(ASSIGN_OP)
+            IndexOp
+              Var('arr')
+              ConstSize( 0 )
+            Var('v')
+        ReturnStatement
+          IndexOp
+            Var('arr')
+            ConstSize( 0 )
+  Function( 'entry' ('entry'), void )
+    ParamList
+    CompoundStatement
+      StatementList
+        ExprStatement
+          Call('test')
+            ArgList
+              Call('getInteger')
+                ArgList
+                  ConstSize( 2 )
 Value is greater than 1

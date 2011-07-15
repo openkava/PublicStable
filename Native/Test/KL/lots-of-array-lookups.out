@@ -1,0 +1,32 @@
+GlobalList
+  Function( 'entry' ('entry'), void )
+    ParamList
+    CompoundStatement
+      StatementList
+        StatementList
+          VarDecl( 'idx', Integer[] )
+        ExprStatement
+          MethodOp( 'resize' )
+            Var('idx')
+            ArgList
+              ConstSize( 5000000 )
+        CStyleLoop
+          AssignedVarDecl( VarDecl( 'i', Size ), ConstSize( 0 ) )
+            ConstSize( 0 )
+          BinOp( LT )
+            Var('i')
+            MethodOp( 'size' )
+              Var('idx')
+              ArgList
+          AssignOp(ASSIGN_OP_ADD)
+            Var('i')
+            ConstSize( 3 )
+          CompoundStatement
+            StatementList
+              StatementList
+                AssignedVarDecl( VarDecl( 'val', Integer ), IndexOp )
+                  IndexOp
+                    Var('idx')
+                    BinOp( ADD )
+                      Var('i')
+                      ConstSize( 0 )

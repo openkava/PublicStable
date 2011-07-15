@@ -1,2 +1,24 @@
+GlobalList
+  Function( 'entry' ('entry'), void )
+    ParamList
+    CompoundStatement
+      StatementList
+        StatementList
+          VarDecl( 'a', Integer[] )
+        ExprStatement
+          MethodOp( 'push' )
+            Var('a')
+            ArgList
+              ConstSize( 17 )
+        Report
+          Var('a')
+        StatementList
+          VarDecl( 'b', Integer[] )
+        ExprStatement
+          AssignOp(ASSIGN_OP)
+            Var('b')
+            Var('a')
+        Report
+          Var('b')
 [17]
 [17]

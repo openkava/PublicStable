@@ -1,1 +1,10 @@
+GlobalList
+  Function( 'entry' ('entry'), void )
+    ParamList
+    CompoundStatement
+      StatementList
+        ConstDeclStatement
+          ConstScalarDecl( 'PI', Scalar, 3.141 )
+        Report
+          Var('PI')
 3.141

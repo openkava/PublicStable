@@ -1,2 +1,17 @@
+GlobalList
+  StructDecl( 'S' )
+    StructDeclMember( 'i', Integer )
+  Function( 'entry' ('entry'), void )
+    ParamList
+    CompoundStatement
+      StatementList
+        StatementList
+          VarDecl( 's', S )
+        Report
+          StructMemberOp( 'dataSize' )
+            Var('s')
+        Report
+          StructMemberOp( 'data' )
+            Var('s')
 4
 <Opaque>

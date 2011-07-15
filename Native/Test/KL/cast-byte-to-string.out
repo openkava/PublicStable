@@ -1,3 +1,31 @@
+GlobalList
+  Function( 'entry' ('entry'), void )
+    ParamList
+    CompoundStatement
+      StatementList
+        StatementList
+          AssignedVarDecl( VarDecl( 'byte', Byte ), ConstSize( 17 ) )
+            ConstSize( 17 )
+        Report
+          Var('byte')
+        ExprStatement
+          AssignOp(ASSIGN_OP)
+            Var('byte')
+            ConstSize( 0 )
+        Report
+          Var('byte')
+        ExprStatement
+          AssignOp(ASSIGN_OP)
+            Var('byte')
+            ConstSize( 255 )
+        Report
+          Var('byte')
+        ExprStatement
+          AssignOp(ASSIGN_OP)
+            Var('byte')
+            ConstSize( 4 )
+        Report
+          Var('byte')
 17
 0
 255

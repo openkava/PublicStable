@@ -1,2 +1,20 @@
+GlobalList
+  Function( 'entry' ('entry'), void )
+    ParamList
+    CompoundStatement
+      StatementList
+        StatementList
+          VarDecl( 'a', Integer[] )
+        Report
+          CastNode( Boolean )
+            Var('a')
+        ExprStatement
+          MethodOp( 'push' )
+            Var('a')
+            ArgList
+              ConstSize( 42 )
+        Report
+          CastNode( Boolean )
+            Var('a')
 false
 true

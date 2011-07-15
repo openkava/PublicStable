@@ -1,3 +1,127 @@
+GlobalList
+  Function( 'reportStats' ('reportStats'), void )
+    ParamList
+      Param( 'n', Size, r-value )
+      Param( 'count', Size, r-value )
+    CompoundStatement
+      StatementList
+        Report
+          BinOp( ADD )
+            BinOp( ADD )
+              BinOp( ADD )
+                BinOp( ADD )
+                  Var('n')
+                  ConstString( ': count=' )
+                Var('count')
+              ConstString( ' n/log(n)=' )
+            BinOp( DIV )
+              Var('n')
+              Call('log')
+                ArgList
+                  Var('n')
+  Function( 'entry' ('entry'), void )
+    ParamList
+    CompoundStatement
+      StatementList
+        StatementList
+          VarDecl( 'prime', Boolean[1000000] )
+        CStyleLoop
+          AssignedVarDecl( VarDecl( 'i', Size ), ConstSize( 2 ) )
+            ConstSize( 2 )
+          BinOp( LT )
+            Var('i')
+            ConstSize( 1000000 )
+          UniOp( prefix ++ )
+            Var('i')
+          ExprStatement
+            AssignOp(ASSIGN_OP)
+              IndexOp
+                Var('prime')
+                Var('i')
+              ConstBoolean( true )
+        CStyleLoop
+          AssignedVarDecl( VarDecl( 'i', Size ), ConstSize( 2 ) )
+            ConstSize( 2 )
+          BinOp( LT )
+            Var('i')
+            ConstSize( 1000000 )
+          UniOp( prefix ++ )
+            Var('i')
+          CompoundStatement
+            StatementList
+              ConditionalStatement
+                NotOp
+                  IndexOp
+                    Var('prime')
+                    Var('i')
+                ContinueStatement
+              CStyleLoop
+                AssignedVarDecl( VarDecl( 'j', Size ), BinOp( MUL ) )
+                  BinOp( MUL )
+                    ConstSize( 2 )
+                    Var('i')
+                BinOp( LT )
+                  Var('j')
+                  ConstSize( 1000000 )
+                AssignOp(ASSIGN_OP_ADD)
+                  Var('j')
+                  Var('i')
+                ExprStatement
+                  AssignOp(ASSIGN_OP)
+                    IndexOp
+                      Var('prime')
+                      Var('j')
+                    ConstBoolean( false )
+        StatementList
+          AssignedVarDecl( VarDecl( 'count', Size ), ConstSize( 0 ) )
+            ConstSize( 0 )
+        CStyleLoop
+          AssignedVarDecl( VarDecl( 'i', Size ), ConstSize( 2 ) )
+            ConstSize( 2 )
+          BinOp( LT )
+            Var('i')
+            ConstSize( 1000000 )
+          UniOp( prefix ++ )
+            Var('i')
+          CompoundStatement
+            StatementList
+              ConditionalStatement
+                IndexOp
+                  Var('prime')
+                  Var('i')
+                ExprStatement
+                  UniOp( prefix ++ )
+                    Var('count')
+              ConditionalStatement
+                OrOp
+                  OrOp
+                    OrOp
+                      OrOp
+                        BinOp( EQ )
+                          Var('i')
+                          ConstSize( 10 )
+                        BinOp( EQ )
+                          Var('i')
+                          ConstSize( 100 )
+                      BinOp( EQ )
+                        Var('i')
+                        ConstSize( 1000 )
+                    BinOp( EQ )
+                      Var('i')
+                      ConstSize( 10000 )
+                  BinOp( EQ )
+                    Var('i')
+                    ConstSize( 10000 )
+                ExprStatement
+                  Call('reportStats')
+                    ArgList
+                      Var('i')
+                      Var('count')
+        ExprStatement
+          Call('reportStats')
+            ArgList
+              ConstSize( 1000000 )
+              Var('count')
 10: count=4 n/log(n)=4.34294
 100: count=25 n/log(n)=21.7147
 1000: count=168 n/log(n)=144.765

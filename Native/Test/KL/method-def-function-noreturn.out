@@ -1,2 +1,117 @@
+GlobalList
+  StructDecl( 'Vec3' )
+    StructDeclMember( 'x', Scalar )
+    StructDeclMember( 'y', Scalar )
+    StructDeclMember( 'z', Scalar )
+  Function( '' ('__construct_Vec3__Scalar__Scalar__Scalar'), void )
+    ParamList
+      Param( 'self', Vec3, l-value )
+      Param( 'x', Scalar, r-value )
+      Param( 'y', Scalar, r-value )
+      Param( 'z', Scalar, r-value )
+    CompoundStatement
+      StatementList
+        ExprStatement
+          AssignOp(ASSIGN_OP)
+            StructMemberOp( 'x' )
+              Var('self')
+            Var('x')
+        ExprStatement
+          AssignOp(ASSIGN_OP)
+            StructMemberOp( 'y' )
+              Var('self')
+            Var('y')
+        ExprStatement
+          AssignOp(ASSIGN_OP)
+            StructMemberOp( 'z' )
+              Var('self')
+            Var('z')
+  Function( '' ('__method_normalize__Vec3'), void )
+    ParamList
+      Param( 'self', Vec3, l-value )
+    CompoundStatement
+      StatementList
+        StatementList
+          AssignedVarDecl( VarDecl( 'normSq', Scalar ), BinOp( ADD ) )
+            BinOp( ADD )
+              BinOp( ADD )
+                BinOp( MUL )
+                  StructMemberOp( 'x' )
+                    Var('self')
+                  StructMemberOp( 'x' )
+                    Var('self')
+                BinOp( MUL )
+                  StructMemberOp( 'y' )
+                    Var('self')
+                  StructMemberOp( 'y' )
+                    Var('self')
+              BinOp( MUL )
+                StructMemberOp( 'z' )
+                  Var('self')
+                StructMemberOp( 'z' )
+                  Var('self')
+        StatementList
+          AssignedVarDecl( VarDecl( 'norm', Scalar ), Call('sqrt') )
+            Call('sqrt')
+              ArgList
+                Var('normSq')
+        ExprStatement
+          AssignOp(ASSIGN_OP_DIV)
+            StructMemberOp( 'x' )
+              Var('self')
+            Var('norm')
+        ExprStatement
+          AssignOp(ASSIGN_OP_DIV)
+            StructMemberOp( 'y' )
+              Var('self')
+            Var('norm')
+        ExprStatement
+          AssignOp(ASSIGN_OP_DIV)
+            StructMemberOp( 'z' )
+              Var('self')
+            Var('norm')
+  Function( 'dotProd' ('dotProd'), Scalar:r-value )
+    ParamList
+      Param( 'lhs', Vec3, r-value )
+      Param( 'rhs', Vec3, r-value )
+    CompoundStatement
+      StatementList
+        ReturnStatement
+          BinOp( ADD )
+            BinOp( ADD )
+              BinOp( MUL )
+                StructMemberOp( 'x' )
+                  Var('lhs')
+                StructMemberOp( 'x' )
+                  Var('rhs')
+              BinOp( MUL )
+                StructMemberOp( 'y' )
+                  Var('lhs')
+                StructMemberOp( 'y' )
+                  Var('rhs')
+            BinOp( MUL )
+              StructMemberOp( 'z' )
+                Var('lhs')
+              StructMemberOp( 'z' )
+                Var('rhs')
+  Function( 'entry' ('entry'), void )
+    ParamList
+    CompoundStatement
+      StatementList
+        StatementList
+          InitializedVarDecl( VarDecl( 'vec3', Vec3 ), ArgList )
+            ArgList
+              ConstScalar( 1 )
+              ConstScalar( 2 )
+              ConstScalar( 3 )
+        Report
+          MethodOp( 'normalize' )
+            Var('vec3')
+            ArgList
+        Report
+          Call('dotProd')
+            ArgList
+              Var('vec3')
+              Var('vec3')
 {x:0.267261,y:0.534522,z:0.801784}
 1

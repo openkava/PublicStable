@@ -1,1 +1,96 @@
+GlobalList
+  StructDecl( 'LinearKeyframe' )
+    StructDeclMember( 'time', Scalar )
+    StructDeclMember( 'value', Scalar )
+  Function( 'evaluateLinearKeyframeAnimationTrack' ('evaluateLinearKeyframeAnimationTrack'), Scalar:r-value )
+    ParamList
+      Param( 'track', LinearKeyframe[], l-value )
+      Param( 'time', Scalar, l-value )
+      Param( 'value', Scalar, l-value )
+      Param( 'keyIndex', Integer, l-value )
+    CompoundStatement
+      StatementList
+        ConditionalStatement
+          BinOp( GE )
+            Var('time')
+            StructMemberOp( 'time' )
+              IndexOp
+                Var('track')
+                BinOp( SUB )
+                  StructMemberOp( 'size' )
+                    Var('track')
+                  ConstSize( 1 )
+          CompoundStatement
+            StatementList
+              ReturnStatement
+                ConstScalar( 0 )
+          ConditionalStatement
+            BinOp( LE )
+              Var('time')
+              StructMemberOp( 'time' )
+                IndexOp
+                  Var('track')
+                  ConstSize( 0 )
+            CompoundStatement
+              StatementList
+                ReturnStatement
+                  ConstScalar( 1 )
+            CompoundStatement
+              StatementList
+                ReturnStatement
+                  ConstScalar( 0.75 )
+  Function( 'entry' ('entry'), void )
+    ParamList
+    CompoundStatement
+      StatementList
+        StatementList
+          VarDecl( 'kf1', LinearKeyframe )
+          VarDecl( 'kf2', LinearKeyframe )
+        ExprStatement
+          AssignOp(ASSIGN_OP)
+            StructMemberOp( 'time' )
+              Var('kf1')
+            ConstScalar( 0 )
+        ExprStatement
+          AssignOp(ASSIGN_OP)
+            StructMemberOp( 'value' )
+              Var('kf1')
+            ConstScalar( 1 )
+        ExprStatement
+          AssignOp(ASSIGN_OP)
+            StructMemberOp( 'time' )
+              Var('kf2')
+            ConstScalar( 1 )
+        ExprStatement
+          AssignOp(ASSIGN_OP)
+            StructMemberOp( 'value' )
+              Var('kf2')
+            ConstScalar( 0.5 )
+        StatementList
+          VarDecl( 'track', LinearKeyframe[] )
+        ExprStatement
+          MethodOp( 'push' )
+            Var('track')
+            ArgList
+              Var('kf1')
+        ExprStatement
+          MethodOp( 'push' )
+            Var('track')
+            ArgList
+              Var('kf2')
+        StatementList
+          AssignedVarDecl( VarDecl( 'time', Scalar ), ConstScalar( 0.5 ) )
+            ConstScalar( 0.5 )
+        StatementList
+          VarDecl( 'value', Scalar )
+        StatementList
+          AssignedVarDecl( VarDecl( 'keyIndex', Integer ), ConstSize( 0 ) )
+            ConstSize( 0 )
+        Report
+          Call('evaluateLinearKeyframeAnimationTrack')
+            ArgList
+              Var('track')
+              Var('time')
+              Var('value')
+              Var('keyIndex')
 0.75

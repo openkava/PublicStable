@@ -1,1 +1,50 @@
+GlobalList
+  StructDecl( 'Vec3' )
+    StructDeclMember( 'x', Scalar )
+    StructDeclMember( 'y', Scalar )
+    StructDeclMember( 'z', Scalar )
+  Function( '' ('__method_setX__Vec3__Scalar'), void )
+    ParamList
+      Param( 'self', Vec3, l-value )
+      Param( 'x', Scalar, r-value )
+    CompoundStatement
+      StatementList
+        ExprStatement
+          AssignOp(ASSIGN_OP)
+            StructMemberOp( 'x' )
+              Var('self')
+            Var('x')
+  Function( 'foo' ('foo'), Vec3:r-value )
+    ParamList
+      Param( 'a', Vec3, r-value )
+    CompoundStatement
+      StatementList
+        ExprStatement
+          MethodOp( 'setX' )
+            Var('a')
+            ArgList
+              ConstScalar( 1 )
+        ReturnStatement
+          Var('a')
+  Function( 'entry' ('entry'), void )
+    ParamList
+    CompoundStatement
+      StatementList
+        StatementList
+          VarDecl( 'a', Vec3 )
+        ExprStatement
+          AssignOp(ASSIGN_OP)
+            StructMemberOp( 'x' )
+              Var('a')
+            AssignOp(ASSIGN_OP)
+              StructMemberOp( 'y' )
+                Var('a')
+              AssignOp(ASSIGN_OP)
+                StructMemberOp( 'z' )
+                  Var('a')
+                ConstScalar( 0 )
+        Report
+          Call('foo')
+            ArgList
+              Var('a')
 16:3: error: calling method 'setX' of type 'Vec3': expression is not an l-value

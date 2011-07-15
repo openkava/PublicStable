@@ -1,1 +1,10 @@
+GlobalList
+  Function( 'entry' ('entry'), void )
+    ParamList
+    CompoundStatement
+      StatementList
+        Report
+          BinOp( ADD )
+            ConstScalar( 9.34 )
+            ConstSize( 10 )
 19.34

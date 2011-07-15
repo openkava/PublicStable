@@ -1,2 +1,26 @@
+GlobalList
+  Function( 'entry' ('entry'), void )
+    ParamList
+    CompoundStatement
+      StatementList
+        StatementList
+          VarDecl( 'foo', Integer[] )
+          VarDecl( 'bar', Integer[][4] )
+        ExprStatement
+          MethodOp( 'push' )
+            Var('foo')
+            ArgList
+              ConstSize( 18 )
+        Report
+          Var('foo')
+        ExprStatement
+          MethodOp( 'push' )
+            IndexOp
+              Var('bar')
+              ConstSize( 2 )
+            ArgList
+              ConstSize( 42 )
+        Report
+          Var('bar')
 [18]
 [[],[],[42],[]]

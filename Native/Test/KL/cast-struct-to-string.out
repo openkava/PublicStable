@@ -1,1 +1,30 @@
+GlobalList
+  StructDecl( 'Vec3' )
+    StructDeclMember( 'x', Scalar )
+    StructDeclMember( 'y', Scalar )
+    StructDeclMember( 'z', Scalar )
+  Function( 'entry' ('entry'), void )
+    ParamList
+    CompoundStatement
+      StatementList
+        StatementList
+          VarDecl( 'vec3', Vec3 )
+        ExprStatement
+          AssignOp(ASSIGN_OP)
+            StructMemberOp( 'x' )
+              Var('vec3')
+            ConstSize( 1 )
+        ExprStatement
+          AssignOp(ASSIGN_OP)
+            StructMemberOp( 'y' )
+              Var('vec3')
+            UniOp( - )
+              ConstScalar( 2.71 )
+        ExprStatement
+          AssignOp(ASSIGN_OP)
+            StructMemberOp( 'z' )
+              Var('vec3')
+            ConstScalar( 3.1e+21 )
+        Report
+          Var('vec3')
 {x:1,y:-2.71,z:3.1e+21}

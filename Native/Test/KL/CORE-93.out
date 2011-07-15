@@ -1,1 +1,65 @@
+GlobalList
+  StructDecl( 'Vec3' )
+    StructDeclMember( 'x', Scalar )
+    StructDeclMember( 'y', Scalar )
+    StructDeclMember( 'z', Scalar )
+  StructDecl( 'Quad' )
+    StructDeclMember( 'normal', Vec3 )
+  Function( '' ('__construct_Vec3__Scalar__Scalar__Scalar'), void )
+    ParamList
+      Param( 'self', Vec3, l-value )
+      Param( 'x', Scalar, r-value )
+      Param( 'y', Scalar, r-value )
+      Param( 'z', Scalar, r-value )
+    CompoundStatement
+      StatementList
+        ExprStatement
+          AssignOp(ASSIGN_OP)
+            StructMemberOp( 'x' )
+              Var('self')
+            Var('x')
+        ExprStatement
+          AssignOp(ASSIGN_OP)
+            StructMemberOp( 'y' )
+              Var('self')
+            Var('y')
+        ExprStatement
+          AssignOp(ASSIGN_OP)
+            StructMemberOp( 'z' )
+              Var('self')
+            Var('z')
+  Function( '' ('__construct_Quad__Vec3_VA'), void )
+    ParamList
+      Param( 'self', Quad, l-value )
+      Param( 'v', Vec3[], r-value )
+    CompoundStatement
+      StatementList
+        ExprStatement
+          AssignOp(ASSIGN_OP)
+            StructMemberOp( 'normal' )
+              Var('self')
+            IndexOp
+              Var('v')
+              ConstSize( 0 )
+  Function( 'entry' ('entry'), void )
+    ParamList
+    CompoundStatement
+      StatementList
+        StatementList
+          VarDecl( 'v', Vec3[] )
+        ExprStatement
+          MethodOp( 'push' )
+            Var('v')
+            ArgList
+              TempValue( Vec3 )
+                ArgList
+                  ConstScalar( 1 )
+                  ConstScalar( 2 )
+                  ConstScalar( 3 )
+        StatementList
+          InitializedVarDecl( VarDecl( 'q', Quad ), ArgList )
+            ArgList
+              Var('v')
+        Report
+          Var('q')
 {normal:{x:1,y:2,z:3}}

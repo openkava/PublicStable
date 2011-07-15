@@ -1,3 +1,45 @@
+GlobalList
+  Function( 'entry' ('entry'), void )
+    ParamList
+    CompoundStatement
+      StatementList
+        StatementList
+          AssignedVarDecl( VarDecl( 'scalar', Scalar ), ConstSize( 0 ) )
+            ConstSize( 0 )
+        Report
+          Var('scalar')
+        ExprStatement
+          AssignOp(ASSIGN_OP)
+            Var('scalar')
+            ConstScalar( 1 )
+        Report
+          Var('scalar')
+        ExprStatement
+          AssignOp(ASSIGN_OP)
+            Var('scalar')
+            UniOp( - )
+              ConstScalar( 2 )
+        Report
+          Var('scalar')
+        ExprStatement
+          AssignOp(ASSIGN_OP)
+            Var('scalar')
+            ConstScalar( 3.1416 )
+        Report
+          Var('scalar')
+        ExprStatement
+          AssignOp(ASSIGN_OP)
+            Var('scalar')
+            ConstScalar( 4.5e-23 )
+        Report
+          Var('scalar')
+        ExprStatement
+          AssignOp(ASSIGN_OP)
+            Var('scalar')
+            UniOp( - )
+              ConstScalar( 5.6e+09 )
+        Report
+          Var('scalar')
 0
 1
 -2

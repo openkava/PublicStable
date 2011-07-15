@@ -1,1 +1,11 @@
+GlobalList
+  Function( 'entry' ('entry'), void )
+    ParamList
+    CompoundStatement
+      StatementList
+        StatementList
+          AssignedVarDecl( VarDecl( 'foo', Integer ), ConstSize( 17 ) )
+            ConstSize( 17 )
+        Report
+          Var('foo')
 17

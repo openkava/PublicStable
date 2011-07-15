@@ -1,1 +1,10 @@
+GlobalList
+  GlobalConstDecl
+    ConstSizeDecl( 'foo', Size, 4660 )
+  Function( 'entry' ('entry'), void )
+    ParamList
+    CompoundStatement
+      StatementList
+        Report
+          Var('foo')
 4660

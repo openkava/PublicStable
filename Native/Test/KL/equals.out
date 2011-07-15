@@ -1,1 +1,22 @@
+GlobalList
+  Function( 'entry' ('entry'), void )
+    ParamList
+    CompoundStatement
+      StatementList
+        StatementList
+          VarDecl( 'result', Integer )
+        ConditionalStatement
+          BinOp( EQ )
+            ConstSize( 1 )
+            ConstSize( 2 )
+          ExprStatement
+            AssignOp(ASSIGN_OP)
+              Var('result')
+              ConstSize( 1 )
+          ExprStatement
+            AssignOp(ASSIGN_OP)
+              Var('result')
+              ConstSize( 0 )
+        Report
+          Var('result')
 0
