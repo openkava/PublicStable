@@ -76,6 +76,11 @@ namespace Fabric
       }
       return result;
     }
+        
+    static int32_t GetDeviceType( cl_device_id clDevice, cl_device_type *clDeviceType )
+    {
+      return clGetDeviceInfo( clDevice, CL_DEVICE_TYPE, sizeof(*clDeviceType), clDeviceType, NULL );
+    }
 
     static int32_t GetDeviceIDs( cl_platform_id clPlatformID, size_t clDeviceType, void *clDeviceIDsAsOpaqueArray )
     {
@@ -554,6 +559,7 @@ namespace Fabric
       ADD_FUNC( GetProgramBuildInfoi, "=Integer,<cl_program program,<cl_device_id device,<cl_program_build_info param_name,>Integer retval" );
       ADD_FUNC( GetProgramBuildInfoStr, "=Integer,<cl_program program,<cl_device_id device,<cl_program_build_info param_name,>String retval" );
       ADD_FUNC( GetMemObjectSize, "=Integer,<cl_mem clMem,>Size size" );
+      ADD_FUNC( GetDeviceType, "=Integer,<cl_device_id clDevice,>cl_device_type clDeviceType" );
     }
     
     void *llvmResolveExternalFunction( std::string const &name )
