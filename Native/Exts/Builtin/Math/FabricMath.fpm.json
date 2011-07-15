@@ -1,4 +1,4 @@
 {
-  "libs": "FabricPNG",
-  "code": "Integer mathRandomInteger( Size id, Size offset );\nScalar mathRandomScalar( Size id, Size offset );\n"
+  "libs": "FabricMath",
+  "code": "function Integer mathRandomInteger( in Size id, in Size offset );\nfunction Scalar mathRandomScalar( in Size id, in Size offset );\n"
 }
