@@ -8,7 +8,7 @@
 #include <Fabric/Core/OCL/OCL.h>
 #include <Fabric/Core/RT/Manager.h>
 #include <Fabric/Core/CG/ModuleBuilder.h>
-#include <Fabric/Core/KL/Parse.h>
+#include <Fabric/Core/AST/GlobalList.h>
 #include <Fabric/Core/AST/Function.h>
 #include <Fabric/Core/AST/Operator.h>
 #include <Fabric/Core/RT/Impl.h>
@@ -19,6 +19,10 @@
 #include <Fabric/Core/MT/IdleTaskQueue.h>
 #include <Fabric/Core/DG/IRCache.h>
 #include <Fabric/Core/Util/Timer.h>
+#include <Fabric/Core/KL/StringSource.h>
+#include <Fabric/Core/KL/Scanner.h>
+#include <Fabric/Core/KL/Parser.h>
+#include <Fabric/Core/CG/Manager.h>
 
 #include <llvm/Module.h>
 #include <llvm/Function.h>
@@ -74,10 +78,10 @@ namespace Fabric
       
       FABRIC_ASSERT( m_sourceCode.length() > 0 );
       
-      Fabric::KL::Source source( m_sourceCode.data(), m_sourceCode.length() );
-      RC::Handle<AST::GlobalList> ast;
-      Fabric::KL::Parse( source, m_context->getCGManager(), m_diagnostics, &ast );
-      m_ast = ast;
+      RC::ConstHandle<KL::Source> source = KL::StringSource::Create( m_sourceCode );
+      RC::Handle<KL::Scanner> scanner = KL::Scanner::Create( source );
+      RC::Handle<KL::Parser> parser = KL::Parser::Create( scanner );
+      m_ast = parser->run();
       if ( !m_diagnostics.containsError() )
         compileAST( true );
     }

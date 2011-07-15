@@ -73,6 +73,12 @@
 		DB1B2EDF13AA8E40008A3950 /* Build.cpp.template */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Build.cpp.template; sourceTree = "<group>"; };
 		DB1B2EF413AA9229008A3950 /* SConscript */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = SConscript; sourceTree = "<group>"; };
 		DB1B2EF513AA9271008A3950 /* SConscript */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = SConscript; sourceTree = "<group>"; };
+		DB32EC4113D0DEEA00CB23DE /* Parser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Parser.h; sourceTree = "<group>"; };
+		DB32EC4213D0DEEA00CB23DE /* Parser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Parser.cpp; sourceTree = "<group>"; };
+		DB32EC4313D0E16800CB23DE /* SourceReader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SourceReader.h; sourceTree = "<group>"; };
+		DB32EC4513D0E26D00CB23DE /* StringSource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StringSource.h; sourceTree = "<group>"; };
+		DB32EC4613D0E3DF00CB23DE /* SourceRange.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SourceRange.h; sourceTree = "<group>"; };
+		DB32EC4813D0E78800CB23DE /* Token.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Token.cpp; sourceTree = "<group>"; };
 		DB39AF9513425B40007026BA /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
 		DB78675913CD056100DEF8DA /* SConscript */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = SConscript; sourceTree = "<group>"; };
 		DB78676313CD05AE00DEF8DA /* exceptSample.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = exceptSample.cpp; sourceTree = "<group>"; };
@@ -366,11 +372,7 @@
 		DB96727D13A5423200616143 /* Stream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Stream.h; sourceTree = "<group>"; };
 		DB96727F13A5423200616143 /* CommandChannel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CommandChannel.h; sourceTree = "<group>"; };
 		DB96728113A5423200616143 /* Context.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Context.h; sourceTree = "<group>"; };
-		DB96728213A5423200616143 /* Debug.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Debug.cpp; sourceTree = "<group>"; };
-		DB96728313A5423200616143 /* Debug.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Debug.h; sourceTree = "<group>"; };
 		DB96728413A5423200616143 /* Location.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Location.h; sourceTree = "<group>"; };
-		DB96728513A5423200616143 /* Parse.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Parse.cpp; sourceTree = "<group>"; };
-		DB96728613A5423200616143 /* Parse.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Parse.h; sourceTree = "<group>"; };
 		DB96728713A5423200616143 /* Parser.yy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Parser.yy; sourceTree = "<group>"; };
 		DB96728813A5423200616143 /* Scanner.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Scanner.cpp; sourceTree = "<group>"; };
 		DB96728913A5423200616143 /* Scanner.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Scanner.h; sourceTree = "<group>"; };
@@ -1055,7 +1057,6 @@
 		DB96856013A79BC700616143 /* Materials.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = Materials.html; sourceTree = "<group>"; };
 		DB96858213A79BC900616143 /* ModelViewer.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = ModelViewer.html; sourceTree = "<group>"; };
 		DB96858313A79BC900616143 /* MouseEvents.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = MouseEvents.html; sourceTree = "<group>"; };
-		DB96858513A79BC900616143 /* nBodySimulation.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = nBodySimulation.html; sourceTree = "<group>"; };
 		DB96858613A79BC900616143 /* Painting.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = Painting.html; sourceTree = "<group>"; };
 		DB96858713A79BC900616143 /* PerPointDeformation.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = PerPointDeformation.html; sourceTree = "<group>"; };
 		DB96858813A79BC900616143 /* PointCloudViewer.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = PointCloudViewer.html; sourceTree = "<group>"; };
@@ -1070,8 +1071,6 @@
 		DB9685C513A79BCB00616143 /* Spine.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = Spine.html; sourceTree = "<group>"; };
 		DB9685EB13A79BCD00616143 /* TwistBones.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = TwistBones.html; sourceTree = "<group>"; };
 		DB96860913A79CE700616143 /* nBodyKernel.cl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.opencl; path = nBodyKernel.cl; sourceTree = "<group>"; };
-		DB96860B13A79CE700616143 /* nBodyOp.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = nBodyOp.kl; sourceTree = "<group>"; };
-		DB96860C13A79CE700616143 /* nBodyOpGPU.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = nBodyOpGPU.kl; sourceTree = "<group>"; };
 		DB96860D13A79CE700616143 /* swirleyMovementOp.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = swirleyMovementOp.kl; sourceTree = "<group>"; };
 		DB96860E13A79CE700616143 /* turningOp.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = turningOp.kl; sourceTree = "<group>"; };
 		DB96860F13A79CE700616143 /* twistOp.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = twistOp.kl; sourceTree = "<group>"; };
@@ -1685,15 +1684,17 @@
 			children = (
 				DB96728A13A5423200616143 /* SConscript */,
 				DB96728113A5423200616143 /* Context.h */,
-				DB96728213A5423200616143 /* Debug.cpp */,
-				DB96728313A5423200616143 /* Debug.h */,
 				DB96728413A5423200616143 /* Location.h */,
-				DB96728513A5423200616143 /* Parse.cpp */,
-				DB96728613A5423200616143 /* Parse.h */,
+				DB32EC4213D0DEEA00CB23DE /* Parser.cpp */,
+				DB32EC4113D0DEEA00CB23DE /* Parser.h */,
 				DB96728713A5423200616143 /* Parser.yy */,
 				DB96728813A5423200616143 /* Scanner.cpp */,
 				DB96728913A5423200616143 /* Scanner.h */,
 				DB96728B13A5423200616143 /* Source.h */,
+				DB32EC4613D0E3DF00CB23DE /* SourceRange.h */,
+				DB32EC4313D0E16800CB23DE /* SourceReader.h */,
+				DB32EC4513D0E26D00CB23DE /* StringSource.h */,
+				DB32EC4813D0E78800CB23DE /* Token.cpp */,
 				DB96728C13A5423200616143 /* Token.h */,
 			);
 			path = KL;
@@ -2712,7 +2713,6 @@
 				DB96856013A79BC700616143 /* Materials.html */,
 				DB96858213A79BC900616143 /* ModelViewer.html */,
 				DB96858313A79BC900616143 /* MouseEvents.html */,
-				DB96858513A79BC900616143 /* nBodySimulation.html */,
 				DB96858613A79BC900616143 /* Painting.html */,
 				DB96858713A79BC900616143 /* PerPointDeformation.html */,
 				DB96858813A79BC900616143 /* PointCloudViewer.html */,
@@ -2750,8 +2750,6 @@
 		DB96860A13A79CE700616143 /* KL */ = {
 			isa = PBXGroup;
 			children = (
-				DB96860B13A79CE700616143 /* nBodyOp.kl */,
-				DB96860C13A79CE700616143 /* nBodyOpGPU.kl */,
 				DB96860D13A79CE700616143 /* swirleyMovementOp.kl */,
 				DB96860E13A79CE700616143 /* turningOp.kl */,
 				DB96860F13A79CE700616143 /* twistOp.kl */,

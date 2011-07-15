@@ -6,8 +6,12 @@
 
 #include <Fabric/Base/JSON/Object.h>
 #include <Fabric/Base/JSON/Decode.h>
-#include <Fabric/Core/KL/Parse.h>
+#include <Fabric/Core/KL/StringSource.h>
+#include <Fabric/Core/KL/Scanner.h>
+#include <Fabric/Core/KL/Parser.h>
 #include <Fabric/Core/AST/Function.h>
+#include <Fabric/Core/AST/GlobalList.h>
+#include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/DG/Context.h>
 #include <Fabric/Core/IO/Helpers.h>
 #include <Fabric/Core/Plug/Helpers.h>
@@ -102,9 +106,11 @@ namespace Fabric
       
       m_code = m_desc.code.concatMatching( Util::getHostTriple() );
 
-      Fabric::KL::Source source( m_code.data(), m_code.length() );
+      RC::ConstHandle<KL::Source> source = KL::StringSource::Create( m_code );
+      RC::Handle<KL::Scanner> scanner = KL::Scanner::Create( source );
+      RC::Handle<KL::Parser> parser = KL::Parser::Create( scanner );
       m_diagnostics.clear();
-      Fabric::KL::Parse( source, m_cgManager, m_diagnostics, &m_ast, false );
+      m_ast = parser->run();
       
       for ( CG::Diagnostics::const_iterator it=m_diagnostics.begin(); it!=m_diagnostics.end(); ++it )
       {

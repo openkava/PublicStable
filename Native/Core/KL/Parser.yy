@@ -1393,15 +1393,13 @@ void kl_error( YYLTYPE *yyl, KL::Context &ctx, const char *msg )
 
 int kl_lex( YYSTYPE *yys, YYLTYPE *yyl, KL::Context &ctx )
 {
-  FABRIC_KL_TRACE( "kl_lex( %p, %p )", yys, yyl );
-
   KL::Location startLocation;
   KL::Token token;
   std::string text;
   KL::Location endLocation;
   while ( true )
   {
-    startLocation = ctx.m_scanner->source().locationForStart();
+    startLocation = ctx.m_scanner->source().getLocationForStart();
     try
     {
       token = ctx.m_scanner->nextToken( yys );
@@ -1415,7 +1413,7 @@ int kl_lex( YYSTYPE *yys, YYLTYPE *yyl, KL::Context &ctx )
       && token != TK_COMMENT_BLOCK
       )
     {
-      endLocation = ctx.m_scanner->source().locationForEnd();
+      endLocation = ctx.m_scanner->source().getLocationForEnd();
       break;
     }
     delete yys->valueStringPtr;
