@@ -27,8 +27,10 @@ namespace Fabric
     
     std::string ReturnStatement::deepDesc( std::string const &indent ) const
     {
-      return indent + localDesc() + "\n"
-        + m_expr->deepDesc(indent+"  ");
+      std::string result = indent + localDesc() + "\n";
+      if ( m_expr )
+        result += m_expr->deepDesc(indent+"  ");
+      return result;
     }
 
     void ReturnStatement::llvmCompileToBuilder( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const

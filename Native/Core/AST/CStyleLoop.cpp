@@ -41,10 +41,13 @@ namespace Fabric
     std::string CStyleLoop::deepDesc( std::string const &indent ) const
     {
       std::string subIndent = indent + "  ";
-      std::string result = indent + localDesc() + "\n"
-        + m_startStatement->deepDesc( subIndent )
-        + m_preCondExpr->deepDesc( subIndent )
-        + m_nextExpr->deepDesc( subIndent );
+      std::string result = indent + localDesc() + "\n";
+      if ( m_startStatement )
+        result += m_startStatement->deepDesc( subIndent );
+      if ( m_preCondExpr )
+        result += m_preCondExpr->deepDesc( subIndent );
+      if ( m_nextExpr )
+        result += m_nextExpr->deepDesc( subIndent );
       if ( m_postCondExpr )
         result += m_postCondExpr->deepDesc( subIndent );
       if ( m_body )
