@@ -1,3 +1,57 @@
+GlobalList
+  Function( 'entry' ('entry'), void )
+    ParamList
+    CompoundStatement
+      StatementList
+        CStyleLoop
+          AssignedVarDecl( VarDecl( 'i', Size ), ConstSize( 1 ) )
+            ConstSize( 1 )
+          BinOp( LE )
+            Var('i')
+            ConstSize( 10 )
+          UniOp( prefix ++ )
+            Var('i')
+          CompoundStatement
+            StatementList
+              SwitchStatement
+                Var('i')
+                CaseList
+                  Case
+                    ConstSize( 7 )
+                    StatementList
+                      Report
+                        ConstString( 'Found 7' )
+                      BreakStatement
+                  Case
+                    ConstSize( 4 )
+                    StatementList
+                      Report
+                        ConstString( 'Found 4; will drop through to 9' )
+                  Case
+                    ConstSize( 9 )
+                    StatementList
+                      Report
+                        ConstString( 'Found 9' )
+                      BreakStatement
+                  Case
+                    ConstSize( 3 )
+                    StatementList
+                      Report
+                        ConstString( 'Found 3; will drop through to something else' )
+                  Case
+                    StatementList
+                      Report
+                        ConstString( 'Something else' )
+                      BreakStatement
+                  Case
+                    ConstSize( 8 )
+                    StatementList
+                  Case
+                    ConstSize( 1 )
+                    StatementList
+                      Report
+                        ConstString( 'Found 8 or 1' )
+                      BreakStatement
 Found 8 or 1
 Something else
 Found 3; will drop through to something else

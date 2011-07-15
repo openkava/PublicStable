@@ -1,2 +1,13 @@
+GlobalList
+  Function( 'entry' ('entry'), void )
+    ParamList
+    CompoundStatement
+      StatementList
+        Report
+          CastNode( Byte )
+            ConstSize( 42 )
+        Report
+          CastNode( Byte )
+            ConstScalar( 3.14 )
 42
 3

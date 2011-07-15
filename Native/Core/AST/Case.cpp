@@ -34,9 +34,12 @@ namespace Fabric
     std::string Case::deepDesc( std::string const &indent ) const
     {
       std::string subIndent = "  " + indent;
-      return indent + "Case\n"
-        + m_expr->deepDesc( subIndent )
-        + m_statementList->deepDesc( subIndent );
+      std::string result = indent + "Case\n";
+      if ( m_expr )
+        result += m_expr->deepDesc( subIndent );
+      if ( m_statementList )
+        result += m_statementList->deepDesc( subIndent );
+      return result;
     }
 
     RC::ConstHandle<Expr> Case::getExpr() const

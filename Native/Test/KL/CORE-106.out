@@ -1,0 +1,6 @@
+GlobalList
+  Function( 'entry' ('entry'), void )
+    ParamList
+    CompoundStatement
+      StatementList
+        ReturnStatement

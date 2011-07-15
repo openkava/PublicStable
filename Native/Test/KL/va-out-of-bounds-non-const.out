@@ -1,2 +1,36 @@
+GlobalList
+  Function( 'entry' ('entry'), void )
+    ParamList
+    CompoundStatement
+      StatementList
+        StatementList
+          VarDecl( 'a', Integer[] )
+        ExprStatement
+          MethodOp( 'push' )
+            Var('a')
+            ArgList
+              ConstSize( 17 )
+        ExprStatement
+          AssignOp(ASSIGN_OP)
+            IndexOp
+              Var('a')
+              ConstSize( 0 )
+            ConstSize( 42 )
+        ExprStatement
+          AssignOp(ASSIGN_OP)
+            IndexOp
+              Var('a')
+              ConstSize( 1 )
+            ConstSize( 98 )
+        StatementList
+          VarDecl( 'b', Scalar[4][] )
+        ExprStatement
+          AssignOp(ASSIGN_OP)
+            IndexOp
+              IndexOp
+                Var('b')
+                ConstSize( 0 )
+              ConstSize( 1 )
+            ConstScalar( 5.6 )
 KL: Integer[] index out-of-bounds
 KL: Scalar[4][] index out-of-bounds

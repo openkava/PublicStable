@@ -1,3 +1,72 @@
+GlobalList
+  Function( 'returnTrue' ('returnTrue'), Boolean:r-value )
+    ParamList
+    CompoundStatement
+      StatementList
+        Report
+          ConstString( 'returnTrue called' )
+        ReturnStatement
+          ConstBoolean( true )
+  Function( 'returnFalse' ('returnFalse'), Boolean:r-value )
+    ParamList
+    CompoundStatement
+      StatementList
+        Report
+          ConstString( 'returnFalse called' )
+        ReturnStatement
+          ConstBoolean( false )
+  Function( 'entry' ('entry'), void )
+    ParamList
+    CompoundStatement
+      StatementList
+        Report
+          OrOp
+            Call('returnFalse')
+              ArgList
+            Call('returnFalse')
+              ArgList
+        Report
+          AndOp
+            Call('returnFalse')
+              ArgList
+            Call('returnFalse')
+              ArgList
+        Report
+          OrOp
+            Call('returnFalse')
+              ArgList
+            Call('returnTrue')
+              ArgList
+        Report
+          AndOp
+            Call('returnFalse')
+              ArgList
+            Call('returnTrue')
+              ArgList
+        Report
+          OrOp
+            Call('returnTrue')
+              ArgList
+            Call('returnFalse')
+              ArgList
+        Report
+          AndOp
+            Call('returnTrue')
+              ArgList
+            Call('returnFalse')
+              ArgList
+        Report
+          OrOp
+            Call('returnTrue')
+              ArgList
+            Call('returnTrue')
+              ArgList
+        Report
+          AndOp
+            Call('returnTrue')
+              ArgList
+            Call('returnTrue')
+              ArgList
 returnFalse called
 returnFalse called
 false

@@ -1,1 +1,11 @@
+GlobalList
+  Function( 'foo' ('foo'), void )
+    ParamList
+      Param( 'rval', Integer, r-value )
+    CompoundStatement
+      StatementList
+        ExprStatement
+          AssignOp(ASSIGN_OP)
+            Var('rval')
+            Var('rval')
 3:3: error: expression is not an l-value

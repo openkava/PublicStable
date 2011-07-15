@@ -1,3 +1,51 @@
+GlobalList
+  Function( 'entry' ('entry'), void )
+    ParamList
+    CompoundStatement
+      StatementList
+        StatementList
+          VarDecl( 'a', Integer[14] )
+        CStyleLoop
+          AssignedVarDecl( VarDecl( 'i', Size ), ConstSize( 0 ) )
+            ConstSize( 0 )
+          BinOp( LT )
+            Var('i')
+            ConstSize( 14 )
+          UniOp( prefix ++ )
+            Var('i')
+          ExprStatement
+            AssignOp(ASSIGN_OP)
+              IndexOp
+                Var('a')
+                Var('i')
+              BinOp( ADD )
+                BinOp( MUL )
+                  ConstSize( 3 )
+                  Var('i')
+                ConstSize( 4 )
+        Report
+          BinOp( ADD )
+            ConstString( 'a.size = ' )
+            StructMemberOp( 'size' )
+              Var('a')
+        CStyleLoop
+          AssignedVarDecl( VarDecl( 'i', Size ), ConstSize( 0 ) )
+            ConstSize( 0 )
+          BinOp( LT )
+            Var('i')
+            ConstSize( 14 )
+          UniOp( prefix ++ )
+            Var('i')
+          Report
+            BinOp( ADD )
+              BinOp( ADD )
+                BinOp( ADD )
+                  ConstString( 'a[' )
+                  Var('i')
+                ConstString( '] = ' )
+              IndexOp
+                Var('a')
+                Var('i')
 a.size = 14
 a[0] = 4
 a[1] = 7

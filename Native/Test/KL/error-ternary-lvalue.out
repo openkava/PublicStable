@@ -1,1 +1,22 @@
+GlobalList
+  Function( 'entry' ('entry'), void )
+    ParamList
+    CompoundStatement
+      StatementList
+        StatementList
+          AssignedVarDecl( VarDecl( 'a', Integer ), ConstSize( 0 ) )
+            ConstSize( 0 )
+          AssignedVarDecl( VarDecl( 'b', Integer ), ConstSize( 0 ) )
+            ConstSize( 0 )
+        ExprStatement
+          AssignOp(ASSIGN_OP)
+            TernaryOp(TERNARY_OP_COND)
+              ConstBoolean( false )
+              Var('a')
+              Var('b')
+            ConstSize( 1 )
+        Report
+          Var('a')
+        Report
+          Var('b')
 4:4: error: assignment: the result of a ternary operation cannot be an l-value

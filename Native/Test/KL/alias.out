@@ -1,1 +1,19 @@
+GlobalList
+  Alias( 'IntArray', Integer[] )
+  Function( 'entry' ('entry'), void )
+    ParamList
+    CompoundStatement
+      StatementList
+        StatementList
+          VarDecl( 'a', IntArray )
+        ExprStatement
+          MethodOp( 'push' )
+            MethodOp( 'push' )
+              Var('a')
+              ArgList
+                ConstSize( 17 )
+            ArgList
+              ConstSize( 42 )
+        Report
+          Var('a')
 [17,42]

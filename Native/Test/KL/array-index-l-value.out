@@ -1,1 +1,17 @@
+GlobalList
+  Function( 'entry' ('entry'), void )
+    ParamList
+    CompoundStatement
+      StatementList
+        StatementList
+          VarDecl( 'a', Integer[] )
+        ExprStatement
+          MethodOp( 'push' )
+            Var('a')
+            ArgList
+              ConstSize( 17 )
+        Report
+          IndexOp
+            Var('a')
+            ConstSize( 0 )
 17

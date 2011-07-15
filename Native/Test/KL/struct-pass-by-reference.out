@@ -1,1 +1,68 @@
+GlobalList
+  StructDecl( 'Vec3' )
+    StructDeclMember( 'x', Scalar )
+    StructDeclMember( 'y', Scalar )
+    StructDeclMember( 'z', Scalar )
+  Function( 'doubleVec3' ('doubleVec3'), Vec3:r-value )
+    ParamList
+      Param( 'vec3', Vec3, l-value )
+    CompoundStatement
+      StatementList
+        StatementList
+          VarDecl( 'result', Vec3 )
+        ExprStatement
+          AssignOp(ASSIGN_OP)
+            StructMemberOp( 'x' )
+              Var('result')
+            BinOp( MUL )
+              ConstSize( 2 )
+              StructMemberOp( 'x' )
+                Var('vec3')
+        ExprStatement
+          AssignOp(ASSIGN_OP)
+            StructMemberOp( 'y' )
+              Var('result')
+            BinOp( MUL )
+              ConstSize( 2 )
+              StructMemberOp( 'y' )
+                Var('vec3')
+        ExprStatement
+          AssignOp(ASSIGN_OP)
+            StructMemberOp( 'z' )
+              Var('result')
+            BinOp( MUL )
+              ConstSize( 2 )
+              StructMemberOp( 'z' )
+                Var('vec3')
+        ReturnStatement
+          Var('result')
+  Function( 'entry' ('entry'), void )
+    ParamList
+    CompoundStatement
+      StatementList
+        StatementList
+          VarDecl( 'vec3', Vec3 )
+        ExprStatement
+          AssignOp(ASSIGN_OP)
+            StructMemberOp( 'x' )
+              Var('vec3')
+            ConstSize( 1 )
+        ExprStatement
+          AssignOp(ASSIGN_OP)
+            StructMemberOp( 'y' )
+              Var('vec3')
+            ConstSize( 2 )
+        ExprStatement
+          AssignOp(ASSIGN_OP)
+            StructMemberOp( 'z' )
+              Var('vec3')
+            ConstSize( 3 )
+        ExprStatement
+          AssignOp(ASSIGN_OP)
+            Var('vec3')
+            Call('doubleVec3')
+              ArgList
+                Var('vec3')
+        Report
+          Var('vec3')
 {x:2,y:4,z:6}

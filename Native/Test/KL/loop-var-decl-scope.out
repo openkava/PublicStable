@@ -1,1 +1,16 @@
+GlobalList
+  Function( 'entry' ('entry'), void )
+    ParamList
+    CompoundStatement
+      StatementList
+        CStyleLoop
+          AssignedVarDecl( VarDecl( 'i', Integer ), ConstSize( 0 ) )
+            ConstSize( 0 )
+          BinOp( LT )
+            Var('i')
+            ConstSize( 10 )
+          UniOp( prefix ++ )
+            Var('i')
+        Report
+          Var('i')
 5:10: error: 'i': symbol not found

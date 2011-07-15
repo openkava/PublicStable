@@ -1,1 +1,43 @@
+GlobalList
+  StructDecl( 'Vec3' )
+    StructDeclMember( 'x', Scalar )
+    StructDeclMember( 'y', Scalar )
+    StructDeclMember( 'z', Scalar )
+  Function( 'entry' ('entry'), void )
+    ParamList
+    CompoundStatement
+      StatementList
+        StatementList
+          VarDecl( 'vec3Array', Vec3[2] )
+        ExprStatement
+          AssignOp(ASSIGN_OP)
+            StructMemberOp( 'x' )
+              IndexOp
+                Var('vec3Array')
+                ConstSize( 1 )
+            ConstScalar( 56.1 )
+        ExprStatement
+          AssignOp(ASSIGN_OP)
+            StructMemberOp( 'y' )
+              IndexOp
+                Var('vec3Array')
+                ConstSize( 1 )
+            ConstScalar( 42 )
+        ExprStatement
+          AssignOp(ASSIGN_OP)
+            StructMemberOp( 'z' )
+              IndexOp
+                Var('vec3Array')
+                ConstSize( 1 )
+            ConstScalar( 9.34 )
+        ExprStatement
+          AssignOp(ASSIGN_OP)
+            IndexOp
+              Var('vec3Array')
+              ConstSize( 0 )
+            IndexOp
+              Var('vec3Array')
+              ConstSize( 1 )
+        Report
+          Var('vec3Array')
 [{x:56.1,y:42,z:9.34},{x:56.1,y:42,z:9.34}]

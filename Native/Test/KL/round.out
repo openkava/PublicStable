@@ -1,3 +1,30 @@
+GlobalList
+  Function( 'entry' ('entry'), void )
+    ParamList
+    CompoundStatement
+      StatementList
+        Report
+          Call('round')
+            ArgList
+              ConstScalar( 1.9 )
+        Report
+          Call('round')
+            ArgList
+              ConstScalar( 1.1 )
+        Report
+          Call('round')
+            ArgList
+              ConstScalar( 0 )
+        Report
+          Call('round')
+            ArgList
+              UniOp( - )
+                ConstScalar( 1.1 )
+        Report
+          Call('round')
+            ArgList
+              UniOp( - )
+                ConstScalar( 1.9 )
 2
 1
 0

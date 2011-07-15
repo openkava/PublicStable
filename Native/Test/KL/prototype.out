@@ -1,1 +1,13 @@
+GlobalList
+  Function( 'externalSquare' ('externalSquare'), Scalar:r-value )
+    ParamList
+      Param( 'value', Scalar, r-value )
+  Function( 'entry' ('entry'), void )
+    ParamList
+    CompoundStatement
+      StatementList
+        Report
+          Call('externalSquare')
+            ArgList
+              ConstSize( 7 )
 49

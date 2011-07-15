@@ -1,1 +1,25 @@
+GlobalList
+  Function( 'entry' ('entry'), void )
+    ParamList
+    CompoundStatement
+      StatementList
+        StatementList
+          AssignedVarDecl( VarDecl( 'a', Scalar ), UniOp( - ) )
+            UniOp( - )
+              ConstScalar( 19.78 )
+        StatementList
+          AssignedVarDecl( VarDecl( 'b', Scalar ), BinOp( SUB ) )
+            BinOp( SUB )
+              BinOp( MUL )
+                ConstSize( 2 )
+                Var('a')
+              ConstSize( 7 )
+        Report
+          BinOp( SUB )
+            BinOp( DIV )
+              BinOp( ADD )
+                Var('b')
+                ConstSize( 7 )
+              ConstSize( 2 )
+            Var('a')
 0

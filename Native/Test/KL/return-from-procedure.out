@@ -1,1 +1,8 @@
+GlobalList
+  Function( 'entry' ('entry'), void )
+    ParamList
+    CompoundStatement
+      StatementList
+        ReturnStatement
+          ConstSize( 17 )
 3:3: error: functions with no return types do not return values

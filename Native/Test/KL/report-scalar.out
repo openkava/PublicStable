@@ -1,1 +1,8 @@
+GlobalList
+  Function( 'entry' ('entry'), void )
+    ParamList
+    CompoundStatement
+      StatementList
+        Report
+          ConstScalar( 3.141 )
 3.141

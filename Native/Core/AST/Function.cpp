@@ -42,9 +42,11 @@ namespace Fabric
     std::string Function::deepDesc( std::string const &indent ) const
     {
       std::string subIndent = indent + "  ";
-      return indent + localDesc() + "\n"
-        + m_params->deepDesc(subIndent)
-        + m_body->deepDesc(subIndent);
+      std::string result = indent + localDesc() + "\n"
+        + m_params->deepDesc(subIndent);
+      if ( m_body )
+        result += m_body->deepDesc(subIndent);
+      return result;
     }
     
     RC::ConstHandle<ParamList> Function::getParamList() const

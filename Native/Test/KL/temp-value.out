@@ -1,1 +1,45 @@
+GlobalList
+  StructDecl( 'Vec3' )
+    StructDeclMember( 'x', Scalar )
+    StructDeclMember( 'y', Scalar )
+    StructDeclMember( 'z', Scalar )
+  Function( '' ('__construct_Vec3__Scalar__Scalar__Scalar'), void )
+    ParamList
+      Param( 'self', Vec3, l-value )
+      Param( 'x', Scalar, r-value )
+      Param( 'y', Scalar, r-value )
+      Param( 'z', Scalar, r-value )
+    CompoundStatement
+      StatementList
+        ExprStatement
+          AssignOp(ASSIGN_OP)
+            StructMemberOp( 'x' )
+              Var('self')
+            Var('x')
+        ExprStatement
+          AssignOp(ASSIGN_OP)
+            StructMemberOp( 'y' )
+              Var('self')
+            Var('y')
+        ExprStatement
+          AssignOp(ASSIGN_OP)
+            StructMemberOp( 'z' )
+              Var('self')
+            Var('z')
+  Function( 'entry' ('entry'), void )
+    ParamList
+    CompoundStatement
+      StatementList
+        StatementList
+          VarDecl( 'vec3', Vec3 )
+        ExprStatement
+          AssignOp(ASSIGN_OP)
+            Var('vec3')
+            TempValue( Vec3 )
+              ArgList
+                ConstScalar( 1.3 )
+                ConstScalar( 5.6 )
+                ConstScalar( 9.8 )
+        Report
+          Var('vec3')
 {x:1.3,y:5.6,z:9.8}

@@ -1,3 +1,47 @@
+GlobalList
+  Function( 'fibonacci' ('fibonacci'), Integer:r-value )
+    ParamList
+      Param( 'n', Integer, r-value )
+    CompoundStatement
+      StatementList
+        ConditionalStatement
+          BinOp( LE )
+            Var('n')
+            ConstSize( 1 )
+          ReturnStatement
+            ConstSize( 1 )
+          ReturnStatement
+            BinOp( ADD )
+              Call('fibonacci')
+                ArgList
+                  BinOp( SUB )
+                    Var('n')
+                    ConstSize( 2 )
+              Call('fibonacci')
+                ArgList
+                  BinOp( SUB )
+                    Var('n')
+                    ConstSize( 1 )
+  Function( 'entry' ('entry'), void )
+    ParamList
+    CompoundStatement
+      StatementList
+        StatementList
+          VarDecl( 'i', Integer )
+        CStyleLoop
+          ExprStatement
+            AssignOp(ASSIGN_OP)
+              Var('i')
+              ConstSize( 0 )
+          BinOp( LT )
+            Var('i')
+            ConstSize( 10 )
+          UniOp( prefix ++ )
+            Var('i')
+          Report
+            Call('fibonacci')
+              ArgList
+                Var('i')
 1
 1
 2

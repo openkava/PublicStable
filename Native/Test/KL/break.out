@@ -1,1 +1,25 @@
+GlobalList
+  Function( 'entry' ('entry'), void )
+    ParamList
+    CompoundStatement
+      StatementList
+        StatementList
+          VarDecl( 'foo', Integer )
+        CStyleLoop
+          ExprStatement
+            AssignOp(ASSIGN_OP)
+              Var('foo')
+              ConstSize( 0 )
+          BinOp( LT )
+            Var('foo')
+            ConstSize( 10 )
+          UniOp( prefix ++ )
+            Var('foo')
+          ConditionalStatement
+            BinOp( EQ )
+              Var('foo')
+              ConstSize( 7 )
+            BreakStatement
+        Report
+          Var('foo')
 7

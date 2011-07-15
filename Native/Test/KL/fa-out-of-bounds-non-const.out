@@ -1,1 +1,26 @@
+GlobalList
+  Function( 'entry' ('entry'), void )
+    ParamList
+    CompoundStatement
+      StatementList
+        StatementList
+          VarDecl( 'a', Integer[2] )
+        ExprStatement
+          AssignOp(ASSIGN_OP)
+            IndexOp
+              Var('a')
+              ConstSize( 0 )
+            ConstSize( 17 )
+        ExprStatement
+          AssignOp(ASSIGN_OP)
+            IndexOp
+              Var('a')
+              ConstSize( 1 )
+            ConstSize( 42 )
+        ExprStatement
+          AssignOp(ASSIGN_OP)
+            IndexOp
+              Var('a')
+              ConstSize( 2 )
+            ConstSize( 64 )
 KL: Integer[2] index out-of-bounds

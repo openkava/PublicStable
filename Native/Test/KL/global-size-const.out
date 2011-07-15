@@ -1,1 +1,10 @@
+GlobalList
+  GlobalConstDecl
+    ConstSizeDecl( 'oneTwoThree', Size, 123 )
+  Function( 'entry' ('entry'), void )
+    ParamList
+    CompoundStatement
+      StatementList
+        Report
+          Var('oneTwoThree')
 123

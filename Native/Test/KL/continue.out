@@ -1,3 +1,27 @@
+GlobalList
+  Function( 'entry' ('entry'), void )
+    ParamList
+    CompoundStatement
+      StatementList
+        CStyleLoop
+          AssignedVarDecl( VarDecl( 'i', Size ), ConstSize( 1 ) )
+            ConstSize( 1 )
+          BinOp( LE )
+            Var('i')
+            ConstSize( 10 )
+          UniOp( prefix ++ )
+            Var('i')
+          CompoundStatement
+            StatementList
+              ConditionalStatement
+                BinOp( EQ )
+                  BinOp( MOD )
+                    Var('i')
+                    ConstSize( 2 )
+                  ConstSize( 0 )
+                ContinueStatement
+              Report
+                Var('i')
 1
 3
 5

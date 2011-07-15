@@ -1,3 +1,70 @@
+GlobalList
+  Function( 'processDataIN' ('processDataIN'), void )
+    ParamList
+      Param( 'myDataSize', Size, r-value )
+      Param( 'myData', Data, r-value )
+    CompoundStatement
+      StatementList
+        Report
+          BinOp( ADD )
+            BinOp( ADD )
+              BinOp( ADD )
+                ConstString( 'Size: ' )
+                Var('myDataSize')
+              ConstString( ' - Data: ' )
+            Var('myData')
+  Function( 'processDataIO' ('processDataIO'), void )
+    ParamList
+      Param( 'myDataSize', Size, r-value )
+      Param( 'myData', Data, l-value )
+    CompoundStatement
+      StatementList
+        Report
+          BinOp( ADD )
+            BinOp( ADD )
+              BinOp( ADD )
+                ConstString( 'Size: ' )
+                Var('myDataSize')
+              ConstString( ' - Data: ' )
+            Var('myData')
+  Function( 'entry' ('entry'), void )
+    ParamList
+    CompoundStatement
+      StatementList
+        StatementList
+          VarDecl( 'foo', Integer )
+        ExprStatement
+          Call('processDataIN')
+            ArgList
+              StructMemberOp( 'dataSize' )
+                Var('foo')
+              StructMemberOp( 'data' )
+                Var('foo')
+        StatementList
+          AssignedVarDecl( VarDecl( 'fooData', Data ), StructMemberOp( 'data' ) )
+            StructMemberOp( 'data' )
+              Var('foo')
+        ExprStatement
+          Call('processDataIO')
+            ArgList
+              StructMemberOp( 'dataSize' )
+                Var('foo')
+              Var('fooData')
+        StatementList
+          VarDecl( 'null', Data )
+        StatementList
+          AssignedVarDecl( VarDecl( 'zero', Size ), ConstSize( 0 ) )
+            ConstSize( 0 )
+        ExprStatement
+          Call('processDataIN')
+            ArgList
+              Var('zero')
+              Var('null')
+        ExprStatement
+          Call('processDataIO')
+            ArgList
+              Var('zero')
+              Var('null')
 Size: 4 - Data: <Opaque>
 Size: 4 - Data: <Opaque>
 Size: 0 - Data: <Opaque>

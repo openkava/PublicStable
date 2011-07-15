@@ -1,1 +1,15 @@
+GlobalList
+  StructDecl( 'Vec3' )
+    StructDeclMember( 'x', Scalar )
+    StructDeclMember( 'y', Scalar )
+    StructDeclMember( 'z', Scalar )
+  Function( 'entry' ('entry'), void )
+    ParamList
+    CompoundStatement
+      StatementList
+        StatementList
+          VarDecl( 'vec3', Vec3 )
+        Report
+          CastNode( Boolean )
+            Var('vec3')
 11:10: error: no cast exists from Vec3 to Boolean

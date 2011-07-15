@@ -1,1 +1,13 @@
+GlobalList
+  StructDecl( 'S' )
+    StructDeclMember( 'i', Integer )
+  Function( 'entry' ('entry'), void )
+    ParamList
+    CompoundStatement
+      StatementList
+        StatementList
+          VarDecl( 's', S )
+        Report
+          UniOp( - )
+            Var('s')
 9:3: error: unary operator '-' not supported for expressions of type 'S'

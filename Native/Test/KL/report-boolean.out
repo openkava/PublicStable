@@ -1,2 +1,11 @@
+GlobalList
+  Function( 'entry' ('entry'), void )
+    ParamList
+    CompoundStatement
+      StatementList
+        Report
+          ConstBoolean( true )
+        Report
+          ConstBoolean( false )
 true
 false

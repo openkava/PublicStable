@@ -1,3 +1,24 @@
+GlobalList
+  Function( 'entry' ('entry'), void )
+    ParamList
+    CompoundStatement
+      StatementList
+        Report
+          OrOp
+            ConstBoolean( true )
+            ConstBoolean( false )
+        Report
+          AndOp
+            ConstBoolean( true )
+            ConstBoolean( false )
+        Report
+          BinOp( EQ )
+            ConstBoolean( true )
+            ConstBoolean( false )
+        Report
+          BinOp( NE )
+            ConstBoolean( true )
+            ConstBoolean( false )
 true
 false
 false

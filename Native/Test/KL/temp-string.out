@@ -1,1 +1,12 @@
+GlobalList
+  Function( 'entry' ('entry'), void )
+    ParamList
+    CompoundStatement
+      StatementList
+        Report
+          BinOp( ADD )
+            CastNode( String )
+              ConstSize( 7 )
+            CastNode( String )
+              ConstSize( 5 )
 75

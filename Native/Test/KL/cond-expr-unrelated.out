@@ -1,1 +1,17 @@
+GlobalList
+  StructDecl( 'Vec3' )
+    StructDeclMember( 'x', Scalar )
+    StructDeclMember( 'y', Scalar )
+    StructDeclMember( 'z', Scalar )
+  Function( 'entry' ('entry'), void )
+    ParamList
+    CompoundStatement
+      StatementList
+        StatementList
+          VarDecl( 'vec', Vec3 )
+        ExprStatement
+          TernaryOp(TERNARY_OP_COND)
+            ConstBoolean( true )
+            ConstSize( 17 )
+            Var('vec')
 11:3: error: ternary operation: types 'Integer' and 'Vec3' are unrelated

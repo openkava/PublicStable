@@ -1,1 +1,29 @@
+GlobalList
+  Function( 'double' ('double'), void )
+    ParamList
+      Param( 'input', Scalar, l-value )
+      Param( 'output', Scalar, l-value )
+    CompoundStatement
+      StatementList
+        ExprStatement
+          AssignOp(ASSIGN_OP)
+            Var('output')
+            BinOp( MUL )
+              ConstSize( 2 )
+              Var('input')
+  Function( 'entry' ('entry'), void )
+    ParamList
+    CompoundStatement
+      StatementList
+        StatementList
+          AssignedVarDecl( VarDecl( 'input', Scalar ), ConstScalar( 4 ) )
+            ConstScalar( 4 )
+          VarDecl( 'output', Scalar )
+        ExprStatement
+          Call('double')
+            ArgList
+              Var('input')
+              Var('output')
+        Report
+          Var('output')
 8
