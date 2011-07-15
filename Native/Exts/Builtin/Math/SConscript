@@ -1,0 +1,18 @@
+#
+# Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+#
+
+Import( 'extsEnv', 'fabricExtsDistDir' )
+
+mathPluginEnv = extsEnv.Clone()
+mathPlugin = mathPluginEnv.SharedLibrary( 'FabricMath', Glob('*.cpp') ),
+mathManifest = mathPluginEnv.File('FabricMath.fpm.json'),
+
+installAction = Install( fabricExtsDistDir, [mathPlugin,mathManifest] )
+extsEnv.CopyToAppdataIfWindows( installAction )
+
+Alias( 'mathExt', [
+  mathPlugin,
+  mathManifest,
+  installAction
+] )
