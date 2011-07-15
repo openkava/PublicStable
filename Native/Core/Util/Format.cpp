@@ -27,39 +27,47 @@ namespace Fabric
     }
   };
   
-  std::string _( char const *data, size_t length, char quote )
+  std::string _( char const *data, size_t length, size_t maxLength, char quote )
   {
     std::string result;
     if ( quote )
       result.push_back(quote);
     for ( size_t i=0; i<length; ++i )
     {
-      char ch = data[i];
-      switch ( ch )
+      if ( i == maxLength )
       {
-        case '\\': result.append( "\\\\" ); break;
-        case '\0': result.append( "\\0" ); break;
-        case '\n': result.append( "\\n" ); break;
-        case '\r': result.append( "\\r" ); break;
-        case '\b': result.append( "\\b" ); break;
-        case '\t': result.append( "\\t" ); break;
-        case '\f': result.append( "\\f" ); break;
-        case '\a': result.append( "\\a" ); break;
-        case '\v': result.append( "\\v" ); break;
-        default:
-          if ( quote && ch == quote )
-          {
-            result.push_back('\\');
-            result.push_back(quote);
-          }
-          else if ( isprint((unsigned char)ch) )
-            result.push_back(ch);
-          else
-          {
-            result.append( "\\x" );
-            result.append( Util::formatHex( 1, &ch ) );
-          }
-          break;
+        result.append( "..." );
+        break;
+      }
+      else
+      {
+        char ch = data[i];
+        switch ( ch )
+        {
+          case '\\': result.append( "\\\\" ); break;
+          case '\0': result.append( "\\0" ); break;
+          case '\n': result.append( "\\n" ); break;
+          case '\r': result.append( "\\r" ); break;
+          case '\b': result.append( "\\b" ); break;
+          case '\t': result.append( "\\t" ); break;
+          case '\f': result.append( "\\f" ); break;
+          case '\a': result.append( "\\a" ); break;
+          case '\v': result.append( "\\v" ); break;
+          default:
+            if ( quote && ch == quote )
+            {
+              result.push_back('\\');
+              result.push_back(quote);
+            }
+            else if ( isprint((unsigned char)ch) )
+              result.push_back(ch);
+            else
+            {
+              result.append( "\\x" );
+              result.append( Util::formatHex( 1, &ch ) );
+            }
+            break;
+        }
       }
     }
     if ( quote )
