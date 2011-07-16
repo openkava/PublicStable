@@ -66,6 +66,25 @@ namespace Fabric
         std::string m_msg;
       };
     
+      class EarlyEOI
+      {
+      public:
+      
+        EarlyEOI( Token const &token )
+          : m_cgLocation( token.getStartLocation() )
+        {
+        }
+        
+        CG::Location const &getCGLocation() const
+        {
+          return m_cgLocation;
+        }
+        
+      private:
+      
+        CG::Location m_cgLocation;
+      };
+
       Parser( RC::Handle<Scanner> const &scanner, CG::Diagnostics &diagnostics );
       
       RC::Handle<AST::GlobalList> parseGlobalList();
@@ -110,11 +129,12 @@ namespace Fabric
       }
       
       void handleError( Error const &error, Token::Type skipTokenType );
+      void handleEarlyEOI( EarlyEOI const &earlyEOI );
 
     private:
     
       RC::Handle<Scanner> m_scanner;
-      CG::Diagnostics m_diagnostics;
+      CG::Diagnostics &m_diagnostics;
       
       bool m_havePeek;
       Token m_peek;

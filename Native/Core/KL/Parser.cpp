@@ -71,7 +71,9 @@ namespace Fabric
         if ( nextTokenType == tokenTypes[i] )
           return nextTokenType;
       }
-      throw Error( m_peek, "expecting " + std::string(desc) );
+      if ( nextTokenType == Token::TK_EOI )
+        throw EarlyEOI( m_peek );
+      else throw Error( m_peek, "expecting " + std::string(desc) );
     }
     
     void Parser::handleError( Error const &error, Token::Type skipTokenType )
@@ -84,6 +86,11 @@ namespace Fabric
           || token.getType() == Token::TK_EOI )
           break;
       }
+    }
+    
+    void Parser::handleEarlyEOI( EarlyEOI const &earlyEOI )
+    {
+      m_diagnostics.addError( earlyEOI.getCGLocation(), "unexpected end of input" );
     }
     
     Location const &Parser::getLocation()
@@ -120,6 +127,10 @@ namespace Fabric
         catch ( Error error )
         {
           handleError( error, Token::TK_SEMICOLON );
+        }
+        catch ( EarlyEOI earlyEOI )
+        {
+          handleEarlyEOI( earlyEOI );
         }
       }
       return result;
