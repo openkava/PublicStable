@@ -92,12 +92,14 @@ namespace Fabric
       RC::Handle<AST::StructDecl> parseStruct();
       RC::Handle<AST::StructDeclMemberList> parseStructMemberList();
       RC::Handle<AST::StructDeclMember> parseStructMember();
+      std::string parseArrayModifier();
       
       Token::Type peek();
       Token next();
       Location const &getLocation();
       
       Token::Type expect( size_t count, Token::Type const *tokenTypes, char const *desc );
+      bool accept( Token::Type tokenType );
 
       Token consume( Token::Type tokenType, char const *desc );
       Token consume( Token::Type tokenType )

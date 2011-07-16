@@ -5,18 +5,22 @@ namespace Fabric
   namespace AST
   {
     GlobalList::GlobalList( CG::Location const &location )
-      : ListNode( location )
+      : Node( location )
     {
     }
 
-    GlobalList::GlobalList( CG::Location const &location, RC::ConstHandle<Global> global, RC::ConstHandle<GlobalList> const &remaining )
-      : ListNode( location, global, remaining )
-    {
-    }
-    
     std::string GlobalList::localDesc() const
     {
       return "GlobalList";
+    }
+    
+    std::string GlobalList::deepDesc( std::string const &indent ) const
+    {
+      std::string subIndent = indent + "  ";
+      std::string result = indent + localDesc() + "\n";
+      for ( size_t i=0; i<numItems(); ++i )
+        result += item(i)->deepDesc( subIndent );
+      return result;
     }
 
     void GlobalList::llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const

@@ -76,6 +76,12 @@ namespace Fabric
       else throw Error( m_peek, "expecting " + std::string(desc) );
     }
     
+    bool Parser::accept( Token::Type tokenType )
+    {
+      peek();
+      return m_peek.getType() == tokenType;
+    }
+    
     void Parser::handleError( Error const &error, Token::Type skipTokenType )
     {
       m_diagnostics.addError( error.getCGLocation(), error.getDesc() );
@@ -105,7 +111,6 @@ namespace Fabric
       bool done;
       while ( !done )
       {
-        RC::Handle<AST::Global> global;
         try
         {
           static Token::Type tokenTypes[3] =
@@ -118,17 +123,15 @@ namespace Fabric
           switch ( tokenType )
           {
             case Token::TK_ALIAS:
-              global = parseAlias();
+              result->append( parseAlias() );
               break;
             case Token::TK_STRUCT:
-              global = parseStruct();
+              result->append( parseStruct() );
               break;
             case Token::TK_EOI:
               done = true;
               break;
           }
-          if ( global )
-            result = AST::GlobalList::Create( result->getLocation(), global, result );
         }
         catch ( Error error )
         {
@@ -147,8 +150,9 @@ namespace Fabric
       Token aliasToken = consume( Token::TK_ALIAS );
       Token oldTypeNameToken = consume( Token::TK_TYPE_OR_IDENTIFIER, "type name" );
       Token newTypeNameToken = consume( Token::TK_TYPE_OR_IDENTIFIER, "identifier" );
+      std::string arrayModifier = parseArrayModifier();
       consume( Token::TK_SEMICOLON, "';'" );
-      return AST::Alias::Create( aliasToken.getStartLocation(), newTypeNameToken.toString(), oldTypeNameToken.toString() );
+      return AST::Alias::Create( aliasToken.getStartLocation(), newTypeNameToken.toString(), oldTypeNameToken.toString() + arrayModifier );
     }
     
     RC::Handle<AST::StructDecl> Parser::parseStruct()
@@ -197,8 +201,40 @@ namespace Fabric
     {
       Token typeToken = consume( Token::TK_TYPE_OR_IDENTIFIER, "type name" );
       Token nameToken = consume( Token::TK_TYPE_OR_IDENTIFIER, "identifier" );
+      std::string arrayModifier = parseArrayModifier();
       consume( Token::TK_SEMICOLON, "';'" );
-      return AST::StructDeclMember::Create( typeToken.getStartLocation(), nameToken.toString(), typeToken.toString() );
+      return AST::StructDeclMember::Create( typeToken.getStartLocation(), nameToken.toString(), typeToken.toString() + arrayModifier );
+    }
+
+    std::string Parser::parseArrayModifier()
+    {
+      std::string result = "";
+      if ( accept( Token::TK_LBRACKET ) )
+      {
+        consume( Token::TK_LBRACKET );
+        static Token::Type tokenTypes[2] =
+        {
+          Token::TK_CONST_UI,
+          Token::TK_RBRACKET
+        };
+        Token::Type tokenType = expect( 2, tokenTypes, "']' or unsigned integer constant" );
+        switch ( tokenType )
+        {
+          case Token::TK_CONST_UI:
+          {
+            Token token = consume( Token::TK_CONST_UI );
+            result += "[" + token.toString() + "]";
+          }
+          break;
+          
+          case Token::TK_RBRACKET:
+            result += "[]";
+            break;
+        }
+        consume( Token::TK_RBRACKET );
+        result = parseArrayModifier() + result;
+      }
+      return result;
     }
   };
 };
