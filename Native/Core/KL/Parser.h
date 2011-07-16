@@ -21,6 +21,9 @@ namespace Fabric
   {
     class GlobalList;
     class Alias;
+    class StructDecl;
+    class StructDeclMemberList;
+    class StructDeclMember;
   };
   
   namespace KL
@@ -67,9 +70,13 @@ namespace Fabric
       
       RC::Handle<AST::GlobalList> parseGlobalList();
       RC::Handle<AST::Alias> parseAlias();
+      RC::Handle<AST::StructDecl> parseStruct();
+      RC::Handle<AST::StructDeclMemberList> parseStructMemberList();
+      RC::Handle<AST::StructDeclMember> parseStructMember();
       
       Token::Type peek();
       Token next();
+      Location const &getLocation();
       
       Token::Type expect( size_t count, Token::Type const *tokenTypes, char const *desc );
       void expect( Token::Type tokenType1, char const *desc )
@@ -84,6 +91,16 @@ namespace Fabric
           tokenType2
         };
         return expect( 2, tokenTypes, desc );
+      }
+      Token::Type expect( Token::Type tokenType1, Token::Type tokenType2, Token::Type tokenType3, char const *desc )
+      {
+        Token::Type tokenTypes[3] =
+        {
+          tokenType1,
+          tokenType2,
+          tokenType3
+        };
+        return expect( 3, tokenTypes, desc );
       }
 
       Token consume( Token::Type tokenType, char const *desc );

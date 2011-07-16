@@ -5,16 +5,21 @@
 #ifndef _FABRIC_AST_STRUCT_DECL_MEMBER_LIST_NODE_H
 #define _FABRIC_AST_STRUCT_DECL_MEMBER_LIST_NODE_H
 
-#include <Fabric/Core/AST/ListNode.h>
+#include <Fabric/Core/AST/Node.h>
 #include <Fabric/Core/RT/StructMemberInfo.h>
 
 namespace Fabric
 {
+  namespace RT
+  {
+    class Manager;
+  };
+  
   namespace AST
   {
     class StructDeclMember;
     
-    class StructDeclMemberList: public ListNode
+    class StructDeclMemberList: public Node
     {
     public:
     
@@ -26,25 +31,20 @@ namespace Fabric
         return new StructDeclMemberList( location );
       }
       
-      static RC::Handle<StructDeclMemberList> Create( CG::Location const &location, RC::ConstHandle<StructDeclMember> const &structDeclMember )
-      {
-        return new StructDeclMemberList( location, structDeclMember );
-      }
+      void append( RC::ConstHandle<StructDeclMember> const &structDeclMember );
       
-      static RC::Handle<StructDeclMemberList> Create( CG::Location const &location, RC::ConstHandle<StructDeclMember> const &structDeclMember, RC::ConstHandle<StructDeclMemberList> const &remaining )
-      {
-        return new StructDeclMemberList( location, structDeclMember, remaining );
-      }
-      
+      size_t numItems() const;
       RC::ConstHandle<StructDeclMember> item( size_t index ) const;
       
-      void appenedToStructMemberInfoVector( RT::StructMemberInfoVector &structMemberInfoVector );
+      void appenedToStructMemberInfoVector( RT::StructMemberInfoVector &structMemberInfoVector, RC::ConstHandle<RT::Manager> const &rtManager );
       
     protected:
     
       StructDeclMemberList( CG::Location const &location );
-      StructDeclMemberList( CG::Location const &location, RC::ConstHandle<StructDeclMember> const &structDeclMember );
-      StructDeclMemberList( CG::Location const &location, RC::ConstHandle<StructDeclMember> const &structDeclMember, RC::ConstHandle<StructDeclMemberList> const &next );
+      
+    private:
+    
+      std::vector< RC::ConstHandle<StructDeclMember> > m_items;
     };
   };
 };

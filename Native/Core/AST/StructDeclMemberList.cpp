@@ -10,18 +10,13 @@ namespace Fabric
   namespace AST
   {
     StructDeclMemberList::StructDeclMemberList( CG::Location const &location )
-      : ListNode( location )
+      : Node( location )
     {
     }
     
-    StructDeclMemberList::StructDeclMemberList( CG::Location const &location, RC::ConstHandle<StructDeclMember> const &structDeclMember )
-      : ListNode( location, structDeclMember )
+    void StructDeclMemberList::append( RC::ConstHandle<StructDeclMember> const &structDeclMember )
     {
-    }
-    
-    StructDeclMemberList::StructDeclMemberList( CG::Location const &location, RC::ConstHandle<StructDeclMember> const &structDeclMember, RC::ConstHandle<StructDeclMemberList> const &remaining )
-      : ListNode( location, structDeclMember, remaining )
-    {
+      m_items.push_back( structDeclMember );
     }
     
     std::string StructDeclMemberList::localDesc() const
@@ -37,17 +32,22 @@ namespace Fabric
         result += item(i)->deepDesc( indent );
       return result;
     }
-          
+    
+    size_t StructDeclMemberList::numItems() const
+    {
+      return m_items.size();
+    }
+    
     RC::ConstHandle<StructDeclMember> StructDeclMemberList::item( size_t index ) const
     {
-      return RC::ConstHandle<StructDeclMember>::StaticCast( ListNode::item(index) );
+      return m_items[index];
     }
 
-    void StructDeclMemberList::appenedToStructMemberInfoVector( RT::StructMemberInfoVector &structMemberInfoVector )
+    void StructDeclMemberList::appenedToStructMemberInfoVector( RT::StructMemberInfoVector &structMemberInfoVector, RC::ConstHandle<RT::Manager> const &rtManager )
     {
       size_t count = numItems();
       for ( size_t i=0; i<count; ++i )
-        structMemberInfoVector.push_back( item(i)->getStructMemberInfo() );
+        structMemberInfoVector.push_back( item(i)->getStructMemberInfo( rtManager ) );
     }
   };
 };

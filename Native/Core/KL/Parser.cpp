@@ -6,6 +6,9 @@
 #include <Fabric/Core/KL/Scanner.h>
 #include <Fabric/Core/AST/Alias.h>
 #include <Fabric/Core/AST/GlobalList.h>
+#include <Fabric/Core/AST/StructDecl.h>
+#include <Fabric/Core/AST/StructDeclMember.h>
+#include <Fabric/Core/AST/StructDeclMemberList.h>
 
 namespace Fabric
 {
@@ -82,22 +85,30 @@ namespace Fabric
           break;
       }
     }
+    
+    Location const &Parser::getLocation()
+    {
+      peek();
+      return m_peek.getStartLocation();
+    }
 
     RC::Handle<AST::GlobalList> Parser::parseGlobalList()
     {
-      peek();
-      RC::Handle<AST::GlobalList> result = AST::GlobalList::Create( m_peek.getStartLocation() );
+      RC::Handle<AST::GlobalList> result = AST::GlobalList::Create( getLocation() );
       bool done;
       while ( !done )
       {
         RC::Handle<AST::Global> global;
         try
         {
-          Token::Type tokenType = expect( Token::TK_ALIAS, Token::TK_EOI, "alias" );
+          Token::Type tokenType = expect( Token::TK_ALIAS, Token::TK_STRUCT, Token::TK_EOI, "alias" );
           switch ( tokenType )
           {
             case Token::TK_ALIAS:
               global = parseAlias();
+              break;
+            case Token::TK_STRUCT:
+              global = parseStruct();
               break;
             case Token::TK_EOI:
               done = true;
@@ -117,10 +128,55 @@ namespace Fabric
     RC::Handle<AST::Alias> Parser::parseAlias()
     {
       Token aliasToken = consume( Token::TK_ALIAS );
-      Token oldTypeNameToken = consume( Token::TK_TYPE_OR_IDENTIFIER, "existing type name" );
-      Token newTypeNameToken = consume( Token::TK_TYPE_OR_IDENTIFIER, "new type name" );
+      Token oldTypeNameToken = consume( Token::TK_TYPE_OR_IDENTIFIER, "type name" );
+      Token newTypeNameToken = consume( Token::TK_TYPE_OR_IDENTIFIER, "identifier" );
       consume( Token::TK_SEMICOLON, "';'" );
       return AST::Alias::Create( aliasToken.getStartLocation(), newTypeNameToken.toString(), oldTypeNameToken.toString() );
+    }
+    
+    RC::Handle<AST::StructDecl> Parser::parseStruct()
+    {
+      Token structToken = consume( Token::TK_STRUCT );
+      Token nameToken = consume( Token::TK_TYPE_OR_IDENTIFIER, "identifier" );
+      consume( Token::TK_LBRACE, "'{'" );
+      RC::Handle<AST::StructDeclMemberList> memberList = parseStructMemberList();
+      consume( Token::TK_RBRACE, "'}'" );
+      consume( Token::TK_SEMICOLON, "';'" );
+      return AST::StructDecl::Create( structToken.getStartLocation(), nameToken.toString(), memberList );
+    }
+    
+    RC::Handle<AST::StructDeclMemberList> Parser::parseStructMemberList()
+    {
+      RC::Handle<AST::StructDeclMemberList> result = AST::StructDeclMemberList::Create( getLocation() );
+      bool done = false;
+      while ( !done )
+      {
+        try
+        {
+          switch ( expect( Token::TK_TYPE_OR_IDENTIFIER, Token::TK_RBRACE, "identifier or '}'" ) )
+          {
+            case Token::TK_TYPE_OR_IDENTIFIER:
+              result->append( parseStructMember() );
+              break;
+            case Token::TK_RBRACE:
+              done = true;
+              break;
+          }
+        }
+        catch ( Error error )
+        {
+          handleError( error, Token::TK_RBRACE );
+        }
+      }
+      return result;
+    }
+    
+    RC::Handle<AST::StructDeclMember> Parser::parseStructMember()
+    {
+      Token typeToken = consume( Token::TK_TYPE_OR_IDENTIFIER, "type name" );
+      Token nameToken = consume( Token::TK_TYPE_OR_IDENTIFIER, "identifier" );
+      consume( Token::TK_SEMICOLON, "';'" );
+      return AST::StructDeclMember::Create( typeToken.getStartLocation(), nameToken.toString(), typeToken.toString() );
     }
   };
 };

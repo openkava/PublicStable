@@ -10,6 +10,11 @@
 
 namespace Fabric
 {
+  namespace RT
+  {
+    class Manager;
+  };
+  
   namespace CG
   {
     class Adapter;
@@ -21,23 +26,23 @@ namespace Fabric
     {
     public:
     
-      static RC::Handle<StructDeclMember> Create( CG::Location const &location, std::string const &name, RC::ConstHandle<CG::Adapter> const &adapter )
+      static RC::Handle<StructDeclMember> Create( CG::Location const &location, std::string const &name, std::string const &typeName )
       {
-        return new StructDeclMember( location, name, adapter );
+        return new StructDeclMember( location, name, typeName );
       }
     
       virtual std::string localDesc() const;
       
-      RT::StructMemberInfo getStructMemberInfo() const;
+      RT::StructMemberInfo getStructMemberInfo( RC::ConstHandle<RT::Manager> const &rtManager ) const;
 
     protected:
     
-      StructDeclMember( CG::Location const &location, std::string const &name, RC::ConstHandle<CG::Adapter> const &adapter );
+      StructDeclMember( CG::Location const &location, std::string const &name, std::string const &typeName );
       
     private:
     
       std::string m_name;
-      RC::ConstHandle<CG::Adapter> m_adapter;
+      std::string m_typeName;
     };
   };
 };

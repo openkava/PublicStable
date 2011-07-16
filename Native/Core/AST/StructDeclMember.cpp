@@ -5,28 +5,29 @@
 #include "StructDeclMember.h"
 #include <Fabric/Core/CG/Location.h>
 #include <Fabric/Core/CG/Adapter.h>
+#include <Fabric/Core/RT/Manager.h>
 
 namespace Fabric
 {
   namespace AST
   {
-    StructDeclMember::StructDeclMember( CG::Location const &location, std::string const &name, RC::ConstHandle<CG::Adapter> const &adapter )
+    StructDeclMember::StructDeclMember( CG::Location const &location, std::string const &name, std::string const &typeName )
       : Node( location )
       , m_name( name )
-      , m_adapter( adapter )
+      , m_typeName( typeName )
     {
     }
 
     std::string StructDeclMember::localDesc() const
     {
-      return "StructDeclMember( " + _(m_name) + ", " + _(m_adapter) + " )";
+      return "StructDeclMember( " + _(m_name) + ", " + _(m_typeName) + " )";
     }
 
-    RT::StructMemberInfo StructDeclMember::getStructMemberInfo() const
+    RT::StructMemberInfo StructDeclMember::getStructMemberInfo( RC::ConstHandle<RT::Manager> const &rtManager ) const
     {
       RT::StructMemberInfo result;
       result.name = m_name;
-      result.desc = m_adapter->getDesc();
+      result.desc = rtManager->getDesc( m_typeName );
       return result;
     }
   };
