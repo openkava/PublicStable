@@ -98,29 +98,6 @@ namespace Fabric
       Location const &getLocation();
       
       Token::Type expect( size_t count, Token::Type const *tokenTypes, char const *desc );
-      void expect( Token::Type tokenType1, char const *desc )
-      {
-        expect( 1, &tokenType1, desc );
-      }
-      Token::Type expect( Token::Type tokenType1, Token::Type tokenType2, char const *desc )
-      {
-        Token::Type tokenTypes[2] =
-        {
-          tokenType1,
-          tokenType2
-        };
-        return expect( 2, tokenTypes, desc );
-      }
-      Token::Type expect( Token::Type tokenType1, Token::Type tokenType2, Token::Type tokenType3, char const *desc )
-      {
-        Token::Type tokenTypes[3] =
-        {
-          tokenType1,
-          tokenType2,
-          tokenType3
-        };
-        return expect( 3, tokenTypes, desc );
-      }
 
       Token consume( Token::Type tokenType, char const *desc );
       Token consume( Token::Type tokenType )

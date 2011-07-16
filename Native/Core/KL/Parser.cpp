@@ -59,7 +59,7 @@ namespace Fabric
     
     Token Parser::consume( Token::Type tokenType, char const *desc )
     {
-      expect( tokenType, desc );
+      expect( 1, &tokenType, desc );
       return next();
     }
     
@@ -108,7 +108,13 @@ namespace Fabric
         RC::Handle<AST::Global> global;
         try
         {
-          Token::Type tokenType = expect( Token::TK_ALIAS, Token::TK_STRUCT, Token::TK_EOI, "alias" );
+          static Token::Type tokenTypes[3] =
+          {
+            Token::TK_ALIAS,
+            Token::TK_STRUCT,
+            Token::TK_EOI
+          };
+          Token::Type tokenType = expect( 3, tokenTypes, "'alias' or 'struct'" );
           switch ( tokenType )
           {
             case Token::TK_ALIAS:
@@ -164,7 +170,12 @@ namespace Fabric
       {
         try
         {
-          switch ( expect( Token::TK_TYPE_OR_IDENTIFIER, Token::TK_RBRACE, "identifier or '}'" ) )
+          static Token::Type tokenTypes[2] =
+          {
+            Token::TK_TYPE_OR_IDENTIFIER,
+            Token::TK_RBRACE
+          };
+          switch ( expect( 2, tokenTypes, "identifier or '}'" ) )
           {
             case Token::TK_TYPE_OR_IDENTIFIER:
               result->append( parseStructMember() );
