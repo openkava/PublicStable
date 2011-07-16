@@ -107,6 +107,10 @@ namespace Fabric
         NUM_TOKENS
       };
       
+      Token()
+      {
+      }
+      
       Token( Type type, SourceRange const &sourceRange )
         : m_type( type )
         , m_sourceRange( sourceRange )
@@ -150,6 +154,11 @@ namespace Fabric
       Location const &getEndLocation() const
       {
         return m_sourceRange.getEndLocation();
+      }
+      
+      std::string toString() const
+      {
+        return m_sourceRange.toString();
       }
       
       static char const *TypeName( Type type )

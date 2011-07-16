@@ -80,7 +80,7 @@ namespace Fabric
       
       RC::ConstHandle<KL::Source> source = KL::StringSource::Create( m_sourceCode );
       RC::Handle<KL::Scanner> scanner = KL::Scanner::Create( source );
-      RC::Handle<KL::Parser> parser = KL::Parser::Create( scanner );
+      RC::Handle<KL::Parser> parser = KL::Parser::Create( scanner, m_diagnostics );
       m_ast = parser->run();
       if ( !m_diagnostics.containsError() )
         compileAST( true );

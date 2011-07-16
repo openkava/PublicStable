@@ -183,7 +183,8 @@ void handleFile( FILE *fp, unsigned int runFlags )
   }
 
   RC::Handle<KL::Scanner> scanner = KL::Scanner::Create( source );
-  RC::Handle<KL::Parser> parser = KL::Parser::Create( scanner );
+  CG::Diagnostics diagnostics;
+  RC::Handle<KL::Parser> parser = KL::Parser::Create( scanner, diagnostics );
   
   llvm::CodeGenOpt::Level    optLevel = llvm::CodeGenOpt::Aggressive;
 
@@ -200,7 +201,6 @@ void handleFile( FILE *fp, unsigned int runFlags )
   cgManager->llvmPrepareModule( moduleBuilder );
   OCL::llvmPrepareModule( moduleBuilder, rtManager );
   
-  CG::Diagnostics diagnostics;
   RC::Handle<AST::GlobalList> globalList = parser->run();
 
   if ( diagnostics.containsError() )

@@ -18,6 +18,10 @@ namespace Fabric
     {
     public:
     
+      SourceRange()
+      {
+      }
+    
       SourceRange( RC::ConstHandle<Source> const &source, Location const &startLocation, Location const &endLocation )
         : m_source( source )
         , m_startLocation( startLocation )
