@@ -137,9 +137,11 @@ static void *LazyFunctionCreator( std::string const &functionName )
     void *result = cgManager->llvmResolveExternalFunction( functionName );
     if ( result )
       return result;
+#if !defined(FABRIC_OS_LINUX)
     result = OCL::llvmResolveExternalFunction( functionName );
     if ( result )
       return result;
+#endif
   }
   fprintf( stderr, "Unable to look up symbol for '%s'\n", functionName.c_str() );
   return( NULL );
@@ -171,7 +173,9 @@ void handleFile( FILE *fp, unsigned int runFlags )
 
   CG::ModuleBuilder moduleBuilder( cgManager, module.get() );
   cgManager->llvmPrepareModule( moduleBuilder );
+#if !defined(FABRIC_OS_LINUX)
   OCL::llvmPrepareModule( moduleBuilder, rtManager );
+#endif
   
   Source source( sourceString.data(), sourceString.length() );
   RC::Handle<AST::GlobalList> globalList;
