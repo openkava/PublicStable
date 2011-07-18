@@ -16,6 +16,11 @@ namespace llvm
 
 namespace Fabric
 {
+  namespace CG
+  {
+    class Manager;
+  };
+  
   namespace AST
   {
     class CompoundStatement;

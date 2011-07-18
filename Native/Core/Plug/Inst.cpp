@@ -133,7 +133,7 @@ namespace Fabric
         
         if ( !function->getBody() )
         {
-          std::string const &name = function->getEntryName();
+          std::string const &name = function->getEntryName( m_cgManager );
           void *resolvedFunction = 0;
           for ( size_t i=0; i<m_orderedSOLibHandles.size(); ++i )
           {
