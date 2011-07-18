@@ -1,10 +1,10 @@
 GlobalList
   StructDecl( 'Vec3' )
-    StructDeclMember( 'x', Scalar )
-    StructDeclMember( 'y', Scalar )
-    StructDeclMember( 'z', Scalar )
+    MemberDecl( 'x', Scalar )
+    MemberDecl( 'y', Scalar )
+    MemberDecl( 'z', Scalar )
   StructDecl( 'Quad' )
-    StructDeclMember( 'normal', Vec3 )
+    MemberDecl( 'normal', Vec3 )
   Function( '' ('__construct_Vec3__Scalar__Scalar__Scalar'), void )
     ParamList
       Param( 'self', Vec3, l-value )

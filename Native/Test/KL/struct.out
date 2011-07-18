@@ -1,8 +1,8 @@
 GlobalList
   StructDecl( 'MyVec3' )
-    StructDeclMember( 'x', Scalar )
-    StructDeclMember( 'y', Scalar )
-    StructDeclMember( 'z', Scalar )
+    MemberDecl( 'x', Scalar )
+    MemberDecl( 'y', Scalar )
+    MemberDecl( 'z', Scalar )
   Function( 'entry' ('entry'), void )
     ParamList
     CompoundStatement

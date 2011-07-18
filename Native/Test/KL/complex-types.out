@@ -1,7 +1,7 @@
 GlobalList
   StructDecl( 'Struct' )
-    StructDeclMember( 'integer', Integer )
-    StructDeclMember( 'scalar', Scalar )
+    MemberDecl( 'integer', Integer )
+    MemberDecl( 'scalar', Scalar )
   Alias( 'StructArray', Struct[] )
   Alias( 'StructArrayArray', StructArray[] )
   Function( 'entry' ('entry'), void )

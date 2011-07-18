@@ -16,7 +16,7 @@ namespace Fabric
   
   namespace AST
   {
-    class StructDeclMemberVector;
+    class MemberDeclVector;
     
     class StructDecl : public Global
     {
@@ -27,7 +27,7 @@ namespace Fabric
       static RC::Handle<StructDecl> Create(
         CG::Location const &location,
         std::string const &name,
-        RC::ConstHandle<StructDeclMemberVector> const &members
+        RC::ConstHandle<MemberDeclVector> const &members
         );
 
       RC::Handle<JSON::Object> toJSON() const;
@@ -39,13 +39,13 @@ namespace Fabric
       StructDecl(
         CG::Location const &location,
         std::string const &name,
-        RC::ConstHandle<StructDeclMemberVector> const &members
+        RC::ConstHandle<MemberDeclVector> const &members
         );
     
     private:
     
       std::string m_name;
-      RC::ConstHandle<StructDeclMemberVector> m_members;
+      RC::ConstHandle<MemberDeclVector> m_members;
     };
   };
 };

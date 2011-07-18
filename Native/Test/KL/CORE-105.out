@@ -1,7 +1,7 @@
 GlobalList
   StructDecl( 'LinearKeyframe' )
-    StructDeclMember( 'time', Scalar )
-    StructDeclMember( 'value', Scalar )
+    MemberDecl( 'time', Scalar )
+    MemberDecl( 'value', Scalar )
   Function( 'evaluateLinearKeyframeAnimationTrack' ('evaluateLinearKeyframeAnimationTrack'), Scalar:r-value )
     ParamList
       Param( 'track', LinearKeyframe[], l-value )

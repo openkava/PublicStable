@@ -61,8 +61,8 @@
 #include <Fabric/Core/AST/ReturnStatement.h>
 #include <Fabric/Core/AST/StatementList.h>
 #include <Fabric/Core/AST/StructDecl.h>
-#include <Fabric/Core/AST/StructDeclMember.h>
-#include <Fabric/Core/AST/StructDeclMemberList.h>
+#include <Fabric/Core/AST/MemberDecl.h>
+#include <Fabric/Core/AST/MemberDeclList.h>
 #include <Fabric/Core/AST/StructMemberOp.h>
 #include <Fabric/Core/AST/SwitchStatement.h>
 #include <Fabric/Core/AST/TempValue.h>
@@ -120,8 +120,8 @@ int kl_lex( YYSTYPE *yys, YYLTYPE *yyl, KL::Context &ctx );
 %union { Fabric::AST::Global *astGlobalPtr; }
 %union { Fabric::AST::GlobalVector *astGlobalListPtr; }
 %union { Fabric::AST::StructDecl *astStructDecl; }
-%union { Fabric::AST::StructDeclMember *astStructDeclMember; }
-%union { Fabric::AST::StructDeclMemberList *astStructDeclMemberList; }
+%union { Fabric::AST::MemberDecl *astMemberDecl; }
+%union { Fabric::AST::MemberDeclList *astMemberDeclList; }
 %union { Fabric::AST::Statement *astStatementPtr; }
 %union { Fabric::AST::StatementList *astStatementListPtr; }
 %union { Fabric::AST::CompoundStatement *astCompoundStatementPtr; }
@@ -232,8 +232,8 @@ int kl_lex( YYSTYPE *yys, YYLTYPE *yyl, KL::Context &ctx );
 %type <astGlobalPtr> struct
 %type <astGlobalPtr> global_const_decl
 %type <astGlobalListPtr> global_list
-%type <astStructDeclMember> struct_member
-%type <astStructDeclMemberList> struct_member_list
+%type <astMemberDecl> struct_member
+%type <astMemberDeclList> struct_member_list
 %type <astConstDeclPtr> const_decl
 %type <astStatementPtr> const_decl_statement
 %type <astStatementPtr> statement
@@ -536,13 +536,13 @@ struct
 struct_member_list
   : struct_member struct_member_list
   {
-    $$ = AST::StructDeclMemberList::Create( RTLOC, $1, $2 ).take();
+    $$ = AST::MemberDeclList::Create( RTLOC, $1, $2 ).take();
     $1->release();
     $2->release();
   }
   | /* empty */
   {
-    $$ = AST::StructDeclMemberList::Create( RTLOC ).take();
+    $$ = AST::MemberDeclList::Create( RTLOC ).take();
   }
 ;
 
@@ -553,7 +553,7 @@ struct_member
       }
     TK_IDENTIFIER array_modifier TK_SEMICOLON
       {
-        $$ = AST::StructDeclMember::Create( RTLOC, *$3, $4 ).take();
+        $$ = AST::MemberDecl::Create( RTLOC, *$3, $4 ).take();
         delete $3;
         $4->release();
         ctx.m_varType->release();

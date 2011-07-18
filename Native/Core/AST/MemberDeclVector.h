@@ -24,13 +24,13 @@ namespace Fabric
   
   namespace AST
   {
-    class StructDeclMember;
+    class MemberDecl;
     
-    class StructDeclMemberVector : public RC::Vector< RC::ConstHandle<StructDeclMember> >
+    class MemberDeclVector : public RC::Vector< RC::ConstHandle<MemberDecl> >
     {
     public:
       
-      static RC::Handle<StructDeclMemberVector> Create();
+      static RC::Handle<MemberDeclVector> Create();
 
       RC::Handle<JSON::Array> toJSON() const;
           
@@ -38,7 +38,7 @@ namespace Fabric
     
     protected:
     
-      StructDeclMemberVector();
+      MemberDeclVector();
     };
   };
 };

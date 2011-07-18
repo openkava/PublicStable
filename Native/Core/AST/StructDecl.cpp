@@ -3,7 +3,7 @@
  */
  
 #include "StructDecl.h"
-#include "StructDeclMemberVector.h"
+#include "MemberDeclVector.h"
 #include <Fabric/Base/JSON/String.h>
 #include <Fabric/Base/JSON/Array.h>
 
@@ -16,7 +16,7 @@ namespace Fabric
     RC::Handle<StructDecl> StructDecl::Create(
       CG::Location const &location,
       std::string const &name,
-      RC::ConstHandle<StructDeclMemberVector> const &members
+      RC::ConstHandle<MemberDeclVector> const &members
       )
     {
       return new StructDecl( location, name, members );
@@ -25,7 +25,7 @@ namespace Fabric
     StructDecl::StructDecl(
       CG::Location const &location,
       std::string const &name,
-      RC::ConstHandle<StructDeclMemberVector> const &members
+      RC::ConstHandle<MemberDeclVector> const &members
       )
       : Global( location )
       , m_name( name )

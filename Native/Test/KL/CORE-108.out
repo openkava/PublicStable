@@ -1,8 +1,8 @@
 GlobalList
   StructDecl( 'Vec3' )
-    StructDeclMember( 'x', Scalar )
-    StructDeclMember( 'y', Scalar )
-    StructDeclMember( 'z', Scalar )
+    MemberDecl( 'x', Scalar )
+    MemberDecl( 'y', Scalar )
+    MemberDecl( 'z', Scalar )
   Function( '' ('__construct_Vec3__Scalar__Scalar__Scalar'), void )
     ParamList
       Param( 'self', Vec3, l-value )
@@ -431,7 +431,7 @@ GlobalList
                   StructMemberOp( 'x' )
                     Var('other')
   StructDecl( 'Patch' )
-    StructDeclMember( 'idx', Integer[4][4] )
+    MemberDecl( 'idx', Integer[4][4] )
   Function( '' ('__construct_Patch__Integer__Integer__Integer__Integer__Integer__Integer__Integer__Integer__Integer__Integer__Integer__Integer__Integer__Integer__Integer__Integer'), void )
     ParamList
       Param( 'self', Patch, l-value )
@@ -598,8 +598,8 @@ GlobalList
               ConstSize( 3 )
             Var('a33')
   StructDecl( 'Quad' )
-    StructDeclMember( 'idx', Integer[2][2] )
-    StructDeclMember( 'normal', Vec3 )
+    MemberDecl( 'idx', Integer[2][2] )
+    MemberDecl( 'normal', Vec3 )
   Function( '' ('__construct_Quad__Vec3_VA__Integer__Integer__Integer__Integer'), void )
     ParamList
       Param( 'self', Quad, l-value )
@@ -680,7 +680,7 @@ GlobalList
                   Var('d1')
               ArgList
   StructDecl( 'Adjacency' )
-    StructDeclMember( 'qidx', Integer[] )
+    MemberDecl( 'qidx', Integer[] )
   Function( 'computeNormals' ('computeNormals'), void )
     ParamList
       Param( 'p', Patch[], l-value )

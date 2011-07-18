@@ -1,9 +1,9 @@
 GlobalList
   StructDecl( 'RGBA' )
-    StructDeclMember( 'r', Byte )
-    StructDeclMember( 'g', Byte )
-    StructDeclMember( 'b', Byte )
-    StructDeclMember( 'a', Byte )
+    MemberDecl( 'r', Byte )
+    MemberDecl( 'g', Byte )
+    MemberDecl( 'b', Byte )
+    MemberDecl( 'a', Byte )
   Function( 'brightness' ('brightness'), void )
     ParamList
       Param( 'index', Integer, r-value )

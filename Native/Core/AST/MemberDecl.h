@@ -22,15 +22,15 @@ namespace Fabric
   
   namespace AST
   {
-    class StructDeclMember: public Node
+    class MemberDecl: public Node
     {
-      FABRIC_AST_NODE_DECL( StructDeclMember );
+      FABRIC_AST_NODE_DECL( MemberDecl );
 
     public:
     
-      static RC::Handle<StructDeclMember> Create( CG::Location const &location, std::string const &name, std::string const &typeName )
+      static RC::Handle<MemberDecl> Create( CG::Location const &location, std::string const &name, std::string const &typeName )
       {
-        return new StructDeclMember( location, name, typeName );
+        return new MemberDecl( location, name, typeName );
       }
 
       RC::Handle<JSON::Object> toJSON() const;
@@ -39,7 +39,7 @@ namespace Fabric
 
     protected:
     
-      StructDeclMember( CG::Location const &location, std::string const &name, std::string const &typeName );
+      MemberDecl( CG::Location const &location, std::string const &name, std::string const &typeName );
       
     private:
     

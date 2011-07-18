@@ -1,6 +1,6 @@
 GlobalList
   StructDecl( 'S' )
-    StructDeclMember( 'a', Integer[] )
+    MemberDecl( 'a', Integer[] )
   Function( 'entry' ('entry'), void )
     ParamList
     CompoundStatement

@@ -7,8 +7,8 @@
 #include <Fabric/Core/AST/Alias.h>
 #include <Fabric/Core/AST/GlobalVector.h>
 #include <Fabric/Core/AST/StructDecl.h>
-#include <Fabric/Core/AST/StructDeclMember.h>
-#include <Fabric/Core/AST/StructDeclMemberVector.h>
+#include <Fabric/Core/AST/MemberDecl.h>
+#include <Fabric/Core/AST/MemberDeclVector.h>
 
 namespace Fabric
 {
@@ -160,15 +160,15 @@ namespace Fabric
       Token structToken = consume( Token::TK_STRUCT );
       Token nameToken = consume( Token::TK_TYPE_OR_IDENTIFIER, "identifier" );
       consume( Token::TK_LBRACE, "'{'" );
-      RC::Handle<AST::StructDeclMemberVector> members = parseStructMemberVector();
+      RC::Handle<AST::MemberDeclVector> members = parseStructMemberVector();
       consume( Token::TK_RBRACE, "'}'" );
       consume( Token::TK_SEMICOLON, "';'" );
       return AST::StructDecl::Create( structToken.getStartLocation(), nameToken.toString(), members );
     }
     
-    RC::Handle<AST::StructDeclMemberVector> Parser::parseStructMemberVector()
+    RC::Handle<AST::MemberDeclVector> Parser::parseStructMemberVector()
     {
-      RC::Handle<AST::StructDeclMemberVector> result = AST::StructDeclMemberVector::Create();
+      RC::Handle<AST::MemberDeclVector> result = AST::MemberDeclVector::Create();
       bool done = false;
       while ( !done )
       {
@@ -197,13 +197,13 @@ namespace Fabric
       return result;
     }
     
-    RC::Handle<AST::StructDeclMember> Parser::parseStructMember()
+    RC::Handle<AST::MemberDecl> Parser::parseStructMember()
     {
       Token typeToken = consume( Token::TK_TYPE_OR_IDENTIFIER, "type name" );
       Token nameToken = consume( Token::TK_TYPE_OR_IDENTIFIER, "identifier" );
       std::string arrayModifier = parseArrayModifier();
       consume( Token::TK_SEMICOLON, "';'" );
-      return AST::StructDeclMember::Create( typeToken.getStartLocation(), nameToken.toString(), typeToken.toString() + arrayModifier );
+      return AST::MemberDecl::Create( typeToken.getStartLocation(), nameToken.toString(), typeToken.toString() + arrayModifier );
     }
 
     std::string Parser::parseArrayModifier()

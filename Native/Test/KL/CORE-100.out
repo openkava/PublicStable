@@ -1,7 +1,7 @@
 GlobalList
   StructDecl( 'S' )
-    StructDeclMember( 'a', Integer[] )
-    StructDeclMember( 'b', Scalar )
+    MemberDecl( 'a', Integer[] )
+    MemberDecl( 'b', Scalar )
   Function( 'getB' ('getB'), Scalar:r-value )
     ParamList
       Param( 's', S, r-value )

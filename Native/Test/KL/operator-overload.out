@@ -1,8 +1,8 @@
 GlobalList
   StructDecl( 'Vec3' )
-    StructDeclMember( 'x', Scalar )
-    StructDeclMember( 'y', Scalar )
-    StructDeclMember( 'z', Scalar )
+    MemberDecl( 'x', Scalar )
+    MemberDecl( 'y', Scalar )
+    MemberDecl( 'z', Scalar )
   Function( '' ('__operator_ADD__Vec3__Vec3'), Vec3:r-value )
     ParamList
       Param( 'lhs', Vec3, r-value )

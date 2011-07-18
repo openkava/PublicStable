@@ -20,8 +20,8 @@ namespace Fabric
     class Alias;
     class GlobalVector;
     class StructDecl;
-    class StructDeclMemberVector;
-    class StructDeclMember;
+    class MemberDeclVector;
+    class MemberDecl;
   };
   
   namespace KL
@@ -88,8 +88,8 @@ namespace Fabric
       RC::Handle<AST::GlobalVector> parseGlobalList();
       RC::Handle<AST::Alias> parseAlias();
       RC::Handle<AST::StructDecl> parseStruct();
-      RC::Handle<AST::StructDeclMemberVector> parseStructMemberVector();
-      RC::Handle<AST::StructDeclMember> parseStructMember();
+      RC::Handle<AST::MemberDeclVector> parseStructMemberVector();
+      RC::Handle<AST::MemberDecl> parseStructMember();
       std::string parseArrayModifier();
       
       Token::Type peek();
