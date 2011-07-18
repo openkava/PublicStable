@@ -1,0 +1,18 @@
+#
+# Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+#
+
+Import( 'extsEnv', 'fabricExtsDistDir' )
+
+arraysPluginEnv = extsEnv.Clone()
+arraysPlugin = arraysPluginEnv.SharedLibrary( 'FabricArrays', Glob('*.cpp') ),
+arraysManifest = arraysPluginEnv.File('FabricArrays.fpm.json'),
+
+installAction = Install( fabricExtsDistDir, [arraysPlugin,arraysManifest] )
+extsEnv.CopyToAppdataIfWindows( installAction )
+
+Alias( 'arraysExt', [
+  arraysPlugin,
+  arraysManifest,
+  installAction
+] )
