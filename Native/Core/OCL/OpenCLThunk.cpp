@@ -1,8 +1,9 @@
-// OpenCL_thunk.cpp
-// *****************************************************************************
-// (C) 2011 Fabric Technologies, Inc.
+/*
+ *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+ */
 
 #include <Fabric/Base/Config.h>
+#include <Fabric/Core/Util/Log.h>
 
 #if defined( FABRIC_OS_WINDOWS )
 # include <windows.h>
@@ -20,44 +21,68 @@
 
 #include <CL/opencl.h>
 
-static void *loadSymbolRaw( const char *symname )
+class SOLib
 {
-  static bool haveSOLibHandle = false;
+public:
+
+  SOLib( char const *libName )
+  {
 #if defined(FABRIC_WIN32)
-  static HMODULE soLibHandle;
+    m_handle = LoadLibraryA( libName );
 #elif defined(FABRIC_POSIX)
-  static void *soLibHandle;
+    m_handle = dlopen( libName, RTLD_LAZY | RTLD_LOCAL );
+#endif
+    if ( !m_handle )
+      FABRIC_LOG( "Warning: OpenCL function requested but %s not found", libName );
+  }
+
+  ~SOLib()
+  {
+#if defined(FABRIC_WIN32)
+    FreeLibrary( m_handle );
+#elif defined(FABRIC_POSIX)
+    dlclose( m_handle );
+#endif
+  }
+
+  void *findSym( char const *symName )
+  {
+    void *result = 0;
+    if ( m_handle )
+    {
+#if defined(FABRIC_WIN32)
+      result = (void *)GetProcAddress( m_handle, symName );
+#elif defined(FABRIC_POSIX)
+      result = (void *)dlsym( m_handle, symName );
 #else
 # error "Unsupported FABRIC_PLATFORM_..."
 #endif
-  if ( !haveSOLibHandle )
-  {
+    }
+    return result;
+  }
+
+private:
+
 #if defined(FABRIC_WIN32)
+  static HMODULE m_handle;
+#elif defined(FABRIC_POSIX)
+  static void *m_handle;
+#else
+# error "Unsupported FABRIC_PLATFORM_..."
+#endif
+};
+
+#if defined(FABRIC_OS_WINDOWS)
 # if defined(WIN64)
-    soLibHandle = LoadLibraryA( "OpenCL64.dll" );
+SOLib soLib( "OpenCL64.dll" );
 # else
-    soLibHandle = LoadLibraryA( "OpenCL.dll" );
+SOLib soLib( "OpenCL.dll" );
 # endif
-#elif defined(FABRIC_POSIX)
-    soLibHandle = dlopen( "libOpenCL.so", RTLD_LAZY | RTLD_LOCAL );
-#endif
-
-    haveSOLibHandle = true;
-  }
-
-  void *result = 0;
-  if ( soLibHandle )
-  {
-#if defined(FABRIC_WIN32)
-    result = (void *)GetProcAddress( hCLDLL, symname );
-#elif defined(FABRIC_POSIX)
-    result = (void *)dlsym( soLibHandle, symname );
+#elif defined(FABRIC_OS_LINUX)
+SOLib soLib( "libOpenCL.so" );
 #else
-# error "Unsupported FABRIC_PLATFORM_..."
+# error "Unsupported FABRIC_OS_..."
 #endif
-  }
-  return result;
-}
 
 template<typename T>
 static T loadSymbol( const char *name )
@@ -69,7 +94,7 @@ static T loadSymbol( const char *name )
   
   if( func == 0 )
   {
-    func = (T)loadSymbolRaw( name );
+    func = (T)soLib.findSym( name );
     if( func  == 0 )
     {
       func = unknownFunc;
