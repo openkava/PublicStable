@@ -1,6 +1,7 @@
+[FABRIC] [MT] clGetPlatformIDs: 0
+[FABRIC] [MT] clPlatformIDs.size > 0 = true
 [FABRIC] [MT] clGetDeviceIDs: 0
-[FABRIC] [MT] clDeviceIDs[0]: <Opaque>
-[FABRIC] [MT] clDeviceIDs[1]: <Opaque>
+[FABRIC] [MT] clDeviceIDs.size > 0 = true
 [FABRIC] [MT] clCreateContext: 0
 [FABRIC] [MT] clContext: <Opaque>
 [FABRIC] [MT] clCreateCommandQueue: 0
