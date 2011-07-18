@@ -1078,6 +1078,10 @@
 		DB9FCD7513C7A4B200A23B69 /* operatorEditor.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = operatorEditor.html; sourceTree = "<group>"; };
 		DB9FCD7613C7A4B200A23B69 /* prettify.css */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.css; path = prettify.css; sourceTree = "<group>"; };
 		DB9FCD7713C7A4B200A23B69 /* prettify.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = prettify.js; sourceTree = "<group>"; };
+		DBC4A0B013D4A6C40092C9E7 /* nBodyKernel.cl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.opencl; path = nBodyKernel.cl; sourceTree = "<group>"; };
+		DBC4A0B213D4A6C40092C9E7 /* nBodyOp.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = nBodyOp.kl; sourceTree = "<group>"; };
+		DBC4A0B313D4A6C40092C9E7 /* nBodyOpGPU.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = nBodyOpGPU.kl; sourceTree = "<group>"; };
+		DBC4A0B413D4A6C40092C9E7 /* nBodySimulation.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = nBodySimulation.html; sourceTree = "<group>"; };
 		DBCCD55C13ABE93D00024113 /* install.sh.template */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = install.sh.template; sourceTree = "<group>"; };
 		DBCCD55D13ABE93D00024113 /* SConscript */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = SConscript; sourceTree = "<group>"; };
 		DBCCD56613ABFAE300024113 /* SConscript */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = SConscript; sourceTree = "<group>"; };
@@ -2683,6 +2687,7 @@
 				DB0F541113A7C6300019FBE6 /* Boston */,
 				DB0F541613A7C6B90019FBE6 /* LightPropagationVolumes */,
 				DB0F546D13A7C7280019FBE6 /* Monster */,
+				DBC4A0AE13D4A6C40092C9E7 /* nBodies */,
 				DB0F54A713A7C80C0019FBE6 /* V8Engine */,
 				DB0F54C213A7C8A50019FBE6 /* VICON */,
 				DB0F54C813A7C8A50019FBE6 /* VIDEO */,
@@ -2767,6 +2772,33 @@
 				DB9FCD7713C7A4B200A23B69 /* prettify.js */,
 			);
 			path = OperatorEditor;
+			sourceTree = "<group>";
+		};
+		DBC4A0AE13D4A6C40092C9E7 /* nBodies */ = {
+			isa = PBXGroup;
+			children = (
+				DBC4A0B413D4A6C40092C9E7 /* nBodySimulation.html */,
+				DBC4A0AF13D4A6C40092C9E7 /* CL */,
+				DBC4A0B113D4A6C40092C9E7 /* KL */,
+			);
+			path = nBodies;
+			sourceTree = "<group>";
+		};
+		DBC4A0AF13D4A6C40092C9E7 /* CL */ = {
+			isa = PBXGroup;
+			children = (
+				DBC4A0B013D4A6C40092C9E7 /* nBodyKernel.cl */,
+			);
+			path = CL;
+			sourceTree = "<group>";
+		};
+		DBC4A0B113D4A6C40092C9E7 /* KL */ = {
+			isa = PBXGroup;
+			children = (
+				DBC4A0B213D4A6C40092C9E7 /* nBodyOp.kl */,
+				DBC4A0B313D4A6C40092C9E7 /* nBodyOpGPU.kl */,
+			);
+			path = KL;
 			sourceTree = "<group>";
 		};
 		DBCCD55B13ABE93D00024113 /* Linux */ = {
