@@ -102,7 +102,7 @@ namespace Fabric
             
             std::string prefix;
             if ( arg )
-              prefix = dstString + cmd + "(" + JSON::encode(arg) + "): ";
+              prefix = dstString + cmd + "(" + _( JSON::encode(arg), 32 ) + "): ";
             else prefix = dstString + cmd + "(): ";
             
             throw prefix + e;

@@ -125,7 +125,9 @@ namespace Fabric
     
     void Context::closeNotificationBracket()
     {
-      if ( m_notificationBracketCount.decrementAndGetValue() == 0 && m_pendingNotifications )
+      if ( m_notificationBracketCount.decrementAndGetValue() == 0
+        && MT::ThreadPool::Instance()->isMainThread()
+        && m_pendingNotifications )
       {
         std::string jsonEncodedNotifications;
         jsonEncodedNotifications = JSON::encode( m_pendingNotifications );

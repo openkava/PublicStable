@@ -114,6 +114,10 @@ CL_IMPL_1( clReleaseMemObject, ERR_RET, cl_int, (cl_mem a0) )
 CL_IMPL_4( clSetKernelArg, ERR_RET, cl_int, (cl_kernel a0, cl_uint a1, size_t a2, const void *a3 ) )
 CL_IMPL_6( clGetProgramBuildInfo, ERR_RET, cl_int, (cl_program a0, cl_device_id a1, cl_program_build_info a2, size_t a3, void *a4, size_t *a5) );
 
+
+CL_IMPL_5( clGetContextInfo, ERR_RET, cl_int, ( cl_context a0, cl_context_info a1, size_t a2, void *a3, size_t *a4 ) )
+CL_IMPL_5( clGetMemObjectInfo, ERR_RET, cl_int, ( cl_mem a0, cl_mem_info a1, size_t a2, void *a3, size_t *a4 ) )
+
 };
 
 #endif
