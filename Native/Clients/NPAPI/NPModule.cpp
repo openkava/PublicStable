@@ -78,7 +78,7 @@ FABRIC_NPAPI_EXPORT NPError OSCALL NP_Shutdown()
   pglTerminate();
 #endif
 #if defined( FABRIC_WIN32)
-  Fabric::MT::ThreadPool::Term( );
+  Fabric::MT::ThreadPool::Instance()->terminate();
 #endif
 
   llvm::llvm_stop_multithreaded();

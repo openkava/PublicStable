@@ -4,10 +4,11 @@
 
 import os.path
 
-Import( 'coreEnv', 'buildOS', 'buildObject', 'libeditFlags' )
+Import( 'coreEnv', 'buildOS', 'buildObject' )
+if buildOS != 'Windows':
+  Import( 'libeditFlags' )
 
 cliEnv = coreEnv.Clone()
-cliEnv.MergeFlags( libeditFlags )
 
 extraObjects = []
 
@@ -18,6 +19,8 @@ if buildOS == 'Windows':
         '/IMPLIB:${TARGET.dir}/fabric_cmd.lib',
         '/STACK:4194304'
     ] )
+else:
+  cliEnv.MergeFlags( libeditFlags )
 
 cliBin = cliEnv.Program( 'fabric', [Glob('*.cpp'),buildObject,extraObjects] )
 Alias( 'cli', cliBin )

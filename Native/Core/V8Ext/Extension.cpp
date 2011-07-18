@@ -143,7 +143,9 @@ namespace Fabric
             
       RC::Handle<IO::Manager> ioManager = IOManager::Create();
       RC::Handle<DG::Context> dgContext = DG::Context::Create( ioManager, m_pluginDirs );
+#if !defined(FABRIC_OS_LINUX)
       OCL::registerTypes( dgContext->getRTManager() );
+#endif
 
       Client *client = Client::Create( dgContext ).take();
       dgContext->getPlugManager()->loadBuiltInPlugins();
