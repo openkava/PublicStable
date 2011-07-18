@@ -7,12 +7,15 @@ operator entry()\n\
 {\n\
   Integer err;\n\
 \n\
-  cl_platform_id clPlatformID; // NULL by default since it's opaque\n\
+  cl_platform_id[] clPlatformIDs;\n\
+  err = clGetPlatformIDs( clPlatformIDs );\n\
+  report 'clGetPlatformIDs: ' + err;\n\
+  report 'clPlatformIDs.size > 0 = ' + (clPlatformIDs.size > 0);\n\
+\n\
   cl_device_id[] clDeviceIDs;\n\
-  err = clGetDeviceIDs( clPlatformID, CL_DEVICE_TYPE_ALL, clDeviceIDs );\n\
+  err = clGetDeviceIDs( clPlatformIDs[0], CL_DEVICE_TYPE_ALL, clDeviceIDs );\n\
   report 'clGetDeviceIDs: ' + err;\n\
-  for ( Integer i=0; i<clDeviceIDs.size; ++i )\n\
-    report 'clDeviceIDs['+i+']: '+clDeviceIDs[i];\n\
+  report 'clDeviceIDs.size > 0 = ' + (clDeviceIDs.size > 0);\n\
 \n\
   cl_context clContext = clCreateContext( clDeviceIDs, err );\n\
   report 'clCreateContext: ' + err;\n\
