@@ -23,6 +23,7 @@ dirs = [
     'TGA',
     'VICON',
     'Math',
+    'Arrays',
 ]
 
 if buildOS != 'Windows':
