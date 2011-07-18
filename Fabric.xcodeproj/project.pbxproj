@@ -79,6 +79,8 @@
 		DB32EC4513D0E26D00CB23DE /* StringSource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StringSource.h; sourceTree = "<group>"; };
 		DB32EC4613D0E3DF00CB23DE /* SourceRange.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SourceRange.h; sourceTree = "<group>"; };
 		DB32EC4813D0E78800CB23DE /* Token.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Token.cpp; sourceTree = "<group>"; };
+		DB32ED6F13D371B000CB23DE /* FunctionBase.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FunctionBase.cpp; sourceTree = "<group>"; };
+		DB32ED7013D371B000CB23DE /* FunctionBase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FunctionBase.h; sourceTree = "<group>"; };
 		DB39AF9513425B40007026BA /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
 		DB78675913CD056100DEF8DA /* SConscript */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = SConscript; sourceTree = "<group>"; };
 		DB78676313CD05AE00DEF8DA /* exceptSample.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = exceptSample.cpp; sourceTree = "<group>"; };
@@ -1606,6 +1608,8 @@
 				DBDB624713D3B1B600F745C8 /* ExprVector.h */,
 				DB9671DB13A5423200616143 /* Function.cpp */,
 				DB9671DC13A5423200616143 /* Function.h */,
+				DB32ED6F13D371B000CB23DE /* FunctionBase.cpp */,
+				DB32ED7013D371B000CB23DE /* FunctionBase.h */,
 				DB9671DD13A5423200616143 /* Global.cpp */,
 				DB9671DE13A5423200616143 /* Global.h */,
 				DB9671DF13A5423200616143 /* GlobalConstDecl.cpp */,

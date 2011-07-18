@@ -28,6 +28,11 @@ namespace Fabric
       return "__operator_" + binOpCodeName(type) + "__" + lhsAdapter->getCodeName() + "__" + rhsAdapter->getCodeName();
     }
 
+    std::string binOpOverloadName( BinOpType type, RC::Handle<CG::Manager> const &cgManager, std::string const &lhsAdapterName, std::string const &rhsAdapterName )
+    {
+      return binOpOverloadName( type, cgManager->getAdapter( lhsAdapterName ), cgManager->getAdapter( rhsAdapterName ) );
+    }
+
     std::string methodOverloadName( std::string const &name, RC::ConstHandle<CG::Adapter> const &selfType, std::vector< RC::ConstHandle<CG::Adapter> > const &paramTypes )
     {
       std::string result = "__method_" + name + "__" + selfType->getCodeName();

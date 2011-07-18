@@ -240,7 +240,8 @@ namespace Fabric
           continue;
         RC::ConstHandle<AST::Function> function = RC::ConstHandle<AST::Function>::StaticCast( global );
         
-        if ( function->getFriendlyName() == m_entryFunctionName )
+        std::string const *friendlyName = function->getFriendlyName();
+        if ( friendlyName && *friendlyName == m_entryFunctionName )
         {
           if( !function->isOperator() )
             throw Exception( "attempting to use a function " + _(m_entryFunctionName) + " instead of an operator" );

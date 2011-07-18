@@ -342,14 +342,6 @@ global
   {
     $$ = $1;
   }
-  | alias
-  {
-    $$ = $1;
-  }
-  | struct
-  {
-    $$ = $1;
-  }
   | global_const_decl
   {
     $$ = $1;
@@ -456,109 +448,6 @@ function_entry_name
   {
     $$ = 0;
   }
-;
-
-alias
-  : TK_ALIAS compound_type
-      {
-        ctx.m_varType = $2;
-      }
-    TK_IDENTIFIER array_modifier TK_SEMICOLON
-      {
-        ctx.m_cgManager->registerAlias( *$4, $5 );
-        $$ = AST::Alias::Create( RTLOC, *$4, $5 ).take();
-        delete $4;
-        $5->release();
-        ctx.m_varType->release();
-        ctx.m_varType = 0;
-      }
-  | TK_ALIAS compound_type
-      {
-        ctx.m_varType = $2;
-      }
-    TK_REGISTERED_TYPE array_modifier TK_SEMICOLON
-      {
-        try
-        {
-          ctx.m_cgManager->registerAlias( $4->getUserName(), $5 );
-        }
-        catch ( Exception e )
-        {
-          ctx.m_diagnostics.addError( RTLOC, e.getDesc() );
-        }
-        $$ = AST::Alias::Create( RTLOC, $4->getUserName(), $5 ).take();
-        $4->release();
-        $5->release();
-        ctx.m_varType->release();
-        ctx.m_varType = 0;
-      }
-
-;
-
-struct
-  : TK_STRUCT TK_IDENTIFIER TK_LBRACE struct_member_list TK_RBRACE TK_SEMICOLON
-  {
-    RT::StructMemberInfoVector structMemberInfoVector;
-    $4->appenedToStructMemberInfoVector( structMemberInfoVector );
-    ctx.m_cgManager->registerStruct( *$2, structMemberInfoVector );
-    
-    $$ = AST::StructDecl::Create( RTLOC, *$2, $4 ).take();
-    delete $2;
-    $4->release();
-  }
-  | TK_STRUCT TK_REGISTERED_TYPE TK_LBRACE struct_member_list TK_RBRACE TK_SEMICOLON
-  {
-    if( !RT::isStruct( $2->getType() ) )
-    {
-      ctx.m_diagnostics.addError( RTLOC, "Redefining non-struct as struct" );
-    }
-    else
-    {
-      RT::StructMemberInfoVector structMemberInfoVector;
-      $4->appenedToStructMemberInfoVector( structMemberInfoVector );
-      try
-      {
-        // This will fail.
-        ctx.m_cgManager->registerStruct( $2->getUserName(), structMemberInfoVector );
-      }
-      catch ( Exception e )
-      {
-        ctx.m_diagnostics.addError( RTLOC, e.getDesc() );
-      }
-    }
-    
-    $$ = AST::StructDecl::Create( RTLOC, $2->getUserName(), $4 ).take();
-    $2->release();
-    $4->release();
-  }
-;
-
-struct_member_list
-  : struct_member struct_member_list
-  {
-    $$ = AST::MemberDeclList::Create( RTLOC, $1, $2 ).take();
-    $1->release();
-    $2->release();
-  }
-  | /* empty */
-  {
-    $$ = AST::MemberDeclList::Create( RTLOC ).take();
-  }
-;
-
-struct_member
-  : compound_type
-      {
-        ctx.m_varType = $1;
-      }
-    TK_IDENTIFIER array_modifier TK_SEMICOLON
-      {
-        $$ = AST::MemberDecl::Create( RTLOC, *$3, $4 ).take();
-        delete $3;
-        $4->release();
-        ctx.m_varType->release();
-        ctx.m_varType = 0;
-      }
 ;
 
 parameter_list

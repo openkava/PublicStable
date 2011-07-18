@@ -17,6 +17,7 @@
 #include <Fabric/Core/RT/VariableArrayImpl.h>
 #include <Fabric/Core/RT/SizeDesc.h>
 #include <Fabric/Core/RT/Manager.h>
+#include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/AST/Operator.h>
 #include <Fabric/Core/AST/ParamVector.h>
 #include <Fabric/Core/AST/Param.h>
@@ -169,8 +170,9 @@ namespace Fabric
       }
     };
     
-    Prototype::Prototype( RC::ConstHandle<RT::Manager> const &rtManager )
-      : m_rtSizeDesc( rtManager->getSizeDesc() )
+    Prototype::Prototype( RC::Handle<CG::Manager> const &cgManager )
+      : m_cgManager( cgManager )
+      , m_rtSizeDesc( cgManager->getRTManager()->getSizeDesc() )
       , m_rtSizeImpl( m_rtSizeDesc->getImpl() )
     {
     }
@@ -250,7 +252,7 @@ namespace Fabric
       if ( numASTParams != expectedNumASTParams )
         throw Exception( "operator takes incorrect number of parameters (expected "+_(expectedNumASTParams)+", actual "+_(numASTParams)+")" );
 
-      RC::Handle<MT::ParallelCall> result = MT::ParallelCall::Create( function, prefixCount+m_paramCount, astOperator->getFriendlyName() );
+      RC::Handle<MT::ParallelCall> result = MT::ParallelCall::Create( function, prefixCount+m_paramCount, astOperator->getFriendlyName()? *astOperator->getFriendlyName(): astOperator->getEntryName() );
       for ( unsigned i=0; i<prefixCount; ++i )
         result->setBaseAddress( i, prefixes[i] );
       for ( std::map< std::string, std::multimap< std::string, Param * > >::const_iterator it=m_params.begin(); it!=m_params.end(); ++it )
@@ -273,7 +275,7 @@ namespace Fabric
             Param const *param = jt->second;
 
             RC::ConstHandle<AST::Param> astParam = astParamList->get( prefixCount + param->index() );
-            CG::ExprType astParamExprType = astParam->getExprType();
+            CG::ExprType astParamExprType = astParam->getExprType( m_cgManager );
             RC::ConstHandle<RT::Desc> astParamDesc = astParamExprType.getDesc();
             RC::ConstHandle<RT::Impl> astParamImpl = astParamDesc->getImpl();
             

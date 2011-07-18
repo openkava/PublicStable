@@ -49,6 +49,9 @@ namespace Fabric
       RC::ConstHandle<RT::Manager> getRTManager() const;
       
       RC::ConstHandle<Adapter> getAdapter( RC::ConstHandle<RT::Desc> const &desc ) const;
+      RC::ConstHandle<Adapter> maybeGetAdapter( std::string const &userName ) const;
+      RC::ConstHandle<Adapter> getAdapter( std::string const &userName ) const;
+      std::string const &getCodeName( std::string const &userName ) const;
       
       RC::ConstHandle<BooleanAdapter> getBooleanAdapter() const;
       RC::ConstHandle<ByteAdapter> getByteAdapter() const;

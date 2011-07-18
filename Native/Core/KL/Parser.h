@@ -18,7 +18,10 @@ namespace Fabric
   namespace AST
   {
     class Alias;
+    class CompoundStatement;
+    class Function;
     class GlobalVector;
+    class ParamVector;
     class StructDecl;
     class MemberDeclVector;
     class MemberDecl;
@@ -91,6 +94,9 @@ namespace Fabric
       RC::Handle<AST::MemberDeclVector> parseStructMemberVector();
       RC::Handle<AST::MemberDecl> parseStructMember();
       std::string parseArrayModifier();
+      RC::Handle<AST::Function> parseFunction();
+      RC::Handle<AST::ParamVector> parseParamVector();
+      RC::Handle<AST::CompoundStatement> parseCompoundStatement();
       
       Token::Type peek();
       Token next();

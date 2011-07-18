@@ -6,9 +6,13 @@
 #include <Fabric/Core/KL/Scanner.h>
 #include <Fabric/Core/AST/Alias.h>
 #include <Fabric/Core/AST/GlobalVector.h>
+#include <Fabric/Core/AST/Function.h>
+#include <Fabric/Core/AST/Param.h>
+#include <Fabric/Core/AST/ParamVector.h>
 #include <Fabric/Core/AST/StructDecl.h>
 #include <Fabric/Core/AST/MemberDecl.h>
 #include <Fabric/Core/AST/MemberDeclVector.h>
+#include <Fabric/Core/AST/StatementVector.h>
 
 namespace Fabric
 {
@@ -113,13 +117,14 @@ namespace Fabric
       {
         try
         {
-          static Token::Type tokenTypes[3] =
+          static Token::Type tokenTypes[4] =
           {
             Token::TK_ALIAS,
             Token::TK_STRUCT,
+            Token::TK_FUNCTION,
             Token::TK_EOI
           };
-          Token::Type tokenType = expect( 3, tokenTypes, "'alias' or 'struct'" );
+          Token::Type tokenType = expect( 4, tokenTypes, "'function', 'alias' or 'struct'" );
           switch ( tokenType )
           {
             case Token::TK_ALIAS:
@@ -127,6 +132,9 @@ namespace Fabric
               break;
             case Token::TK_STRUCT:
               result->push_back( parseStruct() );
+              break;
+            case Token::TK_FUNCTION:
+              result->push_back( parseFunction() );
               break;
             case Token::TK_EOI:
               done = true;
@@ -235,6 +243,93 @@ namespace Fabric
         result = parseArrayModifier() + result;
       }
       return result;
+    }
+    
+    RC::Handle<AST::Function> Parser::parseFunction()
+    {
+      Location startLocation = getLocation();
+      consume( Token::TK_FUNCTION );
+      Token firstIdentifier = consume( Token::TK_TYPE_OR_IDENTIFIER, "type name or identifier" );
+      
+      Token::Type tokenTypes[2] =
+      {
+        Token::TK_TYPE_OR_IDENTIFIER,
+        Token::TK_LPAREN
+      };
+      RC::Handle<AST::Function> result;
+      switch ( expect( 2, tokenTypes, "identifier or '('" ) )
+      {
+        case Token::TK_TYPE_OR_IDENTIFIER:
+        {
+          std::string returnTypeName = firstIdentifier.toString();
+          std::string functionName = consume( Token::TK_TYPE_OR_IDENTIFIER ).toString();
+          consume( Token::TK_LPAREN, "'('" );
+          RC::Handle<AST::ParamVector> paramList = parseParamVector();
+          consume( Token::TK_RPAREN, "')'" );
+          RC::Handle<AST::CompoundStatement> compoundStatement = parseCompoundStatement();
+          result = AST::Function::Create( startLocation, functionName, functionName, returnTypeName, paramList, compoundStatement );
+        }
+        break;
+        
+        case Token::TK_LPAREN:
+        {
+          std::string functionName = firstIdentifier.toString();
+          RC::Handle<AST::ParamVector> paramList = parseParamVector();
+          RC::Handle<AST::CompoundStatement> compoundStatement = parseCompoundStatement();
+          result = AST::Function::Create( startLocation, functionName, functionName, "", paramList, compoundStatement );
+        }
+        break;
+      }
+      return result;
+    }
+    
+    RC::Handle<AST::ParamVector> Parser::parseParamVector()
+    {
+      RC::Handle<AST::ParamVector> result = AST::ParamVector::Create();
+      try
+      {
+        consume( Token::TK_LPAREN, "'('" );
+        bool done = false;
+        while ( !done )
+        {
+          static Token::Type tokenTypes[2] =
+          {
+            Token::TK_TYPE_OR_IDENTIFIER,
+            Token::TK_RPAREN
+          };
+          switch ( expect( 2, tokenTypes, "type name or ')'" ) )
+          {
+            case Token::TK_TYPE_OR_IDENTIFIER:
+            {
+              Location location = getLocation();
+              std::string typeName = consume( Token::TK_TYPE_OR_IDENTIFIER ).toString();
+              std::string paramName = consume( Token::TK_TYPE_OR_IDENTIFIER, "identifier" ).toString();
+              std::string arrayModifier = parseArrayModifier();
+              result->push_back( AST::Param::Create( location, paramName, typeName, CG::USAGE_RVALUE ) );
+            }
+            break;
+            
+            case Token::TK_RPAREN:
+              done = true;
+              break;
+          }
+        }
+        consume( Token::TK_RPAREN, "')'" );
+      }
+      catch ( Error error )
+      {
+        handleError( error, Token::TK_RPAREN );
+      }
+      return result;
+    }
+    
+    RC::Handle<AST::CompoundStatement> Parser::parseCompoundStatement()
+    {
+      Location location = getLocation();
+      consume( Token::TK_LBRACE, "'{'" );
+      RC::ConstHandle<AST::StatementVector> statementList = AST::StatementVector::Create();
+      consume( Token::TK_RBRACE, "'}'" );
+      return AST::CompoundStatement::Create( location, statementList );
     }
   };
 };

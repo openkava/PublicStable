@@ -19,28 +19,26 @@ namespace Fabric
     
     RC::Handle<Function> MethodOpImpl::Create(
       CG::Location const &location,
-      CG::ExprType const &returnExprType,
-      RC::ConstHandle<CG::Adapter> const &selfAdapter,
+      std::string const &returnTypeName,
+      std::string const &selfTypeName,
       std::string const &methodName,
       RC::ConstHandle<ParamVector> const &params,
       RC::ConstHandle<CompoundStatement> const &body
       )
     {
-      return new MethodOpImpl( location, returnExprType, selfAdapter, methodName, params, body );
+      return new MethodOpImpl( location, returnTypeName, selfTypeName, methodName, params, body );
     }
     
     MethodOpImpl::MethodOpImpl(
       CG::Location const &location,
-      CG::ExprType const &returnExprType,
-      RC::ConstHandle<CG::Adapter> const &selfAdapter,
+      std::string const &returnTypeName,
+      std::string const &selfTypeName,
       std::string const &methodName,
       RC::ConstHandle<ParamVector> const &params,
       RC::ConstHandle<CompoundStatement> const &body
       )
-      : Function(
+      : FunctionBase(
         location,
-        "",
-        CG::methodOverloadName( methodName, selfAdapter, params->getTypes() ),
         returnExprType,
         ParamVector::Create(
           Param::Create(
@@ -53,7 +51,20 @@ namespace Fabric
           ),
         body
         )
+      , m_selfTypeName( selfTypeName )
+      , m_methodName( methodName )
+      , m_paramTypeNames( m_params->getTypeNames() )
     {
+    }
+          
+    std::string const *MethodOpImpl::getFriendlyName() const
+    {
+      return 0;
+    }
+    
+    std::string const &MethodOpImpl::getEntryName( RC::Handle<CG::Manager> const &cgManager ) const
+    {
+      return CG::methodOverloadName( cgManager, m_selfTypeName, m_methodName, getParams()->getTypeNames() );
     }
   };
 };

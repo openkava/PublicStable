@@ -47,6 +47,28 @@ namespace Fabric
       return m_rtManager;
     }
       
+    RC::ConstHandle<Adapter> Manager::maybeGetAdapter( std::string const &userName ) const
+    {
+      RC::ConstHandle<Adapter> result;
+      RC::ConstHandle<RT::Desc> rtDesc = m_rtManager->getDesc( userName );
+      if ( rtDesc )
+        result = getAdapter( rtDesc );
+      return result;
+    }
+    
+    RC::ConstHandle<Adapter> Manager::getAdapter( std::string const &userName ) const
+    {
+      RC::ConstHandle<Adapter> result = maybeGetAdapter( userName );
+      if ( !result )
+        throw Exception( _(userName) + ": type not registered" );
+      return result;
+    }
+
+    std::string const &Manager::getCodeName( std::string const &userName ) const
+    {
+      return getAdapter()->getCodeName();
+    }
+
     RC::ConstHandle< CG::Adapter > Manager::getAdapter( RC::ConstHandle<RT::Desc> const &desc ) const
     {
       DescToAdapterMap::const_iterator it = m_descToAdapterMap.find( desc );

@@ -28,7 +28,7 @@ namespace Fabric
       : Function(
         location,
         "",
-        CG::binOpOverloadName( binOpType, lhs->getAdapter(), rhs->getAdapter() ),
+        CG::binOpOverloadName( binOpType, lhs->getAdapterName(), rhs->getAdapterName() ),
         returnExprType,
         ParamVector::Create( lhs, rhs ),
         body

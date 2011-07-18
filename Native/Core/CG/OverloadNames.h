@@ -23,6 +23,7 @@ namespace Fabric
     std::string assignOpMethodName( AssignOpType type );
     std::string uniOpOverloadName( UniOpType type, RC::ConstHandle< CG::Adapter > const &adapter );
     std::string binOpOverloadName( BinOpType type, RC::ConstHandle< CG::Adapter > const &lhsAdapter, RC::ConstHandle<CG::Adapter> const &rhsAdapter );
+    std::string binOpOverloadName( BinOpType type, RC::Handle<CG::Manager> const &cgManager, std::string const &lhsAdapterName, std::string const &rhsAdapterName );
     
     std::string methodOverloadName( std::string const &name, RC::ConstHandle<CG::Adapter> const &selfType, std::vector< RC::ConstHandle<CG::Adapter> > const &paramTypes );
     inline std::string methodOverloadName( std::string const &name, RC::ConstHandle<CG::Adapter> const &selfType )

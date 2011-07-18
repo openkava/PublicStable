@@ -8,7 +8,7 @@
 #ifndef _FABRIC_AST_METHOD_OP_IMPL_H
 #define _FABRIC_AST_METHOD_OP_IMPL_H
 
-#include <Fabric/Core/AST/Function.h>
+#include <Fabric/Core/AST/FunctionBase.h>
 
 namespace llvm
 {
@@ -24,7 +24,7 @@ namespace Fabric
   
   namespace AST
   {
-    class MethodOpImpl : public Function
+    class MethodOpImpl : public FunctionBase
     {
       FABRIC_AST_NODE_DECL( MethodOpImpl );
 
@@ -32,23 +32,31 @@ namespace Fabric
     
       static RC::Handle<Function> Create(
         CG::Location const &location,
-        CG::ExprType const &returnExprType,
-        RC::ConstHandle<CG::Adapter> const &selfAdapter,
+        std::string const &returnTypeName,
+        std::string const &selfTypeName,
         std::string const &methodName,
         RC::ConstHandle<ParamVector> const &params,
         RC::ConstHandle<CompoundStatement> const &body
         );
+          
+      virtual std::string const *getFriendlyName() const;
+      virtual std::string const &getEntryName( RC::Handle<CG::Manager> const &cgManager ) const;
               
     protected:
     
       MethodOpImpl(
         CG::Location const &location,
-        CG::ExprType const &returnExprType,
-        RC::ConstHandle<CG::Adapter> const &selfAdapter,
+        std::string const &returnTypeName,
+        std::string const &selfTypeName,
         std::string const &methodName,
         RC::ConstHandle<ParamVector> const &params,
         RC::ConstHandle<CompoundStatement> const &body
         );
+        
+    private:
+    
+      std::string m_selfTypeName;
+      std::string m_methodName;
     };
   };
 };

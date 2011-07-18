@@ -25,7 +25,7 @@ namespace Fabric
   
   namespace AST
   {
-    class AssignOpImpl: public MethodOpImpl
+    class AssignOpImpl : public MethodOpImpl
     {
       FABRIC_AST_NODE_DECL( AssignOpImpl );
       
