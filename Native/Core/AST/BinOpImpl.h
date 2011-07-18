@@ -27,6 +27,8 @@ namespace Fabric
   {
     class BinOpImpl : public Function
     {
+      FABRIC_AST_NODE_DECL( BinOpImpl );
+      
     public:
     
       static RC::Handle<Function> Create(

@@ -6,6 +6,8 @@
 #include <Fabric/Core/CG/ModuleBuilder.h>
 #include <Fabric/Core/CG/FunctionBuilder.h>
 #include <Fabric/Core/CG/Scope.h>
+#include <Fabric/Base/JSON/String.h>
+#include <Fabric/Base/JSON/Array.h>
 
 #include <llvm/Module.h>
 #include <llvm/Function.h>
@@ -17,12 +19,26 @@ namespace Fabric
 {
   namespace AST
   {
+    FABRIC_AST_NODE_IMPL( Function );
+    
+    RC::Handle<Function> Function::Create(
+      CG::Location const &location,
+      std::string const &friendlyName,
+      std::string const &entryName,
+      CG::ExprType const &returnExprType,
+      RC::ConstHandle<ParamVector> const &params,
+      RC::ConstHandle<CompoundStatement> const &body
+      )
+    {
+      return new Function( location, friendlyName, entryName, returnExprType, params, body );
+    }
+    
     Function::Function(
         CG::Location const &location,
         std::string const &friendlyName,
         std::string const &entryName,
         CG::ExprType const &returnExprType,
-        RC::ConstHandle<ParamList> const &params,
+        RC::ConstHandle<ParamVector> const &params,
         RC::ConstHandle<CompoundStatement> const &body
         )
       : Global( location )
@@ -34,22 +50,19 @@ namespace Fabric
     {
     }
     
-    std::string Function::localDesc() const
+    RC::Handle<JSON::Object> Function::toJSON() const
     {
-      return "Function( '" + m_friendlyName + "' ('" + m_entryName + "'), " + m_returnExprType.desc() + " )";
-    }
-    
-    std::string Function::deepDesc( std::string const &indent ) const
-    {
-      std::string subIndent = indent + "  ";
-      std::string result = indent + localDesc() + "\n"
-        + m_params->deepDesc(subIndent);
-      if ( m_body )
-        result += m_body->deepDesc(subIndent);
+      RC::Handle<JSON::Object> result = Global::toJSON();
+      result->set( "friendlyName", JSON::String::Create( m_friendlyName ) );
+      result->set( "entryName", JSON::String::Create( m_entryName ) );
+      result->set( "returnExprType", JSON::String::Create( m_returnExprType.getUserName() ) );
+      result->set( "friendlyName", JSON::String::Create( m_friendlyName ) );
+      result->set( "params", m_params->toJSON() );
+      result->set( "body", m_body->toJSON() );
       return result;
     }
     
-    RC::ConstHandle<ParamList> Function::getParamList() const
+    RC::ConstHandle<ParamVector> Function::getParams() const
     {
       return m_params;
     }

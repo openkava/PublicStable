@@ -6,31 +6,45 @@
  */
 
 #include <Fabric/Core/AST/Call.h>
+#include <Fabric/Core/AST/ExprVector.h>
 #include <Fabric/Core/CG/Scope.h>
 #include <Fabric/Core/CG/Error.h>
 #include <Fabric/Core/CG/ExprValue.h>
+#include <Fabric/Base/JSON/String.h>
+#include <Fabric/Base/JSON/Array.h>
 
 namespace Fabric
 {
   namespace AST
   {
-    Call::Call( CG::Location const &location, std::string const &name, RC::ConstHandle<ArgList> const &args )
+    FABRIC_AST_NODE_IMPL( Call );
+    
+    RC::Handle<Call> Call::Create(
+      CG::Location const &location,
+      std::string const &name,
+      RC::ConstHandle<ExprVector> const &args
+      )
+    {
+      return new Call( location, name, args );
+    }
+
+    Call::Call(
+      CG::Location const &location,
+      std::string const &name,
+      RC::ConstHandle<ExprVector> const &args
+      )
       : Expr( location )
       , m_name( name )
       , m_args( args )
     {
     }
     
-    std::string Call::localDesc() const
+    RC::Handle<JSON::Object> Call::toJSON() const
     {
-      return "Call('" + m_name + "')";
-    }
-    
-    std::string Call::deepDesc( std::string const &indent ) const
-    {
-      std::string subIndent = indent + "  ";
-      return indent + localDesc() + "\n"
-        + m_args->deepDesc(subIndent);
+      RC::Handle<JSON::Object> result = Expr::toJSON();
+      result->set( "functionFriendlyName", JSON::String::Create( m_name ) );
+      result->set( "args", m_args->toJSON() );
+      return result;
     }
     
     RC::ConstHandle<CG::FunctionSymbol> Call::getFunctionSymbol( CG::BasicBlockBuilder const &basicBlockBuilder ) const
@@ -64,8 +78,8 @@ namespace Fabric
         for ( size_t i=0; i<functionParams.size(); ++i )
           paramUsages.push_back( functionParams[i].getUsage() );
           
-        if ( paramUsages.size() != m_args->numItems() )
-          throw CG::Error( getLocation(), "incorrect number of arguments: expected "+_(paramUsages.size())+", actual "+_(m_args->numItems()) );
+        if ( paramUsages.size() != m_args->size() )
+          throw CG::Error( getLocation(), "incorrect number of arguments: expected "+_(paramUsages.size())+", actual "+_(m_args->size()) );
 
         std::vector<CG::ExprValue> args;
         m_args->appendExprValues( basicBlockBuilder, paramUsages, args, "cannot be an io argument" );

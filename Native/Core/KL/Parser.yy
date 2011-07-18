@@ -116,9 +116,9 @@ int kl_lex( YYSTYPE *yys, YYLTYPE *yyl, KL::Context &ctx );
 %destructor { } <assignOpType>
 
 %union { Fabric::AST::Param *astParamPtr; }
-%union { Fabric::AST::ParamList *astParamListPtr; }
+%union { Fabric::AST::ParamVector *astParamListPtr; }
 %union { Fabric::AST::Global *astGlobalPtr; }
-%union { Fabric::AST::GlobalList *astGlobalListPtr; }
+%union { Fabric::AST::GlobalVector *astGlobalListPtr; }
 %union { Fabric::AST::StructDecl *astStructDecl; }
 %union { Fabric::AST::StructDeclMember *astStructDeclMember; }
 %union { Fabric::AST::StructDeclMemberList *astStructDeclMemberList; }
@@ -293,13 +293,13 @@ start
 global_list :
   global global_list
   {
-    $$ = AST::GlobalList::Create( RTLOC, $1, $2 ).take();
+    $$ = AST::GlobalVector::Create( RTLOC, $1, $2 ).take();
     $1->release();
     $2->release();
   }
   | /* empty */
   {
-    $$ = AST::GlobalList::Create( RTLOC ).take();
+    $$ = AST::GlobalVector::Create( RTLOC ).take();
   }
 
 binary_operator
@@ -564,16 +564,16 @@ struct_member
 parameter_list
   : /* empty */
   {
-    $$ = AST::ParamList::Create( RTLOC ).take();
+    $$ = AST::ParamVector::Create( RTLOC ).take();
   }
   | parameter
   {
-    $$ = AST::ParamList::Create( RTLOC, $1 ).take();
+    $$ = AST::ParamVector::Create( RTLOC, $1 ).take();
     $1->release();
   }
   | parameter TK_COMMA parameter_list
   {
-    $$ = AST::ParamList::Create( RTLOC, $1, $3 ).take();
+    $$ = AST::ParamVector::Create( RTLOC, $1, $3 ).take();
     $1->release();
     $3->release();
   }

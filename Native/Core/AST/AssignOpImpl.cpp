@@ -6,18 +6,33 @@
  */
 
 #include <Fabric/Core/AST/AssignOpImpl.h>
+#include <Fabric/Core/AST/Param.h>
 #include <Fabric/Core/CG/Adapter.h>
 #include <Fabric/Core/CG/OverloadNames.h>
+#include <Fabric/Base/JSON/String.h>
 
 namespace Fabric
 {
   namespace AST
   {
+    FABRIC_AST_NODE_IMPL( AssignOpImpl );
+    
+    RC::Handle<Function> AssignOpImpl::Create(
+      CG::Location const &location,
+      RC::ConstHandle<CG::Adapter> const &selfType,
+      CG::AssignOpType assignOpType,
+      RC::ConstHandle<AST::Param> rhs,
+      RC::ConstHandle<CompoundStatement> const &body
+      )
+    {
+      return new AssignOpImpl( location, selfType, assignOpType, rhs, body );
+    }
+    
     AssignOpImpl::AssignOpImpl(
       CG::Location const &location,
       RC::ConstHandle<CG::Adapter> const &selfType,
       CG::AssignOpType assignOpType,
-      RC::ConstHandle< AST::Param > rhs,
+      RC::ConstHandle<AST::Param> rhs,
       RC::ConstHandle<CompoundStatement> const &body
       )
       : MethodOpImpl(
@@ -25,7 +40,7 @@ namespace Fabric
         RC::ConstHandle<CG::Adapter>(),
         selfType,
         CG::assignOpMethodName( assignOpType ),
-        ParamList::Create( location, rhs ),
+        ParamVector::Create( rhs ),
         body
         )
     {

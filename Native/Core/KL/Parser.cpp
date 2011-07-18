@@ -5,10 +5,10 @@
 #include <Fabric/Core/KL/Parser.h>
 #include <Fabric/Core/KL/Scanner.h>
 #include <Fabric/Core/AST/Alias.h>
-#include <Fabric/Core/AST/GlobalList.h>
+#include <Fabric/Core/AST/GlobalVector.h>
 #include <Fabric/Core/AST/StructDecl.h>
 #include <Fabric/Core/AST/StructDeclMember.h>
-#include <Fabric/Core/AST/StructDeclMemberList.h>
+#include <Fabric/Core/AST/StructDeclMemberVector.h>
 
 namespace Fabric
 {
@@ -26,7 +26,7 @@ namespace Fabric
     {
     }
     
-    RC::Handle<AST::GlobalList> Parser::run()
+    RC::Handle<AST::GlobalVector> Parser::run()
     {
       return parseGlobalList();
     }
@@ -105,9 +105,9 @@ namespace Fabric
       return m_peek.getStartLocation();
     }
 
-    RC::Handle<AST::GlobalList> Parser::parseGlobalList()
+    RC::Handle<AST::GlobalVector> Parser::parseGlobalList()
     {
-      RC::Handle<AST::GlobalList> result = AST::GlobalList::Create( getLocation() );
+      RC::Handle<AST::GlobalVector> result = AST::GlobalVector::Create();
       bool done;
       while ( !done )
       {
@@ -123,10 +123,10 @@ namespace Fabric
           switch ( tokenType )
           {
             case Token::TK_ALIAS:
-              result->append( parseAlias() );
+              result->push_back( parseAlias() );
               break;
             case Token::TK_STRUCT:
-              result->append( parseStruct() );
+              result->push_back( parseStruct() );
               break;
             case Token::TK_EOI:
               done = true;
@@ -160,15 +160,15 @@ namespace Fabric
       Token structToken = consume( Token::TK_STRUCT );
       Token nameToken = consume( Token::TK_TYPE_OR_IDENTIFIER, "identifier" );
       consume( Token::TK_LBRACE, "'{'" );
-      RC::Handle<AST::StructDeclMemberList> memberList = parseStructMemberList();
+      RC::Handle<AST::StructDeclMemberVector> members = parseStructMemberVector();
       consume( Token::TK_RBRACE, "'}'" );
       consume( Token::TK_SEMICOLON, "';'" );
-      return AST::StructDecl::Create( structToken.getStartLocation(), nameToken.toString(), memberList );
+      return AST::StructDecl::Create( structToken.getStartLocation(), nameToken.toString(), members );
     }
     
-    RC::Handle<AST::StructDeclMemberList> Parser::parseStructMemberList()
+    RC::Handle<AST::StructDeclMemberVector> Parser::parseStructMemberVector()
     {
-      RC::Handle<AST::StructDeclMemberList> result = AST::StructDeclMemberList::Create( getLocation() );
+      RC::Handle<AST::StructDeclMemberVector> result = AST::StructDeclMemberVector::Create();
       bool done = false;
       while ( !done )
       {
@@ -182,7 +182,7 @@ namespace Fabric
           switch ( expect( 2, tokenTypes, "identifier or '}'" ) )
           {
             case Token::TK_TYPE_OR_IDENTIFIER:
-              result->append( parseStructMember() );
+              result->push_back( parseStructMember() );
               break;
             case Token::TK_RBRACE:
               done = true;

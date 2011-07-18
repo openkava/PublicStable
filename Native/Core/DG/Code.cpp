@@ -8,7 +8,7 @@
 #include <Fabric/Core/OCL/OCL.h>
 #include <Fabric/Core/RT/Manager.h>
 #include <Fabric/Core/CG/ModuleBuilder.h>
-#include <Fabric/Core/AST/GlobalList.h>
+#include <Fabric/Core/AST/GlobalVector.h>
 #include <Fabric/Core/AST/Function.h>
 #include <Fabric/Core/AST/Operator.h>
 #include <Fabric/Core/RT/Impl.h>
@@ -183,7 +183,7 @@ namespace Fabric
     }
 #endif
     
-    RC::ConstHandle<AST::GlobalList> Code::getAST() const
+    RC::ConstHandle<AST::GlobalVector> Code::getAST() const
     {
       return m_ast;
     }

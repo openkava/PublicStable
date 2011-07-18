@@ -31,11 +31,6 @@ namespace Fabric
       virtual CG::ExprValue buildExprValue( CG::BasicBlockBuilder &basicBlockBuilder, CG::Usage usage, std::string const &lValueErrorDesc ) const = 0;
     };
   };
-  
-  inline std::string _( RC::ConstHandle<AST::Expr> const &expr )
-  {
-    return expr->localDesc();
-  }
 };
 
 #endif //_FABRIC_AST_EXPR_H

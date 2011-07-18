@@ -30,7 +30,7 @@ namespace Fabric
 
       KL::Scanner *m_scanner;
       CG::Diagnostics &m_diagnostics;
-      RC::Handle<AST::GlobalList> m_resultGlobalList;
+      RC::Handle<AST::GlobalVector> m_resultGlobalList;
       RC::Handle<CG::Manager> const &m_cgManager;
 
       // Variable declaration list

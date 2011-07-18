@@ -6,7 +6,7 @@
 #include <Fabric/Core/KL/Parser.h>
 #include <Fabric/Core/KL/Scanner.h>
 #include <Fabric/Core/KL/StringSource.h>
-#include <Fabric/Core/AST/GlobalList.h>
+#include <Fabric/Core/AST/GlobalVector.h>
 #include <Fabric/Core/RT/Manager.h>
 #include <Fabric/Core/RT/ScalarDesc.h>
 #include <Fabric/Core/RT/StringDesc.h>
@@ -20,6 +20,7 @@
 #include <Fabric/Core/OCL/Debug.h>
 #include <Fabric/Base/JSON/String.h>
 #include <Fabric/Base/JSON/Object.h>
+#include <Fabric/Base/JSON/Array.h>
 #include <Fabric/Base/JSON/Encode.h>
 
 #include <memory>
@@ -201,7 +202,7 @@ void handleFile( FILE *fp, unsigned int runFlags )
   cgManager->llvmPrepareModule( moduleBuilder );
   OCL::llvmPrepareModule( moduleBuilder, rtManager );
   
-  RC::Handle<AST::GlobalList> globalList = parser->run();
+  RC::Handle<AST::GlobalVector> globalList = parser->run();
 
   if ( diagnostics.containsError() )
   {
@@ -216,7 +217,8 @@ void handleFile( FILE *fp, unsigned int runFlags )
   {
     if ( runFlags & RF_Verbose )
       printf( "-- AST --\n" );
-    printf( "%s", globalList->deepDesc("").c_str() );
+    RC::ConstHandle<JSON::Value> globalListJSONValue = globalList->toJSON();
+    printf( "%s\n", JSON::encode( globalListJSONValue ).c_str() );
   }
 
   if( runFlags & (RF_ShowASM | RF_ShowIR | RF_ShowOptIR | RF_ShowOptASM | RF_Run) )

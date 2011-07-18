@@ -8,11 +8,15 @@
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/CG/ModuleBuilder.h>
 #include <Fabric/Core/CG/Error.h>
+#include <Fabric/Base/JSON/String.h>
+#include <Fabric/Base/JSON/Scalar.h>
 
 namespace Fabric
 {
   namespace AST
   {
+    FABRIC_AST_NODE_IMPL( ConstScalarDecl );
+    
     ConstScalarDecl::ConstScalarDecl(
       CG::Location const &location,
       std::string const &name,
@@ -25,9 +29,11 @@ namespace Fabric
         throw Exception( "invalid floating-point constant "+_(scalarString) );
     }
     
-    std::string ConstScalarDecl::localDesc() const
+    RC::Handle<JSON::Object> ConstScalarDecl::toJSON() const
     {
-      return "ConstScalarDecl( "+_(getName())+", "+getAdapter()->getUserName()+", "+_(m_scalar)+" )";
+      RC::Handle<JSON::Object> result = ConstDecl::toJSON();
+      result->set( "value", JSON::Scalar::Create( m_scalar ) );
+      return result;
     }
 
     void ConstScalarDecl::llvmCompileToScope( CG::Scope &scope, RC::ConstHandle<CG::Manager> const &manager ) const

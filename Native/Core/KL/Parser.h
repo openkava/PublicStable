@@ -8,8 +8,6 @@
 #include <Fabric/Core/KL/Token.h>
 #include <Fabric/Core/CG/Diagnostics.h>
 
-#include <list>
-
 namespace Fabric
 {
   namespace CG
@@ -19,10 +17,10 @@ namespace Fabric
   
   namespace AST
   {
-    class GlobalList;
     class Alias;
+    class GlobalVector;
     class StructDecl;
-    class StructDeclMemberList;
+    class StructDeclMemberVector;
     class StructDeclMember;
   };
   
@@ -36,7 +34,7 @@ namespace Fabric
     
       static RC::Handle<Parser> Create( RC::Handle<Scanner> const &scanner, CG::Diagnostics &diagnostics );
       
-      RC::Handle<AST::GlobalList> run();
+      RC::Handle<AST::GlobalVector> run();
 
     protected:
     
@@ -87,10 +85,10 @@ namespace Fabric
 
       Parser( RC::Handle<Scanner> const &scanner, CG::Diagnostics &diagnostics );
       
-      RC::Handle<AST::GlobalList> parseGlobalList();
+      RC::Handle<AST::GlobalVector> parseGlobalList();
       RC::Handle<AST::Alias> parseAlias();
       RC::Handle<AST::StructDecl> parseStruct();
-      RC::Handle<AST::StructDeclMemberList> parseStructMemberList();
+      RC::Handle<AST::StructDeclMemberVector> parseStructMemberVector();
       RC::Handle<AST::StructDeclMember> parseStructMember();
       std::string parseArrayModifier();
       

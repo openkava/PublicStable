@@ -5,6 +5,7 @@
 #include "ConstDecl.h"
 #include <Fabric/Core/CG/Adapter.h>
 #include <Fabric/Core/CG/Location.h>
+#include <Fabric/Base/JSON/String.h>
 
 namespace Fabric
 {
@@ -19,6 +20,14 @@ namespace Fabric
       , m_name( name )
       , m_adapter( adapter )
     {
+    }
+    
+    RC::Handle<JSON::Object> ConstDecl::toJSON() const
+    {
+      RC::Handle<JSON::Object> result = Node::toJSON();
+      result->set( "name", JSON::String::Create( m_name ) );
+      result->set( "typeName", JSON::String::Create( m_adapter->getUserName() ) );
+      return result;
     }
 
     RC::ConstHandle<CG::Adapter> ConstDecl::getAdapter() const

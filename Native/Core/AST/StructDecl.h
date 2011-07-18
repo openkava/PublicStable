@@ -16,23 +16,21 @@ namespace Fabric
   
   namespace AST
   {
-    class StructDeclMemberList;
+    class StructDeclMemberVector;
     
     class StructDecl : public Global
     {
+      FABRIC_AST_NODE_DECL( StructDecl );
+
     public:
 
       static RC::Handle<StructDecl> Create(
         CG::Location const &location,
         std::string const &name,
-        RC::ConstHandle<StructDeclMemberList> const &structDeclMemberList
-        )
-      {
-        return new StructDecl( location, name, structDeclMemberList );
-      }
-    
-      virtual std::string localDesc() const;
-      virtual std::string deepDesc( std::string const &indent ) const;
+        RC::ConstHandle<StructDeclMemberVector> const &members
+        );
+
+      RC::Handle<JSON::Object> toJSON() const;
       
       virtual void llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctionBodies ) const;
       
@@ -41,13 +39,13 @@ namespace Fabric
       StructDecl(
         CG::Location const &location,
         std::string const &name,
-        RC::ConstHandle<StructDeclMemberList> const &structDeclMemberList
+        RC::ConstHandle<StructDeclMemberVector> const &members
         );
     
     private:
     
       std::string m_name;
-      RC::ConstHandle<StructDeclMemberList> m_structDeclMemberList;
+      RC::ConstHandle<StructDeclMemberVector> m_members;
     };
   };
 };

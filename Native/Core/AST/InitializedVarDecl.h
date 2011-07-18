@@ -10,28 +10,27 @@
 
 #include <Fabric/Core/AST/VarDecl.h>
 #include <Fabric/Core/AST/Expr.h>
-#include <Fabric/Core/AST/ArgList.h>
 
 namespace Fabric
 {
   namespace AST
   {
+    class ExprVector;
+    
     class InitializedVarDecl: public VarDecl
     {
+      FABRIC_AST_NODE_DECL( InitializedVarDecl );
+
     public:
-    
-      virtual std::string localDesc() const;
-      virtual std::string deepDesc( std::string const &indent ) const;
 
       static RC::Handle<InitializedVarDecl> Create(
         CG::Location const &location,
         std::string const &name,
         RC::ConstHandle<CG::Adapter> const &adapter,
-        RC::ConstHandle<ArgList> const &args
-        )
-      {
-        return new InitializedVarDecl( location, name, adapter, args );
-      }
+        RC::ConstHandle<ExprVector> const &args
+        );
+
+      RC::Handle<JSON::Object> toJSON() const;
 
       virtual void llvmCompileToBuilder( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const;
      
@@ -41,12 +40,12 @@ namespace Fabric
         CG::Location const &location,
         std::string const &name,
         RC::ConstHandle<CG::Adapter> const &adapter,
-        RC::ConstHandle<ArgList> const &args
+        RC::ConstHandle<ExprVector> const &args
         );
     
     private:
     
-      RC::ConstHandle<ArgList> m_argList;
+      RC::ConstHandle<ExprVector> m_args;
     };
   };
 };

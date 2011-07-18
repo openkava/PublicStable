@@ -11,11 +11,14 @@
 #include <Fabric/Core/CG/ModuleBuilder.h>
 #include <Fabric/Core/CG/Error.h>
 #include <Fabric/Core/Util/Parse.h>
+#include <Fabric/Base/JSON/String.h>
 
 namespace Fabric
 {
   namespace AST
   {
+    FABRIC_AST_NODE_IMPL( ConstSizeDecl );
+    
     ConstSizeDecl::ConstSizeDecl(
       CG::Location const &location,
       std::string const &name,
@@ -27,9 +30,11 @@ namespace Fabric
     {
     }
     
-    std::string ConstSizeDecl::localDesc() const
+    RC::Handle<JSON::Object> ConstSizeDecl::toJSON() const
     {
-      return "ConstSizeDecl( "+_(getName())+", "+getAdapter()->getUserName()+", "+_(m_size)+" )";
+      RC::Handle<JSON::Object> result = ConstDecl::toJSON();
+      result->set( "value", JSON::Integer::Create( m_size ) );
+      return result;
     }
 
     void ConstSizeDecl::llvmCompileToScope( CG::Scope &scope, RC::ConstHandle<CG::Manager> const &manager ) const

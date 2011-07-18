@@ -24,14 +24,16 @@ namespace Fabric
   {
     class StructDeclMember: public Node
     {
+      FABRIC_AST_NODE_DECL( StructDeclMember );
+
     public:
     
       static RC::Handle<StructDeclMember> Create( CG::Location const &location, std::string const &name, std::string const &typeName )
       {
         return new StructDeclMember( location, name, typeName );
       }
-    
-      virtual std::string localDesc() const;
+
+      RC::Handle<JSON::Object> toJSON() const;
       
       RT::StructMemberInfo getStructMemberInfo( RC::ConstHandle<RT::Manager> const &rtManager ) const;
 

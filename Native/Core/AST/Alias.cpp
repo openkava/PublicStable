@@ -3,13 +3,17 @@
  */
  
 #include <Fabric/Core/AST/Alias.h>
+#include <Fabric/Core/CG/Adapter.h>
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/RT/Manager.h>
+#include <Fabric/Base/JSON/String.h>
 
 namespace Fabric
 {
   namespace AST
   {
+    FABRIC_AST_NODE_IMPL( Alias );
+    
     Alias::Alias(
       CG::Location const &location,
       std::string const &name,
@@ -21,9 +25,12 @@ namespace Fabric
     {
     }
     
-    std::string Alias::localDesc() const
+    RC::Handle<JSON::Object> Alias::toJSON() const
     {
-      return "Alias( '" + m_name + "', " + m_adapterName + " )";
+      RC::Handle<JSON::Object> result = Global::toJSON();
+      result->set( "newTypeName", JSON::String::Create( m_name ) );
+      result->set( "oldTypeName", JSON::String::Create( m_adapterName ) );
+      return result;
     }
     
     void Alias::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const

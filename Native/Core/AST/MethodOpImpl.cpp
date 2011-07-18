@@ -5,20 +5,36 @@
  *
  */
 
-#include "MethodOpImpl.h"
+#include <Fabric/Core/AST/MethodOpImpl.h>
+#include <Fabric/Core/AST/Param.h>
 #include <Fabric/Core/CG/Adapter.h>
 #include <Fabric/Core/CG/OverloadNames.h>
+#include <Fabric/Base/JSON/String.h>
 
 namespace Fabric
 {
   namespace AST
   {
+    FABRIC_AST_NODE_IMPL( MethodOpImpl );
+    
+    RC::Handle<Function> MethodOpImpl::Create(
+      CG::Location const &location,
+      CG::ExprType const &returnExprType,
+      RC::ConstHandle<CG::Adapter> const &selfAdapter,
+      std::string const &methodName,
+      RC::ConstHandle<ParamVector> const &params,
+      RC::ConstHandle<CompoundStatement> const &body
+      )
+    {
+      return new MethodOpImpl( location, returnExprType, selfAdapter, methodName, params, body );
+    }
+    
     MethodOpImpl::MethodOpImpl(
       CG::Location const &location,
       CG::ExprType const &returnExprType,
       RC::ConstHandle<CG::Adapter> const &selfAdapter,
       std::string const &methodName,
-      RC::ConstHandle<ParamList> const &params,
+      RC::ConstHandle<ParamVector> const &params,
       RC::ConstHandle<CompoundStatement> const &body
       )
       : Function(
@@ -26,8 +42,7 @@ namespace Fabric
         "",
         CG::methodOverloadName( methodName, selfAdapter, params->getTypes() ),
         returnExprType,
-        ParamList::Create(
-          location,
+        ParamVector::Create(
           Param::Create(
             location,
             "self",

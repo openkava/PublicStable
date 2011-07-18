@@ -7,11 +7,14 @@
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/CG/BasicBlockBuilder.h>
 #include <Fabric/Core/Util/Parse.h>
+#include <Fabric/Base/JSON/String.h>
 
 namespace Fabric
 {
   namespace AST
   {
+    FABRIC_AST_NODE_IMPL( ConstString );
+    
     RC::Handle<ConstString> ConstString::Create( CG::Location const &location, std::string const &value, bool quoted )
     {
       if ( quoted )
@@ -25,9 +28,11 @@ namespace Fabric
     {
     }
     
-    std::string ConstString::localDesc() const
+    RC::Handle<JSON::Object> ConstString::toJSON() const
     {
-      return "ConstString( " + _(m_value) + " )";
+      RC::Handle<JSON::Object> result = Expr::toJSON();
+      result->set( "value", JSON::String::Create( m_value ) );
+      return result;
     }
     
     RC::ConstHandle<CG::ConstStringAdapter> ConstString::getAdapter( CG::BasicBlockBuilder const &basicBlockBuilder ) const

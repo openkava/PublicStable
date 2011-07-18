@@ -6,7 +6,7 @@
 #define _FABRIC_AST_GLOBAL_H
 
 #include <Fabric/Core/AST/Node.h>
-#include <Fabric/Core/AST/ParamList.h>
+#include <Fabric/Core/AST/ParamVector.h>
 #include <Fabric/Core/AST/CompoundStatement.h>
 
 namespace llvm
@@ -17,6 +17,12 @@ namespace llvm
 
 namespace Fabric
 {
+  namespace CG
+  {
+    class Diagnostics;
+    class ModuleBuilder;
+  };
+  
   namespace AST
   {
     class Global : public Node

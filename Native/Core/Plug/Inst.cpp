@@ -10,7 +10,7 @@
 #include <Fabric/Core/KL/Scanner.h>
 #include <Fabric/Core/KL/Parser.h>
 #include <Fabric/Core/AST/Function.h>
-#include <Fabric/Core/AST/GlobalList.h>
+#include <Fabric/Core/AST/GlobalVector.h>
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/DG/Context.h>
 #include <Fabric/Core/IO/Helpers.h>
@@ -123,10 +123,10 @@ namespace Fabric
         throw Exception( "unable to compile KL code" );
       FABRIC_ASSERT( m_ast );
       
-      size_t numItems = m_ast->numItems();
+      size_t numItems = m_ast->size();
       for ( size_t i=0; i<numItems; ++i )
       {
-        RC::ConstHandle<AST::Global> global = m_ast->item(i);
+        RC::ConstHandle<AST::Global> global = m_ast->get(i);
         if ( !global->isFunction() )
           continue;
         RC::ConstHandle<AST::Function> function = RC::ConstHandle<AST::Function>::StaticCast( global );

@@ -21,15 +21,16 @@ namespace Fabric
   {
     class CastNode: public Expr
     {
+      FABRIC_AST_NODE_DECL( CastNode );
+
     public:
 
       static RC::Handle<CastNode> Create( CG::Location const &location, RC::ConstHandle< CG::Adapter > const &adapter, RC::ConstHandle<Expr> const &child )
       {
         return new CastNode( location, adapter, child );
       }
-    
-      virtual std::string localDesc() const;
-      virtual std::string deepDesc( std::string const &indent ) const;
+
+      RC::Handle<JSON::Object> toJSON() const;
       
       virtual RC::ConstHandle<CG::Adapter> getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const;
       virtual CG::ExprValue buildExprValue( CG::BasicBlockBuilder &basicBlockBuilder, CG::Usage usage, std::string const &lValueErrorDesc ) const;

@@ -11,12 +11,16 @@
 #include <Fabric/Core/CG/Scope.h>
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/CG/Error.h>
+#include <Fabric/Core/CG/OpTypes.h>
 #include <Fabric/Core/RT/Desc.h>
+#include <Fabric/Base/JSON/String.h>
 
 namespace Fabric
 {
   namespace AST
   {
+    FABRIC_AST_NODE_IMPL( BinOp );
+    
     BinOp::BinOp( CG::Location const &location, CG::BinOpType binOpType, RC::ConstHandle<Expr> const &left, RC::ConstHandle<Expr> const &right )
       : Expr( location )
       , m_binOpType( binOpType )
@@ -24,18 +28,14 @@ namespace Fabric
       , m_right( right )
     {
     }
-    
-    std::string BinOp::localDesc() const
+      
+    RC::Handle<JSON::Object> BinOp::toJSON() const
     {
-      return "BinOp( " + _(m_binOpType) + " )";
-    }
-    
-    std::string BinOp::deepDesc( std::string const &indent ) const
-    {
-      std::string subIndent = indent + "  ";
-      return indent + localDesc() + "\n"
-        + m_left->deepDesc(subIndent)
-        + m_right->deepDesc(subIndent);
+      RC::Handle<JSON::Object> result = Expr::toJSON();
+      result->set( "binOpType", JSON::String::Create( CG::binOpUserName( m_binOpType ) ) );
+      result->set( "lhs", m_left->toJSON() );
+      result->set( "rhs", m_right->toJSON() );
+      return result;
     }
     
     RC::ConstHandle<CG::FunctionSymbol> BinOp::getFunctionSymbol( CG::BasicBlockBuilder const &basicBlockBuilder ) const

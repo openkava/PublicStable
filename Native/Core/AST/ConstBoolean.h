@@ -16,14 +16,16 @@ namespace Fabric
   {
     class ConstBoolean : public Expr
     {
+      FABRIC_AST_NODE_DECL( ConstBoolean );
+
     public:
     
       static RC::Handle<ConstBoolean> Create( CG::Location const &location, bool value )
       {
         return new ConstBoolean( location, value );
       }
-      
-      virtual std::string localDesc() const;
+
+      RC::Handle<JSON::Object> toJSON() const;
       
       virtual RC::ConstHandle<CG::Adapter> getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const;
       virtual CG::ExprValue buildExprValue( CG::BasicBlockBuilder &basicBlockBuilder, CG::Usage usage, std::string const &lValueErrorDesc ) const;

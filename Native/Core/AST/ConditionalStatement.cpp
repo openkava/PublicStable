@@ -10,11 +10,14 @@
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/CG/FunctionBuilder.h>
 #include <Fabric/Core/CG/Error.h>
+#include <Fabric/Base/JSON/String.h>
 
 namespace Fabric
 {
   namespace AST
   {
+    FABRIC_AST_NODE_IMPL( ConditionalStatement );
+    
     ConditionalStatement::ConditionalStatement(
       CG::Location const &location,
       RC::ConstHandle<Expr> const &expr,
@@ -28,20 +31,12 @@ namespace Fabric
     {
     }
     
-    std::string ConditionalStatement::localDesc() const
+    RC::Handle<JSON::Object> ConditionalStatement::toJSON() const
     {
-      return "ConditionalStatement";
-    }
-    
-    std::string ConditionalStatement::deepDesc( std::string const &indent ) const
-    {
-      std::string subIndent = indent + "  ";
-      std::string result = indent + localDesc() + "\n"
-        + m_expr->deepDesc( subIndent );
-      if ( m_trueStatement )
-        result += m_trueStatement->deepDesc( subIndent );
-      if ( m_falseStatement )
-        result += m_falseStatement->deepDesc( subIndent );
+      RC::Handle<JSON::Object> result = Statement::toJSON();
+      result->set( "testExpr", m_expr->toJSON() );
+      result->set( "ifTrue", m_trueStatement->toJSON() );
+      result->set( "ifFalse", m_falseStatement->toJSON() );
       return result;
     }
 

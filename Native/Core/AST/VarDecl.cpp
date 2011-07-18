@@ -8,11 +8,14 @@
 #include "VarDecl.h"
 #include <Fabric/Core/CG/Adapter.h>
 #include <Fabric/Core/CG/Scope.h>
+#include <Fabric/Base/JSON/String.h>
 
 namespace Fabric
 {
   namespace AST
   {
+    FABRIC_AST_NODE_IMPL( VarDecl );
+    
     VarDecl::VarDecl( CG::Location const &location, std::string const &name, RC::ConstHandle< CG::Adapter > const &adapter )
       : Statement( location )
       , m_name( name )
@@ -20,9 +23,12 @@ namespace Fabric
     {
     }
     
-    std::string VarDecl::localDesc() const
+    RC::Handle<JSON::Object> VarDecl::toJSON() const
     {
-      return "VarDecl( "+_(m_name)+", "+_(m_adapter)+" )";
+      RC::Handle<JSON::Object> result = Statement::toJSON();
+      result->set( "name", JSON::String::Create( m_name ) );
+      result->set( "type", JSON::String::Create( m_adapter->getUserName() ) );
+      return result;
     }
 
     void VarDecl::llvmCompileToBuilder( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const

@@ -11,11 +11,14 @@
 #include <Fabric/Core/CG/Error.h>
 #include <Fabric/Core/CG/Scope.h>
 #include <Fabric/Core/RT/StructMemberInfo.h>
+#include <Fabric/Base/JSON/String.h>
 
 namespace Fabric
 {
   namespace AST
   {
+    FABRIC_AST_NODE_IMPL( StructMemberOp );
+    
     StructMemberOp::StructMemberOp( CG::Location const &location, RC::ConstHandle<Expr> const &structExpr, std::string const &memberName )
       : Expr( location )
       , m_structExpr( structExpr )
@@ -23,16 +26,12 @@ namespace Fabric
     {
     }
     
-    std::string StructMemberOp::localDesc() const
+    RC::Handle<JSON::Object> StructMemberOp::toJSON() const
     {
-      return "StructMemberOp( '" + m_memberName + "' )";
-    }
-    
-    std::string StructMemberOp::deepDesc( std::string const &indent ) const
-    {
-      std::string subIndent = indent + "  ";
-      return indent + localDesc() + "\n"
-        + m_structExpr->deepDesc(subIndent);
+      RC::Handle<JSON::Object> result = Expr::toJSON();
+      result->set( "expr", m_structExpr->toJSON() );
+      result->set( "memberName", JSON::String::Create( m_memberName ) );
+      return result;
     }
     
     RC::ConstHandle<CG::Adapter> StructMemberOp::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const

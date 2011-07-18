@@ -10,26 +10,25 @@
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/CG/Error.h>
 #include <Fabric/Core/CG/BasicBlockBuilder.h>
+#include <Fabric/Base/JSON/String.h>
 
 namespace Fabric
 {
   namespace AST
   {
+    FABRIC_AST_NODE_IMPL( Report );
+    
     Report::Report( CG::Location const &location, RC::ConstHandle<Expr> const &expr )
       : Statement( location )
       , m_expr( expr )
     {
     }
     
-    std::string Report::localDesc() const
+    RC::Handle<JSON::Object> Report::toJSON() const
     {
-      return "Report";
-    }
-    
-    std::string Report::deepDesc( std::string const &indent ) const
-    {
-      return indent + localDesc() + "\n"
-        + m_expr->deepDesc(indent+"  ");
+      RC::Handle<JSON::Object> result = Statement::toJSON();
+      result->set( "expr", m_expr->toJSON() );
+      return result;
     }
 
     void Report::llvmCompileToBuilder( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const

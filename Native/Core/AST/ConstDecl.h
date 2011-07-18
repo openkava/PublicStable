@@ -25,6 +25,8 @@ namespace Fabric
     class ConstDecl : public Node
     {
     public:
+
+      RC::Handle<JSON::Object> toJSON() const;
       
       std::string const &getName() const
       {

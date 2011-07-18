@@ -5,14 +5,17 @@
  *
  */
 
-#include "CastNode.h"
+#include <Fabric/Core/AST/CastNode.h>
 #include <Fabric/Core/CG/Error.h>
 #include <Fabric/Core/CG/Adapter.h>
+#include <Fabric/Base/JSON/String.h>
 
 namespace Fabric
 {
   namespace AST
   {
+    FABRIC_AST_NODE_IMPL( CastNode );
+    
     CastNode::CastNode( CG::Location const &location, RC::ConstHandle< CG::Adapter > const &adapter, RC::ConstHandle<Expr> const &child )
       : Expr( location )
       , m_adapter( adapter )
@@ -20,15 +23,12 @@ namespace Fabric
     {
     }
     
-    std::string CastNode::localDesc() const
+    RC::Handle<JSON::Object> CastNode::toJSON() const
     {
-      return "CastNode( " + _(m_adapter) + " )";
-    }
-    
-    std::string CastNode::deepDesc( std::string const &indent ) const
-    {
-      return indent + localDesc() + "\n"
-        + m_child->deepDesc(indent+"  ");
+      RC::Handle<JSON::Object> result = Node::toJSON();
+      result->set( "dstTypeName", JSON::String::Create( m_adapter->getUserName() ) );
+      result->set( "child", m_child->toJSON() );
+      return result;
     }
     
     RC::ConstHandle<CG::Adapter> CastNode::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const

@@ -6,30 +6,44 @@
  */
 
 #include "TempValue.h"
+#include "ExprVector.h"
 #include <Fabric/Core/CG/Scope.h>
 #include <Fabric/Core/CG/OverloadNames.h>
+#include <Fabric/Base/JSON/String.h>
+#include <Fabric/Base/JSON/Array.h>
 
 namespace Fabric
 {
   namespace AST
   {
-    TempValue::TempValue( CG::Location const &location, RC::ConstHandle<CG::Adapter> const &adapter, RC::ConstHandle<ArgList> const &args )
+    FABRIC_AST_NODE_IMPL( TempValue );
+    
+    RC::Handle<TempValue> TempValue::Create(
+      CG::Location const &location,
+      RC::ConstHandle<CG::Adapter> const &adapter,
+      RC::ConstHandle<ExprVector> const &args
+      )
+    {
+      return new TempValue( location, adapter, args );
+    }
+
+    TempValue::TempValue(
+      CG::Location const &location,
+      RC::ConstHandle<CG::Adapter> const &adapter,
+      RC::ConstHandle<ExprVector> const &args
+      )
       : Expr( location )
       , m_adapter( adapter )
       , m_args( args )
     {
     }
     
-    std::string TempValue::localDesc() const
+    RC::Handle<JSON::Object> TempValue::toJSON() const
     {
-      return "TempValue( " + _(m_adapter) + " )";
-    }
-    
-    std::string TempValue::deepDesc( std::string const &indent ) const
-    {
-      std::string subIndent = indent + "  ";
-      return indent + localDesc() + "\n"
-        + m_args->deepDesc(subIndent);
+      RC::Handle<JSON::Object> result = Expr::toJSON();
+      result->set( "type", JSON::String::Create( m_adapter->getUserName() ) );
+      result->set( "args", m_args->toJSON() );
+      return result;
     }
     
     RC::ConstHandle<CG::Adapter> TempValue::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const

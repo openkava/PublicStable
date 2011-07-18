@@ -10,11 +10,14 @@
 #include <Fabric/Core/CG/OverloadNames.h>
 #include <Fabric/Core/CG/Scope.h>
 #include <Fabric/Core/CG/Error.h>
+#include <Fabric/Base/JSON/String.h>
 
 namespace Fabric
 {
   namespace AST
   {
+    FABRIC_AST_NODE_IMPL( AssignedVarDecl );
+    
     AssignedVarDecl::AssignedVarDecl(
       CG::Location const &location,
       std::string const &name,
@@ -26,15 +29,11 @@ namespace Fabric
     {
     }
     
-    std::string AssignedVarDecl::localDesc() const
+    RC::Handle<JSON::Object> AssignedVarDecl::toJSON() const
     {
-      return "AssignedVarDecl( " + VarDecl::localDesc() + ", " + m_initialExpr->localDesc() + " )";
-    }
-    
-    std::string AssignedVarDecl::deepDesc( std::string const &indent ) const
-    {
-      return indent + localDesc() + "\n"
-        + m_initialExpr->deepDesc( indent + "  " );
+      RC::Handle<JSON::Object> result = VarDecl::toJSON();
+      result->set( "initialValue", m_initialExpr->toJSON() );
+      return result;
     }
 
     void AssignedVarDecl::llvmCompileToBuilder( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const

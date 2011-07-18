@@ -19,15 +19,16 @@ namespace Fabric
   {
     class TernaryOp : public Expr
     {
+      FABRIC_AST_NODE_DECL( TernaryOp );
+
     public:
       
       static RC::Handle<TernaryOp> Create( CG::Location const &location, CG::TernaryOpType opType, RC::ConstHandle<Expr> const &left, RC::ConstHandle<Expr> const &middle, RC::ConstHandle<Expr> const &right )
       {
         return new TernaryOp( location, opType, left, middle, right );
       }
-      
-      virtual std::string localDesc() const;
-      virtual std::string deepDesc( std::string const &indent ) const;
+
+      RC::Handle<JSON::Object> toJSON() const;
       
       virtual RC::ConstHandle<CG::Adapter> getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const;
       virtual CG::ExprValue buildExprValue( CG::BasicBlockBuilder &basicBlockBuilder, CG::Usage usage, std::string const &lValueErrorDesc ) const;

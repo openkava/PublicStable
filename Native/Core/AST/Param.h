@@ -24,12 +24,16 @@ namespace Fabric
   {
     class Param: public Node
     {
+      FABRIC_AST_NODE_DECL( Param );
+
     public:
     
       static RC::Handle<Param> Create( CG::Location const &location, std::string const &name, RC::ConstHandle< CG::Adapter > const &adapter, CG::Usage usage )
       {
         return new Param( location, name, adapter, usage );
       }
+
+      RC::Handle<JSON::Object> toJSON() const;
     
       std::string const &getName() const
       {
@@ -61,8 +65,6 @@ namespace Fabric
         return m_functionParam.getLLVMType();
       }
       
-      virtual std::string localDesc() const;
-      
       CG::FunctionParam const &getFunctionParam() const
       {
         return m_functionParam;
@@ -76,13 +78,7 @@ namespace Fabric
     
       CG::FunctionParam m_functionParam;
     };
-
-  }
-
-  inline std::string _( RC::ConstHandle<AST::Param> const &param )
-  {
-    return param->localDesc();
-  }
-}
+  };
+};
 
 #endif //_FABRIC_AST_PARAM_H

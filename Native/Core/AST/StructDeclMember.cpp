@@ -6,21 +6,27 @@
 #include <Fabric/Core/CG/Location.h>
 #include <Fabric/Core/CG/Adapter.h>
 #include <Fabric/Core/RT/Manager.h>
+#include <Fabric/Base/JSON/String.h>
 
 namespace Fabric
 {
   namespace AST
   {
+    FABRIC_AST_NODE_IMPL( StructDeclMember );
+    
     StructDeclMember::StructDeclMember( CG::Location const &location, std::string const &name, std::string const &typeName )
       : Node( location )
       , m_name( name )
       , m_typeName( typeName )
     {
     }
-
-    std::string StructDeclMember::localDesc() const
+    
+    RC::Handle<JSON::Object> StructDeclMember::toJSON() const
     {
-      return "StructDeclMember( " + _(m_name) + ", " + _(m_typeName) + " )";
+      RC::Handle<JSON::Object> result = Node::toJSON();
+      result->set( "name", JSON::String::Create( m_name ) );
+      result->set( "type", JSON::String::Create( m_typeName ) );
+      return result;
     }
 
     RT::StructMemberInfo StructDeclMember::getStructMemberInfo( RC::ConstHandle<RT::Manager> const &rtManager ) const

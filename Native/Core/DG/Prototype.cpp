@@ -18,7 +18,7 @@
 #include <Fabric/Core/RT/SizeDesc.h>
 #include <Fabric/Core/RT/Manager.h>
 #include <Fabric/Core/AST/Operator.h>
-#include <Fabric/Core/AST/ParamList.h>
+#include <Fabric/Core/AST/ParamVector.h>
 #include <Fabric/Core/AST/Param.h>
 #include <Fabric/Core/MT/Util.h>
 #include <Fabric/Base/JSON/String.h>
@@ -244,8 +244,8 @@ namespace Fabric
     {
       FABRIC_ASSERT( function );
       
-      RC::ConstHandle<AST::ParamList> astParamList = astOperator->getParamList();
-      size_t numASTParams = astParamList->numItems();
+      RC::ConstHandle<AST::ParamVector> astParamList = astOperator->getParams();
+      size_t numASTParams = astParamList->size();
       size_t expectedNumASTParams = prefixCount + m_paramCount;
       if ( numASTParams != expectedNumASTParams )
         throw Exception( "operator takes incorrect number of parameters (expected "+_(expectedNumASTParams)+", actual "+_(numASTParams)+")" );
@@ -272,7 +272,7 @@ namespace Fabric
           {
             Param const *param = jt->second;
 
-            RC::ConstHandle<AST::Param> astParam = astParamList->item( prefixCount + param->index() );
+            RC::ConstHandle<AST::Param> astParam = astParamList->get( prefixCount + param->index() );
             CG::ExprType astParamExprType = astParam->getExprType();
             RC::ConstHandle<RT::Desc> astParamDesc = astParamExprType.getDesc();
             RC::ConstHandle<RT::Impl> astParamImpl = astParamDesc->getImpl();

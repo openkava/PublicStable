@@ -26,6 +26,8 @@ namespace Fabric
   {
     class MethodOpImpl : public Function
     {
+      FABRIC_AST_NODE_DECL( MethodOpImpl );
+
     public:
     
       static RC::Handle<Function> Create(
@@ -33,13 +35,10 @@ namespace Fabric
         CG::ExprType const &returnExprType,
         RC::ConstHandle<CG::Adapter> const &selfAdapter,
         std::string const &methodName,
-        RC::ConstHandle<ParamList> const &params,
+        RC::ConstHandle<ParamVector> const &params,
         RC::ConstHandle<CompoundStatement> const &body
-        )
-      {
-        return new MethodOpImpl( location, returnExprType, selfAdapter, methodName, params, body );
-      }
-      
+        );
+              
     protected:
     
       MethodOpImpl(
@@ -47,7 +46,7 @@ namespace Fabric
         CG::ExprType const &returnExprType,
         RC::ConstHandle<CG::Adapter> const &selfAdapter,
         std::string const &methodName,
-        RC::ConstHandle<ParamList> const &params,
+        RC::ConstHandle<ParamVector> const &params,
         RC::ConstHandle<CompoundStatement> const &body
         );
     };

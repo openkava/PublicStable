@@ -26,24 +26,23 @@ namespace Fabric
   {
     class Initializer : public Function
     {
+      FABRIC_AST_NODE_DECL( Initializer );
+
     public:
     
       static RC::Handle<Function> Create(
         CG::Location const &location,
         RC::ConstHandle<CG::Adapter> const &selfAdapter,
-        RC::ConstHandle<ParamList> const &params,
+        RC::ConstHandle<ParamVector> const &params,
         RC::ConstHandle<CompoundStatement> const &body
-        )
-      {
-        return new Initializer( location, selfAdapter, params, body );
-      }
+        );
       
     protected:
     
       Initializer(
         CG::Location const &location,
         RC::ConstHandle<CG::Adapter> const &selfAdapter,
-        RC::ConstHandle<ParamList> const &params,
+        RC::ConstHandle<ParamVector> const &params,
         RC::ConstHandle<CompoundStatement> const &body
         );
     };

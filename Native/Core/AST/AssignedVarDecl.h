@@ -17,11 +17,10 @@ namespace Fabric
   {
     class AssignedVarDecl : public VarDecl
     {
+      FABRIC_AST_NODE_DECL( AssignedVarDecl );
+      
     public:
     
-      virtual std::string localDesc() const;
-      virtual std::string deepDesc( std::string const &indent ) const;
-
       static RC::Handle<AssignedVarDecl> Create(
         CG::Location const &location,
         std::string const &name,
@@ -31,6 +30,8 @@ namespace Fabric
       {
         return new AssignedVarDecl( location, name, adapter, initialExpr );
       }
+
+      RC::Handle<JSON::Object> toJSON() const;
       
       virtual void llvmCompileToBuilder( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const;
      

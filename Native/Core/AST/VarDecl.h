@@ -17,14 +17,16 @@ namespace Fabric
   {
     class VarDecl: public Statement
     {
+      FABRIC_AST_NODE_DECL( VarDecl );
+      
     public:
-    
-      virtual std::string localDesc() const;
 
       static RC::Handle<VarDecl> Create( CG::Location const &location, std::string const &name, RC::ConstHandle< CG::Adapter > const &adapter )
       {
         return new VarDecl( location, name, adapter );
       }
+
+      RC::Handle<JSON::Object> toJSON() const;
       
       virtual void llvmCompileToBuilder( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const;
      

@@ -27,18 +27,19 @@ namespace Fabric
   {
     class AssignOpImpl: public MethodOpImpl
     {
+      FABRIC_AST_NODE_DECL( AssignOpImpl );
+      
     public:
     
       static RC::Handle<Function> Create(
         CG::Location const &location,
         RC::ConstHandle<CG::Adapter> const &selfType,
         CG::AssignOpType assignOpType,
-        RC::ConstHandle< AST::Param > rhs,
+        RC::ConstHandle<AST::Param> rhs,
         RC::ConstHandle<CompoundStatement> const &body
-        )
-      {
-        return new AssignOpImpl( location, selfType, assignOpType, rhs, body );
-      }
+        );
+
+      RC::Handle<JSON::Object> toJSON() const;
       
     protected:
     
@@ -46,7 +47,7 @@ namespace Fabric
         CG::Location const &location,
         RC::ConstHandle<CG::Adapter> const &selfType,
         CG::AssignOpType assignOpType,
-        RC::ConstHandle< AST::Param > rhs,
+        RC::ConstHandle<AST::Param> rhs,
         RC::ConstHandle<CompoundStatement> const &body
         );
     };

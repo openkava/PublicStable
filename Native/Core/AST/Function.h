@@ -6,8 +6,7 @@
 #define _FABRIC_AST_FUNCTION_H
 
 #include <Fabric/Core/AST/Global.h>
-#include <Fabric/Core/AST/ParamList.h>
-#include <Fabric/Core/AST/CompoundStatement.h>
+#include <Fabric/Core/CG/ExprType.h>
 
 namespace llvm
 {
@@ -19,36 +18,37 @@ namespace Fabric
 {
   namespace AST
   {
+    class CompoundStatement;
+    class ParamVector;
+    
     class Function: public Global
     {
+      FABRIC_AST_NODE_DECL( Function );
+
     public:
-    
-      virtual std::string localDesc() const;
-      virtual std::string deepDesc( std::string const &indent ) const;
 
       static RC::Handle<Function> Create(
         CG::Location const &location,
         std::string const &friendlyName,
         std::string const &entryName,
         CG::ExprType const &returnExprType,
-        RC::ConstHandle<ParamList> const &params,
+        RC::ConstHandle<ParamVector> const &params,
         RC::ConstHandle<CompoundStatement> const &body
-        )
-      {
-        return new Function( location, friendlyName, entryName, returnExprType, params, body );
-      }
+        );
       
       static RC::Handle<Function> Create(
         CG::Location const &location,
         std::string const &friendlyName,
         std::string const *entryName,
         CG::ExprType const &returnExprType,
-        RC::ConstHandle<ParamList> const &params,
+        RC::ConstHandle<ParamVector> const &params,
         RC::ConstHandle<CompoundStatement> const &body
         )
       {
         return new Function( location, friendlyName, entryName? *entryName: friendlyName, returnExprType, params, body );
       }
+
+      RC::Handle<JSON::Object> toJSON() const;
       
       virtual bool isFunction() const { return true; }
           
@@ -67,7 +67,7 @@ namespace Fabric
         return false;
       }
       
-      RC::ConstHandle<ParamList> getParamList() const;
+      RC::ConstHandle<ParamVector> getParams() const;
       RC::ConstHandle<CompoundStatement> getBody() const;
       
       virtual void llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctionBodies ) const;
@@ -79,7 +79,7 @@ namespace Fabric
         std::string const &friendlyName,
         std::string const &entryName,
         CG::ExprType const &returnExprType,
-        RC::ConstHandle<ParamList> const &params,
+        RC::ConstHandle<ParamVector> const &params,
         RC::ConstHandle<CompoundStatement> const &body
         );
     
@@ -88,7 +88,7 @@ namespace Fabric
       std::string m_friendlyName;
       std::string m_entryName;
       CG::ExprType m_returnExprType;
-      RC::ConstHandle<ParamList> m_params;
+      RC::ConstHandle<ParamVector> m_params;
       RC::ConstHandle<CompoundStatement> m_body;
     };
   };

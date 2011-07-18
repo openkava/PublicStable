@@ -13,6 +13,8 @@ namespace Fabric
   {
     class ConstSizeDecl: public ConstDecl
     {
+      FABRIC_AST_NODE_DECL( ConstSizeDecl );
+
     public:
 
       static RC::Handle<ConstSizeDecl> Create(
@@ -24,8 +26,8 @@ namespace Fabric
       {
         return new ConstSizeDecl( location, name, adapter, sizeString );
       }
-    
-      virtual std::string localDesc() const;
+
+      RC::Handle<JSON::Object> toJSON() const;
       
       virtual void llvmCompileToScope( CG::Scope &scope, RC::ConstHandle<CG::Manager> const &manager ) const;
      
