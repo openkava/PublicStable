@@ -4,6 +4,7 @@
 
 #include <Fabric/Base/Config.h>
 #include <Fabric/Core/Util/Log.h>
+#include <Fabric/Core/Util/AutoPtr.h>
 
 #if defined( FABRIC_OS_WINDOWS )
 # include <windows.h>
@@ -64,9 +65,9 @@ public:
 private:
 
 #if defined(FABRIC_WIN32)
-  static HMODULE m_handle;
+  HMODULE m_handle;
 #elif defined(FABRIC_POSIX)
-  static void *m_handle;
+  void *m_handle;
 #else
 # error "Unsupported FABRIC_PLATFORM_..."
 #endif
@@ -74,15 +75,17 @@ private:
 
 #if defined(FABRIC_OS_WINDOWS)
 # if defined(WIN64)
-SOLib soLib( "OpenCL64.dll" );
+static char const *soLibName = "OpenCL64.dll";
 # else
-SOLib soLib( "OpenCL.dll" );
+static char const *soLibName = "OpenCL.dll";
 # endif
 #elif defined(FABRIC_OS_LINUX)
-SOLib soLib( "libOpenCL.so" );
+static char const *soLibName = "libOpenCL.so";
 #else
 # error "Unsupported FABRIC_OS_..."
 #endif
+
+Fabric::Util::AutoPtr<SOLib> soLib;
 
 template<typename T>
 static T loadSymbol( const char *name )
@@ -94,7 +97,10 @@ static T loadSymbol( const char *name )
   
   if( func == 0 )
   {
-    func = (T)soLib.findSym( name );
+    if ( !soLib )
+      soLib = new SOLib( soLibName );
+
+    func = (T)soLib->findSym( name );
     if( func  == 0 )
     {
       func = unknownFunc;
