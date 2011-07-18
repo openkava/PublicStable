@@ -10,42 +10,53 @@
 #elif defined( FABRIC_OS_MACOSX )
 # undef FABRIC_OCL_THUNKS
 #elif defined( FABRIC_OS_LINUX )
-# undef FABRIC_OCL_THUNKS
+# include <dlfcn.h>
+# define FABRIC_OCL_THUNKS
 #else
 #error "OpenCL thunks not supported"
 #endif
 
-#if defined( FABRIC_OCL_THUNKS )
+#if defined(FABRIC_OCL_THUNKS)
 
 #include <CL/opencl.h>
 
 static void *loadSymbolRaw( const char *symname )
 {
-#if defined( FABRIC_OS_WINDOWS )
-  static HMODULE    hCLDLL = 0;
-  static HMODULE    hModuleNotFound = (HMODULE)INVALID_HANDLE_VALUE;
-
-  if( hCLDLL == hModuleNotFound )
-    return 0;
-
-  if( !hCLDLL )
-  {
-#if defined(WIN64)
-    hCLDLL = LoadLibraryA( "OpenCL64.dll" );
+  static bool haveSOLibHandle = false;
+#if defined(FABRIC_WIN32)
+  static HMODULE soLibHandle;
+#elif defined(FABRIC_POSIX)
+  static void *soLibHandle;
 #else
-    hCLDLL = LoadLibraryA( "OpenCL.dll" );
+# error "Unsupported FABRIC_PLATFORM_..."
 #endif
-    if( hCLDLL == 0 )
-    {
-      hCLDLL = hModuleNotFound;
-      return 0;
-    }
+  if ( !haveSOLibHandle )
+  {
+#if defined(FABRIC_WIN32)
+# if defined(WIN64)
+    soLibHandle = LoadLibraryA( "OpenCL64.dll" );
+# else
+    soLibHandle = LoadLibraryA( "OpenCL.dll" );
+# endif
+#elif defined(FABRIC_POSIX)
+    soLibHandle = dlopen( "libOpenCL.so", RTLD_LAZY | RTLD_LOCAL );
+#endif
+
+    haveSOLibHandle = true;
   }
 
-  return (void *)GetProcAddress( hCLDLL, symname );
+  void *result = 0;
+  if ( soLibHandle )
+  {
+#if defined(FABRIC_WIN32)
+    result = (void *)GetProcAddress( hCLDLL, symname );
+#elif defined(FABRIC_POSIX)
+    result = (void *)dlsym( soLibHandle, symname );
+#else
+# error "Unsupported FABRIC_PLATFORM_..."
 #endif
-
-  return 0;
+  }
+  return result;
 }
 
 template<typename T>
