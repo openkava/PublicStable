@@ -31,9 +31,9 @@ namespace Fabric
       
     public:
     
-      static RC::Handle<Function> Create(
+      static RC::Handle<AssignOpImpl> Create(
         CG::Location const &location,
-        RC::ConstHandle<CG::Adapter> const &selfType,
+        std::string const &selfType,
         CG::AssignOpType assignOpType,
         RC::ConstHandle<AST::Param> rhs,
         RC::ConstHandle<CompoundStatement> const &body
@@ -45,7 +45,7 @@ namespace Fabric
     
       AssignOpImpl(
         CG::Location const &location,
-        RC::ConstHandle<CG::Adapter> const &selfType,
+        std::string const &selfType,
         CG::AssignOpType assignOpType,
         RC::ConstHandle<AST::Param> rhs,
         RC::ConstHandle<CompoundStatement> const &body

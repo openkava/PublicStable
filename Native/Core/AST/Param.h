@@ -50,8 +50,6 @@ namespace Fabric
         return m_usage;
       }
       
-      virtual std::string localDesc() const;
-      
       CG::FunctionParam getFunctionParam( RC::Handle<CG::Manager> const &cgManager ) const;
       
       RC::ConstHandle<CG::Adapter> getType( RC::Handle<CG::Manager> const &cgManager ) const
@@ -63,8 +61,6 @@ namespace Fabric
       {
         return getFunctionParam( cgManager ).getExprType();
       }
-      
-      CG::FunctionParam const &getFunctionParam() const;
       
       llvm::Type const *getLLVMType( RC::Handle<CG::Manager> const &cgManager ) const
       {

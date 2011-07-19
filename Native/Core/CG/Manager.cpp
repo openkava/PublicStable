@@ -66,7 +66,7 @@ namespace Fabric
 
     std::string const &Manager::getCodeName( std::string const &userName ) const
     {
-      return getAdapter()->getCodeName();
+      return getAdapter( userName )->getCodeName();
     }
 
     RC::ConstHandle< CG::Adapter > Manager::getAdapter( RC::ConstHandle<RT::Desc> const &desc ) const

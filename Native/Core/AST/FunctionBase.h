@@ -34,14 +34,18 @@ namespace Fabric
       
       virtual bool isFunction() const { return true; }
           
-      virtual std::string const *getFriendlyName() const = 0;
-      virtual std::string const &getEntryName( RC::Handle<CG::Manager> const &cgManager ) const = 0;
+      virtual std::string const *getFriendlyName() const;
+      virtual std::string getEntryName( RC::Handle<CG::Manager> const &cgManager ) const = 0;
 
       virtual bool isOperator() const
       {
         return false;
       }
       
+      std::string const &getReturnType() const
+      {
+        return m_returnTypeName;
+      }
       RC::ConstHandle<ParamVector> getParams() const;
       RC::ConstHandle<CompoundStatement> getBody() const;
       

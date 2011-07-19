@@ -8,7 +8,7 @@
 #ifndef _FABRIC_AST_INITIALIZER_H
 #define _FABRIC_AST_INITIALIZER_H
 
-#include <Fabric/Core/AST/Function.h>
+#include <Fabric/Core/AST/FunctionBase.h>
 
 namespace llvm
 {
@@ -24,27 +24,35 @@ namespace Fabric
   
   namespace AST
   {
-    class Initializer : public Function
+    class Initializer : public FunctionBase
     {
       FABRIC_AST_NODE_DECL( Initializer );
 
     public:
     
-      static RC::Handle<Function> Create(
+      static RC::Handle<Initializer> Create(
         CG::Location const &location,
-        RC::ConstHandle<CG::Adapter> const &selfAdapter,
+        std::string const &selfType,
         RC::ConstHandle<ParamVector> const &params,
         RC::ConstHandle<CompoundStatement> const &body
         );
+          
+      virtual std::string const *getFriendlyName() const;
+      virtual std::string getEntryName( RC::Handle<CG::Manager> const &cgManager ) const;
       
     protected:
     
       Initializer(
         CG::Location const &location,
-        RC::ConstHandle<CG::Adapter> const &selfAdapter,
+        std::string const &selfType,
         RC::ConstHandle<ParamVector> const &params,
         RC::ConstHandle<CompoundStatement> const &body
         );
+    
+    private:
+    
+      std::string m_selfType;
+      RC::ConstHandle<ParamVector> m_params;
     };
   };
 };

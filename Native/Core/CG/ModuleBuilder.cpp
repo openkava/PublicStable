@@ -16,7 +16,12 @@ namespace Fabric
       return m_manager;
     }
     
-    RC::Handle<Adapter> ModuleBuilder::getAdapter( std::string const &userName )
+    RC::ConstHandle<Adapter> ModuleBuilder::maybeGetAdapter( std::string const &userName )
+    {
+      return m_manager->maybeGetAdapter( userName );
+    }
+    
+    RC::ConstHandle<Adapter> ModuleBuilder::getAdapter( std::string const &userName )
     {
       return m_manager->getAdapter( userName );
     }

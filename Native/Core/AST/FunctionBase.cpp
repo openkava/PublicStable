@@ -6,6 +6,7 @@
 #include <Fabric/Core/CG/ModuleBuilder.h>
 #include <Fabric/Core/CG/FunctionBuilder.h>
 #include <Fabric/Core/CG/Scope.h>
+#include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Base/JSON/String.h>
 #include <Fabric/Base/JSON/Array.h>
 
@@ -32,7 +33,7 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> Function::toJSON() const
+    RC::Handle<JSON::Object> FunctionBase::toJSON() const
     {
       RC::Handle<JSON::Object> result = Global::toJSON();
       result->set( "returnExprType", JSON::String::Create( m_returnTypeName ) );
@@ -41,17 +42,22 @@ namespace Fabric
       return result;
     }
     
-    RC::ConstHandle<ParamVector> Function::getParams() const
+    RC::ConstHandle<ParamVector> FunctionBase::getParams() const
     {
       return m_params;
     }
 
-    RC::ConstHandle<CompoundStatement> Function::getBody() const
+    RC::ConstHandle<CompoundStatement> FunctionBase::getBody() const
     {
       return m_body;
     }
     
-    void Function::llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctionBodies ) const
+    std::string const *FunctionBase::getFriendlyName() const
+    {
+      return 0;
+    }
+    
+    void FunctionBase::llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctionBodies ) const
     {
       std::string const *friendlyName = getFriendlyName();
       if ( !buildFunctionBodies && friendlyName && moduleBuilder.getScope().has( *friendlyName ) )
@@ -60,31 +66,31 @@ namespace Fabric
       }
       else
       {
-        RC::ConstHandle<Adapter> returnAdapter = moduleBuilder->maybeGetAdapter( m_returnTypeName );
-        if ( !returnAdapter )
-          addError( diagnostics, _(m_returnTypeName) + ": type not found" );
-        else
+        RC::ConstHandle<CG::Adapter> returnAdapter;
+        if ( !m_returnTypeName.empty() )
+          returnAdapter = moduleBuilder.maybeGetAdapter( m_returnTypeName );
+        
+        CG::ExprType returnExprType( returnAdapter, CG::USAGE_RVALUE );
+        std::string entryName = getEntryName( moduleBuilder.getManager() );
+        std::string const *friendlyName = getFriendlyName();
+        CG::FunctionBuilder functionBuilder( moduleBuilder, entryName, returnExprType, m_params->getFunctionParams( moduleBuilder.getManager() ), friendlyName );
+        if ( buildFunctionBodies && m_body )
         {
-          CG::ExprType returnExprType( returnAdapter, CG::USAGE_RVALUE );
-          CG::FunctionBuilder functionBuilder( moduleBuilder, m_entryName, returnExprType, m_params->getFunctionParams(), friendlyName );
-          if ( buildFunctionBodies && m_body )
+          CG::BasicBlockBuilder basicBlockBuilder( functionBuilder );
+
+          llvm::BasicBlock *basicBlock = functionBuilder.createBasicBlock( "entry" );
+          basicBlockBuilder->SetInsertPoint( basicBlock );
+          m_body->llvmCompileToBuilder( basicBlockBuilder, diagnostics );
+
+          llvm::BasicBlock *bb = basicBlockBuilder->GetInsertBlock();
+          if ( !bb->getTerminator() )
           {
-            CG::BasicBlockBuilder basicBlockBuilder( functionBuilder );
-
-            llvm::BasicBlock *basicBlock = functionBuilder.createBasicBlock( "entry" );
-            basicBlockBuilder->SetInsertPoint( basicBlock );
-            m_body->llvmCompileToBuilder( basicBlockBuilder, diagnostics );
-
-            llvm::BasicBlock *bb = basicBlockBuilder->GetInsertBlock();
-            if ( !bb->getTerminator() )
+            if ( returnExprType )
+              addError( diagnostics, Exception("not all paths return a value") );
+            else
             {
-              if ( m_returnExprType )
-                addError( diagnostics, Exception("not all paths return a value") );
-              else
-              {
-                functionBuilder.getScope().llvmUnwind( basicBlockBuilder );
-                basicBlockBuilder->CreateRetVoid();
-              }
+              functionBuilder.getScope().llvmUnwind( basicBlockBuilder );
+              basicBlockBuilder->CreateRetVoid();
             }
           }
         }

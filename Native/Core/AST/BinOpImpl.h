@@ -8,7 +8,7 @@
 #ifndef _FABRIC_AST_BIN_OP_IMPL_H
 #define _FABRIC_AST_BIN_OP_IMPL_H
 
-#include <Fabric/Core/AST/Function.h>
+#include <Fabric/Core/AST/FunctionBase.h>
 #include <Fabric/Core/CG/OpTypes.h>
 
 namespace llvm
@@ -25,34 +25,37 @@ namespace Fabric
   
   namespace AST
   {
-    class BinOpImpl : public Function
+    class BinOpImpl : public FunctionBase
     {
       FABRIC_AST_NODE_DECL( BinOpImpl );
       
     public:
     
-      static RC::Handle<Function> Create(
+      static RC::Handle<BinOpImpl> Create(
         CG::Location const &location,
-        CG::ExprType const &returnExprType,
+        std::string const &returnType,
         CG::BinOpType binOpType,
-        RC::ConstHandle< AST::Param > lhs,
-        RC::ConstHandle< AST::Param > rhs,
+        RC::ConstHandle<AST::Param> const &lhs,
+        RC::ConstHandle<AST::Param> const &rhs,
         RC::ConstHandle<CompoundStatement> const &body
-        )
-      {
-        return new BinOpImpl( location, returnExprType, binOpType, lhs, rhs, body );
-      }
+        );
+                  
+      virtual std::string getEntryName( RC::Handle<CG::Manager> const &cgManager ) const;
       
     protected:
     
       BinOpImpl(
         CG::Location const &location,
-        CG::ExprType const &returnExprType,
+        std::string const &returnType,
         CG::BinOpType binOpType,
-        RC::ConstHandle< AST::Param > lhs,
-        RC::ConstHandle< AST::Param > rhs,
+        RC::ConstHandle<AST::Param> const &lhs,
+        RC::ConstHandle<AST::Param> const &rhs,
         RC::ConstHandle<CompoundStatement> const &body
         );
+        
+    private:
+    
+      CG::BinOpType m_binOpType;
     };
   };
 };

@@ -17,9 +17,9 @@ namespace Fabric
   {
     FABRIC_AST_NODE_IMPL( AssignOpImpl );
     
-    RC::Handle<Function> AssignOpImpl::Create(
+    RC::Handle<AssignOpImpl> AssignOpImpl::Create(
       CG::Location const &location,
-      RC::ConstHandle<CG::Adapter> const &selfType,
+      std::string const &selfType,
       CG::AssignOpType assignOpType,
       RC::ConstHandle<AST::Param> rhs,
       RC::ConstHandle<CompoundStatement> const &body
@@ -30,14 +30,14 @@ namespace Fabric
     
     AssignOpImpl::AssignOpImpl(
       CG::Location const &location,
-      RC::ConstHandle<CG::Adapter> const &selfType,
+      std::string const &selfType,
       CG::AssignOpType assignOpType,
       RC::ConstHandle<AST::Param> rhs,
       RC::ConstHandle<CompoundStatement> const &body
       )
       : MethodOpImpl(
         location,
-        RC::ConstHandle<CG::Adapter>(),
+        "",
         selfType,
         CG::assignOpMethodName( assignOpType ),
         ParamVector::Create( rhs ),

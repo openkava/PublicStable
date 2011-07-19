@@ -30,7 +30,7 @@ namespace Fabric
 
     public:
     
-      static RC::Handle<Function> Create(
+      static RC::Handle<MethodOpImpl> Create(
         CG::Location const &location,
         std::string const &returnTypeName,
         std::string const &selfTypeName,
@@ -40,7 +40,7 @@ namespace Fabric
         );
           
       virtual std::string const *getFriendlyName() const;
-      virtual std::string const &getEntryName( RC::Handle<CG::Manager> const &cgManager ) const;
+      virtual std::string getEntryName( RC::Handle<CG::Manager> const &cgManager ) const;
               
     protected:
     
@@ -57,6 +57,7 @@ namespace Fabric
     
       std::string m_selfTypeName;
       std::string m_methodName;
+      RC::ConstHandle<ParamVector> m_params;
     };
   };
 };

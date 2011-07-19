@@ -6,8 +6,9 @@
  */
 
 #include "Param.h"
-#include <Fabric/Core/CG/Location.h>
 #include <Fabric/Core/CG/Adapter.h>
+#include <Fabric/Core/CG/Location.h>
+#include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Base/JSON/String.h>
 
 namespace Fabric

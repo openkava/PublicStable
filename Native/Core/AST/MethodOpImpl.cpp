@@ -8,6 +8,7 @@
 #include <Fabric/Core/AST/MethodOpImpl.h>
 #include <Fabric/Core/AST/Param.h>
 #include <Fabric/Core/CG/Adapter.h>
+#include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/CG/OverloadNames.h>
 #include <Fabric/Base/JSON/String.h>
 
@@ -17,7 +18,7 @@ namespace Fabric
   {
     FABRIC_AST_NODE_IMPL( MethodOpImpl );
     
-    RC::Handle<Function> MethodOpImpl::Create(
+    RC::Handle<MethodOpImpl> MethodOpImpl::Create(
       CG::Location const &location,
       std::string const &returnTypeName,
       std::string const &selfTypeName,
@@ -39,13 +40,13 @@ namespace Fabric
       )
       : FunctionBase(
         location,
-        returnExprType,
+        returnTypeName,
         ParamVector::Create(
           Param::Create(
             location,
             "self",
-            selfAdapter,
-            returnExprType ? CG::USAGE_RVALUE : CG::USAGE_LVALUE
+            selfTypeName,
+            !returnTypeName.empty() ? CG::USAGE_RVALUE : CG::USAGE_LVALUE
             ),
           params
           ),
@@ -53,7 +54,7 @@ namespace Fabric
         )
       , m_selfTypeName( selfTypeName )
       , m_methodName( methodName )
-      , m_paramTypeNames( m_params->getTypeNames() )
+      , m_params( m_params )
     {
     }
           
@@ -62,9 +63,9 @@ namespace Fabric
       return 0;
     }
     
-    std::string const &MethodOpImpl::getEntryName( RC::Handle<CG::Manager> const &cgManager ) const
+    std::string MethodOpImpl::getEntryName( RC::Handle<CG::Manager> const &cgManager ) const
     {
-      return CG::methodOverloadName( cgManager, m_selfTypeName, m_methodName, getParams()->getTypeNames() );
+      return CG::methodOverloadName( m_methodName, cgManager->getAdapter( m_selfTypeName ), m_params->getTypes( cgManager ) );
     }
   };
 };

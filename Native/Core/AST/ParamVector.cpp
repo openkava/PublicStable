@@ -51,47 +51,55 @@ namespace Fabric
       return result;
     }
 
-    std::vector< llvm::Type const * > ParamVector::getLLVMTypes() const
+    std::vector<llvm::Type const *> ParamVector::getLLVMTypes( RC::Handle<CG::Manager> const &cgManager ) const
     {
-      std::vector< llvm::Type const * > result;
+      std::vector<llvm::Type const *> result;
       for ( size_t i=0; i<size(); ++i )
-        result.push_back( get(i)->getLLVMType() );
+        result.push_back( get(i)->getLLVMType( cgManager ) );
       return result;
     }
       
-    std::string ParamVector::getTypeDesc() const
+    std::string ParamVector::getTypeDesc( RC::Handle<CG::Manager> const &cgManager ) const
     {
       std::string result;
       for ( size_t i=0; i<size(); ++i )
       {
         if ( i > 0 )
           result += "__";
-        result += get(i)->getAdapter()->getCodeName();
+        result += get(i)->getType( cgManager )->getCodeName();
       }
       return result;
     }
       
-    std::vector<CG::FunctionParam> ParamVector::getFunctionParams() const
+    std::vector<CG::FunctionParam> ParamVector::getFunctionParams( RC::Handle<CG::Manager> const &cgManager ) const
     {
       std::vector<CG::FunctionParam> result;
       for ( size_t i=0; i<size(); ++i )
-        result.push_back( get(i)->getFunctionParam() );
+        result.push_back( get(i)->getFunctionParam( cgManager ) );
       return result;
     }
     
-    std::vector< RC::ConstHandle<CG::Adapter> > ParamVector::getTypes() const
+    std::vector<std::string> ParamVector::getTypeNames() const
+    {
+      std::vector<std::string> result;
+      for ( size_t i=0; i<size(); ++i )
+        result.push_back( get(i)->getAdapterName() );
+      return result;
+    }
+    
+    std::vector< RC::ConstHandle<CG::Adapter> > ParamVector::getTypes( RC::Handle<CG::Manager> const &cgManager ) const
     {
       std::vector< RC::ConstHandle<CG::Adapter> > result;
       for ( size_t i=0; i<size(); ++i )
-        result.push_back( get(i)->getType() );
+        result.push_back( get(i)->getType( cgManager ) );
       return result;
     }
     
-    std::vector<CG::ExprType> ParamVector::getExprTypes() const
+    std::vector<CG::ExprType> ParamVector::getExprTypes( RC::Handle<CG::Manager> const &cgManager ) const
     {
       std::vector<CG::ExprType> result;
       for ( size_t i=0; i<size(); ++i )
-        result.push_back( get(i)->getExprType() );
+        result.push_back( get(i)->getExprType( cgManager ) );
       return result;
     }
   };

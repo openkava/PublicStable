@@ -29,7 +29,7 @@ namespace Fabric
       RC::ConstHandle<ParamVector> const &params,
       RC::ConstHandle<CompoundStatement> const &body
       )
-      : Function( location, friendlyName, entryName, CG::ExprType(), params, body )
+      : Function( location, friendlyName, entryName, "", params, body )
     {
     }
   }

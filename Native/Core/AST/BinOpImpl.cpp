@@ -17,23 +17,40 @@ namespace Fabric
   {
     FABRIC_AST_NODE_IMPL( BinOpImpl );
     
+    RC::Handle<BinOpImpl> BinOpImpl::Create(
+      CG::Location const &location,
+      std::string const &returnType,
+      CG::BinOpType binOpType,
+      RC::ConstHandle<AST::Param> const &lhs,
+      RC::ConstHandle<AST::Param> const &rhs,
+      RC::ConstHandle<CompoundStatement> const &body
+      )
+    {
+      return new BinOpImpl( location, returnType, binOpType, lhs, rhs, body );
+    }
+        
     BinOpImpl::BinOpImpl(
-        CG::Location const &location,
-        CG::ExprType const &returnExprType,
-        CG::BinOpType binOpType,
-        RC::ConstHandle<AST::Param> lhs,
-        RC::ConstHandle<AST::Param> rhs,
-        RC::ConstHandle<CompoundStatement> const &body
-        )
-      : Function(
+      CG::Location const &location,
+      std::string const &returnType,
+      CG::BinOpType binOpType,
+      RC::ConstHandle<AST::Param> const &lhs,
+      RC::ConstHandle<AST::Param> const &rhs,
+      RC::ConstHandle<CompoundStatement> const &body
+      )
+      : FunctionBase(
         location,
-        "",
-        CG::binOpOverloadName( binOpType, lhs->getAdapterName(), rhs->getAdapterName() ),
-        returnExprType,
+        returnType,
         ParamVector::Create( lhs, rhs ),
         body
         )
+      , m_binOpType( binOpType )
     {
+    }
+    
+    std::string BinOpImpl::getEntryName( RC::Handle<CG::Manager> const &cgManager ) const
+    {
+      RC::ConstHandle<ParamVector> params = getParams();
+      return CG::binOpOverloadName( m_binOpType, cgManager, params->get(0)->getAdapterName(), params->get(1)->getAdapterName() );
     }
   };
 };

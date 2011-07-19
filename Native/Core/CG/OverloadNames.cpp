@@ -13,6 +13,11 @@ namespace Fabric
       return result;
     }
     
+    std::string constructOverloadName( RC::Handle<CG::Manager> const &cgManager, std::string const &dstType, std::vector< RC::ConstHandle<CG::Adapter> > const &paramTypes )
+    {
+      return constructOverloadName( cgManager->getAdapter( dstType ), paramTypes );
+    }
+
     std::string assignOpMethodName( AssignOpType type )
     {
       return std::string( assignOpTypeDesc(type) );

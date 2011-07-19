@@ -29,7 +29,8 @@ namespace Fabric
       llvm::Module *operator ->();
       
       RC::Handle<Manager> getManager();
-      RC::Handle<Adapter> getAdapter( std::string const &userName );
+      RC::ConstHandle<Adapter> maybeGetAdapter( std::string const &userName );
+      RC::ConstHandle<Adapter> getAdapter( std::string const &userName );
       
       llvm::LLVMContext &getLLVMContext();
       
