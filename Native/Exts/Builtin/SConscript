@@ -6,21 +6,23 @@ import os
 Import( 'baseEnv', 'buildOS' )
 
 aliases = [
-    'exrExt',
-    'hdrExt',
-    'pngExt',
-    'tgaExt',
-    'viconExt'
+  'exrExt',
+  'hdrExt',
+  'oglExt',
+  #'oclExt',
+  'pngExt',
+  'tgaExt',
+  'viconExt',
 ]
 
 dirs = [
-    'EXR',
-    'HDR',
-    #'OCL',
-    'OGL',
-    'PNG',
-    'TGA',
-    'VICON'
+  'EXR',
+  'HDR',
+  #'OCL',
+  'OGL',
+  'PNG',
+  'TGA',
+  'VICON',
 ]
 
 if buildOS != 'Windows':

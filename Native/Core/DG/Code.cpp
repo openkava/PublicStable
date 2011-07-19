@@ -92,9 +92,7 @@ namespace Fabric
 
       cgManager->llvmPrepareModule( moduleBuilder );
       m_context->getPlugManager()->llvmPrepareModule( moduleBuilder );
-#if !defined(FABRIC_OS_LINUX)
       OCL::llvmPrepareModule( moduleBuilder, m_context->getRTManager() );
-#endif
       
       CG::Diagnostics optimizeDiagnostics;
       CG::Diagnostics &diagnostics = (false && optimize)? optimizeDiagnostics: m_diagnostics;

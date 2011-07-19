@@ -92,10 +92,8 @@ namespace Fabric
         void *result = 0;
         if ( !result )
           result = s_currentContext->getPlugManager()->llvmResolveExternalFunction( functionName );
-#if !defined(FABRIC_OS_LINUX)
         if ( !result )
           result = OCL::llvmResolveExternalFunction( functionName );
-#endif
         if ( !result )
           result = s_currentContext->getCGManager()->llvmResolveExternalFunction( functionName );
 
