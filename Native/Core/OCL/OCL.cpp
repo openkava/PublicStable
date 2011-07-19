@@ -123,7 +123,7 @@ namespace Fabric
       return result;
     }
     
-    static cl_context CreateContext_GL( int32_t *clErrCode )
+    static cl_context CreateContext_GL( void const * const clDeviceIDsRValue, int32_t *clErrCode )
     {
 #if defined( FABRIC_OS_WINDOWS ) || defined( FABRIC_OS_LINUX )
       std::vector<cl_platform_id> platforms;
@@ -141,6 +141,10 @@ namespace Fabric
         0
       };
 #elif defined( FABRIC_OS_WINDOWS )
+
+      cl_uint num_devices = clDeviceIDVariableArrayDesc->getNumMembers( &clDeviceIDsRValue );
+      cl_device_id const *devices = (cl_device_id const *)clDeviceIDVariableArrayDesc->getMemberData( &clDeviceIDsRValue, 0 );
+
       cl_context_properties props[] = 
       {
         CL_GL_CONTEXT_KHR, (cl_context_properties)wglGetCurrentContext(), 
@@ -161,7 +165,12 @@ namespace Fabric
 #endif
       
       cl_int errcode;
+
+#if defined( FABRIC_OS_WINDOWS )    
+      cl_context result = clCreateContext( props, num_devices, devices, &ContextNotifyCallback, NULL, &errcode );
+#else
       cl_context result = clCreateContext( props, 0, 0, &ContextNotifyCallback, NULL, &errcode );
+#endif
       if ( clErrCode )
         *clErrCode = errcode;
       return result;
@@ -539,7 +548,7 @@ namespace Fabric
       ADD_FUNC( GetPlatformIDs, "=Integer,>cl_platform_id[] clPlatformIDs" );
       ADD_FUNC( GetDeviceIDs, "=Integer,<cl_platform_id clPlatformID,<cl_device_type clDeviceType,>cl_device_id[] clDeviceIDs" );
       ADD_FUNC( CreateContext, "=cl_context,<cl_device_id[] clDeviceIDs,>Integer clErrCode" );
-      ADD_FUNC( CreateContext_GL, "=cl_context,>Integer clErrCode" );
+      ADD_FUNC( CreateContext_GL, "=cl_context,<cl_device_id[] clDeviceIDs,>Integer clErrCode" );
       ADD_FUNC( GetContextDevices, "=Integer,<cl_context clContext,>cl_device_id[] clDeviceIDs" );
       ADD_FUNC( CreateCommandQueue, "=cl_command_queue,<cl_context clContext,<cl_device_id clDeviceID,<cl_command_queue_properties clCommandQueueProperties,>Integer clErrCode" );
       ADD_FUNC( CreateProgramWithSource, "=cl_program,<cl_context clContext,<String string,>Integer clErrCode" );
