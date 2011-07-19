@@ -459,7 +459,7 @@ namespace Fabric
           break;
       }
 
-      return createToken( Token::TK_TYPE_OR_IDENTIFIER, sourceRange );
+      return createToken( Token::TK_IDENTIFIER, sourceRange );
     }
     
     Token Scanner::nextToken()

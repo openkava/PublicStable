@@ -102,7 +102,7 @@ namespace Fabric
         TK_CONST_STRING_SQUOT,
         TK_CONST_STRING_DQUOT,
         
-        TK_TYPE_OR_IDENTIFIER,
+        TK_IDENTIFIER,
         
         NUM_TOKENS
       };

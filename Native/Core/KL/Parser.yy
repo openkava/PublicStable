@@ -61,8 +61,8 @@
 #include <Fabric/Core/AST/ReturnStatement.h>
 #include <Fabric/Core/AST/StatementList.h>
 #include <Fabric/Core/AST/StructDecl.h>
-#include <Fabric/Core/AST/MemberDecl.h>
-#include <Fabric/Core/AST/MemberDeclList.h>
+#include <Fabric/Core/AST/StructDeclMember.h>
+#include <Fabric/Core/AST/StructDeclMemberList.h>
 #include <Fabric/Core/AST/StructMemberOp.h>
 #include <Fabric/Core/AST/SwitchStatement.h>
 #include <Fabric/Core/AST/TempValue.h>
@@ -116,12 +116,12 @@ int kl_lex( YYSTYPE *yys, YYLTYPE *yyl, KL::Context &ctx );
 %destructor { } <assignOpType>
 
 %union { Fabric::AST::Param *astParamPtr; }
-%union { Fabric::AST::ParamVector *astParamListPtr; }
+%union { Fabric::AST::ParamList *astParamListPtr; }
 %union { Fabric::AST::Global *astGlobalPtr; }
-%union { Fabric::AST::GlobalVector *astGlobalListPtr; }
+%union { Fabric::AST::GlobalList *astGlobalListPtr; }
 %union { Fabric::AST::StructDecl *astStructDecl; }
-%union { Fabric::AST::MemberDecl *astMemberDecl; }
-%union { Fabric::AST::MemberDeclList *astMemberDeclList; }
+%union { Fabric::AST::StructDeclMember *astStructDeclMember; }
+%union { Fabric::AST::StructDeclMemberList *astStructDeclMemberList; }
 %union { Fabric::AST::Statement *astStatementPtr; }
 %union { Fabric::AST::StatementList *astStatementListPtr; }
 %union { Fabric::AST::CompoundStatement *astCompoundStatementPtr; }
@@ -218,7 +218,6 @@ int kl_lex( YYSTYPE *yys, YYLTYPE *yyl, KL::Context &ctx );
 %token <valueStringPtr> TK_CONST_STRING_SQUOT "single-quoted string constant"
 %token <valueStringPtr> TK_CONST_STRING_DQUOT "double-quoted string constant"
 
-%token <cgAdapter> TK_REGISTERED_TYPE "registered type"
 %token <valueStringPtr> TK_IDENTIFIER "identifier"
 
 %type <valueStringPtr> function_entry_name
@@ -232,8 +231,8 @@ int kl_lex( YYSTYPE *yys, YYLTYPE *yyl, KL::Context &ctx );
 %type <astGlobalPtr> struct
 %type <astGlobalPtr> global_const_decl
 %type <astGlobalListPtr> global_list
-%type <astMemberDecl> struct_member
-%type <astMemberDeclList> struct_member_list
+%type <astStructDeclMember> struct_member
+%type <astStructDeclMemberList> struct_member_list
 %type <astConstDeclPtr> const_decl
 %type <astStatementPtr> const_decl_statement
 %type <astStatementPtr> statement
@@ -293,13 +292,13 @@ start
 global_list :
   global global_list
   {
-    $$ = AST::GlobalVector::Create( RTLOC, $1, $2 ).take();
+    $$ = AST::GlobalList::Create( RTLOC, $1, $2 ).take();
     $1->release();
     $2->release();
   }
   | /* empty */
   {
-    $$ = AST::GlobalVector::Create( RTLOC ).take();
+    $$ = AST::GlobalList::Create( RTLOC ).take();
   }
 
 binary_operator
@@ -342,6 +341,14 @@ global
   {
     $$ = $1;
   }
+  | alias
+  {
+    $$ = $1;
+  }
+  | struct
+  {
+    $$ = $1;
+  }
   | global_const_decl
   {
     $$ = $1;
@@ -374,7 +381,7 @@ function
     delete $6;
     $7->release();
   }
-  | TK_FUNCTION compound_type compound_type TK_DOT TK_IDENTIFIER TK_LPAREN parameter_list TK_RPAREN compound_statement
+  | TK_FUNCTION compound_type TK_IDENTIFIER TK_DOT TK_IDENTIFIER TK_LPAREN parameter_list TK_RPAREN compound_statement
   {
     $$ = AST::MethodOpImpl::Create( RTLOC, CG::ExprType( $2, CG::USAGE_RVALUE ), $3, *$5, $7, $9 ).take();
     $2->release();
@@ -450,33 +457,90 @@ function_entry_name
   }
 ;
 
+alias
+  : TK_ALIAS TK_IDENTIFIER
+      {
+        ctx.m_varType = $2;
+      }
+    TK_IDENTIFIER array_modifier TK_SEMICOLON
+      {
+        ctx.m_cgManager->registerAlias( *$4, $5 );
+        $$ = AST::Alias::Create( RTLOC, *$4, $5 ).take();
+        delete $4;
+        $5->release();
+        ctx.m_varType->release();
+        ctx.m_varType = 0;
+      }
+;
+
+struct
+  : TK_STRUCT TK_IDENTIFIER TK_LBRACE struct_member_list TK_RBRACE TK_SEMICOLON
+  {
+    RT::StructMemberInfoVector structMemberInfoVector;
+    $4->appenedToStructMemberInfoVector( structMemberInfoVector );
+    ctx.m_cgManager->registerStruct( *$2, structMemberInfoVector );
+    
+    $$ = AST::StructDecl::Create( RTLOC, *$2, $4 ).take();
+    delete $2;
+    $4->release();
+  }
+;
+
+struct_member_list
+  : struct_member struct_member_list
+  {
+    $$ = AST::StructDeclMemberList::Create( RTLOC, $1, $2 ).take();
+    $1->release();
+    $2->release();
+  }
+  | /* empty */
+  {
+    $$ = AST::StructDeclMemberList::Create( RTLOC ).take();
+  }
+;
+
+struct_member
+  : TK_IDENTIFIER
+      {
+        ctx.m_varType = $1;
+      }
+    TK_IDENTIFIER array_modifier TK_SEMICOLON
+      {
+        $$ = AST::StructDeclMember::Create( RTLOC, *$3, $4 ).take();
+        delete $3;
+        $4->release();
+        ctx.m_varType->release();
+        ctx.m_varType = 0;
+      }
+;
+
 parameter_list
   : /* empty */
   {
-    $$ = AST::ParamVector::Create( RTLOC ).take();
+    $$ = AST::ParamList::Create( RTLOC ).take();
   }
   | parameter
   {
-    $$ = AST::ParamVector::Create( RTLOC, $1 ).take();
+    $$ = AST::ParamList::Create( RTLOC, $1 ).take();
     $1->release();
   }
   | parameter TK_COMMA parameter_list
   {
-    $$ = AST::ParamVector::Create( RTLOC, $1, $3 ).take();
+    $$ = AST::ParamList::Create( RTLOC, $1, $3 ).take();
     $1->release();
     $3->release();
   }
 ;
 
 const_decl
-  : TK_CONST compound_type TK_IDENTIFIER TK_EQUALS TK_CONST_UI TK_SEMICOLON
+  : TK_CONST TK_IDENTIFIER TK_IDENTIFIER TK_EQUALS TK_CONST_UI TK_SEMICOLON
   {
     $$ = AST::ConstSizeDecl::Create( RTLOC, *$3, $2, *$5 ).take();
     $2->release();
     delete $3;
     delete $5;
   }
-  | TK_CONST compound_type TK_IDENTIFIER TK_EQUALS TK_CONST_FP TK_SEMICOLON
+  | TK_CONST TK_IDENTIFIER TK_IDENTIFIER TK_EQUALS TK_CONST_FP TK_SEMICOLON
   {
     $$ = AST::ConstScalarDecl::Create( RTLOC, *$3, $2, *$5 ).take();
     $2->release();
@@ -564,7 +628,7 @@ var_decl_list
   ;
 
 input_parameter
-  : compound_type
+  : TK_IDENTIFIER
       {
         ctx.m_varType = $1;
       }
@@ -576,7 +640,7 @@ input_parameter
         ctx.m_varType->release();
         ctx.m_varType = 0;
       }
-  | TK_IN compound_type
+  | TK_IN TK_IDENTIFIER
       {
         ctx.m_varType = $2;
       }
@@ -595,7 +659,7 @@ parameter
   {
     $$ = $1;
   }
-  | TK_IO compound_type
+  | TK_IO TK_IDENTIFIER
       {
         ctx.m_varType = $2;
       }
@@ -634,7 +698,7 @@ statement_list
   }
 
 compound_type
-  : TK_REGISTERED_TYPE
+  : TK_IDENTIFIER
     {
       ctx.m_varType = $1;
     }
@@ -652,14 +716,14 @@ loop_start_statement
     $$ = AST::ExprStatement::Create( RTLOC, $1 ).take();
     $1->release();
   }
-  | TK_VAR compound_type TK_IDENTIFIER TK_EQUALS assignment_expression 
+  | TK_VAR TK_IDENTIFIER TK_IDENTIFIER TK_EQUALS assignment_expression 
   {
     $$ = AST::AssignedVarDecl::Create( RTLOC, *$3, $2, $5 ).take();
     $2->release();
     delete $3;
     $5->release();
   }
-  | compound_type TK_IDENTIFIER TK_EQUALS assignment_expression 
+  | TK_IDENTIFIER TK_IDENTIFIER TK_EQUALS assignment_expression 
   {
     $$ = AST::AssignedVarDecl::Create( RTLOC, *$2, $1, $4 ).take();
     $1->release();
@@ -673,7 +737,7 @@ loop_start_statement
 ;
 
 var_decl_statement
-  : TK_VAR compound_type 
+  : TK_VAR TK_IDENTIFIER 
       {
         ctx.m_varType = $2;
       }
@@ -683,7 +747,7 @@ var_decl_statement
         ctx.m_varType = 0;
         $2->release();
       }
-  | compound_type 
+  | TK_IDENTIFIER 
       {
         ctx.m_varType = $1;
       }
@@ -1092,7 +1156,7 @@ cast_expression
   {
     $$ = $1;
   }
-	| TK_LPAREN compound_type TK_RPAREN cast_expression
+	| TK_LPAREN TK_IDENTIFIER TK_RPAREN cast_expression
   {
     $$ = AST::CastNode::Create( RTLOC, $2, $4 ).take();
     $2->release();
@@ -1252,13 +1316,7 @@ primary_expression
   }
   | TK_IDENTIFIER TK_LPAREN argument_expression_list TK_RPAREN
   {
-    $$ = AST::Call::Create( RTLOC, *$1, $3 ).take();
-    delete $1;
-    $3->release();
-  }
-  | compound_type TK_LPAREN argument_expression_list TK_RPAREN
-  {
-    $$ = AST::TempValue::Create( RTLOC, $1, $3 ).take();
+    $$ = AST::Call::Create( RTLOC, $1, $3 ).take();
     $1->release();
     $3->release();
   }
@@ -1282,13 +1340,15 @@ void kl_error( YYLTYPE *yyl, KL::Context &ctx, const char *msg )
 
 int kl_lex( YYSTYPE *yys, YYLTYPE *yyl, KL::Context &ctx )
 {
+  FABRIC_KL_TRACE( "kl_lex( %p, %p )", yys, yyl );
+
   KL::Location startLocation;
   KL::Token token;
   std::string text;
   KL::Location endLocation;
   while ( true )
   {
-    startLocation = ctx.m_scanner->source().getLocationForStart();
+    startLocation = ctx.m_scanner->source().locationForStart();
     try
     {
       token = ctx.m_scanner->nextToken( yys );
@@ -1302,7 +1362,7 @@ int kl_lex( YYSTYPE *yys, YYLTYPE *yyl, KL::Context &ctx )
       && token != TK_COMMENT_BLOCK
       )
     {
-      endLocation = ctx.m_scanner->source().getLocationForEnd();
+      endLocation = ctx.m_scanner->source().locationForEnd();
       break;
     }
     delete yys->valueStringPtr;

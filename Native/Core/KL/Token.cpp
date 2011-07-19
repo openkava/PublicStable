@@ -96,7 +96,7 @@ namespace Fabric
       { "TK_CONST_STRING_SQUOT", "single-quoted string constant" },
       { "TK_CONST_STRING_DQUOT", "double-quoted string constant" },
       
-      { "TK_TYPE_OR_IDENTIFIER", "type or identifier" }
+      { "TK_IDENTIFIER", "type or identifier" }
     };
   };
 };

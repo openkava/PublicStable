@@ -156,8 +156,8 @@ namespace Fabric
     RC::Handle<AST::Alias> Parser::parseAlias()
     {
       Token aliasToken = consume( Token::TK_ALIAS );
-      Token oldTypeNameToken = consume( Token::TK_TYPE_OR_IDENTIFIER, "type name" );
-      Token newTypeNameToken = consume( Token::TK_TYPE_OR_IDENTIFIER, "identifier" );
+      Token oldTypeNameToken = consume( Token::TK_IDENTIFIER, "type name" );
+      Token newTypeNameToken = consume( Token::TK_IDENTIFIER, "identifier" );
       std::string arrayModifier = parseArrayModifier();
       consume( Token::TK_SEMICOLON, "';'" );
       return AST::Alias::Create( aliasToken.getStartLocation(), newTypeNameToken.toString(), oldTypeNameToken.toString() + arrayModifier );
@@ -166,7 +166,7 @@ namespace Fabric
     RC::Handle<AST::StructDecl> Parser::parseStruct()
     {
       Token structToken = consume( Token::TK_STRUCT );
-      Token nameToken = consume( Token::TK_TYPE_OR_IDENTIFIER, "identifier" );
+      Token nameToken = consume( Token::TK_IDENTIFIER, "identifier" );
       consume( Token::TK_LBRACE, "'{'" );
       RC::Handle<AST::MemberDeclVector> members = parseStructMemberVector();
       consume( Token::TK_RBRACE, "'}'" );
@@ -184,12 +184,12 @@ namespace Fabric
         {
           static Token::Type tokenTypes[2] =
           {
-            Token::TK_TYPE_OR_IDENTIFIER,
+            Token::TK_IDENTIFIER,
             Token::TK_RBRACE
           };
           switch ( expect( 2, tokenTypes, "identifier or '}'" ) )
           {
-            case Token::TK_TYPE_OR_IDENTIFIER:
+            case Token::TK_IDENTIFIER:
               result->push_back( parseStructMember() );
               break;
             case Token::TK_RBRACE:
@@ -207,8 +207,8 @@ namespace Fabric
     
     RC::Handle<AST::MemberDecl> Parser::parseStructMember()
     {
-      Token typeToken = consume( Token::TK_TYPE_OR_IDENTIFIER, "type name" );
-      Token nameToken = consume( Token::TK_TYPE_OR_IDENTIFIER, "identifier" );
+      Token typeToken = consume( Token::TK_IDENTIFIER, "type name" );
+      Token nameToken = consume( Token::TK_IDENTIFIER, "identifier" );
       std::string arrayModifier = parseArrayModifier();
       consume( Token::TK_SEMICOLON, "';'" );
       return AST::MemberDecl::Create( typeToken.getStartLocation(), nameToken.toString(), typeToken.toString() + arrayModifier );
@@ -249,20 +249,20 @@ namespace Fabric
     {
       Location startLocation = getLocation();
       consume( Token::TK_FUNCTION );
-      Token firstIdentifier = consume( Token::TK_TYPE_OR_IDENTIFIER, "type name or identifier" );
+      Token firstIdentifier = consume( Token::TK_IDENTIFIER, "type name or identifier" );
       
       Token::Type tokenTypes[2] =
       {
-        Token::TK_TYPE_OR_IDENTIFIER,
+        Token::TK_IDENTIFIER,
         Token::TK_LPAREN
       };
       RC::Handle<AST::Function> result;
       switch ( expect( 2, tokenTypes, "identifier or '('" ) )
       {
-        case Token::TK_TYPE_OR_IDENTIFIER:
+        case Token::TK_IDENTIFIER:
         {
           std::string returnTypeName = firstIdentifier.toString();
-          std::string functionName = consume( Token::TK_TYPE_OR_IDENTIFIER ).toString();
+          std::string functionName = consume( Token::TK_IDENTIFIER ).toString();
           consume( Token::TK_LPAREN, "'('" );
           RC::Handle<AST::ParamVector> paramList = parseParamVector();
           consume( Token::TK_RPAREN, "')'" );
@@ -294,16 +294,16 @@ namespace Fabric
         {
           static Token::Type tokenTypes[2] =
           {
-            Token::TK_TYPE_OR_IDENTIFIER,
+            Token::TK_IDENTIFIER,
             Token::TK_RPAREN
           };
           switch ( expect( 2, tokenTypes, "type name or ')'" ) )
           {
-            case Token::TK_TYPE_OR_IDENTIFIER:
+            case Token::TK_IDENTIFIER:
             {
               Location location = getLocation();
-              std::string typeName = consume( Token::TK_TYPE_OR_IDENTIFIER ).toString();
-              std::string paramName = consume( Token::TK_TYPE_OR_IDENTIFIER, "identifier" ).toString();
+              std::string typeName = consume( Token::TK_IDENTIFIER ).toString();
+              std::string paramName = consume( Token::TK_IDENTIFIER, "identifier" ).toString();
               std::string arrayModifier = parseArrayModifier();
               result->push_back( AST::Param::Create( location, paramName, typeName, CG::USAGE_RVALUE ) );
             }
