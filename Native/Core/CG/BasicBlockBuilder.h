@@ -31,6 +31,7 @@ namespace Fabric
     class ModuleBuilder;
     class FunctionBuilder;
     class FunctionSymbol;
+    class Adapter;
     
     class BasicBlockBuilder
     {
@@ -51,6 +52,9 @@ namespace Fabric
       RC::ConstHandle<Manager> getManager() const;
       RC::Handle<Manager> getManager();
       llvm::LLVMContext &getLLVMContext();
+
+      RC::ConstHandle<Adapter> maybeGetAdapter( std::string const &userName ) const;
+      RC::ConstHandle<Adapter> getAdapter( std::string const &userName ) const;
 
       RC::ConstHandle<FunctionSymbol> maybeGetFunction( std::string const &entryName ) const;
 

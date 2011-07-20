@@ -24,12 +24,9 @@ namespace Fabric
       static RC::Handle<AssignedVarDecl> Create(
         CG::Location const &location,
         std::string const &name,
-        RC::ConstHandle< CG::Adapter > const &adapter,
+        std::string const &type,
         RC::ConstHandle<Expr> initialExpr
-        )
-      {
-        return new AssignedVarDecl( location, name, adapter, initialExpr );
-      }
+        );
 
       RC::Handle<JSON::Object> toJSON() const;
       
@@ -40,7 +37,7 @@ namespace Fabric
       AssignedVarDecl(
         CG::Location const &location,
         std::string const &name,
-        RC::ConstHandle< CG::Adapter > const &adapter,
+        std::string const &type,
         RC::ConstHandle<Expr> const &initialExpr
         );
     

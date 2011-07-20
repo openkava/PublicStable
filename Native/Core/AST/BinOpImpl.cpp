@@ -47,6 +47,13 @@ namespace Fabric
     {
     }
     
+    RC::Handle<JSON::Object> BinOpImpl::toJSON() const
+    {
+      RC::Handle<JSON::Object> result = FunctionBase::toJSON();
+      result->set( "op", JSON::String::Create( CG::binOpUserName( m_binOpType ) ) );
+      return result;
+    }
+    
     std::string BinOpImpl::getEntryName( RC::Handle<CG::Manager> const &cgManager ) const
     {
       RC::ConstHandle<ParamVector> params = getParams();

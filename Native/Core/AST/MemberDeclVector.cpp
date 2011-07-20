@@ -15,6 +15,15 @@ namespace Fabric
       return new MemberDeclVector;
     }
     
+    RC::Handle<MemberDeclVector> MemberDeclVector::Create( RC::ConstHandle<MemberDecl> const &first, RC::Handle<MemberDeclVector> const &remaining )
+    {
+      RC::Handle<MemberDeclVector> result = Create();
+      result->push_back( first );
+      for ( MemberDeclVector::const_iterator it=remaining->begin(); it!=remaining->end(); ++it )
+        result->push_back( *it );
+      return result;
+    }
+    
     MemberDeclVector::MemberDeclVector()
     {
     }

@@ -31,6 +31,8 @@ namespace Fabric
     public:
       
       static RC::Handle<CaseVector> Create();
+      static RC::Handle<CaseVector> Create( RC::ConstHandle<Case> const &first );
+      static RC::Handle<CaseVector> Create( RC::ConstHandle<Case> const &first, RC::ConstHandle<CaseVector> const &remaining );
 
       RC::Handle<JSON::Array> toJSON() const;
     

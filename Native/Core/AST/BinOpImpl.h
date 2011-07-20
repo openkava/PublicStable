@@ -39,6 +39,8 @@ namespace Fabric
         RC::ConstHandle<AST::Param> const &rhs,
         RC::ConstHandle<CompoundStatement> const &body
         );
+
+      RC::Handle<JSON::Object> toJSON() const;
                   
       virtual std::string getEntryName( RC::Handle<CG::Manager> const &cgManager ) const;
       

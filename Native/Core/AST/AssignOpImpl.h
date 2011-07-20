@@ -50,6 +50,10 @@ namespace Fabric
         RC::ConstHandle<AST::Param> rhs,
         RC::ConstHandle<CompoundStatement> const &body
         );
+    
+    private:
+    
+      CG::AssignOpType m_assignOpType;
     };
   };
 };

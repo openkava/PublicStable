@@ -91,49 +91,49 @@ namespace Fabric
           if ( m_sourceReader.peek() == '=' )
           {
             m_sourceReader.advance();
-            return createToken( Token::TK_EQUALS_EQUALS, startLocation );
+            return createToken( TOKEN_EQUALS_EQUALS, startLocation );
           }
-          else return createToken( Token::TK_EQUALS, startLocation );        
+          else return createToken( TOKEN_EQUALS, startLocation );        
            
         case '+':
           if ( m_sourceReader.peek() == '=' )
           {
             m_sourceReader.advance();
-            return createToken( Token::TK_PLUS_EQUALS, startLocation );
+            return createToken( TOKEN_PLUS_EQUALS, startLocation );
           }
           else if ( m_sourceReader.peek() == '+' )
           {
             m_sourceReader.advance();
-            return createToken( Token::TK_PLUS_PLUS, startLocation );
+            return createToken( TOKEN_PLUS_PLUS, startLocation );
           }
-          else return createToken( Token::TK_PLUS, startLocation );        
+          else return createToken( TOKEN_PLUS, startLocation );        
         
         case '-':
           if ( m_sourceReader.peek() == '=' )
           {
             m_sourceReader.advance();
-            return createToken( Token::TK_MINUS_EQUALS, startLocation );
+            return createToken( TOKEN_MINUS_EQUALS, startLocation );
           }
           if ( m_sourceReader.peek() == '-' )
           {
             m_sourceReader.advance();
-            return createToken( Token::TK_MINUS_MINUS, startLocation );
+            return createToken( TOKEN_MINUS_MINUS, startLocation );
           }
-          else return createToken( Token::TK_MINUS, startLocation );
+          else return createToken( TOKEN_MINUS, startLocation );
           
         case '*':
           if ( m_sourceReader.peek() == '=' )
           {
             m_sourceReader.advance();
-            return createToken( Token::TK_AST_EQUALS, startLocation );
+            return createToken( TOKEN_AST_EQUALS, startLocation );
           }
-          else return createToken( Token::TK_AST, startLocation );
+          else return createToken( TOKEN_AST, startLocation );
           
         case '/':
           if ( m_sourceReader.peek() == '=' )
           {
             m_sourceReader.advance();
-            return createToken( Token::TK_FSLASH_EQUALS, startLocation );
+            return createToken( TOKEN_FSLASH_EQUALS, startLocation );
           }
           else if ( m_sourceReader.peek() == '*' )
           {
@@ -145,7 +145,7 @@ namespace Fabric
                 if ( m_sourceReader.peek() == '/' )
                 {
                   m_sourceReader.advance();
-                  return createToken( Token::TK_COMMENT_BLOCK, startLocation );
+                  return createToken( TOKEN_COMMENT_BLOCK, startLocation );
                 }
               }
             }
@@ -156,17 +156,17 @@ namespace Fabric
             m_sourceReader.advance();
             while ( m_sourceReader.peek() != '\n' )
               m_sourceReader.advance();
-            return createToken( Token::TK_COMMENT_LINE, startLocation );
+            return createToken( TOKEN_COMMENT_LINE, startLocation );
           }
-          else return createToken( Token::TK_FSLASH, startLocation );
+          else return createToken( TOKEN_FSLASH, startLocation );
           
         case '%':
           if ( m_sourceReader.peek() == '=' )
           {
             m_sourceReader.advance();
-            return createToken( Token::TK_PERCENT_EQUALS, startLocation );
+            return createToken( TOKEN_PERCENT_EQUALS, startLocation );
           }
-          else return createToken( Token::TK_PERCENT, startLocation );
+          else return createToken( TOKEN_PERCENT, startLocation );
           
         case '^':
           if ( m_sourceReader.peek() == '^' )
@@ -175,16 +175,16 @@ namespace Fabric
             if ( m_sourceReader.peek() == '=' )
             {
               m_sourceReader.advance();
-              return createToken( Token::TK_CARET_CARET_EQUALS, startLocation );
+              return createToken( TOKEN_CARET_CARET_EQUALS, startLocation );
             }
-            else return createToken( Token::TK_CARET_CARET, startLocation );
+            else return createToken( TOKEN_CARET_CARET, startLocation );
           }
           else if ( m_sourceReader.peek() == '=' )
           {
             m_sourceReader.advance();
-            return createToken( Token::TK_CARET_EQUALS, startLocation );
+            return createToken( TOKEN_CARET_EQUALS, startLocation );
           }
-          else return createToken( Token::TK_CARET, startLocation );
+          else return createToken( TOKEN_CARET, startLocation );
           
         case '&':
           if ( m_sourceReader.peek() == '&' )
@@ -193,16 +193,16 @@ namespace Fabric
             if ( m_sourceReader.peek() == '=' )
             {
               m_sourceReader.advance();
-              return createToken( Token::TK_AMP_AMP_EQUALS, startLocation );
+              return createToken( TOKEN_AMP_AMP_EQUALS, startLocation );
             }
-            else return createToken( Token::TK_AMP_AMP, startLocation );
+            else return createToken( TOKEN_AMP_AMP, startLocation );
           }
           else if ( m_sourceReader.peek() == '=' )
           {
             m_sourceReader.advance();
-            return createToken( Token::TK_AMP_EQUALS, startLocation );
+            return createToken( TOKEN_AMP_EQUALS, startLocation );
           }
-          else return createToken( Token::TK_AMP, startLocation );
+          else return createToken( TOKEN_AMP, startLocation );
           
         case '|':
           if ( m_sourceReader.peek() == '|' )
@@ -211,67 +211,67 @@ namespace Fabric
             if ( m_sourceReader.peek() == '=' )
             {
               m_sourceReader.advance();
-              return createToken( Token::TK_PIPE_PIPE_EQUALS, startLocation );
+              return createToken( TOKEN_PIPE_PIPE_EQUALS, startLocation );
             }
-            else return createToken( Token::TK_PIPE_PIPE, startLocation );
+            else return createToken( TOKEN_PIPE_PIPE, startLocation );
           }
           else if ( m_sourceReader.peek() == '=' )
           {
             m_sourceReader.advance();
-            return createToken( Token::TK_PIPE_EQUALS, startLocation );
+            return createToken( TOKEN_PIPE_EQUALS, startLocation );
           }
-          else return createToken( Token::TK_PIPE, startLocation );
+          else return createToken( TOKEN_PIPE, startLocation );
           
         case '[':
-          return createToken( Token::TK_LBRACKET, startLocation );
+          return createToken( TOKEN_LBRACKET, startLocation );
 
         case ']':
-          return createToken( Token::TK_RBRACKET, startLocation );
+          return createToken( TOKEN_RBRACKET, startLocation );
         
         case '{':
-          return createToken( Token::TK_LBRACE, startLocation );
+          return createToken( TOKEN_LBRACE, startLocation );
           
         case '}':
-          return createToken( Token::TK_RBRACE, startLocation );
+          return createToken( TOKEN_RBRACE, startLocation );
         
         case '(':
-          return createToken( Token::TK_LPAREN, startLocation );
+          return createToken( TOKEN_LPAREN, startLocation );
           
         case ')':
-          return createToken( Token::TK_RPAREN, startLocation );
+          return createToken( TOKEN_RPAREN, startLocation );
         
         case '.':
-          return createToken( Token::TK_DOT, startLocation );
+          return createToken( TOKEN_DOT, startLocation );
         
         case ';':
-          return createToken( Token::TK_SEMICOLON, startLocation );
+          return createToken( TOKEN_SEMICOLON, startLocation );
           
         case '<':
           if ( m_sourceReader.peek() == '=' )
           {
             m_sourceReader.advance();
-            return createToken( Token::TK_LANGLE_EQUALS, startLocation );
+            return createToken( TOKEN_LANGLE_EQUALS, startLocation );
           }
-          else return createToken( Token::TK_LANGLE, startLocation );
+          else return createToken( TOKEN_LANGLE, startLocation );
           
         case '>':
           if ( m_sourceReader.peek() == '=' )
           {
             m_sourceReader.advance();
-            return createToken( Token::TK_RANGLE_EQUALS, startLocation );
+            return createToken( TOKEN_RANGLE_EQUALS, startLocation );
           }
-          else return createToken( Token::TK_RANGLE, startLocation );
+          else return createToken( TOKEN_RANGLE, startLocation );
         
         case '~':
-          return createToken( Token::TK_TILDE, startLocation );
+          return createToken( TOKEN_TILDE, startLocation );
         
         case '!':
           if ( m_sourceReader.peek() == '=' )
           {
             m_sourceReader.advance();
-            return createToken( Token::TK_EXCL_EQUALS, startLocation );
+            return createToken( TOKEN_EXCL_EQUALS, startLocation );
           }
-          else return createToken( Token::TK_EXCL, startLocation );
+          else return createToken( TOKEN_EXCL, startLocation );
           
         case '\'':
           while ( !m_sourceReader.isEOF() )
@@ -285,7 +285,7 @@ namespace Fabric
             }
             else if ( ch == '\'' )
             {
-              return createToken( Token::TK_CONST_STRING_SQUOT, startLocation );
+              return createToken( TOKEN_CONST_STRING_SQUOT, startLocation );
             }
           }
           throw Exception("unterminated string constant");
@@ -302,19 +302,19 @@ namespace Fabric
             }
             else if ( ch == '"' )
             {
-              return createToken( Token::TK_CONST_STRING_DQUOT, startLocation );
+              return createToken( TOKEN_CONST_STRING_DQUOT, startLocation );
             }
           }
           throw Exception("unterminated string constant");
         
         case ',':
-          return createToken( Token::TK_COMMA, startLocation );
+          return createToken( TOKEN_COMMA, startLocation );
           
         case '?':
-          return createToken( Token::TK_QUESTION_MARK, startLocation );
+          return createToken( TOKEN_QUESTION_MARK, startLocation );
         
         case ':':
-          return createToken( Token::TK_COLON, startLocation );
+          return createToken( TOKEN_COLON, startLocation );
           
         default:
           throw Exception("bad symbol");
@@ -327,7 +327,7 @@ namespace Fabric
       
       char ch = m_sourceReader.advance();
       
-      Token::Type tokenType = Token::TK_CONST_UI;
+      Token::Type tokenType = TOKEN_CONST_UI;
       
       if ( ch == '0' && tolower( m_sourceReader.peek() ) == 'x' )
       {
@@ -345,7 +345,7 @@ namespace Fabric
         if ( m_sourceReader.peek() == '.' )
         {
           m_sourceReader.advance();
-          tokenType = Token::TK_CONST_FP;
+          tokenType = TOKEN_CONST_FP;
           
           while ( IsDigit( m_sourceReader.peek() ) )
             m_sourceReader.advance();
@@ -354,7 +354,7 @@ namespace Fabric
         if ( m_sourceReader.peek() == 'e' || m_sourceReader.peek() == 'E' )
         {
           m_sourceReader.advance();
-          tokenType = Token::TK_CONST_FP;
+          tokenType = TOKEN_CONST_FP;
           
           if ( m_sourceReader.peek() == '+' || m_sourceReader.peek() == '-' )
             m_sourceReader.advance();
@@ -374,7 +374,7 @@ namespace Fabric
       FABRIC_ASSERT( IsSpace( m_sourceReader.peek() ) );
       while ( IsSpace( m_sourceReader.peek() ) )
         m_sourceReader.advance();
-      return createToken( Token::TK_WHITESPACE, startLocation );
+      return createToken( TOKEN_WHITESPACE, startLocation );
     }
     
     Token Scanner::nextToken_Alpha( Location const &startLocation )
@@ -392,74 +392,74 @@ namespace Fabric
       {
         case 2:
           if ( sourceRange == "in" )
-            return createToken( Token::TK_IN, sourceRange );
+            return createToken( TOKEN_IN, sourceRange );
           if ( sourceRange == "io" )
-            return createToken( Token::TK_IO, sourceRange );
+            return createToken( TOKEN_IO, sourceRange );
           if ( sourceRange == "if" )
-            return createToken( Token::TK_IF, sourceRange );
+            return createToken( TOKEN_IF, sourceRange );
           if ( sourceRange == "do" )
-            return createToken( Token::TK_DO, sourceRange );
+            return createToken( TOKEN_DO, sourceRange );
           break;
           
         case 3:
           if ( sourceRange == "for" )
-            return createToken( Token::TK_FOR, sourceRange );
+            return createToken( TOKEN_FOR, sourceRange );
           if ( sourceRange == "var" )
-            return createToken( Token::TK_VAR, sourceRange );
+            return createToken( TOKEN_VAR, sourceRange );
           break;
           
         case 4:
           if ( sourceRange == "case" )
-            return createToken( Token::TK_CASE, sourceRange );
+            return createToken( TOKEN_CASE, sourceRange );
           if ( sourceRange == "else" )
-            return createToken( Token::TK_ELSE, sourceRange );
+            return createToken( TOKEN_ELSE, sourceRange );
           if ( sourceRange == "true" )
-            return createToken( Token::TK_TRUE, sourceRange );
+            return createToken( TOKEN_TRUE, sourceRange );
           break;
           
         case 5:
           if ( sourceRange == "alias" )
-            return createToken( Token::TK_ALIAS, sourceRange );
+            return createToken( TOKEN_ALIAS, sourceRange );
           if ( sourceRange == "break" )
-            return createToken( Token::TK_BREAK, sourceRange );
+            return createToken( TOKEN_BREAK, sourceRange );
           if ( sourceRange == "const" )
-            return createToken( Token::TK_CONST, sourceRange );
+            return createToken( TOKEN_CONST, sourceRange );
           if ( sourceRange == "false" )
-            return createToken( Token::TK_FALSE, sourceRange );
+            return createToken( TOKEN_FALSE, sourceRange );
           if ( sourceRange == "while" )
-            return createToken( Token::TK_WHILE, sourceRange );
+            return createToken( TOKEN_WHILE, sourceRange );
           break;
         
         case 6:
           if ( sourceRange == "struct" )
-            return createToken( Token::TK_STRUCT, sourceRange );
+            return createToken( TOKEN_STRUCT, sourceRange );
           if ( sourceRange == "switch" )
-            return createToken( Token::TK_SWITCH, sourceRange );
+            return createToken( TOKEN_SWITCH, sourceRange );
           if ( sourceRange == "report" )
-            return createToken( Token::TK_REPORT, sourceRange );
+            return createToken( TOKEN_REPORT, sourceRange );
           if ( sourceRange == "return" )
-            return createToken( Token::TK_RETURN, sourceRange );
+            return createToken( TOKEN_RETURN, sourceRange );
           break;
         
         case 7:
           if ( sourceRange == "default" )
-            return createToken( Token::TK_DEFAULT, sourceRange );
+            return createToken( TOKEN_DEFAULT, sourceRange );
           break;
         
         case 8:
           if ( sourceRange == "function" )
-            return createToken( Token::TK_FUNCTION, sourceRange );
+            return createToken( TOKEN_FUNCTION, sourceRange );
           if ( sourceRange == "operator" )
-            return createToken( Token::TK_OPERATOR, sourceRange );
+            return createToken( TOKEN_OPERATOR, sourceRange );
           if ( sourceRange == "continue" )
-            return createToken( Token::TK_CONTINUE, sourceRange );
+            return createToken( TOKEN_CONTINUE, sourceRange );
           break;
         
         case 9:
           break;
       }
 
-      return createToken( Token::TK_IDENTIFIER, sourceRange );
+      return createToken( TOKEN_IDENTIFIER, sourceRange );
     }
     
     Token Scanner::nextToken()
@@ -467,7 +467,7 @@ namespace Fabric
       int ch = m_sourceReader.peek();
       Location startLocation = m_sourceReader.getLocationForStart();
       if ( ch == -1 )
-        return createToken( Token::TK_EOI, startLocation );
+        return createToken( TOKEN_END, startLocation );
       if ( IsSpace(ch) )
         return nextToken_Space( startLocation );
       if ( IsAlpha(ch) )

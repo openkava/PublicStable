@@ -15,6 +15,21 @@ namespace Fabric
       return new CaseVector;
     }
     
+    RC::Handle<CaseVector> CaseVector::Create( RC::ConstHandle<Case> const &first )
+    {
+      RC::Handle<CaseVector> result = Create();
+      result->push_back( first );
+      return result;
+    }
+    
+    RC::Handle<CaseVector> CaseVector::Create( RC::ConstHandle<Case> const &first, RC::ConstHandle<CaseVector> const &remaining )
+    {
+      RC::Handle<CaseVector> result = Create( first );
+      for ( CaseVector::const_iterator it=remaining->begin(); it!=remaining->end(); ++it )
+        result->push_back( *it );
+      return result;
+    }
+    
     CaseVector::CaseVector()
     {
     }

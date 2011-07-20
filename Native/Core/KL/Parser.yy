@@ -1,15 +1,13 @@
 %define api.pure
 %locations
-%lex-param { KL::Context &ctx }
-%parse-param { KL::Context &ctx }
+%lex-param { KL::Context &context }
+%parse-param { KL::Context &context }
 %name-prefix="kl_"
 %defines
 %error-verbose
 %debug
 
-// We're expecing one shift/reduce conflicts for the if/else clause.
-%expect 1
-
+%expect 3
 
 %code top {
 #define YYDEBUG 1
@@ -20,7 +18,6 @@
 #include <string>
 #include <Fabric/Core/AST/Alias.h>
 #include <Fabric/Core/AST/AndOp.h>
-#include <Fabric/Core/AST/ArgList.h>
 #include <Fabric/Core/AST/AssignedVarDecl.h>
 #include <Fabric/Core/AST/AssignOp.h>
 #include <Fabric/Core/AST/AssignOpImpl.h>
@@ -29,7 +26,7 @@
 #include <Fabric/Core/AST/BreakStatement.h>
 #include <Fabric/Core/AST/Call.h>
 #include <Fabric/Core/AST/Case.h>
-#include <Fabric/Core/AST/CaseList.h>
+#include <Fabric/Core/AST/CaseVector.h>
 #include <Fabric/Core/AST/CastNode.h>
 #include <Fabric/Core/AST/CompoundStatement.h>
 #include <Fabric/Core/AST/ConditionalStatement.h>
@@ -37,58 +34,82 @@
 #include <Fabric/Core/AST/ConstDecl.h>
 #include <Fabric/Core/AST/ConstDeclStatement.h>
 #include <Fabric/Core/AST/ConstSize.h>
-#include <Fabric/Core/AST/ConstSizeDecl.h>
 #include <Fabric/Core/AST/ConstScalar.h>
-#include <Fabric/Core/AST/ConstScalarDecl.h>
 #include <Fabric/Core/AST/ConstString.h>
 #include <Fabric/Core/AST/ContinueStatement.h>
 #include <Fabric/Core/AST/CStyleLoop.h>
 #include <Fabric/Core/AST/ExprStatement.h>
+#include <Fabric/Core/AST/ExprVector.h>
 #include <Fabric/Core/AST/Function.h>
 #include <Fabric/Core/AST/GlobalConstDecl.h>
-#include <Fabric/Core/AST/GlobalList.h>
+#include <Fabric/Core/AST/GlobalVector.h>
 #include <Fabric/Core/AST/IndexOp.h>
 #include <Fabric/Core/AST/InitializedVarDecl.h>
 #include <Fabric/Core/AST/Initializer.h>
+#include <Fabric/Core/AST/MemberDecl.h>
+#include <Fabric/Core/AST/MemberDeclVector.h>
 #include <Fabric/Core/AST/MethodOp.h>
 #include <Fabric/Core/AST/MethodOpImpl.h>
 #include <Fabric/Core/AST/NotOp.h>
 #include <Fabric/Core/AST/Operator.h>
 #include <Fabric/Core/AST/OrOp.h>
 #include <Fabric/Core/AST/Param.h>
-#include <Fabric/Core/AST/ParamList.h>
+#include <Fabric/Core/AST/ParamVector.h>
 #include <Fabric/Core/AST/Report.h>
 #include <Fabric/Core/AST/ReturnStatement.h>
-#include <Fabric/Core/AST/StatementList.h>
+#include <Fabric/Core/AST/StatementVector.h>
 #include <Fabric/Core/AST/StructDecl.h>
-#include <Fabric/Core/AST/StructDeclMember.h>
-#include <Fabric/Core/AST/StructDeclMemberList.h>
 #include <Fabric/Core/AST/StructMemberOp.h>
 #include <Fabric/Core/AST/SwitchStatement.h>
-#include <Fabric/Core/AST/TempValue.h>
 #include <Fabric/Core/AST/TernaryOp.h>
 #include <Fabric/Core/AST/Var.h>
 #include <Fabric/Core/AST/VarDecl.h>
 #include <Fabric/Core/AST/UniOp.h>
-#include <Fabric/Core/KL/Debug.h>
 #include <Fabric/Core/CG/Manager.h>
-#include <Fabric/Core/CG/BooleanAdapter.h>
-#include <Fabric/Core/CG/ByteAdapter.h>
-#include <Fabric/Core/CG/IntegerAdapter.h>
-#include <Fabric/Core/CG/ScalarAdapter.h>
-#include <Fabric/Core/CG/StringAdapter.h>
-#include <Fabric/Core/CG/StructAdapter.h>
-#include <Fabric/Core/CG/FixedArrayAdapter.h>
-#include <Fabric/Core/CG/VariableArrayAdapter.h>
 #include <Fabric/Core/Util/Parse.h>
 using namespace Fabric;
 
 }
 
+%code provides {
+#ifndef _FABRIC_KL_PARSER_DECLARED
+#define _FABRIC_KL_PARSER_DECLARED
+namespace Fabric
+{
+  namespace CG
+  {
+    class Diagnostics;
+  };
+  
+  namespace KL
+  {
+    class Scanner;
+    
+    class Parser : public RC::Object
+    {
+    public:
+    
+      static RC::Handle<Parser> Create( RC::Handle<Scanner> const &scanner, CG::Diagnostics &diagnostics );
+      
+      RC::Handle<AST::GlobalVector> run();
+
+    protected:
+    
+      Parser( RC::Handle<Scanner> const &scanner, CG::Diagnostics &diagnostics );
+
+    private:
+    
+      RC::Handle<Scanner> m_scanner;
+      CG::Diagnostics &m_diagnostics;
+    };
+  };
+};
+#endif //_FABRIC_KL_PARSER_DECLARED
+}
+
 %{
 #include "Parser.hpp"
 #include <Fabric/Core/KL/Context.h>
-#include <Fabric/Core/KL/Debug.h>
 #include <Fabric/Core/KL/Location.h>
 #include <Fabric/Core/KL/Source.h>
 
@@ -96,15 +117,12 @@ using namespace Fabric;
 #pragma warning( disable: 4065 )
 #endif
 
-void kl_error( YYLTYPE *yyl, KL::Context &ctx, const char *msg );
-int kl_lex( YYSTYPE *yys, YYLTYPE *yyl, KL::Context &ctx );
+void kl_error( YYLTYPE *yyl, KL::Context &context, const char *msg );
+int kl_lex( YYSTYPE *yys, YYLTYPE *yyl, KL::Context &context );
 %}
 
 %union { std::string const *valueStringPtr; }
 %destructor { delete $$; } <valueStringPtr>
-
-%union { CG::Adapter const *cgAdapter; }
-%destructor { } <cgAdapter>
 
 %union { CG::UniOpType uniOpType; }
 %destructor { } <uniOpType>
@@ -115,114 +133,120 @@ int kl_lex( YYSTYPE *yys, YYLTYPE *yyl, KL::Context &ctx );
 %union { CG::AssignOpType assignOpType; }
 %destructor { } <assignOpType>
 
+%union { CG::Usage usage; }
+%destructor { } <usage>
+
 %union { Fabric::AST::Param *astParamPtr; }
-%union { Fabric::AST::ParamList *astParamListPtr; }
+%union { Fabric::AST::ParamVector *astParamListPtr; }
 %union { Fabric::AST::Global *astGlobalPtr; }
-%union { Fabric::AST::GlobalList *astGlobalListPtr; }
+%union { Fabric::AST::GlobalVector *astGlobalListPtr; }
 %union { Fabric::AST::StructDecl *astStructDecl; }
-%union { Fabric::AST::StructDeclMember *astStructDeclMember; }
-%union { Fabric::AST::StructDeclMemberList *astStructDeclMemberList; }
+%union { Fabric::AST::MemberDecl *astStructDeclMember; }
+%union { Fabric::AST::MemberDeclVector *astStructDeclMemberList; }
 %union { Fabric::AST::Statement *astStatementPtr; }
-%union { Fabric::AST::StatementList *astStatementListPtr; }
+%union { Fabric::AST::StatementVector *astStatementListPtr; }
 %union { Fabric::AST::CompoundStatement *astCompoundStatementPtr; }
-%union { Fabric::AST::ArgList *astArgListPtr; }
+%union { Fabric::AST::ExprVector *astArgListPtr; }
 %union { Fabric::AST::Expr *astExprPtr; }
 %union { Fabric::AST::ConstDecl *astConstDeclPtr; }
 %union { Fabric::AST::Case *astCasePtr; }
-%union { Fabric::AST::CaseList *astCaseListPtr; }
+%union { Fabric::AST::CaseVector *astCaseListPtr; }
 %destructor { $$->release(); } <*>
 
 %token TOKEN_END 0 "end of file"
 
-%token <valueStringPtr> TK_WHITESPACE "whitespace"
+%token <valueStringPtr> TOKEN_WHITESPACE "whitespace"
 
-%token <valueStringPtr> TK_COMMENT_BLOCK "block comment"
-%token <valueStringPtr> TK_COMMENT_LINE "line comment"
+%token <valueStringPtr> TOKEN_COMMENT_BLOCK "block comment"
+%token <valueStringPtr> TOKEN_COMMENT_LINE "line comment"
 
-%token TK_IF "if"
-%token TK_IN "in"
-%token TK_IO "io"
-%token TK_DO "do"
-%token TK_FOR "for"
-%token TK_VAR "var"
-%token TK_CASE "case"
-%token TK_ELSE "else"
-%token TK_TRUE "true"
-%token TK_ALIAS "alias"
-%token TK_BREAK "break"
-%token TK_CONST "const"
-%token TK_FALSE "false"
-%token TK_WHILE "while"
-%token TK_REPORT "report"
-%token TK_RETURN "return"
-%token TK_STRUCT "struct"
-%token TK_SWITCH "switch"
-%token TK_DEFAULT "default"
-%token TK_CONTINUE "continue"
-%token TK_FUNCTION "function"
-%token TK_OPERATOR "operator"
+%token TOKEN_IF "if"
+%token TOKEN_IN "in"
+%token TOKEN_IO "io"
+%token TOKEN_DO "do"
+%token TOKEN_FOR "for"
+%token TOKEN_VAR "var"
+%token TOKEN_CASE "case"
+%token TOKEN_ELSE "else"
+%token TOKEN_TRUE "true"
+%token TOKEN_ALIAS "alias"
+%token TOKEN_BREAK "break"
+%token TOKEN_CONST "const"
+%token TOKEN_FALSE "false"
+%token TOKEN_WHILE "while"
+%token TOKEN_REPORT "report"
+%token TOKEN_RETURN "return"
+%token TOKEN_STRUCT "struct"
+%token TOKEN_SWITCH "switch"
+%token TOKEN_DEFAULT "default"
+%token TOKEN_CONTINUE "continue"
+%token TOKEN_FUNCTION "function"
+%token TOKEN_OPERATOR "operator"
 
-%token TK_LBRACE "{"
-%token TK_RBRACE "}"
-%token TK_LPAREN "("
-%token TK_RPAREN ")"
-%token TK_LBRACKET "["
-%token TK_RBRACKET "]"
-%token TK_COMMA ","
-%token TK_SEMICOLON ";"
-%token TK_DOT "."
-%token TK_COLON ":"
-%token TK_QUESTION_MARK "?"
+%token TOKEN_LBRACE "{"
+%token TOKEN_RBRACE "}"
+%token TOKEN_LPAREN "("
+%token TOKEN_RPAREN ")"
+%token TOKEN_LBRACKET "["
+%token TOKEN_RBRACKET "]"
+%token TOKEN_COMMA ","
+%token TOKEN_SEMICOLON ";"
+%token TOKEN_DOT "."
+%token TOKEN_COLON ":"
+%token TOKEN_QUESTION_MARK "?"
 
-%token TK_PLUS "+"
-%token TK_PLUS_PLUS "++"
-%token TK_MINUS "-"
-%token TK_MINUS_MINUS "--"
+%token TOKEN_PLUS "+"
+%token TOKEN_PLUS_PLUS "++"
+%token TOKEN_MINUS "-"
+%token TOKEN_MINUS_MINUS "--"
 
-%token TK_AST "*"
-%token TK_FSLASH "/"
-%token TK_PERCENT "%"
+%token TOKEN_AST "*"
+%token TOKEN_FSLASH "/"
+%token TOKEN_PERCENT "%"
 
-%token TK_EXCL "!"
-%token TK_AMP_AMP "&&"
-%token TK_PIPE_PIPE "||"
-%token TK_CARET_CARET "^^"
+%token TOKEN_EXCL "!"
+%token TOKEN_AMP_AMP "&&"
+%token TOKEN_PIPE_PIPE "||"
+%token TOKEN_CARET_CARET "^^"
 
-%token TK_TILDE "~"
-%token TK_AMP "&"
-%token TK_PIPE "|"
-%token TK_CARET "^"
+%token TOKEN_TILDE "~"
+%token TOKEN_AMP "&"
+%token TOKEN_PIPE "|"
+%token TOKEN_CARET "^"
 
-%token TK_EQUALS "="
-%token TK_PLUS_EQUALS "+="
-%token TK_MINUS_EQUALS "-="
-%token TK_AST_EQUALS "*="
-%token TK_FSLASH_EQUALS "/="
-%token TK_PERCENT_EQUALS "%="
-%token TK_AMP_AMP_EQUALS "&&="
-%token TK_PIPE_PIPE_EQUALS "||="
-%token TK_CARET_CARET_EQUALS "^^="
-%token TK_AMP_EQUALS "&="
-%token TK_PIPE_EQUALS "|="
-%token TK_CARET_EQUALS "^="
+%token TOKEN_EQUALS "="
+%token TOKEN_PLUS_EQUALS "+="
+%token TOKEN_MINUS_EQUALS "-="
+%token TOKEN_AST_EQUALS "*="
+%token TOKEN_FSLASH_EQUALS "/="
+%token TOKEN_PERCENT_EQUALS "%="
+%token TOKEN_AMP_AMP_EQUALS "&&="
+%token TOKEN_PIPE_PIPE_EQUALS "||="
+%token TOKEN_CARET_CARET_EQUALS "^^="
+%token TOKEN_AMP_EQUALS "&="
+%token TOKEN_PIPE_EQUALS "|="
+%token TOKEN_CARET_EQUALS "^="
 
-%token TK_EQUALS_EQUALS "=="
-%token TK_EXCL_EQUALS "!="
-%token TK_LANGLE "<"
-%token TK_LANGLE_EQUALS "<="
-%token TK_RANGLE ">"
-%token TK_RANGLE_EQUALS ">="
+%token TOKEN_EQUALS_EQUALS "=="
+%token TOKEN_EXCL_EQUALS "!="
+%token TOKEN_LANGLE "<"
+%token TOKEN_LANGLE_EQUALS "<="
+%token TOKEN_RANGLE ">"
+%token TOKEN_RANGLE_EQUALS ">="
 
-%token <valueStringPtr> TK_CONST_UI "integer constant"
-%token <valueStringPtr> TK_CONST_FP "floating point constant"
-%token <valueStringPtr> TK_CONST_STRING_SQUOT "single-quoted string constant"
-%token <valueStringPtr> TK_CONST_STRING_DQUOT "double-quoted string constant"
+%token <valueStringPtr> TOKEN_CONST_UI "integer constant"
+%token <valueStringPtr> TOKEN_CONST_FP "floating point constant"
+%token <valueStringPtr> TOKEN_CONST_STRING_SQUOT "single-quoted string constant"
+%token <valueStringPtr> TOKEN_CONST_STRING_DQUOT "double-quoted string constant"
 
-%token <valueStringPtr> TK_IDENTIFIER "identifier"
+%token <valueStringPtr> TOKEN_IDENTIFIER "identifier"
 
 %type <valueStringPtr> function_entry_name
 %type <astParamPtr> parameter
-%type <astParamPtr> input_parameter
+%type <astParamPtr> in_parameter
+%type <astParamPtr> io_parameter
+%type <usage> in_parameter_usage
+%type <usage> io_parameter_usage
 %type <astParamListPtr> parameter_list
 %type <astGlobalPtr> global
 %type <astGlobalPtr> function
@@ -237,7 +261,7 @@ int kl_lex( YYSTYPE *yys, YYLTYPE *yyl, KL::Context &ctx );
 %type <astStatementPtr> const_decl_statement
 %type <astStatementPtr> statement
 %type <astStatementPtr> loop_start_statement
-%type <cgAdapter> array_modifier
+%type <valueStringPtr> array_modifier
 %type <astStatementPtr> var_decl_statement
 %type <astStatementPtr> var_decl
 %type <astStatementPtr> loop_statement
@@ -248,7 +272,7 @@ int kl_lex( YYSTYPE *yys, YYLTYPE *yyl, KL::Context &ctx );
 %type <astStatementListPtr> statement_list
 %type <astCompoundStatementPtr> compound_statement
 %type <astArgListPtr> argument_expression_list
-%type <cgAdapter> compound_type "type"
+%type <valueStringPtr> compound_type "type"
 
 %type <uniOpType> prefix_unary_operator
 %type <uniOpType> postfix_unary_operator
@@ -284,7 +308,7 @@ int kl_lex( YYSTYPE *yys, YYLTYPE *yyl, KL::Context &ctx );
 start
   : global_list
   {
-    ctx.m_resultGlobalList = $1;
+    context.m_resultGlobalList = $1;
     $1->release();
   }
 ;
@@ -292,33 +316,33 @@ start
 global_list :
   global global_list
   {
-    $$ = AST::GlobalList::Create( RTLOC, $1, $2 ).take();
+    $$ = AST::GlobalVector::Create( $1, $2 ).take();
     $1->release();
     $2->release();
   }
   | /* empty */
   {
-    $$ = AST::GlobalList::Create( RTLOC ).take();
+    $$ = AST::GlobalVector::Create().take();
   }
 
 binary_operator
-  : TK_PLUS
+  : TOKEN_PLUS
   {
     $$ = CG::BIN_OP_ADD;
   }
-  | TK_MINUS
+  | TOKEN_MINUS
   {
     $$ = CG::BIN_OP_SUB;
   }
-  | TK_AST
+  | TOKEN_AST
   {
     $$ = CG::BIN_OP_MUL;
   }
-  | TK_FSLASH
+  | TOKEN_FSLASH
   {
     $$ = CG::BIN_OP_DIV;
   }
-  | TK_PERCENT
+  | TOKEN_PERCENT
   {
     $$ = CG::BIN_OP_MOD;
   }
@@ -356,24 +380,24 @@ global
 ;
 
 function
-  : TK_FUNCTION compound_type TK_IDENTIFIER TK_LPAREN parameter_list TK_RPAREN function_entry_name compound_statement
+  : TOKEN_FUNCTION compound_type TOKEN_IDENTIFIER TOKEN_LPAREN parameter_list TOKEN_RPAREN function_entry_name compound_statement
   {
-    $$ = AST::Function::Create( RTLOC, *$3, $7, CG::ExprType( $2, CG::USAGE_RVALUE ), $5, $8 ).take();
-    $2->release();
+    $$ = AST::Function::Create( RTLOC, *$3, $7, *$2, $5, $8 ).take();
+    delete $2;
     delete $3;
     $5->release();
     delete $7;
     $8->release();
   }
-  | TK_FUNCTION TK_IDENTIFIER TK_LPAREN parameter_list TK_RPAREN function_entry_name compound_statement
+  | TOKEN_FUNCTION TOKEN_IDENTIFIER TOKEN_LPAREN parameter_list TOKEN_RPAREN function_entry_name compound_statement
   {
-    $$ = AST::Function::Create( RTLOC, *$2, $6, CG::ExprType(), $4, $7 ).take();
+    $$ = AST::Function::Create( RTLOC, *$2, $6, "", $4, $7 ).take();
     delete $2;
     $4->release();
     delete $6;
     $7->release();
   }
-  | TK_OPERATOR TK_IDENTIFIER TK_LPAREN parameter_list TK_RPAREN function_entry_name compound_statement
+  | TOKEN_OPERATOR TOKEN_IDENTIFIER TOKEN_LPAREN parameter_list TOKEN_RPAREN function_entry_name compound_statement
   {
     $$ = AST::Operator::Create( RTLOC, *$2, $6, $4, $7 ).take();
     delete $2;
@@ -381,59 +405,59 @@ function
     delete $6;
     $7->release();
   }
-  | TK_FUNCTION compound_type TK_IDENTIFIER TK_DOT TK_IDENTIFIER TK_LPAREN parameter_list TK_RPAREN compound_statement
+  | TOKEN_FUNCTION compound_type TOKEN_IDENTIFIER TOKEN_DOT TOKEN_IDENTIFIER TOKEN_LPAREN parameter_list TOKEN_RPAREN compound_statement
   {
-    $$ = AST::MethodOpImpl::Create( RTLOC, CG::ExprType( $2, CG::USAGE_RVALUE ), $3, *$5, $7, $9 ).take();
-    $2->release();
-    $3->release();
+    $$ = AST::MethodOpImpl::Create( RTLOC, *$2, *$3, *$5, $7, $9 ).take();
+    delete $2;
+    delete $3;
     delete $5;
     $7->release();
     $9->release();
   }
-  | TK_FUNCTION compound_type TK_DOT TK_IDENTIFIER TK_LPAREN parameter_list TK_RPAREN compound_statement
+  | TOKEN_FUNCTION compound_type TOKEN_DOT TOKEN_IDENTIFIER TOKEN_LPAREN parameter_list TOKEN_RPAREN compound_statement
   {
-    $$ = AST::MethodOpImpl::Create( RTLOC, CG::ExprType(), $2, *$4, $6, $8 ).take();
-    $2->release();
+    $$ = AST::MethodOpImpl::Create( RTLOC, "", *$2, *$4, $6, $8 ).take();
+    delete $2;
     delete $4;
     $6->release();
     $8->release();
   }
-  | TK_FUNCTION compound_type binary_operator TK_LPAREN input_parameter TK_COMMA input_parameter TK_RPAREN compound_statement
+  | TOKEN_FUNCTION compound_type binary_operator TOKEN_LPAREN in_parameter TOKEN_COMMA in_parameter TOKEN_RPAREN compound_statement
   {
-    $$ = AST::BinOpImpl::Create( RTLOC, CG::ExprType( $2, CG::USAGE_RVALUE ), $3, $5, $7, $9 ).take();
-    $2->release();
+    $$ = AST::BinOpImpl::Create( RTLOC, *$2, $3, $5, $7, $9 ).take();
+    delete $2;
     $5->release();
     $7->release();
     $9->release();
   }
-  | TK_FUNCTION compound_type TK_DOT assignment_operator TK_LPAREN input_parameter TK_RPAREN compound_statement
+  | TOKEN_FUNCTION compound_type TOKEN_DOT assignment_operator TOKEN_LPAREN in_parameter TOKEN_RPAREN compound_statement
   {
-    $$ = AST::AssignOpImpl::Create( RTLOC, $2, $4, $6, $8 ).take();
-    $2->release();
+    $$ = AST::AssignOpImpl::Create( RTLOC, *$2, $4, $6, $8 ).take();
+    delete $2;
     $6->release();
     $8->release();
   }
-  | TK_FUNCTION compound_type TK_LPAREN parameter_list TK_RPAREN compound_statement
+  | TOKEN_FUNCTION compound_type TOKEN_LPAREN parameter_list TOKEN_RPAREN compound_statement
   {
-    $$ = AST::Initializer::Create( RTLOC, $2, $4, $6 ).take();
-    $2->release();
+    $$ = AST::Initializer::Create( RTLOC, *$2, $4, $6 ).take();
+    delete $2;
     $4->release();
     $6->release();
   }
 ;
 
 prototype
-  : TK_FUNCTION compound_type TK_IDENTIFIER TK_LPAREN parameter_list TK_RPAREN function_entry_name TK_SEMICOLON
+  : TOKEN_FUNCTION compound_type TOKEN_IDENTIFIER TOKEN_LPAREN parameter_list TOKEN_RPAREN function_entry_name TOKEN_SEMICOLON
   {
-    $$ = AST::Function::Create( RTLOC, *$3, $7, CG::ExprType( $2, CG::USAGE_RVALUE ), $5, 0 ).take();
-    $2->release();
+    $$ = AST::Function::Create( RTLOC, *$3, $7, *$2, $5, 0 ).take();
+    delete $2;
     delete $3;
     $5->release();
     delete $7;
   }
-  | TK_FUNCTION TK_IDENTIFIER TK_LPAREN parameter_list TK_RPAREN function_entry_name TK_SEMICOLON
+  | TOKEN_FUNCTION TOKEN_IDENTIFIER TOKEN_LPAREN parameter_list TOKEN_RPAREN function_entry_name TOKEN_SEMICOLON
   {
-    $$ = AST::Function::Create( RTLOC, *$2, $6, CG::ExprType(), $4, 0 ).take();
+    $$ = AST::Function::Create( RTLOC, *$2, $6, "", $4, 0 ).take();
     delete $2;
     $4->release();
     delete $6;
@@ -441,12 +465,12 @@ prototype
 ;
 
 function_entry_name
-  : TK_EQUALS TK_CONST_STRING_SQUOT
+  : TOKEN_EQUALS TOKEN_CONST_STRING_SQUOT
   {
     $$ = new std::string( Util::parseQuotedString( *$2 ) );
     delete $2;
   }
-  | TK_EQUALS TK_CONST_STRING_DQUOT
+  | TOKEN_EQUALS TOKEN_CONST_STRING_DQUOT
   {
     $$ = new std::string( Util::parseQuotedString( *$2 ) );
     delete $2;
@@ -458,28 +482,28 @@ function_entry_name
 ;
 
 alias
-  : TK_ALIAS TK_IDENTIFIER
+  : TOKEN_ALIAS TOKEN_IDENTIFIER
       {
-        ctx.m_varType = $2;
+        FABRIC_ASSERT( context.m_typeName == 0 );
+        context.m_typeName = $2;
       }
-    TK_IDENTIFIER array_modifier TK_SEMICOLON
+    TOKEN_IDENTIFIER array_modifier TOKEN_SEMICOLON
       {
-        ctx.m_cgManager->registerAlias( *$4, $5 );
-        $$ = AST::Alias::Create( RTLOC, *$4, $5 ).take();
+        std::string compoundTypeName( *context.m_typeName );
+        compoundTypeName.append( *$5 );
+        delete $5;
+        
+        $$ = AST::Alias::Create( RTLOC, *$4, compoundTypeName ).take();
         delete $4;
-        $5->release();
-        ctx.m_varType->release();
-        ctx.m_varType = 0;
+        
+        delete context.m_typeName;
+        context.m_typeName = 0;
       }
 ;
 
 struct
-  : TK_STRUCT TK_IDENTIFIER TK_LBRACE struct_member_list TK_RBRACE TK_SEMICOLON
+  : TOKEN_STRUCT TOKEN_IDENTIFIER TOKEN_LBRACE struct_member_list TOKEN_RBRACE TOKEN_SEMICOLON
   {
-    RT::StructMemberInfoVector structMemberInfoVector;
-    $4->appenedToStructMemberInfoVector( structMemberInfoVector );
-    ctx.m_cgManager->registerStruct( *$2, structMemberInfoVector );
-    
     $$ = AST::StructDecl::Create( RTLOC, *$2, $4 ).take();
     delete $2;
     $4->release();
@@ -489,61 +513,66 @@ struct
 struct_member_list
   : struct_member struct_member_list
   {
-    $$ = AST::StructDeclMemberList::Create( RTLOC, $1, $2 ).take();
+    $$ = AST::MemberDeclVector::Create( $1, $2 ).take();
     $1->release();
     $2->release();
   }
   | /* empty */
   {
-    $$ = AST::StructDeclMemberList::Create( RTLOC ).take();
+    $$ = AST::MemberDeclVector::Create().take();
   }
 ;
 
 struct_member
-  : TK_IDENTIFIER
+  : TOKEN_IDENTIFIER
       {
-        ctx.m_varType = $1;
+        FABRIC_ASSERT( context.m_typeName == 0 );
+        context.m_typeName = $1;
       }
-    TK_IDENTIFIER array_modifier TK_SEMICOLON
+    TOKEN_IDENTIFIER array_modifier TOKEN_SEMICOLON
       {
-        $$ = AST::StructDeclMember::Create( RTLOC, *$3, $4 ).take();
+        std::string compoundTypeName( *context.m_typeName );
+        compoundTypeName.append( *$4 );
+        delete $4;
+        
+        $$ = AST::MemberDecl::Create( RTLOC, *$3, compoundTypeName ).take();
         delete $3;
-        $4->release();
-        ctx.m_varType->release();
-        ctx.m_varType = 0;
+        
+        delete context.m_typeName;
+        context.m_typeName = 0;
       }
 ;
 
 parameter_list
   : /* empty */
   {
-    $$ = AST::ParamList::Create( RTLOC ).take();
+    $$ = AST::ParamVector::Create().take();
   }
   | parameter
   {
-    $$ = AST::ParamList::Create( RTLOC, $1 ).take();
+    $$ = AST::ParamVector::Create( $1 ).take();
     $1->release();
   }
-  | parameter TK_COMMA parameter_list
+  | parameter TOKEN_COMMA parameter_list
   {
-    $$ = AST::ParamList::Create( RTLOC, $1, $3 ).take();
+    $$ = AST::ParamVector::Create( $1, RC::ConstHandle<AST::ParamVector>( $3 ) ).take();
     $1->release();
     $3->release();
   }
 ;
 
 const_decl
-  : TK_CONST TK_IDENTIFIER TK_IDENTIFIER TK_EQUALS TK_CONST_UI TK_SEMICOLON
+  : TOKEN_CONST TOKEN_IDENTIFIER TOKEN_IDENTIFIER TOKEN_EQUALS TOKEN_CONST_UI TOKEN_SEMICOLON
   {
-    $$ = AST::ConstSizeDecl::Create( RTLOC, *$3, $2, *$5 ).take();
-    $2->release();
+    $$ = AST::ConstDecl::Create( RTLOC, *$3, *$2, *$5 ).take();
+    delete $2;
     delete $3;
     delete $5;
   }
-  | TK_CONST TK_IDENTIFIER TK_IDENTIFIER TK_EQUALS TK_CONST_FP TK_SEMICOLON
+  | TOKEN_CONST TOKEN_IDENTIFIER TOKEN_IDENTIFIER TOKEN_EQUALS TOKEN_CONST_FP TOKEN_SEMICOLON
   {
-    $$ = AST::ConstScalarDecl::Create( RTLOC, *$3, $2, *$5 ).take();
-    $2->release();
+    $$ = AST::ConstDecl::Create( RTLOC, *$3, *$2, *$5 ).take();
+    delete $2;
     delete $3;
     delete $5;
   }
@@ -558,123 +587,160 @@ const_decl_statement
 ;
 
 array_modifier
-  : TK_LBRACKET TK_RBRACKET array_modifier
+  : TOKEN_LBRACKET TOKEN_RBRACKET array_modifier
   {
-    $$ = ctx.m_cgManager->getVariableArrayOf( $3 ).take();
-    $3->release();
+    std::string *result = new std::string( *$3 );
+    delete $3;
+    result->append( "[]" );
+    
+    $$ = result;
   }
-  | TK_LBRACKET TK_CONST_UI TK_RBRACKET array_modifier
+  | TOKEN_LBRACKET TOKEN_CONST_UI TOKEN_RBRACKET array_modifier
   {
-    unsigned length;
-    sscanf( $2->c_str(), "%u", &length );
-    delete $2;
+    size_t length = Util::parseSize( *$2 );
 
     if ( length == 0 )
     {
-      $4->release();
-      ctx.m_varType->release();
-      ctx.m_varType = 0;
-      yyerror( &yyloc, ctx, "fixed array size must be greater than zero" );
+      delete $4;
+      delete context.m_typeName;
+      context.m_typeName = 0;
+      yyerror( &yyloc, context, "fixed array size must be greater than zero" );
       YYERROR;
     }
     else
     {
-      $$ = ctx.m_cgManager->getFixedArrayOf( $4, length ).take();
-      $4->release();
+      std::string *result = new std::string( *$4 );
+      delete $4;
+      result->append( "[" );
+      result->append( _(length) );
+      result->append( "]" );
+      
+      $$ = result;
     }
   }
   | /* empty */
   {
-    $$ = ctx.m_varType;
-    $$->retain();
+    $$ = new std::string;
   }
 ;
 
 var_decl
-  : TK_IDENTIFIER array_modifier TK_EQUALS assignment_expression
+  : TOKEN_IDENTIFIER array_modifier TOKEN_EQUALS assignment_expression
   {
-    $$ = AST::AssignedVarDecl::Create( RTLOC, *$1, $2, $4 ).take();
+    std::string compoundTypeName( *context.m_typeName );
+    compoundTypeName.append( *$2 );
+    delete $2;
+    
+    $$ = AST::AssignedVarDecl::Create( RTLOC, *$1, compoundTypeName, $4 ).take();
     delete $1;
-    $2->release();
     $4->release();
   }
-  | TK_IDENTIFIER array_modifier TK_LPAREN argument_expression_list TK_RPAREN
+  | TOKEN_IDENTIFIER array_modifier TOKEN_LPAREN argument_expression_list TOKEN_RPAREN
   {
-    $$ = AST::InitializedVarDecl::Create( RTLOC, *$1, $2, $4 ).take();
+    std::string compoundTypeName( *context.m_typeName );
+    compoundTypeName.append( *$2 );
+    delete $2;
+    
+    $$ = AST::InitializedVarDecl::Create( RTLOC, *$1, compoundTypeName, $4 ).take();
     delete $1;
-    $2->release();
     $4->release();
   }
-  | TK_IDENTIFIER array_modifier 
+  | TOKEN_IDENTIFIER array_modifier 
   {
-    $$ = AST::VarDecl::Create( RTLOC, *$1, $2 ).take();
+    std::string compoundTypeName( *context.m_typeName );
+    compoundTypeName.append( *$2 );
+    delete $2;
+    
+    $$ = AST::VarDecl::Create( RTLOC, *$1, compoundTypeName ).take();
     delete $1;
-    $2->release();
   }
 ;
 
 var_decl_list
   : var_decl
   {
-    $$ = AST::StatementList::Create( RTLOC, $1 ).take();
+    $$ = AST::StatementVector::Create( $1 ).take();
     $1->release();
   }
-  | var_decl TK_COMMA var_decl_list
+  | var_decl TOKEN_COMMA var_decl_list
   {
-    $$ = AST::StatementList::Create( RTLOC, $1, $3 ).take();
+    $$ = AST::StatementVector::Create( $1, $3 ).take();
     $1->release();
     $3->release();
   }
   ;
 
-input_parameter
-  : TK_IDENTIFIER
+in_parameter_usage
+  : TOKEN_IN
+  {
+    $$ = CG::USAGE_RVALUE;
+  }
+  | /* empty */
+  {
+    $$ = CG::USAGE_RVALUE;
+  }
+;
+
+io_parameter_usage
+  : TOKEN_IO
+  {
+    $$ = CG::USAGE_LVALUE;
+  }
+;
+
+in_parameter
+  : in_parameter_usage TOKEN_IDENTIFIER
       {
-        ctx.m_varType = $1;
+        FABRIC_ASSERT( context.m_typeName == 0 );
+        context.m_typeName = $2;
       }
-    TK_IDENTIFIER array_modifier
+    TOKEN_IDENTIFIER array_modifier
       {
-        $$ = AST::Param::Create( RTLOC, *$3, $4, CG::USAGE_RVALUE ).take();
-        delete $3;
-        $4->release();
-        ctx.m_varType->release();
-        ctx.m_varType = 0;
-      }
-  | TK_IN TK_IDENTIFIER
-      {
-        ctx.m_varType = $2;
-      }
-    TK_IDENTIFIER array_modifier
-      {
-        $$ = AST::Param::Create( RTLOC, *$4, $5, CG::USAGE_RVALUE ).take();
+        std::string compoundTypeName( *context.m_typeName );
+        compoundTypeName.append( *$5 );
+        delete $5;
+        
+        $$ = AST::Param::Create( RTLOC, *$4, compoundTypeName, $1 ).take();
         delete $4;
-        $5->release();
-        ctx.m_varType->release();
-        ctx.m_varType = 0;
+        
+        delete context.m_typeName;
+        context.m_typeName = 0;
+      }
+;
+
+io_parameter
+  : io_parameter_usage TOKEN_IDENTIFIER
+      {
+        FABRIC_ASSERT( context.m_typeName == 0 );
+        context.m_typeName = $2;
+      }
+    TOKEN_IDENTIFIER array_modifier
+      {
+        std::string compoundTypeName( *context.m_typeName );
+        compoundTypeName.append( *$5 );
+        delete $5;
+        
+        $$ = AST::Param::Create( RTLOC, *$4, compoundTypeName, $1 ).take();
+        delete $4;
+        
+        delete context.m_typeName;
+        context.m_typeName = 0;
       }
 ;
 
 parameter
-  : input_parameter
+  : in_parameter
   {
     $$ = $1;
   }
-  | TK_IO TK_IDENTIFIER
-      {
-        ctx.m_varType = $2;
-      }
-    TK_IDENTIFIER array_modifier
-      {
-        $$ = AST::Param::Create( RTLOC, *$4, $5, CG::USAGE_LVALUE ).take();
-        delete $4;
-        $5->release();
-        ctx.m_varType->release();
-        ctx.m_varType = 0;
-      }
+  | io_parameter
+  {
+    $$ = $1;
+  }
 ;
 
 compound_statement
-  : TK_LBRACE statement_list TK_RBRACE
+  : TOKEN_LBRACE statement_list TOKEN_RBRACE
   {
     $$ = AST::CompoundStatement::Create( RTLOC, $2 ).take();
     $2->release();
@@ -686,7 +752,7 @@ statement_list
   {
     if ( $1 )
     {
-      $$ = AST::StatementList::Create( RTLOC, $1, $2 ).take();
+      $$ = AST::StatementVector::Create( $1, $2 ).take();
       $1->release();
       $2->release();
     }
@@ -694,20 +760,19 @@ statement_list
   }
   | /* empty */
   {
-    $$ = AST::StatementList::Create( RTLOC ).take();
+    $$ = AST::StatementVector::Create().take();
   }
 
 compound_type
-  : TK_IDENTIFIER
-    {
-      ctx.m_varType = $1;
-    }
-    array_modifier
-    {
-      $$ = $3;
-      ctx.m_varType->release();
-      ctx.m_varType = 0;
-    }
+  : TOKEN_IDENTIFIER array_modifier
+  {
+    std::string *result = new std::string( *$1 );
+    delete $1;
+    result->append( *$2 );
+    delete $2;
+    
+    $$ = result;
+  }
 ;
 
 loop_start_statement
@@ -716,17 +781,10 @@ loop_start_statement
     $$ = AST::ExprStatement::Create( RTLOC, $1 ).take();
     $1->release();
   }
-  | TK_VAR TK_IDENTIFIER TK_IDENTIFIER TK_EQUALS assignment_expression 
+  | TOKEN_IDENTIFIER TOKEN_IDENTIFIER TOKEN_EQUALS assignment_expression 
   {
-    $$ = AST::AssignedVarDecl::Create( RTLOC, *$3, $2, $5 ).take();
-    $2->release();
-    delete $3;
-    $5->release();
-  }
-  | TK_IDENTIFIER TK_IDENTIFIER TK_EQUALS assignment_expression 
-  {
-    $$ = AST::AssignedVarDecl::Create( RTLOC, *$2, $1, $4 ).take();
-    $1->release();
+    $$ = AST::AssignedVarDecl::Create( RTLOC, *$2, *$1, $4 ).take();
+    delete $1;
     delete $2;
     $4->release();
   }
@@ -737,30 +795,22 @@ loop_start_statement
 ;
 
 var_decl_statement
-  : TK_VAR TK_IDENTIFIER 
+  : TOKEN_IDENTIFIER 
       {
-        ctx.m_varType = $2;
+        FABRIC_ASSERT( context.m_typeName == 0 );
+        context.m_typeName = $1;
       }
-    var_decl_list TK_SEMICOLON 
+    var_decl_list TOKEN_SEMICOLON 
       {
-        $$ = $4;
-        ctx.m_varType = 0;
-        $2->release();
-      }
-  | TK_IDENTIFIER 
-      {
-        ctx.m_varType = $1;
-      }
-    var_decl_list TK_SEMICOLON 
-      {
-        $$ = $3;
-        ctx.m_varType = 0;
-        $1->release();
+        $$ = AST::CompoundStatement::Create( RTLOC, $3 ).take();
+        
+        delete context.m_typeName;
+        context.m_typeName = 0;
       }
 ;
 
 loop_statement
-  : TK_FOR TK_LPAREN loop_start_statement TK_SEMICOLON optional_expression TK_SEMICOLON optional_expression TK_RPAREN statement
+  : TOKEN_FOR TOKEN_LPAREN loop_start_statement TOKEN_SEMICOLON optional_expression TOKEN_SEMICOLON optional_expression TOKEN_RPAREN statement
   {
     $$ = AST::CStyleLoop::Create( RTLOC, $3, $5, $7, 0, $9 ).take();
     if ( $3 )
@@ -772,14 +822,14 @@ loop_statement
     if ( $9 )
       $9->release();
   }
-  | TK_WHILE TK_LPAREN optional_expression TK_RPAREN statement
+  | TOKEN_WHILE TOKEN_LPAREN optional_expression TOKEN_RPAREN statement
   {
     $$ = AST::CStyleLoop::Create( RTLOC, 0, $3, 0, 0, $5 ).take();
     if ( $3 )
       $3->release();
     $5->release();
   }
-  | TK_DO statement TK_WHILE TK_LPAREN optional_expression TK_RPAREN TK_SEMICOLON
+  | TOKEN_DO statement TOKEN_WHILE TOKEN_LPAREN optional_expression TOKEN_RPAREN TOKEN_SEMICOLON
   {
     $$ = AST::CStyleLoop::Create( RTLOC, 0, 0, 0, $5, $2 ).take();
     $2->release();
@@ -789,7 +839,7 @@ loop_statement
 ;
 
 switch_statement
-  : TK_SWITCH TK_LPAREN expression TK_RPAREN TK_LBRACE case_list TK_RBRACE
+  : TOKEN_SWITCH TOKEN_LPAREN expression TOKEN_RPAREN TOKEN_LBRACE case_list TOKEN_RBRACE
   {
     $$ = AST::SwitchStatement::Create( RTLOC, $3, $6 ).take();
     $3->release();
@@ -800,24 +850,24 @@ switch_statement
 case_list
   : case case_list
   {
-    $$ = AST::CaseList::Create( RTLOC, $1, $2 ).take();
+    $$ = AST::CaseVector::Create( $1, $2 ).take();
     $1->release();
     $2->release();
   }
   | /* empty */
   {
-    $$ = AST::CaseList::Create( RTLOC ).take();
+    $$ = AST::CaseVector::Create().take();
   }
 ;
 
 case
-  : TK_CASE expression TK_COLON statement_list
+  : TOKEN_CASE expression TOKEN_COLON statement_list
   {
     $$ = AST::Case::Create( RTLOC, $2, $4 ).take();
     $2->release();
     $4->release();
   }
-  | TK_DEFAULT TK_COLON statement_list
+  | TOKEN_DEFAULT TOKEN_COLON statement_list
   {
     $$ = AST::Case::Create( RTLOC, 0, $3 ).take();
     $3->release();
@@ -825,50 +875,50 @@ case
 ;
 
 statement
-  : TK_SEMICOLON
+  : TOKEN_SEMICOLON
   {
     $$ = 0;
   }
-  | TK_RETURN expression TK_SEMICOLON
+  | TOKEN_RETURN expression TOKEN_SEMICOLON
   {
     $$ = AST::ReturnStatement::Create( RTLOC, $2 ).take();
     $2->release();
   }
-  | TK_RETURN TK_SEMICOLON
+  | TOKEN_RETURN TOKEN_SEMICOLON
   {
     $$ = AST::ReturnStatement::Create( RTLOC ).take();
   }
   | const_decl_statement
   | var_decl_statement
-  | expression TK_SEMICOLON
+  | expression TOKEN_SEMICOLON
   {
     $$ = AST::ExprStatement::Create( RTLOC, $1 ).take();
     $1->release();
   }
-  | TK_IF TK_LPAREN expression TK_RPAREN statement TK_ELSE statement
+  | TOKEN_IF TOKEN_LPAREN expression TOKEN_RPAREN statement TOKEN_ELSE statement
   {
     $$ = AST::ConditionalStatement::Create( RTLOC, $3, $5, $7 ).take();
     $3->release();
     $5->release();
     $7->release();
   }
-  | TK_IF TK_LPAREN expression TK_RPAREN statement
+  | TOKEN_IF TOKEN_LPAREN expression TOKEN_RPAREN statement
   {
     $$ = AST::ConditionalStatement::Create( RTLOC, $3, $5 ).take();
     $3->release();
     $5->release();
   }
   | loop_statement
-  | TK_REPORT expression TK_SEMICOLON
+  | TOKEN_REPORT expression TOKEN_SEMICOLON
   {
     $$ = AST::Report::Create( RTLOC, $2 ).take();
     $2->release();
   }
-  | TK_BREAK TK_SEMICOLON
+  | TOKEN_BREAK TOKEN_SEMICOLON
   {
     $$ = AST::BreakStatement::Create( RTLOC ).take();
   }
-  | TK_CONTINUE TK_SEMICOLON
+  | TOKEN_CONTINUE TOKEN_SEMICOLON
   {
     $$ = AST::ContinueStatement::Create( RTLOC ).take();
   }
@@ -907,27 +957,27 @@ expression
 ;
 
 assignment_operator
-	: TK_EQUALS
+	: TOKEN_EQUALS
   {
     $$ = CG::ASSIGN_OP;
   }
-  | TK_PLUS_EQUALS
+  | TOKEN_PLUS_EQUALS
   {
     $$ = CG::ASSIGN_OP_ADD;
   }
-  | TK_MINUS_EQUALS
+  | TOKEN_MINUS_EQUALS
   {
     $$ = CG::ASSIGN_OP_SUB;
   }
-  | TK_AST_EQUALS
+  | TOKEN_AST_EQUALS
   {
     $$ = CG::ASSIGN_OP_MUL;
   }
-  | TK_FSLASH_EQUALS
+  | TOKEN_FSLASH_EQUALS
   {
     $$ = CG::ASSIGN_OP_DIV;
   }
-  | TK_PERCENT_EQUALS
+  | TOKEN_PERCENT_EQUALS
   {
     $$ = CG::ASSIGN_OP_MOD;
   }
@@ -958,7 +1008,7 @@ conditional_expression
   {
     $$ = $1;
   }
-	| logical_or_expression TK_QUESTION_MARK expression TK_COLON conditional_expression
+	| logical_or_expression TOKEN_QUESTION_MARK expression TOKEN_COLON conditional_expression
   {
     $$ = AST::TernaryOp::Create( RTLOC, CG::TERNARY_OP_COND, $1, $3, $5 ).take();
     $1->release();
@@ -972,7 +1022,7 @@ logical_or_expression
   {
     $$ = $1;
   }
-	| logical_or_expression TK_PIPE_PIPE logical_and_expression
+	| logical_or_expression TOKEN_PIPE_PIPE logical_and_expression
   {
     $$ = AST::OrOp::Create( RTLOC, $1, $3 ).take();
     $1->release();
@@ -985,7 +1035,7 @@ logical_and_expression
   {
     $$ = $1;
   }
-	| logical_and_expression TK_AMP_AMP inclusive_or_expression
+	| logical_and_expression TOKEN_AMP_AMP inclusive_or_expression
   {
     $$ = AST::AndOp::Create( RTLOC, $1, $3 ).take();
     $1->release();
@@ -998,7 +1048,7 @@ inclusive_or_expression
   {
     $$ = $1;
   }
-	| inclusive_or_expression TK_PIPE exclusive_or_expression
+	| inclusive_or_expression TOKEN_PIPE exclusive_or_expression
   {
     $$ = AST::BinOp::Create( RTLOC, CG::BIN_OP_BIT_OR, $1, $3 ).take();
     $1->release();
@@ -1011,7 +1061,7 @@ exclusive_or_expression
   {
     $$ = $1;
   }
-	| exclusive_or_expression TK_CARET and_expression
+	| exclusive_or_expression TOKEN_CARET and_expression
   {
     $$ = AST::BinOp::Create( RTLOC, CG::BIN_OP_BIT_XOR, $1, $3 ).take();
     $1->release();
@@ -1024,7 +1074,7 @@ and_expression
   {
     $$ = $1;
   }
-	| and_expression TK_AMP equality_expression
+	| and_expression TOKEN_AMP equality_expression
   {
     $$ = AST::BinOp::Create( RTLOC, CG::BIN_OP_BIT_AND, $1, $3 ).take();
     $1->release();
@@ -1033,11 +1083,11 @@ and_expression
 ;
 
 equality_operator
-  : TK_EQUALS_EQUALS
+  : TOKEN_EQUALS_EQUALS
   {
     $$ = CG::BIN_OP_EQ;
   }
-  | TK_EXCL_EQUALS
+  | TOKEN_EXCL_EQUALS
   {
     $$ = CG::BIN_OP_NE;
   }
@@ -1057,19 +1107,19 @@ equality_expression
 ;
 
 relational_operator
-  : TK_LANGLE
+  : TOKEN_LANGLE
   {
     $$ = CG::BIN_OP_LT;
   }
-  | TK_LANGLE_EQUALS
+  | TOKEN_LANGLE_EQUALS
   {
     $$ = CG::BIN_OP_LE;
   }
-  | TK_RANGLE
+  | TOKEN_RANGLE
   {
     $$ = CG::BIN_OP_GT;
   }
-  | TK_RANGLE_EQUALS
+  | TOKEN_RANGLE_EQUALS
   {
     $$ = CG::BIN_OP_GE;
   }
@@ -1100,11 +1150,11 @@ shift_expression
 ;
 
 additive_operator
-  : TK_PLUS
+  : TOKEN_PLUS
   {
     $$ = CG::BIN_OP_ADD;
   }
-  | TK_MINUS
+  | TOKEN_MINUS
   {
     $$ = CG::BIN_OP_SUB;
   }
@@ -1124,15 +1174,15 @@ additive_expression
 ;
 
 multiplicative_operator
-  : TK_AST
+  : TOKEN_AST
   {
     $$ = CG::BIN_OP_MUL;
   }
-  | TK_FSLASH
+  | TOKEN_FSLASH
   {
     $$ = CG::BIN_OP_DIV;
   }
-  | TK_PERCENT
+  | TOKEN_PERCENT
   {
     $$ = CG::BIN_OP_MOD;
   }
@@ -1156,32 +1206,32 @@ cast_expression
   {
     $$ = $1;
   }
-	| TK_LPAREN TK_IDENTIFIER TK_RPAREN cast_expression
+	| TOKEN_LPAREN TOKEN_IDENTIFIER TOKEN_RPAREN cast_expression
   {
-    $$ = AST::CastNode::Create( RTLOC, $2, $4 ).take();
-    $2->release();
+    $$ = AST::CastNode::Create( RTLOC, *$2, $4 ).take();
+    delete $2;
     $4->release();
   }
 ;
 
 prefix_unary_operator
-	: TK_PLUS
+	: TOKEN_PLUS
   {
     $$ = CG::UNI_OP_POS;
   }
-	| TK_MINUS
+	| TOKEN_MINUS
   {
     $$ = CG::UNI_OP_NEG;
   }
-	| TK_TILDE
+	| TOKEN_TILDE
   {
     $$ = CG::UNI_OP_BIT_NOT;
   }
-  | TK_PLUS_PLUS
+  | TOKEN_PLUS_PLUS
   {
     $$ = CG::UNI_OP_PRE_INC;
   }
-  | TK_MINUS_MINUS
+  | TOKEN_MINUS_MINUS
   {
     $$ = CG::UNI_OP_PRE_DEC;
   }
@@ -1197,7 +1247,7 @@ prefix_unary_expression
     $$ = AST::UniOp::Create( RTLOC, $1, $2 ).take();
     $2->release();
   }
-  | TK_EXCL cast_expression
+  | TOKEN_EXCL cast_expression
   {
     $$ = AST::NotOp::Create( RTLOC, $2 ).take();
     $2->release();
@@ -1211,27 +1261,27 @@ prefix_unary_expression
 argument_expression_list
 	: /* empty */
   {
-    $$ = AST::ArgList::Create( RTLOC ).take();
+    $$ = AST::ExprVector::Create().take();
   }
   | assignment_expression
   {
-    $$ = AST::ArgList::Create( RTLOC, $1 ).take();
+    $$ = AST::ExprVector::Create( $1 ).take();
     $1->release();
   }
-	| assignment_expression TK_COMMA argument_expression_list
+	| assignment_expression TOKEN_COMMA argument_expression_list
   {
-    $$ = AST::ArgList::Create( RTLOC, $1, $3 ).take();
+    $$ = AST::ExprVector::Create( $1, $3 ).take();
     $1->release();
     $3->release();
   }
 ;
 
 postfix_unary_operator
-  : TK_PLUS_PLUS
+  : TOKEN_PLUS_PLUS
   {
     $$ = CG::UNI_OP_POST_INC;
   }
-  | TK_MINUS_MINUS
+  | TOKEN_MINUS_MINUS
   {
     $$ = CG::UNI_OP_POST_DEC;
   }
@@ -1242,19 +1292,19 @@ postfix_expression
   {
     $$ = $1;
   }
-	| postfix_expression TK_LBRACKET expression TK_RBRACKET
+	| postfix_expression TOKEN_LBRACKET expression TOKEN_RBRACKET
   {
     $$ = AST::IndexOp::Create( RTLOC, $1, $3 ).take();
     $1->release();
     $3->release();
   }
-	| postfix_expression TK_DOT TK_IDENTIFIER
+	| postfix_expression TOKEN_DOT TOKEN_IDENTIFIER
   {
     $$ = AST::StructMemberOp::Create( RTLOC, $1, *$3 ).take();
     $1->release();
     delete $3;
   }
-  | postfix_expression TK_DOT TK_IDENTIFIER TK_LPAREN argument_expression_list TK_RPAREN
+  | postfix_expression TOKEN_DOT TOKEN_IDENTIFIER TOKEN_LPAREN argument_expression_list TOKEN_RPAREN
   {
     $$ = AST::MethodOp::Create( RTLOC, *$3, $1, $5 ).take();
     $1->release();
@@ -1272,25 +1322,25 @@ postfix_expression
 ;
 
 primary_expression
-  : TK_TRUE
+  : TOKEN_TRUE
   {
     $$ = AST::ConstBoolean::Create( RTLOC, true ).take();
   }
-  | TK_FALSE
+  | TOKEN_FALSE
   {
     $$ = AST::ConstBoolean::Create( RTLOC, false ).take();
   }
-  | TK_CONST_UI
+  | TOKEN_CONST_UI
   {
     $$ = AST::ConstSize::Create( RTLOC, *$1 ).take();
     delete $1;
   }
-  | TK_CONST_FP
+  | TOKEN_CONST_FP
   {
     $$ = AST::ConstScalar::Create( RTLOC, *$1 ).take();
     delete $1;
   }
-  | TK_CONST_STRING_SQUOT
+  | TOKEN_CONST_STRING_SQUOT
   {
     try
     {
@@ -1298,11 +1348,11 @@ primary_expression
     }
     catch ( Exception e )
     {
-      ctx.m_diagnostics.addError( RTLOC, e.getDesc() );
+      context.m_diagnostics.addError( RTLOC, e.getDesc() );
     }
     delete $1;
   }
-  | TK_CONST_STRING_DQUOT
+  | TOKEN_CONST_STRING_DQUOT
   {
     try
     {
@@ -1310,22 +1360,22 @@ primary_expression
     }
     catch ( Exception e )
     {
-      ctx.m_diagnostics.addError( RTLOC, e.getDesc() );
+      context.m_diagnostics.addError( RTLOC, e.getDesc() );
     }
     delete $1;
   }
-  | TK_IDENTIFIER TK_LPAREN argument_expression_list TK_RPAREN
+  | TOKEN_IDENTIFIER TOKEN_LPAREN argument_expression_list TOKEN_RPAREN
   {
-    $$ = AST::Call::Create( RTLOC, $1, $3 ).take();
-    $1->release();
+    $$ = AST::Call::Create( RTLOC, *$1, $3 ).take();
+    delete $1;
     $3->release();
   }
-  | TK_IDENTIFIER
+  | TOKEN_IDENTIFIER
   {
     $$ = AST::Var::Create( RTLOC, *$1 ).take();
     delete $1;
   }
-  | TK_LPAREN expression TK_RPAREN
+  | TOKEN_LPAREN expression TOKEN_RPAREN
   {
     $$ = $2;
   }
@@ -1333,49 +1383,77 @@ primary_expression
 
 %%
 
-void kl_error( YYLTYPE *yyl, KL::Context &ctx, const char *msg )
+void kl_error( YYLTYPE *yyl, KL::Context &context, const char *msg )
 {
-  ctx.m_diagnostics.addError( CG::Location( yyl->first_line, yyl->first_column ), msg );
+  context.m_diagnostics.addError( CG::Location( yyl->first_line, yyl->first_column ), msg );
 }
 
-int kl_lex( YYSTYPE *yys, YYLTYPE *yyl, KL::Context &ctx )
+int kl_lex( YYSTYPE *yys, YYLTYPE *yyl, KL::Context &context )
 {
-  FABRIC_KL_TRACE( "kl_lex( %p, %p )", yys, yyl );
-
   KL::Location startLocation;
   KL::Token token;
   std::string text;
   KL::Location endLocation;
   while ( true )
   {
-    startLocation = ctx.m_scanner->source().locationForStart();
+    startLocation = context.m_scanner->getLocationForStart();
     try
     {
-      token = ctx.m_scanner->nextToken( yys );
+      token = context.m_scanner->nextToken();
     }
     catch ( Exception e )
     {
-      ctx.m_diagnostics.addError( CG::Location( yyl->first_line, yyl->first_column ), e.getDesc() );
+      context.m_diagnostics.addError( startLocation, e.getDesc() );
     }
-    if ( token != TK_WHITESPACE
-      && token != TK_COMMENT_LINE
-      && token != TK_COMMENT_BLOCK
+    if ( token.getType() != TOKEN_WHITESPACE
+      && token.getType() != TOKEN_COMMENT_LINE
+      && token.getType() != TOKEN_COMMENT_BLOCK
       )
     {
-      endLocation = ctx.m_scanner->source().locationForEnd();
+      endLocation = context.m_scanner->getLocationForEnd();
       break;
     }
     delete yys->valueStringPtr;
     yys->valueStringPtr = 0;
   }
-
-  yyl->first_line = startLocation.line();
-  yyl->first_column = startLocation.column();
-  yyl->last_line = endLocation.line();
-  yyl->last_column = endLocation.column();
   
-  int result = int(token);
+  yys->valueStringPtr = new std::string( token.toString() );
+  yyl->first_line = startLocation.getLine();
+  yyl->first_column = startLocation.getColumn();
+  yyl->last_line = endLocation.getLine();
+  yyl->last_column = endLocation.getColumn();
+  
+  int result = int( token.getType() );
   if ( kl_debug )
     fprintf( stderr, "Returning token %d\n", result );
   return result;
 }
+
+namespace Fabric
+{
+  namespace KL
+  {
+    RC::Handle<Parser> Parser::Create( RC::Handle<Scanner> const &scanner, CG::Diagnostics &diagnostics )
+    {
+      return new Parser( scanner, diagnostics );
+    }
+      
+    Parser::Parser( RC::Handle<Scanner> const &scanner, CG::Diagnostics &diagnostics )
+      : m_scanner( scanner )
+      , m_diagnostics( diagnostics )
+    {
+    }
+    
+    RC::Handle<AST::GlobalVector> Parser::run()
+    {
+      Context context( m_scanner, m_diagnostics );
+
+      // TODO: Do we check the status?
+      kl_debug = 0;
+
+      kl_parse( context );
+
+      return context.m_resultGlobalList;
+    }
+  };
+};

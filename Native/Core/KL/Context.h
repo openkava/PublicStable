@@ -5,7 +5,7 @@
 #ifndef __CONTEXT_H__
 #define __CONTEXT_H__
 
-#include <Fabric/Core/AST/GlobalList.h>
+#include <Fabric/Core/AST/GlobalVector.h>
 #include <Fabric/Core/CG/Diagnostics.h>
 #include <Fabric/Core/CG/Adapter.h>
 #include <Fabric/Core/CG/Manager.h>
@@ -19,22 +19,25 @@ namespace Fabric
     struct Context
     {
       Context( 
-        KL::Scanner *scanner,
-        CG::Diagnostics &diagnostics,
-        RC::Handle<CG::Manager> const &cgManager ) 
-        : m_scanner( scanner ),
-          m_diagnostics( diagnostics ),
-          m_cgManager( cgManager )
+        RC::Handle<KL::Scanner> const &scanner,
+        CG::Diagnostics &diagnostics
+        ) 
+        : m_scanner( scanner )
+        , m_diagnostics( diagnostics )
+        , m_typeName( 0 )
       {
       }
+      
+      ~Context()
+      {
+        FABRIC_ASSERT( m_typeName == 0 );
+      }
 
-      KL::Scanner *m_scanner;
+      RC::Handle<KL::Scanner> m_scanner;
       CG::Diagnostics &m_diagnostics;
       RC::Handle<AST::GlobalVector> m_resultGlobalList;
-      RC::Handle<CG::Manager> const &m_cgManager;
 
-      // Variable declaration list
-      CG::Adapter const *m_varType;
+      std::string const *m_typeName;
     };
   }
 }

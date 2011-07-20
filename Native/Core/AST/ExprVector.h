@@ -33,6 +33,8 @@ namespace Fabric
     public:
       
       static RC::Handle<ExprVector> Create();
+      static RC::Handle<ExprVector> Create( RC::ConstHandle<Expr> const &first );
+      static RC::Handle<ExprVector> Create( RC::ConstHandle<Expr> const &first, RC::ConstHandle<ExprVector> const &remaining );
 
       RC::Handle<JSON::Array> toJSON() const;
           

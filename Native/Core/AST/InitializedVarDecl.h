@@ -26,7 +26,7 @@ namespace Fabric
       static RC::Handle<InitializedVarDecl> Create(
         CG::Location const &location,
         std::string const &name,
-        RC::ConstHandle<CG::Adapter> const &adapter,
+        std::string const &type,
         RC::ConstHandle<ExprVector> const &args
         );
 
@@ -39,7 +39,7 @@ namespace Fabric
       InitializedVarDecl(
         CG::Location const &location,
         std::string const &name,
-        RC::ConstHandle<CG::Adapter> const &adapter,
+        std::string const &type,
         RC::ConstHandle<ExprVector> const &args
         );
     

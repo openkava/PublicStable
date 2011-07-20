@@ -3,7 +3,7 @@
  */
  
 #include <stdio.h>
-#include <Fabric/Core/KL/Parser.h>
+#include <Fabric/Core/KL/Parser.hpp>
 #include <Fabric/Core/KL/Scanner.h>
 #include <Fabric/Core/KL/StringSource.h>
 #include <Fabric/Core/AST/GlobalVector.h>
@@ -174,11 +174,10 @@ void handleFile( FILE *fp, unsigned int runFlags )
     {
       KL::Token token = scanner->nextToken();
       RC::Handle<JSON::Object> jsonObject = JSON::Object::Create();
-      jsonObject->set( "name", JSON::String::Create( KL::Token::TypeName( token.getType() ) ) );
-      jsonObject->set( "desc", JSON::String::Create( KL::Token::TypeDesc( token.getType() ) ) );
+      jsonObject->set( "token", JSON::Integer::Create( token.getType() ) );
       jsonObject->set( "value", JSON::String::Create( token.getSourceRange().toString() ) );
       printf( "%s\n", JSON::encode( jsonObject ).c_str() );
-      if ( token.getType() == KL::Token::TK_EOI )
+      if ( token.getType() == -1 )
         break;
     }
   }

@@ -8,7 +8,7 @@
 #include <Fabric/Base/JSON/Decode.h>
 #include <Fabric/Core/KL/StringSource.h>
 #include <Fabric/Core/KL/Scanner.h>
-#include <Fabric/Core/KL/Parser.h>
+#include <Fabric/Core/KL/Parser.hpp>
 #include <Fabric/Core/AST/Function.h>
 #include <Fabric/Core/AST/GlobalVector.h>
 #include <Fabric/Core/CG/Manager.h>

@@ -21,7 +21,7 @@
 #include <Fabric/Core/Util/Timer.h>
 #include <Fabric/Core/KL/StringSource.h>
 #include <Fabric/Core/KL/Scanner.h>
-#include <Fabric/Core/KL/Parser.h>
+#include <Fabric/Core/KL/Parser.hpp>
 #include <Fabric/Core/CG/Manager.h>
 
 #include <llvm/Module.h>

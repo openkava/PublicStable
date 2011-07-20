@@ -18,13 +18,23 @@ namespace Fabric
   {
     FABRIC_AST_NODE_IMPL( AssignedVarDecl );
     
+    RC::Handle<AssignedVarDecl> AssignedVarDecl::Create(
+      CG::Location const &location,
+      std::string const &name,
+      std::string const &type,
+      RC::ConstHandle<Expr> initialExpr
+      )
+    {
+      return new AssignedVarDecl( location, name, type, initialExpr );
+    }
+
     AssignedVarDecl::AssignedVarDecl(
       CG::Location const &location,
       std::string const &name,
-      RC::ConstHandle< CG::Adapter > const &adapter,
+      std::string const &type,
       RC::ConstHandle<Expr> const &initialExpr
       )
-      : VarDecl( location, name, adapter )
+      : VarDecl( location, name, type )
       , m_initialExpr( initialExpr )
     {
     }

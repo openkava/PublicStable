@@ -27,6 +27,15 @@ namespace Fabric
         RC::ConstHandle<CompoundStatement> const &body
         );
 
+      static RC::Handle<Function> Create(
+        CG::Location const &location,
+        std::string const &friendlyName,
+        std::string const *entryName,
+        std::string const &returnTypeName,
+        RC::ConstHandle<ParamVector> const &params,
+        RC::ConstHandle<CompoundStatement> const &body
+        );
+
       RC::Handle<JSON::Object> toJSON() const;
           
       virtual std::string const *getFriendlyName() const;

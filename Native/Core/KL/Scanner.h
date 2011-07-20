@@ -23,6 +23,17 @@ namespace Fabric
       
       Token nextToken();
       
+    
+      Location getLocationForStart()
+      {
+        return m_sourceReader.getLocationForStart();
+      }
+      
+      Location getLocationForEnd() const
+      {
+        return m_sourceReader.getLocationForEnd();
+      }
+      
     protected:
     
       Scanner( RC::ConstHandle<Source> const &source );

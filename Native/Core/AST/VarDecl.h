@@ -21,25 +21,35 @@ namespace Fabric
       
     public:
 
-      static RC::Handle<VarDecl> Create( CG::Location const &location, std::string const &name, RC::ConstHandle< CG::Adapter > const &adapter )
-      {
-        return new VarDecl( location, name, adapter );
-      }
+      static RC::Handle<VarDecl> Create(
+        CG::Location const &location,
+        std::string const &name,
+        std::string const &type
+        );
 
       RC::Handle<JSON::Object> toJSON() const;
+      
+      std::string const &getType() const
+      {
+        return m_type;
+      }
       
       virtual void llvmCompileToBuilder( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const;
      
     protected:
     
-      VarDecl( CG::Location const &location, std::string const &name, RC::ConstHandle< CG::Adapter > const &adapter );
+      VarDecl(
+        CG::Location const &location,
+        std::string const &name,
+        std::string const &type
+        );
     
       CG::ExprValue llvmAllocateVariable( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const;
 
     private:
     
       std::string m_name;
-      RC::ConstHandle< CG::Adapter > m_adapter;
+      std::string m_type;
     };
   };
 };

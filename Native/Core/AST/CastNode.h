@@ -25,10 +25,11 @@ namespace Fabric
 
     public:
 
-      static RC::Handle<CastNode> Create( CG::Location const &location, RC::ConstHandle< CG::Adapter > const &adapter, RC::ConstHandle<Expr> const &child )
-      {
-        return new CastNode( location, adapter, child );
-      }
+      static RC::Handle<CastNode> Create(
+        CG::Location const &location,
+        std::string const &type,
+        RC::ConstHandle<Expr> const &child
+        );
 
       RC::Handle<JSON::Object> toJSON() const;
       
@@ -37,11 +38,15 @@ namespace Fabric
       
     protected:
     
-      CastNode( CG::Location const &location, RC::ConstHandle< CG::Adapter > const &adapter, RC::ConstHandle<Expr> const &child );
+      CastNode(
+        CG::Location const &location,
+        std::string const &type,
+        RC::ConstHandle<Expr> const &child
+        );
     
     private:
     
-      RC::ConstHandle<CG::Adapter> m_adapter;
+      std::string m_type;
       RC::ConstHandle<Expr> m_child;
     };
   };

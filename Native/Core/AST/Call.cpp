@@ -10,6 +10,7 @@
 #include <Fabric/Core/CG/Scope.h>
 #include <Fabric/Core/CG/Error.h>
 #include <Fabric/Core/CG/ExprValue.h>
+#include <Fabric/Core/CG/OverloadNames.h>
 #include <Fabric/Base/JSON/String.h>
 #include <Fabric/Base/JSON/Array.h>
 
@@ -65,32 +66,69 @@ namespace Fabric
     
     CG::ExprValue Call::buildExprValue( CG::BasicBlockBuilder &basicBlockBuilder, CG::Usage usage, std::string const &lValueErrorDesc ) const
     {
-      RC::ConstHandle<CG::FunctionSymbol> functionSymbol = getFunctionSymbol( basicBlockBuilder );
-      if ( usage == CG::USAGE_LVALUE && functionSymbol->getReturnInfo().getUsage() != CG::USAGE_LVALUE )
-        throw Exception( "result of function "+_(m_name)+" is not an l-value" );
-      
-      CG::ExprValue result;
-      try
+      RC::ConstHandle<CG::Adapter> adapter = basicBlockBuilder.maybeGetAdapter( m_name );
+      if ( adapter )
       {
+        if ( usage == CG::USAGE_LVALUE )
+          throw Exception( "temporary values cannot be used in an l-value context" );
+        else usage = CG::USAGE_RVALUE;
+        
+        llvm::Value *selfLValue = adapter->llvmAlloca( basicBlockBuilder, "temp"+adapter->getUserName() );
+        adapter->llvmInit( basicBlockBuilder, selfLValue );
+        CG::ExprValue result( adapter, CG::USAGE_LVALUE, selfLValue );
+        
+        std::vector< RC::ConstHandle<CG::Adapter> > argTypes;
+        m_args->appendTypes( basicBlockBuilder, argTypes );
+        
+        std::string initializerName = constructOverloadName( result.getAdapter(), argTypes );
+          
+        RC::ConstHandle<CG::FunctionSymbol> functionSymbol = basicBlockBuilder.maybeGetFunction( initializerName );
+        if ( !functionSymbol )
+          throw Exception( "initializer " + _(initializerName) + " not found" );
+
         std::vector<CG::FunctionParam> const functionParams = functionSymbol->getParams();
         
-        std::vector<CG::Usage> paramUsages;
-        for ( size_t i=0; i<functionParams.size(); ++i )
-          paramUsages.push_back( functionParams[i].getUsage() );
+        std::vector<CG::Usage> argUsages;
+        for ( size_t i=1; i<functionParams.size(); ++i )
+          argUsages.push_back( functionParams[i].getUsage() );
           
-        if ( paramUsages.size() != m_args->size() )
-          throw CG::Error( getLocation(), "incorrect number of arguments: expected "+_(paramUsages.size())+", actual "+_(m_args->size()) );
-
-        std::vector<CG::ExprValue> args;
-        m_args->appendExprValues( basicBlockBuilder, paramUsages, args, "cannot be an io argument" );
+        std::vector<CG::ExprValue> exprValues;
+        exprValues.push_back( result );
+        m_args->appendExprValues( basicBlockBuilder, argUsages, exprValues, "cannot be used as an io argument" );
         
-        result = functionSymbol->llvmCreateCall( basicBlockBuilder, args );
+        functionSymbol->llvmCreateCall( basicBlockBuilder, exprValues );
+        
+        return result.castTo( basicBlockBuilder, usage );
       }
-      catch ( CG::Error e )
+      else
       {
-        throw "calling function " + _(m_name) + ": " + e;
+        RC::ConstHandle<CG::FunctionSymbol> functionSymbol = getFunctionSymbol( basicBlockBuilder );
+        if ( usage == CG::USAGE_LVALUE && functionSymbol->getReturnInfo().getUsage() != CG::USAGE_LVALUE )
+          throw Exception( "result of function "+_(m_name)+" is not an l-value" );
+        
+        CG::ExprValue result;
+        try
+        {
+          std::vector<CG::FunctionParam> const functionParams = functionSymbol->getParams();
+          
+          std::vector<CG::Usage> paramUsages;
+          for ( size_t i=0; i<functionParams.size(); ++i )
+            paramUsages.push_back( functionParams[i].getUsage() );
+            
+          if ( paramUsages.size() != m_args->size() )
+            throw CG::Error( getLocation(), "incorrect number of arguments: expected "+_(paramUsages.size())+", actual "+_(m_args->size()) );
+
+          std::vector<CG::ExprValue> args;
+          m_args->appendExprValues( basicBlockBuilder, paramUsages, args, "cannot be an io argument" );
+          
+          result = functionSymbol->llvmCreateCall( basicBlockBuilder, args );
+        }
+        catch ( CG::Error e )
+        {
+          throw "calling function " + _(m_name) + ": " + e;
+        }
+        return result.castTo( basicBlockBuilder, usage );
       }
-      return result.castTo( basicBlockBuilder, usage );
     }
   };
 };

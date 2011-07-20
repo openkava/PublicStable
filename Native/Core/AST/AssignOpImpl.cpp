@@ -8,6 +8,7 @@
 #include <Fabric/Core/AST/AssignOpImpl.h>
 #include <Fabric/Core/AST/Param.h>
 #include <Fabric/Core/CG/Adapter.h>
+#include <Fabric/Core/CG/OpTypes.h>
 #include <Fabric/Core/CG/OverloadNames.h>
 #include <Fabric/Base/JSON/String.h>
 
@@ -43,7 +44,15 @@ namespace Fabric
         ParamVector::Create( rhs ),
         body
         )
+      , m_assignOpType( assignOpType )
     {
+    }
+    
+    RC::Handle<JSON::Object> AssignOpImpl::toJSON() const
+    {
+      RC::Handle<JSON::Object> result = MethodOpImpl::toJSON();
+      result->set( "op", JSON::String::Create( CG::assignOpTypeDesc( m_assignOpType ) ) );
+      return result;
     }
   };
 };

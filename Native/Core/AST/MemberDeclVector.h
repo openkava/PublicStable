@@ -31,6 +31,7 @@ namespace Fabric
     public:
       
       static RC::Handle<MemberDeclVector> Create();
+      static RC::Handle<MemberDeclVector> Create( RC::ConstHandle<MemberDecl> const &first, RC::Handle<MemberDeclVector> const &remaining );
 
       RC::Handle<JSON::Array> toJSON() const;
           

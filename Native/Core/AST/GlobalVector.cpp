@@ -15,6 +15,15 @@ namespace Fabric
       return new GlobalVector;
     }
     
+    RC::Handle<GlobalVector> GlobalVector::Create( RC::ConstHandle<Global> const &first, RC::ConstHandle<GlobalVector> const &remaining )
+    {
+      RC::Handle<GlobalVector> globalVector = new GlobalVector;
+      globalVector->push_back( first );
+      for ( GlobalVector::const_iterator it=remaining->begin(); it!=remaining->end(); ++it )
+        globalVector->push_back( *it );
+      return globalVector;
+    }
+    
     GlobalVector::GlobalVector()
     {
     }

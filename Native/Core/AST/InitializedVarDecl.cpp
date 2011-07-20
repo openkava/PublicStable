@@ -22,20 +22,20 @@ namespace Fabric
     RC::Handle<InitializedVarDecl> InitializedVarDecl::Create(
       CG::Location const &location,
       std::string const &name,
-      RC::ConstHandle<CG::Adapter> const &adapter,
+      std::string const &type,
       RC::ConstHandle<ExprVector> const &args
       )
     {
-      return new InitializedVarDecl( location, name, adapter, args );
+      return new InitializedVarDecl( location, name, type, args );
     }
     
     InitializedVarDecl::InitializedVarDecl(
       CG::Location const &location,
       std::string const &name,
-      RC::ConstHandle<CG::Adapter> const &adapter,
+      std::string const &type,
       RC::ConstHandle<ExprVector> const &args
       )
-      : VarDecl( location, name, adapter )
+      : VarDecl( location, name, type )
       , m_args( args )
     {
     }
@@ -54,7 +54,8 @@ namespace Fabric
       std::vector< RC::ConstHandle<CG::Adapter> > argTypes;
       m_args->appendTypes( basicBlockBuilder, argTypes );
       
-      std::string initializerName = constructOverloadName( result.getAdapter(), argTypes );
+      RC::ConstHandle<CG::Adapter> adapter = basicBlockBuilder.getAdapter( getType() );
+      std::string initializerName = constructOverloadName( adapter, argTypes );
         
       RC::ConstHandle<CG::FunctionSymbol> functionSymbol = basicBlockBuilder.maybeGetFunction( initializerName );
       if ( !functionSymbol )
