@@ -24,20 +24,16 @@ namespace Fabric
         ) 
         : m_scanner( scanner )
         , m_diagnostics( diagnostics )
-        , m_typeName( 0 )
       {
       }
       
       ~Context()
       {
-        FABRIC_ASSERT( m_typeName == 0 );
       }
 
       RC::Handle<KL::Scanner> m_scanner;
       CG::Diagnostics &m_diagnostics;
       RC::Handle<AST::GlobalVector> m_resultGlobalList;
-
-      std::string const *m_typeName;
     };
   }
 }

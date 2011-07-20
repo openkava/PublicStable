@@ -486,23 +486,16 @@ function_entry_name
 ;
 
 alias
-  : TOKEN_ALIAS TOKEN_IDENTIFIER
-      {
-        FABRIC_ASSERT( context.m_typeName == 0 );
-        context.m_typeName = $2;
-      }
-    TOKEN_IDENTIFIER array_modifier TOKEN_SEMICOLON
-      {
-        std::string compoundTypeName( *context.m_typeName );
-        compoundTypeName.append( *$5 );
-        delete $5;
-        
-        $$ = AST::Alias::Create( RTLOC, *$4, compoundTypeName ).take();
-        delete $4;
-        
-        delete context.m_typeName;
-        context.m_typeName = 0;
-      }
+  : TOKEN_ALIAS TOKEN_IDENTIFIER TOKEN_IDENTIFIER array_modifier TOKEN_SEMICOLON
+  {
+    std::string compoundTypeName( *$2 );
+    delete $2;
+    compoundTypeName.append( *$4 );
+    delete $4;
+    
+    $$ = AST::Alias::Create( RTLOC, *$3, compoundTypeName ).take();
+    delete $3;
+  }
 ;
 
 struct
@@ -528,23 +521,16 @@ struct_member_list
 ;
 
 struct_member
-  : TOKEN_IDENTIFIER
-      {
-        FABRIC_ASSERT( context.m_typeName == 0 );
-        context.m_typeName = $1;
-      }
-    TOKEN_IDENTIFIER array_modifier TOKEN_SEMICOLON
-      {
-        std::string compoundTypeName( *context.m_typeName );
-        compoundTypeName.append( *$4 );
-        delete $4;
-        
-        $$ = AST::MemberDecl::Create( RTLOC, *$3, compoundTypeName ).take();
-        delete $3;
-        
-        delete context.m_typeName;
-        context.m_typeName = 0;
-      }
+  : TOKEN_IDENTIFIER TOKEN_IDENTIFIER array_modifier TOKEN_SEMICOLON
+  {
+    std::string compoundTypeName( *$1 );
+    delete $1;
+    compoundTypeName.append( *$3 );
+    delete $3;
+    
+    $$ = AST::MemberDecl::Create( RTLOC, *$2, compoundTypeName ).take();
+    delete $2;
+  }
 ;
 
 parameter_list
@@ -606,8 +592,6 @@ array_modifier
     if ( length == 0 )
     {
       delete $4;
-      delete context.m_typeName;
-      context.m_typeName = 0;
       yyerror( &yyloc, context, "fixed array size must be greater than zero" );
       YYERROR;
     }
@@ -631,32 +615,23 @@ array_modifier
 var_decl
   : TOKEN_IDENTIFIER array_modifier TOKEN_EQUALS assignment_expression
   {
-    std::string compoundTypeName( *context.m_typeName );
-    compoundTypeName.append( *$2 );
-    delete $2;
-    
-    $$ = AST::AssignedVarDecl::Create( RTLOC, *$1, compoundTypeName, $4 ).take();
+    $$ = AST::AssignedVarDecl::Create( RTLOC, *$1, *$2, $4 ).take();
     delete $1;
+    delete $2;
     $4->release();
   }
   | TOKEN_IDENTIFIER array_modifier TOKEN_LPAREN argument_expression_list TOKEN_RPAREN
   {
-    std::string compoundTypeName( *context.m_typeName );
-    compoundTypeName.append( *$2 );
-    delete $2;
-    
-    $$ = AST::InitializedVarDecl::Create( RTLOC, *$1, compoundTypeName, $4 ).take();
+    $$ = AST::InitializedVarDecl::Create( RTLOC, *$1, *$2, $4 ).take();
     delete $1;
+    delete $2;
     $4->release();
   }
   | TOKEN_IDENTIFIER array_modifier 
   {
-    std::string compoundTypeName( *context.m_typeName );
-    compoundTypeName.append( *$2 );
-    delete $2;
-    
-    $$ = AST::VarDecl::Create( RTLOC, *$1, compoundTypeName ).take();
+    $$ = AST::VarDecl::Create( RTLOC, *$1, *$2 ).take();
     delete $1;
+    delete $2;
   }
 ;
 
@@ -693,43 +668,29 @@ io_parameter_usage
 ;
 
 in_parameter
-  : in_parameter_usage TOKEN_IDENTIFIER
-      {
-        FABRIC_ASSERT( context.m_typeName == 0 );
-        context.m_typeName = $2;
-      }
-    TOKEN_IDENTIFIER array_modifier
-      {
-        std::string compoundTypeName( *context.m_typeName );
-        compoundTypeName.append( *$5 );
-        delete $5;
-        
-        $$ = AST::Param::Create( RTLOC, *$4, compoundTypeName, $1 ).take();
-        delete $4;
-        
-        delete context.m_typeName;
-        context.m_typeName = 0;
-      }
+  : in_parameter_usage TOKEN_IDENTIFIER TOKEN_IDENTIFIER array_modifier
+  {
+    std::string compoundTypeName( *$2 );
+    delete $2;
+    compoundTypeName.append( *$4 );
+    delete $4;
+    
+    $$ = AST::Param::Create( RTLOC, *$3, compoundTypeName, $1 ).take();
+    delete $2;
+  }
 ;
 
 io_parameter
-  : io_parameter_usage TOKEN_IDENTIFIER
-      {
-        FABRIC_ASSERT( context.m_typeName == 0 );
-        context.m_typeName = $2;
-      }
-    TOKEN_IDENTIFIER array_modifier
-      {
-        std::string compoundTypeName( *context.m_typeName );
-        compoundTypeName.append( *$5 );
-        delete $5;
-        
-        $$ = AST::Param::Create( RTLOC, *$4, compoundTypeName, $1 ).take();
-        delete $4;
-        
-        delete context.m_typeName;
-        context.m_typeName = 0;
-      }
+  : io_parameter_usage TOKEN_IDENTIFIER TOKEN_IDENTIFIER array_modifier
+  {
+    std::string compoundTypeName( *$2 );
+    delete $2;
+    compoundTypeName.append( *$4 );
+    delete $4;
+    
+    $$ = AST::Param::Create( RTLOC, *$3, compoundTypeName, $1 ).take();
+    delete $2;
+  }
 ;
 
 parameter
@@ -780,7 +741,7 @@ compound_type
 ;
 
 loop_start_statement
-  : expression
+  : expression TOKEN_SEMICOLON
   {
     $$ = AST::ExprStatement::Create( RTLOC, $1 ).take();
     $1->release();
@@ -792,46 +753,32 @@ loop_start_statement
 ;
 
 var_decl_statement
-  : TOKEN_IDENTIFIER 
-      {
-        FABRIC_ASSERT( context.m_typeName == 0 );
-        context.m_typeName = $1;
-      }
-    var_decl_list TOKEN_SEMICOLON 
-      {
-        $$ = AST::VarDeclStatement::Create( RTLOC, "", $3 ).take();
-        $3->release();
-        
-        delete context.m_typeName;
-        context.m_typeName = 0;
-      }
-  | TOKEN_VAR TOKEN_IDENTIFIER 
-      {
-        FABRIC_ASSERT( context.m_typeName == 0 );
-        context.m_typeName = $2;
-      }
-    var_decl_list TOKEN_SEMICOLON 
-      {
-        $$ = AST::VarDeclStatement::Create( RTLOC, "", $4 ).take();
-        $4->release();
-        
-        delete context.m_typeName;
-        context.m_typeName = 0;
-      }
+  : TOKEN_IDENTIFIER var_decl_list TOKEN_SEMICOLON 
+  {
+    $$ = AST::VarDeclStatement::Create( RTLOC, *$1, $2 ).take();
+    delete $1;
+    $2->release();
+  }
+  | TOKEN_VAR TOKEN_IDENTIFIER var_decl_list TOKEN_SEMICOLON 
+  {
+    $$ = AST::VarDeclStatement::Create( RTLOC, *$2, $3 ).take();
+    delete $2;
+    $3->release();
+  }
 ;
 
 loop_statement
-  : TOKEN_FOR TOKEN_LPAREN loop_start_statement TOKEN_SEMICOLON optional_expression TOKEN_SEMICOLON optional_expression TOKEN_RPAREN statement
+  : TOKEN_FOR TOKEN_LPAREN loop_start_statement optional_expression TOKEN_SEMICOLON optional_expression TOKEN_RPAREN statement
   {
-    $$ = AST::CStyleLoop::Create( RTLOC, $3, $5, $7, 0, $9 ).take();
+    $$ = AST::CStyleLoop::Create( RTLOC, $3, $4, $6, 0, $8 ).take();
     if ( $3 )
       $3->release();
-    if ( $5 )
-      $5->release();
-    if ( $7 )
-      $7->release();
-    if ( $9 )
-      $9->release();
+    if ( $4 )
+      $4->release();
+    if ( $6 )
+      $6->release();
+    if ( $8 )
+      $8->release();
   }
   | TOKEN_WHILE TOKEN_LPAREN optional_expression TOKEN_RPAREN statement
   {
