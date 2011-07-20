@@ -1,18 +1,2 @@
-GlobalList
-  Function( 'entry' ('entry'), void )
-    ParamList
-    CompoundStatement
-      StatementList
-        StatementList
-          AssignedVarDecl( VarDecl( 'boolean', Boolean ), ConstBoolean( true ) )
-            ConstBoolean( true )
-        Report
-          Var('boolean')
-        ExprStatement
-          AssignOp(ASSIGN_OP)
-            Var('boolean')
-            ConstBoolean( false )
-        Report
-          Var('boolean')
 true
 false

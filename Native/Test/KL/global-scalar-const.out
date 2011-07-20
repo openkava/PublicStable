@@ -1,10 +1,1 @@
-GlobalList
-  GlobalConstDecl
-    ConstScalarDecl( 'PI', Scalar, 3.141 )
-  Function( 'entry' ('entry'), void )
-    ParamList
-    CompoundStatement
-      StatementList
-        Report
-          Var('PI')
 3.141

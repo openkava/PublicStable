@@ -1,10 +1,1 @@
-GlobalList
-  Function( 'entry' ('entry'), void )
-    ParamList
-    CompoundStatement
-      StatementList
-        Report
-          CastNode( Size )
-            CastNode( Integer )
-              ConstSize( 16824 )
 16824

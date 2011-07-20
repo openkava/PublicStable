@@ -1,13 +1,2 @@
-GlobalList
-  Function( 'entry' ('entry'), void )
-    ParamList
-    CompoundStatement
-      StatementList
-        Report
-          CastNode( Boolean )
-            ConstBoolean( false )
-        Report
-          CastNode( Boolean )
-            ConstBoolean( true )
 false
 true

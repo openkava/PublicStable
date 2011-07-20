@@ -1,19 +1,1 @@
-GlobalList
-  Function( 'foo' ('bar'), Scalar:r-value )
-    ParamList
-      Param( 'x', Scalar, r-value )
-    CompoundStatement
-      StatementList
-        ReturnStatement
-          BinOp( DIV )
-            ConstScalar( 1 )
-            Var('x')
-  Function( 'entry' ('entry'), void )
-    ParamList
-    CompoundStatement
-      StatementList
-        Report
-          Call('foo')
-            ArgList
-              ConstSize( 2 )
 0.5

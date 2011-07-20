@@ -1,8 +1,1 @@
-GlobalList
-  Function( 'entry' ('entry'), void )
-    ParamList
-    CompoundStatement
-      StatementList
-        Report
-          ConstSize( 3 )
 3

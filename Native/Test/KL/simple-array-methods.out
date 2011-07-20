@@ -1,15 +1,1 @@
-GlobalList
-  Function( 'entry' ('entry'), void )
-    ParamList
-    CompoundStatement
-      StatementList
-        StatementList
-          VarDecl( 'a', Integer[] )
-        Report
-          BinOp( ADD )
-            BinOp( ADD )
-              Var('a')
-              ConstString( '; size ' )
-            StructMemberOp( 'size' )
-              Var('a')
 []; size 0

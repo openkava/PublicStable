@@ -1,14 +1,1 @@
-GlobalList
-  StructDecl( 'S' )
-    MemberDecl( 'i', Integer )
-  Function( 'entry' ('entry'), void )
-    ParamList
-    CompoundStatement
-      StatementList
-        StatementList
-          VarDecl( 's', S )
-        Report
-          BinOp( ADD )
-            Var('s')
-            ConstSize( 17 )
 9:3: error: binary operator '+' not supported for types 'S' and 'Integer'

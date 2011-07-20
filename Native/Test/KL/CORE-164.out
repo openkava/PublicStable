@@ -1,19 +1,1 @@
-GlobalList
-  Function( 'entry' ('entry'), void )
-    ParamList
-    CompoundStatement
-      StatementList
-        SwitchStatement
-          ConstSize( 0 )
-          CaseList
-            Case
-              ConstSize( 0 )
-              StatementList
-                BreakStatement
-            Case
-              ConstSize( 1 )
-              StatementList
-                BreakStatement
-                StatementList
-                  VarDecl( 'blah', Integer[] )
 9:14: error: code is unreachable

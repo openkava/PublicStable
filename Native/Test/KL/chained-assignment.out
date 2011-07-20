@@ -1,30 +1,3 @@
-GlobalList
-  Function( 'entry' ('entry'), void )
-    ParamList
-    CompoundStatement
-      StatementList
-        StatementList
-          AssignedVarDecl( VarDecl( 'a', Integer ), ConstSize( 7 ) )
-            ConstSize( 7 )
-          VarDecl( 'b', Integer )
-          VarDecl( 'c', Integer )
-          VarDecl( 'd', Integer )
-        ExprStatement
-          AssignOp(ASSIGN_OP)
-            Var('d')
-            AssignOp(ASSIGN_OP)
-              Var('c')
-              AssignOp(ASSIGN_OP)
-                Var('b')
-                Var('a')
-        Report
-          Var('a')
-        Report
-          Var('b')
-        Report
-          Var('c')
-        Report
-          Var('d')
 7
 7
 7

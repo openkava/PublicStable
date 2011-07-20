@@ -1,52 +1,9 @@
-GlobalList
-  Function( 'entry' ('entry'), void )
-    ParamList
-    CompoundStatement
-      StatementList
-        StatementList
-          VarDecl( 'a', String[] )
-        Report
-          Var('a')
-        ExprStatement
-          MethodOp( 'push' )
-            Var('a')
-            ArgList
-              ConstString( 'foo' )
-        Report
-          Var('a')
-        Report
-          IndexOp
-            Var('a')
-            ConstSize( 0 )
-        ExprStatement
-          MethodOp( 'push' )
-            Var('a')
-            ArgList
-              ConstString( 'bar' )
-        Report
-          Var('a')
-        Report
-          IndexOp
-            Var('a')
-            ConstSize( 1 )
-        Report
-          MethodOp( 'pop' )
-            Var('a')
-            ArgList
-        Report
-          Var('a')
-        Report
-          MethodOp( 'pop' )
-            Var('a')
-            ArgList
-        Report
-          Var('a')
 []
-['foo']
+["foo"]
 foo
-['foo','bar']
+["foo","bar"]
 bar
 bar
-['foo']
+["foo"]
 foo
 []

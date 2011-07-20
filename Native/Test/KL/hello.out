@@ -1,8 +1,1 @@
-GlobalList
-  Function( 'entry' ('entry'), void )
-    ParamList
-    CompoundStatement
-      StatementList
-        Report
-          ConstString( 'Hello, world!' )
 Hello, world!

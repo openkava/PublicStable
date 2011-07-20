@@ -1,17 +1,1 @@
-GlobalList
-  Function( 'myFunc' ('myFunc'), void )
-    ParamList
-      Param( 'a', Scalar, r-value )
-    CompoundStatement
-      StatementList
-        Report
-          Var('a')
-  Operator( 'entry' ('entry') )
-    ParamList
-    CompoundStatement
-      StatementList
-        ExprStatement
-          Call('myFunc')
-            ArgList
-              ConstSize( 20 )
 20

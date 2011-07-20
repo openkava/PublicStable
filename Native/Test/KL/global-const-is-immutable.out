@@ -1,12 +1,1 @@
-GlobalList
-  GlobalConstDecl
-    ConstScalarDecl( 'PI', Scalar, 3.141 )
-  Function( 'entry' ('entry'), void )
-    ParamList
-    CompoundStatement
-      StatementList
-        ExprStatement
-          AssignOp(ASSIGN_OP)
-            Var('PI')
-            ConstScalar( 2.718 )
 4:3: error: expression is not an l-value

@@ -1,16 +1,1 @@
-GlobalList
-  Function( 'entry' ('entry'), void )
-    ParamList
-    CompoundStatement
-      StatementList
-        ConditionalStatement
-          ConstBoolean( false )
-          Report
-            ConstString( 'BAD 1' )
-          ConditionalStatement
-            ConstBoolean( false )
-            Report
-              ConstString( 'BAD 2' )
-            Report
-              ConstString( 'GOOD' )
 GOOD

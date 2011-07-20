@@ -800,6 +800,20 @@ var_decl_statement
     var_decl_list TOKEN_SEMICOLON 
       {
         $$ = AST::VarDeclStatement::Create( RTLOC, "", $3 ).take();
+        $3->release();
+        
+        delete context.m_typeName;
+        context.m_typeName = 0;
+      }
+  | TOKEN_VAR TOKEN_IDENTIFIER 
+      {
+        FABRIC_ASSERT( context.m_typeName == 0 );
+        context.m_typeName = $2;
+      }
+    var_decl_list TOKEN_SEMICOLON 
+      {
+        $$ = AST::VarDeclStatement::Create( RTLOC, "", $4 ).take();
+        $4->release();
         
         delete context.m_typeName;
         context.m_typeName = 0;
