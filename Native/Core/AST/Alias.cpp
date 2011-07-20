@@ -4,6 +4,7 @@
  
 #include <Fabric/Core/AST/Alias.h>
 #include <Fabric/Core/CG/Adapter.h>
+#include <Fabric/Core/CG/Error.h>
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/RT/Manager.h>
 #include <Fabric/Base/JSON/String.h>
@@ -33,16 +34,19 @@ namespace Fabric
       return result;
     }
     
-    void Alias::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const
+    void Alias::registerTypes( RC::Handle<RT::Manager> const &rtManager, CG::Diagnostics &diagnostics ) const
     {
-      RC::ConstHandle<RT::Desc> desc = cgManager->getRTManager()->getDesc( m_adapterName );
+      RC::ConstHandle<RT::Desc> desc = rtManager->maybeGetDesc( m_adapterName );
       if ( !desc )
-        addError( diagnostics, "no registered type named " + _(m_adapterName) );
-      else cgManager->registerAlias( m_name, cgManager->getAdapter( desc ) );
-    }
-
-    void Alias::llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctionBodies ) const
-    {
+        throw CG::Error( getLocation(), "no registered type named " + _(m_adapterName) );
+      try
+      {
+        rtManager->registerAlias( m_name, desc );
+      }
+      catch ( Exception e )
+      {
+        addError( diagnostics, e.getDesc() );
+      }
     }
   };
 };
