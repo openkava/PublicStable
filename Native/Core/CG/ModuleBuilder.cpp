@@ -16,14 +16,16 @@ namespace Fabric
       return m_manager;
     }
     
-    RC::ConstHandle<Adapter> ModuleBuilder::maybeGetAdapter( std::string const &userName ) const
+    RC::ConstHandle<Adapter> ModuleBuilder::maybeGetAdapter( std::string const &userName )
     {
       return m_manager->maybeGetAdapter( userName );
     }
     
-    RC::ConstHandle<Adapter> ModuleBuilder::getAdapter( std::string const &userName ) const
+    RC::ConstHandle<Adapter> ModuleBuilder::getAdapter( std::string const &userName )
     {
-      return m_manager->getAdapter( userName );
+      RC::ConstHandle<Adapter> result = m_manager->getAdapter( userName );
+      result->llvmPrepareModule( *this, true );
+      return result;
     }
     
     llvm::LLVMContext &ModuleBuilder::getLLVMContext()

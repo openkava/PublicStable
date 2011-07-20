@@ -3,9 +3,10 @@
  */
  
 #include "MemberDecl.h"
-#include <Fabric/Core/CG/Location.h>
 #include <Fabric/Core/CG/Adapter.h>
 #include <Fabric/Core/CG/Error.h>
+#include <Fabric/Core/CG/Location.h>
+#include <Fabric/Core/CG/ModuleBuilder.h>
 #include <Fabric/Core/RT/Manager.h>
 #include <Fabric/Base/JSON/String.h>
 
@@ -36,6 +37,11 @@ namespace Fabric
       structMemberInfo.desc = rtManager->maybeGetDesc( m_type );
       if ( !structMemberInfo.desc )
         throw CG::Error( getLocation(), "member " + _(m_name) + ": type " + _(m_type) + " not registered" );
+    }
+
+    void MemberDecl::llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    {
+      moduleBuilder.getAdapter( m_type );
     }
   };
 };

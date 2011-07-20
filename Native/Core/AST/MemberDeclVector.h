@@ -44,6 +44,7 @@ namespace Fabric
       RC::Handle<JSON::Array> toJSON() const;
           
       void buildStructMemberInfoVector( RC::ConstHandle<RT::Manager> const &rtManager, RT::StructMemberInfoVector &structMemberInfoVector ) const;
+      void llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
     
     protected:
     

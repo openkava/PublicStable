@@ -18,6 +18,7 @@ namespace Fabric
   namespace CG
   {
     class Adapter;
+    class ModuleBuilder;
   };
   
   namespace AST
@@ -36,6 +37,7 @@ namespace Fabric
       RC::Handle<JSON::Object> toJSON() const;
       
       void buildStructMemberInfo( RC::ConstHandle<RT::Manager> const &rtManager, RT::StructMemberInfo &structMemberInfo ) const;
+      void llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
 
     protected:
     

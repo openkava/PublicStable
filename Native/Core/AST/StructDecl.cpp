@@ -60,5 +60,11 @@ namespace Fabric
         addError( diagnostics, e.getDesc() );
       }
     }
+
+    void StructDecl::llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctionBodies ) const
+    {
+      m_members->llvmCompileToModule( moduleBuilder, diagnostics );
+      moduleBuilder.getAdapter( m_name );
+    }
   };
 };
