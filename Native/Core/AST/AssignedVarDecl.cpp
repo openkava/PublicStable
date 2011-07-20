@@ -21,20 +21,20 @@ namespace Fabric
     RC::Handle<AssignedVarDecl> AssignedVarDecl::Create(
       CG::Location const &location,
       std::string const &name,
-      std::string const &type,
+      std::string const &arrayModifier,
       RC::ConstHandle<Expr> initialExpr
       )
     {
-      return new AssignedVarDecl( location, name, type, initialExpr );
+      return new AssignedVarDecl( location, name, arrayModifier, initialExpr );
     }
 
     AssignedVarDecl::AssignedVarDecl(
       CG::Location const &location,
       std::string const &name,
-      std::string const &type,
+      std::string const &arrayModifier,
       RC::ConstHandle<Expr> const &initialExpr
       )
-      : VarDecl( location, name, type )
+      : VarDecl( location, name, arrayModifier )
       , m_initialExpr( initialExpr )
     {
     }
@@ -46,9 +46,9 @@ namespace Fabric
       return result;
     }
 
-    void AssignedVarDecl::llvmCompileToBuilder( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const
+    void AssignedVarDecl::llvmCompileToBuilder( std::string const &baseType, CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const
     {
-      CG::ExprValue result = VarDecl::llvmAllocateVariable( basicBlockBuilder, diagnostics );
+      CG::ExprValue result = VarDecl::llvmAllocateVariable( baseType, basicBlockBuilder, diagnostics );
       
       CG::ExprValue initialExprExprValue;
       try

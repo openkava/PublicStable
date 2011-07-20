@@ -8,14 +8,19 @@
 #ifndef _FABRIC_AST_VAR_DECL_H
 #define _FABRIC_AST_VAR_DECL_H
 
-#include <Fabric/Core/AST/Statement.h>
-#include <Fabric/Core/AST/Expr.h>
+#include <Fabric/Core/AST/Node.h>
+#include <Fabric/Core/CG/ExprValue.h>
 
 namespace Fabric
 {
+  namespace CG
+  {
+    class BasicBlockBuilder;
+  };
+  
   namespace AST
   {
-    class VarDecl: public Statement
+    class VarDecl : public Node
     {
       FABRIC_AST_NODE_DECL( VarDecl );
       
@@ -24,32 +29,27 @@ namespace Fabric
       static RC::Handle<VarDecl> Create(
         CG::Location const &location,
         std::string const &name,
-        std::string const &type
+        std::string const &arrayModifier
         );
 
       RC::Handle<JSON::Object> toJSON() const;
       
-      std::string const &getType() const
-      {
-        return m_type;
-      }
-      
-      virtual void llvmCompileToBuilder( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const;
+      virtual void llvmCompileToBuilder( std::string const &baseType, CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const;
      
     protected:
     
       VarDecl(
         CG::Location const &location,
         std::string const &name,
-        std::string const &type
+        std::string const &arrayModifier
         );
     
-      CG::ExprValue llvmAllocateVariable( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const;
+      CG::ExprValue llvmAllocateVariable( std::string const &baseType, CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const;
 
     private:
     
       std::string m_name;
-      std::string m_type;
+      std::string m_arrayModifier;
     };
   };
 };

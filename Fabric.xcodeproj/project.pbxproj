@@ -1186,6 +1186,10 @@
 		DBC4A0B213D4A6C40092C9E7 /* nBodyOp.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = nBodyOp.kl; sourceTree = "<group>"; };
 		DBC4A0B313D4A6C40092C9E7 /* nBodyOpGPU.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = nBodyOpGPU.kl; sourceTree = "<group>"; };
 		DBC4A0B413D4A6C40092C9E7 /* nBodySimulation.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = nBodySimulation.html; sourceTree = "<group>"; };
+		DBC987B013D7750E00E0FA31 /* VarDeclStatement.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = VarDeclStatement.cpp; sourceTree = "<group>"; };
+		DBC987B113D7750E00E0FA31 /* VarDeclStatement.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VarDeclStatement.h; sourceTree = "<group>"; };
+		DBC987B213D7764800E0FA31 /* VarDeclVector.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = VarDeclVector.cpp; sourceTree = "<group>"; };
+		DBC987B313D7764800E0FA31 /* VarDeclVector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VarDeclVector.h; sourceTree = "<group>"; };
 		DBCCD55C13ABE93D00024113 /* install.sh.template */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = install.sh.template; sourceTree = "<group>"; };
 		DBCCD55D13ABE93D00024113 /* SConscript */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = SConscript; sourceTree = "<group>"; };
 		DBCCD56613ABFAE300024113 /* SConscript */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = SConscript; sourceTree = "<group>"; };
@@ -1655,6 +1659,10 @@
 				DB96721513A5423200616143 /* Var.h */,
 				DB96721613A5423200616143 /* VarDecl.cpp */,
 				DB96721713A5423200616143 /* VarDecl.h */,
+				DBC987B013D7750E00E0FA31 /* VarDeclStatement.cpp */,
+				DBC987B113D7750E00E0FA31 /* VarDeclStatement.h */,
+				DBC987B213D7764800E0FA31 /* VarDeclVector.cpp */,
+				DBC987B313D7764800E0FA31 /* VarDeclVector.h */,
 			);
 			path = AST;
 			sourceTree = "<group>";

@@ -64,6 +64,8 @@
 #include <Fabric/Core/AST/TernaryOp.h>
 #include <Fabric/Core/AST/Var.h>
 #include <Fabric/Core/AST/VarDecl.h>
+#include <Fabric/Core/AST/VarDeclStatement.h>
+#include <Fabric/Core/AST/VarDeclVector.h>
 #include <Fabric/Core/AST/UniOp.h>
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/Util/Parse.h>
@@ -136,6 +138,8 @@ int kl_lex( YYSTYPE *yys, YYLTYPE *yyl, KL::Context &context );
 %union { CG::Usage usage; }
 %destructor { } <usage>
 
+%union { Fabric::AST::VarDecl *astVarDeclPtr; }
+%union { Fabric::AST::VarDeclVector *astVarDeclVectorPtr; }
 %union { Fabric::AST::Param *astParamPtr; }
 %union { Fabric::AST::ParamVector *astParamListPtr; }
 %union { Fabric::AST::Global *astGlobalPtr; }
@@ -263,12 +267,12 @@ int kl_lex( YYSTYPE *yys, YYLTYPE *yyl, KL::Context &context );
 %type <astStatementPtr> loop_start_statement
 %type <valueStringPtr> array_modifier
 %type <astStatementPtr> var_decl_statement
-%type <astStatementPtr> var_decl
+%type <astVarDeclPtr> var_decl
+%type <astVarDeclVectorPtr> var_decl_list
 %type <astStatementPtr> loop_statement
 %type <astStatementPtr> switch_statement
 %type <astCasePtr> case
 %type <astCaseListPtr> case_list
-%type <astStatementListPtr> var_decl_list
 %type <astStatementListPtr> statement_list
 %type <astCompoundStatementPtr> compound_statement
 %type <astArgListPtr> argument_expression_list
@@ -659,12 +663,12 @@ var_decl
 var_decl_list
   : var_decl
   {
-    $$ = AST::StatementVector::Create( $1 ).take();
+    $$ = AST::VarDeclVector::Create( $1 ).take();
     $1->release();
   }
   | var_decl TOKEN_COMMA var_decl_list
   {
-    $$ = AST::StatementVector::Create( $1, $3 ).take();
+    $$ = AST::VarDeclVector::Create( $1, $3 ).take();
     $1->release();
     $3->release();
   }
@@ -781,16 +785,9 @@ loop_start_statement
     $$ = AST::ExprStatement::Create( RTLOC, $1 ).take();
     $1->release();
   }
-  | TOKEN_IDENTIFIER TOKEN_IDENTIFIER TOKEN_EQUALS assignment_expression 
+  | var_decl_statement 
   {
-    $$ = AST::AssignedVarDecl::Create( RTLOC, *$2, *$1, $4 ).take();
-    delete $1;
-    delete $2;
-    $4->release();
-  }
-  | /* empty */
-  {
-    $$ = 0;
+    $$ = $1;
   }
 ;
 
@@ -802,7 +799,7 @@ var_decl_statement
       }
     var_decl_list TOKEN_SEMICOLON 
       {
-        $$ = AST::CompoundStatement::Create( RTLOC, $3 ).take();
+        $$ = AST::VarDeclStatement::Create( RTLOC, "", $3 ).take();
         
         delete context.m_typeName;
         context.m_typeName = 0;

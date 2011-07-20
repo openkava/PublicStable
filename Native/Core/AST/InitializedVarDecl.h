@@ -26,20 +26,20 @@ namespace Fabric
       static RC::Handle<InitializedVarDecl> Create(
         CG::Location const &location,
         std::string const &name,
-        std::string const &type,
+        std::string const &arrayModifier,
         RC::ConstHandle<ExprVector> const &args
         );
 
       RC::Handle<JSON::Object> toJSON() const;
 
-      virtual void llvmCompileToBuilder( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const;
+      virtual void llvmCompileToBuilder( std::string const &baseType, CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const;
      
     protected:
     
       InitializedVarDecl(
         CG::Location const &location,
         std::string const &name,
-        std::string const &type,
+        std::string const &arrayModifier,
         RC::ConstHandle<ExprVector> const &args
         );
     

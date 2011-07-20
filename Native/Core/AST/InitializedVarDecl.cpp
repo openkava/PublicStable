@@ -22,20 +22,20 @@ namespace Fabric
     RC::Handle<InitializedVarDecl> InitializedVarDecl::Create(
       CG::Location const &location,
       std::string const &name,
-      std::string const &type,
+      std::string const &arrayModifier,
       RC::ConstHandle<ExprVector> const &args
       )
     {
-      return new InitializedVarDecl( location, name, type, args );
+      return new InitializedVarDecl( location, name, arrayModifier, args );
     }
     
     InitializedVarDecl::InitializedVarDecl(
       CG::Location const &location,
       std::string const &name,
-      std::string const &type,
+      std::string const &arrayModifier,
       RC::ConstHandle<ExprVector> const &args
       )
-      : VarDecl( location, name, type )
+      : VarDecl( location, name, arrayModifier )
       , m_args( args )
     {
     }
@@ -47,14 +47,14 @@ namespace Fabric
       return result;
     }
 
-    void InitializedVarDecl::llvmCompileToBuilder( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const
+    void InitializedVarDecl::llvmCompileToBuilder( std::string const &baseType, CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const
     {
-      CG::ExprValue result = VarDecl::llvmAllocateVariable( basicBlockBuilder, diagnostics );
+      CG::ExprValue result = VarDecl::llvmAllocateVariable( baseType, basicBlockBuilder, diagnostics );
       
       std::vector< RC::ConstHandle<CG::Adapter> > argTypes;
       m_args->appendTypes( basicBlockBuilder, argTypes );
       
-      RC::ConstHandle<CG::Adapter> adapter = basicBlockBuilder.getAdapter( getType() );
+      RC::ConstHandle<CG::Adapter> adapter = result.getAdapter();
       std::string initializerName = constructOverloadName( adapter, argTypes );
         
       RC::ConstHandle<CG::FunctionSymbol> functionSymbol = basicBlockBuilder.maybeGetFunction( initializerName );

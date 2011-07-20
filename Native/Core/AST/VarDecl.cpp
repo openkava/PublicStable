@@ -19,39 +19,39 @@ namespace Fabric
     RC::Handle<VarDecl> VarDecl::Create(
       CG::Location const &location,
       std::string const &name,
-      std::string const &type
+      std::string const &arrayModifier
       )
     {
-      return new VarDecl( location, name, type );
+      return new VarDecl( location, name, arrayModifier );
     }
     
     VarDecl::VarDecl(
       CG::Location const &location,
       std::string const &name,
-      std::string const &type
+      std::string const &arrayModifier
       )
-      : Statement( location )
+      : Node( location )
       , m_name( name )
-      , m_type( type )
+      , m_arrayModifier( arrayModifier )
     {
     }
     
     RC::Handle<JSON::Object> VarDecl::toJSON() const
     {
-      RC::Handle<JSON::Object> result = Statement::toJSON();
+      RC::Handle<JSON::Object> result = Node::toJSON();
       result->set( "name", JSON::String::Create( m_name ) );
-      result->set( "type", JSON::String::Create( m_type ) );
+      result->set( "arrayModifier", JSON::String::Create( m_arrayModifier ) );
       return result;
     }
 
-    void VarDecl::llvmCompileToBuilder( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const
+    void VarDecl::llvmCompileToBuilder( std::string const &baseType, CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const
     {
-      llvmAllocateVariable( basicBlockBuilder, diagnostics );
+      llvmAllocateVariable( baseType, basicBlockBuilder, diagnostics );
     }
 
-    CG::ExprValue VarDecl::llvmAllocateVariable( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const
+    CG::ExprValue VarDecl::llvmAllocateVariable( std::string const &baseType, CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const
     {
-      RC::ConstHandle<CG::Adapter> adapter = basicBlockBuilder.getAdapter( m_type );
+      RC::ConstHandle<CG::Adapter> adapter = basicBlockBuilder.getAdapter( baseType + m_arrayModifier );
       
       llvm::Value *result = adapter->llvmAlloca( basicBlockBuilder, m_name );
       adapter->llvmInit( basicBlockBuilder, result );
