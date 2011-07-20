@@ -50,7 +50,7 @@ namespace Fabric
     RC::ConstHandle<Adapter> Manager::maybeGetAdapter( std::string const &userName ) const
     {
       RC::ConstHandle<Adapter> result;
-      RC::ConstHandle<RT::Desc> rtDesc = m_rtManager->getDesc( userName );
+      RC::ConstHandle<RT::Desc> rtDesc = m_rtManager->maybeGetDesc( userName );
       if ( rtDesc )
         result = getAdapter( rtDesc );
       return result;

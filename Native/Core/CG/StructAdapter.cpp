@@ -114,6 +114,8 @@ namespace Fabric
     {
       if ( moduleBuilder.contains( getCodeName() ) )
         return;
+      for ( MemberAdaptorVector::const_iterator it=m_memberAdapters.begin(); it!=m_memberAdapters.end(); ++it )
+        (*it)->llvmPrepareModule( moduleBuilder, buildFunctions );
       
       moduleBuilder->addTypeName( getCodeName(), llvmRawType() );
 

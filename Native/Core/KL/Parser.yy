@@ -579,9 +579,9 @@ const_decl_statement
 array_modifier
   : TOKEN_LBRACKET TOKEN_RBRACKET array_modifier
   {
-    std::string *result = new std::string( *$3 );
+    std::string *result = new std::string( "[]" );
+    result->append( *$3 );
     delete $3;
-    result->append( "[]" );
     
     $$ = result;
   }
@@ -597,11 +597,9 @@ array_modifier
     }
     else
     {
-      std::string *result = new std::string( *$4 );
+      std::string *result = new std::string( "[" + _(length) + "]" );
+      result->append( *$4 );
       delete $4;
-      result->append( "[" );
-      result->append( _(length) );
-      result->append( "]" );
       
       $$ = result;
     }
@@ -676,7 +674,7 @@ in_parameter
     delete $4;
     
     $$ = AST::Param::Create( RTLOC, *$3, compoundTypeName, $1 ).take();
-    delete $2;
+    delete $3;
   }
 ;
 
@@ -689,7 +687,7 @@ io_parameter
     delete $4;
     
     $$ = AST::Param::Create( RTLOC, *$3, compoundTypeName, $1 ).take();
-    delete $2;
+    delete $3;
   }
 ;
 

@@ -38,10 +38,5 @@ namespace Fabric
       if ( !structMemberInfo.desc )
         throw CG::Error( getLocation(), "member " + _(m_name) + ": type " + _(m_type) + " not registered" );
     }
-
-    void MemberDecl::llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
-    {
-      moduleBuilder.getAdapter( m_type );
-    }
   };
 };

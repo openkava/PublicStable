@@ -32,6 +32,7 @@ namespace Fabric
     {
       if ( moduleBuilder.contains( getCodeName() ) )
         return;
+      m_memberAdapter->llvmPrepareModule( moduleBuilder, buildFunctions );
       
       moduleBuilder->addTypeName( getCodeName(), llvmRawType() );
       

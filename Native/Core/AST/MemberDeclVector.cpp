@@ -53,11 +53,5 @@ namespace Fabric
         structMemberInfoVector.push_back( structMemberInfo );
       }
     }
-
-    void MemberDeclVector::llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
-    {
-      for ( const_iterator it=begin(); it!=end(); ++it )
-        (*it)->llvmCompileToModule( moduleBuilder, diagnostics );
-    }
   };
 };
