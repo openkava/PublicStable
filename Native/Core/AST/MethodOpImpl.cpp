@@ -41,15 +41,6 @@ namespace Fabric
       : FunctionBase(
         location,
         returnTypeName,
-        ParamVector::Create(
-          Param::Create(
-            location,
-            "self",
-            selfTypeName,
-            !returnTypeName.empty() ? CG::USAGE_RVALUE : CG::USAGE_LVALUE
-            ),
-          params
-          ),
         body
         )
       , m_selfTypeName( selfTypeName )
@@ -58,14 +49,17 @@ namespace Fabric
     {
     }
           
-    std::string const *MethodOpImpl::getFriendlyName() const
-    {
-      return 0;
-    }
-    
     std::string MethodOpImpl::getEntryName( RC::Handle<CG::Manager> const &cgManager ) const
     {
       return CG::methodOverloadName( m_methodName, cgManager->getAdapter( m_selfTypeName ), m_params->getTypes( cgManager ) );
+    }
+    
+    RC::ConstHandle<ParamVector> MethodOpImpl::getParams( RC::Handle<CG::Manager> const &cgManager ) const
+    {
+      return ParamVector::Create(
+        Param::Create( getLocation(), "self", m_selfTypeName, !getReturnType().empty() ? CG::USAGE_RVALUE : CG::USAGE_LVALUE ),
+        m_params
+        );
     }
   };
 };

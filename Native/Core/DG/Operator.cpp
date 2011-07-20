@@ -11,10 +11,11 @@
 #include <Fabric/Core/DG/Context.h>
 #include <Fabric/Core/DG/CodeManager.h>
 #include <Fabric/Core/DG/Function.h>
-#include <Fabric/Core/RT/Manager.h>
 #include <Fabric/Core/AST/GlobalVector.h>
 #include <Fabric/Core/AST/Function.h>
 #include <Fabric/Core/AST/Operator.h>
+#include <Fabric/Core/CG/Manager.h>
+#include <Fabric/Core/RT/Manager.h>
 #include <Fabric/Base/JSON/Null.h>
 #include <Fabric/Base/JSON/Integer.h>
 #include <Fabric/Base/JSON/String.h>
@@ -240,7 +241,7 @@ namespace Fabric
           continue;
         RC::ConstHandle<AST::Function> function = RC::ConstHandle<AST::Function>::StaticCast( global );
         
-        std::string const *friendlyName = function->getFriendlyName();
+        std::string const *friendlyName = function->getFriendlyName( m_context->getCGManager() );
         if ( friendlyName && *friendlyName == m_entryFunctionName )
         {
           if( !function->isOperator() )

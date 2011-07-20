@@ -33,9 +33,10 @@ namespace Fabric
       RC::Handle<JSON::Object> toJSON() const;
       
       virtual bool isFunction() const { return true; }
-          
-      virtual std::string const *getFriendlyName() const;
+      
+      virtual std::string const *getFriendlyName( RC::Handle<CG::Manager> const &cgManager ) const;
       virtual std::string getEntryName( RC::Handle<CG::Manager> const &cgManager ) const = 0;
+      virtual RC::ConstHandle<ParamVector> getParams( RC::Handle<CG::Manager> const &cgManager ) const = 0;
 
       virtual bool isOperator() const
       {
@@ -46,7 +47,6 @@ namespace Fabric
       {
         return m_returnTypeName;
       }
-      RC::ConstHandle<ParamVector> getParams() const;
       RC::ConstHandle<CompoundStatement> getBody() const;
       
       virtual void llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctionBodies ) const;
@@ -56,14 +56,12 @@ namespace Fabric
       FunctionBase(
         CG::Location const &location,
         std::string const &returnTypeName,
-        RC::ConstHandle<ParamVector> const &params,
         RC::ConstHandle<CompoundStatement> const &body
         );
     
     private:
     
       std::string m_returnTypeName;
-      RC::ConstHandle<ParamVector> m_params;
       RC::ConstHandle<CompoundStatement> m_body;
     };
   };

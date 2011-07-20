@@ -3,7 +3,11 @@
  */
  
 #include "Function.h"
+#include <Fabric/Core/AST/Param.h>
+#include <Fabric/Core/CG/Manager.h>
+#include <Fabric/Core/CG/OverloadNames.h>
 #include <Fabric/Base/JSON/String.h>
+#include <Fabric/Base/JSON/Array.h>
 
 namespace Fabric
 {
@@ -43,9 +47,10 @@ namespace Fabric
         RC::ConstHandle<ParamVector> const &params,
         RC::ConstHandle<CompoundStatement> const &body
         )
-      : FunctionBase( location, returnTypeName, params, body )
+      : FunctionBase( location, returnTypeName, body )
       , m_friendlyName( friendlyName )
       , m_entryName( entryName )
+      , m_params( params )
     {
     }
     
@@ -54,17 +59,30 @@ namespace Fabric
       RC::Handle<JSON::Object> result = FunctionBase::toJSON();
       result->set( "friendlyName", JSON::String::Create( m_friendlyName ) );
       result->set( "entryName", JSON::String::Create( m_entryName ) );
+      result->set( "params", m_params->toJSON() );
       return result;
     }
     
-    std::string const *Function::getFriendlyName() const
+    std::string const *Function::getFriendlyName( RC::Handle<CG::Manager> const &cgManager ) const
     {
-      return &m_friendlyName;
+      if ( cgManager->maybeGetAdapter( m_friendlyName ) )
+        return 0;
+      else return &m_friendlyName;
     }
 
     std::string Function::getEntryName( RC::Handle<CG::Manager> const &cgManager ) const
     {
-      return m_entryName;
+      RC::ConstHandle<CG::Adapter> adapter = cgManager->maybeGetAdapter( m_friendlyName );
+      if ( adapter )
+        return CG::constructOverloadName( adapter, m_params->getTypes( cgManager ) );
+      else return m_entryName;
+    }
+
+    RC::ConstHandle<ParamVector> Function::getParams( RC::Handle<CG::Manager> const &cgManager ) const
+    {
+      if ( cgManager->maybeGetAdapter( m_friendlyName ) )
+        return ParamVector::Create( Param::Create( getLocation(), "self", m_friendlyName, CG::USAGE_LVALUE ), m_params );
+      else return m_params;
     }
   };
 };

@@ -23,12 +23,10 @@ namespace Fabric
     FunctionBase::FunctionBase(
         CG::Location const &location,
         std::string const &returnTypeName,
-        RC::ConstHandle<ParamVector> const &params,
         RC::ConstHandle<CompoundStatement> const &body
         )
       : Global( location )
       , m_returnTypeName( returnTypeName )
-      , m_params( params )
       , m_body( body )
     {
     }
@@ -37,29 +35,23 @@ namespace Fabric
     {
       RC::Handle<JSON::Object> result = Global::toJSON();
       result->set( "returnExprType", JSON::String::Create( m_returnTypeName ) );
-      result->set( "params", m_params->toJSON() );
       result->set( "body", m_body->toJSON() );
       return result;
     }
     
-    RC::ConstHandle<ParamVector> FunctionBase::getParams() const
-    {
-      return m_params;
-    }
-
     RC::ConstHandle<CompoundStatement> FunctionBase::getBody() const
     {
       return m_body;
     }
     
-    std::string const *FunctionBase::getFriendlyName() const
+    std::string const *FunctionBase::getFriendlyName( RC::Handle<CG::Manager> const &cgManager ) const
     {
       return 0;
     }
     
     void FunctionBase::llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctionBodies ) const
     {
-      std::string const *friendlyName = getFriendlyName();
+      std::string const *friendlyName = getFriendlyName( moduleBuilder.getManager() );
       if ( !buildFunctionBodies && friendlyName && moduleBuilder.getScope().has( *friendlyName ) )
       {
         addError( diagnostics, "symbol " + _(*friendlyName) + " already exists" );
@@ -72,8 +64,7 @@ namespace Fabric
         
         CG::ExprType returnExprType( returnAdapter, CG::USAGE_RVALUE );
         std::string entryName = getEntryName( moduleBuilder.getManager() );
-        std::string const *friendlyName = getFriendlyName();
-        CG::FunctionBuilder functionBuilder( moduleBuilder, entryName, returnExprType, m_params->getFunctionParams( moduleBuilder.getManager() ), friendlyName );
+        CG::FunctionBuilder functionBuilder( moduleBuilder, entryName, returnExprType, getParams( moduleBuilder.getManager() )->getFunctionParams( moduleBuilder.getManager() ), friendlyName );
         if ( buildFunctionBodies && m_body )
         {
           CG::BasicBlockBuilder basicBlockBuilder( functionBuilder );

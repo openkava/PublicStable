@@ -7,7 +7,7 @@
 %error-verbose
 %debug
 
-%expect 3
+%expect 2
 
 %code top {
 #define YYDEBUG 1
@@ -45,7 +45,6 @@
 #include <Fabric/Core/AST/GlobalVector.h>
 #include <Fabric/Core/AST/IndexOp.h>
 #include <Fabric/Core/AST/InitializedVarDecl.h>
-#include <Fabric/Core/AST/Initializer.h>
 #include <Fabric/Core/AST/MemberDecl.h>
 #include <Fabric/Core/AST/MemberDeclVector.h>
 #include <Fabric/Core/AST/MethodOp.h>
@@ -440,13 +439,6 @@ function
     delete $2;
     $6->release();
     $8->release();
-  }
-  | TOKEN_FUNCTION compound_type TOKEN_LPAREN parameter_list TOKEN_RPAREN compound_statement
-  {
-    $$ = AST::Initializer::Create( RTLOC, *$2, $4, $6 ).take();
-    delete $2;
-    $4->release();
-    $6->release();
   }
 ;
 

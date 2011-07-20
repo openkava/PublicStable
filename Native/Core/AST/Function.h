@@ -38,8 +38,9 @@ namespace Fabric
 
       RC::Handle<JSON::Object> toJSON() const;
           
-      virtual std::string const *getFriendlyName() const;
+      virtual std::string const *getFriendlyName( RC::Handle<CG::Manager> const &cgManager ) const;
       virtual std::string getEntryName( RC::Handle<CG::Manager> const &cgManager ) const;
+      virtual RC::ConstHandle<ParamVector> getParams( RC::Handle<CG::Manager> const &cgManager ) const;
       
     protected:
     
@@ -56,6 +57,7 @@ namespace Fabric
     
       std::string m_friendlyName;
       std::string m_entryName;
+      RC::ConstHandle<ParamVector> m_params;
     };
   };
 };

@@ -40,10 +40,10 @@ namespace Fabric
       : FunctionBase(
         location,
         returnType,
-        ParamVector::Create( lhs, rhs ),
         body
         )
       , m_binOpType( binOpType )
+      , m_params( ParamVector::Create( lhs, rhs ) )
     {
     }
     
@@ -56,8 +56,13 @@ namespace Fabric
     
     std::string BinOpImpl::getEntryName( RC::Handle<CG::Manager> const &cgManager ) const
     {
-      RC::ConstHandle<ParamVector> params = getParams();
+      RC::ConstHandle<ParamVector> params = getParams( cgManager );
       return CG::binOpOverloadName( m_binOpType, cgManager, params->get(0)->getAdapterName(), params->get(1)->getAdapterName() );
+    }
+
+    RC::ConstHandle<ParamVector> BinOpImpl::getParams( RC::Handle<CG::Manager> const &cgManager ) const
+    {
+      return m_params;
     }
   };
 };

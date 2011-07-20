@@ -39,8 +39,8 @@ namespace Fabric
         RC::ConstHandle<CompoundStatement> const &body
         );
           
-      virtual std::string const *getFriendlyName() const;
       virtual std::string getEntryName( RC::Handle<CG::Manager> const &cgManager ) const;
+      virtual RC::ConstHandle<ParamVector> getParams( RC::Handle<CG::Manager> const &cgManager ) const;
               
     protected:
     

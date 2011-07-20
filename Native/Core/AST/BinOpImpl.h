@@ -43,6 +43,7 @@ namespace Fabric
       RC::Handle<JSON::Object> toJSON() const;
                   
       virtual std::string getEntryName( RC::Handle<CG::Manager> const &cgManager ) const;
+      virtual RC::ConstHandle<ParamVector> getParams( RC::Handle<CG::Manager> const &cgManager ) const;
       
     protected:
     
@@ -58,6 +59,7 @@ namespace Fabric
     private:
     
       CG::BinOpType m_binOpType;
+      RC::ConstHandle<ParamVector> m_params;
     };
   };
 };

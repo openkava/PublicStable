@@ -246,13 +246,14 @@ namespace Fabric
     {
       FABRIC_ASSERT( function );
       
-      RC::ConstHandle<AST::ParamVector> astParamList = astOperator->getParams();
+      RC::ConstHandle<AST::ParamVector> astParamList = astOperator->getParams( m_cgManager );
       size_t numASTParams = astParamList->size();
       size_t expectedNumASTParams = prefixCount + m_paramCount;
       if ( numASTParams != expectedNumASTParams )
         throw Exception( "operator takes incorrect number of parameters (expected "+_(expectedNumASTParams)+", actual "+_(numASTParams)+")" );
 
-      RC::Handle<MT::ParallelCall> result = MT::ParallelCall::Create( function, prefixCount+m_paramCount, astOperator->getFriendlyName()? *astOperator->getFriendlyName(): astOperator->getEntryName( m_cgManager ) );
+      std::string const *friendlyName = astOperator->getFriendlyName( m_cgManager );
+      RC::Handle<MT::ParallelCall> result = MT::ParallelCall::Create( function, prefixCount+m_paramCount, friendlyName? *friendlyName: astOperator->getEntryName( m_cgManager ) );
       for ( unsigned i=0; i<prefixCount; ++i )
         result->setBaseAddress( i, prefixes[i] );
       for ( std::map< std::string, std::multimap< std::string, Param * > >::const_iterator it=m_params.begin(); it!=m_params.end(); ++it )

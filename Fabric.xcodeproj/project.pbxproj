@@ -216,8 +216,6 @@
 		DB9671E413A5423200616143 /* IndexOp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IndexOp.h; sourceTree = "<group>"; };
 		DB9671E513A5423200616143 /* InitializedVarDecl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = InitializedVarDecl.cpp; sourceTree = "<group>"; };
 		DB9671E613A5423200616143 /* InitializedVarDecl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = InitializedVarDecl.h; sourceTree = "<group>"; };
-		DB9671E713A5423200616143 /* Initializer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Initializer.cpp; sourceTree = "<group>"; };
-		DB9671E813A5423200616143 /* Initializer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Initializer.h; sourceTree = "<group>"; };
 		DB9671EB13A5423200616143 /* MethodOp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MethodOp.cpp; sourceTree = "<group>"; };
 		DB9671EC13A5423200616143 /* MethodOp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MethodOp.h; sourceTree = "<group>"; };
 		DB9671ED13A5423200616143 /* MethodOpImpl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MethodOpImpl.cpp; sourceTree = "<group>"; };
@@ -1615,8 +1613,6 @@
 				DB9671E413A5423200616143 /* IndexOp.h */,
 				DB9671E513A5423200616143 /* InitializedVarDecl.cpp */,
 				DB9671E613A5423200616143 /* InitializedVarDecl.h */,
-				DB9671E713A5423200616143 /* Initializer.cpp */,
-				DB9671E813A5423200616143 /* Initializer.h */,
 				DB9CDA1113D3CA1500CCB0E6 /* MemberDecl.cpp */,
 				DB9CDA1213D3CA1500CCB0E6 /* MemberDecl.h */,
 				DB9CDA1313D3CA1500CCB0E6 /* MemberDeclVector.cpp */,
