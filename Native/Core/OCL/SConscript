@@ -15,17 +15,8 @@ if buildOS == 'Darwin':
   coreEnv.Append( LIBS = ['GLEW'] )
   coreEnv.Append( FRAMEWORKS = ['OpenGL'] )
 if buildOS == 'Windows':
-	Import( 'glewFlags' )
-	coreEnv.MergeFlags( glewFlags )
+  Import( 'glewFlags' )
+  coreEnv.MergeFlags( glewFlags )
 
-if buildOS == 'Darwin' or buildOS == 'Windows':
-  coreEnv.MergeFlags( openclFlags )
-  coreEnv.Prepend( LIBS = coreEnv.StaticLibrary( 'OCL', Glob('*.cpp') ) )
-elif buildOS == 'Linux':
-  import os
-  if not os.environ.has_key('OPENCL_SDK'):
-    print("--------- WARNING: For the OpenCL Extension to compile on Linux, you need to specify the path to the OpenCL SDK in the OPENCL_SDK environment variable.")
-    print("--------- Skipping OCL extension, no OpenCL SDK found.")
-  else:
-    coreEnv.MergeFlags( openclFlags )
-    coreEnv.Prepend( LIBS = coreEnv.StaticLibrary( 'OCL', Glob('*.cpp') ) )
+coreEnv.MergeFlags( openclFlags )
+coreEnv.Prepend( LIBS = coreEnv.StaticLibrary( 'OCL', Glob('*.cpp') ) )
