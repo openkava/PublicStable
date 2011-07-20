@@ -2,8 +2,8 @@
  *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
  */
  
-#ifndef _FABRIC_AST_STRUCT_DECL_MEMBER_H
-#define _FABRIC_AST_STRUCT_DECL_MEMBER_H
+#ifndef _FABRIC_AST_MEMBER_DECL_H
+#define _FABRIC_AST_MEMBER_DECL_H
 
 #include <Fabric/Core/AST/Node.h>
 #include <Fabric/Core/RT/StructMemberInfo.h>
@@ -35,7 +35,7 @@ namespace Fabric
 
       RC::Handle<JSON::Object> toJSON() const;
       
-      RT::StructMemberInfo getStructMemberInfo( RC::ConstHandle<RT::Manager> const &rtManager ) const;
+      void buildStructMemberInfo( RC::ConstHandle<RT::Manager> const &rtManager, RT::StructMemberInfo &structMemberInfo ) const;
 
     protected:
     
@@ -44,9 +44,9 @@ namespace Fabric
     private:
     
       std::string m_name;
-      std::string m_typeName;
+      std::string m_type;
     };
   };
 };
 
-#endif //_FABRIC_AST_STRUCT_DECL_MEMBER_H
+#endif //_FABRIC_AST_MEMBER_DECL_H

@@ -63,7 +63,7 @@ namespace Fabric
             
       Types const &getTypes() const;
       
-      RC::ConstHandle<Desc> maybeGetBaseDesc( std::string const &baseName ) const;
+      RC::ConstHandle<Desc> maybeGetDesc( std::string const &name ) const;
       RC::ConstHandle<Desc> getDesc( std::string const &name ) const;
       
       RC::ConstHandle<VariableArrayDesc> getVariableArrayOf( RC::ConstHandle<Desc> const &memberDesc ) const;
@@ -83,6 +83,7 @@ namespace Fabric
     
       Manager();
       
+      RC::ConstHandle<Desc> maybeGetBaseDesc( std::string const &baseName ) const;
       RC::ConstHandle<Desc> registerDesc( RC::ConstHandle< Desc > const &desc ) const;
 
     private:

@@ -222,6 +222,7 @@ void handleFile( FILE *fp, unsigned int runFlags )
 
   if( runFlags & (RF_ShowASM | RF_ShowIR | RF_ShowOptIR | RF_ShowOptASM | RF_Run) )
   {
+    globalList->registerTypes( rtManager, diagnostics );
     globalList->llvmCompileToModule( moduleBuilder, diagnostics );
     dumpDiagnostics( diagnostics );
     if ( !diagnostics.containsError() )

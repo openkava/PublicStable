@@ -17,6 +17,11 @@ namespace llvm
 
 namespace Fabric
 {
+  namespace RT
+  {
+    class Manager;
+  };
+  
   namespace CG
   {
     class Diagnostics;
@@ -31,7 +36,8 @@ namespace Fabric
     
       virtual bool isFunction() const { return false; }
           
-      virtual void llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctionBodies ) const = 0;
+      virtual void registerTypes( RC::Handle<RT::Manager> const &rtManager, CG::Diagnostics &diagnostics ) const;
+      virtual void llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctionBodies ) const;
       
     protected:
     

@@ -8,6 +8,7 @@
 #include <Fabric/Base/RC/Vector.h>
 #include <Fabric/Base/RC/Handle.h>
 #include <Fabric/Base/RC/ConstHandle.h>
+#include <Fabric/Core/RT/StructMemberInfo.h>
 
 namespace Fabric
 {
@@ -16,8 +17,14 @@ namespace Fabric
     class Array;
   };
   
+  namespace RT
+  {
+    class Manager;
+  };
+  
   namespace CG
   {
+    class Manager;
     class ModuleBuilder;
     class Diagnostics;
   };
@@ -31,11 +38,12 @@ namespace Fabric
     public:
       
       static RC::Handle<MemberDeclVector> Create();
+      static RC::Handle<MemberDeclVector> Create( RC::ConstHandle<MemberDecl> const &first );
       static RC::Handle<MemberDeclVector> Create( RC::ConstHandle<MemberDecl> const &first, RC::Handle<MemberDeclVector> const &remaining );
 
       RC::Handle<JSON::Array> toJSON() const;
           
-      void llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
+      void buildStructMemberInfoVector( RC::ConstHandle<RT::Manager> const &rtManager, RT::StructMemberInfoVector &structMemberInfoVector ) const;
     
     protected:
     

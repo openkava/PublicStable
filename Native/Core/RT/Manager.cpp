@@ -183,15 +183,13 @@ namespace Fabric
       return baseDesc;
     }
 
-    RC::ConstHandle<RT::Desc> Manager::getDesc( std::string const &name ) const
+    RC::ConstHandle<RT::Desc> Manager::maybeGetDesc( std::string const &name ) const
     {
-      Exception exception( _(name) + ": malformed type expression" );
-      
       char const *data = name.data();
       char const *dataEnd = data + name.length();
       
       if ( data == dataEnd || !isFirstTypeNameChar( *data ) )
-        throw exception;
+        throw Exception( "malformed type expression" );
       char const *baseNameStart = data++;
       
       while ( data != dataEnd && isRemainingTypeNameChar( *data ) )
@@ -200,10 +198,17 @@ namespace Fabric
       
       std::string baseName( baseNameStart, baseNameEnd - baseNameStart );
       RC::ConstHandle<RT::Desc> desc = maybeGetBaseDesc( baseName );
-      if ( !desc )
-        throw Exception( "base type " + _(baseName) + " not registered" );
-      
-      return getComplexDesc( desc, data, dataEnd );
+      if ( desc )
+        desc = getComplexDesc( desc, data, dataEnd );
+      return desc;
+    }
+
+    RC::ConstHandle<RT::Desc> Manager::getDesc( std::string const &name ) const
+    {
+      RC::ConstHandle<RT::Desc> result = maybeGetDesc( name );
+      if ( !result )
+        throw Exception( _(name) + ": type not registered" );
+      return result;
     }
     
     RC::ConstHandle<RT::Desc> Manager::getComplexDesc( RC::ConstHandle<RT::Desc> const &desc, char const *data, char const *dataEnd ) const

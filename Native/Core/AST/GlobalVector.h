@@ -16,6 +16,11 @@ namespace Fabric
     class Array;
   };
   
+  namespace RT
+  {
+    class Manager;
+  };
+  
   namespace CG
   {
     class ModuleBuilder;
@@ -31,10 +36,12 @@ namespace Fabric
     public:
       
       static RC::Handle<GlobalVector> Create();
+      static RC::Handle<GlobalVector> Create( RC::ConstHandle<Global> const &first );
       static RC::Handle<GlobalVector> Create( RC::ConstHandle<Global> const &first, RC::ConstHandle<GlobalVector> const &remaining );
 
       RC::Handle<JSON::Array> toJSON() const;
           
+      void registerTypes( RC::Handle<RT::Manager> const &rtManager, CG::Diagnostics &diagnostics ) const;
       void llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
     
     protected:

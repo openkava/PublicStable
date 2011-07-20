@@ -4,6 +4,12 @@
  
 #include "StructDecl.h"
 #include "MemberDeclVector.h"
+#include <Fabric/Core/CG/Diagnostics.h>
+#include <Fabric/Core/CG/Manager.h>
+#include <Fabric/Core/CG/ModuleBuilder.h>
+#include <Fabric/Core/RT/Manager.h>
+#include <Fabric/Core/RT/StructDesc.h>
+#include <Fabric/Core/RT/StructMemberInfo.h>
 #include <Fabric/Base/JSON/String.h>
 #include <Fabric/Base/JSON/Array.h>
 
@@ -41,8 +47,18 @@ namespace Fabric
       return result;
     }
     
-    void StructDecl::llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctionBodies ) const
+    void StructDecl::registerTypes( RC::Handle<RT::Manager> const &rtManager, CG::Diagnostics &diagnostics ) const
     {
+      RT::StructMemberInfoVector structMemberInfoVector;
+      m_members->buildStructMemberInfoVector( rtManager, structMemberInfoVector );
+      try
+      {
+        rtManager->registerStruct( m_name, structMemberInfoVector );
+      }
+      catch ( Exception e )
+      {
+        addError( diagnostics, e.getDesc() );
+      }
     }
   };
 };

@@ -5,6 +5,7 @@
 #include "MemberDecl.h"
 #include <Fabric/Core/CG/Location.h>
 #include <Fabric/Core/CG/Adapter.h>
+#include <Fabric/Core/CG/Error.h>
 #include <Fabric/Core/RT/Manager.h>
 #include <Fabric/Base/JSON/String.h>
 
@@ -14,10 +15,10 @@ namespace Fabric
   {
     FABRIC_AST_NODE_IMPL( MemberDecl );
     
-    MemberDecl::MemberDecl( CG::Location const &location, std::string const &name, std::string const &typeName )
+    MemberDecl::MemberDecl( CG::Location const &location, std::string const &name, std::string const &type )
       : Node( location )
       , m_name( name )
-      , m_typeName( typeName )
+      , m_type( type )
     {
     }
     
@@ -25,16 +26,16 @@ namespace Fabric
     {
       RC::Handle<JSON::Object> result = Node::toJSON();
       result->set( "name", JSON::String::Create( m_name ) );
-      result->set( "type", JSON::String::Create( m_typeName ) );
+      result->set( "type", JSON::String::Create( m_type ) );
       return result;
     }
 
-    RT::StructMemberInfo MemberDecl::getStructMemberInfo( RC::ConstHandle<RT::Manager> const &rtManager ) const
+    void MemberDecl::buildStructMemberInfo( RC::ConstHandle<RT::Manager> const &rtManager, RT::StructMemberInfo &structMemberInfo ) const
     {
-      RT::StructMemberInfo result;
-      result.name = m_name;
-      result.desc = rtManager->getDesc( m_typeName );
-      return result;
+      structMemberInfo.name = m_name;
+      structMemberInfo.desc = rtManager->maybeGetDesc( m_type );
+      if ( !structMemberInfo.desc )
+        throw CG::Error( getLocation(), "member " + _(m_name) + ": type " + _(m_type) + " not registered" );
     }
   };
 };

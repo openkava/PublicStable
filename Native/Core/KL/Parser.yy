@@ -1413,8 +1413,6 @@ int kl_lex( YYSTYPE *yys, YYLTYPE *yyl, KL::Context &context )
       endLocation = context.m_scanner->getLocationForEnd();
       break;
     }
-    delete yys->valueStringPtr;
-    yys->valueStringPtr = 0;
   }
   
   yys->valueStringPtr = new std::string( token.toString() );
