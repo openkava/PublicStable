@@ -180,8 +180,6 @@
 		DB9671B813A5423200616143 /* Call.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Call.h; sourceTree = "<group>"; };
 		DB9671B913A5423200616143 /* Case.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Case.cpp; sourceTree = "<group>"; };
 		DB9671BA13A5423200616143 /* Case.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Case.h; sourceTree = "<group>"; };
-		DB9671BD13A5423200616143 /* CastNode.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CastNode.cpp; sourceTree = "<group>"; };
-		DB9671BE13A5423200616143 /* CastNode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CastNode.h; sourceTree = "<group>"; };
 		DB9671BF13A5423200616143 /* CompoundStatement.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CompoundStatement.cpp; sourceTree = "<group>"; };
 		DB9671C013A5423200616143 /* CompoundStatement.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CompoundStatement.h; sourceTree = "<group>"; };
 		DB9671C113A5423200616143 /* ConditionalStatement.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ConditionalStatement.cpp; sourceTree = "<group>"; };
@@ -1571,8 +1569,6 @@
 				DB9671BA13A5423200616143 /* Case.h */,
 				DBDB628013D3B6A700F745C8 /* CaseVector.cpp */,
 				DBDB628113D3B6A700F745C8 /* CaseVector.h */,
-				DB9671BD13A5423200616143 /* CastNode.cpp */,
-				DB9671BE13A5423200616143 /* CastNode.h */,
 				DB9671BF13A5423200616143 /* CompoundStatement.cpp */,
 				DB9671C013A5423200616143 /* CompoundStatement.h */,
 				DB9671C113A5423200616143 /* ConditionalStatement.cpp */,

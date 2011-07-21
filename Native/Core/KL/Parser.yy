@@ -7,7 +7,7 @@
 %error-verbose
 %debug
 
-%expect 2
+%expect 1
 
 %code top {
 #define YYDEBUG 1
@@ -27,7 +27,6 @@
 #include <Fabric/Core/AST/Call.h>
 #include <Fabric/Core/AST/Case.h>
 #include <Fabric/Core/AST/CaseVector.h>
-#include <Fabric/Core/AST/CastNode.h>
 #include <Fabric/Core/AST/CompoundStatement.h>
 #include <Fabric/Core/AST/ConditionalStatement.h>
 #include <Fabric/Core/AST/ConstBoolean.h>
@@ -1145,12 +1144,6 @@ cast_expression
 	: prefix_unary_expression
   {
     $$ = $1;
-  }
-	| TOKEN_LPAREN TOKEN_IDENTIFIER TOKEN_RPAREN cast_expression
-  {
-    $$ = AST::CastNode::Create( RTLOC, *$2, $4 ).take();
-    delete $2;
-    $4->release();
   }
 ;
 

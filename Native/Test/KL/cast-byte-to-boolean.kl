@@ -1,6 +1,6 @@
 function entry()
 {
-  report (Boolean)(Byte)0;
-  report (Boolean)(Byte)1;
-  report (Boolean)(Byte)255;
+  report Boolean(Byte(0));
+  report Boolean(Byte(1));
+  report Boolean(Byte(255));
 }

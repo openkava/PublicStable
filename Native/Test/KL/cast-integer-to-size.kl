@@ -1,4 +1,4 @@
 function entry()
 {
-  report (Size)(Integer)16824;
+  report Size(Integer(16824));
 }
