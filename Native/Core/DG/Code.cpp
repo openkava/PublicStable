@@ -23,6 +23,8 @@
 #include <Fabric/Core/KL/Scanner.h>
 #include <Fabric/Core/KL/Parser.hpp>
 #include <Fabric/Core/CG/Manager.h>
+#include <Fabric/Core/Util/Log.h>
+#include <Fabric/Core/Util/Timer.h>
 
 #include <llvm/Module.h>
 #include <llvm/Function.h>
@@ -90,7 +92,9 @@ namespace Fabric
 
       RC::ConstHandle<KL::Source> source = KL::StringSource::Create( m_sourceCode );
       RC::Handle<KL::Scanner> scanner = KL::Scanner::Create( source );
+      Util::Timer timer;
       KL::Parse( scanner, m_diagnostics, m_ast );
+      FABRIC_LOG( "KL::Parse: %fms", timer.getElapsedMS(true) );
       if ( !m_diagnostics.containsError() )
         compileAST( true );
     }
@@ -122,9 +126,27 @@ namespace Fabric
       m_ast->registerTypes( m_context->getRTManager(), diagnostics );
       if ( !diagnostics.containsError() )
       {
+        std::string ir = m_irCache->get( m_ast );
+        if ( ir.length() > 0 )
+        {
+          RC::Handle<CG::Manager> cgManager = m_context->getCGManager();
+          
+          llvm::SMDiagnostic error;
+          llvm::ParseAssemblyString( ir.c_str(), module.get(), error, cgManager->getLLVMContext() );
+          FABRIC_ASSERT( module );
+          FABRIC_ASSERT( !llvm::verifyModule( *module, llvm::PrintMessageAction ) );
+          linkModule( module, true );
+          return;
+        }
+
+        Util::Timer timer;
         m_ast->llvmCompileToModule( moduleBuilder, diagnostics, false );
+        FABRIC_LOG( "m_ast->llvmCompileToModule(false): %fms", timer.getElapsedMS(true) );
         if ( !diagnostics.containsError() )
+        {
           m_ast->llvmCompileToModule( moduleBuilder, diagnostics, true );
+          FABRIC_LOG( "m_ast->llvmCompileToModule(true): %fms", timer.getElapsedMS(true) );
+        }
         if ( !diagnostics.containsError() )
         {
 #if defined(FABRIC_BUILD_DEBUG)
@@ -134,19 +156,6 @@ namespace Fabric
           module->print( byteCodeStream, 0 );
           byteCodeStream.flush();
 #endif
-
-          std::string ir = m_irCache->get( m_ast );
-          if ( ir.length() > 0 )
-          {
-            RC::Handle<CG::Manager> cgManager = m_context->getCGManager();
-            
-            llvm::SMDiagnostic error;
-            llvm::ParseAssemblyString( ir.c_str(), module.get(), error, cgManager->getLLVMContext() );
-            FABRIC_ASSERT( module );
-            FABRIC_ASSERT( !llvm::verifyModule( *module, llvm::PrintMessageAction ) );
-            linkModule( module, true );
-            return;
-          }
           
           llvm::NoFramePointerElim = true;
           llvm::JITExceptionHandling = true;

@@ -11,6 +11,8 @@
 #include <Fabric/Base/JSON/Array.h>
 #include <Fabric/Base/JSON/Encode.h>
 #include <Fabric/Core/Util/Format.h>
+#include <Fabric/Core/Util/Log.h>
+#include <Fabric/Core/Util/Timer.h>
 #include <Fabric/Core/Build.h>
 
 namespace Fabric
@@ -27,9 +29,13 @@ namespace Fabric
     
     void IRCache::subDirAndEntryFromSourceCode( RC::ConstHandle<AST::GlobalVector> const &ast, RC::ConstHandle<IO::Dir> &subDir, std::string &entry ) const
     {
+      Util::Timer timer;
       RC::ConstHandle<JSON::Value> astJSONValue = ast->toJSON();
+      FABRIC_LOG( "ast->toJSON(): %fms", timer.getElapsedMS(true) );
       std::string astEncodedJSONValue = JSON::encode( astJSONValue );
+      FABRIC_LOG( "JSON::encode( astJSONValue ): %fms", timer.getElapsedMS(true) );
       std::string prefixedSourceCodeMD5HexDigest = Util::md5HexDigest( astEncodedJSONValue );
+      FABRIC_LOG( "Util::md5HexDigest( astEncodedJSONValue ): %fms", timer.getElapsedMS(true) );
       subDir = IO::Dir::Create( m_dir, prefixedSourceCodeMD5HexDigest.substr( 0, 2 ) );
       entry = prefixedSourceCodeMD5HexDigest.substr( 2, 30 );
     }
