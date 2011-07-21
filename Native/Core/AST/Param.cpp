@@ -9,6 +9,7 @@
 #include <Fabric/Core/CG/Adapter.h>
 #include <Fabric/Core/CG/Location.h>
 #include <Fabric/Core/CG/Manager.h>
+#include <Fabric/Core/CG/ModuleBuilder.h>
 #include <Fabric/Base/JSON/String.h>
 
 namespace Fabric
@@ -65,6 +66,11 @@ namespace Fabric
     CG::ExprType Param::getExprType( RC::Handle<CG::Manager> const &cgManager ) const
     {
       return CG::ExprType( getAdapter( cgManager ), m_usage );
+    }
+      
+    void Param::llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    {
+      moduleBuilder.getAdapter( m_type )->llvmPrepareModule( moduleBuilder, true );
     }
   };
 };

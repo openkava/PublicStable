@@ -749,7 +749,7 @@ var_decl_statement
     delete $1;
     $2->release();
   }
-  | TOKEN_VAR TOKEN_IDENTIFIER var_decl_list TOKEN_SEMICOLON 
+  | TOKEN_VAR compound_type var_decl_list TOKEN_SEMICOLON 
   {
     $$ = AST::VarDeclStatement::Create( RTLOC, *$2, $3 ).take();
     delete $2;

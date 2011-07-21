@@ -60,11 +60,18 @@ namespace Fabric
       {
         RC::ConstHandle<CG::Adapter> returnAdapter;
         if ( !m_returnTypeName.empty() )
+        {
           returnAdapter = moduleBuilder.maybeGetAdapter( m_returnTypeName );
+          if ( !returnAdapter )
+            throw CG::Error( getLocation(), "return type " + _(m_returnTypeName) + " not registered" );
+          returnAdapter->llvmPrepareModule( moduleBuilder, true );
+        }
         
         CG::ExprType returnExprType( returnAdapter, CG::USAGE_RVALUE );
         std::string entryName = getEntryName( moduleBuilder.getManager() );
-        CG::FunctionBuilder functionBuilder( moduleBuilder, entryName, returnExprType, getParams( moduleBuilder.getManager() )->getFunctionParams( moduleBuilder.getManager() ), friendlyName );
+        RC::ConstHandle<AST::ParamVector> params = getParams( moduleBuilder.getManager() );
+        params->llvmCompileToModule( moduleBuilder, diagnostics );
+        CG::FunctionBuilder functionBuilder( moduleBuilder, entryName, returnExprType, params->getFunctionParams( moduleBuilder.getManager() ), friendlyName );
         if ( buildFunctionBodies && m_body )
         {
           CG::BasicBlockBuilder basicBlockBuilder( functionBuilder );

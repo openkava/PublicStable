@@ -61,7 +61,10 @@ namespace Fabric
     
     RC::ConstHandle<CG::Adapter> Call::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const
     {
-      return getFunctionSymbol( basicBlockBuilder )->getReturnInfo().getAdapter();
+      RC::ConstHandle<CG::Adapter> adapter = basicBlockBuilder.maybeGetAdapter( m_name );
+      if ( adapter )
+        return adapter;
+      else return getFunctionSymbol( basicBlockBuilder )->getReturnInfo().getAdapter();
     }
     
     CG::ExprValue Call::buildExprValue( CG::BasicBlockBuilder &basicBlockBuilder, CG::Usage usage, std::string const &lValueErrorDesc ) const

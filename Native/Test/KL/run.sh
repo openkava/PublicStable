@@ -21,7 +21,7 @@ fi
 for f in "$@"; do
   TMPFILE=$(tmpfilename)
 
-  echo ../../build/$BUILD_OS/$BUILD_ARCH/$BUILD_TYPE/Fabric/Tools/KL/kl --run $f
+  #echo ../../build/$BUILD_OS/$BUILD_ARCH/$BUILD_TYPE/Fabric/Tools/KL/kl --run $f
   if ! $VALGRIND_CMD ../../build/$BUILD_OS/$BUILD_ARCH/$BUILD_TYPE/Fabric/Tools/KL/kl --run $f >$TMPFILE 2>&1 ; then
     echo "FAIL $(basename $f)"
     exit 1

@@ -53,10 +53,10 @@ namespace Fabric
       }
       
       CG::FunctionParam getFunctionParam( RC::Handle<CG::Manager> const &cgManager ) const;
-      
       RC::ConstHandle<CG::Adapter> getAdapter( RC::Handle<CG::Manager> const &cgManager ) const;
-      
       CG::ExprType getExprType( RC::Handle<CG::Manager> const &cgManager ) const;
+      
+      void llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
 
     protected:
     

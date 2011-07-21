@@ -51,7 +51,11 @@ namespace Fabric
 
     CG::ExprValue VarDecl::llvmAllocateVariable( std::string const &baseType, CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const
     {
-      RC::ConstHandle<CG::Adapter> adapter = basicBlockBuilder.getAdapter( baseType + m_arrayModifier );
+      std::string type = baseType + m_arrayModifier;
+      RC::ConstHandle<CG::Adapter> adapter = basicBlockBuilder.maybeGetAdapter( type );
+      if ( !adapter )
+        throw CG::Error( getLocation(), "variable type " + _(type) + " not registered" );
+      adapter->llvmPrepareModule( basicBlockBuilder.getModuleBuilder(), true );
       
       llvm::Value *result = adapter->llvmAlloca( basicBlockBuilder, m_name );
       adapter->llvmInit( basicBlockBuilder, result );

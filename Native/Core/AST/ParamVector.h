@@ -24,9 +24,11 @@ namespace Fabric
   namespace CG
   {
     class Adapter;
+    class Diagnostics;
     class ExprType;
     class FunctionParam;
     class Manager;
+    class ModuleBuilder;
   };
 
   namespace AST
@@ -48,6 +50,8 @@ namespace Fabric
       std::vector<std::string> getTypes() const;
       std::vector< RC::ConstHandle<CG::Adapter> > getAdapters( RC::Handle<CG::Manager> const &cgManager ) const;
       std::vector<CG::ExprType> getExprTypes( RC::Handle<CG::Manager> const &cgManager ) const;
+      
+      void llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
       
     protected:
     

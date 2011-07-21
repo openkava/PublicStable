@@ -23,9 +23,7 @@ namespace Fabric
     
     RC::ConstHandle<Adapter> ModuleBuilder::getAdapter( std::string const &userName )
     {
-      RC::ConstHandle<Adapter> result = m_manager->getAdapter( userName );
-      result->llvmPrepareModule( *this, true );
-      return result;
+      return m_manager->getAdapter( userName );
     }
     
     llvm::LLVMContext &ModuleBuilder::getLLVMContext()
