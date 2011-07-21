@@ -45,7 +45,7 @@ namespace Fabric
         )
       , m_selfTypeName( selfTypeName )
       , m_methodName( methodName )
-      , m_params( m_params )
+      , m_params( params )
     {
     }
           
