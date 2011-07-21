@@ -153,7 +153,7 @@ int kl_lex( YYSTYPE *yys, YYLTYPE *yyl, KL::Context &context );
 %union { Fabric::AST::ConstDecl *astConstDeclPtr; }
 %union { Fabric::AST::Case *astCasePtr; }
 %union { Fabric::AST::CaseVector *astCaseListPtr; }
-%destructor { $$->release(); } <*>
+%destructor { if ( $$ ) $$->release(); } <*>
 
 %token TOKEN_END 0 "end of file"
 
