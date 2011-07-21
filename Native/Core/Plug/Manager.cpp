@@ -109,6 +109,12 @@ namespace Fabric
       return result;
     }
       
+    void Manager::registerTypes( RC::Handle<RT::Manager> const &rtManager ) const
+    {
+      for ( NameToInstMap::const_iterator it=m_nameToInstMap.begin(); it!=m_nameToInstMap.end(); ++it )
+        it->second->registerTypes( rtManager );
+    }
+    
     void Manager::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder ) const
     {
       for ( NameToInstMap::const_iterator it=m_nameToInstMap.begin(); it!=m_nameToInstMap.end(); ++it )

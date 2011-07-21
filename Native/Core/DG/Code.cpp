@@ -95,59 +95,64 @@ namespace Fabric
       CG::ModuleBuilder moduleBuilder( cgManager, module.get() );
 
       cgManager->llvmPrepareModule( moduleBuilder );
+      m_context->getPlugManager()->registerTypes( m_context->getRTManager() );
       m_context->getPlugManager()->llvmPrepareModule( moduleBuilder );
       OCL::llvmPrepareModule( moduleBuilder, m_context->getRTManager() );
       
       CG::Diagnostics optimizeDiagnostics;
       CG::Diagnostics &diagnostics = (false && optimize)? optimizeDiagnostics: m_diagnostics;
-      m_ast->llvmCompileToModule( moduleBuilder, diagnostics );
+      m_ast->registerTypes( m_context->getRTManager(), diagnostics );
       if ( !diagnostics.containsError() )
       {
+        m_ast->llvmCompileToModule( moduleBuilder, diagnostics );
+        if ( !diagnostics.containsError() )
+        {
 #if defined(FABRIC_BUILD_DEBUG)
-        std::string optimizeByteCode;
-        std::string &byteCode = (false && optimize)? optimizeByteCode: m_byteCode;
-        llvm::raw_string_ostream byteCodeStream( byteCode );
-        module->print( byteCodeStream, 0 );
-        byteCodeStream.flush();
+          std::string optimizeByteCode;
+          std::string &byteCode = (false && optimize)? optimizeByteCode: m_byteCode;
+          llvm::raw_string_ostream byteCodeStream( byteCode );
+          module->print( byteCodeStream, 0 );
+          byteCodeStream.flush();
 #endif
 
-        std::string ir = m_irCache->get( m_sourceCode );
-        if ( ir.length() > 0 )
-        {
-          RC::Handle<CG::Manager> cgManager = m_context->getCGManager();
+          std::string ir = m_irCache->get( m_sourceCode );
+          if ( ir.length() > 0 )
+          {
+            RC::Handle<CG::Manager> cgManager = m_context->getCGManager();
+            
+            llvm::SMDiagnostic error;
+            llvm::ParseAssemblyString( ir.c_str(), module.get(), error, cgManager->getLLVMContext() );
+            FABRIC_ASSERT( module );
+            FABRIC_ASSERT( !llvm::verifyModule( *module, llvm::PrintMessageAction ) );
+            linkModule( module, true );
+            return;
+          }
           
-          llvm::SMDiagnostic error;
-          llvm::ParseAssemblyString( ir.c_str(), module.get(), error, cgManager->getLLVMContext() );
-          FABRIC_ASSERT( module );
-          FABRIC_ASSERT( !llvm::verifyModule( *module, llvm::PrintMessageAction ) );
-          linkModule( module, true );
-          return;
-        }
-        
-        llvm::NoFramePointerElim = true;
-        llvm::JITExceptionHandling = true;
-        llvm::OwningPtr<llvm::PassManager> passManager( new llvm::PassManager );
-        if ( optimize )
-        {
-          llvm::createStandardFunctionPasses( passManager.get(), 2 );
-          llvm::createStandardModulePasses( passManager.get(), 2, false, true, true, true, false, llvm::createFunctionInliningPass() );
-          llvm::createStandardLTOPasses( passManager.get(), true, true, false );
-        }
+          llvm::NoFramePointerElim = true;
+          llvm::JITExceptionHandling = true;
+          llvm::OwningPtr<llvm::PassManager> passManager( new llvm::PassManager );
+          if ( optimize )
+          {
+            llvm::createStandardFunctionPasses( passManager.get(), 2 );
+            llvm::createStandardModulePasses( passManager.get(), 2, false, true, true, true, false, llvm::createFunctionInliningPass() );
+            llvm::createStandardLTOPasses( passManager.get(), true, true, false );
+          }
 #if defined(FABRIC_BUILD_DEBUG)
-        passManager->add( llvm::createVerifierPass() );
+          passManager->add( llvm::createVerifierPass() );
 #endif
-        passManager->run( *module );
-       
-        if ( optimize )
-        {
-          std::string ir;
-          llvm::raw_string_ostream irStream( ir );
-          module->print( irStream, 0 );
-          irStream.flush();
-          m_irCache->put( m_sourceCode, ir );
-        }
+          passManager->run( *module );
+         
+          if ( optimize )
+          {
+            std::string ir;
+            llvm::raw_string_ostream irStream( ir );
+            module->print( irStream, 0 );
+            irStream.flush();
+            m_irCache->put( m_sourceCode, ir );
+          }
 
-        linkModule( module, optimize );
+          linkModule( module, optimize );
+        }
       }
     }
     

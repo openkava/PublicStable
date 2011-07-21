@@ -165,10 +165,10 @@ namespace Fabric
       }
     }
       
-    void Inst::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder ) const
+    void Inst::registerTypes( RC::Handle<RT::Manager> const &rtManager ) const
     {
       CG::Diagnostics diagnostics;
-      m_ast->llvmCompileToModule( moduleBuilder, diagnostics );
+      m_ast->registerTypes( rtManager, diagnostics );
       for ( CG::Diagnostics::const_iterator it=diagnostics.begin(); it!=diagnostics.end(); ++it )
       {
         CG::Location const &location = it->first;
@@ -179,6 +179,26 @@ namespace Fabric
       {
         FABRIC_LOG( "[%s] KL code contains error(s), extension disabled", m_name.c_str() );
         m_disabled = true;
+      }
+    }
+      
+    void Inst::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder ) const
+    {
+      if ( !m_disabled )
+      {
+        CG::Diagnostics diagnostics;
+        m_ast->llvmCompileToModule( moduleBuilder, diagnostics );
+        for ( CG::Diagnostics::const_iterator it=diagnostics.begin(); it!=diagnostics.end(); ++it )
+        {
+          CG::Location const &location = it->first;
+          CG::Diagnostic const &diagnostic = it->second;
+          FABRIC_LOG( "[%s] %u:%u: %s: %s", m_name.c_str(), (unsigned)location.getLine(), (unsigned)location.getColumn(), diagnostic.getLevelDesc(), diagnostic.getDesc().c_str() );
+        }
+        if ( diagnostics.containsError() )
+        {
+          FABRIC_LOG( "[%s] KL code contains error(s), extension disabled", m_name.c_str() );
+          m_disabled = true;
+        }
       }
     }
     

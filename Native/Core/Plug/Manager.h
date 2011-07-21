@@ -17,6 +17,11 @@ namespace Fabric
     class Object;
   };
   
+  namespace RT
+  {
+    class Manager;
+  };
+  
   namespace CG
   {
     class Manager;
@@ -52,6 +57,7 @@ namespace Fabric
       
       RC::ConstHandle<Inst> registerPlugin( std::string const &name, std::string const &jsonDesc );
       
+      void registerTypes( RC::Handle<RT::Manager> const &rtManager ) const;
       void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder ) const;
       void *llvmResolveExternalFunction( std::string const &name ) const;
 

@@ -17,6 +17,11 @@ namespace Fabric
     class CommandChannel;
   };
   
+  namespace RT
+  {
+    class Manager;
+  };
+  
   namespace CG
   {
     class Manager;
@@ -66,6 +71,7 @@ namespace Fabric
         return m_code;
       }
       
+      void registerTypes( RC::Handle<RT::Manager> const &rtManager ) const;
       void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder ) const;
       void *llvmResolveExternalFunction( std::string const &name ) const;
 
