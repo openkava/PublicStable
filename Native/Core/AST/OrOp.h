@@ -16,15 +16,16 @@ namespace Fabric
   {
     class OrOp : public Expr
     {
+      FABRIC_AST_NODE_DECL( OrOp );
+
     public:
         
       static RC::Handle<OrOp> Create( CG::Location const &location, RC::ConstHandle<Expr> const &left, RC::ConstHandle<Expr> const &right )
       {
         return new OrOp( location, left, right );
       }
-    
-      virtual std::string localDesc() const;
-      virtual std::string deepDesc( std::string const &indent ) const;
+
+      RC::Handle<JSON::Object> toJSON() const;
       
       virtual RC::ConstHandle<CG::Adapter> getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const;
       virtual CG::ExprValue buildExprValue( CG::BasicBlockBuilder &basicBlockBuilder, CG::Usage usage, std::string const &lValueErrorDesc ) const;

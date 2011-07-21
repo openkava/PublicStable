@@ -16,6 +16,16 @@ namespace Fabric
       return m_manager;
     }
     
+    RC::ConstHandle<Adapter> ModuleBuilder::maybeGetAdapter( std::string const &userName )
+    {
+      return m_manager->maybeGetAdapter( userName );
+    }
+    
+    RC::ConstHandle<Adapter> ModuleBuilder::getAdapter( std::string const &userName )
+    {
+      return m_manager->getAdapter( userName );
+    }
+    
     llvm::LLVMContext &ModuleBuilder::getLLVMContext()
     {
       return m_manager->getLLVMContext();
@@ -36,9 +46,9 @@ namespace Fabric
       return m_moduleScope;
     }
     
-    bool ModuleBuilder::contains( std::string const &codeName )
+    bool ModuleBuilder::contains( std::string const &codeName, bool buildFunctions )
     {
-      bool insertResult = m_contained.insert( codeName ).second;
+      bool insertResult = m_contained.insert( std::pair<std::string, bool>( codeName, buildFunctions ) ).second;
       return !insertResult;
     }
 

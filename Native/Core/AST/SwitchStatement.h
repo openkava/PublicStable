@@ -17,21 +17,22 @@ namespace Fabric
   namespace AST
   {
     class Expr;
-    class CaseList;
-    class StatementList;
+    class CaseVector;
+    class StatementVector;
     
     class SwitchStatement: public Statement
     {
+      FABRIC_AST_NODE_DECL( SwitchStatement );
+
     public:
 
       static RC::Handle<SwitchStatement> Create(
         CG::Location const &location,
         RC::ConstHandle<Expr> const &expr,
-        RC::ConstHandle<CaseList> const &caseList
+        RC::ConstHandle<CaseVector> const &cases
         );
-    
-      virtual std::string localDesc() const;
-      virtual std::string deepDesc( std::string const &indent ) const;
+
+      RC::Handle<JSON::Object> toJSON() const;
       
       virtual void llvmCompileToBuilder( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const;
      
@@ -40,13 +41,13 @@ namespace Fabric
       SwitchStatement(
         CG::Location const &location,
         RC::ConstHandle<Expr> const &expr,
-        RC::ConstHandle<CaseList> const &caseList
+        RC::ConstHandle<CaseVector> const &cases
         );
     
     private:
     
       RC::ConstHandle<Expr> m_expr;
-      RC::ConstHandle<CaseList> m_caseList;
+      RC::ConstHandle<CaseVector> m_cases;
     };
   };
 };

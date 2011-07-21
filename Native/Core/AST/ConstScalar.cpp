@@ -9,11 +9,15 @@
 #include <Fabric/Core/CG/ScalarAdapter.h>
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/CG/BasicBlockBuilder.h>
+#include <Fabric/Base/JSON/String.h>
+#include <Fabric/Base/JSON/Scalar.h>
 
 namespace Fabric
 {
   namespace AST
   {
+    FABRIC_AST_NODE_IMPL( ConstScalar );
+    
     RC::Handle<ConstScalar> ConstScalar::Create( CG::Location const &location, std::string const &valueString )
     {
       float value;
@@ -28,9 +32,11 @@ namespace Fabric
     {
     }
     
-    std::string ConstScalar::localDesc() const
+    RC::Handle<JSON::Object> ConstScalar::toJSON() const
     {
-      return "ConstScalar( " + _(m_value) + " )";
+      RC::Handle<JSON::Object> result = Expr::toJSON();
+      result->set( "value", JSON::Scalar::Create( m_value ) );
+      return result;
     }
     
     RC::ConstHandle<CG::Adapter> ConstScalar::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const

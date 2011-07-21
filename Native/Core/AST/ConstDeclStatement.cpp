@@ -4,15 +4,17 @@
  
 #include "ConstDeclStatement.h"
 #include "ConstDecl.h"
-
 #include <Fabric/Core/CG/BasicBlockBuilder.h>
 #include <Fabric/Core/CG/Error.h>
 #include <Fabric/Core/CG/Manager.h>
+#include <Fabric/Base/JSON/String.h>
 
 namespace Fabric
 {
   namespace AST
   {
+    FABRIC_AST_NODE_IMPL( ConstDeclStatement );
+    
     ConstDeclStatement::ConstDeclStatement(
       CG::Location const &location,
       RC::ConstHandle<ConstDecl> const &constDecl
@@ -22,15 +24,11 @@ namespace Fabric
     {
     }
     
-    std::string ConstDeclStatement::localDesc() const
+    RC::Handle<JSON::Object> ConstDeclStatement::toJSON() const
     {
-      return "ConstDeclStatement";
-    }
-
-    std::string ConstDeclStatement::deepDesc( std::string const &indent ) const
-    {
-      return indent + localDesc() + "\n"
-        + m_constDecl->deepDesc( indent + "  " );
+      RC::Handle<JSON::Object> result = Statement::toJSON();
+      result->set( "constDecl", m_constDecl->toJSON() );
+      return result;
     }
     
     void ConstDeclStatement::llvmCompileToBuilder( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const

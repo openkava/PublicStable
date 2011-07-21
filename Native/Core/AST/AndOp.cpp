@@ -1,10 +1,7 @@
 /*
- *
- *  Created by Peter Zion on 10-12-02.
- *  Copyright 2010 Fabric Technologies Inc. All rights reserved.
- *
+ *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
  */
-
+ 
 #include <Fabric/Core/AST/AndOp.h>
 #include <Fabric/Core/CG/BooleanAdapter.h>
 #include <Fabric/Core/CG/Scope.h>
@@ -12,11 +9,14 @@
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/CG/Error.h>
 #include <Fabric/Core/RT/Desc.h>
+#include <Fabric/Base/JSON/String.h>
 
 namespace Fabric
 {
   namespace AST
   {
+    FABRIC_AST_NODE_IMPL( AndOp );
+    
     AndOp::AndOp( CG::Location const &location, RC::ConstHandle<Expr> const &left, RC::ConstHandle<Expr> const &right )
       : Expr( location )
       , m_left( left )
@@ -24,17 +24,14 @@ namespace Fabric
     {
     }
     
-    std::string AndOp::localDesc() const
+    RC::Handle<JSON::Object> AndOp::toJSON() const
     {
-      return "AndOp";
-    }
-    
-    std::string AndOp::deepDesc( std::string const &indent ) const
-    {
-      std::string subIndent = indent + "  ";
-      return indent + localDesc() + "\n"
-        + m_left->deepDesc(subIndent)
-        + m_right->deepDesc(subIndent);
+      RC::Handle<JSON::Object> result = Expr::toJSON();
+      if ( m_left )
+        result->set( "lhs", m_left->toJSON() );
+      if ( m_right )
+        result->set( "rhs", m_right->toJSON() );
+      return result;
     }
     
     RC::ConstHandle<CG::Adapter> AndOp::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const

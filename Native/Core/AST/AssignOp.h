@@ -19,16 +19,17 @@ namespace Fabric
   {
     class AssignOp : public Expr
     {
+      FABRIC_AST_NODE_DECL( AssignOp );
+      
     public:
       
       static RC::Handle<AssignOp> Create( CG::Location const &location, CG::AssignOpType assignOpType, RC::ConstHandle<Expr> const &left, RC::ConstHandle<Expr> const &right )
       {
         return new AssignOp( location, assignOpType, left, right );
       }
-      
-      virtual std::string localDesc() const;
-      virtual std::string deepDesc( std::string const &indent ) const;
-      
+ 
+      RC::Handle<JSON::Object> toJSON() const;
+     
       virtual RC::ConstHandle<CG::Adapter> getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const;
       virtual CG::ExprValue buildExprValue( CG::BasicBlockBuilder &basicBlockBuilder, CG::Usage usage, std::string const &lValueErrorDesc ) const;
       

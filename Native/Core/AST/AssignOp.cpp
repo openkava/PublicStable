@@ -12,11 +12,14 @@
 #include <Fabric/Core/CG/OverloadNames.h>
 #include <Fabric/Core/CG/Scope.h>
 #include <Fabric/Core/CG/Error.h>
+#include <Fabric/Base/JSON/String.h>
 
 namespace Fabric
 {
   namespace AST
   {
+    FABRIC_AST_NODE_IMPL( AssignOp );
+    
     AssignOp::AssignOp( CG::Location const &location, CG::AssignOpType assignOpType, RC::ConstHandle<Expr> const &left, RC::ConstHandle<Expr> const &right )
     : Expr( location )
     , m_assignOpType( assignOpType )
@@ -25,19 +28,13 @@ namespace Fabric
     {
     }
     
-    std::string AssignOp::localDesc() const
+    RC::Handle<JSON::Object> AssignOp::toJSON() const
     {
-      char buf[128];
-      snprintf( buf, 128, "AssignOp(%s)", CG::assignOpTypeDesc(m_assignOpType) );
-      return std::string(buf);
-    }
-    
-    std::string AssignOp::deepDesc( std::string const &indent ) const
-    {
-      std::string subIndent = indent + "  ";
-      return indent + localDesc() + "\n"
-      + m_left->deepDesc(subIndent)
-      + m_right->deepDesc(subIndent);
+      RC::Handle<JSON::Object> result = Expr::toJSON();
+      result->set( "assignOpType", JSON::String::Create( assignOpTypeDesc( m_assignOpType ) ) );
+      result->set( "lhs", m_left->toJSON() );
+      result->set( "rhs", m_right->toJSON() );
+      return result;
     }
     
     RC::ConstHandle<CG::Adapter> AssignOp::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const

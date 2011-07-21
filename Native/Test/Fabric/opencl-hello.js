@@ -7,12 +7,12 @@ operator entry()\n\
 {\n\
   Integer err;\n\
 \n\
-  cl_platform_id[] clPlatformIDs;\n\
+  cl_platform_id clPlatformIDs[];\n\
   err = clGetPlatformIDs( clPlatformIDs );\n\
   report 'clGetPlatformIDs: ' + err;\n\
   report 'clPlatformIDs.size > 0 = ' + (clPlatformIDs.size > 0);\n\
 \n\
-  cl_device_id[] clDeviceIDs;\n\
+  cl_device_id clDeviceIDs[];\n\
   err = clGetDeviceIDs( clPlatformIDs[0], CL_DEVICE_TYPE_ALL, clDeviceIDs );\n\
   report 'clGetDeviceIDs: ' + err;\n\
   report 'clDeviceIDs.size > 0 = ' + (clDeviceIDs.size > 0);\n\
@@ -50,20 +50,20 @@ __kernel void square(                                                  \n\
   Data NULL;\n\
   Size count = 1024;\n\
 \n\
-  Scalar[] data;\n\
+  Scalar data[];\n\
   for ( Size i=0; i<count; ++i )\n\
     data.push( 5.6*i+2.4 );\n\
   cl_mem input = clCreateBuffer( clContext, CL_MEM_READ_ONLY, data.dataSize, NULL, err );\n\
   report 'clCreateBuffer returned ' + err;\n\
   report 'input = ' + input;\n\
 \n\
-  Scalar[] results;\n\
+  Scalar results[];\n\
   results.resize( count );\n\
   cl_mem output = clCreateBuffer( clContext, CL_MEM_WRITE_ONLY, results.dataSize, NULL, err );\n\
   report 'clCreateBuffer returned ' + err;\n\
   report 'output = ' + output;\n\
 \n\
-  cl_event[] eventWaitList;\n\
+  cl_event eventWaitList[];\n\
   cl_event event;\n\
   err = clEnqueueWriteBuffer( clCommandQueue, input, CL_TRUE, 0, data.dataSize, data.data, eventWaitList, event );\n\
   report 'clEnqueueWriteBuffer returned ' + err;\n\
@@ -105,17 +105,21 @@ __kernel void square(                                                  \n\
 }\n\
 ");
 op.setEntryFunctionName("entry");
+if (op.getDiagnostics().length > 0) {
+  printDeep(op.getDiagnostics());
+}
+else {
+  b = F.DG.createBinding();
+  b.setOperator(op);
+  b.setParameterLayout([]);
 
-b = F.DG.createBinding();
-b.setOperator(op);
-b.setParameterLayout([]);
+  eh = F.DG.createEventHandler("eventHandler");
+  eh.preDescendBindings.append(b);
 
-eh = F.DG.createEventHandler("eventHandler");
-eh.preDescendBindings.append(b);
-
-e = F.DG.createEvent("event");
-e.appendEventHandler(eh);
-e.fire();
+  e = F.DG.createEvent("event");
+  e.appendEventHandler(eh);
+  e.fire();
+}
 
 F.flush();
 FC.dispose();

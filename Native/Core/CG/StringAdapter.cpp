@@ -59,7 +59,7 @@ namespace Fabric
     
     void StringAdapter::llvmPrepareModule( ModuleBuilder &moduleBuilder, bool buildFunctions ) const
     {
-      if ( moduleBuilder.contains( getCodeName() ) )
+      if ( moduleBuilder.contains( getCodeName(), buildFunctions ) )
         return;
       
       moduleBuilder->addTypeName( getCodeName(), llvmRawType() );
@@ -689,7 +689,7 @@ namespace Fabric
     {
       char const *stringData = m_stringDesc->getValueData( data );
       size_t stringLength = m_stringDesc->getValueLength( data );
-      return _( stringData, stringLength, '"' );
+      return _( stringData, stringLength, SIZE_MAX, '"' );
     }
     
     llvm::Constant *StringAdapter::llvmDefaultValue( BasicBlockBuilder &basicBlockBuilder ) const

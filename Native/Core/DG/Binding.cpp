@@ -8,6 +8,7 @@
 #include <Fabric/Core/DG/Operator.h>
 #include <Fabric/Core/DG/Context.h>
 #include <Fabric/Core/RT/Manager.h>
+#include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Base/JSON/Null.h>
 #include <Fabric/Base/JSON/String.h>
 #include <Fabric/Base/JSON/Object.h>
@@ -77,7 +78,7 @@ namespace Fabric
       
     void Binding::setPrototype( std::vector<std::string> const &parameterDescs )
     {
-      Prototype *newPrototype = new Prototype( m_context->getRTManager() );
+      Prototype *newPrototype = new Prototype( m_context->getCGManager() );
       newPrototype->setDescs( parameterDescs );
       delete m_prototype;
       m_prototype = newPrototype;
