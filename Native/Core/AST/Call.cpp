@@ -98,7 +98,23 @@ namespace Fabric
             
           RC::ConstHandle<CG::FunctionSymbol> functionSymbol = basicBlockBuilder.maybeGetFunction( initializerName );
           if ( !functionSymbol )
-            throw Exception( "initializer " + _(initializerName) + " not found" );
+          {
+            if ( argTypes.size() == 1 )
+              throw CG::Error( getLocation(), "no cast exists from " + argTypes[0]->getUserName() + " to " + adapter->getUserName() );
+            else
+            {
+              std::string initializerName = adapter->getUserName() + "(";
+              for ( size_t i=0; i<argTypes.size(); ++i )
+              {
+                if ( i > 0 )
+                  initializerName += ", ";
+                initializerName += argTypes[i]->getUserName();
+              }
+              initializerName += ")";
+              
+              throw CG::Error( getLocation(), "initializer " + initializerName + " not found" );
+            }
+          }
 
           std::vector<CG::FunctionParam> const functionParams = functionSymbol->getParams();
           

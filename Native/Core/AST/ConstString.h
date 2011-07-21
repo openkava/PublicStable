@@ -36,8 +36,6 @@ namespace Fabric
     
       ConstString( CG::Location const &location, std::string const &value );
       
-      RC::ConstHandle<CG::ConstStringAdapter> getAdapter( CG::BasicBlockBuilder const &basicBlockBuilder ) const;
-      
     private:
     
       std::string m_value;
