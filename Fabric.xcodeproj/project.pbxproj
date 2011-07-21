@@ -1195,6 +1195,10 @@
 		DBD4333713D8925300E57C5F /* SourceRange.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SourceRange.cpp; sourceTree = "<group>"; };
 		DBD4338B13D89E2A00E57C5F /* Compiler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Compiler.h; sourceTree = "<group>"; };
 		DBD4338C13D89E2A00E57C5F /* Compiler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Compiler.cpp; sourceTree = "<group>"; };
+		DBD4340013D8B7D700E57C5F /* nBodySimulation.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = nBodySimulation.html; sourceTree = "<group>"; };
+		DBD4340113D8B7D700E57C5F /* Tesselation.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = Tesselation.html; sourceTree = "<group>"; };
+		DBD4340213D8B7FA00E57C5F /* nBodyOp.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = nBodyOp.kl; sourceTree = "<group>"; };
+		DBD4340313D8B7FA00E57C5F /* nBodyOpGPU.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = nBodyOpGPU.kl; sourceTree = "<group>"; };
 		DBDB624613D3B1B600F745C8 /* ExprVector.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ExprVector.cpp; sourceTree = "<group>"; };
 		DBDB624713D3B1B600F745C8 /* ExprVector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ExprVector.h; sourceTree = "<group>"; };
 		DBDB626013D3B33700F745C8 /* StatementVector.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StatementVector.cpp; sourceTree = "<group>"; };
@@ -2826,11 +2830,13 @@
 				DB96856013A79BC700616143 /* Materials.html */,
 				DB96858213A79BC900616143 /* ModelViewer.html */,
 				DB96858313A79BC900616143 /* MouseEvents.html */,
+				DBD4340013D8B7D700E57C5F /* nBodySimulation.html */,
 				DB96858613A79BC900616143 /* Painting.html */,
 				DB96858713A79BC900616143 /* PerPointDeformation.html */,
 				DB96858813A79BC900616143 /* PointCloudViewer.html */,
 				DB96858913A79BC900616143 /* Primitives.html */,
 				DB96859713A79BC900616143 /* ShadowcastingLights.html */,
+				DBD4340113D8B7D700E57C5F /* Tesselation.html */,
 				DB9685BD13A79BCB00616143 /* TransformAnimation.html */,
 				DB96860813A79CE700616143 /* CL */,
 				DB96860A13A79CE700616143 /* KL */,
@@ -2863,6 +2869,8 @@
 		DB96860A13A79CE700616143 /* KL */ = {
 			isa = PBXGroup;
 			children = (
+				DBD4340213D8B7FA00E57C5F /* nBodyOp.kl */,
+				DBD4340313D8B7FA00E57C5F /* nBodyOpGPU.kl */,
 				DB96860D13A79CE700616143 /* swirleyMovementOp.kl */,
 				DB96860E13A79CE700616143 /* turningOp.kl */,
 				DB96860F13A79CE700616143 /* twistOp.kl */,
