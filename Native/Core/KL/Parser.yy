@@ -263,7 +263,7 @@ int kl_lex( YYSTYPE *yys, YYLTYPE *yyl, KL::Context &context );
 %type <astConstDeclPtr> const_decl
 %type <astStatementPtr> const_decl_statement
 %type <astStatementPtr> statement
-%type <astStatementPtr> loop_start_statement
+%type <astStatementPtr> expression_statement
 %type <valueStringPtr> array_modifier
 %type <astStatementPtr> var_decl_statement
 %type <astVarDeclPtr> var_decl
@@ -730,18 +730,6 @@ compound_type
   }
 ;
 
-loop_start_statement
-  : expression TOKEN_SEMICOLON
-  {
-    $$ = AST::ExprStatement::Create( RTLOC, $1 ).take();
-    $1->release();
-  }
-  | var_decl_statement 
-  {
-    $$ = $1;
-  }
-;
-
 var_decl_statement
   : TOKEN_IDENTIFIER var_decl_list TOKEN_SEMICOLON 
   {
@@ -758,7 +746,7 @@ var_decl_statement
 ;
 
 loop_statement
-  : TOKEN_FOR TOKEN_LPAREN loop_start_statement optional_expression TOKEN_SEMICOLON optional_expression TOKEN_RPAREN statement
+  : TOKEN_FOR TOKEN_LPAREN statement optional_expression TOKEN_SEMICOLON optional_expression TOKEN_RPAREN statement
   {
     $$ = AST::CStyleLoop::Create( RTLOC, $3, $4, $6, 0, $8 ).take();
     if ( $3 )
@@ -838,11 +826,7 @@ statement
   }
   | const_decl_statement
   | var_decl_statement
-  | expression TOKEN_SEMICOLON
-  {
-    $$ = AST::ExprStatement::Create( RTLOC, $1 ).take();
-    $1->release();
-  }
+  | expression_statement
   | TOKEN_IF TOKEN_LPAREN expression TOKEN_RPAREN statement TOKEN_ELSE statement
   {
     $$ = AST::ConditionalStatement::Create( RTLOC, $3, $5, $7 ).take();
@@ -874,6 +858,14 @@ statement
   | compound_statement
   {
     $$ = $1;
+  }
+;
+
+expression_statement
+  : expression TOKEN_SEMICOLON
+  {
+    $$ = AST::ExprStatement::Create( RTLOC, $1 ).take();
+    $1->release();
   }
 ;
 
