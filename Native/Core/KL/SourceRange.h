@@ -61,29 +61,7 @@ namespace Fabric
         return m_endLocation;
       }
       
-      std::string toString() const
-      {
-        return std::string( &m_source->data()[m_startLocation.getIndex()], m_endLocation.getIndex() - m_startLocation.getIndex() );
-      }
-      
-      size_t getLength() const
-      {
-        return m_endLocation.getIndex() - m_startLocation.getIndex();
-      }
-      
-      bool operator ==( char const *cStr )
-      {
-        char const *start = &m_source->data()[m_startLocation.getIndex()];
-        const char *end = start + getLength();
-        
-        while ( start != end )
-        {
-          if ( *start++ != *cStr++ )
-            return false;
-        }
-        
-        return *cStr == '\0';
-      }
+      std::string toString() const;
       
     private:
     

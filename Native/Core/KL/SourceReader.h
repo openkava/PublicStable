@@ -17,10 +17,11 @@ namespace Fabric
     {
     public:
     
-      SourceReader( RC::ConstHandle<Source> const &source )
+      SourceReader( RC::ConstHandle<Source> const &source, Location const &initialLocation = Location() )
         : m_source( source )
         , m_data( source->data() )
         , m_length( source->length() )
+        , m_location( initialLocation )
       {
       }
       
@@ -57,6 +58,7 @@ namespace Fabric
       
       char advance()
       {
+        forwardThroughEscapes();
         FABRIC_ASSERT( m_location.getIndex() < m_length );
         char result = m_data[m_location.getIndex()];
 
@@ -95,6 +97,12 @@ namespace Fabric
             m_location.setIndex( m_location.getIndex() + 3 );
             m_location.setLine( m_location.getLine() + 1 );
             m_location.setColumn( 1 );
+          }
+          else if ( m_location.getIndex() + 1 == m_length
+            && m_data[m_location.getIndex()] == '\\' )
+          {
+            m_location.setIndex( m_location.getIndex() + 1 );
+            m_location.setColumn( m_location.getColumn() + 1 );
           }
           else
           {

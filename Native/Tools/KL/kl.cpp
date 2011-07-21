@@ -177,7 +177,7 @@ void handleFile( FILE *fp, unsigned int runFlags )
       jsonObject->set( "token", JSON::Integer::Create( token.getType() ) );
       jsonObject->set( "value", JSON::String::Create( token.getSourceRange().toString() ) );
       printf( "%s\n", JSON::encode( jsonObject ).c_str() );
-      if ( token.getType() == -1 )
+      if ( token.getType() == TOKEN_END )
         break;
     }
   }

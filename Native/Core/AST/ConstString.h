@@ -25,7 +25,7 @@ namespace Fabric
 
     public:
     
-      static RC::Handle<ConstString> Create( CG::Location const &location, std::string const &value, bool quoted );
+      static RC::Handle<ConstString> Create( CG::Location const &location, std::string const &value );
 
       RC::Handle<JSON::Object> toJSON() const;
       

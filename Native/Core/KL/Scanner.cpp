@@ -387,71 +387,71 @@ namespace Fabric
         m_sourceReader.advance();
         
       SourceRange sourceRange = createSourceRange( startLocation );
-      
-      switch( sourceRange.getLength() )
+      std::string string = sourceRange.toString();
+      switch( string.length() )
       {
         case 2:
-          if ( sourceRange == "in" )
+          if ( string == "in" )
             return createToken( TOKEN_IN, sourceRange );
-          if ( sourceRange == "io" )
+          if ( string == "io" )
             return createToken( TOKEN_IO, sourceRange );
-          if ( sourceRange == "if" )
+          if ( string == "if" )
             return createToken( TOKEN_IF, sourceRange );
-          if ( sourceRange == "do" )
+          if ( string == "do" )
             return createToken( TOKEN_DO, sourceRange );
           break;
           
         case 3:
-          if ( sourceRange == "for" )
+          if ( string == "for" )
             return createToken( TOKEN_FOR, sourceRange );
-          if ( sourceRange == "var" )
+          if ( string == "var" )
             return createToken( TOKEN_VAR, sourceRange );
           break;
           
         case 4:
-          if ( sourceRange == "case" )
+          if ( string == "case" )
             return createToken( TOKEN_CASE, sourceRange );
-          if ( sourceRange == "else" )
+          if ( string == "else" )
             return createToken( TOKEN_ELSE, sourceRange );
-          if ( sourceRange == "true" )
+          if ( string == "true" )
             return createToken( TOKEN_TRUE, sourceRange );
           break;
           
         case 5:
-          if ( sourceRange == "alias" )
+          if ( string == "alias" )
             return createToken( TOKEN_ALIAS, sourceRange );
-          if ( sourceRange == "break" )
+          if ( string == "break" )
             return createToken( TOKEN_BREAK, sourceRange );
-          if ( sourceRange == "const" )
+          if ( string == "const" )
             return createToken( TOKEN_CONST, sourceRange );
-          if ( sourceRange == "false" )
+          if ( string == "false" )
             return createToken( TOKEN_FALSE, sourceRange );
-          if ( sourceRange == "while" )
+          if ( string == "while" )
             return createToken( TOKEN_WHILE, sourceRange );
           break;
         
         case 6:
-          if ( sourceRange == "struct" )
+          if ( string == "struct" )
             return createToken( TOKEN_STRUCT, sourceRange );
-          if ( sourceRange == "switch" )
+          if ( string == "switch" )
             return createToken( TOKEN_SWITCH, sourceRange );
-          if ( sourceRange == "report" )
+          if ( string == "report" )
             return createToken( TOKEN_REPORT, sourceRange );
-          if ( sourceRange == "return" )
+          if ( string == "return" )
             return createToken( TOKEN_RETURN, sourceRange );
           break;
         
         case 7:
-          if ( sourceRange == "default" )
+          if ( string == "default" )
             return createToken( TOKEN_DEFAULT, sourceRange );
           break;
         
         case 8:
-          if ( sourceRange == "function" )
+          if ( string == "function" )
             return createToken( TOKEN_FUNCTION, sourceRange );
-          if ( sourceRange == "operator" )
+          if ( string == "operator" )
             return createToken( TOKEN_OPERATOR, sourceRange );
-          if ( sourceRange == "continue" )
+          if ( string == "continue" )
             return createToken( TOKEN_CONTINUE, sourceRange );
           break;
         

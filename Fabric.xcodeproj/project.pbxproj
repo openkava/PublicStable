@@ -1193,6 +1193,7 @@
 		DBCCD56913ABFAE300024113 /* timeSample.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = timeSample.cpp; sourceTree = "<group>"; };
 		DBCCD56A13ABFAE300024113 /* TimeSample.fpm.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = TimeSample.fpm.json; sourceTree = "<group>"; };
 		DBCCD57B13AC007D00024113 /* currentTime.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = currentTime.html; sourceTree = "<group>"; };
+		DBD4333713D8925300E57C5F /* SourceRange.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SourceRange.cpp; sourceTree = "<group>"; };
 		DBDB624613D3B1B600F745C8 /* ExprVector.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ExprVector.cpp; sourceTree = "<group>"; };
 		DBDB624713D3B1B600F745C8 /* ExprVector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ExprVector.h; sourceTree = "<group>"; };
 		DBDB626013D3B33700F745C8 /* StatementVector.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StatementVector.cpp; sourceTree = "<group>"; };
@@ -1799,6 +1800,7 @@
 				DB96728813A5423200616143 /* Scanner.cpp */,
 				DB96728913A5423200616143 /* Scanner.h */,
 				DB96728B13A5423200616143 /* Source.h */,
+				DBD4333713D8925300E57C5F /* SourceRange.cpp */,
 				DB32EC4613D0E3DF00CB23DE /* SourceRange.h */,
 				DB32EC4313D0E16800CB23DE /* SourceReader.h */,
 				DB32EC4513D0E26D00CB23DE /* StringSource.h */,

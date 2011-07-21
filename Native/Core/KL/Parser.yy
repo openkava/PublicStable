@@ -1277,7 +1277,7 @@ primary_expression
   {
     try
     {
-      $$ = AST::ConstString::Create( RTLOC, *$1, true ).take();
+      $$ = AST::ConstString::Create( RTLOC, *$1 ).take();
     }
     catch ( Exception e )
     {
@@ -1289,7 +1289,7 @@ primary_expression
   {
     try
     {
-      $$ = AST::ConstString::Create( RTLOC, *$1, true ).take();
+      $$ = AST::ConstString::Create( RTLOC, *$1 ).take();
     }
     catch ( Exception e )
     {

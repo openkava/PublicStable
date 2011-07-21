@@ -5,6 +5,7 @@
 #include "ConstString.h"
 #include <Fabric/Core/CG/BasicBlockBuilder.h>
 #include <Fabric/Core/CG/ConstStringAdapter.h>
+#include <Fabric/Core/CG/Error.h>
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/CG/StringAdapter.h>
 #include <Fabric/Core/Util/Parse.h>
@@ -16,11 +17,9 @@ namespace Fabric
   {
     FABRIC_AST_NODE_IMPL( ConstString );
     
-    RC::Handle<ConstString> ConstString::Create( CG::Location const &location, std::string const &value, bool quoted )
+    RC::Handle<ConstString> ConstString::Create( CG::Location const &location, std::string const &value )
     {
-      if ( quoted )
-        return new ConstString( location, Util::parseQuotedString( value ) );
-      else return new ConstString( location, value );
+      return new ConstString( location, value );
     }
 
     ConstString::ConstString( CG::Location const &location, std::string const &value )
@@ -45,9 +44,18 @@ namespace Fabric
     {
       if ( usage == CG::USAGE_LVALUE )
         throw Exception( "constants cannot be used as l-values" );
-      RC::ConstHandle<CG::ConstStringAdapter> constStringAdapter = basicBlockBuilder.getManager()->getConstStringAdapter( m_value.length() );
+      std::string unquotedValue;
+      try
+      {
+        unquotedValue = Util::parseQuotedString( m_value );
+      }
+      catch ( Exception e )
+      {
+        throw CG::Error( getLocation(), e.getDesc() + "(" + m_value + ")" );
+      }
+      RC::ConstHandle<CG::ConstStringAdapter> constStringAdapter = basicBlockBuilder.getManager()->getConstStringAdapter( unquotedValue.length() );
       RC::ConstHandle<CG::StringAdapter> stringAdapter = basicBlockBuilder.getManager()->getStringAdapter();
-      return CG::ExprValue( constStringAdapter, CG::USAGE_RVALUE, constStringAdapter->llvmConst( basicBlockBuilder, m_value.data(), m_value.length() ) ).castTo( basicBlockBuilder, stringAdapter );
+      return CG::ExprValue( constStringAdapter, CG::USAGE_RVALUE, constStringAdapter->llvmConst( basicBlockBuilder, unquotedValue.data(), unquotedValue.length() ) ).castTo( basicBlockBuilder, stringAdapter );
     }
   };
 };
