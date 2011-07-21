@@ -135,7 +135,7 @@ namespace Fabric
           byteCodeStream.flush();
 #endif
 
-          std::string ir = m_irCache->get( m_sourceCode );
+          std::string ir = m_irCache->get( m_ast );
           if ( ir.length() > 0 )
           {
             RC::Handle<CG::Manager> cgManager = m_context->getCGManager();
@@ -168,7 +168,7 @@ namespace Fabric
             llvm::raw_string_ostream irStream( ir );
             module->print( irStream, 0 );
             irStream.flush();
-            m_irCache->put( m_sourceCode, ir );
+            m_irCache->put( m_ast, ir );
           }
 
           linkModule( module, optimize );

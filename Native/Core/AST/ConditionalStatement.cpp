@@ -35,8 +35,10 @@ namespace Fabric
     {
       RC::Handle<JSON::Object> result = Statement::toJSON();
       result->set( "testExpr", m_expr->toJSON() );
-      result->set( "ifTrue", m_trueStatement->toJSON() );
-      result->set( "ifFalse", m_falseStatement->toJSON() );
+      if ( m_trueStatement )
+        result->set( "ifTrue", m_trueStatement->toJSON() );
+      if ( m_falseStatement )
+        result->set( "ifFalse", m_falseStatement->toJSON() );
       return result;
     }
 
