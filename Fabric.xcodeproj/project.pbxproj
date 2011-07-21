@@ -938,7 +938,6 @@
 		DB9684F313A79A1800616143 /* imageFilters.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = imageFilters.kl; sourceTree = "<group>"; };
 		DB9684F413A79A1800616143 /* incrementControllerLocalTime.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = incrementControllerLocalTime.kl; sourceTree = "<group>"; };
 		DB9684F513A79A1800616143 /* lights.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = lights.kl; sourceTree = "<group>"; };
-		DB9684F613A79A1800616143 /* loadCameraMatrices.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = loadCameraMatrices.kl; sourceTree = "<group>"; };
 		DB9684F713A79A1800616143 /* loadShader.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = loadShader.kl; sourceTree = "<group>"; };
 		DB9684F813A79A1800616143 /* loadSlicedVBOs.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = loadSlicedVBOs.kl; sourceTree = "<group>"; };
 		DB9684F913A79A1800616143 /* loadTexture.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = loadTexture.kl; sourceTree = "<group>"; };
@@ -2665,7 +2664,6 @@
 				DB9684F313A79A1800616143 /* imageFilters.kl */,
 				DB9684F413A79A1800616143 /* incrementControllerLocalTime.kl */,
 				DB9684F513A79A1800616143 /* lights.kl */,
-				DB9684F613A79A1800616143 /* loadCameraMatrices.kl */,
 				DB9684F713A79A1800616143 /* loadShader.kl */,
 				DB9684F813A79A1800616143 /* loadSlicedVBOs.kl */,
 				DB9684F913A79A1800616143 /* loadTexture.kl */,
