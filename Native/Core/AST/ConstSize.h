@@ -16,6 +16,8 @@ namespace Fabric
   {
     class ConstSize : public Expr
     {
+      FABRIC_AST_NODE_DECL( ConstSize );
+
     public:
     
       static RC::Handle<ConstSize> Create( CG::Location const &location, size_t value )
@@ -24,8 +26,8 @@ namespace Fabric
       }
 
       static RC::Handle<ConstSize> Create( CG::Location const &location, std::string const &valueString );
-      
-      virtual std::string localDesc() const;
+
+      RC::Handle<JSON::Object> toJSON() const;
       
       virtual RC::ConstHandle<CG::Adapter> getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const;
       virtual CG::ExprValue buildExprValue( CG::BasicBlockBuilder &basicBlockBuilder, CG::Usage usage, std::string const &lValueErrorDesc ) const;

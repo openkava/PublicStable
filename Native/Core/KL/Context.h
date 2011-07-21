@@ -2,10 +2,10 @@
  *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
  */
  
-#ifndef __CONTEXT_H__
-#define __CONTEXT_H__
+#ifndef _FABRIC_KL_CONTEXT_H
+#define _FABRIC_KL_CONTEXT_H
 
-#include <Fabric/Core/AST/GlobalList.h>
+#include <Fabric/Core/AST/GlobalVector.h>
 #include <Fabric/Core/CG/Diagnostics.h>
 #include <Fabric/Core/CG/Adapter.h>
 #include <Fabric/Core/CG/Manager.h>
@@ -19,24 +19,23 @@ namespace Fabric
     struct Context
     {
       Context( 
-        KL::Scanner *scanner,
-        CG::Diagnostics &diagnostics,
-        RC::Handle<CG::Manager> const &cgManager ) 
-        : m_scanner( scanner ),
-          m_diagnostics( diagnostics ),
-          m_cgManager( cgManager )
+        RC::Handle<KL::Scanner> const &scanner,
+        CG::Diagnostics &diagnostics
+        ) 
+        : m_scanner( scanner )
+        , m_diagnostics( diagnostics )
+      {
+      }
+      
+      ~Context()
       {
       }
 
-      KL::Scanner *m_scanner;
+      RC::Handle<KL::Scanner> m_scanner;
       CG::Diagnostics &m_diagnostics;
-      RC::Handle<AST::GlobalList> m_resultGlobalList;
-      RC::Handle<CG::Manager> const &m_cgManager;
-
-      // Variable declaration list
-      CG::Adapter const *m_varType;
+      RC::Handle<AST::GlobalVector> m_resultGlobalList;
     };
   }
 }
 
-#endif // __CONTEXT_H__
+#endif //_FABRIC_KL_CONTEXT_H

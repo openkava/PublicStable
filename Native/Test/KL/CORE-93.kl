@@ -17,7 +17,7 @@ function Vec3( Scalar x, Scalar y, Scalar z )
   self.z = z;
 }
 
-function Quad( in Vec3[] v ) 
+function Quad( in Vec3 v[] ) 
 { 
   self.normal = v[0]; 
 } 

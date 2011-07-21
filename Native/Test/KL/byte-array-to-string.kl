@@ -2,9 +2,9 @@ function entry()
 {
   Byte a[];
   for ( Size i=0; i<256; ++i )
-    a.push( (Byte)i );
+    a.push( Byte(i) );
   
   String b[];
-  b.push( (String)a );
+  b.push( String(a) );
   report b;
 }

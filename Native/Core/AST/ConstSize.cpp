@@ -11,11 +11,14 @@
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/CG/BasicBlockBuilder.h>
 #include <Fabric/Core/Util/Parse.h>
+#include <Fabric/Base/JSON/String.h>
 
 namespace Fabric
 {
   namespace AST
   {
+    FABRIC_AST_NODE_IMPL( ConstSize );
+    
     RC::Handle<ConstSize> ConstSize::Create( CG::Location const &location, std::string const &valueString )
     {
       return new ConstSize( location, Util::parseSize( valueString ) );
@@ -27,11 +30,11 @@ namespace Fabric
     {
     }
     
-    std::string ConstSize::localDesc() const
+    RC::Handle<JSON::Object> ConstSize::toJSON() const
     {
-      char buf[1024];
-      snprintf( buf, 1024, "ConstSize( %u )", (unsigned)m_value );
-      return std::string(buf);
+      RC::Handle<JSON::Object> result = Expr::toJSON();
+      result->set( "value", JSON::Integer::Create( m_value ) );
+      return result;
     }
     
     RC::ConstHandle<CG::Adapter> ConstSize::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const

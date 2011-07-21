@@ -12,39 +12,42 @@ namespace Fabric
   namespace CG
   {
     class Adapter;
+    class Manager;
   };
   
   namespace AST
   {
     class Alias : public Global
     {
+      FABRIC_AST_NODE_DECL( Alias );
+      
     public:
-    
-      virtual std::string localDesc() const;
 
       static RC::Handle<Alias> Create(
         CG::Location const &location,
         std::string const &name,
-        RC::ConstHandle<CG::Adapter> const &adapter
+        std::string const &adapterName
         )
       {
-        return new Alias( location, name, adapter );
+        return new Alias( location, name, adapterName );
       }
+
+      RC::Handle<JSON::Object> toJSON() const;
       
-      virtual void llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctionBodies ) const;
+      virtual void registerTypes( RC::Handle<RT::Manager> const &rtManager, CG::Diagnostics &diagnostics ) const;
       
     protected:
     
       Alias(
         CG::Location const &location,
         std::string const &name,
-        RC::ConstHandle<CG::Adapter> const &adapter
+        std::string const &adapterName
         );
     
     private:
     
       std::string m_name;
-      RC::ConstHandle<CG::Adapter> m_adapter;
+      std::string m_adapterName;
     };
   };
 };

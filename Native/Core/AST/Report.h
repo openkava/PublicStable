@@ -17,15 +17,16 @@ namespace Fabric
   {
     class Report: public Statement
     {
+      FABRIC_AST_NODE_DECL( Report );
+
     public:
-    
-      virtual std::string localDesc() const;
-      virtual std::string deepDesc( std::string const &indent ) const;
 
       static RC::Handle<Report> Create( CG::Location const &location, RC::ConstHandle<Expr> const &expr )
       {
         return new Report( location, expr );
       }
+
+      RC::Handle<JSON::Object> toJSON() const;
       
       virtual void llvmCompileToBuilder( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const;
      

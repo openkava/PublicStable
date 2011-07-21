@@ -17,10 +17,9 @@ namespace Fabric
   {
     class BreakStatement: public Statement
     {
+      FABRIC_AST_NODE_DECL( BreakStatement );
+      
     public:
-    
-      virtual std::string localDesc() const;
-      virtual std::string deepDesc( std::string const &indent ) const;
 
       static RC::Handle<BreakStatement> Create( CG::Location const &location )
       {

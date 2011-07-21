@@ -6,22 +6,71 @@
  */
 
 #include "Param.h"
-#include <Fabric/Core/CG/Location.h>
 #include <Fabric/Core/CG/Adapter.h>
+#include <Fabric/Core/CG/Location.h>
+#include <Fabric/Core/CG/Manager.h>
+#include <Fabric/Core/CG/ModuleBuilder.h>
+#include <Fabric/Base/JSON/String.h>
 
 namespace Fabric
 {
   namespace AST
   {
-    Param::Param( CG::Location const &location, std::string const &name, RC::ConstHandle< CG::Adapter > const &adapter, CG::Usage usage )
-      : Node( location )
-      , m_functionParam( name, adapter, usage )
+    FABRIC_AST_NODE_IMPL( Param );
+    
+    RC::Handle<Param> Param::Create(
+      CG::Location const &location,
+      std::string const &name,
+      std::string const &type,
+      CG::Usage usage
+      )
     {
+      return new Param( location, name, type, usage );
     }
 
-    std::string Param::localDesc() const
+    Param::Param(
+      CG::Location const &location,
+      std::string const &name,
+      std::string const &type,
+      CG::Usage usage
+      )
+      : Node( location )
+      , m_name( name )
+      , m_type( type )
+      , m_usage( usage )
     {
-      return "Param( " + _(getName()) + ", " + _(getAdapter()) + ", " + std::string( CG::usageDesc( getUsage() ) ) + " )";
+    }
+    
+    RC::Handle<JSON::Object> Param::toJSON() const
+    {
+      RC::Handle<JSON::Object> result = Node::toJSON();
+      result->set( "name", JSON::String::Create( m_name ) );
+      result->set( "type", JSON::String::Create( m_type ) );
+      result->set( "usage", JSON::String::Create( CG::usageDesc( m_usage ) ) );
+      return result;
+    }
+
+    CG::FunctionParam Param::getFunctionParam( RC::Handle<CG::Manager> const &cgManager ) const
+    {
+      return CG::FunctionParam( m_name, getAdapter( cgManager ), m_usage );
+    }
+    
+    RC::ConstHandle<CG::Adapter> Param::getAdapter( RC::Handle<CG::Manager> const &cgManager ) const
+    {
+      RC::ConstHandle<CG::Adapter> adapter = cgManager->maybeGetAdapter( m_type );
+      if ( !adapter )
+        throw CG::Error( getLocation(), _(m_type) + ": type not registered" );
+      return adapter;
+    }
+    
+    CG::ExprType Param::getExprType( RC::Handle<CG::Manager> const &cgManager ) const
+    {
+      return CG::ExprType( getAdapter( cgManager ), m_usage );
+    }
+      
+    void Param::llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctionBodies ) const
+    {
+      moduleBuilder.getAdapter( m_type )->llvmPrepareModule( moduleBuilder, buildFunctionBodies );
     }
   };
 };

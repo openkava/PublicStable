@@ -112,8 +112,10 @@ namespace Fabric
 
     void StructAdapter::llvmPrepareModule( ModuleBuilder &moduleBuilder, bool buildFunctions ) const
     {
-      if ( moduleBuilder.contains( getCodeName() ) )
+      if ( moduleBuilder.contains( getCodeName(), buildFunctions ) )
         return;
+      for ( MemberAdaptorVector::const_iterator it=m_memberAdapters.begin(); it!=m_memberAdapters.end(); ++it )
+        (*it)->llvmPrepareModule( moduleBuilder, buildFunctions );
       
       moduleBuilder->addTypeName( getCodeName(), llvmRawType() );
 

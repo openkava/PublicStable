@@ -3,90 +3,86 @@
  */
  
 #include "Function.h"
-#include <Fabric/Core/CG/ModuleBuilder.h>
-#include <Fabric/Core/CG/FunctionBuilder.h>
-#include <Fabric/Core/CG/Scope.h>
-
-#include <llvm/Module.h>
-#include <llvm/Function.h>
-#include <llvm/DerivedTypes.h>
-#include <llvm/Analysis/Verifier.h>
-#include <llvm/PassManager.h>
+#include <Fabric/Core/AST/Param.h>
+#include <Fabric/Core/CG/Manager.h>
+#include <Fabric/Core/CG/OverloadNames.h>
+#include <Fabric/Base/JSON/String.h>
+#include <Fabric/Base/JSON/Array.h>
 
 namespace Fabric
 {
   namespace AST
   {
+    FABRIC_AST_NODE_IMPL( Function );
+    
+    RC::Handle<Function> Function::Create(
+      CG::Location const &location,
+      std::string const &friendlyName,
+      std::string const &entryName,
+      std::string const &returnTypeName,
+      RC::ConstHandle<ParamVector> const &params,
+      RC::ConstHandle<CompoundStatement> const &body
+      )
+    {
+      return new Function( location, friendlyName, entryName, returnTypeName, params, body );
+    }
+    
+    RC::Handle<Function> Function::Create(
+      CG::Location const &location,
+      std::string const &friendlyName,
+      std::string const *entryName,
+      std::string const &returnTypeName,
+      RC::ConstHandle<ParamVector> const &params,
+      RC::ConstHandle<CompoundStatement> const &body
+      )
+    {
+      return new Function( location, friendlyName, entryName? *entryName: friendlyName, returnTypeName, params, body );
+    }
+    
     Function::Function(
         CG::Location const &location,
         std::string const &friendlyName,
         std::string const &entryName,
-        CG::ExprType const &returnExprType,
-        RC::ConstHandle<ParamList> const &params,
+        std::string const &returnTypeName,
+        RC::ConstHandle<ParamVector> const &params,
         RC::ConstHandle<CompoundStatement> const &body
         )
-      : Global( location )
+      : FunctionBase( location, returnTypeName, body )
       , m_friendlyName( friendlyName )
       , m_entryName( entryName )
-      , m_returnExprType( returnExprType )
       , m_params( params )
-      , m_body( body )
     {
     }
     
-    std::string Function::localDesc() const
+    RC::Handle<JSON::Object> Function::toJSON() const
     {
-      return "Function( '" + m_friendlyName + "' ('" + m_entryName + "'), " + m_returnExprType.desc() + " )";
+      RC::Handle<JSON::Object> result = FunctionBase::toJSON();
+      result->set( "friendlyName", JSON::String::Create( m_friendlyName ) );
+      result->set( "entryName", JSON::String::Create( m_entryName ) );
+      result->set( "params", m_params->toJSON() );
+      return result;
     }
     
-    std::string Function::deepDesc( std::string const &indent ) const
+    std::string const *Function::getFriendlyName( RC::Handle<CG::Manager> const &cgManager ) const
     {
-      std::string subIndent = indent + "  ";
-      return indent + localDesc() + "\n"
-        + m_params->deepDesc(subIndent)
-        + m_body->deepDesc(subIndent);
-    }
-    
-    RC::ConstHandle<ParamList> Function::getParamList() const
-    {
-      return m_params;
+      if ( cgManager->maybeGetAdapter( m_friendlyName ) )
+        return 0;
+      else return &m_friendlyName;
     }
 
-    RC::ConstHandle<CompoundStatement> Function::getBody() const
+    std::string Function::getEntryName( RC::Handle<CG::Manager> const &cgManager ) const
     {
-      return m_body;
+      RC::ConstHandle<CG::Adapter> adapter = cgManager->maybeGetAdapter( m_friendlyName );
+      if ( adapter )
+        return CG::constructOverloadName( adapter, m_params->getAdapters( cgManager ) );
+      else return m_entryName;
     }
-    
-    void Function::llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctionBodies ) const
+
+    RC::ConstHandle<ParamVector> Function::getParams( RC::Handle<CG::Manager> const &cgManager ) const
     {
-      if ( !buildFunctionBodies && m_friendlyName.length()>0 && moduleBuilder.getScope().has( m_friendlyName ) )
-      {
-        addError( diagnostics, "symbol '" + m_entryName + "' already exists" );
-      }
-      else
-      {
-        CG::FunctionBuilder functionBuilder( moduleBuilder, m_entryName, m_returnExprType, m_params->getFunctionParams(), m_friendlyName.length()>0? &m_friendlyName: 0 );
-        if ( buildFunctionBodies && m_body )
-        {
-          CG::BasicBlockBuilder basicBlockBuilder( functionBuilder );
-
-          llvm::BasicBlock *basicBlock = functionBuilder.createBasicBlock( "entry" );
-          basicBlockBuilder->SetInsertPoint( basicBlock );
-          m_body->llvmCompileToBuilder( basicBlockBuilder, diagnostics );
-
-          llvm::BasicBlock *bb = basicBlockBuilder->GetInsertBlock();
-          if ( !bb->getTerminator() )
-          {
-            if ( m_returnExprType )
-              addError( diagnostics, Exception("not all paths return a value") );
-            else
-            {
-              functionBuilder.getScope().llvmUnwind( basicBlockBuilder );
-              basicBlockBuilder->CreateRetVoid();
-            }
-          }
-        }
-      }
+      if ( cgManager->maybeGetAdapter( m_friendlyName ) )
+        return ParamVector::Create( Param::Create( getLocation(), "self", m_friendlyName, CG::USAGE_LVALUE ), m_params );
+      else return m_params;
     }
   };
 };

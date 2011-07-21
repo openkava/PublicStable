@@ -17,10 +17,9 @@ namespace Fabric
   {
     class ConditionalStatement: public Statement
     {
+      FABRIC_AST_NODE_DECL( ConditionalStatement );
+
     public:
-    
-      virtual std::string localDesc() const;
-      virtual std::string deepDesc( std::string const &indent ) const;
 
       static RC::Handle<ConditionalStatement> Create(
         CG::Location const &location,
@@ -31,6 +30,8 @@ namespace Fabric
       {
         return new ConditionalStatement( location, expr, trueStatement, falseStatement );
       }
+
+      RC::Handle<JSON::Object> toJSON() const;
       
       virtual void llvmCompileToBuilder( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const;
      

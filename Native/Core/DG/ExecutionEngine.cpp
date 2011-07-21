@@ -91,7 +91,7 @@ namespace Fabric
       {
         void *result = 0;
         if ( !result )
-          result = s_currentContext->getPlugManager()->llvmResolveExternalFunction( functionName );
+          result = Plug::Manager::Instance()->llvmResolveExternalFunction( functionName );
         if ( !result )
           result = OCL::llvmResolveExternalFunction( functionName );
         if ( !result )

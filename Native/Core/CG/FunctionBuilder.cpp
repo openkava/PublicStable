@@ -226,5 +226,15 @@ namespace Fabric
     {
       return m_moduleBuilder.maybeGetFunction( entryName );
     }
+
+    RC::ConstHandle<Adapter> FunctionBuilder::maybeGetAdapter( std::string const &userName ) const
+    {
+      return m_moduleBuilder.maybeGetAdapter( userName );
+    }
+    
+    RC::ConstHandle<Adapter> FunctionBuilder::getAdapter( std::string const &userName ) const
+    {
+      return m_moduleBuilder.getAdapter( userName );
+    }
   };
 };

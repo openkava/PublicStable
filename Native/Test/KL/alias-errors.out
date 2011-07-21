@@ -1,0 +1,2 @@
+1:1: error: no registered type named 'UnregisteredType'
+3:1: error: type 'AliasTypeTwo' already registered with a different definition
