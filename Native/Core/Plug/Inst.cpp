@@ -152,7 +152,8 @@ namespace Fabric
       if ( !m_disabled )
       {
         CG::Diagnostics diagnostics;
-        m_ast->llvmCompileToModule( moduleBuilder, diagnostics );
+        m_ast->llvmCompileToModule( moduleBuilder, diagnostics, false );
+        m_ast->llvmCompileToModule( moduleBuilder, diagnostics, true );
         for ( CG::Diagnostics::const_iterator it=diagnostics.begin(); it!=diagnostics.end(); ++it )
         {
           CG::Location const &location = it->first;

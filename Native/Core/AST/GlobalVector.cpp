@@ -39,8 +39,8 @@ namespace Fabric
     RC::Handle<JSON::Array> GlobalVector::toJSON() const
     {
       RC::Handle<JSON::Array> result = JSON::Array::Create();
-      for ( size_t i=0; i<size(); ++i )
-        result->push_back( get(i)->toJSON() );
+      for ( const_iterator it=begin(); it!=end(); ++it )
+        result->push_back( (*it)->toJSON() );
       return result;
     }
           
@@ -59,12 +59,10 @@ namespace Fabric
       }
     }
     
-    void GlobalVector::llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    void GlobalVector::llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctions ) const
     {
-      for ( size_t i=0; i<size(); ++i )
-        get(i)->llvmCompileToModule( moduleBuilder, diagnostics, false );
-      for ( size_t i=0; i<size(); ++i )
-        get(i)->llvmCompileToModule( moduleBuilder, diagnostics, true );
+      for ( const_iterator it=begin(); it!=end(); ++it )
+        (*it)->llvmCompileToModule( moduleBuilder, diagnostics, buildFunctions );
     }
   };
 };

@@ -227,7 +227,9 @@ void handleFile( FILE *fp, unsigned int runFlags )
     dumpDiagnostics( diagnostics );
     if ( !diagnostics.containsError() )
     {   
-      globalList->llvmCompileToModule( moduleBuilder, diagnostics );
+      globalList->llvmCompileToModule( moduleBuilder, diagnostics, false );
+      if ( !diagnostics.containsError() )
+        globalList->llvmCompileToModule( moduleBuilder, diagnostics, true );
       dumpDiagnostics( diagnostics );
       if ( !diagnostics.containsError() )
       {   

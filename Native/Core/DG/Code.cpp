@@ -111,7 +111,14 @@ namespace Fabric
         RC::ConstHandle<RT::Desc> const &desc = topoSortedDescs[i];
         RC::ConstHandle<AST::GlobalVector> ast = RC::ConstHandle<AST::GlobalVector>::StaticCast( desc->getKLBindingsAST() );
         if ( ast )
-          ast->llvmCompileToModule( moduleBuilder, diagnostics );
+          ast->llvmCompileToModule( moduleBuilder, diagnostics, false );
+      }
+      for ( size_t i=0; i<topoSortedDescs.size(); ++i )
+      {
+        RC::ConstHandle<RT::Desc> const &desc = topoSortedDescs[i];
+        RC::ConstHandle<AST::GlobalVector> ast = RC::ConstHandle<AST::GlobalVector>::StaticCast( desc->getKLBindingsAST() );
+        if ( ast )
+          ast->llvmCompileToModule( moduleBuilder, diagnostics, true );
       }
       Plug::Manager::Instance()->registerTypes( m_context->getRTManager() );
       Plug::Manager::Instance()->llvmPrepareModule( moduleBuilder );
@@ -120,7 +127,7 @@ namespace Fabric
       m_ast->registerTypes( m_context->getRTManager(), diagnostics );
       if ( !diagnostics.containsError() )
       {
-        m_ast->llvmCompileToModule( moduleBuilder, diagnostics );
+        m_ast->llvmCompileToModule( moduleBuilder, diagnostics, true );
         if ( !diagnostics.containsError() )
         {
 #if defined(FABRIC_BUILD_DEBUG)
