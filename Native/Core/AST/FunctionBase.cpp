@@ -70,7 +70,7 @@ namespace Fabric
         CG::ExprType returnExprType( returnAdapter, CG::USAGE_RVALUE );
         std::string entryName = getEntryName( moduleBuilder.getManager() );
         RC::ConstHandle<AST::ParamVector> params = getParams( moduleBuilder.getManager() );
-        params->llvmCompileToModule( moduleBuilder, diagnostics );
+        params->llvmCompileToModule( moduleBuilder, diagnostics, buildFunctionBodies );
         CG::FunctionBuilder functionBuilder( moduleBuilder, entryName, returnExprType, params->getFunctionParams( moduleBuilder.getManager() ), friendlyName );
         if ( buildFunctionBodies && m_body )
         {

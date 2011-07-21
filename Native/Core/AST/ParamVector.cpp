@@ -83,10 +83,10 @@ namespace Fabric
       return result;
     }
       
-    void ParamVector::llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    void ParamVector::llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctionBodies ) const
     {
       for ( const_iterator it=begin(); it!=end(); ++it )
-        (*it)->llvmCompileToModule( moduleBuilder, diagnostics );
+        (*it)->llvmCompileToModule( moduleBuilder, diagnostics, buildFunctionBodies );
     }
   };
 };

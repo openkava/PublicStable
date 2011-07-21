@@ -40,7 +40,7 @@ namespace Fabric
 
     void VariableArrayAdapter::llvmPrepareModule( ModuleBuilder &moduleBuilder, bool buildFunctions ) const
     {
-      if ( moduleBuilder.contains( getCodeName() ) )
+      if ( moduleBuilder.contains( getCodeName(), buildFunctions ) )
         return;
       m_memberAdapter->llvmPrepareModule( moduleBuilder, buildFunctions );
       

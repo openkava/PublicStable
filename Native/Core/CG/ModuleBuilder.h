@@ -36,7 +36,7 @@ namespace Fabric
       
       ModuleScope &getScope();
       
-      bool contains( std::string const &codeName );
+      bool contains( std::string const &codeName, bool buildFunctions );
       
       void addFunction( std::string const &entryName, RC::ConstHandle<FunctionSymbol> const &functionSymbol, std::string const *friendlyName = 0 );
       RC::ConstHandle<FunctionSymbol> maybeGetFunction( std::string const &entryName ) const;
@@ -48,7 +48,7 @@ namespace Fabric
       RC::Handle<Manager> m_manager;      
       llvm::Module *m_module;
       ModuleScope m_moduleScope;
-      std::set<std::string> m_contained;
+      std::set< std::pair<std::string, bool> > m_contained;
       Functions m_functions;
     };
   };

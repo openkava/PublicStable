@@ -46,9 +46,9 @@ namespace Fabric
       return m_moduleScope;
     }
     
-    bool ModuleBuilder::contains( std::string const &codeName )
+    bool ModuleBuilder::contains( std::string const &codeName, bool buildFunctions )
     {
-      bool insertResult = m_contained.insert( codeName ).second;
+      bool insertResult = m_contained.insert( std::pair<std::string, bool>( codeName, buildFunctions ) ).second;
       return !insertResult;
     }
 

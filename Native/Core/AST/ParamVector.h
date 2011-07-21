@@ -51,7 +51,7 @@ namespace Fabric
       std::vector< RC::ConstHandle<CG::Adapter> > getAdapters( RC::Handle<CG::Manager> const &cgManager ) const;
       std::vector<CG::ExprType> getExprTypes( RC::Handle<CG::Manager> const &cgManager ) const;
       
-      void llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
+      void llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctionBodies ) const;
       
     protected:
     

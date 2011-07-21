@@ -473,13 +473,36 @@ namespace Fabric
       else return 0;
     }
 
-    std::vector< RC::ConstHandle<RC::Object> > Manager::getKLBindingsASTs() const
+    void Manager::buildTopoSortedDescs( RC::ConstHandle<Desc> const &desc, std::set< RC::ConstHandle<Desc> > &doneDescs, std::vector< RC::ConstHandle<Desc> > &result ) const
     {
-      std::vector< RC::ConstHandle<RC::Object> > result;
-      for ( Types::const_iterator it=m_types.begin(); it!=m_types.end(); ++it )
+      if ( doneDescs.find( desc ) == doneDescs.end() )
       {
-        result.push_back( it->second->getKLBindingsAST() );
+        doneDescs.insert( desc );
+        
+        if ( isStruct( desc->getType() ) )
+        {
+          RC::ConstHandle<StructDesc> structDesc = RC::ConstHandle<StructDesc>::StaticCast( desc );
+          size_t numMembers = structDesc->getNumMembers();
+          for ( size_t i=0; i<numMembers; ++i )
+            buildTopoSortedDescs( structDesc->getMemberInfo(i).desc, doneDescs, result );
+        }
+
+        if ( isArray( desc->getType() ) )
+        {
+          RC::ConstHandle<ArrayDesc> arrayDesc = RC::ConstHandle<ArrayDesc>::StaticCast( desc );
+          buildTopoSortedDescs( arrayDesc->getMemberDesc(), doneDescs, result );
+        }
+
+        result.push_back( desc );
       }
+    }
+
+    std::vector< RC::ConstHandle<Desc> > Manager::getTopoSortedDescs() const
+    {
+      std::vector< RC::ConstHandle<Desc> > result;
+      std::set< RC::ConstHandle<Desc> > descsForTopoSort;
+      for ( Types::const_iterator it=m_types.begin(); it!=m_types.end(); ++it )
+        buildTopoSortedDescs( it->second, descsForTopoSort, result );
       return result;
     }
   };

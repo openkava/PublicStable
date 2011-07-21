@@ -94,25 +94,29 @@ namespace Fabric
       llvm::OwningPtr<llvm::Module> module( new llvm::Module( "DG::Code", cgManager->getLLVMContext() ) );
       CG::ModuleBuilder moduleBuilder( cgManager, module.get() );
 
+      CG::Diagnostics optimizeDiagnostics;
+      CG::Diagnostics &diagnostics = (false && optimize)? optimizeDiagnostics: m_diagnostics;
+
       RC::ConstHandle<RT::Manager> rtManager = m_context->getRTManager();
-      std::vector< RC::ConstHandle<RC::Object> > klBindingsASTs = rtManager->getKLBindingsASTs();
-      for ( size_t i=0; i<klBindingsASTs.size(); ++i )
+      std::vector< RC::ConstHandle<RT::Desc> > topoSortedDescs = rtManager->getTopoSortedDescs();
+      for ( size_t i=0; i<topoSortedDescs.size(); ++i )
       {
-        RC::ConstHandle<AST::GlobalVector> ast = RC::ConstHandle<AST::GlobalVector>::StaticCast( klBindingsASTs[i] );
+        RC::ConstHandle<RT::Desc> const &desc = topoSortedDescs[i];
+        RC::ConstHandle<CG::Adapter> adapter = cgManager->getAdapter( desc );
+        //FABRIC_DEBUG_LOG( adapter->getCodeName() + "->llvmPrepareModule()" );
+        adapter->llvmPrepareModule( moduleBuilder, true );
+      }
+      for ( size_t i=0; i<topoSortedDescs.size(); ++i )
+      {
+        RC::ConstHandle<RT::Desc> const &desc = topoSortedDescs[i];
+        RC::ConstHandle<AST::GlobalVector> ast = RC::ConstHandle<AST::GlobalVector>::StaticCast( desc->getKLBindingsAST() );
         if ( ast )
-        {
-          CG::Diagnostics diagnostics;
           ast->llvmCompileToModule( moduleBuilder, diagnostics );
-          FABRIC_ASSERT( !diagnostics.containsError() );
-        }
       }
       Plug::Manager::Instance()->registerTypes( m_context->getRTManager() );
       Plug::Manager::Instance()->llvmPrepareModule( moduleBuilder );
       OCL::llvmPrepareModule( moduleBuilder, m_context->getRTManager() );
       
-      CG::Diagnostics optimizeDiagnostics;
-      CG::Diagnostics &diagnostics = (false && optimize)? optimizeDiagnostics: m_diagnostics;
-
       m_ast->registerTypes( m_context->getRTManager(), diagnostics );
       if ( !diagnostics.containsError() )
       {
