@@ -17,10 +17,25 @@ namespace Fabric
   {
     FABRIC_AST_NODE_IMPL( Param );
     
-    Param::Param( CG::Location const &location, std::string const &name, std::string const &adapterName, CG::Usage usage )
+    RC::Handle<Param> Param::Create(
+      CG::Location const &location,
+      std::string const &name,
+      std::string const &type,
+      CG::Usage usage
+      )
+    {
+      return new Param( location, name, type, usage );
+    }
+
+    Param::Param(
+      CG::Location const &location,
+      std::string const &name,
+      std::string const &type,
+      CG::Usage usage
+      )
       : Node( location )
       , m_name( name )
-      , m_adapterName( adapterName )
+      , m_type( type )
       , m_usage( usage )
     {
     }
@@ -29,17 +44,27 @@ namespace Fabric
     {
       RC::Handle<JSON::Object> result = Node::toJSON();
       result->set( "name", JSON::String::Create( m_name ) );
-      result->set( "type", JSON::String::Create( m_adapterName ) );
+      result->set( "type", JSON::String::Create( m_type ) );
       result->set( "usage", JSON::String::Create( CG::usageDesc( m_usage ) ) );
       return result;
     }
 
     CG::FunctionParam Param::getFunctionParam( RC::Handle<CG::Manager> const &cgManager ) const
     {
-      RC::ConstHandle<CG::Adapter> adapter = cgManager->maybeGetAdapter( m_adapterName );
+      return CG::FunctionParam( m_name, getAdapter( cgManager ), m_usage );
+    }
+    
+    RC::ConstHandle<CG::Adapter> Param::getAdapter( RC::Handle<CG::Manager> const &cgManager ) const
+    {
+      RC::ConstHandle<CG::Adapter> adapter = cgManager->maybeGetAdapter( m_type );
       if ( !adapter )
-        throw Exception( _(m_adapterName) + ": type not registered" );
-      return CG::FunctionParam( m_name, adapter, m_usage );
+        throw CG::Error( getLocation(), _(m_type) + ": type not registered" );
+      return adapter;
+    }
+    
+    CG::ExprType Param::getExprType( RC::Handle<CG::Manager> const &cgManager ) const
+    {
+      return CG::ExprType( getAdapter( cgManager ), m_usage );
     }
   };
 };

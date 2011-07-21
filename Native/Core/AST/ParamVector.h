@@ -44,11 +44,9 @@ namespace Fabric
 
       RC::Handle<JSON::Array> toJSON() const;
     
-      std::vector<llvm::Type const *> getLLVMTypes( RC::Handle<CG::Manager> const &cgManager ) const;
-      std::string getTypeDesc( RC::Handle<CG::Manager> const &cgManager ) const;
       std::vector<CG::FunctionParam> getFunctionParams( RC::Handle<CG::Manager> const &cgManager ) const;
-      std::vector<std::string> getTypeNames() const;
-      std::vector< RC::ConstHandle<CG::Adapter> > getTypes( RC::Handle<CG::Manager> const &cgManager ) const;
+      std::vector<std::string> getTypes() const;
+      std::vector< RC::ConstHandle<CG::Adapter> > getAdapters( RC::Handle<CG::Manager> const &cgManager ) const;
       std::vector<CG::ExprType> getExprTypes( RC::Handle<CG::Manager> const &cgManager ) const;
       
     protected:

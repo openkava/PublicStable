@@ -57,7 +57,7 @@ namespace Fabric
     std::string BinOpImpl::getEntryName( RC::Handle<CG::Manager> const &cgManager ) const
     {
       RC::ConstHandle<ParamVector> params = getParams( cgManager );
-      return CG::binOpOverloadName( m_binOpType, cgManager, params->get(0)->getAdapterName(), params->get(1)->getAdapterName() );
+      return CG::binOpOverloadName( m_binOpType, params->get(0)->getAdapter( cgManager ), params->get(1)->getAdapter( cgManager ) );
     }
 
     RC::ConstHandle<ParamVector> BinOpImpl::getParams( RC::Handle<CG::Manager> const &cgManager ) const

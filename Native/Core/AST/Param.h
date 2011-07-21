@@ -28,10 +28,12 @@ namespace Fabric
 
     public:
     
-      static RC::Handle<Param> Create( CG::Location const &location, std::string const &name, std::string const &adapterName, CG::Usage usage )
-      {
-        return new Param( location, name, adapterName, usage );
-      }
+      static RC::Handle<Param> Create(
+        CG::Location const &location,
+        std::string const &name,
+        std::string const &type,
+        CG::Usage usage
+        );
 
       RC::Handle<JSON::Object> toJSON() const;
     
@@ -40,9 +42,9 @@ namespace Fabric
         return m_name;
       }
       
-      std::string const &getAdapterName() const
+      std::string const &getType() const
       {
-        return m_adapterName;
+        return m_type;
       }
       
       CG::Usage getUsage() const
@@ -52,29 +54,23 @@ namespace Fabric
       
       CG::FunctionParam getFunctionParam( RC::Handle<CG::Manager> const &cgManager ) const;
       
-      RC::ConstHandle<CG::Adapter> getType( RC::Handle<CG::Manager> const &cgManager ) const
-      {
-        return getFunctionParam( cgManager ).getAdapter();
-      }
+      RC::ConstHandle<CG::Adapter> getAdapter( RC::Handle<CG::Manager> const &cgManager ) const;
       
-      CG::ExprType const &getExprType( RC::Handle<CG::Manager> const &cgManager ) const
-      {
-        return getFunctionParam( cgManager ).getExprType();
-      }
-      
-      llvm::Type const *getLLVMType( RC::Handle<CG::Manager> const &cgManager ) const
-      {
-        return getFunctionParam( cgManager ).getLLVMType();
-      }
+      CG::ExprType getExprType( RC::Handle<CG::Manager> const &cgManager ) const;
 
     protected:
     
-      Param( CG::Location const &location, std::string const &name, std::string const &adapterName, CG::Usage usage );
+      Param(
+        CG::Location const &location,
+        std::string const &name,
+        std::string const &type,
+        CG::Usage usage
+        );
       
     private:
     
       std::string m_name;
-      std::string m_adapterName;
+      std::string m_type;
       CG::Usage m_usage;
     };
   };

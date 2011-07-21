@@ -51,7 +51,7 @@ namespace Fabric
           
     std::string MethodOpImpl::getEntryName( RC::Handle<CG::Manager> const &cgManager ) const
     {
-      return CG::methodOverloadName( m_methodName, cgManager->getAdapter( m_selfTypeName ), m_params->getTypes( cgManager ) );
+      return CG::methodOverloadName( m_methodName, cgManager->getAdapter( m_selfTypeName ), m_params->getAdapters( cgManager ) );
     }
     
     RC::ConstHandle<ParamVector> MethodOpImpl::getParams( RC::Handle<CG::Manager> const &cgManager ) const

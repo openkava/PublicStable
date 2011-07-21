@@ -50,26 +50,6 @@ namespace Fabric
         result->push_back( (*this)[i]->toJSON() );
       return result;
     }
-
-    std::vector<llvm::Type const *> ParamVector::getLLVMTypes( RC::Handle<CG::Manager> const &cgManager ) const
-    {
-      std::vector<llvm::Type const *> result;
-      for ( size_t i=0; i<size(); ++i )
-        result.push_back( get(i)->getLLVMType( cgManager ) );
-      return result;
-    }
-      
-    std::string ParamVector::getTypeDesc( RC::Handle<CG::Manager> const &cgManager ) const
-    {
-      std::string result;
-      for ( size_t i=0; i<size(); ++i )
-      {
-        if ( i > 0 )
-          result += "__";
-        result += get(i)->getType( cgManager )->getCodeName();
-      }
-      return result;
-    }
       
     std::vector<CG::FunctionParam> ParamVector::getFunctionParams( RC::Handle<CG::Manager> const &cgManager ) const
     {
@@ -79,19 +59,19 @@ namespace Fabric
       return result;
     }
     
-    std::vector<std::string> ParamVector::getTypeNames() const
+    std::vector<std::string> ParamVector::getTypes() const
     {
       std::vector<std::string> result;
       for ( size_t i=0; i<size(); ++i )
-        result.push_back( get(i)->getAdapterName() );
+        result.push_back( get(i)->getType() );
       return result;
     }
     
-    std::vector< RC::ConstHandle<CG::Adapter> > ParamVector::getTypes( RC::Handle<CG::Manager> const &cgManager ) const
+    std::vector< RC::ConstHandle<CG::Adapter> > ParamVector::getAdapters( RC::Handle<CG::Manager> const &cgManager ) const
     {
       std::vector< RC::ConstHandle<CG::Adapter> > result;
       for ( size_t i=0; i<size(); ++i )
-        result.push_back( get(i)->getType( cgManager ) );
+        result.push_back( get(i)->getAdapter( cgManager ) );
       return result;
     }
     
