@@ -15,22 +15,18 @@ namespace Fabric
 {
   namespace Plug
   {
-    Manager::Manager( DG::Context *dgContext, std::vector<std::string> const &pluginDirs )
-      : m_dgContext( dgContext )
-      , m_pluginDirs( pluginDirs )
+    RC::Handle<Manager> Manager::Instance()
+    {
+      static RC::Handle<Manager> instance;
+      if ( !instance )
+        instance = new Manager();
+      return instance;
+    }
+    
+    Manager::Manager()
+      : m_loaded( false )
       //, m_fabricSDKSOLibHandle( invalidSOLibHandle )
     {
-#if 0
-      std::string pluginPath = "";
-      for ( size_t i=0; i<pluginDirs.size(); ++i )
-      {
-        if ( pluginPath.length() > 0 )
-          pluginPath.append( ":" );
-        pluginPath.append( pluginDirs[i] );
-      }
-      FABRIC_LOG( "Plugin path is "+_(pluginPath) );
-#endif
- 
 #if 0
       try
       {
@@ -43,43 +39,59 @@ namespace Fabric
 #endif      
     }
     
-    void Manager::loadBuiltInPlugins()
+    void Manager::loadBuiltInPlugins( std::vector<std::string> const &pluginDirs )
     {
-      //if ( m_fabricSDKSOLibHandle != invalidSOLibHandle )
+      if ( !m_loaded )
       {
-        for ( size_t i=0; i<m_pluginDirs.size(); ++i )
+#if 0
+        std::string pluginPath = "";
+        for ( size_t i=0; i<pluginDirs.size(); ++i )
         {
-          RC::ConstHandle<IO::Dir> pluginsDir;
-          try
+          if ( pluginPath.length() > 0 )
+            pluginPath.append( ":" );
+          pluginPath.append( pluginDirs[i] );
+        }
+        FABRIC_LOG( "Plugin path is "+_(pluginPath) );
+#endif
+   
+        //if ( m_fabricSDKSOLibHandle != invalidSOLibHandle )
+        {
+          for ( size_t i=0; i<pluginDirs.size(); ++i )
           {
-            pluginsDir = IO::Dir::Create( 0, m_pluginDirs[i], false );
-          }
-          catch ( Exception e )
-          {
-            FABRIC_LOG( "Warning: unable to open plugins directory "+_(m_pluginDirs[i]) );
-            continue;
-          }
-          
-          std::vector<std::string> files = pluginsDir->getFiles();
-          for ( size_t i=0; i<files.size(); ++i )
-          {
-            std::string const &filename = files[i];
-            size_t length = filename.length();
-            if ( length > 9 && filename.substr( length-9, 9 ) == ".fpm.json" )
+            RC::ConstHandle<IO::Dir> pluginsDir;
+            try
             {
-              std::string fpmContents = pluginsDir->getFileContents( filename );
-              try
+              pluginsDir = IO::Dir::Create( 0, pluginDirs[i], false );
+            }
+            catch ( Exception e )
+            {
+              FABRIC_LOG( "Warning: unable to open plugins directory "+_(pluginDirs[i]) );
+              continue;
+            }
+            
+            std::vector<std::string> files = pluginsDir->getFiles();
+            for ( size_t i=0; i<files.size(); ++i )
+            {
+              std::string const &filename = files[i];
+              size_t length = filename.length();
+              if ( length > 9 && filename.substr( length-9, 9 ) == ".fpm.json" )
               {
-                registerPlugin( filename.substr( 0, length-9 ), fpmContents );
-                FABRIC_LOG( "Loaded extension " + _(filename.c_str()) );
-              }
-              catch ( Exception e )
-              {
-                FABRIC_LOG( "Extension '%s/%s': %s", pluginsDir->getFullPath().c_str(), filename.c_str(), e.getDesc().c_str() );
+                std::string fpmContents = pluginsDir->getFileContents( filename );
+                try
+                {
+                  registerPlugin( filename.substr( 0, length-9 ), fpmContents, pluginDirs );
+                  FABRIC_LOG( "Loaded extension " + _(filename.c_str()) );
+                }
+                catch ( Exception e )
+                {
+                  FABRIC_LOG( "Extension '%s/%s': %s", pluginsDir->getFullPath().c_str(), filename.c_str(), e.getDesc().c_str() );
+                }
               }
             }
           }
         }
+        
+        m_loaded = true;
       }
     }
     
@@ -89,7 +101,7 @@ namespace Fabric
       //  SOLibClose( m_fabricSDKSOLibHandle, m_fabricSDKSOLibResolvedName );
     }
     
-    RC::ConstHandle<Inst> Manager::registerPlugin( std::string const &name, std::string const &jsonDesc )
+    RC::ConstHandle<Inst> Manager::registerPlugin( std::string const &name, std::string const &jsonDesc, std::vector<std::string> const &pluginDirs )
     {
       RC::Handle<Inst> result;
       
@@ -102,7 +114,7 @@ namespace Fabric
       }
       else
       {
-        result = Inst::Create( name, jsonDesc, m_dgContext, m_pluginDirs, m_dgContext );
+        result = Inst::Create( name, jsonDesc, pluginDirs );
         m_nameToInstMap.insert( NameToInstMap::value_type( name, result ) );
       }
       

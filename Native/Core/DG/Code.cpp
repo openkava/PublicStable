@@ -95,8 +95,8 @@ namespace Fabric
       CG::ModuleBuilder moduleBuilder( cgManager, module.get() );
 
       cgManager->llvmPrepareModule( moduleBuilder );
-      m_context->getPlugManager()->registerTypes( m_context->getRTManager() );
-      m_context->getPlugManager()->llvmPrepareModule( moduleBuilder );
+      Plug::Manager::Instance()->registerTypes( m_context->getRTManager() );
+      Plug::Manager::Instance()->llvmPrepareModule( moduleBuilder );
       OCL::llvmPrepareModule( moduleBuilder, m_context->getRTManager() );
       
       CG::Diagnostics optimizeDiagnostics;

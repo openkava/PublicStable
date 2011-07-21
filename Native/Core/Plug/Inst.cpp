@@ -12,6 +12,7 @@
 #include <Fabric/Core/AST/Function.h>
 #include <Fabric/Core/AST/GlobalVector.h>
 #include <Fabric/Core/CG/Manager.h>
+#include <Fabric/Core/CG/ModuleBuilder.h>
 #include <Fabric/Core/DG/Context.h>
 #include <Fabric/Core/IO/Helpers.h>
 #include <Fabric/Core/Plug/Helpers.h>
@@ -24,28 +25,14 @@ namespace Fabric
     //typedef void (*OnLoadFn)( SDK::Value FABRIC );
     //typedef void (*OnUnloadFn)( SDK::Value FABRIC );
     
-    RC::Handle<Inst> Inst::Create( std::string const &name, std::string const &jsonDesc, RC::Handle<DG::Context> const &dgContext, std::vector<std::string> const &pluginDirs, RC::Handle<JSON::CommandChannel> const &jsonCommandChannel )
+    RC::Handle<Inst> Inst::Create( std::string const &name, std::string const &jsonDesc, std::vector<std::string> const &pluginDirs )
     {
-      RC::Handle<Inst> result = new Inst( name, jsonDesc, dgContext, pluginDirs );
-      
-      static std::vector<std::string> src;
-      if ( src.empty() )
-        src.push_back("EX");
-      
-      static std::string cmd = "delta";
-      
-      RC::Handle<JSON::Object> arg = JSON::Object::Create();
-      arg->set( name, result->jsonDesc() );
-      
-      jsonCommandChannel->jsonNotify( src, cmd, arg );
-      
-      return result;
+      return new Inst( name, jsonDesc, pluginDirs );
     }
       
-    Inst::Inst( std::string const &name, std::string const &jsonDesc, RC::Handle<DG::Context> const &dgContext, std::vector<std::string> const &pluginDirs )
+    Inst::Inst( std::string const &name, std::string const &jsonDesc, std::vector<std::string> const &pluginDirs )
       : m_name( name )
       , m_disabled( false )
-      , m_cgManager( dgContext->getCGManager() )
       , m_jsonDesc( jsonDesc )
     {
       try
@@ -123,28 +110,6 @@ namespace Fabric
         throw Exception( "unable to compile KL code" );
       FABRIC_ASSERT( m_ast );
       
-      size_t numItems = m_ast->size();
-      for ( size_t i=0; i<numItems; ++i )
-      {
-        RC::ConstHandle<AST::Global> global = m_ast->get(i);
-        if ( !global->isFunction() )
-          continue;
-        RC::ConstHandle<AST::Function> function = RC::ConstHandle<AST::Function>::StaticCast( global );
-        
-        if ( !function->getBody() )
-        {
-          std::string const &name = function->getEntryName( m_cgManager );
-          void *resolvedFunction = 0;
-          for ( size_t i=0; i<m_orderedSOLibHandles.size(); ++i )
-          {
-            resolvedFunction = SOLibResolve( m_orderedSOLibHandles[i], name );
-            if ( resolvedFunction )
-              break;
-          }
-          m_externalFunctionMap.insert( ExternalFunctionMap::value_type( name, resolvedFunction ) );
-        }
-      }
-      
       m_jsConstants = m_desc.jsConstants.concatMatching( Util::getHostTriple() );
     }
     
@@ -199,6 +164,32 @@ namespace Fabric
           FABRIC_LOG( "[%s] KL code contains error(s), extension disabled", m_name.c_str() );
           m_disabled = true;
         }
+      
+        if ( !m_externalFunctionMap )
+        {
+          m_externalFunctionMap = new ExternalFunctionMap;
+          size_t numItems = m_ast->size();
+          for ( size_t i=0; i<numItems; ++i )
+          {
+            RC::ConstHandle<AST::Global> global = m_ast->get(i);
+            if ( !global->isFunction() )
+              continue;
+            RC::ConstHandle<AST::Function> function = RC::ConstHandle<AST::Function>::StaticCast( global );
+            
+            if ( !function->getBody() )
+            {
+              std::string const &name = function->getEntryName( moduleBuilder.getManager() );
+              void *resolvedFunction = 0;
+              for ( size_t i=0; i<m_orderedSOLibHandles.size(); ++i )
+              {
+                resolvedFunction = SOLibResolve( m_orderedSOLibHandles[i], name );
+                if ( resolvedFunction )
+                  break;
+              }
+              m_externalFunctionMap->insert( ExternalFunctionMap::value_type( name, resolvedFunction ) );
+            }
+          }
+        }
       }
     }
     
@@ -207,8 +198,9 @@ namespace Fabric
       void *result = 0;
       if ( !m_disabled )
       {
-        ExternalFunctionMap::const_iterator it = m_externalFunctionMap.find( name );
-        if ( it != m_externalFunctionMap.end() )
+        FABRIC_ASSERT( m_externalFunctionMap );
+        ExternalFunctionMap::const_iterator it = m_externalFunctionMap->find( name );
+        if ( it != m_externalFunctionMap->end() )
           result = it->second;
       }
       return result;

@@ -57,7 +57,6 @@ namespace Fabric
       , m_cgManager( CG::Manager::Create( m_rtManager ) )
       , m_ioManager( ioManager )
       , m_codeManager( CodeManager::Create() )
-      , m_plugManager( Plug::Manager::Create( this, pluginDirs ) )
       , m_notificationBracketCount( 0 )
       , m_pendingNotificationsMutex( "pending notifications" )
     {
@@ -161,11 +160,6 @@ namespace Fabric
     RC::Handle<CodeManager> Context::getCodeManager() const
     {
       return m_codeManager;
-    }
-    
-    RC::Handle<Plug::Manager> Context::getPlugManager() const
-    {
-      return m_plugManager;
     }
     
     Context::NamedObjectMap &Context::getNamedObjectRegistry() const
@@ -379,7 +373,7 @@ namespace Fabric
       result->set( "contextID", JSON::String::Create( getContextID() ) );
       result->set( "DG", jsonDescDG() );
       result->set( "RT", m_rtManager->jsonDesc() );
-      result->set( "EX", m_plugManager->jsonDesc() );
+      result->set( "EX", Plug::Manager::Instance()->jsonDesc() );
       result->set( "licenses", jsonDescLicenses() );
       return result;
     }
