@@ -95,9 +95,8 @@ namespace Fabric
 
       RC::ConstHandle<KL::Source> source = KL::StringSource::Create( m_code );
       RC::Handle<KL::Scanner> scanner = KL::Scanner::Create( source );
-      RC::Handle<KL::Parser> parser = KL::Parser::Create( scanner, m_diagnostics );
-      m_diagnostics.clear();
-      m_ast = parser->run();
+      m_ast = 0;
+      KL::Parse( scanner, m_diagnostics, m_ast );
       
       for ( CG::Diagnostics::const_iterator it=m_diagnostics.begin(); it!=m_diagnostics.end(); ++it )
       {

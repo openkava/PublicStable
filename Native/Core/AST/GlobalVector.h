@@ -40,6 +40,8 @@ namespace Fabric
       static RC::Handle<GlobalVector> Create( RC::ConstHandle<Global> const &first, RC::ConstHandle<GlobalVector> const &remaining );
 
       RC::Handle<JSON::Array> toJSON() const;
+
+      void append( RC::ConstHandle<GlobalVector> const &other );
           
       void registerTypes( RC::Handle<RT::Manager> const &rtManager, CG::Diagnostics &diagnostics ) const;
       void llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctions ) const;

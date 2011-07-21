@@ -31,6 +31,12 @@ namespace Fabric
         result->push_back( *it );
       return result;
     }
+
+    void GlobalVector::append( RC::ConstHandle<GlobalVector> const &other )
+    {
+      for ( GlobalVector::const_iterator it=other->begin(); it!=other->end(); ++it )
+        push_back( *it );
+    }
     
     GlobalVector::GlobalVector()
     {

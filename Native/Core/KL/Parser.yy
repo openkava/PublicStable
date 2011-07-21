@@ -85,23 +85,7 @@ namespace Fabric
   {
     class Scanner;
     
-    class Parser : public RC::Object
-    {
-    public:
-    
-      static RC::Handle<Parser> Create( RC::Handle<Scanner> const &scanner, CG::Diagnostics &diagnostics );
-      
-      RC::Handle<AST::GlobalVector> run();
-
-    protected:
-    
-      Parser( RC::Handle<Scanner> const &scanner, CG::Diagnostics &diagnostics );
-
-    private:
-    
-      RC::Handle<Scanner> m_scanner;
-      CG::Diagnostics &m_diagnostics;
-    };
+    void Parse( RC::Handle<Scanner> const &scanner, CG::Diagnostics &diagnostics, RC::Handle<AST::GlobalVector> &result );
   };
 };
 #endif //_FABRIC_KL_PARSER_DECLARED
@@ -318,7 +302,7 @@ start
 global_list :
   global global_list
   {
-    $$ = AST::GlobalVector::Create( $1, $2 ).take();
+    $$ = AST::GlobalVector::Create( RC::ConstHandle<AST::Global>($1), $2 ).take();
     $1->release();
     $2->release();
   }
@@ -1364,27 +1348,18 @@ namespace Fabric
 {
   namespace KL
   {
-    RC::Handle<Parser> Parser::Create( RC::Handle<Scanner> const &scanner, CG::Diagnostics &diagnostics )
+    void Parse( RC::Handle<Scanner> const &scanner, CG::Diagnostics &diagnostics, RC::Handle<AST::GlobalVector> &result )
     {
-      return new Parser( scanner, diagnostics );
-    }
-      
-    Parser::Parser( RC::Handle<Scanner> const &scanner, CG::Diagnostics &diagnostics )
-      : m_scanner( scanner )
-      , m_diagnostics( diagnostics )
-    {
-    }
-    
-    RC::Handle<AST::GlobalVector> Parser::run()
-    {
-      Context context( m_scanner, m_diagnostics );
+      Context context( scanner, diagnostics );
 
       // TODO: Do we check the status?
       kl_debug = 0;
 
       kl_parse( context );
 
-      return context.m_resultGlobalList;
+      if ( result )
+        result->append( context.m_resultGlobalList );
+      else result = context.m_resultGlobalList;
     }
   };
 };

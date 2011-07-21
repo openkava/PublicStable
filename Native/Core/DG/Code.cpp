@@ -78,10 +78,19 @@ namespace Fabric
       
       FABRIC_ASSERT( m_sourceCode.length() > 0 );
       
+      m_ast = AST::GlobalVector::Create();
+      std::vector< RC::ConstHandle<RT::Desc> > topoSortedDescs = m_context->getRTManager()->getTopoSortedDescs();
+      for ( size_t i=0; i<topoSortedDescs.size(); ++i )
+      {
+        RC::ConstHandle<RT::Desc> const &desc = topoSortedDescs[i];
+        RC::ConstHandle<AST::GlobalVector> ast = RC::ConstHandle<AST::GlobalVector>::StaticCast( desc->getKLBindingsAST() );
+        if ( ast )
+          m_ast->append( ast );
+      }
+
       RC::ConstHandle<KL::Source> source = KL::StringSource::Create( m_sourceCode );
       RC::Handle<KL::Scanner> scanner = KL::Scanner::Create( source );
-      RC::Handle<KL::Parser> parser = KL::Parser::Create( scanner, m_diagnostics );
-      m_ast = parser->run();
+      KL::Parse( scanner, m_diagnostics, m_ast );
       if ( !m_diagnostics.containsError() )
         compileAST( true );
     }
@@ -106,20 +115,6 @@ namespace Fabric
         //FABRIC_DEBUG_LOG( adapter->getCodeName() + "->llvmPrepareModule()" );
         adapter->llvmPrepareModule( moduleBuilder, true );
       }
-      for ( size_t i=0; i<topoSortedDescs.size(); ++i )
-      {
-        RC::ConstHandle<RT::Desc> const &desc = topoSortedDescs[i];
-        RC::ConstHandle<AST::GlobalVector> ast = RC::ConstHandle<AST::GlobalVector>::StaticCast( desc->getKLBindingsAST() );
-        if ( ast )
-          ast->llvmCompileToModule( moduleBuilder, diagnostics, false );
-      }
-      for ( size_t i=0; i<topoSortedDescs.size(); ++i )
-      {
-        RC::ConstHandle<RT::Desc> const &desc = topoSortedDescs[i];
-        RC::ConstHandle<AST::GlobalVector> ast = RC::ConstHandle<AST::GlobalVector>::StaticCast( desc->getKLBindingsAST() );
-        if ( ast )
-          ast->llvmCompileToModule( moduleBuilder, diagnostics, true );
-      }
       Plug::Manager::Instance()->registerTypes( m_context->getRTManager() );
       Plug::Manager::Instance()->llvmPrepareModule( moduleBuilder );
       OCL::llvmPrepareModule( moduleBuilder, m_context->getRTManager() );
@@ -127,7 +122,9 @@ namespace Fabric
       m_ast->registerTypes( m_context->getRTManager(), diagnostics );
       if ( !diagnostics.containsError() )
       {
-        m_ast->llvmCompileToModule( moduleBuilder, diagnostics, true );
+        m_ast->llvmCompileToModule( moduleBuilder, diagnostics, false );
+        if ( !diagnostics.containsError() )
+          m_ast->llvmCompileToModule( moduleBuilder, diagnostics, true );
         if ( !diagnostics.containsError() )
         {
 #if defined(FABRIC_BUILD_DEBUG)
