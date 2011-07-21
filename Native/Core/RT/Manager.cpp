@@ -36,17 +36,18 @@ namespace Fabric
 
   namespace RT
   {
-    RC::Handle<Manager> Manager::Create()
+    RC::Handle<Manager> Manager::Create( RC::ConstHandle<KLCompiler> const &klCompiler )
     {
 #if defined( FABRIC_OS_WINDOWS )
       _set_output_format( _TWO_DIGIT_EXPONENT );
 #endif
 
-      return new Manager;
+      return new Manager( klCompiler );
     }
 
-    Manager::Manager()
+    Manager::Manager( RC::ConstHandle<KLCompiler> const &klCompiler )
       : m_jsonCommandChannel( 0 )
+      , m_klCompiler( klCompiler )
     {
       registerDesc( m_booleanDesc = new BooleanDesc( "Boolean", new BooleanImpl( "Boolean" ) ) );
       registerDesc( m_byteDesc = new ByteDesc( "Byte", new ByteImpl( "Byte" ) ) );
@@ -288,58 +289,6 @@ namespace Fabric
       }
       return it->second;
     }
-
-    std::string Manager::buildTopoSortedKBindings( KBindings::iterator const &it, KBindings &kBindings ) const
-    {
-      std::string name = it->first;
-      RC::ConstHandle<RT::Desc> const &desc = m_types[name];
-      std::string kBinding = it->second;
-      kBindings.erase( it );
-      
-      std::string result = "";
-      if ( kBinding.length() )
-      {
-        if ( isStruct( desc->getType() ) )
-        {
-          RC::ConstHandle<StructDesc> structDesc = RC::ConstHandle<StructDesc>::StaticCast( desc );
-          size_t numMembers = structDesc->getNumMembers();
-          for ( size_t i=0; i<numMembers; ++i )
-          {
-            KBindings::iterator it = kBindings.find( structDesc->getMemberInfo(i).desc->getName() );
-            if ( it != kBindings.end() )
-              result += buildTopoSortedKBindings( it, kBindings );
-          }
-        }
-
-        if ( isArray( desc->getType() ) )
-        {
-          RC::ConstHandle<ArrayDesc> arrayDesc = RC::ConstHandle<ArrayDesc>::StaticCast( desc );
-          KBindings::iterator it = kBindings.find( arrayDesc->getMemberDesc()->getName() );
-          if ( it != kBindings.end() )
-            result += buildTopoSortedKBindings( it, kBindings );
-        }
-
-        result += "// KL Bindings for " + desc->getName() + ": Begin\n";
-        result += kBinding + "\n";
-        result += "// KL Bindings for " + desc->getName() + ": End\n";
-      }
-      return result;
-    }
-    
-    std::string Manager::kBindings() const
-    {
-      KBindings kBindings;
-      for( Types::const_iterator it=m_types.begin(); it!=m_types.end(); ++it )
-      {
-        RC::ConstHandle<RT::Desc> desc = it->second;
-        kBindings.insert( KBindings::value_type( desc->getName(), desc->getKBindings() ) );
-      }
-      
-      std::string result;
-      while ( !kBindings.empty() )
-        result += buildTopoSortedKBindings( kBindings.begin(), kBindings );
-      return result;
-    }
       
     RC::Handle<JSON::Object> Manager::jsonDesc() const
     {
@@ -467,12 +416,15 @@ namespace Fabric
         throw "members: " + e;
       }
       
-      std::string kBindings;
+      RC::ConstHandle<RC::Object> klBindingsAST;
       try
       {
-        RC::ConstHandle<JSON::Value> kBindingsJSONValue = argJSONObject->maybeGet( "kBindings" );
-        if ( kBindingsJSONValue )
-          kBindings = kBindingsJSONValue->toString()->value();
+        RC::ConstHandle<JSON::Value> klBindingsJSONValue = argJSONObject->maybeGet( "kBindings" );
+        if ( klBindingsJSONValue )
+        {
+          std::string klBindings = klBindingsJSONValue->toString()->value();
+          klBindingsAST = m_klCompiler->compile( klBindings );
+        }
       }
       catch ( Exception e )
       {
@@ -487,8 +439,8 @@ namespace Fabric
         memberInfo.desc->disposeData( &memberInfo.defaultData[0] );
       }
 
-      if ( kBindings.length() > 0 )
-        structDesc->setKBindings( kBindings );
+      if ( klBindingsAST )
+        structDesc->setKLBindingsAST( klBindingsAST );
     }
     
     RC::ConstHandle<Desc> Manager::getStrongerTypeOrNone( RC::ConstHandle<Desc> const &lhsDesc, RC::ConstHandle<Desc> const &rhsDesc ) const
@@ -519,6 +471,16 @@ namespace Fabric
         return rhsDesc;
       }
       else return 0;
+    }
+
+    std::vector< RC::ConstHandle<RC::Object> > Manager::getKLBindingsASTs() const
+    {
+      std::vector< RC::ConstHandle<RC::Object> > result;
+      for ( Types::const_iterator it=m_types.begin(); it!=m_types.end(); ++it )
+      {
+        result.push_back( it->second->getKLBindingsAST() );
+      }
+      return result;
     }
   };
 };

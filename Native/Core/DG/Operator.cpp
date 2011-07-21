@@ -110,7 +110,7 @@ namespace Fabric
       FABRIC_ASSERT( !m_code );
       FABRIC_ASSERT( !m_function );
       
-      m_code = m_context->getCodeManager()->compileSourceCode( m_context, m_fullSourceCode );
+      m_code = m_context->getCodeManager()->compileSourceCode( m_context, m_sourceCode );
       notifyDelta( "diagnostics", jsonDescDiagnostics() );
       
       if ( !m_code->getDiagnostics().containsError() )
@@ -180,11 +180,6 @@ namespace Fabric
       return m_sourceCode;
     }
     
-    std::string const &Operator::getFullSourceCode() const
-    {
-      return m_fullSourceCode;
-    }
-    
 #if defined(FABRIC_BUILD_DEBUG)      
     std::string const &Operator::getByteCode() const
     {
@@ -205,8 +200,6 @@ namespace Fabric
         
         m_sourceCode = sourceCode;
         notifyDelta( "sourceCode", jsonDescSourceCode() );
-        m_fullSourceCode = m_context->getRTManager()->kBindings() + m_sourceCode;
-        notifyDelta( "fullSourceCode", jsonDescFullSourceCode() );
 
         if ( m_sourceCode.length() > 0 )
           compile();
@@ -258,7 +251,6 @@ namespace Fabric
     {
       RC::Handle<JSON::Object> result = NamedObject::jsonDesc();
       result->set( "sourceCode", jsonDescSourceCode() );
-      result->set( "fullSourceCode", jsonDescFullSourceCode() );
       result->set( "entryFunctionName", jsonDescEntryFunctionName() );
       result->set( "diagnostics", jsonDescDiagnostics() );
       result->set( "mainThreadOnly", jsonDescMainThreadOnly() );
@@ -309,11 +301,6 @@ namespace Fabric
     RC::ConstHandle<JSON::Value> Operator::jsonDescSourceCode() const
     {
       return JSON::String::Create( m_sourceCode );
-    }
-    
-    RC::ConstHandle<JSON::Value> Operator::jsonDescFullSourceCode() const
-    {
-      return JSON::String::Create( m_fullSourceCode );
     }
     
     RC::ConstHandle<JSON::Value> Operator::jsonDescEntryFunctionName() const

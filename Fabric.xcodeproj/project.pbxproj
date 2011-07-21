@@ -1193,6 +1193,8 @@
 		DBCCD56A13ABFAE300024113 /* TimeSample.fpm.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = TimeSample.fpm.json; sourceTree = "<group>"; };
 		DBCCD57B13AC007D00024113 /* currentTime.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = currentTime.html; sourceTree = "<group>"; };
 		DBD4333713D8925300E57C5F /* SourceRange.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SourceRange.cpp; sourceTree = "<group>"; };
+		DBD4338B13D89E2A00E57C5F /* Compiler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Compiler.h; sourceTree = "<group>"; };
+		DBD4338C13D89E2A00E57C5F /* Compiler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Compiler.cpp; sourceTree = "<group>"; };
 		DBDB624613D3B1B600F745C8 /* ExprVector.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ExprVector.cpp; sourceTree = "<group>"; };
 		DBDB624713D3B1B600F745C8 /* ExprVector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ExprVector.h; sourceTree = "<group>"; };
 		DBDB626013D3B33700F745C8 /* StatementVector.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StatementVector.cpp; sourceTree = "<group>"; };
@@ -1793,6 +1795,8 @@
 			isa = PBXGroup;
 			children = (
 				DB96728A13A5423200616143 /* SConscript */,
+				DBD4338C13D89E2A00E57C5F /* Compiler.cpp */,
+				DBD4338B13D89E2A00E57C5F /* Compiler.h */,
 				DB96728113A5423200616143 /* Context.h */,
 				DB96728413A5423200616143 /* Location.h */,
 				DB96728713A5423200616143 /* Parser.yy */,

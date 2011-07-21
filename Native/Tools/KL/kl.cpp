@@ -3,6 +3,7 @@
  */
  
 #include <stdio.h>
+#include <Fabric/Core/KL/Compiler.h>
 #include <Fabric/Core/KL/Parser.hpp>
 #include <Fabric/Core/KL/Scanner.h>
 #include <Fabric/Core/KL/StringSource.h>
@@ -193,7 +194,7 @@ void handleFile( FILE *fp, unsigned int runFlags )
   llvm::InitializeAllAsmPrinters();
   //LLVMLinkInJIT();
 
-  RC::Handle<RT::Manager> rtManager = RT::Manager::Create();
+  RC::Handle<RT::Manager> rtManager = RT::Manager::Create( KL::Compiler::Create() );
   cgManager = CG::Manager::Create( rtManager );
   std::auto_ptr<llvm::Module> module( new llvm::Module( "kl", cgManager->getLLVMContext() ) );
 

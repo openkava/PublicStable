@@ -2,8 +2,8 @@
  *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
  */
  
-#ifndef __CONTEXT_H__
-#define __CONTEXT_H__
+#ifndef _FABRIC_KL_CONTEXT_H
+#define _FABRIC_KL_CONTEXT_H
 
 #include <Fabric/Core/AST/GlobalVector.h>
 #include <Fabric/Core/CG/Diagnostics.h>
@@ -38,4 +38,4 @@ namespace Fabric
   }
 }
 
-#endif // __CONTEXT_H__
+#endif //_FABRIC_KL_CONTEXT_H

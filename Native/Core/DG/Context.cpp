@@ -3,6 +3,7 @@
  */
  
 #include <Fabric/Core/DG/Context.h>
+#include <Fabric/Core/DG/CodeManager.h>
 #include <Fabric/Core/DG/Client.h>
 #include <Fabric/Core/DG/NamedObject.h>
 #include <Fabric/Core/DG/Node.h>
@@ -11,10 +12,10 @@
 #include <Fabric/Core/DG/EventHandler.h>
 #include <Fabric/Core/DG/Operator.h>
 #include <Fabric/Core/DG/LogCollector.h>
-#include <Fabric/Core/RT/Manager.h>
-#include <Fabric/Core/CG/Manager.h>
-#include <Fabric/Core/DG/CodeManager.h>
 #include <Fabric/Core/Plug/Manager.h>
+#include <Fabric/Core/KL/Compiler.h>
+#include <Fabric/Core/CG/Manager.h>
+#include <Fabric/Core/RT/Manager.h>
 #include <Fabric/Core/IO/Manager.h>
 #include <Fabric/Base/JSON/String.h>
 #include <Fabric/Base/JSON/Object.h>
@@ -53,7 +54,7 @@ namespace Fabric
     
     Context::Context( RC::Handle<IO::Manager> const &ioManager, std::vector<std::string> const &pluginDirs )
       : m_logCollector( LogCollector::Create( this ) )
-      , m_rtManager( RT::Manager::Create() )
+      , m_rtManager( RT::Manager::Create( KL::Compiler::Create() ) )
       , m_cgManager( CG::Manager::Create( m_rtManager ) )
       , m_ioManager( ioManager )
       , m_codeManager( CodeManager::Create() )
