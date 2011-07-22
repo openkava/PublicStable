@@ -110,12 +110,6 @@ namespace Fabric
       sigaction( SIGSEGV, &sa, NULL );
 #endif
 
-      FABRIC_LOG( "Fabric version %s", buildVersion );
-      struct tm const *lt = localtime( &buildExpiry );
-      char buf[1024];
-      strftime( buf, 1024, "This build of Fabric will expire on %Y-%m-%d at %H:%M:%S", lt );
-      FABRIC_LOG( "%s", buf );
-
       std::string contextID;
       enum
       {
