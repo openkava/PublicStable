@@ -31,9 +31,9 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> ConstSize::toJSON() const
+    RC::Handle<JSON::Object> ConstSize::toJSONImpl() const
     {
-      RC::Handle<JSON::Object> result = Expr::toJSON();
+      RC::Handle<JSON::Object> result = Expr::toJSONImpl();
       result->set( "value", JSON::Integer::Create( m_value ) );
       return result;
     }

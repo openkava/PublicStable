@@ -19,6 +19,7 @@ namespace Fabric
   
   namespace JSON
   {
+    class Value;
     class Array;
   };
   
@@ -32,13 +33,17 @@ namespace Fabric
       
       static RC::ConstHandle<CaseVector> Create( RC::ConstHandle<Case> const &first = 0, RC::ConstHandle<CaseVector> const &remaining = 0 );
 
-      RC::Handle<JSON::Array> toJSON() const;
+      RC::ConstHandle<JSON::Value> toJSON() const;
       
       void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
     
     protected:
     
       CaseVector();
+    
+    private:
+    
+      mutable RC::ConstHandle<JSON::Value> m_jsonValue;
     };
   };
 };

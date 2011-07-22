@@ -36,9 +36,9 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> MethodOp::toJSON() const
+    RC::Handle<JSON::Object> MethodOp::toJSONImpl() const
     {
-      RC::Handle<JSON::Object> result = Expr::toJSON();
+      RC::Handle<JSON::Object> result = Expr::toJSONImpl();
       result->set( "expr", m_expr->toJSON() );
       result->set( "methodName", JSON::String::Create( m_name ) );
       result->set( "args", m_args->toJSON() );

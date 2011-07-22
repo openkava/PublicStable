@@ -27,12 +27,16 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Array> CaseVector::toJSON() const
+    RC::ConstHandle<JSON::Value> CaseVector::toJSON() const
     {
-      RC::Handle<JSON::Array> result = JSON::Array::Create();
-      for ( const_iterator it=begin(); it!=end(); ++it )
-        result->push_back( (*it)->toJSON() );
-      return result;
+      if ( !m_jsonValue )
+      {
+        RC::Handle<JSON::Array> result = JSON::Array::Create();
+        for ( const_iterator it=begin(); it!=end(); ++it )
+          result->push_back( (*it)->toJSONImpl() );
+        m_jsonValue = result;
+      }
+      return m_jsonValue;
     }
     
     void CaseVector::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const

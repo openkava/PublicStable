@@ -28,12 +28,16 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Array> VarDeclVector::toJSON() const
+    RC::ConstHandle<JSON::Value> VarDeclVector::toJSON() const
     {
-      RC::Handle<JSON::Array> result = JSON::Array::Create();
-      for ( const_iterator it=begin(); it!=end(); ++it )
-        result->push_back( (*it)->toJSON() );
-      return result;
+      if ( !m_jsonValue )
+      {
+        RC::Handle<JSON::Array> result = JSON::Array::Create();
+        for ( const_iterator it=begin(); it!=end(); ++it )
+          result->push_back( (*it)->toJSONImpl() );
+        m_jsonValue = result;
+      }
+      return m_jsonValue;
     }
     
     void VarDeclVector::llvmPrepareModule( std::string const &baseType, CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const

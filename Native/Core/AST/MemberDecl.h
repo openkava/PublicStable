@@ -34,7 +34,7 @@ namespace Fabric
         return new MemberDecl( location, name, typeName );
       }
 
-      RC::Handle<JSON::Object> toJSON() const;
+      RC::Handle<JSON::Object> toJSONImpl() const;
 
       void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
       

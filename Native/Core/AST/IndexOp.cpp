@@ -29,9 +29,9 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> IndexOp::toJSON() const
+    RC::Handle<JSON::Object> IndexOp::toJSONImpl() const
     {
-      RC::Handle<JSON::Object> result = Expr::toJSON();
+      RC::Handle<JSON::Object> result = Expr::toJSONImpl();
       result->set( "expr", m_expr->toJSON() );
       result->set( "indexExpr", m_indexExpr->toJSON() );
       return result;

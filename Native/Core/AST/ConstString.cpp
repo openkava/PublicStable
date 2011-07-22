@@ -29,9 +29,9 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> ConstString::toJSON() const
+    RC::Handle<JSON::Object> ConstString::toJSONImpl() const
     {
-      RC::Handle<JSON::Object> result = Expr::toJSON();
+      RC::Handle<JSON::Object> result = Expr::toJSONImpl();
       result->set( "value", JSON::String::Create( m_value ) );
       return result;
     }

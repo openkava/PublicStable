@@ -32,10 +32,10 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> ConstDeclStatement::toJSON() const
+    RC::Handle<JSON::Object> ConstDeclStatement::toJSONImpl() const
     {
-      RC::Handle<JSON::Object> result = Statement::toJSON();
-      result->set( "constDecl", m_constDecl->toJSON() );
+      RC::Handle<JSON::Object> result = Statement::toJSONImpl();
+      result->set( "constDecl", m_constDecl->toJSONImpl() );
       return result;
     }
     

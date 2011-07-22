@@ -25,9 +25,9 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> UniOp::toJSON() const
+    RC::Handle<JSON::Object> UniOp::toJSONImpl() const
     {
-      RC::Handle<JSON::Object> result = Expr::toJSON();
+      RC::Handle<JSON::Object> result = Expr::toJSONImpl();
       result->set( "op", JSON::String::Create( uniOpUserName( m_uniOpType ) ) );
       result->set( "child", m_child->toJSON() );
       return result;

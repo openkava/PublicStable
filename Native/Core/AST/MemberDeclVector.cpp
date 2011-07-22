@@ -29,12 +29,16 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Array> MemberDeclVector::toJSON() const
+    RC::ConstHandle<JSON::Value> MemberDeclVector::toJSON() const
     {
-      RC::Handle<JSON::Array> result = JSON::Array::Create();
-      for ( size_t i=0; i<size(); ++i )
-        result->push_back( get(i)->toJSON() );
-      return result;
+      if ( !m_jsonValue )
+      {
+        RC::Handle<JSON::Array> result = JSON::Array::Create();
+        for ( size_t i=0; i<size(); ++i )
+          result->push_back( get(i)->toJSONImpl() );
+        m_jsonValue = result;
+      }
+      return m_jsonValue;
     }
     
     void MemberDeclVector::buildStructMemberInfoVector( RC::ConstHandle<RT::Manager> const &rtManager, RT::StructMemberInfoVector &structMemberInfoVector ) const

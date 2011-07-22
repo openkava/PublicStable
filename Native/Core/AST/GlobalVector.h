@@ -13,6 +13,7 @@ namespace Fabric
 {
   namespace JSON
   {
+    class Value;
     class Array;
   };
   
@@ -38,7 +39,7 @@ namespace Fabric
       static RC::ConstHandle<GlobalVector> Create( RC::ConstHandle<Global> const &first = 0, RC::ConstHandle<GlobalVector> const &remaining = 0 );
       static RC::ConstHandle<GlobalVector> Create( RC::ConstHandle<GlobalVector> const &lhs, RC::ConstHandle<GlobalVector> const &rhs );
 
-      RC::Handle<JSON::Array> toJSON() const;
+      RC::ConstHandle<JSON::Value> toJSON() const;
 
       void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
           
@@ -47,6 +48,10 @@ namespace Fabric
     protected:
     
       GlobalVector();
+      
+    private:
+    
+      mutable RC::ConstHandle<JSON::Value> m_jsonValue;
     };
   };
 };

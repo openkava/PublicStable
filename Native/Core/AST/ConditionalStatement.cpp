@@ -42,9 +42,9 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> ConditionalStatement::toJSON() const
+    RC::Handle<JSON::Object> ConditionalStatement::toJSONImpl() const
     {
-      RC::Handle<JSON::Object> result = Statement::toJSON();
+      RC::Handle<JSON::Object> result = Statement::toJSONImpl();
       result->set( "testExpr", m_expr->toJSON() );
       if ( m_trueStatement )
         result->set( "ifTrue", m_trueStatement->toJSON() );

@@ -30,12 +30,16 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Array> ExprVector::toJSON() const
+    RC::ConstHandle<JSON::Value> ExprVector::toJSON() const
     {
-      RC::Handle<JSON::Array> result = JSON::Array::Create();
-      for ( size_t i=0; i<size(); ++i )
-        result->push_back( get(i)->toJSON() );
-      return result;
+      if ( !m_jsonValue )
+      {
+        RC::Handle<JSON::Array> result = JSON::Array::Create();
+        for ( size_t i=0; i<size(); ++i )
+          result->push_back( get(i)->toJSON() );
+        m_jsonValue = result;
+      }
+      return m_jsonValue;
     }
 
     void ExprVector::appendTypes( CG::BasicBlockBuilder const &basicBlockBuilder, std::vector< RC::ConstHandle<CG::Adapter> > &argTypes ) const

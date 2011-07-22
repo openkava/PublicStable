@@ -31,12 +31,12 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> FunctionBase::toJSON() const
+    RC::Handle<JSON::Object> FunctionBase::toJSONImpl() const
     {
-      RC::Handle<JSON::Object> result = Global::toJSON();
+      RC::Handle<JSON::Object> result = Global::toJSONImpl();
       result->set( "returnExprType", JSON::String::Create( m_returnTypeName ) );
       if ( m_body )
-        result->set( "body", m_body->toJSON() );
+        result->set( "body", m_body->toJSONImpl() );
       return result;
     }
     

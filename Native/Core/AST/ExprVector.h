@@ -14,6 +14,7 @@ namespace Fabric
 {
   namespace JSON
   {
+    class Value;
     class Array;
   };
   
@@ -36,7 +37,7 @@ namespace Fabric
       
       static RC::ConstHandle<ExprVector> Create( RC::ConstHandle<Expr> const &first = 0, RC::ConstHandle<ExprVector> const &remaining = 0 );
 
-      RC::Handle<JSON::Array> toJSON() const;
+      RC::ConstHandle<JSON::Value> toJSON() const;
       
       void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
           
@@ -46,6 +47,10 @@ namespace Fabric
     protected:
     
       ExprVector();
+      
+    private:
+    
+      mutable RC::ConstHandle<JSON::Value> m_jsonValue;
     };
   };
 };

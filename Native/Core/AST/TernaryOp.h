@@ -28,7 +28,7 @@ namespace Fabric
         return new TernaryOp( location, opType, left, middle, right );
       }
 
-      RC::Handle<JSON::Object> toJSON() const;
+      RC::Handle<JSON::Object> toJSONImpl() const;
 
       virtual void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
       

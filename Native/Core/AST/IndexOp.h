@@ -26,7 +26,7 @@ namespace Fabric
         RC::ConstHandle<Expr> const &indexExpr
         );
 
-      RC::Handle<JSON::Object> toJSON() const;
+      RC::Handle<JSON::Object> toJSONImpl() const;
       
       virtual void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
       

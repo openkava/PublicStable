@@ -33,9 +33,9 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> AssignOp::toJSON() const
+    RC::Handle<JSON::Object> AssignOp::toJSONImpl() const
     {
-      RC::Handle<JSON::Object> result = Expr::toJSON();
+      RC::Handle<JSON::Object> result = Expr::toJSONImpl();
       result->set( "assignOpType", JSON::String::Create( assignOpTypeDesc( m_assignOpType ) ) );
       result->set( "lhs", m_left->toJSON() );
       result->set( "rhs", m_right->toJSON() );

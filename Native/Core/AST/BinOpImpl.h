@@ -40,7 +40,7 @@ namespace Fabric
         RC::ConstHandle<CompoundStatement> const &body
         );
 
-      RC::Handle<JSON::Object> toJSON() const;
+      RC::Handle<JSON::Object> toJSONImpl() const;
                   
       virtual std::string getEntryName( RC::Handle<CG::Manager> const &cgManager ) const;
       virtual RC::ConstHandle<ParamVector> getParams( RC::Handle<CG::Manager> const &cgManager ) const;

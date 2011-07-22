@@ -40,9 +40,9 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> InitializedVarDecl::toJSON() const
+    RC::Handle<JSON::Object> InitializedVarDecl::toJSONImpl() const
     {
-      RC::Handle<JSON::Object> result = VarDecl::toJSON();
+      RC::Handle<JSON::Object> result = VarDecl::toJSONImpl();
       result->set( "args", m_args->toJSON() );
       return result;
     }

@@ -36,9 +36,9 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> TernaryOp::toJSON() const
+    RC::Handle<JSON::Object> TernaryOp::toJSONImpl() const
     {
-      RC::Handle<JSON::Object> result = Expr::toJSON();
+      RC::Handle<JSON::Object> result = Expr::toJSONImpl();
       result->set( "condExpr", m_left->toJSON() );
       result->set( "trueExpr", m_middle->toJSON() );
       result->set( "falseExpr", m_right->toJSON() );

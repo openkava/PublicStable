@@ -37,9 +37,9 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> VarDecl::toJSON() const
+    RC::Handle<JSON::Object> VarDecl::toJSONImpl() const
     {
-      RC::Handle<JSON::Object> result = Node::toJSON();
+      RC::Handle<JSON::Object> result = Node::toJSONImpl();
       result->set( "name", JSON::String::Create( m_name ) );
       result->set( "arrayModifier", JSON::String::Create( m_arrayModifier ) );
       return result;

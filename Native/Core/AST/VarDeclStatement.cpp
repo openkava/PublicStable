@@ -37,9 +37,9 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> VarDeclStatement::toJSON() const
+    RC::Handle<JSON::Object> VarDeclStatement::toJSONImpl() const
     {
-      RC::Handle<JSON::Object> result = Statement::toJSON();
+      RC::Handle<JSON::Object> result = Statement::toJSONImpl();
       result->set( "baseType", JSON::String::Create( m_baseType ) );
       result->set( "varDecls", m_varDecls->toJSON() );
       return result;

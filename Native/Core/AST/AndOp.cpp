@@ -29,9 +29,9 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> AndOp::toJSON() const
+    RC::Handle<JSON::Object> AndOp::toJSONImpl() const
     {
-      RC::Handle<JSON::Object> result = Expr::toJSON();
+      RC::Handle<JSON::Object> result = Expr::toJSONImpl();
       if ( m_left )
         result->set( "lhs", m_left->toJSON() );
       if ( m_right )

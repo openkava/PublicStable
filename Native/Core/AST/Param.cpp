@@ -41,9 +41,9 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> Param::toJSON() const
+    RC::Handle<JSON::Object> Param::toJSONImpl() const
     {
-      RC::Handle<JSON::Object> result = Node::toJSON();
+      RC::Handle<JSON::Object> result = Node::toJSONImpl();
       result->set( "name", JSON::String::Create( m_name ) );
       result->set( "type", JSON::String::Create( m_type ) );
       result->set( "usage", JSON::String::Create( CG::usageDesc( m_usage ) ) );

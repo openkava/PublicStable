@@ -48,9 +48,9 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> AssignOpImpl::toJSON() const
+    RC::Handle<JSON::Object> AssignOpImpl::toJSONImpl() const
     {
-      RC::Handle<JSON::Object> result = MethodOpImpl::toJSON();
+      RC::Handle<JSON::Object> result = MethodOpImpl::toJSONImpl();
       result->set( "op", JSON::String::Create( CG::assignOpTypeDesc( m_assignOpType ) ) );
       return result;
     }

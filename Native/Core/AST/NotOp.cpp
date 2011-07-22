@@ -25,9 +25,9 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> NotOp::toJSON() const
+    RC::Handle<JSON::Object> NotOp::toJSONImpl() const
     {
-      RC::Handle<JSON::Object> result = Expr::toJSON();
+      RC::Handle<JSON::Object> result = Expr::toJSONImpl();
       result->set( "child", m_child->toJSON() );
       return result;
     }

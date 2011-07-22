@@ -35,7 +35,7 @@ namespace Fabric
         CG::Usage usage
         );
 
-      RC::Handle<JSON::Object> toJSON() const;
+      RC::Handle<JSON::Object> toJSONImpl() const;
     
       std::string const &getName() const
       {

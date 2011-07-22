@@ -27,7 +27,7 @@ namespace Fabric
     
       static RC::ConstHandle<ConstString> Create( CG::Location const &location, std::string const &value );
 
-      RC::Handle<JSON::Object> toJSON() const;
+      RC::Handle<JSON::Object> toJSONImpl() const;
       
       virtual void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
       

@@ -39,9 +39,9 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> StructDecl::toJSON() const
+    RC::Handle<JSON::Object> StructDecl::toJSONImpl() const
     {
-      RC::Handle<JSON::Object> result = Global::toJSON();
+      RC::Handle<JSON::Object> result = Global::toJSONImpl();
       result->set( "name", JSON::String::Create( m_name ) );
       result->set( "members", m_members->toJSON() );
       return result;

@@ -24,10 +24,10 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> GlobalConstDecl::toJSON() const
+    RC::Handle<JSON::Object> GlobalConstDecl::toJSONImpl() const
     {
-      RC::Handle<JSON::Object> result = Global::toJSON();
-      result->set( "constDecl", m_constDecl->toJSON() );
+      RC::Handle<JSON::Object> result = Global::toJSONImpl();
+      result->set( "constDecl", m_constDecl->toJSONImpl() );
       return result;
     }
     

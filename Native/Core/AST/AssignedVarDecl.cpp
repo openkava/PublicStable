@@ -39,9 +39,9 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> AssignedVarDecl::toJSON() const
+    RC::Handle<JSON::Object> AssignedVarDecl::toJSONImpl() const
     {
-      RC::Handle<JSON::Object> result = VarDecl::toJSON();
+      RC::Handle<JSON::Object> result = VarDecl::toJSONImpl();
       result->set( "initialValue", m_initialExpr->toJSON() );
       return result;
     }

@@ -36,9 +36,9 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> Alias::toJSON() const
+    RC::Handle<JSON::Object> Alias::toJSONImpl() const
     {
-      RC::Handle<JSON::Object> result = Global::toJSON();
+      RC::Handle<JSON::Object> result = Global::toJSONImpl();
       result->set( "newTypeName", JSON::String::Create( m_name ) );
       result->set( "oldTypeName", JSON::String::Create( m_adapterName ) );
       return result;

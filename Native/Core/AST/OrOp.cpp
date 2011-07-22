@@ -27,9 +27,9 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> OrOp::toJSON() const
+    RC::Handle<JSON::Object> OrOp::toJSONImpl() const
     {
-      RC::Handle<JSON::Object> result = Expr::toJSON();
+      RC::Handle<JSON::Object> result = Expr::toJSONImpl();
       result->set( "lhs", m_left->toJSON() );
       result->set( "rhs", m_right->toJSON() );
       return result;

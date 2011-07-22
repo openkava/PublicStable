@@ -26,9 +26,9 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> StructMemberOp::toJSON() const
+    RC::Handle<JSON::Object> StructMemberOp::toJSONImpl() const
     {
-      RC::Handle<JSON::Object> result = Expr::toJSON();
+      RC::Handle<JSON::Object> result = Expr::toJSONImpl();
       result->set( "expr", m_structExpr->toJSON() );
       result->set( "memberName", JSON::String::Create( m_memberName ) );
       return result;

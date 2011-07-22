@@ -28,10 +28,16 @@ namespace Fabric
     RC::ConstHandle<GlobalVector> GlobalVector::Create( RC::ConstHandle<GlobalVector> const &lhs, RC::ConstHandle<GlobalVector> const &rhs )
     {
       GlobalVector *result = new GlobalVector;
-      for ( GlobalVector::const_iterator it=lhs->begin(); it!=lhs->end(); ++it )
-        result->push_back( *it );
-      for ( GlobalVector::const_iterator it=rhs->begin(); it!=rhs->end(); ++it )
-        result->push_back( *it );
+      if ( lhs )
+      {
+        for ( GlobalVector::const_iterator it=lhs->begin(); it!=lhs->end(); ++it )
+          result->push_back( *it );
+      }
+      if ( rhs )
+      {
+        for ( GlobalVector::const_iterator it=rhs->begin(); it!=rhs->end(); ++it )
+          result->push_back( *it );
+      }
       return result;
     }
     
@@ -39,12 +45,16 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Array> GlobalVector::toJSON() const
+    RC::ConstHandle<JSON::Value> GlobalVector::toJSON() const
     {
-      RC::Handle<JSON::Array> result = JSON::Array::Create();
-      for ( const_iterator it=begin(); it!=end(); ++it )
-        result->push_back( (*it)->toJSON() );
-      return result;
+      if ( !m_jsonValue )
+      {
+        RC::Handle<JSON::Array> result = JSON::Array::Create();
+        for ( const_iterator it=begin(); it!=end(); ++it )
+          result->push_back( (*it)->toJSON() );
+        m_jsonValue = result;
+      }
+      return m_jsonValue;
     }
     
     void GlobalVector::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const

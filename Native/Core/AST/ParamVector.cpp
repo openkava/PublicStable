@@ -35,12 +35,16 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Array> ParamVector::toJSON() const
+    RC::ConstHandle<JSON::Value> ParamVector::toJSON() const
     {
-      RC::Handle<JSON::Array> result = JSON::Array::Create();
-      for ( size_t i=0; i<size(); ++i )
-        result->push_back( (*this)[i]->toJSON() );
-      return result;
+      if ( !m_jsonValue )
+      {
+        RC::Handle<JSON::Array> result = JSON::Array::Create();
+        for ( size_t i=0; i<size(); ++i )
+          result->push_back( (*this)[i]->toJSONImpl() );
+        m_jsonValue = result;
+      }
+      return m_jsonValue;
     }
       
     std::vector<CG::FunctionParam> ParamVector::getFunctionParams( RC::Handle<CG::Manager> const &cgManager ) const

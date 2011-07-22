@@ -34,9 +34,9 @@ namespace Fabric
     {
     }
       
-    RC::Handle<JSON::Object> BinOp::toJSON() const
+    RC::Handle<JSON::Object> BinOp::toJSONImpl() const
     {
-      RC::Handle<JSON::Object> result = Expr::toJSON();
+      RC::Handle<JSON::Object> result = Expr::toJSONImpl();
       result->set( "binOpType", JSON::String::Create( CG::binOpUserName( m_binOpType ) ) );
       result->set( "lhs", m_left->toJSON() );
       result->set( "rhs", m_right->toJSON() );

@@ -48,9 +48,9 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> CStyleLoop::toJSON() const
+    RC::Handle<JSON::Object> CStyleLoop::toJSONImpl() const
     {
-      RC::Handle<JSON::Object> result = Statement::toJSON();
+      RC::Handle<JSON::Object> result = Statement::toJSONImpl();
       if ( m_startStatement )
         result->set( "startStatement", m_startStatement->toJSON() );
       if ( m_preCondExpr )
