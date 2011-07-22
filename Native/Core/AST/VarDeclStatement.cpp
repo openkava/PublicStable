@@ -44,11 +44,15 @@ namespace Fabric
       result->set( "varDecls", m_varDecls->toJSON() );
       return result;
     }
+    
+    void VarDeclStatement::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    {
+      m_varDecls->llvmPrepareModule( m_baseType, moduleBuilder, diagnostics );
+    }
 
     void VarDeclStatement::llvmCompileToBuilder( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const
     {
-      for ( VarDeclVector::const_iterator it=m_varDecls->begin(); it!=m_varDecls->end(); ++it )
-        (*it)->llvmCompileToBuilder( m_baseType, basicBlockBuilder, diagnostics );
+      m_varDecls->llvmCompileToBuilder( m_baseType, basicBlockBuilder, diagnostics );
     }
   };
 };

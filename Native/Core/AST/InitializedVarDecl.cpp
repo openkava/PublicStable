@@ -46,6 +46,12 @@ namespace Fabric
       result->set( "args", m_args->toJSON() );
       return result;
     }
+    
+    void InitializedVarDecl::llvmPrepareModule( std::string const &baseType, CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    {
+      VarDecl::llvmPrepareModule( baseType, moduleBuilder, diagnostics );
+      m_args->llvmPrepareModule( moduleBuilder, diagnostics );
+    }
 
     void InitializedVarDecl::llvmCompileToBuilder( std::string const &baseType, CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const
     {

@@ -36,6 +36,8 @@ namespace Fabric
       static RC::Handle<StatementVector> Create( RC::ConstHandle<Statement> const &first, RC::ConstHandle<StatementVector> const &remaining );
 
       RC::Handle<JSON::Array> toJSON() const;
+      
+      void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
     
       void llvmCompileToBuilder( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const;
 

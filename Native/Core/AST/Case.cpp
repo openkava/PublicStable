@@ -46,6 +46,13 @@ namespace Fabric
       result->set( "statements", m_statements->toJSON() );
       return result;
     }
+    
+    void Case::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    {
+      if ( m_expr )
+        m_expr->llvmPrepareModule( moduleBuilder, diagnostics );
+      m_statements->llvmPrepareModule( moduleBuilder, diagnostics );
+    }
 
     RC::ConstHandle<Expr> Case::getExpr() const
     {

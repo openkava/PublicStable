@@ -22,6 +22,8 @@ namespace Fabric
     class Adapter;
     class BasicBlockBuilder;
     class ExprValue;
+    class ModuleBuilder;
+    class Diagnostics;
   };
   
   namespace AST
@@ -37,6 +39,8 @@ namespace Fabric
       static RC::Handle<ExprVector> Create( RC::ConstHandle<Expr> const &first, RC::ConstHandle<ExprVector> const &remaining );
 
       RC::Handle<JSON::Array> toJSON() const;
+      
+      void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
           
       void appendTypes( CG::BasicBlockBuilder const &basicBlockBuilder, std::vector< RC::ConstHandle<CG::Adapter> > &argTypes ) const;
       void appendExprValues( CG::BasicBlockBuilder &basicBlockBuilder, std::vector<CG::Usage> const &usages, std::vector<CG::ExprValue> &result, std::string const &lValueErrorDesc ) const;

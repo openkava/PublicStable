@@ -72,5 +72,11 @@ namespace Fabric
         result.push_back( exprValue );
       }
     }
+    
+    void ExprVector::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    {
+      for ( const_iterator it=begin(); it!=end(); ++it )
+        (*it)->llvmPrepareModule( moduleBuilder, diagnostics );
+    }
   };
 };

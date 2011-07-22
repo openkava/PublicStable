@@ -32,6 +32,10 @@ namespace Fabric
       return result;
     }
     
+    void ConstBoolean::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    {
+    }
+    
     RC::ConstHandle<CG::Adapter> ConstBoolean::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const
     {
       return basicBlockBuilder.getManager()->getBooleanAdapter();

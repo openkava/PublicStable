@@ -42,8 +42,9 @@ namespace Fabric
       RC::Handle<JSON::Array> toJSON() const;
 
       void append( RC::ConstHandle<GlobalVector> const &other );
+      
+      void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
           
-      void registerTypes( RC::Handle<RT::Manager> const &rtManager, CG::Diagnostics &diagnostics ) const;
       void llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctions ) const;
     
     protected:

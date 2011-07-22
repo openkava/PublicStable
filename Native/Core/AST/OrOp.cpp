@@ -35,6 +35,12 @@ namespace Fabric
       return result;
     }
     
+    void OrOp::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    {
+      m_left->llvmPrepareModule( moduleBuilder, diagnostics );
+      m_right->llvmPrepareModule( moduleBuilder, diagnostics );
+    }
+    
     RC::ConstHandle<CG::Adapter> OrOp::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const
     {
       RC::ConstHandle<CG::Adapter> lhsType = m_left->getType( basicBlockBuilder );

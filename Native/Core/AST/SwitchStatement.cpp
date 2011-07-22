@@ -52,6 +52,12 @@ namespace Fabric
       result->set( "cases", m_cases->toJSON() );
       return result;
     }
+    
+    void SwitchStatement::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    {
+      m_expr->llvmPrepareModule( moduleBuilder, diagnostics );
+      m_cases->llvmPrepareModule( moduleBuilder, diagnostics );
+    }
 
     void SwitchStatement::llvmCompileToBuilder( CG::BasicBlockBuilder &parentBasicBlockBuilder, CG::Diagnostics &diagnostics ) const
     {

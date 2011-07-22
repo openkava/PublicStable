@@ -10,6 +10,7 @@
 #include <Fabric/Core/CG/IntegerAdapter.h>
 #include <Fabric/Core/CG/Location.h>
 #include <Fabric/Core/CG/Manager.h>
+#include <Fabric/Core/CG/ModuleBuilder.h>
 #include <Fabric/Core/CG/ScalarAdapter.h>
 #include <Fabric/Core/CG/Scope.h>
 #include <Fabric/Core/CG/SizeAdapter.h>
@@ -54,6 +55,12 @@ namespace Fabric
       result->set( "type", JSON::String::Create( m_type ) );
       result->set( "value", JSON::String::Create( m_value ) );
       return result;
+    }
+    
+    void ConstDecl::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    {
+      RC::ConstHandle<CG::Adapter> adapter = moduleBuilder.getAdapter( m_type, getLocation() );
+      adapter->llvmPrepareModule( moduleBuilder, true );
     }
 
     void ConstDecl::llvmCompileToScope( CG::Scope &scope, RC::ConstHandle<CG::Manager> const &manager ) const

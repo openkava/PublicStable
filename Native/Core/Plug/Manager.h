@@ -28,6 +28,11 @@ namespace Fabric
     class ModuleBuilder;
   };
   
+  namespace AST
+  {
+    class GlobalVector;
+  };
+  
   namespace DG
   {
     class Context;
@@ -45,15 +50,14 @@ namespace Fabric
     
       static RC::Handle<Manager> Instance();
       
-      void loadBuiltInPlugins( std::vector<std::string> const &pluginDirs );
+      void loadBuiltInPlugins( std::vector<std::string> const &pluginDirs, RC::Handle<CG::Manager> const &cgManager );
       
       NameToInstMap const &getRegisteredPlugins() const
       {
         return m_nameToInstMap;
       }
       
-      void registerTypes( RC::Handle<RT::Manager> const &rtManager ) const;
-      void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder ) const;
+      RC::Handle<AST::GlobalVector> getAST() const;
       void *llvmResolveExternalFunction( std::string const &name ) const;
 
       virtual RC::Handle<JSON::Object> jsonDesc() const;
@@ -63,7 +67,7 @@ namespace Fabric
       Manager();
       ~Manager();
       
-      RC::ConstHandle<Inst> registerPlugin( std::string const &name, std::string const &jsonDesc, std::vector<std::string> const &pluginDirs );
+      RC::ConstHandle<Inst> registerPlugin( std::string const &name, std::string const &jsonDesc, std::vector<std::string> const &pluginDirs, RC::Handle<CG::Manager> const &cgManager );
       
     private:
     

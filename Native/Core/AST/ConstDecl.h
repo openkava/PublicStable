@@ -14,10 +14,11 @@ namespace Fabric
 {
   namespace CG
   {
-    class Location;
-    class Scope;
-    class Manager;
     class Adapter;
+    class Location;
+    class Manager;
+    class ModuleBuilder;
+    class Scope;
   };
   
   namespace AST
@@ -36,6 +37,8 @@ namespace Fabric
         );
 
       RC::Handle<JSON::Object> toJSON() const;
+      
+      void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
       
       virtual void llvmCompileToScope( CG::Scope &scope, RC::ConstHandle<CG::Manager> const &manager ) const;
      

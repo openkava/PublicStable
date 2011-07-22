@@ -7,6 +7,7 @@
 #include <Fabric/Core/CG/ConstStringAdapter.h>
 #include <Fabric/Core/CG/Error.h>
 #include <Fabric/Core/CG/Manager.h>
+#include <Fabric/Core/CG/ModuleBuilder.h>
 #include <Fabric/Core/CG/StringAdapter.h>
 #include <Fabric/Core/Util/Parse.h>
 #include <Fabric/Base/JSON/String.h>
@@ -33,6 +34,25 @@ namespace Fabric
       RC::Handle<JSON::Object> result = Expr::toJSON();
       result->set( "value", JSON::String::Create( m_value ) );
       return result;
+    }
+    
+    void ConstString::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    {
+      std::string unquotedValue;
+      try
+      {
+        unquotedValue = Util::parseQuotedString( m_value );
+      }
+      catch ( Exception e )
+      {
+        throw CG::Error( getLocation(), e.getDesc() + "(" + m_value + ")" );
+      }
+
+      RC::ConstHandle<CG::ConstStringAdapter> constStringAdapter = moduleBuilder.getManager()->getConstStringAdapter( unquotedValue.length() );
+      constStringAdapter->llvmPrepareModule( moduleBuilder, true );
+
+      RC::ConstHandle<CG::StringAdapter> stringAdapter = moduleBuilder.getManager()->getStringAdapter();
+      stringAdapter->llvmPrepareModule( moduleBuilder, true );
     }
     
     RC::ConstHandle<CG::Adapter> ConstString::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const

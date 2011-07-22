@@ -35,6 +35,8 @@ namespace Fabric
       static RC::Handle<CaseVector> Create( RC::ConstHandle<Case> const &first, RC::ConstHandle<CaseVector> const &remaining );
 
       RC::Handle<JSON::Array> toJSON() const;
+      
+      void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
     
     protected:
     

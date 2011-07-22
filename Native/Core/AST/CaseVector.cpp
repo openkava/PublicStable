@@ -25,7 +25,7 @@ namespace Fabric
     RC::Handle<CaseVector> CaseVector::Create( RC::ConstHandle<Case> const &first, RC::ConstHandle<CaseVector> const &remaining )
     {
       RC::Handle<CaseVector> result = Create( first );
-      for ( CaseVector::const_iterator it=remaining->begin(); it!=remaining->end(); ++it )
+      for ( const_iterator it=remaining->begin(); it!=remaining->end(); ++it )
         result->push_back( *it );
       return result;
     }
@@ -37,9 +37,15 @@ namespace Fabric
     RC::Handle<JSON::Array> CaseVector::toJSON() const
     {
       RC::Handle<JSON::Array> result = JSON::Array::Create();
-      for ( size_t i=0; i<size(); ++i )
-        result->push_back( get(i)->toJSON() );
+      for ( const_iterator it=begin(); it!=end(); ++it )
+        result->push_back( (*it)->toJSON() );
       return result;
+    }
+    
+    void CaseVector::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    {
+      for ( const_iterator it=begin(); it!=end(); ++it )
+        (*it)->llvmPrepareModule( moduleBuilder, diagnostics );
     }
   };
 };

@@ -23,7 +23,7 @@ namespace Fabric
   
   namespace AST
   {
-    class MemberDecl: public Node
+    class MemberDecl : public Node
     {
       FABRIC_AST_NODE_DECL( MemberDecl );
 
@@ -35,6 +35,8 @@ namespace Fabric
       }
 
       RC::Handle<JSON::Object> toJSON() const;
+
+      void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
       
       void buildStructMemberInfo( RC::ConstHandle<RT::Manager> const &rtManager, RT::StructMemberInfo &structMemberInfo ) const;
 

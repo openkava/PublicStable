@@ -30,6 +30,12 @@ namespace Fabric
         result->set( "expr", m_expr->toJSON() );
       return result;
     }
+    
+    void ReturnStatement::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    {
+      if ( m_expr )
+        m_expr->llvmPrepareModule( moduleBuilder, diagnostics );
+    }
 
     void ReturnStatement::llvmCompileToBuilder( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const
     {

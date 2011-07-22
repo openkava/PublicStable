@@ -7,6 +7,7 @@
 
 #include "VarDecl.h"
 #include <Fabric/Core/CG/Adapter.h>
+#include <Fabric/Core/CG/ModuleBuilder.h>
 #include <Fabric/Core/CG/Scope.h>
 #include <Fabric/Base/JSON/String.h>
 
@@ -43,6 +44,13 @@ namespace Fabric
       result->set( "arrayModifier", JSON::String::Create( m_arrayModifier ) );
       return result;
     }
+    
+    void VarDecl::llvmPrepareModule( std::string const &baseType, CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    {
+      std::string type = baseType + m_arrayModifier;
+      RC::ConstHandle<CG::Adapter> adapter = moduleBuilder.getAdapter( type, getLocation() );
+      adapter->llvmPrepareModule( moduleBuilder, true );
+    }
 
     void VarDecl::llvmCompileToBuilder( std::string const &baseType, CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const
     {
@@ -55,7 +63,6 @@ namespace Fabric
       RC::ConstHandle<CG::Adapter> adapter = basicBlockBuilder.maybeGetAdapter( type );
       if ( !adapter )
         throw CG::Error( getLocation(), "variable type " + _(type) + " not registered" );
-      adapter->llvmPrepareModule( basicBlockBuilder.getModuleBuilder(), true );
       
       llvm::Value *result = adapter->llvmAlloca( basicBlockBuilder, m_name );
       adapter->llvmInit( basicBlockBuilder, result );

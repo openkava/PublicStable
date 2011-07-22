@@ -25,13 +25,13 @@ namespace Fabric
     //typedef void (*OnLoadFn)( SDK::Value FABRIC );
     //typedef void (*OnUnloadFn)( SDK::Value FABRIC );
     
-    RC::Handle<Inst> Inst::Create( std::string const &name, std::string const &jsonDesc, std::vector<std::string> const &pluginDirs )
+    RC::Handle<Inst> Inst::Create( std::string const &name, std::string const &jsonDesc, std::vector<std::string> const &pluginDirs, RC::Handle<CG::Manager> const &cgManager )
     {
-      return new Inst( name, jsonDesc, pluginDirs );
+      return new Inst( name, jsonDesc, pluginDirs, cgManager );
     }
       
-    Inst::Inst( std::string const &name, std::string const &jsonDesc, std::vector<std::string> const &pluginDirs )
-      : m_name( name )
+    Inst::Inst( std::string const &extensionName, std::string const &jsonDesc, std::vector<std::string> const &pluginDirs, RC::Handle<CG::Manager> const &cgManager )
+      : m_name( extensionName )
       , m_disabled( false )
       , m_jsonDesc( jsonDesc )
     {
@@ -97,19 +97,48 @@ namespace Fabric
       RC::Handle<KL::Scanner> scanner = KL::Scanner::Create( source );
       m_ast = 0;
       KL::Parse( scanner, m_diagnostics, m_ast );
-      
       for ( CG::Diagnostics::const_iterator it=m_diagnostics.begin(); it!=m_diagnostics.end(); ++it )
       {
         CG::Location const &location = it->first;
         CG::Diagnostic const &diagnostic = it->second;
-        FABRIC_LOG( "[%s] %u:%u: %s: %s", name.c_str(), (unsigned)location.getLine(), (unsigned)location.getColumn(), diagnostic.getLevelDesc(), diagnostic.getDesc().c_str() );
+        FABRIC_LOG( "[%s] %u:%u: %s: %s", extensionName.c_str(), (unsigned)location.getLine(), (unsigned)location.getColumn(), diagnostic.getLevelDesc(), diagnostic.getDesc().c_str() );
+        if ( diagnostic.getLevel() == CG::Diagnostic::LEVEL_ERROR )
+          m_disabled = true;
       }
       
-      if ( m_diagnostics.containsError() )
-        throw Exception( "unable to compile KL code" );
-      FABRIC_ASSERT( m_ast );
-      
+      if ( !m_disabled )
+      {
+        for ( AST::GlobalVector::const_iterator it=m_ast->begin(); it!=m_ast->end(); ++it )
+        {
+          RC::ConstHandle<AST::Global> global = *it;
+          if ( !global->isFunction() )
+            continue;
+          RC::ConstHandle<AST::Function> function = RC::ConstHandle<AST::Function>::StaticCast( global );
+          
+          if ( !function->getBody() )
+          {
+            std::string const &name = function->getEntryName( cgManager );
+            void *resolvedFunction = 0;
+            for ( size_t i=0; i<m_orderedSOLibHandles.size(); ++i )
+            {
+              resolvedFunction = SOLibResolve( m_orderedSOLibHandles[i], name );
+              if ( resolvedFunction )
+                break;
+            }
+            if ( !resolvedFunction )
+            {
+              FABRIC_LOG( "[" + extensionName + "] error: symbol " + _(name) + ", prototyped in KL, not found in native code" );
+              m_disabled = true;
+            }
+            else m_externalFunctionMap.insert( ExternalFunctionMap::value_type( name, resolvedFunction ) );
+          }
+        }
+      }
+
       m_jsConstants = m_desc.jsConstants.concatMatching( Util::getHostTriple() );
+
+      if ( m_disabled )
+        FABRIC_LOG( "[%s] Errors found; extension disabled", m_name.c_str() );
     }
     
     Inst::~Inst()
@@ -128,79 +157,14 @@ namespace Fabric
         SOLibClose( it->second, it->first );
       }
     }
-      
-    void Inst::registerTypes( RC::Handle<RT::Manager> const &rtManager ) const
-    {
-      CG::Diagnostics diagnostics;
-      m_ast->registerTypes( rtManager, diagnostics );
-      for ( CG::Diagnostics::const_iterator it=diagnostics.begin(); it!=diagnostics.end(); ++it )
-      {
-        CG::Location const &location = it->first;
-        CG::Diagnostic const &diagnostic = it->second;
-        FABRIC_LOG( "[%s] %u:%u: %s: %s", m_name.c_str(), (unsigned)location.getLine(), (unsigned)location.getColumn(), diagnostic.getLevelDesc(), diagnostic.getDesc().c_str() );
-      }
-      if ( diagnostics.containsError() )
-      {
-        FABRIC_LOG( "[%s] KL code contains error(s), extension disabled", m_name.c_str() );
-        m_disabled = true;
-      }
-    }
-      
-    void Inst::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder ) const
-    {
-      if ( !m_disabled )
-      {
-        CG::Diagnostics diagnostics;
-        m_ast->llvmCompileToModule( moduleBuilder, diagnostics, false );
-        m_ast->llvmCompileToModule( moduleBuilder, diagnostics, true );
-        for ( CG::Diagnostics::const_iterator it=diagnostics.begin(); it!=diagnostics.end(); ++it )
-        {
-          CG::Location const &location = it->first;
-          CG::Diagnostic const &diagnostic = it->second;
-          FABRIC_LOG( "[%s] %u:%u: %s: %s", m_name.c_str(), (unsigned)location.getLine(), (unsigned)location.getColumn(), diagnostic.getLevelDesc(), diagnostic.getDesc().c_str() );
-        }
-        if ( diagnostics.containsError() )
-        {
-          FABRIC_LOG( "[%s] KL code contains error(s), extension disabled", m_name.c_str() );
-          m_disabled = true;
-        }
-      
-        if ( !m_externalFunctionMap )
-        {
-          m_externalFunctionMap = new ExternalFunctionMap;
-          size_t numItems = m_ast->size();
-          for ( size_t i=0; i<numItems; ++i )
-          {
-            RC::ConstHandle<AST::Global> global = m_ast->get(i);
-            if ( !global->isFunction() )
-              continue;
-            RC::ConstHandle<AST::Function> function = RC::ConstHandle<AST::Function>::StaticCast( global );
-            
-            if ( !function->getBody() )
-            {
-              std::string const &name = function->getEntryName( moduleBuilder.getManager() );
-              void *resolvedFunction = 0;
-              for ( size_t i=0; i<m_orderedSOLibHandles.size(); ++i )
-              {
-                resolvedFunction = SOLibResolve( m_orderedSOLibHandles[i], name );
-                if ( resolvedFunction )
-                  break;
-              }
-              m_externalFunctionMap->insert( ExternalFunctionMap::value_type( name, resolvedFunction ) );
-            }
-          }
-        }
-      }
-    }
     
     void *Inst::llvmResolveExternalFunction( std::string const &name ) const
     {
       void *result = 0;
       if ( !m_disabled )
       {
-        FABRIC_ASSERT( m_externalFunctionMap );
-        ExternalFunctionMap::const_iterator it = m_externalFunctionMap->find( name );
-        if ( it != m_externalFunctionMap->end() )
+        ExternalFunctionMap::const_iterator it = m_externalFunctionMap.find( name );
+        if ( it != m_externalFunctionMap.end() )
           result = it->second;
       }
       return result;
@@ -238,6 +202,12 @@ namespace Fabric
       result->set( "code", JSON::String::Create( m_code ) );
       result->set( "jsConstants", JSON::String::Create( m_jsConstants ) );
       return result;
+    }
+
+      
+    RC::ConstHandle<AST::GlobalVector> Inst::getAST() const
+    {
+      return m_ast;
     }
   };
 };

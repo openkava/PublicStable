@@ -55,7 +55,7 @@ namespace Fabric
       
     public:
     
-      static RC::Handle<Inst> Create( std::string const &name, std::string const &jsonDesc, std::vector<std::string> const &pluginDirs );
+      static RC::Handle<Inst> Create( std::string const &name, std::string const &jsonDesc, std::vector<std::string> const &pluginDirs, RC::Handle<CG::Manager> const &cgManager );
       
       std::string const &getJSONDesc() const
       {
@@ -72,15 +72,14 @@ namespace Fabric
         return m_code;
       }
       
-      void registerTypes( RC::Handle<RT::Manager> const &rtManager ) const;
-      void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder ) const;
+      RC::ConstHandle<AST::GlobalVector> getAST() const;
       void *llvmResolveExternalFunction( std::string const &name ) const;
 
       virtual RC::Handle<JSON::Object> jsonDesc() const;
       
     protected:
     
-      Inst( std::string const &name, std::string const &jsonDesc, std::vector<std::string> const &pluginDirs );
+      Inst( std::string const &name, std::string const &jsonDesc, std::vector<std::string> const &pluginDirs, RC::Handle<CG::Manager> const &cgManager );
       ~Inst();
       
     private:
@@ -99,7 +98,7 @@ namespace Fabric
       CG::Diagnostics m_diagnostics;
       ResolvedNameToSOLibHandleMap m_resolvedNameToSOLibHandleMap;
       std::vector<SOLibHandle> m_orderedSOLibHandles;
-      mutable Util::AutoPtr<ExternalFunctionMap> m_externalFunctionMap;
+      ExternalFunctionMap m_externalFunctionMap;
       //RC::Handle<LIB::Object> m_fabricLIBObject;
       //MethodMap m_methodMap;
       std::string m_jsConstants;

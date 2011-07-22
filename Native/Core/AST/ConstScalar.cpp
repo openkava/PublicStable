@@ -9,6 +9,7 @@
 #include <Fabric/Core/CG/ScalarAdapter.h>
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/CG/BasicBlockBuilder.h>
+#include <Fabric/Core/CG/ModuleBuilder.h>
 #include <Fabric/Base/JSON/String.h>
 #include <Fabric/Base/JSON/Scalar.h>
 
@@ -39,6 +40,12 @@ namespace Fabric
       return result;
     }
     
+    void ConstScalar::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    {
+      RC::ConstHandle<CG::ScalarAdapter> scalarAdapter = moduleBuilder.getManager()->getScalarAdapter();
+      scalarAdapter->llvmPrepareModule( moduleBuilder, true );
+    }
+    
     RC::ConstHandle<CG::Adapter> ConstScalar::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const
     {
       return basicBlockBuilder.getManager()->getScalarAdapter();
@@ -48,7 +55,7 @@ namespace Fabric
     {
       if ( usage == CG::USAGE_LVALUE )
         throw Exception( "constants cannot be used as l-values" );
-      RC::ConstHandle< CG::ScalarAdapter > scalarAdapter = basicBlockBuilder.getManager()->getScalarAdapter();
+      RC::ConstHandle<CG::ScalarAdapter> scalarAdapter = basicBlockBuilder.getManager()->getScalarAdapter();
       return CG::ExprValue( scalarAdapter, CG::USAGE_RVALUE, scalarAdapter->llvmConst( m_value ) );
     }
   };

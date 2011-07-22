@@ -31,6 +31,11 @@ namespace Fabric
       return result;
     }
     
+    void ConstDeclStatement::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    {
+      m_constDecl->llvmPrepareModule( moduleBuilder, diagnostics );
+    }
+    
     void ConstDeclStatement::llvmCompileToBuilder( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const
     {
       try

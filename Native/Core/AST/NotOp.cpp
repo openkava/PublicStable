@@ -32,6 +32,11 @@ namespace Fabric
       return result;
     }
     
+    void NotOp::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    {
+      m_child->llvmPrepareModule( moduleBuilder, diagnostics );
+    }
+    
     RC::ConstHandle<CG::Adapter> NotOp::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const
     {
       return basicBlockBuilder.getManager()->getBooleanAdapter();

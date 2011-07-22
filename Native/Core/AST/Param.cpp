@@ -57,20 +57,17 @@ namespace Fabric
     
     RC::ConstHandle<CG::Adapter> Param::getAdapter( RC::Handle<CG::Manager> const &cgManager ) const
     {
-      RC::ConstHandle<CG::Adapter> adapter = cgManager->maybeGetAdapter( m_type );
-      if ( !adapter )
-        throw CG::Error( getLocation(), _(m_type) + ": type not registered" );
-      return adapter;
+      return cgManager->getAdapter( m_type );
     }
     
     CG::ExprType Param::getExprType( RC::Handle<CG::Manager> const &cgManager ) const
     {
       return CG::ExprType( getAdapter( cgManager ), m_usage );
     }
-      
-    void Param::llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctionBodies ) const
+    
+    void Param::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
     {
-      moduleBuilder.getAdapter( m_type )->llvmPrepareModule( moduleBuilder, buildFunctionBodies );
+      moduleBuilder.getAdapter( m_type, getLocation() )->llvmPrepareModule( moduleBuilder, true );
     }
   };
 };

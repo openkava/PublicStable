@@ -49,14 +49,14 @@ namespace Fabric
         result->push_back( (*it)->toJSON() );
       return result;
     }
-          
-    void GlobalVector::registerTypes( RC::Handle<RT::Manager> const &rtManager, CG::Diagnostics &diagnostics ) const
+    
+    void GlobalVector::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
     {
       for ( const_iterator it=begin(); it!=end(); ++it )
       {
         try
         {
-          (*it)->registerTypes( rtManager, diagnostics );
+          (*it)->llvmPrepareModule( moduleBuilder, diagnostics );
         }
         catch ( CG::Error e )
         {
@@ -68,7 +68,16 @@ namespace Fabric
     void GlobalVector::llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctions ) const
     {
       for ( const_iterator it=begin(); it!=end(); ++it )
-        (*it)->llvmCompileToModule( moduleBuilder, diagnostics, buildFunctions );
+      {
+        try
+        {
+          (*it)->llvmCompileToModule( moduleBuilder, diagnostics, buildFunctions );
+        }
+        catch ( CG::Error e )
+        {
+          diagnostics.addError( e.getLocation(), e.getDesc() );
+        }
+      }
     }
   };
 };

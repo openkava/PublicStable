@@ -36,6 +36,8 @@ namespace Fabric
       static RC::Handle<VarDeclVector> Create( RC::ConstHandle<VarDecl> const &first, RC::ConstHandle<VarDeclVector> const &remaining );
 
       RC::Handle<JSON::Array> toJSON() const;
+      
+      void llvmPrepareModule( std::string const &baseType, CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
     
       void llvmCompileToBuilder( std::string const &baseType, CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const;
 

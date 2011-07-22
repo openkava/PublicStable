@@ -42,7 +42,7 @@ namespace Fabric
     {
     }
 
-    RC::ConstHandle<RT::Manager> Manager::getRTManager() const
+    RC::Handle<RT::Manager> Manager::getRTManager() const
     {
       return m_rtManager;
     }

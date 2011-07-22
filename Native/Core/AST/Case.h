@@ -16,6 +16,11 @@
 
 namespace Fabric
 {
+  namespace CG
+  {
+    class ModuleBuilder;
+  };
+  
   namespace AST
   {
     class Expr;
@@ -34,6 +39,8 @@ namespace Fabric
         );
 
       RC::Handle<JSON::Object> toJSON() const;
+      
+      virtual void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
 
       RC::ConstHandle<Expr> getExpr() const;
       RC::ConstHandle<StatementVector> getStatements() const;

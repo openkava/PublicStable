@@ -30,6 +30,12 @@ namespace Fabric
       result->set( "type", JSON::String::Create( m_type ) );
       return result;
     }
+    
+    void MemberDecl::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    {
+      RC::ConstHandle<CG::Adapter> adapter = moduleBuilder.getAdapter( m_type, getLocation() );
+      adapter->llvmPrepareModule( moduleBuilder, true );
+    }
 
     void MemberDecl::buildStructMemberInfo( RC::ConstHandle<RT::Manager> const &rtManager, RT::StructMemberInfo &structMemberInfo ) const
     {

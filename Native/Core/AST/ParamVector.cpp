@@ -82,11 +82,11 @@ namespace Fabric
         result.push_back( get(i)->getExprType( cgManager ) );
       return result;
     }
-      
-    void ParamVector::llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctionBodies ) const
+    
+    void ParamVector::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
     {
       for ( const_iterator it=begin(); it!=end(); ++it )
-        (*it)->llvmCompileToModule( moduleBuilder, diagnostics, buildFunctionBodies );
+        (*it)->llvmPrepareModule( moduleBuilder, diagnostics );
     }
   };
 };

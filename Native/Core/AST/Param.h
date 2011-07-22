@@ -22,7 +22,7 @@ namespace Fabric
 {
   namespace AST
   {
-    class Param: public Node
+    class Param : public Node
     {
       FABRIC_AST_NODE_DECL( Param );
 
@@ -55,8 +55,8 @@ namespace Fabric
       CG::FunctionParam getFunctionParam( RC::Handle<CG::Manager> const &cgManager ) const;
       RC::ConstHandle<CG::Adapter> getAdapter( RC::Handle<CG::Manager> const &cgManager ) const;
       CG::ExprType getExprType( RC::Handle<CG::Manager> const &cgManager ) const;
-      
-      void llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctionBodies ) const;
+
+      void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
 
     protected:
     

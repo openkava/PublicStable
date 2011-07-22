@@ -40,6 +40,11 @@ namespace Fabric
       result->set( "statements", m_statements->toJSON() );
       return result;
     }
+    
+    void CompoundStatement::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    {
+      m_statements->llvmPrepareModule( moduleBuilder, diagnostics );
+    }
 
     void CompoundStatement::llvmCompileToBuilder( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const
     {

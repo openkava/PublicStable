@@ -37,6 +37,12 @@ namespace Fabric
       return result;
     }
     
+    void IndexOp::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    {
+      m_expr->llvmPrepareModule( moduleBuilder, diagnostics );
+      m_indexExpr->llvmPrepareModule( moduleBuilder, diagnostics );
+    }
+    
     RC::ConstHandle<CG::Adapter> IndexOp::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const
     {
       RC::ConstHandle<CG::Adapter> exprType = m_expr->getType( basicBlockBuilder );

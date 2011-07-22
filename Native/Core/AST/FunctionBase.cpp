@@ -35,7 +35,8 @@ namespace Fabric
     {
       RC::Handle<JSON::Object> result = Global::toJSON();
       result->set( "returnExprType", JSON::String::Create( m_returnTypeName ) );
-      result->set( "body", m_body->toJSON() );
+      if ( m_body )
+        result->set( "body", m_body->toJSON() );
       return result;
     }
     
@@ -47,6 +48,21 @@ namespace Fabric
     std::string const *FunctionBase::getFriendlyName( RC::Handle<CG::Manager> const &cgManager ) const
     {
       return 0;
+    }
+    
+    void FunctionBase::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    {
+      if ( !m_returnTypeName.empty() )
+      {
+        RC::ConstHandle<CG::Adapter> returnAdapter = moduleBuilder.getAdapter( m_returnTypeName, getLocation() );
+        returnAdapter->llvmPrepareModule( moduleBuilder, true );
+      }
+
+      RC::ConstHandle<AST::ParamVector> params = getParams( moduleBuilder.getManager() );
+      params->llvmPrepareModule( moduleBuilder, diagnostics );
+      
+      if ( m_body )
+        m_body->llvmPrepareModule( moduleBuilder, diagnostics );
     }
     
     void FunctionBase::llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctionBodies ) const
@@ -61,16 +77,13 @@ namespace Fabric
         RC::ConstHandle<CG::Adapter> returnAdapter;
         if ( !m_returnTypeName.empty() )
         {
-          returnAdapter = moduleBuilder.maybeGetAdapter( m_returnTypeName );
-          if ( !returnAdapter )
-            throw CG::Error( getLocation(), "return type " + _(m_returnTypeName) + " not registered" );
+          returnAdapter = moduleBuilder.getAdapter( m_returnTypeName, getLocation() );
           returnAdapter->llvmPrepareModule( moduleBuilder, true );
         }
         
         CG::ExprType returnExprType( returnAdapter, CG::USAGE_RVALUE );
         std::string entryName = getEntryName( moduleBuilder.getManager() );
         RC::ConstHandle<AST::ParamVector> params = getParams( moduleBuilder.getManager() );
-        params->llvmCompileToModule( moduleBuilder, diagnostics, buildFunctionBodies );
         CG::FunctionBuilder functionBuilder( moduleBuilder, entryName, returnExprType, params->getFunctionParams( moduleBuilder.getManager() ), friendlyName );
         if ( buildFunctionBodies && m_body )
         {

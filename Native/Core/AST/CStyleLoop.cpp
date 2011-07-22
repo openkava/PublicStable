@@ -51,6 +51,20 @@ namespace Fabric
         result->set( "body", m_body->toJSON() );
       return result;
     }
+    
+    void CStyleLoop::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    {
+      if ( m_startStatement )
+        m_startStatement->llvmPrepareModule( moduleBuilder, diagnostics );
+      if ( m_preCondExpr )
+        m_preCondExpr->llvmPrepareModule( moduleBuilder, diagnostics );
+      if ( m_nextExpr )
+        m_nextExpr->llvmPrepareModule( moduleBuilder, diagnostics );
+      if ( m_postCondExpr )
+        m_postCondExpr->llvmPrepareModule( moduleBuilder, diagnostics );
+      if ( m_body )
+        m_body->llvmPrepareModule( moduleBuilder, diagnostics );
+    }
 
     void CStyleLoop::llvmCompileToBuilder( CG::BasicBlockBuilder &parentBasicBlockBuilder, CG::Diagnostics &diagnostics ) const
     {

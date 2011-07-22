@@ -59,6 +59,12 @@ namespace Fabric
       return functionSymbol;
     }
     
+    void MethodOp::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    {
+      m_expr->llvmPrepareModule( moduleBuilder, diagnostics );
+      m_args->llvmPrepareModule( moduleBuilder, diagnostics );
+    }
+    
     RC::ConstHandle<CG::Adapter> MethodOp::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const
     {
       return getFunctionSymbol( basicBlockBuilder )->getReturnInfo().getAdapter();

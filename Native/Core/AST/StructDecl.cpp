@@ -47,8 +47,11 @@ namespace Fabric
       return result;
     }
     
-    void StructDecl::registerTypes( RC::Handle<RT::Manager> const &rtManager, CG::Diagnostics &diagnostics ) const
+    void StructDecl::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
     {
+      m_members->llvmPrepareModule( moduleBuilder, diagnostics );
+
+      RC::Handle<RT::Manager> rtManager = moduleBuilder.getManager()->getRTManager();
       RT::StructMemberInfoVector structMemberInfoVector;
       m_members->buildStructMemberInfoVector( rtManager, structMemberInfoVector );
       try
@@ -63,7 +66,6 @@ namespace Fabric
 
     void StructDecl::llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctionBodies ) const
     {
-      moduleBuilder.getAdapter( m_name );
     }
   };
 };
