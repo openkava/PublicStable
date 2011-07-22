@@ -138,6 +138,9 @@ namespace Fabric
           byteCodeStream.flush();
 #endif
 
+          llvm::NoFramePointerElim = true;
+          llvm::JITExceptionHandling = true;
+
           std::string ir = m_irCache->get( m_sourceCode );
           if ( ir.length() > 0 )
           {
@@ -151,8 +154,6 @@ namespace Fabric
             return;
           }
           
-          llvm::NoFramePointerElim = true;
-          llvm::JITExceptionHandling = true;
           llvm::OwningPtr<llvm::PassManager> passManager( new llvm::PassManager );
           if ( optimize )
           {
