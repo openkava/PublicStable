@@ -31,9 +31,7 @@ namespace Fabric
     {
     public:
       
-      static RC::Handle<StatementVector> Create();
-      static RC::Handle<StatementVector> Create( RC::ConstHandle<Statement> const &first );
-      static RC::Handle<StatementVector> Create( RC::ConstHandle<Statement> const &first, RC::ConstHandle<StatementVector> const &remaining );
+      static RC::ConstHandle<StatementVector> Create( RC::ConstHandle<Statement> const &first = 0, RC::ConstHandle<StatementVector> const &remaining = 0 );
 
       RC::Handle<JSON::Array> toJSON() const;
       

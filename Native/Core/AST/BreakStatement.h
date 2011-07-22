@@ -21,10 +21,7 @@ namespace Fabric
       
     public:
 
-      static RC::Handle<BreakStatement> Create( CG::Location const &location )
-      {
-        return new BreakStatement( location );
-      }
+      static RC::ConstHandle<BreakStatement> Create( CG::Location const &location );
       
       virtual void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
       

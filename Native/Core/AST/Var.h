@@ -25,7 +25,7 @@ namespace Fabric
 
     public:
     
-      static RC::Handle<Var> Create( CG::Location const &location, std::string const &name )
+      static RC::ConstHandle<Var> Create( CG::Location const &location, std::string const &name )
       {
         return new Var( location, name );
       }

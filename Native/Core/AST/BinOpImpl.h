@@ -31,7 +31,7 @@ namespace Fabric
       
     public:
     
-      static RC::Handle<BinOpImpl> Create(
+      static RC::ConstHandle<BinOpImpl> Create(
         CG::Location const &location,
         std::string const &returnType,
         CG::BinOpType binOpType,

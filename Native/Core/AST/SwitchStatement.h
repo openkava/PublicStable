@@ -26,7 +26,7 @@ namespace Fabric
 
     public:
 
-      static RC::Handle<SwitchStatement> Create(
+      static RC::ConstHandle<SwitchStatement> Create(
         CG::Location const &location,
         RC::ConstHandle<Expr> const &expr,
         RC::ConstHandle<CaseVector> const &cases

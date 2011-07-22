@@ -18,10 +18,7 @@ namespace Fabric
 
     public:
 
-      static RC::Handle<ContinueStatement> Create( CG::Location const &location )
-      {
-        return new ContinueStatement( location );
-      }
+      static RC::ConstHandle<ContinueStatement> Create( CG::Location const &location );
       
       virtual void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
       

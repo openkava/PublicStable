@@ -21,15 +21,12 @@ namespace Fabric
 
     public:
 
-      static RC::Handle<ConditionalStatement> Create(
+      static RC::ConstHandle<ConditionalStatement> Create(
         CG::Location const &location,
         RC::ConstHandle<Expr> const &expr,
         RC::ConstHandle<Statement> const &trueStatement,
         RC::ConstHandle<Statement> const &falseStatement = RC::ConstHandle<Statement>()
-        )
-      {
-        return new ConditionalStatement( location, expr, trueStatement, falseStatement );
-      }
+        );
 
       RC::Handle<JSON::Object> toJSON() const;
       

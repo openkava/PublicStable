@@ -10,23 +10,16 @@ namespace Fabric
 {
   namespace AST
   {
-    RC::Handle<CaseVector> CaseVector::Create()
+    RC::ConstHandle<CaseVector> CaseVector::Create( RC::ConstHandle<Case> const &first, RC::ConstHandle<CaseVector> const &remaining )
     {
-      return new CaseVector;
-    }
-    
-    RC::Handle<CaseVector> CaseVector::Create( RC::ConstHandle<Case> const &first )
-    {
-      RC::Handle<CaseVector> result = Create();
-      result->push_back( first );
-      return result;
-    }
-    
-    RC::Handle<CaseVector> CaseVector::Create( RC::ConstHandle<Case> const &first, RC::ConstHandle<CaseVector> const &remaining )
-    {
-      RC::Handle<CaseVector> result = Create( first );
-      for ( const_iterator it=remaining->begin(); it!=remaining->end(); ++it )
-        result->push_back( *it );
+      CaseVector *result = new CaseVector;
+      if ( first )
+        result->push_back( first );
+      if ( remaining )
+      {
+        for ( const_iterator it=remaining->begin(); it!=remaining->end(); ++it )
+          result->push_back( *it );
+      }
       return result;
     }
     

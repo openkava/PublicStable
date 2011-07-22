@@ -24,7 +24,7 @@ namespace Fabric
 
     public:
 
-      static RC::Handle<CompoundStatement> Create(
+      static RC::ConstHandle<CompoundStatement> Create(
         CG::Location const &location,
         RC::ConstHandle<StatementVector> const &statements
         );

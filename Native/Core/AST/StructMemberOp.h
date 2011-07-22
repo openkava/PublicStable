@@ -20,7 +20,7 @@ namespace Fabric
 
     public:
         
-      static RC::Handle<StructMemberOp> Create( CG::Location const &location, RC::ConstHandle<Expr> const &structExpr, std::string const &memberName )
+      static RC::ConstHandle<StructMemberOp> Create( CG::Location const &location, RC::ConstHandle<Expr> const &structExpr, std::string const &memberName )
       {
         return new StructMemberOp( location, structExpr, memberName );
       }

@@ -21,7 +21,7 @@ namespace Fabric
 
     public:
 
-      static RC::Handle<ReturnStatement> Create( CG::Location const &location, RC::ConstHandle<Expr> const &expr = RC::ConstHandle<Expr>() )
+      static RC::ConstHandle<ReturnStatement> Create( CG::Location const &location, RC::ConstHandle<Expr> const &expr = RC::ConstHandle<Expr>() )
       {
         return new ReturnStatement( location, expr );
       }

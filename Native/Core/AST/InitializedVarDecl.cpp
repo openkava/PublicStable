@@ -19,7 +19,7 @@ namespace Fabric
   {
     FABRIC_AST_NODE_IMPL( InitializedVarDecl );
     
-    RC::Handle<InitializedVarDecl> InitializedVarDecl::Create(
+    RC::ConstHandle<InitializedVarDecl> InitializedVarDecl::Create(
       CG::Location const &location,
       std::string const &name,
       std::string const &arrayModifier,

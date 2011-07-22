@@ -19,7 +19,7 @@ namespace Fabric
   {
     FABRIC_AST_NODE_IMPL( ConstScalar );
     
-    RC::Handle<ConstScalar> ConstScalar::Create( CG::Location const &location, std::string const &valueString )
+    RC::ConstHandle<ConstScalar> ConstScalar::Create( CG::Location const &location, std::string const &valueString )
     {
       float value;
       if ( sscanf( valueString.c_str(), "%f", &value ) != 1 )

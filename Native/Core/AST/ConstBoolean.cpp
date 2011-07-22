@@ -19,6 +19,11 @@ namespace Fabric
   {
     FABRIC_AST_NODE_IMPL( ConstBoolean );
     
+    RC::ConstHandle<ConstBoolean> ConstBoolean::Create( CG::Location const &location, bool value )
+    {
+      return new ConstBoolean( location, value );
+    }
+    
     ConstBoolean::ConstBoolean( CG::Location const &location, bool value )
       : Expr( location )
       , m_value( value )

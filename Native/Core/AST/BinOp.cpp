@@ -21,6 +21,11 @@ namespace Fabric
   {
     FABRIC_AST_NODE_IMPL( BinOp );
     
+    RC::ConstHandle<BinOp> BinOp::Create( CG::Location const &location, CG::BinOpType binOpType, RC::ConstHandle<Expr> const &left, RC::ConstHandle<Expr> const &right )
+    {
+      return new BinOp( location, binOpType, left, right );
+    }
+
     BinOp::BinOp( CG::Location const &location, CG::BinOpType binOpType, RC::ConstHandle<Expr> const &left, RC::ConstHandle<Expr> const &right )
       : Expr( location )
       , m_binOpType( binOpType )

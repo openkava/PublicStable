@@ -18,7 +18,7 @@ namespace Fabric
   {
     FABRIC_AST_NODE_IMPL( Param );
     
-    RC::Handle<Param> Param::Create(
+    RC::ConstHandle<Param> Param::Create(
       CG::Location const &location,
       std::string const &name,
       std::string const &type,

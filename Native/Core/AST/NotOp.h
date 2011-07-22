@@ -20,7 +20,7 @@ namespace Fabric
 
     public:
         
-      static RC::Handle<NotOp> Create( CG::Location const &location, RC::ConstHandle<Expr> const &child )
+      static RC::ConstHandle<NotOp> Create( CG::Location const &location, RC::ConstHandle<Expr> const &child )
       {
         return new NotOp( location, child );
       }

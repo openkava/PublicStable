@@ -94,7 +94,7 @@ namespace Fabric
       std::string m_jsonDesc;
       Desc m_desc;
       std::string m_code;
-      RC::Handle<AST::GlobalVector> m_ast;
+      RC::ConstHandle<AST::GlobalVector> m_ast;
       CG::Diagnostics m_diagnostics;
       ResolvedNameToSOLibHandleMap m_resolvedNameToSOLibHandleMap;
       std::vector<SOLibHandle> m_orderedSOLibHandles;

@@ -15,6 +15,11 @@ namespace Fabric
   {
     FABRIC_AST_NODE_IMPL( ExprStatement );
     
+    RC::ConstHandle<ExprStatement> ExprStatement::Create( CG::Location const &location, RC::ConstHandle<Expr> const &expr )
+    {
+      return new ExprStatement( location, expr );
+    }
+    
     ExprStatement::ExprStatement( CG::Location const &location, RC::ConstHandle<Expr> const &expr )
       : Statement( location )
       , m_expr( expr )

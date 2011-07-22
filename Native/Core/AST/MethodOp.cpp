@@ -13,7 +13,7 @@ namespace Fabric
   {
     FABRIC_AST_NODE_IMPL( MethodOp );
     
-    RC::Handle<MethodOp> MethodOp::Create(
+    RC::ConstHandle<MethodOp> MethodOp::Create(
       CG::Location const &location,
       std::string const &name,
       RC::ConstHandle<Expr> const &expr,

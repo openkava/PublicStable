@@ -29,7 +29,7 @@ namespace Fabric
 
     public:
     
-      static RC::Handle<MemberDecl> Create( CG::Location const &location, std::string const &name, std::string const &typeName )
+      static RC::ConstHandle<MemberDecl> Create( CG::Location const &location, std::string const &name, std::string const &typeName )
       {
         return new MemberDecl( location, name, typeName );
       }

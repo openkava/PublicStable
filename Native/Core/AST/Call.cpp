@@ -20,7 +20,7 @@ namespace Fabric
   {
     FABRIC_AST_NODE_IMPL( Call );
     
-    RC::Handle<Call> Call::Create(
+    RC::ConstHandle<Call> Call::Create(
       CG::Location const &location,
       std::string const &name,
       RC::ConstHandle<ExprVector> const &args

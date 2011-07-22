@@ -32,7 +32,7 @@ namespace Fabric
 
     public:
     
-      static RC::Handle<Case> Create(
+      static RC::ConstHandle<Case> Create(
         CG::Location const &location,
         RC::ConstHandle<Expr> const &expr,
         RC::ConstHandle<StatementVector> const &statements

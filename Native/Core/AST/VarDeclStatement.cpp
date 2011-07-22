@@ -17,7 +17,7 @@ namespace Fabric
   {
     FABRIC_AST_NODE_IMPL( VarDeclStatement );
     
-    RC::Handle<VarDeclStatement> VarDeclStatement::Create(
+    RC::ConstHandle<VarDeclStatement> VarDeclStatement::Create(
       CG::Location const &location,
       std::string const &baseType,
       RC::ConstHandle<VarDeclVector> const &varDecls

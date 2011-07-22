@@ -25,7 +25,7 @@ namespace Fabric
   {
     FABRIC_AST_NODE_IMPL( ConstDecl );
 
-    RC::Handle<ConstDecl> ConstDecl::Create(
+    RC::ConstHandle<ConstDecl> ConstDecl::Create(
       CG::Location const &location,
       std::string const &name,
       std::string const &type,

@@ -17,6 +17,11 @@ namespace Fabric
   {
     FABRIC_AST_NODE_IMPL( AndOp );
     
+    RC::ConstHandle<AndOp> AndOp::Create( CG::Location const &location, RC::ConstHandle<Expr> const &left, RC::ConstHandle<Expr> const &right )
+    {
+      return new AndOp( location, left, right );
+    }
+
     AndOp::AndOp( CG::Location const &location, RC::ConstHandle<Expr> const &left, RC::ConstHandle<Expr> const &right )
       : Expr( location )
       , m_left( left )

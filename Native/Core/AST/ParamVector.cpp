@@ -10,19 +10,7 @@ namespace Fabric
 {
   namespace AST
   {
-    RC::Handle<ParamVector> ParamVector::Create()
-    {
-      return new ParamVector;
-    }
-    
-    RC::Handle<ParamVector> ParamVector::Create( RC::ConstHandle<Param> const &firstParam )
-    {
-      ParamVector *result = new ParamVector;
-      result->push_back( firstParam );
-      return result;
-    }
-    
-    RC::Handle<ParamVector> ParamVector::Create( RC::ConstHandle<Param> const &firstParam, RC::ConstHandle<Param> const &secondParam )
+    RC::ConstHandle<ParamVector> ParamVector::Create( RC::ConstHandle<Param> const &firstParam, RC::ConstHandle<Param> const &secondParam )
     {
       ParamVector *result = new ParamVector;
       result->push_back( firstParam );
@@ -30,12 +18,16 @@ namespace Fabric
       return result;
     }
     
-    RC::Handle<ParamVector> ParamVector::Create( RC::ConstHandle<Param> const &firstParam, RC::ConstHandle<ParamVector> const &remainingParams )
+    RC::ConstHandle<ParamVector> ParamVector::Create( RC::ConstHandle<Param> const &firstParam, RC::ConstHandle<ParamVector> const &remainingParams )
     {
       ParamVector *result = new ParamVector;
-      result->push_back( firstParam );
-      for ( size_t i=0; i<remainingParams->size(); ++i )
-        result->push_back( remainingParams->get(i) );
+      if ( firstParam )
+        result->push_back( firstParam );
+      if ( remainingParams )
+      {
+        for ( size_t i=0; i<remainingParams->size(); ++i )
+          result->push_back( remainingParams->get(i) );
+      }
       return result;
     }
     

@@ -15,7 +15,7 @@ namespace Fabric
   {
     FABRIC_AST_NODE_IMPL( Function );
     
-    RC::Handle<Function> Function::Create(
+    RC::ConstHandle<Function> Function::Create(
       CG::Location const &location,
       std::string const &friendlyName,
       std::string const &entryName,
@@ -27,7 +27,7 @@ namespace Fabric
       return new Function( location, friendlyName, entryName, returnTypeName, params, body );
     }
     
-    RC::Handle<Function> Function::Create(
+    RC::ConstHandle<Function> Function::Create(
       CG::Location const &location,
       std::string const &friendlyName,
       std::string const *entryName,

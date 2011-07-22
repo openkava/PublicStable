@@ -26,7 +26,7 @@ namespace Fabric
 
     public:
     
-      static RC::Handle<UniOp> Create( CG::Location const &location, CG::UniOpType uniOpType, RC::ConstHandle<Expr> const &child )
+      static RC::ConstHandle<UniOp> Create( CG::Location const &location, CG::UniOpType uniOpType, RC::ConstHandle<Expr> const &child )
       {
         return new UniOp( location, uniOpType, child );
       }

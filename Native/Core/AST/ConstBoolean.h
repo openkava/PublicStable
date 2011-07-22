@@ -20,10 +20,7 @@ namespace Fabric
 
     public:
     
-      static RC::Handle<ConstBoolean> Create( CG::Location const &location, bool value )
-      {
-        return new ConstBoolean( location, value );
-      }
+      static RC::ConstHandle<ConstBoolean> Create( CG::Location const &location, bool value );
 
       RC::Handle<JSON::Object> toJSON() const;
       

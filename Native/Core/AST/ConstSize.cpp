@@ -20,7 +20,7 @@ namespace Fabric
   {
     FABRIC_AST_NODE_IMPL( ConstSize );
     
-    RC::Handle<ConstSize> ConstSize::Create( CG::Location const &location, std::string const &valueString )
+    RC::ConstHandle<ConstSize> ConstSize::Create( CG::Location const &location, std::string const &valueString )
     {
       return new ConstSize( location, Util::parseSize( valueString ) );
     }

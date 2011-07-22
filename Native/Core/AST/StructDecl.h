@@ -24,7 +24,7 @@ namespace Fabric
 
     public:
 
-      static RC::Handle<StructDecl> Create(
+      static RC::ConstHandle<StructDecl> Create(
         CG::Location const &location,
         std::string const &name,
         RC::ConstHandle<MemberDeclVector> const &members

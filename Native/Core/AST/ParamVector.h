@@ -39,10 +39,8 @@ namespace Fabric
     {
     public:
       
-      static RC::Handle<ParamVector> Create();
-      static RC::Handle<ParamVector> Create( RC::ConstHandle<Param> const &firstParam );
-      static RC::Handle<ParamVector> Create( RC::ConstHandle<Param> const &firstParam, RC::ConstHandle<Param> const &secondParam );
-      static RC::Handle<ParamVector> Create( RC::ConstHandle<Param> const &firstParam, RC::ConstHandle<ParamVector> const &remainingParams );
+      static RC::ConstHandle<ParamVector> Create( RC::ConstHandle<Param> const &firstParam = 0, RC::ConstHandle<ParamVector> const &remainingParams = 0 );
+      static RC::ConstHandle<ParamVector> Create( RC::ConstHandle<Param> const &firstParam, RC::ConstHandle<Param> const &secondParam );
 
       RC::Handle<JSON::Array> toJSON() const;
     

@@ -81,7 +81,7 @@ namespace Fabric
 #if defined(FABRIC_BUILD_DEBUG)
       std::string m_byteCode;
 #endif
-      RC::Handle<AST::GlobalVector> m_ast;
+      RC::ConstHandle<AST::GlobalVector> m_ast;
       CG::Diagnostics m_diagnostics;
       RC::ConstHandle<ExecutionEngine> m_executionEngine;
       

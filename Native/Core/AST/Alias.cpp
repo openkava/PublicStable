@@ -16,6 +16,15 @@ namespace Fabric
   {
     FABRIC_AST_NODE_IMPL( Alias );
     
+    RC::ConstHandle<Alias> Alias::Create(
+      CG::Location const &location,
+      std::string const &name,
+      std::string const &adapterName
+      )
+    {
+      return new Alias( location, name, adapterName );
+    }
+
     Alias::Alias(
       CG::Location const &location,
       std::string const &name,

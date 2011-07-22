@@ -20,7 +20,7 @@ namespace Fabric
 
     public:
         
-      static RC::Handle<IndexOp> Create(
+      static RC::ConstHandle<IndexOp> Create(
         CG::Location const &location,
         RC::ConstHandle<Expr> const &expr,
         RC::ConstHandle<Expr> const &indexExpr

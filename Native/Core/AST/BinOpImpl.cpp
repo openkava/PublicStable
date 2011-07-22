@@ -17,7 +17,7 @@ namespace Fabric
   {
     FABRIC_AST_NODE_IMPL( BinOpImpl );
     
-    RC::Handle<BinOpImpl> BinOpImpl::Create(
+    RC::ConstHandle<BinOpImpl> BinOpImpl::Create(
       CG::Location const &location,
       std::string const &returnType,
       CG::BinOpType binOpType,

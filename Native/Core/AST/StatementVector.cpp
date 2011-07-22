@@ -11,23 +11,16 @@ namespace Fabric
 {
   namespace AST
   {
-    RC::Handle<StatementVector> StatementVector::Create()
+    RC::ConstHandle<StatementVector> StatementVector::Create( RC::ConstHandle<Statement> const &first, RC::ConstHandle<StatementVector> const &remaining )
     {
-      return new StatementVector;
-    }
-    
-    RC::Handle<StatementVector> StatementVector::Create( RC::ConstHandle<Statement> const &first )
-    {
-      RC::Handle<StatementVector> result = Create();
-      result->push_back( first );
-      return result;
-    }
-    
-    RC::Handle<StatementVector> StatementVector::Create( RC::ConstHandle<Statement> const &first, RC::ConstHandle<StatementVector> const &remaining )
-    {
-      RC::Handle<StatementVector> result = Create( first );
-      for ( StatementVector::const_iterator it=remaining->begin(); it!=remaining->end(); ++it )
-        result->push_back( *it );
+      StatementVector *result = new StatementVector;
+      if ( first )
+        result->push_back( first );
+      if ( remaining )
+      {
+        for ( StatementVector::const_iterator it=remaining->begin(); it!=remaining->end(); ++it )
+          result->push_back( *it );
+      }
       return result;
     }
     

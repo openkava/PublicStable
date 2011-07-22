@@ -23,7 +23,7 @@ namespace Fabric
 
     public:
       
-      static RC::Handle<TernaryOp> Create( CG::Location const &location, CG::TernaryOpType opType, RC::ConstHandle<Expr> const &left, RC::ConstHandle<Expr> const &middle, RC::ConstHandle<Expr> const &right )
+      static RC::ConstHandle<TernaryOp> Create( CG::Location const &location, CG::TernaryOpType opType, RC::ConstHandle<Expr> const &left, RC::ConstHandle<Expr> const &middle, RC::ConstHandle<Expr> const &right )
       {
         return new TernaryOp( location, opType, left, middle, right );
       }

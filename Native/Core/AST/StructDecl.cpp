@@ -19,7 +19,7 @@ namespace Fabric
   {
     FABRIC_AST_NODE_IMPL( StructDecl );
     
-    RC::Handle<StructDecl> StructDecl::Create(
+    RC::ConstHandle<StructDecl> StructDecl::Create(
       CG::Location const &location,
       std::string const &name,
       RC::ConstHandle<MemberDeclVector> const &members

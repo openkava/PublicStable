@@ -19,6 +19,18 @@ namespace Fabric
   {
     FABRIC_AST_NODE_IMPL( CStyleLoop );
     
+    RC::ConstHandle<CStyleLoop> CStyleLoop::Create(
+      CG::Location const &location,
+      RC::ConstHandle<Statement> const &startStatement,
+      RC::ConstHandle<Expr> const &preCondExpr,
+      RC::ConstHandle<Expr> const &nextExpr,
+      RC::ConstHandle<Expr> const &postCondExpr,
+      RC::ConstHandle<Statement> const &body
+      )
+    {
+      return new CStyleLoop( location, startStatement, preCondExpr, nextExpr, postCondExpr, body );
+    }
+    
     CStyleLoop::CStyleLoop(
         CG::Location const &location,
         RC::ConstHandle<Statement> const &startStatement,

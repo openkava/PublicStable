@@ -27,7 +27,7 @@ namespace Fabric
 
     public:
         
-      static RC::Handle<MethodOp> Create(
+      static RC::ConstHandle<MethodOp> Create(
         CG::Location const &location,
         std::string const &name,
         RC::ConstHandle<Expr> const &expr,

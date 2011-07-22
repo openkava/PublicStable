@@ -201,17 +201,13 @@ void handleFile( FILE *fp, unsigned int runFlags )
   cgManager->llvmPrepareModule( moduleBuilder );
   OCL::llvmPrepareModule( moduleBuilder, rtManager );
   
-  RC::Handle<AST::GlobalVector> globalList;
-  KL::Parse( scanner, diagnostics, globalList );
+  RC::ConstHandle<AST::GlobalVector> globalList = KL::Parse( scanner, diagnostics );
 
   if ( diagnostics.containsError() )
   {
     dumpDiagnostics( diagnostics );
     return;
   }
-
-  // [pzion 20110213] This is a horrible hack... it exists for types that are "created" when parsing the tree.
-  cgManager->llvmPrepareModule( moduleBuilder );
   
   if ( runFlags & RF_ShowAST )
   {

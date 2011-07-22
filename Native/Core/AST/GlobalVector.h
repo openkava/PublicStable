@@ -35,14 +35,11 @@ namespace Fabric
     {
     public:
       
-      static RC::Handle<GlobalVector> Create();
-      static RC::Handle<GlobalVector> Create( RC::ConstHandle<Global> const &first );
-      static RC::Handle<GlobalVector> Create( RC::ConstHandle<Global> const &first, RC::ConstHandle<GlobalVector> const &remaining );
+      static RC::ConstHandle<GlobalVector> Create( RC::ConstHandle<Global> const &first = 0, RC::ConstHandle<GlobalVector> const &remaining = 0 );
+      static RC::ConstHandle<GlobalVector> Create( RC::ConstHandle<GlobalVector> const &lhs, RC::ConstHandle<GlobalVector> const &rhs );
 
       RC::Handle<JSON::Array> toJSON() const;
 
-      void append( RC::ConstHandle<GlobalVector> const &other );
-      
       void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
           
       void llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctions ) const;

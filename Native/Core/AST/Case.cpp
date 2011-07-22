@@ -18,7 +18,7 @@ namespace Fabric
   {
     FABRIC_AST_NODE_IMPL( Case );
     
-    RC::Handle<Case> Case::Create(
+    RC::ConstHandle<Case> Case::Create(
         CG::Location const &location,
         RC::ConstHandle<Expr> const &expr,
         RC::ConstHandle<StatementVector> const &statements

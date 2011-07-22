@@ -20,11 +20,16 @@ namespace Fabric
   {
     FABRIC_AST_NODE_IMPL( AssignOp );
     
+    RC::ConstHandle<AssignOp> AssignOp::Create( CG::Location const &location, CG::AssignOpType assignOpType, RC::ConstHandle<Expr> const &left, RC::ConstHandle<Expr> const &right )
+    {
+      return new AssignOp( location, assignOpType, left, right );
+    }
+    
     AssignOp::AssignOp( CG::Location const &location, CG::AssignOpType assignOpType, RC::ConstHandle<Expr> const &left, RC::ConstHandle<Expr> const &right )
-    : Expr( location )
-    , m_assignOpType( assignOpType )
-    , m_left( left )
-    , m_right( right )
+      : Expr( location )
+      , m_assignOpType( assignOpType )
+      , m_left( left )
+      , m_right( right )
     {
     }
     

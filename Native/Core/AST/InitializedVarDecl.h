@@ -23,7 +23,7 @@ namespace Fabric
 
     public:
 
-      static RC::Handle<InitializedVarDecl> Create(
+      static RC::ConstHandle<InitializedVarDecl> Create(
         CG::Location const &location,
         std::string const &name,
         std::string const &arrayModifier,

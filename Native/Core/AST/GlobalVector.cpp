@@ -12,30 +12,27 @@ namespace Fabric
 {
   namespace AST
   {
-    RC::Handle<GlobalVector> GlobalVector::Create()
+    RC::ConstHandle<GlobalVector> GlobalVector::Create( RC::ConstHandle<Global> const &first, RC::ConstHandle<GlobalVector> const &remaining )
     {
-      return new GlobalVector;
-    }
-    
-    RC::Handle<GlobalVector> GlobalVector::Create( RC::ConstHandle<Global> const &first )
-    {
-      RC::Handle<GlobalVector> result = Create();
-      result->push_back( first );
+      GlobalVector *result = new GlobalVector;
+      if ( first )
+        result->push_back( first );
+      if ( remaining )
+      {
+        for ( GlobalVector::const_iterator it=remaining->begin(); it!=remaining->end(); ++it )
+          result->push_back( *it );
+      }
       return result;
     }
     
-    RC::Handle<GlobalVector> GlobalVector::Create( RC::ConstHandle<Global> const &first, RC::ConstHandle<GlobalVector> const &remaining )
+    RC::ConstHandle<GlobalVector> GlobalVector::Create( RC::ConstHandle<GlobalVector> const &lhs, RC::ConstHandle<GlobalVector> const &rhs )
     {
-      RC::Handle<GlobalVector> result = Create( first );
-      for ( GlobalVector::const_iterator it=remaining->begin(); it!=remaining->end(); ++it )
+      GlobalVector *result = new GlobalVector;
+      for ( GlobalVector::const_iterator it=lhs->begin(); it!=lhs->end(); ++it )
+        result->push_back( *it );
+      for ( GlobalVector::const_iterator it=rhs->begin(); it!=rhs->end(); ++it )
         result->push_back( *it );
       return result;
-    }
-
-    void GlobalVector::append( RC::ConstHandle<GlobalVector> const &other )
-    {
-      for ( GlobalVector::const_iterator it=other->begin(); it!=other->end(); ++it )
-        push_back( *it );
     }
     
     GlobalVector::GlobalVector()

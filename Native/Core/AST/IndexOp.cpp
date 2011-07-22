@@ -13,7 +13,7 @@ namespace Fabric
   {
     FABRIC_AST_NODE_IMPL( IndexOp );
     
-    RC::Handle<IndexOp> IndexOp::Create(
+    RC::ConstHandle<IndexOp> IndexOp::Create(
       CG::Location const &location,
       RC::ConstHandle<Expr> const &expr,
       RC::ConstHandle<Expr> const &indexExpr

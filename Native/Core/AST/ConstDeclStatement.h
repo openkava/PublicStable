@@ -26,13 +26,10 @@ namespace Fabric
 
     public:
 
-      static RC::Handle<ConstDeclStatement> Create(
+      static RC::ConstHandle<ConstDeclStatement> Create(
         CG::Location const &location,
         RC::ConstHandle<ConstDecl> const &constDecl
-        )
-      {
-        return new ConstDeclStatement( location, constDecl );
-      }
+        );
 
       RC::Handle<JSON::Object> toJSON() const;
       

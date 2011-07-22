@@ -13,23 +13,16 @@ namespace Fabric
 {
   namespace AST
   {
-    RC::Handle<ExprVector> ExprVector::Create()
+    RC::ConstHandle<ExprVector> ExprVector::Create( RC::ConstHandle<Expr> const &first, RC::ConstHandle<ExprVector> const &remaining )
     {
-      return new ExprVector;
-    }
-    
-    RC::Handle<ExprVector> ExprVector::Create( RC::ConstHandle<Expr> const &first )
-    {
-      RC::Handle<ExprVector> result = Create();
-      result->push_back( first );
-      return result;
-    }
-    
-    RC::Handle<ExprVector> ExprVector::Create( RC::ConstHandle<Expr> const &first, RC::ConstHandle<ExprVector> const &remaining )
-    {
-      RC::Handle<ExprVector> result = Create( first );
-      for ( ExprVector::const_iterator it=remaining->begin(); it!=remaining->end(); ++it )
-        result->push_back( *it );
+      ExprVector *result = new ExprVector;
+      if ( first )
+        result->push_back( first );
+      if ( remaining )
+      {
+        for ( ExprVector::const_iterator it=remaining->begin(); it!=remaining->end(); ++it )
+          result->push_back( *it );
+      }
       return result;
     }
     

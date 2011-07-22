@@ -18,7 +18,7 @@ namespace Fabric
   {
     FABRIC_AST_NODE_IMPL( ConstString );
     
-    RC::Handle<ConstString> ConstString::Create( CG::Location const &location, std::string const &value )
+    RC::ConstHandle<ConstString> ConstString::Create( CG::Location const &location, std::string const &value )
     {
       return new ConstString( location, value );
     }

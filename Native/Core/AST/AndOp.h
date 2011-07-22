@@ -25,10 +25,7 @@ namespace Fabric
       
     public:
         
-      static RC::Handle<AndOp> Create( CG::Location const &location, RC::ConstHandle<Expr> const &left, RC::ConstHandle<Expr> const &right )
-      {
-        return new AndOp( location, left, right );
-      }
+      static RC::ConstHandle<AndOp> Create( CG::Location const &location, RC::ConstHandle<Expr> const &left, RC::ConstHandle<Expr> const &right );
 
       RC::Handle<JSON::Object> toJSON() const;
       

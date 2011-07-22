@@ -21,7 +21,7 @@ namespace Fabric
       
     public:
     
-      static RC::Handle<AssignedVarDecl> Create(
+      static RC::ConstHandle<AssignedVarDecl> Create(
         CG::Location const &location,
         std::string const &name,
         std::string const &arrayModifier,

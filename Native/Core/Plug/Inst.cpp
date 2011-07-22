@@ -95,8 +95,7 @@ namespace Fabric
 
       RC::ConstHandle<KL::Source> source = KL::StringSource::Create( m_code );
       RC::Handle<KL::Scanner> scanner = KL::Scanner::Create( source );
-      m_ast = 0;
-      KL::Parse( scanner, m_diagnostics, m_ast );
+      m_ast = KL::Parse( scanner, m_diagnostics );
       for ( CG::Diagnostics::const_iterator it=m_diagnostics.begin(); it!=m_diagnostics.end(); ++it )
       {
         CG::Location const &location = it->first;

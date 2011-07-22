@@ -25,7 +25,7 @@ namespace Fabric
   {
     FABRIC_AST_NODE_IMPL( SwitchStatement );
     
-    RC::Handle<SwitchStatement> SwitchStatement::Create(
+    RC::ConstHandle<SwitchStatement> SwitchStatement::Create(
       CG::Location const &location,
       RC::ConstHandle<Expr> const &expr,
       RC::ConstHandle<CaseVector> const &cases

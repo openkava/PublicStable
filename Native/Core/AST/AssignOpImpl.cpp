@@ -18,7 +18,7 @@ namespace Fabric
   {
     FABRIC_AST_NODE_IMPL( AssignOpImpl );
     
-    RC::Handle<AssignOpImpl> AssignOpImpl::Create(
+    RC::ConstHandle<AssignOpImpl> AssignOpImpl::Create(
       CG::Location const &location,
       std::string const &selfType,
       CG::AssignOpType assignOpType,

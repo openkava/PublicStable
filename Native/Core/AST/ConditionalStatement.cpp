@@ -19,6 +19,16 @@ namespace Fabric
   {
     FABRIC_AST_NODE_IMPL( ConditionalStatement );
     
+    RC::ConstHandle<ConditionalStatement> ConditionalStatement::Create(
+      CG::Location const &location,
+      RC::ConstHandle<Expr> const &expr,
+      RC::ConstHandle<Statement> const &trueStatement,
+      RC::ConstHandle<Statement> const &falseStatement
+      )
+    {
+      return new ConditionalStatement( location, expr, trueStatement, falseStatement );
+    }
+
     ConditionalStatement::ConditionalStatement(
       CG::Location const &location,
       RC::ConstHandle<Expr> const &expr,

@@ -20,12 +20,7 @@ namespace Fabric
 
     public:
     
-      static RC::Handle<ConstSize> Create( CG::Location const &location, size_t value )
-      {
-        return new ConstSize( location, value );
-      }
-
-      static RC::Handle<ConstSize> Create( CG::Location const &location, std::string const &valueString );
+      static RC::ConstHandle<ConstSize> Create( CG::Location const &location, std::string const &valueString );
 
       RC::Handle<JSON::Object> toJSON() const;
       

@@ -57,7 +57,7 @@ namespace Fabric
         return m_nameToInstMap;
       }
       
-      RC::Handle<AST::GlobalVector> getAST() const;
+      RC::ConstHandle<AST::GlobalVector> getAST() const;
       void *llvmResolveExternalFunction( std::string const &name ) const;
 
       virtual RC::Handle<JSON::Object> jsonDesc() const;

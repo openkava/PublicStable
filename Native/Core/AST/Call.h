@@ -27,7 +27,7 @@ namespace Fabric
       
     public:
         
-      static RC::Handle<Call> Create(
+      static RC::ConstHandle<Call> Create(
         CG::Location const &location,
         std::string const &name,
         RC::ConstHandle<ExprVector> const &args

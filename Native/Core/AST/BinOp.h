@@ -26,10 +26,7 @@ namespace Fabric
       
     public:
         
-      static RC::Handle<BinOp> Create( CG::Location const &location, CG::BinOpType binOpType, RC::ConstHandle<Expr> const &left, RC::ConstHandle<Expr> const &right )
-      {
-        return new BinOp( location, binOpType, left, right );
-      }
+      static RC::ConstHandle<BinOp> Create( CG::Location const &location, CG::BinOpType binOpType, RC::ConstHandle<Expr> const &left, RC::ConstHandle<Expr> const &right );
 
       RC::Handle<JSON::Object> toJSON() const;
       

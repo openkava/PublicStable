@@ -20,7 +20,7 @@ namespace Fabric
 
     public:
         
-      static RC::Handle<OrOp> Create( CG::Location const &location, RC::ConstHandle<Expr> const &left, RC::ConstHandle<Expr> const &right )
+      static RC::ConstHandle<OrOp> Create( CG::Location const &location, RC::ConstHandle<Expr> const &left, RC::ConstHandle<Expr> const &right )
       {
         return new OrOp( location, left, right );
       }

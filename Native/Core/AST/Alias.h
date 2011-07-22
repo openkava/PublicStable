@@ -23,14 +23,11 @@ namespace Fabric
       
     public:
 
-      static RC::Handle<Alias> Create(
+      static RC::ConstHandle<Alias> Create(
         CG::Location const &location,
         std::string const &name,
         std::string const &adapterName
-        )
-      {
-        return new Alias( location, name, adapterName );
-      }
+        );
 
       RC::Handle<JSON::Object> toJSON() const;
       

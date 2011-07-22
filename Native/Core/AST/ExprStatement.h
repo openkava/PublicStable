@@ -21,10 +21,7 @@ namespace Fabric
 
     public:
 
-      static RC::Handle<ExprStatement> Create( CG::Location const &location, RC::ConstHandle<Expr> const &expr )
-      {
-        return new ExprStatement( location, expr );
-      }
+      static RC::ConstHandle<ExprStatement> Create( CG::Location const &location, RC::ConstHandle<Expr> const &expr );
 
       RC::Handle<JSON::Object> toJSON() const;
 

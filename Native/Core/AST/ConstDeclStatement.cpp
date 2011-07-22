@@ -15,6 +15,14 @@ namespace Fabric
   {
     FABRIC_AST_NODE_IMPL( ConstDeclStatement );
     
+    RC::ConstHandle<ConstDeclStatement> ConstDeclStatement::Create(
+      CG::Location const &location,
+      RC::ConstHandle<ConstDecl> const &constDecl
+      )
+    {
+      return new ConstDeclStatement( location, constDecl );
+    }
+
     ConstDeclStatement::ConstDeclStatement(
       CG::Location const &location,
       RC::ConstHandle<ConstDecl> const &constDecl

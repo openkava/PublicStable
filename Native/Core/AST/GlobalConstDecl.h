@@ -19,7 +19,7 @@ namespace Fabric
 
     public:
 
-      static RC::Handle<GlobalConstDecl> Create(
+      static RC::ConstHandle<GlobalConstDecl> Create(
         CG::Location const &location,
         RC::ConstHandle<ConstDecl> const &constDecl
         )

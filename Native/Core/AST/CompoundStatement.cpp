@@ -17,7 +17,7 @@ namespace Fabric
   {
     FABRIC_AST_NODE_IMPL( CompoundStatement );
     
-    RC::Handle<CompoundStatement> CompoundStatement::Create(
+    RC::ConstHandle<CompoundStatement> CompoundStatement::Create(
       CG::Location const &location,
       RC::ConstHandle<StatementVector> const &statements
       )

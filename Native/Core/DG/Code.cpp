@@ -86,15 +86,14 @@ namespace Fabric
       {
         RC::ConstHandle<RT::Desc> const &desc = topoSortedDescs[i];
         RC::ConstHandle<AST::GlobalVector> ast = RC::ConstHandle<AST::GlobalVector>::StaticCast( desc->getKLBindingsAST() );
-        if ( ast )
-          m_ast->append( ast );
+        m_ast = AST::GlobalVector::Create( m_ast, ast );
       }
-      m_ast->append( Plug::Manager::Instance()->getAST() );
+      m_ast = AST::GlobalVector::Create( m_ast, Plug::Manager::Instance()->getAST() );
 
       RC::ConstHandle<KL::Source> source = KL::StringSource::Create( m_sourceCode );
       RC::Handle<KL::Scanner> scanner = KL::Scanner::Create( source );
       Util::Timer timer;
-      KL::Parse( scanner, m_diagnostics, m_ast );
+      m_ast = AST::GlobalVector::Create( m_ast, KL::Parse( scanner, m_diagnostics ) );
       FABRIC_LOG( "KL::Parse: %fms", timer.getElapsedMS(true) );
       if ( !m_diagnostics.containsError() )
         compileAST( true );

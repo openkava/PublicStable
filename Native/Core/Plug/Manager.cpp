@@ -122,11 +122,11 @@ namespace Fabric
       return result;
     }
       
-    RC::Handle<AST::GlobalVector> Manager::getAST() const
+    RC::ConstHandle<AST::GlobalVector> Manager::getAST() const
     {
-      RC::Handle<AST::GlobalVector> result = AST::GlobalVector::Create();
+      RC::ConstHandle<AST::GlobalVector> result;
       for ( NameToInstMap::const_iterator it=m_nameToInstMap.begin(); it!=m_nameToInstMap.end(); ++it )
-        result->append( it->second->getAST() );
+        result = AST::GlobalVector::Create( result, it->second->getAST() );
       return result;
     }
     

@@ -12,23 +12,16 @@ namespace Fabric
 {
   namespace AST
   {
-    RC::Handle<MemberDeclVector> MemberDeclVector::Create()
+    RC::ConstHandle<MemberDeclVector> MemberDeclVector::Create( RC::ConstHandle<MemberDecl> const &first, RC::ConstHandle<MemberDeclVector> const &remaining )
     {
-      return new MemberDeclVector;
-    }
-    
-    RC::Handle<MemberDeclVector> MemberDeclVector::Create( RC::ConstHandle<MemberDecl> const &first )
-    {
-      RC::Handle<MemberDeclVector> result = Create();
-      result->push_back( first );
-      return result;
-    }
-    
-    RC::Handle<MemberDeclVector> MemberDeclVector::Create( RC::ConstHandle<MemberDecl> const &first, RC::Handle<MemberDeclVector> const &remaining )
-    {
-      RC::Handle<MemberDeclVector> result = Create( first );
-      for ( MemberDeclVector::const_iterator it=remaining->begin(); it!=remaining->end(); ++it )
-        result->push_back( *it );
+      MemberDeclVector *result = new MemberDeclVector;
+      if ( first )
+        result->push_back( first );
+      if ( remaining )
+      {
+        for ( MemberDeclVector::const_iterator it=remaining->begin(); it!=remaining->end(); ++it )
+          result->push_back( *it );
+      }
       return result;
     }
     
