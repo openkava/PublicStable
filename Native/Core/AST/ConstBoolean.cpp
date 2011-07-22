@@ -10,20 +10,26 @@
 #include <Fabric/Core/CG/BooleanAdapter.h>
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/CG/BasicBlockBuilder.h>
+#include <Fabric/Base/JSON/String.h>
+#include <Fabric/Base/JSON/Boolean.h>
 
 namespace Fabric
 {
   namespace AST
   {
+    FABRIC_AST_NODE_IMPL( ConstBoolean );
+    
     ConstBoolean::ConstBoolean( CG::Location const &location, bool value )
       : Expr( location )
       , m_value( value )
     {
     }
     
-    std::string ConstBoolean::localDesc() const
+    RC::Handle<JSON::Object> ConstBoolean::toJSON() const
     {
-      return "ConstBoolean( " + _(m_value) + " )";
+      RC::Handle<JSON::Object> result = Expr::toJSON();
+      result->set( "value", JSON::Boolean::Create( m_value ) );
+      return result;
     }
     
     RC::ConstHandle<CG::Adapter> ConstBoolean::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const

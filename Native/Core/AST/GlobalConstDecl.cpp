@@ -4,15 +4,17 @@
  
 #include "GlobalConstDecl.h"
 #include "ConstDecl.h"
-
 #include <Fabric/Core/CG/ModuleBuilder.h>
 #include <Fabric/Core/CG/Error.h>
 #include <Fabric/Core/CG/Manager.h>
+#include <Fabric/Base/JSON/String.h>
 
 namespace Fabric
 {
   namespace AST
   {
+    FABRIC_AST_NODE_IMPL( GlobalConstDecl );
+    
     GlobalConstDecl::GlobalConstDecl(
       CG::Location const &location,
       RC::ConstHandle<ConstDecl> const &constDecl
@@ -22,15 +24,11 @@ namespace Fabric
     {
     }
     
-    std::string GlobalConstDecl::localDesc() const
+    RC::Handle<JSON::Object> GlobalConstDecl::toJSON() const
     {
-      return "GlobalConstDecl";
-    }
-
-    std::string GlobalConstDecl::deepDesc( std::string const &indent ) const
-    {
-      return indent + localDesc() + "\n"
-        + m_constDecl->deepDesc( indent + "  " );
+      RC::Handle<JSON::Object> result = Global::toJSON();
+      result->set( "constDecl", m_constDecl->toJSON() );
+      return result;
     }
     
     void GlobalConstDecl::llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctionBodies ) const

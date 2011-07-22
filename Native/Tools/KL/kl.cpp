@@ -3,9 +3,11 @@
  */
  
 #include <stdio.h>
-#include <Fabric/Core/KL/Debug.h>
-#include <Fabric/Core/KL/Parse.h>
-#include <Fabric/Core/AST/GlobalList.h>
+#include <Fabric/Core/KL/Compiler.h>
+#include <Fabric/Core/KL/Parser.hpp>
+#include <Fabric/Core/KL/Scanner.h>
+#include <Fabric/Core/KL/StringSource.h>
+#include <Fabric/Core/AST/GlobalVector.h>
 #include <Fabric/Core/RT/Manager.h>
 #include <Fabric/Core/RT/ScalarDesc.h>
 #include <Fabric/Core/RT/StringDesc.h>
@@ -13,8 +15,14 @@
 #include <Fabric/Core/RT/OpaqueDesc.h>
 #include <Fabric/Core/MT/LogCollector.h>
 #include <Fabric/Core/CG/ModuleBuilder.h>
+#include <Fabric/Core/CG/Diagnostics.h>
+#include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/OCL/OCL.h>
 #include <Fabric/Core/OCL/Debug.h>
+#include <Fabric/Base/JSON/String.h>
+#include <Fabric/Base/JSON/Object.h>
+#include <Fabric/Base/JSON/Array.h>
+#include <Fabric/Base/JSON/Encode.h>
 
 #include <memory>
 
@@ -49,7 +57,8 @@ enum RunFlags
   RF_ShowBison   = 1 << 4,
   RF_ShowIR      = 1 << 5,
   RF_ShowOptIR   = 1 << 6,
-  RF_ShowOptASM	 = 1 << 7
+  RF_ShowOptASM	 = 1 << 7,
+  RF_ShowTokens	 = 1 << 8
 };
 
 
@@ -157,7 +166,27 @@ void handleFile( FILE *fp, unsigned int runFlags )
     if ( count < 16384 )
       break;
   }
+  
+  RC::ConstHandle<KL::Source> source = KL::StringSource::Create( sourceString );
+  if ( runFlags & RF_ShowTokens )
+  {
+    RC::Handle<KL::Scanner> scanner = KL::Scanner::Create( source );
+    for (;;)
+    {
+      KL::Token token = scanner->nextToken();
+      RC::Handle<JSON::Object> jsonObject = JSON::Object::Create();
+      jsonObject->set( "token", JSON::Integer::Create( token.getType() ) );
+      jsonObject->set( "value", JSON::String::Create( token.getSourceRange().toString() ) );
+      printf( "%s\n", JSON::encode( jsonObject ).c_str() );
+      if ( token.getType() == TOKEN_END )
+        break;
+    }
+  }
 
+  RC::Handle<KL::Scanner> scanner = KL::Scanner::Create( source );
+  CG::Diagnostics diagnostics;
+  RC::Handle<KL::Parser> parser = KL::Parser::Create( scanner, diagnostics );
+  
   llvm::CodeGenOpt::Level    optLevel = llvm::CodeGenOpt::Aggressive;
 
   
@@ -165,7 +194,7 @@ void handleFile( FILE *fp, unsigned int runFlags )
   llvm::InitializeAllAsmPrinters();
   //LLVMLinkInJIT();
 
-  RC::Handle<RT::Manager> rtManager = RT::Manager::Create();
+  RC::Handle<RT::Manager> rtManager = RT::Manager::Create( KL::Compiler::Create() );
   cgManager = CG::Manager::Create( rtManager );
   std::auto_ptr<llvm::Module> module( new llvm::Module( "kl", cgManager->getLLVMContext() ) );
 
@@ -173,11 +202,8 @@ void handleFile( FILE *fp, unsigned int runFlags )
   cgManager->llvmPrepareModule( moduleBuilder );
   OCL::llvmPrepareModule( moduleBuilder, rtManager );
   
-  Source source( sourceString.data(), sourceString.length() );
-  RC::Handle<AST::GlobalList> globalList;
-  CG::Diagnostics diagnostics;
+  RC::Handle<AST::GlobalVector> globalList = parser->run();
 
-  KL::Parse( source, cgManager, diagnostics, &globalList, !!( runFlags & RF_ShowBison ) );
   if ( diagnostics.containsError() )
   {
     dumpDiagnostics( diagnostics );
@@ -191,129 +217,137 @@ void handleFile( FILE *fp, unsigned int runFlags )
   {
     if ( runFlags & RF_Verbose )
       printf( "-- AST --\n" );
-    printf( "%s", globalList->deepDesc("").c_str() );
+    RC::ConstHandle<JSON::Value> globalListJSONValue = globalList->toJSON();
+    printf( "%s\n", JSON::encode( globalListJSONValue, true ).c_str() );
   }
 
   if( runFlags & (RF_ShowASM | RF_ShowIR | RF_ShowOptIR | RF_ShowOptASM | RF_Run) )
   {
-    globalList->llvmCompileToModule( moduleBuilder, diagnostics );
+    globalList->registerTypes( rtManager, diagnostics );
     dumpDiagnostics( diagnostics );
     if ( !diagnostics.containsError() )
     {   
-      if ( runFlags & RF_ShowIR )
-      {
-        if ( runFlags & RF_Verbose )
-          printf( "-- Unoptimized IR --\n" ); 
-        std::string irString;
-        llvm::raw_string_ostream byteCodeStream( irString );
-        module->print( byteCodeStream, 0 );
-        byteCodeStream.flush();
-        printf( "%s", irString.c_str() );
+      globalList->llvmCompileToModule( moduleBuilder, diagnostics, false );
+      if ( !diagnostics.containsError() )
+        globalList->llvmCompileToModule( moduleBuilder, diagnostics, true );
+      dumpDiagnostics( diagnostics );
+      if ( !diagnostics.containsError() )
+      {   
+        if ( runFlags & RF_ShowIR )
+        {
+          if ( runFlags & RF_Verbose )
+            printf( "-- Unoptimized IR --\n" ); 
+          std::string irString;
+          llvm::raw_string_ostream byteCodeStream( irString );
+          module->print( byteCodeStream, 0 );
+          byteCodeStream.flush();
+          printf( "%s", irString.c_str() );
+        }
+        
+        if( runFlags & RF_ShowASM )
+        {
+          std::string   errorStr;
+          std::string   targetTriple = llvm::sys::getHostTriple();
+          const llvm::Target *target = llvm::TargetRegistry::lookupTarget( targetTriple, errorStr );
+          if( !target )
+            throw Exception( errorStr );
+
+          llvm::TargetMachine *targetMachine = target->createTargetMachine( targetTriple, "" );
+          targetMachine->setAsmVerbosityDefault( true );
+
+          if ( runFlags & RF_Verbose )
+            printf( "-- Unoptimized %s assembly --\n", llvm::sys::getHostTriple().c_str() ); 
+
+          llvm::FunctionPassManager *functionPassManager = new llvm::FunctionPassManager( module.get() );
+          targetMachine->addPassesToEmitFile( 
+            *functionPassManager, llvm::fouts(), 
+            llvm::TargetMachine::CGFT_AssemblyFile, llvm::CodeGenOpt::Default );
+          functionPassManager->doInitialization();
+        
+          llvm::Module::FunctionListType &functionList = module->getFunctionList();
+          for ( llvm::Module::FunctionListType::iterator it=functionList.begin(); it!=functionList.end(); ++it )
+            functionPassManager->run( *it );
+
+          delete functionPassManager;
+        }
+
+        std::string errStr;
+        llvm::EngineBuilder builder( module.get() );
+        
+        builder.setErrorStr( &errStr );
+        builder.setEngineKind( llvm::EngineKind::JIT );
+        builder.setOptLevel( optLevel );
+
+        llvm::ExecutionEngine *executionEngine = builder.create();
+        if ( !executionEngine )
+          throw Fabric::Exception( "Failed to construct ExecutionEngine: " + errStr );
+        
+        executionEngine->InstallLazyFunctionCreator( &LazyFunctionCreator );
+        cgManager->llvmAddGlobalMappingsToExecutionEngine( executionEngine, *module );
+        
+        // Make sure we don't search loaded libraries for missing symbols. 
+        // Only symbols *we* provide should be available as calling functions.
+        executionEngine->DisableSymbolSearching( );
+
+        llvm::OwningPtr<llvm::PassManager> passManager( new llvm::PassManager );
+        passManager->add( llvm::createVerifierPass() );
+        llvm::createStandardFunctionPasses( passManager.get(), 2 );
+        llvm::createStandardModulePasses( passManager.get(), 2, false, true, true, true, false, llvm::createFunctionInliningPass() );
+        llvm::createStandardLTOPasses( passManager.get(), true, true, false );
+        passManager->run( *module );
+
+        if( runFlags & RF_ShowOptASM )
+        {
+          std::string   errorStr;
+          std::string   targetTriple = llvm::sys::getHostTriple();
+          const llvm::Target *target = llvm::TargetRegistry::lookupTarget( targetTriple, errorStr );
+          if( !target )
+            throw Exception( errorStr );
+
+          llvm::TargetMachine *targetMachine = target->createTargetMachine( targetTriple, "" );
+          targetMachine->setAsmVerbosityDefault( true );
+
+          if ( runFlags & RF_Verbose )
+            printf( "-- Optimized %s assembly --\n", llvm::sys::getHostTriple().c_str() ); 
+
+          llvm::FunctionPassManager *functionPassManager = new llvm::FunctionPassManager( module.get() );
+          targetMachine->addPassesToEmitFile( 
+            *functionPassManager, llvm::fouts(), 
+            llvm::TargetMachine::CGFT_AssemblyFile, optLevel );
+          functionPassManager->doInitialization();
+          llvm::Module::FunctionListType &functionList = module->getFunctionList();
+          for ( llvm::Module::FunctionListType::iterator it=functionList.begin(); it!=functionList.end(); ++it )
+            functionPassManager->run( *it );
+          delete functionPassManager;
+        }
+        
+        if ( runFlags & RF_ShowOptIR )
+        {
+          if ( runFlags & RF_Verbose )
+            printf( "-- Optimized IR --\n" ); 
+          std::string irString;
+          llvm::raw_string_ostream byteCodeStream( irString );
+          module->print( byteCodeStream, 0 );
+          byteCodeStream.flush();
+          printf( "%s", irString.c_str() );
+        }
+
+        if ( runFlags & RF_Run )
+        {
+          if ( runFlags & RF_Verbose )
+            printf( "-- Run --\n" );
+          llvm::Function *llvmEntry = module->getFunction( "entry" );
+          if ( !llvmEntry )
+            throw Exception("missing function 'entry'");
+          void (*entryPtr)() = (void (*)())executionEngine->getPointerToFunction( llvmEntry );
+          if ( !entryPtr )
+            throw Exception("unable to get pointer to entry");
+          entryPtr();
+        }
+
+        module.release();
+        delete executionEngine;
       }
-      
-      if( runFlags & RF_ShowASM )
-      {
-        std::string   errorStr;
-        std::string   targetTriple = llvm::sys::getHostTriple();
-        const llvm::Target *target = llvm::TargetRegistry::lookupTarget( targetTriple, errorStr );
-        if( !target )
-          throw Exception( errorStr );
-
-        llvm::TargetMachine *targetMachine = target->createTargetMachine( targetTriple, "" );
-        targetMachine->setAsmVerbosityDefault( true );
-
-        if ( runFlags & RF_Verbose )
-          printf( "-- Unoptimized %s assembly --\n", llvm::sys::getHostTriple().c_str() ); 
-
-        llvm::FunctionPassManager *functionPassManager = new llvm::FunctionPassManager( module.get() );
-        targetMachine->addPassesToEmitFile( 
-          *functionPassManager, llvm::fouts(), 
-          llvm::TargetMachine::CGFT_AssemblyFile, llvm::CodeGenOpt::Default );
-        functionPassManager->doInitialization();
-      
-        llvm::Module::FunctionListType &functionList = module->getFunctionList();
-        for ( llvm::Module::FunctionListType::iterator it=functionList.begin(); it!=functionList.end(); ++it )
-          functionPassManager->run( *it );
-
-        delete functionPassManager;
-      }
-
-      std::string errStr;
-      llvm::EngineBuilder builder( module.get() );
-      
-      builder.setErrorStr( &errStr );
-      builder.setEngineKind( llvm::EngineKind::JIT );
-      builder.setOptLevel( optLevel );
-
-      llvm::ExecutionEngine *executionEngine = builder.create();
-      if ( !executionEngine )
-        throw Fabric::Exception( "Failed to construct ExecutionEngine: " + errStr );
-      
-      executionEngine->InstallLazyFunctionCreator( &LazyFunctionCreator );
-      cgManager->llvmAddGlobalMappingsToExecutionEngine( executionEngine, *module );
-      
-      // Make sure we don't search loaded libraries for missing symbols. 
-      // Only symbols *we* provide should be available as calling functions.
-      executionEngine->DisableSymbolSearching( );
-
-      llvm::OwningPtr<llvm::PassManager> passManager( new llvm::PassManager );
-      passManager->add( llvm::createVerifierPass() );
-      llvm::createStandardFunctionPasses( passManager.get(), 2 );
-      llvm::createStandardModulePasses( passManager.get(), 2, false, true, true, true, false, llvm::createFunctionInliningPass() );
-      llvm::createStandardLTOPasses( passManager.get(), true, true, false );
-      passManager->run( *module );
-
-      if( runFlags & RF_ShowOptASM )
-      {
-        std::string   errorStr;
-        std::string   targetTriple = llvm::sys::getHostTriple();
-        const llvm::Target *target = llvm::TargetRegistry::lookupTarget( targetTriple, errorStr );
-        if( !target )
-          throw Exception( errorStr );
-
-        llvm::TargetMachine *targetMachine = target->createTargetMachine( targetTriple, "" );
-        targetMachine->setAsmVerbosityDefault( true );
-
-        if ( runFlags & RF_Verbose )
-          printf( "-- Optimized %s assembly --\n", llvm::sys::getHostTriple().c_str() ); 
-
-        llvm::FunctionPassManager *functionPassManager = new llvm::FunctionPassManager( module.get() );
-        targetMachine->addPassesToEmitFile( 
-          *functionPassManager, llvm::fouts(), 
-          llvm::TargetMachine::CGFT_AssemblyFile, optLevel );
-        functionPassManager->doInitialization();
-        llvm::Module::FunctionListType &functionList = module->getFunctionList();
-        for ( llvm::Module::FunctionListType::iterator it=functionList.begin(); it!=functionList.end(); ++it )
-          functionPassManager->run( *it );
-        delete functionPassManager;
-      }
-      
-      if ( runFlags & RF_ShowOptIR )
-      {
-        if ( runFlags & RF_Verbose )
-          printf( "-- Optimized IR --\n" ); 
-        std::string irString;
-        llvm::raw_string_ostream byteCodeStream( irString );
-        module->print( byteCodeStream, 0 );
-        byteCodeStream.flush();
-        printf( "%s", irString.c_str() );
-      }
-
-      if ( runFlags & RF_Run )
-      {
-        if ( runFlags & RF_Verbose )
-          printf( "-- Run --\n" );
-        llvm::Function *llvmEntry = module->getFunction( "entry" );
-        if ( !llvmEntry )
-          throw Exception("missing function 'entry'");
-        void (*entryPtr)() = (void (*)())executionEngine->getPointerToFunction( llvmEntry );
-        if ( !entryPtr )
-          throw Exception("unable to get pointer to entry");
-        entryPtr();
-      }
-
-      module.release();
-      delete executionEngine;
     }
   }
 }
@@ -329,13 +363,11 @@ int main( int argc, char **argv )
       { "ast", 0, NULL, 'a' },
       { "asm", 0, NULL, 'm' },
       { "bison", 0, NULL, 'b' },
-#if !defined( NDEBUG )
-      { "debug", 0, NULL, 'd' },
-#endif
       { "ir", 0, NULL, 'i' },
       { "optasm", 0, NULL, 'p' },
       { "optir", 0, NULL, 'o' },
       { "run", 0, NULL, 'r' },
+      { "tokens", 0, NULL, 't' },
       { "verbose", 0, NULL, 'v' },
       { NULL, 0, NULL, 0 }
     };
@@ -353,12 +385,6 @@ int main( int argc, char **argv )
       case 'b':
         runFlags |= RF_ShowBison;
         
-#if !defined( NDEBUG )
-      case 'd':
-        Fabric::KL::gDebugEnabled = true;
-        break;
-#endif
-      
       case 'i':
         runFlags |= RF_ShowIR;
         break;
@@ -377,6 +403,10 @@ int main( int argc, char **argv )
         
       case 'r':
         runFlags |= RF_Run;
+        break;
+      
+      case 't':
+        runFlags |= RF_ShowTokens;
         break;
       
       case 'v':

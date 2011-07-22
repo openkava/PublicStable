@@ -24,28 +24,35 @@ namespace Fabric
   {
     class ConstDecl : public Node
     {
-    public:
-      
-      std::string const &getName() const
-      {
-        return m_name;
-      }
-      RC::ConstHandle<CG::Adapter> getAdapter() const;
+      FABRIC_AST_NODE_DECL( ConstDecl );
 
-      virtual void llvmCompileToScope( CG::Scope &scope, RC::ConstHandle<CG::Manager> const &manager ) const = 0;
+    public:
+
+      static RC::Handle<ConstDecl> Create(
+        CG::Location const &location,
+        std::string const &name,
+        std::string const &type,
+        std::string const &value
+        );
+
+      RC::Handle<JSON::Object> toJSON() const;
+      
+      virtual void llvmCompileToScope( CG::Scope &scope, RC::ConstHandle<CG::Manager> const &manager ) const;
      
     protected:
     
       ConstDecl(
         CG::Location const &location,
         std::string const &name,
-        RC::ConstHandle<CG::Adapter> const &adapter
+        std::string const &type,
+        std::string const &value
         );
 
     private:
     
       std::string m_name;
-      RC::ConstHandle<CG::Adapter> m_adapter;
+      std::string m_type;
+      std::string m_value;
     };
   };
 };

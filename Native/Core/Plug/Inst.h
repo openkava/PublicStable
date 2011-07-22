@@ -9,12 +9,18 @@
 #include <Fabric/Core/Plug/Desc.h>
 #include <Fabric/Core/CG/Diagnostics.h>
 #include <Fabric/Core/Plug/Helpers.h>
+#include <Fabric/Core/Util/AutoPtr.h>
 
 namespace Fabric
 {
   namespace JSON
   {
     class CommandChannel;
+  };
+  
+  namespace RT
+  {
+    class Manager;
   };
   
   namespace CG
@@ -25,7 +31,7 @@ namespace Fabric
   
   namespace AST
   {
-    class GlobalList;
+    class GlobalVector;
   };
 
   namespace DG
@@ -49,7 +55,7 @@ namespace Fabric
       
     public:
     
-      static RC::Handle<Inst> Create( std::string const &name, std::string const &jsonDesc, RC::Handle<DG::Context> const &dgContext, std::vector<std::string> const &pluginDirs, RC::Handle<JSON::CommandChannel> const &jsonCommandChannel );
+      static RC::Handle<Inst> Create( std::string const &name, std::string const &jsonDesc, std::vector<std::string> const &pluginDirs );
       
       std::string const &getJSONDesc() const
       {
@@ -66,6 +72,7 @@ namespace Fabric
         return m_code;
       }
       
+      void registerTypes( RC::Handle<RT::Manager> const &rtManager ) const;
       void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder ) const;
       void *llvmResolveExternalFunction( std::string const &name ) const;
 
@@ -73,7 +80,7 @@ namespace Fabric
       
     protected:
     
-      Inst( std::string const &name, std::string const &jsonDesc, RC::Handle<DG::Context> const &dgContext, std::vector<std::string> const &pluginDirs );
+      Inst( std::string const &name, std::string const &jsonDesc, std::vector<std::string> const &pluginDirs );
       ~Inst();
       
     private:
@@ -88,11 +95,11 @@ namespace Fabric
       std::string m_jsonDesc;
       Desc m_desc;
       std::string m_code;
-      RC::Handle<AST::GlobalList> m_ast;
+      RC::Handle<AST::GlobalVector> m_ast;
       CG::Diagnostics m_diagnostics;
       ResolvedNameToSOLibHandleMap m_resolvedNameToSOLibHandleMap;
       std::vector<SOLibHandle> m_orderedSOLibHandles;
-      ExternalFunctionMap m_externalFunctionMap;
+      mutable Util::AutoPtr<ExternalFunctionMap> m_externalFunctionMap;
       //RC::Handle<LIB::Object> m_fabricLIBObject;
       //MethodMap m_methodMap;
       std::string m_jsConstants;

@@ -11,11 +11,14 @@
 #include <Fabric/Core/CG/Scope.h>
 #include <Fabric/Core/CG/Error.h>
 #include <Fabric/Core/CG/FunctionBuilder.h>
+#include <Fabric/Base/JSON/String.h>
 
 namespace Fabric
 {
   namespace AST
   {
+    FABRIC_AST_NODE_IMPL( CStyleLoop );
+    
     CStyleLoop::CStyleLoop(
         CG::Location const &location,
         RC::ConstHandle<Statement> const &startStatement,
@@ -33,22 +36,19 @@ namespace Fabric
     {
     }
     
-    std::string CStyleLoop::localDesc() const
+    RC::Handle<JSON::Object> CStyleLoop::toJSON() const
     {
-      return "CStyleLoop";
-    }
-    
-    std::string CStyleLoop::deepDesc( std::string const &indent ) const
-    {
-      std::string subIndent = indent + "  ";
-      std::string result = indent + localDesc() + "\n"
-        + m_startStatement->deepDesc( subIndent )
-        + m_preCondExpr->deepDesc( subIndent )
-        + m_nextExpr->deepDesc( subIndent );
+      RC::Handle<JSON::Object> result = Statement::toJSON();
+      if ( m_startStatement )
+        result->set( "startStatement", m_startStatement->toJSON() );
+      if ( m_preCondExpr )
+        result->set( "preCondExpr", m_preCondExpr->toJSON() );
+      if ( m_nextExpr )
+        result->set( "nextExpr", m_nextExpr->toJSON() );
       if ( m_postCondExpr )
-        result += m_postCondExpr->deepDesc( subIndent );
+        result->set( "postCondExpr", m_postCondExpr->toJSON() );
       if ( m_body )
-        result += m_body->deepDesc( subIndent );
+        result->set( "body", m_body->toJSON() );
       return result;
     }
 

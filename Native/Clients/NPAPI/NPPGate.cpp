@@ -164,7 +164,7 @@ namespace Fabric
       
         RC::Handle<IOManager> ioManager = IOManager::Create( npp );
         context = Context::Create( ioManager, pluginDirs );
-        context->getPlugManager()->loadBuiltInPlugins();
+        Plug::Manager::Instance()->loadBuiltInPlugins( pluginDirs );
         
         contextID = context->getContextID();
         FABRIC_DEBUG_LOG( "Created new context '%s'", contextID.c_str() );

@@ -1,0 +1,15 @@
+struct Foo
+{
+  UnregisteredType a;
+};
+
+struct Bar
+{
+  Integer a;
+  Scalar b;
+};
+
+struct Bar
+{
+  Scalar a;
+};

@@ -6,27 +6,39 @@
  */
 
 #include "CompoundStatement.h"
+#include <Fabric/Core/AST/StatementVector.h>
 #include <Fabric/Core/CG/Scope.h>
+#include <Fabric/Base/JSON/String.h>
+#include <Fabric/Base/JSON/Array.h>
 
 namespace Fabric
 {
   namespace AST
   {
-    CompoundStatement::CompoundStatement( CG::Location const &location, RC::ConstHandle<StatementList> const &statementList )
+    FABRIC_AST_NODE_IMPL( CompoundStatement );
+    
+    RC::Handle<CompoundStatement> CompoundStatement::Create(
+      CG::Location const &location,
+      RC::ConstHandle<StatementVector> const &statements
+      )
+    {
+      return new CompoundStatement( location, statements );
+    }
+    
+    CompoundStatement::CompoundStatement(
+      CG::Location const &location,
+      RC::ConstHandle<StatementVector> const &statements
+      )
       : Statement( location )
-      , m_statementList( statementList )
+      , m_statements( statements )
     {
     }
     
-    std::string CompoundStatement::localDesc() const
+    RC::Handle<JSON::Object> CompoundStatement::toJSON() const
     {
-      return "CompoundStatement";
-    }
-    
-    std::string CompoundStatement::deepDesc( std::string const &indent ) const
-    {
-      return indent + localDesc() + "\n"
-        + m_statementList->deepDesc( indent + "  " );
+      RC::Handle<JSON::Object> result = Node::toJSON();
+      result->set( "statements", m_statements->toJSON() );
+      return result;
     }
 
     void CompoundStatement::llvmCompileToBuilder( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const
@@ -34,7 +46,8 @@ namespace Fabric
       CG::Scope subScope( basicBlockBuilder.getScope() );
       {
         CG::BasicBlockBuilder subBasicBlockBuilder( basicBlockBuilder, subScope );
-        m_statementList->llvmCompileToBuilder( subBasicBlockBuilder, diagnostics );
+        for ( size_t i=0; i<m_statements->size(); ++i )
+          m_statements->get(i)->llvmCompileToBuilder( subBasicBlockBuilder, diagnostics );
       }
       if ( !basicBlockBuilder->GetInsertBlock()->getTerminator() )
         subScope.llvmUnwind( basicBlockBuilder );

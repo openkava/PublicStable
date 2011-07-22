@@ -32,7 +32,7 @@ namespace Fabric
     
     void ConstStringAdapter::llvmPrepareModule( ModuleBuilder &moduleBuilder, bool buildFunctions ) const
     {
-      if ( moduleBuilder.contains( getCodeName() ) )
+      if ( moduleBuilder.contains( getCodeName(), buildFunctions ) )
         return;
       
       moduleBuilder->addTypeName( getCodeName(), llvmRawType() );

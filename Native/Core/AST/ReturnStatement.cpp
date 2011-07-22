@@ -9,26 +9,26 @@
 #include <Fabric/Core/CG/Adapter.h>
 #include <Fabric/Core/CG/Scope.h>
 #include <Fabric/Core/CG/FunctionBuilder.h>
+#include <Fabric/Base/JSON/String.h>
 
 namespace Fabric
 {
   namespace AST
   {
+    FABRIC_AST_NODE_IMPL( ReturnStatement );
+    
     ReturnStatement::ReturnStatement( CG::Location const &location, RC::ConstHandle<Expr> const &expr )
       : Statement( location )
       , m_expr( expr )
     {
     }
     
-    std::string ReturnStatement::localDesc() const
+    RC::Handle<JSON::Object> ReturnStatement::toJSON() const
     {
-      return "ReturnStatement";
-    }
-    
-    std::string ReturnStatement::deepDesc( std::string const &indent ) const
-    {
-      return indent + localDesc() + "\n"
-        + m_expr->deepDesc(indent+"  ");
+      RC::Handle<JSON::Object> result = Statement::toJSON();
+      if ( m_expr )
+        result->set( "expr", m_expr->toJSON() );
+      return result;
     }
 
     void ReturnStatement::llvmCompileToBuilder( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const

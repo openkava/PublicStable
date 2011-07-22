@@ -14,10 +14,9 @@ namespace Fabric
   {
     class ContinueStatement: public Statement
     {
+      FABRIC_AST_NODE_DECL( ContinueStatement );
+
     public:
-    
-      virtual std::string localDesc() const;
-      virtual std::string deepDesc( std::string const &indent ) const;
 
       static RC::Handle<ContinueStatement> Create( CG::Location const &location )
       {

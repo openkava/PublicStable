@@ -21,14 +21,16 @@ namespace Fabric
   {
     class Var : public Expr
     {
+      FABRIC_AST_NODE_DECL( Var );
+
     public:
     
       static RC::Handle<Var> Create( CG::Location const &location, std::string const &name )
       {
         return new Var( location, name );
       }
-      
-      virtual std::string localDesc() const;
+
+      RC::Handle<JSON::Object> toJSON() const;
       
       virtual RC::ConstHandle<CG::Adapter> getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const;
       virtual CG::ExprValue buildExprValue( CG::BasicBlockBuilder &basicBlockBuilder, CG::Usage usage, std::string const &lValueErrorDesc ) const;

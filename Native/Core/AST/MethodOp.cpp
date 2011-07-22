@@ -1,32 +1,48 @@
-#include "MethodOp.h"
+#include <Fabric/Core/AST/MethodOp.h>
+#include <Fabric/Core/AST/ExprVector.h>
 #include <Fabric/Core/CG/Adapter.h>
 #include <Fabric/Core/CG/OverloadNames.h>
 #include <Fabric/Core/CG/Scope.h>
 #include <Fabric/Core/CG/Error.h>
+#include <Fabric/Base/JSON/String.h>
+#include <Fabric/Base/JSON/Array.h>
 
 namespace Fabric
 {
   namespace AST
   {
-    MethodOp::MethodOp( CG::Location const &location, std::string const &name, RC::ConstHandle<Expr> const &expr, RC::ConstHandle<ArgList> const &argList )
+    FABRIC_AST_NODE_IMPL( MethodOp );
+    
+    RC::Handle<MethodOp> MethodOp::Create(
+      CG::Location const &location,
+      std::string const &name,
+      RC::ConstHandle<Expr> const &expr,
+      RC::ConstHandle<ExprVector> const &args
+      )
+    {
+      return new MethodOp( location, name, expr, args );
+    }
+    
+    MethodOp::MethodOp(
+      CG::Location const &location,
+      std::string const &name,
+      RC::ConstHandle<Expr> const &expr,
+      RC::ConstHandle<ExprVector> const &args
+      )
       : Expr( location )
       , m_name( name )
       , m_expr( expr )
-      , m_argList( argList )
+      , m_args( args )
     {
     }
     
-    std::string MethodOp::localDesc() const
+    RC::Handle<JSON::Object> MethodOp::toJSON() const
     {
-      return "MethodOp( "+_(m_name)+" )";
-    }
-    
-    std::string MethodOp::deepDesc( std::string const &indent ) const
-    {
-      std::string subIndent = indent + "  ";
-      return indent + localDesc() + "\n"
-        + m_expr->deepDesc(subIndent)
-        + m_argList->deepDesc(subIndent);
+      RC::Handle<JSON::Object> result = Expr::toJSON();
+      result->set( "expr", m_expr->toJSON() );
+      result->set( "methodName", JSON::String::Create( m_name ) );
+      result->set( "args", m_args->toJSON() );
+      return result;
     }
     
     RC::ConstHandle<CG::FunctionSymbol> MethodOp::getFunctionSymbol( CG::BasicBlockBuilder const &basicBlockBuilder ) const
@@ -34,7 +50,7 @@ namespace Fabric
       RC::ConstHandle<CG::Adapter> selfType = m_expr->getType( basicBlockBuilder );
       
       std::vector< RC::ConstHandle<CG::Adapter> > paramTypes;
-      m_argList->appendTypes( basicBlockBuilder, paramTypes );
+      m_args->appendTypes( basicBlockBuilder, paramTypes );
       
       std::string functionName = CG::methodOverloadName( m_name, selfType, paramTypes );
       RC::ConstHandle<CG::FunctionSymbol> functionSymbol = basicBlockBuilder.maybeGetFunction( functionName );
@@ -63,7 +79,7 @@ namespace Fabric
         std::vector<CG::ExprValue> argExprValues;
         CG::ExprValue selfExprValue = m_expr->buildExprValue( basicBlockBuilder, selfUsage, "cannot be modified" );
         argExprValues.push_back( selfExprValue );
-        m_argList->appendExprValues( basicBlockBuilder, argUsages, argExprValues, "cannot be used as an io argument" );
+        m_args->appendExprValues( basicBlockBuilder, argUsages, argExprValues, "cannot be used as an io argument" );
         
         CG::ExprValue callResultExprValue = functionSymbol->llvmCreateCall( basicBlockBuilder, argExprValues );
 

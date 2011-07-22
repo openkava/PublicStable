@@ -83,5 +83,15 @@ namespace Fabric
     {
       return getManager()->getStrongerTypeOrNone( lhsDesc, rhsDesc );
     }
+
+    RC::ConstHandle<Adapter> BasicBlockBuilder::maybeGetAdapter( std::string const &userName ) const
+    {
+      return m_functionBuilder.maybeGetAdapter( userName );
+    }
+    
+    RC::ConstHandle<Adapter> BasicBlockBuilder::getAdapter( std::string const &userName ) const
+    {
+      return m_functionBuilder.getAdapter( userName );
+    }
   };
 };

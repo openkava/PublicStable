@@ -9,7 +9,6 @@
 #define _FABRIC_AST_CALL_H
 
 #include <Fabric/Core/AST/Expr.h>
-#include <Fabric/Core/AST/ArgList.h>
 
 namespace Fabric
 {
@@ -20,31 +19,39 @@ namespace Fabric
   
   namespace AST
   {
+    class ExprVector;
+    
     class Call : public Expr
     {
+      FABRIC_AST_NODE_DECL( Call );
+      
     public:
         
-      static RC::Handle<Call> Create( CG::Location const &location, std::string const &name, RC::ConstHandle<ArgList> const &args )
-      {
-        return new Call( location, name, args );
-      }
-    
-      virtual std::string localDesc() const;
-      virtual std::string deepDesc( std::string const &indent ) const;
+      static RC::Handle<Call> Create(
+        CG::Location const &location,
+        std::string const &name,
+        RC::ConstHandle<ExprVector> const &args
+        );
+
+      RC::Handle<JSON::Object> toJSON() const;
       
       virtual RC::ConstHandle<CG::Adapter> getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const;
       virtual CG::ExprValue buildExprValue( CG::BasicBlockBuilder &basicBlockBuilder, CG::Usage usage, std::string const &lValueErrorDesc ) const;
       
     protected:
     
-      Call( CG::Location const &location, std::string const &name, RC::ConstHandle<ArgList> const &args );
+      Call(
+        CG::Location const &location,
+        std::string const &name,
+        RC::ConstHandle<ExprVector> const &args
+        );
       
       RC::ConstHandle<CG::FunctionSymbol> getFunctionSymbol( CG::BasicBlockBuilder const &basicBlockBuilder ) const;
 
     private:
     
       std::string m_name;
-      RC::ConstHandle<ArgList> m_args;
+      RC::ConstHandle<ExprVector> m_args;
     };
   };
 };

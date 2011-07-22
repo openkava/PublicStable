@@ -12,33 +12,44 @@
 #include <Fabric/Base/RC/Handle.h>
 #include <Fabric/Base/RC/ConstHandle.h>
 
+#include <vector>
+
 namespace Fabric
 {
   namespace AST
   {
     class Expr;
-    class StatementList;
+    class StatementVector;
     
-    class Case: public Node
+    class Case : public Node
     {
+      FABRIC_AST_NODE_DECL( Case );
+
     public:
     
-      static RC::Handle<Case> Create( CG::Location const &location, RC::ConstHandle<Expr> const &expr, RC::ConstHandle<StatementList> const &statementList );
-      
-      virtual std::string localDesc() const;
-      virtual std::string deepDesc( std::string const &indent ) const;
+      static RC::Handle<Case> Create(
+        CG::Location const &location,
+        RC::ConstHandle<Expr> const &expr,
+        RC::ConstHandle<StatementVector> const &statements
+        );
+
+      RC::Handle<JSON::Object> toJSON() const;
 
       RC::ConstHandle<Expr> getExpr() const;
-      RC::ConstHandle<StatementList> getStatementList() const;
-     
+      RC::ConstHandle<StatementVector> getStatements() const;
+           
     protected:
     
-      Case( CG::Location const &location, RC::ConstHandle<Expr> const &expr, RC::ConstHandle<StatementList> const &statementList );
+      Case(
+        CG::Location const &location,
+        RC::ConstHandle<Expr> const &expr,
+        RC::ConstHandle<StatementVector> const &statements
+        );
     
     private:
     
       RC::ConstHandle<Expr> m_expr;
-      RC::ConstHandle<StatementList> m_statementList;
+      RC::ConstHandle<StatementVector> m_statements;
     };
   };
 };

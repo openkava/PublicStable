@@ -13,11 +13,14 @@
 #include <Fabric/Core/CG/Error.h>
 #include <Fabric/Core/CG/FunctionBuilder.h>
 #include <Fabric/Core/RT/Desc.h>
+#include <Fabric/Base/JSON/String.h>
 
 namespace Fabric
 {
   namespace AST
   {
+    FABRIC_AST_NODE_IMPL( TernaryOp );
+    
     TernaryOp::TernaryOp(
       CG::Location const &location,
       CG::TernaryOpType opType, 
@@ -33,20 +36,13 @@ namespace Fabric
     {
     }
     
-    std::string TernaryOp::localDesc() const
+    RC::Handle<JSON::Object> TernaryOp::toJSON() const
     {
-      char buf[128];
-      snprintf( buf, 128, "TernaryOp(%s)", CG::ternaryOpTypeDesc(m_opType) );
-      return std::string(buf);
-    }
-    
-    std::string TernaryOp::deepDesc( std::string const &indent ) const
-    {
-      std::string subIndent = indent + "  ";
-      return indent + localDesc() + "\n"
-      + m_left->deepDesc(subIndent)
-      + m_middle->deepDesc(subIndent)
-      + m_right->deepDesc(subIndent);
+      RC::Handle<JSON::Object> result = Expr::toJSON();
+      result->set( "condExpr", m_left->toJSON() );
+      result->set( "trueExpr", m_middle->toJSON() );
+      result->set( "falseExpr", m_right->toJSON() );
+      return result;
     }
     
     RC::ConstHandle<CG::Adapter> TernaryOp::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const

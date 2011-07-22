@@ -16,15 +16,16 @@ namespace Fabric
   {
     class StructMemberOp : public Expr
     {
+      FABRIC_AST_NODE_DECL( StructMemberOp );
+
     public:
         
       static RC::Handle<StructMemberOp> Create( CG::Location const &location, RC::ConstHandle<Expr> const &structExpr, std::string const &memberName )
       {
         return new StructMemberOp( location, structExpr, memberName );
       }
-    
-      virtual std::string localDesc() const;
-      virtual std::string deepDesc( std::string const &indent ) const;
+
+      RC::Handle<JSON::Object> toJSON() const;
       
       virtual RC::ConstHandle<CG::Adapter> getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const;
       virtual CG::ExprValue buildExprValue( CG::BasicBlockBuilder &basicBlockBuilder, CG::Usage usage, std::string const &lValueErrorDesc ) const;
