@@ -19,7 +19,7 @@
 
 using namespace Fabric::EDK;
 
-// #define FABRIC_OGL_DEBUG 1
+//#define FABRIC_OGL_DEBUG 1
 
 static unsigned int gBracket = 0;
 static bool gGlewInitialized = false;

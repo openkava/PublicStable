@@ -302,7 +302,6 @@ def main():
         if type == 'char' or type == 'GLchar':
 
           # DEAL WITH A STIRNG ARRAY
-          traceFormat.append('char*')
           if(variables[i].find('const') > -1):
             
             # IF WE HAVE A CONST CHAR, WE WANT TO JUST READ IT
@@ -314,10 +313,13 @@ def main():
               klParameters.append('io String '+klvarname+'[]')
               cParameters.append('const KL::VariableArray<KL::String> &'+varname)
               klCast.append('('+fulltype+')&'+varname+'Data[0]')
+              traceFormat.append('char *')
             else:
               klParameters.append('io String '+klvarname)
               cParameters.append('const KL::String &'+varname)
               klCast.append('('+fulltype+')'+varname+'.data()')
+              traceFormat.append('\'%s\'')
+              traceVars.append( varname+'.data()' )
           else:
             
             # IF WE DON'T HAVE A CONST CHAR, WE NEED TO WRITE TO IT
@@ -327,6 +329,7 @@ def main():
             klParameters.append('io String '+klvarname)
             cParameters.append('KL::String & '+varname)
             klCast.append('('+fulltype+')'+varname+'Str')
+            traceFormat.append('char *')
         else:
           # BAIL OUT, NO DUAL POINTERS ARE ALLOWED. SKIP THIS FUNCTION
           if verbose:
@@ -448,6 +451,9 @@ def main():
 
     # IF WE HAVE A RETURN TYPE
     if returnType.find('void') == -1 or returnType.count('*') > 0:
+      functionsCode.append('#ifdef FABRIC_OGL_DEBUG')
+      functionsCode.append('  printf("  -> returned %u\\n", (unsigned)result );')
+      functionsCode.append('#endif')
       if klReturnType == "KL::String":
         functionsCode.append('  return ('+klReturnType+')(const char*)result;')
       else:
