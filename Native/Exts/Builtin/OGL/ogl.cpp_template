@@ -19,7 +19,7 @@
 
 using namespace Fabric::EDK;
 
-//#define FABRIC_OGL_DEBUG 1
+static bool fglDebuggingEnabled = false;
 
 static unsigned int gBracket = 0;
 static bool gGlewInitialized = false;
@@ -37,9 +37,8 @@ static void _decBracket()
 static void _clearError()
 {
   if(!gGlewInitialized){
-#ifdef FABRIC_OGL_DEBUG
-    printf("glewInit();\n");
-#endif
+    if (fglDebuggingEnabled)
+      printf("glewInit();\n");
     GLenum error = glewInit();
     if(error != GLEW_OK)
     {
@@ -83,6 +82,11 @@ static void _checkError(const char * functionName)
     printf( "%s\n", buf );
     throw Exception( "%s", buf );
   }
+}
+
+FABRIC_EXT_EXPORT void fglSetDebuggingEnabled( bool enable )
+{
+  fglDebuggingEnabled = enable;
 }
 
 ####FUNCTIONS####
