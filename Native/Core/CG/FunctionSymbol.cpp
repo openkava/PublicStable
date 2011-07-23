@@ -52,8 +52,6 @@ namespace Fabric
       if( !m_returnInfo.usesReturnLValue() )
         returnValue = resultValue;
 
-      size_t argValueOffset = m_returnInfo.usesReturnLValue()? 1: 0;
-
       for ( size_t i=0; i<args.size(); ++i )
         args[i].llvmDispose( basicBlockBuilder );
 

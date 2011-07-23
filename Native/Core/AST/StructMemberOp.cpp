@@ -93,6 +93,10 @@ namespace Fabric
               case CG::USAGE_LVALUE:
                 result = CG::ExprValue( memberAdapter, CG::USAGE_LVALUE, memberLValue );
                 break;
+              
+              case CG::USAGE_UNSPECIFIED:
+                FABRIC_ASSERT( false );
+                throw Exception( "unspecified usage" );
             }
             structExprValue.llvmDispose( basicBlockBuilder );
             return result;

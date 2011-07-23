@@ -118,7 +118,10 @@ namespace Fabric
             break;
           case USAGE_LVALUE:
             llvmReturnType = returnExprType.getAdapter()->llvmLType();
-            break;
+            break;            
+          case USAGE_UNSPECIFIED:
+            FABRIC_ASSERT( false );
+            throw Exception( "unspecified usage" );
         }
       }
       else llvmReturnType = llvm::Type::getVoidTy( m_moduleBuilder.getLLVMContext() );

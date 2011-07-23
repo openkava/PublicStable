@@ -73,10 +73,10 @@ namespace Fabric
         */
       }
       
+      /*
       for ( size_t i=0; i<m_desc.interface.methods.size(); ++i )
       {
         std::string const &methodName = m_desc.interface.methods[i];
-        /*
         Method method = 0;
         for ( size_t j=0; j<m_orderedSOLibHandles.size(); ++j )
         {
@@ -88,8 +88,8 @@ namespace Fabric
         if ( !method )
           throw Exception( "method "+_(methodName)+" not found" );
         m_methodMap.insert( MethodMap::value_type( methodName, method ) );
-        */
       }
+      */
       
       m_code = m_desc.code.concatMatching( Util::getHostTriple() );
 
