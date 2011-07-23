@@ -123,6 +123,7 @@ namespace Fabric
           {
             NPN_SetException( this, "generic exception" );
           }
+          return true;
         }
         else return false;
       }
