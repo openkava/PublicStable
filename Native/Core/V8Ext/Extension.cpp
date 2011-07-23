@@ -70,7 +70,7 @@ namespace Fabric
               size_t offset = 0;
               for (;;)
               {
-                size_t readSize = fread( &data[offset], 1, maxReadSize, fp );
+                size_t readSize = fread( &data[0], 1, maxReadSize, fp );
                 if ( ferror( fp ) )
                   onFailure( m_url, "error while reading file" );
 
