@@ -15,72 +15,70 @@ namespace Fabric
     RC::Handle<IOStream> IOStream::Create(
       NPP npp,
       std::string const &url,
-      SuccessCallback successCallback,
+      DataCallback dataCallback,
+      EndCallback endCallback,
       FailureCallback failureCallback,
       RC::Handle<RC::Object> const &target
       )
     {
-      return new IOStream( npp, url, successCallback, failureCallback, target );
+      return new IOStream( npp, url, dataCallback, endCallback, failureCallback, target );
     }
   
     IOStream::IOStream(
       NPP npp,
       std::string const &url,
-      SuccessCallback successCallback,
+      DataCallback dataCallback,
+      EndCallback endCallback,
       FailureCallback failureCallback,
       RC::Handle<RC::Object> const &target
       )
-      : IO::Stream( successCallback, failureCallback, target )
+      : IO::Stream( dataCallback, endCallback, failureCallback, target )
       , m_npp( npp )
       , m_url( url )
-      , m_started( false )
       , m_finished( false )
     {
-    }
-  
-    void IOStream::start()
-    {
-      if ( !m_started )
-      {
         retain();
         NPError npError = NPN_GetURLNotify( m_npp, m_url.c_str(), 0, this );
         if ( npError != NPERR_NO_ERROR )
           throw Exception( "stream " + _(m_url) + ": error calling NPN_GetURLNotify()" );
-        m_started = true;
-      }
     }
   
     NPError IOStream::nppNewStream( NPP npp, NPMIMEType mimeType, NPStream *stream, NPBool seekable, uint16_t *stype )
     {
-      FABRIC_ASSERT( m_started );
       FABRIC_ASSERT( !m_finished );
       FABRIC_ASSERT( npp == m_npp );
       m_mimeType = mimeType;
       FABRIC_ASSERT( stream->notifyData == this );
-      *stype = NP_ASFILEONLY;
+      *stype = NP_NORMAL;
       return NPERR_NO_ERROR;
     }
-      
-    void IOStream::nppStreamAsFile( NPP npp, NPStream *stream, const char *filename )
+
+    int32_t IOStream::nppWriteReady( NPP npp, NPStream* stream )
     {
-      FABRIC_ASSERT( m_started );
       FABRIC_ASSERT( !m_finished );
       FABRIC_ASSERT( npp == m_npp );
       FABRIC_ASSERT( stream->notifyData == this );
-      m_filename = filename;
+      return 1<<16;//<= 64K buffers
+    }
+
+    int32_t IOStream::nppWrite( NPP npp, NPStream* stream, int32_t offset, int32_t len, void* buffer )
+    {
+      FABRIC_ASSERT( !m_finished );
+      FABRIC_ASSERT( npp == m_npp );
+      FABRIC_ASSERT( stream->notifyData == this );
       try
       {
-        indicateSuccess( m_url, m_mimeType, m_filename );
+        onData( m_url, m_mimeType, offset, len, buffer );
       }
       catch ( Exception e )
       {
         FABRIC_LOG( e.getDesc() );
       }
+      return len;
     }
     
     NPError IOStream::nppDestroyStream( NPP npp, NPStream *stream, NPReason reason )
     {
-      FABRIC_ASSERT( m_started );
       FABRIC_ASSERT( !m_finished );
       FABRIC_ASSERT( npp == m_npp );
       FABRIC_ASSERT( stream->notifyData == this );
@@ -89,12 +87,13 @@ namespace Fabric
         switch ( reason )
         {
           case NPRES_DONE:
+            onEnd( m_url, m_mimeType );
             break;
           case NPRES_USER_BREAK:
-            indicateFailure( m_url, "cancelled at user request" );
+            onFailure( m_url, "cancelled at user request" );
             break;
           case NPRES_NETWORK_ERR:
-            indicateFailure( m_url, "network error" );
+            onFailure( m_url, "network error" );
             break;
         }
       }

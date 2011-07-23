@@ -37,10 +37,16 @@ namespace Fabric
       
       virtual void collectErrors();
 
-      void streamSuccess( std::string const &url, std::string const &mimeType, std::string const &filename );
-      static void StreamSuccess( std::string const &url, std::string const &mimeType, std::string const &filename, RC::Handle<RC::Object> const &target )
+      void streamData( std::string const &url, std::string const &mimeType, size_t offset, size_t size, void const *data );
+      static void StreamData( std::string const &url, std::string const &mimeType, size_t offset, size_t size, void const *data, RC::Handle<RC::Object> const &target )
       {
-        RC::Handle<ResourceLoadEvent>::StaticCast(target)->streamSuccess( url, mimeType, filename );
+        RC::Handle<ResourceLoadEvent>::StaticCast(target)->streamData( url, mimeType, offset, size, data );
+      }
+
+      void streamEnd( std::string const &url, std::string const &mimeType );
+      static void StreamEnd( std::string const &url, std::string const &mimeType, RC::Handle<RC::Object> const &target )
+      {
+        RC::Handle<ResourceLoadEvent>::StaticCast(target)->streamEnd( url, mimeType );
       }
       
       void streamFailure( std::string const &url, std::string const &errorDesc );
@@ -55,7 +61,10 @@ namespace Fabric
     
       Context *m_context;
       NamedScope m_namedScope;
+      std::string m_url;
+
       RC::Handle<IO::Stream> m_stream;
+      std::vector<uint8_t> m_data;
     };
   };
 };

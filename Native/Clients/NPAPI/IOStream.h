@@ -25,15 +25,15 @@ namespace Fabric
       static RC::Handle<IOStream> Create(
         NPP npp,
         std::string const &url,
-        SuccessCallback successCallback,
+        DataCallback dataCallback,
+        EndCallback endCallback,
         FailureCallback failureCallback,
         RC::Handle<RC::Object> const &target
         );
-        
-      virtual void start();
       
       NPError nppNewStream( NPP npp, NPMIMEType type, NPStream *stream, NPBool seekable, uint16_t *stype );
-      void nppStreamAsFile( NPP npp, NPStream *stream, const char *fname );
+      int32_t nppWriteReady( NPP npp, NPStream* stream );
+      int32_t nppWrite( NPP npp, NPStream* stream, int32_t offset, int32_t len, void* buffer );
       NPError nppDestroyStream( NPP npp, NPStream *stream, NPReason reason );
     
     protected:
@@ -41,7 +41,8 @@ namespace Fabric
       IOStream(
         NPP npp,
         std::string const &url,
-        SuccessCallback successCallback,
+        DataCallback dataCallback,
+        EndCallback endCallback,
         FailureCallback failureCallback,
         RC::Handle<RC::Object> const &target
         );
@@ -51,8 +52,6 @@ namespace Fabric
       NPP m_npp;
       std::string m_url;
       std::string m_mimeType;
-      std::string m_filename;
-      bool m_started;
       bool m_finished;
     };
   };

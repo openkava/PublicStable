@@ -28,6 +28,7 @@ namespace Fabric
     ResourceLoadEvent::ResourceLoadEvent( std::string const &name, std::string const &url, RC::Handle<Context> const &context )
       : Event( name, context )
       , m_context( context.ptr() )
+      , m_url( url )
       , m_namedScope( "resource", this )
     {
       RC::ConstHandle<RT::SizeDesc> sizeDesc = m_context->getRTManager()->getSizeDesc();
@@ -39,55 +40,45 @@ namespace Fabric
       addMember( "data", dataDesc, dataDesc->getDefaultData() );
       addMember( "dataSize", sizeDesc, sizeDesc->getDefaultData() );
       addMember( "errorDesc", stringDesc, stringDesc->getDefaultData() );
-    
-      m_stream = context->getIOManager()->createStream(
-        url,
-        &ResourceLoadEvent::StreamSuccess,
-        &ResourceLoadEvent::StreamFailure,
-        this
-        );
     }
     
     void ResourceLoadEvent::start()
     {
-      m_stream->start();
-    }
-    
-    void ResourceLoadEvent::streamSuccess( std::string const &url, std::string const &mimeType, std::string const &filename )
-    {
-      FILE *fp = fopen( filename.c_str(), "rb" );
-      if ( fp == NULL )
-        throw Exception( "unable to open file "+_(filename) );
-      
-      size_t allocSize = 65536;
-      uint8_t *data = static_cast<uint8_t *>( malloc(allocSize) );
-      size_t dataSize = 0;
-      for (;;)
+      if( m_stream.isNull() )
       {
-        static const size_t maxReadSize = 65536;
-        if ( dataSize + maxReadSize > allocSize )
-        {
-          allocSize = dataSize + maxReadSize;
-          data = static_cast<uint8_t *>( realloc( data, allocSize ) );
-        }
-        int readSize = fread( &data[dataSize], 1, maxReadSize, fp );
-        dataSize += std::max<int>( readSize, 0 );
-        if ( readSize < maxReadSize )
-          break;
+        m_stream = m_context->getIOManager()->createStream(
+          m_url,
+          &ResourceLoadEvent::StreamData,
+          &ResourceLoadEvent::StreamEnd,
+          &ResourceLoadEvent::StreamFailure,
+          this
+          );
       }
-      
-      fclose( fp );
-      
-      fire( url, &mimeType, data, dataSize, 0 );
-      
-      free( data );
     }
     
+    void ResourceLoadEvent::streamData( std::string const &url, std::string const &mimeType, size_t offset, size_t size, void const *data )
+    {
+      if( size )
+      {
+        if ( offset + size > m_data.size() )
+        {
+          m_data.resize( offset + size, 0 );
+        }
+        memcpy( &m_data[offset], data, size );
+      }
+    }
+
+    void ResourceLoadEvent::streamEnd( std::string const &url, std::string const &mimeType )
+    {
+      fire( url, &mimeType, m_data.empty() ? NULL : &(m_data[0]), m_data.size(), 0 );
+      m_data.swap( std::vector<uint8_t>() );
+    }
+
     void ResourceLoadEvent::streamFailure( std::string const &url, std::string const &errorDesc )
     {
       fire( url, 0, 0, 0, &errorDesc );
     }
-    
+
     void ResourceLoadEvent::fire(
       std::string const &url,
       std::string const *mimeType,
@@ -126,7 +117,7 @@ namespace Fabric
     {
       Event::collectErrors( &m_namedScope );
     }
-      
+
     RC::ConstHandle<JSON::Value> ResourceLoadEvent::jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg )
     {
       RC::ConstHandle<JSON::Value> result;

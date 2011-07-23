@@ -50,7 +50,6 @@ namespace Fabric
     {
       friend class EventHandler;
       friend class Prototype;
-      friend struct ImageBuilder;
       
     public:
     
