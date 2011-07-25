@@ -21,17 +21,16 @@ namespace Fabric
 
     public:
 
-      static RC::Handle<ConditionalStatement> Create(
+      static RC::ConstHandle<ConditionalStatement> Create(
         CG::Location const &location,
         RC::ConstHandle<Expr> const &expr,
         RC::ConstHandle<Statement> const &trueStatement,
         RC::ConstHandle<Statement> const &falseStatement = RC::ConstHandle<Statement>()
-        )
-      {
-        return new ConditionalStatement( location, expr, trueStatement, falseStatement );
-      }
+        );
 
-      RC::Handle<JSON::Object> toJSON() const;
+      RC::Handle<JSON::Object> toJSONImpl() const;
+      
+      virtual void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
       
       virtual void llvmCompileToBuilder( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const;
      

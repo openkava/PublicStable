@@ -12,8 +12,17 @@ namespace Fabric
   {
     FABRIC_AST_NODE_IMPL( ContinueStatement );
     
+    RC::ConstHandle<ContinueStatement> ContinueStatement::Create( CG::Location const &location )
+    {
+      return new ContinueStatement( location );
+    }
+    
     ContinueStatement::ContinueStatement( CG::Location const &location )
       : Statement( location )
+    {
+    }
+    
+    void ContinueStatement::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
     {
     }
 

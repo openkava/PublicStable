@@ -21,12 +21,11 @@ namespace Fabric
 
     public:
 
-      static RC::Handle<ExprStatement> Create( CG::Location const &location, RC::ConstHandle<Expr> const &expr )
-      {
-        return new ExprStatement( location, expr );
-      }
+      static RC::ConstHandle<ExprStatement> Create( CG::Location const &location, RC::ConstHandle<Expr> const &expr );
 
-      RC::Handle<JSON::Object> toJSON() const;
+      RC::Handle<JSON::Object> toJSONImpl() const;
+
+      virtual void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
       
       virtual void llvmCompileToBuilder( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const;
      

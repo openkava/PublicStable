@@ -20,4 +20,5 @@ namespace Fabric
     FABRIC_COPYRIGHT "\n"
     FABRIC_URL "\n";
   time_t const buildExpiry = {{FABRIC_EXPIRY}};
+  size_t const buildCacheGeneration = {{FABRIC_CACHE_GENERATION}};
 };

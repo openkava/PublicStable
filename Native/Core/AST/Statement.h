@@ -20,6 +20,7 @@ namespace Fabric
   namespace CG
   {
     class BasicBlockBuilder;
+    class ModuleBuilder;
   };
   
   namespace AST
@@ -29,6 +30,8 @@ namespace Fabric
     public:
       
       Statement( CG::Location const &location );
+      
+      virtual void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const = 0;
       
       virtual void llvmCompileToBuilder( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const = 0;
     };

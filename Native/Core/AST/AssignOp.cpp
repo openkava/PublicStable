@@ -20,21 +20,32 @@ namespace Fabric
   {
     FABRIC_AST_NODE_IMPL( AssignOp );
     
+    RC::ConstHandle<AssignOp> AssignOp::Create( CG::Location const &location, CG::AssignOpType assignOpType, RC::ConstHandle<Expr> const &left, RC::ConstHandle<Expr> const &right )
+    {
+      return new AssignOp( location, assignOpType, left, right );
+    }
+    
     AssignOp::AssignOp( CG::Location const &location, CG::AssignOpType assignOpType, RC::ConstHandle<Expr> const &left, RC::ConstHandle<Expr> const &right )
-    : Expr( location )
-    , m_assignOpType( assignOpType )
-    , m_left( left )
-    , m_right( right )
+      : Expr( location )
+      , m_assignOpType( assignOpType )
+      , m_left( left )
+      , m_right( right )
     {
     }
     
-    RC::Handle<JSON::Object> AssignOp::toJSON() const
+    RC::Handle<JSON::Object> AssignOp::toJSONImpl() const
     {
-      RC::Handle<JSON::Object> result = Expr::toJSON();
+      RC::Handle<JSON::Object> result = Expr::toJSONImpl();
       result->set( "assignOpType", JSON::String::Create( assignOpTypeDesc( m_assignOpType ) ) );
       result->set( "lhs", m_left->toJSON() );
       result->set( "rhs", m_right->toJSON() );
       return result;
+    }
+    
+    void AssignOp::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    {
+      m_left->llvmPrepareModule( moduleBuilder, diagnostics );
+      m_right->llvmPrepareModule( moduleBuilder, diagnostics );
     }
     
     RC::ConstHandle<CG::Adapter> AssignOp::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const

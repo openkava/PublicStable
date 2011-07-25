@@ -15,6 +15,14 @@ namespace Fabric
   {
     FABRIC_AST_NODE_IMPL( ConstDeclStatement );
     
+    RC::ConstHandle<ConstDeclStatement> ConstDeclStatement::Create(
+      CG::Location const &location,
+      RC::ConstHandle<ConstDecl> const &constDecl
+      )
+    {
+      return new ConstDeclStatement( location, constDecl );
+    }
+
     ConstDeclStatement::ConstDeclStatement(
       CG::Location const &location,
       RC::ConstHandle<ConstDecl> const &constDecl
@@ -24,11 +32,16 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> ConstDeclStatement::toJSON() const
+    RC::Handle<JSON::Object> ConstDeclStatement::toJSONImpl() const
     {
-      RC::Handle<JSON::Object> result = Statement::toJSON();
-      result->set( "constDecl", m_constDecl->toJSON() );
+      RC::Handle<JSON::Object> result = Statement::toJSONImpl();
+      result->set( "constDecl", m_constDecl->toJSONImpl() );
       return result;
+    }
+    
+    void ConstDeclStatement::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    {
+      m_constDecl->llvmPrepareModule( moduleBuilder, diagnostics );
     }
     
     void ConstDeclStatement::llvmCompileToBuilder( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const

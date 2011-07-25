@@ -18,7 +18,7 @@ namespace Fabric
 
     public:
 
-      static RC::Handle<Function> Create(
+      static RC::ConstHandle<Function> Create(
         CG::Location const &location,
         std::string const &friendlyName,
         std::string const &entryName,
@@ -27,7 +27,7 @@ namespace Fabric
         RC::ConstHandle<CompoundStatement> const &body
         );
 
-      static RC::Handle<Function> Create(
+      static RC::ConstHandle<Function> Create(
         CG::Location const &location,
         std::string const &friendlyName,
         std::string const *entryName,
@@ -36,7 +36,7 @@ namespace Fabric
         RC::ConstHandle<CompoundStatement> const &body
         );
 
-      RC::Handle<JSON::Object> toJSON() const;
+      RC::Handle<JSON::Object> toJSONImpl() const;
           
       virtual bool isFunction() const { return true; }
       virtual bool isOperator() const { return false; }

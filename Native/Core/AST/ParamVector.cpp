@@ -10,19 +10,7 @@ namespace Fabric
 {
   namespace AST
   {
-    RC::Handle<ParamVector> ParamVector::Create()
-    {
-      return new ParamVector;
-    }
-    
-    RC::Handle<ParamVector> ParamVector::Create( RC::ConstHandle<Param> const &firstParam )
-    {
-      ParamVector *result = new ParamVector;
-      result->push_back( firstParam );
-      return result;
-    }
-    
-    RC::Handle<ParamVector> ParamVector::Create( RC::ConstHandle<Param> const &firstParam, RC::ConstHandle<Param> const &secondParam )
+    RC::ConstHandle<ParamVector> ParamVector::Create( RC::ConstHandle<Param> const &firstParam, RC::ConstHandle<Param> const &secondParam )
     {
       ParamVector *result = new ParamVector;
       result->push_back( firstParam );
@@ -30,12 +18,16 @@ namespace Fabric
       return result;
     }
     
-    RC::Handle<ParamVector> ParamVector::Create( RC::ConstHandle<Param> const &firstParam, RC::ConstHandle<ParamVector> const &remainingParams )
+    RC::ConstHandle<ParamVector> ParamVector::Create( RC::ConstHandle<Param> const &firstParam, RC::ConstHandle<ParamVector> const &remainingParams )
     {
       ParamVector *result = new ParamVector;
-      result->push_back( firstParam );
-      for ( size_t i=0; i<remainingParams->size(); ++i )
-        result->push_back( remainingParams->get(i) );
+      if ( firstParam )
+        result->push_back( firstParam );
+      if ( remainingParams )
+      {
+        for ( size_t i=0; i<remainingParams->size(); ++i )
+          result->push_back( remainingParams->get(i) );
+      }
       return result;
     }
     
@@ -43,12 +35,16 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Array> ParamVector::toJSON() const
+    RC::ConstHandle<JSON::Value> ParamVector::toJSON() const
     {
-      RC::Handle<JSON::Array> result = JSON::Array::Create();
-      for ( size_t i=0; i<size(); ++i )
-        result->push_back( (*this)[i]->toJSON() );
-      return result;
+      if ( !m_jsonValue )
+      {
+        RC::Handle<JSON::Array> result = JSON::Array::Create();
+        for ( size_t i=0; i<size(); ++i )
+          result->push_back( (*this)[i]->toJSONImpl() );
+        m_jsonValue = result;
+      }
+      return m_jsonValue;
     }
       
     std::vector<CG::FunctionParam> ParamVector::getFunctionParams( RC::Handle<CG::Manager> const &cgManager ) const
@@ -82,11 +78,11 @@ namespace Fabric
         result.push_back( get(i)->getExprType( cgManager ) );
       return result;
     }
-      
-    void ParamVector::llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctionBodies ) const
+    
+    void ParamVector::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
     {
       for ( const_iterator it=begin(); it!=end(); ++it )
-        (*it)->llvmCompileToModule( moduleBuilder, diagnostics, buildFunctionBodies );
+        (*it)->llvmPrepareModule( moduleBuilder, diagnostics );
     }
   };
 };

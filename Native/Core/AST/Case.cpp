@@ -18,7 +18,7 @@ namespace Fabric
   {
     FABRIC_AST_NODE_IMPL( Case );
     
-    RC::Handle<Case> Case::Create(
+    RC::ConstHandle<Case> Case::Create(
         CG::Location const &location,
         RC::ConstHandle<Expr> const &expr,
         RC::ConstHandle<StatementVector> const &statements
@@ -38,13 +38,20 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> Case::toJSON() const
+    RC::Handle<JSON::Object> Case::toJSONImpl() const
     {
-      RC::Handle<JSON::Object> result = Node::toJSON();
+      RC::Handle<JSON::Object> result = Node::toJSONImpl();
       if ( m_expr )
         result->set( "expr", m_expr->toJSON() );
       result->set( "statements", m_statements->toJSON() );
       return result;
+    }
+    
+    void Case::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    {
+      if ( m_expr )
+        m_expr->llvmPrepareModule( moduleBuilder, diagnostics );
+      m_statements->llvmPrepareModule( moduleBuilder, diagnostics );
     }
 
     RC::ConstHandle<Expr> Case::getExpr() const

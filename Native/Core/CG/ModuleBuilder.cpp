@@ -1,5 +1,7 @@
 #include "ModuleBuilder.h"
 #include "Manager.h"
+#include "Error.h"
+#include "Location.h"
 
 namespace Fabric
 {
@@ -16,14 +18,17 @@ namespace Fabric
       return m_manager;
     }
     
-    RC::ConstHandle<Adapter> ModuleBuilder::maybeGetAdapter( std::string const &userName )
+    RC::ConstHandle<Adapter> ModuleBuilder::maybeGetAdapter( std::string const &userName ) const
     {
       return m_manager->maybeGetAdapter( userName );
     }
     
-    RC::ConstHandle<Adapter> ModuleBuilder::getAdapter( std::string const &userName )
+    RC::ConstHandle<Adapter> ModuleBuilder::getAdapter( std::string const &userName, CG::Location const &location )
     {
-      return m_manager->getAdapter( userName );
+      RC::ConstHandle<Adapter> result = maybeGetAdapter( userName );
+      if ( !result )
+        throw CG::Error( location, _(userName) + ": type not registered" );
+      return result;
     }
     
     llvm::LLVMContext &ModuleBuilder::getLLVMContext()

@@ -5,7 +5,14 @@
 #include <Fabric/Core/DG/IRCache.h>
 #include <Fabric/Core/IO/Dir.h>
 #include <Fabric/Core/Util/MD5.h>
+#include <Fabric/Core/AST/GlobalVector.h>
 #include <Fabric/Base/Exception.h>
+#include <Fabric/Base/JSON/Object.h>
+#include <Fabric/Base/JSON/Array.h>
+#include <Fabric/Base/JSON/Encode.h>
+#include <Fabric/Core/Util/Format.h>
+#include <Fabric/Core/Util/Log.h>
+#include <Fabric/Core/Util/Timer.h>
 #include <Fabric/Core/Build.h>
 
 namespace Fabric
@@ -16,24 +23,28 @@ namespace Fabric
   {
     IRCache::IRCache()
     {
-      RC::ConstHandle<IO::Dir> rootDir = IO::Dir::IRCache();
-      RC::ConstHandle<IO::Dir> fabricInternalDir = IO::Dir::Create( rootDir, ".fabric-internal" );
-      m_dir = IO::Dir::Create( fabricInternalDir, "irCache" );
+      RC::ConstHandle<IO::Dir> rootDir = IO::Dir::Private();
+      m_dir = IO::Dir::Create( IO::Dir::Create( rootDir, "IRCache" ), _(buildCacheGeneration) );
     }
     
-    void IRCache::subDirAndEntryFromSourceCode( std::string const &sourceCode, RC::ConstHandle<IO::Dir> &subDir, std::string &entry ) const
+    void IRCache::subDirAndEntryFromSourceCode( RC::ConstHandle<AST::GlobalVector> const &ast, RC::ConstHandle<IO::Dir> &subDir, std::string &entry ) const
     {
-      std::string prefixedSourceCode = buildVersion + sourceCode;
-      std::string prefixedSourceCodeMD5HexDigest = Util::md5HexDigest( prefixedSourceCode.data(), prefixedSourceCode.length() );
+      Util::Timer timer;
+      RC::ConstHandle<JSON::Value> astJSONValue = ast->toJSON();
+      FABRIC_LOG( "ast->toJSON(): %fms", timer.getElapsedMS(true) );
+      std::string astEncodedJSONValue = JSON::encode( astJSONValue );
+      FABRIC_LOG( "JSON::encode( astJSONValue ): %fms", timer.getElapsedMS(true) );
+      std::string prefixedSourceCodeMD5HexDigest = Util::md5HexDigest( astEncodedJSONValue );
+      FABRIC_LOG( "Util::md5HexDigest( astEncodedJSONValue ): %fms", timer.getElapsedMS(true) );
       subDir = IO::Dir::Create( m_dir, prefixedSourceCodeMD5HexDigest.substr( 0, 2 ) );
       entry = prefixedSourceCodeMD5HexDigest.substr( 2, 30 );
     }
     
-    std::string IRCache::get( std::string const &sourceCode ) const
+    std::string IRCache::get( RC::ConstHandle<AST::GlobalVector> const &ast ) const
     {
       RC::ConstHandle<IO::Dir> subDir;
       std::string entry;
-      subDirAndEntryFromSourceCode( sourceCode, subDir, entry );
+      subDirAndEntryFromSourceCode( ast, subDir, entry );
       
       std::string result;
       try
@@ -46,11 +57,11 @@ namespace Fabric
       return result;
     }
     
-    void IRCache::put( std::string const &sourceCode, std::string const &ir )
+    void IRCache::put( RC::ConstHandle<AST::GlobalVector> const &ast, std::string const &ir )
     {
       RC::ConstHandle<IO::Dir> subDir;
       std::string entry;
-      subDirAndEntryFromSourceCode( sourceCode, subDir, entry );
+      subDirAndEntryFromSourceCode( ast, subDir, entry );
       
       try
       {

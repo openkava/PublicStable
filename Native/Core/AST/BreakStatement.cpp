@@ -15,8 +15,17 @@ namespace Fabric
   {
     FABRIC_AST_NODE_IMPL( BreakStatement );
     
+    RC::ConstHandle<BreakStatement> BreakStatement::Create( CG::Location const &location )
+    {
+      return new BreakStatement( location );
+    }
+
     BreakStatement::BreakStatement( CG::Location const &location )
       : Statement( location )
+    {
+    }
+    
+    void BreakStatement::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
     {
     }
 

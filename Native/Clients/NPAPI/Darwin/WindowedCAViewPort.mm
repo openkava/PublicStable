@@ -37,7 +37,7 @@ namespace Fabric
 
 -(id) initWithViewPort:(Fabric::NPAPI::WindowedCAViewPort *)_viewPort context:(Fabric::DG::Context *)_context
 {
-  if ( self = [super init] )
+  if ( (self = [super init]) )
   {
     // [pzion 20100820] We don't retain the view port because it retains us.
     viewPort = _viewPort;
@@ -84,7 +84,7 @@ namespace Fabric
   };
   CGLPixelFormatObj pixelFormat;
   GLint numPixelFormats = 0;
-  CGLError error = CGLChoosePixelFormat( pixelFormatAttributes, &pixelFormat, &numPixelFormats );
+  CGLChoosePixelFormat( pixelFormatAttributes, &pixelFormat, &numPixelFormats );
   return pixelFormat;
 }
 
@@ -186,7 +186,7 @@ namespace Fabric
 
 -(id) initWithTitle:(NSString *)title viewPort:(Fabric::NPAPI::ViewPort const *)_viewPort arg:(Fabric::JSON::Value *)_arg
 {
-  if ( self = [super initWithTitle:title action:@selector(runCallback:) keyEquivalent:@""] )
+  if ( (self = [super initWithTitle:title action:@selector(runCallback:) keyEquivalent:@""]) )
   {
     [self setTarget:self];
     
@@ -292,31 +292,34 @@ namespace Fabric
       NPCocoaEvent *npCocoaEvent = reinterpret_cast<NPCocoaEvent *>( event );
       switch ( npCocoaEvent->type )
       {
-      case NPCocoaEventDrawRect:
-        [m_npCAOpenGLLayer renderInContext:npCocoaEvent->data.draw.context];
-        return true;
-        
-      case NPCocoaEventMouseDown:
-        if ( npCocoaEvent->data.mouse.buttonNumber == 1 )
-        {
-          if ( !m_popUpItems.empty() )
-          {
-            NSMenu *nsMenu = [[[NSMenu alloc] initWithTitle:@"Fabric Pop-Up Menu"] autorelease];
-            [nsMenu setAutoenablesItems:NO];
+        case NPCocoaEventDrawRect:
+          [m_npCAOpenGLLayer renderInContext:npCocoaEvent->data.draw.context];
+          return true;
           
-            for ( PopUpItems::const_iterator it=m_popUpItems.begin(); it!=m_popUpItems.end(); ++it )
+        case NPCocoaEventMouseDown:
+          if ( npCocoaEvent->data.mouse.buttonNumber == 1 )
+          {
+            if ( !m_popUpItems.empty() )
             {
-              NSMenuItem *nsMenuItem = [MenuItem menuItemWithTitle:[NSString stringWithCString:it->desc.c_str() encoding:NSUTF8StringEncoding] viewPort:this arg:it->value.ptr()];
-              [nsMenuItem setEnabled:YES];
-              [nsMenu addItem:nsMenuItem];
+              NSMenu *nsMenu = [[[NSMenu alloc] initWithTitle:@"Fabric Pop-Up Menu"] autorelease];
+              [nsMenu setAutoenablesItems:NO];
+            
+              for ( PopUpItems::const_iterator it=m_popUpItems.begin(); it!=m_popUpItems.end(); ++it )
+              {
+                NSMenuItem *nsMenuItem = [MenuItem menuItemWithTitle:[NSString stringWithCString:it->desc.c_str() encoding:NSUTF8StringEncoding] viewPort:this arg:it->value.ptr()];
+                [nsMenuItem setEnabled:YES];
+                [nsMenu addItem:nsMenuItem];
+              }
+              
+              NPN_PopUpContextMenu( m_npp, (NPMenu *)nsMenu );
+              
+              return true;
             }
-            
-            NPN_PopUpContextMenu( m_npp, (NPMenu *)nsMenu );
-            
-            return true;
           }
-        }
-        break;
+          break;
+        
+        default:
+          break;
       }
       return false;
     }

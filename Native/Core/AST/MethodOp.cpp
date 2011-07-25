@@ -13,7 +13,7 @@ namespace Fabric
   {
     FABRIC_AST_NODE_IMPL( MethodOp );
     
-    RC::Handle<MethodOp> MethodOp::Create(
+    RC::ConstHandle<MethodOp> MethodOp::Create(
       CG::Location const &location,
       std::string const &name,
       RC::ConstHandle<Expr> const &expr,
@@ -36,9 +36,9 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> MethodOp::toJSON() const
+    RC::Handle<JSON::Object> MethodOp::toJSONImpl() const
     {
-      RC::Handle<JSON::Object> result = Expr::toJSON();
+      RC::Handle<JSON::Object> result = Expr::toJSONImpl();
       result->set( "expr", m_expr->toJSON() );
       result->set( "methodName", JSON::String::Create( m_name ) );
       result->set( "args", m_args->toJSON() );
@@ -57,6 +57,12 @@ namespace Fabric
       if ( !functionSymbol )
         throw CG::Error( getLocation(), "type " + selfType->getUserName() + " has no method named " + _(m_name) );
       return functionSymbol;
+    }
+    
+    void MethodOp::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    {
+      m_expr->llvmPrepareModule( moduleBuilder, diagnostics );
+      m_args->llvmPrepareModule( moduleBuilder, diagnostics );
     }
     
     RC::ConstHandle<CG::Adapter> MethodOp::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const

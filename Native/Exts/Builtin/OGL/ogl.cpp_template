@@ -19,32 +19,31 @@
 
 using namespace Fabric::EDK;
 
-// #define FABRIC_OGL_DEBUG 1
+static bool fglDebuggingEnabled = false;
 
-unsigned int gBracket = 0;
-bool gGlewInitialized = false;
-void _incBracket()
+static unsigned int gBracket = 0;
+static bool gGlewInitialized = false;
+static void _incBracket()
 {
   gBracket++;
 }
-void _decBracket()
+static void _decBracket()
 {
   if(gBracket > 0)
     gBracket--;
   else
-    throw("Fabric::OGL::_decBracket: Unbalanced bracket.");
+    throw Exception("Fabric::OGL::_decBracket: Unbalanced bracket.");
 }
-void _clearError()
+static void _clearError()
 {
   if(!gGlewInitialized){
-#ifdef FABRIC_OGL_DEBUG
-    printf("glewInit();\n");
-#endif
+    if (fglDebuggingEnabled)
+      printf("glewInit();\n");
     GLenum error = glewInit();
     if(error != GLEW_OK)
     {
       printf("[Fabric::OGL::glewInit] ERROR: %s\n",(const char*)glewGetErrorString(error));
-      throw("[Fabric::OGL::glewInit] ERROR: %s",(const char*)glewGetErrorString(error));
+      throw Exception("[Fabric::OGL::glewInit] ERROR: %s",(const char*)glewGetErrorString(error));
     }
     gGlewInitialized = true;
   }
@@ -55,16 +54,39 @@ void _clearError()
   glGetError();
 }
 
-void _checkError(const char * functionName)
+static char const *glErrorDesc( GLenum glError )
+{
+  switch ( glError )
+  {
+    case GL_NO_ERROR: return "GL_NO_ERROR";
+    case GL_INVALID_ENUM: return "GL_INVALID_ENUM";
+    case GL_INVALID_VALUE: return "GL_INVALID_VALUE";
+    case GL_INVALID_OPERATION: return "GL_INVALID_OPERATION";
+    case GL_STACK_OVERFLOW: return "GL_STACK_OVERFLOW";
+    case GL_STACK_UNDERFLOW: return "GL_STACK_UNDERFLOW";
+    case GL_OUT_OF_MEMORY: return "GL_OUT_OF_MEMORY";
+    case GL_TABLE_TOO_LARGE: return "GL_TABLE_TOO_LARGE";
+    default: return "*** Unknown OpenGL Error ***";
+  }
+}
+
+static void _checkError(const char * functionName)
 {
   if(gBracket >0)
     return;
-  GLenum error = glGetError();
-  if(error != GL_NO_ERROR)
+  GLenum glError = glGetError();
+  if(glError != GL_NO_ERROR)
   {
-    printf("[Fabric::OGL::%s] ERROR: %s\n",functionName,(const char*) glewGetErrorString(error));
-    throw("[Fabric::OGL::%s] ERROR: %s",functionName,(const char*) glewGetErrorString(error));
+    char buf[1024];
+    sprintf( buf, "[Fabric::OGL::%s] ERROR: %s (0x%04X)", functionName, glErrorDesc( glError ), (unsigned)glError );
+    printf( "%s\n", buf );
+    throw Exception( "%s", buf );
   }
+}
+
+FABRIC_EXT_EXPORT void fglSetDebuggingEnabled( bool enable )
+{
+  fglDebuggingEnabled = enable;
 }
 
 ####FUNCTIONS####

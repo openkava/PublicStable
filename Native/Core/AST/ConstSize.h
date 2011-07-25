@@ -20,14 +20,11 @@ namespace Fabric
 
     public:
     
-      static RC::Handle<ConstSize> Create( CG::Location const &location, size_t value )
-      {
-        return new ConstSize( location, value );
-      }
+      static RC::ConstHandle<ConstSize> Create( CG::Location const &location, std::string const &valueString );
 
-      static RC::Handle<ConstSize> Create( CG::Location const &location, std::string const &valueString );
-
-      RC::Handle<JSON::Object> toJSON() const;
+      RC::Handle<JSON::Object> toJSONImpl() const;
+      
+      virtual void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
       
       virtual RC::ConstHandle<CG::Adapter> getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const;
       virtual CG::ExprValue buildExprValue( CG::BasicBlockBuilder &basicBlockBuilder, CG::Usage usage, std::string const &lValueErrorDesc ) const;

@@ -27,12 +27,18 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> OrOp::toJSON() const
+    RC::Handle<JSON::Object> OrOp::toJSONImpl() const
     {
-      RC::Handle<JSON::Object> result = Expr::toJSON();
+      RC::Handle<JSON::Object> result = Expr::toJSONImpl();
       result->set( "lhs", m_left->toJSON() );
       result->set( "rhs", m_right->toJSON() );
       return result;
+    }
+    
+    void OrOp::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    {
+      m_left->llvmPrepareModule( moduleBuilder, diagnostics );
+      m_right->llvmPrepareModule( moduleBuilder, diagnostics );
     }
     
     RC::ConstHandle<CG::Adapter> OrOp::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const
@@ -56,7 +62,6 @@ namespace Fabric
       
       RC::ConstHandle<CG::BooleanAdapter> booleanAdapter = basicBlockBuilder.getManager()->getBooleanAdapter();
       
-      llvm::BasicBlock *entryBB = basicBlockBuilder->GetInsertBlock();
       llvm::BasicBlock *lhsTrueBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "orLHSTrue" );
       llvm::BasicBlock *lhsFalseBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "orLHSFalse" );
       llvm::BasicBlock *mergeBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "orMerge" );

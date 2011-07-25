@@ -55,7 +55,7 @@ namespace Fabric
       RC::ConstHandle<FunctionSymbol> maybeGetFunction( std::string const &entryName ) const;
 
       RC::ConstHandle<Adapter> maybeGetAdapter( std::string const &userName ) const;
-      RC::ConstHandle<Adapter> getAdapter( std::string const &userName ) const;
+      RC::ConstHandle<Adapter> getAdapter( std::string const &userName, CG::Location const &location ) const;
       
     private:
     

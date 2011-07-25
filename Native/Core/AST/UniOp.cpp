@@ -25,9 +25,9 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> UniOp::toJSON() const
+    RC::Handle<JSON::Object> UniOp::toJSONImpl() const
     {
-      RC::Handle<JSON::Object> result = Expr::toJSON();
+      RC::Handle<JSON::Object> result = Expr::toJSONImpl();
       result->set( "op", JSON::String::Create( uniOpUserName( m_uniOpType ) ) );
       result->set( "child", m_child->toJSON() );
       return result;
@@ -41,6 +41,11 @@ namespace Fabric
       if ( !functionSymbol )
         throw Exception( "unary operator " + _(CG::uniOpUserName( m_uniOpType )) + " not supported for expressions of type " + _(childType->getUserName()) );
       return functionSymbol;
+    }
+    
+    void UniOp::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    {
+      m_child->llvmPrepareModule( moduleBuilder, diagnostics );
     }
     
     RC::ConstHandle<CG::Adapter> UniOp::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const

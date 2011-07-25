@@ -17,7 +17,7 @@ namespace Fabric
   {
     FABRIC_AST_NODE_IMPL( VarDeclStatement );
     
-    RC::Handle<VarDeclStatement> VarDeclStatement::Create(
+    RC::ConstHandle<VarDeclStatement> VarDeclStatement::Create(
       CG::Location const &location,
       std::string const &baseType,
       RC::ConstHandle<VarDeclVector> const &varDecls
@@ -37,18 +37,22 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> VarDeclStatement::toJSON() const
+    RC::Handle<JSON::Object> VarDeclStatement::toJSONImpl() const
     {
-      RC::Handle<JSON::Object> result = Statement::toJSON();
+      RC::Handle<JSON::Object> result = Statement::toJSONImpl();
       result->set( "baseType", JSON::String::Create( m_baseType ) );
       result->set( "varDecls", m_varDecls->toJSON() );
       return result;
     }
+    
+    void VarDeclStatement::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    {
+      m_varDecls->llvmPrepareModule( m_baseType, moduleBuilder, diagnostics );
+    }
 
     void VarDeclStatement::llvmCompileToBuilder( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const
     {
-      for ( VarDeclVector::const_iterator it=m_varDecls->begin(); it!=m_varDecls->end(); ++it )
-        (*it)->llvmCompileToBuilder( m_baseType, basicBlockBuilder, diagnostics );
+      m_varDecls->llvmCompileToBuilder( m_baseType, basicBlockBuilder, diagnostics );
     }
   };
 };

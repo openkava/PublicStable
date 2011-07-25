@@ -257,7 +257,6 @@ namespace Fabric
         if ( buildFunctions )
         {
           llvm::Value *booleanLValue = functionBuilder[0];
-          llvm::Value *arrayRValue = functionBuilder[1];
           BasicBlockBuilder basicBlockBuilder( functionBuilder );
           basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
           llvm::Value *sizeRValue = llvm::ConstantInt::get( sizeAdapter->llvmRType(), m_length, false );
@@ -293,7 +292,6 @@ namespace Fabric
         FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( sizeAdapter, USAGE_RVALUE ), params );
         if ( buildFunctions )
         {
-          llvm::Value *selfRValue = functionBuilder[0];
           BasicBlockBuilder basicBlockBuilder( functionBuilder );
           basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
           llvm::Value *sizeRValue = llvm::ConstantInt::get( sizeAdapter->llvmRType(), m_length, false );
@@ -308,7 +306,6 @@ namespace Fabric
         FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( sizeAdapter, USAGE_RVALUE ), params );
         if ( buildFunctions )
         {
-          llvm::Value *selfRValue = functionBuilder[0];
           BasicBlockBuilder basicBlockBuilder( functionBuilder );
           basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
           llvm::Value *sizeRValue = sizeAdapter->llvmConst( m_length );

@@ -24,11 +24,16 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> GlobalConstDecl::toJSON() const
+    RC::Handle<JSON::Object> GlobalConstDecl::toJSONImpl() const
     {
-      RC::Handle<JSON::Object> result = Global::toJSON();
-      result->set( "constDecl", m_constDecl->toJSON() );
+      RC::Handle<JSON::Object> result = Global::toJSONImpl();
+      result->set( "constDecl", m_constDecl->toJSONImpl() );
       return result;
+    }
+    
+    void GlobalConstDecl::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    {
+      m_constDecl->llvmPrepareModule( moduleBuilder, diagnostics );
     }
     
     void GlobalConstDecl::llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctionBodies ) const

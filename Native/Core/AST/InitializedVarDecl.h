@@ -23,14 +23,16 @@ namespace Fabric
 
     public:
 
-      static RC::Handle<InitializedVarDecl> Create(
+      static RC::ConstHandle<InitializedVarDecl> Create(
         CG::Location const &location,
         std::string const &name,
         std::string const &arrayModifier,
         RC::ConstHandle<ExprVector> const &args
         );
 
-      RC::Handle<JSON::Object> toJSON() const;
+      RC::Handle<JSON::Object> toJSONImpl() const;
+
+      virtual void llvmPrepareModule( std::string const &baseType, CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
 
       virtual void llvmCompileToBuilder( std::string const &baseType, CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const;
      

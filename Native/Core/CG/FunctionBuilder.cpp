@@ -118,7 +118,10 @@ namespace Fabric
             break;
           case USAGE_LVALUE:
             llvmReturnType = returnExprType.getAdapter()->llvmLType();
-            break;
+            break;            
+          case USAGE_UNSPECIFIED:
+            FABRIC_ASSERT( false );
+            throw Exception( "unspecified usage" );
         }
       }
       else llvmReturnType = llvm::Type::getVoidTy( m_moduleBuilder.getLLVMContext() );
@@ -226,15 +229,15 @@ namespace Fabric
     {
       return m_moduleBuilder.maybeGetFunction( entryName );
     }
-
+    
     RC::ConstHandle<Adapter> FunctionBuilder::maybeGetAdapter( std::string const &userName ) const
     {
       return m_moduleBuilder.maybeGetAdapter( userName );
     }
     
-    RC::ConstHandle<Adapter> FunctionBuilder::getAdapter( std::string const &userName ) const
+    RC::ConstHandle<Adapter> FunctionBuilder::getAdapter( std::string const &userName, CG::Location const &location ) const
     {
-      return m_moduleBuilder.getAdapter( userName );
+      return m_moduleBuilder.getAdapter( userName, location );
     }
   };
 };

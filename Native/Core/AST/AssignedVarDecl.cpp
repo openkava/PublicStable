@@ -18,7 +18,7 @@ namespace Fabric
   {
     FABRIC_AST_NODE_IMPL( AssignedVarDecl );
     
-    RC::Handle<AssignedVarDecl> AssignedVarDecl::Create(
+    RC::ConstHandle<AssignedVarDecl> AssignedVarDecl::Create(
       CG::Location const &location,
       std::string const &name,
       std::string const &arrayModifier,
@@ -39,11 +39,17 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> AssignedVarDecl::toJSON() const
+    RC::Handle<JSON::Object> AssignedVarDecl::toJSONImpl() const
     {
-      RC::Handle<JSON::Object> result = VarDecl::toJSON();
+      RC::Handle<JSON::Object> result = VarDecl::toJSONImpl();
       result->set( "initialValue", m_initialExpr->toJSON() );
       return result;
+    }
+    
+    void AssignedVarDecl::llvmPrepareModule( std::string const &baseType, CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    {
+      VarDecl::llvmPrepareModule( baseType, moduleBuilder, diagnostics );
+      m_initialExpr->llvmPrepareModule( moduleBuilder, diagnostics );
     }
 
     void AssignedVarDecl::llvmCompileToBuilder( std::string const &baseType, CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const

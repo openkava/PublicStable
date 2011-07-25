@@ -36,13 +36,20 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> TernaryOp::toJSON() const
+    RC::Handle<JSON::Object> TernaryOp::toJSONImpl() const
     {
-      RC::Handle<JSON::Object> result = Expr::toJSON();
+      RC::Handle<JSON::Object> result = Expr::toJSONImpl();
       result->set( "condExpr", m_left->toJSON() );
       result->set( "trueExpr", m_middle->toJSON() );
       result->set( "falseExpr", m_right->toJSON() );
       return result;
+    }
+    
+    void TernaryOp::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    {
+      m_left->llvmPrepareModule( moduleBuilder, diagnostics );
+      m_middle->llvmPrepareModule( moduleBuilder, diagnostics );
+      m_right->llvmPrepareModule( moduleBuilder, diagnostics );
     }
     
     RC::ConstHandle<CG::Adapter> TernaryOp::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const

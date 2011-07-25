@@ -10,23 +10,16 @@ namespace Fabric
 {
   namespace AST
   {
-    RC::Handle<CaseVector> CaseVector::Create()
+    RC::ConstHandle<CaseVector> CaseVector::Create( RC::ConstHandle<Case> const &first, RC::ConstHandle<CaseVector> const &remaining )
     {
-      return new CaseVector;
-    }
-    
-    RC::Handle<CaseVector> CaseVector::Create( RC::ConstHandle<Case> const &first )
-    {
-      RC::Handle<CaseVector> result = Create();
-      result->push_back( first );
-      return result;
-    }
-    
-    RC::Handle<CaseVector> CaseVector::Create( RC::ConstHandle<Case> const &first, RC::ConstHandle<CaseVector> const &remaining )
-    {
-      RC::Handle<CaseVector> result = Create( first );
-      for ( CaseVector::const_iterator it=remaining->begin(); it!=remaining->end(); ++it )
-        result->push_back( *it );
+      CaseVector *result = new CaseVector;
+      if ( first )
+        result->push_back( first );
+      if ( remaining )
+      {
+        for ( const_iterator it=remaining->begin(); it!=remaining->end(); ++it )
+          result->push_back( *it );
+      }
       return result;
     }
     
@@ -34,12 +27,22 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Array> CaseVector::toJSON() const
+    RC::ConstHandle<JSON::Value> CaseVector::toJSON() const
     {
-      RC::Handle<JSON::Array> result = JSON::Array::Create();
-      for ( size_t i=0; i<size(); ++i )
-        result->push_back( get(i)->toJSON() );
-      return result;
+      if ( !m_jsonValue )
+      {
+        RC::Handle<JSON::Array> result = JSON::Array::Create();
+        for ( const_iterator it=begin(); it!=end(); ++it )
+          result->push_back( (*it)->toJSONImpl() );
+        m_jsonValue = result;
+      }
+      return m_jsonValue;
+    }
+    
+    void CaseVector::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    {
+      for ( const_iterator it=begin(); it!=end(); ++it )
+        (*it)->llvmPrepareModule( moduleBuilder, diagnostics );
     }
   };
 };

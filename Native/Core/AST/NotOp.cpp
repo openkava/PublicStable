@@ -25,11 +25,16 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> NotOp::toJSON() const
+    RC::Handle<JSON::Object> NotOp::toJSONImpl() const
     {
-      RC::Handle<JSON::Object> result = Expr::toJSON();
+      RC::Handle<JSON::Object> result = Expr::toJSONImpl();
       result->set( "child", m_child->toJSON() );
       return result;
+    }
+    
+    void NotOp::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    {
+      m_child->llvmPrepareModule( moduleBuilder, diagnostics );
     }
     
     RC::ConstHandle<CG::Adapter> NotOp::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const

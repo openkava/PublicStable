@@ -31,7 +31,7 @@ namespace Fabric
       Node( CG::Location const &location );
 
       virtual RC::ConstHandle<JSON::String> nodeTypeNameJSONString() const = 0;
-      virtual RC::Handle<JSON::Object> toJSON() const;
+      RC::Handle<JSON::Value> toJSON() const;
       
       CG::Location const &getLocation() const
       {
@@ -43,11 +43,14 @@ namespace Fabric
 
     protected:
     
+      virtual RC::Handle<JSON::Object> toJSONImpl() const;
+
       void addError( CG::Diagnostics &diagnostics, CG::Error const &error ) const;
       
     private:
     
       CG::Location m_location;
+      mutable RC::Handle<JSON::Value> m_jsonValue;
     };
   };
 };
