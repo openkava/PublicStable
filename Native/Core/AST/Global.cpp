@@ -20,5 +20,12 @@ namespace Fabric
     void Global::llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctionBodies ) const
     {
     }
+
+    Util::SimpleString const &Global::getJSONString() const
+    {
+      if ( m_jsonString.getLength() == 0 )
+        appendJSONString( m_jsonString );
+      return m_jsonString;
+    }
   };
 };

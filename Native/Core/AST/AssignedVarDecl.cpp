@@ -39,6 +39,13 @@ namespace Fabric
     {
     }
     
+    void AssignedVarDecl::appendJSONStringMembers( Util::SimpleString &ss ) const
+    {
+      ss.append( "{\"initialValue\":" );
+      m_initialExpr->appendJSONString( ss );
+      ss.append( '}' );
+    }
+    
     RC::Handle<JSON::Object> AssignedVarDecl::toJSONImpl() const
     {
       RC::Handle<JSON::Object> result = VarDecl::toJSONImpl();

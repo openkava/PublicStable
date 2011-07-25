@@ -34,6 +34,8 @@ namespace Fabric
     {
     public:
     
+      Util::SimpleString const &getJSONString() const;
+    
       virtual bool isFunction() const { return false; }
       
       virtual void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const = 0;
@@ -44,6 +46,12 @@ namespace Fabric
     protected:
     
       Global( CG::Location const &location );
+      
+      virtual appendJSONString( Util::SimpleString &ss ) const = 0;
+      
+    private:
+    
+      mutable Util::SimpleString m_jsonString;
     };
   };
 };

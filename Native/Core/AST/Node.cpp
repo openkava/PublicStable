@@ -19,19 +19,19 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Value> Node::toJSON() const
+    void Node::appendJSONString( Util::SimpleString &ss ) const
     {
-      if ( !m_jsonValue )
-        m_jsonValue = toJSONImpl();
-      return m_jsonValue;
+      ss.append( '{' );
+      appendJSONStringMembers( ss );
+      ss.append( '}' );
     }
     
-    RC::Handle<JSON::Object> Node::toJSONImpl() const
+    void Node::appendJSONStringMembers( Util::SimpleString &ss ) const
     {
-      RC::Handle<JSON::Object> result = JSON::Object::Create();
-      result->set( "nodeType", nodeTypeNameJSONString() );
-      result->set( "location", m_location.toJSON() );
-      return result;
+      ss.append( "\"nodeType\":" );
+      ss.appendQuotedJSONString( nodeTypeName() );
+      ss.append( ",\"location\":" );
+      ss.appendJSONStringMembers( m_location.appendJSONString( ss ) );
     }
 
     void Node::addWarning( CG::Diagnostics &diagnostics, std::string const &desc ) const

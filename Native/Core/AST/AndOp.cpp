@@ -29,14 +29,21 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> AndOp::toJSONImpl() const
+    void AndOp::appendJSONString( Util::SimpleString &ss ) const
     {
-      RC::Handle<JSON::Object> result = Expr::toJSONImpl();
+      ss.append( '{' );
       if ( m_left )
-        result->set( "lhs", m_left->toJSON() );
+      {
+        ss.append( "\"lhs\":" );
+        m_left->appendJSONString( ss );
+        ss.append( ',' );
+      }
       if ( m_right )
-        result->set( "rhs", m_right->toJSON() );
-      return result;
+      {
+        ss.append( "\"rhs\":" );
+        m_right->appendJSONString( ss );
+      }
+      ss.append( '}' );
     }
     
     RC::ConstHandle<CG::Adapter> AndOp::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const

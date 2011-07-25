@@ -36,12 +36,13 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> Alias::toJSONImpl() const
+    void Alias::appendJSONString( Util::SimpleString &ss ) const
     {
-      RC::Handle<JSON::Object> result = Global::toJSONImpl();
-      result->set( "newTypeName", JSON::String::Create( m_name ) );
-      result->set( "oldTypeName", JSON::String::Create( m_adapterName ) );
-      return result;
+      ss.append( "{\"newTypeName\":" );
+      ss.appendQuotedJSONString( m_name );
+      ss.append( ",\"oldTypeName\":" );
+      ss.appendQuotedJSONString( m_adapterName );
+      ss.append( '}' );
     }
     
     void Alias::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const

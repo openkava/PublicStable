@@ -203,6 +203,16 @@ namespace Fabric
         increaseLength( p - tail );
       }
       
+      void appendQuotedJSONString( char const *cStr )
+      {
+        appendQuotedJSONString( cStr, strlen( cStr ) );
+      }
+      
+      void appendQuotedJSONString( std::string const &string )
+      {
+        appendQuotedJSONString( string.data(), string.length() );
+      }
+      
       char *takeCString()
       {
         char *result = m_data;
