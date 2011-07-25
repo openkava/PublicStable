@@ -9,7 +9,7 @@
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/CG/Error.h>
 #include <Fabric/Core/RT/Desc.h>
-#include <Fabric/Base/JSON/String.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -29,21 +29,13 @@ namespace Fabric
     {
     }
     
-    void AndOp::appendJSONString( Util::SimpleString &ss ) const
+    void AndOp::appendJSONMembers( Util::SimpleString &ss ) const
     {
-      ss.append( '{' );
-      if ( m_left )
-      {
-        ss.append( "\"lhs\":" );
-        m_left->appendJSONString( ss );
-        ss.append( ',' );
-      }
-      if ( m_right )
-      {
-        ss.append( "\"rhs\":" );
-        m_right->appendJSONString( ss );
-      }
-      ss.append( '}' );
+      Expr::appendJSONMembers(ss);
+      ss.append( ",\"lhs\":" );
+      m_left->appendJSON( ss );
+      ss.append( ",\"rhs\":" );
+      m_right->appendJSON( ss );
     }
     
     RC::ConstHandle<CG::Adapter> AndOp::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const

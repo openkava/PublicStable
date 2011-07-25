@@ -52,6 +52,8 @@ namespace Fabric
         RC::ConstHandle<ParamVector> const &params,
         RC::ConstHandle<CompoundStatement> const &body
         );
+      
+      virtual void appendJSONMembers( Util::SimpleString &ss ) const;
         
     private:
     

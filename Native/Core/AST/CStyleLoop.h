@@ -9,12 +9,13 @@
 #define _FABRIC_AST_C_STYLE_LOOP_H
 
 #include <Fabric/Core/AST/Statement.h>
-#include <Fabric/Core/AST/Expr.h>
 
 namespace Fabric
 {
   namespace AST
   {
+    class Expr;
+    
     class CStyleLoop: public Statement
     {
       FABRIC_AST_NODE_DECL( CStyleLoop );
@@ -29,8 +30,6 @@ namespace Fabric
         RC::ConstHandle<Expr> const &postCondExpr,
         RC::ConstHandle<Statement> const &body
         );
-
-      RC::Handle<JSON::Object> toJSONImpl() const;
       
       virtual void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
       
@@ -46,6 +45,8 @@ namespace Fabric
         RC::ConstHandle<Expr> const &postCondExpr,
         RC::ConstHandle<Statement> const &body
         );
+      
+      virtual void appendJSONMembers( Util::SimpleString &ss ) const;
     
     private:
     

@@ -9,7 +9,7 @@
 #include <Fabric/Core/CG/Adapter.h>
 #include <Fabric/Core/CG/ModuleBuilder.h>
 #include <Fabric/Core/CG/Scope.h>
-#include <Fabric/Base/JSON/String.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -37,12 +37,13 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> VarDecl::toJSONImpl() const
+    void VarDecl::appendJSONMembers( Util::SimpleString &ss ) const
     {
-      RC::Handle<JSON::Object> result = Node::toJSONImpl();
-      result->set( "name", JSON::String::Create( m_name ) );
-      result->set( "arrayModifier", JSON::String::Create( m_arrayModifier ) );
-      return result;
+      Node::appendJSONMembers(ss);
+      ss.append( ",\"name\":" );
+      ss.appendJSONString( m_name );
+      ss.append( ",\"arrayModifier\":" );
+      ss.appendJSONString( m_arrayModifier );
     }
     
     void VarDecl::llvmPrepareModule( std::string const &baseType, CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const

@@ -156,7 +156,25 @@ namespace Fabric
         return *this;
       }
       
-      void appendQuotedJSONString( char const *data, size_t length )
+      void appendJSONBoolean( bool value )
+      {
+        if ( value )
+          append( "true", 4 );
+        else
+          append( "false", 5 );
+      }
+      
+      void appendJSONInteger( int32_t value )
+      {
+        increaseLength( snprintf( expand( 11 ), 11, "%d", (int)value ) );
+      }
+      
+      void appendJSONScalar( float value )
+      {
+        increaseLength( snprintf( expand( 32 ), 32, "%f", value ) );
+      }
+      
+      void appendJSONString( char const *data, size_t length )
       {
         char *tail = expand( 2*length+2 );
         char *p = tail;
@@ -203,14 +221,14 @@ namespace Fabric
         increaseLength( p - tail );
       }
       
-      void appendQuotedJSONString( char const *cStr )
+      void appendJSONString( char const *cStr )
       {
-        appendQuotedJSONString( cStr, strlen( cStr ) );
+        appendJSONString( cStr, strlen( cStr ) );
       }
       
-      void appendQuotedJSONString( std::string const &string )
+      void appendJSONString( std::string const &string )
       {
-        appendQuotedJSONString( string.data(), string.length() );
+        appendJSONString( string.data(), string.length() );
       }
       
       char *takeCString()

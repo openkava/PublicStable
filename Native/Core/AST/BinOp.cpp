@@ -13,7 +13,7 @@
 #include <Fabric/Core/CG/Error.h>
 #include <Fabric/Core/CG/OpTypes.h>
 #include <Fabric/Core/RT/Desc.h>
-#include <Fabric/Base/JSON/String.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -33,14 +33,16 @@ namespace Fabric
       , m_right( right )
     {
     }
-      
-    RC::Handle<JSON::Object> BinOp::toJSONImpl() const
+    
+    void BinOp::appendJSONMembers( Util::SimpleString &ss ) const
     {
-      RC::Handle<JSON::Object> result = Expr::toJSONImpl();
-      result->set( "binOpType", JSON::String::Create( CG::binOpUserName( m_binOpType ) ) );
-      result->set( "lhs", m_left->toJSON() );
-      result->set( "rhs", m_right->toJSON() );
-      return result;
+      Expr::appendJSONMembers(ss);
+      ss.append( ",\"binOpType\":" );
+      ss.appendJSONString( CG::binOpUserName( m_binOpType ) );
+      ss.append( ",\"lhs\":" );
+      m_left->appendJSON( ss );
+      ss.append( ",\"rhs\":" );
+      m_right->appendJSON( ss );
     }
     
     RC::ConstHandle<CG::FunctionSymbol> BinOp::getFunctionSymbol( CG::BasicBlockBuilder const &basicBlockBuilder ) const

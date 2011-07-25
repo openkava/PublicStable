@@ -9,7 +9,6 @@
 #define _FABRIC_AST_BREAK_STATEMENT_H
 
 #include <Fabric/Core/AST/Statement.h>
-#include <Fabric/Core/AST/Expr.h>
 
 namespace Fabric
 {
@@ -30,6 +29,8 @@ namespace Fabric
     protected:
     
       BreakStatement( CG::Location const &location );
+      
+      virtual void appendJSONMembers( Util::SimpleString &ss ) const;
     };
   };
 };

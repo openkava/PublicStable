@@ -13,6 +13,11 @@
 
 namespace Fabric
 {
+  namespace Util
+  {
+    class SimpleString;
+  };
+  
   namespace AST
   {
     class Report: public Statement
@@ -26,8 +31,6 @@ namespace Fabric
         return new Report( location, expr );
       }
 
-      RC::Handle<JSON::Object> toJSONImpl() const;
-
       virtual void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
       
       virtual void llvmCompileToBuilder( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const;
@@ -35,6 +38,8 @@ namespace Fabric
     protected:
     
       Report( CG::Location const &location, RC::ConstHandle<Expr> const &expr);
+      
+      virtual void appendJSONMembers( Util::SimpleString &ss ) const;
     
     private:
     

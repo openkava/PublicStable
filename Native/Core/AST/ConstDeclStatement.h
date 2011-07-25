@@ -6,8 +6,6 @@
 #define _FABRIC_AST_CONST_DECL_STATEMENT_H
 
 #include <Fabric/Core/AST/Statement.h>
-#include <Fabric/Base/RC/Handle.h>
-#include <Fabric/Base/RC/ConstHandle.h>
 
 namespace Fabric
 {
@@ -30,8 +28,6 @@ namespace Fabric
         CG::Location const &location,
         RC::ConstHandle<ConstDecl> const &constDecl
         );
-
-      RC::Handle<JSON::Object> toJSONImpl() const;
       
       virtual void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
       
@@ -43,6 +39,8 @@ namespace Fabric
         CG::Location const &location,
         RC::ConstHandle<ConstDecl> const &constDecl
         );
+      
+      virtual void appendJSONMembers( Util::SimpleString &ss ) const;
     
     private:
     

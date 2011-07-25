@@ -34,8 +34,6 @@ namespace Fabric
         RC::ConstHandle<ExprVector> const &args
         );
 
-      RC::Handle<JSON::Object> toJSONImpl() const;
-
       virtual void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
       
       virtual RC::ConstHandle<CG::Adapter> getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const;
@@ -49,6 +47,8 @@ namespace Fabric
         RC::ConstHandle<Expr> const &expr,
         RC::ConstHandle<ExprVector> const &args
         );
+      
+      virtual void appendJSONMembers( Util::SimpleString &ss ) const;
       
       RC::ConstHandle<CG::FunctionSymbol> getFunctionSymbol( CG::BasicBlockBuilder const &basicBlockBuilder ) const;
 

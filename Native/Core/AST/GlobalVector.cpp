@@ -6,7 +6,7 @@
 #include <Fabric/Core/AST/Global.h>
 #include <Fabric/Core/CG/Diagnostics.h>
 #include <Fabric/Core/CG/Error.h>
-#include <Fabric/Base/JSON/Array.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -45,16 +45,18 @@ namespace Fabric
     {
     }
     
-    RC::ConstHandle<JSON::Value> GlobalVector::toJSON() const
+    Util::SimpleString GlobalVector::toJSON() const
     {
-      if ( !m_jsonValue )
+      Util::SimpleString ss;
+      ss.append( '[' );
+      for ( const_iterator it=begin(); it!=end(); ++it )
       {
-        RC::Handle<JSON::Array> result = JSON::Array::Create();
-        for ( const_iterator it=begin(); it!=end(); ++it )
-          result->push_back( (*it)->toJSON() );
-        m_jsonValue = result;
+        if ( it != begin() )
+          ss.append( ',' );
+        (*it)->appendJSON( ss );
       }
-      return m_jsonValue;
+      ss.append( ']' );
+      return ss;
     }
     
     void GlobalVector::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const

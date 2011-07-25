@@ -6,7 +6,6 @@
 #define _FABRIC_AST_FUNCTION_BASE_H
 
 #include <Fabric/Core/AST/Global.h>
-#include <Fabric/Core/CG/ExprType.h>
 
 namespace llvm
 {
@@ -29,8 +28,6 @@ namespace Fabric
     class FunctionBase : public Global
     {
     public:
-
-      RC::Handle<JSON::Object> toJSONImpl() const;
       
       virtual std::string const *getFriendlyName( RC::Handle<CG::Manager> const &cgManager ) const;
       virtual std::string getEntryName( RC::Handle<CG::Manager> const &cgManager ) const = 0;
@@ -53,6 +50,8 @@ namespace Fabric
         std::string const &returnTypeName,
         RC::ConstHandle<CompoundStatement> const &body
         );
+      
+      virtual void appendJSONMembers( Util::SimpleString &ss ) const;
     
     private:
     

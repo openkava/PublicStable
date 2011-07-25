@@ -7,7 +7,7 @@
 #include <Fabric/Core/CG/Error.h>
 #include <Fabric/Core/CG/Adapter.h>
 #include <Fabric/Core/Util/Assert.h>
-#include <Fabric/Base/JSON/Array.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -30,16 +30,16 @@ namespace Fabric
     {
     }
     
-    RC::ConstHandle<JSON::Value> ExprVector::toJSON() const
+    void ExprVector::appendJSON( Util::SimpleString &ss ) const
     {
-      if ( !m_jsonValue )
+      ss.append( '[' );
+      for ( const_iterator it=begin(); it!=end(); ++it )
       {
-        RC::Handle<JSON::Array> result = JSON::Array::Create();
-        for ( size_t i=0; i<size(); ++i )
-          result->push_back( get(i)->toJSON() );
-        m_jsonValue = result;
+        if ( it != begin() )
+          ss.append( ',' );
+        (*it)->appendJSON( ss );
       }
-      return m_jsonValue;
+      ss.append( ']' );
     }
 
     void ExprVector::appendTypes( CG::BasicBlockBuilder const &basicBlockBuilder, std::vector< RC::ConstHandle<CG::Adapter> > &argTypes ) const

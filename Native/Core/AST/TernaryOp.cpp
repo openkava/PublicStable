@@ -13,7 +13,7 @@
 #include <Fabric/Core/CG/Error.h>
 #include <Fabric/Core/CG/FunctionBuilder.h>
 #include <Fabric/Core/RT/Desc.h>
-#include <Fabric/Base/JSON/String.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -36,13 +36,15 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> TernaryOp::toJSONImpl() const
+    void TernaryOp::appendJSONMembers( Util::SimpleString &ss ) const
     {
-      RC::Handle<JSON::Object> result = Expr::toJSONImpl();
-      result->set( "condExpr", m_left->toJSON() );
-      result->set( "trueExpr", m_middle->toJSON() );
-      result->set( "falseExpr", m_right->toJSON() );
-      return result;
+      Expr::appendJSONMembers(ss);
+      ss.append( ",\"condExpr\":" );
+      m_left->appendJSON( ss );
+      ss.append( ",\"trueExpr\":" );
+      m_middle->appendJSON( ss );
+      ss.append( ",\"falseExpr\":" );
+      m_right->appendJSON( ss );
     }
     
     void TernaryOp::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const

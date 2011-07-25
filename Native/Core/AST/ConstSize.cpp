@@ -12,7 +12,7 @@
 #include <Fabric/Core/CG/ModuleBuilder.h>
 #include <Fabric/Core/CG/SizeAdapter.h>
 #include <Fabric/Core/Util/Parse.h>
-#include <Fabric/Base/JSON/String.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -31,11 +31,11 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> ConstSize::toJSONImpl() const
+    void ConstSize::appendJSONMembers( Util::SimpleString &ss ) const
     {
-      RC::Handle<JSON::Object> result = Expr::toJSONImpl();
-      result->set( "value", JSON::Integer::Create( m_value ) );
-      return result;
+      Expr::appendJSONMembers(ss);
+      ss.append( ",\"value\":" );
+      ss.appendJSONInteger( m_value );
     }
     
     void ConstSize::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const

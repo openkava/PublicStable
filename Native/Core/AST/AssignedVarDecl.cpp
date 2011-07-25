@@ -6,11 +6,12 @@
  */
 
 #include <Fabric/Core/AST/AssignedVarDecl.h>
+#include <Fabric/Core/AST/Expr.h>
 #include <Fabric/Core/CG/Adapter.h>
 #include <Fabric/Core/CG/OverloadNames.h>
 #include <Fabric/Core/CG/Scope.h>
 #include <Fabric/Core/CG/Error.h>
-#include <Fabric/Base/JSON/String.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -39,18 +40,11 @@ namespace Fabric
     {
     }
     
-    void AssignedVarDecl::appendJSONStringMembers( Util::SimpleString &ss ) const
+    void AssignedVarDecl::appendJSONMembers( Util::SimpleString &ss ) const
     {
-      ss.append( "{\"initialValue\":" );
-      m_initialExpr->appendJSONString( ss );
-      ss.append( '}' );
-    }
-    
-    RC::Handle<JSON::Object> AssignedVarDecl::toJSONImpl() const
-    {
-      RC::Handle<JSON::Object> result = VarDecl::toJSONImpl();
-      result->set( "initialValue", m_initialExpr->toJSON() );
-      return result;
+      VarDecl::appendJSONMembers(ss);
+      ss.append( ",\"initialValue\":" );
+      m_initialExpr->appendJSON( ss );
     }
     
     void AssignedVarDecl::llvmPrepareModule( std::string const &baseType, CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const

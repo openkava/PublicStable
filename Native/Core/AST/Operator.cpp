@@ -3,7 +3,6 @@
  */
  
 #include "Operator.h"
-#include <Fabric/Base/JSON/String.h>
 
 namespace Fabric
 {

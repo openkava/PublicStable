@@ -20,6 +20,11 @@ namespace llvm
 
 namespace Fabric
 {
+  namespace Util
+  {
+    class SimpleString;
+  };
+  
   namespace AST
   {
     class Param : public Node
@@ -34,8 +39,6 @@ namespace Fabric
         std::string const &type,
         CG::Usage usage
         );
-
-      RC::Handle<JSON::Object> toJSONImpl() const;
     
       std::string const &getName() const
       {
@@ -66,6 +69,8 @@ namespace Fabric
         std::string const &type,
         CG::Usage usage
         );
+      
+      virtual void appendJSONMembers( Util::SimpleString &ss ) const;
       
     private:
     

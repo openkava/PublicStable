@@ -7,7 +7,7 @@
 
 #include <Fabric/Core/AST/BreakStatement.h>
 #include <Fabric/Core/CG/Scope.h>
-#include <Fabric/Base/JSON/String.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -23,6 +23,11 @@ namespace Fabric
     BreakStatement::BreakStatement( CG::Location const &location )
       : Statement( location )
     {
+    }
+    
+    void BreakStatement::appendJSONMembers( Util::SimpleString &ss ) const
+    {
+      Statement::appendJSONMembers(ss);
     }
     
     void BreakStatement::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const

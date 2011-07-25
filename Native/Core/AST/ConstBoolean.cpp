@@ -10,8 +10,7 @@
 #include <Fabric/Core/CG/BooleanAdapter.h>
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/CG/BasicBlockBuilder.h>
-#include <Fabric/Base/JSON/String.h>
-#include <Fabric/Base/JSON/Boolean.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -30,11 +29,11 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> ConstBoolean::toJSONImpl() const
+    void ConstBoolean::appendJSONMembers( Util::SimpleString &ss ) const
     {
-      RC::Handle<JSON::Object> result = Expr::toJSONImpl();
-      result->set( "value", JSON::Boolean::Create( m_value ) );
-      return result;
+      Expr::appendJSONMembers(ss);
+      ss.append( ",\"value\":" );
+      ss.appendJSONBoolean( m_value );
     }
     
     void ConstBoolean::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const

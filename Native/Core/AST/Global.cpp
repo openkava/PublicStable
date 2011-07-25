@@ -12,6 +12,13 @@ namespace Fabric
       : Node( location )
     {
     }
+
+    void Global::appendJSON( Util::SimpleString &ss ) const
+    {
+      if ( m_json.getLength() == 0 )
+        Node::appendJSON( m_json );
+      ss.append( m_json );
+    }
     
     void Global::registerTypes( RC::Handle<RT::Manager> const &rtManager, CG::Diagnostics &diagnostics ) const
     {
@@ -19,13 +26,6 @@ namespace Fabric
     
     void Global::llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctionBodies ) const
     {
-    }
-
-    Util::SimpleString const &Global::getJSONString() const
-    {
-      if ( m_jsonString.getLength() == 0 )
-        appendJSONString( m_jsonString );
-      return m_jsonString;
     }
   };
 };

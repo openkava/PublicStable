@@ -4,7 +4,7 @@
  
 #include <Fabric/Core/AST/ParamVector.h>
 #include <Fabric/Core/AST/Param.h>
-#include <Fabric/Base/JSON/Array.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -35,16 +35,16 @@ namespace Fabric
     {
     }
     
-    RC::ConstHandle<JSON::Value> ParamVector::toJSON() const
+    void ParamVector::appendJSON( Util::SimpleString &ss ) const
     {
-      if ( !m_jsonValue )
+      ss.append( '[' );
+      for ( const_iterator it=begin(); it!=end(); ++it )
       {
-        RC::Handle<JSON::Array> result = JSON::Array::Create();
-        for ( size_t i=0; i<size(); ++i )
-          result->push_back( (*this)[i]->toJSONImpl() );
-        m_jsonValue = result;
+        if ( it != begin() )
+          ss.append( ',' );
+        (*it)->appendJSON( ss );
       }
-      return m_jsonValue;
+      ss.append( ']' );
     }
       
     std::vector<CG::FunctionParam> ParamVector::getFunctionParams( RC::Handle<CG::Manager> const &cgManager ) const

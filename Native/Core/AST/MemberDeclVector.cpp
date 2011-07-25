@@ -6,7 +6,7 @@
 #include "MemberDecl.h"
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/RT/Manager.h>
-#include <Fabric/Base/JSON/Array.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -29,16 +29,16 @@ namespace Fabric
     {
     }
     
-    RC::ConstHandle<JSON::Value> MemberDeclVector::toJSON() const
+    void MemberDeclVector::appendJSON( Util::SimpleString &ss ) const
     {
-      if ( !m_jsonValue )
+      ss.append( '[' );
+      for ( const_iterator it=begin(); it!=end(); ++it )
       {
-        RC::Handle<JSON::Array> result = JSON::Array::Create();
-        for ( size_t i=0; i<size(); ++i )
-          result->push_back( get(i)->toJSONImpl() );
-        m_jsonValue = result;
+        if ( it != begin() )
+          ss.append( ',' );
+        (*it)->appendJSON( ss );
       }
-      return m_jsonValue;
+      ss.append( ']' );
     }
     
     void MemberDeclVector::buildStructMemberInfoVector( RC::ConstHandle<RT::Manager> const &rtManager, RT::StructMemberInfoVector &structMemberInfoVector ) const

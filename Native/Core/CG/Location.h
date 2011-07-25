@@ -4,6 +4,7 @@
 #include <Fabric/Base/JSON/Object.h>
 #include <Fabric/Base/JSON/Integer.h>
 #include <Fabric/Core/Util/Format.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -47,12 +48,13 @@ namespace Fabric
         return _(m_line) + ":" + _(m_column);
       }
       
-      RC::ConstHandle<JSON::Value> toJSON() const
+      void appendJSON( Util::SimpleString &ss ) const
       {
-        RC::Handle<JSON::Object> result = JSON::Object::Create();
-        result->set( "line", JSON::Integer::Create( m_line ) );
-        result->set( "column", JSON::Integer::Create( m_column ) );
-        return result;
+        ss.append( "{\"line\":" );
+        ss.appendJSONInteger( m_line );
+        ss.append( ",\"column\":" );
+        ss.appendJSONInteger( m_column );
+        ss.append( '}' );
       }
       
     private:

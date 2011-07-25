@@ -10,8 +10,6 @@
 
 #include <Fabric/Core/AST/Statement.h>
 
-#include <vector>
-
 namespace Fabric
 {
   namespace AST
@@ -28,8 +26,6 @@ namespace Fabric
         CG::Location const &location,
         RC::ConstHandle<StatementVector> const &statements
         );
-
-      RC::Handle<JSON::Object> toJSONImpl() const;
       
       virtual void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
       
@@ -41,6 +37,8 @@ namespace Fabric
         CG::Location const &location,
         RC::ConstHandle<StatementVector> const &statements
         );
+      
+      virtual void appendJSONMembers( Util::SimpleString &ss ) const;
     
     private:
     

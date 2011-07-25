@@ -21,8 +21,6 @@ namespace Fabric
     public:
       
       static RC::ConstHandle<ConstScalar> Create( CG::Location const &location, std::string const &valueString );
-
-      RC::Handle<JSON::Object> toJSONImpl() const;
       
       virtual void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
             
@@ -32,6 +30,8 @@ namespace Fabric
     protected:
     
       ConstScalar( CG::Location const &location, float value );
+      
+      virtual void appendJSONMembers( Util::SimpleString &ss ) const;
       
     private:
     

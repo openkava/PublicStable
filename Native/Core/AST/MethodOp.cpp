@@ -4,8 +4,7 @@
 #include <Fabric/Core/CG/OverloadNames.h>
 #include <Fabric/Core/CG/Scope.h>
 #include <Fabric/Core/CG/Error.h>
-#include <Fabric/Base/JSON/String.h>
-#include <Fabric/Base/JSON/Array.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -36,13 +35,15 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> MethodOp::toJSONImpl() const
+    void MethodOp::appendJSONMembers( Util::SimpleString &ss ) const
     {
-      RC::Handle<JSON::Object> result = Expr::toJSONImpl();
-      result->set( "expr", m_expr->toJSON() );
-      result->set( "methodName", JSON::String::Create( m_name ) );
-      result->set( "args", m_args->toJSON() );
-      return result;
+      Expr::appendJSONMembers(ss);
+      ss.append( ",\"expr\":" );
+      m_expr->appendJSON( ss );
+      ss.append( ",\"methodName\":" );
+      ss.appendJSONString( m_name );
+      ss.append( ",\"args\":" );
+      m_args->appendJSON( ss );
     }
     
     RC::ConstHandle<CG::FunctionSymbol> MethodOp::getFunctionSymbol( CG::BasicBlockBuilder const &basicBlockBuilder ) const

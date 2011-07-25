@@ -12,7 +12,7 @@ namespace Fabric
 {
   namespace Util
   {
-    SimpleString;
+    class SimpleString;
   };
   
   namespace JSON
@@ -35,8 +35,8 @@ namespace Fabric
     
       Node( CG::Location const &location );
 
-      virtual RC::ConstHandle<JSON::String> nodeTypeNameJSONString() const = 0;
-      void appendJSONString( Util::SimpleString &ss ) const;
+      virtual char const *nodeTypeName() const = 0;
+      virtual void appendJSON( Util::SimpleString &ss ) const;
       
       CG::Location const &getLocation() const
       {
@@ -48,7 +48,7 @@ namespace Fabric
 
     protected:
       
-      virtual void appendJSONStringMembers( Util::SimpleString &ss ) const = 0;
+      virtual void appendJSONMembers( Util::SimpleString &ss ) const = 0;
 
       void addError( CG::Diagnostics &diagnostics, CG::Error const &error ) const;
       

@@ -34,8 +34,6 @@ namespace Fabric
         return new MemberDecl( location, name, typeName );
       }
 
-      RC::Handle<JSON::Object> toJSONImpl() const;
-
       void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
       
       void buildStructMemberInfo( RC::ConstHandle<RT::Manager> const &rtManager, RT::StructMemberInfo &structMemberInfo ) const;
@@ -43,6 +41,8 @@ namespace Fabric
     protected:
     
       MemberDecl( CG::Location const &location, std::string const &name, std::string const &typeName );
+      
+      virtual void appendJSONMembers( Util::SimpleString &ss ) const;
       
     private:
     

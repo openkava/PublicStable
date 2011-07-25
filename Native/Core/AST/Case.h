@@ -9,10 +9,6 @@
 #define _FABRIC_AST_CASE_H
 
 #include <Fabric/Core/AST/Node.h>
-#include <Fabric/Base/RC/Handle.h>
-#include <Fabric/Base/RC/ConstHandle.h>
-
-#include <vector>
 
 namespace Fabric
 {
@@ -37,8 +33,6 @@ namespace Fabric
         RC::ConstHandle<Expr> const &expr,
         RC::ConstHandle<StatementVector> const &statements
         );
-
-      RC::Handle<JSON::Object> toJSONImpl() const;
       
       virtual void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
 
@@ -52,6 +46,8 @@ namespace Fabric
         RC::ConstHandle<Expr> const &expr,
         RC::ConstHandle<StatementVector> const &statements
         );
+      
+      virtual void appendJSONMembers( Util::SimpleString &ss ) const;
     
     private:
     

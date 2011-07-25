@@ -4,7 +4,7 @@
 
 #include "ContinueStatement.h"
 #include <Fabric/Core/CG/Scope.h>
-#include <Fabric/Base/JSON/String.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -20,6 +20,11 @@ namespace Fabric
     ContinueStatement::ContinueStatement( CG::Location const &location )
       : Statement( location )
     {
+    }
+    
+    void ContinueStatement::appendJSONMembers( Util::SimpleString &ss ) const
+    {
+      Statement::appendJSONMembers(ss);
     }
     
     void ContinueStatement::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const

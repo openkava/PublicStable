@@ -12,7 +12,7 @@
 #include <Fabric/Core/CG/OverloadNames.h>
 #include <Fabric/Core/CG/Scope.h>
 #include <Fabric/Core/CG/Error.h>
-#include <Fabric/Base/JSON/String.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -33,13 +33,15 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> AssignOp::toJSONImpl() const
+    void AssignOp::appendJSONMembers( Util::SimpleString &ss ) const
     {
-      RC::Handle<JSON::Object> result = Expr::toJSONImpl();
-      result->set( "assignOpType", JSON::String::Create( assignOpTypeDesc( m_assignOpType ) ) );
-      result->set( "lhs", m_left->toJSON() );
-      result->set( "rhs", m_right->toJSON() );
-      return result;
+      Expr::appendJSONMembers(ss);
+      ss.append( ",\"assignOpType\":" );
+      ss.appendJSONString( assignOpTypeDesc( m_assignOpType ) );
+      ss.append( ",\"lhs\":" );
+      m_left->appendJSON( ss );
+      ss.append( ",\"rhs\":" );
+      m_right->appendJSON( ss );
     }
     
     void AssignOp::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const

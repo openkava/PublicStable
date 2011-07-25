@@ -10,7 +10,7 @@
 #include <Fabric/Core/CG/Adapter.h>
 #include <Fabric/Core/CG/OpTypes.h>
 #include <Fabric/Core/CG/OverloadNames.h>
-#include <Fabric/Base/JSON/String.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -48,11 +48,11 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> AssignOpImpl::toJSONImpl() const
+    void AssignOpImpl::appendJSONMembers( Util::SimpleString &ss ) const
     {
-      RC::Handle<JSON::Object> result = MethodOpImpl::toJSONImpl();
-      result->set( "op", JSON::String::Create( CG::assignOpTypeDesc( m_assignOpType ) ) );
-      return result;
+      MethodOpImpl::appendJSONMembers(ss);
+      ss.append( ",\"op\":" );
+      ss.appendJSONString( CG::assignOpTypeDesc( m_assignOpType ) );
     }
   };
 };

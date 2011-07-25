@@ -9,7 +9,7 @@
 #include <Fabric/Core/CG/Adapter.h>
 #include <Fabric/Core/CG/Scope.h>
 #include <Fabric/Core/CG/FunctionBuilder.h>
-#include <Fabric/Base/JSON/String.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -23,12 +23,14 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> ReturnStatement::toJSONImpl() const
+    void ReturnStatement::appendJSONMembers( Util::SimpleString &ss ) const
     {
-      RC::Handle<JSON::Object> result = Statement::toJSONImpl();
+      Statement::appendJSONMembers(ss);
       if ( m_expr )
-        result->set( "expr", m_expr->toJSON() );
-      return result;
+      {
+        ss.append( ",\"expr\":" );
+        m_expr->appendJSON( ss );
+      }
     }
     
     void ReturnStatement::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const

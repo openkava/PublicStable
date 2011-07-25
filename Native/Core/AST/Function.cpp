@@ -6,8 +6,7 @@
 #include <Fabric/Core/AST/Param.h>
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/CG/OverloadNames.h>
-#include <Fabric/Base/JSON/String.h>
-#include <Fabric/Base/JSON/Array.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -54,13 +53,15 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> Function::toJSONImpl() const
+    void Function::appendJSONMembers( Util::SimpleString &ss ) const
     {
-      RC::Handle<JSON::Object> result = FunctionBase::toJSONImpl();
-      result->set( "friendlyName", JSON::String::Create( m_friendlyName ) );
-      result->set( "entryName", JSON::String::Create( m_entryName ) );
-      result->set( "params", m_params->toJSON() );
-      return result;
+      FunctionBase::appendJSONMembers(ss);
+      ss.append( ",\"friendlyName\":" );
+      ss.appendJSONString( m_friendlyName );
+      ss.append( ",\"entryName\":" );
+      ss.appendJSONString( m_entryName );
+      ss.append( ",\"params\":" );
+      m_params->appendJSON( ss );
     }
     
     std::string const *Function::getFriendlyName( RC::Handle<CG::Manager> const &cgManager ) const

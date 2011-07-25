@@ -8,7 +8,7 @@
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/CG/ModuleBuilder.h>
 #include <Fabric/Core/RT/Manager.h>
-#include <Fabric/Base/JSON/String.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -36,13 +36,13 @@ namespace Fabric
     {
     }
     
-    void Alias::appendJSONString( Util::SimpleString &ss ) const
+    void Alias::appendJSONMembers( Util::SimpleString &ss ) const
     {
-      ss.append( "{\"newTypeName\":" );
-      ss.appendQuotedJSONString( m_name );
+      Global::appendJSONMembers(ss);
+      ss.append( ",{\"newTypeName\":" );
+      ss.appendJSONString( m_name );
       ss.append( ",\"oldTypeName\":" );
-      ss.appendQuotedJSONString( m_adapterName );
-      ss.append( '}' );
+      ss.appendJSONString( m_adapterName );
     }
     
     void Alias::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const

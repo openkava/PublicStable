@@ -12,6 +12,11 @@
 
 namespace Fabric
 {
+  namespace Util
+  {
+    class SimpleString;
+  };
+  
   namespace AST
   {
     class OrOp : public Expr
@@ -25,8 +30,6 @@ namespace Fabric
         return new OrOp( location, left, right );
       }
 
-      RC::Handle<JSON::Object> toJSONImpl() const;
-
       virtual void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
       
       virtual RC::ConstHandle<CG::Adapter> getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const;
@@ -35,6 +38,8 @@ namespace Fabric
     protected:
     
       OrOp( CG::Location const &location, RC::ConstHandle<Expr> const &left, RC::ConstHandle<Expr> const &right );
+      
+      virtual void appendJSONMembers( Util::SimpleString &ss ) const;
 
     private:
     

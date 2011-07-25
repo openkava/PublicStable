@@ -5,7 +5,7 @@
 #include <Fabric/Core/AST/StatementVector.h>
 #include <Fabric/Core/AST/Statement.h>
 #include <Fabric/Core/CG/BasicBlockBuilder.h>
-#include <Fabric/Base/JSON/Array.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -28,16 +28,16 @@ namespace Fabric
     {
     }
     
-    RC::ConstHandle<JSON::Value> StatementVector::toJSON() const
+    void StatementVector::appendJSON( Util::SimpleString &ss ) const
     {
-      if ( !m_jsonValue )
+      ss.append( '[' );
+      for ( const_iterator it=begin(); it!=end(); ++it )
       {
-        RC::Handle<JSON::Array> result = JSON::Array::Create();
-        for ( size_t i=0; i<size(); ++i )
-          result->push_back( get(i)->toJSON() );
-        m_jsonValue = result;
+        if ( it != begin() )
+          ss.append( ',' );
+        (*it)->appendJSON( ss );
       }
-      return m_jsonValue;
+      ss.append( ']' );
     }
     
     void StatementVector::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const

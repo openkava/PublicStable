@@ -6,7 +6,6 @@
 #define _FABRIC_AST_CONTINUE_STATEMENT_H
 
 #include <Fabric/Core/AST/Statement.h>
-#include <Fabric/Core/AST/Expr.h>
 
 namespace Fabric
 {
@@ -27,6 +26,8 @@ namespace Fabric
     protected:
     
       ContinueStatement( CG::Location const &location );
+      
+      virtual void appendJSONMembers( Util::SimpleString &ss ) const;
     };
   };
 };

@@ -6,7 +6,6 @@
 #define _FABRIC_AST_FUNCTION_H
 
 #include <Fabric/Core/AST/FunctionBase.h>
-#include <Fabric/Core/CG/ExprType.h>
 
 namespace Fabric
 {
@@ -35,8 +34,6 @@ namespace Fabric
         RC::ConstHandle<ParamVector> const &params,
         RC::ConstHandle<CompoundStatement> const &body
         );
-
-      RC::Handle<JSON::Object> toJSONImpl() const;
           
       virtual bool isFunction() const { return true; }
       virtual bool isOperator() const { return false; }
@@ -59,6 +56,8 @@ namespace Fabric
         RC::ConstHandle<ParamVector> const &params,
         RC::ConstHandle<CompoundStatement> const &body
         );
+      
+      virtual void appendJSONMembers( Util::SimpleString &ss ) const;
     
     private:
     

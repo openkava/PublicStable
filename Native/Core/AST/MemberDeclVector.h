@@ -12,6 +12,11 @@
 
 namespace Fabric
 {
+  namespace Util
+  {
+    class SimpleString;
+  };
+  
   namespace JSON
   {
     class Array;
@@ -39,7 +44,7 @@ namespace Fabric
       
       static RC::ConstHandle<MemberDeclVector> Create( RC::ConstHandle<MemberDecl> const &first = 0, RC::ConstHandle<MemberDeclVector> const &remaining = 0 );
 
-      RC::ConstHandle<JSON::Value> toJSON() const;
+      void appendJSON( Util::SimpleString &ss ) const;
       
       void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
           

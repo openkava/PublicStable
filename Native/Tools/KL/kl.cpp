@@ -213,8 +213,8 @@ void handleFile( FILE *fp, unsigned int runFlags )
   {
     if ( runFlags & RF_Verbose )
       printf( "-- AST --\n" );
-    RC::ConstHandle<JSON::Value> globalListJSONValue = globalList->toJSON();
-    printf( "%s\n", JSON::encode( globalListJSONValue, true ).c_str() );
+    Util::SimpleString globalListJSONString = globalList->toJSON();
+    printf( "%s\n", globalListJSONString.getCString() );
   }
 
   if( runFlags & (RF_ShowASM | RF_ShowIR | RF_ShowOptIR | RF_ShowOptASM | RF_Run) )

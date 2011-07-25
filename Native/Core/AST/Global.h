@@ -8,6 +8,7 @@
 #include <Fabric/Core/AST/Node.h>
 #include <Fabric/Core/AST/ParamVector.h>
 #include <Fabric/Core/AST/CompoundStatement.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace llvm
 {
@@ -34,7 +35,7 @@ namespace Fabric
     {
     public:
     
-      Util::SimpleString const &getJSONString() const;
+      virtual void appendJSON( Util::SimpleString &ss ) const;
     
       virtual bool isFunction() const { return false; }
       
@@ -47,11 +48,9 @@ namespace Fabric
     
       Global( CG::Location const &location );
       
-      virtual appendJSONString( Util::SimpleString &ss ) const = 0;
-      
     private:
     
-      mutable Util::SimpleString m_jsonString;
+      mutable Util::SimpleString m_json;
     };
   };
 };

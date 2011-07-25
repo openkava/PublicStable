@@ -9,8 +9,7 @@
 #include <Fabric/Core/AST/Expr.h>
 #include <Fabric/Core/AST/StatementVector.h>
 #include <Fabric/Core/CG/Scope.h>
-#include <Fabric/Base/JSON/String.h>
-#include <Fabric/Base/JSON/Array.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -38,13 +37,16 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> Case::toJSONImpl() const
+    void Case::appendJSONMembers( Util::SimpleString &ss ) const
     {
-      RC::Handle<JSON::Object> result = Node::toJSONImpl();
+      Node::appendJSONMembers(ss);
       if ( m_expr )
-        result->set( "expr", m_expr->toJSON() );
-      result->set( "statements", m_statements->toJSON() );
-      return result;
+      {
+        ss.append( ",\"expr\":" );
+        m_expr->appendJSON( ss );
+      }
+      ss.append( ",\"statements\":" );
+      m_statements->appendJSON( ss );
     }
     
     void Case::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const

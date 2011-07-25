@@ -16,8 +16,7 @@
 #include <Fabric/Core/CG/BooleanAdapter.h>
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/CG/OverloadNames.h>
-#include <Fabric/Base/JSON/String.h>
-#include <Fabric/Base/JSON/Array.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -45,12 +44,13 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> SwitchStatement::toJSONImpl() const
+    void SwitchStatement::appendJSONMembers( Util::SimpleString &ss ) const
     {
-      RC::Handle<JSON::Object> result = Statement::toJSONImpl();
-      result->set( "expr", m_expr->toJSON() );
-      result->set( "cases", m_cases->toJSON() );
-      return result;
+      Statement::appendJSONMembers(ss);
+      ss.append( ",\"expr\":" );
+      m_expr->appendJSON( ss );
+      ss.append( ",\"cases\":" );
+      m_cases->appendJSON( ss );
     }
     
     void SwitchStatement::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const

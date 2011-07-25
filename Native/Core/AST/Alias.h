@@ -39,7 +39,7 @@ namespace Fabric
         std::string const &adapterName
         );
       
-      virtual void appendJSONString( Util::SimpleString &ss ) const;
+      virtual void appendJSONMembers( Util::SimpleString &ss ) const;
     
     private:
     

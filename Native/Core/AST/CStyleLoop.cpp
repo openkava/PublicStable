@@ -6,12 +6,13 @@
  */
 
 #include <Fabric/Core/AST/CStyleLoop.h>
+#include <Fabric/Core/AST/Expr.h>
 #include <Fabric/Core/CG/BooleanAdapter.h>
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/CG/Scope.h>
 #include <Fabric/Core/CG/Error.h>
 #include <Fabric/Core/CG/FunctionBuilder.h>
-#include <Fabric/Base/JSON/String.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -48,20 +49,34 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> CStyleLoop::toJSONImpl() const
+    void CStyleLoop::appendJSONMembers( Util::SimpleString &ss ) const
     {
-      RC::Handle<JSON::Object> result = Statement::toJSONImpl();
+      Statement::appendJSONMembers(ss);
       if ( m_startStatement )
-        result->set( "startStatement", m_startStatement->toJSON() );
+      {
+        ss.append( ",\"startStatement\":" );
+        m_startStatement->appendJSON( ss );
+      }
       if ( m_preCondExpr )
-        result->set( "preCondExpr", m_preCondExpr->toJSON() );
+      {
+        ss.append( ",\"preCondExpr\":" );
+        m_preCondExpr->appendJSON( ss );
+      }
       if ( m_nextExpr )
-        result->set( "nextExpr", m_nextExpr->toJSON() );
+      {
+        ss.append( ",\"nextExpr\":" );
+        m_nextExpr->appendJSON( ss );
+      }
       if ( m_postCondExpr )
-        result->set( "postCondExpr", m_postCondExpr->toJSON() );
+      {
+        ss.append( ",\"postCondExpr\":" );
+        m_postCondExpr->appendJSON( ss );
+      }
       if ( m_body )
-        result->set( "body", m_body->toJSON() );
-      return result;
+      {
+        ss.append( ",\"body\":" );
+        m_body->appendJSON( ss );
+      }
     }
     
     void CStyleLoop::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const

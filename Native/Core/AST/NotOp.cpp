@@ -11,7 +11,7 @@
 #include <Fabric/Core/CG/Scope.h>
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/CG/Error.h>
-#include <Fabric/Base/JSON/String.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -25,11 +25,11 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> NotOp::toJSONImpl() const
+    void NotOp::appendJSONMembers( Util::SimpleString &ss ) const
     {
-      RC::Handle<JSON::Object> result = Expr::toJSONImpl();
-      result->set( "child", m_child->toJSON() );
-      return result;
+      Expr::appendJSONMembers(ss);
+      ss.append( ",\"child\":" );
+      m_child->appendJSON( ss );
     }
     
     void NotOp::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const

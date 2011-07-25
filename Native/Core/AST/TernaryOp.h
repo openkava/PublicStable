@@ -15,6 +15,11 @@
 
 namespace Fabric
 {
+  namespace Util
+  {
+    class SimpleString;
+  };
+  
   namespace AST
   {
     class TernaryOp : public Expr
@@ -28,8 +33,6 @@ namespace Fabric
         return new TernaryOp( location, opType, left, middle, right );
       }
 
-      RC::Handle<JSON::Object> toJSONImpl() const;
-
       virtual void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
       
       virtual RC::ConstHandle<CG::Adapter> getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const;
@@ -38,6 +41,8 @@ namespace Fabric
     protected:
       
       TernaryOp( CG::Location const &location, CG::TernaryOpType ternaryOpType, RC::ConstHandle<Expr> const &left, RC::ConstHandle<Expr> const &middle, RC::ConstHandle<Expr> const &right );
+      
+      virtual void appendJSONMembers( Util::SimpleString &ss ) const;
       
     private:
       
