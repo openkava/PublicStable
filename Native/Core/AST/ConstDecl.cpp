@@ -48,15 +48,12 @@ namespace Fabric
     {
     }
     
-    void ConstDecl::appendJSONMembers( Util::SimpleString &ss ) const
+    void ConstDecl::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      Node::appendJSONMembers(ss);
-      ss.append( ",\"name\":" );
-      ss.appendJSONString( m_name );
-      ss.append( ",\"type\":" );
-      ss.appendJSONString( m_type );
-      ss.append( ",\"value\":" );
-      ss.appendJSONString( m_value );
+      Node::appendJSONMembers( jsonObjectGenerator );
+      jsonObjectGenerator.makeMember( "name" ).makeString( m_name );
+      jsonObjectGenerator.makeMember( "type" ).makeString( m_type );
+      jsonObjectGenerator.makeMember( "value" ).makeString( m_value );
     }
     
     void ConstDecl::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const

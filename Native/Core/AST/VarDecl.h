@@ -50,7 +50,7 @@ namespace Fabric
         std::string const &arrayModifier
         );
       
-      virtual void appendJSONMembers( Util::SimpleString &ss ) const;
+      virtual void appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const;
     
       CG::ExprValue llvmAllocateVariable( std::string const &baseType, CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const;
 

@@ -31,11 +31,10 @@ namespace Fabric
     {
     }
     
-    void ConstSize::appendJSONMembers( Util::SimpleString &ss ) const
+    void ConstSize::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      Expr::appendJSONMembers(ss);
-      ss.append( ",\"value\":" );
-      ss.appendJSONInteger( m_value );
+      Expr::appendJSONMembers( jsonObjectGenerator );
+      jsonObjectGenerator.makeMember( "value" ).makeInteger( m_value );
     }
     
     void ConstSize::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const

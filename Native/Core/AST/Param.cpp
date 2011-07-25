@@ -41,15 +41,12 @@ namespace Fabric
     {
     }
     
-    void Param::appendJSONMembers( Util::SimpleString &ss ) const
+    void Param::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      Node::appendJSONMembers(ss);
-      ss.append( ",\"name\":" );
-      ss.appendJSONString( m_name );
-      ss.append( ",\"type\":" );
-      ss.appendJSONString( m_type );
-      ss.append( ",\"usage\":" );
-      ss.appendJSONString( CG::usageDesc( m_usage ) );
+      Node::appendJSONMembers( jsonObjectGenerator );
+      jsonObjectGenerator.makeMember( "name" ).makeString( m_name );
+      jsonObjectGenerator.makeMember( "type" ).makeString( m_type );
+      jsonObjectGenerator.makeMember( "usage" ).makeString( CG::usageDesc( m_usage ) );
     }
 
     CG::FunctionParam Param::getFunctionParam( RC::Handle<CG::Manager> const &cgManager ) const

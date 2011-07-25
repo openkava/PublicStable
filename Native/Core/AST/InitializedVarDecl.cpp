@@ -39,11 +39,10 @@ namespace Fabric
     {
     }
     
-    void InitializedVarDecl::appendJSONMembers( Util::SimpleString &ss ) const
+    void InitializedVarDecl::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      VarDecl::appendJSONMembers(ss);
-      ss.append( ",\"args\":" );
-      m_args->appendJSON( ss );
+      VarDecl::appendJSONMembers( jsonObjectGenerator );
+      m_args->appendJSON( jsonObjectGenerator.makeMember( "args" ) );
     }
     
     void InitializedVarDecl::llvmPrepareModule( std::string const &baseType, CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const

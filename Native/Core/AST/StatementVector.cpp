@@ -28,16 +28,11 @@ namespace Fabric
     {
     }
     
-    void StatementVector::appendJSON( Util::SimpleString &ss ) const
+    void StatementVector::appendJSON( Util::JSONGenerator const &jsonGenerator ) const
     {
-      ss.append( '[' );
+      Util::JSONArrayGenerator jsonArrayGenerator = jsonGenerator.makeArray();
       for ( const_iterator it=begin(); it!=end(); ++it )
-      {
-        if ( it != begin() )
-          ss.append( ',' );
-        (*it)->appendJSON( ss );
-      }
-      ss.append( ']' );
+        (*it)->appendJSON( jsonArrayGenerator.makeElement() );
     }
     
     void StatementVector::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const

@@ -25,11 +25,10 @@ namespace Fabric
     {
     }
     
-    void NotOp::appendJSONMembers( Util::SimpleString &ss ) const
+    void NotOp::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      Expr::appendJSONMembers(ss);
-      ss.append( ",\"child\":" );
-      m_child->appendJSON( ss );
+      Expr::appendJSONMembers( jsonObjectGenerator );
+      m_child->appendJSON( jsonObjectGenerator.makeMember( "child" ) );
     }
     
     void NotOp::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const

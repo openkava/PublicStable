@@ -4,7 +4,7 @@
  
 #include <Fabric/Core/AST/CaseVector.h>
 #include <Fabric/Core/AST/Case.h>
-#include <Fabric/Core/Util/SimpleString.h>
+#include <Fabric/Core/Util/JSONGenerator.h>
 
 namespace Fabric
 {
@@ -27,16 +27,11 @@ namespace Fabric
     {
     }
     
-    void CaseVector::appendJSON( Util::SimpleString &ss ) const
+    void CaseVector::appendJSON( Util::JSONGenerator const &jsonGenerator ) const
     {
-      ss.append( '[' );
+      Util::JSONArrayGenerator jsonArrayGenerator = jsonGenerator.makeArray();
       for ( const_iterator it=begin(); it!=end(); ++it )
-      {
-        if ( it != begin() )
-          ss.append( ',' );
-        (*it)->appendJSON( ss );
-      }
-      ss.append( ']' );
+        (*it)->appendJSON( jsonArrayGenerator.makeElement() );
     }
     
     void CaseVector::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const

@@ -29,13 +29,11 @@ namespace Fabric
     {
     }
     
-    void IndexOp::appendJSONMembers( Util::SimpleString &ss ) const
+    void IndexOp::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      Expr::appendJSONMembers(ss);
-      ss.append( ",\"expr\":" );
-      m_expr->appendJSON( ss );
-      ss.append( ",\"indexExpr\":" );
-      m_indexExpr->appendJSON( ss );
+      Expr::appendJSONMembers( jsonObjectGenerator );
+      m_expr->appendJSON( jsonObjectGenerator.makeMember( "expr" ) );
+      m_indexExpr->appendJSON( jsonObjectGenerator.makeMember( "indexExpr" ) );
     }
     
     void IndexOp::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const

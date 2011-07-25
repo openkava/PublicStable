@@ -36,7 +36,7 @@ namespace Fabric
       Node( CG::Location const &location );
 
       virtual char const *nodeTypeName() const = 0;
-      virtual void appendJSON( Util::SimpleString &ss ) const;
+      virtual void appendJSON( Util::JSONGenerator const &jsonGenerator ) const;
       
       CG::Location const &getLocation() const
       {
@@ -48,7 +48,7 @@ namespace Fabric
 
     protected:
       
-      virtual void appendJSONMembers( Util::SimpleString &ss ) const = 0;
+      virtual void appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const = 0;
 
       void addError( CG::Diagnostics &diagnostics, CG::Error const &error ) const;
       

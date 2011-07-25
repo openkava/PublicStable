@@ -36,13 +36,11 @@ namespace Fabric
     {
     }
     
-    void VarDeclStatement::appendJSONMembers( Util::SimpleString &ss ) const
+    void VarDeclStatement::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      Statement::appendJSONMembers(ss);
-      ss.append( ",\"baseType\":" );
-      ss.appendJSONString( m_baseType );
-      ss.append( ",\"varDecls\":" );
-      m_varDecls->appendJSON( ss );
+      Statement::appendJSONMembers( jsonObjectGenerator );
+      jsonObjectGenerator.makeMember( "baseType" ).makeString( m_baseType );
+      m_varDecls->appendJSON( jsonObjectGenerator.makeMember( "varDecls" ) );
     }
     
     void VarDeclStatement::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const

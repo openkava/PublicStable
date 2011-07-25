@@ -37,16 +37,12 @@ namespace Fabric
     {
     }
     
-    void Case::appendJSONMembers( Util::SimpleString &ss ) const
+    void Case::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      Node::appendJSONMembers(ss);
+      Node::appendJSONMembers( jsonObjectGenerator );
       if ( m_expr )
-      {
-        ss.append( ",\"expr\":" );
-        m_expr->appendJSON( ss );
-      }
-      ss.append( ",\"statements\":" );
-      m_statements->appendJSON( ss );
+        m_expr->appendJSON( jsonObjectGenerator.makeMember( "expr" ) );
+      m_statements->appendJSON( jsonObjectGenerator.makeMember( "statements" ) );
     }
     
     void Case::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const

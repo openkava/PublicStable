@@ -4,7 +4,7 @@
 #include <Fabric/Base/JSON/Object.h>
 #include <Fabric/Base/JSON/Integer.h>
 #include <Fabric/Core/Util/Format.h>
-#include <Fabric/Core/Util/SimpleString.h>
+#include <Fabric/Core/Util/JSONGenerator.h>
 
 namespace Fabric
 {
@@ -48,13 +48,11 @@ namespace Fabric
         return _(m_line) + ":" + _(m_column);
       }
       
-      void appendJSON( Util::SimpleString &ss ) const
+      void appendJSON( Util::JSONGenerator const &jsonGenerator ) const
       {
-        ss.append( "{\"line\":" );
-        ss.appendJSONInteger( m_line );
-        ss.append( ",\"column\":" );
-        ss.appendJSONInteger( m_column );
-        ss.append( '}' );
+        Util::JSONObjectGenerator jsonObjectGenerator = jsonGenerator.makeObject();
+        jsonObjectGenerator.makeMember( "line" ).makeInteger( m_line );
+        jsonObjectGenerator.makeMember( "column" ).makeInteger( m_column );
       }
       
     private:

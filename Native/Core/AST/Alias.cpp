@@ -36,13 +36,11 @@ namespace Fabric
     {
     }
     
-    void Alias::appendJSONMembers( Util::SimpleString &ss ) const
+    void Alias::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      Global::appendJSONMembers(ss);
-      ss.append( ",{\"newTypeName\":" );
-      ss.appendJSONString( m_name );
-      ss.append( ",\"oldTypeName\":" );
-      ss.appendJSONString( m_adapterName );
+      Global::appendJSONMembers( jsonObjectGenerator );
+      jsonObjectGenerator.makeMember( "newTypeName" ).makeString( m_name );
+      jsonObjectGenerator.makeMember( "oldTypeName" ).makeString( m_adapterName );
     }
     
     void Alias::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const

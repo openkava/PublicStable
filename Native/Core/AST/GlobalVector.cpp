@@ -48,14 +48,10 @@ namespace Fabric
     Util::SimpleString GlobalVector::toJSON() const
     {
       Util::SimpleString ss;
-      ss.append( '[' );
+      Util::JSONGenerator jsonGenerator( &ss );
+      Util::JSONArrayGenerator jsonArrayGenerator = jsonGenerator.makeArray();
       for ( const_iterator it=begin(); it!=end(); ++it )
-      {
-        if ( it != begin() )
-          ss.append( ',' );
-        (*it)->appendJSON( ss );
-      }
-      ss.append( ']' );
+        (*it)->appendJSON( jsonArrayGenerator.makeElement() );
       return ss;
     }
     

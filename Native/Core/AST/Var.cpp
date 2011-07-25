@@ -22,11 +22,10 @@ namespace Fabric
     {
     }
     
-    void Var::appendJSONMembers( Util::SimpleString &ss ) const
+    void Var::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      Expr::appendJSONMembers(ss);
-      ss.append( ",\"name\":" );
-      ss.appendJSONString( m_name );
+      Expr::appendJSONMembers( jsonObjectGenerator );
+      jsonObjectGenerator.makeMember( "name" ).makeString( m_name );
     }
     
     void Var::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const

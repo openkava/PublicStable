@@ -39,7 +39,7 @@ namespace Fabric
         RC::ConstHandle<Expr> const &indexExpr
         );
       
-      virtual void appendJSONMembers( Util::SimpleString &ss ) const;
+      virtual void appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const;
 
     private:
     

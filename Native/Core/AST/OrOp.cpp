@@ -27,13 +27,11 @@ namespace Fabric
     {
     }
     
-    void OrOp::appendJSONMembers( Util::SimpleString &ss ) const
+    void OrOp::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      Expr::appendJSONMembers(ss);
-      ss.append( ",\"lhs\":" );
-      m_left->appendJSON( ss );
-      ss.append( ",\"rhs\":" );
-      m_right->appendJSON( ss );
+      Expr::appendJSONMembers( jsonObjectGenerator );
+      m_left->appendJSON( jsonObjectGenerator.makeMember( "lhs" ) );
+      m_right->appendJSON( jsonObjectGenerator.makeMember( "rhs" ) );
     }
     
     void OrOp::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const

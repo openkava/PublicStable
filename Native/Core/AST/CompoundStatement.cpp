@@ -33,11 +33,10 @@ namespace Fabric
     {
     }
     
-    void CompoundStatement::appendJSONMembers( Util::SimpleString &ss ) const
+    void CompoundStatement::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      Statement::appendJSONMembers(ss);
-      ss.append( ",\"statements\":" );
-      m_statements->appendJSON( ss );
+      Statement::appendJSONMembers( jsonObjectGenerator );
+      m_statements->appendJSON( jsonObjectGenerator.makeMember( "statements" ) );
     }
     
     void CompoundStatement::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const

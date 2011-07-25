@@ -44,13 +44,11 @@ namespace Fabric
     {
     }
     
-    void SwitchStatement::appendJSONMembers( Util::SimpleString &ss ) const
+    void SwitchStatement::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      Statement::appendJSONMembers(ss);
-      ss.append( ",\"expr\":" );
-      m_expr->appendJSON( ss );
-      ss.append( ",\"cases\":" );
-      m_cases->appendJSON( ss );
+      Statement::appendJSONMembers( jsonObjectGenerator );
+      m_expr->appendJSON( jsonObjectGenerator.makeMember( "expr" ) );
+      m_cases->appendJSON( jsonObjectGenerator.makeMember( "cases" ) );
     }
     
     void SwitchStatement::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const

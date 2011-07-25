@@ -34,15 +34,12 @@ namespace Fabric
     {
     }
     
-    void BinOp::appendJSONMembers( Util::SimpleString &ss ) const
+    void BinOp::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      Expr::appendJSONMembers(ss);
-      ss.append( ",\"binOpType\":" );
-      ss.appendJSONString( CG::binOpUserName( m_binOpType ) );
-      ss.append( ",\"lhs\":" );
-      m_left->appendJSON( ss );
-      ss.append( ",\"rhs\":" );
-      m_right->appendJSON( ss );
+      Expr::appendJSONMembers( jsonObjectGenerator );
+      jsonObjectGenerator.makeMember( "binOpType" ).makeString( CG::binOpUserName( m_binOpType ) );
+      m_left->appendJSON( jsonObjectGenerator.makeMember( "lhs" ) );
+      m_right->appendJSON( jsonObjectGenerator.makeMember( "rhs" ) );
     }
     
     RC::ConstHandle<CG::FunctionSymbol> BinOp::getFunctionSymbol( CG::BasicBlockBuilder const &basicBlockBuilder ) const

@@ -43,21 +43,14 @@ namespace Fabric
     {
     }
     
-    void ConditionalStatement::appendJSONMembers( Util::SimpleString &ss ) const
+    void ConditionalStatement::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      Statement::appendJSONMembers(ss);
-      ss.append( ",\"testExpr\":" );
-      m_expr->appendJSON( ss );
+      Statement::appendJSONMembers( jsonObjectGenerator );
+      m_expr->appendJSON( jsonObjectGenerator.makeMember( "testExpr" ) );
       if ( m_trueStatement )
-      {
-        ss.append( ",\"ifTrue\":" );
-        m_trueStatement->appendJSON( ss );
-      }
+        m_trueStatement->appendJSON( jsonObjectGenerator.makeMember( "ifTrue" ) );
       if ( m_falseStatement )
-      {
-        ss.append( ",\"ifFalse\":" );
-        m_falseStatement->appendJSON( ss );
-      }
+        m_falseStatement->appendJSON( jsonObjectGenerator.makeMember( "ifFalse" ) );
     }
     
     void ConditionalStatement::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const

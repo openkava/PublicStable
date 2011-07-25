@@ -19,19 +19,15 @@ namespace Fabric
     {
     }
     
-    void Node::appendJSON( Util::SimpleString &ss ) const
+    void Node::appendJSON( Util::JSONGenerator const &jsonGenerator ) const
     {
-      ss.append( '{' );
-      appendJSONMembers( ss );
-      ss.append( '}' );
+      appendJSONMembers( jsonGenerator.makeObject() );
     }
     
-    void Node::appendJSONMembers( Util::SimpleString &ss ) const
+    void Node::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      ss.append( "\"nodeType\":" );
-      ss.appendJSONString( nodeTypeName() );
-      ss.append( ",\"location\":" );
-      m_location.appendJSON( ss );
+      jsonObjectGenerator.makeMember( "nodeType" ).makeString( nodeTypeName() );
+      m_location.appendJSON( jsonObjectGenerator.makeMember( "location" ) );
     }
 
     void Node::addWarning( CG::Diagnostics &diagnostics, std::string const &desc ) const

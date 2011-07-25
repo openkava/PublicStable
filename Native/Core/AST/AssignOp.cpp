@@ -33,15 +33,12 @@ namespace Fabric
     {
     }
     
-    void AssignOp::appendJSONMembers( Util::SimpleString &ss ) const
+    void AssignOp::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      Expr::appendJSONMembers(ss);
-      ss.append( ",\"assignOpType\":" );
-      ss.appendJSONString( assignOpTypeDesc( m_assignOpType ) );
-      ss.append( ",\"lhs\":" );
-      m_left->appendJSON( ss );
-      ss.append( ",\"rhs\":" );
-      m_right->appendJSON( ss );
+      Expr::appendJSONMembers( jsonObjectGenerator );
+      jsonObjectGenerator.makeMember( "initialValue" ).makeString( assignOpTypeDesc( m_assignOpType ) );
+      m_left->appendJSON( jsonObjectGenerator.makeMember( "lhs" ) );
+      m_right->appendJSON( jsonObjectGenerator.makeMember( "rhs" ) );
     }
     
     void AssignOp::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const

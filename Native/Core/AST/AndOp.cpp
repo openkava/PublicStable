@@ -29,13 +29,11 @@ namespace Fabric
     {
     }
     
-    void AndOp::appendJSONMembers( Util::SimpleString &ss ) const
+    void AndOp::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      Expr::appendJSONMembers(ss);
-      ss.append( ",\"lhs\":" );
-      m_left->appendJSON( ss );
-      ss.append( ",\"rhs\":" );
-      m_right->appendJSON( ss );
+      Expr::appendJSONMembers( jsonObjectGenerator );
+      m_left->appendJSON( jsonObjectGenerator.makeMember( "lhs" ) );
+      m_right->appendJSON( jsonObjectGenerator.makeMember( "rhs" ) );
     }
     
     RC::ConstHandle<CG::Adapter> AndOp::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const

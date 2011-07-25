@@ -16,7 +16,7 @@ namespace Fabric
 {
   namespace Util
   {
-    class SimpleString;
+    class JSONGenerator;
   };
   
   namespace CG
@@ -38,7 +38,7 @@ namespace Fabric
       
       static RC::ConstHandle<ExprVector> Create( RC::ConstHandle<Expr> const &first = 0, RC::ConstHandle<ExprVector> const &remaining = 0 );
 
-      void appendJSON( Util::SimpleString &ss ) const;
+      void appendJSON( Util::JSONGenerator const &jsonGenerator ) const;
       
       void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
           

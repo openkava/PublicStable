@@ -49,34 +49,19 @@ namespace Fabric
     {
     }
     
-    void CStyleLoop::appendJSONMembers( Util::SimpleString &ss ) const
+    void CStyleLoop::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      Statement::appendJSONMembers(ss);
+      Statement::appendJSONMembers( jsonObjectGenerator );
       if ( m_startStatement )
-      {
-        ss.append( ",\"startStatement\":" );
-        m_startStatement->appendJSON( ss );
-      }
+        m_startStatement->appendJSON( jsonObjectGenerator.makeMember( "startStatement" ) );
       if ( m_preCondExpr )
-      {
-        ss.append( ",\"preCondExpr\":" );
-        m_preCondExpr->appendJSON( ss );
-      }
+        m_preCondExpr->appendJSON( jsonObjectGenerator.makeMember( "preCondExpr" ) );
       if ( m_nextExpr )
-      {
-        ss.append( ",\"nextExpr\":" );
-        m_nextExpr->appendJSON( ss );
-      }
+        m_nextExpr->appendJSON( jsonObjectGenerator.makeMember( "nextExpr" ) );
       if ( m_postCondExpr )
-      {
-        ss.append( ",\"postCondExpr\":" );
-        m_postCondExpr->appendJSON( ss );
-      }
+        m_postCondExpr->appendJSON( jsonObjectGenerator.makeMember( "postCondExpr" ) );
       if ( m_body )
-      {
-        ss.append( ",\"body\":" );
-        m_body->appendJSON( ss );
-      }
+        m_body->appendJSON( jsonObjectGenerator.makeMember( "body" ) );
     }
     
     void CStyleLoop::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const

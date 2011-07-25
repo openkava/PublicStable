@@ -24,11 +24,10 @@ namespace Fabric
     {
     }
     
-    void GlobalConstDecl::appendJSONMembers( Util::SimpleString &ss ) const
+    void GlobalConstDecl::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      Global::appendJSONMembers(ss);
-      ss.append( ",\"constDecl\":" );
-      m_constDecl->appendJSON( ss );
+      Global::appendJSONMembers( jsonObjectGenerator );
+      m_constDecl->appendJSON( jsonObjectGenerator.makeMember( "constDecl" ) );
     }
     
     void GlobalConstDecl::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const

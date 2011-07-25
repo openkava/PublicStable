@@ -23,13 +23,11 @@ namespace Fabric
     {
     }
     
-    void MemberDecl::appendJSONMembers( Util::SimpleString &ss ) const
+    void MemberDecl::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      Node::appendJSONMembers(ss);
-      ss.append( ",\"name\":" );
-      ss.appendJSONString( m_name );
-      ss.append( ",\"type\":" );
-      ss.appendJSONString( m_type );
+      Node::appendJSONMembers( jsonObjectGenerator );
+      jsonObjectGenerator.makeMember( "name" ).makeString( m_name );
+      jsonObjectGenerator.makeMember( "type" ).makeString( m_type );
     }
     
     void MemberDecl::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const

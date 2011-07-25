@@ -29,11 +29,10 @@ namespace Fabric
     {
     }
     
-    void ConstString::appendJSONMembers( Util::SimpleString &ss ) const
+    void ConstString::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      Expr::appendJSONMembers(ss);
-      ss.append( ",\"value\":" );
-      ss.appendJSONString( m_value );
+      Expr::appendJSONMembers( jsonObjectGenerator );
+      jsonObjectGenerator.makeMember( "value" ).makeString( m_value );
     }
     
     void ConstString::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const

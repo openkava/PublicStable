@@ -31,7 +31,7 @@ namespace Fabric
     
       ConstScalar( CG::Location const &location, float value );
       
-      virtual void appendJSONMembers( Util::SimpleString &ss ) const;
+      virtual void appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const;
       
     private:
     

@@ -49,15 +49,12 @@ namespace Fabric
     {
     }
     
-    void MethodOpImpl::appendJSONMembers( Util::SimpleString &ss ) const
+    void MethodOpImpl::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      FunctionBase::appendJSONMembers(ss);
-      ss.append( ",\"selfTypeName\":" );
-      ss.appendJSONString( m_selfTypeName );
-      ss.append( ",\"methodName\":" );
-      ss.appendJSONString( m_methodName );
-      ss.append( ",\"params\":" );
-      m_params->appendJSON( ss );
+      FunctionBase::appendJSONMembers( jsonObjectGenerator );
+      jsonObjectGenerator.makeMember( "selfTypeName" ).makeString( m_selfTypeName );
+      jsonObjectGenerator.makeMember( "methodName" ).makeString( m_methodName );
+      m_params->appendJSON( jsonObjectGenerator.makeMember( "params" ) );
     }
           
     std::string MethodOpImpl::getEntryName( RC::Handle<CG::Manager> const &cgManager ) const

@@ -36,15 +36,12 @@ namespace Fabric
     {
     }
     
-    void TernaryOp::appendJSONMembers( Util::SimpleString &ss ) const
+    void TernaryOp::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      Expr::appendJSONMembers(ss);
-      ss.append( ",\"condExpr\":" );
-      m_left->appendJSON( ss );
-      ss.append( ",\"trueExpr\":" );
-      m_middle->appendJSON( ss );
-      ss.append( ",\"falseExpr\":" );
-      m_right->appendJSON( ss );
+      Expr::appendJSONMembers( jsonObjectGenerator );
+      m_left->appendJSON( jsonObjectGenerator.makeMember( "condExpr" ) );
+      m_middle->appendJSON( jsonObjectGenerator.makeMember( "trueExpr" ) );
+      m_right->appendJSON( jsonObjectGenerator.makeMember( "falseExpr" ) );
     }
     
     void TernaryOp::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const

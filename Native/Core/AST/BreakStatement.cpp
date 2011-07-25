@@ -25,9 +25,9 @@ namespace Fabric
     {
     }
     
-    void BreakStatement::appendJSONMembers( Util::SimpleString &ss ) const
+    void BreakStatement::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      Statement::appendJSONMembers(ss);
+      Statement::appendJSONMembers( jsonObjectGenerator );
     }
     
     void BreakStatement::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const

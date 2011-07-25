@@ -30,16 +30,12 @@ namespace Fabric
     {
     }
     
-    void FunctionBase::appendJSONMembers( Util::SimpleString &ss ) const
+    void FunctionBase::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      Global::appendJSONMembers(ss);
-      ss.append( ",\"returnExprType\":" );
-      ss.appendJSONString( m_returnTypeName );
+      Global::appendJSONMembers( jsonObjectGenerator );
+      jsonObjectGenerator.makeMember( "returnExprType" ).makeString( m_returnTypeName );
       if ( m_body )
-      {
-        ss.append( ",\"body\":" );
-        m_body->appendJSON( ss );
-      }
+        m_body->appendJSON( jsonObjectGenerator.makeMember( "body" ) );
     }
     
     RC::ConstHandle<CompoundStatement> FunctionBase::getBody() const

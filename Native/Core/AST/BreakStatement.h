@@ -30,7 +30,7 @@ namespace Fabric
     
       BreakStatement( CG::Location const &location );
       
-      virtual void appendJSONMembers( Util::SimpleString &ss ) const;
+      virtual void appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const;
     };
   };
 };

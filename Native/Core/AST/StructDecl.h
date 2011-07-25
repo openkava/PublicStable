@@ -47,7 +47,7 @@ namespace Fabric
         RC::ConstHandle<MemberDeclVector> const &members
         );
       
-      virtual void appendJSONMembers( Util::SimpleString &ss ) const;
+      virtual void appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const;
     
     private:
     

@@ -32,11 +32,10 @@ namespace Fabric
     {
     }
     
-    void ConstScalar::appendJSONMembers( Util::SimpleString &ss ) const
+    void ConstScalar::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      Expr::appendJSONMembers(ss);
-      ss.append( ",\"value\":" );
-      ss.appendJSONScalar( m_value );
+      Expr::appendJSONMembers( jsonObjectGenerator );
+      jsonObjectGenerator.makeMember( "value" ).makeScalar( m_value );
     }
     
     void ConstScalar::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const

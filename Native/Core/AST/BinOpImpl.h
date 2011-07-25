@@ -54,7 +54,7 @@ namespace Fabric
         RC::ConstHandle<CompoundStatement> const &body
         );
       
-      virtual void appendJSONMembers( Util::SimpleString &ss ) const;
+      virtual void appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const;
         
     private:
     
