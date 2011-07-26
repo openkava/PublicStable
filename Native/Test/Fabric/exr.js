@@ -15,7 +15,7 @@ struct Color\n\
 operator load( io String url, io FabricResource resource )\n\
 {\n\
   report "Loaded " + url + " (mime type " + resource.mimeType + ")";\n\
-  report "EXR data size is "+resource.dataSize;\n\
+  report "EXR data size is " + resource.dataSize;\n\
   Size imageWidth, imageHeight;\n\
   Color imagePixels[];\n\
   FabricEXRDecode( resource.data, resource.dataSize, imageWidth, imageHeight, imagePixels );\n\
