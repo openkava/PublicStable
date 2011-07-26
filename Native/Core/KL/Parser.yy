@@ -85,23 +85,7 @@ namespace Fabric
   {
     class Scanner;
     
-    class Parser : public RC::Object
-    {
-    public:
-    
-      static RC::Handle<Parser> Create( RC::Handle<Scanner> const &scanner, CG::Diagnostics &diagnostics );
-      
-      RC::Handle<AST::GlobalVector> run();
-
-    protected:
-    
-      Parser( RC::Handle<Scanner> const &scanner, CG::Diagnostics &diagnostics );
-
-    private:
-    
-      RC::Handle<Scanner> m_scanner;
-      CG::Diagnostics &m_diagnostics;
-    };
+    RC::ConstHandle<AST::GlobalVector> Parse( RC::Handle<Scanner> const &scanner, CG::Diagnostics &diagnostics );
   };
 };
 #endif //_FABRIC_KL_PARSER_DECLARED
@@ -136,23 +120,23 @@ int kl_lex( YYSTYPE *yys, YYLTYPE *yyl, KL::Context &context );
 %union { CG::Usage usage; }
 %destructor { } <usage>
 
-%union { Fabric::AST::VarDecl *astVarDeclPtr; }
-%union { Fabric::AST::VarDeclVector *astVarDeclVectorPtr; }
-%union { Fabric::AST::Param *astParamPtr; }
-%union { Fabric::AST::ParamVector *astParamListPtr; }
-%union { Fabric::AST::Global *astGlobalPtr; }
-%union { Fabric::AST::GlobalVector *astGlobalListPtr; }
-%union { Fabric::AST::StructDecl *astStructDecl; }
-%union { Fabric::AST::MemberDecl *astStructDeclMember; }
-%union { Fabric::AST::MemberDeclVector *astStructDeclMemberList; }
-%union { Fabric::AST::Statement *astStatementPtr; }
-%union { Fabric::AST::StatementVector *astStatementListPtr; }
-%union { Fabric::AST::CompoundStatement *astCompoundStatementPtr; }
-%union { Fabric::AST::ExprVector *astArgListPtr; }
-%union { Fabric::AST::Expr *astExprPtr; }
-%union { Fabric::AST::ConstDecl *astConstDeclPtr; }
-%union { Fabric::AST::Case *astCasePtr; }
-%union { Fabric::AST::CaseVector *astCaseListPtr; }
+%union { Fabric::AST::VarDecl const *astVarDeclPtr; }
+%union { Fabric::AST::VarDeclVector const *astVarDeclVectorPtr; }
+%union { Fabric::AST::Param const *astParamPtr; }
+%union { Fabric::AST::ParamVector const *astParamListPtr; }
+%union { Fabric::AST::Global const *astGlobalPtr; }
+%union { Fabric::AST::GlobalVector const *astGlobalListPtr; }
+%union { Fabric::AST::StructDecl const *astStructDecl; }
+%union { Fabric::AST::MemberDecl const *astStructDeclMember; }
+%union { Fabric::AST::MemberDeclVector const *astStructDeclMemberList; }
+%union { Fabric::AST::Statement const *astStatementPtr; }
+%union { Fabric::AST::StatementVector const *astStatementListPtr; }
+%union { Fabric::AST::CompoundStatement const *astCompoundStatementPtr; }
+%union { Fabric::AST::ExprVector const *astArgListPtr; }
+%union { Fabric::AST::Expr const *astExprPtr; }
+%union { Fabric::AST::ConstDecl const *astConstDeclPtr; }
+%union { Fabric::AST::Case const *astCasePtr; }
+%union { Fabric::AST::CaseVector const *astCaseListPtr; }
 %destructor { if ( $$ ) $$->release(); } <*>
 
 %token TOKEN_END 0 "end of file"
@@ -318,7 +302,7 @@ start
 global_list :
   global global_list
   {
-    $$ = AST::GlobalVector::Create( $1, $2 ).take();
+    $$ = AST::GlobalVector::Create( RC::ConstHandle<AST::Global>($1), $2 ).take();
     $1->release();
     $2->release();
   }
@@ -1364,20 +1348,9 @@ namespace Fabric
 {
   namespace KL
   {
-    RC::Handle<Parser> Parser::Create( RC::Handle<Scanner> const &scanner, CG::Diagnostics &diagnostics )
+    RC::ConstHandle<AST::GlobalVector> Parse( RC::Handle<Scanner> const &scanner, CG::Diagnostics &diagnostics )
     {
-      return new Parser( scanner, diagnostics );
-    }
-      
-    Parser::Parser( RC::Handle<Scanner> const &scanner, CG::Diagnostics &diagnostics )
-      : m_scanner( scanner )
-      , m_diagnostics( diagnostics )
-    {
-    }
-    
-    RC::Handle<AST::GlobalVector> Parser::run()
-    {
-      Context context( m_scanner, m_diagnostics );
+      Context context( scanner, diagnostics );
 
       // TODO: Do we check the status?
       kl_debug = 0;

@@ -6,8 +6,7 @@
 #include <Fabric/Core/AST/Param.h>
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/CG/OverloadNames.h>
-#include <Fabric/Base/JSON/String.h>
-#include <Fabric/Base/JSON/Array.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -15,7 +14,7 @@ namespace Fabric
   {
     FABRIC_AST_NODE_IMPL( Function );
     
-    RC::Handle<Function> Function::Create(
+    RC::ConstHandle<Function> Function::Create(
       CG::Location const &location,
       std::string const &friendlyName,
       std::string const &entryName,
@@ -27,7 +26,7 @@ namespace Fabric
       return new Function( location, friendlyName, entryName, returnTypeName, params, body );
     }
     
-    RC::Handle<Function> Function::Create(
+    RC::ConstHandle<Function> Function::Create(
       CG::Location const &location,
       std::string const &friendlyName,
       std::string const *entryName,
@@ -54,13 +53,12 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> Function::toJSON() const
+    void Function::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      RC::Handle<JSON::Object> result = FunctionBase::toJSON();
-      result->set( "friendlyName", JSON::String::Create( m_friendlyName ) );
-      result->set( "entryName", JSON::String::Create( m_entryName ) );
-      result->set( "params", m_params->toJSON() );
-      return result;
+      FunctionBase::appendJSONMembers( jsonObjectGenerator );
+      jsonObjectGenerator.makeMember( "friendlyName" ).makeString( m_friendlyName );
+      jsonObjectGenerator.makeMember( "entryName" ).makeString( m_entryName );
+      m_params->appendJSON( jsonObjectGenerator.makeMember( "params" ) );
     }
     
     std::string const *Function::getFriendlyName( RC::Handle<CG::Manager> const &cgManager ) const

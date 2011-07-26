@@ -31,7 +31,7 @@ namespace Fabric
       
     public:
     
-      static RC::Handle<BinOpImpl> Create(
+      static RC::ConstHandle<BinOpImpl> Create(
         CG::Location const &location,
         std::string const &returnType,
         CG::BinOpType binOpType,
@@ -39,8 +39,6 @@ namespace Fabric
         RC::ConstHandle<AST::Param> const &rhs,
         RC::ConstHandle<CompoundStatement> const &body
         );
-
-      RC::Handle<JSON::Object> toJSON() const;
                   
       virtual std::string getEntryName( RC::Handle<CG::Manager> const &cgManager ) const;
       virtual RC::ConstHandle<ParamVector> getParams( RC::Handle<CG::Manager> const &cgManager ) const;
@@ -55,6 +53,8 @@ namespace Fabric
         RC::ConstHandle<AST::Param> const &rhs,
         RC::ConstHandle<CompoundStatement> const &body
         );
+      
+      virtual void appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const;
         
     private:
     

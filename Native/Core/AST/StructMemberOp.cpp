@@ -11,7 +11,7 @@
 #include <Fabric/Core/CG/Error.h>
 #include <Fabric/Core/CG/Scope.h>
 #include <Fabric/Core/RT/StructMemberInfo.h>
-#include <Fabric/Base/JSON/String.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -26,12 +26,16 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> StructMemberOp::toJSON() const
+    void StructMemberOp::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      RC::Handle<JSON::Object> result = Expr::toJSON();
-      result->set( "expr", m_structExpr->toJSON() );
-      result->set( "memberName", JSON::String::Create( m_memberName ) );
-      return result;
+      Expr::appendJSONMembers( jsonObjectGenerator );
+      m_structExpr->appendJSON( jsonObjectGenerator.makeMember( "expr" ) );
+      jsonObjectGenerator.makeMember( "memberName" ).makeString( m_memberName );
+    }
+    
+    void StructMemberOp::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    {
+      m_structExpr->llvmPrepareModule( moduleBuilder, diagnostics );
     }
     
     RC::ConstHandle<CG::Adapter> StructMemberOp::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const
@@ -88,6 +92,10 @@ namespace Fabric
               case CG::USAGE_LVALUE:
                 result = CG::ExprValue( memberAdapter, CG::USAGE_LVALUE, memberLValue );
                 break;
+              
+              case CG::USAGE_UNSPECIFIED:
+                FABRIC_ASSERT( false );
+                throw Exception( "unspecified usage" );
             }
             structExprValue.llvmDispose( basicBlockBuilder );
             return result;

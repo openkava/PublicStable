@@ -10,11 +10,13 @@
 #include <Fabric/Base/RC/ConstHandle.h>
 #include <Fabric/Core/CG/ExprType.h>
 
+#include <vector>
+
 namespace Fabric
 {
-  namespace JSON
+  namespace Util
   {
-    class Array;
+    class JSONGenerator;
   };
   
   namespace CG
@@ -22,6 +24,8 @@ namespace Fabric
     class Adapter;
     class BasicBlockBuilder;
     class ExprValue;
+    class ModuleBuilder;
+    class Diagnostics;
   };
   
   namespace AST
@@ -32,11 +36,11 @@ namespace Fabric
     {
     public:
       
-      static RC::Handle<ExprVector> Create();
-      static RC::Handle<ExprVector> Create( RC::ConstHandle<Expr> const &first );
-      static RC::Handle<ExprVector> Create( RC::ConstHandle<Expr> const &first, RC::ConstHandle<ExprVector> const &remaining );
+      static RC::ConstHandle<ExprVector> Create( RC::ConstHandle<Expr> const &first = 0, RC::ConstHandle<ExprVector> const &remaining = 0 );
 
-      RC::Handle<JSON::Array> toJSON() const;
+      void appendJSON( Util::JSONGenerator const &jsonGenerator ) const;
+      
+      void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
           
       void appendTypes( CG::BasicBlockBuilder const &basicBlockBuilder, std::vector< RC::ConstHandle<CG::Adapter> > &argTypes ) const;
       void appendExprValues( CG::BasicBlockBuilder &basicBlockBuilder, std::vector<CG::Usage> const &usages, std::vector<CG::ExprValue> &result, std::string const &lValueErrorDesc ) const;

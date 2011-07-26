@@ -64,7 +64,7 @@ namespace Fabric
       size_t dataSize = 0;
       for (;;)
       {
-        static const size_t maxReadSize = 65536;
+        static const int maxReadSize = 65536;
         if ( dataSize + maxReadSize > allocSize )
         {
           allocSize = dataSize + maxReadSize;

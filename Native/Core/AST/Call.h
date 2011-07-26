@@ -27,13 +27,13 @@ namespace Fabric
       
     public:
         
-      static RC::Handle<Call> Create(
+      static RC::ConstHandle<Call> Create(
         CG::Location const &location,
         std::string const &name,
         RC::ConstHandle<ExprVector> const &args
         );
-
-      RC::Handle<JSON::Object> toJSON() const;
+      
+      virtual void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
       
       virtual RC::ConstHandle<CG::Adapter> getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const;
       virtual CG::ExprValue buildExprValue( CG::BasicBlockBuilder &basicBlockBuilder, CG::Usage usage, std::string const &lValueErrorDesc ) const;
@@ -45,6 +45,8 @@ namespace Fabric
         std::string const &name,
         RC::ConstHandle<ExprVector> const &args
         );
+      
+      virtual void appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const;
       
       RC::ConstHandle<CG::FunctionSymbol> getFunctionSymbol( CG::BasicBlockBuilder const &basicBlockBuilder ) const;
 

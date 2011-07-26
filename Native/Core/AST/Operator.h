@@ -9,6 +9,11 @@
 
 namespace Fabric
 {
+  namespace Util
+  {
+    class SimpleString;
+  };
+  
   namespace AST
   {
     class ParamVector;
@@ -19,7 +24,7 @@ namespace Fabric
 
     public:
     
-      static RC::Handle<Function> Create(
+      static RC::ConstHandle<Function> Create(
         CG::Location const &location,
         std::string const &friendlyName,
         std::string const &entryName,
@@ -27,7 +32,7 @@ namespace Fabric
         RC::ConstHandle<CompoundStatement> const &body
         );
     
-      static RC::Handle<Function> Create(
+      static RC::ConstHandle<Function> Create(
         CG::Location const &location,
         std::string const &friendlyName,
         std::string const *entryName,

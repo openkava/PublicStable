@@ -11,8 +11,14 @@
 
 namespace Fabric
 {
+  namespace Util
+  {
+    class JSONGenerator;
+  };
+  
   namespace JSON
   {
+    class Value;
     class Array;
   };
   
@@ -31,17 +37,21 @@ namespace Fabric
     {
     public:
       
-      static RC::Handle<VarDeclVector> Create();
-      static RC::Handle<VarDeclVector> Create( RC::ConstHandle<VarDecl> const &first );
-      static RC::Handle<VarDeclVector> Create( RC::ConstHandle<VarDecl> const &first, RC::ConstHandle<VarDeclVector> const &remaining );
+      static RC::ConstHandle<VarDeclVector> Create( RC::ConstHandle<VarDecl> const &first = 0, RC::ConstHandle<VarDeclVector> const &remaining = 0 );
 
-      RC::Handle<JSON::Array> toJSON() const;
+      void appendJSON( Util::JSONGenerator const &jsonGenerator ) const;
+      
+      void llvmPrepareModule( std::string const &baseType, CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
     
       void llvmCompileToBuilder( std::string const &baseType, CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const;
 
     protected:
     
       VarDeclVector();
+      
+    private:
+    
+      mutable RC::ConstHandle<JSON::Value> m_jsonValue;
     };
   };
 };

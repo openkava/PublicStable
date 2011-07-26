@@ -5,9 +5,10 @@
  *
  */
 
-#include "ExprStatement.h"
+#include <Fabric/Core/AST/ExprStatement.h>
+#include <Fabric/Core/AST/Expr.h>
 #include <Fabric/Core/CG/Error.h>
-#include <Fabric/Base/JSON/String.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -15,17 +16,26 @@ namespace Fabric
   {
     FABRIC_AST_NODE_IMPL( ExprStatement );
     
+    RC::ConstHandle<ExprStatement> ExprStatement::Create( CG::Location const &location, RC::ConstHandle<Expr> const &expr )
+    {
+      return new ExprStatement( location, expr );
+    }
+    
     ExprStatement::ExprStatement( CG::Location const &location, RC::ConstHandle<Expr> const &expr )
       : Statement( location )
       , m_expr( expr )
     {
     }
     
-    RC::Handle<JSON::Object> ExprStatement::toJSON() const
+    void ExprStatement::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      RC::Handle<JSON::Object> result = Statement::toJSON();
-      result->set( "expr", m_expr->toJSON() );
-      return result;
+      Statement::appendJSONMembers( jsonObjectGenerator );
+      m_expr->appendJSON( jsonObjectGenerator.makeMember( "expr" ) );
+    }
+    
+    void ExprStatement::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    {
+      m_expr->llvmPrepareModule( moduleBuilder, diagnostics );
     }
 
     void ExprStatement::llvmCompileToBuilder( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const

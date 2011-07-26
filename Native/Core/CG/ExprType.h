@@ -36,6 +36,8 @@ namespace Fabric
           return "r-value";
         case USAGE_LVALUE:
           return "l-value";
+        case USAGE_UNSPECIFIED:
+          return "unspecified";
       }
       return "<unknown usage>";
     }

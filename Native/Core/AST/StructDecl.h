@@ -9,6 +9,11 @@
 
 namespace Fabric
 {
+  namespace Util
+  {
+    class SimpleString;
+  };
+  
   namespace CG
   {
     class Adapter;
@@ -24,15 +29,14 @@ namespace Fabric
 
     public:
 
-      static RC::Handle<StructDecl> Create(
+      static RC::ConstHandle<StructDecl> Create(
         CG::Location const &location,
         std::string const &name,
         RC::ConstHandle<MemberDeclVector> const &members
         );
 
-      RC::Handle<JSON::Object> toJSON() const;
+      virtual void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
       
-      virtual void registerTypes( RC::Handle<RT::Manager> const &rtManager, CG::Diagnostics &diagnostics ) const;
       virtual void llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctionBodies ) const;
       
     protected:
@@ -42,6 +46,8 @@ namespace Fabric
         std::string const &name,
         RC::ConstHandle<MemberDeclVector> const &members
         );
+      
+      virtual void appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const;
     
     private:
     

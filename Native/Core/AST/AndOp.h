@@ -12,6 +12,11 @@
 
 namespace Fabric
 {
+  namespace CG
+  {
+    class ModuleBuilder;
+  };
+  
   namespace AST
   {
     class AndOp : public Expr
@@ -20,12 +25,9 @@ namespace Fabric
       
     public:
         
-      static RC::Handle<AndOp> Create( CG::Location const &location, RC::ConstHandle<Expr> const &left, RC::ConstHandle<Expr> const &right )
-      {
-        return new AndOp( location, left, right );
-      }
-
-      RC::Handle<JSON::Object> toJSON() const;
+      static RC::ConstHandle<AndOp> Create( CG::Location const &location, RC::ConstHandle<Expr> const &left, RC::ConstHandle<Expr> const &right );
+      
+      virtual void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
       
       virtual RC::ConstHandle<CG::Adapter> getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const;
       virtual CG::ExprValue buildExprValue( CG::BasicBlockBuilder &basicBlockBuilder, CG::Usage usage, std::string const &lValueErrorDesc ) const;
@@ -33,6 +35,8 @@ namespace Fabric
     protected:
     
       AndOp( CG::Location const &location, RC::ConstHandle<Expr> const &left, RC::ConstHandle<Expr> const &right );
+      
+      virtual void appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const;
 
     private:
     

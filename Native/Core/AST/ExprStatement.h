@@ -9,30 +9,30 @@
 #define _FABRIC_AST_EXPR_STATEMENT_H
 
 #include <Fabric/Core/AST/Statement.h>
-#include <Fabric/Core/AST/Expr.h>
 
 namespace Fabric
 {
   namespace AST
   {
+    class Expr;
+    
     class ExprStatement: public Statement
     {
       FABRIC_AST_NODE_DECL( ExprStatement );
 
     public:
 
-      static RC::Handle<ExprStatement> Create( CG::Location const &location, RC::ConstHandle<Expr> const &expr )
-      {
-        return new ExprStatement( location, expr );
-      }
+      static RC::ConstHandle<ExprStatement> Create( CG::Location const &location, RC::ConstHandle<Expr> const &expr );
 
-      RC::Handle<JSON::Object> toJSON() const;
+      virtual void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
       
       virtual void llvmCompileToBuilder( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const;
      
     protected:
     
       ExprStatement( CG::Location const &location, RC::ConstHandle<Expr> const &expr );
+      
+      virtual void appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const;
     
     private:
     

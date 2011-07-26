@@ -7,7 +7,7 @@
 #include <Fabric/Core/CG/ModuleBuilder.h>
 #include <Fabric/Core/CG/Error.h>
 #include <Fabric/Core/CG/Manager.h>
-#include <Fabric/Base/JSON/String.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -24,11 +24,15 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> GlobalConstDecl::toJSON() const
+    void GlobalConstDecl::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      RC::Handle<JSON::Object> result = Global::toJSON();
-      result->set( "constDecl", m_constDecl->toJSON() );
-      return result;
+      Global::appendJSONMembers( jsonObjectGenerator );
+      m_constDecl->appendJSON( jsonObjectGenerator.makeMember( "constDecl" ) );
+    }
+    
+    void GlobalConstDecl::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    {
+      m_constDecl->llvmPrepareModule( moduleBuilder, diagnostics );
     }
     
     void GlobalConstDecl::llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctionBodies ) const

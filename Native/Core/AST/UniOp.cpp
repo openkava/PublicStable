@@ -10,7 +10,7 @@
 #include <Fabric/Core/CG/OverloadNames.h>
 #include <Fabric/Core/CG/Error.h>
 #include <Fabric/Core/CG/Scope.h>
-#include <Fabric/Base/JSON/String.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -25,12 +25,11 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> UniOp::toJSON() const
+    void UniOp::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      RC::Handle<JSON::Object> result = Expr::toJSON();
-      result->set( "op", JSON::String::Create( uniOpUserName( m_uniOpType ) ) );
-      result->set( "child", m_child->toJSON() );
-      return result;
+      Expr::appendJSONMembers( jsonObjectGenerator );
+      jsonObjectGenerator.makeMember( "op" ).makeString( uniOpUserName( m_uniOpType ) );
+      m_child->appendJSON( jsonObjectGenerator.makeMember( "child" ) );
     }
     
     RC::ConstHandle<CG::FunctionSymbol> UniOp::getFunctionSymbol( CG::BasicBlockBuilder const &basicBlockBuilder ) const
@@ -41,6 +40,11 @@ namespace Fabric
       if ( !functionSymbol )
         throw Exception( "unary operator " + _(CG::uniOpUserName( m_uniOpType )) + " not supported for expressions of type " + _(childType->getUserName()) );
       return functionSymbol;
+    }
+    
+    void UniOp::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    {
+      m_child->llvmPrepareModule( moduleBuilder, diagnostics );
     }
     
     RC::ConstHandle<CG::Adapter> UniOp::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const

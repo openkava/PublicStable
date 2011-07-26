@@ -13,6 +13,11 @@
 
 namespace Fabric
 {
+  namespace Util
+  {
+    class SimpleString;
+  };
+  
   namespace CG
   {
     class FunctionSymbol;
@@ -26,12 +31,12 @@ namespace Fabric
 
     public:
     
-      static RC::Handle<UniOp> Create( CG::Location const &location, CG::UniOpType uniOpType, RC::ConstHandle<Expr> const &child )
+      static RC::ConstHandle<UniOp> Create( CG::Location const &location, CG::UniOpType uniOpType, RC::ConstHandle<Expr> const &child )
       {
         return new UniOp( location, uniOpType, child );
       }
 
-      RC::Handle<JSON::Object> toJSON() const;
+      virtual void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
       
       virtual RC::ConstHandle<CG::Adapter> getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const;
       virtual CG::ExprValue buildExprValue( CG::BasicBlockBuilder &basicBlockBuilder, CG::Usage usage, std::string const &lValueErrorDesc ) const;
@@ -39,6 +44,8 @@ namespace Fabric
     protected:
     
       UniOp( CG::Location const &location, CG::UniOpType uniOpType, RC::ConstHandle<Expr> const &child );
+      
+      virtual void appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const;
       
       RC::ConstHandle<CG::FunctionSymbol> getFunctionSymbol( CG::BasicBlockBuilder const &basicBlockBuilder ) const;
 

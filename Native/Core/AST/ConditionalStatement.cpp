@@ -5,12 +5,14 @@
  *
  */
 
-#include "ConditionalStatement.h"
+#include <Fabric/Core/AST/ConditionalStatement.h>
+#include <Fabric/Core/AST/Expr.h>
 #include <Fabric/Core/CG/BooleanAdapter.h>
-#include <Fabric/Core/CG/Manager.h>
-#include <Fabric/Core/CG/FunctionBuilder.h>
 #include <Fabric/Core/CG/Error.h>
-#include <Fabric/Base/JSON/String.h>
+#include <Fabric/Core/CG/FunctionBuilder.h>
+#include <Fabric/Core/CG/Manager.h>
+#include <Fabric/Core/CG/ModuleBuilder.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -18,6 +20,16 @@ namespace Fabric
   {
     FABRIC_AST_NODE_IMPL( ConditionalStatement );
     
+    RC::ConstHandle<ConditionalStatement> ConditionalStatement::Create(
+      CG::Location const &location,
+      RC::ConstHandle<Expr> const &expr,
+      RC::ConstHandle<Statement> const &trueStatement,
+      RC::ConstHandle<Statement> const &falseStatement
+      )
+    {
+      return new ConditionalStatement( location, expr, trueStatement, falseStatement );
+    }
+
     ConditionalStatement::ConditionalStatement(
       CG::Location const &location,
       RC::ConstHandle<Expr> const &expr,
@@ -31,13 +43,23 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> ConditionalStatement::toJSON() const
+    void ConditionalStatement::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      RC::Handle<JSON::Object> result = Statement::toJSON();
-      result->set( "testExpr", m_expr->toJSON() );
-      result->set( "ifTrue", m_trueStatement->toJSON() );
-      result->set( "ifFalse", m_falseStatement->toJSON() );
-      return result;
+      Statement::appendJSONMembers( jsonObjectGenerator );
+      m_expr->appendJSON( jsonObjectGenerator.makeMember( "testExpr" ) );
+      if ( m_trueStatement )
+        m_trueStatement->appendJSON( jsonObjectGenerator.makeMember( "ifTrue" ) );
+      if ( m_falseStatement )
+        m_falseStatement->appendJSON( jsonObjectGenerator.makeMember( "ifFalse" ) );
+    }
+    
+    void ConditionalStatement::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    {
+      m_expr->llvmPrepareModule( moduleBuilder, diagnostics );
+      if ( m_trueStatement )
+        m_trueStatement->llvmPrepareModule( moduleBuilder, diagnostics );
+      if ( m_falseStatement )
+        m_falseStatement->llvmPrepareModule( moduleBuilder, diagnostics );
     }
 
     void ConditionalStatement::llvmCompileToBuilder( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const

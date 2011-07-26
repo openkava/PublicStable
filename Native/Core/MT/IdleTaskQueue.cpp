@@ -174,6 +174,7 @@ namespace Fabric
         }
       }
       pthread_mutex_unlock( &m_stateMutex );
+      return 0;
     }
 #elif defined(FABRIC_MT_IDLE_TASK_QUEUE_WIN32)
     unsigned IdleTaskQueue::threadEntry()

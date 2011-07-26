@@ -8,8 +8,7 @@
 #include <Fabric/Core/AST/VarDeclStatement.h>
 #include <Fabric/Core/AST/VarDecl.h>
 #include <Fabric/Core/AST/VarDeclVector.h>
-#include <Fabric/Base/JSON/String.h>
-#include <Fabric/Base/JSON/Array.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -17,7 +16,7 @@ namespace Fabric
   {
     FABRIC_AST_NODE_IMPL( VarDeclStatement );
     
-    RC::Handle<VarDeclStatement> VarDeclStatement::Create(
+    RC::ConstHandle<VarDeclStatement> VarDeclStatement::Create(
       CG::Location const &location,
       std::string const &baseType,
       RC::ConstHandle<VarDeclVector> const &varDecls
@@ -37,18 +36,21 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> VarDeclStatement::toJSON() const
+    void VarDeclStatement::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      RC::Handle<JSON::Object> result = Statement::toJSON();
-      result->set( "baseType", JSON::String::Create( m_baseType ) );
-      result->set( "varDecls", m_varDecls->toJSON() );
-      return result;
+      Statement::appendJSONMembers( jsonObjectGenerator );
+      jsonObjectGenerator.makeMember( "baseType" ).makeString( m_baseType );
+      m_varDecls->appendJSON( jsonObjectGenerator.makeMember( "varDecls" ) );
+    }
+    
+    void VarDeclStatement::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    {
+      m_varDecls->llvmPrepareModule( m_baseType, moduleBuilder, diagnostics );
     }
 
     void VarDeclStatement::llvmCompileToBuilder( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const
     {
-      for ( VarDeclVector::const_iterator it=m_varDecls->begin(); it!=m_varDecls->end(); ++it )
-        (*it)->llvmCompileToBuilder( m_baseType, basicBlockBuilder, diagnostics );
+      m_varDecls->llvmCompileToBuilder( m_baseType, basicBlockBuilder, diagnostics );
     }
   };
 };

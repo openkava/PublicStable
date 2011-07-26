@@ -13,7 +13,7 @@
 #include <Fabric/Core/CG/Error.h>
 #include <Fabric/Core/CG/FunctionBuilder.h>
 #include <Fabric/Core/RT/Desc.h>
-#include <Fabric/Base/JSON/String.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -36,13 +36,19 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> TernaryOp::toJSON() const
+    void TernaryOp::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      RC::Handle<JSON::Object> result = Expr::toJSON();
-      result->set( "condExpr", m_left->toJSON() );
-      result->set( "trueExpr", m_middle->toJSON() );
-      result->set( "falseExpr", m_right->toJSON() );
-      return result;
+      Expr::appendJSONMembers( jsonObjectGenerator );
+      m_left->appendJSON( jsonObjectGenerator.makeMember( "condExpr" ) );
+      m_middle->appendJSON( jsonObjectGenerator.makeMember( "trueExpr" ) );
+      m_right->appendJSON( jsonObjectGenerator.makeMember( "falseExpr" ) );
+    }
+    
+    void TernaryOp::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    {
+      m_left->llvmPrepareModule( moduleBuilder, diagnostics );
+      m_middle->llvmPrepareModule( moduleBuilder, diagnostics );
+      m_right->llvmPrepareModule( moduleBuilder, diagnostics );
     }
     
     RC::ConstHandle<CG::Adapter> TernaryOp::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const

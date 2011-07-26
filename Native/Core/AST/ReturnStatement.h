@@ -13,6 +13,11 @@
 
 namespace Fabric
 {
+  namespace Util
+  {
+    class SimpleString;
+  };
+  
   namespace AST
   {
     class ReturnStatement: public Statement
@@ -21,18 +26,20 @@ namespace Fabric
 
     public:
 
-      static RC::Handle<ReturnStatement> Create( CG::Location const &location, RC::ConstHandle<Expr> const &expr = RC::ConstHandle<Expr>() )
+      static RC::ConstHandle<ReturnStatement> Create( CG::Location const &location, RC::ConstHandle<Expr> const &expr = RC::ConstHandle<Expr>() )
       {
         return new ReturnStatement( location, expr );
       }
 
-      RC::Handle<JSON::Object> toJSON() const;
+      virtual void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
       
       virtual void llvmCompileToBuilder( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const;
      
     protected:
     
       ReturnStatement( CG::Location const &location, RC::ConstHandle<Expr> const &expr);
+      
+      virtual void appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const;
     
     private:
     

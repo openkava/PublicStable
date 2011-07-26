@@ -18,8 +18,6 @@
 
 namespace Fabric
 {
-  
-
   namespace DG
   {
     RC::Handle<EventHandler> EventHandler::Create( std::string const &name, RC::Handle<Context> const &context )
@@ -73,8 +71,7 @@ namespace Fabric
       
     void EventHandler::addEvent( Event *event )
     {
-      bool insertResult = m_events.insert( event ).second;
-      FABRIC_ASSERT( insertResult );
+      FABRIC_CONFIRM( m_events.insert( event ).second );
     }
     
     void EventHandler::removeEvent( Event *event )

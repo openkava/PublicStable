@@ -12,6 +12,11 @@
 
 namespace Fabric
 {
+  namespace Util
+  {
+    class SimpleString;
+  };
+  
   namespace CG
   {
     class ValueSymbol;
@@ -25,12 +30,12 @@ namespace Fabric
 
     public:
     
-      static RC::Handle<Var> Create( CG::Location const &location, std::string const &name )
+      static RC::ConstHandle<Var> Create( CG::Location const &location, std::string const &name )
       {
         return new Var( location, name );
       }
 
-      RC::Handle<JSON::Object> toJSON() const;
+      virtual void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
       
       virtual RC::ConstHandle<CG::Adapter> getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const;
       virtual CG::ExprValue buildExprValue( CG::BasicBlockBuilder &basicBlockBuilder, CG::Usage usage, std::string const &lValueErrorDesc ) const;
@@ -38,6 +43,8 @@ namespace Fabric
     protected:
     
       Var( CG::Location const &location, std::string const &name );
+      
+      virtual void appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const;
       
       RC::ConstHandle<CG::ValueSymbol> getValueSymbol( CG::BasicBlockBuilder const &basicBlockBuilder ) const;
       

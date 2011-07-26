@@ -8,8 +8,7 @@
 #include "CompoundStatement.h"
 #include <Fabric/Core/AST/StatementVector.h>
 #include <Fabric/Core/CG/Scope.h>
-#include <Fabric/Base/JSON/String.h>
-#include <Fabric/Base/JSON/Array.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -17,7 +16,7 @@ namespace Fabric
   {
     FABRIC_AST_NODE_IMPL( CompoundStatement );
     
-    RC::Handle<CompoundStatement> CompoundStatement::Create(
+    RC::ConstHandle<CompoundStatement> CompoundStatement::Create(
       CG::Location const &location,
       RC::ConstHandle<StatementVector> const &statements
       )
@@ -34,11 +33,15 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> CompoundStatement::toJSON() const
+    void CompoundStatement::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      RC::Handle<JSON::Object> result = Node::toJSON();
-      result->set( "statements", m_statements->toJSON() );
-      return result;
+      Statement::appendJSONMembers( jsonObjectGenerator );
+      m_statements->appendJSON( jsonObjectGenerator.makeMember( "statements" ) );
+    }
+    
+    void CompoundStatement::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    {
+      m_statements->llvmPrepareModule( moduleBuilder, diagnostics );
     }
 
     void CompoundStatement::llvmCompileToBuilder( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const

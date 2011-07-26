@@ -23,6 +23,8 @@
 #include <Fabric/Core/KL/Scanner.h>
 #include <Fabric/Core/KL/Parser.hpp>
 #include <Fabric/Core/CG/Manager.h>
+#include <Fabric/Core/Util/Log.h>
+#include <Fabric/Core/Util/Timer.h>
 
 #include <llvm/Module.h>
 #include <llvm/Function.h>
@@ -78,10 +80,21 @@ namespace Fabric
       
       FABRIC_ASSERT( m_sourceCode.length() > 0 );
       
+      m_ast = AST::GlobalVector::Create();
+      std::vector< RC::ConstHandle<RT::Desc> > topoSortedDescs = m_context->getRTManager()->getTopoSortedDescs();
+      for ( size_t i=0; i<topoSortedDescs.size(); ++i )
+      {
+        RC::ConstHandle<RT::Desc> const &desc = topoSortedDescs[i];
+        RC::ConstHandle<AST::GlobalVector> ast = RC::ConstHandle<AST::GlobalVector>::StaticCast( desc->getKLBindingsAST() );
+        m_ast = AST::GlobalVector::Create( m_ast, ast );
+      }
+      m_ast = AST::GlobalVector::Create( m_ast, Plug::Manager::Instance()->getAST() );
+
       RC::ConstHandle<KL::Source> source = KL::StringSource::Create( m_sourceCode );
       RC::Handle<KL::Scanner> scanner = KL::Scanner::Create( source );
-      RC::Handle<KL::Parser> parser = KL::Parser::Create( scanner, m_diagnostics );
-      m_ast = parser->run();
+      Util::Timer timer;
+      m_ast = AST::GlobalVector::Create( m_ast, KL::Parse( scanner, m_diagnostics ) );
+      FABRIC_LOG( "KL::Parse: %fms", timer.getElapsedMS(true) );
       if ( !m_diagnostics.containsError() )
         compileAST( true );
     }
@@ -93,89 +106,76 @@ namespace Fabric
       RC::Handle<CG::Manager> cgManager = m_context->getCGManager();
       llvm::OwningPtr<llvm::Module> module( new llvm::Module( "DG::Code", cgManager->getLLVMContext() ) );
       CG::ModuleBuilder moduleBuilder( cgManager, module.get() );
+      OCL::llvmPrepareModule( moduleBuilder, m_context->getRTManager() );
 
       CG::Diagnostics optimizeDiagnostics;
       CG::Diagnostics &diagnostics = (false && optimize)? optimizeDiagnostics: m_diagnostics;
 
-      RC::ConstHandle<RT::Manager> rtManager = m_context->getRTManager();
-      std::vector< RC::ConstHandle<RT::Desc> > topoSortedDescs = rtManager->getTopoSortedDescs();
-      for ( size_t i=0; i<topoSortedDescs.size(); ++i )
+      std::string ir = m_irCache->get( m_ast );
+      if ( ir.length() > 0 )
       {
-        RC::ConstHandle<RT::Desc> const &desc = topoSortedDescs[i];
-        RC::ConstHandle<CG::Adapter> adapter = cgManager->getAdapter( desc );
-        //FABRIC_DEBUG_LOG( adapter->getCodeName() + "->llvmPrepareModule()" );
-        adapter->llvmPrepareModule( moduleBuilder, true );
+        RC::Handle<CG::Manager> cgManager = m_context->getCGManager();
+        
+        llvm::SMDiagnostic error;
+        llvm::ParseAssemblyString( ir.c_str(), module.get(), error, cgManager->getLLVMContext() );
+        
+        m_ast->llvmPrepareModule( moduleBuilder, diagnostics );
+        FABRIC_ASSERT( !diagnostics.containsError() );
+
+        FABRIC_ASSERT( !llvm::verifyModule( *module, llvm::PrintMessageAction ) );
+
+        linkModule( module, true );
+        
+        return;
       }
-      for ( size_t i=0; i<topoSortedDescs.size(); ++i )
-      {
-        RC::ConstHandle<RT::Desc> const &desc = topoSortedDescs[i];
-        RC::ConstHandle<AST::GlobalVector> ast = RC::ConstHandle<AST::GlobalVector>::StaticCast( desc->getKLBindingsAST() );
-        if ( ast )
-          ast->llvmCompileToModule( moduleBuilder, diagnostics, false );
-      }
-      for ( size_t i=0; i<topoSortedDescs.size(); ++i )
-      {
-        RC::ConstHandle<RT::Desc> const &desc = topoSortedDescs[i];
-        RC::ConstHandle<AST::GlobalVector> ast = RC::ConstHandle<AST::GlobalVector>::StaticCast( desc->getKLBindingsAST() );
-        if ( ast )
-          ast->llvmCompileToModule( moduleBuilder, diagnostics, true );
-      }
-      Plug::Manager::Instance()->registerTypes( m_context->getRTManager() );
-      Plug::Manager::Instance()->llvmPrepareModule( moduleBuilder );
-      OCL::llvmPrepareModule( moduleBuilder, m_context->getRTManager() );
       
-      m_ast->registerTypes( m_context->getRTManager(), diagnostics );
+      Util::Timer timer;
+      m_ast->llvmPrepareModule( moduleBuilder, diagnostics );
+      FABRIC_LOG( "m_ast->llvmPrepareModule(): %fms", timer.getElapsedMS(true) );
+      if ( !diagnostics.containsError() )
+      {
+        m_ast->llvmCompileToModule( moduleBuilder, diagnostics, false );
+        FABRIC_LOG( "m_ast->llvmCompileToModule(false): %fms", timer.getElapsedMS(true) );
+      }
       if ( !diagnostics.containsError() )
       {
         m_ast->llvmCompileToModule( moduleBuilder, diagnostics, true );
-        if ( !diagnostics.containsError() )
+        FABRIC_LOG( "m_ast->llvmCompileToModule(true): %fms", timer.getElapsedMS(true) );
+      }
+      if ( !diagnostics.containsError() )
+      {
+#if defined(FABRIC_BUILD_DEBUG)
+        std::string optimizeByteCode;
+        std::string &byteCode = (false && optimize)? optimizeByteCode: m_byteCode;
+        llvm::raw_string_ostream byteCodeStream( byteCode );
+        module->print( byteCodeStream, 0 );
+        byteCodeStream.flush();
+#endif
+        
+        llvm::NoFramePointerElim = true;
+        llvm::JITExceptionHandling = true;
+        llvm::OwningPtr<llvm::PassManager> passManager( new llvm::PassManager );
+        if ( optimize )
         {
-#if defined(FABRIC_BUILD_DEBUG)
-          std::string optimizeByteCode;
-          std::string &byteCode = (false && optimize)? optimizeByteCode: m_byteCode;
-          llvm::raw_string_ostream byteCodeStream( byteCode );
-          module->print( byteCodeStream, 0 );
-          byteCodeStream.flush();
-#endif
-
-          std::string ir = m_irCache->get( m_sourceCode );
-          if ( ir.length() > 0 )
-          {
-            RC::Handle<CG::Manager> cgManager = m_context->getCGManager();
-            
-            llvm::SMDiagnostic error;
-            llvm::ParseAssemblyString( ir.c_str(), module.get(), error, cgManager->getLLVMContext() );
-            FABRIC_ASSERT( module );
-            FABRIC_ASSERT( !llvm::verifyModule( *module, llvm::PrintMessageAction ) );
-            linkModule( module, true );
-            return;
-          }
-          
-          llvm::NoFramePointerElim = true;
-          llvm::JITExceptionHandling = true;
-          llvm::OwningPtr<llvm::PassManager> passManager( new llvm::PassManager );
-          if ( optimize )
-          {
-            llvm::createStandardFunctionPasses( passManager.get(), 2 );
-            llvm::createStandardModulePasses( passManager.get(), 2, false, true, true, true, false, llvm::createFunctionInliningPass() );
-            llvm::createStandardLTOPasses( passManager.get(), true, true, false );
-          }
-#if defined(FABRIC_BUILD_DEBUG)
-          passManager->add( llvm::createVerifierPass() );
-#endif
-          passManager->run( *module );
-         
-          if ( optimize )
-          {
-            std::string ir;
-            llvm::raw_string_ostream irStream( ir );
-            module->print( irStream, 0 );
-            irStream.flush();
-            m_irCache->put( m_sourceCode, ir );
-          }
-
-          linkModule( module, optimize );
+          llvm::createStandardFunctionPasses( passManager.get(), 2 );
+          llvm::createStandardModulePasses( passManager.get(), 2, false, true, true, true, false, llvm::createFunctionInliningPass() );
+          llvm::createStandardLTOPasses( passManager.get(), true, true, false );
         }
+#if defined(FABRIC_BUILD_DEBUG)
+        passManager->add( llvm::createVerifierPass() );
+#endif
+        passManager->run( *module );
+       
+        if ( optimize )
+        {
+          std::string ir;
+          llvm::raw_string_ostream irStream( ir );
+          module->print( irStream, 0 );
+          irStream.flush();
+          m_irCache->put( m_ast, ir );
+        }
+
+        linkModule( module, optimize );
       }
     }
     

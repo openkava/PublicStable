@@ -11,8 +11,7 @@
 #include <Fabric/Core/CG/Error.h>
 #include <Fabric/Core/CG/ExprValue.h>
 #include <Fabric/Core/CG/OverloadNames.h>
-#include <Fabric/Base/JSON/String.h>
-#include <Fabric/Base/JSON/Array.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -20,7 +19,7 @@ namespace Fabric
   {
     FABRIC_AST_NODE_IMPL( Call );
     
-    RC::Handle<Call> Call::Create(
+    RC::ConstHandle<Call> Call::Create(
       CG::Location const &location,
       std::string const &name,
       RC::ConstHandle<ExprVector> const &args
@@ -40,12 +39,11 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> Call::toJSON() const
+    void Call::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      RC::Handle<JSON::Object> result = Expr::toJSON();
-      result->set( "functionFriendlyName", JSON::String::Create( m_name ) );
-      result->set( "args", m_args->toJSON() );
-      return result;
+      Expr::appendJSONMembers( jsonObjectGenerator );
+      jsonObjectGenerator.makeMember( "functionFriendlyName" ).makeString( m_name );
+      m_args->appendJSON( jsonObjectGenerator.makeMember( "args" ) );
     }
     
     RC::ConstHandle<CG::FunctionSymbol> Call::getFunctionSymbol( CG::BasicBlockBuilder const &basicBlockBuilder ) const
@@ -65,6 +63,11 @@ namespace Fabric
       if ( adapter )
         return adapter;
       else return getFunctionSymbol( basicBlockBuilder )->getReturnInfo().getAdapter();
+    }
+    
+    void Call::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    {
+      m_args->llvmPrepareModule( moduleBuilder, diagnostics );
     }
     
     CG::ExprValue Call::buildExprValue( CG::BasicBlockBuilder &basicBlockBuilder, CG::Usage usage, std::string const &lValueErrorDesc ) const

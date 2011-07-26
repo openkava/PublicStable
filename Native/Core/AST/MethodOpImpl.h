@@ -30,7 +30,7 @@ namespace Fabric
 
     public:
     
-      static RC::Handle<MethodOpImpl> Create(
+      static RC::ConstHandle<MethodOpImpl> Create(
         CG::Location const &location,
         std::string const &returnTypeName,
         std::string const &selfTypeName,
@@ -52,6 +52,8 @@ namespace Fabric
         RC::ConstHandle<ParamVector> const &params,
         RC::ConstHandle<CompoundStatement> const &body
         );
+      
+      virtual void appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const;
         
     private:
     

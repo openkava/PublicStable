@@ -7,6 +7,7 @@
 
 #include <Fabric/Core/RT/Manager.h>
 #include <Fabric/Core/CG/Manager.h>
+#include <Fabric/Core/AST/GlobalVector.h>
 #include <Fabric/Core/DG/Context.h>
 #include <Fabric/Core/IO/Dir.h>
 #include <Fabric/Base/JSON/Object.h>
@@ -39,7 +40,7 @@ namespace Fabric
 #endif      
     }
     
-    void Manager::loadBuiltInPlugins( std::vector<std::string> const &pluginDirs )
+    void Manager::loadBuiltInPlugins( std::vector<std::string> const &pluginDirs, RC::Handle<CG::Manager> const &cgManager )
     {
       if ( !m_loaded )
       {
@@ -79,7 +80,7 @@ namespace Fabric
                 std::string fpmContents = pluginsDir->getFileContents( filename );
                 try
                 {
-                  registerPlugin( filename.substr( 0, length-9 ), fpmContents, pluginDirs );
+                  registerPlugin( filename.substr( 0, length-9 ), fpmContents, pluginDirs, cgManager );
                   FABRIC_LOG( "Loaded extension " + _(filename.c_str()) );
                 }
                 catch ( Exception e )
@@ -101,7 +102,7 @@ namespace Fabric
       //  SOLibClose( m_fabricSDKSOLibHandle, m_fabricSDKSOLibResolvedName );
     }
     
-    RC::ConstHandle<Inst> Manager::registerPlugin( std::string const &name, std::string const &jsonDesc, std::vector<std::string> const &pluginDirs )
+    RC::ConstHandle<Inst> Manager::registerPlugin( std::string const &name, std::string const &jsonDesc, std::vector<std::string> const &pluginDirs, RC::Handle<CG::Manager> const &cgManager )
     {
       RC::Handle<Inst> result;
       
@@ -114,23 +115,19 @@ namespace Fabric
       }
       else
       {
-        result = Inst::Create( name, jsonDesc, pluginDirs );
+        result = Inst::Create( name, jsonDesc, pluginDirs, cgManager );
         m_nameToInstMap.insert( NameToInstMap::value_type( name, result ) );
       }
       
       return result;
     }
       
-    void Manager::registerTypes( RC::Handle<RT::Manager> const &rtManager ) const
+    RC::ConstHandle<AST::GlobalVector> Manager::getAST() const
     {
+      RC::ConstHandle<AST::GlobalVector> result;
       for ( NameToInstMap::const_iterator it=m_nameToInstMap.begin(); it!=m_nameToInstMap.end(); ++it )
-        it->second->registerTypes( rtManager );
-    }
-    
-    void Manager::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder ) const
-    {
-      for ( NameToInstMap::const_iterator it=m_nameToInstMap.begin(); it!=m_nameToInstMap.end(); ++it )
-        it->second->llvmPrepareModule( moduleBuilder );
+        result = AST::GlobalVector::Create( result, it->second->getAST() );
+      return result;
     }
     
     void *Manager::llvmResolveExternalFunction( std::string const &name ) const

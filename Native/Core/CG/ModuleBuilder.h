@@ -17,6 +17,7 @@ namespace Fabric
 {
   namespace CG
   {
+    class Location;
     class Manager;
     
     class ModuleBuilder
@@ -29,8 +30,6 @@ namespace Fabric
       llvm::Module *operator ->();
       
       RC::Handle<Manager> getManager();
-      RC::ConstHandle<Adapter> maybeGetAdapter( std::string const &userName );
-      RC::ConstHandle<Adapter> getAdapter( std::string const &userName );
       
       llvm::LLVMContext &getLLVMContext();
       
@@ -40,6 +39,9 @@ namespace Fabric
       
       void addFunction( std::string const &entryName, RC::ConstHandle<FunctionSymbol> const &functionSymbol, std::string const *friendlyName = 0 );
       RC::ConstHandle<FunctionSymbol> maybeGetFunction( std::string const &entryName ) const;
+
+      RC::ConstHandle<Adapter> maybeGetAdapter( std::string const &userName ) const;
+      RC::ConstHandle<Adapter> getAdapter( std::string const &userName, CG::Location const &location );
       
     private:
     

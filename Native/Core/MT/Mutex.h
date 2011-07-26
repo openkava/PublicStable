@@ -32,7 +32,6 @@ namespace Fabric
       Mutex( char const *name )
         : m_name( name )
       {
-        FABRIC_MT_TRACE( "Mutex[%s]::Mutex()", m_name );
 #if defined(FABRIC_OS_WINDOWS) 
         ::InitializeCriticalSection( &m_cs );
 #else
@@ -40,22 +39,18 @@ namespace Fabric
         pthread_mutexattr_init( &attr );
         pthread_mutexattr_settype( &attr, PTHREAD_MUTEX_RECURSIVE );
                 
-        int result = pthread_mutex_init( &m_mutex, &attr );
+        FABRIC_CONFIRM( pthread_mutex_init( &m_mutex, &attr ) == 0 );
         
         pthread_mutexattr_destroy( &attr );
-        
-        FABRIC_ASSERT( result == 0 );
 #endif
       }
       
       ~Mutex()
       {
-        FABRIC_MT_TRACE( "Mutex[%s]::~Mutex()", m_name );
 #if defined(FABRIC_OS_WINDOWS) 
         ::DeleteCriticalSection( &m_cs );
 #else
-        int result = pthread_mutex_destroy( &m_mutex );
-        FABRIC_ASSERT( result == 0 );
+        FABRIC_CONFIRM( pthread_mutex_destroy( &m_mutex ) == 0 );
 #endif
       }
       

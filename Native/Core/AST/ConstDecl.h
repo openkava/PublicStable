@@ -6,18 +6,16 @@
 #define _FABRIC_AST_CONST_DECL_H
 
 #include <Fabric/Core/AST/Node.h>
-#include <Fabric/Base/RC/ConstHandle.h>
-
-#include <string>
 
 namespace Fabric
 {
   namespace CG
   {
-    class Location;
-    class Scope;
-    class Manager;
     class Adapter;
+    class Location;
+    class Manager;
+    class ModuleBuilder;
+    class Scope;
   };
   
   namespace AST
@@ -28,14 +26,14 @@ namespace Fabric
 
     public:
 
-      static RC::Handle<ConstDecl> Create(
+      static RC::ConstHandle<ConstDecl> Create(
         CG::Location const &location,
         std::string const &name,
         std::string const &type,
         std::string const &value
         );
-
-      RC::Handle<JSON::Object> toJSON() const;
+      
+      void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
       
       virtual void llvmCompileToScope( CG::Scope &scope, RC::ConstHandle<CG::Manager> const &manager ) const;
      
@@ -47,6 +45,8 @@ namespace Fabric
         std::string const &type,
         std::string const &value
         );
+      
+      virtual void appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const;
 
     private:
     

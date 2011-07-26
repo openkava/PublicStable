@@ -6,7 +6,6 @@
 #define _FABRIC_AST_CONTINUE_STATEMENT_H
 
 #include <Fabric/Core/AST/Statement.h>
-#include <Fabric/Core/AST/Expr.h>
 
 namespace Fabric
 {
@@ -18,16 +17,17 @@ namespace Fabric
 
     public:
 
-      static RC::Handle<ContinueStatement> Create( CG::Location const &location )
-      {
-        return new ContinueStatement( location );
-      }
+      static RC::ConstHandle<ContinueStatement> Create( CG::Location const &location );
+      
+      virtual void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
       
       virtual void llvmCompileToBuilder( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const;
      
     protected:
     
       ContinueStatement( CG::Location const &location );
+      
+      virtual void appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const;
     };
   };
 };

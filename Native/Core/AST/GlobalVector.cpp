@@ -6,29 +6,38 @@
 #include <Fabric/Core/AST/Global.h>
 #include <Fabric/Core/CG/Diagnostics.h>
 #include <Fabric/Core/CG/Error.h>
-#include <Fabric/Base/JSON/Array.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
   namespace AST
   {
-    RC::Handle<GlobalVector> GlobalVector::Create()
+    RC::ConstHandle<GlobalVector> GlobalVector::Create( RC::ConstHandle<Global> const &first, RC::ConstHandle<GlobalVector> const &remaining )
     {
-      return new GlobalVector;
-    }
-    
-    RC::Handle<GlobalVector> GlobalVector::Create( RC::ConstHandle<Global> const &first )
-    {
-      RC::Handle<GlobalVector> result = Create();
-      result->push_back( first );
+      GlobalVector *result = new GlobalVector;
+      if ( first )
+        result->push_back( first );
+      if ( remaining )
+      {
+        for ( GlobalVector::const_iterator it=remaining->begin(); it!=remaining->end(); ++it )
+          result->push_back( *it );
+      }
       return result;
     }
     
-    RC::Handle<GlobalVector> GlobalVector::Create( RC::ConstHandle<Global> const &first, RC::ConstHandle<GlobalVector> const &remaining )
+    RC::ConstHandle<GlobalVector> GlobalVector::Create( RC::ConstHandle<GlobalVector> const &lhs, RC::ConstHandle<GlobalVector> const &rhs )
     {
-      RC::Handle<GlobalVector> result = Create( first );
-      for ( GlobalVector::const_iterator it=remaining->begin(); it!=remaining->end(); ++it )
-        result->push_back( *it );
+      GlobalVector *result = new GlobalVector;
+      if ( lhs )
+      {
+        for ( GlobalVector::const_iterator it=lhs->begin(); it!=lhs->end(); ++it )
+          result->push_back( *it );
+      }
+      if ( rhs )
+      {
+        for ( GlobalVector::const_iterator it=rhs->begin(); it!=rhs->end(); ++it )
+          result->push_back( *it );
+      }
       return result;
     }
     
@@ -36,21 +45,23 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Array> GlobalVector::toJSON() const
+    Util::SimpleString GlobalVector::toJSON() const
     {
-      RC::Handle<JSON::Array> result = JSON::Array::Create();
+      Util::SimpleString ss;
+      Util::JSONGenerator jsonGenerator( &ss );
+      Util::JSONArrayGenerator jsonArrayGenerator = jsonGenerator.makeArray();
       for ( const_iterator it=begin(); it!=end(); ++it )
-        result->push_back( (*it)->toJSON() );
-      return result;
+        (*it)->appendJSON( jsonArrayGenerator.makeElement() );
+      return ss;
     }
-          
-    void GlobalVector::registerTypes( RC::Handle<RT::Manager> const &rtManager, CG::Diagnostics &diagnostics ) const
+    
+    void GlobalVector::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
     {
       for ( const_iterator it=begin(); it!=end(); ++it )
       {
         try
         {
-          (*it)->registerTypes( rtManager, diagnostics );
+          (*it)->llvmPrepareModule( moduleBuilder, diagnostics );
         }
         catch ( CG::Error e )
         {
@@ -62,7 +73,16 @@ namespace Fabric
     void GlobalVector::llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctions ) const
     {
       for ( const_iterator it=begin(); it!=end(); ++it )
-        (*it)->llvmCompileToModule( moduleBuilder, diagnostics, buildFunctions );
+      {
+        try
+        {
+          (*it)->llvmCompileToModule( moduleBuilder, diagnostics, buildFunctions );
+        }
+        catch ( CG::Error e )
+        {
+          diagnostics.addError( e.getLocation(), e.getDesc() );
+        }
+      }
     }
   };
 };

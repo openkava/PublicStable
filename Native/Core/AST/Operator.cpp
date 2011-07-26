@@ -3,7 +3,6 @@
  */
  
 #include "Operator.h"
-#include <Fabric/Base/JSON/String.h>
 
 namespace Fabric
 {
@@ -11,7 +10,7 @@ namespace Fabric
   {
     FABRIC_AST_NODE_IMPL( Operator );
     
-    RC::Handle<Function> Operator::Create(
+    RC::ConstHandle<Function> Operator::Create(
       CG::Location const &location,
       std::string const &friendlyName,
       std::string const &entryName,
