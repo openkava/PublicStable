@@ -8,7 +8,7 @@
 #include "Node.h"
 #include <Fabric/Core/CG/Diagnostics.h>
 #include <Fabric/Core/CG/Error.h>
-#include <Fabric/Base/JSON/String.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -19,19 +19,15 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Value> Node::toJSON() const
+    void Node::appendJSON( Util::JSONGenerator const &jsonGenerator ) const
     {
-      if ( !m_jsonValue )
-        m_jsonValue = toJSONImpl();
-      return m_jsonValue;
+      appendJSONMembers( jsonGenerator.makeObject() );
     }
     
-    RC::Handle<JSON::Object> Node::toJSONImpl() const
+    void Node::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      RC::Handle<JSON::Object> result = JSON::Object::Create();
-      result->set( "nodeType", nodeTypeNameJSONString() );
-      result->set( "location", m_location.toJSON() );
-      return result;
+      jsonObjectGenerator.makeMember( "nodeType" ).makeString( nodeTypeName() );
+      m_location.appendJSON( jsonObjectGenerator.makeMember( "location" ) );
     }
 
     void Node::addWarning( CG::Diagnostics &diagnostics, std::string const &desc ) const

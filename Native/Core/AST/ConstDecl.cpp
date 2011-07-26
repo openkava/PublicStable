@@ -15,7 +15,7 @@
 #include <Fabric/Core/CG/Scope.h>
 #include <Fabric/Core/CG/SizeAdapter.h>
 #include <Fabric/Core/Util/Parse.h>
-#include <Fabric/Base/JSON/String.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 #include <llvm/Constant.h>
 
@@ -48,13 +48,12 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> ConstDecl::toJSONImpl() const
+    void ConstDecl::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      RC::Handle<JSON::Object> result = Node::toJSONImpl();
-      result->set( "name", JSON::String::Create( m_name ) );
-      result->set( "type", JSON::String::Create( m_type ) );
-      result->set( "value", JSON::String::Create( m_value ) );
-      return result;
+      Node::appendJSONMembers( jsonObjectGenerator );
+      jsonObjectGenerator.makeMember( "name" ).makeString( m_name );
+      jsonObjectGenerator.makeMember( "type" ).makeString( m_type );
+      jsonObjectGenerator.makeMember( "value" ).makeString( m_value );
     }
     
     void ConstDecl::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const

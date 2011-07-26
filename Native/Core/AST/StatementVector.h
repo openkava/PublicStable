@@ -11,6 +11,11 @@
 
 namespace Fabric
 {
+  namespace Util
+  {
+    class JSONGenerator;
+  };
+  
   namespace JSON
   {
     class Value;
@@ -34,7 +39,7 @@ namespace Fabric
       
       static RC::ConstHandle<StatementVector> Create( RC::ConstHandle<Statement> const &first = 0, RC::ConstHandle<StatementVector> const &remaining = 0 );
 
-      RC::ConstHandle<JSON::Value> toJSON() const;
+      void appendJSON( Util::JSONGenerator const &jsonGenerator ) const;
       
       void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
     

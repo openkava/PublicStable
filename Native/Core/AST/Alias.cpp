@@ -8,7 +8,7 @@
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/CG/ModuleBuilder.h>
 #include <Fabric/Core/RT/Manager.h>
-#include <Fabric/Base/JSON/String.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -36,12 +36,11 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> Alias::toJSONImpl() const
+    void Alias::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      RC::Handle<JSON::Object> result = Global::toJSONImpl();
-      result->set( "newTypeName", JSON::String::Create( m_name ) );
-      result->set( "oldTypeName", JSON::String::Create( m_adapterName ) );
-      return result;
+      Global::appendJSONMembers( jsonObjectGenerator );
+      jsonObjectGenerator.makeMember( "newTypeName" ).makeString( m_name );
+      jsonObjectGenerator.makeMember( "oldTypeName" ).makeString( m_adapterName );
     }
     
     void Alias::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const

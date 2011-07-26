@@ -10,7 +10,7 @@
 #include <Fabric/Core/CG/Location.h>
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/CG/ModuleBuilder.h>
-#include <Fabric/Base/JSON/String.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -41,13 +41,12 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> Param::toJSONImpl() const
+    void Param::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      RC::Handle<JSON::Object> result = Node::toJSONImpl();
-      result->set( "name", JSON::String::Create( m_name ) );
-      result->set( "type", JSON::String::Create( m_type ) );
-      result->set( "usage", JSON::String::Create( CG::usageDesc( m_usage ) ) );
-      return result;
+      Node::appendJSONMembers( jsonObjectGenerator );
+      jsonObjectGenerator.makeMember( "name" ).makeString( m_name );
+      jsonObjectGenerator.makeMember( "type" ).makeString( m_type );
+      jsonObjectGenerator.makeMember( "usage" ).makeString( CG::usageDesc( m_usage ) );
     }
 
     CG::FunctionParam Param::getFunctionParam( RC::Handle<CG::Manager> const &cgManager ) const

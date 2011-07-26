@@ -11,16 +11,15 @@
 
 namespace Fabric
 {
+  namespace Util
+  {
+    class JSONGenerator;
+  };
+  
   namespace CG
   {
     class ModuleBuilder;
     class Diagnostics;
-  };
-  
-  namespace JSON
-  {
-    class Value;
-    class Array;
   };
   
   namespace AST
@@ -33,17 +32,13 @@ namespace Fabric
       
       static RC::ConstHandle<CaseVector> Create( RC::ConstHandle<Case> const &first = 0, RC::ConstHandle<CaseVector> const &remaining = 0 );
 
-      RC::ConstHandle<JSON::Value> toJSON() const;
+      void appendJSON( Util::JSONGenerator const &jsonGenerator ) const;
       
       void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
     
     protected:
     
       CaseVector();
-    
-    private:
-    
-      mutable RC::ConstHandle<JSON::Value> m_jsonValue;
     };
   };
 };

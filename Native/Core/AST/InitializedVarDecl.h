@@ -30,8 +30,6 @@ namespace Fabric
         RC::ConstHandle<ExprVector> const &args
         );
 
-      RC::Handle<JSON::Object> toJSONImpl() const;
-
       virtual void llvmPrepareModule( std::string const &baseType, CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
 
       virtual void llvmCompileToBuilder( std::string const &baseType, CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const;
@@ -44,6 +42,8 @@ namespace Fabric
         std::string const &arrayModifier,
         RC::ConstHandle<ExprVector> const &args
         );
+      
+      virtual void appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const;
     
     private:
     

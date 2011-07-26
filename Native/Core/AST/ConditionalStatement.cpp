@@ -5,13 +5,14 @@
  *
  */
 
-#include "ConditionalStatement.h"
+#include <Fabric/Core/AST/ConditionalStatement.h>
+#include <Fabric/Core/AST/Expr.h>
 #include <Fabric/Core/CG/BooleanAdapter.h>
 #include <Fabric/Core/CG/Error.h>
 #include <Fabric/Core/CG/FunctionBuilder.h>
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/CG/ModuleBuilder.h>
-#include <Fabric/Base/JSON/String.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -42,15 +43,14 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> ConditionalStatement::toJSONImpl() const
+    void ConditionalStatement::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      RC::Handle<JSON::Object> result = Statement::toJSONImpl();
-      result->set( "testExpr", m_expr->toJSON() );
+      Statement::appendJSONMembers( jsonObjectGenerator );
+      m_expr->appendJSON( jsonObjectGenerator.makeMember( "testExpr" ) );
       if ( m_trueStatement )
-        result->set( "ifTrue", m_trueStatement->toJSON() );
+        m_trueStatement->appendJSON( jsonObjectGenerator.makeMember( "ifTrue" ) );
       if ( m_falseStatement )
-        result->set( "ifFalse", m_falseStatement->toJSON() );
-      return result;
+        m_falseStatement->appendJSON( jsonObjectGenerator.makeMember( "ifFalse" ) );
     }
     
     void ConditionalStatement::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const

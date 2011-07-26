@@ -13,6 +13,11 @@
 
 namespace Fabric
 {
+  namespace Util
+  {
+    class SimpleString;
+  };
+  
   namespace CG
   {
     class BasicBlockBuilder;
@@ -32,8 +37,6 @@ namespace Fabric
         std::string const &name,
         std::string const &arrayModifier
         );
-
-      RC::Handle<JSON::Object> toJSONImpl() const;
       
       virtual void llvmPrepareModule( std::string const &baseType, CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
       
@@ -46,6 +49,8 @@ namespace Fabric
         std::string const &name,
         std::string const &arrayModifier
         );
+      
+      virtual void appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const;
     
       CG::ExprValue llvmAllocateVariable( std::string const &baseType, CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const;
 

@@ -10,8 +10,7 @@
 #include <Fabric/Core/CG/Adapter.h>
 #include <Fabric/Core/CG/Scope.h>
 #include <Fabric/Core/CG/OverloadNames.h>
-#include <Fabric/Base/JSON/String.h>
-#include <Fabric/Base/JSON/Array.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -40,11 +39,10 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> InitializedVarDecl::toJSONImpl() const
+    void InitializedVarDecl::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      RC::Handle<JSON::Object> result = VarDecl::toJSONImpl();
-      result->set( "args", m_args->toJSON() );
-      return result;
+      VarDecl::appendJSONMembers( jsonObjectGenerator );
+      m_args->appendJSON( jsonObjectGenerator.makeMember( "args" ) );
     }
     
     void InitializedVarDecl::llvmPrepareModule( std::string const &baseType, CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const

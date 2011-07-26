@@ -17,6 +17,11 @@ namespace llvm
 
 namespace Fabric
 {
+  namespace Util
+  {
+    class SimpleString;
+  };
+  
   namespace CG
   {
     class BasicBlockBuilder;

@@ -11,8 +11,7 @@
 #include <Fabric/Core/CG/Error.h>
 #include <Fabric/Core/CG/ExprValue.h>
 #include <Fabric/Core/CG/OverloadNames.h>
-#include <Fabric/Base/JSON/String.h>
-#include <Fabric/Base/JSON/Array.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -40,12 +39,11 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> Call::toJSONImpl() const
+    void Call::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      RC::Handle<JSON::Object> result = Expr::toJSONImpl();
-      result->set( "functionFriendlyName", JSON::String::Create( m_name ) );
-      result->set( "args", m_args->toJSON() );
-      return result;
+      Expr::appendJSONMembers( jsonObjectGenerator );
+      jsonObjectGenerator.makeMember( "functionFriendlyName" ).makeString( m_name );
+      m_args->appendJSON( jsonObjectGenerator.makeMember( "args" ) );
     }
     
     RC::ConstHandle<CG::FunctionSymbol> Call::getFunctionSymbol( CG::BasicBlockBuilder const &basicBlockBuilder ) const

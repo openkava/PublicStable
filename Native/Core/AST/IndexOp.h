@@ -25,8 +25,6 @@ namespace Fabric
         RC::ConstHandle<Expr> const &expr,
         RC::ConstHandle<Expr> const &indexExpr
         );
-
-      RC::Handle<JSON::Object> toJSONImpl() const;
       
       virtual void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
       
@@ -40,6 +38,8 @@ namespace Fabric
         RC::ConstHandle<Expr> const &expr,
         RC::ConstHandle<Expr> const &indexExpr
         );
+      
+      virtual void appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const;
 
     private:
     

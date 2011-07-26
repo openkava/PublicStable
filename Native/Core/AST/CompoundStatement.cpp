@@ -8,8 +8,7 @@
 #include "CompoundStatement.h"
 #include <Fabric/Core/AST/StatementVector.h>
 #include <Fabric/Core/CG/Scope.h>
-#include <Fabric/Base/JSON/String.h>
-#include <Fabric/Base/JSON/Array.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -34,11 +33,10 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> CompoundStatement::toJSONImpl() const
+    void CompoundStatement::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      RC::Handle<JSON::Object> result = Node::toJSONImpl();
-      result->set( "statements", m_statements->toJSON() );
-      return result;
+      Statement::appendJSONMembers( jsonObjectGenerator );
+      m_statements->appendJSON( jsonObjectGenerator.makeMember( "statements" ) );
     }
     
     void CompoundStatement::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const

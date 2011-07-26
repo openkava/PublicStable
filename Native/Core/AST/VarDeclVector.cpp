@@ -5,7 +5,7 @@
 #include <Fabric/Core/AST/VarDeclVector.h>
 #include <Fabric/Core/AST/VarDecl.h>
 #include <Fabric/Core/CG/BasicBlockBuilder.h>
-#include <Fabric/Base/JSON/Array.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -28,16 +28,11 @@ namespace Fabric
     {
     }
     
-    RC::ConstHandle<JSON::Value> VarDeclVector::toJSON() const
+    void VarDeclVector::appendJSON( Util::JSONGenerator const &jsonGenerator ) const
     {
-      if ( !m_jsonValue )
-      {
-        RC::Handle<JSON::Array> result = JSON::Array::Create();
-        for ( const_iterator it=begin(); it!=end(); ++it )
-          result->push_back( (*it)->toJSONImpl() );
-        m_jsonValue = result;
-      }
-      return m_jsonValue;
+      Util::JSONArrayGenerator jsonArrayGenerator = jsonGenerator.makeArray();
+      for ( const_iterator it=begin(); it!=end(); ++it )
+        (*it)->appendJSON( jsonArrayGenerator.makeElement() );
     }
     
     void VarDeclVector::llvmPrepareModule( std::string const &baseType, CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const

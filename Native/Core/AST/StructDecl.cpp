@@ -10,8 +10,7 @@
 #include <Fabric/Core/RT/Manager.h>
 #include <Fabric/Core/RT/StructDesc.h>
 #include <Fabric/Core/RT/StructMemberInfo.h>
-#include <Fabric/Base/JSON/String.h>
-#include <Fabric/Base/JSON/Array.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -39,12 +38,11 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> StructDecl::toJSONImpl() const
+    void StructDecl::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      RC::Handle<JSON::Object> result = Global::toJSONImpl();
-      result->set( "name", JSON::String::Create( m_name ) );
-      result->set( "members", m_members->toJSON() );
-      return result;
+      Global::appendJSONMembers( jsonObjectGenerator );
+      jsonObjectGenerator.makeMember( "name" ).makeString( m_name );
+      m_members->appendJSON( jsonObjectGenerator.makeMember( "members" ) );
     }
     
     void StructDecl::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const

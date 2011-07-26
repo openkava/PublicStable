@@ -28,8 +28,6 @@ namespace Fabric
         std::string const &name,
         std::string const &adapterName
         );
-
-      RC::Handle<JSON::Object> toJSONImpl() const;
       
       virtual void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
       
@@ -40,6 +38,8 @@ namespace Fabric
         std::string const &name,
         std::string const &adapterName
         );
+      
+      virtual void appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const;
     
     private:
     

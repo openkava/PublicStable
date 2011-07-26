@@ -9,12 +9,13 @@
 #define _FABRIC_AST_ASSIGNED_VAR_DECL_H
 
 #include <Fabric/Core/AST/VarDecl.h>
-#include <Fabric/Core/AST/Expr.h>
 
 namespace Fabric
 {
   namespace AST
   {
+    class Expr;
+    
     class AssignedVarDecl : public VarDecl
     {
       FABRIC_AST_NODE_DECL( AssignedVarDecl );
@@ -28,8 +29,6 @@ namespace Fabric
         RC::ConstHandle<Expr> initialExpr
         );
 
-      RC::Handle<JSON::Object> toJSONImpl() const;
-
       virtual void llvmPrepareModule( std::string const &baseType, CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
       
       virtual void llvmCompileToBuilder( std::string const &baseType, CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const;
@@ -42,6 +41,8 @@ namespace Fabric
         std::string const &arrayModifier,
         RC::ConstHandle<Expr> const &initialExpr
         );
+      
+      virtual void appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const;
     
     private:
     

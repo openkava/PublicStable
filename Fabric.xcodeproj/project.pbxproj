@@ -78,6 +78,7 @@
 		DB32EC4613D0E3DF00CB23DE /* SourceRange.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SourceRange.h; sourceTree = "<group>"; };
 		DB32ED6F13D371B000CB23DE /* FunctionBase.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FunctionBase.cpp; sourceTree = "<group>"; };
 		DB32ED7013D371B000CB23DE /* FunctionBase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FunctionBase.h; sourceTree = "<group>"; };
+		DB3552ED13DE084A000EEB89 /* JSONGenerator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JSONGenerator.h; sourceTree = "<group>"; };
 		DB39AF9513425B40007026BA /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
 		DB78675913CD056100DEF8DA /* SConscript */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = SConscript; sourceTree = "<group>"; };
 		DB78676313CD05AE00DEF8DA /* exceptSample.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = exceptSample.cpp; sourceTree = "<group>"; };
@@ -1958,6 +1959,7 @@
 				DB9672FF13A5423200616143 /* Format.h */,
 				DB96730013A5423200616143 /* Hash.h */,
 				DB96730113A5423200616143 /* Hex.h */,
+				DB3552ED13DE084A000EEB89 /* JSONGenerator.h */,
 				DB96730213A5423200616143 /* LittleEndianBufferDecoder.h */,
 				DB96730313A5423200616143 /* LittleEndianBufferEncoder.h */,
 				DB96730413A5423200616143 /* Log.cpp */,

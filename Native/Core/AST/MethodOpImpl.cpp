@@ -10,7 +10,7 @@
 #include <Fabric/Core/CG/Adapter.h>
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/CG/OverloadNames.h>
-#include <Fabric/Base/JSON/String.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -47,6 +47,14 @@ namespace Fabric
       , m_methodName( methodName )
       , m_params( params )
     {
+    }
+    
+    void MethodOpImpl::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
+    {
+      FunctionBase::appendJSONMembers( jsonObjectGenerator );
+      jsonObjectGenerator.makeMember( "selfTypeName" ).makeString( m_selfTypeName );
+      jsonObjectGenerator.makeMember( "methodName" ).makeString( m_methodName );
+      m_params->appendJSON( jsonObjectGenerator.makeMember( "params" ) );
     }
           
     std::string MethodOpImpl::getEntryName( RC::Handle<CG::Manager> const &cgManager ) const

@@ -26,8 +26,6 @@ namespace Fabric
       {
         return new GlobalConstDecl( location, constDecl );
       }
-
-      RC::Handle<JSON::Object> toJSONImpl() const;
       
       virtual void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
       
@@ -39,6 +37,8 @@ namespace Fabric
         CG::Location const &location,
         RC::ConstHandle<ConstDecl> const &constDecl
         );
+      
+      virtual void appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const;
     
     private:
     

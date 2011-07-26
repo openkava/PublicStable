@@ -8,6 +8,7 @@
 #include <Fabric/Base/RC/Vector.h>
 #include <Fabric/Base/RC/Handle.h>
 #include <Fabric/Base/RC/ConstHandle.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -39,7 +40,7 @@ namespace Fabric
       static RC::ConstHandle<GlobalVector> Create( RC::ConstHandle<Global> const &first = 0, RC::ConstHandle<GlobalVector> const &remaining = 0 );
       static RC::ConstHandle<GlobalVector> Create( RC::ConstHandle<GlobalVector> const &lhs, RC::ConstHandle<GlobalVector> const &rhs );
 
-      RC::ConstHandle<JSON::Value> toJSON() const;
+      Util::SimpleString toJSON() const;
 
       void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
           
@@ -48,10 +49,6 @@ namespace Fabric
     protected:
     
       GlobalVector();
-      
-    private:
-    
-      mutable RC::ConstHandle<JSON::Value> m_jsonValue;
     };
   };
 };

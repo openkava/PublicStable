@@ -21,8 +21,6 @@ namespace Fabric
     public:
     
       static RC::ConstHandle<ConstBoolean> Create( CG::Location const &location, bool value );
-
-      RC::Handle<JSON::Object> toJSONImpl() const;
       
       virtual void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
       
@@ -32,6 +30,8 @@ namespace Fabric
     protected:
     
       ConstBoolean( CG::Location const &location, bool value );
+      
+      virtual void appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const;
       
     private:
     

@@ -9,6 +9,11 @@
 
 namespace Fabric
 {
+  namespace Util
+  {
+    class SimpleString;
+  };
+  
   namespace AST
   {
     class ParamVector;
