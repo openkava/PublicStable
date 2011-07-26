@@ -10,6 +10,11 @@
 
 namespace Fabric
 {
+  namespace Util
+  {
+    class SimpleString;
+  };
+  
   namespace JSON
   {
     class Value;
@@ -30,8 +35,8 @@ namespace Fabric
     
       Node( CG::Location const &location );
 
-      virtual RC::ConstHandle<JSON::String> nodeTypeNameJSONString() const = 0;
-      virtual RC::Handle<JSON::Object> toJSON() const;
+      virtual char const *nodeTypeName() const = 0;
+      virtual void appendJSON( Util::JSONGenerator const &jsonGenerator ) const;
       
       CG::Location const &getLocation() const
       {
@@ -42,7 +47,9 @@ namespace Fabric
       void addError( CG::Diagnostics &diagnostics, std::string const &desc ) const;
 
     protected:
-    
+      
+      virtual void appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const = 0;
+
       void addError( CG::Diagnostics &diagnostics, CG::Error const &error ) const;
       
     private:
@@ -56,7 +63,7 @@ namespace Fabric
   public: \
     \
     static char const *NodeTypeName(); \
-    virtual RC::ConstHandle<JSON::String> nodeTypeNameJSONString() const; \
+    virtual char const *nodeTypeName() const; \
     
 #define FABRIC_AST_NODE_IMPL(NodeName) \
     char const *NodeName::NodeTypeName() \
@@ -65,10 +72,9 @@ namespace Fabric
       return result; \
     } \
     \
-    RC::ConstHandle<JSON::String> NodeName::nodeTypeNameJSONString() const \
+    char const *NodeName::nodeTypeName() const \
     { \
-      static RC::ConstHandle<JSON::String> result = JSON::String::Create( NodeTypeName() ); \
-      return result; \
-    }
+      return NodeTypeName(); \
+    } \
 
 #endif //_FABRIC_AST_NODE_H

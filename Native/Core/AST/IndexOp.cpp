@@ -5,7 +5,7 @@
 #include <Fabric/Core/CG/BasicBlockBuilder.h>
 #include <Fabric/Core/CG/Error.h>
 #include <Fabric/Core/RT/ImplType.h>
-#include <Fabric/Base/JSON/String.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -13,7 +13,7 @@ namespace Fabric
   {
     FABRIC_AST_NODE_IMPL( IndexOp );
     
-    RC::Handle<IndexOp> IndexOp::Create(
+    RC::ConstHandle<IndexOp> IndexOp::Create(
       CG::Location const &location,
       RC::ConstHandle<Expr> const &expr,
       RC::ConstHandle<Expr> const &indexExpr
@@ -29,12 +29,17 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> IndexOp::toJSON() const
+    void IndexOp::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      RC::Handle<JSON::Object> result = Expr::toJSON();
-      result->set( "expr", m_expr->toJSON() );
-      result->set( "indexExpr", m_indexExpr->toJSON() );
-      return result;
+      Expr::appendJSONMembers( jsonObjectGenerator );
+      m_expr->appendJSON( jsonObjectGenerator.makeMember( "expr" ) );
+      m_indexExpr->appendJSON( jsonObjectGenerator.makeMember( "indexExpr" ) );
+    }
+    
+    void IndexOp::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    {
+      m_expr->llvmPrepareModule( moduleBuilder, diagnostics );
+      m_indexExpr->llvmPrepareModule( moduleBuilder, diagnostics );
     }
     
     RC::ConstHandle<CG::Adapter> IndexOp::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const

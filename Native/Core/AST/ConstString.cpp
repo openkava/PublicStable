@@ -7,9 +7,10 @@
 #include <Fabric/Core/CG/ConstStringAdapter.h>
 #include <Fabric/Core/CG/Error.h>
 #include <Fabric/Core/CG/Manager.h>
+#include <Fabric/Core/CG/ModuleBuilder.h>
 #include <Fabric/Core/CG/StringAdapter.h>
 #include <Fabric/Core/Util/Parse.h>
-#include <Fabric/Base/JSON/String.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -17,7 +18,7 @@ namespace Fabric
   {
     FABRIC_AST_NODE_IMPL( ConstString );
     
-    RC::Handle<ConstString> ConstString::Create( CG::Location const &location, std::string const &value )
+    RC::ConstHandle<ConstString> ConstString::Create( CG::Location const &location, std::string const &value )
     {
       return new ConstString( location, value );
     }
@@ -28,11 +29,29 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> ConstString::toJSON() const
+    void ConstString::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      RC::Handle<JSON::Object> result = Expr::toJSON();
-      result->set( "value", JSON::String::Create( m_value ) );
-      return result;
+      Expr::appendJSONMembers( jsonObjectGenerator );
+      jsonObjectGenerator.makeMember( "value" ).makeString( m_value );
+    }
+    
+    void ConstString::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    {
+      std::string unquotedValue;
+      try
+      {
+        unquotedValue = Util::parseQuotedString( m_value );
+      }
+      catch ( Exception e )
+      {
+        throw CG::Error( getLocation(), e.getDesc() + "(" + m_value + ")" );
+      }
+
+      RC::ConstHandle<CG::ConstStringAdapter> constStringAdapter = moduleBuilder.getManager()->getConstStringAdapter( unquotedValue.length() );
+      constStringAdapter->llvmPrepareModule( moduleBuilder, true );
+
+      RC::ConstHandle<CG::StringAdapter> stringAdapter = moduleBuilder.getManager()->getStringAdapter();
+      stringAdapter->llvmPrepareModule( moduleBuilder, true );
     }
     
     RC::ConstHandle<CG::Adapter> ConstString::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const

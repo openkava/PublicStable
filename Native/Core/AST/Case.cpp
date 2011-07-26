@@ -9,8 +9,7 @@
 #include <Fabric/Core/AST/Expr.h>
 #include <Fabric/Core/AST/StatementVector.h>
 #include <Fabric/Core/CG/Scope.h>
-#include <Fabric/Base/JSON/String.h>
-#include <Fabric/Base/JSON/Array.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -18,7 +17,7 @@ namespace Fabric
   {
     FABRIC_AST_NODE_IMPL( Case );
     
-    RC::Handle<Case> Case::Create(
+    RC::ConstHandle<Case> Case::Create(
         CG::Location const &location,
         RC::ConstHandle<Expr> const &expr,
         RC::ConstHandle<StatementVector> const &statements
@@ -38,13 +37,19 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> Case::toJSON() const
+    void Case::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      RC::Handle<JSON::Object> result = Node::toJSON();
+      Node::appendJSONMembers( jsonObjectGenerator );
       if ( m_expr )
-        result->set( "expr", m_expr->toJSON() );
-      result->set( "statements", m_statements->toJSON() );
-      return result;
+        m_expr->appendJSON( jsonObjectGenerator.makeMember( "expr" ) );
+      m_statements->appendJSON( jsonObjectGenerator.makeMember( "statements" ) );
+    }
+    
+    void Case::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    {
+      if ( m_expr )
+        m_expr->llvmPrepareModule( moduleBuilder, diagnostics );
+      m_statements->llvmPrepareModule( moduleBuilder, diagnostics );
     }
 
     RC::ConstHandle<Expr> Case::getExpr() const

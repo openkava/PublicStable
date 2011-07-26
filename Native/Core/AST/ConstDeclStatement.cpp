@@ -7,7 +7,7 @@
 #include <Fabric/Core/CG/BasicBlockBuilder.h>
 #include <Fabric/Core/CG/Error.h>
 #include <Fabric/Core/CG/Manager.h>
-#include <Fabric/Base/JSON/String.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -15,6 +15,14 @@ namespace Fabric
   {
     FABRIC_AST_NODE_IMPL( ConstDeclStatement );
     
+    RC::ConstHandle<ConstDeclStatement> ConstDeclStatement::Create(
+      CG::Location const &location,
+      RC::ConstHandle<ConstDecl> const &constDecl
+      )
+    {
+      return new ConstDeclStatement( location, constDecl );
+    }
+
     ConstDeclStatement::ConstDeclStatement(
       CG::Location const &location,
       RC::ConstHandle<ConstDecl> const &constDecl
@@ -24,11 +32,15 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> ConstDeclStatement::toJSON() const
+    void ConstDeclStatement::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      RC::Handle<JSON::Object> result = Statement::toJSON();
-      result->set( "constDecl", m_constDecl->toJSON() );
-      return result;
+      Node::appendJSONMembers( jsonObjectGenerator );
+      m_constDecl->appendJSON( jsonObjectGenerator.makeMember( "constDecl" ) );
+    }
+    
+    void ConstDeclStatement::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    {
+      m_constDecl->llvmPrepareModule( moduleBuilder, diagnostics );
     }
     
     void ConstDeclStatement::llvmCompileToBuilder( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const

@@ -55,8 +55,8 @@ namespace Fabric
     Context::Context( RC::Handle<IO::Manager> const &ioManager, std::vector<std::string> const &pluginDirs )
       : m_logCollector( LogCollector::Create( this ) )
       , m_rtManager( RT::Manager::Create( KL::Compiler::Create() ) )
-      , m_cgManager( CG::Manager::Create( m_rtManager ) )
       , m_ioManager( ioManager )
+      , m_cgManager( CG::Manager::Create( m_rtManager ) )
       , m_codeManager( CodeManager::Create() )
       , m_notificationBracketCount( 0 )
       , m_pendingNotificationsMutex( "pending notifications" )
@@ -341,6 +341,7 @@ namespace Fabric
       RC::Handle<JSON::Object> result = JSON::Object::Create();
       result->set( ThirdPartyLicenses::llvm::filename, JSON::String::Create( ThirdPartyLicenses::llvm::text ) );
       result->set( "lib", jsonDescLicenses_llvm_lib() );
+      result->set( "projects", jsonDescLicenses_llvm_projects() );
       result->set( "autoconf", jsonDescLicenses_llvm_autoconf() );
       return result;
     }

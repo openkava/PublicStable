@@ -7,7 +7,7 @@ namespace Fabric
 {
   namespace Util
   {
-    static std::string hexBuf( size_t count, void const *data )
+    inline std::string hexBuf( size_t count, void const *data )
     {
       std::string result;
       result.resize( 2 * count );

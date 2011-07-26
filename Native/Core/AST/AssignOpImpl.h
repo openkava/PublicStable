@@ -31,15 +31,13 @@ namespace Fabric
       
     public:
     
-      static RC::Handle<AssignOpImpl> Create(
+      static RC::ConstHandle<AssignOpImpl> Create(
         CG::Location const &location,
         std::string const &selfType,
         CG::AssignOpType assignOpType,
         RC::ConstHandle<AST::Param> rhs,
         RC::ConstHandle<CompoundStatement> const &body
         );
-
-      RC::Handle<JSON::Object> toJSON() const;
       
     protected:
     
@@ -50,6 +48,8 @@ namespace Fabric
         RC::ConstHandle<AST::Param> rhs,
         RC::ConstHandle<CompoundStatement> const &body
         );
+      
+      virtual void appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const;
     
     private:
     

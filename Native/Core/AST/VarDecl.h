@@ -13,9 +13,15 @@
 
 namespace Fabric
 {
+  namespace Util
+  {
+    class SimpleString;
+  };
+  
   namespace CG
   {
     class BasicBlockBuilder;
+    class ModuleBuilder;
   };
   
   namespace AST
@@ -26,13 +32,13 @@ namespace Fabric
       
     public:
 
-      static RC::Handle<VarDecl> Create(
+      static RC::ConstHandle<VarDecl> Create(
         CG::Location const &location,
         std::string const &name,
         std::string const &arrayModifier
         );
-
-      RC::Handle<JSON::Object> toJSON() const;
+      
+      virtual void llvmPrepareModule( std::string const &baseType, CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
       
       virtual void llvmCompileToBuilder( std::string const &baseType, CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const;
      
@@ -43,6 +49,8 @@ namespace Fabric
         std::string const &name,
         std::string const &arrayModifier
         );
+      
+      virtual void appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const;
     
       CG::ExprValue llvmAllocateVariable( std::string const &baseType, CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const;
 

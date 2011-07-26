@@ -17,6 +17,7 @@ namespace Fabric
   {
     class BasicBlockBuilder;
     class Diagnostics;
+    class ModuleBuilder;
   };
   
   namespace AST
@@ -26,6 +27,8 @@ namespace Fabric
     public:
     
       Expr( CG::Location const &location );
+      
+      virtual void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const = 0;
     
       virtual RC::ConstHandle<CG::Adapter> getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const = 0;
       virtual CG::ExprValue buildExprValue( CG::BasicBlockBuilder &basicBlockBuilder, CG::Usage usage, std::string const &lValueErrorDesc ) const = 0;

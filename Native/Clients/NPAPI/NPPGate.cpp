@@ -17,6 +17,7 @@
 #include <Fabric/Clients/NPAPI/Context.h>
 #include <Fabric/Clients/NPAPI/IOManager.h>
 #include <Fabric/Core/Build.h>
+#include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/RT/Manager.h>
 #include <Fabric/Core/RT/StringDesc.h>
 #include <Fabric/Core/Plug/Manager.h>
@@ -109,12 +110,6 @@ namespace Fabric
       sigaction( SIGSEGV, &sa, NULL );
 #endif
 
-      FABRIC_LOG( "Fabric version %s", buildVersion );
-      struct tm const *lt = localtime( &buildExpiry );
-      char buf[1024];
-      strftime( buf, 1024, "This build of Fabric will expire on %Y-%m-%d at %H:%M:%S", lt );
-      FABRIC_LOG( "%s", buf );
-
       std::string contextID;
       enum
       {
@@ -164,7 +159,7 @@ namespace Fabric
       
         RC::Handle<IOManager> ioManager = IOManager::Create( npp );
         context = Context::Create( ioManager, pluginDirs );
-        Plug::Manager::Instance()->loadBuiltInPlugins( pluginDirs );
+        Plug::Manager::Instance()->loadBuiltInPlugins( pluginDirs, context->getCGManager() );
         
         contextID = context->getContextID();
         FABRIC_DEBUG_LOG( "Created new context '%s'", contextID.c_str() );

@@ -28,11 +28,11 @@ namespace Fabric
 
       llvm::Constant *llvmConst( float value ) const;
       
+      virtual void llvmPrepareModule( ModuleBuilder &moduleBuilder, bool buildFunctions ) const;
+      
     protected:
       
       ScalarAdapter( RC::ConstHandle<Manager> const &manager, RC::ConstHandle<RT::ScalarDesc> const &scalarDesc );
-      
-      virtual void llvmPrepareModule( ModuleBuilder &moduleBuilder, bool buildFunctions ) const;
       
     private:
     

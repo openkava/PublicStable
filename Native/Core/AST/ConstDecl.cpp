@@ -10,11 +10,12 @@
 #include <Fabric/Core/CG/IntegerAdapter.h>
 #include <Fabric/Core/CG/Location.h>
 #include <Fabric/Core/CG/Manager.h>
+#include <Fabric/Core/CG/ModuleBuilder.h>
 #include <Fabric/Core/CG/ScalarAdapter.h>
 #include <Fabric/Core/CG/Scope.h>
 #include <Fabric/Core/CG/SizeAdapter.h>
 #include <Fabric/Core/Util/Parse.h>
-#include <Fabric/Base/JSON/String.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 #include <llvm/Constant.h>
 
@@ -24,7 +25,7 @@ namespace Fabric
   {
     FABRIC_AST_NODE_IMPL( ConstDecl );
 
-    RC::Handle<ConstDecl> ConstDecl::Create(
+    RC::ConstHandle<ConstDecl> ConstDecl::Create(
       CG::Location const &location,
       std::string const &name,
       std::string const &type,
@@ -47,13 +48,18 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> ConstDecl::toJSON() const
+    void ConstDecl::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      RC::Handle<JSON::Object> result = Node::toJSON();
-      result->set( "name", JSON::String::Create( m_name ) );
-      result->set( "type", JSON::String::Create( m_type ) );
-      result->set( "value", JSON::String::Create( m_value ) );
-      return result;
+      Node::appendJSONMembers( jsonObjectGenerator );
+      jsonObjectGenerator.makeMember( "name" ).makeString( m_name );
+      jsonObjectGenerator.makeMember( "type" ).makeString( m_type );
+      jsonObjectGenerator.makeMember( "value" ).makeString( m_value );
+    }
+    
+    void ConstDecl::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    {
+      RC::ConstHandle<CG::Adapter> adapter = moduleBuilder.getAdapter( m_type, getLocation() );
+      adapter->llvmPrepareModule( moduleBuilder, true );
     }
 
     void ConstDecl::llvmCompileToScope( CG::Scope &scope, RC::ConstHandle<CG::Manager> const &manager ) const

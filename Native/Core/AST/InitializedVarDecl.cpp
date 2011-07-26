@@ -10,8 +10,7 @@
 #include <Fabric/Core/CG/Adapter.h>
 #include <Fabric/Core/CG/Scope.h>
 #include <Fabric/Core/CG/OverloadNames.h>
-#include <Fabric/Base/JSON/String.h>
-#include <Fabric/Base/JSON/Array.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -19,7 +18,7 @@ namespace Fabric
   {
     FABRIC_AST_NODE_IMPL( InitializedVarDecl );
     
-    RC::Handle<InitializedVarDecl> InitializedVarDecl::Create(
+    RC::ConstHandle<InitializedVarDecl> InitializedVarDecl::Create(
       CG::Location const &location,
       std::string const &name,
       std::string const &arrayModifier,
@@ -40,11 +39,16 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> InitializedVarDecl::toJSON() const
+    void InitializedVarDecl::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      RC::Handle<JSON::Object> result = VarDecl::toJSON();
-      result->set( "args", m_args->toJSON() );
-      return result;
+      VarDecl::appendJSONMembers( jsonObjectGenerator );
+      m_args->appendJSON( jsonObjectGenerator.makeMember( "args" ) );
+    }
+    
+    void InitializedVarDecl::llvmPrepareModule( std::string const &baseType, CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    {
+      VarDecl::llvmPrepareModule( baseType, moduleBuilder, diagnostics );
+      m_args->llvmPrepareModule( moduleBuilder, diagnostics );
     }
 
     void InitializedVarDecl::llvmCompileToBuilder( std::string const &baseType, CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const

@@ -10,8 +10,7 @@
 #include <Fabric/Core/RT/Manager.h>
 #include <Fabric/Core/RT/StructDesc.h>
 #include <Fabric/Core/RT/StructMemberInfo.h>
-#include <Fabric/Base/JSON/String.h>
-#include <Fabric/Base/JSON/Array.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -19,7 +18,7 @@ namespace Fabric
   {
     FABRIC_AST_NODE_IMPL( StructDecl );
     
-    RC::Handle<StructDecl> StructDecl::Create(
+    RC::ConstHandle<StructDecl> StructDecl::Create(
       CG::Location const &location,
       std::string const &name,
       RC::ConstHandle<MemberDeclVector> const &members
@@ -39,16 +38,18 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> StructDecl::toJSON() const
+    void StructDecl::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      RC::Handle<JSON::Object> result = Global::toJSON();
-      result->set( "name", JSON::String::Create( m_name ) );
-      result->set( "members", m_members->toJSON() );
-      return result;
+      Global::appendJSONMembers( jsonObjectGenerator );
+      jsonObjectGenerator.makeMember( "name" ).makeString( m_name );
+      m_members->appendJSON( jsonObjectGenerator.makeMember( "members" ) );
     }
     
-    void StructDecl::registerTypes( RC::Handle<RT::Manager> const &rtManager, CG::Diagnostics &diagnostics ) const
+    void StructDecl::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
     {
+      m_members->llvmPrepareModule( moduleBuilder, diagnostics );
+
+      RC::Handle<RT::Manager> rtManager = moduleBuilder.getManager()->getRTManager();
       RT::StructMemberInfoVector structMemberInfoVector;
       m_members->buildStructMemberInfoVector( rtManager, structMemberInfoVector );
       try
@@ -63,7 +64,6 @@ namespace Fabric
 
     void StructDecl::llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctionBodies ) const
     {
-      moduleBuilder.getAdapter( m_name );
     }
   };
 };

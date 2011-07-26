@@ -9,7 +9,7 @@
 #include <Fabric/Core/AST/Param.h>
 #include <Fabric/Core/CG/Adapter.h>
 #include <Fabric/Core/CG/OverloadNames.h>
-#include <Fabric/Base/JSON/String.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -17,7 +17,7 @@ namespace Fabric
   {
     FABRIC_AST_NODE_IMPL( BinOpImpl );
     
-    RC::Handle<BinOpImpl> BinOpImpl::Create(
+    RC::ConstHandle<BinOpImpl> BinOpImpl::Create(
       CG::Location const &location,
       std::string const &returnType,
       CG::BinOpType binOpType,
@@ -47,11 +47,11 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> BinOpImpl::toJSON() const
+    void BinOpImpl::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      RC::Handle<JSON::Object> result = FunctionBase::toJSON();
-      result->set( "op", JSON::String::Create( CG::binOpUserName( m_binOpType ) ) );
-      return result;
+      FunctionBase::appendJSONMembers( jsonObjectGenerator );
+      jsonObjectGenerator.makeMember( "op" ).makeString( CG::binOpUserName( m_binOpType ) );
+      m_params->appendJSON( jsonObjectGenerator.makeMember( "params" ) );
     }
     
     std::string BinOpImpl::getEntryName( RC::Handle<CG::Manager> const &cgManager ) const

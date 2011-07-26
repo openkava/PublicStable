@@ -6,11 +6,12 @@
  */
 
 #include <Fabric/Core/AST/AssignedVarDecl.h>
+#include <Fabric/Core/AST/Expr.h>
 #include <Fabric/Core/CG/Adapter.h>
 #include <Fabric/Core/CG/OverloadNames.h>
 #include <Fabric/Core/CG/Scope.h>
 #include <Fabric/Core/CG/Error.h>
-#include <Fabric/Base/JSON/String.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -18,7 +19,7 @@ namespace Fabric
   {
     FABRIC_AST_NODE_IMPL( AssignedVarDecl );
     
-    RC::Handle<AssignedVarDecl> AssignedVarDecl::Create(
+    RC::ConstHandle<AssignedVarDecl> AssignedVarDecl::Create(
       CG::Location const &location,
       std::string const &name,
       std::string const &arrayModifier,
@@ -39,11 +40,16 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> AssignedVarDecl::toJSON() const
+    void AssignedVarDecl::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      RC::Handle<JSON::Object> result = VarDecl::toJSON();
-      result->set( "initialValue", m_initialExpr->toJSON() );
-      return result;
+      VarDecl::appendJSONMembers( jsonObjectGenerator );
+      m_initialExpr->appendJSON( jsonObjectGenerator.makeMember( "initialValue" ) );
+    }
+    
+    void AssignedVarDecl::llvmPrepareModule( std::string const &baseType, CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    {
+      VarDecl::llvmPrepareModule( baseType, moduleBuilder, diagnostics );
+      m_initialExpr->llvmPrepareModule( moduleBuilder, diagnostics );
     }
 
     void AssignedVarDecl::llvmCompileToBuilder( std::string const &baseType, CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const

@@ -6,7 +6,6 @@
 #define _FABRIC_AST_FUNCTION_H
 
 #include <Fabric/Core/AST/FunctionBase.h>
-#include <Fabric/Core/CG/ExprType.h>
 
 namespace Fabric
 {
@@ -18,7 +17,7 @@ namespace Fabric
 
     public:
 
-      static RC::Handle<Function> Create(
+      static RC::ConstHandle<Function> Create(
         CG::Location const &location,
         std::string const &friendlyName,
         std::string const &entryName,
@@ -27,7 +26,7 @@ namespace Fabric
         RC::ConstHandle<CompoundStatement> const &body
         );
 
-      static RC::Handle<Function> Create(
+      static RC::ConstHandle<Function> Create(
         CG::Location const &location,
         std::string const &friendlyName,
         std::string const *entryName,
@@ -35,8 +34,6 @@ namespace Fabric
         RC::ConstHandle<ParamVector> const &params,
         RC::ConstHandle<CompoundStatement> const &body
         );
-
-      RC::Handle<JSON::Object> toJSON() const;
           
       virtual bool isFunction() const { return true; }
       virtual bool isOperator() const { return false; }
@@ -59,6 +56,8 @@ namespace Fabric
         RC::ConstHandle<ParamVector> const &params,
         RC::ConstHandle<CompoundStatement> const &body
         );
+      
+      virtual void appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const;
     
     private:
     

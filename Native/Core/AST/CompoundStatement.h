@@ -10,8 +10,6 @@
 
 #include <Fabric/Core/AST/Statement.h>
 
-#include <vector>
-
 namespace Fabric
 {
   namespace AST
@@ -24,12 +22,12 @@ namespace Fabric
 
     public:
 
-      static RC::Handle<CompoundStatement> Create(
+      static RC::ConstHandle<CompoundStatement> Create(
         CG::Location const &location,
         RC::ConstHandle<StatementVector> const &statements
         );
-
-      RC::Handle<JSON::Object> toJSON() const;
+      
+      virtual void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
       
       virtual void llvmCompileToBuilder( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const;
      
@@ -39,6 +37,8 @@ namespace Fabric
         CG::Location const &location,
         RC::ConstHandle<StatementVector> const &statements
         );
+      
+      virtual void appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const;
     
     private:
     

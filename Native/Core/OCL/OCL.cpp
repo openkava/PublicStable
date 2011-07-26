@@ -70,7 +70,7 @@ namespace Fabric
       if ( result == CL_SUCCESS )
       {
         cl_platform_id *clPlatformIDs = new cl_platform_id[clNumPlatforms];
-        cl_int result = clGetPlatformIDs( clNumPlatforms, clPlatformIDs, NULL );
+        clGetPlatformIDs( clNumPlatforms, clPlatformIDs, NULL );
         clPlatformIDVariableArrayDesc->setMembers( clPlatformIDsAsOpaqueArray, clNumPlatforms, clPlatformIDs );
         delete [] clPlatformIDs;
       }

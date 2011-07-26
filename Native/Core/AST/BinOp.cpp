@@ -13,7 +13,7 @@
 #include <Fabric/Core/CG/Error.h>
 #include <Fabric/Core/CG/OpTypes.h>
 #include <Fabric/Core/RT/Desc.h>
-#include <Fabric/Base/JSON/String.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -21,6 +21,11 @@ namespace Fabric
   {
     FABRIC_AST_NODE_IMPL( BinOp );
     
+    RC::ConstHandle<BinOp> BinOp::Create( CG::Location const &location, CG::BinOpType binOpType, RC::ConstHandle<Expr> const &left, RC::ConstHandle<Expr> const &right )
+    {
+      return new BinOp( location, binOpType, left, right );
+    }
+
     BinOp::BinOp( CG::Location const &location, CG::BinOpType binOpType, RC::ConstHandle<Expr> const &left, RC::ConstHandle<Expr> const &right )
       : Expr( location )
       , m_binOpType( binOpType )
@@ -28,14 +33,13 @@ namespace Fabric
       , m_right( right )
     {
     }
-      
-    RC::Handle<JSON::Object> BinOp::toJSON() const
+    
+    void BinOp::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      RC::Handle<JSON::Object> result = Expr::toJSON();
-      result->set( "binOpType", JSON::String::Create( CG::binOpUserName( m_binOpType ) ) );
-      result->set( "lhs", m_left->toJSON() );
-      result->set( "rhs", m_right->toJSON() );
-      return result;
+      Expr::appendJSONMembers( jsonObjectGenerator );
+      jsonObjectGenerator.makeMember( "binOpType" ).makeString( CG::binOpUserName( m_binOpType ) );
+      m_left->appendJSON( jsonObjectGenerator.makeMember( "lhs" ) );
+      m_right->appendJSON( jsonObjectGenerator.makeMember( "rhs" ) );
     }
     
     RC::ConstHandle<CG::FunctionSymbol> BinOp::getFunctionSymbol( CG::BasicBlockBuilder const &basicBlockBuilder ) const
@@ -64,6 +68,12 @@ namespace Fabric
       // 
 
       throw Exception( "binary operator " + _(CG::binOpUserName( m_binOpType )) + " not supported for types " + _(lhsType->getUserName()) + " and " + _(rhsType->getUserName()) );
+    }
+    
+    void BinOp::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    {
+      m_left->llvmPrepareModule( moduleBuilder, diagnostics );
+      m_right->llvmPrepareModule( moduleBuilder, diagnostics );
     }
     
     RC::ConstHandle<CG::Adapter> BinOp::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const

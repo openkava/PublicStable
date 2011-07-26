@@ -33,7 +33,7 @@ namespace Fabric
 
       RC::Handle<KL::Scanner> m_scanner;
       CG::Diagnostics &m_diagnostics;
-      RC::Handle<AST::GlobalVector> m_resultGlobalList;
+      RC::ConstHandle<AST::GlobalVector> m_resultGlobalList;
     };
   }
 }

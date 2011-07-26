@@ -46,7 +46,7 @@ namespace Fabric
     
       static RC::Handle<Manager> Create( RC::Handle<RT::Manager> const &rtManager );
       
-      RC::ConstHandle<RT::Manager> getRTManager() const;
+      RC::Handle<RT::Manager> getRTManager() const;
       
       RC::ConstHandle<Adapter> getAdapter( RC::ConstHandle<RT::Desc> const &desc ) const;
       RC::ConstHandle<Adapter> maybeGetAdapter( std::string const &userName ) const;

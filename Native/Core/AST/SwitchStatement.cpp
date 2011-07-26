@@ -16,8 +16,7 @@
 #include <Fabric/Core/CG/BooleanAdapter.h>
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/CG/OverloadNames.h>
-#include <Fabric/Base/JSON/String.h>
-#include <Fabric/Base/JSON/Array.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -25,7 +24,7 @@ namespace Fabric
   {
     FABRIC_AST_NODE_IMPL( SwitchStatement );
     
-    RC::Handle<SwitchStatement> SwitchStatement::Create(
+    RC::ConstHandle<SwitchStatement> SwitchStatement::Create(
       CG::Location const &location,
       RC::ConstHandle<Expr> const &expr,
       RC::ConstHandle<CaseVector> const &cases
@@ -45,12 +44,17 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> SwitchStatement::toJSON() const
+    void SwitchStatement::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      RC::Handle<JSON::Object> result = Statement::toJSON();
-      result->set( "expr", m_expr->toJSON() );
-      result->set( "cases", m_cases->toJSON() );
-      return result;
+      Statement::appendJSONMembers( jsonObjectGenerator );
+      m_expr->appendJSON( jsonObjectGenerator.makeMember( "expr" ) );
+      m_cases->appendJSON( jsonObjectGenerator.makeMember( "cases" ) );
+    }
+    
+    void SwitchStatement::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    {
+      m_expr->llvmPrepareModule( moduleBuilder, diagnostics );
+      m_cases->llvmPrepareModule( moduleBuilder, diagnostics );
     }
 
     void SwitchStatement::llvmCompileToBuilder( CG::BasicBlockBuilder &parentBasicBlockBuilder, CG::Diagnostics &diagnostics ) const
