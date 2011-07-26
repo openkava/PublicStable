@@ -24,6 +24,7 @@ namespace Fabric
       FABRIC_RESOURCE_DATA_MEMBER_INDEX,
       FABRIC_RESOURCE_DATASIZE_MEMBER_INDEX,
       FABRIC_RESOURCE_MIMETYPE_MEMBER_INDEX,
+      FABRIC_RESOURCE_EXTENSION_MEMBER_INDEX,
     };
 
     RC::Handle<ResourceLoadNode> ResourceLoadNode::Create( std::string const &name, RC::Handle<Context> const &context )
@@ -47,6 +48,7 @@ namespace Fabric
       FABRIC_ASSERT( fabricResourceStructDesc->getMemberInfo( FABRIC_RESOURCE_DATA_MEMBER_INDEX ).name == "data" );
       FABRIC_ASSERT( fabricResourceStructDesc->getMemberInfo( FABRIC_RESOURCE_DATASIZE_MEMBER_INDEX ).name == "dataSize" );
       FABRIC_ASSERT( fabricResourceStructDesc->getMemberInfo( FABRIC_RESOURCE_MIMETYPE_MEMBER_INDEX ).name == "mimeType" );
+      FABRIC_ASSERT( fabricResourceStructDesc->getMemberInfo( FABRIC_RESOURCE_EXTENSION_MEMBER_INDEX ).name == "extension" );
 #endif
 
       addMember( "url", stringDesc, stringDesc->getDefaultData() );
@@ -163,30 +165,46 @@ namespace Fabric
         dataDesc->setData( NULL, fabricResourceStructDesc->getMemberData( resourceData, FABRIC_RESOURCE_DATA_MEMBER_INDEX ) );
         sizeDesc->setValue( 0, fabricResourceStructDesc->getMemberData( resourceData, FABRIC_RESOURCE_DATASIZE_MEMBER_INDEX ) );
         stringDesc->setValue( NULL, 0, fabricResourceStructDesc->getMemberData( resourceData, FABRIC_RESOURCE_MIMETYPE_MEMBER_INDEX ) );
+        stringDesc->setValue( NULL, 0, fabricResourceStructDesc->getMemberData( resourceData, FABRIC_RESOURCE_EXTENSION_MEMBER_INDEX ) );
       }
       else
       {
-        //Important: only set if different
-        bool changed = false;
-        const void *currentResourceData = getConstData( "resource", 0 );
-
-        if( *(const void **)fabricResourceStructDesc->getMemberData( currentResourceData, FABRIC_RESOURCE_DATA_MEMBER_INDEX ) != data )
-          changed = true;
-        else if( sizeDesc->getValue( fabricResourceStructDesc->getMemberData( currentResourceData, FABRIC_RESOURCE_DATASIZE_MEMBER_INDEX ) ) != dataSize )
-          changed = true;
+        std::string extension;
+        size_t extensionPos = m_streamURL.rfind('.');
+        if( extensionPos != std::string::npos )
+          extension = m_streamURL.substr( extensionPos+1 );
         else
         {
-          const void* mimeTypeData = fabricResourceStructDesc->getMemberData( currentResourceData, FABRIC_RESOURCE_MIMETYPE_MEMBER_INDEX );
-          if( stringDesc->getValueLength( mimeTypeData ) != mimeType->length() || memcmp( mimeType->data(), stringDesc->getValueData( mimeTypeData ), mimeType->length() ) != 0 )
-            changed = true;
+          extensionPos = mimeType->rfind('/');
+          if( extensionPos != std::string::npos )
+            extension = mimeType->substr( extensionPos+1 );
         }
+
+        //Important: only set if different
+        bool changed = false;
+        const void *prevResourceData = getConstData( "resource", 0 );
+
+        const void* prevData = fabricResourceStructDesc->getMemberData( prevResourceData, FABRIC_RESOURCE_DATA_MEMBER_INDEX );
+        const void* prevDataSize = fabricResourceStructDesc->getMemberData( prevResourceData, FABRIC_RESOURCE_DATASIZE_MEMBER_INDEX );
+        const void* prevMimeTypeData = fabricResourceStructDesc->getMemberData( prevResourceData, FABRIC_RESOURCE_MIMETYPE_MEMBER_INDEX );
+        const void* prevExtensionData = fabricResourceStructDesc->getMemberData( prevResourceData, FABRIC_RESOURCE_EXTENSION_MEMBER_INDEX );
+
+        if( *(const void **)prevData != data )
+          changed = true;
+        else if( sizeDesc->getValue( prevDataSize ) != dataSize )
+          changed = true;
+        else if ( stringDesc->getValueLength( prevMimeTypeData ) != mimeType->length() || memcmp( mimeType->data(), stringDesc->getValueData( prevMimeTypeData ), mimeType->length() ) != 0 )
+          changed = true;
+        else if ( stringDesc->getValueLength( prevExtensionData ) != extension.length() || memcmp( extension.data(), stringDesc->getValueData( prevExtensionData ), extension.length() ) != 0 )
+          changed = true;
 
         if( changed )
         {
           void* resourceData = getMutableData( "resource", 0 );
           dataDesc->setData( &data, fabricResourceStructDesc->getMemberData( resourceData, FABRIC_RESOURCE_DATA_MEMBER_INDEX ) );
           sizeDesc->setValue( dataSize, fabricResourceStructDesc->getMemberData( resourceData, FABRIC_RESOURCE_DATASIZE_MEMBER_INDEX ) );
-          stringDesc->setValue( mimeType->c_str(), mimeType->size(), fabricResourceStructDesc->getMemberData( resourceData, FABRIC_RESOURCE_MIMETYPE_MEMBER_INDEX ) );
+          stringDesc->setValue( mimeType->data(), mimeType->length(), fabricResourceStructDesc->getMemberData( resourceData, FABRIC_RESOURCE_MIMETYPE_MEMBER_INDEX ) );
+          stringDesc->setValue( extension.data(), extension.length(), fabricResourceStructDesc->getMemberData( resourceData, FABRIC_RESOURCE_EXTENSION_MEMBER_INDEX ) );
 
           if( notify )
           {
