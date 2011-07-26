@@ -3,4 +3,6 @@ function entry() {
   report "s.refCount = " + s.refCount;
   String t = s;
   report "s.refCount = " + s.refCount;
+  t = "bar";
+  report "s.refCount = " + s.refCount;
 }
