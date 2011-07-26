@@ -1,0 +1,6 @@
+function entry() {
+  String s = "foo";
+  report "s.refCount = " + s.refCount;
+  String t = s;
+  report "s.refCount = " + s.refCount;
+}
