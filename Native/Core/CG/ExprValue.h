@@ -57,6 +57,7 @@ namespace Fabric
       ExprValue &castTo( BasicBlockBuilder &basicBlockBuilder, RC::ConstHandle<Adapter> const &adapter );
       ExprValue &castTo( BasicBlockBuilder &basicBlockBuilder, Usage usage );
 
+      void llvmRetain( BasicBlockBuilder &basicBlockBuilder );
       void llvmDispose( BasicBlockBuilder &basicBlockBuilder );
     
       std::string desc() const;
