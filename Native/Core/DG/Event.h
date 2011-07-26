@@ -30,7 +30,6 @@ namespace Fabric
     public:
     
       virtual bool isEvent() const { return true; }
-      virtual bool isResourceLoadEvent() const { return false; }
 
       typedef std::vector< RC::Handle<EventHandler> > EventHandlers;
       

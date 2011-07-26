@@ -8,7 +8,6 @@
 #include <Fabric/Core/DG/Node.h>
 #include <Fabric/Core/DG/ResourceLoadNode.h>
 #include <Fabric/Core/DG/Event.h>
-#include <Fabric/Core/DG/ResourceLoadEvent.h>
 #include <Fabric/Core/DG/EventHandler.h>
 #include <Fabric/Core/DG/Operator.h>
 #include <Fabric/Core/DG/LogCollector.h>
@@ -436,8 +435,6 @@ namespace Fabric
         ResourceLoadNode::jsonExecCreate( arg, this );
       else if ( cmd == "createEvent" )
         Event::jsonExecCreate( arg, this );
-      else if ( cmd == "createResourceLoadEvent" )
-        ResourceLoadEvent::jsonExecCreate( arg, this );
       else if ( cmd == "createEventHandler" )
         EventHandler::jsonExecCreate( arg, this );
       else throw Exception( "unknown command" );
