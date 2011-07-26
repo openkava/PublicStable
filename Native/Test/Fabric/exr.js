@@ -12,7 +12,7 @@ struct Color\n\
   Scalar a;\n\
 };\n\
 \n\
-operator load( io String url, io FabricResource resource, io Size nbPixels )\n\
+operator load( io String url, io FabricResource resource )\n\
 {\n\
   report "Loaded " + url + " (mime type " + resource.mimeType + ")";\n\
   report "EXR data size is "+resource.dataSize;\n\
@@ -21,7 +21,6 @@ operator load( io String url, io FabricResource resource, io Size nbPixels )\n\
   FabricEXRDecode( resource.data, resource.dataSize, imageWidth, imageHeight, imagePixels );\n\
   report "Image dimensions are "+imageWidth+" by "+imageHeight;\n\
   report "Image pixels size is "+imagePixels.size;\n\
-  nbPixels = imagePixels.size;\n\
 }\n\
 ');
 
@@ -29,8 +28,7 @@ binding = FABRIC.DG.createBinding();
 binding.setOperator(op);
 binding.setParameterLayout([
   "loadnode.url",
-  "loadnode.resource",
-  "self.nbPixels"
+  "loadnode.resource"
 ]);
 
 rlnode = FABRIC.DependencyGraph.createResourceLoadNode("rlnode");
@@ -38,10 +36,8 @@ rlnode.setData("url", 0, "file:sample.exr");
 
 node = FABRIC.DependencyGraph.createNode("node");
 node.addDependency(rlnode, "loadnode");
-node.addMember("nbPixels", "Size");
 node.bindings.append(binding);
-
-printDeep(node.getData("nbPixels"));
+node.evaluate();
 
 FABRIC.flush();
 FC.dispose();
