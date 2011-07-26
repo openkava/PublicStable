@@ -24,11 +24,16 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> Report::toJSON() const
+    RC::Handle<JSON::Object> Report::toJSONImpl() const
     {
-      RC::Handle<JSON::Object> result = Statement::toJSON();
+      RC::Handle<JSON::Object> result = Statement::toJSONImpl();
       result->set( "expr", m_expr->toJSON() );
       return result;
+    }
+    
+    void Report::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    {
+      m_expr->llvmPrepareModule( moduleBuilder, diagnostics );
     }
 
     void Report::llvmCompileToBuilder( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const

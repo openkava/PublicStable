@@ -26,12 +26,17 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> StructMemberOp::toJSON() const
+    RC::Handle<JSON::Object> StructMemberOp::toJSONImpl() const
     {
-      RC::Handle<JSON::Object> result = Expr::toJSON();
+      RC::Handle<JSON::Object> result = Expr::toJSONImpl();
       result->set( "expr", m_structExpr->toJSON() );
       result->set( "memberName", JSON::String::Create( m_memberName ) );
       return result;
+    }
+    
+    void StructMemberOp::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    {
+      m_structExpr->llvmPrepareModule( moduleBuilder, diagnostics );
     }
     
     RC::ConstHandle<CG::Adapter> StructMemberOp::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const
@@ -88,6 +93,10 @@ namespace Fabric
               case CG::USAGE_LVALUE:
                 result = CG::ExprValue( memberAdapter, CG::USAGE_LVALUE, memberLValue );
                 break;
+              
+              case CG::USAGE_UNSPECIFIED:
+                FABRIC_ASSERT( false );
+                throw Exception( "unspecified usage" );
             }
             structExprValue.llvmDispose( basicBlockBuilder );
             return result;

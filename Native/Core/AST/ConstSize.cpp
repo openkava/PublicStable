@@ -6,10 +6,11 @@
  */
 
 #include <Fabric/Core/AST/ConstSize.h>
-#include <Fabric/Core/CG/IntegerAdapter.h>
-#include <Fabric/Core/CG/SizeAdapter.h>
-#include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/CG/BasicBlockBuilder.h>
+#include <Fabric/Core/CG/IntegerAdapter.h>
+#include <Fabric/Core/CG/Manager.h>
+#include <Fabric/Core/CG/ModuleBuilder.h>
+#include <Fabric/Core/CG/SizeAdapter.h>
 #include <Fabric/Core/Util/Parse.h>
 #include <Fabric/Base/JSON/String.h>
 
@@ -19,7 +20,7 @@ namespace Fabric
   {
     FABRIC_AST_NODE_IMPL( ConstSize );
     
-    RC::Handle<ConstSize> ConstSize::Create( CG::Location const &location, std::string const &valueString )
+    RC::ConstHandle<ConstSize> ConstSize::Create( CG::Location const &location, std::string const &valueString )
     {
       return new ConstSize( location, Util::parseSize( valueString ) );
     }
@@ -30,11 +31,17 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> ConstSize::toJSON() const
+    RC::Handle<JSON::Object> ConstSize::toJSONImpl() const
     {
-      RC::Handle<JSON::Object> result = Expr::toJSON();
+      RC::Handle<JSON::Object> result = Expr::toJSONImpl();
       result->set( "value", JSON::Integer::Create( m_value ) );
       return result;
+    }
+    
+    void ConstSize::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    {
+      RC::ConstHandle<CG::IntegerAdapter> integerAdapter = moduleBuilder.getManager()->getIntegerAdapter();
+      integerAdapter->llvmPrepareModule( moduleBuilder, true );
     }
     
     RC::ConstHandle<CG::Adapter> ConstSize::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const

@@ -13,7 +13,7 @@ namespace Fabric
   {
     FABRIC_AST_NODE_IMPL( IndexOp );
     
-    RC::Handle<IndexOp> IndexOp::Create(
+    RC::ConstHandle<IndexOp> IndexOp::Create(
       CG::Location const &location,
       RC::ConstHandle<Expr> const &expr,
       RC::ConstHandle<Expr> const &indexExpr
@@ -29,12 +29,18 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> IndexOp::toJSON() const
+    RC::Handle<JSON::Object> IndexOp::toJSONImpl() const
     {
-      RC::Handle<JSON::Object> result = Expr::toJSON();
+      RC::Handle<JSON::Object> result = Expr::toJSONImpl();
       result->set( "expr", m_expr->toJSON() );
       result->set( "indexExpr", m_indexExpr->toJSON() );
       return result;
+    }
+    
+    void IndexOp::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    {
+      m_expr->llvmPrepareModule( moduleBuilder, diagnostics );
+      m_indexExpr->llvmPrepareModule( moduleBuilder, diagnostics );
     }
     
     RC::ConstHandle<CG::Adapter> IndexOp::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const

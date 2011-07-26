@@ -200,6 +200,9 @@ namespace Fabric
             return getAdapter()->llvmRType();
           case USAGE_LVALUE:
             return getAdapter()->llvmLType();
+          case USAGE_UNSPECIFIED:
+            FABRIC_ASSERT( false );
+            throw Exception( "usage unspecified" );
         }
         return 0;
       }
@@ -290,9 +293,10 @@ namespace Fabric
       }
 
     private:
+
+      ExprType  m_exprType;
       bool        m_returnsStaticDataPtr;
       llvm::Value *m_returnLValue;
-      ExprType  m_exprType;
     };
 
     class FunctionSymbol : public Symbol
@@ -482,6 +486,9 @@ namespace Fabric
               throw Exception( "cannot return l-value through casting" );
             returnValue = exprValue.getValue();
             break;
+          case USAGE_UNSPECIFIED:
+            FABRIC_ASSERT( false );
+            throw Exception( "unspecified usage" );
         }
         llvmReturn( bbb, returnValue );
       }

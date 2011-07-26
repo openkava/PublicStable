@@ -11,8 +11,7 @@ if buildOS == 'Linux':
   coreEnv.ParseConfig( 'pkg-config --cflags --libs gtkglext-1.0' )
 if buildOS == 'Darwin':
   coreEnv.Append( CPPPATH = ['/opt/local/include'] )
-  coreEnv.Append( LIBPATH = ['/opt/local/lib'] )
-  coreEnv.Append( LIBS = ['GLEW'] )
+  coreEnv.Append( LIBS = [File('/opt/local/lib/libGLEW.a')] )
   coreEnv.Append( FRAMEWORKS = ['OpenGL'] )
 if buildOS == 'Windows':
   Import( 'glewFlags' )

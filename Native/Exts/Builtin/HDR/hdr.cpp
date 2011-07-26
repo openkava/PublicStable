@@ -155,7 +155,7 @@ static bool readPixelsRLE(
       return readPixelsRaw( hdr, img, idx + 1, scanlineWidth * nbScanlines - 1 );
     }
     
-    if( ( (rgbe[2] << 8 ) | rgbe[3]) != scanlineWidth )
+    if( ( (size_t(rgbe[2]) << 8 ) | size_t(rgbe[3])) != scanlineWidth )
       return false;
     
     unsigned char *scanlineStart, *scanlineEnd;
@@ -175,14 +175,14 @@ static bool readPixelsRLE(
         {
           // Run of identical values
           size_t count = rle[0] - 128;
-          if( count == 0 || count > ( scanlineEnd - scanlineStart ) )
+          if( count == 0 || count > ( size_t(scanlineEnd) - size_t(scanlineStart) ) )
             return false;
           while( count-- > 0 )
             *scanlineStart++ = rle[1];
         } else {
           // Run of non-identical values
           size_t count = rle[0];
-          if( count == 0 || count > ( scanlineEnd - scanlineStart ) )
+          if( count == 0 || count > ( size_t(scanlineEnd) - size_t(scanlineStart) ) )
             return false;
           
           *scanlineStart++ = rle[1];

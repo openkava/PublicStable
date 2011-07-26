@@ -19,7 +19,14 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> Node::toJSON() const
+    RC::Handle<JSON::Value> Node::toJSON() const
+    {
+      if ( !m_jsonValue )
+        m_jsonValue = toJSONImpl();
+      return m_jsonValue;
+    }
+    
+    RC::Handle<JSON::Object> Node::toJSONImpl() const
     {
       RC::Handle<JSON::Object> result = JSON::Object::Create();
       result->set( "nodeType", nodeTypeNameJSONString() );

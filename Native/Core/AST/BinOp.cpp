@@ -21,6 +21,11 @@ namespace Fabric
   {
     FABRIC_AST_NODE_IMPL( BinOp );
     
+    RC::ConstHandle<BinOp> BinOp::Create( CG::Location const &location, CG::BinOpType binOpType, RC::ConstHandle<Expr> const &left, RC::ConstHandle<Expr> const &right )
+    {
+      return new BinOp( location, binOpType, left, right );
+    }
+
     BinOp::BinOp( CG::Location const &location, CG::BinOpType binOpType, RC::ConstHandle<Expr> const &left, RC::ConstHandle<Expr> const &right )
       : Expr( location )
       , m_binOpType( binOpType )
@@ -29,9 +34,9 @@ namespace Fabric
     {
     }
       
-    RC::Handle<JSON::Object> BinOp::toJSON() const
+    RC::Handle<JSON::Object> BinOp::toJSONImpl() const
     {
-      RC::Handle<JSON::Object> result = Expr::toJSON();
+      RC::Handle<JSON::Object> result = Expr::toJSONImpl();
       result->set( "binOpType", JSON::String::Create( CG::binOpUserName( m_binOpType ) ) );
       result->set( "lhs", m_left->toJSON() );
       result->set( "rhs", m_right->toJSON() );
@@ -64,6 +69,12 @@ namespace Fabric
       // 
 
       throw Exception( "binary operator " + _(CG::binOpUserName( m_binOpType )) + " not supported for types " + _(lhsType->getUserName()) + " and " + _(rhsType->getUserName()) );
+    }
+    
+    void BinOp::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    {
+      m_left->llvmPrepareModule( moduleBuilder, diagnostics );
+      m_right->llvmPrepareModule( moduleBuilder, diagnostics );
     }
     
     RC::ConstHandle<CG::Adapter> BinOp::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const

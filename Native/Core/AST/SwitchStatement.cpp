@@ -25,7 +25,7 @@ namespace Fabric
   {
     FABRIC_AST_NODE_IMPL( SwitchStatement );
     
-    RC::Handle<SwitchStatement> SwitchStatement::Create(
+    RC::ConstHandle<SwitchStatement> SwitchStatement::Create(
       CG::Location const &location,
       RC::ConstHandle<Expr> const &expr,
       RC::ConstHandle<CaseVector> const &cases
@@ -45,12 +45,18 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> SwitchStatement::toJSON() const
+    RC::Handle<JSON::Object> SwitchStatement::toJSONImpl() const
     {
-      RC::Handle<JSON::Object> result = Statement::toJSON();
+      RC::Handle<JSON::Object> result = Statement::toJSONImpl();
       result->set( "expr", m_expr->toJSON() );
       result->set( "cases", m_cases->toJSON() );
       return result;
+    }
+    
+    void SwitchStatement::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    {
+      m_expr->llvmPrepareModule( moduleBuilder, diagnostics );
+      m_cases->llvmPrepareModule( moduleBuilder, diagnostics );
     }
 
     void SwitchStatement::llvmCompileToBuilder( CG::BasicBlockBuilder &parentBasicBlockBuilder, CG::Diagnostics &diagnostics ) const

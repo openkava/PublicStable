@@ -11,23 +11,16 @@ namespace Fabric
 {
   namespace AST
   {
-    RC::Handle<StatementVector> StatementVector::Create()
+    RC::ConstHandle<StatementVector> StatementVector::Create( RC::ConstHandle<Statement> const &first, RC::ConstHandle<StatementVector> const &remaining )
     {
-      return new StatementVector;
-    }
-    
-    RC::Handle<StatementVector> StatementVector::Create( RC::ConstHandle<Statement> const &first )
-    {
-      RC::Handle<StatementVector> result = Create();
-      result->push_back( first );
-      return result;
-    }
-    
-    RC::Handle<StatementVector> StatementVector::Create( RC::ConstHandle<Statement> const &first, RC::ConstHandle<StatementVector> const &remaining )
-    {
-      RC::Handle<StatementVector> result = Create( first );
-      for ( StatementVector::const_iterator it=remaining->begin(); it!=remaining->end(); ++it )
-        result->push_back( *it );
+      StatementVector *result = new StatementVector;
+      if ( first )
+        result->push_back( first );
+      if ( remaining )
+      {
+        for ( StatementVector::const_iterator it=remaining->begin(); it!=remaining->end(); ++it )
+          result->push_back( *it );
+      }
       return result;
     }
     
@@ -35,12 +28,22 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Array> StatementVector::toJSON() const
+    RC::ConstHandle<JSON::Value> StatementVector::toJSON() const
     {
-      RC::Handle<JSON::Array> result = JSON::Array::Create();
-      for ( size_t i=0; i<size(); ++i )
-        result->push_back( get(i)->toJSON() );
-      return result;
+      if ( !m_jsonValue )
+      {
+        RC::Handle<JSON::Array> result = JSON::Array::Create();
+        for ( size_t i=0; i<size(); ++i )
+          result->push_back( get(i)->toJSON() );
+        m_jsonValue = result;
+      }
+      return m_jsonValue;
+    }
+    
+    void StatementVector::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    {
+      for ( const_iterator it=begin(); it!=end(); ++it )
+        (*it)->llvmPrepareModule( moduleBuilder, diagnostics );
     }
     
     void StatementVector::llvmCompileToBuilder( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const

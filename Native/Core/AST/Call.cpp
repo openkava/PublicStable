@@ -20,7 +20,7 @@ namespace Fabric
   {
     FABRIC_AST_NODE_IMPL( Call );
     
-    RC::Handle<Call> Call::Create(
+    RC::ConstHandle<Call> Call::Create(
       CG::Location const &location,
       std::string const &name,
       RC::ConstHandle<ExprVector> const &args
@@ -40,9 +40,9 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> Call::toJSON() const
+    RC::Handle<JSON::Object> Call::toJSONImpl() const
     {
-      RC::Handle<JSON::Object> result = Expr::toJSON();
+      RC::Handle<JSON::Object> result = Expr::toJSONImpl();
       result->set( "functionFriendlyName", JSON::String::Create( m_name ) );
       result->set( "args", m_args->toJSON() );
       return result;
@@ -65,6 +65,11 @@ namespace Fabric
       if ( adapter )
         return adapter;
       else return getFunctionSymbol( basicBlockBuilder )->getReturnInfo().getAdapter();
+    }
+    
+    void Call::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    {
+      m_args->llvmPrepareModule( moduleBuilder, diagnostics );
     }
     
     CG::ExprValue Call::buildExprValue( CG::BasicBlockBuilder &basicBlockBuilder, CG::Usage usage, std::string const &lValueErrorDesc ) const

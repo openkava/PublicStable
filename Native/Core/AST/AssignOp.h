@@ -23,12 +23,11 @@ namespace Fabric
       
     public:
       
-      static RC::Handle<AssignOp> Create( CG::Location const &location, CG::AssignOpType assignOpType, RC::ConstHandle<Expr> const &left, RC::ConstHandle<Expr> const &right )
-      {
-        return new AssignOp( location, assignOpType, left, right );
-      }
+      static RC::ConstHandle<AssignOp> Create( CG::Location const &location, CG::AssignOpType assignOpType, RC::ConstHandle<Expr> const &left, RC::ConstHandle<Expr> const &right );
  
-      RC::Handle<JSON::Object> toJSON() const;
+      RC::Handle<JSON::Object> toJSONImpl() const;
+      
+      virtual void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
      
       virtual RC::ConstHandle<CG::Adapter> getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const;
       virtual CG::ExprValue buildExprValue( CG::BasicBlockBuilder &basicBlockBuilder, CG::Usage usage, std::string const &lValueErrorDesc ) const;

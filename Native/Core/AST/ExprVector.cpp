@@ -13,23 +13,16 @@ namespace Fabric
 {
   namespace AST
   {
-    RC::Handle<ExprVector> ExprVector::Create()
+    RC::ConstHandle<ExprVector> ExprVector::Create( RC::ConstHandle<Expr> const &first, RC::ConstHandle<ExprVector> const &remaining )
     {
-      return new ExprVector;
-    }
-    
-    RC::Handle<ExprVector> ExprVector::Create( RC::ConstHandle<Expr> const &first )
-    {
-      RC::Handle<ExprVector> result = Create();
-      result->push_back( first );
-      return result;
-    }
-    
-    RC::Handle<ExprVector> ExprVector::Create( RC::ConstHandle<Expr> const &first, RC::ConstHandle<ExprVector> const &remaining )
-    {
-      RC::Handle<ExprVector> result = Create( first );
-      for ( ExprVector::const_iterator it=remaining->begin(); it!=remaining->end(); ++it )
-        result->push_back( *it );
+      ExprVector *result = new ExprVector;
+      if ( first )
+        result->push_back( first );
+      if ( remaining )
+      {
+        for ( ExprVector::const_iterator it=remaining->begin(); it!=remaining->end(); ++it )
+          result->push_back( *it );
+      }
       return result;
     }
     
@@ -37,12 +30,16 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Array> ExprVector::toJSON() const
+    RC::ConstHandle<JSON::Value> ExprVector::toJSON() const
     {
-      RC::Handle<JSON::Array> result = JSON::Array::Create();
-      for ( size_t i=0; i<size(); ++i )
-        result->push_back( get(i)->toJSON() );
-      return result;
+      if ( !m_jsonValue )
+      {
+        RC::Handle<JSON::Array> result = JSON::Array::Create();
+        for ( size_t i=0; i<size(); ++i )
+          result->push_back( get(i)->toJSON() );
+        m_jsonValue = result;
+      }
+      return m_jsonValue;
     }
 
     void ExprVector::appendTypes( CG::BasicBlockBuilder const &basicBlockBuilder, std::vector< RC::ConstHandle<CG::Adapter> > &argTypes ) const
@@ -71,6 +68,12 @@ namespace Fabric
         }
         result.push_back( exprValue );
       }
+    }
+    
+    void ExprVector::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    {
+      for ( const_iterator it=begin(); it!=end(); ++it )
+        (*it)->llvmPrepareModule( moduleBuilder, diagnostics );
     }
   };
 };

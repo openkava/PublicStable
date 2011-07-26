@@ -30,7 +30,7 @@ namespace Fabric
     {
     public:
 
-      RC::Handle<JSON::Object> toJSON() const;
+      RC::Handle<JSON::Object> toJSONImpl() const;
       
       virtual std::string const *getFriendlyName( RC::Handle<CG::Manager> const &cgManager ) const;
       virtual std::string getEntryName( RC::Handle<CG::Manager> const &cgManager ) const = 0;
@@ -41,6 +41,8 @@ namespace Fabric
         return m_returnTypeName;
       }
       RC::ConstHandle<CompoundStatement> getBody() const;
+      
+      virtual void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
       
       virtual void llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctionBodies ) const;
       

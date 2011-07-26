@@ -17,7 +17,7 @@ namespace Fabric
   {
     FABRIC_AST_NODE_IMPL( CompoundStatement );
     
-    RC::Handle<CompoundStatement> CompoundStatement::Create(
+    RC::ConstHandle<CompoundStatement> CompoundStatement::Create(
       CG::Location const &location,
       RC::ConstHandle<StatementVector> const &statements
       )
@@ -34,11 +34,16 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> CompoundStatement::toJSON() const
+    RC::Handle<JSON::Object> CompoundStatement::toJSONImpl() const
     {
-      RC::Handle<JSON::Object> result = Node::toJSON();
+      RC::Handle<JSON::Object> result = Node::toJSONImpl();
       result->set( "statements", m_statements->toJSON() );
       return result;
+    }
+    
+    void CompoundStatement::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    {
+      m_statements->llvmPrepareModule( moduleBuilder, diagnostics );
     }
 
     void CompoundStatement::llvmCompileToBuilder( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const

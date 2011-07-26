@@ -6,6 +6,7 @@
 #include <Fabric/Core/CG/Adapter.h>
 #include <Fabric/Core/CG/Error.h>
 #include <Fabric/Core/CG/Manager.h>
+#include <Fabric/Core/CG/ModuleBuilder.h>
 #include <Fabric/Core/RT/Manager.h>
 #include <Fabric/Base/JSON/String.h>
 
@@ -15,6 +16,15 @@ namespace Fabric
   {
     FABRIC_AST_NODE_IMPL( Alias );
     
+    RC::ConstHandle<Alias> Alias::Create(
+      CG::Location const &location,
+      std::string const &name,
+      std::string const &adapterName
+      )
+    {
+      return new Alias( location, name, adapterName );
+    }
+
     Alias::Alias(
       CG::Location const &location,
       std::string const &name,
@@ -26,22 +36,22 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> Alias::toJSON() const
+    RC::Handle<JSON::Object> Alias::toJSONImpl() const
     {
-      RC::Handle<JSON::Object> result = Global::toJSON();
+      RC::Handle<JSON::Object> result = Global::toJSONImpl();
       result->set( "newTypeName", JSON::String::Create( m_name ) );
       result->set( "oldTypeName", JSON::String::Create( m_adapterName ) );
       return result;
     }
     
-    void Alias::registerTypes( RC::Handle<RT::Manager> const &rtManager, CG::Diagnostics &diagnostics ) const
+    void Alias::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
     {
-      RC::ConstHandle<RT::Desc> desc = rtManager->maybeGetDesc( m_adapterName );
-      if ( !desc )
-        throw CG::Error( getLocation(), "no registered type named " + _(m_adapterName) );
+      RC::ConstHandle<CG::Adapter> adapter = moduleBuilder.getAdapter( m_adapterName, getLocation() );
       try
       {
-        rtManager->registerAlias( m_name, desc );
+        RC::ConstHandle<RT::Desc> aliasDesc = moduleBuilder.getManager()->getRTManager()->registerAlias( m_name, adapter->getDesc() );
+        RC::ConstHandle<CG::Adapter> aliasAdapter = moduleBuilder.getAdapter( m_adapterName, getLocation() );
+        aliasAdapter->llvmPrepareModule( moduleBuilder, true );
       }
       catch ( Exception e )
       {

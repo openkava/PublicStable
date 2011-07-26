@@ -23,12 +23,18 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> MemberDecl::toJSON() const
+    RC::Handle<JSON::Object> MemberDecl::toJSONImpl() const
     {
-      RC::Handle<JSON::Object> result = Node::toJSON();
+      RC::Handle<JSON::Object> result = Node::toJSONImpl();
       result->set( "name", JSON::String::Create( m_name ) );
       result->set( "type", JSON::String::Create( m_type ) );
       return result;
+    }
+    
+    void MemberDecl::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    {
+      RC::ConstHandle<CG::Adapter> adapter = moduleBuilder.getAdapter( m_type, getLocation() );
+      adapter->llvmPrepareModule( moduleBuilder, true );
     }
 
     void MemberDecl::buildStructMemberInfo( RC::ConstHandle<RT::Manager> const &rtManager, RT::StructMemberInfo &structMemberInfo ) const

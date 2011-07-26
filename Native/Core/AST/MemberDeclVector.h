@@ -37,17 +37,21 @@ namespace Fabric
     {
     public:
       
-      static RC::Handle<MemberDeclVector> Create();
-      static RC::Handle<MemberDeclVector> Create( RC::ConstHandle<MemberDecl> const &first );
-      static RC::Handle<MemberDeclVector> Create( RC::ConstHandle<MemberDecl> const &first, RC::Handle<MemberDeclVector> const &remaining );
+      static RC::ConstHandle<MemberDeclVector> Create( RC::ConstHandle<MemberDecl> const &first = 0, RC::ConstHandle<MemberDeclVector> const &remaining = 0 );
 
-      RC::Handle<JSON::Array> toJSON() const;
+      RC::ConstHandle<JSON::Value> toJSON() const;
+      
+      void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
           
       void buildStructMemberInfoVector( RC::ConstHandle<RT::Manager> const &rtManager, RT::StructMemberInfoVector &structMemberInfoVector ) const;
     
     protected:
     
       MemberDeclVector();
+      
+    private:
+    
+      mutable RC::ConstHandle<JSON::Value> m_jsonValue;
     };
   };
 };

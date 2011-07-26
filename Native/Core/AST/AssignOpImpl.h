@@ -31,7 +31,7 @@ namespace Fabric
       
     public:
     
-      static RC::Handle<AssignOpImpl> Create(
+      static RC::ConstHandle<AssignOpImpl> Create(
         CG::Location const &location,
         std::string const &selfType,
         CG::AssignOpType assignOpType,
@@ -39,7 +39,7 @@ namespace Fabric
         RC::ConstHandle<CompoundStatement> const &body
         );
 
-      RC::Handle<JSON::Object> toJSON() const;
+      RC::Handle<JSON::Object> toJSONImpl() const;
       
     protected:
     

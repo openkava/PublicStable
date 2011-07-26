@@ -19,7 +19,7 @@ namespace Fabric
 
     public:
 
-      static RC::Handle<GlobalConstDecl> Create(
+      static RC::ConstHandle<GlobalConstDecl> Create(
         CG::Location const &location,
         RC::ConstHandle<ConstDecl> const &constDecl
         )
@@ -27,7 +27,9 @@ namespace Fabric
         return new GlobalConstDecl( location, constDecl );
       }
 
-      RC::Handle<JSON::Object> toJSON() const;
+      RC::Handle<JSON::Object> toJSONImpl() const;
+      
+      virtual void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
       
       virtual void llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctionBodies ) const;
       

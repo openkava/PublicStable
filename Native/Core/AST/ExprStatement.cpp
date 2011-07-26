@@ -15,17 +15,27 @@ namespace Fabric
   {
     FABRIC_AST_NODE_IMPL( ExprStatement );
     
+    RC::ConstHandle<ExprStatement> ExprStatement::Create( CG::Location const &location, RC::ConstHandle<Expr> const &expr )
+    {
+      return new ExprStatement( location, expr );
+    }
+    
     ExprStatement::ExprStatement( CG::Location const &location, RC::ConstHandle<Expr> const &expr )
       : Statement( location )
       , m_expr( expr )
     {
     }
     
-    RC::Handle<JSON::Object> ExprStatement::toJSON() const
+    RC::Handle<JSON::Object> ExprStatement::toJSONImpl() const
     {
-      RC::Handle<JSON::Object> result = Statement::toJSON();
+      RC::Handle<JSON::Object> result = Statement::toJSONImpl();
       result->set( "expr", m_expr->toJSON() );
       return result;
+    }
+    
+    void ExprStatement::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    {
+      m_expr->llvmPrepareModule( moduleBuilder, diagnostics );
     }
 
     void ExprStatement::llvmCompileToBuilder( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const

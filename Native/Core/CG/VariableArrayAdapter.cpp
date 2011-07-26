@@ -83,7 +83,7 @@ namespace Fabric
           };
           llvm::Function *intrinsic = llvm::Intrinsic::getDeclaration( basicBlockBuilder.getModuleBuilder(), llvm::Intrinsic::atomic_load_add, intrinsicTypes, numIntrinsicTypes );
           FABRIC_ASSERT( intrinsic );
-          llvm::Value *oldRefCountRValue = basicBlockBuilder->CreateCall2( intrinsic, refCountLValue, one );
+          basicBlockBuilder->CreateCall2( intrinsic, refCountLValue, one );
           basicBlockBuilder->CreateBr( doneBB );
           
           basicBlockBuilder->SetInsertPoint( doneBB );

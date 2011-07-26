@@ -56,6 +56,7 @@ namespace Fabric
         if ( m_data )
           free( m_data );
         init( that.m_data, that.m_length );
+        return *this;
       }
       
       char const *getData() const
@@ -222,7 +223,7 @@ namespace Fabric
     
       void init( char const *data, size_t length )
       {
-        if ( m_length = length )
+        if ( (m_length = length) )
         {
           m_allocSize = AllocSizeForLengthPlusOne( length + 1 );
           m_data = (char *)malloc( m_allocSize );
@@ -238,9 +239,9 @@ namespace Fabric
       
     private:
     
+      char *m_data;
       size_t m_length;
       size_t m_allocSize;
-      char *m_data;
     };
   };
 };

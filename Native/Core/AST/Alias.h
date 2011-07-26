@@ -23,18 +23,15 @@ namespace Fabric
       
     public:
 
-      static RC::Handle<Alias> Create(
+      static RC::ConstHandle<Alias> Create(
         CG::Location const &location,
         std::string const &name,
         std::string const &adapterName
-        )
-      {
-        return new Alias( location, name, adapterName );
-      }
+        );
 
-      RC::Handle<JSON::Object> toJSON() const;
+      RC::Handle<JSON::Object> toJSONImpl() const;
       
-      virtual void registerTypes( RC::Handle<RT::Manager> const &rtManager, CG::Diagnostics &diagnostics ) const;
+      virtual void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
       
     protected:
     

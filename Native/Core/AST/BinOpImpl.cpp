@@ -17,7 +17,7 @@ namespace Fabric
   {
     FABRIC_AST_NODE_IMPL( BinOpImpl );
     
-    RC::Handle<BinOpImpl> BinOpImpl::Create(
+    RC::ConstHandle<BinOpImpl> BinOpImpl::Create(
       CG::Location const &location,
       std::string const &returnType,
       CG::BinOpType binOpType,
@@ -47,9 +47,9 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> BinOpImpl::toJSON() const
+    RC::Handle<JSON::Object> BinOpImpl::toJSONImpl() const
     {
-      RC::Handle<JSON::Object> result = FunctionBase::toJSON();
+      RC::Handle<JSON::Object> result = FunctionBase::toJSONImpl();
       result->set( "op", JSON::String::Create( CG::binOpUserName( m_binOpType ) ) );
       return result;
     }

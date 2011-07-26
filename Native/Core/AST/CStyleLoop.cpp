@@ -19,6 +19,18 @@ namespace Fabric
   {
     FABRIC_AST_NODE_IMPL( CStyleLoop );
     
+    RC::ConstHandle<CStyleLoop> CStyleLoop::Create(
+      CG::Location const &location,
+      RC::ConstHandle<Statement> const &startStatement,
+      RC::ConstHandle<Expr> const &preCondExpr,
+      RC::ConstHandle<Expr> const &nextExpr,
+      RC::ConstHandle<Expr> const &postCondExpr,
+      RC::ConstHandle<Statement> const &body
+      )
+    {
+      return new CStyleLoop( location, startStatement, preCondExpr, nextExpr, postCondExpr, body );
+    }
+    
     CStyleLoop::CStyleLoop(
         CG::Location const &location,
         RC::ConstHandle<Statement> const &startStatement,
@@ -36,9 +48,9 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> CStyleLoop::toJSON() const
+    RC::Handle<JSON::Object> CStyleLoop::toJSONImpl() const
     {
-      RC::Handle<JSON::Object> result = Statement::toJSON();
+      RC::Handle<JSON::Object> result = Statement::toJSONImpl();
       if ( m_startStatement )
         result->set( "startStatement", m_startStatement->toJSON() );
       if ( m_preCondExpr )
@@ -50,6 +62,20 @@ namespace Fabric
       if ( m_body )
         result->set( "body", m_body->toJSON() );
       return result;
+    }
+    
+    void CStyleLoop::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    {
+      if ( m_startStatement )
+        m_startStatement->llvmPrepareModule( moduleBuilder, diagnostics );
+      if ( m_preCondExpr )
+        m_preCondExpr->llvmPrepareModule( moduleBuilder, diagnostics );
+      if ( m_nextExpr )
+        m_nextExpr->llvmPrepareModule( moduleBuilder, diagnostics );
+      if ( m_postCondExpr )
+        m_postCondExpr->llvmPrepareModule( moduleBuilder, diagnostics );
+      if ( m_body )
+        m_body->llvmPrepareModule( moduleBuilder, diagnostics );
     }
 
     void CStyleLoop::llvmCompileToBuilder( CG::BasicBlockBuilder &parentBasicBlockBuilder, CG::Diagnostics &diagnostics ) const

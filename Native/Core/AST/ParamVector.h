@@ -18,6 +18,7 @@ namespace Fabric
 {
   namespace JSON
   {
+    class Value;
     class Array;
   };
   
@@ -39,23 +40,25 @@ namespace Fabric
     {
     public:
       
-      static RC::Handle<ParamVector> Create();
-      static RC::Handle<ParamVector> Create( RC::ConstHandle<Param> const &firstParam );
-      static RC::Handle<ParamVector> Create( RC::ConstHandle<Param> const &firstParam, RC::ConstHandle<Param> const &secondParam );
-      static RC::Handle<ParamVector> Create( RC::ConstHandle<Param> const &firstParam, RC::ConstHandle<ParamVector> const &remainingParams );
+      static RC::ConstHandle<ParamVector> Create( RC::ConstHandle<Param> const &firstParam = 0, RC::ConstHandle<ParamVector> const &remainingParams = 0 );
+      static RC::ConstHandle<ParamVector> Create( RC::ConstHandle<Param> const &firstParam, RC::ConstHandle<Param> const &secondParam );
 
-      RC::Handle<JSON::Array> toJSON() const;
+      RC::ConstHandle<JSON::Value> toJSON() const;
     
       std::vector<CG::FunctionParam> getFunctionParams( RC::Handle<CG::Manager> const &cgManager ) const;
       std::vector<std::string> getTypes() const;
       std::vector< RC::ConstHandle<CG::Adapter> > getAdapters( RC::Handle<CG::Manager> const &cgManager ) const;
       std::vector<CG::ExprType> getExprTypes( RC::Handle<CG::Manager> const &cgManager ) const;
       
-      void llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctionBodies ) const;
+      void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
       
     protected:
     
       ParamVector();
+      
+    private:
+    
+      mutable RC::ConstHandle<JSON::Value> m_jsonValue;
     };
   };
 };
