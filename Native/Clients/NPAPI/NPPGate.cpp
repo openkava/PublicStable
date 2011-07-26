@@ -31,6 +31,7 @@
 
 #include <assert.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <npapi/npapi.h>
 #include <npapi/npfunctions.h>
