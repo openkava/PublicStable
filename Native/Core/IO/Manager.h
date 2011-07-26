@@ -20,7 +20,8 @@ namespace Fabric
         Stream::DataCallback dataCallback,
         Stream::EndCallback endCallback,
         Stream::FailureCallback failureCallback,
-        RC::Handle<RC::Object> const &target
+        RC::Handle<RC::Object> const &target,
+        void *userData = NULL
         ) const = 0;
     };
   };

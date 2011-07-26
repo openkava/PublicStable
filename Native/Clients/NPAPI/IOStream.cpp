@@ -18,10 +18,11 @@ namespace Fabric
       DataCallback dataCallback,
       EndCallback endCallback,
       FailureCallback failureCallback,
-      RC::Handle<RC::Object> const &target
+      RC::Handle<RC::Object> const &target,
+      void *userData
       )
     {
-      return new IOStream( npp, url, dataCallback, endCallback, failureCallback, target );
+      return new IOStream( npp, url, dataCallback, endCallback, failureCallback, target, userData );
     }
   
     IOStream::IOStream(
@@ -30,9 +31,10 @@ namespace Fabric
       DataCallback dataCallback,
       EndCallback endCallback,
       FailureCallback failureCallback,
-      RC::Handle<RC::Object> const &target
+      RC::Handle<RC::Object> const &target,
+      void *userData
       )
-      : IO::Stream( dataCallback, endCallback, failureCallback, target )
+      : IO::Stream( dataCallback, endCallback, failureCallback, target, userData )
       , m_npp( npp )
       , m_url( url )
       , m_finished( false )

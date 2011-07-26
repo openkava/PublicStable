@@ -67,6 +67,7 @@ namespace Fabric
       
       void openNotificationBracket();
       void closeNotificationBracket();
+      void registerCoreTypes();
     
     public:
     

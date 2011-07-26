@@ -78,6 +78,8 @@ namespace Fabric
       void addEventHandler( EventHandler *eventHandler );
       void removeEventHandler( EventHandler *eventHandler );
 
+      Context *Node::getContext() const;
+
       virtual RC::ConstHandle<JSON::Value> jsonRoute( std::vector<std::string> const &dst, size_t dstOffset, std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg );
       virtual RC::ConstHandle<JSON::Value> jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg );
       static void jsonExecCreate( RC::ConstHandle<JSON::Value> const &arg, RC::Handle<Context> const &context );
@@ -107,7 +109,7 @@ namespace Fabric
       virtual void collectTasksImpl( unsigned generation, MT::TaskGroupStream &taskGroupStream ) const;
       virtual bool canExecute() const;
       
-      void evaluateLocal( void *userdata );
+      virtual void evaluateLocal( void *userdata );
       
       void ensureRunState() const;
 

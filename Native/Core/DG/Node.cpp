@@ -416,6 +416,11 @@ namespace Fabric
       m_eventHandlers.erase( it );
     }
 
+    Context *Node::getContext() const
+    {
+      return m_context;
+    }
+
     RC::ConstHandle<JSON::Value> Node::jsonRoute( std::vector<std::string> const &dst, size_t dstOffset, std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg )
     {
       RC::ConstHandle<JSON::Value> result;

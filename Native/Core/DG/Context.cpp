@@ -6,12 +6,17 @@
 #include <Fabric/Core/DG/Client.h>
 #include <Fabric/Core/DG/NamedObject.h>
 #include <Fabric/Core/DG/Node.h>
+#include <Fabric/Core/DG/ResourceLoadNode.h>
 #include <Fabric/Core/DG/Event.h>
 #include <Fabric/Core/DG/ResourceLoadEvent.h>
 #include <Fabric/Core/DG/EventHandler.h>
 #include <Fabric/Core/DG/Operator.h>
 #include <Fabric/Core/DG/LogCollector.h>
 #include <Fabric/Core/RT/Manager.h>
+#include <Fabric/Core/RT/OpaqueDesc.h>
+#include <Fabric/Core/RT/SizeDesc.h>
+#include <Fabric/Core/RT/StringDesc.h>
+#include <Fabric/Core/RT/StructDesc.h>
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/DG/CodeManager.h>
 #include <Fabric/Core/Plug/Manager.h>
@@ -57,12 +62,13 @@ namespace Fabric
       , m_cgManager( CG::Manager::Create( m_rtManager ) )
       , m_ioManager( ioManager )
       , m_codeManager( CodeManager::Create() )
-      , m_plugManager( Plug::Manager::Create( this, pluginDirs ) )
       , m_notificationBracketCount( 0 )
       , m_pendingNotificationsMutex( "pending notifications" )
     {
+      registerCoreTypes();
+      m_plugManager = Plug::Manager::Create( this, pluginDirs );
       m_rtManager->setJSONCommandChannel( this );
-    
+
       static const size_t contextIDByteCount = 96;
       uint8_t contextIDBytes[contextIDByteCount];
       Util::generateSecureRandomBytes( contextIDByteCount, contextIDBytes );
@@ -89,6 +95,20 @@ namespace Fabric
     {
       bool insertResult = m_clients.insert( client ).second;
       FABRIC_ASSERT( insertResult );
+    }
+
+    void Context::registerCoreTypes()
+    {
+      //FabricResource type: used by ResourceLoadNode
+      RT::StructMemberInfoVector memberInfos;
+      memberInfos.resize(3);
+      memberInfos[0].name = "data";
+      memberInfos[0].desc = m_rtManager->getDataDesc();
+      memberInfos[1].name = "dataSize";
+      memberInfos[1].desc = m_rtManager->getSizeDesc();
+      memberInfos[2].name = "mimeType";
+      memberInfos[2].desc = m_rtManager->getStringDesc();
+      m_rtManager->registerStruct( "FabricResource", memberInfos );
     }
     
     void Context::jsonNotify( std::vector<std::string> const &src, std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg )
@@ -410,6 +430,8 @@ namespace Fabric
         Operator::jsonExecCreate( arg, this );
       else if ( cmd == "createNode" )
         Node::jsonExecCreate( arg, this );
+      else if ( cmd == "createResourceLoadNode" )
+        ResourceLoadNode::jsonExecCreate( arg, this );
       else if ( cmd == "createEvent" )
         Event::jsonExecCreate( arg, this );
       else if ( cmd == "createResourceLoadEvent" )

@@ -60,18 +60,18 @@ namespace Fabric
     {
       if( size )
       {
-        if ( offset + size > m_data.size() )
+        if ( offset + size > m_streamData.size() )
         {
-          m_data.resize( offset + size, 0 );
+          m_streamData.resize( offset + size, 0 );
         }
-        memcpy( &m_data[offset], data, size );
+        memcpy( &m_streamData[offset], data, size );
       }
     }
 
     void ResourceLoadEvent::streamEnd( std::string const &url, std::string const &mimeType )
     {
-      fire( url, &mimeType, m_data.empty() ? NULL : &(m_data[0]), m_data.size(), 0 );
-      m_data.swap( std::vector<uint8_t>() );
+      fire( url, &mimeType, m_streamData.empty() ? NULL : &(m_streamData[0]), m_streamData.size(), 0 );
+      m_streamData.swap( std::vector<uint8_t>() );
     }
 
     void ResourceLoadEvent::streamFailure( std::string const &url, std::string const &errorDesc )

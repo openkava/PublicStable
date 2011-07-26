@@ -38,19 +38,19 @@ namespace Fabric
       virtual void collectErrors();
 
       void streamData( std::string const &url, std::string const &mimeType, size_t offset, size_t size, void const *data );
-      static void StreamData( std::string const &url, std::string const &mimeType, size_t offset, size_t size, void const *data, RC::Handle<RC::Object> const &target )
+      static void StreamData( std::string const &url, std::string const &mimeType, size_t offset, size_t size, void const *data, RC::Handle<RC::Object> const &target, void *userData )
       {
         RC::Handle<ResourceLoadEvent>::StaticCast(target)->streamData( url, mimeType, offset, size, data );
       }
 
       void streamEnd( std::string const &url, std::string const &mimeType );
-      static void StreamEnd( std::string const &url, std::string const &mimeType, RC::Handle<RC::Object> const &target )
+      static void StreamEnd( std::string const &url, std::string const &mimeType, RC::Handle<RC::Object> const &target, void *userData )
       {
         RC::Handle<ResourceLoadEvent>::StaticCast(target)->streamEnd( url, mimeType );
       }
       
       void streamFailure( std::string const &url, std::string const &errorDesc );
-      static void StreamFailure( std::string const &url, std::string const &errorDesc, RC::Handle<RC::Object> const &target )
+      static void StreamFailure( std::string const &url, std::string const &errorDesc, RC::Handle<RC::Object> const &target, void *userData )
       {
         RC::Handle<ResourceLoadEvent>::StaticCast(target)->streamFailure( url, errorDesc );
       }
@@ -64,7 +64,7 @@ namespace Fabric
       std::string m_url;
 
       RC::Handle<IO::Stream> m_stream;
-      std::vector<uint8_t> m_data;
+      std::vector<uint8_t> m_streamData;
     };
   };
 };

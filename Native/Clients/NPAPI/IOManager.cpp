@@ -27,10 +27,11 @@ namespace Fabric
       IO::Stream::DataCallback dataCallback,
       IO::Stream::EndCallback endCallback,
       IO::Stream::FailureCallback failureCallback,
-      RC::Handle<RC::Object> const &target
+      RC::Handle<RC::Object> const &target,
+      void *userData
       ) const
     {
-      return IOStream::Create( m_npp, url, dataCallback, endCallback, failureCallback, target );
+      return IOStream::Create( m_npp, url, dataCallback, endCallback, failureCallback, target, userData );
     }
   
     NPError IOManager::nppNewStream( NPP npp, NPMIMEType type, NPStream *stream, NPBool seekable, uint16_t *stype )

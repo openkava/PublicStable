@@ -18,9 +18,9 @@ namespace Fabric
     {
     public:
     
-      typedef void (*DataCallback)( std::string const &url, std::string const &mimeType, size_t offset, size_t size, void const *data, RC::Handle<RC::Object> const &target );
-      typedef void (*EndCallback)( std::string const &url, std::string const &mimeType, RC::Handle<RC::Object> const &target );
-      typedef void (*FailureCallback)( std::string const &url, std::string const &errorDesc, RC::Handle<RC::Object> const &target );
+      typedef void (*DataCallback)( std::string const &url, std::string const &mimeType, size_t offset, size_t size, void const *data, RC::Handle<RC::Object> const &target, void *userData );
+      typedef void (*EndCallback)( std::string const &url, std::string const &mimeType, RC::Handle<RC::Object> const &target, void *userData );
+      typedef void (*FailureCallback)( std::string const &url, std::string const &errorDesc, RC::Handle<RC::Object> const &target, void *userData );
 
     protected:
     
@@ -28,7 +28,8 @@ namespace Fabric
         DataCallback dataCallback,
         EndCallback endCallback,
         FailureCallback failureCallback,
-        RC::Handle<RC::Object> const &target
+        RC::Handle<RC::Object> const &target,
+        void *userData
         );
       ~Stream();
       
@@ -42,6 +43,7 @@ namespace Fabric
       EndCallback m_endCallback;
       FailureCallback m_failureCallback;
       RC::WeakHandle<RC::Object> m_target;
+      void* m_userData;
     };
   };
 };

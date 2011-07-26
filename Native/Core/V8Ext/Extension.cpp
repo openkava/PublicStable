@@ -28,10 +28,11 @@ namespace Fabric
         DataCallback dataCallback,
         EndCallback endCallback,
         FailureCallback failureCallback,
-        RC::Handle<RC::Object> const &target
+        RC::Handle<RC::Object> const &target,
+        void *userData
         )
       {
-        return new IOStream( url, dataCallback, endCallback, failureCallback, target );
+        return new IOStream( url, dataCallback, endCallback, failureCallback, target, userData );
       }
       
     protected:
@@ -41,9 +42,10 @@ namespace Fabric
         DataCallback dataCallback,
         EndCallback endCallback,
         FailureCallback failureCallback,
-        RC::Handle<RC::Object> const &target
+        RC::Handle<RC::Object> const &target,
+        void *userData
         )
-        : IO::Stream( dataCallback, endCallback, failureCallback, target )
+        : IO::Stream( dataCallback, endCallback, failureCallback, target, userData )
         , m_url( url )
       {
         size_t colonIndex = m_url.find( ':' );
@@ -108,10 +110,11 @@ namespace Fabric
         IO::Stream::DataCallback dataCallback,
         IO::Stream::EndCallback endCallback,
         IO::Stream::FailureCallback failureCallback,
-        RC::Handle<RC::Object> const &target
+        RC::Handle<RC::Object> const &target,
+        void *userData
         ) const
       {
-        return IOStream::Create( url, dataCallback, endCallback, failureCallback, target );
+        return IOStream::Create( url, dataCallback, endCallback, failureCallback, target, userData );
       }
     
     protected:
