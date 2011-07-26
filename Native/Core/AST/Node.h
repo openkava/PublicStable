@@ -10,6 +10,12 @@
 
 namespace Fabric
 {
+  namespace JSON
+  {
+    class Value;
+    class Object;
+  };
+  
   namespace CG
   {
     class Diagnostics;
@@ -23,9 +29,9 @@ namespace Fabric
     public:
     
       Node( CG::Location const &location );
-    
-      virtual std::string localDesc() const = 0;
-      virtual std::string deepDesc( std::string const &indent ) const;
+
+      virtual RC::ConstHandle<JSON::String> nodeTypeNameJSONString() const = 0;
+      RC::Handle<JSON::Value> toJSON() const;
       
       CG::Location const &getLocation() const
       {
@@ -37,13 +43,35 @@ namespace Fabric
 
     protected:
     
+      virtual RC::Handle<JSON::Object> toJSONImpl() const;
+
       void addError( CG::Diagnostics &diagnostics, CG::Error const &error ) const;
       
     private:
     
       CG::Location m_location;
+      mutable RC::Handle<JSON::Value> m_jsonValue;
     };
   };
 };
+
+#define FABRIC_AST_NODE_DECL(NodeName) \
+  public: \
+    \
+    static char const *NodeTypeName(); \
+    virtual RC::ConstHandle<JSON::String> nodeTypeNameJSONString() const; \
+    
+#define FABRIC_AST_NODE_IMPL(NodeName) \
+    char const *NodeName::NodeTypeName() \
+    { \
+      static char const *result = #NodeName; \
+      return result; \
+    } \
+    \
+    RC::ConstHandle<JSON::String> NodeName::nodeTypeNameJSONString() const \
+    { \
+      static RC::ConstHandle<JSON::String> result = JSON::String::Create( NodeTypeName() ); \
+      return result; \
+    }
 
 #endif //_FABRIC_AST_NODE_H

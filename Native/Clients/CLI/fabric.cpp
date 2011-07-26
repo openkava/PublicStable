@@ -9,7 +9,6 @@
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/DG/Context.h>
 #include <Fabric/Core/DG/Debug.h>
-#include <Fabric/Core/KL/Debug.h>
 #include <Fabric/Core/RT/ScalarDesc.h>
 #include <Fabric/Core/RT/StructDesc.h>
 #include <Fabric/Core/V8Ext/Extension.h>

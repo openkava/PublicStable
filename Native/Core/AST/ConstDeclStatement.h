@@ -22,18 +22,18 @@ namespace Fabric
     
     class ConstDeclStatement : public Statement
     {
+      FABRIC_AST_NODE_DECL( ConstDeclStatement );
+
     public:
 
-      static RC::Handle<ConstDeclStatement> Create(
+      static RC::ConstHandle<ConstDeclStatement> Create(
         CG::Location const &location,
         RC::ConstHandle<ConstDecl> const &constDecl
-        )
-      {
-        return new ConstDeclStatement( location, constDecl );
-      }
-    
-      virtual std::string localDesc() const;
-      virtual std::string deepDesc( std::string const &indent ) const;
+        );
+
+      RC::Handle<JSON::Object> toJSONImpl() const;
+      
+      virtual void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
       
       virtual void llvmCompileToBuilder( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const;
       

@@ -6,7 +6,7 @@
 #define _FABRIC_AST_GLOBAL_H
 
 #include <Fabric/Core/AST/Node.h>
-#include <Fabric/Core/AST/ParamList.h>
+#include <Fabric/Core/AST/ParamVector.h>
 #include <Fabric/Core/AST/CompoundStatement.h>
 
 namespace llvm
@@ -17,6 +17,17 @@ namespace llvm
 
 namespace Fabric
 {
+  namespace RT
+  {
+    class Manager;
+  };
+  
+  namespace CG
+  {
+    class Diagnostics;
+    class ModuleBuilder;
+  };
+  
   namespace AST
   {
     class Global : public Node
@@ -24,8 +35,11 @@ namespace Fabric
     public:
     
       virtual bool isFunction() const { return false; }
+      
+      virtual void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const = 0;
           
-      virtual void llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctionBodies ) const = 0;
+      virtual void registerTypes( RC::Handle<RT::Manager> const &rtManager, CG::Diagnostics &diagnostics ) const;
+      virtual void llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctionBodies ) const;
       
     protected:
     

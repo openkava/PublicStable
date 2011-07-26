@@ -21,11 +21,15 @@ namespace Fabric
   {
     class ConstString : public Expr
     {
+      FABRIC_AST_NODE_DECL( ConstString );
+
     public:
     
-      static RC::Handle<ConstString> Create( CG::Location const &location, std::string const &value, bool quoted );
+      static RC::ConstHandle<ConstString> Create( CG::Location const &location, std::string const &value );
+
+      RC::Handle<JSON::Object> toJSONImpl() const;
       
-      virtual std::string localDesc() const;
+      virtual void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
       
       virtual RC::ConstHandle<CG::Adapter> getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const;
       virtual CG::ExprValue buildExprValue( CG::BasicBlockBuilder &basicBlockBuilder, CG::Usage usage, std::string const &lValueErrorDesc ) const;
@@ -33,8 +37,6 @@ namespace Fabric
     protected:
     
       ConstString( CG::Location const &location, std::string const &value );
-      
-      RC::ConstHandle<CG::ConstStringAdapter> getAdapter( CG::BasicBlockBuilder const &basicBlockBuilder ) const;
       
     private:
     

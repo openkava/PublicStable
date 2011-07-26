@@ -11,11 +11,26 @@
 #include <Fabric/Core/CG/Scope.h>
 #include <Fabric/Core/CG/Error.h>
 #include <Fabric/Core/CG/FunctionBuilder.h>
+#include <Fabric/Base/JSON/String.h>
 
 namespace Fabric
 {
   namespace AST
   {
+    FABRIC_AST_NODE_IMPL( CStyleLoop );
+    
+    RC::ConstHandle<CStyleLoop> CStyleLoop::Create(
+      CG::Location const &location,
+      RC::ConstHandle<Statement> const &startStatement,
+      RC::ConstHandle<Expr> const &preCondExpr,
+      RC::ConstHandle<Expr> const &nextExpr,
+      RC::ConstHandle<Expr> const &postCondExpr,
+      RC::ConstHandle<Statement> const &body
+      )
+    {
+      return new CStyleLoop( location, startStatement, preCondExpr, nextExpr, postCondExpr, body );
+    }
+    
     CStyleLoop::CStyleLoop(
         CG::Location const &location,
         RC::ConstHandle<Statement> const &startStatement,
@@ -33,23 +48,34 @@ namespace Fabric
     {
     }
     
-    std::string CStyleLoop::localDesc() const
+    RC::Handle<JSON::Object> CStyleLoop::toJSONImpl() const
     {
-      return "CStyleLoop";
+      RC::Handle<JSON::Object> result = Statement::toJSONImpl();
+      if ( m_startStatement )
+        result->set( "startStatement", m_startStatement->toJSON() );
+      if ( m_preCondExpr )
+        result->set( "preCondExpr", m_preCondExpr->toJSON() );
+      if ( m_nextExpr )
+        result->set( "nextExpr", m_nextExpr->toJSON() );
+      if ( m_postCondExpr )
+        result->set( "postCondExpr", m_postCondExpr->toJSON() );
+      if ( m_body )
+        result->set( "body", m_body->toJSON() );
+      return result;
     }
     
-    std::string CStyleLoop::deepDesc( std::string const &indent ) const
+    void CStyleLoop::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
     {
-      std::string subIndent = indent + "  ";
-      std::string result = indent + localDesc() + "\n"
-        + m_startStatement->deepDesc( subIndent )
-        + m_preCondExpr->deepDesc( subIndent )
-        + m_nextExpr->deepDesc( subIndent );
+      if ( m_startStatement )
+        m_startStatement->llvmPrepareModule( moduleBuilder, diagnostics );
+      if ( m_preCondExpr )
+        m_preCondExpr->llvmPrepareModule( moduleBuilder, diagnostics );
+      if ( m_nextExpr )
+        m_nextExpr->llvmPrepareModule( moduleBuilder, diagnostics );
       if ( m_postCondExpr )
-        result += m_postCondExpr->deepDesc( subIndent );
+        m_postCondExpr->llvmPrepareModule( moduleBuilder, diagnostics );
       if ( m_body )
-        result += m_body->deepDesc( subIndent );
-      return result;
+        m_body->llvmPrepareModule( moduleBuilder, diagnostics );
     }
 
     void CStyleLoop::llvmCompileToBuilder( CG::BasicBlockBuilder &parentBasicBlockBuilder, CG::Diagnostics &diagnostics ) const

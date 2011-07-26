@@ -1,7 +1,9 @@
 #ifndef _FABRIC_CG_LOCATION_H
 #define _FABRIC_CG_LOCATION_H
 
-#include <Fabric/Core/Util/Debug.h>
+#include <Fabric/Base/JSON/Object.h>
+#include <Fabric/Base/JSON/Integer.h>
+#include <Fabric/Core/Util/Format.h>
 
 namespace Fabric
 {
@@ -43,6 +45,14 @@ namespace Fabric
       std::string desc() const
       {
         return _(m_line) + ":" + _(m_column);
+      }
+      
+      RC::ConstHandle<JSON::Value> toJSON() const
+      {
+        RC::Handle<JSON::Object> result = JSON::Object::Create();
+        result->set( "line", JSON::Integer::Create( m_line ) );
+        result->set( "column", JSON::Integer::Create( m_column ) );
+        return result;
       }
       
     private:

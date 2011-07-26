@@ -146,7 +146,7 @@ namespace Fabric
       OCL::registerTypes( dgContext->getRTManager() );
 
       Client *client = Client::Create( dgContext ).take();
-      dgContext->getPlugManager()->loadBuiltInPlugins();
+      Plug::Manager::Instance()->loadBuiltInPlugins( m_pluginDirs, dgContext->getCGManager() );
       
       v8::Persistent<v8::Object> v8ClientObject = v8::Persistent<v8::Object>::New( m_v8ClientObjectTemplate->NewInstance() );
       v8ClientObject->SetPointerInInternalField( 0, client );

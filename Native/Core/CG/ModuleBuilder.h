@@ -17,6 +17,7 @@ namespace Fabric
 {
   namespace CG
   {
+    class Location;
     class Manager;
     
     class ModuleBuilder
@@ -34,10 +35,13 @@ namespace Fabric
       
       ModuleScope &getScope();
       
-      bool contains( std::string const &codeName );
+      bool contains( std::string const &codeName, bool buildFunctions );
       
       void addFunction( std::string const &entryName, RC::ConstHandle<FunctionSymbol> const &functionSymbol, std::string const *friendlyName = 0 );
       RC::ConstHandle<FunctionSymbol> maybeGetFunction( std::string const &entryName ) const;
+
+      RC::ConstHandle<Adapter> maybeGetAdapter( std::string const &userName ) const;
+      RC::ConstHandle<Adapter> getAdapter( std::string const &userName, CG::Location const &location );
       
     private:
     
@@ -46,7 +50,7 @@ namespace Fabric
       RC::Handle<Manager> m_manager;      
       llvm::Module *m_module;
       ModuleScope m_moduleScope;
-      std::set<std::string> m_contained;
+      std::set< std::pair<std::string, bool> > m_contained;
       Functions m_functions;
     };
   };

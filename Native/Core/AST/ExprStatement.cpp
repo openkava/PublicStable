@@ -7,26 +7,35 @@
 
 #include "ExprStatement.h"
 #include <Fabric/Core/CG/Error.h>
+#include <Fabric/Base/JSON/String.h>
 
 namespace Fabric
 {
   namespace AST
   {
+    FABRIC_AST_NODE_IMPL( ExprStatement );
+    
+    RC::ConstHandle<ExprStatement> ExprStatement::Create( CG::Location const &location, RC::ConstHandle<Expr> const &expr )
+    {
+      return new ExprStatement( location, expr );
+    }
+    
     ExprStatement::ExprStatement( CG::Location const &location, RC::ConstHandle<Expr> const &expr )
       : Statement( location )
       , m_expr( expr )
     {
     }
     
-    std::string ExprStatement::localDesc() const
+    RC::Handle<JSON::Object> ExprStatement::toJSONImpl() const
     {
-      return "ExprStatement";
+      RC::Handle<JSON::Object> result = Statement::toJSONImpl();
+      result->set( "expr", m_expr->toJSON() );
+      return result;
     }
     
-    std::string ExprStatement::deepDesc( std::string const &indent ) const
+    void ExprStatement::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
     {
-      return indent + localDesc() + "\n"
-        + m_expr->deepDesc( indent + "  " );
+      m_expr->llvmPrepareModule( moduleBuilder, diagnostics );
     }
 
     void ExprStatement::llvmCompileToBuilder( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const

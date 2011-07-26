@@ -7,40 +7,72 @@
 
 #include "VarDecl.h"
 #include <Fabric/Core/CG/Adapter.h>
+#include <Fabric/Core/CG/ModuleBuilder.h>
 #include <Fabric/Core/CG/Scope.h>
+#include <Fabric/Base/JSON/String.h>
 
 namespace Fabric
 {
   namespace AST
   {
-    VarDecl::VarDecl( CG::Location const &location, std::string const &name, RC::ConstHandle< CG::Adapter > const &adapter )
-      : Statement( location )
+    FABRIC_AST_NODE_IMPL( VarDecl );
+    
+    RC::ConstHandle<VarDecl> VarDecl::Create(
+      CG::Location const &location,
+      std::string const &name,
+      std::string const &arrayModifier
+      )
+    {
+      return new VarDecl( location, name, arrayModifier );
+    }
+    
+    VarDecl::VarDecl(
+      CG::Location const &location,
+      std::string const &name,
+      std::string const &arrayModifier
+      )
+      : Node( location )
       , m_name( name )
-      , m_adapter( adapter )
+      , m_arrayModifier( arrayModifier )
     {
     }
     
-    std::string VarDecl::localDesc() const
+    RC::Handle<JSON::Object> VarDecl::toJSONImpl() const
     {
-      return "VarDecl( "+_(m_name)+", "+_(m_adapter)+" )";
+      RC::Handle<JSON::Object> result = Node::toJSONImpl();
+      result->set( "name", JSON::String::Create( m_name ) );
+      result->set( "arrayModifier", JSON::String::Create( m_arrayModifier ) );
+      return result;
+    }
+    
+    void VarDecl::llvmPrepareModule( std::string const &baseType, CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    {
+      std::string type = baseType + m_arrayModifier;
+      RC::ConstHandle<CG::Adapter> adapter = moduleBuilder.getAdapter( type, getLocation() );
+      adapter->llvmPrepareModule( moduleBuilder, true );
     }
 
-    void VarDecl::llvmCompileToBuilder( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const
+    void VarDecl::llvmCompileToBuilder( std::string const &baseType, CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const
     {
-      llvmAllocateVariable( basicBlockBuilder, diagnostics );
+      llvmAllocateVariable( baseType, basicBlockBuilder, diagnostics );
     }
 
-    CG::ExprValue VarDecl::llvmAllocateVariable( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const
+    CG::ExprValue VarDecl::llvmAllocateVariable( std::string const &baseType, CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const
     {
-      llvm::Value *result = m_adapter->llvmAlloca( basicBlockBuilder, m_name );
-      m_adapter->llvmInit( basicBlockBuilder, result );
+      std::string type = baseType + m_arrayModifier;
+      RC::ConstHandle<CG::Adapter> adapter = basicBlockBuilder.maybeGetAdapter( type );
+      if ( !adapter )
+        throw CG::Error( getLocation(), "variable type " + _(type) + " not registered" );
+      
+      llvm::Value *result = adapter->llvmAlloca( basicBlockBuilder, m_name );
+      adapter->llvmInit( basicBlockBuilder, result );
       
       CG::Scope &scope = basicBlockBuilder.getScope();
       if ( scope.has( m_name ) )
         addError( diagnostics, "variable '" + m_name + "' already exists" );
-      else scope.put( m_name, CG::VariableSymbol::Create( CG::ExprValue( m_adapter, CG::USAGE_LVALUE, result ) ) );
+      else scope.put( m_name, CG::VariableSymbol::Create( CG::ExprValue( adapter, CG::USAGE_LVALUE, result ) ) );
         
-      return CG::ExprValue( m_adapter, CG::USAGE_LVALUE, result );
+      return CG::ExprValue( adapter, CG::USAGE_LVALUE, result );
     }
   };
 };

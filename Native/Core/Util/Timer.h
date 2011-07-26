@@ -35,18 +35,22 @@ namespace Fabric
 #endif
       }
 
-      float getElapsed() const
+      float getElapsedMS( bool reset = false )
       {
         float elapsed;
 
 #if defined(FABRIC_OS_WINDOWS)
-        LARGE_INTEGER   pcEnd;
+        LARGE_INTEGER pcEnd;
         ::QueryPerformanceCounter( &pcEnd );
         elapsed = float(pcEnd.QuadPart - m_pcBegin.QuadPart)/m_pcFreq;
+        if ( reset )
+          m_pcBegin = pcEnd;
 #else
         struct timeval tvEnd;
         gettimeofday( &tvEnd, NULL );
         elapsed = (float)(tvEnd.tv_sec-m_tvBegin.tv_sec)*1e3 + ((float)tvEnd.tv_usec - (float)m_tvBegin.tv_usec)*1e-3;
+        if ( reset )
+          m_tvBegin = tvEnd;
 #endif
         
         return elapsed;

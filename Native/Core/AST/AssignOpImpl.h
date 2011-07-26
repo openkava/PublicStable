@@ -25,30 +25,35 @@ namespace Fabric
   
   namespace AST
   {
-    class AssignOpImpl: public MethodOpImpl
+    class AssignOpImpl : public MethodOpImpl
     {
+      FABRIC_AST_NODE_DECL( AssignOpImpl );
+      
     public:
     
-      static RC::Handle<Function> Create(
+      static RC::ConstHandle<AssignOpImpl> Create(
         CG::Location const &location,
-        RC::ConstHandle<CG::Adapter> const &selfType,
+        std::string const &selfType,
         CG::AssignOpType assignOpType,
-        RC::ConstHandle< AST::Param > rhs,
+        RC::ConstHandle<AST::Param> rhs,
         RC::ConstHandle<CompoundStatement> const &body
-        )
-      {
-        return new AssignOpImpl( location, selfType, assignOpType, rhs, body );
-      }
+        );
+
+      RC::Handle<JSON::Object> toJSONImpl() const;
       
     protected:
     
       AssignOpImpl(
         CG::Location const &location,
-        RC::ConstHandle<CG::Adapter> const &selfType,
+        std::string const &selfType,
         CG::AssignOpType assignOpType,
-        RC::ConstHandle< AST::Param > rhs,
+        RC::ConstHandle<AST::Param> rhs,
         RC::ConstHandle<CompoundStatement> const &body
         );
+    
+    private:
+    
+      CG::AssignOpType m_assignOpType;
     };
   };
 };

@@ -17,22 +17,22 @@ namespace Fabric
   {
     class CStyleLoop: public Statement
     {
-    public:
-    
-      virtual std::string localDesc() const;
-      virtual std::string deepDesc( std::string const &indent ) const;
+      FABRIC_AST_NODE_DECL( CStyleLoop );
 
-      static RC::Handle<CStyleLoop> Create(
+    public:
+
+      static RC::ConstHandle<CStyleLoop> Create(
         CG::Location const &location,
         RC::ConstHandle<Statement> const &startStatement,
         RC::ConstHandle<Expr> const &preCondExpr,
         RC::ConstHandle<Expr> const &nextExpr,
         RC::ConstHandle<Expr> const &postCondExpr,
         RC::ConstHandle<Statement> const &body
-        )
-      {
-        return new CStyleLoop( location, startStatement, preCondExpr, nextExpr, postCondExpr, body );
-      }
+        );
+
+      RC::Handle<JSON::Object> toJSONImpl() const;
+      
+      virtual void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
       
       virtual void llvmCompileToBuilder( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const;
      

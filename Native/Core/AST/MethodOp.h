@@ -9,7 +9,6 @@
 #define _FABRIC_AST_METHOD_OP_H
 
 #include <Fabric/Core/AST/Expr.h>
-#include <Fabric/Core/AST/ArgList.h>
 
 namespace Fabric
 {
@@ -20,24 +19,36 @@ namespace Fabric
   
   namespace AST
   {
+    class ExprVector;
+    
     class MethodOp : public Expr
     {
+      FABRIC_AST_NODE_DECL( MethodOp );
+
     public:
         
-      static RC::Handle<MethodOp> Create( CG::Location const &location, std::string const &name, RC::ConstHandle<Expr> const &expr, RC::ConstHandle<ArgList> const &argList )
-      {
-        return new MethodOp( location, name, expr, argList );
-      }
-    
-      virtual std::string localDesc() const;
-      virtual std::string deepDesc( std::string const &indent ) const;
+      static RC::ConstHandle<MethodOp> Create(
+        CG::Location const &location,
+        std::string const &name,
+        RC::ConstHandle<Expr> const &expr,
+        RC::ConstHandle<ExprVector> const &args
+        );
+
+      RC::Handle<JSON::Object> toJSONImpl() const;
+
+      virtual void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
       
       virtual RC::ConstHandle<CG::Adapter> getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const;
       virtual CG::ExprValue buildExprValue( CG::BasicBlockBuilder &basicBlockBuilder, CG::Usage usage, std::string const &lValueErrorDesc ) const;
       
     protected:
     
-      MethodOp( CG::Location const &location, std::string const &name, RC::ConstHandle<Expr> const &expr, RC::ConstHandle<ArgList> const &argList );
+      MethodOp(
+        CG::Location const &location,
+        std::string const &name,
+        RC::ConstHandle<Expr> const &expr,
+        RC::ConstHandle<ExprVector> const &args
+        );
       
       RC::ConstHandle<CG::FunctionSymbol> getFunctionSymbol( CG::BasicBlockBuilder const &basicBlockBuilder ) const;
 
@@ -45,7 +56,7 @@ namespace Fabric
     
       std::string m_name;
       RC::ConstHandle<Expr> m_expr;
-      RC::ConstHandle<ArgList> m_argList;
+      RC::ConstHandle<ExprVector> m_args;
     };
   };
 };

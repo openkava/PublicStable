@@ -4,24 +4,26 @@
 
 #include "ContinueStatement.h"
 #include <Fabric/Core/CG/Scope.h>
+#include <Fabric/Base/JSON/String.h>
 
 namespace Fabric
 {
   namespace AST
   {
+    FABRIC_AST_NODE_IMPL( ContinueStatement );
+    
+    RC::ConstHandle<ContinueStatement> ContinueStatement::Create( CG::Location const &location )
+    {
+      return new ContinueStatement( location );
+    }
+    
     ContinueStatement::ContinueStatement( CG::Location const &location )
       : Statement( location )
     {
     }
     
-    std::string ContinueStatement::localDesc() const
+    void ContinueStatement::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
     {
-      return "ContinueStatement";
-    }
-    
-    std::string ContinueStatement::deepDesc( std::string const &indent ) const
-    {
-      return indent + localDesc() + "\n";
     }
 
     void ContinueStatement::llvmCompileToBuilder( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const

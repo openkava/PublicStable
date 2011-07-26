@@ -24,7 +24,7 @@ namespace Fabric
     
       static RC::ConstHandle<Dir> Root();
       static RC::ConstHandle<Dir> User();
-      static RC::ConstHandle<Dir> IRCache();
+      static RC::ConstHandle<Dir> Private();
           
       static RC::ConstHandle<Dir> Create( RC::ConstHandle<Dir> const &parentDir, std::string path, bool createIfMissing = true )
       {

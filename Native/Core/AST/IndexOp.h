@@ -9,7 +9,6 @@
 #define _FABRIC_AST_INDEX_OP_H
 
 #include <Fabric/Core/AST/Expr.h>
-#include <Fabric/Core/AST/ArgList.h>
 
 namespace Fabric
 {
@@ -17,22 +16,30 @@ namespace Fabric
   {
     class IndexOp : public Expr
     {
+      FABRIC_AST_NODE_DECL( IndexOp );
+
     public:
         
-      static RC::Handle<IndexOp> Create( CG::Location const &location, RC::ConstHandle<Expr> const &expr, RC::ConstHandle<Expr> const &indexExpr )
-      {
-        return new IndexOp( location, expr, indexExpr );
-      }
-    
-      virtual std::string localDesc() const;
-      virtual std::string deepDesc( std::string const &indent ) const;
+      static RC::ConstHandle<IndexOp> Create(
+        CG::Location const &location,
+        RC::ConstHandle<Expr> const &expr,
+        RC::ConstHandle<Expr> const &indexExpr
+        );
+
+      RC::Handle<JSON::Object> toJSONImpl() const;
+      
+      virtual void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
       
       virtual RC::ConstHandle<CG::Adapter> getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const;
       virtual CG::ExprValue buildExprValue( CG::BasicBlockBuilder &basicBlockBuilder, CG::Usage usage, std::string const &lValueErrorDesc ) const;
       
     protected:
     
-      IndexOp( CG::Location const &location, RC::ConstHandle<Expr> const &expr, RC::ConstHandle<Expr> const &indexExpr );
+      IndexOp(
+        CG::Location const &location,
+        RC::ConstHandle<Expr> const &expr,
+        RC::ConstHandle<Expr> const &indexExpr
+        );
 
     private:
     

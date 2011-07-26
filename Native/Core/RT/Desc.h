@@ -60,8 +60,8 @@ namespace Fabric
       Util::Encoder &encode( Util::Encoder &encoder, void const *data ) const;
       Util::Decoder &decode( Util::Decoder &decoder, void *data ) const;
 
-      void setKBindings( std::string const &kBindings ) const;
-      std::string const &getKBindings() const;
+      void setKLBindingsAST( RC::ConstHandle<RC::Object> const &klBindingsAST ) const;
+      RC::ConstHandle<RC::Object> getKLBindingsAST() const;
       
       bool isEquivalentTo( RC::ConstHandle< RT::Desc > const &desc ) const;
       bool isShallow() const;
@@ -82,7 +82,7 @@ namespace Fabric
       std::string m_name;
       RC::ConstHandle<Impl> m_impl;
       
-      mutable std::string m_kBindings;
+      mutable RC::ConstHandle<RC::Object> m_klBindingsAST;
     };
   };
   

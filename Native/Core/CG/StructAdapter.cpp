@@ -112,8 +112,10 @@ namespace Fabric
 
     void StructAdapter::llvmPrepareModule( ModuleBuilder &moduleBuilder, bool buildFunctions ) const
     {
-      if ( moduleBuilder.contains( getCodeName() ) )
+      if ( moduleBuilder.contains( getCodeName(), buildFunctions ) )
         return;
+      for ( MemberAdaptorVector::const_iterator it=m_memberAdapters.begin(); it!=m_memberAdapters.end(); ++it )
+        (*it)->llvmPrepareModule( moduleBuilder, buildFunctions );
       
       moduleBuilder->addTypeName( getCodeName(), llvmRawType() );
 
@@ -215,7 +217,6 @@ namespace Fabric
           FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( sizeAdapter, USAGE_RVALUE ), params );
           if ( buildFunctions )
           {
-            llvm::Value *selfRValue = functionBuilder[0];
             BasicBlockBuilder basicBlockBuilder( functionBuilder );
             basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
             llvm::Value *dataSizeRValue = llvm::ConstantInt::get( sizeAdapter->llvmRType(), getDesc()->getSize() );

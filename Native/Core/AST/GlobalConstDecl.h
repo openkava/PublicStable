@@ -15,18 +15,21 @@ namespace Fabric
     
     class GlobalConstDecl : public Global
     {
+      FABRIC_AST_NODE_DECL( GlobalConstDecl );
+
     public:
 
-      static RC::Handle<GlobalConstDecl> Create(
+      static RC::ConstHandle<GlobalConstDecl> Create(
         CG::Location const &location,
         RC::ConstHandle<ConstDecl> const &constDecl
         )
       {
         return new GlobalConstDecl( location, constDecl );
       }
-    
-      virtual std::string localDesc() const;
-      virtual std::string deepDesc( std::string const &indent ) const;
+
+      RC::Handle<JSON::Object> toJSONImpl() const;
+      
+      virtual void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
       
       virtual void llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctionBodies ) const;
       

@@ -10,36 +10,51 @@
 #include <Fabric/Core/CG/OverloadNames.h>
 #include <Fabric/Core/CG/Scope.h>
 #include <Fabric/Core/CG/Error.h>
+#include <Fabric/Base/JSON/String.h>
 
 namespace Fabric
 {
   namespace AST
   {
+    FABRIC_AST_NODE_IMPL( AssignedVarDecl );
+    
+    RC::ConstHandle<AssignedVarDecl> AssignedVarDecl::Create(
+      CG::Location const &location,
+      std::string const &name,
+      std::string const &arrayModifier,
+      RC::ConstHandle<Expr> initialExpr
+      )
+    {
+      return new AssignedVarDecl( location, name, arrayModifier, initialExpr );
+    }
+
     AssignedVarDecl::AssignedVarDecl(
       CG::Location const &location,
       std::string const &name,
-      RC::ConstHandle< CG::Adapter > const &adapter,
+      std::string const &arrayModifier,
       RC::ConstHandle<Expr> const &initialExpr
       )
-      : VarDecl( location, name, adapter )
+      : VarDecl( location, name, arrayModifier )
       , m_initialExpr( initialExpr )
     {
     }
     
-    std::string AssignedVarDecl::localDesc() const
+    RC::Handle<JSON::Object> AssignedVarDecl::toJSONImpl() const
     {
-      return "AssignedVarDecl( " + VarDecl::localDesc() + ", " + m_initialExpr->localDesc() + " )";
+      RC::Handle<JSON::Object> result = VarDecl::toJSONImpl();
+      result->set( "initialValue", m_initialExpr->toJSON() );
+      return result;
     }
     
-    std::string AssignedVarDecl::deepDesc( std::string const &indent ) const
+    void AssignedVarDecl::llvmPrepareModule( std::string const &baseType, CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
     {
-      return indent + localDesc() + "\n"
-        + m_initialExpr->deepDesc( indent + "  " );
+      VarDecl::llvmPrepareModule( baseType, moduleBuilder, diagnostics );
+      m_initialExpr->llvmPrepareModule( moduleBuilder, diagnostics );
     }
 
-    void AssignedVarDecl::llvmCompileToBuilder( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const
+    void AssignedVarDecl::llvmCompileToBuilder( std::string const &baseType, CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const
     {
-      CG::ExprValue result = VarDecl::llvmAllocateVariable( basicBlockBuilder, diagnostics );
+      CG::ExprValue result = VarDecl::llvmAllocateVariable( baseType, basicBlockBuilder, diagnostics );
       
       CG::ExprValue initialExprExprValue;
       try

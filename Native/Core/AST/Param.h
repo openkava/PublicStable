@@ -22,67 +22,58 @@ namespace Fabric
 {
   namespace AST
   {
-    class Param: public Node
+    class Param : public Node
     {
+      FABRIC_AST_NODE_DECL( Param );
+
     public:
     
-      static RC::Handle<Param> Create( CG::Location const &location, std::string const &name, RC::ConstHandle< CG::Adapter > const &adapter, CG::Usage usage )
-      {
-        return new Param( location, name, adapter, usage );
-      }
+      static RC::ConstHandle<Param> Create(
+        CG::Location const &location,
+        std::string const &name,
+        std::string const &type,
+        CG::Usage usage
+        );
+
+      RC::Handle<JSON::Object> toJSONImpl() const;
     
       std::string const &getName() const
       {
-        return m_functionParam.getName();
+        return m_name;
       }
       
-      RC::ConstHandle< CG::Adapter > getAdapter() const
+      std::string const &getType() const
       {
-        return m_functionParam.getAdapter();
+        return m_type;
       }
       
       CG::Usage getUsage() const
       {
-        return m_functionParam.getUsage();
+        return m_usage;
       }
       
-      RC::ConstHandle<CG::Adapter> getType() const
-      {
-        return m_functionParam.getAdapter();
-      }
-      
-      CG::ExprType const &getExprType() const
-      {
-        return m_functionParam.getExprType();
-      }
-      
-      llvm::Type const *getLLVMType() const
-      {
-        return m_functionParam.getLLVMType();
-      }
-      
-      virtual std::string localDesc() const;
-      
-      CG::FunctionParam const &getFunctionParam() const
-      {
-        return m_functionParam;
-      }
+      CG::FunctionParam getFunctionParam( RC::Handle<CG::Manager> const &cgManager ) const;
+      RC::ConstHandle<CG::Adapter> getAdapter( RC::Handle<CG::Manager> const &cgManager ) const;
+      CG::ExprType getExprType( RC::Handle<CG::Manager> const &cgManager ) const;
+
+      void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
 
     protected:
     
-      Param( CG::Location const &location, std::string const &name, RC::ConstHandle< CG::Adapter > const &adapter, CG::Usage usage );
+      Param(
+        CG::Location const &location,
+        std::string const &name,
+        std::string const &type,
+        CG::Usage usage
+        );
       
     private:
     
-      CG::FunctionParam m_functionParam;
+      std::string m_name;
+      std::string m_type;
+      CG::Usage m_usage;
     };
-
-  }
-
-  inline std::string _( RC::ConstHandle<AST::Param> const &param )
-  {
-    return param->localDesc();
-  }
-}
+  };
+};
 
 #endif //_FABRIC_AST_PARAM_H

@@ -53,16 +53,6 @@ namespace Fabric
       return m_ioManager;
     }
 
-    Context::PopUpItems const &Context::getPopUpItems() const
-    {
-      return m_popUpItems;
-    }
-    
-    void Context::addPopUpItem( PopUpItem const &popUpItem )
-    {
-      m_popUpItems.push_back( popUpItem );
-    }
-
     RC::ConstHandle<JSON::Value> Context::jsonRoute( std::vector<std::string> const &dst, size_t dstOffset, std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg )
     {
       if ( dst.size() - dstOffset >= 1 && dst[dstOffset] == "VP" )

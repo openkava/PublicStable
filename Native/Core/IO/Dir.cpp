@@ -41,11 +41,11 @@ namespace Fabric
       return user;
     }
 
-    RC::ConstHandle<Dir> Dir::IRCache()
+    RC::ConstHandle<Dir> Dir::Private()
     {
       static RC::Handle<Dir> result;
       if ( !result )
-        result = new Dir( Root(), "IRCache", true );
+        result = new Dir( Root(), ".private", true );
       return result;
     }
 

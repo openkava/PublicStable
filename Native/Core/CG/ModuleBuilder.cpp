@@ -1,5 +1,7 @@
 #include "ModuleBuilder.h"
 #include "Manager.h"
+#include "Error.h"
+#include "Location.h"
 
 namespace Fabric
 {
@@ -14,6 +16,19 @@ namespace Fabric
     RC::Handle<Manager> ModuleBuilder::getManager()
     {
       return m_manager;
+    }
+    
+    RC::ConstHandle<Adapter> ModuleBuilder::maybeGetAdapter( std::string const &userName ) const
+    {
+      return m_manager->maybeGetAdapter( userName );
+    }
+    
+    RC::ConstHandle<Adapter> ModuleBuilder::getAdapter( std::string const &userName, CG::Location const &location )
+    {
+      RC::ConstHandle<Adapter> result = maybeGetAdapter( userName );
+      if ( !result )
+        throw CG::Error( location, _(userName) + ": type not registered" );
+      return result;
     }
     
     llvm::LLVMContext &ModuleBuilder::getLLVMContext()
@@ -36,9 +51,9 @@ namespace Fabric
       return m_moduleScope;
     }
     
-    bool ModuleBuilder::contains( std::string const &codeName )
+    bool ModuleBuilder::contains( std::string const &codeName, bool buildFunctions )
     {
-      bool insertResult = m_contained.insert( codeName ).second;
+      bool insertResult = m_contained.insert( std::pair<std::string, bool>( codeName, buildFunctions ) ).second;
       return !insertResult;
     }
 

@@ -10,11 +10,14 @@
 #include <Fabric/Core/CG/OverloadNames.h>
 #include <Fabric/Core/CG/Error.h>
 #include <Fabric/Core/CG/Scope.h>
+#include <Fabric/Base/JSON/String.h>
 
 namespace Fabric
 {
   namespace AST
   {
+    FABRIC_AST_NODE_IMPL( UniOp );
+    
     UniOp::UniOp( CG::Location const &location, CG::UniOpType uniOpType, RC::ConstHandle<Expr> const &child )
       : Expr( location )
       , m_uniOpType( uniOpType )
@@ -22,16 +25,12 @@ namespace Fabric
     {
     }
     
-    std::string UniOp::localDesc() const
+    RC::Handle<JSON::Object> UniOp::toJSONImpl() const
     {
-      return "UniOp( " + CG::uniOpUserName( m_uniOpType ) + " )";
-    }
-    
-    std::string UniOp::deepDesc( std::string const &indent ) const
-    {
-      std::string subIndent = indent + "  ";
-      return indent + localDesc() + "\n"
-        + m_child->deepDesc(subIndent);
+      RC::Handle<JSON::Object> result = Expr::toJSONImpl();
+      result->set( "op", JSON::String::Create( uniOpUserName( m_uniOpType ) ) );
+      result->set( "child", m_child->toJSON() );
+      return result;
     }
     
     RC::ConstHandle<CG::FunctionSymbol> UniOp::getFunctionSymbol( CG::BasicBlockBuilder const &basicBlockBuilder ) const
@@ -42,6 +41,11 @@ namespace Fabric
       if ( !functionSymbol )
         throw Exception( "unary operator " + _(CG::uniOpUserName( m_uniOpType )) + " not supported for expressions of type " + _(childType->getUserName()) );
       return functionSymbol;
+    }
+    
+    void UniOp::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    {
+      m_child->llvmPrepareModule( moduleBuilder, diagnostics );
     }
     
     RC::ConstHandle<CG::Adapter> UniOp::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const

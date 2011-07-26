@@ -17,10 +17,20 @@ namespace Fabric
     class Object;
   };
   
+  namespace RT
+  {
+    class Manager;
+  };
+  
   namespace CG
   {
     class Manager;
     class ModuleBuilder;
+  };
+  
+  namespace AST
+  {
+    class GlobalVector;
   };
   
   namespace DG
@@ -38,33 +48,30 @@ namespace Fabric
     
       typedef Util::UnorderedMap< std::string, RC::Handle<Inst> > NameToInstMap;
     
-      static RC::Handle<Manager> Create( DG::Context *dgContext, std::vector<std::string> const &pluginDirs )
-      {
-        return new Manager( dgContext, pluginDirs );
-      }
+      static RC::Handle<Manager> Instance();
       
-      void loadBuiltInPlugins();
+      void loadBuiltInPlugins( std::vector<std::string> const &pluginDirs, RC::Handle<CG::Manager> const &cgManager );
       
       NameToInstMap const &getRegisteredPlugins() const
       {
         return m_nameToInstMap;
       }
       
-      RC::ConstHandle<Inst> registerPlugin( std::string const &name, std::string const &jsonDesc );
-      
-      void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder ) const;
+      RC::ConstHandle<AST::GlobalVector> getAST() const;
       void *llvmResolveExternalFunction( std::string const &name ) const;
 
       virtual RC::Handle<JSON::Object> jsonDesc() const;
 
     protected:
     
-      Manager( DG::Context *dgContext, std::vector<std::string> const &pluginDirs );
+      Manager();
       ~Manager();
+      
+      RC::ConstHandle<Inst> registerPlugin( std::string const &name, std::string const &jsonDesc, std::vector<std::string> const &pluginDirs, RC::Handle<CG::Manager> const &cgManager );
       
     private:
     
-      DG::Context *m_dgContext; // [pzion 20110309] We are owned by the context
+      bool m_loaded;
       std::vector<std::string> m_pluginDirs;
       std::string m_fabricSDKSOLibResolvedName;
       //SOLibHandle m_fabricSDKSOLibHandle;

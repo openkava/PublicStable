@@ -21,7 +21,7 @@ namespace Fabric
       int fd = open( "/dev/urandom", O_RDONLY );
       FABRIC_ASSERT( fd != -1 );
       int readResult = read( fd, bytes, count );
-      FABRIC_ASSERT( readResult == count );
+      FABRIC_ASSERT( readResult == int(count) );
       close( fd );
 #elif defined(FABRIC_WIN32)
       HCRYPTPROV  hCryptProvider = NULL;

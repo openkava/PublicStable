@@ -11,27 +11,30 @@
 #include <Fabric/Core/CG/Scope.h>
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/CG/Error.h>
+#include <Fabric/Base/JSON/String.h>
 
 namespace Fabric
 {
   namespace AST
   {
+    FABRIC_AST_NODE_IMPL( NotOp );
+    
     NotOp::NotOp( CG::Location const &location, RC::ConstHandle<Expr> const &child )
       : Expr( location )
       , m_child( child )
     {
     }
     
-    std::string NotOp::localDesc() const
+    RC::Handle<JSON::Object> NotOp::toJSONImpl() const
     {
-      return "NotOp";
+      RC::Handle<JSON::Object> result = Expr::toJSONImpl();
+      result->set( "child", m_child->toJSON() );
+      return result;
     }
     
-    std::string NotOp::deepDesc( std::string const &indent ) const
+    void NotOp::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
     {
-      std::string subIndent = indent + "  ";
-      return indent + localDesc() + "\n"
-        + m_child->deepDesc(subIndent);
+      m_child->llvmPrepareModule( moduleBuilder, diagnostics );
     }
     
     RC::ConstHandle<CG::Adapter> NotOp::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const

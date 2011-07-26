@@ -17,15 +17,13 @@ namespace Fabric
   {
     class BreakStatement: public Statement
     {
+      FABRIC_AST_NODE_DECL( BreakStatement );
+      
     public:
-    
-      virtual std::string localDesc() const;
-      virtual std::string deepDesc( std::string const &indent ) const;
 
-      static RC::Handle<BreakStatement> Create( CG::Location const &location )
-      {
-        return new BreakStatement( location );
-      }
+      static RC::ConstHandle<BreakStatement> Create( CG::Location const &location );
+      
+      virtual void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
       
       virtual void llvmCompileToBuilder( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const;
      
