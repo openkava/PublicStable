@@ -85,7 +85,8 @@ namespace Fabric
         //we create a new one in parallel instead of waiting its completion.
         ++m_streamGeneration;
         m_streamURL = stringDesc->getValueData( urlMember );
-        m_streamData.swap( std::vector<uint8_t>() );
+        std::vector<uint8_t> freeMe;
+        m_streamData.swap( freeMe );
         m_streamMimeType.clear();
 
         if( m_streamURL.empty() )

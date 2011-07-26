@@ -71,7 +71,8 @@ namespace Fabric
     void ResourceLoadEvent::streamEnd( std::string const &url, std::string const &mimeType )
     {
       fire( url, &mimeType, m_streamData.empty() ? NULL : &(m_streamData[0]), m_streamData.size(), 0 );
-      m_streamData.swap( std::vector<uint8_t>() );
+      std::vector<uint8_t> freeMe;
+      m_streamData.swap( freeMe );
     }
 
     void ResourceLoadEvent::streamFailure( std::string const &url, std::string const &errorDesc )

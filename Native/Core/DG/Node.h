@@ -78,7 +78,7 @@ namespace Fabric
       void addEventHandler( EventHandler *eventHandler );
       void removeEventHandler( EventHandler *eventHandler );
 
-      Context *Node::getContext() const;
+      Context *getContext() const;
 
       virtual RC::ConstHandle<JSON::Value> jsonRoute( std::vector<std::string> const &dst, size_t dstOffset, std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg );
       virtual RC::ConstHandle<JSON::Value> jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg );
