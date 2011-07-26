@@ -31,12 +31,10 @@ namespace Fabric
         : m_t( t )
         , m_executeCallback( executeCallback )
       {
-        FABRIC_MT_TRACE( "Task<>::Task( %p, %p )", t, executeCallback );
       }
 
       virtual void execute( void *userdata ) const
       {
-        FABRIC_MT_TRACE( "Task<>::execute( %p )", userdata );
         (m_t->*m_executeCallback)( userdata );
       }
     

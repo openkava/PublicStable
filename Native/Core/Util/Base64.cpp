@@ -55,7 +55,6 @@ namespace Fabric
 
     unsigned decodeBase64Size( const char *src )
     {
-      FABRIC_UTIL_TRACE( "Util::decodeBase64Size" );
       // [pzion 20100930] This is a gross upper bound for the required size; it
       // may be smaller if there is whitespace
       return (3*strlen(src)+3)/4;
@@ -63,8 +62,6 @@ namespace Fabric
     
     static inline bool nextVal( const char *&src, uint8_t &val )
     {
-      FABRIC_UTIL_TRACE( "Util::nextVal" );
-      
       static const uint8_t invalid = 255;
       static uint8_t lookupTable[256];
       static bool lookupTableInitialized = false;
@@ -95,8 +92,6 @@ namespace Fabric
     
     unsigned decodeBase64( void *_dst, const char *src )
     {
-      FABRIC_UTIL_TRACE( "Util::decodeBase64" );
-      
       uint8_t *dst = static_cast<uint8_t *>(_dst);
       unsigned size = 0;
       while ( *src )

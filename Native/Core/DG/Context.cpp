@@ -87,8 +87,7 @@ namespace Fabric
     
     void Context::registerClient( Client *client )
     {
-      bool insertResult = m_clients.insert( client ).second;
-      FABRIC_ASSERT( insertResult );
+      FABRIC_CONFIRM( m_clients.insert( client ).second );
     }
     
     void Context::jsonNotify( std::vector<std::string> const &src, std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg )

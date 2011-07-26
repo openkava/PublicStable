@@ -11,6 +11,7 @@
 #if defined(FABRIC_BUILD_RELEASE)
 # define FABRIC_ASSERT(condition)
 # define FABRIC_ASSERT_TEXT(condition,text)
+# define FABRIC_CONFIRM(condition) (void)(condition)
 #else //defined(FABRIC_BUILD_DEBUG)
 # if defined( FABRIC_OS_WINDOWS )
 #  include <assert.h>
@@ -28,6 +29,8 @@
     } \
   } while(false)
 # define FABRIC_ASSERT(condition) \
+  FABRIC_ASSERT_TEXT( condition, "" #condition )
+# define FABRIC_CONFIRM(condition) \
   FABRIC_ASSERT_TEXT( condition, "" #condition )
 # endif
 #endif

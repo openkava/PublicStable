@@ -36,8 +36,7 @@ namespace Fabric
     
     void Context::registerViewPort( std::string const &name, ViewPort *viewPort )
     {
-      bool insertResult = m_viewPorts.insert( ViewPorts::value_type( name, viewPort ) ).second;
-      FABRIC_ASSERT( insertResult );
+      FABRIC_CONFIRM( m_viewPorts.insert( ViewPorts::value_type( name, viewPort ) ).second );
     }
     
     void Context::unregisterViewPort( std::string const &name, ViewPort *viewPort )
