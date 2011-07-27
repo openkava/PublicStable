@@ -1,0 +1,14 @@
+function display( String string ) {
+  switch (string) {
+    case "goodbye":
+    case "hello":
+      break;
+  }
+}
+
+function entry() {
+  String s = "hello";
+  report "s.refCount = " + s.refCount;
+  display( s );
+  report "s.refCount = " + s.refCount;
+}

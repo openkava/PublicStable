@@ -18,28 +18,32 @@ namespace Fabric
     {
     public:
     
-      typedef void (*SuccessCallback)( std::string const &url, std::string const &mimeType, std::string const &filename, RC::Handle<RC::Object> const &target );
-      typedef void (*FailureCallback)( std::string const &url, std::string const &errorDesc, RC::Handle<RC::Object> const &target );
-      
-      virtual void start() = 0;
-    
+      typedef void (*DataCallback)( std::string const &url, std::string const &mimeType, size_t offset, size_t size, void const *data, RC::Handle<RC::Object> const &target, void *userData );
+      typedef void (*EndCallback)( std::string const &url, std::string const &mimeType, RC::Handle<RC::Object> const &target, void *userData );
+      typedef void (*FailureCallback)( std::string const &url, std::string const &errorDesc, RC::Handle<RC::Object> const &target, void *userData );
+
     protected:
     
       Stream(
-        SuccessCallback successCallback,
+        DataCallback dataCallback,
+        EndCallback endCallback,
         FailureCallback failureCallback,
-        RC::Handle<RC::Object> const &target
+        RC::Handle<RC::Object> const &target,
+        void *userData
         );
       ~Stream();
       
-      void indicateSuccess( std::string const &url, std::string const &mimeType, std::string const &filename );
-      void indicateFailure( std::string const &url, std::string const &errorDesc );
+      void onData( std::string const &url, std::string const &mimeType, size_t offset, size_t size, void const *data );
+      void onEnd( std::string const &url, std::string const &mimeType );
+      void onFailure( std::string const &url, std::string const &errorDesc );
     
     private:
     
-      SuccessCallback m_successCallback;
+      DataCallback m_dataCallback;
+      EndCallback m_endCallback;
       FailureCallback m_failureCallback;
       RC::WeakHandle<RC::Object> m_target;
+      void* m_userData;
     };
   };
 };

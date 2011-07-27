@@ -10,13 +10,17 @@ namespace Fabric
   namespace IO
   {
     Stream::Stream(
-      SuccessCallback successCallback,
+      DataCallback dataCallback,
+      EndCallback endCallback,
       FailureCallback failureCallback,
-      RC::Handle<RC::Object> const &target
+      RC::Handle<RC::Object> const &target,
+      void *userData
       )
-      : m_successCallback( successCallback )
+      : m_dataCallback( dataCallback )
+      , m_endCallback( endCallback )
       , m_failureCallback( failureCallback )
       , m_target( target )
+      , m_userData( userData )
     {
     }
     
@@ -24,17 +28,23 @@ namespace Fabric
     {
     }
     
-    void Stream::indicateSuccess( std::string const &url, std::string const &mimeType, std::string const &filename )
+    void Stream::onData( std::string const &url, std::string const &mimeType, size_t offset, size_t size, void const *data )
     {
       FABRIC_ASSERT( m_target );
-      m_successCallback( url, mimeType, filename, m_target.makeStrong() );
+      m_dataCallback( url, mimeType, offset, size, data, m_target.makeStrong(), m_userData );
+    }
+
+    void Stream::onEnd( std::string const &url, std::string const &mimeType )
+    {
+      FABRIC_ASSERT( m_target );
+      m_endCallback( url, mimeType, m_target.makeStrong(), m_userData );
       m_target = 0;
     }
-    
-    void Stream::indicateFailure( std::string const &url, std::string const &errorDesc )
+
+    void Stream::onFailure( std::string const &url, std::string const &errorDesc )
     {
       FABRIC_ASSERT( m_target );
-      m_failureCallback( url, errorDesc, m_target.makeStrong() );
+      m_failureCallback( url, errorDesc, m_target.makeStrong(), m_userData );
       m_target = 0;
     }
   };

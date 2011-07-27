@@ -21,6 +21,8 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXFileReference section */
+		DB0914A213DF39C8000B1A0F /* ResourceLoadNode.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ResourceLoadNode.cpp; sourceTree = "<group>"; };
+		DB0914A313DF39C8000B1A0F /* ResourceLoadNode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ResourceLoadNode.h; sourceTree = "<group>"; };
 		DB0F540713A7C5500019FBE6 /* .gitignore */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 		DB0F540813A7C5500019FBE6 /* BigGuy.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = BigGuy.html; sourceTree = "<group>"; };
 		DB0F540F13A7C6120019FBE6 /* bundle-private-web-resources.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = "bundle-private-web-resources.sh"; sourceTree = "<group>"; };
@@ -1767,6 +1769,8 @@
 				DB96726F13A5423200616143 /* Prototype.h */,
 				DB96727013A5423200616143 /* ResourceLoadEvent.cpp */,
 				DB96727113A5423200616143 /* ResourceLoadEvent.h */,
+				DB0914A213DF39C8000B1A0F /* ResourceLoadNode.cpp */,
+				DB0914A313DF39C8000B1A0F /* ResourceLoadNode.h */,
 				DB96727313A5423200616143 /* Scope.h */,
 				DB96727413A5423200616143 /* SelectedNode.h */,
 			);

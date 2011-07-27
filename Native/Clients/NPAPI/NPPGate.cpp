@@ -297,43 +297,34 @@ namespace Fabric
       return result;
     }
 
-    void NPP_StreamAsFile( NPP npp, NPStream *stream, const char *fname )
+    int32_t NPP_WriteReady( NPP npp, NPStream* stream )
     {
       FABRIC_ASSERT( npp );
       Interface *interface = static_cast<Interface *>( npp->pdata );
+      int32_t result;
+      return interface->nppWriteReady( npp, stream );
+    }
 
-#if defined( FABRIC_OS_MACOSX )
-      // [hi20110420  - For some braindamaged reason, Safari only gives us HFS-style paths
-      // rather than POSIX absolute paths. Let's try to autoconvert]
-      if( fname[0] != '/' && strchr( fname, ':' ) )
-      {
-        CFStringRef pathRef = CFStringCreateWithCString( kCFAllocatorDefault, fname, kCFStringEncodingUTF8 );
-        CFURLRef urlRef = CFURLCreateWithFileSystemPath( kCFAllocatorDefault, pathRef, kCFURLHFSPathStyle, false );
-        CFRelease( pathRef );
-        pathRef = CFURLCopyFileSystemPath(urlRef, kCFURLPOSIXPathStyle);
-        CFRelease( urlRef );
-        CFIndex   len = strlen( fname ) * 2 + 1;
-        char *newfname = (char *)alloca( len );
-        CFStringGetCString( pathRef, newfname, len, kCFStringEncodingUTF8 );
-        CFRelease( pathRef );
-        fname = newfname;
-      }
-#endif
-
+    int32_t NPP_Write( NPP npp, NPStream* stream, int32_t offset, int32_t len, void* buffer )
+    {
+      FABRIC_ASSERT( npp );
+      Interface *interface = static_cast<Interface *>( npp->pdata );
+      int32_t result;
       try
       {
-        interface->nppStreamAsFile( npp, stream, fname );
+        result = interface->nppWrite( npp, stream, offset, len, buffer );
       }
       catch ( Fabric::Exception e )
       {
-        FABRIC_DEBUG_LOG( "NPP_StreamAsFile: caught Fabric exception: " + e );
+        FABRIC_DEBUG_LOG( "NPP_Write: caught Fabric exception: " + e );
       }
       catch ( ... )
       {
-        FABRIC_DEBUG_LOG( "NPP_StreamAsFile: caught unknown exception" );
+        FABRIC_DEBUG_LOG( "NPP_Write: caught unknown exception" );
       }
+      return result;
     }
-    
+
     NPError NPP_DestroyStream( NPP npp, NPStream *stream, NPReason reason )
     {
       if( !npp )
@@ -374,7 +365,8 @@ extern "C" NPError InitializePluginFunctions( NPPluginFuncs *npPluginFuncs )
   npPluginFuncs->event = &Fabric::NPAPI::NPP_HandleEvent;
   npPluginFuncs->getvalue = &Fabric::NPAPI::NPP_GetValue;
   npPluginFuncs->newstream = &Fabric::NPAPI::NPP_NewStream;
-  npPluginFuncs->asfile = &Fabric::NPAPI::NPP_StreamAsFile;
+  npPluginFuncs->writeready = &Fabric::NPAPI::NPP_WriteReady;
+  npPluginFuncs->write = &Fabric::NPAPI::NPP_Write;
   npPluginFuncs->destroystream = &Fabric::NPAPI::NPP_DestroyStream;
   npPluginFuncs->urlnotify = &Fabric::NPAPI::NPP_URLNotify;
   
