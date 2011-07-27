@@ -1,16 +1,27 @@
 #include "IndexOp.h"
-
 #include <Fabric/Core/CG/ArrayAdapter.h>
 #include <Fabric/Core/CG/SizeAdapter.h>
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/CG/BasicBlockBuilder.h>
 #include <Fabric/Core/CG/Error.h>
 #include <Fabric/Core/RT/ImplType.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
   namespace AST
   {
+    FABRIC_AST_NODE_IMPL( IndexOp );
+    
+    RC::ConstHandle<IndexOp> IndexOp::Create(
+      CG::Location const &location,
+      RC::ConstHandle<Expr> const &expr,
+      RC::ConstHandle<Expr> const &indexExpr
+      )
+    {
+      return new IndexOp( location, expr, indexExpr );
+    }
+    
     IndexOp::IndexOp( CG::Location const &location, RC::ConstHandle<Expr> const &expr, RC::ConstHandle<Expr> const &indexExpr )
       : Expr( location )
       , m_expr( expr )
@@ -18,17 +29,17 @@ namespace Fabric
     {
     }
     
-    std::string IndexOp::localDesc() const
+    void IndexOp::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      return "IndexOp";
+      Expr::appendJSONMembers( jsonObjectGenerator );
+      m_expr->appendJSON( jsonObjectGenerator.makeMember( "expr" ) );
+      m_indexExpr->appendJSON( jsonObjectGenerator.makeMember( "indexExpr" ) );
     }
     
-    std::string IndexOp::deepDesc( std::string const &indent ) const
+    void IndexOp::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
     {
-      std::string subIndent = indent + "  ";
-      return indent + localDesc() + "\n"
-        + m_expr->deepDesc(subIndent)
-        + m_indexExpr->deepDesc(subIndent);
+      m_expr->llvmPrepareModule( moduleBuilder, diagnostics );
+      m_indexExpr->llvmPrepareModule( moduleBuilder, diagnostics );
     }
     
     RC::ConstHandle<CG::Adapter> IndexOp::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const

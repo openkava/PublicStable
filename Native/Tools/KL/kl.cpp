@@ -3,9 +3,11 @@
  */
  
 #include <stdio.h>
-#include <Fabric/Core/KL/Debug.h>
-#include <Fabric/Core/KL/Parse.h>
-#include <Fabric/Core/AST/GlobalList.h>
+#include <Fabric/Core/KL/Compiler.h>
+#include <Fabric/Core/KL/Parser.hpp>
+#include <Fabric/Core/KL/Scanner.h>
+#include <Fabric/Core/KL/StringSource.h>
+#include <Fabric/Core/AST/GlobalVector.h>
 #include <Fabric/Core/RT/Manager.h>
 #include <Fabric/Core/RT/ScalarDesc.h>
 #include <Fabric/Core/RT/StringDesc.h>
@@ -13,8 +15,14 @@
 #include <Fabric/Core/RT/OpaqueDesc.h>
 #include <Fabric/Core/MT/LogCollector.h>
 #include <Fabric/Core/CG/ModuleBuilder.h>
+#include <Fabric/Core/CG/Diagnostics.h>
+#include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/OCL/OCL.h>
 #include <Fabric/Core/OCL/Debug.h>
+#include <Fabric/Base/JSON/String.h>
+#include <Fabric/Base/JSON/Object.h>
+#include <Fabric/Base/JSON/Array.h>
+#include <Fabric/Base/JSON/Encode.h>
 
 #include <memory>
 
@@ -49,7 +57,8 @@ enum RunFlags
   RF_ShowBison   = 1 << 4,
   RF_ShowIR      = 1 << 5,
   RF_ShowOptIR   = 1 << 6,
-  RF_ShowOptASM	 = 1 << 7
+  RF_ShowOptASM	 = 1 << 7,
+  RF_ShowTokens	 = 1 << 8
 };
 
 
@@ -157,7 +166,26 @@ void handleFile( FILE *fp, unsigned int runFlags )
     if ( count < 16384 )
       break;
   }
+  
+  RC::ConstHandle<KL::Source> source = KL::StringSource::Create( sourceString );
+  if ( runFlags & RF_ShowTokens )
+  {
+    RC::Handle<KL::Scanner> scanner = KL::Scanner::Create( source );
+    for (;;)
+    {
+      KL::Token token = scanner->nextToken();
+      RC::Handle<JSON::Object> jsonObject = JSON::Object::Create();
+      jsonObject->set( "token", JSON::Integer::Create( token.getType() ) );
+      jsonObject->set( "value", JSON::String::Create( token.getSourceRange().toString() ) );
+      printf( "%s\n", JSON::encode( jsonObject ).c_str() );
+      if ( token.getType() == TOKEN_END )
+        break;
+    }
+  }
 
+  RC::Handle<KL::Scanner> scanner = KL::Scanner::Create( source );
+  CG::Diagnostics diagnostics;
+  
   llvm::CodeGenOpt::Level    optLevel = llvm::CodeGenOpt::Aggressive;
 
   
@@ -165,7 +193,7 @@ void handleFile( FILE *fp, unsigned int runFlags )
   llvm::InitializeAllAsmPrinters();
   //LLVMLinkInJIT();
 
-  RC::Handle<RT::Manager> rtManager = RT::Manager::Create();
+  RC::Handle<RT::Manager> rtManager = RT::Manager::Create( KL::Compiler::Create() );
   cgManager = CG::Manager::Create( rtManager );
   std::auto_ptr<llvm::Module> module( new llvm::Module( "kl", cgManager->getLLVMContext() ) );
 
@@ -173,30 +201,29 @@ void handleFile( FILE *fp, unsigned int runFlags )
   cgManager->llvmPrepareModule( moduleBuilder );
   OCL::llvmPrepareModule( moduleBuilder, rtManager );
   
-  Source source( sourceString.data(), sourceString.length() );
-  RC::Handle<AST::GlobalList> globalList;
-  CG::Diagnostics diagnostics;
+  RC::ConstHandle<AST::GlobalVector> globalList = KL::Parse( scanner, diagnostics );
 
-  KL::Parse( source, cgManager, diagnostics, &globalList, !!( runFlags & RF_ShowBison ) );
   if ( diagnostics.containsError() )
   {
     dumpDiagnostics( diagnostics );
     return;
   }
-
-  // [pzion 20110213] This is a horrible hack... it exists for types that are "created" when parsing the tree.
-  cgManager->llvmPrepareModule( moduleBuilder );
   
   if ( runFlags & RF_ShowAST )
   {
     if ( runFlags & RF_Verbose )
       printf( "-- AST --\n" );
-    printf( "%s", globalList->deepDesc("").c_str() );
+    Util::SimpleString globalListJSONString = globalList->toJSON();
+    printf( "%s\n", globalListJSONString.getCString() );
   }
 
   if( runFlags & (RF_ShowASM | RF_ShowIR | RF_ShowOptIR | RF_ShowOptASM | RF_Run) )
   {
-    globalList->llvmCompileToModule( moduleBuilder, diagnostics );
+    globalList->llvmPrepareModule( moduleBuilder, diagnostics );
+    if ( !diagnostics.containsError() )
+      globalList->llvmCompileToModule( moduleBuilder, diagnostics, false );
+    if ( !diagnostics.containsError() )
+      globalList->llvmCompileToModule( moduleBuilder, diagnostics, true );
     dumpDiagnostics( diagnostics );
     if ( !diagnostics.containsError() )
     {   
@@ -329,13 +356,11 @@ int main( int argc, char **argv )
       { "ast", 0, NULL, 'a' },
       { "asm", 0, NULL, 'm' },
       { "bison", 0, NULL, 'b' },
-#if !defined( NDEBUG )
-      { "debug", 0, NULL, 'd' },
-#endif
       { "ir", 0, NULL, 'i' },
       { "optasm", 0, NULL, 'p' },
       { "optir", 0, NULL, 'o' },
       { "run", 0, NULL, 'r' },
+      { "tokens", 0, NULL, 't' },
       { "verbose", 0, NULL, 'v' },
       { NULL, 0, NULL, 0 }
     };
@@ -353,12 +378,6 @@ int main( int argc, char **argv )
       case 'b':
         runFlags |= RF_ShowBison;
         
-#if !defined( NDEBUG )
-      case 'd':
-        Fabric::KL::gDebugEnabled = true;
-        break;
-#endif
-      
       case 'i':
         runFlags |= RF_ShowIR;
         break;
@@ -377,6 +396,10 @@ int main( int argc, char **argv )
         
       case 'r':
         runFlags |= RF_Run;
+        break;
+      
+      case 't':
+        runFlags |= RF_ShowTokens;
         break;
       
       case 'v':

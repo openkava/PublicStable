@@ -3,20 +3,24 @@
  */
  
 #include "ConstString.h"
-#include <Fabric/Core/CG/ConstStringAdapter.h>
-#include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/CG/BasicBlockBuilder.h>
+#include <Fabric/Core/CG/ConstStringAdapter.h>
+#include <Fabric/Core/CG/Error.h>
+#include <Fabric/Core/CG/Manager.h>
+#include <Fabric/Core/CG/ModuleBuilder.h>
+#include <Fabric/Core/CG/StringAdapter.h>
 #include <Fabric/Core/Util/Parse.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
   namespace AST
   {
-    RC::Handle<ConstString> ConstString::Create( CG::Location const &location, std::string const &value, bool quoted )
+    FABRIC_AST_NODE_IMPL( ConstString );
+    
+    RC::ConstHandle<ConstString> ConstString::Create( CG::Location const &location, std::string const &value )
     {
-      if ( quoted )
-        return new ConstString( location, Util::parseQuotedString( value ) );
-      else return new ConstString( location, value );
+      return new ConstString( location, value );
     }
 
     ConstString::ConstString( CG::Location const &location, std::string const &value )
@@ -25,27 +29,52 @@ namespace Fabric
     {
     }
     
-    std::string ConstString::localDesc() const
+    void ConstString::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      return "ConstString( " + _(m_value) + " )";
+      Expr::appendJSONMembers( jsonObjectGenerator );
+      jsonObjectGenerator.makeMember( "value" ).makeString( m_value );
     }
     
-    RC::ConstHandle<CG::ConstStringAdapter> ConstString::getAdapter( CG::BasicBlockBuilder const &basicBlockBuilder ) const
+    void ConstString::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
     {
-      return basicBlockBuilder.getManager()->getConstStringAdapter( m_value.length() );
+      std::string unquotedValue;
+      try
+      {
+        unquotedValue = Util::parseQuotedString( m_value );
+      }
+      catch ( Exception e )
+      {
+        throw CG::Error( getLocation(), e.getDesc() + "(" + m_value + ")" );
+      }
+
+      RC::ConstHandle<CG::ConstStringAdapter> constStringAdapter = moduleBuilder.getManager()->getConstStringAdapter( unquotedValue.length() );
+      constStringAdapter->llvmPrepareModule( moduleBuilder, true );
+
+      RC::ConstHandle<CG::StringAdapter> stringAdapter = moduleBuilder.getManager()->getStringAdapter();
+      stringAdapter->llvmPrepareModule( moduleBuilder, true );
     }
     
     RC::ConstHandle<CG::Adapter> ConstString::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const
     {
-      return getAdapter( basicBlockBuilder );
+      return basicBlockBuilder.getManager()->getStringAdapter();
     }
     
     CG::ExprValue ConstString::buildExprValue( CG::BasicBlockBuilder &basicBlockBuilder, CG::Usage usage, std::string const &lValueErrorDesc ) const
     {
       if ( usage == CG::USAGE_LVALUE )
         throw Exception( "constants cannot be used as l-values" );
-      RC::ConstHandle<CG::ConstStringAdapter> constStringAdapter = getAdapter( basicBlockBuilder );
-      return CG::ExprValue( constStringAdapter, CG::USAGE_RVALUE, constStringAdapter->llvmConst( basicBlockBuilder, m_value.data(), m_value.length() ) );
+      std::string unquotedValue;
+      try
+      {
+        unquotedValue = Util::parseQuotedString( m_value );
+      }
+      catch ( Exception e )
+      {
+        throw CG::Error( getLocation(), e.getDesc() + "(" + m_value + ")" );
+      }
+      RC::ConstHandle<CG::ConstStringAdapter> constStringAdapter = basicBlockBuilder.getManager()->getConstStringAdapter( unquotedValue.length() );
+      RC::ConstHandle<CG::StringAdapter> stringAdapter = basicBlockBuilder.getManager()->getStringAdapter();
+      return CG::ExprValue( constStringAdapter, CG::USAGE_RVALUE, constStringAdapter->llvmConst( basicBlockBuilder, unquotedValue.data(), unquotedValue.length() ) ).castTo( basicBlockBuilder, stringAdapter );
     }
   };
 };

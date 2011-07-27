@@ -1,45 +1,54 @@
 /*
- *
- *  Created by Peter Zion on 10-12-01.
- *  Copyright 2010 Fabric Technologies Inc. All rights reserved.
- *
+ *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
  */
-
+ 
 #ifndef _FABRIC_KL_SCANNER_H
 #define _FABRIC_KL_SCANNER_H
 
 #include <Fabric/Core/KL/Token.h>
-#include <Fabric/Core/KL/Parser.hpp>
-#include <string>
+#include <Fabric/Core/KL/SourceReader.h>
 
 namespace Fabric
 {
   namespace KL
   {
-    class Source;
-    class Location;
-    
-    class Scanner
+    class Scanner : public RC::Object
     {
     public:
     
-      Scanner( Source &source, RC::ConstHandle<CG::Manager> const &cgManager );
-      
-      Token nextToken( YYSTYPE *yys );
-      
-      Source &source()
+      static RC::Handle<Scanner> Create( RC::ConstHandle<Source> const &source )
       {
-        return m_source;
+        return new Scanner( source );
       }
       
-      RC::ConstHandle<CG::Manager> cgManager() const;
+      Token nextToken();
+      
     
+      Location getLocationForStart()
+      {
+        return m_sourceReader.getLocationForStart();
+      }
+      
+      Location getLocationForEnd() const
+      {
+        return m_sourceReader.getLocationForEnd();
+      }
+      
     protected:
     
-      Token nextToken_Alpha( YYSTYPE *yys );
-      Token nextToken_Digit( YYSTYPE *yys );
-      Token nextToken_Space( YYSTYPE *yys );
-      Token nextToken_Symbol( YYSTYPE *yys );
+      Scanner( RC::ConstHandle<Source> const &source );
+    
+      SourceRange createSourceRange( Location const &startLocation ) const;
+      Token createToken( Token::Type tokenType, SourceRange const &sourceRange ) const;
+      Token createToken( Token::Type tokenType, Location const &startLocation ) const
+      {
+        return createToken( tokenType, createSourceRange( startLocation ) );
+      }
+    
+      Token nextToken_Alpha( Location const &startLocation );
+      Token nextToken_Digit( Location const &startLocation );
+      Token nextToken_Space( Location const &startLocation );
+      Token nextToken_Symbol( Location const &startLocation );
     
       static bool IsAlpha( int ch )
       {
@@ -68,8 +77,7 @@ namespace Fabric
       
     private:
     
-      Source &m_source;
-      RC::ConstHandle<CG::Manager> m_cgManager;
+      SourceReader m_sourceReader;
 
       static bool s_charAttribsInitialized;
       static uint8_t s_charAttribs[256];

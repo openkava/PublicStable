@@ -2,30 +2,60 @@
  *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
  */
  
-#include "Alias.h"
+#include <Fabric/Core/AST/Alias.h>
+#include <Fabric/Core/CG/Adapter.h>
+#include <Fabric/Core/CG/Error.h>
+#include <Fabric/Core/CG/Manager.h>
+#include <Fabric/Core/CG/ModuleBuilder.h>
+#include <Fabric/Core/RT/Manager.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
   namespace AST
   {
+    FABRIC_AST_NODE_IMPL( Alias );
+    
+    RC::ConstHandle<Alias> Alias::Create(
+      CG::Location const &location,
+      std::string const &name,
+      std::string const &adapterName
+      )
+    {
+      return new Alias( location, name, adapterName );
+    }
+
     Alias::Alias(
       CG::Location const &location,
       std::string const &name,
-      RC::ConstHandle<CG::Adapter> const &adapter
+      std::string const &adapterName
       )
       : Global( location )
       , m_name( name )
-      , m_adapter( adapter )
+      , m_adapterName( adapterName )
     {
     }
     
-    std::string Alias::localDesc() const
+    void Alias::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      return "Alias( '" + m_name + "', " + m_adapter->getUserName() + " )";
+      Global::appendJSONMembers( jsonObjectGenerator );
+      jsonObjectGenerator.makeMember( "newTypeName" ).makeString( m_name );
+      jsonObjectGenerator.makeMember( "oldTypeName" ).makeString( m_adapterName );
     }
-
-    void Alias::llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctionBodies ) const
+    
+    void Alias::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
     {
+      RC::ConstHandle<CG::Adapter> adapter = moduleBuilder.getAdapter( m_adapterName, getLocation() );
+      try
+      {
+        RC::ConstHandle<RT::Desc> aliasDesc = moduleBuilder.getManager()->getRTManager()->registerAlias( m_name, adapter->getDesc() );
+        RC::ConstHandle<CG::Adapter> aliasAdapter = moduleBuilder.getAdapter( m_adapterName, getLocation() );
+        aliasAdapter->llvmPrepareModule( moduleBuilder, true );
+      }
+      catch ( Exception e )
+      {
+        addError( diagnostics, e.getDesc() );
+      }
     }
   };
 };

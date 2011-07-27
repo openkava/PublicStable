@@ -23,12 +23,10 @@ var desc = {
   members: { x:'Scalar', y:'Scalar' },
   constructor: Vec2,
   kBindings: "\
-function Vec2 ( Scalar x, Scalar y )\n\
+function Vec2(Scalar x, Scalar y)\n\
 {\n\
-  var Vec2 vec2;\n\
-  vec2.x = x;\n\
-  vec2.y = y;\n\
-  return vec2;\n\
+  self.x = x;\n\
+  self.y = y;\n\
 }\n\
 "
 };
@@ -39,6 +37,20 @@ printDeep(FABRIC.RT.getRegisteredTypes()['Vec2']);
 var node = FABRIC.DependencyGraph.createNode("foo");
 node.addMember( 'vec2', 'Vec2' );
 node.setData( 'vec2', 0, new Vec2( 5.6, 4.3 ) );
+var data = node.getData("vec2", 0);
+print( JSON.stringify(data) );
+print(data.sum());
+
+var op = FABRIC.DG.createOperator("op");
+op.setSourceCode("operator entry( io Vec2 vec2 ) { vec2 = Vec2(8.9, 2.3); }");
+op.setEntryFunctionName("entry");
+
+var binding = FABRIC.DG.createBinding();
+binding.setOperator(op);
+binding.setParameterLayout(["self.vec2"]);
+
+node.bindings.append(binding);
+node.evaluate();
 var data = node.getData("vec2", 0);
 print( JSON.stringify(data) );
 print(data.sum());

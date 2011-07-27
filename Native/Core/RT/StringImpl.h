@@ -5,6 +5,7 @@
 #include <Fabric/Base/Util/AtomicSize.h>
 
 #include <string.h>
+#include <stdlib.h>
 
 namespace Fabric
 {

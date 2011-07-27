@@ -7,24 +7,31 @@
 
 #include <Fabric/Core/AST/BreakStatement.h>
 #include <Fabric/Core/CG/Scope.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
   namespace AST
   {
+    FABRIC_AST_NODE_IMPL( BreakStatement );
+    
+    RC::ConstHandle<BreakStatement> BreakStatement::Create( CG::Location const &location )
+    {
+      return new BreakStatement( location );
+    }
+
     BreakStatement::BreakStatement( CG::Location const &location )
       : Statement( location )
     {
     }
     
-    std::string BreakStatement::localDesc() const
+    void BreakStatement::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      return "BreakStatement";
+      Statement::appendJSONMembers( jsonObjectGenerator );
     }
     
-    std::string BreakStatement::deepDesc( std::string const &indent ) const
+    void BreakStatement::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
     {
-      return indent + localDesc() + "\n";
     }
 
     void BreakStatement::llvmCompileToBuilder( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const

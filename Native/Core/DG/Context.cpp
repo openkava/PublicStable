@@ -3,6 +3,7 @@
  */
  
 #include <Fabric/Core/DG/Context.h>
+#include <Fabric/Core/DG/CodeManager.h>
 #include <Fabric/Core/DG/Client.h>
 #include <Fabric/Core/DG/NamedObject.h>
 #include <Fabric/Core/DG/Node.h>
@@ -11,14 +12,14 @@
 #include <Fabric/Core/DG/EventHandler.h>
 #include <Fabric/Core/DG/Operator.h>
 #include <Fabric/Core/DG/LogCollector.h>
-#include <Fabric/Core/RT/Manager.h>
 #include <Fabric/Core/RT/OpaqueDesc.h>
 #include <Fabric/Core/RT/SizeDesc.h>
 #include <Fabric/Core/RT/StringDesc.h>
 #include <Fabric/Core/RT/StructDesc.h>
-#include <Fabric/Core/CG/Manager.h>
-#include <Fabric/Core/DG/CodeManager.h>
 #include <Fabric/Core/Plug/Manager.h>
+#include <Fabric/Core/KL/Compiler.h>
+#include <Fabric/Core/CG/Manager.h>
+#include <Fabric/Core/RT/Manager.h>
 #include <Fabric/Core/IO/Manager.h>
 #include <Fabric/Base/JSON/String.h>
 #include <Fabric/Base/JSON/Object.h>
@@ -57,9 +58,9 @@ namespace Fabric
     
     Context::Context( RC::Handle<IO::Manager> const &ioManager, std::vector<std::string> const &pluginDirs )
       : m_logCollector( LogCollector::Create( this ) )
-      , m_rtManager( RT::Manager::Create() )
-      , m_cgManager( CG::Manager::Create( m_rtManager ) )
+      , m_rtManager( RT::Manager::Create( KL::Compiler::Create() ) )
       , m_ioManager( ioManager )
+      , m_cgManager( CG::Manager::Create( m_rtManager ) )
       , m_codeManager( CodeManager::Create() )
       , m_notificationBracketCount( 0 )
       , m_pendingNotificationsMutex( "pending notifications" )
@@ -92,8 +93,7 @@ namespace Fabric
     
     void Context::registerClient( Client *client )
     {
-      bool insertResult = m_clients.insert( client ).second;
-      FABRIC_ASSERT( insertResult );
+      FABRIC_CONFIRM( m_clients.insert( client ).second );
     }
 
     void Context::registerCoreTypes()
@@ -182,11 +182,6 @@ namespace Fabric
     RC::Handle<CodeManager> Context::getCodeManager() const
     {
       return m_codeManager;
-    }
-    
-    RC::Handle<Plug::Manager> Context::getPlugManager() const
-    {
-      return m_plugManager;
     }
     
     Context::NamedObjectMap &Context::getNamedObjectRegistry() const
@@ -367,6 +362,7 @@ namespace Fabric
       RC::Handle<JSON::Object> result = JSON::Object::Create();
       result->set( ThirdPartyLicenses::llvm::filename, JSON::String::Create( ThirdPartyLicenses::llvm::text ) );
       result->set( "lib", jsonDescLicenses_llvm_lib() );
+      result->set( "projects", jsonDescLicenses_llvm_projects() );
       result->set( "autoconf", jsonDescLicenses_llvm_autoconf() );
       return result;
     }
@@ -400,7 +396,7 @@ namespace Fabric
       result->set( "contextID", JSON::String::Create( getContextID() ) );
       result->set( "DG", jsonDescDG() );
       result->set( "RT", m_rtManager->jsonDesc() );
-      result->set( "EX", m_plugManager->jsonDesc() );
+      result->set( "EX", Plug::Manager::Instance()->jsonDesc() );
       result->set( "licenses", jsonDescLicenses() );
       return result;
     }

@@ -7,36 +7,49 @@
 
 #include <Fabric/Core/AST/Case.h>
 #include <Fabric/Core/AST/Expr.h>
-#include <Fabric/Core/AST/StatementList.h>
+#include <Fabric/Core/AST/StatementVector.h>
 #include <Fabric/Core/CG/Scope.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
   namespace AST
   {
-    RC::Handle<Case> Case::Create( CG::Location const &location, RC::ConstHandle<Expr> const &expr, RC::ConstHandle<StatementList> const &statementList )
+    FABRIC_AST_NODE_IMPL( Case );
+    
+    RC::ConstHandle<Case> Case::Create(
+        CG::Location const &location,
+        RC::ConstHandle<Expr> const &expr,
+        RC::ConstHandle<StatementVector> const &statements
+        )
     {
-      return new Case( location, expr, statementList );
+      return new Case( location, expr, statements );
     }
     
-    Case::Case( CG::Location const &location, RC::ConstHandle<Expr> const &expr, RC::ConstHandle<StatementList> const &statementList )
+    Case::Case(
+        CG::Location const &location,
+        RC::ConstHandle<Expr> const &expr,
+        RC::ConstHandle<StatementVector> const &statements
+        )
       : Node( location )
       , m_expr( expr )
-      , m_statementList( statementList )
+      , m_statements( statements )
     {
     }
     
-    std::string Case::localDesc() const
+    void Case::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      return "Case( " + m_expr->localDesc() + " )";
+      Node::appendJSONMembers( jsonObjectGenerator );
+      if ( m_expr )
+        m_expr->appendJSON( jsonObjectGenerator.makeMember( "expr" ) );
+      m_statements->appendJSON( jsonObjectGenerator.makeMember( "statements" ) );
     }
     
-    std::string Case::deepDesc( std::string const &indent ) const
+    void Case::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
     {
-      std::string subIndent = "  " + indent;
-      return indent + "Case\n"
-        + m_expr->deepDesc( subIndent )
-        + m_statementList->deepDesc( subIndent );
+      if ( m_expr )
+        m_expr->llvmPrepareModule( moduleBuilder, diagnostics );
+      m_statements->llvmPrepareModule( moduleBuilder, diagnostics );
     }
 
     RC::ConstHandle<Expr> Case::getExpr() const
@@ -44,9 +57,9 @@ namespace Fabric
       return m_expr;
     }
     
-    RC::ConstHandle<StatementList> Case::getStatementList() const
+    RC::ConstHandle<StatementVector> Case::getStatements() const
     {
-      return m_statementList;
+      return m_statements;
     }
   };
 };

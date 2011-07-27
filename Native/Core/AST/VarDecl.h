@@ -8,36 +8,56 @@
 #ifndef _FABRIC_AST_VAR_DECL_H
 #define _FABRIC_AST_VAR_DECL_H
 
-#include <Fabric/Core/AST/Statement.h>
-#include <Fabric/Core/AST/Expr.h>
+#include <Fabric/Core/AST/Node.h>
+#include <Fabric/Core/CG/ExprValue.h>
 
 namespace Fabric
 {
+  namespace Util
+  {
+    class SimpleString;
+  };
+  
+  namespace CG
+  {
+    class BasicBlockBuilder;
+    class ModuleBuilder;
+  };
+  
   namespace AST
   {
-    class VarDecl: public Statement
+    class VarDecl : public Node
     {
-    public:
-    
-      virtual std::string localDesc() const;
-
-      static RC::Handle<VarDecl> Create( CG::Location const &location, std::string const &name, RC::ConstHandle< CG::Adapter > const &adapter )
-      {
-        return new VarDecl( location, name, adapter );
-      }
+      FABRIC_AST_NODE_DECL( VarDecl );
       
-      virtual void llvmCompileToBuilder( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const;
+    public:
+
+      static RC::ConstHandle<VarDecl> Create(
+        CG::Location const &location,
+        std::string const &name,
+        std::string const &arrayModifier
+        );
+      
+      virtual void llvmPrepareModule( std::string const &baseType, CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
+      
+      virtual void llvmCompileToBuilder( std::string const &baseType, CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const;
      
     protected:
     
-      VarDecl( CG::Location const &location, std::string const &name, RC::ConstHandle< CG::Adapter > const &adapter );
+      VarDecl(
+        CG::Location const &location,
+        std::string const &name,
+        std::string const &arrayModifier
+        );
+      
+      virtual void appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const;
     
-      CG::ExprValue llvmAllocateVariable( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const;
+      CG::ExprValue llvmAllocateVariable( std::string const &baseType, CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const;
 
     private:
     
       std::string m_name;
-      RC::ConstHandle< CG::Adapter > m_adapter;
+      std::string m_arrayModifier;
     };
   };
 };

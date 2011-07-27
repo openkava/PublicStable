@@ -32,7 +32,7 @@ namespace Fabric
         }
       }
 
-      llvm::Value *returnValue;
+      llvm::Value *returnValue = 0;
       if ( m_returnInfo.usesReturnLValue() )
       {
         RC::ConstHandle<Adapter> returnAdapter = m_returnInfo.getAdapter();
@@ -51,8 +51,6 @@ namespace Fabric
       llvm::Value *resultValue = basicBlockBuilder->CreateCall( m_llvmFunction, argValues.begin(), argValues.end() );
       if( !m_returnInfo.usesReturnLValue() )
         returnValue = resultValue;
-
-      size_t argValueOffset = m_returnInfo.usesReturnLValue()? 1: 0;
 
       for ( size_t i=0; i<args.size(); ++i )
         args[i].llvmDispose( basicBlockBuilder );

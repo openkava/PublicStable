@@ -56,6 +56,7 @@ namespace Fabric
         if ( m_data )
           free( m_data );
         init( that.m_data, that.m_length );
+        return *this;
       }
       
       char const *getData() const
@@ -154,64 +155,6 @@ namespace Fabric
         append( string );
         return *this;
       }
-      
-      void appendQuotedJSONString( char const *data, size_t length )
-      {
-        char *tail = expand( 2*length+2 );
-        char *p = tail;
-        *p++ = '"';
-        char const *dataEnd = data + length;
-        for ( ; data != dataEnd; ++data )
-        {
-          switch ( *data )
-          {
-            case '"':
-              *p++ = '\\';
-              *p++ = '"';
-              break;
-            case '\\':
-              *p++ = '\\';
-              *p++ = '\\';
-              break;
-            case '\b':
-              *p++ = '\\';
-              *p++ = 'b';
-              break;
-            case '\f':
-              *p++ = '\\';
-              *p++ = 'f';
-              break;
-            case '\n':
-              *p++ = '\\';
-              *p++ = 'n';
-              break;
-            case '\r':
-              *p++ = '\\';
-              *p++ = 'r';
-              break;
-            case '\t':
-              *p++ = '\\';
-              *p++ = 't';
-              break;
-            default:
-              *p++ = *data;
-              break;
-          }
-        }
-        *p++ = '"';
-        increaseLength( p - tail );
-      }
-      
-      char *takeCString()
-      {
-        char *result = m_data;
-        if ( result )
-          result[m_length] = '\0';
-        m_length = 0;
-        m_allocSize = 0;
-        m_data = 0;
-        return result;
-      }
     
     protected:
     
@@ -222,7 +165,7 @@ namespace Fabric
     
       void init( char const *data, size_t length )
       {
-        if ( m_length = length )
+        if ( (m_length = length) )
         {
           m_allocSize = AllocSizeForLengthPlusOne( length + 1 );
           m_data = (char *)malloc( m_allocSize );
@@ -238,9 +181,9 @@ namespace Fabric
       
     private:
     
+      char *m_data;
       size_t m_length;
       size_t m_allocSize;
-      char *m_data;
     };
   };
 };

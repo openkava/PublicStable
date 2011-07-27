@@ -29,14 +29,6 @@ namespace Fabric
       
     public:
     
-      struct PopUpItem
-      {
-        std::string desc;
-        //RC::ConstHandle<LIB::Callback> callback;
-        //RC::Handle<LIB::Value> arg;
-      };
-      typedef std::vector<PopUpItem> PopUpItems;
-    
       static RC::Handle<Context> Create( RC::Handle<IOManager> const &ioManager, std::vector<std::string> const &pluginDirs );
       
       void registerViewPort( std::string const &name, ViewPort *viewPort );
@@ -50,9 +42,6 @@ namespace Fabric
       RC::Handle<JSON::Object> jsonDescViewPorts() const;
 
       RC::Handle<IOManager> getIOManager() const;
-
-      PopUpItems const &getPopUpItems() const;
-      void addPopUpItem( PopUpItem const &popUpItem );
       
     protected:
     
@@ -62,7 +51,6 @@ namespace Fabric
     private:
       
       RC::Handle<IOManager> m_ioManager;
-      PopUpItems m_popUpItems;
       ViewPorts m_viewPorts;
     };
   };

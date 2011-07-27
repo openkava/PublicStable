@@ -189,6 +189,8 @@ def main():
   klFunctionsCode = []
   knownFunctions = {}
   
+  klFunctionsCode.append('function fglSetDebuggingEnabled( Boolean enable );')
+  
   for i in range(len(functions)):
 
     # FIRST CHECK IF THE FUNCTION USES A MACRO
@@ -302,7 +304,6 @@ def main():
         if type == 'char' or type == 'GLchar':
 
           # DEAL WITH A STIRNG ARRAY
-          traceFormat.append('char*')
           if(variables[i].find('const') > -1):
             
             # IF WE HAVE A CONST CHAR, WE WANT TO JUST READ IT
@@ -314,10 +315,13 @@ def main():
               klParameters.append('io String '+klvarname+'[]')
               cParameters.append('const KL::VariableArray<KL::String> &'+varname)
               klCast.append('('+fulltype+')&'+varname+'Data[0]')
+              traceFormat.append('char *')
             else:
               klParameters.append('io String '+klvarname)
               cParameters.append('const KL::String &'+varname)
               klCast.append('('+fulltype+')'+varname+'.data()')
+              traceFormat.append('\'%s\'')
+              traceVars.append( varname+'.data()' )
           else:
             
             # IF WE DON'T HAVE A CONST CHAR, WE NEED TO WRITE TO IT
@@ -327,6 +331,7 @@ def main():
             klParameters.append('io String '+klvarname)
             cParameters.append('KL::String & '+varname)
             klCast.append('('+fulltype+')'+varname+'Str')
+            traceFormat.append('char *')
         else:
           # BAIL OUT, NO DUAL POINTERS ARE ALLOWED. SKIP THIS FUNCTION
           if verbose:
@@ -424,12 +429,12 @@ def main():
     if name.lower() == 'glbegin':
       functionsCode.append('  _incBracket();')
 
-    functionsCode.append('#ifdef FABRIC_OGL_DEBUG')
+    functionsCode.append('  if ( fglDebuggingEnabled ) {')
     if len(traceVars) > 0:
-      functionsCode.append('  printf("'+name+'( '+str(', ').join(traceFormat)+' );\\n", '+str(', ').join(traceVars)+');')
+      functionsCode.append('    printf("'+name+'( '+str(', ').join(traceFormat)+' );\\n", '+str(', ').join(traceVars)+');')
     else:
-      functionsCode.append('  printf("'+name+'( '+str(', ').join(traceFormat)+' );\\n");')
-    functionsCode.append('#endif')
+      functionsCode.append('    printf("'+name+'( '+str(', ').join(traceFormat)+' );\\n");')
+    functionsCode.append('  }')
 
     functionsCode.extend(additionalCodePre)
     prefix = ''
@@ -448,6 +453,10 @@ def main():
 
     # IF WE HAVE A RETURN TYPE
     if returnType.find('void') == -1 or returnType.count('*') > 0:
+      if returnType.count('*') == 0:
+        functionsCode.append('  if ( fglDebuggingEnabled ) {')
+        functionsCode.append('    printf("  -> returned %u\\n", (unsigned)result );')
+        functionsCode.append('  }')
       if klReturnType == "KL::String":
         functionsCode.append('  return ('+klReturnType+')(const char*)result;')
       else:

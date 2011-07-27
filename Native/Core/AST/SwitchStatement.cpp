@@ -7,51 +7,54 @@
 
 #include <Fabric/Core/AST/SwitchStatement.h>
 #include <Fabric/Core/AST/Expr.h>
-#include <Fabric/Core/AST/CaseList.h>
+#include <Fabric/Core/AST/CaseVector.h>
 #include <Fabric/Core/AST/Case.h>
-#include <Fabric/Core/AST/StatementList.h>
+#include <Fabric/Core/AST/StatementVector.h>
 #include <Fabric/Core/CG/Scope.h>
 #include <Fabric/Core/CG/Error.h>
 #include <Fabric/Core/CG/FunctionBuilder.h>
 #include <Fabric/Core/CG/BooleanAdapter.h>
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/CG/OverloadNames.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
   namespace AST
   {
-    RC::Handle<SwitchStatement> SwitchStatement::Create(
+    FABRIC_AST_NODE_IMPL( SwitchStatement );
+    
+    RC::ConstHandle<SwitchStatement> SwitchStatement::Create(
       CG::Location const &location,
       RC::ConstHandle<Expr> const &expr,
-      RC::ConstHandle<CaseList> const &caseList
+      RC::ConstHandle<CaseVector> const &cases
       )
     {
-      return new SwitchStatement( location, expr, caseList );
+      return new SwitchStatement( location, expr, cases );
     }
     
     SwitchStatement::SwitchStatement(
       CG::Location const &location,
       RC::ConstHandle<Expr> const &expr,
-      RC::ConstHandle<CaseList> const &caseList
+      RC::ConstHandle<CaseVector> const &cases
       )
       : Statement( location )
       , m_expr( expr )
-      , m_caseList( caseList )
+      , m_cases( cases )
     {
     }
     
-    std::string SwitchStatement::localDesc() const
+    void SwitchStatement::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      return "SwitchStatement";
+      Statement::appendJSONMembers( jsonObjectGenerator );
+      m_expr->appendJSON( jsonObjectGenerator.makeMember( "expr" ) );
+      m_cases->appendJSON( jsonObjectGenerator.makeMember( "cases" ) );
     }
     
-    std::string SwitchStatement::deepDesc( std::string const &indent ) const
+    void SwitchStatement::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
     {
-      std::string subIndent = indent + "  ";
-      return indent + localDesc() + "\n"
-        + m_expr->deepDesc( subIndent )
-        + m_caseList->deepDesc( subIndent );
+      m_expr->llvmPrepareModule( moduleBuilder, diagnostics );
+      m_cases->llvmPrepareModule( moduleBuilder, diagnostics );
     }
 
     void SwitchStatement::llvmCompileToBuilder( CG::BasicBlockBuilder &parentBasicBlockBuilder, CG::Diagnostics &diagnostics ) const
@@ -61,7 +64,7 @@ namespace Fabric
         CG::FunctionBuilder &functionBuilder = parentBasicBlockBuilder.getFunctionBuilder();
         RC::ConstHandle<CG::BooleanAdapter> booleanAdapter = parentBasicBlockBuilder.getManager()->getBooleanAdapter();
 
-        size_t numCases = m_caseList->getNumCases();
+        size_t numCases = m_cases->size();
         std::vector<llvm::BasicBlock *> caseBodyBBs;
         llvm::BasicBlock *caseDefaultBodyBB = 0;
         for ( size_t i=0; i<numCases; ++i )
@@ -69,7 +72,7 @@ namespace Fabric
           llvm::BasicBlock *caseBodyBB = functionBuilder.createBasicBlock( "switchBody"+_(i+1) );
           caseBodyBBs.push_back( caseBodyBB );
 
-          RC::ConstHandle<Case> case_ = m_caseList->getCase(i);
+          RC::ConstHandle<Case> case_ = m_cases->get(i);
           if ( !case_->getExpr() )
           {
             if ( caseDefaultBodyBB )
@@ -85,7 +88,7 @@ namespace Fabric
         std::vector<llvm::BasicBlock *> caseTestBBs;
         for ( size_t i=0; i<numCases; ++i )
         {
-          RC::ConstHandle<Case> case_ = m_caseList->getCase(i);
+          RC::ConstHandle<Case> case_ = m_cases->get(i);
           if ( case_->getExpr() )
             caseTestBBs.push_back( functionBuilder.createBasicBlock( "switchTest"+_(i+1) ) );
         }
@@ -105,7 +108,7 @@ namespace Fabric
           RC::ConstHandle<Case> case_;
           for (;;)
           {
-            case_ = m_caseList->getCase(caseIndex);
+            case_ = m_cases->get(caseIndex);
             if ( case_->getExpr() )
               break;
             ++caseIndex;
@@ -139,10 +142,10 @@ namespace Fabric
         
         for ( size_t i=0; i<numCases; ++i )
         {
-          RC::ConstHandle<Case> case_ = m_caseList->getCase(i);
+          RC::ConstHandle<Case> case_ = m_cases->get(i);
 
           basicBlockBuilder->SetInsertPoint( caseBodyBBs[i] );
-          case_->getStatementList()->llvmCompileToBuilder( basicBlockBuilder, diagnostics );
+          case_->getStatements()->llvmCompileToBuilder( basicBlockBuilder, diagnostics );
           if ( !basicBlockBuilder->GetInsertBlock()->getTerminator() )
             basicBlockBuilder->CreateBr( i+1 == numCases? doneBB: caseBodyBBs[i+1] );
         }

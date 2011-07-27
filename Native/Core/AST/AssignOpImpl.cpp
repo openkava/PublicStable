@@ -6,29 +6,52 @@
  */
 
 #include <Fabric/Core/AST/AssignOpImpl.h>
+#include <Fabric/Core/AST/Param.h>
 #include <Fabric/Core/CG/Adapter.h>
+#include <Fabric/Core/CG/OpTypes.h>
 #include <Fabric/Core/CG/OverloadNames.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
   namespace AST
   {
+    FABRIC_AST_NODE_IMPL( AssignOpImpl );
+    
+    RC::ConstHandle<AssignOpImpl> AssignOpImpl::Create(
+      CG::Location const &location,
+      std::string const &selfType,
+      CG::AssignOpType assignOpType,
+      RC::ConstHandle<AST::Param> rhs,
+      RC::ConstHandle<CompoundStatement> const &body
+      )
+    {
+      return new AssignOpImpl( location, selfType, assignOpType, rhs, body );
+    }
+    
     AssignOpImpl::AssignOpImpl(
       CG::Location const &location,
-      RC::ConstHandle<CG::Adapter> const &selfType,
+      std::string const &selfType,
       CG::AssignOpType assignOpType,
-      RC::ConstHandle< AST::Param > rhs,
+      RC::ConstHandle<AST::Param> rhs,
       RC::ConstHandle<CompoundStatement> const &body
       )
       : MethodOpImpl(
         location,
-        RC::ConstHandle<CG::Adapter>(),
+        "",
         selfType,
         CG::assignOpMethodName( assignOpType ),
-        ParamList::Create( location, rhs ),
+        ParamVector::Create( rhs ),
         body
         )
+      , m_assignOpType( assignOpType )
     {
+    }
+    
+    void AssignOpImpl::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
+    {
+      MethodOpImpl::appendJSONMembers( jsonObjectGenerator );
+      jsonObjectGenerator.makeMember( "op" ).makeString( CG::assignOpTypeDesc( m_assignOpType ) );
     }
   };
 };

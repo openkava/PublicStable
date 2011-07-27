@@ -13,25 +13,33 @@
 
 namespace Fabric
 {
+  namespace Util
+  {
+    class SimpleString;
+  };
+  
   namespace AST
   {
     class Report: public Statement
     {
-    public:
-    
-      virtual std::string localDesc() const;
-      virtual std::string deepDesc( std::string const &indent ) const;
+      FABRIC_AST_NODE_DECL( Report );
 
-      static RC::Handle<Report> Create( CG::Location const &location, RC::ConstHandle<Expr> const &expr )
+    public:
+
+      static RC::ConstHandle<Report> Create( CG::Location const &location, RC::ConstHandle<Expr> const &expr )
       {
         return new Report( location, expr );
       }
+
+      virtual void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
       
       virtual void llvmCompileToBuilder( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const;
      
     protected:
     
       Report( CG::Location const &location, RC::ConstHandle<Expr> const &expr);
+      
+      virtual void appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const;
     
     private:
     

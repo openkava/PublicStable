@@ -59,7 +59,7 @@ namespace Fabric
     
     void StringAdapter::llvmPrepareModule( ModuleBuilder &moduleBuilder, bool buildFunctions ) const
     {
-      if ( moduleBuilder.contains( getCodeName() ) )
+      if ( moduleBuilder.contains( getCodeName(), buildFunctions ) )
         return;
       
       moduleBuilder->addTypeName( getCodeName(), llvmRawType() );
@@ -143,7 +143,7 @@ namespace Fabric
           };
           llvm::Function *intrinsic = llvm::Intrinsic::getDeclaration( basicBlockBuilder.getModuleBuilder(), llvm::Intrinsic::atomic_load_add, intrinsicTypes, numIntrinsicTypes );
           FABRIC_ASSERT( intrinsic );
-          llvm::Value *oldRefCountRValue = basicBlockBuilder->CreateCall2( intrinsic, refCountLValue, one );
+          basicBlockBuilder->CreateCall2( intrinsic, refCountLValue, one );
           basicBlockBuilder->CreateBr( doneBB );
           
           basicBlockBuilder->SetInsertPoint( doneBB );
@@ -271,7 +271,7 @@ namespace Fabric
         }
       }
       
-      llvm::Function *assignAddFunction;
+      llvm::Function *assignAddFunction = 0;
       {
         std::vector< llvm::Type const * > argTypes;
         argTypes.push_back( llvmLType() );
@@ -453,7 +453,6 @@ namespace Fabric
             );
           
           basicBlockBuilder->SetInsertPoint( deepBB );
-          llvm::Type const *int8PtrTy = basicBlockBuilder->getInt8PtrTy();
           llvm::Value *selfLengthRValue = basicBlockBuilder->CreateLoad( basicBlockBuilder->CreateStructGEP( selfRValue, 2, "selfLengthPtr" ), "selfLength" );
           llvm::Value *selfCStrRValue = basicBlockBuilder->CreateConstGEP2_32( basicBlockBuilder->CreateStructGEP( selfRValue, 3 ), 0, 0, "selfCStr" );
           llvm::Value *otherLengthRValue = basicBlockBuilder->CreateLoad( basicBlockBuilder->CreateStructGEP( otherRValue, 2, "otherLengthPtr" ), "otherLength" );

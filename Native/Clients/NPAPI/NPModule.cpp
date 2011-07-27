@@ -29,6 +29,16 @@ static void llvmInitialize()
   }
 }
 
+static void displayHeader()
+{
+  FABRIC_LOG( "Fabric version %s", Fabric::buildVersion );
+  struct tm const *lt = localtime( &Fabric::buildExpiry );
+  char buf[1024];
+  strftime( buf, 1024, "This build of Fabric will expire on %Y-%m-%d at %H:%M:%S", lt );
+  FABRIC_LOG( "%s", buf );
+  FABRIC_LOG( "Plugin loaded." );
+}
+
 #if defined(FABRIC_OS_NACL)
 FABRIC_NPAPI_EXPORT NPError OSCALL NP_Initialize(NPNetscapeFuncs* browser_functions,
                              NPPluginFuncs* plugin_functions)
@@ -43,7 +53,7 @@ FABRIC_NPAPI_EXPORT NPError OSCALL NP_Initialize(NPNetscapeFuncs* browser_functi
 FABRIC_NPAPI_EXPORT NPError OSCALL NP_Initialize(NPNetscapeFuncs* browser_functions,
                       NPPluginFuncs* plugin_functions)
 {
-  FABRIC_LOG( "Plugin loaded." );
+  displayHeader();
   FABRIC_DEBUG_LOG( "Debug with: gdb --pid=%d", getpid() );
   llvmInitialize();
   extern void InitializeBrowserFunctions(NPNetscapeFuncs* browser_functions);
@@ -54,15 +64,17 @@ FABRIC_NPAPI_EXPORT NPError OSCALL NP_Initialize(NPNetscapeFuncs* browser_functi
 #elif defined(FABRIC_OS_MACOSX)
 FABRIC_NPAPI_EXPORT NPError OSCALL NP_Initialize(NPNetscapeFuncs* browser_functions)
 {
-  FABRIC_LOG( "Plugin loaded." );
-  FABRIC_DEBUG_LOG( "Debug with: gdb --pid=%d", getpid() );
+  displayHeader();
+  FABRIC_LOG( "Debug with: gdb --pid=%d", getpid() );
   llvmInitialize();
   extern void InitializeBrowserFunctions(NPNetscapeFuncs* browser_functions);
   InitializeBrowserFunctions(browser_functions);
   return NPERR_NO_ERROR;
 }
 #elif defined(FABRIC_OS_WINDOWS)
-FABRIC_NPAPI_EXPORT NPError OSCALL NP_Initialize(NPNetscapeFuncs* browser_functions) {
+FABRIC_NPAPI_EXPORT NPError OSCALL NP_Initialize(NPNetscapeFuncs* browser_functions)
+{
+  displayHeader();
   llvmInitialize();
   extern void InitializeBrowserFunctions(NPNetscapeFuncs* browser_functions);
   InitializeBrowserFunctions(browser_functions);

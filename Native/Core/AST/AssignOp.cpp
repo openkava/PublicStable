@@ -12,32 +12,39 @@
 #include <Fabric/Core/CG/OverloadNames.h>
 #include <Fabric/Core/CG/Scope.h>
 #include <Fabric/Core/CG/Error.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
   namespace AST
   {
+    FABRIC_AST_NODE_IMPL( AssignOp );
+    
+    RC::ConstHandle<AssignOp> AssignOp::Create( CG::Location const &location, CG::AssignOpType assignOpType, RC::ConstHandle<Expr> const &left, RC::ConstHandle<Expr> const &right )
+    {
+      return new AssignOp( location, assignOpType, left, right );
+    }
+    
     AssignOp::AssignOp( CG::Location const &location, CG::AssignOpType assignOpType, RC::ConstHandle<Expr> const &left, RC::ConstHandle<Expr> const &right )
-    : Expr( location )
-    , m_assignOpType( assignOpType )
-    , m_left( left )
-    , m_right( right )
+      : Expr( location )
+      , m_assignOpType( assignOpType )
+      , m_left( left )
+      , m_right( right )
     {
     }
     
-    std::string AssignOp::localDesc() const
+    void AssignOp::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      char buf[128];
-      snprintf( buf, 128, "AssignOp(%s)", CG::assignOpTypeDesc(m_assignOpType) );
-      return std::string(buf);
+      Expr::appendJSONMembers( jsonObjectGenerator );
+      jsonObjectGenerator.makeMember( "initialValue" ).makeString( assignOpTypeDesc( m_assignOpType ) );
+      m_left->appendJSON( jsonObjectGenerator.makeMember( "lhs" ) );
+      m_right->appendJSON( jsonObjectGenerator.makeMember( "rhs" ) );
     }
     
-    std::string AssignOp::deepDesc( std::string const &indent ) const
+    void AssignOp::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
     {
-      std::string subIndent = indent + "  ";
-      return indent + localDesc() + "\n"
-      + m_left->deepDesc(subIndent)
-      + m_right->deepDesc(subIndent);
+      m_left->llvmPrepareModule( moduleBuilder, diagnostics );
+      m_right->llvmPrepareModule( moduleBuilder, diagnostics );
     }
     
     RC::ConstHandle<CG::Adapter> AssignOp::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const

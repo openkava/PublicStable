@@ -6,27 +6,42 @@
  */
 
 #include "CompoundStatement.h"
+#include <Fabric/Core/AST/StatementVector.h>
 #include <Fabric/Core/CG/Scope.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
   namespace AST
   {
-    CompoundStatement::CompoundStatement( CG::Location const &location, RC::ConstHandle<StatementList> const &statementList )
+    FABRIC_AST_NODE_IMPL( CompoundStatement );
+    
+    RC::ConstHandle<CompoundStatement> CompoundStatement::Create(
+      CG::Location const &location,
+      RC::ConstHandle<StatementVector> const &statements
+      )
+    {
+      return new CompoundStatement( location, statements );
+    }
+    
+    CompoundStatement::CompoundStatement(
+      CG::Location const &location,
+      RC::ConstHandle<StatementVector> const &statements
+      )
       : Statement( location )
-      , m_statementList( statementList )
+      , m_statements( statements )
     {
     }
     
-    std::string CompoundStatement::localDesc() const
+    void CompoundStatement::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      return "CompoundStatement";
+      Statement::appendJSONMembers( jsonObjectGenerator );
+      m_statements->appendJSON( jsonObjectGenerator.makeMember( "statements" ) );
     }
     
-    std::string CompoundStatement::deepDesc( std::string const &indent ) const
+    void CompoundStatement::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
     {
-      return indent + localDesc() + "\n"
-        + m_statementList->deepDesc( indent + "  " );
+      m_statements->llvmPrepareModule( moduleBuilder, diagnostics );
     }
 
     void CompoundStatement::llvmCompileToBuilder( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const
@@ -34,7 +49,8 @@ namespace Fabric
       CG::Scope subScope( basicBlockBuilder.getScope() );
       {
         CG::BasicBlockBuilder subBasicBlockBuilder( basicBlockBuilder, subScope );
-        m_statementList->llvmCompileToBuilder( subBasicBlockBuilder, diagnostics );
+        for ( size_t i=0; i<m_statements->size(); ++i )
+          m_statements->get(i)->llvmCompileToBuilder( subBasicBlockBuilder, diagnostics );
       }
       if ( !basicBlockBuilder->GetInsertBlock()->getTerminator() )
         subScope.llvmUnwind( basicBlockBuilder );

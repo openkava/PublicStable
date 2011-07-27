@@ -5,28 +5,37 @@
  *
  */
 
-#include "ExprStatement.h"
+#include <Fabric/Core/AST/ExprStatement.h>
+#include <Fabric/Core/AST/Expr.h>
 #include <Fabric/Core/CG/Error.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
   namespace AST
   {
+    FABRIC_AST_NODE_IMPL( ExprStatement );
+    
+    RC::ConstHandle<ExprStatement> ExprStatement::Create( CG::Location const &location, RC::ConstHandle<Expr> const &expr )
+    {
+      return new ExprStatement( location, expr );
+    }
+    
     ExprStatement::ExprStatement( CG::Location const &location, RC::ConstHandle<Expr> const &expr )
       : Statement( location )
       , m_expr( expr )
     {
     }
     
-    std::string ExprStatement::localDesc() const
+    void ExprStatement::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      return "ExprStatement";
+      Statement::appendJSONMembers( jsonObjectGenerator );
+      m_expr->appendJSON( jsonObjectGenerator.makeMember( "expr" ) );
     }
     
-    std::string ExprStatement::deepDesc( std::string const &indent ) const
+    void ExprStatement::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
     {
-      return indent + localDesc() + "\n"
-        + m_expr->deepDesc( indent + "  " );
+      m_expr->llvmPrepareModule( moduleBuilder, diagnostics );
     }
 
     void ExprStatement::llvmCompileToBuilder( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const

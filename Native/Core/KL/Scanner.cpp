@@ -1,28 +1,22 @@
 /*
- *
- *  Created by Peter Zion on 10-12-01.
- *  Copyright 2010 Fabric Technologies Inc. All rights reserved.
- *
+ *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
  */
-
-#include "Scanner.h"
-#include "Source.h"
-#include "Location.h"
+ 
+#include <Fabric/Core/KL/Scanner.h>
+#include <Fabric/Core/KL/Source.h>
+#include <Fabric/Core/KL/Location.h>
 #include <Fabric/Core/RT/Manager.h>
 #include <Fabric/Core/CG/Manager.h>
 
 namespace Fabric
 {
-  
-  
   namespace KL
   {
     bool Scanner::s_charAttribsInitialized = false;
     uint8_t Scanner::s_charAttribs[256];
 
-    Scanner::Scanner( Source &source, RC::ConstHandle<CG::Manager> const &cgManager )
-      : m_source( source )
-      , m_cgManager( cgManager )
+    Scanner::Scanner( RC::ConstHandle<Source> const &source )
+      : m_sourceReader( source )
     {
       if ( !s_charAttribsInitialized )
       {
@@ -87,424 +81,412 @@ namespace Fabric
       }
     }
     
-    Token Scanner::nextToken_Symbol( YYSTYPE *yys )
+    Token Scanner::nextToken_Symbol( Location const &startLocation )
     {
-      FABRIC_ASSERT( IsSymbol( m_source.peek() ) );
-      std::string text;
-      char ch = m_source.advance( &text );
+      FABRIC_ASSERT( IsSymbol( m_sourceReader.peek() ) );
+      char ch = m_sourceReader.advance();
       switch ( ch )
       {
         case '=':
-          if ( m_source.peek() == '=' )
+          if ( m_sourceReader.peek() == '=' )
           {
-            m_source.advance( &text );
-            return TK_EQUALS_EQUALS;
+            m_sourceReader.advance();
+            return createToken( TOKEN_EQUALS_EQUALS, startLocation );
           }
-          else return TK_EQUALS;        
+          else return createToken( TOKEN_EQUALS, startLocation );        
            
         case '+':
-          if ( m_source.peek() == '=' )
+          if ( m_sourceReader.peek() == '=' )
           {
-            m_source.advance( &text );
-            return TK_PLUS_EQUALS;
+            m_sourceReader.advance();
+            return createToken( TOKEN_PLUS_EQUALS, startLocation );
           }
-          else if ( m_source.peek() == '+' )
+          else if ( m_sourceReader.peek() == '+' )
           {
-            m_source.advance( &text );
-            return TK_PLUS_PLUS;
+            m_sourceReader.advance();
+            return createToken( TOKEN_PLUS_PLUS, startLocation );
           }
-          else return TK_PLUS;        
+          else return createToken( TOKEN_PLUS, startLocation );        
         
         case '-':
-          if ( m_source.peek() == '=' )
+          if ( m_sourceReader.peek() == '=' )
           {
-            m_source.advance( &text );
-            return TK_MINUS_EQUALS;
+            m_sourceReader.advance();
+            return createToken( TOKEN_MINUS_EQUALS, startLocation );
           }
-          if ( m_source.peek() == '-' )
+          if ( m_sourceReader.peek() == '-' )
           {
-            m_source.advance( &text );
-            return TK_MINUS_MINUS;
+            m_sourceReader.advance();
+            return createToken( TOKEN_MINUS_MINUS, startLocation );
           }
-          else return TK_MINUS;
+          else return createToken( TOKEN_MINUS, startLocation );
           
         case '*':
-          if ( m_source.peek() == '=' )
+          if ( m_sourceReader.peek() == '=' )
           {
-            m_source.advance( &text );
-            return TK_AST_EQUALS;
+            m_sourceReader.advance();
+            return createToken( TOKEN_AST_EQUALS, startLocation );
           }
-          else return TK_AST;
+          else return createToken( TOKEN_AST, startLocation );
           
         case '/':
-          if ( m_source.peek() == '=' )
+          if ( m_sourceReader.peek() == '=' )
           {
-            m_source.advance( &text );
-            return TK_FSLASH_EQUALS;
+            m_sourceReader.advance();
+            return createToken( TOKEN_FSLASH_EQUALS, startLocation );
           }
-          else if ( m_source.peek() == '*' )
+          else if ( m_sourceReader.peek() == '*' )
           {
-            m_source.advance( &text );
-            while ( !m_source.isEOF() )
+            m_sourceReader.advance();
+            while ( !m_sourceReader.isEOF() )
             {
-              if ( m_source.advance( &text ) == '*' )
+              if ( m_sourceReader.advance() == '*' )
               {
-                if ( m_source.peek() == '/' )
+                if ( m_sourceReader.peek() == '/' )
                 {
-                  m_source.advance( &text );
-                  yys->valueStringPtr = new std::string( text );
-                  return TK_COMMENT_BLOCK;
+                  m_sourceReader.advance();
+                  return createToken( TOKEN_COMMENT_BLOCK, startLocation );
                 }
               }
             }
             throw Exception("unclosed block comment");
           }
-          else if ( m_source.peek() == '/' )
+          else if ( m_sourceReader.peek() == '/' )
           {
-            m_source.advance( &text );
-            while ( m_source.peek() != '\n' )
-              m_source.advance( &text );
-            yys->valueStringPtr = new std::string( text );
-            return TK_COMMENT_LINE;
+            m_sourceReader.advance();
+            while ( m_sourceReader.peek() != '\n' )
+              m_sourceReader.advance();
+            return createToken( TOKEN_COMMENT_LINE, startLocation );
           }
-          else return TK_FSLASH;
+          else return createToken( TOKEN_FSLASH, startLocation );
           
         case '%':
-          if ( m_source.peek() == '=' )
+          if ( m_sourceReader.peek() == '=' )
           {
-            m_source.advance( &text );
-            return TK_PERCENT_EQUALS;
+            m_sourceReader.advance();
+            return createToken( TOKEN_PERCENT_EQUALS, startLocation );
           }
-          else return TK_PERCENT;
+          else return createToken( TOKEN_PERCENT, startLocation );
           
         case '^':
-          if ( m_source.peek() == '^' )
+          if ( m_sourceReader.peek() == '^' )
           {
-            m_source.advance( &text );
-            if ( m_source.peek() == '=' )
+            m_sourceReader.advance();
+            if ( m_sourceReader.peek() == '=' )
             {
-              m_source.advance( &text );
-              return TK_CARET_CARET_EQUALS;
+              m_sourceReader.advance();
+              return createToken( TOKEN_CARET_CARET_EQUALS, startLocation );
             }
-            else return TK_CARET_CARET;
+            else return createToken( TOKEN_CARET_CARET, startLocation );
           }
-          else if ( m_source.peek() == '=' )
+          else if ( m_sourceReader.peek() == '=' )
           {
-            m_source.advance( &text );
-            return TK_CARET_EQUALS;
+            m_sourceReader.advance();
+            return createToken( TOKEN_CARET_EQUALS, startLocation );
           }
-          else return TK_CARET;
+          else return createToken( TOKEN_CARET, startLocation );
           
         case '&':
-          if ( m_source.peek() == '&' )
+          if ( m_sourceReader.peek() == '&' )
           {
-            m_source.advance( &text );
-            if ( m_source.peek() == '=' )
+            m_sourceReader.advance();
+            if ( m_sourceReader.peek() == '=' )
             {
-              m_source.advance( &text );
-              return TK_AMP_AMP_EQUALS;
+              m_sourceReader.advance();
+              return createToken( TOKEN_AMP_AMP_EQUALS, startLocation );
             }
-            else return TK_AMP_AMP;
+            else return createToken( TOKEN_AMP_AMP, startLocation );
           }
-          else if ( m_source.peek() == '=' )
+          else if ( m_sourceReader.peek() == '=' )
           {
-            m_source.advance( &text );
-            return TK_AMP_EQUALS;
+            m_sourceReader.advance();
+            return createToken( TOKEN_AMP_EQUALS, startLocation );
           }
-          else return TK_AMP;
+          else return createToken( TOKEN_AMP, startLocation );
           
         case '|':
-          if ( m_source.peek() == '|' )
+          if ( m_sourceReader.peek() == '|' )
           {
-            m_source.advance( &text );
-            if ( m_source.peek() == '=' )
+            m_sourceReader.advance();
+            if ( m_sourceReader.peek() == '=' )
             {
-              m_source.advance( &text );
-              return TK_PIPE_PIPE_EQUALS;
+              m_sourceReader.advance();
+              return createToken( TOKEN_PIPE_PIPE_EQUALS, startLocation );
             }
-            else return TK_PIPE_PIPE;
+            else return createToken( TOKEN_PIPE_PIPE, startLocation );
           }
-          else if ( m_source.peek() == '=' )
+          else if ( m_sourceReader.peek() == '=' )
           {
-            m_source.advance( &text );
-            return TK_PIPE_EQUALS;
+            m_sourceReader.advance();
+            return createToken( TOKEN_PIPE_EQUALS, startLocation );
           }
-          else return TK_PIPE;
+          else return createToken( TOKEN_PIPE, startLocation );
           
         case '[':
-          return TK_LBRACKET;
+          return createToken( TOKEN_LBRACKET, startLocation );
 
         case ']':
-          return TK_RBRACKET;
+          return createToken( TOKEN_RBRACKET, startLocation );
         
         case '{':
-          return TK_LBRACE;
+          return createToken( TOKEN_LBRACE, startLocation );
           
         case '}':
-          return TK_RBRACE;
+          return createToken( TOKEN_RBRACE, startLocation );
         
         case '(':
-          return TK_LPAREN;
+          return createToken( TOKEN_LPAREN, startLocation );
           
         case ')':
-          return TK_RPAREN;
+          return createToken( TOKEN_RPAREN, startLocation );
         
         case '.':
-          return TK_DOT;
+          return createToken( TOKEN_DOT, startLocation );
         
         case ';':
-          return TK_SEMICOLON;
+          return createToken( TOKEN_SEMICOLON, startLocation );
           
         case '<':
-          if ( m_source.peek() == '=' )
+          if ( m_sourceReader.peek() == '=' )
           {
-            m_source.advance( &text );
-            return TK_LANGLE_EQUALS;
+            m_sourceReader.advance();
+            return createToken( TOKEN_LANGLE_EQUALS, startLocation );
           }
-          else return TK_LANGLE;
+          else return createToken( TOKEN_LANGLE, startLocation );
           
         case '>':
-          if ( m_source.peek() == '=' )
+          if ( m_sourceReader.peek() == '=' )
           {
-            m_source.advance( &text );
-            return TK_RANGLE_EQUALS;
+            m_sourceReader.advance();
+            return createToken( TOKEN_RANGLE_EQUALS, startLocation );
           }
-          else return TK_RANGLE;
+          else return createToken( TOKEN_RANGLE, startLocation );
         
         case '~':
-          return TK_TILDE;
+          return createToken( TOKEN_TILDE, startLocation );
         
         case '!':
-          if ( m_source.peek() == '=' )
+          if ( m_sourceReader.peek() == '=' )
           {
-            m_source.advance( &text );
-            return TK_EXCL_EQUALS;
+            m_sourceReader.advance();
+            return createToken( TOKEN_EXCL_EQUALS, startLocation );
           }
-          else return TK_EXCL;
+          else return createToken( TOKEN_EXCL, startLocation );
           
         case '\'':
-          while ( !m_source.isEOF() )
+          while ( !m_sourceReader.isEOF() )
           {
-            char ch = m_source.advance( &text );
+            char ch = m_sourceReader.advance();
             if ( ch == '\\' )
             {
-              if ( m_source.isEOF() )
+              if ( m_sourceReader.isEOF() )
                 throw Exception("unterminated string constant");
-              m_source.advance( &text );
+              m_sourceReader.advance();
             }
             else if ( ch == '\'' )
             {
-              yys->valueStringPtr = new std::string( text );
-              return TK_CONST_STRING_SQUOT;
+              return createToken( TOKEN_CONST_STRING_SQUOT, startLocation );
             }
           }
           throw Exception("unterminated string constant");
           
         case '"':
-          while ( !m_source.isEOF() )
+          while ( !m_sourceReader.isEOF() )
           {
-            char ch = m_source.advance( &text );
+            char ch = m_sourceReader.advance();
             if ( ch == '\\' )
             {
-              if ( m_source.isEOF() )
+              if ( m_sourceReader.isEOF() )
                 throw Exception("unterminated string constant");
-              m_source.advance( &text );
+              m_sourceReader.advance();
             }
             else if ( ch == '"' )
             {
-              yys->valueStringPtr = new std::string( text );
-              return TK_CONST_STRING_DQUOT;
+              return createToken( TOKEN_CONST_STRING_DQUOT, startLocation );
             }
           }
           throw Exception("unterminated string constant");
         
         case ',':
-          return TK_COMMA;
+          return createToken( TOKEN_COMMA, startLocation );
           
         case '?':
-          return TK_QUESTION_MARK;
+          return createToken( TOKEN_QUESTION_MARK, startLocation );
         
         case ':':
-          return TK_COLON;
+          return createToken( TOKEN_COLON, startLocation );
           
         default:
           throw Exception("bad symbol");
       }
     }
     
-    Token Scanner::nextToken_Digit( YYSTYPE *yys )
+    Token Scanner::nextToken_Digit( Location const &startLocation )
     {
-      FABRIC_ASSERT( IsDigit( m_source.peek() ) );
-      std::string text;
+      FABRIC_ASSERT( IsDigit( m_sourceReader.peek() ) );
       
-      m_source.advance( &text );
+      char ch = m_sourceReader.advance();
       
-      Token token = TK_CONST_UI;
+      Token::Type tokenType = TOKEN_CONST_UI;
       
-      if ( text[0] == '0' && tolower( m_source.peek() ) == 'x' )
+      if ( ch == '0' && tolower( m_sourceReader.peek() ) == 'x' )
       {
-        m_source.advance( &text );
-        if ( !IsHexDigit( m_source.peek() ) )
+        m_sourceReader.advance();
+        if ( !IsHexDigit( m_sourceReader.peek() ) )
           throw Exception("malformed hexadecimal constant");
-        while ( IsHexDigit( m_source.peek() ) )
-          m_source.advance( &text );
+        while ( IsHexDigit( m_sourceReader.peek() ) )
+          m_sourceReader.advance();
       }
       else
       {
-        while ( IsDigit( m_source.peek() ) )
-          m_source.advance( &text );
+        while ( IsDigit( m_sourceReader.peek() ) )
+          m_sourceReader.advance();
         
-        if ( m_source.peek() == '.' )
+        if ( m_sourceReader.peek() == '.' )
         {
-          m_source.advance( &text );
-          token = TK_CONST_FP;
+          m_sourceReader.advance();
+          tokenType = TOKEN_CONST_FP;
           
-          while ( IsDigit( m_source.peek() ) )
-            m_source.advance( &text );
+          while ( IsDigit( m_sourceReader.peek() ) )
+            m_sourceReader.advance();
         }
         
-        if ( m_source.peek() == 'e' || m_source.peek() == 'E' )
+        if ( m_sourceReader.peek() == 'e' || m_sourceReader.peek() == 'E' )
         {
-          m_source.advance( &text );
-          token = TK_CONST_FP;
+          m_sourceReader.advance();
+          tokenType = TOKEN_CONST_FP;
           
-          if ( m_source.peek() == '+' || m_source.peek() == '-' )
-            m_source.advance( &text );
+          if ( m_sourceReader.peek() == '+' || m_sourceReader.peek() == '-' )
+            m_sourceReader.advance();
           
-          if ( !IsDigit( m_source.peek() ) )
+          if ( !IsDigit( m_sourceReader.peek() ) )
             throw Exception("malformed floating point exponent");
-          while ( IsDigit( m_source.peek() ) )
-            m_source.advance( &text );
+          while ( IsDigit( m_sourceReader.peek() ) )
+            m_sourceReader.advance();
         }
       }
       
-      yys->valueStringPtr = new std::string( text );
-      return token;
+      return createToken( tokenType, startLocation );
     }
     
-    Token Scanner::nextToken_Space( YYSTYPE *yys )
+    Token Scanner::nextToken_Space( Location const &startLocation )
     {
-      FABRIC_ASSERT( IsSpace( m_source.peek() ) );
-      std::string text;
-      while ( IsSpace( m_source.peek() ) )
-        m_source.advance( &text );
-      yys->valueStringPtr = new std::string( text );
-      return TK_WHITESPACE;
+      FABRIC_ASSERT( IsSpace( m_sourceReader.peek() ) );
+      while ( IsSpace( m_sourceReader.peek() ) )
+        m_sourceReader.advance();
+      return createToken( TOKEN_WHITESPACE, startLocation );
     }
     
-    Token Scanner::nextToken_Alpha( YYSTYPE *yys )
+    Token Scanner::nextToken_Alpha( Location const &startLocation )
     {
-      FABRIC_ASSERT( IsAlpha( m_source.peek() ) );
-      std::string text;
+      FABRIC_ASSERT( IsAlpha( m_sourceReader.peek() ) );
 
-      m_source.advance( &text );
+      m_sourceReader.advance();
       
-      while ( IsAlpha( m_source.peek() ) || IsDigit( m_source.peek() ) )
-        m_source.advance( &text );
-      
-      switch( text.length() )
+      while ( IsAlpha( m_sourceReader.peek() ) || IsDigit( m_sourceReader.peek() ) )
+        m_sourceReader.advance();
+        
+      SourceRange sourceRange = createSourceRange( startLocation );
+      std::string string = sourceRange.toString();
+      switch( string.length() )
       {
         case 2:
-          if ( text == "in" )
-            return TK_IN;
-          if ( text == "io" )
-            return TK_IO;
-          if ( text == "if" )
-            return TK_IF;
-          if ( text == "do" )
-            return TK_DO;
+          if ( string == "in" )
+            return createToken( TOKEN_IN, sourceRange );
+          if ( string == "io" )
+            return createToken( TOKEN_IO, sourceRange );
+          if ( string == "if" )
+            return createToken( TOKEN_IF, sourceRange );
+          if ( string == "do" )
+            return createToken( TOKEN_DO, sourceRange );
           break;
           
         case 3:
-          if ( text == "for" )
-            return TK_FOR;
-          if ( text == "var" )
-            return TK_VAR;
+          if ( string == "for" )
+            return createToken( TOKEN_FOR, sourceRange );
+          if ( string == "var" )
+            return createToken( TOKEN_VAR, sourceRange );
           break;
           
         case 4:
-          if ( text == "case" )
-            return TK_CASE;
-          if ( text == "else" )
-            return TK_ELSE;
-          if ( text == "true" )
-            return TK_TRUE;
+          if ( string == "case" )
+            return createToken( TOKEN_CASE, sourceRange );
+          if ( string == "else" )
+            return createToken( TOKEN_ELSE, sourceRange );
+          if ( string == "true" )
+            return createToken( TOKEN_TRUE, sourceRange );
           break;
           
         case 5:
-          if ( text == "alias" )
-            return TK_ALIAS;
-          if ( text == "break" )
-            return TK_BREAK;
-          if ( text == "const" )
-            return TK_CONST;
-          if ( text == "false" )
-            return TK_FALSE;
-          if ( text == "while" )
-            return TK_WHILE;
+          if ( string == "alias" )
+            return createToken( TOKEN_ALIAS, sourceRange );
+          if ( string == "break" )
+            return createToken( TOKEN_BREAK, sourceRange );
+          if ( string == "const" )
+            return createToken( TOKEN_CONST, sourceRange );
+          if ( string == "false" )
+            return createToken( TOKEN_FALSE, sourceRange );
+          if ( string == "while" )
+            return createToken( TOKEN_WHILE, sourceRange );
           break;
         
         case 6:
-          if ( text == "struct" )
-            return TK_STRUCT;
-          if ( text == "switch" )
-            return TK_SWITCH;
-          if ( text == "report" )
-            return TK_REPORT;
-          if ( text == "return" )
-            return TK_RETURN;
+          if ( string == "struct" )
+            return createToken( TOKEN_STRUCT, sourceRange );
+          if ( string == "switch" )
+            return createToken( TOKEN_SWITCH, sourceRange );
+          if ( string == "report" )
+            return createToken( TOKEN_REPORT, sourceRange );
+          if ( string == "return" )
+            return createToken( TOKEN_RETURN, sourceRange );
           break;
         
         case 7:
-          if ( text == "default" )
-            return TK_DEFAULT;
+          if ( string == "default" )
+            return createToken( TOKEN_DEFAULT, sourceRange );
           break;
         
         case 8:
-          if ( text == "function" )
-            return TK_FUNCTION;
-          if ( text == "operator" )
-            return TK_OPERATOR;
-          if ( text == "continue" )
-            return TK_CONTINUE;
+          if ( string == "function" )
+            return createToken( TOKEN_FUNCTION, sourceRange );
+          if ( string == "operator" )
+            return createToken( TOKEN_OPERATOR, sourceRange );
+          if ( string == "continue" )
+            return createToken( TOKEN_CONTINUE, sourceRange );
           break;
         
         case 9:
           break;
       }
-      
-      RC::ConstHandle<RT::Desc> baseDesc = m_cgManager->getRTManager()->maybeGetBaseDesc( text );
-      if ( baseDesc )
-      {
-        RC::ConstHandle<CG::Adapter> desc = m_cgManager->getAdapter( baseDesc );
-        yys->cgAdapter = desc.ptr();
-        yys->cgAdapter->retain();
-        return TK_REGISTERED_TYPE;
-      }
-      
-      yys->valueStringPtr = new std::string( text );
-      return TK_IDENTIFIER;
+
+      return createToken( TOKEN_IDENTIFIER, sourceRange );
     }
     
-    Token Scanner::nextToken( YYSTYPE *yys )
+    Token Scanner::nextToken()
     {
-      int ch = m_source.peek();
+      int ch = m_sourceReader.peek();
+      Location startLocation = m_sourceReader.getLocationForStart();
       if ( ch == -1 )
-        return TOKEN_END;
+        return createToken( TOKEN_END, startLocation );
       if ( IsSpace(ch) )
-        return nextToken_Space( yys );
+        return nextToken_Space( startLocation );
       if ( IsAlpha(ch) )
-        return nextToken_Alpha( yys );
+        return nextToken_Alpha( startLocation );
       if ( IsDigit(ch) )
-        return nextToken_Digit( yys );
+        return nextToken_Digit( startLocation );
       if ( IsSymbol(ch) )
-        return nextToken_Symbol( yys );
-      throw Exception("bad character");
+        return nextToken_Symbol( startLocation );
+      throw Exception( "bad character" );
     }
 
-    RC::ConstHandle<CG::Manager> Scanner::cgManager() const
+    SourceRange Scanner::createSourceRange( Location const &startLocation ) const
     {
-      return m_cgManager;
+      return SourceRange( m_sourceReader.getSource(), startLocation, m_sourceReader.getLocationForEnd() );
+    }
+
+    Token Scanner::createToken( Token::Type tokenType, SourceRange const &sourceRange ) const
+    {
+      return Token( tokenType, sourceRange );
     }
   };
 };
