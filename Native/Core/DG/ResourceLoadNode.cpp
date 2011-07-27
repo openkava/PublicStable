@@ -42,7 +42,6 @@ namespace Fabric
       RC::ConstHandle<RT::Desc> fabricResourceDesc = context->getRTManager()->getDesc("FabricResource");
 
 #if defined(FABRIC_BUILD_DEBUG)
-      //Ensure that FabricResource is structured as expected
       FABRIC_ASSERT( fabricResourceDesc && RT::isStruct( fabricResourceDesc->getType() ) );
       RC::ConstHandle<RT::StructDesc> fabricResourceStructDesc = RC::ConstHandle<RT::StructDesc>::StaticCast( fabricResourceDesc );
       FABRIC_ASSERT( fabricResourceStructDesc->getMemberInfo( FABRIC_RESOURCE_DATA_MEMBER_INDEX ).name == "data" );
@@ -62,7 +61,7 @@ namespace Fabric
 
     void ResourceLoadNode::evaluateLocal( void *userdata )
     {
-      //Important: stream-base task must be run in main thread only
+      // [JeromeCG 20110727]Important: Url streaming task must be run in main thread only since it might use some thread-sensitive APIs such as NPAPI's stream interface
       MT::executeParallel( 1, &ResourceLoadNode::EvaluateResource, (void *)this, true );
       Node::evaluateLocal( userdata );
     }
@@ -75,16 +74,17 @@ namespace Fabric
 
       if( sameURL )
       {
-        if( !m_stream )//Loading has finished
+        bool loadingFinished = !m_stream;
+        if( loadingFinished )
         {
-          //The resource member might have been modified by some operators; set it back if it is the case
+          // [JeromeCG 20110727] The resource member might have been modified by some operators; set it back if it is the case
           setData( &m_streamMimeType, m_streamData.empty() ? NULL : &(m_streamData[0]), m_streamData.size(), 0, false );
         }
       }
       else
       {
-        //Note: we use a generation because if there was a previous stream created for a previous URL we cannot destroy it; 
-        //we create a new one in parallel instead of waiting its completion.
+        // [JeromeCG 20110727] Note: we use a generation because if there was a previous stream created for a previous URL we cannot destroy it; 
+        // we create a new one in parallel instead of waiting its completion.
         ++m_streamGeneration;
         m_streamURL = stringDesc->getValueData( urlMember );
         std::vector<uint8_t> freeMe;
@@ -93,7 +93,6 @@ namespace Fabric
 
         if( m_streamURL.empty() )
         {
-          //Empty URL: free the resource
           setData( &m_streamMimeType, NULL, 0, 0, false );
         }
         else
@@ -180,7 +179,6 @@ namespace Fabric
             extension = mimeType->substr( extensionPos+1 );
         }
 
-        //Important: only set if different
         bool changed = false;
         const void *prevResourceData = getConstData( "resource", 0 );
 

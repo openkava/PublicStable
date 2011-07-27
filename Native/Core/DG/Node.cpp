@@ -416,7 +416,7 @@ namespace Fabric
       m_eventHandlers.erase( it );
     }
 
-    Context *Node::getContext() const
+    RC::Handle<Context> Node::getContext() const
     {
       return m_context;
     }

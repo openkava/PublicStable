@@ -302,19 +302,7 @@ namespace Fabric
       FABRIC_ASSERT( npp );
       Interface *interface = static_cast<Interface *>( npp->pdata );
       int32_t result;
-      try
-      {
-        result = interface->nppWriteReady( npp, stream );
-      }
-      catch ( Fabric::Exception e )
-      {
-        FABRIC_DEBUG_LOG( "NPP_WriteReady: caught Fabric exception: " + e );
-      }
-      catch ( ... )
-      {
-        FABRIC_DEBUG_LOG( "NPP_WriteReady: caught unknown exception" );
-      }
-      return result;
+      return interface->nppWriteReady( npp, stream );
     }
 
     int32_t NPP_Write( NPP npp, NPStream* stream, int32_t offset, int32_t len, void* buffer )
