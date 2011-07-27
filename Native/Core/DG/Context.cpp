@@ -66,7 +66,6 @@ namespace Fabric
       , m_pendingNotificationsMutex( "pending notifications" )
     {
       registerCoreTypes();
-      m_plugManager = Plug::Manager::Create( this, pluginDirs );
       m_rtManager->setJSONCommandChannel( this );
 
       static const size_t contextIDByteCount = 96;

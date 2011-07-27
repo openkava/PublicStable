@@ -19,6 +19,8 @@
   (void)( (!!(condition)) || (_wassert(_CRT_WIDE(text), _CRT_WIDE(__FILE__), __LINE__), 0) )
 # define FABRIC_ASSERT(condition) \
   FABRIC_ASSERT_TEXT( condition, #condition )
+# define FABRIC_CONFIRM(condition) \
+  FABRIC_ASSERT_TEXT( condition, #condition )
 # else
 #  include <stdlib.h>
 #  define FABRIC_ASSERT_TEXT(condition,text) \
