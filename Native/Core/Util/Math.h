@@ -18,7 +18,7 @@ namespace Fabric
     bool isinf( float value )
     {
 #if defined (FABRIC_WIN32)
-      return value != (float)10e50 && value != (float)-10e50;
+      return value == (float)10e50 || value == (float)-10e50;
 #else
       return std::isinf( value );
 #endif
