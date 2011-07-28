@@ -16,12 +16,10 @@ namespace Fabric
   {
     void generateSecureRandomBytes( size_t count, uint8_t *bytes )
     {
-      FABRIC_UTIL_TRACE( "generateSecureRandomBytes( %u, %p )", (unsigned)count, bytes );
 #if defined(FABRIC_POSIX)
       int fd = open( "/dev/urandom", O_RDONLY );
       FABRIC_ASSERT( fd != -1 );
-      int readResult = read( fd, bytes, count );
-      FABRIC_ASSERT( readResult == int(count) );
+      FABRIC_CONFIRM( read( fd, bytes, count ) == int(count) );
       close( fd );
 #elif defined(FABRIC_WIN32)
       HCRYPTPROV  hCryptProvider = NULL;

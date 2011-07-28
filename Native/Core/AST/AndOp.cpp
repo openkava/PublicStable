@@ -80,14 +80,14 @@ namespace Fabric
       basicBlockBuilder->SetInsertPoint( lhsTrueBB );
       CG::ExprValue rhsExprValue = m_right->buildExprValue( basicBlockBuilder, usage, lValueErrorDesc );
       
-      llvm::Value *rhsCastedRValue;
+      llvm::Value *rhsCastedRValue = 0;
       if ( castAdapter )
         rhsCastedRValue = castAdapter->llvmCast( basicBlockBuilder, rhsExprValue );
       llvm::BasicBlock *lhsTruePredBB = basicBlockBuilder->GetInsertBlock();
       basicBlockBuilder->CreateBr( mergeBB );
       
       basicBlockBuilder->SetInsertPoint( lhsFalseBB );
-      llvm::Value *lhsCastedRValue;
+      llvm::Value *lhsCastedRValue = 0;
       if ( castAdapter )
         lhsCastedRValue = castAdapter->llvmCast( basicBlockBuilder, lhsExprValue );
       llvm::BasicBlock *lhsFalsePredBB = basicBlockBuilder->GetInsertBlock();

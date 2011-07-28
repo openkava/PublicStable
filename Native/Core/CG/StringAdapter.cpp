@@ -242,7 +242,7 @@ namespace Fabric
         }
       }
       
-      llvm::Function *assignAddFunction;
+      llvm::Function *assignAddFunction = 0;
       {
         std::vector< llvm::Type const * > argTypes;
         argTypes.push_back( llvmLType() );

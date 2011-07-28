@@ -32,7 +32,7 @@ namespace Fabric
         }
       }
 
-      llvm::Value *returnValue;
+      llvm::Value *returnValue = 0;
       if ( m_returnInfo.usesReturnLValue() )
       {
         RC::ConstHandle<Adapter> returnAdapter = m_returnInfo.getAdapter();

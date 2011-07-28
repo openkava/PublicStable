@@ -265,7 +265,7 @@ namespace Fabric
             throw Exception( "not found" );
           
           bool haveAdjustmentIndex = false;
-          unsigned adjustmentIndex;
+          unsigned adjustmentIndex = 0;
           
           std::set<void *> elementAccessSet;
           std::set<void *> arrayAccessSet;

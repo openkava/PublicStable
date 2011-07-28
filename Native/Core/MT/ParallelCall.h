@@ -52,14 +52,12 @@ namespace Fabric
       
       void setBaseAddress( size_t index, void *baseAddress )
       {
-        FABRIC_MT_TRACE( "ParallelCall::setBaseAddress( %u, %p )", index, baseAddress );
         FABRIC_ASSERT( index < m_paramCount );
         m_baseAddresses[index] = baseAddress;
       }
       
       size_t addAdjustment( size_t count, size_t batchSize )
       {
-        FABRIC_MT_TRACE( "ParallelCall::addAdjustment( %u, %u )", count, batchSize );
         size_t index = m_adjustments.size();
         m_adjustments.resize( index + 1 );
         Adjustment &newAdjustment = m_adjustments[index];

@@ -79,6 +79,7 @@
 		DB32ED6F13D371B000CB23DE /* FunctionBase.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FunctionBase.cpp; sourceTree = "<group>"; };
 		DB32ED7013D371B000CB23DE /* FunctionBase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FunctionBase.h; sourceTree = "<group>"; };
 		DB3552ED13DE084A000EEB89 /* JSONGenerator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JSONGenerator.h; sourceTree = "<group>"; };
+		DB35538D13DF1B55000EEB89 /* OpenCLThunk.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OpenCLThunk.cpp; sourceTree = "<group>"; };
 		DB39AF9513425B40007026BA /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
 		DB78675913CD056100DEF8DA /* SConscript */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = SConscript; sourceTree = "<group>"; };
 		DB78676313CD05AE00DEF8DA /* exceptSample.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = exceptSample.cpp; sourceTree = "<group>"; };
@@ -382,7 +383,6 @@
 		DB9672A413A5423200616143 /* Debug.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Debug.h; sourceTree = "<group>"; };
 		DB9672A513A5423200616143 /* OCL.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OCL.cpp; sourceTree = "<group>"; };
 		DB9672A613A5423200616143 /* OCL.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OCL.h; sourceTree = "<group>"; };
-		DB9672A713A5423200616143 /* OpenCL_thunk.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OpenCL_thunk.cpp; sourceTree = "<group>"; };
 		DB9672A813A5423200616143 /* SConscript */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = SConscript; sourceTree = "<group>"; };
 		DB9672B013A5423200616143 /* Desc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Desc.cpp; sourceTree = "<group>"; };
 		DB9672B113A5423200616143 /* Desc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Desc.h; sourceTree = "<group>"; };
@@ -1854,7 +1854,7 @@
 				DB9672A413A5423200616143 /* Debug.h */,
 				DB9672A513A5423200616143 /* OCL.cpp */,
 				DB9672A613A5423200616143 /* OCL.h */,
-				DB9672A713A5423200616143 /* OpenCL_thunk.cpp */,
+				DB35538D13DF1B55000EEB89 /* OpenCLThunk.cpp */,
 			);
 			path = OCL;
 			sourceTree = "<group>";
