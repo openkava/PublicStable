@@ -16,7 +16,7 @@
 # include <unistd.h>
 inline void FABRIC_WRITE_CSTR( char const *data, size_t length )
 {
-  write( 1, data, length );
+  (void)write( 1, data, length );
 }
 
 #elif defined(FABRIC_OS_WINDOWS)
