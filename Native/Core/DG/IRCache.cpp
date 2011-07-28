@@ -17,32 +17,39 @@
 
 namespace Fabric
 {
-  
-  
   namespace DG
   {
+    RC::Handle<IRCache> IRCache::Instance()
+    {
+      static RC::Handle<IRCache> instance;
+      if ( !instance )
+        instance = new IRCache();
+      return instance;
+    }
+      
     IRCache::IRCache()
     {
       RC::ConstHandle<IO::Dir> rootDir = IO::Dir::Private();
       m_dir = IO::Dir::Create( IO::Dir::Create( rootDir, "IRCache" ), _(buildCacheGeneration) );
     }
     
-    void IRCache::subDirAndEntryFromSourceCode( RC::ConstHandle<AST::GlobalVector> const &ast, RC::ConstHandle<IO::Dir> &subDir, std::string &entry ) const
+    std::string IRCache::keyForAST( RC::ConstHandle<AST::GlobalVector> const &ast ) const
     {
-      Util::Timer timer;
       Util::SimpleString astJSONString = ast->toJSON();
-      FABRIC_LOG( "ast->toJSON(): %fms", timer.getElapsedMS(true) );
-      std::string prefixedSourceCodeMD5HexDigest = Util::md5HexDigest( astJSONString.getData(), astJSONString.getLength() );
-      FABRIC_LOG( "Util::md5HexDigest( astEncodedJSONValue ): %fms", timer.getElapsedMS(true) );
-      subDir = IO::Dir::Create( m_dir, prefixedSourceCodeMD5HexDigest.substr( 0, 2 ) );
-      entry = prefixedSourceCodeMD5HexDigest.substr( 2, 30 );
+      return Util::md5HexDigest( astJSONString.getData(), astJSONString.getLength() );
     }
     
-    std::string IRCache::get( RC::ConstHandle<AST::GlobalVector> const &ast ) const
+    void IRCache::subDirAndEntryFromKey( std::string const &key, RC::ConstHandle<IO::Dir> &subDir, std::string &entry ) const
+    {
+      subDir = IO::Dir::Create( m_dir, key.substr( 0, 2 ) );
+      entry = key.substr( 2, 30 );
+    }
+    
+    std::string IRCache::get( std::string const &key ) const
     {
       RC::ConstHandle<IO::Dir> subDir;
       std::string entry;
-      subDirAndEntryFromSourceCode( ast, subDir, entry );
+      subDirAndEntryFromKey( key, subDir, entry );
       
       std::string result;
       try
@@ -55,11 +62,11 @@ namespace Fabric
       return result;
     }
     
-    void IRCache::put( RC::ConstHandle<AST::GlobalVector> const &ast, std::string const &ir )
+    void IRCache::put( std::string const &key, std::string const &ir ) const
     {
       RC::ConstHandle<IO::Dir> subDir;
       std::string entry;
-      subDirAndEntryFromSourceCode( ast, subDir, entry );
+      subDirAndEntryFromKey( key, subDir, entry );
       
       try
       {
