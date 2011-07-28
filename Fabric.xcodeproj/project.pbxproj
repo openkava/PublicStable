@@ -339,8 +339,6 @@
 		DB96726D13A5423200616143 /* Operator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Operator.h; sourceTree = "<group>"; };
 		DB96726E13A5423200616143 /* Prototype.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Prototype.cpp; sourceTree = "<group>"; };
 		DB96726F13A5423200616143 /* Prototype.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Prototype.h; sourceTree = "<group>"; };
-		DB96727013A5423200616143 /* ResourceLoadEvent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ResourceLoadEvent.cpp; sourceTree = "<group>"; };
-		DB96727113A5423200616143 /* ResourceLoadEvent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ResourceLoadEvent.h; sourceTree = "<group>"; };
 		DB96727213A5423200616143 /* SConscript */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = SConscript; sourceTree = "<group>"; };
 		DB96727313A5423200616143 /* Scope.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Scope.h; sourceTree = "<group>"; };
 		DB96727413A5423200616143 /* SelectedNode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SelectedNode.h; sourceTree = "<group>"; };
@@ -1767,8 +1765,6 @@
 				DB96726D13A5423200616143 /* Operator.h */,
 				DB96726E13A5423200616143 /* Prototype.cpp */,
 				DB96726F13A5423200616143 /* Prototype.h */,
-				DB96727013A5423200616143 /* ResourceLoadEvent.cpp */,
-				DB96727113A5423200616143 /* ResourceLoadEvent.h */,
 				DB0914A213DF39C8000B1A0F /* ResourceLoadNode.cpp */,
 				DB0914A313DF39C8000B1A0F /* ResourceLoadNode.h */,
 				DB96727313A5423200616143 /* Scope.h */,

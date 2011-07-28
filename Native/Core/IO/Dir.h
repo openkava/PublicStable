@@ -44,10 +44,12 @@ namespace Fabric
       std::string getFullPath() const;
       
       std::vector< std::string > getFiles() const;
-      std::vector< RC::ConstHandle<Dir> > getSubDirs() const;
+      std::vector< RC::ConstHandle<Dir> > getSubDirs( bool followLinks = true ) const;
       
       std::string getFileContents( std::string const &entry ) const;
       void putFileContents( std::string const &entry, std::string const &contents ) const;
+      
+      void recursiveDeleteFilesOlderThan( time_t time ) const;
     
     protected:
     

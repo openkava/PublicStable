@@ -15,6 +15,8 @@
 #include <Fabric/Core/Util/Timer.h>
 #include <Fabric/Core/Build.h>
 
+#define FABRIC_IR_CACHE_EXPIRY_SEC (30*24*60*60)
+
 namespace Fabric
 {
   namespace DG
@@ -30,7 +32,9 @@ namespace Fabric
     IRCache::IRCache()
     {
       RC::ConstHandle<IO::Dir> rootDir = IO::Dir::Private();
-      m_dir = IO::Dir::Create( IO::Dir::Create( rootDir, "IRCache" ), _(buildCacheGeneration) );
+      RC::ConstHandle<IO::Dir> baseDir = IO::Dir::Create( rootDir, "IRCache" );
+      baseDir->recursiveDeleteFilesOlderThan( time(NULL) - FABRIC_IR_CACHE_EXPIRY_SEC );
+      m_dir = IO::Dir::Create( baseDir, _(buildCacheGeneration) );
     }
     
     std::string IRCache::keyForAST( RC::ConstHandle<AST::GlobalVector> const &ast ) const

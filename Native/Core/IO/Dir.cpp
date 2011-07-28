@@ -7,6 +7,8 @@
 
 #include <Fabric/Core/IO/Dir.h>
 #include <Fabric/Core/IO/Helpers.h>
+#include <Fabric/Core/Util/Format.h>
+#include <Fabric/Core/Util/Log.h>
 #include <Fabric/Base/Exception.h>
 
 #if defined(FABRIC_POSIX)
@@ -128,11 +130,12 @@ namespace Fabric
       return result;
     }
 
-    std::vector< RC::ConstHandle<Dir> > Dir::getSubDirs() const
+    std::vector< RC::ConstHandle<Dir> > Dir::getSubDirs( bool followLinks ) const
     {
       std::vector< RC::ConstHandle<Dir> > result;
+      std::string dirFullPath = getFullPath();
 #if defined(FABRIC_POSIX)
-      DIR *dir = opendir( getFullPath().c_str() );
+      DIR *dir = opendir( dirFullPath.c_str() );
       if ( !dir )
         throw Exception("unable to open directory");
       for (;;)
@@ -145,6 +148,15 @@ namespace Fabric
         std::string entry( de->d_name );
         if ( entry == "." || entry == ".." )
           continue;
+        if ( !followLinks )
+        {
+          std::string fileFullPath = joinPath( dirFullPath, entry );
+          struct stat st;
+          if ( lstat( fileFullPath.c_str(), &st ) != 0 )
+            throw Exception( _(fileFullPath) + ": unable to lstat" );
+          if ( S_ISLNK( st.st_mode ) )
+            continue;
+        }
         RC::ConstHandle<Dir> subDir = new Dir( this, entry, false );
         result.push_back( subDir );
       }
@@ -152,7 +164,7 @@ namespace Fabric
 #elif defined(FABRIC_WIN32)
       WIN32_FIND_DATAA    fd;
       ::ZeroMemory( &fd, sizeof( fd ) );
-      std::string   searchGlob = joinPath( getFullPath(), "*" );
+      std::string   searchGlob = joinPath( dirFullPath, "*" );
       HANDLE    hDir = ::FindFirstFileA( searchGlob.c_str(), &fd );
       if( hDir == INVALID_HANDLE_VALUE )
         throw Exception("unable to open directory");
@@ -266,6 +278,39 @@ namespace Fabric
       if( nbWritten < contents.length() )
         throw Exception( "short write" );
 #endif 
+    }
+      
+    void Dir::recursiveDeleteFilesOlderThan( time_t time ) const
+    {
+      std::vector< RC::ConstHandle<Dir> > subDirs = getSubDirs( false );
+      for ( std::vector< RC::ConstHandle<Dir> >::const_iterator it=subDirs.begin(); it!=subDirs.end(); ++it )
+        (*it)->recursiveDeleteFilesOlderThan( time );
+      
+      std::string dirFullPath = getFullPath();
+      std::vector<std::string> files = getFiles();
+      for ( std::vector<std::string>::const_iterator it=files.begin(); it!=files.end(); ++it )
+      {
+        std::string const &file = *it;
+        std::string fileFullPath = joinPath( dirFullPath, file );
+        struct stat st;
+        if ( lstat( fileFullPath.c_str(), &st ) != 0 )
+        {
+          FABRIC_LOG( "Warning: unable to return file information for " + _(fileFullPath) );
+          continue;
+        }
+        if ( S_ISREG(st.st_mode) && st.st_ctime < time )
+        {
+#if defined(FABRIC_POSIX)
+          if ( unlink( fileFullPath.c_str() ) != 0 )
+            FABRIC_LOG( "Warning: unable to delete " + _(fileFullPath) );
+#elif defined(FABRIC_WIN32)
+          if ( !::DeleteFileA( fileFullPath.c_str() ) )
+            FABRIC_LOG( "Warning: unable to delete " + _(fileFullPath) );
+#else
+# error "unsupported FABRIC_PLATFORM_..."
+#endif
+        }
+      }
     }
   };
 };
