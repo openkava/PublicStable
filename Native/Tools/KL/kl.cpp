@@ -7,7 +7,7 @@
 #include <Fabric/Core/KL/Parser.hpp>
 #include <Fabric/Core/KL/Scanner.h>
 #include <Fabric/Core/KL/StringSource.h>
-#include <Fabric/Core/AST/GlobalVector.h>
+#include <Fabric/Core/AST/GlobalList.h>
 #include <Fabric/Core/RT/Manager.h>
 #include <Fabric/Core/RT/ScalarDesc.h>
 #include <Fabric/Core/RT/StringDesc.h>
@@ -201,7 +201,7 @@ void handleFile( FILE *fp, unsigned int runFlags )
   cgManager->llvmPrepareModule( moduleBuilder );
   OCL::llvmPrepareModule( moduleBuilder, rtManager );
   
-  RC::ConstHandle<AST::GlobalVector> globalList = KL::Parse( scanner, diagnostics );
+  RC::ConstHandle<AST::GlobalList> globalList = KL::Parse( scanner, diagnostics );
 
   if ( diagnostics.containsError() )
   {
