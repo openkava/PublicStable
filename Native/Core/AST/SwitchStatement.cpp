@@ -130,6 +130,7 @@ namespace Fabric
             caseExprValue = newCaseExprValue;
           }
           
+          exprValue.llvmRetain( basicBlockBuilder );
           CG::ExprValue cmpExprValue = functionSymbol->llvmCreateCall( basicBlockBuilder, exprValue, caseExprValue );
           llvm::Value *cmpBooleanRValue = booleanAdapter->llvmCast( basicBlockBuilder, cmpExprValue );
           cmpExprValue.llvmDispose( basicBlockBuilder );
@@ -149,6 +150,8 @@ namespace Fabric
             basicBlockBuilder->CreateBr( i+1 == numCases? doneBB: caseBodyBBs[i+1] );
         }
         basicBlockBuilder->SetInsertPoint( doneBB );
+        
+        exprValue.llvmDispose( basicBlockBuilder );
       }
       catch ( CG::Error e )
       {
