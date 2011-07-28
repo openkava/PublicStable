@@ -16,36 +16,30 @@ namespace Fabric
   {
     TaskGroup::TaskGroup()
     {
-      FABRIC_MT_TRACE( "TaskGroup::TaskGroup()" );
     }
 
     TaskGroup::TaskGroup( TaskGroup const &that )
       : m_tasks( that.m_tasks )
     {
-      FABRIC_MT_TRACE( "TaskGroup::TaskGroup()" );
     }
     
     TaskGroup::~TaskGroup()
     {
-      FABRIC_MT_TRACE( "TaskGroup::~TaskGroup()" );
     }
     
     TaskGroup &TaskGroup::operator =( TaskGroup const &that )
     {
-      FABRIC_MT_TRACE( "TaskGroup::operator =()" );
       m_tasks = that.m_tasks;
       return *this;
     }
       
     void TaskGroup::clear()
     {
-      FABRIC_MT_TRACE( "TaskGroup::clear()" );
       m_tasks.resize(0);
     }
         
     void TaskGroup::add( TaskBase const *task )
     {
-      FABRIC_MT_TRACE( "TaskGroup::add()" );
       m_tasks.push_back( task );
     }
     
@@ -62,7 +56,6 @@ namespace Fabric
 
     void TaskGroup::execute( void *userdata ) const
     {
-      FABRIC_MT_TRACE( "TaskGroup::execute( %p )", userdata );
       if ( !m_tasks.empty() )
       {
         Context context;
@@ -74,7 +67,6 @@ namespace Fabric
 
     std::string TaskGroup::desc() const
     {
-      FABRIC_MT_TRACE( "TaskGroup::desc()" );
       char buf[4096];
       snprintf( buf, 4096, "%u tasks", (unsigned)m_tasks.size() );
       return buf;

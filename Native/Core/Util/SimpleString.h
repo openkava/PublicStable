@@ -155,64 +155,6 @@ namespace Fabric
         append( string );
         return *this;
       }
-      
-      void appendQuotedJSONString( char const *data, size_t length )
-      {
-        char *tail = expand( 2*length+2 );
-        char *p = tail;
-        *p++ = '"';
-        char const *dataEnd = data + length;
-        for ( ; data != dataEnd; ++data )
-        {
-          switch ( *data )
-          {
-            case '"':
-              *p++ = '\\';
-              *p++ = '"';
-              break;
-            case '\\':
-              *p++ = '\\';
-              *p++ = '\\';
-              break;
-            case '\b':
-              *p++ = '\\';
-              *p++ = 'b';
-              break;
-            case '\f':
-              *p++ = '\\';
-              *p++ = 'f';
-              break;
-            case '\n':
-              *p++ = '\\';
-              *p++ = 'n';
-              break;
-            case '\r':
-              *p++ = '\\';
-              *p++ = 'r';
-              break;
-            case '\t':
-              *p++ = '\\';
-              *p++ = 't';
-              break;
-            default:
-              *p++ = *data;
-              break;
-          }
-        }
-        *p++ = '"';
-        increaseLength( p - tail );
-      }
-      
-      char *takeCString()
-      {
-        char *result = m_data;
-        if ( result )
-          result[m_length] = '\0';
-        m_length = 0;
-        m_allocSize = 0;
-        m_data = 0;
-        return result;
-      }
     
     protected:
     

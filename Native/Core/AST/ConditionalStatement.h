@@ -9,12 +9,13 @@
 #define _FABRIC_AST_CONDITIONAL_STATEMENT_H
 
 #include <Fabric/Core/AST/Statement.h>
-#include <Fabric/Core/AST/Expr.h>
 
 namespace Fabric
 {
   namespace AST
   {
+    class Expr;
+    
     class ConditionalStatement: public Statement
     {
       FABRIC_AST_NODE_DECL( ConditionalStatement );
@@ -27,8 +28,6 @@ namespace Fabric
         RC::ConstHandle<Statement> const &trueStatement,
         RC::ConstHandle<Statement> const &falseStatement = RC::ConstHandle<Statement>()
         );
-
-      RC::Handle<JSON::Object> toJSONImpl() const;
       
       virtual void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
       
@@ -42,6 +41,8 @@ namespace Fabric
         RC::ConstHandle<Statement> const &trueStatement,
         RC::ConstHandle<Statement> const &falseStatement = RC::ConstHandle<Statement>()
         );
+      
+      virtual void appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const;
     
     private:
     

@@ -12,13 +12,13 @@ struct Color\n\
   Scalar a;\n\
 };\n\
 \n\
-operator load( io String url, io String mimeType, io Data exrData, io Size exrDataSize )\n\
+operator load( io String url, io FabricResource resource )\n\
 {\n\
-  report "Loaded " + url + " (mime type " + mimeType + ")";\n\
-  report "EXR data size is "+exrDataSize;\n\
+  report "Loaded " + url + " (mime type " + resource.mimeType + ")";\n\
+  report "EXR data size is " + resource.dataSize;\n\
   Size imageWidth, imageHeight;\n\
   Color imagePixels[];\n\
-  FabricEXRDecode( exrData, exrDataSize, imageWidth, imageHeight, imagePixels );\n\
+  FabricEXRDecode( resource.data, resource.dataSize, imageWidth, imageHeight, imagePixels );\n\
   report "Image dimensions are "+imageWidth+" by "+imageHeight;\n\
   report "Image pixels size is "+imagePixels.size;\n\
 }\n\
@@ -27,18 +27,17 @@ operator load( io String url, io String mimeType, io Data exrData, io Size exrDa
 binding = FABRIC.DG.createBinding();
 binding.setOperator(op);
 binding.setParameterLayout([
-  "resource.url",
-  "resource.mimeType",
-  "resource.data",
-  "resource.dataSize"
+  "loadnode.url",
+  "loadnode.resource"
 ]);
 
-eh = FABRIC.DependencyGraph.createEventHandler("eh");
-eh.preDescendBindings.append(binding);
+rlnode = FABRIC.DependencyGraph.createResourceLoadNode("rlnode");
+rlnode.setData("url", 0, "file:sample.exr");
 
-rle = FABRIC.DependencyGraph.createResourceLoadEvent("exr", "file:sample.exr");
-rle.appendEventHandler(eh);
-rle.start();
+node = FABRIC.DependencyGraph.createNode("node");
+node.addDependency(rlnode, "loadnode");
+node.bindings.append(binding);
+node.evaluate();
 
 FABRIC.flush();
 FC.dispose();

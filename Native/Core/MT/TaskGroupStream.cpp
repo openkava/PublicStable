@@ -16,19 +16,16 @@ namespace Fabric
   {
     TaskGroupStream::TaskGroupStream()
     {
-      FABRIC_MT_TRACE( "TaskGroupStream::TaskGroupStream()" );
     }
     
     void TaskGroupStream::clear()
     {
-      FABRIC_MT_TRACE( "TaskGroupStream::clear()" );
       for ( std::vector< TaskGroup >::iterator it=m_taskGroups.begin(); it!=m_taskGroups.end(); ++it )
         it->clear();
     }
     
     void TaskGroupStream::add( unsigned rank, TaskBase const *task )
     {
-      FABRIC_MT_TRACE( "TaskGroupStream::add()" );
       if ( rank >= m_taskGroups.size() )
         m_taskGroups.resize( rank+1 );
       m_taskGroups[rank].add( task );
@@ -36,14 +33,12 @@ namespace Fabric
     
     void TaskGroupStream::execute( void *userdata ) const
     {
-      FABRIC_MT_TRACE( "TaskGroupStream::execute( %p )", userdata );
       for ( std::vector< TaskGroup >::const_iterator it=m_taskGroups.begin(); it!=m_taskGroups.end(); ++it )
         it->execute( userdata );
     }
 
     std::string TaskGroupStream::desc() const
     {
-      FABRIC_MT_TRACE( "TaskGroupStream::desc()" );
       std::string result = "[";
       for ( std::vector< TaskGroup >::const_iterator it=m_taskGroups.begin(); it!=m_taskGroups.end(); ++it )
       {

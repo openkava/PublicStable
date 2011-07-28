@@ -7,8 +7,7 @@
 #include <Fabric/Core/CG/FunctionBuilder.h>
 #include <Fabric/Core/CG/Scope.h>
 #include <Fabric/Core/CG/Manager.h>
-#include <Fabric/Base/JSON/String.h>
-#include <Fabric/Base/JSON/Array.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 #include <llvm/Module.h>
 #include <llvm/Function.h>
@@ -31,13 +30,12 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> FunctionBase::toJSONImpl() const
+    void FunctionBase::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      RC::Handle<JSON::Object> result = Global::toJSONImpl();
-      result->set( "returnExprType", JSON::String::Create( m_returnTypeName ) );
+      Global::appendJSONMembers( jsonObjectGenerator );
+      jsonObjectGenerator.makeMember( "returnExprType" ).makeString( m_returnTypeName );
       if ( m_body )
-        result->set( "body", m_body->toJSONImpl() );
-      return result;
+        m_body->appendJSON( jsonObjectGenerator.makeMember( "body" ) );
     }
     
     RC::ConstHandle<CompoundStatement> FunctionBase::getBody() const

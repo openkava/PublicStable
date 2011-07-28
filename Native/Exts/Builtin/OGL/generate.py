@@ -452,10 +452,11 @@ def main():
     functionsCode.extend(additionalCodePost)
 
     # IF WE HAVE A RETURN TYPE
-    if returnTypeKey.find('void') == -1 and returnTypeKey.count('*') > 0:
-      functionsCode.append('  if ( fglDebuggingEnabled ) {')
-      functionsCode.append('    printf("  -> returned %u\\n", (unsigned)result );')
-      functionsCode.append('  }')
+    if returnType.find('void') == -1 or returnType.count('*') > 0:
+      if returnType.count('*') == 0:
+        functionsCode.append('  if ( fglDebuggingEnabled ) {')
+        functionsCode.append('    printf("  -> returned %u\\n", (unsigned)result );')
+        functionsCode.append('  }')
       if klReturnType == "KL::String":
         functionsCode.append('  return ('+klReturnType+')(const char*)result;')
       else:

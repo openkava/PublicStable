@@ -11,7 +11,7 @@
 #include <Fabric/Core/CG/Error.h>
 #include <Fabric/Core/CG/Scope.h>
 #include <Fabric/Core/RT/StructMemberInfo.h>
-#include <Fabric/Base/JSON/String.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -26,12 +26,11 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> StructMemberOp::toJSONImpl() const
+    void StructMemberOp::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      RC::Handle<JSON::Object> result = Expr::toJSONImpl();
-      result->set( "expr", m_structExpr->toJSON() );
-      result->set( "memberName", JSON::String::Create( m_memberName ) );
-      return result;
+      Expr::appendJSONMembers( jsonObjectGenerator );
+      m_structExpr->appendJSON( jsonObjectGenerator.makeMember( "expr" ) );
+      jsonObjectGenerator.makeMember( "memberName" ).makeString( m_memberName );
     }
     
     void StructMemberOp::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const

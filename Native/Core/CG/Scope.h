@@ -431,7 +431,7 @@ namespace Fabric
             {
               RC::ConstHandle<VariableSymbol> variableSymbol = RC::ConstHandle<VariableSymbol>::StaticCast( valueSymbol );
               ExprValue exprValue = variableSymbol->getExprValue();
-              llvm::Value *rValue;
+              llvm::Value *rValue = 0;
               switch ( exprValue.getUsage() )
               {
                 case USAGE_RVALUE:
@@ -475,7 +475,7 @@ namespace Fabric
       void llvmReturn( BasicBlockBuilder &bbb, ExprValue &exprValue ) const
       {
         ExprType const &returnExprType = getReturnInfo().getExprType();
-        llvm::Value *returnValue;
+        llvm::Value *returnValue = 0;
         switch ( returnExprType.getUsage() )
         {
           case USAGE_RVALUE:

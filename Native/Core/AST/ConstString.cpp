@@ -10,7 +10,7 @@
 #include <Fabric/Core/CG/ModuleBuilder.h>
 #include <Fabric/Core/CG/StringAdapter.h>
 #include <Fabric/Core/Util/Parse.h>
-#include <Fabric/Base/JSON/String.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -29,11 +29,10 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> ConstString::toJSONImpl() const
+    void ConstString::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      RC::Handle<JSON::Object> result = Expr::toJSONImpl();
-      result->set( "value", JSON::String::Create( m_value ) );
-      return result;
+      Expr::appendJSONMembers( jsonObjectGenerator );
+      jsonObjectGenerator.makeMember( "value" ).makeString( m_value );
     }
     
     void ConstString::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const

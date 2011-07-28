@@ -9,7 +9,7 @@
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/CG/Error.h>
 #include <Fabric/Core/RT/Desc.h>
-#include <Fabric/Base/JSON/String.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -29,14 +29,11 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> AndOp::toJSONImpl() const
+    void AndOp::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      RC::Handle<JSON::Object> result = Expr::toJSONImpl();
-      if ( m_left )
-        result->set( "lhs", m_left->toJSON() );
-      if ( m_right )
-        result->set( "rhs", m_right->toJSON() );
-      return result;
+      Expr::appendJSONMembers( jsonObjectGenerator );
+      m_left->appendJSON( jsonObjectGenerator.makeMember( "lhs" ) );
+      m_right->appendJSON( jsonObjectGenerator.makeMember( "rhs" ) );
     }
     
     RC::ConstHandle<CG::Adapter> AndOp::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const
@@ -83,14 +80,14 @@ namespace Fabric
       basicBlockBuilder->SetInsertPoint( lhsTrueBB );
       CG::ExprValue rhsExprValue = m_right->buildExprValue( basicBlockBuilder, usage, lValueErrorDesc );
       
-      llvm::Value *rhsCastedRValue;
+      llvm::Value *rhsCastedRValue = 0;
       if ( castAdapter )
         rhsCastedRValue = castAdapter->llvmCast( basicBlockBuilder, rhsExprValue );
       llvm::BasicBlock *lhsTruePredBB = basicBlockBuilder->GetInsertBlock();
       basicBlockBuilder->CreateBr( mergeBB );
       
       basicBlockBuilder->SetInsertPoint( lhsFalseBB );
-      llvm::Value *lhsCastedRValue;
+      llvm::Value *lhsCastedRValue = 0;
       if ( castAdapter )
         lhsCastedRValue = castAdapter->llvmCast( basicBlockBuilder, lhsExprValue );
       llvm::BasicBlock *lhsFalsePredBB = basicBlockBuilder->GetInsertBlock();

@@ -6,9 +6,6 @@
 #define _FABRIC_AST_CONST_DECL_H
 
 #include <Fabric/Core/AST/Node.h>
-#include <Fabric/Base/RC/ConstHandle.h>
-
-#include <string>
 
 namespace Fabric
 {
@@ -35,8 +32,6 @@ namespace Fabric
         std::string const &type,
         std::string const &value
         );
-
-      RC::Handle<JSON::Object> toJSONImpl() const;
       
       void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
       
@@ -50,6 +45,8 @@ namespace Fabric
         std::string const &type,
         std::string const &value
         );
+      
+      virtual void appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const;
 
     private:
     

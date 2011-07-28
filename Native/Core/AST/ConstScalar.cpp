@@ -10,8 +10,7 @@
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/CG/BasicBlockBuilder.h>
 #include <Fabric/Core/CG/ModuleBuilder.h>
-#include <Fabric/Base/JSON/String.h>
-#include <Fabric/Base/JSON/Scalar.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -33,11 +32,10 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> ConstScalar::toJSONImpl() const
+    void ConstScalar::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      RC::Handle<JSON::Object> result = Expr::toJSONImpl();
-      result->set( "value", JSON::Scalar::Create( m_value ) );
-      return result;
+      Expr::appendJSONMembers( jsonObjectGenerator );
+      jsonObjectGenerator.makeMember( "value" ).makeScalar( m_value );
     }
     
     void ConstScalar::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const

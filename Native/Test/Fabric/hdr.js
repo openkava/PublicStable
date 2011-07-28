@@ -12,33 +12,32 @@ struct Color\n\
   Scalar a;\n\
 };\n\
 \n\
-operator load( io String url, io String mimeType, io Data hdrData, io Size hdrDataSize )\n\
+operator load( io String url, io FabricResource resource )\n\
 {\n\
-  report "Loaded " + url + " (mime type " + mimeType + ")";\n\
-  report "HDR data size is "+hdrDataSize;\n\
+  report "Loaded " + url + " (mime type " + resource.mimeType + ")";\n\
+  report "HDR data size is " + resource.dataSize;\n\
   Size imageWidth, imageHeight;\n\
   Color imagePixels[];\n\
-  FabricHDRDecode( hdrData, hdrDataSize, imageWidth, imageHeight, imagePixels );\n\
+  FabricHDRDecode( resource.data, resource.dataSize, imageWidth, imageHeight, imagePixels );\n\
   report "Image dimensions are "+imageWidth+" by "+imageHeight;\n\
   report "Image pixels size is "+imagePixels.size;\n\
 }\n\
 ');
 
-binding = FABRIC.DependencyGraph.createBinding();
-binding.setOperator( op );
-binding.setParameterLayout( [
-  "resource.url",
-  "resource.mimeType",
-  "resource.data",
-  "resource.dataSize"
-] );
+binding = FABRIC.DG.createBinding();
+binding.setOperator(op);
+binding.setParameterLayout([
+  "loadnode.url",
+  "loadnode.resource"
+]);
 
-eh = FABRIC.DependencyGraph.createEventHandler("eh");
-eh.preDescendBindings.append(binding);
+rlnode = FABRIC.DependencyGraph.createResourceLoadNode("rlnode");
+rlnode.setData("url", 0, "file:sample.hdr");
 
-rle = FABRIC.DependencyGraph.createResourceLoadEvent("rle", "file:sample.hdr");
-rle.appendEventHandler(eh);
-rle.start();
+node = FABRIC.DependencyGraph.createNode("node");
+node.addDependency(rlnode, "loadnode");
+node.bindings.append(binding);
+node.evaluate();
 
 FABRIC.flush();
 FC.dispose();

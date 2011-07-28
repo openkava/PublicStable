@@ -16,8 +16,7 @@
 #include <Fabric/Core/CG/BooleanAdapter.h>
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/CG/OverloadNames.h>
-#include <Fabric/Base/JSON/String.h>
-#include <Fabric/Base/JSON/Array.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -45,12 +44,11 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> SwitchStatement::toJSONImpl() const
+    void SwitchStatement::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      RC::Handle<JSON::Object> result = Statement::toJSONImpl();
-      result->set( "expr", m_expr->toJSON() );
-      result->set( "cases", m_cases->toJSON() );
-      return result;
+      Statement::appendJSONMembers( jsonObjectGenerator );
+      m_expr->appendJSON( jsonObjectGenerator.makeMember( "expr" ) );
+      m_cases->appendJSON( jsonObjectGenerator.makeMember( "cases" ) );
     }
     
     void SwitchStatement::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
@@ -132,6 +130,7 @@ namespace Fabric
             caseExprValue = newCaseExprValue;
           }
           
+          exprValue.llvmRetain( basicBlockBuilder );
           CG::ExprValue cmpExprValue = functionSymbol->llvmCreateCall( basicBlockBuilder, exprValue, caseExprValue );
           llvm::Value *cmpBooleanRValue = booleanAdapter->llvmCast( basicBlockBuilder, cmpExprValue );
           cmpExprValue.llvmDispose( basicBlockBuilder );
@@ -151,6 +150,8 @@ namespace Fabric
             basicBlockBuilder->CreateBr( i+1 == numCases? doneBB: caseBodyBBs[i+1] );
         }
         basicBlockBuilder->SetInsertPoint( doneBB );
+        
+        exprValue.llvmDispose( basicBlockBuilder );
       }
       catch ( CG::Error e )
       {

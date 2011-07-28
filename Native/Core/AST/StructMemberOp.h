@@ -12,6 +12,11 @@
 
 namespace Fabric
 {
+  namespace Util
+  {
+    class SimpleString;
+  };
+  
   namespace AST
   {
     class StructMemberOp : public Expr
@@ -25,8 +30,6 @@ namespace Fabric
         return new StructMemberOp( location, structExpr, memberName );
       }
 
-      RC::Handle<JSON::Object> toJSONImpl() const;
-
       virtual void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
       
       virtual RC::ConstHandle<CG::Adapter> getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const;
@@ -35,6 +38,8 @@ namespace Fabric
     protected:
     
       StructMemberOp( CG::Location const &location, RC::ConstHandle<Expr> const &structExpr, std::string const &memberName );
+      
+      virtual void appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const;
 
     private:
     

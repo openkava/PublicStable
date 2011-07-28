@@ -14,6 +14,11 @@
 
 namespace Fabric
 {
+  namespace Util
+  {
+    class SimpleString;
+  };
+  
   namespace AST
   {
     class Expr;
@@ -32,8 +37,6 @@ namespace Fabric
         RC::ConstHandle<CaseVector> const &cases
         );
 
-      RC::Handle<JSON::Object> toJSONImpl() const;
-
       virtual void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
       
       virtual void llvmCompileToBuilder( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const;
@@ -45,6 +48,8 @@ namespace Fabric
         RC::ConstHandle<Expr> const &expr,
         RC::ConstHandle<CaseVector> const &cases
         );
+      
+      virtual void appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const;
     
     private:
     

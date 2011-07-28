@@ -108,7 +108,7 @@ namespace Fabric
       
       ReturnInfo returnInfo( returnExprType, returnsStaticDataPtr );
 
-      llvm::Type const *llvmReturnType;
+      llvm::Type const *llvmReturnType = 0;
       if ( returnExprType && !returnInfo.usesReturnLValue() )
       {
         switch ( returnExprType.getUsage() )

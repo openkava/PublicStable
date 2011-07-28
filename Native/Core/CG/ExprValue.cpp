@@ -93,6 +93,15 @@ namespace Fabric
       return m_value;
     }
 
+    void ExprValue::llvmRetain( BasicBlockBuilder &basicBlockBuilder )
+    {
+      if ( isValid() )
+      {
+        if ( getUsage() == USAGE_RVALUE )
+          getAdapter()->llvmRetain( basicBlockBuilder, getValue() );
+      }
+    }
+
     void ExprValue::llvmDispose( BasicBlockBuilder &basicBlockBuilder )
     {
       if ( isValid() )

@@ -8,8 +8,7 @@
 #include <Fabric/Core/AST/VarDeclStatement.h>
 #include <Fabric/Core/AST/VarDecl.h>
 #include <Fabric/Core/AST/VarDeclVector.h>
-#include <Fabric/Base/JSON/String.h>
-#include <Fabric/Base/JSON/Array.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -37,12 +36,11 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> VarDeclStatement::toJSONImpl() const
+    void VarDeclStatement::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      RC::Handle<JSON::Object> result = Statement::toJSONImpl();
-      result->set( "baseType", JSON::String::Create( m_baseType ) );
-      result->set( "varDecls", m_varDecls->toJSON() );
-      return result;
+      Statement::appendJSONMembers( jsonObjectGenerator );
+      jsonObjectGenerator.makeMember( "baseType" ).makeString( m_baseType );
+      m_varDecls->appendJSON( jsonObjectGenerator.makeMember( "varDecls" ) );
     }
     
     void VarDeclStatement::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const

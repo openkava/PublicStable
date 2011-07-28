@@ -38,8 +38,6 @@ namespace Fabric
         RC::ConstHandle<AST::Param> rhs,
         RC::ConstHandle<CompoundStatement> const &body
         );
-
-      RC::Handle<JSON::Object> toJSONImpl() const;
       
     protected:
     
@@ -50,6 +48,8 @@ namespace Fabric
         RC::ConstHandle<AST::Param> rhs,
         RC::ConstHandle<CompoundStatement> const &body
         );
+      
+      virtual void appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const;
     
     private:
     

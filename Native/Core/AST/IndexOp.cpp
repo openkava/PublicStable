@@ -5,7 +5,7 @@
 #include <Fabric/Core/CG/BasicBlockBuilder.h>
 #include <Fabric/Core/CG/Error.h>
 #include <Fabric/Core/RT/ImplType.h>
-#include <Fabric/Base/JSON/String.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -29,12 +29,11 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> IndexOp::toJSONImpl() const
+    void IndexOp::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      RC::Handle<JSON::Object> result = Expr::toJSONImpl();
-      result->set( "expr", m_expr->toJSON() );
-      result->set( "indexExpr", m_indexExpr->toJSON() );
-      return result;
+      Expr::appendJSONMembers( jsonObjectGenerator );
+      m_expr->appendJSON( jsonObjectGenerator.makeMember( "expr" ) );
+      m_indexExpr->appendJSON( jsonObjectGenerator.makeMember( "indexExpr" ) );
     }
     
     void IndexOp::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const

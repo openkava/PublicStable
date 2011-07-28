@@ -5,9 +5,10 @@
  *
  */
 
-#include "ExprStatement.h"
+#include <Fabric/Core/AST/ExprStatement.h>
+#include <Fabric/Core/AST/Expr.h>
 #include <Fabric/Core/CG/Error.h>
-#include <Fabric/Base/JSON/String.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -26,11 +27,10 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> ExprStatement::toJSONImpl() const
+    void ExprStatement::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      RC::Handle<JSON::Object> result = Statement::toJSONImpl();
-      result->set( "expr", m_expr->toJSON() );
-      return result;
+      Statement::appendJSONMembers( jsonObjectGenerator );
+      m_expr->appendJSON( jsonObjectGenerator.makeMember( "expr" ) );
     }
     
     void ExprStatement::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
