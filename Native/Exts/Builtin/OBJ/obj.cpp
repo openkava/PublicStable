@@ -26,6 +26,13 @@ FABRIC_EXT_EXPORT void FabricOBJDecode(
   istreambuf memstreambuff( (char*)objData,objDataSize );
   std::istream memstream( &memstreambuff );
 
+  if( parsedDataHandle != NULL )
+  {
+    //Dangerous, but ok for current tests...
+    ObjParser *parser = (ObjParser*)parsedDataHandle;
+    delete parser;
+    parsedDataHandle = NULL;
+  }
   parsedDataHandle = new ObjParser(memstream);
 }
 
