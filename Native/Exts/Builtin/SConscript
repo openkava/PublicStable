@@ -9,6 +9,7 @@ aliases = [
   'exrExt',
   'hdrExt',
   'oglExt',
+  'objExt',
   #'oclExt',
   'pngExt',
   'tgaExt',
@@ -18,6 +19,7 @@ aliases = [
 dirs = [
   'EXR',
   'HDR',
+  'OBJ',
   #'OCL',
   'OGL',
   'PNG',
@@ -28,10 +30,6 @@ dirs = [
 if buildOS != 'Windows':
   dirs += ['VIDEO']
   aliases += ['videoExt']
-
-if buildOS == 'Windows':
-  dirs += ['OBJ']
-  aliases += ['objExt']
 
 SConscript( dirs=dirs )
 

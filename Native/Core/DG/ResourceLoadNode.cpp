@@ -160,8 +160,8 @@ namespace Fabric
       if( errorDesc )
       {
         void *resourceData = getMutableData( "resource", 0 );
-
-        dataDesc->setData( NULL, fabricResourceStructDesc->getMemberData( resourceData, FABRIC_RESOURCE_DATA_MEMBER_INDEX ) );
+        void* nullPtr = NULL;
+        dataDesc->setData( &nullPtr, fabricResourceStructDesc->getMemberData( resourceData, FABRIC_RESOURCE_DATA_MEMBER_INDEX ) );
         sizeDesc->setValue( 0, fabricResourceStructDesc->getMemberData( resourceData, FABRIC_RESOURCE_DATASIZE_MEMBER_INDEX ) );
         stringDesc->setValue( NULL, 0, fabricResourceStructDesc->getMemberData( resourceData, FABRIC_RESOURCE_MIMETYPE_MEMBER_INDEX ) );
         stringDesc->setValue( NULL, 0, fabricResourceStructDesc->getMemberData( resourceData, FABRIC_RESOURCE_EXTENSION_MEMBER_INDEX ) );

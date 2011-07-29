@@ -149,23 +149,24 @@ void ObjParser::ParseF( std::istream& stream )
       m_initialPointIndices[indices.m_point] = indices;
     else if( m_initialPointIndices[indices.m_point] != indices )
     {
-      indices.m_point = (int)m_points.size();
       V3 v = m_points[indices.m_point];
+      indices.m_point = (int)m_points.size();
       m_points.push_back( v );
 
       if(indices.m_normal != -1)
       {
-        indices.m_normal = (int)m_normals.size();
         v = m_normals[indices.m_normal];
+        indices.m_normal = (int)m_normals.size();
         m_normals.push_back( v );
       }
 
       if(indices.m_texCoord != -1)
       {
-        indices.m_texCoord = (int)m_texCoords.size();
         V2 t = m_texCoords[indices.m_texCoord];
+        indices.m_texCoord = (int)m_texCoords.size();
         m_texCoords.push_back( t );
       }
+      m_initialPointIndices.push_back( indices );
     }
 
     nbFacePts++;
@@ -228,6 +229,7 @@ void ObjParser::ComputeMissingNormals()
   for( i = 0; i < m_normals.size(); ++i )
   {
     m_normals[i].Normalize();
+    m_initialPointIndices[i].m_normal = i;
   }
 }
 
@@ -309,10 +311,18 @@ V3 ObjParser::GetPoint(int ptIndex)const
 
 V3 ObjParser::GetNormal(int ptIndex)const
 {
-  return m_normals[ m_initialPointIndices[ptIndex].m_normal ];
+  int index = m_initialPointIndices[ptIndex].m_normal;
+  if( index == -1 )
+    return V3( 0, 1, 0 );
+  else
+    return m_normals[ index ];
 }
 
 V2 ObjParser::GetTextureCoord(int ptIndex)const
 {
-  return m_texCoords[ m_initialPointIndices[ptIndex].m_texCoord ];
+  int index = m_initialPointIndices[ptIndex].m_texCoord;
+  if( index == -1 )
+    return V2( 0, 0 );
+  else
+    return m_texCoords[ index ];
 }
