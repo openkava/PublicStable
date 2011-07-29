@@ -5,7 +5,7 @@
 #include <Fabric/Core/DG/IRCache.h>
 #include <Fabric/Core/IO/Dir.h>
 #include <Fabric/Core/Util/MD5.h>
-#include <Fabric/Core/AST/GlobalVector.h>
+#include <Fabric/Core/AST/GlobalList.h>
 #include <Fabric/Base/Exception.h>
 #include <Fabric/Base/JSON/Object.h>
 #include <Fabric/Base/JSON/Array.h>
@@ -27,7 +27,7 @@ namespace Fabric
       m_dir = IO::Dir::Create( IO::Dir::Create( rootDir, "IRCache" ), _(buildCacheGeneration) );
     }
     
-    void IRCache::subDirAndEntryFromSourceCode( RC::ConstHandle<AST::GlobalVector> const &ast, RC::ConstHandle<IO::Dir> &subDir, std::string &entry ) const
+    void IRCache::subDirAndEntryFromSourceCode( RC::ConstHandle<AST::GlobalList> const &ast, RC::ConstHandle<IO::Dir> &subDir, std::string &entry ) const
     {
       Util::Timer timer;
       Util::SimpleString astJSONString = ast->toJSON();
@@ -38,7 +38,7 @@ namespace Fabric
       entry = prefixedSourceCodeMD5HexDigest.substr( 2, 30 );
     }
     
-    std::string IRCache::get( RC::ConstHandle<AST::GlobalVector> const &ast ) const
+    std::string IRCache::get( RC::ConstHandle<AST::GlobalList> const &ast ) const
     {
       RC::ConstHandle<IO::Dir> subDir;
       std::string entry;
@@ -55,7 +55,7 @@ namespace Fabric
       return result;
     }
     
-    void IRCache::put( RC::ConstHandle<AST::GlobalVector> const &ast, std::string const &ir )
+    void IRCache::put( RC::ConstHandle<AST::GlobalList> const &ast, std::string const &ir )
     {
       RC::ConstHandle<IO::Dir> subDir;
       std::string entry;
