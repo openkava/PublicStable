@@ -15,7 +15,7 @@ namespace Fabric
 {
   namespace AST
   {
-    class GlobalVector;
+    class GlobalList;
   };
   
   namespace IO
@@ -34,14 +34,14 @@ namespace Fabric
         return new IRCache;
       }
       
-      std::string get( RC::ConstHandle<AST::GlobalVector> const &ast ) const;
-      void put( RC::ConstHandle<AST::GlobalVector> const &ast, std::string const &ir );
+      std::string get( RC::ConstHandle<AST::GlobalList> const &ast ) const;
+      void put( RC::ConstHandle<AST::GlobalList> const &ast, std::string const &ir );
       
     protected:
     
       IRCache();
       
-      void subDirAndEntryFromSourceCode( RC::ConstHandle<AST::GlobalVector> const &ast, RC::ConstHandle<IO::Dir> &subDir, std::string &entry ) const;
+      void subDirAndEntryFromSourceCode( RC::ConstHandle<AST::GlobalList> const &ast, RC::ConstHandle<IO::Dir> &subDir, std::string &entry ) const;
       
     private:
     
