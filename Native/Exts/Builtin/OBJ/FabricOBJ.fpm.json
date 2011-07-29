@@ -1,0 +1,4 @@
+{
+  "libs": "FabricOBJ",
+  "code": "struct Vec2 {Scalar x;  Scalar y;}; struct Vec3 {Scalar x; Scalar y; Scalar z;}; function FabricOBJDecode( Data objData, Size objDataSize, io Data parsedDataHandle ); function FabricOBJFreeParsedData( io Data parsedDataHandle ); function FabricOBJGetNbPoints( Data parsedDataHandle, io Size nbPoints ); function FabricOBJGetPoints( Data parsedDataHandle, io Vec3 points[] ); function FabricOBJGetNormals( Data parsedDataHandle, io Vec3 normals[] ); function FabricOBJGetTextureCoords( Data parsedDataHandle, io Vec2 texCoords[] ); function FabricOBJGetNbTriangles( Data parsedDataHandle, io Size nbTriangles ); function FabricOBJGetTriangleIndices( Data parsedDataHandle, io Integer triangleIndices[] ); \n"
+}

@@ -29,6 +29,10 @@ if buildOS != 'Windows':
   dirs += ['VIDEO']
   aliases += ['videoExt']
 
+if buildOS == 'Windows':
+  dirs += ['OBJ']
+  aliases += ['objExt']
+
 SConscript( dirs=dirs )
 
 Alias( 'builtinExts', aliases )
