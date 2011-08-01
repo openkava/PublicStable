@@ -1,0 +1,92 @@
+FC = createFabricClient();
+FABRIC = wrapFabricClient(FC);
+
+loadOp = FABRIC.DependencyGraph.createOperator("load");
+loadOp.setEntryFunctionName("load");
+loadOp.setSourceCode('\
+operator load(\n\
+  io String url,\n\
+  io FabricResource resource,\n\
+  io Data objParseHandle\n\
+  )\n\
+{\n\
+  report "Loaded " + url + " (mime type " + resource.mimeType + ")";\n\
+  report "OBJ data size is " + resource.dataSize;\n\
+  FabricOBJDecode(resource.data, resource.dataSize, objParseHandle);\n\
+}\n\
+');
+if (loadOp.getDiagnostics().length > 0 ) {
+  printDeep(loadOp.getDiagnostics());
+}
+
+loadOpBinding = FABRIC.DG.createBinding();
+loadOpBinding.setOperator(loadOp);
+loadOpBinding.setParameterLayout([
+  "self.url",
+  "self.resource",
+  "self.objParseHandle"
+]);
+
+rlnode = FABRIC.DependencyGraph.createResourceLoadNode("rlnode");
+rlnode.addMember("objParseHandle", "Data");
+rlnode.bindings.append(loadOpBinding);
+rlnode.setData("url", 0, "file:test.obj");
+
+resizeOp = FABRIC.DependencyGraph.createOperator("resize");
+resizeOp.setEntryFunctionName("resize");
+resizeOp.setSourceCode('\
+operator resize(\n\
+  io Data objParseHandle,\n\
+  io Size newSize\n\
+  )\n\
+{\n\
+  FabricOBJGetNbPoints(objParseHandle, newSize);\n\
+  report "rlnode: resized to " + newSize + " points";\n\
+}\n\
+');
+if (resizeOp.getDiagnostics().length > 0 ) {
+  printDeep(resizeOp.getDiagnostics());
+}
+
+resizeBinding = FABRIC.DG.createBinding();
+resizeBinding.setOperator( resizeOp );
+resizeBinding.setParameterLayout([
+  "rlnode.objParseHandle",
+  "self.newCount"
+]);
+
+setDataOp = FABRIC.DependencyGraph.createOperator("setData");
+setDataOp.setEntryFunctionName("setData");
+setDataOp.setSourceCode('\
+operator setData(\n\
+  io Data objParseHandle,\n\
+  io Vec3 positions[]\n\
+  )\n\
+{\n\
+  FabricOBJGetPoints(objParseHandle, positions);\n\
+  report "rlnode: setData to " + positions.size + " points";\n\
+  FabricOBJFreeParsedData(objParseHandle);\n\
+}\n\
+');
+if (setDataOp.getDiagnostics().length > 0 ) {
+  printDeep(setDataOp.getDiagnostics());
+}
+
+setDataBinding = FABRIC.DG.createBinding();
+setDataBinding.setOperator( setDataOp );
+setDataBinding.setParameterLayout([
+  "rlnode.objParseHandle",
+  "self.position[]"
+]);
+
+node = FABRIC.DG.createNode("dataNode");
+node.addMember("position", "Vec3");
+node.bindings.append(resizeBinding);
+node.bindings.append(setDataBinding);
+node.addDependency(rlnode, "rlnode");
+if ( node.getErrors().length > 0 )
+  printDeep(node.getErrors());
+node.evaluate();
+
+FABRIC.flush();
+FC.dispose();
