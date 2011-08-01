@@ -21,6 +21,10 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXFileReference section */
+		DB082E9013E6FB0100FB75DA /* LightsTest.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = LightsTest.html; sourceTree = "<group>"; };
+		DB082E9113E6FB0100FB75DA /* ObjLoadTest.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = ObjLoadTest.html; sourceTree = "<group>"; };
+		DB082E9213E6FB3C00FB75DA /* Resources */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Resources; sourceTree = "<group>"; };
+		DB082F2E13E6FD3400FB75DA /* OBJ */ = {isa = PBXFileReference; lastKnownFileType = folder; path = OBJ; sourceTree = "<group>"; };
 		DB0914A213DF39C8000B1A0F /* ResourceLoadNode.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ResourceLoadNode.cpp; sourceTree = "<group>"; };
 		DB0914A313DF39C8000B1A0F /* ResourceLoadNode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ResourceLoadNode.h; sourceTree = "<group>"; };
 		DB0F540713A7C5500019FBE6 /* .gitignore */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
@@ -339,8 +343,6 @@
 		DB96726D13A5423200616143 /* Operator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Operator.h; sourceTree = "<group>"; };
 		DB96726E13A5423200616143 /* Prototype.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Prototype.cpp; sourceTree = "<group>"; };
 		DB96726F13A5423200616143 /* Prototype.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Prototype.h; sourceTree = "<group>"; };
-		DB96727013A5423200616143 /* ResourceLoadEvent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ResourceLoadEvent.cpp; sourceTree = "<group>"; };
-		DB96727113A5423200616143 /* ResourceLoadEvent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ResourceLoadEvent.h; sourceTree = "<group>"; };
 		DB96727213A5423200616143 /* SConscript */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = SConscript; sourceTree = "<group>"; };
 		DB96727313A5423200616143 /* Scope.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Scope.h; sourceTree = "<group>"; };
 		DB96727413A5423200616143 /* SelectedNode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SelectedNode.h; sourceTree = "<group>"; };
@@ -889,145 +891,6 @@
 		DB9684B513A7984500616143 /* FABRIC.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = FABRIC.js; sourceTree = "<group>"; };
 		DB9684B613A7984600616143 /* shell.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = shell.html; sourceTree = "<group>"; };
 		DB9684BD13A79A1500616143 /* CurveEditor.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = CurveEditor.html; sourceTree = "<group>"; };
-		DB9684BF13A79A1500616143 /* FABRIC.SceneGraph.Animation.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = FABRIC.SceneGraph.Animation.js; sourceTree = "<group>"; };
-		DB9684C013A79A1500616143 /* FABRIC.SceneGraph.Characters.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = FABRIC.SceneGraph.Characters.js; sourceTree = "<group>"; };
-		DB9684C113A79A1500616143 /* FABRIC.SceneGraph.CharacterSolvers.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = FABRIC.SceneGraph.CharacterSolvers.js; sourceTree = "<group>"; };
-		DB9684C213A79A1600616143 /* FABRIC.SceneGraph.Geometry.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = FABRIC.SceneGraph.Geometry.js; sourceTree = "<group>"; };
-		DB9684C313A79A1600616143 /* FABRIC.SceneGraph.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = FABRIC.SceneGraph.js; sourceTree = "<group>"; };
-		DB9684C413A79A1600616143 /* FABRIC.SceneGraph.Kinematics.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = FABRIC.SceneGraph.Kinematics.js; sourceTree = "<group>"; };
-		DB9684C513A79A1600616143 /* FABRIC.SceneGraph.Lights.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = FABRIC.SceneGraph.Lights.js; sourceTree = "<group>"; };
-		DB9684C613A79A1600616143 /* FABRIC.SceneGraph.Manipulation.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = FABRIC.SceneGraph.Manipulation.js; sourceTree = "<group>"; };
-		DB9684C713A79A1600616143 /* FABRIC.SceneGraph.Materials.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = FABRIC.SceneGraph.Materials.js; sourceTree = "<group>"; };
-		DB9684C913A79A1600616143 /* FABRIC.SceneGraph.Particles.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = FABRIC.SceneGraph.Particles.js; sourceTree = "<group>"; };
-		DB9684CA13A79A1600616143 /* FABRIC.SceneGraph.Persistence.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = FABRIC.SceneGraph.Persistence.js; sourceTree = "<group>"; };
-		DB9684CB13A79A1600616143 /* FABRIC.SceneGraph.Primitives.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = FABRIC.SceneGraph.Primitives.js; sourceTree = "<group>"; };
-		DB9684CE13A79A1600616143 /* aimTransform.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = aimTransform.kl; sourceTree = "<group>"; };
-		DB9684CF13A79A1700616143 /* calcBoundingBox.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = calcBoundingBox.kl; sourceTree = "<group>"; };
-		DB9684D013A79A1700616143 /* calcGlobalXfo.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = calcGlobalXfo.kl; sourceTree = "<group>"; };
-		DB9684D113A79A1700616143 /* characterDebug.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = characterDebug.kl; sourceTree = "<group>"; };
-		DB9684D213A79A1700616143 /* characterRig.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = characterRig.kl; sourceTree = "<group>"; };
-		DB9684D313A79A1700616143 /* characterSkeleton.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = characterSkeleton.kl; sourceTree = "<group>"; };
-		DB9684D413A79A1700616143 /* collectPointsInsideVolume.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = collectPointsInsideVolume.kl; sourceTree = "<group>"; };
-		DB9684D513A79A1700616143 /* copyVec3ArrayElementToVec3.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = copyVec3ArrayElementToVec3.kl; sourceTree = "<group>"; };
-		DB9684D613A79A1700616143 /* drawAttributes.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = drawAttributes.kl; sourceTree = "<group>"; };
-		DB9684D713A79A1700616143 /* drawCharacterInstance.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = drawCharacterInstance.kl; sourceTree = "<group>"; };
-		DB9684D813A79A1700616143 /* drawLines.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = drawLines.kl; sourceTree = "<group>"; };
-		DB9684D913A79A1700616143 /* drawPoints.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = drawPoints.kl; sourceTree = "<group>"; };
-		DB9684DA13A79A1700616143 /* drawSilhouette.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = drawSilhouette.kl; sourceTree = "<group>"; };
-		DB9684DB13A79A1700616143 /* drawTriangles.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = drawTriangles.kl; sourceTree = "<group>"; };
-		DB9684DC13A79A1700616143 /* evaluateCharacterManipulator.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = evaluateCharacterManipulator.kl; sourceTree = "<group>"; };
-		DB9684DD13A79A1700616143 /* evaluateGizmo.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = evaluateGizmo.kl; sourceTree = "<group>"; };
-		DB9684DE13A79A1700616143 /* evaluateKeyframeAnimationTrack.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = evaluateKeyframeAnimationTrack.kl; sourceTree = "<group>"; };
-		DB9684DF13A79A1700616143 /* evaluatePoseOffsets.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = evaluatePoseOffsets.kl; sourceTree = "<group>"; };
-		DB9684E013A79A1700616143 /* evaluateVICONStream.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = evaluateVICONStream.kl; sourceTree = "<group>"; };
-		DB9684E113A79A1700616143 /* flocking.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = flocking.kl; sourceTree = "<group>"; };
-		DB9684E213A79A1700616143 /* genAndLoadVBO.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = genAndLoadVBO.kl; sourceTree = "<group>"; };
-		DB9684E313A79A1700616143 /* generateAxes.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = generateAxes.kl; sourceTree = "<group>"; };
-		DB9684E413A79A1700616143 /* generateBoundingBox.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = generateBoundingBox.kl; sourceTree = "<group>"; };
-		DB9684E513A79A1700616143 /* generateCircle.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = generateCircle.kl; sourceTree = "<group>"; };
-		DB9684E613A79A1700616143 /* generateCone.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = generateCone.kl; sourceTree = "<group>"; };
-		DB9684E713A79A1700616143 /* generateCross.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = generateCross.kl; sourceTree = "<group>"; };
-		DB9684E813A79A1700616143 /* generateCuboid.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = generateCuboid.kl; sourceTree = "<group>"; };
-		DB9684E913A79A1700616143 /* generateCylinder.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = generateCylinder.kl; sourceTree = "<group>"; };
-		DB9684EA13A79A1700616143 /* generateGeodesicSphere.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = generateGeodesicSphere.cpp; sourceTree = "<group>"; };
-		DB9684EB13A79A1700616143 /* generateGrid.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = generateGrid.kl; sourceTree = "<group>"; };
-		DB9684EC13A79A1700616143 /* generatePlane.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = generatePlane.kl; sourceTree = "<group>"; };
-		DB9684ED13A79A1700616143 /* generateRectangle.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = generateRectangle.kl; sourceTree = "<group>"; };
-		DB9684EE13A79A1700616143 /* generateSkeleton.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = generateSkeleton.kl; sourceTree = "<group>"; };
-		DB9684EF13A79A1700616143 /* generateSphere.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = generateSphere.kl; sourceTree = "<group>"; };
-		DB9684F013A79A1800616143 /* generateTangents.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = generateTangents.kl; sourceTree = "<group>"; };
-		DB9684F113A79A1800616143 /* generateTeapot.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = generateTeapot.kl; sourceTree = "<group>"; };
-		DB9684F213A79A1800616143 /* generateTorus.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = generateTorus.kl; sourceTree = "<group>"; };
-		DB9684F313A79A1800616143 /* imageFilters.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = imageFilters.kl; sourceTree = "<group>"; };
-		DB9684F413A79A1800616143 /* incrementControllerLocalTime.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = incrementControllerLocalTime.kl; sourceTree = "<group>"; };
-		DB9684F513A79A1800616143 /* lights.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = lights.kl; sourceTree = "<group>"; };
-		DB9684F713A79A1800616143 /* loadShader.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = loadShader.kl; sourceTree = "<group>"; };
-		DB9684F813A79A1800616143 /* loadSlicedVBOs.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = loadSlicedVBOs.kl; sourceTree = "<group>"; };
-		DB9684F913A79A1800616143 /* loadTexture.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = loadTexture.kl; sourceTree = "<group>"; };
-		DB9684FA13A79A1800616143 /* loadUniforms.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = loadUniforms.kl; sourceTree = "<group>"; };
-		DB9684FB13A79A1800616143 /* loadVBOs.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = loadVBOs.kl; sourceTree = "<group>"; };
-		DB9684FC13A79A1800616143 /* loadVideo.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = loadVideo.kl; sourceTree = "<group>"; };
-		DB9684FD13A79A1800616143 /* OffscreenRendering.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = OffscreenRendering.kl; sourceTree = "<group>"; };
-		DB9684FE13A79A1800616143 /* OpenCL.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = OpenCL.kl; sourceTree = "<group>"; };
-		DB9684FF13A79A1800616143 /* rayIntersectLines.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = rayIntersectLines.kl; sourceTree = "<group>"; };
-		DB96850013A79A1800616143 /* rayIntersectPoints.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = rayIntersectPoints.kl; sourceTree = "<group>"; };
-		DB96850113A79A1800616143 /* rayIntersectTriangles.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = rayIntersectTriangles.kl; sourceTree = "<group>"; };
-		DB96850213A79A1800616143 /* reduceBoneBinding.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = reduceBoneBinding.kl; sourceTree = "<group>"; };
-		DB96850313A79A1800616143 /* shadowMaps.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = shadowMaps.kl; sourceTree = "<group>"; };
-		DB96850413A79A1800616143 /* skinOp.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = skinOp.kl; sourceTree = "<group>"; };
-		DB96850513A79A1800616143 /* softLimitBezierCurve.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = softLimitBezierCurve.kl; sourceTree = "<group>"; };
-		DB96850613A79A1800616143 /* solveFishingRod.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = solveFishingRod.kl; sourceTree = "<group>"; };
-		DB96850713A79A1800616143 /* solveFKHierarchy.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = solveFKHierarchy.kl; sourceTree = "<group>"; };
-		DB96850813A79A1800616143 /* solveIK2Bone.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = solveIK2Bone.kl; sourceTree = "<group>"; };
-		DB96850913A79A1800616143 /* solveLimbIK.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = solveLimbIK.kl; sourceTree = "<group>"; };
-		DB96850A13A79A1800616143 /* solveNCFIK.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = solveNCFIK.kl; sourceTree = "<group>"; };
-		DB96850B13A79A1800616143 /* solveSpine.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = solveSpine.kl; sourceTree = "<group>"; };
-		DB96850C13A79A1800616143 /* solveTwistBones.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = solveTwistBones.kl; sourceTree = "<group>"; };
-		DB96850D13A79A1800616143 /* spatialHashTable.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = spatialHashTable.kl; sourceTree = "<group>"; };
-		DB96850E13A79A1800616143 /* updateCameraProjection.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = updateCameraProjection.kl; sourceTree = "<group>"; };
-		DB96850F13A79A1800616143 /* viewPortBeginRender.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = viewPortBeginRender.kl; sourceTree = "<group>"; };
-		DB96851013A79A1800616143 /* viewPortEndRender.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = viewPortEndRender.kl; sourceTree = "<group>"; };
-		DB96851113A79A1800616143 /* viewPortUpdateRayCast.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = viewPortUpdateRayCast.kl; sourceTree = "<group>"; };
-		DB96851213A79A1800616143 /* xfoToMat44.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = xfoToMat44.kl; sourceTree = "<group>"; };
-		DB96851413A79A1900616143 /* parseCollada.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = parseCollada.js; sourceTree = "<group>"; };
-		DB96851513A79A1900616143 /* parseMTL.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = parseMTL.js; sourceTree = "<group>"; };
-		DB96851613A79A1900616143 /* parseOBJ.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = parseOBJ.js; sourceTree = "<group>"; };
-		DB96851713A79A1900616143 /* parsePLY.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = parsePLY.js; sourceTree = "<group>"; };
-		DB96851913A79A1900616143 /* BezierKeyframe.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = BezierKeyframe.js; sourceTree = "<group>"; };
-		DB96851A13A79A1900616143 /* BezierKeyframe.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = BezierKeyframe.kl; sourceTree = "<group>"; };
-		DB96851B13A79A1900616143 /* Bone.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = Bone.js; sourceTree = "<group>"; };
-		DB96851C13A79A1900616143 /* BoundingBox.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = BoundingBox.js; sourceTree = "<group>"; };
-		DB96851D13A79A1900616143 /* CollectedPoints.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = CollectedPoints.js; sourceTree = "<group>"; };
-		DB96851E13A79A1900616143 /* Color.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = Color.js; sourceTree = "<group>"; };
-		DB96851F13A79A1900616143 /* Color.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Color.kl; sourceTree = "<group>"; };
-		DB96852013A79A1900616143 /* Euler.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = Euler.js; sourceTree = "<group>"; };
-		DB96852113A79A1900616143 /* Euler.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Euler.kl; sourceTree = "<group>"; };
-		DB96852213A79A1900616143 /* HashTable.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = HashTable.js; sourceTree = "<group>"; };
-		DB96852313A79A1A00616143 /* LinearKeyframe.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = LinearKeyframe.js; sourceTree = "<group>"; };
-		DB96852413A79A1A00616143 /* LinearKeyframe.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LinearKeyframe.kl; sourceTree = "<group>"; };
-		DB96852513A79A1A00616143 /* Mat33.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = Mat33.js; sourceTree = "<group>"; };
-		DB96852613A79A1A00616143 /* Mat33.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Mat33.kl; sourceTree = "<group>"; };
-		DB96852713A79A1A00616143 /* Mat44.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = Mat44.js; sourceTree = "<group>"; };
-		DB96852813A79A1A00616143 /* Mat44.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Mat44.kl; sourceTree = "<group>"; };
-		DB96852913A79A1A00616143 /* Math.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = Math.js; sourceTree = "<group>"; };
-		DB96852A13A79A1A00616143 /* Quat.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = Quat.js; sourceTree = "<group>"; };
-		DB96852B13A79A1A00616143 /* Quat.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Quat.kl; sourceTree = "<group>"; };
-		DB96852C13A79A1A00616143 /* Ray.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = Ray.js; sourceTree = "<group>"; };
-		DB96852D13A79A1A00616143 /* Ray.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Ray.kl; sourceTree = "<group>"; };
-		DB96852E13A79A1A00616143 /* RGBA.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = RGBA.js; sourceTree = "<group>"; };
-		DB96852F13A79A1A00616143 /* RGBA.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = RGBA.kl; sourceTree = "<group>"; };
-		DB96853013A79A1A00616143 /* RotationOrder.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = RotationOrder.kl; sourceTree = "<group>"; };
-		DB96853113A79A1A00616143 /* Vec2.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = Vec2.js; sourceTree = "<group>"; };
-		DB96853213A79A1A00616143 /* Vec2.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Vec2.kl; sourceTree = "<group>"; };
-		DB96853313A79A1A00616143 /* Vec3.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = Vec3.js; sourceTree = "<group>"; };
-		DB96853413A79A1B00616143 /* Vec3.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Vec3.kl; sourceTree = "<group>"; };
-		DB96853513A79A1B00616143 /* Vec4.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = Vec4.js; sourceTree = "<group>"; };
-		DB96853613A79A1B00616143 /* Vec4.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Vec4.kl; sourceTree = "<group>"; };
-		DB96853713A79A1B00616143 /* Xfo.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = Xfo.js; sourceTree = "<group>"; };
-		DB96853813A79A1B00616143 /* Xfo.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Xfo.kl; sourceTree = "<group>"; };
-		DB96853A13A79A1B00616143 /* BloomPixelShader.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = BloomPixelShader.glsl; sourceTree = "<group>"; };
-		DB96853B13A79A1B00616143 /* EdgeDetectionPixelShader.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = EdgeDetectionPixelShader.glsl; sourceTree = "<group>"; };
-		DB96853C13A79A1B00616143 /* FilmicTonemapper.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = FilmicTonemapper.glsl; sourceTree = "<group>"; };
-		DB96853D13A79A1B00616143 /* FlatScreenSpaceShader.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = FlatScreenSpaceShader.xml; sourceTree = "<group>"; };
-		DB96853E13A79A1B00616143 /* FlatShader.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = FlatShader.xml; sourceTree = "<group>"; };
-		DB96853F13A79A1B00616143 /* FlatTextureShader.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = FlatTextureShader.xml; sourceTree = "<group>"; };
-		DB96854013A79A1B00616143 /* GaussianBlurFragmentShader.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = GaussianBlurFragmentShader.glsl; sourceTree = "<group>"; };
-		DB96854113A79A1B00616143 /* lighting.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = lighting.txt; sourceTree = "<group>"; };
-		DB96854213A79A1B00616143 /* NormalShader.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = NormalShader.xml; sourceTree = "<group>"; };
-		DB96854313A79A1B00616143 /* PhongBumpReflectShader.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = PhongBumpReflectShader.xml; sourceTree = "<group>"; };
-		DB96854413A79A1B00616143 /* PhongBumpReflectSkinningShader.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = PhongBumpReflectSkinningShader.xml; sourceTree = "<group>"; };
-		DB96854513A79A1B00616143 /* PhongShader.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = PhongShader.xml; sourceTree = "<group>"; };
-		DB96854613A79A1B00616143 /* PhongSkinningShader.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = PhongSkinningShader.xml; sourceTree = "<group>"; };
-		DB96854713A79A1B00616143 /* PhongTextureShader.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = PhongTextureShader.xml; sourceTree = "<group>"; };
-		DB96854813A79A1B00616143 /* PhongVertexColorShader.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = PhongVertexColorShader.xml; sourceTree = "<group>"; };
-		DB96854913A79A1B00616143 /* PointSpriteFragmentShader.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = PointSpriteFragmentShader.glsl; sourceTree = "<group>"; };
-		DB96854A13A79A1B00616143 /* PointSpriteVertexShader.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = PointSpriteVertexShader.glsl; sourceTree = "<group>"; };
-		DB96854B13A79A1B00616143 /* ShadowMapShader.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = ShadowMapShader.xml; sourceTree = "<group>"; };
-		DB96854C13A79A1B00616143 /* ShadowReceivingPhongShader.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = ShadowReceivingPhongShader.xml; sourceTree = "<group>"; };
-		DB96854D13A79A1B00616143 /* shadows.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = shadows.txt; sourceTree = "<group>"; };
-		DB96854E13A79A1B00616143 /* silhouetteGeometryShader.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = silhouetteGeometryShader.glsl; sourceTree = "<group>"; };
-		DB96854F13A79A1B00616143 /* skinning.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = skinning.txt; sourceTree = "<group>"; };
-		DB96855013A79A1B00616143 /* VertexColorShader.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = VertexColorShader.xml; sourceTree = "<group>"; };
 		DB96855A13A79BC700616143 /* BackgroundTexture.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = BackgroundTexture.html; sourceTree = "<group>"; };
 		DB96855B13A79BC700616143 /* CharacterSkeleton.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = CharacterSkeleton.html; sourceTree = "<group>"; };
 		DB96855C13A79BC700616143 /* CharacterSkinning.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = CharacterSkinning.html; sourceTree = "<group>"; };
@@ -1180,10 +1043,6 @@
 		DB9FCD7513C7A4B200A23B69 /* operatorEditor.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = operatorEditor.html; sourceTree = "<group>"; };
 		DB9FCD7613C7A4B200A23B69 /* prettify.css */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.css; path = prettify.css; sourceTree = "<group>"; };
 		DB9FCD7713C7A4B200A23B69 /* prettify.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = prettify.js; sourceTree = "<group>"; };
-		DBC4A0B013D4A6C40092C9E7 /* nBodyKernel.cl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.opencl; path = nBodyKernel.cl; sourceTree = "<group>"; };
-		DBC4A0B213D4A6C40092C9E7 /* nBodyOp.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = nBodyOp.kl; sourceTree = "<group>"; };
-		DBC4A0B313D4A6C40092C9E7 /* nBodyOpGPU.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = nBodyOpGPU.kl; sourceTree = "<group>"; };
-		DBC4A0B413D4A6C40092C9E7 /* nBodySimulation.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = nBodySimulation.html; sourceTree = "<group>"; };
 		DBC987B013D7750E00E0FA31 /* VarDeclStatement.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = VarDeclStatement.cpp; sourceTree = "<group>"; };
 		DBC987B113D7750E00E0FA31 /* VarDeclStatement.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VarDeclStatement.h; sourceTree = "<group>"; };
 		DBC987B213D7764800E0FA31 /* VarDeclVector.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = VarDeclVector.cpp; sourceTree = "<group>"; };
@@ -1220,6 +1079,15 @@
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
+		DB082E8F13E6FB0100FB75DA /* Tests */ = {
+			isa = PBXGroup;
+			children = (
+				DB082E9013E6FB0100FB75DA /* LightsTest.html */,
+				DB082E9113E6FB0100FB75DA /* ObjLoadTest.html */,
+			);
+			path = Tests;
+			sourceTree = "<group>";
+		};
 		DB0F540613A7C5500019FBE6 /* BigGuy */ = {
 			isa = PBXGroup;
 			children = (
@@ -1767,8 +1635,6 @@
 				DB96726D13A5423200616143 /* Operator.h */,
 				DB96726E13A5423200616143 /* Prototype.cpp */,
 				DB96726F13A5423200616143 /* Prototype.h */,
-				DB96727013A5423200616143 /* ResourceLoadEvent.cpp */,
-				DB96727113A5423200616143 /* ResourceLoadEvent.h */,
 				DB0914A213DF39C8000B1A0F /* ResourceLoadNode.cpp */,
 				DB0914A313DF39C8000B1A0F /* ResourceLoadNode.h */,
 				DB96727313A5423200616143 /* Scope.h */,
@@ -2032,6 +1898,7 @@
 				DB96734913A5423300616143 /* SConscript */,
 				DB96733D13A5423300616143 /* EXR */,
 				DB96734113A5423300616143 /* HDR */,
+				DB082F2E13E6FD3400FB75DA /* OBJ */,
 				DBF56E4D13C63B6000778A06 /* OGL */,
 				DB96734513A5423300616143 /* PNG */,
 				DB96734A13A5423300616143 /* TGA */,
@@ -2582,7 +2449,7 @@
 		DB96843513A5445300616143 /* SceneGraph */ = {
 			isa = PBXGroup;
 			children = (
-				DB9684BE13A79A1500616143 /* Resources */,
+				DB082E9213E6FB3C00FB75DA /* Resources */,
 				DB9684BC13A79A1500616143 /* CurveEditor */,
 			);
 			path = SceneGraph;
@@ -2612,184 +2479,6 @@
 			path = CurveEditor;
 			sourceTree = "<group>";
 		};
-		DB9684BE13A79A1500616143 /* Resources */ = {
-			isa = PBXGroup;
-			children = (
-				DB9684C313A79A1600616143 /* FABRIC.SceneGraph.js */,
-				DB9684BF13A79A1500616143 /* FABRIC.SceneGraph.Animation.js */,
-				DB9684C013A79A1500616143 /* FABRIC.SceneGraph.Characters.js */,
-				DB9684C113A79A1500616143 /* FABRIC.SceneGraph.CharacterSolvers.js */,
-				DB9684C213A79A1600616143 /* FABRIC.SceneGraph.Geometry.js */,
-				DB9684C413A79A1600616143 /* FABRIC.SceneGraph.Kinematics.js */,
-				DB9684C513A79A1600616143 /* FABRIC.SceneGraph.Lights.js */,
-				DB9684C613A79A1600616143 /* FABRIC.SceneGraph.Manipulation.js */,
-				DB9684C713A79A1600616143 /* FABRIC.SceneGraph.Materials.js */,
-				DB9684C913A79A1600616143 /* FABRIC.SceneGraph.Particles.js */,
-				DB9684CA13A79A1600616143 /* FABRIC.SceneGraph.Persistence.js */,
-				DB9684CB13A79A1600616143 /* FABRIC.SceneGraph.Primitives.js */,
-				DB9684CD13A79A1600616143 /* KL */,
-				DB96851313A79A1800616143 /* Parsers */,
-				DB96851813A79A1900616143 /* RT */,
-				DB96853913A79A1B00616143 /* Shaders */,
-			);
-			path = Resources;
-			sourceTree = "<group>";
-		};
-		DB9684CD13A79A1600616143 /* KL */ = {
-			isa = PBXGroup;
-			children = (
-				DB9684CE13A79A1600616143 /* aimTransform.kl */,
-				DB9684CF13A79A1700616143 /* calcBoundingBox.kl */,
-				DB9684D013A79A1700616143 /* calcGlobalXfo.kl */,
-				DB9684D113A79A1700616143 /* characterDebug.kl */,
-				DB9684D213A79A1700616143 /* characterRig.kl */,
-				DB9684D313A79A1700616143 /* characterSkeleton.kl */,
-				DB9684D413A79A1700616143 /* collectPointsInsideVolume.kl */,
-				DB9684D513A79A1700616143 /* copyVec3ArrayElementToVec3.kl */,
-				DB9684D613A79A1700616143 /* drawAttributes.kl */,
-				DB9684D713A79A1700616143 /* drawCharacterInstance.kl */,
-				DB9684D813A79A1700616143 /* drawLines.kl */,
-				DB9684D913A79A1700616143 /* drawPoints.kl */,
-				DB9684DA13A79A1700616143 /* drawSilhouette.kl */,
-				DB9684DB13A79A1700616143 /* drawTriangles.kl */,
-				DB9684DC13A79A1700616143 /* evaluateCharacterManipulator.kl */,
-				DB9684DD13A79A1700616143 /* evaluateGizmo.kl */,
-				DB9684DE13A79A1700616143 /* evaluateKeyframeAnimationTrack.kl */,
-				DB9684DF13A79A1700616143 /* evaluatePoseOffsets.kl */,
-				DB9684E013A79A1700616143 /* evaluateVICONStream.kl */,
-				DB9684E113A79A1700616143 /* flocking.kl */,
-				DB9684E213A79A1700616143 /* genAndLoadVBO.kl */,
-				DB9684E313A79A1700616143 /* generateAxes.kl */,
-				DB9684E413A79A1700616143 /* generateBoundingBox.kl */,
-				DB9684E513A79A1700616143 /* generateCircle.kl */,
-				DB9684E613A79A1700616143 /* generateCone.kl */,
-				DB9684E713A79A1700616143 /* generateCross.kl */,
-				DB9684E813A79A1700616143 /* generateCuboid.kl */,
-				DB9684E913A79A1700616143 /* generateCylinder.kl */,
-				DB9684EA13A79A1700616143 /* generateGeodesicSphere.cpp */,
-				DB9684EB13A79A1700616143 /* generateGrid.kl */,
-				DB9684EC13A79A1700616143 /* generatePlane.kl */,
-				DB9684ED13A79A1700616143 /* generateRectangle.kl */,
-				DB9684EE13A79A1700616143 /* generateSkeleton.kl */,
-				DB9684EF13A79A1700616143 /* generateSphere.kl */,
-				DB9684F013A79A1800616143 /* generateTangents.kl */,
-				DB9684F113A79A1800616143 /* generateTeapot.kl */,
-				DB9684F213A79A1800616143 /* generateTorus.kl */,
-				DB9684F313A79A1800616143 /* imageFilters.kl */,
-				DB9684F413A79A1800616143 /* incrementControllerLocalTime.kl */,
-				DB9684F513A79A1800616143 /* lights.kl */,
-				DB9684F713A79A1800616143 /* loadShader.kl */,
-				DB9684F813A79A1800616143 /* loadSlicedVBOs.kl */,
-				DB9684F913A79A1800616143 /* loadTexture.kl */,
-				DB9684FA13A79A1800616143 /* loadUniforms.kl */,
-				DB9684FB13A79A1800616143 /* loadVBOs.kl */,
-				DB9684FC13A79A1800616143 /* loadVideo.kl */,
-				DB9684FD13A79A1800616143 /* OffscreenRendering.kl */,
-				DB9684FE13A79A1800616143 /* OpenCL.kl */,
-				DB9684FF13A79A1800616143 /* rayIntersectLines.kl */,
-				DB96850013A79A1800616143 /* rayIntersectPoints.kl */,
-				DB96850113A79A1800616143 /* rayIntersectTriangles.kl */,
-				DB96850213A79A1800616143 /* reduceBoneBinding.kl */,
-				DB96850313A79A1800616143 /* shadowMaps.kl */,
-				DB96850413A79A1800616143 /* skinOp.kl */,
-				DB96850513A79A1800616143 /* softLimitBezierCurve.kl */,
-				DB96850613A79A1800616143 /* solveFishingRod.kl */,
-				DB96850713A79A1800616143 /* solveFKHierarchy.kl */,
-				DB96850813A79A1800616143 /* solveIK2Bone.kl */,
-				DB96850913A79A1800616143 /* solveLimbIK.kl */,
-				DB96850A13A79A1800616143 /* solveNCFIK.kl */,
-				DB96850B13A79A1800616143 /* solveSpine.kl */,
-				DB96850C13A79A1800616143 /* solveTwistBones.kl */,
-				DB96850D13A79A1800616143 /* spatialHashTable.kl */,
-				DB96850E13A79A1800616143 /* updateCameraProjection.kl */,
-				DB96850F13A79A1800616143 /* viewPortBeginRender.kl */,
-				DB96851013A79A1800616143 /* viewPortEndRender.kl */,
-				DB96851113A79A1800616143 /* viewPortUpdateRayCast.kl */,
-				DB96851213A79A1800616143 /* xfoToMat44.kl */,
-			);
-			path = KL;
-			sourceTree = "<group>";
-		};
-		DB96851313A79A1800616143 /* Parsers */ = {
-			isa = PBXGroup;
-			children = (
-				DB96851413A79A1900616143 /* parseCollada.js */,
-				DB96851513A79A1900616143 /* parseMTL.js */,
-				DB96851613A79A1900616143 /* parseOBJ.js */,
-				DB96851713A79A1900616143 /* parsePLY.js */,
-			);
-			path = Parsers;
-			sourceTree = "<group>";
-		};
-		DB96851813A79A1900616143 /* RT */ = {
-			isa = PBXGroup;
-			children = (
-				DB96851913A79A1900616143 /* BezierKeyframe.js */,
-				DB96851A13A79A1900616143 /* BezierKeyframe.kl */,
-				DB96851B13A79A1900616143 /* Bone.js */,
-				DB96851C13A79A1900616143 /* BoundingBox.js */,
-				DB96851D13A79A1900616143 /* CollectedPoints.js */,
-				DB96851E13A79A1900616143 /* Color.js */,
-				DB96851F13A79A1900616143 /* Color.kl */,
-				DB96852013A79A1900616143 /* Euler.js */,
-				DB96852113A79A1900616143 /* Euler.kl */,
-				DB96852213A79A1900616143 /* HashTable.js */,
-				DB96852313A79A1A00616143 /* LinearKeyframe.js */,
-				DB96852413A79A1A00616143 /* LinearKeyframe.kl */,
-				DB96852513A79A1A00616143 /* Mat33.js */,
-				DB96852613A79A1A00616143 /* Mat33.kl */,
-				DB96852713A79A1A00616143 /* Mat44.js */,
-				DB96852813A79A1A00616143 /* Mat44.kl */,
-				DB96852913A79A1A00616143 /* Math.js */,
-				DB96852A13A79A1A00616143 /* Quat.js */,
-				DB96852B13A79A1A00616143 /* Quat.kl */,
-				DB96852C13A79A1A00616143 /* Ray.js */,
-				DB96852D13A79A1A00616143 /* Ray.kl */,
-				DB96852E13A79A1A00616143 /* RGBA.js */,
-				DB96852F13A79A1A00616143 /* RGBA.kl */,
-				DB96853013A79A1A00616143 /* RotationOrder.kl */,
-				DB96853113A79A1A00616143 /* Vec2.js */,
-				DB96853213A79A1A00616143 /* Vec2.kl */,
-				DB96853313A79A1A00616143 /* Vec3.js */,
-				DB96853413A79A1B00616143 /* Vec3.kl */,
-				DB96853513A79A1B00616143 /* Vec4.js */,
-				DB96853613A79A1B00616143 /* Vec4.kl */,
-				DB96853713A79A1B00616143 /* Xfo.js */,
-				DB96853813A79A1B00616143 /* Xfo.kl */,
-			);
-			path = RT;
-			sourceTree = "<group>";
-		};
-		DB96853913A79A1B00616143 /* Shaders */ = {
-			isa = PBXGroup;
-			children = (
-				DB96853A13A79A1B00616143 /* BloomPixelShader.glsl */,
-				DB96853B13A79A1B00616143 /* EdgeDetectionPixelShader.glsl */,
-				DB96853C13A79A1B00616143 /* FilmicTonemapper.glsl */,
-				DB96853D13A79A1B00616143 /* FlatScreenSpaceShader.xml */,
-				DB96853E13A79A1B00616143 /* FlatShader.xml */,
-				DB96853F13A79A1B00616143 /* FlatTextureShader.xml */,
-				DB96854013A79A1B00616143 /* GaussianBlurFragmentShader.glsl */,
-				DB96854113A79A1B00616143 /* lighting.txt */,
-				DB96854213A79A1B00616143 /* NormalShader.xml */,
-				DB96854313A79A1B00616143 /* PhongBumpReflectShader.xml */,
-				DB96854413A79A1B00616143 /* PhongBumpReflectSkinningShader.xml */,
-				DB96854513A79A1B00616143 /* PhongShader.xml */,
-				DB96854613A79A1B00616143 /* PhongSkinningShader.xml */,
-				DB96854713A79A1B00616143 /* PhongTextureShader.xml */,
-				DB96854813A79A1B00616143 /* PhongVertexColorShader.xml */,
-				DB96854913A79A1B00616143 /* PointSpriteFragmentShader.glsl */,
-				DB96854A13A79A1B00616143 /* PointSpriteVertexShader.glsl */,
-				DB96854B13A79A1B00616143 /* ShadowMapShader.xml */,
-				DB96854C13A79A1B00616143 /* ShadowReceivingPhongShader.xml */,
-				DB96854D13A79A1B00616143 /* shadows.txt */,
-				DB96854E13A79A1B00616143 /* silhouetteGeometryShader.glsl */,
-				DB96854F13A79A1B00616143 /* skinning.txt */,
-				DB96855013A79A1B00616143 /* VertexColorShader.xml */,
-			);
-			path = Shaders;
-			sourceTree = "<group>";
-		};
 		DB96855613A79BC700616143 /* Apps */ = {
 			isa = PBXGroup;
 			children = (
@@ -2806,7 +2495,7 @@
 				DB0F541113A7C6300019FBE6 /* Boston */,
 				DB0F541613A7C6B90019FBE6 /* LightPropagationVolumes */,
 				DB0F546D13A7C7280019FBE6 /* Monster */,
-				DBC4A0AE13D4A6C40092C9E7 /* nBodies */,
+				DB082E8F13E6FB0100FB75DA /* Tests */,
 				DB0F54A713A7C80C0019FBE6 /* V8Engine */,
 				DB0F54C213A7C8A50019FBE6 /* VICON */,
 				DB0F54C813A7C8A50019FBE6 /* VIDEO */,
@@ -3074,33 +2763,6 @@
 				DB9FCD7713C7A4B200A23B69 /* prettify.js */,
 			);
 			path = OperatorEditor;
-			sourceTree = "<group>";
-		};
-		DBC4A0AE13D4A6C40092C9E7 /* nBodies */ = {
-			isa = PBXGroup;
-			children = (
-				DBC4A0B413D4A6C40092C9E7 /* nBodySimulation.html */,
-				DBC4A0AF13D4A6C40092C9E7 /* CL */,
-				DBC4A0B113D4A6C40092C9E7 /* KL */,
-			);
-			path = nBodies;
-			sourceTree = "<group>";
-		};
-		DBC4A0AF13D4A6C40092C9E7 /* CL */ = {
-			isa = PBXGroup;
-			children = (
-				DBC4A0B013D4A6C40092C9E7 /* nBodyKernel.cl */,
-			);
-			path = CL;
-			sourceTree = "<group>";
-		};
-		DBC4A0B113D4A6C40092C9E7 /* KL */ = {
-			isa = PBXGroup;
-			children = (
-				DBC4A0B213D4A6C40092C9E7 /* nBodyOp.kl */,
-				DBC4A0B313D4A6C40092C9E7 /* nBodyOpGPU.kl */,
-			);
-			path = KL;
 			sourceTree = "<group>";
 		};
 		DBCCD55B13ABE93D00024113 /* Linux */ = {
