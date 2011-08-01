@@ -92,9 +92,7 @@ namespace Fabric
 
       RC::ConstHandle<KL::Source> source = KL::StringSource::Create( m_sourceCode );
       RC::Handle<KL::Scanner> scanner = KL::Scanner::Create( source );
-      Util::Timer timer;
       m_ast = AST::GlobalList::Create( m_ast, KL::Parse( scanner, m_diagnostics ) );
-      FABRIC_LOG( "KL::Parse: %fms", timer.getElapsedMS(true) );
       if ( !m_diagnostics.containsError() )
         compileAST( true );
     }
@@ -129,18 +127,14 @@ namespace Fabric
         return;
       }
       
-      Util::Timer timer;
       m_ast->llvmPrepareModule( moduleBuilder, diagnostics );
-      FABRIC_LOG( "m_ast->llvmPrepareModule(): %fms", timer.getElapsedMS(true) );
       if ( !diagnostics.containsError() )
       {
         m_ast->llvmCompileToModule( moduleBuilder, diagnostics, false );
-        FABRIC_LOG( "m_ast->llvmCompileToModule(false): %fms", timer.getElapsedMS(true) );
       }
       if ( !diagnostics.containsError() )
       {
         m_ast->llvmCompileToModule( moduleBuilder, diagnostics, true );
-        FABRIC_LOG( "m_ast->llvmCompileToModule(true): %fms", timer.getElapsedMS(true) );
       }
       if ( !diagnostics.containsError() )
       {

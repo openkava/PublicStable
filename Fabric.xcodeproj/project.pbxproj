@@ -25,6 +25,7 @@
 		DB082E9113E6FB0100FB75DA /* ObjLoadTest.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = ObjLoadTest.html; sourceTree = "<group>"; };
 		DB082E9213E6FB3C00FB75DA /* Resources */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Resources; sourceTree = "<group>"; };
 		DB082F2E13E6FD3400FB75DA /* OBJ */ = {isa = PBXFileReference; lastKnownFileType = folder; path = OBJ; sourceTree = "<group>"; };
+		DB0831D513E7606800FB75DA /* Core */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Core; sourceTree = "<group>"; };
 		DB96855A13A79BC700616143 /* BackgroundTexture.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = BackgroundTexture.html; sourceTree = "<group>"; };
 		DB96855B13A79BC700616143 /* CharacterSkeleton.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = CharacterSkeleton.html; sourceTree = "<group>"; };
 		DB96855C13A79BC700616143 /* CharacterSkinning.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = CharacterSkinning.html; sourceTree = "<group>"; };
@@ -170,17 +171,9 @@
 		DB9CD98B13D3C69400CCB0E6 /* CMakeLists.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = CMakeLists.txt; sourceTree = "<group>"; };
 		DB9CD98C13D3C69400CCB0E6 /* json_verify.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = json_verify.c; sourceTree = "<group>"; };
 		DB9CD98D13D3C69400CCB0E6 /* YAJLDoc.cmake */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = YAJLDoc.cmake; sourceTree = "<group>"; };
-		DB9CDA1113D3CA1500CCB0E6 /* MemberDecl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MemberDecl.cpp; sourceTree = "<group>"; };
-		DB9CDA1213D3CA1500CCB0E6 /* MemberDecl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MemberDecl.h; sourceTree = "<group>"; };
-		DB9CDA1313D3CA1500CCB0E6 /* MemberDeclVector.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MemberDeclVector.cpp; sourceTree = "<group>"; };
-		DB9CDA1413D3CA1500CCB0E6 /* MemberDeclVector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MemberDeclVector.h; sourceTree = "<group>"; };
 		DB9FCD7513C7A4B200A23B69 /* operatorEditor.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = operatorEditor.html; sourceTree = "<group>"; };
 		DB9FCD7613C7A4B200A23B69 /* prettify.css */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.css; path = prettify.css; sourceTree = "<group>"; };
 		DB9FCD7713C7A4B200A23B69 /* prettify.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = prettify.js; sourceTree = "<group>"; };
-		DBC987B013D7750E00E0FA31 /* VarDeclStatement.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = VarDeclStatement.cpp; sourceTree = "<group>"; };
-		DBC987B113D7750E00E0FA31 /* VarDeclStatement.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VarDeclStatement.h; sourceTree = "<group>"; };
-		DBC987B213D7764800E0FA31 /* VarDeclVector.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = VarDeclVector.cpp; sourceTree = "<group>"; };
-		DBC987B313D7764800E0FA31 /* VarDeclVector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VarDeclVector.h; sourceTree = "<group>"; };
 		DBCCD55C13ABE93D00024113 /* install.sh.template */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = install.sh.template; sourceTree = "<group>"; };
 		DBCCD55D13ABE93D00024113 /* SConscript */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = SConscript; sourceTree = "<group>"; };
 		DBCCD56613ABFAE300024113 /* SConscript */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = SConscript; sourceTree = "<group>"; };
@@ -188,25 +181,10 @@
 		DBCCD56913ABFAE300024113 /* timeSample.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = timeSample.cpp; sourceTree = "<group>"; };
 		DBCCD56A13ABFAE300024113 /* TimeSample.fpm.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = TimeSample.fpm.json; sourceTree = "<group>"; };
 		DBCCD57B13AC007D00024113 /* currentTime.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = currentTime.html; sourceTree = "<group>"; };
-		DBD4333713D8925300E57C5F /* SourceRange.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SourceRange.cpp; sourceTree = "<group>"; };
-		DBD4338B13D89E2A00E57C5F /* Compiler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Compiler.h; sourceTree = "<group>"; };
-		DBD4338C13D89E2A00E57C5F /* Compiler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Compiler.cpp; sourceTree = "<group>"; };
 		DBD4340013D8B7D700E57C5F /* nBodySimulation.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = nBodySimulation.html; sourceTree = "<group>"; };
 		DBD4340113D8B7D700E57C5F /* Tesselation.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = Tesselation.html; sourceTree = "<group>"; };
 		DBD4340213D8B7FA00E57C5F /* nBodyOp.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = nBodyOp.kl; sourceTree = "<group>"; };
 		DBD4340313D8B7FA00E57C5F /* nBodyOpGPU.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = nBodyOpGPU.kl; sourceTree = "<group>"; };
-		DBDB624613D3B1B600F745C8 /* ExprVector.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ExprVector.cpp; sourceTree = "<group>"; };
-		DBDB624713D3B1B600F745C8 /* ExprVector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ExprVector.h; sourceTree = "<group>"; };
-		DBDB626013D3B33700F745C8 /* StatementVector.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StatementVector.cpp; sourceTree = "<group>"; };
-		DBDB626113D3B33700F745C8 /* StatementVector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StatementVector.h; sourceTree = "<group>"; };
-		DBDB628013D3B6A700F745C8 /* CaseVector.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CaseVector.cpp; sourceTree = "<group>"; };
-		DBDB628113D3B6A700F745C8 /* CaseVector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CaseVector.h; sourceTree = "<group>"; };
-		DBF56D2413C4B4F800778A06 /* ConstStringImpl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ConstStringImpl.h; sourceTree = "<group>"; };
-		DBF56D2513C4B58400778A06 /* ConstStringImpl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ConstStringImpl.cpp; sourceTree = "<group>"; };
-		DBF56D5913C4BCDA00778A06 /* ConstStringDesc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ConstStringDesc.cpp; sourceTree = "<group>"; };
-		DBF56D5A13C4BCDA00778A06 /* ConstStringDesc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ConstStringDesc.h; sourceTree = "<group>"; };
-		DBF56D5F13C4CA6A00778A06 /* ConstStringAdapter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ConstStringAdapter.cpp; sourceTree = "<group>"; };
-		DBF56D6013C4CA6A00778A06 /* ConstStringAdapter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ConstStringAdapter.h; sourceTree = "<group>"; };
 		DBF56E4F13C63B6000778A06 /* generate.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = generate.py; sourceTree = "<group>"; };
 		DBF56E5013C63B6000778A06 /* ogl.cpp_template */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ogl.cpp_template; sourceTree = "<group>"; };
 		DBF56E5113C63B6000778A06 /* SConscript */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = SConscript; sourceTree = "<group>"; };
@@ -313,7 +291,7 @@
 				DB967E0213A543F600616143 /* Test */,
 				DB96717213A5423100616143 /* Clients */,
 				DB96842313A5445100616143 /* Tools */,
-				DB9671A313A5423200616143 /* Core */,
+				DB0831D513E7606800FB75DA /* Core */,
 				DB96713D13A5423100616143 /* Base */,
 				DB967F6013A5440A00616143 /* ThirdParty */,
 			);
@@ -404,132 +382,6 @@
 			children = (
 			);
 			path = Windows;
-			sourceTree = "<group>";
-		};
-		DB9671A313A5423200616143 /* Core */ = {
-			isa = PBXGroup;
-			children = (
-				DB96731313A5423200616143 /* V8Ext */,
-				DB96724913A5423200616143 /* DG */,
-				DB9672AF13A5423200616143 /* Plug */,
-				DB96727513A5423200616143 /* IO */,
-				DB9672A213A5423200616143 /* OCL */,
-				DB96728013A5423200616143 /* KL */,
-				DB9671A413A5423200616143 /* AST */,
-				DB96721813A5423200616143 /* CG */,
-				DB9672B913A5423200616143 /* RT */,
-				DB96727E13A5423200616143 /* JSON */,
-				DB96728D13A5423200616143 /* MT */,
-				DB9672F313A5423200616143 /* Util */,
-			);
-			path = Core;
-			sourceTree = "<group>";
-		};
-		DB9671A413A5423200616143 /* AST */ = {
-			isa = PBXGroup;
-			children = (
-				DBDB628013D3B6A700F745C8 /* CaseVector.cpp */,
-				DBDB628113D3B6A700F745C8 /* CaseVector.h */,
-				DBDB624613D3B1B600F745C8 /* ExprVector.cpp */,
-				DBDB624713D3B1B600F745C8 /* ExprVector.h */,
-				DB9CDA1113D3CA1500CCB0E6 /* MemberDecl.cpp */,
-				DB9CDA1213D3CA1500CCB0E6 /* MemberDecl.h */,
-				DB9CDA1313D3CA1500CCB0E6 /* MemberDeclVector.cpp */,
-				DB9CDA1413D3CA1500CCB0E6 /* MemberDeclVector.h */,
-				DBDB626013D3B33700F745C8 /* StatementVector.cpp */,
-				DBDB626113D3B33700F745C8 /* StatementVector.h */,
-				DBC987B013D7750E00E0FA31 /* VarDeclStatement.cpp */,
-				DBC987B113D7750E00E0FA31 /* VarDeclStatement.h */,
-				DBC987B213D7764800E0FA31 /* VarDeclVector.cpp */,
-				DBC987B313D7764800E0FA31 /* VarDeclVector.h */,
-			);
-			path = AST;
-			sourceTree = "<group>";
-		};
-		DB96721813A5423200616143 /* CG */ = {
-			isa = PBXGroup;
-			children = (
-				DBF56D5F13C4CA6A00778A06 /* ConstStringAdapter.cpp */,
-				DBF56D6013C4CA6A00778A06 /* ConstStringAdapter.h */,
-			);
-			path = CG;
-			sourceTree = "<group>";
-		};
-		DB96724913A5423200616143 /* DG */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = DG;
-			sourceTree = "<group>";
-		};
-		DB96727513A5423200616143 /* IO */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = IO;
-			sourceTree = "<group>";
-		};
-		DB96727E13A5423200616143 /* JSON */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = JSON;
-			sourceTree = "<group>";
-		};
-		DB96728013A5423200616143 /* KL */ = {
-			isa = PBXGroup;
-			children = (
-				DBD4338C13D89E2A00E57C5F /* Compiler.cpp */,
-				DBD4338B13D89E2A00E57C5F /* Compiler.h */,
-				DBD4333713D8925300E57C5F /* SourceRange.cpp */,
-			);
-			path = KL;
-			sourceTree = "<group>";
-		};
-		DB96728D13A5423200616143 /* MT */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = MT;
-			sourceTree = "<group>";
-		};
-		DB9672A213A5423200616143 /* OCL */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = OCL;
-			sourceTree = "<group>";
-		};
-		DB9672AF13A5423200616143 /* Plug */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Plug;
-			sourceTree = "<group>";
-		};
-		DB9672B913A5423200616143 /* RT */ = {
-			isa = PBXGroup;
-			children = (
-				DBF56D5913C4BCDA00778A06 /* ConstStringDesc.cpp */,
-				DBF56D5A13C4BCDA00778A06 /* ConstStringDesc.h */,
-				DBF56D2513C4B58400778A06 /* ConstStringImpl.cpp */,
-				DBF56D2413C4B4F800778A06 /* ConstStringImpl.h */,
-			);
-			path = RT;
-			sourceTree = "<group>";
-		};
-		DB9672F313A5423200616143 /* Util */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Util;
-			sourceTree = "<group>";
-		};
-		DB96731313A5423200616143 /* V8Ext */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = V8Ext;
 			sourceTree = "<group>";
 		};
 		DB96731913A5423200616143 /* DevServer */ = {
