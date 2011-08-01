@@ -563,6 +563,7 @@ array_modifier
   | TOKEN_LBRACKET TOKEN_CONST_UI TOKEN_RBRACKET array_modifier
   {
     size_t length = Util::parseSize( *$2 );
+    delete $2;
 
     if ( length == 0 )
     {
