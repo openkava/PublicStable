@@ -11,7 +11,7 @@
 #include <Fabric/Core/DG/Context.h>
 #include <Fabric/Core/DG/CodeManager.h>
 #include <Fabric/Core/DG/Function.h>
-#include <Fabric/Core/AST/GlobalVector.h>
+#include <Fabric/Core/AST/GlobalList.h>
 #include <Fabric/Core/AST/Function.h>
 #include <Fabric/Core/AST/Operator.h>
 #include <Fabric/Core/CG/Manager.h>
@@ -206,7 +206,7 @@ namespace Fabric
       }
     }
     
-    RC::ConstHandle<AST::GlobalVector> Operator::getAST() const
+    RC::ConstHandle<AST::GlobalList> Operator::getAST() const
     {
       if ( !m_code )
         throw Exception( "operator is not compiled" );
@@ -226,13 +226,12 @@ namespace Fabric
       FABRIC_ASSERT( m_entryFunctionName.length() > 0 );
       FABRIC_ASSERT( m_code );
 
-      RC::ConstHandle<AST::GlobalVector> ast = m_code->getAST();
-      for( size_t i = 0, end = ast->size(); i < end; i++ )
+      RC::ConstHandle<AST::GlobalList> ast = m_code->getAST();
+      std::vector< RC::ConstHandle<AST::Function> > functions;
+      ast->collectFunctions( functions );
+      for ( std::vector< RC::ConstHandle<AST::Function> >::const_iterator it=functions.begin(); it!=functions.end(); ++it )
       {
-        RC::ConstHandle<AST::Global> global = ast->get( i );
-        if ( !global->isFunction() )
-          continue;
-        RC::ConstHandle<AST::Function> function = RC::ConstHandle<AST::Function>::StaticCast( global );
+        RC::ConstHandle<AST::Function> const &function = *it;
         
         std::string const *friendlyName = function->getFriendlyName( m_context->getCGManager() );
         if ( friendlyName && *friendlyName == m_entryFunctionName )

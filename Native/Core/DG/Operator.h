@@ -35,7 +35,7 @@ namespace Fabric
   
   namespace AST
   {
-    class GlobalVector;
+    class GlobalList;
     class Operator;
   };
   
@@ -82,8 +82,8 @@ namespace Fabric
         m_mainThreadOnly = mainThreadOnly;
       }
       
-      RC::ConstHandle<AST::GlobalVector> getAST() const;
-      void setAST( RC::ConstHandle<AST::GlobalVector> const &ast );
+      RC::ConstHandle<AST::GlobalList> getAST() const;
+      void setAST( RC::ConstHandle<AST::GlobalList> const &ast );
       
       CG::Diagnostics const &getDiagnostics() const;
 

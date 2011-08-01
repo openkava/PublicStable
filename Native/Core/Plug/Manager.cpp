@@ -7,7 +7,7 @@
 
 #include <Fabric/Core/RT/Manager.h>
 #include <Fabric/Core/CG/Manager.h>
-#include <Fabric/Core/AST/GlobalVector.h>
+#include <Fabric/Core/AST/GlobalList.h>
 #include <Fabric/Core/DG/Context.h>
 #include <Fabric/Core/IO/Dir.h>
 #include <Fabric/Base/JSON/Object.h>
@@ -122,11 +122,11 @@ namespace Fabric
       return result;
     }
       
-    RC::ConstHandle<AST::GlobalVector> Manager::getAST() const
+    RC::ConstHandle<AST::GlobalList> Manager::getAST() const
     {
-      RC::ConstHandle<AST::GlobalVector> result;
+      RC::ConstHandle<AST::GlobalList> result;
       for ( NameToInstMap::const_iterator it=m_nameToInstMap.begin(); it!=m_nameToInstMap.end(); ++it )
-        result = AST::GlobalVector::Create( result, it->second->getAST() );
+        result = AST::GlobalList::Create( result, it->second->getAST() );
       return result;
     }
     

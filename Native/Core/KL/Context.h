@@ -5,7 +5,7 @@
 #ifndef _FABRIC_KL_CONTEXT_H
 #define _FABRIC_KL_CONTEXT_H
 
-#include <Fabric/Core/AST/GlobalVector.h>
+#include <Fabric/Core/AST/GlobalList.h>
 #include <Fabric/Core/CG/Diagnostics.h>
 #include <Fabric/Core/CG/Adapter.h>
 #include <Fabric/Core/CG/Manager.h>
@@ -33,7 +33,7 @@ namespace Fabric
 
       RC::Handle<KL::Scanner> m_scanner;
       CG::Diagnostics &m_diagnostics;
-      RC::ConstHandle<AST::GlobalVector> m_resultGlobalList;
+      RC::ConstHandle<AST::GlobalList> m_resultGlobalList;
     };
   }
 }

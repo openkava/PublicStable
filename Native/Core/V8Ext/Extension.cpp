@@ -14,6 +14,7 @@
 #include <Fabric/Core/IO/Manager.h>
 #include <Fabric/Core/OCL/OCL.h>
 #include <Fabric/Core/Plug/Manager.h>
+#include <stdlib.h>
 
 namespace Fabric
 {
