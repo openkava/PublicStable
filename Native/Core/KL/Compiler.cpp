@@ -26,7 +26,7 @@ namespace Fabric
       RC::ConstHandle<Source> source = StringSource::Create( klSource );
       RC::Handle<Scanner> scanner = Scanner::Create( source );
       CG::Diagnostics diagnostics;
-      RC::ConstHandle<AST::GlobalVector> ast = KL::Parse( scanner, diagnostics );
+      RC::ConstHandle<AST::GlobalList> ast = KL::Parse( scanner, diagnostics );
       if ( diagnostics.containsError() )
         throw Exception( "KL compile failed" );
       return ast;

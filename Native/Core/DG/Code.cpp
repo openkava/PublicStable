@@ -8,7 +8,7 @@
 #include <Fabric/Core/OCL/OCL.h>
 #include <Fabric/Core/RT/Manager.h>
 #include <Fabric/Core/CG/ModuleBuilder.h>
-#include <Fabric/Core/AST/GlobalVector.h>
+#include <Fabric/Core/AST/GlobalList.h>
 #include <Fabric/Core/AST/Function.h>
 #include <Fabric/Core/AST/Operator.h>
 #include <Fabric/Core/RT/Impl.h>
@@ -80,20 +80,20 @@ namespace Fabric
       
       FABRIC_ASSERT( m_sourceCode.length() > 0 );
       
-      m_ast = AST::GlobalVector::Create();
+      m_ast = AST::GlobalList::Create();
       std::vector< RC::ConstHandle<RT::Desc> > topoSortedDescs = m_context->getRTManager()->getTopoSortedDescs();
       for ( size_t i=0; i<topoSortedDescs.size(); ++i )
       {
         RC::ConstHandle<RT::Desc> const &desc = topoSortedDescs[i];
-        RC::ConstHandle<AST::GlobalVector> ast = RC::ConstHandle<AST::GlobalVector>::StaticCast( desc->getKLBindingsAST() );
-        m_ast = AST::GlobalVector::Create( m_ast, ast );
+        RC::ConstHandle<AST::GlobalList> ast = RC::ConstHandle<AST::GlobalList>::StaticCast( desc->getKLBindingsAST() );
+        m_ast = AST::GlobalList::Create( m_ast, ast );
       }
-      m_ast = AST::GlobalVector::Create( m_ast, Plug::Manager::Instance()->getAST() );
+      m_ast = AST::GlobalList::Create( m_ast, Plug::Manager::Instance()->getAST() );
 
       RC::ConstHandle<KL::Source> source = KL::StringSource::Create( m_sourceCode );
       RC::Handle<KL::Scanner> scanner = KL::Scanner::Create( source );
       Util::Timer timer;
-      m_ast = AST::GlobalVector::Create( m_ast, KL::Parse( scanner, m_diagnostics ) );
+      m_ast = AST::GlobalList::Create( m_ast, KL::Parse( scanner, m_diagnostics ) );
       FABRIC_LOG( "KL::Parse: %fms", timer.getElapsedMS(true) );
       if ( !m_diagnostics.containsError() )
         compileAST( true );
@@ -211,7 +211,7 @@ namespace Fabric
     }
 #endif
     
-    RC::ConstHandle<AST::GlobalVector> Code::getAST() const
+    RC::ConstHandle<AST::GlobalList> Code::getAST() const
     {
       return m_ast;
     }

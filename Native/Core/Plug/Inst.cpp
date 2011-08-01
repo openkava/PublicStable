@@ -10,7 +10,7 @@
 #include <Fabric/Core/KL/Scanner.h>
 #include <Fabric/Core/KL/Parser.hpp>
 #include <Fabric/Core/AST/Function.h>
-#include <Fabric/Core/AST/GlobalVector.h>
+#include <Fabric/Core/AST/GlobalList.h>
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/CG/ModuleBuilder.h>
 #include <Fabric/Core/DG/Context.h>
@@ -107,12 +107,11 @@ namespace Fabric
       
       if ( !m_disabled )
       {
-        for ( AST::GlobalVector::const_iterator it=m_ast->begin(); it!=m_ast->end(); ++it )
+        std::vector< RC::ConstHandle<AST::Function> > functions;
+        m_ast->collectFunctions( functions );
+        for ( std::vector< RC::ConstHandle<AST::Function> >::const_iterator it=functions.begin(); it!=functions.end(); ++it )
         {
-          RC::ConstHandle<AST::Global> global = *it;
-          if ( !global->isFunction() )
-            continue;
-          RC::ConstHandle<AST::Function> function = RC::ConstHandle<AST::Function>::StaticCast( global );
+          RC::ConstHandle<AST::Function> const &function = *it;
           
           if ( !function->getBody() )
           {
@@ -204,7 +203,7 @@ namespace Fabric
     }
 
       
-    RC::ConstHandle<AST::GlobalVector> Inst::getAST() const
+    RC::ConstHandle<AST::GlobalList> Inst::getAST() const
     {
       return m_ast;
     }
