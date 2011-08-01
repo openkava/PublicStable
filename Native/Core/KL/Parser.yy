@@ -1332,7 +1332,13 @@ int kl_lex( YYSTYPE *yys, YYLTYPE *yyl, KL::Context &context )
     }
   }
   
-  yys->valueStringPtr = new std::string( token.toString() );
+  if ( token.getType() == TOKEN_CONST_UI
+    || token.getType() == TOKEN_CONST_FP
+    || token.getType() == TOKEN_CONST_STRING_SQUOT
+    || token.getType() == TOKEN_CONST_STRING_DQUOT
+    || token.getType() == TOKEN_IDENTIFIER )
+    yys->valueStringPtr = new std::string( token.toString() );
+
   yyl->first_line = startLocation.getLine();
   yyl->first_column = startLocation.getColumn();
   yyl->last_line = endLocation.getLine();
