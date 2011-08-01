@@ -49,6 +49,16 @@ namespace Fabric
         m_after->appendJSON( jsonArrayGenerator );
     }
     
+    void GlobalList::registerTypes( RC::Handle<RT::Manager> const &rtManager, CG::Diagnostics &diagnostics ) const
+    {
+      if ( m_before )
+        m_before->registerTypes( rtManager, diagnostics );
+      if ( m_global )
+        m_global->registerTypes( rtManager, diagnostics );
+      if ( m_after )
+        m_after->registerTypes( rtManager, diagnostics );
+    }
+    
     void GlobalList::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
     {
       if ( m_before )

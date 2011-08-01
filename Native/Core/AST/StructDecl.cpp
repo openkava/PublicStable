@@ -45,11 +45,8 @@ namespace Fabric
       m_members->appendJSON( jsonObjectGenerator.makeMember( "members" ) );
     }
     
-    void StructDecl::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    void StructDecl::registerTypes( RC::Handle<RT::Manager> const &rtManager, CG::Diagnostics &diagnostics ) const
     {
-      m_members->llvmPrepareModule( moduleBuilder, diagnostics );
-
-      RC::Handle<RT::Manager> rtManager = moduleBuilder.getManager()->getRTManager();
       RT::StructMemberInfoVector structMemberInfoVector;
       m_members->buildStructMemberInfoVector( rtManager, structMemberInfoVector );
       try
@@ -60,6 +57,12 @@ namespace Fabric
       {
         addError( diagnostics, e.getDesc() );
       }
+    }
+    
+    void StructDecl::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    {
+      m_members->llvmPrepareModule( moduleBuilder, diagnostics );
+      registerTypes( moduleBuilder.getManager()->getRTManager(), diagnostics );
     }
 
     void StructDecl::llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctionBodies ) const

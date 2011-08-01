@@ -116,6 +116,8 @@ namespace Fabric
       else
       {
         result = Inst::Create( name, jsonDesc, pluginDirs, cgManager );
+        CG::Diagnostics diagnostics;
+        result->getAST()->registerTypes( cgManager->getRTManager(), diagnostics );
         m_nameToInstMap.insert( NameToInstMap::value_type( name, result ) );
       }
       

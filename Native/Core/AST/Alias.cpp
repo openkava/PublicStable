@@ -43,19 +43,28 @@ namespace Fabric
       jsonObjectGenerator.makeMember( "oldTypeName" ).makeString( m_adapterName );
     }
     
-    void Alias::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    void Alias::registerTypes( RC::Handle<RT::Manager> const &rtManager, CG::Diagnostics &diagnostics ) const
     {
-      RC::ConstHandle<CG::Adapter> adapter = moduleBuilder.getAdapter( m_adapterName, getLocation() );
       try
       {
-        RC::ConstHandle<RT::Desc> aliasDesc = moduleBuilder.getManager()->getRTManager()->registerAlias( m_name, adapter->getDesc() );
-        RC::ConstHandle<CG::Adapter> aliasAdapter = moduleBuilder.getAdapter( m_adapterName, getLocation() );
-        aliasAdapter->llvmPrepareModule( moduleBuilder, true );
+        RC::ConstHandle<RT::Desc> desc = rtManager->getDesc( m_adapterName );
+        rtManager->registerAlias( m_name, desc );
       }
       catch ( Exception e )
       {
         addError( diagnostics, e.getDesc() );
       }
+    }
+    
+    void Alias::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    {
+      registerTypes( moduleBuilder.getManager()->getRTManager(), diagnostics );
+      
+      RC::ConstHandle<CG::Adapter> adapter = moduleBuilder.getAdapter( m_adapterName, getLocation() );
+      adapter->llvmPrepareModule( moduleBuilder, true );
+      
+      RC::ConstHandle<CG::Adapter> aliasAdapter = moduleBuilder.getAdapter( m_name, getLocation() );
+      aliasAdapter->llvmPrepareModule( moduleBuilder, true );
     }
   };
 };
