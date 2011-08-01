@@ -21,12 +21,19 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXFileReference section */
+<<<<<<< HEAD
 		DB082E9013E6FB0100FB75DA /* LightsTest.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = LightsTest.html; sourceTree = "<group>"; };
 		DB082E9113E6FB0100FB75DA /* ObjLoadTest.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = ObjLoadTest.html; sourceTree = "<group>"; };
 		DB082E9213E6FB3C00FB75DA /* Resources */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Resources; sourceTree = "<group>"; };
 		DB082F2E13E6FD3400FB75DA /* OBJ */ = {isa = PBXFileReference; lastKnownFileType = folder; path = OBJ; sourceTree = "<group>"; };
+=======
+		DB08301713E7436A00FB75DA /* KL */ = {isa = PBXFileReference; lastKnownFileType = folder; path = KL; sourceTree = "<group>"; };
+		DB08306E13E7450800FB75DA /* RT */ = {isa = PBXFileReference; lastKnownFileType = folder; path = RT; sourceTree = "<group>"; };
+>>>>>>> origin/master
 		DB0914A213DF39C8000B1A0F /* ResourceLoadNode.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ResourceLoadNode.cpp; sourceTree = "<group>"; };
 		DB0914A313DF39C8000B1A0F /* ResourceLoadNode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ResourceLoadNode.h; sourceTree = "<group>"; };
+		DB0914D913E1BC99000B1A0F /* GlobalList.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GlobalList.cpp; sourceTree = "<group>"; };
+		DB0914DA13E1BC99000B1A0F /* GlobalList.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GlobalList.h; sourceTree = "<group>"; };
 		DB0F540713A7C5500019FBE6 /* .gitignore */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 		DB0F540813A7C5500019FBE6 /* BigGuy.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = BigGuy.html; sourceTree = "<group>"; };
 		DB0F540F13A7C6120019FBE6 /* bundle-private-web-resources.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = "bundle-private-web-resources.sh"; sourceTree = "<group>"; };
@@ -93,8 +100,6 @@
 		DB7867F513CE38C300DEF8DA /* Cond.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Cond.h; sourceTree = "<group>"; };
 		DB78683313CE484500DEF8DA /* Thread.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Thread.h; sourceTree = "<group>"; };
 		DB9225E013D3A87200398753 /* Vector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Vector.h; sourceTree = "<group>"; };
-		DB9225E113D3A9FA00398753 /* GlobalVector.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GlobalVector.cpp; sourceTree = "<group>"; };
-		DB9225E213D3A9FA00398753 /* GlobalVector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GlobalVector.h; sourceTree = "<group>"; };
 		DB92265D13D3AA9B00398753 /* ParamVector.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ParamVector.cpp; sourceTree = "<group>"; };
 		DB92265E13D3AA9B00398753 /* ParamVector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ParamVector.h; sourceTree = "<group>"; };
 		DB966DC513A5422000616143 /* .gitignore */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
@@ -891,6 +896,48 @@
 		DB9684B513A7984500616143 /* FABRIC.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = FABRIC.js; sourceTree = "<group>"; };
 		DB9684B613A7984600616143 /* shell.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = shell.html; sourceTree = "<group>"; };
 		DB9684BD13A79A1500616143 /* CurveEditor.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = CurveEditor.html; sourceTree = "<group>"; };
+<<<<<<< HEAD
+=======
+		DB9684BF13A79A1500616143 /* FABRIC.SceneGraph.Animation.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = FABRIC.SceneGraph.Animation.js; sourceTree = "<group>"; };
+		DB9684C013A79A1500616143 /* FABRIC.SceneGraph.Characters.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = FABRIC.SceneGraph.Characters.js; sourceTree = "<group>"; };
+		DB9684C113A79A1500616143 /* FABRIC.SceneGraph.CharacterSolvers.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = FABRIC.SceneGraph.CharacterSolvers.js; sourceTree = "<group>"; };
+		DB9684C213A79A1600616143 /* FABRIC.SceneGraph.Geometry.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = FABRIC.SceneGraph.Geometry.js; sourceTree = "<group>"; };
+		DB9684C313A79A1600616143 /* FABRIC.SceneGraph.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = FABRIC.SceneGraph.js; sourceTree = "<group>"; };
+		DB9684C413A79A1600616143 /* FABRIC.SceneGraph.Kinematics.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = FABRIC.SceneGraph.Kinematics.js; sourceTree = "<group>"; };
+		DB9684C513A79A1600616143 /* FABRIC.SceneGraph.Lights.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = FABRIC.SceneGraph.Lights.js; sourceTree = "<group>"; };
+		DB9684C613A79A1600616143 /* FABRIC.SceneGraph.Manipulation.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = FABRIC.SceneGraph.Manipulation.js; sourceTree = "<group>"; };
+		DB9684C713A79A1600616143 /* FABRIC.SceneGraph.Materials.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = FABRIC.SceneGraph.Materials.js; sourceTree = "<group>"; };
+		DB9684C913A79A1600616143 /* FABRIC.SceneGraph.Particles.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = FABRIC.SceneGraph.Particles.js; sourceTree = "<group>"; };
+		DB9684CA13A79A1600616143 /* FABRIC.SceneGraph.Persistence.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = FABRIC.SceneGraph.Persistence.js; sourceTree = "<group>"; };
+		DB9684CB13A79A1600616143 /* FABRIC.SceneGraph.Primitives.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = FABRIC.SceneGraph.Primitives.js; sourceTree = "<group>"; };
+		DB96851413A79A1900616143 /* parseCollada.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = parseCollada.js; sourceTree = "<group>"; };
+		DB96851513A79A1900616143 /* parseMTL.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = parseMTL.js; sourceTree = "<group>"; };
+		DB96851613A79A1900616143 /* parseOBJ.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = parseOBJ.js; sourceTree = "<group>"; };
+		DB96851713A79A1900616143 /* parsePLY.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = parsePLY.js; sourceTree = "<group>"; };
+		DB96853A13A79A1B00616143 /* BloomPixelShader.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = BloomPixelShader.glsl; sourceTree = "<group>"; };
+		DB96853B13A79A1B00616143 /* EdgeDetectionPixelShader.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = EdgeDetectionPixelShader.glsl; sourceTree = "<group>"; };
+		DB96853C13A79A1B00616143 /* FilmicTonemapper.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = FilmicTonemapper.glsl; sourceTree = "<group>"; };
+		DB96853D13A79A1B00616143 /* FlatScreenSpaceShader.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = FlatScreenSpaceShader.xml; sourceTree = "<group>"; };
+		DB96853E13A79A1B00616143 /* FlatShader.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = FlatShader.xml; sourceTree = "<group>"; };
+		DB96853F13A79A1B00616143 /* FlatTextureShader.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = FlatTextureShader.xml; sourceTree = "<group>"; };
+		DB96854013A79A1B00616143 /* GaussianBlurFragmentShader.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = GaussianBlurFragmentShader.glsl; sourceTree = "<group>"; };
+		DB96854113A79A1B00616143 /* lighting.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = lighting.txt; sourceTree = "<group>"; };
+		DB96854213A79A1B00616143 /* NormalShader.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = NormalShader.xml; sourceTree = "<group>"; };
+		DB96854313A79A1B00616143 /* PhongBumpReflectShader.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = PhongBumpReflectShader.xml; sourceTree = "<group>"; };
+		DB96854413A79A1B00616143 /* PhongBumpReflectSkinningShader.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = PhongBumpReflectSkinningShader.xml; sourceTree = "<group>"; };
+		DB96854513A79A1B00616143 /* PhongShader.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = PhongShader.xml; sourceTree = "<group>"; };
+		DB96854613A79A1B00616143 /* PhongSkinningShader.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = PhongSkinningShader.xml; sourceTree = "<group>"; };
+		DB96854713A79A1B00616143 /* PhongTextureShader.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = PhongTextureShader.xml; sourceTree = "<group>"; };
+		DB96854813A79A1B00616143 /* PhongVertexColorShader.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = PhongVertexColorShader.xml; sourceTree = "<group>"; };
+		DB96854913A79A1B00616143 /* PointSpriteFragmentShader.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = PointSpriteFragmentShader.glsl; sourceTree = "<group>"; };
+		DB96854A13A79A1B00616143 /* PointSpriteVertexShader.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = PointSpriteVertexShader.glsl; sourceTree = "<group>"; };
+		DB96854B13A79A1B00616143 /* ShadowMapShader.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = ShadowMapShader.xml; sourceTree = "<group>"; };
+		DB96854C13A79A1B00616143 /* ShadowReceivingPhongShader.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = ShadowReceivingPhongShader.xml; sourceTree = "<group>"; };
+		DB96854D13A79A1B00616143 /* shadows.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = shadows.txt; sourceTree = "<group>"; };
+		DB96854E13A79A1B00616143 /* silhouetteGeometryShader.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = silhouetteGeometryShader.glsl; sourceTree = "<group>"; };
+		DB96854F13A79A1B00616143 /* skinning.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = skinning.txt; sourceTree = "<group>"; };
+		DB96855013A79A1B00616143 /* VertexColorShader.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = VertexColorShader.xml; sourceTree = "<group>"; };
+>>>>>>> origin/master
 		DB96855A13A79BC700616143 /* BackgroundTexture.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = BackgroundTexture.html; sourceTree = "<group>"; };
 		DB96855B13A79BC700616143 /* CharacterSkeleton.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = CharacterSkeleton.html; sourceTree = "<group>"; };
 		DB96855C13A79BC700616143 /* CharacterSkinning.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = CharacterSkinning.html; sourceTree = "<group>"; };
@@ -1480,8 +1527,8 @@
 				DB9671DE13A5423200616143 /* Global.h */,
 				DB9671DF13A5423200616143 /* GlobalConstDecl.cpp */,
 				DB9671E013A5423200616143 /* GlobalConstDecl.h */,
-				DB9225E113D3A9FA00398753 /* GlobalVector.cpp */,
-				DB9225E213D3A9FA00398753 /* GlobalVector.h */,
+				DB0914D913E1BC99000B1A0F /* GlobalList.cpp */,
+				DB0914DA13E1BC99000B1A0F /* GlobalList.h */,
 				DB9671E313A5423200616143 /* IndexOp.cpp */,
 				DB9671E413A5423200616143 /* IndexOp.h */,
 				DB9671E513A5423200616143 /* InitializedVarDecl.cpp */,
@@ -2479,6 +2526,73 @@
 			path = CurveEditor;
 			sourceTree = "<group>";
 		};
+<<<<<<< HEAD
+=======
+		DB9684BE13A79A1500616143 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				DB9684C313A79A1600616143 /* FABRIC.SceneGraph.js */,
+				DB9684BF13A79A1500616143 /* FABRIC.SceneGraph.Animation.js */,
+				DB9684C013A79A1500616143 /* FABRIC.SceneGraph.Characters.js */,
+				DB9684C113A79A1500616143 /* FABRIC.SceneGraph.CharacterSolvers.js */,
+				DB9684C213A79A1600616143 /* FABRIC.SceneGraph.Geometry.js */,
+				DB9684C413A79A1600616143 /* FABRIC.SceneGraph.Kinematics.js */,
+				DB9684C513A79A1600616143 /* FABRIC.SceneGraph.Lights.js */,
+				DB9684C613A79A1600616143 /* FABRIC.SceneGraph.Manipulation.js */,
+				DB9684C713A79A1600616143 /* FABRIC.SceneGraph.Materials.js */,
+				DB9684C913A79A1600616143 /* FABRIC.SceneGraph.Particles.js */,
+				DB9684CA13A79A1600616143 /* FABRIC.SceneGraph.Persistence.js */,
+				DB9684CB13A79A1600616143 /* FABRIC.SceneGraph.Primitives.js */,
+				DB08301713E7436A00FB75DA /* KL */,
+				DB96851313A79A1800616143 /* Parsers */,
+				DB08306E13E7450800FB75DA /* RT */,
+				DB96853913A79A1B00616143 /* Shaders */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		DB96851313A79A1800616143 /* Parsers */ = {
+			isa = PBXGroup;
+			children = (
+				DB96851413A79A1900616143 /* parseCollada.js */,
+				DB96851513A79A1900616143 /* parseMTL.js */,
+				DB96851613A79A1900616143 /* parseOBJ.js */,
+				DB96851713A79A1900616143 /* parsePLY.js */,
+			);
+			path = Parsers;
+			sourceTree = "<group>";
+		};
+		DB96853913A79A1B00616143 /* Shaders */ = {
+			isa = PBXGroup;
+			children = (
+				DB96853A13A79A1B00616143 /* BloomPixelShader.glsl */,
+				DB96853B13A79A1B00616143 /* EdgeDetectionPixelShader.glsl */,
+				DB96853C13A79A1B00616143 /* FilmicTonemapper.glsl */,
+				DB96853D13A79A1B00616143 /* FlatScreenSpaceShader.xml */,
+				DB96853E13A79A1B00616143 /* FlatShader.xml */,
+				DB96853F13A79A1B00616143 /* FlatTextureShader.xml */,
+				DB96854013A79A1B00616143 /* GaussianBlurFragmentShader.glsl */,
+				DB96854113A79A1B00616143 /* lighting.txt */,
+				DB96854213A79A1B00616143 /* NormalShader.xml */,
+				DB96854313A79A1B00616143 /* PhongBumpReflectShader.xml */,
+				DB96854413A79A1B00616143 /* PhongBumpReflectSkinningShader.xml */,
+				DB96854513A79A1B00616143 /* PhongShader.xml */,
+				DB96854613A79A1B00616143 /* PhongSkinningShader.xml */,
+				DB96854713A79A1B00616143 /* PhongTextureShader.xml */,
+				DB96854813A79A1B00616143 /* PhongVertexColorShader.xml */,
+				DB96854913A79A1B00616143 /* PointSpriteFragmentShader.glsl */,
+				DB96854A13A79A1B00616143 /* PointSpriteVertexShader.glsl */,
+				DB96854B13A79A1B00616143 /* ShadowMapShader.xml */,
+				DB96854C13A79A1B00616143 /* ShadowReceivingPhongShader.xml */,
+				DB96854D13A79A1B00616143 /* shadows.txt */,
+				DB96854E13A79A1B00616143 /* silhouetteGeometryShader.glsl */,
+				DB96854F13A79A1B00616143 /* skinning.txt */,
+				DB96855013A79A1B00616143 /* VertexColorShader.xml */,
+			);
+			path = Shaders;
+			sourceTree = "<group>";
+		};
+>>>>>>> origin/master
 		DB96855613A79BC700616143 /* Apps */ = {
 			isa = PBXGroup;
 			children = (

@@ -31,7 +31,7 @@ namespace Fabric
   
   namespace AST
   {
-    class GlobalVector;
+    class GlobalList;
   };
 
   namespace DG
@@ -72,7 +72,7 @@ namespace Fabric
         return m_code;
       }
       
-      RC::ConstHandle<AST::GlobalVector> getAST() const;
+      RC::ConstHandle<AST::GlobalList> getAST() const;
       void *llvmResolveExternalFunction( std::string const &name ) const;
 
       virtual RC::Handle<JSON::Object> jsonDesc() const;
@@ -94,7 +94,7 @@ namespace Fabric
       std::string m_jsonDesc;
       Desc m_desc;
       std::string m_code;
-      RC::ConstHandle<AST::GlobalVector> m_ast;
+      RC::ConstHandle<AST::GlobalList> m_ast;
       CG::Diagnostics m_diagnostics;
       ResolvedNameToSOLibHandleMap m_resolvedNameToSOLibHandleMap;
       std::vector<SOLibHandle> m_orderedSOLibHandles;

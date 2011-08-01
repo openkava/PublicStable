@@ -30,7 +30,7 @@ namespace Fabric
   
   namespace AST
   {
-    class GlobalVector;
+    class GlobalList;
   };
   
   namespace DG
@@ -57,7 +57,7 @@ namespace Fabric
         return m_nameToInstMap;
       }
       
-      RC::ConstHandle<AST::GlobalVector> getAST() const;
+      RC::ConstHandle<AST::GlobalList> getAST() const;
       void *llvmResolveExternalFunction( std::string const &name ) const;
 
       virtual RC::Handle<JSON::Object> jsonDesc() const;
