@@ -455,8 +455,6 @@ namespace Fabric
       {
         std::string type = argJSONObject->get( "type" )->toString()->value();
         desc = m_context->getRTManager()->getDesc( type );
-        if ( !desc )
-          throw Exception( _(type) + ": type not registered" );
       }
       catch ( Exception e )
       {
