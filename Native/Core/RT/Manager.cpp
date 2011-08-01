@@ -186,6 +186,9 @@ namespace Fabric
 
     RC::ConstHandle<RT::Desc> Manager::maybeGetDesc( std::string const &name ) const
     {
+      if ( name == "RGB[]" )
+        sleep(0);
+        
       char const *data = name.data();
       char const *dataEnd = data + name.length();
       
