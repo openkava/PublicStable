@@ -348,99 +348,106 @@ namespace Fabric
         throw "'name': " + e;
       }
       
-      RC::ConstHandle<JSON::Object> defaultValue;
       try
       {
-        defaultValue = argJSONObject->get( "defaultValue" )->toObject();
-      }
-      catch ( Exception e )
-      {
-        throw "'defaultValue': " + e;
-      }
-      
-      RT::StructMemberInfoVector memberInfos;
-      try
-      {
-        RC::ConstHandle<JSON::Array> membersArray = argJSONObject->get( "members" )->toArray();
-        size_t membersArraySize = membersArray->size();
-        for ( size_t i=0; i<membersArraySize; ++i )
+        RC::ConstHandle<JSON::Object> defaultValue;
+        try
         {
-          try
+          defaultValue = argJSONObject->get( "defaultValue" )->toObject();
+        }
+        catch ( Exception e )
+        {
+          throw "'defaultValue': " + e;
+        }
+        
+        RT::StructMemberInfoVector memberInfos;
+        try
+        {
+          RC::ConstHandle<JSON::Array> membersArray = argJSONObject->get( "members" )->toArray();
+          size_t membersArraySize = membersArray->size();
+          for ( size_t i=0; i<membersArraySize; ++i )
           {
-            RC::ConstHandle<JSON::Object> memberObject = membersArray->get(i)->toObject();
-            RT::StructMemberInfo memberInfo;
+            try
+            {
+              RC::ConstHandle<JSON::Object> memberObject = membersArray->get(i)->toObject();
+              RT::StructMemberInfo memberInfo;
 
-            try
-            {
-              memberInfo.name = memberObject->get( "name" )->toString()->value();
-            }
-            catch ( Exception e )
-            {
-              throw "'name': " + e;
-            }
-            
-            try
-            {
-              std::string typeName = memberObject->get( "type" )->toString()->value();
-              if ( typeName.empty() )
-                throw Exception( "must be non-empty" );
-              memberInfo.desc = getDesc( typeName );
-              if ( !memberInfo.desc )
-                throw Exception( "type " + _(typeName) + " not registered" );
-            }
-            catch ( Exception e )
-            {
-              throw "'type': " + e;
-            }
-            
-            memberInfo.defaultData.resize( memberInfo.desc->getSize() );
-            try
-            {
-              memberInfo.desc->setDataFromJSONValue( defaultValue->get( memberInfo.name ), &memberInfo.defaultData[0] );
-            }
-            catch ( Exception e )
-            {
-              throw _(memberInfo.name) + " default value: " + e;
-            }
+              try
+              {
+                memberInfo.name = memberObject->get( "name" )->toString()->value();
+              }
+              catch ( Exception e )
+              {
+                throw "'name': " + e;
+              }
+              
+              try
+              {
+                std::string typeName = memberObject->get( "type" )->toString()->value();
+                if ( typeName.empty() )
+                  throw Exception( "must be non-empty" );
+                memberInfo.desc = getDesc( typeName );
+                if ( !memberInfo.desc )
+                  throw Exception( "type " + _(typeName) + " not registered" );
+              }
+              catch ( Exception e )
+              {
+                throw "'type': " + e;
+              }
+              
+              memberInfo.defaultData.resize( memberInfo.desc->getSize() );
+              try
+              {
+                memberInfo.desc->setDataFromJSONValue( defaultValue->get( memberInfo.name ), &memberInfo.defaultData[0] );
+              }
+              catch ( Exception e )
+              {
+                throw _(memberInfo.name) + " default value: " + e;
+              }
 
-            memberInfos.push_back( memberInfo );
-          }
-          catch ( Exception e )
-          {
-            throw "index " + _(i) + ": " + e;
+              memberInfos.push_back( memberInfo );
+            }
+            catch ( Exception e )
+            {
+              throw "index " + _(i) + ": " + e;
+            }
           }
         }
-      }
-      catch ( Exception e )
-      {
-        throw "members: " + e;
-      }
-      
-      RC::ConstHandle<RC::Object> klBindingsAST;
-      try
-      {
-        RC::ConstHandle<JSON::Value> klBindingsJSONValue = argJSONObject->maybeGet( "kBindings" );
-        if ( klBindingsJSONValue )
+        catch ( Exception e )
         {
-          std::string klBindings = klBindingsJSONValue->toString()->value();
-          klBindingsAST = m_klCompiler->compile( klBindings );
+          throw "members: " + e;
         }
+        
+        RC::ConstHandle<RC::Object> klBindingsAST;
+        try
+        {
+          RC::ConstHandle<JSON::Value> klBindingsJSONValue = argJSONObject->maybeGet( "kBindings" );
+          if ( klBindingsJSONValue )
+          {
+            std::string klBindings = klBindingsJSONValue->toString()->value();
+            klBindingsAST = m_klCompiler->compile( klBindings );
+          }
+        }
+        catch ( Exception e )
+        {
+          throw "'kBindings': " + e;
+        }
+        
+        RC::ConstHandle< RT::StructDesc > structDesc = registerStruct( name, memberInfos );
+
+        for ( size_t i=0; i<memberInfos.size(); ++i )
+        {
+          RT::StructMemberInfo &memberInfo = memberInfos[i];
+          memberInfo.desc->disposeData( &memberInfo.defaultData[0] );
+        }
+
+        if ( klBindingsAST )
+          structDesc->setKLBindingsAST( klBindingsAST );
       }
       catch ( Exception e )
       {
-        throw "'kBindings': " + e;
+        throw "name " + _(name) + ": " + e;
       }
-      
-      RC::ConstHandle< RT::StructDesc > structDesc = registerStruct( name, memberInfos );
-
-      for ( size_t i=0; i<memberInfos.size(); ++i )
-      {
-        RT::StructMemberInfo &memberInfo = memberInfos[i];
-        memberInfo.desc->disposeData( &memberInfo.defaultData[0] );
-      }
-
-      if ( klBindingsAST )
-        structDesc->setKLBindingsAST( klBindingsAST );
     }
     
     RC::ConstHandle<Desc> Manager::getStrongerTypeOrNone( RC::ConstHandle<Desc> const &lhsDesc, RC::ConstHandle<Desc> const &rhsDesc ) const
