@@ -308,7 +308,7 @@ namespace Fabric
     {
       FABRIC_ASSERT( npp );
       Interface *interface = static_cast<Interface *>( npp->pdata );
-      int32_t result;
+      int32_t result = 0;
       try
       {
         result = interface->nppWrite( npp, stream, offset, len, buffer );
