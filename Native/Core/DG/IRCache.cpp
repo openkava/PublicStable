@@ -29,11 +29,8 @@ namespace Fabric
     
     void IRCache::subDirAndEntryFromSourceCode( RC::ConstHandle<AST::GlobalList> const &ast, RC::ConstHandle<IO::Dir> &subDir, std::string &entry ) const
     {
-      Util::Timer timer;
       Util::SimpleString astJSONString = ast->toJSON();
-      FABRIC_LOG( "ast->toJSON(): %fms", timer.getElapsedMS(true) );
       std::string prefixedSourceCodeMD5HexDigest = Util::md5HexDigest( astJSONString.getData(), astJSONString.getLength() );
-      FABRIC_LOG( "Util::md5HexDigest( astEncodedJSONValue ): %fms", timer.getElapsedMS(true) );
       subDir = IO::Dir::Create( m_dir, prefixedSourceCodeMD5HexDigest.substr( 0, 2 ) );
       entry = prefixedSourceCodeMD5HexDigest.substr( 2, 30 );
     }

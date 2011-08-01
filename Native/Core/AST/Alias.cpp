@@ -58,13 +58,17 @@ namespace Fabric
     
     void Alias::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
     {
-      registerTypes( moduleBuilder.getManager()->getRTManager(), diagnostics );
-      
-      RC::ConstHandle<CG::Adapter> adapter = moduleBuilder.getAdapter( m_adapterName, getLocation() );
-      adapter->llvmPrepareModule( moduleBuilder, true );
-      
-      RC::ConstHandle<CG::Adapter> aliasAdapter = moduleBuilder.getAdapter( m_name, getLocation() );
-      aliasAdapter->llvmPrepareModule( moduleBuilder, true );
+      try
+      {
+        RC::ConstHandle<CG::Adapter> adapter = moduleBuilder.getAdapter( m_adapterName, getLocation() );
+        moduleBuilder.getManager()->getRTManager()->registerAlias( m_name, adapter->getDesc() );
+        RC::ConstHandle<CG::Adapter> aliasAdapter = moduleBuilder.getAdapter( m_name, getLocation() );
+        aliasAdapter->llvmPrepareModule( moduleBuilder, true );
+      }
+      catch ( Exception e )
+      {
+        addError( diagnostics, e.getDesc() );
+      }
     }
   };
 };
