@@ -26,6 +26,7 @@
 		DB082E9213E6FB3C00FB75DA /* Resources */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Resources; sourceTree = "<group>"; };
 		DB082F2E13E6FD3400FB75DA /* OBJ */ = {isa = PBXFileReference; lastKnownFileType = folder; path = OBJ; sourceTree = "<group>"; };
 		DB0831D513E7606800FB75DA /* Core */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Core; sourceTree = "<group>"; };
+		DB76649C13E7B70D00D5F072 /* Clients */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Clients; sourceTree = "<group>"; };
 		DB96855A13A79BC700616143 /* BackgroundTexture.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = BackgroundTexture.html; sourceTree = "<group>"; };
 		DB96855B13A79BC700616143 /* CharacterSkeleton.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = CharacterSkeleton.html; sourceTree = "<group>"; };
 		DB96855C13A79BC700616143 /* CharacterSkinning.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = CharacterSkinning.html; sourceTree = "<group>"; };
@@ -288,8 +289,8 @@
 				DB96731913A5423200616143 /* DevServer */,
 				DB96733B13A5423300616143 /* Exts */,
 				DB96733813A5423300616143 /* EDK */,
+				DB76649C13E7B70D00D5F072 /* Clients */,
 				DB967E0213A543F600616143 /* Test */,
-				DB96717213A5423100616143 /* Clients */,
 				DB96842313A5445100616143 /* Tools */,
 				DB0831D513E7606800FB75DA /* Core */,
 				DB96713D13A5423100616143 /* Base */,
@@ -327,61 +328,6 @@
 			children = (
 			);
 			path = Util;
-			sourceTree = "<group>";
-		};
-		DB96717213A5423100616143 /* Clients */ = {
-			isa = PBXGroup;
-			children = (
-				DB96717313A5423100616143 /* CLI */,
-				DB96717813A5423100616143 /* NPAPI */,
-			);
-			path = Clients;
-			sourceTree = "<group>";
-		};
-		DB96717313A5423100616143 /* CLI */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = CLI;
-			sourceTree = "<group>";
-		};
-		DB96717813A5423100616143 /* NPAPI */ = {
-			isa = PBXGroup;
-			children = (
-				DB96717B13A5423200616143 /* Darwin */,
-				DB96718C13A5423200616143 /* Linux */,
-				DB96719013A5423200616143 /* NaCl */,
-				DB96719913A5423200616143 /* Windows */,
-			);
-			path = NPAPI;
-			sourceTree = "<group>";
-		};
-		DB96717B13A5423200616143 /* Darwin */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Darwin;
-			sourceTree = "<group>";
-		};
-		DB96718C13A5423200616143 /* Linux */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Linux;
-			sourceTree = "<group>";
-		};
-		DB96719013A5423200616143 /* NaCl */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = NaCl;
-			sourceTree = "<group>";
-		};
-		DB96719913A5423200616143 /* Windows */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Windows;
 			sourceTree = "<group>";
 		};
 		DB96731913A5423200616143 /* DevServer */ = {
