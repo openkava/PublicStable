@@ -94,6 +94,12 @@ namespace Fabric
         
         m_loaded = true;
       }
+
+      CG::Diagnostics diagnostics;
+      for ( NameToInstMap::const_iterator it=m_nameToInstMap.begin(); it!=m_nameToInstMap.end(); ++it )
+      {
+        it->second->getAST()->registerTypes( cgManager->getRTManager(), diagnostics );
+      }
     }
     
     Manager::~Manager()
@@ -116,8 +122,6 @@ namespace Fabric
       else
       {
         result = Inst::Create( name, jsonDesc, pluginDirs, cgManager );
-        CG::Diagnostics diagnostics;
-        result->getAST()->registerTypes( cgManager->getRTManager(), diagnostics );
         m_nameToInstMap.insert( NameToInstMap::value_type( name, result ) );
       }
       
