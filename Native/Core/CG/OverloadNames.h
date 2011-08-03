@@ -1,8 +1,9 @@
 #ifndef _FABRIC_RT_OVERLOAD_NAMES_H
 #define _FABRIC_RT_OVERLOAD_NAMES_H
 
-#include <Fabric/Core/CG/OpTypes.h>
 #include <Fabric/Core/CG/ExprType.h>
+#include <Fabric/Core/CG/Manager.h>
+#include <Fabric/Core/CG/OpTypes.h>
 #include <string>
 #include <vector>
 
@@ -18,6 +19,13 @@ namespace Fabric
       std::vector< RC::ConstHandle<CG::Adapter> > paramTypes;
       paramTypes.push_back( param1Type );
       return constructOverloadName( dstAdapter, paramTypes );
+    }
+    std::string constructOverloadName( RC::Handle<CG::Manager> const &cgManager, std::string const &dstType, std::vector< RC::ConstHandle<CG::Adapter> > const &paramTypes );
+    inline std::string constructOverloadName( RC::Handle<CG::Manager> const &cgManager, std::string const &dstType, RC::ConstHandle<CG::Adapter> const &param1Type )
+    {
+      std::vector< RC::ConstHandle<CG::Adapter> > paramTypes;
+      paramTypes.push_back( param1Type );
+      return constructOverloadName( cgManager, dstType, paramTypes );
     }
     
     std::string assignOpMethodName( AssignOpType type );

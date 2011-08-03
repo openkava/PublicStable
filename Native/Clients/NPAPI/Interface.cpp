@@ -123,6 +123,7 @@ namespace Fabric
           {
             NPN_SetException( this, "generic exception" );
           }
+          return true;
         }
         else return false;
       }
@@ -284,10 +285,16 @@ namespace Fabric
       return m_context->getIOManager()->nppNewStream( npp, type, stream, seekable, stype );
     }
 
-    void Interface::nppStreamAsFile( NPP npp, NPStream *stream, const char *fname )
+    int32_t Interface::nppWriteReady( NPP npp, NPStream* stream )
     {
       FABRIC_ASSERT( npp == m_npp );
-      m_context->getIOManager()->nppStreamAsFile( npp, stream, fname );
+      return m_context->getIOManager()->nppWriteReady( npp, stream );
+    }
+
+    int32_t Interface::nppWrite( NPP npp, NPStream* stream, int32_t offset, int32_t len, void* buffer )
+    {
+      FABRIC_ASSERT( npp == m_npp );
+      return m_context->getIOManager()->nppWrite( npp, stream, offset, len, buffer );
     }
 
     NPError Interface::nppDestroyStream( NPP npp, NPStream *stream, NPReason reason )

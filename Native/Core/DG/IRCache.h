@@ -13,6 +13,11 @@
 
 namespace Fabric
 {
+  namespace AST
+  {
+    class GlobalList;
+  };
+  
   namespace IO
   {
     class Dir;
@@ -29,14 +34,14 @@ namespace Fabric
         return new IRCache;
       }
       
-      std::string get( std::string const &sourceCode ) const;
-      void put( std::string const &sourceCode, std::string const &ir );
+      std::string get( RC::ConstHandle<AST::GlobalList> const &ast ) const;
+      void put( RC::ConstHandle<AST::GlobalList> const &ast, std::string const &ir );
       
     protected:
     
       IRCache();
       
-      void subDirAndEntryFromSourceCode( std::string const &sourceCode, RC::ConstHandle<IO::Dir> &subDir, std::string &entry ) const;
+      void subDirAndEntryFromSourceCode( RC::ConstHandle<AST::GlobalList> const &ast, RC::ConstHandle<IO::Dir> &subDir, std::string &entry ) const;
       
     private:
     

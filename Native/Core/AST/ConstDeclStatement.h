@@ -6,8 +6,6 @@
 #define _FABRIC_AST_CONST_DECL_STATEMENT_H
 
 #include <Fabric/Core/AST/Statement.h>
-#include <Fabric/Base/RC/Handle.h>
-#include <Fabric/Base/RC/ConstHandle.h>
 
 namespace Fabric
 {
@@ -22,18 +20,16 @@ namespace Fabric
     
     class ConstDeclStatement : public Statement
     {
+      FABRIC_AST_NODE_DECL( ConstDeclStatement );
+
     public:
 
-      static RC::Handle<ConstDeclStatement> Create(
+      static RC::ConstHandle<ConstDeclStatement> Create(
         CG::Location const &location,
         RC::ConstHandle<ConstDecl> const &constDecl
-        )
-      {
-        return new ConstDeclStatement( location, constDecl );
-      }
-    
-      virtual std::string localDesc() const;
-      virtual std::string deepDesc( std::string const &indent ) const;
+        );
+      
+      virtual void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
       
       virtual void llvmCompileToBuilder( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const;
       
@@ -43,6 +39,8 @@ namespace Fabric
         CG::Location const &location,
         RC::ConstHandle<ConstDecl> const &constDecl
         );
+      
+      virtual void appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const;
     
     private:
     

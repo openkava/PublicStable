@@ -10,6 +10,7 @@
 #include <ctype.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 namespace Fabric
 {
@@ -63,15 +64,8 @@ namespace Fabric
     
     float parseFloat( char const *cString )
     {
-      char const *scanfFormat;
-      if ( sizeof(size_t) == sizeof(unsigned) )
-        scanfFormat = "%u";
-      else if ( sizeof(size_t) == sizeof(long unsigned) )
-        scanfFormat = "%lu";
-      else FABRIC_ASSERT( false && "Unable to determine scanf format for this architecture" );
-
       float result;
-      if ( sscanf( cString, scanfFormat, &result ) != 1 )
+      if ( sscanf( cString, "%f", &result ) != 1 )
         throw Exception( "malformed floating-point constant" );
       return result;
     }
@@ -79,13 +73,6 @@ namespace Fabric
     float parseFloat( std::string const &string )
     {
       return parseFloat( string.c_str() );
-    }
-    
-    static inline char unescapeStringChar( char ch )
-    {
-      switch ( ch )
-      {
-      }
     }
     
     std::string parseQuotedString( char const *data, size_t length )

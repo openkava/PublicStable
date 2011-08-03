@@ -32,7 +32,7 @@ namespace Fabric
     
     void ConstStringAdapter::llvmPrepareModule( ModuleBuilder &moduleBuilder, bool buildFunctions ) const
     {
-      if ( moduleBuilder.contains( getCodeName() ) )
+      if ( moduleBuilder.contains( getCodeName(), buildFunctions ) )
         return;
       
       moduleBuilder->addTypeName( getCodeName(), llvmRawType() );
@@ -50,7 +50,6 @@ namespace Fabric
         if ( buildFunctions )
         {
           llvm::Value *booleanLValue = functionBuilder[0];
-          llvm::Value *constStringRValue = functionBuilder[1];
           BasicBlockBuilder basicBlockBuilder( functionBuilder );
           basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
           basicBlockBuilder->CreateStore( booleanAdapter->llvmConst( m_length > 0 ), booleanLValue );

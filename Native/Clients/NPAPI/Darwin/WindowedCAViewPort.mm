@@ -5,6 +5,7 @@
 #include <Fabric/Clients/NPAPI/Darwin/WindowedCAViewPort.h>
 #include <Fabric/Clients/NPAPI/Interface.h>
 #include <Fabric/Clients/NPAPI/Context.h>
+#include <Fabric/Base/JSON/Value.h>
 #include <Fabric/Base/Exception.h>
 #include <Fabric/Core/DG/Event.h>
 #include <Fabric/Core/MT/LogCollector.h>
@@ -36,7 +37,7 @@ namespace Fabric
 
 -(id) initWithViewPort:(Fabric::NPAPI::WindowedCAViewPort *)_viewPort context:(Fabric::DG::Context *)_context
 {
-  if ( self = [super init] )
+  if ( (self = [super init]) )
   {
     // [pzion 20100820] We don't retain the view port because it retains us.
     viewPort = _viewPort;
@@ -83,7 +84,7 @@ namespace Fabric
   };
   CGLPixelFormatObj pixelFormat;
   GLint numPixelFormats = 0;
-  CGLError error = CGLChoosePixelFormat( pixelFormatAttributes, &pixelFormat, &numPixelFormats );
+  CGLChoosePixelFormat( pixelFormatAttributes, &pixelFormat, &numPixelFormats );
   return pixelFormat;
 }
 
@@ -167,57 +168,47 @@ namespace Fabric
 @interface MenuItem : NSMenuItem
 {
 @private
-  /*
-  Fabric::LIB::Callback const *callback;
-  Fabric::LIB::Value *arg;
-  */
+  Fabric::NPAPI::ViewPort const *viewPort;
+  Fabric::JSON::Value const *arg;
 }
 
-+(id) menuItemWithTitle:(NSString *)title callback:(Fabric::LIB::Callback const *)callback arg:(Fabric::LIB::Value *)arg;
--(id) initWithTitle:(NSString *)title callback:(Fabric::LIB::Callback const *)callback arg:(Fabric::LIB::Value *)arg;
++(id) menuItemWithTitle:(NSString *)title viewPort:(Fabric::NPAPI::ViewPort const *)viewPort arg:(Fabric::JSON::Value const *)arg;
+-(id) initWithTitle:(NSString *)title viewPort:(Fabric::NPAPI::ViewPort const *)viewPort arg:(Fabric::JSON::Value const *)arg;
 -(void) runCallback:(id)sender;
 @end
 
 @implementation MenuItem
 
-+(id) menuItemWithTitle:(NSString *)title callback:(Fabric::LIB::Callback const *)_callback arg:(Fabric::LIB::Value *)_arg
++(id) menuItemWithTitle:(NSString *)title viewPort:(Fabric::NPAPI::ViewPort const *)_viewPort arg:(Fabric::JSON::Value *)_arg
 {
-  return [[[MenuItem alloc] initWithTitle:title callback:_callback arg:_arg] autorelease];
+  return [[[MenuItem alloc] initWithTitle:title viewPort:_viewPort arg:_arg] autorelease];
 }
 
--(id) initWithTitle:(NSString *)title callback:(Fabric::LIB::Callback const *)_callback arg:(Fabric::LIB::Value *)_arg
+-(id) initWithTitle:(NSString *)title viewPort:(Fabric::NPAPI::ViewPort const *)_viewPort arg:(Fabric::JSON::Value *)_arg
 {
-  if ( self = [super initWithTitle:title action:@selector(runCallback:) keyEquivalent:@""] )
+  if ( (self = [super initWithTitle:title action:@selector(runCallback:) keyEquivalent:@""]) )
   {
     [self setTarget:self];
     
-    /*
-    callback = _callback;
-    callback->retain();
+    viewPort = _viewPort;
+    viewPort->retain();
     
     arg = _arg;
     arg->retain();
-    */
   }
   return self;
 }
 
 -(void) dealloc
 {
-  /*
   arg->release();
-  callback->release();
-  */
+  viewPort->release();
   [super dealloc];
 }
 
 -(void) runCallback:(id)sender
 {
-  /*
-  std::vector< Fabric::RC::Handle<Fabric::LIB::Value> > args;
-  args.push_back( arg );
-  callback->invoke( args );
-  */
+  viewPort->jsonNotifyPopUpItem( arg );
 }
 
 @end
@@ -301,34 +292,34 @@ namespace Fabric
       NPCocoaEvent *npCocoaEvent = reinterpret_cast<NPCocoaEvent *>( event );
       switch ( npCocoaEvent->type )
       {
-      case NPCocoaEventDrawRect:
-        [m_npCAOpenGLLayer renderInContext:npCocoaEvent->data.draw.context];
-        return true;
-        
-      case NPCocoaEventMouseDown:
-        if ( npCocoaEvent->data.mouse.buttonNumber == 1 )
-        {
-          Context::PopUpItems const &popupItems = getInterface()->getContext()->getPopUpItems();
-          if ( !popupItems.empty() )
-          {
-            NSMenu *nsMenu = [[[NSMenu alloc] initWithTitle:@"Fabric Pop-Up Menu"] autorelease];
-            [nsMenu setAutoenablesItems:NO];
+        case NPCocoaEventDrawRect:
+          [m_npCAOpenGLLayer renderInContext:npCocoaEvent->data.draw.context];
+          return true;
           
-            for ( Context::PopUpItems::const_iterator it=popupItems.begin(); it!=popupItems.end(); ++it )
+        case NPCocoaEventMouseDown:
+          if ( npCocoaEvent->data.mouse.buttonNumber == 1 )
+          {
+            if ( !m_popUpItems.empty() )
             {
-              /*
-              NSMenuItem *nsMenuItem = [MenuItem menuItemWithTitle:[NSString stringWithCString:it->desc.c_str() encoding:NSUTF8StringEncoding] callback:it->callback.ptr() arg:it->arg.ptr()];
-              [nsMenuItem setEnabled:YES];
-              [nsMenu addItem:nsMenuItem];
-              */
+              NSMenu *nsMenu = [[[NSMenu alloc] initWithTitle:@"Fabric Pop-Up Menu"] autorelease];
+              [nsMenu setAutoenablesItems:NO];
+            
+              for ( PopUpItems::const_iterator it=m_popUpItems.begin(); it!=m_popUpItems.end(); ++it )
+              {
+                NSMenuItem *nsMenuItem = [MenuItem menuItemWithTitle:[NSString stringWithCString:it->desc.c_str() encoding:NSUTF8StringEncoding] viewPort:this arg:it->value.ptr()];
+                [nsMenuItem setEnabled:YES];
+                [nsMenu addItem:nsMenuItem];
+              }
+              
+              NPN_PopUpContextMenu( m_npp, (NPMenu *)nsMenu );
+              
+              return true;
             }
-            
-            NPN_PopUpContextMenu( m_npp, (NPMenu *)nsMenu );
-            
-            return true;
           }
-        }
-        break;
+          break;
+        
+        default:
+          break;
       }
       return false;
     }

@@ -161,7 +161,7 @@ namespace Fabric
         if ( !functionSymbol )
           throw Exception( "no cast exists from " + exprValue.getTypeUserName() + " to " + getUserName() );
         
-        llvm::Value *srcRValue;
+        llvm::Value *srcRValue = 0;
         switch ( exprValue.getUsage() )
         {
           case USAGE_RVALUE:

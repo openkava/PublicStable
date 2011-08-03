@@ -9,39 +9,40 @@
 #define _FABRIC_AST_ASSIGNED_VAR_DECL_H
 
 #include <Fabric/Core/AST/VarDecl.h>
-#include <Fabric/Core/AST/Expr.h>
 
 namespace Fabric
 {
   namespace AST
   {
+    class Expr;
+    
     class AssignedVarDecl : public VarDecl
     {
+      FABRIC_AST_NODE_DECL( AssignedVarDecl );
+      
     public:
     
-      virtual std::string localDesc() const;
-      virtual std::string deepDesc( std::string const &indent ) const;
-
-      static RC::Handle<AssignedVarDecl> Create(
+      static RC::ConstHandle<AssignedVarDecl> Create(
         CG::Location const &location,
         std::string const &name,
-        RC::ConstHandle< CG::Adapter > const &adapter,
+        std::string const &arrayModifier,
         RC::ConstHandle<Expr> initialExpr
-        )
-      {
-        return new AssignedVarDecl( location, name, adapter, initialExpr );
-      }
+        );
+
+      virtual void llvmPrepareModule( std::string const &baseType, CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
       
-      virtual void llvmCompileToBuilder( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const;
+      virtual void llvmCompileToBuilder( std::string const &baseType, CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const;
      
     protected:
     
       AssignedVarDecl(
         CG::Location const &location,
         std::string const &name,
-        RC::ConstHandle< CG::Adapter > const &adapter,
+        std::string const &arrayModifier,
         RC::ConstHandle<Expr> const &initialExpr
         );
+      
+      virtual void appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const;
     
     private:
     

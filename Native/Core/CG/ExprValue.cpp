@@ -93,6 +93,15 @@ namespace Fabric
       return m_value;
     }
 
+    void ExprValue::llvmRetain( BasicBlockBuilder &basicBlockBuilder )
+    {
+      if ( isValid() )
+      {
+        if ( getUsage() == USAGE_RVALUE )
+          getAdapter()->llvmRetain( basicBlockBuilder, getValue() );
+      }
+    }
+
     void ExprValue::llvmDispose( BasicBlockBuilder &basicBlockBuilder )
     {
       if ( isValid() )
@@ -150,9 +159,14 @@ namespace Fabric
               m_value = dstAdapter->llvmCast( basicBlockBuilder, *this );
             }
             break;
+            
             case USAGE_LVALUE:
               throw Exception( "incorrect type (expected "+dstAdapter->getUserName()+", actual "+srcAdapter->getUserName()+")" );
               break;
+            
+            case USAGE_UNSPECIFIED:
+              FABRIC_ASSERT( false );
+              throw Exception( "unspecified usage" );
           }
         }
         else if ( dstUsage != USAGE_UNSPECIFIED && dstUsage != srcUsage )
@@ -167,9 +181,14 @@ namespace Fabric
               m_value = rValue;
             }
             break;
+            
             case USAGE_LVALUE:
               throw Exception( "expression is not an l-value" );
               break;
+            
+            case USAGE_UNSPECIFIED:
+              FABRIC_ASSERT( false );
+              throw Exception( "unspecified usage" );
           }
         }
       }

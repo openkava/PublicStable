@@ -36,17 +36,18 @@ namespace Fabric
 
   namespace RT
   {
-    RC::Handle<Manager> Manager::Create()
+    RC::Handle<Manager> Manager::Create( RC::ConstHandle<KLCompiler> const &klCompiler )
     {
 #if defined( FABRIC_OS_WINDOWS )
       _set_output_format( _TWO_DIGIT_EXPONENT );
 #endif
 
-      return new Manager;
+      return new Manager( klCompiler );
     }
 
-    Manager::Manager()
+    Manager::Manager( RC::ConstHandle<KLCompiler> const &klCompiler )
       : m_jsonCommandChannel( 0 )
+      , m_klCompiler( klCompiler )
     {
       registerDesc( m_booleanDesc = new BooleanDesc( "Boolean", new BooleanImpl( "Boolean" ) ) );
       registerDesc( m_byteDesc = new ByteDesc( "Byte", new ByteImpl( "Byte" ) ) );
@@ -183,15 +184,16 @@ namespace Fabric
       return baseDesc;
     }
 
-    RC::ConstHandle<RT::Desc> Manager::getDesc( std::string const &name ) const
+    RC::ConstHandle<RT::Desc> Manager::maybeGetDesc( std::string const &name ) const
     {
-      Exception exception( _(name) + ": malformed type expression" );
-      
+      if ( name == "RGB[]" )
+        sleep(0);
+        
       char const *data = name.data();
       char const *dataEnd = data + name.length();
       
       if ( data == dataEnd || !isFirstTypeNameChar( *data ) )
-        throw exception;
+        throw Exception( "malformed type expression" );
       char const *baseNameStart = data++;
       
       while ( data != dataEnd && isRemainingTypeNameChar( *data ) )
@@ -200,10 +202,17 @@ namespace Fabric
       
       std::string baseName( baseNameStart, baseNameEnd - baseNameStart );
       RC::ConstHandle<RT::Desc> desc = maybeGetBaseDesc( baseName );
-      if ( !desc )
-        throw Exception( "base type " + _(baseName) + " not registered" );
-      
-      return getComplexDesc( desc, data, dataEnd );
+      if ( desc )
+        desc = getComplexDesc( desc, data, dataEnd );
+      return desc;
+    }
+
+    RC::ConstHandle<RT::Desc> Manager::getDesc( std::string const &name ) const
+    {
+      RC::ConstHandle<RT::Desc> result = maybeGetDesc( name );
+      if ( !result )
+        throw Exception( _(name) + ": type not registered" );
+      return result;
     }
     
     RC::ConstHandle<RT::Desc> Manager::getComplexDesc( RC::ConstHandle<RT::Desc> const &desc, char const *data, char const *dataEnd ) const
@@ -283,58 +292,6 @@ namespace Fabric
       }
       return it->second;
     }
-
-    std::string Manager::buildTopoSortedKBindings( KBindings::iterator const &it, KBindings &kBindings ) const
-    {
-      std::string name = it->first;
-      RC::ConstHandle<RT::Desc> const &desc = m_types[name];
-      std::string kBinding = it->second;
-      kBindings.erase( it );
-      
-      std::string result = "";
-      if ( kBinding.length() )
-      {
-        if ( isStruct( desc->getType() ) )
-        {
-          RC::ConstHandle<StructDesc> structDesc = RC::ConstHandle<StructDesc>::StaticCast( desc );
-          size_t numMembers = structDesc->getNumMembers();
-          for ( size_t i=0; i<numMembers; ++i )
-          {
-            KBindings::iterator it = kBindings.find( structDesc->getMemberInfo(i).desc->getName() );
-            if ( it != kBindings.end() )
-              result += buildTopoSortedKBindings( it, kBindings );
-          }
-        }
-
-        if ( isArray( desc->getType() ) )
-        {
-          RC::ConstHandle<ArrayDesc> arrayDesc = RC::ConstHandle<ArrayDesc>::StaticCast( desc );
-          KBindings::iterator it = kBindings.find( arrayDesc->getMemberDesc()->getName() );
-          if ( it != kBindings.end() )
-            result += buildTopoSortedKBindings( it, kBindings );
-        }
-
-        result += "// KL Bindings for " + desc->getName() + ": Begin\n";
-        result += kBinding + "\n";
-        result += "// KL Bindings for " + desc->getName() + ": End\n";
-      }
-      return result;
-    }
-    
-    std::string Manager::kBindings() const
-    {
-      KBindings kBindings;
-      for( Types::const_iterator it=m_types.begin(); it!=m_types.end(); ++it )
-      {
-        RC::ConstHandle<RT::Desc> desc = it->second;
-        kBindings.insert( KBindings::value_type( desc->getName(), desc->getKBindings() ) );
-      }
-      
-      std::string result;
-      while ( !kBindings.empty() )
-        result += buildTopoSortedKBindings( kBindings.begin(), kBindings );
-      return result;
-    }
       
     RC::Handle<JSON::Object> Manager::jsonDesc() const
     {
@@ -394,96 +351,106 @@ namespace Fabric
         throw "'name': " + e;
       }
       
-      RC::ConstHandle<JSON::Object> defaultValue;
       try
       {
-        defaultValue = argJSONObject->get( "defaultValue" )->toObject();
-      }
-      catch ( Exception e )
-      {
-        throw "'defaultValue': " + e;
-      }
-      
-      RT::StructMemberInfoVector memberInfos;
-      try
-      {
-        RC::ConstHandle<JSON::Array> membersArray = argJSONObject->get( "members" )->toArray();
-        size_t membersArraySize = membersArray->size();
-        for ( size_t i=0; i<membersArraySize; ++i )
+        RC::ConstHandle<JSON::Object> defaultValue;
+        try
         {
-          try
+          defaultValue = argJSONObject->get( "defaultValue" )->toObject();
+        }
+        catch ( Exception e )
+        {
+          throw "'defaultValue': " + e;
+        }
+        
+        RT::StructMemberInfoVector memberInfos;
+        try
+        {
+          RC::ConstHandle<JSON::Array> membersArray = argJSONObject->get( "members" )->toArray();
+          size_t membersArraySize = membersArray->size();
+          for ( size_t i=0; i<membersArraySize; ++i )
           {
-            RC::ConstHandle<JSON::Object> memberObject = membersArray->get(i)->toObject();
-            RT::StructMemberInfo memberInfo;
+            try
+            {
+              RC::ConstHandle<JSON::Object> memberObject = membersArray->get(i)->toObject();
+              RT::StructMemberInfo memberInfo;
 
-            try
-            {
-              memberInfo.name = memberObject->get( "name" )->toString()->value();
-            }
-            catch ( Exception e )
-            {
-              throw "'name': " + e;
-            }
-            
-            try
-            {
-              std::string typeName = memberObject->get( "type" )->toString()->value();
-              if ( typeName.empty() )
-                throw Exception( "must be non-empty" );
-              memberInfo.desc = getDesc( typeName );
-              if ( !memberInfo.desc )
-                throw Exception( "type " + _(typeName) + " not registered" );
-            }
-            catch ( Exception e )
-            {
-              throw "'type': " + e;
-            }
-            
-            memberInfo.defaultData.resize( memberInfo.desc->getSize() );
-            try
-            {
-              memberInfo.desc->setDataFromJSONValue( defaultValue->get( memberInfo.name ), &memberInfo.defaultData[0] );
-            }
-            catch ( Exception e )
-            {
-              throw _(memberInfo.name) + " default value: " + e;
-            }
+              try
+              {
+                memberInfo.name = memberObject->get( "name" )->toString()->value();
+              }
+              catch ( Exception e )
+              {
+                throw "'name': " + e;
+              }
+              
+              try
+              {
+                std::string typeName = memberObject->get( "type" )->toString()->value();
+                if ( typeName.empty() )
+                  throw Exception( "must be non-empty" );
+                memberInfo.desc = getDesc( typeName );
+                if ( !memberInfo.desc )
+                  throw Exception( "type " + _(typeName) + " not registered" );
+              }
+              catch ( Exception e )
+              {
+                throw "'type': " + e;
+              }
+              
+              memberInfo.defaultData.resize( memberInfo.desc->getSize() );
+              try
+              {
+                memberInfo.desc->setDataFromJSONValue( defaultValue->get( memberInfo.name ), &memberInfo.defaultData[0] );
+              }
+              catch ( Exception e )
+              {
+                throw _(memberInfo.name) + " default value: " + e;
+              }
 
-            memberInfos.push_back( memberInfo );
-          }
-          catch ( Exception e )
-          {
-            throw "index " + _(i) + ": " + e;
+              memberInfos.push_back( memberInfo );
+            }
+            catch ( Exception e )
+            {
+              throw "index " + _(i) + ": " + e;
+            }
           }
         }
+        catch ( Exception e )
+        {
+          throw "members: " + e;
+        }
+        
+        RC::ConstHandle<RC::Object> klBindingsAST;
+        try
+        {
+          RC::ConstHandle<JSON::Value> klBindingsJSONValue = argJSONObject->maybeGet( "kBindings" );
+          if ( klBindingsJSONValue )
+          {
+            std::string klBindings = klBindingsJSONValue->toString()->value();
+            klBindingsAST = m_klCompiler->compile( klBindings );
+          }
+        }
+        catch ( Exception e )
+        {
+          throw "'kBindings': " + e;
+        }
+        
+        RC::ConstHandle< RT::StructDesc > structDesc = registerStruct( name, memberInfos );
+
+        for ( size_t i=0; i<memberInfos.size(); ++i )
+        {
+          RT::StructMemberInfo &memberInfo = memberInfos[i];
+          memberInfo.desc->disposeData( &memberInfo.defaultData[0] );
+        }
+
+        if ( klBindingsAST )
+          structDesc->setKLBindingsAST( klBindingsAST );
       }
       catch ( Exception e )
       {
-        throw "members: " + e;
+        throw "name " + _(name) + ": " + e;
       }
-      
-      std::string kBindings;
-      try
-      {
-        RC::ConstHandle<JSON::Value> kBindingsJSONValue = argJSONObject->maybeGet( "kBindings" );
-        if ( kBindingsJSONValue )
-          kBindings = kBindingsJSONValue->toString()->value();
-      }
-      catch ( Exception e )
-      {
-        throw "'kBindings': " + e;
-      }
-      
-      RC::ConstHandle< RT::StructDesc > structDesc = registerStruct( name, memberInfos );
-
-      for ( size_t i=0; i<memberInfos.size(); ++i )
-      {
-        RT::StructMemberInfo &memberInfo = memberInfos[i];
-        memberInfo.desc->disposeData( &memberInfo.defaultData[0] );
-      }
-
-      if ( kBindings.length() > 0 )
-        structDesc->setKBindings( kBindings );
     }
     
     RC::ConstHandle<Desc> Manager::getStrongerTypeOrNone( RC::ConstHandle<Desc> const &lhsDesc, RC::ConstHandle<Desc> const &rhsDesc ) const
@@ -514,6 +481,39 @@ namespace Fabric
         return rhsDesc;
       }
       else return 0;
+    }
+
+    void Manager::buildTopoSortedDescs( RC::ConstHandle<Desc> const &desc, std::set< RC::ConstHandle<Desc> > &doneDescs, std::vector< RC::ConstHandle<Desc> > &result ) const
+    {
+      if ( doneDescs.find( desc ) == doneDescs.end() )
+      {
+        doneDescs.insert( desc );
+        
+        if ( isStruct( desc->getType() ) )
+        {
+          RC::ConstHandle<StructDesc> structDesc = RC::ConstHandle<StructDesc>::StaticCast( desc );
+          size_t numMembers = structDesc->getNumMembers();
+          for ( size_t i=0; i<numMembers; ++i )
+            buildTopoSortedDescs( structDesc->getMemberInfo(i).desc, doneDescs, result );
+        }
+
+        if ( isArray( desc->getType() ) )
+        {
+          RC::ConstHandle<ArrayDesc> arrayDesc = RC::ConstHandle<ArrayDesc>::StaticCast( desc );
+          buildTopoSortedDescs( arrayDesc->getMemberDesc(), doneDescs, result );
+        }
+
+        result.push_back( desc );
+      }
+    }
+
+    std::vector< RC::ConstHandle<Desc> > Manager::getTopoSortedDescs() const
+    {
+      std::vector< RC::ConstHandle<Desc> > result;
+      std::set< RC::ConstHandle<Desc> > descsForTopoSort;
+      for ( Types::const_iterator it=m_types.begin(); it!=m_types.end(); ++it )
+        buildTopoSortedDescs( it->second, descsForTopoSort, result );
+      return result;
     }
   };
 };

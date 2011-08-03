@@ -26,11 +26,13 @@ namespace Fabric
   
   namespace CG
   {
-    class Manager;
-    class Scope;
-    class ModuleBuilder;
+    class Adapter;
+    class Location;
     class FunctionBuilder;
     class FunctionSymbol;
+    class Manager;
+    class ModuleBuilder;
+    class Scope;
     
     class BasicBlockBuilder
     {
@@ -51,6 +53,9 @@ namespace Fabric
       RC::ConstHandle<Manager> getManager() const;
       RC::Handle<Manager> getManager();
       llvm::LLVMContext &getLLVMContext();
+
+      RC::ConstHandle<Adapter> maybeGetAdapter( std::string const &userName ) const;
+      RC::ConstHandle<Adapter> getAdapter( std::string const &userName, CG::Location const &location ) const;
 
       RC::ConstHandle<FunctionSymbol> maybeGetFunction( std::string const &entryName ) const;
 

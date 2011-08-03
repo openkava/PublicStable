@@ -1,10 +1,7 @@
 /*
- *
- *  Created by Peter Zion on 10-12-02.
- *  Copyright 2010 Fabric Technologies Inc. All rights reserved.
- *
+ *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
  */
-
+ 
 #include <Fabric/Core/AST/AndOp.h>
 #include <Fabric/Core/CG/BooleanAdapter.h>
 #include <Fabric/Core/CG/Scope.h>
@@ -12,11 +9,19 @@
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/CG/Error.h>
 #include <Fabric/Core/RT/Desc.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
   namespace AST
   {
+    FABRIC_AST_NODE_IMPL( AndOp );
+    
+    RC::ConstHandle<AndOp> AndOp::Create( CG::Location const &location, RC::ConstHandle<Expr> const &left, RC::ConstHandle<Expr> const &right )
+    {
+      return new AndOp( location, left, right );
+    }
+
     AndOp::AndOp( CG::Location const &location, RC::ConstHandle<Expr> const &left, RC::ConstHandle<Expr> const &right )
       : Expr( location )
       , m_left( left )
@@ -24,17 +29,11 @@ namespace Fabric
     {
     }
     
-    std::string AndOp::localDesc() const
+    void AndOp::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      return "AndOp";
-    }
-    
-    std::string AndOp::deepDesc( std::string const &indent ) const
-    {
-      std::string subIndent = indent + "  ";
-      return indent + localDesc() + "\n"
-        + m_left->deepDesc(subIndent)
-        + m_right->deepDesc(subIndent);
+      Expr::appendJSONMembers( jsonObjectGenerator );
+      m_left->appendJSON( jsonObjectGenerator.makeMember( "lhs" ) );
+      m_right->appendJSON( jsonObjectGenerator.makeMember( "rhs" ) );
     }
     
     RC::ConstHandle<CG::Adapter> AndOp::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const
@@ -53,6 +52,12 @@ namespace Fabric
         adapter = lhsType->getManager()->getAdapter( castType );
       }
       return adapter;
+    }
+    
+    void AndOp::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    {
+      m_left->llvmPrepareModule( moduleBuilder, diagnostics );
+      m_right->llvmPrepareModule( moduleBuilder, diagnostics );
     }
     
     CG::ExprValue AndOp::buildExprValue( CG::BasicBlockBuilder &basicBlockBuilder, CG::Usage usage, std::string const &lValueErrorDesc ) const
@@ -75,14 +80,14 @@ namespace Fabric
       basicBlockBuilder->SetInsertPoint( lhsTrueBB );
       CG::ExprValue rhsExprValue = m_right->buildExprValue( basicBlockBuilder, usage, lValueErrorDesc );
       
-      llvm::Value *rhsCastedRValue;
+      llvm::Value *rhsCastedRValue = 0;
       if ( castAdapter )
         rhsCastedRValue = castAdapter->llvmCast( basicBlockBuilder, rhsExprValue );
       llvm::BasicBlock *lhsTruePredBB = basicBlockBuilder->GetInsertBlock();
       basicBlockBuilder->CreateBr( mergeBB );
       
       basicBlockBuilder->SetInsertPoint( lhsFalseBB );
-      llvm::Value *lhsCastedRValue;
+      llvm::Value *lhsCastedRValue = 0;
       if ( castAdapter )
         lhsCastedRValue = castAdapter->llvmCast( basicBlockBuilder, lhsExprValue );
       llvm::BasicBlock *lhsFalsePredBB = basicBlockBuilder->GetInsertBlock();

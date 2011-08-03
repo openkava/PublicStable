@@ -9,28 +9,27 @@
 #define _FABRIC_AST_CONDITIONAL_STATEMENT_H
 
 #include <Fabric/Core/AST/Statement.h>
-#include <Fabric/Core/AST/Expr.h>
 
 namespace Fabric
 {
   namespace AST
   {
+    class Expr;
+    
     class ConditionalStatement: public Statement
     {
-    public:
-    
-      virtual std::string localDesc() const;
-      virtual std::string deepDesc( std::string const &indent ) const;
+      FABRIC_AST_NODE_DECL( ConditionalStatement );
 
-      static RC::Handle<ConditionalStatement> Create(
+    public:
+
+      static RC::ConstHandle<ConditionalStatement> Create(
         CG::Location const &location,
         RC::ConstHandle<Expr> const &expr,
         RC::ConstHandle<Statement> const &trueStatement,
         RC::ConstHandle<Statement> const &falseStatement = RC::ConstHandle<Statement>()
-        )
-      {
-        return new ConditionalStatement( location, expr, trueStatement, falseStatement );
-      }
+        );
+      
+      virtual void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
       
       virtual void llvmCompileToBuilder( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const;
      
@@ -42,6 +41,8 @@ namespace Fabric
         RC::ConstHandle<Statement> const &trueStatement,
         RC::ConstHandle<Statement> const &falseStatement = RC::ConstHandle<Statement>()
         );
+      
+      virtual void appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const;
     
     private:
     

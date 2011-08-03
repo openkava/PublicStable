@@ -12,11 +12,14 @@
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/CG/Error.h>
 #include <Fabric/Core/RT/Desc.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
   namespace AST
   {
+    FABRIC_AST_NODE_IMPL( OrOp );
+    
     OrOp::OrOp( CG::Location const &location, RC::ConstHandle<Expr> const &left, RC::ConstHandle<Expr> const &right )
       : Expr( location )
       , m_left( left )
@@ -24,17 +27,17 @@ namespace Fabric
     {
     }
     
-    std::string OrOp::localDesc() const
+    void OrOp::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      return "OrOp";
+      Expr::appendJSONMembers( jsonObjectGenerator );
+      m_left->appendJSON( jsonObjectGenerator.makeMember( "lhs" ) );
+      m_right->appendJSON( jsonObjectGenerator.makeMember( "rhs" ) );
     }
     
-    std::string OrOp::deepDesc( std::string const &indent ) const
+    void OrOp::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
     {
-      std::string subIndent = indent + "  ";
-      return indent + localDesc() + "\n"
-        + m_left->deepDesc(subIndent)
-        + m_right->deepDesc(subIndent);
+      m_left->llvmPrepareModule( moduleBuilder, diagnostics );
+      m_right->llvmPrepareModule( moduleBuilder, diagnostics );
     }
     
     RC::ConstHandle<CG::Adapter> OrOp::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const
@@ -58,7 +61,6 @@ namespace Fabric
       
       RC::ConstHandle<CG::BooleanAdapter> booleanAdapter = basicBlockBuilder.getManager()->getBooleanAdapter();
       
-      llvm::BasicBlock *entryBB = basicBlockBuilder->GetInsertBlock();
       llvm::BasicBlock *lhsTrueBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "orLHSTrue" );
       llvm::BasicBlock *lhsFalseBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "orLHSFalse" );
       llvm::BasicBlock *mergeBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "orMerge" );

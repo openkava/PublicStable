@@ -69,8 +69,6 @@ namespace Fabric
       std::string const &getSourceCode() const;
       void setSourceCode( std::string const &sourceCode );
       
-      std::string const &getFullSourceCode() const;
-
 #if defined(FABRIC_BUILD_DEBUG)
       std::string const &getByteCode() const;
 #endif
@@ -99,7 +97,6 @@ namespace Fabric
       virtual RC::Handle<JSON::Object> jsonDesc() const;
       virtual RC::ConstHandle<JSON::Value> jsonDescType() const;
       RC::ConstHandle<JSON::Value> jsonDescSourceCode() const;
-      RC::ConstHandle<JSON::Value> jsonDescFullSourceCode() const;
       RC::ConstHandle<JSON::Value> jsonDescEntryFunctionName() const;
       RC::ConstHandle<JSON::Value> jsonDescDiagnostics() const;
       RC::ConstHandle<JSON::Value> jsonDescMainThreadOnly() const;
@@ -127,7 +124,6 @@ namespace Fabric
     
       std::string m_entryFunctionName;
       std::string m_sourceCode;
-      std::string m_fullSourceCode;
       RC::ConstHandle<Code> m_code;
       RC::ConstHandle<Function> m_function;
       bool m_mainThreadOnly;

@@ -6,6 +6,7 @@
 #include <Fabric/Core/Util/UnorderedMap.h>
 
 #include <map>
+#include <set>
 
 namespace Fabric
 {
@@ -41,9 +42,16 @@ namespace Fabric
     {
     public:
     
+      class KLCompiler : public RC::Object
+      {
+      public:
+      
+        virtual RC::ConstHandle<RC::Object> compile( std::string const &klSource ) const = 0;
+      };
+    
       typedef std::map< std::string, RC::ConstHandle<RT::Desc> > Types;
       
-      static RC::Handle<Manager> Create();
+      static RC::Handle<Manager> Create( RC::ConstHandle<KLCompiler> const &klCompiler );
       
       void setJSONCommandChannel( JSON::CommandChannel *jsonCommandChannel );
       
@@ -63,13 +71,11 @@ namespace Fabric
             
       Types const &getTypes() const;
       
-      RC::ConstHandle<Desc> maybeGetBaseDesc( std::string const &baseName ) const;
+      RC::ConstHandle<Desc> maybeGetDesc( std::string const &name ) const;
       RC::ConstHandle<Desc> getDesc( std::string const &name ) const;
       
       RC::ConstHandle<VariableArrayDesc> getVariableArrayOf( RC::ConstHandle<Desc> const &memberDesc ) const;
       RC::ConstHandle<FixedArrayDesc> getFixedArrayOf( RC::ConstHandle<Desc> const &memberDesc, size_t length ) const;
-      
-      std::string kBindings() const;
       
       RC::ConstHandle<JSON::Value> jsonRoute( std::vector<std::string> const &dst, size_t dstOffset, std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg );
       RC::ConstHandle<JSON::Value> jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg );
@@ -78,21 +84,23 @@ namespace Fabric
       RC::Handle<JSON::Object> jsonDescRegisteredTypes() const;
       
       RC::ConstHandle<Desc> getStrongerTypeOrNone( RC::ConstHandle<Desc> const &lhsDesc, RC::ConstHandle<Desc> const &rhsDesc ) const;
+      
+      std::vector< RC::ConstHandle<Desc> > getTopoSortedDescs() const;
 
     protected:
     
-      Manager();
+      Manager( RC::ConstHandle<KLCompiler> const &klCompiler );
       
+      RC::ConstHandle<Desc> maybeGetBaseDesc( std::string const &baseName ) const;
       RC::ConstHandle<Desc> registerDesc( RC::ConstHandle< Desc > const &desc ) const;
 
+      void buildTopoSortedDescs( RC::ConstHandle<Desc> const &desc, std::set< RC::ConstHandle<Desc> > &doneDescs, std::vector< RC::ConstHandle<Desc> > &result ) const;
+      
     private:
     
       typedef std::map< size_t, RC::ConstHandle<ConstStringDesc> > ConstStringDescs;
       
       RC::ConstHandle<Desc> getComplexDesc( RC::ConstHandle<Desc> const &desc, char const *data, char const *dataEnd ) const;
-
-      typedef std::map< std::string, std::string > KBindings;
-      std::string buildTopoSortedKBindings( KBindings::iterator const &it, KBindings &kBindings) const;
 
       mutable Types m_types;
             
@@ -106,6 +114,8 @@ namespace Fabric
       mutable ConstStringDescs m_constStringDescs;
       
       JSON::CommandChannel *m_jsonCommandChannel;
+      
+      RC::ConstHandle<KLCompiler> m_klCompiler;
     };
   };
 };

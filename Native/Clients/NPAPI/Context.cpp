@@ -36,8 +36,7 @@ namespace Fabric
     
     void Context::registerViewPort( std::string const &name, ViewPort *viewPort )
     {
-      bool insertResult = m_viewPorts.insert( ViewPorts::value_type( name, viewPort ) ).second;
-      FABRIC_ASSERT( insertResult );
+      FABRIC_CONFIRM( m_viewPorts.insert( ViewPorts::value_type( name, viewPort ) ).second );
     }
     
     void Context::unregisterViewPort( std::string const &name, ViewPort *viewPort )
@@ -51,16 +50,6 @@ namespace Fabric
     RC::Handle<IOManager> Context::getIOManager() const
     {
       return m_ioManager;
-    }
-
-    Context::PopUpItems const &Context::getPopUpItems() const
-    {
-      return m_popUpItems;
-    }
-    
-    void Context::addPopUpItem( PopUpItem const &popUpItem )
-    {
-      m_popUpItems.push_back( popUpItem );
     }
 
     RC::ConstHandle<JSON::Value> Context::jsonRoute( std::vector<std::string> const &dst, size_t dstOffset, std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg )

@@ -50,7 +50,6 @@ namespace Fabric
     {
       friend class EventHandler;
       friend class Prototype;
-      friend struct ImageBuilder;
       
     public:
     
@@ -78,6 +77,8 @@ namespace Fabric
       
       void addEventHandler( EventHandler *eventHandler );
       void removeEventHandler( EventHandler *eventHandler );
+
+      RC::Handle<Context> getContext() const;
 
       virtual RC::ConstHandle<JSON::Value> jsonRoute( std::vector<std::string> const &dst, size_t dstOffset, std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg );
       virtual RC::ConstHandle<JSON::Value> jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg );
@@ -108,7 +109,7 @@ namespace Fabric
       virtual void collectTasksImpl( unsigned generation, MT::TaskGroupStream &taskGroupStream ) const;
       virtual bool canExecute() const;
       
-      void evaluateLocal( void *userdata );
+      virtual void evaluateLocal( void *userdata );
       
       void ensureRunState() const;
 

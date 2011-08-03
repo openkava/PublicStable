@@ -67,6 +67,7 @@ namespace Fabric
       
       void openNotificationBracket();
       void closeNotificationBracket();
+      void registerCoreTypes();
     
     public:
     
@@ -102,7 +103,6 @@ namespace Fabric
       RC::Handle<CG::Manager> getCGManager() const;
       RC::Handle<IO::Manager> getIOManager() const;
       RC::Handle<CodeManager> getCodeManager() const;
-      RC::Handle<Plug::Manager> getPlugManager() const;
       
       NamedObjectMap &getNamedObjectRegistry() const;
       
@@ -140,7 +140,6 @@ namespace Fabric
       RC::Handle<IO::Manager> m_ioManager;
       RC::Handle<CG::Manager> m_cgManager;
       RC::Handle<CodeManager> m_codeManager;
-      RC::Handle<Plug::Manager> m_plugManager;
       
       mutable NamedObjectMap m_namedObjectRegistry;
       

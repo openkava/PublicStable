@@ -17,18 +17,26 @@ namespace llvm
 
 namespace Fabric
 {
+  namespace Util
+  {
+    class SimpleString;
+  };
+  
   namespace CG
   {
     class BasicBlockBuilder;
+    class ModuleBuilder;
   };
   
   namespace AST
   {
-    class Statement: public Node
+    class Statement : public Node
     {
     public:
       
       Statement( CG::Location const &location );
+      
+      virtual void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const = 0;
       
       virtual void llvmCompileToBuilder( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const = 0;
     };

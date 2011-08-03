@@ -1,0 +1,3 @@
+alias UnregisteredType AliasTypeOne;
+alias Integer AliasTypeTwo;
+alias Scalar AliasTypeTwo;

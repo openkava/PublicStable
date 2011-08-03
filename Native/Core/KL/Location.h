@@ -1,17 +1,13 @@
 /*
- *
- *  Created by Peter Zion on 10-12-01.
- *  Copyright 2010 Fabric Technologies Inc. All rights reserved.
- *
+ *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
  */
-
+ 
 #ifndef _FABRIC_KL_LOCATION_H
 #define _FABRIC_KL_LOCATION_H
 
-#include <Fabric/Base/Config.h>
-#include <stdlib.h> // For size_t
-#include <stdio.h> // for snprintf
-#include <string>
+#include <Fabric/Core/CG/Location.h>
+
+#include <stdlib.h>
 
 namespace Fabric
 {
@@ -21,7 +17,14 @@ namespace Fabric
     {
     public:
     
-      Location( size_t index = 0, size_t line = 1, size_t column = 1 )
+      Location()
+        : m_index( 0 )
+        , m_line( 1 )
+        , m_column( 1 )
+      {
+      }
+    
+      Location( size_t index, size_t line, size_t column )
         : m_index( index )
         , m_line( line )
         , m_column( column )
@@ -43,7 +46,7 @@ namespace Fabric
         return *this;
       }
       
-      size_t index() const
+      size_t getIndex() const
       {
         return m_index;
       }
@@ -53,7 +56,7 @@ namespace Fabric
         m_index = index;
       }
       
-      size_t line() const
+      size_t getLine() const
       {
         return m_line;
       }
@@ -63,7 +66,7 @@ namespace Fabric
         m_line = line;
       }
       
-      size_t column() const
+      size_t getColumn() const
       {
         return m_column;
       }
@@ -73,11 +76,9 @@ namespace Fabric
         m_column = column;
       }
       
-      std::string desc() const
+      operator CG::Location() const
       {
-        char buf[128];
-        snprintf( buf, 128, "%u:%u[%u]", (unsigned)m_line, (unsigned)m_column, (unsigned)m_index );
-        return std::string(buf);
+        return CG::Location( m_line, m_column );
       }
       
     private:

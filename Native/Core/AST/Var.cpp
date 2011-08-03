@@ -8,20 +8,28 @@
 #include "Var.h"
 #include <Fabric/Core/CG/Error.h>
 #include <Fabric/Core/CG/Scope.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
   namespace AST
   {
+    FABRIC_AST_NODE_IMPL( Var );
+    
     Var::Var( CG::Location const &location, std::string const &name )
       : Expr( location )
       , m_name( name )
     {
     }
     
-    std::string Var::localDesc() const
+    void Var::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      return "Var('" + m_name + "')";
+      Expr::appendJSONMembers( jsonObjectGenerator );
+      jsonObjectGenerator.makeMember( "name" ).makeString( m_name );
+    }
+    
+    void Var::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    {
     }
     
     RC::ConstHandle<CG::ValueSymbol> Var::getValueSymbol( CG::BasicBlockBuilder const &basicBlockBuilder ) const

@@ -5,16 +5,31 @@
  *
  */
 
-#include "ConditionalStatement.h"
+#include <Fabric/Core/AST/ConditionalStatement.h>
+#include <Fabric/Core/AST/Expr.h>
 #include <Fabric/Core/CG/BooleanAdapter.h>
-#include <Fabric/Core/CG/Manager.h>
-#include <Fabric/Core/CG/FunctionBuilder.h>
 #include <Fabric/Core/CG/Error.h>
+#include <Fabric/Core/CG/FunctionBuilder.h>
+#include <Fabric/Core/CG/Manager.h>
+#include <Fabric/Core/CG/ModuleBuilder.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
   namespace AST
   {
+    FABRIC_AST_NODE_IMPL( ConditionalStatement );
+    
+    RC::ConstHandle<ConditionalStatement> ConditionalStatement::Create(
+      CG::Location const &location,
+      RC::ConstHandle<Expr> const &expr,
+      RC::ConstHandle<Statement> const &trueStatement,
+      RC::ConstHandle<Statement> const &falseStatement
+      )
+    {
+      return new ConditionalStatement( location, expr, trueStatement, falseStatement );
+    }
+
     ConditionalStatement::ConditionalStatement(
       CG::Location const &location,
       RC::ConstHandle<Expr> const &expr,
@@ -28,21 +43,23 @@ namespace Fabric
     {
     }
     
-    std::string ConditionalStatement::localDesc() const
+    void ConditionalStatement::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      return "ConditionalStatement";
+      Statement::appendJSONMembers( jsonObjectGenerator );
+      m_expr->appendJSON( jsonObjectGenerator.makeMember( "testExpr" ) );
+      if ( m_trueStatement )
+        m_trueStatement->appendJSON( jsonObjectGenerator.makeMember( "ifTrue" ) );
+      if ( m_falseStatement )
+        m_falseStatement->appendJSON( jsonObjectGenerator.makeMember( "ifFalse" ) );
     }
     
-    std::string ConditionalStatement::deepDesc( std::string const &indent ) const
+    void ConditionalStatement::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
     {
-      std::string subIndent = indent + "  ";
-      std::string result = indent + localDesc() + "\n"
-        + m_expr->deepDesc( subIndent );
+      m_expr->llvmPrepareModule( moduleBuilder, diagnostics );
       if ( m_trueStatement )
-        result += m_trueStatement->deepDesc( subIndent );
+        m_trueStatement->llvmPrepareModule( moduleBuilder, diagnostics );
       if ( m_falseStatement )
-        result += m_falseStatement->deepDesc( subIndent );
-      return result;
+        m_falseStatement->llvmPrepareModule( moduleBuilder, diagnostics );
     }
 
     void ConditionalStatement::llvmCompileToBuilder( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const
