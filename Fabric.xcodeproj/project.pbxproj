@@ -26,6 +26,7 @@
 		DB082E9213E6FB3C00FB75DA /* Resources */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Resources; sourceTree = "<group>"; };
 		DB082F2E13E6FD3400FB75DA /* OBJ */ = {isa = PBXFileReference; lastKnownFileType = folder; path = OBJ; sourceTree = "<group>"; };
 		DB0831D513E7606800FB75DA /* Core */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Core; sourceTree = "<group>"; };
+		DB083DE813E9FC3F00828F72 /* Base */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Base; sourceTree = "<group>"; };
 		DB76649C13E7B70D00D5F072 /* Clients */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Clients; sourceTree = "<group>"; };
 		DB96855A13A79BC700616143 /* BackgroundTexture.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = BackgroundTexture.html; sourceTree = "<group>"; };
 		DB96855B13A79BC700616143 /* CharacterSkeleton.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = CharacterSkeleton.html; sourceTree = "<group>"; };
@@ -186,6 +187,7 @@
 		DBD4340113D8B7D700E57C5F /* Tesselation.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = Tesselation.html; sourceTree = "<group>"; };
 		DBD4340213D8B7FA00E57C5F /* nBodyOp.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = nBodyOp.kl; sourceTree = "<group>"; };
 		DBD4340313D8B7FA00E57C5F /* nBodyOpGPU.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = nBodyOpGPU.kl; sourceTree = "<group>"; };
+		DBE4D7F213E9FB2E004A50E5 /* Tools */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Tools; sourceTree = "<group>"; };
 		DBF56E4F13C63B6000778A06 /* generate.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = generate.py; sourceTree = "<group>"; };
 		DBF56E5013C63B6000778A06 /* ogl.cpp_template */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ogl.cpp_template; sourceTree = "<group>"; };
 		DBF56E5113C63B6000778A06 /* SConscript */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = SConscript; sourceTree = "<group>"; };
@@ -289,45 +291,14 @@
 				DB96731913A5423200616143 /* DevServer */,
 				DB96733B13A5423300616143 /* Exts */,
 				DB96733813A5423300616143 /* EDK */,
-				DB76649C13E7B70D00D5F072 /* Clients */,
 				DB967E0213A543F600616143 /* Test */,
-				DB96842313A5445100616143 /* Tools */,
+				DB76649C13E7B70D00D5F072 /* Clients */,
+				DBE4D7F213E9FB2E004A50E5 /* Tools */,
 				DB0831D513E7606800FB75DA /* Core */,
-				DB96713D13A5423100616143 /* Base */,
+				DB083DE813E9FC3F00828F72 /* Base */,
 				DB967F6013A5440A00616143 /* ThirdParty */,
 			);
 			path = Native;
-			sourceTree = "<group>";
-		};
-		DB96713D13A5423100616143 /* Base */ = {
-			isa = PBXGroup;
-			children = (
-				DB96714013A5423100616143 /* JSON */,
-				DB96714F13A5423100616143 /* RC */,
-				DB96715A13A5423100616143 /* Util */,
-			);
-			path = Base;
-			sourceTree = "<group>";
-		};
-		DB96714013A5423100616143 /* JSON */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = JSON;
-			sourceTree = "<group>";
-		};
-		DB96714F13A5423100616143 /* RC */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = RC;
-			sourceTree = "<group>";
-		};
-		DB96715A13A5423100616143 /* Util */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Util;
 			sourceTree = "<group>";
 		};
 		DB96731913A5423200616143 /* DevServer */ = {
@@ -479,21 +450,6 @@
 				DB9CD90F13D3C69300CCB0E6 /* yajl-1.0.9 */,
 			);
 			path = Public;
-			sourceTree = "<group>";
-		};
-		DB96842313A5445100616143 /* Tools */ = {
-			isa = PBXGroup;
-			children = (
-				DB96842413A5445100616143 /* KL */,
-			);
-			path = Tools;
-			sourceTree = "<group>";
-		};
-		DB96842413A5445100616143 /* KL */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = KL;
 			sourceTree = "<group>";
 		};
 		DB96842913A5445200616143 /* Util */ = {
