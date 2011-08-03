@@ -7,8 +7,8 @@
 #include "IntegerImpl.h"
 #include "SizeDesc.h"
 #include "SizeImpl.h"
-#include "ScalarDesc.h"
-#include "ScalarImpl.h"
+#include "FloatDesc.h"
+#include "FloatImpl.h"
 #include "ConstStringDesc.h"
 #include "ConstStringImpl.h"
 #include "StringDesc.h"
@@ -53,7 +53,7 @@ namespace Fabric
       registerDesc( m_byteDesc = new ByteDesc( "Byte", new ByteImpl( "Byte" ) ) );
       registerDesc( m_integerDesc = new IntegerDesc( "Integer", new IntegerImpl( "Integer" ) ) );
       registerDesc( m_sizeDesc = new SizeDesc( "Size", new SizeImpl( "Size" ) ) );
-      registerDesc( m_scalarDesc = new ScalarDesc( "Scalar", new ScalarImpl( "Scalar" ) ) );
+      registerDesc( m_scalarDesc = new FloatDesc( "Scalar", new FloatImpl( "Scalar" ) ) );
       registerDesc( m_stringDesc = new StringDesc( "String", new StringImpl( "String" ) ) );
       registerDesc( m_dataDesc = new OpaqueDesc( "Data", new OpaqueImpl( "Data", sizeof(size_t) ) ) );
     }
@@ -117,7 +117,7 @@ namespace Fabric
           aliasDesc = new SizeDesc( name, RC::ConstHandle<SizeImpl>::StaticCast( desc->getImpl() ) );
           break;
         case DT_SCALAR:
-          aliasDesc = new ScalarDesc( name, RC::ConstHandle<ScalarImpl>::StaticCast( desc->getImpl() ) );
+          aliasDesc = new FloatDesc( name, RC::ConstHandle<FloatImpl>::StaticCast( desc->getImpl() ) );
           break;
         case DT_STRING:
           aliasDesc = new StringDesc( name, RC::ConstHandle<StringImpl>::StaticCast( desc->getImpl() ) );
@@ -264,7 +264,7 @@ namespace Fabric
       return m_sizeDesc;
     }
     
-    RC::ConstHandle<ScalarDesc> Manager::getScalarDesc() const
+    RC::ConstHandle<FloatDesc> Manager::getScalarDesc() const
     {
       return m_scalarDesc;
     }
