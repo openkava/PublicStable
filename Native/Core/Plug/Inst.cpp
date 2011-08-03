@@ -6,8 +6,13 @@
 
 #include <Fabric/Base/JSON/Object.h>
 #include <Fabric/Base/JSON/Decode.h>
-#include <Fabric/Core/KL/Parse.h>
+#include <Fabric/Core/KL/StringSource.h>
+#include <Fabric/Core/KL/Scanner.h>
+#include <Fabric/Core/KL/Parser.hpp>
 #include <Fabric/Core/AST/Function.h>
+#include <Fabric/Core/AST/GlobalList.h>
+#include <Fabric/Core/CG/Manager.h>
+#include <Fabric/Core/CG/ModuleBuilder.h>
 #include <Fabric/Core/DG/Context.h>
 #include <Fabric/Core/IO/Helpers.h>
 #include <Fabric/Core/Plug/Helpers.h>
@@ -20,28 +25,14 @@ namespace Fabric
     //typedef void (*OnLoadFn)( SDK::Value FABRIC );
     //typedef void (*OnUnloadFn)( SDK::Value FABRIC );
     
-    RC::Handle<Inst> Inst::Create( std::string const &name, std::string const &jsonDesc, RC::Handle<DG::Context> const &dgContext, std::vector<std::string> const &pluginDirs, RC::Handle<JSON::CommandChannel> const &jsonCommandChannel )
+    RC::Handle<Inst> Inst::Create( std::string const &name, std::string const &jsonDesc, std::vector<std::string> const &pluginDirs, RC::Handle<CG::Manager> const &cgManager )
     {
-      RC::Handle<Inst> result = new Inst( name, jsonDesc, dgContext, pluginDirs );
-      
-      static std::vector<std::string> src;
-      if ( src.empty() )
-        src.push_back("EX");
-      
-      static std::string cmd = "delta";
-      
-      RC::Handle<JSON::Object> arg = JSON::Object::Create();
-      arg->set( name, result->jsonDesc() );
-      
-      jsonCommandChannel->jsonNotify( src, cmd, arg );
-      
-      return result;
+      return new Inst( name, jsonDesc, pluginDirs, cgManager );
     }
       
-    Inst::Inst( std::string const &name, std::string const &jsonDesc, RC::Handle<DG::Context> const &dgContext, std::vector<std::string> const &pluginDirs )
-      : m_name( name )
+    Inst::Inst( std::string const &extensionName, std::string const &jsonDesc, std::vector<std::string> const &pluginDirs, RC::Handle<CG::Manager> const &cgManager )
+      : m_name( extensionName )
       , m_disabled( false )
-      , m_cgManager( dgContext->getCGManager() )
       , m_jsonDesc( jsonDesc )
     {
       try
@@ -82,10 +73,10 @@ namespace Fabric
         */
       }
       
+      /*
       for ( size_t i=0; i<m_desc.interface.methods.size(); ++i )
       {
         std::string const &methodName = m_desc.interface.methods[i];
-        /*
         Method method = 0;
         for ( size_t j=0; j<m_orderedSOLibHandles.size(); ++j )
         {
@@ -97,49 +88,55 @@ namespace Fabric
         if ( !method )
           throw Exception( "method "+_(methodName)+" not found" );
         m_methodMap.insert( MethodMap::value_type( methodName, method ) );
-        */
       }
+      */
       
       m_code = m_desc.code.concatMatching( Util::getHostTriple() );
 
-      Fabric::KL::Source source( m_code.data(), m_code.length() );
-      m_diagnostics.clear();
-      Fabric::KL::Parse( source, m_cgManager, m_diagnostics, &m_ast, false );
-      
+      RC::ConstHandle<KL::Source> source = KL::StringSource::Create( m_code );
+      RC::Handle<KL::Scanner> scanner = KL::Scanner::Create( source );
+      m_ast = KL::Parse( scanner, m_diagnostics );
       for ( CG::Diagnostics::const_iterator it=m_diagnostics.begin(); it!=m_diagnostics.end(); ++it )
       {
         CG::Location const &location = it->first;
         CG::Diagnostic const &diagnostic = it->second;
-        FABRIC_LOG( "[%s] %u:%u: %s: %s", name.c_str(), (unsigned)location.getLine(), (unsigned)location.getColumn(), diagnostic.getLevelDesc(), diagnostic.getDesc().c_str() );
+        FABRIC_LOG( "[%s] %u:%u: %s: %s", extensionName.c_str(), (unsigned)location.getLine(), (unsigned)location.getColumn(), diagnostic.getLevelDesc(), diagnostic.getDesc().c_str() );
+        if ( diagnostic.getLevel() == CG::Diagnostic::LEVEL_ERROR )
+          m_disabled = true;
       }
       
-      if ( m_diagnostics.containsError() )
-        throw Exception( "unable to compile KL code" );
-      FABRIC_ASSERT( m_ast );
-      
-      size_t numItems = m_ast->numItems();
-      for ( size_t i=0; i<numItems; ++i )
+      if ( !m_disabled )
       {
-        RC::ConstHandle<AST::Global> global = m_ast->item(i);
-        if ( !global->isFunction() )
-          continue;
-        RC::ConstHandle<AST::Function> function = RC::ConstHandle<AST::Function>::StaticCast( global );
-        
-        if ( !function->getBody() )
+        std::vector< RC::ConstHandle<AST::Function> > functions;
+        m_ast->collectFunctions( functions );
+        for ( std::vector< RC::ConstHandle<AST::Function> >::const_iterator it=functions.begin(); it!=functions.end(); ++it )
         {
-          std::string const &name = function->getEntryName();
-          void *resolvedFunction = 0;
-          for ( size_t i=0; i<m_orderedSOLibHandles.size(); ++i )
+          RC::ConstHandle<AST::Function> const &function = *it;
+          
+          if ( !function->getBody() )
           {
-            resolvedFunction = SOLibResolve( m_orderedSOLibHandles[i], name );
-            if ( resolvedFunction )
-              break;
+            std::string const &name = function->getEntryName( cgManager );
+            void *resolvedFunction = 0;
+            for ( size_t i=0; i<m_orderedSOLibHandles.size(); ++i )
+            {
+              resolvedFunction = SOLibResolve( m_orderedSOLibHandles[i], name );
+              if ( resolvedFunction )
+                break;
+            }
+            if ( !resolvedFunction )
+            {
+              FABRIC_LOG( "[" + extensionName + "] error: symbol " + _(name) + ", prototyped in KL, not found in native code" );
+              m_disabled = true;
+            }
+            else m_externalFunctionMap.insert( ExternalFunctionMap::value_type( name, resolvedFunction ) );
           }
-          m_externalFunctionMap.insert( ExternalFunctionMap::value_type( name, resolvedFunction ) );
         }
       }
-      
+
       m_jsConstants = m_desc.jsConstants.concatMatching( Util::getHostTriple() );
+
+      if ( m_disabled )
+        FABRIC_LOG( "[%s] Errors found; extension disabled", m_name.c_str() );
     }
     
     Inst::~Inst()
@@ -156,23 +153,6 @@ namespace Fabric
       for ( ResolvedNameToSOLibHandleMap::const_iterator it=m_resolvedNameToSOLibHandleMap.begin(); it !=m_resolvedNameToSOLibHandleMap.end(); ++it )
       {
         SOLibClose( it->second, it->first );
-      }
-    }
-      
-    void Inst::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder ) const
-    {
-      CG::Diagnostics diagnostics;
-      m_ast->llvmCompileToModule( moduleBuilder, diagnostics );
-      for ( CG::Diagnostics::const_iterator it=diagnostics.begin(); it!=diagnostics.end(); ++it )
-      {
-        CG::Location const &location = it->first;
-        CG::Diagnostic const &diagnostic = it->second;
-        FABRIC_LOG( "[%s] %u:%u: %s: %s", m_name.c_str(), (unsigned)location.getLine(), (unsigned)location.getColumn(), diagnostic.getLevelDesc(), diagnostic.getDesc().c_str() );
-      }
-      if ( diagnostics.containsError() )
-      {
-        FABRIC_LOG( "[%s] KL code contains error(s), extension disabled", m_name.c_str() );
-        m_disabled = true;
       }
     }
     
@@ -220,6 +200,12 @@ namespace Fabric
       result->set( "code", JSON::String::Create( m_code ) );
       result->set( "jsConstants", JSON::String::Create( m_jsConstants ) );
       return result;
+    }
+
+      
+    RC::ConstHandle<AST::GlobalList> Inst::getAST() const
+    {
+      return m_ast;
     }
   };
 };

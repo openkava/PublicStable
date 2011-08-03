@@ -46,7 +46,8 @@ namespace Fabric
       NPError nppDestroy( NPP npp, NPSavedData** save );
 
       NPError nppNewStream( NPP npp, NPMIMEType type, NPStream *stream, NPBool seekable, uint16_t *stype );
-      void nppStreamAsFile( NPP npp, NPStream *stream, const char *fname );
+      int32_t nppWriteReady( NPP npp, NPStream* stream );
+      int32_t nppWrite( NPP npp, NPStream* stream, int32_t offset, int32_t len, void* buffer );
       NPError nppDestroyStream( NPP npp, NPStream *stream, NPReason reason );
       
     protected:

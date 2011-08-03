@@ -8,7 +8,7 @@
 #include <Fabric/Core/OCL/OCL.h>
 #include <Fabric/Core/RT/Manager.h>
 #include <Fabric/Core/CG/ModuleBuilder.h>
-#include <Fabric/Core/KL/Parse.h>
+#include <Fabric/Core/AST/GlobalList.h>
 #include <Fabric/Core/AST/Function.h>
 #include <Fabric/Core/AST/Operator.h>
 #include <Fabric/Core/RT/Impl.h>
@@ -18,6 +18,12 @@
 #include <Fabric/Core/MT/LogCollector.h>
 #include <Fabric/Core/MT/IdleTaskQueue.h>
 #include <Fabric/Core/DG/IRCache.h>
+#include <Fabric/Core/Util/Timer.h>
+#include <Fabric/Core/KL/StringSource.h>
+#include <Fabric/Core/KL/Scanner.h>
+#include <Fabric/Core/KL/Parser.hpp>
+#include <Fabric/Core/CG/Manager.h>
+#include <Fabric/Core/Util/Log.h>
 #include <Fabric/Core/Util/Timer.h>
 
 #include <llvm/Module.h>
@@ -74,10 +80,19 @@ namespace Fabric
       
       FABRIC_ASSERT( m_sourceCode.length() > 0 );
       
-      Fabric::KL::Source source( m_sourceCode.data(), m_sourceCode.length() );
-      RC::Handle<AST::GlobalList> ast;
-      Fabric::KL::Parse( source, m_context->getCGManager(), m_diagnostics, &ast );
-      m_ast = ast;
+      m_ast = AST::GlobalList::Create();
+      std::vector< RC::ConstHandle<RT::Desc> > topoSortedDescs = m_context->getRTManager()->getTopoSortedDescs();
+      for ( size_t i=0; i<topoSortedDescs.size(); ++i )
+      {
+        RC::ConstHandle<RT::Desc> const &desc = topoSortedDescs[i];
+        RC::ConstHandle<AST::GlobalList> ast = RC::ConstHandle<AST::GlobalList>::StaticCast( desc->getKLBindingsAST() );
+        m_ast = AST::GlobalList::Create( m_ast, ast );
+      }
+      m_ast = AST::GlobalList::Create( m_ast, Plug::Manager::Instance()->getAST() );
+
+      RC::ConstHandle<KL::Source> source = KL::StringSource::Create( m_sourceCode );
+      RC::Handle<KL::Scanner> scanner = KL::Scanner::Create( source );
+      m_ast = AST::GlobalList::Create( m_ast, KL::Parse( scanner, m_diagnostics ) );
       if ( !m_diagnostics.containsError() )
         compileAST( true );
     }
@@ -89,14 +104,38 @@ namespace Fabric
       RC::Handle<CG::Manager> cgManager = m_context->getCGManager();
       llvm::OwningPtr<llvm::Module> module( new llvm::Module( "DG::Code", cgManager->getLLVMContext() ) );
       CG::ModuleBuilder moduleBuilder( cgManager, module.get() );
-
-      cgManager->llvmPrepareModule( moduleBuilder );
-      m_context->getPlugManager()->llvmPrepareModule( moduleBuilder );
       OCL::llvmPrepareModule( moduleBuilder, m_context->getRTManager() );
-      
+
       CG::Diagnostics optimizeDiagnostics;
       CG::Diagnostics &diagnostics = (false && optimize)? optimizeDiagnostics: m_diagnostics;
-      m_ast->llvmCompileToModule( moduleBuilder, diagnostics );
+
+      std::string ir = m_irCache->get( m_ast );
+      if ( ir.length() > 0 )
+      {
+        RC::Handle<CG::Manager> cgManager = m_context->getCGManager();
+        
+        llvm::SMDiagnostic error;
+        llvm::ParseAssemblyString( ir.c_str(), module.get(), error, cgManager->getLLVMContext() );
+        
+        m_ast->llvmPrepareModule( moduleBuilder, diagnostics );
+        FABRIC_ASSERT( !diagnostics.containsError() );
+
+        FABRIC_ASSERT( !llvm::verifyModule( *module, llvm::PrintMessageAction ) );
+
+        linkModule( module, true );
+        
+        return;
+      }
+      
+      m_ast->llvmPrepareModule( moduleBuilder, diagnostics );
+      if ( !diagnostics.containsError() )
+      {
+        m_ast->llvmCompileToModule( moduleBuilder, diagnostics, false );
+      }
+      if ( !diagnostics.containsError() )
+      {
+        m_ast->llvmCompileToModule( moduleBuilder, diagnostics, true );
+      }
       if ( !diagnostics.containsError() )
       {
 #if defined(FABRIC_BUILD_DEBUG)
@@ -106,19 +145,6 @@ namespace Fabric
         module->print( byteCodeStream, 0 );
         byteCodeStream.flush();
 #endif
-
-        std::string ir = m_irCache->get( m_sourceCode );
-        if ( ir.length() > 0 )
-        {
-          RC::Handle<CG::Manager> cgManager = m_context->getCGManager();
-          
-          llvm::SMDiagnostic error;
-          llvm::ParseAssemblyString( ir.c_str(), module.get(), error, cgManager->getLLVMContext() );
-          FABRIC_ASSERT( module );
-          FABRIC_ASSERT( !llvm::verifyModule( *module, llvm::PrintMessageAction ) );
-          linkModule( module, true );
-          return;
-        }
         
         llvm::NoFramePointerElim = true;
         llvm::JITExceptionHandling = true;
@@ -140,7 +166,7 @@ namespace Fabric
           llvm::raw_string_ostream irStream( ir );
           module->print( irStream, 0 );
           irStream.flush();
-          m_irCache->put( m_sourceCode, ir );
+          m_irCache->put( m_ast, ir );
         }
 
         linkModule( module, optimize );

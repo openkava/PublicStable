@@ -4,15 +4,25 @@
  
 #include "ConstDeclStatement.h"
 #include "ConstDecl.h"
-
 #include <Fabric/Core/CG/BasicBlockBuilder.h>
 #include <Fabric/Core/CG/Error.h>
 #include <Fabric/Core/CG/Manager.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
   namespace AST
   {
+    FABRIC_AST_NODE_IMPL( ConstDeclStatement );
+    
+    RC::ConstHandle<ConstDeclStatement> ConstDeclStatement::Create(
+      CG::Location const &location,
+      RC::ConstHandle<ConstDecl> const &constDecl
+      )
+    {
+      return new ConstDeclStatement( location, constDecl );
+    }
+
     ConstDeclStatement::ConstDeclStatement(
       CG::Location const &location,
       RC::ConstHandle<ConstDecl> const &constDecl
@@ -22,15 +32,15 @@ namespace Fabric
     {
     }
     
-    std::string ConstDeclStatement::localDesc() const
+    void ConstDeclStatement::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      return "ConstDeclStatement";
+      Node::appendJSONMembers( jsonObjectGenerator );
+      m_constDecl->appendJSON( jsonObjectGenerator.makeMember( "constDecl" ) );
     }
-
-    std::string ConstDeclStatement::deepDesc( std::string const &indent ) const
+    
+    void ConstDeclStatement::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
     {
-      return indent + localDesc() + "\n"
-        + m_constDecl->deepDesc( indent + "  " );
+      m_constDecl->llvmPrepareModule( moduleBuilder, diagnostics );
     }
     
     void ConstDeclStatement::llvmCompileToBuilder( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const

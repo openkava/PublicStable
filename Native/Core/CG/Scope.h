@@ -200,6 +200,9 @@ namespace Fabric
             return getAdapter()->llvmRType();
           case USAGE_LVALUE:
             return getAdapter()->llvmLType();
+          case USAGE_UNSPECIFIED:
+            FABRIC_ASSERT( false );
+            throw Exception( "usage unspecified" );
         }
         return 0;
       }
@@ -290,9 +293,10 @@ namespace Fabric
       }
 
     private:
+
+      ExprType  m_exprType;
       bool        m_returnsStaticDataPtr;
       llvm::Value *m_returnLValue;
-      ExprType  m_exprType;
     };
 
     class FunctionSymbol : public Symbol
@@ -427,7 +431,7 @@ namespace Fabric
             {
               RC::ConstHandle<VariableSymbol> variableSymbol = RC::ConstHandle<VariableSymbol>::StaticCast( valueSymbol );
               ExprValue exprValue = variableSymbol->getExprValue();
-              llvm::Value *rValue;
+              llvm::Value *rValue = 0;
               switch ( exprValue.getUsage() )
               {
                 case USAGE_RVALUE:
@@ -471,7 +475,7 @@ namespace Fabric
       void llvmReturn( BasicBlockBuilder &bbb, ExprValue &exprValue ) const
       {
         ExprType const &returnExprType = getReturnInfo().getExprType();
-        llvm::Value *returnValue;
+        llvm::Value *returnValue = 0;
         switch ( returnExprType.getUsage() )
         {
           case USAGE_RVALUE:
@@ -482,6 +486,9 @@ namespace Fabric
               throw Exception( "cannot return l-value through casting" );
             returnValue = exprValue.getValue();
             break;
+          case USAGE_UNSPECIFIED:
+            FABRIC_ASSERT( false );
+            throw Exception( "unspecified usage" );
         }
         llvmReturn( bbb, returnValue );
       }

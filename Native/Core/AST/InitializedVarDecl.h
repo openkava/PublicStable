@@ -10,43 +10,44 @@
 
 #include <Fabric/Core/AST/VarDecl.h>
 #include <Fabric/Core/AST/Expr.h>
-#include <Fabric/Core/AST/ArgList.h>
 
 namespace Fabric
 {
   namespace AST
   {
+    class ExprVector;
+    
     class InitializedVarDecl: public VarDecl
     {
-    public:
-    
-      virtual std::string localDesc() const;
-      virtual std::string deepDesc( std::string const &indent ) const;
+      FABRIC_AST_NODE_DECL( InitializedVarDecl );
 
-      static RC::Handle<InitializedVarDecl> Create(
+    public:
+
+      static RC::ConstHandle<InitializedVarDecl> Create(
         CG::Location const &location,
         std::string const &name,
-        RC::ConstHandle<CG::Adapter> const &adapter,
-        RC::ConstHandle<ArgList> const &args
-        )
-      {
-        return new InitializedVarDecl( location, name, adapter, args );
-      }
+        std::string const &arrayModifier,
+        RC::ConstHandle<ExprVector> const &args
+        );
 
-      virtual void llvmCompileToBuilder( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const;
+      virtual void llvmPrepareModule( std::string const &baseType, CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
+
+      virtual void llvmCompileToBuilder( std::string const &baseType, CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const;
      
     protected:
     
       InitializedVarDecl(
         CG::Location const &location,
         std::string const &name,
-        RC::ConstHandle<CG::Adapter> const &adapter,
-        RC::ConstHandle<ArgList> const &args
+        std::string const &arrayModifier,
+        RC::ConstHandle<ExprVector> const &args
         );
+      
+      virtual void appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const;
     
     private:
     
-      RC::ConstHandle<ArgList> m_argList;
+      RC::ConstHandle<ExprVector> m_args;
     };
   };
 };

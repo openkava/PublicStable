@@ -10,10 +10,10 @@
 
 #include <Fabric/Core/MT/Debug.h>
 
-#if defined(FABRIC_OS_MACOSX) || defined(FABRIC_OS_LINUX)
+#if defined(FABRIC_POSIX)
 # include <pthread.h>
-#elif defined(FABRIC_OS_WINDOWS) 
-#include <windows.h>
+#elif defined(FABRIC_WIN32) 
+# include <windows.h>
 #else
 # error "missing FABRIC_OS_... definition"
 #endif
@@ -24,12 +24,14 @@ namespace Fabric
   {
     class Mutex
     {
+      friend class Cond;
+      friend class ThreadPool;
+      
     public:
     
       Mutex( char const *name )
         : m_name( name )
       {
-        FABRIC_MT_TRACE( "Mutex[%s]::Mutex()", m_name );
 #if defined(FABRIC_OS_WINDOWS) 
         ::InitializeCriticalSection( &m_cs );
 #else
@@ -37,22 +39,18 @@ namespace Fabric
         pthread_mutexattr_init( &attr );
         pthread_mutexattr_settype( &attr, PTHREAD_MUTEX_RECURSIVE );
                 
-        int result = pthread_mutex_init( &m_mutex, &attr );
+        FABRIC_CONFIRM( pthread_mutex_init( &m_mutex, &attr ) == 0 );
         
         pthread_mutexattr_destroy( &attr );
-        
-        FABRIC_ASSERT( result == 0 );
 #endif
       }
       
       ~Mutex()
       {
-        FABRIC_MT_TRACE( "Mutex[%s]::~Mutex()", m_name );
 #if defined(FABRIC_OS_WINDOWS) 
         ::DeleteCriticalSection( &m_cs );
 #else
-        int result = pthread_mutex_destroy( &m_mutex );
-        FABRIC_ASSERT( result == 0 );
+        FABRIC_CONFIRM( pthread_mutex_destroy( &m_mutex ) == 0 );
 #endif
       }
       
@@ -63,14 +61,12 @@ namespace Fabric
         Lock( Mutex &mutex )
           : m_mutex( mutex )
         {
-          FABRIC_MT_TRACE( "Mutex[%s]::Mutex::Lock()", m_mutex.m_name );
-          m_mutex.acquire();
+          m_mutex.lock();
         }
         
         ~Lock()
         {
-          FABRIC_MT_TRACE( "Mutex[%s]::Mutex::~Lock()", m_mutex.m_name );
-          m_mutex.release();
+          m_mutex.unlock();
         }
         
       private:
@@ -80,32 +76,29 @@ namespace Fabric
       
     protected:
     
-      void acquire()
+      void lock()
       {
-        FABRIC_MT_TRACE( "Mutex[%s]::acquire()", m_name );
 #if defined(FABRIC_OS_WINDOWS) 
         ::EnterCriticalSection( &m_cs );
 #else
-        int result = pthread_mutex_lock( &m_mutex );
-        FABRIC_ASSERT( result == 0 );
+        if ( pthread_mutex_lock( &m_mutex ) != 0 )
+          throw Exception( "pthread_mutex_lock(): unknown failure" );
 #endif
       }
       
-      void release()
+      void unlock()
       {
-        FABRIC_MT_TRACE( "Mutex[%s]::release()", m_name );
 #if defined(FABRIC_OS_WINDOWS) 
         ::LeaveCriticalSection( &m_cs );
 #else
-        int result = pthread_mutex_unlock( &m_mutex );
-        FABRIC_ASSERT( result == 0 );
+        if ( pthread_mutex_unlock( &m_mutex ) != 0 )
+          throw Exception( "pthread_mutex_unlock(): unknown failure" );
 #endif
       }
 
     private:
 
       char const *m_name;
-      char buf[64];
 #if defined(FABRIC_OS_WINDOWS) 
       CRITICAL_SECTION m_cs;
 #else

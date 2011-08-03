@@ -12,19 +12,25 @@
 
 namespace Fabric
 {
+  namespace Util
+  {
+    class SimpleString;
+  };
+  
   namespace AST
   {
     class NotOp : public Expr
     {
+      FABRIC_AST_NODE_DECL( NotOp );
+
     public:
         
-      static RC::Handle<NotOp> Create( CG::Location const &location, RC::ConstHandle<Expr> const &child )
+      static RC::ConstHandle<NotOp> Create( CG::Location const &location, RC::ConstHandle<Expr> const &child )
       {
         return new NotOp( location, child );
       }
-    
-      virtual std::string localDesc() const;
-      virtual std::string deepDesc( std::string const &indent ) const;
+
+      virtual void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
       
       virtual RC::ConstHandle<CG::Adapter> getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const;
       virtual CG::ExprValue buildExprValue( CG::BasicBlockBuilder &basicBlockBuilder, CG::Usage usage, std::string const &lValueErrorDesc ) const;
@@ -32,6 +38,8 @@ namespace Fabric
     protected:
     
       NotOp( CG::Location const &location, RC::ConstHandle<Expr> const &child );
+      
+      virtual void appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const;
 
     private:
     

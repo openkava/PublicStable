@@ -139,13 +139,8 @@ Export( 'ffmpegFlags' )
 
 # OpenCL
 openclFlags = {}
-if buildOS == 'Windows':
+if buildOS == 'Windows' or buildOS == 'Linux':
   openclFlags['CPPPATH'] = [os.path.join( osArchIncludeBaseDir, 'OpenCL' )]
-elif buildOS == 'Linux':
-  if os.environ.has_key('OPENCL_SDK'):
-    openclFlags['CPPPATH'] = [os.path.join(os.environ['OPENCL_SDK'],'include')]
-    openclFlags['LIBPATH'] = [os.path.join(os.environ['OPENCL_SDK'],'lib',buildArch)]
-    openclFlags['LIBS'] = ['OpenCL','GLEW','glut']
 elif buildOS == 'Darwin':
   openclFlags['FRAMEWORKS'] = ['OpenCL']
 Export( 'openclFlags' )

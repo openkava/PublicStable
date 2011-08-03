@@ -58,25 +58,31 @@ namespace Fabric
     static RC::ConstHandle<RT::OpaqueDesc> clProgramDesc;
     static RC::ConstHandle<RT::OpaqueDesc> clKernelDesc;
     static RC::ConstHandle<RT::OpaqueDesc> clMemDesc;
+    static RC::ConstHandle<RT::VariableArrayDesc> clMemVariableArrayDesc;
     static RC::ConstHandle<RT::OpaqueDesc> clEventDesc;
     static RC::ConstHandle<RT::VariableArrayDesc> clEventVariableArrayDesc;
     
-    static int32_t GetPlatformIDs( cl_uint clNumEntries, void *clPlatformIDsAsOpaqueArray )
+    static int32_t GetPlatformIDs( void *clPlatformIDsAsOpaqueArray )
     {
-      FABRIC_OCL_TRACE( "GetPlatformIDs()" );
-      cl_platform_id *clPlatformIDs = new cl_platform_id[clNumEntries];
       cl_uint clNumPlatforms;
-      cl_int result = clGetPlatformIDs( clNumEntries, clPlatformIDs, &clNumPlatforms );
+      cl_int result = clGetPlatformIDs( 0, NULL, &clNumPlatforms );
       if ( result == CL_SUCCESS )
+      {
+        cl_platform_id *clPlatformIDs = new cl_platform_id[clNumPlatforms];
+        clGetPlatformIDs( clNumPlatforms, clPlatformIDs, NULL );
         clPlatformIDVariableArrayDesc->setMembers( clPlatformIDsAsOpaqueArray, clNumPlatforms, clPlatformIDs );
-      delete [] clPlatformIDs;
+        delete [] clPlatformIDs;
+      }
       return result;
+    }
+        
+    static int32_t GetDeviceType( cl_device_id clDevice, cl_device_type *clDeviceType )
+    {
+      return clGetDeviceInfo( clDevice, CL_DEVICE_TYPE, sizeof(*clDeviceType), clDeviceType, NULL );
     }
 
     static int32_t GetDeviceIDs( cl_platform_id clPlatformID, size_t clDeviceType, void *clDeviceIDsAsOpaqueArray )
     {
-      FABRIC_OCL_TRACE( "GetDeviceIDs()" );
-
       cl_uint clNumDevices = 0;
       cl_int result = clGetDeviceIDs( clPlatformID, clDeviceType, 0, NULL, &clNumDevices );
       if( result == CL_SUCCESS )
@@ -96,7 +102,6 @@ namespace Fabric
     
     static void CL_CALLBACK ContextNotifyCallback( char const *errinfo, void const *private_info, size_t cb, void *user_data )
     {
-      FABRIC_OCL_TRACE( "ContextNotifyCallback( " + _(errinfo) + ", " + _(private_info) + ", " + _(cb) + ", " + _(user_data) + " )" );
       FABRIC_DEBUG_LOG( "OpenCL context notify: %s\n", errinfo );
       std::string err( errinfo );
       MT::tlsLogCollector.get()->add( "OpenCL error: " + err );
@@ -114,7 +119,7 @@ namespace Fabric
       return result;
     }
     
-    static cl_context CreateContext_GL( int32_t *clErrCode )
+    static cl_context CreateContext_GL( void const * const clDeviceIDsRValue, int32_t *clErrCode )
     {
 #if defined( FABRIC_OS_WINDOWS ) || defined( FABRIC_OS_LINUX )
       std::vector<cl_platform_id> platforms;
@@ -132,6 +137,10 @@ namespace Fabric
         0
       };
 #elif defined( FABRIC_OS_WINDOWS )
+
+      cl_uint num_devices = clDeviceIDVariableArrayDesc->getNumMembers( &clDeviceIDsRValue );
+      cl_device_id const *devices = (cl_device_id const *)clDeviceIDVariableArrayDesc->getMemberData( &clDeviceIDsRValue, 0 );
+
       cl_context_properties props[] = 
       {
         CL_GL_CONTEXT_KHR, (cl_context_properties)wglGetCurrentContext(), 
@@ -152,7 +161,12 @@ namespace Fabric
 #endif
       
       cl_int errcode;
+
+#if defined( FABRIC_OS_WINDOWS )    
+      cl_context result = clCreateContext( props, num_devices, devices, &ContextNotifyCallback, NULL, &errcode );
+#else
       cl_context result = clCreateContext( props, 0, 0, &ContextNotifyCallback, NULL, &errcode );
+#endif
       if ( clErrCode )
         *clErrCode = errcode;
       return result;
@@ -175,7 +189,6 @@ namespace Fabric
 
     static cl_command_queue CreateCommandQueue( cl_context clContext, cl_device_id clDeviceID, size_t clCommandQueueProperties, int32_t *clErrCode )
     {
-      FABRIC_OCL_TRACE( "CreateCommandQueue()" );
       cl_int errcode;
       cl_command_queue result = clCreateCommandQueue( clContext, clDeviceID, clCommandQueueProperties, &errcode );
       if ( clErrCode )
@@ -185,7 +198,6 @@ namespace Fabric
     
     static cl_program CreateProgramWithSource( cl_context clContext, void const * const sourceStringRValue, int32_t *clErrCode )
     {
-      FABRIC_OCL_TRACE( "CreateProgramWithSource()" );
       cl_uint count = 1;
       char const *sources[1] = { stringDesc->getValueData( &sourceStringRValue ) };
       size_t lengths[1] = { stringDesc->getValueLength( &sourceStringRValue ) };
@@ -212,7 +224,6 @@ namespace Fabric
     
     static int32_t GetProgramBuildInfoi( cl_program program, cl_device_id device, size_t param_name, int32_t *retval )
     {
-      FABRIC_OCL_TRACE( "GetProgramBuildInfoi" );
       if( param_name != CL_PROGRAM_BUILD_STATUS )
         return CL_INVALID_VALUE;
       
@@ -221,7 +232,6 @@ namespace Fabric
     
     static int32_t GetProgramBuildInfoStr( cl_program program, cl_device_id device, int32_t param_name, void *stringData )
     {
-      FABRIC_OCL_TRACE( "GetProgramBuildInfoStr( %p, %p, %d, %p )", program, device, param_name, stringData );
       if( param_name != CL_PROGRAM_BUILD_OPTIONS && param_name != CL_PROGRAM_BUILD_LOG )
         return CL_INVALID_VALUE;
       
@@ -235,7 +245,6 @@ namespace Fabric
 
     static cl_kernel CreateKernel( cl_program clProgram, void const * const kernelNameStringRValue, int32_t *clErrCode )
     {
-      FABRIC_OCL_TRACE( "CreateKernel()" );
       char const *kernel_name = stringDesc->getValueData( &kernelNameStringRValue );
       cl_int errcode;
       cl_kernel result = clCreateKernel( clProgram, kernel_name, &errcode );
@@ -246,7 +255,6 @@ namespace Fabric
     
     static cl_mem CreateBuffer( cl_context clContext, size_t flags, size_t size, void *host_ptr, int32_t *clErrCode )
     {
-      FABRIC_OCL_TRACE( "CreateBuffer( size=" + _(size) + " host_ptr=" + _(host_ptr) + " )" );
       cl_int errcode;
       cl_mem result = clCreateBuffer( clContext, flags, size, host_ptr, &errcode );
       if ( clErrCode )
@@ -256,7 +264,6 @@ namespace Fabric
 
     static cl_mem CreateFromGLBuffer( cl_context clContext, size_t flags, GLuint bufobj, int32_t *clErrCode )
     {
-      FABRIC_OCL_TRACE( "CreateFromGLBuffer( bufobj=" + _((int)bufobj) + " )" );
       cl_int errcode;
       cl_mem result = clCreateFromGLBuffer( clContext, flags, bufobj, &errcode );
       if ( clErrCode )
@@ -266,7 +273,6 @@ namespace Fabric
     
     static int32_t ReleaseMemObject( cl_mem memobj )
     {
-      FABRIC_OCL_TRACE( "ReleaseMemObject(%p)", memobj );
       cl_int result = clReleaseMemObject( memobj );
       return result;
     }
@@ -282,16 +288,48 @@ namespace Fabric
       cl_event *event 
       )
     {
-      FABRIC_OCL_TRACE( "EnqueueReadBuffer()" );
       cl_uint num_events_in_wait_list = clEventVariableArrayDesc->getNumMembers( &eventWaitListArrayRValue );
       cl_event const *event_wait_list = num_events_in_wait_list? (cl_event const *)clEventVariableArrayDesc->getMemberData( &eventWaitListArrayRValue, 0 ): NULL;
       cl_int result = clEnqueueReadBuffer( command_queue, buffer, blocking_read? CL_TRUE: CL_FALSE, offset, cb, ptr, num_events_in_wait_list, event_wait_list, event );
       return result;
     }
-    
+
+    static int32_t EnqueueAcquireGLObjects(
+      cl_command_queue command_queue,
+      void const * const memObjectsArrayRValue, 
+      void const * const eventWaitListArrayRValue, 
+      cl_event *event
+      )
+    {
+      cl_uint num_mem_objects = clMemVariableArrayDesc->getNumMembers( &memObjectsArrayRValue );
+      cl_mem const *mem_objects = num_mem_objects? (cl_mem const *)clMemVariableArrayDesc->getMemberData( &memObjectsArrayRValue, 0 ): NULL;
+
+      cl_uint num_events_in_wait_list = clEventVariableArrayDesc->getNumMembers( &eventWaitListArrayRValue );
+      cl_event const *event_wait_list = num_events_in_wait_list? (cl_event const *)clEventVariableArrayDesc->getMemberData( &eventWaitListArrayRValue, 0 ): NULL;
+
+      cl_int result = clEnqueueAcquireGLObjects( command_queue, num_mem_objects, mem_objects, num_events_in_wait_list, event_wait_list, event );
+      return result;
+    }
+
+    static int32_t EnqueueReleaseGLObjects(
+      cl_command_queue command_queue,
+      void const * const memObjectsArrayRValue, 
+      void const * const eventWaitListArrayRValue, 
+      cl_event *event
+      )
+    {
+      cl_uint num_mem_objects = clMemVariableArrayDesc->getNumMembers( &memObjectsArrayRValue );
+      cl_mem const *mem_objects = num_mem_objects? (cl_mem const *)clMemVariableArrayDesc->getMemberData( &memObjectsArrayRValue, 0 ): NULL;
+
+      cl_uint num_events_in_wait_list = clEventVariableArrayDesc->getNumMembers( &eventWaitListArrayRValue );
+      cl_event const *event_wait_list = num_events_in_wait_list? (cl_event const *)clEventVariableArrayDesc->getMemberData( &eventWaitListArrayRValue, 0 ): NULL;
+
+      cl_int result = clEnqueueReleaseGLObjects( command_queue, num_mem_objects, mem_objects, num_events_in_wait_list, event_wait_list, event );
+      return result;
+    }
+
     static int32_t EnqueueWriteBuffer( cl_command_queue command_queue, cl_mem buffer, bool blocking_write, size_t offset, size_t cb, void const *ptr, void const * const eventWaitListArrayRValue, cl_event *event )
     {
-      FABRIC_OCL_TRACE( "EnqueueWriteBuffer()" );
       cl_uint num_events_in_wait_list = clEventVariableArrayDesc->getNumMembers( &eventWaitListArrayRValue );
       cl_event const *event_wait_list = num_events_in_wait_list? (cl_event const *)clEventVariableArrayDesc->getMemberData( &eventWaitListArrayRValue, 0 ): NULL;
       cl_int result = clEnqueueWriteBuffer( command_queue, buffer, blocking_write? CL_TRUE: CL_FALSE, offset, cb, ptr, num_events_in_wait_list, event_wait_list, event );
@@ -300,14 +338,12 @@ namespace Fabric
     
     static int32_t SetKernelArg( cl_kernel kernel, size_t arg_index, size_t arg_size, void const *arg_value )
     {
-      FABRIC_OCL_TRACE( "SetKernelArg()" );
       cl_int result = clSetKernelArg( kernel, arg_index, arg_size, arg_value );
       return result;
     }
     
     static int32_t GetKernelWorkGroupInfo( cl_kernel kernel, cl_device_id device, cl_kernel_work_group_info param_name, size_t param_value_size, void *param_value, size_t *param_value_size_ret )
     {
-      FABRIC_OCL_TRACE( "GetKernelWorkGroupInfo()" );
       cl_int result = clGetKernelWorkGroupInfo( kernel, device, param_name, param_value_size, param_value, param_value_size_ret );
       return result;
     }
@@ -323,7 +359,6 @@ namespace Fabric
       cl_event *event
       )
     {
-      FABRIC_OCL_TRACE( "EnqueueNDRangeKernel()" );
       cl_uint num_events_in_wait_list = clEventVariableArrayDesc->getNumMembers( &eventWaitListArrayRValue );
       cl_event const *event_wait_list = num_events_in_wait_list? (cl_event const *)clEventVariableArrayDesc->getMemberData( &eventWaitListArrayRValue, 0 ): NULL;
       cl_int result = clEnqueueNDRangeKernel(
@@ -342,15 +377,12 @@ namespace Fabric
     
     static int32_t Finish( cl_command_queue command_queue )
     {
-      FABRIC_OCL_TRACE( "Finish" );
       cl_int result = clFinish( command_queue );
       return result;
     }
 
     void registerTypes( RC::Handle<RT::Manager> const &rtManager )
     {
-      FABRIC_OCL_TRACE( "registerTypes()" );
-      
       //printf("registering OCL....\n");
       
       RC::ConstHandle<RT::BooleanDesc> booleanDesc = rtManager->getBooleanDesc();
@@ -377,6 +409,7 @@ namespace Fabric
       clProgramDesc = rtManager->registerOpaque( "cl_program", sizeof(cl_program) );
       clKernelDesc = rtManager->registerOpaque( "cl_kernel", sizeof(cl_kernel) );
       clMemDesc = rtManager->registerOpaque( "cl_mem", sizeof(cl_mem) );
+      clMemVariableArrayDesc = rtManager->getVariableArrayOf( clMemDesc );
       clEventDesc = rtManager->registerOpaque( "cl_event", sizeof(cl_event) );
       clEventVariableArrayDesc = rtManager->getVariableArrayOf( clEventDesc );
     }
@@ -397,8 +430,6 @@ namespace Fabric
     
     void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, RC::Handle<RT::Manager> const &rtManager )
     {
-      FABRIC_OCL_TRACE( "llvmPrepareModule()" );
-      
       llvmFuncTable.clear();
       
       RC::Handle<CG::Manager> cgManager = moduleBuilder.getManager();
@@ -490,10 +521,10 @@ namespace Fabric
       ADD_CONST_INT( CL_PROGRAM_BUILD_LOG );
       
       //
-      ADD_FUNC( GetPlatformIDs, "=Integer,<Size clNumEntries,>cl_platform_id[] clPlatformIDs" );
+      ADD_FUNC( GetPlatformIDs, "=Integer,>cl_platform_id[] clPlatformIDs" );
       ADD_FUNC( GetDeviceIDs, "=Integer,<cl_platform_id clPlatformID,<cl_device_type clDeviceType,>cl_device_id[] clDeviceIDs" );
       ADD_FUNC( CreateContext, "=cl_context,<cl_device_id[] clDeviceIDs,>Integer clErrCode" );
-      ADD_FUNC( CreateContext_GL, "=cl_context,>Integer clErrCode" );
+      ADD_FUNC( CreateContext_GL, "=cl_context,<cl_device_id[] clDeviceIDs,>Integer clErrCode" );
       ADD_FUNC( GetContextDevices, "=Integer,<cl_context clContext,>cl_device_id[] clDeviceIDs" );
       ADD_FUNC( CreateCommandQueue, "=cl_command_queue,<cl_context clContext,<cl_device_id clDeviceID,<cl_command_queue_properties clCommandQueueProperties,>Integer clErrCode" );
       ADD_FUNC( CreateProgramWithSource, "=cl_program,<cl_context clContext,<String string,>Integer clErrCode" );
@@ -504,6 +535,8 @@ namespace Fabric
       ADD_FUNC( ReleaseMemObject, "=Integer,<cl_mem memobj" );
       ADD_FUNC( EnqueueReadBuffer, "=Integer,<cl_command_queue command_queue,<cl_mem buffer,<Boolean blocking_read,<Size offset,<Size cb,<Data ptr,<cl_event[] clEventArray,>cl_event event" );
       ADD_FUNC( EnqueueWriteBuffer, "=Integer,<cl_command_queue command_queue,<cl_mem buffer,<Boolean blocking_read,<Size offset,<Size cb,<Data ptr,<cl_event[] clEventArray,>cl_event event" );
+      ADD_FUNC( EnqueueAcquireGLObjects, "=Integer,<cl_command_queue command_queue,<cl_mem[] clMemArray,<cl_event[] clEventArray,>cl_event event" );
+      ADD_FUNC( EnqueueReleaseGLObjects, "=Integer,<cl_command_queue command_queue,<cl_mem[] clMemArray,<cl_event[] clEventArray,>cl_event event" );
       ADD_FUNC( SetKernelArg, "=Integer,<cl_kernel kernel,<Size arg_index,<Size arg_size,<Data arg_value" );
       ADD_FUNC( GetKernelWorkGroupInfo, "=Integer,<cl_kernel kernel,<cl_device_id device,<cl_kernel_work_group_info param_name,<Size param_value_size,<Data param_value,<Data param_value_size_ret" );
       ADD_FUNC( EnqueueNDRangeKernel, "=Integer,<cl_command_queue command_queue,<cl_kernel kernel,<Size work_dim,<Data global_work_offset,<Data global_work_size,<Data local_work_size,<cl_event[] clEventArray,>cl_event event" );
@@ -511,6 +544,7 @@ namespace Fabric
       ADD_FUNC( GetProgramBuildInfoi, "=Integer,<cl_program program,<cl_device_id device,<cl_program_build_info param_name,>Integer retval" );
       ADD_FUNC( GetProgramBuildInfoStr, "=Integer,<cl_program program,<cl_device_id device,<cl_program_build_info param_name,>String retval" );
       ADD_FUNC( GetMemObjectSize, "=Integer,<cl_mem clMem,>Size size" );
+      ADD_FUNC( GetDeviceType, "=Integer,<cl_device_id clDevice,>cl_device_type clDeviceType" );
     }
     
     void *llvmResolveExternalFunction( std::string const &name )

@@ -9,6 +9,11 @@
 
 namespace Fabric
 {
+  namespace Util
+  {
+    class SimpleString;
+  };
+  
   namespace CG
   {
     class Adapter;
@@ -16,24 +21,22 @@ namespace Fabric
   
   namespace AST
   {
-    class StructDeclMemberList;
+    class MemberDeclVector;
     
     class StructDecl : public Global
     {
+      FABRIC_AST_NODE_DECL( StructDecl );
+
     public:
 
-      static RC::Handle<StructDecl> Create(
+      static RC::ConstHandle<StructDecl> Create(
         CG::Location const &location,
         std::string const &name,
-        RC::ConstHandle<StructDeclMemberList> const &structDeclMemberList
-        )
-      {
-        return new StructDecl( location, name, structDeclMemberList );
-      }
-    
-      virtual std::string localDesc() const;
-      virtual std::string deepDesc( std::string const &indent ) const;
-      
+        RC::ConstHandle<MemberDeclVector> const &members
+        );
+
+      virtual void registerTypes( RC::Handle<RT::Manager> const &rtManager, CG::Diagnostics &diagnostics ) const;
+      virtual void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
       virtual void llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctionBodies ) const;
       
     protected:
@@ -41,13 +44,15 @@ namespace Fabric
       StructDecl(
         CG::Location const &location,
         std::string const &name,
-        RC::ConstHandle<StructDeclMemberList> const &structDeclMemberList
+        RC::ConstHandle<MemberDeclVector> const &members
         );
+      
+      virtual void appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const;
     
     private:
     
       std::string m_name;
-      RC::ConstHandle<StructDeclMemberList> m_structDeclMemberList;
+      RC::ConstHandle<MemberDeclVector> m_members;
     };
   };
 };

@@ -11,10 +11,11 @@
 #include <Fabric/Core/DG/Context.h>
 #include <Fabric/Core/DG/CodeManager.h>
 #include <Fabric/Core/DG/Function.h>
-#include <Fabric/Core/RT/Manager.h>
 #include <Fabric/Core/AST/GlobalList.h>
 #include <Fabric/Core/AST/Function.h>
 #include <Fabric/Core/AST/Operator.h>
+#include <Fabric/Core/CG/Manager.h>
+#include <Fabric/Core/RT/Manager.h>
 #include <Fabric/Base/JSON/Null.h>
 #include <Fabric/Base/JSON/Integer.h>
 #include <Fabric/Base/JSON/String.h>
@@ -109,7 +110,7 @@ namespace Fabric
       FABRIC_ASSERT( !m_code );
       FABRIC_ASSERT( !m_function );
       
-      m_code = m_context->getCodeManager()->compileSourceCode( m_context, m_fullSourceCode );
+      m_code = m_context->getCodeManager()->compileSourceCode( m_context, m_sourceCode );
       notifyDelta( "diagnostics", jsonDescDiagnostics() );
       
       if ( !m_code->getDiagnostics().containsError() )
@@ -179,11 +180,6 @@ namespace Fabric
       return m_sourceCode;
     }
     
-    std::string const &Operator::getFullSourceCode() const
-    {
-      return m_fullSourceCode;
-    }
-    
 #if defined(FABRIC_BUILD_DEBUG)      
     std::string const &Operator::getByteCode() const
     {
@@ -204,8 +200,6 @@ namespace Fabric
         
         m_sourceCode = sourceCode;
         notifyDelta( "sourceCode", jsonDescSourceCode() );
-        m_fullSourceCode = m_context->getRTManager()->kBindings() + m_sourceCode;
-        notifyDelta( "fullSourceCode", jsonDescFullSourceCode() );
 
         if ( m_sourceCode.length() > 0 )
           compile();
@@ -233,14 +227,14 @@ namespace Fabric
       FABRIC_ASSERT( m_code );
 
       RC::ConstHandle<AST::GlobalList> ast = m_code->getAST();
-      for( size_t i = 0, end = ast->numItems(); i < end; i++ )
+      std::vector< RC::ConstHandle<AST::Function> > functions;
+      ast->collectFunctions( functions );
+      for ( std::vector< RC::ConstHandle<AST::Function> >::const_iterator it=functions.begin(); it!=functions.end(); ++it )
       {
-        RC::ConstHandle<AST::Global> global = ast->item( i );
-        if ( !global->isFunction() )
-          continue;
-        RC::ConstHandle<AST::Function> function = RC::ConstHandle<AST::Function>::StaticCast( global );
+        RC::ConstHandle<AST::Function> const &function = *it;
         
-        if ( function->getFriendlyName() == m_entryFunctionName )
+        std::string const *friendlyName = function->getFriendlyName( m_context->getCGManager() );
+        if ( friendlyName && *friendlyName == m_entryFunctionName )
         {
           if( !function->isOperator() )
             throw Exception( "attempting to use a function " + _(m_entryFunctionName) + " instead of an operator" );
@@ -256,7 +250,6 @@ namespace Fabric
     {
       RC::Handle<JSON::Object> result = NamedObject::jsonDesc();
       result->set( "sourceCode", jsonDescSourceCode() );
-      result->set( "fullSourceCode", jsonDescFullSourceCode() );
       result->set( "entryFunctionName", jsonDescEntryFunctionName() );
       result->set( "diagnostics", jsonDescDiagnostics() );
       result->set( "mainThreadOnly", jsonDescMainThreadOnly() );
@@ -307,11 +300,6 @@ namespace Fabric
     RC::ConstHandle<JSON::Value> Operator::jsonDescSourceCode() const
     {
       return JSON::String::Create( m_sourceCode );
-    }
-    
-    RC::ConstHandle<JSON::Value> Operator::jsonDescFullSourceCode() const
-    {
-      return JSON::String::Create( m_fullSourceCode );
     }
     
     RC::ConstHandle<JSON::Value> Operator::jsonDescEntryFunctionName() const

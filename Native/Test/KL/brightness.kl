@@ -28,7 +28,7 @@ function entry()
 
   var Byte brightnessTable[];
   for ( var Size i=0; i<256; ++i )
-    brightnessTable.push( (Byte)i );
+    brightnessTable.push( Byte(i) );
 
   var RGBA rgba;
   brightness( index, rgba, sourceRGBA, brightnessTable );

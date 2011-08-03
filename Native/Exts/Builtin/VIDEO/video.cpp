@@ -108,7 +108,7 @@ public:
     }
 
     // find the first video stream
-    for(int i=0; i<mFormatCtx->nb_streams; i++)
+    for(int i=0; i<int(mFormatCtx->nb_streams); i++)
     {
       if(mFormatCtx->streams[i]->codec->codec_type==AVMEDIA_TYPE_VIDEO)
       {
@@ -164,7 +164,6 @@ public:
   bool readNextFrame(KL::Boolean &loop)
   {
     AVPacket packet;
-    unsigned int i=0;
     int frameFinished = 0;
     bool result = false;
     while(av_read_frame(mFormatCtx, &packet)>=0)

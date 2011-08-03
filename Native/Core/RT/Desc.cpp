@@ -76,14 +76,14 @@ namespace Fabric
       return m_impl->decode( decoder, data );
     }
 
-    void Desc::setKBindings( std::string const &kBindings ) const
+    void Desc::setKLBindingsAST( RC::ConstHandle<RC::Object> const &klBindingsAST ) const
     {
-      m_kBindings = kBindings;
+      m_klBindingsAST = klBindingsAST;
     }
     
-    std::string const &Desc::getKBindings() const
+    RC::ConstHandle<RC::Object> Desc::getKLBindingsAST() const
     {
-      return m_kBindings;
+      return m_klBindingsAST;
     }
 
     bool Desc::isEquivalentTo( RC::ConstHandle<Desc> const &desc ) const

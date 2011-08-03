@@ -20,6 +20,7 @@
 #elif defined( FABRIC_WIN32 )
 # include <windows.h>
 #endif
+#include <vector>
 
 namespace Fabric
 {
@@ -79,7 +80,10 @@ namespace Fabric
       virtual void redrawFinished();
       
       virtual RC::ConstHandle<JSON::Value> jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg );
+      void jsonExecAddPopupItem( RC::ConstHandle<JSON::Value> const &arg );
       virtual RC::Handle<JSON::Object> jsonDesc() const;
+      void jsonNotify( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg ) const;
+      void jsonNotifyPopUpItem( RC::ConstHandle<JSON::Value> const &arg ) const;
 
       virtual void pushOGLContext() = 0;
       virtual void popOGLContext() = 0;
@@ -95,6 +99,15 @@ namespace Fabric
 
       virtual void timerFired();
       static void TimerFiredCallback( NPP npp, uint32_t timer );
+    
+      struct PopUpItem
+      {
+        std::string desc;
+        RC::ConstHandle<JSON::Value> value;
+      };
+      typedef std::vector<PopUpItem> PopUpItems;
+
+      PopUpItems m_popUpItems;
 
     private:
     
@@ -107,7 +120,7 @@ namespace Fabric
       }
     
       NPP m_npp;
-      
+      std::string m_name;
       Interface const *m_interface;
       
       typedef Util::UnorderedMap< NPP, Util::UnorderedMap< uint32_t, ViewPort *> > Timers;

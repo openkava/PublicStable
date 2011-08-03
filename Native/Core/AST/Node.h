@@ -10,6 +10,17 @@
 
 namespace Fabric
 {
+  namespace Util
+  {
+    class SimpleString;
+  };
+  
+  namespace JSON
+  {
+    class Value;
+    class Object;
+  };
+  
   namespace CG
   {
     class Diagnostics;
@@ -23,9 +34,9 @@ namespace Fabric
     public:
     
       Node( CG::Location const &location );
-    
-      virtual std::string localDesc() const = 0;
-      virtual std::string deepDesc( std::string const &indent ) const;
+
+      virtual char const *nodeTypeName() const = 0;
+      virtual void appendJSON( Util::JSONGenerator const &jsonGenerator ) const;
       
       CG::Location const &getLocation() const
       {
@@ -36,7 +47,9 @@ namespace Fabric
       void addError( CG::Diagnostics &diagnostics, std::string const &desc ) const;
 
     protected:
-    
+      
+      virtual void appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const = 0;
+
       void addError( CG::Diagnostics &diagnostics, CG::Error const &error ) const;
       
     private:
@@ -45,5 +58,23 @@ namespace Fabric
     };
   };
 };
+
+#define FABRIC_AST_NODE_DECL(NodeName) \
+  public: \
+    \
+    static char const *NodeTypeName(); \
+    virtual char const *nodeTypeName() const; \
+    
+#define FABRIC_AST_NODE_IMPL(NodeName) \
+    char const *NodeName::NodeTypeName() \
+    { \
+      static char const *result = #NodeName; \
+      return result; \
+    } \
+    \
+    char const *NodeName::nodeTypeName() const \
+    { \
+      return NodeTypeName(); \
+    } \
 
 #endif //_FABRIC_AST_NODE_H

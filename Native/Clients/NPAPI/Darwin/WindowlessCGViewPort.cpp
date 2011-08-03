@@ -128,8 +128,7 @@ namespace Fabric
           FABRIC_ASSERT( m_windowAGLContext );
           aglDestroyPixelFormat( aglPixelFormat );
           
-          GLboolean aglSetWindowRefResult = aglSetWindowRef( m_windowAGLContext, m_windowRef );
-          FABRIC_ASSERT( aglSetWindowRefResult );
+          FABRIC_CONFIRM( aglSetWindowRef( m_windowAGLContext, m_windowRef ) );
         }
       }
 
@@ -166,8 +165,7 @@ namespace Fabric
           CGColorSpaceRelease( cgColorSpace );
           CGDataProviderRelease( cgDataProvider );
           
-          GLboolean aglSetWindowRefResult = aglSetWindowRef( m_windowAGLContext, m_windowRef );
-          FABRIC_ASSERT( aglSetWindowRefResult );
+          FABRIC_CONFIRM( aglSetWindowRef( m_windowAGLContext, m_windowRef ) );
         }
 
         didResize( m_windowWidth, m_windowHeight );

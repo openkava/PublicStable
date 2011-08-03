@@ -13,11 +13,14 @@
 #include <Fabric/Core/CG/Error.h>
 #include <Fabric/Core/CG/FunctionBuilder.h>
 #include <Fabric/Core/RT/Desc.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
   namespace AST
   {
+    FABRIC_AST_NODE_IMPL( TernaryOp );
+    
     TernaryOp::TernaryOp(
       CG::Location const &location,
       CG::TernaryOpType opType, 
@@ -33,20 +36,19 @@ namespace Fabric
     {
     }
     
-    std::string TernaryOp::localDesc() const
+    void TernaryOp::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      char buf[128];
-      snprintf( buf, 128, "TernaryOp(%s)", CG::ternaryOpTypeDesc(m_opType) );
-      return std::string(buf);
+      Expr::appendJSONMembers( jsonObjectGenerator );
+      m_left->appendJSON( jsonObjectGenerator.makeMember( "condExpr" ) );
+      m_middle->appendJSON( jsonObjectGenerator.makeMember( "trueExpr" ) );
+      m_right->appendJSON( jsonObjectGenerator.makeMember( "falseExpr" ) );
     }
     
-    std::string TernaryOp::deepDesc( std::string const &indent ) const
+    void TernaryOp::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
     {
-      std::string subIndent = indent + "  ";
-      return indent + localDesc() + "\n"
-      + m_left->deepDesc(subIndent)
-      + m_middle->deepDesc(subIndent)
-      + m_right->deepDesc(subIndent);
+      m_left->llvmPrepareModule( moduleBuilder, diagnostics );
+      m_middle->llvmPrepareModule( moduleBuilder, diagnostics );
+      m_right->llvmPrepareModule( moduleBuilder, diagnostics );
     }
     
     RC::ConstHandle<CG::Adapter> TernaryOp::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const

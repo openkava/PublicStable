@@ -14,6 +14,7 @@
 #include <Fabric/Core/IO/Manager.h>
 #include <Fabric/Core/OCL/OCL.h>
 #include <Fabric/Core/Plug/Manager.h>
+#include <stdlib.h>
 
 namespace Fabric
 {
@@ -25,57 +26,75 @@ namespace Fabric
     
       static RC::Handle<IOStream> Create(
         std::string const &url,
-        SuccessCallback successCallback,
+        DataCallback dataCallback,
+        EndCallback endCallback,
         FailureCallback failureCallback,
-        RC::Handle<RC::Object> const &target
+        RC::Handle<RC::Object> const &target,
+        void *userData
         )
       {
-        return new IOStream( url, successCallback, failureCallback, target );
-      }
-
-      virtual void start()
-      {
-        if ( !m_started )
-        {
-          m_started = true;
-          size_t colonIndex = m_url.find( ':' );
-          if ( colonIndex == m_url.length() )
-            indicateFailure( m_url, "malformed URL" );
-          else
-          {
-            std::string method = m_url.substr( 0, colonIndex );
-            if ( method != "file" )
-              indicateFailure( m_url, "unsupported method " + _(method) );
-            else
-            {
-              std::string filename = m_url.substr( colonIndex+1, m_url.length() - colonIndex - 1 );
-              if ( filename.length() == 0 )
-                indicateFailure( m_url, "empty filename" );
-              else
-                indicateSuccess( m_url, "text/plain", filename );
-            }
-          }
-        }
+        return new IOStream( url, dataCallback, endCallback, failureCallback, target, userData );
       }
       
     protected:
     
       IOStream(
         std::string const &url,
-        SuccessCallback successCallback,
+        DataCallback dataCallback,
+        EndCallback endCallback,
         FailureCallback failureCallback,
-        RC::Handle<RC::Object> const &target
+        RC::Handle<RC::Object> const &target,
+        void *userData
         )
-        : IO::Stream( successCallback, failureCallback, target )
+        : IO::Stream( dataCallback, endCallback, failureCallback, target, userData )
         , m_url( url )
-        , m_started( false )
       {
+        size_t colonIndex = m_url.find( ':' );
+        if ( colonIndex == m_url.length() )
+          onFailure( m_url, "malformed URL" );
+        else
+        {
+          std::string method = m_url.substr( 0, colonIndex );
+          if ( method != "file" )
+            onFailure( m_url, "unsupported method " + _(method) );
+          else
+          {
+            std::string filename = m_url.substr( colonIndex+1, m_url.length() - colonIndex - 1 );
+            if ( filename.length() == 0 )
+              onFailure( m_url, "empty filename" );
+            else
+            {
+              FILE *fp = fopen( filename.c_str(), "rb" );
+              if ( fp == NULL )
+                onFailure( m_url, "unable to open file" );
+      
+              static const size_t maxReadSize = 1<<16;//64K buffers
+              uint8_t *data = static_cast<uint8_t *>( malloc(maxReadSize) );
+              size_t offset = 0;
+              for (;;)
+              {
+                size_t readSize = fread( &data[0], 1, maxReadSize, fp );
+                if ( ferror( fp ) )
+                  onFailure( m_url, "error while reading file" );
+
+                onData( m_url, "text/plain", offset, readSize, data );
+
+                if ( readSize < maxReadSize )
+                  break;
+                offset += readSize;
+              }
+              free( data );
+              fclose( fp );
+
+              onEnd( m_url, "text/plain" );
+            }
+          }
+        }
       }
       
     private:
     
       std::string m_url;
-      bool m_started;
     };
 
     class IOManager : public IO::Manager
@@ -89,12 +108,14 @@ namespace Fabric
     
       virtual RC::Handle<IO::Stream> createStream(
         std::string const &url,
-        IO::Stream::SuccessCallback successCallback,
+        IO::Stream::DataCallback dataCallback,
+        IO::Stream::EndCallback endCallback,
         IO::Stream::FailureCallback failureCallback,
-        RC::Handle<RC::Object> const &target
+        RC::Handle<RC::Object> const &target,
+        void *userData
         ) const
       {
-        return IOStream::Create( url, successCallback, failureCallback, target );
+        return IOStream::Create( url, dataCallback, endCallback, failureCallback, target, userData );
       }
     
     protected:
@@ -146,7 +167,7 @@ namespace Fabric
       OCL::registerTypes( dgContext->getRTManager() );
 
       Client *client = Client::Create( dgContext ).take();
-      dgContext->getPlugManager()->loadBuiltInPlugins();
+      Plug::Manager::Instance()->loadBuiltInPlugins( m_pluginDirs, dgContext->getCGManager() );
       
       v8::Persistent<v8::Object> v8ClientObject = v8::Persistent<v8::Object>::New( m_v8ClientObjectTemplate->NewInstance() );
       v8ClientObject->SetPointerInInternalField( 0, client );

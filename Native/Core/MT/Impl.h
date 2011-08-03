@@ -1,22 +1,18 @@
 /*
- *
- *  Created by Peter Zion on 10-11-07.
- *  Copyright 2010 Fabric 3D Inc. All rights reserved.
- *
+ *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
  */
-
+ 
 #ifndef _FABRIC_MT_IMPL_H
 #define _FABRIC_MT_IMPL_H
 
 #include <Fabric/Core/MT/Debug.h>
+#include <Fabric/Core/MT/Mutex.h>
+#include <Fabric/Core/MT/Cond.h>
+#include <Fabric/Core/MT/Thread.h>
+#include <Fabric/Core/MT/Cond.h>
 #include <Fabric/Core/Util/TLS.h>
-#include <vector>
 
-#if defined(FABRIC_POSIX)
-# include <pthread.h>
-#elif defined(FABRIC_WIN32)
-# include <windows.h>
-#endif
+#include <vector>
 
 namespace Fabric
 {
@@ -78,27 +74,19 @@ namespace Fabric
       
     public:
 
-      static ThreadPool *Instance()
-      {
-        return &m_singleton;
-      }
+      static ThreadPool *Instance();
 
-      static void Term( )
-      {
-#if defined(FABRIC_WIN32)
-        // On Windows, threads can't be destroyed when the parent
-        // thread is being destroyed. This causes issues with Chrome
-        // in single-process mode and all the other browsers. 
-        // We have to terminate the threadpool manually from the
-        // NPAPI destroy callback.
-        Instance()->terminate();
-#endif
-      }
-      
       ThreadPool();
       ~ThreadPool();
       
       void executeParallel( size_t count, void (*callback)( void *userdata, size_t index ), void *userdata, bool mainThreadOnly );
+      
+      void terminate();
+      
+      bool isMainThread() const
+      {
+        return m_isMainThread.get();
+      }
         
     protected:
     
@@ -107,36 +95,16 @@ namespace Fabric
       void workerMain();    
         
     private:
-      static ThreadPool m_singleton;
+    
+      static void WorkerMainCallback( void *_this );
 
-#if defined( FABRIC_POSIX )
-      static void *WorkerMainCallback( void *_this );
-
-      pthread_mutex_t m_stateMutex;
-      pthread_cond_t m_stateCond;
-      size_t m_workerThreadCount;
-      pthread_t *m_workerThreads;
-#elif defined( FABRIC_WIN32)
-      static unsigned __stdcall WorkerMainCallback( void *_this );
-
-      void terminate();
-
-      CRITICAL_SECTION    m_cs;
-      HANDLE              m_hWakeup;
-      std::vector<HANDLE> m_workerThreads;
-      std::vector<HANDLE> m_workerExit;
-      bool                m_running;
-
-      struct ThreadData
-      {
-          ThreadPool  *m_this;
-          HANDLE      m_exitEvent;
-      };
-#endif
+      Mutex m_stateMutex;
+      Cond m_stateCond;
+      std::vector<Thread> m_workerThreads;
       std::vector<Task *> m_tasks;
       Util::TLSVar<bool> m_isMainThread;
       std::vector<Task *> m_mainThreadTasks;
-      bool m_exiting;
+      bool m_running;
     };
     
     inline void executeParallel( size_t count, void (*callback)( void *userdata, size_t index ), void *userdata, bool mainThreadOnly )

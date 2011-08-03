@@ -8,6 +8,7 @@
 #include "Node.h"
 #include <Fabric/Core/CG/Diagnostics.h>
 #include <Fabric/Core/CG/Error.h>
+#include <Fabric/Core/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -18,9 +19,15 @@ namespace Fabric
     {
     }
     
-    std::string Node::deepDesc( std::string const &indent ) const
+    void Node::appendJSON( Util::JSONGenerator const &jsonGenerator ) const
     {
-      return indent + localDesc() + "\n";
+      appendJSONMembers( jsonGenerator.makeObject() );
+    }
+    
+    void Node::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
+    {
+      jsonObjectGenerator.makeMember( "nodeType" ).makeString( nodeTypeName() );
+      m_location.appendJSON( jsonObjectGenerator.makeMember( "location" ) );
     }
 
     void Node::addWarning( CG::Diagnostics &diagnostics, std::string const &desc ) const

@@ -1,0 +1,18 @@
+#
+# Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+#
+
+Import( 'extsEnv', 'fabricExtsDistDir' )
+
+objPluginEnv = extsEnv.Clone()
+objPlugin = objPluginEnv.SharedLibrary( 'FabricOBJ', Glob('*.cpp') ),
+objManifest = objPluginEnv.File('FabricOBJ.fpm.json'),
+
+installAction = Install( fabricExtsDistDir, [objPlugin,objManifest] )
+extsEnv.CopyToAppdataIfWindows( installAction )
+
+Alias( 'objExt', [
+  objPlugin,
+  objManifest,
+  installAction
+] )

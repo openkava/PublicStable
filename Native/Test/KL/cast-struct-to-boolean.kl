@@ -8,5 +8,5 @@ struct Vec3
 function entry()
 {
   var Vec3 vec3;
-  report (Boolean)vec3;
+  report Boolean(vec3);
 }
