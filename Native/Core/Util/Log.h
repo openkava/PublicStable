@@ -14,9 +14,16 @@
 #if defined(FABRIC_OS_NACL) ||  defined(FABRIC_OS_MACOSX) || defined(FABRIC_OS_LINUX)
 
 # include <unistd.h>
+# include <errno.h>
+
 inline void FABRIC_WRITE_CSTR( char const *data, size_t length )
 {
-  (void)write( 1, data, length );
+  for (;;)
+  {
+    int result = write( 1, data, length );
+    if ( result != EINTR )
+      break;
+  }
 }
 
 #elif defined(FABRIC_OS_WINDOWS)
