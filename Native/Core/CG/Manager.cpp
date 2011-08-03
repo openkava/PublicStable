@@ -16,7 +16,7 @@
 #include <Fabric/Core/RT/ByteDesc.h>
 #include <Fabric/Core/RT/IntegerDesc.h>
 #include <Fabric/Core/RT/SizeDesc.h>
-#include <Fabric/Core/RT/ScalarDesc.h>
+#include <Fabric/Core/RT/FloatDesc.h>
 #include <Fabric/Core/RT/OpaqueDesc.h>
 #include <Fabric/Core/RT/ConstStringDesc.h>
 #include <Fabric/Core/RT/StringDesc.h>
@@ -108,7 +108,7 @@ namespace Fabric
           
           case RT::DT_SCALAR:
           {
-            RC::ConstHandle<RT::ScalarDesc> scalarDesc = RC::ConstHandle<RT::ScalarDesc>::StaticCast( desc );
+            RC::ConstHandle<RT::FloatDesc> scalarDesc = RC::ConstHandle<RT::FloatDesc>::StaticCast( desc );
             adapter = new ScalarAdapter( this, scalarDesc );
           }
           break;

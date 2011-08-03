@@ -9,7 +9,7 @@
 #include <Fabric/Core/KL/StringSource.h>
 #include <Fabric/Core/AST/GlobalList.h>
 #include <Fabric/Core/RT/Manager.h>
-#include <Fabric/Core/RT/ScalarDesc.h>
+#include <Fabric/Core/RT/FloatDesc.h>
 #include <Fabric/Core/RT/StringDesc.h>
 #include <Fabric/Core/RT/StructDesc.h>
 #include <Fabric/Core/RT/OpaqueDesc.h>

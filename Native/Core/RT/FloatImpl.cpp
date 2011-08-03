@@ -1,4 +1,4 @@
-#include "ScalarImpl.h"
+#include "FloatImpl.h"
 
 #include <Fabric/Base/JSON/Scalar.h>
 #include <Fabric/Base/JSON/Integer.h>
@@ -16,23 +16,23 @@ namespace Fabric
 
   namespace RT
   {
-    ScalarImpl::ScalarImpl( std::string const &codeName )
+    FloatImpl::FloatImpl( std::string const &codeName )
       : SimpleImpl( codeName, DT_SCALAR, sizeof(float) )
     {
     }
     
-    void const *ScalarImpl::getDefaultData() const
+    void const *FloatImpl::getDefaultData() const
     {
       static float const defaultData = 0.0f;
       return &defaultData;
     }
     
-    void ScalarImpl::setData( void const *src, void *dst ) const
+    void FloatImpl::setData( void const *src, void *dst ) const
     {
       setValue( getValue( src ), dst );
     }
       
-    RC::Handle<JSON::Value> ScalarImpl::getJSONValue( void const *src ) const
+    RC::Handle<JSON::Value> FloatImpl::getJSONValue( void const *src ) const
     {
       float value = getValue( src );
       if ( Util::isnan( value ) || Util::isinf( value ) )
@@ -40,7 +40,7 @@ namespace Fabric
       else return JSON::Scalar::Create( value );
     }
     
-    void ScalarImpl::setDataFromJSONValue( RC::ConstHandle<JSON::Value> const &jsonValue, void *dst ) const
+    void FloatImpl::setDataFromJSONValue( RC::ConstHandle<JSON::Value> const &jsonValue, void *dst ) const
     {
       if ( jsonValue->isScalar() )
       {
@@ -59,12 +59,12 @@ namespace Fabric
       else throw Exception("value is not scalar, integer or null");
     }
 
-    Util::Encoder &ScalarImpl::encode( Util::Encoder &encoder, void const *src ) const
+    Util::Encoder &FloatImpl::encode( Util::Encoder &encoder, void const *src ) const
     {
       return encoder.put( getValue( src ) );
     }
     
-    Util::Decoder &ScalarImpl::decode( Util::Decoder &decoder, void *dst ) const
+    Util::Decoder &FloatImpl::decode( Util::Decoder &decoder, void *dst ) const
     {
       float floatData;
       decoder.get( floatData );
@@ -72,7 +72,7 @@ namespace Fabric
       return decoder;
     }  
     
-    std::string ScalarImpl::descData( void const *data ) const
+    std::string FloatImpl::descData( void const *data ) const
     {
       char buf[32];
       sprintf( buf, "%g", (float)getValue(data) );

@@ -11,8 +11,8 @@
 #include "BasicBlockBuilder.h"
 #include "OverloadNames.h"
 
-#include <Fabric/Core/RT/ScalarDesc.h>
-#include <Fabric/Core/RT/ScalarImpl.h>
+#include <Fabric/Core/RT/FloatDesc.h>
+#include <Fabric/Core/RT/FloatImpl.h>
 #include <Fabric/Core/Util/Format.h>
 
 #include <llvm/Module.h>
@@ -23,7 +23,7 @@ namespace Fabric
 {
   namespace CG
   {
-    ScalarAdapter::ScalarAdapter( RC::ConstHandle<Manager> const &manager, RC::ConstHandle<RT::ScalarDesc> const &scalarDesc )
+    ScalarAdapter::ScalarAdapter( RC::ConstHandle<Manager> const &manager, RC::ConstHandle<RT::FloatDesc> const &scalarDesc )
       : SimpleAdapter( manager, scalarDesc )
       , m_scalarDesc( scalarDesc )
     {

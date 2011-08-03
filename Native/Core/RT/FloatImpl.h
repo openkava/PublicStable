@@ -1,5 +1,5 @@
-#ifndef _FABRIC_RT_SCALAR_IMPL_H
-#define _FABRIC_RT_SCALAR_IMPL_H
+#ifndef _FABRIC_RT_FLOAT_IMPL_H
+#define _FABRIC_RT_FLOAT_IMPL_H
 
 #include <Fabric/Core/RT/SimpleImpl.h>
 
@@ -7,7 +7,7 @@ namespace Fabric
 {
   namespace RT
   {
-    class ScalarImpl : public SimpleImpl
+    class FloatImpl : public SimpleImpl
     {
       friend class Manager;
       
@@ -25,7 +25,7 @@ namespace Fabric
       virtual Util::Encoder &encode( Util::Encoder &encoder, void const *data ) const;
       virtual Util::Decoder &decode( Util::Decoder &decoder, void *data ) const;
 
-      // ScalarImpl
+      // FloatImpl
 
       float getValue( void const *data ) const
       {
@@ -39,9 +39,9 @@ namespace Fabric
 
     protected:
       
-      ScalarImpl( std::string const &codeName );
+      FloatImpl( std::string const &codeName );
     };
   };
 };
 
-#endif //_FABRIC_RT_SCALAR_IMPL_H
+#endif //_FABRIC_RT_FLOAT_IMPL_H

@@ -1,5 +1,5 @@
-#ifndef _FABRIC_RT_SCALAR_DESC_H
-#define _FABRIC_RT_SCALAR_DESC_H
+#ifndef _FABRIC_RT_FLOAT_DESC_H
+#define _FABRIC_RT_FLOAT_DESC_H
 
 #include <Fabric/Core/RT/Desc.h>
 
@@ -7,9 +7,9 @@ namespace Fabric
 {
   namespace RT
   {
-    class ScalarImpl;
+    class FloatImpl;
     
-    class ScalarDesc : public Desc
+    class FloatDesc : public Desc
     {
       friend class Manager;
       
@@ -22,13 +22,13 @@ namespace Fabric
       
     protected:
     
-      ScalarDesc( std::string const &name, RC::ConstHandle<ScalarImpl> const &scalarImpl );
+      FloatDesc( std::string const &name, RC::ConstHandle<FloatImpl> const &scalarImpl );
       
     private:
     
-      RC::ConstHandle<ScalarImpl> m_scalarImpl;
+      RC::ConstHandle<FloatImpl> m_scalarImpl;
     };
   };
 };
 
-#endif //_FABRIC_RT_SCALAR_DESC_H
+#endif //_FABRIC_RT_FLOAT_DESC_H
