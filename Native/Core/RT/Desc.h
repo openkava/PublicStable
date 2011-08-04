@@ -53,6 +53,7 @@ namespace Fabric
       void setData( void const *value, void *data ) const;
       void disposeData( void *data ) const;
       std::string descData( void const *data ) const;
+      std::string toString( void const *data ) const;
       
       RC::Handle<JSON::Value> getJSONValue( void const *data ) const;
       void setDataFromJSONValue( RC::ConstHandle<JSON::Value> const &value, void *data ) const;
