@@ -42,22 +42,6 @@ namespace Fabric
       RC::ConstHandle<JSON::Integer> jsonInteger = RC::ConstHandle<JSON::Integer>::StaticCast( jsonValue );
       setValue( jsonInteger->value(), dst );
     }
-
-    Util::Encoder &SizeImpl::encode( Util::Encoder &encoder, void const *src ) const
-    {
-      return encoder.put( uint64_t( getValue( src ) ) );
-    }
-    
-    Util::Decoder &SizeImpl::decode( Util::Decoder &decoder, void *dst ) const
-    {
-      uint64_t uint64Data;
-      decoder.get( uint64Data );
-      size_t sizeData = size_t( uint64Data );
-      if ( uint64_t( sizeData ) != uint64Data )
-        throw Exception( "value is too large for architecture" );
-      setValue( sizeData, dst );
-      return decoder;
-    }  
     
     std::string SizeImpl::descData( void const *data ) const
     {

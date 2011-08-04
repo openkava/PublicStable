@@ -56,9 +56,6 @@ namespace Fabric
       
       RC::Handle<JSON::Value> getJSONValue( void const *data ) const;
       void setDataFromJSONValue( RC::ConstHandle<JSON::Value> const &value, void *data ) const;
-      
-      Util::Encoder &encode( Util::Encoder &encoder, void const *data ) const;
-      Util::Decoder &decode( Util::Decoder &decoder, void *data ) const;
 
       void setKLBindingsAST( RC::ConstHandle<RC::Object> const &klBindingsAST ) const;
       RC::ConstHandle<RC::Object> getKLBindingsAST() const;

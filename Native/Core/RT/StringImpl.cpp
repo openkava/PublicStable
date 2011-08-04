@@ -57,36 +57,6 @@ namespace Fabric
       SetValue( jsonString->data(), jsonString->length(), dst );
     }
 
-    Util::Encoder &StringImpl::encode( Util::Encoder &encoder, void const *src ) const
-    {
-      FABRIC_ASSERT( src );
-      bits_t const *bits = reinterpret_cast<bits_t const *>( src );
-      if ( bits )
-        return encoder.putString( bits->cStr, bits->length );
-      
-      return encoder.putString( 0, 0 );
-    }
-    
-    Util::Decoder &StringImpl::decode( Util::Decoder &decoder, void *dst ) const
-    {
-      FABRIC_ASSERT( dst );
-      
-      size_t length;
-      decoder.getStringLength( length );
-
-      Prepare( length, false, dst );
-      bits_t *bits = *reinterpret_cast<bits_t **>( dst );
-      if ( length )
-      {
-        FABRIC_ASSERT( bits && bits->refCount.getValue() == 1 && length+1 <= bits->allocSize );
-        decoder.getStringData( bits->cStr, length );
-        bits->length = length;
-      }
-      else FABRIC_ASSERT( !bits );
-
-      return decoder;
-    }  
-
     void StringImpl::disposeData( void *dst ) const
     {
       bits_t *bits = *reinterpret_cast<bits_t **>( dst );
