@@ -55,6 +55,11 @@ namespace Fabric
     {
       return m_name + ":" + m_impl->descData( data );
     }
+
+    std::string Desc::toString( void const *data ) const
+    {
+      return m_impl->descData( data );
+    }
     
     RC::Handle<JSON::Value> Desc::getJSONValue( void const *data ) const
     {

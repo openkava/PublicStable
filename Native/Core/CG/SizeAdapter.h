@@ -12,7 +12,7 @@ namespace Fabric
 {
   namespace RT
   {
-    class SizeDesc;
+    class NumericDesc;
   };
   
   namespace CG
@@ -31,11 +31,11 @@ namespace Fabric
 
     protected:
 
-      SizeAdapter( RC::ConstHandle<Manager> const &manager, RC::ConstHandle<RT::SizeDesc> const &sizeDesc );
+      SizeAdapter( RC::ConstHandle<Manager> const &manager, RC::ConstHandle<RT::NumericDesc> const &sizeDesc );
       
     private:
     
-      RC::ConstHandle<RT::SizeDesc> m_sizeDesc;
+      RC::ConstHandle<RT::NumericDesc> m_sizeDesc;
     };
   };
 };

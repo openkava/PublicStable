@@ -13,14 +13,14 @@
 #include "BasicBlockBuilder.h"
 #include "OverloadNames.h"
 
-#include <Fabric/Core/RT/SizeDesc.h>
+#include <Fabric/Core/RT/NumericDesc.h>
 #include <Fabric/Core/Util/Format.h>
 
 namespace Fabric
 {
   namespace CG
   {
-    SizeAdapter::SizeAdapter( RC::ConstHandle<Manager> const &manager, RC::ConstHandle<RT::SizeDesc> const &sizeDesc )
+    SizeAdapter::SizeAdapter( RC::ConstHandle<Manager> const &manager, RC::ConstHandle<RT::NumericDesc> const &sizeDesc )
       : SimpleAdapter( manager, sizeDesc )
       , m_sizeDesc( sizeDesc )
     {
@@ -541,7 +541,7 @@ namespace Fabric
     
     std::string SizeAdapter::toString( void const *data ) const
     {
-      return _( m_sizeDesc->getValue( data ) );
+      return m_sizeDesc->toString( data );
     }
   }; // namespace RT
 }; // namespace FABRIC

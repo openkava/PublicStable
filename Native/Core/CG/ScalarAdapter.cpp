@@ -11,8 +11,8 @@
 #include "BasicBlockBuilder.h"
 #include "OverloadNames.h"
 
-#include <Fabric/Core/RT/FloatDesc.h>
-#include <Fabric/Core/RT/FloatImpl.h>
+#include <Fabric/Core/RT/NumericDesc.h>
+#include <Fabric/Core/RT/NumericImpl.h>
 #include <Fabric/Core/Util/Format.h>
 
 #include <llvm/Module.h>
@@ -23,7 +23,7 @@ namespace Fabric
 {
   namespace CG
   {
-    ScalarAdapter::ScalarAdapter( RC::ConstHandle<Manager> const &manager, RC::ConstHandle<RT::FloatDesc> const &scalarDesc )
+    ScalarAdapter::ScalarAdapter( RC::ConstHandle<Manager> const &manager, RC::ConstHandle<RT::NumericDesc> const &scalarDesc )
       : SimpleAdapter( manager, scalarDesc )
       , m_scalarDesc( scalarDesc )
     {
@@ -654,12 +654,12 @@ namespace Fabric
     
     llvm::Constant *ScalarAdapter::llvmDefaultValue( BasicBlockBuilder &basicBlockBuilder ) const
     {
-      return llvm::ConstantFP::get( llvmRType(), m_scalarDesc->getValue( m_scalarDesc->getDefaultData() ) );
+      return llvm::ConstantFP::get( llvmRType(), 0.0 );
     }
     
     std::string ScalarAdapter::toString( void const *data ) const
     {
-      return _( m_scalarDesc->getValue( data ) );
+      return m_scalarDesc->toString( data );
     }
   };
 };

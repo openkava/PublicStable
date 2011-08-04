@@ -1,20 +1,16 @@
 #include "Manager.h"
 #include "BooleanDesc.h"
 #include "BooleanImpl.h"
-#include "ByteDesc.h"
-#include "ByteImpl.h"
-#include "IntegerDesc.h"
-#include "IntegerImpl.h"
-#include "SizeDesc.h"
-#include "SizeImpl.h"
-#include "FloatDesc.h"
-#include "FloatImpl.h"
 #include "ConstStringDesc.h"
 #include "ConstStringImpl.h"
-#include "StringDesc.h"
-#include "StringImpl.h"
 #include "FixedArrayDesc.h"
 #include "FixedArrayImpl.h"
+#include "FloatDesc.h"
+#include "FloatImpl.h"
+#include "IntegerDesc.h"
+#include "IntegerImpl.h"
+#include "StringDesc.h"
+#include "StringImpl.h"
 #include "VariableArrayDesc.h"
 #include "VariableArrayImpl.h"
 #include "StructDesc.h"
@@ -51,9 +47,9 @@ namespace Fabric
     {
       registerDesc( m_booleanDesc = new BooleanDesc( "Boolean", new BooleanImpl( "Boolean" ) ) );
       registerDesc( m_byteDesc = new ByteDesc( "Byte", new ByteImpl( "Byte" ) ) );
-      registerDesc( m_integerDesc = new IntegerDesc( "Integer", new IntegerImpl( "Integer" ) ) );
+      registerDesc( m_integerDesc = new SI32Desc( "Integer", new SI32Impl( "Integer" ) ) );
       registerDesc( m_sizeDesc = new SizeDesc( "Size", new SizeImpl( "Size" ) ) );
-      registerDesc( m_scalarDesc = new FloatDesc( "Scalar", new FloatImpl( "Scalar" ) ) );
+      registerDesc( m_scalarDesc = new FP32Desc( "Scalar", new FP32Impl( "Scalar" ) ) );
       registerDesc( m_stringDesc = new StringDesc( "String", new StringImpl( "String" ) ) );
       registerDesc( m_dataDesc = new OpaqueDesc( "Data", new OpaqueImpl( "Data", sizeof(size_t) ) ) );
     }
@@ -96,7 +92,7 @@ namespace Fabric
       return RC::ConstHandle<OpaqueDesc>::StaticCast( registerDesc( result ) );
     }
 
-    RC::ConstHandle<Desc> Manager::registerAlias( std::string const &name, RC::ConstHandle< RT::Desc > const &desc )
+    RC::ConstHandle<Desc> Manager::registerAlias( std::string const &name, RC::ConstHandle<RT::Desc> const &desc )
     {
       RC::ConstHandle<Desc> aliasDesc;
       switch ( desc->getType() )
@@ -104,20 +100,14 @@ namespace Fabric
         case DT_BOOLEAN:
           aliasDesc = new BooleanDesc( name, RC::ConstHandle<BooleanImpl>::StaticCast( desc->getImpl() ) );
           break;
-        case DT_BYTE:
-          aliasDesc = new ByteDesc( name, RC::ConstHandle<ByteImpl>::StaticCast( desc->getImpl() ) );
-          break;
-        case DT_CONST_STRING:
-          aliasDesc = new ConstStringDesc( name, RC::ConstHandle<ConstStringImpl>::StaticCast( desc->getImpl() ) );
-          break;
         case DT_INTEGER:
           aliasDesc = new IntegerDesc( name, RC::ConstHandle<IntegerImpl>::StaticCast( desc->getImpl() ) );
           break;
-        case DT_SIZE:
-          aliasDesc = new SizeDesc( name, RC::ConstHandle<SizeImpl>::StaticCast( desc->getImpl() ) );
-          break;
-        case DT_SCALAR:
+        case DT_FLOAT:
           aliasDesc = new FloatDesc( name, RC::ConstHandle<FloatImpl>::StaticCast( desc->getImpl() ) );
+          break;
+        case DT_CONST_STRING:
+          aliasDesc = new ConstStringDesc( name, RC::ConstHandle<ConstStringImpl>::StaticCast( desc->getImpl() ) );
           break;
         case DT_STRING:
           aliasDesc = new StringDesc( name, RC::ConstHandle<StringImpl>::StaticCast( desc->getImpl() ) );
@@ -453,13 +443,25 @@ namespace Fabric
     RC::ConstHandle<Desc> Manager::getStrongerTypeOrNone( RC::ConstHandle<Desc> const &lhsDesc, RC::ConstHandle<Desc> const &rhsDesc ) const
     {
       ImplType lhsType = lhsDesc->getType(), rhsType = rhsDesc->getType();
-      if ( isSimple( lhsType ) && isSimple( rhsType ) )
+      if ( isNumeric( lhsType ) && isNumeric( rhsType ) )
       {
-        // Arrange by casting priority.
-        if( lhsType >= rhsType )
-          return( lhsDesc );
+        RC::ConstHandle<NumericDesc> lhsNumericDesc = RC::ConstHandle<NumericDesc>::StaticCast( lhsDesc );
+        RC::ConstHandle<NumericDesc> rhsNumericDesc = RC::ConstHandle<NumericDesc>::StaticCast( rhsDesc );
+        if ( lhsNumericDesc->isFloat() )
+        {
+          if ( rhsNumericDesc->isFloat() && rhsNumericDesc->getSize() > lhsNumericDesc->getSize() )
+            return rhsNumericDesc;
+          else return lhsNumericDesc;
+        }
+        else if ( rhsNumericDesc->isFloat() )
+          return rhsNumericDesc;
         else
-          return( rhsDesc );
+        {
+          if ( rhsNumericDesc->getSize() > lhsNumericDesc->getSize()
+            || ( rhsNumericDesc->getSize() == lhsNumericDesc->getSize() && RC::ConstHandle<IntegerDesc>::StaticCast(rhsNumericDesc)->isSigned() ) )
+            return rhsNumericDesc;
+          else return lhsNumericDesc;
+        }
       }
       else if( lhsType == rhsType )
       {

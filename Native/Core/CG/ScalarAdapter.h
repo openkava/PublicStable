@@ -12,7 +12,7 @@ namespace Fabric
 {
   namespace RT
   {
-    class FloatDesc;
+    class NumericDesc;
   }
   namespace CG
   {
@@ -32,11 +32,11 @@ namespace Fabric
       
     protected:
       
-      ScalarAdapter( RC::ConstHandle<Manager> const &manager, RC::ConstHandle<RT::FloatDesc> const &scalarDesc );
+      ScalarAdapter( RC::ConstHandle<Manager> const &manager, RC::ConstHandle<RT::NumericDesc> const &scalarDesc );
       
     private:
     
-      RC::ConstHandle<RT::FloatDesc> m_scalarDesc;
+      RC::ConstHandle<RT::NumericDesc> m_scalarDesc;
     };
   };
 };

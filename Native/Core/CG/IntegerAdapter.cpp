@@ -12,14 +12,14 @@
 #include "BasicBlockBuilder.h"
 #include "OverloadNames.h"
 
-#include <Fabric/Core/RT/IntegerDesc.h>
+#include <Fabric/Core/RT/NumericDesc.h>
 #include <Fabric/Core/Util/Format.h>
 
 namespace Fabric
 {
   namespace CG
   {
-    IntegerAdapter::IntegerAdapter( RC::ConstHandle<Manager> const &manager, RC::ConstHandle<RT::IntegerDesc> const &integerDesc )
+    IntegerAdapter::IntegerAdapter( RC::ConstHandle<Manager> const &manager, RC::ConstHandle<RT::NumericDesc> const &integerDesc )
       : SimpleAdapter( manager, integerDesc )
       , m_integerDesc( integerDesc )
     {
@@ -553,7 +553,7 @@ namespace Fabric
 
     std::string IntegerAdapter::toString( void const *data ) const
     {
-      return _( m_integerDesc->getValue(data) );
+      return m_integerDesc->toString( data );
     }
-  }; // namespace RT
-}; // namespace FABRIC
+  };
+};

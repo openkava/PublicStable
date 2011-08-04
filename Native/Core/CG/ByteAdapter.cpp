@@ -16,14 +16,14 @@
 #include "BasicBlockBuilder.h"
 #include "OverloadNames.h"
 
-#include <Fabric/Core/RT/ByteDesc.h>
+#include <Fabric/Core/RT/NumericDesc.h>
 #include <Fabric/Core/Util/Format.h>
 
 namespace Fabric
 {
   namespace CG
   {
-    ByteAdapter::ByteAdapter( RC::ConstHandle<Manager> const &manager, RC::ConstHandle<RT::ByteDesc> const &byteDesc )
+    ByteAdapter::ByteAdapter( RC::ConstHandle<Manager> const &manager, RC::ConstHandle<RT::NumericDesc> const &byteDesc )
       : SimpleAdapter( manager, byteDesc )
       , m_byteDesc( byteDesc )
     {
@@ -542,7 +542,7 @@ namespace Fabric
     
     std::string ByteAdapter::toString( void const *data ) const
     {
-      return _( m_byteDesc->getValue(data) );
+      return m_byteDesc->toString( data );
     }
   };
 };

@@ -6,8 +6,8 @@
 #include <Fabric/Core/DG/Context.h>
 #include <Fabric/Core/RT/Manager.h>
 #include <Fabric/Core/IO/Manager.h>
+#include <Fabric/Core/RT/IntegerDesc.h>
 #include <Fabric/Core/RT/OpaqueDesc.h>
-#include <Fabric/Core/RT/SizeDesc.h>
 #include <Fabric/Core/RT/StringDesc.h>
 #include <Fabric/Core/RT/StructDesc.h>
 #include <Fabric/Core/RT/ImplType.h>

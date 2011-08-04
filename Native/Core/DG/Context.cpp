@@ -13,7 +13,7 @@
 #include <Fabric/Core/DG/Operator.h>
 #include <Fabric/Core/DG/LogCollector.h>
 #include <Fabric/Core/RT/OpaqueDesc.h>
-#include <Fabric/Core/RT/SizeDesc.h>
+#include <Fabric/Core/RT/IntegerDesc.h>
 #include <Fabric/Core/RT/StringDesc.h>
 #include <Fabric/Core/RT/StructDesc.h>
 #include <Fabric/Core/Plug/Manager.h>

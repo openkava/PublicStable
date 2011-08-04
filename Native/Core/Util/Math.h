@@ -13,9 +13,21 @@ namespace Fabric
 {
   namespace Util
   {
-		static const float kNAN = float( ~(uint32_t)0 );
+    template<typename T> T nanValue();
+    
+    template<> inline float nanValue<float>()
+    {
+      static uint32_t uint32Value = ~uint32_t(0);
+      return *reinterpret_cast<float const *>( &uint32Value );
+    }
 
-    bool isinf( float value )
+    template<> inline double nanValue<double>()
+    {
+      static uint64_t uint64Value = ~uint64_t(0);
+      return *reinterpret_cast<double const *>( &uint64Value );
+    }
+
+    inline bool isinf( float value )
     {
 #if defined (FABRIC_WIN32)
       return value == (float)10e50 || value == (float)-10e50;
@@ -24,7 +36,25 @@ namespace Fabric
 #endif
     }
 
-    bool isnan( float value )
+    inline bool isinf( double value )
+    {
+#if defined (FABRIC_WIN32)
+      return value == (double)10e500 || value == (double)-10e500;
+#else
+      return std::isinf( value );
+#endif
+    }
+
+    inline bool isnan( float value )
+    {
+#if defined (FABRIC_WIN32)
+      return value != value;
+#else
+      return std::isnan( value );
+#endif
+    }
+
+    inline bool isnan( double value )
     {
 #if defined (FABRIC_WIN32)
       return value != value;
