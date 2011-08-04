@@ -3,7 +3,7 @@
 #include "ByteAdapter.h"
 #include "IntegerAdapter.h"
 #include "SizeAdapter.h"
-#include "ScalarAdapter.h"
+#include "FloatAdapter.h"
 #include "OpaqueAdapter.h"
 #include "Manager.h"
 #include "ModuleBuilder.h"

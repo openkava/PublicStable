@@ -1,4 +1,4 @@
-#include "ScalarAdapter.h"
+#include "FloatAdapter.h"
 #include "BooleanAdapter.h"
 #include "ByteAdapter.h"
 #include "IntegerAdapter.h"
@@ -11,8 +11,8 @@
 #include "BasicBlockBuilder.h"
 #include "OverloadNames.h"
 
-#include <Fabric/Core/RT/NumericDesc.h>
-#include <Fabric/Core/RT/NumericImpl.h>
+#include <Fabric/Core/RT/FloatDesc.h>
+#include <Fabric/Core/RT/FloatImpl.h>
 #include <Fabric/Core/Util/Format.h>
 
 #include <llvm/Module.h>
@@ -23,14 +23,14 @@ namespace Fabric
 {
   namespace CG
   {
-    ScalarAdapter::ScalarAdapter( RC::ConstHandle<Manager> const &manager, RC::ConstHandle<RT::NumericDesc> const &scalarDesc )
-      : SimpleAdapter( manager, scalarDesc )
-      , m_scalarDesc( scalarDesc )
+    FloatAdapter::FloatAdapter( RC::ConstHandle<Manager> const &manager, RC::ConstHandle<RT::FloatDesc> const &floatDesc )
+      : SimpleAdapter( manager, floatDesc )
+      , m_floatDesc( floatDesc )
     {
       setLLVMType( llvm::Type::getFloatTy( manager->getLLVMContext() ) );
     }
 
-    void ScalarAdapter::llvmPrepareModule( ModuleBuilder &moduleBuilder, bool buildFunctions ) const
+    void FloatAdapter::llvmPrepareModule( ModuleBuilder &moduleBuilder, bool buildFunctions ) const
     {
       if ( moduleBuilder.contains( getCodeName(), buildFunctions ) )
         return;
@@ -647,19 +647,19 @@ namespace Fabric
       }
     }
     
-    llvm::Constant *ScalarAdapter::llvmConst( float value ) const
+    llvm::Constant *FloatAdapter::llvmConst( float value ) const
     {
       return llvm::ConstantFP::get( llvmRawType(), value );
     }
     
-    llvm::Constant *ScalarAdapter::llvmDefaultValue( BasicBlockBuilder &basicBlockBuilder ) const
+    llvm::Constant *FloatAdapter::llvmDefaultValue( BasicBlockBuilder &basicBlockBuilder ) const
     {
       return llvm::ConstantFP::get( llvmRType(), 0.0 );
     }
     
-    std::string ScalarAdapter::toString( void const *data ) const
+    std::string FloatAdapter::toString( void const *data ) const
     {
-      return m_scalarDesc->toString( data );
+      return m_floatDesc->toString( data );
     }
   };
 };

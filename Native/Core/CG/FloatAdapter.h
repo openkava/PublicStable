@@ -1,5 +1,5 @@
-#ifndef _FABRIC_CG_SCALAR_ADAPTER_H
-#define _FABRIC_CG_SCALAR_ADAPTER_H
+#ifndef _FABRIC_CG_FLOAT_ADAPTER_H
+#define _FABRIC_CG_FLOAT_ADAPTER_H
 
 #include <Fabric/Core/CG/SimpleAdapter.h>
 
@@ -12,11 +12,11 @@ namespace Fabric
 {
   namespace RT
   {
-    class NumericDesc;
+    class FloatDesc;
   }
   namespace CG
   {
-    class ScalarAdapter : public SimpleAdapter
+    class FloatAdapter : public SimpleAdapter
     {
       friend class Manager;
     
@@ -32,13 +32,13 @@ namespace Fabric
       
     protected:
       
-      ScalarAdapter( RC::ConstHandle<Manager> const &manager, RC::ConstHandle<RT::NumericDesc> const &scalarDesc );
+      FloatAdapter( RC::ConstHandle<Manager> const &manager, RC::ConstHandle<RT::FloatDesc> const &floatDesc );
       
     private:
     
-      RC::ConstHandle<RT::NumericDesc> m_scalarDesc;
+      RC::ConstHandle<RT::FloatDesc> m_floatDesc;
     };
   };
 };
 
-#endif //_FABRIC_CG_SCALAR_ADAPTER_H
+#endif //_FABRIC_CG_FLOAT_ADAPTER_H
