@@ -4,7 +4,7 @@
 #include "ConstStringAdapter.h"
 #include "IntegerAdapter.h"
 #include "SizeAdapter.h"
-#include "ScalarAdapter.h"
+#include "FloatAdapter.h"
 #include "StringAdapter.h"
 #include "FixedArrayAdapter.h"
 #include "VariableArrayAdapter.h"
@@ -97,7 +97,7 @@ namespace Fabric
           case RT::DT_FLOAT:
           {
             RC::ConstHandle<RT::FloatDesc> floatDesc = RC::ConstHandle<RT::FloatDesc>::StaticCast( desc );
-            adapter = new ScalarAdapter( this, floatDesc );
+            adapter = new FloatAdapter( this, floatDesc );
           }
           break;
           
@@ -183,10 +183,10 @@ namespace Fabric
       return m_sizeAdapter;
     }
     
-    RC::ConstHandle<ScalarAdapter> Manager::getScalarAdapter() const
+    RC::ConstHandle<FloatAdapter> Manager::getScalarAdapter() const
     {
       if ( !m_scalarAdapter )
-        m_scalarAdapter = RC::ConstHandle<ScalarAdapter>::StaticCast( getAdapter( m_rtManager->getScalarDesc() ) );
+        m_scalarAdapter = RC::ConstHandle<FloatAdapter>::StaticCast( getAdapter( m_rtManager->getScalarDesc() ) );
       return m_scalarAdapter;
     }
     

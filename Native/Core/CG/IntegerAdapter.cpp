@@ -2,7 +2,7 @@
 #include "BooleanAdapter.h"
 #include "ByteAdapter.h"
 #include "SizeAdapter.h"
-#include "ScalarAdapter.h"
+#include "FloatAdapter.h"
 #include "ConstStringAdapter.h"
 #include "StringAdapter.h"
 #include "OpaqueAdapter.h"
@@ -34,7 +34,7 @@ namespace Fabric
       RC::ConstHandle<BooleanAdapter> booleanAdapter = getManager()->getBooleanAdapter();
       RC::ConstHandle<ByteAdapter> byteAdapter = getManager()->getByteAdapter();
       RC::ConstHandle<SizeAdapter> sizeAdapter = getManager()->getSizeAdapter();
-      RC::ConstHandle<ScalarAdapter> scalarAdapter = getManager()->getScalarAdapter();
+      RC::ConstHandle<FloatAdapter> scalarAdapter = getManager()->getScalarAdapter();
       RC::ConstHandle<StringAdapter> stringAdapter = getManager()->getStringAdapter();
       RC::ConstHandle<OpaqueAdapter> dataAdapter = getManager()->getDataAdapter();
       
