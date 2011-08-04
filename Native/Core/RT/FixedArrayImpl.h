@@ -22,9 +22,6 @@ namespace Fabric
       
       virtual RC::Handle<JSON::Value> getJSONValue( void const *data ) const;
       virtual void setDataFromJSONValue( RC::ConstHandle<JSON::Value> const &value, void *data ) const;
-      
-      virtual Util::Encoder &encode( Util::Encoder &encoder, void const *data ) const;
-      virtual Util::Decoder &decode( Util::Decoder &decoder, void *data ) const;
 
       virtual bool isEquivalentTo( RC::ConstHandle< RT::Impl > const &desc ) const;
       virtual bool isShallow() const;

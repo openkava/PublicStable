@@ -40,19 +40,6 @@ namespace Fabric
       RC::ConstHandle<JSON::Integer> jsonInteger = RC::ConstHandle<JSON::Integer>::StaticCast( jsonValue );
       setValue( jsonInteger->value(), dst );
     }
-
-    Util::Encoder &IntegerImpl::encode( Util::Encoder &encoder, void const *src ) const
-    {
-      return encoder.put( getValue( src ) );
-    }
-    
-    Util::Decoder &IntegerImpl::decode( Util::Decoder &decoder, void *dst ) const
-    {
-      int32_t int32Data;
-      decoder.get( int32Data );
-      setValue( int32Data, dst );
-      return decoder;
-    }  
     
     std::string IntegerImpl::descData( void const *data ) const
     {

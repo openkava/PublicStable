@@ -58,19 +58,6 @@ namespace Fabric
       }
       else throw Exception("value is not scalar, integer or null");
     }
-
-    Util::Encoder &FloatImpl::encode( Util::Encoder &encoder, void const *src ) const
-    {
-      return encoder.put( getValue( src ) );
-    }
-    
-    Util::Decoder &FloatImpl::decode( Util::Decoder &decoder, void *dst ) const
-    {
-      float floatData;
-      decoder.get( floatData );
-      setValue( floatData, dst );
-      return decoder;
-    }  
     
     std::string FloatImpl::descData( void const *data ) const
     {

@@ -83,34 +83,6 @@ namespace Fabric
         getMemberImpl()->setDataFromJSONValue( jsonArray->get(i), memberData );
       }
     }
-      
-    Util::Encoder &VariableArrayImpl::encode( Util::Encoder &encoder, void const *data ) const
-    {
-      size_t numMembers = getNumMembers( data );
-      
-      uint64_t uint64NumMembers = numMembers;
-      encoder.put( uint64NumMembers );
-      
-      for ( size_t i=0; i<numMembers; ++i )
-        getMemberImpl()->encode( encoder, getMemberData( data, i ) );
-      
-      return encoder;
-    }
-    
-    Util::Decoder &VariableArrayImpl::decode( Util::Decoder &decoder, void *data ) const
-    {
-      uint64_t uint64NumMembers;
-      decoder.get( uint64NumMembers );
-      size_t numMembers = size_t( uint64NumMembers );
-      if ( uint64_t(numMembers) != uint64NumMembers )
-        throw Exception( "array is too large for architecture" );
-      setNumMembers( data, numMembers );
-      
-      for ( size_t i=0; i<numMembers; ++i )
-        getMemberImpl()->decode( decoder, getMemberData( data, i ) );
-      
-      return decoder;
-    }  
 
     void VariableArrayImpl::disposeData( void *data ) const
     {

@@ -45,18 +45,5 @@ namespace Fabric
       RC::ConstHandle<JSON::Integer> jsonInteger = RC::ConstHandle<JSON::Integer>::StaticCast( jsonValue );
       setValue( (uint8_t)jsonInteger->value(), dst );
     }
-      
-    Util::Encoder &ByteImpl::encode( Util::Encoder &encoder, void const *src ) const
-    {
-      return encoder.put( getValue( src ) );
-    }
-    
-    Util::Decoder &ByteImpl::decode( Util::Decoder &decoder, void *dst ) const
-    {
-      uint8_t uint8Data;
-      decoder.get( uint8Data );
-      setValue( uint8Data, dst );
-      return decoder;
-    }  
   };
 };
