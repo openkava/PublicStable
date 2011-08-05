@@ -28,6 +28,9 @@
 		DB0831D513E7606800FB75DA /* Core */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Core; sourceTree = "<group>"; };
 		DB083DE813E9FC3F00828F72 /* Base */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Base; sourceTree = "<group>"; };
 		DB76649C13E7B70D00D5F072 /* Clients */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Clients; sourceTree = "<group>"; };
+		DB8ACF1213EC4281008EC09C /* Installer */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Installer; sourceTree = "<group>"; };
+		DB8ACF2F13EC43D3008EC09C /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
+		DB8ACF3013EC43D3008EC09C /* SConstruct */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = SConstruct; sourceTree = "<group>"; };
 		DB96855A13A79BC700616143 /* BackgroundTexture.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = BackgroundTexture.html; sourceTree = "<group>"; };
 		DB96855B13A79BC700616143 /* CharacterSkeleton.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = CharacterSkeleton.html; sourceTree = "<group>"; };
 		DB96855C13A79BC700616143 /* CharacterSkinning.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = CharacterSkinning.html; sourceTree = "<group>"; };
@@ -176,8 +179,6 @@
 		DB9FCD7513C7A4B200A23B69 /* operatorEditor.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = operatorEditor.html; sourceTree = "<group>"; };
 		DB9FCD7613C7A4B200A23B69 /* prettify.css */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.css; path = prettify.css; sourceTree = "<group>"; };
 		DB9FCD7713C7A4B200A23B69 /* prettify.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = prettify.js; sourceTree = "<group>"; };
-		DBCCD55C13ABE93D00024113 /* install.sh.template */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = install.sh.template; sourceTree = "<group>"; };
-		DBCCD55D13ABE93D00024113 /* SConscript */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = SConscript; sourceTree = "<group>"; };
 		DBCCD56613ABFAE300024113 /* SConscript */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = SConscript; sourceTree = "<group>"; };
 		DBCCD56813ABFAE300024113 /* SConscript */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = SConscript; sourceTree = "<group>"; };
 		DBCCD56913ABFAE300024113 /* timeSample.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = timeSample.cpp; sourceTree = "<group>"; };
@@ -287,7 +288,9 @@
 		DB966DC413A5422000616143 /* Native */ = {
 			isa = PBXGroup;
 			children = (
-				DB96735713A5423300616143 /* Installer */,
+				DB8ACF3013EC43D3008EC09C /* SConstruct */,
+				DB8ACF2F13EC43D3008EC09C /* Makefile */,
+				DB8ACF1213EC4281008EC09C /* Installer */,
 				DB96731913A5423200616143 /* DevServer */,
 				DB96733B13A5423300616143 /* Exts */,
 				DB96733813A5423300616143 /* EDK */,
@@ -379,22 +382,6 @@
 			children = (
 			);
 			path = VIDEO;
-			sourceTree = "<group>";
-		};
-		DB96735713A5423300616143 /* Installer */ = {
-			isa = PBXGroup;
-			children = (
-				DB96735813A5423300616143 /* Darwin */,
-				DBCCD55B13ABE93D00024113 /* Linux */,
-			);
-			path = Installer;
-			sourceTree = "<group>";
-		};
-		DB96735813A5423300616143 /* Darwin */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Darwin;
 			sourceTree = "<group>";
 		};
 		DB967E0213A543F600616143 /* Test */ = {
@@ -785,15 +772,6 @@
 				DB9FCD7713C7A4B200A23B69 /* prettify.js */,
 			);
 			path = OperatorEditor;
-			sourceTree = "<group>";
-		};
-		DBCCD55B13ABE93D00024113 /* Linux */ = {
-			isa = PBXGroup;
-			children = (
-				DBCCD55D13ABE93D00024113 /* SConscript */,
-				DBCCD55C13ABE93D00024113 /* install.sh.template */,
-			);
-			path = Linux;
 			sourceTree = "<group>";
 		};
 		DBCCD56513ABFAE300024113 /* Sample */ = {

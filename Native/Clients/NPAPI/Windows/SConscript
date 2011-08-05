@@ -13,8 +13,11 @@ npapiSources.append( Glob( '*.cpp' ) )
 npapiEnv.Append( CPPPATH = [ os.path.join( '#NPAPI', 'Windows' ) ] )
 npapiEnv.Append( LIBS = [ 'User32', 'Gdi32' ] )
 
+defFile = npapiBuildPath.File( 'FabricPlugin.def' )
+npapiEnv.Template( defFile, 'FabricPlugin.def.template' )
+
 npapiEnv.Append( LINKFLAGS = [ 
-  '/DEF:' + npapiBuildPath.File( 'FabricPlugin.def' ).path,
+  '/DEF:' + defFile.path,
   '/MANIFEST',
   '/ManifestFile:${TARGET}.manifest',
   '/MANIFESTUAC:level=\'asInvoker\' uiAccess=\'false\''

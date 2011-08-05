@@ -1,0 +1,44 @@
+#
+# Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+#
+
+import os
+Import( 'baseEnv', 'buildOS', 'buildArch', 'archDistDir', 'npapiDistDir' )
+
+chromeExtensionDir = archDistDir.Dir( 'ChromeExtension' )
+
+srcManifest = baseEnv.Template( "manifest.json", "manifest.json.template" )
+dstManifest = chromeExtensionDir.File( "manifest.json" )
+baseEnv.Command(
+  dstManifest,
+  srcManifest,
+  [
+    Copy( '$TARGET', '$SOURCE' )
+  ]
+)
+
+for res in ["16", "48", "128"]:
+  baseEnv.Command(
+    chromeExtensionDir.File( 'fabric-engine_' + res + '.png' ),
+    'fabric-engine_' + res + '.png',
+    [
+      Copy( '$TARGET', '$SOURCE' )
+    ]
+  )
+
+npapiPluginBundleDir = npapiDistDir.Dir( 'Fabric.'+buildArch+'.plugin' )
+pluginDir = chromeExtensionDir.Dir( 'Fabric.'+buildArch+'.plugin' )
+baseEnv.Command(
+  pluginDir.Dir('Contents').Dir('MacOS').File('FabricNPAPI'),
+  npapiPluginBundleDir.Dir('Contents').Dir('MacOS').File('FabricNPAPI'),
+  [
+    Copy( '$TARGET', '$SOURCE' )
+  ]
+)
+baseEnv.Command(
+  pluginDir.Dir('Contents').File('Info.plist'),
+  npapiPluginBundleDir.Dir('Contents').File('Info.plist'),
+  [
+    Copy( '$TARGET', '$SOURCE' )
+  ]
+)
