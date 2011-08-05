@@ -410,7 +410,7 @@ v8::Handle<v8::String> ReadFile(const char* name) {
 
 static void printBanner( )
 {
-  printf( "%s", Fabric::buildDesc );
+  printf( "%s\n%s\n%s\n", Fabric::buildNameAndVersion, Fabric::buildDesc, Fabric::buildCopyright );
 }
 
 #if defined( FABRIC_POSIX )
