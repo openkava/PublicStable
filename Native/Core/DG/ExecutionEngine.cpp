@@ -4,6 +4,7 @@
  
 #include <Fabric/Core/DG/ExecutionEngine.h>
 #include <Fabric/Core/DG/Context.h>
+#include <Fabric/Core/KL/Externals.h>
 #include <Fabric/Core/MT/LogCollector.h>
 #include <Fabric/Core/Util/UnorderedMap.h>
 #include <Fabric/Core/Plug/Manager.h>
@@ -35,13 +36,6 @@ namespace Fabric
       
       MT::tlsLogCollector.get()->add( buffer );
     }
-    
-#if defined(FABRIC_OS_WINDOWS)
-    static float imp_roundf( float x )
-    {
-      return( floorf( x + 0.5f ) );
-    }
-#endif
 
     RC::ConstHandle<Context> ExecutionEngine::s_currentContext;
     
@@ -52,44 +46,13 @@ namespace Fabric
     
     void *ExecutionEngine::LazyFunctionCreator( std::string const &functionName )
     {
-      static Util::AutoPtr< Util::UnorderedMap< std::string, void * > > functionMapPtr;
-      if ( !functionMapPtr )
-      {
-        functionMapPtr = new Util::UnorderedMap< std::string, void * >;
-        Util::UnorderedMap< std::string, void * > &functionMap = *functionMapPtr;
-        
-        functionMap["acosf"] = (void *)&acosf;
-        functionMap["asinf"] = (void *)&asinf;
-        functionMap["atanf"] = (void *)&atanf;
-        functionMap["atan2f"] = (void *)&atan2f;
-        functionMap["cosf"] = (void *)&cosf;
-        functionMap["fabsf"] = (void *)&fabsf;
-        functionMap["ceilf"] = (void *)&ceilf;
-        functionMap["floorf"] = (void *)&floorf;
-        functionMap["logf"] = (void *)&logf;
-        functionMap["powf"] = (void *)&powf;
-#if defined(FABRIC_OS_WINDOWS)
-        functionMap["roundf"] = (void *)&imp_roundf;
-#else
-        functionMap["roundf"] = (void *)&roundf;
-#endif
-        functionMap["sinf"] = (void *)&sinf;
-        functionMap["sqrtf"] = (void *)&sqrtf;
-        functionMap["tanf"] = (void *)&tanf;
-
-        functionMap["report"] = (void *)&ExecutionEngine::Report;
-        functionMap["malloc"] = (void *)&malloc;
-        functionMap["free"] = (void *)&free;
-#if defined(FABRIC_OS_WINDOWS)
-        functionMap["_chkstk"] = (void *)&_chkstk;
-#endif
-      }
-      Util::UnorderedMap< std::string, void * >::const_iterator it = functionMapPtr->find( functionName );
-      if ( it != functionMapPtr->end() )
-        return it->second;
+      if ( functionName == "report" )
+        return (void *)&ExecutionEngine::Report;
       else
       {
         void *result = 0;
+        if ( !result )
+          result = KL::LookupExternalSymbol( functionName );
         if ( !result )
           result = Plug::Manager::Instance()->llvmResolveExternalFunction( functionName );
         if ( !result )
