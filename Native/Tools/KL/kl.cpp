@@ -4,6 +4,7 @@
  
 #include <stdio.h>
 #include <Fabric/Core/KL/Compiler.h>
+#include <Fabric/Core/KL/Externals.h>
 #include <Fabric/Core/KL/Parser.hpp>
 #include <Fabric/Core/KL/Scanner.h>
 #include <Fabric/Core/KL/StringSource.h>
@@ -72,16 +73,6 @@ void dumpDiagnostics( CG::Diagnostics const &diagnostics )
   }
 }
 
-#if defined(FABRIC_OS_WINDOWS)
-
-extern "C" void _chkstk( );
-
-static float imp_roundf( float x )
-{
-  return( floorf( x + 0.5f ) );
-}
-#endif
-
 RC::Handle<CG::Manager> cgManager;
 
 static float externalSquare( float value )
@@ -98,96 +89,16 @@ static void report( char const *data, size_t length )
 
 static void *LazyFunctionCreator( std::string const &functionName )
 {
-  //fprintf( stderr, "LazyFunctionCreator('%s')\n", functionName.c_str() );
   if ( functionName == "report" )
     return (void *)&report;
-  else if ( functionName == "malloc" )
-    return (void *)&malloc;
-  else if ( functionName == "realloc" )
-    return (void *)&realloc;
-  else if ( functionName == "free" )
-    return (void *)&free;
-  else if ( functionName == "fp32_acos" )
-    return (void *)&acosf;
-  else if ( functionName == "fp64_acos" )
-    return (void *)&acos;
-  else if ( functionName == "fp32_asin" )
-    return (void *)&asinf;
-  else if ( functionName == "fp64_asin" )
-    return (void *)&asin;
-  else if ( functionName == "fp32_atan" )
-    return (void *)&atanf;
-  else if ( functionName == "fp64_atan" )
-    return (void *)&atan;
-  else if ( functionName == "fp32_atan2" )
-    return (void *)&atan2f;
-  else if ( functionName == "fp64_atan2" )
-    return (void *)&atan2;
-  else if ( functionName == "fp32_sin" )
-    return (void *)&sinf;
-  else if ( functionName == "fp64_sin" )
-    return (void *)&sin;
-  else if ( functionName == "fp32_cos" )
-    return (void *)&cosf;
-  else if ( functionName == "fp64_cos" )
-    return (void *)&cos;
-  else if ( functionName == "fp32_tan" )
-    return (void *)&tanf;
-  else if ( functionName == "fp64_tan" )
-    return (void *)&tan;
-  else if ( functionName == "fp32_pow" )
-    return (void *)&powf;
-  else if ( functionName == "fp64_pow" )
-    return (void *)&pow;
-  else if ( functionName == "fp32_round" )
-#if defined(FABRIC_OS_WINDOWS)
-    return (void *)&imp_roundf;
-#else
-    return (void *)&roundf;
-#endif
-  else if ( functionName == "fp64_round" )
-#if defined(FABRIC_OS_WINDOWS)
-    return (void *)&imp_round;
-#else
-    return (void *)&round;
-#endif
-  else if( functionName == "fp64_ceil" )
-    return( void *)&ceil;
-  else if( functionName == "fp64_floor" )
-    return( void *)&floor;
-  else if( functionName == "fp32_fabs" )
-    return( void *)&fabsf;
-  else if( functionName == "fp64_fabs" )
-    return( void *)&fabs;
-  else if ( functionName == "sinf" )
-    return (void *)&sinf;
-  else if ( functionName == "sin" )
-    return (void *)&sin;
-  else if ( functionName == "cosf" )
-    return (void *)&cosf;
-  else if ( functionName == "cos" )
-    return (void *)&cos;
-  else if ( functionName == "powf" )
-    return (void *)&powf;
-  else if ( functionName == "pow" )
-    return (void *)&pow;
-  else if ( functionName == "fmod" )
-    return (void *)&fmod;
-  else if ( functionName == "fmodf" )
-    return (void *)&fmodf;
-  else if ( functionName == "fp32_log" )
-    return (void *)&logf;
-  else if ( functionName == "fp64_log" )
-    return (void *)&log;
   else if ( functionName == "externalSquare" )
     return (void *)&externalSquare;
-#if defined(FABRIC_OS_WINDOWS)
-  else if ( functionName == "_chkstk" )
-    return (void *)&_chkstk;
-#endif
   else
   {
-    void *result = cgManager->llvmResolveExternalFunction( functionName );
+    void *result = KL::LookupExternalSymbol( functionName );
+    if ( result )
+      return result;
+    result = cgManager->llvmResolveExternalFunction( functionName );
     if ( result )
       return result;
     result = OCL::llvmResolveExternalFunction( functionName );
