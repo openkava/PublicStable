@@ -90,7 +90,26 @@ namespace Fabric
       return (valueAsUint32&signBit)? "-0": "0";
 
     char buffer[64];
-    snprintf( buffer, 64, "%g", value );
+    snprintf( buffer, 64, "%.6g", value );
+    return std::string( buffer );
+  }
+  
+  std::string _( double value )
+  {
+    static const uint64_t signBit = 0x8000000000000000llu;
+    uint64_t const &valueAsUint64 = *(uint64_t const *)&value;
+    if( ( valueAsUint64 & 0x7F80000000000000llu ) == 0x7F80000000000000llu )
+    {
+      if( ( valueAsUint64 & 0x007FFFFFFFFFFFFFllu ) == 0 )
+        return (valueAsUint64&signBit)? "-Inf": "Inf";
+      else
+        return "NaN";
+    }
+    else if( ( valueAsUint64 & ~signBit ) == 0 )
+      return (valueAsUint64&signBit)? "-0": "0";
+
+    char buffer[128];
+    snprintf( buffer, 64, "%.17g", value );
     return std::string( buffer );
   }
 };

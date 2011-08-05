@@ -35,7 +35,7 @@ namespace Fabric
       RC::ConstHandle<BooleanAdapter> booleanAdapter = getManager()->getBooleanAdapter();
       RC::ConstHandle<ByteAdapter> byteAdapter = getManager()->getByteAdapter();
       RC::ConstHandle<IntegerAdapter> integerAdapter = getManager()->getIntegerAdapter();
-      RC::ConstHandle<FloatAdapter> scalarAdapter = getManager()->getScalarAdapter();
+      RC::ConstHandle<FloatAdapter> scalarAdapter = getManager()->getFP32Adapter();
       RC::ConstHandle<StringAdapter> stringAdapter = getManager()->getStringAdapter();
       RC::ConstHandle<OpaqueAdapter> dataAdapter = getManager()->getDataAdapter();
       

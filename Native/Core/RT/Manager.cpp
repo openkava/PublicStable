@@ -28,8 +28,6 @@
 
 namespace Fabric
 {
-  
-
   namespace RT
   {
     RC::Handle<Manager> Manager::Create( RC::ConstHandle<KLCompiler> const &klCompiler )
@@ -50,6 +48,7 @@ namespace Fabric
       registerDesc( m_integerDesc = new SI32Desc( "Integer", new SI32Impl( "Integer" ) ) );
       registerDesc( m_sizeDesc = new SizeDesc( "Size", new SizeImpl( "Size" ) ) );
       registerDesc( m_scalarDesc = new FP32Desc( "Scalar", new FP32Impl( "Scalar" ) ) );
+      registerDesc( m_fp64Desc = new FloatDescT<double>( "Float64", new FloatImplT<double>( "Float64" ) ) );
       registerDesc( m_stringDesc = new StringDesc( "String", new StringImpl( "String" ) ) );
       registerDesc( m_dataDesc = new OpaqueDesc( "Data", new OpaqueImpl( "Data", sizeof(size_t) ) ) );
     }
@@ -257,6 +256,11 @@ namespace Fabric
     RC::ConstHandle<FloatDesc> Manager::getScalarDesc() const
     {
       return m_scalarDesc;
+    }
+    
+    RC::ConstHandle<FloatDesc> Manager::getFP64Desc() const
+    {
+      return m_fp64Desc;
     }
     
     RC::ConstHandle<StringDesc> Manager::getStringDesc() const

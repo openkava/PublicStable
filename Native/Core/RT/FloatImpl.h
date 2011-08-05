@@ -35,6 +35,8 @@ namespace Fabric
     
     template<typename T> class FloatImplT : public FloatImpl
     {
+      friend class Manager;
+      
     public:
 
       // Impl

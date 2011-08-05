@@ -69,7 +69,7 @@ namespace Fabric
       RC::ConstHandle<CG::ByteAdapter> byteAdapter = manager->getByteAdapter();
       RC::ConstHandle<CG::IntegerAdapter> integerAdapter = manager->getIntegerAdapter();
       RC::ConstHandle<CG::SizeAdapter> sizeAdapter = manager->getSizeAdapter();
-      RC::ConstHandle<CG::FloatAdapter> scalarAdapter = manager->getScalarAdapter();
+      RC::ConstHandle<CG::FloatAdapter> scalarAdapter = manager->getFP32Adapter();
       
       CG::ExprValue exprValue;
       if ( adapter == byteAdapter )

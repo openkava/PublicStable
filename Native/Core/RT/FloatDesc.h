@@ -33,6 +33,8 @@ namespace Fabric
 
     template<typename T> class FloatDescT : public FloatDesc
     {
+      friend class Manager;
+      
     public:
     
       T getValue( void const *data ) const
