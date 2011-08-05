@@ -141,21 +141,37 @@ namespace Fabric
       }
       else
       {
+        std::string extensionsSubDir = IO::joinPath( "Extensions", "kdijpapodgbchkehlmacojcegohcmbel", std::string(buildChromeVersion) + "_0" );
         std::vector<std::string> pluginDirs;
+
 #if defined(FABRIC_OS_MACOSX)
         char const *home = getenv("HOME");
         if ( home && *home )
-          pluginDirs.push_back( std::string(home) + "/Library/Fabric/Exts" );
+        {
+          std::string homeDir( home );
+          pluginDirs.push_back( homeDir + "/Library/Fabric/Exts" );
+          pluginDirs.push_back( IO::joinPath( homeDir, "Library", "Application Support", "Google", "Chrome", "Default", extensionsSubDir ) );
+          pluginDirs.push_back( IO::joinPath( homeDir, "Library", "Application Support", "Chromium", "Default", extensionsSubDir ) );
+        }
         pluginDirs.push_back( "/Library/Fabric/Exts" );
 #elif defined(FABRIC_OS_LINUX)
         char const *home = getenv("HOME");
         if ( home && *home )
-          pluginDirs.push_back( IO::joinPath( IO::joinPath( std::string(home), ".fabric" ), "Exts" ) );
+        {
+          pluginDirs.push_back( IO::joinPath( homeDir, ".fabric", "Exts" );
+          pluginDirs.push_back( IO::joinPath( homeDir, ".config", "google-chrome", "Default", extensionsSubDir ) );
+          pluginDirs.push_back( IO::joinPath( homeDir, ".config", "chromium", "Default", extensionsSubDir ) );
+        }
         pluginDirs.push_back( "/usr/lib/fabric/Exts" );
 #elif defined(FABRIC_OS_WINDOWS)
         char const *appData = getenv("APPDATA");
         if ( appData && *appData )
-          pluginDirs.push_back( IO::joinPath( IO::joinPath( std::string(appData), "Fabric" ), "Exts" ) );
+        {
+          std::string appDataDir(appData);
+          pluginDirs.push_back( IO::joinPath( appDataDir, "Fabric" , "Exts" );
+          pluginDirs.push_back( IO::joinPath( appData, "Google", "Chrome", "User Data", "Default", extensionsSubDir ) );
+          pluginDirs.push_back( IO::joinPath( appData, "Chromium", "User Data", "Default", extensionsSubDir ) );
+        }
 #endif
       
         RC::Handle<IOManager> ioManager = IOManager::Create( npp );

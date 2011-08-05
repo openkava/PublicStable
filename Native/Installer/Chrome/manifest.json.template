@@ -2,6 +2,8 @@
   "name": "{{FABRIC_NAME}}",
   "version": "{{FABRIC_VERSION_MAJ}}.{{FABRIC_VERSION_MIN}}.{{FABRIC_VERSION_REV}}.{{FABRIC_VERSION_CHROME_SUFFIX}}",
   "description": "{{FABRIC_DESC}}",
+  "homepage_url": "{{FABRIC_URL}}",
+  "key": "kdijpapodgbchkehlmacojcegohcmbel",
   "icons": {
     "16": "fabric-engine_16.png",
     "48": "fabric-engine_48.png",

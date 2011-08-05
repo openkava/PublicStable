@@ -3,7 +3,7 @@
 #
 
 import os
-Import( 'baseEnv', 'buildOS', 'buildArch', 'archDistDir', 'npapiDistDir' )
+Import( 'baseEnv', 'buildOS', 'buildArch', 'archDistDir', 'fabricExtsDistDir', 'npapiDistDir' )
 
 chromeExtensionDir = archDistDir.Dir( 'ChromeExtension' )
 
@@ -42,3 +42,22 @@ baseEnv.Command(
     Copy( '$TARGET', '$SOURCE' )
   ]
 )
+
+for ext in ['EXR','HDR','OBJ','OGL','PNG','TGA']:
+  fpm = 'Fabric' + ext + '.fpm.json'
+  if buildOS == 'Darwin':
+    lib = 'libFabric' + ext + '.dylib'
+  baseEnv.Command(
+    chromeExtensionDir.File( fpm ),
+    fabricExtsDistDir.File( fpm ),
+    [
+      Copy( '$TARGET', '$SOURCE' )
+    ]
+  )
+  baseEnv.Command(
+    chromeExtensionDir.File( lib ),
+    fabricExtsDistDir.File( lib ),
+    [
+      Copy( '$TARGET', '$SOURCE' )
+    ]
+  )
