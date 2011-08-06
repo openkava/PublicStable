@@ -50,6 +50,8 @@ for ext in ['EXR','HDR','OBJ','OGL','PNG','TGA']:
   fpm = 'Fabric' + ext + '.fpm.json'
   if buildOS == 'Darwin':
     lib = 'libFabric' + ext + '.dylib'
+  if buildOS == 'Windows':
+    lib = 'Fabric' + ext + '.dll'
   installerFiles.append( baseEnv.Command(
     firefoxExtensionDir.Dir('plugins').File( fpm ),
     fabricExtsDistDir.File( fpm ),

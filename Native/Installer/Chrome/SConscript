@@ -49,6 +49,8 @@ for ext in ['EXR','HDR','OBJ','OGL','PNG','TGA']:
   fpm = 'Fabric' + ext + '.fpm.json'
   if buildOS == 'Darwin':
     lib = 'libFabric' + ext + '.dylib'
+  if buildOS == 'Windows':
+    lib = 'Fabric' + ext + '.dll'
   installedFiles.append( baseEnv.Command(
     chromeExtensionDir.File( fpm ),
     fabricExtsDistDir.File( fpm ),
