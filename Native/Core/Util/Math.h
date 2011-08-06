@@ -29,20 +29,14 @@ namespace Fabric
 
     inline bool isinf( float value )
     {
-#if defined (FABRIC_WIN32)
-      return value == (float)10e50 || value == (float)-10e50;
-#else
-      return std::isinf( value );
-#endif
+      uint32_t uint32Rep = *reinterpret_cast<uint32_t const *>( &value );
+      return (uint32Rep & 0x7FFFFFFFu) == 0x7F800000u;
     }
 
     inline bool isinf( double value )
     {
-#if defined (FABRIC_WIN32)
-      return value == (double)10e500 || value == (double)-10e500;
-#else
-      return std::isinf( value );
-#endif
+      uint64_t uint64Rep = *reinterpret_cast<uint64_t const *>( &value );
+      return (uint64Rep & 0x7FFFFFFFFFFFFFFFlu) == 0x7FF0000000000000lu;
     }
 
     inline bool isnan( float value )

@@ -709,6 +709,11 @@ namespace Fabric
       return llvm::ConstantFP::get( llvmRawType(), value );
     }
     
+    llvm::Constant *FloatAdapter::llvmConst( std::string const &valueString ) const
+    {
+      return llvm::ConstantFP::get( llvmRawType(), valueString );
+    }
+    
     llvm::Constant *FloatAdapter::llvmDefaultValue( BasicBlockBuilder &basicBlockBuilder ) const
     {
       return llvm::ConstantFP::get( llvmRType(), 0.0 );

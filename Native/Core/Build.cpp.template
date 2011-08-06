@@ -14,4 +14,6 @@ namespace Fabric
   char const *buildURL = "{{FABRIC_URL}}";
   time_t const buildExpiry = {{FABRIC_EXPIRY}};
   size_t const buildCacheGeneration = {{FABRIC_CACHE_GENERATION}};
+  char const *buildOS = "{{FABRIC_OS}}";
+  char const *buildArch = "{{FABRIC_ARCH}}";
 };
