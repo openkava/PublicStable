@@ -3,61 +3,74 @@
 #
 
 import os
-Import( 'baseEnv', 'buildOS', 'buildArch', 'archDistDir', 'fabricExtsDistDir', 'npapiDistDir' )
+Import( 'baseEnv', 'buildOS', 'buildArch', 'archDistDir', 'fabricExtsDistDir', 'npapiDistDir', 'installerName' )
 
-chromeExtensionDir = archDistDir.Dir( 'ChromeExtension' )
+chromeExtensionDir = archDistDir.Dir('Chrome').Dir(installerName)
+
+installedFiles = []
 
 srcManifest = baseEnv.Template( "manifest.json", "manifest.json.template" )
 dstManifest = chromeExtensionDir.File( "manifest.json" )
-baseEnv.Command(
+installedFiles.append( baseEnv.Command(
   dstManifest,
   srcManifest,
   [
     Copy( '$TARGET', '$SOURCE' )
   ]
-)
+) )
 
 for res in ["16", "48", "128"]:
-  baseEnv.Command(
+  installedFiles.append( baseEnv.Command(
     chromeExtensionDir.File( 'fabric-engine_' + res + '.png' ),
     'fabric-engine_' + res + '.png',
     [
       Copy( '$TARGET', '$SOURCE' )
     ]
-  )
+  ) )
 
 npapiPluginBundleDir = npapiDistDir.Dir( 'Fabric.'+buildArch+'.plugin' )
 pluginDir = chromeExtensionDir.Dir( 'Fabric.'+buildArch+'.plugin' )
-baseEnv.Command(
+installedFiles.append( baseEnv.Command(
   pluginDir.Dir('Contents').Dir('MacOS').File('FabricNPAPI'),
   npapiPluginBundleDir.Dir('Contents').Dir('MacOS').File('FabricNPAPI'),
   [
     Copy( '$TARGET', '$SOURCE' )
   ]
-)
-baseEnv.Command(
+) )
+installedFiles.append( baseEnv.Command(
   pluginDir.Dir('Contents').File('Info.plist'),
   npapiPluginBundleDir.Dir('Contents').File('Info.plist'),
   [
     Copy( '$TARGET', '$SOURCE' )
   ]
-)
+) )
 
 for ext in ['EXR','HDR','OBJ','OGL','PNG','TGA']:
   fpm = 'Fabric' + ext + '.fpm.json'
   if buildOS == 'Darwin':
     lib = 'libFabric' + ext + '.dylib'
-  baseEnv.Command(
+  installedFiles.append( baseEnv.Command(
     chromeExtensionDir.File( fpm ),
     fabricExtsDistDir.File( fpm ),
     [
       Copy( '$TARGET', '$SOURCE' )
     ]
-  )
-  baseEnv.Command(
+  ) )
+  installedFiles.append( baseEnv.Command(
     chromeExtensionDir.File( lib ),
     fabricExtsDistDir.File( lib ),
-    [
-      Copy( '$TARGET', '$SOURCE' )
-    ]
-  )
+    [Copy( '$TARGET', '$SOURCE' )]
+  ) )
+
+installedFiles.append( baseEnv.Command(
+  archDistDir.Dir('Chrome').File('private-key.pem'),
+  baseEnv.File('ChromeExtension.pem'),
+  [Copy( '$TARGET', '$SOURCE' )]
+) )
+
+chromePEMFile = baseEnv.File('ChromeExtension.pem')
+baseEnv.Command(
+  archDistDir.Dir('Chrome').File(installerName+'.crx'),
+  installedFiles.append( chromePEMFile ),
+  "cd '" + archDistDir.Dir('Chrome').path + "' && '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' --pack-extension='" + installerName + "' --pack-extension-key=private-key.pem"
+)
