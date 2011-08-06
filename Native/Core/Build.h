@@ -15,6 +15,8 @@ namespace Fabric
   extern char const *buildDesc;
   extern time_t const buildExpiry; 
   extern size_t const buildCacheGeneration;
+  extern char const *buildOS;
+  extern char const *buildArch;
 };
 
 #endif //_FABRIC_BUILD_H

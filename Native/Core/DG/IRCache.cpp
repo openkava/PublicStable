@@ -24,7 +24,7 @@ namespace Fabric
     IRCache::IRCache()
     {
       RC::ConstHandle<IO::Dir> rootDir = IO::Dir::Private();
-      m_dir = IO::Dir::Create( IO::Dir::Create( rootDir, "IRCache" ), _(buildCacheGeneration) );
+      m_dir = IO::Dir::Create( IO::Dir::Create( IO::Dir::Create( IO::Dir::Create( rootDir, "IRCache" ), buildOS ), buildArch ), _(buildCacheGeneration) );
     }
     
     void IRCache::subDirAndEntryFromSourceCode( RC::ConstHandle<AST::GlobalList> const &ast, RC::ConstHandle<IO::Dir> &subDir, std::string &entry ) const
