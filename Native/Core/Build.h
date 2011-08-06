@@ -10,9 +10,8 @@
 namespace Fabric
 {
   extern char const *buildName;
-  extern char const *buildVersion;
-  extern char const *buildChromeVersion;
-  extern char const *buildNameAndVersion;
+  extern char const *buildFullVersion;
+  extern char const *buildPureVersion;
   extern char const *buildDesc;
   extern char const *buildCopyright;
   extern char const *buildURL;

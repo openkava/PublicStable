@@ -4,7 +4,7 @@
   <Description about="urn:mozilla:install-manifest">
     <em:id>info@fabric-engine.com</em:id>
     <em:name>{{FABRIC_NAME}}</em:name>
-    <em:version>{{FABRIC_VERSION_MAJ}}.{{FABRIC_VERSION_MIN}}.{{FABRIC_VERSION_REV}}.{{FABRIC_VERSION_CHROME_SUFFIX}}</em:version>
+    <em:version>{{FABRIC_VERSION_MAJ}}.{{FABRIC_VERSION_MIN}}.{{FABRIC_VERSION_REV}}</em:version>
     <em:type>2</em:type>
     <em:unpack>true</em:unpack>
     <em:creator>{{FABRIC_COMPANY_NAME}}</em:creator>

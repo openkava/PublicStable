@@ -4,15 +4,11 @@
 
 #include <Fabric/Core/Build.h>
 
-#define FABRIC_VERSION "{{FABRIC_VERSION_MAJ}}.{{FABRIC_VERSION_MIN}}.{{FABRIC_VERSION_REV}}{{FABRIC_VERSION_SUFFIX}}"
-#define FABRIC_NAME_AND_VERSION "{{FABRIC_NAME}} version " FABRIC_VERSION
-
 namespace Fabric
 {
   char const *buildName = "{{FABRIC_NAME}}";
-  char const *buildVersion = FABRIC_VERSION;
-  char const *buildChromeVersion = "{{FABRIC_VERSION_MAJ}}.{{FABRIC_VERSION_MIN}}.{{FABRIC_VERSION_REV}}.{{FABRIC_VERSION_CHROME_SUFFIX}}";
-  char const *buildNameAndVersion = FABRIC_NAME_AND_VERSION;
+  char const *buildPureVersion = "{{FABRIC_VERSION_MAJ}}.{{FABRIC_VERSION_MIN}}.{{FABRIC_VERSION_REV}}";
+  char const *buildFullVersion = "{{FABRIC_VERSION_MAJ}}.{{FABRIC_VERSION_MIN}}.{{FABRIC_VERSION_REV}}{{FABRIC_VERSION_SUFFIX}}";
   char const *buildDesc = "{{FABRIC_DESC}}";
   char const *buildCopyright = "{{FABRIC_COPYRIGHT}}";
   char const *buildURL = "{{FABRIC_URL}}";
