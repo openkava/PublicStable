@@ -24,6 +24,7 @@
 #include <Fabric/Core/Util/Assert.h>
 #include <Fabric/Core/MT/IdleTaskQueue.h>
 #include <Fabric/Core/IO/Helpers.h>
+#include <Fabric/Core/IO/Dir.h>
 #include <Fabric/Core/OCL/OCL.h>
 #include <Fabric/Base/JSON/Object.h>
 #include <Fabric/Core/Util/Debug.h>
@@ -141,7 +142,8 @@ namespace Fabric
       }
       else
       {
-        std::string extensionsSubDir = IO::joinPath( "Extensions", "kdijpapodgbchkehlmacojcegohcmbel", std::string(buildChromeVersion) + "_0" );
+        std::string chromeExtensionsSubDir = IO::joinPath( "Extensions", "kdijpapodgbchkehlmacojcegohcmbel", std::string(buildChromeVersion) + "_0" );
+        std::string firefoxExtensionsSubDir = IO::joinPath( "extensions", "info@fabric-engine.com", "plugins" );
         std::vector<std::string> pluginDirs;
 
 #if defined(FABRIC_OS_MACOSX)
@@ -150,8 +152,18 @@ namespace Fabric
         {
           std::string homeDir( home );
           pluginDirs.push_back( homeDir + "/Library/Fabric/Exts" );
-          pluginDirs.push_back( IO::joinPath( homeDir, "Library", "Application Support", "Google", "Chrome", "Default", extensionsSubDir ) );
-          pluginDirs.push_back( IO::joinPath( homeDir, "Library", "Application Support", "Chromium", "Default", extensionsSubDir ) );
+          std::string appSupportDir = IO::joinPath( homeDir, "Library", "Application Support" );
+          pluginDirs.push_back( IO::joinPath( appSupportDir, "Google", "Chrome", "Default", chromeExtensionsSubDir ) );
+          pluginDirs.push_back( IO::joinPath( appSupportDir, "Chromium", "Default", chromeExtensionsSubDir ) );
+          
+          std::string firefoxProfilesDirString = IO::joinPath( appSupportDir, "Firefox", "Profiles" );
+          RC::ConstHandle<IO::Dir> firefoxProfilesDir = IO::Dir::Create( 0, firefoxProfilesDirString, false );
+          std::vector< RC::ConstHandle<IO::Dir> > firefoxProfilesSubDirs = firefoxProfilesDir->getSubDirs();
+          for ( std::vector< RC::ConstHandle<IO::Dir> >::const_iterator it=firefoxProfilesSubDirs.begin(); it!=firefoxProfilesSubDirs.end(); ++it )
+          {
+            RC::ConstHandle<IO::Dir> const &firefoxProfilesSubDir = *it;
+            pluginDirs.push_back( IO::joinPath( firefoxProfilesSubDir->getFullPath(), firefoxExtensionsSubDir ) );
+          }
         }
         pluginDirs.push_back( "/Library/Fabric/Exts" );
 #elif defined(FABRIC_OS_LINUX)
@@ -159,8 +171,8 @@ namespace Fabric
         if ( home && *home )
         {
           pluginDirs.push_back( IO::joinPath( homeDir, ".fabric", "Exts" );
-          pluginDirs.push_back( IO::joinPath( homeDir, ".config", "google-chrome", "Default", extensionsSubDir ) );
-          pluginDirs.push_back( IO::joinPath( homeDir, ".config", "chromium", "Default", extensionsSubDir ) );
+          pluginDirs.push_back( IO::joinPath( homeDir, ".config", "google-chrome", "Default", chromeExtensionsSubDir ) );
+          pluginDirs.push_back( IO::joinPath( homeDir, ".config", "chromium", "Default", chromeExtensionsSubDir ) );
         }
         pluginDirs.push_back( "/usr/lib/fabric/Exts" );
 #elif defined(FABRIC_OS_WINDOWS)
@@ -169,8 +181,8 @@ namespace Fabric
         {
           std::string appDataDir(appData);
           pluginDirs.push_back( IO::joinPath( appDataDir, "Fabric" , "Exts" );
-          pluginDirs.push_back( IO::joinPath( appData, "Google", "Chrome", "User Data", "Default", extensionsSubDir ) );
-          pluginDirs.push_back( IO::joinPath( appData, "Chromium", "User Data", "Default", extensionsSubDir ) );
+          pluginDirs.push_back( IO::joinPath( appData, "Google", "Chrome", "User Data", "Default", chromeExtensionsSubDir ) );
+          pluginDirs.push_back( IO::joinPath( appData, "Chromium", "User Data", "Default", chromeExtensionsSubDir ) );
         }
 #endif
       

@@ -19,8 +19,6 @@
 
 namespace Fabric
 {
-  
-  
   namespace Plug
   {
     extern SOLibHandle const invalidSOLibHandle = 0;
