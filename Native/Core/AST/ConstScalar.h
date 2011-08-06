@@ -29,13 +29,13 @@ namespace Fabric
         
     protected:
     
-      ConstScalar( CG::Location const &location, double value );
+      ConstScalar( CG::Location const &location, std::string const &valueString );
       
       virtual void appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const;
       
     private:
     
-      double m_value;
+      std::string m_valueString;
     };
   };
 };
