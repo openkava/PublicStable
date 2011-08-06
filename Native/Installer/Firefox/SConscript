@@ -1,0 +1,73 @@
+#
+# Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+#
+
+import os
+Import( 'baseEnv', 'buildOS', 'buildArch', 'archDistDir', 'fabricExtsDistDir', 'npapiDistDir', 'installerName' )
+
+firefoxExtensionDir = archDistDir.Dir( 'FirefoxExtension' )
+
+installerFiles = []
+
+installerFiles.append( baseEnv.Command(
+  firefoxExtensionDir.File('chrome.manifest'),
+  'chrome.manifest',
+  [ Copy( '$TARGET', '$SOURCE' ) ]
+) )
+
+baseEnv.Template( "install.rdf", "install.rdf.template" )
+installerFiles.append( baseEnv.Command(
+  firefoxExtensionDir.File('install.rdf'),
+  'install.rdf',
+  [ Copy( '$TARGET', '$SOURCE' ) ]
+) )
+
+for res in ["48", "64"]:
+  installerFiles.append( baseEnv.Command(
+    firefoxExtensionDir.Dir('content').File('fabric-engine_'+res+'.png'),
+    baseEnv.Dir('content').File('fabric-engine_'+res+'.png'),
+    [ Copy( '$TARGET', '$SOURCE' ) ]
+  ) )
+
+npapiPluginBundleDir = npapiDistDir.Dir( 'Fabric.'+buildArch+'.plugin' )
+pluginDir = firefoxExtensionDir.Dir('plugins').Dir( 'Fabric.'+buildArch+'.plugin' )
+installerFiles.append( baseEnv.Command(
+  pluginDir.Dir('Contents').Dir('MacOS').File('FabricNPAPI'),
+  npapiPluginBundleDir.Dir('Contents').Dir('MacOS').File('FabricNPAPI'),
+  [
+    Copy( '$TARGET', '$SOURCE' )
+  ]
+) )
+installerFiles.append( baseEnv.Command(
+  pluginDir.Dir('Contents').File('Info.plist'),
+  npapiPluginBundleDir.Dir('Contents').File('Info.plist'),
+  [
+    Copy( '$TARGET', '$SOURCE' )
+  ]
+) )
+
+for ext in ['EXR','HDR','OBJ','OGL','PNG','TGA']:
+  fpm = 'Fabric' + ext + '.fpm.json'
+  if buildOS == 'Darwin':
+    lib = 'libFabric' + ext + '.dylib'
+  installerFiles.append( baseEnv.Command(
+    firefoxExtensionDir.Dir('plugins').File( fpm ),
+    fabricExtsDistDir.File( fpm ),
+    [
+      Copy( '$TARGET', '$SOURCE' )
+    ]
+  ) )
+  installerFiles.append( baseEnv.Command(
+    firefoxExtensionDir.Dir('plugins').File( lib ),
+    fabricExtsDistDir.File( lib ),
+    [
+      Copy( '$TARGET', '$SOURCE' )
+    ]
+  ) )
+
+installerFile = archDistDir.File(installerName + ".xpi")
+Command(
+  [installerFile],
+  installerFiles,
+  "cd '" + firefoxExtensionDir.path + "' && zip -r '../" + installerName + ".xpi' *"
+)

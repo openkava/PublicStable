@@ -3,5 +3,5 @@
 #
 
 Import( 'buildOS' )
-#SConscript( dirs=[buildOS] )
-SConscript( dirs=["Chrome"] )
+
+SConscript( dirs=["Chrome","Firefox"] )
