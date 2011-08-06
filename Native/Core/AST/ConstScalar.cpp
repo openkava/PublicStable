@@ -20,22 +20,19 @@ namespace Fabric
     
     RC::ConstHandle<ConstScalar> ConstScalar::Create( CG::Location const &location, std::string const &valueString )
     {
-      double value;
-      if ( sscanf( valueString.c_str(), "%lf", &value ) != 1 )
-        throw Exception( "invalid floating-point constant '" + valueString + "'" );
-      return new ConstScalar( location, value );
+      return new ConstScalar( location, valueString );
     }
     
-    ConstScalar::ConstScalar( CG::Location const &location, double value )
+    ConstScalar::ConstScalar( CG::Location const &location, std::string const &valueString )
       : Expr( location )
-      , m_value( value )
+      , m_valueString( valueString )
     {
     }
     
     void ConstScalar::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
       Expr::appendJSONMembers( jsonObjectGenerator );
-      jsonObjectGenerator.makeMember( "value" ).makeScalar( m_value );
+      jsonObjectGenerator.makeMember( "value" ).makeString( m_valueString );
     }
     
     void ConstScalar::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
@@ -54,7 +51,7 @@ namespace Fabric
       if ( usage == CG::USAGE_LVALUE )
         throw Exception( "constants cannot be used as l-values" );
       RC::ConstHandle<CG::FloatAdapter> floatAdapter = basicBlockBuilder.getManager()->getFP32Adapter();
-      return CG::ExprValue( floatAdapter, CG::USAGE_RVALUE, floatAdapter->llvmConst( m_value ) );
+      return CG::ExprValue( floatAdapter, CG::USAGE_RVALUE, floatAdapter->llvmConst( m_valueString ) );
     }
   };
 };
