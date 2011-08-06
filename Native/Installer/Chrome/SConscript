@@ -71,7 +71,7 @@ installedFiles.append( baseEnv.Command(
 ) )
 
 if buildOS == 'Windows':
-  chrome = 'c:\Users\Phil\AppData\Local\Google\Chrome\Application\chrome.exe'
+  chrome = os.environ['LOCALAPPDATA']+'\Google\Chrome\Application\chrome.exe'
 if buildOS == 'Darwin':
   chrome = "'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'"
 baseEnv.Command(
