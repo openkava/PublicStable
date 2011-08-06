@@ -134,7 +134,7 @@ int main( int argc, char **argv )
     switch ( c )
     {
       case 'v':
-        printf( "Fabric version %s\n", buildVersion );
+        printf( "%s version %s\n", buildName, buildFullVersion );
         return 0;
         
       case 'p':
@@ -410,7 +410,7 @@ v8::Handle<v8::String> ReadFile(const char* name) {
 
 static void printBanner( )
 {
-  printf( "%s\n%s\n%s\n", Fabric::buildNameAndVersion, Fabric::buildDesc, Fabric::buildCopyright );
+  printf( "%s version %s\n%s\n%s\n", Fabric::buildName, Fabric::buildFullVersion, Fabric::buildDesc, Fabric::buildCopyright );
 }
 
 #if defined( FABRIC_POSIX )

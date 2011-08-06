@@ -142,7 +142,7 @@ namespace Fabric
       }
       else
       {
-        std::string chromeExtensionsSubDir = IO::joinPath( "Extensions", "kdijpapodgbchkehlmacojcegohcmbel", std::string(buildChromeVersion) + "_0" );
+        std::string chromeExtensionsSubDir = IO::joinPath( "Extensions", "kdijpapodgbchkehlmacojcegohcmbel", std::string(buildPureVersion) + "_0" );
         std::string firefoxExtensionsSubDir = IO::joinPath( "extensions", "info@fabric-engine.com", "plugins" );
         std::vector<std::string> pluginDirs;
 
