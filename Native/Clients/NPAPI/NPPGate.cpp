@@ -180,9 +180,18 @@ namespace Fabric
         if ( appData && *appData )
         {
           std::string appDataDir(appData);
-          pluginDirs.push_back( IO::joinPath( appDataDir, "Fabric" , "Exts" );
+          pluginDirs.push_back( IO::joinPath( appDataDir, "Fabric" , "Exts" ) );
           pluginDirs.push_back( IO::joinPath( appData, "Google", "Chrome", "User Data", "Default", chromeExtensionsSubDir ) );
           pluginDirs.push_back( IO::joinPath( appData, "Chromium", "User Data", "Default", chromeExtensionsSubDir ) );
+          
+          std::string firefoxProfilesDirString = IO::joinPath( appDataDir, "mozilla", "Firefox", "Profiles" );
+          RC::ConstHandle<IO::Dir> firefoxProfilesDir = IO::Dir::Create( 0, firefoxProfilesDirString, false );
+          std::vector< RC::ConstHandle<IO::Dir> > firefoxProfilesSubDirs = firefoxProfilesDir->getSubDirs();
+          for ( std::vector< RC::ConstHandle<IO::Dir> >::const_iterator it=firefoxProfilesSubDirs.begin(); it!=firefoxProfilesSubDirs.end(); ++it )
+          {
+            RC::ConstHandle<IO::Dir> const &firefoxProfilesSubDir = *it;
+            pluginDirs.push_back( IO::joinPath( firefoxProfilesSubDir->getFullPath(), firefoxExtensionsSubDir ) );
+          }
         }
 #endif
       
