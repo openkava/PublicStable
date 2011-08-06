@@ -6,6 +6,11 @@ BUILD_OS=$(uname -s)
 BUILD_ARCH=$(uname -m)
 BUILD_TYPE=Debug
 
+if [ "${BUILD_OS#MINGW}" != "$BUILD_OS" ]; then
+  BUILD_OS=Windows
+  BUILD_ARCH=x86
+fi
+
 if [ -n "$FABRIC_TEST_WITH_VALGRIND" -a "$BUILD_OS" = "Linux" ]; then
   VALGRIND_CMD="valgrind --suppressions=../valgrind.suppressions.linux --leak-check=full -q"
 else
