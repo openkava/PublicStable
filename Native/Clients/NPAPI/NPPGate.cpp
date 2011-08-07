@@ -142,47 +142,52 @@ namespace Fabric
       }
       else
       {
-        std::string chromeExtensionsSubDir = IO::joinPath( "Extensions", "kdijpapodgbchkehlmacojcegohcmbel", std::string(buildPureVersion) + "_0" );
+      	std::vector<std::string> pluginPaths;
+
         std::string firefoxExtensionsSubDir = IO::joinPath( "extensions", "info@fabric-engine.com", "plugins" );
-        std::vector<std::string> pluginDirs;
+
+        std::string googleChromeProfilesPath;
+	std::string chromiumProfilesPath;
 
 #if defined(FABRIC_OS_MACOSX)
         char const *home = getenv("HOME");
         if ( home && *home )
         {
-          std::string homeDir( home );
-          pluginDirs.push_back( homeDir + "/Library/Fabric/Exts" );
-          std::string appSupportDir = IO::joinPath( homeDir, "Library", "Application Support" );
-          pluginDirs.push_back( IO::joinPath( appSupportDir, "Google", "Chrome", "Default", chromeExtensionsSubDir ) );
-          pluginDirs.push_back( IO::joinPath( appSupportDir, "Chromium", "Default", chromeExtensionsSubDir ) );
+          std::string homePath( home );
+	  std::string libraryPath = IO::joinPath( homePath, "Library" );
+
+          pluginPaths.push_back( IO::joinPath( libraryPath, "Fabric", "Exts" ) );
+
+          std::string applicationSupportPath = IO::joinPath( libraryPath, "Application Support" );
+	  googleChromeProfilesPath = IO::joinPath( applicationSupportPath, "Google", "Chrome" );
+	  chromiumProfilesPath = IO::joinPath( applicationSupportPath, "Chromium" );
           
-          std::string firefoxProfilesDirString = IO::joinPath( appSupportDir, "Firefox", "Profiles" );
+          std::string firefoxProfilesDirString = IO::joinPath( applicationSupportPath, "Firefox", "Profiles" );
           RC::ConstHandle<IO::Dir> firefoxProfilesDir = IO::Dir::Create( 0, firefoxProfilesDirString, false );
           std::vector< RC::ConstHandle<IO::Dir> > firefoxProfilesSubDirs = firefoxProfilesDir->getSubDirs();
           for ( std::vector< RC::ConstHandle<IO::Dir> >::const_iterator it=firefoxProfilesSubDirs.begin(); it!=firefoxProfilesSubDirs.end(); ++it )
           {
             RC::ConstHandle<IO::Dir> const &firefoxProfilesSubDir = *it;
-            pluginDirs.push_back( IO::joinPath( firefoxProfilesSubDir->getFullPath(), firefoxExtensionsSubDir ) );
+            pluginPaths.push_back( IO::joinPath( firefoxProfilesSubDir->getFullPath(), firefoxExtensionsSubDir ) );
           }
         }
-        pluginDirs.push_back( "/Library/Fabric/Exts" );
+        pluginPaths.push_back( "/Library/Fabric/Exts" );
 #elif defined(FABRIC_OS_LINUX)
         char const *home = getenv("HOME");
         if ( home && *home )
         {
-          pluginDirs.push_back( IO::joinPath( homeDir, ".fabric", "Exts" );
-          pluginDirs.push_back( IO::joinPath( homeDir, ".config", "google-chrome", "Default", chromeExtensionsSubDir ) );
-          pluginDirs.push_back( IO::joinPath( homeDir, ".config", "chromium", "Default", chromeExtensionsSubDir ) );
+          pluginPaths.push_back( IO::joinPath( homePath, ".fabric", "Exts" ) );
+          pluginPaths.push_back( IO::joinPath( homePath, ".config", "google-chrome", "Default", chromeExtensionsSubDir ) );
+          pluginPaths.push_back( IO::joinPath( homePath, ".config", "chromium", "Default", chromeExtensionsSubDir ) );
         }
-        pluginDirs.push_back( "/usr/lib/fabric/Exts" );
+        pluginPaths.push_back( "/usr/lib/fabric/Exts" );
 #elif defined(FABRIC_OS_WINDOWS)
         char const *appData = getenv("APPDATA");
         if ( appData && *appData )
         {
           std::string appDataDir(appData);
-          pluginDirs.push_back( IO::joinPath( appDataDir, "Fabric" , "Exts" ) );
-          pluginDirs.push_back( IO::joinPath( appData, "Google", "Chrome", "User Data", "Default", chromeExtensionsSubDir ) );
-          pluginDirs.push_back( IO::joinPath( appData, "Chromium", "User Data", "Default", chromeExtensionsSubDir ) );
+          pluginPaths.push_back( IO::joinPath( appDataDir, "Fabric" , "Exts" ) );
+
           
           std::string firefoxProfilesDirString = IO::joinPath( appDataDir, "mozilla", "Firefox", "Profiles" );
           RC::ConstHandle<IO::Dir> firefoxProfilesDir = IO::Dir::Create( 0, firefoxProfilesDirString, false );
@@ -190,14 +195,27 @@ namespace Fabric
           for ( std::vector< RC::ConstHandle<IO::Dir> >::const_iterator it=firefoxProfilesSubDirs.begin(); it!=firefoxProfilesSubDirs.end(); ++it )
           {
             RC::ConstHandle<IO::Dir> const &firefoxProfilesSubDir = *it;
-            pluginDirs.push_back( IO::joinPath( firefoxProfilesSubDir->getFullPath(), firefoxExtensionsSubDir ) );
+            pluginPaths.push_back( IO::joinPath( firefoxProfilesSubDir->getFullPath(), firefoxExtensionsSubDir ) );
           }
         }
+
+        char const *localAppData = getenv("LOCALAPPDATA");
+        if ( localAppData && *localAppData )
+        {
+          std::string localAppDataPath(localAppData);
+	  googleChromeProfilesPath = IO::joinPath( localAppDataDir, "Google", "Chrome", "User Data" );
+	  chromiumProfilesPath = IO::joinPath( localAppDataDir, "Chromium", "User Data", "Default", chromeExtensionsSubDir );
+        }
 #endif
+
+	RC::ConstHandle<IO::DirSpec> googleChromeExtDirSpec = IO::DirSpec::Create( 0, googleChromeProfilesPath, "*", "Extensions", "kdijpapodgbchkehlmacojcegohcmbel", std::string(buildPureVersion) + "_*" );
+	std::vector<RC::ConstHandle<IO::Dir>> googleChromeExtDirs = googleChromeExtDirSpec->resolve();
+	for ( size_t i=0; i<googleChromeExtDirs.size(); ++i )
+	  pluginPaths.push_back( googleChromeExtDirs[i]->getFullPath() );
       
         RC::Handle<IOManager> ioManager = IOManager::Create( npp );
-        context = Context::Create( ioManager, pluginDirs );
-        Plug::Manager::Instance()->loadBuiltInPlugins( pluginDirs, context->getCGManager() );
+        context = Context::Create( ioManager, pluginPaths );
+        Plug::Manager::Instance()->loadBuiltInPlugins( pluginPaths, context->getCGManager() );
         
         contextID = context->getContextID();
         FABRIC_DEBUG_LOG( "Created new context '%s'", contextID.c_str() );

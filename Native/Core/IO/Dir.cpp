@@ -21,8 +21,6 @@
 
 namespace Fabric
 {
-  
-  
   namespace IO
   {
     RC::ConstHandle<Dir> Dir::Root()
@@ -56,34 +54,12 @@ namespace Fabric
       if ( m_parentDir )
         validateEntry( entry );
       
-      std::string fullPath = getFullPath();
-#if defined(FABRIC_POSIX)
-      DIR *dir = opendir( fullPath.c_str() );
-      if ( !dir )
+      if ( createIfMissing )
       {
-        if ( errno == ENOENT && createIfMissing )
-        {
-          if ( mkdir( fullPath.c_str(), 0777 ) )
-            throw Exception("unable to create directory");
-        }
-        else throw Exception("unable to open directory");
+        std::string fullPath = getFullPath();
+        if ( !DirExists( fullPath ) )
+	  CreateDir( fullPath );
       }
-      else closedir( dir );
-#elif defined(FABRIC_WIN32)
-      DWORD     dwAttrib = ::GetFileAttributesA( fullPath.c_str() );
-      if( dwAttrib == INVALID_FILE_ATTRIBUTES )
-      {
-        if( createIfMissing )
-        {
-          if ( !::CreateDirectoryA( fullPath.c_str(), NULL ) )
-            throw Exception("unable to create a directory");
-        }
-        else 
-          throw Exception("unable to open directory");
-      }
-      else if( !( dwAttrib & FILE_ATTRIBUTE_DIRECTORY ) )
-        throw Exception( "Not a directory" );
-#endif 
     }
     
     std::string Dir::getFullPath() const
