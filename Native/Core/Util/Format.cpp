@@ -77,11 +77,11 @@ namespace Fabric
   
   std::string _( float value )
   {
-    static const uint32_t signBit = 0x80000000u;
+    static const uint32_t signBit = UINT32_C(0x80000000);
     uint32_t const &valueAsUint32 = *(uint32_t const *)&value;
-    if( ( valueAsUint32 & 0x7F800000 ) == 0x7F800000 )
+    if( ( valueAsUint32 & UINT32_C(0x7F800000) ) == UINT32_C(0x7F800000) )
     {
-      if( ( valueAsUint32 & 0x007FFFFF ) == 0 )
+      if( ( valueAsUint32 & UINT32_C(0x007FFFFF) ) == 0 )
         return (valueAsUint32&signBit)? "-Inf": "Inf";
       else
         return "NaN";
@@ -96,11 +96,11 @@ namespace Fabric
   
   std::string _( double value )
   {
-    static const uint64_t signBit = 0x8000000000000000lu;
+    static const uint64_t signBit = UINT64_C(0x8000000000000000);
     uint64_t const &valueAsUint64 = *(uint64_t const *)&value;
-    if( ( valueAsUint64 & 0x7FF0000000000000lu ) == 0x7FF0000000000000lu )
+    if( ( valueAsUint64 & UINT64_C(0x7FF0000000000000) ) == UINT64_C(0x7FF0000000000000) )
     {
-      if( ( valueAsUint64 & 0x000FFFFFFFFFFFFFlu ) == 0 )
+      if( ( valueAsUint64 & UINT64_C(0x000FFFFFFFFFFFFF) ) == 0 )
         return (valueAsUint64&signBit)? "-Inf": "Inf";
       else
         return "NaN";

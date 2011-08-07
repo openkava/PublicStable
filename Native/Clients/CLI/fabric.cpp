@@ -151,7 +151,7 @@ int main( int argc, char **argv )
   }
 
   if ( pluginDir.length() == 0 )
-    pluginDir = IO::joinPath( IO::getRootPath(), "Exts" );
+    pluginDir = IO::JoinPath( IO::getRootPath(), "Exts" );
     
   std::vector< std::string > filesToRun;
   for ( ; optind < argc; ++optind )
