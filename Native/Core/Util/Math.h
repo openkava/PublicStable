@@ -30,13 +30,13 @@ namespace Fabric
     inline bool isinf( float value )
     {
       uint32_t uint32Rep = *reinterpret_cast<uint32_t const *>( &value );
-      return (uint32Rep & 0x7FFFFFFFu) == 0x7F800000u;
+      return (uint32Rep & UINT32_C(0x7FFFFFFF)) == UINT32_C(0x7F800000);
     }
 
     inline bool isinf( double value )
     {
       uint64_t uint64Rep = *reinterpret_cast<uint64_t const *>( &value );
-      return (uint64Rep & 0x7FFFFFFFFFFFFFFFlu) == 0x7FF0000000000000lu;
+      return (uint64Rep & UINT64_C(0x7FFFFFFFFFFFFFFF)) == UINT64_C(0x7FF0000000000000);
     }
 
     inline bool isnan( float value )

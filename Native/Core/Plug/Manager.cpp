@@ -44,48 +44,41 @@ namespace Fabric
     {
       if ( !m_loaded )
       {
-#if 0
-        std::string pluginPath = "";
-        for ( size_t i=0; i<pluginDirs.size(); ++i )
-        {
-          if ( pluginPath.length() > 0 )
-            pluginPath.append( ":" );
-          pluginPath.append( pluginDirs[i] );
-        }
-        FABRIC_LOG( "Plugin path is "+_(pluginPath) );
-#endif
-   
         //if ( m_fabricSDKSOLibHandle != invalidSOLibHandle )
         {
           for ( size_t i=0; i<pluginDirs.size(); ++i )
           {
+            FABRIC_LOG( "Searching extension directory " + _(pluginDirs[i]) );
+          
             RC::ConstHandle<IO::Dir> pluginsDir;
+            std::vector<std::string> files;
             try
             {
               pluginsDir = IO::Dir::Create( 0, pluginDirs[i], false );
+              files = pluginsDir->getFiles();
             }
             catch ( Exception e )
             {
-              FABRIC_LOG( "Warning: unable to open plugins directory "+_(pluginDirs[i]) );
+              FABRIC_LOG( "Warning: unable to open extension directory " + _(pluginDirs[i]) );
               continue;
             }
-            
-            std::vector<std::string> files = pluginsDir->getFiles();
+              
             for ( size_t i=0; i<files.size(); ++i )
             {
               std::string const &filename = files[i];
               size_t length = filename.length();
               if ( length > 9 && filename.substr( length-9, 9 ) == ".fpm.json" )
               {
+                std::string extensionName = filename.substr( 0, length-9 );
                 std::string fpmContents = pluginsDir->getFileContents( filename );
                 try
                 {
-                  registerPlugin( filename.substr( 0, length-9 ), fpmContents, pluginDirs, cgManager );
-                  FABRIC_LOG( "Loaded extension " + _(filename.c_str()) );
+                  registerPlugin( extensionName, fpmContents, pluginDirs, cgManager );
+                  FABRIC_LOG( "Loaded extension " + _(extensionName) );
                 }
                 catch ( Exception e )
                 {
-                  FABRIC_LOG( "Extension '%s/%s': %s", pluginsDir->getFullPath().c_str(), filename.c_str(), e.getDesc().c_str() );
+                  FABRIC_LOG( "Extension '%s' ('%s/%s'): %s", extensionName.c_str(), pluginsDir->getFullPath().c_str(), filename.c_str(), e.getDesc().c_str() );
                 }
               }
             }
@@ -115,9 +108,7 @@ namespace Fabric
       NameToInstMap::const_iterator it = m_nameToInstMap.find( name );
       if ( it != m_nameToInstMap.end() )
       {
-        result = it->second;
-        if ( result->getJSONDesc() != jsonDesc )
-          throw Exception( "a different plugin named "+_(name)+" is already registered" );
+        throw Exception( "already registered" );
       }
       else
       {

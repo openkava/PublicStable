@@ -1,8 +1,5 @@
 /*
- *
- *  Created by Peter Zion on 10-12-07.
- *  Copyright 2010 Fabric Technologies Inc. All rights reserved.
- *
+ *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
  */
 
 #include <Fabric/Core/IO/Dir.h>
@@ -65,7 +62,7 @@ namespace Fabric
     std::string Dir::getFullPath() const
     {
       if ( m_parentDir )
-        return joinPath( m_parentDir->getFullPath(), m_entry );
+        return JoinPath( m_parentDir->getFullPath(), m_entry );
       else return m_entry;
     }
 
@@ -89,7 +86,7 @@ namespace Fabric
 #elif defined(FABRIC_WIN32)
       WIN32_FIND_DATAA    fd;
       ::ZeroMemory( &fd, sizeof( fd ) );
-      std::string   searchGlob = joinPath( getFullPath(), "*" );
+      std::string   searchGlob = JoinPath( getFullPath(), "*" );
       HANDLE    hDir = ::FindFirstFileA( searchGlob.c_str(), &fd );
       if( hDir == INVALID_HANDLE_VALUE )
         throw Exception("unable to open directory");
@@ -106,52 +103,22 @@ namespace Fabric
 
     std::vector< RC::ConstHandle<Dir> > Dir::getSubDirs() const
     {
+      std::string fullPath = getFullPath();
+      std::vector<std::string> subDirEntries = GetSubDirEntries( fullPath );
+      
       std::vector< RC::ConstHandle<Dir> > result;
-#if defined(FABRIC_POSIX)
-      DIR *dir = opendir( getFullPath().c_str() );
-      if ( !dir )
-        throw Exception("unable to open directory");
-      for (;;)
+      for ( std::vector<std::string>::const_iterator it=subDirEntries.begin(); it!=subDirEntries.end(); ++it )
       {
-        struct dirent *de = readdir( dir );
-        if ( !de )
-          break;
-        if ( de->d_type != DT_DIR )
-          continue;
-        std::string entry( de->d_name );
-        if ( entry == "." || entry == ".." )
-          continue;
-        RC::ConstHandle<Dir> subDir = new Dir( this, entry, false );
-        result.push_back( subDir );
+        std::string const &subDirEntry = *it;
+        result.push_back( Dir::Create( this, subDirEntry ) );
       }
-      closedir( dir );
-#elif defined(FABRIC_WIN32)
-      WIN32_FIND_DATAA    fd;
-      ::ZeroMemory( &fd, sizeof( fd ) );
-      std::string   searchGlob = joinPath( getFullPath(), "*" );
-      HANDLE    hDir = ::FindFirstFileA( searchGlob.c_str(), &fd );
-      if( hDir == INVALID_HANDLE_VALUE )
-        throw Exception("unable to open directory");
-      do
-      {
-        if( !( fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY ) )
-          continue;
-
-        std::string entry( fd.cFileName );
-        if ( entry == "." || entry == ".." )
-          continue;
-        RC::ConstHandle<Dir> subDir = new Dir( this, entry, false );
-        result.push_back( subDir );
-      } while( ::FindNextFileA( hDir, &fd ) );
-      ::FindClose( hDir );
-#endif 
       return result;
     }
 
     std::string Dir::getFileContents( std::string const &entry ) const
     {
       validateEntry( entry );
-      std::string filePath = joinPath( getFullPath(), entry );
+      std::string filePath = JoinPath( getFullPath(), entry );
       
 #if defined(FABRIC_POSIX)
       int fd = open( filePath.c_str(), O_RDONLY );
@@ -217,7 +184,7 @@ namespace Fabric
     void Dir::putFileContents( std::string const &entry, std::string const &contents ) const
     {
       validateEntry( entry );
-      std::string filePath = joinPath( getFullPath(), entry );
+      std::string filePath = JoinPath( getFullPath(), entry );
       
 #if defined(FABRIC_POSIX)
       int fd = open( filePath.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0666 );

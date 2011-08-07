@@ -144,31 +144,31 @@ namespace Fabric
       {
       	std::vector<std::string> pluginPaths;
 
-        std::string firefoxExtensionsSubDir = IO::joinPath( "extensions", "info@fabric-engine.com", "plugins" );
-
         std::string googleChromeProfilesPath;
-	std::string chromiumProfilesPath;
+        std::string chromiumProfilesPath;
+
+        std::string firefoxExtensionsSubDir = IO::JoinPath( "extensions", "info@fabric-engine.com", "plugins" );
 
 #if defined(FABRIC_OS_MACOSX)
         char const *home = getenv("HOME");
         if ( home && *home )
         {
           std::string homePath( home );
-	  std::string libraryPath = IO::joinPath( homePath, "Library" );
+          std::string libraryPath = IO::JoinPath( homePath, "Library" );
 
-          pluginPaths.push_back( IO::joinPath( libraryPath, "Fabric", "Exts" ) );
+          pluginPaths.push_back( IO::JoinPath( libraryPath, "Fabric", "Exts" ) );
 
-          std::string applicationSupportPath = IO::joinPath( libraryPath, "Application Support" );
-	  googleChromeProfilesPath = IO::joinPath( applicationSupportPath, "Google", "Chrome" );
-	  chromiumProfilesPath = IO::joinPath( applicationSupportPath, "Chromium" );
+          std::string applicationSupportPath = IO::JoinPath( libraryPath, "Application Support" );
+          googleChromeProfilesPath = IO::JoinPath( applicationSupportPath, "Google", "Chrome" );
+          chromiumProfilesPath = IO::JoinPath( applicationSupportPath, "Chromium" );
           
-          std::string firefoxProfilesDirString = IO::joinPath( applicationSupportPath, "Firefox", "Profiles" );
+          std::string firefoxProfilesDirString = IO::JoinPath( applicationSupportPath, "Firefox", "Profiles" );
           RC::ConstHandle<IO::Dir> firefoxProfilesDir = IO::Dir::Create( 0, firefoxProfilesDirString, false );
           std::vector< RC::ConstHandle<IO::Dir> > firefoxProfilesSubDirs = firefoxProfilesDir->getSubDirs();
           for ( std::vector< RC::ConstHandle<IO::Dir> >::const_iterator it=firefoxProfilesSubDirs.begin(); it!=firefoxProfilesSubDirs.end(); ++it )
           {
             RC::ConstHandle<IO::Dir> const &firefoxProfilesSubDir = *it;
-            pluginPaths.push_back( IO::joinPath( firefoxProfilesSubDir->getFullPath(), firefoxExtensionsSubDir ) );
+            pluginPaths.push_back( IO::JoinPath( firefoxProfilesSubDir->getFullPath(), firefoxExtensionsSubDir ) );
           }
         }
         pluginPaths.push_back( "/Library/Fabric/Exts" );
@@ -176,9 +176,9 @@ namespace Fabric
         char const *home = getenv("HOME");
         if ( home && *home )
         {
-          pluginPaths.push_back( IO::joinPath( homePath, ".fabric", "Exts" ) );
-          pluginPaths.push_back( IO::joinPath( homePath, ".config", "google-chrome", "Default", chromeExtensionsSubDir ) );
-          pluginPaths.push_back( IO::joinPath( homePath, ".config", "chromium", "Default", chromeExtensionsSubDir ) );
+          pluginPaths.push_back( IO::JoinPath( homePath, ".fabric", "Exts" ) );
+          pluginPaths.push_back( IO::JoinPath( homePath, ".config", "google-chrome", "Default", chromeExtensionsSubDir ) );
+          pluginPaths.push_back( IO::JoinPath( homePath, ".config", "chromium", "Default", chromeExtensionsSubDir ) );
         }
         pluginPaths.push_back( "/usr/lib/fabric/Exts" );
 #elif defined(FABRIC_OS_WINDOWS)
@@ -186,16 +186,16 @@ namespace Fabric
         if ( appData && *appData )
         {
           std::string appDataDir(appData);
-          pluginPaths.push_back( IO::joinPath( appDataDir, "Fabric" , "Exts" ) );
+          pluginPaths.push_back( IO::JoinPath( appDataDir, "Fabric" , "Exts" ) );
 
           
-          std::string firefoxProfilesDirString = IO::joinPath( appDataDir, "mozilla", "Firefox", "Profiles" );
+          std::string firefoxProfilesDirString = IO::JoinPath( appDataDir, "mozilla", "Firefox", "Profiles" );
           RC::ConstHandle<IO::Dir> firefoxProfilesDir = IO::Dir::Create( 0, firefoxProfilesDirString, false );
           std::vector< RC::ConstHandle<IO::Dir> > firefoxProfilesSubDirs = firefoxProfilesDir->getSubDirs();
           for ( std::vector< RC::ConstHandle<IO::Dir> >::const_iterator it=firefoxProfilesSubDirs.begin(); it!=firefoxProfilesSubDirs.end(); ++it )
           {
             RC::ConstHandle<IO::Dir> const &firefoxProfilesSubDir = *it;
-            pluginPaths.push_back( IO::joinPath( firefoxProfilesSubDir->getFullPath(), firefoxExtensionsSubDir ) );
+            pluginPaths.push_back( IO::JoinPath( firefoxProfilesSubDir->getFullPath(), firefoxExtensionsSubDir ) );
           }
         }
 
@@ -203,15 +203,14 @@ namespace Fabric
         if ( localAppData && *localAppData )
         {
           std::string localAppDataPath(localAppData);
-	  googleChromeProfilesPath = IO::joinPath( localAppDataDir, "Google", "Chrome", "User Data" );
-	  chromiumProfilesPath = IO::joinPath( localAppDataDir, "Chromium", "User Data", "Default", chromeExtensionsSubDir );
+          googleChromeProfilesPath = IO::JoinPath( localAppDataDir, "Google", "Chrome", "User Data" );
+          chromiumProfilesPath = IO::JoinPath( localAppDataDir, "Chromium", "User Data", "Default", chromeExtensionsSubDir );
         }
 #endif
 
-	RC::ConstHandle<IO::DirSpec> googleChromeExtDirSpec = IO::DirSpec::Create( 0, googleChromeProfilesPath, "*", "Extensions", "kdijpapodgbchkehlmacojcegohcmbel", std::string(buildPureVersion) + "_*" );
-	std::vector<RC::ConstHandle<IO::Dir>> googleChromeExtDirs = googleChromeExtDirSpec->resolve();
-	for ( size_t i=0; i<googleChromeExtDirs.size(); ++i )
-	  pluginPaths.push_back( googleChromeExtDirs[i]->getFullPath() );
+        std::string chromeExtensionsPathSpec = IO::JoinPath( "Default", "Extensions", "kdijpapodgbchkehlmacojcegohcmbel", std::string(buildPureVersion) + "_*" );
+        IO::GlobDirPaths( IO::JoinPath( googleChromeProfilesPath, chromeExtensionsPathSpec ), pluginPaths );
+        IO::GlobDirPaths( IO::JoinPath( chromiumProfilesPath, chromeExtensionsPathSpec ), pluginPaths );
       
         RC::Handle<IOManager> ioManager = IOManager::Create( npp );
         context = Context::Create( ioManager, pluginPaths );
