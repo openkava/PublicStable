@@ -176,9 +176,10 @@ namespace Fabric
         char const *home = getenv("HOME");
         if ( home && *home )
         {
+          std::string homePath( home );
           pluginPaths.push_back( IO::JoinPath( homePath, ".fabric", "Exts" ) );
-          pluginPaths.push_back( IO::JoinPath( homePath, ".config", "google-chrome", "Default", chromeExtensionsSubDir ) );
-          pluginPaths.push_back( IO::JoinPath( homePath, ".config", "chromium", "Default", chromeExtensionsSubDir ) );
+          googleChromeProfilesPath = IO::JoinPath( homePath, ".config", "google-chrome" );
+          chromiumProfilesPath = IO::JoinPath( homePath, ".config", "chromium" );
         }
         pluginPaths.push_back( "/usr/lib/fabric/Exts" );
 #elif defined(FABRIC_OS_WINDOWS)

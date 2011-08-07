@@ -48,6 +48,8 @@ installerFiles.append( baseEnv.Command(
 
 for ext in ['EXR','HDR','OBJ','OGL','PNG','TGA']:
   fpm = 'Fabric' + ext + '.fpm.json'
+  if buildOS == 'Linux':
+    lib = 'libFabric' + ext + '.so'
   if buildOS == 'Darwin':
     lib = 'libFabric' + ext + '.dylib'
   if buildOS == 'Windows':
