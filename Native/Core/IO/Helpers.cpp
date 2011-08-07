@@ -24,7 +24,7 @@ namespace Fabric
   
   namespace IO
   {
-    void validateEntry( std::string const &entry )
+    void validateEntry( std::string const &entry, bool allowAsterisk )
     {
       if ( entry.length() == 0 )
         throw Exception("driectory entries cannot be empty");
@@ -38,7 +38,8 @@ namespace Fabric
         if ( ch == '/' )
           throw Exception("directory entries cannot contain '/'");
 #elif defined(FABRIC_WIN32)
-        if( strchr( "<>:\"/\\|?*", ch ) != 0 )
+        if ( strchr( "<>:\"/\\|?", ch ) != 0
+	 || (!allowAsterisk && ch == '*') )
           throw Exception("directory entries cannot contain any of '<>:\"/\\|?*'");
 #else
 # error "missing platform!"
@@ -113,5 +114,30 @@ namespace Fabric
       }
     }
     */
+
+    void CreateDir( std::string const &fullPath )
+    {
+#if defined(FABRIC_POSIX)
+      if ( mkdir( fullPath.c_str(), 0777 ) && errno != EEXIST )
+        throw Exception("unable to create directory");
+#elif defined(FABRIC_WIN32)
+      if ( !::CreateDirectoryA( fullPath.c_str(), NULL ) && GetLastError() != ERROR_ALREADY_EXISTS )
+        throw Exception("unable to create directory");
+#endif 
+    }
+      
+    bool DirExists( std::string const &fullPath )
+    {
+      bool result;
+#if defined(FABRIC_POSIX)
+      struct stat st;
+      result = stat( fullPath.c_str(), &st ) && S_ISDIR(st.st_mode);
+#elif defined(FABRIC_WIN32)
+      DWORD dwAttrib = ::GetFileAttributesA( fullPath.c_str() );
+      result = (dwAttrib != INVALID_FILE_ATTRIBUTES)
+      	&& (dwAttrib & FILE_ATTRIBUTE_DIRECTORY);
+#endif 
+      result result;
+    }
   };
 };

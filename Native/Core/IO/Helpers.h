@@ -14,7 +14,7 @@ namespace Fabric
 {
   namespace IO
   {
-    void validateEntry( std::string const &entry );
+    void validateEntry( std::string const &entry, bool allowAsterisk = false );
     
     std::string const &getRootPath();
     
@@ -41,6 +41,9 @@ namespace Fabric
     }
 
     //void safeCall( void (*callback)( int fd ) );
+
+    bool DirExists( std::string const &path );
+    void CreateDir( std::string const &path );
   };
 };
 

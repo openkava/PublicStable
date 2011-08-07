@@ -40,6 +40,8 @@ namespace Fabric
       {
         return m_entry;
       }
+
+      bool exists() const;
       
       std::string getFullPath() const;
       
