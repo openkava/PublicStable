@@ -182,7 +182,11 @@ namespace Fabric
     
     static inline bool EqInsensitive( std::string const &lhs, std::string const &rhs )
     {
+#if defined(FABRIC_POSIX)
       return strcasecmp( lhs.c_str(), rhs.c_str() ) == 0;
+#elif defined(FABRIC_WIN32)
+      return stricmp( lhs.c_str(), rhs.c_str() ) == 0;
+#endif
     }
     
     void GlobDirPaths( std::string const &dirPathSpec, std::vector<std::string> &result )

@@ -203,8 +203,8 @@ namespace Fabric
         if ( localAppData && *localAppData )
         {
           std::string localAppDataPath(localAppData);
-          googleChromeProfilesPath = IO::JoinPath( localAppDataDir, "Google", "Chrome", "User Data" );
-          chromiumProfilesPath = IO::JoinPath( localAppDataDir, "Chromium", "User Data", "Default", chromeExtensionsSubDir );
+          googleChromeProfilesPath = IO::JoinPath( localAppDataPath, "Google", "Chrome", "User Data" );
+          chromiumProfilesPath = IO::JoinPath( localAppDataPath, "Chromium", "User Data" );
         }
 #endif
 
