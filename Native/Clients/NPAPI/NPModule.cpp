@@ -120,7 +120,7 @@ FABRIC_NPAPI_EXPORT NPError OSCALL NP_GetValue(NPP instance, NPPVariable variabl
 
 FABRIC_NPAPI_EXPORT const char * OSCALL NP_GetPluginVersion(void)
 {
-  return Fabric::buildVersion;
+  return Fabric::buildFullVersion;
 }
 
 FABRIC_NPAPI_EXPORT const char* OSCALL NP_GetMIMEDescription(void)
