@@ -69,6 +69,11 @@ static double fp64_floor( double x )
   return floor( x );
 }
 
+static double fp64_round( double x )
+{
+  return floor( x + 0.5 );
+}
+
 static double fp64_asin( double x )
 {
   return asin( x );
