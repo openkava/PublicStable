@@ -216,9 +216,7 @@ namespace Fabric
       RC::Handle<ViewPort> viewPort;
       if ( viewPortType != VPT_EMPTY )
       {
-#if defined(FABRIC_OS_NACL)
-        viewPort = NPNaClViewPort::Create();
-#elif defined(FABRIC_OS_MACOSX)
+#if defined(FABRIC_OS_MACOSX)
         if ( compositing )
         {
 # if !defined(__x86_64__)

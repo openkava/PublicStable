@@ -11,7 +11,7 @@
 # include <string.h>
 # include <stdarg.h>
 
-#if defined(FABRIC_OS_NACL) ||  defined(FABRIC_OS_MACOSX) || defined(FABRIC_OS_LINUX)
+#if defined(FABRIC_POSIX)
 
 # include <unistd.h>
 # include <errno.h>
