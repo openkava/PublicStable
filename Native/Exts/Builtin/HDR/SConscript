@@ -7,12 +7,6 @@ Import( 'extsEnv', 'fabricExtsDistDir' )
 hdrPluginEnv = extsEnv.Clone()
 hdrPlugin = hdrPluginEnv.SharedLibrary( 'FabricHDR', Glob('*.cpp') ),
 hdrManifest = hdrPluginEnv.File('FabricHDR.fpm.json'),
+hdrFiles = [hdrManifest, hdrPlugin]
 
-installAction = Install( fabricExtsDistDir, [hdrPlugin,hdrManifest] )
-extsEnv.CopyToAppdataIfWindows( installAction )
-
-Alias( 'hdrExt', [
-  hdrPlugin,
-  hdrManifest,
-  installAction
-] )
+Return( 'hdrFiles' )

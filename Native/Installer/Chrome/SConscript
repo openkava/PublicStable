@@ -6,7 +6,7 @@
 # with the MIME type application/x-chrome-extension
 
 import os
-Import( 'baseEnv', 'buildOS', 'buildArch', 'archDistDir', 'fabricExtsDistDir', 'npapiDistDir', 'installerName' )
+Import( 'baseEnv', 'buildOS', 'buildArch', 'archDistDir', 'fabricExtsDistDir', 'npapiDistDir', 'installerName', 'extFiles' )
 
 chromeExtensionDir = archDistDir.Dir('Chrome').Dir(installerName)
 
@@ -53,26 +53,10 @@ if buildOS == "Darwin":
     [ Copy( '$TARGET', '$SOURCE' ) ]
   ) )
 
-for ext in ['EXR','HDR','OBJ','OGL','PNG','TGA']:
-  fpm = 'Fabric' + ext + '.fpm.json'
-  if buildOS == 'Linux':
-    lib = 'libFabric' + ext + '.so'
-  if buildOS == 'Darwin':
-    lib = 'libFabric' + ext + '.dylib'
-  if buildOS == 'Windows':
-    lib = 'Fabric' + ext + '.dll'
-  installedFiles.append( baseEnv.Command(
-    chromeExtensionDir.File( fpm ),
-    fabricExtsDistDir.File( fpm ),
-    [
-      Copy( '$TARGET', '$SOURCE' )
-    ]
-  ) )
-  installedFiles.append( baseEnv.Command(
-    chromeExtensionDir.File( lib ),
-    fabricExtsDistDir.File( lib ),
-    [Copy( '$TARGET', '$SOURCE' )]
-  ) )
+installedFiles.append( Install(
+  chromeExtensionDir,
+  extFiles
+) )
 
 pemFile = archDistDir.Dir('Chrome').File('private-key.pem')
 installedFiles.append( baseEnv.Command(

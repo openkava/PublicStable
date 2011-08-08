@@ -44,12 +44,6 @@ oglPluginEnv.Command(
   )
 
 oglPlugin = oglPluginEnv.SharedLibrary( 'FabricOGL', oglSource )
+oglFiles = [oglManifest, oglPlugin]
 
-installAction = Install( fabricExtsDistDir, [oglPlugin,oglManifest] )
-extsEnv.CopyToAppdataIfWindows( installAction )
-
-Alias( 'oglExt', [
-  oglPlugin,
-  oglManifest,
-  installAction
-] )
+Return( 'oglFiles' )
