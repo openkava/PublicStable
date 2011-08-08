@@ -17,7 +17,7 @@
 	<key>CFBundleShortVersionString</key>
 	<string>{{FABRIC_VERSION_MAJ}}.{{FABRIC_VERSION_MIN}}.{{FABRIC_VERSION_REV}}{{FABRIC_VERSION_SUFFIX}}</string>
 	<key>WebPluginDescription</key>
-	<string>http://fabric-engine.com</string>
+	<string>{{FABRIC_DESC}}</string>
 	<key>WebPluginMIMETypes</key>
 	<dict>
 		<key>application/fabric</key>
@@ -27,6 +27,6 @@
 		</dict>
 	</dict>
 	<key>WebPluginName</key>
-	<string>Fabric</string>
+	<string>{{FABRIC_NAME}}</string>
 </dict>
 </plist>
