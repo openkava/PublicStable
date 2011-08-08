@@ -154,3 +154,5 @@ installEnv.Append(
 
 zip = installEnv.DistZip(installerName + '.zip', [npapiDistDir])
 installEnv.Alias("zip", zip)
+
+Alias( 'nativeInstaller', zip )

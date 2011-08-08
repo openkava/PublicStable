@@ -78,6 +78,7 @@ installedFiles.append( baseEnv.Command(
   [Copy( '$TARGET', '$SOURCE' )]
 ) )
 
+chromeInstallerFile = archDistDir.Dir('Chrome').File(installerName+'.crx')
 if buildOS == 'Windows':
   chrome = os.environ['LOCALAPPDATA']+'\Google\Chrome\Application\chrome.exe'
 if buildOS == 'Darwin':
@@ -85,7 +86,8 @@ if buildOS == 'Darwin':
 if buildOS == 'Linux':
   chrome = "DISPLAY="+os.environ['DISPLAY']+" /opt/google/chrome/chrome"
 baseEnv.Command(
-  archDistDir.Dir('Chrome').File(installerName+'.crx'),
+  chromeInstallerFile,
   installedFiles,
   chrome+" --pack-extension=" + chromeExtensionDir.abspath + " --pack-extension-key=" + pemFile.abspath + " --no-message-box"
 )
+Alias( 'chromeInstaller', chromeInstallerFile )
