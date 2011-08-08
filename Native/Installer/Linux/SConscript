@@ -28,4 +28,4 @@ tarball = env.Tarball(
   source=installScript
 )
 
-Alias( 'installer', tarball )
+Alias( 'nativeInstaller', tarball )

@@ -134,7 +134,7 @@ namespace Fabric
         symbolNameToAddressMap["fp64_round"] = (void *)&imp_round;
 #else
         symbolNameToAddressMap["fp32_round"] = (void *)&roundf;
-        symbolNameToAddressMap["fp64_round"] = (void *)&fp64_round;
+        symbolNameToAddressMap["fp64_round"] = (void *)&round;
 #endif
         symbolNameToAddressMap["fp32_ceil"] =( void *)&ceilf;
         symbolNameToAddressMap["fp64_ceil"] =( void *)&fp64_ceil;
@@ -142,6 +142,8 @@ namespace Fabric
         symbolNameToAddressMap["fp64_floor"] =( void *)&fp64_floor;
         symbolNameToAddressMap["fp32_fabs"] =( void *)&fabsf;
         symbolNameToAddressMap["fp64_fabs"] =( void *)&fp64_fabs;
+        symbolNameToAddressMap["fp32_sqrt"] =( void *)&sqrtf;
+        symbolNameToAddressMap["fp64_sqrt"] =( void *)&fp64_sqrt;
         symbolNameToAddressMap["sinf"] = (void *)&sinf;
         symbolNameToAddressMap["sin"] = (void *)&fp64_sin;
         symbolNameToAddressMap["cosf"] = (void *)&cosf;
