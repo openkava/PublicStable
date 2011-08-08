@@ -2,18 +2,12 @@
 # Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 #
 
-Import( 'extsEnv', 'openexrFlags', 'fabricExtsDistDir' )
+Import( 'extsEnv', 'openexrFlags' )
 
 exrPluginEnv = extsEnv.Clone()
 exrPluginEnv.MergeFlags( openexrFlags )
 exrPlugin = exrPluginEnv.SharedLibrary( 'FabricEXR', Glob('*.cpp') ),
 exrManifest = exrPluginEnv.File('FabricEXR.fpm.json'),
+exrFiles = [exrManifest, exrPlugin]
 
-installAction = Install( fabricExtsDistDir, [exrPlugin,exrManifest] )
-extsEnv.CopyToAppdataIfWindows( installAction )
-
-Alias( 'exrExt', [
-  exrPlugin,
-  exrManifest,
-  installAction
-] )
+Return( 'exrFiles' )

@@ -6,7 +6,7 @@
 # with the MIME type application/x-xpinstall
 
 import os
-Import( 'baseEnv', 'buildOS', 'buildArch', 'archDistDir', 'fabricExtsDistDir', 'npapiDistDir', 'installerName', 'generateDistZip' )
+Import( 'baseEnv', 'buildOS', 'buildArch', 'archDistDir', 'fabricExtsDistDir', 'npapiDistDir', 'installerName', 'generateDistZip', 'extFiles' )
 
 firefoxExtensionDir = archDistDir.Dir( 'FirefoxExtension' )
 
@@ -58,28 +58,10 @@ if buildOS == 'Windows':
     Copy( '$TARGET', '$SOURCE' )
   ) )
 
-for ext in ['EXR','HDR','OBJ','OGL','PNG','TGA']:
-  fpm = 'Fabric' + ext + '.fpm.json'
-  if buildOS == 'Linux':
-    lib = 'libFabric' + ext + '.so'
-  if buildOS == 'Darwin':
-    lib = 'libFabric' + ext + '.dylib'
-  if buildOS == 'Windows':
-    lib = 'Fabric' + ext + '.dll'
-  installerFiles.append( baseEnv.Command(
-    firefoxExtensionDir.Dir('plugins').File( fpm ),
-    fabricExtsDistDir.File( fpm ),
-    [
-      Copy( '$TARGET', '$SOURCE' )
-    ]
-  ) )
-  installerFiles.append( baseEnv.Command(
-    firefoxExtensionDir.Dir('plugins').File( lib ),
-    fabricExtsDistDir.File( lib ),
-    [
-      Copy( '$TARGET', '$SOURCE' )
-    ]
-  ) )
+installerFiles.append( Install(
+  firefoxExtensionDir.Dir('plugins'),
+  extFiles
+) )
 
 installerEnv = baseEnv.Clone()
 generateDistZip( installerEnv )
