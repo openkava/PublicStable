@@ -182,14 +182,7 @@ namespace Fabric
           pluginPaths.push_back( IO::JoinPath( appDataDir, "Fabric" , "Exts" ) );
 
           
-          std::string firefoxProfilesDirString = IO::JoinPath( appDataDir, "mozilla", "Firefox", "Profiles" );
-          RC::ConstHandle<IO::Dir> firefoxProfilesDir = IO::Dir::Create( 0, firefoxProfilesDirString, false );
-          std::vector< RC::ConstHandle<IO::Dir> > firefoxProfilesSubDirs = firefoxProfilesDir->getSubDirs();
-          for ( std::vector< RC::ConstHandle<IO::Dir> >::const_iterator it=firefoxProfilesSubDirs.begin(); it!=firefoxProfilesSubDirs.end(); ++it )
-          {
-            RC::ConstHandle<IO::Dir> const &firefoxProfilesSubDir = *it;
-            pluginPaths.push_back( IO::JoinPath( firefoxProfilesSubDir->getFullPath(), firefoxExtensionsSubDir ) );
-          }
+          firefoxProfilesPath = IO::JoinPath( appDataDir, "Mozilla", "Firefox", "Profiles" );
         }
 
         char const *localAppData = getenv("LOCALAPPDATA");

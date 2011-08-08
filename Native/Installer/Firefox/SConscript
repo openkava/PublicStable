@@ -2,8 +2,11 @@
 # Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 #
 
+# Note that the installer with the .xpi extension should be served
+# with the MIME type application/x-xpinstall
+
 import os
-Import( 'baseEnv', 'buildOS', 'buildArch', 'archDistDir', 'fabricExtsDistDir', 'npapiDistDir', 'installerName' )
+Import( 'baseEnv', 'buildOS', 'buildArch', 'archDistDir', 'fabricExtsDistDir', 'npapiDistDir', 'installerName', 'generateDistZip' )
 
 firefoxExtensionDir = archDistDir.Dir( 'FirefoxExtension' )
 
@@ -48,6 +51,12 @@ if buildOS == 'Linux':
     npapiDistDir.File('libFabricPlugin.so'),
     Copy( '$TARGET', '$SOURCE' )
   ) )
+if buildOS == 'Windows':
+  installerFiles.append( baseEnv.Command(
+    firefoxExtensionDir.Dir('plugins').File('npFabricPlugin.dll'),
+    npapiDistDir.File('npFabricPlugin.dll'),
+    Copy( '$TARGET', '$SOURCE' )
+  ) )
 
 for ext in ['EXR','HDR','OBJ','OGL','PNG','TGA']:
   fpm = 'Fabric' + ext + '.fpm.json'
@@ -72,10 +81,11 @@ for ext in ['EXR','HDR','OBJ','OGL','PNG','TGA']:
     ]
   ) )
 
-installerFile = archDistDir.File(installerName + ".xpi")
-Command(
-  installerFile,
-  installerFiles,
-  "cd '" + firefoxExtensionDir.path + "' && zip -r '../" + installerName + ".xpi' *"
+installerEnv = baseEnv.Clone()
+generateDistZip( installerEnv )
+installerEnv.Append( DISTZIP_ROOTDIR = firefoxExtensionDir )
+installerFile = installerEnv.DistZip(
+  archDistDir.File(installerName + ".xpi"),
+  installerFiles
 )
 Alias( 'firefoxInstaller', installerFile )

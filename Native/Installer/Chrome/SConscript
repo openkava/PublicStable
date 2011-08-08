@@ -2,6 +2,9 @@
 # Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 #
 
+# Note that the installer with the .crx extension should be served
+# with the MIME type application/x-chrome-extension
+
 import os
 Import( 'baseEnv', 'buildOS', 'buildArch', 'archDistDir', 'fabricExtsDistDir', 'npapiDistDir', 'installerName' )
 
