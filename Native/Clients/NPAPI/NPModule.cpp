@@ -49,17 +49,7 @@ static void displayHeader()
   FABRIC_LOG( "Plugin loaded." );
 }
 
-#if defined(FABRIC_OS_NACL)
-FABRIC_NPAPI_EXPORT NPError OSCALL NP_Initialize(NPNetscapeFuncs* browser_functions,
-                             NPPluginFuncs* plugin_functions)
-{
-  llvmInitialize();
-  NPError np_err = NP_GetEntryPoints(plugin_functions);
-  if (NPERR_NO_ERROR == np_err)
-    pglInitialize();
-  return np_err;
-}
-#elif defined(FABRIC_OS_LINUX)
+#if defined(FABRIC_OS_LINUX)
 FABRIC_NPAPI_EXPORT NPError OSCALL NP_Initialize(NPNetscapeFuncs* browser_functions,
                       NPPluginFuncs* plugin_functions)
 {
@@ -91,7 +81,7 @@ FABRIC_NPAPI_EXPORT NPError OSCALL NP_Initialize(NPNetscapeFuncs* browser_functi
   return NPERR_NO_ERROR;
 }
 #else
-# error "Unrecognized platform"
+# error "Unrecognized FABRIC_OS_..."
 #endif
 
 FABRIC_NPAPI_EXPORT NPError OSCALL NP_Shutdown()

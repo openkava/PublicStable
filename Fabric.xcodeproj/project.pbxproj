@@ -27,6 +27,8 @@
 		DB0831D513E7606800FB75DA /* Core */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Core; sourceTree = "<group>"; };
 		DB083DE813E9FC3F00828F72 /* Base */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Base; sourceTree = "<group>"; };
 		DB76649C13E7B70D00D5F072 /* Clients */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Clients; sourceTree = "<group>"; };
+		DB7DEBBC13F085DF009996CD /* EDK */ = {isa = PBXFileReference; lastKnownFileType = folder; path = EDK; sourceTree = "<group>"; };
+		DB7DEBC013F085DF009996CD /* Test */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Test; sourceTree = "<group>"; };
 		DB8ACF1213EC4281008EC09C /* Installer */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Installer; sourceTree = "<group>"; };
 		DB8ACF2F13EC43D3008EC09C /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
 		DB8ACF3013EC43D3008EC09C /* SConstruct */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = SConstruct; sourceTree = "<group>"; };
@@ -278,9 +280,9 @@
 				DB8ACF2F13EC43D3008EC09C /* Makefile */,
 				DB8ACF1213EC4281008EC09C /* Installer */,
 				DB96731913A5423200616143 /* DevServer */,
+				DB7DEBC013F085DF009996CD /* Test */,
 				DB8ACFF513EC5515008EC09C /* Exts */,
-				DB96733813A5423300616143 /* EDK */,
-				DB967E0213A543F600616143 /* Test */,
+				DB7DEBBC13F085DF009996CD /* EDK */,
 				DB76649C13E7B70D00D5F072 /* Clients */,
 				DBE4D7F213E9FB2E004A50E5 /* Tools */,
 				DB0831D513E7606800FB75DA /* Core */,
@@ -295,44 +297,6 @@
 			children = (
 			);
 			path = DevServer;
-			sourceTree = "<group>";
-		};
-		DB96733813A5423300616143 /* EDK */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = EDK;
-			sourceTree = "<group>";
-		};
-		DB967E0213A543F600616143 /* Test */ = {
-			isa = PBXGroup;
-			children = (
-				DB967E0313A543F600616143 /* Fabric */,
-				DB967E5213A543FD00616143 /* KL */,
-			);
-			path = Test;
-			sourceTree = "<group>";
-		};
-		DB967E0313A543F600616143 /* Fabric */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Fabric;
-			sourceTree = "<group>";
-		};
-		DB967E5213A543FD00616143 /* KL */ = {
-			isa = PBXGroup;
-			children = (
-				DB967F1913A5440700616143 /* OpenCL */,
-			);
-			path = KL;
-			sourceTree = "<group>";
-		};
-		DB967F1913A5440700616143 /* OpenCL */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = OpenCL;
 			sourceTree = "<group>";
 		};
 		DB967F6013A5440A00616143 /* ThirdParty */ = {
