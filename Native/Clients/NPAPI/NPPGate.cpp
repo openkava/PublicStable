@@ -146,8 +146,7 @@ namespace Fabric
 
         std::string googleChromeProfilesPath;
         std::string chromiumProfilesPath;
-
-        std::string firefoxExtensionsSubDir = IO::JoinPath( "extensions", "info@fabric-engine.com", "plugins" );
+        std::string firefoxProfilesPath;
 
 #if defined(FABRIC_OS_MACOSX)
         char const *home = getenv("HOME");
@@ -161,15 +160,7 @@ namespace Fabric
           std::string applicationSupportPath = IO::JoinPath( libraryPath, "Application Support" );
           googleChromeProfilesPath = IO::JoinPath( applicationSupportPath, "Google", "Chrome" );
           chromiumProfilesPath = IO::JoinPath( applicationSupportPath, "Chromium" );
-          
-          std::string firefoxProfilesDirString = IO::JoinPath( applicationSupportPath, "Firefox", "Profiles" );
-          RC::ConstHandle<IO::Dir> firefoxProfilesDir = IO::Dir::Create( 0, firefoxProfilesDirString, false );
-          std::vector< RC::ConstHandle<IO::Dir> > firefoxProfilesSubDirs = firefoxProfilesDir->getSubDirs();
-          for ( std::vector< RC::ConstHandle<IO::Dir> >::const_iterator it=firefoxProfilesSubDirs.begin(); it!=firefoxProfilesSubDirs.end(); ++it )
-          {
-            RC::ConstHandle<IO::Dir> const &firefoxProfilesSubDir = *it;
-            pluginPaths.push_back( IO::JoinPath( firefoxProfilesSubDir->getFullPath(), firefoxExtensionsSubDir ) );
-          }
+          firefoxProfilesPath = IO::JoinPath( applicationSupportPath, "Firefox", "Profiles" );
         }
         pluginPaths.push_back( "/Library/Fabric/Exts" );
 #elif defined(FABRIC_OS_LINUX)
@@ -180,6 +171,7 @@ namespace Fabric
           pluginPaths.push_back( IO::JoinPath( homePath, ".fabric", "Exts" ) );
           googleChromeProfilesPath = IO::JoinPath( homePath, ".config", "google-chrome" );
           chromiumProfilesPath = IO::JoinPath( homePath, ".config", "chromium" );
+          firefoxProfilesPath = IO::JoinPath( homePath, ".mozilla", "firefox" );
         }
         pluginPaths.push_back( "/usr/lib/fabric/Exts" );
 #elif defined(FABRIC_OS_WINDOWS)
@@ -212,6 +204,9 @@ namespace Fabric
         std::string chromeExtensionsPathSpec = IO::JoinPath( "Default", "Extensions", "kdijpapodgbchkehlmacojcegohcmbel", std::string(buildPureVersion) + "_*" );
         IO::GlobDirPaths( IO::JoinPath( googleChromeProfilesPath, chromeExtensionsPathSpec ), pluginPaths );
         IO::GlobDirPaths( IO::JoinPath( chromiumProfilesPath, chromeExtensionsPathSpec ), pluginPaths );
+
+        std::string firefoxExtensionsPathSpec = IO::JoinPath( "*", "extensions", "info@fabric-engine.com", "plugins" );
+        IO::GlobDirPaths( IO::JoinPath( firefoxProfilesPath, firefoxExtensionsPathSpec ), pluginPaths );
       
         RC::Handle<IOManager> ioManager = IOManager::Create( npp );
         context = Context::Create( ioManager, pluginPaths );
@@ -293,20 +288,25 @@ namespace Fabric
 
     NPError NPP_GetValue( NPP npp, NPPVariable variable, void *value )
     {
-#if defined(FABRIC_OS_LINUX)
-      // [pzion 20110211] Special case: Linux plugin requires XEmbed no matter what
-      if ( variable == NPPVpluginNeedsXEmbed )
+      switch ( variable )
       {
-        *(static_cast<NPBool*>(value)) = true;
-        return NPERR_NO_ERROR;
-      }
+        case NPPVpluginNameString:
+          *static_cast<char const **>( value ) = buildName;
+          return NPERR_NO_ERROR;
+        case NPPVpluginDescriptionString:
+          *static_cast<char const **>( value ) = buildDesc;
+          return NPERR_NO_ERROR;
+#if defined(FABRIC_OS_LINUX)
+        // [pzion 20110211] Special case: Linux plugin requires XEmbed no matter what
+        case NPPVpluginNeedsXEmbed:
+          *(static_cast<NPBool*>(value)) = true;
+          return NPERR_NO_ERROR;
 #endif
-      
-      if ( !npp )
-        return NPERR_INVALID_INSTANCE_ERROR;
-      Interface *interface = static_cast<Interface *>( npp->pdata );
-        
-      return interface->nppGetValue( npp, variable, value );
+        default:      
+          if ( !npp )
+            return NPERR_INVALID_INSTANCE_ERROR;
+          return static_cast<Interface *>( npp->pdata )->nppGetValue( npp, variable, value );
+      }
     }
 
     // |event| just took place in this plugin's window in the browser.  This

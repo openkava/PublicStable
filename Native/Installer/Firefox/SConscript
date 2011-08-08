@@ -15,7 +15,7 @@ installerFiles.append( baseEnv.Command(
   [ Copy( '$TARGET', '$SOURCE' ) ]
 ) )
 
-baseEnv.Template( "install.rdf", "install.rdf.template" )
+baseEnv.Template( "install.rdf", "install.rdf."+buildOS+"."+buildArch+".template" )
 installerFiles.append( baseEnv.Command(
   firefoxExtensionDir.File('install.rdf'),
   'install.rdf',
@@ -29,22 +29,25 @@ for res in ["48", "64"]:
     [ Copy( '$TARGET', '$SOURCE' ) ]
   ) )
 
-npapiPluginBundleDir = npapiDistDir.Dir( 'Fabric.'+buildArch+'.plugin' )
-pluginDir = firefoxExtensionDir.Dir('plugins').Dir( 'Fabric.'+buildArch+'.plugin' )
-installerFiles.append( baseEnv.Command(
-  pluginDir.Dir('Contents').Dir('MacOS').File('FabricNPAPI'),
-  npapiPluginBundleDir.Dir('Contents').Dir('MacOS').File('FabricNPAPI'),
-  [
+if buildOS == 'Darwin':
+  npapiPluginBundleDir = npapiDistDir.Dir( 'Fabric.'+buildArch+'.plugin' )
+  pluginDir = firefoxExtensionDir.Dir('plugins').Dir( 'Fabric.'+buildArch+'.plugin' )
+  installerFiles.append( baseEnv.Command(
+    pluginDir.Dir('Contents').Dir('MacOS').File('FabricNPAPI'),
+    npapiPluginBundleDir.Dir('Contents').Dir('MacOS').File('FabricNPAPI'),
     Copy( '$TARGET', '$SOURCE' )
-  ]
-) )
-installerFiles.append( baseEnv.Command(
-  pluginDir.Dir('Contents').File('Info.plist'),
-  npapiPluginBundleDir.Dir('Contents').File('Info.plist'),
-  [
+  ) )
+  installerFiles.append( baseEnv.Command(
+    pluginDir.Dir('Contents').File('Info.plist'),
+    npapiPluginBundleDir.Dir('Contents').File('Info.plist'),
     Copy( '$TARGET', '$SOURCE' )
-  ]
-) )
+  ) )
+if buildOS == 'Linux':
+  installerFiles.append( baseEnv.Command(
+    firefoxExtensionDir.Dir('plugins').File('libFabricPlugin.so'),
+    npapiDistDir.File('libFabricPlugin.so'),
+    Copy( '$TARGET', '$SOURCE' )
+  ) )
 
 for ext in ['EXR','HDR','OBJ','OGL','PNG','TGA']:
   fpm = 'Fabric' + ext + '.fpm.json'
