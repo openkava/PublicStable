@@ -74,7 +74,8 @@ for ext in ['EXR','HDR','OBJ','OGL','PNG','TGA']:
 
 installerFile = archDistDir.File(installerName + ".xpi")
 Command(
-  [installerFile],
+  installerFile,
   installerFiles,
   "cd '" + firefoxExtensionDir.path + "' && zip -r '../" + installerName + ".xpi' *"
 )
+Alias( 'firefoxInstaller', installerFile )

@@ -4,4 +4,6 @@
 
 Import( 'buildOS' )
 
-SConscript( dirs=["Chrome","Firefox"] )
+SConscript( dirs=[buildOS,"Chrome","Firefox"] )
+
+Alias( 'installer', ['nativeInstaller','chromeInstaller','firefoxInstaller'] )
