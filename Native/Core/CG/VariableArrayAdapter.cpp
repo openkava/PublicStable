@@ -397,8 +397,12 @@ namespace Fabric
           llvm::Value *memberRValue = functionBuilder[1];
           BasicBlockBuilder basicBlockBuilder( functionBuilder );
           basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
-          llvm::Value *memberLValue = m_memberAdapter->llvmRValueToLValue( basicBlockBuilder, memberRValue );
-          llvmCallPush( basicBlockBuilder, selfLValue, memberLValue );
+          llvm::Value *selfRValue = llvmLValueToRValue( basicBlockBuilder, selfLValue );
+          llvm::Value *oldSize = llvmCallSize( basicBlockBuilder, selfRValue );
+          llvm::Value *newSize = basicBlockBuilder->CreateAdd( oldSize, sizeAdapter->llvmConst( 1 ) );
+          llvmCallResize( basicBlockBuilder, selfLValue, newSize );
+          llvm::Value *newElementLValue = llvmNonConstIndexOp( basicBlockBuilder, selfLValue, oldSize );
+          m_memberAdapter->llvmAssign( basicBlockBuilder, newElementLValue, memberRValue );
           basicBlockBuilder->CreateRet( selfLValue );
         }
       }
@@ -532,8 +536,6 @@ namespace Fabric
     {
       if ( functionName == "__"+getCodeName()+"__Resize" )
         return (void *)&VariableArrayAdapter::Resize;
-      else if ( functionName == "__"+getCodeName()+"__Push" )
-        return (void *)&VariableArrayAdapter::Push;
       else if ( functionName == "__"+getCodeName()+"__Pop" )
         return (void *)&VariableArrayAdapter::Pop;
       else if ( functionName == "__"+getCodeName()+"__Split" )
@@ -568,11 +570,6 @@ namespace Fabric
       params.push_back( FunctionParam( "index", sizeAdapter, CG::USAGE_RVALUE ) );
       FunctionBuilder functionBuilder( basicBlockBuilder.getModuleBuilder(), "__"+getCodeName()+"__NonConstIndex", ExprType( m_memberAdapter, USAGE_LVALUE ), params, false, true );
       return basicBlockBuilder->CreateCall2( functionBuilder.getLLVMFunction(), exprLValue, indexRValue );
-    }
-    
-    void VariableArrayAdapter::Push( VariableArrayAdapter const *inst, void *dst, void const *src )
-    {
-      inst->m_variableArrayDesc->push( dst, src );
     }
     
     void VariableArrayAdapter::Split( VariableArrayAdapter const *inst, void *data )
@@ -617,31 +614,7 @@ namespace Fabric
       args.push_back( newSize );
       basicBlockBuilder->CreateCall( func, args.begin(), args.end() );
     }
-    
-    void VariableArrayAdapter::llvmCallPush( BasicBlockBuilder &basicBlockBuilder, llvm::Value *arrayLValue, llvm::Value *memberLValue ) const
-    {
-      std::vector< llvm::Type const * > argTypes;
-      argTypes.push_back( basicBlockBuilder->getInt8PtrTy() );
-      argTypes.push_back( llvmLType() );
-      argTypes.push_back( m_memberAdapter->llvmLType() );
-      llvm::FunctionType const *funcType = llvm::FunctionType::get( basicBlockBuilder->getVoidTy(), argTypes, false );
-      
-      llvm::AttributeWithIndex AWI[4];
-      AWI[0] = llvm::AttributeWithIndex::get( 1, llvm::Attribute::NoCapture );
-      AWI[1] = llvm::AttributeWithIndex::get( 2, llvm::Attribute::NoCapture );
-      AWI[2] = llvm::AttributeWithIndex::get( 3, llvm::Attribute::NoCapture );
-      AWI[3] = llvm::AttributeWithIndex::get( ~0u, llvm::Attribute::InlineHint | llvm::Attribute::NoUnwind );
-      llvm::AttrListPtr attrListPtr = llvm::AttrListPtr::get( AWI, 4 );
-      
-      llvm::Function *func = llvm::cast<llvm::Function>( basicBlockBuilder.getModuleBuilder()->getOrInsertFunction( "__"+getCodeName()+"__Push", funcType, attrListPtr ) ); 
 
-      std::vector< llvm::Value * > args;
-      args.push_back( llvmAdapterPtr( basicBlockBuilder ) );
-      args.push_back( arrayLValue );
-      args.push_back( memberLValue );
-      basicBlockBuilder->CreateCall( func, args.begin(), args.end() );
-    }
-    
     void VariableArrayAdapter::llvmCallPop( BasicBlockBuilder &basicBlockBuilder, llvm::Value *arrayLValue, llvm::Value *memberLValue ) const
     {
       std::vector< llvm::Type const * > argTypes;
