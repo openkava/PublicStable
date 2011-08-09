@@ -33,7 +33,7 @@ namespace Fabric
       memberLLVMTypes.push_back( llvmSizeTy ); // allocNumMembers
       memberLLVMTypes.push_back( llvmSizeTy ); // numMembers
       memberLLVMTypes.push_back( llvm::ArrayType::get( m_memberAdapter->llvmRawType(), 0 ) );
-      m_implType = llvm::StructType::get( getLLVMContext(), memberLLVMTypes );
+      m_implType = llvm::StructType::get( getLLVMContext(), memberLLVMTypes, true );
       
       setLLVMType( m_implType->getPointerTo() );
     }
