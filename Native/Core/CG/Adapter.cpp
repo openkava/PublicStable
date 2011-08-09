@@ -138,21 +138,20 @@ namespace Fabric
     {
       if ( exprValue.getAdapter()->getDesc()->getImpl() == getDesc()->getImpl() )
       {
-        llvm::Value *rValue = 0;
         switch ( exprValue.getUsage() )
         {
           case USAGE_RVALUE:
-            rValue = exprValue.getValue();
-            break;
+            return exprValue.getValue();
           case USAGE_LVALUE:
-            rValue = llvmLValueToRValue( basicBlockBuilder, exprValue.getValue() );
-            break;
+          {
+            llvm::Value *rValue = llvmLValueToRValue( basicBlockBuilder, exprValue.getValue() );
+            llvmRetain( basicBlockBuilder, rValue );
+            return rValue;
+          }
           default:
             FABRIC_ASSERT( false );
-            break;
+            return 0;
         }
-        llvmRetain( basicBlockBuilder, rValue );
-        return rValue;
       }
       else
       {
