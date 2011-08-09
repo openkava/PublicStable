@@ -93,7 +93,7 @@ namespace Fabric
 
     llvm::SmallVectorImpl<char> buffer(0);
     llvm::APFloat apFloat( value );
-    apFloat.toString( buffer );
+    apFloat.toString( buffer, 6 );
     return std::string( &buffer[0], buffer.size() );
   }
   
@@ -113,7 +113,7 @@ namespace Fabric
 
     llvm::SmallVectorImpl<char> buffer(0);
     llvm::APFloat apFloat( value );
-    apFloat.toString( buffer );
+    apFloat.toString( buffer, 16 );
     return std::string( &buffer[0], buffer.size() );
   }
 };
