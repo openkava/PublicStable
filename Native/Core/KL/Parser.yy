@@ -905,12 +905,21 @@ assignment_operator
   {
     $$ = CG::ASSIGN_OP_MOD;
   }
+  | TOKEN_PIPE_EQUALS
+  {
+    $$ = CG::ASSIGN_OP_BIT_OR;
+  }
+  | TOKEN_AMP_EQUALS
+  {
+    $$ = CG::ASSIGN_OP_BIT_AND;
+  }
+  | TOKEN_CARET_EQUALS
+  {
+    $$ = CG::ASSIGN_OP_BIT_XOR;
+  }
   /*
 	| LEFT_ASSIGN
 	| RIGHT_ASSIGN
-	| AND_ASSIGN
-	| XOR_ASSIGN
-	| OR_ASSIGN
   */
 ;
 
@@ -1113,11 +1122,11 @@ multiplicative_operator
 ;
 
 multiplicative_expression
-	: cast_expression
+  : cast_expression
   {
     $$ = $1;
   }
-	| multiplicative_expression multiplicative_operator cast_expression
+  | multiplicative_expression multiplicative_operator cast_expression
   {
     $$ = AST::BinOp::Create( RTLOC, $2, $1, $3 ).take();
     $1->release();
@@ -1133,15 +1142,15 @@ cast_expression
 ;
 
 prefix_unary_operator
-	: TOKEN_PLUS
+  : TOKEN_PLUS
   {
     $$ = CG::UNI_OP_POS;
   }
-	| TOKEN_MINUS
+  | TOKEN_MINUS
   {
     $$ = CG::UNI_OP_NEG;
   }
-	| TOKEN_TILDE
+  | TOKEN_TILDE
   {
     $$ = CG::UNI_OP_BIT_NOT;
   }
