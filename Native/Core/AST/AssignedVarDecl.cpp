@@ -69,6 +69,8 @@ namespace Fabric
       if( initialExprExprValue.isValid() )
       {
         llvm::Value *initialExprCastedRValue = result.getAdapter()->llvmCast( basicBlockBuilder, initialExprExprValue );
+        initialExprExprValue.llvmDispose( basicBlockBuilder );
+        
         result.getAdapter()->llvmAssign( basicBlockBuilder, result.getValue(), initialExprCastedRValue );
         result.getAdapter()->llvmRelease( basicBlockBuilder, initialExprCastedRValue );
       }
