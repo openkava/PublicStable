@@ -402,6 +402,7 @@ namespace Fabric
           llvm::Value *newSize = basicBlockBuilder->CreateAdd( oldSize, sizeAdapter->llvmConst( 1 ) );
           llvmCallResize( basicBlockBuilder, selfLValue, newSize );
           llvm::Value *newElementLValue = llvmNonConstIndexOp( basicBlockBuilder, selfLValue, oldSize );
+          m_memberAdapter->llvmRetain( basicBlockBuilder, memberRValue );
           m_memberAdapter->llvmAssign( basicBlockBuilder, newElementLValue, memberRValue );
           basicBlockBuilder->CreateRet( selfLValue );
         }

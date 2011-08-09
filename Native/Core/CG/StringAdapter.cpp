@@ -694,7 +694,6 @@ namespace Fabric
     void StringAdapter::llvmDefaultAssign( BasicBlockBuilder &basicBlockBuilder, llvm::Value *dstLValue, llvm::Value *srcRValue ) const
     {
       llvm::Value *oldDstRValue = llvmLValueToRValue( basicBlockBuilder, dstLValue );
-      llvmRetain( basicBlockBuilder, srcRValue );
       basicBlockBuilder->CreateStore( srcRValue, dstLValue );
       llvmRelease( basicBlockBuilder, oldDstRValue );
     }
