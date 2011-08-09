@@ -3,8 +3,12 @@ function entry() {
   a.push(Float64(0.0));
   a.push(Float64(2.0));
   a.push(Float64(4.0));
+  a.push(Float64(6.0));
+  a.push(Float64(8.0));
+  a.push(Float64(198.0));
   Float64 sum = 0.0;
-  for ( Size i=0; i<a.size; ++i )
+  for ( Size i=0; i<a.size-2; ++i )
     sum += a[i];
   report sum;
+  report a;
 }
