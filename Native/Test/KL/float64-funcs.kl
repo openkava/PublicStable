@@ -1,17 +1,17 @@
 function entry() {
-  Float64 x = 3.141, y = 2.718, z = 0.5;
+  Float64 x = 0.1;
   report sqrt64(x);
   report abs64(x);
   report round64(x);
   report ceil64(x);
   report floor64(x);
-  report pow64(x, y);
+  report pow64(x, x);
   report sin64(x);
   report cos64(x);
   report tan64(x);
   report log64(x);
-  report asin64(z);
-  report acos64(z);
-  report atan64(z);
-  report atan264(x, y);
+  report asin64( sin64(x) );
+  report acos64( cos64(x) );
+  report atan64( tan64(x) );
+  report atan264( tan64(x), 1.0 );
 }
