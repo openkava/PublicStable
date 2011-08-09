@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 #include <cmath>
+#include <llvm/ADT/APFloat.h>
+#include <llvm/ADT/SmallVector.h>
 
 namespace Fabric
 {
@@ -89,9 +91,10 @@ namespace Fabric
     else if( ( valueAsUint32 & ~signBit ) == 0 )
       return (valueAsUint32&signBit)? "-0": "0";
 
-    char buffer[64];
-    snprintf( buffer, 64, "%.6g", value );
-    return std::string( buffer );
+    llvm::SmallVectorImpl<char> buffer(0);
+    llvm::APFloat apFloat( value );
+    apFloat.toString( buffer );
+    return std::string( &buffer[0], buffer.size() );
   }
   
   std::string _( double value )
@@ -108,8 +111,9 @@ namespace Fabric
     else if( ( valueAsUint64 & ~signBit ) == 0 )
       return (valueAsUint64&signBit)? "-0": "0";
 
-    char buffer[128];
-    snprintf( buffer, 128, "%.17g", value );
-    return std::string( buffer );
+    llvm::SmallVectorImpl<char> buffer(0);
+    llvm::APFloat apFloat( value );
+    apFloat.toString( buffer );
+    return std::string( &buffer[0], buffer.size() );
   }
 };
