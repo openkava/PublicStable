@@ -1,5 +1,5 @@
 function entry() {
-  Float64 x = 3.141, y = 2.718, z = 0.1;
+  Float64 x = 3.141, y = 2.718, z = 0.5;
   report sqrt64(x);
   report abs64(x);
   report round64(x);
