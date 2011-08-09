@@ -1,0 +1,4057 @@
+	.def	 ___construct_String__Boolean;
+	.scl	2;
+	.type	32;
+	.endef
+	.text
+	.globl	___construct_String__Boolean
+	.align	16, 0x90
+___construct_String__Boolean:           # @__construct_String__Boolean
+# BB#0:                                 # %entry
+	pushl	%esi
+Ltmp0:
+	subl	$8, %esp
+Ltmp1:
+	movl	16(%esp), %esi
+	testb	$1, 20(%esp)
+	je	LBB0_2
+# BB#1:                                 # %__construct_String__ConstString4.exit
+	movl	$___ConstString4__Adapter, 4(%esp)
+	movl	$___unnamed_1, (%esp)
+	jmp	LBB0_3
+LBB0_2:                                 # %__construct_String__ConstString5.exit
+	movl	$___ConstString5__Adapter, 4(%esp)
+	movl	$___unnamed_2, (%esp)
+LBB0_3:                                 # %__construct_String__ConstString5.exit
+	calll	___String__Cast
+	movl	(%esi), %ecx
+	movl	%eax, (%esi)
+	testl	%ecx, %ecx
+	je	LBB0_6
+# BB#4:                                 # %nonNull.i
+	movl	$-1, %eax
+	lock
+	xaddl	%eax, (%ecx)
+	cmpl	$1, %eax
+	jne	LBB0_6
+# BB#5:                                 # %free.i
+	movl	%ecx, (%esp)
+	calll	_free
+LBB0_6:                                 # %__String__Release.exit
+	addl	$8, %esp
+	popl	%esi
+	ret
+
+	.def	 ___construct_Boolean__ConstString4;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___construct_Boolean__ConstString4
+	.align	16, 0x90
+___construct_Boolean__ConstString4:     # @__construct_Boolean__ConstString4
+# BB#0:                                 # %entry
+	movl	4(%esp), %eax
+	movb	$1, (%eax)
+	ret
+
+	.def	 ___construct_String__ConstString4;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___construct_String__ConstString4
+	.align	16, 0x90
+___construct_String__ConstString4:      # @__construct_String__ConstString4
+# BB#0:                                 # %entry
+	subl	$12, %esp
+Ltmp2:
+	movl	20(%esp), %eax
+	movl	%eax, (%esp)
+	movl	$___ConstString4__Adapter, 4(%esp)
+	calll	___String__Cast
+	movl	16(%esp), %ecx
+	movl	(%ecx), %edx
+	movl	%eax, (%ecx)
+	testl	%edx, %edx
+	je	LBB2_3
+# BB#1:                                 # %nonNull.i
+	movl	$-1, %eax
+	lock
+	xaddl	%eax, (%edx)
+	cmpl	$1, %eax
+	jne	LBB2_3
+# BB#2:                                 # %free.i
+	movl	%edx, (%esp)
+	calll	_free
+LBB2_3:                                 # %__String__Release.exit
+	addl	$12, %esp
+	ret
+
+	.def	 ___String__Release;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___String__Release
+	.align	16, 0x90
+___String__Release:                     # @__String__Release
+# BB#0:                                 # %entry
+	movl	4(%esp), %eax
+	testl	%eax, %eax
+	je	LBB3_2
+# BB#1:                                 # %nonNull
+	movl	$-1, %ecx
+	lock
+	xaddl	%ecx, (%eax)
+	cmpl	$1, %ecx
+	je	LBB3_3
+LBB3_2:                                 # %done
+	ret
+LBB3_3:                                 # %free
+	jmp	_free                   # TAILCALL
+
+	.def	 ___construct_Boolean__ConstString5;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___construct_Boolean__ConstString5
+	.align	16, 0x90
+___construct_Boolean__ConstString5:     # @__construct_Boolean__ConstString5
+# BB#0:                                 # %entry
+	movl	4(%esp), %eax
+	movb	$1, (%eax)
+	ret
+
+	.def	 ___construct_String__ConstString5;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___construct_String__ConstString5
+	.align	16, 0x90
+___construct_String__ConstString5:      # @__construct_String__ConstString5
+# BB#0:                                 # %entry
+	subl	$12, %esp
+Ltmp3:
+	movl	20(%esp), %eax
+	movl	%eax, (%esp)
+	movl	$___ConstString5__Adapter, 4(%esp)
+	calll	___String__Cast
+	movl	16(%esp), %ecx
+	movl	(%ecx), %edx
+	movl	%eax, (%ecx)
+	testl	%edx, %edx
+	je	LBB5_3
+# BB#1:                                 # %nonNull.i
+	movl	$-1, %eax
+	lock
+	xaddl	%eax, (%edx)
+	cmpl	$1, %eax
+	jne	LBB5_3
+# BB#2:                                 # %free.i
+	movl	%edx, (%esp)
+	calll	_free
+LBB5_3:                                 # %__String__Release.exit
+	addl	$12, %esp
+	ret
+
+	.def	 ___operator_BIT_NOT__Boolean;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_BIT_NOT__Boolean
+	.align	16, 0x90
+___operator_BIT_NOT__Boolean:           # @__operator_BIT_NOT__Boolean
+# BB#0:                                 # %entry
+	movb	4(%esp), %al
+	xorb	$1, %al
+	ret
+
+	.def	 ___operator_BIT_OR__Boolean__Boolean;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_BIT_OR__Boolean__Boolean
+	.align	16, 0x90
+___operator_BIT_OR__Boolean__Boolean:   # @__operator_BIT_OR__Boolean__Boolean
+# BB#0:                                 # %entry
+	movb	4(%esp), %al
+	orb	8(%esp), %al
+	ret
+
+	.def	 ___operator_BIT_AND__Boolean__Boolean;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_BIT_AND__Boolean__Boolean
+	.align	16, 0x90
+___operator_BIT_AND__Boolean__Boolean:  # @__operator_BIT_AND__Boolean__Boolean
+# BB#0:                                 # %entry
+	movb	4(%esp), %al
+	andb	8(%esp), %al
+	ret
+
+	.def	 ___operator_BIT_XOR__Boolean__Boolean;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_BIT_XOR__Boolean__Boolean
+	.align	16, 0x90
+___operator_BIT_XOR__Boolean__Boolean:  # @__operator_BIT_XOR__Boolean__Boolean
+# BB#0:                                 # %entry
+	movb	4(%esp), %al
+	xorb	8(%esp), %al
+	ret
+
+	.def	 ___operator_EQ__Boolean__Boolean;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_EQ__Boolean__Boolean
+	.align	16, 0x90
+___operator_EQ__Boolean__Boolean:       # @__operator_EQ__Boolean__Boolean
+# BB#0:                                 # %entry
+	movb	4(%esp), %al
+	xorb	8(%esp), %al
+	xorb	$1, %al
+	ret
+
+	.def	 ___operator_NE__Boolean__Boolean;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_NE__Boolean__Boolean
+	.align	16, 0x90
+___operator_NE__Boolean__Boolean:       # @__operator_NE__Boolean__Boolean
+# BB#0:                                 # %entry
+	movb	4(%esp), %al
+	xorb	8(%esp), %al
+	ret
+
+	.def	 ___construct_Boolean__Byte;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___construct_Boolean__Byte
+	.align	16, 0x90
+___construct_Boolean__Byte:             # @__construct_Boolean__Byte
+# BB#0:                                 # %entry
+	cmpb	$0, 8(%esp)
+	movl	4(%esp), %eax
+	setne	(%eax)
+	ret
+
+	.def	 ___construct_Integer__Byte;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___construct_Integer__Byte
+	.align	16, 0x90
+___construct_Integer__Byte:             # @__construct_Integer__Byte
+# BB#0:                                 # %entry
+	movzbl	8(%esp), %eax
+	movl	4(%esp), %ecx
+	movl	%eax, (%ecx)
+	ret
+
+	.def	 ___construct_Size__Byte;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___construct_Size__Byte
+	.align	16, 0x90
+___construct_Size__Byte:                # @__construct_Size__Byte
+# BB#0:                                 # %entry
+	movzbl	8(%esp), %eax
+	movl	4(%esp), %ecx
+	movl	%eax, (%ecx)
+	ret
+
+	.def	 ___construct_Scalar__Byte;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___construct_Scalar__Byte
+	.align	16, 0x90
+___construct_Scalar__Byte:              # @__construct_Scalar__Byte
+# BB#0:                                 # %entry
+	movzbl	8(%esp), %eax
+	cvtsi2ss	%eax, %xmm0
+	movl	4(%esp), %eax
+	movss	%xmm0, (%eax)
+	ret
+
+	.def	 ___construct_String__Byte;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___construct_String__Byte
+	.align	16, 0x90
+___construct_String__Byte:              # @__construct_String__Byte
+# BB#0:                                 # %entry
+	subl	$12, %esp
+Ltmp4:
+	movb	20(%esp), %al
+	movb	%al, 11(%esp)
+	leal	11(%esp), %eax
+	movl	%eax, (%esp)
+	movl	$___Byte__Adapter, 4(%esp)
+	calll	___String__Cast
+	movl	16(%esp), %ecx
+	movl	(%ecx), %edx
+	movl	%eax, (%ecx)
+	testl	%edx, %edx
+	je	LBB16_3
+# BB#1:                                 # %nonNull.i
+	movl	$-1, %eax
+	lock
+	xaddl	%eax, (%edx)
+	cmpl	$1, %eax
+	jne	LBB16_3
+# BB#2:                                 # %free.i
+	movl	%edx, (%esp)
+	calll	_free
+LBB16_3:                                # %__String__Release.exit
+	addl	$12, %esp
+	ret
+
+	.def	 ___operator_POS__Byte;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_POS__Byte
+	.align	16, 0x90
+___operator_POS__Byte:                  # @__operator_POS__Byte
+# BB#0:                                 # %entry
+	movb	4(%esp), %al
+	ret
+
+	.def	 ___operator_BIT_NOT__Byte;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_BIT_NOT__Byte
+	.align	16, 0x90
+___operator_BIT_NOT__Byte:              # @__operator_BIT_NOT__Byte
+# BB#0:                                 # %entry
+	movb	4(%esp), %al
+	notb	%al
+	ret
+
+	.def	 ___operator_PRE_INC__Byte;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_PRE_INC__Byte
+	.align	16, 0x90
+___operator_PRE_INC__Byte:              # @__operator_PRE_INC__Byte
+# BB#0:                                 # %entry
+	movl	4(%esp), %ecx
+	movb	(%ecx), %al
+	incb	%al
+	movb	%al, (%ecx)
+	ret
+
+	.def	 ___operator_PRE_DEC__Byte;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_PRE_DEC__Byte
+	.align	16, 0x90
+___operator_PRE_DEC__Byte:              # @__operator_PRE_DEC__Byte
+# BB#0:                                 # %entry
+	movl	4(%esp), %ecx
+	movb	(%ecx), %al
+	decb	%al
+	movb	%al, (%ecx)
+	ret
+
+	.def	 ___operator_POST_INC__Byte;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_POST_INC__Byte
+	.align	16, 0x90
+___operator_POST_INC__Byte:             # @__operator_POST_INC__Byte
+# BB#0:                                 # %entry
+	movl	4(%esp), %ecx
+	movb	(%ecx), %al
+	movb	%al, %dl
+	incb	%dl
+	movb	%dl, (%ecx)
+	ret
+
+	.def	 ___operator_POST_DEC__Byte;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_POST_DEC__Byte
+	.align	16, 0x90
+___operator_POST_DEC__Byte:             # @__operator_POST_DEC__Byte
+# BB#0:                                 # %entry
+	movl	4(%esp), %ecx
+	movb	(%ecx), %al
+	movb	%al, %dl
+	decb	%dl
+	movb	%dl, (%ecx)
+	ret
+
+	.def	 ___operator_ADD__Byte__Byte;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_ADD__Byte__Byte
+	.align	16, 0x90
+___operator_ADD__Byte__Byte:            # @__operator_ADD__Byte__Byte
+# BB#0:                                 # %entry
+	movb	8(%esp), %al
+	addb	4(%esp), %al
+	ret
+
+	.def	 ___operator_SUB__Byte__Byte;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_SUB__Byte__Byte
+	.align	16, 0x90
+___operator_SUB__Byte__Byte:            # @__operator_SUB__Byte__Byte
+# BB#0:                                 # %entry
+	movb	4(%esp), %al
+	subb	8(%esp), %al
+	ret
+
+	.def	 ___operator_MUL__Byte__Byte;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_MUL__Byte__Byte
+	.align	16, 0x90
+___operator_MUL__Byte__Byte:            # @__operator_MUL__Byte__Byte
+# BB#0:                                 # %entry
+	movb	8(%esp), %al
+	mulb	4(%esp)
+	ret
+
+	.def	 ___operator_DIV__Byte__Byte;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_DIV__Byte__Byte
+	.align	16, 0x90
+___operator_DIV__Byte__Byte:            # @__operator_DIV__Byte__Byte
+# BB#0:                                 # %entry
+	pushl	%esi
+Ltmp5:
+	subl	$8, %esp
+Ltmp6:
+	movb	20(%esp), %cl
+	testb	%cl, %cl
+	je	LBB26_2
+# BB#1:                                 # %nonZero
+	movb	16(%esp), %al
+	movzbl	%al, %eax
+	divb	%cl
+	jmp	LBB26_6
+LBB26_2:                                # %__construct_String__ConstString25.exit
+	movl	$___ConstString25__Adapter, 4(%esp)
+	movl	$___unnamed_3, (%esp)
+	calll	___String__Cast
+	testl	%eax, %eax
+	je	LBB26_5
+# BB#3:                                 # %nonNull.i
+	movl	%eax, %esi
+	movl	8(%esi), %eax
+	movl	%eax, 4(%esp)
+	leal	12(%esi), %eax
+	movl	%eax, (%esp)
+	calll	_report
+	movl	$-1, %eax
+	lock
+	xaddl	%eax, (%esi)
+	cmpl	$1, %eax
+	jne	LBB26_5
+# BB#4:                                 # %free.i
+	movl	%esi, (%esp)
+	calll	_free
+LBB26_5:                                # %__String__Release.exit
+	xorb	%al, %al
+LBB26_6:                                # %__String__Release.exit
+	addl	$8, %esp
+	popl	%esi
+	ret
+
+	.def	 ___construct_Boolean__ConstString25;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___construct_Boolean__ConstString25
+	.align	16, 0x90
+___construct_Boolean__ConstString25:    # @__construct_Boolean__ConstString25
+# BB#0:                                 # %entry
+	movl	4(%esp), %eax
+	movb	$1, (%eax)
+	ret
+
+	.def	 ___construct_String__ConstString25;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___construct_String__ConstString25
+	.align	16, 0x90
+___construct_String__ConstString25:     # @__construct_String__ConstString25
+# BB#0:                                 # %entry
+	subl	$12, %esp
+Ltmp7:
+	movl	20(%esp), %eax
+	movl	%eax, (%esp)
+	movl	$___ConstString25__Adapter, 4(%esp)
+	calll	___String__Cast
+	movl	16(%esp), %ecx
+	movl	(%ecx), %edx
+	movl	%eax, (%ecx)
+	testl	%edx, %edx
+	je	LBB28_3
+# BB#1:                                 # %nonNull.i
+	movl	$-1, %eax
+	lock
+	xaddl	%eax, (%edx)
+	cmpl	$1, %eax
+	jne	LBB28_3
+# BB#2:                                 # %free.i
+	movl	%edx, (%esp)
+	calll	_free
+LBB28_3:                                # %__String__Release.exit
+	addl	$12, %esp
+	ret
+
+	.def	 ___String__Report;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___String__Report
+	.align	16, 0x90
+___String__Report:                      # @__String__Report
+# BB#0:                                 # %entry
+	subl	$12, %esp
+	movl	16(%esp), %eax
+	testl	%eax, %eax
+	je	LBB29_2
+# BB#1:                                 # %notNull
+	movl	8(%eax), %ecx
+	movl	%ecx, 4(%esp)
+	addl	$12, %eax
+	movl	%eax, (%esp)
+	calll	_report
+LBB29_2:                                # %done
+	addl	$12, %esp
+	ret
+
+	.def	 ___operator_MOD__Byte__Byte;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_MOD__Byte__Byte
+	.align	16, 0x90
+___operator_MOD__Byte__Byte:            # @__operator_MOD__Byte__Byte
+# BB#0:                                 # %entry
+	pushl	%esi
+Ltmp8:
+	subl	$8, %esp
+Ltmp9:
+	movb	20(%esp), %cl
+	testb	%cl, %cl
+	je	LBB30_2
+# BB#1:                                 # %nonZero
+	movb	16(%esp), %al
+	movzbl	%al, %eax
+	divb	%cl
+	movb	%ah, %al
+	jmp	LBB30_6
+LBB30_2:                                # %__construct_String__ConstString25.exit
+	movl	$___ConstString25__Adapter, 4(%esp)
+	movl	$___unnamed_4, (%esp)
+	calll	___String__Cast
+	testl	%eax, %eax
+	je	LBB30_5
+# BB#3:                                 # %nonNull.i
+	movl	%eax, %esi
+	movl	8(%esi), %eax
+	movl	%eax, 4(%esp)
+	leal	12(%esi), %eax
+	movl	%eax, (%esp)
+	calll	_report
+	movl	$-1, %eax
+	lock
+	xaddl	%eax, (%esi)
+	cmpl	$1, %eax
+	jne	LBB30_5
+# BB#4:                                 # %free.i
+	movl	%esi, (%esp)
+	calll	_free
+LBB30_5:                                # %__String__Release.exit
+	xorb	%al, %al
+LBB30_6:                                # %__String__Release.exit
+	addl	$8, %esp
+	popl	%esi
+	ret
+
+	.def	 ___operator_BIT_OR__Byte__Byte;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_BIT_OR__Byte__Byte
+	.align	16, 0x90
+___operator_BIT_OR__Byte__Byte:         # @__operator_BIT_OR__Byte__Byte
+# BB#0:                                 # %entry
+	movb	8(%esp), %al
+	orb	4(%esp), %al
+	ret
+
+	.def	 ___operator_BIT_AND__Byte__Byte;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_BIT_AND__Byte__Byte
+	.align	16, 0x90
+___operator_BIT_AND__Byte__Byte:        # @__operator_BIT_AND__Byte__Byte
+# BB#0:                                 # %entry
+	movb	8(%esp), %al
+	andb	4(%esp), %al
+	ret
+
+	.def	 ___operator_BIT_XOR__Byte__Byte;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_BIT_XOR__Byte__Byte
+	.align	16, 0x90
+___operator_BIT_XOR__Byte__Byte:        # @__operator_BIT_XOR__Byte__Byte
+# BB#0:                                 # %entry
+	movb	8(%esp), %al
+	xorb	4(%esp), %al
+	ret
+
+	.def	 ___operator_EQ__Byte__Byte;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_EQ__Byte__Byte
+	.align	16, 0x90
+___operator_EQ__Byte__Byte:             # @__operator_EQ__Byte__Byte
+# BB#0:                                 # %entry
+	movb	4(%esp), %al
+	cmpb	8(%esp), %al
+	sete	%al
+	ret
+
+	.def	 ___operator_NE__Byte__Byte;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_NE__Byte__Byte
+	.align	16, 0x90
+___operator_NE__Byte__Byte:             # @__operator_NE__Byte__Byte
+# BB#0:                                 # %entry
+	movb	4(%esp), %al
+	cmpb	8(%esp), %al
+	setne	%al
+	ret
+
+	.def	 ___operator_GT__Byte__Byte;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_GT__Byte__Byte
+	.align	16, 0x90
+___operator_GT__Byte__Byte:             # @__operator_GT__Byte__Byte
+# BB#0:                                 # %entry
+	movb	4(%esp), %al
+	cmpb	8(%esp), %al
+	seta	%al
+	ret
+
+	.def	 ___operator_GE__Byte__Byte;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_GE__Byte__Byte
+	.align	16, 0x90
+___operator_GE__Byte__Byte:             # @__operator_GE__Byte__Byte
+# BB#0:                                 # %entry
+	movb	4(%esp), %al
+	cmpb	8(%esp), %al
+	setae	%al
+	ret
+
+	.def	 ___operator_LT__Byte__Byte;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_LT__Byte__Byte
+	.align	16, 0x90
+___operator_LT__Byte__Byte:             # @__operator_LT__Byte__Byte
+# BB#0:                                 # %entry
+	movb	4(%esp), %al
+	cmpb	8(%esp), %al
+	setb	%al
+	ret
+
+	.def	 ___operator_LE__Byte__Byte;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_LE__Byte__Byte
+	.align	16, 0x90
+___operator_LE__Byte__Byte:             # @__operator_LE__Byte__Byte
+# BB#0:                                 # %entry
+	movb	4(%esp), %al
+	cmpb	8(%esp), %al
+	setbe	%al
+	ret
+
+	.def	 ___method_dataSize__Byte;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___method_dataSize__Byte
+	.align	16, 0x90
+___method_dataSize__Byte:               # @__method_dataSize__Byte
+# BB#0:                                 # %entry
+	movl	$1, %eax
+	ret
+
+	.def	 ___method_data__Byte;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___method_data__Byte
+	.align	16, 0x90
+___method_data__Byte:                   # @__method_data__Byte
+# BB#0:                                 # %entry
+	movl	4(%esp), %eax
+	ret
+
+	.def	 ___construct_Boolean__Data;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___construct_Boolean__Data
+	.align	16, 0x90
+___construct_Boolean__Data:             # @__construct_Boolean__Data
+# BB#0:                                 # %entry
+	cmpl	$0, 8(%esp)
+	movl	4(%esp), %eax
+	setne	(%eax)
+	ret
+
+	.def	 ___construct_String__Data;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___construct_String__Data
+	.align	16, 0x90
+___construct_String__Data:              # @__construct_String__Data
+# BB#0:                                 # %entry
+	subl	$12, %esp
+Ltmp10:
+	movl	20(%esp), %eax
+	movl	%eax, 8(%esp)
+	leal	8(%esp), %eax
+	movl	%eax, (%esp)
+	movl	$___Data__Adapter, 4(%esp)
+	calll	___String__Cast
+	movl	16(%esp), %ecx
+	movl	(%ecx), %edx
+	movl	%eax, (%ecx)
+	testl	%edx, %edx
+	je	LBB43_3
+# BB#1:                                 # %nonNull.i
+	movl	$-1, %eax
+	lock
+	xaddl	%eax, (%edx)
+	cmpl	$1, %eax
+	jne	LBB43_3
+# BB#2:                                 # %free.i
+	movl	%edx, (%esp)
+	calll	_free
+LBB43_3:                                # %__String__Release.exit
+	addl	$12, %esp
+	ret
+
+	.def	 ___method_dataSize__Data;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___method_dataSize__Data
+	.align	16, 0x90
+___method_dataSize__Data:               # @__method_dataSize__Data
+# BB#0:                                 # %entry
+	movl	$4, %eax
+	ret
+
+	.def	 ___method_data__Data;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___method_data__Data
+	.align	16, 0x90
+___method_data__Data:                   # @__method_data__Data
+# BB#0:                                 # %entry
+	movl	4(%esp), %eax
+	ret
+
+	.def	 ___construct_Boolean__Float64;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___construct_Boolean__Float64
+	.align	16, 0x90
+___construct_Boolean__Float64:          # @__construct_Boolean__Float64
+# BB#0:                                 # %entry
+	pxor	%xmm0, %xmm0
+	ucomisd	8(%esp), %xmm0
+	movl	4(%esp), %eax
+	setne	(%eax)
+	ret
+
+	.def	 ___construct_Byte__Float64;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___construct_Byte__Float64
+	.align	16, 0x90
+___construct_Byte__Float64:             # @__construct_Byte__Float64
+# BB#0:                                 # %entry
+	cvttsd2si	8(%esp), %eax
+	movl	4(%esp), %ecx
+	movb	%al, (%ecx)
+	ret
+
+	.def	 ___construct_Integer__Float64;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___construct_Integer__Float64
+	.align	16, 0x90
+___construct_Integer__Float64:          # @__construct_Integer__Float64
+# BB#0:                                 # %entry
+	cvttsd2si	8(%esp), %eax
+	movl	4(%esp), %ecx
+	movl	%eax, (%ecx)
+	ret
+
+	.def	 ___construct_Size__Float64;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___construct_Size__Float64
+	.align	16, 0x90
+___construct_Size__Float64:             # @__construct_Size__Float64
+# BB#0:                                 # %entry
+	subl	$20, %esp
+	movsd	28(%esp), %xmm0
+	movsd	%xmm0, 8(%esp)
+	fldl	8(%esp)
+	fisttpll	(%esp)
+	movl	24(%esp), %eax
+	movl	(%esp), %ecx
+	movl	%ecx, (%eax)
+	addl	$20, %esp
+	ret
+
+	.def	 ___construct_Scalar__Float64;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___construct_Scalar__Float64
+	.align	16, 0x90
+___construct_Scalar__Float64:           # @__construct_Scalar__Float64
+# BB#0:                                 # %entry
+	movsd	8(%esp), %xmm0
+	cvtsd2ss	%xmm0, %xmm0
+	movl	4(%esp), %eax
+	movss	%xmm0, (%eax)
+	ret
+
+	.def	 ___construct_String__Float64;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___construct_String__Float64
+	.align	16, 0x90
+___construct_String__Float64:           # @__construct_String__Float64
+# BB#0:                                 # %entry
+	subl	$20, %esp
+Ltmp11:
+	movsd	28(%esp), %xmm0
+	movsd	%xmm0, 8(%esp)
+	leal	8(%esp), %eax
+	movl	%eax, (%esp)
+	movl	$___Float64__Adapter, 4(%esp)
+	calll	___String__Cast
+	movl	24(%esp), %ecx
+	movl	(%ecx), %edx
+	movl	%eax, (%ecx)
+	testl	%edx, %edx
+	je	LBB51_3
+# BB#1:                                 # %nonNull.i
+	movl	$-1, %eax
+	lock
+	xaddl	%eax, (%edx)
+	cmpl	$1, %eax
+	jne	LBB51_3
+# BB#2:                                 # %free.i
+	movl	%edx, (%esp)
+	calll	_free
+LBB51_3:                                # %__String__Release.exit
+	addl	$20, %esp
+	ret
+
+	.def	 ___operator_POS__Float64;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_POS__Float64
+	.align	16, 0x90
+___operator_POS__Float64:               # @__operator_POS__Float64
+# BB#0:                                 # %entry
+	fldl	4(%esp)
+	ret
+
+	.def	 ___operator_NEG__Float64;
+	.scl	2;
+	.type	32;
+	.endef
+	.section	.rdata,"r"
+	.align	16
+LCPI53_0:
+	.quad	-9223372036854775808    # double -0.000000e+00
+	.quad	-9223372036854775808    # double -0.000000e+00
+	.text
+	.globl	___operator_NEG__Float64
+	.align	16, 0x90
+___operator_NEG__Float64:               # @__operator_NEG__Float64
+# BB#0:                                 # %entry
+	subl	$12, %esp
+	movsd	16(%esp), %xmm0
+	xorpd	LCPI53_0, %xmm0
+	movsd	%xmm0, (%esp)
+	fldl	(%esp)
+	addl	$12, %esp
+	ret
+
+	.def	 _sin64;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	_sin64
+	.align	16, 0x90
+_sin64:                                 # @sin64
+# BB#0:                                 # %entry
+	jmp	_sin                    # TAILCALL
+
+	.def	 _cos64;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	_cos64
+	.align	16, 0x90
+_cos64:                                 # @cos64
+# BB#0:                                 # %entry
+	jmp	_cos                    # TAILCALL
+
+	.def	 _tan64;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	_tan64
+	.align	16, 0x90
+_tan64:                                 # @tan64
+# BB#0:                                 # %entry
+	jmp	_fp64_tan               # TAILCALL
+
+	.def	 _log64;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	_log64
+	.align	16, 0x90
+_log64:                                 # @log64
+# BB#0:                                 # %entry
+	jmp	_fp64_log               # TAILCALL
+
+	.def	 _acos64;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	_acos64
+	.align	16, 0x90
+_acos64:                                # @acos64
+# BB#0:                                 # %entry
+	jmp	_fp64_acos              # TAILCALL
+
+	.def	 _asin64;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	_asin64
+	.align	16, 0x90
+_asin64:                                # @asin64
+# BB#0:                                 # %entry
+	jmp	_fp64_asin              # TAILCALL
+
+	.def	 _atan64;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	_atan64
+	.align	16, 0x90
+_atan64:                                # @atan64
+# BB#0:                                 # %entry
+	jmp	_fp64_atan              # TAILCALL
+
+	.def	 _atan264;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	_atan264
+	.align	16, 0x90
+_atan264:                               # @atan264
+# BB#0:                                 # %entry
+	jmp	_fp64_atan2             # TAILCALL
+
+	.def	 _sqrt64;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	_sqrt64
+	.align	16, 0x90
+_sqrt64:                                # @sqrt64
+# BB#0:                                 # %entry
+	subl	$12, %esp
+	movsd	16(%esp), %xmm0
+	sqrtsd	%xmm0, %xmm0
+	movsd	%xmm0, (%esp)
+	fldl	(%esp)
+	addl	$12, %esp
+	ret
+
+	.def	 _abs64;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	_abs64
+	.align	16, 0x90
+_abs64:                                 # @abs64
+# BB#0:                                 # %entry
+	subl	$12, %esp
+	movl	16(%esp), %eax
+	movl	%eax, (%esp)
+	movl	$2147483647, %eax       # imm = 0x7FFFFFFF
+	andl	20(%esp), %eax
+	movl	%eax, 4(%esp)
+	fldl	(%esp)
+	addl	$12, %esp
+	ret
+
+	.def	 _round64;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	_round64
+	.align	16, 0x90
+_round64:                               # @round64
+# BB#0:                                 # %entry
+	jmp	_fp64_round             # TAILCALL
+
+	.def	 _ceil64;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	_ceil64
+	.align	16, 0x90
+_ceil64:                                # @ceil64
+# BB#0:                                 # %entry
+	jmp	_fp64_ceil              # TAILCALL
+
+	.def	 _floor64;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	_floor64
+	.align	16, 0x90
+_floor64:                               # @floor64
+# BB#0:                                 # %entry
+	jmp	_fp64_floor             # TAILCALL
+
+	.def	 _pow64;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	_pow64
+	.align	16, 0x90
+_pow64:                                 # @pow64
+# BB#0:                                 # %entry
+	jmp	_pow                    # TAILCALL
+
+	.def	 ___operator_ADD__Float64__Float64;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_ADD__Float64__Float64
+	.align	16, 0x90
+___operator_ADD__Float64__Float64:      # @__operator_ADD__Float64__Float64
+# BB#0:                                 # %entry
+	subl	$12, %esp
+	movsd	16(%esp), %xmm0
+	addsd	24(%esp), %xmm0
+	movsd	%xmm0, (%esp)
+	fldl	(%esp)
+	addl	$12, %esp
+	ret
+
+	.def	 ___operator_SUB__Float64__Float64;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_SUB__Float64__Float64
+	.align	16, 0x90
+___operator_SUB__Float64__Float64:      # @__operator_SUB__Float64__Float64
+# BB#0:                                 # %entry
+	subl	$12, %esp
+	movsd	16(%esp), %xmm0
+	subsd	24(%esp), %xmm0
+	movsd	%xmm0, (%esp)
+	fldl	(%esp)
+	addl	$12, %esp
+	ret
+
+	.def	 ___operator_MUL__Float64__Float64;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_MUL__Float64__Float64
+	.align	16, 0x90
+___operator_MUL__Float64__Float64:      # @__operator_MUL__Float64__Float64
+# BB#0:                                 # %entry
+	subl	$12, %esp
+	movsd	16(%esp), %xmm0
+	mulsd	24(%esp), %xmm0
+	movsd	%xmm0, (%esp)
+	fldl	(%esp)
+	addl	$12, %esp
+	ret
+
+	.def	 ___operator_DIV__Float64__Float64;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_DIV__Float64__Float64
+	.align	16, 0x90
+___operator_DIV__Float64__Float64:      # @__operator_DIV__Float64__Float64
+# BB#0:                                 # %entry
+	subl	$12, %esp
+	movsd	16(%esp), %xmm0
+	divsd	24(%esp), %xmm0
+	movsd	%xmm0, (%esp)
+	fldl	(%esp)
+	addl	$12, %esp
+	ret
+
+	.def	 ___operator_MOD__Float64__Float64;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_MOD__Float64__Float64
+	.align	16, 0x90
+___operator_MOD__Float64__Float64:      # @__operator_MOD__Float64__Float64
+# BB#0:                                 # %entry
+	jmp	_fmod                   # TAILCALL
+
+	.def	 ___operator_EQ__Float64__Float64;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_EQ__Float64__Float64
+	.align	16, 0x90
+___operator_EQ__Float64__Float64:       # @__operator_EQ__Float64__Float64
+# BB#0:                                 # %entry
+	movsd	4(%esp), %xmm0
+	ucomisd	12(%esp), %xmm0
+	setnp	%cl
+	sete	%al
+	andb	%cl, %al
+	ret
+
+	.def	 ___operator_NE__Float64__Float64;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_NE__Float64__Float64
+	.align	16, 0x90
+___operator_NE__Float64__Float64:       # @__operator_NE__Float64__Float64
+# BB#0:                                 # %entry
+	movsd	4(%esp), %xmm0
+	ucomisd	12(%esp), %xmm0
+	setne	%al
+	ret
+
+	.def	 ___operator_GT__Float64__Float64;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_GT__Float64__Float64
+	.align	16, 0x90
+___operator_GT__Float64__Float64:       # @__operator_GT__Float64__Float64
+# BB#0:                                 # %entry
+	movsd	4(%esp), %xmm0
+	ucomisd	12(%esp), %xmm0
+	seta	%al
+	ret
+
+	.def	 ___operator_GE__Float64__Float64;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_GE__Float64__Float64
+	.align	16, 0x90
+___operator_GE__Float64__Float64:       # @__operator_GE__Float64__Float64
+# BB#0:                                 # %entry
+	movsd	4(%esp), %xmm0
+	ucomisd	12(%esp), %xmm0
+	setae	%al
+	ret
+
+	.def	 ___operator_LT__Float64__Float64;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_LT__Float64__Float64
+	.align	16, 0x90
+___operator_LT__Float64__Float64:       # @__operator_LT__Float64__Float64
+# BB#0:                                 # %entry
+	movsd	12(%esp), %xmm0
+	ucomisd	4(%esp), %xmm0
+	seta	%al
+	ret
+
+	.def	 ___operator_LE__Float64__Float64;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_LE__Float64__Float64
+	.align	16, 0x90
+___operator_LE__Float64__Float64:       # @__operator_LE__Float64__Float64
+# BB#0:                                 # %entry
+	movsd	12(%esp), %xmm0
+	ucomisd	4(%esp), %xmm0
+	setae	%al
+	ret
+
+	.def	 ___method_dataSize__Float64;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___method_dataSize__Float64
+	.align	16, 0x90
+___method_dataSize__Float64:            # @__method_dataSize__Float64
+# BB#0:                                 # %entry
+	movl	$8, %eax
+	ret
+
+	.def	 ___method_data__Float64;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___method_data__Float64
+	.align	16, 0x90
+___method_data__Float64:                # @__method_data__Float64
+# BB#0:                                 # %entry
+	movl	4(%esp), %eax
+	ret
+
+	.def	 ___construct_Boolean__Integer;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___construct_Boolean__Integer
+	.align	16, 0x90
+___construct_Boolean__Integer:          # @__construct_Boolean__Integer
+# BB#0:                                 # %entry
+	cmpl	$0, 8(%esp)
+	movl	4(%esp), %eax
+	setne	(%eax)
+	ret
+
+	.def	 ___construct_Byte__Integer;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___construct_Byte__Integer
+	.align	16, 0x90
+___construct_Byte__Integer:             # @__construct_Byte__Integer
+# BB#0:                                 # %entry
+	movb	8(%esp), %al
+	movl	4(%esp), %ecx
+	movb	%al, (%ecx)
+	ret
+
+	.def	 ___construct_Size__Integer;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___construct_Size__Integer
+	.align	16, 0x90
+___construct_Size__Integer:             # @__construct_Size__Integer
+# BB#0:                                 # %entry
+	movl	8(%esp), %eax
+	movl	4(%esp), %ecx
+	movl	%eax, (%ecx)
+	ret
+
+	.def	 ___construct_Scalar__Integer;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___construct_Scalar__Integer
+	.align	16, 0x90
+___construct_Scalar__Integer:           # @__construct_Scalar__Integer
+# BB#0:                                 # %entry
+	cvtsi2ss	8(%esp), %xmm0
+	movl	4(%esp), %eax
+	movss	%xmm0, (%eax)
+	ret
+
+	.def	 ___construct_String__Integer;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___construct_String__Integer
+	.align	16, 0x90
+___construct_String__Integer:           # @__construct_String__Integer
+# BB#0:                                 # %entry
+	subl	$12, %esp
+Ltmp12:
+	movl	20(%esp), %eax
+	movl	%eax, 8(%esp)
+	leal	8(%esp), %eax
+	movl	%eax, (%esp)
+	movl	$___Integer__Adapter, 4(%esp)
+	calll	___String__Cast
+	movl	16(%esp), %ecx
+	movl	(%ecx), %edx
+	movl	%eax, (%ecx)
+	testl	%edx, %edx
+	je	LBB85_3
+# BB#1:                                 # %nonNull.i
+	movl	$-1, %eax
+	lock
+	xaddl	%eax, (%edx)
+	cmpl	$1, %eax
+	jne	LBB85_3
+# BB#2:                                 # %free.i
+	movl	%edx, (%esp)
+	calll	_free
+LBB85_3:                                # %__String__Release.exit
+	addl	$12, %esp
+	ret
+
+	.def	 ___operator_POS__Integer;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_POS__Integer
+	.align	16, 0x90
+___operator_POS__Integer:               # @__operator_POS__Integer
+# BB#0:                                 # %entry
+	movl	4(%esp), %eax
+	ret
+
+	.def	 ___operator_NEG__Integer;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_NEG__Integer
+	.align	16, 0x90
+___operator_NEG__Integer:               # @__operator_NEG__Integer
+# BB#0:                                 # %entry
+	xorl	%eax, %eax
+	subl	4(%esp), %eax
+	ret
+
+	.def	 ___operator_BIT_NOT__Integer;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_BIT_NOT__Integer
+	.align	16, 0x90
+___operator_BIT_NOT__Integer:           # @__operator_BIT_NOT__Integer
+# BB#0:                                 # %entry
+	movl	4(%esp), %eax
+	notl	%eax
+	ret
+
+	.def	 ___operator_PRE_INC__Integer;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_PRE_INC__Integer
+	.align	16, 0x90
+___operator_PRE_INC__Integer:           # @__operator_PRE_INC__Integer
+# BB#0:                                 # %entry
+	movl	4(%esp), %ecx
+	movl	(%ecx), %eax
+	incl	%eax
+	movl	%eax, (%ecx)
+	ret
+
+	.def	 ___operator_PRE_DEC__Integer;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_PRE_DEC__Integer
+	.align	16, 0x90
+___operator_PRE_DEC__Integer:           # @__operator_PRE_DEC__Integer
+# BB#0:                                 # %entry
+	movl	4(%esp), %ecx
+	movl	(%ecx), %eax
+	decl	%eax
+	movl	%eax, (%ecx)
+	ret
+
+	.def	 ___operator_POST_INC__Integer;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_POST_INC__Integer
+	.align	16, 0x90
+___operator_POST_INC__Integer:          # @__operator_POST_INC__Integer
+# BB#0:                                 # %entry
+	movl	4(%esp), %ecx
+	movl	(%ecx), %eax
+	leal	1(%eax), %edx
+	movl	%edx, (%ecx)
+	ret
+
+	.def	 ___operator_POST_DEC__Integer;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_POST_DEC__Integer
+	.align	16, 0x90
+___operator_POST_DEC__Integer:          # @__operator_POST_DEC__Integer
+# BB#0:                                 # %entry
+	movl	4(%esp), %ecx
+	movl	(%ecx), %eax
+	leal	-1(%eax), %edx
+	movl	%edx, (%ecx)
+	ret
+
+	.def	 ___operator_ADD__Integer__Integer;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_ADD__Integer__Integer
+	.align	16, 0x90
+___operator_ADD__Integer__Integer:      # @__operator_ADD__Integer__Integer
+# BB#0:                                 # %entry
+	movl	8(%esp), %eax
+	addl	4(%esp), %eax
+	ret
+
+	.def	 ___operator_SUB__Integer__Integer;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_SUB__Integer__Integer
+	.align	16, 0x90
+___operator_SUB__Integer__Integer:      # @__operator_SUB__Integer__Integer
+# BB#0:                                 # %entry
+	movl	4(%esp), %eax
+	subl	8(%esp), %eax
+	ret
+
+	.def	 ___operator_MUL__Integer__Integer;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_MUL__Integer__Integer
+	.align	16, 0x90
+___operator_MUL__Integer__Integer:      # @__operator_MUL__Integer__Integer
+# BB#0:                                 # %entry
+	movl	8(%esp), %eax
+	imull	4(%esp), %eax
+	ret
+
+	.def	 ___operator_DIV__Integer__Integer;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_DIV__Integer__Integer
+	.align	16, 0x90
+___operator_DIV__Integer__Integer:      # @__operator_DIV__Integer__Integer
+# BB#0:                                 # %entry
+	pushl	%esi
+Ltmp13:
+	subl	$8, %esp
+Ltmp14:
+	movl	20(%esp), %ecx
+	testl	%ecx, %ecx
+	je	LBB96_2
+# BB#1:                                 # %nonZero
+	movl	16(%esp), %eax
+	cltd
+	idivl	%ecx
+	jmp	LBB96_6
+LBB96_2:                                # %__construct_String__ConstString28.exit
+	movl	$___ConstString28__Adapter, 4(%esp)
+	movl	$___unnamed_5, (%esp)
+	calll	___String__Cast
+	testl	%eax, %eax
+	je	LBB96_5
+# BB#3:                                 # %nonNull.i
+	movl	%eax, %esi
+	movl	8(%esi), %eax
+	movl	%eax, 4(%esp)
+	leal	12(%esi), %eax
+	movl	%eax, (%esp)
+	calll	_report
+	movl	$-1, %eax
+	lock
+	xaddl	%eax, (%esi)
+	cmpl	$1, %eax
+	jne	LBB96_5
+# BB#4:                                 # %free.i
+	movl	%esi, (%esp)
+	calll	_free
+LBB96_5:                                # %__String__Release.exit
+	xorl	%eax, %eax
+LBB96_6:                                # %__String__Release.exit
+	addl	$8, %esp
+	popl	%esi
+	ret
+
+	.def	 ___construct_Boolean__ConstString28;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___construct_Boolean__ConstString28
+	.align	16, 0x90
+___construct_Boolean__ConstString28:    # @__construct_Boolean__ConstString28
+# BB#0:                                 # %entry
+	movl	4(%esp), %eax
+	movb	$1, (%eax)
+	ret
+
+	.def	 ___construct_String__ConstString28;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___construct_String__ConstString28
+	.align	16, 0x90
+___construct_String__ConstString28:     # @__construct_String__ConstString28
+# BB#0:                                 # %entry
+	subl	$12, %esp
+Ltmp15:
+	movl	20(%esp), %eax
+	movl	%eax, (%esp)
+	movl	$___ConstString28__Adapter, 4(%esp)
+	calll	___String__Cast
+	movl	16(%esp), %ecx
+	movl	(%ecx), %edx
+	movl	%eax, (%ecx)
+	testl	%edx, %edx
+	je	LBB98_3
+# BB#1:                                 # %nonNull.i
+	movl	$-1, %eax
+	lock
+	xaddl	%eax, (%edx)
+	cmpl	$1, %eax
+	jne	LBB98_3
+# BB#2:                                 # %free.i
+	movl	%edx, (%esp)
+	calll	_free
+LBB98_3:                                # %__String__Release.exit
+	addl	$12, %esp
+	ret
+
+	.def	 ___operator_MOD__Integer__Integer;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_MOD__Integer__Integer
+	.align	16, 0x90
+___operator_MOD__Integer__Integer:      # @__operator_MOD__Integer__Integer
+# BB#0:                                 # %entry
+	pushl	%esi
+Ltmp16:
+	subl	$8, %esp
+Ltmp17:
+	movl	20(%esp), %ecx
+	testl	%ecx, %ecx
+	je	LBB99_2
+# BB#1:                                 # %nonZero
+	movl	16(%esp), %eax
+	cltd
+	idivl	%ecx
+	movl	%edx, %eax
+	jmp	LBB99_6
+LBB99_2:                                # %__construct_String__ConstString28.exit
+	movl	$___ConstString28__Adapter, 4(%esp)
+	movl	$___unnamed_6, (%esp)
+	calll	___String__Cast
+	testl	%eax, %eax
+	je	LBB99_5
+# BB#3:                                 # %nonNull.i
+	movl	%eax, %esi
+	movl	8(%esi), %eax
+	movl	%eax, 4(%esp)
+	leal	12(%esi), %eax
+	movl	%eax, (%esp)
+	calll	_report
+	movl	$-1, %eax
+	lock
+	xaddl	%eax, (%esi)
+	cmpl	$1, %eax
+	jne	LBB99_5
+# BB#4:                                 # %free.i
+	movl	%esi, (%esp)
+	calll	_free
+LBB99_5:                                # %__String__Release.exit
+	xorl	%eax, %eax
+LBB99_6:                                # %__String__Release.exit
+	addl	$8, %esp
+	popl	%esi
+	ret
+
+	.def	 ___operator_BIT_OR__Integer__Integer;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_BIT_OR__Integer__Integer
+	.align	16, 0x90
+___operator_BIT_OR__Integer__Integer:   # @__operator_BIT_OR__Integer__Integer
+# BB#0:                                 # %entry
+	movl	8(%esp), %eax
+	orl	4(%esp), %eax
+	ret
+
+	.def	 ___operator_BIT_AND__Integer__Integer;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_BIT_AND__Integer__Integer
+	.align	16, 0x90
+___operator_BIT_AND__Integer__Integer:  # @__operator_BIT_AND__Integer__Integer
+# BB#0:                                 # %entry
+	movl	8(%esp), %eax
+	andl	4(%esp), %eax
+	ret
+
+	.def	 ___operator_BIT_XOR__Integer__Integer;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_BIT_XOR__Integer__Integer
+	.align	16, 0x90
+___operator_BIT_XOR__Integer__Integer:  # @__operator_BIT_XOR__Integer__Integer
+# BB#0:                                 # %entry
+	movl	8(%esp), %eax
+	xorl	4(%esp), %eax
+	ret
+
+	.def	 ___operator_EQ__Integer__Integer;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_EQ__Integer__Integer
+	.align	16, 0x90
+___operator_EQ__Integer__Integer:       # @__operator_EQ__Integer__Integer
+# BB#0:                                 # %entry
+	movl	4(%esp), %eax
+	cmpl	8(%esp), %eax
+	sete	%al
+	ret
+
+	.def	 ___operator_NE__Integer__Integer;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_NE__Integer__Integer
+	.align	16, 0x90
+___operator_NE__Integer__Integer:       # @__operator_NE__Integer__Integer
+# BB#0:                                 # %entry
+	movl	4(%esp), %eax
+	cmpl	8(%esp), %eax
+	setne	%al
+	ret
+
+	.def	 ___operator_GT__Integer__Integer;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_GT__Integer__Integer
+	.align	16, 0x90
+___operator_GT__Integer__Integer:       # @__operator_GT__Integer__Integer
+# BB#0:                                 # %entry
+	movl	4(%esp), %eax
+	cmpl	8(%esp), %eax
+	setg	%al
+	ret
+
+	.def	 ___operator_GE__Integer__Integer;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_GE__Integer__Integer
+	.align	16, 0x90
+___operator_GE__Integer__Integer:       # @__operator_GE__Integer__Integer
+# BB#0:                                 # %entry
+	movl	4(%esp), %eax
+	cmpl	8(%esp), %eax
+	setge	%al
+	ret
+
+	.def	 ___operator_LT__Integer__Integer;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_LT__Integer__Integer
+	.align	16, 0x90
+___operator_LT__Integer__Integer:       # @__operator_LT__Integer__Integer
+# BB#0:                                 # %entry
+	movl	4(%esp), %eax
+	cmpl	8(%esp), %eax
+	setl	%al
+	ret
+
+	.def	 ___operator_LE__Integer__Integer;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_LE__Integer__Integer
+	.align	16, 0x90
+___operator_LE__Integer__Integer:       # @__operator_LE__Integer__Integer
+# BB#0:                                 # %entry
+	movl	4(%esp), %eax
+	cmpl	8(%esp), %eax
+	setle	%al
+	ret
+
+	.def	 ___method_dataSize__Integer;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___method_dataSize__Integer
+	.align	16, 0x90
+___method_dataSize__Integer:            # @__method_dataSize__Integer
+# BB#0:                                 # %entry
+	movl	$4, %eax
+	ret
+
+	.def	 ___method_data__Integer;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___method_data__Integer
+	.align	16, 0x90
+___method_data__Integer:                # @__method_data__Integer
+# BB#0:                                 # %entry
+	movl	4(%esp), %eax
+	ret
+
+	.def	 ___construct_Boolean__Scalar;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___construct_Boolean__Scalar
+	.align	16, 0x90
+___construct_Boolean__Scalar:           # @__construct_Boolean__Scalar
+# BB#0:                                 # %entry
+	pxor	%xmm0, %xmm0
+	ucomiss	8(%esp), %xmm0
+	movl	4(%esp), %eax
+	setne	(%eax)
+	ret
+
+	.def	 ___construct_Byte__Scalar;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___construct_Byte__Scalar
+	.align	16, 0x90
+___construct_Byte__Scalar:              # @__construct_Byte__Scalar
+# BB#0:                                 # %entry
+	cvttss2si	8(%esp), %eax
+	movl	4(%esp), %ecx
+	movb	%al, (%ecx)
+	ret
+
+	.def	 ___construct_Integer__Scalar;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___construct_Integer__Scalar
+	.align	16, 0x90
+___construct_Integer__Scalar:           # @__construct_Integer__Scalar
+# BB#0:                                 # %entry
+	cvttss2si	8(%esp), %eax
+	movl	4(%esp), %ecx
+	movl	%eax, (%ecx)
+	ret
+
+	.def	 ___construct_Size__Scalar;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___construct_Size__Scalar
+	.align	16, 0x90
+___construct_Size__Scalar:              # @__construct_Size__Scalar
+# BB#0:                                 # %entry
+	subl	$20, %esp
+	movss	28(%esp), %xmm0
+	movss	%xmm0, 8(%esp)
+	flds	8(%esp)
+	fisttpll	(%esp)
+	movl	24(%esp), %eax
+	movl	(%esp), %ecx
+	movl	%ecx, (%eax)
+	addl	$20, %esp
+	ret
+
+	.def	 ___construct_Float64__Scalar;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___construct_Float64__Scalar
+	.align	16, 0x90
+___construct_Float64__Scalar:           # @__construct_Float64__Scalar
+# BB#0:                                 # %entry
+	movss	8(%esp), %xmm0
+	cvtss2sd	%xmm0, %xmm0
+	movl	4(%esp), %eax
+	movsd	%xmm0, (%eax)
+	ret
+
+	.def	 ___construct_String__Scalar;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___construct_String__Scalar
+	.align	16, 0x90
+___construct_String__Scalar:            # @__construct_String__Scalar
+# BB#0:                                 # %entry
+	subl	$12, %esp
+Ltmp18:
+	movss	20(%esp), %xmm0
+	movss	%xmm0, 8(%esp)
+	leal	8(%esp), %eax
+	movl	%eax, (%esp)
+	movl	$___Scalar__Adapter, 4(%esp)
+	calll	___String__Cast
+	movl	16(%esp), %ecx
+	movl	(%ecx), %edx
+	movl	%eax, (%ecx)
+	testl	%edx, %edx
+	je	LBB116_3
+# BB#1:                                 # %nonNull.i
+	movl	$-1, %eax
+	lock
+	xaddl	%eax, (%edx)
+	cmpl	$1, %eax
+	jne	LBB116_3
+# BB#2:                                 # %free.i
+	movl	%edx, (%esp)
+	calll	_free
+LBB116_3:                               # %__String__Release.exit
+	addl	$12, %esp
+	ret
+
+	.def	 ___operator_POS__Scalar;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_POS__Scalar
+	.align	16, 0x90
+___operator_POS__Scalar:                # @__operator_POS__Scalar
+# BB#0:                                 # %entry
+	flds	4(%esp)
+	ret
+
+	.def	 ___operator_NEG__Scalar;
+	.scl	2;
+	.type	32;
+	.endef
+	.section	.rdata,"r"
+	.align	16
+LCPI118_0:
+	.long	2147483648              # float -0.000000e+00
+	.long	2147483648              # float -0.000000e+00
+	.long	2147483648              # float -0.000000e+00
+	.long	2147483648              # float -0.000000e+00
+	.text
+	.globl	___operator_NEG__Scalar
+	.align	16, 0x90
+___operator_NEG__Scalar:                # @__operator_NEG__Scalar
+# BB#0:                                 # %entry
+	pushl	%eax
+	movss	8(%esp), %xmm0
+	xorps	LCPI118_0, %xmm0
+	movss	%xmm0, (%esp)
+	flds	(%esp)
+	popl	%eax
+	ret
+
+	.def	 _sin;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	_sin
+	.align	16, 0x90
+_sin:                                   # @sin
+# BB#0:                                 # %entry
+	jmp	_sinf                   # TAILCALL
+
+	.def	 _cos;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	_cos
+	.align	16, 0x90
+_cos:                                   # @cos
+# BB#0:                                 # %entry
+	jmp	_cosf                   # TAILCALL
+
+	.def	 _tan;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	_tan
+	.align	16, 0x90
+_tan:                                   # @tan
+# BB#0:                                 # %entry
+	jmp	_fp32_tan               # TAILCALL
+
+	.def	 _log;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	_log
+	.align	16, 0x90
+_log:                                   # @log
+# BB#0:                                 # %entry
+	jmp	_fp32_log               # TAILCALL
+
+	.def	 _acos;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	_acos
+	.align	16, 0x90
+_acos:                                  # @acos
+# BB#0:                                 # %entry
+	jmp	_fp32_acos              # TAILCALL
+
+	.def	 _asin;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	_asin
+	.align	16, 0x90
+_asin:                                  # @asin
+# BB#0:                                 # %entry
+	jmp	_fp32_asin              # TAILCALL
+
+	.def	 _atan;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	_atan
+	.align	16, 0x90
+_atan:                                  # @atan
+# BB#0:                                 # %entry
+	jmp	_fp32_atan              # TAILCALL
+
+	.def	 _atan2;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	_atan2
+	.align	16, 0x90
+_atan2:                                 # @atan2
+# BB#0:                                 # %entry
+	jmp	_fp32_atan2             # TAILCALL
+
+	.def	 _sqrt;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	_sqrt
+	.align	16, 0x90
+_sqrt:                                  # @sqrt
+# BB#0:                                 # %entry
+	pushl	%eax
+	movss	8(%esp), %xmm0
+	sqrtss	%xmm0, %xmm0
+	movss	%xmm0, (%esp)
+	flds	(%esp)
+	popl	%eax
+	ret
+
+	.def	 _abs;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	_abs
+	.align	16, 0x90
+_abs:                                   # @abs
+# BB#0:                                 # %entry
+	pushl	%eax
+	movl	$2147483647, %eax       # imm = 0x7FFFFFFF
+	andl	8(%esp), %eax
+	movd	%eax, %xmm0
+	movss	%xmm0, (%esp)
+	flds	(%esp)
+	popl	%eax
+	ret
+
+	.def	 _round;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	_round
+	.align	16, 0x90
+_round:                                 # @round
+# BB#0:                                 # %entry
+	jmp	_fp32_round             # TAILCALL
+
+	.def	 _ceil;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	_ceil
+	.align	16, 0x90
+_ceil:                                  # @ceil
+# BB#0:                                 # %entry
+	jmp	_fp32_ceil              # TAILCALL
+
+	.def	 _floor;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	_floor
+	.align	16, 0x90
+_floor:                                 # @floor
+# BB#0:                                 # %entry
+	jmp	_fp32_floor             # TAILCALL
+
+	.def	 _pow;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	_pow
+	.align	16, 0x90
+_pow:                                   # @pow
+# BB#0:                                 # %entry
+	jmp	_powf                   # TAILCALL
+
+	.def	 ___operator_ADD__Scalar__Scalar;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_ADD__Scalar__Scalar
+	.align	16, 0x90
+___operator_ADD__Scalar__Scalar:        # @__operator_ADD__Scalar__Scalar
+# BB#0:                                 # %entry
+	pushl	%eax
+	movss	8(%esp), %xmm0
+	addss	12(%esp), %xmm0
+	movss	%xmm0, (%esp)
+	flds	(%esp)
+	popl	%eax
+	ret
+
+	.def	 ___operator_SUB__Scalar__Scalar;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_SUB__Scalar__Scalar
+	.align	16, 0x90
+___operator_SUB__Scalar__Scalar:        # @__operator_SUB__Scalar__Scalar
+# BB#0:                                 # %entry
+	pushl	%eax
+	movss	8(%esp), %xmm0
+	subss	12(%esp), %xmm0
+	movss	%xmm0, (%esp)
+	flds	(%esp)
+	popl	%eax
+	ret
+
+	.def	 ___operator_MUL__Scalar__Scalar;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_MUL__Scalar__Scalar
+	.align	16, 0x90
+___operator_MUL__Scalar__Scalar:        # @__operator_MUL__Scalar__Scalar
+# BB#0:                                 # %entry
+	pushl	%eax
+	movss	8(%esp), %xmm0
+	mulss	12(%esp), %xmm0
+	movss	%xmm0, (%esp)
+	flds	(%esp)
+	popl	%eax
+	ret
+
+	.def	 ___operator_DIV__Scalar__Scalar;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_DIV__Scalar__Scalar
+	.align	16, 0x90
+___operator_DIV__Scalar__Scalar:        # @__operator_DIV__Scalar__Scalar
+# BB#0:                                 # %entry
+	pushl	%eax
+	movss	8(%esp), %xmm0
+	divss	12(%esp), %xmm0
+	movss	%xmm0, (%esp)
+	flds	(%esp)
+	popl	%eax
+	ret
+
+	.def	 ___operator_MOD__Scalar__Scalar;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_MOD__Scalar__Scalar
+	.align	16, 0x90
+___operator_MOD__Scalar__Scalar:        # @__operator_MOD__Scalar__Scalar
+# BB#0:                                 # %entry
+	jmp	_fmodf                  # TAILCALL
+
+	.def	 ___operator_EQ__Scalar__Scalar;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_EQ__Scalar__Scalar
+	.align	16, 0x90
+___operator_EQ__Scalar__Scalar:         # @__operator_EQ__Scalar__Scalar
+# BB#0:                                 # %entry
+	movss	4(%esp), %xmm0
+	ucomiss	8(%esp), %xmm0
+	setnp	%cl
+	sete	%al
+	andb	%cl, %al
+	ret
+
+	.def	 ___operator_NE__Scalar__Scalar;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_NE__Scalar__Scalar
+	.align	16, 0x90
+___operator_NE__Scalar__Scalar:         # @__operator_NE__Scalar__Scalar
+# BB#0:                                 # %entry
+	movss	4(%esp), %xmm0
+	ucomiss	8(%esp), %xmm0
+	setne	%al
+	ret
+
+	.def	 ___operator_GT__Scalar__Scalar;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_GT__Scalar__Scalar
+	.align	16, 0x90
+___operator_GT__Scalar__Scalar:         # @__operator_GT__Scalar__Scalar
+# BB#0:                                 # %entry
+	movss	4(%esp), %xmm0
+	ucomiss	8(%esp), %xmm0
+	seta	%al
+	ret
+
+	.def	 ___operator_GE__Scalar__Scalar;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_GE__Scalar__Scalar
+	.align	16, 0x90
+___operator_GE__Scalar__Scalar:         # @__operator_GE__Scalar__Scalar
+# BB#0:                                 # %entry
+	movss	4(%esp), %xmm0
+	ucomiss	8(%esp), %xmm0
+	setae	%al
+	ret
+
+	.def	 ___operator_LT__Scalar__Scalar;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_LT__Scalar__Scalar
+	.align	16, 0x90
+___operator_LT__Scalar__Scalar:         # @__operator_LT__Scalar__Scalar
+# BB#0:                                 # %entry
+	movss	8(%esp), %xmm0
+	ucomiss	4(%esp), %xmm0
+	seta	%al
+	ret
+
+	.def	 ___operator_LE__Scalar__Scalar;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_LE__Scalar__Scalar
+	.align	16, 0x90
+___operator_LE__Scalar__Scalar:         # @__operator_LE__Scalar__Scalar
+# BB#0:                                 # %entry
+	movss	8(%esp), %xmm0
+	ucomiss	4(%esp), %xmm0
+	setae	%al
+	ret
+
+	.def	 ___method_dataSize__Scalar;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___method_dataSize__Scalar
+	.align	16, 0x90
+___method_dataSize__Scalar:             # @__method_dataSize__Scalar
+# BB#0:                                 # %entry
+	movl	$4, %eax
+	ret
+
+	.def	 ___method_data__Scalar;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___method_data__Scalar
+	.align	16, 0x90
+___method_data__Scalar:                 # @__method_data__Scalar
+# BB#0:                                 # %entry
+	movl	4(%esp), %eax
+	ret
+
+	.def	 ___construct_Boolean__Size;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___construct_Boolean__Size
+	.align	16, 0x90
+___construct_Boolean__Size:             # @__construct_Boolean__Size
+# BB#0:                                 # %entry
+	cmpl	$0, 8(%esp)
+	movl	4(%esp), %eax
+	setne	(%eax)
+	ret
+
+	.def	 ___construct_Byte__Size;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___construct_Byte__Size
+	.align	16, 0x90
+___construct_Byte__Size:                # @__construct_Byte__Size
+# BB#0:                                 # %entry
+	movb	8(%esp), %al
+	movl	4(%esp), %ecx
+	movb	%al, (%ecx)
+	ret
+
+	.def	 ___construct_Integer__Size;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___construct_Integer__Size
+	.align	16, 0x90
+___construct_Integer__Size:             # @__construct_Integer__Size
+# BB#0:                                 # %entry
+	movl	8(%esp), %eax
+	movl	4(%esp), %ecx
+	movl	%eax, (%ecx)
+	ret
+
+	.def	 ___construct_Scalar__Size;
+	.scl	2;
+	.type	32;
+	.endef
+	.section	.rdata,"r"
+	.align	8
+LCPI149_0:
+	.quad	4841369599423283200     # double 4.503600e+15
+	.text
+	.globl	___construct_Scalar__Size
+	.align	16, 0x90
+___construct_Scalar__Size:              # @__construct_Scalar__Size
+# BB#0:                                 # %entry
+	movsd	LCPI149_0, %xmm0
+	movd	8(%esp), %xmm1
+	orpd	%xmm0, %xmm1
+	subsd	%xmm0, %xmm1
+	cvtsd2ss	%xmm1, %xmm0
+	movl	4(%esp), %eax
+	movss	%xmm0, (%eax)
+	ret
+
+	.def	 ___construct_String__Size;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___construct_String__Size
+	.align	16, 0x90
+___construct_String__Size:              # @__construct_String__Size
+# BB#0:                                 # %entry
+	subl	$12, %esp
+Ltmp19:
+	movl	20(%esp), %eax
+	movl	%eax, 8(%esp)
+	leal	8(%esp), %eax
+	movl	%eax, (%esp)
+	movl	$___Size__Adapter, 4(%esp)
+	calll	___String__Cast
+	movl	16(%esp), %ecx
+	movl	(%ecx), %edx
+	movl	%eax, (%ecx)
+	testl	%edx, %edx
+	je	LBB150_3
+# BB#1:                                 # %nonNull.i
+	movl	$-1, %eax
+	lock
+	xaddl	%eax, (%edx)
+	cmpl	$1, %eax
+	jne	LBB150_3
+# BB#2:                                 # %free.i
+	movl	%edx, (%esp)
+	calll	_free
+LBB150_3:                               # %__String__Release.exit
+	addl	$12, %esp
+	ret
+
+	.def	 ___operator_POS__Size;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_POS__Size
+	.align	16, 0x90
+___operator_POS__Size:                  # @__operator_POS__Size
+# BB#0:                                 # %entry
+	movl	4(%esp), %eax
+	ret
+
+	.def	 ___operator_BIT_NOT__Size;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_BIT_NOT__Size
+	.align	16, 0x90
+___operator_BIT_NOT__Size:              # @__operator_BIT_NOT__Size
+# BB#0:                                 # %entry
+	movl	4(%esp), %eax
+	notl	%eax
+	ret
+
+	.def	 ___operator_PRE_INC__Size;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_PRE_INC__Size
+	.align	16, 0x90
+___operator_PRE_INC__Size:              # @__operator_PRE_INC__Size
+# BB#0:                                 # %entry
+	movl	4(%esp), %ecx
+	movl	(%ecx), %eax
+	incl	%eax
+	movl	%eax, (%ecx)
+	ret
+
+	.def	 ___operator_PRE_DEC__Size;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_PRE_DEC__Size
+	.align	16, 0x90
+___operator_PRE_DEC__Size:              # @__operator_PRE_DEC__Size
+# BB#0:                                 # %entry
+	movl	4(%esp), %ecx
+	movl	(%ecx), %eax
+	decl	%eax
+	movl	%eax, (%ecx)
+	ret
+
+	.def	 ___operator_POST_INC__Size;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_POST_INC__Size
+	.align	16, 0x90
+___operator_POST_INC__Size:             # @__operator_POST_INC__Size
+# BB#0:                                 # %entry
+	movl	4(%esp), %ecx
+	movl	(%ecx), %eax
+	leal	1(%eax), %edx
+	movl	%edx, (%ecx)
+	ret
+
+	.def	 ___operator_POST_DEC__Size;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_POST_DEC__Size
+	.align	16, 0x90
+___operator_POST_DEC__Size:             # @__operator_POST_DEC__Size
+# BB#0:                                 # %entry
+	movl	4(%esp), %ecx
+	movl	(%ecx), %eax
+	leal	-1(%eax), %edx
+	movl	%edx, (%ecx)
+	ret
+
+	.def	 ___operator_ADD__Size__Size;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_ADD__Size__Size
+	.align	16, 0x90
+___operator_ADD__Size__Size:            # @__operator_ADD__Size__Size
+# BB#0:                                 # %entry
+	movl	8(%esp), %eax
+	addl	4(%esp), %eax
+	ret
+
+	.def	 ___operator_SUB__Size__Size;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_SUB__Size__Size
+	.align	16, 0x90
+___operator_SUB__Size__Size:            # @__operator_SUB__Size__Size
+# BB#0:                                 # %entry
+	movl	4(%esp), %eax
+	subl	8(%esp), %eax
+	ret
+
+	.def	 ___operator_MUL__Size__Size;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_MUL__Size__Size
+	.align	16, 0x90
+___operator_MUL__Size__Size:            # @__operator_MUL__Size__Size
+# BB#0:                                 # %entry
+	movl	8(%esp), %eax
+	imull	4(%esp), %eax
+	ret
+
+	.def	 ___operator_DIV__Size__Size;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_DIV__Size__Size
+	.align	16, 0x90
+___operator_DIV__Size__Size:            # @__operator_DIV__Size__Size
+# BB#0:                                 # %entry
+	pushl	%esi
+Ltmp20:
+	subl	$8, %esp
+Ltmp21:
+	movl	20(%esp), %ecx
+	testl	%ecx, %ecx
+	je	LBB160_2
+# BB#1:                                 # %nonZero
+	movl	16(%esp), %eax
+	xorl	%edx, %edx
+	divl	%ecx
+	jmp	LBB160_6
+LBB160_2:                               # %__construct_String__ConstString25.exit
+	movl	$___ConstString25__Adapter, 4(%esp)
+	movl	$___unnamed_7, (%esp)
+	calll	___String__Cast
+	testl	%eax, %eax
+	je	LBB160_5
+# BB#3:                                 # %nonNull.i
+	movl	%eax, %esi
+	movl	8(%esi), %eax
+	movl	%eax, 4(%esp)
+	leal	12(%esi), %eax
+	movl	%eax, (%esp)
+	calll	_report
+	movl	$-1, %eax
+	lock
+	xaddl	%eax, (%esi)
+	cmpl	$1, %eax
+	jne	LBB160_5
+# BB#4:                                 # %free.i
+	movl	%esi, (%esp)
+	calll	_free
+LBB160_5:                               # %__String__Release.exit
+	xorl	%eax, %eax
+LBB160_6:                               # %__String__Release.exit
+	addl	$8, %esp
+	popl	%esi
+	ret
+
+	.def	 ___operator_MOD__Size__Size;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_MOD__Size__Size
+	.align	16, 0x90
+___operator_MOD__Size__Size:            # @__operator_MOD__Size__Size
+# BB#0:                                 # %entry
+	pushl	%esi
+Ltmp22:
+	subl	$8, %esp
+Ltmp23:
+	movl	20(%esp), %ecx
+	testl	%ecx, %ecx
+	je	LBB161_2
+# BB#1:                                 # %nonZero
+	movl	16(%esp), %eax
+	xorl	%edx, %edx
+	divl	%ecx
+	movl	%edx, %eax
+	jmp	LBB161_6
+LBB161_2:                               # %__construct_String__ConstString25.exit
+	movl	$___ConstString25__Adapter, 4(%esp)
+	movl	$___unnamed_8, (%esp)
+	calll	___String__Cast
+	testl	%eax, %eax
+	je	LBB161_5
+# BB#3:                                 # %nonNull.i
+	movl	%eax, %esi
+	movl	8(%esi), %eax
+	movl	%eax, 4(%esp)
+	leal	12(%esi), %eax
+	movl	%eax, (%esp)
+	calll	_report
+	movl	$-1, %eax
+	lock
+	xaddl	%eax, (%esi)
+	cmpl	$1, %eax
+	jne	LBB161_5
+# BB#4:                                 # %free.i
+	movl	%esi, (%esp)
+	calll	_free
+LBB161_5:                               # %__String__Release.exit
+	xorl	%eax, %eax
+LBB161_6:                               # %__String__Release.exit
+	addl	$8, %esp
+	popl	%esi
+	ret
+
+	.def	 ___operator_BIT_OR__Size__Size;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_BIT_OR__Size__Size
+	.align	16, 0x90
+___operator_BIT_OR__Size__Size:         # @__operator_BIT_OR__Size__Size
+# BB#0:                                 # %entry
+	movl	8(%esp), %eax
+	orl	4(%esp), %eax
+	ret
+
+	.def	 ___operator_BIT_AND__Size__Size;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_BIT_AND__Size__Size
+	.align	16, 0x90
+___operator_BIT_AND__Size__Size:        # @__operator_BIT_AND__Size__Size
+# BB#0:                                 # %entry
+	movl	8(%esp), %eax
+	andl	4(%esp), %eax
+	ret
+
+	.def	 ___operator_BIT_XOR__Size__Size;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_BIT_XOR__Size__Size
+	.align	16, 0x90
+___operator_BIT_XOR__Size__Size:        # @__operator_BIT_XOR__Size__Size
+# BB#0:                                 # %entry
+	movl	8(%esp), %eax
+	xorl	4(%esp), %eax
+	ret
+
+	.def	 ___operator_EQ__Size__Size;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_EQ__Size__Size
+	.align	16, 0x90
+___operator_EQ__Size__Size:             # @__operator_EQ__Size__Size
+# BB#0:                                 # %entry
+	movl	4(%esp), %eax
+	cmpl	8(%esp), %eax
+	sete	%al
+	ret
+
+	.def	 ___operator_NE__Size__Size;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_NE__Size__Size
+	.align	16, 0x90
+___operator_NE__Size__Size:             # @__operator_NE__Size__Size
+# BB#0:                                 # %entry
+	movl	4(%esp), %eax
+	cmpl	8(%esp), %eax
+	setne	%al
+	ret
+
+	.def	 ___operator_GT__Size__Size;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_GT__Size__Size
+	.align	16, 0x90
+___operator_GT__Size__Size:             # @__operator_GT__Size__Size
+# BB#0:                                 # %entry
+	movl	4(%esp), %eax
+	cmpl	8(%esp), %eax
+	seta	%al
+	ret
+
+	.def	 ___operator_GE__Size__Size;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_GE__Size__Size
+	.align	16, 0x90
+___operator_GE__Size__Size:             # @__operator_GE__Size__Size
+# BB#0:                                 # %entry
+	movl	4(%esp), %eax
+	cmpl	8(%esp), %eax
+	setae	%al
+	ret
+
+	.def	 ___operator_LT__Size__Size;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_LT__Size__Size
+	.align	16, 0x90
+___operator_LT__Size__Size:             # @__operator_LT__Size__Size
+# BB#0:                                 # %entry
+	movl	4(%esp), %eax
+	cmpl	8(%esp), %eax
+	setb	%al
+	ret
+
+	.def	 ___operator_LE__Size__Size;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_LE__Size__Size
+	.align	16, 0x90
+___operator_LE__Size__Size:             # @__operator_LE__Size__Size
+# BB#0:                                 # %entry
+	movl	4(%esp), %eax
+	cmpl	8(%esp), %eax
+	setbe	%al
+	ret
+
+	.def	 ___method_dataSize__Size;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___method_dataSize__Size
+	.align	16, 0x90
+___method_dataSize__Size:               # @__method_dataSize__Size
+# BB#0:                                 # %entry
+	movl	$4, %eax
+	ret
+
+	.def	 ___method_data__Size;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___method_data__Size
+	.align	16, 0x90
+___method_data__Size:                   # @__method_data__Size
+# BB#0:                                 # %entry
+	movl	4(%esp), %eax
+	ret
+
+	.def	 ___String__Retain;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___String__Retain
+	.align	16, 0x90
+___String__Retain:                      # @__String__Retain
+# BB#0:                                 # %entry
+	movl	4(%esp), %eax
+	testl	%eax, %eax
+	je	LBB173_2
+# BB#1:                                 # %addRef
+	lock
+	incl	(%eax)
+LBB173_2:                               # %done
+	ret
+
+	.def	 ___String__RefCount;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___String__RefCount
+	.align	16, 0x90
+___String__RefCount:                    # @__String__RefCount
+# BB#0:                                 # %entry
+	movl	4(%esp), %eax
+	testl	%eax, %eax
+	je	LBB174_2
+# BB#1:                                 # %nonNull
+	movl	(%eax), %eax
+	ret
+LBB174_2:                               # %null
+	xorl	%eax, %eax
+	ret
+
+	.def	 ___String__Length;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___String__Length
+	.align	16, 0x90
+___String__Length:                      # @__String__Length
+# BB#0:                                 # %entry
+	movl	4(%esp), %eax
+	testl	%eax, %eax
+	je	LBB175_2
+# BB#1:                                 # %nonNull
+	movl	8(%eax), %eax
+	ret
+LBB175_2:                               # %null
+	xorl	%eax, %eax
+	ret
+
+	.def	 ___construct_Boolean__String;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___construct_Boolean__String
+	.align	16, 0x90
+___construct_Boolean__String:           # @__construct_Boolean__String
+# BB#0:                                 # %entry
+	xorb	%al, %al
+	movl	8(%esp), %ecx
+	testl	%ecx, %ecx
+	je	LBB176_2
+# BB#1:                                 # %nonNull.i
+	cmpl	$0, 8(%ecx)
+	setne	%al
+LBB176_2:                               # %__String__Length.exit
+	movl	4(%esp), %ecx
+	movb	%al, (%ecx)
+	ret
+
+	.def	 ___method_ASSIGN_OP_ADD__String__String;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___method_ASSIGN_OP_ADD__String__String
+	.align	16, 0x90
+___method_ASSIGN_OP_ADD__String__String: # @__method_ASSIGN_OP_ADD__String__String
+# BB#0:                                 # %entry
+	jmp	___String__Append       # TAILCALL
+
+	.def	 ___operator_ADD__String__String;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_ADD__String__String
+	.align	16, 0x90
+___operator_ADD__String__String:        # @__operator_ADD__String__String
+# BB#0:                                 # %entry
+	subl	$12, %esp
+Ltmp24:
+	movl	$0, 8(%esp)
+	movl	16(%esp), %eax
+	testl	%eax, %eax
+	je	LBB178_2
+# BB#1:                                 # %__String__Retain.exit
+	lock
+	incl	(%eax)
+LBB178_2:                               # %__String__Release.exit
+	movl	20(%esp), %ecx
+	movl	%eax, 8(%esp)
+	movl	%ecx, 4(%esp)
+	leal	8(%esp), %ecx
+	movl	%ecx, (%esp)
+	calll	___String__Append
+	movl	8(%esp), %eax
+	addl	$12, %esp
+	ret
+
+	.def	 ___method_refCount__String;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___method_refCount__String
+	.align	16, 0x90
+___method_refCount__String:             # @__method_refCount__String
+# BB#0:                                 # %entry
+	movl	4(%esp), %eax
+	testl	%eax, %eax
+	jne	LBB179_2
+# BB#1:
+	xorl	%eax, %eax
+	ret
+LBB179_2:                               # %nonNull.i
+	movl	(%eax), %eax
+	ret
+
+	.def	 ___method_length__String;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___method_length__String
+	.align	16, 0x90
+___method_length__String:               # @__method_length__String
+# BB#0:                                 # %entry
+	movl	4(%esp), %eax
+	testl	%eax, %eax
+	jne	LBB180_2
+# BB#1:
+	xorl	%eax, %eax
+	ret
+LBB180_2:                               # %nonNull.i
+	movl	8(%eax), %eax
+	ret
+
+	.def	 ___method_dataSize__String;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___method_dataSize__String
+	.align	16, 0x90
+___method_dataSize__String:             # @__method_dataSize__String
+# BB#0:                                 # %entry
+	movl	4(%esp), %ecx
+	testl	%ecx, %ecx
+	movl	$1, %eax
+	je	LBB181_2
+# BB#1:                                 # %nonNull.i
+	movl	8(%ecx), %eax
+	incl	%eax
+LBB181_2:                               # %__String__Length.exit
+	ret
+
+	.def	 ___method_data__String;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___method_data__String
+	.align	16, 0x90
+___method_data__String:                 # @__method_data__String
+# BB#0:                                 # %entry
+	movl	4(%esp), %eax
+	testl	%eax, %eax
+	jne	LBB182_2
+# BB#1:                                 # %null
+	ret
+LBB182_2:                               # %nonNull
+	addl	$12, %eax
+	ret
+
+	.def	 ___method_compare__String__String;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___method_compare__String__String
+	.align	16, 0x90
+___method_compare__String__String:      # @__method_compare__String__String
+# BB#0:                                 # %entry
+	pushl	%ebx
+	pushl	%edi
+	pushl	%esi
+	movl	16(%esp), %eax
+	testl	%eax, %eax
+	movl	20(%esp), %ecx
+	jne	LBB183_3
+# BB#1:                                 # %selfIsNull
+	xorl	%edx, %edx
+	testl	%ecx, %ecx
+	je	LBB183_8
+LBB183_2:                               # %lt
+	movl	$-1, %edx
+	jmp	LBB183_8
+LBB183_3:                               # %selfIsNotNull
+	testl	%ecx, %ecx
+	movl	$1, %edx
+	je	LBB183_8
+# BB#4:                                 # %shallow
+	xorl	%edx, %edx
+	cmpl	%ecx, %eax
+	je	LBB183_8
+# BB#5:                                 # %deep
+	movl	8(%ecx), %esi
+	movl	8(%eax), %edi
+	xorl	%ebx, %ebx
+	jmp	LBB183_6
+	.align	16, 0x90
+LBB183_9:                               # %checkOtherLength
+                                        #   in Loop: Header=BB183_6 Depth=1
+	cmpl	%esi, %ebx
+	movl	$1, %edx
+	jae	LBB183_8
+# BB#10:                                # %checkChars
+                                        #   in Loop: Header=BB183_6 Depth=1
+	movb	12(%ecx,%ebx), %dl
+	movb	12(%eax,%ebx), %dh
+	cmpb	%dl, %dh
+	jb	LBB183_2
+# BB#11:                                # %checkCharsGT
+                                        #   in Loop: Header=BB183_6 Depth=1
+	cmpb	%dl, %dh
+	movl	$1, %edx
+	ja	LBB183_8
+# BB#12:                                # %next
+                                        #   in Loop: Header=BB183_6 Depth=1
+	incl	%ebx
+LBB183_6:                               # %check
+                                        # =>This Inner Loop Header: Depth=1
+	cmpl	%edi, %ebx
+	jb	LBB183_9
+# BB#7:                                 # %verifyOtherLength
+	xorl	%edx, %edx
+	cmpl	%esi, %ebx
+	jb	LBB183_2
+LBB183_8:                               # %eq
+	movl	%edx, %eax
+	popl	%esi
+	popl	%edi
+	popl	%ebx
+	ret
+
+	.def	 ___operator_EQ__String__String;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_EQ__String__String
+	.align	16, 0x90
+___operator_EQ__String__String:         # @__operator_EQ__String__String
+# BB#0:                                 # %entry
+	pushl	%ebx
+	pushl	%edi
+	pushl	%esi
+	cmpl	$0, 16(%esp)
+	movl	20(%esp), %eax
+	jne	LBB184_3
+# BB#1:                                 # %selfIsNull.i
+	testl	%eax, %eax
+	movb	$1, %cl
+	jne	LBB184_8
+LBB184_2:                               # %__method_compare__String__String.exit
+	movb	%cl, %al
+	popl	%esi
+	popl	%edi
+	popl	%ebx
+	ret
+LBB184_3:                               # %selfIsNotNull.i
+	xorb	%cl, %cl
+	testl	%eax, %eax
+	je	LBB184_2
+# BB#4:                                 # %shallow.i
+	cmpl	%eax, 16(%esp)
+	movb	$1, %cl
+	je	LBB184_2
+# BB#5:                                 # %deep.i
+	movl	8(%eax), %edx
+	movl	16(%esp), %ecx
+	movl	8(%ecx), %esi
+	xorl	%edi, %edi
+	jmp	LBB184_6
+	.align	16, 0x90
+LBB184_9:                               # %checkOtherLength.i
+                                        #   in Loop: Header=BB184_6 Depth=1
+	xorb	%cl, %cl
+	cmpl	%edx, %edi
+	jae	LBB184_2
+# BB#10:                                # %checkChars.i
+                                        #   in Loop: Header=BB184_6 Depth=1
+	movb	12(%eax,%edi), %ch
+	movl	16(%esp), %ebx
+	movb	12(%ebx,%edi), %bl
+	cmpb	%ch, %bl
+	jb	LBB184_8
+# BB#11:                                # %checkCharsGT.i
+                                        #   in Loop: Header=BB184_6 Depth=1
+	xorb	%cl, %cl
+	cmpb	%ch, %bl
+	ja	LBB184_2
+# BB#12:                                # %next.i
+                                        #   in Loop: Header=BB184_6 Depth=1
+	incl	%edi
+LBB184_6:                               # %check.i
+                                        # =>This Inner Loop Header: Depth=1
+	cmpl	%esi, %edi
+	jb	LBB184_9
+# BB#7:                                 # %verifyOtherLength.i
+	cmpl	%edx, %edi
+	movb	$1, %cl
+	jae	LBB184_2
+LBB184_8:                               # %lt.i
+	xorb	%cl, %cl
+	jmp	LBB184_2
+
+	.def	 ___operator_NE__String__String;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_NE__String__String
+	.align	16, 0x90
+___operator_NE__String__String:         # @__operator_NE__String__String
+# BB#0:                                 # %entry
+	pushl	%ebx
+	pushl	%edi
+	pushl	%esi
+	movl	16(%esp), %eax
+	testl	%eax, %eax
+	movl	20(%esp), %ecx
+	jne	LBB185_3
+# BB#1:                                 # %selfIsNull.i
+	xorb	%dl, %dl
+	testl	%ecx, %ecx
+	jne	LBB185_8
+LBB185_2:                               # %__method_compare__String__String.exit
+	movb	%dl, %al
+	popl	%esi
+	popl	%edi
+	popl	%ebx
+	ret
+LBB185_3:                               # %selfIsNotNull.i
+	testl	%ecx, %ecx
+	movb	$1, %dl
+	je	LBB185_2
+# BB#4:                                 # %shallow.i
+	xorb	%dl, %dl
+	cmpl	%ecx, %eax
+	je	LBB185_2
+# BB#5:                                 # %deep.i
+	movl	8(%ecx), %esi
+	movl	8(%eax), %edi
+	xorl	%ebx, %ebx
+	jmp	LBB185_6
+	.align	16, 0x90
+LBB185_9:                               # %checkOtherLength.i
+                                        #   in Loop: Header=BB185_6 Depth=1
+	cmpl	%esi, %ebx
+	movb	$1, %dl
+	jae	LBB185_2
+# BB#10:                                # %checkChars.i
+                                        #   in Loop: Header=BB185_6 Depth=1
+	movb	12(%ecx,%ebx), %dl
+	movb	12(%eax,%ebx), %dh
+	cmpb	%dl, %dh
+	jb	LBB185_8
+# BB#11:                                # %checkCharsGT.i
+                                        #   in Loop: Header=BB185_6 Depth=1
+	cmpb	%dl, %dh
+	movb	$1, %dl
+	ja	LBB185_2
+# BB#12:                                # %next.i
+                                        #   in Loop: Header=BB185_6 Depth=1
+	incl	%ebx
+LBB185_6:                               # %check.i
+                                        # =>This Inner Loop Header: Depth=1
+	cmpl	%edi, %ebx
+	jb	LBB185_9
+# BB#7:                                 # %verifyOtherLength.i
+	xorb	%dl, %dl
+	cmpl	%esi, %ebx
+	jae	LBB185_2
+LBB185_8:                               # %lt.i
+	movb	$1, %dl
+	jmp	LBB185_2
+
+	.def	 ___operator_GT__String__String;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_GT__String__String
+	.align	16, 0x90
+___operator_GT__String__String:         # @__operator_GT__String__String
+# BB#0:                                 # %entry
+	pushl	%ebx
+	pushl	%edi
+	pushl	%esi
+	cmpl	$0, 16(%esp)
+	setne	%al
+	je	LBB186_9
+# BB#1:                                 # %entry
+	movl	20(%esp), %ecx
+	testl	%ecx, %ecx
+	je	LBB186_9
+# BB#2:                                 # %shallow.i
+	xorb	%al, %al
+	cmpl	%ecx, 16(%esp)
+	je	LBB186_9
+# BB#3:                                 # %deep.i
+	movl	8(%ecx), %edx
+	movl	16(%esp), %eax
+	movl	8(%eax), %esi
+	xorl	%edi, %edi
+	jmp	LBB186_4
+	.align	16, 0x90
+LBB186_8:                               # %next.i
+                                        #   in Loop: Header=BB186_4 Depth=1
+	incl	%edi
+LBB186_4:                               # %check.i
+                                        # =>This Inner Loop Header: Depth=1
+	xorb	%al, %al
+	cmpl	%esi, %edi
+	jae	LBB186_9
+# BB#5:                                 # %checkOtherLength.i
+                                        #   in Loop: Header=BB186_4 Depth=1
+	cmpl	%edx, %edi
+	movb	$1, %al
+	jae	LBB186_9
+# BB#6:                                 # %checkChars.i
+                                        #   in Loop: Header=BB186_4 Depth=1
+	movb	12(%ecx,%edi), %ah
+	movl	16(%esp), %ebx
+	movb	12(%ebx,%edi), %bl
+	xorb	%al, %al
+	cmpb	%ah, %bl
+	jb	LBB186_9
+# BB#7:                                 # %checkCharsGT.i
+                                        #   in Loop: Header=BB186_4 Depth=1
+	cmpb	%ah, %bl
+	movb	$1, %al
+	jbe	LBB186_8
+LBB186_9:                               # %verifyOtherLength.i
+	popl	%esi
+	popl	%edi
+	popl	%ebx
+	ret
+
+	.def	 ___operator_GE__String__String;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_GE__String__String
+	.align	16, 0x90
+___operator_GE__String__String:         # @__operator_GE__String__String
+# BB#0:                                 # %entry
+	pushl	%ebx
+	pushl	%edi
+	pushl	%esi
+	movl	16(%esp), %ecx
+	testl	%ecx, %ecx
+	movl	20(%esp), %edx
+	jne	LBB187_3
+# BB#1:                                 # %selfIsNull.i
+	testl	%edx, %edx
+	movb	$1, %al
+	jne	LBB187_8
+LBB187_2:                               # %__method_compare__String__String.exit
+	popl	%esi
+	popl	%edi
+	popl	%ebx
+	ret
+LBB187_3:                               # %selfIsNotNull.i
+	testl	%edx, %edx
+	movb	$1, %al
+	je	LBB187_2
+# BB#4:                                 # %selfIsNotNull.i
+	cmpl	%edx, %ecx
+	je	LBB187_2
+# BB#5:                                 # %deep.i
+	movl	8(%edx), %esi
+	movl	8(%ecx), %edi
+	xorl	%ebx, %ebx
+	jmp	LBB187_6
+	.align	16, 0x90
+LBB187_9:                               # %checkOtherLength.i
+                                        #   in Loop: Header=BB187_6 Depth=1
+	cmpl	%esi, %ebx
+	movb	$1, %al
+	jae	LBB187_2
+# BB#10:                                # %checkChars.i
+                                        #   in Loop: Header=BB187_6 Depth=1
+	movb	12(%edx,%ebx), %al
+	movb	12(%ecx,%ebx), %ah
+	cmpb	%al, %ah
+	jb	LBB187_8
+# BB#11:                                # %checkCharsGT.i
+                                        #   in Loop: Header=BB187_6 Depth=1
+	cmpb	%al, %ah
+	movb	$1, %al
+	ja	LBB187_2
+# BB#12:                                # %next.i
+                                        #   in Loop: Header=BB187_6 Depth=1
+	incl	%ebx
+LBB187_6:                               # %check.i
+                                        # =>This Inner Loop Header: Depth=1
+	cmpl	%edi, %ebx
+	jb	LBB187_9
+# BB#7:                                 # %verifyOtherLength.i
+	cmpl	%esi, %ebx
+	movb	$1, %al
+	jae	LBB187_2
+LBB187_8:                               # %lt.i
+	xorb	%al, %al
+	jmp	LBB187_2
+
+	.def	 ___operator_LT__String__String;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_LT__String__String
+	.align	16, 0x90
+___operator_LT__String__String:         # @__operator_LT__String__String
+# BB#0:                                 # %entry
+	pushl	%ebx
+	pushl	%edi
+	pushl	%esi
+	cmpl	$0, 16(%esp)
+	movl	20(%esp), %eax
+	jne	LBB188_3
+# BB#1:                                 # %selfIsNull.i
+	xorb	%cl, %cl
+	testl	%eax, %eax
+	jne	LBB188_8
+LBB188_2:                               # %__method_compare__String__String.exit
+	movb	%cl, %al
+	popl	%esi
+	popl	%edi
+	popl	%ebx
+	ret
+LBB188_3:                               # %selfIsNotNull.i
+	xorb	%cl, %cl
+	testl	%eax, %eax
+	je	LBB188_2
+# BB#4:                                 # %selfIsNotNull.i
+	cmpl	%eax, 16(%esp)
+	je	LBB188_2
+# BB#5:                                 # %deep.i
+	movl	8(%eax), %edx
+	movl	16(%esp), %ecx
+	movl	8(%ecx), %esi
+	xorl	%edi, %edi
+	jmp	LBB188_6
+	.align	16, 0x90
+LBB188_9:                               # %checkOtherLength.i
+                                        #   in Loop: Header=BB188_6 Depth=1
+	xorb	%cl, %cl
+	cmpl	%edx, %edi
+	jae	LBB188_2
+# BB#10:                                # %checkChars.i
+                                        #   in Loop: Header=BB188_6 Depth=1
+	movb	12(%eax,%edi), %ch
+	movl	16(%esp), %ebx
+	movb	12(%ebx,%edi), %bl
+	cmpb	%ch, %bl
+	jb	LBB188_8
+# BB#11:                                # %checkCharsGT.i
+                                        #   in Loop: Header=BB188_6 Depth=1
+	xorb	%cl, %cl
+	cmpb	%ch, %bl
+	ja	LBB188_2
+# BB#12:                                # %next.i
+                                        #   in Loop: Header=BB188_6 Depth=1
+	incl	%edi
+LBB188_6:                               # %check.i
+                                        # =>This Inner Loop Header: Depth=1
+	cmpl	%esi, %edi
+	jb	LBB188_9
+# BB#7:                                 # %verifyOtherLength.i
+	xorb	%cl, %cl
+	cmpl	%edx, %edi
+	jae	LBB188_2
+LBB188_8:                               # %lt.i
+	movb	$1, %cl
+	jmp	LBB188_2
+
+	.def	 ___operator_LE__String__String;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_LE__String__String
+	.align	16, 0x90
+___operator_LE__String__String:         # @__operator_LE__String__String
+# BB#0:                                 # %entry
+	pushl	%ebx
+	pushl	%edi
+	pushl	%esi
+	cmpl	$0, 16(%esp)
+	sete	%al
+	je	LBB189_9
+# BB#1:                                 # %entry
+	movl	20(%esp), %ecx
+	testl	%ecx, %ecx
+	je	LBB189_9
+# BB#2:                                 # %shallow.i
+	cmpl	%ecx, 16(%esp)
+	movb	$1, %al
+	je	LBB189_9
+# BB#3:                                 # %deep.i
+	movl	8(%ecx), %edx
+	movl	16(%esp), %eax
+	movl	8(%eax), %esi
+	xorl	%edi, %edi
+	jmp	LBB189_4
+	.align	16, 0x90
+LBB189_8:                               # %next.i
+                                        #   in Loop: Header=BB189_4 Depth=1
+	incl	%edi
+LBB189_4:                               # %check.i
+                                        # =>This Inner Loop Header: Depth=1
+	cmpl	%esi, %edi
+	movb	$1, %al
+	jae	LBB189_9
+# BB#5:                                 # %checkOtherLength.i
+                                        #   in Loop: Header=BB189_4 Depth=1
+	xorb	%al, %al
+	cmpl	%edx, %edi
+	jae	LBB189_9
+# BB#6:                                 # %checkChars.i
+                                        #   in Loop: Header=BB189_4 Depth=1
+	movb	12(%ecx,%edi), %ah
+	movl	16(%esp), %ebx
+	movb	12(%ebx,%edi), %bl
+	cmpb	%ah, %bl
+	movb	$1, %al
+	jb	LBB189_9
+# BB#7:                                 # %checkCharsGT.i
+                                        #   in Loop: Header=BB189_4 Depth=1
+	xorb	%al, %al
+	cmpb	%ah, %bl
+	jbe	LBB189_8
+LBB189_9:                               # %verifyOtherLength.i
+	popl	%esi
+	popl	%edi
+	popl	%ebx
+	ret
+
+	.def	 ___Float64_VA__Retain;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___Float64_VA__Retain
+	.align	16, 0x90
+___Float64_VA__Retain:                  # @__Float64_VA__Retain
+# BB#0:                                 # %entry
+	movl	4(%esp), %eax
+	testl	%eax, %eax
+	je	LBB190_2
+# BB#1:                                 # %nonNull
+	lock
+	incl	(%eax)
+LBB190_2:                               # %done
+	ret
+
+	.def	 ___Float64_VA__Release;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___Float64_VA__Release
+	.align	16, 0x90
+___Float64_VA__Release:                 # @__Float64_VA__Release
+# BB#0:                                 # %entry
+	movl	4(%esp), %eax
+	testl	%eax, %eax
+	je	LBB191_2
+# BB#1:                                 # %nonNull
+	movl	$-1, %ecx
+	lock
+	xaddl	%ecx, (%eax)
+	cmpl	$1, %ecx
+	je	LBB191_3
+LBB191_2:                               # %done
+	ret
+LBB191_3:                               # %free
+	jmp	_free                   # TAILCALL
+
+	.def	 ___Float64_VA__Size;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___Float64_VA__Size
+	.align	16, 0x90
+___Float64_VA__Size:                    # @__Float64_VA__Size
+# BB#0:                                 # %entry
+	movl	4(%esp), %eax
+	testl	%eax, %eax
+	je	LBB192_2
+# BB#1:                                 # %nonNull
+	movl	8(%eax), %eax
+	ret
+LBB192_2:                               # %null
+	xorl	%eax, %eax
+	ret
+
+	.def	 ___Float64_VA__ConstIndex;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___Float64_VA__ConstIndex
+	.align	16, 0x90
+___Float64_VA__ConstIndex:              # @__Float64_VA__ConstIndex
+# BB#0:                                 # %entry
+	pushl	%esi
+Ltmp25:
+	subl	$8, %esp
+Ltmp26:
+	movl	16(%esp), %eax
+	testl	%eax, %eax
+	je	LBB193_3
+# BB#1:                                 # %notNull
+	movl	20(%esp), %ecx
+	cmpl	%ecx, 8(%eax)
+	jbe	LBB193_3
+# BB#2:                                 # %inRange
+	fldl	16(%eax,%ecx,8)
+	jmp	LBB193_7
+LBB193_3:                               # %__construct_String__ConstString33.exit
+	movl	$___ConstString33__Adapter, 4(%esp)
+	movl	$___unnamed_9, (%esp)
+	calll	___String__Cast
+	testl	%eax, %eax
+	je	LBB193_6
+# BB#4:                                 # %nonNull.i
+	movl	%eax, %esi
+	movl	8(%esi), %eax
+	movl	%eax, 4(%esp)
+	leal	12(%esi), %eax
+	movl	%eax, (%esp)
+	calll	_report
+	movl	$-1, %eax
+	lock
+	xaddl	%eax, (%esi)
+	cmpl	$1, %eax
+	jne	LBB193_6
+# BB#5:                                 # %free.i
+	movl	%esi, (%esp)
+	calll	_free
+LBB193_6:                               # %__String__Release.exit
+	fldz
+LBB193_7:                               # %__String__Release.exit
+	addl	$8, %esp
+	popl	%esi
+	ret
+
+	.def	 ___construct_Boolean__ConstString33;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___construct_Boolean__ConstString33
+	.align	16, 0x90
+___construct_Boolean__ConstString33:    # @__construct_Boolean__ConstString33
+# BB#0:                                 # %entry
+	movl	4(%esp), %eax
+	movb	$1, (%eax)
+	ret
+
+	.def	 ___construct_String__ConstString33;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___construct_String__ConstString33
+	.align	16, 0x90
+___construct_String__ConstString33:     # @__construct_String__ConstString33
+# BB#0:                                 # %entry
+	subl	$12, %esp
+Ltmp27:
+	movl	20(%esp), %eax
+	movl	%eax, (%esp)
+	movl	$___ConstString33__Adapter, 4(%esp)
+	calll	___String__Cast
+	movl	16(%esp), %ecx
+	movl	(%ecx), %edx
+	movl	%eax, (%ecx)
+	testl	%edx, %edx
+	je	LBB195_3
+# BB#1:                                 # %nonNull.i
+	movl	$-1, %eax
+	lock
+	xaddl	%eax, (%edx)
+	cmpl	$1, %eax
+	jne	LBB195_3
+# BB#2:                                 # %free.i
+	movl	%edx, (%esp)
+	calll	_free
+LBB195_3:                               # %__String__Release.exit
+	addl	$12, %esp
+	ret
+
+	.def	 ___Float64_VA__NonConstIndex;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___Float64_VA__NonConstIndex
+	.align	16, 0x90
+___Float64_VA__NonConstIndex:           # @__Float64_VA__NonConstIndex
+# BB#0:                                 # %entry
+	pushl	%edi
+Ltmp28:
+	pushl	%esi
+Ltmp29:
+	subl	$12, %esp
+Ltmp30:
+	movl	24(%esp), %esi
+	movl	(%esi), %eax
+	testl	%eax, %eax
+	je	LBB196_5
+# BB#1:                                 # %notNull
+	movl	28(%esp), %edi
+	cmpl	%edi, 8(%eax)
+	jbe	LBB196_5
+# BB#2:                                 # %inRange
+	cmpl	$1, (%eax)
+	jbe	LBB196_4
+# BB#3:                                 # %nonUnique
+	movl	%esi, 4(%esp)
+	movl	$___Float64_VA__Adapter, (%esp)
+	calll	___Float64_VA__Split
+	movl	(%esi), %eax
+LBB196_4:                               # %unique
+	leal	16(%eax,%edi,8), %eax
+	jmp	LBB196_9
+LBB196_5:                               # %__construct_String__ConstString33.exit
+	movl	$___ConstString33__Adapter, 4(%esp)
+	movl	$___unnamed_10, (%esp)
+	calll	___String__Cast
+	testl	%eax, %eax
+	je	LBB196_8
+# BB#6:                                 # %nonNull.i
+	movl	%eax, %esi
+	movl	8(%esi), %eax
+	movl	%eax, 4(%esp)
+	leal	12(%esi), %eax
+	movl	%eax, (%esp)
+	calll	_report
+	movl	$-1, %eax
+	lock
+	xaddl	%eax, (%esi)
+	cmpl	$1, %eax
+	jne	LBB196_8
+# BB#7:                                 # %free.i
+	movl	%esi, (%esp)
+	calll	_free
+LBB196_8:                               # %__String__Release.exit
+	movl	$___Float64__DefaultValue, %eax
+LBB196_9:                               # %__String__Release.exit
+	addl	$12, %esp
+	popl	%esi
+	popl	%edi
+	ret
+
+	.def	 ___construct_Boolean__Float64_VA;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___construct_Boolean__Float64_VA
+	.align	16, 0x90
+___construct_Boolean__Float64_VA:       # @__construct_Boolean__Float64_VA
+# BB#0:                                 # %entry
+	xorb	%al, %al
+	movl	8(%esp), %ecx
+	testl	%ecx, %ecx
+	je	LBB197_2
+# BB#1:                                 # %nonNull.i
+	cmpl	$0, 8(%ecx)
+	setne	%al
+LBB197_2:                               # %__Float64_VA__Size.exit
+	movl	4(%esp), %ecx
+	movb	%al, (%ecx)
+	ret
+
+	.def	 ___construct_String__Float64_VA;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___construct_String__Float64_VA
+	.align	16, 0x90
+___construct_String__Float64_VA:        # @__construct_String__Float64_VA
+# BB#0:                                 # %entry
+	subl	$12, %esp
+Ltmp31:
+	movl	20(%esp), %eax
+	movl	%eax, 8(%esp)
+	leal	8(%esp), %eax
+	movl	%eax, (%esp)
+	movl	$___Float64_VA__Adapter, 4(%esp)
+	calll	___String__Cast
+	movl	16(%esp), %ecx
+	movl	(%ecx), %edx
+	movl	%eax, (%ecx)
+	testl	%edx, %edx
+	je	LBB198_3
+# BB#1:                                 # %nonNull.i
+	movl	$-1, %eax
+	lock
+	xaddl	%eax, (%edx)
+	cmpl	$1, %eax
+	jne	LBB198_3
+# BB#2:                                 # %free.i
+	movl	%edx, (%esp)
+	calll	_free
+LBB198_3:                               # %__String__Release.exit
+	addl	$12, %esp
+	ret
+
+	.def	 ___method_ASSIGN_OP_ADD__Float64_VA__Float64_VA;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___method_ASSIGN_OP_ADD__Float64_VA__Float64_VA
+	.align	16, 0x90
+___method_ASSIGN_OP_ADD__Float64_VA__Float64_VA: # @__method_ASSIGN_OP_ADD__Float64_VA__Float64_VA
+# BB#0:                                 # %entry
+	subl	$12, %esp
+Ltmp32:
+	movl	20(%esp), %eax
+	movl	%eax, 8(%esp)
+	movl	16(%esp), %eax
+	movl	%eax, 4(%esp)
+	movl	$___Float64_VA__Adapter, (%esp)
+	calll	___Float64_VA__Append
+	addl	$12, %esp
+	ret
+
+	.def	 ___operator_ADD__Float64_VA__Float64_VA;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___operator_ADD__Float64_VA__Float64_VA
+	.align	16, 0x90
+___operator_ADD__Float64_VA__Float64_VA: # @__operator_ADD__Float64_VA__Float64_VA
+# BB#0:                                 # %entry
+	subl	$20, %esp
+Ltmp33:
+	movl	$0, 16(%esp)
+	movl	24(%esp), %eax
+	testl	%eax, %eax
+	je	LBB200_2
+# BB#1:                                 # %__Float64_VA__Retain.exit
+	lock
+	incl	(%eax)
+LBB200_2:                               # %__Float64_VA__Release.exit
+	movl	28(%esp), %ecx
+	movl	%eax, 16(%esp)
+	movl	%ecx, 8(%esp)
+	leal	16(%esp), %ecx
+	movl	%ecx, 4(%esp)
+	movl	$___Float64_VA__Adapter, (%esp)
+	calll	___Float64_VA__Append
+	movl	16(%esp), %eax
+	addl	$20, %esp
+	ret
+
+	.def	 ___method_push__Float64_VA__Float64;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___method_push__Float64_VA__Float64
+	.align	16, 0x90
+___method_push__Float64_VA__Float64:    # @__method_push__Float64_VA__Float64
+# BB#0:                                 # %entry
+	pushl	%ebx
+Ltmp34:
+	pushl	%edi
+Ltmp35:
+	pushl	%esi
+Ltmp36:
+	subl	$16, %esp
+Ltmp37:
+	movl	32(%esp), %esi
+	movl	(%esi), %eax
+	xorl	%edi, %edi
+	testl	%eax, %eax
+	je	LBB201_2
+# BB#1:                                 # %nonNull.i
+	movl	8(%eax), %edi
+LBB201_2:                               # %__Float64_VA__Size.exit
+	leal	1(%edi), %eax
+	movl	%eax, 8(%esp)
+	movl	%esi, 4(%esp)
+	movl	$___Float64_VA__Adapter, (%esp)
+	calll	___Float64_VA__Resize
+	movl	(%esi), %eax
+	testl	%eax, %eax
+	je	LBB201_7
+# BB#3:                                 # %notNull.i
+	cmpl	%edi, 8(%eax)
+	jbe	LBB201_7
+# BB#4:                                 # %inRange.i
+	cmpl	$1, (%eax)
+	jbe	LBB201_6
+# BB#5:                                 # %nonUnique.i
+	movl	%esi, 4(%esp)
+	movl	$___Float64_VA__Adapter, (%esp)
+	calll	___Float64_VA__Split
+	movl	(%esi), %eax
+LBB201_6:                               # %unique.i
+	leal	16(%eax,%edi,8), %edi
+	jmp	LBB201_10
+LBB201_7:                               # %__construct_String__ConstString33.exit.i
+	movl	$___ConstString33__Adapter, 4(%esp)
+	movl	$___unnamed_10, (%esp)
+	calll	___String__Cast
+	testl	%eax, %eax
+	movl	$___Float64__DefaultValue, %edi
+	je	LBB201_10
+# BB#8:                                 # %nonNull.i.i
+	movl	%eax, %ebx
+	movl	8(%ebx), %edi
+	movl	%edi, 4(%esp)
+	leal	12(%ebx), %edi
+	movl	%edi, (%esp)
+	calll	_report
+	movl	$-1, %edi
+	lock
+	xaddl	%edi, (%ebx)
+	cmpl	$1, %edi
+	movl	$___Float64__DefaultValue, %edi
+	jne	LBB201_10
+# BB#9:                                 # %free.i.i
+	movl	%ebx, (%esp)
+	calll	_free
+	movl	$___Float64__DefaultValue, %edi
+LBB201_10:                              # %__Float64_VA__NonConstIndex.exit
+	movsd	36(%esp), %xmm0
+	movsd	%xmm0, (%edi)
+	movl	%esi, %eax
+	addl	$16, %esp
+	popl	%esi
+	popl	%edi
+	popl	%ebx
+	ret
+
+	.def	 ___method_pop__Float64_VA;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___method_pop__Float64_VA
+	.align	16, 0x90
+___method_pop__Float64_VA:              # @__method_pop__Float64_VA
+# BB#0:                                 # %entry
+	subl	$28, %esp
+	leal	16(%esp), %eax
+	movl	%eax, 8(%esp)
+	movl	32(%esp), %eax
+	movl	%eax, 4(%esp)
+	movl	$___Float64_VA__Adapter, (%esp)
+	calll	___Float64_VA__Pop
+	fldl	16(%esp)
+	addl	$28, %esp
+	ret
+
+	.def	 ___method_resize__Float64_VA__Size;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___method_resize__Float64_VA__Size
+	.align	16, 0x90
+___method_resize__Float64_VA__Size:     # @__method_resize__Float64_VA__Size
+# BB#0:                                 # %entry
+	pushl	%esi
+	subl	$16, %esp
+	movl	28(%esp), %eax
+	movl	%eax, 8(%esp)
+	movl	24(%esp), %esi
+	movl	%esi, 4(%esp)
+	movl	$___Float64_VA__Adapter, (%esp)
+	calll	___Float64_VA__Resize
+	movl	%esi, %eax
+	addl	$16, %esp
+	popl	%esi
+	ret
+
+	.def	 ___method_resize__Float64_VA__Integer;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___method_resize__Float64_VA__Integer
+	.align	16, 0x90
+___method_resize__Float64_VA__Integer:  # @__method_resize__Float64_VA__Integer
+# BB#0:                                 # %entry
+	pushl	%esi
+	subl	$16, %esp
+	movl	28(%esp), %eax
+	movl	%eax, 8(%esp)
+	movl	24(%esp), %esi
+	movl	%esi, 4(%esp)
+	movl	$___Float64_VA__Adapter, (%esp)
+	calll	___Float64_VA__Resize
+	movl	%esi, %eax
+	addl	$16, %esp
+	popl	%esi
+	ret
+
+	.def	 ___method_size__Float64_VA;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___method_size__Float64_VA
+	.align	16, 0x90
+___method_size__Float64_VA:             # @__method_size__Float64_VA
+# BB#0:                                 # %entry
+	movl	4(%esp), %eax
+	testl	%eax, %eax
+	jne	LBB205_2
+# BB#1:
+	xorl	%eax, %eax
+	ret
+LBB205_2:                               # %nonNull.i
+	movl	8(%eax), %eax
+	ret
+
+	.def	 ___method_dataSize__Float64_VA;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___method_dataSize__Float64_VA
+	.align	16, 0x90
+___method_dataSize__Float64_VA:         # @__method_dataSize__Float64_VA
+# BB#0:                                 # %entry
+	movl	4(%esp), %eax
+	testl	%eax, %eax
+	jne	LBB206_2
+# BB#1:
+	xorl	%eax, %eax
+	ret
+LBB206_2:                               # %nonNull.i
+	movl	8(%eax), %eax
+	shll	$3, %eax
+	ret
+
+	.def	 ___method_data__Float64_VA;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	___method_data__Float64_VA
+	.align	16, 0x90
+___method_data__Float64_VA:             # @__method_data__Float64_VA
+# BB#0:                                 # %entry
+	movl	4(%esp), %eax
+	testl	%eax, %eax
+	jne	LBB207_2
+# BB#1:                                 # %null
+	ret
+LBB207_2:                               # %nonNull
+	addl	$16, %eax
+	ret
+
+	.def	 _entry;
+	.scl	2;
+	.type	32;
+	.endef
+	.globl	_entry
+	.align	16, 0x90
+_entry:                                 # @entry
+# BB#0:                                 # %entry
+	pushl	%ebx
+Ltmp38:
+	pushl	%edi
+Ltmp39:
+	pushl	%esi
+Ltmp40:
+	subl	$48, %esp
+Ltmp41:
+	movl	$0, 32(%esp)
+	leal	32(%esp), %esi
+	movl	%esi, (%esp)
+	movl	$0, 8(%esp)
+	movl	$0, 4(%esp)
+	calll	___method_push__Float64_VA__Float64
+	movl	%esi, (%esp)
+	movl	$1073741824, 8(%esp)    # imm = 0x40000000
+	movl	$0, 4(%esp)
+	calll	___method_push__Float64_VA__Float64
+	movl	%esi, (%esp)
+	movl	$1074790400, 8(%esp)    # imm = 0x40100000
+	movl	$0, 4(%esp)
+	calll	___method_push__Float64_VA__Float64
+	movl	%esi, (%esp)
+	movl	$1075314688, 8(%esp)    # imm = 0x40180000
+	movl	$0, 4(%esp)
+	calll	___method_push__Float64_VA__Float64
+	movl	%esi, (%esp)
+	movl	$1075838976, 8(%esp)    # imm = 0x40200000
+	movl	$0, 4(%esp)
+	calll	___method_push__Float64_VA__Float64
+	movl	%esi, (%esp)
+	movl	$1080606720, 8(%esp)    # imm = 0x4068C000
+	movl	$0, 4(%esp)
+	calll	___method_push__Float64_VA__Float64
+	pxor	%xmm0, %xmm0
+	movsd	%xmm0, 16(%esp)         # 8-byte Spill
+	xorl	%esi, %esi
+	movl	32(%esp), %edi
+	jmp	LBB208_1
+	.align	16, 0x90
+LBB208_8:                               # %__construct_String__ConstString33.exit.i
+                                        #   in Loop: Header=BB208_1 Depth=1
+	movl	$___ConstString33__Adapter, 4(%esp)
+	movl	$___unnamed_9, (%esp)
+	calll	___String__Cast
+	testl	%eax, %eax
+	je	LBB208_11
+# BB#9:                                 # %nonNull.i.i26
+                                        #   in Loop: Header=BB208_1 Depth=1
+	movl	%eax, %ebx
+	movl	8(%ebx), %eax
+	movl	%eax, 4(%esp)
+	leal	12(%ebx), %eax
+	movl	%eax, (%esp)
+	calll	_report
+	movl	$-1, %eax
+	lock
+	xaddl	%eax, (%ebx)
+	cmpl	$1, %eax
+	jne	LBB208_11
+# BB#10:                                # %free.i.i27
+                                        #   in Loop: Header=BB208_1 Depth=1
+	movl	%ebx, (%esp)
+	calll	_free
+LBB208_11:                              # %__Float64_VA__ConstIndex.exit
+                                        #   in Loop: Header=BB208_1 Depth=1
+	testl	%edi, %edi
+	pxor	%xmm0, %xmm0
+	movsd	%xmm0, 24(%esp)         # 8-byte Spill
+	je	LBB208_14
+LBB208_12:                              # %nonNull.i28
+                                        #   in Loop: Header=BB208_1 Depth=1
+	movl	$-1, %eax
+	lock
+	xaddl	%eax, (%edi)
+	cmpl	$1, %eax
+	jne	LBB208_14
+# BB#13:                                # %free.i29
+                                        #   in Loop: Header=BB208_1 Depth=1
+	movl	%edi, (%esp)
+	calll	_free
+LBB208_14:                              # %__Float64_VA__Release.exit30
+                                        #   in Loop: Header=BB208_1 Depth=1
+	movsd	16(%esp), %xmm0         # 8-byte Reload
+	addsd	24(%esp), %xmm0         # 8-byte Folded Reload
+	movsd	%xmm0, 16(%esp)         # 8-byte Spill
+	incl	%esi
+LBB208_1:                               # %loopCheckPreCond
+                                        # =>This Inner Loop Header: Depth=1
+	testl	%edi, %edi
+	movl	$0, %ebx
+	je	LBB208_4
+# BB#2:                                 # %nonNull.i15
+                                        #   in Loop: Header=BB208_1 Depth=1
+	lock
+	incl	(%edi)
+	movl	8(%edi), %ebx
+	movl	$-1, %eax
+	lock
+	xaddl	%eax, (%edi)
+	cmpl	$1, %eax
+	jne	LBB208_4
+# BB#3:                                 # %free.i16
+                                        #   in Loop: Header=BB208_1 Depth=1
+	movl	%edi, (%esp)
+	calll	_free
+LBB208_4:                               # %__Float64_VA__Release.exit17
+                                        #   in Loop: Header=BB208_1 Depth=1
+	addl	$-2, %ebx
+	cmpl	%ebx, %esi
+	jge	LBB208_15
+# BB#5:                                 # %loopBody
+                                        #   in Loop: Header=BB208_1 Depth=1
+	testl	%edi, %edi
+	je	LBB208_8
+# BB#6:                                 # %notNull.i25
+                                        #   in Loop: Header=BB208_1 Depth=1
+	lock
+	incl	(%edi)
+	cmpl	%esi, 8(%edi)
+	jbe	LBB208_8
+# BB#7:                                 # %__Float64_VA__ConstIndex.exit.thread
+                                        #   in Loop: Header=BB208_1 Depth=1
+	movsd	16(%edi,%esi,8), %xmm0
+	movsd	%xmm0, 24(%esp)         # 8-byte Spill
+	jmp	LBB208_12
+LBB208_15:                              # %__construct_String__Float64.exit
+	movsd	16(%esp), %xmm0         # 8-byte Reload
+	movsd	%xmm0, 40(%esp)
+	leal	40(%esp), %eax
+	movl	%eax, (%esp)
+	movl	$___Float64__Adapter, 4(%esp)
+	calll	___String__Cast
+	testl	%eax, %eax
+	je	LBB208_18
+# BB#16:                                # %nonNull.i20
+	movl	%eax, %esi
+	movl	8(%esi), %eax
+	movl	%eax, 4(%esp)
+	leal	12(%esi), %eax
+	movl	%eax, (%esp)
+	calll	_report
+	movl	$-1, %eax
+	lock
+	xaddl	%eax, (%esi)
+	cmpl	$1, %eax
+	jne	LBB208_18
+# BB#17:                                # %free.i21
+	movl	%esi, (%esp)
+	calll	_free
+LBB208_18:                              # %__String__Release.exit22
+	testl	%edi, %edi
+	jne	LBB208_20
+# BB#19:                                # %__construct_String__Float64_VA.exit.thread
+	movl	%edi, 36(%esp)
+	leal	36(%esp), %eax
+	movl	%eax, (%esp)
+	movl	$___Float64_VA__Adapter, 4(%esp)
+	calll	___String__Cast
+	movl	%eax, %esi
+	jmp	LBB208_22
+LBB208_20:                              # %nonNull.i10
+	lock
+	incl	(%edi)
+	movl	%edi, 36(%esp)
+	leal	36(%esp), %esi
+	movl	%esi, (%esp)
+	movl	$___Float64_VA__Adapter, 4(%esp)
+	calll	___String__Cast
+	movl	$-1, %esi
+	lock
+	xaddl	%esi, (%edi)
+	cmpl	$1, %esi
+	movl	%eax, %esi
+	jne	LBB208_22
+# BB#21:                                # %free.i11
+	movl	%edi, (%esp)
+	calll	_free
+LBB208_22:                              # %__Float64_VA__Release.exit12
+	testl	%esi, %esi
+	je	LBB208_25
+# BB#23:                                # %nonNull.i8
+	movl	8(%esi), %eax
+	movl	%eax, 4(%esp)
+	leal	12(%esi), %eax
+	movl	%eax, (%esp)
+	calll	_report
+	movl	$-1, %eax
+	lock
+	xaddl	%eax, (%esi)
+	cmpl	$1, %eax
+	jne	LBB208_25
+# BB#24:                                # %free.i9
+	movl	%esi, (%esp)
+	calll	_free
+LBB208_25:                              # %__String__Release.exit
+	testl	%edi, %edi
+	je	LBB208_28
+# BB#26:                                # %nonNull.i
+	movl	$-1, %eax
+	lock
+	xaddl	%eax, (%edi)
+	cmpl	$1, %eax
+	jne	LBB208_28
+# BB#27:                                # %free.i
+	movl	%edi, (%esp)
+	calll	_free
+LBB208_28:                              # %__Float64_VA__Release.exit
+	addl	$48, %esp
+	popl	%esi
+	popl	%edi
+	popl	%ebx
+	ret
+
