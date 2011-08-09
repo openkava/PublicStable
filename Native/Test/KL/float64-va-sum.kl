@@ -1,0 +1,10 @@
+function entry() {
+  Float64 a[];
+  a.push(Float64(0.0));
+  a.push(Float64(2.0));
+  a.push(Float64(4.0));
+  Float64 sum = 0.0;
+  for ( Size i=0; i<a.size; ++i )
+    sum += a[i];
+  report sum;
+}
