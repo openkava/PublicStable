@@ -7,6 +7,7 @@ Import( 'extsEnv', 'fabricExtsDistDir' )
 objPluginEnv = extsEnv.Clone()
 objPlugin = objPluginEnv.SharedLibrary( 'FabricOBJ', Glob('*.cpp') ),
 objManifest = objPluginEnv.File('FabricOBJ.fpm.json'),
-objFiles = [objManifest, objPlugin]
+objKL = objPluginEnv.File('FabricOBJ.kl'),
+objFiles = [objManifest, objPlugin, objKL]
 
 Return( 'objFiles' )

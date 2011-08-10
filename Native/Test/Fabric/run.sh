@@ -42,7 +42,7 @@ for f in "$@"; do
   TMPFILE=$(tmpfilename)
 
   #echo $VALGRIND_CMD ../../build/$BUILD_OS/$BUILD_ARCH/$BUILD_TYPE/Fabric/Clients/CLI/fabric --load="'$WRAPPERS_FILE'" --exts="'$EXTS_DIR'" $f
-  LD_LIBRARY_PATH=build/ $VALGRIND_CMD ../../build/$BUILD_OS/$BUILD_ARCH/$BUILD_TYPE/Fabric/Clients/CLI/fabric --load="$WRAPPERS_FILE" --exts="$EXTS_DIR" $f 2>&1 | grep -v '^\[FABRIC\] Loaded extension ' | $OUTPUT_FILTER >$TMPFILE
+  LD_LIBRARY_PATH=build/ $VALGRIND_CMD ../../build/$BUILD_OS/$BUILD_ARCH/$BUILD_TYPE/Fabric/Clients/CLI/fabric --load="$WRAPPERS_FILE" --exts="$EXTS_DIR" $f 2>&1 | grep -v '^\[FABRIC\] ' | $OUTPUT_FILTER >$TMPFILE
 
   if [ "$REPLACE" -eq 1 ]; then
     mv $TMPFILE ${f%.js}.out

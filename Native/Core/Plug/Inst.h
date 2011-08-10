@@ -45,6 +45,11 @@ namespace Fabric
     class Object;
   };
   
+  namespace IO
+  {
+    class Dir;
+  };
+  
   namespace Plug
   {
     class Inst : public RC::Object
@@ -55,7 +60,7 @@ namespace Fabric
       
     public:
     
-      static RC::Handle<Inst> Create( std::string const &name, std::string const &jsonDesc, std::vector<std::string> const &pluginDirs, RC::Handle<CG::Manager> const &cgManager );
+      static RC::Handle<Inst> Create( RC::ConstHandle<IO::Dir> const &extensionDir, std::string const &name, std::string const &jsonDesc, std::vector<std::string> const &pluginDirs, RC::Handle<CG::Manager> const &cgManager );
       
       std::string const &getJSONDesc() const
       {
@@ -79,7 +84,7 @@ namespace Fabric
       
     protected:
     
-      Inst( std::string const &name, std::string const &jsonDesc, std::vector<std::string> const &pluginDirs, RC::Handle<CG::Manager> const &cgManager );
+      Inst( RC::ConstHandle<IO::Dir> const &extensionDir, std::string const &name, std::string const &jsonDesc, std::vector<std::string> const &pluginDirs, RC::Handle<CG::Manager> const &cgManager );
       ~Inst();
       
     private:
@@ -89,7 +94,6 @@ namespace Fabric
       //RC::Handle<LIB::Value> invokeMethod( std::string const &methodName, std::vector< RC::Handle<LIB::Value> > const &args );
     
       std::string m_name;
-      mutable bool m_disabled;
       RC::Handle<CG::Manager> m_cgManager;
       std::string m_jsonDesc;
       Desc m_desc;

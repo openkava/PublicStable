@@ -1,0 +1,25 @@
+struct RGB {
+  Byte r; Byte g; Byte b;
+};
+
+function FabricVIDEOOpenStream(
+  io String filename,
+  io Size stream,
+  io Size width,
+  io Size height,
+  io Scalar duration,
+  io Scalar fps
+  );
+function FabricVIDEOSeekTime( io Size stream, io Scalar time);
+function FabricVIDEOGetAllPixels(
+  io Size stream,
+  io Size width,
+  io Size height,
+  io RGB pixels[]
+  );
+function FabricVIDEOGetPixel(
+  io Size stream,
+  io Size x,
+  io Size y,
+  io RGB pixel
+  );

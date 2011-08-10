@@ -8,6 +8,7 @@ videoPluginEnv = extsEnv.Clone()
 videoPluginEnv.MergeFlags( ffmpegFlags )
 videoPlugin = videoPluginEnv.SharedLibrary( 'FabricVIDEO', Glob('*.cpp') ),
 videoManifest = videoPluginEnv.File('FabricVIDEO.fpm.json'),
-videoFiles = [videoManifest, videoPlugin]
+videoKL = videoPluginEnv.File('FabricVIDEO.kl'),
+videoFiles = [videoManifest, videoPlugin, videoKL]
 
 Return( 'videoFiles' )
