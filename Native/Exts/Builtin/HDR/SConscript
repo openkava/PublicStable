@@ -7,6 +7,7 @@ Import( 'extsEnv', 'fabricExtsDistDir' )
 hdrPluginEnv = extsEnv.Clone()
 hdrPlugin = hdrPluginEnv.SharedLibrary( 'FabricHDR', Glob('*.cpp') ),
 hdrManifest = hdrPluginEnv.File('FabricHDR.fpm.json'),
-hdrFiles = [hdrManifest, hdrPlugin]
+hdrKL = hdrPluginEnv.File('FabricHDR.kl'),
+hdrFiles = [hdrManifest, hdrPlugin, hdrKL]
 
 Return( 'hdrFiles' )

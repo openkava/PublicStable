@@ -8,6 +8,7 @@ pngPluginEnv = extsEnv.Clone()
 pngPluginEnv.MergeFlags( libpngFlags )
 pngPlugin = pngPluginEnv.SharedLibrary( 'FabricPNG', Glob('*.cpp') ),
 pngManifest = pngPluginEnv.File('FabricPNG.fpm.json'),
-pngFiles = [pngManifest, pngPlugin]
+pngKL = pngPluginEnv.File('FabricPNG.kl'),
+pngFiles = [pngManifest, pngPlugin, pngKL]
 
 Return( 'pngFiles' )

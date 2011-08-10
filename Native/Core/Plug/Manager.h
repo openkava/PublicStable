@@ -38,6 +38,11 @@ namespace Fabric
     class Context;
   };
   
+  namespace IO
+  {
+    class Dir;
+  };
+  
   namespace Plug
   {
     class Inst;
@@ -67,7 +72,7 @@ namespace Fabric
       Manager();
       ~Manager();
       
-      RC::ConstHandle<Inst> registerPlugin( std::string const &name, std::string const &jsonDesc, std::vector<std::string> const &pluginDirs, RC::Handle<CG::Manager> const &cgManager );
+      RC::ConstHandle<Inst> registerPlugin( RC::ConstHandle<IO::Dir> const &extensionDir, std::string const &name, std::string const &jsonDesc, std::vector<std::string> const &pluginDirs, RC::Handle<CG::Manager> const &cgManager );
       
     private:
     

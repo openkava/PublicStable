@@ -7,6 +7,7 @@ Import( 'extsEnv' )
 tgaPluginEnv = extsEnv.Clone()
 tgaPlugin = tgaPluginEnv.SharedLibrary( 'FabricTGA', Glob('*.cpp') ),
 tgaManifest = tgaPluginEnv.File('FabricTGA.fpm.json'),
-tgaFiles = [tgaManifest, tgaPlugin]
+tgaKL = tgaPluginEnv.File('FabricTGA.kl'),
+tgaFiles = [tgaManifest, tgaPlugin, tgaKL]
 
 Return( 'tgaFiles' )

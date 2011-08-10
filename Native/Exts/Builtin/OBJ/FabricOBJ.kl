@@ -1,0 +1,18 @@
+struct Vec2 {
+  Scalar x;  Scalar y;
+};
+struct Vec3 {
+  Scalar x; Scalar y; Scalar z;
+};
+
+function FabricOBJDecode( Data objData, Size objDataSize, io Data parsedDataHandle );
+function FabricOBJFreeParsedData( io Data parsedDataHandle );
+function FabricOBJHadErrors( Data parsedDataHandle, io Boolean hadErrors );
+function FabricOBJGetErrors( Data parsedDataHandle, io String errors[] );
+function FabricOBJHasTextureCoords( Data parsedDataHandle, io Boolean hasTextureCoords );
+function FabricOBJGetNbPoints( Data parsedDataHandle, io Size nbPoints );
+function FabricOBJGetPoints( Data parsedDataHandle, io Vec3 points[] );
+function FabricOBJGetNormals( Data parsedDataHandle, io Vec3 normals[] );
+function FabricOBJGetTextureCoords( Data parsedDataHandle, io Vec2 texCoords[] );
+function FabricOBJGetNbTriangles( Data parsedDataHandle, io Size nbTriangles );
+function FabricOBJGetTriangleIndices( Data parsedDataHandle, io Integer triangleIndices[] );

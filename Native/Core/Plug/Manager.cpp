@@ -10,6 +10,7 @@
 #include <Fabric/Core/AST/GlobalList.h>
 #include <Fabric/Core/DG/Context.h>
 #include <Fabric/Core/IO/Dir.h>
+#include <Fabric/Core/IO/Helpers.h>
 #include <Fabric/Base/JSON/Object.h>
 
 namespace Fabric
@@ -73,12 +74,13 @@ namespace Fabric
                 std::string fpmContents = pluginsDir->getFileContents( filename );
                 try
                 {
-                  registerPlugin( extensionName, fpmContents, pluginDirs, cgManager );
-                  FABRIC_LOG( "Loaded extension " + _(extensionName) );
+                  registerPlugin( pluginsDir, extensionName, fpmContents, pluginDirs, cgManager );
                 }
                 catch ( Exception e )
                 {
-                  FABRIC_LOG( "Extension '%s' ('%s/%s'): %s", extensionName.c_str(), pluginsDir->getFullPath().c_str(), filename.c_str(), e.getDesc().c_str() );
+                  FABRIC_LOG( "[%s] %s", extensionName.c_str(), e.getDesc().c_str() );
+                  FABRIC_LOG( "[%s] Error(s) encountered, extension disabled", extensionName.c_str() );
+                  FABRIC_LOG( "[%s] Extension manifest is '%s'", extensionName.c_str(), IO::JoinPath( pluginsDir->getFullPath(), filename ).c_str() );
                 }
               }
             }
@@ -101,19 +103,21 @@ namespace Fabric
       //  SOLibClose( m_fabricSDKSOLibHandle, m_fabricSDKSOLibResolvedName );
     }
     
-    RC::ConstHandle<Inst> Manager::registerPlugin( std::string const &name, std::string const &jsonDesc, std::vector<std::string> const &pluginDirs, RC::Handle<CG::Manager> const &cgManager )
+    RC::ConstHandle<Inst> Manager::registerPlugin( RC::ConstHandle<IO::Dir> const &extensionDir, std::string const &name, std::string const &jsonDesc, std::vector<std::string> const &pluginDirs, RC::Handle<CG::Manager> const &cgManager )
     {
       RC::Handle<Inst> result;
       
       NameToInstMap::const_iterator it = m_nameToInstMap.find( name );
       if ( it != m_nameToInstMap.end() )
       {
-        throw Exception( "already registered" );
+        result = it->second;
+        FABRIC_LOG( "[%s] Extension already registered", name.c_str() );
       }
       else
       {
-        result = Inst::Create( name, jsonDesc, pluginDirs, cgManager );
+        result = Inst::Create( extensionDir, name, jsonDesc, pluginDirs, cgManager );
         m_nameToInstMap.insert( NameToInstMap::value_type( name, result ) );
+        FABRIC_LOG( "[%s] Extension registered", name.c_str() );
       }
       
       return result;

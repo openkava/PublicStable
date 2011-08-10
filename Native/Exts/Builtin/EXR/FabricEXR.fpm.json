@@ -1,4 +1,4 @@
 {
   "libs": "FabricEXR",
-  "code": "struct Color { Scalar r; Scalar g; Scalar b; Scalar a; }; function FabricEXRDecode( Data exrData, Size exrDataSize, io Size imageWidth, io Size imageHeight, io Color imagePixels[] );\n"
+  "code": "FabricEXR.kl"
 }

@@ -8,6 +8,7 @@ exrPluginEnv = extsEnv.Clone()
 exrPluginEnv.MergeFlags( openexrFlags )
 exrPlugin = exrPluginEnv.SharedLibrary( 'FabricEXR', Glob('*.cpp') ),
 exrManifest = exrPluginEnv.File('FabricEXR.fpm.json'),
-exrFiles = [exrManifest, exrPlugin]
+exrKL = exrPluginEnv.File('FabricEXR.kl'),
+exrFiles = [exrManifest, exrPlugin, exrKL]
 
 Return( 'exrFiles' )
