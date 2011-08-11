@@ -8,17 +8,16 @@ oglPluginEnv = extsEnv.Clone()
 
 # OpenGL
 if buildOS == 'Linux':
-  Import( 'gtkglFlags' )
   oglPluginEnv.Append( LINKFLAGS = [ '-lGLEW' ] )
   oglPluginEnv.ParseConfig( 'pkg-config --cflags --libs gtk+-2.0' )
-  oglPluginEnv.MergeFlags( gtkglFlags )
+  oglPluginEnv.ParseConfig( 'pkg-config --cflags --libs gtkglext-1.0' )
 if buildOS == 'Darwin':
   oglPluginEnv.Append( CPPPATH = ['/opt/local/include'] )
   oglPluginEnv.Append( LIBS = [File('/opt/local/lib/libGLEW.a')] )
   oglPluginEnv.Append( FRAMEWORKS = ['OpenGL'] )
 if buildOS == 'Windows':
-  Import( 'glewFlags' )
-  oglPluginEnv.MergeFlags( glewFlags )
+	Import( 'glewFlags' )
+	oglPluginEnv.MergeFlags( glewFlags )
 
 generator = oglPluginEnv.File("generate.py")
 template = oglPluginEnv.File("ogl.cpp_template")
