@@ -26,6 +26,10 @@ run() {
   for f in Exts/*.json; do
     $ECHO install -m 644 -o root -g adm "$f" /usr/lib/fabric/Exts/
   done
+
+  for f in Exts/*.kl; do
+    $ECHO install -m 644 -o root -g adm "$f" /usr/lib/fabric/Exts/
+  done
 }
 
 cat <<EOT
