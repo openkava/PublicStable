@@ -137,14 +137,6 @@ ffmpegFlags = {
 }
 Export( 'ffmpegFlags' )
 
-# GTKGL
-if buildOS == 'Linux':
-  gtkglFlags = {
-    'CPPPATH': ['/usr/include/gtkglext-1.0', '/usr/lib/gtkglext-1.0/include'],
-    'LIBS': [File('/usr/lib/libgtkglext-x11-1.0.a'), File('/usr/lib/libgdkglext-x11-1.0.a')],
-  }
-  Export( 'gtkglFlags' )
-
 # OpenCL
 openclFlags = {}
 if buildOS == 'Windows' or buildOS == 'Linux':

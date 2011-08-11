@@ -8,8 +8,7 @@ Import( 'coreEnv', 'buildOS', 'openclFlags' )
 if buildOS == 'Linux':
   coreEnv.Append( LINKFLAGS = [ '-lGLEW' ] )
   coreEnv.ParseConfig( 'pkg-config --cflags --libs gtk+-2.0' )
-  Import( 'gtkglFlags' )
-  coreEnv.MergeFlags( gtkglFlags )
+  coreEnv.ParseConfig( 'pkg-config --cflags --libs gtkglext-1.0' )
 if buildOS == 'Darwin':
   coreEnv.Append( CPPPATH = ['/opt/local/include'] )
   coreEnv.Append( LIBS = [File('/opt/local/lib/libGLEW.a')] )
