@@ -5,6 +5,7 @@
 #include <iostream>
 #include <vector>
 #include "simplevector.h"
+#include <limits.h>
 
 class ObjParser
 {
@@ -16,7 +17,7 @@ public:
 
   bool HasTextureCoords()const{ return !m_texCoords.empty(); }
 
-  size_t NbPoints()const{ return m_points.size(); }
+  size_t NbPoints()const{ return m_pointIndices.size(); }
 
   V3 GetPoint(int ptIndex)const;
   V3 GetNormal(int ptIndex)const;
@@ -42,14 +43,14 @@ private:
   struct PointIndices
   {
     PointIndices()
-      : m_point(-1)
-      , m_normal(-1)
-      , m_texCoord(-1)
+      : m_point(INT_MAX)
+      , m_normal(INT_MAX)
+      , m_texCoord(INT_MAX)
     {}
 
     bool isInitialized()
     {
-      return m_point != -1;
+      return m_point != INT_MAX;
     }
 
     bool operator==( const PointIndices& other )const
@@ -66,6 +67,6 @@ private:
     int m_texCoord;
   };
 
-  std::vector<PointIndices> m_triangleIndices;
-  std::vector<PointIndices> m_initialPointIndices;//To try maintaining trivial sharing
+  std::vector<int> m_triangleIndices;
+  std::vector<PointIndices> m_pointIndices;
 };
