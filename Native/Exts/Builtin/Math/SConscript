@@ -7,12 +7,7 @@ Import( 'extsEnv', 'fabricExtsDistDir' )
 mathPluginEnv = extsEnv.Clone()
 mathPlugin = mathPluginEnv.SharedLibrary( 'FabricMath', Glob('*.cpp') ),
 mathManifest = mathPluginEnv.File('FabricMath.fpm.json'),
+mathKL = mathPluginEnv.File('FabricMath.kl'),
+mathFiles = [mathManifest, mathPlugin, mathKL]
 
-installAction = Install( fabricExtsDistDir, [mathPlugin,mathManifest] )
-extsEnv.CopyToAppdataIfWindows( installAction )
-
-Alias( 'mathExt', [
-  mathPlugin,
-  mathManifest,
-  installAction
-] )
+Return( 'mathFiles' )

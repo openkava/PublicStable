@@ -1,4 +1,4 @@
 {
   "libs": "FabricMath",
-  "code": "function Integer mathRandomInteger( in Size id, in Size offset );\nfunction Scalar mathRandomScalar( in Size id, in Size offset );\n"
+  "code": "FabricMath.kl"
 }
