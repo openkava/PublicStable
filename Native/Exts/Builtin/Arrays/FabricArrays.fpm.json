@@ -1,4 +1,0 @@
-{
-  "libs": "FabricArrays",
-  "code": "struct Vec3 { Scalar x; Scalar y; Scalar z; }; function incShiftVec3Array( io Vec3 inputArray[], io Vec3 outputArray[]); function decShiftVec3Array( io Vec3 inputArray[], io Vec3 outputArray[]);"
-}
