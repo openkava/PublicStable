@@ -21,9 +21,25 @@ private:
   std::string m_msg;
 };
 
+bool IsSeparator( char c )
+{
+  return c == ' ' || c == '\n' || c == '\r' || c == '\t';
+}
+
 void skipToNextLine( std::istream& stream )
 {
-  stream.ignore(20000, '\n');
+  char c = 0;
+  while( stream.good() )
+  {
+    stream.get(c);
+    if(c == '\n' || c == '\r')
+    {
+      char pc = stream.peek();
+      if(pc != c && (pc == '\n' || pc == '\r'))
+        stream.get(c);
+      break;
+    }
+  }
 }
 
 bool parsingError( std::istream& stream )
@@ -38,7 +54,7 @@ bool skipSpaces( std::istream& stream )
   while( stream.good() )
   {
     char pc = stream.peek();
-    if( pc == ' ' || pc == '\t' || pc == '\r' )
+    if( pc == ' ' || pc == '\t' )
       stream.get(c);
     else
       break;
@@ -98,7 +114,8 @@ void ObjParser::ParseF( std::istream& stream )
   while( true )
   {
     bool hadSpaces = skipSpaces( stream );
-    if( stream.peek() == '\n' )
+    char pc = stream.peek();
+    if( pc == '\n' || pc == '\r' )
     {
       skipToNextLine( stream );
       break;
@@ -119,7 +136,7 @@ void ObjParser::ParseF( std::istream& stream )
     stream.get(c);
     if(c == '/')
     {
-      if(stream.peek() != '/')
+      if( !IsSeparator( stream.peek() ) && stream.peek() != '/' )
       {
         stream >> indices.m_texCoord;
         if( parsingError( stream ) )
@@ -130,18 +147,23 @@ void ObjParser::ParseF( std::istream& stream )
       }
       c = 0;
       stream.get(c);
-      if(c != '/')
-        stream.unget();
-      else
+      if(c == '/')
       {
-        stream >> indices.m_normal;
-        if( parsingError( stream ) )
-          throw Exception("int value expected");
-        --indices.m_normal;
-        if( indices.m_normal < 0 || indices.m_normal > (int)m_normals.size() )
-          throw Exception("out of range normal index");
+        if( !IsSeparator( stream.peek() ) )
+        {
+          stream >> indices.m_normal;
+          if( parsingError( stream ) )
+            throw Exception("int value expected");
+          --indices.m_normal;
+          if( indices.m_normal < 0 || indices.m_normal > (int)m_normals.size() )
+            throw Exception("out of range normal index");
+        }
       }
+      else
+        stream.unget();
     }
+    else
+      stream.unget();
 
     // [jeromecg 20110728] Check if we need to unshare the vertex data
     // Note: this would be more complex (and might have to be done later) if we were taking smoothing groups into account...
