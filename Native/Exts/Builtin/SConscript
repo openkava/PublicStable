@@ -8,12 +8,14 @@ Import( 'baseEnv', 'buildOS' )
 dirs = [
   'EXR',
   'HDR',
+  'Math',
   'OBJ',
   #'OCL',
   'OGL',
   'PNG',
   'TGA',
   'VICON',
+  'Math',
 ]
 
 if buildOS != 'Windows':
