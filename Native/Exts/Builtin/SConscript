@@ -15,7 +15,6 @@ dirs = [
   'PNG',
   'TGA',
   'VICON',
-  'Math',
 ]
 
 if buildOS != 'Windows':
