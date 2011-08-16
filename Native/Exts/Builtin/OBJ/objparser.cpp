@@ -92,7 +92,8 @@ void ObjParser::ParseF( std::istream& stream )
 {
   int nbFacePts = 0;
   int initalFacePt = (int)m_triangleIndices.size();
-  m_initialPointIndices.resize( m_points.size() );
+  if( m_pointIndices.size() < m_points.size() )
+    m_pointIndices.resize( m_points.size() );
 
   while( true )
   {
@@ -145,44 +146,31 @@ void ObjParser::ParseF( std::istream& stream )
     // [jeromecg 20110728] Check if we need to unshare the vertex data
     // Note: this would be more complex (and might have to be done later) if we were taking smoothing groups into account...
 
-    if( !m_initialPointIndices[indices.m_point].isInitialized() )
-      m_initialPointIndices[indices.m_point] = indices;
-    else if( m_initialPointIndices[indices.m_point] != indices )
+    int ptIndex = indices.m_point;
+    if( !m_pointIndices[indices.m_point].isInitialized() )
     {
-      V3 v = m_points[indices.m_point];
-      indices.m_point = (int)m_points.size();
-      m_points.push_back( v );
-
-      if(indices.m_normal != -1)
-      {
-        v = m_normals[indices.m_normal];
-        indices.m_normal = (int)m_normals.size();
-        m_normals.push_back( v );
-      }
-
-      if(indices.m_texCoord != -1)
-      {
-        V2 t = m_texCoords[indices.m_texCoord];
-        indices.m_texCoord = (int)m_texCoords.size();
-        m_texCoords.push_back( t );
-      }
-      m_initialPointIndices.push_back( indices );
+      m_pointIndices[indices.m_point] = indices;
+    }
+    else if( m_pointIndices[indices.m_point] != indices )
+    {
+      ptIndex = (int)m_pointIndices.size();
+      m_pointIndices.push_back( indices );
     }
 
     nbFacePts++;
 
     if( nbFacePts <= 3 )
     {
-      m_triangleIndices.push_back( indices );
+      m_triangleIndices.push_back( ptIndex );
     }
     else
     {
       //Simple triangulation: 0 1 2 / 0 2 3 / 0 3 4...
-      PointIndices first = m_triangleIndices[initalFacePt];
-      PointIndices second = m_triangleIndices.back();
+      int first = m_triangleIndices[initalFacePt];
+      int second = m_triangleIndices.back();
       m_triangleIndices.push_back( first );
       m_triangleIndices.push_back( second );
-      m_triangleIndices.push_back( indices );
+      m_triangleIndices.push_back( ptIndex );
     }
   }
   if( nbFacePts < 3 )
@@ -195,7 +183,7 @@ void ObjParser::ComputeMissingNormals()
   size_t i;
   for( i = 0; i < m_triangleIndices.size(); ++i )
   {
-    if( m_triangleIndices[i].m_normal == -1 )
+    if( m_pointIndices[ m_triangleIndices[i] ].m_normal == INT_MAX )
       break;
   }
   if( i == m_triangleIndices.size() )
@@ -211,8 +199,8 @@ void ObjParser::ComputeMissingNormals()
 
   for( i = 0; i < nbTriangles; ++i )
   {
-    V3 v1 = m_points[ m_triangleIndices[ i*3+1 ].m_point ] - m_points[ m_triangleIndices[ i*3 ].m_point ];
-    V3 v2 = m_points[ m_triangleIndices[ i*3+2 ].m_point ] - m_points[ m_triangleIndices[ i*3 ].m_point ];
+    V3 v1 = m_points[ m_pointIndices[ m_triangleIndices[ i*3+1 ] ].m_point ] - m_points[ m_pointIndices[ m_triangleIndices[ i*3 ] ].m_point ];
+    V3 v2 = m_points[ m_pointIndices[ m_triangleIndices[ i*3+2 ] ].m_point ] - m_points[ m_pointIndices[ m_triangleIndices[ i*3 ] ].m_point ];
     triangleNormals[i] = v1.Cross( v2 );
     triangleNormals[i].Normalize();
   }
@@ -222,14 +210,14 @@ void ObjParser::ComputeMissingNormals()
 
   for( i = 0; i < m_triangleIndices.size(); ++i )
   {
-    int ptIndex = m_triangleIndices[i].m_point;
+    int ptIndex = m_pointIndices[ m_triangleIndices[i] ].m_point;
     m_normals[ptIndex] = m_normals[ptIndex] + triangleNormals[i/3];
   }
 
   for( i = 0; i < m_normals.size(); ++i )
   {
     m_normals[i].Normalize();
-    m_initialPointIndices[i].m_normal = i;
+    m_pointIndices[i].m_normal = i;
   }
 }
 
@@ -299,20 +287,24 @@ ObjParser::ObjParser( std::istream& stream )
 
 void ObjParser::GetTriangleIndices(int triIndex, int& i1, int& i2, int& i3)const
 {
-  i1 = m_triangleIndices[triIndex*3].m_point;
-  i2 = m_triangleIndices[triIndex*3+1].m_point;
-  i3 = m_triangleIndices[triIndex*3+2].m_point;
+  i1 = m_triangleIndices[triIndex*3];
+  i2 = m_triangleIndices[triIndex*3+1];
+  i3 = m_triangleIndices[triIndex*3+2];
 }
 
 V3 ObjParser::GetPoint(int ptIndex)const
 {
-  return m_points[ptIndex];
+  int index = m_pointIndices[ptIndex].m_point;
+  if( index == INT_MAX )
+    return V3( 0, 0, 0 );
+  else
+    return m_points[ index ];
 }
 
 V3 ObjParser::GetNormal(int ptIndex)const
 {
-  int index = m_initialPointIndices[ptIndex].m_normal;
-  if( index == -1 )
+  int index = m_pointIndices[ptIndex].m_normal;
+  if( index == INT_MAX )
     return V3( 0, 1, 0 );
   else
     return m_normals[ index ];
@@ -320,8 +312,8 @@ V3 ObjParser::GetNormal(int ptIndex)const
 
 V2 ObjParser::GetTextureCoord(int ptIndex)const
 {
-  int index = m_initialPointIndices[ptIndex].m_texCoord;
-  if( index == -1 )
+  int index = m_pointIndices[ptIndex].m_texCoord;
+  if( index == INT_MAX )
     return V2( 0, 0 );
   else
     return m_texCoords[ index ];
