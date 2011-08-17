@@ -39,6 +39,7 @@ namespace Fabric
     class StructAdapter;
     class FixedArrayAdapter;
     class VariableArrayAdapter;
+    class SlicedArrayAdapter;
     class OpaqueAdapter;
     class ModuleBuilder;
     
@@ -68,6 +69,7 @@ namespace Fabric
       RC::ConstHandle<ConstStringAdapter> getConstStringAdapter( size_t length ) const;
       
       RC::ConstHandle<VariableArrayAdapter> getVariableArrayOf( RC::ConstHandle<Adapter> const &adapter ) const;
+      RC::ConstHandle<SlicedArrayAdapter> getSlicedArrayOf( RC::ConstHandle<Adapter> const &adapter ) const;
       RC::ConstHandle<FixedArrayAdapter> getFixedArrayOf( RC::ConstHandle<Adapter> const &adapter, size_t length ) const;
       
       RC::ConstHandle<StructAdapter> registerStruct( std::string const &name, RT::StructMemberInfoVector const &structMemberInfoVector );

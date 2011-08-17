@@ -12,6 +12,7 @@
 #include "StringAdapter.h"
 #include "FixedArrayAdapter.h"
 #include "VariableArrayAdapter.h"
+#include "SlicedArrayAdapter.h"
 #include "StructAdapter.h"
 #include "OpaqueAdapter.h"
 #include "ModuleBuilder.h"
@@ -25,6 +26,7 @@
 #include <Fabric/Core/RT/StructDesc.h>
 #include <Fabric/Core/RT/FixedArrayDesc.h>
 #include <Fabric/Core/RT/VariableArrayDesc.h>
+#include <Fabric/Core/RT/SlicedArrayDesc.h>
 #include <Fabric/Core/RT/Manager.h>
 #include <Fabric/Core/Util/Debug.h>
 
@@ -140,6 +142,13 @@ namespace Fabric
           }
           break;
           
+          case RT::DT_SLICED_ARRAY:
+          {
+            RC::ConstHandle<RT::SlicedArrayDesc> slicedArrayDesc = RC::ConstHandle<RT::SlicedArrayDesc>::StaticCast( desc );
+            adapter = new SlicedArrayAdapter( this, slicedArrayDesc );
+          }
+          break;
+          
           case RT::DT_OPAQUE:
           {
             RC::ConstHandle<RT::OpaqueDesc> opaqueDesc = RC::ConstHandle<RT::OpaqueDesc>::StaticCast( desc );
@@ -227,6 +236,12 @@ namespace Fabric
     {
       RC::ConstHandle<RT::Desc> variableArrayDesc = m_rtManager->getVariableArrayOf( adapter->getDesc() );
       return RC::ConstHandle<VariableArrayAdapter>::StaticCast( getAdapter( variableArrayDesc ) );
+    }
+      
+    RC::ConstHandle<SlicedArrayAdapter> Manager::getSlicedArrayOf( RC::ConstHandle<Adapter> const &adapter ) const
+    {
+      RC::ConstHandle<RT::Desc> slicedArrayDesc = m_rtManager->getSlicedArrayOf( adapter->getDesc() );
+      return RC::ConstHandle<SlicedArrayAdapter>::StaticCast( getAdapter( slicedArrayDesc ) );
     }
     
     RC::ConstHandle<FixedArrayAdapter> Manager::getFixedArrayOf( RC::ConstHandle<Adapter> const &adapter, size_t length ) const
