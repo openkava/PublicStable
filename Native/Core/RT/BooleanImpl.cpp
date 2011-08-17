@@ -1,3 +1,7 @@
+/*
+ *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+ */
+ 
 #include "BooleanImpl.h"
 
 #include <Fabric/Base/JSON/Boolean.h>
@@ -8,8 +12,6 @@
 
 namespace Fabric
 {
-  
-
   namespace RT
   {
     BooleanImpl::BooleanImpl( std::string const &codeName )
