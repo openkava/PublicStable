@@ -3,6 +3,7 @@
  */
  
 #include <Fabric/Core/RT/SlicedArrayImpl.h>
+#include <Fabric/Core/RT/VariableArrayImpl.h>
 #include <Fabric/Base/JSON/Array.h>
 #include <Fabric/Core/Util/Format.h>
 #include <Fabric/Base/Exception.h>
@@ -16,6 +17,7 @@ namespace Fabric
       , m_memberImpl( memberImpl )
       , m_memberSize( memberImpl->getSize() )
       , m_memberIsShallow( memberImpl->isShallow() )
+      , m_variableArrayImpl( memberImpl->getVariableArrayImpl() )
     {
       setSize( sizeof(bits_t) );
     }
@@ -29,34 +31,18 @@ namespace Fabric
     void SlicedArrayImpl::setData( void const *src, void *dst ) const
     {
       bits_t const *srcBits = reinterpret_cast<bits_t const *>(src);
-      bits_t const *dstBits = reinterpret_cast<bits_t const *>(dst);
-      if ( srcBits != dstBits )
-      {
-        if ( srcBits->size != dstBits->size )
-          throw Exception( "source and destination sizes of sliced array must match" );
-        uint8_t const *srcMember = srcBits->members + srcBits->offset * m_memberSize;
-        uint8_t const *srcMemberEnd = srcBits->members + (srcBits->offset + srcBits->size) * m_memberSize;
-        uint8_t *dstMember = dstBits->members + dstBits->offset * m_memberSize;
-        while ( srcMember != srcMemberEnd )
-        {
-          m_memberImpl->setData( srcMember, dstMember );
-          srcMember += m_memberSize;
-          dstMember += m_memberSize;
-        }
-      }
+      bits_t *dstBits = reinterpret_cast<bits_t *>(dst);
+      dstBits->offset = srcBits->offset;
+      dstBits->size = srcBits->size;
+      m_variableArrayImpl->setData( &srcBits->variableArrayBits, &dstBits->variableArrayBits );
     }
 
     RC::Handle<JSON::Value> SlicedArrayImpl::getJSONValue( void const *data ) const
     {
-      bits_t const *srcBits = reinterpret_cast<bits_t const *>(data);
-      RC::Handle<JSON::Array> arrayValue = JSON::Array::Create( srcBits->size );
-      uint8_t const *srcMember = srcBits->members + srcBits->offset * m_memberSize;
-      uint8_t const *srcMemberEnd = srcBits->members + (srcBits->offset + srcBits->size) * m_memberSize;
-      for ( size_t i=0; srcMember!=srcMemberEnd; ++i )
-      {
-        arrayValue->set( i, m_memberImpl->getJSONValue( srcMember ) );
-        srcMember += m_memberSize;
-      }
+      bits_t const *bits = reinterpret_cast<bits_t const *>(data);
+      RC::Handle<JSON::Array> arrayValue = JSON::Array::Create( bits->size );
+      for ( size_t i=0; i<bits->size; ++i )
+        arrayValue->set( i, m_variableArrayImpl->getJSONValue( m_variableArrayImpl->getImmutableMemberData_NoCheck( &bits->variableArrayBits, bits->offset + i ) ) );
       return arrayValue;
     }
     
@@ -66,38 +52,35 @@ namespace Fabric
         throw Exception( "JSON value is not array" );
       RC::ConstHandle<JSON::Array> jsonArray = RC::ConstHandle<JSON::Array>::StaticCast( jsonValue );
 
-      bits_t const *dstBits = reinterpret_cast<bits_t const *>(data);
+      bits_t *dstBits = reinterpret_cast<bits_t *>(data);
       if ( jsonArray->size() != dstBits->size )
         throw Exception( "JSON array size must equal sliced array size" );
 
-      uint8_t *dstMember = dstBits->members + dstBits->offset * m_memberSize;
       for ( size_t i=0; i<dstBits->size; ++i )
-      {
-        m_memberImpl->setDataFromJSONValue( jsonArray->get(i), dstMember );
-        dstMember += m_memberSize;
-      }
+        m_memberImpl->setDataFromJSONValue( jsonArray->get(i), m_variableArrayImpl->getMutableMemberData_NoCheck( &dstBits->variableArrayBits, dstBits->offset + i ) );
     }
 
     void SlicedArrayImpl::disposeData( void *data ) const
     {
-      // [pzion 20110816] no-op: sliced arrays don't own references to their members
+      bits_t *bits = reinterpret_cast<bits_t *>(data);
+      m_variableArrayImpl->disposeData( &bits->variableArrayBits );
     }
     
     std::string SlicedArrayImpl::descData( void const *data ) const
     {
-      std::string result = "[";
-      bits_t const *srcBits = reinterpret_cast<bits_t const *>(data);
+      bits_t const *srcBits = reinterpret_cast<bits_t const *>( data );
+
       size_t numMembers = srcBits->size;
       size_t numMembersToDisplay = numMembers;
       if ( numMembersToDisplay > 16 )
         numMembersToDisplay = 16;
-      uint8_t const *srcMember = srcBits->members + srcBits->offset * m_memberSize;
+
+      std::string result = "[";
       for ( size_t i=0; i<numMembersToDisplay; ++i )
       {
         if ( result.length() > 1 )
           result += ",";
-        result += getMemberImpl()->descData( srcMember );
-        srcMember += m_memberSize;
+        result += getMemberImpl()->descData( m_variableArrayImpl->getImmutableMemberData_NoCheck( &srcBits->variableArrayBits, srcBits->offset + i ) );
       }
       if ( numMembers > numMembersToDisplay )
         result += "...";
@@ -131,15 +114,23 @@ namespace Fabric
       bits_t const *srcBits = reinterpret_cast<bits_t const *>(data);
       if ( index >= srcBits->size )
         throw Exception( "index ("+_(index)+") out of range ("+_(srcBits->size)+")" );
-      return srcBits->members + (srcBits->offset + index) * m_memberSize;
+      return m_variableArrayImpl->getImmutableMemberData_NoCheck( &srcBits->variableArrayBits, srcBits->offset + index );
     }
     
     void *SlicedArrayImpl::getMemberData( void *data, size_t index ) const
     { 
-      bits_t const *srcBits = reinterpret_cast<bits_t const *>(data);
+      bits_t *srcBits = reinterpret_cast<bits_t *>(data);
       if ( index >= srcBits->size )
         throw Exception( "index ("+_(index)+") out of range ("+_(srcBits->size)+")" );
-      return srcBits->members + (srcBits->offset + index) * m_memberSize;
+      return m_variableArrayImpl->getMutableMemberData_NoCheck( &srcBits->variableArrayBits, srcBits->offset + index );
+    }
+
+    void SlicedArrayImpl::set( size_t offset, size_t size, void *variableArrayBits, void *data ) const
+    {
+      bits_t *bits = reinterpret_cast<bits_t *>(data);
+      bits->offset = offset;
+      bits->size = size;
+      m_variableArrayImpl->setData( &variableArrayBits, &bits->variableArrayBits );
     }
   };
 };

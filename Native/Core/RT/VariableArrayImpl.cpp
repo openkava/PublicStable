@@ -215,7 +215,7 @@ namespace Fabric
       size_t numMembers = bits? bits->numMembers: 0;
       if ( index >= numMembers )
         throw Exception( "index ("+_(index)+") out of range ("+_(numMembers)+")" );
-      return getMemberData_NoCheck( data, index );
+      return getImmutableMemberData_NoCheck( data, index );
     }
     
     void *VariableArrayImpl::getMemberData( void *data, size_t index ) const
@@ -224,7 +224,7 @@ namespace Fabric
       size_t numMembers = bits? bits->numMembers: 0;
       if ( index >= numMembers )
         throw Exception( "index ("+_(index)+") out of range ("+_(numMembers)+")" );
-      return getMemberData_NoCheck( data, index );
+      return getMutableMemberData_NoCheck( data, index );
     }
 
     void VariableArrayImpl::setMembers( void *data, size_t numMembers, void const *members ) const
