@@ -74,7 +74,7 @@ namespace Fabric
 
     RC::ConstHandle<SlicedArrayDesc> Manager::getSlicedArrayOf( RC::ConstHandle<RT::Desc> const &memberDesc ) const
     {
-      std::string slicedArrayName = memberDesc->getName() + "[]";
+      std::string slicedArrayName = memberDesc->getName() + "<>";
       RC::ConstHandle<SlicedArrayImpl> slicedArrayImpl = memberDesc->getImpl()->getSlicedArrayImpl();
       RC::ConstHandle<SlicedArrayDesc> slicedArrayDesc = new SlicedArrayDesc( slicedArrayName, slicedArrayImpl, memberDesc );
       return RC::ConstHandle<SlicedArrayDesc>::StaticCast( registerDesc( slicedArrayDesc ) );
@@ -241,6 +241,17 @@ namespace Fabric
           ++data;
           
           return getFixedArrayOf( getComplexDesc( desc, data, dataEnd ), length );
+        }
+        else throw Exception( "malformed type expression" );
+      }
+      else if ( data != dataEnd && *data == '<' )
+      {
+        ++data;
+        
+        if ( data != dataEnd && *data == '>' )
+        {
+          ++data;
+          return getSlicedArrayOf( getComplexDesc( desc, data, dataEnd ) );
         }
         else throw Exception( "malformed type expression" );
       }
