@@ -1,7 +1,11 @@
-#include "Impl.h"
-#include "FixedArrayImpl.h"
-#include "VariableArrayImpl.h"
-
+/*
+ *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+ */
+ 
+#include <Fabric/Core/RT/Impl.h>
+#include <Fabric/Core/RT/FixedArrayImpl.h>
+#include <Fabric/Core/RT/VariableArrayImpl.h>
+#include <Fabric/Core/RT/SlicedArrayImpl.h>
 #include <Fabric/Core/Util/Encoder.h>
 #include <Fabric/Base/Util/Bits.h>
 #include <Fabric/Base/Exception.h>
@@ -9,8 +13,6 @@
 
 namespace Fabric
 {
-  
-
   namespace RT
   {
     Impl::Impl( std::string const &codeName, ImplType implType )
@@ -47,6 +49,17 @@ namespace Fabric
         m_variableArrayImpl = variableArrayImpl;
       }
       return variableArrayImpl;
+    }
+
+    RC::ConstHandle<SlicedArrayImpl> Impl::getSlicedArrayImpl() const
+    {
+      RC::ConstHandle<SlicedArrayImpl> slicedArrayImpl = m_slicedArrayImpl.makeStrong();
+      if ( !slicedArrayImpl )
+      {
+        slicedArrayImpl = new SlicedArrayImpl( m_codeName + "_SA", this );
+        m_slicedArrayImpl = slicedArrayImpl;
+      }
+      return slicedArrayImpl;
     }
   };
 };
