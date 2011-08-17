@@ -1,3 +1,7 @@
+/*
+ *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+ */
+ 
 #ifndef _FABRIC_RT_IMPL_H
 #define _FABRIC_RT_IMPL_H
 
@@ -26,6 +30,7 @@ namespace Fabric
   namespace RT
   {
     class VariableArrayImpl;
+    class SlicedArrayImpl;
     class FixedArrayImpl;
     
     class Impl : public RC::Object
@@ -49,6 +54,7 @@ namespace Fabric
       
       RC::ConstHandle<FixedArrayImpl> getFixedArrayImpl( size_t length ) const;
       RC::ConstHandle<VariableArrayImpl> getVariableArrayImpl() const;
+      RC::ConstHandle<SlicedArrayImpl> getSlicedArrayImpl() const;
       
     protected:
     
@@ -63,6 +69,7 @@ namespace Fabric
       size_t m_size;
       
       mutable RC::WeakConstHandle<VariableArrayImpl> m_variableArrayImpl;
+      mutable RC::WeakConstHandle<SlicedArrayImpl> m_slicedArrayImpl;
       mutable Util::UnorderedMap< size_t, RC::WeakConstHandle<FixedArrayImpl> > m_fixedArrayImpls;  
     };
   };

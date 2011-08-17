@@ -1,3 +1,7 @@
+/*
+ *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+ */
+ 
 #include "Manager.h"
 #include "BooleanDesc.h"
 #include "BooleanImpl.h"
@@ -13,6 +17,8 @@
 #include "StringImpl.h"
 #include "VariableArrayDesc.h"
 #include "VariableArrayImpl.h"
+#include "SlicedArrayDesc.h"
+#include "SlicedArrayImpl.h"
 #include "StructDesc.h"
 #include "StructImpl.h"
 #include "OpaqueDesc.h"
@@ -64,6 +70,14 @@ namespace Fabric
       RC::ConstHandle<VariableArrayImpl> variableArrayImpl = memberDesc->getImpl()->getVariableArrayImpl();
       RC::ConstHandle<VariableArrayDesc> variableArrayDesc = new VariableArrayDesc( variableArrayName, variableArrayImpl, memberDesc );
       return RC::ConstHandle<VariableArrayDesc>::StaticCast( registerDesc( variableArrayDesc ) );
+    }
+
+    RC::ConstHandle<SlicedArrayDesc> Manager::getSlicedArrayOf( RC::ConstHandle<RT::Desc> const &memberDesc ) const
+    {
+      std::string slicedArrayName = memberDesc->getName() + "[]";
+      RC::ConstHandle<SlicedArrayImpl> slicedArrayImpl = memberDesc->getImpl()->getSlicedArrayImpl();
+      RC::ConstHandle<SlicedArrayDesc> slicedArrayDesc = new SlicedArrayDesc( slicedArrayName, slicedArrayImpl, memberDesc );
+      return RC::ConstHandle<SlicedArrayDesc>::StaticCast( registerDesc( slicedArrayDesc ) );
     }
 
     RC::ConstHandle<FixedArrayDesc> Manager::getFixedArrayOf( RC::ConstHandle<RT::Desc> const &memberDesc, size_t length ) const

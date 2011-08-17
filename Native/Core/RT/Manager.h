@@ -1,3 +1,7 @@
+/*
+ *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+ */
+ 
 #ifndef _FABRIC_RT_MANAGER_H
 #define _FABRIC_RT_MANAGER_H
 
@@ -34,6 +38,7 @@ namespace Fabric
     class StructDesc;
     class FixedArrayDesc;
     class VariableArrayDesc;
+    class SlicedArrayDesc;
     class OpaqueDesc;
     class ModuleBuilder;
     class ModuleScope;
@@ -76,6 +81,7 @@ namespace Fabric
       RC::ConstHandle<Desc> getDesc( std::string const &name ) const;
       
       RC::ConstHandle<VariableArrayDesc> getVariableArrayOf( RC::ConstHandle<Desc> const &memberDesc ) const;
+      RC::ConstHandle<SlicedArrayDesc> getSlicedArrayOf( RC::ConstHandle<Desc> const &memberDesc ) const;
       RC::ConstHandle<FixedArrayDesc> getFixedArrayOf( RC::ConstHandle<Desc> const &memberDesc, size_t length ) const;
       
       RC::ConstHandle<JSON::Value> jsonRoute( std::vector<std::string> const &dst, size_t dstOffset, std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg );
