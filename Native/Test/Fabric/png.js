@@ -23,6 +23,8 @@ operator load( io String url, io FabricResource resource )\n\
   report "Image pixels size is "+imagePixels.size;\n\
 }\n\
 ');
+if (op.getDiagnostics().length)
+  printDeep(op.getDiagnostics());
 
 binding = FABRIC.DG.createBinding();
 binding.setOperator(op);
@@ -37,6 +39,8 @@ rlnode.setData("url", 0, "file:tomatoes_960_640.png");
 node = FABRIC.DependencyGraph.createNode("node");
 node.addDependency(rlnode, "loadnode");
 node.bindings.append(binding);
+if (node.getErrors().length > 0 )
+  printDeep(node.getErrors());
 node.evaluate();
 
 FABRIC.flush();

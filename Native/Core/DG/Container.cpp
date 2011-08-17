@@ -10,6 +10,7 @@
 #include <Fabric/Core/MT/LogCollector.h>
 #include <Fabric/Core/RT/NumericDesc.h>
 #include <Fabric/Core/RT/VariableArrayDesc.h>
+#include <Fabric/Core/RT/SlicedArrayDesc.h>
 #include <Fabric/Core/RT/Manager.h>
 #include <Fabric/Core/RT/VariableArrayImpl.h>
 #include <Fabric/Base/JSON/Value.h>
@@ -24,8 +25,6 @@
 
 namespace Fabric
 {
-  
-
   namespace DG
   {
     class Container::Member : public RC::Object
@@ -45,6 +44,13 @@ namespace Fabric
       RC::ConstHandle<RT::Desc> getDesc() const
       {
         return m_memberDesc;
+      }
+      
+      void getDescs( RC::ConstHandle<RT::Desc> &memberDesc, RC::ConstHandle<RT::VariableArrayDesc> &variableArrayDesc, RC::ConstHandle<RT::SlicedArrayDesc> &slicedArrayDesc ) const
+      {
+        memberDesc = m_memberDesc;
+        variableArrayDesc = m_variableArrayDesc;
+        slicedArrayDesc = m_slicedArrayDesc;
       }
       
       void *getArrayData() const
@@ -77,6 +83,7 @@ namespace Fabric
       RC::ConstHandle<RT::Desc> m_memberDesc;
       void *m_defaultMemberData;
       RC::ConstHandle<RT::VariableArrayDesc> m_variableArrayDesc;
+      RC::ConstHandle<RT::SlicedArrayDesc> m_slicedArrayDesc;
       void *m_arrayData;
     };
 
@@ -130,17 +137,12 @@ namespace Fabric
       notifyDelta( "members", jsonDescMembers() );
     }
 
-    RC::ConstHandle<RT::Desc> Container::getMemberDesc( std::string const &name )
+    void Container::getMemberDescs( std::string const &name, RC::ConstHandle<RT::Desc> &memberDesc, RC::ConstHandle<RT::VariableArrayDesc> &variableArrayDesc, RC::ConstHandle<RT::SlicedArrayDesc> &slicedArrayDesc )
     {
       Members::const_iterator it = m_members.find( name );
       if ( it == m_members.end() )
         throw Exception( "'" + name + "': no such member" );
-      return it->second->getDesc();
-    }
-    
-    RC::ConstHandle<RT::VariableArrayDesc> Container::getMemberArrayDesc( std::string const &name )
-    {
-      return m_context->getRTManager()->getVariableArrayOf( getMemberDesc( name ) );
+      it->second->getDescs( memberDesc, variableArrayDesc, slicedArrayDesc );
     }
     
     void *Container::getMemberArrayData( std::string const &name )
@@ -341,11 +343,18 @@ namespace Fabric
       }
     }
       
-    RC::Handle<MT::ParallelCall> Container::bind( RC::ConstHandle<Binding> const &binding, Scope const &scope, size_t *newCount, unsigned prefixCount, void * const *prefixes )
+    RC::Handle<MT::ParallelCall> Container::bind(
+      RC::ConstHandle<Binding> const &binding,
+      Scope const &scope,
+      size_t *newCount,
+      std::vector<Prototype::SlicedArray> &slicedArrays,
+      unsigned prefixCount,
+      void * const *prefixes
+      )
     {
       SelfScope selfScope( this, &scope );
 
-      return binding->bind( selfScope, newCount, prefixCount, prefixes );
+      return binding->bind( selfScope, newCount, slicedArrays, prefixCount, prefixes );
     }
 
     Container::Member::Member( RC::Handle<RT::Manager> const &rtManager, RC::ConstHandle<RT::Desc> memberDesc, size_t count, void const *defaultMemberData )
@@ -360,6 +369,7 @@ namespace Fabric
       memberDesc->setData( defaultMemberData, m_defaultMemberData );
       
       m_variableArrayDesc = rtManager->getVariableArrayOf( memberDesc );
+      m_slicedArrayDesc = rtManager->getSlicedArrayOf( memberDesc );
       
       size_t arraySize = m_variableArrayDesc->getSize();
       m_arrayData = malloc( arraySize );

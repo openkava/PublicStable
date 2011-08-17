@@ -24,7 +24,7 @@ FABRIC.RegisteredTypesManager.registerType( "MyStruct", myStructDesc );
 op = FABRIC.DependencyGraph.createOperator( "op" );
 op.setEntryFunctionName("entry");
 op.setSourceCode("\n\
-operator entry( io MyStruct arg[][] )\n\
+operator entry( io MyStruct arg<>[] )\n\
 {\n\
   report 'parent data: ' + arg;\n\
 }\n\
