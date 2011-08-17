@@ -16,6 +16,7 @@
 #include "OverloadNames.h"
 
 #include <Fabric/Core/RT/SlicedArrayDesc.h>
+#include <Fabric/Core/RT/Impl.h>
 
 #include <llvm/Module.h>
 #include <llvm/Function.h>
@@ -47,6 +48,7 @@ namespace Fabric
       if ( moduleBuilder.contains( getCodeName(), buildFunctions ) )
         return;
       m_memberAdapter->llvmPrepareModule( moduleBuilder, buildFunctions );
+      m_variableArrayAdapter->llvmPrepareModule( moduleBuilder, buildFunctions );
       
       moduleBuilder->addTypeName( getCodeName(), llvmRawType() );
 
@@ -54,6 +56,71 @@ namespace Fabric
       RC::ConstHandle<SizeAdapter> sizeAdapter = getManager()->getSizeAdapter();
       RC::ConstHandle<StringAdapter> stringAdapter = getManager()->getStringAdapter();
       RC::ConstHandle<OpaqueAdapter> dataAdapter = getManager()->getDataAdapter();
+      
+      {
+        std::vector< FunctionParam > params;
+        params.push_back( FunctionParam( "slicedArayLValue", this, CG::USAGE_LVALUE ) );
+        params.push_back( FunctionParam( "sizeRValue", sizeAdapter, CG::USAGE_RVALUE ) );
+        std::string overloadName = constructOverloadName( this, sizeAdapter );
+        FunctionBuilder functionBuilder( moduleBuilder, overloadName, ExprType(), params, false );
+        if ( buildFunctions )
+        {
+          BasicBlockBuilder basicBlockBuilder( functionBuilder );
+
+          llvm::Value *slicedArayLValue = functionBuilder[0];
+          llvm::Value *sizeRValue = functionBuilder[1];
+        
+          llvm::BasicBlock *entryBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "entry" );
+          
+          basicBlockBuilder->SetInsertPoint( entryBB );
+          llvm::Value *offsetLValue = basicBlockBuilder->CreateConstGEP2_32( slicedArayLValue, 0, 0 );
+          sizeAdapter->llvmDefaultAssign( basicBlockBuilder, offsetLValue, sizeAdapter->llvmConst( 0 ) );
+          llvm::Value *sizeLValue = basicBlockBuilder->CreateConstGEP2_32( slicedArayLValue, 0, 1 );
+          sizeAdapter->llvmDefaultAssign( basicBlockBuilder, sizeLValue, sizeRValue );
+          llvm::Value *variableArrayLValue = basicBlockBuilder->CreateConstGEP2_32( slicedArayLValue, 0, 2 );
+          m_variableArrayAdapter->llvmInit( basicBlockBuilder, variableArrayLValue );
+          m_variableArrayAdapter->llvmCallResize( basicBlockBuilder, variableArrayLValue, sizeRValue );
+          basicBlockBuilder->CreateRetVoid();
+        }
+      }
+      
+      {
+        std::vector<FunctionParam> params;
+        params.push_back( FunctionParam( "dstSlicedArrayLValue", this, CG::USAGE_LVALUE ) );
+        params.push_back( FunctionParam( "srcSlicedArrayRValue", this, CG::USAGE_RVALUE ) );
+        params.push_back( FunctionParam( "offsetRValue", sizeAdapter, CG::USAGE_RVALUE ) );
+        params.push_back( FunctionParam( "sizeRValue", sizeAdapter, CG::USAGE_RVALUE ) );
+        std::vector< RC::ConstHandle<CG::Adapter> > paramTypes;
+        paramTypes.push_back( this );
+        paramTypes.push_back( sizeAdapter );
+        paramTypes.push_back( sizeAdapter );
+        std::string overloadName = constructOverloadName( this, paramTypes );
+        FunctionBuilder functionBuilder( moduleBuilder, overloadName, ExprType(), params, false );
+        if ( buildFunctions )
+        {
+          BasicBlockBuilder basicBlockBuilder( functionBuilder );
+
+          llvm::Value *dstSlicedArrayLValue = functionBuilder[0];
+          llvm::Value *srcSlicedArrayRValue = functionBuilder[1];
+          llvm::Value *offsetRValue = functionBuilder[2];
+          llvm::Value *sizeRValue = functionBuilder[3];
+        
+          llvm::BasicBlock *entryBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "entry" );
+          
+          basicBlockBuilder->SetInsertPoint( entryBB );
+          llvm::Value *offsetLValue = basicBlockBuilder->CreateConstGEP2_32( dstSlicedArrayLValue, 0, 0 );
+          sizeAdapter->llvmDefaultAssign( basicBlockBuilder, offsetLValue, offsetRValue );
+          llvm::Value *sizeLValue = basicBlockBuilder->CreateConstGEP2_32( dstSlicedArrayLValue, 0, 1 );
+          sizeAdapter->llvmDefaultAssign( basicBlockBuilder, sizeLValue, sizeRValue );
+          llvm::Value *srcSlicedArrayLValue = llvmRValueToLValue( basicBlockBuilder, srcSlicedArrayRValue );
+          llvm::Value *srcVariableArrayLValue = basicBlockBuilder->CreateConstGEP2_32( srcSlicedArrayLValue, 0, 2 );
+          llvm::Value *srcVariableArrayRValue = m_variableArrayAdapter->llvmLValueToRValue( basicBlockBuilder, srcVariableArrayLValue );
+          llvm::Value *dstVariableArrayLValue = basicBlockBuilder->CreateConstGEP2_32( dstSlicedArrayLValue, 0, 2 );
+          m_variableArrayAdapter->llvmInit( basicBlockBuilder, dstVariableArrayLValue );
+          m_variableArrayAdapter->llvmDefaultAssign( basicBlockBuilder, dstVariableArrayLValue, srcVariableArrayRValue );
+          basicBlockBuilder->CreateRetVoid();
+        }
+      }
       
       {
         std::vector< FunctionParam > params;
@@ -227,41 +294,44 @@ namespace Fabric
         }
       }
       
+      if ( m_memberAdapter->getImpl()->isShallow() )
       {
-        std::string name = methodOverloadName( "dataSize", this );
-        std::vector< FunctionParam > params;
-        params.push_back( FunctionParam( "selfRValue", this, USAGE_RVALUE ) );
-        FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( sizeAdapter, USAGE_RVALUE ), params );
-        if ( buildFunctions )
         {
-          llvm::Value *selfRValue = functionBuilder[0];
-          BasicBlockBuilder basicBlockBuilder( functionBuilder );
-          basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
-          llvm::Value *sizeLValue = basicBlockBuilder->CreateConstGEP2_32( selfRValue, 0, 1 );
-          llvm::Value *sizeRValue = sizeAdapter->llvmLValueToRValue( basicBlockBuilder, sizeLValue );
-          llvm::Value *memberSizeRValue = sizeAdapter->llvmConst( m_memberAdapter->getDesc()->getSize() );
-          llvm::Value *dataSizeRValue = basicBlockBuilder->CreateMul( sizeRValue, memberSizeRValue );
-          basicBlockBuilder->CreateRet( dataSizeRValue );
+          std::string name = methodOverloadName( "dataSize", this );
+          std::vector< FunctionParam > params;
+          params.push_back( FunctionParam( "selfRValue", this, USAGE_RVALUE ) );
+          FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( sizeAdapter, USAGE_RVALUE ), params );
+          if ( buildFunctions )
+          {
+            llvm::Value *selfRValue = functionBuilder[0];
+            BasicBlockBuilder basicBlockBuilder( functionBuilder );
+            basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
+            llvm::Value *sizeLValue = basicBlockBuilder->CreateConstGEP2_32( selfRValue, 0, 1 );
+            llvm::Value *sizeRValue = sizeAdapter->llvmLValueToRValue( basicBlockBuilder, sizeLValue );
+            llvm::Value *memberSizeRValue = sizeAdapter->llvmConst( m_memberAdapter->getDesc()->getSize() );
+            llvm::Value *dataSizeRValue = basicBlockBuilder->CreateMul( sizeRValue, memberSizeRValue );
+            basicBlockBuilder->CreateRet( dataSizeRValue );
+          }
         }
-      }
-      
-      {
-        std::string name = methodOverloadName( "data", this );
-        std::vector< FunctionParam > params;
-        params.push_back( FunctionParam( "arrayRValue", this, USAGE_RVALUE ) );
-        FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( dataAdapter, USAGE_RVALUE ), params );
-        if ( buildFunctions )
+        
         {
-          llvm::Value *arrayRValue = functionBuilder[0];
-          BasicBlockBuilder basicBlockBuilder( functionBuilder );
-          basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
-          llvm::Value *offsetLValue = basicBlockBuilder->CreateConstGEP2_32( arrayRValue, 0, 0 );
-          llvm::Value *offsetRValue = sizeAdapter->llvmLValueToRValue( basicBlockBuilder, offsetLValue );
-          llvm::Value *arrayLValue = llvmRValueToLValue( basicBlockBuilder, arrayRValue );
-          llvm::Value *variableArrayLValue = basicBlockBuilder->CreateConstGEP2_32( arrayLValue, 0, 2 );
-          llvm::Value *variableArrayRValue = m_variableArrayAdapter->llvmLValueToRValue( basicBlockBuilder, variableArrayLValue );
-          llvm::Value *memberLValue = m_variableArrayAdapter->llvmConstIndexOp_NoCheckLValue( basicBlockBuilder, variableArrayRValue, offsetRValue );
-          basicBlockBuilder->CreateRet( basicBlockBuilder->CreatePointerCast( memberLValue, dataAdapter->llvmRType() ) );
+          std::string name = methodOverloadName( "data", this );
+          std::vector< FunctionParam > params;
+          params.push_back( FunctionParam( "arrayRValue", this, USAGE_RVALUE ) );
+          FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( dataAdapter, USAGE_RVALUE ), params );
+          if ( buildFunctions )
+          {
+            llvm::Value *arrayRValue = functionBuilder[0];
+            BasicBlockBuilder basicBlockBuilder( functionBuilder );
+            basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
+            llvm::Value *offsetLValue = basicBlockBuilder->CreateConstGEP2_32( arrayRValue, 0, 0 );
+            llvm::Value *offsetRValue = sizeAdapter->llvmLValueToRValue( basicBlockBuilder, offsetLValue );
+            llvm::Value *arrayLValue = llvmRValueToLValue( basicBlockBuilder, arrayRValue );
+            llvm::Value *variableArrayLValue = basicBlockBuilder->CreateConstGEP2_32( arrayLValue, 0, 2 );
+            llvm::Value *variableArrayRValue = m_variableArrayAdapter->llvmLValueToRValue( basicBlockBuilder, variableArrayLValue );
+            llvm::Value *memberLValue = m_variableArrayAdapter->llvmConstIndexOp_NoCheckLValue( basicBlockBuilder, variableArrayRValue, offsetRValue );
+            basicBlockBuilder->CreateRet( basicBlockBuilder->CreatePointerCast( memberLValue, dataAdapter->llvmRType() ) );
+          }
         }
       }
     }
