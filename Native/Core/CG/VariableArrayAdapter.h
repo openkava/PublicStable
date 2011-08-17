@@ -19,6 +19,7 @@ namespace Fabric
     class VariableArrayAdapter : public ArrayAdapter
     {
       friend class Manager;
+      friend class SlicedArrayAdapter;
     
     public:
 
