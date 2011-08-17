@@ -16,6 +16,8 @@ namespace Fabric
 {
   namespace RT
   {
+    class VariableArrayImpl;
+    
     class SlicedArrayImpl : public ArrayImpl
     {
       friend class Manager;
@@ -25,7 +27,7 @@ namespace Fabric
       {
         size_t offset;
         size_t size;
-        uint8_t *members;
+        void *variableArrayBits;
       };
     
     public:
@@ -51,28 +53,7 @@ namespace Fabric
       
       // SlicedArrayImpl
       
-      size_t getOffset( void const *data )
-      {
-        bits_t const *bits = reinterpret_cast<bits_t const *>(data);
-        return bits->offset;
-      }
-      size_t getSize( void const *data )
-      {
-        bits_t const *bits = reinterpret_cast<bits_t const *>(data);
-        return bits->size;
-      }
-      void *getMembers( void const *data )
-      {
-        bits_t const *bits = reinterpret_cast<bits_t const *>(data);
-        return bits->members;
-      }
-      void set( size_t offset, size_t size, void *members, void *data ) const
-      {
-        bits_t *bits = reinterpret_cast<bits_t *>(data);
-        bits->offset = offset;
-        bits->size = size;
-        bits->members = reinterpret_cast<uint8_t *>( members );
-      }
+      void set( size_t offset, size_t size, void *variableArrayBits, void *data ) const;
       
     protected:
     
@@ -83,6 +64,7 @@ namespace Fabric
       RC::ConstHandle<Impl> m_memberImpl;
       size_t m_memberSize;
       bool m_memberIsShallow;
+      RC::ConstHandle<VariableArrayImpl> m_variableArrayImpl;
    };
   };
 };
