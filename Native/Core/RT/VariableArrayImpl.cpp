@@ -1,3 +1,7 @@
+/*
+ *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+ */
+ 
 #include "VariableArrayImpl.h"
 
 #include <Fabric/Base/JSON/Array.h>
@@ -11,8 +15,6 @@
 
 namespace Fabric
 {
-  
-
   namespace RT
   {
     VariableArrayImpl::VariableArrayImpl( std::string const &codeName, RC::ConstHandle<Impl> const &memberImpl )

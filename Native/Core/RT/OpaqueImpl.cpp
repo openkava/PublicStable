@@ -1,3 +1,7 @@
+/*
+ *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+ */
+ 
 #include "OpaqueImpl.h"
 
 #include <Fabric/Base/JSON/Null.h>
@@ -8,8 +12,6 @@
 
 namespace Fabric
 {
-  
-
   namespace RT
   {
     OpaqueImpl::OpaqueImpl( std::string const &codeName, size_t size )

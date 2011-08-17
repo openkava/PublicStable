@@ -1,3 +1,7 @@
+/*
+ *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+ */
+ 
 #include "StringImpl.h"
 
 #include <Fabric/Base/JSON/String.h>
@@ -9,8 +13,6 @@
 
 namespace Fabric
 {
-  
-
   namespace RT
   {
     StringImpl::StringImpl( std::string const &codeName )
