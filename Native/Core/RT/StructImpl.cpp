@@ -1,3 +1,7 @@
+/*
+ *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+ */
+ 
 #include "StructImpl.h"
 #include "Desc.h"
 
@@ -8,8 +12,6 @@
 
 namespace Fabric
 {
-  
-
   namespace RT
   {
     StructImpl::StructImpl( std::string const &codeName, StructMemberInfoVector const &memberInfos )

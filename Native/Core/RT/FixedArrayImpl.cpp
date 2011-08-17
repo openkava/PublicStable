@@ -1,3 +1,7 @@
+/*
+ *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+ */
+ 
 #include "FixedArrayImpl.h"
 
 #include <Fabric/Base/JSON/Array.h>
@@ -8,8 +12,6 @@
 
 namespace Fabric
 {
-  
-
   namespace RT
   {
     FixedArrayImpl::FixedArrayImpl( std::string const &codeName, RC::ConstHandle<Impl> const &memberImpl, size_t length )
