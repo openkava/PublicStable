@@ -1,3 +1,7 @@
+/*
+ *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+ */
+ 
 #include "Desc.h"
 #include "Impl.h"
 #include "FixedArrayDesc.h"
@@ -11,8 +15,6 @@
 
 namespace Fabric
 {
-  
-
   namespace RT
   {
     Desc::Desc( std::string const &name, RC::ConstHandle<Impl> const &impl )

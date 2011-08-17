@@ -1,3 +1,7 @@
+/*
+ *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+ */
+ 
 #include "VariableArrayAdapter.h"
 #include "BooleanAdapter.h"
 #include "IntegerAdapter.h"
