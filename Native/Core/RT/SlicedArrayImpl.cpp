@@ -130,7 +130,12 @@ namespace Fabric
       bits_t *bits = reinterpret_cast<bits_t *>(data);
       bits->offset = offset;
       bits->size = size;
-      m_variableArrayImpl->setData( &variableArrayBits, &bits->variableArrayBits );
+      m_variableArrayImpl->setData( variableArrayBits, &bits->variableArrayBits );
+    }
+
+    RC::ConstHandle<VariableArrayImpl> SlicedArrayImpl::getVariableArrayImpl() const
+    {
+      return m_variableArrayImpl;
     }
   };
 };

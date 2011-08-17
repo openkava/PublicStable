@@ -108,7 +108,13 @@ namespace Fabric
       markForRecompile();
     }
     
-    RC::Handle<MT::ParallelCall> Binding::bind( Scope const &scope, size_t *newSize, unsigned prefixCount, void * const *prefixes ) const
+    RC::Handle<MT::ParallelCall> Binding::bind(
+      Scope const &scope,
+      size_t *newSize,
+      std::vector<Prototype::SlicedArray> &slicedArrays,
+      unsigned prefixCount,
+      void * const *prefixes
+      ) const
     {
       if ( !m_prototype )
         throw Exception( "no prototype set" );
@@ -118,7 +124,7 @@ namespace Fabric
       RC::Handle<MT::ParallelCall> result;
       try
       {
-        result = m_operator->bind( m_prototype, scope, newSize, prefixCount, prefixes );
+        result = m_operator->bind( m_prototype, scope, newSize, slicedArrays, prefixCount, prefixes );
       }
       catch ( Exception e )
       {

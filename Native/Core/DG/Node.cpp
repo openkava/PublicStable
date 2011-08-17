@@ -34,6 +34,7 @@ namespace Fabric
       MT::TaskGroupStream taskGroupStream;
       size_t m_newCount;
       std::vector< RC::Handle<MT::ParallelCall> > m_evaluateParallelCallsPerOperator;
+      std::vector< std::vector<Prototype::SlicedArray> > m_slicedArraysPerOperator;
     };
     
     size_t Node::s_globalColorGeneration = 0;
@@ -144,7 +145,10 @@ namespace Fabric
       if ( m_runState )
       {
         for ( size_t i=0; i<m_runState->m_evaluateParallelCallsPerOperator.size(); ++i )
+        {
           m_runState->m_evaluateParallelCallsPerOperator[i] = 0;
+          m_runState->m_slicedArraysPerOperator[i].resize( 0 );
+        }
       }
       
       setOutOfDate();
@@ -212,7 +216,7 @@ namespace Fabric
           {
             BindingsScope dependenciesScope( m_dependencies );
             SelfScope selfScope( this, &dependenciesScope );
-            m_runState->m_evaluateParallelCallsPerOperator[i] = opParallelCall = binding->bind( selfScope, &m_runState->m_newCount );
+            m_runState->m_evaluateParallelCallsPerOperator[i] = opParallelCall = binding->bind( selfScope, &m_runState->m_newCount, m_runState->m_slicedArraysPerOperator[i] );
           }
 
           size_t oldCount = getCount();
@@ -226,10 +230,17 @@ namespace Fabric
       }
     }
       
-    RC::Handle<MT::ParallelCall> Node::bind( RC::ConstHandle<Binding> const &binding, Scope const &scope, size_t *newCount, unsigned prefixCount, void * const *prefixes )
+    RC::Handle<MT::ParallelCall> Node::bind(
+      RC::ConstHandle<Binding> const &binding,
+      Scope const &scope,
+      size_t *newCount,
+      std::vector<Prototype::SlicedArray> &slicedArrays,
+      unsigned prefixCount,
+      void * const *prefixes
+      )
     {
       BindingsScope dependenciesScope( m_dependencies, &scope );
-      return Container::bind( binding, dependenciesScope, newCount, prefixCount, prefixes );
+      return Container::bind( binding, dependenciesScope, newCount, slicedArrays, prefixCount, prefixes );
     }
     
     void Node::recalculateGlobalDependencyRank()
@@ -318,7 +329,8 @@ namespace Fabric
         size_t newCount;
         try
         {
-          RC::Handle<MT::ParallelCall>( binding->bind( selfScope, &newCount ) );
+          std::vector<Prototype::SlicedArray> slicedArrays;
+          RC::Handle<MT::ParallelCall>( binding->bind( selfScope, &newCount, slicedArrays ) );
         }
         catch ( Exception e )
         {
@@ -357,6 +369,7 @@ namespace Fabric
         {
           collectTasks( m_runState->taskGroupStream );
           m_runState->m_evaluateParallelCallsPerOperator.resize( m_bindingList->size(), 0 );
+          m_runState->m_slicedArraysPerOperator.resize( m_bindingList->size() );
         }
       }
     }

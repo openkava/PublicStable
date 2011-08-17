@@ -60,7 +60,7 @@ setDataOp.setEntryFunctionName("setData");
 setDataOp.setSourceCode('\
 operator setData(\n\
   io Data objParseHandle,\n\
-  io Vec3 positions[]\n\
+  io Vec3 positions<>\n\
   )\n\
 {\n\
   FabricOBJGetPoints(objParseHandle, positions);\n\

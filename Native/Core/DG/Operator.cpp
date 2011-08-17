@@ -136,7 +136,14 @@ namespace Fabric
       markForRecompile();
     }
     
-    RC::Handle<MT::ParallelCall> Operator::bind( Prototype *prototype, Scope const &scope, size_t *newSize, unsigned prefixCount, void * const *prefixes ) const
+    RC::Handle<MT::ParallelCall> Operator::bind(
+      Prototype *prototype,
+      Scope const &scope,
+      size_t *newSize,
+      std::vector<Prototype::SlicedArray> &slicedArrays,
+      unsigned prefixCount,
+      void * const *prefixes
+      ) const
     {
       if ( !m_sourceCode.length() )
         throw Exception( "no source code loaded" );
@@ -147,7 +154,7 @@ namespace Fabric
       if ( !m_function )
         throw Exception( "entry function not found" );
         
-      return prototype->bind( m_astOperator, scope, m_function, newSize, prefixCount, prefixes );
+      return prototype->bind( m_astOperator, scope, m_function, newSize, slicedArrays, prefixCount, prefixes );
     }
     
     std::string const &Operator::getEntryFunctionName() const

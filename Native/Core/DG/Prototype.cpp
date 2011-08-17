@@ -21,6 +21,8 @@
 #include <Fabric/Core/RT/Manager.h>
 #include <Fabric/Core/RT/VariableArrayDesc.h>
 #include <Fabric/Core/RT/VariableArrayImpl.h>
+#include <Fabric/Core/RT/SlicedArrayImpl.h>
+#include <Fabric/Core/RT/SlicedArrayDesc.h>
 #include <Fabric/Core/MT/Util.h>
 #include <Fabric/Base/JSON/String.h>
 #include <Fabric/Base/JSON/Array.h>
@@ -242,7 +244,15 @@ namespace Fabric
       clear();
     }
 
-    RC::Handle<MT::ParallelCall> Prototype::bind( RC::ConstHandle<AST::Operator> const &astOperator, Scope const &scope, RC::ConstHandle<Function> const &function, size_t *newSize, unsigned prefixCount, void * const *prefixes )
+    RC::Handle<MT::ParallelCall> Prototype::bind(
+      RC::ConstHandle<AST::Operator> const &astOperator,
+      Scope const &scope,
+      RC::ConstHandle<Function> const &function,
+      size_t *newSize,
+      std::vector<SlicedArray> &slicedArrays,
+      unsigned prefixCount,
+      void * const *prefixes
+      )
     {
       FABRIC_ASSERT( function );
       
@@ -319,7 +329,10 @@ namespace Fabric
                 std::string const &memberName = memberParam->name();
                 try
                 {
-                  RC::ConstHandle<RT::VariableArrayDesc> memberArrayDesc = container->getMemberArrayDesc( memberName );
+                  RC::ConstHandle<RT::Desc> memberDesc;
+                  RC::ConstHandle<RT::VariableArrayDesc> memberArrayDesc;
+                  RC::ConstHandle<RT::SlicedArrayDesc> memberSlicedArrayDesc;
+                  container->getMemberDescs( memberName, memberDesc, memberArrayDesc, memberSlicedArrayDesc );
                   RC::ConstHandle<RT::VariableArrayImpl> memberArrayImpl = memberArrayDesc->getImpl();
                   void *memberArrayData = container->getMemberArrayData( memberName );
                   if ( param->isElementParam() )
@@ -328,7 +341,6 @@ namespace Fabric
                       throw Exception( "cannot access both per-slice and whole array data for the same member" );
                     elementAccessSet.insert( memberArrayData );
                     
-                    RC::ConstHandle<RT::Desc> memberDesc = container->getMemberDesc( memberName );
                     RC::ConstHandle<RT::Impl> memberImpl = memberDesc->getImpl();
                     if ( astParamImpl != memberImpl )
                       throw Exception( "parameter type mismatch: member element type is "+_(memberDesc->getName())+", operator parameter type is "+_(astParamDesc->getName()) );
@@ -351,11 +363,15 @@ namespace Fabric
                       throw Exception( "cannot access both per-slice and whole array data for the same member" );
                     arrayAccessSet.insert( memberArrayData );
                     
-                    if ( astParamImpl != memberArrayImpl )
-                      throw Exception( "parameter type mismatch: member array type is "+_(memberArrayDesc->getName())+", operator parameter type is "+_(astParamDesc->getName()) );
-                    if ( astParamExprType.getUsage() != CG::USAGE_LVALUE )
-                      throw Exception( "array parmeters must bind to operator io parameters" );
-                    result->setBaseAddress( prefixCount+param->index(), memberArrayData );
+                    RC::ConstHandle<RT::SlicedArrayImpl> slicedArrayImpl = memberSlicedArrayDesc->getImpl();
+                    if ( astParamImpl != slicedArrayImpl )
+                      throw Exception( "parameter type mismatch: member array type is "+_(memberSlicedArrayDesc->getName())+", operator parameter type is "+_(astParamDesc->getName()) );
+                    //if ( astParamExprType.getUsage() != CG::USAGE_LVALUE )
+                    //  throw Exception( "array parmeters must bind to operator io parameters" );
+                    
+                    SlicedArray slicedArray( slicedArrayImpl, memberArrayData );
+                    slicedArrays.push_back( slicedArray );
+                    result->setBaseAddress( prefixCount+param->index(), slicedArrays.back().getData() );
                   }
                 }
                 catch ( Exception e ) {
@@ -401,6 +417,53 @@ namespace Fabric
       for ( size_t i=0; i<items.size(); ++i )
         result->push_back( JSON::String::Create( items[i] ) );
       return result;
+    }
+
+    Prototype::SlicedArray::SlicedArray()
+    {
+    }
+    
+    Prototype::SlicedArray::SlicedArray( RC::ConstHandle<RT::SlicedArrayImpl> const &slicedArrayImpl, void *variableArrayData )
+      : m_slicedArrayImpl( slicedArrayImpl )
+    {
+      if ( m_slicedArrayImpl )
+      {
+        m_slicedArrayData.resize( m_slicedArrayImpl->getSize(), 0 );
+        RC::ConstHandle<RT::VariableArrayImpl> variableArrayImpl = m_slicedArrayImpl->getVariableArrayImpl();
+        m_slicedArrayImpl->set( 0, variableArrayImpl->getNumMembers( variableArrayData ), variableArrayData, &m_slicedArrayData[0] );
+      }
+    }
+    
+    Prototype::SlicedArray::SlicedArray( SlicedArray const &that )
+      : m_slicedArrayImpl( that.m_slicedArrayImpl )
+    {
+      if ( m_slicedArrayImpl )
+      {
+        m_slicedArrayData.resize( m_slicedArrayImpl->getSize(), 0 );
+        m_slicedArrayImpl->setData( &that.m_slicedArrayData[0], &m_slicedArrayData[0] );
+      }
+    }
+    
+    Prototype::SlicedArray &Prototype::SlicedArray::operator =( SlicedArray const &that )
+    {
+      if ( m_slicedArrayImpl )
+      {
+        m_slicedArrayImpl->disposeData( &m_slicedArrayData[0] );
+        m_slicedArrayData.resize( 0 );
+      }
+      m_slicedArrayImpl = that.m_slicedArrayImpl;
+      if ( m_slicedArrayImpl )
+      {
+        m_slicedArrayData.resize( m_slicedArrayImpl->getSize(), 0 );
+        m_slicedArrayImpl->setData( &that.m_slicedArrayData[0], &m_slicedArrayData[0] );
+      }
+      return *this;
+    }
+    
+    Prototype::SlicedArray::~SlicedArray()
+    {
+      if ( m_slicedArrayImpl )
+        m_slicedArrayImpl->disposeData( &m_slicedArrayData[0] );
     }
   };
 };

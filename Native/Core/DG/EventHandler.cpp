@@ -228,7 +228,8 @@ namespace Fabric
       for ( size_t i=0; i<numPreDescendBindings; ++i )
       {
         RC::Handle<Binding> binding = m_preDescendBindings->get(i);
-        RC::Handle<MT::ParallelCall> parallelCall = binding->bind( selfScope, 0 );
+        std::vector<Prototype::SlicedArray> slicedArrays;
+        RC::Handle<MT::ParallelCall> parallelCall = binding->bind( selfScope, 0, slicedArrays );
         parallelCall->executeSerial();
       }
       
@@ -242,7 +243,8 @@ namespace Fabric
       for ( size_t i=0; i<numPostDescendBindings; ++i )
       {
         RC::Handle<Binding> binding = m_postDescendBindings->get(i);
-        RC::Handle<MT::ParallelCall> parallelCall = binding->bind( selfScope, 0 );
+        std::vector<Prototype::SlicedArray> slicedArrays;
+        RC::Handle<MT::ParallelCall> parallelCall = binding->bind( selfScope, 0, slicedArrays );
         parallelCall->executeSerial();
       }
       
@@ -254,7 +256,8 @@ namespace Fabric
         bool shouldSelect = false;
         SelectedNode selectedNode( node, selectorType );
         void *prefixes[2] = { &shouldSelect, &selectedNode.data[0] };
-        RC::Handle<MT::ParallelCall> parallelCall = m_selectBinding->bind( bindingsScope, 0, 2, prefixes );
+        std::vector<Prototype::SlicedArray> slicedArrays;
+        RC::Handle<MT::ParallelCall> parallelCall = m_selectBinding->bind( bindingsScope, 0, slicedArrays, 2, prefixes );
         parallelCall->executeSerial();
         if ( shouldSelect )
           selectedNodes->push_back( selectedNode );
@@ -274,7 +277,8 @@ namespace Fabric
         RC::Handle<Binding> binding = m_preDescendBindings->get(i);
         try
         {
-          binding->bind( selfScope, 0 );
+          std::vector<Prototype::SlicedArray> slicedArrays;
+          binding->bind( selfScope, 0, slicedArrays );
         }
         catch ( Exception e )
         {
@@ -294,7 +298,8 @@ namespace Fabric
         RC::Handle<Binding> binding = m_postDescendBindings->get(i);
         try
         {
-          binding->bind( selfScope, 0 );
+          std::vector<Prototype::SlicedArray> slicedArrays;
+          binding->bind( selfScope, 0, slicedArrays );
         }
         catch ( Exception e )
         {
@@ -307,7 +312,8 @@ namespace Fabric
         void *prefixes[2] = { 0, 0 };
         try
         {
-          m_selectBinding->bind( bindingsScope, 0, 2, prefixes );
+          std::vector<Prototype::SlicedArray> slicedArrays;
+          m_selectBinding->bind( bindingsScope, 0, slicedArrays, 2, prefixes );
         }
         catch ( Exception e )
         {
