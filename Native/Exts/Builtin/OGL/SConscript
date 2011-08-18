@@ -2,7 +2,7 @@
 # Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 #
 
-Import( 'extsEnv', 'fabricExtsDistDir', 'buildOS', 'buildArch', 'buildType' )
+Import( 'extsEnv', 'fabricExtsDistDir', 'buildOS', 'buildArch', 'buildType', 'ExtSLName' )
 
 oglPluginEnv = extsEnv.Clone()
 
@@ -45,7 +45,7 @@ oglPluginEnv.Command(
   command
   )
 
-oglPlugin = oglPluginEnv.SharedLibrary( 'FabricOGL', oglSource )
+oglPlugin = oglPluginEnv.SharedLibrary( ExtSLName('FabricOGL'), oglSource )
 oglFiles = [oglManifest, oglPlugin, oglKL]
 
 Return( 'oglFiles' )
