@@ -140,8 +140,8 @@ Export( 'ffmpegFlags' )
 # GTKGL
 if buildOS == 'Linux':
   gtkglFlags = {
-    'CPPPATH': ['/usr/include/gtkglext-1.0', '/usr/lib/gtkglext-1.0/include'],
-    'LIBS': [File('/usr/lib/libgtkglext-x11-1.0.a'), File('/usr/lib/libgdkglext-x11-1.0.a')],
+    'CPPPATH': [os.path.join( osArchIncludeBaseDir, 'gtkglext' )],
+    'LIBS': [File(os.path.join( libBaseDir, 'gtkglext', 'libgtkglext-x11-1.0.a' )), File(os.path.join( libBaseDir, 'gtkglext', 'libgdkglext-x11-1.0.a' ))],
   }
   Export( 'gtkglFlags' )
 
