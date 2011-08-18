@@ -5,7 +5,3 @@ operator bar( io ShaderSource shaders[] ) {
 	}
 }
 
-[FABRIC] [MT] Type: 0
-[FABRIC] [MT] Code: Zero
-[FABRIC] [MT] Type: 1
-[FABRIC] [MT] Code: One
