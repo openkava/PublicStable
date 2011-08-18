@@ -521,6 +521,8 @@ install_gtkglext:
                   && cp Build/gtkglext-$(GTKGLEXT_VERSION)-$$ARCH/gdk/.libs/libgdkglext-x11-1.0.a $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/lib/gtkglext/ \
                   && cp Build/gtkglext-$(GTKGLEXT_VERSION)-$$ARCH/gtk/.libs/libgtkglext-x11-1.0.a $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/lib/gtkglext/; \
 	done
+	mkdir -p $(TARGET_BASE)/$(BUILD_PLATFORM)/$(FIRST_ARCH)/Release/include/gtkglext
+	cp Build/gtkglext-$(GTKGLEXT_VERSION)-$(FIRST_ARCH)/gdk/gdkglext-config.h $(TARGET_BASE)/$(BUILD_PLATFORM)/$(FIRST_ARCH)/Release/include/gtkglext/
 	mkdir -p $(TARGET_BASE)/$(BUILD_PLATFORM)/$(FIRST_ARCH)/Release/include/gtkglext/gdk
 	cp Build/gtkglext-$(GTKGLEXT_VERSION)-$(FIRST_ARCH)/gdk/*.h $(TARGET_BASE)/$(BUILD_PLATFORM)/$(FIRST_ARCH)/Release/include/gtkglext/gdk/
 	mkdir -p $(TARGET_BASE)/$(BUILD_PLATFORM)/$(FIRST_ARCH)/Release/include/gtkglext/gtk
