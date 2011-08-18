@@ -168,7 +168,7 @@ namespace Fabric
 
       virtual std::string desc() const
       {
-        return name() + "[]";
+        return name() + "<>";
       }
     };
     
@@ -198,7 +198,7 @@ namespace Fabric
           std::string nodeName = desc.substr( nodeNameStart, nodeNameEnd - nodeNameStart );
           
           std::string::size_type memberNameStart = nodeNameEnd + 1;
-          std::string::size_type memberNameEnd = desc.find( '[' );
+          std::string::size_type memberNameEnd = desc.find( '<' );
           if ( memberNameEnd == std::string::npos )
             memberNameEnd = desc.size();
           if ( memberNameEnd - memberNameStart < 1 )
@@ -212,7 +212,7 @@ namespace Fabric
             param = new NewSizeParam(i);
           else if ( memberName == "index" )
             param = new IndexParam(i);
-          else if ( desc.substr( memberNameEnd ) == "[]" )
+          else if ( desc.substr( memberNameEnd ) == "<>" )
             param = new ArrayParam( i, memberName );
           else
             param = new ElementParam( i, memberName );
