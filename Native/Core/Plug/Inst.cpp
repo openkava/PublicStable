@@ -18,6 +18,7 @@
 #include <Fabric/Core/IO/Dir.h>
 #include <Fabric/Core/Plug/Helpers.h>
 #include <Fabric/Base/JSON/String.h>
+#include <Fabric/EDK/Common.h>
 
 namespace Fabric
 {
@@ -63,6 +64,23 @@ namespace Fabric
         m_resolvedNameToSOLibHandleMap.insert( ResolvedNameToSOLibHandleMap::value_type( resolvedName, soLibHandle ) );
         m_orderedSOLibHandles.push_back( soLibHandle );
       }
+
+      void *resolvedFabricEDKInitFunction = 0;
+      for ( size_t i=0; i<m_orderedSOLibHandles.size(); ++i )
+      {
+        resolvedFabricEDKInitFunction = SOLibResolve( m_orderedSOLibHandles[i], "FabricEDKInit" );
+        if ( resolvedFabricEDKInitFunction )
+          break;
+      }
+      if ( !resolvedFabricEDKInitFunction )
+        throw Exception( "error: extension doesn't implement function FabricEDKInit through macro IMPLEMENT_FABRIC_EDK_ENTRIES" );
+
+      Fabric::EDK::Callbacks callbacks;
+      callbacks.m_malloc = malloc;
+      callbacks.m_realloc = realloc;
+      callbacks.m_free = free;
+
+      ( *( FabricEDKInitPtr )resolvedFabricEDKInitFunction )( callbacks );
       
       for ( size_t i=0; i<m_orderedSOLibHandles.size(); ++i )
       {
