@@ -6,6 +6,7 @@ LIBEDIT_VERSION := 3.0
 ILMBASE_VERSION := 1.0.2
 OPENEXR_VERSION := 1.7.0
 FFMPEG_VERSION := 0.6.3
+GTKGLEXT_VERSION := 1.2.0
 
 RSYNC := rsync
 
@@ -32,14 +33,15 @@ ifeq ($(BUILD_PLATFORM),Darwin)
 endif 
 
 .PHONY: all build install clean check_env_vars \
-	unpack_ilmbase patch_ilmbase configure_ilmbase build_ilmbase install_ilmbase clean_ilmbase \
-	unpack_openexr patch_openexr configure_openexr build_openexr install_openexr clean_openexr \
-	unpack_llvm patch_llvm configure_llvm build_llvm install_llvm clean_llvm \
-	unpack_libpng patch_libpng configure_libpng build_libpng install_libpng clean_libpng \
-	unpack_ffmpeg patch_ffmpeg configure_ffmpeg build_ffmpeg install_ffmpeg clean_ffmpeg \
-	unpack_v8 patch_v8 configure_v8 build_v8 install_v8 clean_v8 \
+  unpack_ilmbase patch_ilmbase configure_ilmbase build_ilmbase install_ilmbase clean_ilmbase \
+  unpack_openexr patch_openexr configure_openexr build_openexr install_openexr clean_openexr \
+  unpack_llvm patch_llvm configure_llvm build_llvm install_llvm clean_llvm \
+  unpack_libpng patch_libpng configure_libpng build_libpng install_libpng clean_libpng \
+  unpack_ffmpeg patch_ffmpeg configure_ffmpeg build_ffmpeg install_ffmpeg clean_ffmpeg \
+  unpack_v8 patch_v8 configure_v8 build_v8 install_v8 clean_v8 \
   unpack_zlib patch_zlib configure_zlib build_zlib install_zlib clean_zlib \
   unpack_libedit patch_libedit configure_libedit build_libedit install_libedit clean_libedit \
+  unpack_gtkglext patch_gtkglext configure_gtkglext build_gtkglext install_gtkglext clean_gtkglext \
   install_llvm_headers install_llvm_libraries
 
 all: build
@@ -276,6 +278,45 @@ Build/.libedit.unpack:
 	done
 	touch $@
 
+build_gtkglext: build_gtkglext Build/.gtkglext.build
+
+configure_gtkglext: Build/.gtkglext.configure
+
+patch_gtkglext: Build/.gtkglext.patch
+
+unpack_gtkglext: Build/.gtkglext.unpack
+
+Build/.gtkglext.build: Build/.gtkglext.configure
+	for ARCH in $(ARCHS); do \
+		( cd Build/gtkglext-$(GTKGLEXT_VERSION)-$$ARCH && make -j2 ); \
+	done
+	touch $@
+
+Build/.gtkglext.configure: Build/.gtkglext.patch
+ifeq ($(BUILD_PLATFORM),Linux)
+	for ARCH in $(ARCHS); do \
+		( cd Build/gtkglext-$(GTKGLEXT_VERSION)-$$ARCH && ./configure --with-pic --enable-static --disable-shared ); \
+	done
+else 
+	for ARCH in $(ARCHS); do \
+		( cd Build/gtkglext-$(GTKGLEXT_VERSION)-$$ARCH && CFLAGS="-arch $$ARCH" ./configure ); \
+	done
+endif
+	touch $@
+
+Build/.gtkglext.patch: Build/.gtkglext.unpack
+	for ARCH in $(ARCHS); do \
+		( cd Build/gtkglext-$(GTKGLEXT_VERSION)-$$ARCH && patch -p1 <../../Patches/gtkglext.diff ); \
+	done
+	touch $@
+
+Build/.gtkglext.unpack:
+	mkdir -p Build
+	for ARCH in $(ARCHS); do \
+		( cd Build && tar jxf ../SourcePackages/gtkglext-$(GTKGLEXT_VERSION).tar.bz2 && mv gtkglext-$(GTKGLEXT_VERSION) gtkglext-$(GTKGLEXT_VERSION)-$$ARCH ); \
+	done
+	touch $@
+
 
 build_libpng: build_zlib Build/.libpng.build
 
@@ -374,7 +415,7 @@ Build/.zlib.patch: Build/.zlib.unpack
 Build/.zlib.unpack:
 	touch $@
   
-install: check_env_vars install_ilmbase install_openexr install_llvm install_libpng install_ffmpeg install_v8 install_libedit
+install: check_env_vars install_ilmbase install_openexr install_llvm install_libpng install_ffmpeg install_v8 install_libedit install_gtkglext
 
 install_ilmbase: install_ilmbase_headers install_ilmbase_libraries
 
@@ -474,6 +515,17 @@ install_libedit:
 	mkdir -p $(TARGET_BASE)/include/libedit/libedit
 	cp Build/libedit-$(LIBEDIT_VERSION)-$(FIRST_ARCH)/src/histedit.h $(TARGET_BASE)/include/libedit/libedit/
 
+install_gtkglext:
+	for ARCH in $(ARCHS); do \
+		mkdir -p $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/lib/gtkglext \
+                  && cp Build/gtkglext-$(GTKGLEXT_VERSION)-$$ARCH/gdk/.libs/libgdkglext-x11-1.0.a $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/lib/gtkglext/ \
+                  && cp Build/gtkglext-$(GTKGLEXT_VERSION)-$$ARCH/gtk/.libs/libgtkglext-x11-1.0.a $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/lib/gtkglext/; \
+	done
+	mkdir -p $(TARGET_BASE)/$(BUILD_PLATFORM)/$(FIRST_ARCH)/Release/include/gtkglext/gdk
+	cp Build/gtkglext-$(GTKGLEXT_VERSION)-$(FIRST_ARCH)/gdk/*.h $(TARGET_BASE)/$(BUILD_PLATFORM)/$(FIRST_ARCH)/Release/include/gtkglext/gdk/
+	mkdir -p $(TARGET_BASE)/$(BUILD_PLATFORM)/$(FIRST_ARCH)/Release/include/gtkglext/gtk
+	cp Build/gtkglext-$(GTKGLEXT_VERSION)-$(FIRST_ARCH)/gtk/*.h $(TARGET_BASE)/$(BUILD_PLATFORM)/$(FIRST_ARCH)/Release/include/gtkglext/gtk/
+
 install_zlib:
 ifeq ($(BUILD_PLATFORM),"mingw")
 	for ARCH in $(ARCHS); do \
@@ -484,7 +536,7 @@ ifeq ($(BUILD_PLATFORM),"mingw")
 	cp Build/zlib-$(ZLIB_VERSION)-$(FIRST_ARCH)/zlib.h $(TARGET_BASE)/include/zlib/zlib/
 endif
 
-clean: clean_ilmbase clean_openexr clean_llvm clean_libpng clean_ffmpeg clean_v8 clean_libedit
+clean: clean_ilmbase clean_openexr clean_llvm clean_libpng clean_ffmpeg clean_v8 clean_libedit clean_gtkglext
 	rm -rf Build
 
 clean_ilmbase:
@@ -528,6 +580,12 @@ clean_libedit:
 		rm -rf Build/libedit-$(LIBEDIT_VERSION)-$$ARCH; \
 	done
 	rm -rf Build/.libedit.*
+
+clean_gtkglext:
+	for ARCH in $(ARCHS); do \
+		rm -rf Build/gtkglext-$(GTKGLEXT_VERSION)-$$ARCH; \
+	done
+	rm -rf Build/.gtkglext.*
 
 clean_zlib:
 ifeq ($(PLATFORM),"mingw")
