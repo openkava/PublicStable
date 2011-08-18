@@ -17,6 +17,7 @@
 #include <Fabric/Core/IO/Helpers.h>
 #include <Fabric/Core/IO/Dir.h>
 #include <Fabric/Core/Plug/Helpers.h>
+#include <Fabric/Core/Build.h>
 #include <Fabric/Base/JSON/String.h>
 
 namespace Fabric
@@ -55,11 +56,12 @@ namespace Fabric
       */
       std::vector< std::string > libs;
       m_desc.libs.appendMatching( Util::getHostTriple(), libs );
-
+      std::string libSuffix = "-" + std::string(buildOS) + "-" + std::string(buildArch);
+      
       for ( size_t i=0; i<libs.size(); ++i )
       {
         std::string resolvedName;
-        SOLibHandle soLibHandle = SOLibOpen( libs[i], resolvedName, false, pluginDirs );
+        SOLibHandle soLibHandle = SOLibOpen( libs[i]+libSuffix, resolvedName, false, pluginDirs );
         m_resolvedNameToSOLibHandleMap.insert( ResolvedNameToSOLibHandleMap::value_type( resolvedName, soLibHandle ) );
         m_orderedSOLibHandles.push_back( soLibHandle );
       }

@@ -2,10 +2,10 @@
 # Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 #
 
-Import( 'extsEnv', 'fabricExtsDistDir' )
+Import( 'extsEnv', 'fabricExtsDistDir', 'ExtSLName' )
 
 objPluginEnv = extsEnv.Clone()
-objPlugin = objPluginEnv.SharedLibrary( 'FabricOBJ', Glob('*.cpp') ),
+objPlugin = objPluginEnv.SharedLibrary( ExtSLName('FabricOBJ'), Glob('*.cpp') ),
 objManifest = objPluginEnv.File('FabricOBJ.fpm.json'),
 objKL = objPluginEnv.File('FabricOBJ.kl'),
 objFiles = [objManifest, objPlugin, objKL]
