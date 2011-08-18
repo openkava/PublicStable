@@ -128,7 +128,10 @@ void ObjParser::ParseF( std::istream& stream )
     stream >> indices.m_point;
     if( parsingError( stream ) )
       throw Exception("int value expected");
-    --indices.m_point;
+    if(indices.m_point < 0)
+      indices.m_point += (int)m_points.size();
+    else
+      --indices.m_point;
     if( indices.m_point < 0 || indices.m_point > (int)m_points.size() )
       throw Exception("out of range point index");
 
@@ -141,7 +144,10 @@ void ObjParser::ParseF( std::istream& stream )
         stream >> indices.m_texCoord;
         if( parsingError( stream ) )
           throw Exception("int value expected");
-        --indices.m_texCoord;
+        if(indices.m_texCoord < 0)
+          indices.m_texCoord += (int)m_texCoords.size();
+        else
+          --indices.m_texCoord;
         if( indices.m_texCoord < 0 || indices.m_texCoord > (int)m_texCoords.size() )
           throw Exception("out of range texture index");
       }
@@ -154,7 +160,10 @@ void ObjParser::ParseF( std::istream& stream )
           stream >> indices.m_normal;
           if( parsingError( stream ) )
             throw Exception("int value expected");
-          --indices.m_normal;
+          if(indices.m_normal < 0)
+            indices.m_normal += (int)m_normals.size();
+          else
+            --indices.m_normal;
           if( indices.m_normal < 0 || indices.m_normal > (int)m_normals.size() )
             throw Exception("out of range normal index");
         }
