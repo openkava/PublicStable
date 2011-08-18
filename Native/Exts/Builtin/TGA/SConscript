@@ -2,10 +2,10 @@
 # Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 #
 
-Import( 'extsEnv' )
+Import( 'extsEnv', 'ExtSLName' )
 
 tgaPluginEnv = extsEnv.Clone()
-tgaPlugin = tgaPluginEnv.SharedLibrary( 'FabricTGA', Glob('*.cpp') ),
+tgaPlugin = tgaPluginEnv.SharedLibrary( ExtSLName('FabricTGA'), Glob('*.cpp') ),
 tgaManifest = tgaPluginEnv.File('FabricTGA.fpm.json'),
 tgaKL = tgaPluginEnv.File('FabricTGA.kl'),
 tgaFiles = [tgaManifest, tgaPlugin, tgaKL]

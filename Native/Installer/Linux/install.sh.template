@@ -19,7 +19,7 @@ run() {
   $ECHO chown root:adm /usr/lib/fabric/Exts
   $ECHO chmod 755 /usr/lib/fabric/Exts
 
-  for f in Exts/*.so; do
+  for f in Exts/lib*-{{FABRIC_OS}}-{{FABRIC_ARCH}}.so; do
     $ECHO install -m 755 -o root -g adm "$f" /usr/lib/fabric/Exts/
   done
 

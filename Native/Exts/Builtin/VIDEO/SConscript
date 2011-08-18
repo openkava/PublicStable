@@ -2,11 +2,11 @@
 # Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 #
 
-Import( 'extsEnv', 'fabricExtsDistDir', 'ffmpegFlags' )
+Import( 'extsEnv', 'fabricExtsDistDir', 'ffmpegFlags', 'ExtSLName' )
 
 videoPluginEnv = extsEnv.Clone()
 videoPluginEnv.MergeFlags( ffmpegFlags )
-videoPlugin = videoPluginEnv.SharedLibrary( 'FabricVIDEO', Glob('*.cpp') ),
+videoPlugin = videoPluginEnv.SharedLibrary( ExtSLName('FabricVIDEO'), Glob('*.cpp') ),
 videoManifest = videoPluginEnv.File('FabricVIDEO.fpm.json'),
 videoKL = videoPluginEnv.File('FabricVIDEO.kl'),
 videoFiles = [videoManifest, videoPlugin, videoKL]
