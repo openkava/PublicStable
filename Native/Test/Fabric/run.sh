@@ -13,9 +13,9 @@ fi
 
 WRAPPERS_FILE="../../../Web/Core/FABRIC.Wrappers.js"
 if [ "$BUILD_OS" = "Darwin" ]; then
-  EXTS_DIR="../../dist/$BUILD_OS/$BUILD_ARCH/$BUILD_TYPE/Fabric NPAPI Plugin/Library/Fabric/Exts"
+  EXTS_DIR="../../dist/$BUILD_OS/$BUILD_ARCH/$BUILD_TYPE/FabricEngine/Library/Fabric/Exts"
 elif [ "$BUILD_OS" = "Windows" ]; then
-  EXTS_DIR="../../dist/$BUILD_OS/$BUILD_ARCH/$BUILD_TYPE/Fabric NPAPI Plugin/Exts"
+  EXTS_DIR="../../dist/$BUILD_OS/$BUILD_ARCH/$BUILD_TYPE/FabricEngine/Exts"
 else
   EXTS_DIR="../../dist/$BUILD_OS/$BUILD_ARCH/$BUILD_TYPE/Exts"
 fi
@@ -42,7 +42,7 @@ for f in "$@"; do
   TMPFILE=$(tmpfilename)
 
   #echo $VALGRIND_CMD ../../build/$BUILD_OS/$BUILD_ARCH/$BUILD_TYPE/Fabric/Clients/CLI/fabric --load="'$WRAPPERS_FILE'" --exts="'$EXTS_DIR'" $f
-  LD_LIBRARY_PATH=build/ $VALGRIND_CMD ../../build/$BUILD_OS/$BUILD_ARCH/$BUILD_TYPE/Fabric/Clients/CLI/fabric --load="$WRAPPERS_FILE" --exts="$EXTS_DIR" $f 2>&1 | grep -v '^\[FABRIC\] ' | $OUTPUT_FILTER >$TMPFILE
+  LD_LIBRARY_PATH=build/ $VALGRIND_CMD ../../build/$BUILD_OS/$BUILD_ARCH/$BUILD_TYPE/Fabric/Clients/CLI/fabric --load="$WRAPPERS_FILE" --exts="$EXTS_DIR" $f 2>&1 | grep -v '^\[FABRIC\] .*Extension registered' | grep -v '^\[FABRIC\] .*Searching extension directory' | $OUTPUT_FILTER >$TMPFILE
 
   if [ "$REPLACE" -eq 1 ]; then
     mv $TMPFILE ${f%.js}.out
