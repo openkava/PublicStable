@@ -10,3 +10,4 @@ zip -qr private-web-resources-$DATE.zip \
   Web/Apps/Private/Monster/Images \
   Web/Apps/Private/Monster/Models \
   Web/Apps/Private/V8Engine/Assets \
+  Web/Apps/Private/Lamborghini/Assets \
