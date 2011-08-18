@@ -48,7 +48,7 @@ else {
 
 	var binding = FABRIC.DG.createBinding();
 	binding.setOperator(op);
-	binding.setParameterLayout(["parent.msa[]"]);
+	binding.setParameterLayout(["parent.msa<>"]);
 
   node = FABRIC.DependencyGraph.createNode( "node" );
   node.addDependency( parentNode, "parent" );
