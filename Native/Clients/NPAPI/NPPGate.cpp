@@ -198,7 +198,7 @@ namespace Fabric
         IO::GlobDirPaths( IO::JoinPath( googleChromeProfilesPath, chromeExtensionsPathSpec ), pluginPaths );
         IO::GlobDirPaths( IO::JoinPath( chromiumProfilesPath, chromeExtensionsPathSpec ), pluginPaths );
 
-        std::string firefoxExtensionsPathSpec = IO::JoinPath( "*", "extensions", "info@fabric-engine.com", "plugins" );
+        std::string firefoxExtensionsPathSpec = IO::JoinPath( "*", "extensions", std::string(buildOS) + "-" + std::string(buildArch) + "@fabric-engine.com", "plugins" );
         IO::GlobDirPaths( IO::JoinPath( firefoxProfilesPath, firefoxExtensionsPathSpec ), pluginPaths );
       
         RC::Handle<IOManager> ioManager = IOManager::Create( npp );
