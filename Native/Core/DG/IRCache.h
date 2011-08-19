@@ -29,19 +29,18 @@ namespace Fabric
     {
     public:
     
-      static RC::Handle<IRCache> Create()
-      {
-        return new IRCache;
-      }
+      static RC::Handle<IRCache> Instance();
       
-      std::string get( RC::ConstHandle<AST::GlobalList> const &ast ) const;
-      void put( RC::ConstHandle<AST::GlobalList> const &ast, std::string const &ir );
+      std::string keyForAST( RC::ConstHandle<AST::GlobalList> const &ast ) const;
+      
+      std::string get( std::string const &key ) const;
+      void put( std::string const &key, std::string const &ir ) const;
       
     protected:
     
       IRCache();
       
-      void subDirAndEntryFromSourceCode( RC::ConstHandle<AST::GlobalList> const &ast, RC::ConstHandle<IO::Dir> &subDir, std::string &entry ) const;
+      void subDirAndEntryFromKey( std::string const &key, RC::ConstHandle<IO::Dir> &subDir, std::string &entry ) const;
       
     private:
     
