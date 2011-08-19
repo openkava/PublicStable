@@ -157,7 +157,7 @@ namespace Fabric
           continue;
         if ( !followLinks )
         {
-          std::string fileFullPath = joinPath( dirPath, entry );
+          std::string fileFullPath = JoinPath( dirPath, entry );
           struct stat st;
           if ( lstat( fileFullPath.c_str(), &st ) != 0 )
             throw Exception( _(fileFullPath) + ": unable to lstat" );
