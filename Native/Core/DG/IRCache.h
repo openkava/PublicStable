@@ -31,7 +31,7 @@ namespace Fabric
     
       static RC::Handle<IRCache> Instance();
       
-      std::string keyForAST( RC::ConstHandle<AST::GlobalVector> const &ast ) const;
+      std::string keyForAST( RC::ConstHandle<AST::GlobalList> const &ast ) const;
       
       std::string get( std::string const &key ) const;
       void put( std::string const &key, std::string const &ir ) const;
