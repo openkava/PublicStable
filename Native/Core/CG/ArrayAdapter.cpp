@@ -21,21 +21,14 @@ namespace Fabric
     std::string ArrayAdapter::toString( void const *data ) const
     {
       size_t numMembers = m_arrayDesc->getNumMembers( data );
-      if ( m_memberAdapter->getType() == RT::DT_BYTE )
+      std::string result = "[";
+      for ( size_t i=0; i<numMembers; ++i )
       {
-        return std::string( (char const *)m_arrayDesc->getMemberData( data, 0 ), numMembers );
+        if ( i > 0 )
+          result += ",";
+        result += m_memberAdapter->toString( m_arrayDesc->getMemberData( data, i ) );
       }
-      else
-      {
-        std::string result = "[";
-        for ( size_t i=0; i<numMembers; ++i )
-        {
-          if ( i > 0 )
-            result += ",";
-          result += m_memberAdapter->toString( m_arrayDesc->getMemberData( data, i ) );
-        }
-        return result + "]";
-      }
+      return result + "]";
     }
   };
 };

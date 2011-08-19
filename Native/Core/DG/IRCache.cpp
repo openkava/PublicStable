@@ -5,7 +5,7 @@
 #include <Fabric/Core/DG/IRCache.h>
 #include <Fabric/Core/IO/Dir.h>
 #include <Fabric/Core/Util/MD5.h>
-#include <Fabric/Core/AST/GlobalVector.h>
+#include <Fabric/Core/AST/GlobalList.h>
 #include <Fabric/Base/Exception.h>
 #include <Fabric/Base/JSON/Object.h>
 #include <Fabric/Base/JSON/Array.h>

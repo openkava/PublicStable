@@ -29,6 +29,7 @@ namespace Fabric
         std::string const &adapterName
         );
       
+      virtual void registerTypes( RC::Handle<RT::Manager> const &rtManager, CG::Diagnostics &diagnostics ) const;
       virtual void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
       
     protected:

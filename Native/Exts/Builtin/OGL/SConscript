@@ -2,7 +2,7 @@
 # Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 #
 
-Import( 'extsEnv', 'fabricExtsDistDir', 'buildOS', 'buildArch', 'buildType' )
+Import( 'extsEnv', 'fabricExtsDistDir', 'buildOS', 'buildArch', 'buildType', 'ExtSLName' )
 
 oglPluginEnv = extsEnv.Clone()
 
@@ -24,6 +24,7 @@ template = oglPluginEnv.File("ogl.cpp_template")
 
 oglSource = oglPluginEnv.File("ogl.cpp")
 oglManifest = oglPluginEnv.File('FabricOGL.fpm.json')
+oglKL = oglPluginEnv.File('FabricOGL.kl')
 
 command = "python " + generator.abspath
 if buildOS == 'Linux':
@@ -34,22 +35,17 @@ if buildOS == 'Windows':
   command = command + " --header="+Dir('#').abspath+"/ThirdParty/Private/GLEW/GL/glew.h"
   
 command = command + " --template=$BUILDDIR/Exts/Builtin/OGL/ogl.cpp_template"
+command = command + " --klresult=$BUILDDIR/Exts/Builtin/OGL/FabricOGL.kl"
 command = command + " --cppresult=$BUILDDIR/Exts/Builtin/OGL/ogl.cpp"
 command = command + " --jsonresult=$BUILDDIR/Exts/Builtin/OGL/FabricOGL.fpm.json"
     
 oglPluginEnv.Command(
-  [oglSource, oglManifest],
+  [oglSource, oglManifest, oglKL],
   [generator, template],
   command
   )
 
-oglPlugin = oglPluginEnv.SharedLibrary( 'FabricOGL', oglSource )
+oglPlugin = oglPluginEnv.SharedLibrary( ExtSLName('FabricOGL'), oglSource )
+oglFiles = [oglManifest, oglPlugin, oglKL]
 
-installAction = Install( fabricExtsDistDir, [oglPlugin,oglManifest] )
-extsEnv.CopyToAppdataIfWindows( installAction )
-
-Alias( 'oglExt', [
-  oglPlugin,
-  oglManifest,
-  installAction
-] )
+Return( 'oglFiles' )

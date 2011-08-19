@@ -41,19 +41,6 @@ namespace Fabric
       RC::ConstHandle<JSON::Boolean> jsonBoolean = RC::ConstHandle<JSON::Boolean>::StaticCast( jsonValue );
       setValue( jsonBoolean->value(), dst );
     }
-
-    Util::Encoder &BooleanImpl::encode( Util::Encoder &encoder, void const *src ) const
-    {
-      return encoder.put( getValue( src ) );
-    }
-    
-    Util::Decoder &BooleanImpl::decode( Util::Decoder &decoder, void *dst ) const
-    {
-      bool boolData;
-      decoder.get( boolData );
-      setValue( boolData, dst );
-      return decoder;
-    }  
     
     std::string BooleanImpl::descData( void const *data ) const
     {

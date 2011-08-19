@@ -41,7 +41,7 @@
 #include <Fabric/Core/AST/ExprVector.h>
 #include <Fabric/Core/AST/Function.h>
 #include <Fabric/Core/AST/GlobalConstDecl.h>
-#include <Fabric/Core/AST/GlobalVector.h>
+#include <Fabric/Core/AST/GlobalList.h>
 #include <Fabric/Core/AST/IndexOp.h>
 #include <Fabric/Core/AST/InitializedVarDecl.h>
 #include <Fabric/Core/AST/MemberDecl.h>
@@ -85,7 +85,7 @@ namespace Fabric
   {
     class Scanner;
     
-    RC::ConstHandle<AST::GlobalVector> Parse( RC::Handle<Scanner> const &scanner, CG::Diagnostics &diagnostics );
+    RC::ConstHandle<AST::GlobalList> Parse( RC::Handle<Scanner> const &scanner, CG::Diagnostics &diagnostics );
   };
 };
 #endif //_FABRIC_KL_PARSER_DECLARED
@@ -125,7 +125,7 @@ int kl_lex( YYSTYPE *yys, YYLTYPE *yyl, KL::Context &context );
 %union { Fabric::AST::Param const *astParamPtr; }
 %union { Fabric::AST::ParamVector const *astParamListPtr; }
 %union { Fabric::AST::Global const *astGlobalPtr; }
-%union { Fabric::AST::GlobalVector const *astGlobalListPtr; }
+%union { Fabric::AST::GlobalList const *astGlobalListPtr; }
 %union { Fabric::AST::StructDecl const *astStructDecl; }
 %union { Fabric::AST::MemberDecl const *astStructDeclMember; }
 %union { Fabric::AST::MemberDeclVector const *astStructDeclMemberList; }
@@ -302,13 +302,13 @@ start
 global_list :
   global global_list
   {
-    $$ = AST::GlobalVector::Create( RC::ConstHandle<AST::Global>($1), $2 ).take();
+    $$ = AST::GlobalList::Create( RC::ConstHandle<AST::Global>($1), $2 ).take();
     $1->release();
     $2->release();
   }
   | /* empty */
   {
-    $$ = AST::GlobalVector::Create().take();
+    $$ = AST::GlobalList::Create().take();
   }
 
 binary_operator
@@ -563,6 +563,7 @@ array_modifier
   | TOKEN_LBRACKET TOKEN_CONST_UI TOKEN_RBRACKET array_modifier
   {
     size_t length = Util::parseSize( *$2 );
+    delete $2;
 
     if ( length == 0 )
     {
@@ -904,12 +905,21 @@ assignment_operator
   {
     $$ = CG::ASSIGN_OP_MOD;
   }
+  | TOKEN_PIPE_EQUALS
+  {
+    $$ = CG::ASSIGN_OP_BIT_OR;
+  }
+  | TOKEN_AMP_EQUALS
+  {
+    $$ = CG::ASSIGN_OP_BIT_AND;
+  }
+  | TOKEN_CARET_EQUALS
+  {
+    $$ = CG::ASSIGN_OP_BIT_XOR;
+  }
   /*
 	| LEFT_ASSIGN
 	| RIGHT_ASSIGN
-	| AND_ASSIGN
-	| XOR_ASSIGN
-	| OR_ASSIGN
   */
 ;
 
@@ -1112,11 +1122,11 @@ multiplicative_operator
 ;
 
 multiplicative_expression
-	: cast_expression
+  : cast_expression
   {
     $$ = $1;
   }
-	| multiplicative_expression multiplicative_operator cast_expression
+  | multiplicative_expression multiplicative_operator cast_expression
   {
     $$ = AST::BinOp::Create( RTLOC, $2, $1, $3 ).take();
     $1->release();
@@ -1132,15 +1142,15 @@ cast_expression
 ;
 
 prefix_unary_operator
-	: TOKEN_PLUS
+  : TOKEN_PLUS
   {
     $$ = CG::UNI_OP_POS;
   }
-	| TOKEN_MINUS
+  | TOKEN_MINUS
   {
     $$ = CG::UNI_OP_NEG;
   }
-	| TOKEN_TILDE
+  | TOKEN_TILDE
   {
     $$ = CG::UNI_OP_BIT_NOT;
   }
@@ -1332,7 +1342,13 @@ int kl_lex( YYSTYPE *yys, YYLTYPE *yyl, KL::Context &context )
     }
   }
   
-  yys->valueStringPtr = new std::string( token.toString() );
+  if ( token.getType() == TOKEN_CONST_UI
+    || token.getType() == TOKEN_CONST_FP
+    || token.getType() == TOKEN_CONST_STRING_SQUOT
+    || token.getType() == TOKEN_CONST_STRING_DQUOT
+    || token.getType() == TOKEN_IDENTIFIER )
+    yys->valueStringPtr = new std::string( token.toString() );
+
   yyl->first_line = startLocation.getLine();
   yyl->first_column = startLocation.getColumn();
   yyl->last_line = endLocation.getLine();
@@ -1348,7 +1364,7 @@ namespace Fabric
 {
   namespace KL
   {
-    RC::ConstHandle<AST::GlobalVector> Parse( RC::Handle<Scanner> const &scanner, CG::Diagnostics &diagnostics )
+    RC::ConstHandle<AST::GlobalList> Parse( RC::Handle<Scanner> const &scanner, CG::Diagnostics &diagnostics )
     {
       Context context( scanner, diagnostics );
 

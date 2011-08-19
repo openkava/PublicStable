@@ -7,9 +7,10 @@
 
 #include <Fabric/Core/RT/Manager.h>
 #include <Fabric/Core/CG/Manager.h>
-#include <Fabric/Core/AST/GlobalVector.h>
+#include <Fabric/Core/AST/GlobalList.h>
 #include <Fabric/Core/DG/Context.h>
 #include <Fabric/Core/IO/Dir.h>
+#include <Fabric/Core/IO/Helpers.h>
 #include <Fabric/Base/JSON/Object.h>
 
 namespace Fabric
@@ -44,48 +45,42 @@ namespace Fabric
     {
       if ( !m_loaded )
       {
-#if 0
-        std::string pluginPath = "";
-        for ( size_t i=0; i<pluginDirs.size(); ++i )
-        {
-          if ( pluginPath.length() > 0 )
-            pluginPath.append( ":" );
-          pluginPath.append( pluginDirs[i] );
-        }
-        FABRIC_LOG( "Plugin path is "+_(pluginPath) );
-#endif
-   
         //if ( m_fabricSDKSOLibHandle != invalidSOLibHandle )
         {
           for ( size_t i=0; i<pluginDirs.size(); ++i )
           {
+            FABRIC_LOG( "Searching extension directory " + _(pluginDirs[i]) );
+          
             RC::ConstHandle<IO::Dir> pluginsDir;
+            std::vector<std::string> files;
             try
             {
               pluginsDir = IO::Dir::Create( 0, pluginDirs[i], false );
+              files = pluginsDir->getFiles();
             }
             catch ( Exception e )
             {
-              FABRIC_LOG( "Warning: unable to open plugins directory "+_(pluginDirs[i]) );
+              FABRIC_LOG( "Warning: unable to open extension directory " + _(pluginDirs[i]) );
               continue;
             }
-            
-            std::vector<std::string> files = pluginsDir->getFiles();
+              
             for ( size_t i=0; i<files.size(); ++i )
             {
               std::string const &filename = files[i];
               size_t length = filename.length();
               if ( length > 9 && filename.substr( length-9, 9 ) == ".fpm.json" )
               {
+                std::string extensionName = filename.substr( 0, length-9 );
                 std::string fpmContents = pluginsDir->getFileContents( filename );
                 try
                 {
-                  registerPlugin( filename.substr( 0, length-9 ), fpmContents, pluginDirs, cgManager );
-                  FABRIC_LOG( "Loaded extension " + _(filename.c_str()) );
+                  registerPlugin( pluginsDir, extensionName, fpmContents, pluginDirs, cgManager );
                 }
                 catch ( Exception e )
                 {
-                  FABRIC_LOG( "Extension '%s/%s': %s", pluginsDir->getFullPath().c_str(), filename.c_str(), e.getDesc().c_str() );
+                  FABRIC_LOG( "[%s] %s", extensionName.c_str(), e.getDesc().c_str() );
+                  FABRIC_LOG( "[%s] Error(s) encountered, extension disabled", extensionName.c_str() );
+                  FABRIC_LOG( "[%s] Extension manifest is '%s'", extensionName.c_str(), IO::JoinPath( pluginsDir->getFullPath(), filename ).c_str() );
                 }
               }
             }
@@ -93,6 +88,12 @@ namespace Fabric
         }
         
         m_loaded = true;
+      }
+
+      CG::Diagnostics diagnostics;
+      for ( NameToInstMap::const_iterator it=m_nameToInstMap.begin(); it!=m_nameToInstMap.end(); ++it )
+      {
+        it->second->getAST()->registerTypes( cgManager->getRTManager(), diagnostics );
       }
     }
     
@@ -102,7 +103,7 @@ namespace Fabric
       //  SOLibClose( m_fabricSDKSOLibHandle, m_fabricSDKSOLibResolvedName );
     }
     
-    RC::ConstHandle<Inst> Manager::registerPlugin( std::string const &name, std::string const &jsonDesc, std::vector<std::string> const &pluginDirs, RC::Handle<CG::Manager> const &cgManager )
+    RC::ConstHandle<Inst> Manager::registerPlugin( RC::ConstHandle<IO::Dir> const &extensionDir, std::string const &name, std::string const &jsonDesc, std::vector<std::string> const &pluginDirs, RC::Handle<CG::Manager> const &cgManager )
     {
       RC::Handle<Inst> result;
       
@@ -110,23 +111,23 @@ namespace Fabric
       if ( it != m_nameToInstMap.end() )
       {
         result = it->second;
-        if ( result->getJSONDesc() != jsonDesc )
-          throw Exception( "a different plugin named "+_(name)+" is already registered" );
+        FABRIC_LOG( "[%s] Extension already registered", name.c_str() );
       }
       else
       {
-        result = Inst::Create( name, jsonDesc, pluginDirs, cgManager );
+        result = Inst::Create( extensionDir, name, jsonDesc, pluginDirs, cgManager );
         m_nameToInstMap.insert( NameToInstMap::value_type( name, result ) );
+        FABRIC_LOG( "[%s] Extension registered", name.c_str() );
       }
       
       return result;
     }
       
-    RC::ConstHandle<AST::GlobalVector> Manager::getAST() const
+    RC::ConstHandle<AST::GlobalList> Manager::getAST() const
     {
-      RC::ConstHandle<AST::GlobalVector> result;
+      RC::ConstHandle<AST::GlobalList> result;
       for ( NameToInstMap::const_iterator it=m_nameToInstMap.begin(); it!=m_nameToInstMap.end(); ++it )
-        result = AST::GlobalVector::Create( result, it->second->getAST() );
+        result = AST::GlobalList::Create( result, it->second->getAST() );
       return result;
     }
     

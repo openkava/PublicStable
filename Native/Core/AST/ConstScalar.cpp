@@ -6,7 +6,7 @@
  */
 
 #include "ConstScalar.h"
-#include <Fabric/Core/CG/ScalarAdapter.h>
+#include <Fabric/Core/CG/FloatAdapter.h>
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/CG/BasicBlockBuilder.h>
 #include <Fabric/Core/CG/ModuleBuilder.h>
@@ -20,41 +20,38 @@ namespace Fabric
     
     RC::ConstHandle<ConstScalar> ConstScalar::Create( CG::Location const &location, std::string const &valueString )
     {
-      float value;
-      if ( sscanf( valueString.c_str(), "%f", &value ) != 1 )
-        throw Exception( "invalid floating-point constant '" + valueString + "'" );
-      return new ConstScalar( location, value );
+      return new ConstScalar( location, valueString );
     }
     
-    ConstScalar::ConstScalar( CG::Location const &location, float value )
+    ConstScalar::ConstScalar( CG::Location const &location, std::string const &valueString )
       : Expr( location )
-      , m_value( value )
+      , m_valueString( valueString )
     {
     }
     
     void ConstScalar::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
       Expr::appendJSONMembers( jsonObjectGenerator );
-      jsonObjectGenerator.makeMember( "value" ).makeScalar( m_value );
+      jsonObjectGenerator.makeMember( "value" ).makeString( m_valueString );
     }
     
     void ConstScalar::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
     {
-      RC::ConstHandle<CG::ScalarAdapter> scalarAdapter = moduleBuilder.getManager()->getScalarAdapter();
-      scalarAdapter->llvmPrepareModule( moduleBuilder, true );
+      RC::ConstHandle<CG::FloatAdapter> floatAdapter = moduleBuilder.getManager()->getFP32Adapter();
+      floatAdapter->llvmPrepareModule( moduleBuilder, true );
     }
     
     RC::ConstHandle<CG::Adapter> ConstScalar::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const
     {
-      return basicBlockBuilder.getManager()->getScalarAdapter();
+      return basicBlockBuilder.getManager()->getFP32Adapter();
     }
     
     CG::ExprValue ConstScalar::buildExprValue( CG::BasicBlockBuilder &basicBlockBuilder, CG::Usage usage, std::string const &lValueErrorDesc ) const
     {
       if ( usage == CG::USAGE_LVALUE )
         throw Exception( "constants cannot be used as l-values" );
-      RC::ConstHandle<CG::ScalarAdapter> scalarAdapter = basicBlockBuilder.getManager()->getScalarAdapter();
-      return CG::ExprValue( scalarAdapter, CG::USAGE_RVALUE, scalarAdapter->llvmConst( m_value ) );
+      RC::ConstHandle<CG::FloatAdapter> floatAdapter = basicBlockBuilder.getManager()->getFP32Adapter();
+      return CG::ExprValue( floatAdapter, CG::USAGE_RVALUE, floatAdapter->llvmConst( m_valueString ) );
     }
   };
 };

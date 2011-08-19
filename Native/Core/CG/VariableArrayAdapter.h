@@ -42,12 +42,10 @@ namespace Fabric
     private:
     
       static void Append( VariableArrayAdapter const *inst, void *dstLValue, void const *srcRValue );
-      static void Push( VariableArrayAdapter const *inst, void *dst, void const *src );
       static void Pop( VariableArrayAdapter const *inst, void *dst, void *result );
       static void Resize( VariableArrayAdapter const *inst, void *dst, size_t newSize );
       static void Split( VariableArrayAdapter const *inst, void *data );
  
-      void llvmCallPush( BasicBlockBuilder &basicBlockBuilder, llvm::Value *arrayLValue, llvm::Value *memberRValue ) const;
       void llvmCallPop( BasicBlockBuilder &basicBlockBuilder, llvm::Value *arrayLValue, llvm::Value *memberLValue ) const;
       llvm::Value *llvmCallSize( BasicBlockBuilder &basicBlockBuilder, llvm::Value *arrayRValue ) const;
       void llvmCallResize( BasicBlockBuilder &basicBlockBuilder, llvm::Value *arrayLValue, llvm::Value *newSize ) const;

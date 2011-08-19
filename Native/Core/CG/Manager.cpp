@@ -4,7 +4,7 @@
 #include "ConstStringAdapter.h"
 #include "IntegerAdapter.h"
 #include "SizeAdapter.h"
-#include "ScalarAdapter.h"
+#include "FloatAdapter.h"
 #include "StringAdapter.h"
 #include "FixedArrayAdapter.h"
 #include "VariableArrayAdapter.h"
@@ -13,10 +13,8 @@
 #include "ModuleBuilder.h"
 
 #include <Fabric/Core/RT/BooleanDesc.h>
-#include <Fabric/Core/RT/ByteDesc.h>
 #include <Fabric/Core/RT/IntegerDesc.h>
-#include <Fabric/Core/RT/SizeDesc.h>
-#include <Fabric/Core/RT/ScalarDesc.h>
+#include <Fabric/Core/RT/FloatDesc.h>
 #include <Fabric/Core/RT/OpaqueDesc.h>
 #include <Fabric/Core/RT/ConstStringDesc.h>
 #include <Fabric/Core/RT/StringDesc.h>
@@ -85,31 +83,21 @@ namespace Fabric
           }
           break;
           
-          case RT::DT_BYTE:
-          {
-            RC::ConstHandle<RT::ByteDesc> byteDesc = RC::ConstHandle<RT::ByteDesc>::StaticCast( desc );
-            adapter = new ByteAdapter( this, byteDesc );
-          }
-          break;
-          
           case RT::DT_INTEGER:
           {
             RC::ConstHandle<RT::IntegerDesc> integerDesc = RC::ConstHandle<RT::IntegerDesc>::StaticCast( desc );
-            adapter = new IntegerAdapter( this, integerDesc );
+            if ( integerDesc->getSize() == 1 && !integerDesc->isSigned() )
+              adapter = new ByteAdapter( this, integerDesc );
+            else if ( integerDesc->getSize() == 4 && integerDesc->isSigned() )
+              adapter = new IntegerAdapter( this, integerDesc );
+            else adapter = new SizeAdapter( this, integerDesc );
           }
           break;
           
-          case RT::DT_SIZE:
+          case RT::DT_FLOAT:
           {
-            RC::ConstHandle<RT::SizeDesc> sizeDesc = RC::ConstHandle<RT::SizeDesc>::StaticCast( desc );
-            adapter = new SizeAdapter( this, sizeDesc );
-          }
-          break;
-          
-          case RT::DT_SCALAR:
-          {
-            RC::ConstHandle<RT::ScalarDesc> scalarDesc = RC::ConstHandle<RT::ScalarDesc>::StaticCast( desc );
-            adapter = new ScalarAdapter( this, scalarDesc );
+            RC::ConstHandle<RT::FloatDesc> floatDesc = RC::ConstHandle<RT::FloatDesc>::StaticCast( desc );
+            adapter = new FloatAdapter( this, floatDesc );
           }
           break;
           
@@ -195,11 +183,18 @@ namespace Fabric
       return m_sizeAdapter;
     }
     
-    RC::ConstHandle<ScalarAdapter> Manager::getScalarAdapter() const
+    RC::ConstHandle<FloatAdapter> Manager::getFP32Adapter() const
     {
       if ( !m_scalarAdapter )
-        m_scalarAdapter = RC::ConstHandle<ScalarAdapter>::StaticCast( getAdapter( m_rtManager->getScalarDesc() ) );
+        m_scalarAdapter = RC::ConstHandle<FloatAdapter>::StaticCast( getAdapter( m_rtManager->getScalarDesc() ) );
       return m_scalarAdapter;
+    }
+    
+    RC::ConstHandle<FloatAdapter> Manager::getFP64Adapter() const
+    {
+      if ( !m_fp64Adapter )
+        m_fp64Adapter = RC::ConstHandle<FloatAdapter>::StaticCast( getAdapter( m_rtManager->getFP64Desc() ) );
+      return m_fp64Adapter;
     }
     
     RC::ConstHandle<StringAdapter> Manager::getStringAdapter() const

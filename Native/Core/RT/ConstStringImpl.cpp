@@ -55,16 +55,6 @@ namespace Fabric
 
       memcpy( data, jsonString->data(), getSize() );
     }
-    
-    Util::Encoder &ConstStringImpl::encode( Util::Encoder &encoder, void const *data ) const
-    {
-      return encoder.putData( data, getSize(), false );
-    }
-    
-    Util::Decoder &ConstStringImpl::decode( Util::Decoder &decoder, void *data ) const
-    {
-      return decoder.getData( data, getSize(), false );
-    }  
 
     void ConstStringImpl::disposeData( void *data ) const
     {

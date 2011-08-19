@@ -1,8 +1,5 @@
 /*
- *
- *  Created by Peter Zion on 10-12-07.
- *  Copyright 2010 Fabric Technologies Inc. All rights reserved.
- *
+ *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
  */
  
 #ifndef _FABRIC_IO_DIR_H
@@ -40,6 +37,8 @@ namespace Fabric
       {
         return m_entry;
       }
+
+      bool exists() const;
       
       std::string getFullPath() const;
       

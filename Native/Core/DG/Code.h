@@ -27,7 +27,7 @@ namespace Fabric
 {
   namespace AST
   {
-    class GlobalVector;
+    class GlobalList;
     class Operator;
   };
   
@@ -49,7 +49,7 @@ namespace Fabric
       static RC::ConstHandle<Code> Create( RC::ConstHandle<Context> const &context, std::string const &sourceCode );
       
       std::string const &getSourceCode() const;
-      RC::ConstHandle<AST::GlobalVector> getAST() const;
+      RC::ConstHandle<AST::GlobalList> getAST() const;
       RC::ConstHandle<ExecutionEngine> getExecutionEngine() const;
       CG::Diagnostics const &getDiagnostics() const;
 #if defined(FABRIC_BUILD_DEBUG)
@@ -81,7 +81,7 @@ namespace Fabric
 #if defined(FABRIC_BUILD_DEBUG)
       std::string m_byteCode;
 #endif
-      RC::ConstHandle<AST::GlobalVector> m_ast;
+      RC::ConstHandle<AST::GlobalList> m_ast;
       CG::Diagnostics m_diagnostics;
       RC::ConstHandle<ExecutionEngine> m_executionEngine;
       

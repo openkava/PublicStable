@@ -2,6 +2,7 @@
 #define _FABRIC_CG_INTEGER_ADAPTER_H
 
 #include <Fabric/Core/CG/SimpleAdapter.h>
+#include <Fabric/Core/RT/NumericDesc.h>
 
 namespace llvm
 {
@@ -10,11 +11,6 @@ namespace llvm
 
 namespace Fabric
 {
-  namespace RT
-  {
-    class IntegerDesc;
-  };
-  
   namespace CG
   {
     class IntegerAdapter : public SimpleAdapter
@@ -31,11 +27,11 @@ namespace Fabric
 
     protected:
 
-      IntegerAdapter( RC::ConstHandle<Manager> const &manager, RC::ConstHandle<RT::IntegerDesc> const &integerDesc );
+      IntegerAdapter( RC::ConstHandle<Manager> const &manager, RC::ConstHandle<RT::NumericDesc> const &integerDesc );
       
     private:
     
-      RC::ConstHandle<RT::IntegerDesc> m_integerDesc;
+      RC::ConstHandle<RT::NumericDesc> m_integerDesc;
     };
   };
 };

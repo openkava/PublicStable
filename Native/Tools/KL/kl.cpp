@@ -4,12 +4,13 @@
  
 #include <stdio.h>
 #include <Fabric/Core/KL/Compiler.h>
+#include <Fabric/Core/KL/Externals.h>
 #include <Fabric/Core/KL/Parser.hpp>
 #include <Fabric/Core/KL/Scanner.h>
 #include <Fabric/Core/KL/StringSource.h>
-#include <Fabric/Core/AST/GlobalVector.h>
+#include <Fabric/Core/AST/GlobalList.h>
 #include <Fabric/Core/RT/Manager.h>
-#include <Fabric/Core/RT/ScalarDesc.h>
+#include <Fabric/Core/RT/NumericDesc.h>
 #include <Fabric/Core/RT/StringDesc.h>
 #include <Fabric/Core/RT/StructDesc.h>
 #include <Fabric/Core/RT/OpaqueDesc.h>
@@ -72,16 +73,6 @@ void dumpDiagnostics( CG::Diagnostics const &diagnostics )
   }
 }
 
-#if defined(FABRIC_OS_WINDOWS)
-
-extern "C" void _chkstk( );
-
-static float imp_roundf( float x )
-{
-  return( floorf( x + 0.5f ) );
-}
-#endif
-
 RC::Handle<CG::Manager> cgManager;
 
 static float externalSquare( float value )
@@ -98,52 +89,16 @@ static void report( char const *data, size_t length )
 
 static void *LazyFunctionCreator( std::string const &functionName )
 {
-  //fprintf( stderr, "LazyFunctionCreator('%s')\n", functionName.c_str() );
   if ( functionName == "report" )
     return (void *)&report;
-  else if ( functionName == "malloc" )
-    return (void *)&malloc;
-  else if ( functionName == "realloc" )
-    return (void *)&realloc;
-  else if ( functionName == "free" )
-    return (void *)&free;
-  else if ( functionName == "acosf" )
-    return (void *)&acosf;
-  else if ( functionName == "asinf" )
-    return (void *)&asinf;
-  else if ( functionName == "atanf" )
-    return (void *)&atanf;
-  else if ( functionName == "atan2f" )
-    return (void *)&atan2f;
-  else if ( functionName == "sinf" )
-    return (void *)&sinf;
-  else if ( functionName == "cosf" )
-    return (void *)&cosf;
-  else if ( functionName == "tanf" )
-    return (void *)&tanf;
-  else if ( functionName == "powf" )
-    return (void *)&powf;
-  else if ( functionName == "roundf" )
-#if defined(FABRIC_OS_WINDOWS)
-    return (void *)&imp_roundf;
-#else
-    return (void *)&roundf;
-#endif
-  else if( functionName == "fabs" )
-    return( void *)&fabsf;
-  else if ( functionName == "fmodf" )
-    return (void *)&fmodf;
-  else if ( functionName == "logf" )
-    return (void *)&logf;
   else if ( functionName == "externalSquare" )
     return (void *)&externalSquare;
-#if defined(FABRIC_OS_WINDOWS)
-  else if ( functionName == "_chkstk" )
-    return (void *)&_chkstk;
-#endif
   else
   {
-    void *result = cgManager->llvmResolveExternalFunction( functionName );
+    void *result = KL::LookupExternalSymbol( functionName );
+    if ( result )
+      return result;
+    result = cgManager->llvmResolveExternalFunction( functionName );
     if ( result )
       return result;
     result = OCL::llvmResolveExternalFunction( functionName );
@@ -151,7 +106,7 @@ static void *LazyFunctionCreator( std::string const &functionName )
       return result;
   }
   fprintf( stderr, "Unable to look up symbol for '%s'\n", functionName.c_str() );
-  return( NULL );
+  return 0;
 }
 
 
@@ -201,7 +156,7 @@ void handleFile( FILE *fp, unsigned int runFlags )
   cgManager->llvmPrepareModule( moduleBuilder );
   OCL::llvmPrepareModule( moduleBuilder, rtManager );
   
-  RC::ConstHandle<AST::GlobalVector> globalList = KL::Parse( scanner, diagnostics );
+  RC::ConstHandle<AST::GlobalList> globalList = KL::Parse( scanner, diagnostics );
 
   if ( diagnostics.containsError() )
   {

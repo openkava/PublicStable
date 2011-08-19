@@ -26,4 +26,4 @@ installerDmg = env.Dmg(
   source = installerDistDir,
 )
 
-Alias( 'installer', installerDmg )
+Alias( 'nativeInstaller', installerDmg )

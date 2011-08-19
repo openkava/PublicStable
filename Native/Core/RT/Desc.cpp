@@ -55,6 +55,11 @@ namespace Fabric
     {
       return m_name + ":" + m_impl->descData( data );
     }
+
+    std::string Desc::toString( void const *data ) const
+    {
+      return m_impl->descData( data );
+    }
     
     RC::Handle<JSON::Value> Desc::getJSONValue( void const *data ) const
     {
@@ -64,16 +69,6 @@ namespace Fabric
     void Desc::setDataFromJSONValue( RC::ConstHandle<JSON::Value> const &value, void *data ) const
     {
       m_impl->setDataFromJSONValue( value, data );
-    }
-    
-    Util::Encoder &Desc::encode( Util::Encoder &encoder, void const *data ) const
-    {
-      return m_impl->encode( encoder, data );
-    }
-    
-    Util::Decoder &Desc::decode( Util::Decoder &decoder, void *data ) const
-    {
-      return m_impl->decode( decoder, data );
     }
 
     void Desc::setKLBindingsAST( RC::ConstHandle<RC::Object> const &klBindingsAST ) const

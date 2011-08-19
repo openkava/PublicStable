@@ -31,7 +31,7 @@ namespace Fabric
   
   namespace AST
   {
-    class GlobalVector;
+    class GlobalList;
   };
 
   namespace DG
@@ -45,6 +45,11 @@ namespace Fabric
     class Object;
   };
   
+  namespace IO
+  {
+    class Dir;
+  };
+  
   namespace Plug
   {
     class Inst : public RC::Object
@@ -55,7 +60,7 @@ namespace Fabric
       
     public:
     
-      static RC::Handle<Inst> Create( std::string const &name, std::string const &jsonDesc, std::vector<std::string> const &pluginDirs, RC::Handle<CG::Manager> const &cgManager );
+      static RC::Handle<Inst> Create( RC::ConstHandle<IO::Dir> const &extensionDir, std::string const &name, std::string const &jsonDesc, std::vector<std::string> const &pluginDirs, RC::Handle<CG::Manager> const &cgManager );
       
       std::string const &getJSONDesc() const
       {
@@ -72,14 +77,14 @@ namespace Fabric
         return m_code;
       }
       
-      RC::ConstHandle<AST::GlobalVector> getAST() const;
+      RC::ConstHandle<AST::GlobalList> getAST() const;
       void *llvmResolveExternalFunction( std::string const &name ) const;
 
       virtual RC::Handle<JSON::Object> jsonDesc() const;
       
     protected:
     
-      Inst( std::string const &name, std::string const &jsonDesc, std::vector<std::string> const &pluginDirs, RC::Handle<CG::Manager> const &cgManager );
+      Inst( RC::ConstHandle<IO::Dir> const &extensionDir, std::string const &name, std::string const &jsonDesc, std::vector<std::string> const &pluginDirs, RC::Handle<CG::Manager> const &cgManager );
       ~Inst();
       
     private:
@@ -89,12 +94,11 @@ namespace Fabric
       //RC::Handle<LIB::Value> invokeMethod( std::string const &methodName, std::vector< RC::Handle<LIB::Value> > const &args );
     
       std::string m_name;
-      mutable bool m_disabled;
       RC::Handle<CG::Manager> m_cgManager;
       std::string m_jsonDesc;
       Desc m_desc;
       std::string m_code;
-      RC::ConstHandle<AST::GlobalVector> m_ast;
+      RC::ConstHandle<AST::GlobalList> m_ast;
       CG::Diagnostics m_diagnostics;
       ResolvedNameToSOLibHandleMap m_resolvedNameToSOLibHandleMap;
       std::vector<SOLibHandle> m_orderedSOLibHandles;

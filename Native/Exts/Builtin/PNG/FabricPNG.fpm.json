@@ -1,4 +1,4 @@
 {
   "libs": "FabricPNG",
-  "code": "struct RGBA { Byte r; Byte g; Byte b; Byte a; }; function FabricPNGDecode( Data pngData, Size pngDataSize, io Size imageWidth, io Size imageHeight, io RGBA imagePixels[] );\n"
+  "code": "FabricPNG.kl"
 }
