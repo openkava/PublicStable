@@ -346,7 +346,8 @@ void main()\n\
         
         GLint posLocation = glGetAttribLocation( m_watermarkShaderProgram, "a_position" );
         GLint texLocation = glGetAttribLocation( m_watermarkShaderProgram, "a_texCoord" );
-        GLint smpLocation = glGetUniformLocation( m_watermarkShaderProgram, "u_rgbaImage" );
+      //  GLint smpLocation = glGetUniformLocation( m_watermarkShaderProgram, "u_rgbaImage" );
+      //  glUniform1i( smpLocation, GL_TEXTURE0 );
         
         if ( !m_watermarkTextureBuffer )
         {
@@ -367,7 +368,6 @@ void main()\n\
         }
         glActiveTexture( GL_TEXTURE0 );
         glBindTexture( GL_TEXTURE_2D, m_watermarkTextureBuffer );
-        glUniform1i( smpLocation, GL_TEXTURE0 );
 
         glPushAttrib( GL_TEXTURE_BIT );
         
@@ -382,10 +382,10 @@ void main()\n\
         {
           static const GLfloat p[12] =
           {
-             1.0,  1.0, 0.0,
-            -1.0,  1.0, 0.0,
-            -1.0, -1.0, 0.0,
-             1.0, -1.0, 0.0
+            -1.0, -0.75, 0.0,
+            -0.75, -0.75, 0.0,
+            -0.75, -1.0, 0.0,
+            -1.0, -1.0, 0.0
           };
           glGenBuffers( 1, &m_watermarkPositionsBufferID );
           glBindBuffer( GL_ARRAY_BUFFER, m_watermarkPositionsBufferID );
