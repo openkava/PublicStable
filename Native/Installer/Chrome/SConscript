@@ -77,4 +77,5 @@ baseEnv.Command(
   installedFiles,
   chrome+" --pack-extension=" + chromeExtensionDir.abspath + " --pack-extension-key=" + pemFile.abspath + " --no-message-box"
 )
-Alias( 'chromeInstaller', chromeInstallerFile )
+chromeUpdateFile = baseEnv.Template( archDistDir.Dir('Chrome').File("crx-update-"+buildOS+"-"+buildArch+".xml"), "crx-update.xml.template" )
+Alias( 'chromeInstaller', [chromeInstallerFile, chromeUpdateFile] )
