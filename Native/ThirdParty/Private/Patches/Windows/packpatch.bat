@@ -10,5 +10,5 @@ echo Creating %ARCHIVE%
 
 if exist %ARCHIVE% del /q %ARCHIVE%
 
-..\..\bin\windows\tar.exe -cf - %1 | ..\..\bin\windows\bzip2 > %ARCHIVE%
+tar.exe -cf - %1 | bzip2 > %ARCHIVE%
 rmdir /s/q %1

@@ -37,6 +37,7 @@
 #include <FabricThirdPartyLicenses/llvm/projects/sample/autoconf/license.h>
 #include <FabricThirdPartyLicenses/md5/license.h>
 #include <FabricThirdPartyLicenses/libpng/license.h>
+#include <FabricThirdPartyLicenses/liblas/license.h>
 
 namespace Fabric
 {
@@ -368,17 +369,24 @@ namespace Fabric
       return result;
     }
     
-    static RC::Handle<JSON::Object> jsonDescLicenses_md5()
+    static RC::Handle<JSON::Object> jsonDescLicenses_libpng()
     {
       RC::Handle<JSON::Object> result = JSON::Object::Create();
       result->set( ThirdPartyLicenses::libpng::filename, JSON::String::Create( ThirdPartyLicenses::libpng::text ) );
       return result;
     }
     
-    static RC::Handle<JSON::Object> jsonDescLicenses_libpng()
+    static RC::Handle<JSON::Object> jsonDescLicenses_md5()
     {
       RC::Handle<JSON::Object> result = JSON::Object::Create();
       result->set( ThirdPartyLicenses::md5::filename, JSON::String::Create( ThirdPartyLicenses::md5::text ) );
+      return result;
+    }
+
+    static RC::Handle<JSON::Object> jsonDescLicenses_liblas()
+    {
+      RC::Handle<JSON::Object> result = JSON::Object::Create();
+      result->set( ThirdPartyLicenses::liblas::filename, JSON::String::Create( ThirdPartyLicenses::liblas::text ) );
       return result;
     }
     
@@ -388,6 +396,7 @@ namespace Fabric
       result->set( "llvm", jsonDescLicenses_llvm() );
       result->set( "md5", jsonDescLicenses_md5() );
       result->set( "libpng", jsonDescLicenses_libpng() );
+      result->set( "liblas", jsonDescLicenses_liblas() );
       return result;
     }
 
