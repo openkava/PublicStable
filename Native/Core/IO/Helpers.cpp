@@ -138,7 +138,7 @@ namespace Fabric
       return result;
     }
     
-    std::vector<std::string> GetSubDirEntries( std::string const &dirPath )
+    std::vector<std::string> GetSubDirEntries( std::string const &dirPath, bool followLinks )
     {
       std::vector<std::string> result;
 #if defined(FABRIC_POSIX)
@@ -155,6 +155,15 @@ namespace Fabric
         std::string entry( de->d_name );
         if ( entry == "." || entry == ".." )
           continue;
+        if ( !followLinks )
+        {
+          std::string fileFullPath = joinPath( dirPath, entry );
+          struct stat st;
+          if ( lstat( fileFullPath.c_str(), &st ) != 0 )
+            throw Exception( _(fileFullPath) + ": unable to lstat" );
+          if ( S_ISLNK( st.st_mode ) )
+            continue;
+        }
         result.push_back( entry );
       }
       closedir( dir );
@@ -173,6 +182,22 @@ namespace Fabric
         std::string entry( fd.cFileName );
         if ( entry == "." || entry == ".." )
           continue;
+
+        if ( !followLinks && ( fd.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT ) )
+        {
+          //[jcg 20110819] http://msdn.microsoft.com/en-us/library/aa365460(v=vs.85).aspx
+          //[jcg 20110819] http://msdn.microsoft.com/en-us/library/aa363940(v=vs.85).aspx
+          std::string potentialLinkFullPath = JoinPath( dirPath, entry );
+          WIN32_FIND_DATAA fdLink;
+          ::ZeroMemory( &fdLink, sizeof( fdLink ) );
+          HANDLE hDir = ::FindFirstFileA( potentialLinkFullPath.c_str(), &fdLink );
+          if( hDir != INVALID_HANDLE_VALUE )
+          {
+            if( fdLink.dwReserved0 == IO_REPARSE_TAG_MOUNT_POINT )
+              continue;
+          }
+        }
+
         result.push_back( entry );
       } while( ::FindNextFileA( hDir, &fd ) );
       ::FindClose( hDir );
