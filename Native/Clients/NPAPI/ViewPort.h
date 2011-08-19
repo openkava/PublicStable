@@ -88,6 +88,8 @@ namespace Fabric
       virtual void pushOGLContext() = 0;
       virtual void popOGLContext() = 0;
 
+      void drawWatermark( size_t width, size_t height );
+      
     protected:
     
       ViewPort( RC::ConstHandle<Interface> const &interface, uint32_t timerInterval = 0 );
@@ -145,6 +147,8 @@ namespace Fabric
       
       unsigned m_fpsCount; 
       float m_fps;
+      
+      GLuint m_watermarkShaderProgram;
     };
   };
 };
