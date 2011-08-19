@@ -10,6 +10,7 @@
 #include <ImathBox.h>
 
 using namespace Fabric::EDK;
+IMPLEMENT_FABRIC_EDK_ENTRIES
 
 class MemIStream : public Imf::IStream
 {
