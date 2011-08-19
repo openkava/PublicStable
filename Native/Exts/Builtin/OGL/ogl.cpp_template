@@ -4,7 +4,8 @@
 
 // include the EDK first, since it provides the OS based defines
 #include <Fabric/EDK/EDK.h>
- 
+IMPLEMENT_FABRIC_EDK_ENTRIES
+
 #include <GL/glew.h>
 #if defined(FABRIC_OS_LINUX)
 # undef None
