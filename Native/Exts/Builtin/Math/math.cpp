@@ -5,6 +5,7 @@
 #include <Fabric/EDK/EDK.h>
 
 using namespace Fabric::EDK;
+IMPLEMENT_FABRIC_EDK_ENTRIES
 
 // [pzion 20110714] Order of 300772 (mod 2^32) is 1073741824
 static const uint32_t randomBase = 300773;
