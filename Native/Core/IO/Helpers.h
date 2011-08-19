@@ -42,7 +42,7 @@ namespace Fabric
     
     bool DirExists( std::string const &dirPath );
     void CreateDir( std::string const &dirPath );
-    std::vector<std::string> GetSubDirEntries( std::string const &dirPath );
+    std::vector<std::string> GetSubDirEntries( std::string const &dirPath, bool followLinks = true );
     
     void GlobDirPaths( std::string const &dirPathSpec, std::vector<std::string> &result );
   };

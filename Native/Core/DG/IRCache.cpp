@@ -37,7 +37,7 @@ namespace Fabric
       m_dir = IO::Dir::Create( baseDir, _(buildCacheGeneration) );
     }
     
-    std::string IRCache::keyForAST( RC::ConstHandle<AST::GlobalVector> const &ast ) const
+    std::string IRCache::keyForAST( RC::ConstHandle<AST::GlobalList> const &ast ) const
     {
       Util::SimpleString astJSONString = ast->toJSON();
       return Util::md5HexDigest( astJSONString.getData(), astJSONString.getLength() );

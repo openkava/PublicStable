@@ -106,25 +106,14 @@ namespace Fabric
     std::vector< RC::ConstHandle<Dir> > Dir::getSubDirs( bool followLinks ) const
     {
       std::string fullPath = getFullPath();
-      std::vector<std::string> subDirEntries = GetSubDirEntries( fullPath );
+      std::vector<std::string> subDirEntries = GetSubDirEntries( fullPath, followLinks );
       
       std::vector< RC::ConstHandle<Dir> > result;
-      std::string dirFullPath = getFullPath();
-      DIR *dir = opendir( dirFullPath.c_str() );
+      for ( std::vector<std::string>::const_iterator it=subDirEntries.begin(); it!=subDirEntries.end(); ++it )
       {
         std::string const &subDirEntry = *it;
         result.push_back( Dir::Create( this, subDirEntry ) );
-        if ( !followLinks )
-        {
-          std::string fileFullPath = joinPath( dirFullPath, entry );
-          struct stat st;
-          if ( lstat( fileFullPath.c_str(), &st ) != 0 )
-            throw Exception( _(fileFullPath) + ": unable to lstat" );
-          if ( S_ISLNK( st.st_mode ) )
-            continue;
-        }
       }
-      std::string   searchGlob = joinPath( dirFullPath, "*" );
       return result;
     }
 
@@ -223,6 +212,16 @@ namespace Fabric
         throw Exception( "short write" );
 #endif 
     }
+
+#if defined(FABRIC_WIN32)
+    //[jcg 20110819] http://msdn.microsoft.com/en-us/library/ms724228(v=vs.85).aspx
+    void TimetToWindowsFileTime( time_t t, LPFILETIME pft )
+    {
+        LONGLONG ll = Int32x32To64(t, 10000000) + 116444736000000000;
+        pft->dwLowDateTime = (DWORD) ll;
+        pft->dwHighDateTime = ll >>32;
+    }
+#endif
       
     void Dir::recursiveDeleteFilesOlderThan( time_t time ) const
     {
@@ -235,7 +234,9 @@ namespace Fabric
       for ( std::vector<std::string>::const_iterator it=files.begin(); it!=files.end(); ++it )
       {
         std::string const &file = *it;
-        std::string fileFullPath = joinPath( dirFullPath, file );
+        std::string fileFullPath = JoinPath( dirFullPath, file );
+
+#if defined(FABRIC_POSIX)
         struct stat st;
         if ( lstat( fileFullPath.c_str(), &st ) != 0 )
         {
@@ -244,16 +245,28 @@ namespace Fabric
         }
         if ( S_ISREG(st.st_mode) && st.st_ctime < time )
         {
-#if defined(FABRIC_POSIX)
           if ( unlink( fileFullPath.c_str() ) != 0 )
             FABRIC_LOG( "Warning: unable to delete " + _(fileFullPath) );
+        }
 #elif defined(FABRIC_WIN32)
+        WIN32_FILE_ATTRIBUTE_DATA attrData;
+        if( GetFileAttributesExA( fileFullPath.c_str(), GetFileExInfoStandard, &attrData) == 0 )
+        {
+          FABRIC_LOG( "Warning: unable to return file information for " + _(fileFullPath) );
+          continue;
+        }
+
+        FILETIME timeTAsFileTime;
+        TimetToWindowsFileTime(time, &timeTAsFileTime );
+
+        if( CompareFileTime( &attrData.ftLastWriteTime, &timeTAsFileTime ) < 0 )
+        {
           if ( !::DeleteFileA( fileFullPath.c_str() ) )
             FABRIC_LOG( "Warning: unable to delete " + _(fileFullPath) );
+        }
 #else
 # error "unsupported FABRIC_PLATFORM_..."
 #endif
-        }
       }
     }
   };
