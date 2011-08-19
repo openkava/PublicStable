@@ -132,7 +132,10 @@ namespace Fabric
           functionSymbol->llvmCreateCall( basicBlockBuilder, exprValues );
         }
         
-        return result.castTo( basicBlockBuilder, usage );
+        result.castTo( basicBlockBuilder, usage );
+        llvm::Value *selfRValue = adapter->llvmLValueToRValue( basicBlockBuilder, selfLValue );
+        adapter->llvmRelease( basicBlockBuilder, selfRValue );
+        return result;
       }
       else
       {
