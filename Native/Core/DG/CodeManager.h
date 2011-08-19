@@ -43,8 +43,6 @@ namespace Fabric
     private:
     
       SourceCodeToCodeMap m_sourceCodeToCodeMap;
-      
-      RC::Handle<IRCache> m_irCache;
     };
   };
 };
