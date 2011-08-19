@@ -35,6 +35,10 @@ namespace Fabric
       , m_fpsCount( 0 )
       , m_fps( 0.0 )
       , m_watermarkShaderProgram( 0 )
+      , m_watermarkTextureBuffer( 0 )
+      , m_watermarkPositionsBufferID( 0 )
+      , m_watermarkUVsBufferID( 0 )
+      , m_watermarkIndexesBufferID( 0 )
     {
       if ( timerInterval )
       {
@@ -340,6 +344,10 @@ void main()\n\
         }
         glUseProgram( m_watermarkShaderProgram );
         
+        GLint posLocation = glGetAttribLocation( m_watermarkShaderProgram, "a_position" );
+        GLint texLocation = glGetAttribLocation( m_watermarkShaderProgram, "a_texCoord" );
+        GLint smpLocation = glGetUniformLocation( m_watermarkShaderProgram, "u_rgbaImage" );
+        
         if ( !m_watermarkTextureBuffer )
         {
           glGenTextures( 1, &m_watermarkTextureBuffer );
@@ -349,7 +357,7 @@ void main()\n\
           glBindTexture( GL_TEXTURE_2D, m_watermarkTextureBuffer );
     
           glPixelStorei( GL_UNPACK_ALIGNMENT, 1 );
-          glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA8, watermarkWidth, watermarkHeight, 0, GL_RGBA, GL_BYTE, watermarkData );
+          glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA8, watermarkWidth, watermarkHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, watermarkData );
 
           glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
           glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
@@ -357,91 +365,79 @@ void main()\n\
           glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
           glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
         }
+        glActiveTexture( GL_TEXTURE0 );
+        glBindTexture( GL_TEXTURE_2D, m_watermarkTextureBuffer );
+        glUniform1i( smpLocation, GL_TEXTURE0 );
+
+        glPushAttrib( GL_TEXTURE_BIT );
         
+        glDisable( GL_DEPTH_TEST );
+        glDisable( GL_CULL_FACE );
+
+        glEnable( GL_TEXTURE_2D );
+        glDisable( GL_DEPTH_TEST );
+        glDisable( GL_CULL_FACE );
+
+        if ( !m_watermarkPositionsBufferID )
+        {
+          static const GLfloat p[12] =
+          {
+             1.0,  1.0, 0.0,
+            -1.0,  1.0, 0.0,
+            -1.0, -1.0, 0.0,
+             1.0, -1.0, 0.0
+          };
+          glGenBuffers( 1, &m_watermarkPositionsBufferID );
+          glBindBuffer( GL_ARRAY_BUFFER, m_watermarkPositionsBufferID );
+          glBufferData( GL_ARRAY_BUFFER, sizeof(p), p, GL_STATIC_DRAW );
+          glBindBuffer( GL_ARRAY_BUFFER, 0 );
+        }
+        glBindBuffer( GL_ARRAY_BUFFER, m_watermarkPositionsBufferID );
+        glEnableVertexAttribArray( posLocation );
+        glVertexAttribPointer( posLocation, 3, GL_FLOAT, GL_FALSE, 0, NULL );
+        glBindBuffer( GL_ARRAY_BUFFER, 0 );
+        
+        if ( !m_watermarkUVsBufferID )
+        {
+          static const GLfloat t[8] =
+          {
+            0.0, 0.0,
+            1.0, 0.0,
+            1.0, 1.0,
+            0.0, 1.0
+          };
+          glGenBuffers( 1, &m_watermarkUVsBufferID );
+          glBindBuffer( GL_ARRAY_BUFFER, m_watermarkUVsBufferID );
+          glBufferData( GL_ARRAY_BUFFER, sizeof(t), t, GL_STATIC_DRAW );
+          glBindBuffer( GL_ARRAY_BUFFER, 0 );
+        }
+        glBindBuffer( GL_ARRAY_BUFFER, m_watermarkUVsBufferID );
+        glEnableVertexAttribArray( texLocation );
+        glVertexAttribPointer( texLocation, 2, GL_FLOAT, GL_FALSE, 0, NULL );
+        glBindBuffer( GL_ARRAY_BUFFER, 0 );
+        
+        if ( !m_watermarkIndexesBufferID )
+        {
+          static const GLuint idx[6] =
+          {
+            0, 2, 1,
+            0, 3, 2
+          };
+          glGenBuffers( 1, &m_watermarkIndexesBufferID );
+          glBindBuffer( GL_ARRAY_BUFFER, m_watermarkIndexesBufferID );
+          glBufferData( GL_ARRAY_BUFFER, sizeof(idx), idx, GL_STATIC_DRAW );
+          glBindBuffer( GL_ARRAY_BUFFER, 0 );
+        }
+        glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, m_watermarkIndexesBufferID );
+        glDrawElements( GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL );
+        glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 );
+
+        glPopAttrib();
       }
       catch ( Exception e )
       {
         throw "ViewPort::drawWatermark( " + _(width) + ", " + _(height) + " ): " + e;
       }
-/*
-  var String name = 'a_position';
-  var Integer posLocation = glGetAttribLocation(program, name);
-  name = 'a_texCoord';
-  var Integer texLocation = glGetAttribLocation(program, name);
-  name = 'u_rgbaImage';
-  var Integer smpLocation = glGetUniformLocation(program, name);
-
-  glPushAttrib(GL_TEXTURE_BIT);
-  glDisable(GL_DEPTH_TEST);
-  glDisable(GL_CULL_FACE);
-
-  glEnable(GL_TEXTURE_2D);
-  glDisable(GL_DEPTH_TEST);
-  glDisable(GL_CULL_FACE);
-
-  // PT 29-06-11 : I'm not sure why this is here.
-  // Do we need to set the texture unit here?
-//  glUniform1i(smpLocation, GL_TEXTURE0);
-  
-  // Draw a quad in the upper left with debugging info
-  var Vec3 p[4];
-  p[0] = Vec3(tl.x, tl.y, 0.0);
-  p[1] = Vec3(br.x, tl.y, 0.0);
-  p[2] = Vec3(br.x, br.y, 0.0);
-  p[3] = Vec3(tl.x, br.y, 0.0);
-  
-  var Vec2 t[4];
-  if(flipY){
-    t[0] = Vec2(0.0, 0.0);
-    t[1] = Vec2(1.0, 0.0);
-    t[2] = Vec2(1.0, 1.0);
-    t[3] = Vec2(0.0, 1.0);
-  }else{
-    t[0] = Vec2(0.0, 1.0);
-    t[1] = Vec2(1.0, 1.0);
-    t[2] = Vec2(1.0, 0.0);
-    t[3] = Vec2(0.0, 0.0);
-  }
-  
-  var Integer idx[6];
-  idx[0] = 0; idx[1] = 2; idx[2] = 1;
-  idx[3] = 0; idx[4] = 3; idx[5] = 2;
-
-  var Data NULL;
-
-  var Size bufferID0;
-  var Size bufferID1;
-  var Size bufferID2;
-  var Size bufferIDArray[];
-  bufferIDArray.resize(1);
-  glGenBuffers(1, bufferIDArray);
-  bufferID0 = bufferIDArray[0];
-  glGenBuffers(1, bufferIDArray);
-  bufferID1 = bufferIDArray[0];
-  glGenBuffers(1, bufferIDArray);
-  bufferID2 = bufferIDArray[0];
-  
-  glBindBuffer(GL_ARRAY_BUFFER, bufferID0);
-  glBufferData(GL_ARRAY_BUFFER, p.dataSize(), p.data(), GL_STATIC_DRAW);
-  glEnableVertexAttribArray(posLocation);
-  glVertexAttribPointer(posLocation, 3, GL_FLOAT, GL_FALSE, 0, NULL);
-
-  glBindBuffer(GL_ARRAY_BUFFER, bufferID1);
-  glBufferData(GL_ARRAY_BUFFER, t.dataSize(), t.data(), GL_STATIC_DRAW);
-  glEnableVertexAttribArray(texLocation);
-  glVertexAttribPointer(texLocation, 2, GL_FLOAT, GL_FALSE, 0, NULL);
-
-  glBindBuffer(GL_ARRAY_BUFFER, bufferID2);
-  glBufferData(GL_ARRAY_BUFFER, idx.dataSize(), idx.data(), GL_STATIC_DRAW);
-  glBindBuffer(GL_ARRAY_BUFFER, 0);
-  
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferID2);
-  glDrawElements(GL_TRIANGLES, idx.size(), GL_UNSIGNED_INT, NULL);
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
-  glPopAttrib();
-//  report("<<<drawTexture");
-*/
     }
   };
 };
