@@ -1,4 +1,2 @@
 [FABRIC] [MT] before test exception
-../../../Web/Core/FABRIC.Wrappers.js:45: Fabric core exception: DG.e.fire(): command 'fire': test exception
-          throw 'Fabric core exception: ' + result.exception;
-                                                  ^
+terminate called after throwing an instance of 'Fabric::Exception'
