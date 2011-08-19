@@ -1,8 +1,5 @@
 /*
- *
- *  Created by Peter Zion on 10-08-13.
- *  Copyright 2010 Fabric 3D Inc.. All rights reserved.
- *
+ *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
  */
 
 #ifndef _FABRIC_NPAPI_NP_VIEW_PORT_H
@@ -149,6 +146,7 @@ namespace Fabric
       float m_fps;
       
       GLuint m_watermarkShaderProgram;
+      GLuint m_watermarkTextureBuffer;
     };
   };
 };

@@ -1,12 +1,10 @@
 /*
- *
- *  Created by Peter Zion on 10-08-13.
- *  Copyright 2010 Fabric 3D Inc.. All rights reserved.
- *
+ *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
  */
 
 #include "ViewPort.h"
 #include "Interface.h"
+#include "Watermark.h"
 #include <Fabric/Core/RT/Manager.h>
 #include <Fabric/Core/RT/IntegerDesc.h>
 #include <Fabric/Clients/NPAPI/Context.h>
@@ -26,6 +24,7 @@ namespace Fabric
 {
   namespace NPAPI
   {
+    
     ViewPort::ViewPort( RC::ConstHandle<Interface> const &interface, uint32_t timerInterval )
       : m_npp( interface->getNPP() )
       , m_name( "viewPort" )
@@ -340,6 +339,25 @@ void main()\n\
           glDeleteShader( vertexShaderID );
         }
         glUseProgram( m_watermarkShaderProgram );
+        
+        if ( !m_watermarkTextureBuffer )
+        {
+          glGenTextures( 1, &m_watermarkTextureBuffer );
+          if ( !m_watermarkTextureBuffer )
+            throw Exception( "glGenTextures() failed" );
+          glActiveTexture( GL_TEXTURE0 );
+          glBindTexture( GL_TEXTURE_2D, m_watermarkTextureBuffer );
+    
+          glPixelStorei( GL_UNPACK_ALIGNMENT, 1 );
+          glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA8, watermarkWidth, watermarkHeight, 0, GL_RGBA, GL_BYTE, watermarkData );
+
+          glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+          glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+
+          glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
+          glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
+        }
+        
       }
       catch ( Exception e )
       {

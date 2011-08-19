@@ -41,19 +41,20 @@ static size_t counter;
 void preOutput()
 {
   counter = 0;
-  printf( "\"" );
 }
 
 void pngOutput( uint8_t ch )
 {
-  printf( "\\x%02X", (unsigned)ch );
-  if ( counter++ % 16 == 15 )
-    printf( "\"\n\"" );
+  if ( counter > 0 )
+    printf( ", " );
+  if ( counter++ % 16 == 0 )
+    printf( "\n" );
+  printf( "0x%02X", (unsigned)ch );
 }
 
 void postOutput()
 {
-  printf( "\"\n" );
+  printf( "\n" );
 }
 
 void decode( char const *inFile )
