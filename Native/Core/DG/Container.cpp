@@ -8,7 +8,7 @@
 #include <Fabric/Core/DG/ExecutionEngine.h>
 #include <Fabric/Core/DG/Binding.h>
 #include <Fabric/Core/MT/LogCollector.h>
-#include <Fabric/Core/RT/IntegerDesc.h>
+#include <Fabric/Core/RT/NumericDesc.h>
 #include <Fabric/Core/RT/VariableArrayDesc.h>
 #include <Fabric/Core/RT/Manager.h>
 #include <Fabric/Core/RT/VariableArrayImpl.h>
@@ -455,8 +455,6 @@ namespace Fabric
       {
         std::string type = argJSONObject->get( "type" )->toString()->value();
         desc = m_context->getRTManager()->getDesc( type );
-        if ( !desc )
-          throw Exception( _(type) + ": type not registered" );
       }
       catch ( Exception e )
       {

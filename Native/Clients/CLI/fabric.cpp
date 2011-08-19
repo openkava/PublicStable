@@ -9,7 +9,7 @@
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/DG/Context.h>
 #include <Fabric/Core/DG/Debug.h>
-#include <Fabric/Core/RT/ScalarDesc.h>
+#include <Fabric/Core/RT/NumericDesc.h>
 #include <Fabric/Core/RT/StructDesc.h>
 #include <Fabric/Core/V8Ext/Extension.h>
 #include <Fabric/Core/MT/IdleTaskQueue.h>
@@ -134,7 +134,7 @@ int main( int argc, char **argv )
     switch ( c )
     {
       case 'v':
-        printf( "Fabric version %s\n", buildVersion );
+        printf( "%s version %s\n", buildName, buildFullVersion );
         return 0;
         
       case 'p':
@@ -151,7 +151,7 @@ int main( int argc, char **argv )
   }
 
   if ( pluginDir.length() == 0 )
-    pluginDir = IO::joinPath( IO::getRootPath(), "Exts" );
+    pluginDir = IO::JoinPath( IO::getRootPath(), "Exts" );
     
   std::vector< std::string > filesToRun;
   for ( ; optind < argc; ++optind )
@@ -410,7 +410,7 @@ v8::Handle<v8::String> ReadFile(const char* name) {
 
 static void printBanner( )
 {
-  printf( "%s", Fabric::buildDesc );
+  printf( "%s version %s\n%s\n%s\n", Fabric::buildName, Fabric::buildFullVersion, Fabric::buildDesc, Fabric::buildCopyright );
 }
 
 #if defined( FABRIC_POSIX )

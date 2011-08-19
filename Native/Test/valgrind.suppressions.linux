@@ -26,6 +26,17 @@
    obj:*
 }
 {
+   mesa_pthread_mutex_init_3
+   Memcheck:Cond
+   fun:pthread_mutex_init
+   obj:/usr/lib/mesa/libGL.so.6.0.12094.676494
+   obj:/usr/lib/mesa/libGL.so.6.0.12094.676494
+   obj:/usr/lib/mesa/libGL.so.6.0.12094.676494
+   fun:call_init
+   fun:_dl_init
+   obj:/lib/ld-2.12.1.so
+}
+{
    llvm_equivalence_classes
    Memcheck:Leak
    fun:_Znwj

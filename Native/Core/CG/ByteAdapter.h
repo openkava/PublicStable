@@ -11,7 +11,7 @@ namespace Fabric
 {
   namespace RT
   {
-    class ByteDesc;
+    class NumericDesc;
   };
   
   namespace CG
@@ -28,13 +28,13 @@ namespace Fabric
       
     protected:
     
-      ByteAdapter( RC::ConstHandle<Manager> const &manager, RC::ConstHandle<RT::ByteDesc> const &byteDesc );
+      ByteAdapter( RC::ConstHandle<Manager> const &manager, RC::ConstHandle<RT::NumericDesc> const &byteDesc );
       
       virtual void llvmPrepareModule( ModuleBuilder &moduleBuilder, bool buildFunctions ) const;
       
     private:
     
-      RC::ConstHandle<RT::ByteDesc> m_byteDesc;
+      RC::ConstHandle<RT::NumericDesc> m_byteDesc;
     };
   };
 };

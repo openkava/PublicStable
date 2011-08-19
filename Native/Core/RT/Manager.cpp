@@ -1,20 +1,16 @@
 #include "Manager.h"
 #include "BooleanDesc.h"
 #include "BooleanImpl.h"
-#include "ByteDesc.h"
-#include "ByteImpl.h"
-#include "IntegerDesc.h"
-#include "IntegerImpl.h"
-#include "SizeDesc.h"
-#include "SizeImpl.h"
-#include "ScalarDesc.h"
-#include "ScalarImpl.h"
 #include "ConstStringDesc.h"
 #include "ConstStringImpl.h"
-#include "StringDesc.h"
-#include "StringImpl.h"
 #include "FixedArrayDesc.h"
 #include "FixedArrayImpl.h"
+#include "FloatDesc.h"
+#include "FloatImpl.h"
+#include "IntegerDesc.h"
+#include "IntegerImpl.h"
+#include "StringDesc.h"
+#include "StringImpl.h"
 #include "VariableArrayDesc.h"
 #include "VariableArrayImpl.h"
 #include "StructDesc.h"
@@ -32,8 +28,6 @@
 
 namespace Fabric
 {
-  
-
   namespace RT
   {
     RC::Handle<Manager> Manager::Create( RC::ConstHandle<KLCompiler> const &klCompiler )
@@ -51,9 +45,10 @@ namespace Fabric
     {
       registerDesc( m_booleanDesc = new BooleanDesc( "Boolean", new BooleanImpl( "Boolean" ) ) );
       registerDesc( m_byteDesc = new ByteDesc( "Byte", new ByteImpl( "Byte" ) ) );
-      registerDesc( m_integerDesc = new IntegerDesc( "Integer", new IntegerImpl( "Integer" ) ) );
+      registerDesc( m_integerDesc = new SI32Desc( "Integer", new SI32Impl( "Integer" ) ) );
       registerDesc( m_sizeDesc = new SizeDesc( "Size", new SizeImpl( "Size" ) ) );
-      registerDesc( m_scalarDesc = new ScalarDesc( "Scalar", new ScalarImpl( "Scalar" ) ) );
+      registerDesc( m_scalarDesc = new FP32Desc( "Scalar", new FP32Impl( "Scalar" ) ) );
+      registerDesc( m_fp64Desc = new FloatDescT<double>( "Float64", new FloatImplT<double>( "Float64" ) ) );
       registerDesc( m_stringDesc = new StringDesc( "String", new StringImpl( "String" ) ) );
       registerDesc( m_dataDesc = new OpaqueDesc( "Data", new OpaqueImpl( "Data", sizeof(size_t) ) ) );
     }
@@ -96,7 +91,7 @@ namespace Fabric
       return RC::ConstHandle<OpaqueDesc>::StaticCast( registerDesc( result ) );
     }
 
-    RC::ConstHandle<Desc> Manager::registerAlias( std::string const &name, RC::ConstHandle< RT::Desc > const &desc )
+    RC::ConstHandle<Desc> Manager::registerAlias( std::string const &name, RC::ConstHandle<RT::Desc> const &desc )
     {
       RC::ConstHandle<Desc> aliasDesc;
       switch ( desc->getType() )
@@ -104,20 +99,14 @@ namespace Fabric
         case DT_BOOLEAN:
           aliasDesc = new BooleanDesc( name, RC::ConstHandle<BooleanImpl>::StaticCast( desc->getImpl() ) );
           break;
-        case DT_BYTE:
-          aliasDesc = new ByteDesc( name, RC::ConstHandle<ByteImpl>::StaticCast( desc->getImpl() ) );
-          break;
-        case DT_CONST_STRING:
-          aliasDesc = new ConstStringDesc( name, RC::ConstHandle<ConstStringImpl>::StaticCast( desc->getImpl() ) );
-          break;
         case DT_INTEGER:
           aliasDesc = new IntegerDesc( name, RC::ConstHandle<IntegerImpl>::StaticCast( desc->getImpl() ) );
           break;
-        case DT_SIZE:
-          aliasDesc = new SizeDesc( name, RC::ConstHandle<SizeImpl>::StaticCast( desc->getImpl() ) );
+        case DT_FLOAT:
+          aliasDesc = new FloatDesc( name, RC::ConstHandle<FloatImpl>::StaticCast( desc->getImpl() ) );
           break;
-        case DT_SCALAR:
-          aliasDesc = new ScalarDesc( name, RC::ConstHandle<ScalarImpl>::StaticCast( desc->getImpl() ) );
+        case DT_CONST_STRING:
+          aliasDesc = new ConstStringDesc( name, RC::ConstHandle<ConstStringImpl>::StaticCast( desc->getImpl() ) );
           break;
         case DT_STRING:
           aliasDesc = new StringDesc( name, RC::ConstHandle<StringImpl>::StaticCast( desc->getImpl() ) );
@@ -264,9 +253,14 @@ namespace Fabric
       return m_sizeDesc;
     }
     
-    RC::ConstHandle<ScalarDesc> Manager::getScalarDesc() const
+    RC::ConstHandle<FloatDesc> Manager::getScalarDesc() const
     {
       return m_scalarDesc;
+    }
+    
+    RC::ConstHandle<FloatDesc> Manager::getFP64Desc() const
+    {
+      return m_fp64Desc;
     }
     
     RC::ConstHandle<StringDesc> Manager::getStringDesc() const
@@ -348,111 +342,130 @@ namespace Fabric
         throw "'name': " + e;
       }
       
-      RC::ConstHandle<JSON::Object> defaultValue;
       try
       {
-        defaultValue = argJSONObject->get( "defaultValue" )->toObject();
-      }
-      catch ( Exception e )
-      {
-        throw "'defaultValue': " + e;
-      }
-      
-      RT::StructMemberInfoVector memberInfos;
-      try
-      {
-        RC::ConstHandle<JSON::Array> membersArray = argJSONObject->get( "members" )->toArray();
-        size_t membersArraySize = membersArray->size();
-        for ( size_t i=0; i<membersArraySize; ++i )
+        RC::ConstHandle<JSON::Object> defaultValue;
+        try
         {
-          try
+          defaultValue = argJSONObject->get( "defaultValue" )->toObject();
+        }
+        catch ( Exception e )
+        {
+          throw "'defaultValue': " + e;
+        }
+        
+        RT::StructMemberInfoVector memberInfos;
+        try
+        {
+          RC::ConstHandle<JSON::Array> membersArray = argJSONObject->get( "members" )->toArray();
+          size_t membersArraySize = membersArray->size();
+          for ( size_t i=0; i<membersArraySize; ++i )
           {
-            RC::ConstHandle<JSON::Object> memberObject = membersArray->get(i)->toObject();
-            RT::StructMemberInfo memberInfo;
+            try
+            {
+              RC::ConstHandle<JSON::Object> memberObject = membersArray->get(i)->toObject();
+              RT::StructMemberInfo memberInfo;
 
-            try
-            {
-              memberInfo.name = memberObject->get( "name" )->toString()->value();
-            }
-            catch ( Exception e )
-            {
-              throw "'name': " + e;
-            }
-            
-            try
-            {
-              std::string typeName = memberObject->get( "type" )->toString()->value();
-              if ( typeName.empty() )
-                throw Exception( "must be non-empty" );
-              memberInfo.desc = getDesc( typeName );
-              if ( !memberInfo.desc )
-                throw Exception( "type " + _(typeName) + " not registered" );
-            }
-            catch ( Exception e )
-            {
-              throw "'type': " + e;
-            }
-            
-            memberInfo.defaultData.resize( memberInfo.desc->getSize() );
-            try
-            {
-              memberInfo.desc->setDataFromJSONValue( defaultValue->get( memberInfo.name ), &memberInfo.defaultData[0] );
-            }
-            catch ( Exception e )
-            {
-              throw _(memberInfo.name) + " default value: " + e;
-            }
+              try
+              {
+                memberInfo.name = memberObject->get( "name" )->toString()->value();
+              }
+              catch ( Exception e )
+              {
+                throw "'name': " + e;
+              }
+              
+              try
+              {
+                std::string typeName = memberObject->get( "type" )->toString()->value();
+                if ( typeName.empty() )
+                  throw Exception( "must be non-empty" );
+                memberInfo.desc = getDesc( typeName );
+                if ( !memberInfo.desc )
+                  throw Exception( "type " + _(typeName) + " not registered" );
+              }
+              catch ( Exception e )
+              {
+                throw "'type': " + e;
+              }
+              
+              memberInfo.defaultData.resize( memberInfo.desc->getSize() );
+              try
+              {
+                memberInfo.desc->setDataFromJSONValue( defaultValue->get( memberInfo.name ), &memberInfo.defaultData[0] );
+              }
+              catch ( Exception e )
+              {
+                throw _(memberInfo.name) + " default value: " + e;
+              }
 
-            memberInfos.push_back( memberInfo );
-          }
-          catch ( Exception e )
-          {
-            throw "index " + _(i) + ": " + e;
+              memberInfos.push_back( memberInfo );
+            }
+            catch ( Exception e )
+            {
+              throw "index " + _(i) + ": " + e;
+            }
           }
         }
-      }
-      catch ( Exception e )
-      {
-        throw "members: " + e;
-      }
-      
-      RC::ConstHandle<RC::Object> klBindingsAST;
-      try
-      {
-        RC::ConstHandle<JSON::Value> klBindingsJSONValue = argJSONObject->maybeGet( "kBindings" );
-        if ( klBindingsJSONValue )
+        catch ( Exception e )
         {
-          std::string klBindings = klBindingsJSONValue->toString()->value();
-          klBindingsAST = m_klCompiler->compile( klBindings );
+          throw "members: " + e;
         }
+        
+        RC::ConstHandle<RC::Object> klBindingsAST;
+        try
+        {
+          RC::ConstHandle<JSON::Value> klBindingsJSONValue = argJSONObject->maybeGet( "kBindings" );
+          if ( klBindingsJSONValue )
+          {
+            std::string klBindings = klBindingsJSONValue->toString()->value();
+            klBindingsAST = m_klCompiler->compile( klBindings );
+          }
+        }
+        catch ( Exception e )
+        {
+          throw "'kBindings': " + e;
+        }
+        
+        RC::ConstHandle< RT::StructDesc > structDesc = registerStruct( name, memberInfos );
+
+        for ( size_t i=0; i<memberInfos.size(); ++i )
+        {
+          RT::StructMemberInfo &memberInfo = memberInfos[i];
+          memberInfo.desc->disposeData( &memberInfo.defaultData[0] );
+        }
+
+        if ( klBindingsAST )
+          structDesc->setKLBindingsAST( klBindingsAST );
       }
       catch ( Exception e )
       {
-        throw "'kBindings': " + e;
+        throw "name " + _(name) + ": " + e;
       }
-      
-      RC::ConstHandle< RT::StructDesc > structDesc = registerStruct( name, memberInfos );
-
-      for ( size_t i=0; i<memberInfos.size(); ++i )
-      {
-        RT::StructMemberInfo &memberInfo = memberInfos[i];
-        memberInfo.desc->disposeData( &memberInfo.defaultData[0] );
-      }
-
-      if ( klBindingsAST )
-        structDesc->setKLBindingsAST( klBindingsAST );
     }
     
     RC::ConstHandle<Desc> Manager::getStrongerTypeOrNone( RC::ConstHandle<Desc> const &lhsDesc, RC::ConstHandle<Desc> const &rhsDesc ) const
     {
       ImplType lhsType = lhsDesc->getType(), rhsType = rhsDesc->getType();
-      if ( isSimple( lhsType ) && isSimple( rhsType ) )
+      if ( isNumeric( lhsType ) && isNumeric( rhsType ) )
       {
-        // Arrange by casting priority.
-        if( lhsType >= rhsType )
-          return( lhsDesc );
+        RC::ConstHandle<NumericDesc> lhsNumericDesc = RC::ConstHandle<NumericDesc>::StaticCast( lhsDesc );
+        RC::ConstHandle<NumericDesc> rhsNumericDesc = RC::ConstHandle<NumericDesc>::StaticCast( rhsDesc );
+        if ( lhsNumericDesc->isFloat() )
+        {
+          if ( rhsNumericDesc->isFloat() && rhsNumericDesc->getSize() > lhsNumericDesc->getSize() )
+            return rhsNumericDesc;
+          else return lhsNumericDesc;
+        }
+        else if ( rhsNumericDesc->isFloat() )
+          return rhsNumericDesc;
         else
-          return( rhsDesc );
+        {
+          if ( rhsNumericDesc->getSize() > lhsNumericDesc->getSize()
+            || ( rhsNumericDesc->getSize() == lhsNumericDesc->getSize() && RC::ConstHandle<IntegerDesc>::StaticCast(rhsNumericDesc)->isSigned() ) )
+            return rhsNumericDesc;
+          else return lhsNumericDesc;
+        }
       }
       else if( lhsType == rhsType )
       {

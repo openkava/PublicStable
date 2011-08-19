@@ -50,17 +50,6 @@ namespace Fabric
         throw Exception("value is not null");
       memset( dst, 0, getSize() );
     }
-
-    Util::Encoder &OpaqueImpl::encode( Util::Encoder &encoder, void const *src ) const
-    {
-      return encoder;
-    }
-    
-    Util::Decoder &OpaqueImpl::decode( Util::Decoder &decoder, void *dst ) const
-    {
-      setData( m_defaultData, dst );
-      return decoder;
-    }  
     
     std::string OpaqueImpl::descData( void const *src ) const
     {

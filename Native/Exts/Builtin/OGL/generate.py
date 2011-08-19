@@ -17,6 +17,7 @@ def main():
   jsonsourcePath = False
   cpptemplatePath = False
   cppsourcePath = False
+  klsourcePath = False
 
   # parse the command line options
   for i in range(1,len(sys.argv)):
@@ -35,9 +36,11 @@ def main():
       jsonsourcePath = arg[2]
     elif arg[0].lower() == "cppresult":
       cppsourcePath = arg[2]
+    elif arg[0].lower() == "klresult":
+      klsourcePath = arg[2]
       
-  if len(files) == 0 or not cpptemplatePath or not jsonsourcePath or not cppsourcePath:
-      message = "Some command line options are missing\nUsage:\ngenerate.py --header=path/to/single/header --template=path/to/cpptemplate --cppresult=path/to/generated/cpp --jsonresult=path/to/generated/json\nYou can use --header multiple times to parse multiple headers.\nOptionally you can specify --jsresult=path/to/javascript to generate a JavaSCript file as well.\n"
+  if len(files) == 0 or not cpptemplatePath or not jsonsourcePath or not cppsourcePath or not klsourcePath:
+      message = "Some command line options are missing\nUsage:\ngenerate.py --header=path/to/single/header --template=path/to/cpptemplate --cppresult=path/to/generated/cpp --klresult=path/to/generated/kl --jsonresult=path/to/generated/json\nYou can use --header multiple times to parse multiple headers.\nOptionally you can specify --jsresult=path/to/javascript to generate a JavaSCript file as well.\n"
       print(message)
       raise(Exception(message))
   
@@ -477,14 +480,14 @@ struct Vec2 {
   Scalar x;
   Scalar y;
 };
-""").strip().replace("\n","\\n"))
+""").strip())
   jsonTypes.append(str("""
 struct Vec3 {
   Scalar x;
   Scalar y;
   Scalar z;
 };
-""").strip().replace("\n","\\n"))
+""").strip())
   jsonTypes.append(str("""
 struct Vec4 {
   Scalar x;
@@ -492,20 +495,20 @@ struct Vec4 {
   Scalar z;
   Scalar t;
 };
-""").strip().replace("\n","\\n"))
+""").strip())
   jsonTypes.append(str("""
 struct Mat22 {
   Vec2 row0;
   Vec2 row1;
 };
-""").strip().replace("\n","\\n"))
+""").strip())
   jsonTypes.append(str("""
 struct Mat33 {
   Vec3 row0;
   Vec3 row1;
   Vec3 row2;
 };
-""").strip().replace("\n","\\n"))
+""").strip())
   jsonTypes.append(str("""
 struct Mat44 {
   Vec4 row0;
@@ -513,13 +516,17 @@ struct Mat44 {
   Vec4 row2;
   Vec4 row3;
 };
-""").strip().replace("\n","\\n"))
+""").strip())
 
   # JSON structure for SceneGraph constants
   jsConstants = "{"+str(",").join(sceneGraphConstants)+"}"
 
-  open(jsonsourcePath,'w').write('{\n  "libs": "FabricOGL",\n  "code": "'+str("\\n").join(jsonTypes)+''+str('').join(jsonConstants)+''+str('').join(klFunctionsCode)+'",\n  "jsConstants":"' + jsConstants + '"\n}\n')
+  open(jsonsourcePath,'w').write('{\n  "libs": "FabricOGL",\n  "code": "FabricOGL.kl",\n  "jsConstants":"' + jsConstants + '"\n}\n')
   print("Generated JSON result: "+jsonsourcePath)
+  #open('/development/temp/test.kl','w').write(str('\n').join(jsonConstants)+'\n\n'+str('\n').join(klFunctionsCode)+'\n\nfunction entry()\n{\n  report("valid");\n}\n')
+  
+  open(klsourcePath,'w').write(str("\n").join(jsonTypes)+"\n"+str("\n").join(jsonConstants)+"\n"+str("\n").join(klFunctionsCode))
+  print("Generated KL result: "+klsourcePath)
   #open('/development/temp/test.kl','w').write(str('\n').join(jsonConstants)+'\n\n'+str('\n').join(klFunctionsCode)+'\n\nfunction entry()\n{\n  report("valid");\n}\n')
   
   # LOAD THE TEMPLATE AND FILL IT

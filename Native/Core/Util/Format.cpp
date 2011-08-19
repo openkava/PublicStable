@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 #include <cmath>
+#include <llvm/ADT/APFloat.h>
+#include <llvm/ADT/SmallVector.h>
 
 namespace Fabric
 {
@@ -77,11 +79,11 @@ namespace Fabric
   
   std::string _( float value )
   {
-    static const uint32_t signBit = 0x80000000u;
+    static const uint32_t signBit = UINT32_C(0x80000000);
     uint32_t const &valueAsUint32 = *(uint32_t const *)&value;
-    if( ( valueAsUint32 & 0x7F800000 ) == 0x7F800000 )
+    if( ( valueAsUint32 & UINT32_C(0x7F800000) ) == UINT32_C(0x7F800000) )
     {
-      if( ( valueAsUint32 & 0x007FFFFF ) == 0 )
+      if( ( valueAsUint32 & UINT32_C(0x007FFFFF) ) == 0 )
         return (valueAsUint32&signBit)? "-Inf": "Inf";
       else
         return "NaN";
@@ -89,8 +91,29 @@ namespace Fabric
     else if( ( valueAsUint32 & ~signBit ) == 0 )
       return (valueAsUint32&signBit)? "-0": "0";
 
-    char buffer[64];
-    snprintf( buffer, 64, "%g", value );
-    return std::string( buffer );
+    llvm::SmallVectorImpl<char> buffer(0);
+    llvm::APFloat apFloat( value );
+    apFloat.toString( buffer, 6 );
+    return std::string( &buffer[0], buffer.size() );
+  }
+  
+  std::string _( double value )
+  {
+    static const uint64_t signBit = UINT64_C(0x8000000000000000);
+    uint64_t const &valueAsUint64 = *(uint64_t const *)&value;
+    if( ( valueAsUint64 & UINT64_C(0x7FF0000000000000) ) == UINT64_C(0x7FF0000000000000) )
+    {
+      if( ( valueAsUint64 & UINT64_C(0x000FFFFFFFFFFFFF) ) == 0 )
+        return (valueAsUint64&signBit)? "-Inf": "Inf";
+      else
+        return "NaN";
+    }
+    else if( ( valueAsUint64 & ~signBit ) == 0 )
+      return (valueAsUint64&signBit)? "-0": "0";
+
+    llvm::SmallVectorImpl<char> buffer(0);
+    llvm::APFloat apFloat( value );
+    apFloat.toString( buffer, 16 );
+    return std::string( &buffer[0], buffer.size() );
   }
 };

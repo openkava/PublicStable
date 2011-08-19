@@ -13,14 +13,14 @@
 #include "Debug.h"
 
 #include <Fabric/Core/DG/Function.h>
-#include <Fabric/Core/RT/VariableArrayDesc.h>
-#include <Fabric/Core/RT/VariableArrayImpl.h>
-#include <Fabric/Core/RT/SizeDesc.h>
-#include <Fabric/Core/RT/Manager.h>
-#include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/AST/Operator.h>
 #include <Fabric/Core/AST/ParamVector.h>
 #include <Fabric/Core/AST/Param.h>
+#include <Fabric/Core/CG/Manager.h>
+#include <Fabric/Core/RT/IntegerDesc.h>
+#include <Fabric/Core/RT/Manager.h>
+#include <Fabric/Core/RT/VariableArrayDesc.h>
+#include <Fabric/Core/RT/VariableArrayImpl.h>
 #include <Fabric/Core/MT/Util.h>
 #include <Fabric/Base/JSON/String.h>
 #include <Fabric/Base/JSON/Array.h>

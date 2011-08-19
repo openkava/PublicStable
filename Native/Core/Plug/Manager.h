@@ -30,12 +30,17 @@ namespace Fabric
   
   namespace AST
   {
-    class GlobalVector;
+    class GlobalList;
   };
   
   namespace DG
   {
     class Context;
+  };
+  
+  namespace IO
+  {
+    class Dir;
   };
   
   namespace Plug
@@ -57,7 +62,7 @@ namespace Fabric
         return m_nameToInstMap;
       }
       
-      RC::ConstHandle<AST::GlobalVector> getAST() const;
+      RC::ConstHandle<AST::GlobalList> getAST() const;
       void *llvmResolveExternalFunction( std::string const &name ) const;
 
       virtual RC::Handle<JSON::Object> jsonDesc() const;
@@ -67,7 +72,7 @@ namespace Fabric
       Manager();
       ~Manager();
       
-      RC::ConstHandle<Inst> registerPlugin( std::string const &name, std::string const &jsonDesc, std::vector<std::string> const &pluginDirs, RC::Handle<CG::Manager> const &cgManager );
+      RC::ConstHandle<Inst> registerPlugin( RC::ConstHandle<IO::Dir> const &extensionDir, std::string const &name, std::string const &jsonDesc, std::vector<std::string> const &pluginDirs, RC::Handle<CG::Manager> const &cgManager );
       
     private:
     

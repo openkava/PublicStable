@@ -175,6 +175,9 @@ namespace Fabric
       ASSIGN_OP_MUL,
       ASSIGN_OP_DIV,
       ASSIGN_OP_MOD,
+      ASSIGN_OP_BIT_OR,
+      ASSIGN_OP_BIT_AND,
+      ASSIGN_OP_BIT_XOR,
     };
     
     inline char const *assignOpTypeDesc( AssignOpType assignOpType )
@@ -187,6 +190,9 @@ namespace Fabric
         case ASSIGN_OP_MUL: return "ASSIGN_OP_MUL";
         case ASSIGN_OP_DIV: return "ASSIGN_OP_DIV";
         case ASSIGN_OP_MOD: return "ASSIGN_OP_MOD";
+        case ASSIGN_OP_BIT_OR: return "ASSIGN_OP_BIT_OR";
+        case ASSIGN_OP_BIT_AND: return "ASSIGN_OP_BIT_AND";
+        case ASSIGN_OP_BIT_XOR: return "ASSIGN_OP_BIT_XOR";
       }
       return "<unknown>";
     }
@@ -200,15 +206,13 @@ namespace Fabric
         case ASSIGN_OP_MUL: return BIN_OP_MUL;
         case ASSIGN_OP_DIV: return BIN_OP_DIV;
         case ASSIGN_OP_MOD: return BIN_OP_MOD;
+        case ASSIGN_OP_BIT_OR: return BIN_OP_BIT_OR;
+        case ASSIGN_OP_BIT_AND: return BIN_OP_BIT_AND;
+        case ASSIGN_OP_BIT_XOR: return BIN_OP_BIT_XOR;
         default: FABRIC_ASSERT( false ); return BIN_OP_ADD;
       }
     }
   };
-  
-  inline std::string const &_( CG::BinOpType binOpType )
-  {
-    return binOpCodeName( binOpType );
-  }
 };
 
 #endif //_FABRIC_CG_OP_TYPES_H

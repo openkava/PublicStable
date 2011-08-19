@@ -2,7 +2,7 @@
 # Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 #
 
-Import( 'extsEnv', 'fabricExtsDistDir' )
+Import( 'extsEnv', 'ExtSLName' )
 
 # check if we have vicon installed
 import os.path, platform
@@ -15,20 +15,14 @@ else:
 
 if(os.path.exists(sdkPath)):
   viconPluginEnv = extsEnv.Clone()
-  viconPlugin = viconPluginEnv.SharedLibrary( 'FabricVICON', Glob('*.cpp') ),
-  viconManifest = viconPluginEnv.File('FabricVICON.fpm.json'),
-  
   # vicon sdk
   viconPluginEnv.Append( CCFLAGS = '-I'+sdkPath )
   viconPluginEnv.Append( LINKFLAGS = '-L'+sdkPath+" -lViconDataStreamSDK_CPP" )
-
-  installAction = Install( viconPluginEnv['DEST_DIR'], [viconPlugin,viconManifest] )
-  extsEnv.CopyToAppdataIfWindows( installAction )
-
-  Alias( 'viconExt', [
-    viconPlugin,
-    viconManifest,
-    installAction
-  ] )
+  viconPlugin = viconPluginEnv.SharedLibrary( ExtSLName('FabricVICON'), Glob('*.cpp') ),
+  viconManifest = viconPluginEnv.File('FabricVICON.fpm.json'),
+  viconFiles = [viconManifest, viconPlugin]
+  Return( 'viconFiles' )
 else:
   print("--------- Skipping VICON extension, no VICON SDK found.")
+  Return( [] )
+  

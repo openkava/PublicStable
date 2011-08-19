@@ -30,7 +30,7 @@ namespace Fabric
     class ConstStringAdapter;
     class IntegerAdapter;
     class SizeAdapter;
-    class ScalarAdapter;
+    class FloatAdapter;
     class StringAdapter;
     class StructAdapter;
     class FixedArrayAdapter;
@@ -57,7 +57,8 @@ namespace Fabric
       RC::ConstHandle<ByteAdapter> getByteAdapter() const;
       RC::ConstHandle<IntegerAdapter> getIntegerAdapter() const;
       RC::ConstHandle<SizeAdapter> getSizeAdapter() const;
-      RC::ConstHandle<ScalarAdapter> getScalarAdapter() const;
+      RC::ConstHandle<FloatAdapter> getFP32Adapter() const;
+      RC::ConstHandle<FloatAdapter> getFP64Adapter() const;
       RC::ConstHandle<StringAdapter> getStringAdapter() const;
       RC::ConstHandle<OpaqueAdapter> getDataAdapter() const;
       RC::ConstHandle<ConstStringAdapter> getConstStringAdapter( size_t length ) const;
@@ -95,7 +96,8 @@ namespace Fabric
       mutable RC::ConstHandle<ByteAdapter> m_byteAdapter;
       mutable RC::ConstHandle<IntegerAdapter> m_integerAdapter;
       mutable RC::ConstHandle<SizeAdapter> m_sizeAdapter;
-      mutable RC::ConstHandle<ScalarAdapter> m_scalarAdapter;
+      mutable RC::ConstHandle<FloatAdapter> m_scalarAdapter;
+      mutable RC::ConstHandle<FloatAdapter> m_fp64Adapter;
       mutable RC::ConstHandle<StringAdapter> m_stringAdapter;
       mutable RC::ConstHandle<OpaqueAdapter> m_dataAdapter;
       mutable ConstStringAdapters m_constStringAdapters;

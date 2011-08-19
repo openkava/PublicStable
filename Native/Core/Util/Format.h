@@ -57,6 +57,7 @@ namespace Fabric
   }
   
   std::string _( float value );
+  std::string _( double value );
 };
 
 #endif //_FABRIC_UTIL_FORMAT_H

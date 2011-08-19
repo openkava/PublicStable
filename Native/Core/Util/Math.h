@@ -13,18 +13,42 @@ namespace Fabric
 {
   namespace Util
   {
-		static const float kNAN = float( ~(uint32_t)0 );
+    template<typename T> T nanValue();
+    
+    template<> inline float nanValue<float>()
+    {
+      static uint32_t uint32Value = ~uint32_t(0);
+      return *reinterpret_cast<float const *>( &uint32Value );
+    }
 
-    bool isinf( float value )
+    template<> inline double nanValue<double>()
+    {
+      static uint64_t uint64Value = ~uint64_t(0);
+      return *reinterpret_cast<double const *>( &uint64Value );
+    }
+
+    inline bool isinf( float value )
+    {
+      uint32_t uint32Rep = *reinterpret_cast<uint32_t const *>( &value );
+      return (uint32Rep & UINT32_C(0x7FFFFFFF)) == UINT32_C(0x7F800000);
+    }
+
+    inline bool isinf( double value )
+    {
+      uint64_t uint64Rep = *reinterpret_cast<uint64_t const *>( &value );
+      return (uint64Rep & UINT64_C(0x7FFFFFFFFFFFFFFF)) == UINT64_C(0x7FF0000000000000);
+    }
+
+    inline bool isnan( float value )
     {
 #if defined (FABRIC_WIN32)
-      return value == (float)10e50 || value == (float)-10e50;
+      return value != value;
 #else
-      return std::isinf( value );
+      return std::isnan( value );
 #endif
     }
 
-    bool isnan( float value )
+    inline bool isnan( double value )
     {
 #if defined (FABRIC_WIN32)
       return value != value;

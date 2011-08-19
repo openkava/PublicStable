@@ -15,7 +15,7 @@ namespace Fabric
 {
   namespace AST
   {
-    class GlobalVector;
+    class GlobalList;
   };
   
   namespace IO

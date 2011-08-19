@@ -19,8 +19,6 @@
 
 namespace Fabric
 {
-  
-  
   namespace Plug
   {
     extern SOLibHandle const invalidSOLibHandle = 0;
@@ -43,9 +41,9 @@ namespace Fabric
       for ( size_t i=0; i<pluginDirs.size(); ++i )
       {
 #if defined(FABRIC_POSIX)
-        result = dlopen( IO::joinPath( pluginDirs[i], resolvedName ).c_str(), RTLD_LAZY | (global?RTLD_GLOBAL:RTLD_LOCAL) );
+        result = dlopen( IO::JoinPath( pluginDirs[i], resolvedName ).c_str(), RTLD_LAZY | (global?RTLD_GLOBAL:RTLD_LOCAL) );
 #elif defined(FABRIC_WIN32)
-        result = ::LoadLibraryExA( IO::joinPath( pluginDirs[i], resolvedName ).c_str(), NULL, LOAD_WITH_ALTERED_SEARCH_PATH );
+        result = ::LoadLibraryExA( IO::JoinPath( pluginDirs[i], resolvedName ).c_str(), NULL, LOAD_WITH_ALTERED_SEARCH_PATH );
 #else
 # error "Unsupported platform"
 #endif

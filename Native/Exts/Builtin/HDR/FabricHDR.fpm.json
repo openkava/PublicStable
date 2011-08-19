@@ -1,4 +1,4 @@
 {
   "libs": "FabricHDR",
-  "code": "struct Color { Scalar r; Scalar g; Scalar b; Scalar a; }; function FabricHDRDecode( Data hdrData, Size hdrDataSize, io Size imageWidth, io Size imageHeight, io Color imagePixels[] );\n"
+  "code": "FabricHDR.kl"
 }

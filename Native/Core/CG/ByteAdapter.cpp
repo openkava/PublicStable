@@ -6,7 +6,7 @@
 #include "BooleanAdapter.h"
 #include "IntegerAdapter.h"
 #include "SizeAdapter.h"
-#include "ScalarAdapter.h"
+#include "FloatAdapter.h"
 #include "ConstStringAdapter.h"
 #include "StringAdapter.h"
 #include "OpaqueAdapter.h"
@@ -16,14 +16,14 @@
 #include "BasicBlockBuilder.h"
 #include "OverloadNames.h"
 
-#include <Fabric/Core/RT/ByteDesc.h>
+#include <Fabric/Core/RT/NumericDesc.h>
 #include <Fabric/Core/Util/Format.h>
 
 namespace Fabric
 {
   namespace CG
   {
-    ByteAdapter::ByteAdapter( RC::ConstHandle<Manager> const &manager, RC::ConstHandle<RT::ByteDesc> const &byteDesc )
+    ByteAdapter::ByteAdapter( RC::ConstHandle<Manager> const &manager, RC::ConstHandle<RT::NumericDesc> const &byteDesc )
       : SimpleAdapter( manager, byteDesc )
       , m_byteDesc( byteDesc )
     {
@@ -43,7 +43,7 @@ namespace Fabric
       RC::ConstHandle<BooleanAdapter> booleanAdapter = getManager()->getBooleanAdapter();
       RC::ConstHandle<IntegerAdapter> integerAdapter = getManager()->getIntegerAdapter();
       RC::ConstHandle<SizeAdapter> sizeAdapter = getManager()->getSizeAdapter();
-      RC::ConstHandle<ScalarAdapter> scalarAdapter = getManager()->getScalarAdapter();
+      RC::ConstHandle<FloatAdapter> scalarAdapter = getManager()->getFP32Adapter();
       RC::ConstHandle<StringAdapter> stringAdapter = getManager()->getStringAdapter();
       RC::ConstHandle<OpaqueAdapter> dataAdapter = getManager()->getDataAdapter();
       
@@ -542,7 +542,7 @@ namespace Fabric
     
     std::string ByteAdapter::toString( void const *data ) const
     {
-      return _( m_byteDesc->getValue(data) );
+      return m_byteDesc->toString( data );
     }
   };
 };

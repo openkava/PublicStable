@@ -11,6 +11,16 @@
 #include <llvm/Support/Threading.h>
 #include <stdlib.h>
 
+#if defined(FABRIC_OS_LINUX)
+namespace Fabric
+{
+  namespace NPAPI
+  {
+    extern NPError NPP_GetValue(NPP instance, NPPVariable variable, void* value);
+  };
+};
+#endif
+
 extern "C"
 {
 FABRIC_NPAPI_EXPORT NPError OSCALL NP_GetEntryPoints(NPPluginFuncs* plugin_funcs)
@@ -31,7 +41,7 @@ static void llvmInitialize()
 
 static void displayHeader()
 {
-  FABRIC_LOG( "Fabric version %s", Fabric::buildVersion );
+  FABRIC_LOG( "%s version %s", Fabric::buildName, Fabric::buildFullVersion );
   struct tm const *lt = localtime( &Fabric::buildExpiry );
   char buf[1024];
   strftime( buf, 1024, "This build of Fabric will expire on %Y-%m-%d at %H:%M:%S", lt );
@@ -39,17 +49,7 @@ static void displayHeader()
   FABRIC_LOG( "Plugin loaded." );
 }
 
-#if defined(FABRIC_OS_NACL)
-FABRIC_NPAPI_EXPORT NPError OSCALL NP_Initialize(NPNetscapeFuncs* browser_functions,
-                             NPPluginFuncs* plugin_functions)
-{
-  llvmInitialize();
-  NPError np_err = NP_GetEntryPoints(plugin_functions);
-  if (NPERR_NO_ERROR == np_err)
-    pglInitialize();
-  return np_err;
-}
-#elif defined(FABRIC_OS_LINUX)
+#if defined(FABRIC_OS_LINUX)
 FABRIC_NPAPI_EXPORT NPError OSCALL NP_Initialize(NPNetscapeFuncs* browser_functions,
                       NPPluginFuncs* plugin_functions)
 {
@@ -81,7 +81,7 @@ FABRIC_NPAPI_EXPORT NPError OSCALL NP_Initialize(NPNetscapeFuncs* browser_functi
   return NPERR_NO_ERROR;
 }
 #else
-# error "Unrecognized platform"
+# error "Unrecognized FABRIC_OS_..."
 #endif
 
 FABRIC_NPAPI_EXPORT NPError OSCALL NP_Shutdown()
@@ -101,26 +101,12 @@ FABRIC_NPAPI_EXPORT NPError OSCALL NP_Shutdown()
 #if defined(FABRIC_OS_LINUX)
 FABRIC_NPAPI_EXPORT NPError OSCALL NP_GetValue(NPP instance, NPPVariable variable, void* value)
 {
-  extern NPError NPP_GetValue(NPP instance, NPPVariable variable, void* value);
-  NPError err = NPERR_NO_ERROR;
-  switch (variable)
-  {
-    case NPPVpluginNameString:
-      *(static_cast<const char**>(value)) = Fabric::buildName;
-      break;
-    case NPPVpluginDescriptionString:
-      *(static_cast<const char**>(value)) = Fabric::buildDesc;
-      break;
-    default:
-      err = NPP_GetValue(instance, variable, value);
-      break;
-  }
-  return err;
+  return Fabric::NPAPI::NPP_GetValue(instance, variable, value);
 }
 
 FABRIC_NPAPI_EXPORT const char * OSCALL NP_GetPluginVersion(void)
 {
-  return Fabric::buildVersion;
+  return Fabric::buildFullVersion;
 }
 
 FABRIC_NPAPI_EXPORT const char* OSCALL NP_GetMIMEDescription(void)

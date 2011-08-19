@@ -21,7 +21,7 @@
 #include <Fabric/Core/RT/StringDesc.h>
 #include <Fabric/Core/RT/VariableArrayDesc.h>
 #include <Fabric/Core/RT/OpaqueDesc.h>
-#include <Fabric/Core/RT/SizeDesc.h>
+#include <Fabric/Core/RT/NumericDesc.h>
 #include <Fabric/Core/RT/Manager.h>
 
 #if defined( FABRIC_OS_MACOSX )

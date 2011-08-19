@@ -75,20 +75,6 @@ namespace Fabric
         m_memberImpl->setDataFromJSONValue( jsonArray->get(i), memberData );
       }
     }
-    
-    Util::Encoder &FixedArrayImpl::encode( Util::Encoder &encoder, void const *data ) const
-    {
-      for ( size_t i=0; i<m_length; ++i )
-        m_memberImpl->encode( encoder, getMemberData_NoCheck( data, i ) );
-      return encoder;
-    }
-    
-    Util::Decoder &FixedArrayImpl::decode( Util::Decoder &decoder, void *data ) const
-    {
-      for ( size_t i=0; i<m_length; ++i )
-        m_memberImpl->decode( decoder, getMemberData_NoCheck( data, i ) );
-      return decoder;
-    }  
 
     void FixedArrayImpl::disposeData( void *data ) const
     {

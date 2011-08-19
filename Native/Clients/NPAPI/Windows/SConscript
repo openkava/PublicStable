@@ -13,8 +13,10 @@ npapiSources.append( Glob( '*.cpp' ) )
 npapiEnv.Append( CPPPATH = [ os.path.join( '#NPAPI', 'Windows' ) ] )
 npapiEnv.Append( LIBS = [ 'User32', 'Gdi32' ] )
 
+defFile = npapiBuildPath.File( 'FabricPlugin.def' )
+
 npapiEnv.Append( LINKFLAGS = [ 
-  '/DEF:' + npapiBuildPath.File( 'FabricPlugin.def' ).path,
+  '/DEF:' + defFile.path,
   '/MANIFEST',
   '/ManifestFile:${TARGET}.manifest',
   '/MANIFESTUAC:level=\'asInvoker\' uiAccess=\'false\''
@@ -26,7 +28,9 @@ if npapiEnv['FABRIC_BUILD_TYPE'] == 'Debug':
 Import( 'glewFlags' )
 npapiEnv.MergeFlags( glewFlags )
 
-Depends( 'FabricPlugin.rc', 'resource.h' )
+rcFile = npapiBuildPath.File( "FabricPlugin.rc" )
+npapiEnv.Template( rcFile, 'FabricPlugin.rc.template' )
+Depends( rcFile, 'resource.h' )
 npapiSources += [npapiEnv.RES( 'FabricPlugin.rc' )]
 npapiPlugin = npapiEnv.LoadableModule( 'npFabricPlugin', npapiSources, register=1 )
 

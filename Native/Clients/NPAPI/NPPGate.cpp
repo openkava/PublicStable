@@ -24,6 +24,7 @@
 #include <Fabric/Core/Util/Assert.h>
 #include <Fabric/Core/MT/IdleTaskQueue.h>
 #include <Fabric/Core/IO/Helpers.h>
+#include <Fabric/Core/IO/Dir.h>
 #include <Fabric/Core/OCL/OCL.h>
 #include <Fabric/Base/JSON/Object.h>
 #include <Fabric/Core/Util/Debug.h>
@@ -141,26 +142,68 @@ namespace Fabric
       }
       else
       {
-        std::vector<std::string> pluginDirs;
+      	std::vector<std::string> pluginPaths;
+
+        std::string googleChromeProfilesPath;
+        std::string chromiumProfilesPath;
+        std::string firefoxProfilesPath;
+
 #if defined(FABRIC_OS_MACOSX)
         char const *home = getenv("HOME");
         if ( home && *home )
-          pluginDirs.push_back( std::string(home) + "/Library/Fabric/Exts" );
-        pluginDirs.push_back( "/Library/Fabric/Exts" );
+        {
+          std::string homePath( home );
+          std::string libraryPath = IO::JoinPath( homePath, "Library" );
+
+          pluginPaths.push_back( IO::JoinPath( libraryPath, "Fabric", "Exts" ) );
+
+          std::string applicationSupportPath = IO::JoinPath( libraryPath, "Application Support" );
+          googleChromeProfilesPath = IO::JoinPath( applicationSupportPath, "Google", "Chrome" );
+          chromiumProfilesPath = IO::JoinPath( applicationSupportPath, "Chromium" );
+          firefoxProfilesPath = IO::JoinPath( applicationSupportPath, "Firefox", "Profiles" );
+        }
+        pluginPaths.push_back( "/Library/Fabric/Exts" );
 #elif defined(FABRIC_OS_LINUX)
         char const *home = getenv("HOME");
         if ( home && *home )
-          pluginDirs.push_back( IO::joinPath( IO::joinPath( std::string(home), ".fabric" ), "Exts" ) );
-        pluginDirs.push_back( "/usr/lib/fabric/Exts" );
+        {
+          std::string homePath( home );
+          pluginPaths.push_back( IO::JoinPath( homePath, ".fabric", "Exts" ) );
+          googleChromeProfilesPath = IO::JoinPath( homePath, ".config", "google-chrome" );
+          chromiumProfilesPath = IO::JoinPath( homePath, ".config", "chromium" );
+          firefoxProfilesPath = IO::JoinPath( homePath, ".mozilla", "firefox" );
+        }
+        pluginPaths.push_back( "/usr/lib/fabric/Exts" );
 #elif defined(FABRIC_OS_WINDOWS)
         char const *appData = getenv("APPDATA");
         if ( appData && *appData )
-          pluginDirs.push_back( IO::joinPath( IO::joinPath( std::string(appData), "Fabric" ), "Exts" ) );
+        {
+          std::string appDataDir(appData);
+          pluginPaths.push_back( IO::JoinPath( appDataDir, "Fabric" , "Exts" ) );
+
+          
+          firefoxProfilesPath = IO::JoinPath( appDataDir, "Mozilla", "Firefox", "Profiles" );
+        }
+
+        char const *localAppData = getenv("LOCALAPPDATA");
+        if ( localAppData && *localAppData )
+        {
+          std::string localAppDataPath(localAppData);
+          googleChromeProfilesPath = IO::JoinPath( localAppDataPath, "Google", "Chrome", "User Data" );
+          chromiumProfilesPath = IO::JoinPath( localAppDataPath, "Chromium", "User Data" );
+        }
 #endif
+
+        std::string chromeExtensionsPathSpec = IO::JoinPath( "Default", "Extensions", "kdijpapodgbchkehlmacojcegohcmbel", std::string(buildPureVersion) + "_*" );
+        IO::GlobDirPaths( IO::JoinPath( googleChromeProfilesPath, chromeExtensionsPathSpec ), pluginPaths );
+        IO::GlobDirPaths( IO::JoinPath( chromiumProfilesPath, chromeExtensionsPathSpec ), pluginPaths );
+
+        std::string firefoxExtensionsPathSpec = IO::JoinPath( "*", "extensions", std::string(buildOS) + "-" + std::string(buildArch) + "@fabric-engine.com", "plugins" );
+        IO::GlobDirPaths( IO::JoinPath( firefoxProfilesPath, firefoxExtensionsPathSpec ), pluginPaths );
       
         RC::Handle<IOManager> ioManager = IOManager::Create( npp );
-        context = Context::Create( ioManager, pluginDirs );
-        Plug::Manager::Instance()->loadBuiltInPlugins( pluginDirs, context->getCGManager() );
+        context = Context::Create( ioManager, pluginPaths );
+        Plug::Manager::Instance()->loadBuiltInPlugins( pluginPaths, context->getCGManager() );
         
         contextID = context->getContextID();
         FABRIC_DEBUG_LOG( "Created new context '%s'", contextID.c_str() );
@@ -173,9 +216,7 @@ namespace Fabric
       RC::Handle<ViewPort> viewPort;
       if ( viewPortType != VPT_EMPTY )
       {
-#if defined(FABRIC_OS_NACL)
-        viewPort = NPNaClViewPort::Create();
-#elif defined(FABRIC_OS_MACOSX)
+#if defined(FABRIC_OS_MACOSX)
         if ( compositing )
         {
 # if !defined(__x86_64__)
@@ -238,20 +279,25 @@ namespace Fabric
 
     NPError NPP_GetValue( NPP npp, NPPVariable variable, void *value )
     {
-#if defined(FABRIC_OS_LINUX)
-      // [pzion 20110211] Special case: Linux plugin requires XEmbed no matter what
-      if ( variable == NPPVpluginNeedsXEmbed )
+      switch ( variable )
       {
-        *(static_cast<NPBool*>(value)) = true;
-        return NPERR_NO_ERROR;
-      }
+        case NPPVpluginNameString:
+          *static_cast<char const **>( value ) = buildName;
+          return NPERR_NO_ERROR;
+        case NPPVpluginDescriptionString:
+          *static_cast<char const **>( value ) = buildDesc;
+          return NPERR_NO_ERROR;
+#if defined(FABRIC_OS_LINUX)
+        // [pzion 20110211] Special case: Linux plugin requires XEmbed no matter what
+        case NPPVpluginNeedsXEmbed:
+          *(static_cast<NPBool*>(value)) = true;
+          return NPERR_NO_ERROR;
 #endif
-      
-      if ( !npp )
-        return NPERR_INVALID_INSTANCE_ERROR;
-      Interface *interface = static_cast<Interface *>( npp->pdata );
-        
-      return interface->nppGetValue( npp, variable, value );
+        default:      
+          if ( !npp )
+            return NPERR_INVALID_INSTANCE_ERROR;
+          return static_cast<Interface *>( npp->pdata )->nppGetValue( npp, variable, value );
+      }
     }
 
     // |event| just took place in this plugin's window in the browser.  This
@@ -308,7 +354,7 @@ namespace Fabric
     {
       FABRIC_ASSERT( npp );
       Interface *interface = static_cast<Interface *>( npp->pdata );
-      int32_t result;
+      int32_t result = 0;
       try
       {
         result = interface->nppWrite( npp, stream, offset, len, buffer );

@@ -5,19 +5,11 @@
 import os
 Import( 'baseEnv', 'buildOS' )
 
-aliases = [
-  'exrExt',
-  'hdrExt',
-  'oglExt',
-  #'oclExt',
-  'pngExt',
-  'tgaExt',
-  'viconExt',
-]
-
 dirs = [
   'EXR',
   'HDR',
+  'Math',
+  'OBJ',
   #'OCL',
   'OGL',
   'PNG',
@@ -27,8 +19,7 @@ dirs = [
 
 if buildOS != 'Windows':
   dirs += ['VIDEO']
-  aliases += ['videoExt']
 
-SConscript( dirs=dirs )
+builtinExtFiles = SConscript( dirs=dirs )
 
-Alias( 'builtinExts', aliases )
+Return( 'builtinExtFiles' )

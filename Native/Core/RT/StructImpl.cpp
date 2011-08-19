@@ -108,28 +108,6 @@ namespace Fabric
       }
     }
 
-    Util::Encoder &StructImpl::encode( Util::Encoder &encoder, void const *data ) const
-    {
-      for ( size_t i=0; i<m_numMembers; ++i )
-      {
-        StructMemberInfo const &memberInfo = m_memberInfos[i];
-        void const *memberData = static_cast<uint8_t const *>(data) + m_memberOffsets[i];
-        memberInfo.desc->encode( encoder, memberData );
-      }
-      return encoder;
-    }
-    
-    Util::Decoder &StructImpl::decode( Util::Decoder &decoder, void *data ) const
-    {
-      for ( size_t i=0; i<m_numMembers; ++i )
-      {
-        StructMemberInfo const &memberInfo = m_memberInfos[i];
-        void *memberData = static_cast<uint8_t *>(data) + m_memberOffsets[i];
-        memberInfo.desc->decode( decoder, memberData );
-      }
-      return decoder;
-    }  
-
     void StructImpl::disposeData( void *data ) const
     {
       if ( !m_isShallow )

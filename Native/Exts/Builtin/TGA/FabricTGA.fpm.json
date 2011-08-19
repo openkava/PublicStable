@@ -1,4 +1,4 @@
 {
   "libs": "FabricTGA",
-  "code": "struct RGBA { Byte r; Byte g; Byte b; Byte a; }; function FabricTGADecode( Data tgaData, Size tgaDataSize, io Size imageWidth, io Size imageHeight, io RGBA imagePixels[] );\n"
+  "code": "FabricTGA.kl"
 }
