@@ -86,6 +86,7 @@ namespace Fabric
         {
           FABRIC_DEBUG_LOG( "redrawEvent: unknown exception thrown" );
         }
+        drawWatermark( m_windowWidth, m_windowHeight );
         glFinish();
 
         if ( gdk_gl_drawable_is_double_buffered( gdkGLDrawable ) )
