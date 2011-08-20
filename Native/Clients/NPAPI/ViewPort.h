@@ -1,8 +1,5 @@
 /*
- *
- *  Created by Peter Zion on 10-08-13.
- *  Copyright 2010 Fabric 3D Inc.. All rights reserved.
- *
+ *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
  */
 
 #ifndef _FABRIC_NPAPI_NP_VIEW_PORT_H
@@ -88,6 +85,8 @@ namespace Fabric
       virtual void pushOGLContext() = 0;
       virtual void popOGLContext() = 0;
 
+      void drawWatermark( size_t width, size_t height );
+      
     protected:
     
       ViewPort( RC::ConstHandle<Interface> const &interface, uint32_t timerInterval = 0 );
@@ -145,6 +144,14 @@ namespace Fabric
       
       unsigned m_fpsCount; 
       float m_fps;
+      
+      GLuint m_watermarkShaderProgram;
+      GLuint m_watermarkTextureBuffer;
+      GLuint m_watermarkPositionsBufferID;
+      GLuint m_watermarkUVsBufferID;
+      GLuint m_watermarkIndexesBufferID;
+      size_t m_watermarkLastWidth;
+      size_t m_watermarkLastHeight;
     };
   };
 };

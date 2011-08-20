@@ -8,6 +8,7 @@
 #include <streambuf>
 
 using namespace Fabric::EDK;
+IMPLEMENT_FABRIC_EDK_ENTRIES
 
 struct istreambuf : public std::basic_streambuf<char, std::char_traits<char> >
 {

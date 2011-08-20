@@ -10,7 +10,7 @@ set ILMBASE_NAME=ilmbase-1.0.2
 set OPENEXR_NAME=openexr-1.7.0
 set V8_NAME=v8-1.3.18.22
 set LLVM_NAME=llvm-2.9
-
+set LASLIB_NAME=laslib
 
 if "%1" NEQ "" goto %1
 
@@ -230,14 +230,14 @@ touch %CHECKPOINT_DIR%\v8_unpack
 if EXIST %CHECKPOINT_DIR%\v8_compile_debug goto v8_compile_debug_done
 echo V8 - Compiling debug
 cd %BUILD_DIR%\%V8_NAME%
-call scons mode=debug msvcrt=shared arch=%V8ARCH%
+call scons mode=debug msvcrt=static arch=%V8ARCH%
 touch %CHECKPOINT_DIR%\v8_compile_debug
 :v8_compile_debug_done
 
 if EXIST %CHECKPOINT_DIR%\v8_compile_release goto v8_compile_release_done
 echo V8 - Compiling release
 cd %BUILD_DIR%\%V8_NAME%
-call scons mode=release msvcrt=shared arch=%V8ARCH%
+call scons mode=release msvcrt=static arch=%V8ARCH%
 touch %CHECKPOINT_DIR%\v8_compile_release
 :v8_compile_release_done
 
@@ -304,7 +304,41 @@ robocopy lib\Release %LIB_ARCH_DIR%\Release\llvm llvm*.lib /S /MIR /XF llvm_head
 touch %CHECKPOINT_DIR%\llvm_install
 :llvm_install_done
 
+rem =========== LASLIB =============
+if EXIST %CHECKPOINT_DIR%\laslib_unpack goto laslib_unpack_done
+echo laslib - Unpacking
+cd %BUILD_DIR%
+type %TOP%\SourcePackages\%LASLIB_NAME%.tar.bz2 | bzip2 -d -c | tar -x -f- 2> NUL:
+type %TOP%\Patches\Windows\%LASLIB_NAME%-patch.tar.bz2 | bzip2 -d -c | tar -x -f- 2> NUL:
+touch %CHECKPOINT_DIR%\laslib_unpack
+:laslib_unpack_done
 
+if EXIST %CHECKPOINT_DIR%\laslib_compile_debug goto laslib_compile_debug_done
+echo laslib - Compiling debug
+cd %BUILD_DIR%\%LASLIB_NAME%\lastools\laslib\contrib\vc10
+if exist %VSARCH%\Debug rmdir /s/q %VSARCH%\Debug
+devenv laslib.sln /build "Debug|%VSARCH%"
+touch %CHECKPOINT_DIR%\laslib_compile_debug
+:laslib_compile_debug_done
 
+if EXIST %CHECKPOINT_DIR%\laslib_compile_release goto laslib_compile_release_done
+echo laslib - Compiling release
+cd %BUILD_DIR%\%LASLIB_NAME%\lastools\laslib\contrib\vc10
+if exist %VSARCH%\Release rmdir /s/q %VSARCH%\Release
+devenv laslib.sln /build "Release|%VSARCH%"
+touch %CHECKPOINT_DIR%\laslib_compile_release
+:laslib_compile_release_done
+
+if EXIST %CHECKPOINT_DIR%\laslib_install goto laslib_install_done
+echo laslib - Installing
+cd %BUILD_DIR%\%LASLIB_NAME%\lastools\laslib\contrib\vc10
+robocopy %VSARCH%\Debug %LIB_ARCH_DIR%\Debug\laslib *.lib /S /MIR > NUL:
+robocopy %VSARCH%\Release %LIB_ARCH_DIR%\Release\laslib *.lib /S /MIR > NUL:
+
+cd %BUILD_DIR%\%LASLIB_NAME%
+robocopy lastools\laslib\inc %TOP%\include\laslib *.hpp /s > NUL:
+
+touch %CHECKPOINT_DIR%\laslib_install
+:laslib_install_done
 
 rem exit

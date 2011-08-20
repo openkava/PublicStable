@@ -1,12 +1,10 @@
 /*
- *
- *  Created by Peter Zion on 10-08-13.
- *  Copyright 2010 Fabric 3D Inc.. All rights reserved.
- *
+ *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
  */
 
 #include "ViewPort.h"
 #include "Interface.h"
+#include "Watermark.h"
 #include <Fabric/Core/RT/Manager.h>
 #include <Fabric/Core/RT/IntegerDesc.h>
 #include <Fabric/Clients/NPAPI/Context.h>
@@ -26,6 +24,7 @@ namespace Fabric
 {
   namespace NPAPI
   {
+    
     ViewPort::ViewPort( RC::ConstHandle<Interface> const &interface, uint32_t timerInterval )
       : m_npp( interface->getNPP() )
       , m_name( "viewPort" )
@@ -35,6 +34,13 @@ namespace Fabric
       , m_redrawFinishedCallbackPendingInvokeCount( 0 )
       , m_fpsCount( 0 )
       , m_fps( 0.0 )
+      , m_watermarkShaderProgram( 0 )
+      , m_watermarkTextureBuffer( 0 )
+      , m_watermarkPositionsBufferID( 0 )
+      , m_watermarkUVsBufferID( 0 )
+      , m_watermarkIndexesBufferID( 0 )
+      , m_watermarkLastWidth( 0 )
+      , m_watermarkLastHeight( 0 )
     {
       if ( timerInterval )
       {
@@ -271,6 +277,191 @@ namespace Fabric
     void ViewPort::jsonNotifyPopUpItem( RC::ConstHandle<JSON::Value> const &arg ) const
     {
       jsonNotify( "popUpMenuItemSelected", arg );
+    }
+
+    void ViewPort::drawWatermark( size_t width, size_t height )
+    {
+      if ( width == 0 || height == 0 )
+        return;
+        
+      try
+      {
+        if ( width != m_watermarkLastWidth || height != m_watermarkLastHeight )
+        {
+          if ( m_watermarkPositionsBufferID )
+          {
+            glDeleteBuffers( 1, &m_watermarkPositionsBufferID );
+            m_watermarkPositionsBufferID = 0;
+          }
+          m_watermarkLastWidth = width;
+          m_watermarkLastHeight = height;
+        }
+      
+        if ( !m_watermarkShaderProgram )
+        {
+          GLuint vertexShaderID = glCreateShader( GL_VERTEX_SHADER );
+          if ( !vertexShaderID )
+            throw Exception( "glCreateShader( GL_VERTEX_SHADER ) failed" );
+          static const GLsizei numVertexShaderSources = 1;
+          GLchar const *vertexShaderSources[numVertexShaderSources] = {
+            "\
+attribute vec4 a_position;\n\
+attribute vec4 a_texCoord;\n\
+void main() {\n\
+  gl_TexCoord[0].st = a_texCoord.xy;\n\
+  gl_Position = a_position;\n\
+}\n\
+            "
+          };
+          GLint vertexShaderSourceLengths[numVertexShaderSources];
+          vertexShaderSourceLengths[0] = strlen( vertexShaderSources[0] );
+          glShaderSource( vertexShaderID, numVertexShaderSources, vertexShaderSources, vertexShaderSourceLengths );
+          glCompileShader( vertexShaderID );
+          GLint vertexShaderCompileResult[1];
+          glGetShaderiv( vertexShaderID, GL_COMPILE_STATUS, vertexShaderCompileResult );
+          if ( !vertexShaderCompileResult[0] )
+            throw Exception( "vertex shader compilation failure" );
+
+          GLuint fragmentShaderID = glCreateShader( GL_FRAGMENT_SHADER );
+          if ( !fragmentShaderID )
+            throw Exception( "glCreateShader( GL_FRAGMENT_SHADER ) failed" );
+          static const GLsizei numFragmentShaderSources = 1;
+          GLchar const *fragmentShaderSources[numFragmentShaderSources] = {
+            "\
+uniform sampler2D u_rgbaImage;\n\
+void main()\n\
+{\n\
+  gl_FragColor = texture2D( u_rgbaImage, gl_TexCoord[0].st );\n\
+}\n\
+            "
+          };
+          GLint fragmentShaderSourceLengths[numFragmentShaderSources];
+          fragmentShaderSourceLengths[0] = strlen( fragmentShaderSources[0] );
+          glShaderSource( fragmentShaderID, numFragmentShaderSources, fragmentShaderSources, fragmentShaderSourceLengths );
+          glCompileShader( fragmentShaderID );
+          GLint fragmentShaderCompileResult[1];
+          glGetShaderiv( fragmentShaderID, GL_COMPILE_STATUS, fragmentShaderCompileResult );
+          if ( !fragmentShaderCompileResult[0] )
+            throw Exception( "fragment shader compilation failure" );
+          
+          m_watermarkShaderProgram = glCreateProgram();
+          if ( !m_watermarkShaderProgram )
+            throw Exception( "glCreateProgram() failed" );
+          glAttachShader( m_watermarkShaderProgram, vertexShaderID );
+          glAttachShader( m_watermarkShaderProgram, fragmentShaderID );
+          glLinkProgram( m_watermarkShaderProgram );
+          GLint linkResult[1];
+          glGetProgramiv( m_watermarkShaderProgram, GL_LINK_STATUS, linkResult );
+          if ( !linkResult[0] )
+            throw Exception( "link failure" );
+            
+          glDeleteShader( fragmentShaderID );
+          glDeleteShader( vertexShaderID );
+        }
+        glUseProgram( m_watermarkShaderProgram );
+        
+        GLint posLocation = glGetAttribLocation( m_watermarkShaderProgram, "a_position" );
+        GLint texLocation = glGetAttribLocation( m_watermarkShaderProgram, "a_texCoord" );
+      //  GLint smpLocation = glGetUniformLocation( m_watermarkShaderProgram, "u_rgbaImage" );
+      //  glUniform1i( smpLocation, GL_TEXTURE0 );
+        
+        if ( !m_watermarkTextureBuffer )
+        {
+          glGenTextures( 1, &m_watermarkTextureBuffer );
+          if ( !m_watermarkTextureBuffer )
+            throw Exception( "glGenTextures() failed" );
+          glActiveTexture( GL_TEXTURE0 );
+          glBindTexture( GL_TEXTURE_2D, m_watermarkTextureBuffer );
+    
+          glPixelStorei( GL_UNPACK_ALIGNMENT, 1 );
+          glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA8, watermarkWidth, watermarkHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, watermarkData );
+
+          glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+          glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+
+          glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
+          glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
+        }
+        glActiveTexture( GL_TEXTURE0 );
+        glBindTexture( GL_TEXTURE_2D, m_watermarkTextureBuffer );
+
+        glPushAttrib( GL_TEXTURE_BIT );
+        
+        glDisable( GL_DEPTH_TEST );
+        glDisable( GL_CULL_FACE );
+
+        glEnable( GL_TEXTURE_2D );
+        glDisable( GL_DEPTH_TEST );
+        glDisable( GL_CULL_FACE );
+
+        glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+        glEnable( GL_BLEND );
+
+        if ( !m_watermarkPositionsBufferID )
+        {
+          static const size_t xMargin = 16, yMargin = 16;
+          float xMin = float(xMargin)*2.0/float(width)-1.0;
+          float xMax = float(xMargin + watermarkWidth)*2.0/float(width)-1.0;
+          float yMin = float(yMargin)*2.0/float(height)-1.0;
+          float yMax = float(yMargin + watermarkHeight)*2.0/float(height)-1.0;
+          GLfloat p[12] =
+          {
+            xMin, yMax, 0.0,
+            xMax, yMax, 0.0,
+            xMax, yMin, 0.0,
+            xMin, yMin, 0.0
+          };
+          glGenBuffers( 1, &m_watermarkPositionsBufferID );
+          glBindBuffer( GL_ARRAY_BUFFER, m_watermarkPositionsBufferID );
+          glBufferData( GL_ARRAY_BUFFER, sizeof(p), p, GL_STATIC_DRAW );
+          glBindBuffer( GL_ARRAY_BUFFER, 0 );
+        }
+        glBindBuffer( GL_ARRAY_BUFFER, m_watermarkPositionsBufferID );
+        glEnableVertexAttribArray( posLocation );
+        glVertexAttribPointer( posLocation, 3, GL_FLOAT, GL_FALSE, 0, NULL );
+        glBindBuffer( GL_ARRAY_BUFFER, 0 );
+        
+        if ( !m_watermarkUVsBufferID )
+        {
+          static const GLfloat t[8] =
+          {
+            0.0, 0.0,
+            1.0, 0.0,
+            1.0, 1.0,
+            0.0, 1.0
+          };
+          glGenBuffers( 1, &m_watermarkUVsBufferID );
+          glBindBuffer( GL_ARRAY_BUFFER, m_watermarkUVsBufferID );
+          glBufferData( GL_ARRAY_BUFFER, sizeof(t), t, GL_STATIC_DRAW );
+          glBindBuffer( GL_ARRAY_BUFFER, 0 );
+        }
+        glBindBuffer( GL_ARRAY_BUFFER, m_watermarkUVsBufferID );
+        glEnableVertexAttribArray( texLocation );
+        glVertexAttribPointer( texLocation, 2, GL_FLOAT, GL_FALSE, 0, NULL );
+        glBindBuffer( GL_ARRAY_BUFFER, 0 );
+        
+        if ( !m_watermarkIndexesBufferID )
+        {
+          static const GLuint idx[6] =
+          {
+            0, 2, 1,
+            0, 3, 2
+          };
+          glGenBuffers( 1, &m_watermarkIndexesBufferID );
+          glBindBuffer( GL_ARRAY_BUFFER, m_watermarkIndexesBufferID );
+          glBufferData( GL_ARRAY_BUFFER, sizeof(idx), idx, GL_STATIC_DRAW );
+          glBindBuffer( GL_ARRAY_BUFFER, 0 );
+        }
+        glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, m_watermarkIndexesBufferID );
+        glDrawElements( GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL );
+        glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 );
+
+        glPopAttrib();
+      }
+      catch ( Exception e )
+      {
+        throw "ViewPort::drawWatermark( " + _(width) + ", " + _(height) + " ): " + e;
+      }
     }
   };
 };

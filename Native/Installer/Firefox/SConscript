@@ -66,8 +66,16 @@ installerFiles.append( Install(
 installerEnv = baseEnv.Clone()
 generateDistZip( installerEnv )
 installerEnv.Append( DISTZIP_ROOTDIR = firefoxExtensionDir )
-installerFile = installerEnv.DistZip(
-  archDistDir.File(installerName + ".xpi"),
+installerFile = archDistDir.File(installerName + ".xpi")
+installerEnv.DistZip(
+  installerFile,
   installerFiles
 )
-Alias( 'firefoxInstaller', installerFile )
+updateFile = archDistDir.File("xpi-update-"+buildOS+"-"+buildArch+".rdf")
+baseEnv.Template( updateFile, "xpi-update.rdf.template" )
+print( "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+print( "!! Firefox Installer: you MUST perform the following steps before uploading:")
+print( "!! 1. Calculate the SHA1 hash of "+installerFile.abspath+" and insert it into "+updateFile.abspath )
+print( "!! 2. Sign "+updateFile.abspath+" using the McCoy tool" )
+print( "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+Alias( 'firefoxInstaller', [installerFile, updateFile] )
