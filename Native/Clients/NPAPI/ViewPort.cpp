@@ -16,6 +16,7 @@
 #include <Fabric/Base/JSON/String.h>
 #include <Fabric/Base/JSON/Object.h>
 
+#include <GL/glew.h>
 #if defined(FABRIC_OS_WINDOWS)
 # include <intrin.h>
 #endif
