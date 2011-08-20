@@ -145,6 +145,8 @@ namespace Fabric
       viewPort->getLogCollector()->add( "redrawEvent: unknown exception thrown" );
     }
     
+    viewPort->drawWatermark( width, height );
+    
     glFinish();
   }
   

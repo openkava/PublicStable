@@ -265,6 +265,7 @@ namespace Fabric
           fprintf( stderr, "redrawEvent: unknown exception thrown\n" );
         }
       }
+      drawWatermark( m_windowWidth, m_windowHeight );
     }
 
     void WindowsViewPort::initOGLContext( )

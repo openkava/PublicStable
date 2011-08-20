@@ -15,31 +15,45 @@
 #include <Fabric/Core/Util/Timer.h>
 #include <Fabric/Core/Build.h>
 
+#define FABRIC_IR_CACHE_EXPIRY_SEC (30*24*60*60)
+
 namespace Fabric
 {
-  
-  
   namespace DG
   {
+    RC::Handle<IRCache> IRCache::Instance()
+    {
+      static RC::Handle<IRCache> instance;
+      if ( !instance )
+        instance = new IRCache();
+      return instance;
+    }
+      
     IRCache::IRCache()
     {
       RC::ConstHandle<IO::Dir> rootDir = IO::Dir::Private();
-      m_dir = IO::Dir::Create( IO::Dir::Create( IO::Dir::Create( IO::Dir::Create( rootDir, "IRCache" ), buildOS ), buildArch ), _(buildCacheGeneration) );
+      RC::ConstHandle<IO::Dir> baseDir = IO::Dir::Create( rootDir, "IRCache" );
+      baseDir->recursiveDeleteFilesOlderThan( time(NULL) - FABRIC_IR_CACHE_EXPIRY_SEC );
+      m_dir = IO::Dir::Create( baseDir, _(buildCacheGeneration) );
     }
     
-    void IRCache::subDirAndEntryFromSourceCode( RC::ConstHandle<AST::GlobalList> const &ast, RC::ConstHandle<IO::Dir> &subDir, std::string &entry ) const
+    std::string IRCache::keyForAST( RC::ConstHandle<AST::GlobalList> const &ast ) const
     {
       Util::SimpleString astJSONString = ast->toJSON();
-      std::string prefixedSourceCodeMD5HexDigest = Util::md5HexDigest( astJSONString.getData(), astJSONString.getLength() );
-      subDir = IO::Dir::Create( m_dir, prefixedSourceCodeMD5HexDigest.substr( 0, 2 ) );
-      entry = prefixedSourceCodeMD5HexDigest.substr( 2, 30 );
+      return Util::md5HexDigest( astJSONString.getData(), astJSONString.getLength() );
     }
     
-    std::string IRCache::get( RC::ConstHandle<AST::GlobalList> const &ast ) const
+    void IRCache::subDirAndEntryFromKey( std::string const &key, RC::ConstHandle<IO::Dir> &subDir, std::string &entry ) const
+    {
+      subDir = IO::Dir::Create( m_dir, key.substr( 0, 2 ) );
+      entry = key.substr( 2, 30 );
+    }
+    
+    std::string IRCache::get( std::string const &key ) const
     {
       RC::ConstHandle<IO::Dir> subDir;
       std::string entry;
-      subDirAndEntryFromSourceCode( ast, subDir, entry );
+      subDirAndEntryFromKey( key, subDir, entry );
       
       std::string result;
       try
@@ -52,11 +66,11 @@ namespace Fabric
       return result;
     }
     
-    void IRCache::put( RC::ConstHandle<AST::GlobalList> const &ast, std::string const &ir )
+    void IRCache::put( std::string const &key, std::string const &ir ) const
     {
       RC::ConstHandle<IO::Dir> subDir;
       std::string entry;
-      subDirAndEntryFromSourceCode( ast, subDir, entry );
+      subDirAndEntryFromKey( key, subDir, entry );
       
       try
       {

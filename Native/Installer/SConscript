@@ -142,4 +142,4 @@ Import( 'buildOS' )
 
 SConscript( dirs=[buildOS,"Chrome","Firefox"] )
 
-Alias( 'installer', ['nativeInstaller','chromeInstaller','firefoxInstaller'] )
+Alias( 'installer', ['chromeInstaller','firefoxInstaller'] )

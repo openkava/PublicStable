@@ -46,7 +46,7 @@ namespace Fabric
     
       typedef void (*FunctionPtr)( ... );
     
-      static RC::ConstHandle<Code> Create( RC::ConstHandle<Context> const &context, std::string const &sourceCode, RC::Handle<IRCache> const &irCache );
+      static RC::ConstHandle<Code> Create( RC::ConstHandle<Context> const &context, std::string const &sourceCode );
       
       std::string const &getSourceCode() const;
       RC::ConstHandle<AST::GlobalList> getAST() const;
@@ -61,7 +61,7 @@ namespace Fabric
 
     protected:
     
-      Code( RC::ConstHandle<Context> const &context, std::string const &sourceCode, RC::Handle<IRCache> const &irCache );
+      Code( RC::ConstHandle<Context> const &context, std::string const &sourceCode );
       ~Code();
       
       void compileSourceCode();
@@ -87,8 +87,6 @@ namespace Fabric
       
       mutable MT::Mutex m_registeredFunctionSetMutex;
       mutable RegisteredFunctionSet m_registeredFunctionSet;
-      
-      RC::Handle<IRCache> m_irCache;
     };
   };
 };
