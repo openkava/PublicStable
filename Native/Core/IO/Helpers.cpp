@@ -129,7 +129,7 @@ namespace Fabric
       bool result;
 #if defined(FABRIC_POSIX)
       struct stat st;
-      result = stat( fullPath.c_str(), &st ) && S_ISDIR(st.st_mode);
+      result = stat( fullPath.c_str(), &st ) == 0 && S_ISDIR(st.st_mode);
 #elif defined(FABRIC_WIN32)
       DWORD dwAttrib = ::GetFileAttributesA( fullPath.c_str() );
       result = (dwAttrib != INVALID_FILE_ATTRIBUTES)
