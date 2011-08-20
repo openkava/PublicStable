@@ -420,6 +420,7 @@ namespace Fabric
     }
 
     Prototype::SlicedArray::SlicedArray()
+      : m_slicedArrayData( 0 )
     {
     }
     
@@ -428,9 +429,10 @@ namespace Fabric
     {
       if ( m_slicedArrayImpl )
       {
-        m_slicedArrayData.resize( m_slicedArrayImpl->getSize(), 0 );
+        m_slicedArrayData = malloc( m_slicedArrayImpl->getSize() );
+        memset( m_slicedArrayData, 0, m_slicedArrayImpl->getSize() );
         RC::ConstHandle<RT::VariableArrayImpl> variableArrayImpl = m_slicedArrayImpl->getVariableArrayImpl();
-        m_slicedArrayImpl->set( 0, variableArrayImpl->getNumMembers( variableArrayData ), variableArrayData, &m_slicedArrayData[0] );
+        m_slicedArrayImpl->set( 0, variableArrayImpl->getNumMembers( variableArrayData ), variableArrayData, m_slicedArrayData );
       }
     }
     
@@ -439,31 +441,35 @@ namespace Fabric
     {
       if ( m_slicedArrayImpl )
       {
-        m_slicedArrayData.resize( m_slicedArrayImpl->getSize(), 0 );
-        m_slicedArrayImpl->setData( &that.m_slicedArrayData[0], &m_slicedArrayData[0] );
+        m_slicedArrayData = that.m_slicedArrayData;
+        that.m_slicedArrayData = 0;
       }
     }
     
     Prototype::SlicedArray &Prototype::SlicedArray::operator =( SlicedArray const &that )
     {
-      if ( m_slicedArrayImpl )
+      if ( m_slicedArrayImpl && m_slicedArrayData )
       {
-        m_slicedArrayImpl->disposeData( &m_slicedArrayData[0] );
-        m_slicedArrayData.resize( 0 );
+        m_slicedArrayImpl->disposeData( m_slicedArrayData );
+        free( m_slicedArrayData );
+        m_slicedArrayData = 0;
       }
       m_slicedArrayImpl = that.m_slicedArrayImpl;
       if ( m_slicedArrayImpl )
       {
-        m_slicedArrayData.resize( m_slicedArrayImpl->getSize(), 0 );
-        m_slicedArrayImpl->setData( &that.m_slicedArrayData[0], &m_slicedArrayData[0] );
+        m_slicedArrayData = that.m_slicedArrayData;
+        that.m_slicedArrayData = 0;
       }
       return *this;
     }
     
     Prototype::SlicedArray::~SlicedArray()
     {
-      if ( m_slicedArrayImpl )
-        m_slicedArrayImpl->disposeData( &m_slicedArrayData[0] );
+      if ( m_slicedArrayImpl && m_slicedArrayData )
+      {
+        m_slicedArrayImpl->disposeData( m_slicedArrayData );
+        free( m_slicedArrayData );
+      }
     }
   };
 };

@@ -61,13 +61,13 @@ namespace Fabric
         
         void *getData()
         {
-          return &m_slicedArrayData[0];
+          return m_slicedArrayData;
         }
         
       private:
       
         RC::ConstHandle<RT::SlicedArrayImpl> m_slicedArrayImpl;
-        std::vector<uint8_t> m_slicedArrayData;
+        mutable void *m_slicedArrayData;
       };
     
       Prototype( RC::Handle<CG::Manager> const &cgManager );
