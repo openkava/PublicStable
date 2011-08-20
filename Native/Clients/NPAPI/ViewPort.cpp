@@ -39,6 +39,8 @@ namespace Fabric
       , m_watermarkPositionsBufferID( 0 )
       , m_watermarkUVsBufferID( 0 )
       , m_watermarkIndexesBufferID( 0 )
+      , m_watermarkLastWidth( 0 )
+      , m_watermarkLastHeight( 0 )
     {
       if ( timerInterval )
       {
@@ -279,8 +281,22 @@ namespace Fabric
 
     void ViewPort::drawWatermark( size_t width, size_t height )
     {
+      if ( width == 0 || height == 0 )
+        return;
+        
       try
       {
+        if ( width != m_watermarkLastWidth || height != m_watermarkLastHeight )
+        {
+          if ( m_watermarkPositionsBufferID )
+          {
+            glDeleteBuffers( 1, &m_watermarkPositionsBufferID );
+            m_watermarkPositionsBufferID = 0;
+          }
+          m_watermarkLastWidth = width;
+          m_watermarkLastHeight = height;
+        }
+      
         if ( !m_watermarkShaderProgram )
         {
           GLuint vertexShaderID = glCreateShader( GL_VERTEX_SHADER );
@@ -383,12 +399,17 @@ void main()\n\
 
         if ( !m_watermarkPositionsBufferID )
         {
-          static const GLfloat p[12] =
+          static const size_t xMargin = 16, yMargin = 16;
+          float xMin = float(xMargin)*2.0/float(width)-1.0;
+          float xMax = float(xMargin + watermarkWidth)*2.0/float(width)-1.0;
+          float yMin = float(yMargin)*2.0/float(height)-1.0;
+          float yMax = float(yMargin + watermarkHeight)*2.0/float(height)-1.0;
+          GLfloat p[12] =
           {
-            -1.0, -0.75, 0.0,
-            -0.75, -0.75, 0.0,
-            -0.75, -1.0, 0.0,
-            -1.0, -1.0, 0.0
+            xMin, yMax, 0.0,
+            xMax, yMax, 0.0,
+            xMax, yMin, 0.0,
+            xMin, yMin, 0.0
           };
           glGenBuffers( 1, &m_watermarkPositionsBufferID );
           glBindBuffer( GL_ARRAY_BUFFER, m_watermarkPositionsBufferID );
