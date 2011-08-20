@@ -268,7 +268,7 @@ namespace Fabric
           llvm::Value *offsetRValue = sizeAdapter->llvmLValueToRValue( basicBlockBuilder, offsetLValue );
           llvm::Value *absoluteIndexRValue = basicBlockBuilder->CreateAdd( offsetRValue, indexRValue );
           llvm::Value *variableArrayLValue = basicBlockBuilder->CreateConstGEP2_32( arrayLValue, 0, 2 );
-          basicBlockBuilder->CreateRet( m_variableArrayAdapter->llvmNonConstIndexOp_NoCheck( basicBlockBuilder, variableArrayLValue, absoluteIndexRValue ) );
+          basicBlockBuilder->CreateRet( m_variableArrayAdapter->llvmNonConstIndexOp_NoCheckNoSplit( basicBlockBuilder, variableArrayLValue, absoluteIndexRValue ) );
           
           basicBlockBuilder->SetInsertPoint( outOfRangeBB );
           std::string errorMsg = "KL: "+getUserName()+" index out-of-bounds";

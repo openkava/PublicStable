@@ -352,7 +352,27 @@ namespace Fabric
           basicBlockBuilder->CreateBr( uniqueBB );
           
           basicBlockBuilder->SetInsertPoint( uniqueBB );
-          arrayRValue = llvmLValueToRValue( basicBlockBuilder, arrayLValue );
+          llvm::Value *memberLValue = llvmNonConstIndexOp_NoCheckNoSplit( basicBlockBuilder, arrayLValue, indexRValue );
+          basicBlockBuilder->CreateRet( memberLValue );
+        }
+      }
+
+      {
+        std::vector< FunctionParam > params;
+        params.push_back( FunctionParam( "array", this, CG::USAGE_LVALUE ) );
+        params.push_back( FunctionParam( "index", sizeAdapter, CG::USAGE_RVALUE ) );
+        FunctionBuilder functionBuilder( moduleBuilder, "__"+getCodeName()+"__NonConstIndexNoCheckNoSplit", ExprType( m_memberAdapter, USAGE_LVALUE ), params, false, true );
+        if ( buildFunctions )
+        {
+          BasicBlockBuilder basicBlockBuilder( functionBuilder );
+
+          llvm::Value *arrayLValue = functionBuilder[0];
+          llvm::Value *indexRValue = functionBuilder[1];
+
+          llvm::BasicBlock *entryBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "entry" );
+
+          basicBlockBuilder->SetInsertPoint( entryBB );
+          llvm::Value *arrayRValue = llvmLValueToRValue( basicBlockBuilder, arrayLValue );
           llvm::Value *memberData = basicBlockBuilder->CreateConstGEP2_32( basicBlockBuilder->CreateStructGEP( arrayRValue, 3 ), 0, 0 );
           llvm::Value *memberLValue = basicBlockBuilder->CreateGEP( memberData, indexRValue );
           basicBlockBuilder->CreateRet( memberLValue );
@@ -667,6 +687,17 @@ namespace Fabric
       params.push_back( FunctionParam( "array", this, CG::USAGE_LVALUE ) );
       params.push_back( FunctionParam( "index", sizeAdapter, CG::USAGE_RVALUE ) );
       FunctionBuilder functionBuilder( basicBlockBuilder.getModuleBuilder(), "__"+getCodeName()+"__NonConstIndexNoCheck", ExprType( m_memberAdapter, USAGE_LVALUE ), params, false, true );
+      return basicBlockBuilder->CreateCall2( functionBuilder.getLLVMFunction(), exprLValue, indexRValue );
+    }
+
+    llvm::Value *VariableArrayAdapter::llvmNonConstIndexOp_NoCheckNoSplit( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *exprLValue, llvm::Value *indexRValue ) const
+    {
+      RC::ConstHandle<SizeAdapter> sizeAdapter = basicBlockBuilder.getManager()->getSizeAdapter();
+
+      std::vector< FunctionParam > params;
+      params.push_back( FunctionParam( "array", this, CG::USAGE_LVALUE ) );
+      params.push_back( FunctionParam( "index", sizeAdapter, CG::USAGE_RVALUE ) );
+      FunctionBuilder functionBuilder( basicBlockBuilder.getModuleBuilder(), "__"+getCodeName()+"__NonConstIndexNoCheckNoSplit", ExprType( m_memberAdapter, USAGE_LVALUE ), params, false, true );
       return basicBlockBuilder->CreateCall2( functionBuilder.getLLVMFunction(), exprLValue, indexRValue );
     }
     
