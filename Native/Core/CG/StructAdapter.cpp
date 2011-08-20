@@ -124,8 +124,11 @@ namespace Fabric
       moduleBuilder->addTypeName( getCodeName(), llvmRawType() );
 
       RC::ConstHandle<StringAdapter> stringAdapter = getManager()->getStringAdapter();
+      stringAdapter->llvmPrepareModule( moduleBuilder, buildFunctions );
       RC::ConstHandle<SizeAdapter> sizeAdapter = getManager()->getSizeAdapter();
+      sizeAdapter->llvmPrepareModule( moduleBuilder, buildFunctions );
       RC::ConstHandle<OpaqueAdapter> dataAdapter = getManager()->getDataAdapter();
+      dataAdapter->llvmPrepareModule( moduleBuilder, buildFunctions );
       
       if ( !m_isShallow )
       {
