@@ -16,7 +16,6 @@
 #include <Fabric/Base/JSON/String.h>
 #include <Fabric/Base/JSON/Object.h>
 
-#include <GL/glew.h>
 #if defined(FABRIC_OS_WINDOWS)
 # include <intrin.h>
 #endif
@@ -25,7 +24,6 @@ namespace Fabric
 {
   namespace NPAPI
   {
-    
     ViewPort::ViewPort( RC::ConstHandle<Interface> const &interface, uint32_t timerInterval )
       : m_npp( interface->getNPP() )
       , m_name( "viewPort" )
