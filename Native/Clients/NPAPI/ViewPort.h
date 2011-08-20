@@ -150,6 +150,8 @@ namespace Fabric
       GLuint m_watermarkPositionsBufferID;
       GLuint m_watermarkUVsBufferID;
       GLuint m_watermarkIndexesBufferID;
+      size_t m_watermarkLastWidth;
+      size_t m_watermarkLastHeight;
     };
   };
 };
