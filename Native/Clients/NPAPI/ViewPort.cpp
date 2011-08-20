@@ -378,6 +378,9 @@ void main()\n\
         glDisable( GL_DEPTH_TEST );
         glDisable( GL_CULL_FACE );
 
+        glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+        glEnable( GL_BLEND );
+
         if ( !m_watermarkPositionsBufferID )
         {
           static const GLfloat p[12] =
