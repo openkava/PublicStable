@@ -140,7 +140,6 @@ namespace Fabric
       Prototype *prototype,
       Scope const &scope,
       size_t *newSize,
-      std::vector<Prototype::SlicedArray> &slicedArrays,
       unsigned prefixCount,
       void * const *prefixes
       ) const
@@ -154,7 +153,7 @@ namespace Fabric
       if ( !m_function )
         throw Exception( "entry function not found" );
         
-      return prototype->bind( m_astOperator, scope, m_function, newSize, slicedArrays, prefixCount, prefixes );
+      return prototype->bind( m_astOperator, scope, m_function, newSize, prefixCount, prefixes );
     }
     
     std::string const &Operator::getEntryFunctionName() const
