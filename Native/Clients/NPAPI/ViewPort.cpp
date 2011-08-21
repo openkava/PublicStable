@@ -24,6 +24,7 @@ namespace Fabric
 {
   namespace NPAPI
   {
+    
     ViewPort::ViewPort( RC::ConstHandle<Interface> const &interface, uint32_t timerInterval )
       : m_npp( interface->getNPP() )
       , m_name( "viewPort" )
