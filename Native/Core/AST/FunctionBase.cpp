@@ -7,7 +7,7 @@
 #include <Fabric/Core/CG/FunctionBuilder.h>
 #include <Fabric/Core/CG/Scope.h>
 #include <Fabric/Core/CG/Manager.h>
-#include <Fabric/Core/Util/SimpleString.h>
+#include <Fabric/Base/Util/SimpleString.h>
 
 #include <llvm/Module.h>
 #include <llvm/Function.h>
@@ -68,7 +68,7 @@ namespace Fabric
       std::string const *friendlyName = getFriendlyName( moduleBuilder.getManager() );
       if ( !buildFunctionBodies && friendlyName && moduleBuilder.getScope().has( *friendlyName ) )
       {
-        addError( diagnostics, "symbol " + _(*friendlyName) + " already exists" );
+        addError( diagnostics, ("symbol " + _(*friendlyName) + " already exists").c_str() );
       }
       else
       {
@@ -95,7 +95,7 @@ namespace Fabric
           if ( !bb->getTerminator() )
           {
             if ( returnExprType )
-              addError( diagnostics, Exception("not all paths return a value") );
+              addError( diagnostics, "not all paths return a value" );
             else
             {
               functionBuilder.getScope().llvmUnwind( basicBlockBuilder );

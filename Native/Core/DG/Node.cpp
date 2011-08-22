@@ -22,7 +22,7 @@
 #include <Fabric/Core/Util/Base64.h>
 #include <Fabric/Core/Util/Encoder.h>
 #include <Fabric/Core/Util/Decoder.h>
-#include <Fabric/Core/Util/SimpleString.h>
+#include <Fabric/Base/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -322,7 +322,7 @@ namespace Fabric
         }
         catch ( Exception e )
         {
-          errors.push_back( "binding " + _(i) + ": " + e );
+          errors.push_back( "binding " + _(i) + ": " + std::string( e ) );
         }
       }
     }

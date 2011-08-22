@@ -9,7 +9,7 @@
 #include <Fabric/Core/CG/Adapter.h>
 #include <Fabric/Core/CG/ModuleBuilder.h>
 #include <Fabric/Core/CG/Scope.h>
-#include <Fabric/Core/Util/SimpleString.h>
+#include <Fabric/Base/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -68,7 +68,7 @@ namespace Fabric
       
       CG::Scope &scope = basicBlockBuilder.getScope();
       if ( scope.has( m_name ) )
-        addError( diagnostics, "variable '" + m_name + "' already exists" );
+        addError( diagnostics, ("variable '" + m_name + "' already exists").c_str() );
       else scope.put( m_name, CG::VariableSymbol::Create( CG::ExprValue( adapter, CG::USAGE_LVALUE, result ) ) );
         
       return CG::ExprValue( adapter, CG::USAGE_LVALUE, result );

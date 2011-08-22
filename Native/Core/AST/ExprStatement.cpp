@@ -8,7 +8,7 @@
 #include <Fabric/Core/AST/ExprStatement.h>
 #include <Fabric/Core/AST/Expr.h>
 #include <Fabric/Core/CG/Error.h>
-#include <Fabric/Core/Util/SimpleString.h>
+#include <Fabric/Base/Util/SimpleString.h>
 
 namespace Fabric
 {

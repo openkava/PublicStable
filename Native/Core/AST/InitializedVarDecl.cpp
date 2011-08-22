@@ -10,7 +10,7 @@
 #include <Fabric/Core/CG/Adapter.h>
 #include <Fabric/Core/CG/Scope.h>
 #include <Fabric/Core/CG/OverloadNames.h>
-#include <Fabric/Core/Util/SimpleString.h>
+#include <Fabric/Base/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -63,7 +63,7 @@ namespace Fabric
         
       RC::ConstHandle<CG::FunctionSymbol> functionSymbol = basicBlockBuilder.maybeGetFunction( initializerName );
       if ( !functionSymbol )
-        addError( diagnostics, "initializer " + _(initializerName) + " not found" );
+        addError( diagnostics, ("initializer " + _(initializerName) + " not found").c_str() );
       else
       {
         std::vector<CG::FunctionParam> const functionParams = functionSymbol->getParams();

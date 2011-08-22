@@ -10,7 +10,7 @@
 #include <Fabric/Core/RT/Manager.h>
 #include <Fabric/Core/RT/StructDesc.h>
 #include <Fabric/Core/RT/StructMemberInfo.h>
-#include <Fabric/Core/Util/SimpleString.h>
+#include <Fabric/Base/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -55,7 +55,7 @@ namespace Fabric
       }
       catch ( Exception e )
       {
-        addError( diagnostics, e.getDesc() );
+        addError( diagnostics, e );
       }
     }
     
