@@ -365,7 +365,7 @@ void main()\n\
         GLint posLocation = glGetAttribLocation( m_watermarkShaderProgram, "a_position" );
         GLint texLocation = glGetAttribLocation( m_watermarkShaderProgram, "a_texCoord" );
       //  GLint smpLocation = glGetUniformLocation( m_watermarkShaderProgram, "u_rgbaImage" );
-      //  glUniform1i( smpLocation, GL_TEXTURE0 );
+      //  glUniform1i( smpLocation, 0 );
         
         if ( !m_watermarkTextureBuffer )
         {
@@ -387,11 +387,8 @@ void main()\n\
         glActiveTexture( GL_TEXTURE0 );
         glBindTexture( GL_TEXTURE_2D, m_watermarkTextureBuffer );
 
-        glPushAttrib( GL_TEXTURE_BIT );
-        
-        glDisable( GL_DEPTH_TEST );
-        glDisable( GL_CULL_FACE );
-
+        glPushAttrib( GL_TEXTURE_BIT | GL_ENABLE_BIT | GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+		
         glEnable( GL_TEXTURE_2D );
         glDisable( GL_DEPTH_TEST );
         glDisable( GL_CULL_FACE );
@@ -457,6 +454,9 @@ void main()\n\
         glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, m_watermarkIndexesBufferID );
         glDrawElements( GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL );
         glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 );
+		
+		
+        glBindTexture( GL_TEXTURE_2D, 0 );
 
         glPopAttrib();
       }
