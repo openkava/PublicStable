@@ -2,14 +2,15 @@
  *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
  */
 
-#ifndef _FABRIC_NPAPI_NP_VIEW_PORT_H
-#define _FABRIC_NPAPI_NP_VIEW_PORT_H
+#ifndef _FABRIC_NPAPI_VIEW_PORT_H
+#define _FABRIC_NPAPI_VIEW_PORT_H
 
 #include <Fabric/Base/RC/Object.h>
 #include <Fabric/Base/RC/Handle.h>
 #include <Fabric/Base/RC/ConstHandle.h>
 #include <Fabric/Core/Util/UnorderedMap.h>
 
+#include <GL/glew.h>
 #include <npapi/npapi.h>
 #include <npapi/npruntime.h>
 #if defined( FABRIC_POSIX )
@@ -156,4 +157,4 @@ namespace Fabric
   };
 };
 
-#endif //_FABRIC_NPAPI_NP_VIEW_PORT_H
+#endif //_FABRIC_NPAPI_VIEW_PORT_H

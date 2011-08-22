@@ -49,27 +49,6 @@ namespace Fabric
     {
     public:
     
-      class SlicedArray
-      {
-      public:
-      
-        SlicedArray();
-        SlicedArray( RC::ConstHandle<RT::SlicedArrayImpl> const &slicedArrayImpl, void *variableArrayData );
-        SlicedArray( SlicedArray const &that );
-        SlicedArray &operator =( SlicedArray const &that );
-        ~SlicedArray();
-        
-        void *getData()
-        {
-          return &m_slicedArrayData[0];
-        }
-        
-      private:
-      
-        RC::ConstHandle<RT::SlicedArrayImpl> m_slicedArrayImpl;
-        std::vector<uint8_t> m_slicedArrayData;
-      };
-    
       Prototype( RC::Handle<CG::Manager> const &cgManager );
       virtual ~Prototype();
       
@@ -81,7 +60,6 @@ namespace Fabric
         Scope const &scope,
         RC::ConstHandle<Function> const &function,
         size_t *newSize,
-        std::vector<SlicedArray> &slicedArrays,
         unsigned prefixCount=0,
         void * const *prefixes = 0
         );

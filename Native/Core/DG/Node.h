@@ -100,7 +100,6 @@ namespace Fabric
         RC::ConstHandle<Binding> const &binding,
         Scope const &scope,
         size_t *newCount,
-        std::vector<Prototype::SlicedArray> &slicedArrays,
         unsigned prefixCount = 0,
         void * const *prefixes = 0
         );

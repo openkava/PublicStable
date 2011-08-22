@@ -12,6 +12,7 @@
 #include "Scope.h"
 #include "Debug.h"
 
+#include <Fabric/Core/DG/SharedSlicedArray.h>
 #include <Fabric/Core/DG/Function.h>
 #include <Fabric/Core/AST/Operator.h>
 #include <Fabric/Core/AST/ParamVector.h>
@@ -249,7 +250,6 @@ namespace Fabric
       Scope const &scope,
       RC::ConstHandle<Function> const &function,
       size_t *newSize,
-      std::vector<SlicedArray> &slicedArrays,
       unsigned prefixCount,
       void * const *prefixes
       )
@@ -369,9 +369,9 @@ namespace Fabric
                     //if ( astParamExprType.getUsage() != CG::USAGE_LVALUE )
                     //  throw Exception( "array parmeters must bind to operator io parameters" );
                     
-                    SlicedArray slicedArray( slicedArrayImpl, memberArrayData );
-                    slicedArrays.push_back( slicedArray );
-                    result->setBaseAddress( prefixCount+param->index(), slicedArrays.back().getData() );
+                    RC::Handle<SharedSlicedArray> sharedSlicedArray = SharedSlicedArray::Create( slicedArrayImpl, memberArrayData );
+                    result->setBaseAddress( prefixCount+param->index(), sharedSlicedArray->getData() );
+                    result->addOwnedObject( sharedSlicedArray );
                   }
                 }
                 catch ( Exception e ) {
@@ -417,53 +417,6 @@ namespace Fabric
       for ( size_t i=0; i<items.size(); ++i )
         result->push_back( JSON::String::Create( items[i] ) );
       return result;
-    }
-
-    Prototype::SlicedArray::SlicedArray()
-    {
-    }
-    
-    Prototype::SlicedArray::SlicedArray( RC::ConstHandle<RT::SlicedArrayImpl> const &slicedArrayImpl, void *variableArrayData )
-      : m_slicedArrayImpl( slicedArrayImpl )
-    {
-      if ( m_slicedArrayImpl )
-      {
-        m_slicedArrayData.resize( m_slicedArrayImpl->getSize(), 0 );
-        RC::ConstHandle<RT::VariableArrayImpl> variableArrayImpl = m_slicedArrayImpl->getVariableArrayImpl();
-        m_slicedArrayImpl->set( 0, variableArrayImpl->getNumMembers( variableArrayData ), variableArrayData, &m_slicedArrayData[0] );
-      }
-    }
-    
-    Prototype::SlicedArray::SlicedArray( SlicedArray const &that )
-      : m_slicedArrayImpl( that.m_slicedArrayImpl )
-    {
-      if ( m_slicedArrayImpl )
-      {
-        m_slicedArrayData.resize( m_slicedArrayImpl->getSize(), 0 );
-        m_slicedArrayImpl->setData( &that.m_slicedArrayData[0], &m_slicedArrayData[0] );
-      }
-    }
-    
-    Prototype::SlicedArray &Prototype::SlicedArray::operator =( SlicedArray const &that )
-    {
-      if ( m_slicedArrayImpl )
-      {
-        m_slicedArrayImpl->disposeData( &m_slicedArrayData[0] );
-        m_slicedArrayData.resize( 0 );
-      }
-      m_slicedArrayImpl = that.m_slicedArrayImpl;
-      if ( m_slicedArrayImpl )
-      {
-        m_slicedArrayData.resize( m_slicedArrayImpl->getSize(), 0 );
-        m_slicedArrayImpl->setData( &that.m_slicedArrayData[0], &m_slicedArrayData[0] );
-      }
-      return *this;
-    }
-    
-    Prototype::SlicedArray::~SlicedArray()
-    {
-      if ( m_slicedArrayImpl )
-        m_slicedArrayImpl->disposeData( &m_slicedArrayData[0] );
     }
   };
 };
