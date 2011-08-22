@@ -3,8 +3,8 @@
  */
 
 #include <Fabric/Clients/NPAPI/Context.h>
-#include <Fabric/Clients/NPAPI/IOManager.h>
 #include <Fabric/Clients/NPAPI/ViewPort.h>
+#include <Fabric/Clients/NPAPI/IOManager.h>
 #include <Fabric/Core/MT/LogCollector.h>
 #include <Fabric/Core/RT/Manager.h>
 #include <Fabric/Core/CG/Manager.h>
