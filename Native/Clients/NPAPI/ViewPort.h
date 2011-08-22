@@ -10,6 +10,7 @@
 #include <Fabric/Base/RC/ConstHandle.h>
 #include <Fabric/Core/Util/UnorderedMap.h>
 
+#include <GL/glew.h>
 #include <npapi/npapi.h>
 #include <npapi/npruntime.h>
 #if defined( FABRIC_POSIX )
