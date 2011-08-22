@@ -278,7 +278,7 @@ namespace Fabric
         }
         catch ( Exception e )
         {
-          getErrors().push_back( "pre-descend operator " + _(i) + ": " + e );
+          getErrors().push_back( "pre-descend operator " + _(i) + ": " + std::string( e ) );
         }
       }
       
@@ -298,7 +298,7 @@ namespace Fabric
         }
         catch ( Exception e )
         {
-          getErrors().push_back( "post-descend operator " + _(i) + ": " + e );
+          getErrors().push_back( "post-descend operator " + _(i) + ": " + std::string( e ) );
         }
       }
         
@@ -311,7 +311,7 @@ namespace Fabric
         }
         catch ( Exception e )
         {
-          getErrors().push_back( "selector: " + e );
+          getErrors().push_back( "selector: " + std::string( e ) );
         }
       }
     }

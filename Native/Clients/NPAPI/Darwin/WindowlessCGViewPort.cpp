@@ -203,7 +203,7 @@ namespace Fabric
               }
               catch ( Exception e )
               {
-                FABRIC_DEBUG_LOG( "redrawEvent: exception thrown: %s", e.getDesc().c_str() );
+                FABRIC_DEBUG_LOG( "redrawEvent: exception thrown: %s", (const char*)e.getDesc() );
               }
               catch ( ... )
               {

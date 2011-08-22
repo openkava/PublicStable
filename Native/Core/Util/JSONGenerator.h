@@ -5,7 +5,7 @@
 #ifndef _FABRIC_UTIL_JSON_GENERATOR_H
 #define _FABRIC_UTIL_JSON_GENERATOR_H
 
-#include <Fabric/Core/Util/SimpleString.h>
+#include <Fabric/Base/Util/SimpleString.h>
 #include <Fabric/Core/Util/Assert.h>
 
 namespace Fabric
