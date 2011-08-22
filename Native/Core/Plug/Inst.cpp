@@ -137,7 +137,7 @@ namespace Fabric
       {
         CG::Location const &location = it->first;
         CG::Diagnostic const &diagnostic = it->second;
-        FABRIC_LOG( "[%s] %u:%u: %s: %s", extensionName.c_str(), (unsigned)location.getLine(), (unsigned)location.getColumn(), diagnostic.getLevelDesc(), diagnostic.getDesc().c_str() );
+        FABRIC_LOG( "[%s] %u:%u: %s: %s", extensionName.c_str(), (unsigned)location.getLine(), (unsigned)location.getColumn(), diagnostic.getLevelDesc(), diagnostic.getDesc() );
       }
       if ( m_diagnostics.containsError() )
         throw Exception( "KL compile failed" );

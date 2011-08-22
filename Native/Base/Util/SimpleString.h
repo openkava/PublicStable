@@ -185,7 +185,37 @@ namespace Fabric
       size_t m_length;
       size_t m_allocSize;
     };
+
+    inline SimpleString operator +( Util::SimpleString const &left, Util::SimpleString const &right )
+    {
+      SimpleString result;
+      result.reserve( left.getLength() + right.getLength() );
+      result += left;
+      result += right;
+      return result;
+    }
+  
+    inline SimpleString operator +( const char *left, Util::SimpleString const &right )
+    {
+      SimpleString result;
+      size_t llen = strlen( left );
+      result.reserve( llen + right.getLength() );
+      result.append( left, llen );
+      result += right;
+      return result;
+    }
+  
+    inline SimpleString operator +( Util::SimpleString const &left, const char *right )
+    {
+      SimpleString result;
+      size_t rlen = strlen( right );
+      result.reserve( left.getLength() + rlen );
+      result += left;
+      result.append( right, rlen );
+      return result;
+    }
   };
 };
+
 
 #endif //_FABRIC_UTIL_SIMPLE_STRING_H

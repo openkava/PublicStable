@@ -95,7 +95,7 @@ namespace Fabric
           }
           catch ( Exception e )
           {
-            NPN_SetException( this, e.getDesc().c_str() );
+            NPN_SetException( this, (const char*)e.getDesc() );
           }
           catch ( ... )
           {
@@ -117,7 +117,7 @@ namespace Fabric
           }
           catch ( Exception e )
           {
-            NPN_SetException( this, e.getDesc().c_str() );
+            NPN_SetException( this, (const char*)e.getDesc() );
           }
           catch ( ... )
           {

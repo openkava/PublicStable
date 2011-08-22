@@ -13,7 +13,7 @@
 #include <Fabric/Core/CG/Error.h>
 #include <Fabric/Core/CG/OpTypes.h>
 #include <Fabric/Core/RT/Desc.h>
-#include <Fabric/Core/Util/SimpleString.h>
+#include <Fabric/Base/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -99,7 +99,7 @@ namespace Fabric
       }
       catch ( Exception e )
       {
-        throw CG::Error( getLocation(), "in expression " + functionParams[0].getAdapter()->getUserName() + " " + CG::binOpUserName( m_binOpType ) + " " + functionParams[1].getAdapter()->getUserName() + ": " + e );
+        throw CG::Error( getLocation(), "in expression " + functionParams[0].getAdapter()->getUserName() + " " + CG::binOpUserName( m_binOpType ) + " " + functionParams[1].getAdapter()->getUserName() + ": " + e.getDesc() );
       }
       return result;
     }

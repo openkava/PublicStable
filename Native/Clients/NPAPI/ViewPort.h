@@ -16,6 +16,7 @@
 # include <sys/time.h>
 #elif defined( FABRIC_WIN32 )
 # include <windows.h>
+#include <GL/glew.h>
 #endif
 #include <vector>
 
