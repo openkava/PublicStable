@@ -28,7 +28,7 @@ namespace Fabric
         }
         catch ( Exception e )
         {
-          throw Exception( "argument %u ('%s'): %s", (unsigned)(i + 1), param.getName().c_str(), e.getDesc().c_str() );
+          throw Exception( "argument %u ('%s'): %s", (unsigned)(i + 1), param.getName().c_str(), (const char*)e.getDesc() );
         }
       }
 

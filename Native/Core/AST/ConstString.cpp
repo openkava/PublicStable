@@ -10,7 +10,7 @@
 #include <Fabric/Core/CG/ModuleBuilder.h>
 #include <Fabric/Core/CG/StringAdapter.h>
 #include <Fabric/Core/Util/Parse.h>
-#include <Fabric/Core/Util/SimpleString.h>
+#include <Fabric/Base/Util/SimpleString.h>
 
 namespace Fabric
 {

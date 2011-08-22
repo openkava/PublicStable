@@ -4,7 +4,7 @@
  
 #include <Fabric/Core/AST/ParamVector.h>
 #include <Fabric/Core/AST/Param.h>
-#include <Fabric/Core/Util/SimpleString.h>
+#include <Fabric/Base/Util/SimpleString.h>
 
 namespace Fabric
 {

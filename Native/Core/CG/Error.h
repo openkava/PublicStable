@@ -16,7 +16,7 @@ namespace Fabric
     {
     public:
     
-      Error( Location const &location, std::string const &desc );
+      Error( Location const &location, Util::SimpleString const &desc );
       Error( Error const &that );
       
       Error &operator =( Error const &that );
@@ -31,12 +31,8 @@ namespace Fabric
       Location m_location;
     };
     
-    Error operator +( std::string const &prefix, Error const &error );
-    
-    inline Error operator +( char const *cString, Error const &error )
-    {
-      return std::string(cString) + error;
-    }
+    Error operator +( Util::SimpleString const &prefix, Error const &error );
+    Error operator +( char const *cString, Error const &error );
   };
 };
 

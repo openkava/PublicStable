@@ -226,7 +226,7 @@ STDAPI DllRegisterServer( )
   }
   catch( Fabric::Exception e )
   {
-    fprintf( stderr, "Registration failed. Reason: %s\n", e.getDesc().c_str() );
+    fprintf( stderr, "Registration failed. Reason: %s\n", (const char*)e.getDesc() );
     return( E_UNEXPECTED );
   }
 
@@ -245,7 +245,7 @@ STDAPI DllUnregisterServer( )
   }
   catch( Fabric::Exception e )
   {
-    fprintf( stderr, "Unregistration failed. Reason: %s\n", e.getDesc().c_str() );
+    fprintf( stderr, "Unregistration failed. Reason: %s\n", (const char*)e.getDesc() );
     return( E_UNEXPECTED );
   }
 

@@ -6,7 +6,7 @@
 #include "MemberDecl.h"
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/RT/Manager.h>
-#include <Fabric/Core/Util/SimpleString.h>
+#include <Fabric/Base/Util/SimpleString.h>
 
 namespace Fabric
 {
