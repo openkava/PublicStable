@@ -5,7 +5,7 @@
 #include <Fabric/Core/AST/VarDeclVector.h>
 #include <Fabric/Core/AST/VarDecl.h>
 #include <Fabric/Core/CG/BasicBlockBuilder.h>
-#include <Fabric/Core/Util/SimpleString.h>
+#include <Fabric/Base/Util/SimpleString.h>
 
 namespace Fabric
 {

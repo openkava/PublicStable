@@ -8,7 +8,7 @@
 #include <Fabric/Core/AST/Node.h>
 #include <Fabric/Core/AST/ParamVector.h>
 #include <Fabric/Core/AST/CompoundStatement.h>
-#include <Fabric/Core/Util/SimpleString.h>
+#include <Fabric/Base/Util/SimpleString.h>
 
 namespace llvm
 {

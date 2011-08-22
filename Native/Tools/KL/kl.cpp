@@ -69,7 +69,7 @@ void dumpDiagnostics( CG::Diagnostics const &diagnostics )
   {
     CG::Location const &location = it->first;
     CG::Diagnostic const &diagnostic = it->second;
-    printf( "%u:%u: %s: %s\n", (unsigned)location.getLine(), (unsigned)location.getColumn(), diagnostic.getLevelDesc(), diagnostic.getDesc().c_str() );
+    printf( "%u:%u: %s: %s\n", (unsigned)location.getLine(), (unsigned)location.getColumn(), diagnostic.getLevelDesc(), (const char*)diagnostic.getDesc() );
   }
 }
 
@@ -377,7 +377,7 @@ int main( int argc, char **argv )
     }
     catch ( Exception e )
     {
-      fprintf( stderr, "Caught Exception '%s'\n", e.getDesc().c_str() );
+      fprintf( stderr, "Caught Exception '%s'\n", (const char*)e.getDesc() );
     }
   }
   else
@@ -397,7 +397,7 @@ int main( int argc, char **argv )
         }
         catch ( Exception e )
         {
-          fprintf( stderr, "Caught Exception '%s'\n", e.getDesc().c_str() );
+          fprintf( stderr, "Caught Exception '%s'\n", (const char*)e.getDesc() );
         }
         fclose( fp );
       }

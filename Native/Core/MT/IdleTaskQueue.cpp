@@ -162,7 +162,7 @@ namespace Fabric
           }
           catch ( Exception e )
           {
-            FABRIC_LOG( "Exception caught on IdleTaskQueue: %s", e.getDesc().c_str() );
+            FABRIC_LOG( "Exception caught on IdleTaskQueue: %s", (const char*)e.getDesc() );
           }
           catch ( ... )
           {
@@ -199,7 +199,7 @@ namespace Fabric
           }
           catch ( Exception e )
           {
-            FABRIC_LOG( "Exception caught on IdleTaskQueue: %s", e.getDesc().c_str() );
+            FABRIC_LOG( "Exception caught on IdleTaskQueue: %s", (const char *)e.getDesc() );
           }
           catch ( ... )
           {

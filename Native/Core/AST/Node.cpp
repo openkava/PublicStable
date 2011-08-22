@@ -8,7 +8,7 @@
 #include "Node.h"
 #include <Fabric/Core/CG/Diagnostics.h>
 #include <Fabric/Core/CG/Error.h>
-#include <Fabric/Core/Util/SimpleString.h>
+#include <Fabric/Base/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -30,12 +30,12 @@ namespace Fabric
       m_location.appendJSON( jsonObjectGenerator.makeMember( "location" ) );
     }
 
-    void Node::addWarning( CG::Diagnostics &diagnostics, std::string const &desc ) const
+    void Node::addWarning( CG::Diagnostics &diagnostics, Util::SimpleString const &desc ) const
     {
       diagnostics.addWarning( m_location, desc );
     }
     
-    void Node::addError( CG::Diagnostics &diagnostics, std::string const &desc ) const
+    void Node::addError( CG::Diagnostics &diagnostics, Util::SimpleString const &desc ) const
     {
 	 		diagnostics.addError( m_location, desc );
     }
