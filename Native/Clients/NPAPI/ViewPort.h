@@ -150,6 +150,7 @@ namespace Fabric
       GLuint m_watermarkShaderProgram;
       GLuint m_watermarkTextureBuffer;
       GLuint m_watermarkPositionsBufferID;
+      bool m_watermarkNeedPositionsVBOUpload;
       GLuint m_watermarkUVsBufferID;
       GLuint m_watermarkIndexesBufferID;
       size_t m_watermarkLastWidth;
