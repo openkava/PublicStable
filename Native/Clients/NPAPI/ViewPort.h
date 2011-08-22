@@ -10,15 +10,13 @@
 #include <Fabric/Base/RC/ConstHandle.h>
 #include <Fabric/Core/Util/UnorderedMap.h>
 
+#include <GL/glew.h>
 #include <npapi/npapi.h>
 #include <npapi/npruntime.h>
 #if defined( FABRIC_POSIX )
 # include <sys/time.h>
 #elif defined( FABRIC_WIN32 )
 # include <windows.h>
-#endif
-#if defined( FABRIC_OS_LINUX )
-#include <GL/glew.h>
 #endif
 #include <vector>
 
