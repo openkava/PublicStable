@@ -11,7 +11,6 @@ namespace Fabric
   namespace DG
   {
     CodeManager::CodeManager()
-      : m_irCache( IRCache::Create() )
     {
     }
     
@@ -26,7 +25,7 @@ namespace Fabric
       if ( !result )
       {
         //FABRIC_DEBUG_LOG( "No compiled code in cache; compiling" );
-        result = Code::Create( context, sourceCode, m_irCache );
+        result = Code::Create( context, sourceCode );
         it = m_sourceCodeToCodeMap.insert( SourceCodeToCodeMap::value_type( sourceCode, result ) ).first;
         FABRIC_ASSERT( it != m_sourceCodeToCodeMap.end() );
       }
