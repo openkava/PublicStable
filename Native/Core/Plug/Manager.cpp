@@ -78,7 +78,7 @@ namespace Fabric
                 }
                 catch ( Exception e )
                 {
-                  FABRIC_LOG( "[%s] %s", extensionName.c_str(), e.getDesc().c_str() );
+                  FABRIC_LOG( "[%s] %s", extensionName.c_str(), (const char *)e );
                   FABRIC_LOG( "[%s] Error(s) encountered, extension disabled", extensionName.c_str() );
                   FABRIC_LOG( "[%s] Extension manifest is '%s'", extensionName.c_str(), IO::JoinPath( pluginsDir->getFullPath(), filename ).c_str() );
                 }

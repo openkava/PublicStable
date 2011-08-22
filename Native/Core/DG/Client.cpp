@@ -110,7 +110,7 @@ namespace Fabric
         }
         catch ( Exception e )
         {
-          result->set( "exception", JSON::String::Create( e ) );
+          result->set( "exception", JSON::String::Create( e.getDesc().getData(), e.getDesc().getLength() ) );
           resultJSONArray->push_back( result );
           break;
         }

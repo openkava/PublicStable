@@ -258,7 +258,7 @@ namespace Fabric
         }
         catch ( Exception e )
         {
-          fprintf( stderr, "redrawEvent: exception thrown: %s\n", e.getDesc().c_str() );
+          fprintf( stderr, "redrawEvent: exception thrown: %s\n", (const char*)e.getDesc() );
         }
         catch ( ... )
         {
