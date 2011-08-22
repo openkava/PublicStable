@@ -96,6 +96,11 @@ namespace Fabric
         m_functionPtr = functionPtr;
       }
       
+      void addOwnedObject( RC::ConstHandle<RC::Object> const &object )
+      {
+        m_ownedObjects.push_back( object );
+      }
+      
     protected:
     
       void execute( size_t adjustmentIndex, void * const *addresses, size_t const *iteration ) const
@@ -468,6 +473,7 @@ namespace Fabric
       std::vector< Adjustment > m_adjustments;
       size_t m_totalParallelCalls;
       std::string m_debugDesc;
+      std::vector< RC::ConstHandle<RC::Object> > m_ownedObjects;
     };
   };
 };

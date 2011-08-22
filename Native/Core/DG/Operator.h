@@ -91,7 +91,6 @@ namespace Fabric
         Prototype *prototype,
         Scope const &scope,
         size_t *newSize,
-        std::vector<Prototype::SlicedArray> &slicedArrays,
         unsigned prefixCount,
         void * const *prefixes
         ) const;

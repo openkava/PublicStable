@@ -299,6 +299,8 @@ namespace Fabric
       
         if ( !m_watermarkShaderProgram )
         {
+          glewInit();
+          
           GLuint vertexShaderID = glCreateShader( GL_VERTEX_SHADER );
           if ( !vertexShaderID )
             throw Exception( "glCreateShader( GL_VERTEX_SHADER ) failed" );

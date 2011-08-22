@@ -50,7 +50,6 @@ namespace Fabric
       RC::Handle<MT::ParallelCall> bind(
         Scope const &scope,
         size_t *newSize,
-        std::vector<Prototype::SlicedArray> &slicedArrays,
         unsigned prefixCount = 0,
         void * const *prefixes = 0
         ) const;      

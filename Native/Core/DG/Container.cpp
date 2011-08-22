@@ -347,14 +347,13 @@ namespace Fabric
       RC::ConstHandle<Binding> const &binding,
       Scope const &scope,
       size_t *newCount,
-      std::vector<Prototype::SlicedArray> &slicedArrays,
       unsigned prefixCount,
       void * const *prefixes
       )
     {
       SelfScope selfScope( this, &scope );
 
-      return binding->bind( selfScope, newCount, slicedArrays, prefixCount, prefixes );
+      return binding->bind( selfScope, newCount, prefixCount, prefixes );
     }
 
     Container::Member::Member( RC::Handle<RT::Manager> const &rtManager, RC::ConstHandle<RT::Desc> memberDesc, size_t count, void const *defaultMemberData )
