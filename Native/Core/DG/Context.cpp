@@ -22,6 +22,7 @@
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/RT/Manager.h>
 #include <Fabric/Core/IO/Manager.h>
+#include <Fabric/Base/JSON/Boolean.h>
 #include <Fabric/Base/JSON/String.h>
 #include <Fabric/Base/JSON/Object.h>
 #include <Fabric/Base/JSON/Array.h>
@@ -37,6 +38,7 @@
 #include <FabricThirdPartyLicenses/llvm/projects/sample/autoconf/license.h>
 #include <FabricThirdPartyLicenses/md5/license.h>
 #include <FabricThirdPartyLicenses/libpng/license.h>
+#include <FabricThirdPartyLicenses/liblas/license.h>
 
 namespace Fabric
 {
@@ -282,11 +284,23 @@ namespace Fabric
       }
       return eventHandler;
     }
-
+    
+    static bool IsExpired()
+    {
+      static bool haveIsExpired = false;
+      static bool isExpired;
+      if ( !haveIsExpired )
+      {
+        time_t currentTime = time( NULL );
+        isExpired = currentTime >= buildExpiry;
+        haveIsExpired = true;
+      }
+      return isExpired;
+    }
+    
     RC::ConstHandle<JSON::Value> Context::jsonRoute( std::vector<std::string> const &dst, size_t dstOffset, std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg )
     {
-      time_t currentTime = time( NULL );
-      if ( currentTime >= buildExpiry )
+      if ( IsExpired() )
       {
         static char const *expiryMessage = "This build of Fabric has expired and will no longer work!\nContact customer support to obtain a more recent build.";
         FABRIC_LOG( expiryMessage );
@@ -368,17 +382,24 @@ namespace Fabric
       return result;
     }
     
-    static RC::Handle<JSON::Object> jsonDescLicenses_md5()
+    static RC::Handle<JSON::Object> jsonDescLicenses_libpng()
     {
       RC::Handle<JSON::Object> result = JSON::Object::Create();
       result->set( ThirdPartyLicenses::libpng::filename, JSON::String::Create( ThirdPartyLicenses::libpng::text ) );
       return result;
     }
     
-    static RC::Handle<JSON::Object> jsonDescLicenses_libpng()
+    static RC::Handle<JSON::Object> jsonDescLicenses_md5()
     {
       RC::Handle<JSON::Object> result = JSON::Object::Create();
       result->set( ThirdPartyLicenses::md5::filename, JSON::String::Create( ThirdPartyLicenses::md5::text ) );
+      return result;
+    }
+
+    static RC::Handle<JSON::Object> jsonDescLicenses_liblas()
+    {
+      RC::Handle<JSON::Object> result = JSON::Object::Create();
+      result->set( ThirdPartyLicenses::liblas::filename, JSON::String::Create( ThirdPartyLicenses::liblas::text ) );
       return result;
     }
     
@@ -388,6 +409,22 @@ namespace Fabric
       result->set( "llvm", jsonDescLicenses_llvm() );
       result->set( "md5", jsonDescLicenses_md5() );
       result->set( "libpng", jsonDescLicenses_libpng() );
+      result->set( "liblas", jsonDescLicenses_liblas() );
+      return result;
+    }
+
+    static RC::Handle<JSON::Object> jsonDescBuild()
+    {
+      RC::Handle<JSON::Object> result = JSON::Object::Create();
+      result->set( "isExpired", JSON::Boolean::Create( IsExpired() ) );
+      result->set( "name", JSON::String::Create( buildName ) );
+      result->set( "pureVersion", JSON::String::Create( buildPureVersion ) );
+      result->set( "fullVersion", JSON::String::Create( buildFullVersion ) );
+      result->set( "desc", JSON::String::Create( buildDesc ) );
+      result->set( "copyright", JSON::String::Create( buildCopyright ) );
+      result->set( "url", JSON::String::Create( buildURL ) );
+      result->set( "os", JSON::String::Create( buildOS ) );
+      result->set( "arch", JSON::String::Create( buildArch ) );
       return result;
     }
 
@@ -399,6 +436,7 @@ namespace Fabric
       result->set( "RT", m_rtManager->jsonDesc() );
       result->set( "EX", Plug::Manager::Instance()->jsonDesc() );
       result->set( "licenses", jsonDescLicenses() );
+      result->set( "build", jsonDescBuild() );
       return result;
     }
 

@@ -18,13 +18,11 @@
 #include <Fabric/Core/MT/LogCollector.h>
 #include <Fabric/Core/MT/IdleTaskQueue.h>
 #include <Fabric/Core/DG/IRCache.h>
-#include <Fabric/Core/Util/Timer.h>
 #include <Fabric/Core/KL/StringSource.h>
 #include <Fabric/Core/KL/Scanner.h>
 #include <Fabric/Core/KL/Parser.hpp>
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/Util/Log.h>
-#include <Fabric/Core/Util/Timer.h>
 
 #include <llvm/Module.h>
 #include <llvm/Function.h>
@@ -53,16 +51,15 @@ namespace Fabric
   {
     static MT::Mutex s_globalCompileLock( "Global Compile Lock" );
   
-    RC::ConstHandle<Code> Code::Create( RC::ConstHandle<Context> const &context, std::string const &sourceCode, RC::Handle<IRCache> const &irCache )
+    RC::ConstHandle<Code> Code::Create( RC::ConstHandle<Context> const &context, std::string const &sourceCode )
     {
-      return new Code( context, sourceCode, irCache );
+      return new Code( context, sourceCode );
     }
 
-    Code::Code( RC::ConstHandle<Context> const &context, std::string const &sourceCode, RC::Handle<IRCache> const &irCache )
+    Code::Code( RC::ConstHandle<Context> const &context, std::string const &sourceCode )
       : m_context( context.ptr() )
       , m_sourceCode( sourceCode )
       , m_registeredFunctionSetMutex( "DG::Code::m_registeredFunctionSet" )
-      , m_irCache( irCache )
     {
       compileSourceCode();
     }
@@ -109,7 +106,8 @@ namespace Fabric
       CG::Diagnostics optimizeDiagnostics;
       CG::Diagnostics &diagnostics = (false && optimize)? optimizeDiagnostics: m_diagnostics;
 
-      std::string ir = m_irCache->get( m_ast );
+      std::string irCacheKeyForAST = IRCache::Instance()->keyForAST( m_ast );
+      std::string ir = IRCache::Instance()->get( irCacheKeyForAST );
       if ( ir.length() > 0 )
       {
         RC::Handle<CG::Manager> cgManager = m_context->getCGManager();
@@ -166,7 +164,7 @@ namespace Fabric
           llvm::raw_string_ostream irStream( ir );
           module->print( irStream, 0 );
           irStream.flush();
-          m_irCache->put( m_ast, ir );
+          IRCache::Instance()->put( irCacheKeyForAST, ir );
         }
 
         linkModule( module, optimize );

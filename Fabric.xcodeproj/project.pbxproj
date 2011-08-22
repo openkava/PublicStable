@@ -26,6 +26,7 @@
 		DB082E9213E6FB3C00FB75DA /* Resources */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Resources; sourceTree = "<group>"; };
 		DB0831D513E7606800FB75DA /* Core */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Core; sourceTree = "<group>"; };
 		DB083DE813E9FC3F00828F72 /* Base */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Base; sourceTree = "<group>"; };
+		DB6DECBD13FEB42800BE0901 /* Core */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Core; sourceTree = "<group>"; };
 		DB76649C13E7B70D00D5F072 /* Clients */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Clients; sourceTree = "<group>"; };
 		DB7DEBBC13F085DF009996CD /* EDK */ = {isa = PBXFileReference; lastKnownFileType = folder; path = EDK; sourceTree = "<group>"; };
 		DB7DEBC013F085DF009996CD /* Test */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Test; sourceTree = "<group>"; };
@@ -178,9 +179,6 @@
 		DB9CD98B13D3C69400CCB0E6 /* CMakeLists.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = CMakeLists.txt; sourceTree = "<group>"; };
 		DB9CD98C13D3C69400CCB0E6 /* json_verify.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = json_verify.c; sourceTree = "<group>"; };
 		DB9CD98D13D3C69400CCB0E6 /* YAJLDoc.cmake */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = YAJLDoc.cmake; sourceTree = "<group>"; };
-		DB9FCD7513C7A4B200A23B69 /* operatorEditor.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = operatorEditor.html; sourceTree = "<group>"; };
-		DB9FCD7613C7A4B200A23B69 /* prettify.css */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.css; path = prettify.css; sourceTree = "<group>"; };
-		DB9FCD7713C7A4B200A23B69 /* prettify.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = prettify.js; sourceTree = "<group>"; };
 		DBCCD57B13AC007D00024113 /* currentTime.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = currentTime.html; sourceTree = "<group>"; };
 		DBD4340013D8B7D700E57C5F /* nBodySimulation.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = nBodySimulation.html; sourceTree = "<group>"; };
 		DBD4340113D8B7D700E57C5F /* Tesselation.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = Tesselation.html; sourceTree = "<group>"; };
@@ -333,20 +331,11 @@
 		DB96842E13A5445200616143 /* Web */ = {
 			isa = PBXGroup;
 			children = (
+				DB6DECBD13FEB42800BE0901 /* Core */,
 				DB96855613A79BC700616143 /* Apps */,
 				DB96843513A5445300616143 /* SceneGraph */,
-				DB96842F13A5445200616143 /* Core */,
 			);
 			path = Web;
-			sourceTree = "<group>";
-		};
-		DB96842F13A5445200616143 /* Core */ = {
-			isa = PBXGroup;
-			children = (
-				DB9684AB13A7984500616143 /* Debugger */,
-				DB9FCD7413C7A4B200A23B69 /* OperatorEditor */,
-			);
-			path = Core;
 			sourceTree = "<group>";
 		};
 		DB96843513A5445300616143 /* SceneGraph */ = {
@@ -356,13 +345,6 @@
 				DB9684BC13A79A1500616143 /* CurveEditor */,
 			);
 			path = SceneGraph;
-			sourceTree = "<group>";
-		};
-		DB9684AB13A7984500616143 /* Debugger */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Debugger;
 			sourceTree = "<group>";
 		};
 		DB9684BC13A79A1500616143 /* CurveEditor */ = {
@@ -646,16 +628,6 @@
 				DB9CD98C13D3C69400CCB0E6 /* json_verify.c */,
 			);
 			path = verify;
-			sourceTree = "<group>";
-		};
-		DB9FCD7413C7A4B200A23B69 /* OperatorEditor */ = {
-			isa = PBXGroup;
-			children = (
-				DB9FCD7513C7A4B200A23B69 /* operatorEditor.html */,
-				DB9FCD7613C7A4B200A23B69 /* prettify.css */,
-				DB9FCD7713C7A4B200A23B69 /* prettify.js */,
-			);
-			path = OperatorEditor;
 			sourceTree = "<group>";
 		};
 		DBCCD57A13AC007D00024113 /* SampleExts */ = {
