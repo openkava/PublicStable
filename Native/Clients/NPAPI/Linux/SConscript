@@ -8,9 +8,13 @@ Import( 'coreEnv', 'npapiSources', 'npapiDistDir', 'buildArch', 'npapiFlags', 'g
 npapiEnv = coreEnv.Clone()
 npapiEnv.MergeFlags( npapiFlags )
 
-npapiEnv.Append( LINKFLAGS = [ '-lGLEW' ] )
-npapiEnv.ParseConfig( 'pkg-config --cflags --libs gtk+-2.0' )
+npapiEnv.Append( CPPDEFINES = 'GLEW_STATIC' )
 npapiEnv.MergeFlags( gtkglFlags )
+if buildArch == 'x86_64':
+  npapiEnv.Append( LIBS = [File('/usr/lib64/libGLEW.a')] )
+else:
+  npapiEnv.Append( LIBS = [File('/usr/lib/libGLEW.a')] )
+npapiEnv.Append( LIBS = ['GL'] )
 ccflags = []
 for flag in npapiEnv['CCFLAGS']:
   if(flag.lower() == '-include'):
