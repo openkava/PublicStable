@@ -9,10 +9,14 @@ oglPluginEnv = extsEnv.Clone()
 # OpenGL
 if buildOS == 'Linux':
   Import( 'gtkglFlags' )
-  oglPluginEnv.Append( LINKFLAGS = [ '-lGLEW' ] )
-  oglPluginEnv.ParseConfig( 'pkg-config --cflags --libs gtk+-2.0' )
-  oglPluginEnv.MergeFlags( gtkglFlags )
+  oglPluginEnv.Append( CPPDEFINES = 'GLEW_STATIC' )
+  if buildArch == 'x86_64':
+    oglPluginEnv.Append( LIBS = [File('/usr/lib64/libGLEW.a')] )
+  else:
+    oglPluginEnv.Append( LIBS = [File('/usr/lib/libGLEW.a')] )
+  oglPluginEnv.Append( LIBS = ['GL'] )
 if buildOS == 'Darwin':
+  oglPluginEnv.Append( CPPDEFINES = 'GLEW_STATIC' )
   oglPluginEnv.Append( CPPPATH = ['/opt/local/include'] )
   oglPluginEnv.Append( LIBS = [File('/opt/local/lib/libGLEW.a')] )
   oglPluginEnv.Append( FRAMEWORKS = ['OpenGL'] )
