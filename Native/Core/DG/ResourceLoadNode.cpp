@@ -25,6 +25,7 @@ namespace Fabric
       FABRIC_RESOURCE_DATASIZE_MEMBER_INDEX,
       FABRIC_RESOURCE_MIMETYPE_MEMBER_INDEX,
       FABRIC_RESOURCE_EXTENSION_MEMBER_INDEX,
+      FABRIC_RESOURCE_URL_MEMBER_INDEX,
     };
 
     RC::Handle<ResourceLoadNode> ResourceLoadNode::Create( std::string const &name, RC::Handle<Context> const &context )
@@ -48,6 +49,7 @@ namespace Fabric
       FABRIC_ASSERT( fabricResourceStructDesc->getMemberInfo( FABRIC_RESOURCE_DATASIZE_MEMBER_INDEX ).name == "dataSize" );
       FABRIC_ASSERT( fabricResourceStructDesc->getMemberInfo( FABRIC_RESOURCE_MIMETYPE_MEMBER_INDEX ).name == "mimeType" );
       FABRIC_ASSERT( fabricResourceStructDesc->getMemberInfo( FABRIC_RESOURCE_EXTENSION_MEMBER_INDEX ).name == "extension" );
+      FABRIC_ASSERT( fabricResourceStructDesc->getMemberInfo( FABRIC_RESOURCE_URL_MEMBER_INDEX ).name == "url" );
 #endif
 
       addMember( "url", stringDesc, stringDesc->getDefaultData() );
@@ -165,6 +167,7 @@ namespace Fabric
         sizeDesc->setValue( 0, fabricResourceStructDesc->getMemberData( resourceData, FABRIC_RESOURCE_DATASIZE_MEMBER_INDEX ) );
         stringDesc->setValue( NULL, 0, fabricResourceStructDesc->getMemberData( resourceData, FABRIC_RESOURCE_MIMETYPE_MEMBER_INDEX ) );
         stringDesc->setValue( NULL, 0, fabricResourceStructDesc->getMemberData( resourceData, FABRIC_RESOURCE_EXTENSION_MEMBER_INDEX ) );
+        stringDesc->setValue( NULL, 0, fabricResourceStructDesc->getMemberData( resourceData, FABRIC_RESOURCE_URL_MEMBER_INDEX ) );
       }
       else
       {
@@ -186,6 +189,7 @@ namespace Fabric
         const void* prevDataSize = fabricResourceStructDesc->getMemberData( prevResourceData, FABRIC_RESOURCE_DATASIZE_MEMBER_INDEX );
         const void* prevMimeTypeData = fabricResourceStructDesc->getMemberData( prevResourceData, FABRIC_RESOURCE_MIMETYPE_MEMBER_INDEX );
         const void* prevExtensionData = fabricResourceStructDesc->getMemberData( prevResourceData, FABRIC_RESOURCE_EXTENSION_MEMBER_INDEX );
+        const void* prevUrlData = fabricResourceStructDesc->getMemberData( prevResourceData, FABRIC_RESOURCE_URL_MEMBER_INDEX );
 
         if( *(const void **)prevData != data )
           changed = true;
@@ -195,6 +199,8 @@ namespace Fabric
           changed = true;
         else if ( stringDesc->getValueLength( prevExtensionData ) != extension.length() || memcmp( extension.data(), stringDesc->getValueData( prevExtensionData ), extension.length() ) != 0 )
           changed = true;
+        else if ( stringDesc->getValueLength( prevUrlData ) != m_streamURL.length() || memcmp( m_streamURL.data(), stringDesc->getValueData( prevUrlData ), m_streamURL.length() ) != 0 )
+          changed = true;
 
         if( changed )
         {
@@ -203,6 +209,7 @@ namespace Fabric
           sizeDesc->setValue( dataSize, fabricResourceStructDesc->getMemberData( resourceData, FABRIC_RESOURCE_DATASIZE_MEMBER_INDEX ) );
           stringDesc->setValue( mimeType->data(), mimeType->length(), fabricResourceStructDesc->getMemberData( resourceData, FABRIC_RESOURCE_MIMETYPE_MEMBER_INDEX ) );
           stringDesc->setValue( extension.data(), extension.length(), fabricResourceStructDesc->getMemberData( resourceData, FABRIC_RESOURCE_EXTENSION_MEMBER_INDEX ) );
+          stringDesc->setValue( m_streamURL.data(), m_streamURL.length(), fabricResourceStructDesc->getMemberData( resourceData, FABRIC_RESOURCE_URL_MEMBER_INDEX ) );
 
           if( notify )
           {

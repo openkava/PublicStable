@@ -453,6 +453,7 @@ void main()\n\
         glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, m_watermarkIndexesBufferID );
         glDrawElements( GL_QUADS, 4, GL_UNSIGNED_INT, NULL );
         glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 );
+        glBindTexture( GL_TEXTURE_2D, 0 );
 
         glPopAttrib();
       }
