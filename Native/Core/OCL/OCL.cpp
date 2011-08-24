@@ -9,6 +9,7 @@
 #include "Debug.h"
 
 #include <Fabric/Core/CG/BooleanAdapter.h>
+#include <Fabric/Core/CG/Context.h>
 #include <Fabric/Core/CG/IntegerAdapter.h>
 #include <Fabric/Core/CG/SizeAdapter.h>
 #include <Fabric/Core/CG/Manager.h>
@@ -415,11 +416,11 @@ namespace Fabric
     }
 
 #define ADD_CONST_BOOL( name, value ) \
-  moduleBuilder.getScope().put( name, CG::ConstantSymbol::Create( CG::ExprValue( booleanAdapter, CG::USAGE_RVALUE, booleanAdapter->llvmConst( value ) ) ) )
+  moduleBuilder.getScope().put( name, CG::ConstantSymbol::Create( CG::ExprValue( booleanAdapter, CG::USAGE_RVALUE, moduleBuilder.getContext(), booleanAdapter->llvmConst( moduleBuilder.getContext(), value ) ) ) )
 #define ADD_CONST_INT( name ) \
-  moduleBuilder.getScope().put( #name, CG::ConstantSymbol::Create( CG::ExprValue( integerAdapter, CG::USAGE_RVALUE, integerAdapter->llvmConst( name ) ) ) )
+  moduleBuilder.getScope().put( #name, CG::ConstantSymbol::Create( CG::ExprValue( integerAdapter, CG::USAGE_RVALUE, moduleBuilder.getContext(), integerAdapter->llvmConst( moduleBuilder.getContext(), name ) ) ) )
 #define ADD_CONST_SIZE( name ) \
-  moduleBuilder.getScope().put( #name, CG::ConstantSymbol::Create( CG::ExprValue( sizeAdapter, CG::USAGE_RVALUE, sizeAdapter->llvmConst( name ) ) ) )
+  moduleBuilder.getScope().put( #name, CG::ConstantSymbol::Create( CG::ExprValue( sizeAdapter, CG::USAGE_RVALUE, moduleBuilder.getContext(), sizeAdapter->llvmConst( moduleBuilder.getContext(), name ) ) ) )
 #define ADD_FUNC_QUOTE( x ) #x
 #define ADD_FUNC( name, paramLayout ) \
   do { \

@@ -81,7 +81,7 @@ namespace Fabric
         
         llvm::Value *selfLValue = adapter->llvmAlloca( basicBlockBuilder, "temp"+adapter->getUserName() );
         adapter->llvmInit( basicBlockBuilder, selfLValue );
-        CG::ExprValue result( adapter, CG::USAGE_LVALUE, selfLValue );
+        CG::ExprValue result( adapter, CG::USAGE_LVALUE, basicBlockBuilder.getContext(), selfLValue );
         
         std::vector< RC::ConstHandle<CG::Adapter> > argTypes;
         m_args->appendTypes( basicBlockBuilder, argTypes );
@@ -140,7 +140,7 @@ namespace Fabric
         if ( usage == CG::USAGE_LVALUE && functionSymbol->getReturnInfo().getUsage() != CG::USAGE_LVALUE )
           throw Exception( "result of function "+_(m_name)+" is not an l-value" );
         
-        CG::ExprValue result;
+        CG::ExprValue result( basicBlockBuilder.getContext() );
         try
         {
           std::vector<CG::FunctionParam> const functionParams = functionSymbol->getParams();

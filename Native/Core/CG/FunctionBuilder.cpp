@@ -105,6 +105,7 @@ namespace Fabric
       bool returnsStaticDataPtr
       )
     {
+      RC::Handle<Context> context = getContext();
       
       ReturnInfo returnInfo( returnExprType, returnsStaticDataPtr );
 
@@ -114,25 +115,25 @@ namespace Fabric
         switch ( returnExprType.getUsage() )
         {
           case USAGE_RVALUE:
-            llvmReturnType = returnExprType.getAdapter()->llvmRType();
+            llvmReturnType = returnExprType.getAdapter()->llvmRType( context );
             break;
           case USAGE_LVALUE:
-            llvmReturnType = returnExprType.getAdapter()->llvmLType();
+            llvmReturnType = returnExprType.getAdapter()->llvmLType( context );
             break;            
           case USAGE_UNSPECIFIED:
             FABRIC_ASSERT( false );
             throw Exception( "unspecified usage" );
         }
       }
-      else llvmReturnType = llvm::Type::getVoidTy( m_moduleBuilder.getLLVMContext() );
+      else llvmReturnType = llvm::Type::getVoidTy( context->getLLVMContext() );
 
       std::vector< llvm::Type const * > llvmParamTypes;
     
       if( returnInfo.usesReturnLValue() )
-        llvmParamTypes.push_back( returnExprType.getAdapter()->llvmLType() );
+        llvmParamTypes.push_back( returnExprType.getAdapter()->llvmLType( context ) );
 
       for ( size_t i=0; i<params.size(); ++i )
-        llvmParamTypes.push_back( params[i].getLLVMType() );
+        llvmParamTypes.push_back( params[i].getLLVMType( context ) );
         
       m_llvmFunctionType = llvm::FunctionType::get( llvmReturnType, llvmParamTypes, false );
 
@@ -144,8 +145,9 @@ namespace Fabric
       AWI[0] = llvm::AttributeWithIndex::get( ~0u, llvm::Attribute::InlineHint );
       llvm::AttrListPtr attrListPtr = llvm::AttrListPtr::get(AWI, 1);
       
-      m_llvmFunction = llvm::cast<llvm::Function>( m_moduleBuilder->getOrInsertFunction( entryName.c_str(), m_llvmFunctionType, attrListPtr ) );
-      m_llvmFunction->setLinkage(  llvm::GlobalValue::ExternalLinkage );
+      llvm::Constant *llvmFunctionAsConstant = m_moduleBuilder->getOrInsertFunction( entryName.c_str(), m_llvmFunctionType, attrListPtr );
+      m_llvmFunction = llvm::cast<llvm::Function>( llvmFunctionAsConstant );
+      m_llvmFunction->setLinkage( llvm::GlobalValue::ExternalLinkage );
       
       llvm::Function::arg_iterator ai = m_llvmFunction->arg_begin();
       if( returnInfo.usesReturnLValue() )
@@ -163,7 +165,7 @@ namespace Fabric
         ai->setName( param.getName() );
         if ( param.getUsage() == USAGE_LVALUE )
           ai->addAttr( llvm::Attribute::NoCapture );
-        m_functionScope->put( param.getName(), ParameterSymbol::Create( CG::ExprValue( param.getExprType(), ai ) ) );
+        m_functionScope->put( param.getName(), ParameterSymbol::Create( CG::ExprValue( param.getExprType(), context, ai ) ) );
       }
       
       RC::ConstHandle<FunctionSymbol> functionSymbol = CG::FunctionSymbol::Create( m_llvmFunction, returnInfo, params );
@@ -180,9 +182,9 @@ namespace Fabric
       return m_moduleBuilder.getManager();
     }
     
-    llvm::LLVMContext &FunctionBuilder::getLLVMContext()
+    RC::Handle<Context> FunctionBuilder::getContext()
     {
-      return m_moduleBuilder.getLLVMContext();
+      return m_moduleBuilder.getContext();
     }
     
     llvm::Function *FunctionBuilder::operator ->()
@@ -217,7 +219,7 @@ namespace Fabric
 
     llvm::BasicBlock *FunctionBuilder::createBasicBlock( std::string const &name )
     {
-      return llvm::BasicBlock::Create( getLLVMContext(), name, m_llvmFunction );
+      return llvm::BasicBlock::Create( getContext()->getLLVMContext(), name, m_llvmFunction );
     }
       
     FunctionScope &FunctionBuilder::getScope()

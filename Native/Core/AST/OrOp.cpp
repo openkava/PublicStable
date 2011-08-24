@@ -7,9 +7,10 @@
 
 #include "OrOp.h"
 #include <Fabric/Core/CG/BooleanAdapter.h>
-#include <Fabric/Core/CG/Scope.h>
+#include <Fabric/Core/CG/Context.h>
 #include <Fabric/Core/CG/FunctionBuilder.h>
 #include <Fabric/Core/CG/Manager.h>
+#include <Fabric/Core/CG/Scope.h>
 #include <Fabric/Core/CG/Error.h>
 #include <Fabric/Core/RT/Desc.h>
 #include <Fabric/Base/Util/SimpleString.h>
@@ -65,7 +66,7 @@ namespace Fabric
       llvm::BasicBlock *lhsFalseBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "orLHSFalse" );
       llvm::BasicBlock *mergeBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "orMerge" );
 
-      CG::ExprValue result;
+      CG::ExprValue result( basicBlockBuilder.getContext() );
       CG::ExprValue lhsExprValue = m_left->buildExprValue( basicBlockBuilder, usage, lValueErrorDesc );
       llvm::Value *lhsBooleanRValue = booleanAdapter->llvmCast( basicBlockBuilder, lhsExprValue );
       basicBlockBuilder->CreateCondBr( lhsBooleanRValue, lhsTrueBB, lhsFalseBB );
@@ -84,10 +85,10 @@ namespace Fabric
       basicBlockBuilder->CreateBr( mergeBB );
 
       basicBlockBuilder->SetInsertPoint( mergeBB );
-      llvm::PHINode *phi = basicBlockBuilder->CreatePHI( castAdapter->llvmRType() );
+      llvm::PHINode *phi = basicBlockBuilder->CreatePHI( castAdapter->llvmRType( basicBlockBuilder.getContext() ) );
       phi->addIncoming( lhsCastedRValue, lhsTruePredBB );
       phi->addIncoming( rhsCastedRValue, lhsFalsePredBB );
-      return CG::ExprValue( castAdapter, usage, phi );
+      return CG::ExprValue( castAdapter, usage, basicBlockBuilder.getContext(), phi );
     }
   };
 };

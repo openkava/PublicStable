@@ -55,7 +55,7 @@ namespace Fabric
     
     CG::ExprValue IndexOp::buildExprValue( CG::BasicBlockBuilder &basicBlockBuilder, CG::Usage usage, std::string const &lValueErrorDesc ) const
     {
-      CG::ExprValue result;
+      CG::ExprValue result( basicBlockBuilder.getContext() );
       try
       {
         CG::ExprValue arrayExprValue = m_expr->buildExprValue( basicBlockBuilder, usage, lValueErrorDesc );
@@ -73,10 +73,10 @@ namespace Fabric
           switch ( usage )
           {
             case CG::USAGE_LVALUE:
-              result = CG::ExprValue( arrayAdapter->getMemberAdapter(), CG::USAGE_LVALUE, arrayAdapter->llvmNonConstIndexOp( basicBlockBuilder, arrayExprValue.getValue(), indexExprRValue ) );
+              result = CG::ExprValue( arrayAdapter->getMemberAdapter(), CG::USAGE_LVALUE, basicBlockBuilder.getContext(), arrayAdapter->llvmNonConstIndexOp( basicBlockBuilder, arrayExprValue.getValue(), indexExprRValue ) );
               break;
             default:
-              result = CG::ExprValue( arrayAdapter->getMemberAdapter(), CG::USAGE_RVALUE, arrayAdapter->llvmConstIndexOp( basicBlockBuilder, arrayExprValue.getValue(), indexExprRValue ) );
+              result = CG::ExprValue( arrayAdapter->getMemberAdapter(), CG::USAGE_RVALUE, basicBlockBuilder.getContext(), arrayAdapter->llvmConstIndexOp( basicBlockBuilder, arrayExprValue.getValue(), indexExprRValue ) );
               break;
           }
           arrayExprValue.llvmDispose( basicBlockBuilder );

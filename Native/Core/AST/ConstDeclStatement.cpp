@@ -47,7 +47,7 @@ namespace Fabric
     {
       try
       {
-        m_constDecl->llvmCompileToScope( basicBlockBuilder.getScope(), basicBlockBuilder.getManager() );
+        m_constDecl->llvmCompileToScope( basicBlockBuilder.getScope(), basicBlockBuilder.getModuleBuilder() );
       }
       catch ( CG::Error e )
       {

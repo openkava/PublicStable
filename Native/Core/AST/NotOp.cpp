@@ -52,7 +52,7 @@ namespace Fabric
         RC::ConstHandle< CG::Adapter > booleanAdapter = basicBlockBuilder.getManager()->getBooleanAdapter();
         llvm::Value *booleanRValue = booleanAdapter->llvmCast( basicBlockBuilder, childExprValue );
         llvm::Value *notBooleanRValue = basicBlockBuilder->CreateNot( booleanRValue );
-        return CG::ExprValue( booleanAdapter, CG::USAGE_RVALUE, notBooleanRValue );
+        return CG::ExprValue( booleanAdapter, CG::USAGE_RVALUE, basicBlockBuilder.getContext(), notBooleanRValue );
       }
       catch ( CG::Error e )
       {

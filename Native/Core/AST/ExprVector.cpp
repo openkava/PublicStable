@@ -4,6 +4,7 @@
  
 #include "ExprVector.h"
 #include <Fabric/Core/AST/Expr.h>
+#include <Fabric/Core/CG/BasicBlockBuilder.h>
 #include <Fabric/Core/CG/Error.h>
 #include <Fabric/Core/CG/Adapter.h>
 #include <Fabric/Core/Util/Assert.h>
@@ -52,7 +53,7 @@ namespace Fabric
       for ( size_t i=0; i<size(); ++i )
       {
         RC::ConstHandle<Expr> const &arg = get(i);
-        CG::ExprValue exprValue;
+        CG::ExprValue exprValue( basicBlockBuilder.getContext() );
         try
         {
           exprValue = arg->buildExprValue( basicBlockBuilder, usages[i], "cannot be used as an io argument" );

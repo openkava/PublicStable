@@ -39,6 +39,10 @@ namespace Fabric
     
       VariableArrayAdapter( RC::ConstHandle<Manager> const &manager, RC::ConstHandle<RT::VariableArrayDesc> const &variableArrayDesc );
       
+      virtual llvm::Type const *buildLLVMRawType( RC::Handle<Context> const &context ) const;
+
+      llvm::Type const *getLLVMImplType( RC::Handle<Context> const &context ) const;
+      
     private:
     
       static void Append( VariableArrayAdapter const *inst, void *dstLValue, void const *srcRValue );
@@ -52,7 +56,6 @@ namespace Fabric
  
       RC::ConstHandle<RT::VariableArrayDesc> m_variableArrayDesc;
       RC::ConstHandle<Adapter> m_memberAdapter;
-      llvm::Type const *m_implType;
    };
   };
 };

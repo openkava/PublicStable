@@ -8,6 +8,7 @@
 #include <Fabric/Core/AST/CStyleLoop.h>
 #include <Fabric/Core/AST/Expr.h>
 #include <Fabric/Core/CG/BooleanAdapter.h>
+#include <Fabric/Core/CG/Context.h>
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/CG/Scope.h>
 #include <Fabric/Core/CG/Error.h>
@@ -104,7 +105,7 @@ namespace Fabric
           CG::ExprValue preCondExprRValue = m_preCondExpr->buildExprValue( loopBasicBlockBuilder, CG::USAGE_RVALUE, "cannot be an l-value" );
           preCondExprBoolRValue = booleanAdapter->llvmCast( loopBasicBlockBuilder, preCondExprRValue );
         }
-        else preCondExprBoolRValue = booleanAdapter->llvmConst( true );
+        else preCondExprBoolRValue = booleanAdapter->llvmConst( loopBasicBlockBuilder.getContext(), true );
         loopBasicBlockBuilder->CreateCondBr( preCondExprBoolRValue, bodyBB, endBB );
         
         loopBasicBlockBuilder->SetInsertPoint( bodyBB );
@@ -124,7 +125,7 @@ namespace Fabric
           CG::ExprValue postCondExprRValue = m_postCondExpr->buildExprValue( loopBasicBlockBuilder, CG::USAGE_RVALUE, "cannot be an l-value" );
           postCondExprBoolRValue = booleanAdapter->llvmCast( loopBasicBlockBuilder, postCondExprRValue );
         }
-        else postCondExprBoolRValue = booleanAdapter->llvmConst( true );
+        else postCondExprBoolRValue = booleanAdapter->llvmConst( loopBasicBlockBuilder.getContext(), true );
         loopBasicBlockBuilder->CreateCondBr( postCondExprBoolRValue, checkPreCondBB, endBB );
         
         loopBasicBlockBuilder->SetInsertPoint( endBB );

@@ -69,8 +69,6 @@ namespace Fabric
       RC::ConstHandle<StructAdapter> registerStruct( std::string const &name, RT::StructMemberInfoVector const &structMemberInfoVector );
       RC::ConstHandle<Adapter> registerAlias( std::string const &name, RC::ConstHandle<Adapter> const &adapter );
       
-      llvm::LLVMContext &getLLVMContext() const;
-      
       void llvmPrepareModule( ModuleBuilder &moduleBuilder ) const;
       
       void *llvmResolveExternalFunction( std::string const &functionName ) const;
@@ -86,8 +84,6 @@ namespace Fabric
     
       typedef std::map< size_t, RC::ConstHandle<ConstStringAdapter> > ConstStringAdapters;
       
-      mutable llvm::LLVMContext m_llvmContext;
-    
       RC::Handle<RT::Manager> m_rtManager;
       
       mutable DescToAdapterMap m_descToAdapterMap;

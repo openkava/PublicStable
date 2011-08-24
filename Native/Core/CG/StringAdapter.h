@@ -47,14 +47,17 @@ namespace Fabric
     protected:
       
       StringAdapter( RC::ConstHandle<Manager> const &manager, RC::ConstHandle<RT::StringDesc> const &stringDesc );
+      
+      virtual llvm::Type const *buildLLVMRawType( RC::Handle<Context> const &context ) const;
 
+      llvm::Type const *getLLVMImplType( RC::Handle<Context> const &context ) const;
+      
     private:
       
       static void Append( void *dstLValue, void const *srcRValue );
       static void *Cast( void const *lValue, Adapter const *adapter );
       
       RC::ConstHandle<RT::StringDesc> m_stringDesc;
-      llvm::Type const *m_implType;
     };
   };
 };

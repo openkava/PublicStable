@@ -8,6 +8,7 @@
 #include <Fabric/Core/MT/LogCollector.h>
 #include <Fabric/Core/Util/UnorderedMap.h>
 #include <Fabric/Core/Plug/Manager.h>
+#include <Fabric/Core/CG/Context.h>
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/OCL/OCL.h>
 
@@ -69,13 +70,14 @@ namespace Fabric
       }
     }
 
-    RC::ConstHandle<ExecutionEngine> ExecutionEngine::Create( RC::ConstHandle<Context> const &context, llvm::Module *llvmModule )
+    RC::ConstHandle<ExecutionEngine> ExecutionEngine::Create( RC::ConstHandle<Context> const &context, RC::Handle<CG::Context> const &cgContext, llvm::Module *llvmModule )
     {
-      return new ExecutionEngine( context, llvmModule );
+      return new ExecutionEngine( context, cgContext, llvmModule );
     }
     
-    ExecutionEngine::ExecutionEngine( RC::ConstHandle<Context> const &context, llvm::Module *llvmModule )
+    ExecutionEngine::ExecutionEngine( RC::ConstHandle<Context> const &context, RC::Handle<CG::Context> const &cgContext, llvm::Module *llvmModule )
       : m_context( context.ptr() )
+      , m_cgContext( cgContext )
     {
       std::string errStr;
       m_llvmExecutionEngine.reset(

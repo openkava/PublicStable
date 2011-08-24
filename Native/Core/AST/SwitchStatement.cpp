@@ -125,7 +125,7 @@ namespace Fabric
             functionSymbol = basicBlockBuilder.maybeGetFunction( eqFunctionName );
             if ( !functionSymbol )
               throw Exception( "binary operator " + _(CG::binOpUserName(CG::BIN_OP_EQ)) + " not supported for types " + _(exprValue.getTypeUserName()) + " and " + _(caseExprValue.getTypeUserName()) );
-            CG::ExprValue newCaseExprValue( exprValue.getAdapter(), CG::USAGE_RVALUE, exprValue.getAdapter()->llvmCast( basicBlockBuilder, caseExprValue ) );
+            CG::ExprValue newCaseExprValue( exprValue.getAdapter(), CG::USAGE_RVALUE, basicBlockBuilder.getContext(), exprValue.getAdapter()->llvmCast( basicBlockBuilder, caseExprValue ) );
             caseExprValue.llvmDispose( basicBlockBuilder );
             caseExprValue = newCaseExprValue;
           }

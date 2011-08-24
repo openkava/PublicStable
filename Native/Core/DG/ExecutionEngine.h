@@ -19,6 +19,11 @@ namespace llvm
 
 namespace Fabric
 {
+  namespace CG
+  {
+    class Context;
+  };
+  
   namespace DG
   {
     class Context;
@@ -29,7 +34,7 @@ namespace Fabric
     
       typedef void (*GenericFunctionPtr)( ... );
     
-      static RC::ConstHandle<ExecutionEngine> Create( RC::ConstHandle<Context> const &context, llvm::Module *llvmModule );
+      static RC::ConstHandle<ExecutionEngine> Create( RC::ConstHandle<Context> const &context, RC::Handle<CG::Context> const &cgContext, llvm::Module *llvmModule );
       
       GenericFunctionPtr getFunctionByName( std::string const &functionName ) const;
       
@@ -47,7 +52,7 @@ namespace Fabric
 
     protected:
     
-      ExecutionEngine( RC::ConstHandle<Context> const &context, llvm::Module *llvmModule );
+      ExecutionEngine( RC::ConstHandle<Context> const &context, RC::Handle<CG::Context> const &cgContext, llvm::Module *llvmModule );
       
     private:
     
@@ -55,6 +60,7 @@ namespace Fabric
       static void Report( char const *data, size_t length );
     
       Context const *m_context;
+      RC::Handle<CG::Context> m_cgContext;
       llvm::OwningPtr<llvm::ExecutionEngine> m_llvmExecutionEngine;
       
       static RC::ConstHandle<Context> s_currentContext;
