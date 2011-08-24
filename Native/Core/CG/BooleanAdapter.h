@@ -31,11 +31,13 @@ namespace Fabric
       
       virtual std::string toString( void const *data ) const;
     
-      llvm::Constant *llvmConst( bool value ) const;
+      llvm::Constant *llvmConst( RC::Handle<Context> const &context, bool value ) const;
 
     protected:
 
       BooleanAdapter( RC::ConstHandle<Manager> const &manager, RC::ConstHandle<RT::BooleanDesc> const &booleanDesc );
+      
+      virtual llvm::Type const *buildLLVMRawType( RC::Handle<Context> const &context ) const;
      
       virtual void llvmPrepareModule( ModuleBuilder &moduleBuilder, bool buildFunctions ) const;
       

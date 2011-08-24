@@ -17,6 +17,7 @@ namespace Fabric
 {
   namespace CG
   {
+    class Context;
     class Location;
     class Manager;
     
@@ -24,14 +25,14 @@ namespace Fabric
     {
     public:
     
-      ModuleBuilder( RC::Handle<Manager> const &manager, llvm::Module *module );
+      ModuleBuilder( RC::Handle<Manager> const &manager, RC::Handle<Context> const &context, llvm::Module *module );
       
       operator llvm::Module *();
       llvm::Module *operator ->();
       
       RC::Handle<Manager> getManager();
       
-      llvm::LLVMContext &getLLVMContext();
+      RC::Handle<Context> getContext();
       
       ModuleScope &getScope();
       
@@ -47,7 +48,8 @@ namespace Fabric
     
       typedef std::map< std::string, RC::ConstHandle<FunctionSymbol> > Functions;
     
-      RC::Handle<Manager> m_manager;      
+      RC::Handle<Manager> m_manager;     
+      RC::Handle<Context> m_context; 
       llvm::Module *m_module;
       ModuleScope m_moduleScope;
       std::set< std::pair<std::string, bool> > m_contained;

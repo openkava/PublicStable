@@ -27,26 +27,33 @@ namespace Fabric
       : SimpleAdapter( manager, floatDesc )
       , m_floatDesc( floatDesc )
     {
+    }
+    
+    llvm::Type const *FloatAdapter::buildLLVMRawType( RC::Handle<Context> const &context ) const
+    {
+      llvm::Type const *result = 0;
       switch ( m_floatDesc->getSize() )
       {
         case 4:
-          setLLVMType( llvm::Type::getFloatTy( manager->getLLVMContext() ) );
-          m_integerTypeOfSameWidth = llvm::Type::getInt32Ty( manager->getLLVMContext() );
+          result = llvm::Type::getFloatTy( context->getLLVMContext() );
           break;
         case 8:
-          setLLVMType( llvm::Type::getDoubleTy( manager->getLLVMContext() ) );
-          m_integerTypeOfSameWidth = llvm::Type::getInt64Ty( manager->getLLVMContext() );
+          result = llvm::Type::getDoubleTy( context->getLLVMContext() );
           break;
         default:
           FABRIC_ASSERT( false );
+          result = 0;
           break;
       }
+      return result;
     }
 
     void FloatAdapter::llvmPrepareModule( ModuleBuilder &moduleBuilder, bool buildFunctions ) const
     {
       if ( moduleBuilder.contains( getCodeName(), buildFunctions ) )
         return;
+      
+      RC::Handle<Context> context = moduleBuilder.getContext();
       
       RC::ConstHandle<BooleanAdapter> booleanAdapter = getManager()->getBooleanAdapter();
       RC::ConstHandle<ByteAdapter> byteAdapter = getManager()->getByteAdapter();
@@ -67,7 +74,7 @@ namespace Fabric
           llvm::Value *scalarRValue = functionBuilder[1];
           BasicBlockBuilder basicBlockBuilder( functionBuilder );
           basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
-          llvm::Value *booleanRValue = basicBlockBuilder->CreateFCmpONE( scalarRValue, llvmConst( 0.0 ) );
+          llvm::Value *booleanRValue = basicBlockBuilder->CreateFCmpONE( scalarRValue, llvmConst( context, 0.0 ) );
           booleanAdapter->llvmAssign( basicBlockBuilder, booleanLValue, booleanRValue );
           basicBlockBuilder->CreateRetVoid();
         }
@@ -85,7 +92,7 @@ namespace Fabric
           llvm::Value *scalarRValue = functionBuilder[1];
           BasicBlockBuilder basicBlockBuilder( functionBuilder );
           basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
-          llvm::Value *byteRValue = basicBlockBuilder->CreateFPToUI( scalarRValue, byteAdapter->llvmRType() );
+          llvm::Value *byteRValue = basicBlockBuilder->CreateFPToUI( scalarRValue, byteAdapter->llvmRType( context ) );
           byteAdapter->llvmAssign( basicBlockBuilder, byteLValue, byteRValue );
           basicBlockBuilder->CreateRetVoid();
         }
@@ -103,7 +110,7 @@ namespace Fabric
           llvm::Value *scalarRValue = functionBuilder[1];
           BasicBlockBuilder basicBlockBuilder( functionBuilder );
           basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
-          llvm::Value *integerRValue = basicBlockBuilder->CreateFPToSI( scalarRValue, integerAdapter->llvmRType() );
+          llvm::Value *integerRValue = basicBlockBuilder->CreateFPToSI( scalarRValue, integerAdapter->llvmRType( context ) );
           integerAdapter->llvmAssign( basicBlockBuilder, integerLValue, integerRValue );
           basicBlockBuilder->CreateRetVoid();
         }
@@ -121,7 +128,7 @@ namespace Fabric
           llvm::Value *scalarRValue = functionBuilder[1];
           BasicBlockBuilder basicBlockBuilder( functionBuilder );
           basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
-          llvm::Value *sizeRValue = basicBlockBuilder->CreateFPToUI( scalarRValue, sizeAdapter->llvmRType() );
+          llvm::Value *sizeRValue = basicBlockBuilder->CreateFPToUI( scalarRValue, sizeAdapter->llvmRType( context ) );
           sizeAdapter->llvmAssign( basicBlockBuilder, sizeLValue, sizeRValue );
           basicBlockBuilder->CreateRetVoid();
         }
@@ -142,7 +149,7 @@ namespace Fabric
           llvm::Value *scalarRValue = functionBuilder[1];
           BasicBlockBuilder basicBlockBuilder( functionBuilder );
           basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
-          llvm::Value *fp32RValue = basicBlockBuilder->CreateFPTrunc( scalarRValue, fp32Adapter->llvmRType() );
+          llvm::Value *fp32RValue = basicBlockBuilder->CreateFPTrunc( scalarRValue, fp32Adapter->llvmRType( context ) );
           sizeAdapter->llvmAssign( basicBlockBuilder, fp32LValue, fp32RValue );
           basicBlockBuilder->CreateRetVoid();
         }
@@ -163,7 +170,7 @@ namespace Fabric
           llvm::Value *scalarRValue = functionBuilder[1];
           BasicBlockBuilder basicBlockBuilder( functionBuilder );
           basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
-          llvm::Value *fp64RValue = basicBlockBuilder->CreateFPExt( scalarRValue, fp64Adapter->llvmRType() );
+          llvm::Value *fp64RValue = basicBlockBuilder->CreateFPExt( scalarRValue, fp64Adapter->llvmRType( context ) );
           sizeAdapter->llvmAssign( basicBlockBuilder, fp64LValue, fp64RValue );
           basicBlockBuilder->CreateRetVoid();
         }
@@ -230,7 +237,7 @@ namespace Fabric
           static const size_t numIntrinsicTypes = 1;
           llvm::Type const *intrinsicTypes[numIntrinsicTypes] =
           {
-            llvmRType()
+            llvmRType( context )
           };
           llvm::Function *intrinsic = llvm::Intrinsic::getDeclaration( moduleBuilder, llvm::Intrinsic::sin, intrinsicTypes, numIntrinsicTypes );
           FABRIC_ASSERT( intrinsic );
@@ -251,7 +258,7 @@ namespace Fabric
           static const size_t numIntrinsicTypes = 1;
           llvm::Type const *intrinsicTypes[numIntrinsicTypes] =
           {
-            llvmRType()
+            llvmRType( context )
           };
           llvm::Function *intrinsic = llvm::Intrinsic::getDeclaration( moduleBuilder, llvm::Intrinsic::cos, intrinsicTypes, numIntrinsicTypes );
           FABRIC_ASSERT( intrinsic );
@@ -383,7 +390,7 @@ namespace Fabric
           static const size_t numIntrinsicTypes = 1;
           llvm::Type const *intrinsicTypes[numIntrinsicTypes] =
           {
-            llvmRType()
+            llvmRType( context )
           };
           llvm::Function *intrinsic = llvm::Intrinsic::getDeclaration( moduleBuilder, llvm::Intrinsic::sqrt, intrinsicTypes, numIntrinsicTypes );
           FABRIC_ASSERT( intrinsic );
@@ -398,15 +405,30 @@ namespace Fabric
         FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( this, USAGE_RVALUE ), params, &name );
         if ( buildFunctions )
         {
+          llvm::Type const *integerTypeOfSameWidth = 0;
+          switch ( m_floatDesc->getSize() )
+          {
+            case 4:
+              integerTypeOfSameWidth = llvm::Type::getInt32Ty( context->getLLVMContext() );
+              break;
+            case 8:
+              integerTypeOfSameWidth = llvm::Type::getInt64Ty( context->getLLVMContext() );
+              break;
+            default:
+              FABRIC_ASSERT( false );
+              integerTypeOfSameWidth = 0;
+              break;
+          }
+          
           llvm::Value *x = functionBuilder[0];
           BasicBlockBuilder basicBlockBuilder( functionBuilder );
           basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
-          llvm::Value *xAsInt = basicBlockBuilder->CreateBitCast( x, m_integerTypeOfSameWidth );
-          llvm::Value *zero = llvm::ConstantInt::get( m_integerTypeOfSameWidth, 0 );
+          llvm::Value *xAsInt = basicBlockBuilder->CreateBitCast( x, integerTypeOfSameWidth );
+          llvm::Value *zero = llvm::ConstantInt::get( integerTypeOfSameWidth, 0 );
           llvm::Value *notZero = basicBlockBuilder->CreateNot( zero );
-          llvm::Value *mask = basicBlockBuilder->CreateLShr( notZero, llvm::ConstantInt::get( m_integerTypeOfSameWidth, 1 ) );
+          llvm::Value *mask = basicBlockBuilder->CreateLShr( notZero, llvm::ConstantInt::get( integerTypeOfSameWidth, 1 ) );
           llvm::Value *maskedXAsInt = basicBlockBuilder->CreateAnd( xAsInt, mask );
-          llvm::Value *maskedX = basicBlockBuilder->CreateBitCast( maskedXAsInt, llvmRType() );
+          llvm::Value *maskedX = basicBlockBuilder->CreateBitCast( maskedXAsInt, llvmRType( context ) );
           basicBlockBuilder->CreateRet( maskedX );
         }
       }
@@ -480,7 +502,7 @@ namespace Fabric
           static const size_t numIntrinsicTypes = 1;
           llvm::Type const *intrinsicTypes[numIntrinsicTypes] =
           {
-            llvmRType()
+            llvmRType( context )
           };
           llvm::Function *intrinsic = llvm::Intrinsic::getDeclaration( moduleBuilder, llvm::Intrinsic::pow, intrinsicTypes, numIntrinsicTypes );
           FABRIC_ASSERT( intrinsic );
@@ -684,7 +706,7 @@ namespace Fabric
         {
           BasicBlockBuilder basicBlockBuilder( functionBuilder );
           basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
-          llvm::Value *dataSizeRValue = llvm::ConstantInt::get( sizeAdapter->llvmRType(), getDesc()->getSize() );
+          llvm::Value *dataSizeRValue = llvm::ConstantInt::get( sizeAdapter->llvmRType( context ), getDesc()->getSize() );
           basicBlockBuilder->CreateRet( dataSizeRValue );
         }
       }
@@ -699,24 +721,24 @@ namespace Fabric
           llvm::Value *selfLValue = functionBuilder[0];
           BasicBlockBuilder basicBlockBuilder( functionBuilder );
           basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
-          basicBlockBuilder->CreateRet( basicBlockBuilder->CreatePointerCast( selfLValue, dataAdapter->llvmRType() ) );
+          basicBlockBuilder->CreateRet( basicBlockBuilder->CreatePointerCast( selfLValue, dataAdapter->llvmRType( context ) ) );
         }
       }
     }
     
-    llvm::Constant *FloatAdapter::llvmConst( double value ) const
+    llvm::Constant *FloatAdapter::llvmConst( RC::Handle<Context> const &context, double value ) const
     {
-      return llvm::ConstantFP::get( llvmRawType(), value );
+      return llvm::ConstantFP::get( llvmRawType( context ), value );
     }
     
-    llvm::Constant *FloatAdapter::llvmConst( std::string const &valueString ) const
+    llvm::Constant *FloatAdapter::llvmConst( RC::Handle<Context> const &context, std::string const &valueString ) const
     {
-      return llvm::ConstantFP::get( llvmRawType(), valueString );
+      return llvm::ConstantFP::get( llvmRawType( context ), valueString );
     }
     
     llvm::Constant *FloatAdapter::llvmDefaultValue( BasicBlockBuilder &basicBlockBuilder ) const
     {
-      return llvm::ConstantFP::get( llvmRType(), 0.0 );
+      return llvm::ConstantFP::get( llvmRType( basicBlockBuilder.getContext() ), 0.0 );
     }
     
     std::string FloatAdapter::toString( void const *data ) const

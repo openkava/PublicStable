@@ -47,7 +47,8 @@ namespace Fabric
       llvm::BasicBlock *createBasicBlock( std::string const &name );
       
       RC::Handle<Manager> getManager();
-      llvm::LLVMContext &getLLVMContext();
+
+      RC::Handle<Context> getContext();
       
       llvm::Value *operator[]( size_t index );
       

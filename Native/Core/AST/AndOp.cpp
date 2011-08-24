@@ -4,9 +4,10 @@
  
 #include <Fabric/Core/AST/AndOp.h>
 #include <Fabric/Core/CG/BooleanAdapter.h>
-#include <Fabric/Core/CG/Scope.h>
+#include <Fabric/Core/CG/Context.h>
 #include <Fabric/Core/CG/FunctionBuilder.h>
 #include <Fabric/Core/CG/Manager.h>
+#include <Fabric/Core/CG/Scope.h>
 #include <Fabric/Core/CG/Error.h>
 #include <Fabric/Core/RT/Desc.h>
 #include <Fabric/Base/Util/SimpleString.h>
@@ -96,12 +97,12 @@ namespace Fabric
       basicBlockBuilder->SetInsertPoint( mergeBB );
       if ( castAdapter )
       {
-        llvm::PHINode *phi = basicBlockBuilder->CreatePHI( castAdapter->llvmRType() );
+        llvm::PHINode *phi = basicBlockBuilder->CreatePHI( castAdapter->llvmRType( basicBlockBuilder.getContext() ) );
         phi->addIncoming( rhsCastedRValue, lhsTruePredBB );
         phi->addIncoming( lhsCastedRValue, lhsFalsePredBB );
-        return CG::ExprValue( castAdapter, usage, phi );
+        return CG::ExprValue( castAdapter, usage, basicBlockBuilder.getContext(), phi );
       }
-      else return CG::ExprValue();
+      else return CG::ExprValue( basicBlockBuilder.getContext() );
     }
   };
 };

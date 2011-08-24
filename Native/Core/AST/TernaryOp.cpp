@@ -9,9 +9,10 @@
 
 #include "TernaryOp.h"
 #include <Fabric/Core/CG/BooleanAdapter.h>
-#include <Fabric/Core/CG/Manager.h>
+#include <Fabric/Core/CG/Context.h>
 #include <Fabric/Core/CG/Error.h>
 #include <Fabric/Core/CG/FunctionBuilder.h>
+#include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/RT/Desc.h>
 #include <Fabric/Base/Util/SimpleString.h>
 
@@ -86,7 +87,7 @@ namespace Fabric
             CG::ExprValue exprExprValue = m_left->buildExprValue( basicBlockBuilder, CG::USAGE_RVALUE, lValueErrorDesc );
             condValue = booleanAdapter->llvmCast( basicBlockBuilder, exprExprValue );
             if( !condValue )
-              return CG::ExprValue();
+              return CG::ExprValue( basicBlockBuilder.getContext() );
             basicBlockBuilder->CreateCondBr( condValue, trueBasicBlock, falseBasicBlock );
 
             basicBlockBuilder->SetInsertPoint( trueBasicBlock );
@@ -127,11 +128,11 @@ namespace Fabric
             
             // The merge path
             basicBlockBuilder->SetInsertPoint( mergeBasicBlock );
-            llvm::PHINode *phi = basicBlockBuilder->CreatePHI( castAdapter->llvmRType(), "cond_phi" );
+            llvm::PHINode *phi = basicBlockBuilder->CreatePHI( castAdapter->llvmRType( basicBlockBuilder.getContext() ), "cond_phi" );
             phi->addIncoming( trueRValue, trueBasicBlock );
             phi->addIncoming( falseRValue, falseBasicBlock );
             
-            return CG::ExprValue( castAdapter, usage, phi );
+            return CG::ExprValue( castAdapter, usage, basicBlockBuilder.getContext(), phi );
           }
         }
       }
@@ -143,7 +144,7 @@ namespace Fabric
       {
         throw CG::Error( getLocation(), "ternary operation: " + e );
       }
-      return CG::ExprValue();
+      return CG::ExprValue( basicBlockBuilder.getContext() );
     }
   };
 };

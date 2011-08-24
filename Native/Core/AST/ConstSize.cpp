@@ -7,6 +7,7 @@
 
 #include <Fabric/Core/AST/ConstSize.h>
 #include <Fabric/Core/CG/BasicBlockBuilder.h>
+#include <Fabric/Core/CG/Context.h>
 #include <Fabric/Core/CG/IntegerAdapter.h>
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/CG/ModuleBuilder.h>
@@ -59,7 +60,7 @@ namespace Fabric
       return CG::ExprValue( sizeAdapter, CG::USAGE_RVALUE, llvm::ConstantInt::get( sizeAdapter->llvmRType(), m_value, false ) );
       */
       RC::ConstHandle< CG::IntegerAdapter > integerAdapter = basicBlockBuilder.getManager()->getIntegerAdapter();
-      return CG::ExprValue( integerAdapter, CG::USAGE_RVALUE, integerAdapter->llvmConst( (int32_t)m_value ) );
+      return CG::ExprValue( integerAdapter, CG::USAGE_RVALUE, basicBlockBuilder.getContext(), integerAdapter->llvmConst( basicBlockBuilder.getContext(), (int32_t)m_value ) );
     }
   };
 };

@@ -6,6 +6,7 @@
  */
 
 #include "ConstScalar.h"
+#include <Fabric/Core/CG/Context.h>
 #include <Fabric/Core/CG/FloatAdapter.h>
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/CG/BasicBlockBuilder.h>
@@ -51,7 +52,7 @@ namespace Fabric
       if ( usage == CG::USAGE_LVALUE )
         throw Exception( "constants cannot be used as l-values" );
       RC::ConstHandle<CG::FloatAdapter> floatAdapter = basicBlockBuilder.getManager()->getFP32Adapter();
-      return CG::ExprValue( floatAdapter, CG::USAGE_RVALUE, floatAdapter->llvmConst( m_valueString ) );
+      return CG::ExprValue( floatAdapter, CG::USAGE_RVALUE, basicBlockBuilder.getContext(), floatAdapter->llvmConst( basicBlockBuilder.getContext(), m_valueString ) );
     }
   };
 };

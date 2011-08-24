@@ -74,7 +74,7 @@ namespace Fabric
       }
       RC::ConstHandle<CG::ConstStringAdapter> constStringAdapter = basicBlockBuilder.getManager()->getConstStringAdapter( unquotedValue.length() );
       RC::ConstHandle<CG::StringAdapter> stringAdapter = basicBlockBuilder.getManager()->getStringAdapter();
-      return CG::ExprValue( constStringAdapter, CG::USAGE_RVALUE, constStringAdapter->llvmConst( basicBlockBuilder, unquotedValue.data(), unquotedValue.length() ) ).castTo( basicBlockBuilder, stringAdapter );
+      return CG::ExprValue( constStringAdapter, CG::USAGE_RVALUE, basicBlockBuilder.getContext(), constStringAdapter->llvmConst( basicBlockBuilder, unquotedValue.data(), unquotedValue.length() ) ).castTo( basicBlockBuilder, stringAdapter );
     }
   };
 };

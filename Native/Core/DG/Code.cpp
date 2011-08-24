@@ -7,6 +7,8 @@
 #include <Fabric/Core/CG/Scope.h>
 #include <Fabric/Core/OCL/OCL.h>
 #include <Fabric/Core/RT/Manager.h>
+#include <Fabric/Core/CG/Context.h>
+#include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/CG/ModuleBuilder.h>
 #include <Fabric/Core/AST/GlobalList.h>
 #include <Fabric/Core/AST/Function.h>
@@ -21,7 +23,6 @@
 #include <Fabric/Core/KL/StringSource.h>
 #include <Fabric/Core/KL/Scanner.h>
 #include <Fabric/Core/KL/Parser.hpp>
-#include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/Util/Log.h>
 
 #include <llvm/Module.h>
@@ -99,8 +100,9 @@ namespace Fabric
       FABRIC_ASSERT( m_ast );
       
       RC::Handle<CG::Manager> cgManager = m_context->getCGManager();
-      llvm::OwningPtr<llvm::Module> module( new llvm::Module( "DG::Code", cgManager->getLLVMContext() ) );
-      CG::ModuleBuilder moduleBuilder( cgManager, module.get() );
+      RC::Handle<CG::Context> cgContext = CG::Context::Create();
+      llvm::OwningPtr<llvm::Module> module( new llvm::Module( "DG::Code", cgContext->getLLVMContext() ) );
+      CG::ModuleBuilder moduleBuilder( cgManager, cgContext, module.get() );
       OCL::llvmPrepareModule( moduleBuilder, m_context->getRTManager() );
 
       CG::Diagnostics optimizeDiagnostics;
@@ -113,14 +115,14 @@ namespace Fabric
         RC::Handle<CG::Manager> cgManager = m_context->getCGManager();
         
         llvm::SMDiagnostic error;
-        llvm::ParseAssemblyString( ir.c_str(), module.get(), error, cgManager->getLLVMContext() );
+        llvm::ParseAssemblyString( ir.c_str(), module.get(), error, cgContext->getLLVMContext() );
         
         m_ast->llvmPrepareModule( moduleBuilder, diagnostics );
         FABRIC_ASSERT( !diagnostics.containsError() );
 
         FABRIC_ASSERT( !llvm::verifyModule( *module, llvm::PrintMessageAction ) );
 
-        linkModule( module, true );
+        linkModule( cgContext, module, true );
         
         return;
       }
@@ -167,13 +169,13 @@ namespace Fabric
           IRCache::Instance()->put( irCacheKeyForAST, ir );
         }
 
-        linkModule( module, optimize );
+        linkModule( cgContext, module, optimize );
       }
     }
     
-    void Code::linkModule( llvm::OwningPtr<llvm::Module> &module, bool optimize )
+    void Code::linkModule( RC::Handle<CG::Context> const &cgContext, llvm::OwningPtr<llvm::Module> &module, bool optimize )
     {
-      RC::ConstHandle<ExecutionEngine> executionEngine = ExecutionEngine::Create( m_context, module.take() );
+      RC::ConstHandle<ExecutionEngine> executionEngine = ExecutionEngine::Create( m_context, cgContext, module.take() );
       
       {
         MT::Mutex::Lock lock( m_registeredFunctionSetMutex );

@@ -26,8 +26,8 @@ namespace Fabric
     
       virtual llvm::Constant *llvmDefaultValue( BasicBlockBuilder &basicBlockBuilder ) const;
 
-      llvm::Constant *llvmConst( double value ) const;
-      llvm::Constant *llvmConst( std::string const &valueString ) const;
+      llvm::Constant *llvmConst( RC::Handle<Context> const &context, double value ) const;
+      llvm::Constant *llvmConst( RC::Handle<Context> const &context, std::string const &valueString ) const;
       
       virtual void llvmPrepareModule( ModuleBuilder &moduleBuilder, bool buildFunctions ) const;
       
@@ -35,13 +35,14 @@ namespace Fabric
       
       FloatAdapter( RC::ConstHandle<Manager> const &manager, RC::ConstHandle<RT::FloatDesc> const &floatDesc );
       
+      virtual llvm::Type const *buildLLVMRawType( RC::Handle<Context> const &context ) const;
+      
       std::string internalFunctionNameForType( std::string const &externalFunctionName ) const;
       std::string externalFunctionNameForType( std::string const &externalFunctionName ) const;
       
     private:
     
       RC::ConstHandle<RT::FloatDesc> m_floatDesc;
-      llvm::Type const *m_integerTypeOfSameWidth;
     };
   };
 };

@@ -280,11 +280,6 @@ namespace Fabric
       }
     }
 
-    llvm::LLVMContext &Manager::getLLVMContext() const
-    {
-      return m_llvmContext;
-    }
-
     RC::ConstHandle<RT::Desc> Manager::getStrongerTypeOrNone( RC::ConstHandle<RT::Desc> const &lhsDesc, RC::ConstHandle<RT::Desc> const &rhsDesc ) const
     {
       return m_rtManager->getStrongerTypeOrNone( lhsDesc, rhsDesc );

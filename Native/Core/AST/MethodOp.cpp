@@ -87,7 +87,7 @@ namespace Fabric
         
         CG::ExprValue callResultExprValue = functionSymbol->llvmCreateCall( basicBlockBuilder, argExprValues );
 
-        CG::ExprValue result;
+        CG::ExprValue result( basicBlockBuilder.getContext() );
         if ( functionSymbol->getReturnInfo().getExprType() )
           result = callResultExprValue;
         else result = selfExprValue;

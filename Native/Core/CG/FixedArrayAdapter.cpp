@@ -25,7 +25,11 @@ namespace Fabric
       , m_length( fixedArrayDesc->getNumMembers() )
       , m_memberAdapter( manager->getAdapter( fixedArrayDesc->getMemberDesc() ) )
     {
-      setLLVMType( llvm::ArrayType::get( m_memberAdapter->llvmRawType(), m_length ) );
+    }
+    
+    llvm::Type const *FixedArrayAdapter::buildLLVMRawType( RC::Handle<Context> const &context ) const
+    {
+      return llvm::ArrayType::get( m_memberAdapter->llvmRawType( context ), m_length );
     }
     
     void FixedArrayAdapter::llvmPrepareModule( ModuleBuilder &moduleBuilder, bool buildFunctions ) const
@@ -33,8 +37,10 @@ namespace Fabric
       if ( moduleBuilder.contains( getCodeName(), buildFunctions ) )
         return;
       m_memberAdapter->llvmPrepareModule( moduleBuilder, buildFunctions );
+        
+      RC::Handle<Context> context = moduleBuilder.getContext();
       
-      moduleBuilder->addTypeName( getCodeName(), llvmRawType() );
+      moduleBuilder->addTypeName( getCodeName(), llvmRawType( context ) );
       
       RC::ConstHandle<BooleanAdapter> booleanAdapter = getManager()->getBooleanAdapter();
       RC::ConstHandle<IntegerAdapter> integerAdapter = getManager()->getIntegerAdapter();
@@ -59,9 +65,9 @@ namespace Fabric
           
           basicBlockBuilder->SetInsertPoint( entryBB );
           llvm::Value *arrayLValue = llvmRValueToLValue( basicBlockBuilder, arrayRValue );
-          llvm::Value *lengthRValue = sizeAdapter->llvmConst( m_length );
+          llvm::Value *lengthRValue = sizeAdapter->llvmConst( context, m_length );
           llvm::Value *indexLValue = sizeAdapter->llvmAlloca( basicBlockBuilder, "index" );
-          basicBlockBuilder->CreateStore( sizeAdapter->llvmConst( 0 ), indexLValue );
+          basicBlockBuilder->CreateStore( sizeAdapter->llvmConst( context, 0 ), indexLValue );
           basicBlockBuilder->CreateBr( checkBB );
           
           basicBlockBuilder->SetInsertPoint( checkBB );
@@ -74,7 +80,7 @@ namespace Fabric
           llvm::Value *memberLValue = basicBlockBuilder->CreateGEP( arrayData, indexRValue );
           llvm::Value *memberRValue = m_memberAdapter->llvmLValueToRValue( basicBlockBuilder, memberLValue );
           m_memberAdapter->llvmRetain( basicBlockBuilder, memberRValue );
-          llvm::Value *newIndexRValue = basicBlockBuilder->CreateAdd( indexRValue, sizeAdapter->llvmConst( 1 ) );
+          llvm::Value *newIndexRValue = basicBlockBuilder->CreateAdd( indexRValue, sizeAdapter->llvmConst( context, 1 ) );
           basicBlockBuilder->CreateStore( newIndexRValue, indexLValue );
           basicBlockBuilder->CreateBr( checkBB );
           
@@ -101,9 +107,9 @@ namespace Fabric
           llvm::BasicBlock *doneBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "done" );
           
           basicBlockBuilder->SetInsertPoint( entryBB );
-          llvm::Value *lengthRValue = sizeAdapter->llvmConst( m_length );
+          llvm::Value *lengthRValue = sizeAdapter->llvmConst( context, m_length );
           llvm::Value *indexLValue = sizeAdapter->llvmAlloca( basicBlockBuilder, "index" );
-          basicBlockBuilder->CreateStore( sizeAdapter->llvmConst( 0 ), indexLValue );
+          basicBlockBuilder->CreateStore( sizeAdapter->llvmConst( context, 0 ), indexLValue );
           basicBlockBuilder->CreateBr( checkBB );
           
           basicBlockBuilder->SetInsertPoint( checkBB );
@@ -118,7 +124,7 @@ namespace Fabric
           llvm::Value *srcMemberLValue = basicBlockBuilder->CreateGEP( srcMemberData, indexRValue );
           llvm::Value *srcMemberRValue = m_memberAdapter->llvmLValueToRValue( basicBlockBuilder, srcMemberLValue );
           m_memberAdapter->llvmAssign( basicBlockBuilder, dstMemberLValue, srcMemberRValue );
-          llvm::Value *newIndexRValue = basicBlockBuilder->CreateAdd( indexRValue, sizeAdapter->llvmConst( 1 ) );
+          llvm::Value *newIndexRValue = basicBlockBuilder->CreateAdd( indexRValue, sizeAdapter->llvmConst( context, 1 ) );
           basicBlockBuilder->CreateStore( newIndexRValue, indexLValue );
           basicBlockBuilder->CreateBr( checkBB );
           
@@ -144,9 +150,9 @@ namespace Fabric
           
           basicBlockBuilder->SetInsertPoint( entryBB );
           llvm::Value *arrayLValue = llvmRValueToLValue( basicBlockBuilder, arrayRValue );
-          llvm::Value *lengthRValue = sizeAdapter->llvmConst( m_length );
+          llvm::Value *lengthRValue = sizeAdapter->llvmConst( context, m_length );
           llvm::Value *indexLValue = sizeAdapter->llvmAlloca( basicBlockBuilder, "index" );
-          basicBlockBuilder->CreateStore( sizeAdapter->llvmConst(0), indexLValue );
+          basicBlockBuilder->CreateStore( sizeAdapter->llvmConst( context, 0 ), indexLValue );
           basicBlockBuilder->CreateBr( checkBB );
           
           basicBlockBuilder->SetInsertPoint( checkBB );
@@ -159,7 +165,7 @@ namespace Fabric
           llvm::Value *memberLValue = basicBlockBuilder->CreateGEP( arrayData, indexRValue );
           llvm::Value *memberRValue = m_memberAdapter->llvmLValueToRValue( basicBlockBuilder, memberLValue );
           m_memberAdapter->llvmRelease( basicBlockBuilder, memberRValue );
-          llvm::Value *newIndexRValue = basicBlockBuilder->CreateAdd( indexRValue, sizeAdapter->llvmConst( 1 ) );
+          llvm::Value *newIndexRValue = basicBlockBuilder->CreateAdd( indexRValue, sizeAdapter->llvmConst( context, 1 ) );
           basicBlockBuilder->CreateStore( newIndexRValue, indexLValue );
           basicBlockBuilder->CreateBr( checkBB );
           
@@ -185,7 +191,7 @@ namespace Fabric
           llvm::BasicBlock *outOfRangeBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "outOfRange" );
 
           basicBlockBuilder->SetInsertPoint( entryBB );
-          llvm::Value *lengthRValue = sizeAdapter->llvmConst( m_length );
+          llvm::Value *lengthRValue = sizeAdapter->llvmConst( context, m_length );
           llvm::Value *inRangeCond = basicBlockBuilder->CreateICmpULT( indexRValue, lengthRValue );
           basicBlockBuilder->CreateCondBr( inRangeCond, inRangeBB, outOfRangeBB );
           
@@ -200,7 +206,7 @@ namespace Fabric
           basicBlockBuilder->SetInsertPoint( outOfRangeBB );
           std::string errorMsg = "KL: "+getUserName()+" index out-of-bounds";
           RC::ConstHandle<ConstStringAdapter> errorConstStringAdapter = getManager()->getConstStringAdapter( errorMsg.length() );
-          ExprValue errorExprValue( errorConstStringAdapter, USAGE_RVALUE, errorConstStringAdapter->llvmConst( basicBlockBuilder, errorMsg ) );
+          ExprValue errorExprValue( errorConstStringAdapter, USAGE_RVALUE, context, errorConstStringAdapter->llvmConst( basicBlockBuilder, errorMsg ) );
           llvm::Value *errorStringRValue = stringAdapter->llvmCast( basicBlockBuilder, errorExprValue );
           stringAdapter->llvmReport( basicBlockBuilder, errorStringRValue );
           stringAdapter->llvmRelease( basicBlockBuilder, errorStringRValue );
@@ -227,7 +233,7 @@ namespace Fabric
           llvm::BasicBlock *outOfRangeBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "outOfRange" );
 
           basicBlockBuilder->SetInsertPoint( entryBB );
-          llvm::Value *lengthRValue = sizeAdapter->llvmConst( m_length );
+          llvm::Value *lengthRValue = sizeAdapter->llvmConst( context, m_length );
           llvm::Value *inRangeCond = basicBlockBuilder->CreateICmpULT( indexRValue, lengthRValue );
           basicBlockBuilder->CreateCondBr( inRangeCond, inRangeBB, outOfRangeBB );
           
@@ -239,7 +245,7 @@ namespace Fabric
           basicBlockBuilder->SetInsertPoint( outOfRangeBB );
           std::string errorMsg = "KL: "+getUserName()+" index out-of-bounds";
           RC::ConstHandle<ConstStringAdapter> errorConstStringAdapter = getManager()->getConstStringAdapter( errorMsg.length() );
-          ExprValue errorExprValue( errorConstStringAdapter, USAGE_RVALUE, errorConstStringAdapter->llvmConst( basicBlockBuilder, errorMsg ) );
+          ExprValue errorExprValue( errorConstStringAdapter, USAGE_RVALUE, context, errorConstStringAdapter->llvmConst( basicBlockBuilder, errorMsg ) );
           llvm::Value *errorStringRValue = stringAdapter->llvmCast( basicBlockBuilder, errorExprValue );
           stringAdapter->llvmReport( basicBlockBuilder, errorStringRValue );
           stringAdapter->llvmRelease( basicBlockBuilder, errorStringRValue );
@@ -259,7 +265,7 @@ namespace Fabric
           llvm::Value *booleanLValue = functionBuilder[0];
           BasicBlockBuilder basicBlockBuilder( functionBuilder );
           basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
-          llvm::Value *sizeRValue = llvm::ConstantInt::get( sizeAdapter->llvmRType(), m_length, false );
+          llvm::Value *sizeRValue = llvm::ConstantInt::get( sizeAdapter->llvmRType( context ), m_length, false );
           llvm::Value *booleanRValue = basicBlockBuilder->CreateICmpNE( sizeRValue, llvm::ConstantInt::get( sizeRValue->getType(), 0 ) );
           booleanAdapter->llvmAssign( basicBlockBuilder, booleanLValue, booleanRValue );
           basicBlockBuilder->CreateRetVoid();
@@ -294,7 +300,7 @@ namespace Fabric
         {
           BasicBlockBuilder basicBlockBuilder( functionBuilder );
           basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
-          llvm::Value *sizeRValue = llvm::ConstantInt::get( sizeAdapter->llvmRType(), m_length, false );
+          llvm::Value *sizeRValue = llvm::ConstantInt::get( sizeAdapter->llvmRType( context ), m_length, false );
           basicBlockBuilder->CreateRet( sizeRValue );
         }
       }
@@ -308,8 +314,8 @@ namespace Fabric
         {
           BasicBlockBuilder basicBlockBuilder( functionBuilder );
           basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
-          llvm::Value *sizeRValue = sizeAdapter->llvmConst( m_length );
-          llvm::Value *memberSizeRValue = sizeAdapter->llvmConst( m_memberAdapter->getDesc()->getSize() );
+          llvm::Value *sizeRValue = sizeAdapter->llvmConst( context, m_length );
+          llvm::Value *memberSizeRValue = sizeAdapter->llvmConst( context, m_memberAdapter->getDesc()->getSize() );
           llvm::Value *dataSizeRValue = basicBlockBuilder->CreateMul( sizeRValue, memberSizeRValue );
           basicBlockBuilder->CreateRet( dataSizeRValue );
         }
@@ -325,7 +331,7 @@ namespace Fabric
           llvm::Value *selfRValue = functionBuilder[0];
           BasicBlockBuilder basicBlockBuilder( functionBuilder );
           basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
-          basicBlockBuilder->CreateRet( basicBlockBuilder->CreatePointerCast( selfRValue, dataAdapter->llvmRType() ) );
+          basicBlockBuilder->CreateRet( basicBlockBuilder->CreatePointerCast( selfRValue, dataAdapter->llvmRType( context ) ) );
         }
       }
     }
@@ -339,7 +345,7 @@ namespace Fabric
     {
       std::vector<llvm::Constant *> elementDefaultRValues;
       elementDefaultRValues.resize( m_length, m_memberAdapter->llvmDefaultValue( basicBlockBuilder ) );
-      return llvm::ConstantArray::get( (llvm::ArrayType const *)llvmRawType(), elementDefaultRValues );
+      return llvm::ConstantArray::get( (llvm::ArrayType const *)llvmRawType( basicBlockBuilder.getContext() ), elementDefaultRValues );
     }
     
     llvm::Constant *FixedArrayAdapter::llvmDefaultRValue( BasicBlockBuilder &basicBlockBuilder ) const
@@ -383,6 +389,7 @@ namespace Fabric
     
     void FixedArrayAdapter::llvmInit( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *lValue ) const
     {
+      RC::Handle<Context> context = basicBlockBuilder.getContext();
       
       RC::ConstHandle<SizeAdapter> sizeAdapter = basicBlockBuilder.getManager()->getSizeAdapter();
 
@@ -391,8 +398,8 @@ namespace Fabric
       llvm::BasicBlock *doneBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "done" );
       
       llvm::Value *indexLValue = sizeAdapter->llvmAlloca( basicBlockBuilder, "index" );
-      llvm::Value *lengthRValue = sizeAdapter->llvmConst( m_length );
-      basicBlockBuilder->CreateStore( sizeAdapter->llvmConst( 0 ), indexLValue );
+      llvm::Value *lengthRValue = sizeAdapter->llvmConst( context, m_length );
+      basicBlockBuilder->CreateStore( sizeAdapter->llvmConst( context, 0 ), indexLValue );
       basicBlockBuilder->CreateBr( checkBB );
       
       basicBlockBuilder->SetInsertPoint( checkBB );
@@ -402,11 +409,11 @@ namespace Fabric
       basicBlockBuilder->SetInsertPoint( notDoneBB );
       indexRValue = basicBlockBuilder->CreateLoad( indexLValue );
       std::vector< llvm::Value * > gepIndices;
-      gepIndices.push_back( sizeAdapter->llvmConst( 0 ) );
+      gepIndices.push_back( sizeAdapter->llvmConst( context, 0 ) );
       gepIndices.push_back( indexRValue );
       llvm::Value *memberLValue = basicBlockBuilder->CreateGEP( lValue, gepIndices.begin(), gepIndices.end() );
       m_memberAdapter->llvmInit( basicBlockBuilder, memberLValue );
-      llvm::Value *newIndexRValue = basicBlockBuilder->CreateAdd( indexRValue, sizeAdapter->llvmConst( 1 ) );
+      llvm::Value *newIndexRValue = basicBlockBuilder->CreateAdd( indexRValue, sizeAdapter->llvmConst( context, 1 ) );
       basicBlockBuilder->CreateStore( newIndexRValue, indexLValue );
       basicBlockBuilder->CreateBr( checkBB );
       

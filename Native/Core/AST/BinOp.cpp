@@ -90,7 +90,7 @@ namespace Fabric
         throw Exception( "the result of " + functionParams[0].getAdapter()->getUserName() + " " + CG::binOpUserName( m_binOpType ) + " " + functionParams[1].getAdapter()->getUserName() + " is not an l-value" );
       else usage = CG::USAGE_RVALUE;
       
-      CG::ExprValue result;
+      CG::ExprValue result( basicBlockBuilder.getContext() );
       CG::ExprValue lhsExprValue = m_left->buildExprValue( basicBlockBuilder, functionParams[0].getUsage(), lValueErrorDesc );
       CG::ExprValue rhsExprValue = m_right->buildExprValue( basicBlockBuilder, functionParams[1].getUsage(), lValueErrorDesc );
       try

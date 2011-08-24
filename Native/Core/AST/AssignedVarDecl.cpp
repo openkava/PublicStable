@@ -56,7 +56,7 @@ namespace Fabric
     {
       CG::ExprValue result = VarDecl::llvmAllocateVariable( baseType, basicBlockBuilder, diagnostics );
       
-      CG::ExprValue initialExprExprValue;
+      CG::ExprValue initialExprExprValue( basicBlockBuilder.getContext() );
       try
       {
         initialExprExprValue = m_initialExpr->buildExprValue( basicBlockBuilder, CG::USAGE_RVALUE, "cannot be an l-value" );

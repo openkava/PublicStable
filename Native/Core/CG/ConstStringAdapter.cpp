@@ -27,7 +27,11 @@ namespace Fabric
       : Adapter( manager, constStringDesc, FL_PASS_BY_REFERENCE )
       , m_length( constStringDesc->getLength() )
     {
-      setLLVMType( llvm::ArrayType::get( llvm::Type::getInt8Ty( getLLVMContext() ), m_length ) );
+    }
+    
+    llvm::Type const *ConstStringAdapter::buildLLVMRawType( RC::Handle<Context> const &context ) const
+    {
+      return llvm::ArrayType::get( llvm::Type::getInt8Ty( context->getLLVMContext() ), m_length );
     }
     
     void ConstStringAdapter::llvmPrepareModule( ModuleBuilder &moduleBuilder, bool buildFunctions ) const
@@ -35,7 +39,9 @@ namespace Fabric
       if ( moduleBuilder.contains( getCodeName(), buildFunctions ) )
         return;
       
-      moduleBuilder->addTypeName( getCodeName(), llvmRawType() );
+      RC::Handle<Context> context = moduleBuilder.getContext();
+      
+      moduleBuilder->addTypeName( getCodeName(), llvmRawType( context ) );
       
       RC::ConstHandle<BooleanAdapter> booleanAdapter = getManager()->getBooleanAdapter();
       RC::ConstHandle<StringAdapter> stringAdapter = getManager()->getStringAdapter();
@@ -52,7 +58,7 @@ namespace Fabric
           llvm::Value *booleanLValue = functionBuilder[0];
           BasicBlockBuilder basicBlockBuilder( functionBuilder );
           basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
-          basicBlockBuilder->CreateStore( booleanAdapter->llvmConst( m_length > 0 ), booleanLValue );
+          basicBlockBuilder->CreateStore( booleanAdapter->llvmConst( context, m_length > 0 ), booleanLValue );
           basicBlockBuilder->CreateRetVoid();
         }
       }
@@ -80,8 +86,8 @@ namespace Fabric
     llvm::Constant *ConstStringAdapter::llvmDefaultValue( BasicBlockBuilder &basicBlockBuilder ) const
     {
       std::vector<llvm::Constant *> elementDefaultRValues;
-      elementDefaultRValues.resize( m_length, llvm::ConstantInt::get( llvm::Type::getInt8Ty( getLLVMContext() ), 0 ) );
-      return llvm::ConstantArray::get( (llvm::ArrayType const *)llvmRawType(), elementDefaultRValues );
+      elementDefaultRValues.resize( m_length, llvm::ConstantInt::get( llvm::Type::getInt8Ty( basicBlockBuilder.getContext()->getLLVMContext() ), 0 ) );
+      return llvm::ConstantArray::get( (llvm::ArrayType const *)llvmRawType( basicBlockBuilder.getContext() ), elementDefaultRValues );
     }
     
     llvm::Constant *ConstStringAdapter::llvmDefaultRValue( BasicBlockBuilder &basicBlockBuilder ) const
@@ -106,13 +112,13 @@ namespace Fabric
     {
       FABRIC_ASSERT( length == m_length );
       
-      llvm::Type const *charType = llvm::Type::getInt8Ty( getLLVMContext() );
+      llvm::Type const *charType = llvm::Type::getInt8Ty( basicBlockBuilder.getContext()->getLLVMContext() );
       
       std::vector<llvm::Constant *> chars;
       for ( size_t i=0; i<length; ++i )
         chars.push_back( llvm::ConstantInt::get( charType, data[i] ) );
 
-      llvm::Constant *cStringConstant = llvm::ConstantArray::get( llvm::ArrayType::get( llvm::Type::getInt8Ty( getLLVMContext() ), m_length ), chars );
+      llvm::Constant *cStringConstant = llvm::ConstantArray::get( llvm::ArrayType::get( llvm::Type::getInt8Ty( basicBlockBuilder.getContext()->getLLVMContext() ), m_length ), chars );
 
       return new llvm::GlobalVariable(
         *basicBlockBuilder.getModuleBuilder(),

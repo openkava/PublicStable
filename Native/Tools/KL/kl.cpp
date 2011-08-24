@@ -150,9 +150,10 @@ void handleFile( FILE *fp, unsigned int runFlags )
 
   RC::Handle<RT::Manager> rtManager = RT::Manager::Create( KL::Compiler::Create() );
   cgManager = CG::Manager::Create( rtManager );
-  std::auto_ptr<llvm::Module> module( new llvm::Module( "kl", cgManager->getLLVMContext() ) );
+  RC::Handle<CG::Context> cgContext = CG::Context::Create();
+  std::auto_ptr<llvm::Module> module( new llvm::Module( "kl", cgContext->getLLVMContext() ) );
 
-  CG::ModuleBuilder moduleBuilder( cgManager, module.get() );
+  CG::ModuleBuilder moduleBuilder( cgManager, cgContext, module.get() );
   cgManager->llvmPrepareModule( moduleBuilder );
   OCL::llvmPrepareModule( moduleBuilder, rtManager );
   

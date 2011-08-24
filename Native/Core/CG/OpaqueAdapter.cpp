@@ -22,45 +22,56 @@ namespace Fabric
   {
     OpaqueAdapter::OpaqueAdapter( RC::ConstHandle<Manager> const &manager, RC::ConstHandle<RT::OpaqueDesc> const &opaqueDesc )
       : SimpleAdapter( manager, opaqueDesc )
+      , m_opaqueDesc( opaqueDesc )
     {
-      size_t size = opaqueDesc->getSize();
+    }
+    
+    llvm::Type const *OpaqueAdapter::buildLLVMRawType( RC::Handle<Context> const &context ) const
+    {
+      llvm::Type const *result;
+      size_t size = m_opaqueDesc->getSize();
       if ( size == sizeof( void * ) )
-        setLLVMType( llvm::Type::getInt8PtrTy( manager->getLLVMContext() ) );
+        result = llvm::Type::getInt8PtrTy( context->getLLVMContext() );
       else
       {
         switch ( size )
         {
           case 1:
-            setLLVMType( llvm::Type::getInt8Ty( manager->getLLVMContext() ) );
+            result = llvm::Type::getInt8Ty( context->getLLVMContext() );
             break;
           case 2:
-            setLLVMType( llvm::Type::getInt16Ty( manager->getLLVMContext() ) );
+            result = llvm::Type::getInt16Ty( context->getLLVMContext() );
             break;
           case 4:
-            setLLVMType( llvm::Type::getInt32Ty( manager->getLLVMContext() ) );
+            result = llvm::Type::getInt32Ty( context->getLLVMContext() );
             break;
           case 8:
-            setLLVMType( llvm::Type::getInt64Ty( manager->getLLVMContext() ) );
+            result = llvm::Type::getInt64Ty( context->getLLVMContext() );
             break;
           default:
             FABRIC_ASSERT( false && "Opaque size must be 1, 2, 4 or 8" );
+            result = 0;
             break;
         }
       }
+      return result;
     }
     
     llvm::Constant *OpaqueAdapter::llvmDefaultValue( BasicBlockBuilder &basicBlockBuilder ) const
     {
+      RC::Handle<Context> context = basicBlockBuilder.getContext();
       if ( getDesc()->getSize() == sizeof( void * ) )
-        return llvm::ConstantPointerNull::get( (llvm::PointerType const *)llvmRType() );
+        return llvm::ConstantPointerNull::get( (llvm::PointerType const *)llvmRType( context ) );
       else 
-        return llvm::ConstantInt::get( llvmRType(), 0 );
+        return llvm::ConstantInt::get( llvmRType( context ), 0 );
     }
 
     void OpaqueAdapter::llvmPrepareModule( ModuleBuilder &moduleBuilder, bool buildFunctions ) const
     {
       if ( moduleBuilder.contains( getCodeName(), buildFunctions ) )
         return;
+      
+      RC::Handle<Context> context = moduleBuilder.getContext();
       
       RC::ConstHandle<BooleanAdapter> booleanAdapter = getManager()->getBooleanAdapter();
       RC::ConstHandle<SizeAdapter> sizeAdapter = getManager()->getSizeAdapter();
@@ -113,7 +124,7 @@ namespace Fabric
         {
           BasicBlockBuilder basicBlockBuilder( functionBuilder );
           basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
-          llvm::Value *dataSizeRValue = sizeAdapter->llvmConst( getDesc()->getSize() );
+          llvm::Value *dataSizeRValue = sizeAdapter->llvmConst( context, getDesc()->getSize() );
           basicBlockBuilder->CreateRet( dataSizeRValue );
         }
       }
@@ -128,14 +139,14 @@ namespace Fabric
           llvm::Value *selfLValue = functionBuilder[0];
           BasicBlockBuilder basicBlockBuilder( functionBuilder );
           basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
-          basicBlockBuilder->CreateRet( basicBlockBuilder->CreatePointerCast( selfLValue, dataAdapter->llvmRType() ) );
+          basicBlockBuilder->CreateRet( basicBlockBuilder->CreatePointerCast( selfLValue, dataAdapter->llvmRType( context ) ) );
         }
       }
     }
 
     void OpaqueAdapter::llvmInit( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *lValue ) const
     {
-      basicBlockBuilder->CreateStore( llvm::Constant::getNullValue( llvmRType() ), lValue ); 
+      basicBlockBuilder->CreateStore( llvm::Constant::getNullValue( llvmRType( basicBlockBuilder.getContext() ) ), lValue ); 
     }
     
     std::string OpaqueAdapter::toString( void const *data ) const

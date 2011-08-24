@@ -78,19 +78,19 @@ namespace Fabric
             size_t memberIndex = structAdapter->getMemberIndex( m_memberName );
             RC::ConstHandle<CG::Adapter> memberAdapter = structAdapter->getMemberAdapter( memberIndex );
             llvm::Value *memberLValue = basicBlockBuilder->CreateConstGEP2_32( structExprValue.getValue(), 0, memberIndex );
-            CG::ExprValue result;
+            CG::ExprValue result( basicBlockBuilder.getContext() );
             switch ( usage )
             {
               case CG::USAGE_RVALUE:
               {
                 llvm::Value *memberRValue = memberAdapter->llvmLValueToRValue( basicBlockBuilder, memberLValue );
                 memberAdapter->llvmRetain( basicBlockBuilder, memberRValue );
-                result = CG::ExprValue( memberAdapter, CG::USAGE_RVALUE, memberRValue );
+                result = CG::ExprValue( memberAdapter, CG::USAGE_RVALUE, basicBlockBuilder.getContext(), memberRValue );
               }
               break;
               
               case CG::USAGE_LVALUE:
-                result = CG::ExprValue( memberAdapter, CG::USAGE_LVALUE, memberLValue );
+                result = CG::ExprValue( memberAdapter, CG::USAGE_LVALUE, basicBlockBuilder.getContext(), memberLValue );
                 break;
               
               case CG::USAGE_UNSPECIFIED:

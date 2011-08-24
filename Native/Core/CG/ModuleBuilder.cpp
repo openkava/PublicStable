@@ -7,8 +7,9 @@ namespace Fabric
 {
   namespace CG
   {
-    ModuleBuilder::ModuleBuilder( RC::Handle<Manager> const &manager, llvm::Module *module )
+    ModuleBuilder::ModuleBuilder( RC::Handle<Manager> const &manager, RC::Handle<Context> const &context, llvm::Module *module )
       : m_manager( manager )
+      , m_context( context )
       , m_module( module )
     {
     }
@@ -31,9 +32,9 @@ namespace Fabric
       return result;
     }
     
-    llvm::LLVMContext &ModuleBuilder::getLLVMContext()
+    RC::Handle<Context> ModuleBuilder::getContext()
     {
-      return m_manager->getLLVMContext();
+      return m_context;
     }
     
     ModuleBuilder::operator llvm::Module *()

@@ -69,9 +69,9 @@ namespace Fabric
       CG::Scope &scope = basicBlockBuilder.getScope();
       if ( scope.has( m_name ) )
         addError( diagnostics, ("variable '" + m_name + "' already exists").c_str() );
-      else scope.put( m_name, CG::VariableSymbol::Create( CG::ExprValue( adapter, CG::USAGE_LVALUE, result ) ) );
+      else scope.put( m_name, CG::VariableSymbol::Create( CG::ExprValue( adapter, CG::USAGE_LVALUE, basicBlockBuilder.getContext(), result ) ) );
         
-      return CG::ExprValue( adapter, CG::USAGE_LVALUE, result );
+      return CG::ExprValue( adapter, CG::USAGE_LVALUE, basicBlockBuilder.getContext(), result );
     }
   };
 };
