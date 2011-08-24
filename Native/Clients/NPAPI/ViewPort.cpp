@@ -288,11 +288,7 @@ namespace Fabric
       {
         if ( width != m_watermarkLastWidth || height != m_watermarkLastHeight )
         {
-          if ( m_watermarkPositionsBufferID )
-          {
-            glDeleteBuffers( 1, &m_watermarkPositionsBufferID );
-            m_watermarkPositionsBufferID = 0;
-          }
+          m_watermarkNeedPositionsVBOUpload = true;
           m_watermarkLastWidth = width;
           m_watermarkLastHeight = height;
         }
@@ -364,15 +360,23 @@ void main()\n\
         
         GLint posLocation = glGetAttribLocation( m_watermarkShaderProgram, "a_position" );
         GLint texLocation = glGetAttribLocation( m_watermarkShaderProgram, "a_texCoord" );
-      //  GLint smpLocation = glGetUniformLocation( m_watermarkShaderProgram, "u_rgbaImage" );
-      //  glUniform1i( smpLocation, GL_TEXTURE0 );
+        GLint smpLocation = glGetUniformLocation( m_watermarkShaderProgram, "u_rgbaImage" );
         
+        glPushAttrib( GL_TEXTURE_BIT | GL_ENABLE_BIT | GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+		
+        glEnable( GL_TEXTURE_2D );
+        glDisable( GL_DEPTH_TEST );
+        glDisable( GL_CULL_FACE );
+
+        glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+        glEnable( GL_BLEND );
+
+        glActiveTexture( GL_TEXTURE0 );
         if ( !m_watermarkTextureBuffer )
         {
           glGenTextures( 1, &m_watermarkTextureBuffer );
           if ( !m_watermarkTextureBuffer )
             throw Exception( "glGenTextures() failed" );
-          glActiveTexture( GL_TEXTURE0 );
           glBindTexture( GL_TEXTURE_2D, m_watermarkTextureBuffer );
     
           glPixelStorei( GL_UNPACK_ALIGNMENT, 1 );
@@ -384,22 +388,15 @@ void main()\n\
           glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
           glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
         }
-        glActiveTexture( GL_TEXTURE0 );
+        glUniform1i( smpLocation, 0 );
         glBindTexture( GL_TEXTURE_2D, m_watermarkTextureBuffer );
 
-        glPushAttrib( GL_TEXTURE_BIT );
-        
-        glDisable( GL_DEPTH_TEST );
-        glDisable( GL_CULL_FACE );
-
-        glEnable( GL_TEXTURE_2D );
-        glDisable( GL_DEPTH_TEST );
-        glDisable( GL_CULL_FACE );
-
-        glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
-        glEnable( GL_BLEND );
-
         if ( !m_watermarkPositionsBufferID )
+        {
+          m_watermarkNeedPositionsVBOUpload = true;
+          glGenBuffers( 1, &m_watermarkPositionsBufferID );
+        }
+        if ( m_watermarkNeedPositionsVBOUpload )
         {
           static const size_t xMargin = 16, yMargin = 16;
           float xMin = float(xMargin)*2.0/float(width)-1.0;
@@ -413,10 +410,10 @@ void main()\n\
             xMax, yMin, 0.0,
             xMin, yMin, 0.0
           };
-          glGenBuffers( 1, &m_watermarkPositionsBufferID );
           glBindBuffer( GL_ARRAY_BUFFER, m_watermarkPositionsBufferID );
           glBufferData( GL_ARRAY_BUFFER, sizeof(p), p, GL_STATIC_DRAW );
           glBindBuffer( GL_ARRAY_BUFFER, 0 );
+          m_watermarkNeedPositionsVBOUpload = false;
         }
         glBindBuffer( GL_ARRAY_BUFFER, m_watermarkPositionsBufferID );
         glEnableVertexAttribArray( posLocation );
@@ -444,10 +441,9 @@ void main()\n\
         
         if ( !m_watermarkIndexesBufferID )
         {
-          static const GLuint idx[6] =
+          static const GLuint idx[4] =
           {
-            0, 2, 1,
-            0, 3, 2
+            0, 1, 2, 3
           };
           glGenBuffers( 1, &m_watermarkIndexesBufferID );
           glBindBuffer( GL_ARRAY_BUFFER, m_watermarkIndexesBufferID );
@@ -455,8 +451,9 @@ void main()\n\
           glBindBuffer( GL_ARRAY_BUFFER, 0 );
         }
         glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, m_watermarkIndexesBufferID );
-        glDrawElements( GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL );
+        glDrawElements( GL_QUADS, 4, GL_UNSIGNED_INT, NULL );
         glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 );
+        glBindTexture( GL_TEXTURE_2D, 0 );
 
         glPopAttrib();
       }
