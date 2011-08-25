@@ -79,9 +79,11 @@ namespace Fabric
       {
         Code *code = static_cast<Code *>( userdata );
         code->compileAST( true );
+        code->release();
       }
     
       Context const *m_context;
+      MT::Mutex m_mutex;
       std::string m_sourceCode;
 #if defined(FABRIC_BUILD_DEBUG)
       std::string m_byteCode;

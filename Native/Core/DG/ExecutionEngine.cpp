@@ -38,6 +38,7 @@ namespace Fabric
       MT::tlsLogCollector.get()->add( buffer );
     }
 
+    MT::Mutex ExecutionEngine::s_currentContextMutex( "DG::ExecutionEngine::s_currentContext" );
     RC::ConstHandle<Context> ExecutionEngine::s_currentContext;
     
     void ExecutionEngine::Report( char const *data, size_t length )
@@ -109,6 +110,7 @@ namespace Fabric
 
     ExecutionEngine::ContextSetter::ContextSetter( RC::ConstHandle<Context> const &context )
     {
+      s_currentContextMutex.acquire();
       m_oldContext = s_currentContext;
       s_currentContext = context;
     }
@@ -116,6 +118,7 @@ namespace Fabric
     ExecutionEngine::ContextSetter::~ContextSetter()
     {
       s_currentContext = m_oldContext;
+      s_currentContextMutex.release();
     }
   };
 };

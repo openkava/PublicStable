@@ -69,22 +69,22 @@ namespace Fabric
     {
       m_isMainThread = true;
       
-      m_stateMutex.lock();
+      MT::Mutex::Lock stateMutexLock( m_stateMutex );
       size_t numCores = getNumCores();
       m_workerThreads.resize( numCores - 1 );
       for ( size_t i=0; i<m_workerThreads.size(); ++i )
         m_workerThreads[i].start( &ThreadPool::WorkerMainCallback, this );
-      m_stateMutex.unlock();
     }
     
     void ThreadPool::terminate()
     {
       FABRIC_ASSERT( m_running );
-      
-      m_stateMutex.lock();
-      m_running = false;
-      m_stateCond.broadcast();
-      m_stateMutex.unlock();
+
+      {
+        MT::Mutex::Lock stateMutexLock( m_stateMutex );
+        m_running = false;
+        m_stateCond.broadcast();
+      }
       
       for ( size_t i=0; i<m_workerThreads.size(); ++i )
         m_workerThreads[i].waitUntilDone();
@@ -103,8 +103,7 @@ namespace Fabric
       else
       {
         Task task( count, callback, userdata );
-        
-        m_stateMutex.lock();
+        Mutex::Lock stateMutexLock( m_stateMutex );
         
         if ( mainThreadOnly )
           m_mainThreadTasks.push_back( &task );
@@ -115,8 +114,6 @@ namespace Fabric
         
         while ( !task.completed_CRITICAL_SECTION() )
           executeOneTaskIfPossible_CRITICAL_SECTION();
-        
-        m_stateMutex.unlock();
       }
     }
 
@@ -139,9 +136,10 @@ namespace Fabric
         if ( !keep )
           taskQueue->pop_back();
 
-        m_stateMutex.unlock();
-        task->execute( index );
-        m_stateMutex.lock();
+        {
+          Mutex::Lock stateMutexLock( m_stateMutex );
+          task->execute( index );
+        }
         
         task->postExecute_CRITICAL_SECTION();
         if ( task->completed_CRITICAL_SECTION() )
@@ -155,10 +153,9 @@ namespace Fabric
 
     void ThreadPool::workerMain()
     {
-      m_stateMutex.lock();
+      Mutex::Lock stateMutexLock( m_stateMutex );
       while ( m_running )
         executeOneTaskIfPossible_CRITICAL_SECTION();
-      m_stateMutex.unlock();
     }
     
     void ThreadPool::WorkerMainCallback( void *_this )

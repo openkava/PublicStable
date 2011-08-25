@@ -59,6 +59,7 @@ namespace Fabric
 
     Code::Code( RC::ConstHandle<Context> const &context, std::string const &sourceCode )
       : m_context( context.ptr() )
+      , m_mutex( "DG::Code" )
       , m_sourceCode( sourceCode )
       , m_registeredFunctionSetMutex( "DG::Code::m_registeredFunctionSet" )
     {
@@ -71,7 +72,7 @@ namespace Fabric
 
     void Code::compileSourceCode()
     {
-      //MT::Mutex::Lock compileLock( s_globalCompileLock );
+      MT::Mutex::Lock mutexLock( m_mutex );
 
       llvm::InitializeNativeTarget();
       LLVMLinkInJIT();
@@ -92,11 +93,13 @@ namespace Fabric
       RC::Handle<KL::Scanner> scanner = KL::Scanner::Create( source );
       m_ast = AST::GlobalList::Create( m_ast, KL::Parse( scanner, m_diagnostics ) );
       if ( !m_diagnostics.containsError() )
-        compileAST( true );
+        compileAST( false );
     }
     
     void Code::compileAST( bool optimize )
     {
+      MT::Mutex::Lock mutexLock( m_mutex );
+
       FABRIC_ASSERT( m_ast );
       
       RC::Handle<CG::Manager> cgManager = m_context->getCGManager();
@@ -175,6 +178,8 @@ namespace Fabric
     
     void Code::linkModule( RC::Handle<CG::Context> const &cgContext, llvm::OwningPtr<llvm::Module> &module, bool optimize )
     {
+      MT::Mutex::Lock mutexLock( m_mutex );
+
       RC::ConstHandle<ExecutionEngine> executionEngine = ExecutionEngine::Create( m_context, cgContext, module.take() );
       
       {
@@ -190,7 +195,10 @@ namespace Fabric
       m_executionEngine = executionEngine;
       
       if ( !optimize )
+      {
+        retain();
         MT::IdleTaskQueue::Instance()->submit( &Code::CompileOptimizedAST, this );
+      }
     }
     
     std::string const &Code::getSourceCode() const

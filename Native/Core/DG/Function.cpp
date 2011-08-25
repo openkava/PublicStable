@@ -10,8 +10,6 @@
 
 namespace Fabric
 {
-  
-  
   namespace DG
   {
     RC::ConstHandle<Function> Function::Create( RC::ConstHandle<Code> const &code, std::string const &functionName )
@@ -32,23 +30,12 @@ namespace Fabric
       m_code->unregisterFunction( this );
     }
 
-    Function::FunctionPtr Function::getFunctionPtr() const
-    {
-      return m_functionPtr;
-    }
-    
-    RC::Object const *Function::getObjectOwningFunctionPtr() const
-    {
-      return m_executionEngine.ptr();
-    }
-
     void Function::onExecutionEngineChange( RC::ConstHandle<ExecutionEngine> const &executionEngine )
     {
-      m_executionEngine = executionEngine;
-      m_functionPtr = m_executionEngine->getFunctionByName( m_functionName );
-      if ( !m_functionPtr )
+      FunctionPtr functionPtr = executionEngine->getFunctionByName( m_functionName );
+      if ( !functionPtr )
         throw Exception( "function " + _(m_functionName) + " not found" );
-      onFunctionPtrChange( m_functionPtr, m_executionEngine.ptr() );
+      onFunctionPtrChange( functionPtr, executionEngine );
     }
   };
 };
