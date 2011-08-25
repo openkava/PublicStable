@@ -26,8 +26,8 @@ namespace Fabric
     
     void Node::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
-      jsonObjectGenerator.makeMember( "nodeType" ).makeString( nodeTypeName() );
-      m_location.appendJSON( jsonObjectGenerator.makeMember( "location" ) );
+      jsonObjectGenerator.makeMember( "+" ).makeString( nodeTypeName() );
+      m_location.appendJSON( jsonObjectGenerator.makeMember( "-" ) );
     }
 
     void Node::addWarning( CG::Diagnostics &diagnostics, Util::SimpleString const &desc ) const
