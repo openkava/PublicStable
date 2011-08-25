@@ -10,7 +10,6 @@
 #include <Fabric/Base/RC/WeakConstHandle.h>
 #include <Fabric/Core/RT/ImplType.h>
 #include <Fabric/Core/Util/Assert.h>
-#include <Fabric/Core/Util/UnorderedMap.h>
 
 #include <stdint.h>
 

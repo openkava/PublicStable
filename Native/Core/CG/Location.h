@@ -50,9 +50,9 @@ namespace Fabric
       
       void appendJSON( Util::JSONGenerator const &jsonGenerator ) const
       {
-        Util::JSONObjectGenerator jsonObjectGenerator = jsonGenerator.makeObject();
-        jsonObjectGenerator.makeMember( "line" ).makeInteger( m_line );
-        jsonObjectGenerator.makeMember( "column" ).makeInteger( m_column );
+        Util::JSONArrayGenerator jsonArrayGenerator = jsonGenerator.makeArray();
+        jsonArrayGenerator.makeElement().makeInteger( m_line );
+        jsonArrayGenerator.makeElement().makeInteger( m_column );
       }
       
     private:
