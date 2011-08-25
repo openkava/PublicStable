@@ -3,7 +3,6 @@
 
 #include <Fabric/Core/RT/StructMemberInfo.h>
 #include <Fabric/Base/RC/Object.h>
-#include <Fabric/Core/Util/UnorderedMap.h>
 
 #include <map>
 #include <set>
