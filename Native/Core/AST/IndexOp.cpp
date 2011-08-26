@@ -36,21 +36,24 @@ namespace Fabric
       m_indexExpr->appendJSON( jsonObjectGenerator.makeMember( "indexExpr" ) );
     }
     
-    void IndexOp::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctions ) const
+    void IndexOp::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const
     {
-      m_expr->llvmPrepareModule( moduleBuilder, diagnostics, buildFunctions );
-      m_indexExpr->llvmPrepareModule( moduleBuilder, diagnostics, buildFunctions );
+      m_expr->registerTypes( cgManager, diagnostics );
+      m_indexExpr->registerTypes( cgManager, diagnostics );
     }
     
-    RC::ConstHandle<CG::Adapter> IndexOp::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const
+    RC::ConstHandle<CG::Adapter> IndexOp::getType( CG::BasicBlockBuilder &basicBlockBuilder ) const
     {
       RC::ConstHandle<CG::Adapter> exprType = m_expr->getType( basicBlockBuilder );
+      exprType->llvmCompileToModule( basicBlockBuilder.getModuleBuilder() );
       
       if ( !RT::isArray( exprType->getType() ) )
         throw Exception( "only arrays can be indexed" );
       RC::ConstHandle<CG::ArrayAdapter> arrayType = RC::ConstHandle<CG::ArrayAdapter>::StaticCast( exprType );
       
-      return arrayType->getMemberAdapter();
+      RC::ConstHandle<CG::Adapter> memberAdapter = arrayType->getMemberAdapter();
+      memberAdapter->llvmCompileToModule( basicBlockBuilder.getModuleBuilder() );
+      return memberAdapter;
     }
     
     CG::ExprValue IndexOp::buildExprValue( CG::BasicBlockBuilder &basicBlockBuilder, CG::Usage usage, std::string const &lValueErrorDesc ) const

@@ -27,7 +27,7 @@ namespace Fabric
 
       virtual llvm::Constant *llvmDefaultValue( BasicBlockBuilder &basicBlockBuilder ) const;
       
-      virtual void llvmPrepareModule( ModuleBuilder &moduleBuilder, bool buildFunctions ) const;
+      virtual void llvmCompileToModule( ModuleBuilder &moduleBuilder ) const;
       virtual void *llvmResolveExternalFunction( std::string const &functionName ) const;
 
       // ArrayAdapter

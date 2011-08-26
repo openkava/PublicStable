@@ -151,6 +151,11 @@ namespace Fabric
         std::pair< DescToAdapterMap::iterator, bool > insertResult = m_descToAdapterMap.insert( DescToAdapterMap::value_type( desc, adapter ) );
         FABRIC_ASSERT( insertResult.second );
         it = insertResult.first;
+        FABRIC_LOG( "Registered " + _(adapter->getCodeName()) );
+        if ( adapter->getCodeName() == "__ConstString30__Adapter" )
+        {
+          sleep( 5 );
+        }
       }
       return it->second;
     }
@@ -268,9 +273,10 @@ namespace Fabric
       }
     }
 
+    /*
     void Manager::llvmPrepareModule( ModuleBuilder &moduleBuilder ) const
     {
-      // [pzion 20110224] Since adapteres are created lazily, we actually
+      // [pzion 20110224] Since adapters are created lazily, we actually
       // iterates the types.
       RT::Manager::Types const &rtTypes = m_rtManager->getTypes();
       for ( RT::Manager::Types::const_iterator it=rtTypes.begin(); it!=rtTypes.end(); ++it )
@@ -279,6 +285,7 @@ namespace Fabric
         adapter->llvmPrepareModule( moduleBuilder, true );
       }
     }
+    */
 
     llvm::LLVMContext &Manager::getLLVMContext() const
     {

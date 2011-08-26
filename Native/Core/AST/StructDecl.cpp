@@ -59,10 +59,10 @@ namespace Fabric
       }
     }
     
-    void StructDecl::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctions ) const
+    void StructDecl::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const
     {
-      m_members->llvmPrepareModule( moduleBuilder, diagnostics, buildFunctions );
-      registerTypes( moduleBuilder.getManager()->getRTManager(), diagnostics );
+      m_members->registerTypes( cgManager, diagnostics );
+      registerTypes( cgManager->getRTManager(), diagnostics );
     }
 
     void StructDecl::llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctionBodies ) const

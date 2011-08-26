@@ -34,10 +34,10 @@ namespace Fabric
         (*it)->appendJSON( jsonArrayGenerator.makeElement() );
     }
     
-    void CaseVector::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctions ) const
+    void CaseVector::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const
     {
       for ( const_iterator it=begin(); it!=end(); ++it )
-        (*it)->llvmPrepareModule( moduleBuilder, diagnostics, buildFunctions );
+        (*it)->registerTypes( cgManager, diagnostics );
     }
   };
 };

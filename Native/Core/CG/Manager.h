@@ -71,7 +71,7 @@ namespace Fabric
       
       llvm::LLVMContext &getLLVMContext() const;
       
-      void llvmPrepareModule( ModuleBuilder &moduleBuilder ) const;
+      //void llvmPrepareModule( ModuleBuilder &moduleBuilder ) const;
       
       void *llvmResolveExternalFunction( std::string const &functionName ) const;
       void llvmAddGlobalMappingsToExecutionEngine( llvm::ExecutionEngine *executionEngine, llvm::Module &module ) const;

@@ -74,10 +74,16 @@ namespace Fabric
       return result;
     }
     
-    void ParamVector::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctions ) const
+    void ParamVector::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const
     {
       for ( const_iterator it=begin(); it!=end(); ++it )
-        (*it)->llvmPrepareModule( moduleBuilder, diagnostics, buildFunctions );
+        (*it)->registerTypes( cgManager, diagnostics );
+    }
+
+    void ParamVector::llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctionBodies ) const
+    {
+      for ( const_iterator it=begin(); it!=end(); ++it )
+        (*it)->llvmCompileToModule( moduleBuilder, diagnostics, buildFunctionBodies );
     }
   };
 };

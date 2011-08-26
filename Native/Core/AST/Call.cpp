@@ -57,17 +57,19 @@ namespace Fabric
       return RC::ConstHandle<CG::FunctionSymbol>::StaticCast( symbol );
     }
     
-    RC::ConstHandle<CG::Adapter> Call::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const
+    RC::ConstHandle<CG::Adapter> Call::getType( CG::BasicBlockBuilder &basicBlockBuilder ) const
     {
       RC::ConstHandle<CG::Adapter> adapter = basicBlockBuilder.maybeGetAdapter( m_name );
+      if ( !adapter )
+        adapter = getFunctionSymbol( basicBlockBuilder )->getReturnInfo().getAdapter();
       if ( adapter )
-        return adapter;
-      else return getFunctionSymbol( basicBlockBuilder )->getReturnInfo().getAdapter();
+        adapter->llvmCompileToModule( basicBlockBuilder.getModuleBuilder() );
+      return adapter;
     }
     
-    void Call::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctions ) const
+    void Call::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const
     {
-      m_args->llvmPrepareModule( moduleBuilder, diagnostics, buildFunctions );
+      m_args->registerTypes( cgManager, diagnostics );
     }
     
     CG::ExprValue Call::buildExprValue( CG::BasicBlockBuilder &basicBlockBuilder, CG::Usage usage, std::string const &lValueErrorDesc ) const
@@ -75,6 +77,8 @@ namespace Fabric
       RC::ConstHandle<CG::Adapter> adapter = basicBlockBuilder.maybeGetAdapter( m_name );
       if ( adapter )
       {
+        adapter->llvmCompileToModule( basicBlockBuilder.getModuleBuilder() );
+        
         if ( usage == CG::USAGE_LVALUE )
           throw Exception( "temporary values cannot be used in an l-value context" );
         else usage = CG::USAGE_RVALUE;

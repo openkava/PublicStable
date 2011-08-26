@@ -35,15 +35,16 @@ namespace Fabric
       jsonObjectGenerator.makeMember( "value" ).makeString( m_valueString );
     }
     
-    void ConstScalar::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctions ) const
+    void ConstScalar::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const
     {
-      RC::ConstHandle<CG::FloatAdapter> floatAdapter = moduleBuilder.getManager()->getFP32Adapter();
-      floatAdapter->llvmPrepareModule( moduleBuilder, buildFunctions );
+      cgManager->getFP32Adapter();
     }
     
-    RC::ConstHandle<CG::Adapter> ConstScalar::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const
+    RC::ConstHandle<CG::Adapter> ConstScalar::getType( CG::BasicBlockBuilder &basicBlockBuilder ) const
     {
-      return basicBlockBuilder.getManager()->getFP32Adapter();
+      RC::ConstHandle<CG::Adapter> adapter = basicBlockBuilder.getManager()->getFP32Adapter();
+      adapter->llvmCompileToModule( basicBlockBuilder.getModuleBuilder() );
+      return adapter;
     }
     
     CG::ExprValue ConstScalar::buildExprValue( CG::BasicBlockBuilder &basicBlockBuilder, CG::Usage usage, std::string const &lValueErrorDesc ) const
@@ -51,6 +52,7 @@ namespace Fabric
       if ( usage == CG::USAGE_LVALUE )
         throw Exception( "constants cannot be used as l-values" );
       RC::ConstHandle<CG::FloatAdapter> floatAdapter = basicBlockBuilder.getManager()->getFP32Adapter();
+      floatAdapter->llvmCompileToModule( basicBlockBuilder.getModuleBuilder() );
       return CG::ExprValue( floatAdapter, CG::USAGE_RVALUE, floatAdapter->llvmConst( m_valueString ) );
     }
   };

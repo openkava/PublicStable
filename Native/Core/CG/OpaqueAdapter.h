@@ -15,6 +15,10 @@ namespace Fabric
     class OpaqueAdapter : public SimpleAdapter
     {
       friend class Manager;
+    
+    public:
+
+      virtual void llvmCompileToModule( ModuleBuilder &moduleBuilder ) const;
       
     protected:
       
@@ -25,8 +29,6 @@ namespace Fabric
       virtual void llvmInit( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *lValue ) const;
 
       virtual llvm::Constant *llvmDefaultValue( BasicBlockBuilder &basicBlockBuilder ) const;
-
-      virtual void llvmPrepareModule( ModuleBuilder &moduleBuilder, bool buildFunctions ) const;
     };
   };
 };

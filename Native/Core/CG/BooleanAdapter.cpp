@@ -25,12 +25,15 @@ namespace Fabric
       setLLVMType( llvm::Type::getInt1Ty( manager->getLLVMContext() ) );
     }
     
-    void BooleanAdapter::llvmPrepareModule( ModuleBuilder &moduleBuilder, bool buildFunctions ) const
+    void BooleanAdapter::llvmCompileToModule( ModuleBuilder &moduleBuilder ) const
     {
-      if ( moduleBuilder.contains( getCodeName(), buildFunctions ) )
+      if ( moduleBuilder.haveCompiledToModule( getCodeName() ) )
         return;
       
       RC::ConstHandle<StringAdapter> stringAdapter = getManager()->getStringAdapter();
+      stringAdapter->llvmCompileToModule( moduleBuilder );
+      
+      static const bool buildFunctions = true;
       
       {
         std::string name = constructOverloadName( stringAdapter, this );

@@ -50,19 +50,25 @@ namespace Fabric
       return 0;
     }
     
-    void FunctionBase::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctions ) const
+    void FunctionBase::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const
     {
       if ( !m_returnTypeName.empty() )
       {
-        RC::ConstHandle<CG::Adapter> returnAdapter = moduleBuilder.getAdapter( m_returnTypeName, getLocation() );
-        returnAdapter->llvmPrepareModule( moduleBuilder, buildFunctions );
+        try
+        {
+          cgManager->getAdapter( m_returnTypeName );
+        }
+        catch ( Exception e )
+        {
+          addError( diagnostics, e );
+        }
       }
 
-      RC::ConstHandle<AST::ParamVector> params = getParams( moduleBuilder.getManager() );
-      params->llvmPrepareModule( moduleBuilder, diagnostics, buildFunctions );
+      RC::ConstHandle<AST::ParamVector> params = getParams( cgManager );
+      params->registerTypes( cgManager, diagnostics );
       
       if ( m_body )
-        m_body->llvmPrepareModule( moduleBuilder, diagnostics, buildFunctions );
+        m_body->registerTypes( cgManager, diagnostics );
     }
     
     void FunctionBase::llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctionBodies ) const
@@ -78,12 +84,13 @@ namespace Fabric
         if ( !m_returnTypeName.empty() )
         {
           returnAdapter = moduleBuilder.getAdapter( m_returnTypeName, getLocation() );
-          returnAdapter->llvmPrepareModule( moduleBuilder, true );
+          returnAdapter->llvmCompileToModule( moduleBuilder );
         }
         
         CG::ExprType returnExprType( returnAdapter, CG::USAGE_RVALUE );
         std::string entryName = getEntryName( moduleBuilder.getManager() );
         RC::ConstHandle<AST::ParamVector> params = getParams( moduleBuilder.getManager() );
+        params->llvmCompileToModule( moduleBuilder, diagnostics, buildFunctionBodies );
         CG::FunctionBuilder functionBuilder( moduleBuilder, entryName, returnExprType, params->getFunctionParams( moduleBuilder.getManager() ), m_exportSymbol, friendlyName, false );
         if ( buildFunctionBodies && m_body )
         {

@@ -35,13 +35,15 @@ namespace Fabric
       jsonObjectGenerator.makeMember( "value" ).makeBoolean( m_value );
     }
     
-    void ConstBoolean::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctions ) const
+    void ConstBoolean::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const
     {
     }
     
-    RC::ConstHandle<CG::Adapter> ConstBoolean::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const
+    RC::ConstHandle<CG::Adapter> ConstBoolean::getType( CG::BasicBlockBuilder &basicBlockBuilder ) const
     {
-      return basicBlockBuilder.getManager()->getBooleanAdapter();
+      RC::ConstHandle<CG::Adapter> adapter = basicBlockBuilder.getManager()->getBooleanAdapter();
+      adapter->llvmCompileToModule( basicBlockBuilder.getModuleBuilder() );
+      return adapter;
     }
     
     CG::ExprValue ConstBoolean::buildExprValue( CG::BasicBlockBuilder &basicBlockBuilder, CG::Usage usage, std::string const &lValueErrorDesc ) const

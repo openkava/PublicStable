@@ -36,10 +36,14 @@ namespace Fabric
       m_right->appendJSON( jsonObjectGenerator.makeMember( "rhs" ) );
     }
     
-    RC::ConstHandle<CG::Adapter> AndOp::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const
+    RC::ConstHandle<CG::Adapter> AndOp::getType( CG::BasicBlockBuilder &basicBlockBuilder ) const
     {
       RC::ConstHandle<CG::Adapter> lhsType = m_left->getType( basicBlockBuilder );
+      if ( lhsType )
+        lhsType->llvmCompileToModule( basicBlockBuilder.getModuleBuilder() );
       RC::ConstHandle<CG::Adapter> rhsType = m_right->getType( basicBlockBuilder );
+      if ( rhsType )
+        rhsType->llvmCompileToModule( basicBlockBuilder.getModuleBuilder() );
   
       RC::ConstHandle<CG::Adapter> adapter;
       if ( lhsType && rhsType )
@@ -54,10 +58,10 @@ namespace Fabric
       return adapter;
     }
     
-    void AndOp::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctions ) const
+    void AndOp::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const
     {
-      m_left->llvmPrepareModule( moduleBuilder, diagnostics, buildFunctions );
-      m_right->llvmPrepareModule( moduleBuilder, diagnostics, buildFunctions );
+      m_left->registerTypes( cgManager, diagnostics );
+      m_right->registerTypes( cgManager, diagnostics );
     }
     
     CG::ExprValue AndOp::buildExprValue( CG::BasicBlockBuilder &basicBlockBuilder, CG::Usage usage, std::string const &lValueErrorDesc ) const
