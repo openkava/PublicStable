@@ -1,4 +1,4 @@
-function entry()
+operator entry()
 {
   var Integer a[2];
   a[0] = 17;

@@ -1,4 +1,4 @@
-function entry()
+operator entry()
 {
   Integer foo = 17;
   report foo;

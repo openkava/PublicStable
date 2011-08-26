@@ -69,22 +69,28 @@ namespace Fabric
       return basicBlockBuilder->CreateCall( func, args.begin(), args.end() );
     }
     
-    void StringAdapter::llvmPrepareModule( ModuleBuilder &moduleBuilder, bool buildFunctions ) const
+    void StringAdapter::llvmCompileToModule( ModuleBuilder &moduleBuilder ) const
     {
-      if ( moduleBuilder.contains( getCodeName(), buildFunctions ) )
+      if ( moduleBuilder.haveCompiledToModule( getCodeName() ) )
         return;
         
       RC::Handle<Context> context = moduleBuilder.getContext();
       
       llvm::Type const *implType = getLLVMImplType( context );
 
+      RC::ConstHandle<BooleanAdapter> booleanAdapter = getManager()->getBooleanAdapter();
+      booleanAdapter->llvmCompileToModule( moduleBuilder );
+      RC::ConstHandle<IntegerAdapter> integerAdapter = getManager()->getIntegerAdapter();
+      integerAdapter->llvmCompileToModule( moduleBuilder );
+      RC::ConstHandle<SizeAdapter> sizeAdapter = getManager()->getSizeAdapter();
+      sizeAdapter->llvmCompileToModule( moduleBuilder );
+      RC::ConstHandle<OpaqueAdapter> dataAdapter = getManager()->getDataAdapter();
+      dataAdapter->llvmCompileToModule( moduleBuilder );
+      
       moduleBuilder->addTypeName( getCodeName(), llvmRawType( context ) );
       moduleBuilder->addTypeName( getCodeName() + "Bits", implType );
-
-      RC::ConstHandle<BooleanAdapter> booleanAdapter = getManager()->getBooleanAdapter();
-      RC::ConstHandle<IntegerAdapter> integerAdapter = getManager()->getIntegerAdapter();
-      RC::ConstHandle<SizeAdapter> sizeAdapter = getManager()->getSizeAdapter();
-      RC::ConstHandle<OpaqueAdapter> dataAdapter = getManager()->getDataAdapter();
+      
+      static const bool buildFunctions = true;
 
       llvm::Function *reportFunction;
       {

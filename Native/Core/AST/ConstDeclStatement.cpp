@@ -38,9 +38,9 @@ namespace Fabric
       m_constDecl->appendJSON( jsonObjectGenerator.makeMember( "constDecl" ) );
     }
     
-    void ConstDeclStatement::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    void ConstDeclStatement::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const
     {
-      m_constDecl->llvmPrepareModule( moduleBuilder, diagnostics );
+      m_constDecl->registerTypes( cgManager, diagnostics );
     }
     
     void ConstDeclStatement::llvmCompileToBuilder( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const

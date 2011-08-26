@@ -120,7 +120,7 @@ namespace Fabric
         llvm::SMDiagnostic error;
         llvm::ParseAssemblyString( ir.c_str(), module.get(), error, cgContext->getLLVMContext() );
         
-        m_ast->llvmPrepareModule( moduleBuilder, diagnostics );
+        m_ast->registerTypes( cgManager, diagnostics );
         FABRIC_ASSERT( !diagnostics.containsError() );
 
         FABRIC_ASSERT( !llvm::verifyModule( *module, llvm::PrintMessageAction ) );
@@ -130,7 +130,7 @@ namespace Fabric
         return;
       }
       
-      m_ast->llvmPrepareModule( moduleBuilder, diagnostics );
+      m_ast->registerTypes( cgManager, diagnostics );
       if ( !diagnostics.containsError() )
       {
         m_ast->llvmCompileToModule( moduleBuilder, diagnostics, false );

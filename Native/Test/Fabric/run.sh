@@ -41,7 +41,6 @@ fi
 for f in "$@"; do
   TMPFILE=$(tmpfilename)
 
-  echo $VALGRIND_CMD ../../build/$BUILD_OS/$BUILD_ARCH/$BUILD_TYPE/Fabric/Clients/CLI/fabric --load="'$WRAPPERS_FILE'" --exts="'$EXTS_DIR'" $f
   LD_LIBRARY_PATH=build/ $VALGRIND_CMD ../../build/$BUILD_OS/$BUILD_ARCH/$BUILD_TYPE/Fabric/Clients/CLI/fabric --load="$WRAPPERS_FILE" --exts="$EXTS_DIR" $f 2>&1 \
     | grep -v '^\[FABRIC\] .*Extension registered' \
     | grep -v '^\[FABRIC\] .*Searching extension directory' \
@@ -58,6 +57,8 @@ for f in "$@"; do
       cat ${f%.js}.out
       echo "Actual output ($TMPFILE):"
       cat $TMPFILE
+      echo "To debug:"
+      echo "gdb --args" $VALGRIND_CMD ../../build/$BUILD_OS/$BUILD_ARCH/$BUILD_TYPE/Fabric/Clients/CLI/fabric --load="'$WRAPPERS_FILE'" --exts="'$EXTS_DIR'" $f
       exit 1
     else
       echo "PASS $(basename $f)";

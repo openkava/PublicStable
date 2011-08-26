@@ -1,4 +1,4 @@
-function entry()
+operator entry()
 {
   report String(7) + String(5);
 }

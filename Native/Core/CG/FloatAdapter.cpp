@@ -48,19 +48,27 @@ namespace Fabric
       return result;
     }
 
-    void FloatAdapter::llvmPrepareModule( ModuleBuilder &moduleBuilder, bool buildFunctions ) const
+    void FloatAdapter::llvmCompileToModule( ModuleBuilder &moduleBuilder ) const
     {
-      if ( moduleBuilder.contains( getCodeName(), buildFunctions ) )
+      if ( moduleBuilder.haveCompiledToModule( getCodeName() ) )
         return;
       
       RC::Handle<Context> context = moduleBuilder.getContext();
       
       RC::ConstHandle<BooleanAdapter> booleanAdapter = getManager()->getBooleanAdapter();
+      booleanAdapter->llvmCompileToModule( moduleBuilder );
       RC::ConstHandle<ByteAdapter> byteAdapter = getManager()->getByteAdapter();
+      byteAdapter->llvmCompileToModule( moduleBuilder );
       RC::ConstHandle<IntegerAdapter> integerAdapter = getManager()->getIntegerAdapter();
+      integerAdapter->llvmCompileToModule( moduleBuilder );
       RC::ConstHandle<SizeAdapter> sizeAdapter = getManager()->getSizeAdapter();
+      sizeAdapter->llvmCompileToModule( moduleBuilder );
       RC::ConstHandle<StringAdapter> stringAdapter = getManager()->getStringAdapter();
+      stringAdapter->llvmCompileToModule( moduleBuilder );
       RC::ConstHandle<OpaqueAdapter> dataAdapter = getManager()->getDataAdapter();
+      dataAdapter->llvmCompileToModule( moduleBuilder );
+      
+      static const bool buildFunctions = true;
       
       {
         std::string name = constructOverloadName( booleanAdapter, this );
@@ -228,7 +236,7 @@ namespace Fabric
         std::vector< FunctionParam > params;
         params.push_back( FunctionParam( "x", this, USAGE_RVALUE ) );
         std::string name = internalFunctionNameForType("sin");
-        FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( this, USAGE_RVALUE ), params, &name );
+        FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( this, USAGE_RVALUE ), params, false, &name );
         if ( buildFunctions )
         {
           llvm::Value *x = functionBuilder[0];
@@ -249,7 +257,7 @@ namespace Fabric
         std::vector< FunctionParam > params;
         params.push_back( FunctionParam( "x", this, USAGE_RVALUE ) );
         std::string name = internalFunctionNameForType("cos");
-        FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( this, USAGE_RVALUE ), params, &name );
+        FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( this, USAGE_RVALUE ), params, false, &name );
         if ( buildFunctions )
         {
           llvm::Value *x = functionBuilder[0];
@@ -269,12 +277,12 @@ namespace Fabric
       {
         std::vector< FunctionParam > tanfParams;
         tanfParams.push_back( FunctionParam( "x", this, USAGE_RVALUE ) );
-        FunctionBuilder tanfFunctionBuilder( moduleBuilder, externalFunctionNameForType("tan"), ExprType( this, USAGE_RVALUE ), tanfParams, false );
+        FunctionBuilder tanfFunctionBuilder( moduleBuilder, externalFunctionNameForType("tan"), ExprType( this, USAGE_RVALUE ), tanfParams, true );
 
         std::vector< FunctionParam > params;
         params.push_back( FunctionParam( "x", this, USAGE_RVALUE ) );
         std::string name = internalFunctionNameForType("tan");
-        FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( this, USAGE_RVALUE ), params, &name );
+        FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( this, USAGE_RVALUE ), params, false, &name );
         if ( buildFunctions )
         {
           llvm::Value *x = functionBuilder[0];
@@ -287,12 +295,12 @@ namespace Fabric
       {
         std::vector< FunctionParam > logfParams;
         logfParams.push_back( FunctionParam( "x", this, USAGE_RVALUE ) );
-        FunctionBuilder logfFunctionBuilder( moduleBuilder, externalFunctionNameForType("log"), ExprType( this, USAGE_RVALUE ), logfParams, false );
+        FunctionBuilder logfFunctionBuilder( moduleBuilder, externalFunctionNameForType("log"), ExprType( this, USAGE_RVALUE ), logfParams, true );
 
         std::vector< FunctionParam > params;
         params.push_back( FunctionParam( "x", this, USAGE_RVALUE ) );
         std::string name = internalFunctionNameForType("log");
-        FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( this, USAGE_RVALUE ), params, &name );
+        FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( this, USAGE_RVALUE ), params, false, &name );
         if ( buildFunctions )
         {
           llvm::Value *x = functionBuilder[0];
@@ -305,12 +313,12 @@ namespace Fabric
       {
         std::vector< FunctionParam > acosfParams;
         acosfParams.push_back( FunctionParam( "x", this, USAGE_RVALUE ) );
-        FunctionBuilder acosfFunctionBuilder( moduleBuilder, externalFunctionNameForType("acos"), ExprType( this, USAGE_RVALUE ), acosfParams, false );
+        FunctionBuilder acosfFunctionBuilder( moduleBuilder, externalFunctionNameForType("acos"), ExprType( this, USAGE_RVALUE ), acosfParams, true );
 
         std::vector< FunctionParam > params;
         params.push_back( FunctionParam( "x", this, USAGE_RVALUE ) );
         std::string name = internalFunctionNameForType("acos");
-        FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( this, USAGE_RVALUE ), params, &name );
+        FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( this, USAGE_RVALUE ), params, false, &name );
         if ( buildFunctions )
         {
           llvm::Value *x = functionBuilder[0];
@@ -323,12 +331,12 @@ namespace Fabric
       {
         std::vector< FunctionParam > asinfParams;
         asinfParams.push_back( FunctionParam( "x", this, USAGE_RVALUE ) );
-        FunctionBuilder asinfFunctionBuilder( moduleBuilder, externalFunctionNameForType("asin"), ExprType( this, USAGE_RVALUE ), asinfParams, false );
+        FunctionBuilder asinfFunctionBuilder( moduleBuilder, externalFunctionNameForType("asin"), ExprType( this, USAGE_RVALUE ), asinfParams, true );
 
         std::vector< FunctionParam > params;
         params.push_back( FunctionParam( "x", this, USAGE_RVALUE ) );
         std::string name = internalFunctionNameForType("asin");
-        FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( this, USAGE_RVALUE ), params, &name );
+        FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( this, USAGE_RVALUE ), params, false, &name );
         if ( buildFunctions )
         {
           llvm::Value *x = functionBuilder[0];
@@ -341,12 +349,12 @@ namespace Fabric
       {
         std::vector< FunctionParam > atanfParams;
         atanfParams.push_back( FunctionParam( "x", this, USAGE_RVALUE ) );
-        FunctionBuilder atanfFunctionBuilder( moduleBuilder, externalFunctionNameForType("atan"), ExprType( this, USAGE_RVALUE ), atanfParams, false );
+        FunctionBuilder atanfFunctionBuilder( moduleBuilder, externalFunctionNameForType("atan"), ExprType( this, USAGE_RVALUE ), atanfParams, true );
 
         std::vector< FunctionParam > params;
         params.push_back( FunctionParam( "x", this, USAGE_RVALUE ) );
         std::string name = internalFunctionNameForType("atan");
-        FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( this, USAGE_RVALUE ), params, &name );
+        FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( this, USAGE_RVALUE ), params, false, &name );
         if ( buildFunctions )
         {
           llvm::Value *x = functionBuilder[0];
@@ -360,13 +368,13 @@ namespace Fabric
         std::vector< FunctionParam > atan2fParams;
         atan2fParams.push_back( FunctionParam( "y", this, USAGE_RVALUE ) );
         atan2fParams.push_back( FunctionParam( "x", this, USAGE_RVALUE ) );
-        FunctionBuilder atan2fFunctionBuilder( moduleBuilder, externalFunctionNameForType("atan2"), ExprType( this, USAGE_RVALUE ), atan2fParams, false );
+        FunctionBuilder atan2fFunctionBuilder( moduleBuilder, externalFunctionNameForType("atan2"), ExprType( this, USAGE_RVALUE ), atan2fParams, true );
 
         std::vector< FunctionParam > params;
         params.push_back( FunctionParam( "y", this, USAGE_RVALUE ) );
         params.push_back( FunctionParam( "x", this, USAGE_RVALUE ) );
         std::string name = internalFunctionNameForType("atan2");
-        FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( this, USAGE_RVALUE ), params, &name );
+        FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( this, USAGE_RVALUE ), params, false, &name );
         if ( buildFunctions )
         {
           llvm::Value *y = functionBuilder[0];
@@ -381,7 +389,7 @@ namespace Fabric
         std::vector< FunctionParam > params;
         params.push_back( FunctionParam( "x", this, USAGE_RVALUE ) );
         std::string name = internalFunctionNameForType("sqrt");
-        FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( this, USAGE_RVALUE ), params, &name );
+        FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( this, USAGE_RVALUE ), params, false, &name );
         if ( buildFunctions )
         {
           llvm::Value *x = functionBuilder[0];
@@ -402,7 +410,7 @@ namespace Fabric
         std::vector< FunctionParam > params;
         params.push_back( FunctionParam( "x", this, USAGE_RVALUE ) );
         std::string name = internalFunctionNameForType("abs");
-        FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( this, USAGE_RVALUE ), params, &name );
+        FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( this, USAGE_RVALUE ), params, false, &name );
         if ( buildFunctions )
         {
           llvm::Type const *integerTypeOfSameWidth = 0;
@@ -436,12 +444,12 @@ namespace Fabric
       {
         std::vector< FunctionParam > roundfParams;
         roundfParams.push_back( FunctionParam( "x", this, USAGE_RVALUE ) );
-        FunctionBuilder roundfFunctionBuilder( moduleBuilder, externalFunctionNameForType("round"), ExprType( this, USAGE_RVALUE ), roundfParams );
+        FunctionBuilder roundfFunctionBuilder( moduleBuilder, externalFunctionNameForType("round"), ExprType( this, USAGE_RVALUE ), roundfParams, true );
 
         std::vector< FunctionParam > params;
         params.push_back( FunctionParam( "x", this, USAGE_RVALUE ) );
         std::string name = internalFunctionNameForType("round");
-        FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( this, USAGE_RVALUE ), params, &name );
+        FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( this, USAGE_RVALUE ), params, false, &name );
         if ( buildFunctions )
         {
           llvm::Value *x = functionBuilder[0];
@@ -454,12 +462,12 @@ namespace Fabric
       {
         std::vector< FunctionParam > ceilfParams;
         ceilfParams.push_back( FunctionParam( "x", this, USAGE_RVALUE ) );
-        FunctionBuilder ceilfFunctionBuilder( moduleBuilder, externalFunctionNameForType("ceil"), ExprType( this, USAGE_RVALUE ), ceilfParams );
+        FunctionBuilder ceilfFunctionBuilder( moduleBuilder, externalFunctionNameForType("ceil"), ExprType( this, USAGE_RVALUE ), ceilfParams, true );
 
         std::vector< FunctionParam > params;
         params.push_back( FunctionParam( "x", this, USAGE_RVALUE ) );
         std::string name = internalFunctionNameForType("ceil");
-        FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( this, USAGE_RVALUE ), params, &name );
+        FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( this, USAGE_RVALUE ), params, false, &name );
         if ( buildFunctions )
         {
           llvm::Value *x = functionBuilder[0];
@@ -472,12 +480,12 @@ namespace Fabric
       {
         std::vector< FunctionParam > floorfParams;
         floorfParams.push_back( FunctionParam( "x", this, USAGE_RVALUE ) );
-        FunctionBuilder floorfFunctionBuilder( moduleBuilder, externalFunctionNameForType("floor"), ExprType( this, USAGE_RVALUE ), floorfParams, false );
+        FunctionBuilder floorfFunctionBuilder( moduleBuilder, externalFunctionNameForType("floor"), ExprType( this, USAGE_RVALUE ), floorfParams, true );
 
         std::vector< FunctionParam > params;
         params.push_back( FunctionParam( "x", this, USAGE_RVALUE ) );
         std::string name = internalFunctionNameForType("floor");
-        FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( this, USAGE_RVALUE ), params, &name );
+        FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( this, USAGE_RVALUE ), params, false, &name );
         if ( buildFunctions )
         {
           llvm::Value *x = functionBuilder[0];
@@ -492,7 +500,7 @@ namespace Fabric
         params.push_back( FunctionParam( "x", this, USAGE_RVALUE ) );
         params.push_back( FunctionParam( "y", this, USAGE_RVALUE ) );
         std::string name = internalFunctionNameForType("pow");
-        FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( this, USAGE_RVALUE ), params, &name );
+        FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( this, USAGE_RVALUE ), params, false, &name );
         if ( buildFunctions )
         {
           llvm::Value *x = functionBuilder[0];

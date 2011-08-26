@@ -33,21 +33,22 @@ namespace Fabric
       jsonObjectGenerator.makeMember( "memberName" ).makeString( m_memberName );
     }
     
-    void StructMemberOp::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    void StructMemberOp::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const
     {
-      m_structExpr->llvmPrepareModule( moduleBuilder, diagnostics );
+      m_structExpr->registerTypes( cgManager, diagnostics );
     }
     
-    RC::ConstHandle<CG::Adapter> StructMemberOp::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const
+    RC::ConstHandle<CG::Adapter> StructMemberOp::getType( CG::BasicBlockBuilder &basicBlockBuilder ) const
     {
       RC::ConstHandle<CG::Adapter> structType = m_structExpr->getType( basicBlockBuilder );
+      RC::ConstHandle<CG::Adapter> adapter;
       if ( RT::isStruct( structType->getType() ) )
       {
         RC::ConstHandle<CG::StructAdapter> structAdapter = RC::ConstHandle<CG::StructAdapter>::StaticCast( structType );
         if ( !structAdapter->hasMember( m_memberName ) )
           throw Exception( "structure has no member named " + _(m_memberName) );
         size_t memberIndex = structAdapter->getMemberIndex( m_memberName );
-        return structAdapter->getMemberAdapter( memberIndex );
+        adapter = structAdapter->getMemberAdapter( memberIndex );
       }
       else
       {
@@ -55,8 +56,10 @@ namespace Fabric
         RC::ConstHandle<CG::FunctionSymbol> functionSymbol = basicBlockBuilder.maybeGetFunction( functionName );
         if ( !functionSymbol )
           throw Exception( "type " + structType->getUserName() + " has no member or method named " + _(m_memberName) );
-        return functionSymbol->getReturnInfo().getAdapter();
+        adapter = functionSymbol->getReturnInfo().getAdapter();
       }
+      adapter->llvmCompileToModule( basicBlockBuilder.getModuleBuilder() );
+      return adapter;
     }
     
     CG::ExprValue StructMemberOp::buildExprValue( CG::BasicBlockBuilder &basicBlockBuilder, CG::Usage usage, std::string const &lValueErrorDesc ) const

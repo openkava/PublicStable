@@ -3,7 +3,7 @@ function double( io Scalar input, io Scalar output )
   output = 2 * input;
 }
 
-function entry()
+operator entry()
 {
   var Scalar input = 4.0, output;
   double( input, output );

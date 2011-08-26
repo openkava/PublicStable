@@ -26,7 +26,8 @@ namespace Fabric
         ModuleBuilder &moduleBuilder, 
         std::string const &entryName, 
         ExprType const &returnExprType, 
-        std::vector< FunctionParam > const &params, 
+        std::vector< FunctionParam > const &params,
+        bool exportSymbol = false,
         std::string const *friendlyName = 0,
         bool returnsStaticDataPtr = false
         );
@@ -35,6 +36,7 @@ namespace Fabric
         ModuleBuilder &moduleBuilder, 
         std::string const &entryName, 
         std::string const &paramLayout,
+        bool exportSymbol = false,
         std::string const *friendlyName = 0, 
         bool returnsStaticDataPtr = false
         );
@@ -64,6 +66,7 @@ namespace Fabric
         std::string const &entryName, 
         ExprType const &returnExprType, 
         std::vector< FunctionParam > const &params, 
+        bool exportSymbol,
         std::string const *friendlyName, 
         bool returnsStaticDataPtr
         );

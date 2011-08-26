@@ -22,7 +22,7 @@ function Quad( in Vec3 v[] )
   self.normal = v[0]; 
 } 
 
-function entry() 
+operator entry() 
 { 
   var Vec3 v[]; 
   v.push( Vec3( 1.0, 2.0, 3.0 ) );

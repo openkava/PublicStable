@@ -32,6 +32,8 @@ namespace Fabric
       virtual std::string toString( void const *data ) const;
     
       llvm::Constant *llvmConst( RC::Handle<Context> const &context, bool value ) const;
+     
+      virtual void llvmCompileToModule( ModuleBuilder &moduleBuilder ) const;
 
     protected:
 
@@ -39,8 +41,6 @@ namespace Fabric
       
       virtual llvm::Type const *buildLLVMRawType( RC::Handle<Context> const &context ) const;
      
-      virtual void llvmPrepareModule( ModuleBuilder &moduleBuilder, bool buildFunctions ) const;
-      
     private:
     
       RC::ConstHandle<RT::BooleanDesc> m_booleanDesc;

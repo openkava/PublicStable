@@ -17,7 +17,7 @@ function Scalar Vec3.normSq()
   return self.x*self.x + self.y*self.y + self.z*self.z;
 }
 
-function entry()
+operator entry()
 {
   var Vec3 vec3( 1.0, 2.0, 3.0 );
   report vec3.normSq();

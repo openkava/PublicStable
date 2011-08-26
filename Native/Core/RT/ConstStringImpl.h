@@ -16,6 +16,12 @@ namespace Fabric
       friend class Manager;
       friend class Impl;
       
+      struct bits_t
+      {
+        char const *data;
+        size_t length;
+      };
+      
     public:
           
       // Impl
@@ -33,19 +39,12 @@ namespace Fabric
       
       // ConstStringImpl
       
-      size_t getLength() const
-      {
-        return getSize();
-      }
+      std::string toString( void const *data ) const;
             
     protected:
     
-      ConstStringImpl( std::string const &codeName, size_t length );
+      ConstStringImpl( std::string const &codeName );
       ~ConstStringImpl();
-      
-    private:
-    
-      void *m_defaultData;
    };
   };
 };
