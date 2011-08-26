@@ -1,4 +1,4 @@
-function entry()
+operator entry()
 {
   const Scalar PI = 3.141;
   PI = 2.718;

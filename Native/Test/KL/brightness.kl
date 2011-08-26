@@ -15,7 +15,7 @@ function brightness( Integer index, io RGBA rgba, io RGBA sourceRgba[], io Byte 
   rgba.a = inRGBA.a;
 }
 
-function entry()
+operator entry()
 {
   var Integer index = 546;
 

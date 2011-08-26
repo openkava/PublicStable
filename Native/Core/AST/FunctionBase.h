@@ -39,7 +39,7 @@ namespace Fabric
       }
       RC::ConstHandle<CompoundStatement> getBody() const;
       
-      virtual void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
+      virtual void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctions ) const;
       
       virtual void llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctionBodies ) const;
       
@@ -48,7 +48,8 @@ namespace Fabric
       FunctionBase(
         CG::Location const &location,
         std::string const &returnTypeName,
-        RC::ConstHandle<CompoundStatement> const &body
+        RC::ConstHandle<CompoundStatement> const &body,
+        bool exportSymbol = false
         );
       
       virtual void appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const;
@@ -57,6 +58,7 @@ namespace Fabric
     
       std::string m_returnTypeName;
       RC::ConstHandle<CompoundStatement> m_body;
+      bool m_exportSymbol;
     };
   };
 };

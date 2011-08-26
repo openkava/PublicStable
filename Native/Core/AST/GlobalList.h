@@ -49,7 +49,7 @@ namespace Fabric
       Util::SimpleString toJSON() const;
 
       void registerTypes( RC::Handle<RT::Manager> const &rtManager, CG::Diagnostics &diagnostics ) const;
-      void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
+      void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctions = true ) const;
       void llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctions ) const;
       void collectFunctions( std::vector< RC::ConstHandle<AST::Function> > &result ) const;
     

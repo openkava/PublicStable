@@ -187,7 +187,7 @@ namespace Fabric
         std::vector< FunctionParam > params;
         params.push_back( FunctionParam( "array", this, CG::USAGE_RVALUE ) );
         params.push_back( FunctionParam( "index", sizeAdapter, CG::USAGE_RVALUE ) );
-        FunctionBuilder functionBuilder( moduleBuilder, "__"+getCodeName()+"__ConstIndex", ExprType( m_memberAdapter, USAGE_RVALUE ), params, false, true );
+        FunctionBuilder functionBuilder( moduleBuilder, "__"+getCodeName()+"__ConstIndex", ExprType( m_memberAdapter, USAGE_RVALUE ), params, false, 0, true );
         if ( buildFunctions )
         {
           BasicBlockBuilder basicBlockBuilder( functionBuilder );
@@ -234,7 +234,7 @@ namespace Fabric
         std::vector< FunctionParam > params;
         params.push_back( FunctionParam( "array", this, CG::USAGE_LVALUE ) );
         params.push_back( FunctionParam( "index", sizeAdapter, CG::USAGE_RVALUE ) );
-        FunctionBuilder functionBuilder( moduleBuilder, "__"+getCodeName()+"__NonConstIndex", ExprType( m_memberAdapter, USAGE_LVALUE ), params, false, true );
+        FunctionBuilder functionBuilder( moduleBuilder, "__"+getCodeName()+"__NonConstIndex", ExprType( m_memberAdapter, USAGE_LVALUE ), params, false, 0, true );
         if ( buildFunctions )
         {
           BasicBlockBuilder basicBlockBuilder( functionBuilder );
@@ -557,7 +557,7 @@ namespace Fabric
       std::vector< FunctionParam > params;
       params.push_back( FunctionParam( "array", this, CG::USAGE_RVALUE ) );
       params.push_back( FunctionParam( "index", sizeAdapter, CG::USAGE_RVALUE ) );
-      FunctionBuilder functionBuilder( basicBlockBuilder.getModuleBuilder(), "__"+getCodeName()+"__ConstIndex", ExprType( m_memberAdapter, USAGE_RVALUE ), params, false, true );
+      FunctionBuilder functionBuilder( basicBlockBuilder.getModuleBuilder(), "__"+getCodeName()+"__ConstIndex", ExprType( m_memberAdapter, USAGE_RVALUE ), params, false, 0, true );
       return basicBlockBuilder->CreateCall2( functionBuilder.getLLVMFunction(), arrayRValue, indexRValue );
     }
 
@@ -569,7 +569,7 @@ namespace Fabric
       std::vector< FunctionParam > params;
       params.push_back( FunctionParam( "array", this, CG::USAGE_LVALUE ) );
       params.push_back( FunctionParam( "index", sizeAdapter, CG::USAGE_RVALUE ) );
-      FunctionBuilder functionBuilder( basicBlockBuilder.getModuleBuilder(), "__"+getCodeName()+"__NonConstIndex", ExprType( m_memberAdapter, USAGE_LVALUE ), params, false, true );
+      FunctionBuilder functionBuilder( basicBlockBuilder.getModuleBuilder(), "__"+getCodeName()+"__NonConstIndex", ExprType( m_memberAdapter, USAGE_LVALUE ), params, false, 0, true );
       return basicBlockBuilder->CreateCall2( functionBuilder.getLLVMFunction(), exprLValue, indexRValue );
     }
     

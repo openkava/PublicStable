@@ -5,7 +5,7 @@ struct MyVec3
   Scalar z;
 };
   
-function entry()
+operator entry()
 {
   var MyVec3 vec3;
   vec3.x = 1.0;

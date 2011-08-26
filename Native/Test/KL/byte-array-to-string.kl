@@ -1,4 +1,4 @@
-function entry()
+operator entry()
 {
   Byte a[];
   for ( Size i=0; i<256; ++i )

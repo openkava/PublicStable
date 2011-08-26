@@ -59,15 +59,15 @@ namespace Fabric
         m_after->registerTypes( rtManager, diagnostics );
     }
     
-    void GlobalList::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    void GlobalList::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctions ) const
     {
       if ( m_before )
-        m_before->llvmPrepareModule( moduleBuilder, diagnostics );
+        m_before->llvmPrepareModule( moduleBuilder, diagnostics, buildFunctions );
       if ( m_global )
       {
         try
         {
-          m_global->llvmPrepareModule( moduleBuilder, diagnostics );
+          m_global->llvmPrepareModule( moduleBuilder, diagnostics, buildFunctions );
         }
         catch ( CG::Error e )
         {
@@ -75,7 +75,7 @@ namespace Fabric
         }
       }
       if ( m_after )
-        m_after->llvmPrepareModule( moduleBuilder, diagnostics );
+        m_after->llvmPrepareModule( moduleBuilder, diagnostics, buildFunctions );
     }
     
     void GlobalList::llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctions ) const

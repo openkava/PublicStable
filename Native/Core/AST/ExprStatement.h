@@ -24,7 +24,7 @@ namespace Fabric
 
       static RC::ConstHandle<ExprStatement> Create( CG::Location const &location, RC::ConstHandle<Expr> const &expr );
 
-      virtual void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
+      virtual void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctions ) const;
       
       virtual void llvmCompileToBuilder( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const;
      

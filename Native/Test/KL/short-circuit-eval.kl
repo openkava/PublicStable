@@ -10,7 +10,7 @@ function Boolean returnFalse()
   return false;
 }
 
-function entry()
+operator entry()
 {
   report returnFalse() || returnFalse();
   report returnFalse() && returnFalse();

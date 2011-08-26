@@ -1,6 +1,6 @@
 const Size oneTwoThree = 123;
 
-function entry()
+operator entry()
 {
   report oneTwoThree;
 }

@@ -1,4 +1,4 @@
-function entry()
+operator entry()
 {
   var Scalar a = -19.78;
   var Scalar b = 2 * a - 7;

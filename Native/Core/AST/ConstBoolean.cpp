@@ -35,7 +35,7 @@ namespace Fabric
       jsonObjectGenerator.makeMember( "value" ).makeBoolean( m_value );
     }
     
-    void ConstBoolean::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    void ConstBoolean::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctions ) const
     {
     }
     

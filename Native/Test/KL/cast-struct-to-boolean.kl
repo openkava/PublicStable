@@ -5,7 +5,7 @@ struct Vec3
   Scalar z;
 };
 
-function entry()
+operator entry()
 {
   var Vec3 vec3;
   report Boolean(vec3);

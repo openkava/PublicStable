@@ -30,10 +30,10 @@ namespace Fabric
       jsonObjectGenerator.makeMember( "type" ).makeString( m_type );
     }
     
-    void MemberDecl::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    void MemberDecl::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctions ) const
     {
       RC::ConstHandle<CG::Adapter> adapter = moduleBuilder.getAdapter( m_type, getLocation() );
-      adapter->llvmPrepareModule( moduleBuilder, true );
+      adapter->llvmPrepareModule( moduleBuilder, buildFunctions );
     }
 
     void MemberDecl::buildStructMemberInfo( RC::ConstHandle<RT::Manager> const &rtManager, RT::StructMemberInfo &structMemberInfo ) const

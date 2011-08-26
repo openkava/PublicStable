@@ -30,9 +30,9 @@ namespace Fabric
       m_constDecl->appendJSON( jsonObjectGenerator.makeMember( "constDecl" ) );
     }
     
-    void GlobalConstDecl::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    void GlobalConstDecl::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctions ) const
     {
-      m_constDecl->llvmPrepareModule( moduleBuilder, diagnostics );
+      m_constDecl->llvmPrepareModule( moduleBuilder, diagnostics, buildFunctions );
     }
     
     void GlobalConstDecl::llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctionBodies ) const

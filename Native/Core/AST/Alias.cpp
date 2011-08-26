@@ -56,14 +56,14 @@ namespace Fabric
       }
     }
     
-    void Alias::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    void Alias::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctions ) const
     {
       try
       {
         RC::ConstHandle<CG::Adapter> adapter = moduleBuilder.getAdapter( m_adapterName, getLocation() );
         moduleBuilder.getManager()->getRTManager()->registerAlias( m_name, adapter->getDesc() );
         RC::ConstHandle<CG::Adapter> aliasAdapter = moduleBuilder.getAdapter( m_name, getLocation() );
-        aliasAdapter->llvmPrepareModule( moduleBuilder, true );
+        aliasAdapter->llvmPrepareModule( moduleBuilder, buildFunctions );
       }
       catch ( Exception e )
       {

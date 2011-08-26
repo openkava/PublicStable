@@ -37,10 +37,10 @@ namespace Fabric
       jsonObjectGenerator.makeMember( "value" ).makeInteger( m_value );
     }
     
-    void ConstSize::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    void ConstSize::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctions ) const
     {
       RC::ConstHandle<CG::IntegerAdapter> integerAdapter = moduleBuilder.getManager()->getIntegerAdapter();
-      integerAdapter->llvmPrepareModule( moduleBuilder, true );
+      integerAdapter->llvmPrepareModule( moduleBuilder, buildFunctions );
     }
     
     RC::ConstHandle<CG::Adapter> ConstSize::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const

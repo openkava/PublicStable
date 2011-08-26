@@ -1,4 +1,4 @@
-function entry()
+operator entry()
 {
   var String string = "Hello, world!";
   report "string.length = " + string.length;

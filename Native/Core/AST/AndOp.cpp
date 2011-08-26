@@ -54,10 +54,10 @@ namespace Fabric
       return adapter;
     }
     
-    void AndOp::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    void AndOp::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctions ) const
     {
-      m_left->llvmPrepareModule( moduleBuilder, diagnostics );
-      m_right->llvmPrepareModule( moduleBuilder, diagnostics );
+      m_left->llvmPrepareModule( moduleBuilder, diagnostics, buildFunctions );
+      m_right->llvmPrepareModule( moduleBuilder, diagnostics, buildFunctions );
     }
     
     CG::ExprValue AndOp::buildExprValue( CG::BasicBlockBuilder &basicBlockBuilder, CG::Usage usage, std::string const &lValueErrorDesc ) const

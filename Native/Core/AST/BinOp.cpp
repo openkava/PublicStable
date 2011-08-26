@@ -70,10 +70,10 @@ namespace Fabric
       throw Exception( "binary operator " + _(CG::binOpUserName( m_binOpType )) + " not supported for types " + _(lhsType->getUserName()) + " and " + _(rhsType->getUserName()) );
     }
     
-    void BinOp::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    void BinOp::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctions ) const
     {
-      m_left->llvmPrepareModule( moduleBuilder, diagnostics );
-      m_right->llvmPrepareModule( moduleBuilder, diagnostics );
+      m_left->llvmPrepareModule( moduleBuilder, diagnostics, buildFunctions );
+      m_right->llvmPrepareModule( moduleBuilder, diagnostics, buildFunctions );
     }
     
     RC::ConstHandle<CG::Adapter> BinOp::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const

@@ -1,4 +1,4 @@
-function entry() {
+operator entry() {
   Scalar x = 3.141, y = 2.718, z = 0.1;
   report sqrt(x);
   report abs(x);

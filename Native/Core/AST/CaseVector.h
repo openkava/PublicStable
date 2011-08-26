@@ -34,7 +34,7 @@ namespace Fabric
 
       void appendJSON( Util::JSONGenerator const &jsonGenerator ) const;
       
-      void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
+      void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctions ) const;
     
     protected:
     

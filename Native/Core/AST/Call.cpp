@@ -65,9 +65,9 @@ namespace Fabric
       else return getFunctionSymbol( basicBlockBuilder )->getReturnInfo().getAdapter();
     }
     
-    void Call::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    void Call::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctions ) const
     {
-      m_args->llvmPrepareModule( moduleBuilder, diagnostics );
+      m_args->llvmPrepareModule( moduleBuilder, diagnostics, buildFunctions );
     }
     
     CG::ExprValue Call::buildExprValue( CG::BasicBlockBuilder &basicBlockBuilder, CG::Usage usage, std::string const &lValueErrorDesc ) const
