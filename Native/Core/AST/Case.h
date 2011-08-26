@@ -34,7 +34,7 @@ namespace Fabric
         RC::ConstHandle<StatementVector> const &statements
         );
       
-      virtual void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
+      virtual void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctions ) const;
 
       RC::ConstHandle<Expr> getExpr() const;
       RC::ConstHandle<StatementVector> getStatements() const;

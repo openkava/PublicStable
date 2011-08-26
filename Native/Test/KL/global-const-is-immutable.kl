@@ -1,5 +1,5 @@
 const Scalar PI = 3.141;
-function entry()
+operator entry()
 {
   PI = 2.718;
 }

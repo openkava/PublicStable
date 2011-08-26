@@ -45,10 +45,10 @@ namespace Fabric
       m_args->appendJSON( jsonObjectGenerator.makeMember( "args" ) );
     }
     
-    void InitializedVarDecl::llvmPrepareModule( std::string const &baseType, CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    void InitializedVarDecl::llvmPrepareModule( std::string const &baseType, CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctions ) const
     {
-      VarDecl::llvmPrepareModule( baseType, moduleBuilder, diagnostics );
-      m_args->llvmPrepareModule( moduleBuilder, diagnostics );
+      VarDecl::llvmPrepareModule( baseType, moduleBuilder, diagnostics, buildFunctions );
+      m_args->llvmPrepareModule( moduleBuilder, diagnostics, buildFunctions );
     }
 
     void InitializedVarDecl::llvmCompileToBuilder( std::string const &baseType, CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const

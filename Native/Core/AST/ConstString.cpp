@@ -35,7 +35,7 @@ namespace Fabric
       jsonObjectGenerator.makeMember( "value" ).makeString( m_value );
     }
     
-    void ConstString::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    void ConstString::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctions ) const
     {
       std::string unquotedValue;
       try
@@ -48,10 +48,10 @@ namespace Fabric
       }
 
       RC::ConstHandle<CG::ConstStringAdapter> constStringAdapter = moduleBuilder.getManager()->getConstStringAdapter( unquotedValue.length() );
-      constStringAdapter->llvmPrepareModule( moduleBuilder, true );
+      constStringAdapter->llvmPrepareModule( moduleBuilder, buildFunctions );
 
       RC::ConstHandle<CG::StringAdapter> stringAdapter = moduleBuilder.getManager()->getStringAdapter();
-      stringAdapter->llvmPrepareModule( moduleBuilder, true );
+      stringAdapter->llvmPrepareModule( moduleBuilder, buildFunctions );
     }
     
     RC::ConstHandle<CG::Adapter> ConstString::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const

@@ -33,9 +33,9 @@ namespace Fabric
       jsonObjectGenerator.makeMember( "memberName" ).makeString( m_memberName );
     }
     
-    void StructMemberOp::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    void StructMemberOp::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctions ) const
     {
-      m_structExpr->llvmPrepareModule( moduleBuilder, diagnostics );
+      m_structExpr->llvmPrepareModule( moduleBuilder, diagnostics, buildFunctions );
     }
     
     RC::ConstHandle<CG::Adapter> StructMemberOp::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const

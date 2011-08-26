@@ -35,10 +35,10 @@ namespace Fabric
         (*it)->appendJSON( jsonArrayGenerator.makeElement() );
     }
     
-    void StatementVector::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    void StatementVector::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctions ) const
     {
       for ( const_iterator it=begin(); it!=end(); ++it )
-        (*it)->llvmPrepareModule( moduleBuilder, diagnostics );
+        (*it)->llvmPrepareModule( moduleBuilder, diagnostics, buildFunctions );
     }
     
     void StatementVector::llvmCompileToBuilder( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const

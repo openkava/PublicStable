@@ -1,4 +1,4 @@
-function entry()
+operator entry()
 {
   const Byte constByte = 42;
   report constByte;

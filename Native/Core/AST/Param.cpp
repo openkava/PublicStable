@@ -64,9 +64,9 @@ namespace Fabric
       return CG::ExprType( getAdapter( cgManager ), m_usage );
     }
     
-    void Param::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    void Param::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctions ) const
     {
-      moduleBuilder.getAdapter( m_type, getLocation() )->llvmPrepareModule( moduleBuilder, true );
+      moduleBuilder.getAdapter( m_type, getLocation() )->llvmPrepareModule( moduleBuilder, buildFunctions );
     }
   };
 };

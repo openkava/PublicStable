@@ -36,10 +36,10 @@ namespace Fabric
       m_indexExpr->appendJSON( jsonObjectGenerator.makeMember( "indexExpr" ) );
     }
     
-    void IndexOp::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    void IndexOp::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctions ) const
     {
-      m_expr->llvmPrepareModule( moduleBuilder, diagnostics );
-      m_indexExpr->llvmPrepareModule( moduleBuilder, diagnostics );
+      m_expr->llvmPrepareModule( moduleBuilder, diagnostics, buildFunctions );
+      m_indexExpr->llvmPrepareModule( moduleBuilder, diagnostics, buildFunctions );
     }
     
     RC::ConstHandle<CG::Adapter> IndexOp::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const

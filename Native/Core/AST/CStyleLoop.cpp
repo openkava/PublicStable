@@ -64,18 +64,18 @@ namespace Fabric
         m_body->appendJSON( jsonObjectGenerator.makeMember( "body" ) );
     }
     
-    void CStyleLoop::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    void CStyleLoop::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctions ) const
     {
       if ( m_startStatement )
-        m_startStatement->llvmPrepareModule( moduleBuilder, diagnostics );
+        m_startStatement->llvmPrepareModule( moduleBuilder, diagnostics, buildFunctions );
       if ( m_preCondExpr )
-        m_preCondExpr->llvmPrepareModule( moduleBuilder, diagnostics );
+        m_preCondExpr->llvmPrepareModule( moduleBuilder, diagnostics, buildFunctions );
       if ( m_nextExpr )
-        m_nextExpr->llvmPrepareModule( moduleBuilder, diagnostics );
+        m_nextExpr->llvmPrepareModule( moduleBuilder, diagnostics, buildFunctions );
       if ( m_postCondExpr )
-        m_postCondExpr->llvmPrepareModule( moduleBuilder, diagnostics );
+        m_postCondExpr->llvmPrepareModule( moduleBuilder, diagnostics, buildFunctions );
       if ( m_body )
-        m_body->llvmPrepareModule( moduleBuilder, diagnostics );
+        m_body->llvmPrepareModule( moduleBuilder, diagnostics, buildFunctions );
     }
 
     void CStyleLoop::llvmCompileToBuilder( CG::BasicBlockBuilder &parentBasicBlockBuilder, CG::Diagnostics &diagnostics ) const

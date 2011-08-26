@@ -1,4 +1,4 @@
-function entry()
+operator entry()
 {
   if ( false )
     report "BAD 1";

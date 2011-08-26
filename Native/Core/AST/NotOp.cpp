@@ -31,9 +31,9 @@ namespace Fabric
       m_child->appendJSON( jsonObjectGenerator.makeMember( "child" ) );
     }
     
-    void NotOp::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    void NotOp::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctions ) const
     {
-      m_child->llvmPrepareModule( moduleBuilder, diagnostics );
+      m_child->llvmPrepareModule( moduleBuilder, diagnostics, buildFunctions );
     }
     
     RC::ConstHandle<CG::Adapter> NotOp::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const

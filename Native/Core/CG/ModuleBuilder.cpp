@@ -3,6 +3,8 @@
 #include "Error.h"
 #include "Location.h"
 
+#include <llvm/Function.h>
+
 namespace Fabric
 {
   namespace CG
@@ -65,7 +67,9 @@ namespace Fabric
       if ( !insertResult.second )
       {
         RC::ConstHandle<FunctionSymbol> const &existingFunctionSymbol = insertResult.first->second;
-        if ( existingFunctionSymbol->getLLVMFunction() != functionSymbol->getLLVMFunction() )
+        llvm::Function *llvmFunction = functionSymbol->getLLVMFunction();
+        llvm::Function *existingLLVMFunction = existingFunctionSymbol->getLLVMFunction();
+        if ( llvmFunction != existingLLVMFunction )
           throw Exception( "function with entry name " + _(entryName) + " already exists" );
       }
       

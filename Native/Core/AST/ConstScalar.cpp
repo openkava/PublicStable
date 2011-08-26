@@ -35,10 +35,10 @@ namespace Fabric
       jsonObjectGenerator.makeMember( "value" ).makeString( m_valueString );
     }
     
-    void ConstScalar::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    void ConstScalar::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctions ) const
     {
       RC::ConstHandle<CG::FloatAdapter> floatAdapter = moduleBuilder.getManager()->getFP32Adapter();
-      floatAdapter->llvmPrepareModule( moduleBuilder, true );
+      floatAdapter->llvmPrepareModule( moduleBuilder, buildFunctions );
     }
     
     RC::ConstHandle<CG::Adapter> ConstScalar::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const

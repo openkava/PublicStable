@@ -56,10 +56,10 @@ namespace Fabric
       jsonObjectGenerator.makeMember( "value" ).makeString( m_value );
     }
     
-    void ConstDecl::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    void ConstDecl::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctions ) const
     {
       RC::ConstHandle<CG::Adapter> adapter = moduleBuilder.getAdapter( m_type, getLocation() );
-      adapter->llvmPrepareModule( moduleBuilder, true );
+      adapter->llvmPrepareModule( moduleBuilder, buildFunctions );
     }
 
     void ConstDecl::llvmCompileToScope( CG::Scope &scope, RC::ConstHandle<CG::Manager> const &manager ) const

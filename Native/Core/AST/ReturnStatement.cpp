@@ -30,10 +30,10 @@ namespace Fabric
         m_expr->appendJSON( jsonObjectGenerator.makeMember( "expr" ) );
     }
     
-    void ReturnStatement::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    void ReturnStatement::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctions ) const
     {
       if ( m_expr )
-        m_expr->llvmPrepareModule( moduleBuilder, diagnostics );
+        m_expr->llvmPrepareModule( moduleBuilder, diagnostics, buildFunctions );
     }
 
     void ReturnStatement::llvmCompileToBuilder( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const

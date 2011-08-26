@@ -28,7 +28,7 @@ namespace Fabric
       jsonObjectGenerator.makeMember( "name" ).makeString( m_name );
     }
     
-    void Var::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    void Var::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctions ) const
     {
     }
     

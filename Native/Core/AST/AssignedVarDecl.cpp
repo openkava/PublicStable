@@ -46,10 +46,10 @@ namespace Fabric
       m_initialExpr->appendJSON( jsonObjectGenerator.makeMember( "initialValue" ) );
     }
     
-    void AssignedVarDecl::llvmPrepareModule( std::string const &baseType, CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    void AssignedVarDecl::llvmPrepareModule( std::string const &baseType, CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctions ) const
     {
-      VarDecl::llvmPrepareModule( baseType, moduleBuilder, diagnostics );
-      m_initialExpr->llvmPrepareModule( moduleBuilder, diagnostics );
+      VarDecl::llvmPrepareModule( baseType, moduleBuilder, diagnostics, buildFunctions );
+      m_initialExpr->llvmPrepareModule( moduleBuilder, diagnostics, buildFunctions );
     }
 
     void AssignedVarDecl::llvmCompileToBuilder( std::string const &baseType, CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const

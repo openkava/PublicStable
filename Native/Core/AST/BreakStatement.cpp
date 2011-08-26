@@ -30,7 +30,7 @@ namespace Fabric
       Statement::appendJSONMembers( jsonObjectGenerator );
     }
     
-    void BreakStatement::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    void BreakStatement::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctions ) const
     {
     }
 

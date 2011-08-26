@@ -44,11 +44,11 @@ namespace Fabric
       jsonObjectGenerator.makeMember( "arrayModifier" ).makeString( m_arrayModifier );
     }
     
-    void VarDecl::llvmPrepareModule( std::string const &baseType, CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    void VarDecl::llvmPrepareModule( std::string const &baseType, CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctions ) const
     {
       std::string type = baseType + m_arrayModifier;
       RC::ConstHandle<CG::Adapter> adapter = moduleBuilder.getAdapter( type, getLocation() );
-      adapter->llvmPrepareModule( moduleBuilder, true );
+      adapter->llvmPrepareModule( moduleBuilder, buildFunctions );
     }
 
     void VarDecl::llvmCompileToBuilder( std::string const &baseType, CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const

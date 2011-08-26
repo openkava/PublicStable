@@ -44,11 +44,11 @@ namespace Fabric
       m_right->appendJSON( jsonObjectGenerator.makeMember( "falseExpr" ) );
     }
     
-    void TernaryOp::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    void TernaryOp::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctions ) const
     {
-      m_left->llvmPrepareModule( moduleBuilder, diagnostics );
-      m_middle->llvmPrepareModule( moduleBuilder, diagnostics );
-      m_right->llvmPrepareModule( moduleBuilder, diagnostics );
+      m_left->llvmPrepareModule( moduleBuilder, diagnostics, buildFunctions );
+      m_middle->llvmPrepareModule( moduleBuilder, diagnostics, buildFunctions );
+      m_right->llvmPrepareModule( moduleBuilder, diagnostics, buildFunctions );
     }
     
     RC::ConstHandle<CG::Adapter> TernaryOp::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const
