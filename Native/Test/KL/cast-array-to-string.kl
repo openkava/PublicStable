@@ -1,4 +1,4 @@
-function entry()
+operator entry()
 {
   var Scalar scalars[];
   scalars.push( 3.141 );

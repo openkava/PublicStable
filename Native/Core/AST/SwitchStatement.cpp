@@ -51,10 +51,10 @@ namespace Fabric
       m_cases->appendJSON( jsonObjectGenerator.makeMember( "cases" ) );
     }
     
-    void SwitchStatement::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    void SwitchStatement::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const
     {
-      m_expr->llvmPrepareModule( moduleBuilder, diagnostics );
-      m_cases->llvmPrepareModule( moduleBuilder, diagnostics );
+      m_expr->registerTypes( cgManager, diagnostics );
+      m_cases->registerTypes( cgManager, diagnostics );
     }
 
     void SwitchStatement::llvmCompileToBuilder( CG::BasicBlockBuilder &parentBasicBlockBuilder, CG::Diagnostics &diagnostics ) const
@@ -125,7 +125,7 @@ namespace Fabric
             functionSymbol = basicBlockBuilder.maybeGetFunction( eqFunctionName );
             if ( !functionSymbol )
               throw Exception( "binary operator " + _(CG::binOpUserName(CG::BIN_OP_EQ)) + " not supported for types " + _(exprValue.getTypeUserName()) + " and " + _(caseExprValue.getTypeUserName()) );
-            CG::ExprValue newCaseExprValue( exprValue.getAdapter(), CG::USAGE_RVALUE, exprValue.getAdapter()->llvmCast( basicBlockBuilder, caseExprValue ) );
+            CG::ExprValue newCaseExprValue( exprValue.getAdapter(), CG::USAGE_RVALUE, basicBlockBuilder.getContext(), exprValue.getAdapter()->llvmCast( basicBlockBuilder, caseExprValue ) );
             caseExprValue.llvmDispose( basicBlockBuilder );
             caseExprValue = newCaseExprValue;
           }

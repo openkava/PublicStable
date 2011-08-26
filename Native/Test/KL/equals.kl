@@ -1,4 +1,4 @@
-function entry()
+operator entry()
 {
   var Integer result;
   if ( 1 == 2 )

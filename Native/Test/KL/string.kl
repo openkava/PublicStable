@@ -3,7 +3,7 @@ function reportString( String string )
   report "'" + string + "' (length " + string.length + ")";
 }
 
-function entry()
+operator entry()
 {
   var String string; reportString( string );
   string = 7; reportString( string );

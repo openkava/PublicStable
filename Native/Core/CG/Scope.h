@@ -192,14 +192,14 @@ namespace Fabric
         return getExprType().getUsage();
       }
       
-      llvm::Type const *getLLVMType() const
+      llvm::Type const *getLLVMType( RC::Handle<Context> const &context ) const
       {
         switch ( getUsage() )
         {
           case USAGE_RVALUE:
-            return getAdapter()->llvmRType();
+            return getAdapter()->llvmRType( context );
           case USAGE_LVALUE:
-            return getAdapter()->llvmLType();
+            return getAdapter()->llvmLType( context );
           case USAGE_UNSPECIFIED:
             FABRIC_ASSERT( false );
             throw Exception( "usage unspecified" );

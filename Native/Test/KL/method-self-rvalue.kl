@@ -20,7 +20,7 @@ function Vec3 foo( in Vec3 a, in Vec3 b )
   return a.cross( b ); 
 } 
 
-function entry( ) 
+operator entry( ) 
 { 
   var Vec3	a, b; 
   a.x = a.y = a.z = b.x = b.y = b.z = 0.0; 

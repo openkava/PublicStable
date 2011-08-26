@@ -30,9 +30,9 @@ namespace Fabric
       m_constDecl->appendJSON( jsonObjectGenerator.makeMember( "constDecl" ) );
     }
     
-    void GlobalConstDecl::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    void GlobalConstDecl::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const
     {
-      m_constDecl->llvmPrepareModule( moduleBuilder, diagnostics );
+      m_constDecl->registerTypes( cgManager, diagnostics );
     }
     
     void GlobalConstDecl::llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctionBodies ) const
@@ -41,7 +41,7 @@ namespace Fabric
       {
         try
         {
-          m_constDecl->llvmCompileToScope( moduleBuilder.getScope(), moduleBuilder.getManager() );
+          m_constDecl->llvmCompileToScope( moduleBuilder.getScope(), moduleBuilder );
         }
         catch ( CG::Error e )
         {

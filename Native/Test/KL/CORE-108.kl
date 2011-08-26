@@ -416,7 +416,7 @@ operator generateTeapot(
     v[i] = v[i] * scale;
 }
 
-function entry()
+operator entry()
 {
   report( "Entry" );
   var Vec3  v[], n[];

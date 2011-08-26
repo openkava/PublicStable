@@ -27,7 +27,7 @@ namespace Fabric
 
       virtual llvm::Constant *llvmDefaultValue( BasicBlockBuilder &basicBlockBuilder ) const;
       
-      virtual void llvmPrepareModule( ModuleBuilder &moduleBuilder, bool buildFunctions ) const;
+      virtual void llvmCompileToModule( ModuleBuilder &moduleBuilder ) const;
       virtual void *llvmResolveExternalFunction( std::string const &functionName ) const;
 
       // ArrayAdapter
@@ -38,6 +38,10 @@ namespace Fabric
     protected:
     
       VariableArrayAdapter( RC::ConstHandle<Manager> const &manager, RC::ConstHandle<RT::VariableArrayDesc> const &variableArrayDesc );
+      
+      virtual llvm::Type const *buildLLVMRawType( RC::Handle<Context> const &context ) const;
+
+      llvm::Type const *getLLVMImplType( RC::Handle<Context> const &context ) const;
       
     private:
     
@@ -52,7 +56,6 @@ namespace Fabric
  
       RC::ConstHandle<RT::VariableArrayDesc> m_variableArrayDesc;
       RC::ConstHandle<Adapter> m_memberAdapter;
-      llvm::Type const *m_implType;
    };
   };
 };

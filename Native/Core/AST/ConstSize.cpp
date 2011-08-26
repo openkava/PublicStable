@@ -7,6 +7,7 @@
 
 #include <Fabric/Core/AST/ConstSize.h>
 #include <Fabric/Core/CG/BasicBlockBuilder.h>
+#include <Fabric/Core/CG/Context.h>
 #include <Fabric/Core/CG/IntegerAdapter.h>
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/CG/ModuleBuilder.h>
@@ -37,15 +38,16 @@ namespace Fabric
       jsonObjectGenerator.makeMember( "value" ).makeInteger( m_value );
     }
     
-    void ConstSize::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    void ConstSize::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const
     {
-      RC::ConstHandle<CG::IntegerAdapter> integerAdapter = moduleBuilder.getManager()->getIntegerAdapter();
-      integerAdapter->llvmPrepareModule( moduleBuilder, true );
+      cgManager->getIntegerAdapter();
     }
     
-    RC::ConstHandle<CG::Adapter> ConstSize::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const
+    RC::ConstHandle<CG::Adapter> ConstSize::getType( CG::BasicBlockBuilder &basicBlockBuilder ) const
     {
-      return basicBlockBuilder.getManager()->getIntegerAdapter();
+      RC::ConstHandle<CG::Adapter> adapter = basicBlockBuilder.getManager()->getIntegerAdapter();
+      adapter->llvmCompileToModule( basicBlockBuilder.getModuleBuilder() );
+      return adapter;
     }
     
     CG::ExprValue ConstSize::buildExprValue( CG::BasicBlockBuilder &basicBlockBuilder, CG::Usage usage, std::string const &lValueErrorDesc ) const
@@ -59,7 +61,8 @@ namespace Fabric
       return CG::ExprValue( sizeAdapter, CG::USAGE_RVALUE, llvm::ConstantInt::get( sizeAdapter->llvmRType(), m_value, false ) );
       */
       RC::ConstHandle< CG::IntegerAdapter > integerAdapter = basicBlockBuilder.getManager()->getIntegerAdapter();
-      return CG::ExprValue( integerAdapter, CG::USAGE_RVALUE, integerAdapter->llvmConst( (int32_t)m_value ) );
+      integerAdapter->llvmCompileToModule( basicBlockBuilder.getModuleBuilder() );
+      return CG::ExprValue( integerAdapter, CG::USAGE_RVALUE, basicBlockBuilder.getContext(), integerAdapter->llvmConst( basicBlockBuilder.getContext(), (int32_t)m_value ) );
     }
   };
 };

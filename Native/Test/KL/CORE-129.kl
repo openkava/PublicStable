@@ -3,7 +3,7 @@ struct S
   Integer i;
 };
 
-function entry()
+operator entry()
 {
   S s;
   report s.dataSize;

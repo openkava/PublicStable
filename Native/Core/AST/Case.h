@@ -14,7 +14,8 @@ namespace Fabric
 {
   namespace CG
   {
-    class ModuleBuilder;
+    class Diagnostics;
+    class Manager;
   };
   
   namespace AST
@@ -34,7 +35,7 @@ namespace Fabric
         RC::ConstHandle<StatementVector> const &statements
         );
       
-      virtual void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
+      virtual void registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const;
 
       RC::ConstHandle<Expr> getExpr() const;
       RC::ConstHandle<StatementVector> getStatements() const;

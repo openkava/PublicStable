@@ -8,7 +8,7 @@ function bar( io String strings[] )
   foo( strings );
 }
 
-function entry()
+operator entry()
 {
   var String strings[];
   strings.push( "foo" );

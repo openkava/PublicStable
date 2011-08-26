@@ -20,8 +20,8 @@ else
   EXTS_DIR="../../dist/$BUILD_OS/$BUILD_ARCH/$BUILD_TYPE/Exts"
 fi
 
-if [ -n "$FABRIC_TEST_WITH_VALGRIND" -a "$BUILD_OS" = "Linux" ]; then
-  VALGRIND_CMD="valgrind --suppressions=../valgrind.suppressions.linux --leak-check=full -q"
+if [ -n "$FABRIC_TEST_WITH_VALGRIND" ]; then
+  VALGRIND_CMD="valgrind --suppressions=../valgrind.suppressions.$BUILD_OS --leak-check=full -q"
 else
   VALGRIND_CMD=
 fi
@@ -41,8 +41,11 @@ fi
 for f in "$@"; do
   TMPFILE=$(tmpfilename)
 
-  #echo $VALGRIND_CMD ../../build/$BUILD_OS/$BUILD_ARCH/$BUILD_TYPE/Fabric/Clients/CLI/fabric --load="'$WRAPPERS_FILE'" --exts="'$EXTS_DIR'" $f
-  LD_LIBRARY_PATH=build/ $VALGRIND_CMD ../../build/$BUILD_OS/$BUILD_ARCH/$BUILD_TYPE/Fabric/Clients/CLI/fabric --load="$WRAPPERS_FILE" --exts="$EXTS_DIR" $f 2>&1 | grep -v '^\[FABRIC\] .*Extension registered' | grep -v '^\[FABRIC\] .*Searching extension directory' | $OUTPUT_FILTER >$TMPFILE
+  LD_LIBRARY_PATH=build/ $VALGRIND_CMD ../../build/$BUILD_OS/$BUILD_ARCH/$BUILD_TYPE/Fabric/Clients/CLI/fabric --load="$WRAPPERS_FILE" --exts="$EXTS_DIR" $f 2>&1 \
+    | grep -v '^\[FABRIC\] .*Extension registered' \
+    | grep -v '^\[FABRIC\] .*Searching extension directory' \
+    | grep -v '^\[FABRIC\] .*unable to open extension directory' \
+    | $OUTPUT_FILTER >$TMPFILE
 
   if [ "$REPLACE" -eq 1 ]; then
     mv $TMPFILE ${f%.js}.out
@@ -54,6 +57,8 @@ for f in "$@"; do
       cat ${f%.js}.out
       echo "Actual output ($TMPFILE):"
       cat $TMPFILE
+      echo "To debug:"
+      echo "gdb --args" $VALGRIND_CMD ../../build/$BUILD_OS/$BUILD_ARCH/$BUILD_TYPE/Fabric/Clients/CLI/fabric --load="'$WRAPPERS_FILE'" --exts="'$EXTS_DIR'" $f
       exit 1
     else
       echo "PASS $(basename $f)";
