@@ -46,10 +46,10 @@ namespace Fabric
       }
     }
     
-    void MemberDeclVector::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    void MemberDeclVector::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const
     {
       for ( const_iterator it=begin(); it!=end(); ++it )
-        (*it)->llvmPrepareModule( moduleBuilder, diagnostics );
+        (*it)->registerTypes( cgManager, diagnostics );
     }
   };
 };

@@ -3,7 +3,7 @@ function double( io Scalar x )
   x *= 2;
 }
 
-function entry()
+operator entry()
 {
   var Scalar x = 2;
   double( x );

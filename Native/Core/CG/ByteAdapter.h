@@ -26,13 +26,13 @@ namespace Fabric
       
       llvm::Constant *llvmConst( RC::Handle<Context> const &context, uint8_t value ) const;
       
+      virtual void llvmCompileToModule( ModuleBuilder &moduleBuilder ) const;
+      
     protected:
     
       ByteAdapter( RC::ConstHandle<Manager> const &manager, RC::ConstHandle<RT::NumericDesc> const &byteDesc );
       
       virtual llvm::Type const *buildLLVMRawType( RC::Handle<Context> const &context ) const;
-      
-      virtual void llvmPrepareModule( ModuleBuilder &moduleBuilder, bool buildFunctions ) const;
       
     private:
     

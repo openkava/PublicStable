@@ -1,4 +1,4 @@
-function entry()
+operator entry()
 {
   var Data data;
   var Data otherData = data;

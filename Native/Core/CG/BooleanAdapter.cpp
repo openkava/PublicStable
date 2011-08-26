@@ -30,12 +30,19 @@ namespace Fabric
       return llvm::Type::getInt1Ty( context->getLLVMContext() );
     }
     
-    void BooleanAdapter::llvmPrepareModule( ModuleBuilder &moduleBuilder, bool buildFunctions ) const
+    void BooleanAdapter::llvmCompileToModule( ModuleBuilder &moduleBuilder ) const
     {
-      if ( moduleBuilder.contains( getCodeName(), buildFunctions ) )
+      if ( moduleBuilder.haveCompiledToModule( getCodeName() ) )
         return;
+        
+      RC::Handle<Context> context = moduleBuilder.getContext();
       
       RC::ConstHandle<StringAdapter> stringAdapter = getManager()->getStringAdapter();
+      stringAdapter->llvmCompileToModule( moduleBuilder );
+      RC::ConstHandle<ConstStringAdapter> constStringAdapter = getManager()->getConstStringAdapter();
+      constStringAdapter->llvmCompileToModule( moduleBuilder );
+      
+      static const bool buildFunctions = true;
       
       {
         std::string name = constructOverloadName( stringAdapter, this );
@@ -56,19 +63,17 @@ namespace Fabric
           basicBlockBuilder->CreateCondBr( booleanRValue, trueBB, falseBB );
           
           basicBlockBuilder->SetInsertPoint( trueBB );
-          RC::ConstHandle<ConstStringAdapter> trueConstStringAdapter = getManager()->getConstStringAdapter(4);
-          ExprValue trueExprValue( trueConstStringAdapter, USAGE_RVALUE, moduleBuilder.getContext(), trueConstStringAdapter->llvmConst( basicBlockBuilder, "true", 4 ) );
+          ExprValue trueExprValue( constStringAdapter, USAGE_RVALUE, context, constStringAdapter->llvmConst( basicBlockBuilder, "true", 4 ) );
           llvm::Value *trueStringRValue = stringAdapter->llvmCast( basicBlockBuilder, trueExprValue );
           basicBlockBuilder->CreateBr( mergeBB );
           
           basicBlockBuilder->SetInsertPoint( falseBB );
-          RC::ConstHandle<ConstStringAdapter> falseConstStringAdapter = getManager()->getConstStringAdapter(5);
-          ExprValue falseExprValue( falseConstStringAdapter, USAGE_RVALUE, moduleBuilder.getContext(), falseConstStringAdapter->llvmConst( basicBlockBuilder, "false", 5 ) );
+          ExprValue falseExprValue( constStringAdapter, USAGE_RVALUE, context, constStringAdapter->llvmConst( basicBlockBuilder, "false", 5 ) );
           llvm::Value *falseStringRValue = stringAdapter->llvmCast( basicBlockBuilder, falseExprValue );
           basicBlockBuilder->CreateBr( mergeBB );
           
           basicBlockBuilder->SetInsertPoint( mergeBB );
-          llvm::PHINode *stringRValue = basicBlockBuilder->CreatePHI( stringAdapter->llvmRType( moduleBuilder.getContext() ), "stringRValue" );
+          llvm::PHINode *stringRValue = basicBlockBuilder->CreatePHI( stringAdapter->llvmRType( context ), "stringRValue" );
           stringRValue->addIncoming( trueStringRValue, trueBB );
           stringRValue->addIncoming( falseStringRValue, falseBB );
           stringAdapter->llvmAssign( basicBlockBuilder, stringLValue, stringRValue );

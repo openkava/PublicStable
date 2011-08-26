@@ -16,6 +16,7 @@ namespace Fabric
       std::string const &entryName,
       ExprType const &returnExprType,
       std::vector< FunctionParam > const &params,
+      bool exportSymbol,
       std::string const *friendlyName, 
       bool returnsStaticDataPtr
       )
@@ -23,13 +24,14 @@ namespace Fabric
       , m_functionScope( NULL )
     {
       
-      build( entryName, returnExprType, params, friendlyName, returnsStaticDataPtr );
+      build( entryName, returnExprType, params, exportSymbol, friendlyName, returnsStaticDataPtr );
     }
     
     FunctionBuilder::FunctionBuilder( 
       ModuleBuilder &moduleBuilder, 
       std::string const &entryName, 
       std::string const &paramLayout,
+      bool exportSymbol,
       std::string const *friendlyName,
       bool returnsStaticDataPtr
       )
@@ -94,13 +96,14 @@ namespace Fabric
         } while( end != std::string::npos );
       }
       
-      build( entryName, returnExprType, paramList, friendlyName, returnsStaticDataPtr );
+      build( entryName, returnExprType, paramList, exportSymbol, friendlyName, returnsStaticDataPtr );
     }
     
     void FunctionBuilder::build( 
       std::string const &entryName, 
       ExprType const &returnExprType, 
-      std::vector< FunctionParam > const &params, 
+      std::vector< FunctionParam > const &params,
+      bool exportSymbol,
       std::string const *friendlyName, 
       bool returnsStaticDataPtr
       )
@@ -137,7 +140,7 @@ namespace Fabric
         
       m_llvmFunctionType = llvm::FunctionType::get( llvmReturnType, llvmParamTypes, false );
 
-      llvm::Attributes    attrs = llvm::Attribute::InlineHint;
+      llvm::Attributes attrs = llvm::Attribute::InlineHint;
       if( returnInfo.usesReturnLValue() )
         attrs |= llvm::Attribute::StructRet;
 
@@ -145,9 +148,18 @@ namespace Fabric
       AWI[0] = llvm::AttributeWithIndex::get( ~0u, llvm::Attribute::InlineHint );
       llvm::AttrListPtr attrListPtr = llvm::AttrListPtr::get(AWI, 1);
       
-      llvm::Constant *llvmFunctionAsConstant = m_moduleBuilder->getOrInsertFunction( entryName.c_str(), m_llvmFunctionType, attrListPtr );
-      m_llvmFunction = llvm::cast<llvm::Function>( llvmFunctionAsConstant );
-      m_llvmFunction->setLinkage( llvm::GlobalValue::ExternalLinkage );
+      llvm::Function *existingLLVMFunction = m_moduleBuilder->getFunction( entryName.c_str() );
+      if ( existingLLVMFunction )
+      {
+        // [pzion 20110825] FIXME: should verify sanity here through asserts on types, attributes
+        // and linkage
+        m_llvmFunction = existingLLVMFunction;
+      }
+      else
+      {
+        m_llvmFunction = llvm::cast<llvm::Function>( m_moduleBuilder->getOrInsertFunction( entryName.c_str(), m_llvmFunctionType, attrListPtr ) );
+        m_llvmFunction->setLinkage( exportSymbol? llvm::GlobalValue::ExternalLinkage: llvm::GlobalValue::PrivateLinkage );
+      }
       
       llvm::Function::arg_iterator ai = m_llvmFunction->arg_begin();
       if( returnInfo.usesReturnLValue() )

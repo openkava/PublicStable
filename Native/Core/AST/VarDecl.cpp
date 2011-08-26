@@ -7,6 +7,7 @@
 
 #include "VarDecl.h"
 #include <Fabric/Core/CG/Adapter.h>
+#include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/CG/ModuleBuilder.h>
 #include <Fabric/Core/CG/Scope.h>
 #include <Fabric/Base/Util/SimpleString.h>
@@ -44,11 +45,24 @@ namespace Fabric
       jsonObjectGenerator.makeMember( "arrayModifier" ).makeString( m_arrayModifier );
     }
     
-    void VarDecl::llvmPrepareModule( std::string const &baseType, CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    RC::ConstHandle<CG::Adapter> VarDecl::getAdapter( std::string const &baseType, RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const
     {
       std::string type = baseType + m_arrayModifier;
-      RC::ConstHandle<CG::Adapter> adapter = moduleBuilder.getAdapter( type, getLocation() );
-      adapter->llvmPrepareModule( moduleBuilder, true );
+      RC::ConstHandle<CG::Adapter> result;
+      try
+      {
+        result = cgManager->getAdapter( type );
+      }
+      catch ( Exception e )
+      {
+        addError( diagnostics, e );
+      }
+      return result;
+    }
+    
+    void VarDecl::registerTypes( std::string const &baseType, RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const
+    {
+      getAdapter( baseType, cgManager, diagnostics );
     }
 
     void VarDecl::llvmCompileToBuilder( std::string const &baseType, CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const
@@ -58,10 +72,8 @@ namespace Fabric
 
     CG::ExprValue VarDecl::llvmAllocateVariable( std::string const &baseType, CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const
     {
-      std::string type = baseType + m_arrayModifier;
-      RC::ConstHandle<CG::Adapter> adapter = basicBlockBuilder.maybeGetAdapter( type );
-      if ( !adapter )
-        throw CG::Error( getLocation(), "variable type " + _(type) + " not registered" );
+      RC::ConstHandle<CG::Adapter> adapter = getAdapter( baseType, basicBlockBuilder.getManager(), diagnostics );
+      adapter->llvmCompileToModule( basicBlockBuilder.getModuleBuilder() );
       
       llvm::Value *result = adapter->llvmAlloca( basicBlockBuilder, m_name );
       adapter->llvmInit( basicBlockBuilder, result );

@@ -3,7 +3,7 @@ struct Foo
   Integer bar[]; 
 }; 
 
-function entry() 
+operator entry() 
 { 
     var Foo baz[]; 
     baz.resize(1); 

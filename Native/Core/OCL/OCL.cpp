@@ -425,7 +425,7 @@ namespace Fabric
 #define ADD_FUNC( name, paramLayout ) \
   do { \
     std::string friendlyEntryName = ADD_FUNC_QUOTE(cl##name); \
-    CG::FunctionBuilder( moduleBuilder, friendlyEntryName, paramLayout, &friendlyEntryName ); \
+    CG::FunctionBuilder( moduleBuilder, friendlyEntryName, paramLayout, true, &friendlyEntryName ); \
     llvmFuncTable[friendlyEntryName] = (void *)&name; \
   } while ( false )
     

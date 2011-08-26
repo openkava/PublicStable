@@ -114,21 +114,25 @@ namespace Fabric
       }
     }
 
-    void StructAdapter::llvmPrepareModule( ModuleBuilder &moduleBuilder, bool buildFunctions ) const
+    void StructAdapter::llvmCompileToModule( ModuleBuilder &moduleBuilder ) const
     {
-      if ( moduleBuilder.contains( getCodeName(), buildFunctions ) )
+      if ( moduleBuilder.haveCompiledToModule( getCodeName() ) )
         return;
         
       RC::Handle<Context> context = moduleBuilder.getContext();
       
+      RC::ConstHandle<StringAdapter> stringAdapter = getManager()->getStringAdapter();
+      stringAdapter->llvmCompileToModule( moduleBuilder );
+      RC::ConstHandle<SizeAdapter> sizeAdapter = getManager()->getSizeAdapter();
+      sizeAdapter->llvmCompileToModule( moduleBuilder );
+      RC::ConstHandle<OpaqueAdapter> dataAdapter = getManager()->getDataAdapter();
+      dataAdapter->llvmCompileToModule( moduleBuilder );
       for ( MemberAdaptorVector::const_iterator it=m_memberAdapters.begin(); it!=m_memberAdapters.end(); ++it )
-        (*it)->llvmPrepareModule( moduleBuilder, buildFunctions );
+        (*it)->llvmCompileToModule( moduleBuilder );
       
       moduleBuilder->addTypeName( getCodeName(), llvmRawType( context ) );
-
-      RC::ConstHandle<StringAdapter> stringAdapter = getManager()->getStringAdapter();
-      RC::ConstHandle<SizeAdapter> sizeAdapter = getManager()->getSizeAdapter();
-      RC::ConstHandle<OpaqueAdapter> dataAdapter = getManager()->getDataAdapter();
+      
+      static const bool buildFunctions = true;
       
       if ( !m_isShallow )
       {

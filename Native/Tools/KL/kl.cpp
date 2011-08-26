@@ -154,7 +154,6 @@ void handleFile( FILE *fp, unsigned int runFlags )
   std::auto_ptr<llvm::Module> module( new llvm::Module( "kl", cgContext->getLLVMContext() ) );
 
   CG::ModuleBuilder moduleBuilder( cgManager, cgContext, module.get() );
-  cgManager->llvmPrepareModule( moduleBuilder );
   OCL::llvmPrepareModule( moduleBuilder, rtManager );
   
   RC::ConstHandle<AST::GlobalList> globalList = KL::Parse( scanner, diagnostics );
@@ -175,7 +174,7 @@ void handleFile( FILE *fp, unsigned int runFlags )
 
   if( runFlags & (RF_ShowASM | RF_ShowIR | RF_ShowOptIR | RF_ShowOptASM | RF_Run) )
   {
-    globalList->llvmPrepareModule( moduleBuilder, diagnostics );
+    globalList->registerTypes( cgManager, diagnostics );
     if ( !diagnostics.containsError() )
       globalList->llvmCompileToModule( moduleBuilder, diagnostics, false );
     if ( !diagnostics.containsError() )

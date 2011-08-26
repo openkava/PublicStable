@@ -66,17 +66,23 @@ namespace Fabric
         return llvm::ConstantInt::get( llvmRType( context ), 0 );
     }
 
-    void OpaqueAdapter::llvmPrepareModule( ModuleBuilder &moduleBuilder, bool buildFunctions ) const
+    void OpaqueAdapter::llvmCompileToModule( ModuleBuilder &moduleBuilder ) const
     {
-      if ( moduleBuilder.contains( getCodeName(), buildFunctions ) )
+      if ( moduleBuilder.haveCompiledToModule( getCodeName() ) )
         return;
       
       RC::Handle<Context> context = moduleBuilder.getContext();
       
       RC::ConstHandle<BooleanAdapter> booleanAdapter = getManager()->getBooleanAdapter();
+      booleanAdapter->llvmCompileToModule( moduleBuilder );
       RC::ConstHandle<SizeAdapter> sizeAdapter = getManager()->getSizeAdapter();
+      sizeAdapter->llvmCompileToModule( moduleBuilder );
       RC::ConstHandle<StringAdapter> stringAdapter = getManager()->getStringAdapter();
+      stringAdapter->llvmCompileToModule( moduleBuilder );
       RC::ConstHandle<OpaqueAdapter> dataAdapter = getManager()->getDataAdapter();
+      dataAdapter->llvmCompileToModule( moduleBuilder );
+      
+      static const bool buildFunctions = true;
       
       {
         std::string name = constructOverloadName( booleanAdapter, this );

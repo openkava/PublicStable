@@ -1,4 +1,4 @@
-function entry() {
+operator entry() {
   String s = "foo";
   report "s.refCount = " + s.refCount;
   String t = s;

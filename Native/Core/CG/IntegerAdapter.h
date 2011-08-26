@@ -23,7 +23,7 @@ namespace Fabric
     
       llvm::Constant *llvmConst( RC::Handle<Context> const &context, int32_t value ) const;
           
-      virtual void llvmPrepareModule( ModuleBuilder &moduleBuilder, bool buildFunctions ) const;
+      virtual void llvmCompileToModule( ModuleBuilder &moduleBuilder ) const;
 
     protected:
 

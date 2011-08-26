@@ -39,9 +39,9 @@ namespace Fabric
       m_statements->appendJSON( jsonObjectGenerator.makeMember( "statements" ) );
     }
     
-    void CompoundStatement::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    void CompoundStatement::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const
     {
-      m_statements->llvmPrepareModule( moduleBuilder, diagnostics );
+      m_statements->registerTypes( cgManager, diagnostics );
     }
 
     void CompoundStatement::llvmCompileToBuilder( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const
