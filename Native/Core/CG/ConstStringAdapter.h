@@ -30,10 +30,8 @@ namespace Fabric
       virtual void llvmRelease( BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const;
       
       virtual llvm::Constant *llvmDefaultValue( BasicBlockBuilder &basicBlockBuilder ) const;
-      virtual llvm::Constant *llvmDefaultRValue( BasicBlockBuilder &basicBlockBuilder ) const;
-      virtual llvm::Constant *llvmDefaultLValue( BasicBlockBuilder &basicBlockBuilder ) const;
       
-      virtual void llvmPrepareModule( ModuleBuilder &moduleBuilder, bool buildFunctions ) const;
+      virtual void llvmCompileToModule( ModuleBuilder &moduleBuilder ) const;
       virtual void *llvmResolveExternalFunction( std::string const &functionName ) const;
       
       virtual std::string toString( void const *data ) const;
@@ -53,11 +51,13 @@ namespace Fabric
     protected:
     
       ConstStringAdapter( RC::ConstHandle<Manager> const &manager, RC::ConstHandle<RT::ConstStringDesc> const &constStringDesc );
+      
+      virtual llvm::Type const *buildLLVMRawType( RC::Handle<Context> const &context ) const;
 
     private:
     
-      size_t m_length;
       std::string m_codeName;
+      RC::ConstHandle<RT::ConstStringDesc> m_constStringDesc;
    };
   };
 };

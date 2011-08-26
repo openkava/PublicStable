@@ -9,7 +9,7 @@ function Scalar getB( S s )
   return s.b;
 }
 
-function entry()
+operator entry()
 {
   var S s;
   s.a.push( 17 );

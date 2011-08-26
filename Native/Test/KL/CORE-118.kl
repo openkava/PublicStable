@@ -8,7 +8,7 @@ function processDataIO( in Size myDataSize, io Data myData )
 	report( "Size: " + myDataSize + " - Data: " + myData );
 }
 
-function entry()
+operator entry()
 {
   var Integer foo;
   processDataIN( foo.dataSize, foo.data );

@@ -43,7 +43,7 @@ namespace Fabric
       m_args->appendJSON( jsonObjectGenerator.makeMember( "args" ) );
     }
     
-    RC::ConstHandle<CG::FunctionSymbol> MethodOp::getFunctionSymbol( CG::BasicBlockBuilder const &basicBlockBuilder ) const
+    RC::ConstHandle<CG::FunctionSymbol> MethodOp::getFunctionSymbol( CG::BasicBlockBuilder &basicBlockBuilder ) const
     {
       RC::ConstHandle<CG::Adapter> selfType = m_expr->getType( basicBlockBuilder );
       
@@ -57,15 +57,17 @@ namespace Fabric
       return functionSymbol;
     }
     
-    void MethodOp::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    void MethodOp::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const
     {
-      m_expr->llvmPrepareModule( moduleBuilder, diagnostics );
-      m_args->llvmPrepareModule( moduleBuilder, diagnostics );
+      m_expr->registerTypes( cgManager, diagnostics );
+      m_args->registerTypes( cgManager, diagnostics );
     }
     
-    RC::ConstHandle<CG::Adapter> MethodOp::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const
+    RC::ConstHandle<CG::Adapter> MethodOp::getType( CG::BasicBlockBuilder &basicBlockBuilder ) const
     {
-      return getFunctionSymbol( basicBlockBuilder )->getReturnInfo().getAdapter();
+      RC::ConstHandle<CG::Adapter> adapter = getFunctionSymbol( basicBlockBuilder )->getReturnInfo().getAdapter();
+      adapter->llvmCompileToModule( basicBlockBuilder.getModuleBuilder() );
+      return adapter;
     }
     
     CG::ExprValue MethodOp::buildExprValue( CG::BasicBlockBuilder &basicBlockBuilder, CG::Usage usage, std::string const &lValueErrorDesc ) const
@@ -87,7 +89,7 @@ namespace Fabric
         
         CG::ExprValue callResultExprValue = functionSymbol->llvmCreateCall( basicBlockBuilder, argExprValues );
 
-        CG::ExprValue result;
+        CG::ExprValue result( basicBlockBuilder.getContext() );
         if ( functionSymbol->getReturnInfo().getExprType() )
           result = callResultExprValue;
         else result = selfExprValue;

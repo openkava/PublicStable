@@ -17,7 +17,7 @@ function Vec3 foo( in Vec3 a )
   return a;
 } 
 
-function entry( ) 
+operator entry( ) 
 { 
   var Vec3	a; 
   a.x = a.y = a.z = 0.0; 

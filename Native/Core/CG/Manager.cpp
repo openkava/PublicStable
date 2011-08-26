@@ -211,12 +211,11 @@ namespace Fabric
       return m_dataAdapter;
     }
     
-    RC::ConstHandle<ConstStringAdapter> Manager::getConstStringAdapter( size_t length ) const
+    RC::ConstHandle<ConstStringAdapter> Manager::getConstStringAdapter() const
     {
-      ConstStringAdapters::const_iterator it = m_constStringAdapters.find( length );
-      if ( it == m_constStringAdapters.end() )
-        it = m_constStringAdapters.insert( ConstStringAdapters::value_type( length, RC::ConstHandle<ConstStringAdapter>::StaticCast( getAdapter( m_rtManager->getConstStringDesc( length ) ) ) ) ).first;
-      return it->second;
+      if ( !m_constStringAdapter )
+        m_constStringAdapter = RC::ConstHandle<ConstStringAdapter>::StaticCast( getAdapter( m_rtManager->getConstStringDesc() ) );
+      return m_constStringAdapter;
     }
       
     RC::ConstHandle<VariableArrayAdapter> Manager::getVariableArrayOf( RC::ConstHandle<Adapter> const &adapter ) const
@@ -266,23 +265,6 @@ namespace Fabric
         if( !adapterPtr )
           executionEngine->addGlobalMapping( llvmAdapterGlobalValue, (void *)adapter.ptr() );
       }
-    }
-
-    void Manager::llvmPrepareModule( ModuleBuilder &moduleBuilder ) const
-    {
-      // [pzion 20110224] Since adapteres are created lazily, we actually
-      // iterates the types.
-      RT::Manager::Types const &rtTypes = m_rtManager->getTypes();
-      for ( RT::Manager::Types::const_iterator it=rtTypes.begin(); it!=rtTypes.end(); ++it )
-      {
-        RC::ConstHandle<Adapter> adapter = getAdapter( it->second );
-        adapter->llvmPrepareModule( moduleBuilder, true );
-      }
-    }
-
-    llvm::LLVMContext &Manager::getLLVMContext() const
-    {
-      return m_llvmContext;
     }
 
     RC::ConstHandle<RT::Desc> Manager::getStrongerTypeOrNone( RC::ConstHandle<RT::Desc> const &lhsDesc, RC::ConstHandle<RT::Desc> const &rhsDesc ) const

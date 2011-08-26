@@ -34,6 +34,12 @@ namespace Fabric
   {
     class ParallelCall : public RC::Object
     {
+      struct ParallelExecutionUserData
+      {
+        ParallelCall const *parallelCall;
+        void (*functionPtr)( ... );
+      };
+      
     public:
     
       typedef void (*FunctionPtr)( ... );
@@ -82,27 +88,27 @@ namespace Fabric
       
       void executeSerial() const
       {
-        execute( 0, m_baseAddresses, NULL );
+        RC::ConstHandle<RC::Object> objectToAvoidFreeDuringExecution;
+        void (*functionPtr)( ... ) = m_function->getFunctionPtr( objectToAvoidFreeDuringExecution );
+        execute( 0, m_baseAddresses, NULL, functionPtr );
       }
       
       void executeParallel( bool mainThreadOnly ) const
       {
-        MT::executeParallel( m_totalParallelCalls, &ParallelCall::ExecuteParallel, (void *)this, mainThreadOnly );
-      }
-      
-      void onFunctionPtrChange( FunctionPtr functionPtr, RC::Object const *objectOwningFunctionPtr ) const
-      {
-        //FABRIC_DEBUG_LOG( "ParallelCall::onFunctionPtrChange( %p, %p )", functionPtr, objectOwningFunctionPtr );
-        m_functionPtr = functionPtr;
+        RC::ConstHandle<RC::Object> objectToAvoidFreeDuringExecution;
+        ParallelExecutionUserData parallelExecutionUserData;
+        parallelExecutionUserData.parallelCall = this;
+        parallelExecutionUserData.functionPtr = m_function->getFunctionPtr( objectToAvoidFreeDuringExecution );
+        MT::executeParallel( m_totalParallelCalls, &ParallelCall::ExecuteParallel, &parallelExecutionUserData, mainThreadOnly );
       }
       
     protected:
     
-      void execute( size_t adjustmentIndex, void * const *addresses, size_t const *iteration ) const
+      void execute( size_t adjustmentIndex, void * const *addresses, size_t const *iteration, void (*functionPtr)( ... ) ) const
       {
         if ( adjustmentIndex == m_adjustments.size() )
         {
-          evalWithArgs( addresses );
+          evalWithArgs( addresses, functionPtr );
         }
         else
         {
@@ -138,114 +144,108 @@ namespace Fabric
 
           for ( size_t i=0; i<count; ++i )
           {
-            execute( adjustmentIndex + 1, newAddresses, newIterationsPtr );
+            execute( adjustmentIndex + 1, newAddresses, newIterationsPtr, functionPtr );
             for ( size_t j=0; j<m_paramCount; ++j )
               newAddresses[j] = (uint8_t *)newAddresses[j] + adjustment.offsets[j];
           }
         }
       }
       
-      void executeParallel( size_t iteration ) const
+      void executeParallel( size_t iteration, void (*functionPtr)( ... ) ) const
       {
         //Util::Timer timer;
-        execute( 0, m_baseAddresses, &iteration );
+        execute( 0, m_baseAddresses, &iteration, functionPtr );
         //FABRIC_DEBUG_LOG( "[%p] debugDesc='%s' iteration=%u elapsed=%gms", (void *)getCurrentThreadID(), m_debugDesc.c_str(), (unsigned)iteration, timer.getElapsed() );
       }
       
-      static void ExecuteParallel( void *context, size_t iteration )
+      static void ExecuteParallel( void *userdata, size_t iteration )
       {
-        static_cast<ParallelCall const *>(context)->executeParallel( iteration );
+        ParallelExecutionUserData const *parallelExecutionUserData = static_cast<ParallelExecutionUserData const *>( userdata );
+        parallelExecutionUserData->parallelCall->executeParallel( iteration, parallelExecutionUserData->functionPtr );
       }
       
-      void evalWithArgs( void * const *argv ) const
+      void evalWithArgs( void * const *argv, void (*functionPtr)( ... ) ) const
       {
-        // [pzion 20110322] Note that it's possible that the function pointer
-        // we call actually belongs to a newer object than the one we retain/release;
-        // this is OK as long as it is impossible to change the function pointer
-        // twice in the execution of the pointer, which is the case because we only
-        // ever update pointers once.
-        RC::Object const *objectOwningFunctionPtr = m_objectOwningFunctionPtr;
-        objectOwningFunctionPtr->retain();
         size_t argc = m_paramCount;
         switch ( argc )
         {
           case 0:
-            m_functionPtr();
+            functionPtr();
             break;
           case 1:
-            m_functionPtr(
+            functionPtr(
               argv[ 0]
               );
             break;
           case 2:
-            m_functionPtr(
+            functionPtr(
               argv[ 0], argv[ 1]
               );
             break;
           case 3:
-            m_functionPtr(
+            functionPtr(
               argv[ 0], argv[ 1], argv[ 2]
               );
             break;
           case 4:
-            m_functionPtr(
+            functionPtr(
               argv[ 0], argv[ 1], argv[ 2], argv[ 3]
               );
             break;
           case 5:
-            m_functionPtr(
+            functionPtr(
               argv[ 0], argv[ 1], argv[ 2], argv[ 3],
               argv[ 4]
               );
             break;
           case 6:
-            m_functionPtr(
+            functionPtr(
               argv[ 0], argv[ 1], argv[ 2], argv[ 3],
               argv[ 4], argv[ 5]
               );
             break;
           case 7:
-            m_functionPtr(
+            functionPtr(
               argv[ 0], argv[ 1], argv[ 2], argv[ 3],
               argv[ 4], argv[ 5], argv[ 6]
               );
             break;
           case 8:
-            m_functionPtr(
+            functionPtr(
               argv[ 0], argv[ 1], argv[ 2], argv[ 3],
               argv[ 4], argv[ 5], argv[ 6], argv[ 7]
               );
             break;
           case 9:
-            m_functionPtr(
+            functionPtr(
               argv[ 0], argv[ 1], argv[ 2], argv[ 3],
               argv[ 4], argv[ 5], argv[ 6], argv[ 7],
               argv[ 8]
               );
             break;
           case 10:
-            m_functionPtr(
+            functionPtr(
               argv[ 0], argv[ 1], argv[ 2], argv[ 3],
               argv[ 4], argv[ 5], argv[ 6], argv[ 7],
               argv[ 8], argv[ 9]
               );
             break;
           case 11:
-            m_functionPtr(
+            functionPtr(
               argv[ 0], argv[ 1], argv[ 2], argv[ 3],
               argv[ 4], argv[ 5], argv[ 6], argv[ 7],
               argv[ 8], argv[ 9], argv[10]
               );
             break;
           case 12:
-            m_functionPtr(
+            functionPtr(
               argv[ 0], argv[ 1], argv[ 2], argv[ 3],
               argv[ 4], argv[ 5], argv[ 6], argv[ 7],
               argv[ 8], argv[ 9], argv[10], argv[11]
               );
             break;
           case 13:
-            m_functionPtr(
+            functionPtr(
               argv[ 0], argv[ 1], argv[ 2], argv[ 3],
               argv[ 4], argv[ 5], argv[ 6], argv[ 7],
               argv[ 8], argv[ 9], argv[10], argv[11],
@@ -253,7 +253,7 @@ namespace Fabric
               );
             break;
           case 14:
-            m_functionPtr(
+            functionPtr(
               argv[ 0], argv[ 1], argv[ 2], argv[ 3],
               argv[ 4], argv[ 5], argv[ 6], argv[ 7],
               argv[ 8], argv[ 9], argv[10], argv[11],
@@ -261,7 +261,7 @@ namespace Fabric
               );
             break;
           case 15:
-            m_functionPtr(
+            functionPtr(
               argv[ 0], argv[ 1], argv[ 2], argv[ 3],
               argv[ 4], argv[ 5], argv[ 6], argv[ 7],
               argv[ 8], argv[ 9], argv[10], argv[11],
@@ -269,7 +269,7 @@ namespace Fabric
               );
             break;
           case 16:
-            m_functionPtr(
+            functionPtr(
               argv[ 0], argv[ 1], argv[ 2], argv[ 3],
               argv[ 4], argv[ 5], argv[ 6], argv[ 7],
               argv[ 8], argv[ 9], argv[10], argv[11],
@@ -277,7 +277,7 @@ namespace Fabric
               );
             break;
           case 17:
-            m_functionPtr(
+            functionPtr(
               argv[ 0], argv[ 1], argv[ 2], argv[ 3],
               argv[ 4], argv[ 5], argv[ 6], argv[ 7],
               argv[ 8], argv[ 9], argv[10], argv[11],
@@ -286,7 +286,7 @@ namespace Fabric
               );
             break;
           case 18:
-            m_functionPtr(
+            functionPtr(
               argv[ 0], argv[ 1], argv[ 2], argv[ 3],
               argv[ 4], argv[ 5], argv[ 6], argv[ 7],
               argv[ 8], argv[ 9], argv[10], argv[11],
@@ -295,7 +295,7 @@ namespace Fabric
               );
             break;
           case 19:
-            m_functionPtr(
+            functionPtr(
               argv[ 0], argv[ 1], argv[ 2], argv[ 3],
               argv[ 4], argv[ 5], argv[ 6], argv[ 7],
               argv[ 8], argv[ 9], argv[10], argv[11],
@@ -304,7 +304,7 @@ namespace Fabric
               );
             break;
           case 20:
-            m_functionPtr(
+            functionPtr(
               argv[ 0], argv[ 1], argv[ 2], argv[ 3],
               argv[ 4], argv[ 5], argv[ 6], argv[ 7],
               argv[ 8], argv[ 9], argv[10], argv[11],
@@ -313,7 +313,7 @@ namespace Fabric
               );
             break;
           case 21:
-            m_functionPtr(
+            functionPtr(
               argv[ 0], argv[ 1], argv[ 2], argv[ 3],
               argv[ 4], argv[ 5], argv[ 6], argv[ 7],
               argv[ 8], argv[ 9], argv[10], argv[11],
@@ -323,7 +323,7 @@ namespace Fabric
               );
             break;
           case 22:
-            m_functionPtr(
+            functionPtr(
               argv[ 0], argv[ 1], argv[ 2], argv[ 3],
               argv[ 4], argv[ 5], argv[ 6], argv[ 7],
               argv[ 8], argv[ 9], argv[10], argv[11],
@@ -333,7 +333,7 @@ namespace Fabric
               );
             break;
           case 23:
-            m_functionPtr(
+            functionPtr(
               argv[ 0], argv[ 1], argv[ 2], argv[ 3],
               argv[ 4], argv[ 5], argv[ 6], argv[ 7],
               argv[ 8], argv[ 9], argv[10], argv[11],
@@ -343,7 +343,7 @@ namespace Fabric
               );
             break;
           case 24:
-            m_functionPtr(
+            functionPtr(
               argv[ 0], argv[ 1], argv[ 2], argv[ 3],
               argv[ 4], argv[ 5], argv[ 6], argv[ 7],
               argv[ 8], argv[ 9], argv[10], argv[11],
@@ -353,7 +353,7 @@ namespace Fabric
               );
             break;
           case 25:
-            m_functionPtr(
+            functionPtr(
               argv[ 0], argv[ 1], argv[ 2], argv[ 3],
               argv[ 4], argv[ 5], argv[ 6], argv[ 7],
               argv[ 8], argv[ 9], argv[10], argv[11],
@@ -364,7 +364,7 @@ namespace Fabric
               );
             break;
           case 26:
-            m_functionPtr(
+            functionPtr(
               argv[ 0], argv[ 1], argv[ 2], argv[ 3],
               argv[ 4], argv[ 5], argv[ 6], argv[ 7],
               argv[ 8], argv[ 9], argv[10], argv[11],
@@ -375,7 +375,7 @@ namespace Fabric
               );
             break;
           case 27:
-            m_functionPtr(
+            functionPtr(
               argv[ 0], argv[ 1], argv[ 2], argv[ 3],
               argv[ 4], argv[ 5], argv[ 6], argv[ 7],
               argv[ 8], argv[ 9], argv[10], argv[11],
@@ -386,7 +386,7 @@ namespace Fabric
               );
             break;
           case 28:
-            m_functionPtr(
+            functionPtr(
               argv[ 0], argv[ 1], argv[ 2], argv[ 3],
               argv[ 4], argv[ 5], argv[ 6], argv[ 7],
               argv[ 8], argv[ 9], argv[10], argv[11],
@@ -397,7 +397,7 @@ namespace Fabric
               );
             break;
           case 29:
-            m_functionPtr(
+            functionPtr(
               argv[ 0], argv[ 1], argv[ 2], argv[ 3],
               argv[ 4], argv[ 5], argv[ 6], argv[ 7],
               argv[ 8], argv[ 9], argv[10], argv[11],
@@ -409,7 +409,7 @@ namespace Fabric
               );
             break;
           case 30:
-            m_functionPtr(
+            functionPtr(
               argv[ 0], argv[ 1], argv[ 2], argv[ 3],
               argv[ 4], argv[ 5], argv[ 6], argv[ 7],
               argv[ 8], argv[ 9], argv[10], argv[11],
@@ -421,7 +421,7 @@ namespace Fabric
               );
             break;
           case 31:
-            m_functionPtr(
+            functionPtr(
               argv[ 0], argv[ 1], argv[ 2], argv[ 3],
               argv[ 4], argv[ 5], argv[ 6], argv[ 7],
               argv[ 8], argv[ 9], argv[10], argv[11],
@@ -433,7 +433,7 @@ namespace Fabric
               );
             break;
           case 32:
-            m_functionPtr(
+            functionPtr(
               argv[ 0], argv[ 1], argv[ 2], argv[ 3],
               argv[ 4], argv[ 5], argv[ 6], argv[ 7],
               argv[ 8], argv[ 9], argv[10], argv[11],
@@ -447,7 +447,6 @@ namespace Fabric
           default:
             throw Exception( "a maximum of %u parameters are supported for operator calls", FABRIC_MT_PARALLEL_CALL_MAX_PARAM_COUNT );
         }
-        objectOwningFunctionPtr->release();
       }
       
     private:
@@ -461,11 +460,9 @@ namespace Fabric
       };
       
       RC::ConstHandle<Function> m_function;
-      mutable FunctionPtr volatile m_functionPtr;
-      RC::Object const * volatile m_objectOwningFunctionPtr;
       size_t m_paramCount;
       void *m_baseAddresses[FABRIC_MT_PARALLEL_CALL_MAX_PARAM_COUNT];
-      std::vector< Adjustment > m_adjustments;
+      std::vector<Adjustment> m_adjustments;
       size_t m_totalParallelCalls;
       std::string m_debugDesc;
     };

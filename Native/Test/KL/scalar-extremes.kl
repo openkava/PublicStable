@@ -1,4 +1,4 @@
-function entry()
+operator entry()
 {
   Scalar scalars[];
   scalars.push( 0.0 );

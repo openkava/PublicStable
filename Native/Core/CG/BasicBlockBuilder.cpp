@@ -2,10 +2,11 @@
  *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
  */
  
-#include "BasicBlockBuilder.h"
-#include "FunctionBuilder.h"
-#include "Scope.h"
-#include "Manager.h"
+#include <Fabric/Core/CG/BasicBlockBuilder.h>
+#include <Fabric/Core/CG/Context.h>
+#include <Fabric/Core/CG/FunctionBuilder.h>
+#include <Fabric/Core/CG/Manager.h>
+#include <Fabric/Core/CG/Scope.h>
 
 namespace Fabric
 {
@@ -14,7 +15,7 @@ namespace Fabric
     BasicBlockBuilder::BasicBlockBuilder( FunctionBuilder &functionBuilder )
       : m_functionBuilder( functionBuilder )
       , m_parentBasicBlockBuilder( 0 )
-      , m_irBuilder( functionBuilder.getLLVMContext() )
+      , m_irBuilder( functionBuilder.getContext()->getLLVMContext() )
       , m_scope( functionBuilder.getScope() )     
     {
     }
@@ -22,7 +23,7 @@ namespace Fabric
     BasicBlockBuilder::BasicBlockBuilder( BasicBlockBuilder &parentBasicBlockBuilder, Scope &scope )
       : m_functionBuilder( parentBasicBlockBuilder.getFunctionBuilder() )
       , m_parentBasicBlockBuilder( &parentBasicBlockBuilder )
-      , m_irBuilder( parentBasicBlockBuilder.getLLVMContext() )
+      , m_irBuilder( parentBasicBlockBuilder.getContext()->getLLVMContext() )
       , m_scope( scope )     
     {
       m_irBuilder.SetInsertPoint( parentBasicBlockBuilder.m_irBuilder.GetInsertBlock() );
@@ -69,9 +70,9 @@ namespace Fabric
       return m_functionBuilder.getManager();
     }
     
-    llvm::LLVMContext &BasicBlockBuilder::getLLVMContext()
+    RC::Handle<Context> BasicBlockBuilder::getContext()
     {
-      return m_functionBuilder.getLLVMContext();
+      return m_functionBuilder.getContext();
     }
 
     RC::ConstHandle<FunctionSymbol> BasicBlockBuilder::maybeGetFunction( std::string const &entryName ) const

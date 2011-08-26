@@ -1,4 +1,4 @@
-function entry()
+operator entry()
 {
   report "Scalar";
   report Boolean(0.0);

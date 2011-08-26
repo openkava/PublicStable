@@ -11,32 +11,22 @@ namespace Fabric
   namespace MT
   {
     Function::Function()
-      : m_registeredParallelCallsMutex("MT::Function")
+      : m_mutex("MT::Function")
     {
     }
     
-    void Function::registerParallelCall( ParallelCall const *parallelCall ) const
+    Function::FunctionPtr Function::getFunctionPtr( RC::ConstHandle<RC::Object> &handleToObjectOwningFunctionPtr ) const
     {
-      MT::Mutex::Lock lock( m_registeredParallelCallsMutex );
-      m_registeredParallelCalls.insert( parallelCall );
+      MT::Mutex::Lock mutexLock( m_mutex );
+      handleToObjectOwningFunctionPtr = m_objectOwningFunctionPtr;
+      return m_functionPtr;
     }
     
-    void Function::unregisterParallelCall( ParallelCall const *parallelCall ) const
+    void Function::onFunctionPtrChange( FunctionPtr functionPtr, RC::ConstHandle<RC::Object> const &objectOwningFunctionPtr )
     {
-      MT::Mutex::Lock lock( m_registeredParallelCallsMutex );
-      RegisteredParallelCallSet::iterator it = m_registeredParallelCalls.find( parallelCall );
-      FABRIC_ASSERT( it != m_registeredParallelCalls.end() );
-      m_registeredParallelCalls.erase( it );
-    }
-      
-    void Function::onFunctionPtrChange( FunctionPtr functionPtr, RC::Object const *objectOwningFunctionPtr )
-    {
-      for ( RegisteredParallelCallSet::const_iterator it=m_registeredParallelCalls.begin();
-        it!=m_registeredParallelCalls.end(); ++it )
-      {
-        ParallelCall const *registeredParallelCall = *it;
-        registeredParallelCall->onFunctionPtrChange( functionPtr, objectOwningFunctionPtr );
-      }
+      MT::Mutex::Lock mutexLock( m_mutex );
+      m_functionPtr = functionPtr;
+      m_objectOwningFunctionPtr = objectOwningFunctionPtr;
     }
   };
 };

@@ -1,4 +1,4 @@
-function entry()
+operator entry()
 {
   report "Integer:";
   for ( Integer n=5; n>=-5; --n )

@@ -3,7 +3,7 @@ function foo( io Integer n )
   n = 42;
 }
 
-function entry()
+operator entry()
 {
   var Integer a, b;
   a = 1;

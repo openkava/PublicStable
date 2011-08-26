@@ -28,7 +28,7 @@ namespace Fabric
       jsonObjectGenerator.makeMember( "name" ).makeString( m_name );
     }
     
-    void Var::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    void Var::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const
     {
     }
     
@@ -50,9 +50,11 @@ namespace Fabric
       }
     }
     
-    RC::ConstHandle<CG::Adapter> Var::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const
+    RC::ConstHandle<CG::Adapter> Var::getType( CG::BasicBlockBuilder &basicBlockBuilder ) const
     {
-      return getValueSymbol( basicBlockBuilder )->getAdapter();
+      RC::ConstHandle<CG::Adapter> adapter = getValueSymbol( basicBlockBuilder )->getAdapter();
+      adapter->llvmCompileToModule( basicBlockBuilder.getModuleBuilder() );
+      return adapter;
     }
     
     CG::ExprValue Var::buildExprValue( CG::BasicBlockBuilder &basicBlockBuilder, CG::Usage usage, std::string const &lValueErrorDesc ) const

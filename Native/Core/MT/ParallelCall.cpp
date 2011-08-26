@@ -17,14 +17,10 @@ namespace Fabric
       , m_totalParallelCalls( 1 )
       , m_debugDesc( debugDesc )
     {
-      m_function->registerParallelCall( this );
-      m_functionPtr = m_function->getFunctionPtr();
-      m_objectOwningFunctionPtr = m_function->getObjectOwningFunctionPtr();
     }
     
     ParallelCall::~ParallelCall()
     {
-      m_function->unregisterParallelCall( this );
     }
   };
 };

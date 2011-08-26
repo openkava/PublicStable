@@ -7,8 +7,9 @@
 
 #include <Fabric/Base/RC/Object.h>
 #include <Fabric/Base/RC/ConstHandle.h>
-#include <Fabric/Core/Util/UnorderedMap.h>
 #include <Fabric/Core/Plug/Helpers.h>
+
+#include <map>
  
 namespace Fabric
 {
@@ -51,7 +52,7 @@ namespace Fabric
     {
     public:
     
-      typedef Util::UnorderedMap< std::string, RC::Handle<Inst> > NameToInstMap;
+      typedef std::map< std::string, RC::Handle<Inst> > NameToInstMap;
     
       static RC::Handle<Manager> Instance();
       

@@ -16,7 +16,7 @@ function Byte computeDwell( Scalar x, Scalar y )
   return count;
 }
 
-function entry()
+operator entry()
 {
   var Integer row;
   for ( row=0; row<=40; ++row )

@@ -17,7 +17,7 @@ function Integer getInteger( Integer v )
 	return arr[0];
 }
 
-function entry()
+operator entry()
 {
 	test( getInteger( 2 ) );
 }
