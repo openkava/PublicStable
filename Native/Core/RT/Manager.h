@@ -16,8 +16,9 @@ namespace Fabric
   
   namespace JSON
   {
-    class Value;
     class CommandChannel;
+    class Value;
+    class Object;
   };
   
   namespace RT

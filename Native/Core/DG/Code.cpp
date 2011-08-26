@@ -13,6 +13,7 @@
 #include <Fabric/Core/AST/GlobalList.h>
 #include <Fabric/Core/AST/Function.h>
 #include <Fabric/Core/AST/Operator.h>
+#include <Fabric/Core/RT/Desc.h>
 #include <Fabric/Core/RT/Impl.h>
 #include <Fabric/Core/Plug/Manager.h>
 #include <Fabric/Core/DG/Context.h>

@@ -25,6 +25,9 @@ namespace Fabric
   
   namespace AST
   {
+    class CompoundStatement;
+    class Param;
+    
     class BinOpImpl : public FunctionBase
     {
       FABRIC_AST_NODE_DECL( BinOpImpl );
@@ -35,8 +38,8 @@ namespace Fabric
         CG::Location const &location,
         std::string const &returnType,
         CG::BinOpType binOpType,
-        RC::ConstHandle<AST::Param> const &lhs,
-        RC::ConstHandle<AST::Param> const &rhs,
+        RC::ConstHandle<Param> const &lhs,
+        RC::ConstHandle<Param> const &rhs,
         RC::ConstHandle<CompoundStatement> const &body
         );
                   
@@ -49,8 +52,8 @@ namespace Fabric
         CG::Location const &location,
         std::string const &returnType,
         CG::BinOpType binOpType,
-        RC::ConstHandle<AST::Param> const &lhs,
-        RC::ConstHandle<AST::Param> const &rhs,
+        RC::ConstHandle<Param> const &lhs,
+        RC::ConstHandle<Param> const &rhs,
         RC::ConstHandle<CompoundStatement> const &body
         );
       
