@@ -31,14 +31,16 @@ namespace Fabric
       m_child->appendJSON( jsonObjectGenerator.makeMember( "child" ) );
     }
     
-    void NotOp::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    void NotOp::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const
     {
-      m_child->llvmPrepareModule( moduleBuilder, diagnostics );
+      m_child->registerTypes( cgManager, diagnostics );
     }
     
-    RC::ConstHandle<CG::Adapter> NotOp::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const
+    RC::ConstHandle<CG::Adapter> NotOp::getType( CG::BasicBlockBuilder &basicBlockBuilder ) const
     {
-      return basicBlockBuilder.getManager()->getBooleanAdapter();
+      RC::ConstHandle<CG::Adapter> adapter = basicBlockBuilder.getManager()->getBooleanAdapter();
+      adapter->llvmCompileToModule( basicBlockBuilder.getModuleBuilder() );
+      return adapter;
     }
     
     CG::ExprValue NotOp::buildExprValue( CG::BasicBlockBuilder &basicBlockBuilder, CG::Usage usage, std::string const &lValueErrorDesc ) const
@@ -52,7 +54,7 @@ namespace Fabric
         RC::ConstHandle< CG::Adapter > booleanAdapter = basicBlockBuilder.getManager()->getBooleanAdapter();
         llvm::Value *booleanRValue = booleanAdapter->llvmCast( basicBlockBuilder, childExprValue );
         llvm::Value *notBooleanRValue = basicBlockBuilder->CreateNot( booleanRValue );
-        return CG::ExprValue( booleanAdapter, CG::USAGE_RVALUE, notBooleanRValue );
+        return CG::ExprValue( booleanAdapter, CG::USAGE_RVALUE, basicBlockBuilder.getContext(), notBooleanRValue );
       }
       catch ( CG::Error e )
       {

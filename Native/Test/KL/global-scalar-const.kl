@@ -1,6 +1,6 @@
 const Scalar PI = 3.141;
 
-function entry()
+operator entry()
 {
   report PI;
 }

@@ -1,6 +1,6 @@
 alias Integer IntArray[];
 
-function entry()
+operator entry()
 {
   var IntArray a;
   a.push( 17 ).push( 42 );

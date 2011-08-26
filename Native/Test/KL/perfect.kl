@@ -11,7 +11,7 @@ function Size fsum(Size n) {
   return result;
 }
 
-function entry() {
+operator entry() {
   for (Size n=2; n<100000; ++n) {
     if (fsum(n) == n - 1 )
       report "*** " + n;

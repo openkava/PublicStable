@@ -4,6 +4,6 @@ function Scalar foo( Scalar x ) = "bar" {
   return 1.0/x;
 }
 
-function entry() {
+operator entry() {
   report foo(2);
 }

@@ -1,5 +1,7 @@
 #include "SimpleAdapter.h"
+#include "Context.h"
 #include "Manager.h"
+#include "Context.h"
 #include "BasicBlockBuilder.h"
 
 #include <Fabric/Core/RT/Desc.h>
@@ -36,7 +38,7 @@ namespace Fabric
     
     llvm::Constant *SimpleAdapter::llvmDefaultValue( BasicBlockBuilder &basicBlockBuilder ) const
     {
-      return llvm::ConstantInt::get( llvmRType(), *(uint64_t const *)getImpl()->getDefaultData() );
+      return llvm::ConstantInt::get( llvmRType( basicBlockBuilder.getContext() ), *(uint64_t const *)getImpl()->getDefaultData() );
     }
     
     void *SimpleAdapter::llvmResolveExternalFunction( std::string const &functionName ) const

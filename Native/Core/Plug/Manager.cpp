@@ -93,7 +93,7 @@ namespace Fabric
       CG::Diagnostics diagnostics;
       for ( NameToInstMap::const_iterator it=m_nameToInstMap.begin(); it!=m_nameToInstMap.end(); ++it )
       {
-        it->second->getAST()->registerTypes( cgManager->getRTManager(), diagnostics );
+        it->second->getAST()->registerTypes( cgManager, diagnostics );
       }
     }
     

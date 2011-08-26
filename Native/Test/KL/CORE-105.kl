@@ -22,7 +22,7 @@ function Scalar evaluateLinearKeyframeAnimationTrack(
 	}
 }
 
-function entry()
+operator entry()
 {
   var LinearKeyframe kf1, kf2;
   kf1.time = 0.0;

@@ -1,4 +1,4 @@
-function entry()
+operator entry()
 {
   for ( var Integer i=0; i<10; ++i )
     ;

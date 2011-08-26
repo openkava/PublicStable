@@ -45,11 +45,11 @@ namespace Fabric
       m_statements->appendJSON( jsonObjectGenerator.makeMember( "statements" ) );
     }
     
-    void Case::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    void Case::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const
     {
       if ( m_expr )
-        m_expr->llvmPrepareModule( moduleBuilder, diagnostics );
-      m_statements->llvmPrepareModule( moduleBuilder, diagnostics );
+        m_expr->registerTypes( cgManager, diagnostics );
+      m_statements->registerTypes( cgManager, diagnostics );
     }
 
     RC::ConstHandle<Expr> Case::getExpr() const

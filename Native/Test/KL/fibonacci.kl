@@ -6,7 +6,7 @@ function Integer fibonacci( Integer n )
     return fibonacci( n - 2 ) + fibonacci( n - 1 );
 }
 
-function entry()
+operator entry()
 {
   var Integer i;
   for ( i=0; i<10; ++i )

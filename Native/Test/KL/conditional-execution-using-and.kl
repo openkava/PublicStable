@@ -9,7 +9,7 @@ function doSomethingElse()
 }
 
 
-function entry()
+operator entry()
 {
   true && doSomething();
   false && doSomethingElse();

@@ -18,6 +18,8 @@ namespace Fabric
   namespace CG
   {
     class Adapter;
+    class Diagnostics;
+    class Manager;
     class ModuleBuilder;
   };
   
@@ -34,7 +36,7 @@ namespace Fabric
         return new MemberDecl( location, name, typeName );
       }
 
-      void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
+      void registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const;
       
       void buildStructMemberInfo( RC::ConstHandle<RT::Manager> const &rtManager, RT::StructMemberInfo &structMemberInfo ) const;
 

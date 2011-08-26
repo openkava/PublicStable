@@ -42,10 +42,12 @@ namespace Fabric
       m_right->appendJSON( jsonObjectGenerator.makeMember( "rhs" ) );
     }
     
-    RC::ConstHandle<CG::FunctionSymbol> BinOp::getFunctionSymbol( CG::BasicBlockBuilder const &basicBlockBuilder ) const
+    RC::ConstHandle<CG::FunctionSymbol> BinOp::getFunctionSymbol( CG::BasicBlockBuilder &basicBlockBuilder ) const
     {
       RC::ConstHandle<CG::Adapter> lhsType = m_left->getType( basicBlockBuilder );
+      lhsType->llvmCompileToModule( basicBlockBuilder.getModuleBuilder() );
       RC::ConstHandle<CG::Adapter> rhsType = m_right->getType( basicBlockBuilder );
+      rhsType->llvmCompileToModule( basicBlockBuilder.getModuleBuilder() );
       
       std::string functionName = CG::binOpOverloadName( m_binOpType, lhsType, rhsType );
       RC::ConstHandle<CG::FunctionSymbol> functionSymbol = basicBlockBuilder.maybeGetFunction( functionName );
@@ -70,15 +72,17 @@ namespace Fabric
       throw Exception( "binary operator " + _(CG::binOpUserName( m_binOpType )) + " not supported for types " + _(lhsType->getUserName()) + " and " + _(rhsType->getUserName()) );
     }
     
-    void BinOp::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    void BinOp::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const
     {
-      m_left->llvmPrepareModule( moduleBuilder, diagnostics );
-      m_right->llvmPrepareModule( moduleBuilder, diagnostics );
+      m_left->registerTypes( cgManager, diagnostics );
+      m_right->registerTypes( cgManager, diagnostics );
     }
     
-    RC::ConstHandle<CG::Adapter> BinOp::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const
+    RC::ConstHandle<CG::Adapter> BinOp::getType( CG::BasicBlockBuilder &basicBlockBuilder ) const
     {
-      return getFunctionSymbol( basicBlockBuilder )->getReturnInfo().getAdapter();
+      RC::ConstHandle<CG::Adapter> adapter = getFunctionSymbol( basicBlockBuilder )->getReturnInfo().getAdapter();
+      adapter->llvmCompileToModule( basicBlockBuilder.getModuleBuilder() );
+      return adapter;
     }
     
     CG::ExprValue BinOp::buildExprValue( CG::BasicBlockBuilder &basicBlockBuilder, CG::Usage usage, std::string const &lValueErrorDesc ) const
@@ -90,7 +94,7 @@ namespace Fabric
         throw Exception( "the result of " + functionParams[0].getAdapter()->getUserName() + " " + CG::binOpUserName( m_binOpType ) + " " + functionParams[1].getAdapter()->getUserName() + " is not an l-value" );
       else usage = CG::USAGE_RVALUE;
       
-      CG::ExprValue result;
+      CG::ExprValue result( basicBlockBuilder.getContext() );
       CG::ExprValue lhsExprValue = m_left->buildExprValue( basicBlockBuilder, functionParams[0].getUsage(), lValueErrorDesc );
       CG::ExprValue rhsExprValue = m_right->buildExprValue( basicBlockBuilder, functionParams[1].getUsage(), lValueErrorDesc );
       try

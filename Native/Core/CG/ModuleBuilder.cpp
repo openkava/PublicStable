@@ -3,12 +3,15 @@
 #include "Error.h"
 #include "Location.h"
 
+#include <llvm/Function.h>
+
 namespace Fabric
 {
   namespace CG
   {
-    ModuleBuilder::ModuleBuilder( RC::Handle<Manager> const &manager, llvm::Module *module )
+    ModuleBuilder::ModuleBuilder( RC::Handle<Manager> const &manager, RC::Handle<Context> const &context, llvm::Module *module )
       : m_manager( manager )
+      , m_context( context )
       , m_module( module )
     {
     }
@@ -31,9 +34,9 @@ namespace Fabric
       return result;
     }
     
-    llvm::LLVMContext &ModuleBuilder::getLLVMContext()
+    RC::Handle<Context> ModuleBuilder::getContext()
     {
-      return m_manager->getLLVMContext();
+      return m_context;
     }
     
     ModuleBuilder::operator llvm::Module *()
@@ -51,9 +54,9 @@ namespace Fabric
       return m_moduleScope;
     }
     
-    bool ModuleBuilder::contains( std::string const &codeName, bool buildFunctions )
+    bool ModuleBuilder::haveCompiledToModule( std::string const &codeName )
     {
-      bool insertResult = m_contained.insert( std::pair<std::string, bool>( codeName, buildFunctions ) ).second;
+      bool insertResult = m_haveCompiledToModule.insert( codeName ).second;
       return !insertResult;
     }
 
@@ -65,7 +68,9 @@ namespace Fabric
       if ( !insertResult.second )
       {
         RC::ConstHandle<FunctionSymbol> const &existingFunctionSymbol = insertResult.first->second;
-        if ( existingFunctionSymbol->getLLVMFunction() != functionSymbol->getLLVMFunction() )
+        llvm::Function *llvmFunction = functionSymbol->getLLVMFunction();
+        llvm::Function *existingLLVMFunction = existingFunctionSymbol->getLLVMFunction();
+        if ( llvmFunction != existingLLVMFunction )
           throw Exception( "function with entry name " + _(entryName) + " already exists" );
       }
       

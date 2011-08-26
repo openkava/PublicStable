@@ -51,6 +51,7 @@ namespace Fabric
       registerDesc( m_fp64Desc = new FloatDescT<double>( "Float64", new FloatImplT<double>( "Float64" ) ) );
       registerDesc( m_stringDesc = new StringDesc( "String", new StringImpl( "String" ) ) );
       registerDesc( m_dataDesc = new OpaqueDesc( "Data", new OpaqueImpl( "Data", sizeof(size_t) ) ) );
+      registerDesc( m_constStringDesc = new ConstStringDesc( "ConstString", new ConstStringImpl( "ConstString" ) ) );
     }
     
     void Manager::setJSONCommandChannel( JSON::CommandChannel *jsonCommandChannel )
@@ -273,15 +274,9 @@ namespace Fabric
       return m_dataDesc;
     }
     
-    RC::ConstHandle<ConstStringDesc> Manager::getConstStringDesc( size_t length ) const
+    RC::ConstHandle<ConstStringDesc> Manager::getConstStringDesc() const
     {
-      ConstStringDescs::const_iterator it = m_constStringDescs.find( length );
-      if ( it == m_constStringDescs.end() )
-      {
-        std::string name = "ConstString" + _(length);
-        it = m_constStringDescs.insert( ConstStringDescs::value_type( length, new ConstStringDesc( name, new ConstStringImpl( name, length ) ) ) ).first;
-      }
-      return it->second;
+      return m_constStringDesc;
     }
       
     RC::Handle<JSON::Object> Manager::jsonDesc() const

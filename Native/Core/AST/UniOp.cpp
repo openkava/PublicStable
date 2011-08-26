@@ -32,7 +32,7 @@ namespace Fabric
       m_child->appendJSON( jsonObjectGenerator.makeMember( "child" ) );
     }
     
-    RC::ConstHandle<CG::FunctionSymbol> UniOp::getFunctionSymbol( CG::BasicBlockBuilder const &basicBlockBuilder ) const
+    RC::ConstHandle<CG::FunctionSymbol> UniOp::getFunctionSymbol( CG::BasicBlockBuilder &basicBlockBuilder ) const
     {
       RC::ConstHandle<CG::Adapter> childType = m_child->getType( basicBlockBuilder );
       std::string functionName = CG::uniOpOverloadName( m_uniOpType, childType );
@@ -42,14 +42,16 @@ namespace Fabric
       return functionSymbol;
     }
     
-    void UniOp::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    void UniOp::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const
     {
-      m_child->llvmPrepareModule( moduleBuilder, diagnostics );
+      m_child->registerTypes( cgManager, diagnostics );
     }
     
-    RC::ConstHandle<CG::Adapter> UniOp::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const
+    RC::ConstHandle<CG::Adapter> UniOp::getType( CG::BasicBlockBuilder &basicBlockBuilder ) const
     {
-      return getFunctionSymbol( basicBlockBuilder )->getReturnInfo().getAdapter();
+      RC::ConstHandle<CG::Adapter> adapter = getFunctionSymbol( basicBlockBuilder )->getReturnInfo().getAdapter();
+      adapter->llvmCompileToModule( basicBlockBuilder.getModuleBuilder() );
+      return adapter;
     }
     
     CG::ExprValue UniOp::buildExprValue( CG::BasicBlockBuilder &basicBlockBuilder, CG::Usage usage, std::string const &lValueErrorDesc ) const
