@@ -112,7 +112,7 @@ namespace Fabric
       RC::ConstHandle<FloatDesc> m_fp64Desc;
       RC::ConstHandle<StringDesc> m_stringDesc;
       RC::ConstHandle<OpaqueDesc> m_dataDesc;
-      mutable ConstStringDescs m_constStringDescs;
+      RC::ConstHandle<ConstStringDesc> m_constStringDesc;
       
       JSON::CommandChannel *m_jsonCommandChannel;
       

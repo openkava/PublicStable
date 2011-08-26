@@ -151,11 +151,6 @@ namespace Fabric
         std::pair< DescToAdapterMap::iterator, bool > insertResult = m_descToAdapterMap.insert( DescToAdapterMap::value_type( desc, adapter ) );
         FABRIC_ASSERT( insertResult.second );
         it = insertResult.first;
-        FABRIC_LOG( "Registered " + _(adapter->getCodeName()) );
-        if ( adapter->getCodeName() == "__ConstString30__Adapter" )
-        {
-          sleep( 5 );
-        }
       }
       return it->second;
     }
@@ -216,12 +211,11 @@ namespace Fabric
       return m_dataAdapter;
     }
     
-    RC::ConstHandle<ConstStringAdapter> Manager::getConstStringAdapter( size_t length ) const
+    RC::ConstHandle<ConstStringAdapter> Manager::getConstStringAdapter() const
     {
-      ConstStringAdapters::const_iterator it = m_constStringAdapters.find( length );
-      if ( it == m_constStringAdapters.end() )
-        it = m_constStringAdapters.insert( ConstStringAdapters::value_type( length, RC::ConstHandle<ConstStringAdapter>::StaticCast( getAdapter( m_rtManager->getConstStringDesc( length ) ) ) ) ).first;
-      return it->second;
+      if ( !m_constStringAdapter )
+        m_constStringAdapter = RC::ConstHandle<ConstStringAdapter>::StaticCast( getAdapter( m_rtManager->getConstStringDesc() ) );
+      return m_constStringAdapter;
     }
       
     RC::ConstHandle<VariableArrayAdapter> Manager::getVariableArrayOf( RC::ConstHandle<Adapter> const &adapter ) const

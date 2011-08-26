@@ -115,7 +115,6 @@ namespace Fabric
         llvm::SMDiagnostic error;
         llvm::ParseAssemblyString( ir.c_str(), module.get(), error, cgManager->getLLVMContext() );
         
-        FABRIC_LOG( "Code: " + m_sourceCode );
         m_ast->registerTypes( cgManager, diagnostics );
         FABRIC_ASSERT( !diagnostics.containsError() );
 

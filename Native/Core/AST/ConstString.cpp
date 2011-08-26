@@ -47,7 +47,7 @@ namespace Fabric
         throw CG::Error( getLocation(), e.getDesc() + "(" + m_value + ")" );
       }
 
-      cgManager->getConstStringAdapter( unquotedValue.length() );
+      cgManager->getConstStringAdapter();
       cgManager->getStringAdapter();
     }
     
@@ -71,7 +71,7 @@ namespace Fabric
       {
         throw CG::Error( getLocation(), e.getDesc() + "(" + m_value + ")" );
       }
-      RC::ConstHandle<CG::ConstStringAdapter> constStringAdapter = basicBlockBuilder.getManager()->getConstStringAdapter( unquotedValue.length() );
+      RC::ConstHandle<CG::ConstStringAdapter> constStringAdapter = basicBlockBuilder.getManager()->getConstStringAdapter();
       constStringAdapter->llvmCompileToModule( basicBlockBuilder.getModuleBuilder() );
       RC::ConstHandle<CG::StringAdapter> stringAdapter = basicBlockBuilder.getManager()->getStringAdapter();
       stringAdapter->llvmCompileToModule( basicBlockBuilder.getModuleBuilder() );

@@ -30,8 +30,6 @@ namespace Fabric
       virtual void llvmRelease( BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const;
       
       virtual llvm::Constant *llvmDefaultValue( BasicBlockBuilder &basicBlockBuilder ) const;
-      virtual llvm::Constant *llvmDefaultRValue( BasicBlockBuilder &basicBlockBuilder ) const;
-      virtual llvm::Constant *llvmDefaultLValue( BasicBlockBuilder &basicBlockBuilder ) const;
       
       virtual void llvmCompileToModule( ModuleBuilder &moduleBuilder ) const;
       virtual void *llvmResolveExternalFunction( std::string const &functionName ) const;
@@ -56,8 +54,8 @@ namespace Fabric
 
     private:
     
-      size_t m_length;
       std::string m_codeName;
+      RC::ConstHandle<RT::ConstStringDesc> m_constStringDesc;
    };
   };
 };

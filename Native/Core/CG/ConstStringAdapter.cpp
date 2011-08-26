@@ -25,9 +25,12 @@ namespace Fabric
   {
     ConstStringAdapter::ConstStringAdapter( RC::ConstHandle<Manager> const &manager, RC::ConstHandle<RT::ConstStringDesc> const &constStringDesc )
       : Adapter( manager, constStringDesc, FL_PASS_BY_REFERENCE )
-      , m_length( constStringDesc->getLength() )
+      , m_constStringDesc( constStringDesc )
     {
-      setLLVMType( llvm::ArrayType::get( llvm::Type::getInt8Ty( getLLVMContext() ), m_length ) );
+      std::vector<llvm::Type const *> memberLLVMTypes;
+      memberLLVMTypes.push_back( llvm::Type::getInt8PtrTy( getLLVMContext() ) );
+      memberLLVMTypes.push_back( llvmSizeType() );
+      setLLVMType( llvm::StructType::get( manager->getLLVMContext(), memberLLVMTypes, true ) );
     }
     
     void ConstStringAdapter::llvmCompileToModule( ModuleBuilder &moduleBuilder ) const
@@ -54,9 +57,13 @@ namespace Fabric
         if ( buildFunctions )
         {
           llvm::Value *booleanLValue = functionBuilder[0];
+          llvm::Value *constStringRValue = functionBuilder[1];
           BasicBlockBuilder basicBlockBuilder( functionBuilder );
           basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
-          basicBlockBuilder->CreateStore( booleanAdapter->llvmConst( m_length > 0 ), booleanLValue );
+          llvm::Value *lengthLValue = basicBlockBuilder->CreateStructGEP( constStringRValue, 1 );
+          llvm::Value *lengthRValue = basicBlockBuilder->CreateLoad( lengthLValue );
+          llvm::Value *booleanRValue = basicBlockBuilder->CreateICmpNE( lengthRValue, llvm::ConstantInt::get( llvmSizeType(), 0, false ) );
+          booleanAdapter->llvmDefaultAssign( basicBlockBuilder, booleanLValue, booleanRValue );
           basicBlockBuilder->CreateRetVoid();
         }
       }
@@ -84,53 +91,49 @@ namespace Fabric
     llvm::Constant *ConstStringAdapter::llvmDefaultValue( BasicBlockBuilder &basicBlockBuilder ) const
     {
       std::vector<llvm::Constant *> elementDefaultRValues;
-      elementDefaultRValues.resize( m_length, llvm::ConstantInt::get( llvm::Type::getInt8Ty( getLLVMContext() ), 0 ) );
-      return llvm::ConstantArray::get( (llvm::ArrayType const *)llvmRawType(), elementDefaultRValues );
-    }
-    
-    llvm::Constant *ConstStringAdapter::llvmDefaultRValue( BasicBlockBuilder &basicBlockBuilder ) const
-    {
-      return llvmDefaultLValue( basicBlockBuilder );
-    }
-
-    llvm::Constant *ConstStringAdapter::llvmDefaultLValue( BasicBlockBuilder &basicBlockBuilder ) const
-    {
-      llvm::Constant *defaultValue = llvmDefaultValue( basicBlockBuilder );
-      return new llvm::GlobalVariable(
-        *basicBlockBuilder.getModuleBuilder(),
-        defaultValue->getType(),
-        true,
-        llvm::GlobalValue::InternalLinkage,
-        defaultValue,
-        "__" + getCodeName() + "__DefaultValue"
-        );
+      elementDefaultRValues.push_back( llvm::ConstantPointerNull::get( llvm::Type::getInt8PtrTy( getLLVMContext() ) ) );
+      elementDefaultRValues.push_back( basicBlockBuilder.getManager()->getSizeAdapter()->llvmConst( 0 ) );
+      return llvm::ConstantStruct::get( (llvm::StructType const *)llvmRawType(), elementDefaultRValues );
     }
       
     llvm::Value *ConstStringAdapter::llvmConst( CG::BasicBlockBuilder &basicBlockBuilder, char const *data, size_t length ) const
     {
-      FABRIC_ASSERT( length == m_length );
-      
       llvm::Type const *charType = llvm::Type::getInt8Ty( getLLVMContext() );
-      
       std::vector<llvm::Constant *> chars;
       for ( size_t i=0; i<length; ++i )
         chars.push_back( llvm::ConstantInt::get( charType, data[i] ) );
+      llvm::Constant *dataConstant = llvm::ConstantArray::get( llvm::ArrayType::get( charType, length ), chars );
 
-      llvm::Constant *cStringConstant = llvm::ConstantArray::get( llvm::ArrayType::get( llvm::Type::getInt8Ty( getLLVMContext() ), m_length ), chars );
+      llvm::Value *dataGlobal = new llvm::GlobalVariable(
+        *basicBlockBuilder.getModuleBuilder(),
+        dataConstant->getType(),
+        true,
+        llvm::GlobalValue::InternalLinkage,
+        dataConstant,
+        ""
+        );
+
+      llvm::Constant *llvmData = llvm::cast<llvm::Constant>( basicBlockBuilder->CreateConstGEP2_32( dataGlobal, 0, 0 ) );
+      llvm::Constant *llvmLength = llvm::ConstantInt::get( llvmSizeType(), length, false );
+      
+      std::vector<llvm::Constant *> elementDefaultRValues;
+      elementDefaultRValues.push_back( llvmData );
+      elementDefaultRValues.push_back( llvmLength );
+      llvm::Constant *llvmStruct = llvm::ConstantStruct::get( (llvm::StructType const *)llvmRawType(), elementDefaultRValues );
 
       return new llvm::GlobalVariable(
         *basicBlockBuilder.getModuleBuilder(),
-        cStringConstant->getType(),
+        llvmStruct->getType(),
         true,
         llvm::GlobalValue::InternalLinkage,
-        cStringConstant,
+        llvmStruct,
         ""
         );
     }
     
     std::string ConstStringAdapter::toString( void const *data ) const
     {
-      return std::string( static_cast<char const *>(data), m_length );
+      return m_constStringDesc->toString( data );
     }
 
     void ConstStringAdapter::llvmInit( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *value ) const
