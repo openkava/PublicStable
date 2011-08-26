@@ -43,9 +43,9 @@ namespace Fabric
       m_varDecls->appendJSON( jsonObjectGenerator.makeMember( "varDecls" ) );
     }
     
-    void VarDeclStatement::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctions ) const
+    void VarDeclStatement::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const
     {
-      m_varDecls->llvmPrepareModule( m_baseType, moduleBuilder, diagnostics, buildFunctions );
+      m_varDecls->registerTypes( m_baseType, cgManager, diagnostics );
     }
 
     void VarDeclStatement::llvmCompileToBuilder( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const

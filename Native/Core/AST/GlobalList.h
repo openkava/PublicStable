@@ -17,21 +17,11 @@ namespace Fabric
     class JSONArrayGenerator;
   };
   
-  namespace JSON
-  {
-    class Value;
-    class Array;
-  };
-  
-  namespace RT
-  {
-    class Manager;
-  };
-  
   namespace CG
   {
-    class ModuleBuilder;
     class Diagnostics;
+    class Manager;
+    class ModuleBuilder;
   };
   
   namespace AST
@@ -48,8 +38,7 @@ namespace Fabric
 
       Util::SimpleString toJSON() const;
 
-      void registerTypes( RC::Handle<RT::Manager> const &rtManager, CG::Diagnostics &diagnostics ) const;
-      void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctions = true ) const;
+      void registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const;
       void llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctions ) const;
       void collectFunctions( std::vector< RC::ConstHandle<AST::Function> > &result ) const;
     

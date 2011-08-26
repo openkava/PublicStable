@@ -35,18 +35,26 @@ namespace Fabric
       return llvm::ConstantInt::get( llvmRawType(), value, false );
     }
 
-    void ByteAdapter::llvmPrepareModule( ModuleBuilder &moduleBuilder, bool buildFunctions ) const
+    void ByteAdapter::llvmCompileToModule( ModuleBuilder &moduleBuilder ) const
     {
-      if ( moduleBuilder.contains( getCodeName(), buildFunctions ) )
+      if ( moduleBuilder.haveCompiledToModule( getCodeName() ) )
         return;
       
       RC::ConstHandle<BooleanAdapter> booleanAdapter = getManager()->getBooleanAdapter();
+      booleanAdapter->llvmCompileToModule( moduleBuilder );
       RC::ConstHandle<IntegerAdapter> integerAdapter = getManager()->getIntegerAdapter();
+      integerAdapter->llvmCompileToModule( moduleBuilder );
       RC::ConstHandle<SizeAdapter> sizeAdapter = getManager()->getSizeAdapter();
+      sizeAdapter->llvmCompileToModule( moduleBuilder );
       RC::ConstHandle<FloatAdapter> scalarAdapter = getManager()->getFP32Adapter();
+      scalarAdapter->llvmCompileToModule( moduleBuilder );
       RC::ConstHandle<StringAdapter> stringAdapter = getManager()->getStringAdapter();
+      stringAdapter->llvmCompileToModule( moduleBuilder );
       RC::ConstHandle<OpaqueAdapter> dataAdapter = getManager()->getDataAdapter();
+      dataAdapter->llvmCompileToModule( moduleBuilder );
       
+      static const bool buildFunctions = true;
+
       {
         std::string name = constructOverloadName( booleanAdapter, this );
         std::vector< FunctionParam > params;
@@ -313,6 +321,7 @@ namespace Fabric
           basicBlockBuilder->SetInsertPoint( zeroBB );
           std::string errorMsg = "KL: "+getUserName()+" division by zero";
           RC::ConstHandle<ConstStringAdapter> errorConstStringAdapter = getManager()->getConstStringAdapter( errorMsg.length() );
+          errorConstStringAdapter->llvmCompileToModule( moduleBuilder );
           ExprValue errorExprValue( errorConstStringAdapter, USAGE_RVALUE, errorConstStringAdapter->llvmConst( basicBlockBuilder, errorMsg ) );
           llvm::Value *errorStringRValue = stringAdapter->llvmCast( basicBlockBuilder, errorExprValue );
           stringAdapter->llvmReport( basicBlockBuilder, errorStringRValue );
@@ -349,6 +358,7 @@ namespace Fabric
           basicBlockBuilder->SetInsertPoint( zeroBB );
           std::string errorMsg = "KL: "+getUserName()+" division by zero";
           RC::ConstHandle<ConstStringAdapter> errorConstStringAdapter = getManager()->getConstStringAdapter( errorMsg.length() );
+          errorConstStringAdapter->llvmCompileToModule( moduleBuilder );
           ExprValue errorExprValue( errorConstStringAdapter, USAGE_RVALUE, errorConstStringAdapter->llvmConst( basicBlockBuilder, errorMsg ) );
           llvm::Value *errorStringRValue = stringAdapter->llvmCast( basicBlockBuilder, errorExprValue );
           stringAdapter->llvmReport( basicBlockBuilder, errorStringRValue );

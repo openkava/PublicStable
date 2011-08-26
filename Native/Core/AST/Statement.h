@@ -25,6 +25,8 @@ namespace Fabric
   namespace CG
   {
     class BasicBlockBuilder;
+    class Diagnostics;
+    class Manager;
     class ModuleBuilder;
   };
   
@@ -36,7 +38,7 @@ namespace Fabric
       
       Statement( CG::Location const &location );
       
-      virtual void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctions ) const = 0;
+      virtual void registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const = 0;
       
       virtual void llvmCompileToBuilder( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const = 0;
     };

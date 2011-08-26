@@ -51,10 +51,10 @@ namespace Fabric
       m_cases->appendJSON( jsonObjectGenerator.makeMember( "cases" ) );
     }
     
-    void SwitchStatement::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctions ) const
+    void SwitchStatement::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const
     {
-      m_expr->llvmPrepareModule( moduleBuilder, diagnostics, buildFunctions );
-      m_cases->llvmPrepareModule( moduleBuilder, diagnostics, buildFunctions );
+      m_expr->registerTypes( cgManager, diagnostics );
+      m_cases->registerTypes( cgManager, diagnostics );
     }
 
     void SwitchStatement::llvmCompileToBuilder( CG::BasicBlockBuilder &parentBasicBlockBuilder, CG::Diagnostics &diagnostics ) const

@@ -30,15 +30,19 @@ namespace Fabric
       setLLVMType( llvm::ArrayType::get( llvm::Type::getInt8Ty( getLLVMContext() ), m_length ) );
     }
     
-    void ConstStringAdapter::llvmPrepareModule( ModuleBuilder &moduleBuilder, bool buildFunctions ) const
+    void ConstStringAdapter::llvmCompileToModule( ModuleBuilder &moduleBuilder ) const
     {
-      if ( moduleBuilder.contains( getCodeName(), buildFunctions ) )
+      if ( moduleBuilder.haveCompiledToModule( getCodeName() ) )
         return;
+      
+      RC::ConstHandle<BooleanAdapter> booleanAdapter = getManager()->getBooleanAdapter();
+      booleanAdapter->llvmCompileToModule( moduleBuilder );
+      RC::ConstHandle<StringAdapter> stringAdapter = getManager()->getStringAdapter();
+      stringAdapter->llvmCompileToModule( moduleBuilder );
       
       moduleBuilder->addTypeName( getCodeName(), llvmRawType() );
       
-      RC::ConstHandle<BooleanAdapter> booleanAdapter = getManager()->getBooleanAdapter();
-      RC::ConstHandle<StringAdapter> stringAdapter = getManager()->getStringAdapter();
+      static const bool buildFunctions = true;
 
       {
         // [pzion 20110202] Cast string to boolean

@@ -29,7 +29,7 @@ namespace Fabric
       llvm::Constant *llvmConst( double value ) const;
       llvm::Constant *llvmConst( std::string const &valueString ) const;
       
-      virtual void llvmPrepareModule( ModuleBuilder &moduleBuilder, bool buildFunctions ) const;
+      virtual void llvmCompileToModule( ModuleBuilder &moduleBuilder ) const;
       
     protected:
       

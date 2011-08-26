@@ -18,8 +18,10 @@ namespace Fabric
   
   namespace CG
   {
-    class ModuleBuilder;
+    class BasicBlockBuilder;
     class Diagnostics;
+    class Manager;
+    class ModuleBuilder;
   };
   
   namespace AST
@@ -34,7 +36,7 @@ namespace Fabric
 
       void appendJSON( Util::JSONGenerator const &jsonGenerator ) const;
       
-      void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctions ) const;
+      void registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const;
     
     protected:
     

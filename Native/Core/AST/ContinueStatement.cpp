@@ -27,7 +27,7 @@ namespace Fabric
       Statement::appendJSONMembers( jsonObjectGenerator );
     }
     
-    void ContinueStatement::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctions ) const
+    void ContinueStatement::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const
     {
     }
 

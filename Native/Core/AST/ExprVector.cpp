@@ -37,7 +37,7 @@ namespace Fabric
         (*it)->appendJSON( jsonArrayGenerator.makeElement() );
     }
 
-    void ExprVector::appendTypes( CG::BasicBlockBuilder const &basicBlockBuilder, std::vector< RC::ConstHandle<CG::Adapter> > &argTypes ) const
+    void ExprVector::appendTypes( CG::BasicBlockBuilder &basicBlockBuilder, std::vector< RC::ConstHandle<CG::Adapter> > &argTypes ) const
     {
       for ( size_t i=0; i<size(); ++i )
       {
@@ -65,10 +65,10 @@ namespace Fabric
       }
     }
     
-    void ExprVector::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctions ) const
+    void ExprVector::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const
     {
       for ( const_iterator it=begin(); it!=end(); ++it )
-        (*it)->llvmPrepareModule( moduleBuilder, diagnostics, buildFunctions );
+        (*it)->registerTypes( cgManager, diagnostics );
     }
   };
 };

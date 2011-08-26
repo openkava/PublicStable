@@ -53,13 +53,13 @@ namespace Fabric
         m_falseStatement->appendJSON( jsonObjectGenerator.makeMember( "ifFalse" ) );
     }
     
-    void ConditionalStatement::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctions ) const
+    void ConditionalStatement::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const
     {
-      m_expr->llvmPrepareModule( moduleBuilder, diagnostics, buildFunctions );
+      m_expr->registerTypes( cgManager, diagnostics );
       if ( m_trueStatement )
-        m_trueStatement->llvmPrepareModule( moduleBuilder, diagnostics, buildFunctions );
+        m_trueStatement->registerTypes( cgManager, diagnostics );
       if ( m_falseStatement )
-        m_falseStatement->llvmPrepareModule( moduleBuilder, diagnostics, buildFunctions );
+        m_falseStatement->registerTypes( cgManager, diagnostics );
     }
 
     void ConditionalStatement::llvmCompileToBuilder( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const

@@ -41,15 +41,17 @@ namespace Fabric
       m_right->appendJSON( jsonObjectGenerator.makeMember( "rhs" ) );
     }
     
-    void AssignOp::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctions ) const
+    void AssignOp::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const
     {
-      m_left->llvmPrepareModule( moduleBuilder, diagnostics, buildFunctions );
-      m_right->llvmPrepareModule( moduleBuilder, diagnostics, buildFunctions );
+      m_left->registerTypes( cgManager, diagnostics );
+      m_right->registerTypes( cgManager, diagnostics );
     }
     
-    RC::ConstHandle<CG::Adapter> AssignOp::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const
+    RC::ConstHandle<CG::Adapter> AssignOp::getType( CG::BasicBlockBuilder &basicBlockBuilder ) const
     {
-      return m_left->getType( basicBlockBuilder );
+      RC::ConstHandle<CG::Adapter> adapter = m_left->getType( basicBlockBuilder );
+      adapter->llvmCompileToModule( basicBlockBuilder.getModuleBuilder() );
+      return adapter;
     }
     
     CG::ExprValue AssignOp::buildExprValue( CG::BasicBlockBuilder &basicBlockBuilder, CG::Usage usage, std::string const &lValueErrorDesc ) const

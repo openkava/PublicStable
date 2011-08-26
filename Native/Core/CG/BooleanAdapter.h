@@ -32,12 +32,12 @@ namespace Fabric
       virtual std::string toString( void const *data ) const;
     
       llvm::Constant *llvmConst( bool value ) const;
+     
+      virtual void llvmCompileToModule( ModuleBuilder &moduleBuilder ) const;
 
     protected:
 
       BooleanAdapter( RC::ConstHandle<Manager> const &manager, RC::ConstHandle<RT::BooleanDesc> const &booleanDesc );
-     
-      virtual void llvmPrepareModule( ModuleBuilder &moduleBuilder, bool buildFunctions ) const;
       
     private:
     
