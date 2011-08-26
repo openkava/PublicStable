@@ -1,4 +1,4 @@
-function entry() 
+operator entry() 
 { 
   var Integer nb_points = 3;
   for( var Integer i = 0; i < nb_points; i++ )

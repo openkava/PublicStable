@@ -1,4 +1,4 @@
-function entry()
+operator entry()
 {
   Size i=0;
   for (;;)

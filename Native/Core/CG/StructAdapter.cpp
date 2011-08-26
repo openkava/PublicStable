@@ -23,19 +23,23 @@ namespace Fabric
       , m_structDesc( structDesc )
       , m_isShallow( structDesc->isShallow() )
     {
-      size_t numMembers = structDesc->getNumMembers();
+      size_t numMembers = m_structDesc->getNumMembers();
       m_memberAdapters.reserve( numMembers );
       for ( size_t i=0; i<numMembers; ++i )
       {
-        RC::ConstHandle<Adapter> memberAdapter = manager->getAdapter( structDesc->getMemberInfo( i ).desc );
+        RC::ConstHandle<Adapter> memberAdapter = getAdapter( m_structDesc->getMemberInfo( i ).desc );
         m_memberAdapters.push_back( memberAdapter );
       }
+    }
+    
+    llvm::Type const *StructAdapter::buildLLVMRawType( RC::Handle<Context> const &context ) const
+    {
       
       std::vector<llvm::Type const *> memberLLVMTypes;
-      memberLLVMTypes.reserve( numMembers );
-      for ( size_t i=0; i<numMembers; ++i )
-        memberLLVMTypes.push_back( m_memberAdapters[i]->llvmRawType() );
-      setLLVMType( llvm::StructType::get( manager->getLLVMContext(), memberLLVMTypes, true ) );
+      memberLLVMTypes.reserve( m_memberAdapters.size() );
+      for ( size_t i=0; i<m_memberAdapters.size(); ++i )
+        memberLLVMTypes.push_back( m_memberAdapters[i]->llvmRawType( context ) );
+      return llvm::StructType::get( context->getLLVMContext(), memberLLVMTypes, true );
     }
 
     bool StructAdapter::hasMember( std::string const &memberName ) const
@@ -110,18 +114,25 @@ namespace Fabric
       }
     }
 
-    void StructAdapter::llvmPrepareModule( ModuleBuilder &moduleBuilder, bool buildFunctions ) const
+    void StructAdapter::llvmCompileToModule( ModuleBuilder &moduleBuilder ) const
     {
-      if ( moduleBuilder.contains( getCodeName(), buildFunctions ) )
+      if ( moduleBuilder.haveCompiledToModule( getCodeName() ) )
         return;
-      for ( MemberAdaptorVector::const_iterator it=m_memberAdapters.begin(); it!=m_memberAdapters.end(); ++it )
-        (*it)->llvmPrepareModule( moduleBuilder, buildFunctions );
+        
+      RC::Handle<Context> context = moduleBuilder.getContext();
       
-      moduleBuilder->addTypeName( getCodeName(), llvmRawType() );
-
       RC::ConstHandle<StringAdapter> stringAdapter = getManager()->getStringAdapter();
+      stringAdapter->llvmCompileToModule( moduleBuilder );
       RC::ConstHandle<SizeAdapter> sizeAdapter = getManager()->getSizeAdapter();
+      sizeAdapter->llvmCompileToModule( moduleBuilder );
       RC::ConstHandle<OpaqueAdapter> dataAdapter = getManager()->getDataAdapter();
+      dataAdapter->llvmCompileToModule( moduleBuilder );
+      for ( MemberAdaptorVector::const_iterator it=m_memberAdapters.begin(); it!=m_memberAdapters.end(); ++it )
+        (*it)->llvmCompileToModule( moduleBuilder );
+      
+      moduleBuilder->addTypeName( getCodeName(), llvmRawType( context ) );
+      
+      static const bool buildFunctions = true;
       
       if ( !m_isShallow )
       {
@@ -219,7 +230,7 @@ namespace Fabric
           {
             BasicBlockBuilder basicBlockBuilder( functionBuilder );
             basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
-            llvm::Value *dataSizeRValue = llvm::ConstantInt::get( sizeAdapter->llvmRType(), getDesc()->getSize() );
+            llvm::Value *dataSizeRValue = llvm::ConstantInt::get( sizeAdapter->llvmRType( context ), getDesc()->getSize() );
             basicBlockBuilder->CreateRet( dataSizeRValue );
           }
         }
@@ -234,7 +245,7 @@ namespace Fabric
             llvm::Value *selfLValue = functionBuilder[0];
             BasicBlockBuilder basicBlockBuilder( functionBuilder );
             basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
-            basicBlockBuilder->CreateRet( basicBlockBuilder->CreatePointerCast( selfLValue, dataAdapter->llvmRType() ) );
+            basicBlockBuilder->CreateRet( basicBlockBuilder->CreatePointerCast( selfLValue, dataAdapter->llvmRType( context ) ) );
           }
         }
       }
@@ -266,7 +277,7 @@ namespace Fabric
         RC::ConstHandle<Adapter> const &memberAdapter = m_memberAdapters[i];
         memberDefaultRValues.push_back( memberAdapter->llvmDefaultValue( basicBlockBuilder ) );
       }
-      return llvm::ConstantStruct::get( getLLVMContext(), memberDefaultRValues, true );
+      return llvm::ConstantStruct::get( basicBlockBuilder.getContext()->getLLVMContext(), memberDefaultRValues, true );
     }
       
     llvm::Constant *StructAdapter::llvmDefaultRValue( BasicBlockBuilder &basicBlockBuilder ) const

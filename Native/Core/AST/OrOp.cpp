@@ -7,9 +7,10 @@
 
 #include "OrOp.h"
 #include <Fabric/Core/CG/BooleanAdapter.h>
-#include <Fabric/Core/CG/Scope.h>
+#include <Fabric/Core/CG/Context.h>
 #include <Fabric/Core/CG/FunctionBuilder.h>
 #include <Fabric/Core/CG/Manager.h>
+#include <Fabric/Core/CG/Scope.h>
 #include <Fabric/Core/CG/Error.h>
 #include <Fabric/Core/RT/Desc.h>
 #include <Fabric/Base/Util/SimpleString.h>
@@ -34,16 +35,20 @@ namespace Fabric
       m_right->appendJSON( jsonObjectGenerator.makeMember( "rhs" ) );
     }
     
-    void OrOp::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    void OrOp::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const
     {
-      m_left->llvmPrepareModule( moduleBuilder, diagnostics );
-      m_right->llvmPrepareModule( moduleBuilder, diagnostics );
+      m_left->registerTypes( cgManager, diagnostics );
+      m_right->registerTypes( cgManager, diagnostics );
     }
     
-    RC::ConstHandle<CG::Adapter> OrOp::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const
+    RC::ConstHandle<CG::Adapter> OrOp::getType( CG::BasicBlockBuilder &basicBlockBuilder ) const
     {
       RC::ConstHandle<CG::Adapter> lhsType = m_left->getType( basicBlockBuilder );
+      if ( lhsType )
+        lhsType->llvmCompileToModule( basicBlockBuilder.getModuleBuilder() );
       RC::ConstHandle<CG::Adapter> rhsType = m_right->getType( basicBlockBuilder );
+      if ( rhsType )
+        rhsType->llvmCompileToModule( basicBlockBuilder.getModuleBuilder() );
   
       // The true/false value types need to be "equivalent". We'll cast into whoever wins the
       // casting competition, or fail if they can't.
@@ -65,7 +70,7 @@ namespace Fabric
       llvm::BasicBlock *lhsFalseBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "orLHSFalse" );
       llvm::BasicBlock *mergeBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "orMerge" );
 
-      CG::ExprValue result;
+      CG::ExprValue result( basicBlockBuilder.getContext() );
       CG::ExprValue lhsExprValue = m_left->buildExprValue( basicBlockBuilder, usage, lValueErrorDesc );
       llvm::Value *lhsBooleanRValue = booleanAdapter->llvmCast( basicBlockBuilder, lhsExprValue );
       basicBlockBuilder->CreateCondBr( lhsBooleanRValue, lhsTrueBB, lhsFalseBB );
@@ -84,10 +89,10 @@ namespace Fabric
       basicBlockBuilder->CreateBr( mergeBB );
 
       basicBlockBuilder->SetInsertPoint( mergeBB );
-      llvm::PHINode *phi = basicBlockBuilder->CreatePHI( castAdapter->llvmRType() );
+      llvm::PHINode *phi = basicBlockBuilder->CreatePHI( castAdapter->llvmRType( basicBlockBuilder.getContext() ) );
       phi->addIncoming( lhsCastedRValue, lhsTruePredBB );
       phi->addIncoming( rhsCastedRValue, lhsFalsePredBB );
-      return CG::ExprValue( castAdapter, usage, phi );
+      return CG::ExprValue( castAdapter, usage, basicBlockBuilder.getContext(), phi );
     }
   };
 };

@@ -1,4 +1,4 @@
-function entry()
+operator entry()
 {
   var Integer[] foo;
   var Integer[4][] bar;

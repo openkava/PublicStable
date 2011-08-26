@@ -14,7 +14,7 @@ function Vec3 doubleVec3( io Vec3 vec3 )
   return result;
 }
 
-function entry()
+operator entry()
 {
   var Vec3 vec3;
   vec3.x = 1;

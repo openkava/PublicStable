@@ -18,17 +18,16 @@ namespace Fabric
     {
     }
     
-    size_t ConstStringDesc::getLength() const
-    {
-      return m_constStringImpl->getLength();
-    }
-    
     RC::Handle<JSON::Object> ConstStringDesc::jsonDesc() const
     {
       RC::Handle<JSON::Object> result = Desc::jsonDesc();
       result->set( "internalType", JSON::String::Create("ConstString") );
-      result->set( "length", JSON::Integer::Create(getLength()) );
       return result;
+    }
+
+    std::string ConstStringDesc::toString( void const *data ) const
+    {
+      return m_constStringImpl->toString( data );
     }
   };
 };

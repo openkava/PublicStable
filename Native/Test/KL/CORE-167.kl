@@ -8,7 +8,7 @@ function Scalar check( Boolean foo )
 		return 0.0;
 }
 
-function entry( )
+operator entry( )
 {
 	report check( true );
 }
