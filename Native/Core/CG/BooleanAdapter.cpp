@@ -32,6 +32,8 @@ namespace Fabric
       
       RC::ConstHandle<StringAdapter> stringAdapter = getManager()->getStringAdapter();
       stringAdapter->llvmCompileToModule( moduleBuilder );
+      RC::ConstHandle<ConstStringAdapter> constStringAdapter = getManager()->getConstStringAdapter();
+      constStringAdapter->llvmCompileToModule( moduleBuilder );
       
       static const bool buildFunctions = true;
       
@@ -54,14 +56,12 @@ namespace Fabric
           basicBlockBuilder->CreateCondBr( booleanRValue, trueBB, falseBB );
           
           basicBlockBuilder->SetInsertPoint( trueBB );
-          RC::ConstHandle<ConstStringAdapter> trueConstStringAdapter = getManager()->getConstStringAdapter(4);
-          ExprValue trueExprValue( trueConstStringAdapter, USAGE_RVALUE, trueConstStringAdapter->llvmConst( basicBlockBuilder, "true", 4 ) );
+          ExprValue trueExprValue( constStringAdapter, USAGE_RVALUE, constStringAdapter->llvmConst( basicBlockBuilder, "true", 4 ) );
           llvm::Value *trueStringRValue = stringAdapter->llvmCast( basicBlockBuilder, trueExprValue );
           basicBlockBuilder->CreateBr( mergeBB );
           
           basicBlockBuilder->SetInsertPoint( falseBB );
-          RC::ConstHandle<ConstStringAdapter> falseConstStringAdapter = getManager()->getConstStringAdapter(5);
-          ExprValue falseExprValue( falseConstStringAdapter, USAGE_RVALUE, falseConstStringAdapter->llvmConst( basicBlockBuilder, "false", 5 ) );
+          ExprValue falseExprValue( constStringAdapter, USAGE_RVALUE, constStringAdapter->llvmConst( basicBlockBuilder, "false", 5 ) );
           llvm::Value *falseStringRValue = stringAdapter->llvmCast( basicBlockBuilder, falseExprValue );
           basicBlockBuilder->CreateBr( mergeBB );
           
