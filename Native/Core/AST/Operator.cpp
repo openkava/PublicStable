@@ -28,7 +28,7 @@ namespace Fabric
       RC::ConstHandle<ParamVector> const &params,
       RC::ConstHandle<CompoundStatement> const &body
       )
-      : Function( location, friendlyName, entryName, "", params, body )
+      : Function( location, friendlyName, entryName, "", params, body, true )
     {
     }
   }

@@ -1,4 +1,4 @@
-function entry()
+operator entry()
 {
   var Integer integer = 42;
   report integer;

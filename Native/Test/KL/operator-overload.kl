@@ -14,7 +14,7 @@ function Vec3 +( Vec3 lhs, Vec3 rhs )
   return result;
 }
 
-function entry()
+operator entry()
 {
   var Vec3 vec3;
   vec3.x = 1;

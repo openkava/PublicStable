@@ -1,4 +1,4 @@
-function entry()
+operator entry()
 {
   report round( 1.9 );
   report round( 1.1 );

@@ -12,29 +12,37 @@ namespace Fabric
 {
   namespace CG
   {
-    ExprValue::ExprValue()
-      : m_value( 0 )
+    ExprValue::ExprValue( RC::Handle<Context> const &context )
+      : m_context( context )
+      , m_value( 0 )
     {
     }
   
-    ExprValue::ExprValue( ExprType const &exprType, llvm::Value *value )
+    ExprValue::ExprValue( ExprType const &exprType, RC::Handle<Context> const &context, llvm::Value *value )
       : m_exprType( exprType )
+      , m_context( context )
       , m_value( value )
     {
-      FABRIC_ASSERT( !exprType
-        || exprType.getUsage() == USAGE_RVALUE && value->getType() == exprType.getAdapter()->llvmRType()
-        || exprType.getUsage() == USAGE_LVALUE && value->getType() == exprType.getAdapter()->llvmLType()
+      FABRIC_ASSERT( !m_exprType
+        || m_exprType.getUsage() == USAGE_RVALUE && m_value->getType() == m_exprType.getAdapter()->llvmRType( m_context )
+        || m_exprType.getUsage() == USAGE_LVALUE && m_value->getType() == m_exprType.getAdapter()->llvmLType( m_context )
         );
     }
     
-    ExprValue::ExprValue( RC::ConstHandle<Adapter> const &adapter, Usage usage, llvm::Value *value )
+    ExprValue::ExprValue( RC::ConstHandle<Adapter> const &adapter, Usage usage, RC::Handle<Context> const &context, llvm::Value *value )
       : m_exprType( adapter, usage )
+      , m_context( context )
       , m_value( value )
     {
+      FABRIC_ASSERT( !m_exprType
+        || m_exprType.getUsage() == USAGE_RVALUE && m_value->getType() == m_exprType.getAdapter()->llvmRType( m_context )
+        || m_exprType.getUsage() == USAGE_LVALUE && m_value->getType() == m_exprType.getAdapter()->llvmLType( m_context )
+        );
     }
     
     ExprValue::ExprValue( ExprValue const &that )
       : m_exprType( that.m_exprType )
+      , m_context( that.m_context )
       , m_value( that.m_value )
     {
     }

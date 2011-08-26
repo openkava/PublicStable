@@ -21,9 +21,6 @@ namespace Fabric
     
       static RC::ConstHandle<Function> Create( RC::ConstHandle<Code> const &code, std::string const &functionName );
     
-      virtual FunctionPtr getFunctionPtr() const;
-      virtual RC::Object const *getObjectOwningFunctionPtr() const;
-      
       void onExecutionEngineChange( RC::ConstHandle<ExecutionEngine> const &executionEngine );
     
     protected:
@@ -35,8 +32,6 @@ namespace Fabric
     
       RC::ConstHandle<Code> m_code;
       std::string m_functionName;
-      mutable RC::ConstHandle<ExecutionEngine> m_executionEngine;
-      mutable FunctionPtr m_functionPtr;
     };
   };
 };

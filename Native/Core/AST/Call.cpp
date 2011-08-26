@@ -57,17 +57,19 @@ namespace Fabric
       return RC::ConstHandle<CG::FunctionSymbol>::StaticCast( symbol );
     }
     
-    RC::ConstHandle<CG::Adapter> Call::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const
+    RC::ConstHandle<CG::Adapter> Call::getType( CG::BasicBlockBuilder &basicBlockBuilder ) const
     {
       RC::ConstHandle<CG::Adapter> adapter = basicBlockBuilder.maybeGetAdapter( m_name );
+      if ( !adapter )
+        adapter = getFunctionSymbol( basicBlockBuilder )->getReturnInfo().getAdapter();
       if ( adapter )
-        return adapter;
-      else return getFunctionSymbol( basicBlockBuilder )->getReturnInfo().getAdapter();
+        adapter->llvmCompileToModule( basicBlockBuilder.getModuleBuilder() );
+      return adapter;
     }
     
-    void Call::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    void Call::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const
     {
-      m_args->llvmPrepareModule( moduleBuilder, diagnostics );
+      m_args->registerTypes( cgManager, diagnostics );
     }
     
     CG::ExprValue Call::buildExprValue( CG::BasicBlockBuilder &basicBlockBuilder, CG::Usage usage, std::string const &lValueErrorDesc ) const
@@ -75,13 +77,15 @@ namespace Fabric
       RC::ConstHandle<CG::Adapter> adapter = basicBlockBuilder.maybeGetAdapter( m_name );
       if ( adapter )
       {
+        adapter->llvmCompileToModule( basicBlockBuilder.getModuleBuilder() );
+        
         if ( usage == CG::USAGE_LVALUE )
           throw Exception( "temporary values cannot be used in an l-value context" );
         else usage = CG::USAGE_RVALUE;
         
         llvm::Value *selfLValue = adapter->llvmAlloca( basicBlockBuilder, "temp"+adapter->getUserName() );
         adapter->llvmInit( basicBlockBuilder, selfLValue );
-        CG::ExprValue result( adapter, CG::USAGE_LVALUE, selfLValue );
+        CG::ExprValue result( adapter, CG::USAGE_LVALUE, basicBlockBuilder.getContext(), selfLValue );
         
         std::vector< RC::ConstHandle<CG::Adapter> > argTypes;
         m_args->appendTypes( basicBlockBuilder, argTypes );
@@ -140,7 +144,7 @@ namespace Fabric
         if ( usage == CG::USAGE_LVALUE && functionSymbol->getReturnInfo().getUsage() != CG::USAGE_LVALUE )
           throw Exception( "result of function "+_(m_name)+" is not an l-value" );
         
-        CG::ExprValue result;
+        CG::ExprValue result( basicBlockBuilder.getContext() );
         try
         {
           std::vector<CG::FunctionParam> const functionParams = functionSymbol->getParams();

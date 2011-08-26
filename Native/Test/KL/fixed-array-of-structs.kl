@@ -5,7 +5,7 @@ struct Vec3
   Scalar z;
 };
 
-function entry()
+operator entry()
 {
   var Vec3 vec3Array[2];
   vec3Array[1].x = 56.1;
