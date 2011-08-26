@@ -23,7 +23,7 @@ namespace Fabric
       RC::ConstHandle<CompoundStatement> const &body
       )
     {
-      return new Function( location, friendlyName, entryName, returnTypeName, params, body );
+      return new Function( location, friendlyName, entryName, returnTypeName, params, body, !body );
     }
     
     RC::ConstHandle<Function> Function::Create(
@@ -35,18 +35,19 @@ namespace Fabric
       RC::ConstHandle<CompoundStatement> const &body
       )
     {
-      return new Function( location, friendlyName, entryName? *entryName: friendlyName, returnTypeName, params, body );
+      return new Function( location, friendlyName, entryName? *entryName: friendlyName, returnTypeName, params, body, !body );
     }
     
     Function::Function(
-        CG::Location const &location,
-        std::string const &friendlyName,
-        std::string const &entryName,
-        std::string const &returnTypeName,
-        RC::ConstHandle<ParamVector> const &params,
-        RC::ConstHandle<CompoundStatement> const &body
-        )
-      : FunctionBase( location, returnTypeName, body )
+      CG::Location const &location,
+      std::string const &friendlyName,
+      std::string const &entryName,
+      std::string const &returnTypeName,
+      RC::ConstHandle<ParamVector> const &params,
+      RC::ConstHandle<CompoundStatement> const &body,
+      bool exportSymbol
+      )
+      : FunctionBase( location, returnTypeName, body, exportSymbol )
       , m_friendlyName( friendlyName )
       , m_entryName( entryName )
       , m_params( params )

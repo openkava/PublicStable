@@ -147,7 +147,7 @@ namespace Fabric
       
       JSONGenerator makeMember( char const *name ) const
       {
-        if ( m_count++ == 0 )
+        if ( m_count++ > 0 )
           m_ss->append( ',' );
         JSONGenerator( m_ss ).makeString( name );
         m_ss->append( ':' );
@@ -186,7 +186,7 @@ namespace Fabric
       
       JSONGenerator makeElement() const
       {
-        if ( m_count++ == 0 )
+        if ( m_count++ > 0 )
           m_ss->append( ',' );
         return JSONGenerator( m_ss );
       }

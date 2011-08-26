@@ -49,7 +49,7 @@ function Scalar rand( io Integer seed )
   return Scalar( (seed / 256) & 8388607) / 8388607.0 ;
 } 
 
-function entry()
+operator entry()
 {
 	var Scalar a[];
 	var Integer seed;

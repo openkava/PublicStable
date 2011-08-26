@@ -9,9 +9,10 @@
 
 #include "TernaryOp.h"
 #include <Fabric/Core/CG/BooleanAdapter.h>
-#include <Fabric/Core/CG/Manager.h>
+#include <Fabric/Core/CG/Context.h>
 #include <Fabric/Core/CG/Error.h>
 #include <Fabric/Core/CG/FunctionBuilder.h>
+#include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/RT/Desc.h>
 #include <Fabric/Base/Util/SimpleString.h>
 
@@ -44,24 +45,28 @@ namespace Fabric
       m_right->appendJSON( jsonObjectGenerator.makeMember( "falseExpr" ) );
     }
     
-    void TernaryOp::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    void TernaryOp::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const
     {
-      m_left->llvmPrepareModule( moduleBuilder, diagnostics );
-      m_middle->llvmPrepareModule( moduleBuilder, diagnostics );
-      m_right->llvmPrepareModule( moduleBuilder, diagnostics );
+      m_left->registerTypes( cgManager, diagnostics );
+      m_middle->registerTypes( cgManager, diagnostics );
+      m_right->registerTypes( cgManager, diagnostics );
     }
     
-    RC::ConstHandle<CG::Adapter> TernaryOp::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const
+    RC::ConstHandle<CG::Adapter> TernaryOp::getType( CG::BasicBlockBuilder &basicBlockBuilder ) const
     {
       RC::ConstHandle<CG::Adapter> trueType = m_middle->getType( basicBlockBuilder );
+      trueType->llvmCompileToModule( basicBlockBuilder.getModuleBuilder() );
       RC::ConstHandle<CG::Adapter> falseType = m_right->getType( basicBlockBuilder );
+      falseType->llvmCompileToModule( basicBlockBuilder.getModuleBuilder() );
       
       // The true/false value types need to be "equivalent". We'll cast into whoever wins the
       // casting competition, or fail if they can't.
       RC::ConstHandle<RT::Desc> castDesc = basicBlockBuilder.getStrongerTypeOrNone( trueType->getDesc(), falseType->getDesc() );
       if ( !castDesc )
         throw CG::Error( getLocation(), "types " + _(trueType->getUserName()) + " and " + _(falseType->getUserName()) + " are unrelated" );
-      return trueType->getManager()->getAdapter( castDesc );
+      RC::ConstHandle<CG::Adapter> adapter = trueType->getManager()->getAdapter( castDesc );
+      adapter->llvmCompileToModule( basicBlockBuilder.getModuleBuilder() );
+      return adapter;
     }
     
     CG::ExprValue TernaryOp::buildExprValue( CG::BasicBlockBuilder &basicBlockBuilder, CG::Usage usage, std::string const &lValueErrorDesc ) const
@@ -86,7 +91,7 @@ namespace Fabric
             CG::ExprValue exprExprValue = m_left->buildExprValue( basicBlockBuilder, CG::USAGE_RVALUE, lValueErrorDesc );
             condValue = booleanAdapter->llvmCast( basicBlockBuilder, exprExprValue );
             if( !condValue )
-              return CG::ExprValue();
+              return CG::ExprValue( basicBlockBuilder.getContext() );
             basicBlockBuilder->CreateCondBr( condValue, trueBasicBlock, falseBasicBlock );
 
             basicBlockBuilder->SetInsertPoint( trueBasicBlock );
@@ -127,11 +132,11 @@ namespace Fabric
             
             // The merge path
             basicBlockBuilder->SetInsertPoint( mergeBasicBlock );
-            llvm::PHINode *phi = basicBlockBuilder->CreatePHI( castAdapter->llvmRType(), "cond_phi" );
+            llvm::PHINode *phi = basicBlockBuilder->CreatePHI( castAdapter->llvmRType( basicBlockBuilder.getContext() ), "cond_phi" );
             phi->addIncoming( trueRValue, trueBasicBlock );
             phi->addIncoming( falseRValue, falseBasicBlock );
             
-            return CG::ExprValue( castAdapter, usage, phi );
+            return CG::ExprValue( castAdapter, usage, basicBlockBuilder.getContext(), phi );
           }
         }
       }
@@ -143,7 +148,7 @@ namespace Fabric
       {
         throw CG::Error( getLocation(), "ternary operation: " + e );
       }
-      return CG::ExprValue();
+      return CG::ExprValue( basicBlockBuilder.getContext() );
     }
   };
 };

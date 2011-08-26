@@ -39,7 +39,7 @@ namespace Fabric
     protected:
     
       ArrayAdapter( RC::ConstHandle<Manager> const &manager, RC::ConstHandle<RT::ArrayDesc> const &arrayDesc, Flags flags );
-      
+
     private:
     
       RC::ConstHandle<RT::ArrayDesc> m_arrayDesc;

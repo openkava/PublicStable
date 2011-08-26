@@ -1,4 +1,4 @@
-function entry()
+operator entry()
 {
   // Binary ops
   report Byte(1) + Byte(2);

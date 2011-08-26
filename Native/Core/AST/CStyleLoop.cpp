@@ -8,6 +8,7 @@
 #include <Fabric/Core/AST/CStyleLoop.h>
 #include <Fabric/Core/AST/Expr.h>
 #include <Fabric/Core/CG/BooleanAdapter.h>
+#include <Fabric/Core/CG/Context.h>
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/CG/Scope.h>
 #include <Fabric/Core/CG/Error.h>
@@ -64,18 +65,18 @@ namespace Fabric
         m_body->appendJSON( jsonObjectGenerator.makeMember( "body" ) );
     }
     
-    void CStyleLoop::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    void CStyleLoop::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const
     {
       if ( m_startStatement )
-        m_startStatement->llvmPrepareModule( moduleBuilder, diagnostics );
+        m_startStatement->registerTypes( cgManager, diagnostics );
       if ( m_preCondExpr )
-        m_preCondExpr->llvmPrepareModule( moduleBuilder, diagnostics );
+        m_preCondExpr->registerTypes( cgManager, diagnostics );
       if ( m_nextExpr )
-        m_nextExpr->llvmPrepareModule( moduleBuilder, diagnostics );
+        m_nextExpr->registerTypes( cgManager, diagnostics );
       if ( m_postCondExpr )
-        m_postCondExpr->llvmPrepareModule( moduleBuilder, diagnostics );
+        m_postCondExpr->registerTypes( cgManager, diagnostics );
       if ( m_body )
-        m_body->llvmPrepareModule( moduleBuilder, diagnostics );
+        m_body->registerTypes( cgManager, diagnostics );
     }
 
     void CStyleLoop::llvmCompileToBuilder( CG::BasicBlockBuilder &parentBasicBlockBuilder, CG::Diagnostics &diagnostics ) const
@@ -104,7 +105,7 @@ namespace Fabric
           CG::ExprValue preCondExprRValue = m_preCondExpr->buildExprValue( loopBasicBlockBuilder, CG::USAGE_RVALUE, "cannot be an l-value" );
           preCondExprBoolRValue = booleanAdapter->llvmCast( loopBasicBlockBuilder, preCondExprRValue );
         }
-        else preCondExprBoolRValue = booleanAdapter->llvmConst( true );
+        else preCondExprBoolRValue = booleanAdapter->llvmConst( loopBasicBlockBuilder.getContext(), true );
         loopBasicBlockBuilder->CreateCondBr( preCondExprBoolRValue, bodyBB, endBB );
         
         loopBasicBlockBuilder->SetInsertPoint( bodyBB );
@@ -124,7 +125,7 @@ namespace Fabric
           CG::ExprValue postCondExprRValue = m_postCondExpr->buildExprValue( loopBasicBlockBuilder, CG::USAGE_RVALUE, "cannot be an l-value" );
           postCondExprBoolRValue = booleanAdapter->llvmCast( loopBasicBlockBuilder, postCondExprRValue );
         }
-        else postCondExprBoolRValue = booleanAdapter->llvmConst( true );
+        else postCondExprBoolRValue = booleanAdapter->llvmConst( loopBasicBlockBuilder.getContext(), true );
         loopBasicBlockBuilder->CreateCondBr( postCondExprBoolRValue, checkPreCondBB, endBB );
         
         loopBasicBlockBuilder->SetInsertPoint( endBB );

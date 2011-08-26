@@ -23,9 +23,5 @@ namespace Fabric
     void Global::registerTypes( RC::Handle<RT::Manager> const &rtManager, CG::Diagnostics &diagnostics ) const
     {
     }
-    
-    void Global::llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctionBodies ) const
-    {
-    }
   };
 };

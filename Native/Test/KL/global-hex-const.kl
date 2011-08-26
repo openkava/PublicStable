@@ -1,4 +1,4 @@
 const Size foo = 0x1234;
-function entry() {
+operator entry() {
   report foo;
 }

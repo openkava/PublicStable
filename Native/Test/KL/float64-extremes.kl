@@ -1,4 +1,4 @@
-function entry()
+operator entry()
 {
   Float64 float64s[];
   float64s.push( Float64(0.0) );

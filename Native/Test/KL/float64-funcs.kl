@@ -1,4 +1,4 @@
-function entry() {
+operator entry() {
   Float64 x = 0.1;
   report sqrt64(x);
   report abs64(x);

@@ -3,7 +3,7 @@ struct S
   Integer i;
 };
 
-function entry()
+operator entry()
 {
   var S s;
   report -s;

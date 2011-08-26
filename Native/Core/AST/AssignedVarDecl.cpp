@@ -46,17 +46,17 @@ namespace Fabric
       m_initialExpr->appendJSON( jsonObjectGenerator.makeMember( "initialValue" ) );
     }
     
-    void AssignedVarDecl::llvmPrepareModule( std::string const &baseType, CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    void AssignedVarDecl::registerTypes( std::string const &baseType, RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const
     {
-      VarDecl::llvmPrepareModule( baseType, moduleBuilder, diagnostics );
-      m_initialExpr->llvmPrepareModule( moduleBuilder, diagnostics );
+      VarDecl::registerTypes( baseType, cgManager, diagnostics );
+      m_initialExpr->registerTypes( cgManager, diagnostics );
     }
 
     void AssignedVarDecl::llvmCompileToBuilder( std::string const &baseType, CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const
     {
       CG::ExprValue result = VarDecl::llvmAllocateVariable( baseType, basicBlockBuilder, diagnostics );
       
-      CG::ExprValue initialExprExprValue;
+      CG::ExprValue initialExprExprValue( basicBlockBuilder.getContext() );
       try
       {
         initialExprExprValue = m_initialExpr->buildExprValue( basicBlockBuilder, CG::USAGE_RVALUE, "cannot be an l-value" );

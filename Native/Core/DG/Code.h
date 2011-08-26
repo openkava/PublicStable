@@ -31,6 +31,11 @@ namespace Fabric
     class Operator;
   };
   
+  namespace CG
+  {
+    class Context;
+  };
+  
   namespace DG
   {
     class Context;
@@ -66,7 +71,7 @@ namespace Fabric
       
       void compileSourceCode();
       void compileAST( bool optimize );
-      void linkModule( llvm::OwningPtr<llvm::Module> &module, bool optimize );
+      void linkModule( RC::Handle<CG::Context> const &cgContext, llvm::OwningPtr<llvm::Module> &module, bool optimize );
       
     private:
     
@@ -74,9 +79,11 @@ namespace Fabric
       {
         Code *code = static_cast<Code *>( userdata );
         code->compileAST( true );
+        code->release();
       }
     
       Context const *m_context;
+      MT::Mutex m_mutex;
       std::string m_sourceCode;
 #if defined(FABRIC_BUILD_DEBUG)
       std::string m_byteCode;

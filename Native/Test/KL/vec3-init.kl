@@ -5,7 +5,7 @@ struct Vec3
   Scalar z;
 };
 
-function entry()
+operator entry()
 {
   Vec3 a;
   a.x = 1; report a.x;

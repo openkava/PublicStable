@@ -30,14 +30,15 @@ namespace Fabric
       m_expr->appendJSON( jsonObjectGenerator.makeMember( "expr" ) );
     }
     
-    void Report::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    void Report::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const
     {
-      m_expr->llvmPrepareModule( moduleBuilder, diagnostics );
+      m_expr->registerTypes( cgManager, diagnostics );
     }
 
     void Report::llvmCompileToBuilder( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const
     {
       RC::ConstHandle< CG::StringAdapter > stringAdapter = basicBlockBuilder.getManager()->getStringAdapter();
+      stringAdapter->llvmCompileToModule( basicBlockBuilder.getModuleBuilder() );
 
       try
       {
