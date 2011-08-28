@@ -60,6 +60,7 @@ namespace Fabric
       RC::ConstHandle<ConstStringDesc> getConstStringDesc() const;
       RC::ConstHandle<IntegerDesc> getIntegerDesc() const;
       RC::ConstHandle<SizeDesc> getSizeDesc() const;
+      RC::ConstHandle<Desc> getIndexDesc() const;
       RC::ConstHandle<FloatDesc> getScalarDesc() const;
       RC::ConstHandle<FloatDesc> getFP64Desc() const;
       RC::ConstHandle<StringDesc> getStringDesc() const;
@@ -111,6 +112,7 @@ namespace Fabric
       RC::ConstHandle<ByteDesc> m_byteDesc;
       RC::ConstHandle<IntegerDesc> m_integerDesc;
       RC::ConstHandle<SizeDesc> m_sizeDesc;
+      RC::ConstHandle<Desc> m_indexDesc;
       RC::ConstHandle<FloatDesc> m_scalarDesc;
       RC::ConstHandle<FloatDesc> m_fp64Desc;
       RC::ConstHandle<StringDesc> m_stringDesc;
