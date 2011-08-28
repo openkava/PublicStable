@@ -174,6 +174,8 @@ namespace Fabric
       : m_cgManager( cgManager )
       , m_rtSizeDesc( cgManager->getRTManager()->getSizeDesc() )
       , m_rtSizeImpl( m_rtSizeDesc->getImpl() )
+      , m_rtIndexDesc( cgManager->getRTManager()->getIndexDesc() )
+      , m_rtIndexImpl( m_rtIndexDesc->getImpl() )
     {
     }
     
@@ -299,9 +301,9 @@ namespace Fabric
               }
               else if ( param->isIndexParam() )
               {
-                if ( astParamImpl != m_rtSizeImpl
+                if ( astParamImpl != m_rtIndexImpl
                   || astParamExprType.getUsage() != CG::USAGE_RVALUE )
-                  throw Exception( "'index' parmeters must bind to operator in parameters of type "+_(m_rtSizeDesc->getName()) );
+                  throw Exception( "'index' parmeters must bind to operator in parameters of type "+_(m_rtIndexDesc->getName()) );
                 result->setBaseAddress( prefixCount+param->index(), (void *)0 );
                 if ( container->getCount() != 1 )
                 {
