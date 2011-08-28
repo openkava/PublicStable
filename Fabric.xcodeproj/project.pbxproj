@@ -37,7 +37,6 @@
 		DB96855A13A79BC700616143 /* BackgroundTexture.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = BackgroundTexture.html; sourceTree = "<group>"; };
 		DB96855B13A79BC700616143 /* CharacterSkeleton.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = CharacterSkeleton.html; sourceTree = "<group>"; };
 		DB96855C13A79BC700616143 /* CharacterSkinning.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = CharacterSkinning.html; sourceTree = "<group>"; };
-		DB96855D13A79BC700616143 /* Flocking.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = Flocking.html; sourceTree = "<group>"; };
 		DB96855E13A79BC700616143 /* KeyframeAnimation.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = KeyframeAnimation.html; sourceTree = "<group>"; };
 		DB96855F13A79BC700616143 /* Manipulators.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = Manipulators.html; sourceTree = "<group>"; };
 		DB96856013A79BC700616143 /* Materials.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = Materials.html; sourceTree = "<group>"; };
@@ -45,9 +44,7 @@
 		DB96858313A79BC900616143 /* MouseEvents.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = MouseEvents.html; sourceTree = "<group>"; };
 		DB96858613A79BC900616143 /* Painting.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = Painting.html; sourceTree = "<group>"; };
 		DB96858713A79BC900616143 /* PerPointDeformation.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = PerPointDeformation.html; sourceTree = "<group>"; };
-		DB96858813A79BC900616143 /* PointCloudViewer.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = PointCloudViewer.html; sourceTree = "<group>"; };
 		DB96858913A79BC900616143 /* Primitives.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = Primitives.html; sourceTree = "<group>"; };
-		DB96859713A79BC900616143 /* ShadowcastingLights.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = ShadowcastingLights.html; sourceTree = "<group>"; };
 		DB9685BD13A79BCB00616143 /* TransformAnimation.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = TransformAnimation.html; sourceTree = "<group>"; };
 		DB9685BF13A79BCB00616143 /* ArmRig.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = ArmRig.html; sourceTree = "<group>"; };
 		DB9685C013A79BCB00616143 /* FishingRod.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = FishingRod.html; sourceTree = "<group>"; };
@@ -56,7 +53,6 @@
 		DB9685C313A79BCB00616143 /* LegRig.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = LegRig.html; sourceTree = "<group>"; };
 		DB9685C513A79BCB00616143 /* Spine.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = Spine.html; sourceTree = "<group>"; };
 		DB9685EB13A79BCD00616143 /* TwistBones.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = TwistBones.html; sourceTree = "<group>"; };
-		DB96860913A79CE700616143 /* nBodyKernel.cl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.opencl; path = nBodyKernel.cl; sourceTree = "<group>"; };
 		DB96860D13A79CE700616143 /* swirleyMovementOp.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = swirleyMovementOp.kl; sourceTree = "<group>"; };
 		DB96860E13A79CE700616143 /* turningOp.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = turningOp.kl; sourceTree = "<group>"; };
 		DB96860F13A79CE700616143 /* twistOp.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = twistOp.kl; sourceTree = "<group>"; };
@@ -180,7 +176,7 @@
 		DB9CD98C13D3C69400CCB0E6 /* json_verify.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = json_verify.c; sourceTree = "<group>"; };
 		DB9CD98D13D3C69400CCB0E6 /* YAJLDoc.cmake */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = YAJLDoc.cmake; sourceTree = "<group>"; };
 		DBCCD57B13AC007D00024113 /* currentTime.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = currentTime.html; sourceTree = "<group>"; };
-		DBD4340013D8B7D700E57C5F /* nBodySimulation.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = nBodySimulation.html; sourceTree = "<group>"; };
+		DBD2B750140AF0860000DEF7 /* Simulation */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Simulation; sourceTree = "<group>"; };
 		DBD4340113D8B7D700E57C5F /* Tesselation.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = Tesselation.html; sourceTree = "<group>"; };
 		DBD4340213D8B7FA00E57C5F /* nBodyOp.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = nBodyOp.kl; sourceTree = "<group>"; };
 		DBD4340313D8B7FA00E57C5F /* nBodyOpGPU.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = nBodyOpGPU.kl; sourceTree = "<group>"; };
@@ -381,6 +377,7 @@
 		DB96855813A79BC700616143 /* Sample */ = {
 			isa = PBXGroup;
 			children = (
+				DBD2B750140AF0860000DEF7 /* Simulation */,
 				DB96855913A79BC700616143 /* BasicDemos */,
 				DB9685BE13A79BCB00616143 /* Rigging */,
 				DBCCD57A13AC007D00024113 /* SampleExts */,
@@ -394,21 +391,16 @@
 				DB96855A13A79BC700616143 /* BackgroundTexture.html */,
 				DB96855B13A79BC700616143 /* CharacterSkeleton.html */,
 				DB96855C13A79BC700616143 /* CharacterSkinning.html */,
-				DB96855D13A79BC700616143 /* Flocking.html */,
 				DB96855E13A79BC700616143 /* KeyframeAnimation.html */,
 				DB96855F13A79BC700616143 /* Manipulators.html */,
 				DB96856013A79BC700616143 /* Materials.html */,
 				DB96858213A79BC900616143 /* ModelViewer.html */,
 				DB96858313A79BC900616143 /* MouseEvents.html */,
-				DBD4340013D8B7D700E57C5F /* nBodySimulation.html */,
 				DB96858613A79BC900616143 /* Painting.html */,
 				DB96858713A79BC900616143 /* PerPointDeformation.html */,
-				DB96858813A79BC900616143 /* PointCloudViewer.html */,
 				DB96858913A79BC900616143 /* Primitives.html */,
-				DB96859713A79BC900616143 /* ShadowcastingLights.html */,
 				DBD4340113D8B7D700E57C5F /* Tesselation.html */,
 				DB9685BD13A79BCB00616143 /* TransformAnimation.html */,
-				DB96860813A79CE700616143 /* CL */,
 				DB96860A13A79CE700616143 /* KL */,
 			);
 			path = BasicDemos;
@@ -426,14 +418,6 @@
 				DB9685EB13A79BCD00616143 /* TwistBones.html */,
 			);
 			path = Rigging;
-			sourceTree = "<group>";
-		};
-		DB96860813A79CE700616143 /* CL */ = {
-			isa = PBXGroup;
-			children = (
-				DB96860913A79CE700616143 /* nBodyKernel.cl */,
-			);
-			path = CL;
 			sourceTree = "<group>";
 		};
 		DB96860A13A79CE700616143 /* KL */ = {
