@@ -75,6 +75,8 @@ namespace Fabric
       RC::Handle<CG::Manager> m_cgManager;
       RC::ConstHandle<RT::Desc> m_rtSizeDesc;
       RC::ConstHandle<RT::Impl> m_rtSizeImpl;
+      RC::ConstHandle<RT::Desc> m_rtIndexDesc;
+      RC::ConstHandle<RT::Impl> m_rtIndexImpl;
     };
   };
 };
