@@ -13,6 +13,7 @@
 #include <Fabric/Core/AST/GlobalList.h>
 #include <Fabric/Core/AST/Function.h>
 #include <Fabric/Core/AST/Operator.h>
+#include <Fabric/Core/AST/UseInfo.h>
 #include <Fabric/Core/RT/Desc.h>
 #include <Fabric/Core/RT/Impl.h>
 #include <Fabric/Core/Plug/Manager.h>
@@ -80,16 +81,6 @@ namespace Fabric
       
       FABRIC_ASSERT( m_sourceCode.length() > 0 );
       
-      m_ast = AST::GlobalList::Create();
-      std::vector< RC::ConstHandle<RT::Desc> > topoSortedDescs = m_context->getRTManager()->getTopoSortedDescs();
-      for ( size_t i=0; i<topoSortedDescs.size(); ++i )
-      {
-        RC::ConstHandle<RT::Desc> const &desc = topoSortedDescs[i];
-        RC::ConstHandle<AST::GlobalList> ast = RC::ConstHandle<AST::GlobalList>::StaticCast( desc->getKLBindingsAST() );
-        m_ast = AST::GlobalList::Create( m_ast, ast );
-      }
-      m_ast = AST::GlobalList::Create( m_ast, Plug::Manager::Instance()->getAST() );
-
       RC::ConstHandle<KL::Source> source = KL::StringSource::Create( m_sourceCode );
       RC::Handle<KL::Scanner> scanner = KL::Scanner::Create( source );
       m_ast = AST::GlobalList::Create( m_ast, KL::Parse( scanner, m_diagnostics ) );
@@ -102,78 +93,111 @@ namespace Fabric
       MT::Mutex::Lock mutexLock( m_mutex );
 
       FABRIC_ASSERT( m_ast );
+      RC::ConstHandle<AST::GlobalList> ast = m_ast;
       
-      RC::Handle<CG::Manager> cgManager = m_context->getCGManager();
-      RC::Handle<CG::Context> cgContext = CG::Context::Create();
-      llvm::OwningPtr<llvm::Module> module( new llvm::Module( "DG::Code", cgContext->getLLVMContext() ) );
-      CG::ModuleBuilder moduleBuilder( cgManager, cgContext, module.get() );
-      OCL::llvmPrepareModule( moduleBuilder, m_context->getRTManager() );
+      AST::UseNameToLocationMap uses;
+      m_ast->collectUses( uses );
 
-      CG::Diagnostics optimizeDiagnostics;
-      CG::Diagnostics &diagnostics = (false && optimize)? optimizeDiagnostics: m_diagnostics;
+      std::set<std::string> includedUses;
+      while ( !uses.empty() )
+      {
+        AST::UseNameToLocationMap::iterator it = uses.begin();
+        std::string const &name = it->first;
+        if ( includedUses.find( name ) == includedUses.end() )
+        {
+          RC::ConstHandle<AST::GlobalList> useAST = Plug::Manager::Instance()->maybeGetASTForExt( name );
+          if ( !useAST )
+          {
+            RC::ConstHandle<RC::Object> typeAST;
+            if ( m_context->getRTManager()->maybeGetASTForType( name, typeAST ) )
+              useAST = typeAST? RC::ConstHandle<AST::GlobalList>::StaticCast( typeAST ): AST::GlobalList::Create();
+          }
+            
+          if ( useAST )
+          {
+            useAST->collectUses( uses );
+            ast = AST::GlobalList::Create( useAST, ast );
+            includedUses.insert( name );
+          }
+          else m_diagnostics.addError( it->second, "no registered type or plugin named " + _(it->first) );
+        }
+        uses.erase( it );
+      }
 
-      std::string irCacheKeyForAST = IRCache::Instance()->keyForAST( m_ast );
-      std::string ir = IRCache::Instance()->get( irCacheKeyForAST );
-      if ( ir.length() > 0 )
+      if ( !m_diagnostics.containsError() )
       {
         RC::Handle<CG::Manager> cgManager = m_context->getCGManager();
-        
-        llvm::SMDiagnostic error;
-        llvm::ParseAssemblyString( ir.c_str(), module.get(), error, cgContext->getLLVMContext() );
-        
-        m_ast->registerTypes( cgManager, diagnostics );
-        FABRIC_ASSERT( !diagnostics.containsError() );
+        RC::Handle<CG::Context> cgContext = CG::Context::Create();
+        llvm::OwningPtr<llvm::Module> module( new llvm::Module( "DG::Code", cgContext->getLLVMContext() ) );
+        CG::ModuleBuilder moduleBuilder( cgManager, cgContext, module.get() );
+        OCL::llvmPrepareModule( moduleBuilder, m_context->getRTManager() );
 
-        FABRIC_ASSERT( !llvm::verifyModule( *module, llvm::PrintMessageAction ) );
+        CG::Diagnostics optimizeDiagnostics;
+        CG::Diagnostics &diagnostics = (false && optimize)? optimizeDiagnostics: m_diagnostics;
 
-        linkModule( cgContext, module, true );
-        
-        return;
-      }
-      
-      m_ast->registerTypes( cgManager, diagnostics );
-      if ( !diagnostics.containsError() )
-      {
-        m_ast->llvmCompileToModule( moduleBuilder, diagnostics, false );
-      }
-      if ( !diagnostics.containsError() )
-      {
-        m_ast->llvmCompileToModule( moduleBuilder, diagnostics, true );
-      }
-      if ( !diagnostics.containsError() )
-      {
-#if defined(FABRIC_BUILD_DEBUG)
-        std::string optimizeByteCode;
-        std::string &byteCode = (false && optimize)? optimizeByteCode: m_byteCode;
-        llvm::raw_string_ostream byteCodeStream( byteCode );
-        module->print( byteCodeStream, 0 );
-        byteCodeStream.flush();
-#endif
-        
-        llvm::NoFramePointerElim = true;
-        llvm::JITExceptionHandling = true;
-        llvm::OwningPtr<llvm::PassManager> passManager( new llvm::PassManager );
-        if ( optimize )
+        std::string irCacheKeyForAST = IRCache::Instance()->keyForAST( ast );
+        std::string ir = IRCache::Instance()->get( irCacheKeyForAST );
+        if ( ir.length() > 0 )
         {
-          llvm::createStandardFunctionPasses( passManager.get(), 2 );
-          llvm::createStandardModulePasses( passManager.get(), 2, false, true, true, true, false, llvm::createFunctionInliningPass() );
-          llvm::createStandardLTOPasses( passManager.get(), true, true, false );
-        }
-#if defined(FABRIC_BUILD_DEBUG)
-        passManager->add( llvm::createVerifierPass() );
-#endif
-        passManager->run( *module );
-       
-        if ( optimize )
-        {
-          std::string ir;
-          llvm::raw_string_ostream irStream( ir );
-          module->print( irStream, 0 );
-          irStream.flush();
-          IRCache::Instance()->put( irCacheKeyForAST, ir );
-        }
+          RC::Handle<CG::Manager> cgManager = m_context->getCGManager();
+          
+          llvm::SMDiagnostic error;
+          llvm::ParseAssemblyString( ir.c_str(), module.get(), error, cgContext->getLLVMContext() );
+          
+          ast->registerTypes( cgManager, diagnostics );
+          FABRIC_ASSERT( !diagnostics.containsError() );
 
-        linkModule( cgContext, module, optimize );
+          FABRIC_ASSERT( !llvm::verifyModule( *module, llvm::PrintMessageAction ) );
+
+          linkModule( cgContext, module, true );
+          
+          return;
+        }
+        
+        ast->registerTypes( cgManager, diagnostics );
+        if ( !diagnostics.containsError() )
+        {
+          ast->llvmCompileToModule( moduleBuilder, diagnostics, false );
+        }
+        if ( !diagnostics.containsError() )
+        {
+          ast->llvmCompileToModule( moduleBuilder, diagnostics, true );
+        }
+        if ( !diagnostics.containsError() )
+        {
+#if defined(FABRIC_BUILD_DEBUG)
+          std::string optimizeByteCode;
+          std::string &byteCode = (false && optimize)? optimizeByteCode: m_byteCode;
+          llvm::raw_string_ostream byteCodeStream( byteCode );
+          module->print( byteCodeStream, 0 );
+          byteCodeStream.flush();
+#endif
+          
+          llvm::NoFramePointerElim = true;
+          llvm::JITExceptionHandling = true;
+          llvm::OwningPtr<llvm::PassManager> passManager( new llvm::PassManager );
+          if ( optimize )
+          {
+            llvm::createStandardFunctionPasses( passManager.get(), 2 );
+            llvm::createStandardModulePasses( passManager.get(), 2, false, true, true, true, false, llvm::createFunctionInliningPass() );
+            llvm::createStandardLTOPasses( passManager.get(), true, true, false );
+          }
+#if defined(FABRIC_BUILD_DEBUG)
+          passManager->add( llvm::createVerifierPass() );
+#endif
+          passManager->run( *module );
+         
+          if ( optimize )
+          {
+            std::string ir;
+            llvm::raw_string_ostream irStream( ir );
+            module->print( irStream, 0 );
+            irStream.flush();
+            IRCache::Instance()->put( irCacheKeyForAST, ir );
+          }
+
+          linkModule( cgContext, module, optimize );
+        }
       }
     }
     

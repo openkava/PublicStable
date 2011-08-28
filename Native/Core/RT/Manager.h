@@ -87,6 +87,8 @@ namespace Fabric
       RC::ConstHandle<Desc> getStrongerTypeOrNone( RC::ConstHandle<Desc> const &lhsDesc, RC::ConstHandle<Desc> const &rhsDesc ) const;
       
       std::vector< RC::ConstHandle<Desc> > getTopoSortedDescs() const;
+      
+      bool maybeGetASTForType( std::string const &typeName, RC::ConstHandle<RC::Object> &ast ) const;
 
     protected:
     
