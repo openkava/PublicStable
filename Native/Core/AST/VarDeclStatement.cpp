@@ -1,10 +1,7 @@
 /*
- *
- *  Created by Peter Zion on 10-12-02.
- *  Copyright 2010 Fabric Technologies Inc. All rights reserved.
- *
+ *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
  */
-
+ 
 #include <Fabric/Core/AST/VarDeclStatement.h>
 #include <Fabric/Core/AST/VarDecl.h>
 #include <Fabric/Core/AST/VarDeclVector.h>

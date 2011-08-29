@@ -28,6 +28,7 @@ namespace Fabric
   {
     class Function;
     class Global;
+    class UseNameToLocationMap;
     
     class GlobalList : public RC::Object
     {
@@ -38,6 +39,7 @@ namespace Fabric
 
       Util::SimpleString toJSON() const;
 
+      void collectUses( UseNameToLocationMap &uses ) const;
       void registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const;
       void llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctions ) const;
       void collectFunctions( std::vector< RC::ConstHandle<AST::Function> > &result ) const;

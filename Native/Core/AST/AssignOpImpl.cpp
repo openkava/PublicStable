@@ -7,6 +7,7 @@
 
 #include <Fabric/Core/AST/AssignOpImpl.h>
 #include <Fabric/Core/AST/Param.h>
+#include <Fabric/Core/AST/ParamVector.h>
 #include <Fabric/Core/CG/Adapter.h>
 #include <Fabric/Core/CG/OpTypes.h>
 #include <Fabric/Core/CG/OverloadNames.h>

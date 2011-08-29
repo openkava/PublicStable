@@ -64,6 +64,7 @@ namespace Fabric
       }
       
       RC::ConstHandle<AST::GlobalList> getAST() const;
+      RC::ConstHandle<AST::GlobalList> maybeGetASTForExt( std::string const &extName ) const;
       void *llvmResolveExternalFunction( std::string const &name ) const;
 
       virtual RC::Handle<JSON::Object> jsonDesc() const;
