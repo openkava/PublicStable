@@ -11,20 +11,13 @@
 #include <Fabric/Core/AST/MethodOpImpl.h>
 #include <Fabric/Core/CG/OpTypes.h>
 
-namespace llvm
-{
-  class Module;
-  class FunctionPassManager;
-};
-
 namespace Fabric
 {
-  namespace RT
-  {
-  };
-  
   namespace AST
   {
+    class CompoundStatement;
+    class Param;
+    
     class AssignOpImpl : public MethodOpImpl
     {
       FABRIC_AST_NODE_DECL( AssignOpImpl );
@@ -35,7 +28,7 @@ namespace Fabric
         CG::Location const &location,
         std::string const &selfType,
         CG::AssignOpType assignOpType,
-        RC::ConstHandle<AST::Param> rhs,
+        RC::ConstHandle<Param> rhs,
         RC::ConstHandle<CompoundStatement> const &body
         );
       
@@ -45,7 +38,7 @@ namespace Fabric
         CG::Location const &location,
         std::string const &selfType,
         CG::AssignOpType assignOpType,
-        RC::ConstHandle<AST::Param> rhs,
+        RC::ConstHandle<Param> rhs,
         RC::ConstHandle<CompoundStatement> const &body
         );
       

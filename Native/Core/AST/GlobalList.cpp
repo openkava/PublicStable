@@ -49,6 +49,16 @@ namespace Fabric
         m_after->appendJSON( jsonArrayGenerator );
     }
     
+    void GlobalList::collectUses( UseNameToLocationMap &uses ) const
+    {
+      if ( m_before )
+        m_before->collectUses( uses );
+      if ( m_global )
+        m_global->collectUses( uses );
+      if ( m_after )
+        m_after->collectUses( uses );
+    }
+    
     void GlobalList::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const
     {
       if ( m_before )

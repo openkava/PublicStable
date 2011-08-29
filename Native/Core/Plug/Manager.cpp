@@ -150,5 +150,14 @@ namespace Fabric
         result->set( it->first, it->second->jsonDesc() );
       return result;
     }
+
+    RC::ConstHandle<AST::GlobalList> Manager::maybeGetASTForExt( std::string const &extName ) const
+    {
+      RC::ConstHandle<AST::GlobalList> result;
+      NameToInstMap::const_iterator it = m_nameToInstMap.find( extName );
+      if ( it != m_nameToInstMap.end() )
+        result = it->second->getAST();
+      return result;
+    }
   };
 };

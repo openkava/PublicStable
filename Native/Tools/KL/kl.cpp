@@ -9,6 +9,7 @@
 #include <Fabric/Core/KL/Scanner.h>
 #include <Fabric/Core/KL/StringSource.h>
 #include <Fabric/Core/AST/GlobalList.h>
+#include <Fabric/Core/AST/UseInfo.h>
 #include <Fabric/Core/RT/Manager.h>
 #include <Fabric/Core/RT/NumericDesc.h>
 #include <Fabric/Core/RT/StringDesc.h>
@@ -157,7 +158,6 @@ void handleFile( FILE *fp, unsigned int runFlags )
   OCL::llvmPrepareModule( moduleBuilder, rtManager );
   
   RC::ConstHandle<AST::GlobalList> globalList = KL::Parse( scanner, diagnostics );
-
   if ( diagnostics.containsError() )
   {
     dumpDiagnostics( diagnostics );
@@ -174,7 +174,13 @@ void handleFile( FILE *fp, unsigned int runFlags )
 
   if( runFlags & (RF_ShowASM | RF_ShowIR | RF_ShowOptIR | RF_ShowOptASM | RF_Run) )
   {
-    globalList->registerTypes( cgManager, diagnostics );
+    AST::UseNameToLocationMap uses;
+    globalList->collectUses( uses );
+    for ( AST::UseNameToLocationMap::const_iterator it=uses.begin(); it!=uses.end(); ++it )
+      diagnostics.addError( it->second, "no registered type or plugin named " + _(it->first) );
+    
+    if ( !diagnostics.containsError() )
+      globalList->registerTypes( cgManager, diagnostics );
     if ( !diagnostics.containsError() )
       globalList->llvmCompileToModule( moduleBuilder, diagnostics, false );
     if ( !diagnostics.containsError() )
