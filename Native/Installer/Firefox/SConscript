@@ -6,7 +6,7 @@
 # with the MIME type application/x-xpinstall
 
 import os
-Import( 'baseEnv', 'buildOS', 'buildArch', 'archDistDir', 'fabricExtsDistDir', 'npapiDistDir', 'installerName', 'generateDistZip', 'extFiles' )
+Import( 'baseEnv', 'buildOS', 'buildArch', 'archDistDir', 'fabricExtsDistDir', 'npapiDistDir', 'installerName', 'generateDistZip', 'extFiles', 'distDir' )
 
 firefoxExtensionDir = archDistDir.Dir( 'FirefoxExtension' )
 
@@ -66,12 +66,12 @@ installerFiles.append( Install(
 installerEnv = baseEnv.Clone()
 generateDistZip( installerEnv )
 installerEnv.Append( DISTZIP_ROOTDIR = firefoxExtensionDir )
-installerFile = archDistDir.File(installerName + ".xpi")
+installerFile = distDir.File(installerName + ".xpi")
 installerEnv.DistZip(
   installerFile,
   installerFiles
 )
-updateFile = archDistDir.File("xpi-update-"+buildOS+"-"+buildArch+".rdf")
+updateFile = distDir.File("xpi-update-"+buildOS+"-"+buildArch+".rdf")
 baseEnv.Template( updateFile, "xpi-update.rdf.template" )
 print( "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 print( "!! Firefox Installer: you MUST perform the following steps before uploading:")
