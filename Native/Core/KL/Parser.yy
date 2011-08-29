@@ -65,6 +65,9 @@
 #include <Fabric/Core/AST/VarDeclStatement.h>
 #include <Fabric/Core/AST/VarDeclVector.h>
 #include <Fabric/Core/AST/UniOp.h>
+#include <Fabric/Core/AST/Use.h>
+#include <Fabric/Core/AST/UseGlobal.h>
+#include <Fabric/Core/AST/UseVector.h>
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/Util/Parse.h>
 using namespace Fabric;
@@ -125,6 +128,8 @@ int kl_lex( YYSTYPE *yys, YYLTYPE *yyl, KL::Context &context );
 %union { Fabric::AST::Param const *astParamPtr; }
 %union { Fabric::AST::ParamVector const *astParamListPtr; }
 %union { Fabric::AST::Global const *astGlobalPtr; }
+%union { Fabric::AST::UseVector const *astUseVectorPtr; }
+%union { Fabric::AST::Use const *astUsePtr; }
 %union { Fabric::AST::GlobalList const *astGlobalListPtr; }
 %union { Fabric::AST::StructDecl const *astStructDecl; }
 %union { Fabric::AST::MemberDecl const *astStructDeclMember; }
@@ -151,6 +156,7 @@ int kl_lex( YYSTYPE *yys, YYLTYPE *yyl, KL::Context &context );
 %token TOKEN_IO "io"
 %token TOKEN_DO "do"
 %token TOKEN_FOR "for"
+%token TOKEN_USE "use"
 %token TOKEN_VAR "var"
 %token TOKEN_CASE "case"
 %token TOKEN_ELSE "else"
@@ -240,6 +246,9 @@ int kl_lex( YYSTYPE *yys, YYLTYPE *yyl, KL::Context &context );
 %type <astGlobalPtr> alias
 %type <astGlobalPtr> struct
 %type <astGlobalPtr> global_const_decl
+%type <astGlobalPtr> use_global
+%type <astUseVectorPtr> use_list
+%type <astUsePtr> use
 %type <astGlobalListPtr> global_list
 %type <astStructDeclMember> struct_member
 %type <astStructDeclMemberList> struct_member_list
@@ -362,6 +371,44 @@ global
   | global_const_decl
   {
     $$ = $1;
+  }
+  | use_global
+  {
+    $$ = $1;
+  }
+;
+
+use_global
+  : TOKEN_USE use_list TOKEN_SEMICOLON
+  {
+    $$ = AST::UseGlobal::Create( RTLOC, $2 ).take();
+    $2->release();
+  }
+;
+
+use_list
+  : /* empty */
+  {
+    $$ = AST::UseVector::Create().take();
+  }
+  | use
+  {
+    $$ = AST::UseVector::Create( $1 ).take();
+    $1->release();
+  }
+  | use TOKEN_COMMA use_list
+  {
+    $$ = AST::UseVector::Create( $1, $3 ).take();
+    $1->release();
+    $3->release();
+  }
+;
+
+use
+  : TOKEN_IDENTIFIER
+  {
+    $$ = AST::Use::Create( RTLOC, *$1 ).take();
+    delete $1;
   }
 ;
 

@@ -404,6 +404,8 @@ namespace Fabric
         case 3:
           if ( string == "for" )
             return createToken( TOKEN_FOR, sourceRange );
+          if ( string == "use" )
+            return createToken( TOKEN_USE, sourceRange );
           if ( string == "var" )
             return createToken( TOKEN_VAR, sourceRange );
           break;

@@ -6,6 +6,7 @@
 #define _FABRIC_AST_FUNCTION_BASE_H
 
 #include <Fabric/Core/AST/Global.h>
+#include <Fabric/Core/AST/CompoundStatement.h>
 
 namespace llvm
 {
@@ -22,7 +23,6 @@ namespace Fabric
   
   namespace AST
   {
-    class CompoundStatement;
     class ParamVector;
     
     class FunctionBase : public Global

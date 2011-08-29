@@ -26,9 +26,10 @@ fi
 for f in "$@"; do
   TMPFILE=$(tmpfilename)
 
-  #echo $VALGRIND_CMD ../../build/$BUILD_OS/$BUILD_ARCH/$BUILD_TYPE/Fabric/Tools/KL/kl --run $f
   if ! $VALGRIND_CMD ../../build/$BUILD_OS/$BUILD_ARCH/$BUILD_TYPE/Fabric/Tools/KL/kl --run $f >$TMPFILE 2>&1 ; then
     echo "FAIL $(basename $f)"
+    echo "To debug, run:"
+    echo "gdb --args" $VALGRIND_CMD ../../build/$BUILD_OS/$BUILD_ARCH/$BUILD_TYPE/Fabric/Tools/KL/kl --run $f
     exit 1
   fi
 
@@ -45,6 +46,8 @@ for f in "$@"; do
     fi
     echo "Actual output ($TMPFILE):"
     cat $TMPFILE
+    echo "To debug, run:"
+    echo "gdb --args" $VALGRIND_CMD ../../build/$BUILD_OS/$BUILD_ARCH/$BUILD_TYPE/Fabric/Tools/KL/kl --run $f
     exit 1
   else
     echo "PASS $(basename $f)";
