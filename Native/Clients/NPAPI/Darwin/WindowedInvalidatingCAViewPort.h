@@ -19,7 +19,7 @@ namespace Fabric
     
       static RC::Handle<ViewPort> Create( RC::ConstHandle<Interface> const &interface );
 
-      virtual void needsRedraw();
+      virtual void redrawFinished();
       
     protected:
     
