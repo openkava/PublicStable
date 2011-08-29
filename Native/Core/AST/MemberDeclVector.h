@@ -53,10 +53,6 @@ namespace Fabric
     protected:
     
       MemberDeclVector();
-      
-    private:
-    
-      mutable RC::ConstHandle<JSON::Value> m_jsonValue;
     };
   };
 };

@@ -47,6 +47,7 @@ namespace Fabric
       registerDesc( m_byteDesc = new ByteDesc( "Byte", new ByteImpl( "Byte" ) ) );
       registerDesc( m_integerDesc = new SI32Desc( "Integer", new SI32Impl( "Integer" ) ) );
       registerDesc( m_sizeDesc = new SizeDesc( "Size", new SizeImpl( "Size" ) ) );
+      m_indexDesc = registerAlias( "Index", m_sizeDesc );
       registerDesc( m_scalarDesc = new FP32Desc( "Scalar", new FP32Impl( "Scalar" ) ) );
       registerDesc( m_fp64Desc = new FloatDescT<double>( "Float64", new FloatImplT<double>( "Float64" ) ) );
       registerDesc( m_stringDesc = new StringDesc( "String", new StringImpl( "String" ) ) );
@@ -252,6 +253,11 @@ namespace Fabric
     RC::ConstHandle<SizeDesc> Manager::getSizeDesc() const
     {
       return m_sizeDesc;
+    }
+    
+    RC::ConstHandle<Desc> Manager::getIndexDesc() const
+    {
+      return m_indexDesc;
     }
     
     RC::ConstHandle<FloatDesc> Manager::getScalarDesc() const
@@ -512,6 +518,17 @@ namespace Fabric
       for ( Types::const_iterator it=m_types.begin(); it!=m_types.end(); ++it )
         buildTopoSortedDescs( it->second, descsForTopoSort, result );
       return result;
+    }
+
+    bool Manager::maybeGetASTForType( std::string const &typeName, RC::ConstHandle<RC::Object> &ast ) const
+    {
+      Types::const_iterator it = m_types.find( typeName );
+      if ( it != m_types.end() )
+      {
+        ast = it->second->getKLBindingsAST();
+        return true;
+      }
+      else return false;
     }
   };
 };

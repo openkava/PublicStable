@@ -3,6 +3,7 @@
  */
  
 #include "FunctionBase.h"
+#include <Fabric/Core/AST/ParamVector.h>
 #include <Fabric/Core/CG/ModuleBuilder.h>
 #include <Fabric/Core/CG/FunctionBuilder.h>
 #include <Fabric/Core/CG/Scope.h>

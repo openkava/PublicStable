@@ -7,6 +7,7 @@
 
 #include <Fabric/Core/AST/BinOpImpl.h>
 #include <Fabric/Core/AST/Param.h>
+#include <Fabric/Core/AST/ParamVector.h>
 #include <Fabric/Core/CG/Adapter.h>
 #include <Fabric/Core/CG/OverloadNames.h>
 #include <Fabric/Base/Util/SimpleString.h>

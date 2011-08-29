@@ -6,6 +6,7 @@
 #define _FABRIC_AST_FUNCTION_H
 
 #include <Fabric/Core/AST/FunctionBase.h>
+#include <Fabric/Core/AST/ParamVector.h>
 
 namespace Fabric
 {
