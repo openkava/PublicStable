@@ -45,6 +45,7 @@ namespace Fabric
     context = _context;
     context->retain();
 
+    self.opaque = NO;
     self.asynchronous = NO;
     self.needsDisplayOnBoundsChange = NO;
     self.autoresizingMask = kCALayerWidthSizable | kCALayerHeightSizable;
@@ -74,12 +75,14 @@ namespace Fabric
   //FABRIC_LOG( "copyCGLPixelFormatForDisplayMask" );
   CGLPixelFormatAttribute pixelFormatAttributes[] =
   {
+    kCGLPFAClosestPolicy,
     kCGLPFADisplayMask, (CGLPixelFormatAttribute)mask,
-    kCGLPFAAccelerated,
-    //kCGLPFADoubleBuffer,
+    kCGLPFAAccelerated, kCGLPFANoRecovery,
     kCGLPFAColorSize, (CGLPixelFormatAttribute)24,
     kCGLPFAAlphaSize, (CGLPixelFormatAttribute)8,
-    kCGLPFADepthSize, (CGLPixelFormatAttribute)16,
+    kCGLPFADepthSize, (CGLPixelFormatAttribute)24,
+    kCGLPFAStencilSize, (CGLPixelFormatAttribute)8,
+    //kCGLPFAMultisample, kCGLPFASamples, (CGLPixelFormatAttribute)4,
     (CGLPixelFormatAttribute)0
   };
   CGLPixelFormatObj pixelFormat;
@@ -114,6 +117,14 @@ namespace Fabric
   CGLReleaseContext( ctx );
 }
 
+- (BOOL) canDrawInCGLContext:(CGLContextObj)ctx
+  pixelFormat:(CGLPixelFormatObj)pf
+  forLayerTime:(CFTimeInterval)t
+  displayTime:(const CVTimeStamp *)ts
+{
+  return YES;
+}
+
 -(void) drawInCGLContext:(CGLContextObj)cglContext
   pixelFormat:(CGLPixelFormatObj)pixelFormat
   forLayerTime:(CFTimeInterval)timeInterval
@@ -121,6 +132,8 @@ namespace Fabric
 {
   if ( viewPort )
   {
+    Fabric::DG::Context::NotificationBracket notificationBracket(context);
+
     size_t width, height;
     viewPort->getWindowSize( width, height );
     //FABRIC_LOG( "NPCAOpenGLLayer::drawInCGLContext: width=%u, height=%u, glContext=%p", (unsigned)width, (unsigned)height, (void *)cglContext );
@@ -133,7 +146,6 @@ namespace Fabric
     
     try
     {
-      Fabric::DG::Context::NotificationBracket notificationBracket(context);
       viewPort->getRedrawEvent()->fire();
     }
     catch ( Fabric::Exception e )
@@ -146,14 +158,11 @@ namespace Fabric
     }
     
     viewPort->drawWatermark( width, height );
-    
-    glFinish();
+
+    viewPort->redrawFinished();
   }
   
   [super drawInCGLContext:cglContext pixelFormat:pixelFormat forLayerTime:timeInterval displayTime:timeStamp];
-
-  if ( viewPort )
-    viewPort->redrawFinished();
 }
 
 -(void) didChangeValueForKey:(NSString *)key
@@ -295,7 +304,7 @@ namespace Fabric
       switch ( npCocoaEvent->type )
       {
         case NPCocoaEventDrawRect:
-          [m_npCAOpenGLLayer renderInContext:npCocoaEvent->data.draw.context];
+          [m_npCAOpenGLLayer setNeedsDisplay];
           return true;
           
         case NPCocoaEventMouseDown:

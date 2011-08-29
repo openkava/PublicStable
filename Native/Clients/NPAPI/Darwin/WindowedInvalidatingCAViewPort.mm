@@ -39,10 +39,10 @@ namespace Fabric
     {
     }
     
-    void WindowedInvalidatingCAViewPort::needsRedraw()
+    void WindowedInvalidatingCAViewPort::redrawFinished()
     {
       sendInvalidateMessage();
-      WindowedCAViewPort::needsRedraw();
+      WindowedCAViewPort::redrawFinished();
     }
     
     void WindowedInvalidatingCAViewPort::sendInvalidateMessage()
