@@ -41,9 +41,14 @@ namespace Fabric
     
     void WindowedInvalidatingCAViewPort::redrawFinished()
     {
-      sendInvalidateMessage();
-      NPN_PluginThreadAsyncCall( m_npp, &WindowedInvalidatingCAViewPort::SendInvalidateMessage, this );
+      //sendInvalidateMessage();
       WindowedCAViewPort::redrawFinished();
+    }
+    
+    void WindowedInvalidatingCAViewPort::asyncRedrawFinished()
+    {
+      sendInvalidateMessage();
+      WindowedCAViewPort::asyncRedrawFinished();
     }
     
     void WindowedInvalidatingCAViewPort::sendInvalidateMessage()

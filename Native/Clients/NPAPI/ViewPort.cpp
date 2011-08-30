@@ -30,7 +30,6 @@ namespace Fabric
       , m_interface( interface.ptr() )
       , m_logCollector( interface->getContext()->getLogCollector() )
       , m_redrawFinishedCallback( 0 )
-      , m_redrawFinishedCallbackPendingInvokeCount( 0 )
       , m_fpsCount( 0 )
       , m_fps( 0.0 )
       , m_watermarkShaderProgram( 0 )
@@ -87,18 +86,9 @@ namespace Fabric
       m_interface->getContext()->jsonNotify( src, cmd, arg );
     }
     
-    void ViewPort::issuePendingRedrawFinishedCallbacks()
+    void ViewPort::asyncRedrawFinished()
     {
-      while ( m_redrawFinishedCallbackPendingInvokeCount > 0 )
-      {
-        jsonNotify( "redrawFinished", 0 );
-        
-#if defined(FABRIC_OS_WINDOWS)
-        ::_InterlockedDecrement( &m_redrawFinishedCallbackPendingInvokeCount );
-#else
-        __sync_sub_and_fetch( &m_redrawFinishedCallbackPendingInvokeCount, 1 );
-#endif
-      }
+      jsonNotify( "redrawFinished", 0 );
     }
     
     void ViewPort::timerFired()
@@ -158,13 +148,7 @@ namespace Fabric
       
       m_logCollector->flush();
 
-#if defined(FABRIC_OS_WINDOWS)
-      ::_InterlockedIncrement( &m_redrawFinishedCallbackPendingInvokeCount );
-#else
-      __sync_fetch_and_add( &m_redrawFinishedCallbackPendingInvokeCount, 1 );
-#endif
-
-      NPN_PluginThreadAsyncCall( m_npp, &ViewPort::IssuePendingRedrawFinishedCallbacks, this );
+      NPN_PluginThreadAsyncCall( m_npp, &ViewPort::AsyncRedrawFinished, this );
     }
     
     void ViewPort::setRedrawFinishedCallback( NPObject *npObject )
