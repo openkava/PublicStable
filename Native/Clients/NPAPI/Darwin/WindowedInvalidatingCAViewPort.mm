@@ -42,13 +42,12 @@ namespace Fabric
     void WindowedInvalidatingCAViewPort::redrawFinished()
     {
       sendInvalidateMessage();
+      NPN_PluginThreadAsyncCall( m_npp, &WindowedInvalidatingCAViewPort::SendInvalidateMessage, this );
       WindowedCAViewPort::redrawFinished();
     }
     
     void WindowedInvalidatingCAViewPort::sendInvalidateMessage()
     {
-      //FABRIC_LOG( "WindowedInvalidatingCAViewPort::sendInvalidateMessage()" );
-
       size_t width, height;
       getWindowSize( width, height );
       

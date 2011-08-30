@@ -9,8 +9,10 @@
 #include <Fabric/Base/Exception.h>
 #include <Fabric/Core/DG/Event.h>
 #include <Fabric/Core/MT/LogCollector.h>
+#include <Fabric/Core/Util/Format.h>
 
 #include <Cocoa/Cocoa.h>
+#include <QuartzCore/QuartzCore.h>
 
 namespace Fabric
 {
@@ -47,8 +49,13 @@ namespace Fabric
 
     self.opaque = NO;
     self.asynchronous = NO;
-    self.needsDisplayOnBoundsChange = NO;
-    self.autoresizingMask = kCALayerWidthSizable | kCALayerHeightSizable;
+    self.masksToBounds = YES;
+    self.needsDisplayOnBoundsChange = YES;
+    self.actions =
+      [[[NSMutableDictionary alloc] initWithObjectsAndKeys:
+          [NSNull null], @"bounds",
+          [NSNull null], @"position",
+          nil] autorelease];
   }
   return self;
 }
@@ -72,7 +79,6 @@ namespace Fabric
 
 -(CGLPixelFormatObj) copyCGLPixelFormatForDisplayMask:(uint32_t)mask
 {
-  //FABRIC_LOG( "copyCGLPixelFormatForDisplayMask" );
   CGLPixelFormatAttribute pixelFormatAttributes[] =
   {
     kCGLPFAClosestPolicy,
@@ -134,10 +140,9 @@ namespace Fabric
   {
     Fabric::DG::Context::NotificationBracket notificationBracket(context);
 
-    size_t width, height;
-    viewPort->getWindowSize( width, height );
-    //FABRIC_LOG( "NPCAOpenGLLayer::drawInCGLContext: width=%u, height=%u, glContext=%p", (unsigned)width, (unsigned)height, (void *)cglContext );
-
+    size_t width = self.bounds.size.width, height = self.bounds.size.height;
+    viewPort->setWindowSize( width, height );
+ 
     // [pzion 20110303] Fill the viewport with 18% gray adjusted to a
     // gamma of 2.2.  0.46 ~= 0.18^(1/2.2)
     glViewport( 0, 0, width, height );
@@ -164,17 +169,60 @@ namespace Fabric
   
   [super drawInCGLContext:cglContext pixelFormat:pixelFormat forLayerTime:timeInterval displayTime:timeStamp];
 }
+@end
 
--(void) didChangeValueForKey:(NSString *)key
+/*
+@interface MiddleLayer : CALayer
 {
-  if ( [key isEqualToString:@"bounds"] )
+@private
+  NPCAOpenGLLayer *openGLLayer;
+}
+
+-(id) initWithViewPort:(Fabric::NPAPI::WindowedCAViewPort *)_viewPort context:(Fabric::DG::Context *)_context;
+-(void) invalidate;
+@end
+
+@implementation MiddleLayer
+-(id) initWithViewPort:(Fabric::NPAPI::WindowedCAViewPort *)_viewPort context:(Fabric::DG::Context *)_context
+{
+  if ( (self = [super init]) )
   {
-    CGSize size = self.bounds.size;
-    //FABRIC_LOG( "didChangeValueForKey:'bounds' size=(%g,%g)", size.width, size.height );
-    viewPort->setWindowSize( size.width, size.height );
+    openGLLayer = [[NPCAOpenGLLayer alloc] initWithViewPort:_viewPort context:_context];
+    [self addSublayer:openGLLayer];
   }
+  return self;
+}
+
+-(void) invalidate
+{
+  [openGLLayer invalidate];
+}
+
+-(void) dealloc
+{
+  [openGLLayer removeFromSuperlayer];
+  [openGLLayer release];
+  [super dealloc];
+}
+
+-(void) setNeedsDisplay
+{
+  [openGLLayer setNeedsDisplay];
+  //[super setNeedsDisplay];
+}
+
+- (void)setBounds:(CGRect)bounds
+{
+  CGRect subLayerFrame;
+  subLayerFrame.origin.x = 0;
+  subLayerFrame.origin.y = 0;
+  subLayerFrame.size.width = bounds.size.width;
+  subLayerFrame.size.height = bounds.size.height;
+  [openGLLayer setFrame:subLayerFrame];
+  [super setBounds:bounds];
 }
 @end
+*/
 
 @interface MenuItem : NSMenuItem
 {
@@ -266,7 +314,9 @@ namespace Fabric
     
     void WindowedCAViewPort::needsRedraw()
     {
+      [CATransaction begin];
       [m_npCAOpenGLLayer setNeedsDisplay];
+      [CATransaction commit];
     }
     
     void WindowedCAViewPort::redrawFinished()
@@ -341,7 +391,6 @@ namespace Fabric
       {
         m_width = width;
         m_height = height;
-        needsRedraw();
         didResize( width, height );
       }
     }
