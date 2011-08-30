@@ -135,6 +135,9 @@ namespace Fabric
         CG::Diagnostics optimizeDiagnostics;
         CG::Diagnostics &diagnostics = (false && optimize)? optimizeDiagnostics: m_diagnostics;
 
+        llvm::NoFramePointerElim = true;
+        llvm::JITExceptionHandling = true;
+        
         std::string irCacheKeyForAST = IRCache::Instance()->keyForAST( ast );
         std::string ir = IRCache::Instance()->get( irCacheKeyForAST );
         if ( ir.length() > 0 )
@@ -173,8 +176,6 @@ namespace Fabric
           byteCodeStream.flush();
 #endif
           
-          llvm::NoFramePointerElim = true;
-          llvm::JITExceptionHandling = true;
           llvm::OwningPtr<llvm::PassManager> passManager( new llvm::PassManager );
           if ( optimize )
           {
