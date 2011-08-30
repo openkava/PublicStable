@@ -16,12 +16,6 @@ namespace Fabric
     class JSONGenerator;
   };
   
-  namespace JSON
-  {
-    class Value;
-    class Array;
-  };
-  
   namespace CG
   {
     class BasicBlockBuilder;
@@ -49,10 +43,6 @@ namespace Fabric
     protected:
     
       StatementVector();
-      
-    private:
-    
-      mutable RC::ConstHandle<JSON::Value> m_jsonValue;
     };
   };
 };

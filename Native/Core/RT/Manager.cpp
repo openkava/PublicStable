@@ -519,5 +519,16 @@ namespace Fabric
         buildTopoSortedDescs( it->second, descsForTopoSort, result );
       return result;
     }
+
+    bool Manager::maybeGetASTForType( std::string const &typeName, RC::ConstHandle<RC::Object> &ast ) const
+    {
+      Types::const_iterator it = m_types.find( typeName );
+      if ( it != m_types.end() )
+      {
+        ast = it->second->getKLBindingsAST();
+        return true;
+      }
+      else return false;
+    }
   };
 };

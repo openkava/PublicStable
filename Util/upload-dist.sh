@@ -10,7 +10,11 @@ VERSION="$1"; shift
 upload() {
   filename=$1; shift
   mimeType=$1; shift
-  s3cmd put --acl-public --mime-type=$mimeType $filename s3://dist.fabric-engine.com/$VERSION/$fileName
+  if [ -f "$filename" ]; then
+    s3cmd put --acl-public --mime-type=$mimeType $filename s3://dist.fabric-engine.com/$VERSION/$fileName
+  else
+    echo "WARNING: missing '$filename'"
+  fi
 }
 
 for OS_ARCH in Windows-x86 Darwin-i386 Darwin-x86_64 Linux-i686 Linux-x86_64; do
