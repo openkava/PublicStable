@@ -26,10 +26,7 @@ namespace Fabric
       WindowedInvalidatingCAViewPort( RC::ConstHandle<Interface> const &interface );
       
       void sendInvalidateMessage();
-      static void SendInvalidateMessage( void *userdata )
-      {
-        static_cast<WindowedInvalidatingCAViewPort *>( userdata )->sendInvalidateMessage();
-      }
+      virtual void asyncRedrawFinished();
       
     private:
 
