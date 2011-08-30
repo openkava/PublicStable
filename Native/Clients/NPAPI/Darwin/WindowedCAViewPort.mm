@@ -171,59 +171,6 @@ namespace Fabric
 }
 @end
 
-/*
-@interface MiddleLayer : CALayer
-{
-@private
-  NPCAOpenGLLayer *openGLLayer;
-}
-
--(id) initWithViewPort:(Fabric::NPAPI::WindowedCAViewPort *)_viewPort context:(Fabric::DG::Context *)_context;
--(void) invalidate;
-@end
-
-@implementation MiddleLayer
--(id) initWithViewPort:(Fabric::NPAPI::WindowedCAViewPort *)_viewPort context:(Fabric::DG::Context *)_context
-{
-  if ( (self = [super init]) )
-  {
-    openGLLayer = [[NPCAOpenGLLayer alloc] initWithViewPort:_viewPort context:_context];
-    [self addSublayer:openGLLayer];
-  }
-  return self;
-}
-
--(void) invalidate
-{
-  [openGLLayer invalidate];
-}
-
--(void) dealloc
-{
-  [openGLLayer removeFromSuperlayer];
-  [openGLLayer release];
-  [super dealloc];
-}
-
--(void) setNeedsDisplay
-{
-  [openGLLayer setNeedsDisplay];
-  //[super setNeedsDisplay];
-}
-
-- (void)setBounds:(CGRect)bounds
-{
-  CGRect subLayerFrame;
-  subLayerFrame.origin.x = 0;
-  subLayerFrame.origin.y = 0;
-  subLayerFrame.size.width = bounds.size.width;
-  subLayerFrame.size.height = bounds.size.height;
-  [openGLLayer setFrame:subLayerFrame];
-  [super setBounds:bounds];
-}
-@end
-*/
-
 @interface MenuItem : NSMenuItem
 {
 @private
