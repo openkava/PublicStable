@@ -260,9 +260,7 @@ namespace Fabric
     
     void WindowedCAViewPort::needsRedraw()
     {
-      [CATransaction begin];
       [m_npCAOpenGLLayer setNeedsDisplay];
-      [CATransaction commit];
     }
     
     void WindowedCAViewPort::redrawFinished()
