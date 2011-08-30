@@ -99,9 +99,7 @@ namespace Fabric
 
 -(void) releaseCGLPixelFormat:(CGLPixelFormatObj)pixelFormat
 {
-  Fabric::NPAPI::ContextToCGLContextMap::iterator it = Fabric::NPAPI::s_contextToCGLContextMap.find( context );
-  if ( it != Fabric::NPAPI::s_contextToCGLContextMap.end() )
-    Fabric::NPAPI::s_contextToCGLContextMap.erase( it );
+  [super releaseCGLPixelFormat:pixelFormat];
 }
 
 -(CGLContextObj) copyCGLContextForPixelFormat:(CGLPixelFormatObj)pixelFormat
@@ -110,6 +108,7 @@ namespace Fabric
   if ( it == Fabric::NPAPI::s_contextToCGLContextMap.end() )
   {
     CGLContextObj cglContextObj = [super copyCGLContextForPixelFormat:pixelFormat];
+    CGLRetainContext( cglContextObj );
     it = Fabric::NPAPI::s_contextToCGLContextMap.insert( Fabric::NPAPI::ContextToCGLContextMap::value_type( context, cglContextObj ) ).first;
   }
 
@@ -330,6 +329,20 @@ namespace Fabric
           break;
       }
       return false;
+    }
+    
+    NPError WindowedCAViewPort::nppDestroy( NPSavedData** save )
+    {
+      RC::Handle<Context> context = getInterface()->getContext();
+    
+      ContextToCGLContextMap::iterator it = s_contextToCGLContextMap.find( context.ptr() );
+      if ( it != s_contextToCGLContextMap.end() )
+      {
+        CGLReleaseContext( it->second );
+        s_contextToCGLContextMap.erase( it );
+      }
+      
+      return ViewPort::nppDestroy( save );
     }
     
     void WindowedCAViewPort::setWindowSize( size_t width, size_t height )
