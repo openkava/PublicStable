@@ -11,8 +11,6 @@
 
 namespace Fabric
 {
-  
-
   namespace RT
   {
     Desc::Desc( std::string const &name, RC::ConstHandle<Impl> const &impl )

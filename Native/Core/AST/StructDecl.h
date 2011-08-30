@@ -11,12 +11,21 @@ namespace Fabric
 {
   namespace Util
   {
-    class SimpleString;
+    class JSONObjectGenerator;
+  };
+  
+  namespace RT
+  {
+    class Manager;
   };
   
   namespace CG
   {
     class Adapter;
+    class Diagnostics;
+    class Location;
+    class Manager;
+    class ModuleBuilder;
   };
   
   namespace AST
@@ -35,7 +44,6 @@ namespace Fabric
         RC::ConstHandle<MemberDeclVector> const &members
         );
 
-      virtual void registerTypes( RC::Handle<RT::Manager> const &rtManager, CG::Diagnostics &diagnostics ) const;
       virtual void registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const;
       virtual void llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctionBodies ) const;
       
@@ -47,6 +55,7 @@ namespace Fabric
         RC::ConstHandle<MemberDeclVector> const &members
         );
       
+      void registerTypes( RC::Handle<RT::Manager> const &rtManager, CG::Diagnostics &diagnostics ) const;
       virtual void appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const;
     
     private:
