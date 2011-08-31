@@ -231,5 +231,10 @@ namespace Fabric
     {
       return _( m_booleanDesc->getValue(data) );
     }
+    
+    llvm::Constant *BooleanAdapter::llvmDefaultValue( BasicBlockBuilder &basicBlockBuilder ) const
+    {
+      return llvmConst( basicBlockBuilder.getContext(), m_booleanDesc->getValue( m_booleanDesc->getDefaultData() ) );
+    }
   };
 };
