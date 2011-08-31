@@ -25,8 +25,8 @@ var desc = {
   kBindings: "\
 function Vec2(Scalar x, Scalar y)\n\
 {\n\
-  self.x = x;\n\
-  self.y = y;\n\
+  this.x = x;\n\
+  this.y = y;\n\
 }\n\
 "
 };
@@ -42,7 +42,7 @@ print( JSON.stringify(data) );
 print(data.sum());
 
 var op = FABRIC.DG.createOperator("op");
-op.setSourceCode("operator entry( io Vec2 vec2 ) { vec2 = Vec2(8.9, 2.3); }");
+op.setSourceCode("use Vec2; operator entry( io Vec2 vec2 ) { vec2 = Vec2(8.9, 2.3); }");
 op.setEntryFunctionName("entry");
 
 var binding = FABRIC.DG.createBinding();
