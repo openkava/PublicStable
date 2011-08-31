@@ -103,17 +103,16 @@ namespace Fabric
     {
       //FabricResource type: used by ResourceLoadNode
       RT::StructMemberInfoVector memberInfos;
-      memberInfos.resize(5);
+      memberInfos.resize(4);
+
       memberInfos[0].name = "data";
-      memberInfos[0].desc = m_rtManager->getDataDesc();
-      memberInfos[1].name = "dataSize";
-      memberInfos[1].desc = m_rtManager->getSizeDesc();
-      memberInfos[2].name = "mimeType";
+      memberInfos[0].desc = m_rtManager->getVariableArrayOf( m_rtManager->getByteDesc() );
+      memberInfos[1].name = "mimeType";
+      memberInfos[1].desc = m_rtManager->getStringDesc();
+      memberInfos[2].name = "extension";
       memberInfos[2].desc = m_rtManager->getStringDesc();
-      memberInfos[3].name = "extension";
+      memberInfos[3].name = "url";
       memberInfos[3].desc = m_rtManager->getStringDesc();
-      memberInfos[4].name = "url";
-      memberInfos[4].desc = m_rtManager->getStringDesc();
       m_rtManager->registerStruct( "FabricResource", memberInfos );
     }
     

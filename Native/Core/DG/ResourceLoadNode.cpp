@@ -14,6 +14,7 @@
 #include <Fabric/Base/JSON/Value.h>
 #include <Fabric/Base/JSON/Object.h>
 #include <Fabric/Base/JSON/String.h>
+#include <Fabric/Core/RT/VariableArrayImpl.h>
 
 namespace Fabric
 {
@@ -22,7 +23,6 @@ namespace Fabric
     enum FabricResourceMemberIndices
     {
       FABRIC_RESOURCE_DATA_MEMBER_INDEX,
-      FABRIC_RESOURCE_DATASIZE_MEMBER_INDEX,
       FABRIC_RESOURCE_MIMETYPE_MEMBER_INDEX,
       FABRIC_RESOURCE_EXTENSION_MEMBER_INDEX,
       FABRIC_RESOURCE_URL_MEMBER_INDEX,
@@ -46,7 +46,6 @@ namespace Fabric
       FABRIC_ASSERT( fabricResourceDesc && RT::isStruct( fabricResourceDesc->getType() ) );
       RC::ConstHandle<RT::StructDesc> fabricResourceStructDesc = RC::ConstHandle<RT::StructDesc>::StaticCast( fabricResourceDesc );
       FABRIC_ASSERT( fabricResourceStructDesc->getMemberInfo( FABRIC_RESOURCE_DATA_MEMBER_INDEX ).name == "data" );
-      FABRIC_ASSERT( fabricResourceStructDesc->getMemberInfo( FABRIC_RESOURCE_DATASIZE_MEMBER_INDEX ).name == "dataSize" );
       FABRIC_ASSERT( fabricResourceStructDesc->getMemberInfo( FABRIC_RESOURCE_MIMETYPE_MEMBER_INDEX ).name == "mimeType" );
       FABRIC_ASSERT( fabricResourceStructDesc->getMemberInfo( FABRIC_RESOURCE_EXTENSION_MEMBER_INDEX ).name == "extension" );
       FABRIC_ASSERT( fabricResourceStructDesc->getMemberInfo( FABRIC_RESOURCE_URL_MEMBER_INDEX ).name == "url" );
@@ -54,6 +53,17 @@ namespace Fabric
 
       addMember( "url", stringDesc, stringDesc->getDefaultData() );
       addMember( "resource", fabricResourceDesc, fabricResourceDesc->getDefaultData() );
+
+      m_byteVariableArrayDesc = context->getRTManager()->getVariableArrayOf( context->getRTManager()->getByteDesc() );
+      size_t arraySize = m_byteVariableArrayDesc->getSize();
+      m_byteVariableArrayStreamData = malloc( arraySize );
+      memset( m_byteVariableArrayStreamData, 0, arraySize );
+    }
+
+    ResourceLoadNode::~ResourceLoadNode()
+    {
+      m_byteVariableArrayDesc->disposeData( m_byteVariableArrayStreamData );
+      free( m_byteVariableArrayStreamData );
     }
 
     void ResourceLoadNode::jsonExecCreate( RC::ConstHandle<JSON::Value> const &arg, RC::Handle<Context> const &context )
@@ -80,7 +90,7 @@ namespace Fabric
         if( loadingFinished )
         {
           // [JeromeCG 20110727] The resource member might have been modified by some operators; set it back if it is the case
-          setData( &m_streamMimeType, m_streamData.empty() ? NULL : &(m_streamData[0]), m_streamData.size(), 0, false );
+          setData( &m_streamMimeType, m_byteVariableArrayStreamData, 0, false );
         }
       }
       else
@@ -89,13 +99,13 @@ namespace Fabric
         // we create a new one in parallel instead of waiting its completion.
         ++m_streamGeneration;
         m_streamURL = stringDesc->getValueData( urlMember );
-        std::vector<uint8_t> freeMe;
-        m_streamData.swap( freeMe );
+
+        m_byteVariableArrayDesc->setNumMembers( m_byteVariableArrayStreamData, 0, NULL );
         m_streamMimeType.clear();
 
         if( m_streamURL.empty() )
         {
-          setData( &m_streamMimeType, NULL, 0, 0, false );
+          setData( &m_streamMimeType, m_byteVariableArrayStreamData, 0, false );
         }
         else
         {
@@ -118,11 +128,12 @@ namespace Fabric
 
       if( size )
       {
-        if ( offset + size > m_streamData.size() )
+        size_t prevSize = m_byteVariableArrayDesc->getImpl()->getNumMembers( m_byteVariableArrayStreamData );
+        if ( offset + size > prevSize )
         {
-          m_streamData.resize( offset + size, 0 );
+          m_byteVariableArrayDesc->setNumMembers( m_byteVariableArrayStreamData, offset + size, NULL );
         }
-        memcpy( &m_streamData[offset], data, size );
+        m_byteVariableArrayDesc->getImpl()->setMembers( m_byteVariableArrayStreamData, offset, size, data );
       }
     }
 
@@ -132,7 +143,7 @@ namespace Fabric
         return;
 
       m_streamMimeType = mimeType;
-      setData( &m_streamMimeType, m_streamData.empty() ? NULL : &(m_streamData[0]), m_streamData.size(), 0, true );
+      setData( &m_streamMimeType, m_byteVariableArrayStreamData, 0, true );
       m_stream = NULL;
     }
 
@@ -141,30 +152,26 @@ namespace Fabric
       if( (size_t)userData != m_streamGeneration )
         return;
 
-      setData( 0, 0, 0, &errorDesc, true );
+      m_byteVariableArrayDesc->setNumMembers( m_byteVariableArrayStreamData, 0, NULL );
+      setData( 0, m_byteVariableArrayStreamData, &errorDesc, true );
     }
 
     void ResourceLoadNode::setData(
       std::string const *mimeType,
-      void *data,
-      size_t dataSize,
+      void *byteVariableArrayData,
       std::string const *errorDesc,
       bool notify
       )
     {
       RC::ConstHandle<RT::Desc> fabricResourceDesc = getContext()->getRTManager()->getDesc("FabricResource");
       RC::ConstHandle<RT::StructDesc> fabricResourceStructDesc = RC::ConstHandle<RT::StructDesc>::StaticCast( fabricResourceDesc );
-
       RC::ConstHandle<RT::SizeDesc> sizeDesc = getContext()->getRTManager()->getSizeDesc();
       RC::ConstHandle<RT::StringDesc> stringDesc = getContext()->getRTManager()->getStringDesc();
-      RC::ConstHandle<RT::OpaqueDesc> dataDesc = getContext()->getRTManager()->getDataDesc();
 
       if( errorDesc )
       {
         void *resourceData = getMutableData( "resource", 0 );
-        void* nullPtr = NULL;
-        dataDesc->setData( &nullPtr, fabricResourceStructDesc->getMemberData( resourceData, FABRIC_RESOURCE_DATA_MEMBER_INDEX ) );
-        sizeDesc->setValue( 0, fabricResourceStructDesc->getMemberData( resourceData, FABRIC_RESOURCE_DATASIZE_MEMBER_INDEX ) );
+        m_byteVariableArrayDesc->setNumMembers( fabricResourceStructDesc->getMemberData( resourceData, FABRIC_RESOURCE_DATA_MEMBER_INDEX ), 0 );
         stringDesc->setValue( NULL, 0, fabricResourceStructDesc->getMemberData( resourceData, FABRIC_RESOURCE_MIMETYPE_MEMBER_INDEX ) );
         stringDesc->setValue( NULL, 0, fabricResourceStructDesc->getMemberData( resourceData, FABRIC_RESOURCE_EXTENSION_MEMBER_INDEX ) );
         stringDesc->setValue( NULL, 0, fabricResourceStructDesc->getMemberData( resourceData, FABRIC_RESOURCE_URL_MEMBER_INDEX ) );
@@ -186,14 +193,17 @@ namespace Fabric
         const void *prevResourceData = getConstData( "resource", 0 );
 
         const void* prevData = fabricResourceStructDesc->getMemberData( prevResourceData, FABRIC_RESOURCE_DATA_MEMBER_INDEX );
-        const void* prevDataSize = fabricResourceStructDesc->getMemberData( prevResourceData, FABRIC_RESOURCE_DATASIZE_MEMBER_INDEX );
         const void* prevMimeTypeData = fabricResourceStructDesc->getMemberData( prevResourceData, FABRIC_RESOURCE_MIMETYPE_MEMBER_INDEX );
         const void* prevExtensionData = fabricResourceStructDesc->getMemberData( prevResourceData, FABRIC_RESOURCE_EXTENSION_MEMBER_INDEX );
         const void* prevUrlData = fabricResourceStructDesc->getMemberData( prevResourceData, FABRIC_RESOURCE_URL_MEMBER_INDEX );
 
-        if( *(const void **)prevData != data )
-          changed = true;
-        else if( sizeDesc->getValue( prevDataSize ) != dataSize )
+        // [JeromeCG 20110831] Question: can we access the .data() and .dataSize() like opaque adapters? Would be cleaner for memcmp...
+        size_t prevDataSize = m_byteVariableArrayDesc->getImpl()->getNumMembers( prevData );
+        size_t dataSize = m_byteVariableArrayDesc->getImpl()->getNumMembers( byteVariableArrayData );
+        void const* prevDataPtr = prevDataSize == 0 ? NULL : m_byteVariableArrayDesc->getImpl()->getMemberData( prevData, 0 );
+        void const* dataPtr = dataSize == 0 ? NULL : m_byteVariableArrayDesc->getImpl()->getMemberData( byteVariableArrayData, 0 );
+
+        if( !m_byteVariableArrayDesc->getImpl()->shareSameData( prevData, byteVariableArrayData ) && ( prevDataSize != dataSize || memcmp( prevDataPtr, dataPtr, prevDataSize ) != 0 ) )
           changed = true;
         else if ( stringDesc->getValueLength( prevMimeTypeData ) != mimeType->length() || memcmp( mimeType->data(), stringDesc->getValueData( prevMimeTypeData ), mimeType->length() ) != 0 )
           changed = true;
@@ -205,8 +215,7 @@ namespace Fabric
         if( changed )
         {
           void* resourceData = getMutableData( "resource", 0 );
-          dataDesc->setData( &data, fabricResourceStructDesc->getMemberData( resourceData, FABRIC_RESOURCE_DATA_MEMBER_INDEX ) );
-          sizeDesc->setValue( dataSize, fabricResourceStructDesc->getMemberData( resourceData, FABRIC_RESOURCE_DATASIZE_MEMBER_INDEX ) );
+          m_byteVariableArrayDesc->setData( byteVariableArrayData, fabricResourceStructDesc->getMemberData( resourceData, FABRIC_RESOURCE_DATA_MEMBER_INDEX ) );
           stringDesc->setValue( mimeType->data(), mimeType->length(), fabricResourceStructDesc->getMemberData( resourceData, FABRIC_RESOURCE_MIMETYPE_MEMBER_INDEX ) );
           stringDesc->setValue( extension.data(), extension.length(), fabricResourceStructDesc->getMemberData( resourceData, FABRIC_RESOURCE_EXTENSION_MEMBER_INDEX ) );
           stringDesc->setValue( m_streamURL.data(), m_streamURL.length(), fabricResourceStructDesc->getMemberData( resourceData, FABRIC_RESOURCE_URL_MEMBER_INDEX ) );
