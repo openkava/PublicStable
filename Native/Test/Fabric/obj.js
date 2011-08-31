@@ -4,6 +4,8 @@ FABRIC = wrapFabricClient(FC);
 loadOp = FABRIC.DependencyGraph.createOperator("load");
 loadOp.setEntryFunctionName("load");
 loadOp.setSourceCode('\
+use FabricOBJ;\n\
+\n\
 operator load(\n\
   io String url,\n\
   io FabricResource resource,\n\
@@ -35,6 +37,7 @@ rlnode.setData("url", 0, "file:test.obj");
 resizeOp = FABRIC.DependencyGraph.createOperator("resize");
 resizeOp.setEntryFunctionName("resize");
 resizeOp.setSourceCode('\
+use FabricOBJ;\n\
 operator resize(\n\
   io Data objParseHandle,\n\
   io Size newSize\n\
@@ -58,6 +61,7 @@ resizeBinding.setParameterLayout([
 setDataOp = FABRIC.DependencyGraph.createOperator("setData");
 setDataOp.setEntryFunctionName("setData");
 setDataOp.setSourceCode('\
+use FabricOBJ;\n\
 operator setData(\n\
   io Data objParseHandle,\n\
   io Vec3 positions[]\n\
