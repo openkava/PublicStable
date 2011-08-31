@@ -4,6 +4,7 @@ FABRIC = wrapFabricClient(FC);
 op = FABRIC.DependencyGraph.createOperator("op");
 op.setEntryFunctionName("load");
 op.setSourceCode('\
+use FabricPNG;\n\
 struct RGBA\n\
 {\n\
   Byte r;\n\
@@ -15,10 +16,10 @@ struct RGBA\n\
 operator load( io String url, io FabricResource resource )\n\
 {\n\
   report "Loaded " + url + " (mime type " + resource.mimeType + ")";\n\
-  report "PNG data size is " + resource.dataSize;\n\
+  report "PNG data size is " + resource.data.dataSize();\n\
   Size imageWidth, imageHeight;\n\
   RGBA imagePixels[];\n\
-  FabricPNGDecode( resource.data, resource.dataSize, imageWidth, imageHeight, imagePixels );\n\
+  FabricPNGDecode( resource.data.data(), resource.data.dataSize(), imageWidth, imageHeight, imagePixels );\n\
   report "Image dimentions are "+imageWidth+" by "+imageHeight;\n\
   report "Image pixels size is "+imagePixels.size;\n\
 }\n\

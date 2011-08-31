@@ -6,6 +6,7 @@
 #define _FABRIC_DG_RESOURCELOADNODE_H
 
 #include <Fabric/Core/DG/Node.h>
+#include <Fabric/Core/RT/VariableArrayDesc.h>
 
 namespace Fabric
 {
@@ -28,6 +29,7 @@ namespace Fabric
     protected:
     
       ResourceLoadNode( std::string const &name, RC::Handle<Context> const &context );
+      ~ResourceLoadNode( );
 
       virtual void evaluateLocal( void *userdata );
 
@@ -49,7 +51,7 @@ namespace Fabric
         RC::Handle<ResourceLoadNode>::StaticCast(target)->streamFailure( url, errorDesc, userData );
       }
 
-      void setData( std::string const *mimeType, void *data, size_t dataSize, std::string const *errorDesc, bool notify );
+      void setData( std::string const *mimeType, void *byteVariableArrayData, std::string const *errorDesc, bool notify );
 
       void evaluateResource();
       static void EvaluateResource( void *userData, size_t index )
@@ -59,10 +61,12 @@ namespace Fabric
 
     private:
     
-      //TODO: don't have a stream; wrap it... RC::Handle<IO::Stream> m_stream;
       RC::Handle<IO::Stream> m_stream;
       std::string m_streamURL, m_streamMimeType;
-      std::vector<uint8_t> m_streamData;
+
+      RC::ConstHandle<RT::VariableArrayDesc> m_byteVariableArrayDesc;
+      void* m_byteVariableArrayStreamData;
+
       size_t m_streamGeneration;
     };
   };
