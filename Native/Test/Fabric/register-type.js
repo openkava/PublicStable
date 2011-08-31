@@ -25,8 +25,8 @@ var desc = {
   kBindings: "\
 function Vec2(Scalar x, Scalar y)\n\
 {\n\
-  self.x = x;\n\
-  self.y = y;\n\
+  this.x = x;\n\
+  this.y = y;\n\
 }\n\
 "
 };
