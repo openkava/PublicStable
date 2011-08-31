@@ -668,11 +668,6 @@ namespace Fabric
         }
       }
     }
-
-    void StringAdapter::llvmInit( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *lValue ) const
-    {
-      basicBlockBuilder->CreateStore( llvmDefaultValue( basicBlockBuilder ), lValue ); 
-    }
     
     void *StringAdapter::Cast( void const *lValue, Adapter const *adapter )
     {

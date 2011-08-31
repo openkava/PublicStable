@@ -29,5 +29,15 @@ namespace Fabric
     {
       return m_constStringImpl->toString( data );
     }
+
+    char const *ConstStringDesc::getValueData( void const *src ) const
+    {
+      return m_constStringImpl->getValueData( src );
+    }
+    
+    size_t ConstStringDesc::getValueLength( void const *src ) const
+    {
+      return m_constStringImpl->getValueLength( src );
+    }
   };
 };

@@ -13,6 +13,7 @@
 #include "OverloadNames.h"
 
 #include <Fabric/Core/RT/NumericDesc.h>
+#include <Fabric/Core/RT/IntegerImpl.h>
 #include <Fabric/Core/Util/Format.h>
 
 namespace Fabric
@@ -568,6 +569,12 @@ namespace Fabric
     std::string IntegerAdapter::toString( void const *data ) const
     {
       return m_integerDesc->toString( data );
+    }
+    
+    llvm::Constant *IntegerAdapter::llvmDefaultValue( BasicBlockBuilder &basicBlockBuilder ) const
+    {
+      RC::ConstHandle<RT::SI32Impl> si32Impl = RC::ConstHandle<RT::SI32Impl>::StaticCast( m_integerDesc->getImpl() );
+      return llvmConst( basicBlockBuilder.getContext(), si32Impl->getValue( si32Impl->getDefaultData() ) );
     }
   };
 };

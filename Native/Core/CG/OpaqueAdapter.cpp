@@ -149,11 +149,6 @@ namespace Fabric
         }
       }
     }
-
-    void OpaqueAdapter::llvmInit( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *lValue ) const
-    {
-      basicBlockBuilder->CreateStore( llvm::Constant::getNullValue( llvmRType( basicBlockBuilder.getContext() ) ), lValue ); 
-    }
     
     std::string OpaqueAdapter::toString( void const *data ) const
     {

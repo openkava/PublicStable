@@ -63,19 +63,6 @@ namespace Fabric
       return m_memberAdapters[memberIndex];
     }
     
-    void StructAdapter::llvmInit( BasicBlockBuilder &basicBlockBuilder, llvm::Value *lValue ) const
-    {
-      if ( !m_structDesc->isShallow() )
-      {
-        for ( size_t i=0; i<getNumMembers(); ++i )
-        {
-          RC::ConstHandle<Adapter> const &memberAdapter = m_memberAdapters[i];
-          llvm::Value *memberLValue = basicBlockBuilder->CreateConstGEP2_32( lValue, 0, i );
-          memberAdapter->llvmInit( basicBlockBuilder, memberLValue );
-        }
-      }
-    }
-    
     void StructAdapter::llvmRetain( BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const
     {
       if ( !m_isShallow )
