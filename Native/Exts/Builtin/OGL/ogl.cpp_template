@@ -96,13 +96,21 @@ FABRIC_EXT_EXPORT void fglSetDebuggingEnabled( bool enable )
   fglDebuggingEnabled = enable;
 }
 
-FABRIC_EXT_EXPORT KL::String glGetVersion()
+FABRIC_EXT_EXPORT void glGetVersion_wrapper(KL::String & result)
 {
-  printf("!!!!!!!!!!!!!!!!!!!!! glGetVersion... \n");
+  _clearError();
   const char * version = (const char *)glGetString(GL_VERSION);
-  printf("!!!!!!!!!!!!!!!!!!!!! GLVERSION %s\n",version);
-  
-  return KL::String(version);
+  if(version == NULL)
+    result = KL::String("Error: No OpenGL context created yet.");
+  else
+    result = KL::String(version);
+}
+
+FABRIC_EXT_EXPORT void glewIsSupported_wrapper(KL::String & token, KL::Boolean & supported)
+{
+  _clearError();
+  printf("querying glewSupported: %s\n",token.data());
+  supported = glewIsSupported(token.data());
 }
 
 ####FUNCTIONS####
