@@ -23,7 +23,6 @@
 /* Begin PBXFileReference section */
 		DB082E9013E6FB0100FB75DA /* LightsTest.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = LightsTest.html; sourceTree = "<group>"; };
 		DB082E9113E6FB0100FB75DA /* ObjLoadTest.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = ObjLoadTest.html; sourceTree = "<group>"; };
-		DB082E9213E6FB3C00FB75DA /* Resources */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Resources; sourceTree = "<group>"; };
 		DB0831D513E7606800FB75DA /* Core */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Core; sourceTree = "<group>"; };
 		DB083DE813E9FC3F00828F72 /* Base */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Base; sourceTree = "<group>"; };
 		DB6DECBD13FEB42800BE0901 /* Core */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Core; sourceTree = "<group>"; };
@@ -177,6 +176,7 @@
 		DB9CD98D13D3C69400CCB0E6 /* YAJLDoc.cmake */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = YAJLDoc.cmake; sourceTree = "<group>"; };
 		DBCCD57B13AC007D00024113 /* currentTime.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = currentTime.html; sourceTree = "<group>"; };
 		DBD2B750140AF0860000DEF7 /* Simulation */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Simulation; sourceTree = "<group>"; };
+		DBD2B8BE140D8D9A0000DEF7 /* SceneGraph */ = {isa = PBXFileReference; lastKnownFileType = folder; path = SceneGraph; sourceTree = "<group>"; };
 		DBD4340113D8B7D700E57C5F /* Tesselation.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = Tesselation.html; sourceTree = "<group>"; };
 		DBD4340213D8B7FA00E57C5F /* nBodyOp.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = nBodyOp.kl; sourceTree = "<group>"; };
 		DBD4340313D8B7FA00E57C5F /* nBodyOpGPU.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = nBodyOpGPU.kl; sourceTree = "<group>"; };
@@ -327,27 +327,11 @@
 		DB96842E13A5445200616143 /* Web */ = {
 			isa = PBXGroup;
 			children = (
+				DBD2B8BE140D8D9A0000DEF7 /* SceneGraph */,
 				DB6DECBD13FEB42800BE0901 /* Core */,
 				DB96855613A79BC700616143 /* Apps */,
-				DB96843513A5445300616143 /* SceneGraph */,
 			);
 			path = Web;
-			sourceTree = "<group>";
-		};
-		DB96843513A5445300616143 /* SceneGraph */ = {
-			isa = PBXGroup;
-			children = (
-				DB082E9213E6FB3C00FB75DA /* Resources */,
-				DB9684BC13A79A1500616143 /* CurveEditor */,
-			);
-			path = SceneGraph;
-			sourceTree = "<group>";
-		};
-		DB9684BC13A79A1500616143 /* CurveEditor */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = CurveEditor;
 			sourceTree = "<group>";
 		};
 		DB96855613A79BC700616143 /* Apps */ = {
