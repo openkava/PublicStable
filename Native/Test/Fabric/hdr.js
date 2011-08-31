@@ -4,6 +4,8 @@ FABRIC = wrapFabricClient(FC);
 op = FABRIC.DependencyGraph.createOperator("op");
 op.setEntryFunctionName("load");
 op.setSourceCode('\
+use FabricHDR;\n\
+\n\
 struct Color\n\
 {\n\
   Scalar r;\n\
