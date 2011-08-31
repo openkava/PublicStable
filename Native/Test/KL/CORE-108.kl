@@ -7,38 +7,38 @@ struct Vec3
 
 function Vec3 ( Scalar x, Scalar y, Scalar z )
 {
-  self.x = x;
-  self.y = y;
-  self.z = z;
+  this.x = x;
+  this.y = y;
+  this.z = z;
 }
 
 function Vec3.set( Scalar x, Scalar y, Scalar z )
 {
-  self.x = x;
-  self.y = y;
-  self.z = z;
+  this.x = x;
+  this.y = y;
+  this.z = z;
 }
 
 function Vec3.setNull( )
 {
-  self.x = self.y = self.z = 0.0;
+  this.x = this.y = this.z = 0.0;
 }
 
 function Vec3 Vec3.max( in Vec3 other )
 {
   var Vec3  v;
-  v.x = self.x > other.x ? self.x : other.x;
-  v.y = self.y > other.y ? self.y : other.y;
-  v.z = self.z > other.z ? self.z : other.z;
+  v.x = this.x > other.x ? this.x : other.x;
+  v.y = this.y > other.y ? this.y : other.y;
+  v.z = this.z > other.z ? this.z : other.z;
   return v;
 }
 
 function Vec3 Vec3.min( in Vec3 other )
 {
   var Vec3  v;
-  v.x = self.x < other.x ? self.x : other.x;
-  v.y = self.y < other.y ? self.y : other.y;
-  v.z = self.z < other.z ? self.z : other.z;
+  v.x = this.x < other.x ? this.x : other.x;
+  v.y = this.y < other.y ? this.y : other.y;
+  v.z = this.z < other.z ? this.z : other.z;
   return v;
 }
 
@@ -75,40 +75,40 @@ function Vec3 /( Vec3 a, Scalar b )
 
 function Vec3 Vec3.neg( )
 {
-  return Vec3( -self.x, -self.y, -self.z );
+  return Vec3( -this.x, -this.y, -this.z );
 }
 
 function Scalar Vec3.dot( Vec3 other )
 {
-  return self.x*other.x + self.y*other.y + self.z*other.z;
+  return this.x*other.x + this.y*other.y + this.z*other.z;
 }
 
 function Scalar Vec3.normSq( )
 {
-  return self.dot( self );
+  return this.dot( this );
 }
 
 function Scalar Vec3.norm( )
 {
-  return sqrt( self.normSq() );
+  return sqrt( this.normSq() );
 }
 
 function Vec3 Vec3.unit( )
 {
-  return self / self.norm();
+  return this / this.norm();
 }
 
 function Vec3.setUnit( )
 {
-  self = self.unit();
+  this = this.unit();
 }
 
 function Vec3 Vec3.cross( in Vec3 other )
 {
   return Vec3(
-    self.y * other.z - self.z * other.y,
-    self.z * other.x - self.x * other.z,
-    self.x * other.y - self.y * other.x
+    this.y * other.z - this.z * other.y,
+    this.z * other.x - this.x * other.z,
+    this.x * other.y - this.y * other.x
     );
 }
 
@@ -126,10 +126,10 @@ function Patch(
   in Integer a30, in Integer a31, in Integer a32, in Integer a33
   )
 {
-  self.idx[0][0] = a00; self.idx[0][1] = a01; self.idx[0][2] = a02; self.idx[0][3] = a03; 
-  self.idx[1][0] = a10; self.idx[1][1] = a11; self.idx[1][2] = a12; self.idx[1][3] = a13; 
-  self.idx[2][0] = a20; self.idx[2][1] = a21; self.idx[2][2] = a22; self.idx[2][3] = a23; 
-  self.idx[3][0] = a30; self.idx[3][1] = a31; self.idx[3][2] = a32; self.idx[3][3] = a33; 
+  this.idx[0][0] = a00; this.idx[0][1] = a01; this.idx[0][2] = a02; this.idx[0][3] = a03; 
+  this.idx[1][0] = a10; this.idx[1][1] = a11; this.idx[1][2] = a12; this.idx[1][3] = a13; 
+  this.idx[2][0] = a20; this.idx[2][1] = a21; this.idx[2][2] = a22; this.idx[2][3] = a23; 
+  this.idx[3][0] = a30; this.idx[3][1] = a31; this.idx[3][2] = a32; this.idx[3][3] = a33; 
 }
 
 struct Quad
@@ -140,10 +140,10 @@ struct Quad
 
 function Quad( in Vec3 v[], in Integer i00, in Integer i01, in Integer i10, in Integer i11 )
 {
-  self.idx[0][0] = i00;
-  self.idx[0][1] = i01;
-  self.idx[1][0] = i10;
-  self.idx[1][1] = i11;
+  this.idx[0][0] = i00;
+  this.idx[0][1] = i01;
+  this.idx[1][0] = i10;
+  this.idx[1][1] = i11;
   
   // Compute the face normal from the diagonals
   var Vec3   d0, d1;
@@ -151,7 +151,7 @@ function Quad( in Vec3 v[], in Integer i00, in Integer i01, in Integer i10, in I
   d0 = v[i11]-v[i00];
   d1 = v[i10]-v[i01];
   
-  self.normal = d0.cross( d1 ).unit();
+  this.normal = d0.cross( d1 ).unit();
 }
 
 struct Adjacency

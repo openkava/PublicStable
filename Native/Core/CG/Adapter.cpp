@@ -132,6 +132,9 @@ namespace Fabric
 
     llvm::Value *Adapter::llvmCast( BasicBlockBuilder &basicBlockBuilder, ExprValue exprValue ) const
     {
+      if ( !exprValue.getAdapter() )
+        throw Exception( "function does not return a value" );
+        
       if ( exprValue.getAdapter()->getDesc()->getImpl() == getDesc()->getImpl() )
       {
         switch ( exprValue.getUsage() )
