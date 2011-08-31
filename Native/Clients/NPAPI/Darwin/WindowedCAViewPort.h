@@ -33,6 +33,7 @@ namespace Fabric
     
       virtual NPError nppGetValue( NPPVariable variable, void *value );
       virtual int16_t nppHandleEvent( void *event );
+      virtual NPError nppDestroy( NPSavedData** save );
 
       virtual void needsRedraw();
       virtual void redrawFinished();

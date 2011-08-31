@@ -41,6 +41,8 @@ namespace Fabric
       try
       {
         CG::ReturnInfo const &returnInfo = basicBlockBuilder.getFunctionBuilder().getScope().getReturnInfo();
+        if ( basicBlockBuilder->GetInsertBlock()->getTerminator() )
+          throw CG::Error( getLocation(), "unreachable code" );
         if ( m_expr )
         {
           if ( !returnInfo )

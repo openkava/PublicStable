@@ -47,6 +47,7 @@ namespace Fabric
       RC::ConstHandle<JSON::Value> jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg );
       void jsonExecAppend( RC::ConstHandle<JSON::Value> const &arg );
       void jsonExecInsert( RC::ConstHandle<JSON::Value> const &arg );
+      void jsonExecRemove( RC::ConstHandle<JSON::Value> const &arg );
       RC::Handle<JSON::Array> jsonDesc() const;
       
     protected:
