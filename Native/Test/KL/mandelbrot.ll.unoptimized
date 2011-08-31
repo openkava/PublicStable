@@ -348,14 +348,14 @@ entry:
   ret i1 %0
 }
 
-define i32 @__method_dataSize__Byte(i8 %selfRValue) inlinehint {
+define i32 @__method_dataSize__Byte(i8 %thisRValue) inlinehint {
 entry:
   ret i32 1
 }
 
-define i8* @__method_data__Byte(i8* nocapture %selfLValue) inlinehint {
+define i8* @__method_data__Byte(i8* nocapture %thisLValue) inlinehint {
 entry:
-  ret i8* %selfLValue
+  ret i8* %thisLValue
 }
 
 define void @__construct_Boolean__Data(i1* nocapture %booleanLValue, i8* %opaqueRValue) inlinehint {
@@ -377,14 +377,14 @@ entry:
   ret void
 }
 
-define i32 @__method_dataSize__Data(i8* %selfRValue) inlinehint {
+define i32 @__method_dataSize__Data(i8* %thisRValue) inlinehint {
 entry:
   ret i32 4
 }
 
-define i8* @__method_data__Data(i8** nocapture %selfLValue) inlinehint {
+define i8* @__method_data__Data(i8** nocapture %thisLValue) inlinehint {
 entry:
-  %0 = bitcast i8** %selfLValue to i8*
+  %0 = bitcast i8** %thisLValue to i8*
   ret i8* %0
 }
 
@@ -578,14 +578,14 @@ entry:
   ret i1 %0
 }
 
-define i32 @__method_dataSize__Integer(i32 %selfRValue) inlinehint {
+define i32 @__method_dataSize__Integer(i32 %thisRValue) inlinehint {
 entry:
   ret i32 4
 }
 
-define i8* @__method_data__Integer(i32* nocapture %selfLValue) inlinehint {
+define i8* @__method_data__Integer(i32* nocapture %thisLValue) inlinehint {
 entry:
-  %0 = bitcast i32* %selfLValue to i8*
+  %0 = bitcast i32* %thisLValue to i8*
   ret i8* %0
 }
 
@@ -818,14 +818,14 @@ entry:
   ret i1 %0
 }
 
-define i32 @__method_dataSize__Scalar(float %selfRValue) inlinehint {
+define i32 @__method_dataSize__Scalar(float %thisRValue) inlinehint {
 entry:
   ret i32 4
 }
 
-define i8* @__method_data__Scalar(float* nocapture %selfLValue) inlinehint {
+define i8* @__method_data__Scalar(float* nocapture %thisLValue) inlinehint {
 entry:
-  %0 = bitcast float* %selfLValue to i8*
+  %0 = bitcast float* %thisLValue to i8*
   ret i8* %0
 }
 
@@ -1013,14 +1013,14 @@ entry:
   ret i1 %0
 }
 
-define i32 @__method_dataSize__Size(i32 %selfRValue) inlinehint {
+define i32 @__method_dataSize__Size(i32 %thisRValue) inlinehint {
 entry:
   ret i32 4
 }
 
-define i8* @__method_data__Size(i32* nocapture %selfLValue) inlinehint {
+define i8* @__method_data__Size(i32* nocapture %thisLValue) inlinehint {
 entry:
-  %0 = bitcast i32* %selfLValue to i8*
+  %0 = bitcast i32* %thisLValue to i8*
   ret i8* %0
 }
 
@@ -1075,30 +1075,30 @@ entry:
   ret %String %1
 }
 
-define i32 @__method_length__String(%String %selfRValue) inlinehint {
+define i32 @__method_length__String(%String %thisRValue) inlinehint {
 entry:
-  %0 = call i32 @__String__Length(%String %selfRValue)
+  %0 = call i32 @__String__Length(%String %thisRValue)
   ret i32 %0
 }
 
-define i32 @__method_dataSize__String(%String %selfRValue) inlinehint {
+define i32 @__method_dataSize__String(%String %thisRValue) inlinehint {
 entry:
-  %0 = call i32 @__String__Length(%String %selfRValue)
+  %0 = call i32 @__String__Length(%String %thisRValue)
   %1 = add i32 %0, 1
   ret i32 %1
 }
 
-define i8* @__method_data__String(%String %selfRValue) inlinehint {
+define i8* @__method_data__String(%String %thisRValue) inlinehint {
 entry:
-  %0 = icmp eq %String %selfRValue, null
+  %0 = icmp eq %String %thisRValue, null
   br i1 %0, label %null, label %nonNull
 
 null:                                             ; preds = %entry
-  %1 = bitcast %String %selfRValue to i8*
+  %1 = bitcast %String %thisRValue to i8*
   ret i8* %1
 
 nonNull:                                          ; preds = %entry
-  %2 = getelementptr inbounds %String %selfRValue, i32 0, i32 3
+  %2 = getelementptr inbounds %String %thisRValue, i32 0, i32 3
   %3 = getelementptr [0 x i8]* %2, i32 0, i32 0
   %4 = getelementptr i8* %3, i32 0
   ret i8* %4
@@ -1110,25 +1110,25 @@ entry:
 
 checkPointers:                                    ; preds = %entry
   %0 = icmp eq %String %lhs, null
-  br i1 %0, label %selfIsNull, label %selfIsNotNull
+  br i1 %0, label %thisIsNull, label %thisIsNotNull
 
-selfIsNull:                                       ; preds = %checkPointers
+thisIsNull:                                       ; preds = %checkPointers
   %1 = icmp eq %String %rhs, null
   br i1 %1, label %eq, label %lt
 
-selfIsNotNull:                                    ; preds = %checkPointers
+thisIsNotNull:                                    ; preds = %checkPointers
   %2 = icmp eq %String %rhs, null
   br i1 %2, label %gt, label %shallow
 
-shallow:                                          ; preds = %selfIsNotNull
+shallow:                                          ; preds = %thisIsNotNull
   %3 = icmp eq %String %lhs, %rhs
   br i1 %3, label %eq, label %deep
 
 deep:                                             ; preds = %shallow
-  %selfLengthPtr = getelementptr inbounds %String %lhs, i32 0, i32 2
-  %selfLength = load i32* %selfLengthPtr
+  %thisLengthPtr = getelementptr inbounds %String %lhs, i32 0, i32 2
+  %thisLength = load i32* %thisLengthPtr
   %4 = getelementptr inbounds %String %lhs, i32 0, i32 3
-  %selfCStr = getelementptr [0 x i8]* %4, i32 0, i32 0
+  %thisCStr = getelementptr [0 x i8]* %4, i32 0, i32 0
   %otherLengthPtr = getelementptr inbounds %String %rhs, i32 0, i32 2
   %otherLength = load i32* %otherLengthPtr
   %5 = getelementptr inbounds %String %rhs, i32 0, i32 3
@@ -1142,7 +1142,7 @@ check:                                            ; preds = %next, %deep
   br label %checkSelfLength
 
 checkSelfLength:                                  ; preds = %check
-  %6 = icmp ult i32 %index, %selfLength
+  %6 = icmp ult i32 %index, %thisLength
   br i1 %6, label %checkOtherLength, label %verifyOtherLength
 
 verifyOtherLength:                                ; preds = %checkSelfLength
@@ -1154,18 +1154,18 @@ checkOtherLength:                                 ; preds = %checkSelfLength
   br i1 %8, label %checkChars, label %gt
 
 checkChars:                                       ; preds = %checkOtherLength
-  %selfCharPtr = getelementptr i8* %selfCStr, i32 %index
-  %selfChar = load i8* %selfCharPtr
+  %thisCharPtr = getelementptr i8* %thisCStr, i32 %index
+  %thisChar = load i8* %thisCharPtr
   %otherCharPtr = getelementptr i8* %otherCStr, i32 %index
   %otherChar = load i8* %otherCharPtr
   br label %checkCharsLT
 
 checkCharsLT:                                     ; preds = %checkChars
-  %9 = icmp ult i8 %selfChar, %otherChar
+  %9 = icmp ult i8 %thisChar, %otherChar
   br i1 %9, label %lt, label %checkCharsGT
 
 checkCharsGT:                                     ; preds = %checkCharsLT
-  %10 = icmp ugt i8 %selfChar, %otherChar
+  %10 = icmp ugt i8 %thisChar, %otherChar
   br i1 %10, label %gt, label %next
 
 next:                                             ; preds = %checkCharsGT
@@ -1173,13 +1173,13 @@ next:                                             ; preds = %checkCharsGT
   store i32 %11, i32* %indexPtr
   br label %check
 
-eq:                                               ; preds = %verifyOtherLength, %shallow, %selfIsNull
+eq:                                               ; preds = %verifyOtherLength, %shallow, %thisIsNull
   ret i32 0
 
-lt:                                               ; preds = %checkCharsLT, %verifyOtherLength, %selfIsNull
+lt:                                               ; preds = %checkCharsLT, %verifyOtherLength, %thisIsNull
   ret i32 -1
 
-gt:                                               ; preds = %checkCharsGT, %checkOtherLength, %selfIsNotNull
+gt:                                               ; preds = %checkCharsGT, %checkOtherLength, %thisIsNotNull
   ret i32 1
 }
 
@@ -1494,14 +1494,14 @@ entry:
   ret void
 }
 
-define i32 @__method_dataSize__cl_command_queue(i8* %selfRValue) inlinehint {
+define i32 @__method_dataSize__cl_command_queue(i8* %thisRValue) inlinehint {
 entry:
   ret i32 4
 }
 
-define i8* @__method_data__cl_command_queue(i8** nocapture %selfLValue) inlinehint {
+define i8* @__method_data__cl_command_queue(i8** nocapture %thisLValue) inlinehint {
 entry:
-  %0 = bitcast i8** %selfLValue to i8*
+  %0 = bitcast i8** %thisLValue to i8*
   ret i8* %0
 }
 
@@ -1524,14 +1524,14 @@ entry:
   ret void
 }
 
-define i32 @__method_dataSize__cl_context(i8* %selfRValue) inlinehint {
+define i32 @__method_dataSize__cl_context(i8* %thisRValue) inlinehint {
 entry:
   ret i32 4
 }
 
-define i8* @__method_data__cl_context(i8** nocapture %selfLValue) inlinehint {
+define i8* @__method_data__cl_context(i8** nocapture %thisLValue) inlinehint {
 entry:
-  %0 = bitcast i8** %selfLValue to i8*
+  %0 = bitcast i8** %thisLValue to i8*
   ret i8* %0
 }
 
@@ -1554,14 +1554,14 @@ entry:
   ret void
 }
 
-define i32 @__method_dataSize__cl_device_id(i8* %selfRValue) inlinehint {
+define i32 @__method_dataSize__cl_device_id(i8* %thisRValue) inlinehint {
 entry:
   ret i32 4
 }
 
-define i8* @__method_data__cl_device_id(i8** nocapture %selfLValue) inlinehint {
+define i8* @__method_data__cl_device_id(i8** nocapture %thisLValue) inlinehint {
 entry:
-  %0 = bitcast i8** %selfLValue to i8*
+  %0 = bitcast i8** %thisLValue to i8*
   ret i8* %0
 }
 
@@ -1737,68 +1737,68 @@ entry:
   ret %cl_device_id_VA %1
 }
 
-define %cl_device_id_VA* @__method_push__cl_device_id_VA__cl_device_id(%cl_device_id_VA* nocapture %selfLValue, i8* %memberRValue) inlinehint {
+define %cl_device_id_VA* @__method_push__cl_device_id_VA__cl_device_id(%cl_device_id_VA* nocapture %thisLValue, i8* %memberRValue) inlinehint {
 entry:
   %memberRValue_tempLValue = alloca i8*
   store i8* %memberRValue, i8** %memberRValue_tempLValue
-  call void @__cl_device_id_VA__Push(i8* bitcast (i8** @__cl_device_id_VA__Adapter to i8*), %cl_device_id_VA* %selfLValue, i8** %memberRValue_tempLValue)
-  ret %cl_device_id_VA* %selfLValue
+  call void @__cl_device_id_VA__Push(i8* bitcast (i8** @__cl_device_id_VA__Adapter to i8*), %cl_device_id_VA* %thisLValue, i8** %memberRValue_tempLValue)
+  ret %cl_device_id_VA* %thisLValue
 }
 
 declare void @__cl_device_id_VA__Push(i8* nocapture, %cl_device_id_VA* nocapture, i8** nocapture) nounwind inlinehint
 
-define i8* @__method_pop__cl_device_id_VA(%cl_device_id_VA* nocapture %selfLValue) inlinehint {
+define i8* @__method_pop__cl_device_id_VA(%cl_device_id_VA* nocapture %thisLValue) inlinehint {
 entry:
   %result = alloca i8*
   store i8* null, i8** %result
-  call void @__cl_device_id_VA__Pop(i8* bitcast (i8** @__cl_device_id_VA__Adapter to i8*), %cl_device_id_VA* %selfLValue, i8** %result)
+  call void @__cl_device_id_VA__Pop(i8* bitcast (i8** @__cl_device_id_VA__Adapter to i8*), %cl_device_id_VA* %thisLValue, i8** %result)
   %0 = load i8** %result
   ret i8* %0
 }
 
 declare void @__cl_device_id_VA__Pop(i8* nocapture, %cl_device_id_VA* nocapture, i8** nocapture) nounwind inlinehint
 
-define %cl_device_id_VA* @__method_resize__cl_device_id_VA__Size(%cl_device_id_VA* nocapture %selfLValue, i32 %newSizeRValue) inlinehint {
+define %cl_device_id_VA* @__method_resize__cl_device_id_VA__Size(%cl_device_id_VA* nocapture %thisLValue, i32 %newSizeRValue) inlinehint {
 entry:
-  call void @__cl_device_id_VA__Resize(i8* bitcast (i8** @__cl_device_id_VA__Adapter to i8*), %cl_device_id_VA* %selfLValue, i32 %newSizeRValue)
-  ret %cl_device_id_VA* %selfLValue
+  call void @__cl_device_id_VA__Resize(i8* bitcast (i8** @__cl_device_id_VA__Adapter to i8*), %cl_device_id_VA* %thisLValue, i32 %newSizeRValue)
+  ret %cl_device_id_VA* %thisLValue
 }
 
 declare void @__cl_device_id_VA__Resize(i8*, %cl_device_id_VA*, i32) nounwind inlinehint
 
-define %cl_device_id_VA* @__method_resize__cl_device_id_VA__Integer(%cl_device_id_VA* nocapture %selfLValue, i32 %integerRValue) inlinehint {
+define %cl_device_id_VA* @__method_resize__cl_device_id_VA__Integer(%cl_device_id_VA* nocapture %thisLValue, i32 %integerRValue) inlinehint {
 entry:
   %castToSize = alloca i32
   call void @__construct_Size__Integer(i32* %castToSize, i32 %integerRValue)
   %0 = load i32* %castToSize
-  call void @__cl_device_id_VA__Resize(i8* bitcast (i8** @__cl_device_id_VA__Adapter to i8*), %cl_device_id_VA* %selfLValue, i32 %0)
-  ret %cl_device_id_VA* %selfLValue
+  call void @__cl_device_id_VA__Resize(i8* bitcast (i8** @__cl_device_id_VA__Adapter to i8*), %cl_device_id_VA* %thisLValue, i32 %0)
+  ret %cl_device_id_VA* %thisLValue
 }
 
-define i32 @__method_size__cl_device_id_VA(%cl_device_id_VA %selfRValue) inlinehint {
+define i32 @__method_size__cl_device_id_VA(%cl_device_id_VA %thisRValue) inlinehint {
 entry:
-  %0 = call i32 @__cl_device_id_VA__Size(%cl_device_id_VA %selfRValue)
+  %0 = call i32 @__cl_device_id_VA__Size(%cl_device_id_VA %thisRValue)
   ret i32 %0
 }
 
-define i32 @__method_dataSize__cl_device_id_VA(%cl_device_id_VA %selfRValue) inlinehint {
+define i32 @__method_dataSize__cl_device_id_VA(%cl_device_id_VA %thisRValue) inlinehint {
 entry:
-  %0 = call i32 @__cl_device_id_VA__Size(%cl_device_id_VA %selfRValue)
+  %0 = call i32 @__cl_device_id_VA__Size(%cl_device_id_VA %thisRValue)
   %1 = mul i32 %0, 4
   ret i32 %1
 }
 
-define i8* @__method_data__cl_device_id_VA(%cl_device_id_VA %selfRValue) inlinehint {
+define i8* @__method_data__cl_device_id_VA(%cl_device_id_VA %thisRValue) inlinehint {
 entry:
-  %0 = icmp eq %cl_device_id_VA %selfRValue, null
+  %0 = icmp eq %cl_device_id_VA %thisRValue, null
   br i1 %0, label %null, label %nonNull
 
 null:                                             ; preds = %entry
-  %1 = bitcast %cl_device_id_VA %selfRValue to i8*
+  %1 = bitcast %cl_device_id_VA %thisRValue to i8*
   ret i8* %1
 
 nonNull:                                          ; preds = %entry
-  %2 = getelementptr inbounds %cl_device_id_VA %selfRValue, i32 0, i32 3
+  %2 = getelementptr inbounds %cl_device_id_VA %thisRValue, i32 0, i32 3
   %3 = getelementptr [0 x i8*]* %2, i32 0, i32 0
   %4 = getelementptr i8** %3, i32 0
   %5 = bitcast i8** %4 to i8*
@@ -1824,14 +1824,14 @@ entry:
   ret void
 }
 
-define i32 @__method_dataSize__cl_event(i8* %selfRValue) inlinehint {
+define i32 @__method_dataSize__cl_event(i8* %thisRValue) inlinehint {
 entry:
   ret i32 4
 }
 
-define i8* @__method_data__cl_event(i8** nocapture %selfLValue) inlinehint {
+define i8* @__method_data__cl_event(i8** nocapture %thisLValue) inlinehint {
 entry:
-  %0 = bitcast i8** %selfLValue to i8*
+  %0 = bitcast i8** %thisLValue to i8*
   ret i8* %0
 }
 
@@ -2007,68 +2007,68 @@ entry:
   ret %cl_device_id_VA %1
 }
 
-define %cl_device_id_VA* @__method_push__cl_event_VA__cl_event(%cl_device_id_VA* nocapture %selfLValue, i8* %memberRValue) inlinehint {
+define %cl_device_id_VA* @__method_push__cl_event_VA__cl_event(%cl_device_id_VA* nocapture %thisLValue, i8* %memberRValue) inlinehint {
 entry:
   %memberRValue_tempLValue = alloca i8*
   store i8* %memberRValue, i8** %memberRValue_tempLValue
-  call void @__cl_event_VA__Push(i8* bitcast (i8** @__cl_event_VA__Adapter to i8*), %cl_device_id_VA* %selfLValue, i8** %memberRValue_tempLValue)
-  ret %cl_device_id_VA* %selfLValue
+  call void @__cl_event_VA__Push(i8* bitcast (i8** @__cl_event_VA__Adapter to i8*), %cl_device_id_VA* %thisLValue, i8** %memberRValue_tempLValue)
+  ret %cl_device_id_VA* %thisLValue
 }
 
 declare void @__cl_event_VA__Push(i8* nocapture, %cl_device_id_VA* nocapture, i8** nocapture) nounwind inlinehint
 
-define i8* @__method_pop__cl_event_VA(%cl_device_id_VA* nocapture %selfLValue) inlinehint {
+define i8* @__method_pop__cl_event_VA(%cl_device_id_VA* nocapture %thisLValue) inlinehint {
 entry:
   %result = alloca i8*
   store i8* null, i8** %result
-  call void @__cl_event_VA__Pop(i8* bitcast (i8** @__cl_event_VA__Adapter to i8*), %cl_device_id_VA* %selfLValue, i8** %result)
+  call void @__cl_event_VA__Pop(i8* bitcast (i8** @__cl_event_VA__Adapter to i8*), %cl_device_id_VA* %thisLValue, i8** %result)
   %0 = load i8** %result
   ret i8* %0
 }
 
 declare void @__cl_event_VA__Pop(i8* nocapture, %cl_device_id_VA* nocapture, i8** nocapture) nounwind inlinehint
 
-define %cl_device_id_VA* @__method_resize__cl_event_VA__Size(%cl_device_id_VA* nocapture %selfLValue, i32 %newSizeRValue) inlinehint {
+define %cl_device_id_VA* @__method_resize__cl_event_VA__Size(%cl_device_id_VA* nocapture %thisLValue, i32 %newSizeRValue) inlinehint {
 entry:
-  call void @__cl_event_VA__Resize(i8* bitcast (i8** @__cl_event_VA__Adapter to i8*), %cl_device_id_VA* %selfLValue, i32 %newSizeRValue)
-  ret %cl_device_id_VA* %selfLValue
+  call void @__cl_event_VA__Resize(i8* bitcast (i8** @__cl_event_VA__Adapter to i8*), %cl_device_id_VA* %thisLValue, i32 %newSizeRValue)
+  ret %cl_device_id_VA* %thisLValue
 }
 
 declare void @__cl_event_VA__Resize(i8*, %cl_device_id_VA*, i32) nounwind inlinehint
 
-define %cl_device_id_VA* @__method_resize__cl_event_VA__Integer(%cl_device_id_VA* nocapture %selfLValue, i32 %integerRValue) inlinehint {
+define %cl_device_id_VA* @__method_resize__cl_event_VA__Integer(%cl_device_id_VA* nocapture %thisLValue, i32 %integerRValue) inlinehint {
 entry:
   %castToSize = alloca i32
   call void @__construct_Size__Integer(i32* %castToSize, i32 %integerRValue)
   %0 = load i32* %castToSize
-  call void @__cl_event_VA__Resize(i8* bitcast (i8** @__cl_event_VA__Adapter to i8*), %cl_device_id_VA* %selfLValue, i32 %0)
-  ret %cl_device_id_VA* %selfLValue
+  call void @__cl_event_VA__Resize(i8* bitcast (i8** @__cl_event_VA__Adapter to i8*), %cl_device_id_VA* %thisLValue, i32 %0)
+  ret %cl_device_id_VA* %thisLValue
 }
 
-define i32 @__method_size__cl_event_VA(%cl_device_id_VA %selfRValue) inlinehint {
+define i32 @__method_size__cl_event_VA(%cl_device_id_VA %thisRValue) inlinehint {
 entry:
-  %0 = call i32 @__cl_event_VA__Size(%cl_device_id_VA %selfRValue)
+  %0 = call i32 @__cl_event_VA__Size(%cl_device_id_VA %thisRValue)
   ret i32 %0
 }
 
-define i32 @__method_dataSize__cl_event_VA(%cl_device_id_VA %selfRValue) inlinehint {
+define i32 @__method_dataSize__cl_event_VA(%cl_device_id_VA %thisRValue) inlinehint {
 entry:
-  %0 = call i32 @__cl_event_VA__Size(%cl_device_id_VA %selfRValue)
+  %0 = call i32 @__cl_event_VA__Size(%cl_device_id_VA %thisRValue)
   %1 = mul i32 %0, 4
   ret i32 %1
 }
 
-define i8* @__method_data__cl_event_VA(%cl_device_id_VA %selfRValue) inlinehint {
+define i8* @__method_data__cl_event_VA(%cl_device_id_VA %thisRValue) inlinehint {
 entry:
-  %0 = icmp eq %cl_device_id_VA %selfRValue, null
+  %0 = icmp eq %cl_device_id_VA %thisRValue, null
   br i1 %0, label %null, label %nonNull
 
 null:                                             ; preds = %entry
-  %1 = bitcast %cl_device_id_VA %selfRValue to i8*
+  %1 = bitcast %cl_device_id_VA %thisRValue to i8*
   ret i8* %1
 
 nonNull:                                          ; preds = %entry
-  %2 = getelementptr inbounds %cl_device_id_VA %selfRValue, i32 0, i32 3
+  %2 = getelementptr inbounds %cl_device_id_VA %thisRValue, i32 0, i32 3
   %3 = getelementptr [0 x i8*]* %2, i32 0, i32 0
   %4 = getelementptr i8** %3, i32 0
   %5 = bitcast i8** %4 to i8*
@@ -2094,14 +2094,14 @@ entry:
   ret void
 }
 
-define i32 @__method_dataSize__cl_kernel(i8* %selfRValue) inlinehint {
+define i32 @__method_dataSize__cl_kernel(i8* %thisRValue) inlinehint {
 entry:
   ret i32 4
 }
 
-define i8* @__method_data__cl_kernel(i8** nocapture %selfLValue) inlinehint {
+define i8* @__method_data__cl_kernel(i8** nocapture %thisLValue) inlinehint {
 entry:
-  %0 = bitcast i8** %selfLValue to i8*
+  %0 = bitcast i8** %thisLValue to i8*
   ret i8* %0
 }
 
@@ -2124,14 +2124,14 @@ entry:
   ret void
 }
 
-define i32 @__method_dataSize__cl_mem(i8* %selfRValue) inlinehint {
+define i32 @__method_dataSize__cl_mem(i8* %thisRValue) inlinehint {
 entry:
   ret i32 4
 }
 
-define i8* @__method_data__cl_mem(i8** nocapture %selfLValue) inlinehint {
+define i8* @__method_data__cl_mem(i8** nocapture %thisLValue) inlinehint {
 entry:
-  %0 = bitcast i8** %selfLValue to i8*
+  %0 = bitcast i8** %thisLValue to i8*
   ret i8* %0
 }
 
@@ -2154,14 +2154,14 @@ entry:
   ret void
 }
 
-define i32 @__method_dataSize__cl_platform_id(i8* %selfRValue) inlinehint {
+define i32 @__method_dataSize__cl_platform_id(i8* %thisRValue) inlinehint {
 entry:
   ret i32 4
 }
 
-define i8* @__method_data__cl_platform_id(i8** nocapture %selfLValue) inlinehint {
+define i8* @__method_data__cl_platform_id(i8** nocapture %thisLValue) inlinehint {
 entry:
-  %0 = bitcast i8** %selfLValue to i8*
+  %0 = bitcast i8** %thisLValue to i8*
   ret i8* %0
 }
 
@@ -2337,68 +2337,68 @@ entry:
   ret %cl_device_id_VA %1
 }
 
-define %cl_device_id_VA* @__method_push__cl_platform_id_VA__cl_platform_id(%cl_device_id_VA* nocapture %selfLValue, i8* %memberRValue) inlinehint {
+define %cl_device_id_VA* @__method_push__cl_platform_id_VA__cl_platform_id(%cl_device_id_VA* nocapture %thisLValue, i8* %memberRValue) inlinehint {
 entry:
   %memberRValue_tempLValue = alloca i8*
   store i8* %memberRValue, i8** %memberRValue_tempLValue
-  call void @__cl_platform_id_VA__Push(i8* bitcast (i8** @__cl_platform_id_VA__Adapter to i8*), %cl_device_id_VA* %selfLValue, i8** %memberRValue_tempLValue)
-  ret %cl_device_id_VA* %selfLValue
+  call void @__cl_platform_id_VA__Push(i8* bitcast (i8** @__cl_platform_id_VA__Adapter to i8*), %cl_device_id_VA* %thisLValue, i8** %memberRValue_tempLValue)
+  ret %cl_device_id_VA* %thisLValue
 }
 
 declare void @__cl_platform_id_VA__Push(i8* nocapture, %cl_device_id_VA* nocapture, i8** nocapture) nounwind inlinehint
 
-define i8* @__method_pop__cl_platform_id_VA(%cl_device_id_VA* nocapture %selfLValue) inlinehint {
+define i8* @__method_pop__cl_platform_id_VA(%cl_device_id_VA* nocapture %thisLValue) inlinehint {
 entry:
   %result = alloca i8*
   store i8* null, i8** %result
-  call void @__cl_platform_id_VA__Pop(i8* bitcast (i8** @__cl_platform_id_VA__Adapter to i8*), %cl_device_id_VA* %selfLValue, i8** %result)
+  call void @__cl_platform_id_VA__Pop(i8* bitcast (i8** @__cl_platform_id_VA__Adapter to i8*), %cl_device_id_VA* %thisLValue, i8** %result)
   %0 = load i8** %result
   ret i8* %0
 }
 
 declare void @__cl_platform_id_VA__Pop(i8* nocapture, %cl_device_id_VA* nocapture, i8** nocapture) nounwind inlinehint
 
-define %cl_device_id_VA* @__method_resize__cl_platform_id_VA__Size(%cl_device_id_VA* nocapture %selfLValue, i32 %newSizeRValue) inlinehint {
+define %cl_device_id_VA* @__method_resize__cl_platform_id_VA__Size(%cl_device_id_VA* nocapture %thisLValue, i32 %newSizeRValue) inlinehint {
 entry:
-  call void @__cl_platform_id_VA__Resize(i8* bitcast (i8** @__cl_platform_id_VA__Adapter to i8*), %cl_device_id_VA* %selfLValue, i32 %newSizeRValue)
-  ret %cl_device_id_VA* %selfLValue
+  call void @__cl_platform_id_VA__Resize(i8* bitcast (i8** @__cl_platform_id_VA__Adapter to i8*), %cl_device_id_VA* %thisLValue, i32 %newSizeRValue)
+  ret %cl_device_id_VA* %thisLValue
 }
 
 declare void @__cl_platform_id_VA__Resize(i8*, %cl_device_id_VA*, i32) nounwind inlinehint
 
-define %cl_device_id_VA* @__method_resize__cl_platform_id_VA__Integer(%cl_device_id_VA* nocapture %selfLValue, i32 %integerRValue) inlinehint {
+define %cl_device_id_VA* @__method_resize__cl_platform_id_VA__Integer(%cl_device_id_VA* nocapture %thisLValue, i32 %integerRValue) inlinehint {
 entry:
   %castToSize = alloca i32
   call void @__construct_Size__Integer(i32* %castToSize, i32 %integerRValue)
   %0 = load i32* %castToSize
-  call void @__cl_platform_id_VA__Resize(i8* bitcast (i8** @__cl_platform_id_VA__Adapter to i8*), %cl_device_id_VA* %selfLValue, i32 %0)
-  ret %cl_device_id_VA* %selfLValue
+  call void @__cl_platform_id_VA__Resize(i8* bitcast (i8** @__cl_platform_id_VA__Adapter to i8*), %cl_device_id_VA* %thisLValue, i32 %0)
+  ret %cl_device_id_VA* %thisLValue
 }
 
-define i32 @__method_size__cl_platform_id_VA(%cl_device_id_VA %selfRValue) inlinehint {
+define i32 @__method_size__cl_platform_id_VA(%cl_device_id_VA %thisRValue) inlinehint {
 entry:
-  %0 = call i32 @__cl_platform_id_VA__Size(%cl_device_id_VA %selfRValue)
+  %0 = call i32 @__cl_platform_id_VA__Size(%cl_device_id_VA %thisRValue)
   ret i32 %0
 }
 
-define i32 @__method_dataSize__cl_platform_id_VA(%cl_device_id_VA %selfRValue) inlinehint {
+define i32 @__method_dataSize__cl_platform_id_VA(%cl_device_id_VA %thisRValue) inlinehint {
 entry:
-  %0 = call i32 @__cl_platform_id_VA__Size(%cl_device_id_VA %selfRValue)
+  %0 = call i32 @__cl_platform_id_VA__Size(%cl_device_id_VA %thisRValue)
   %1 = mul i32 %0, 4
   ret i32 %1
 }
 
-define i8* @__method_data__cl_platform_id_VA(%cl_device_id_VA %selfRValue) inlinehint {
+define i8* @__method_data__cl_platform_id_VA(%cl_device_id_VA %thisRValue) inlinehint {
 entry:
-  %0 = icmp eq %cl_device_id_VA %selfRValue, null
+  %0 = icmp eq %cl_device_id_VA %thisRValue, null
   br i1 %0, label %null, label %nonNull
 
 null:                                             ; preds = %entry
-  %1 = bitcast %cl_device_id_VA %selfRValue to i8*
+  %1 = bitcast %cl_device_id_VA %thisRValue to i8*
   ret i8* %1
 
 nonNull:                                          ; preds = %entry
-  %2 = getelementptr inbounds %cl_device_id_VA %selfRValue, i32 0, i32 3
+  %2 = getelementptr inbounds %cl_device_id_VA %thisRValue, i32 0, i32 3
   %3 = getelementptr [0 x i8*]* %2, i32 0, i32 0
   %4 = getelementptr i8** %3, i32 0
   %5 = bitcast i8** %4 to i8*
@@ -2424,14 +2424,14 @@ entry:
   ret void
 }
 
-define i32 @__method_dataSize__cl_program(i8* %selfRValue) inlinehint {
+define i32 @__method_dataSize__cl_program(i8* %thisRValue) inlinehint {
 entry:
   ret i32 4
 }
 
-define i8* @__method_data__cl_program(i8** nocapture %selfLValue) inlinehint {
+define i8* @__method_data__cl_program(i8** nocapture %thisLValue) inlinehint {
 entry:
-  %0 = bitcast i8** %selfLValue to i8*
+  %0 = bitcast i8** %thisLValue to i8*
   ret i8* %0
 }
 

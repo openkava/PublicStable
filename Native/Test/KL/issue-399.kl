@@ -8,17 +8,17 @@ struct Vec2 {
 };
 
 function Vec2(Scalar x, Scalar y) {
-  self.x = x;
-  self.y = y;
+  this.x = x;
+  this.y = y;
 }
 
 function Vec2.set(Scalar x, Scalar y) {
-  self.x = x;
-  self.y = y;
+  this.x = x;
+  this.y = y;
 }
 
 function Vec2.setNull() {
-  self.x = self.y = 0.0;
+  this.x = this.y = 0.0;
 }
 
 function Vec2 + (Vec2 a, Vec2 b) {
@@ -26,7 +26,7 @@ function Vec2 + (Vec2 a, Vec2 b) {
 }
 
 function Vec2. += (Vec2 other) {
-  self = self + other;
+  this = this + other;
 }
 
 function Vec2 - (Vec2 a, Vec2 b) {
@@ -34,7 +34,7 @@ function Vec2 - (Vec2 a, Vec2 b) {
 }
 
 function Vec2. -= (Vec2 other) {
-  self = self - other;
+  this = this - other;
 }
 
 function Vec2 * (Scalar a, Vec2 b) {
@@ -50,11 +50,11 @@ function Vec2 * (Vec2 a, Vec2 b) {
 }
 
 function Vec2. *= (Scalar other) {
-  self = self * other;
+  this = this * other;
 }
 
 function Vec2. *= (Vec2 other) {
-  self = self * other;
+  this = this * other;
 }
 
 function Vec2 / (Vec2 a, Vec2 b) {
@@ -70,66 +70,66 @@ function Vec2 / (Vec2 a, Scalar b) {
 }
 
 function Vec2. /= (Scalar other) {
-  self = self / other;
+  this = this / other;
 }
 
 function Vec2. /= (Vec2 other) {
-  self = self / other;
+  this = this / other;
 }
 
 function Vec2 Vec2.neg() {
-  return Vec2(-self.x, - self.y);
+  return Vec2(-this.x, - this.y);
 }
 
 function Scalar Vec2.dot(Vec2 other) {
-  return self.x * other.x + self.y * other.y;
+  return this.x * other.x + this.y * other.y;
 }
 
 function Scalar Vec2.normSq() {
-  return self.dot(self);
+  return this.dot(this);
 }
 
 function Scalar Vec2.norm() {
-  return sqrt(self.normSq());
+  return sqrt(this.normSq());
 }
 
 function Vec2 Vec2.unit() {
-  var Scalar n = self.norm();
+  var Scalar n = this.norm();
   if (n > 0.0) {
-    return self / n;
+    return this / n;
   }
-  return self;
+  return this;
 }
 
 function Vec2.setUnit() {
-  self = self.unit();
+  this = this.unit();
 }
 
 function Scalar Vec2.distSq(in Vec2 other) {
   var Vec2 v;
-  v = self - other;
+  v = this - other;
   return v.normSq();
 }
 
 function Scalar Vec2.dist(in Vec2 other) {
-  return sqrt(self.distSq(other));
+  return sqrt(this.distSq(other));
 }
 
 function Scalar Vec2.det(in Vec2 other) {
-  return self.x * other.y - self.y * other.x;
+  return this.x * other.y - this.y * other.x;
 }
 
 function Vec2 Vec2.max(in Vec2 other) {
   var Vec2 v;
-  v.x = self.x > other.x ? self.x : other.x;
-  v.y = self.y > other.y ? self.y : other.y;
+  v.x = this.x > other.x ? this.x : other.x;
+  v.y = this.y > other.y ? this.y : other.y;
   return v;
 }
 
 function Vec2 Vec2.min(in Vec2 other) {
   var Vec2 v;
-  v.x = self.x < other.x ? self.x : other.x;
-  v.y = self.y < other.y ? self.y : other.y;
+  v.x = this.x < other.x ? this.x : other.x;
+  v.y = this.y < other.y ? this.y : other.y;
   return v;
 }
 
@@ -140,19 +140,19 @@ struct Vec3 {
 };
 
 function Vec3(Scalar x, Scalar y, Scalar z) {
-  self.x = x;
-  self.y = y;
-  self.z = z;
+  this.x = x;
+  this.y = y;
+  this.z = z;
 }
 
 function Vec3.set(Scalar x, Scalar y, Scalar z) {
-  self.x = x;
-  self.y = y;
-  self.z = z;
+  this.x = x;
+  this.y = y;
+  this.z = z;
 }
 
 function Vec3.setNull() {
-  self.x = self.y = self.z = 0.0;
+  this.x = this.y = this.z = 0.0;
 }
 
 function Vec3 + (Vec3 a, Vec3 b) {
@@ -160,7 +160,7 @@ function Vec3 + (Vec3 a, Vec3 b) {
 }
 
 function Vec3. += (Vec3 other) {
-  self = self + other;
+  this = this + other;
 }
 
 function Vec3 - (Vec3 a, Vec3 b) {
@@ -168,7 +168,7 @@ function Vec3 - (Vec3 a, Vec3 b) {
 }
 
 function Vec3. -= (Vec3 other) {
-  self = self - other;
+  this = this - other;
 }
 
 function Vec3 * (Scalar a, Vec3 b) {
@@ -184,11 +184,11 @@ function Vec3 * (Vec3 a, Vec3 b) {
 }
 
 function Vec3. *= (Scalar other) {
-  self = self * other;
+  this = this * other;
 }
 
 function Vec3. *= (Vec3 other) {
-  self = self * other;
+  this = this * other;
 }
 
 function Vec3 / (Vec3 a, Vec3 b) {
@@ -204,19 +204,19 @@ function Vec3 / (Vec3 a, Scalar b) {
 }
 
 function Vec3. /= (Scalar other) {
-  self = self / other;
+  this = this / other;
 }
 
 function Vec3. /= (Vec3 other) {
-  self = self / other;
+  this = this / other;
 }
 
 function Vec3 Vec3.neg() {
-  return Vec3(-self.x, -self.y, -self.z);
+  return Vec3(-this.x, -this.y, -this.z);
 }
 
 function Vec3 Vec3.inv() {
-  return Vec3(1.0 / self.x, 1.0 / self.y, 1.0 / self.z);
+  return Vec3(1.0 / this.x, 1.0 / this.y, 1.0 / this.z);
 }
 
 struct Mat33 {
@@ -231,17 +231,17 @@ function Mat33(
   Scalar _10, Scalar _11, Scalar _12,
   Scalar _20, Scalar _21, Scalar _22
 ) {
-  self.row0 = Vec3(_00, _01, _02);
-  self.row1 = Vec3(_10, _11, _12);
-  self.row2 = Vec3(_20, _21, _22);
+  this.row0 = Vec3(_00, _01, _02);
+  this.row1 = Vec3(_10, _11, _12);
+  this.row2 = Vec3(_20, _21, _22);
 }
 
 function Mat33(
   Vec3 row0, Vec3 row1, Vec3 row2
 ) {
-  self.row0 = row0;
-  self.row1 = row1;
-  self.row2 = row2;
+  this.row0 = row0;
+  this.row1 = row1;
+  this.row2 = row2;
 }
 
 struct RotationOrder {
@@ -251,10 +251,10 @@ struct RotationOrder {
 function RotationOrder(in Integer order) {
   if (order < 0 || order > 5) {
     report('Invalid rotation order: ' + order);
-    self.setXYZ();
+    this.setXYZ();
   }
   else
-    self.order = order;
+    this.order = order;
 }
 
 /*
@@ -272,45 +272,45 @@ function String( in RotationOrder o )
 */
 
 function Boolean RotationOrder.isXYZ() {
-  return self.order == 0;
+  return this.order == 0;
 }
 function Boolean RotationOrder.isYZX() {
-  return self.order == 1;
+  return this.order == 1;
 }
 function Boolean RotationOrder.isZXY() {
-  return self.order == 2;
+  return this.order == 2;
 }
 function Boolean RotationOrder.isXZY() {
-  return self.order == 3;
+  return this.order == 3;
 }
 function Boolean RotationOrder.isZYX() {
-  return self.order == 4;
+  return this.order == 4;
 }
 function Boolean RotationOrder.isYXZ() {
-  return self.order == 5;
+  return this.order == 5;
 }
 
 function Boolean RotationOrder.isReversed() {
-  return self.isXZY() || self.isZYX() || self.isYXZ();
+  return this.isXZY() || this.isZYX() || this.isYXZ();
 }
 
 function RotationOrder.setXYZ() {
-  self.order = 0;
+  this.order = 0;
 }
 function RotationOrder.setYZX() {
-  self.order = 1;
+  this.order = 1;
 }
 function RotationOrder.setZXY() {
-  self.order = 2;
+  this.order = 2;
 }
 function RotationOrder.setXZY() {
-  self.order = 3;
+  this.order = 3;
 }
 function RotationOrder.setZYX() {
-  self.order = 4;
+  this.order = 4;
 }
 function RotationOrder.setYXZ() {
-  self.order = 5;
+  this.order = 5;
 }
 
 struct Quat {
@@ -319,18 +319,18 @@ struct Quat {
 };
 
 function Quat() {
-  self.v = Vec3(0.0, 0.0, 0.0);
-  self.w = 1.0;
+  this.v = Vec3(0.0, 0.0, 0.0);
+  this.w = 1.0;
 }
 
 function Quat.identity() {
-  self.v = Vec3(0.0, 0.0, 0.0);
-  self.w = 1.0;
+  this.v = Vec3(0.0, 0.0, 0.0);
+  this.w = 1.0;
 }
 
 function Quat(in Scalar w, in Vec3 v) {
-  self.v = v;
-  self.w = w;
+  this.v = v;
+  this.w = w;
 }
 
 function Quat + (in Quat a, in Quat b) {
@@ -358,41 +358,41 @@ function Quat / (in Quat a, in Quat b) {
 }
 
 function Scalar Quat.normSq() {
-  return self.w * self.w + self.v.normSq();
+  return this.w * this.w + this.v.normSq();
 }
 
 function Scalar Quat.norm() {
-  return sqrt(self.normSq());
+  return sqrt(this.normSq());
 }
 
 function Quat Quat.unit() {
-  var Scalar l = self.norm();
-  return Quat(self.w / l, self.v / l);
+  var Scalar l = this.norm();
+  return Quat(this.w / l, this.v / l);
 }
 
 function Quat.setUnit() {
-  self = self.unit();
+  this = this.unit();
 }
 
 function Quat.normalize() {
-  self = self.unit();
+  this = this.unit();
 }
 
 function Quat Quat.conjugate() {
-  return Quat(self.w, self.v.neg());
+  return Quat(this.w, this.v.neg());
 }
 
 function Quat Quat.inv() {
-  return self.unit().conjugate();
+  return this.unit().conjugate();
 }
 
 function Scalar Quat.dot(in Quat other) {
-  return self.w * other.w + self.v.dot(other.v);
+  return this.w * other.w + this.v.dot(other.v);
 }
 
 function Quat.makeClosest(in Quat other) {
-  if(self.dot(other) < 0.0){
-    self = Quat(-self.w, self.v.neg());;
+  if(this.dot(other) < 0.0){
+    this = Quat(-this.w, this.v.neg());;
   }
 }
 
@@ -450,9 +450,9 @@ function Quat makeQuatFrom2Vectors(in Vec3 vec1, in Vec3 vec2) {
 // Method for obtaining axes directly from a quaternion
 function Vec3 Quat.getXaxis() {
   Vec3 temp;
-  Scalar xy = self.v.x * self.v.y; Scalar xz = self.v.x * self.v.z;
-  Scalar yy = self.v.y * self.v.y; Scalar yw = self.v.y * self.w;
-  Scalar zz = self.v.z * self.v.z; Scalar zw = self.v.z * self.w;
+  Scalar xy = this.v.x * this.v.y; Scalar xz = this.v.x * this.v.z;
+  Scalar yy = this.v.y * this.v.y; Scalar yw = this.v.y * this.w;
+  Scalar zz = this.v.z * this.v.z; Scalar zw = this.v.z * this.w;
 
   temp.x = 1.0 - 2.0 * (zz + yy);
   temp.y = 2.0 * (xy + zw);
@@ -462,9 +462,9 @@ function Vec3 Quat.getXaxis() {
 
 function Vec3 Quat.getYaxis() {
   Vec3 temp;
-  Scalar xx = self.v.x * self.v.x; Scalar xy = self.v.x * self.v.y; Scalar xw = self.v.x * self.w;
-  Scalar yz = self.v.y * self.v.z;
-  Scalar zz = self.v.z * self.v.z; Scalar zw = self.v.z * self.w;
+  Scalar xx = this.v.x * this.v.x; Scalar xy = this.v.x * this.v.y; Scalar xw = this.v.x * this.w;
+  Scalar yz = this.v.y * this.v.z;
+  Scalar zz = this.v.z * this.v.z; Scalar zw = this.v.z * this.w;
 
   temp.x = 2.0 * (xy - zw);
   temp.y = 1.0 - 2.0 * (zz + xx);
@@ -474,9 +474,9 @@ function Vec3 Quat.getYaxis() {
 
 function Vec3 Quat.getZaxis() {
   Vec3 temp;
-  Scalar xx = self.v.x * self.v.x; Scalar xz = self.v.x * self.v.z; Scalar xw = self.v.x * self.w;
+  Scalar xx = this.v.x * this.v.x; Scalar xz = this.v.x * this.v.z; Scalar xw = this.v.x * this.w;
 
-  Scalar yy = self.v.y * self.v.y; Scalar yz = self.v.y * self.v.z; Scalar yw = self.v.y * self.w;
+  Scalar yy = this.v.y * this.v.y; Scalar yz = this.v.y * this.v.z; Scalar yw = this.v.y * this.w;
 
   temp.x = 2.0 * (yw + xz);
   temp.y = 2.0 * (yz - xw);
@@ -487,9 +487,9 @@ function Vec3 Quat.getZaxis() {
 function Mat33 Quat.makeMatrix() {
   Mat33 temp;
 
-  Scalar xx = self.v.x * self.v.x; Scalar xy = self.v.x * self.v.y; Scalar xz = self.v.x * self.v.z; Scalar xw = self.v.x * self.w;
-  Scalar yy = self.v.y * self.v.y; Scalar yz = self.v.y * self.v.z; Scalar yw = self.v.y * self.w;
-  Scalar zz = self.v.z * self.v.z; Scalar zw = self.v.z * self.w;
+  Scalar xx = this.v.x * this.v.x; Scalar xy = this.v.x * this.v.y; Scalar xz = this.v.x * this.v.z; Scalar xw = this.v.x * this.w;
+  Scalar yy = this.v.y * this.v.y; Scalar yz = this.v.y * this.v.z; Scalar yw = this.v.y * this.w;
+  Scalar zz = this.v.z * this.v.z; Scalar zw = this.v.z * this.w;
 
   temp.row0.x = 1.0 - 2.0 * (zz + yy);
   temp.row1.x = 2.0 * (xy + zw);
@@ -508,7 +508,7 @@ function Mat33 Quat.makeMatrix() {
 
 function Vec3 Quat.transform(in Vec3 v) {
   var Quat vq = Quat(0.0, v);
-  var Quat pq = self * vq * self.conjugate();
+  var Quat pq = this * vq * this.conjugate();
   return pq.v;
 }
 
@@ -516,7 +516,7 @@ function Vec3 Quat.transform(in Vec3 v) {
 // and inconsistent with our JS library.
 function Vec3 Quat.rotateVector(in Vec3 v) {
   var Quat vq = Quat(0.0, v);
-  var Quat pq = self * vq * self.conjugate();
+  var Quat pq = this * vq * this.conjugate();
   return pq.v;
 }
 
@@ -524,40 +524,40 @@ function Quat(in Mat33 mat) {
   var Scalar trace = mat.row0.x + mat.row1.y + mat.row2.z;
   if (trace > 0) {
     var Scalar s = 0.5 / sqrt(trace + 1.0);
-    self.w = 0.25 / s;
-    self.v.x = (mat.row2.y - mat.row1.z) * s;
-    self.v.y = (mat.row0.z - mat.row2.x) * s;
-    self.v.z = (mat.row1.x - mat.row0.y) * s;
+    this.w = 0.25 / s;
+    this.v.x = (mat.row2.y - mat.row1.z) * s;
+    this.v.y = (mat.row0.z - mat.row2.x) * s;
+    this.v.z = (mat.row1.x - mat.row0.y) * s;
   }else {
     if (mat.row0.x > mat.row1.y && mat.row0.x > mat.row2.z) {
       var Scalar s = 2.0 * sqrt(1.0 + mat.row0.x - mat.row1.y - mat.row2.z);
-      self.w = (mat.row2.y - mat.row1.z) / s;
-      self.v.x = 0.25 * s;
-      self.v.y = (mat.row0.y + mat.row1.x) / s;
-      self.v.z = (mat.row0.z + mat.row2.x) / s;
+      this.w = (mat.row2.y - mat.row1.z) / s;
+      this.v.x = 0.25 * s;
+      this.v.y = (mat.row0.y + mat.row1.x) / s;
+      this.v.z = (mat.row0.z + mat.row2.x) / s;
     }else if (mat.row1.y > mat.row2.z) {
       var Scalar s = 2.0 * sqrt(1.0 + mat.row1.y - mat.row0.x - mat.row2.z);
-      self.w = (mat.row0.z - mat.row2.x) / s;
-      self.v.x = (mat.row0.y + mat.row1.x) / s;
-      self.v.y = 0.25 * s;
-      self.v.z = (mat.row1.z + mat.row2.y) / s;
+      this.w = (mat.row0.z - mat.row2.x) / s;
+      this.v.x = (mat.row0.y + mat.row1.x) / s;
+      this.v.y = 0.25 * s;
+      this.v.z = (mat.row1.z + mat.row2.y) / s;
     }else {
       var Scalar s = 2.0 * sqrt(1.0 + mat.row2.z - mat.row0.x - mat.row1.y);
-      self.w = (mat.row1.x - mat.row0.y) / s;
-      self.v.x = (mat.row0.z + mat.row2.x) / s;
-      self.v.y = (mat.row1.z + mat.row2.y) / s;
-      self.v.z = 0.25 * s;
+      this.w = (mat.row1.x - mat.row0.y) / s;
+      this.v.x = (mat.row0.z + mat.row2.x) / s;
+      this.v.y = (mat.row1.z + mat.row2.y) / s;
+      this.v.z = 0.25 * s;
     }
   }
-  self.setUnit();
+  this.setUnit();
 }
 
 
 
 function Quat Quat.nlerp(in Quat other, in Scalar t) {
   Quat q;
-  q.v = self.v.lerp(other.v, t);
-  q.w = self.w + ((other.w - self.w) * t);
+  q.v = this.v.lerp(other.v, t);
+  q.w = this.w + ((other.w - this.w) * t);
   return q.unit();
 }
 
@@ -585,50 +585,50 @@ function Quat(in Euler e) {
   if (e.ro.isReversed()) {
     aj = - aj;
   }
-  self.w = cj * cc + sj * ss;
+  this.w = cj * cc + sj * ss;
 
   if (e.ro.isXYZ()) {
-    self.v.x = ai; self.v.y = aj; self.v.z = ak;
+    this.v.x = ai; this.v.y = aj; this.v.z = ak;
   }
   else if (e.ro.isYZX()) {
-    self.v.x = aj; self.v.y = ak; self.v.z = ai;
+    this.v.x = aj; this.v.y = ak; this.v.z = ai;
   }
   else if (e.ro.isZXY()) {
-    self.v.x = ak; self.v.y = ai; self.v.z = aj;
+    this.v.x = ak; this.v.y = ai; this.v.z = aj;
   }
   else if (e.ro.isXZY()) {
-    self.v.x = ai; self.v.y = ak; self.v.z = aj;
+    this.v.x = ai; this.v.y = ak; this.v.z = aj;
   }
   else if (e.ro.isZYX()) {
-    self.v.x = ak; self.v.y = aj; self.v.z = ai;
+    this.v.x = ak; this.v.y = aj; this.v.z = ai;
   }
   else if (e.ro.isYXZ()) {
-    self.v.x = aj; self.v.y = ai; self.v.z = ak;
+    this.v.x = aj; this.v.y = ai; this.v.z = ak;
   }
 }
 
 function Euler(in Vec3 angles) {
-  self.x = angles.x;
-  self.y = angles.y;
-  self.z = angles.z;
-  self.ro.setXYZ();
+  this.x = angles.x;
+  this.y = angles.y;
+  this.z = angles.z;
+  this.ro.setXYZ();
 }
 
 function Euler(in Vec3 angles, in RotationOrder order) {
-  self.x = angles.x;
-  self.y = angles.y;
-  self.z = angles.z;
-  self.ro = order;
+  this.x = angles.x;
+  this.y = angles.y;
+  this.z = angles.z;
+  this.ro = order;
 }
 
 function Vec3 Euler.getAngles() {
-  return Vec3(self.x, self.y, self.z);
+  return Vec3(this.x, this.y, this.z);
 }
 
 // Euler <-> Quaternion/Mat33 conversion
 
 function Euler(in Quat q, in RotationOrder ro) {
-  self.ro = ro;
+  this.ro = ro;
 
   var Scalar nq = q.normSq();
   var Scalar s = (nq > 0.0) ? (2.0 / nq) : 0.0;
@@ -657,29 +657,29 @@ function Mat33(in Euler e) {
   Rz.row1.x = Sz; Rz.row1.y = Cz; Rz.row1.z = 0.0;
   Rz.row2.x = 0.0; Rz.row2.y = 0.0; Rz.row2.z = 1.0;
 
-  if (e.ro.isXYZ()) self = Rx * Ry * Rz;
-    else if (e.ro.isYZX()) self = Ry * Rz * Rx;
-    else if (e.ro.isZXY()) self = Rz * Rx * Ry;
-    else if (e.ro.isXZY()) self = Rx * Rz * Ry;
-    else if (e.ro.isZYX()) self = Rz * Ry * Rx;
-    else if (e.ro.isYXZ()) self = Ry * Rx * Rz;
+  if (e.ro.isXYZ()) this = Rx * Ry * Rz;
+    else if (e.ro.isYZX()) this = Ry * Rz * Rx;
+    else if (e.ro.isZXY()) this = Rz * Rx * Ry;
+    else if (e.ro.isXZY()) this = Rx * Rz * Ry;
+    else if (e.ro.isZYX()) this = Rz * Ry * Rx;
+    else if (e.ro.isYXZ()) this = Ry * Rx * Rz;
 
-    report(self);
+    report(this);
 }
 
 function Mat33.setNull() {
   var Vec3 null(0.0, 0.0, 0.0);
-  self.row0 = self.row1 = self.row2 = null;
+  this.row0 = this.row1 = this.row2 = null;
 }
 
 function Mat33.setDiagonal(in Scalar v) {
-  self.row0.x = self.row1.y = self.row2.z = v;
+  this.row0.x = this.row1.y = this.row2.z = v;
 }
 
 function Mat33.setDiagonal(in Vec3 v) {
-  self.row0.x = v.x;
-  self.row1.y = v.y;
-  self.row2.z = v.z;
+  this.row0.x = v.x;
+  this.row1.y = v.y;
+  this.row2.z = v.z;
 }
 
 function Vec3 * (Vec3 vec3, Mat33 mat33) {
@@ -724,52 +724,52 @@ function Mat33 / (Mat33 mat, Scalar value) {
 }
 
 function Scalar Mat33.det() {
-  return self.row0.x * self.row1.y * self.row2.z
-  + self.row0.y * self.row1.z * self.row2.x
-  + self.row0.z * self.row1.x * self.row2.y
-  - self.row0.x * self.row1.z * self.row2.y
-  - self.row0.y * self.row1.x * self.row2.z
-  - self.row0.z * self.row1.y * self.row2.x;
+  return this.row0.x * this.row1.y * this.row2.z
+  + this.row0.y * this.row1.z * this.row2.x
+  + this.row0.z * this.row1.x * this.row2.y
+  - this.row0.x * this.row1.z * this.row2.y
+  - this.row0.y * this.row1.x * this.row2.z
+  - this.row0.z * this.row1.y * this.row2.x;
 }
 
 function Mat33 Mat33.adjoint() {
   var Mat33 result;
 
-  result.row0.x = self.row1.y * self.row2.z - self.row1.z * self.row2.y;
-  result.row0.y = self.row0.z * self.row2.y - self.row0.y * self.row2.z;
-  result.row0.z = self.row0.y * self.row1.z - self.row0.z * self.row1.y;
+  result.row0.x = this.row1.y * this.row2.z - this.row1.z * this.row2.y;
+  result.row0.y = this.row0.z * this.row2.y - this.row0.y * this.row2.z;
+  result.row0.z = this.row0.y * this.row1.z - this.row0.z * this.row1.y;
 
-  result.row1.x = self.row1.z * self.row2.x - self.row1.x * self.row2.z;
-  result.row1.y = self.row0.x * self.row2.z - self.row0.z * self.row2.x;
-  result.row1.z = self.row0.z * self.row1.x - self.row0.x * self.row1.z;
+  result.row1.x = this.row1.z * this.row2.x - this.row1.x * this.row2.z;
+  result.row1.y = this.row0.x * this.row2.z - this.row0.z * this.row2.x;
+  result.row1.z = this.row0.z * this.row1.x - this.row0.x * this.row1.z;
 
-  result.row2.x = self.row1.x * self.row2.y - self.row1.y * self.row2.x;
-  result.row2.y = self.row0.y * self.row2.x - self.row0.x * self.row2.y;
-  result.row2.z = self.row0.x * self.row1.y - self.row0.y * self.row1.x;
+  result.row2.x = this.row1.x * this.row2.y - this.row1.y * this.row2.x;
+  result.row2.y = this.row0.y * this.row2.x - this.row0.x * this.row2.y;
+  result.row2.z = this.row0.x * this.row1.y - this.row0.y * this.row1.x;
 
   return result;
 }
 
 function Mat33 Mat33.inverse() {
-  var Mat33 result = self.adjoint();
-  result = result / self.det();
+  var Mat33 result = this.adjoint();
+  result = result / this.det();
   return result;
 }
 
 function Mat33 Mat33.transpose() {
   var Mat33 result;
 
-  result.row0.x = self.row0.x;
-  result.row0.y = self.row1.x;
-  result.row0.z = self.row2.x;
+  result.row0.x = this.row0.x;
+  result.row0.y = this.row1.x;
+  result.row0.z = this.row2.x;
 
-  result.row1.x = self.row0.y;
-  result.row1.y = self.row1.y;
-  result.row1.z = self.row2.y;
+  result.row1.x = this.row0.y;
+  result.row1.y = this.row1.y;
+  result.row1.z = this.row2.y;
 
-  result.row2.x = self.row0.z;
-  result.row2.y = self.row1.z;
-  result.row2.z = self.row2.z;
+  result.row2.x = this.row0.z;
+  result.row2.y = this.row1.z;
+  result.row2.z = this.row2.z;
 
   return result;
 }
@@ -782,21 +782,21 @@ struct Vec4 {
 };
 
 function Vec4(Scalar x, Scalar y, Scalar z, Scalar t) {
-  self.x = x;
-  self.y = y;
-  self.z = z;
-  self.t = t;
+  this.x = x;
+  this.y = y;
+  this.z = z;
+  this.t = t;
 }
 
 function Vec4.set(Scalar x, Scalar y, Scalar z, Scalar t) {
-  self.x = x;
-  self.y = y;
-  self.z = z;
-  self.t = t;
+  this.x = x;
+  this.y = y;
+  this.z = z;
+  this.t = t;
 }
 
 function Vec4.setNull() {
-  self.x = self.y = self.z = self.t = 0.0;
+  this.x = this.y = this.z = this.t = 0.0;
 }
 
 function Vec4 + (Vec4 a, Vec4 b) {
@@ -804,7 +804,7 @@ function Vec4 + (Vec4 a, Vec4 b) {
 }
 
 function Vec4. += (Vec4 other) {
-  self = self + other;
+  this = this + other;
 }
 
 function Vec4 - (Vec4 a, Vec4 b) {
@@ -812,7 +812,7 @@ function Vec4 - (Vec4 a, Vec4 b) {
 }
 
 function Vec4. -= (Vec4 other) {
-  self = self - other;
+  this = this - other;
 }
 
 function Vec4 * (Scalar a, Vec4 b) {
@@ -828,11 +828,11 @@ function Vec4 * (Vec4 a, Vec4 b) {
 }
 
 function Vec4. *= (Scalar other) {
-  self = self * other;
+  this = this * other;
 }
 
 function Vec4. *= (Vec4 other) {
-  self = self * other;
+  this = this * other;
 }
 
 function Vec4 / (Vec4 a, Vec4 b) {
@@ -848,136 +848,136 @@ function Vec4 / (Vec4 a, Scalar b) {
 }
 
 function Vec4. /= (Scalar other) {
-  self = self / other;
+  this = this / other;
 }
 
 function Vec4. /= (Vec4 other) {
-  self = self / other;
+  this = this / other;
 }
 
 function Vec4 Vec4.neg() {
-  return Vec4(-self.x, - self.y, - self.z, - self.t);
+  return Vec4(-this.x, - this.y, - this.z, - this.t);
 }
 
 function Scalar Vec4.dot(in Vec4 other) {
-  return self.x * other.x + self.y * other.y + self.z * other.z + self.t * other.t;
+  return this.x * other.x + this.y * other.y + this.z * other.z + this.t * other.t;
 }
 
 function Scalar Vec4.normSq() {
-  return self.dot(self);
+  return this.dot(this);
 }
 
 function Scalar Vec4.norm() {
-  return sqrt(self.normSq());
+  return sqrt(this.normSq());
 }
 
 function Vec4 Vec4.unit() {
-  var Scalar n = self.norm();
+  var Scalar n = this.norm();
   if (n > 0.0)
-    return self / n;
-  return self;
+    return this / n;
+  return this;
 }
 
 function Vec4.setUnit() {
-  self = self.unit();
+  this = this.unit();
 }
 
 function Vec4 Vec4.max(in Vec4 other) {
   var Vec4 v;
-  v.x = self.x > other.x ? self.x : other.x;
-  v.y = self.y > other.y ? self.y : other.y;
-  v.z = self.z > other.z ? self.z : other.z;
-  v.t = self.t > other.t ? self.t : other.t;
+  v.x = this.x > other.x ? this.x : other.x;
+  v.y = this.y > other.y ? this.y : other.y;
+  v.z = this.z > other.z ? this.z : other.z;
+  v.t = this.t > other.t ? this.t : other.t;
   return v;
 }
 
 function Vec4 Vec4.min(in Vec4 other) {
   var Vec4 v;
-  v.x = self.x < other.x ? self.x : other.x;
-  v.y = self.y < other.y ? self.y : other.y;
-  v.z = self.z < other.z ? self.z : other.z;
-  v.t = self.t < other.t ? self.t : other.t;
+  v.x = this.x < other.x ? this.x : other.x;
+  v.y = this.y < other.y ? this.y : other.y;
+  v.z = this.z < other.z ? this.z : other.z;
+  v.t = this.t < other.t ? this.t : other.t;
   return v;
 }
 
 
 function Vec4 Vec4.lerp(in Vec4 other, in Scalar t) {
-  return self + ((other - self) * t);
+  return this + ((other - this) * t);
 }
 
 function Scalar Vec3.dot(Vec3 other) {
-  return self.x * other.x + self.y * other.y + self.z * other.z;
+  return this.x * other.x + this.y * other.y + this.z * other.z;
 }
 
 function Scalar Vec3.normSq() {
-  return self.dot(self);
+  return this.dot(this);
 }
 
 function Scalar Vec3.norm() {
-  return sqrt(self.normSq());
+  return sqrt(this.normSq());
 }
 
 function Scalar Vec3.length() {
-  return sqrt(self.normSq());
+  return sqrt(this.normSq());
 }
 
 function Vec3 Vec3.unit() {
-  var Scalar n = self.norm();
+  var Scalar n = this.norm();
   if (n > 0.0) {
-    return self / n;
+    return this / n;
   }
-  return self;
+  return this;
 }
 
 function Vec3.setUnit() {
-  self = self.unit();
+  this = this.unit();
 }
 
 function Vec3 Vec3.cross(in Vec3 other) {
   return Vec3(
-    self.y * other.z - self.z * other.y,
-    self.z * other.x - self.x * other.z,
-    self.x * other.y - self.y * other.x
+    this.y * other.z - this.z * other.y,
+    this.z * other.x - this.x * other.z,
+    this.x * other.y - this.y * other.x
   );
 }
 
 // TODO: Depricate the ambiguous function
 function Scalar Vec3.angle(in Vec3 other) {
-  return acos(self.dot(other));
+  return acos(this.dot(other));
 }
 
 function Scalar Vec3.angleTo(in Vec3 other) {
-  return acos(self.dot(other));
+  return acos(this.dot(other));
 }
 
 function Scalar Vec3.distSq(in Vec3 other) {
   var Vec3 v;
-  v = self - other;
+  v = this - other;
   return v.normSq();
 }
 
 function Scalar Vec3.dist(in Vec3 other) {
-  return sqrt(self.distSq(other));
+  return sqrt(this.distSq(other));
 }
 
 function Vec3 Vec3.max(in Vec3 other) {
   var Vec3 v;
-  v.x = self.x > other.x ? self.x : other.x;
-  v.y = self.y > other.y ? self.y : other.y;
-  v.z = self.z > other.z ? self.z : other.z;
+  v.x = this.x > other.x ? this.x : other.x;
+  v.y = this.y > other.y ? this.y : other.y;
+  v.z = this.z > other.z ? this.z : other.z;
   return v;
 }
 
 function Vec3 Vec3.min(in Vec3 other) {
   var Vec3 v;
-  v.x = self.x < other.x ? self.x : other.x;
-  v.y = self.y < other.y ? self.y : other.y;
-  v.z = self.z < other.z ? self.z : other.z;
+  v.x = this.x < other.x ? this.x : other.x;
+  v.y = this.y < other.y ? this.y : other.y;
+  v.z = this.z < other.z ? this.z : other.z;
   return v;
 }
 
 function Vec3 Vec3.lerp(in Vec3 other, in Scalar t) {
-  return self + ((other - self) * t);
+  return this + ((other - this) * t);
 }
 
 function Scalar distFromPointToLine(in Vec3 P, in Vec3 lineP0, in Vec3 lineP1) {
@@ -1079,10 +1079,10 @@ function Mat44(
   Scalar _20, Scalar _21, Scalar _22, Scalar _23,
   Scalar _30, Scalar _31, Scalar _32, Scalar _33
 ) {
-  self.row0 = Vec4(_00, _01, _02, _03);
-  self.row1 = Vec4(_10, _11, _12, _13);
-  self.row2 = Vec4(_20, _21, _22, _23);
-  self.row3 = Vec4(_30, _31, _32, _33);
+  this.row0 = Vec4(_00, _01, _02, _03);
+  this.row1 = Vec4(_10, _11, _12, _13);
+  this.row2 = Vec4(_20, _21, _22, _23);
+  this.row3 = Vec4(_30, _31, _32, _33);
 }
 
 function Mat44.set(
@@ -1091,47 +1091,47 @@ function Mat44.set(
   Scalar _20, Scalar _21, Scalar _22, Scalar _23,
   Scalar _30, Scalar _31, Scalar _32, Scalar _33
 ) {
-  self.row0 = Vec4(_00, _01, _02, _03);
-  self.row1 = Vec4(_10, _11, _12, _13);
-  self.row2 = Vec4(_20, _21, _22, _23);
-  self.row3 = Vec4(_30, _31, _32, _33);
+  this.row0 = Vec4(_00, _01, _02, _03);
+  this.row1 = Vec4(_10, _11, _12, _13);
+  this.row2 = Vec4(_20, _21, _22, _23);
+  this.row3 = Vec4(_30, _31, _32, _33);
 }
 
 function Mat44(in Mat33 m) {
-  self.row0.x = m.row0.x; self.row0.y = m.row0.y; self.row0.z = m.row0.z; self.row0.t = 0.0;
-  self.row1.x = m.row1.x; self.row1.y = m.row1.y; self.row1.z = m.row1.z; self.row1.t = 0.0;
-  self.row2.x = m.row2.x; self.row2.y = m.row2.y; self.row2.z = m.row2.z; self.row2.t = 0.0;
-  self.row3.x = 0.0; self.row3.y = 0.0; self.row3.z = 0.0; self.row3.t = 1.0;
+  this.row0.x = m.row0.x; this.row0.y = m.row0.y; this.row0.z = m.row0.z; this.row0.t = 0.0;
+  this.row1.x = m.row1.x; this.row1.y = m.row1.y; this.row1.z = m.row1.z; this.row1.t = 0.0;
+  this.row2.x = m.row2.x; this.row2.y = m.row2.y; this.row2.z = m.row2.z; this.row2.t = 0.0;
+  this.row3.x = 0.0; this.row3.y = 0.0; this.row3.z = 0.0; this.row3.t = 1.0;
 }
 
 function Mat44.setNull() {
   var Vec4 null(0.0, 0.0, 0.0, 0.0);
-  self.row0 = self.row1 = self.row2 = self.row3 = null;
+  this.row0 = this.row1 = this.row2 = this.row3 = null;
 }
 
 function Mat44.setDiagonal(in Scalar v) {
-  self.row0.x = self.row1.y = self.row2.z = self.row3.t = v;
+  this.row0.x = this.row1.y = this.row2.z = this.row3.t = v;
 }
 
 function Mat44.setDiagonal(in Vec4 v) {
-  self.row0.x = v.x;
-  self.row1.y = v.y;
-  self.row2.z = v.z;
-  self.row3.t = v.t;
+  this.row0.x = v.x;
+  this.row1.y = v.y;
+  this.row2.z = v.z;
+  this.row3.t = v.t;
 }
 
 function Mat44.setRows(in Vec4 row0, in Vec4 row1, in Vec4 row2, in Vec4 row3) {
-  self.row0 = row0;
-  self.row1 = row1;
-  self.row2 = row2;
-  self.row3 = row3;
+  this.row0 = row0;
+  this.row1 = row1;
+  this.row2 = row2;
+  this.row3 = row3;
 }
 
 function Mat44.setColumns(in Vec4 col0, in Vec4 col1, in Vec4 col2, in Vec4 col3) {
-  self.row0.x = col0.x; self.row0.y = col1.x; self.row0.z = col2.x; self.row0.t = col3.x;
-  self.row1.x = col0.y; self.row1.y = col1.y; self.row1.z = col2.y; self.row1.t = col3.y;
-  self.row2.x = col0.z; self.row2.y = col1.z; self.row2.z = col2.z; self.row2.t = col3.z;
-  self.row3.x = col0.t; self.row3.y = col1.t; self.row3.z = col2.t; self.row3.t = col3.t;
+  this.row0.x = col0.x; this.row0.y = col1.x; this.row0.z = col2.x; this.row0.t = col3.x;
+  this.row1.x = col0.y; this.row1.y = col1.y; this.row1.z = col2.y; this.row1.t = col3.y;
+  this.row2.x = col0.z; this.row2.y = col1.z; this.row2.z = col2.z; this.row2.t = col3.z;
+  this.row3.x = col0.t; this.row3.y = col1.t; this.row3.z = col2.t; this.row3.t = col3.t;
 }
 
 function Vec4 * (Vec4 vec4, Mat44 mat44) {
@@ -1188,24 +1188,24 @@ function Mat44 * (Mat44 left, Mat44 right) {
 }
 
 function Scalar Mat44.det() {
-  var Scalar a0 = self.row0.x * self.row1.y - self.row0.y * self.row1.x;
-  var Scalar a1 = self.row0.x * self.row1.z - self.row0.z * self.row1.x;
-  var Scalar a2 = self.row0.x * self.row1.t - self.row0.t * self.row1.x;
-  var Scalar a3 = self.row0.y * self.row1.z - self.row0.z * self.row1.y;
-  var Scalar a4 = self.row0.y * self.row1.t - self.row0.t * self.row1.y;
-  var Scalar a5 = self.row0.z * self.row1.t - self.row0.t * self.row1.z;
-  var Scalar b0 = self.row2.x * self.row3.y - self.row2.y * self.row3.x;
-  var Scalar b1 = self.row2.x * self.row3.z - self.row2.z * self.row3.x;
-  var Scalar b2 = self.row2.x * self.row3.t - self.row2.t * self.row3.x;
-  var Scalar b3 = self.row2.y * self.row3.z - self.row2.z * self.row3.y;
-  var Scalar b4 = self.row2.y * self.row3.t - self.row2.t * self.row3.y;
-  var Scalar b5 = self.row2.z * self.row3.t - self.row2.t * self.row3.z;
+  var Scalar a0 = this.row0.x * this.row1.y - this.row0.y * this.row1.x;
+  var Scalar a1 = this.row0.x * this.row1.z - this.row0.z * this.row1.x;
+  var Scalar a2 = this.row0.x * this.row1.t - this.row0.t * this.row1.x;
+  var Scalar a3 = this.row0.y * this.row1.z - this.row0.z * this.row1.y;
+  var Scalar a4 = this.row0.y * this.row1.t - this.row0.t * this.row1.y;
+  var Scalar a5 = this.row0.z * this.row1.t - this.row0.t * this.row1.z;
+  var Scalar b0 = this.row2.x * this.row3.y - this.row2.y * this.row3.x;
+  var Scalar b1 = this.row2.x * this.row3.z - this.row2.z * this.row3.x;
+  var Scalar b2 = this.row2.x * this.row3.t - this.row2.t * this.row3.x;
+  var Scalar b3 = this.row2.y * this.row3.z - this.row2.z * this.row3.y;
+  var Scalar b4 = this.row2.y * this.row3.t - this.row2.t * this.row3.y;
+  var Scalar b5 = this.row2.z * this.row3.t - this.row2.t * this.row3.z;
   return a0 * b5 - a1 * b4 + a2 * b3 + a3 * b2 - a4 * b1 + a5 * b0;
 }
 
 function Mat44 Mat44.inverse() {
   // Compute the determinant of the matrix.
-  var Scalar det = self.det();
+  var Scalar det = this.det();
 
   var Mat44 result;
 
@@ -1214,36 +1214,36 @@ function Mat44 Mat44.inverse() {
     return result;
   }
 
-  var Scalar a0 = self.row0.x * self.row1.y - self.row0.y * self.row1.x;
-  var Scalar a1 = self.row0.x * self.row1.z - self.row0.z * self.row1.x;
-  var Scalar a2 = self.row0.x * self.row1.t - self.row0.t * self.row1.x;
-  var Scalar a3 = self.row0.y * self.row1.z - self.row0.z * self.row1.y;
-  var Scalar a4 = self.row0.y * self.row1.t - self.row0.t * self.row1.y;
-  var Scalar a5 = self.row0.z * self.row1.t - self.row0.t * self.row1.z;
-  var Scalar b0 = self.row2.x * self.row3.y - self.row2.y * self.row3.x;
-  var Scalar b1 = self.row2.x * self.row3.z - self.row2.z * self.row3.x;
-  var Scalar b2 = self.row2.x * self.row3.t - self.row2.t * self.row3.x;
-  var Scalar b3 = self.row2.y * self.row3.z - self.row2.z * self.row3.y;
-  var Scalar b4 = self.row2.y * self.row3.t - self.row2.t * self.row3.y;
-  var Scalar b5 = self.row2.z * self.row3.t - self.row2.t * self.row3.z;
+  var Scalar a0 = this.row0.x * this.row1.y - this.row0.y * this.row1.x;
+  var Scalar a1 = this.row0.x * this.row1.z - this.row0.z * this.row1.x;
+  var Scalar a2 = this.row0.x * this.row1.t - this.row0.t * this.row1.x;
+  var Scalar a3 = this.row0.y * this.row1.z - this.row0.z * this.row1.y;
+  var Scalar a4 = this.row0.y * this.row1.t - this.row0.t * this.row1.y;
+  var Scalar a5 = this.row0.z * this.row1.t - this.row0.t * this.row1.z;
+  var Scalar b0 = this.row2.x * this.row3.y - this.row2.y * this.row3.x;
+  var Scalar b1 = this.row2.x * this.row3.z - this.row2.z * this.row3.x;
+  var Scalar b2 = this.row2.x * this.row3.t - this.row2.t * this.row3.x;
+  var Scalar b3 = this.row2.y * this.row3.z - this.row2.z * this.row3.y;
+  var Scalar b4 = this.row2.y * this.row3.t - this.row2.t * this.row3.y;
+  var Scalar b5 = this.row2.z * this.row3.t - this.row2.t * this.row3.z;
 
   var Scalar di = 1.0 / det;
-  result.row0.x = ( + self.row1.y * b5 - self.row1.z * b4 + self.row1.t * b3) * di;
-  result.row1.x = (-self.row1.x * b5 + self.row1.z * b2 - self.row1.t * b1) * di;
-  result.row2.x = ( + self.row1.x * b4 - self.row1.y * b2 + self.row1.t * b0) * di;
-  result.row3.x = (-self.row1.x * b3 + self.row1.y * b1 - self.row1.z * b0) * di;
-  result.row0.y = (-self.row0.y * b5 + self.row0.z * b4 - self.row0.t * b3) * di;
-  result.row1.y = ( + self.row0.x * b5 - self.row0.z * b2 + self.row0.t * b1) * di;
-  result.row2.y = (-self.row0.x * b4 + self.row0.y * b2 - self.row0.t * b0) * di;
-  result.row3.y = ( + self.row0.x * b3 - self.row0.y * b1 + self.row0.z * b0) * di;
-  result.row0.z = ( + self.row3.y * a5 - self.row3.z * a4 + self.row3.t * a3) * di;
-  result.row1.z = (-self.row3.x * a5 + self.row3.z * a2 - self.row3.t * a1) * di;
-  result.row2.z = ( + self.row3.x * a4 - self.row3.y * a2 + self.row3.t * a0) * di;
-  result.row3.z = (-self.row3.x * a3 + self.row3.y * a1 - self.row3.z * a0) * di;
-  result.row0.t = (-self.row2.y * a5 + self.row2.z * a4 - self.row2.t * a3) * di;
-  result.row1.t = ( + self.row2.x * a5 - self.row2.z * a2 + self.row2.t * a1) * di;
-  result.row2.t = (-self.row2.x * a4 + self.row2.y * a2 - self.row2.t * a0) * di;
-  result.row3.t = ( + self.row2.x * a3 - self.row2.y * a1 + self.row2.z * a0) * di;
+  result.row0.x = ( + this.row1.y * b5 - this.row1.z * b4 + this.row1.t * b3) * di;
+  result.row1.x = (-this.row1.x * b5 + this.row1.z * b2 - this.row1.t * b1) * di;
+  result.row2.x = ( + this.row1.x * b4 - this.row1.y * b2 + this.row1.t * b0) * di;
+  result.row3.x = (-this.row1.x * b3 + this.row1.y * b1 - this.row1.z * b0) * di;
+  result.row0.y = (-this.row0.y * b5 + this.row0.z * b4 - this.row0.t * b3) * di;
+  result.row1.y = ( + this.row0.x * b5 - this.row0.z * b2 + this.row0.t * b1) * di;
+  result.row2.y = (-this.row0.x * b4 + this.row0.y * b2 - this.row0.t * b0) * di;
+  result.row3.y = ( + this.row0.x * b3 - this.row0.y * b1 + this.row0.z * b0) * di;
+  result.row0.z = ( + this.row3.y * a5 - this.row3.z * a4 + this.row3.t * a3) * di;
+  result.row1.z = (-this.row3.x * a5 + this.row3.z * a2 - this.row3.t * a1) * di;
+  result.row2.z = ( + this.row3.x * a4 - this.row3.y * a2 + this.row3.t * a0) * di;
+  result.row3.z = (-this.row3.x * a3 + this.row3.y * a1 - this.row3.z * a0) * di;
+  result.row0.t = (-this.row2.y * a5 + this.row2.z * a4 - this.row2.t * a3) * di;
+  result.row1.t = ( + this.row2.x * a5 - this.row2.z * a2 + this.row2.t * a1) * di;
+  result.row2.t = (-this.row2.x * a4 + this.row2.y * a2 - this.row2.t * a0) * di;
+  result.row3.t = ( + this.row2.x * a3 - this.row2.y * a1 + this.row2.z * a0) * di;
 
   return result;
 }
@@ -1251,35 +1251,35 @@ function Mat44 Mat44.inverse() {
 function Mat33 Mat44.upperLeft() {
   var Mat33 result;
 
-  result.row0.x = self.row0.x;
-  result.row0.y = self.row0.y;
-  result.row0.z = self.row0.z;
+  result.row0.x = this.row0.x;
+  result.row0.y = this.row0.y;
+  result.row0.z = this.row0.z;
 
-  result.row1.x = self.row1.x;
-  result.row1.y = self.row1.y;
-  result.row1.z = self.row1.z;
+  result.row1.x = this.row1.x;
+  result.row1.y = this.row1.y;
+  result.row1.z = this.row1.z;
 
-  result.row2.x = self.row2.x;
-  result.row2.y = self.row2.y;
-  result.row2.z = self.row2.z;
+  result.row2.x = this.row2.x;
+  result.row2.y = this.row2.y;
+  result.row2.z = this.row2.z;
 
   return result;
 }
 
 function Mat44 Mat44.transpose() {
   var Mat44 r;
-  r.row0.x = self.row0.x; r.row1.x = self.row0.y; r.row2.x = self.row0.z; r.row3.x = self.row0.t;
-  r.row0.y = self.row1.x; r.row1.y = self.row1.y; r.row2.y = self.row1.z; r.row3.y = self.row1.t;
-  r.row0.z = self.row2.x; r.row1.z = self.row2.y; r.row2.z = self.row2.z; r.row3.z = self.row2.t;
-  r.row0.t = self.row3.x; r.row1.t = self.row3.y; r.row2.t = self.row3.z; r.row3.t = self.row3.t;
+  r.row0.x = this.row0.x; r.row1.x = this.row0.y; r.row2.x = this.row0.z; r.row3.x = this.row0.t;
+  r.row0.y = this.row1.x; r.row1.y = this.row1.y; r.row2.y = this.row1.z; r.row3.y = this.row1.t;
+  r.row0.z = this.row2.x; r.row1.z = this.row2.y; r.row2.z = this.row2.z; r.row3.z = this.row2.t;
+  r.row0.t = this.row3.x; r.row1.t = this.row3.y; r.row2.t = this.row3.z; r.row3.t = this.row3.t;
   return r;
 }
 
 function Vec3 Mat44.translation() {
   var Vec3 result;
-  result.x = self.row3.x;
-  result.y = self.row3.y;
-  result.z = self.row3.z;
+  result.x = this.row3.x;
+  result.y = this.row3.y;
+  result.z = this.row3.z;
   return result;
 }
 
@@ -1292,10 +1292,10 @@ struct BezierKeyframe {
 };
 
 function BezierKeyframe(Scalar time, Scalar value, Vec2 intangent, Vec2 outtangent) {
-  self.time = time;
-  self.value = value;
-  self.intangent = intangent;
-  self.outtangent = outtangent;
+  this.time = time;
+  this.value = value;
+  this.intangent = intangent;
+  this.outtangent = outtangent;
 }
 
 function Boolean isZero(Scalar x) {
@@ -1382,27 +1382,27 @@ function Integer FindRootsToCubic(
 
 function Scalar BezierKeyframe.interpolate(BezierKeyframe key2, Scalar t) {
   var Vec2 outvec, invec;
-  outvec.x = self.time + self.outtangent.x;
-  outvec.y = self.value + self.outtangent.y;
+  outvec.x = this.time + this.outtangent.x;
+  outvec.y = this.value + this.outtangent.y;
   invec.x = key2.time + key2.intangent.x;
   invec.y = key2.value + key2.intangent.y;
 
-  var Scalar u = (t - self.time) / (key2.time - self.time);
+  var Scalar u = (t - this.time) / (key2.time - this.time);
   var Scalar s = 1.0 - u;
   var Scalar u2 = u * u;
 
   // ax3+bx2+cx+d=0
   var Scalar Ax, Bx, Cx, Dx;
-  Ax = key2.time - self.time - 3.0 * invec.x + 3.0 * outvec.x;
-  Bx = self.time - 2.0 * outvec.x + invec.x;
-  Cx = - self.time + outvec.x;
-  Dx = self.time - t;
+  Ax = key2.time - this.time - 3.0 * invec.x + 3.0 * outvec.x;
+  Bx = this.time - 2.0 * outvec.x + invec.x;
+  Cx = - this.time + outvec.x;
+  Dx = this.time - t;
 
   var Scalar Ay, By, Cy, Dy;
-  Ay = key2.value - self.value - 3.0 * invec.y + 3.0 * outvec.y;
-  By = self.value - 2.0 * outvec.y + invec.y;
-  Cy = - self.value + outvec.y;
-  Dy = self.value;
+  Ay = key2.value - this.value - 3.0 * invec.y + 3.0 * outvec.y;
+  By = this.value - 2.0 * outvec.y + invec.y;
+  Cy = - this.value + outvec.y;
+  Dy = this.value;
 
   var Scalar c[4];
   var Scalar roots[3];
@@ -1415,8 +1415,8 @@ function Scalar BezierKeyframe.interpolate(BezierKeyframe key2, Scalar t) {
   if ((Ax == 0.0) && (Bx == 0.0)) {
     v = u;
   }
-  else if (t == self.time) {
-    return self.value;
+  else if (t == this.time) {
+    return this.value;
   }
   else if (t == key2.time) {
     return key2.value;
@@ -1508,10 +1508,10 @@ struct Color {
 };
 
 function Color(Scalar r, Scalar g, Scalar b, Scalar a) {
-  self.r = r;
-  self.g = g;
-  self.b = b;
-  self.a = a;
+  this.r = r;
+  this.g = g;
+  this.b = b;
+  this.a = a;
 }
 
 function Color + (Color a, Color b) {
@@ -1519,7 +1519,7 @@ function Color + (Color a, Color b) {
 }
 
 function Color. += (Color other) {
-  self = self + other;
+  this = this + other;
 }
 
 function Color - (Color a, Color b) {
@@ -1527,7 +1527,7 @@ function Color - (Color a, Color b) {
 }
 
 function Color. -= (Color other) {
-  self = self - other;
+  this = this - other;
 }
 
 function Color * (Scalar a, Color b) {
@@ -1543,11 +1543,11 @@ function Color * (Color a, Color b) {
 }
 
 function Color. *= (Scalar other) {
-  self = self * other;
+  this = this * other;
 }
 
 function Color. *= (Color other) {
-  self = self * other;
+  this = this * other;
 }
 
 function Color / (Color a, Color b) {
@@ -1563,15 +1563,15 @@ function Color / (Color a, Scalar b) {
 }
 
 function Color. /= (Scalar other) {
-  self = self / other;
+  this = this / other;
 }
 
 function Color. /= (Color other) {
-  self = self / other;
+  this = this / other;
 }
 
 function Color Color.lerp(in Color other, in Scalar t) {
-  return self + ((other - self) * t);
+  return this + ((other - this) * t);
 }
 
 struct Xfo {
@@ -1581,15 +1581,15 @@ struct Xfo {
 };
 
 function Xfo() {
-  self.tr = self.tr.setNull();
-  self.ori = self.ori.inv();
-  self.sc = self.sc.inv();
+  this.tr = this.tr.setNull();
+  this.ori = this.ori.inv();
+  this.sc = this.sc.inv();
 }
 
 function Xfo.identity() {
-  self.tr.setNull();
-  self.ori.identity();
-  self.sc = Vec3(1.0, 1.0, 1.0);
+  this.tr.setNull();
+  this.ori.identity();
+  this.sc = Vec3(1.0, 1.0, 1.0);
 }
 
 function Xfo * (in Xfo local, in Xfo global) {
@@ -1607,38 +1607,38 @@ function Xfo * (in Xfo local, in Xfo global) {
 
 function Xfo Xfo.inv() {
   var Xfo result;
-  result.tr = self.tr.neg();
-  result.ori = self.ori.inv();
-  result.sc = self.sc.inv();
+  result.tr = this.tr.neg();
+  result.ori = this.ori.inv();
+  result.sc = this.sc.inv();
   return result;
 }
 
 function Xfo Xfo.project(in Xfo xf) {
-  return xf * self;
+  return xf * this;
 }
 
 function Xfo Xfo.invProject(in Xfo xf) {
-  var Xfo selfInv = self.inv();
+  var Xfo thisInv = this.inv();
   var Quat glb_ori = xf.ori.unit();
-  var Quat inv_ori = selfInv.ori.unit();
+  var Quat inv_ori = thisInv.ori.unit();
 
   var Xfo result;
-  result.tr = inv_ori.transform(selfInv.sc * (xf.tr + selfInv.tr));
+  result.tr = inv_ori.transform(thisInv.sc * (xf.tr + thisInv.tr));
   result.ori = glb_ori * inv_ori;
   //  result.ori = inv_ori * glb_ori;
   result.ori.setUnit();
-  result.sc = selfInv.sc * xf.sc;
+  result.sc = thisInv.sc * xf.sc;
   return result;
 }
 
 function Vec3 Xfo.transform(in Vec3 v) {
-  return self.ori.transform(v) * self.sc + self.tr;
+  return this.ori.transform(v) * this.sc + this.tr;
 }
 
 // TODO: Remove the function above. 'transform' is too ambiguous,
 // and inconsistent with our JS library.
 function Vec3 Xfo.transformVector(in Vec3 v) {
-  return self.ori.rotateVector(v) * self.sc + self.tr;
+  return this.ori.rotateVector(v) * this.sc + this.tr;
 }
 
 function Mat44(in Xfo xfo) {
@@ -1671,37 +1671,37 @@ function Mat44(in Xfo xfo) {
   trn.row3.y = xfo.tr.y;
   trn.row3.z = xfo.tr.z;
 
-  self = scl * rot * trn;
+  this = scl * rot * trn;
 }
 
 function Xfo Mat44.decompose(in RotationOrder ro) {
   var Xfo xfo;
 
-  if (abs(1.0 - self.row3.t) > 0.001) {
+  if (abs(1.0 - this.row3.t) > 0.001) {
     report('Cannot handle denormalized matrices');
-    report(self.row3.t);
+    report(this.row3.t);
     return xfo;
   }
 
-  if (self.row0.t != 0.0 || self.row1.t != 0.0 || self.row2.t != 0.0) {
+  if (this.row0.t != 0.0 || this.row1.t != 0.0 || this.row2.t != 0.0) {
     report('Cannot handle perspective projection matrices');
     return xfo;
   }
 
-  if (abs(self.det()) < 0.00001) {
+  if (abs(this.det()) < 0.00001) {
     report('Matrix is singular.');
     return xfo;
   }
 
   // Grab the translation
-  xfo.tr.x = self.row3.x;
-  xfo.tr.y = self.row3.y;
-  xfo.tr.z = self.row3.z;
+  xfo.tr.x = this.row3.x;
+  xfo.tr.y = this.row3.y;
+  xfo.tr.z = this.row3.z;
 
   var Vec3 row0, row1, row2;
-  row0.set(self.row0.x, self.row0.y, self.row0.z);
-  row1.set(self.row1.x, self.row1.y, self.row1.z);
-  row2.set(self.row2.x, self.row2.y, self.row2.z);
+  row0.set(this.row0.x, this.row0.y, this.row0.z);
+  row1.set(this.row1.x, this.row1.y, this.row1.z);
+  row2.set(this.row2.x, this.row2.y, this.row2.z);
 
   // Grab the X scale and normalize the first row
   xfo.sc.x = row0.norm();
@@ -1747,7 +1747,7 @@ function Xfo Mat44.decompose(in RotationOrder ro) {
 }
 
 function Xfo(in Mat44 m) {
-  self = m.decompose(RotationOrder(0));
+  this = m.decompose(RotationOrder(0));
 }
 
 function Scalar clamp(in Scalar val, in Scalar minval, in Scalar maxval){
@@ -1820,13 +1820,13 @@ struct Ray {
 };
 
 function Ray(Vec3 start, Vec3 direction) {
-  self.start = start;
-  self.direction = direction;
+  this.start = start;
+  this.direction = direction;
 }
 
 function Ray.set(Vec3 start, Vec3 direction) {
-  self.start = start;
-  self.direction = direction;
+  this.start = start;
+  this.direction = direction;
 }
 
 function Scalar Ray.distanceToPoint(Vec3 point) {
@@ -1834,17 +1834,17 @@ function Scalar Ray.distanceToPoint(Vec3 point) {
   Scalar c1, c2;
   Scalar rayT, dist;
 
-  w = point - self.start;
-  c1 = w.dot(self.direction);
-  c2 = v.dot(self.direction);
+  w = point - this.start;
+  c1 = w.dot(this.direction);
+  c2 = v.dot(this.direction);
   rayT = c1 / c2;
 
   if (rayT >= 0.0) {
-    Vec3 pointOnRay = self.start + (rayT * self.direction);
+    Vec3 pointOnRay = this.start + (rayT * this.direction);
     return pointOnRay.dist(point);
   }
   else {
-    return self.start.dist(point);
+    return this.start.dist(point);
   }
 }
 
@@ -1856,10 +1856,10 @@ function Boolean Ray.intersectLineSegment(
   io Scalar segmentParam,
 ) {
   Vec3 rayP1;
-  rayP1 = self.start + self.direction;
+  rayP1 = this.start + this.direction;
 
   dist = distanceFromLineToLine(
-    self.start, rayP1,
+    this.start, rayP1,
     lineP0, lineP1,
     rayParam, segmentParam
   );
@@ -1869,12 +1869,12 @@ function Boolean Ray.intersectLineSegment(
       return true;
     }
     if (segmentParam < 0.0) {
-      dist = self.distanceToPoint(lineP0);
+      dist = this.distanceToPoint(lineP0);
       segmentParam = 0.0;
       return true;
     }
     if (segmentParam > 1.0) {
-      dist = self.distanceToPoint(lineP1);
+      dist = this.distanceToPoint(lineP1);
       segmentParam = 1.0;
       return true;
     }
@@ -1884,11 +1884,11 @@ function Boolean Ray.intersectLineSegment(
 
 function Vec2 Ray.intersectLine(Vec3 lineP0, Vec3 lineP1) {
   Vec3 rayP1;
-  rayP1 = self.start + self.direction;
+  rayP1 = this.start + this.direction;
 
   var Scalar rayT, lineT, dist;
   dist = distanceFromLineToLine(
-    self.start, rayP1,
+    this.start, rayP1,
     lineP0, lineP1,
     rayT, lineT
   );
@@ -1907,20 +1907,20 @@ function Boolean Ray.intersectTriangle(
 ) {
   var Vec3 e1 = v1 - v0;
   var Vec3 e2 = v2 - v0;
-  var Vec3 pvec = self.direction.cross(e2);
+  var Vec3 pvec = this.direction.cross(e2);
   var Scalar det = e1.dot(pvec);
 
   if (cull) {
     if (det < 0.00001) {
       return false;
     }
-    var Vec3 tvec = self.start - v0;
+    var Vec3 tvec = this.start - v0;
     u = tvec.dot(pvec);
     if (u < 0.0 || u > det) {
       return false;
     }
     var Vec3 qvec = tvec.cross(e1);
-    v = self.direction.dot(qvec);
+    v = this.direction.dot(qvec);
     if (v < 0.0 || (u + v) > det) {
       return false;
     }
@@ -1934,19 +1934,19 @@ function Boolean Ray.intersectTriangle(
       return false;
     }
     var Scalar inv_det = 1.0 / det;
-    var Vec3 tvec = self.start - v0;
+    var Vec3 tvec = this.start - v0;
     u = tvec.dot(pvec) * inv_det;
     if (u < 0.0 || u > 1.0) {
       return false;
     }
     var Vec3 qvec = tvec.cross(e1);
-    v = self.direction.dot(qvec) * inv_det;
+    v = this.direction.dot(qvec) * inv_det;
     if (v < 0.0 || (u + v) > 1.0) {
       return false;
     }
     dist = e2.dot(qvec) * inv_det;
   }
-  point = self.start + (self.direction * dist);
+  point = this.start + (this.direction * dist);
   return true;
 }
 
@@ -1983,20 +1983,20 @@ function Boolean Ray.intersectBoundingBox(
   var Vec3 t3 = Vec3(bboxmax.x, bboxmax.y, bboxmax.z);
   var Vec3 t4 = Vec3(bboxmax.x, bboxmin.y, bboxmax.z);
 
-  return (intersectBBoxEdge(self, bboxCenter, b1, t1)
-    || intersectBBoxEdge(self, bboxCenter, b2, t2)
-    || intersectBBoxEdge(self, bboxCenter, b3, t3)
-    || intersectBBoxEdge(self, bboxCenter, b4, t4)
+  return (intersectBBoxEdge(this, bboxCenter, b1, t1)
+    || intersectBBoxEdge(this, bboxCenter, b2, t2)
+    || intersectBBoxEdge(this, bboxCenter, b3, t3)
+    || intersectBBoxEdge(this, bboxCenter, b4, t4)
 
-    || intersectBBoxEdge(self, bboxCenter, b1, b2)
-    || intersectBBoxEdge(self, bboxCenter, b2, b3)
-    || intersectBBoxEdge(self, bboxCenter, b3, b4)
-    || intersectBBoxEdge(self, bboxCenter, b4, b1)
+    || intersectBBoxEdge(this, bboxCenter, b1, b2)
+    || intersectBBoxEdge(this, bboxCenter, b2, b3)
+    || intersectBBoxEdge(this, bboxCenter, b3, b4)
+    || intersectBBoxEdge(this, bboxCenter, b4, b1)
 
-    || intersectBBoxEdge(self, bboxCenter, t1, t2)
-    || intersectBBoxEdge(self, bboxCenter, t2, t3)
-    || intersectBBoxEdge(self, bboxCenter, t3, t4)
-  || intersectBBoxEdge(self, bboxCenter, t4, t1));
+    || intersectBBoxEdge(this, bboxCenter, t1, t2)
+    || intersectBBoxEdge(this, bboxCenter, t2, t3)
+    || intersectBBoxEdge(this, bboxCenter, t3, t4)
+  || intersectBBoxEdge(this, bboxCenter, t4, t1));
 }
 
 

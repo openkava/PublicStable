@@ -7,9 +7,9 @@ struct Vec3
 
 function Vec3( Scalar x, Scalar y, Scalar z )
 {
-  self.x = x;
-  self.y = y;
-  self.z = z;
+  this.x = x;
+  this.y = y;
+  this.z = z;
 }
 
 function Vec3 +( Vec3 lhs, Vec3 rhs )
