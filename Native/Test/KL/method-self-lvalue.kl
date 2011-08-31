@@ -7,7 +7,7 @@ struct Vec3
 
 function Vec3.setX( in Scalar x ) 
 {
-  self.x = x; 
+  this.x = x; 
 } 
 
 function Vec3 foo( in Vec3 a ) 
