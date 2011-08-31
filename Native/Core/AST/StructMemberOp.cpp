@@ -46,7 +46,7 @@ namespace Fabric
       {
         RC::ConstHandle<CG::StructAdapter> structAdapter = RC::ConstHandle<CG::StructAdapter>::StaticCast( structType );
         if ( !structAdapter->hasMember( m_memberName ) )
-          throw Exception( "structure has no member named " + _(m_memberName) );
+          throw CG::Error( getLocation(), "structure has no member named " + _(m_memberName) );
         size_t memberIndex = structAdapter->getMemberIndex( m_memberName );
         adapter = structAdapter->getMemberAdapter( memberIndex );
       }
@@ -55,7 +55,7 @@ namespace Fabric
         std::string functionName = methodOverloadName( m_memberName, structType );
         RC::ConstHandle<CG::FunctionSymbol> functionSymbol = basicBlockBuilder.maybeGetFunction( functionName );
         if ( !functionSymbol )
-          throw Exception( "type " + structType->getUserName() + " has no member or method named " + _(m_memberName) );
+          throw CG::Error( getLocation(), "type " + structType->getUserName() + " has no member or method named " + _(m_memberName) );
         adapter = functionSymbol->getReturnInfo().getAdapter();
       }
       adapter->llvmCompileToModule( basicBlockBuilder.getModuleBuilder() );
