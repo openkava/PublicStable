@@ -10,6 +10,9 @@ if [ "${BUILD_OS#MINGW}" != "$BUILD_OS" ]; then
   BUILD_OS=Windows
   BUILD_ARCH=x86
 fi
+if [ "$BUILD_OS" = "Darwin" ]; then
+  BUILD_ARCH=universal
+fi
 
 if [ -n "$FABRIC_TEST_WITH_VALGRIND" ]; then
   VALGRIND_CMD="valgrind --suppressions=../valgrind.suppressions.$BUILD_OS --leak-check=full -q"

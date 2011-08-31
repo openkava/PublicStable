@@ -10,6 +10,9 @@ if [ "${BUILD_OS#MINGW}" != "$BUILD_OS" ]; then
   BUILD_OS=Windows
   BUILD_ARCH=x86
 fi
+if [ "$BUILD_OS" = "Darwin" ]; then
+  BUILD_ARCH=universal
+fi
 
 WRAPPERS_FILE="../../../Web/Core/FABRIC.Wrappers.js"
 if [ "$BUILD_OS" = "Darwin" ]; then
