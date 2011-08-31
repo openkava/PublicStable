@@ -96,4 +96,13 @@ FABRIC_EXT_EXPORT void fglSetDebuggingEnabled( bool enable )
   fglDebuggingEnabled = enable;
 }
 
+FABRIC_EXT_EXPORT KL::String glGetVersion()
+{
+  printf("!!!!!!!!!!!!!!!!!!!!! glGetVersion... \n");
+  const char * version = (const char *)glGetString(GL_VERSION);
+  printf("!!!!!!!!!!!!!!!!!!!!! GLVERSION %s\n",version);
+  
+  return KL::String(version);
+}
+
 ####FUNCTIONS####
