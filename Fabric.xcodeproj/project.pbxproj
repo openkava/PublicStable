@@ -984,6 +984,7 @@
 		DB9B2561140EC71200711AEE /* v8-1.3.18.22-patch.tar.bz2 */ = {isa = PBXFileReference; lastKnownFileType = file; path = "v8-1.3.18.22-patch.tar.bz2"; sourceTree = "<group>"; };
 		DB9B2562140EC71200711AEE /* zlib-1.2.5-patch.tar.bz2 */ = {isa = PBXFileReference; lastKnownFileType = file; path = "zlib-1.2.5-patch.tar.bz2"; sourceTree = "<group>"; };
 		DB9B25AF140EC71200711AEE /* SConscript */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = SConscript; sourceTree = "<group>"; };
+		DB9B27E3140FD8D700711AEE /* Util */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Util; sourceTree = "<group>"; };
 		DB9BFC6B140EC6FA00711AEE /* .gitignore */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 		DB9CD91013D3C69300CCB0E6 /* .gitignore */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 		DB9CD91113D3C69300CCB0E6 /* SConscript */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = SConscript; sourceTree = "<group>"; };
@@ -1193,7 +1194,7 @@
 			children = (
 				DB966DC413A5422000616143 /* Native */,
 				DB96842E13A5445200616143 /* Web */,
-				DB96842913A5445200616143 /* Util */,
+				DB9B27E3140FD8D700711AEE /* Util */,
 			);
 			sourceTree = "<group>";
 		};
@@ -1238,13 +1239,6 @@
 				DB9CD90F13D3C69300CCB0E6 /* yajl-1.0.9 */,
 			);
 			path = Public;
-			sourceTree = "<group>";
-		};
-		DB96842913A5445200616143 /* Util */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Util;
 			sourceTree = "<group>";
 		};
 		DB96842E13A5445200616143 /* Web */ = {
