@@ -276,5 +276,10 @@ namespace Fabric
 
       m_gdkGLStack.pop_back();
     }
+
+    std::string X11ViewPort::getPathFromSaveAsDialog( std::string const& defaultFilename, std::string const& extension )
+    {
+      throw Exception( "SaveAs dialog not implemented" );
+    }
   };
 };

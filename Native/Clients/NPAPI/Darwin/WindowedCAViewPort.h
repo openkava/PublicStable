@@ -40,6 +40,8 @@ namespace Fabric
       virtual void pushOGLContext();
       virtual void popOGLContext();
 
+      virtual std::string getPathFromSaveAsDialog( std::string const& defaultFilename, std::string const& extension );
+
     protected:
     
       WindowedCAViewPort( RC::ConstHandle<Interface> const &interface );

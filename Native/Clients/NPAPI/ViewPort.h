@@ -88,7 +88,9 @@ namespace Fabric
       virtual void popOGLContext() = 0;
 
       void drawWatermark( size_t width, size_t height );
-      
+
+      virtual std::string getPathFromSaveAsDialog( std::string const& defaultFilename, std::string const& extension ) = 0;
+
     protected:
     
       ViewPort( RC::ConstHandle<Interface> const &interface, uint32_t timerInterval = 0 );
