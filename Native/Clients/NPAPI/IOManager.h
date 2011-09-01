@@ -18,6 +18,8 @@ namespace Fabric
   
   namespace NPAPI
   {
+    class Context;
+
     class IOManager : public IO::Manager
     {
     public:
@@ -37,14 +39,21 @@ namespace Fabric
       int32_t nppWriteReady( NPP npp, NPStream* stream );
       int32_t nppWrite( NPP npp, NPStream* stream, int32_t offset, int32_t len, void* buffer );
       NPError nppDestroyStream( NPP npp, NPStream *stream, NPReason reason );
-    
-    protected:
-    
+
+      virtual void writeDataAtUserLocation(
+        size_t size,
+        void const *data,
+        std::string const &defaultFilename,
+        std::string const &extension
+        ) const;
+
       IOManager( NPP npp );
+      void setContext( RC::Handle<Context> const &context );
       
     private:
     
       NPP m_npp;
+      Context* m_context;
     };
   };
 };

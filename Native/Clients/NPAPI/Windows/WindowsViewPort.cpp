@@ -258,11 +258,11 @@ namespace Fabric
         }
         catch ( Exception e )
         {
-          fprintf( stderr, "redrawEvent: exception thrown: %s\n", (const char*)e.getDesc() );
+          FABRIC_DEBUG_LOG( "redrawEvent: exception thrown: %s", (const char*)e.getDesc() );
         }
         catch ( ... )
         {
-          fprintf( stderr, "redrawEvent: unknown exception thrown\n" );
+          FABRIC_DEBUG_LOG( "redrawEvent: unknown exception thrown" );
         }
       }
       drawWatermark( m_windowWidth, m_windowHeight );
@@ -336,6 +336,11 @@ namespace Fabric
       FABRIC_ASSERT( wglMakeCurrentResult );
 
       m_wglStack.pop_back();
+    }
+
+    std::string WindowsViewPort::getPathFromSaveAsDialog( std::string const& defaultFilename, std::string const& extension )
+    {
+      throw Exception( "SaveAs dialog not implemented" );
     }
   };
 };

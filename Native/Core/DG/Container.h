@@ -97,6 +97,7 @@ namespace Fabric
       void jsonExecSetBulkData( RC::ConstHandle<JSON::Value> const &arg );
       RC::ConstHandle<JSON::Value> jsonExecGetSlicesBulkData( RC::ConstHandle<JSON::Value> const &arg ) const;
       void jsonExecSetSlicesBulkData( RC::ConstHandle<JSON::Value> const &arg );
+      void jsonExecWriteResourceToUserLocation( RC::ConstHandle<JSON::Value> const &arg ) const;
       virtual RC::Handle<JSON::Object> jsonDesc() const;
       RC::ConstHandle<JSON::Value> jsonDescMembers() const;
       RC::ConstHandle<JSON::Value> jsonDescCount() const;
