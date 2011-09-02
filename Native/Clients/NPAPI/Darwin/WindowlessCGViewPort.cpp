@@ -203,11 +203,11 @@ namespace Fabric
               }
               catch ( Exception e )
               {
-                FABRIC_DEBUG_LOG( "redrawEvent: exception thrown: %s", (const char*)e.getDesc() );
+                FABRIC_LOG( "redrawEvent: exception thrown: %s", (const char*)e.getDesc() );
               }
               catch ( ... )
               {
-                FABRIC_DEBUG_LOG( "redrawEvent: unknown exception thrown" );
+                FABRIC_LOG( "redrawEvent: unknown exception thrown" );
               }
               
               glFinish();
