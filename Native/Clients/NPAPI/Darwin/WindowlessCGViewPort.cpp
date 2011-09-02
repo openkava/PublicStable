@@ -24,7 +24,9 @@ namespace Fabric
         return 0;
 
       NPBool supportsCarbonEventModel;
+#if !defined( __x86_64 )
       if ( NPN_GetValue( npp, NPNVsupportsCarbonBool, &supportsCarbonEventModel ) != NPERR_NO_ERROR )
+#endif
         supportsCarbonEventModel = false;
 
       NPBool supportsCocoaEventModel;
@@ -33,8 +35,10 @@ namespace Fabric
 
       if ( !supportsCarbonEventModel )
         return 0;
+#if !defined( __x86_64 )
       if ( NPN_SetValue( npp, NPPVpluginEventModel, (void *)NPEventModelCarbon ) != NPERR_NO_ERROR )
         return 0;
+#endif
         
       NPBool supportsCoreGraphics;
       if ( NPN_GetValue( npp, NPNVsupportsCoreGraphicsBool, &supportsCoreGraphics ) != NPERR_NO_ERROR )
