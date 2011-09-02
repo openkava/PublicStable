@@ -26,7 +26,7 @@ namespace Fabric
     
       static RC::ConstHandle<AssignOpImpl> Create(
         CG::Location const &location,
-        std::string const &selfType,
+        std::string const &thisType,
         CG::AssignOpType assignOpType,
         RC::ConstHandle<Param> rhs,
         RC::ConstHandle<CompoundStatement> const &body
@@ -36,7 +36,7 @@ namespace Fabric
     
       AssignOpImpl(
         CG::Location const &location,
-        std::string const &selfType,
+        std::string const &thisType,
         CG::AssignOpType assignOpType,
         RC::ConstHandle<Param> rhs,
         RC::ConstHandle<CompoundStatement> const &body

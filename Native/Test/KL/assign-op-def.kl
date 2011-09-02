@@ -7,16 +7,16 @@ struct Vec3
 
 function Vec3( Scalar x, Scalar y, Scalar z )
 {
-  self.x = x;
-  self.y = y;
-  self.z = z;
+  this.x = x;
+  this.y = y;
+  this.z = z;
 }
 
 function Vec3.+=( Vec3 other )
 {
-  self.x += other.x;
-  self.y += other.y;
-  self.z += other.z;
+  this.x += other.x;
+  this.y += other.y;
+  this.z += other.z;
 }
 operator entry()
 {

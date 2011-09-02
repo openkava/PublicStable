@@ -311,8 +311,10 @@ namespace Fabric
       if ( !npp )
         return NPERR_INVALID_INSTANCE_ERROR;
       Interface *interface = static_cast<Interface *>( npp->pdata );
-      
-      return interface->nppHandleEvent( npp, event );
+      //FABRIC_LOG( "NPP_HandleEvent: begin %p", event );
+      int16_t result = interface->nppHandleEvent( npp, event );
+      //FABRIC_LOG( "NPP_HandleEvent: end" );
+      return result;
     }
 
     NPError NPP_SetWindow( NPP npp, NPWindow *window )
@@ -320,7 +322,10 @@ namespace Fabric
       if ( !npp )
         return NPERR_INVALID_INSTANCE_ERROR;
       Interface *interface = static_cast<Interface *>( npp->pdata );
-      return interface->nppSetWindow( npp, window );
+      //FABRIC_LOG( "NPP_SetWindow: begin" );
+      NPError result = interface->nppSetWindow( npp, window );
+      //FABRIC_LOG( "NPP_SetWindow: end" );
+      return result;
     }
 
     NPError NPP_NewStream( NPP npp, NPMIMEType type, NPStream *stream, NPBool seekable, uint16_t *stype )

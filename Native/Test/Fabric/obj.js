@@ -5,6 +5,7 @@ loadOp = FABRIC.DependencyGraph.createOperator("load");
 loadOp.setEntryFunctionName("load");
 loadOp.setSourceCode('\
 use FabricOBJ;\n\
+\n\
 operator load(\n\
   io String url,\n\
   io FabricResource resource,\n\

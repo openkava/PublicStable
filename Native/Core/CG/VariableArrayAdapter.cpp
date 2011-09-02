@@ -406,35 +406,35 @@ namespace Fabric
       {
         std::string name = methodOverloadName( "push", this, m_memberAdapter );
         std::vector< FunctionParam > params;
-        params.push_back( FunctionParam( "selfLValue", this, USAGE_LVALUE ) );
+        params.push_back( FunctionParam( "thisLValue", this, USAGE_LVALUE ) );
         params.push_back( FunctionParam( "memberRValue", m_memberAdapter, USAGE_RVALUE ) );
         FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( this, USAGE_LVALUE ), params );
         if ( buildFunctions )
         {
-          llvm::Value *selfLValue = functionBuilder[0];
+          llvm::Value *thisLValue = functionBuilder[0];
           llvm::Value *memberRValue = functionBuilder[1];
           BasicBlockBuilder basicBlockBuilder( functionBuilder );
           basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
-          llvm::Value *selfRValue = llvmLValueToRValue( basicBlockBuilder, selfLValue );
-          llvm::Value *oldSize = llvmCallSize( basicBlockBuilder, selfRValue );
+          llvm::Value *thisRValue = llvmLValueToRValue( basicBlockBuilder, thisLValue );
+          llvm::Value *oldSize = llvmCallSize( basicBlockBuilder, thisRValue );
           llvm::Value *newSize = basicBlockBuilder->CreateAdd( oldSize, sizeAdapter->llvmConst( context, 1 ) );
-          llvmCallResize( basicBlockBuilder, selfLValue, newSize );
-          llvm::Value *newElementLValue = llvmNonConstIndexOp( basicBlockBuilder, selfLValue, oldSize );
+          llvmCallResize( basicBlockBuilder, thisLValue, newSize );
+          llvm::Value *newElementLValue = llvmNonConstIndexOp( basicBlockBuilder, thisLValue, oldSize );
           m_memberAdapter->llvmRetain( basicBlockBuilder, memberRValue );
           m_memberAdapter->llvmAssign( basicBlockBuilder, newElementLValue, memberRValue );
-          basicBlockBuilder->CreateRet( selfLValue );
+          basicBlockBuilder->CreateRet( thisLValue );
         }
       }
       
       {
         std::string name = methodOverloadName( "pop", this );
         std::vector< FunctionParam > params;
-        params.push_back( FunctionParam( "selfLValue", this, USAGE_LVALUE ) );
+        params.push_back( FunctionParam( "thisLValue", this, USAGE_LVALUE ) );
         FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( m_memberAdapter, USAGE_RVALUE ), params );
         if ( buildFunctions )
         {
           ReturnInfo const &returnInfo = functionBuilder.getScope().getReturnInfo();
-          llvm::Value *selfLValue = functionBuilder[0];
+          llvm::Value *thisLValue = functionBuilder[0];
           BasicBlockBuilder basicBlockBuilder( functionBuilder );
           basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
         
@@ -448,7 +448,7 @@ namespace Fabric
           {
             returnLValue = returnInfo.getReturnLValue();
           }
-          llvmCallPop( basicBlockBuilder, selfLValue, returnLValue );
+          llvmCallPop( basicBlockBuilder, thisLValue, returnLValue );
           
           if( returnInfo.usesReturnLValue() )
           {
@@ -465,17 +465,17 @@ namespace Fabric
       {
         std::string name = methodOverloadName( "resize", this, sizeAdapter );
         std::vector< FunctionParam > params;
-        params.push_back( FunctionParam( "selfLValue", this, USAGE_LVALUE ) );
+        params.push_back( FunctionParam( "thisLValue", this, USAGE_LVALUE ) );
         params.push_back( FunctionParam( "newSizeRValue", sizeAdapter, USAGE_RVALUE ) );
         FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( this, USAGE_LVALUE ), params );
         if ( buildFunctions )
         {
-          llvm::Value *selfLValue = functionBuilder[0];
+          llvm::Value *thisLValue = functionBuilder[0];
           llvm::Value *newSizeRValue = functionBuilder[1];
           BasicBlockBuilder basicBlockBuilder( functionBuilder );
           basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
-          llvmCallResize( basicBlockBuilder, selfLValue, newSizeRValue );
-          basicBlockBuilder->CreateRet( selfLValue );
+          llvmCallResize( basicBlockBuilder, thisLValue, newSizeRValue );
+          basicBlockBuilder->CreateRet( thisLValue );
         }
       }
       
@@ -483,32 +483,32 @@ namespace Fabric
         // [pzion 20110205] FIXME this version should be removed once we have automatic casting
         std::string name = methodOverloadName( "resize", this, integerAdapter );
         std::vector< FunctionParam > params;
-        params.push_back( FunctionParam( "selfLValue", this, USAGE_LVALUE ) );
+        params.push_back( FunctionParam( "thisLValue", this, USAGE_LVALUE ) );
         params.push_back( FunctionParam( "integerRValue", integerAdapter, USAGE_RVALUE ) );
         FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( this, USAGE_LVALUE ), params );
         if ( buildFunctions )
         {
-          llvm::Value *selfLValue = functionBuilder[0];
+          llvm::Value *thisLValue = functionBuilder[0];
           llvm::Value *integerRValue = functionBuilder[1];
           BasicBlockBuilder basicBlockBuilder( functionBuilder );
           basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
           llvm::Value *newSizeRValue = sizeAdapter->llvmCast( basicBlockBuilder, ExprValue( integerAdapter, USAGE_RVALUE, context, integerRValue ) );
-          llvmCallResize( basicBlockBuilder, selfLValue, newSizeRValue );
-          basicBlockBuilder->CreateRet( selfLValue );
+          llvmCallResize( basicBlockBuilder, thisLValue, newSizeRValue );
+          basicBlockBuilder->CreateRet( thisLValue );
         }
       }
       
       {
         std::string name = methodOverloadName( "size", this );
         std::vector< FunctionParam > params;
-        params.push_back( FunctionParam( "selfRValue", this, USAGE_RVALUE ) );
+        params.push_back( FunctionParam( "thisRValue", this, USAGE_RVALUE ) );
         FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( sizeAdapter, USAGE_RVALUE ), params );
         if ( buildFunctions )
         {
-          llvm::Value *selfRValue = functionBuilder[0];
+          llvm::Value *thisRValue = functionBuilder[0];
           BasicBlockBuilder basicBlockBuilder( functionBuilder );
           basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
-          llvm::Value *sizeRValue = llvmCallSize( basicBlockBuilder, selfRValue );
+          llvm::Value *sizeRValue = llvmCallSize( basicBlockBuilder, thisRValue );
           basicBlockBuilder->CreateRet( sizeRValue );
         }
       }
@@ -516,14 +516,14 @@ namespace Fabric
       {
         std::string name = methodOverloadName( "dataSize", this );
         std::vector< FunctionParam > params;
-        params.push_back( FunctionParam( "selfRValue", this, USAGE_RVALUE ) );
+        params.push_back( FunctionParam( "thisRValue", this, USAGE_RVALUE ) );
         FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( sizeAdapter, USAGE_RVALUE ), params );
         if ( buildFunctions )
         {
-          llvm::Value *selfRValue = functionBuilder[0];
+          llvm::Value *thisRValue = functionBuilder[0];
           BasicBlockBuilder basicBlockBuilder( functionBuilder );
           basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
-          llvm::Value *sizeRValue = llvmCallSize( basicBlockBuilder, selfRValue );
+          llvm::Value *sizeRValue = llvmCallSize( basicBlockBuilder, thisRValue );
           llvm::Value *memberSizeRValue = sizeAdapter->llvmConst( context, m_memberAdapter->getDesc()->getSize() );
           llvm::Value *dataSizeRValue = basicBlockBuilder->CreateMul( sizeRValue, memberSizeRValue );
           basicBlockBuilder->CreateRet( dataSizeRValue );
@@ -533,20 +533,20 @@ namespace Fabric
       {
         std::string name = methodOverloadName( "data", this );
         std::vector< FunctionParam > params;
-        params.push_back( FunctionParam( "selfRValue", this, USAGE_RVALUE ) );
+        params.push_back( FunctionParam( "thisRValue", this, USAGE_RVALUE ) );
         FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( dataAdapter, USAGE_RVALUE ), params );
         if ( buildFunctions )
         {
-          llvm::Value *selfRValue = functionBuilder[0];
+          llvm::Value *thisRValue = functionBuilder[0];
           BasicBlockBuilder basicBlockBuilder( functionBuilder );
           basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
           llvm::BasicBlock *nullBB = functionBuilder.createBasicBlock( "null" );
           llvm::BasicBlock *nonNullBB = functionBuilder.createBasicBlock( "nonNull" );
-          basicBlockBuilder->CreateCondBr( basicBlockBuilder->CreateIsNull( selfRValue ), nullBB, nonNullBB );
+          basicBlockBuilder->CreateCondBr( basicBlockBuilder->CreateIsNull( thisRValue ), nullBB, nonNullBB );
           basicBlockBuilder->SetInsertPoint( nullBB );
-          basicBlockBuilder->CreateRet( basicBlockBuilder->CreatePointerCast( selfRValue, dataAdapter->llvmRType( context ) ) );
+          basicBlockBuilder->CreateRet( basicBlockBuilder->CreatePointerCast( thisRValue, dataAdapter->llvmRType( context ) ) );
           basicBlockBuilder->SetInsertPoint( nonNullBB );
-          basicBlockBuilder->CreateRet( basicBlockBuilder->CreatePointerCast( basicBlockBuilder->CreateConstGEP1_32( basicBlockBuilder->CreateConstGEP2_32( basicBlockBuilder->CreateStructGEP( selfRValue, 3 ), 0, 0 ), 0 ), dataAdapter->llvmRType( context ) ) );
+          basicBlockBuilder->CreateRet( basicBlockBuilder->CreatePointerCast( basicBlockBuilder->CreateConstGEP1_32( basicBlockBuilder->CreateConstGEP2_32( basicBlockBuilder->CreateStructGEP( thisRValue, 3 ), 0, 0 ), 0 ), dataAdapter->llvmRType( context ) ) );
         }
       }
     }
@@ -604,11 +604,6 @@ namespace Fabric
     void VariableArrayAdapter::Pop( VariableArrayAdapter const *inst, void *dst, void *result )
     {
       inst->m_variableArrayDesc->pop( dst, result );
-    }
-    
-    void VariableArrayAdapter::llvmInit( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *lValue ) const
-    {
-      basicBlockBuilder->CreateStore( llvm::ConstantPointerNull::get( static_cast<llvm::PointerType const *>( llvmRawType( basicBlockBuilder.getContext() ) ) ), lValue ); 
     }
 
     void VariableArrayAdapter::llvmCallResize( BasicBlockBuilder &basicBlockBuilder, llvm::Value *arrayLValue, llvm::Value *newSize ) const

@@ -9,8 +9,10 @@
 #include <Fabric/Base/Exception.h>
 #include <Fabric/Core/DG/Event.h>
 #include <Fabric/Core/MT/LogCollector.h>
+#include <Fabric/Core/Util/Format.h>
 
 #include <Cocoa/Cocoa.h>
+#include <QuartzCore/QuartzCore.h>
 
 namespace Fabric
 {
@@ -45,9 +47,15 @@ namespace Fabric
     context = _context;
     context->retain();
 
+    self.opaque = NO;
     self.asynchronous = NO;
-    self.needsDisplayOnBoundsChange = NO;
-    self.autoresizingMask = kCALayerWidthSizable | kCALayerHeightSizable;
+    self.masksToBounds = YES;
+    self.needsDisplayOnBoundsChange = YES;
+    self.actions =
+      [[[NSMutableDictionary alloc] initWithObjectsAndKeys:
+          [NSNull null], @"bounds",
+          [NSNull null], @"position",
+          nil] autorelease];
   }
   return self;
 }
@@ -71,15 +79,16 @@ namespace Fabric
 
 -(CGLPixelFormatObj) copyCGLPixelFormatForDisplayMask:(uint32_t)mask
 {
-  //FABRIC_LOG( "copyCGLPixelFormatForDisplayMask" );
   CGLPixelFormatAttribute pixelFormatAttributes[] =
   {
+    kCGLPFAClosestPolicy,
     kCGLPFADisplayMask, (CGLPixelFormatAttribute)mask,
-    kCGLPFAAccelerated,
-    //kCGLPFADoubleBuffer,
+    kCGLPFAAccelerated, kCGLPFANoRecovery,
     kCGLPFAColorSize, (CGLPixelFormatAttribute)24,
     kCGLPFAAlphaSize, (CGLPixelFormatAttribute)8,
-    kCGLPFADepthSize, (CGLPixelFormatAttribute)16,
+    kCGLPFADepthSize, (CGLPixelFormatAttribute)24,
+    kCGLPFAStencilSize, (CGLPixelFormatAttribute)8,
+    //kCGLPFAMultisample, kCGLPFASamples, (CGLPixelFormatAttribute)4,
     (CGLPixelFormatAttribute)0
   };
   CGLPixelFormatObj pixelFormat;
@@ -90,9 +99,7 @@ namespace Fabric
 
 -(void) releaseCGLPixelFormat:(CGLPixelFormatObj)pixelFormat
 {
-  Fabric::NPAPI::ContextToCGLContextMap::iterator it = Fabric::NPAPI::s_contextToCGLContextMap.find( context );
-  if ( it != Fabric::NPAPI::s_contextToCGLContextMap.end() )
-    Fabric::NPAPI::s_contextToCGLContextMap.erase( it );
+  [super releaseCGLPixelFormat:pixelFormat];
 }
 
 -(CGLContextObj) copyCGLContextForPixelFormat:(CGLPixelFormatObj)pixelFormat
@@ -101,6 +108,7 @@ namespace Fabric
   if ( it == Fabric::NPAPI::s_contextToCGLContextMap.end() )
   {
     CGLContextObj cglContextObj = [super copyCGLContextForPixelFormat:pixelFormat];
+    CGLRetainContext( cglContextObj );
     it = Fabric::NPAPI::s_contextToCGLContextMap.insert( Fabric::NPAPI::ContextToCGLContextMap::value_type( context, cglContextObj ) ).first;
   }
 
@@ -114,6 +122,14 @@ namespace Fabric
   CGLReleaseContext( ctx );
 }
 
+- (BOOL) canDrawInCGLContext:(CGLContextObj)ctx
+  pixelFormat:(CGLPixelFormatObj)pf
+  forLayerTime:(CFTimeInterval)t
+  displayTime:(const CVTimeStamp *)ts
+{
+  return YES;
+}
+
 -(void) drawInCGLContext:(CGLContextObj)cglContext
   pixelFormat:(CGLPixelFormatObj)pixelFormat
   forLayerTime:(CFTimeInterval)timeInterval
@@ -121,10 +137,11 @@ namespace Fabric
 {
   if ( viewPort )
   {
-    size_t width, height;
-    viewPort->getWindowSize( width, height );
-    //FABRIC_LOG( "NPCAOpenGLLayer::drawInCGLContext: width=%u, height=%u, glContext=%p", (unsigned)width, (unsigned)height, (void *)cglContext );
+    Fabric::DG::Context::NotificationBracket notificationBracket(context);
 
+    size_t width = self.bounds.size.width, height = self.bounds.size.height;
+    viewPort->setWindowSize( width, height );
+ 
     // [pzion 20110303] Fill the viewport with 18% gray adjusted to a
     // gamma of 2.2.  0.46 ~= 0.18^(1/2.2)
     glViewport( 0, 0, width, height );
@@ -133,7 +150,6 @@ namespace Fabric
     
     try
     {
-      Fabric::DG::Context::NotificationBracket notificationBracket(context);
       viewPort->getRedrawEvent()->fire();
     }
     catch ( Fabric::Exception e )
@@ -146,24 +162,11 @@ namespace Fabric
     }
     
     viewPort->drawWatermark( width, height );
-    
-    glFinish();
+
+    viewPort->redrawFinished();
   }
   
   [super drawInCGLContext:cglContext pixelFormat:pixelFormat forLayerTime:timeInterval displayTime:timeStamp];
-
-  if ( viewPort )
-    viewPort->redrawFinished();
-}
-
--(void) didChangeValueForKey:(NSString *)key
-{
-  if ( [key isEqualToString:@"bounds"] )
-  {
-    CGSize size = self.bounds.size;
-    //FABRIC_LOG( "didChangeValueForKey:'bounds' size=(%g,%g)", size.width, size.height );
-    viewPort->setWindowSize( size.width, size.height );
-  }
 }
 @end
 
@@ -295,7 +298,7 @@ namespace Fabric
       switch ( npCocoaEvent->type )
       {
         case NPCocoaEventDrawRect:
-          [m_npCAOpenGLLayer renderInContext:npCocoaEvent->data.draw.context];
+          [m_npCAOpenGLLayer setNeedsDisplay];
           return true;
           
         case NPCocoaEventMouseDown:
@@ -326,13 +329,26 @@ namespace Fabric
       return false;
     }
     
+    NPError WindowedCAViewPort::nppDestroy( NPSavedData** save )
+    {
+      RC::Handle<Context> context = getInterface()->getContext();
+    
+      ContextToCGLContextMap::iterator it = s_contextToCGLContextMap.find( context.ptr() );
+      if ( it != s_contextToCGLContextMap.end() )
+      {
+        CGLReleaseContext( it->second );
+        s_contextToCGLContextMap.erase( it );
+      }
+      
+      return ViewPort::nppDestroy( save );
+    }
+    
     void WindowedCAViewPort::setWindowSize( size_t width, size_t height )
     {
       if ( width != m_width || height != m_height )
       {
         m_width = width;
         m_height = height;
-        needsRedraw();
         didResize( width, height );
       }
     }

@@ -124,7 +124,7 @@ namespace Fabric
       {
         std::string name = methodOverloadName( "dataSize", this );
         std::vector< FunctionParam > params;
-        params.push_back( FunctionParam( "selfRValue", this, USAGE_RVALUE ) );
+        params.push_back( FunctionParam( "thisRValue", this, USAGE_RVALUE ) );
         FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( sizeAdapter, USAGE_RVALUE ), params );
         if ( buildFunctions )
         {
@@ -138,21 +138,16 @@ namespace Fabric
       {
         std::string name = methodOverloadName( "data", this );
         std::vector< FunctionParam > params;
-        params.push_back( FunctionParam( "selfLValue", this, USAGE_LVALUE ) );
+        params.push_back( FunctionParam( "thisLValue", this, USAGE_LVALUE ) );
         FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( dataAdapter, USAGE_RVALUE ), params );
         if ( buildFunctions )
         {
-          llvm::Value *selfLValue = functionBuilder[0];
+          llvm::Value *thisLValue = functionBuilder[0];
           BasicBlockBuilder basicBlockBuilder( functionBuilder );
           basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
-          basicBlockBuilder->CreateRet( basicBlockBuilder->CreatePointerCast( selfLValue, dataAdapter->llvmRType( context ) ) );
+          basicBlockBuilder->CreateRet( basicBlockBuilder->CreatePointerCast( thisLValue, dataAdapter->llvmRType( context ) ) );
         }
       }
-    }
-
-    void OpaqueAdapter::llvmInit( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *lValue ) const
-    {
-      basicBlockBuilder->CreateStore( llvm::Constant::getNullValue( llvmRType( basicBlockBuilder.getContext() ) ), lValue ); 
     }
     
     std::string OpaqueAdapter::toString( void const *data ) const

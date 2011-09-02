@@ -39,16 +39,20 @@ namespace Fabric
     {
     }
     
-    void WindowedInvalidatingCAViewPort::needsRedraw()
+    void WindowedInvalidatingCAViewPort::redrawFinished()
+    {
+      //sendInvalidateMessage();
+      WindowedCAViewPort::redrawFinished();
+    }
+    
+    void WindowedInvalidatingCAViewPort::asyncRedrawFinished()
     {
       sendInvalidateMessage();
-      WindowedCAViewPort::needsRedraw();
+      WindowedCAViewPort::asyncRedrawFinished();
     }
     
     void WindowedInvalidatingCAViewPort::sendInvalidateMessage()
     {
-      //FABRIC_LOG( "WindowedInvalidatingCAViewPort::sendInvalidateMessage()" );
-
       size_t width, height;
       getWindowSize( width, height );
       

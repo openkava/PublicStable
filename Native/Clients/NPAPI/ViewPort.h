@@ -106,6 +106,8 @@ namespace Fabric
       virtual void timerFired();
       static void TimerFiredCallback( NPP npp, uint32_t timer );
     
+      virtual void asyncRedrawFinished();
+
       struct PopUpItem
       {
         std::string desc;
@@ -119,10 +121,9 @@ namespace Fabric
     
       RC::Handle<JSON::Value> jsonExecGetFPS() const;
 
-      void issuePendingRedrawFinishedCallbacks();
-      static void IssuePendingRedrawFinishedCallbacks( void *_this )
+      static void AsyncRedrawFinished( void *_this )
       {
-        static_cast<ViewPort *>(_this)->issuePendingRedrawFinishedCallbacks();
+        static_cast<ViewPort *>(_this)->asyncRedrawFinished();
       }
     
       NPP m_npp;
@@ -141,11 +142,9 @@ namespace Fabric
       
       NPObject *m_redrawFinishedCallback;
 #if defined(FABRIC_OS_WINDOWS)
-      long volatile m_redrawFinishedCallbackPendingInvokeCount;
       LARGE_INTEGER m_fpsStart;
       double        m_fpsTimerFreq;
 #else  
-      size_t volatile m_redrawFinishedCallbackPendingInvokeCount;
       struct timeval m_fpsStart;
 #endif
       
