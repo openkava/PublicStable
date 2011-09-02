@@ -120,7 +120,7 @@ namespace Fabric
       return result;
     }
 
-    bool VariableArrayImpl::shareSameData( const void *data1, const void *data2 ) const
+    bool VariableArrayImpl::areSameData( const void *data1, const void *data2 ) const
     {
       FABRIC_ASSERT( data1 && data2 );
       bits_t const *bits1 = *static_cast<bits_t const * const *>(data1);

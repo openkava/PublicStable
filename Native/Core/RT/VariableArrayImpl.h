@@ -51,7 +51,7 @@ namespace Fabric
       void setNumMembers( void *data, size_t newNumMembers, void const *defaultMemberData = 0 ) const;
       void setMembers( void *data, size_t numMembers, void const *members ) const;
       void setMembers( void *data, size_t dstOffset, size_t numMembers, void const *members ) const;
-      bool shareSameData( const void *data1, const void *data2 ) const;
+      bool areSameData( const void *data1, const void *data2 ) const;
       
       void split( void *data ) const;
       void push( void *dst, void const *src ) const;

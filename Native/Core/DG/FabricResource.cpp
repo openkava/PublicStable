@@ -95,7 +95,7 @@ namespace Fabric
     bool FabricResourceWrapper::isEqualTo( const void *other ) const
     {
       size_t dataSize = getDataSize();
-      if( !m_dataMemberDesc->getImpl()->shareSameData( m_desc->getMemberData( m_resource, FABRIC_RESOURCE_DATA_MEMBER_INDEX ), m_desc->getMemberData( other, FABRIC_RESOURCE_DATA_MEMBER_INDEX ) ) 
+      if( !m_dataMemberDesc->getImpl()->areSameData( m_desc->getMemberData( m_resource, FABRIC_RESOURCE_DATA_MEMBER_INDEX ), m_desc->getMemberData( other, FABRIC_RESOURCE_DATA_MEMBER_INDEX ) ) 
           && ( dataSize != getFabricResourceDataSize( m_desc, m_dataMemberDesc, other ) || memcmp( getDataPtr(), getFabricResourceDataPtr( m_desc, m_dataMemberDesc, other ), dataSize ) != 0 ) )
         return false;
       else if( !areStringDatasEqual( m_desc->getMemberData( m_resource, FABRIC_RESOURCE_URL_MEMBER_INDEX),  m_desc->getMemberData( other, FABRIC_RESOURCE_URL_MEMBER_INDEX ) ) )
