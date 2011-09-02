@@ -13,8 +13,8 @@ operator load(\n\
   )\n\
 {\n\
   report "Loaded " + url + " (mime type " + resource.mimeType + ")";\n\
-  report "OBJ data size is " + resource.dataSize;\n\
-  FabricOBJDecode(resource.data, resource.dataSize, objParseHandle);\n\
+  report "OBJ data size is " + resource.data.dataSize();\n\
+  FabricOBJDecode(resource.data.data(), resource.data.dataSize(), objParseHandle);\n\
 }\n\
 ');
 if (loadOp.getDiagnostics().length > 0 ) {

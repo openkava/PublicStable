@@ -102,19 +102,7 @@ namespace Fabric
     void Context::registerCoreTypes()
     {
       //FabricResource type: used by ResourceLoadNode
-      RT::StructMemberInfoVector memberInfos;
-      memberInfos.resize(5);
-      memberInfos[0].name = "data";
-      memberInfos[0].desc = m_rtManager->getDataDesc();
-      memberInfos[1].name = "dataSize";
-      memberInfos[1].desc = m_rtManager->getSizeDesc();
-      memberInfos[2].name = "mimeType";
-      memberInfos[2].desc = m_rtManager->getStringDesc();
-      memberInfos[3].name = "extension";
-      memberInfos[3].desc = m_rtManager->getStringDesc();
-      memberInfos[4].name = "url";
-      memberInfos[4].desc = m_rtManager->getStringDesc();
-      m_rtManager->registerStruct( "FabricResource", memberInfos );
+      RegisterFabricResource( m_rtManager );
     }
     
     void Context::jsonNotify( std::vector<std::string> const &src, std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg )

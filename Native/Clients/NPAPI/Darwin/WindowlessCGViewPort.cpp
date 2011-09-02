@@ -203,11 +203,11 @@ namespace Fabric
               }
               catch ( Exception e )
               {
-                FABRIC_DEBUG_LOG( "redrawEvent: exception thrown: %s", (const char*)e.getDesc() );
+                FABRIC_LOG( "redrawEvent: exception thrown: %s", (const char*)e.getDesc() );
               }
               catch ( ... )
               {
-                FABRIC_DEBUG_LOG( "redrawEvent: unknown exception thrown" );
+                FABRIC_LOG( "redrawEvent: unknown exception thrown" );
               }
               
               glFinish();
@@ -242,6 +242,11 @@ namespace Fabric
       FABRIC_ASSERT( !m_aglContextStack.empty() );
       aglSetCurrentContext( m_aglContextStack.back() );
       m_aglContextStack.pop_back();
+    }
+
+    std::string WindowlessCGViewPort::getPathFromSaveAsDialog( std::string const &defaultFilename, std::string const &extension )
+    {
+      throw Exception( "SaveAs dialog not implemented" );
     }
   };
 };
