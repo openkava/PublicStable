@@ -118,19 +118,12 @@ namespace Fabric
         return IOStream::Create( url, dataCallback, endCallback, failureCallback, target, userData );
       }
 
-      virtual void writeDataAtUserLocation(
-        size_t size,
-        void const* data,
+      virtual std::string getUserFilePath(
         std::string const &defaultFilename,
         std::string const &extension
         ) const
       {
-        std::string fullName = defaultFilename + "." + extension;
-        FILE *fp = fopen( (defaultFilename + "." + extension).c_str(), "wb" );
-        if ( fp == NULL )
-          v8::ThrowException(v8::String::New( ("Unable to create file " + fullName).c_str() ) );
-        fwrite( data, 1, size, fp );
-        fclose( fp );
+        return defaultFilename;
       }
   
     protected:

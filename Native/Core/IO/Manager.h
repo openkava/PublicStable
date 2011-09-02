@@ -29,6 +29,11 @@ namespace Fabric
         const void* data,
         std::string const &defaultFilename,
         std::string const &extension
+        ) const;
+
+      virtual std::string getUserFilePath(
+        std::string const &defaultFilename,
+        std::string const &extension
         ) const = 0;
     };
   };

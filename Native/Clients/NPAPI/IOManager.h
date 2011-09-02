@@ -40,9 +40,7 @@ namespace Fabric
       int32_t nppWrite( NPP npp, NPStream* stream, int32_t offset, int32_t len, void* buffer );
       NPError nppDestroyStream( NPP npp, NPStream *stream, NPReason reason );
 
-      virtual void writeDataAtUserLocation(
-        size_t size,
-        void const *data,
+      virtual std::string getUserFilePath(
         std::string const &defaultFilename,
         std::string const &extension
         ) const;
