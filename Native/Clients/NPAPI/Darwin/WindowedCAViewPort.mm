@@ -163,6 +163,7 @@ namespace Fabric
     
     viewPort->drawWatermark( width, height );
 
+    glFinish();
     viewPort->redrawFinished();
   }
   
