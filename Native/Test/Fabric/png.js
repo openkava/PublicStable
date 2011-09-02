@@ -5,6 +5,7 @@ op = FABRIC.DependencyGraph.createOperator("op");
 op.setEntryFunctionName("load");
 op.setSourceCode('\
 use FabricPNG;\n\
+\n\
 struct RGBA\n\
 {\n\
   Byte r;\n\

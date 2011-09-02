@@ -5,6 +5,7 @@ op = FABRIC.DependencyGraph.createOperator("op");
 op.setEntryFunctionName("load");
 op.setSourceCode('\
 use FabricEXR;\n\
+\n\
 struct Color\n\
 {\n\
   Scalar r;\n\
@@ -24,6 +25,8 @@ operator load( io String url, io FabricResource resource )\n\
   report "Image pixels size is "+imagePixels.size;\n\
 }\n\
 ');
+if (op.getDiagnostics().length > 0)
+  printDeep(op.getDiagnostics());
 
 binding = FABRIC.DG.createBinding();
 binding.setOperator(op);

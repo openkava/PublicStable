@@ -193,6 +193,8 @@ def main():
   knownFunctions = {}
   
   klFunctionsCode.append('function fglSetDebuggingEnabled( Boolean enable );')
+  klFunctionsCode.append('function glGetVersion(io String version) = \'glGetVersion_wrapper\';')
+  klFunctionsCode.append('function glewIsSupported(io String token, io Boolean supported) = \'glewIsSupported_wrapper\';')
   
   for i in range(len(functions)):
 

@@ -19,12 +19,16 @@ namespace Fabric
       
     public:
       
+      // Adapter
+      
       virtual std::string toString( void const *data ) const;
+      virtual llvm::Constant *llvmDefaultValue( BasicBlockBuilder &basicBlockBuilder ) const;
+      virtual void llvmCompileToModule( ModuleBuilder &moduleBuilder ) const;
     
+      // IntegerAdapter
+      
       llvm::Constant *llvmConst( RC::Handle<Context> const &context, int32_t value ) const;
           
-      virtual void llvmCompileToModule( ModuleBuilder &moduleBuilder ) const;
-
     protected:
 
       IntegerAdapter( RC::ConstHandle<Manager> const &manager, RC::ConstHandle<RT::NumericDesc> const &integerDesc );

@@ -81,7 +81,7 @@ namespace Fabric
     RC::ConstHandle<ParamVector> Function::getParams( RC::Handle<CG::Manager> const &cgManager ) const
     {
       if ( cgManager->maybeGetAdapter( m_friendlyName ) )
-        return ParamVector::Create( Param::Create( getLocation(), "self", m_friendlyName, CG::USAGE_LVALUE ), m_params );
+        return ParamVector::Create( Param::Create( getLocation(), "this", m_friendlyName, CG::USAGE_LVALUE ), m_params );
       else return m_params;
     }
   };

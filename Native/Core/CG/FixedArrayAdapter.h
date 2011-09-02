@@ -20,9 +20,9 @@ namespace Fabric
       
       // Adapter
       
-      virtual void llvmInit( BasicBlockBuilder &basicBlockBuilder, llvm::Value *value ) const;
       virtual void llvmRetain( BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const;
       virtual void llvmDefaultAssign( BasicBlockBuilder &basicBlockBuilder, llvm::Value *dstLValue, llvm::Value *srcRValue ) const;
+      virtual void llvmStore( BasicBlockBuilder &basicBlockBuilder, llvm::Value *dstLValue, llvm::Value *srcRValue ) const;
       virtual void llvmRelease( BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const;
 
       virtual llvm::Constant *llvmDefaultValue( BasicBlockBuilder &basicBlockBuilder ) const;
@@ -46,6 +46,7 @@ namespace Fabric
     private:
     
       size_t m_length;
+      RC::ConstHandle<RT::Desc> m_fixedArrayDesc;
       RC::ConstHandle<Adapter> m_memberAdapter;
       std::string m_codeName;
    };
