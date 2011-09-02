@@ -24,7 +24,9 @@ namespace Fabric
         return 0;
 
       NPBool supportsCarbonEventModel;
+#if !defined( __x86_64 )
       if ( NPN_GetValue( npp, NPNVsupportsCarbonBool, &supportsCarbonEventModel ) != NPERR_NO_ERROR )
+#endif
         supportsCarbonEventModel = false;
 
       NPBool supportsCocoaEventModel;
@@ -33,8 +35,10 @@ namespace Fabric
 
       if ( !supportsCarbonEventModel )
         return 0;
+#if !defined( __x86_64 )
       if ( NPN_SetValue( npp, NPPVpluginEventModel, (void *)NPEventModelCarbon ) != NPERR_NO_ERROR )
         return 0;
+#endif
         
       NPBool supportsCoreGraphics;
       if ( NPN_GetValue( npp, NPNVsupportsCoreGraphicsBool, &supportsCoreGraphics ) != NPERR_NO_ERROR )
@@ -203,11 +207,11 @@ namespace Fabric
               }
               catch ( Exception e )
               {
-                FABRIC_DEBUG_LOG( "redrawEvent: exception thrown: %s", (const char*)e.getDesc() );
+                FABRIC_LOG( "redrawEvent: exception thrown: %s", (const char*)e.getDesc() );
               }
               catch ( ... )
               {
-                FABRIC_DEBUG_LOG( "redrawEvent: unknown exception thrown" );
+                FABRIC_LOG( "redrawEvent: unknown exception thrown" );
               }
               
               glFinish();
@@ -242,6 +246,11 @@ namespace Fabric
       FABRIC_ASSERT( !m_aglContextStack.empty() );
       aglSetCurrentContext( m_aglContextStack.back() );
       m_aglContextStack.pop_back();
+    }
+
+    std::string WindowlessCGViewPort::getPathFromSaveAsDialog( std::string const &defaultFilename, std::string const &extension )
+    {
+      throw Exception( "SaveAs dialog not implemented" );
     }
   };
 };
