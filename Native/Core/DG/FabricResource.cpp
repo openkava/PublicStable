@@ -62,9 +62,9 @@ namespace Fabric
     }
 
     FabricResourceWrapper::FabricResourceWrapper( RC::ConstHandle<RT::Manager> rtManager, void *resourceToAttach )
-      : m_rtManager( rtManager )
-      , m_resource( resourceToAttach )
+      : m_resource( resourceToAttach )
       , m_alloc( resourceToAttach == NULL )
+      , m_rtManager( rtManager )
     {
       m_desc = getFabricResourceDesc( m_rtManager );
       m_dataMemberDesc = RC::ConstHandle<RT::VariableArrayDesc>::StaticCast( m_desc->getMemberInfo( FABRIC_RESOURCE_DATA_MEMBER_INDEX ).desc );

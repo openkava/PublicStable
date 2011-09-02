@@ -27,8 +27,8 @@ namespace Fabric
     
     ResourceLoadNode::ResourceLoadNode( std::string const &name, RC::Handle<Context> const &context )
       : Node( name, context )
-      , m_streamGeneration( 0 )
       , m_fabricResourceStreamData( context->getRTManager() )
+      , m_streamGeneration( 0 )
     {
       RC::ConstHandle<RT::StringDesc> stringDesc = context->getRTManager()->getStringDesc();
 
