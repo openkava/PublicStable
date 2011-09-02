@@ -1,0 +1,3 @@
+function FabricALEMBICDecode( Data objData, Size objDataSize, io Data dataHandle );
+function FabricALEMBICFreeData( io Data dataHandle );
+function FabricALEMBICGetObjects( Data parsedDataHandle, io String objects[] );

@@ -6,6 +6,7 @@ import os
 Import( 'baseEnv', 'buildOS' )
 
 dirs = [
+  'ALEMBIC',
   'EXR',
   'HDR',
   'Math',
