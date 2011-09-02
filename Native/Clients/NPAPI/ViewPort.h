@@ -17,6 +17,9 @@
 # include <sys/time.h>
 #elif defined( FABRIC_WIN32 )
 # include <windows.h>
+#if defined( interface )
+# undef interface
+#endif
 #include <GL/glew.h>
 #endif
 #include <vector>
@@ -89,7 +92,7 @@ namespace Fabric
 
       void drawWatermark( size_t width, size_t height );
 
-      virtual std::string getPathFromSaveAsDialog( std::string const& defaultFilename, std::string const& extension ) = 0;
+      virtual std::string getPathFromSaveAsDialog( std::string const &defaultFilename, std::string const &extension ) = 0;
 
     protected:
     

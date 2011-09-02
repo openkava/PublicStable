@@ -65,22 +65,13 @@ namespace Fabric
       return static_cast<IOStream *>( stream->notifyData )->nppDestroyStream( npp, stream, reason );
     }
 
-    void IOManager::writeDataAtUserLocation(
-        size_t size,
-        void const *data,
+    std::string IOManager::getUserFilePath(
         std::string const &defaultFilename,
         std::string const &extension
         ) const
     {
       FABRIC_ASSERT( m_context );
-      std::string filePath = m_context->getUserFilePath( defaultFilename, extension );
-
-      FILE *fp = fopen( filePath.c_str(), "wb" );
-      if ( fp == NULL )
-        throw Exception( "Unable to create file " + filePath );
-
-      fwrite( data, 1, size, fp );
-      fclose( fp );
+      return m_context->getUserFilePath( defaultFilename, extension );
     }
   };
 };

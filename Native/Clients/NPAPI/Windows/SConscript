@@ -10,8 +10,10 @@ npapiBuildPath = npapiEnv.Dir('.')
 
 npapiSources.append( Glob( '*.cpp' ) )
 
+npapiEnv.Append( CPPDEFINES = [ '_AFXDLL', 'INCLUDE_WINDOWS_UI' ] )
+npapiEnv.Append( CPPDEFINES = 'INCLUDE_WINDOWS_UI' )
 npapiEnv.Append( CPPPATH = [ os.path.join( '#NPAPI', 'Windows' ) ] )
-npapiEnv.Append( LIBS = [ 'User32', 'Gdi32' ] )
+npapiEnv.Append( LIBS = [ 'User32', 'Gdi32', 'comdlg32' ] )
 
 defFile = npapiBuildPath.File( 'FabricPlugin.def' )
 

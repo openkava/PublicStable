@@ -418,8 +418,8 @@ namespace Fabric
         result = jsonExecGetDataSize( arg );
       else if ( cmd == "getDataElement" )
         result = jsonExecGetDataElement( arg );
-      else if ( cmd == "writeResourceToUserLocation" )
-        jsonExecWriteResourceToUserLocation( arg );
+      else if ( cmd == "writeResourceToUserFile" )
+        jsonExecWriteResourceToUserFile( arg );
       else if ( cmd == "setData" )
         jsonExecSetData( arg );
       else if ( cmd == "getBulkData" )
@@ -715,11 +715,11 @@ namespace Fabric
       }
     }
 
-    void Container::jsonExecWriteResourceToUserLocation( RC::ConstHandle<JSON::Value> const &arg ) const
+    void Container::jsonExecWriteResourceToUserFile( RC::ConstHandle<JSON::Value> const &arg ) const
     {
       RC::ConstHandle<JSON::Object> argJSONObject = arg->toObject();
       
-      std::string memberName, defaultFileName;
+      std::string memberName;
       try
       {
         memberName = argJSONObject->get( "memberName" )->toString()->value();
@@ -729,20 +729,29 @@ namespace Fabric
         throw "'memberName': " + e;
       }
 
+      std::string defaultFileName;
+
       RC::ConstHandle<JSON::Value> val;
       val = argJSONObject->maybeGet( "defaultFileName" );
       if( val )
+      {
         defaultFileName = val->toString()->value();
+      }
 
       RC::ConstHandle<Container::Member> member = getMember( memberName );
 
       RC::ConstHandle<RT::Desc> desc = member->getDesc();
       if( desc->getName() != "FabricResource" )
       {
-        throw "member" + memberName + " is not of type FabricResource";
+        throw Exception( "member" + memberName + " is not of type FabricResource" );
       }
 
       FabricResourceWrapper resource( m_context->getRTManager(), (void*)member->getElementData( 0 ) );
+      if( resource.getDataSize() == 0 )
+      {
+        throw Exception( "writeResourceToUserLocation: resource \'" + memberName + " \' is empty" );
+      }
+
       m_context->getIOManager()->writeDataAtUserLocation( resource.getDataSize(), resource.getDataPtr(), defaultFileName, resource.getExtension() );
     }
   };
