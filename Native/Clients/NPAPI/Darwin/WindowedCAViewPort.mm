@@ -375,5 +375,11 @@ namespace Fabric
       CGLSetCurrentContext( m_cglContextStack.back() );
       m_cglContextStack.pop_back();
     }
+
+    std::string WindowedCAViewPort::getPathFromSaveAsDialog( std::string const &defaultFilename, std::string const &extension )
+    {
+      throw Exception( "WindowedCAViewPort::getPathFromSaveAsDialog unimplemented" );
+      return defaultFilename;
+    }
   };
 };
