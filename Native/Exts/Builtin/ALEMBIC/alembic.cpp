@@ -7,6 +7,7 @@
 //#include <boost/smart_ptr.hpp>
 //#include <boost/format.hpp>
 //#include <boost/variant.hpp>
+#include <boost/algorithm/string.hpp>
 
 #include <utility>
 #include <limits>
@@ -47,8 +48,6 @@ FABRIC_EXT_EXPORT void FabricALEMBICDecode(
   if( dataHandle == NULL )
   {
     std::string fileName(tmpnam(NULL));
-
-    printf(" { ALEMBIC } fileName : %s\n",fileName.c_str());
       
     // save the file to disk
     FILE * file = fopen(fileName.c_str(),"wb");
@@ -56,21 +55,14 @@ FABRIC_EXT_EXPORT void FabricALEMBICDecode(
     fclose(file);
     file = NULL;
 
-    printf(" { ALEMBIC } fileName : %s saved of size %d.\n",fileName.c_str(),int(objDataSize));
-
     Alembic::Abc::IArchive localArchive(Alembic::AbcCoreHDF5::ReadArchive(),fileName.c_str());
-    printf(" { ALEMBIC } archive: %s loaded.\n",fileName.c_str());
     
     // load the file    
     Alembic::Abc::IArchive * archive = new Alembic::Abc::IArchive(
       Alembic::AbcCoreHDF5::ReadArchive(),fileName.c_str());
 
-    printf(" { ALEMBIC } archive: %s loaded into ptr.\n",fileName.c_str());
-    
     // store to the handle
     dataHandle = archive;
-
-    printf(" { ALEMBIC } dataHandle stored.\n",fileName.c_str());
   }
 }
 
@@ -86,16 +78,14 @@ FABRIC_EXT_EXPORT void FabricALEMBICFreeData(
   }
 }
 
-FABRIC_EXT_EXPORT void FabricALEMBICGetObjects(
+FABRIC_EXT_EXPORT void FabricALEMBICGetIdentifiers(
   KL::Data dataHandle,
-  KL::VariableArray<KL::String>& objects
+  KL::VariableArray<KL::String>& identifiers
   )
 {
-  objects.resize(0);
+  identifiers.resize(0);
   if( dataHandle != NULL )
   {
-    printf(" { ALEMBIC } Parsing archive....\n");
-    
     Alembic::Abc::IArchive * archive = (Alembic::Abc::IArchive *)dataHandle;
     std::vector<Alembic::Abc::IObject> iObjects;
     iObjects.push_back(archive->getTop());
@@ -104,18 +94,19 @@ FABRIC_EXT_EXPORT void FabricALEMBICGetObjects(
     for(size_t i=0;i<iObjects.size();i++)
     {
       Alembic::Abc::IObject obj(iObjects[i],Alembic::Abc::kWrapExisting);
-      printf(" { ALEMBIC } IObject %d: '%s, NumChildren %d'\n",(int)i,obj.getFullName().c_str(),(int)obj.getNumChildren());
       
       for(size_t j=0;j<obj.getNumChildren();j++)
       {
-        printf(" { ALEMBIC } IObject %d, Child %d\n",(int)i,(int)j);
-
         Alembic::Abc::IObject child = obj.getChild(j);
-
-        printf(" { ALEMBIC } IObject %d, Child %d, name: '%s'\n",(int)i,(int)j,child.getName().c_str());
 
         const Alembic::Abc::MetaData &md = child.getMetaData();
         if(Alembic::AbcGeom::IXformSchema::matches(md) ||
+           Alembic::AbcGeom::IPolyMeshSchema::matches(md)||
+           Alembic::AbcGeom::ICurvesSchema::matches(md)||
+           Alembic::AbcGeom::IFaceSetSchema::matches(md)||
+           Alembic::AbcGeom::INuPatchSchema::matches(md)||
+           Alembic::AbcGeom::IPointsSchema::matches(md)||
+           Alembic::AbcGeom::ISubDSchema::matches(md)||
            Alembic::AbcGeom::ICameraSchema::matches(md))
         {
           iObjects.push_back(child);
@@ -124,38 +115,87 @@ FABRIC_EXT_EXPORT void FabricALEMBICGetObjects(
       }
     }
     
-    printf(" { ALEMBIC } Parsed archive.\n");
-    printf(" { ALEMBIC } Found %d objects.\n",(int)(iObjects.size()-1));
-    
-    objects.resize(offset);
+    identifiers.resize(offset);
     offset = 0;
     for(size_t i=1;i<iObjects.size();i++)
     {
-      objects[offset++] = iObjects[i].getFullName().c_str();
+      identifiers[offset] = iObjects[i].getFullName().c_str();
+      identifiers[offset] += "|";
+      const Alembic::Abc::MetaData &md = iObjects[i].getMetaData();
+      if(Alembic::AbcGeom::IXformSchema::matches(md))
+        identifiers[offset] += "Xform";
+      else if(Alembic::AbcGeom::IPolyMeshSchema::matches(md))
+        identifiers[offset] += "PolyMesh";
+      else if(Alembic::AbcGeom::ICurvesSchema::matches(md))
+        identifiers[offset] += "Curves";
+      else if(Alembic::AbcGeom::IFaceSetSchema::matches(md))
+        identifiers[offset] += "FaceSet";
+      else if(Alembic::AbcGeom::INuPatchSchema::matches(md))
+        identifiers[offset] += "NuPatch";
+      else if(Alembic::AbcGeom::IPointsSchema::matches(md))
+        identifiers[offset] += "Points";
+      else if(Alembic::AbcGeom::ISubDSchema::matches(md))
+        identifiers[offset] += "SubD";
+      else if(Alembic::AbcGeom::ICameraSchema::matches(md))
+        identifiers[offset] += "Camera";
+      offset++;
     }
   }
 }
 
-/*
-int main(int argc, char ** argv)
+Alembic::Abc::IObject getObjectFromIdentifier(Alembic::Abc::IArchive * archive, KL::String & identifier)
 {
-  if(argc != 2)
+  // split the path
+  std::vector<std::string> parts;
+  std::string stdidentifier(identifier.data());
+  boost::split(parts, stdidentifier, boost::is_any_of("/"));
+
+  // recurves to find it
+  Alembic::Abc::IObject obj = archive->getTop();
+  for(size_t i=1;i<parts.size();i++)
   {
-    printf("specify filename!\n");
-    return 1;
+    obj = obj.getChild(parts[i]);
   }
-  std::string fileName(argv[1]);  
-
-  printf(" { ALEMBIC } archive: %s loading....\n",fileName.c_str());
-
-  {
-    Alembic::Abc::IArchive localArchive(
-      Alembic::AbcCoreHDF5::ReadArchive(),
-      fileName.c_str(),
-      Alembic::Abc::ErrorHandler::kThrowPolicy);
-    printf(" { ALEMBIC } archive: %s loaded.\n",localArchive.getName().c_str());
-  }
-
-  return 0;
+    
+  return obj; 
 }
-*/
+
+FABRIC_EXT_EXPORT void FabricALEMBICParseXform(
+  KL::Data dataHandle,
+  KL::String & identifier,
+  KL::Integer & sample,
+  KL::Xfo & transform
+  )
+{
+  if( dataHandle != NULL )
+  {
+    Alembic::Abc::IArchive * archive = (Alembic::Abc::IArchive *)dataHandle;
+    Alembic::AbcGeom::IXform obj(getObjectFromIdentifier(archive,identifier),Alembic::Abc::kWrapExisting);
+    if(!obj.valid())
+      return;
+    
+    // get the schema
+    Alembic::AbcGeom::IXformSchema schema = obj.getSchema();
+    if(sample < 0)
+      sample = 0;
+    else if(sample >= schema.getNumSamples())
+      sample = schema.getNumSamples()-1;
+      
+    // get the sample
+    Alembic::AbcGeom::XformSample xform;
+    schema.get(xform,sample);
+    
+    // extract the information
+    transform.ori.v.x = xform.getAxis().x * sin(xform.getAngle() * 0.5);
+    transform.ori.v.y = xform.getAxis().y * sin(xform.getAngle() * 0.5);
+    transform.ori.v.z = xform.getAxis().z * sin(xform.getAngle() * 0.5);
+    transform.ori.w = cos(xform.getAngle() * 0.5);
+    transform.tr.x = xform.getTranslation().x;
+    transform.tr.y = xform.getTranslation().y;
+    transform.tr.z = xform.getTranslation().z;
+    transform.sc.x = xform.getScale().x;
+    transform.sc.y = xform.getScale().y;
+    transform.sc.z = xform.getScale().z;
+  }
+}
+

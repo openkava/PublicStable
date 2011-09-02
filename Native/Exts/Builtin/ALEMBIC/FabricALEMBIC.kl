@@ -1,3 +1,8 @@
+use Vec3;
+use Quat;
+use Xfo;
+
 function FabricALEMBICDecode( Data objData, Size objDataSize, io Data dataHandle );
 function FabricALEMBICFreeData( io Data dataHandle );
-function FabricALEMBICGetObjects( Data parsedDataHandle, io String objects[] );
+function FabricALEMBICGetIdentifiers( Data parsedDataHandle, io String identifiers[] );
+function FabricALEMBICParseXform( Data parsedDataHandle, io String identifier, io Integer sample, io Xfo transform );
