@@ -20,7 +20,7 @@ oglPluginEnv.Command(
     [
       'python',
       generator.abspath,
-      "--header="+File('#/ThirdParty/Private/GLEW/GL/glew.h').abspath,
+      "--header="+File('#/ThirdParty/Private/glew-1.6.0/GL/glew.h').abspath,
       "--template="+template.abspath,
       "--klresult="+oglKL.abspath,
       "--cppresult="+oglSource.abspath,
