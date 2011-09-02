@@ -50,6 +50,8 @@ namespace Fabric
       
       void setNumMembers( void *data, size_t newNumMembers, void const *defaultMemberData = 0 ) const;
       void setMembers( void *data, size_t numMembers, void const *members ) const;
+      void setMembers( void *data, size_t dstOffset, size_t numMembers, void const *members ) const;
+      bool areSameData( const void *data1, const void *data2 ) const;
       
       void split( void *data ) const;
       void push( void *dst, void const *src ) const;
@@ -73,14 +75,18 @@ namespace Fabric
       
       void *getMemberData_NoCheck( void *data, size_t index ) const
       { 
+        unshare( data );
         bits_t *bits = *reinterpret_cast<bits_t **>(data);
+        return bits->memberDatas + m_memberSize * index;
+      }    
+
+      void unshare( void *data ) const
+      {
         if ( (*reinterpret_cast<bits_t **>(data))->refCount.getValue() > 1 )
         {
           split( data );
-          bits = *reinterpret_cast<bits_t **>(data);
         }
-        return bits->memberDatas + m_memberSize * index;
-      }    
+      }
 
       void copyMemberDatas( bits_t *dstBits, size_t dstOffset, bits_t const *srcBits, size_t srcOffset, size_t count, bool disposeFirst ) const
       {
