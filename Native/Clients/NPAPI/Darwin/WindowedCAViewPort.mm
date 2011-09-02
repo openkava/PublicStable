@@ -378,8 +378,22 @@ namespace Fabric
 
     std::string WindowedCAViewPort::getPathFromSaveAsDialog( std::string const &defaultFilename, std::string const &extension )
     {
-      throw Exception( "WindowedCAViewPort::getPathFromSaveAsDialog unimplemented" );
-      return defaultFilename;
+      NSSavePanel *savePanel = [NSSavePanel savePanel];
+      [savePanel setTitle:@"Save File..."];
+      [savePanel setNameFieldStringValue:[NSString stringWithUTF8String:defaultFilename.c_str()]];
+      [savePanel setCanCreateDirectories:YES];
+      [savePanel setAllowedFileTypes:[NSArray arrayWithObject:[NSString stringWithUTF8String:extension.c_str()]]];
+
+      std::string result;
+      if ( [savePanel runModal] == NSFileHandlingPanelOKButton )
+      {
+        NSURL *url = [savePanel URL];
+        FABRIC_ASSERT( [url isFileURL] );
+        NSString *path = [url path];
+        result = std::string( [path UTF8String] );
+      }
+      else throw Exception( "File save failed or was canceled by user" );
+      return result;
     }
   };
 };
