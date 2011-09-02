@@ -2,27 +2,8 @@
 # Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 #
 
-Import( 'coreEnv', 'buildOS', 'buildArch', 'openclFlags' )
-
-# OpenGL Flags
-if buildOS == 'Linux':
-  coreEnv.Append( CPPDEFINES = 'GLEW_STATIC' )
-  if buildArch == 'x86_64':
-    coreEnv.Append( LINKFLAGS = [File('/usr/lib64/libGLEW.a') ] )
-  else:
-    coreEnv.Append( LINKFLAGS = [File('/usr/lib/libGLEW.a') ] )
-  coreEnv.ParseConfig( 'pkg-config --cflags --libs gtk+-2.0' )
-  Import( 'gtkglFlags' )
-  coreEnv.MergeFlags( gtkglFlags )
-  coreEnv.Append( LIBS = 'GL' )
-if buildOS == 'Darwin':
-  coreEnv.Append( CPPDEFINES = 'GLEW_STATIC' )
-  coreEnv.Append( CPPPATH = ['/opt/local/include'] )
-  coreEnv.Append( LIBS = [File('/opt/local/lib/libGLEW.a')] )
-  coreEnv.Append( FRAMEWORKS = ['OpenGL'] )
-if buildOS == 'Windows':
-  Import( 'glewFlags' )
-  coreEnv.MergeFlags( glewFlags )
+Import( 'coreEnv', 'buildOS', 'buildArch', 'openclFlags', 'glewFlags' )
 
 coreEnv.MergeFlags( openclFlags )
+coreEnv.MergeFlags( glewFlags )
 coreEnv.Prepend( LIBS = coreEnv.StaticLibrary( 'OCL', Glob('*.cpp') ) )

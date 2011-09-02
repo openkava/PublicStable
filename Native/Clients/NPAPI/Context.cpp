@@ -33,7 +33,7 @@ namespace Fabric
     {
       FABRIC_ASSERT( m_viewPorts.empty() );
     }
-    
+
     void Context::registerViewPort( std::string const &name, ViewPort *viewPort )
     {
       FABRIC_CONFIRM( m_viewPorts.insert( ViewPorts::value_type( name, viewPort ) ).second );
@@ -107,6 +107,14 @@ namespace Fabric
       for ( ViewPorts::const_iterator it=m_viewPorts.begin(); it!=m_viewPorts.end(); ++it )
         result->set( it->first, it->second->jsonDesc() );
       return result;
+    }
+
+    std::string Context::getUserFilePath( std::string const &defaultFilename, std::string const &extension )
+    {
+      if( m_viewPorts.empty() )
+        throw Exception( "Unable to open SaveAs dialog" );
+
+      return m_viewPorts.begin()->second->getPathFromSaveAsDialog( defaultFilename, extension );
     }
   };
 };

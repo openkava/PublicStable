@@ -203,6 +203,7 @@ namespace Fabric
       
         RC::Handle<IOManager> ioManager = IOManager::Create( npp );
         context = Context::Create( ioManager, pluginPaths );
+        ioManager->setContext( context );
         Plug::Manager::Instance()->loadBuiltInPlugins( pluginPaths, context->getCGManager() );
         
         contextID = context->getContextID();
