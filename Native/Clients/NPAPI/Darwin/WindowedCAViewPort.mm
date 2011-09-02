@@ -383,7 +383,8 @@ namespace Fabric
       [savePanel setNameFieldStringValue:[NSString stringWithUTF8String:defaultFilename.c_str()]];
       [savePanel setCanCreateDirectories:YES];
       [savePanel setAllowedFileTypes:[NSArray arrayWithObject:[NSString stringWithUTF8String:extension.c_str()]]];
-
+      [savePanel setExtensionHidden:NO];
+      
       std::string result;
       if ( [savePanel runModal] == NSFileHandlingPanelOKButton )
       {
