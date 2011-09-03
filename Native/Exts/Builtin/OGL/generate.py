@@ -13,7 +13,7 @@ verbose = False
 
 # RUN THE PARSER
 def main():
-  
+
   jsonsourcePath = False
   cpptemplatePath = False
   cppsourcePath = False
@@ -288,7 +288,7 @@ def main():
         if verbose:
           print("Warning: Skipped function '"+name+"' due to unknown parameter type '"+variables[i]+ "'.")
         break
-      
+
       # deal with special case functions
       if name.lower().find('string') > -1 and len(variables) == 1 and variables[i].count('*') == 1:
         # this means we have a string!
@@ -351,8 +351,8 @@ def main():
         else:
           traceFormat.append(type+'*')
           
-        # IF WE HAVE A POINTER
-        if variables[i].find('*') > -1:
+        # IF WE HAVE A POINTER (BUT NOT 'void*', AS IT IS A VALUE BY ITSELF)
+        if variables[i].find('*') > -1 and variables[i].find('void') == -1:
 
           digit = ''
           for k in range(len(name)-1,0,-1):
