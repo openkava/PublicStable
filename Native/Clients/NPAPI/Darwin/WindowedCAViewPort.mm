@@ -163,6 +163,7 @@ namespace Fabric
     
     viewPort->drawWatermark( width, height );
 
+    glFinish();
     viewPort->redrawFinished();
   }
   
@@ -374,6 +375,27 @@ namespace Fabric
       FABRIC_ASSERT( !m_cglContextStack.empty() );
       CGLSetCurrentContext( m_cglContextStack.back() );
       m_cglContextStack.pop_back();
+    }
+
+    std::string WindowedCAViewPort::getPathFromSaveAsDialog( std::string const &defaultFilename, std::string const &extension )
+    {
+      NSSavePanel *savePanel = [NSSavePanel savePanel];
+      [savePanel setTitle:@"Save File..."];
+      [savePanel setNameFieldStringValue:[NSString stringWithUTF8String:defaultFilename.c_str()]];
+      [savePanel setCanCreateDirectories:YES];
+      [savePanel setAllowedFileTypes:[NSArray arrayWithObject:[NSString stringWithUTF8String:extension.c_str()]]];
+      [savePanel setExtensionHidden:NO];
+      
+      std::string result;
+      if ( [savePanel runModal] == NSFileHandlingPanelOKButton )
+      {
+        NSURL *url = [savePanel URL];
+        FABRIC_ASSERT( [url isFileURL] );
+        NSString *path = [url path];
+        result = std::string( [path UTF8String] );
+      }
+      else throw Exception( "File save failed or was canceled by user" );
+      return result;
     }
   };
 };
