@@ -319,13 +319,17 @@ FABRIC_EXT_EXPORT void FabricALEMBICParsePolyMeshAttributes(
       sampleIndex = schema.getNumSamples()-1;
       
     // get the sample
+    Alembic::AbcCoreAbstract::index_t timeIndex = (Alembic::AbcCoreAbstract::index_t)sampleIndex;
     Alembic::AbcGeom::IPolyMeshSchema::Sample sample;
-    schema.get(sample,sampleIndex);
+    schema.get(sample,timeIndex);
+    Alembic::Abc::P3fArraySamplePtr abcPoints = sample.getPositions();
 
     // load the vertices
-    if(vertices.size() == sample.getPositions()->size())
-      memcpy(&vertices[0],sample.getPositions()->getData(),sizeof(float) * 3 * vertices.size());
-    
+    if(vertices.size() == abcPoints->size())
+    {
+      memcpy(&vertices[0],abcPoints->getData(),sizeof(float) * 3 * vertices.size());
+      printf(" { ALEMBIC } Loaded %d vertices of sample %d.\n",(int)vertices.size(),(int)sampleIndex);
+    }
     
     // load the normals
     Alembic::AbcGeom::IN3fGeomParam N = schema.getNormalsParam();
