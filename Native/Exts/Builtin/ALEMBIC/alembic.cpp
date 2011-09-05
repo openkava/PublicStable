@@ -39,13 +39,71 @@ using namespace AbcA;
 using namespace Fabric::EDK;
 IMPLEMENT_FABRIC_EDK_ENTRIES
 
+std::map<KL::Integer,Alembic::Abc::IArchive *> gArchives;
+
+Alembic::Abc::IArchive * getArchiveFromID(KL::Integer id)
+{
+  std::map<KL::Integer,Alembic::Abc::IArchive *>::iterator it;
+  it = gArchives.find(id);
+  if(it == gArchives.end())
+    return NULL;
+  
+  return it->second;
+}
+
+KL::Integer addArchive(Alembic::Abc::IArchive * archive)
+{
+  KL::Integer id = 0;
+  std::map<KL::Integer,Alembic::Abc::IArchive *>::iterator it;
+  for(it = gArchives.begin();it != gArchives.end(); it++)
+  {
+    id++;
+    if(it->first > id)
+      break;
+  }
+  gArchives.insert(std::pair<KL::Integer,Alembic::Abc::IArchive *>(id,archive));
+  return id;  
+}
+
+void deleteArchive(KL::Integer id)
+{
+  std::map<KL::Integer,Alembic::Abc::IArchive *>::iterator it;
+  it = gArchives.find(id);
+  if(it == gArchives.end())
+    return;
+  delete(it->second);
+  gArchives.erase(it);
+}
+
+Alembic::Abc::IObject getObjectFromArchive(KL::Integer id, const std::string & identifier)
+{
+  Alembic::Abc::IArchive * archive = getArchiveFromID(id);
+  if(archive == NULL)
+    return Alembic::Abc::IObject();
+  
+  // split the path
+  std::vector<std::string> parts;
+  boost::split(parts, identifier, boost::is_any_of("/"));
+
+  // recurse to find it
+  Alembic::Abc::IObject obj = archive->getTop();
+  for(size_t i=1;i<parts.size();i++)
+  {
+    Alembic::Abc::IObject child(obj,parts[i]);
+    obj = child;
+  }
+    
+  return obj; 
+}
+
 FABRIC_EXT_EXPORT void FabricALEMBICDecode(
   KL::Data objData,
   KL::Size objDataSize,
-  KL::Data &dataHandle
+  KL::Integer &archiveID
   )
 {
-  if( dataHandle == NULL )
+  Alembic::Abc::IArchive * archive = getArchiveFromID(archiveID);
+  if( archive == NULL )
   {
     std::string fileName(tmpnam(NULL));
       
@@ -55,38 +113,31 @@ FABRIC_EXT_EXPORT void FabricALEMBICDecode(
     fclose(file);
     file = NULL;
 
-    Alembic::Abc::IArchive localArchive(Alembic::AbcCoreHDF5::ReadArchive(),fileName.c_str());
-    
     // load the file    
-    Alembic::Abc::IArchive * archive = new Alembic::Abc::IArchive(
+    archive = new Alembic::Abc::IArchive(
       Alembic::AbcCoreHDF5::ReadArchive(),fileName.c_str());
 
-    // store to the handle
-    dataHandle = archive;
+    archiveID = addArchive(archive);
   }
 }
 
 FABRIC_EXT_EXPORT void FabricALEMBICFreeData(
-  KL::Data& dataHandle
+  KL::Integer& archiveID
   )
 {
-  if( dataHandle != NULL )
-  {
-    Alembic::Abc::IArchive * archive = (Alembic::Abc::IArchive *)dataHandle;
-    delete(archive);
-    dataHandle = NULL;
-  }
+  deleteArchive(archiveID);
+  archiveID = -1;
 }
 
 FABRIC_EXT_EXPORT void FabricALEMBICGetIdentifiers(
-  KL::Data dataHandle,
+  KL::Integer archiveID,
   KL::VariableArray<KL::String>& identifiers
   )
 {
   identifiers.resize(0);
-  if( dataHandle != NULL )
+  Alembic::Abc::IArchive * archive = getArchiveFromID(archiveID);
+  if( archive != NULL )
   {
-    Alembic::Abc::IArchive * archive = (Alembic::Abc::IArchive *)dataHandle;
     std::vector<Alembic::Abc::IObject> iObjects;
     iObjects.push_back(archive->getTop());
 
@@ -101,13 +152,13 @@ FABRIC_EXT_EXPORT void FabricALEMBICGetIdentifiers(
 
         const Alembic::Abc::MetaData &md = child.getMetaData();
         if(Alembic::AbcGeom::IXformSchema::matches(md) ||
-           Alembic::AbcGeom::IPolyMeshSchema::matches(md)||
-           Alembic::AbcGeom::ICurvesSchema::matches(md)||
-           Alembic::AbcGeom::IFaceSetSchema::matches(md)||
-           Alembic::AbcGeom::INuPatchSchema::matches(md)||
-           Alembic::AbcGeom::IPointsSchema::matches(md)||
-           Alembic::AbcGeom::ISubDSchema::matches(md)||
-           Alembic::AbcGeom::ICameraSchema::matches(md))
+           Alembic::AbcGeom::IPolyMesh::matches(md)||
+           Alembic::AbcGeom::ICurves::matches(md)||
+           Alembic::AbcGeom::IFaceSet::matches(md)||
+           Alembic::AbcGeom::INuPatch::matches(md)||
+           Alembic::AbcGeom::IPoints::matches(md)||
+           Alembic::AbcGeom::ISubD::matches(md)||
+           Alembic::AbcGeom::ICamera::matches(md))
         {
           iObjects.push_back(child);
           offset++;
@@ -122,58 +173,37 @@ FABRIC_EXT_EXPORT void FabricALEMBICGetIdentifiers(
       identifiers[offset] = iObjects[i].getFullName().c_str();
       identifiers[offset] += "|";
       const Alembic::Abc::MetaData &md = iObjects[i].getMetaData();
-      if(Alembic::AbcGeom::IXformSchema::matches(md))
+      if(Alembic::AbcGeom::IXform::matches(md))
         identifiers[offset] += "Xform";
-      else if(Alembic::AbcGeom::IPolyMeshSchema::matches(md))
+      else if(Alembic::AbcGeom::IPolyMesh::matches(md))
         identifiers[offset] += "PolyMesh";
-      else if(Alembic::AbcGeom::ICurvesSchema::matches(md))
+      else if(Alembic::AbcGeom::ICurves::matches(md))
         identifiers[offset] += "Curves";
-      else if(Alembic::AbcGeom::IFaceSetSchema::matches(md))
+      else if(Alembic::AbcGeom::IFaceSet::matches(md))
         identifiers[offset] += "FaceSet";
-      else if(Alembic::AbcGeom::INuPatchSchema::matches(md))
+      else if(Alembic::AbcGeom::INuPatch::matches(md))
         identifiers[offset] += "NuPatch";
-      else if(Alembic::AbcGeom::IPointsSchema::matches(md))
+      else if(Alembic::AbcGeom::IPoints::matches(md))
         identifiers[offset] += "Points";
-      else if(Alembic::AbcGeom::ISubDSchema::matches(md))
+      else if(Alembic::AbcGeom::ISubD::matches(md))
         identifiers[offset] += "SubD";
-      else if(Alembic::AbcGeom::ICameraSchema::matches(md))
+      else if(Alembic::AbcGeom::ICamera::matches(md))
         identifiers[offset] += "Camera";
       offset++;
     }
   }
 }
 
-Alembic::Abc::IObject getObjectFromIdentifier(Alembic::Abc::IArchive * archive, KL::String & identifier)
-{
-  // split the path
-  std::vector<std::string> parts;
-  std::string stdidentifier(identifier.data());
-  boost::split(parts, stdidentifier, boost::is_any_of("/"));
-
-  // recurves to find it
-  Alembic::Abc::IObject obj = archive->getTop();
-  for(size_t i=1;i<parts.size();i++)
-  {
-    obj = obj.getChild(parts[i]);
-  }
-    
-  return obj; 
-}
-
 FABRIC_EXT_EXPORT void FabricALEMBICParseXform(
-  KL::Data dataHandle,
+  KL::Integer archiveID,
   KL::String & identifier,
   KL::Integer & sample,
   KL::Xfo & transform
   )
 {
-  if( dataHandle != NULL )
+  Alembic::AbcGeom::IXform obj(getObjectFromArchive(archiveID,identifier.data()),Alembic::Abc::kWrapExisting);
+  if( obj.valid() )
   {
-    Alembic::Abc::IArchive * archive = (Alembic::Abc::IArchive *)dataHandle;
-    Alembic::AbcGeom::IXform obj(getObjectFromIdentifier(archive,identifier),Alembic::Abc::kWrapExisting);
-    if(!obj.valid())
-      return;
-    
     // get the schema
     Alembic::AbcGeom::IXformSchema schema = obj.getSchema();
     if(sample < 0)
@@ -199,3 +229,148 @@ FABRIC_EXT_EXPORT void FabricALEMBICParseXform(
   }
 }
 
+FABRIC_EXT_EXPORT void FabricALEMBICParsePolyMeshUniforms(
+  KL::Integer archiveID,
+  KL::String & identifier,
+  KL::VariableArray<KL::Integer>& indices
+  )
+{
+  Alembic::AbcGeom::IPolyMesh obj(getObjectFromArchive(archiveID,identifier.data()),Alembic::Abc::kWrapExisting);
+  if( obj.valid() )
+  {
+    // get the schema
+    Alembic::AbcGeom::IPolyMeshSchema schema = obj.getSchema();
+
+    // get the sample
+    Alembic::AbcGeom::IPolyMeshSchema::Sample sample;
+    schema.get(sample,0);
+
+    // store the indices
+    Alembic::Abc::Int32ArraySamplePtr faceIndices = sample.getFaceIndices();
+    Alembic::Abc::Int32ArraySamplePtr faceCounts = sample.getFaceCounts();
+    
+    // add all of the faces that we can support
+    std::vector<KL::Integer> vecIndices;
+    size_t offset = 0;
+    for(size_t i=0;i<faceCounts->size();i++)
+    {
+      size_t count = (*faceCounts)[i];
+      if(count == 3)
+      {
+        vecIndices.push_back((*faceIndices)[offset++]);
+        vecIndices.push_back((*faceIndices)[offset++]);
+        vecIndices.push_back((*faceIndices)[offset++]);
+      }
+      else if(count == 4)
+      {
+        vecIndices.push_back((*faceIndices)[offset]);
+        vecIndices.push_back((*faceIndices)[offset+1]);
+        vecIndices.push_back((*faceIndices)[offset+2]);
+        vecIndices.push_back((*faceIndices)[offset+2]);
+        vecIndices.push_back((*faceIndices)[offset+3]);
+        vecIndices.push_back((*faceIndices)[offset]);
+        offset += 4;
+      }
+    }
+    
+    // finally copy them out
+    indices.resize(vecIndices.size());
+    memcpy(&indices[0],&vecIndices[0],sizeof(KL::Integer) * vecIndices.size());
+  }
+}
+
+FABRIC_EXT_EXPORT void FabricALEMBICParsePolyMeshCount(
+  KL::Integer archiveID,
+  KL::String & identifier,
+  KL::Size & count
+  )
+{
+  Alembic::AbcGeom::IPolyMesh obj(getObjectFromArchive(archiveID,identifier.data()),Alembic::Abc::kWrapExisting);
+  if( obj.valid() )
+  {
+    // get the schema
+    Alembic::AbcGeom::IPolyMeshSchema schema = obj.getSchema();
+      
+    // get the sample
+    Alembic::AbcGeom::IPolyMeshSchema::Sample sample;
+    schema.get(sample,0);
+
+    // store the slice count
+    count = sample.getPositions()->size();
+  }
+}
+
+FABRIC_EXT_EXPORT void FabricALEMBICParsePolyMeshAttributes(
+  KL::Integer archiveID,
+  KL::String & identifier,
+  KL::Integer & sampleIndex,
+  KL::VariableArray<KL::Vec3>& vertices,
+  KL::VariableArray<KL::Vec3>& normals
+  )
+{
+  Alembic::AbcGeom::IPolyMesh obj(getObjectFromArchive(archiveID,identifier.data()),Alembic::Abc::kWrapExisting);
+  if( obj.valid() )
+  {
+    // get the schema
+    Alembic::AbcGeom::IPolyMeshSchema schema = obj.getSchema();
+    if(sampleIndex < 0)
+      sampleIndex = 0;
+    else if(sampleIndex >= schema.getNumSamples())
+      sampleIndex = schema.getNumSamples()-1;
+      
+    // get the sample
+    Alembic::AbcGeom::IPolyMeshSchema::Sample sample;
+    schema.get(sample,sampleIndex);
+
+    // load the vertices
+    if(vertices.size() == sample.getPositions()->size())
+      memcpy(&vertices[0],sample.getPositions()->getData(),sizeof(float) * 3 * vertices.size());
+    
+    
+    // load the normals
+    Alembic::AbcGeom::IN3fGeomParam N = schema.getNormalsParam();
+    if(N.valid())
+    {
+      Alembic::AbcGeom::N3fArraySamplePtr nsp = N.getExpandedValue().getVals();
+      printf(" { ALEMBIC } Num Vertices : %d\n",(int)vertices.size());
+      printf(" { ALEMBIC } Num Normals : %d\n",(int)nsp->size());
+    }
+
+    //IV2fGeomParam uv = schema.getUVsParam();
+  }
+}
+
+int main(int argc, char ** argv)
+{
+  
+printf("Opening archive...\n");
+  KL::Integer id = addArchive(new Alembic::Abc::IArchive(Alembic::AbcCoreHDF5::ReadArchive(),"/development/octopus.abc"));
+  
+  printf("Opened archive.\n");
+  
+  std::string identifier = "/octopus_low/octopus_lowShape";
+  
+  printf("Looking for identifier...\n");
+  
+  Alembic::AbcGeom::IPolyMesh obj(getObjectFromArchive(id,identifier.data()),Alembic::Abc::kWrapExisting);
+  Alembic::AbcGeom::IXform xform(obj.getParent(),Alembic::Abc::kWrapExisting);
+  printf("found object: %s\n",obj.getFullName().c_str());
+  
+  printf("Requesting schema...\n");
+  
+  Alembic::AbcGeom::IPolyMeshSchema schema = obj.getSchema();
+  
+  printf("Nb Samples: %d\n",(int)schema.getNumSamples());
+  printf("Requesting sample...\n");
+  
+  Alembic::AbcGeom::IPolyMeshSchema::Sample sample;
+  schema.get(sample);
+  
+  printf("Received sample.\n");
+  
+  printf("Nb Points: %d\n",(int)sample.getPositions()->size());
+  
+  deleteArchive(id);
+
+  return 0;
+}
