@@ -7,7 +7,7 @@ Import( 'extsEnv', 'fabricExtsDistDir', 'alembicFlags', 'ExtSLName' )
 alembicPluginEnv = extsEnv.Clone()
 alembicPluginEnv.MergeFlags( alembicFlags )
 alembicPlugin = alembicPluginEnv.SharedLibrary( ExtSLName('FabricALEMBIC'), Glob('*.cpp') ),
-#alembicCmdLine = alembicPluginEnv.Program( ExtSLName('FabricALEMBIC'), Glob('*.cpp') ),
+alembicCmdLine = alembicPluginEnv.Program( ExtSLName('FabricALEMBIC'), Glob('*.cpp') ),
 alembicManifest = alembicPluginEnv.File('FabricALEMBIC.fpm.json'),
 alembicKL = alembicPluginEnv.File('FabricALEMBIC.kl'),
 alembicFiles = [alembicManifest, alembicPlugin, alembicKL]
