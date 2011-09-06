@@ -53,10 +53,12 @@ namespace Fabric
       registerDesc( m_byteDesc = new ByteDesc( "Byte", new ByteImpl( "Byte" ) ) );
       registerDesc( m_integerDesc = new SI32Desc( "Integer", new SI32Impl( "Integer" ) ) );
       registerDesc( m_sizeDesc = new SizeDesc( "Size", new SizeImpl( "Size" ) ) );
+      m_indexDesc = registerAlias( "Index", m_sizeDesc );
       registerDesc( m_scalarDesc = new FP32Desc( "Scalar", new FP32Impl( "Scalar" ) ) );
       registerDesc( m_fp64Desc = new FloatDescT<double>( "Float64", new FloatImplT<double>( "Float64" ) ) );
       registerDesc( m_stringDesc = new StringDesc( "String", new StringImpl( "String" ) ) );
       registerDesc( m_dataDesc = new OpaqueDesc( "Data", new OpaqueImpl( "Data", sizeof(size_t) ) ) );
+      registerDesc( m_constStringDesc = new ConstStringDesc( "ConstString", new ConstStringImpl( "ConstString" ) ) );
     }
     
     void Manager::setJSONCommandChannel( JSON::CommandChannel *jsonCommandChannel )
@@ -278,6 +280,11 @@ namespace Fabric
       return m_sizeDesc;
     }
     
+    RC::ConstHandle<Desc> Manager::getIndexDesc() const
+    {
+      return m_indexDesc;
+    }
+    
     RC::ConstHandle<FloatDesc> Manager::getScalarDesc() const
     {
       return m_scalarDesc;
@@ -298,15 +305,9 @@ namespace Fabric
       return m_dataDesc;
     }
     
-    RC::ConstHandle<ConstStringDesc> Manager::getConstStringDesc( size_t length ) const
+    RC::ConstHandle<ConstStringDesc> Manager::getConstStringDesc() const
     {
-      ConstStringDescs::const_iterator it = m_constStringDescs.find( length );
-      if ( it == m_constStringDescs.end() )
-      {
-        std::string name = "ConstString" + _(length);
-        it = m_constStringDescs.insert( ConstStringDescs::value_type( length, new ConstStringDesc( name, new ConstStringImpl( name, length ) ) ) ).first;
-      }
-      return it->second;
+      return m_constStringDesc;
     }
       
     RC::Handle<JSON::Object> Manager::jsonDesc() const
@@ -542,6 +543,17 @@ namespace Fabric
       for ( Types::const_iterator it=m_types.begin(); it!=m_types.end(); ++it )
         buildTopoSortedDescs( it->second, descsForTopoSort, result );
       return result;
+    }
+
+    bool Manager::maybeGetASTForType( std::string const &typeName, RC::ConstHandle<RC::Object> &ast ) const
+    {
+      Types::const_iterator it = m_types.find( typeName );
+      if ( it != m_types.end() )
+      {
+        ast = it->second->getKLBindingsAST();
+        return true;
+      }
+      else return false;
     }
   };
 };

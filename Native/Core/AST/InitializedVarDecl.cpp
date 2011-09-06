@@ -10,7 +10,7 @@
 #include <Fabric/Core/CG/Adapter.h>
 #include <Fabric/Core/CG/Scope.h>
 #include <Fabric/Core/CG/OverloadNames.h>
-#include <Fabric/Core/Util/SimpleString.h>
+#include <Fabric/Base/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -45,10 +45,10 @@ namespace Fabric
       m_args->appendJSON( jsonObjectGenerator.makeMember( "args" ) );
     }
     
-    void InitializedVarDecl::llvmPrepareModule( std::string const &baseType, CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    void InitializedVarDecl::registerTypes( std::string const &baseType, RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const
     {
-      VarDecl::llvmPrepareModule( baseType, moduleBuilder, diagnostics );
-      m_args->llvmPrepareModule( moduleBuilder, diagnostics );
+      VarDecl::registerTypes( baseType, cgManager, diagnostics );
+      m_args->registerTypes( cgManager, diagnostics );
     }
 
     void InitializedVarDecl::llvmCompileToBuilder( std::string const &baseType, CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const
@@ -63,7 +63,7 @@ namespace Fabric
         
       RC::ConstHandle<CG::FunctionSymbol> functionSymbol = basicBlockBuilder.maybeGetFunction( initializerName );
       if ( !functionSymbol )
-        addError( diagnostics, "initializer " + _(initializerName) + " not found" );
+        addError( diagnostics, ("initializer " + _(initializerName) + " not found").c_str() );
       else
       {
         std::vector<CG::FunctionParam> const functionParams = functionSymbol->getParams();

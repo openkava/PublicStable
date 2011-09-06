@@ -8,7 +8,7 @@
 #include <Fabric/Base/JSON/Object.h>
 #include <Fabric/Core/Util/Encoder.h>
 #include <Fabric/Core/Util/Decoder.h>
-#include <Fabric/Core/Util/SimpleString.h>
+#include <Fabric/Base/Util/SimpleString.h>
 
 namespace Fabric
 {

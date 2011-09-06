@@ -78,7 +78,7 @@ namespace Fabric
                 }
                 catch ( Exception e )
                 {
-                  FABRIC_LOG( "[%s] %s", extensionName.c_str(), e.getDesc().c_str() );
+                  FABRIC_LOG( "[%s] %s", extensionName.c_str(), (const char *)e );
                   FABRIC_LOG( "[%s] Error(s) encountered, extension disabled", extensionName.c_str() );
                   FABRIC_LOG( "[%s] Extension manifest is '%s'", extensionName.c_str(), IO::JoinPath( pluginsDir->getFullPath(), filename ).c_str() );
                 }
@@ -93,7 +93,7 @@ namespace Fabric
       CG::Diagnostics diagnostics;
       for ( NameToInstMap::const_iterator it=m_nameToInstMap.begin(); it!=m_nameToInstMap.end(); ++it )
       {
-        it->second->getAST()->registerTypes( cgManager->getRTManager(), diagnostics );
+        it->second->getAST()->registerTypes( cgManager, diagnostics );
       }
     }
     
@@ -148,6 +148,15 @@ namespace Fabric
       RC::Handle<JSON::Object> result = JSON::Object::Create();
       for ( NameToInstMap::const_iterator it=m_nameToInstMap.begin(); it!=m_nameToInstMap.end(); ++it )
         result->set( it->first, it->second->jsonDesc() );
+      return result;
+    }
+
+    RC::ConstHandle<AST::GlobalList> Manager::maybeGetASTForExt( std::string const &extName ) const
+    {
+      RC::ConstHandle<AST::GlobalList> result;
+      NameToInstMap::const_iterator it = m_nameToInstMap.find( extName );
+      if ( it != m_nameToInstMap.end() )
+        result = it->second->getAST();
       return result;
     }
   };

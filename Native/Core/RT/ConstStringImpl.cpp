@@ -10,28 +10,22 @@
 
 namespace Fabric
 {
-  
-
   namespace RT
   {
-    ConstStringImpl::ConstStringImpl( std::string const &codeName, size_t length )
+    ConstStringImpl::ConstStringImpl( std::string const &codeName )
       : Impl( codeName, DT_CONST_STRING )
     {
-      setSize( length );
-
-      m_defaultData = malloc( getSize() );
-      memset( m_defaultData, 0, getSize() );
+      setSize( sizeof(bits_t) );
     }
     
     ConstStringImpl::~ConstStringImpl()
     {
-      disposeData( m_defaultData );
-      free( m_defaultData );
     }
     
     void const *ConstStringImpl::getDefaultData() const
     {
-      return m_defaultData;
+      static const bits_t defaultBits = { 0, 0 };
+      return &defaultBits;
     }
 
     void ConstStringImpl::setData( void const *src, void *dst ) const
@@ -41,19 +35,13 @@ namespace Fabric
 
     RC::Handle<JSON::Value> ConstStringImpl::getJSONValue( void const *data ) const
     {
-      return JSON::String::Create( static_cast<char const *>(data), getSize() );
+      bits_t const *bits = static_cast<bits_t const *>( data );
+      return JSON::String::Create( bits->data, bits->length );
     }
     
     void ConstStringImpl::setDataFromJSONValue( RC::ConstHandle<JSON::Value> const &jsonValue, void *data ) const
     {
-      if ( !jsonValue->isString() )
-        throw Exception( "JSON value is not string" );
-      RC::ConstHandle<JSON::String> jsonString = RC::ConstHandle<JSON::String>::StaticCast( jsonValue );
-
-      if ( jsonString->length() != getSize() )
-        throw Exception( "JSON string is of wrong length (expected " + _(getSize()) + ", actual " + _(jsonString->length()) + ")" );
-
-      memcpy( data, jsonString->data(), getSize() );
+      throw Exception( "cannot set constant string from a JSON value" );
     }
 
     void ConstStringImpl::disposeData( void *data ) const
@@ -62,11 +50,7 @@ namespace Fabric
     
     bool ConstStringImpl::isEquivalentTo( RC::ConstHandle<Impl> const &impl ) const
     {
-      if ( !isConstString( impl->getType() ) )
-        return false;
-      RC::ConstHandle<ConstStringImpl> constStringImpl = RC::ConstHandle<ConstStringImpl>::StaticCast( impl );
-      
-      return getSize() == constStringImpl->getSize();
+      return isConstString( impl->getType() );
     }
     
     bool ConstStringImpl::isShallow() const
@@ -76,16 +60,22 @@ namespace Fabric
     
     std::string ConstStringImpl::descData( void const *data ) const
     {
-      char const *stringData = static_cast<char const *>(data);
+      bits_t const *bits = static_cast<bits_t const *>( data );
       std::string result = "\"";
-      if ( getLength() > 64 )
+      if ( bits->length > 64 )
       {
-        result.append( stringData, 64 );
+        result.append( bits->data, 64 );
         result += "...";
       }
-      else result.append( stringData, getLength() );
+      else result.append( bits->data, bits->length );
       result += "\"";
       return result;
+    }
+
+    std::string ConstStringImpl::toString( void const *data ) const
+    {
+      bits_t const *bits = static_cast<bits_t const *>( data );
+      return std::string( bits->data, bits->length );
     }
   };
 };

@@ -7,8 +7,9 @@
 #include <Fabric/Core/CG/Error.h>
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/CG/ModuleBuilder.h>
+#include <Fabric/Core/RT/Desc.h>
 #include <Fabric/Core/RT/Manager.h>
-#include <Fabric/Core/Util/SimpleString.h>
+#include <Fabric/Base/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -43,31 +44,31 @@ namespace Fabric
       jsonObjectGenerator.makeMember( "oldTypeName" ).makeString( m_adapterName );
     }
     
-    void Alias::registerTypes( RC::Handle<RT::Manager> const &rtManager, CG::Diagnostics &diagnostics ) const
+    void Alias::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const
     {
       try
       {
-        RC::ConstHandle<RT::Desc> desc = rtManager->getDesc( m_adapterName );
-        rtManager->registerAlias( m_name, desc );
+        RC::Handle<RT::Manager> rtManager = cgManager->getRTManager();
+        RC::ConstHandle<RT::Desc> oldDesc = rtManager->getDesc( m_adapterName );
+        RC::ConstHandle<RT::Desc> newDesc = rtManager->registerAlias( m_name, oldDesc );
+        cgManager->getAdapter( newDesc );
       }
       catch ( Exception e )
       {
-        addError( diagnostics, e.getDesc() );
+        addError( diagnostics, e );
       }
     }
     
-    void Alias::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    void Alias::llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctionBodies ) const
     {
       try
       {
-        RC::ConstHandle<CG::Adapter> adapter = moduleBuilder.getAdapter( m_adapterName, getLocation() );
-        moduleBuilder.getManager()->getRTManager()->registerAlias( m_name, adapter->getDesc() );
         RC::ConstHandle<CG::Adapter> aliasAdapter = moduleBuilder.getAdapter( m_name, getLocation() );
-        aliasAdapter->llvmPrepareModule( moduleBuilder, true );
+        aliasAdapter->llvmCompileToModule( moduleBuilder );
       }
       catch ( Exception e )
       {
-        addError( diagnostics, e.getDesc() );
+        addError( diagnostics, e );
       }
     }
   };

@@ -20,11 +20,7 @@ namespace Fabric
       jsonGenerator.appendJSON( m_json );
     }
     
-    void Global::registerTypes( RC::Handle<RT::Manager> const &rtManager, CG::Diagnostics &diagnostics ) const
-    {
-    }
-    
-    void Global::llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctionBodies ) const
+    void Global::collectUses( UseNameToLocationMap &uses ) const
     {
     }
   };

@@ -4,7 +4,7 @@
  
 #include <Fabric/Core/AST/ParamVector.h>
 #include <Fabric/Core/AST/Param.h>
-#include <Fabric/Core/Util/SimpleString.h>
+#include <Fabric/Base/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -74,10 +74,16 @@ namespace Fabric
       return result;
     }
     
-    void ParamVector::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    void ParamVector::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const
     {
       for ( const_iterator it=begin(); it!=end(); ++it )
-        (*it)->llvmPrepareModule( moduleBuilder, diagnostics );
+        (*it)->registerTypes( cgManager, diagnostics );
+    }
+
+    void ParamVector::llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctionBodies ) const
+    {
+      for ( const_iterator it=begin(); it!=end(); ++it )
+        (*it)->llvmCompileToModule( moduleBuilder, diagnostics, buildFunctionBodies );
     }
   };
 };

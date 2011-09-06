@@ -9,9 +9,9 @@ function Vec3 Vec3.cross( in Vec3 other )
 { 
   var Vec3	v; 
 
-  v.x = self.x * other.x; 
-  v.y = self.y * other.y; 
-  v.z = self.z * other.z; 
+  v.x = this.x * other.x; 
+  v.y = this.y * other.y; 
+  v.z = this.z * other.z; 
   return v; 
 } 
 
@@ -20,7 +20,7 @@ function Vec3 foo( in Vec3 a, in Vec3 b )
   return a.cross( b ); 
 } 
 
-function entry( ) 
+operator entry( ) 
 { 
   var Vec3	a, b; 
   a.x = a.y = a.z = b.x = b.y = b.z = 0.0; 

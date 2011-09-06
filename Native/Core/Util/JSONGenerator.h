@@ -5,7 +5,7 @@
 #ifndef _FABRIC_UTIL_JSON_GENERATOR_H
 #define _FABRIC_UTIL_JSON_GENERATOR_H
 
-#include <Fabric/Core/Util/SimpleString.h>
+#include <Fabric/Base/Util/SimpleString.h>
 #include <Fabric/Core/Util/Assert.h>
 
 namespace Fabric
@@ -147,7 +147,7 @@ namespace Fabric
       
       JSONGenerator makeMember( char const *name ) const
       {
-        if ( m_count++ == 0 )
+        if ( m_count++ > 0 )
           m_ss->append( ',' );
         JSONGenerator( m_ss ).makeString( name );
         m_ss->append( ':' );
@@ -186,7 +186,7 @@ namespace Fabric
       
       JSONGenerator makeElement() const
       {
-        if ( m_count++ == 0 )
+        if ( m_count++ > 0 )
           m_ss->append( ',' );
         return JSONGenerator( m_ss );
       }

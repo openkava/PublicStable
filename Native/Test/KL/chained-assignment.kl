@@ -1,4 +1,4 @@
-function entry()
+operator entry()
 {
   var Integer a=7, b, c, d;
   d = c = b = a;

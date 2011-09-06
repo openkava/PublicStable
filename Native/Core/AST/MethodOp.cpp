@@ -4,7 +4,7 @@
 #include <Fabric/Core/CG/OverloadNames.h>
 #include <Fabric/Core/CG/Scope.h>
 #include <Fabric/Core/CG/Error.h>
-#include <Fabric/Core/Util/SimpleString.h>
+#include <Fabric/Base/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -43,29 +43,31 @@ namespace Fabric
       m_args->appendJSON( jsonObjectGenerator.makeMember( "args" ) );
     }
     
-    RC::ConstHandle<CG::FunctionSymbol> MethodOp::getFunctionSymbol( CG::BasicBlockBuilder const &basicBlockBuilder ) const
+    RC::ConstHandle<CG::FunctionSymbol> MethodOp::getFunctionSymbol( CG::BasicBlockBuilder &basicBlockBuilder ) const
     {
-      RC::ConstHandle<CG::Adapter> selfType = m_expr->getType( basicBlockBuilder );
+      RC::ConstHandle<CG::Adapter> thisType = m_expr->getType( basicBlockBuilder );
       
       std::vector< RC::ConstHandle<CG::Adapter> > paramTypes;
       m_args->appendTypes( basicBlockBuilder, paramTypes );
       
-      std::string functionName = CG::methodOverloadName( m_name, selfType, paramTypes );
+      std::string functionName = CG::methodOverloadName( m_name, thisType, paramTypes );
       RC::ConstHandle<CG::FunctionSymbol> functionSymbol = basicBlockBuilder.maybeGetFunction( functionName );
       if ( !functionSymbol )
-        throw CG::Error( getLocation(), "type " + selfType->getUserName() + " has no method named " + _(m_name) );
+        throw CG::Error( getLocation(), "type " + thisType->getUserName() + " has no method named " + _(m_name) );
       return functionSymbol;
     }
     
-    void MethodOp::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    void MethodOp::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const
     {
-      m_expr->llvmPrepareModule( moduleBuilder, diagnostics );
-      m_args->llvmPrepareModule( moduleBuilder, diagnostics );
+      m_expr->registerTypes( cgManager, diagnostics );
+      m_args->registerTypes( cgManager, diagnostics );
     }
     
-    RC::ConstHandle<CG::Adapter> MethodOp::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const
+    RC::ConstHandle<CG::Adapter> MethodOp::getType( CG::BasicBlockBuilder &basicBlockBuilder ) const
     {
-      return getFunctionSymbol( basicBlockBuilder )->getReturnInfo().getAdapter();
+      RC::ConstHandle<CG::Adapter> adapter = getFunctionSymbol( basicBlockBuilder )->getReturnInfo().getAdapter();
+      adapter->llvmCompileToModule( basicBlockBuilder.getModuleBuilder() );
+      return adapter;
     }
     
     CG::ExprValue MethodOp::buildExprValue( CG::BasicBlockBuilder &basicBlockBuilder, CG::Usage usage, std::string const &lValueErrorDesc ) const
@@ -75,22 +77,22 @@ namespace Fabric
       
       try
       {
-        CG::Usage selfUsage = functionParams[0].getUsage();
+        CG::Usage thisUsage = functionParams[0].getUsage();
         std::vector<CG::Usage> argUsages;
         for ( size_t i=1; i<functionParams.size(); ++i )
           argUsages.push_back( functionParams[i].getUsage() );
         
         std::vector<CG::ExprValue> argExprValues;
-        CG::ExprValue selfExprValue = m_expr->buildExprValue( basicBlockBuilder, selfUsage, "cannot be modified" );
-        argExprValues.push_back( selfExprValue );
+        CG::ExprValue thisExprValue = m_expr->buildExprValue( basicBlockBuilder, thisUsage, "cannot be modified" );
+        argExprValues.push_back( thisExprValue );
         m_args->appendExprValues( basicBlockBuilder, argUsages, argExprValues, "cannot be used as an io argument" );
         
         CG::ExprValue callResultExprValue = functionSymbol->llvmCreateCall( basicBlockBuilder, argExprValues );
 
-        CG::ExprValue result;
+        CG::ExprValue result( basicBlockBuilder.getContext() );
         if ( functionSymbol->getReturnInfo().getExprType() )
           result = callResultExprValue;
-        else result = selfExprValue;
+        else result = thisExprValue;
 
         return result.castTo( basicBlockBuilder, usage );
       }

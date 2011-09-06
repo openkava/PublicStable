@@ -5,6 +5,7 @@
 #include "ConstDecl.h"
 #include <Fabric/Core/CG/Adapter.h>
 #include <Fabric/Core/CG/ByteAdapter.h>
+#include <Fabric/Core/CG/Context.h>
 #include <Fabric/Core/CG/Error.h>
 #include <Fabric/Core/CG/ExprValue.h>
 #include <Fabric/Core/CG/IntegerAdapter.h>
@@ -15,7 +16,7 @@
 #include <Fabric/Core/CG/Scope.h>
 #include <Fabric/Core/CG/SizeAdapter.h>
 #include <Fabric/Core/Util/Parse.h>
-#include <Fabric/Core/Util/SimpleString.h>
+#include <Fabric/Base/Util/SimpleString.h>
 
 #include <llvm/Constant.h>
 
@@ -56,14 +57,22 @@ namespace Fabric
       jsonObjectGenerator.makeMember( "value" ).makeString( m_value );
     }
     
-    void ConstDecl::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    void ConstDecl::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const
     {
-      RC::ConstHandle<CG::Adapter> adapter = moduleBuilder.getAdapter( m_type, getLocation() );
-      adapter->llvmPrepareModule( moduleBuilder, true );
+      try
+      {
+        cgManager->getAdapter( m_type );
+      }
+      catch ( Exception e )
+      {
+        addError( diagnostics, e );
+      }
     }
 
-    void ConstDecl::llvmCompileToScope( CG::Scope &scope, RC::ConstHandle<CG::Manager> const &manager ) const
+    void ConstDecl::llvmCompileToScope( CG::Scope &scope, CG::ModuleBuilder &moduleBuilder ) const
     {
+      RC::Handle<CG::Manager> manager = moduleBuilder.getManager();
+      
       RC::ConstHandle<CG::Adapter> adapter = manager->getAdapter( m_type );
       
       RC::ConstHandle<CG::ByteAdapter> byteAdapter = manager->getByteAdapter();
@@ -71,15 +80,15 @@ namespace Fabric
       RC::ConstHandle<CG::SizeAdapter> sizeAdapter = manager->getSizeAdapter();
       RC::ConstHandle<CG::FloatAdapter> scalarAdapter = manager->getFP32Adapter();
       
-      CG::ExprValue exprValue;
+      CG::ExprValue exprValue( moduleBuilder.getContext() );
       if ( adapter == byteAdapter )
-        exprValue = CG::ExprValue( byteAdapter, CG::USAGE_RVALUE, byteAdapter->llvmConst( Util::parseSize( m_value ) ) );
+        exprValue = CG::ExprValue( byteAdapter, CG::USAGE_RVALUE, moduleBuilder.getContext(), byteAdapter->llvmConst( moduleBuilder.getContext(), Util::parseSize( m_value ) ) );
       else if ( adapter == integerAdapter )
-        exprValue = CG::ExprValue( integerAdapter, CG::USAGE_RVALUE, integerAdapter->llvmConst( Util::parseSize( m_value ) ) );
+        exprValue = CG::ExprValue( integerAdapter, CG::USAGE_RVALUE, moduleBuilder.getContext(), integerAdapter->llvmConst( moduleBuilder.getContext(), Util::parseSize( m_value ) ) );
       else if ( adapter == sizeAdapter )
-        exprValue = CG::ExprValue( sizeAdapter, CG::USAGE_RVALUE, sizeAdapter->llvmConst( Util::parseSize( m_value ) ) );
+        exprValue = CG::ExprValue( sizeAdapter, CG::USAGE_RVALUE, moduleBuilder.getContext(), sizeAdapter->llvmConst( moduleBuilder.getContext(), Util::parseSize( m_value ) ) );
       else if ( adapter == scalarAdapter )
-        exprValue = CG::ExprValue( scalarAdapter, CG::USAGE_RVALUE, scalarAdapter->llvmConst( Util::parseFloat( m_value ) ) );
+        exprValue = CG::ExprValue( scalarAdapter, CG::USAGE_RVALUE, moduleBuilder.getContext(), scalarAdapter->llvmConst( moduleBuilder.getContext(), Util::parseFloat( m_value ) ) );
       else throw CG::Error( getLocation(), "constant declaration type must be Byte, Integer, Size or Scalar" );
         
       if ( scope.has( m_name ) )

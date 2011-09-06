@@ -1,4 +1,4 @@
-function entry()
+operator entry()
 {
   report Byte(42);
   report Byte(3.14);

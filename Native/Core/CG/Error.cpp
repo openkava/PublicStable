@@ -8,7 +8,7 @@ namespace Fabric
 {
   namespace CG
   {
-    Error::Error( Location const &location, std::string const &desc )
+    Error::Error( Location const &location, Util::SimpleString const &desc )
       : Exception( desc )
       , m_location( location )
     {
@@ -27,9 +27,14 @@ namespace Fabric
       return *this;
     }
     
-    Error operator +( std::string const &prefix, Error const &error )
+    Error operator +( Util::SimpleString const &prefix, Error const &error )
     {
       return Error( error.getLocation(), prefix + error.getDesc() );
+    }
+
+    Error operator +( char const *cString, Error const &error )
+    {
+      return Error( error.getLocation(), cString + error.getDesc() );
     }
   };
 };

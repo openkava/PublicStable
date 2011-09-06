@@ -1,4 +1,4 @@
-function entry()
+operator entry()
 {
   report Boolean(0);
   report Boolean(2387423);

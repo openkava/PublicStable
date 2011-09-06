@@ -1,4 +1,4 @@
-function entry()
+operator entry()
 {
   report Integer(2147483647);
   report Integer(-2147483648);

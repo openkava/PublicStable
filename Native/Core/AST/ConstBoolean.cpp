@@ -8,9 +8,10 @@
 #include "ConstBoolean.h"
 #include <Fabric/Core/CG/Adapter.h>
 #include <Fabric/Core/CG/BooleanAdapter.h>
+#include <Fabric/Core/CG/Context.h>
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/CG/BasicBlockBuilder.h>
-#include <Fabric/Core/Util/SimpleString.h>
+#include <Fabric/Base/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -35,13 +36,15 @@ namespace Fabric
       jsonObjectGenerator.makeMember( "value" ).makeBoolean( m_value );
     }
     
-    void ConstBoolean::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    void ConstBoolean::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const
     {
     }
     
-    RC::ConstHandle<CG::Adapter> ConstBoolean::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const
+    RC::ConstHandle<CG::Adapter> ConstBoolean::getType( CG::BasicBlockBuilder &basicBlockBuilder ) const
     {
-      return basicBlockBuilder.getManager()->getBooleanAdapter();
+      RC::ConstHandle<CG::Adapter> adapter = basicBlockBuilder.getManager()->getBooleanAdapter();
+      adapter->llvmCompileToModule( basicBlockBuilder.getModuleBuilder() );
+      return adapter;
     }
     
     CG::ExprValue ConstBoolean::buildExprValue( CG::BasicBlockBuilder &basicBlockBuilder, CG::Usage usage, std::string const &lValueErrorDesc ) const
@@ -49,7 +52,7 @@ namespace Fabric
       if ( usage == CG::USAGE_LVALUE )
         throw Exception( "constants cannot be used as l-values" );
       RC::ConstHandle<CG::BooleanAdapter> booleanAdapter = basicBlockBuilder.getManager()->getBooleanAdapter();
-      return CG::ExprValue( booleanAdapter, CG::USAGE_RVALUE, booleanAdapter->llvmConst( m_value ) );
+      return CG::ExprValue( booleanAdapter, CG::USAGE_RVALUE, basicBlockBuilder.getContext(), booleanAdapter->llvmConst( basicBlockBuilder.getContext(), m_value ) );
     }
   };
 };

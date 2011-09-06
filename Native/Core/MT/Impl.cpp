@@ -69,22 +69,22 @@ namespace Fabric
     {
       m_isMainThread = true;
       
-      m_stateMutex.lock();
+      m_stateMutex.acquire();
       size_t numCores = getNumCores();
       m_workerThreads.resize( numCores - 1 );
       for ( size_t i=0; i<m_workerThreads.size(); ++i )
         m_workerThreads[i].start( &ThreadPool::WorkerMainCallback, this );
-      m_stateMutex.unlock();
+      m_stateMutex.release();
     }
     
     void ThreadPool::terminate()
     {
       FABRIC_ASSERT( m_running );
-      
-      m_stateMutex.lock();
+
+      m_stateMutex.acquire();
       m_running = false;
       m_stateCond.broadcast();
-      m_stateMutex.unlock();
+      m_stateMutex.release();
       
       for ( size_t i=0; i<m_workerThreads.size(); ++i )
         m_workerThreads[i].waitUntilDone();
@@ -98,13 +98,15 @@ namespace Fabric
 
     void ThreadPool::executeParallel( size_t count, void (*callback)( void *userdata, size_t index ), void *userdata, bool mainThreadOnly )
     {
-      if ( count == 1 && (!mainThreadOnly || m_isMainThread.get()) )
+      if ( count == 0 )
+        return;
+      else if ( count == 1 && (!mainThreadOnly || m_isMainThread.get()) )
         callback( userdata, 0 );
       else
       {
         Task task( count, callback, userdata );
         
-        m_stateMutex.lock();
+        m_stateMutex.acquire();
         
         if ( mainThreadOnly )
           m_mainThreadTasks.push_back( &task );
@@ -116,7 +118,7 @@ namespace Fabric
         while ( !task.completed_CRITICAL_SECTION() )
           executeOneTaskIfPossible_CRITICAL_SECTION();
         
-        m_stateMutex.unlock();
+        m_stateMutex.release();
       }
     }
 
@@ -139,9 +141,9 @@ namespace Fabric
         if ( !keep )
           taskQueue->pop_back();
 
-        m_stateMutex.unlock();
+        m_stateMutex.release();
         task->execute( index );
-        m_stateMutex.lock();
+        m_stateMutex.acquire();
         
         task->postExecute_CRITICAL_SECTION();
         if ( task->completed_CRITICAL_SECTION() )
@@ -155,10 +157,10 @@ namespace Fabric
 
     void ThreadPool::workerMain()
     {
-      m_stateMutex.lock();
+      m_stateMutex.acquire();
       while ( m_running )
         executeOneTaskIfPossible_CRITICAL_SECTION();
-      m_stateMutex.unlock();
+      m_stateMutex.release();
     }
     
     void ThreadPool::WorkerMainCallback( void *_this )

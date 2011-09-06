@@ -8,7 +8,7 @@
 #include <Fabric/Base/RC/Object.h>
 #include <Fabric/Base/RC/Handle.h>
 #include <Fabric/Base/RC/ConstHandle.h>
-#include <Fabric/Core/Util/SimpleString.h>
+#include <Fabric/Base/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -17,27 +17,18 @@ namespace Fabric
     class JSONArrayGenerator;
   };
   
-  namespace JSON
-  {
-    class Value;
-    class Array;
-  };
-  
-  namespace RT
-  {
-    class Manager;
-  };
-  
   namespace CG
   {
-    class ModuleBuilder;
     class Diagnostics;
+    class Manager;
+    class ModuleBuilder;
   };
   
   namespace AST
   {
     class Function;
     class Global;
+    class UseNameToLocationMap;
     
     class GlobalList : public RC::Object
     {
@@ -48,8 +39,8 @@ namespace Fabric
 
       Util::SimpleString toJSON() const;
 
-      void registerTypes( RC::Handle<RT::Manager> const &rtManager, CG::Diagnostics &diagnostics ) const;
-      void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
+      void collectUses( UseNameToLocationMap &uses ) const;
+      void registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const;
       void llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctions ) const;
       void collectFunctions( std::vector< RC::ConstHandle<AST::Function> > &result ) const;
     

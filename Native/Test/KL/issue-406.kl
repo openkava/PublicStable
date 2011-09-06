@@ -1,0 +1,10 @@
+struct Vec3 {
+  Scalar x;
+  Scalar y;
+  Scalar z;
+};
+
+operator entry() {
+  Vec3 vec3;
+  report vec3;
+}

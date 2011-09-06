@@ -6,6 +6,7 @@
 #define _FABRIC_AST_FUNCTION_H
 
 #include <Fabric/Core/AST/FunctionBase.h>
+#include <Fabric/Core/AST/ParamVector.h>
 
 namespace Fabric
 {
@@ -54,7 +55,8 @@ namespace Fabric
         std::string const &entryName,
         std::string const &returnTypeName,
         RC::ConstHandle<ParamVector> const &params,
-        RC::ConstHandle<CompoundStatement> const &body
+        RC::ConstHandle<CompoundStatement> const &body,
+        bool exportSymbol
         );
       
       virtual void appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const;

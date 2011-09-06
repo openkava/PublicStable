@@ -3,11 +3,12 @@
  */
  
 #include "FunctionBase.h"
+#include <Fabric/Core/AST/ParamVector.h>
 #include <Fabric/Core/CG/ModuleBuilder.h>
 #include <Fabric/Core/CG/FunctionBuilder.h>
 #include <Fabric/Core/CG/Scope.h>
 #include <Fabric/Core/CG/Manager.h>
-#include <Fabric/Core/Util/SimpleString.h>
+#include <Fabric/Base/Util/SimpleString.h>
 
 #include <llvm/Module.h>
 #include <llvm/Function.h>
@@ -20,13 +21,15 @@ namespace Fabric
   namespace AST
   {
     FunctionBase::FunctionBase(
-        CG::Location const &location,
-        std::string const &returnTypeName,
-        RC::ConstHandle<CompoundStatement> const &body
-        )
+      CG::Location const &location,
+      std::string const &returnTypeName,
+      RC::ConstHandle<CompoundStatement> const &body,
+      bool exportSymbol
+      )
       : Global( location )
       , m_returnTypeName( returnTypeName )
       , m_body( body )
+      , m_exportSymbol( exportSymbol )
     {
     }
     
@@ -48,19 +51,25 @@ namespace Fabric
       return 0;
     }
     
-    void FunctionBase::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    void FunctionBase::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const
     {
       if ( !m_returnTypeName.empty() )
       {
-        RC::ConstHandle<CG::Adapter> returnAdapter = moduleBuilder.getAdapter( m_returnTypeName, getLocation() );
-        returnAdapter->llvmPrepareModule( moduleBuilder, true );
+        try
+        {
+          cgManager->getAdapter( m_returnTypeName );
+        }
+        catch ( Exception e )
+        {
+          addError( diagnostics, e );
+        }
       }
 
-      RC::ConstHandle<AST::ParamVector> params = getParams( moduleBuilder.getManager() );
-      params->llvmPrepareModule( moduleBuilder, diagnostics );
+      RC::ConstHandle<AST::ParamVector> params = getParams( cgManager );
+      params->registerTypes( cgManager, diagnostics );
       
       if ( m_body )
-        m_body->llvmPrepareModule( moduleBuilder, diagnostics );
+        m_body->registerTypes( cgManager, diagnostics );
     }
     
     void FunctionBase::llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctionBodies ) const
@@ -68,7 +77,7 @@ namespace Fabric
       std::string const *friendlyName = getFriendlyName( moduleBuilder.getManager() );
       if ( !buildFunctionBodies && friendlyName && moduleBuilder.getScope().has( *friendlyName ) )
       {
-        addError( diagnostics, "symbol " + _(*friendlyName) + " already exists" );
+        addError( diagnostics, ("symbol " + _(*friendlyName) + " already exists").c_str() );
       }
       else
       {
@@ -76,13 +85,14 @@ namespace Fabric
         if ( !m_returnTypeName.empty() )
         {
           returnAdapter = moduleBuilder.getAdapter( m_returnTypeName, getLocation() );
-          returnAdapter->llvmPrepareModule( moduleBuilder, true );
+          returnAdapter->llvmCompileToModule( moduleBuilder );
         }
         
         CG::ExprType returnExprType( returnAdapter, CG::USAGE_RVALUE );
         std::string entryName = getEntryName( moduleBuilder.getManager() );
         RC::ConstHandle<AST::ParamVector> params = getParams( moduleBuilder.getManager() );
-        CG::FunctionBuilder functionBuilder( moduleBuilder, entryName, returnExprType, params->getFunctionParams( moduleBuilder.getManager() ), friendlyName );
+        params->llvmCompileToModule( moduleBuilder, diagnostics, buildFunctionBodies );
+        CG::FunctionBuilder functionBuilder( moduleBuilder, entryName, returnExprType, params->getFunctionParams( moduleBuilder.getManager() ), m_exportSymbol, friendlyName, false );
         if ( buildFunctionBodies && m_body )
         {
           CG::BasicBlockBuilder basicBlockBuilder( functionBuilder );
@@ -95,7 +105,7 @@ namespace Fabric
           if ( !bb->getTerminator() )
           {
             if ( returnExprType )
-              addError( diagnostics, Exception("not all paths return a value") );
+              addError( diagnostics, "not all paths return a value" );
             else
             {
               functionBuilder.getScope().llvmUnwind( basicBlockBuilder );

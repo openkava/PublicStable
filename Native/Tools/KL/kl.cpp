@@ -9,6 +9,7 @@
 #include <Fabric/Core/KL/Scanner.h>
 #include <Fabric/Core/KL/StringSource.h>
 #include <Fabric/Core/AST/GlobalList.h>
+#include <Fabric/Core/AST/UseInfo.h>
 #include <Fabric/Core/RT/Manager.h>
 #include <Fabric/Core/RT/NumericDesc.h>
 #include <Fabric/Core/RT/StringDesc.h>
@@ -69,7 +70,7 @@ void dumpDiagnostics( CG::Diagnostics const &diagnostics )
   {
     CG::Location const &location = it->first;
     CG::Diagnostic const &diagnostic = it->second;
-    printf( "%u:%u: %s: %s\n", (unsigned)location.getLine(), (unsigned)location.getColumn(), diagnostic.getLevelDesc(), diagnostic.getDesc().c_str() );
+    printf( "%u:%u: %s: %s\n", (unsigned)location.getLine(), (unsigned)location.getColumn(), diagnostic.getLevelDesc(), (const char*)diagnostic.getDesc() );
   }
 }
 
@@ -150,14 +151,13 @@ void handleFile( FILE *fp, unsigned int runFlags )
 
   RC::Handle<RT::Manager> rtManager = RT::Manager::Create( KL::Compiler::Create() );
   cgManager = CG::Manager::Create( rtManager );
-  std::auto_ptr<llvm::Module> module( new llvm::Module( "kl", cgManager->getLLVMContext() ) );
+  RC::Handle<CG::Context> cgContext = CG::Context::Create();
+  std::auto_ptr<llvm::Module> module( new llvm::Module( "kl", cgContext->getLLVMContext() ) );
 
-  CG::ModuleBuilder moduleBuilder( cgManager, module.get() );
-  cgManager->llvmPrepareModule( moduleBuilder );
+  CG::ModuleBuilder moduleBuilder( cgManager, cgContext, module.get() );
   OCL::llvmPrepareModule( moduleBuilder, rtManager );
   
   RC::ConstHandle<AST::GlobalList> globalList = KL::Parse( scanner, diagnostics );
-
   if ( diagnostics.containsError() )
   {
     dumpDiagnostics( diagnostics );
@@ -174,7 +174,13 @@ void handleFile( FILE *fp, unsigned int runFlags )
 
   if( runFlags & (RF_ShowASM | RF_ShowIR | RF_ShowOptIR | RF_ShowOptASM | RF_Run) )
   {
-    globalList->llvmPrepareModule( moduleBuilder, diagnostics );
+    AST::UseNameToLocationMap uses;
+    globalList->collectUses( uses );
+    for ( AST::UseNameToLocationMap::const_iterator it=uses.begin(); it!=uses.end(); ++it )
+      diagnostics.addError( it->second, "no registered type or plugin named " + _(it->first) );
+    
+    if ( !diagnostics.containsError() )
+      globalList->registerTypes( cgManager, diagnostics );
     if ( !diagnostics.containsError() )
       globalList->llvmCompileToModule( moduleBuilder, diagnostics, false );
     if ( !diagnostics.containsError() )
@@ -377,7 +383,7 @@ int main( int argc, char **argv )
     }
     catch ( Exception e )
     {
-      fprintf( stderr, "Caught Exception '%s'\n", e.getDesc().c_str() );
+      fprintf( stderr, "Caught Exception '%s'\n", (const char*)e.getDesc() );
     }
   }
   else
@@ -397,7 +403,7 @@ int main( int argc, char **argv )
         }
         catch ( Exception e )
         {
-          fprintf( stderr, "Caught Exception '%s'\n", e.getDesc().c_str() );
+          fprintf( stderr, "Caught Exception '%s'\n", (const char*)e.getDesc() );
         }
         fclose( fp );
       }

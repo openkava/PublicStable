@@ -7,7 +7,7 @@
 #include <Fabric/Core/CG/BasicBlockBuilder.h>
 #include <Fabric/Core/CG/Error.h>
 #include <Fabric/Core/CG/Manager.h>
-#include <Fabric/Core/Util/SimpleString.h>
+#include <Fabric/Base/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -38,16 +38,16 @@ namespace Fabric
       m_constDecl->appendJSON( jsonObjectGenerator.makeMember( "constDecl" ) );
     }
     
-    void ConstDeclStatement::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    void ConstDeclStatement::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const
     {
-      m_constDecl->llvmPrepareModule( moduleBuilder, diagnostics );
+      m_constDecl->registerTypes( cgManager, diagnostics );
     }
     
     void ConstDeclStatement::llvmCompileToBuilder( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const
     {
       try
       {
-        m_constDecl->llvmCompileToScope( basicBlockBuilder.getScope(), basicBlockBuilder.getManager() );
+        m_constDecl->llvmCompileToScope( basicBlockBuilder.getScope(), basicBlockBuilder.getModuleBuilder() );
       }
       catch ( CG::Error e )
       {

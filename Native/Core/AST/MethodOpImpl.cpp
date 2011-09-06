@@ -7,10 +7,11 @@
 
 #include <Fabric/Core/AST/MethodOpImpl.h>
 #include <Fabric/Core/AST/Param.h>
+#include <Fabric/Core/AST/ParamVector.h>
 #include <Fabric/Core/CG/Adapter.h>
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/CG/OverloadNames.h>
-#include <Fabric/Core/Util/SimpleString.h>
+#include <Fabric/Base/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -21,19 +22,19 @@ namespace Fabric
     RC::ConstHandle<MethodOpImpl> MethodOpImpl::Create(
       CG::Location const &location,
       std::string const &returnTypeName,
-      std::string const &selfTypeName,
+      std::string const &thisTypeName,
       std::string const &methodName,
       RC::ConstHandle<ParamVector> const &params,
       RC::ConstHandle<CompoundStatement> const &body
       )
     {
-      return new MethodOpImpl( location, returnTypeName, selfTypeName, methodName, params, body );
+      return new MethodOpImpl( location, returnTypeName, thisTypeName, methodName, params, body );
     }
     
     MethodOpImpl::MethodOpImpl(
       CG::Location const &location,
       std::string const &returnTypeName,
-      std::string const &selfTypeName,
+      std::string const &thisTypeName,
       std::string const &methodName,
       RC::ConstHandle<ParamVector> const &params,
       RC::ConstHandle<CompoundStatement> const &body
@@ -43,7 +44,7 @@ namespace Fabric
         returnTypeName,
         body
         )
-      , m_selfTypeName( selfTypeName )
+      , m_selfTypeName( thisTypeName )
       , m_methodName( methodName )
       , m_params( params )
     {
@@ -52,7 +53,7 @@ namespace Fabric
     void MethodOpImpl::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
     {
       FunctionBase::appendJSONMembers( jsonObjectGenerator );
-      jsonObjectGenerator.makeMember( "selfTypeName" ).makeString( m_selfTypeName );
+      jsonObjectGenerator.makeMember( "thisTypeName" ).makeString( m_selfTypeName );
       jsonObjectGenerator.makeMember( "methodName" ).makeString( m_methodName );
       m_params->appendJSON( jsonObjectGenerator.makeMember( "params" ) );
     }
@@ -65,7 +66,7 @@ namespace Fabric
     RC::ConstHandle<ParamVector> MethodOpImpl::getParams( RC::Handle<CG::Manager> const &cgManager ) const
     {
       return ParamVector::Create(
-        Param::Create( getLocation(), "self", m_selfTypeName, !getReturnType().empty() ? CG::USAGE_RVALUE : CG::USAGE_LVALUE ),
+        Param::Create( getLocation(), "this", m_selfTypeName, !getReturnType().empty() ? CG::USAGE_RVALUE : CG::USAGE_LVALUE ),
         m_params
         );
     }

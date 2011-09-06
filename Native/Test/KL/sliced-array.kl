@@ -1,4 +1,4 @@
-function entry() {
+operator entry() {
   String slicedArray<>( Size(16) );
   report slicedArray.size;
   report slicedArray;

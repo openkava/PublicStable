@@ -6,7 +6,7 @@
 # with the MIME type application/x-chrome-extension
 
 import os
-Import( 'baseEnv', 'buildOS', 'buildArch', 'archDistDir', 'fabricExtsDistDir', 'npapiDistDir', 'installerName', 'extFiles' )
+Import( 'baseEnv', 'buildOS', 'buildArch', 'archDistDir', 'fabricExtsDistDir', 'npapiDistDir', 'installerName', 'extFiles', 'distDir' )
 
 chromeExtensionDir = archDistDir.Dir('Chrome').Dir(installerName)
 
@@ -65,7 +65,7 @@ installedFiles.append( baseEnv.Command(
   [Copy( '$TARGET', '$SOURCE' )]
 ) )
 
-chromeInstallerFile = archDistDir.Dir('Chrome').File(installerName+'.crx')
+chromeInstallerFile = distDir.File(installerName+'.crx')
 if buildOS == 'Windows':
   chrome = os.environ['LOCALAPPDATA']+'\Google\Chrome\Application\chrome.exe'
 if buildOS == 'Darwin':
@@ -75,7 +75,10 @@ if buildOS == 'Linux':
 baseEnv.Command(
   chromeInstallerFile,
   installedFiles,
-  chrome+" --pack-extension=" + chromeExtensionDir.abspath + " --pack-extension-key=" + pemFile.abspath + " --no-message-box"
+  [
+    chrome+" --pack-extension="+chromeExtensionDir.abspath+" --pack-extension-key="+pemFile.abspath+" --no-message-box",
+    Move( chromeInstallerFile, archDistDir.Dir('Chrome').File(installerName+'.crx') ),
+  ]
 )
-chromeUpdateFile = baseEnv.Template( archDistDir.Dir('Chrome').File("crx-update-"+buildOS+"-"+buildArch+".xml"), "crx-update.xml.template" )
+chromeUpdateFile = baseEnv.Template( distDir.File("crx-update-"+buildOS+"-"+buildArch+".xml"), "crx-update.xml.template" )
 Alias( 'chromeInstaller', [chromeInstallerFile, chromeUpdateFile] )

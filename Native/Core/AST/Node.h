@@ -43,8 +43,8 @@ namespace Fabric
         return m_location;
       }
       
-      void addWarning( CG::Diagnostics &diagnostics, std::string const &desc ) const;
-      void addError( CG::Diagnostics &diagnostics, std::string const &desc ) const;
+      void addWarning( CG::Diagnostics &diagnostics, Util::SimpleString const &desc ) const;
+      void addError( CG::Diagnostics &diagnostics, Util::SimpleString const &desc ) const;
 
     protected:
       

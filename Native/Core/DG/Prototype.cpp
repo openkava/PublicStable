@@ -177,6 +177,8 @@ namespace Fabric
       : m_cgManager( cgManager )
       , m_rtSizeDesc( cgManager->getRTManager()->getSizeDesc() )
       , m_rtSizeImpl( m_rtSizeDesc->getImpl() )
+      , m_rtIndexDesc( cgManager->getRTManager()->getIndexDesc() )
+      , m_rtIndexImpl( m_rtIndexDesc->getImpl() )
     {
     }
     
@@ -309,9 +311,9 @@ namespace Fabric
               }
               else if ( param->isIndexParam() )
               {
-                if ( astParamImpl != m_rtSizeImpl
+                if ( astParamImpl != m_rtIndexImpl
                   || astParamExprType.getUsage() != CG::USAGE_RVALUE )
-                  throw Exception( "'index' parmeters must bind to operator in parameters of type "+_(m_rtSizeDesc->getName()) );
+                  throw Exception( "'index' parmeters must bind to operator in parameters of type "+_(m_rtIndexDesc->getName()) );
                 result->setBaseAddress( prefixCount+param->index(), (void *)0 );
                 if ( container->getCount() != 1 )
                 {
@@ -346,7 +348,11 @@ namespace Fabric
                       throw Exception( "parameter type mismatch: member element type is "+_(memberDesc->getName())+", operator parameter type is "+_(astParamDesc->getName()) );
                     if ( astParamExprType.getUsage() != CG::USAGE_LVALUE )
                       throw Exception( "element parmeters must bind to operator io parameters" );
-                    result->setBaseAddress( prefixCount+param->index(), memberArrayImpl->getMemberData( memberArrayData, 0 ) );
+                    void *baseAddress;
+                    if ( memberArrayImpl->getNumMembers( memberArrayData ) > 0 )
+                      baseAddress = memberArrayImpl->getMemberData( memberArrayData, 0 );
+                    else baseAddress = 0;
+                    result->setBaseAddress( prefixCount+param->index(), baseAddress );
                     if ( container->getCount() != 1 )
                     {
                       if ( !haveAdjustmentIndex )

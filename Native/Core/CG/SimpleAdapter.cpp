@@ -1,5 +1,7 @@
 #include "SimpleAdapter.h"
+#include "Context.h"
 #include "Manager.h"
+#include "Context.h"
 #include "BasicBlockBuilder.h"
 
 #include <Fabric/Core/RT/Desc.h>
@@ -17,10 +19,6 @@ namespace Fabric
     {
     }
 
-    void SimpleAdapter::llvmInit( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *value ) const
-    {
-    }
-
     void SimpleAdapter::llvmRetain( BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const
     {
     }
@@ -32,11 +30,6 @@ namespace Fabric
     
     void SimpleAdapter::llvmRelease( BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const
     {
-    }
-    
-    llvm::Constant *SimpleAdapter::llvmDefaultValue( BasicBlockBuilder &basicBlockBuilder ) const
-    {
-      return llvm::ConstantInt::get( llvmRType(), *(uint64_t const *)getImpl()->getDefaultData() );
     }
     
     void *SimpleAdapter::llvmResolveExternalFunction( std::string const &functionName ) const

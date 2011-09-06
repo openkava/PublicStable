@@ -42,7 +42,9 @@ namespace Fabric
       RC::Handle<JSON::Object> jsonDescViewPorts() const;
 
       RC::Handle<IOManager> getIOManager() const;
-      
+
+      std::string getUserFilePath( std::string const &defaultFilename, std::string const &extension );
+
     protected:
     
       Context( RC::Handle<IOManager> const &ioManager, std::vector<std::string> const &pluginDirs );

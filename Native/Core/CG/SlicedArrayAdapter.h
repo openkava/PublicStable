@@ -26,14 +26,15 @@ namespace Fabric
 
       // Adapter
     
-      virtual void llvmInit( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *value ) const;
       virtual void llvmRetain( BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const;
       virtual void llvmDefaultAssign( BasicBlockBuilder &basicBlockBuilder, llvm::Value *dstLValue, llvm::Value *srcRValue ) const;
       virtual void llvmRelease( BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const;
 
       virtual llvm::Constant *llvmDefaultValue( BasicBlockBuilder &basicBlockBuilder ) const;
+      virtual llvm::Constant *llvmDefaultRValue( BasicBlockBuilder &basicBlockBuilder ) const;
+      virtual llvm::Constant *llvmDefaultLValue( BasicBlockBuilder &basicBlockBuilder ) const;
       
-      virtual void llvmPrepareModule( ModuleBuilder &moduleBuilder, bool buildFunctions ) const;
+      virtual void llvmCompileToModule( ModuleBuilder &moduleBuilder ) const;
       virtual void *llvmResolveExternalFunction( std::string const &functionName ) const;
 
       // ArrayAdapter
@@ -45,11 +46,12 @@ namespace Fabric
     
       SlicedArrayAdapter( RC::ConstHandle<Manager> const &manager, RC::ConstHandle<RT::SlicedArrayDesc> const &slicedArrayDesc );
       
+      virtual llvm::Type const *buildLLVMRawType( RC::Handle<Context> const &context ) const;
+      
     private:
     
       RC::ConstHandle<RT::SlicedArrayDesc> m_slicedArrayDesc;
       RC::ConstHandle<Adapter> m_memberAdapter;
-      llvm::Type const *m_implType;
       RC::ConstHandle<VariableArrayAdapter> m_variableArrayAdapter;
    };
   };

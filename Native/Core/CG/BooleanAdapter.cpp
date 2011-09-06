@@ -4,6 +4,7 @@
  
 #include "BooleanAdapter.h"
 #include "ConstStringAdapter.h"
+#include "Context.h"
 #include "StringAdapter.h"
 #include "Manager.h"
 #include "ModuleBuilder.h"
@@ -22,15 +23,26 @@ namespace Fabric
       : SimpleAdapter( manager, booleanDesc )
       , m_booleanDesc( booleanDesc )
     {
-      setLLVMType( llvm::Type::getInt1Ty( manager->getLLVMContext() ) );
     }
     
-    void BooleanAdapter::llvmPrepareModule( ModuleBuilder &moduleBuilder, bool buildFunctions ) const
+    llvm::Type const *BooleanAdapter::buildLLVMRawType( RC::Handle<Context> const &context ) const
     {
-      if ( moduleBuilder.contains( getCodeName(), buildFunctions ) )
+      return llvm::Type::getInt1Ty( context->getLLVMContext() );
+    }
+    
+    void BooleanAdapter::llvmCompileToModule( ModuleBuilder &moduleBuilder ) const
+    {
+      if ( moduleBuilder.haveCompiledToModule( getCodeName() ) )
         return;
+        
+      RC::Handle<Context> context = moduleBuilder.getContext();
       
       RC::ConstHandle<StringAdapter> stringAdapter = getManager()->getStringAdapter();
+      stringAdapter->llvmCompileToModule( moduleBuilder );
+      RC::ConstHandle<ConstStringAdapter> constStringAdapter = getManager()->getConstStringAdapter();
+      constStringAdapter->llvmCompileToModule( moduleBuilder );
+      
+      static const bool buildFunctions = true;
       
       {
         std::string name = constructOverloadName( stringAdapter, this );
@@ -51,19 +63,17 @@ namespace Fabric
           basicBlockBuilder->CreateCondBr( booleanRValue, trueBB, falseBB );
           
           basicBlockBuilder->SetInsertPoint( trueBB );
-          RC::ConstHandle<ConstStringAdapter> trueConstStringAdapter = getManager()->getConstStringAdapter(4);
-          ExprValue trueExprValue( trueConstStringAdapter, USAGE_RVALUE, trueConstStringAdapter->llvmConst( basicBlockBuilder, "true", 4 ) );
+          ExprValue trueExprValue( constStringAdapter, USAGE_RVALUE, context, constStringAdapter->llvmConst( basicBlockBuilder, "true", 4 ) );
           llvm::Value *trueStringRValue = stringAdapter->llvmCast( basicBlockBuilder, trueExprValue );
           basicBlockBuilder->CreateBr( mergeBB );
           
           basicBlockBuilder->SetInsertPoint( falseBB );
-          RC::ConstHandle<ConstStringAdapter> falseConstStringAdapter = getManager()->getConstStringAdapter(5);
-          ExprValue falseExprValue( falseConstStringAdapter, USAGE_RVALUE, falseConstStringAdapter->llvmConst( basicBlockBuilder, "false", 5 ) );
+          ExprValue falseExprValue( constStringAdapter, USAGE_RVALUE, context, constStringAdapter->llvmConst( basicBlockBuilder, "false", 5 ) );
           llvm::Value *falseStringRValue = stringAdapter->llvmCast( basicBlockBuilder, falseExprValue );
           basicBlockBuilder->CreateBr( mergeBB );
           
           basicBlockBuilder->SetInsertPoint( mergeBB );
-          llvm::PHINode *stringRValue = basicBlockBuilder->CreatePHI( stringAdapter->llvmRType(), "stringRValue" );
+          llvm::PHINode *stringRValue = basicBlockBuilder->CreatePHI( stringAdapter->llvmRType( context ), "stringRValue" );
           stringRValue->addIncoming( trueStringRValue, trueBB );
           stringRValue->addIncoming( falseStringRValue, falseBB );
           stringAdapter->llvmAssign( basicBlockBuilder, stringLValue, stringRValue );
@@ -212,14 +222,19 @@ namespace Fabric
       }
     }
 
-    llvm::Constant *BooleanAdapter::llvmConst( bool value ) const
+    llvm::Constant *BooleanAdapter::llvmConst( RC::Handle<Context> const &context, bool value ) const
     {
-      return llvm::ConstantInt::get( llvmRType(), value, false );
+      return llvm::ConstantInt::get( llvmRType( context ), value, false );
     }
     
     std::string BooleanAdapter::toString( void const *data ) const
     {
       return _( m_booleanDesc->getValue(data) );
+    }
+    
+    llvm::Constant *BooleanAdapter::llvmDefaultValue( BasicBlockBuilder &basicBlockBuilder ) const
+    {
+      return llvmConst( basicBlockBuilder.getContext(), m_booleanDesc->getValue( m_booleanDesc->getDefaultData() ) );
     }
   };
 };
