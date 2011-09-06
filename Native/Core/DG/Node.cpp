@@ -221,7 +221,12 @@ namespace Fabric
           m_runState->m_newCount = oldCount;
           opParallelCall->executeParallel( binding->getMainThreadOnly() );
           if ( m_runState->m_newCount != oldCount )
+          {
             setCount( m_runState->m_newCount );
+            
+            for ( size_t j=i+1; j<numBindings; ++j )
+              m_runState->m_evaluateParallelCallsPerOperator[j] = 0;
+          }
         }
         
         m_dirty = false;
