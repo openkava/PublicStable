@@ -1,0 +1,9 @@
+function Scalar foo() {
+  return 3.14;
+  Scalar a = 2.71;
+  return a;
+}
+
+operator entry() {
+  report foo();
+}
