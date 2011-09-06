@@ -49,8 +49,7 @@ namespace Fabric
       CG::Scope subScope( basicBlockBuilder.getScope() );
       {
         CG::BasicBlockBuilder subBasicBlockBuilder( basicBlockBuilder, subScope );
-        for ( size_t i=0; i<m_statements->size(); ++i )
-          m_statements->get(i)->llvmCompileToBuilder( subBasicBlockBuilder, diagnostics );
+        m_statements->llvmCompileToBuilder( subBasicBlockBuilder, diagnostics );
       }
       if ( !basicBlockBuilder->GetInsertBlock()->getTerminator() )
         subScope.llvmUnwind( basicBlockBuilder );
