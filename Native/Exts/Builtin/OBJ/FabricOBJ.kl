@@ -6,6 +6,7 @@ struct Vec3 {
 };
 
 function FabricOBJDecode( Data objData, Size objDataSize, io Data parsedDataHandle );
+function FabricOBJIsHandleValid( Data parsedDataHandle, io Boolean valid );
 function FabricOBJFreeParsedData( io Data parsedDataHandle );
 function FabricOBJHadErrors( Data parsedDataHandle, io Boolean hadErrors );
 function FabricOBJGetErrors( Data parsedDataHandle, io String errors[] );
