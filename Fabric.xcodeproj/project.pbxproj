@@ -52,9 +52,6 @@
 		DB9685C313A79BCB00616143 /* LegRig.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = LegRig.html; sourceTree = "<group>"; };
 		DB9685C513A79BCB00616143 /* Spine.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = Spine.html; sourceTree = "<group>"; };
 		DB9685EB13A79BCD00616143 /* TwistBones.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = TwistBones.html; sourceTree = "<group>"; };
-		DB96860D13A79CE700616143 /* swirleyMovementOp.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = swirleyMovementOp.kl; sourceTree = "<group>"; };
-		DB96860E13A79CE700616143 /* turningOp.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = turningOp.kl; sourceTree = "<group>"; };
-		DB96860F13A79CE700616143 /* twistOp.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = twistOp.kl; sourceTree = "<group>"; };
 		DB9B1E3B140EC70E00711AEE /* build.bat */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = build.bat; sourceTree = "<group>"; };
 		DB9B1FE5140EC71000711AEE /* getopt.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = getopt.c; sourceTree = "<group>"; };
 		DB9B1FE6140EC71000711AEE /* getopt.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = getopt.h; sourceTree = "<group>"; };
@@ -1105,12 +1102,11 @@
 		DB9CD98B13D3C69400CCB0E6 /* CMakeLists.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = CMakeLists.txt; sourceTree = "<group>"; };
 		DB9CD98C13D3C69400CCB0E6 /* json_verify.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = json_verify.c; sourceTree = "<group>"; };
 		DB9CD98D13D3C69400CCB0E6 /* YAJLDoc.cmake */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = YAJLDoc.cmake; sourceTree = "<group>"; };
+		DBB496C31416D80900A50FA9 /* KL */ = {isa = PBXFileReference; lastKnownFileType = folder; path = KL; sourceTree = "<group>"; };
 		DBCCD57B13AC007D00024113 /* currentTime.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = currentTime.html; sourceTree = "<group>"; };
 		DBD2B750140AF0860000DEF7 /* Simulation */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Simulation; sourceTree = "<group>"; };
 		DBD2B8BE140D8D9A0000DEF7 /* SceneGraph */ = {isa = PBXFileReference; lastKnownFileType = folder; path = SceneGraph; sourceTree = "<group>"; };
 		DBD4340113D8B7D700E57C5F /* Tesselation.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = Tesselation.html; sourceTree = "<group>"; };
-		DBD4340213D8B7FA00E57C5F /* nBodyOp.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = nBodyOp.kl; sourceTree = "<group>"; };
-		DBD4340313D8B7FA00E57C5F /* nBodyOpGPU.kl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = nBodyOpGPU.kl; sourceTree = "<group>"; };
 		DBE4D7F213E9FB2E004A50E5 /* Tools */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Tools; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -1302,7 +1298,7 @@
 				DB96858913A79BC900616143 /* Primitives.html */,
 				DBD4340113D8B7D700E57C5F /* Tesselation.html */,
 				DB9685BD13A79BCB00616143 /* TransformAnimation.html */,
-				DB96860A13A79CE700616143 /* KL */,
+				DBB496C31416D80900A50FA9 /* KL */,
 			);
 			path = BasicDemos;
 			sourceTree = "<group>";
@@ -1319,18 +1315,6 @@
 				DB9685EB13A79BCD00616143 /* TwistBones.html */,
 			);
 			path = Rigging;
-			sourceTree = "<group>";
-		};
-		DB96860A13A79CE700616143 /* KL */ = {
-			isa = PBXGroup;
-			children = (
-				DBD4340213D8B7FA00E57C5F /* nBodyOp.kl */,
-				DBD4340313D8B7FA00E57C5F /* nBodyOpGPU.kl */,
-				DB96860D13A79CE700616143 /* swirleyMovementOp.kl */,
-				DB96860E13A79CE700616143 /* turningOp.kl */,
-				DB96860F13A79CE700616143 /* twistOp.kl */,
-			);
-			path = KL;
 			sourceTree = "<group>";
 		};
 		DB9B1FE4140EC71000711AEE /* getopt */ = {
