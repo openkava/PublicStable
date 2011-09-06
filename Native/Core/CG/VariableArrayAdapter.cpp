@@ -221,29 +221,26 @@ namespace Fabric
           llvm::Value *indexRValue = functionBuilder[1];
 
           llvm::BasicBlock *entryBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "entry" );
-          llvm::BasicBlock *notNullBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "notNull" );
           llvm::BasicBlock *inRangeBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "inRange" );
           llvm::BasicBlock *outOfRangeBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "outOfRange" );
 
           basicBlockBuilder->SetInsertPoint( entryBB );
-          llvm::Value *isNullCond = basicBlockBuilder->CreateIsNull( arrayRValue );
-          basicBlockBuilder->CreateCondBr( isNullCond, outOfRangeBB, notNullBB );
-          
-          basicBlockBuilder->SetInsertPoint( notNullBB );
-          llvm::Value *lengthLValue = basicBlockBuilder->CreateConstGEP2_32( arrayRValue, 0, 2 );
-          llvm::Value *lengthRValue = basicBlockBuilder->CreateLoad( lengthLValue );
-          llvm::Value *inRangeCond = basicBlockBuilder->CreateICmpULT( indexRValue, lengthRValue );
+          llvm::Value *sizeRValue = llvmCallSize( basicBlockBuilder, arrayRValue );
+          llvm::Value *inRangeCond = basicBlockBuilder->CreateICmpULT( indexRValue, sizeRValue );
           basicBlockBuilder->CreateCondBr( inRangeCond, inRangeBB, outOfRangeBB );
           
           basicBlockBuilder->SetInsertPoint( inRangeBB );
           basicBlockBuilder->CreateRet( llvmConstIndexOp_NoCheck( basicBlockBuilder, arrayRValue, indexRValue ) );
           
           basicBlockBuilder->SetInsertPoint( outOfRangeBB );
-          std::string errorMsg = "KL: "+getUserName()+" index out-of-bounds";
-          ExprValue errorExprValue( constStringAdapter, USAGE_RVALUE, context, constStringAdapter->llvmConst( basicBlockBuilder, errorMsg ) );
-          llvm::Value *errorStringRValue = stringAdapter->llvmCast( basicBlockBuilder, errorExprValue );
-          stringAdapter->llvmReport( basicBlockBuilder, errorStringRValue );
-          stringAdapter->llvmRelease( basicBlockBuilder, errorStringRValue );
+          llvmReportOutOfRangeError(
+            basicBlockBuilder,
+            constStringAdapter,
+            stringAdapter,
+            sizeAdapter,
+            indexRValue,
+            sizeRValue
+            );
           llvm::Value *defaultRValue = m_memberAdapter->llvmDefaultRValue( basicBlockBuilder );
           m_memberAdapter->llvmRetain( basicBlockBuilder, defaultRValue );
           basicBlockBuilder->CreateRet( defaultRValue );
@@ -263,30 +260,27 @@ namespace Fabric
           llvm::Value *indexRValue = functionBuilder[1];
 
           llvm::BasicBlock *entryBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "entry" );
-          llvm::BasicBlock *notNullBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "notNull" );
           llvm::BasicBlock *inRangeBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "inRange" );
           llvm::BasicBlock *outOfRangeBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "outOfRange" );
 
           basicBlockBuilder->SetInsertPoint( entryBB );
-          llvm::Value *arrayRValue = basicBlockBuilder->CreateLoad( arrayLValue );
-          llvm::Value *isNullCond = basicBlockBuilder->CreateIsNull( arrayRValue );
-          basicBlockBuilder->CreateCondBr( isNullCond, outOfRangeBB, notNullBB );
-          
-          basicBlockBuilder->SetInsertPoint( notNullBB );
-          llvm::Value *lengthLValue = basicBlockBuilder->CreateConstGEP2_32( arrayRValue, 0, 2 );
-          llvm::Value *lengthRValue = basicBlockBuilder->CreateLoad( lengthLValue );
-          llvm::Value *inRangeCond = basicBlockBuilder->CreateICmpULT( indexRValue, lengthRValue );
+          llvm::Value *arrayRValue = llvmLValueToRValue( basicBlockBuilder, arrayLValue );
+          llvm::Value *sizeRValue = llvmCallSize( basicBlockBuilder, arrayRValue );
+          llvm::Value *inRangeCond = basicBlockBuilder->CreateICmpULT( indexRValue, sizeRValue );
           basicBlockBuilder->CreateCondBr( inRangeCond, inRangeBB, outOfRangeBB );
           
           basicBlockBuilder->SetInsertPoint( inRangeBB );
           basicBlockBuilder->CreateRet( llvmNonConstIndexOp_NoCheck( basicBlockBuilder, arrayLValue, indexRValue ) );
           
           basicBlockBuilder->SetInsertPoint( outOfRangeBB );
-          std::string errorMsg = "KL: "+getUserName()+" index out-of-bounds";
-          ExprValue errorExprValue( constStringAdapter, USAGE_RVALUE, context, constStringAdapter->llvmConst( basicBlockBuilder, errorMsg ) );
-          llvm::Value *errorStringRValue = stringAdapter->llvmCast( basicBlockBuilder, errorExprValue );
-          stringAdapter->llvmReport( basicBlockBuilder, errorStringRValue );
-          stringAdapter->llvmRelease( basicBlockBuilder, errorStringRValue );
+          llvmReportOutOfRangeError(
+            basicBlockBuilder,
+            constStringAdapter,
+            stringAdapter,
+            sizeAdapter,
+            indexRValue,
+            sizeRValue
+            );
           llvm::Constant *defaultLValue = m_memberAdapter->llvmDefaultLValue( basicBlockBuilder );
           basicBlockBuilder->CreateRet( defaultLValue );
         }
