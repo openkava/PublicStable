@@ -49,6 +49,14 @@ FABRIC_EXT_EXPORT void FabricOBJFreeParsedData(
   }
 }
 
+FABRIC_EXT_EXPORT void FabricOBJIsHandleValid(
+  KL::Data parsedDataHandle,
+  KL::Boolean& valid
+  )
+{
+  valid = parsedDataHandle != NULL;
+}
+
 FABRIC_EXT_EXPORT void FabricOBJHadErrors(
   KL::Data parsedDataHandle,
   KL::Boolean& hadErrors
