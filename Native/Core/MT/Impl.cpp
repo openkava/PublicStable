@@ -98,7 +98,9 @@ namespace Fabric
 
     void ThreadPool::executeParallel( size_t count, void (*callback)( void *userdata, size_t index ), void *userdata, bool mainThreadOnly )
     {
-      if ( count == 1 && (!mainThreadOnly || m_isMainThread.get()) )
+      if ( count == 0 )
+        return;
+      else if ( count == 1 && (!mainThreadOnly || m_isMainThread.get()) )
         callback( userdata, 0 );
       else
       {
