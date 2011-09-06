@@ -1,14 +1,11 @@
 /*
- *
- *  Created by Peter Zion on 10-12-02.
- *  Copyright 2010 Fabric Technologies Inc. All rights reserved.
- *
+ *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
  */
-
+ 
 #include <Fabric/Core/AST/VarDeclStatement.h>
 #include <Fabric/Core/AST/VarDecl.h>
 #include <Fabric/Core/AST/VarDeclVector.h>
-#include <Fabric/Core/Util/SimpleString.h>
+#include <Fabric/Base/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -43,9 +40,9 @@ namespace Fabric
       m_varDecls->appendJSON( jsonObjectGenerator.makeMember( "varDecls" ) );
     }
     
-    void VarDeclStatement::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    void VarDeclStatement::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const
     {
-      m_varDecls->llvmPrepareModule( m_baseType, moduleBuilder, diagnostics );
+      m_varDecls->registerTypes( m_baseType, cgManager, diagnostics );
     }
 
     void VarDeclStatement::llvmCompileToBuilder( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const

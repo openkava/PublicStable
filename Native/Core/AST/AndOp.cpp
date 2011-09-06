@@ -4,12 +4,13 @@
  
 #include <Fabric/Core/AST/AndOp.h>
 #include <Fabric/Core/CG/BooleanAdapter.h>
-#include <Fabric/Core/CG/Scope.h>
+#include <Fabric/Core/CG/Context.h>
 #include <Fabric/Core/CG/FunctionBuilder.h>
 #include <Fabric/Core/CG/Manager.h>
+#include <Fabric/Core/CG/Scope.h>
 #include <Fabric/Core/CG/Error.h>
 #include <Fabric/Core/RT/Desc.h>
-#include <Fabric/Core/Util/SimpleString.h>
+#include <Fabric/Base/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -36,10 +37,14 @@ namespace Fabric
       m_right->appendJSON( jsonObjectGenerator.makeMember( "rhs" ) );
     }
     
-    RC::ConstHandle<CG::Adapter> AndOp::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const
+    RC::ConstHandle<CG::Adapter> AndOp::getType( CG::BasicBlockBuilder &basicBlockBuilder ) const
     {
       RC::ConstHandle<CG::Adapter> lhsType = m_left->getType( basicBlockBuilder );
+      if ( lhsType )
+        lhsType->llvmCompileToModule( basicBlockBuilder.getModuleBuilder() );
       RC::ConstHandle<CG::Adapter> rhsType = m_right->getType( basicBlockBuilder );
+      if ( rhsType )
+        rhsType->llvmCompileToModule( basicBlockBuilder.getModuleBuilder() );
   
       RC::ConstHandle<CG::Adapter> adapter;
       if ( lhsType && rhsType )
@@ -54,10 +59,10 @@ namespace Fabric
       return adapter;
     }
     
-    void AndOp::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    void AndOp::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const
     {
-      m_left->llvmPrepareModule( moduleBuilder, diagnostics );
-      m_right->llvmPrepareModule( moduleBuilder, diagnostics );
+      m_left->registerTypes( cgManager, diagnostics );
+      m_right->registerTypes( cgManager, diagnostics );
     }
     
     CG::ExprValue AndOp::buildExprValue( CG::BasicBlockBuilder &basicBlockBuilder, CG::Usage usage, std::string const &lValueErrorDesc ) const
@@ -96,12 +101,12 @@ namespace Fabric
       basicBlockBuilder->SetInsertPoint( mergeBB );
       if ( castAdapter )
       {
-        llvm::PHINode *phi = basicBlockBuilder->CreatePHI( castAdapter->llvmRType() );
+        llvm::PHINode *phi = basicBlockBuilder->CreatePHI( castAdapter->llvmRType( basicBlockBuilder.getContext() ) );
         phi->addIncoming( rhsCastedRValue, lhsTruePredBB );
         phi->addIncoming( lhsCastedRValue, lhsFalsePredBB );
-        return CG::ExprValue( castAdapter, usage, phi );
+        return CG::ExprValue( castAdapter, usage, basicBlockBuilder.getContext(), phi );
       }
-      else return CG::ExprValue();
+      else return CG::ExprValue( basicBlockBuilder.getContext() );
     }
   };
 };

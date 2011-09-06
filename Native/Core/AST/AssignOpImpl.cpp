@@ -7,10 +7,11 @@
 
 #include <Fabric/Core/AST/AssignOpImpl.h>
 #include <Fabric/Core/AST/Param.h>
+#include <Fabric/Core/AST/ParamVector.h>
 #include <Fabric/Core/CG/Adapter.h>
 #include <Fabric/Core/CG/OpTypes.h>
 #include <Fabric/Core/CG/OverloadNames.h>
-#include <Fabric/Core/Util/SimpleString.h>
+#include <Fabric/Base/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -20,18 +21,18 @@ namespace Fabric
     
     RC::ConstHandle<AssignOpImpl> AssignOpImpl::Create(
       CG::Location const &location,
-      std::string const &selfType,
+      std::string const &thisType,
       CG::AssignOpType assignOpType,
       RC::ConstHandle<AST::Param> rhs,
       RC::ConstHandle<CompoundStatement> const &body
       )
     {
-      return new AssignOpImpl( location, selfType, assignOpType, rhs, body );
+      return new AssignOpImpl( location, thisType, assignOpType, rhs, body );
     }
     
     AssignOpImpl::AssignOpImpl(
       CG::Location const &location,
-      std::string const &selfType,
+      std::string const &thisType,
       CG::AssignOpType assignOpType,
       RC::ConstHandle<AST::Param> rhs,
       RC::ConstHandle<CompoundStatement> const &body
@@ -39,7 +40,7 @@ namespace Fabric
       : MethodOpImpl(
         location,
         "",
-        selfType,
+        thisType,
         CG::assignOpMethodName( assignOpType ),
         ParamVector::Create( rhs ),
         body

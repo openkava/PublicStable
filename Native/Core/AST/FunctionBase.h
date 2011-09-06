@@ -6,6 +6,7 @@
 #define _FABRIC_AST_FUNCTION_BASE_H
 
 #include <Fabric/Core/AST/Global.h>
+#include <Fabric/Core/AST/CompoundStatement.h>
 
 namespace llvm
 {
@@ -22,7 +23,6 @@ namespace Fabric
   
   namespace AST
   {
-    class CompoundStatement;
     class ParamVector;
     
     class FunctionBase : public Global
@@ -39,8 +39,7 @@ namespace Fabric
       }
       RC::ConstHandle<CompoundStatement> getBody() const;
       
-      virtual void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
-      
+      virtual void registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const;
       virtual void llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctionBodies ) const;
       
     protected:
@@ -48,7 +47,8 @@ namespace Fabric
       FunctionBase(
         CG::Location const &location,
         std::string const &returnTypeName,
-        RC::ConstHandle<CompoundStatement> const &body
+        RC::ConstHandle<CompoundStatement> const &body,
+        bool exportSymbol = false
         );
       
       virtual void appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const;
@@ -57,6 +57,7 @@ namespace Fabric
     
       std::string m_returnTypeName;
       RC::ConstHandle<CompoundStatement> m_body;
+      bool m_exportSymbol;
     };
   };
 };

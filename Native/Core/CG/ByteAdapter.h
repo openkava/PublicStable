@@ -22,15 +22,21 @@ namespace Fabric
       
     public:
       
-      virtual std::string toString( void const *data ) const;
+      // Adapter
       
-      llvm::Constant *llvmConst( uint8_t value ) const;
+      virtual std::string toString( void const *data ) const;
+      virtual llvm::Constant *llvmDefaultValue( BasicBlockBuilder &basicBlockBuilder ) const;
+      virtual void llvmCompileToModule( ModuleBuilder &moduleBuilder ) const;
+
+      // ByteAdapter
+      
+      llvm::Constant *llvmConst( RC::Handle<Context> const &context, uint8_t value ) const;
       
     protected:
     
       ByteAdapter( RC::ConstHandle<Manager> const &manager, RC::ConstHandle<RT::NumericDesc> const &byteDesc );
       
-      virtual void llvmPrepareModule( ModuleBuilder &moduleBuilder, bool buildFunctions ) const;
+      virtual llvm::Type const *buildLLVMRawType( RC::Handle<Context> const &context ) const;
       
     private:
     

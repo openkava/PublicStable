@@ -16,16 +16,11 @@ namespace Fabric
     class JSONGenerator;
   };
   
-  namespace JSON
-  {
-    class Value;
-    class Array;
-  };
-  
   namespace CG
   {
     class BasicBlockBuilder;
     class Diagnostics;
+    class Manager;
     class ModuleBuilder;
   };
   
@@ -41,17 +36,13 @@ namespace Fabric
 
       void appendJSON( Util::JSONGenerator const &jsonGenerator ) const;
       
-      void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const;
+      void registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const;
     
       void llvmCompileToBuilder( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const;
 
     protected:
     
       StatementVector();
-      
-    private:
-    
-      mutable RC::ConstHandle<JSON::Value> m_jsonValue;
     };
   };
 };

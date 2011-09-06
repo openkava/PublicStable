@@ -32,17 +32,17 @@ namespace Fabric
     std::string uniOpOverloadName( UniOpType type, RC::ConstHandle< CG::Adapter > const &adapter );
     std::string binOpOverloadName( BinOpType type, RC::ConstHandle< CG::Adapter > const &lhsAdapter, RC::ConstHandle<CG::Adapter> const &rhsAdapter );
     
-    std::string methodOverloadName( std::string const &name, RC::ConstHandle<CG::Adapter> const &selfType, std::vector< RC::ConstHandle<CG::Adapter> > const &paramTypes );
-    inline std::string methodOverloadName( std::string const &name, RC::ConstHandle<CG::Adapter> const &selfType )
+    std::string methodOverloadName( std::string const &name, RC::ConstHandle<CG::Adapter> const &thisType, std::vector< RC::ConstHandle<CG::Adapter> > const &paramTypes );
+    inline std::string methodOverloadName( std::string const &name, RC::ConstHandle<CG::Adapter> const &thisType )
     {
       std::vector< RC::ConstHandle<CG::Adapter> > paramTypes;
-      return methodOverloadName( name, selfType, paramTypes );
+      return methodOverloadName( name, thisType, paramTypes );
     }
-    inline std::string methodOverloadName( std::string const &name, RC::ConstHandle<CG::Adapter> const &selfType, RC::ConstHandle<CG::Adapter> const &param1Type )
+    inline std::string methodOverloadName( std::string const &name, RC::ConstHandle<CG::Adapter> const &thisType, RC::ConstHandle<CG::Adapter> const &param1Type )
     {
       std::vector< RC::ConstHandle<CG::Adapter> > paramTypes;
       paramTypes.push_back( param1Type );
-      return methodOverloadName( name, selfType, paramTypes );
+      return methodOverloadName( name, thisType, paramTypes );
     }
   };
 };

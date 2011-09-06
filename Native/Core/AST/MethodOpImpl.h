@@ -33,7 +33,7 @@ namespace Fabric
       static RC::ConstHandle<MethodOpImpl> Create(
         CG::Location const &location,
         std::string const &returnTypeName,
-        std::string const &selfTypeName,
+        std::string const &thisTypeName,
         std::string const &methodName,
         RC::ConstHandle<ParamVector> const &params,
         RC::ConstHandle<CompoundStatement> const &body
@@ -47,7 +47,7 @@ namespace Fabric
       MethodOpImpl(
         CG::Location const &location,
         std::string const &returnTypeName,
-        std::string const &selfTypeName,
+        std::string const &thisTypeName,
         std::string const &methodName,
         RC::ConstHandle<ParamVector> const &params,
         RC::ConstHandle<CompoundStatement> const &body

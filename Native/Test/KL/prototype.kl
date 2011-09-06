@@ -1,6 +1,6 @@
 function Scalar externalSquare( Scalar value );
 
-function entry()
+operator entry()
 {
   report externalSquare( 7 );
 }

@@ -34,7 +34,9 @@ namespace Fabric
       RC::ConstHandle<IO::Dir> rootDir = IO::Dir::Private();
       RC::ConstHandle<IO::Dir> baseDir = IO::Dir::Create( rootDir, "IRCache" );
       baseDir->recursiveDeleteFilesOlderThan( time(NULL) - FABRIC_IR_CACHE_EXPIRY_SEC );
-      m_dir = IO::Dir::Create( baseDir, _(buildCacheGeneration) );
+      RC::ConstHandle<IO::Dir> osDir = IO::Dir::Create( baseDir, buildOS );
+      RC::ConstHandle<IO::Dir> archDir = IO::Dir::Create( osDir, runningArch );
+      m_dir = IO::Dir::Create( archDir, _(buildCacheGeneration) );
     }
     
     std::string IRCache::keyForAST( RC::ConstHandle<AST::GlobalList> const &ast ) const

@@ -25,7 +25,6 @@ namespace Fabric
     class Mutex
     {
       friend class Cond;
-      friend class ThreadPool;
       
     public:
     
@@ -61,12 +60,12 @@ namespace Fabric
         Lock( Mutex &mutex )
           : m_mutex( mutex )
         {
-          m_mutex.lock();
+          m_mutex.acquire();
         }
         
         ~Lock()
         {
-          m_mutex.unlock();
+          m_mutex.release();
         }
         
       private:
@@ -74,9 +73,7 @@ namespace Fabric
         Mutex &m_mutex;
       };
       
-    protected:
-    
-      void lock()
+      void acquire()
       {
 #if defined(FABRIC_OS_WINDOWS) 
         ::EnterCriticalSection( &m_cs );
@@ -86,7 +83,7 @@ namespace Fabric
 #endif
       }
       
-      void unlock()
+      void release()
       {
 #if defined(FABRIC_OS_WINDOWS) 
         ::LeaveCriticalSection( &m_cs );

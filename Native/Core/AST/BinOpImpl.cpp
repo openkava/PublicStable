@@ -7,9 +7,10 @@
 
 #include <Fabric/Core/AST/BinOpImpl.h>
 #include <Fabric/Core/AST/Param.h>
+#include <Fabric/Core/AST/ParamVector.h>
 #include <Fabric/Core/CG/Adapter.h>
 #include <Fabric/Core/CG/OverloadNames.h>
-#include <Fabric/Core/Util/SimpleString.h>
+#include <Fabric/Base/Util/SimpleString.h>
 
 namespace Fabric
 {

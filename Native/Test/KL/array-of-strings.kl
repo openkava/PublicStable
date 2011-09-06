@@ -1,4 +1,4 @@
-function entry()
+operator entry()
 {
   var String a[];
   report a;

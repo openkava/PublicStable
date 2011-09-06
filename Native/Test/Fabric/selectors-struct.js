@@ -23,9 +23,9 @@ var desc = {
   kBindings: "\
 function Vec3( Scalar x, Scalar y, Scalar z )\n\
 {\n\
-  self.x = x;\n\
-  self.y = y;\n\
-  self.z = z;\n\
+  this.x = x;\n\
+  this.y = y;\n\
+  this.z = z;\n\
 }\n\
 "
 };

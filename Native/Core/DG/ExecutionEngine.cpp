@@ -6,8 +6,8 @@
 #include <Fabric/Core/DG/Context.h>
 #include <Fabric/Core/KL/Externals.h>
 #include <Fabric/Core/MT/LogCollector.h>
-#include <Fabric/Core/Util/UnorderedMap.h>
 #include <Fabric/Core/Plug/Manager.h>
+#include <Fabric/Core/CG/Context.h>
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/OCL/OCL.h>
 
@@ -37,6 +37,7 @@ namespace Fabric
       MT::tlsLogCollector.get()->add( buffer );
     }
 
+    MT::Mutex ExecutionEngine::s_currentContextMutex( "DG::ExecutionEngine::s_currentContext" );
     RC::ConstHandle<Context> ExecutionEngine::s_currentContext;
     
     void ExecutionEngine::Report( char const *data, size_t length )
@@ -69,13 +70,14 @@ namespace Fabric
       }
     }
 
-    RC::ConstHandle<ExecutionEngine> ExecutionEngine::Create( RC::ConstHandle<Context> const &context, llvm::Module *llvmModule )
+    RC::ConstHandle<ExecutionEngine> ExecutionEngine::Create( RC::ConstHandle<Context> const &context, RC::Handle<CG::Context> const &cgContext, llvm::Module *llvmModule )
     {
-      return new ExecutionEngine( context, llvmModule );
+      return new ExecutionEngine( context, cgContext, llvmModule );
     }
     
-    ExecutionEngine::ExecutionEngine( RC::ConstHandle<Context> const &context, llvm::Module *llvmModule )
+    ExecutionEngine::ExecutionEngine( RC::ConstHandle<Context> const &context, RC::Handle<CG::Context> const &cgContext, llvm::Module *llvmModule )
       : m_context( context.ptr() )
+      , m_cgContext( cgContext )
     {
       std::string errStr;
       m_llvmExecutionEngine.reset(
@@ -107,6 +109,7 @@ namespace Fabric
 
     ExecutionEngine::ContextSetter::ContextSetter( RC::ConstHandle<Context> const &context )
     {
+      s_currentContextMutex.acquire();
       m_oldContext = s_currentContext;
       s_currentContext = context;
     }
@@ -114,6 +117,7 @@ namespace Fabric
     ExecutionEngine::ContextSetter::~ContextSetter()
     {
       s_currentContext = m_oldContext;
+      s_currentContextMutex.release();
     }
   };
 };

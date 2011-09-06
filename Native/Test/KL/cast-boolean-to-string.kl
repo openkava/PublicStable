@@ -1,4 +1,4 @@
-function entry()
+operator entry()
 {
   var Boolean boolean = true;
   report boolean;

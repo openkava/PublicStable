@@ -22,7 +22,7 @@ namespace Fabric
         LEVEL_ERROR
       };
       
-      Diagnostic( Level level, std::string const &desc )
+      Diagnostic( Level level, Util::SimpleString const &desc )
         : m_level( level )
         , m_desc( desc )
       {
@@ -58,22 +58,22 @@ namespace Fabric
         return "<unknown level>";
       }
       
-      std::string const &getDesc() const
+      Util::SimpleString const &getDesc() const
       {
         return m_desc;
       }
       
-      std::string desc() const
+      Util::SimpleString desc() const
       {
         char buf[1024];
-        snprintf( buf, 1024, "%s: %s", getLevelDesc(), m_desc.c_str() );
-        return std::string( buf );
+        snprintf( buf, 1024, "%s: %s", getLevelDesc(), (const char*)m_desc );
+        return Util::SimpleString( buf );
       }
       
     private:
     
       Level m_level;
-      std::string m_desc;
+      Util::SimpleString m_desc;
     };
     
     class Diagnostics
@@ -93,7 +93,7 @@ namespace Fabric
         m_containsError = false;
       }
       
-      void add( Diagnostic::Level level, Location const &location, std::string const &desc )
+      void add( Diagnostic::Level level, Location const &location, Util::SimpleString const &desc )
       {
         Diagnostic diagnostic( level, desc );
         m_impl.insert( Impl::value_type( location, diagnostic ) );
@@ -102,7 +102,7 @@ namespace Fabric
         //FABRIC_LOG( "*** %u:%u: %s: %s\n", (unsigned)location.getLine(), (unsigned)location.getColumn(), diagnostic.getLevelDesc(), diagnostic.getDesc().c_str() );
       }
       
-      void addWarning( Location const &location, std::string const &desc )
+      void addWarning( Location const &location, Util::SimpleString const &desc )
       {
         add( Diagnostic::LEVEL_WARNING, location, desc );
       }
@@ -117,7 +117,7 @@ namespace Fabric
         add( Diagnostic::LEVEL_WARNING, location, buf );
       }
       
-      void addError( Location const &location, std::string const &desc )
+      void addError( Location const &location, Util::SimpleString const &desc )
       {
         add( Diagnostic::LEVEL_ERROR, location, desc );
       }

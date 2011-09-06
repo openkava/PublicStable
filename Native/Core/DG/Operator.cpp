@@ -328,7 +328,7 @@ namespace Fabric
           sub->set( "line", JSON::Integer::Create( location.getLine() ) );
           sub->set( "column", JSON::Integer::Create( location.getColumn() ) );
           sub->set( "level", JSON::String::Create( diagnostic.getLevelDesc() ) );
-          sub->set( "desc", JSON::String::Create( diagnostic.getDesc() ) );
+          sub->set( "desc", JSON::String::Create( diagnostic.getDesc().getData(), diagnostic.getDesc().getLength() ) );
           
           result->push_back( sub );
         }

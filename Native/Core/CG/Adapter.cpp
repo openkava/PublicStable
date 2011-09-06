@@ -3,6 +3,7 @@
  */
  
 #include "Adapter.h"
+#include "Context.h"
 #include "IntegerAdapter.h"
 #include "Manager.h"
 #include "ModuleBuilder.h"
@@ -47,11 +48,6 @@ namespace Fabric
       return getManager()->getRTManager();
     }
     
-    llvm::LLVMContext &Adapter::getLLVMContext() const
-    {
-      return getManager()->getLLVMContext();
-    }
-    
     RC::ConstHandle<RT::Desc> Adapter::getDesc() const
     {
       return m_desc;
@@ -73,7 +69,7 @@ namespace Fabric
       RC::ConstHandle< IntegerAdapter > integerAdapter = basicBlockBuilder.getManager()->getIntegerAdapter();
 
       std::vector< llvm::Type const * > argTypes;
-      argTypes.push_back( integerAdapter->llvmRType() );
+      argTypes.push_back( integerAdapter->llvmRType( basicBlockBuilder.getContext() ) );
       llvm::FunctionType const *funcType = llvm::FunctionType::get( basicBlockBuilder->getInt8PtrTy(), argTypes, false );
 
       llvm::AttributeWithIndex AWI[1];
@@ -91,7 +87,7 @@ namespace Fabric
 
       std::vector< llvm::Type const * > argTypes;
       argTypes.push_back( basicBlockBuilder->getInt8PtrTy() );
-      argTypes.push_back( integerAdapter->llvmRType() );
+      argTypes.push_back( integerAdapter->llvmRType( basicBlockBuilder.getContext() ) );
       llvm::FunctionType const *funcType = llvm::FunctionType::get( basicBlockBuilder->getInt8PtrTy(), argTypes, false );
 
       llvm::AttributeWithIndex AWI[1];
@@ -127,15 +123,27 @@ namespace Fabric
       RC::ConstHandle<FunctionSymbol> functionSymbol = basicBlockBuilder.maybeGetFunction( name );
       if ( functionSymbol )
       {
-        ExprValue dstExprValue = ExprValue( this, USAGE_LVALUE, dstLValue );
-        ExprValue srcExprValue = ExprValue( this, USAGE_RVALUE, srcRValue );
+        ExprValue dstExprValue = ExprValue( this, USAGE_LVALUE, basicBlockBuilder.getContext(), dstLValue );
+        ExprValue srcExprValue = ExprValue( this, USAGE_RVALUE, basicBlockBuilder.getContext(), srcRValue );
         functionSymbol->llvmCreateCall( basicBlockBuilder, dstExprValue, srcExprValue );
       }
       else llvmDefaultAssign( basicBlockBuilder, dstLValue, srcRValue );
     }
+    
+    void Adapter::llvmStore( BasicBlockBuilder &basicBlockBuilder, llvm::Value *dstLValue, llvm::Value *srcRValue ) const
+    {
+      llvm::Value *srcRawValue;
+      if ( m_flags & FL_PASS_BY_REFERENCE )
+        srcRawValue = basicBlockBuilder->CreateLoad( srcRValue );
+      else srcRawValue = srcRValue;
+      basicBlockBuilder->CreateStore( srcRawValue, dstLValue );
+    }
 
     llvm::Value *Adapter::llvmCast( BasicBlockBuilder &basicBlockBuilder, ExprValue exprValue ) const
     {
+      if ( !exprValue.getAdapter() )
+        throw Exception( "function does not return a value" );
+        
       if ( exprValue.getAdapter()->getDesc()->getImpl() == getDesc()->getImpl() )
       {
         switch ( exprValue.getUsage() )
@@ -156,7 +164,7 @@ namespace Fabric
       else
       {
         std::string name = constructOverloadName( this, exprValue.getAdapter() );
-        exprValue.getAdapter()->llvmPrepareModule( basicBlockBuilder.getModuleBuilder(), true );
+        exprValue.getAdapter()->llvmCompileToModule( basicBlockBuilder.getModuleBuilder() );
         RC::ConstHandle<FunctionSymbol> functionSymbol = basicBlockBuilder.maybeGetFunction( name );
         if ( !functionSymbol )
           throw Exception( "no cast exists from " + exprValue.getTypeUserName() + " to " + getUserName() );
@@ -176,29 +184,33 @@ namespace Fabric
             break;
         }
         
-        ExprValue srcExprValue( exprValue.getAdapter(), USAGE_RVALUE, srcRValue );
+        ExprValue srcExprValue( exprValue.getAdapter(), USAGE_RVALUE, basicBlockBuilder.getContext(), srcRValue );
         llvm::Value *dstLValue = llvmAlloca( basicBlockBuilder, "castTo"+getUserName() );
         llvmInit( basicBlockBuilder, dstLValue );
-        ExprValue dstExprValue( this, USAGE_LVALUE, dstLValue );
+        ExprValue dstExprValue( this, USAGE_LVALUE, basicBlockBuilder.getContext(), dstLValue );
         functionSymbol->llvmCreateCall( basicBlockBuilder, dstExprValue, srcExprValue );
         return llvmLValueToRValue( basicBlockBuilder, dstLValue );
       }
     }
 
-    llvm::Type const *Adapter::llvmSizeType() const
+    llvm::Type const *Adapter::llvmSizeType( RC::Handle<Context> const &context ) const
     {
       llvm::Type const *llvmSizeType;
       if ( sizeof(size_t) == sizeof(int32_t) )
-        llvmSizeType = llvm::Type::getInt32Ty( getLLVMContext() );
+        llvmSizeType = llvm::Type::getInt32Ty( context->getLLVMContext() );
       else if ( sizeof(size_t) == sizeof(int64_t) )
-        llvmSizeType = llvm::Type::getInt64Ty( getLLVMContext() );
-      else FABRIC_ASSERT( false && "Unable to determin LLVM type for size_t" );
+        llvmSizeType = llvm::Type::getInt64Ty( context->getLLVMContext() );
+      else
+      {
+        FABRIC_ASSERT( false && "Unable to determin LLVM type for size_t" );
+        llvmSizeType = 0;
+      }
       return llvmSizeType;
     }
 
     llvm::Value *Adapter::llvmAlloca( BasicBlockBuilder &basicBlockBuilder, std::string const &name ) const
     {
-      llvm::Instruction *allocaInst = new llvm::AllocaInst( llvmRawType() );
+      llvm::Instruction *allocaInst = new llvm::AllocaInst( llvmRawType( basicBlockBuilder.getContext() ) );
       allocaInst->setName( name );
       
       FunctionBuilder &functionBuilder = basicBlockBuilder.getFunctionBuilder();
@@ -217,18 +229,18 @@ namespace Fabric
     
     llvm::Value *Adapter::llvmLValueToRValue( BasicBlockBuilder &basicBlockBuilder, llvm::Value *lValue ) const
     {
-      FABRIC_ASSERT( lValue->getType() == llvmLType() );
+      FABRIC_ASSERT( lValue->getType() == llvmLType( basicBlockBuilder.getContext() ) );
       llvm::Value *result;
       if ( m_flags & FL_PASS_BY_REFERENCE )
         result = lValue;
       else result = basicBlockBuilder->CreateLoad( lValue );
-      FABRIC_ASSERT( result->getType() == llvmRType() );
+      FABRIC_ASSERT( result->getType() == llvmRType( basicBlockBuilder.getContext() ) );
       return result;
     }
 
     llvm::Value *Adapter::llvmRValueToLValue( BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const
     {
-      FABRIC_ASSERT( rValue->getType() == llvmRType() );
+      FABRIC_ASSERT( rValue->getType() == llvmRType( basicBlockBuilder.getContext() ) );
       llvm::Value *result;
       if ( m_flags & FL_PASS_BY_REFERENCE )
         result = rValue;
@@ -238,25 +250,33 @@ namespace Fabric
         basicBlockBuilder->CreateStore( rValue, lValue );
         result = lValue;
       }
-      FABRIC_ASSERT( result->getType() == llvmLType() );
+      FABRIC_ASSERT( result->getType() == llvmLType( basicBlockBuilder.getContext() ) );
       return result;
     }
 
-    llvm::Type const *Adapter::llvmRawType() const { return m_llvmType; }
-    
-    llvm::Type const *Adapter::llvmLType() const { return m_llvmTypePtr; }
-    
-    llvm::Type const *Adapter::llvmRType() const
+    llvm::Type const *Adapter::llvmRawType( RC::Handle<Context> const &context ) const
     {
-      return (m_flags & FL_PASS_BY_REFERENCE)? m_llvmTypePtr: m_llvmType;
+      llvm::Type const *llvmRawType = context->getLLVMRawType( m_codeName );
+      if ( !llvmRawType )
+      {
+        llvmRawType = buildLLVMRawType( context );
+        context->setLLVMRawType( m_codeName, llvmRawType );
+      }
+      return llvmRawType;
     }
 
-    void Adapter::setLLVMType( llvm::Type const *llvmType )
+    llvm::Type const *Adapter::llvmLType( RC::Handle<Context> const &context ) const
     {
-      m_llvmType = llvmType;
-      m_llvmTypePtr = llvmType->getPointerTo();
+      return llvmRawType( context )->getPointerTo();
     }
     
+    llvm::Type const *Adapter::llvmRType( RC::Handle<Context> const &context ) const
+    {
+      if ( (m_flags & FL_PASS_BY_REFERENCE) )
+        return llvmRawType( context )->getPointerTo();
+      else return llvmRawType( context );
+    }
+
     llvm::Constant *Adapter::llvmDefaultRValue( BasicBlockBuilder &basicBlockBuilder ) const
     {
       return llvmDefaultValue( basicBlockBuilder );
@@ -282,7 +302,7 @@ namespace Fabric
       llvm::GlobalVariable *llvmAdapterGlobalValue = module.getNamedGlobal( name );
       if( !llvmAdapterGlobalValue )
       {
-        llvm::Type const *int8PtrTy = llvm::Type::getInt8PtrTy( getLLVMContext() );
+        llvm::Type const *int8PtrTy = llvm::Type::getInt8PtrTy( module.getContext() );
         
         llvmAdapterGlobalValue = new llvm::GlobalVariable(
           module,
@@ -299,8 +319,20 @@ namespace Fabric
     
     llvm::Value *Adapter::llvmAdapterPtr( BasicBlockBuilder &basicBlockBuilder ) const
     {
-      llvm::Type const *int8PtrTy = llvm::Type::getInt8PtrTy( getLLVMContext() );
+      llvm::Type const *int8PtrTy = llvm::Type::getInt8PtrTy( basicBlockBuilder.getContext()->getLLVMContext() );
       return basicBlockBuilder->CreatePointerCast( llvmAdapterGlobalValue( *basicBlockBuilder.getModuleBuilder() ), int8PtrTy );
+    }
+      
+    RC::ConstHandle<Adapter> Adapter::getAdapter( RC::ConstHandle<RT::Desc> const &desc ) const
+    {
+      return m_manager.makeStrong()->getAdapter( desc );
+    }
+
+    void Adapter::llvmInit( BasicBlockBuilder &basicBlockBuilder, llvm::Value *lValue ) const
+    {
+      llvm::Value *defaultRValue = llvmDefaultRValue( basicBlockBuilder );
+      llvmRetain( basicBlockBuilder, defaultRValue );
+      llvmStore( basicBlockBuilder, lValue, defaultRValue );
     }
   };
 };

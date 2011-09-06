@@ -66,7 +66,7 @@ namespace Fabric
       RC::ConstHandle<FloatAdapter> getFP64Adapter() const;
       RC::ConstHandle<StringAdapter> getStringAdapter() const;
       RC::ConstHandle<OpaqueAdapter> getDataAdapter() const;
-      RC::ConstHandle<ConstStringAdapter> getConstStringAdapter( size_t length ) const;
+      RC::ConstHandle<ConstStringAdapter> getConstStringAdapter() const;
       
       RC::ConstHandle<VariableArrayAdapter> getVariableArrayOf( RC::ConstHandle<Adapter> const &adapter ) const;
       RC::ConstHandle<SlicedArrayAdapter> getSlicedArrayOf( RC::ConstHandle<Adapter> const &adapter ) const;
@@ -74,10 +74,6 @@ namespace Fabric
       
       RC::ConstHandle<StructAdapter> registerStruct( std::string const &name, RT::StructMemberInfoVector const &structMemberInfoVector );
       RC::ConstHandle<Adapter> registerAlias( std::string const &name, RC::ConstHandle<Adapter> const &adapter );
-      
-      llvm::LLVMContext &getLLVMContext() const;
-      
-      void llvmPrepareModule( ModuleBuilder &moduleBuilder ) const;
       
       void *llvmResolveExternalFunction( std::string const &functionName ) const;
       void llvmAddGlobalMappingsToExecutionEngine( llvm::ExecutionEngine *executionEngine, llvm::Module &module ) const;
@@ -92,8 +88,6 @@ namespace Fabric
     
       typedef std::map< size_t, RC::ConstHandle<ConstStringAdapter> > ConstStringAdapters;
       
-      mutable llvm::LLVMContext m_llvmContext;
-    
       RC::Handle<RT::Manager> m_rtManager;
       
       mutable DescToAdapterMap m_descToAdapterMap;
@@ -106,7 +100,7 @@ namespace Fabric
       mutable RC::ConstHandle<FloatAdapter> m_fp64Adapter;
       mutable RC::ConstHandle<StringAdapter> m_stringAdapter;
       mutable RC::ConstHandle<OpaqueAdapter> m_dataAdapter;
-      mutable ConstStringAdapters m_constStringAdapters;
+      mutable RC::ConstHandle<ConstStringAdapter> m_constStringAdapter;
     };
   };
 };

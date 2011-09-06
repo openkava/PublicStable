@@ -31,7 +31,6 @@ namespace Fabric
     
       // Adapter
 
-      virtual void llvmInit( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *value ) const;
       virtual void llvmRetain( BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const;
       virtual void llvmDefaultAssign( BasicBlockBuilder &basicBlockBuilder, llvm::Value *dstLValue, llvm::Value *srcRValue ) const;
       virtual void llvmRelease( BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const;
@@ -40,7 +39,7 @@ namespace Fabric
       virtual llvm::Constant *llvmDefaultRValue( BasicBlockBuilder &basicBlockBuilder ) const;
       virtual llvm::Constant *llvmDefaultLValue( BasicBlockBuilder &basicBlockBuilder ) const;
  
-      virtual void llvmPrepareModule( ModuleBuilder &moduleBuilder, bool buildFunctions ) const;
+      virtual void llvmCompileToModule( ModuleBuilder &moduleBuilder ) const;
       virtual void *llvmResolveExternalFunction( std::string const &functionName ) const;
       
       virtual std::string toString( void const *data ) const;
@@ -60,6 +59,8 @@ namespace Fabric
     protected:
     
       StructAdapter( RC::ConstHandle<Manager> const &manager, RC::ConstHandle<RT::StructDesc> const &structDesc );
+      
+      virtual llvm::Type const *buildLLVMRawType( RC::Handle<Context> const &context ) const;
 
     private:
     

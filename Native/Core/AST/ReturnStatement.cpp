@@ -9,7 +9,7 @@
 #include <Fabric/Core/CG/Adapter.h>
 #include <Fabric/Core/CG/Scope.h>
 #include <Fabric/Core/CG/FunctionBuilder.h>
-#include <Fabric/Core/Util/SimpleString.h>
+#include <Fabric/Base/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -30,10 +30,10 @@ namespace Fabric
         m_expr->appendJSON( jsonObjectGenerator.makeMember( "expr" ) );
     }
     
-    void ReturnStatement::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    void ReturnStatement::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const
     {
       if ( m_expr )
-        m_expr->llvmPrepareModule( moduleBuilder, diagnostics );
+        m_expr->registerTypes( cgManager, diagnostics );
     }
 
     void ReturnStatement::llvmCompileToBuilder( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const
@@ -41,6 +41,8 @@ namespace Fabric
       try
       {
         CG::ReturnInfo const &returnInfo = basicBlockBuilder.getFunctionBuilder().getScope().getReturnInfo();
+        if ( basicBlockBuilder->GetInsertBlock()->getTerminator() )
+          throw CG::Error( getLocation(), "unreachable code" );
         if ( m_expr )
         {
           if ( !returnInfo )

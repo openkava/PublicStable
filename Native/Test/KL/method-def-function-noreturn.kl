@@ -7,18 +7,18 @@ struct Vec3
 
 function Vec3 ( Scalar x, Scalar y, Scalar z )
 {
-  self.x = x;
-  self.y = y;
-  self.z = z;
+  this.x = x;
+  this.y = y;
+  this.z = z;
 }
 
 function Vec3.normalize()
 {
-  var Scalar normSq = self.x*self.x + self.y*self.y + self.z*self.z;
+  var Scalar normSq = this.x*this.x + this.y*this.y + this.z*this.z;
   var Scalar norm = sqrt( normSq );
-  self.x /= norm;
-  self.y /= norm;
-  self.z /= norm;
+  this.x /= norm;
+  this.y /= norm;
+  this.z /= norm;
 }
 
 function Scalar dotProd( Vec3 lhs, Vec3 rhs )
@@ -26,7 +26,7 @@ function Scalar dotProd( Vec3 lhs, Vec3 rhs )
   return lhs.x*rhs.x + lhs.y*rhs.y + lhs.z*rhs.z;
 }
 
-function entry()
+operator entry()
 {
   var Vec3 vec3( 1.0, 2.0, 3.0 );
   report vec3.normalize();

@@ -10,7 +10,6 @@
 #include <Fabric/Base/RC/WeakConstHandle.h>
 #include <Fabric/Core/RT/ImplType.h>
 #include <Fabric/Core/Util/Assert.h>
-#include <Fabric/Core/Util/UnorderedMap.h>
 
 #include <stdint.h>
 
@@ -36,11 +35,12 @@ namespace Fabric
   
   namespace CG
   {
-    class Manager;
-    class ModuleScope;
-    class ModuleBuilder;
     class BasicBlockBuilder;
+    class Context;
     class ExprValue;
+    class Manager;
+    class ModuleBuilder;
+    class ModuleScope;
     
     class Adapter : public RC::Object
     {
@@ -57,7 +57,6 @@ namespace Fabric
       RT::ImplType getType() const;
       
       RC::ConstHandle<Manager> getManager() const;
-      llvm::LLVMContext &getLLVMContext() const;
       RC::ConstHandle<RT::Manager> getRTManager() const;    
       RC::ConstHandle<RT::Desc> getDesc() const;
       RC::ConstHandle<RT::Impl> getImpl() const;
@@ -70,24 +69,26 @@ namespace Fabric
       llvm::Value *llvmCallRealloc( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *data, llvm::Value *newSize ) const;
       void llvmCallFree( BasicBlockBuilder &basicBlockBuilder, llvm::Value *data ) const;
   
-      llvm::Type const *llvmRawType() const;
-      llvm::Type const *llvmLType() const;
-      llvm::Type const *llvmRType() const;
+      virtual llvm::Type const *buildLLVMRawType( RC::Handle<Context> const &context ) const = 0;
+      llvm::Type const *llvmRawType( RC::Handle<Context> const &context ) const;
+      llvm::Type const *llvmLType( RC::Handle<Context> const &context ) const;
+      llvm::Type const *llvmRType( RC::Handle<Context> const &context ) const;
       bool usesReturnLValue() const { return m_flags & FL_PASS_BY_REFERENCE; }
       
       llvm::Value *llvmLValueToRValue( BasicBlockBuilder &basicBlockBuilder, llvm::Value *lValue ) const;
       llvm::Value *llvmRValueToLValue( BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const;
       
-      virtual void llvmInit( BasicBlockBuilder &basicBlockBuilder, llvm::Value *value ) const = 0;
+      void llvmInit( BasicBlockBuilder &basicBlockBuilder, llvm::Value *value ) const;
       virtual void llvmRetain( BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const = 0;
       virtual void llvmDefaultAssign( BasicBlockBuilder &basicBlockBuilder, llvm::Value *dstLValue, llvm::Value *srcRValue ) const = 0;
+      virtual void llvmStore( BasicBlockBuilder &basicBlockBuilder, llvm::Value *dstLValue, llvm::Value *srcRValue ) const;
       virtual void llvmRelease( BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const = 0;
       
       virtual llvm::Constant *llvmDefaultValue( BasicBlockBuilder &basicBlockBuilder ) const = 0;
       virtual llvm::Constant *llvmDefaultRValue( BasicBlockBuilder &basicBlockBuilder ) const;
       virtual llvm::Constant *llvmDefaultLValue( BasicBlockBuilder &basicBlockBuilder ) const;
 
-      virtual void llvmPrepareModule( ModuleBuilder &moduleBuilder, bool buildFunctions ) const = 0;
+      virtual void llvmCompileToModule( ModuleBuilder &moduleBuilder ) const = 0;
       virtual void *llvmResolveExternalFunction( std::string const &functionName ) const = 0;
       
       virtual std::string toString( void const *data ) const = 0;
@@ -99,9 +100,9 @@ namespace Fabric
     
       Adapter( RC::ConstHandle<Manager> const &manager, RC::ConstHandle<RT::Desc> const &desc, Flags flags );
       
-      void setLLVMType( llvm::Type const *llvmType );
+      RC::ConstHandle<Adapter> getAdapter( RC::ConstHandle<RT::Desc> const &desc ) const;
       
-      llvm::Type const *llvmSizeType() const;
+      llvm::Type const *llvmSizeType( RC::Handle<Context> const &context ) const;
       
     private:
     
@@ -109,8 +110,6 @@ namespace Fabric
       RC::ConstHandle<RT::Desc> m_desc;
       Flags m_flags;
       std::string m_codeName;
-      llvm::Type const *m_llvmType;
-      llvm::PointerType const *m_llvmTypePtr;
     };
   };
   

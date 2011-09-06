@@ -10,7 +10,7 @@
 #include <Fabric/Core/CG/Location.h>
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/CG/ModuleBuilder.h>
-#include <Fabric/Core/Util/SimpleString.h>
+#include <Fabric/Base/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -64,9 +64,28 @@ namespace Fabric
       return CG::ExprType( getAdapter( cgManager ), m_usage );
     }
     
-    void Param::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    RC::ConstHandle<CG::Adapter> Param::getAdapter( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const
     {
-      moduleBuilder.getAdapter( m_type, getLocation() )->llvmPrepareModule( moduleBuilder, true );
+      RC::ConstHandle<CG::Adapter> result;
+      try
+      {
+        result = cgManager->getAdapter( m_type );
+      }
+      catch ( Exception e )
+      {
+        addError( diagnostics, e );
+      }
+      return result;
+    }
+    
+    void Param::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const
+    {
+      getAdapter( cgManager, diagnostics );
+    }
+
+    void Param::llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctionBodies ) const
+    {
+      getAdapter( moduleBuilder.getManager(), diagnostics )->llvmCompileToModule( moduleBuilder );
     }
   };
 };

@@ -10,7 +10,7 @@
 #include <Fabric/Core/RT/Manager.h>
 #include <Fabric/Core/RT/StructDesc.h>
 #include <Fabric/Core/RT/StructMemberInfo.h>
-#include <Fabric/Core/Util/SimpleString.h>
+#include <Fabric/Base/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -55,14 +55,14 @@ namespace Fabric
       }
       catch ( Exception e )
       {
-        addError( diagnostics, e.getDesc() );
+        addError( diagnostics, e );
       }
     }
     
-    void StructDecl::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    void StructDecl::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const
     {
-      m_members->llvmPrepareModule( moduleBuilder, diagnostics );
-      registerTypes( moduleBuilder.getManager()->getRTManager(), diagnostics );
+      m_members->registerTypes( cgManager, diagnostics );
+      registerTypes( cgManager->getRTManager(), diagnostics );
     }
 
     void StructDecl::llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctionBodies ) const

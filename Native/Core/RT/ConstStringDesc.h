@@ -19,10 +19,13 @@ namespace Fabric
       
     public:
       
-      size_t getLength() const;
-    
       virtual RC::Handle<JSON::Object> jsonDesc() const;
             
+      char const *getValueData( void const *src ) const;
+      size_t getValueLength( void const *src ) const;
+
+      std::string toString( void const *data ) const;
+      
     protected:
     
       ConstStringDesc( std::string const &name, RC::ConstHandle<ConstStringImpl> const &constStringImpl );

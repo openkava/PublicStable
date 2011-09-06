@@ -4,9 +4,10 @@
  
 #include "Function.h"
 #include <Fabric/Core/AST/Param.h>
+#include <Fabric/Core/AST/ParamVector.h>
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/CG/OverloadNames.h>
-#include <Fabric/Core/Util/SimpleString.h>
+#include <Fabric/Base/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -23,7 +24,7 @@ namespace Fabric
       RC::ConstHandle<CompoundStatement> const &body
       )
     {
-      return new Function( location, friendlyName, entryName, returnTypeName, params, body );
+      return new Function( location, friendlyName, entryName, returnTypeName, params, body, !body );
     }
     
     RC::ConstHandle<Function> Function::Create(
@@ -35,18 +36,19 @@ namespace Fabric
       RC::ConstHandle<CompoundStatement> const &body
       )
     {
-      return new Function( location, friendlyName, entryName? *entryName: friendlyName, returnTypeName, params, body );
+      return new Function( location, friendlyName, entryName? *entryName: friendlyName, returnTypeName, params, body, !body );
     }
     
     Function::Function(
-        CG::Location const &location,
-        std::string const &friendlyName,
-        std::string const &entryName,
-        std::string const &returnTypeName,
-        RC::ConstHandle<ParamVector> const &params,
-        RC::ConstHandle<CompoundStatement> const &body
-        )
-      : FunctionBase( location, returnTypeName, body )
+      CG::Location const &location,
+      std::string const &friendlyName,
+      std::string const &entryName,
+      std::string const &returnTypeName,
+      RC::ConstHandle<ParamVector> const &params,
+      RC::ConstHandle<CompoundStatement> const &body,
+      bool exportSymbol
+      )
+      : FunctionBase( location, returnTypeName, body, exportSymbol )
       , m_friendlyName( friendlyName )
       , m_entryName( entryName )
       , m_params( params )
@@ -79,7 +81,7 @@ namespace Fabric
     RC::ConstHandle<ParamVector> Function::getParams( RC::Handle<CG::Manager> const &cgManager ) const
     {
       if ( cgManager->maybeGetAdapter( m_friendlyName ) )
-        return ParamVector::Create( Param::Create( getLocation(), "self", m_friendlyName, CG::USAGE_LVALUE ), m_params );
+        return ParamVector::Create( Param::Create( getLocation(), "this", m_friendlyName, CG::USAGE_LVALUE ), m_params );
       else return m_params;
     }
   };

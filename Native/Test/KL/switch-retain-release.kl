@@ -6,7 +6,7 @@ function display( String string ) {
   }
 }
 
-function entry() {
+operator entry() {
   String s = "hello";
   report "s.refCount = " + s.refCount;
   display( s );

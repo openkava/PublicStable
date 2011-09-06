@@ -7,7 +7,7 @@
 #include <Fabric/Core/AST/Global.h>
 #include <Fabric/Core/CG/Diagnostics.h>
 #include <Fabric/Core/CG/Error.h>
-#include <Fabric/Core/Util/SimpleString.h>
+#include <Fabric/Base/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -49,25 +49,25 @@ namespace Fabric
         m_after->appendJSON( jsonArrayGenerator );
     }
     
-    void GlobalList::registerTypes( RC::Handle<RT::Manager> const &rtManager, CG::Diagnostics &diagnostics ) const
+    void GlobalList::collectUses( UseNameToLocationMap &uses ) const
     {
       if ( m_before )
-        m_before->registerTypes( rtManager, diagnostics );
+        m_before->collectUses( uses );
       if ( m_global )
-        m_global->registerTypes( rtManager, diagnostics );
+        m_global->collectUses( uses );
       if ( m_after )
-        m_after->registerTypes( rtManager, diagnostics );
+        m_after->collectUses( uses );
     }
     
-    void GlobalList::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    void GlobalList::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const
     {
       if ( m_before )
-        m_before->llvmPrepareModule( moduleBuilder, diagnostics );
+        m_before->registerTypes( cgManager, diagnostics );
       if ( m_global )
       {
         try
         {
-          m_global->llvmPrepareModule( moduleBuilder, diagnostics );
+          m_global->registerTypes( cgManager, diagnostics );
         }
         catch ( CG::Error e )
         {
@@ -75,7 +75,7 @@ namespace Fabric
         }
       }
       if ( m_after )
-        m_after->llvmPrepareModule( moduleBuilder, diagnostics );
+        m_after->registerTypes( cgManager, diagnostics );
     }
     
     void GlobalList::llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctions ) const

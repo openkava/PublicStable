@@ -25,14 +25,13 @@ namespace Fabric
 
       // Adapter
     
-      virtual void llvmInit( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *value ) const;
       virtual void llvmRetain( BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const;
       virtual void llvmDefaultAssign( BasicBlockBuilder &basicBlockBuilder, llvm::Value *dstLValue, llvm::Value *srcRValue ) const;
       virtual void llvmRelease( BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const;
 
       virtual llvm::Constant *llvmDefaultValue( BasicBlockBuilder &basicBlockBuilder ) const;
       
-      virtual void llvmPrepareModule( ModuleBuilder &moduleBuilder, bool buildFunctions ) const;
+      virtual void llvmCompileToModule( ModuleBuilder &moduleBuilder ) const;
       virtual void *llvmResolveExternalFunction( std::string const &functionName ) const;
 
       // ArrayAdapter
@@ -51,6 +50,10 @@ namespace Fabric
     
       VariableArrayAdapter( RC::ConstHandle<Manager> const &manager, RC::ConstHandle<RT::VariableArrayDesc> const &variableArrayDesc );
       
+      virtual llvm::Type const *buildLLVMRawType( RC::Handle<Context> const &context ) const;
+
+      llvm::Type const *getLLVMImplType( RC::Handle<Context> const &context ) const;
+      
     private:
     
       static void Append( VariableArrayAdapter const *inst, void *dstLValue, void const *srcRValue );
@@ -64,7 +67,6 @@ namespace Fabric
  
       RC::ConstHandle<RT::VariableArrayDesc> m_variableArrayDesc;
       RC::ConstHandle<Adapter> m_memberAdapter;
-      llvm::Type const *m_implType;
    };
   };
 };

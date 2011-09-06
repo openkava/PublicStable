@@ -7,7 +7,7 @@
 
 #include <Fabric/Core/AST/BreakStatement.h>
 #include <Fabric/Core/CG/Scope.h>
-#include <Fabric/Core/Util/SimpleString.h>
+#include <Fabric/Base/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -30,7 +30,7 @@ namespace Fabric
       Statement::appendJSONMembers( jsonObjectGenerator );
     }
     
-    void BreakStatement::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    void BreakStatement::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const
     {
     }
 

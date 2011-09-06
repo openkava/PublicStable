@@ -27,14 +27,13 @@ namespace Fabric
     
       // Adapter
     
-      virtual void llvmInit( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *value ) const;
       virtual void llvmRetain( BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const;
       virtual void llvmDefaultAssign( BasicBlockBuilder &basicBlockBuilder, llvm::Value *dstLValue, llvm::Value *srcRValue ) const;
       virtual void llvmRelease( BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const;
 
       virtual llvm::Constant *llvmDefaultValue( BasicBlockBuilder &basicBlockBuilder ) const;
       
-      virtual void llvmPrepareModule( ModuleBuilder &moduleBuilder, bool buildFunctions ) const;
+      virtual void llvmCompileToModule( ModuleBuilder &moduleBuilder ) const;
       virtual void *llvmResolveExternalFunction( std::string const &functionName ) const;
       
       virtual std::string toString( void const *data ) const;
@@ -51,14 +50,17 @@ namespace Fabric
     protected:
       
       StringAdapter( RC::ConstHandle<Manager> const &manager, RC::ConstHandle<RT::StringDesc> const &stringDesc );
+      
+      virtual llvm::Type const *buildLLVMRawType( RC::Handle<Context> const &context ) const;
 
+      llvm::Type const *getLLVMImplType( RC::Handle<Context> const &context ) const;
+      
     private:
       
       static void Append( void *dstLValue, void const *srcRValue );
       static void *Cast( void const *lValue, Adapter const *adapter );
       
       RC::ConstHandle<RT::StringDesc> m_stringDesc;
-      llvm::Type const *m_implType;
     };
   };
 };

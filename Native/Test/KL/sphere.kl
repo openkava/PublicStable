@@ -4,8 +4,8 @@ struct Vec2 {
 };
 
 function Vec2( Scalar x, Scalar y ) {
-  self.x = x;
-  self.y = y;
+  this.x = x;
+  this.y = y;
 }
 
 struct Vec3 {
@@ -15,9 +15,9 @@ struct Vec3 {
 };
 
 function Vec3( Scalar x, Scalar y, Scalar z ) {
-  self.x = x;
-  self.y = y;
-  self.z = z;
+  this.x = x;
+  this.y = y;
+  this.z = z;
 }
 
 function Vec3 *( Vec3 v, Scalar s ) {
@@ -102,7 +102,7 @@ function generateSphere(
   }
 }
 
-function entry() {
+operator entry() {
   Integer detail = 10;
   Size count;
   setSphereVertexCount( detail, count );

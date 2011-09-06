@@ -10,9 +10,12 @@ if [ "${BUILD_OS#MINGW}" != "$BUILD_OS" ]; then
   BUILD_OS=Windows
   BUILD_ARCH=x86
 fi
+if [ "$BUILD_OS" = "Darwin" ]; then
+  BUILD_ARCH=universal
+fi
 
-if [ -n "$FABRIC_TEST_WITH_VALGRIND" -a "$BUILD_OS" = "Linux" ]; then
-  VALGRIND_CMD="valgrind --suppressions=../valgrind.suppressions.linux --leak-check=full -q"
+if [ -n "$FABRIC_TEST_WITH_VALGRIND" ]; then
+  VALGRIND_CMD="valgrind --suppressions=../valgrind.suppressions.$BUILD_OS --leak-check=full -q"
 else
   VALGRIND_CMD=
 fi
@@ -26,9 +29,10 @@ fi
 for f in "$@"; do
   TMPFILE=$(tmpfilename)
 
-  #echo ../../build/$BUILD_OS/$BUILD_ARCH/$BUILD_TYPE/Fabric/Tools/KL/kl --run $f
   if ! $VALGRIND_CMD ../../build/$BUILD_OS/$BUILD_ARCH/$BUILD_TYPE/Fabric/Tools/KL/kl --run $f >$TMPFILE 2>&1 ; then
     echo "FAIL $(basename $f)"
+    echo "To debug, run:"
+    echo "gdb --args" $VALGRIND_CMD ../../build/$BUILD_OS/$BUILD_ARCH/$BUILD_TYPE/Fabric/Tools/KL/kl --run $f
     exit 1
   fi
 
@@ -45,6 +49,8 @@ for f in "$@"; do
     fi
     echo "Actual output ($TMPFILE):"
     cat $TMPFILE
+    echo "To debug, run:"
+    echo "gdb --args" $VALGRIND_CMD ../../build/$BUILD_OS/$BUILD_ARCH/$BUILD_TYPE/Fabric/Tools/KL/kl --run $f
     exit 1
   else
     echo "PASS $(basename $f)";

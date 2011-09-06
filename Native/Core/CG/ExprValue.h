@@ -9,6 +9,7 @@
 #define _FABRIC_CG_EXPR_VALUE_H
 
 #include <Fabric/Core/CG/ExprType.h>
+#include <Fabric/Core/CG/Context.h>
 
 namespace llvm
 {
@@ -25,9 +26,9 @@ namespace Fabric
     {
     public:
     
-      ExprValue();
-      ExprValue( ExprType const &type, llvm::Value *value );
-      ExprValue( RC::ConstHandle<Adapter> const &adapter, Usage usage, llvm::Value *value );
+      ExprValue( RC::Handle<Context> const &context );
+      ExprValue( ExprType const &type, RC::Handle<Context> const &context, llvm::Value *value );
+      ExprValue( RC::ConstHandle<Adapter> const &adapter, Usage usage, RC::Handle<Context> const &context, llvm::Value *value );
       ExprValue( ExprValue const &that );
       
       ExprValue &operator =( ExprValue const &that );
@@ -65,6 +66,7 @@ namespace Fabric
     private:
     
       ExprType m_exprType;
+      RC::Handle<Context> m_context;
       llvm::Value *m_value;
     };
   };

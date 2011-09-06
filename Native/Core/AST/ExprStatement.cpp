@@ -8,7 +8,7 @@
 #include <Fabric/Core/AST/ExprStatement.h>
 #include <Fabric/Core/AST/Expr.h>
 #include <Fabric/Core/CG/Error.h>
-#include <Fabric/Core/Util/SimpleString.h>
+#include <Fabric/Base/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -33,9 +33,9 @@ namespace Fabric
       m_expr->appendJSON( jsonObjectGenerator.makeMember( "expr" ) );
     }
     
-    void ExprStatement::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    void ExprStatement::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const
     {
-      m_expr->llvmPrepareModule( moduleBuilder, diagnostics );
+      m_expr->registerTypes( cgManager, diagnostics );
     }
 
     void ExprStatement::llvmCompileToBuilder( CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const

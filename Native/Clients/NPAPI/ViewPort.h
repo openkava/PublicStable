@@ -17,6 +17,10 @@
 # include <sys/time.h>
 #elif defined( FABRIC_WIN32 )
 # include <windows.h>
+#if defined( interface )
+# undef interface
+#endif
+#include <GL/glew.h>
 #endif
 #include <vector>
 
@@ -87,7 +91,9 @@ namespace Fabric
       virtual void popOGLContext() = 0;
 
       void drawWatermark( size_t width, size_t height );
-      
+
+      virtual std::string getPathFromSaveAsDialog( std::string const &defaultFilename, std::string const &extension ) = 0;
+
     protected:
     
       ViewPort( RC::ConstHandle<Interface> const &interface, uint32_t timerInterval = 0 );
@@ -100,6 +106,8 @@ namespace Fabric
       virtual void timerFired();
       static void TimerFiredCallback( NPP npp, uint32_t timer );
     
+      virtual void asyncRedrawFinished();
+
       struct PopUpItem
       {
         std::string desc;
@@ -113,10 +121,9 @@ namespace Fabric
     
       RC::Handle<JSON::Value> jsonExecGetFPS() const;
 
-      void issuePendingRedrawFinishedCallbacks();
-      static void IssuePendingRedrawFinishedCallbacks( void *_this )
+      static void AsyncRedrawFinished( void *_this )
       {
-        static_cast<ViewPort *>(_this)->issuePendingRedrawFinishedCallbacks();
+        static_cast<ViewPort *>(_this)->asyncRedrawFinished();
       }
     
       NPP m_npp;
@@ -135,11 +142,9 @@ namespace Fabric
       
       NPObject *m_redrawFinishedCallback;
 #if defined(FABRIC_OS_WINDOWS)
-      long volatile m_redrawFinishedCallbackPendingInvokeCount;
       LARGE_INTEGER m_fpsStart;
       double        m_fpsTimerFreq;
 #else  
-      size_t volatile m_redrawFinishedCallbackPendingInvokeCount;
       struct timeval m_fpsStart;
 #endif
       
@@ -149,6 +154,7 @@ namespace Fabric
       GLuint m_watermarkShaderProgram;
       GLuint m_watermarkTextureBuffer;
       GLuint m_watermarkPositionsBufferID;
+      bool m_watermarkNeedPositionsVBOUpload;
       GLuint m_watermarkUVsBufferID;
       GLuint m_watermarkIndexesBufferID;
       size_t m_watermarkLastWidth;

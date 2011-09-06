@@ -7,7 +7,7 @@
 #include <Fabric/Base/JSON/Boolean.h>
 #include <Fabric/Core/Util/Encoder.h>
 #include <Fabric/Core/Util/Decoder.h>
-#include <Fabric/Core/Util/SimpleString.h>
+#include <Fabric/Base/Util/SimpleString.h>
 #include <Fabric/Core/Util/Format.h>
 
 namespace Fabric

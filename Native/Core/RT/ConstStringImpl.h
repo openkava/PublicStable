@@ -16,6 +16,12 @@ namespace Fabric
       friend class Manager;
       friend class Impl;
       
+      struct bits_t
+      {
+        char const *data;
+        size_t length;
+      };
+      
     public:
           
       // Impl
@@ -32,20 +38,25 @@ namespace Fabric
       virtual bool isShallow() const;
       
       // ConstStringImpl
-      
-      size_t getLength() const
+
+      char const *getValueData( void const *src ) const
       {
-        return getSize();
+        bits_t const *bits = static_cast<bits_t const *>( src );
+        return bits->data;
       }
+      
+      size_t getValueLength( void const *src ) const
+      {
+        bits_t const *bits = static_cast<bits_t const *>( src );
+        return bits->length;
+      }
+      
+      std::string toString( void const *data ) const;
             
     protected:
     
-      ConstStringImpl( std::string const &codeName, size_t length );
+      ConstStringImpl( std::string const &codeName );
       ~ConstStringImpl();
-      
-    private:
-    
-      void *m_defaultData;
    };
   };
 };

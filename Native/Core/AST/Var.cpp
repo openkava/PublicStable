@@ -1,14 +1,11 @@
 /*
- *
- *  Created by Peter Zion on 10-12-02.
- *  Copyright 2010 Fabric Technologies Inc. All rights reserved.
- *
+ *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
  */
 
 #include "Var.h"
 #include <Fabric/Core/CG/Error.h>
 #include <Fabric/Core/CG/Scope.h>
-#include <Fabric/Core/Util/SimpleString.h>
+#include <Fabric/Base/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -28,7 +25,7 @@ namespace Fabric
       jsonObjectGenerator.makeMember( "name" ).makeString( m_name );
     }
     
-    void Var::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    void Var::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const
     {
     }
     
@@ -50,9 +47,11 @@ namespace Fabric
       }
     }
     
-    RC::ConstHandle<CG::Adapter> Var::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const
+    RC::ConstHandle<CG::Adapter> Var::getType( CG::BasicBlockBuilder &basicBlockBuilder ) const
     {
-      return getValueSymbol( basicBlockBuilder )->getAdapter();
+      RC::ConstHandle<CG::Adapter> adapter = getValueSymbol( basicBlockBuilder )->getAdapter();
+      adapter->llvmCompileToModule( basicBlockBuilder.getModuleBuilder() );
+      return adapter;
     }
     
     CG::ExprValue Var::buildExprValue( CG::BasicBlockBuilder &basicBlockBuilder, CG::Usage usage, std::string const &lValueErrorDesc ) const

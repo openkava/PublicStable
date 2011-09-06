@@ -7,7 +7,7 @@
 #include <Fabric/Base/JSON/Array.h>
 #include <Fabric/Core/Util/Encoder.h>
 #include <Fabric/Core/Util/Decoder.h>
-#include <Fabric/Core/Util/SimpleString.h>
+#include <Fabric/Base/Util/SimpleString.h>
 #include <Fabric/Core/Util/Format.h>
 #include <Fabric/Base/Config.h>
 
@@ -121,6 +121,14 @@ namespace Fabric
       result += "]";
       return result;
     }
+
+    bool VariableArrayImpl::areSameData( const void *data1, const void *data2 ) const
+    {
+      FABRIC_ASSERT( data1 && data2 );
+      bits_t const *bits1 = *static_cast<bits_t const * const *>(data1);
+      bits_t const *bits2 = *static_cast<bits_t const * const *>(data2);
+      return bits1 == bits2;
+    }
       
     void VariableArrayImpl::split( void *data ) const
     {
@@ -230,13 +238,28 @@ namespace Fabric
     void VariableArrayImpl::setMembers( void *data, size_t numMembers, void const *members ) const
     {
       setNumMembers( data, numMembers );
-      for ( size_t i=0; i<numMembers; ++i )
+      setMembers( data, 0, numMembers, members );
+    }
+
+    void VariableArrayImpl::setMembers( void *data, size_t dstOffset, size_t numMembers, void const *members ) const
+    {
+      FABRIC_ASSERT( numMembers + dstOffset <= getNumMembers( data ) );
+      if ( !m_memberIsShallow )
       {
-        void *memberData = getMemberData( data, i );
-        getMemberImpl()->setData( &((uint8_t const *)members)[i*m_memberSize], memberData );
+        for ( size_t i=0; i<numMembers; ++i )
+        {
+          void *memberData = getMemberData( data, i+dstOffset );
+          getMemberImpl()->setData( &((uint8_t const *)members)[i*m_memberSize], memberData );
+        }
+      }
+      else
+      {
+        unshare( data );
+        bits_t *&bits = *reinterpret_cast<bits_t **>(data);
+        memcpy( bits->memberDatas + dstOffset*m_memberSize, members, numMembers*m_memberSize );
       }
     }
-    
+
     void VariableArrayImpl::setNumMembers( void *data, size_t newNumMembers, void const *defaultMemberData ) const
     {
       bits_t *&bits = *reinterpret_cast<bits_t **>(data);

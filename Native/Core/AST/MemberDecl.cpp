@@ -6,9 +6,10 @@
 #include <Fabric/Core/CG/Adapter.h>
 #include <Fabric/Core/CG/Error.h>
 #include <Fabric/Core/CG/Location.h>
+#include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/CG/ModuleBuilder.h>
 #include <Fabric/Core/RT/Manager.h>
-#include <Fabric/Core/Util/SimpleString.h>
+#include <Fabric/Base/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -30,10 +31,16 @@ namespace Fabric
       jsonObjectGenerator.makeMember( "type" ).makeString( m_type );
     }
     
-    void MemberDecl::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    void MemberDecl::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const
     {
-      RC::ConstHandle<CG::Adapter> adapter = moduleBuilder.getAdapter( m_type, getLocation() );
-      adapter->llvmPrepareModule( moduleBuilder, true );
+      try
+      {
+        cgManager->getAdapter( m_type );
+      }
+      catch ( Exception e )
+      {
+        addError( diagnostics, e );
+      }
     }
 
     void MemberDecl::buildStructMemberInfo( RC::ConstHandle<RT::Manager> const &rtManager, RT::StructMemberInfo &structMemberInfo ) const

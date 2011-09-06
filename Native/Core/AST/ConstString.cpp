@@ -10,7 +10,7 @@
 #include <Fabric/Core/CG/ModuleBuilder.h>
 #include <Fabric/Core/CG/StringAdapter.h>
 #include <Fabric/Core/Util/Parse.h>
-#include <Fabric/Core/Util/SimpleString.h>
+#include <Fabric/Base/Util/SimpleString.h>
 
 namespace Fabric
 {
@@ -35,7 +35,7 @@ namespace Fabric
       jsonObjectGenerator.makeMember( "value" ).makeString( m_value );
     }
     
-    void ConstString::llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const
+    void ConstString::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const
     {
       std::string unquotedValue;
       try
@@ -47,16 +47,15 @@ namespace Fabric
         throw CG::Error( getLocation(), e.getDesc() + "(" + m_value + ")" );
       }
 
-      RC::ConstHandle<CG::ConstStringAdapter> constStringAdapter = moduleBuilder.getManager()->getConstStringAdapter( unquotedValue.length() );
-      constStringAdapter->llvmPrepareModule( moduleBuilder, true );
-
-      RC::ConstHandle<CG::StringAdapter> stringAdapter = moduleBuilder.getManager()->getStringAdapter();
-      stringAdapter->llvmPrepareModule( moduleBuilder, true );
+      cgManager->getConstStringAdapter();
+      cgManager->getStringAdapter();
     }
     
-    RC::ConstHandle<CG::Adapter> ConstString::getType( CG::BasicBlockBuilder const &basicBlockBuilder ) const
+    RC::ConstHandle<CG::Adapter> ConstString::getType( CG::BasicBlockBuilder &basicBlockBuilder ) const
     {
-      return basicBlockBuilder.getManager()->getStringAdapter();
+      RC::ConstHandle<CG::Adapter> adapter = basicBlockBuilder.getManager()->getStringAdapter();
+      adapter->llvmCompileToModule( basicBlockBuilder.getModuleBuilder() );
+      return adapter;
     }
     
     CG::ExprValue ConstString::buildExprValue( CG::BasicBlockBuilder &basicBlockBuilder, CG::Usage usage, std::string const &lValueErrorDesc ) const
@@ -72,9 +71,11 @@ namespace Fabric
       {
         throw CG::Error( getLocation(), e.getDesc() + "(" + m_value + ")" );
       }
-      RC::ConstHandle<CG::ConstStringAdapter> constStringAdapter = basicBlockBuilder.getManager()->getConstStringAdapter( unquotedValue.length() );
+      RC::ConstHandle<CG::ConstStringAdapter> constStringAdapter = basicBlockBuilder.getManager()->getConstStringAdapter();
+      constStringAdapter->llvmCompileToModule( basicBlockBuilder.getModuleBuilder() );
       RC::ConstHandle<CG::StringAdapter> stringAdapter = basicBlockBuilder.getManager()->getStringAdapter();
-      return CG::ExprValue( constStringAdapter, CG::USAGE_RVALUE, constStringAdapter->llvmConst( basicBlockBuilder, unquotedValue.data(), unquotedValue.length() ) ).castTo( basicBlockBuilder, stringAdapter );
+      stringAdapter->llvmCompileToModule( basicBlockBuilder.getModuleBuilder() );
+      return CG::ExprValue( constStringAdapter, CG::USAGE_RVALUE, basicBlockBuilder.getContext(), constStringAdapter->llvmConst( basicBlockBuilder, unquotedValue.data(), unquotedValue.length() ) ).castTo( basicBlockBuilder, stringAdapter );
     }
   };
 };

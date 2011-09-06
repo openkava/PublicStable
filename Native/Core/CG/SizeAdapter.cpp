@@ -14,6 +14,7 @@
 #include "OverloadNames.h"
 
 #include <Fabric/Core/RT/NumericDesc.h>
+#include <Fabric/Core/RT/IntegerImpl.h>
 #include <Fabric/Core/Util/Format.h>
 
 namespace Fabric
@@ -24,22 +25,36 @@ namespace Fabric
       : SimpleAdapter( manager, sizeDesc )
       , m_sizeDesc( sizeDesc )
     {
-      setLLVMType( llvmSizeType() );
+    }
+    
+    llvm::Type const *SizeAdapter::buildLLVMRawType( RC::Handle<Context> const &context ) const
+    {
+      return llvmSizeType( context );
     }
        
-    void SizeAdapter::llvmPrepareModule( ModuleBuilder &moduleBuilder, bool buildFunctions ) const
+    void SizeAdapter::llvmCompileToModule( ModuleBuilder &moduleBuilder ) const
     {
-      if ( moduleBuilder.contains( getCodeName(), buildFunctions ) )
+      if ( moduleBuilder.haveCompiledToModule( getCodeName() ) )
         return;
       
-      RC::ConstHandle<BooleanAdapter> booleanAdapter = getManager()->getBooleanAdapter();
-      RC::ConstHandle<ByteAdapter> byteAdapter = getManager()->getByteAdapter();
-      RC::ConstHandle<IntegerAdapter> integerAdapter = getManager()->getIntegerAdapter();
-      RC::ConstHandle<FloatAdapter> scalarAdapter = getManager()->getFP32Adapter();
-      RC::ConstHandle<StringAdapter> stringAdapter = getManager()->getStringAdapter();
-      RC::ConstHandle<OpaqueAdapter> dataAdapter = getManager()->getDataAdapter();
+      RC::Handle<Context> context = moduleBuilder.getContext();
       
-      integerAdapter->llvmPrepareModule( moduleBuilder, buildFunctions );
+      RC::ConstHandle<BooleanAdapter> booleanAdapter = getManager()->getBooleanAdapter();
+      booleanAdapter->llvmCompileToModule( moduleBuilder );
+      RC::ConstHandle<ByteAdapter> byteAdapter = getManager()->getByteAdapter();
+      byteAdapter->llvmCompileToModule( moduleBuilder );
+      RC::ConstHandle<IntegerAdapter> integerAdapter = getManager()->getIntegerAdapter();
+      integerAdapter->llvmCompileToModule( moduleBuilder );
+      RC::ConstHandle<FloatAdapter> scalarAdapter = getManager()->getFP32Adapter();
+      scalarAdapter->llvmCompileToModule( moduleBuilder );
+      RC::ConstHandle<StringAdapter> stringAdapter = getManager()->getStringAdapter();
+      stringAdapter->llvmCompileToModule( moduleBuilder );
+      RC::ConstHandle<OpaqueAdapter> dataAdapter = getManager()->getDataAdapter();
+      dataAdapter->llvmCompileToModule( moduleBuilder );
+      RC::ConstHandle<ConstStringAdapter> constStringAdapter = getManager()->getConstStringAdapter();
+      constStringAdapter->llvmCompileToModule( moduleBuilder );
+      
+      static const bool buildFunctions = true;
       
       {
         std::string name = constructOverloadName( booleanAdapter, this );
@@ -71,7 +86,7 @@ namespace Fabric
           llvm::Value *sizeRValue = functionBuilder[1];
           BasicBlockBuilder basicBlockBuilder( functionBuilder );
           basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
-          llvm::Value *byteRValue = basicBlockBuilder->CreateTrunc( sizeRValue, byteAdapter->llvmRType() );
+          llvm::Value *byteRValue = basicBlockBuilder->CreateTrunc( sizeRValue, byteAdapter->llvmRType( context ) );
           byteAdapter->llvmAssign( basicBlockBuilder, byteLValue, byteRValue );
           basicBlockBuilder->CreateRetVoid();
         }
@@ -89,7 +104,7 @@ namespace Fabric
           llvm::Value *sizeRValue = functionBuilder[1];
           BasicBlockBuilder basicBlockBuilder( functionBuilder );
           basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
-          llvm::Value *integerRValue = basicBlockBuilder->CreateTrunc( sizeRValue, integerAdapter->llvmRType() );
+          llvm::Value *integerRValue = basicBlockBuilder->CreateTrunc( sizeRValue, integerAdapter->llvmRType( context ) );
           integerAdapter->llvmAssign( basicBlockBuilder, integerLValue, integerRValue );
           basicBlockBuilder->CreateRetVoid();
         }
@@ -107,7 +122,7 @@ namespace Fabric
           llvm::Value *sizeRValue = functionBuilder[1];
           BasicBlockBuilder basicBlockBuilder( functionBuilder );
           basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
-          llvm::Value *scalarRValue = basicBlockBuilder->CreateUIToFP( sizeRValue, scalarAdapter->llvmRType() );
+          llvm::Value *scalarRValue = basicBlockBuilder->CreateUIToFP( sizeRValue, scalarAdapter->llvmRType( context ) );
           scalarAdapter->llvmAssign( basicBlockBuilder, scalarLValue, scalarRValue );
           basicBlockBuilder->CreateRetVoid();
         }
@@ -172,7 +187,7 @@ namespace Fabric
           BasicBlockBuilder basicBlockBuilder( functionBuilder );
           basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
           llvm::Value *preRValue = basicBlockBuilder->CreateLoad( lValue );
-          llvm::Value *postRValue = basicBlockBuilder->CreateAdd( preRValue, llvm::ConstantInt::get( llvmRType(), 1, false ) );
+          llvm::Value *postRValue = basicBlockBuilder->CreateAdd( preRValue, llvm::ConstantInt::get( llvmRType( context ), 1, false ) );
           basicBlockBuilder->CreateStore( postRValue, lValue );
           basicBlockBuilder->CreateRet( postRValue );
         }
@@ -189,7 +204,7 @@ namespace Fabric
           BasicBlockBuilder basicBlockBuilder( functionBuilder );
           basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
           llvm::Value *preRValue = basicBlockBuilder->CreateLoad( lValue );
-          llvm::Value *postRValue = basicBlockBuilder->CreateSub( preRValue, llvm::ConstantInt::get( llvmRType(), 1, false ) );
+          llvm::Value *postRValue = basicBlockBuilder->CreateSub( preRValue, llvm::ConstantInt::get( llvmRType( context ), 1, false ) );
           basicBlockBuilder->CreateStore( postRValue, lValue );
           basicBlockBuilder->CreateRet( postRValue );
         }
@@ -206,7 +221,7 @@ namespace Fabric
           BasicBlockBuilder basicBlockBuilder( functionBuilder );
           basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
           llvm::Value *preRValue = basicBlockBuilder->CreateLoad( lValue );
-          llvm::Value *postRValue = basicBlockBuilder->CreateAdd( preRValue, llvm::ConstantInt::get( llvmRType(), 1, false ) );
+          llvm::Value *postRValue = basicBlockBuilder->CreateAdd( preRValue, llvm::ConstantInt::get( llvmRType( context), 1, false ) );
           basicBlockBuilder->CreateStore( postRValue, lValue );
           basicBlockBuilder->CreateRet( preRValue );
         }
@@ -223,7 +238,7 @@ namespace Fabric
           BasicBlockBuilder basicBlockBuilder( functionBuilder );
           basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
           llvm::Value *preRValue = basicBlockBuilder->CreateLoad( lValue );
-          llvm::Value *postRValue = basicBlockBuilder->CreateSub( preRValue, llvm::ConstantInt::get( llvmRType(), 1, false ) );
+          llvm::Value *postRValue = basicBlockBuilder->CreateSub( preRValue, llvm::ConstantInt::get( llvmRType( context ), 1, false ) );
           basicBlockBuilder->CreateStore( postRValue, lValue );
           basicBlockBuilder->CreateRet( preRValue );
         }
@@ -306,8 +321,7 @@ namespace Fabric
           
           basicBlockBuilder->SetInsertPoint( zeroBB );
           std::string errorMsg = "KL: "+getUserName()+" division by zero";
-          RC::ConstHandle<ConstStringAdapter> errorConstStringAdapter = getManager()->getConstStringAdapter( errorMsg.length() );
-          ExprValue errorExprValue( errorConstStringAdapter, USAGE_RVALUE, errorConstStringAdapter->llvmConst( basicBlockBuilder, errorMsg ) );
+          ExprValue errorExprValue( constStringAdapter, USAGE_RVALUE, context, constStringAdapter->llvmConst( basicBlockBuilder, errorMsg ) );
           llvm::Value *errorStringRValue = stringAdapter->llvmCast( basicBlockBuilder, errorExprValue );
           stringAdapter->llvmReport( basicBlockBuilder, errorStringRValue );
           stringAdapter->llvmRelease( basicBlockBuilder, errorStringRValue );
@@ -342,8 +356,7 @@ namespace Fabric
           
           basicBlockBuilder->SetInsertPoint( zeroBB );
           std::string errorMsg = "KL: "+getUserName()+" division by zero";
-          RC::ConstHandle<ConstStringAdapter> errorConstStringAdapter = getManager()->getConstStringAdapter( errorMsg.length() );
-          ExprValue errorExprValue( errorConstStringAdapter, USAGE_RVALUE, errorConstStringAdapter->llvmConst( basicBlockBuilder, errorMsg ) );
+          ExprValue errorExprValue( constStringAdapter, USAGE_RVALUE, context, constStringAdapter->llvmConst( basicBlockBuilder, errorMsg ) );
           llvm::Value *errorStringRValue = stringAdapter->llvmCast( basicBlockBuilder, errorExprValue );
           stringAdapter->llvmReport( basicBlockBuilder, errorStringRValue );
           stringAdapter->llvmRelease( basicBlockBuilder, errorStringRValue );
@@ -508,13 +521,13 @@ namespace Fabric
       {
         std::string name = methodOverloadName( "dataSize", this );
         std::vector< FunctionParam > params;
-        params.push_back( FunctionParam( "selfRValue", this, USAGE_RVALUE ) );
+        params.push_back( FunctionParam( "thisRValue", this, USAGE_RVALUE ) );
         FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( this, USAGE_RVALUE ), params );
         if ( buildFunctions )
         {
           BasicBlockBuilder basicBlockBuilder( functionBuilder );
           basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
-          llvm::Value *dataSizeRValue = llvm::ConstantInt::get( llvmRType(), getDesc()->getSize() );
+          llvm::Value *dataSizeRValue = llvm::ConstantInt::get( llvmRType( context ), getDesc()->getSize() );
           basicBlockBuilder->CreateRet( dataSizeRValue );
         }
       }
@@ -522,26 +535,32 @@ namespace Fabric
       {
         std::string name = methodOverloadName( "data", this );
         std::vector< FunctionParam > params;
-        params.push_back( FunctionParam( "selfLValue", this, USAGE_LVALUE ) );
+        params.push_back( FunctionParam( "thisLValue", this, USAGE_LVALUE ) );
         FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( dataAdapter, USAGE_RVALUE ), params );
         if ( buildFunctions )
         {
-          llvm::Value *selfLValue = functionBuilder[0];
+          llvm::Value *thisLValue = functionBuilder[0];
           BasicBlockBuilder basicBlockBuilder( functionBuilder );
           basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
-          basicBlockBuilder->CreateRet( basicBlockBuilder->CreatePointerCast( selfLValue, dataAdapter->llvmRType() ) );
+          basicBlockBuilder->CreateRet( basicBlockBuilder->CreatePointerCast( thisLValue, dataAdapter->llvmRType( context ) ) );
         }
       }
     }
 
-    llvm::Constant *SizeAdapter::llvmConst( size_t value ) const
+    llvm::Constant *SizeAdapter::llvmConst( RC::Handle<Context> const &context, size_t value ) const
     {
-      return llvm::ConstantInt::get( llvmRawType(), value, false );
+      return llvm::ConstantInt::get( llvmRawType( context ), value, false );
     }
     
     std::string SizeAdapter::toString( void const *data ) const
     {
       return m_sizeDesc->toString( data );
     }
-  }; // namespace RT
-}; // namespace FABRIC
+    
+    llvm::Constant *SizeAdapter::llvmDefaultValue( BasicBlockBuilder &basicBlockBuilder ) const
+    {
+      RC::ConstHandle<RT::SizeImpl> sizeImpl = RC::ConstHandle<RT::SizeImpl>::StaticCast( m_sizeDesc->getImpl() );
+      return llvmConst( basicBlockBuilder.getContext(), sizeImpl->getValue( sizeImpl->getDefaultData() ) );
+    }
+  };
+};

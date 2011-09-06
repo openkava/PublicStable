@@ -6,31 +6,27 @@
 #define _FABRIC_AST_GLOBAL_H
 
 #include <Fabric/Core/AST/Node.h>
-#include <Fabric/Core/AST/ParamVector.h>
-#include <Fabric/Core/AST/CompoundStatement.h>
-#include <Fabric/Core/Util/SimpleString.h>
-
-namespace llvm
-{
-  class Module;
-  class GlobalPassManager;
-};
+#include <Fabric/Base/Util/SimpleString.h>
 
 namespace Fabric
 {
-  namespace RT
+  namespace Util
   {
-    class Manager;
+    class JSONGenerator;
   };
   
   namespace CG
   {
     class Diagnostics;
+    class Location;
+    class Manager;
     class ModuleBuilder;
   };
   
   namespace AST
   {
+    class UseNameToLocationMap;
+
     class Global : public Node
     {
     public:
@@ -39,9 +35,9 @@ namespace Fabric
     
       virtual bool isFunction() const { return false; }
       
-      virtual void registerTypes( RC::Handle<RT::Manager> const &rtManager, CG::Diagnostics &diagnostics ) const;
-      virtual void llvmPrepareModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics ) const = 0;
-      virtual void llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctionBodies ) const;
+      virtual void collectUses( UseNameToLocationMap &uses ) const;
+      virtual void registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const = 0;
+      virtual void llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctionBodies ) const = 0;
       
     protected:
     
