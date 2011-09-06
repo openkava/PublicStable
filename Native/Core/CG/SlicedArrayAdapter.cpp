@@ -244,11 +244,14 @@ namespace Fabric
           basicBlockBuilder->CreateRet( m_variableArrayAdapter->llvmConstIndexOp_NoCheck( basicBlockBuilder, variableArrayRValue, absoluteIndexRValue ) );
           
           basicBlockBuilder->SetInsertPoint( outOfRangeBB );
-          std::string errorMsg = "KL: "+getUserName()+" index out-of-bounds";
-          ExprValue errorExprValue( constStringAdapter, USAGE_RVALUE, context, constStringAdapter->llvmConst( basicBlockBuilder, errorMsg ) );
-          llvm::Value *errorStringRValue = stringAdapter->llvmCast( basicBlockBuilder, errorExprValue );
-          stringAdapter->llvmReport( basicBlockBuilder, errorStringRValue );
-          stringAdapter->llvmRelease( basicBlockBuilder, errorStringRValue );
+          llvmReportOutOfRangeError(
+            basicBlockBuilder,
+            constStringAdapter,
+            stringAdapter,
+            sizeAdapter,
+            indexRValue,
+            sizeRValue
+            );
           llvm::Value *defaultRValue = m_memberAdapter->llvmDefaultRValue( basicBlockBuilder );
           m_memberAdapter->llvmRetain( basicBlockBuilder, defaultRValue );
           basicBlockBuilder->CreateRet( defaultRValue );
@@ -285,11 +288,14 @@ namespace Fabric
           basicBlockBuilder->CreateRet( m_variableArrayAdapter->llvmNonConstIndexOp_NoCheckNoSplit( basicBlockBuilder, variableArrayLValue, absoluteIndexRValue ) );
           
           basicBlockBuilder->SetInsertPoint( outOfRangeBB );
-          std::string errorMsg = "KL: "+getUserName()+" index out-of-bounds";
-          ExprValue errorExprValue( constStringAdapter, USAGE_RVALUE, context, constStringAdapter->llvmConst( basicBlockBuilder, errorMsg ) );
-          llvm::Value *errorStringRValue = stringAdapter->llvmCast( basicBlockBuilder, errorExprValue );
-          stringAdapter->llvmReport( basicBlockBuilder, errorStringRValue );
-          stringAdapter->llvmRelease( basicBlockBuilder, errorStringRValue );
+          llvmReportOutOfRangeError(
+            basicBlockBuilder,
+            constStringAdapter,
+            stringAdapter,
+            sizeAdapter,
+            indexRValue,
+            sizeRValue
+            );
           llvm::Constant *defaultLValue = m_memberAdapter->llvmDefaultLValue( basicBlockBuilder );
           basicBlockBuilder->CreateRet( defaultLValue );
         }

@@ -759,6 +759,16 @@ namespace Fabric
       return basicBlockBuilder->CreateCall2( functionBuilder.getLLVMFunction(), lhsRValue, rhsRValue );
     }
     
+    llvm::Value *StringAdapter::llvmCallConcat( BasicBlockBuilder &basicBlockBuilder, llvm::Value *lhsRValue, llvm::Value *rhsRValue ) const
+    {
+      std::vector< FunctionParam > params;
+      params.push_back( FunctionParam( "lhsRValue", this, CG::USAGE_RVALUE ) );
+      params.push_back( FunctionParam( "rhsRValue", this, CG::USAGE_RVALUE ) );
+      std::string name = binOpOverloadName( BIN_OP_ADD, this, this );
+      FunctionBuilder functionBuilder( basicBlockBuilder.getModuleBuilder(), name, ExprType( this, CG::USAGE_RVALUE ), params, false );
+      return basicBlockBuilder->CreateCall2( functionBuilder.getLLVMFunction(), lhsRValue, rhsRValue );
+    }
+    
     std::string StringAdapter::toString( void const *data ) const
     {
       char const *stringData = m_stringDesc->getValueData( data );
