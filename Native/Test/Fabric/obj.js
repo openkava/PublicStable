@@ -64,10 +64,10 @@ setDataOp.setSourceCode('\
 use FabricOBJ;\n\
 operator setData(\n\
   io Data objParseHandle,\n\
-  io Vec3 positions[]\n\
+  io Vec3 positions<>\n\
   )\n\
 {\n\
-  FabricOBJGetPoints(objParseHandle, positions);\n\
+  FabricOBJGetPointsSliced(objParseHandle, positions);\n\
   report "rlnode: setData to " + positions.size + " points";\n\
   FabricOBJFreeParsedData(objParseHandle);\n\
 }\n\
@@ -80,7 +80,7 @@ setDataBinding = FABRIC.DG.createBinding();
 setDataBinding.setOperator( setDataOp );
 setDataBinding.setParameterLayout([
   "rlnode.objParseHandle",
-  "self.position[]"
+  "self.position<>"
 ]);
 
 node = FABRIC.DG.createNode("dataNode");

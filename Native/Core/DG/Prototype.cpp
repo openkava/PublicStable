@@ -12,6 +12,7 @@
 #include "Scope.h"
 #include "Debug.h"
 
+#include <Fabric/Core/DG/SharedSlicedArray.h>
 #include <Fabric/Core/DG/Function.h>
 #include <Fabric/Core/AST/Operator.h>
 #include <Fabric/Core/AST/ParamVector.h>
@@ -21,6 +22,8 @@
 #include <Fabric/Core/RT/Manager.h>
 #include <Fabric/Core/RT/VariableArrayDesc.h>
 #include <Fabric/Core/RT/VariableArrayImpl.h>
+#include <Fabric/Core/RT/SlicedArrayImpl.h>
+#include <Fabric/Core/RT/SlicedArrayDesc.h>
 #include <Fabric/Core/MT/Util.h>
 #include <Fabric/Base/JSON/String.h>
 #include <Fabric/Base/JSON/Array.h>
@@ -166,7 +169,7 @@ namespace Fabric
 
       virtual std::string desc() const
       {
-        return name() + "[]";
+        return name() + "<>";
       }
     };
     
@@ -198,7 +201,7 @@ namespace Fabric
           std::string nodeName = desc.substr( nodeNameStart, nodeNameEnd - nodeNameStart );
           
           std::string::size_type memberNameStart = nodeNameEnd + 1;
-          std::string::size_type memberNameEnd = desc.find( '[' );
+          std::string::size_type memberNameEnd = desc.find( '<' );
           if ( memberNameEnd == std::string::npos )
             memberNameEnd = desc.size();
           if ( memberNameEnd - memberNameStart < 1 )
@@ -212,7 +215,7 @@ namespace Fabric
             param = new NewSizeParam(i);
           else if ( memberName == "index" )
             param = new IndexParam(i);
-          else if ( desc.substr( memberNameEnd ) == "[]" )
+          else if ( desc.substr( memberNameEnd ) == "<>" )
             param = new ArrayParam( i, memberName );
           else
             param = new ElementParam( i, memberName );
@@ -244,7 +247,14 @@ namespace Fabric
       clear();
     }
 
-    RC::Handle<MT::ParallelCall> Prototype::bind( RC::ConstHandle<AST::Operator> const &astOperator, Scope const &scope, RC::ConstHandle<Function> const &function, size_t *newSize, unsigned prefixCount, void * const *prefixes )
+    RC::Handle<MT::ParallelCall> Prototype::bind(
+      RC::ConstHandle<AST::Operator> const &astOperator,
+      Scope const &scope,
+      RC::ConstHandle<Function> const &function,
+      size_t *newSize,
+      unsigned prefixCount,
+      void * const *prefixes
+      )
     {
       FABRIC_ASSERT( function );
       
@@ -321,7 +331,10 @@ namespace Fabric
                 std::string const &memberName = memberParam->name();
                 try
                 {
-                  RC::ConstHandle<RT::VariableArrayDesc> memberArrayDesc = container->getMemberArrayDesc( memberName );
+                  RC::ConstHandle<RT::Desc> memberDesc;
+                  RC::ConstHandle<RT::VariableArrayDesc> memberArrayDesc;
+                  RC::ConstHandle<RT::SlicedArrayDesc> memberSlicedArrayDesc;
+                  container->getMemberDescs( memberName, memberDesc, memberArrayDesc, memberSlicedArrayDesc );
                   RC::ConstHandle<RT::VariableArrayImpl> memberArrayImpl = memberArrayDesc->getImpl();
                   void *memberArrayData = container->getMemberArrayData( memberName );
                   if ( param->isElementParam() )
@@ -330,7 +343,6 @@ namespace Fabric
                       throw Exception( "cannot access both per-slice and whole array data for the same member" );
                     elementAccessSet.insert( memberArrayData );
                     
-                    RC::ConstHandle<RT::Desc> memberDesc = container->getMemberDesc( memberName );
                     RC::ConstHandle<RT::Impl> memberImpl = memberDesc->getImpl();
                     if ( astParamImpl != memberImpl )
                       throw Exception( "parameter type mismatch: member element type is "+_(memberDesc->getName())+", operator parameter type is "+_(astParamDesc->getName()) );
@@ -357,11 +369,15 @@ namespace Fabric
                       throw Exception( "cannot access both per-slice and whole array data for the same member" );
                     arrayAccessSet.insert( memberArrayData );
                     
-                    if ( astParamImpl != memberArrayImpl )
-                      throw Exception( "parameter type mismatch: member array type is "+_(memberArrayDesc->getName())+", operator parameter type is "+_(astParamDesc->getName()) );
-                    if ( astParamExprType.getUsage() != CG::USAGE_LVALUE )
-                      throw Exception( "array parmeters must bind to operator io parameters" );
-                    result->setBaseAddress( prefixCount+param->index(), memberArrayData );
+                    RC::ConstHandle<RT::SlicedArrayImpl> slicedArrayImpl = memberSlicedArrayDesc->getImpl();
+                    if ( astParamImpl != slicedArrayImpl )
+                      throw Exception( "parameter type mismatch: member array type is "+_(memberSlicedArrayDesc->getName())+", operator parameter type is "+_(astParamDesc->getName()) );
+                    //if ( astParamExprType.getUsage() != CG::USAGE_LVALUE )
+                    //  throw Exception( "array parmeters must bind to operator io parameters" );
+                    
+                    RC::Handle<SharedSlicedArray> sharedSlicedArray = SharedSlicedArray::Create( slicedArrayImpl, memberArrayData );
+                    result->setBaseAddress( prefixCount+param->index(), sharedSlicedArray->getData() );
+                    result->addOwnedObject( sharedSlicedArray );
                   }
                 }
                 catch ( Exception e ) {

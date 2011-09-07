@@ -6,6 +6,7 @@
 #define _FABRIC_DG_BINDING_H
 
 #include <Fabric/Core/DG/CompiledObject.h>
+#include <Fabric/Core/DG/Prototype.h>
 
 namespace Fabric
 {
@@ -24,7 +25,6 @@ namespace Fabric
   {
     class Context;
     class Scope;
-    class Prototype;
     class BindingList;
     class Operator;
     
@@ -47,7 +47,12 @@ namespace Fabric
       void addBindingList( BindingList *bindingList );
       void removeBindingList( BindingList *bindingList );
 
-      RC::Handle<MT::ParallelCall> bind( Scope const &scope, size_t *newSize, unsigned prefixCount=0, void * const *prefixes = 0 ) const;
+      RC::Handle<MT::ParallelCall> bind(
+        Scope const &scope,
+        size_t *newSize,
+        unsigned prefixCount = 0,
+        void * const *prefixes = 0
+        ) const;      
       bool getMainThreadOnly() const;
       
       RC::ConstHandle<JSON::Value> jsonDesc() const;

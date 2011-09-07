@@ -1,3 +1,7 @@
+/*
+ *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+ */
+ 
 #ifndef _FABRIC_CG_MANAGER_H
 #define _FABRIC_CG_MANAGER_H
 
@@ -35,6 +39,7 @@ namespace Fabric
     class StructAdapter;
     class FixedArrayAdapter;
     class VariableArrayAdapter;
+    class SlicedArrayAdapter;
     class OpaqueAdapter;
     class ModuleBuilder;
     
@@ -64,6 +69,7 @@ namespace Fabric
       RC::ConstHandle<ConstStringAdapter> getConstStringAdapter() const;
       
       RC::ConstHandle<VariableArrayAdapter> getVariableArrayOf( RC::ConstHandle<Adapter> const &adapter ) const;
+      RC::ConstHandle<SlicedArrayAdapter> getSlicedArrayOf( RC::ConstHandle<Adapter> const &adapter ) const;
       RC::ConstHandle<FixedArrayAdapter> getFixedArrayOf( RC::ConstHandle<Adapter> const &adapter, size_t length ) const;
       
       RC::ConstHandle<StructAdapter> registerStruct( std::string const &name, RT::StructMemberInfoVector const &structMemberInfoVector );

@@ -139,6 +139,28 @@ FABRIC_EXT_EXPORT void FabricOBJGetPoints(
   }
 }
 
+FABRIC_EXT_EXPORT void FabricOBJGetPointsSliced(
+  KL::Data parsedDataHandle,
+  KL::SlicedArray<KL::Vec3>& points
+  )
+{
+  if ( parsedDataHandle != NULL )
+  {
+    ObjParser *parser = (ObjParser*)parsedDataHandle;
+
+    size_t nbPoints = parser->NbPoints();
+    if ( points.size() != nbPoints )
+      throw Exception( "FabricOBJGetPointsSliced: sliced array size mismatch" );
+
+    for( size_t i = 0; i < nbPoints; ++i )
+    {
+      V3 point = parser->GetPoint( i );
+      KL::Vec3 klVec = { point.v[0], point.v[1], point.v[2] };
+      points[i] = klVec;
+    }
+  }
+}
+
 FABRIC_EXT_EXPORT void FabricOBJGetNormals(
   KL::Data parsedDataHandle,
   KL::VariableArray<KL::Vec3>& normals
@@ -162,6 +184,28 @@ FABRIC_EXT_EXPORT void FabricOBJGetNormals(
   }
 }
 
+FABRIC_EXT_EXPORT void FabricOBJGetNormalsSliced(
+  KL::Data parsedDataHandle,
+  KL::SlicedArray<KL::Vec3>& normals
+  )
+{
+  if ( parsedDataHandle )
+  {
+    ObjParser *parser = (ObjParser*)parsedDataHandle;
+
+    size_t nbPoints = parser->NbPoints();
+    if ( normals.size() != nbPoints )
+      throw Exception( "FabricOBJGetNormalsSliced: sliced array size mismatch" );
+
+    for ( size_t i = 0; i < nbPoints; ++i )
+    {
+      V3 normal = parser->GetNormal( i );
+      KL::Vec3 klVec = { normal.v[0], normal.v[1], normal.v[2] };
+      normals[i] = klVec;
+    }
+  }
+}
+
 FABRIC_EXT_EXPORT void FabricOBJGetTextureCoords(
   KL::Data parsedDataHandle,
   KL::VariableArray<KL::Vec2>& textureCoords
@@ -177,6 +221,28 @@ FABRIC_EXT_EXPORT void FabricOBJGetTextureCoords(
     textureCoords.resize( nbPoints );
 
     for( size_t i = 0; i < nbPoints; ++i )
+    {
+      V2 texCoord = parser->GetTextureCoord( i );
+      KL::Vec2 klVec = { texCoord.v[0], texCoord.v[1] };
+      textureCoords[i] = klVec;
+    }
+  }
+}
+
+FABRIC_EXT_EXPORT void FabricOBJGetTextureCoordsSliced(
+  KL::Data parsedDataHandle,
+  KL::SlicedArray<KL::Vec2>& textureCoords
+  )
+{
+  if ( parsedDataHandle )
+  {
+    ObjParser *parser = (ObjParser*)parsedDataHandle;
+
+    size_t nbPoints = parser->NbPoints();
+    if ( textureCoords.size() != nbPoints )
+      throw Exception( "FabricOBJGetTextureCoordsSliced: sliced array size mismatch" );
+
+    for ( size_t i = 0; i < nbPoints; ++i )
     {
       V2 texCoord = parser->GetTextureCoord( i );
       KL::Vec2 klVec = { texCoord.v[0], texCoord.v[1] };
@@ -212,6 +278,30 @@ FABRIC_EXT_EXPORT void FabricOBJGetTriangleIndices(
 
     size_t nbTriangles = parser->NbTriangles();
     indices.resize( nbTriangles * 3 );
+
+    for( size_t i = 0; i < nbTriangles; ++i )
+    {
+      int t1, t2, t3;
+      parser->GetTriangleIndices( i, t1, t2, t3 );
+      indices[i*3] = t1;
+      indices[i*3+1] = t2;
+      indices[i*3+2] = t3;
+    }
+  }
+}
+
+FABRIC_EXT_EXPORT void FabricOBJGetTriangleIndicesSliced(
+  KL::Data parsedDataHandle,
+  KL::SlicedArray<KL::Integer>& indices
+  )
+{
+  if ( parsedDataHandle )
+  {
+    ObjParser *parser = (ObjParser*)parsedDataHandle;
+
+    size_t nbTriangles = parser->NbTriangles();
+    if ( indices.size() != nbTriangles )
+      throw Exception( "FabricOBJGetTriangleIndicesSliced: sliced array size mismatch" );
 
     for( size_t i = 0; i < nbTriangles; ++i )
     {
