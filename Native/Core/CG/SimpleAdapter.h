@@ -10,8 +10,10 @@ namespace Fabric
     class SimpleAdapter : public Adapter
     {
     public:
-
+    
       virtual void llvmDefaultAssign( BasicBlockBuilder &basicBlockBuilder, llvm::Value *dstLValue, llvm::Value *srcRValue ) const;
+      virtual void llvmRetain( BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const;
+      virtual void llvmRelease( BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const;
 
     protected:
     
@@ -19,9 +21,6 @@ namespace Fabric
         RC::ConstHandle<Manager> const &manager,
         RC::ConstHandle<RT::Desc> const &desc
         );
-
-      virtual void llvmRetain( BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const;
-      virtual void llvmRelease( BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const;
 
       virtual void *llvmResolveExternalFunction( std::string const &functionName ) const;
     };

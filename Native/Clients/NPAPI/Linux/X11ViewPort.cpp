@@ -1,17 +1,11 @@
 /*
- *  ViewPort.cpp
- *  Fabric
- *
- *  Created by Peter Zion on 10-08-13.
- *  Copyright 2010 Fabric 3D Inc.. All rights reserved.
- *
+ *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
  */
 
 #include <Fabric/Clients/NPAPI/Linux/X11ViewPort.h>
 #include <Fabric/Clients/NPAPI/Interface.h>
 #include <Fabric/Base/JSON/Value.h>
 #include <Fabric/Base/Exception.h>
-#include <GL/gl.h>
 #include <Fabric/Clients/NPAPI/Context.h>
 #include <Fabric/Core/DG/Event.h>
 #include <Fabric/Core/MT/LogCollector.h>

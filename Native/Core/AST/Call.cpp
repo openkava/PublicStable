@@ -136,7 +136,10 @@ namespace Fabric
           functionSymbol->llvmCreateCall( basicBlockBuilder, exprValues );
         }
         
-        return result.castTo( basicBlockBuilder, usage );
+        result.castTo( basicBlockBuilder, usage );
+        llvm::Value *thisRValue = adapter->llvmLValueToRValue( basicBlockBuilder, thisLValue );
+        adapter->llvmRelease( basicBlockBuilder, thisRValue );
+        return result;
       }
       else
       {

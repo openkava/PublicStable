@@ -1,3 +1,7 @@
+/*
+ *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+ */
+ 
 #include "OpaqueDesc.h"
 #include <Fabric/Core/RT/OpaqueImpl.h>
 #include <Fabric/Base/JSON/String.h>

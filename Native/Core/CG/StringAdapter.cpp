@@ -1,3 +1,7 @@
+/*
+ *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+ */
+ 
 #include "StringAdapter.h"
 #include "BooleanAdapter.h"
 #include "ByteAdapter.h"
@@ -752,6 +756,16 @@ namespace Fabric
       params.push_back( FunctionParam( "rhs", this, USAGE_RVALUE ) );
       std::string name = methodOverloadName( "compare", this, this );
       FunctionBuilder functionBuilder( basicBlockBuilder.getModuleBuilder(), name, ExprType( integerAdapter, USAGE_RVALUE ), params, false );
+      return basicBlockBuilder->CreateCall2( functionBuilder.getLLVMFunction(), lhsRValue, rhsRValue );
+    }
+    
+    llvm::Value *StringAdapter::llvmCallConcat( BasicBlockBuilder &basicBlockBuilder, llvm::Value *lhsRValue, llvm::Value *rhsRValue ) const
+    {
+      std::vector< FunctionParam > params;
+      params.push_back( FunctionParam( "lhsRValue", this, CG::USAGE_RVALUE ) );
+      params.push_back( FunctionParam( "rhsRValue", this, CG::USAGE_RVALUE ) );
+      std::string name = binOpOverloadName( BIN_OP_ADD, this, this );
+      FunctionBuilder functionBuilder( basicBlockBuilder.getModuleBuilder(), name, ExprType( this, CG::USAGE_RVALUE ), params, false );
       return basicBlockBuilder->CreateCall2( functionBuilder.getLLVMFunction(), lhsRValue, rhsRValue );
     }
     

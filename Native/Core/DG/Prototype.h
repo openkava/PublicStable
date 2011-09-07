@@ -26,6 +26,8 @@ namespace Fabric
     class Manager;
     class Desc;
     class Impl;
+    class VariableArrayImpl;
+    class SlicedArrayImpl;
   };
   
   namespace CG
@@ -53,7 +55,14 @@ namespace Fabric
       void setDescs( std::vector<std::string> const &descs );
       void clear();
     
-      RC::Handle<MT::ParallelCall> bind( RC::ConstHandle<AST::Operator> const &astOperator, Scope const &scope, RC::ConstHandle<Function> const &function, size_t *newSize, unsigned prefixCount=0, void * const *prefixes = 0 );
+      RC::Handle<MT::ParallelCall> bind(
+        RC::ConstHandle<AST::Operator> const &astOperator,
+        Scope const &scope,
+        RC::ConstHandle<Function> const &function,
+        size_t *newSize,
+        unsigned prefixCount=0,
+        void * const *prefixes = 0
+        );
       
       std::vector<std::string> desc() const;
 

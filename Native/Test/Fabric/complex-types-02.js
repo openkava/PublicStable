@@ -24,7 +24,7 @@ FABRIC.RegisteredTypesManager.registerType( "MyStruct", myStructDesc );
 op = FABRIC.DependencyGraph.createOperator( "op" );
 op.setEntryFunctionName("entry");
 op.setSourceCode("\n\
-operator entry( io MyStruct arg[][] )\n\
+operator entry( io MyStruct arg<>[] )\n\
 {\n\
   report 'parent data: ' + arg;\n\
 }\n\
@@ -48,7 +48,7 @@ else {
 
 	var binding = FABRIC.DG.createBinding();
 	binding.setOperator(op);
-	binding.setParameterLayout(["parent.msa[]"]);
+	binding.setParameterLayout(["parent.msa<>"]);
 
   node = FABRIC.DependencyGraph.createNode( "node" );
   node.addDependency( parentNode, "parent" );
