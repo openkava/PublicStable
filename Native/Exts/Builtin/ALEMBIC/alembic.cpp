@@ -280,11 +280,6 @@ FABRIC_EXT_EXPORT void FabricALEMBICParsePolyMeshUniforms(
           vecIndices.push_back(curSize + 3);
         }
       }
-      
-      for(size_t i=0;i<30;i++)
-      {
-        printf(" { ALEMBIC } face indicex %d: %d\n",(int)i,(int)vecIndices[i]);
-      }
     }
     else
     {
@@ -357,8 +352,6 @@ FABRIC_EXT_EXPORT void FabricALEMBICParsePolyMeshCount(
         else if(faceCounts->get()[i] == 4)
           count += 6;
       }
-      
-      printf(" { ALEMBIC } NewCount %d\n",(int)count);
     }
   }
 }
@@ -383,13 +376,14 @@ FABRIC_EXT_EXPORT void FabricALEMBICParsePolyMeshAttributes(
       
     // get the sample
     Alembic::AbcCoreAbstract::index_t timeIndex = (Alembic::AbcCoreAbstract::index_t)sampleIndex;
+    Alembic::AbcGeom::IPolyMeshSchema::Sample firstSample = schema.getValue(0);
     Alembic::AbcGeom::IPolyMeshSchema::Sample sample = schema.getValue(timeIndex);
     Alembic::Abc::P3fArraySamplePtr abcPoints = sample.getPositions();
-    Alembic::Abc::Int32ArraySamplePtr faceCounts = sample.getFaceCounts();
-    Alembic::Abc::Int32ArraySamplePtr faceIndices= sample.getFaceIndices();
+    Alembic::Abc::Int32ArraySamplePtr faceCounts = firstSample.getFaceCounts();
+    Alembic::Abc::Int32ArraySamplePtr faceIndices= firstSample.getFaceIndices();
     
     // load the vertices
-    bool vertexNormals = usesVertexNormals(schema,sample);
+    bool vertexNormals = usesVertexNormals(schema,firstSample);
     if(vertexNormals)
     {
       memcpy(&vertices[0],abcPoints->getData(),sizeof(float) * 3 * vertices.size());
@@ -434,7 +428,7 @@ FABRIC_EXT_EXPORT void FabricALEMBICParsePolyMeshAttributes(
     Alembic::AbcGeom::IN3fGeomParam N = schema.getNormalsParam();
     if(N.valid())
     {
-      Alembic::AbcGeom::N3fArraySamplePtr nsp = N.getExpandedValue().getVals();
+      Alembic::AbcGeom::N3fArraySamplePtr nsp = N.getExpandedValue(sampleIndex).getVals();
       
       if(vertexNormals && normals.size() == nsp->size())
       {
@@ -451,10 +445,11 @@ FABRIC_EXT_EXPORT void FabricALEMBICParsePolyMeshAttributes(
           {
             for(size_t j=0;j<count;j++)
             {
-              normals[vertexOffset].x = nsp->get()[indexOffset].x;
-              normals[vertexOffset].y = nsp->get()[indexOffset].y;
-              normals[vertexOffset++].z = nsp->get()[indexOffset++].z;
+              normals[vertexOffset].x = nsp->get()[indexOffset+j].x;
+              normals[vertexOffset].y = nsp->get()[indexOffset+j].y;
+              normals[vertexOffset++].z = nsp->get()[indexOffset+j].z;
             }
+            indexOffset += 3;
           }
           else if(count == 4)
           {
@@ -484,8 +479,7 @@ FABRIC_EXT_EXPORT void FabricALEMBICParsePolyMeshAttributes(
 
 int main(int argc, char ** argv)
 {
-  
-printf("Opening archive...\n");
+  printf("Opening archive...\n");
   KL::Integer id = addArchive(new Alembic::Abc::IArchive(Alembic::AbcCoreHDF5::ReadArchive(),"/development/octopus.abc"));
   
   printf("Opened archive.\n");
