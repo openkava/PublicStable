@@ -227,10 +227,11 @@ FABRIC_EXT_EXPORT void FabricALEMBICParseXform(
     schema.get(xform,sample);
     
     // extract the information
-    transform.ori.v.x = xform.getAxis().x * sin(xform.getAngle() * 0.5);
-    transform.ori.v.y = xform.getAxis().y * sin(xform.getAngle() * 0.5);
-    transform.ori.v.z = xform.getAxis().z * sin(xform.getAngle() * 0.5);
-    transform.ori.w = cos(xform.getAngle() * 0.5);
+    float halfAngle = 0.5f * xform.getAngle() * 3.14f / 180.0f;
+    transform.ori.v.x = xform.getAxis().x * sin(halfAngle);
+    transform.ori.v.y = xform.getAxis().y * sin(halfAngle);
+    transform.ori.v.z = xform.getAxis().z * sin(halfAngle);
+    transform.ori.w = cos(halfAngle);
     transform.tr.x = xform.getTranslation().x;
     transform.tr.y = xform.getTranslation().y;
     transform.tr.z = xform.getTranslation().z;
@@ -361,7 +362,9 @@ FABRIC_EXT_EXPORT void FabricALEMBICParsePolyMeshAttributes(
   KL::String & identifier,
   KL::Integer & sampleIndex,
   KL::VariableArray<KL::Vec3>& vertices,
-  KL::VariableArray<KL::Vec3>& normals
+  KL::VariableArray<KL::Vec3>& normals,
+  KL::Boolean & uvsLoaded,
+  KL::VariableArray<KL::Vec2>& uvs
   )
 {
   Alembic::AbcGeom::IPolyMesh obj(getObjectFromArchive(archiveID,identifier.data()),Alembic::Abc::kWrapExisting);
@@ -421,7 +424,6 @@ FABRIC_EXT_EXPORT void FabricALEMBICParsePolyMeshAttributes(
           indexOffset += 4;
         }
       }
-      printf(" { ALEMBIC } Loaded %d split-vertices of sample %d.\n",(int)vertexOffset,(int)timeIndex);
     }
     
     // load the normals
@@ -434,7 +436,7 @@ FABRIC_EXT_EXPORT void FabricALEMBICParsePolyMeshAttributes(
       {
         memcpy(&normals[0],nsp->getData(),sizeof(float) * 3 * normals.size());
       }
-      else if(!vertexNormals)
+      else if(!vertexNormals && nsp->size() > 0)
       {
         size_t vertexOffset = 0;
         size_t indexOffset = 0;
@@ -443,7 +445,7 @@ FABRIC_EXT_EXPORT void FabricALEMBICParsePolyMeshAttributes(
           size_t count = faceCounts->get()[i];
           if(count == 3)
           {
-            for(size_t j=0;j<count;j++)
+            for(size_t j=0;j<3;j++)
             {
               normals[vertexOffset].x = nsp->get()[indexOffset+j].x;
               normals[vertexOffset].y = nsp->get()[indexOffset+j].y;
@@ -468,45 +470,53 @@ FABRIC_EXT_EXPORT void FabricALEMBICParsePolyMeshAttributes(
             indexOffset += 4;
           }
         }
-
-        printf(" { ALEMBIC } Loaded %d face-normals of sample %d.\n",(int)normals.size(),(int)timeIndex);
       }
     }
 
-    //IV2fGeomParam uv = schema.getUVsParam();
+    if(!uvsLoaded)
+    {
+      Alembic::AbcGeom::IV2fGeomParam U = schema.getUVsParam();
+      if(U.valid())
+      {
+        Alembic::AbcGeom::V2fArraySamplePtr usp = U.getExpandedValue(0).getVals();
+        if(vertexNormals && uvs.size() == usp->size())
+        {
+          memcpy(&uvs[0],usp->getData(),sizeof(float) * 2 * uvs.size());
+        }
+        else if(usp->size() > 0)
+        {
+          size_t vertexOffset = 0;
+          size_t indexOffset = 0;
+          for(size_t i=0;i<faceCounts->size();i++)
+          {
+            size_t count = faceCounts->get()[i];
+            if(count == 3)
+            {
+              for(size_t j=0;j<3;j++)
+              {
+                uvs[vertexOffset].x = usp->get()[indexOffset+j].x;
+                uvs[vertexOffset++].y = usp->get()[indexOffset+j].y;
+              }
+              indexOffset += 3;
+            }
+            else if(count == 4)
+            {
+              for(size_t j=0;j<3;j++)
+              {
+                uvs[vertexOffset].x = usp->get()[indexOffset+j].x;
+                uvs[vertexOffset++].y = usp->get()[indexOffset+j].y;
+              }
+              for(size_t j=2;j<5;j++)
+              {
+                uvs[vertexOffset].x = usp->get()[indexOffset+(j%4)].x;
+                uvs[vertexOffset++].y = usp->get()[indexOffset+(j%4)].y;
+              }
+              indexOffset += 4;
+            }
+          }
+        }
+        uvsLoaded = true;
+      }
+    }
   }
-}
-
-int main(int argc, char ** argv)
-{
-  printf("Opening archive...\n");
-  KL::Integer id = addArchive(new Alembic::Abc::IArchive(Alembic::AbcCoreHDF5::ReadArchive(),"/development/octopus.abc"));
-  
-  printf("Opened archive.\n");
-  
-  std::string identifier = "/octopus_low/octopus_lowShape";
-  
-  printf("Looking for identifier...\n");
-  
-  Alembic::AbcGeom::IPolyMesh obj(getObjectFromArchive(id,identifier.data()),Alembic::Abc::kWrapExisting);
-  Alembic::AbcGeom::IXform xform(obj.getParent(),Alembic::Abc::kWrapExisting);
-  printf("found object: %s\n",obj.getFullName().c_str());
-  
-  printf("Requesting schema...\n");
-  
-  Alembic::AbcGeom::IPolyMeshSchema schema = obj.getSchema();
-  
-  printf("Nb Samples: %d\n",(int)schema.getNumSamples());
-  printf("Requesting sample...\n");
-  
-  Alembic::AbcGeom::IPolyMeshSchema::Sample sample;
-  schema.get(sample);
-  
-  printf("Received sample.\n");
-  
-  printf("Nb Points: %d\n",(int)sample.getPositions()->size());
-  
-  deleteArchive(id);
-
-  return 0;
 }
