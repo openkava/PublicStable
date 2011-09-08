@@ -335,6 +335,16 @@ patch_boost: Build/.boost.patch
 unpack_boost: Build/.boost.unpack
 
 Build/.boost.build: Build/.boost.configure
+ifeq ($(BUILD_PLATFORM),Linux)
+	for ARCH in $(ARCHS); do \
+		if [ "$$ARCH" = "x86_64" ]; then \
+			BJAM_FLAGS="toolset=gcc architecture=x86 address-model=64 link=static"; \
+		else \
+			BJAM_FLAGS="toolset=gcc architecture=x86 instruction-set=i686 address-model=32 link=static"; \
+		fi; \
+		( cd Build/boost-$(BOOST_VERSION)-$$ARCH && ./bjam -d+2 $$BJAM_FLAGS ); \
+	done
+else
 	for ARCH in $(ARCHS); do \
 		if [ "$$ARCH" = "x86_64" ]; then \
 			BJAM_FLAGS="toolset=darwin architecture=x86 address-model=64 link=static"; \
@@ -343,6 +353,7 @@ Build/.boost.build: Build/.boost.configure
 		fi; \
 		( cd Build/boost-$(BOOST_VERSION)-$$ARCH && ./bjam -d+2 $$BJAM_FLAGS ); \
 	done
+endif
 	touch $@
 
 Build/.boost.configure: Build/.boost.patch
@@ -415,6 +426,32 @@ Build/.alembic.build: Build/.alembic.configure
 	touch $@
 
 Build/.alembic.configure: Build/.alembic.patch
+ifeq ($(BUILD_PLATFORM),Linux)
+	for ARCH in $(ARCHS); do \
+		if [ "$$ARCH" = "x86_64" ]; then \
+			ALEMBIC_CFLAGS="-fPIC"; \
+			ALEMBIC_LDFLAGS=""; \
+		else \
+			ALEMBIC_CFLAGS="-fPIC -march=i686"; \
+			ALEMBIC_LDFLAGS="-march=i686"; \
+		fi; \
+		( cd Build/alembic-$(ALEMBIC_VERSION)-$$ARCH && \
+			CFLAGS="$$ALEMBIC_CFLAGS" CXXFLAGS="$$ALEMBIC_CFLAGS" LDFLAGS="$$ALEMBIC_LDFLAGS" python build/bootstrap/alembic_bootstrap.py \
+				--disable-prman \
+				--disable-arnold \
+				--disable-maya \
+				--hdf5_include_dir=$(TARGET_BASE)/include/hdf5/hdf5 \
+				--hdf5_hdf5_library=$(TARGET_BASE)/Linux/$$ARCH/Release/lib/hdf5/libhdf5.a \
+				--ilmbase_include_dir=$(TARGET_BASE)/include/ilmbase \
+				--ilmbase_imath_library=$(TARGET_BASE)/Linux/$$ARCH/Release/lib/ilmbase/libImath.a \
+				--boost_include_dir=$(TARGET_BASE)/include/boost \
+				--boost_thread_library=$(TARGET_BASE)/Linux/$$ARCH/Release/lib/boost/libboost_thread.a \
+				--zlib_include_dir=/usr/include \
+				--zlib_library=/usr/lib/libz.a \
+				alembic_build \
+		); \
+	done
+else
 	for ARCH in $(ARCHS); do \
 		if [ "$$ARCH" = "x86_64" ]; then \
 			ALEMBIC_CFLAGS="-fPIC -m64"; \
@@ -439,6 +476,7 @@ Build/.alembic.configure: Build/.alembic.patch
 				alembic_build \
 		); \
 	done
+endif
 	touch $@
 
 Build/.alembic.patch: Build/.alembic.unpack
@@ -621,7 +659,7 @@ install_boost: install_boost_headers install_boost_libraries
 
 install_boost_headers:
 	mkdir -p include/boost/boost
-	$(RSYNC) --progress --recursive --delete Build/boost-$(BOOST_VERSION)-$(FIRST_ARCH)/boost/ $(TARGET_BASE)/include/boost/boost/
+	$(RSYNC) --progress --recursive --delete --exclude='._*' Build/boost-$(BOOST_VERSION)-$(FIRST_ARCH)/boost/ $(TARGET_BASE)/include/boost/boost/
 
 install_boost_libraries:
 	for ARCH in $(ARCHS); do \
