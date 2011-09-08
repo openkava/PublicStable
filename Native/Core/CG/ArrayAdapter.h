@@ -17,6 +17,9 @@ namespace Fabric
   namespace CG
   {
     class BasicBlockBuilder;
+    class ConstStringAdapter;
+    class SizeAdapter;
+    class StringAdapter;
     
     class ArrayAdapter : public Adapter
     {
@@ -39,6 +42,15 @@ namespace Fabric
     protected:
     
       ArrayAdapter( RC::ConstHandle<Manager> const &manager, RC::ConstHandle<RT::ArrayDesc> const &arrayDesc, Flags flags );
+
+      void llvmReportOutOfRangeError(
+        BasicBlockBuilder &basicBlockBuilder,
+        RC::ConstHandle<ConstStringAdapter> const &constStringAdapter,
+        RC::ConstHandle<StringAdapter> const &stringAdapter,
+        RC::ConstHandle<SizeAdapter> const &sizeAdapter,
+        llvm::Value *indexRValue,
+        llvm::Value *sizeRValue
+        ) const;
 
     private:
     

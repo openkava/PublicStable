@@ -1,3 +1,7 @@
+/*
+ *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+ */
+ 
 #include "VariableArrayDesc.h"
 #include "VariableArrayImpl.h"
 
@@ -7,8 +11,6 @@
 
 namespace Fabric
 {
-  
-
   namespace RT
   {
     VariableArrayDesc::VariableArrayDesc( std::string const &name, RC::ConstHandle<VariableArrayImpl> const &variableArrayImpl, RC::ConstHandle<Desc> const &memberDesc )

@@ -1,2 +1,2 @@
-KL: Integer[] index out-of-bounds
-KL: Scalar[4][] index out-of-bounds
+KL: Integer[] index (1) out of range (1)
+KL: Scalar[4][] index (0) out of range (0)

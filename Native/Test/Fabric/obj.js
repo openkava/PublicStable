@@ -4,6 +4,8 @@ FABRIC = wrapFabricClient(FC);
 loadOp = FABRIC.DependencyGraph.createOperator("load");
 loadOp.setEntryFunctionName("load");
 loadOp.setSourceCode('\
+use FabricOBJ;\n\
+\n\
 operator load(\n\
   io String url,\n\
   io FabricResource resource,\n\
@@ -11,8 +13,8 @@ operator load(\n\
   )\n\
 {\n\
   report "Loaded " + url + " (mime type " + resource.mimeType + ")";\n\
-  report "OBJ data size is " + resource.dataSize;\n\
-  FabricOBJDecode(resource.data, resource.dataSize, objParseHandle);\n\
+  report "OBJ data size is " + resource.data.dataSize();\n\
+  FabricOBJDecode(resource.data.data(), resource.data.dataSize(), objParseHandle);\n\
 }\n\
 ');
 if (loadOp.getDiagnostics().length > 0 ) {
@@ -35,6 +37,7 @@ rlnode.setData("url", 0, "file:test.obj");
 resizeOp = FABRIC.DependencyGraph.createOperator("resize");
 resizeOp.setEntryFunctionName("resize");
 resizeOp.setSourceCode('\
+use FabricOBJ;\n\
 operator resize(\n\
   io Data objParseHandle,\n\
   io Size newSize\n\
@@ -58,12 +61,13 @@ resizeBinding.setParameterLayout([
 setDataOp = FABRIC.DependencyGraph.createOperator("setData");
 setDataOp.setEntryFunctionName("setData");
 setDataOp.setSourceCode('\
+use FabricOBJ;\n\
 operator setData(\n\
   io Data objParseHandle,\n\
-  io Vec3 positions[]\n\
+  io Vec3 positions<>\n\
   )\n\
 {\n\
-  FabricOBJGetPoints(objParseHandle, positions);\n\
+  FabricOBJGetPointsSliced(objParseHandle, positions);\n\
   report "rlnode: setData to " + positions.size + " points";\n\
   FabricOBJFreeParsedData(objParseHandle);\n\
 }\n\
@@ -76,7 +80,7 @@ setDataBinding = FABRIC.DG.createBinding();
 setDataBinding.setOperator( setDataOp );
 setDataBinding.setParameterLayout([
   "rlnode.objParseHandle",
-  "self.position[]"
+  "self.position<>"
 ]);
 
 node = FABRIC.DG.createNode("dataNode");

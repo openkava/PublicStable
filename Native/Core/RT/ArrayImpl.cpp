@@ -1,3 +1,7 @@
+/*
+ *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+ */
+ 
 #include "ArrayImpl.h"
 
 #include <Fabric/Base/JSON/Array.h>
@@ -6,8 +10,6 @@
 
 namespace Fabric
 {
-  
-
   namespace RT
   {
     std::string ArrayImpl::descData( void const *data ) const

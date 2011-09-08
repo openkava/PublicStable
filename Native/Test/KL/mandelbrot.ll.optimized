@@ -374,14 +374,14 @@ entry:
   ret i1 %0
 }
 
-define i32 @__method_dataSize__Byte(i8 %selfRValue) nounwind readnone inlinehint {
+define i32 @__method_dataSize__Byte(i8 %thisRValue) nounwind readnone inlinehint {
 entry:
   ret i32 1
 }
 
-define i8* @__method_data__Byte(i8* nocapture %selfLValue) nounwind readnone inlinehint {
+define i8* @__method_data__Byte(i8* nocapture %thisLValue) nounwind readnone inlinehint {
 entry:
-  ret i8* %selfLValue
+  ret i8* %thisLValue
 }
 
 define void @__construct_Boolean__Data(i1* nocapture %booleanLValue, i8* %opaqueRValue) nounwind inlinehint {
@@ -417,14 +417,14 @@ __String__Release.exit:                           ; preds = %entry, %nonNull.i, 
   ret void
 }
 
-define i32 @__method_dataSize__Data(i8* nocapture %selfRValue) nounwind readnone inlinehint {
+define i32 @__method_dataSize__Data(i8* nocapture %thisRValue) nounwind readnone inlinehint {
 entry:
   ret i32 4
 }
 
-define i8* @__method_data__Data(i8** nocapture %selfLValue) nounwind readnone inlinehint {
+define i8* @__method_data__Data(i8** nocapture %thisLValue) nounwind readnone inlinehint {
 entry:
-  %0 = bitcast i8** %selfLValue to i8*
+  %0 = bitcast i8** %thisLValue to i8*
   ret i8* %0
 }
 
@@ -634,14 +634,14 @@ entry:
   ret i1 %0
 }
 
-define i32 @__method_dataSize__Integer(i32 %selfRValue) nounwind readnone inlinehint {
+define i32 @__method_dataSize__Integer(i32 %thisRValue) nounwind readnone inlinehint {
 entry:
   ret i32 4
 }
 
-define i8* @__method_data__Integer(i32* nocapture %selfLValue) nounwind readnone inlinehint {
+define i8* @__method_data__Integer(i32* nocapture %thisLValue) nounwind readnone inlinehint {
 entry:
-  %0 = bitcast i32* %selfLValue to i8*
+  %0 = bitcast i32* %thisLValue to i8*
   ret i8* %0
 }
 
@@ -888,14 +888,14 @@ entry:
   ret i1 %0
 }
 
-define i32 @__method_dataSize__Scalar(float %selfRValue) nounwind readnone inlinehint {
+define i32 @__method_dataSize__Scalar(float %thisRValue) nounwind readnone inlinehint {
 entry:
   ret i32 4
 }
 
-define i8* @__method_data__Scalar(float* nocapture %selfLValue) nounwind readnone inlinehint {
+define i8* @__method_data__Scalar(float* nocapture %thisLValue) nounwind readnone inlinehint {
 entry:
-  %0 = bitcast float* %selfLValue to i8*
+  %0 = bitcast float* %thisLValue to i8*
   ret i8* %0
 }
 
@@ -1099,14 +1099,14 @@ entry:
   ret i1 %0
 }
 
-define i32 @__method_dataSize__Size(i32 %selfRValue) nounwind readnone inlinehint {
+define i32 @__method_dataSize__Size(i32 %thisRValue) nounwind readnone inlinehint {
 entry:
   ret i32 4
 }
 
-define i8* @__method_data__Size(i32* nocapture %selfLValue) nounwind readnone inlinehint {
+define i8* @__method_data__Size(i32* nocapture %thisLValue) nounwind readnone inlinehint {
 entry:
-  %0 = bitcast i32* %selfLValue to i8*
+  %0 = bitcast i32* %thisLValue to i8*
   ret i8* %0
 }
 
@@ -1176,13 +1176,13 @@ __String__Release.exit:                           ; preds = %entry, %__String__R
   ret %String %3
 }
 
-define i32 @__method_length__String(%String %selfRValue) nounwind readonly inlinehint {
+define i32 @__method_length__String(%String %thisRValue) nounwind readonly inlinehint {
 entry:
-  %0 = icmp eq %String %selfRValue, null
+  %0 = icmp eq %String %thisRValue, null
   br i1 %0, label %__String__Length.exit, label %nonNull.i
 
 nonNull.i:                                        ; preds = %entry
-  %1 = getelementptr %String %selfRValue, i32 0, i32 2
+  %1 = getelementptr %String %thisRValue, i32 0, i32 2
   %2 = load i32* %1
   br label %__String__Length.exit
 
@@ -1191,13 +1191,13 @@ __String__Length.exit:                            ; preds = %entry, %nonNull.i
   ret i32 %3
 }
 
-define i32 @__method_dataSize__String(%String %selfRValue) nounwind readonly inlinehint {
+define i32 @__method_dataSize__String(%String %thisRValue) nounwind readonly inlinehint {
 entry:
-  %0 = icmp eq %String %selfRValue, null
+  %0 = icmp eq %String %thisRValue, null
   br i1 %0, label %__String__Length.exit, label %nonNull.i
 
 nonNull.i:                                        ; preds = %entry
-  %1 = getelementptr %String %selfRValue, i32 0, i32 2
+  %1 = getelementptr %String %thisRValue, i32 0, i32 2
   %2 = load i32* %1
   %phitmp = add i32 %2, 1
   br label %__String__Length.exit
@@ -1207,17 +1207,17 @@ __String__Length.exit:                            ; preds = %entry, %nonNull.i
   ret i32 %3
 }
 
-define i8* @__method_data__String(%String %selfRValue) nounwind readnone inlinehint {
+define i8* @__method_data__String(%String %thisRValue) nounwind readnone inlinehint {
 entry:
-  %0 = icmp eq %String %selfRValue, null
+  %0 = icmp eq %String %thisRValue, null
   br i1 %0, label %null, label %nonNull
 
 null:                                             ; preds = %entry
-  %1 = bitcast %String %selfRValue to i8*
+  %1 = bitcast %String %thisRValue to i8*
   ret i8* %1
 
 nonNull:                                          ; preds = %entry
-  %2 = getelementptr %String %selfRValue, i32 0, i32 3, i32 0
+  %2 = getelementptr %String %thisRValue, i32 0, i32 3, i32 0
   ret i8* %2
 }
 
@@ -1225,28 +1225,28 @@ define i32 @__method_compare__String__String(%String %lhs, %String %rhs) nounwin
 entry:
   %0 = icmp eq %String %lhs, null
   %1 = icmp eq %String %rhs, null
-  br i1 %0, label %selfIsNull, label %selfIsNotNull
+  br i1 %0, label %thisIsNull, label %thisIsNotNull
 
-selfIsNull:                                       ; preds = %entry
+thisIsNull:                                       ; preds = %entry
   br i1 %1, label %eq, label %lt
 
-selfIsNotNull:                                    ; preds = %entry
+thisIsNotNull:                                    ; preds = %entry
   br i1 %1, label %eq, label %shallow
 
-shallow:                                          ; preds = %selfIsNotNull
+shallow:                                          ; preds = %thisIsNotNull
   %2 = icmp eq %String %lhs, %rhs
   br i1 %2, label %eq, label %deep
 
 deep:                                             ; preds = %shallow
-  %selfLengthPtr = getelementptr inbounds %String %lhs, i32 0, i32 2
-  %selfLength = load i32* %selfLengthPtr
+  %thisLengthPtr = getelementptr inbounds %String %lhs, i32 0, i32 2
+  %thisLength = load i32* %thisLengthPtr
   %otherLengthPtr = getelementptr inbounds %String %rhs, i32 0, i32 2
   %otherLength = load i32* %otherLengthPtr
   br label %check
 
 check:                                            ; preds = %next, %deep
   %3 = phi i32 [ 0, %deep ], [ %8, %next ]
-  %4 = icmp ult i32 %3, %selfLength
+  %4 = icmp ult i32 %3, %thisLength
   %5 = icmp ult i32 %3, %otherLength
   br i1 %4, label %checkOtherLength, label %verifyOtherLength
 
@@ -1257,26 +1257,26 @@ checkOtherLength:                                 ; preds = %check
   br i1 %5, label %checkChars, label %eq
 
 checkChars:                                       ; preds = %checkOtherLength
-  %selfCharPtr = getelementptr %String %lhs, i32 0, i32 3, i32 %3
-  %selfChar = load i8* %selfCharPtr
+  %thisCharPtr = getelementptr %String %lhs, i32 0, i32 3, i32 %3
+  %thisChar = load i8* %thisCharPtr
   %otherCharPtr = getelementptr %String %rhs, i32 0, i32 3, i32 %3
   %otherChar = load i8* %otherCharPtr
-  %6 = icmp ult i8 %selfChar, %otherChar
+  %6 = icmp ult i8 %thisChar, %otherChar
   br i1 %6, label %lt, label %checkCharsGT
 
 checkCharsGT:                                     ; preds = %checkChars
-  %7 = icmp ugt i8 %selfChar, %otherChar
+  %7 = icmp ugt i8 %thisChar, %otherChar
   br i1 %7, label %eq, label %next
 
 next:                                             ; preds = %checkCharsGT
   %8 = add i32 %3, 1
   br label %check
 
-eq:                                               ; preds = %checkOtherLength, %checkCharsGT, %selfIsNotNull, %lt, %verifyOtherLength, %shallow, %selfIsNull
-  %merge = phi i32 [ 0, %verifyOtherLength ], [ 0, %shallow ], [ 0, %selfIsNull ], [ -1, %lt ], [ 1, %selfIsNotNull ], [ 1, %checkCharsGT ], [ 1, %checkOtherLength ]
+eq:                                               ; preds = %checkOtherLength, %checkCharsGT, %thisIsNotNull, %lt, %verifyOtherLength, %shallow, %thisIsNull
+  %merge = phi i32 [ 0, %verifyOtherLength ], [ 0, %shallow ], [ 0, %thisIsNull ], [ -1, %lt ], [ 1, %thisIsNotNull ], [ 1, %checkCharsGT ], [ 1, %checkOtherLength ]
   ret i32 %merge
 
-lt:                                               ; preds = %checkChars, %verifyOtherLength, %selfIsNull
+lt:                                               ; preds = %checkChars, %verifyOtherLength, %thisIsNull
   br label %eq
 }
 
@@ -1284,28 +1284,28 @@ define i1 @__operator_EQ__String__String(%String %lhsRValue, %String %rhsRValue)
 entry:
   %0 = icmp eq %String %lhsRValue, null
   %1 = icmp eq %String %rhsRValue, null
-  br i1 %0, label %selfIsNull.i, label %selfIsNotNull.i
+  br i1 %0, label %thisIsNull.i, label %thisIsNotNull.i
 
-selfIsNull.i:                                     ; preds = %entry
+thisIsNull.i:                                     ; preds = %entry
   br i1 %1, label %__method_compare__String__String.exit, label %lt.i
 
-selfIsNotNull.i:                                  ; preds = %entry
+thisIsNotNull.i:                                  ; preds = %entry
   br i1 %1, label %__method_compare__String__String.exit, label %shallow.i
 
-shallow.i:                                        ; preds = %selfIsNotNull.i
+shallow.i:                                        ; preds = %thisIsNotNull.i
   %2 = icmp eq %String %lhsRValue, %rhsRValue
   br i1 %2, label %__method_compare__String__String.exit, label %deep.i
 
 deep.i:                                           ; preds = %shallow.i
-  %selfLengthPtr.i = getelementptr inbounds %String %lhsRValue, i32 0, i32 2
-  %selfLength.i = load i32* %selfLengthPtr.i
+  %thisLengthPtr.i = getelementptr inbounds %String %lhsRValue, i32 0, i32 2
+  %thisLength.i = load i32* %thisLengthPtr.i
   %otherLengthPtr.i = getelementptr inbounds %String %rhsRValue, i32 0, i32 2
   %otherLength.i = load i32* %otherLengthPtr.i
   br label %check.i
 
 check.i:                                          ; preds = %next.i, %deep.i
   %3 = phi i32 [ 0, %deep.i ], [ %8, %next.i ]
-  %4 = icmp ult i32 %3, %selfLength.i
+  %4 = icmp ult i32 %3, %thisLength.i
   %5 = icmp ult i32 %3, %otherLength.i
   br i1 %4, label %checkOtherLength.i, label %verifyOtherLength.i
 
@@ -1316,26 +1316,26 @@ checkOtherLength.i:                               ; preds = %check.i
   br i1 %5, label %checkChars.i, label %__method_compare__String__String.exit
 
 checkChars.i:                                     ; preds = %checkOtherLength.i
-  %selfCharPtr.i = getelementptr %String %lhsRValue, i32 0, i32 3, i32 %3
-  %selfChar.i = load i8* %selfCharPtr.i
+  %thisCharPtr.i = getelementptr %String %lhsRValue, i32 0, i32 3, i32 %3
+  %thisChar.i = load i8* %thisCharPtr.i
   %otherCharPtr.i = getelementptr %String %rhsRValue, i32 0, i32 3, i32 %3
   %otherChar.i = load i8* %otherCharPtr.i
-  %6 = icmp ult i8 %selfChar.i, %otherChar.i
+  %6 = icmp ult i8 %thisChar.i, %otherChar.i
   br i1 %6, label %lt.i, label %checkCharsGT.i
 
 checkCharsGT.i:                                   ; preds = %checkChars.i
-  %7 = icmp ugt i8 %selfChar.i, %otherChar.i
+  %7 = icmp ugt i8 %thisChar.i, %otherChar.i
   br i1 %7, label %__method_compare__String__String.exit, label %next.i
 
 next.i:                                           ; preds = %checkCharsGT.i
   %8 = add i32 %3, 1
   br label %check.i
 
-lt.i:                                             ; preds = %checkChars.i, %verifyOtherLength.i, %selfIsNull.i
+lt.i:                                             ; preds = %checkChars.i, %verifyOtherLength.i, %thisIsNull.i
   br label %__method_compare__String__String.exit
 
-__method_compare__String__String.exit:            ; preds = %checkOtherLength.i, %checkCharsGT.i, %selfIsNull.i, %selfIsNotNull.i, %shallow.i, %verifyOtherLength.i, %lt.i
-  %merge.i = phi i1 [ true, %verifyOtherLength.i ], [ true, %shallow.i ], [ true, %selfIsNull.i ], [ false, %lt.i ], [ false, %selfIsNotNull.i ], [ false, %checkCharsGT.i ], [ false, %checkOtherLength.i ]
+__method_compare__String__String.exit:            ; preds = %checkOtherLength.i, %checkCharsGT.i, %thisIsNull.i, %thisIsNotNull.i, %shallow.i, %verifyOtherLength.i, %lt.i
+  %merge.i = phi i1 [ true, %verifyOtherLength.i ], [ true, %shallow.i ], [ true, %thisIsNull.i ], [ false, %lt.i ], [ false, %thisIsNotNull.i ], [ false, %checkCharsGT.i ], [ false, %checkOtherLength.i ]
   ret i1 %merge.i
 }
 
@@ -1343,28 +1343,28 @@ define i1 @__operator_NE__String__String(%String %lhsRValue, %String %rhsRValue)
 entry:
   %0 = icmp eq %String %lhsRValue, null
   %1 = icmp eq %String %rhsRValue, null
-  br i1 %0, label %selfIsNull.i, label %selfIsNotNull.i
+  br i1 %0, label %thisIsNull.i, label %thisIsNotNull.i
 
-selfIsNull.i:                                     ; preds = %entry
+thisIsNull.i:                                     ; preds = %entry
   br i1 %1, label %__method_compare__String__String.exit, label %lt.i
 
-selfIsNotNull.i:                                  ; preds = %entry
+thisIsNotNull.i:                                  ; preds = %entry
   br i1 %1, label %__method_compare__String__String.exit, label %shallow.i
 
-shallow.i:                                        ; preds = %selfIsNotNull.i
+shallow.i:                                        ; preds = %thisIsNotNull.i
   %2 = icmp eq %String %lhsRValue, %rhsRValue
   br i1 %2, label %__method_compare__String__String.exit, label %deep.i
 
 deep.i:                                           ; preds = %shallow.i
-  %selfLengthPtr.i = getelementptr inbounds %String %lhsRValue, i32 0, i32 2
-  %selfLength.i = load i32* %selfLengthPtr.i
+  %thisLengthPtr.i = getelementptr inbounds %String %lhsRValue, i32 0, i32 2
+  %thisLength.i = load i32* %thisLengthPtr.i
   %otherLengthPtr.i = getelementptr inbounds %String %rhsRValue, i32 0, i32 2
   %otherLength.i = load i32* %otherLengthPtr.i
   br label %check.i
 
 check.i:                                          ; preds = %next.i, %deep.i
   %3 = phi i32 [ 0, %deep.i ], [ %8, %next.i ]
-  %4 = icmp ult i32 %3, %selfLength.i
+  %4 = icmp ult i32 %3, %thisLength.i
   %5 = icmp ult i32 %3, %otherLength.i
   br i1 %4, label %checkOtherLength.i, label %verifyOtherLength.i
 
@@ -1375,26 +1375,26 @@ checkOtherLength.i:                               ; preds = %check.i
   br i1 %5, label %checkChars.i, label %__method_compare__String__String.exit
 
 checkChars.i:                                     ; preds = %checkOtherLength.i
-  %selfCharPtr.i = getelementptr %String %lhsRValue, i32 0, i32 3, i32 %3
-  %selfChar.i = load i8* %selfCharPtr.i
+  %thisCharPtr.i = getelementptr %String %lhsRValue, i32 0, i32 3, i32 %3
+  %thisChar.i = load i8* %thisCharPtr.i
   %otherCharPtr.i = getelementptr %String %rhsRValue, i32 0, i32 3, i32 %3
   %otherChar.i = load i8* %otherCharPtr.i
-  %6 = icmp ult i8 %selfChar.i, %otherChar.i
+  %6 = icmp ult i8 %thisChar.i, %otherChar.i
   br i1 %6, label %lt.i, label %checkCharsGT.i
 
 checkCharsGT.i:                                   ; preds = %checkChars.i
-  %7 = icmp ugt i8 %selfChar.i, %otherChar.i
+  %7 = icmp ugt i8 %thisChar.i, %otherChar.i
   br i1 %7, label %__method_compare__String__String.exit, label %next.i
 
 next.i:                                           ; preds = %checkCharsGT.i
   %8 = add i32 %3, 1
   br label %check.i
 
-lt.i:                                             ; preds = %checkChars.i, %verifyOtherLength.i, %selfIsNull.i
+lt.i:                                             ; preds = %checkChars.i, %verifyOtherLength.i, %thisIsNull.i
   br label %__method_compare__String__String.exit
 
-__method_compare__String__String.exit:            ; preds = %checkOtherLength.i, %checkCharsGT.i, %selfIsNull.i, %selfIsNotNull.i, %shallow.i, %verifyOtherLength.i, %lt.i
-  %merge.i = phi i1 [ false, %verifyOtherLength.i ], [ false, %shallow.i ], [ false, %selfIsNull.i ], [ true, %lt.i ], [ true, %selfIsNotNull.i ], [ true, %checkCharsGT.i ], [ true, %checkOtherLength.i ]
+__method_compare__String__String.exit:            ; preds = %checkOtherLength.i, %checkCharsGT.i, %thisIsNull.i, %thisIsNotNull.i, %shallow.i, %verifyOtherLength.i, %lt.i
+  %merge.i = phi i1 [ false, %verifyOtherLength.i ], [ false, %shallow.i ], [ false, %thisIsNull.i ], [ true, %lt.i ], [ true, %thisIsNotNull.i ], [ true, %checkCharsGT.i ], [ true, %checkOtherLength.i ]
   ret i1 %merge.i
 }
 
@@ -1411,15 +1411,15 @@ shallow.i:                                        ; preds = %entry
   br i1 %2, label %verifyOtherLength.i, label %deep.i
 
 deep.i:                                           ; preds = %shallow.i
-  %selfLengthPtr.i = getelementptr inbounds %String %lhsRValue, i32 0, i32 2
-  %selfLength.i = load i32* %selfLengthPtr.i
+  %thisLengthPtr.i = getelementptr inbounds %String %lhsRValue, i32 0, i32 2
+  %thisLength.i = load i32* %thisLengthPtr.i
   %otherLengthPtr.i = getelementptr inbounds %String %rhsRValue, i32 0, i32 2
   %otherLength.i = load i32* %otherLengthPtr.i
   br label %check.i
 
 check.i:                                          ; preds = %next.i, %deep.i
   %3 = phi i32 [ 0, %deep.i ], [ %8, %next.i ]
-  %4 = icmp ult i32 %3, %selfLength.i
+  %4 = icmp ult i32 %3, %thisLength.i
   br i1 %4, label %checkOtherLength.i, label %verifyOtherLength.i
 
 verifyOtherLength.i:                              ; preds = %checkCharsGT.i, %checkOtherLength.i, %checkChars.i, %check.i, %shallow.i, %entry
@@ -1431,15 +1431,15 @@ checkOtherLength.i:                               ; preds = %check.i
   br i1 %5, label %checkChars.i, label %verifyOtherLength.i
 
 checkChars.i:                                     ; preds = %checkOtherLength.i
-  %selfCharPtr.i = getelementptr %String %lhsRValue, i32 0, i32 3, i32 %3
-  %selfChar.i = load i8* %selfCharPtr.i
+  %thisCharPtr.i = getelementptr %String %lhsRValue, i32 0, i32 3, i32 %3
+  %thisChar.i = load i8* %thisCharPtr.i
   %otherCharPtr.i = getelementptr %String %rhsRValue, i32 0, i32 3, i32 %3
   %otherChar.i = load i8* %otherCharPtr.i
-  %6 = icmp ult i8 %selfChar.i, %otherChar.i
+  %6 = icmp ult i8 %thisChar.i, %otherChar.i
   br i1 %6, label %verifyOtherLength.i, label %checkCharsGT.i
 
 checkCharsGT.i:                                   ; preds = %checkChars.i
-  %7 = icmp ugt i8 %selfChar.i, %otherChar.i
+  %7 = icmp ugt i8 %thisChar.i, %otherChar.i
   br i1 %7, label %verifyOtherLength.i, label %next.i
 
 next.i:                                           ; preds = %checkCharsGT.i
@@ -1451,26 +1451,26 @@ define i1 @__operator_GE__String__String(%String %lhsRValue, %String %rhsRValue)
 entry:
   %0 = icmp eq %String %lhsRValue, null
   %1 = icmp eq %String %rhsRValue, null
-  br i1 %0, label %selfIsNull.i, label %selfIsNotNull.i
+  br i1 %0, label %thisIsNull.i, label %thisIsNotNull.i
 
-selfIsNull.i:                                     ; preds = %entry
+thisIsNull.i:                                     ; preds = %entry
   br i1 %1, label %__method_compare__String__String.exit, label %lt.i
 
-selfIsNotNull.i:                                  ; preds = %entry
+thisIsNotNull.i:                                  ; preds = %entry
   %2 = icmp eq %String %lhsRValue, %rhsRValue
   %or.cond = or i1 %1, %2
   br i1 %or.cond, label %__method_compare__String__String.exit, label %deep.i
 
-deep.i:                                           ; preds = %selfIsNotNull.i
-  %selfLengthPtr.i = getelementptr inbounds %String %lhsRValue, i32 0, i32 2
-  %selfLength.i = load i32* %selfLengthPtr.i
+deep.i:                                           ; preds = %thisIsNotNull.i
+  %thisLengthPtr.i = getelementptr inbounds %String %lhsRValue, i32 0, i32 2
+  %thisLength.i = load i32* %thisLengthPtr.i
   %otherLengthPtr.i = getelementptr inbounds %String %rhsRValue, i32 0, i32 2
   %otherLength.i = load i32* %otherLengthPtr.i
   br label %check.i
 
 check.i:                                          ; preds = %next.i, %deep.i
   %3 = phi i32 [ 0, %deep.i ], [ %8, %next.i ]
-  %4 = icmp ult i32 %3, %selfLength.i
+  %4 = icmp ult i32 %3, %thisLength.i
   %5 = icmp ult i32 %3, %otherLength.i
   br i1 %4, label %checkOtherLength.i, label %verifyOtherLength.i
 
@@ -1481,26 +1481,26 @@ checkOtherLength.i:                               ; preds = %check.i
   br i1 %5, label %checkChars.i, label %__method_compare__String__String.exit
 
 checkChars.i:                                     ; preds = %checkOtherLength.i
-  %selfCharPtr.i = getelementptr %String %lhsRValue, i32 0, i32 3, i32 %3
-  %selfChar.i = load i8* %selfCharPtr.i
+  %thisCharPtr.i = getelementptr %String %lhsRValue, i32 0, i32 3, i32 %3
+  %thisChar.i = load i8* %thisCharPtr.i
   %otherCharPtr.i = getelementptr %String %rhsRValue, i32 0, i32 3, i32 %3
   %otherChar.i = load i8* %otherCharPtr.i
-  %6 = icmp ult i8 %selfChar.i, %otherChar.i
+  %6 = icmp ult i8 %thisChar.i, %otherChar.i
   br i1 %6, label %lt.i, label %checkCharsGT.i
 
 checkCharsGT.i:                                   ; preds = %checkChars.i
-  %7 = icmp ugt i8 %selfChar.i, %otherChar.i
+  %7 = icmp ugt i8 %thisChar.i, %otherChar.i
   br i1 %7, label %__method_compare__String__String.exit, label %next.i
 
 next.i:                                           ; preds = %checkCharsGT.i
   %8 = add i32 %3, 1
   br label %check.i
 
-lt.i:                                             ; preds = %checkChars.i, %verifyOtherLength.i, %selfIsNull.i
+lt.i:                                             ; preds = %checkChars.i, %verifyOtherLength.i, %thisIsNull.i
   br label %__method_compare__String__String.exit
 
-__method_compare__String__String.exit:            ; preds = %checkOtherLength.i, %checkCharsGT.i, %selfIsNull.i, %selfIsNotNull.i, %verifyOtherLength.i, %lt.i
-  %merge.i = phi i1 [ true, %verifyOtherLength.i ], [ true, %selfIsNull.i ], [ false, %lt.i ], [ true, %selfIsNotNull.i ], [ true, %checkCharsGT.i ], [ true, %checkOtherLength.i ]
+__method_compare__String__String.exit:            ; preds = %checkOtherLength.i, %checkCharsGT.i, %thisIsNull.i, %thisIsNotNull.i, %verifyOtherLength.i, %lt.i
+  %merge.i = phi i1 [ true, %verifyOtherLength.i ], [ true, %thisIsNull.i ], [ false, %lt.i ], [ true, %thisIsNotNull.i ], [ true, %checkCharsGT.i ], [ true, %checkOtherLength.i ]
   ret i1 %merge.i
 }
 
@@ -1508,26 +1508,26 @@ define i1 @__operator_LT__String__String(%String %lhsRValue, %String %rhsRValue)
 entry:
   %0 = icmp eq %String %lhsRValue, null
   %1 = icmp eq %String %rhsRValue, null
-  br i1 %0, label %selfIsNull.i, label %selfIsNotNull.i
+  br i1 %0, label %thisIsNull.i, label %thisIsNotNull.i
 
-selfIsNull.i:                                     ; preds = %entry
+thisIsNull.i:                                     ; preds = %entry
   br i1 %1, label %__method_compare__String__String.exit, label %lt.i
 
-selfIsNotNull.i:                                  ; preds = %entry
+thisIsNotNull.i:                                  ; preds = %entry
   %2 = icmp eq %String %lhsRValue, %rhsRValue
   %or.cond = or i1 %1, %2
   br i1 %or.cond, label %__method_compare__String__String.exit, label %deep.i
 
-deep.i:                                           ; preds = %selfIsNotNull.i
-  %selfLengthPtr.i = getelementptr inbounds %String %lhsRValue, i32 0, i32 2
-  %selfLength.i = load i32* %selfLengthPtr.i
+deep.i:                                           ; preds = %thisIsNotNull.i
+  %thisLengthPtr.i = getelementptr inbounds %String %lhsRValue, i32 0, i32 2
+  %thisLength.i = load i32* %thisLengthPtr.i
   %otherLengthPtr.i = getelementptr inbounds %String %rhsRValue, i32 0, i32 2
   %otherLength.i = load i32* %otherLengthPtr.i
   br label %check.i
 
 check.i:                                          ; preds = %next.i, %deep.i
   %3 = phi i32 [ 0, %deep.i ], [ %8, %next.i ]
-  %4 = icmp ult i32 %3, %selfLength.i
+  %4 = icmp ult i32 %3, %thisLength.i
   %5 = icmp ult i32 %3, %otherLength.i
   br i1 %4, label %checkOtherLength.i, label %verifyOtherLength.i
 
@@ -1538,26 +1538,26 @@ checkOtherLength.i:                               ; preds = %check.i
   br i1 %5, label %checkChars.i, label %__method_compare__String__String.exit
 
 checkChars.i:                                     ; preds = %checkOtherLength.i
-  %selfCharPtr.i = getelementptr %String %lhsRValue, i32 0, i32 3, i32 %3
-  %selfChar.i = load i8* %selfCharPtr.i
+  %thisCharPtr.i = getelementptr %String %lhsRValue, i32 0, i32 3, i32 %3
+  %thisChar.i = load i8* %thisCharPtr.i
   %otherCharPtr.i = getelementptr %String %rhsRValue, i32 0, i32 3, i32 %3
   %otherChar.i = load i8* %otherCharPtr.i
-  %6 = icmp ult i8 %selfChar.i, %otherChar.i
+  %6 = icmp ult i8 %thisChar.i, %otherChar.i
   br i1 %6, label %lt.i, label %checkCharsGT.i
 
 checkCharsGT.i:                                   ; preds = %checkChars.i
-  %7 = icmp ugt i8 %selfChar.i, %otherChar.i
+  %7 = icmp ugt i8 %thisChar.i, %otherChar.i
   br i1 %7, label %__method_compare__String__String.exit, label %next.i
 
 next.i:                                           ; preds = %checkCharsGT.i
   %8 = add i32 %3, 1
   br label %check.i
 
-lt.i:                                             ; preds = %checkChars.i, %verifyOtherLength.i, %selfIsNull.i
+lt.i:                                             ; preds = %checkChars.i, %verifyOtherLength.i, %thisIsNull.i
   br label %__method_compare__String__String.exit
 
-__method_compare__String__String.exit:            ; preds = %checkOtherLength.i, %checkCharsGT.i, %selfIsNull.i, %selfIsNotNull.i, %verifyOtherLength.i, %lt.i
-  %merge.i = phi i1 [ false, %verifyOtherLength.i ], [ false, %selfIsNull.i ], [ true, %lt.i ], [ false, %selfIsNotNull.i ], [ false, %checkCharsGT.i ], [ false, %checkOtherLength.i ]
+__method_compare__String__String.exit:            ; preds = %checkOtherLength.i, %checkCharsGT.i, %thisIsNull.i, %thisIsNotNull.i, %verifyOtherLength.i, %lt.i
+  %merge.i = phi i1 [ false, %verifyOtherLength.i ], [ false, %thisIsNull.i ], [ true, %lt.i ], [ false, %thisIsNotNull.i ], [ false, %checkCharsGT.i ], [ false, %checkOtherLength.i ]
   ret i1 %merge.i
 }
 
@@ -1573,15 +1573,15 @@ shallow.i:                                        ; preds = %entry
   br i1 %2, label %verifyOtherLength.i, label %deep.i
 
 deep.i:                                           ; preds = %shallow.i
-  %selfLengthPtr.i = getelementptr inbounds %String %lhsRValue, i32 0, i32 2
-  %selfLength.i = load i32* %selfLengthPtr.i
+  %thisLengthPtr.i = getelementptr inbounds %String %lhsRValue, i32 0, i32 2
+  %thisLength.i = load i32* %thisLengthPtr.i
   %otherLengthPtr.i = getelementptr inbounds %String %rhsRValue, i32 0, i32 2
   %otherLength.i = load i32* %otherLengthPtr.i
   br label %check.i
 
 check.i:                                          ; preds = %next.i, %deep.i
   %3 = phi i32 [ 0, %deep.i ], [ %8, %next.i ]
-  %4 = icmp ult i32 %3, %selfLength.i
+  %4 = icmp ult i32 %3, %thisLength.i
   br i1 %4, label %checkOtherLength.i, label %verifyOtherLength.i
 
 verifyOtherLength.i:                              ; preds = %checkCharsGT.i, %checkOtherLength.i, %checkChars.i, %check.i, %shallow.i, %entry
@@ -1593,15 +1593,15 @@ checkOtherLength.i:                               ; preds = %check.i
   br i1 %5, label %checkChars.i, label %verifyOtherLength.i
 
 checkChars.i:                                     ; preds = %checkOtherLength.i
-  %selfCharPtr.i = getelementptr %String %lhsRValue, i32 0, i32 3, i32 %3
-  %selfChar.i = load i8* %selfCharPtr.i
+  %thisCharPtr.i = getelementptr %String %lhsRValue, i32 0, i32 3, i32 %3
+  %thisChar.i = load i8* %thisCharPtr.i
   %otherCharPtr.i = getelementptr %String %rhsRValue, i32 0, i32 3, i32 %3
   %otherChar.i = load i8* %otherCharPtr.i
-  %6 = icmp ult i8 %selfChar.i, %otherChar.i
+  %6 = icmp ult i8 %thisChar.i, %otherChar.i
   br i1 %6, label %verifyOtherLength.i, label %checkCharsGT.i
 
 checkCharsGT.i:                                   ; preds = %checkChars.i
-  %7 = icmp ugt i8 %selfChar.i, %otherChar.i
+  %7 = icmp ugt i8 %thisChar.i, %otherChar.i
   br i1 %7, label %verifyOtherLength.i, label %next.i
 
 next.i:                                           ; preds = %checkCharsGT.i
@@ -1642,14 +1642,14 @@ __String__Release.exit:                           ; preds = %entry, %nonNull.i, 
   ret void
 }
 
-define i32 @__method_dataSize__cl_command_queue(i8* nocapture %selfRValue) nounwind readnone inlinehint {
+define i32 @__method_dataSize__cl_command_queue(i8* nocapture %thisRValue) nounwind readnone inlinehint {
 entry:
   ret i32 4
 }
 
-define i8* @__method_data__cl_command_queue(i8** nocapture %selfLValue) nounwind readnone inlinehint {
+define i8* @__method_data__cl_command_queue(i8** nocapture %thisLValue) nounwind readnone inlinehint {
 entry:
-  %0 = bitcast i8** %selfLValue to i8*
+  %0 = bitcast i8** %thisLValue to i8*
   ret i8* %0
 }
 
@@ -1686,14 +1686,14 @@ __String__Release.exit:                           ; preds = %entry, %nonNull.i, 
   ret void
 }
 
-define i32 @__method_dataSize__cl_context(i8* nocapture %selfRValue) nounwind readnone inlinehint {
+define i32 @__method_dataSize__cl_context(i8* nocapture %thisRValue) nounwind readnone inlinehint {
 entry:
   ret i32 4
 }
 
-define i8* @__method_data__cl_context(i8** nocapture %selfLValue) nounwind readnone inlinehint {
+define i8* @__method_data__cl_context(i8** nocapture %thisLValue) nounwind readnone inlinehint {
 entry:
-  %0 = bitcast i8** %selfLValue to i8*
+  %0 = bitcast i8** %thisLValue to i8*
   ret i8* %0
 }
 
@@ -1730,14 +1730,14 @@ __String__Release.exit:                           ; preds = %entry, %nonNull.i, 
   ret void
 }
 
-define i32 @__method_dataSize__cl_device_id(i8* nocapture %selfRValue) nounwind readnone inlinehint {
+define i32 @__method_dataSize__cl_device_id(i8* nocapture %thisRValue) nounwind readnone inlinehint {
 entry:
   ret i32 4
 }
 
-define i8* @__method_data__cl_device_id(i8** nocapture %selfLValue) nounwind readnone inlinehint {
+define i8* @__method_data__cl_device_id(i8** nocapture %thisLValue) nounwind readnone inlinehint {
 entry:
-  %0 = bitcast i8** %selfLValue to i8*
+  %0 = bitcast i8** %thisLValue to i8*
   ret i8* %0
 }
 
@@ -1919,48 +1919,48 @@ __cl_device_id_VA__Release.exit:                  ; preds = %entry, %__cl_device
   ret %cl_device_id_VA %3
 }
 
-define %cl_device_id_VA* @__method_push__cl_device_id_VA__cl_device_id(%cl_device_id_VA* nocapture %selfLValue, i8* %memberRValue) nounwind inlinehint {
+define %cl_device_id_VA* @__method_push__cl_device_id_VA__cl_device_id(%cl_device_id_VA* nocapture %thisLValue, i8* %memberRValue) nounwind inlinehint {
 entry:
   %memberRValue_tempLValue = alloca i8*
   store i8* %memberRValue, i8** %memberRValue_tempLValue
-  call void @__cl_device_id_VA__Push(i8* bitcast (i8** @__cl_device_id_VA__Adapter to i8*), %cl_device_id_VA* %selfLValue, i8** %memberRValue_tempLValue)
-  ret %cl_device_id_VA* %selfLValue
+  call void @__cl_device_id_VA__Push(i8* bitcast (i8** @__cl_device_id_VA__Adapter to i8*), %cl_device_id_VA* %thisLValue, i8** %memberRValue_tempLValue)
+  ret %cl_device_id_VA* %thisLValue
 }
 
 declare void @__cl_device_id_VA__Push(i8* nocapture, %cl_device_id_VA* nocapture, i8** nocapture) nounwind inlinehint
 
-define i8* @__method_pop__cl_device_id_VA(%cl_device_id_VA* nocapture %selfLValue) nounwind inlinehint {
+define i8* @__method_pop__cl_device_id_VA(%cl_device_id_VA* nocapture %thisLValue) nounwind inlinehint {
 entry:
   %result = alloca i8*
   store i8* null, i8** %result
-  call void @__cl_device_id_VA__Pop(i8* bitcast (i8** @__cl_device_id_VA__Adapter to i8*), %cl_device_id_VA* %selfLValue, i8** %result)
+  call void @__cl_device_id_VA__Pop(i8* bitcast (i8** @__cl_device_id_VA__Adapter to i8*), %cl_device_id_VA* %thisLValue, i8** %result)
   %0 = load i8** %result
   ret i8* %0
 }
 
 declare void @__cl_device_id_VA__Pop(i8* nocapture, %cl_device_id_VA* nocapture, i8** nocapture) nounwind inlinehint
 
-define %cl_device_id_VA* @__method_resize__cl_device_id_VA__Size(%cl_device_id_VA* nocapture %selfLValue, i32 %newSizeRValue) nounwind inlinehint {
+define %cl_device_id_VA* @__method_resize__cl_device_id_VA__Size(%cl_device_id_VA* nocapture %thisLValue, i32 %newSizeRValue) nounwind inlinehint {
 entry:
-  tail call void @__cl_device_id_VA__Resize(i8* bitcast (i8** @__cl_device_id_VA__Adapter to i8*), %cl_device_id_VA* %selfLValue, i32 %newSizeRValue)
-  ret %cl_device_id_VA* %selfLValue
+  tail call void @__cl_device_id_VA__Resize(i8* bitcast (i8** @__cl_device_id_VA__Adapter to i8*), %cl_device_id_VA* %thisLValue, i32 %newSizeRValue)
+  ret %cl_device_id_VA* %thisLValue
 }
 
 declare void @__cl_device_id_VA__Resize(i8*, %cl_device_id_VA*, i32) nounwind inlinehint
 
-define %cl_device_id_VA* @__method_resize__cl_device_id_VA__Integer(%cl_device_id_VA* nocapture %selfLValue, i32 %integerRValue) nounwind inlinehint {
+define %cl_device_id_VA* @__method_resize__cl_device_id_VA__Integer(%cl_device_id_VA* nocapture %thisLValue, i32 %integerRValue) nounwind inlinehint {
 entry:
-  tail call void @__cl_device_id_VA__Resize(i8* bitcast (i8** @__cl_device_id_VA__Adapter to i8*), %cl_device_id_VA* %selfLValue, i32 %integerRValue)
-  ret %cl_device_id_VA* %selfLValue
+  tail call void @__cl_device_id_VA__Resize(i8* bitcast (i8** @__cl_device_id_VA__Adapter to i8*), %cl_device_id_VA* %thisLValue, i32 %integerRValue)
+  ret %cl_device_id_VA* %thisLValue
 }
 
-define i32 @__method_size__cl_device_id_VA(%cl_device_id_VA %selfRValue) nounwind readonly inlinehint {
+define i32 @__method_size__cl_device_id_VA(%cl_device_id_VA %thisRValue) nounwind readonly inlinehint {
 entry:
-  %0 = icmp eq %cl_device_id_VA %selfRValue, null
+  %0 = icmp eq %cl_device_id_VA %thisRValue, null
   br i1 %0, label %__cl_device_id_VA__Size.exit, label %nonNull.i
 
 nonNull.i:                                        ; preds = %entry
-  %1 = getelementptr %cl_device_id_VA %selfRValue, i32 0, i32 2
+  %1 = getelementptr %cl_device_id_VA %thisRValue, i32 0, i32 2
   %2 = load i32* %1
   br label %__cl_device_id_VA__Size.exit
 
@@ -1969,13 +1969,13 @@ __cl_device_id_VA__Size.exit:                     ; preds = %entry, %nonNull.i
   ret i32 %3
 }
 
-define i32 @__method_dataSize__cl_device_id_VA(%cl_device_id_VA %selfRValue) nounwind readonly inlinehint {
+define i32 @__method_dataSize__cl_device_id_VA(%cl_device_id_VA %thisRValue) nounwind readonly inlinehint {
 entry:
-  %0 = icmp eq %cl_device_id_VA %selfRValue, null
+  %0 = icmp eq %cl_device_id_VA %thisRValue, null
   br i1 %0, label %__cl_device_id_VA__Size.exit, label %nonNull.i
 
 nonNull.i:                                        ; preds = %entry
-  %1 = getelementptr %cl_device_id_VA %selfRValue, i32 0, i32 2
+  %1 = getelementptr %cl_device_id_VA %thisRValue, i32 0, i32 2
   %2 = load i32* %1
   %phitmp = shl i32 %2, 2
   br label %__cl_device_id_VA__Size.exit
@@ -1985,17 +1985,17 @@ __cl_device_id_VA__Size.exit:                     ; preds = %entry, %nonNull.i
   ret i32 %3
 }
 
-define i8* @__method_data__cl_device_id_VA(%cl_device_id_VA %selfRValue) nounwind readnone inlinehint {
+define i8* @__method_data__cl_device_id_VA(%cl_device_id_VA %thisRValue) nounwind readnone inlinehint {
 entry:
-  %0 = icmp eq %cl_device_id_VA %selfRValue, null
+  %0 = icmp eq %cl_device_id_VA %thisRValue, null
   br i1 %0, label %null, label %nonNull
 
 null:                                             ; preds = %entry
-  %1 = bitcast %cl_device_id_VA %selfRValue to i8*
+  %1 = bitcast %cl_device_id_VA %thisRValue to i8*
   ret i8* %1
 
 nonNull:                                          ; preds = %entry
-  %2 = getelementptr %cl_device_id_VA %selfRValue, i32 0, i32 3, i32 0
+  %2 = getelementptr %cl_device_id_VA %thisRValue, i32 0, i32 3, i32 0
   %3 = bitcast i8** %2 to i8*
   ret i8* %3
 }
@@ -2033,14 +2033,14 @@ __String__Release.exit:                           ; preds = %entry, %nonNull.i, 
   ret void
 }
 
-define i32 @__method_dataSize__cl_event(i8* nocapture %selfRValue) nounwind readnone inlinehint {
+define i32 @__method_dataSize__cl_event(i8* nocapture %thisRValue) nounwind readnone inlinehint {
 entry:
   ret i32 4
 }
 
-define i8* @__method_data__cl_event(i8** nocapture %selfLValue) nounwind readnone inlinehint {
+define i8* @__method_data__cl_event(i8** nocapture %thisLValue) nounwind readnone inlinehint {
 entry:
-  %0 = bitcast i8** %selfLValue to i8*
+  %0 = bitcast i8** %thisLValue to i8*
   ret i8* %0
 }
 
@@ -2222,48 +2222,48 @@ __cl_event_VA__Release.exit:                      ; preds = %entry, %__cl_event_
   ret %cl_device_id_VA %3
 }
 
-define %cl_device_id_VA* @__method_push__cl_event_VA__cl_event(%cl_device_id_VA* nocapture %selfLValue, i8* %memberRValue) nounwind inlinehint {
+define %cl_device_id_VA* @__method_push__cl_event_VA__cl_event(%cl_device_id_VA* nocapture %thisLValue, i8* %memberRValue) nounwind inlinehint {
 entry:
   %memberRValue_tempLValue = alloca i8*
   store i8* %memberRValue, i8** %memberRValue_tempLValue
-  call void @__cl_event_VA__Push(i8* bitcast (i8** @__cl_event_VA__Adapter to i8*), %cl_device_id_VA* %selfLValue, i8** %memberRValue_tempLValue)
-  ret %cl_device_id_VA* %selfLValue
+  call void @__cl_event_VA__Push(i8* bitcast (i8** @__cl_event_VA__Adapter to i8*), %cl_device_id_VA* %thisLValue, i8** %memberRValue_tempLValue)
+  ret %cl_device_id_VA* %thisLValue
 }
 
 declare void @__cl_event_VA__Push(i8* nocapture, %cl_device_id_VA* nocapture, i8** nocapture) nounwind inlinehint
 
-define i8* @__method_pop__cl_event_VA(%cl_device_id_VA* nocapture %selfLValue) nounwind inlinehint {
+define i8* @__method_pop__cl_event_VA(%cl_device_id_VA* nocapture %thisLValue) nounwind inlinehint {
 entry:
   %result = alloca i8*
   store i8* null, i8** %result
-  call void @__cl_event_VA__Pop(i8* bitcast (i8** @__cl_event_VA__Adapter to i8*), %cl_device_id_VA* %selfLValue, i8** %result)
+  call void @__cl_event_VA__Pop(i8* bitcast (i8** @__cl_event_VA__Adapter to i8*), %cl_device_id_VA* %thisLValue, i8** %result)
   %0 = load i8** %result
   ret i8* %0
 }
 
 declare void @__cl_event_VA__Pop(i8* nocapture, %cl_device_id_VA* nocapture, i8** nocapture) nounwind inlinehint
 
-define %cl_device_id_VA* @__method_resize__cl_event_VA__Size(%cl_device_id_VA* nocapture %selfLValue, i32 %newSizeRValue) nounwind inlinehint {
+define %cl_device_id_VA* @__method_resize__cl_event_VA__Size(%cl_device_id_VA* nocapture %thisLValue, i32 %newSizeRValue) nounwind inlinehint {
 entry:
-  tail call void @__cl_event_VA__Resize(i8* bitcast (i8** @__cl_event_VA__Adapter to i8*), %cl_device_id_VA* %selfLValue, i32 %newSizeRValue)
-  ret %cl_device_id_VA* %selfLValue
+  tail call void @__cl_event_VA__Resize(i8* bitcast (i8** @__cl_event_VA__Adapter to i8*), %cl_device_id_VA* %thisLValue, i32 %newSizeRValue)
+  ret %cl_device_id_VA* %thisLValue
 }
 
 declare void @__cl_event_VA__Resize(i8*, %cl_device_id_VA*, i32) nounwind inlinehint
 
-define %cl_device_id_VA* @__method_resize__cl_event_VA__Integer(%cl_device_id_VA* nocapture %selfLValue, i32 %integerRValue) nounwind inlinehint {
+define %cl_device_id_VA* @__method_resize__cl_event_VA__Integer(%cl_device_id_VA* nocapture %thisLValue, i32 %integerRValue) nounwind inlinehint {
 entry:
-  tail call void @__cl_event_VA__Resize(i8* bitcast (i8** @__cl_event_VA__Adapter to i8*), %cl_device_id_VA* %selfLValue, i32 %integerRValue)
-  ret %cl_device_id_VA* %selfLValue
+  tail call void @__cl_event_VA__Resize(i8* bitcast (i8** @__cl_event_VA__Adapter to i8*), %cl_device_id_VA* %thisLValue, i32 %integerRValue)
+  ret %cl_device_id_VA* %thisLValue
 }
 
-define i32 @__method_size__cl_event_VA(%cl_device_id_VA %selfRValue) nounwind readonly inlinehint {
+define i32 @__method_size__cl_event_VA(%cl_device_id_VA %thisRValue) nounwind readonly inlinehint {
 entry:
-  %0 = icmp eq %cl_device_id_VA %selfRValue, null
+  %0 = icmp eq %cl_device_id_VA %thisRValue, null
   br i1 %0, label %__cl_event_VA__Size.exit, label %nonNull.i
 
 nonNull.i:                                        ; preds = %entry
-  %1 = getelementptr %cl_device_id_VA %selfRValue, i32 0, i32 2
+  %1 = getelementptr %cl_device_id_VA %thisRValue, i32 0, i32 2
   %2 = load i32* %1
   br label %__cl_event_VA__Size.exit
 
@@ -2272,13 +2272,13 @@ __cl_event_VA__Size.exit:                         ; preds = %entry, %nonNull.i
   ret i32 %3
 }
 
-define i32 @__method_dataSize__cl_event_VA(%cl_device_id_VA %selfRValue) nounwind readonly inlinehint {
+define i32 @__method_dataSize__cl_event_VA(%cl_device_id_VA %thisRValue) nounwind readonly inlinehint {
 entry:
-  %0 = icmp eq %cl_device_id_VA %selfRValue, null
+  %0 = icmp eq %cl_device_id_VA %thisRValue, null
   br i1 %0, label %__cl_event_VA__Size.exit, label %nonNull.i
 
 nonNull.i:                                        ; preds = %entry
-  %1 = getelementptr %cl_device_id_VA %selfRValue, i32 0, i32 2
+  %1 = getelementptr %cl_device_id_VA %thisRValue, i32 0, i32 2
   %2 = load i32* %1
   %phitmp = shl i32 %2, 2
   br label %__cl_event_VA__Size.exit
@@ -2288,17 +2288,17 @@ __cl_event_VA__Size.exit:                         ; preds = %entry, %nonNull.i
   ret i32 %3
 }
 
-define i8* @__method_data__cl_event_VA(%cl_device_id_VA %selfRValue) nounwind readnone inlinehint {
+define i8* @__method_data__cl_event_VA(%cl_device_id_VA %thisRValue) nounwind readnone inlinehint {
 entry:
-  %0 = icmp eq %cl_device_id_VA %selfRValue, null
+  %0 = icmp eq %cl_device_id_VA %thisRValue, null
   br i1 %0, label %null, label %nonNull
 
 null:                                             ; preds = %entry
-  %1 = bitcast %cl_device_id_VA %selfRValue to i8*
+  %1 = bitcast %cl_device_id_VA %thisRValue to i8*
   ret i8* %1
 
 nonNull:                                          ; preds = %entry
-  %2 = getelementptr %cl_device_id_VA %selfRValue, i32 0, i32 3, i32 0
+  %2 = getelementptr %cl_device_id_VA %thisRValue, i32 0, i32 3, i32 0
   %3 = bitcast i8** %2 to i8*
   ret i8* %3
 }
@@ -2336,14 +2336,14 @@ __String__Release.exit:                           ; preds = %entry, %nonNull.i, 
   ret void
 }
 
-define i32 @__method_dataSize__cl_kernel(i8* nocapture %selfRValue) nounwind readnone inlinehint {
+define i32 @__method_dataSize__cl_kernel(i8* nocapture %thisRValue) nounwind readnone inlinehint {
 entry:
   ret i32 4
 }
 
-define i8* @__method_data__cl_kernel(i8** nocapture %selfLValue) nounwind readnone inlinehint {
+define i8* @__method_data__cl_kernel(i8** nocapture %thisLValue) nounwind readnone inlinehint {
 entry:
-  %0 = bitcast i8** %selfLValue to i8*
+  %0 = bitcast i8** %thisLValue to i8*
   ret i8* %0
 }
 
@@ -2380,14 +2380,14 @@ __String__Release.exit:                           ; preds = %entry, %nonNull.i, 
   ret void
 }
 
-define i32 @__method_dataSize__cl_mem(i8* nocapture %selfRValue) nounwind readnone inlinehint {
+define i32 @__method_dataSize__cl_mem(i8* nocapture %thisRValue) nounwind readnone inlinehint {
 entry:
   ret i32 4
 }
 
-define i8* @__method_data__cl_mem(i8** nocapture %selfLValue) nounwind readnone inlinehint {
+define i8* @__method_data__cl_mem(i8** nocapture %thisLValue) nounwind readnone inlinehint {
 entry:
-  %0 = bitcast i8** %selfLValue to i8*
+  %0 = bitcast i8** %thisLValue to i8*
   ret i8* %0
 }
 
@@ -2424,14 +2424,14 @@ __String__Release.exit:                           ; preds = %entry, %nonNull.i, 
   ret void
 }
 
-define i32 @__method_dataSize__cl_platform_id(i8* nocapture %selfRValue) nounwind readnone inlinehint {
+define i32 @__method_dataSize__cl_platform_id(i8* nocapture %thisRValue) nounwind readnone inlinehint {
 entry:
   ret i32 4
 }
 
-define i8* @__method_data__cl_platform_id(i8** nocapture %selfLValue) nounwind readnone inlinehint {
+define i8* @__method_data__cl_platform_id(i8** nocapture %thisLValue) nounwind readnone inlinehint {
 entry:
-  %0 = bitcast i8** %selfLValue to i8*
+  %0 = bitcast i8** %thisLValue to i8*
   ret i8* %0
 }
 
@@ -2613,48 +2613,48 @@ __cl_platform_id_VA__Release.exit:                ; preds = %entry, %__cl_platfo
   ret %cl_device_id_VA %3
 }
 
-define %cl_device_id_VA* @__method_push__cl_platform_id_VA__cl_platform_id(%cl_device_id_VA* nocapture %selfLValue, i8* %memberRValue) nounwind inlinehint {
+define %cl_device_id_VA* @__method_push__cl_platform_id_VA__cl_platform_id(%cl_device_id_VA* nocapture %thisLValue, i8* %memberRValue) nounwind inlinehint {
 entry:
   %memberRValue_tempLValue = alloca i8*
   store i8* %memberRValue, i8** %memberRValue_tempLValue
-  call void @__cl_platform_id_VA__Push(i8* bitcast (i8** @__cl_platform_id_VA__Adapter to i8*), %cl_device_id_VA* %selfLValue, i8** %memberRValue_tempLValue)
-  ret %cl_device_id_VA* %selfLValue
+  call void @__cl_platform_id_VA__Push(i8* bitcast (i8** @__cl_platform_id_VA__Adapter to i8*), %cl_device_id_VA* %thisLValue, i8** %memberRValue_tempLValue)
+  ret %cl_device_id_VA* %thisLValue
 }
 
 declare void @__cl_platform_id_VA__Push(i8* nocapture, %cl_device_id_VA* nocapture, i8** nocapture) nounwind inlinehint
 
-define i8* @__method_pop__cl_platform_id_VA(%cl_device_id_VA* nocapture %selfLValue) nounwind inlinehint {
+define i8* @__method_pop__cl_platform_id_VA(%cl_device_id_VA* nocapture %thisLValue) nounwind inlinehint {
 entry:
   %result = alloca i8*
   store i8* null, i8** %result
-  call void @__cl_platform_id_VA__Pop(i8* bitcast (i8** @__cl_platform_id_VA__Adapter to i8*), %cl_device_id_VA* %selfLValue, i8** %result)
+  call void @__cl_platform_id_VA__Pop(i8* bitcast (i8** @__cl_platform_id_VA__Adapter to i8*), %cl_device_id_VA* %thisLValue, i8** %result)
   %0 = load i8** %result
   ret i8* %0
 }
 
 declare void @__cl_platform_id_VA__Pop(i8* nocapture, %cl_device_id_VA* nocapture, i8** nocapture) nounwind inlinehint
 
-define %cl_device_id_VA* @__method_resize__cl_platform_id_VA__Size(%cl_device_id_VA* nocapture %selfLValue, i32 %newSizeRValue) nounwind inlinehint {
+define %cl_device_id_VA* @__method_resize__cl_platform_id_VA__Size(%cl_device_id_VA* nocapture %thisLValue, i32 %newSizeRValue) nounwind inlinehint {
 entry:
-  tail call void @__cl_platform_id_VA__Resize(i8* bitcast (i8** @__cl_platform_id_VA__Adapter to i8*), %cl_device_id_VA* %selfLValue, i32 %newSizeRValue)
-  ret %cl_device_id_VA* %selfLValue
+  tail call void @__cl_platform_id_VA__Resize(i8* bitcast (i8** @__cl_platform_id_VA__Adapter to i8*), %cl_device_id_VA* %thisLValue, i32 %newSizeRValue)
+  ret %cl_device_id_VA* %thisLValue
 }
 
 declare void @__cl_platform_id_VA__Resize(i8*, %cl_device_id_VA*, i32) nounwind inlinehint
 
-define %cl_device_id_VA* @__method_resize__cl_platform_id_VA__Integer(%cl_device_id_VA* nocapture %selfLValue, i32 %integerRValue) nounwind inlinehint {
+define %cl_device_id_VA* @__method_resize__cl_platform_id_VA__Integer(%cl_device_id_VA* nocapture %thisLValue, i32 %integerRValue) nounwind inlinehint {
 entry:
-  tail call void @__cl_platform_id_VA__Resize(i8* bitcast (i8** @__cl_platform_id_VA__Adapter to i8*), %cl_device_id_VA* %selfLValue, i32 %integerRValue)
-  ret %cl_device_id_VA* %selfLValue
+  tail call void @__cl_platform_id_VA__Resize(i8* bitcast (i8** @__cl_platform_id_VA__Adapter to i8*), %cl_device_id_VA* %thisLValue, i32 %integerRValue)
+  ret %cl_device_id_VA* %thisLValue
 }
 
-define i32 @__method_size__cl_platform_id_VA(%cl_device_id_VA %selfRValue) nounwind readonly inlinehint {
+define i32 @__method_size__cl_platform_id_VA(%cl_device_id_VA %thisRValue) nounwind readonly inlinehint {
 entry:
-  %0 = icmp eq %cl_device_id_VA %selfRValue, null
+  %0 = icmp eq %cl_device_id_VA %thisRValue, null
   br i1 %0, label %__cl_platform_id_VA__Size.exit, label %nonNull.i
 
 nonNull.i:                                        ; preds = %entry
-  %1 = getelementptr %cl_device_id_VA %selfRValue, i32 0, i32 2
+  %1 = getelementptr %cl_device_id_VA %thisRValue, i32 0, i32 2
   %2 = load i32* %1
   br label %__cl_platform_id_VA__Size.exit
 
@@ -2663,13 +2663,13 @@ __cl_platform_id_VA__Size.exit:                   ; preds = %entry, %nonNull.i
   ret i32 %3
 }
 
-define i32 @__method_dataSize__cl_platform_id_VA(%cl_device_id_VA %selfRValue) nounwind readonly inlinehint {
+define i32 @__method_dataSize__cl_platform_id_VA(%cl_device_id_VA %thisRValue) nounwind readonly inlinehint {
 entry:
-  %0 = icmp eq %cl_device_id_VA %selfRValue, null
+  %0 = icmp eq %cl_device_id_VA %thisRValue, null
   br i1 %0, label %__cl_platform_id_VA__Size.exit, label %nonNull.i
 
 nonNull.i:                                        ; preds = %entry
-  %1 = getelementptr %cl_device_id_VA %selfRValue, i32 0, i32 2
+  %1 = getelementptr %cl_device_id_VA %thisRValue, i32 0, i32 2
   %2 = load i32* %1
   %phitmp = shl i32 %2, 2
   br label %__cl_platform_id_VA__Size.exit
@@ -2679,17 +2679,17 @@ __cl_platform_id_VA__Size.exit:                   ; preds = %entry, %nonNull.i
   ret i32 %3
 }
 
-define i8* @__method_data__cl_platform_id_VA(%cl_device_id_VA %selfRValue) nounwind readnone inlinehint {
+define i8* @__method_data__cl_platform_id_VA(%cl_device_id_VA %thisRValue) nounwind readnone inlinehint {
 entry:
-  %0 = icmp eq %cl_device_id_VA %selfRValue, null
+  %0 = icmp eq %cl_device_id_VA %thisRValue, null
   br i1 %0, label %null, label %nonNull
 
 null:                                             ; preds = %entry
-  %1 = bitcast %cl_device_id_VA %selfRValue to i8*
+  %1 = bitcast %cl_device_id_VA %thisRValue to i8*
   ret i8* %1
 
 nonNull:                                          ; preds = %entry
-  %2 = getelementptr %cl_device_id_VA %selfRValue, i32 0, i32 3, i32 0
+  %2 = getelementptr %cl_device_id_VA %thisRValue, i32 0, i32 3, i32 0
   %3 = bitcast i8** %2 to i8*
   ret i8* %3
 }
@@ -2727,14 +2727,14 @@ __String__Release.exit:                           ; preds = %entry, %nonNull.i, 
   ret void
 }
 
-define i32 @__method_dataSize__cl_program(i8* nocapture %selfRValue) nounwind readnone inlinehint {
+define i32 @__method_dataSize__cl_program(i8* nocapture %thisRValue) nounwind readnone inlinehint {
 entry:
   ret i32 4
 }
 
-define i8* @__method_data__cl_program(i8** nocapture %selfLValue) nounwind readnone inlinehint {
+define i8* @__method_data__cl_program(i8** nocapture %thisLValue) nounwind readnone inlinehint {
 entry:
-  %0 = bitcast i8** %selfLValue to i8*
+  %0 = bitcast i8** %thisLValue to i8*
   ret i8* %0
 }
 

@@ -4,6 +4,8 @@ FABRIC = wrapFabricClient(FC);
 op = FABRIC.DependencyGraph.createOperator("op");
 op.setEntryFunctionName("load");
 op.setSourceCode('\
+use FabricHDR;\n\
+\n\
 struct Color\n\
 {\n\
   Scalar r;\n\
@@ -15,10 +17,10 @@ struct Color\n\
 operator load( io String url, io FabricResource resource )\n\
 {\n\
   report "Loaded " + url + " (mime type " + resource.mimeType + ")";\n\
-  report "HDR data size is " + resource.dataSize;\n\
+  report "HDR data size is " + resource.data.dataSize();\n\
   Size imageWidth, imageHeight;\n\
   Color imagePixels[];\n\
-  FabricHDRDecode( resource.data, resource.dataSize, imageWidth, imageHeight, imagePixels );\n\
+  FabricHDRDecode( resource.data.data(), resource.data.dataSize(), imageWidth, imageHeight, imagePixels );\n\
   report "Image dimensions are "+imageWidth+" by "+imageHeight;\n\
   report "Image pixels size is "+imagePixels.size;\n\
 }\n\

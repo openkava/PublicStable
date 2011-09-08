@@ -83,9 +83,9 @@ namespace Fabric
           throw Exception( "temporary values cannot be used in an l-value context" );
         else usage = CG::USAGE_RVALUE;
         
-        llvm::Value *selfLValue = adapter->llvmAlloca( basicBlockBuilder, "temp"+adapter->getUserName() );
-        adapter->llvmInit( basicBlockBuilder, selfLValue );
-        CG::ExprValue result( adapter, CG::USAGE_LVALUE, basicBlockBuilder.getContext(), selfLValue );
+        llvm::Value *thisLValue = adapter->llvmAlloca( basicBlockBuilder, "temp"+adapter->getUserName() );
+        adapter->llvmInit( basicBlockBuilder, thisLValue );
+        CG::ExprValue result( adapter, CG::USAGE_LVALUE, basicBlockBuilder.getContext(), thisLValue );
         
         std::vector< RC::ConstHandle<CG::Adapter> > argTypes;
         m_args->appendTypes( basicBlockBuilder, argTypes );
@@ -96,7 +96,7 @@ namespace Fabric
           std::vector<CG::ExprValue> exprValues;
           m_args->appendExprValues( basicBlockBuilder, usages, exprValues, "cannot be used as an io argument" );
           FABRIC_ASSERT( exprValues.size() == 1 );
-          adapter->llvmAssign( basicBlockBuilder, selfLValue, exprValues[0].getValue() );
+          adapter->llvmAssign( basicBlockBuilder, thisLValue, exprValues[0].getValue() );
           exprValues[0].llvmDispose( basicBlockBuilder );
         }
         else
@@ -136,7 +136,10 @@ namespace Fabric
           functionSymbol->llvmCreateCall( basicBlockBuilder, exprValues );
         }
         
-        return result.castTo( basicBlockBuilder, usage );
+        result.castTo( basicBlockBuilder, usage );
+        llvm::Value *thisRValue = adapter->llvmLValueToRValue( basicBlockBuilder, thisLValue );
+        adapter->llvmRelease( basicBlockBuilder, thisRValue );
+        return result;
       }
       else
       {

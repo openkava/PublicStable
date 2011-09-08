@@ -2,53 +2,32 @@
 # Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 #
 
-Import( 'extsEnv', 'fabricExtsDistDir', 'buildOS', 'buildArch', 'buildType', 'ExtSLName' )
+Import( 'extsEnv', 'fabricExtsDistDir', 'buildOS', 'buildArch', 'buildType', 'ExtSLName', 'glewFlags' )
 
 oglPluginEnv = extsEnv.Clone()
-
-# OpenGL
-if buildOS == 'Linux':
-  Import( 'gtkglFlags' )
-  oglPluginEnv.Append( CPPDEFINES = 'GLEW_STATIC' )
-  if buildArch == 'x86_64':
-    oglPluginEnv.Append( LIBS = [File('/usr/lib64/libGLEW.a')] )
-  else:
-    oglPluginEnv.Append( LIBS = [File('/usr/lib/libGLEW.a')] )
-  oglPluginEnv.Append( LIBS = ['GL'] )
-if buildOS == 'Darwin':
-  oglPluginEnv.Append( CPPDEFINES = 'GLEW_STATIC' )
-  oglPluginEnv.Append( CPPPATH = ['/opt/local/include'] )
-  oglPluginEnv.Append( LIBS = [File('/opt/local/lib/libGLEW.a')] )
-  oglPluginEnv.Append( FRAMEWORKS = ['OpenGL'] )
-if buildOS == 'Windows':
-  Import( 'glewFlags' )
-  oglPluginEnv.MergeFlags( glewFlags )
+oglPluginEnv.MergeFlags( glewFlags )
 
 generator = oglPluginEnv.File("generate.py")
 template = oglPluginEnv.File("ogl.cpp_template")
-
 oglSource = oglPluginEnv.File("ogl.cpp")
 oglManifest = oglPluginEnv.File('FabricOGL.fpm.json')
 oglKL = oglPluginEnv.File('FabricOGL.kl')
 
-command = "python " + generator.abspath
-if buildOS == 'Linux':
-  command = command + " --header=/usr/include/GL/glew.h"
-if buildOS == 'Darwin':
-  command = command + " --header=/opt/local/include/GL/glew.h"
-if buildOS == 'Windows':
-  command = command + " --header="+Dir('#').abspath+"/ThirdParty/Private/GLEW/GL/glew.h"
-  
-command = command + " --template=$BUILDDIR/Exts/Builtin/OGL/ogl.cpp_template"
-command = command + " --klresult=$BUILDDIR/Exts/Builtin/OGL/FabricOGL.kl"
-command = command + " --cppresult=$BUILDDIR/Exts/Builtin/OGL/ogl.cpp"
-command = command + " --jsonresult=$BUILDDIR/Exts/Builtin/OGL/FabricOGL.fpm.json"
-    
 oglPluginEnv.Command(
   [oglSource, oglManifest, oglKL],
   [generator, template],
-  command
-  )
+  [
+    [
+      'python',
+      generator.abspath,
+      "--header="+File('#/ThirdParty/Private/glew-1.6.0/GL/glew.h').abspath,
+      "--template="+template.abspath,
+      "--klresult="+oglKL.abspath,
+      "--cppresult="+oglSource.abspath,
+      "--jsonresult="+oglManifest.abspath,
+    ]
+  ]
+)
 
 oglPlugin = oglPluginEnv.SharedLibrary( ExtSLName('FabricOGL'), oglSource )
 oglFiles = [oglManifest, oglPlugin, oglKL]

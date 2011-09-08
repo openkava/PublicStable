@@ -17,7 +17,7 @@ upload() {
   fi
 }
 
-for OS_ARCH in Windows-x86 Darwin-i386 Darwin-x86_64 Linux-i686 Linux-x86_64; do
+for OS_ARCH in Windows-x86 Darwin-universal Linux-i686 Linux-x86_64; do
   if [ "$VERSION" != "latest" ]; then
     upload FabricEngine-$OS_ARCH.crx application/x-chrome-extension
     upload FabricEngine-$OS_ARCH.xpi application/x-xpinstall
