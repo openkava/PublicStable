@@ -335,6 +335,16 @@ patch_boost: Build/.boost.patch
 unpack_boost: Build/.boost.unpack
 
 Build/.boost.build: Build/.boost.configure
+ifeq ($(BUILD_PLATFORM),Linux)
+	for ARCH in $(ARCHS); do \
+		if [ "$$ARCH" = "x86_64" ]; then \
+			BJAM_FLAGS="toolset=gcc architecture=x86 address-model=64 link=static"; \
+		else \
+			BJAM_FLAGS="toolset=gcc architecture=x86 address-model=32 link=static"; \
+		fi; \
+		( cd Build/boost-$(BOOST_VERSION)-$$ARCH && ./bjam -d+2 $$BJAM_FLAGS ); \
+	done
+else
 	for ARCH in $(ARCHS); do \
 		if [ "$$ARCH" = "x86_64" ]; then \
 			BJAM_FLAGS="toolset=darwin architecture=x86 address-model=64 link=static"; \
@@ -343,6 +353,7 @@ Build/.boost.build: Build/.boost.configure
 		fi; \
 		( cd Build/boost-$(BOOST_VERSION)-$$ARCH && ./bjam -d+2 $$BJAM_FLAGS ); \
 	done
+endif
 	touch $@
 
 Build/.boost.configure: Build/.boost.patch
@@ -621,7 +632,7 @@ install_boost: install_boost_headers install_boost_libraries
 
 install_boost_headers:
 	mkdir -p include/boost/boost
-	$(RSYNC) --progress --recursive --delete Build/boost-$(BOOST_VERSION)-$(FIRST_ARCH)/boost/ $(TARGET_BASE)/include/boost/boost/
+	$(RSYNC) --progress --recursive --delete --exclude='._*' Build/boost-$(BOOST_VERSION)-$(FIRST_ARCH)/boost/ $(TARGET_BASE)/include/boost/boost/
 
 install_boost_libraries:
 	for ARCH in $(ARCHS); do \
