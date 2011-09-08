@@ -9,7 +9,9 @@
 #include <Fabric/Core/Util/Decoder.h>
 #include <Fabric/Base/Util/SimpleString.h>
 #include <Fabric/Core/Util/Format.h>
+#include <Fabric/Core/Util/Timer.h>
 #include <Fabric/Base/Config.h>
+#include <Fabric/Base/Util/Bits.h>
 
 #include <algorithm>
 
@@ -262,6 +264,7 @@ namespace Fabric
 
     void VariableArrayImpl::setNumMembers( void *data, size_t newNumMembers, void const *defaultMemberData ) const
     {
+      //Util::Timer ft;
       bits_t *&bits = *reinterpret_cast<bits_t **>(data);
       size_t oldNumMembers = bits? bits->numMembers: 0;
       size_t oldAllocNumMembers = bits? bits->allocNumMembers: 0;
@@ -305,11 +308,22 @@ namespace Fabric
           {
             if ( !defaultMemberData )
               defaultMemberData = getMemberImpl()->getDefaultData();
+            size_t memberSize = getMemberImpl()->getSize();
             memberData = bits->memberDatas + m_memberSize * oldNumMembers;
             memberDataEnd = bits->memberDatas + m_memberSize * newNumMembers;
             memset( memberData, 0, memberDataEnd - memberData );
-            for ( ; memberData!=memberDataEnd; memberData += m_memberSize )
-              getMemberImpl()->setData( defaultMemberData, memberData );
+            // [pzion 20110908] Very special case: if the default data is
+            // all 0, we just memset to 0 and leave it at that
+            if ( !Util::IsZero( memberSize, defaultMemberData ) )
+            {
+              for ( ; memberData!=memberDataEnd; memberData += m_memberSize )
+              {
+                if ( !m_memberIsShallow )
+                  getMemberImpl()->setData( defaultMemberData, memberData );
+                else
+                  memcpy( memberData, defaultMemberData, memberSize );
+              }
+            }
           }
         }
         else
@@ -354,6 +368,7 @@ namespace Fabric
           else bits = 0;
         }
       }
+      //FABRIC_LOG( "VariableArrayImpl::setNumMembers: %fms", ft.getElapsedMS() );
     }
   };
 };
