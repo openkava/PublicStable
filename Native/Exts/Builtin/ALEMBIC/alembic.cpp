@@ -257,7 +257,7 @@ FABRIC_EXT_EXPORT void FabricALEMBICParseCamera(
     Alembic::AbcGeom::ICameraSchema schema = obj.getSchema();
     if(sample < 0)
       sample = 0;
-    else if(sample >= schema.getNumSamples())
+    else if(sample >= KL::Integer(schema.getNumSamples()))
       sample = schema.getNumSamples()-1;
       
     // get the sample
