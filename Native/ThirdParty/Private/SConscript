@@ -151,6 +151,7 @@ alembicFlags = {
       os.path.join( includeBaseDir, 'zlib' ),
       os.path.join( includeBaseDir, 'ilmbase' ),
       os.path.join( includeBaseDir, 'hdf5' ),
+      os.path.join( osArchIncludeBaseDir, 'hdf5' ),
       os.path.join( includeBaseDir, 'boost' ),
       os.path.join( includeBaseDir, 'alembic' )
     ],
