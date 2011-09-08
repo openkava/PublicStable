@@ -10,4 +10,4 @@ function FabricALEMBICParseXform( Integer archiveID, io String identifier, io In
 function FabricALEMBICParseCamera( Integer archiveID, io String identifier, io Integer sample, io Scalar near, io Scalar far, io Scalar fovY );
 function FabricALEMBICParsePolyMeshCount( Integer archiveID, io String identifier, io Size count );
 function FabricALEMBICParsePolyMeshUniforms( Integer archiveID, io String identifier, io Integer indices[] );
-function FabricALEMBICParsePolyMeshAttributes( Integer archiveID, io String identifier, io Integer sample, io Vec3 vertices[], io Vec3 normals[], io Boolean uvsLoaded, io Vec2 uvs[] );
+function FabricALEMBICParsePolyMeshAttributes( Integer archiveID, io String identifier, io Integer sample, io Vec3 vertices<>, io Vec3 normals<>, io Boolean uvsLoaded, io Vec2 uvs<> );

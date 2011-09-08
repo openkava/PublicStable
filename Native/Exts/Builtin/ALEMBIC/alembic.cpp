@@ -395,10 +395,10 @@ FABRIC_EXT_EXPORT void FabricALEMBICParsePolyMeshAttributes(
   KL::Integer archiveID,
   KL::String & identifier,
   KL::Integer & sampleIndex,
-  KL::VariableArray<KL::Vec3>& vertices,
-  KL::VariableArray<KL::Vec3>& normals,
+  KL::SlicedArray<KL::Vec3>& vertices,
+  KL::SlicedArray<KL::Vec3>& normals,
   KL::Boolean & uvsLoaded,
-  KL::VariableArray<KL::Vec2>& uvs
+  KL::SlicedArray<KL::Vec2>& uvs
   )
 {
   Alembic::AbcGeom::IPolyMesh obj(getObjectFromArchive(archiveID,identifier.data()),Alembic::Abc::kWrapExisting);
