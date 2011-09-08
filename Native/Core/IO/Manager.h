@@ -23,6 +23,18 @@ namespace Fabric
         RC::Handle<RC::Object> const &target,
         void *userData = NULL
         ) const = 0;
+
+      virtual void writeDataAtUserLocation(
+        size_t size,
+        const void* data,
+        std::string const &defaultFilename,
+        std::string const &extension
+        ) const;
+
+      virtual std::string getUserFilePath(
+        std::string const &defaultFilename,
+        std::string const &extension
+        ) const = 0;
     };
   };
 };

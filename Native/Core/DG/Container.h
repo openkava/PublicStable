@@ -6,6 +6,7 @@
 #define _FABRIC_DG_CONTAINER_H
 
 #include <Fabric/Core/DG/NamedObject.h>
+#include <Fabric/Core/DG/Prototype.h>
 #include <Fabric/Core/Util/UnorderedMap.h>
 
 #include <map>
@@ -40,6 +41,7 @@ namespace Fabric
     class Desc;
     class Impl;
     class VariableArrayDesc;
+    class SlicedArrayDesc;
   };
   
   namespace DG
@@ -68,7 +70,7 @@ namespace Fabric
       MemberDescs getMemberDescs() const;
       void addMember( std::string const &name, RC::ConstHandle<RT::Desc> const &desc, void const *defaultData );
       void removeMember( std::string const &name );
-      RC::ConstHandle<RT::Desc> getMemberDesc( std::string const &name );
+      void getMemberDescs( std::string const &name, RC::ConstHandle<RT::Desc> &memberDesc, RC::ConstHandle<RT::VariableArrayDesc> &variableArrayDesc, RC::ConstHandle<RT::SlicedArrayDesc> &slicedArrayDesc );
     
       size_t getCount() const;
       void setCount( size_t count );
@@ -97,6 +99,7 @@ namespace Fabric
       void jsonExecSetBulkData( RC::ConstHandle<JSON::Value> const &arg );
       RC::ConstHandle<JSON::Value> jsonExecGetSlicesBulkData( RC::ConstHandle<JSON::Value> const &arg ) const;
       void jsonExecSetSlicesBulkData( RC::ConstHandle<JSON::Value> const &arg );
+      void jsonExecWriteResourceToUserFile( RC::ConstHandle<JSON::Value> const &arg ) const;
       virtual RC::Handle<JSON::Object> jsonDesc() const;
       RC::ConstHandle<JSON::Value> jsonDescMembers() const;
       RC::ConstHandle<JSON::Value> jsonDescCount() const;
@@ -108,7 +111,13 @@ namespace Fabric
       
       virtual void setOutOfDate() = 0;
       
-      virtual RC::Handle<MT::ParallelCall> bind( RC::ConstHandle<Binding> const &binding, Scope const &scope, size_t *newCount, unsigned prefixCount=0, void * const *prefixes = 0 );
+      virtual RC::Handle<MT::ParallelCall> bind(
+        RC::ConstHandle<Binding> const &binding,
+        Scope const &scope,
+        size_t *newCount,
+        unsigned prefixCount = 0,
+        void * const *prefixes = 0
+        );
       
       class Member;
       typedef std::map< std::string, RC::Handle<Member> > Members;
@@ -116,7 +125,6 @@ namespace Fabric
       RC::ConstHandle<Member> getMember( std::string const &name ) const;
       RC::Handle<Member> getMember( std::string const &name );
 
-      RC::ConstHandle<RT::VariableArrayDesc> getMemberArrayDesc( std::string const &name );
       void *getMemberArrayData( std::string const &name );
     
     private:

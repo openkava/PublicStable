@@ -1,3 +1,7 @@
+/*
+ *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+ */
+ 
 #ifndef _FABRIC_RT_VARIABLE_ARRAY_IMPL_H
 #define _FABRIC_RT_VARIABLE_ARRAY_IMPL_H
 
@@ -16,6 +20,7 @@ namespace Fabric
     {
       friend class Manager;
       friend class Impl;
+      friend class SlicedArrayImpl;
       
       struct bits_t
       {
@@ -50,6 +55,8 @@ namespace Fabric
       
       void setNumMembers( void *data, size_t newNumMembers, void const *defaultMemberData = 0 ) const;
       void setMembers( void *data, size_t numMembers, void const *members ) const;
+      void setMembers( void *data, size_t dstOffset, size_t numMembers, void const *members ) const;
+      bool areSameData( const void *data1, const void *data2 ) const;
       
       void split( void *data ) const;
       void push( void *dst, void const *src ) const;
@@ -65,22 +72,26 @@ namespace Fabric
         return std::max( size_t(15), Util::nextPowerOfTwoMinusOne( numMembers ) );
       }
             
-      void const *getMemberData_NoCheck( void const *data, size_t index ) const
+      void const *getImmutableMemberData_NoCheck( void const *data, size_t index ) const
       { 
         bits_t const *bits = *reinterpret_cast<bits_t const * const *>(data);
         return bits->memberDatas + m_memberSize * index;
       }
       
-      void *getMemberData_NoCheck( void *data, size_t index ) const
+      void *getMutableMemberData_NoCheck( void *data, size_t index ) const
       { 
+        unshare( data );
         bits_t *bits = *reinterpret_cast<bits_t **>(data);
+        return bits->memberDatas + m_memberSize * index;
+      }    
+
+      void unshare( void *data ) const
+      {
         if ( (*reinterpret_cast<bits_t **>(data))->refCount.getValue() > 1 )
         {
           split( data );
-          bits = *reinterpret_cast<bits_t **>(data);
         }
-        return bits->memberDatas + m_memberSize * index;
-      }    
+      }
 
       void copyMemberDatas( bits_t *dstBits, size_t dstOffset, bits_t const *srcBits, size_t srcOffset, size_t count, bool disposeFirst ) const
       {

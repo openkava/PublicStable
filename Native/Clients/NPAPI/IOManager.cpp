@@ -4,6 +4,7 @@
 
 #include <Fabric/Clients/NPAPI/IOManager.h>
 #include <Fabric/Clients/NPAPI/IOStream.h>
+#include <Fabric/Clients/NPAPI/Context.h>
 #include <Fabric/Base/Exception.h>
 #include <Fabric/Core/Util/Assert.h>
 #include <Fabric/Core/MT/LogCollector.h>
@@ -19,7 +20,13 @@ namespace Fabric
   
     IOManager::IOManager( NPP npp )
       : m_npp( npp )
+      , m_context( NULL )
     {
+    }
+
+    void IOManager::setContext( RC::Handle<Context> const &context )
+    {
+      m_context = context.ptr();
     }
     
     RC::Handle<IO::Stream> IOManager::createStream(
@@ -56,6 +63,15 @@ namespace Fabric
     {
       FABRIC_ASSERT( npp == m_npp );
       return static_cast<IOStream *>( stream->notifyData )->nppDestroyStream( npp, stream, reason );
+    }
+
+    std::string IOManager::getUserFilePath(
+        std::string const &defaultFilename,
+        std::string const &extension
+        ) const
+    {
+      FABRIC_ASSERT( m_context );
+      return m_context->getUserFilePath( defaultFilename, extension );
     }
   };
 };

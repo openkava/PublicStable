@@ -117,7 +117,15 @@ namespace Fabric
       {
         return IOStream::Create( url, dataCallback, endCallback, failureCallback, target, userData );
       }
-    
+
+      virtual std::string getUserFilePath(
+        std::string const &defaultFilename,
+        std::string const &extension
+        ) const
+      {
+        return defaultFilename;
+      }
+  
     protected:
     
       IOManager()

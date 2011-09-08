@@ -2,8 +2,8 @@
  *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
  */
 
-#ifndef _FABRIC_NPAPI_NP_VIEW_PORT_H
-#define _FABRIC_NPAPI_NP_VIEW_PORT_H
+#ifndef _FABRIC_NPAPI_VIEW_PORT_H
+#define _FABRIC_NPAPI_VIEW_PORT_H
 
 #include <Fabric/Base/RC/Object.h>
 #include <Fabric/Base/RC/Handle.h>
@@ -17,6 +17,9 @@
 # include <sys/time.h>
 #elif defined( FABRIC_WIN32 )
 # include <windows.h>
+#if defined( interface )
+# undef interface
+#endif
 #include <GL/glew.h>
 #endif
 #include <vector>
@@ -88,7 +91,9 @@ namespace Fabric
       virtual void popOGLContext() = 0;
 
       void drawWatermark( size_t width, size_t height );
-      
+
+      virtual std::string getPathFromSaveAsDialog( std::string const &defaultFilename, std::string const &extension ) = 0;
+
     protected:
     
       ViewPort( RC::ConstHandle<Interface> const &interface, uint32_t timerInterval = 0 );
@@ -158,4 +163,4 @@ namespace Fabric
   };
 };
 
-#endif //_FABRIC_NPAPI_NP_VIEW_PORT_H
+#endif //_FABRIC_NPAPI_VIEW_PORT_H
