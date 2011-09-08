@@ -237,6 +237,8 @@ namespace Fabric
         jsonExecAppend( arg );
       else if ( cmd == "insert" )
         jsonExecInsert( arg );
+      else if ( cmd == "remove" )
+        jsonExecRemove( arg );
       else throw Exception( "unknown command" );
       
       return result;
@@ -334,6 +336,23 @@ namespace Fabric
       binding->setOperator( operator_ );
       binding->setPrototype( parameterLayout );
       insert( binding, beforeIndex );
+    }
+      
+    void BindingList::jsonExecRemove( RC::ConstHandle<JSON::Value> const &arg )
+    {
+      RC::ConstHandle<JSON::Object> argJSONObject = arg->toObject();
+          
+      size_t index;
+      try
+      {
+        index = argJSONObject->get( "index" )->toInteger()->value();
+      }
+      catch ( Exception e )
+      {
+        throw "'index': " + e;
+      }
+      
+      remove( index );
     }
     
     RC::Handle<JSON::Array> BindingList::jsonDesc() const

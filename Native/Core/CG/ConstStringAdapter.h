@@ -24,7 +24,6 @@ namespace Fabric
       
       // Adapter
 
-      virtual void llvmInit( BasicBlockBuilder &basicBlockBuilder, llvm::Value *value ) const;
       virtual void llvmRetain( BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const;
       virtual void llvmDefaultAssign( BasicBlockBuilder &basicBlockBuilder, llvm::Value *dstLValue, llvm::Value *srcRValue ) const;
       virtual void llvmRelease( BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const;
@@ -38,12 +37,12 @@ namespace Fabric
       
       // ConstStringAdapter
       
-      llvm::Value *llvmConst( BasicBlockBuilder &basicBlockBuilder, char const *data, size_t length ) const;
-      llvm::Value *llvmConst( BasicBlockBuilder &basicBlockBuilder, char const *cString ) const
+      llvm::Constant *llvmConst( BasicBlockBuilder &basicBlockBuilder, char const *data, size_t length ) const;
+      llvm::Constant *llvmConst( BasicBlockBuilder &basicBlockBuilder, char const *cString ) const
       {
         return llvmConst( basicBlockBuilder, cString, strlen(cString) );
       }
-      llvm::Value *llvmConst( BasicBlockBuilder &basicBlockBuilder, std::string const &string ) const
+      llvm::Constant *llvmConst( BasicBlockBuilder &basicBlockBuilder, std::string const &string ) const
       {
         return llvmConst( basicBlockBuilder, string.data(), string.length() );
       }

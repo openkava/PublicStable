@@ -1,17 +1,11 @@
 /*
- *  ViewPort.cpp
- *  Fabric
- *
- *  Created by Peter Zion on 10-08-13.
- *  Copyright 2010 Fabric 3D Inc.. All rights reserved.
- *
+ *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
  */
 
 #include <Fabric/Clients/NPAPI/Linux/X11ViewPort.h>
 #include <Fabric/Clients/NPAPI/Interface.h>
 #include <Fabric/Base/JSON/Value.h>
 #include <Fabric/Base/Exception.h>
-#include <GL/gl.h>
 #include <Fabric/Clients/NPAPI/Context.h>
 #include <Fabric/Core/DG/Event.h>
 #include <Fabric/Core/MT/LogCollector.h>
@@ -80,11 +74,11 @@ namespace Fabric
         }
         catch ( Exception e )
         {
-          FABRIC_DEBUG_LOG( "redrawEvent: exception thrown: %s", (const char*)e.getDesc() );
+          FABRIC_LOG( "redrawEvent: exception thrown: %s", (const char*)e.getDesc() );
         }
         catch ( ... )
         {
-          FABRIC_DEBUG_LOG( "redrawEvent: unknown exception thrown" );
+          FABRIC_LOG( "redrawEvent: unknown exception thrown" );
         }
         drawWatermark( m_windowWidth, m_windowHeight );
         glFinish();
@@ -275,6 +269,33 @@ namespace Fabric
       FABRIC_ASSERT( gdkGLDrawableMakeCurrentResult );
 
       m_gdkGLStack.pop_back();
+    }
+
+    std::string X11ViewPort::getPathFromSaveAsDialog( std::string const &defaultFilename, std::string const &extension )
+    {
+      GtkWidget *dialog = gtk_file_chooser_dialog_new( "Save File...",
+        NULL,
+        GTK_FILE_CHOOSER_ACTION_SAVE,
+        GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+        GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
+        NULL
+        );
+      gtk_file_chooser_set_do_overwrite_confirmation( GTK_FILE_CHOOSER(dialog), TRUE );
+      //gtk_file_chooser_set_current_folder( GTK_FILE_CHOOSER(dialog), default_folder_for_saving );
+      gtk_file_chooser_set_current_name( GTK_FILE_CHOOSER(dialog), defaultFilename.c_str() );
+       
+      std::string result;
+      gint runResult = gtk_dialog_run(GTK_DIALOG(dialog));
+      if ( runResult == GTK_RESPONSE_ACCEPT )
+      {
+        char *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
+        result = std::string( filename );
+        g_free(filename);
+      }
+      gtk_widget_destroy (dialog);
+      if ( runResult != GTK_RESPONSE_ACCEPT )
+        throw Exception( "File save failed or was canceled by user" );
+      return result;
     }
   };
 };

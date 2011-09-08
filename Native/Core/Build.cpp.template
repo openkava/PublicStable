@@ -3,6 +3,7 @@
  */
 
 #include <Fabric/Core/Build.h>
+#include <Fabric/Base/Config.h>
 
 namespace Fabric
 {
@@ -16,4 +17,21 @@ namespace Fabric
   size_t const buildCacheGeneration = {{FABRIC_CACHE_GENERATION}};
   char const *buildOS = "{{FABRIC_OS}}";
   char const *buildArch = "{{FABRIC_ARCH}}";
+#if defined(FABRIC_OS_WINDOWS)
+  char const *runningArch = "x86";
+#elif defined(FABRIC_OS_MACOSX)
+# if defined(__x86_64)
+  char const *runningArch = "x86_64";
+# else
+  char const *runningArch = "i386";
+# endif
+#elif defined(FABRIC_OS_LINUX)
+# if defined(__x86_64)
+  char const *runningArch = "x86_64";
+# else
+  char const *runningArch = "i686";
+# endif
+#else
+# error "unsupported FABRIC_OS_..."
+#endif
 };

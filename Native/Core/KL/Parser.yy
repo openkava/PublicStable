@@ -599,7 +599,15 @@ const_decl_statement
 ;
 
 array_modifier
-  : TOKEN_LBRACKET TOKEN_RBRACKET array_modifier
+  : TOKEN_LANGLE TOKEN_RANGLE array_modifier
+  {
+    std::string *result = new std::string( "<>" );
+    result->append( *$3 );
+    delete $3;
+    
+    $$ = result;
+  }
+  | TOKEN_LBRACKET TOKEN_RBRACKET array_modifier
   {
     std::string *result = new std::string( "[]" );
     result->append( *$3 );

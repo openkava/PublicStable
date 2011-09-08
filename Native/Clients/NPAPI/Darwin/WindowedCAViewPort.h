@@ -33,12 +33,15 @@ namespace Fabric
     
       virtual NPError nppGetValue( NPPVariable variable, void *value );
       virtual int16_t nppHandleEvent( void *event );
+      virtual NPError nppDestroy( NPSavedData** save );
 
       virtual void needsRedraw();
       virtual void redrawFinished();
 
       virtual void pushOGLContext();
       virtual void popOGLContext();
+
+      virtual std::string getPathFromSaveAsDialog( std::string const &defaultFilename, std::string const &extension );
 
     protected:
     

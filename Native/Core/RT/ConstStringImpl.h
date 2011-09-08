@@ -38,6 +38,18 @@ namespace Fabric
       virtual bool isShallow() const;
       
       // ConstStringImpl
+
+      char const *getValueData( void const *src ) const
+      {
+        bits_t const *bits = static_cast<bits_t const *>( src );
+        return bits->data;
+      }
+      
+      size_t getValueLength( void const *src ) const
+      {
+        bits_t const *bits = static_cast<bits_t const *>( src );
+        return bits->length;
+      }
       
       std::string toString( void const *data ) const;
             

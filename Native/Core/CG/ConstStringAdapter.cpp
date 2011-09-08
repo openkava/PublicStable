@@ -96,15 +96,10 @@ namespace Fabric
     
     llvm::Constant *ConstStringAdapter::llvmDefaultValue( BasicBlockBuilder &basicBlockBuilder ) const
     {
-      RC::Handle<Context> context = basicBlockBuilder.getContext();
-      
-      std::vector<llvm::Constant *> elementDefaultRValues;
-      elementDefaultRValues.push_back( llvm::ConstantPointerNull::get( llvm::Type::getInt8PtrTy( context->getLLVMContext() ) ) );
-      elementDefaultRValues.push_back( llvm::ConstantInt::get( llvmSizeType( context ), 0, false ) );
-      return llvm::ConstantStruct::get( (llvm::StructType const *)llvmRawType( context ), elementDefaultRValues );
+      return llvmConst( basicBlockBuilder, m_constStringDesc->getValueData( m_constStringDesc->getDefaultData() ), m_constStringDesc->getValueLength( m_constStringDesc->getDefaultData() ) );
     }
       
-    llvm::Value *ConstStringAdapter::llvmConst( CG::BasicBlockBuilder &basicBlockBuilder, char const *data, size_t length ) const
+    llvm::Constant *ConstStringAdapter::llvmConst( CG::BasicBlockBuilder &basicBlockBuilder, char const *data, size_t length ) const
     {
       RC::Handle<Context> context = basicBlockBuilder.getContext();
       
@@ -144,10 +139,6 @@ namespace Fabric
     std::string ConstStringAdapter::toString( void const *data ) const
     {
       return m_constStringDesc->toString( data );
-    }
-
-    void ConstStringAdapter::llvmInit( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *value ) const
-    {
     }
 
     void ConstStringAdapter::llvmRetain( BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const

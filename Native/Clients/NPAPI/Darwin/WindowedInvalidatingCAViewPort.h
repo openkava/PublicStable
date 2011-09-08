@@ -19,14 +19,15 @@ namespace Fabric
     
       static RC::Handle<ViewPort> Create( RC::ConstHandle<Interface> const &interface );
 
-      virtual void needsRedraw();
+      virtual void redrawFinished();
       
     protected:
     
       WindowedInvalidatingCAViewPort( RC::ConstHandle<Interface> const &interface );
       
       void sendInvalidateMessage();
-
+      virtual void asyncRedrawFinished();
+      
     private:
 
       NPP m_npp;

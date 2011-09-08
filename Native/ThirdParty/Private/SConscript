@@ -2,7 +2,7 @@
 # Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 #
 
-SConscript( dirs=['md5-1.4','GLEW','getopt']  )
+SConscript( dirs=['md5-1.4','glew-1.6.0','getopt']  )
 
 import os
 Import( ['env','buildOS','buildArch','buildType'] )
@@ -10,46 +10,57 @@ Import( ['env','buildOS','buildArch','buildType'] )
 includeBaseDir = os.path.join( '#ThirdParty', 'Private', 'include' )
 srcBaseDir = os.path.join( '#ThirdParty', 'Private', 'src' )
 osArchIncludeBaseDir = os.path.join( '#ThirdParty', 'Private', buildOS, buildArch, buildType, 'include' )
-libBaseDir = os.path.join( '#ThirdParty', 'Private', buildOS, buildArch, buildType, 'lib' )
+if buildOS == 'Darwin':
+  libBaseDirs = [Dir(os.path.join( '#ThirdParty', 'Private', buildOS, 'i386', buildType, 'lib' )).abspath, Dir(os.path.join( '#ThirdParty', 'Private', buildOS, 'x86_64', buildType, 'lib' )).abspath]
+else:
+  libBaseDirs = [Dir(os.path.join( '#ThirdParty', 'Private', buildOS, buildArch, buildType, 'lib' )).abspath]
+
+def staticLibFromLibName( libName ):
+  if buildOS == 'Windows':
+    return libName + ".lib"
+  else:
+    return "lib" + libName + ".a"
+
+def archLibs( libSubDirName, libNames ):
+  return map( lambda libBaseDir: map( lambda libName: File(os.path.join( libBaseDir, libSubDirName, staticLibFromLibName(libName) )), libNames ), libBaseDirs )
 
 # LLVM
+# [pzion 20110128] These *must* be in topo order since the Linux linker is stupid
+llvmLibNames = [
+  "LLVMBitWriter",
+  "LLVMBitReader",
+  "LLVMipo",
+  "LLVMAsmParser",
+  "LLVMX86AsmPrinter",
+  "LLVMAsmPrinter",
+  "LLVMX86CodeGen",
+  "LLVMX86Info",
+  "LLVMInstCombine",
+  "LLVMSelectionDAG",
+  "LLVMX86AsmPrinter",
+  "LLVMAsmPrinter",
+  "LLVMX86Utils",
+  "LLVMMCParser",
+  "LLVMJIT",
+  "LLVMCodeGen",
+  "LLVMExecutionEngine",
+  "LLVMScalarOpts",
+  "LLVMTransformUtils",
+  "LLVMipa",
+  "LLVMAnalysis",
+  "LLVMTarget",
+  "LLVMMC",
+  "LLVMCore",
+  "LLVMSupport",
+]
+llvmStaticLibs = map( staticLibFromLibName, llvmLibNames )
 llvmFlags = {
 	'CPPDEFINES': [ '__STDC_LIMIT_MACROS', '__STDC_CONSTANT_MACROS' ],
 	'CPPPATH': [
 	  os.path.join( includeBaseDir, 'llvm' ),
 	  os.path.join( osArchIncludeBaseDir, 'llvm' ),
 	],
-	'LIBPATH': [
-	  os.path.join( libBaseDir, 'llvm' )
-	],
-	# [pzion 20110128] These *must* be in topo order since the Linux linker is stupid
-	'LIBS': [
-	  "LLVMBitWriter",
-	  "LLVMBitReader",
-	  "LLVMipo",
-	  "LLVMAsmParser",
-	  "LLVMX86AsmPrinter",
-	  "LLVMAsmPrinter",
-	  "LLVMX86CodeGen",
-	  "LLVMX86Info",
-	  "LLVMInstCombine",
-	  "LLVMSelectionDAG",
-	  "LLVMX86AsmPrinter",
-	  "LLVMAsmPrinter",
-	  "LLVMX86Utils",
-	  "LLVMMCParser",
-	  "LLVMJIT",
-	  "LLVMCodeGen",
-	  "LLVMExecutionEngine",
-	  "LLVMScalarOpts",
-	  "LLVMTransformUtils",
-	  "LLVMipa",
-	  "LLVMAnalysis",
-	  "LLVMTarget",
-	  "LLVMMC",
-	  "LLVMCore",
-	  "LLVMSupport",
-  ]
+	'LIBS': archLibs( 'llvm', llvmLibNames ),
 }
 if buildOS == 'Windows':
   llvmFlags['LIBS'] += ['Shell32']
@@ -60,10 +71,7 @@ v8Flags = {
 	'CPPPATH': [
 	  os.path.join( includeBaseDir, 'v8' ),
 	],
-	'LIBPATH': [
-	  os.path.join( libBaseDir, 'v8' )
-	],
-	'LIBS': ["v8"]
+	'LIBS': archLibs( 'v8', ['v8'] ),
 };
 if buildOS == 'Windows':
   v8Flags['LIBS'] += ['Advapi32', 'Ws2_32', 'Winmm']
@@ -75,13 +83,9 @@ if buildOS != 'Windows':
 		'CPPPATH': [
 		   os.path.join( includeBaseDir, 'libedit' ),
 		 ],
-			'LIBPATH': [
-		   os.path.join( libBaseDir, 'libedit' )
-		 ],
-		'LIBS': ["edit"]
+    'LIBS': archLibs( 'libedit', ['edit'] ),
 	}
-	if buildOS == 'Linux':
-		libeditFlags['LIBS'] += ['ncurses']
+	libeditFlags['LIBS'] += ['ncurses']
 	Export( 'libeditFlags' )
 
 # NPAPI
@@ -95,15 +99,12 @@ Export( 'npapiFlags' )
 # ilmbase+openexr
 openexrFlags = {}
 openexrFlags['CPPPATH'] = [os.path.join( includeBaseDir, 'ilmbase' ),os.path.join( osArchIncludeBaseDir, 'ilmbase' ),os.path.join( includeBaseDir, 'openexr' )]
-openexrFlags['LIBPATH'] = [os.path.join( libBaseDir, 'ilmbase' ),os.path.join( libBaseDir, 'openexr' )]
-openexrFlags['LIBS'] = ['IlmImf','Half','Iex','IlmThread','Imath']
+openexrFlags['LIBS'] = [archLibs( 'openexr', ['IlmImf'] ), archLibs( 'ilmbase', ['Half', 'Iex', 'IlmThread', 'Imath'] )]
 if buildOS == 'Windows':
-    openexrFlags['CPPPATH'].append( os.path.join( includeBaseDir, 'zlib' ) )
-    openexrFlags['LIBPATH'].append( os.path.join( libBaseDir, 'zlib' ) )
-    openexrFlags['LIBS'].append( 'zlib' )
+  openexrFlags['CPPPATH'].append( os.path.join( includeBaseDir, 'zlib' ) )
+  openexrFlags['LIBS'].append( archLibs( 'zlib', ['zlib'] ) )
 else:  
-    openexrFlags['LIBS'].append( 'z' )
-    Export( openexrFlags )
+  openexrFlags['LIBS'].append( 'z' )
 Export( 'openexrFlags' )
 
 # libpng
@@ -119,21 +120,18 @@ if buildOS == 'Linux':
 else:
     libpngFlags = {}
     libpngFlags['CPPPATH'] = [os.path.join( includeBaseDir, 'libpng' )]
-    libpngFlags['LIBPATH'] = [os.path.join( libBaseDir, 'libpng' )]
     if buildOS == 'Windows':
         libpngFlags['CPPPATH'].append( os.path.join( includeBaseDir, 'zlib' ) )
-        # libpngFlags['LIBPATH'].append( os.path.join( libBaseDir, 'zlib' ) )
-        libpngFlags['LIBS'] = ['libpng14','zlib']
+        libpngFlags['LIBS'] = archLibs( 'libpng', ['libpng14','zlib'] )
     else:  
-        libpngFlags['LIBS'] = ['png14','z']
+        libpngFlags['LIBS'] = [archLibs( 'libpng', ['png14'] ), 'z']
 Export( 'libpngFlags' )
 
 # ffmpeg
 ffmpegFlags = {
     'CPPDEFINES': [ '__STDC_LIMIT_MACROS', '__STDC_CONSTANT_MACROS' ],
     'CPPPATH': [os.path.join( includeBaseDir, 'ffmpeg' )],
-    'LIBPATH': [os.path.join( libBaseDir, 'ffmpeg' )],
-    'LIBS': ['swscale','avformat','avcodec','avutil','z','bz2'],
+    'LIBS': [archLibs( 'ffmpeg', ['swscale','avformat','avcodec','avutil'] ), 'z', 'bz2'],
 }
 Export( 'ffmpegFlags' )
 
@@ -141,7 +139,7 @@ Export( 'ffmpegFlags' )
 if buildOS == 'Linux':
   gtkglFlags = {
     'CPPPATH': [os.path.join( osArchIncludeBaseDir, 'gtkglext' ), os.path.join( osArchIncludeBaseDir, 'gtkglext', 'gdk' )],
-    'LIBS': [File(os.path.join( libBaseDir, 'gtkglext', 'libgtkglext-x11-1.0.a' )), File(os.path.join( libBaseDir, 'gtkglext', 'libgdkglext-x11-1.0.a' ))],
+    'LIBS': archLibs( 'gtkglext', ['gtkglext-x11-1.0', 'gdkglext-x11-1.0'] ),
   }
   Export( 'gtkglFlags' )
 

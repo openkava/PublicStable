@@ -1,3 +1,7 @@
+/*
+ *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+ */
+ 
 #ifndef _FABRIC_CG_OPAQUE_ADAPTER_H
 #define _FABRIC_CG_OPAQUE_ADAPTER_H
 
@@ -15,7 +19,7 @@ namespace Fabric
     class OpaqueAdapter : public SimpleAdapter
     {
       friend class Manager;
-    
+
     public:
 
       virtual void llvmCompileToModule( ModuleBuilder &moduleBuilder ) const;
@@ -26,8 +30,6 @@ namespace Fabric
       
       virtual llvm::Type const *buildLLVMRawType( RC::Handle<Context> const &context ) const;
       
-      virtual void llvmInit( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *lValue ) const;
-
       virtual llvm::Constant *llvmDefaultValue( BasicBlockBuilder &basicBlockBuilder ) const;
      
       virtual std::string toString( void const *data ) const;

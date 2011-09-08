@@ -7,9 +7,13 @@
 #include <Fabric/Core/DG/Context.h>
 #include <Fabric/Core/DG/ExecutionEngine.h>
 #include <Fabric/Core/DG/Binding.h>
+#include <Fabric/Core/DG/FabricResource.h>
+#include <Fabric/Core/RT/StructDesc.h>
+#include <Fabric/Core/IO/Manager.h>
 #include <Fabric/Core/MT/LogCollector.h>
 #include <Fabric/Core/RT/NumericDesc.h>
 #include <Fabric/Core/RT/VariableArrayDesc.h>
+#include <Fabric/Core/RT/SlicedArrayDesc.h>
 #include <Fabric/Core/RT/Manager.h>
 #include <Fabric/Core/RT/VariableArrayImpl.h>
 #include <Fabric/Base/JSON/Value.h>
@@ -24,8 +28,6 @@
 
 namespace Fabric
 {
-  
-
   namespace DG
   {
     class Container::Member : public RC::Object
@@ -45,6 +47,13 @@ namespace Fabric
       RC::ConstHandle<RT::Desc> getDesc() const
       {
         return m_memberDesc;
+      }
+      
+      void getDescs( RC::ConstHandle<RT::Desc> &memberDesc, RC::ConstHandle<RT::VariableArrayDesc> &variableArrayDesc, RC::ConstHandle<RT::SlicedArrayDesc> &slicedArrayDesc ) const
+      {
+        memberDesc = m_memberDesc;
+        variableArrayDesc = m_variableArrayDesc;
+        slicedArrayDesc = m_slicedArrayDesc;
       }
       
       void *getArrayData() const
@@ -77,6 +86,7 @@ namespace Fabric
       RC::ConstHandle<RT::Desc> m_memberDesc;
       void *m_defaultMemberData;
       RC::ConstHandle<RT::VariableArrayDesc> m_variableArrayDesc;
+      RC::ConstHandle<RT::SlicedArrayDesc> m_slicedArrayDesc;
       void *m_arrayData;
     };
 
@@ -130,17 +140,12 @@ namespace Fabric
       notifyDelta( "members", jsonDescMembers() );
     }
 
-    RC::ConstHandle<RT::Desc> Container::getMemberDesc( std::string const &name )
+    void Container::getMemberDescs( std::string const &name, RC::ConstHandle<RT::Desc> &memberDesc, RC::ConstHandle<RT::VariableArrayDesc> &variableArrayDesc, RC::ConstHandle<RT::SlicedArrayDesc> &slicedArrayDesc )
     {
       Members::const_iterator it = m_members.find( name );
       if ( it == m_members.end() )
         throw Exception( "'" + name + "': no such member" );
-      return it->second->getDesc();
-    }
-    
-    RC::ConstHandle<RT::VariableArrayDesc> Container::getMemberArrayDesc( std::string const &name )
-    {
-      return m_context->getRTManager()->getVariableArrayOf( getMemberDesc( name ) );
+      it->second->getDescs( memberDesc, variableArrayDesc, slicedArrayDesc );
     }
     
     void *Container::getMemberArrayData( std::string const &name )
@@ -341,7 +346,13 @@ namespace Fabric
       }
     }
       
-    RC::Handle<MT::ParallelCall> Container::bind( RC::ConstHandle<Binding> const &binding, Scope const &scope, size_t *newCount, unsigned prefixCount, void * const *prefixes )
+    RC::Handle<MT::ParallelCall> Container::bind(
+      RC::ConstHandle<Binding> const &binding,
+      Scope const &scope,
+      size_t *newCount,
+      unsigned prefixCount,
+      void * const *prefixes
+      )
     {
       SelfScope selfScope( this, &scope );
 
@@ -360,6 +371,7 @@ namespace Fabric
       memberDesc->setData( defaultMemberData, m_defaultMemberData );
       
       m_variableArrayDesc = rtManager->getVariableArrayOf( memberDesc );
+      m_slicedArrayDesc = rtManager->getSlicedArrayOf( memberDesc );
       
       size_t arraySize = m_variableArrayDesc->getSize();
       m_arrayData = malloc( arraySize );
@@ -415,6 +427,8 @@ namespace Fabric
         result = jsonExecGetDataSize( arg );
       else if ( cmd == "getDataElement" )
         result = jsonExecGetDataElement( arg );
+      else if ( cmd == "writeResourceToUserFile" )
+        jsonExecWriteResourceToUserFile( arg );
       else if ( cmd == "setData" )
         jsonExecSetData( arg );
       else if ( cmd == "getBulkData" )
@@ -708,6 +722,46 @@ namespace Fabric
           throw "index " + _(i) + ": " + e;
         }
       }
+    }
+
+    void Container::jsonExecWriteResourceToUserFile( RC::ConstHandle<JSON::Value> const &arg ) const
+    {
+      RC::ConstHandle<JSON::Object> argJSONObject = arg->toObject();
+      
+      std::string memberName;
+      try
+      {
+        memberName = argJSONObject->get( "memberName" )->toString()->value();
+      }
+      catch ( Exception e )
+      {
+        throw "'memberName': " + e;
+      }
+
+      std::string defaultFileName;
+
+      RC::ConstHandle<JSON::Value> val;
+      val = argJSONObject->maybeGet( "defaultFileName" );
+      if( val )
+      {
+        defaultFileName = val->toString()->value();
+      }
+
+      RC::ConstHandle<Container::Member> member = getMember( memberName );
+
+      RC::ConstHandle<RT::Desc> desc = member->getDesc();
+      if( desc->getName() != "FabricResource" )
+      {
+        throw Exception( "member" + memberName + " is not of type FabricResource" );
+      }
+
+      FabricResourceWrapper resource( m_context->getRTManager(), (void*)member->getElementData( 0 ) );
+      if( resource.getDataSize() == 0 )
+      {
+        throw Exception( "writeResourceToUserLocation: resource \'" + memberName + " \' is empty" );
+      }
+
+      m_context->getIOManager()->writeDataAtUserLocation( resource.getDataSize(), resource.getDataPtr(), defaultFileName, resource.getExtension() );
     }
   };
 };
