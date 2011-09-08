@@ -1,19 +1,17 @@
 #!/bin/sh
 
-if [ $# != 3 ]
-then
-  echo "Usage: $0 <OS> <ARCH> <TYPE>"
-  exit 1
-fi
-
-OS=$1; shift
-ARCH=$1; shift
-TYPE=$1; shift
+OS=$(uname -s)
+ARCH=$(uname -m)
+TYPE=Release
 DATE=$(date '+%Y-%m-%d')
 
 if [ "$OS" = "Windows" ]; then
   ARCHIVE="zip -qr third-party-builds-$OS-$ARCH-$DATE.zip"
+  $ARCHIVE Native/ThirdParty/Private/$OS/$ARCH/$TYPE/lib
+elif [ "$OS" = "Darwin" ]; then
+  ARCHIVE="tar jcf third-party-builds-$OS-universal-$DATE.tar.bz2"
+  $ARCHIVE Native/ThirdParty/Private/$OS/i386/$TYPE/lib Native/ThirdParty/Private/$OS/x86_64/$TYPE/lib
 else
   ARCHIVE="tar jcf third-party-builds-$OS-$ARCH-$DATE.tar.bz2"
+  $ARCHIVE Native/ThirdParty/Private/$OS/$ARCH/$TYPE/lib
 fi
-$ARCHIVE Native/ThirdParty/Private/$OS/$ARCH/$TYPE/lib
