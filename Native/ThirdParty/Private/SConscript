@@ -137,7 +137,6 @@ Export( 'ffmpegFlags' )
 
 # alembic
 alembicFlags = {
-    'CPPDEFINES': [ ],
     'CPPPATH': [
       os.path.join( includeBaseDir, 'zlib' ),
       os.path.join( includeBaseDir, 'ilmbase' ),
@@ -145,29 +144,12 @@ alembicFlags = {
       os.path.join( includeBaseDir, 'boost' ),
       os.path.join( includeBaseDir, 'alembic' )
     ],
-    'LIBPATH': [
-      os.path.join( libBaseDir, 'ilmbase' ),
-      os.path.join( libBaseDir, 'hdf5' ),
-      os.path.join( libBaseDir, 'boost' ),
-      os.path.join( libBaseDir, 'alembic' ),
-    ],
     'LIBS': [
       'z',
-      'boost_program_options',
-      'boost_date_time',
-      'boost_iostreams',
-      'boost_thread',
-      'AlembicAbcCoreHDF5',
-      'AlembicAbcCoreAbstract',
-      'AlembicUtil',
-      'AlembicAbcGeom',
-      'AlembicAbc',
-      'hdf5_hl',
-      'hdf5',
-      'Iex',
-      'Imath',
-      'Half',
-      'IlmThread',
+      archLibs('boost', ['boost_program_options', 'boost_date_time', 'boost_iostreams', 'boost_thread']),
+      archLibs('alembic', ['AlembicAbcCoreHDF5', 'AlembicAbcCoreAbstract', 'AlembicUtil', 'AlembicAbcGeom', 'AlembicAbc']),
+      archLibs('hdf5', ['hdf5_hl', 'hdf5']),
+      archLibs('ilmbase', ['Iex', 'Imath', 'Half', 'IlmThread'])
     ],
 }
 Export( 'alembicFlags' )
