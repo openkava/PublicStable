@@ -136,7 +136,13 @@ namespace Fabric
       markForRecompile();
     }
     
-    RC::Handle<MT::ParallelCall> Operator::bind( Prototype *prototype, Scope const &scope, size_t *newSize, unsigned prefixCount, void * const *prefixes ) const
+    RC::Handle<MT::ParallelCall> Operator::bind(
+      Prototype *prototype,
+      Scope const &scope,
+      size_t *newSize,
+      unsigned prefixCount,
+      void * const *prefixes
+      ) const
     {
       if ( !m_sourceCode.length() )
         throw Exception( "no source code loaded" );

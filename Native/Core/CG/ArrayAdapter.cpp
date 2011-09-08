@@ -4,7 +4,11 @@
  
 #include "ArrayAdapter.h"
 #include "Manager.h"
-
+#include <Fabric/Core/CG/BasicBlockBuilder.h>
+#include <Fabric/Core/CG/ConstStringAdapter.h>
+#include <Fabric/Core/CG/ExprValue.h>
+#include <Fabric/Core/CG/SizeAdapter.h>
+#include <Fabric/Core/CG/StringAdapter.h>
 #include <Fabric/Core/RT/ArrayDesc.h>
 
 namespace Fabric
@@ -29,6 +33,51 @@ namespace Fabric
         result += m_memberAdapter->toString( m_arrayDesc->getMemberData( data, i ) );
       }
       return result + "]";
+    }
+
+    void ArrayAdapter::llvmReportOutOfRangeError(
+      BasicBlockBuilder &basicBlockBuilder,
+      RC::ConstHandle<ConstStringAdapter> const &constStringAdapter,
+      RC::ConstHandle<StringAdapter> const &stringAdapter,
+      RC::ConstHandle<SizeAdapter> const &sizeAdapter,
+      llvm::Value *indexRValue,
+      llvm::Value *sizeRValue
+      ) const
+    {
+      RC::Handle<Context> context = basicBlockBuilder.getContext();
+      
+      std::string errorMsg1 = "KL: "+getUserName()+" index (";
+      llvm::Value *errorMsg1RValue = stringAdapter->llvmCast( basicBlockBuilder,
+        ExprValue( constStringAdapter, USAGE_RVALUE, context, constStringAdapter->llvmConst( basicBlockBuilder, errorMsg1 ) )
+        );
+      llvm::Value *indexStringRValue = stringAdapter->llvmCast( basicBlockBuilder,
+        ExprValue( sizeAdapter, USAGE_RVALUE, context, indexRValue )
+        );
+      llvm::Value *errorMsg1PlusIndexRValue = stringAdapter->llvmCallConcat( basicBlockBuilder, errorMsg1RValue, indexStringRValue );
+      stringAdapter->llvmRelease( basicBlockBuilder, errorMsg1RValue );
+      stringAdapter->llvmRelease( basicBlockBuilder, indexStringRValue );
+      std::string errorMsg2 = ") out of range (";
+      llvm::Value *errorMsg2RValue = stringAdapter->llvmCast( basicBlockBuilder,
+        ExprValue( constStringAdapter, USAGE_RVALUE, context, constStringAdapter->llvmConst( basicBlockBuilder, errorMsg2 ) )
+        );
+      llvm::Value *errorMsg1PlusIndexPlusErrorMsg2RValue = stringAdapter->llvmCallConcat( basicBlockBuilder, errorMsg1PlusIndexRValue, errorMsg2RValue );
+      stringAdapter->llvmRelease( basicBlockBuilder, errorMsg1PlusIndexRValue );
+      stringAdapter->llvmRelease( basicBlockBuilder, errorMsg2RValue );
+      llvm::Value *sizeStringRValue = stringAdapter->llvmCast( basicBlockBuilder,
+        ExprValue( sizeAdapter, USAGE_RVALUE, context, sizeRValue )
+        );
+      llvm::Value *errorMsg1PlusIndexPlusErrorMsg2PlusSizeRValue = stringAdapter->llvmCallConcat( basicBlockBuilder, errorMsg1PlusIndexPlusErrorMsg2RValue, sizeStringRValue );
+      stringAdapter->llvmRelease( basicBlockBuilder, errorMsg1PlusIndexPlusErrorMsg2RValue );
+      stringAdapter->llvmRelease( basicBlockBuilder, sizeStringRValue );
+      std::string errorMsg3 = ")";
+      llvm::Value *errorMsg3RValue = stringAdapter->llvmCast( basicBlockBuilder,
+        ExprValue( constStringAdapter, USAGE_RVALUE, context, constStringAdapter->llvmConst( basicBlockBuilder, errorMsg3 ) )
+        );
+      llvm::Value *errorMsg1PlusIndexPlusErrorMsg2PlusSizePlusErrorMsg3RValue = stringAdapter->llvmCallConcat( basicBlockBuilder, errorMsg1PlusIndexPlusErrorMsg2PlusSizeRValue, errorMsg3RValue );
+      stringAdapter->llvmRelease( basicBlockBuilder, errorMsg1PlusIndexPlusErrorMsg2PlusSizeRValue );
+      stringAdapter->llvmRelease( basicBlockBuilder, errorMsg3RValue );
+      stringAdapter->llvmReport( basicBlockBuilder, errorMsg1PlusIndexPlusErrorMsg2PlusSizePlusErrorMsg3RValue );
+      stringAdapter->llvmRelease( basicBlockBuilder, errorMsg1PlusIndexPlusErrorMsg2PlusSizePlusErrorMsg3RValue );
     }
   };
 };

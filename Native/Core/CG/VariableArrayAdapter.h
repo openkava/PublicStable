@@ -1,3 +1,7 @@
+/*
+ *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+ */
+ 
 #ifndef _FABRIC_CG_VARIABLE_ARRAY_ADAPTER_H
 #define _FABRIC_CG_VARIABLE_ARRAY_ADAPTER_H
 
@@ -15,6 +19,7 @@ namespace Fabric
     class VariableArrayAdapter : public ArrayAdapter
     {
       friend class Manager;
+      friend class SlicedArrayAdapter;
     
     public:
 
@@ -33,6 +38,13 @@ namespace Fabric
 
       virtual llvm::Value *llvmConstIndexOp( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *arrayRValue, llvm::Value *indexRValue ) const;
       virtual llvm::Value *llvmNonConstIndexOp( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *arrayLValue, llvm::Value *indexRValue ) const;
+
+      // VariableArrayAdapter
+
+      llvm::Value *llvmConstIndexOp_NoCheckLValue( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *arrayRValue, llvm::Value *indexRValue ) const;
+      llvm::Value *llvmConstIndexOp_NoCheck( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *arrayRValue, llvm::Value *indexRValue ) const;
+      llvm::Value *llvmNonConstIndexOp_NoCheck( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *arrayLValue, llvm::Value *indexRValue ) const;
+      llvm::Value *llvmNonConstIndexOp_NoCheckNoSplit( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *arrayLValue, llvm::Value *indexRValue ) const;
 
     protected:
     
