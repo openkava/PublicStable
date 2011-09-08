@@ -338,20 +338,20 @@ Build/.boost.build: Build/.boost.configure
 ifeq ($(BUILD_PLATFORM),Linux)
 	for ARCH in $(ARCHS); do \
 		if [ "$$ARCH" = "x86_64" ]; then \
-			BJAM_FLAGS="toolset=gcc architecture=x86 address-model=64 link=static"; \
+			BJAM_FLAGS="toolset=gcc architecture=x86 instruction-set=opteron address-model=64"; \
 		else \
-			BJAM_FLAGS="toolset=gcc architecture=x86 instruction-set=i686 address-model=32 link=static"; \
+			BJAM_FLAGS="toolset=gcc architecture=x86 instruction-set=i686 address-model=32"; \
 		fi; \
 		( cd Build/boost-$(BOOST_VERSION)-$$ARCH && ./bjam -d+2 $$BJAM_FLAGS ); \
 	done
 else
 	for ARCH in $(ARCHS); do \
 		if [ "$$ARCH" = "x86_64" ]; then \
-			BJAM_FLAGS="toolset=darwin architecture=x86 address-model=64 link=static"; \
+			BJAM_FLAGS="toolset=darwin architecture=x86 address-model=64"; \
 		else \
-			BJAM_FLAGS="toolset=darwin architecture=x86 address-model=32 link=static"; \
+			BJAM_FLAGS="toolset=darwin architecture=x86 address-model=32"; \
 		fi; \
-		( cd Build/boost-$(BOOST_VERSION)-$$ARCH && ./bjam -d+2 $$BJAM_FLAGS ); \
+		( cd Build/boost-$(BOOST_VERSION)-$$ARCH && ./bjam -d+2 $$BJAM_FLAGS link=static threading=multi variant=release ); \
 	done
 endif
 	touch $@
