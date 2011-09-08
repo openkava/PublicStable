@@ -19,17 +19,19 @@ parentNode.bindings.append( parentBinding );
 
 childOp = FABRIC.DependencyGraph.createOperator( "childOp" );
 childOp.setEntryFunctionName('entry');
-childOp.setSourceCode("operator entry( io Scalar input[], Size index, io Scalar output ) { output = 2 * input[index]; }");
+childOp.setSourceCode("operator entry( io Scalar input<>, Size index, io Scalar output ) { output = 2 * input[index]; }");
 
 childBinding = FABRIC.DependencyGraph.createBinding();
 childBinding.setOperator( childOp );
-childBinding.setParameterLayout( [ "parent.output[]", "self.index", "self.output" ] );
+childBinding.setParameterLayout( [ "parent.output<>", "self.index", "self.output" ] );
 
 childNode = FABRIC.DependencyGraph.createNode( "child" );
 childNode.addDependency( parentNode, "parent" );
 childNode.addMember( "output", "Scalar" );
 childNode.setCount( 2 );
 childNode.bindings.append( childBinding );
+if (childNode.getErrors().length)
+  printDeep(childNode.getErrors());
 
 parentEHPreOp = FABRIC.DependencyGraph.createOperator( "parentEHPreOp" );
 parentEHPreOp.setEntryFunctionName('entry');

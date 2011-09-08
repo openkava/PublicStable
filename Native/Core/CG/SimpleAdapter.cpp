@@ -19,10 +19,6 @@ namespace Fabric
     {
     }
 
-    void SimpleAdapter::llvmInit( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *value ) const
-    {
-    }
-
     void SimpleAdapter::llvmRetain( BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const
     {
     }
@@ -34,11 +30,6 @@ namespace Fabric
     
     void SimpleAdapter::llvmRelease( BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const
     {
-    }
-    
-    llvm::Constant *SimpleAdapter::llvmDefaultValue( BasicBlockBuilder &basicBlockBuilder ) const
-    {
-      return llvm::ConstantInt::get( llvmRType( basicBlockBuilder.getContext() ), *(uint64_t const *)getImpl()->getDefaultData() );
     }
     
     void *SimpleAdapter::llvmResolveExternalFunction( std::string const &functionName ) const

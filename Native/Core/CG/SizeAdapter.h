@@ -22,12 +22,16 @@ namespace Fabric
       friend class Manager;
     
     public:
+
+      // Adapter
       
       virtual std::string toString( void const *data ) const;
+      virtual llvm::Constant *llvmDefaultValue( BasicBlockBuilder &basicBlockBuilder ) const;
+      virtual void llvmCompileToModule( ModuleBuilder &moduleBuilder ) const;
+      
+      // SizeAdapter
       
       llvm::Constant *llvmConst( RC::Handle<Context> const &context, size_t value ) const;
-      
-      virtual void llvmCompileToModule( ModuleBuilder &moduleBuilder ) const;
 
     protected:
 

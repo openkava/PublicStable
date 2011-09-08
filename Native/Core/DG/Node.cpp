@@ -144,7 +144,9 @@ namespace Fabric
       if ( m_runState )
       {
         for ( size_t i=0; i<m_runState->m_evaluateParallelCallsPerOperator.size(); ++i )
+        {
           m_runState->m_evaluateParallelCallsPerOperator[i] = 0;
+        }
       }
       
       setOutOfDate();
@@ -219,14 +221,25 @@ namespace Fabric
           m_runState->m_newCount = oldCount;
           opParallelCall->executeParallel( binding->getMainThreadOnly() );
           if ( m_runState->m_newCount != oldCount )
+          {
             setCount( m_runState->m_newCount );
+            
+            for ( size_t j=i+1; j<numBindings; ++j )
+              m_runState->m_evaluateParallelCallsPerOperator[j] = 0;
+          }
         }
         
         m_dirty = false;
       }
     }
       
-    RC::Handle<MT::ParallelCall> Node::bind( RC::ConstHandle<Binding> const &binding, Scope const &scope, size_t *newCount, unsigned prefixCount, void * const *prefixes )
+    RC::Handle<MT::ParallelCall> Node::bind(
+      RC::ConstHandle<Binding> const &binding,
+      Scope const &scope,
+      size_t *newCount,
+      unsigned prefixCount,
+      void * const *prefixes
+      )
     {
       BindingsScope dependenciesScope( m_dependencies, &scope );
       return Container::bind( binding, dependenciesScope, newCount, prefixCount, prefixes );

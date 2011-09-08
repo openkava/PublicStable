@@ -120,6 +120,18 @@ namespace Fabric
       {
       }
     };
+    
+    class FP64Impl : public FloatImplT<double>
+    {
+      friend class Manager;
+      
+    protected:
+    
+      FP64Impl( std::string const &codeName )
+        : FloatImplT<double>( codeName )
+      {
+      }
+    };
   };
 };
 

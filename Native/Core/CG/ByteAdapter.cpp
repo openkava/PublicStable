@@ -17,6 +17,7 @@
 #include "OverloadNames.h"
 
 #include <Fabric/Core/RT/NumericDesc.h>
+#include <Fabric/Core/RT/IntegerImpl.h>
 #include <Fabric/Core/Util/Format.h>
 
 namespace Fabric
@@ -557,6 +558,12 @@ namespace Fabric
     std::string ByteAdapter::toString( void const *data ) const
     {
       return m_byteDesc->toString( data );
+    }
+    
+    llvm::Constant *ByteAdapter::llvmDefaultValue( BasicBlockBuilder &basicBlockBuilder ) const
+    {
+      RC::ConstHandle<RT::ByteImpl> byteImpl = RC::ConstHandle<RT::ByteImpl>::StaticCast( m_byteDesc->getImpl() );
+      return llvmConst( basicBlockBuilder.getContext(), byteImpl->getValue( byteImpl->getDefaultData() ) );
     }
   };
 };

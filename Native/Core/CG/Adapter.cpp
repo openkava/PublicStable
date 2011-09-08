@@ -129,6 +129,15 @@ namespace Fabric
       }
       else llvmDefaultAssign( basicBlockBuilder, dstLValue, srcRValue );
     }
+    
+    void Adapter::llvmStore( BasicBlockBuilder &basicBlockBuilder, llvm::Value *dstLValue, llvm::Value *srcRValue ) const
+    {
+      llvm::Value *srcRawValue;
+      if ( m_flags & FL_PASS_BY_REFERENCE )
+        srcRawValue = basicBlockBuilder->CreateLoad( srcRValue );
+      else srcRawValue = srcRValue;
+      basicBlockBuilder->CreateStore( srcRawValue, dstLValue );
+    }
 
     llvm::Value *Adapter::llvmCast( BasicBlockBuilder &basicBlockBuilder, ExprValue exprValue ) const
     {
@@ -317,6 +326,13 @@ namespace Fabric
     RC::ConstHandle<Adapter> Adapter::getAdapter( RC::ConstHandle<RT::Desc> const &desc ) const
     {
       return m_manager.makeStrong()->getAdapter( desc );
+    }
+
+    void Adapter::llvmInit( BasicBlockBuilder &basicBlockBuilder, llvm::Value *lValue ) const
+    {
+      llvm::Value *defaultRValue = llvmDefaultRValue( basicBlockBuilder );
+      llvmRetain( basicBlockBuilder, defaultRValue );
+      llvmStore( basicBlockBuilder, lValue, defaultRValue );
     }
   };
 };

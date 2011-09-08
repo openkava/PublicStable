@@ -14,6 +14,7 @@
 #include "OverloadNames.h"
 
 #include <Fabric/Core/RT/NumericDesc.h>
+#include <Fabric/Core/RT/IntegerImpl.h>
 #include <Fabric/Core/Util/Format.h>
 
 namespace Fabric
@@ -555,5 +556,11 @@ namespace Fabric
     {
       return m_sizeDesc->toString( data );
     }
-  }; // namespace RT
-}; // namespace FABRIC
+    
+    llvm::Constant *SizeAdapter::llvmDefaultValue( BasicBlockBuilder &basicBlockBuilder ) const
+    {
+      RC::ConstHandle<RT::SizeImpl> sizeImpl = RC::ConstHandle<RT::SizeImpl>::StaticCast( m_sizeDesc->getImpl() );
+      return llvmConst( basicBlockBuilder.getContext(), sizeImpl->getValue( sizeImpl->getDefaultData() ) );
+    }
+  };
+};
