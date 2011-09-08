@@ -241,6 +241,40 @@ FABRIC_EXT_EXPORT void FabricALEMBICParseXform(
   }
 }
 
+FABRIC_EXT_EXPORT void FabricALEMBICParseCamera(
+  KL::Integer archiveID,
+  KL::String & identifier,
+  KL::Integer & sample,
+  KL::Scalar & near,
+  KL::Scalar & far,
+  KL::Scalar & fovY
+  )
+{
+  Alembic::AbcGeom::ICamera obj(getObjectFromArchive(archiveID,identifier.data()),Alembic::Abc::kWrapExisting);
+  if( obj.valid() )
+  {
+    // get the schema
+    Alembic::AbcGeom::ICameraSchema schema = obj.getSchema();
+    if(sample < 0)
+      sample = 0;
+    else if(sample >= schema.getNumSamples())
+      sample = schema.getNumSamples()-1;
+      
+    // get the sample
+    Alembic::AbcGeom::CameraSample camera;
+    schema.get(camera,sample);
+
+    // clipping planes
+    near = camera.getNearClippingPlane();    
+    far = camera.getFarClippingPlane();
+    
+    // compute fovY from aspect and aperture
+    KL::Scalar focallength = camera.getFocalLength();
+    KL::Scalar aperture = camera.getVerticalAperture();
+    fovY = 1.0f * atanf(50.0f * aperture / focallength);
+  }
+}
+
 FABRIC_EXT_EXPORT void FabricALEMBICParsePolyMeshUniforms(
   KL::Integer archiveID,
   KL::String & identifier,
@@ -400,29 +434,31 @@ FABRIC_EXT_EXPORT void FabricALEMBICParsePolyMeshAttributes(
         size_t count = faceCounts->get()[i];
         if(count == 3)
         {
-          for(size_t j=0;j<3;j++)
-          {
-            vertices[vertexOffset].x = abcPoints->get()[faceIndices->get()[indexOffset]].x;
-            vertices[vertexOffset].y = abcPoints->get()[faceIndices->get()[indexOffset]].y;
-            vertices[vertexOffset++].z = abcPoints->get()[faceIndices->get()[indexOffset++]].z;
-          }
-        }
-        else if(count == 4)
-        {
-          for(size_t j=0;j<3;j++)
+          for(int j=0;j<3;j++)
           {
             vertices[vertexOffset].x = abcPoints->get()[faceIndices->get()[indexOffset+j]].x;
             vertices[vertexOffset].y = abcPoints->get()[faceIndices->get()[indexOffset+j]].y;
             vertices[vertexOffset++].z = abcPoints->get()[faceIndices->get()[indexOffset+j]].z;
           }
-          for(size_t j=2;j<5;j++)
+        }
+        else if(count == 4)
+        {
+          for(int j=0;j<3;j++)
+          {
+            vertices[vertexOffset].x = abcPoints->get()[faceIndices->get()[indexOffset+j]].x;
+            vertices[vertexOffset].y = abcPoints->get()[faceIndices->get()[indexOffset+j]].y;
+            vertices[vertexOffset++].z = abcPoints->get()[faceIndices->get()[indexOffset+j]].z;
+          }
+          for(int j=2;j<5;j++)
           {
             vertices[vertexOffset].x = abcPoints->get()[faceIndices->get()[indexOffset+(j%4)]].x;
             vertices[vertexOffset].y = abcPoints->get()[faceIndices->get()[indexOffset+(j%4)]].y;
             vertices[vertexOffset++].z = abcPoints->get()[faceIndices->get()[indexOffset+(j%4)]].z;
           }
-          indexOffset += 4;
         }
+        else
+          continue;
+        indexOffset += count;
       }
     }
     
@@ -445,30 +481,31 @@ FABRIC_EXT_EXPORT void FabricALEMBICParsePolyMeshAttributes(
           size_t count = faceCounts->get()[i];
           if(count == 3)
           {
-            for(size_t j=0;j<3;j++)
+            for(int j=2;j>=0;j--)
             {
               normals[vertexOffset].x = nsp->get()[indexOffset+j].x;
               normals[vertexOffset].y = nsp->get()[indexOffset+j].y;
               normals[vertexOffset++].z = nsp->get()[indexOffset+j].z;
             }
-            indexOffset += 3;
           }
           else if(count == 4)
           {
-            for(size_t j=0;j<3;j++)
+            for(int j=2;j>=0;j--)
             {
               normals[vertexOffset].x = nsp->get()[indexOffset+j].x;
               normals[vertexOffset].y = nsp->get()[indexOffset+j].y;
               normals[vertexOffset++].z = nsp->get()[indexOffset+j].z;
             }
-            for(size_t j=2;j<5;j++)
+            for(int j=4;j>=2;j--)
             {
               normals[vertexOffset].x = nsp->get()[indexOffset+(j%4)].x;
               normals[vertexOffset].y = nsp->get()[indexOffset+(j%4)].y;
               normals[vertexOffset++].z = nsp->get()[indexOffset+(j%4)].z;
             }
-            indexOffset += 4;
           }
+          else
+            continue;
+          indexOffset += count;
         }
       }
     }
@@ -481,7 +518,12 @@ FABRIC_EXT_EXPORT void FabricALEMBICParsePolyMeshAttributes(
         Alembic::AbcGeom::V2fArraySamplePtr usp = U.getExpandedValue(0).getVals();
         if(vertexNormals && uvs.size() == usp->size())
         {
-          memcpy(&uvs[0],usp->getData(),sizeof(float) * 2 * uvs.size());
+          for(size_t i=0;i<usp->size();i++)
+          {
+            uvs[i].x = usp->get()[i].x;
+            uvs[i].y = 1.0f - usp->get()[i].y;
+          }
+          //memcpy(&uvs[0],usp->getData(),sizeof(float) * 2 * uvs.size());
         }
         else if(usp->size() > 0)
         {
@@ -492,27 +534,28 @@ FABRIC_EXT_EXPORT void FabricALEMBICParsePolyMeshAttributes(
             size_t count = faceCounts->get()[i];
             if(count == 3)
             {
-              for(size_t j=0;j<3;j++)
+              for(int j=2;j>=0;j--)
               {
                 uvs[vertexOffset].x = usp->get()[indexOffset+j].x;
-                uvs[vertexOffset++].y = usp->get()[indexOffset+j].y;
+                uvs[vertexOffset++].y = 1.0f - usp->get()[indexOffset+j].y;
               }
-              indexOffset += 3;
             }
             else if(count == 4)
             {
-              for(size_t j=0;j<3;j++)
+              for(int j=2;j>=0;j--)
               {
                 uvs[vertexOffset].x = usp->get()[indexOffset+j].x;
-                uvs[vertexOffset++].y = usp->get()[indexOffset+j].y;
+                uvs[vertexOffset++].y = 1.0f - usp->get()[indexOffset+j].y;
               }
-              for(size_t j=2;j<5;j++)
+              for(int j=4;j>=2;j--)
               {
                 uvs[vertexOffset].x = usp->get()[indexOffset+(j%4)].x;
-                uvs[vertexOffset++].y = usp->get()[indexOffset+(j%4)].y;
+                uvs[vertexOffset++].y = 1.0f - usp->get()[indexOffset+(j%4)].y;
               }
-              indexOffset += 4;
             }
+            else
+              continue;
+            indexOffset += count;
           }
         }
         uvsLoaded = true;

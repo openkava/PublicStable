@@ -136,6 +136,16 @@ ffmpegFlags = {
 Export( 'ffmpegFlags' )
 
 # alembic
+alembicLibs = []
+if buildOS == 'Windows':
+  alembicLibs.extend( archLibs( 'zlib', ['zlib'] ) )
+else:  
+  alembicLibs.extend(['z'])
+archLibs( 'zlib', ['z'] )
+alembicLibs.extend(archLibs( 'boost', ['boost_program_options', 'boost_date_time', 'boost_iostreams', 'boost_thread'] ))
+alembicLibs.extend(archLibs( 'alembic', ['AlembicAbcCoreHDF5', 'AlembicAbcCoreAbstract', 'AlembicUtil', 'AlembicAbcGeom', 'AlembicAbc'] ))
+alembicLibs.extend(archLibs( 'hdf5', ['hdf5_hl', 'hdf5'] ))
+alembicLibs.extend(archLibs( 'ilmbase', ['Iex', 'Imath', 'Half', 'IlmThread'] ))
 alembicFlags = {
     'CPPPATH': [
       os.path.join( includeBaseDir, 'zlib' ),
@@ -144,13 +154,7 @@ alembicFlags = {
       os.path.join( includeBaseDir, 'boost' ),
       os.path.join( includeBaseDir, 'alembic' )
     ],
-    'LIBS': [
-      'z',
-      archLibs('boost', ['boost_program_options', 'boost_date_time', 'boost_iostreams', 'boost_thread']),
-      archLibs('alembic', ['AlembicAbcCoreHDF5', 'AlembicAbcCoreAbstract', 'AlembicUtil', 'AlembicAbcGeom', 'AlembicAbc']),
-      archLibs('hdf5', ['hdf5_hl', 'hdf5']),
-      archLibs('ilmbase', ['Iex', 'Imath', 'Half', 'IlmThread'])
-    ],
+    'LIBS': alembicLibs
 }
 Export( 'alembicFlags' )
 

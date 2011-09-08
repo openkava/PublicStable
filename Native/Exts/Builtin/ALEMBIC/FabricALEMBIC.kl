@@ -7,6 +7,7 @@ function FabricALEMBICDecode( Data objData, Size objDataSize, io Integer archive
 function FabricALEMBICFreeData( io Integer archiveID );
 function FabricALEMBICGetIdentifiers( Integer archiveID, io String identifiers[] );
 function FabricALEMBICParseXform( Integer archiveID, io String identifier, io Integer sample, io Xfo transform );
+function FabricALEMBICParseCamera( Integer archiveID, io String identifier, io Integer sample, io Scalar near, io Scalar far, io Scalar fovY );
 function FabricALEMBICParsePolyMeshCount( Integer archiveID, io String identifier, io Size count );
 function FabricALEMBICParsePolyMeshUniforms( Integer archiveID, io String identifier, io Integer indices[] );
 function FabricALEMBICParsePolyMeshAttributes( Integer archiveID, io String identifier, io Integer sample, io Vec3 vertices[], io Vec3 normals[], io Boolean uvsLoaded, io Vec2 uvs[] );
