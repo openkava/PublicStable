@@ -672,8 +672,12 @@ install_hdf5: install_hdf5_headers install_hdf5_libraries
 
 install_hdf5_headers:
 	mkdir -p include/hdf5/hdf5
-	$(RSYNC) --progress --recursive --include='*/' --exclude '*private.h' --include='*.h' --exclude='*' Build/hdf5-$(HDF5_VERSION)-$(FIRST_ARCH)/src/ $(TARGET_BASE)/include/hdf5/hdf5/
+	$(RSYNC) --progress --recursive --include='*/' --exclude '*private.h' --exclude 'H5config.h' --exclude 'H5pubconf.h' --include='*.h' --exclude='*' Build/hdf5-$(HDF5_VERSION)-$(FIRST_ARCH)/src/ $(TARGET_BASE)/include/hdf5/hdf5/
 	$(RSYNC) --progress --recursive --include='*/' --exclude '*private.h' --include='*.h' --exclude='*' Build/hdf5-$(HDF5_VERSION)-$(FIRST_ARCH)/hl/src/ $(TARGET_BASE)/include/hdf5/hdf5/
+	for ARCH in $(ARCHS); do \
+          mkdir -p $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/include/hdf5/hdf5/; \
+          $(RSYNC) --progress --recursive --include='*/' --include='H5config.h' --include 'H5pubconf.h' --exclude='*' Build/hdf5-$(HDF5_VERSION)-$(FIRST_ARCH)/src/ $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/include/hdf5/hdf5/; \
+        done
 
 install_hdf5_libraries:
 	for ARCH in $(ARCHS); do \
