@@ -241,6 +241,40 @@ FABRIC_EXT_EXPORT void FabricALEMBICParseXform(
   }
 }
 
+FABRIC_EXT_EXPORT void FabricALEMBICParseCamera(
+  KL::Integer archiveID,
+  KL::String & identifier,
+  KL::Integer & sample,
+  KL::Scalar & near,
+  KL::Scalar & far,
+  KL::Scalar & fovY
+  )
+{
+  Alembic::AbcGeom::ICamera obj(getObjectFromArchive(archiveID,identifier.data()),Alembic::Abc::kWrapExisting);
+  if( obj.valid() )
+  {
+    // get the schema
+    Alembic::AbcGeom::ICameraSchema schema = obj.getSchema();
+    if(sample < 0)
+      sample = 0;
+    else if(sample >= schema.getNumSamples())
+      sample = schema.getNumSamples()-1;
+      
+    // get the sample
+    Alembic::AbcGeom::CameraSample camera;
+    schema.get(camera,sample);
+
+    // clipping planes
+    near = camera.getNearClippingPlane();    
+    far = camera.getFarClippingPlane();
+    
+    // compute fovY from aspect and aperture
+    KL::Scalar focallength = camera.getFocalLength();
+    KL::Scalar aperture = camera.getVerticalAperture();
+    fovY = 1.0f * atanf(50.0f * aperture / focallength);
+  }
+}
+
 FABRIC_EXT_EXPORT void FabricALEMBICParsePolyMeshUniforms(
   KL::Integer archiveID,
   KL::String & identifier,
