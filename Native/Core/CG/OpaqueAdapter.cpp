@@ -1,3 +1,7 @@
+/*
+ *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+ */
+ 
 #include "OpaqueAdapter.h"
 #include "BooleanAdapter.h"
 #include "SizeAdapter.h"
@@ -148,11 +152,6 @@ namespace Fabric
           basicBlockBuilder->CreateRet( basicBlockBuilder->CreatePointerCast( thisLValue, dataAdapter->llvmRType( context ) ) );
         }
       }
-    }
-
-    void OpaqueAdapter::llvmInit( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *lValue ) const
-    {
-      basicBlockBuilder->CreateStore( llvm::Constant::getNullValue( llvmRType( basicBlockBuilder.getContext() ) ), lValue ); 
     }
     
     std::string OpaqueAdapter::toString( void const *data ) const

@@ -1,3 +1,7 @@
+/*
+ *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+ */
+ 
 #ifndef _FABRIC_RT_IMPL_TYPE_H
 #define _FABRIC_RT_IMPL_TYPE_H
 
@@ -30,6 +34,7 @@ namespace Fabric
     // Array types
     static const ImplType DT_FIXED_ARRAY = size_t(1) << 24;
     static const ImplType DT_VARIABLE_ARRAY = size_t(1) << 25;
+    static const ImplType DT_SLICED_ARRAY = size_t(1) << 26;
 
     inline bool isBoolean( ImplType implType ) { return implType & DT_BOOLEAN; }
     inline bool isInteger( ImplType implType ) { return implType & DT_INTEGER; }
@@ -42,7 +47,8 @@ namespace Fabric
     inline bool isStruct( ImplType implType ) { return implType & DT_STRUCT; }
     inline bool isFixedArray( ImplType implType ) { return implType & DT_FIXED_ARRAY; }
     inline bool isVariableArray( ImplType implType ) { return implType & DT_VARIABLE_ARRAY; }
-    inline bool isArray( ImplType implType ) { return isFixedArray(implType) || isVariableArray(implType); }
+    inline bool isSlicedArray( ImplType implType ) { return implType & DT_SLICED_ARRAY; }
+    inline bool isArray( ImplType implType ) { return isFixedArray(implType) || isVariableArray(implType) || isSlicedArray(implType); }
   };
 };
 

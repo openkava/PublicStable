@@ -14,9 +14,10 @@
                    em:updateURL="http://dist.fabric-engine.com/latest/xpi-update-{{FABRIC_OS}}-{{FABRIC_ARCH}}.rdf"
                    em:iconURL="chrome://fabric-engine/content/fabric-engine_48.png"
                    em:icon64URL="chrome://fabric-engine/content/fabric-engine_64.png"
-                   em:targetPlatform="Darwin_x86_64-gcc3"
                    em:updateKey="MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDMUByH7sLpQZRziQmnBwohVlGDOjbPmbz6X6wumP6ilK+vOtgknIzuNwfW/cjo/YT+scnl4098rXerl2cF5Z5Lz3QFdU9pNMqV4vg+9IC7ptRpYH5HQoIj2TR2RhbKb+T5O1mxVBbV91LXipTJF9e4RSaZyiY7lM2raW16Q8XO9QIDAQAB">
     <em:targetApplication RDF:resource="rdf:#$kXfJd2"/>
+    <em:targetPlatform>Darwin_x86-gcc3</em:targetPlatform>
+    <em:targetPlatform>Darwin_x86_64-gcc3</em:targetPlatform>
   </RDF:Description>
   <RDF:Description RDF:about="rdf:#$kXfJd2"
                    em:id="{ec8030f7-c20a-464f-9b0e-13a3a9e97384}"

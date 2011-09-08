@@ -108,7 +108,12 @@ namespace Fabric
       markForRecompile();
     }
     
-    RC::Handle<MT::ParallelCall> Binding::bind( Scope const &scope, size_t *newSize, unsigned prefixCount, void * const *prefixes ) const
+    RC::Handle<MT::ParallelCall> Binding::bind(
+      Scope const &scope,
+      size_t *newSize,
+      unsigned prefixCount,
+      void * const *prefixes
+      ) const
     {
       if ( !m_prototype )
         throw Exception( "no prototype set" );

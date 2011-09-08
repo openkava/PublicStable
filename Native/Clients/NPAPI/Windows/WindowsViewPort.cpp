@@ -13,6 +13,7 @@
 #include <Fabric/Base/Exception.h>
 #include <Fabric/Clients/NPAPI/Context.h>
 #include <Fabric/Clients/NPAPI/Interface.h>
+#include <algorithm>
 
 #include <windowsx.h>
 #include <tchar.h>
@@ -258,11 +259,11 @@ namespace Fabric
         }
         catch ( Exception e )
         {
-          fprintf( stderr, "redrawEvent: exception thrown: %s\n", (const char*)e.getDesc() );
+          FABRIC_LOG( "redrawEvent: exception thrown: %s", (const char*)e.getDesc() );
         }
         catch ( ... )
         {
-          fprintf( stderr, "redrawEvent: unknown exception thrown\n" );
+          FABRIC_LOG( "redrawEvent: unknown exception thrown" );
         }
       }
       drawWatermark( m_windowWidth, m_windowHeight );
@@ -336,6 +337,45 @@ namespace Fabric
       FABRIC_ASSERT( wglMakeCurrentResult );
 
       m_wglStack.pop_back();
+    }
+
+    std::string WindowsViewPort::getPathFromSaveAsDialog( std::string const &defaultFilename, std::string const &extension )
+    {
+      OPENFILENAME options;
+      memset( &options, 0, sizeof(options) );
+      options.lStructSize = sizeof(options); 
+
+      options.hwndOwner = m_hWnd;
+
+      char fullPathBuff[1000];
+      options.nMaxFile = 1000;
+      size_t lenToCopy = std::min( defaultFilename.length(), (size_t)999 );
+      strncpy( fullPathBuff, defaultFilename.data(), lenToCopy );
+      fullPathBuff[lenToCopy] = 0;
+      options.lpstrFile = fullPathBuff;
+
+      options.Flags = OFN_OVERWRITEPROMPT | OFN_PATHMUSTEXIST;
+
+      if( !extension.empty() )
+      {
+        options.lpstrDefExt = extension.c_str();
+
+        char extFilter[100];
+        snprintf( extFilter, 100, "%s file\0*.%s\0\0", extension.c_str(), extension.c_str() );
+        options.lpstrFilter = extFilter;
+        options.nFilterIndex = 1;
+      }
+
+      bool success = GetSaveFileName(&options) != FALSE;
+
+      std::string fullPath( options.nMaxFile, ' ' );
+      for( size_t i = 0; i < options.nMaxFile; ++i )
+        fullPath[i] = (char)options.lpstrFile[i];
+
+      if( !success )
+        throw Exception( "Saving file " + fullPath + " failed or was canceled by user" );
+
+      return fullPath;
     }
   };
 };

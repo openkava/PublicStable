@@ -23,6 +23,7 @@ namespace Fabric
     FixedArrayAdapter::FixedArrayAdapter( RC::ConstHandle<Manager> const &manager, RC::ConstHandle<RT::FixedArrayDesc> const &fixedArrayDesc )
       : ArrayAdapter( manager, fixedArrayDesc, FL_PASS_BY_REFERENCE )
       , m_length( fixedArrayDesc->getNumMembers() )
+      , m_fixedArrayDesc( fixedArrayDesc )
       , m_memberAdapter( manager->getAdapter( fixedArrayDesc->getMemberDesc() ) )
     {
     }
@@ -133,6 +134,50 @@ namespace Fabric
           llvm::Value *srcMemberLValue = basicBlockBuilder->CreateGEP( srcMemberData, indexRValue );
           llvm::Value *srcMemberRValue = m_memberAdapter->llvmLValueToRValue( basicBlockBuilder, srcMemberLValue );
           m_memberAdapter->llvmAssign( basicBlockBuilder, dstMemberLValue, srcMemberRValue );
+          llvm::Value *newIndexRValue = basicBlockBuilder->CreateAdd( indexRValue, sizeAdapter->llvmConst( context, 1 ) );
+          basicBlockBuilder->CreateStore( newIndexRValue, indexLValue );
+          basicBlockBuilder->CreateBr( checkBB );
+          
+          basicBlockBuilder->SetInsertPoint( doneBB );
+          basicBlockBuilder->CreateRetVoid();
+        }
+      }
+      
+      {
+        std::vector< FunctionParam > params;
+        params.push_back( FunctionParam( "dstLValue", this, CG::USAGE_LVALUE ) );
+        params.push_back( FunctionParam( "srcRValue", this, CG::USAGE_RVALUE ) );
+        FunctionBuilder functionBuilder( moduleBuilder, "__"+getCodeName()+"__Store", ExprType(), params, false );
+        if ( buildFunctions )
+        {
+          BasicBlockBuilder basicBlockBuilder( functionBuilder );
+
+          llvm::Value *dstLValue = functionBuilder[0];
+          llvm::Value *srcRValue = functionBuilder[1];
+        
+          llvm::BasicBlock *entryBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "entry" );
+          llvm::BasicBlock *checkBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "check" );
+          llvm::BasicBlock *notDoneBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "notDone" );
+          llvm::BasicBlock *doneBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "done" );
+          
+          basicBlockBuilder->SetInsertPoint( entryBB );
+          llvm::Value *lengthRValue = sizeAdapter->llvmConst( context, m_length );
+          llvm::Value *indexLValue = sizeAdapter->llvmAlloca( basicBlockBuilder, "index" );
+          basicBlockBuilder->CreateStore( sizeAdapter->llvmConst( context, 0 ), indexLValue );
+          basicBlockBuilder->CreateBr( checkBB );
+          
+          basicBlockBuilder->SetInsertPoint( checkBB );
+          llvm::Value *indexRValue = basicBlockBuilder->CreateLoad( indexLValue );
+          basicBlockBuilder->CreateCondBr( basicBlockBuilder->CreateICmpULT( indexRValue, lengthRValue ), notDoneBB, doneBB );
+          
+          basicBlockBuilder->SetInsertPoint( notDoneBB );
+          indexRValue = basicBlockBuilder->CreateLoad( indexLValue );
+          llvm::Value *dstMemberData = basicBlockBuilder->CreateConstGEP2_32( dstLValue, 0, 0 );
+          llvm::Value *dstMemberLValue = basicBlockBuilder->CreateGEP( dstMemberData, indexRValue );
+          llvm::Value *srcMemberData = basicBlockBuilder->CreateConstGEP2_32( srcRValue, 0, 0 );
+          llvm::Value *srcMemberLValue = basicBlockBuilder->CreateGEP( srcMemberData, indexRValue );
+          llvm::Value *srcMemberRValue = m_memberAdapter->llvmLValueToRValue( basicBlockBuilder, srcMemberLValue );
+          m_memberAdapter->llvmStore( basicBlockBuilder, dstMemberLValue, srcMemberRValue );
           llvm::Value *newIndexRValue = basicBlockBuilder->CreateAdd( indexRValue, sizeAdapter->llvmConst( context, 1 ) );
           basicBlockBuilder->CreateStore( newIndexRValue, indexLValue );
           basicBlockBuilder->CreateBr( checkBB );
@@ -394,39 +439,6 @@ namespace Fabric
       return basicBlockBuilder->CreateCall2( functionBuilder.getLLVMFunction(), arrayLValue, indexRValue );
     }
     
-    void FixedArrayAdapter::llvmInit( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *lValue ) const
-    {
-      RC::Handle<Context> context = basicBlockBuilder.getContext();
-      
-      RC::ConstHandle<SizeAdapter> sizeAdapter = basicBlockBuilder.getManager()->getSizeAdapter();
-
-      llvm::BasicBlock *checkBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "check" );
-      llvm::BasicBlock *notDoneBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "notDone" );
-      llvm::BasicBlock *doneBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "done" );
-      
-      llvm::Value *indexLValue = sizeAdapter->llvmAlloca( basicBlockBuilder, "index" );
-      llvm::Value *lengthRValue = sizeAdapter->llvmConst( context, m_length );
-      basicBlockBuilder->CreateStore( sizeAdapter->llvmConst( context, 0 ), indexLValue );
-      basicBlockBuilder->CreateBr( checkBB );
-      
-      basicBlockBuilder->SetInsertPoint( checkBB );
-      llvm::Value *indexRValue = basicBlockBuilder->CreateLoad( indexLValue );
-      basicBlockBuilder->CreateCondBr( basicBlockBuilder->CreateICmpULT( indexRValue, lengthRValue ), notDoneBB, doneBB );
-      
-      basicBlockBuilder->SetInsertPoint( notDoneBB );
-      indexRValue = basicBlockBuilder->CreateLoad( indexLValue );
-      std::vector< llvm::Value * > gepIndices;
-      gepIndices.push_back( sizeAdapter->llvmConst( context, 0 ) );
-      gepIndices.push_back( indexRValue );
-      llvm::Value *memberLValue = basicBlockBuilder->CreateGEP( lValue, gepIndices.begin(), gepIndices.end() );
-      m_memberAdapter->llvmInit( basicBlockBuilder, memberLValue );
-      llvm::Value *newIndexRValue = basicBlockBuilder->CreateAdd( indexRValue, sizeAdapter->llvmConst( context, 1 ) );
-      basicBlockBuilder->CreateStore( newIndexRValue, indexLValue );
-      basicBlockBuilder->CreateBr( checkBB );
-      
-      basicBlockBuilder->SetInsertPoint( doneBB );
-    }
-    
     void FixedArrayAdapter::llvmRelease( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const
     {
       std::vector< FunctionParam > params;
@@ -450,6 +462,15 @@ namespace Fabric
       params.push_back( FunctionParam( "array", this, CG::USAGE_RVALUE ) );
       FunctionBuilder functionBuilder( basicBlockBuilder.getModuleBuilder(), "__"+getCodeName()+"__Retain", ExprType(), params, false );
       basicBlockBuilder->CreateCall( functionBuilder.getLLVMFunction(), rValue );
+    }
+    
+    void FixedArrayAdapter::llvmStore( BasicBlockBuilder &basicBlockBuilder, llvm::Value *dstLValue, llvm::Value *srcRValue ) const
+    {
+      std::vector< FunctionParam > params;
+      params.push_back( FunctionParam( "dstLValue", this, CG::USAGE_LVALUE ) );
+      params.push_back( FunctionParam( "srcRValue", this, CG::USAGE_RVALUE ) );
+      FunctionBuilder functionBuilder( basicBlockBuilder.getModuleBuilder(), "__"+getCodeName()+"__Store", ExprType(), params, false );
+      basicBlockBuilder->CreateCall2( functionBuilder.getLLVMFunction(), dstLValue, srcRValue );
     }
   };
 };

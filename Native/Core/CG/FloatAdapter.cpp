@@ -746,7 +746,26 @@ namespace Fabric
     
     llvm::Constant *FloatAdapter::llvmDefaultValue( BasicBlockBuilder &basicBlockBuilder ) const
     {
-      return llvm::ConstantFP::get( llvmRType( basicBlockBuilder.getContext() ), 0.0 );
+      switch ( m_floatDesc->getSize() )
+      {
+        case 4:
+        {
+          RC::ConstHandle<RT::FP32Impl> fp32Impl = RC::ConstHandle<RT::FP32Impl>::StaticCast( m_floatDesc->getImpl() );
+          return llvmConst( basicBlockBuilder.getContext(), fp32Impl->getValue( fp32Impl->getDefaultData() ) );
+        }
+        break;
+        
+        case 8:
+        {
+          RC::ConstHandle<RT::FP64Impl> fp64Impl = RC::ConstHandle<RT::FP64Impl>::StaticCast( m_floatDesc->getImpl() );
+          return llvmConst( basicBlockBuilder.getContext(), fp64Impl->getValue( fp64Impl->getDefaultData() ) );
+        }
+        break;
+        
+        default:
+          FABRIC_ASSERT( false );
+          return 0;
+      }
     }
     
     std::string FloatAdapter::toString( void const *data ) const

@@ -1,3 +1,7 @@
+/*
+ *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+ */
+ 
 #include "Desc.h"
 #include "Impl.h"
 #include "FixedArrayDesc.h"
