@@ -110,7 +110,8 @@ Alembic::Abc::IObject getObjectFromArchive(KL::Integer id, const std::string & i
 FABRIC_EXT_EXPORT void FabricALEMBICDecode(
   KL::Data objData,
   KL::Size objDataSize,
-  KL::Integer &archiveID
+  KL::Integer &archiveID,
+  KL::Integer &numSamples
   )
 {
   Alembic::Abc::IArchive * archive = getArchiveFromID(archiveID);
@@ -129,6 +130,38 @@ FABRIC_EXT_EXPORT void FabricALEMBICDecode(
       Alembic::AbcCoreHDF5::ReadArchive(),fileName.c_str());
 
     archiveID = addArchive(archive);
+    
+    // determine the number of samples
+    numSamples = 1;
+    std::vector<Alembic::Abc::IObject> iObjects;
+    iObjects.push_back(archive->getTop());
+    for(size_t i=0;i<iObjects.size();i++)
+    {
+      Alembic::Abc::IObject obj(iObjects[i],Alembic::Abc::kWrapExisting);
+
+      const Alembic::Abc::MetaData &md = obj.getMetaData();
+      KL::Integer numCurrent = 0;
+      if(Alembic::AbcGeom::IXform::matches(md))
+        numCurrent = Alembic::AbcGeom::IXform(obj,Alembic::Abc::kWrapExisting).getSchema().getNumSamples();
+      else if(Alembic::AbcGeom::IPolyMesh::matches(md))
+        numCurrent = Alembic::AbcGeom::IPolyMesh(obj,Alembic::Abc::kWrapExisting).getSchema().getNumSamples();
+      else if(Alembic::AbcGeom::ICurves::matches(md))
+        numCurrent = Alembic::AbcGeom::ICurves(obj,Alembic::Abc::kWrapExisting).getSchema().getNumSamples();
+      else if(Alembic::AbcGeom::INuPatch::matches(md))
+        numCurrent = Alembic::AbcGeom::INuPatch(obj,Alembic::Abc::kWrapExisting).getSchema().getNumSamples();
+      else if(Alembic::AbcGeom::IPoints::matches(md))
+        numCurrent = Alembic::AbcGeom::IPoints(obj,Alembic::Abc::kWrapExisting).getSchema().getNumSamples();
+      else if(Alembic::AbcGeom::ISubD::matches(md))
+        numCurrent = Alembic::AbcGeom::ISubD(obj,Alembic::Abc::kWrapExisting).getSchema().getNumSamples();
+      else if(Alembic::AbcGeom::ICamera::matches(md))
+        numCurrent = Alembic::AbcGeom::ICamera(obj,Alembic::Abc::kWrapExisting).getSchema().getNumSamples();
+
+      if(numCurrent > numSamples)
+        numSamples = numCurrent;
+
+      for(size_t j=0;j<obj.getNumChildren();j++)
+        iObjects.push_back(obj.getChild(j));
+    }
   }
 }
 
@@ -165,7 +198,6 @@ FABRIC_EXT_EXPORT void FabricALEMBICGetIdentifiers(
         if(Alembic::AbcGeom::IXformSchema::matches(md) ||
            Alembic::AbcGeom::IPolyMesh::matches(md)||
            Alembic::AbcGeom::ICurves::matches(md)||
-           Alembic::AbcGeom::IFaceSet::matches(md)||
            Alembic::AbcGeom::INuPatch::matches(md)||
            Alembic::AbcGeom::IPoints::matches(md)||
            Alembic::AbcGeom::ISubD::matches(md)||
@@ -190,8 +222,6 @@ FABRIC_EXT_EXPORT void FabricALEMBICGetIdentifiers(
         identifiers[offset] += "PolyMesh";
       else if(Alembic::AbcGeom::ICurves::matches(md))
         identifiers[offset] += "Curves";
-      else if(Alembic::AbcGeom::IFaceSet::matches(md))
-        identifiers[offset] += "FaceSet";
       else if(Alembic::AbcGeom::INuPatch::matches(md))
         identifiers[offset] += "NuPatch";
       else if(Alembic::AbcGeom::IPoints::matches(md))
