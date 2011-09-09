@@ -7,6 +7,9 @@ ILMBASE_VERSION := 1.0.2
 OPENEXR_VERSION := 1.7.0
 FFMPEG_VERSION := 0.6.3
 GTKGLEXT_VERSION := 1.2.0
+BOOST_VERSION := 1.47.0
+HDF5_VERSION := 1.8.7
+ALEMBIC_VERSION := 1.0_2011080800
 
 RSYNC := rsync
 
@@ -30,7 +33,8 @@ endif
 ifeq ($(BUILD_PLATFORM),Darwin)
   ARCHS=i386 x86_64
   FIRST_ARCH=i386
-endif 
+  SYS_SDK_ROOT=/Developer/SDKs/MacOSX10.6.sdk
+endif
 
 .PHONY: all build install clean check_env_vars \
   unpack_ilmbase patch_ilmbase configure_ilmbase build_ilmbase install_ilmbase clean_ilmbase \
@@ -42,6 +46,9 @@ endif
   unpack_zlib patch_zlib configure_zlib build_zlib install_zlib clean_zlib \
   unpack_libedit patch_libedit configure_libedit build_libedit install_libedit clean_libedit \
   unpack_gtkglext patch_gtkglext configure_gtkglext build_gtkglext install_gtkglext clean_gtkglext \
+  unpack_boost patch_boost configure_boost build_boost install_boost clean_boost \
+  unpack_hdf5 patch_hdf5 configure_hdf5 build_hdf5 install_hdf5 clean_hdf5 \
+  unpack_alembic patch_alembic configure_alembic build_alembic install_alembic clean_alembic \
   install_llvm_headers install_llvm_libraries
 
 all: build
@@ -318,6 +325,171 @@ Build/.gtkglext.unpack:
 	touch $@
 
 
+
+build_boost: Build/.boost.build
+
+configure_boost: Build/.boost.configure
+
+patch_boost: Build/.boost.patch
+
+unpack_boost: Build/.boost.unpack
+
+Build/.boost.build: Build/.boost.configure
+ifeq ($(BUILD_PLATFORM),Linux)
+	for ARCH in $(ARCHS); do \
+		if [ "$$ARCH" = "x86_64" ]; then \
+			BJAM_FLAGS="toolset=gcc architecture=x86 instruction-set=opteron address-model=64"; \
+		else \
+			BJAM_FLAGS="toolset=gcc architecture=x86 instruction-set=i686 address-model=32"; \
+		fi; \
+		( cd Build/boost-$(BOOST_VERSION)-$$ARCH && ./bjam -d+2 $$BJAM_FLAGS ); \
+	done
+else
+	for ARCH in $(ARCHS); do \
+		if [ "$$ARCH" = "x86_64" ]; then \
+			BJAM_FLAGS="toolset=darwin architecture=x86 address-model=64"; \
+		else \
+			BJAM_FLAGS="toolset=darwin architecture=x86 address-model=32"; \
+		fi; \
+		( cd Build/boost-$(BOOST_VERSION)-$$ARCH && ./bjam -d+2 $$BJAM_FLAGS link=static threading=multi variant=release ); \
+	done
+endif
+	touch $@
+
+Build/.boost.configure: Build/.boost.patch
+	for ARCH in $(ARCHS); do \
+		( cd Build/boost-$(BOOST_VERSION)-$$ARCH && ./bootstrap.sh --with-libraries=date_time,program_options,iostreams,thread ); \
+	done
+	touch $@
+
+Build/.boost.patch: Build/.boost.unpack
+	touch $@
+
+Build/.boost.unpack:
+	mkdir -p Build
+	for ARCH in $(ARCHS); do \
+		( cd Build && tar jxf ../SourcePackages/boost-$(BOOST_VERSION).tar.bz2 && mv boost-$(BOOST_VERSION) boost-$(BOOST_VERSION)-$$ARCH ); \
+	done
+	touch $@
+
+
+
+build_hdf5: Build/.hdf5.build
+
+configure_hdf5: Build/.hdf5.configure
+
+patch_hdf5: Build/.hdf5.patch
+
+unpack_hdf5: Build/.hdf5.unpack
+
+Build/.hdf5.build: Build/.hdf5.configure
+	for ARCH in $(ARCHS); do \
+		( cd Build/hdf5-$(HDF5_VERSION)-$$ARCH && make -j4 ); \
+	done
+	touch $@
+
+Build/.hdf5.configure: Build/.hdf5.patch
+	for ARCH in $(ARCHS); do \
+		if [ "$$ARCH" = "x86_64" ]; then \
+			HDF5_CFLAGS=-m64; \
+		else \
+			HDF5_CFLAGS=-m32; \
+		fi; \
+		( cd Build/hdf5-$(HDF5_VERSION)-$$ARCH && CFLAGS=$$HDF5_CFLAGS ./configure --enable-threadsafe --enable-static --disable-shared --with-pic --with-pthread ); \
+	done
+	touch $@
+
+Build/.hdf5.patch: Build/.hdf5.unpack
+	touch $@
+
+Build/.hdf5.unpack:
+	mkdir -p Build
+	for ARCH in $(ARCHS); do \
+		( cd Build && tar jxf ../SourcePackages/hdf5-$(HDF5_VERSION).tar.bz2 && mv hdf5-$(HDF5_VERSION) hdf5-$(HDF5_VERSION)-$$ARCH ); \
+	done
+	touch $@
+
+
+
+build_alembic: Build/.alembic.build
+
+configure_alembic: Build/.alembic.configure
+
+patch_alembic: Build/.alembic.patch
+
+unpack_alembic: Build/.alembic.unpack
+
+Build/.alembic.build: Build/.alembic.configure
+	for ARCH in $(ARCHS); do \
+		( cd Build/alembic-$(ALEMBIC_VERSION)-$$ARCH/alembic_build && make -j4 ); \
+	done
+	touch $@
+
+Build/.alembic.configure: Build/.alembic.patch
+ifeq ($(BUILD_PLATFORM),Linux)
+	for ARCH in $(ARCHS); do \
+		if [ "$$ARCH" = "x86_64" ]; then \
+			ALEMBIC_CFLAGS="-fPIC"; \
+			ALEMBIC_LDFLAGS=""; \
+		else \
+			ALEMBIC_CFLAGS="-fPIC -march=i686"; \
+			ALEMBIC_LDFLAGS="-march=i686"; \
+		fi; \
+		( cd Build/alembic-$(ALEMBIC_VERSION)-$$ARCH && \
+			CFLAGS="$$ALEMBIC_CFLAGS" CXXFLAGS="$$ALEMBIC_CFLAGS" LDFLAGS="$$ALEMBIC_LDFLAGS" python build/bootstrap/alembic_bootstrap.py \
+				--disable-prman \
+				--disable-arnold \
+				--disable-maya \
+				--hdf5_include_dir=$(TARGET_BASE)/include/hdf5/hdf5 \
+				--hdf5_hdf5_library=$(TARGET_BASE)/Linux/$$ARCH/Release/lib/hdf5/libhdf5.a \
+				--ilmbase_include_dir=$(TARGET_BASE)/include/ilmbase \
+				--ilmbase_imath_library=$(TARGET_BASE)/Linux/$$ARCH/Release/lib/ilmbase/libImath.a \
+				--boost_include_dir=$(TARGET_BASE)/include/boost \
+				--boost_thread_library=$(TARGET_BASE)/Linux/$$ARCH/Release/lib/boost/libboost_thread.a \
+				--zlib_include_dir=/usr/include \
+				--zlib_library=/usr/lib/libz.a \
+				alembic_build \
+		); \
+	done
+else
+	for ARCH in $(ARCHS); do \
+		if [ "$$ARCH" = "x86_64" ]; then \
+			ALEMBIC_CFLAGS="-fPIC -m64"; \
+			ALEMBIC_LDFLAGS="-m64"; \
+		else \
+			ALEMBIC_CFLAGS="-fPIC -m32"; \
+			ALEMBIC_LDFLAGS="-m32"; \
+		fi; \
+		( cd Build/alembic-$(ALEMBIC_VERSION)-$$ARCH && \
+			CFLAGS="$$ALEMBIC_CFLAGS" CXXFLAGS="$$ALEMBIC_CFLAGS" LDFLAGS="$$ALEMBIC_LDFLAGS" python build/bootstrap/alembic_bootstrap.py \
+				--disable-prman \
+				--disable-arnold \
+				--disable-maya \
+				--hdf5_include_dir=$(TARGET_BASE)/include/hdf5/hdf5 \
+				--hdf5_hdf5_library=$(TARGET_BASE)/Darwin/$$ARCH/Release/lib/hdf5/libhdf5.a \
+				--ilmbase_include_dir=$(TARGET_BASE)/include/ilmbase \
+				--ilmbase_imath_library=$(TARGET_BASE)/Darwin/$$ARCH/Release/lib/ilmbase/libImath.a \
+				--boost_include_dir=$(TARGET_BASE)/include/boost \
+				--boost_thread_library=$(TARGET_BASE)/Darwin/$$ARCH/Release/lib/boost/libboost_thread.a \
+				--zlib_include_dir=$(SYS_SDK_ROOT)/usr/include \
+				--zlib_library=$(SYS_SDK_ROOT)/usr/lib/libz.dylib \
+				alembic_build \
+		); \
+	done
+endif
+	touch $@
+
+Build/.alembic.patch: Build/.alembic.unpack
+	touch $@
+
+Build/.alembic.unpack:
+	mkdir -p Build
+	for ARCH in $(ARCHS); do \
+		( cd Build && tar jxf ../SourcePackages/alembic-$(ALEMBIC_VERSION).tar.bz2 && mv alembic-$(ALEMBIC_VERSION) alembic-$(ALEMBIC_VERSION)-$$ARCH ); \
+	done
+	touch $@
+
+
 build_libpng: build_zlib Build/.libpng.build
 
 configure_libpng: Build/.libpng.configure
@@ -482,7 +654,57 @@ install_v8_libraries:
 		mkdir -p $(TARGET_BASE)/lib/$(BUILD_PLATFORM)/$$ARCH/v8; \
 		cp Build/v8-$(V8_VERSION)-$$ARCH/libv8.a $(TARGET_BASE)/lib/$(BUILD_PLATFORM)/$$ARCH/v8/; \
 	done
+
+install_boost: install_boost_headers install_boost_libraries
+
+install_boost_headers:
+	mkdir -p include/boost/boost
+	$(RSYNC) --progress --recursive --delete --exclude='._*' Build/boost-$(BOOST_VERSION)-$(FIRST_ARCH)/boost/ $(TARGET_BASE)/include/boost/boost/
+
+install_boost_libraries:
+	for ARCH in $(ARCHS); do \
+		mkdir -p $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/lib/boost; \
+		cp Build/boost-$(BOOST_VERSION)-$$ARCH/stage/lib/*.a $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/lib/boost/; \
+	done
+
+
+install_hdf5: install_hdf5_headers install_hdf5_libraries
+
+install_hdf5_headers:
+	mkdir -p include/hdf5/hdf5
+	$(RSYNC) --progress --recursive --include='*/' --exclude '*private.h' --exclude 'H5config.h' --exclude 'H5pubconf.h' --include='*.h' --exclude='*' Build/hdf5-$(HDF5_VERSION)-$(FIRST_ARCH)/src/ $(TARGET_BASE)/include/hdf5/hdf5/
+	$(RSYNC) --progress --recursive --include='*/' --exclude '*private.h' --include='*.h' --exclude='*' Build/hdf5-$(HDF5_VERSION)-$(FIRST_ARCH)/hl/src/ $(TARGET_BASE)/include/hdf5/hdf5/
+	for ARCH in $(ARCHS); do \
+          mkdir -p $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/include/hdf5/hdf5/; \
+          $(RSYNC) --progress --recursive --include='*/' --include='H5config.h' --include 'H5pubconf.h' --exclude='*' Build/hdf5-$(HDF5_VERSION)-$(FIRST_ARCH)/src/ $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/include/hdf5/hdf5/; \
+        done
+
+install_hdf5_libraries:
+	for ARCH in $(ARCHS); do \
+		mkdir -p $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/lib/hdf5; \
+		cp Build/hdf5-$(HDF5_VERSION)-$$ARCH/src/.libs/lib*.a $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/lib/hdf5/; \
+		cp Build/hdf5-$(HDF5_VERSION)-$$ARCH/hl/src/.libs/lib*.a $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/lib/hdf5/; \
+	done
 	
+
+
+install_alembic: install_alembic_headers install_alembic_libraries
+
+install_alembic_headers:
+	mkdir -p include/alembic
+	$(RSYNC) --progress --recursive --include='*/' --exclude '*private.h' --include='*.h' --exclude='*' Build/alembic-$(ALEMBIC_VERSION)-$(FIRST_ARCH)/lib/Alembic $(TARGET_BASE)/include/alembic/
+
+install_alembic_libraries:
+	for ARCH in $(ARCHS); do \
+		mkdir -p $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/lib/alembic; \
+		cp Build/alembic-$(ALEMBIC_VERSION)-$$ARCH/alembic_build/lib/Alembic/Abc/lib*.a $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/lib/alembic/; \
+		cp Build/alembic-$(ALEMBIC_VERSION)-$$ARCH/alembic_build/lib/Alembic/AbcCoreAbstract/lib*.a $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/lib/alembic/; \
+		cp Build/alembic-$(ALEMBIC_VERSION)-$$ARCH/alembic_build/lib/Alembic/AbcCoreHDF5/lib*.a $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/lib/alembic/; \
+		cp Build/alembic-$(ALEMBIC_VERSION)-$$ARCH/alembic_build/lib/Alembic/AbcGeom/lib*.a $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/lib/alembic/; \
+		cp Build/alembic-$(ALEMBIC_VERSION)-$$ARCH/alembic_build/lib/Alembic/Util/lib*.a $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/lib/alembic/; \
+	done
+	
+
 install_libpng: install_zlib
 	for ARCH in $(ARCHS); do \
 		mkdir -p $(TARGET_BASE)/lib/$(BUILD_PLATFORM)/$$ARCH/Release/libpng && cp Build/libpng-$(PNG_VERSION)-$$ARCH/.libs/libpng14.a $(TARGET_BASE)/lib/$(BUILD_PLATFORM)/$$ARCH/Release/libpng/; \
@@ -538,7 +760,7 @@ ifeq ($(BUILD_PLATFORM),"mingw")
 	cp Build/zlib-$(ZLIB_VERSION)-$(FIRST_ARCH)/zlib.h $(TARGET_BASE)/include/zlib/zlib/
 endif
 
-clean: clean_ilmbase clean_openexr clean_llvm clean_libpng clean_ffmpeg clean_v8 clean_libedit clean_gtkglext
+clean: clean_ilmbase clean_openexr clean_llvm clean_libpng clean_ffmpeg clean_v8 clean_libedit clean_gtkglext clean_boost clean_hdf5 clean_alembic
 	rm -rf Build
 
 clean_ilmbase:
@@ -588,6 +810,24 @@ clean_gtkglext:
 		rm -rf Build/gtkglext-$(GTKGLEXT_VERSION)-$$ARCH; \
 	done
 	rm -rf Build/.gtkglext.*
+
+clean_boost:
+	for ARCH in $(ARCHS); do \
+		rm -rf Build/boost-$(BOOST_VERSION)-$$ARCH; \
+	done
+	rm -rf Build/.boost.*
+
+clean_hdf5:
+	for ARCH in $(ARCHS); do \
+		rm -rf Build/hdf5-$(HDF5_VERSION)-$$ARCH; \
+	done
+	rm -rf Build/.hdf5.*
+
+clean_alembic:
+	for ARCH in $(ARCHS); do \
+		rm -rf Build/alembic-$(ALEMBIC_VERSION)-$$ARCH; \
+	done
+	rm -rf Build/.alembic.*
 
 clean_zlib:
 ifeq ($(PLATFORM),"mingw")
