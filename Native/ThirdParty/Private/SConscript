@@ -159,11 +159,11 @@ alembicLibs.extend(archLibs( 'alembic', ['AlembicAbcCoreHDF5', 'AlembicAbcCoreAb
 alembicLibs.extend(archLibs( 'hdf5', ['hdf5_hl', 'hdf5'] ))
 alembicLibs.extend(archLibs( 'ilmbase', ['Iex', 'Imath', 'Half', 'IlmThread'] ))
 alembicFlags = {
-    'CPPDEFINES': [ ],
     'CPPPATH': [
       os.path.join( includeBaseDir, 'zlib' ),
       os.path.join( includeBaseDir, 'ilmbase' ),
       os.path.join( includeBaseDir, 'hdf5' ),
+      os.path.join( osArchIncludeBaseDir, 'hdf5' ),
       os.path.join( includeBaseDir, 'boost' ),
       os.path.join( includeBaseDir, 'alembic' )
     ],

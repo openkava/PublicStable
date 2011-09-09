@@ -230,7 +230,7 @@ FABRIC_EXT_EXPORT void FabricALEMBICParseXform(
     Alembic::AbcGeom::IXformSchema schema = obj.getSchema();
     if(sample < 0)
       sample = 0;
-    else if(sample >= schema.getNumSamples())
+    else if(sample >= KL::Integer(schema.getNumSamples()))
       sample = schema.getNumSamples()-1;
       
     // get the sample
@@ -268,7 +268,7 @@ FABRIC_EXT_EXPORT void FabricALEMBICParseCamera(
     Alembic::AbcGeom::ICameraSchema schema = obj.getSchema();
     if(sample < 0)
       sample = 0;
-    else if(sample >= schema.getNumSamples())
+    else if(sample >= KL::Integer(schema.getNumSamples()))
       sample = schema.getNumSamples()-1;
       
     // get the sample
@@ -419,7 +419,7 @@ FABRIC_EXT_EXPORT void FabricALEMBICParsePolyMeshAttributes(
     Alembic::AbcGeom::IPolyMeshSchema schema = obj.getSchema();
     if(sampleIndex < 0)
       sampleIndex = 0;
-    else if(sampleIndex >= schema.getNumSamples())
+    else if(sampleIndex >= KL::Integer(schema.getNumSamples()))
       sampleIndex = schema.getNumSamples()-1;
       
     // get the sample
