@@ -117,7 +117,18 @@ FABRIC_EXT_EXPORT void FabricALEMBICDecode(
   Alembic::Abc::IArchive * archive = getArchiveFromID(archiveID);
   if( archive == NULL )
   {
+#if defined(FABRIC_OS_WINDOWS)
+    char const *dir = getenv("APPDATA");
+    if(dir == NULL)
+      dir = getenv("TEMP");
+    if(dir == NULL)
+      dir = getenv("TMP");
+    if(dir == NULL)
+      throw Fabric::EDK::Exception("Alembic extension: environment variable APP_DATA or TMP or TEMP is undefined");
+    std::string fileName( _tempnam( dir, "tmpfab_" ) );
+#else
     std::string fileName(tmpnam(NULL));
+#endif
       
     // save the file to disk
     FILE * file = fopen(fileName.c_str(),"wb");
