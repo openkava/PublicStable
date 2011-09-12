@@ -161,7 +161,10 @@ namespace Fabric
           src.push_back( "DG" );
           src.push_back( getName() );
 
-          getContext()->jsonNotify( src, "resourceLoaded", RC::ConstHandle<JSON::Value>() );
+          if( errorDesc )
+            getContext()->jsonNotify( src, "resourceLoadFailure", RC::ConstHandle<JSON::Value>() );
+          else
+            getContext()->jsonNotify( src, "resourceLoadSuccess", RC::ConstHandle<JSON::Value>() );
         }
       }
     }
