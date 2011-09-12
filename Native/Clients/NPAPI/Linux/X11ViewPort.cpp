@@ -51,6 +51,8 @@ namespace Fabric
     {
       if ( m_drawingArea )
       {
+        DG::Context::NotificationBracket notificationBracket( getInterface()->getContext() );
+
         GdkGLDrawable *gdkGLDrawable = gtk_widget_get_gl_drawable( m_drawingArea );
         FABRIC_ASSERT( gdkGLDrawable );
         GdkGLContext *gdkGLContext = gtk_widget_get_gl_context( m_drawingArea );
