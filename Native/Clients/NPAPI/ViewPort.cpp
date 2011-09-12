@@ -28,7 +28,8 @@ namespace Fabric
       : m_npp( interface->getNPP() )
       , m_name( "viewPort" )
       , m_interface( interface.ptr() )
-      , m_logCollector( interface->getContext()->getLogCollector() )
+      , m_context( interface->getContext() )
+      , m_logCollector( m_context->getLogCollector() )
       , m_redrawFinishedCallback( 0 )
       , m_fpsCount( 0 )
       , m_fps( 0.0 )
@@ -40,15 +41,14 @@ namespace Fabric
       , m_watermarkLastWidth( 0 )
       , m_watermarkLastHeight( 0 )
     {
-      RC::Handle<DG::Context> context = interface->getContext();
-      RC::Handle<RT::Manager> rtManager = context->getRTManager();
+      RC::Handle<RT::Manager> rtManager = m_context->getRTManager();
       m_integerDesc = rtManager->getIntegerDesc();
       
-      m_windowNode = DG::Node::Create( "FABRIC.window", context );
+      m_windowNode = DG::Node::Create( "FABRIC.window", m_context );
       m_windowNode->addMember( "width", m_integerDesc, m_integerDesc->getDefaultData() );
       m_windowNode->addMember( "height", m_integerDesc, m_integerDesc->getDefaultData() );
        
-      m_redrawEvent = DG::Event::Create( "FABRIC.window.redraw", context );
+      m_redrawEvent = DG::Event::Create( "FABRIC.window.redraw", m_context );
 
 #if defined(FABRIC_OS_WINDOWS)
       LARGE_INTEGER fpsTimerFreq;
@@ -59,12 +59,12 @@ namespace Fabric
       gettimeofday( &m_fpsStart, NULL );
 #endif
 
-      m_interface->getContext()->registerViewPort( m_name, this );
+      m_context->registerViewPort( m_name, this );
     }
     
     ViewPort::~ViewPort()
     {
-      m_interface->getContext()->unregisterViewPort( m_name, this );
+      m_context->unregisterViewPort( m_name, this );
 
       if ( m_redrawFinishedCallback )
         NPN_ReleaseObject( m_redrawFinishedCallback );
@@ -76,7 +76,7 @@ namespace Fabric
       src.push_back("VP");
       src.push_back("viewPort");
       
-      m_interface->getContext()->jsonNotify( src, cmd, arg );
+      m_context->jsonNotify( src, cmd, arg );
     }
     
     void ViewPort::asyncRedrawFinished()
@@ -128,7 +128,15 @@ namespace Fabric
       
       m_logCollector->flush();
 
+      retain();
       NPN_PluginThreadAsyncCall( m_npp, &ViewPort::AsyncRedrawFinished, this );
+    }
+    
+    void ViewPort::AsyncRedrawFinished( void *_this )
+    {
+      ViewPort *viewPort = static_cast<ViewPort *>(_this);
+      viewPort->asyncRedrawFinished();
+      viewPort->release();
     }
     
     void ViewPort::setRedrawFinishedCallback( NPObject *npObject )
