@@ -96,15 +96,12 @@ namespace Fabric
 
     protected:
     
-      ViewPort( RC::ConstHandle<Interface> const &interface, uint32_t timerInterval = 0 );
+      ViewPort( RC::ConstHandle<Interface> const &interface );
       ~ViewPort();
       
       RC::ConstHandle<Interface> getInterface() const;
       
       virtual void didResize( size_t width, size_t height ); 
-
-      virtual void timerFired();
-      static void TimerFiredCallback( NPP npp, uint32_t timer );
     
       virtual void asyncRedrawFinished();
 
@@ -130,10 +127,6 @@ namespace Fabric
       std::string m_name;
       Interface const *m_interface;
       
-      typedef Util::UnorderedMap< NPP, Util::UnorderedMap< uint32_t, ViewPort *> > Timers;
-      uint32_t m_timer;
-      static Timers s_timers;
-
       RC::Handle<MT::LogCollector> m_logCollector;
       
       RC::ConstHandle<RT::IntegerDesc> m_integerDesc;
