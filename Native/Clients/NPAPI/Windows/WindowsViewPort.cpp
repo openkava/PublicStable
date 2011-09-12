@@ -192,6 +192,7 @@ namespace Fabric
 
     LRESULT WindowsViewPort::processMessage( UINT message, WPARAM wParam, LPARAM lParam )
     {
+      DG::Context::NotificationBracket notificationBracket( getInterface()->getContext() );
       switch( message )
       {
       case WM_PAINT:
