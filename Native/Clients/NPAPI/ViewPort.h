@@ -52,6 +52,7 @@ namespace Fabric
   
   namespace NPAPI
   {
+    class Context;
     class Interface;
     
     class ViewPort : public RC::Object
@@ -118,14 +119,12 @@ namespace Fabric
     
       RC::Handle<JSON::Value> jsonExecGetFPS() const;
 
-      static void AsyncRedrawFinished( void *_this )
-      {
-        static_cast<ViewPort *>(_this)->asyncRedrawFinished();
-      }
-    
+      static void AsyncRedrawFinished( void *_this );
+          
       NPP m_npp;
       std::string m_name;
       Interface const *m_interface;
+      RC::Handle<Context> m_context;
       
       RC::Handle<MT::LogCollector> m_logCollector;
       
