@@ -24,7 +24,7 @@ namespace Fabric
 {
   namespace NPAPI
   {
-    ViewPort::ViewPort( RC::ConstHandle<Interface> const &interface, uint32_t timerInterval )
+    ViewPort::ViewPort( RC::ConstHandle<Interface> const &interface )
       : m_npp( interface->getNPP() )
       , m_name( "viewPort" )
       , m_interface( interface.ptr() )
@@ -40,13 +40,6 @@ namespace Fabric
       , m_watermarkLastWidth( 0 )
       , m_watermarkLastHeight( 0 )
     {
-      if ( timerInterval )
-      {
-        m_timer = NPN_ScheduleTimer( m_npp, timerInterval, true, &ViewPort::TimerFiredCallback );
-        s_timers[m_npp].insert( Util::UnorderedMap< uint32_t, ViewPort *>::value_type( m_timer, this ) );
-      }
-      else m_timer = 0;
-
       RC::Handle<DG::Context> context = interface->getContext();
       RC::Handle<RT::Manager> rtManager = context->getRTManager();
       m_integerDesc = rtManager->getIntegerDesc();
@@ -58,7 +51,7 @@ namespace Fabric
       m_redrawEvent = DG::Event::Create( "FABRIC.window.redraw", context );
 
 #if defined(FABRIC_OS_WINDOWS)
-      LARGE_INTEGER      fpsTimerFreq;
+      LARGE_INTEGER fpsTimerFreq;
       ::QueryPerformanceFrequency( &fpsTimerFreq );
       m_fpsTimerFreq = double( fpsTimerFreq.QuadPart );
       ::QueryPerformanceCounter( &m_fpsStart );
@@ -89,19 +82,6 @@ namespace Fabric
     void ViewPort::asyncRedrawFinished()
     {
       jsonNotify( "redrawFinished", 0 );
-    }
-    
-    void ViewPort::timerFired()
-    {
-    }
-    
-    void ViewPort::TimerFiredCallback( NPP npp, uint32_t timer )
-    {
-      Util::UnorderedMap< uint32_t, ViewPort *> &timers = s_timers[npp];
-      Util::UnorderedMap< uint32_t, ViewPort *>::iterator it = timers.find( timer );
-      FABRIC_ASSERT( it != timers.end() );
-      FABRIC_ASSERT( it->second->m_npp == npp );
-      it->second->timerFired();
     }
 
     RC::Handle<MT::LogCollector> ViewPort::getLogCollector() const
@@ -186,19 +166,8 @@ namespace Fabric
 
     NPError ViewPort::nppDestroy( NPSavedData** save )
     {
-      if ( m_timer )
-      {
-        Util::UnorderedMap< uint32_t, ViewPort *> &timers = s_timers[m_npp];
-        Util::UnorderedMap< uint32_t, ViewPort *>::iterator it = timers.find( m_timer );
-        FABRIC_ASSERT( it != timers.end() );
-        timers.erase( it );
-        NPN_UnscheduleTimer( m_npp, m_timer );
-      }
-      
       return NPERR_NO_ERROR;
     }
-
-    ViewPort::Timers ViewPort::s_timers;
 
     RC::Handle<DG::Node> ViewPort::getWindowNode() const
     {
