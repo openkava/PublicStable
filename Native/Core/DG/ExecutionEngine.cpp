@@ -76,7 +76,7 @@ namespace Fabric
     }
     
     ExecutionEngine::ExecutionEngine( RC::ConstHandle<Context> const &context, RC::Handle<CG::Context> const &cgContext, llvm::Module *llvmModule )
-      : m_context( context.ptr() )
+      : m_contextWeakRef( context )
       , m_cgContext( cgContext )
     {
       std::string errStr;
@@ -94,13 +94,17 @@ namespace Fabric
       // Make sure we don't search loaded libraries for missing symbols. 
       // Only symbols *we* provide should be available as calling functions.
       m_llvmExecutionEngine->DisableSymbolSearching();
-      m_context->getCGManager()->llvmAddGlobalMappingsToExecutionEngine( m_llvmExecutionEngine.get(), *llvmModule );
+      context->getCGManager()->llvmAddGlobalMappingsToExecutionEngine( m_llvmExecutionEngine.get(), *llvmModule );
     }
     
     ExecutionEngine::GenericFunctionPtr ExecutionEngine::getFunctionByName( std::string const &functionName ) const
     {
+      RC::ConstHandle<Context> context = m_contextWeakRef.makeStrong();
+      if ( !context )
+        return 0;
+      ContextSetter contextSetter( context );
+      
       GenericFunctionPtr result = 0;
-      ContextSetter contextSetter( m_context );
       llvm::Function *llvmFunction = m_llvmExecutionEngine->FindFunctionNamed( functionName.c_str() );
       if ( llvmFunction )
         result = GenericFunctionPtr( m_llvmExecutionEngine->getPointerToFunction( llvmFunction ) );

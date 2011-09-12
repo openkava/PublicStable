@@ -60,7 +60,7 @@ namespace Fabric
     }
 
     Code::Code( RC::ConstHandle<Context> const &context, std::string const &sourceCode )
-      : m_context( context.ptr() )
+      : m_contextWeakRef( context )
       , m_mutex( "DG::Code" )
       , m_sourceCode( sourceCode )
       , m_registeredFunctionSetMutex( "DG::Code::m_registeredFunctionSet" )
@@ -90,6 +90,10 @@ namespace Fabric
     
     void Code::compileAST( bool optimize )
     {
+      RC::ConstHandle<Context> context = m_contextWeakRef.makeStrong();
+      if ( !context )
+        return;
+        
       MT::Mutex::Lock mutexLock( m_mutex );
 
       FABRIC_ASSERT( m_ast );
@@ -109,7 +113,7 @@ namespace Fabric
           if ( !useAST )
           {
             RC::ConstHandle<RC::Object> typeAST;
-            if ( m_context->getRTManager()->maybeGetASTForType( name, typeAST ) )
+            if ( context->getRTManager()->maybeGetASTForType( name, typeAST ) )
               useAST = typeAST? RC::ConstHandle<AST::GlobalList>::StaticCast( typeAST ): AST::GlobalList::Create();
           }
             
@@ -126,11 +130,11 @@ namespace Fabric
 
       if ( !m_diagnostics.containsError() )
       {
-        RC::Handle<CG::Manager> cgManager = m_context->getCGManager();
+        RC::Handle<CG::Manager> cgManager = context->getCGManager();
         RC::Handle<CG::Context> cgContext = CG::Context::Create();
         llvm::OwningPtr<llvm::Module> module( new llvm::Module( "DG::Code", cgContext->getLLVMContext() ) );
         CG::ModuleBuilder moduleBuilder( cgManager, cgContext, module.get() );
-        OCL::llvmPrepareModule( moduleBuilder, m_context->getRTManager() );
+        OCL::llvmPrepareModule( moduleBuilder, context->getRTManager() );
 
         CG::Diagnostics optimizeDiagnostics;
         CG::Diagnostics &diagnostics = (false && optimize)? optimizeDiagnostics: m_diagnostics;
@@ -142,7 +146,7 @@ namespace Fabric
         std::string ir = IRCache::Instance()->get( irCacheKeyForAST );
         if ( ir.length() > 0 )
         {
-          RC::Handle<CG::Manager> cgManager = m_context->getCGManager();
+          RC::Handle<CG::Manager> cgManager = context->getCGManager();
           
           llvm::SMDiagnostic error;
           llvm::ParseAssemblyString( ir.c_str(), module.get(), error, cgContext->getLLVMContext() );
@@ -204,9 +208,13 @@ namespace Fabric
     
     void Code::linkModule( RC::Handle<CG::Context> const &cgContext, llvm::OwningPtr<llvm::Module> &module, bool optimize )
     {
+      RC::ConstHandle<Context> context = m_contextWeakRef.makeStrong();
+      if ( !context )
+        return;
+        
       MT::Mutex::Lock mutexLock( m_mutex );
 
-      RC::ConstHandle<ExecutionEngine> executionEngine = ExecutionEngine::Create( m_context, cgContext, module.take() );
+      RC::ConstHandle<ExecutionEngine> executionEngine = ExecutionEngine::Create( context, cgContext, module.take() );
       
       {
         MT::Mutex::Lock lock( m_registeredFunctionSetMutex );
