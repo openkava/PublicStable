@@ -42,18 +42,10 @@
 #include <llvm/PassManager.h>
 #include <llvm/Support/StandardPasses.h>
 
-// [pzion 20110307] Include this last because it does lots of
-// #defines on Linux that mess up llvm
-// #include <Fabric/Core/OGL/OGL.h>
-
 namespace Fabric
 {
-  
-
   namespace DG
   {
-    static MT::Mutex s_globalCompileLock( "Global Compile Lock" );
-  
     RC::ConstHandle<Code> Code::Create( RC::ConstHandle<Context> const &context, std::string const &sourceCode )
     {
       return new Code( context, sourceCode );
