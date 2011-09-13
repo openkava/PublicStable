@@ -273,6 +273,13 @@ namespace Fabric
     NPError Interface::nppDestroy( NPP npp, NPSavedData** save )
     {
       FABRIC_ASSERT( npp == m_npp );
+
+      if ( m_callbackNPObject )
+      {
+        NPN_ReleaseObject( m_callbackNPObject );
+        m_callbackNPObject = 0;
+      }
+
       if ( m_viewPort )
         return m_viewPort->nppDestroy( save );
       else 
