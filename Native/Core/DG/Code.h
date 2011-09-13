@@ -8,6 +8,7 @@
 #include <Fabric/Base/RC/Object.h>
 #include <Fabric/Base/RC/Handle.h>
 #include <Fabric/Base/RC/ConstHandle.h>
+#include <Fabric/Base/RC/WeakConstHandle.h>
 #include <Fabric/Core/CG/Diagnostics.h>
 #include <Fabric/Core/MT/Mutex.h>
 
@@ -82,7 +83,7 @@ namespace Fabric
         code->release();
       }
     
-      Context const *m_context;
+      RC::WeakConstHandle<Context> m_contextWeakRef;
       MT::Mutex m_mutex;
       std::string m_sourceCode;
 #if defined(FABRIC_BUILD_DEBUG)
