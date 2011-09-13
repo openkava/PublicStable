@@ -63,7 +63,7 @@ bool skipSpaces( std::istream& stream )
   return c != 0;
 }
 
-bool skipExpectedString( std::istream& stream, const char* str )
+void skipExpectedString( std::istream& stream, const char* str )
 {
   while( true )
   {
@@ -247,7 +247,7 @@ int ObjParser::ParseS( std::istream& stream )
 void ObjParser::ComputeMissingNormals()
 {
   //Quick check if any normal is missing
-  size_t i, j, k;
+  size_t i, j;
   for( i = 0; i < m_triangleIndices.size(); ++i )
   {
     if( m_sharedPointIndices[ m_triangleIndices[i] ].m_normal == INT_MAX )
@@ -347,7 +347,7 @@ void ObjParser::ComputeMissingNormals()
             int prevNormalIndex = m_sharedPointIndices[ faceSharedPointIndex ].m_normal;
             if( prevNormalIndex != INT_MAX )
             {
-              if( prevNormalIndex < nbOriginalNormals )//Don't overwrite originally specified normals even if in a smoothing group
+              if( prevNormalIndex < int(nbOriginalNormals) )//Don't overwrite originally specified normals even if in a smoothing group
                 keepOriginalNormal = true;
               else if( prevNormalIndex != normalIndex )//We need to split the point indices in order to preserve the existing normal
               {
