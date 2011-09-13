@@ -3,7 +3,7 @@ use Vec3;
 use Quat;
 use Xfo;
 
-function FabricALEMBICDecode( Data objData, Size objDataSize, io Integer archiveID );
+function FabricALEMBICDecode( Data objData, Size objDataSize, io Integer archiveID, io Integer numSamples );
 function FabricALEMBICFreeData( io Integer archiveID );
 function FabricALEMBICGetIdentifiers( Integer archiveID, io String identifiers[] );
 function FabricALEMBICParseXform( Integer archiveID, io String identifier, io Integer sample, io Xfo transform );
