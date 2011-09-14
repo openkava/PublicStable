@@ -24,6 +24,7 @@ namespace Fabric
     }
 
     IdleTaskQueue::IdleTaskQueue()
+      : m_terminated( false )
     {
 #if defined(FABRIC_MT_IDLE_TASK_QUEUE_GCD)
       m_dispatchQueue = dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, NULL );
@@ -64,6 +65,15 @@ namespace Fabric
     
     IdleTaskQueue::~IdleTaskQueue()
     {
+      terminate();
+    }
+    
+    void IdleTaskQueue::terminate()
+    {
+      if ( m_terminated )
+        return;
+      m_terminated = true;
+      
       wait();
 
 #if defined(FABRIC_MT_IDLE_TASK_QUEUE_GCD)

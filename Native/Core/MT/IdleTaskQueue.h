@@ -45,6 +45,8 @@ namespace Fabric
       void submit( Callback callback, void *userdata );
       void wait() const;
       
+      void terminate();
+      
     protected:
     
       IdleTaskQueue();
@@ -102,6 +104,8 @@ namespace Fabric
 #else
 # error "Unsupported platform"
 #endif
+
+      bool m_terminated;
     };
   };
 };
