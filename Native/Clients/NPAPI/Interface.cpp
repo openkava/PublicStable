@@ -27,7 +27,7 @@ namespace Fabric
       NPInterfaceObject()
         : m_jsonExecNPIdentifier( NPN_GetStringIdentifier( "jsonExec" ) )
         , m_setJSONNotifyCallbackNPIdentifier( NPN_GetStringIdentifier( "setJSONNotifyCallback" ) )
-        , m_wrapFabricClientJSSourceNPIdentifier( NPN_GetStringIdentifier( "wrapFabricClientJSSource" ) )
+        , m_wrapFabricClientNPIdentifier( NPN_GetStringIdentifier( "wrapFabricClient" ) )
       {
       }
       
@@ -65,7 +65,8 @@ namespace Fabric
       bool npHasMethod( NPIdentifier identifier ) const
       {
         return identifier == m_jsonExecNPIdentifier
-          || identifier == m_setJSONNotifyCallbackNPIdentifier;
+          || identifier == m_setJSONNotifyCallbackNPIdentifier
+          || identifier == m_wrapFabricClientNPIdentifier;
       }
       
       static bool NPHasMethod( NPObject *npObject, NPIdentifier identifier )
@@ -126,6 +127,48 @@ namespace Fabric
           }
           return true;
         }
+        else if ( identifier == m_wrapFabricClientNPIdentifier )
+        {
+          try
+          {
+            NPP npp = m_interface->getNPP();
+            
+            NPObject* windowObject = NULL;
+            NPError err = NPN_GetValue( npp, NPNVWindowNPObject, &windowObject );
+            if ( err != NPERR_NO_ERROR )
+              throw Exception( "NPN_GetValue( NPNVWindowNPObject ) failed" );
+
+            std::string const &wrapFabricClientJSSource = DG::Context::GetWrapFabricClientJSSource();
+            
+            NPString npString;
+            npString.UTF8Length = wrapFabricClientJSSource.length();
+            //npString.UTUTF8Characters = static_cast<NPUTF8 *>( NPN_MemAlloc( npString.UTF8Length + 1 ) );
+            //memcpy( data, wrapFabricClientJSSource.c_str(), length+1 );
+            npString.UTF8Characters = wrapFabricClientJSSource.data();
+            
+            NPVariant wrapFabricClientNPVariant;
+            if ( !NPN_Evaluate( npp, windowObject, &npString, &wrapFabricClientNPVariant ) )
+              throw Exception( "NPN_Evaluate() failed" );
+            NPN_ReleaseObject( windowObject );
+            
+            if ( !NPVARIANT_IS_OBJECT(wrapFabricClientNPVariant) )
+              throw Exception( "result of NPN_Evalute() is not an object" );
+            NPObject *wrapFabricClientNPObject = NPVARIANT_TO_OBJECT(wrapFabricClientNPVariant);
+            
+            if ( !NPN_InvokeDefault( npp, wrapFabricClientNPObject, args, argCount, result ) )
+              throw Exception( "invocation of wrapFabricClient failed" );
+            NPN_ReleaseObject( wrapFabricClientNPObject );
+          }
+          catch ( Exception e )
+          {
+            NPN_SetException( this, (const char*)e.getDesc() );
+          }
+          catch ( ... )
+          {
+            NPN_SetException( this, "generic exception" );
+          }
+          return true;
+        }
         else return false;
       }
       
@@ -152,9 +195,7 @@ namespace Fabric
       
       bool npHasProperty( NPIdentifier identifier ) const
       {
-        if ( identifier == m_wrapFabricClientJSSourceNPIdentifier )
-          return true;
-        else return false;
+        return false;
       }
       
       static bool NPHasProperty( NPObject *npObject, NPIdentifier identifier )
@@ -164,28 +205,7 @@ namespace Fabric
 
       bool npGetProperty( NPIdentifier identifier, NPVariant *result )
       {
-        if ( identifier == m_wrapFabricClientJSSourceNPIdentifier )
-        {
-          try
-          {
-            std::string const &wrapFabricClientJSSource = DG::Context::GetWrapFabricClientJSSource();
-            
-            size_t length = wrapFabricClientJSSource.length();
-            NPUTF8 *data = static_cast<NPUTF8 *>( NPN_MemAlloc( length + 1 ) );
-            memcpy( data, wrapFabricClientJSSource.c_str(), length+1 );
-            STRINGN_TO_NPVARIANT( data, length, *result );
-          }
-          catch ( Exception e )
-          {
-            NPN_SetException( this, (const char*)e.getDesc() );
-          }
-          catch ( ... )
-          {
-            NPN_SetException( this, "generic exception" );
-          }
-          return true;
-        }
-        else return false;
+        return false;
       }
 
       static bool NPGetProperty( NPObject *npObject, NPIdentifier identifier, NPVariant *result )
@@ -228,7 +248,7 @@ namespace Fabric
       
       NPIdentifier m_jsonExecNPIdentifier;
       NPIdentifier m_setJSONNotifyCallbackNPIdentifier;
-      NPIdentifier m_wrapFabricClientJSSourceNPIdentifier;
+      NPIdentifier m_wrapFabricClientNPIdentifier;
       
       static NPClass s_npClass;
     };
