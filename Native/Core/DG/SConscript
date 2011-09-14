@@ -4,15 +4,6 @@
 
 Import( 'coreEnv', 'yajlFlags', 'licensesFlags' )
 
-quoteCString = coreEnv.File('quote-c-string.sed')
-wrappersINC = coreEnv.Command(
-  'FABRIC.Wrappers.js.inc',
-  ['FABRIC.Wrappers.js',quoteCString],
-  [[ 'sed', '-f', quoteCString.path, '$SOURCE', '>$TARGET' ]]
-)
-
-coreEnv.Depends( 'Context.cpp', wrappersINC )
-
 coreEnv.MergeFlags( yajlFlags )
 coreEnv.MergeFlags( licensesFlags )
-coreEnv.Prepend( LIBS = coreEnv.StaticLibrary( 'DG', [Glob('*.cpp')] ) )
+coreEnv.Prepend( LIBS = coreEnv.StaticLibrary( 'DG', Glob('*.cpp') ) )
