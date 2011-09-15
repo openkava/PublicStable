@@ -6,6 +6,9 @@
 #include <Fabric/Base/Exception.h>
 #include <Fabric/Core/Util/Log.h>
 
+#if defined(FABRIC_WIN32)
+# include <windows.h>
+#endif
 
 namespace Fabric
 {
@@ -82,7 +85,11 @@ namespace Fabric
           m_tasks.pop_back();
           ++m_executingTasks;
           m_stateMutex.release();
+#if defined(FABRIC_WIN32)
+          Sleep(1);
+#else
           sleep(1);
+#endif
           try
           {
             task.callback( task.userdata );
