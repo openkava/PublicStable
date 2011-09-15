@@ -150,7 +150,7 @@ FABRIC_EXT_EXPORT void FabricOBJGetPointsSliced(
 
     size_t nbPoints = parser->NbPoints();
     if ( points.size() != nbPoints )
-      throw Exception( "FabricOBJGetPointsSliced: sliced array size mismatch" );
+      throwException( "FabricOBJGetPointsSliced: sliced array size mismatch" );
 
     for( size_t i = 0; i < nbPoints; ++i )
     {
@@ -195,7 +195,7 @@ FABRIC_EXT_EXPORT void FabricOBJGetNormalsSliced(
 
     size_t nbPoints = parser->NbPoints();
     if ( normals.size() != nbPoints )
-      throw Exception( "FabricOBJGetNormalsSliced: sliced array size mismatch" );
+      throwException( "FabricOBJGetNormalsSliced: sliced array size mismatch" );
 
     for ( size_t i = 0; i < nbPoints; ++i )
     {
@@ -240,7 +240,7 @@ FABRIC_EXT_EXPORT void FabricOBJGetTextureCoordsSliced(
 
     size_t nbPoints = parser->NbPoints();
     if ( textureCoords.size() != nbPoints )
-      throw Exception( "FabricOBJGetTextureCoordsSliced: sliced array size mismatch" );
+      throwException( "FabricOBJGetTextureCoordsSliced: sliced array size mismatch" );
 
     for ( size_t i = 0; i < nbPoints; ++i )
     {
@@ -301,7 +301,7 @@ FABRIC_EXT_EXPORT void FabricOBJGetTriangleIndicesSliced(
 
     size_t nbTriangles = parser->NbTriangles();
     if ( indices.size() != nbTriangles )
-      throw Exception( "FabricOBJGetTriangleIndicesSliced: sliced array size mismatch" );
+      throwException( "FabricOBJGetTriangleIndicesSliced: sliced array size mismatch" );
 
     for( size_t i = 0; i < nbTriangles; ++i )
     {
