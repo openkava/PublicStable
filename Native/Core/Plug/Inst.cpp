@@ -25,6 +25,11 @@ namespace Fabric
 {
   namespace Plug
   {
+    static void throwException( size_t length, char const *data )
+    {
+      throw Exception( length, data );
+    }
+    
     //typedef void (*OnLoadFn)( SDK::Value FABRIC );
     //typedef void (*OnUnloadFn)( SDK::Value FABRIC );
     
@@ -81,6 +86,7 @@ namespace Fabric
       callbacks.m_malloc = malloc;
       callbacks.m_realloc = realloc;
       callbacks.m_free = free;
+      callbacks.m_throwException = throwException;
 
       ( *( FabricEDKInitPtr )resolvedFabricEDKInitFunction )( callbacks );
       

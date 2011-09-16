@@ -9,6 +9,10 @@
 #include <npapi/npfunctions.h>
 #include <llvm/Support/Threading.h>
 #include <stdlib.h>
+#include <llvm/Target/TargetData.h>
+#include <llvm/Target/TargetSelect.h>
+#include <llvm/Target/TargetOptions.h>
+#include <llvm/ExecutionEngine/JIT.h>
 
 #if defined(FABRIC_OS_LINUX)
 namespace Fabric
@@ -36,6 +40,8 @@ static void llvmInitialize()
     FABRIC_LOG( "LLVM not compiled with multithreading enabled; aborting" );
     abort();
   }
+  llvm::InitializeNativeTarget();
+  LLVMLinkInJIT();
 }
 
 static void displayHeader()
