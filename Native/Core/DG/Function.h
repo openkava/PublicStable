@@ -21,7 +21,7 @@ namespace Fabric
     
       static RC::ConstHandle<Function> Create( RC::ConstHandle<Code> const &code, std::string const &functionName );
     
-      void onExecutionEngineChange( RC::ConstHandle<ExecutionEngine> const &executionEngine );
+      virtual FunctionPtr getFunctionPtr(  RC::ConstHandle<RC::Object> &objectToAvoidFreeDuringExecution ) const;
     
     protected:
     
