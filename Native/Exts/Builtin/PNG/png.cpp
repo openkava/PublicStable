@@ -22,7 +22,7 @@ public:
   void read( void *dst, unsigned count )
   {
     if ( count > m_size )
-      throw Exception("short read");
+      throwException("short read");
     memcpy( dst, m_data, count );
     m_size -= count;
     m_data += count;
@@ -79,14 +79,14 @@ FABRIC_EXT_EXPORT void FabricPNGDecode(
 
   png_structp png_ptr = png_create_read_struct( PNG_LIBPNG_VER_STRING, NULL, NULL, NULL );
   if ( !png_ptr )
-    throw Exception("png_create_read_struct failed");
+    throwException("png_create_read_struct failed");
 
   png_infop info_ptr = png_create_info_struct(png_ptr);
   if ( !info_ptr )
-    throw Exception("png_create_info_struct failed");
+    throwException("png_create_info_struct failed");
 
   if ( setjmp( png_jmpbuf(png_ptr) ) )
-    throw Exception("decode error");
+    throwException("decode error");
 
   png_set_read_fn( png_ptr, &dataBuffer, &ReadDataBuffer::Read );
   
@@ -102,9 +102,9 @@ FABRIC_EXT_EXPORT void FabricPNGDecode(
     NULL, NULL, NULL
     );
   if ( retval != 1 )
-    throw Exception( "png_get_IHDR failed" );
+    throwException( "png_get_IHDR failed" );
   if ( colorType != PNG_COLOR_TYPE_RGB && colorType != PNG_COLOR_TYPE_RGB_ALPHA )
-    throw Exception( "unsupported color type" );
+    throwException( "unsupported color type" );
   
   imageWidth = width;
   imageHeight = height;
@@ -148,17 +148,17 @@ FABRIC_EXT_EXPORT void FabricPNGEncode(
 
   png_structp png_ptr = png_create_write_struct( PNG_LIBPNG_VER_STRING, NULL, NULL, NULL );
   if ( !png_ptr )
-    throw Exception("png_create_write_struct failed");
+    throwException("png_create_write_struct failed");
 
   png_infop info_ptr = png_create_info_struct(png_ptr);
   if ( !info_ptr )
-    throw Exception("png_create_info_struct failed");
+    throwException("png_create_info_struct failed");
   
 
   png_set_write_fn( png_ptr, &dataBuffer, &WriteDataBuffer::Write, &WriteDataBuffer::Flush );
 
   if( setjmp( png_jmpbuf(png_ptr) ) )
-    throw Exception("init io error");
+    throwException("init io error");
 
   png_set_IHDR(png_ptr, info_ptr, imageWidth, imageHeight,
                 8, PNG_COLOR_TYPE_RGB_ALPHA, PNG_INTERLACE_NONE,
