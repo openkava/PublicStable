@@ -23,19 +23,11 @@ namespace Fabric
     
       typedef void (*FunctionPtr)( ... );
     
-      FunctionPtr getFunctionPtr( RC::ConstHandle<RC::Object> &handleToObjectOwningFunctionPtr ) const;
+      virtual FunctionPtr getFunctionPtr( RC::ConstHandle<RC::Object> &objectToAvoidFreeDuringExecution ) const = 0;
       
     protected:
     
       Function();
-    
-      void onFunctionPtrChange( FunctionPtr functionPtr, RC::ConstHandle<RC::Object> const &objectOwningFunctionPtr );
-      
-    private:
-    
-      mutable MT::Mutex m_mutex;
-      FunctionPtr m_functionPtr;
-      RC::ConstHandle<RC::Object> m_objectOwningFunctionPtr;
     };
   };
 };
