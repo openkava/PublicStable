@@ -652,10 +652,18 @@
         }]);
       };
 
-      result.pub.writeResourceToUserFile = function(memberName, defaultFileName) {
-        result.queueCommand('writeResourceToUserFile', {
+      result.pub.putResourceToUserFile = function(memberName, uiOptions) {
+        result.queueCommand('putResourceToUserFile', {
           'memberName': memberName,
-          'defaultFileName': defaultFileName
+          'uiOptions': uiOptions
+        });
+        executeQueuedCommands();
+      };
+
+      result.pub.loadResourceFromUserFile = function(memberName, uiOptions) {
+        result.queueCommand('getResourceFromUserFile', {
+          'memberName': memberName,
+          'uiOptions': uiOptions
         });
         executeQueuedCommands();
       };

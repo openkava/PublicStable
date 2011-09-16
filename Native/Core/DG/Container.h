@@ -99,7 +99,8 @@ namespace Fabric
       void jsonExecSetBulkData( RC::ConstHandle<JSON::Value> const &arg );
       RC::ConstHandle<JSON::Value> jsonExecGetSlicesBulkData( RC::ConstHandle<JSON::Value> const &arg ) const;
       void jsonExecSetSlicesBulkData( RC::ConstHandle<JSON::Value> const &arg );
-      void jsonExecWriteResourceToUserFile( RC::ConstHandle<JSON::Value> const &arg ) const;
+      void jsonExecPutResourceToFile( RC::ConstHandle<JSON::Value> const &arg, bool userFile ) const;
+      void jsonExecGetResourceFromFile( RC::ConstHandle<JSON::Value> const &arg, bool userFile ) const;
       virtual RC::Handle<JSON::Object> jsonDesc() const;
       RC::ConstHandle<JSON::Value> jsonDescMembers() const;
       RC::ConstHandle<JSON::Value> jsonDescCount() const;
@@ -127,6 +128,8 @@ namespace Fabric
 
       void *getMemberArrayData( std::string const &name );
     
+      void* jsonGetResourceMember( RC::ConstHandle<JSON::Value> const &arg, std::string& memberName ) const;
+
     private:
     
       Context *m_context;

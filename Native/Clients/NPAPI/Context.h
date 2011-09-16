@@ -17,6 +17,11 @@ namespace Fabric
     class Value;
     class Callback;
   };
+
+  namespace IO
+  {
+    class Dir;
+  };
   
   namespace NPAPI
   {
@@ -43,7 +48,7 @@ namespace Fabric
 
       RC::Handle<IOManager> getIOManager() const;
 
-      std::string getUserFilePath( std::string const &defaultFilename, std::string const &extension );
+      void queryUserFileAndDir( bool existingFile, std::string const &title, std::string const &defaultFilename, std::string const &extension, RC::ConstHandle<IO::Dir> &dir, std::string &filename ) const;
 
     protected:
     
