@@ -41,7 +41,7 @@ namespace Fabric
       virtual void pushOGLContext();
       virtual void popOGLContext();
       
-      virtual std::string getPathFromSaveAsDialog( std::string const &defaultFilename, std::string const &extension );
+      virtual void queryUserFileAndDir( bool existingFile, std::string const &title, std::string const &defaultFilename, std::string const &extension, RC::ConstHandle<Dir> &dir, std::string &filename );
 
     protected:
     

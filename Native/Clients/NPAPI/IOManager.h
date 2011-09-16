@@ -40,9 +40,13 @@ namespace Fabric
       int32_t nppWrite( NPP npp, NPStream* stream, int32_t offset, int32_t len, void* buffer );
       NPError nppDestroyStream( NPP npp, NPStream *stream, NPReason reason );
 
-      virtual std::string getUserFilePath(
+      virtual void queryUserFileAndDir(
+        bool existingFile,
+        std::string const &title,
         std::string const &defaultFilename,
-        std::string const &extension
+        std::string const &extension,
+        RC::ConstHandle<IO::Dir>& dir,
+        std::string& filename
         ) const;
 
       IOManager( NPP npp );

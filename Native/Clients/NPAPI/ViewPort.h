@@ -26,6 +26,11 @@
 
 namespace Fabric
 {
+  namespace IO
+  {
+    class Dir;
+  };
+
   namespace JSON
   {
     class Value;
@@ -93,7 +98,7 @@ namespace Fabric
 
       void drawWatermark( size_t width, size_t height );
 
-      virtual std::string getPathFromSaveAsDialog( std::string const &defaultFilename, std::string const &extension ) = 0;
+      virtual void queryUserFileAndDir( bool existingFile, std::string const &title, std::string const &defaultFilename, std::string const &extension, RC::ConstHandle<IO::Dir> &dir, std::string &filename ) = 0;
 
     protected:
     

@@ -309,6 +309,8 @@ namespace Fabric
           result = jsonRouteDG( dst, dstOffset + 1, cmd, arg );
         else if ( dst[dstOffset] == "RT" )
           result = m_rtManager->jsonRoute( dst, dstOffset + 1, cmd, arg );
+        else if ( dst[dstOffset] == "IO" )
+          result = m_ioManager->jsonRoute( dst, dstOffset + 1, cmd, arg );
         else throw Exception( "unroutable" );
       }
       

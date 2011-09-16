@@ -273,9 +273,10 @@ namespace Fabric
       m_gdkGLStack.pop_back();
     }
 
-    std::string X11ViewPort::getPathFromSaveAsDialog( std::string const &defaultFilename, std::string const &extension )
+    void X11ViewPort::queryUserFileAndDir( bool existingFile, std::string const &title, std::string const &defaultFilename, std::string const &extension, RC::ConstHandle<Dir> &dir, std::string &filename );
     {
-      GtkWidget *dialog = gtk_file_chooser_dialog_new( "Save File...",
+JCG TODO!
+      GtkWidget *dialog = gtk_file_chooser_dialog_new( title.c_str(),
         NULL,
         GTK_FILE_CHOOSER_ACTION_SAVE,
         GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
