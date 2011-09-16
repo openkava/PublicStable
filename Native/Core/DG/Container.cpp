@@ -427,8 +427,14 @@ namespace Fabric
         result = jsonExecGetDataSize( arg );
       else if ( cmd == "getDataElement" )
         result = jsonExecGetDataElement( arg );
-      else if ( cmd == "writeResourceToUserFile" )
-        jsonExecWriteResourceToUserFile( arg );
+      else if ( cmd == "putResourceToUserFile" )
+        jsonExecPutResourceToFile( arg, true );
+      else if ( cmd == "getResourceFromUserFile" )
+        jsonExecGetResourceFromFile( arg, true );
+      else if ( cmd == "putResourceToFile" )
+        jsonExecPutResourceToFile( arg, false );
+      else if ( cmd == "getResourceFromFile" )
+        jsonExecGetResourceFromFile( arg, false );
       else if ( cmd == "setData" )
         jsonExecSetData( arg );
       else if ( cmd == "getBulkData" )
@@ -446,7 +452,7 @@ namespace Fabric
       else if ( cmd == "setCount" )
         jsonSetCount( arg );
       else result = NamedObject::jsonExec( cmd, arg );
-
+      throw Exception( "unknown command" );
       return result;
     }
 
@@ -724,11 +730,10 @@ namespace Fabric
       }
     }
 
-    void Container::jsonExecWriteResourceToUserFile( RC::ConstHandle<JSON::Value> const &arg ) const
+    void* Container::jsonGetResourceMember( RC::ConstHandle<JSON::Value> const &arg, std::string& memberName ) const
     {
       RC::ConstHandle<JSON::Object> argJSONObject = arg->toObject();
       
-      std::string memberName;
       try
       {
         memberName = argJSONObject->get( "memberName" )->toString()->value();
@@ -738,30 +743,59 @@ namespace Fabric
         throw "'memberName': " + e;
       }
 
-      std::string defaultFileName;
-
-      RC::ConstHandle<JSON::Value> val;
-      val = argJSONObject->maybeGet( "defaultFileName" );
-      if( val )
-      {
-        defaultFileName = val->toString()->value();
-      }
-
       RC::ConstHandle<Container::Member> member = getMember( memberName );
-
       RC::ConstHandle<RT::Desc> desc = member->getDesc();
       if( desc->getName() != "FabricResource" )
       {
         throw Exception( "member" + memberName + " is not of type FabricResource" );
       }
+      return (void*)member->getElementData( 0 );
+    }
 
-      FabricResourceWrapper resource( m_context->getRTManager(), (void*)member->getElementData( 0 ) );
-      if( resource.getDataSize() == 0 )
+    struct FabricResourceByteContainerAdapter : public IO::Manager::ByteContainer
+    {
+      FabricResourceByteContainerAdapter( FabricResourceWrapper& resource )
+        : m_resource(resource)
+      {}
+
+      virtual void* Allocate( size_t size )
       {
-        throw Exception( "writeResourceToUserLocation: resource \'" + memberName + " \' is empty" );
+        m_resource.resizeData( size );
+        return (void*)m_resource.getDataPtr();
       }
 
-      m_context->getIOManager()->writeDataAtUserLocation( resource.getDataSize(), resource.getDataPtr(), defaultFileName, resource.getExtension() );
+      FabricResourceWrapper& m_resource;
+    };
+
+    void Container::jsonExecGetResourceFromFile( RC::ConstHandle<JSON::Value> const &arg, bool userFile )
+    {
+      std::string memberName;
+      FabricResourceWrapper resourceMember( m_context->getRTManager(), jsonGetResourceMember( arg, memberName ) );
+
+      //Load to a temporary resource then swap to preserve existing resource in case an exception is thrown
+      FabricResourceWrapper tempResource( m_context->getRTManager() );
+      FabricResourceByteContainerAdapter tempResourceAdapter(tempResource);
+
+      std::string filename, extension;
+      if( userFile )
+        m_context->getIOManager()->jsonExecGetUserFile( arg, tempResourceAdapter, filename, extension );
+      else
+        m_context->getIOManager()->jsonExecGetFile( arg, tempResourceAdapter, filename, extension );
+
+      tempResource.setExtension( extension );
+      tempResource.setURL( filename );
+      setData( memberName, 0, tempResource.get() );
     }
+
+    void Container::jsonExecPutResourceToFile( RC::ConstHandle<JSON::Value> const &arg, bool userFile ) const
+    {
+      std::string memberName;
+      FabricResourceWrapper resource( m_context->getRTManager(), jsonGetResourceMember( arg, memberName ) );
+      if( userFile )
+        m_context->getIOManager()->jsonExecPutUserFile( arg, resource.getDataSize(), resource.getDataPtr(), resource.getExtension().c_str() );
+      else
+        m_context->getIOManager()->jsonExecPutFile( arg, resource.getDataSize(), resource.getDataPtr(), resource.getExtension().c_str() );
+    }
+
   };
 };

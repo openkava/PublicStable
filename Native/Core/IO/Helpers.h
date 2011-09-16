@@ -38,6 +38,8 @@ namespace Fabric
       return JoinPath( JoinPath( arg1, arg2, arg3, arg4, arg5, arg6 ), arg7 );
     }
 
+    void SplitPath( std::string const &path, std::string &parentDir, std::string &entry );
+
     //void safeCall( void (*callback)( int fd ) );
     
     bool DirExists( std::string const &dirPath );

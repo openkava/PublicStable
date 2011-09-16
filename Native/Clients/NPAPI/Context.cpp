@@ -12,6 +12,7 @@
 #include <Fabric/Core/DG/CodeManager.h>
 #include <Fabric/Core/Plug/Manager.h>
 #include <Fabric/Core/IO/Helpers.h>
+#include <Fabric/Core/IO/Dir.h>
 #include <Fabric/Base/JSON/Object.h>
 
 namespace Fabric
@@ -109,12 +110,12 @@ namespace Fabric
       return result;
     }
 
-    std::string Context::getUserFilePath( std::string const &defaultFilename, std::string const &extension )
+    void Context::queryUserFileAndDir( bool existingFile, std::string const &title, std::string const &defaultFilename, std::string const &extension, RC::ConstHandle<IO::Dir> &dir, std::string &filename ) const
     {
       if( m_viewPorts.empty() )
-        throw Exception( "Unable to open SaveAs dialog" );
+        throw Exception( "Error: viewport is not initialized" );
 
-      return m_viewPorts.begin()->second->getPathFromSaveAsDialog( defaultFilename, extension );
+      return m_viewPorts.begin()->second->queryUserFileAndDir( existingFile, title, defaultFilename, extension, dir, filename );
     }
   };
 };

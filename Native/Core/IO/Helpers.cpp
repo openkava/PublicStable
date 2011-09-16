@@ -23,6 +23,14 @@ namespace Fabric
 {
   namespace IO
   {
+#if defined(FABRIC_POSIX)
+    static const char *s_pathSeparator = "/";
+#elif defined(FABRIC_WIN32)
+    static const char *s_pathSeparator = "\\";
+#else
+# error "Unsupported platform"
+#endif
+
     void validateEntry( std::string const &entry )
     {
       if ( entry.length() == 0 )
@@ -77,20 +85,27 @@ namespace Fabric
     
     std::string JoinPath( std::string const &lhs, std::string const &rhs )
     {
-#if defined(FABRIC_POSIX)
-      static const char *s_pathSeparator = "/";
-#elif defined(FABRIC_WIN32)
-      static const char *s_pathSeparator = "\\";
-#else
-# error "Unsupported platform"
-#endif
-
       if ( lhs.length() == 0 )
         return rhs;
       else if ( rhs.length() == 0 )
         return lhs;
       else
         return lhs + s_pathSeparator + rhs;
+    }
+
+    void SplitPath( std::string const &path, std::string &parentDir, std::string &entry )
+    {
+      size_t separatorPos = path.rfind( s_pathSeparator );
+      if( separatorPos == std::string::npos )
+      {
+        parentDir.clear();
+        entry = path;
+      }
+      else
+      {
+        entry = path.substr( separatorPos + strlen( s_pathSeparator ) );
+        parentDir = path.substr( 0, separatorPos );
+      }
     }
     
     /*
