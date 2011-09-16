@@ -21,21 +21,15 @@ namespace Fabric
       : m_code( code )
       , m_functionName( functionName )
     {
-      m_code->registerFunction( this );
-      onExecutionEngineChange( code->getExecutionEngine() );
     }
     
     Function::~Function()
     {
-      m_code->unregisterFunction( this );
     }
 
-    void Function::onExecutionEngineChange( RC::ConstHandle<ExecutionEngine> const &executionEngine )
+    Function::FunctionPtr Function::getFunctionPtr( RC::ConstHandle<RC::Object> &objectToAvoidFreeDuringExecution ) const
     {
-      FunctionPtr functionPtr = executionEngine->getFunctionByName( m_functionName );
-      if ( !functionPtr )
-        throw Exception( "function " + _(m_functionName) + " not found" );
-      onFunctionPtrChange( functionPtr, executionEngine );
+      return m_code->getFunctionPtrByName( m_functionName, objectToAvoidFreeDuringExecution );
     }
   };
 };
