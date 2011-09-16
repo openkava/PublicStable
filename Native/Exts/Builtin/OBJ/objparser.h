@@ -17,7 +17,7 @@ public:
 
   bool HasTextureCoords()const{ return !m_texCoords.empty(); }
 
-  size_t NbPoints()const{ return m_pointIndices.size(); }
+  size_t NbPoints()const{ return m_sharedPointIndices.size(); }
 
   V3 GetPoint(int ptIndex)const;
   V3 GetNormal(int ptIndex)const;
@@ -32,6 +32,7 @@ private:
   void ParseN( std::istream& stream );
   void ParseT( std::istream& stream );
   void ParseF( std::istream& stream );
+  int ParseS( std::istream& stream );
 
   void ComputeMissingNormals();
 
@@ -67,6 +68,9 @@ private:
     int m_texCoord;
   };
 
+  std::vector<int> m_triangleSmoothingGroups;
   std::vector<int> m_triangleIndices;
-  std::vector<PointIndices> m_pointIndices;
+  std::vector<PointIndices> m_sharedPointIndices;
+
+  int m_currentSmoothingGroup;
 };

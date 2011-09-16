@@ -125,6 +125,11 @@ namespace Fabric
       void jsonNotify( std::vector<std::string> const &src, std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg );
       void unregisterClient( Client *client );
       
+      static std::string const &GetWrapFabricClientJSSource()
+      {
+        return s_wrapFabricClientJSSource;
+      }
+      
     protected:
     
       Context( RC::Handle<IO::Manager> const &ioManager, std::vector<std::string> const &pluginDirs );
@@ -148,6 +153,8 @@ namespace Fabric
       Util::AtomicSize m_notificationBracketCount;
       MT::Mutex m_pendingNotificationsMutex;
       RC::Handle<JSON::Array> m_pendingNotifications;
+      
+      static std::string const s_wrapFabricClientJSSource;
     };
   };
 };
