@@ -124,7 +124,7 @@ FABRIC_EXT_EXPORT void FabricALEMBICDecode(
     if(dir == NULL)
       dir = getenv("TMP");
     if(dir == NULL)
-      throw Fabric::EDK::Exception("Alembic extension: environment variable APP_DATA or TMP or TEMP is undefined");
+      Fabric::EDK::throwException("Alembic extension: environment variable APP_DATA or TMP or TEMP is undefined");
     std::string fileName( _tempnam( dir, "tmpfab_" ) );
 #else
     std::string fileName(tmpnam(NULL));
