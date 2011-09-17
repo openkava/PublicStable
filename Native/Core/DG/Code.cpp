@@ -86,8 +86,6 @@ namespace Fabric
       if ( !context )
         return;
         
-      MT::Mutex::Lock mutexLock( m_mutex );
-
       FABRIC_ASSERT( m_ast );
       RC::ConstHandle<AST::GlobalList> ast = m_ast;
       
