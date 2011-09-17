@@ -84,7 +84,7 @@ namespace Fabric
       }
     
       RC::WeakConstHandle<Context> m_contextWeakRef;
-      MT::Mutex m_mutex;
+      mutable MT::Mutex m_mutex;
       std::string m_sourceCode;
 #if defined(FABRIC_BUILD_DEBUG)
       std::string m_byteCode;
