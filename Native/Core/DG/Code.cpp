@@ -246,6 +246,7 @@ namespace Fabric
     
     RC::ConstHandle<ExecutionEngine> Code::getExecutionEngine() const
     {
+      MT::Mutex::Lock mutexLock( m_mutex );
       return m_executionEngine;
     }
     
