@@ -34,11 +34,11 @@ namespace Fabric
     {
     public:
     
-      typedef void (*FunctionPtr)( ... );
+      typedef void (*GenericFunctionPtr)( ... );
     
       static RC::ConstHandle<ExecutionEngine> Create( RC::ConstHandle<Context> const &context, RC::Handle<CG::Context> const &cgContext, llvm::Module *llvmModule );
       
-      FunctionPtr getFunctionPtrByName( std::string const &functionName ) const;
+      GenericFunctionPtr getFunctionByName( std::string const &functionName ) const;
       
       class ContextSetter
       {
