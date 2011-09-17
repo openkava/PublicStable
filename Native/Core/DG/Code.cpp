@@ -55,6 +55,7 @@ namespace Fabric
       : m_contextWeakRef( context )
       , m_mutex( "DG::Code" )
       , m_sourceCode( sourceCode )
+      , m_registeredFunctionSetMutex( "DG::Code::m_registeredFunctionSet" )
     {
       compileSourceCode();
     }
@@ -65,6 +66,11 @@ namespace Fabric
 
     void Code::compileSourceCode()
     {
+      MT::Mutex::Lock mutexLock( m_mutex );
+
+      llvm::InitializeNativeTarget();
+      LLVMLinkInJIT();
+      
       FABRIC_ASSERT( m_sourceCode.length() > 0 );
       
       RC::ConstHandle<KL::Source> source = KL::StringSource::Create( m_sourceCode );
@@ -80,6 +86,8 @@ namespace Fabric
       if ( !context )
         return;
         
+      MT::Mutex::Lock mutexLock( m_mutex );
+
       FABRIC_ASSERT( m_ast );
       RC::ConstHandle<AST::GlobalList> ast = m_ast;
       
@@ -189,13 +197,6 @@ namespace Fabric
         }
       }
     }
-
-    Code::FunctionPtr Code::getFunctionPtrByName( std::string const &name, RC::ConstHandle<RC::Object> &objectToAvoidFreeDuringExecution ) const
-    {
-      MT::Mutex::Lock mutexLock( m_mutex );
-      objectToAvoidFreeDuringExecution = m_executionEngine;
-      return m_executionEngine->getFunctionPtrByName( name );
-    }
     
     void Code::linkModule( RC::Handle<CG::Context> const &cgContext, llvm::OwningPtr<llvm::Module> &module, bool optimize )
     {
@@ -205,7 +206,19 @@ namespace Fabric
         
       MT::Mutex::Lock mutexLock( m_mutex );
 
-      m_executionEngine = ExecutionEngine::Create( context, cgContext, module.take() );
+      RC::ConstHandle<ExecutionEngine> executionEngine = ExecutionEngine::Create( context, cgContext, module.take() );
+      
+      {
+        MT::Mutex::Lock lock( m_registeredFunctionSetMutex );
+        for ( RegisteredFunctionSet::const_iterator it=m_registeredFunctionSet.begin();
+          it!=m_registeredFunctionSet.end(); ++it )
+        {
+          Function *function = *it;
+          function->onExecutionEngineChange( executionEngine );
+        }
+      }
+      
+      m_executionEngine = executionEngine;
       
       if ( !optimize )
       {
@@ -231,9 +244,28 @@ namespace Fabric
       return m_ast;
     }
     
+    RC::ConstHandle<ExecutionEngine> Code::getExecutionEngine() const
+    {
+      return m_executionEngine;
+    }
+    
     CG::Diagnostics const &Code::getDiagnostics() const
     {
       return m_diagnostics;
+    }
+
+    void Code::registerFunction( Function *function ) const
+    {
+      MT::Mutex::Lock lock( m_registeredFunctionSetMutex );
+      m_registeredFunctionSet.insert( function );
+    }
+    
+    void Code::unregisterFunction( Function *function ) const
+    {
+      MT::Mutex::Lock lock( m_registeredFunctionSetMutex );
+      RegisteredFunctionSet::iterator it = m_registeredFunctionSet.find( function );
+      FABRIC_ASSERT( it != m_registeredFunctionSet.end() );
+      m_registeredFunctionSet.erase( it );
     }
   };
 };
