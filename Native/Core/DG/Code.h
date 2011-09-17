@@ -46,6 +46,8 @@ namespace Fabric
     
     class Code : public RC::Object
     {
+      typedef std::multiset<Function *> RegisteredFunctionSet;
+      
     public:
     
       typedef void (*FunctionPtr)( ... );
@@ -54,12 +56,14 @@ namespace Fabric
       
       std::string const &getSourceCode() const;
       RC::ConstHandle<AST::GlobalList> getAST() const;
+      RC::ConstHandle<ExecutionEngine> getExecutionEngine() const;
       CG::Diagnostics const &getDiagnostics() const;
 #if defined(FABRIC_BUILD_DEBUG)
       std::string const &getByteCode() const;
 #endif
-      
-      FunctionPtr getFunctionPtrByName( std::string const &name, RC::ConstHandle<RC::Object> &objectToAvoidFreeDuringExecution ) const;
+
+      void registerFunction( Function *function ) const;
+      void unregisterFunction( Function *function ) const;
 
     protected:
     
@@ -80,7 +84,7 @@ namespace Fabric
       }
     
       RC::WeakConstHandle<Context> m_contextWeakRef;
-      mutable MT::Mutex m_mutex;
+      MT::Mutex m_mutex;
       std::string m_sourceCode;
 #if defined(FABRIC_BUILD_DEBUG)
       std::string m_byteCode;
@@ -88,6 +92,9 @@ namespace Fabric
       RC::ConstHandle<AST::GlobalList> m_ast;
       CG::Diagnostics m_diagnostics;
       RC::ConstHandle<ExecutionEngine> m_executionEngine;
+      
+      mutable MT::Mutex m_registeredFunctionSetMutex;
+      mutable RegisteredFunctionSet m_registeredFunctionSet;
     };
   };
 };

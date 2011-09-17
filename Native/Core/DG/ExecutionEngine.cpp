@@ -97,14 +97,17 @@ namespace Fabric
       context->getCGManager()->llvmAddGlobalMappingsToExecutionEngine( m_llvmExecutionEngine.get(), *llvmModule );
     }
     
-    ExecutionEngine::FunctionPtr ExecutionEngine::getFunctionPtrByName( std::string const &functionName ) const
+    ExecutionEngine::GenericFunctionPtr ExecutionEngine::getFunctionByName( std::string const &functionName ) const
     {
-      FABRIC_ASSERT( s_currentContext == m_contextWeakRef.makeStrong() );
+      RC::ConstHandle<Context> context = m_contextWeakRef.makeStrong();
+      if ( !context )
+        return 0;
+      ContextSetter contextSetter( context );
       
-      FunctionPtr result = 0;
+      GenericFunctionPtr result = 0;
       llvm::Function *llvmFunction = m_llvmExecutionEngine->FindFunctionNamed( functionName.c_str() );
       if ( llvmFunction )
-        result = FunctionPtr( m_llvmExecutionEngine->getPointerToFunction( llvmFunction ) );
+        result = GenericFunctionPtr( m_llvmExecutionEngine->getPointerToFunction( llvmFunction ) );
       return result;
     }
 
