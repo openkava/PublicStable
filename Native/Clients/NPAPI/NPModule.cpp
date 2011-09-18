@@ -2,9 +2,8 @@
 #include <Fabric/Core/Util/Log.h>
 #include <Fabric/Core/Util/Debug.h>
 #include <Fabric/Core/Build.h>
-#if defined( FABRIC_WIN32)
 #include <Fabric/Core/MT/Impl.h>
-#endif
+#include <Fabric/Core/MT/IdleTaskQueue.h>
 
 #include <npapi/npapi.h>
 #include <npapi/npfunctions.h>
@@ -86,12 +85,8 @@ FABRIC_NPAPI_EXPORT NPError OSCALL NP_Initialize(NPNetscapeFuncs* browser_functi
 
 FABRIC_NPAPI_EXPORT NPError OSCALL NP_Shutdown()
 {
-#if defined (__native_client__)
-  pglTerminate();
-#endif
-#if defined( FABRIC_WIN32)
   Fabric::MT::ThreadPool::Instance()->terminate();
-#endif
+  Fabric::MT::IdleTaskQueue::Instance()->terminate();
 
   llvm::llvm_stop_multithreaded();
   

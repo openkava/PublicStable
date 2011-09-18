@@ -86,8 +86,6 @@ namespace Fabric
       if ( !context )
         return;
         
-      MT::Mutex::Lock mutexLock( m_mutex );
-
       FABRIC_ASSERT( m_ast );
       RC::ConstHandle<AST::GlobalList> ast = m_ast;
       
@@ -246,6 +244,7 @@ namespace Fabric
     
     RC::ConstHandle<ExecutionEngine> Code::getExecutionEngine() const
     {
+      MT::Mutex::Lock mutexLock( m_mutex );
       return m_executionEngine;
     }
     
