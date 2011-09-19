@@ -34,7 +34,7 @@ namespace Fabric
       
       static RC::ConstHandle<StatementVector> Create( RC::ConstHandle<Statement> const &first = 0, RC::ConstHandle<StatementVector> const &remaining = 0 );
 
-      void appendJSON( Util::JSONGenerator const &jsonGenerator ) const;
+      void appendJSON( Util::JSONGenerator const &jsonGenerator, bool includeLocation ) const;
       
       void registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const;
     

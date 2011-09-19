@@ -24,10 +24,10 @@ namespace Fabric
     {
     }
     
-    void GlobalConstDecl::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
+    void GlobalConstDecl::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator, bool includeLocation ) const
     {
-      Global::appendJSONMembers( jsonObjectGenerator );
-      m_constDecl->appendJSON( jsonObjectGenerator.makeMember( "constDecl" ) );
+      Global::appendJSONMembers( jsonObjectGenerator, includeLocation );
+      m_constDecl->appendJSON( jsonObjectGenerator.makeMember( "constDecl" ), includeLocation );
     }
     
     void GlobalConstDecl::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const

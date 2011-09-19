@@ -29,11 +29,11 @@ namespace Fabric
     {
     }
     
-    void IndexOp::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
+    void IndexOp::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator, bool includeLocation ) const
     {
-      Expr::appendJSONMembers( jsonObjectGenerator );
-      m_expr->appendJSON( jsonObjectGenerator.makeMember( "expr" ) );
-      m_indexExpr->appendJSON( jsonObjectGenerator.makeMember( "indexExpr" ) );
+      Expr::appendJSONMembers( jsonObjectGenerator, includeLocation );
+      m_expr->appendJSON( jsonObjectGenerator.makeMember( "expr" ), includeLocation );
+      m_indexExpr->appendJSON( jsonObjectGenerator.makeMember( "indexExpr" ), includeLocation );
     }
     
     void IndexOp::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const
