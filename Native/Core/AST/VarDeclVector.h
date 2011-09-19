@@ -40,7 +40,7 @@ namespace Fabric
       
       static RC::ConstHandle<VarDeclVector> Create( RC::ConstHandle<VarDecl> const &first = 0, RC::ConstHandle<VarDeclVector> const &remaining = 0 );
 
-      void appendJSON( Util::JSONGenerator const &jsonGenerator ) const;
+      void appendJSON( Util::JSONGenerator const &jsonGenerator, bool includeLocation ) const;
       
       void registerTypes( std::string const &baseType, RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const;
     

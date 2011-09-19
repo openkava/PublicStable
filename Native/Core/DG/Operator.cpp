@@ -73,7 +73,9 @@ namespace Fabric
     void Operator::collectErrors()
     {
       Errors &errors = getErrors();
-      if ( !m_sourceCode.length() )
+      if ( !m_filename.length() )
+        errors.push_back( "no source code filename specified" );
+      else if ( !m_sourceCode.length() )
         errors.push_back( "no source code loaded" );
       else if ( !m_entryFunctionName.length() )
         errors.push_back( "no entry function specified" );
@@ -97,7 +99,8 @@ namespace Fabric
     
     bool Operator::canExecute() const
     {
-      return m_sourceCode.length() > 0
+      return m_filename.length() > 0
+        && m_sourceCode.length() > 0
         && m_entryFunctionName.length() > 0
         && m_code
         && !m_code->getDiagnostics().containsError()
@@ -106,11 +109,12 @@ namespace Fabric
     
     void Operator::compile()
     {
+      FABRIC_ASSERT( m_filename.length() > 0 );
       FABRIC_ASSERT( m_sourceCode.length() > 0 );
       FABRIC_ASSERT( !m_code );
       FABRIC_ASSERT( !m_function );
       
-      m_code = m_context->getCodeManager()->compileSourceCode( m_context, m_sourceCode );
+      m_code = m_context->getCodeManager()->compileSourceCode( m_context, m_filename, m_sourceCode );
       notifyDelta( "diagnostics", jsonDescDiagnostics() );
       
       if ( !m_code->getDiagnostics().containsError() )
@@ -144,6 +148,8 @@ namespace Fabric
       void * const *prefixes
       ) const
     {
+      if ( !m_filename.length() )
+        throw Exception( "no source code filename specified" );
       if ( !m_sourceCode.length() )
         throw Exception( "no source code loaded" );
       if ( !m_entryFunctionName.length() )
@@ -181,6 +187,11 @@ namespace Fabric
       }
     }
     
+    std::string const &Operator::getFilename() const
+    {
+      return m_filename;
+    }
+    
     std::string const &Operator::getSourceCode() const
     {
       return m_sourceCode;
@@ -196,18 +207,20 @@ namespace Fabric
     }
 #endif
 
-    void Operator::setSourceCode( std::string const &sourceCode )
+    void Operator::setFilenameAndSourceCode( std::string const &filename, std::string const &sourceCode )
     {
-      if ( sourceCode != m_sourceCode )
+      if ( filename != m_filename || sourceCode != m_sourceCode )
       {
         m_function = 0;
         m_astOperator = 0;
         m_code = 0;
         
+        m_filename = filename;
+        notifyDelta( "filename", jsonDescFilename() );
         m_sourceCode = sourceCode;
         notifyDelta( "sourceCode", jsonDescSourceCode() );
 
-        if ( m_sourceCode.length() > 0 )
+        if ( m_filename.length() > 0 && m_sourceCode.length() > 0 )
           compile();
       }
     }
@@ -255,6 +268,7 @@ namespace Fabric
     RC::Handle<JSON::Object> Operator::jsonDesc() const
     {
       RC::Handle<JSON::Object> result = NamedObject::jsonDesc();
+      result->set( "filename", jsonDescFilename() );
       result->set( "sourceCode", jsonDescSourceCode() );
       result->set( "entryFunctionName", jsonDescEntryFunctionName() );
       result->set( "diagnostics", jsonDescDiagnostics() );
@@ -284,7 +298,29 @@ namespace Fabric
       
     void Operator::jsonExecSetSourceCode( RC::ConstHandle<JSON::Value> const &arg )
     {
-      setSourceCode( arg->toString()->value() );
+      RC::ConstHandle<JSON::Object> argObject = arg->toObject();
+      
+      std::string filename;
+      try
+      {
+        filename = argObject->get("filename")->toString()->value();
+      }
+      catch ( Exception e )
+      {
+        throw "filename: " + e;
+      }
+      
+      std::string sourceCode;
+      try
+      {
+        sourceCode = argObject->get("sourceCode")->toString()->value();
+      }
+      catch ( Exception e )
+      {
+        throw "sourceCode: " + e;
+      }
+        
+      setFilenameAndSourceCode( filename, sourceCode );
     }
       
     void Operator::jsonExecSetEntryFunctionName( RC::ConstHandle<JSON::Value> const &arg )
@@ -301,6 +337,11 @@ namespace Fabric
     {
       static RC::ConstHandle<JSON::Value> result = JSON::String::Create( "Operator" );
       return result;
+    }
+    
+    RC::ConstHandle<JSON::Value> Operator::jsonDescFilename() const
+    {
+      return JSON::String::Create( m_filename );
     }
     
     RC::ConstHandle<JSON::Value> Operator::jsonDescSourceCode() const
@@ -325,6 +366,7 @@ namespace Fabric
           CG::Diagnostic const &diagnostic = it->second;
           
           RC::Handle<JSON::Object> sub = JSON::Object::Create();
+          sub->set( "filename", JSON::String::Create( location.getFilename() ) );
           sub->set( "line", JSON::Integer::Create( location.getLine() ) );
           sub->set( "column", JSON::Integer::Create( location.getColumn() ) );
           sub->set( "level", JSON::String::Create( diagnostic.getLevelDesc() ) );

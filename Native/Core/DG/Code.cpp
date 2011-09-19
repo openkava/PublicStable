@@ -46,14 +46,15 @@ namespace Fabric
 {
   namespace DG
   {
-    RC::ConstHandle<Code> Code::Create( RC::ConstHandle<Context> const &context, std::string const &sourceCode )
+    RC::ConstHandle<Code> Code::Create( RC::ConstHandle<Context> const &context, std::string const &filename, std::string const &sourceCode )
     {
-      return new Code( context, sourceCode );
+      return new Code( context, filename, sourceCode );
     }
 
-    Code::Code( RC::ConstHandle<Context> const &context, std::string const &sourceCode )
+    Code::Code( RC::ConstHandle<Context> const &context, std::string const &filename, std::string const &sourceCode )
       : m_contextWeakRef( context )
       , m_mutex( "DG::Code" )
+      , m_filename( filename )
       , m_sourceCode( sourceCode )
       , m_registeredFunctionSetMutex( "DG::Code::m_registeredFunctionSet" )
     {
@@ -71,9 +72,10 @@ namespace Fabric
       llvm::InitializeNativeTarget();
       LLVMLinkInJIT();
       
+      FABRIC_ASSERT( m_filename.length() > 0 );
       FABRIC_ASSERT( m_sourceCode.length() > 0 );
       
-      RC::ConstHandle<KL::Source> source = KL::StringSource::Create( m_sourceCode );
+      RC::ConstHandle<KL::Source> source = KL::StringSource::Create( m_filename, m_sourceCode );
       RC::Handle<KL::Scanner> scanner = KL::Scanner::Create( source );
       m_ast = AST::GlobalList::Create( m_ast, KL::Parse( scanner, m_diagnostics ) );
       if ( !m_diagnostics.containsError() )
@@ -223,6 +225,11 @@ namespace Fabric
         retain();
         MT::IdleTaskQueue::Instance()->submit( &Code::CompileOptimizedAST, this );
       }
+    }
+    
+    std::string const &Code::getFilename() const
+    {
+      return m_filename;
     }
     
     std::string const &Code::getSourceCode() const

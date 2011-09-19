@@ -18,17 +18,13 @@ namespace Fabric
     
       typedef enum yytokentype Type;
       
-      Token()
-      {
-      }
-      
-      Token( Type type, SourceRange const &sourceRange )
+      Token( SourceRange const &sourceRange, Type type = TOKEN_END )
         : m_type( type )
         , m_sourceRange( sourceRange )
       {
       }
       
-      Token( Type type, RC::ConstHandle<Source> const &source, Location const &startLocation, Location const &endLocation )
+      Token( RC::ConstHandle<Source> const &source, Location const &startLocation, Location const &endLocation, Type type )
         : m_type( type )
         , m_sourceRange( source, startLocation, endLocation )
       {

@@ -120,10 +120,15 @@ namespace Fabric
       
       std::vector<std::string> codeFiles;
       m_desc.code.appendMatching( Util::getHostTriple(), codeFiles );
+      std::string filename;
       m_code = "";
       for ( std::vector<std::string>::const_iterator it=codeFiles.begin(); it!=codeFiles.end(); ++it )
       {
         std::string const &codeEntry = *it;
+        
+        if ( filename.length() == 0 )
+          filename = codeEntry;
+          
         std::string code;
         try
         {
@@ -136,14 +141,14 @@ namespace Fabric
         m_code += code + "\n";
       }
       
-      RC::ConstHandle<KL::Source> source = KL::StringSource::Create( m_code );
+      RC::ConstHandle<KL::Source> source = KL::StringSource::Create( filename, m_code );
       RC::Handle<KL::Scanner> scanner = KL::Scanner::Create( source );
       m_ast = KL::Parse( scanner, m_diagnostics );
       for ( CG::Diagnostics::const_iterator it=m_diagnostics.begin(); it!=m_diagnostics.end(); ++it )
       {
         CG::Location const &location = it->first;
         CG::Diagnostic const &diagnostic = it->second;
-        FABRIC_LOG( "[%s] %u:%u: %s: %s", extensionName.c_str(), (unsigned)location.getLine(), (unsigned)location.getColumn(), diagnostic.getLevelDesc(), diagnostic.getDesc().c_str() );
+        FABRIC_LOG( "[%s] %s:%u:%u: %s: %s", extensionName.c_str(), location.getFilename()->c_str(), (unsigned)location.getLine(), (unsigned)location.getColumn(), diagnostic.getLevelDesc(), diagnostic.getDesc().c_str() );
       }
       if ( m_diagnostics.containsError() )
         throw Exception( "KL compile failed" );

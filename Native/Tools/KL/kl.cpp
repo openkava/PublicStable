@@ -70,7 +70,7 @@ void dumpDiagnostics( CG::Diagnostics const &diagnostics )
   {
     CG::Location const &location = it->first;
     CG::Diagnostic const &diagnostic = it->second;
-    printf( "%u:%u: %s: %s\n", (unsigned)location.getLine(), (unsigned)location.getColumn(), diagnostic.getLevelDesc(), (const char*)diagnostic.getDesc() );
+    printf( "%s:%u:%u: %s: %s\n", location.getFilename()->c_str(), (unsigned)location.getLine(), (unsigned)location.getColumn(), diagnostic.getLevelDesc(), (const char*)diagnostic.getDesc() );
   }
 }
 
@@ -111,7 +111,7 @@ static void *LazyFunctionCreator( std::string const &functionName )
 }
 
 
-void handleFile( FILE *fp, unsigned int runFlags )
+void handleFile( std::string const &filename, FILE *fp, unsigned int runFlags )
 {
   std::string sourceString;
   while ( true )
@@ -123,7 +123,7 @@ void handleFile( FILE *fp, unsigned int runFlags )
       break;
   }
   
-  RC::ConstHandle<KL::Source> source = KL::StringSource::Create( sourceString );
+  RC::ConstHandle<KL::Source> source = KL::StringSource::Create( filename, sourceString );
   if ( runFlags & RF_ShowTokens )
   {
     RC::Handle<KL::Scanner> scanner = KL::Scanner::Create( source );
@@ -168,7 +168,7 @@ void handleFile( FILE *fp, unsigned int runFlags )
   {
     if ( runFlags & RF_Verbose )
       printf( "-- AST --\n" );
-    Util::SimpleString globalListJSONString = globalList->toJSON();
+    Util::SimpleString globalListJSONString = globalList->toJSON( true );
     printf( "%s\n", globalListJSONString.getCString() );
   }
 
@@ -379,7 +379,7 @@ int main( int argc, char **argv )
   {
     try
     {
-      handleFile( stdin, runFlags );
+      handleFile( "(stdin)", stdin, runFlags );
     }
     catch ( Exception e )
     {
@@ -399,7 +399,7 @@ int main( int argc, char **argv )
           printf( "--- %s ---\n", argv[i] );
         try
         {
-          handleFile( fp, runFlags );
+          handleFile( argv[i], fp, runFlags );
         }
         catch ( Exception e )
         {
