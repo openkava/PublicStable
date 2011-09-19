@@ -13,10 +13,10 @@ namespace Fabric
     {
     }
 
-    void Global::appendJSON( Util::JSONGenerator const &jsonGenerator ) const
+    void Global::appendJSON( Util::JSONGenerator const &jsonGenerator, bool includeLocation ) const
     {
       if ( m_json.getLength() == 0 )
-        Node::appendJSON( Util::JSONGenerator( &m_json ) );
+        Node::appendJSON( Util::JSONGenerator( &m_json ), includeLocation );
       jsonGenerator.appendJSON( m_json );
     }
     

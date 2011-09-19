@@ -1,1 +1,1 @@
-3:3: error: code is unreachable
+issue-424.kl:3:3: error: code is unreachable

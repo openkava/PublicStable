@@ -45,7 +45,7 @@ namespace Fabric
     
       UniOp( CG::Location const &location, CG::UniOpType uniOpType, RC::ConstHandle<Expr> const &child );
       
-      virtual void appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const;
+      virtual void appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator, bool includeLocation ) const;
       
       RC::ConstHandle<CG::FunctionSymbol> getFunctionSymbol( CG::BasicBlockBuilder &basicBlockBuilder ) const;
 
