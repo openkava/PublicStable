@@ -37,7 +37,7 @@ namespace Fabric
       static RC::ConstHandle<GlobalList> Create( RC::ConstHandle<Global> const &first = 0, RC::ConstHandle<GlobalList> const &remaining = 0 );
       static RC::ConstHandle<GlobalList> Create( RC::ConstHandle<GlobalList> const &lhs, RC::ConstHandle<GlobalList> const &rhs );
 
-      Util::SimpleString toJSON() const;
+      Util::SimpleString toJSON( bool includeLocation ) const;
 
       void collectUses( UseNameToLocationMap &uses ) const;
       void registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const;
@@ -48,7 +48,7 @@ namespace Fabric
     
       GlobalList( RC::ConstHandle<GlobalList> const &before, RC::ConstHandle<Global> const &global, RC::ConstHandle<GlobalList> const &after );
     
-      void appendJSON( Util::JSONArrayGenerator const &jsonArrayGenerator ) const;
+      void appendJSON( Util::JSONArrayGenerator const &jsonArrayGenerator, bool includeLocation ) const;
       
     private:
     
