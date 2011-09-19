@@ -9,6 +9,7 @@
 #include <Fabric/Base/JSON/Integer.h>
 #include <Fabric/Core/Util/Format.h>
 #include <Fabric/Core/Util/JSONGenerator.h>
+#include <Fabric/Base/RC/String.h>
 
 namespace Fabric
 {
@@ -18,23 +19,32 @@ namespace Fabric
     {
     public:
     
-      Location( size_t line, size_t column )
-        : m_line( line )
+      Location( RC::ConstHandle<RC::String> const &filename, size_t line, size_t column )
+        : m_filename( filename )
+        , m_line( line )
         , m_column( column )
       {
+        FABRIC_ASSERT( m_filename );
       }
       
       Location( Location const &that )
-        : m_line( that.m_line )
+        : m_filename( that.m_filename )
+        , m_line( that.m_line )
         , m_column( that.m_column )
       {
       }
       
       Location &operator =( Location const &that )
       {
+        m_filename = that.m_filename;
         m_line = that.m_line;
         m_column = that.m_column;
         return *this;
+      }
+      
+      RC::ConstHandle<RC::String> getFilename() const
+      {
+        return m_filename;
       }
       
       size_t getLine() const
@@ -49,36 +59,24 @@ namespace Fabric
       
       std::string desc() const
       {
-        return _(m_line) + ":" + _(m_column);
+        return m_filename->stdString() + ":" + _(m_line) + ":" + _(m_column);
       }
       
       void appendJSON( Util::JSONGenerator const &jsonGenerator ) const
       {
         Util::JSONArrayGenerator jsonArrayGenerator = jsonGenerator.makeArray();
+        jsonArrayGenerator.makeElement().makeString( m_filename );
         jsonArrayGenerator.makeElement().makeInteger( m_line );
         jsonArrayGenerator.makeElement().makeInteger( m_column );
       }
       
     private:
     
+      RC::ConstHandle<RC::String> m_filename;
       size_t m_line;
       size_t m_column;
     };
-
-    struct LocationLessThanComparator
-    {
-      bool operator ()( Location const &lhs, Location const &rhs )
-      {
-        return lhs.getLine() < rhs.getLine()
-          || (lhs.getLine() == rhs.getLine() && lhs.getColumn() < rhs.getColumn());
-      }
-    };
   };
-  
-  inline std::string _( CG::Location const &location )
-  {
-    return location.desc();
-  }
 };
 
 #endif //_FABRIC_CG_LOCATION_H

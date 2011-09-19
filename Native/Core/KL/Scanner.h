@@ -21,8 +21,12 @@ namespace Fabric
         return new Scanner( source );
       }
       
-      Token nextToken();
+      SourceReader const &getSourceReader() const
+      {
+        return m_sourceReader;
+      }
       
+      Token nextToken();
     
       Location getLocationForStart()
       {
