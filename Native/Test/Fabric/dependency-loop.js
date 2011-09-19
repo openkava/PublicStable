@@ -1,5 +1,5 @@
 FC = createFabricClient();
-FABRIC = wrapFabricClient(FC);
+FABRIC = FC.wrapFabricClient(FC);
 
 node1 = FABRIC.DependencyGraph.createNode("one");
 node2 = FABRIC.DependencyGraph.createNode("two");

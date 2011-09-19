@@ -1,5 +1,5 @@
 FC = createFabricClient();
-FABRIC = wrapFabricClient(FC);
+FABRIC = FC.wrapFabricClient(FC);
 
 var ShaderSource = function( code, type ) {
 	this.code = (code!=undefined) ? code : "";

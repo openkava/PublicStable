@@ -1,5 +1,5 @@
 FC = createFabricClient();
-FABRIC = wrapFabricClient(FC);
+FABRIC = FC.wrapFabricClient(FC);
 load( "UnitTest.js.inc" );
 ut = new FABRIC.UnitTest;
         ut.test( "Selectors", function() {
