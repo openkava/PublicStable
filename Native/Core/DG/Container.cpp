@@ -420,7 +420,6 @@ namespace Fabric
     RC::ConstHandle<JSON::Value> Container::jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg )
     {
       RC::ConstHandle<JSON::Value> result;
-
       if ( cmd == "getData" )
         result = jsonExecGetData( arg );
       else if ( cmd == "getDataSize" )
@@ -451,8 +450,8 @@ namespace Fabric
         jsonExecRemoveMember( arg );
       else if ( cmd == "setCount" )
         jsonSetCount( arg );
-      else result = NamedObject::jsonExec( cmd, arg );
-      throw Exception( "unknown command" );
+      else
+        result = NamedObject::jsonExec( cmd, arg );
       return result;
     }
 
@@ -778,9 +777,9 @@ namespace Fabric
 
       std::string filename, extension;
       if( userFile )
-        m_context->getIOManager()->jsonExecGetUserFile( arg, tempResourceAdapter, filename, extension );
+        m_context->getIOManager()->jsonExecGetUserFile( arg, tempResourceAdapter, true, filename, extension );
       else
-        m_context->getIOManager()->jsonExecGetFile( arg, tempResourceAdapter, filename, extension );
+        m_context->getIOManager()->jsonExecGetFile( arg, tempResourceAdapter, true, filename, extension );
 
       tempResource.setExtension( extension );
       tempResource.setURL( filename );
@@ -794,7 +793,7 @@ namespace Fabric
       if( userFile )
         m_context->getIOManager()->jsonExecPutUserFile( arg, resource.getDataSize(), resource.getDataPtr(), resource.getExtension().c_str() );
       else
-        m_context->getIOManager()->jsonExecPutFile( arg, resource.getDataSize(), resource.getDataPtr(), resource.getExtension().c_str() );
+        m_context->getIOManager()->jsonExecPutFile( arg, resource.getDataSize(), resource.getDataPtr() );
     }
 
   };
