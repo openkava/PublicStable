@@ -56,7 +56,7 @@ namespace Fabric
         );
       
       void registerTypes( RC::Handle<RT::Manager> const &rtManager, CG::Diagnostics &diagnostics ) const;
-      virtual void appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const;
+      virtual void appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator, bool includeLocation ) const;
     
     private:
     

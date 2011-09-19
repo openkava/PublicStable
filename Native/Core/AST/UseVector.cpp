@@ -27,11 +27,11 @@ namespace Fabric
     {
     }
     
-    void UseVector::appendJSON( Util::JSONGenerator const &jsonGenerator ) const
+    void UseVector::appendJSON( Util::JSONGenerator const &jsonGenerator, bool includeLocation ) const
     {
       Util::JSONArrayGenerator jsonArrayGenerator = jsonGenerator.makeArray();
       for ( const_iterator it=begin(); it!=end(); ++it )
-        (*it)->appendJSON( jsonArrayGenerator.makeElement() );
+        (*it)->appendJSON( jsonArrayGenerator.makeElement(), includeLocation );
     }
     
     void UseVector::collectUses( UseNameToLocationMap &uses ) const

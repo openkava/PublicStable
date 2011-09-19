@@ -31,7 +31,7 @@ namespace Fabric
     {
     public:
     
-      virtual void appendJSON( Util::JSONGenerator const &jsonGenerator ) const;
+      virtual void appendJSON( Util::JSONGenerator const &jsonGenerator, bool includeLocation ) const;
     
       virtual bool isFunction() const { return false; }
       
