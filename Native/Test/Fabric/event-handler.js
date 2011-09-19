@@ -1,5 +1,5 @@
 FC = createFabricClient();
-F = wrapFabricClient(FC);
+F = FC.wrapFabricClient(FC);
 
 eh = F.DG.createEventHandler("event handler");
 print(eh.getName());

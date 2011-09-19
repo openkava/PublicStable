@@ -14,7 +14,6 @@ if [ "$BUILD_OS" = "Darwin" ]; then
   BUILD_ARCH=universal
 fi
 
-WRAPPERS_FILE="../../../Web/Core/FABRIC.Wrappers.js"
 if [ "$BUILD_OS" = "Darwin" ]; then
   EXTS_DIR="../../dist/$BUILD_OS/$BUILD_ARCH/$BUILD_TYPE/FabricEngine/Library/Fabric/Exts"
 elif [ "$BUILD_OS" = "Windows" ]; then
@@ -44,7 +43,7 @@ fi
 for f in "$@"; do
   TMPFILE=$(tmpfilename)
 
-  LD_LIBRARY_PATH=build/ $VALGRIND_CMD ../../build/$BUILD_OS/$BUILD_ARCH/$BUILD_TYPE/Fabric/Clients/CLI/fabric --load="$WRAPPERS_FILE" --exts="$EXTS_DIR" $f 2>&1 \
+  LD_LIBRARY_PATH=build/ $VALGRIND_CMD ../../build/$BUILD_OS/$BUILD_ARCH/$BUILD_TYPE/Fabric/Clients/CLI/fabric --exts="$EXTS_DIR" $f 2>&1 \
     | grep -v '^\[FABRIC\] .*Extension registered' \
     | grep -v '^\[FABRIC\] .*Searching extension directory' \
     | grep -v '^\[FABRIC\] .*unable to open extension directory' \
@@ -61,7 +60,7 @@ for f in "$@"; do
       echo "Actual output ($TMPFILE):"
       cat $TMPFILE
       echo "To debug:"
-      echo "gdb --args" $VALGRIND_CMD ../../build/$BUILD_OS/$BUILD_ARCH/$BUILD_TYPE/Fabric/Clients/CLI/fabric --load="'$WRAPPERS_FILE'" --exts="'$EXTS_DIR'" $f
+      echo "gdb --args" $VALGRIND_CMD ../../build/$BUILD_OS/$BUILD_ARCH/$BUILD_TYPE/Fabric/Clients/CLI/fabric --exts="'$EXTS_DIR'" $f
       exit 1
     else
       echo "PASS $(basename $f)";

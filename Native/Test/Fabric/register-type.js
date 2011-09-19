@@ -1,5 +1,5 @@
 FC = createFabricClient();
-FABRIC = wrapFabricClient(FC);
+FABRIC = FC.wrapFabricClient(FC);
 
 var Vec2 = function( x, y ) {
   if ( typeof x === "number" && typeof y === "number" ) {
