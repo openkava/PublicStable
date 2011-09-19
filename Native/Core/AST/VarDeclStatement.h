@@ -42,7 +42,7 @@ namespace Fabric
         RC::ConstHandle<VarDeclVector> const &varDecls
         );
       
-      virtual void appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const;
+      virtual void appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator, bool includeLocation ) const;
 
     private:
     

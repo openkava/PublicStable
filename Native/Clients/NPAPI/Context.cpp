@@ -110,12 +110,12 @@ namespace Fabric
       return result;
     }
 
-    void Context::queryUserFileAndDir( bool existingFile, std::string const &title, std::string const &defaultFilename, std::string const &extension, RC::ConstHandle<IO::Dir> &dir, std::string &filename ) const
+    std::string Context::queryUserFilePath( bool existingFile, std::string const &title, std::string const &defaultFilename, std::string const &extension ) const
     {
       if( m_viewPorts.empty() )
         throw Exception( "Error: viewport is not initialized" );
 
-      return m_viewPorts.begin()->second->queryUserFileAndDir( existingFile, title, defaultFilename, extension, dir, filename );
+      return m_viewPorts.begin()->second->queryUserFilePath( existingFile, title, defaultFilename, extension );
     }
   };
 };

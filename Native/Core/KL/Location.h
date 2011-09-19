@@ -17,33 +17,36 @@ namespace Fabric
     {
     public:
     
-      Location()
-        : m_index( 0 )
-        , m_line( 1 )
-        , m_column( 1 )
-      {
-      }
-    
-      Location( size_t index, size_t line, size_t column )
-        : m_index( index )
+      Location( RC::ConstHandle<RC::String> const &filename, size_t index = 0, size_t line = 1, size_t column = 1 )
+        : m_filename( filename )
+        , m_index( index )
         , m_line( line )
         , m_column( column )
       {
+        FABRIC_ASSERT( m_filename );
       }
       
       Location( Location const &that )
-        : m_index( that.m_index )
+        : m_filename( that.m_filename )
+        , m_index( that.m_index )
         , m_line( that.m_line )
         , m_column( that.m_column )
       {
+        FABRIC_ASSERT( m_filename );
       }
       
       Location &operator =( Location const &that )
       {
+        m_filename = that.m_filename;
         m_index = that.m_index;
         m_line = that.m_line;
         m_column = that.m_column;
         return *this;
+      }
+      
+      RC::ConstHandle<RC::String> getFilename() const
+      {
+        return m_filename;
       }
       
       size_t getIndex() const
@@ -78,11 +81,12 @@ namespace Fabric
       
       operator CG::Location() const
       {
-        return CG::Location( m_line, m_column );
+        return CG::Location( m_filename, m_line, m_column );
       }
       
     private:
     
+      RC::ConstHandle<RC::String> m_filename;
       size_t m_index;
       size_t m_line;
       size_t m_column;

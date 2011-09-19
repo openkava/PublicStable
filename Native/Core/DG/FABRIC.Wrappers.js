@@ -166,8 +166,8 @@
           members: members,
           defaultValue: defaultValue
         };
-        if ('kBindings' in desc)
-          arg.kBindings = desc.kBindings;
+        if ('klBindings' in desc)
+          arg.klBindings = desc.klBindings;
 
         RT.queueCommand('registerType', arg, function() {
           delete RT.prototypes[name];
@@ -404,6 +404,9 @@
       result.patch = function(diff) {
         parentPatch(diff);
 
+        if ('filename' in diff)
+          result.filename = diff.filename;
+
         if ('sourceCode' in diff)
           result.sourceCode = diff.sourceCode;
 
@@ -431,21 +434,41 @@
         });
       };
 
+      result.pub.getFilename = function() {
+        if (!('filename' in result))
+          executeQueuedCommands();
+        return result.sourceCode;
+      };
+
       result.pub.getSourceCode = function() {
         if (!('sourceCode' in result))
           executeQueuedCommands();
         return result.sourceCode;
       };
 
-      result.pub.setSourceCode = function(sourceCode) {
+      var setSourceCode = function(filename, sourceCode) {
+        var oldFilename = result.filename;
+        result.filename = filename;
         var oldSourceCode = result.sourceCode;
         result.sourceCode = sourceCode;
         var oldDiagnostics = result.diagnostics;
         delete result.diagnostics;
-        result.queueCommand('setSourceCode', sourceCode, function() {
+        result.queueCommand('setSourceCode', {
+          filename: filename,
+          sourceCode: sourceCode
+        }, function() {
+          result.filename = oldFilename;
           result.sourceCode = oldSourceCode;
           result.diagnostics = oldDiagnostics;
         });
+      };
+      result.pub.setSourceCode = function(filename, sourceCode) {
+        if (!sourceCode) {
+          // [pzion 20110919] Legacy usage: assume default filename
+          sourceCode = filename;
+          filename = "(unknown)";
+        }
+        setSourceCode(filename, sourceCode);
       };
 
       result.pub.getEntryFunctionName = function() {

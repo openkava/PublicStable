@@ -1,5 +1,5 @@
 FC = createFabricClient();
-F = wrapFabricClient(FC);
+F = FC.wrapFabricClient(FC);
 
 var mapNamedObjectsToNames = function (namedObjects) {
   var result = {};

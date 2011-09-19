@@ -66,10 +66,10 @@ namespace Fabric
       return static_cast<IOStream *>( stream->notifyData )->nppDestroyStream( npp, stream, reason );
     }
 
-    void IOManager::queryUserFileAndDir( bool existingFile, std::string const &title, std::string const &defaultFilename, std::string const &extension, RC::ConstHandle<IO::Dir>& dir, std::string& filename ) const
+    std::string IOManager::queryUserFilePath( bool existingFile, std::string const &title, std::string const &defaultFilename, std::string const &extension ) const
     {
       FABRIC_ASSERT( m_context );
-      m_context->queryUserFileAndDir( existingFile, title, defaultFilename, extension, dir, filename );
+      return m_context->queryUserFilePath( existingFile, title, defaultFilename, extension );
     }
   };
 };

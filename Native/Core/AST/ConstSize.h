@@ -31,7 +31,7 @@ namespace Fabric
     
       ConstSize( CG::Location const &location, size_t value );
       
-      virtual void appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const;
+      virtual void appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator, bool includeLocation ) const;
       
     private:
     

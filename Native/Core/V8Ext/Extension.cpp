@@ -119,16 +119,14 @@ namespace Fabric
         return IOStream::Create( url, dataCallback, endCallback, failureCallback, target, userData );
       }
 
-      virtual void queryUserFileAndDir(
+      virtual std::string queryUserFilePath(
         bool existingFile,
         std::string const &title,
         std::string const &defaultFilename,
-        std::string const &extension,
-        RC::ConstHandle<IO::Dir>& dir,
-        std::string& filename
+        std::string const &extension
         ) const
       {
-        filename = defaultFilename;
+        return defaultFilename;
       }
   
     protected:
@@ -153,6 +151,7 @@ namespace Fabric
       v8ClientObjectTemplate->SetInternalFieldCount( 1 );
       v8ClientObjectTemplate->Set( "jsonExec", v8::FunctionTemplate::New( &Client::V8JSONExec ) );
       v8ClientObjectTemplate->Set( "setJSONNotifyCallback", v8::FunctionTemplate::New( &Client::V8SetJSONNotifyCallback ) );
+      v8ClientObjectTemplate->Set( "wrapFabricClient", v8::FunctionTemplate::New( &Client::V8WrapFabricClient ) );
       v8ClientObjectTemplate->Set( "dispose", v8::FunctionTemplate::New( &Client::V8Dispose ) );
       m_v8ClientObjectTemplate = v8::Persistent<v8::ObjectTemplate>::New( v8ClientObjectTemplate );
     }

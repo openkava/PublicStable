@@ -48,7 +48,7 @@ namespace Fabric
 
       RC::Handle<IOManager> getIOManager() const;
 
-      void queryUserFileAndDir( bool existingFile, std::string const &title, std::string const &defaultFilename, std::string const &extension, RC::ConstHandle<IO::Dir> &dir, std::string &filename ) const;
+      std::string queryUserFilePath( bool existingFile, std::string const &title, std::string const &defaultFilename, std::string const &extension ) const;
 
     protected:
     

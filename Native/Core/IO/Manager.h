@@ -51,13 +51,11 @@ namespace Fabric
 
     protected:
 
-      virtual void queryUserFileAndDir(
+      virtual std::string queryUserFilePath(
         bool existingFile,
         std::string const &title,
         std::string const &defaultFilename,
-        std::string const &extension,
-        RC::ConstHandle<Dir>& dir,
-        std::string& file
+        std::string const &extension
         ) const = 0;
 
     private:
