@@ -43,7 +43,7 @@ namespace Fabric
         RC::ConstHandle<ExprVector> const &args
         );
       
-      virtual void appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const;
+      virtual void appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator, bool includeLocation ) const;
     
     private:
     

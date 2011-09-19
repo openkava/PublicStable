@@ -98,7 +98,7 @@ namespace Fabric
 
       void drawWatermark( size_t width, size_t height );
 
-      virtual void queryUserFileAndDir( bool existingFile, std::string const &title, std::string const &defaultFilename, std::string const &extension, RC::ConstHandle<IO::Dir> &dir, std::string &filename ) = 0;
+      virtual std::string queryUserFilePath( bool existingFile, std::string const &title, std::string const &defaultFilename, std::string const &extension ) = 0;
 
     protected:
     

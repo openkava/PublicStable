@@ -342,7 +342,7 @@ namespace Fabric
       m_wglStack.pop_back();
     }
 
-    void WindowsViewPort::queryUserFileAndDir( bool existingFile, std::string const &title, std::string const &defaultFilename, std::string const &extension, RC::ConstHandle<IO::Dir> &dir, std::string &filename )
+    std::string WindowsViewPort::queryUserFilePath( bool existingFile, std::string const &title, std::string const &defaultFilename, std::string const &extension )
     {
       OPENFILENAME options;
       memset( &options, 0, sizeof(options) );
@@ -373,26 +373,19 @@ namespace Fabric
       if( !title.empty() )
         options.lpstrTitle = title.c_str();
 
-      bool success;
       if( existingFile )
       {
         options.Flags = OFN_FILEMUSTEXIST;
-        success = GetOpenFileName(&options) != FALSE;
+        if( !GetOpenFileName(&options) )
+          throw Exception( "Open file failed or was canceled by user" );
       }
       else
       {
         options.Flags = OFN_OVERWRITEPROMPT | OFN_PATHMUSTEXIST;
-        success = GetSaveFileName(&options) != FALSE;
+        if( !GetSaveFileName(&options) )
+          throw Exception( "Save file failed or was canceled by user" );
       }
-
-      std::string fullPath( options.lpstrFile );
-
-      if( !success )
-        throw Exception( existingFile ? "Opening file " : "Saving file " + fullPath + " failed or was canceled by user" );
-
-      std::string dirString;
-      IO::SplitPath( fullPath, dirString, filename );
-      dir = IO::Dir::Create( dirString, false );
+      return options.lpstrFile;
     }
   };
 };

@@ -39,7 +39,7 @@ namespace Fabric
     
       NotOp( CG::Location const &location, RC::ConstHandle<Expr> const &child );
       
-      virtual void appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const;
+      virtual void appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator, bool includeLocation ) const;
 
     private:
     

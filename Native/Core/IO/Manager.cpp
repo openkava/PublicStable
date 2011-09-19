@@ -125,7 +125,11 @@ namespace Fabric
         if( !(extPos == defaultFilename.size() - extension.size() && extPos > 0 && defaultFilename[ extPos-1 ] == L'.') )
           defaultFilename += '.' + extension;
       }
-      queryUserFileAndDir( existing, title, defaultFilename, extension, dir, filename );
+      std::string fullPath = queryUserFilePath( existing, title, defaultFilename, extension );
+
+      std::string dirString;
+      IO::SplitPath( fullPath, dirString, filename );
+      dir = IO::Dir::Create( dirString, false );
     }
 
     void Manager::putFile( RC::ConstHandle<Dir>& dir, std::string const &filename, size_t size, const void* data ) const

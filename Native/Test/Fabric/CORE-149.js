@@ -1,5 +1,5 @@
 FC = createFabricClient();
-FABRIC = wrapFabricClient(FC);
+FABRIC = FC.wrapFabricClient(FC);
 
 node = FABRIC.DependencyGraph.createNode( "node" );
 node.addMember( "input", "Scalar" );
