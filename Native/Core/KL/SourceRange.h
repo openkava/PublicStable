@@ -18,7 +18,10 @@ namespace Fabric
     {
     public:
     
-      SourceRange()
+      SourceRange( RC::ConstHandle<Source> const &source )
+        : m_source( source )
+        , m_startLocation( source->filename() )
+        , m_endLocation( source->filename() )
       {
       }
     

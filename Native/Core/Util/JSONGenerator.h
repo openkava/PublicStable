@@ -7,6 +7,7 @@
 
 #include <Fabric/Base/Util/SimpleString.h>
 #include <Fabric/Core/Util/Assert.h>
+#include <Fabric/Base/RC/String.h>
 
 namespace Fabric
 {
@@ -111,6 +112,11 @@ namespace Fabric
       void makeString( std::string const &string ) const
       {
         makeString( string.data(), string.length() );
+      }
+      
+      void makeString( RC::ConstHandle<RC::String> const &string ) const
+      {
+        makeString( string->data(), string->length() );
       }
       
       JSONObjectGenerator makeObject() const;

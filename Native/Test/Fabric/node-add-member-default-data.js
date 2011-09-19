@@ -1,5 +1,5 @@
 FC = createFabricClient();
-FABRIC = wrapFabricClient(FC);
+FABRIC = FC.wrapFabricClient(FC);
 
 var node = FABRIC.DG.createNode("node");
 node.addMember("foo","Scalar",3.141);

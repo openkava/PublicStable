@@ -30,9 +30,9 @@ namespace Fabric
     {
     }
     
-    void ConstBoolean::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
+    void ConstBoolean::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator, bool includeLocation ) const
     {
-      Expr::appendJSONMembers( jsonObjectGenerator );
+      Expr::appendJSONMembers( jsonObjectGenerator, includeLocation );
       jsonObjectGenerator.makeMember( "value" ).makeBoolean( m_value );
     }
     

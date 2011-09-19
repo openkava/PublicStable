@@ -1,5 +1,5 @@
 FC = createFabricClient();
-F = wrapFabricClient(FC);
+F = FC.wrapFabricClient(FC);
 
 o = F.DG.createOperator("op");
 o.setSourceCode("operator entry( io Integer foo ) { report 'Hello'; }");

@@ -30,7 +30,7 @@ namespace Fabric
       
       static RC::ConstHandle<UseVector> Create( RC::ConstHandle<Use> const &first = 0, RC::ConstHandle<UseVector> const &remaining = 0 );
 
-      void appendJSON( Util::JSONGenerator const &jsonGenerator ) const;
+      void appendJSON( Util::JSONGenerator const &jsonGenerator, bool includeLocation ) const;
       void collectUses( UseNameToLocationMap &uses ) const;
 
     protected:

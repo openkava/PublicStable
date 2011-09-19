@@ -37,9 +37,9 @@ namespace Fabric
     {
     }
     
-    void Alias::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
+    void Alias::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator, bool includeLocation ) const
     {
-      Global::appendJSONMembers( jsonObjectGenerator );
+      Global::appendJSONMembers( jsonObjectGenerator, includeLocation );
       jsonObjectGenerator.makeMember( "newTypeName" ).makeString( m_name );
       jsonObjectGenerator.makeMember( "oldTypeName" ).makeString( m_adapterName );
     }
