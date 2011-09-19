@@ -17,7 +17,15 @@ namespace Fabric
     {
     public:
     
-      SourceReader( RC::ConstHandle<Source> const &source, Location const &initialLocation = Location() )
+      SourceReader( RC::ConstHandle<Source> const &source )
+        : m_source( source )
+        , m_data( source->data() )
+        , m_length( source->length() )
+        , m_location( source->filename() )
+      {
+      }
+    
+      SourceReader( RC::ConstHandle<Source> const &source, Location const &initialLocation )
         : m_source( source )
         , m_data( source->data() )
         , m_length( source->length() )
