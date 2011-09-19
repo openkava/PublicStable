@@ -370,6 +370,9 @@ namespace Fabric
         options.nFilterIndex = 1;
       }
 
+      if( !title.empty() )
+        options.lpstrTitle = title.c_str();
+
       bool success;
       if( existingFile )
       {

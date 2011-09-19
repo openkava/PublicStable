@@ -7,17 +7,22 @@
 
 #include <Fabric/Core/IO/Stream.h>
 #include  <map>
-#include  <list>
+#include  <vector>
 
 namespace Fabric
 {
+  namespace JSON
+  {
+    class Value;
+  };
+
   namespace IO
   {
     class Dir;
 
     class Manager : public RC::Object
     {
-      typedef std::map<std::string, RC::Handle<Dir> > HandleToDirMap;
+      typedef std::map<std::string, RC::ConstHandle<Dir> > HandleToDirMap;
 
     public:
     
@@ -38,11 +43,11 @@ namespace Fabric
       virtual RC::ConstHandle<JSON::Value> jsonRoute( std::vector<std::string> const &dst, size_t dstOffset, std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg );
       virtual RC::ConstHandle<JSON::Value> jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg );
 
-      void jsonExecPutFile( RC::ConstHandle<JSON::Value> const &arg, size_t size, const void* data, const char* defaultExtension = NULL ) const;
-      void jsonExecGetFile( RC::ConstHandle<JSON::Value> const &arg, ByteContainer& bytes, std::string& filename, std::string& extension ) const;
+      void jsonExecPutFile( RC::ConstHandle<JSON::Value> const &arg, size_t size, const void* data ) const;
+      void jsonExecGetFile( RC::ConstHandle<JSON::Value> const &arg, ByteContainer& bytes, bool binary, std::string& filename, std::string& extension ) const;
 
       void jsonExecPutUserFile( RC::ConstHandle<JSON::Value> const &arg, size_t size, const void* data, const char* defaultExtension = NULL ) const;
-      void jsonExecGetUserFile( RC::ConstHandle<JSON::Value> const &arg, ByteContainer& bytes, std::string& filename, std::string& extension ) const;
+      void jsonExecGetUserFile( RC::ConstHandle<JSON::Value> const &arg, ByteContainer& bytes, bool binary, std::string& filename, std::string& extension ) const;
 
     protected:
 
@@ -57,13 +62,17 @@ namespace Fabric
 
     private:
 
-      void jsonQueryUserFileAndDir( RC::ConstHandle<JSON::Value> const &arg, bool *existingFile, const char *defaultExtension, RC::ConstHandle<Dir>& dir, std::string& file ) const;
+      void putFile( RC::ConstHandle<Dir>& dir, std::string const &filename, size_t size, const void* data ) const;
+      void getFile( RC::ConstHandle<Dir>& dir, std::string const &filename, bool binary, ByteContainer& bytes ) const;
 
-      RC::ConstHandle<JSON::Value> jsonExecGetUserTextFile( RC::ConstHandle<JSON::Value> const &arg );
-      void jsonExecPutUserTextFile( RC::ConstHandle<JSON::Value> const &arg );
-      RC::ConstHandle<JSON::Value> jsonExecGetTextFile( RC::ConstHandle<JSON::Value> const &arg );
-      void jsonExecPutTextFile( RC::ConstHandle<JSON::Value> const &arg );
+      void jsonQueryUserFileAndDir( RC::ConstHandle<JSON::Value> const &arg, bool *existingFile, const char *defaultExtension, RC::ConstHandle<Dir>& dir, std::string& filename ) const;
+      void jsonGetFileAndDirFromHandlePath( RC::ConstHandle<JSON::Value> const &arg, bool existingFile, RC::ConstHandle<Dir>& dir, std::string& file ) const;
+
       RC::ConstHandle<JSON::Value> jsonExecQueryUserFileAndFolder( RC::ConstHandle<JSON::Value> const &arg );
+      RC::ConstHandle<JSON::Value> jsonExecGetUserTextFile( RC::ConstHandle<JSON::Value> const &arg ) const;
+      void jsonExecPutUserTextFile( RC::ConstHandle<JSON::Value> const &arg ) const;
+      RC::ConstHandle<JSON::Value> jsonExecGetTextFile( RC::ConstHandle<JSON::Value> const &arg ) const;
+      void jsonExecPutTextFile( RC::ConstHandle<JSON::Value> const &arg );
 
       HandleToDirMap m_handleToDirMap;
     };

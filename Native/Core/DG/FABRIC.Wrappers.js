@@ -652,22 +652,44 @@
         }]);
       };
 
-      result.pub.putResourceToUserFile = function(memberName, uiOptions) {
+      result.pub.putResourceToUserFile = function(memberName, uiTitle, extension, defaultFileName) {
         result.queueCommand('putResourceToUserFile', {
           'memberName': memberName,
-          'uiOptions': uiOptions
+          'uiOptions': {
+            'title': uiTitle,
+            'extension': extension,
+            'defaultFileName': defaultFileName
+          }
         });
         executeQueuedCommands();
       };
 
-      result.pub.loadResourceFromUserFile = function(memberName, uiOptions) {
+      result.pub.getResourceFromUserFile = function(memberName, uiTitle, extension) {
         result.queueCommand('getResourceFromUserFile', {
           'memberName': memberName,
-          'uiOptions': uiOptions
+          'uiOptions': {
+            'title': uiTitle,
+            'extension': extension
+          }
         });
         executeQueuedCommands();
       };
 
+      result.pub.getResourceFromFile = function(memberName, handleBasedPathArray) {
+        result.queueCommand('getResourceFromFile', {
+          'memberName': memberName,
+          'path': handleBasedPathArray
+        });
+        executeQueuedCommands();
+      }
+
+      result.pub.putResourceToFile = function(memberName, handleBasedPathArray) {
+        result.queueCommand('putResourceToFile', {
+          'memberName': memberName,
+          'path': handleBasedPathArray
+        });
+        executeQueuedCommands();
+      }
       return result;
     };
 
@@ -1151,6 +1173,84 @@
   };
   var EX = createEX();
 
+  var createIO = function() {
+
+    var IO = {
+      pub: {}
+    };
+
+    IO.queueCommand = function(cmd, arg, unwind, callback) {
+      queueCommand(['IO'], cmd, arg, unwind, callback);
+    };
+
+    IO.pub.queryUserFileAndFolderHandle = function(existingFile, uiTitle, extension, defaultFileName) {
+      var handleBasedPathArray;
+      IO.queueCommand('queryUserFileAndFolder', {
+        'existingFile': existingFile,
+        'uiOptions': {
+          'title': uiTitle,
+          'extension': extension,
+          'defaultFileName': defaultFileName
+        }
+      }, function() {
+      }, function(data) {
+        handleBasedPathArray = data;
+      });
+      executeQueuedCommands();
+      return handleBasedPathArray;
+    };
+
+    IO.pub.getTextFile = function(handleBasedPathArray) {
+      var fileContent;
+      IO.queueCommand('getTextFile', {
+        'path': handleBasedPathArray
+      }, function() {
+      }, function(data) {
+        fileContent = data;
+      });
+      executeQueuedCommands();
+      return fileContent;
+    }
+
+    IO.pub.putTextFile = function(content, handleBasedPathArray) {
+      IO.queueCommand('putTextFile', {
+        'content': content,
+        'path': handleBasedPathArray
+      });
+      executeQueuedCommands();
+    }
+
+    IO.pub.getUserTextFile = function(uiTitle, extension) {
+      var fileContent;
+      IO.queueCommand('getUserTextFile', {
+        'uiOptions': {
+          'title': uiTitle,
+          'extension': extension
+        }
+      }, function() {
+      }, function(data) {
+        fileContent = data;
+      });
+      executeQueuedCommands();
+      return fileContent;
+    };
+
+    IO.pub.putUserTextFile = function(content, uiTitle, extension, defaultFileName) {
+      IO.queueCommand('putUserTextFile', {
+        'content': content,
+        'uiOptions': {
+          'title': uiTitle,
+          'extension': extension,
+          'defaultFileName': defaultFileName
+        }
+      });
+      executeQueuedCommands();
+    };
+
+    return IO;
+  };
+  var IO = createIO();
+
   var createBuild = function() {
     var build = {
       pub: {}
@@ -1451,6 +1551,14 @@
             throw 'EX: ' + e;
           }
           break;
+        case 'IO':
+          try {
+            IO.route(src, cmd, arg);
+          }
+          catch (e) {
+            throw 'IO: ' + e;
+          }
+          break;
         case 'VP':
           try {
             VP.route(src, cmd, arg);
@@ -1498,6 +1606,7 @@
     RegisteredTypesManager: RT.pub,
     DG: DG.pub,
     EX: EX.pub,
+    IO: IO.pub,
     DependencyGraph: DG.pub,
     VP: VP.pub,
     getLicenses: function() {
