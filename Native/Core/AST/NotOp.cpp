@@ -25,10 +25,10 @@ namespace Fabric
     {
     }
     
-    void NotOp::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
+    void NotOp::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator, bool includeLocation ) const
     {
-      Expr::appendJSONMembers( jsonObjectGenerator );
-      m_child->appendJSON( jsonObjectGenerator.makeMember( "child" ) );
+      Expr::appendJSONMembers( jsonObjectGenerator, includeLocation );
+      m_child->appendJSON( jsonObjectGenerator.makeMember( "child" ), includeLocation );
     }
     
     void NotOp::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const

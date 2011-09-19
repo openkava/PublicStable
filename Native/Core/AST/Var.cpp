@@ -19,9 +19,9 @@ namespace Fabric
     {
     }
     
-    void Var::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
+    void Var::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator, bool includeLocation ) const
     {
-      Expr::appendJSONMembers( jsonObjectGenerator );
+      Expr::appendJSONMembers( jsonObjectGenerator, includeLocation );
       jsonObjectGenerator.makeMember( "name" ).makeString( m_name );
     }
     

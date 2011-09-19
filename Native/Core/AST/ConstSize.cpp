@@ -32,9 +32,9 @@ namespace Fabric
     {
     }
     
-    void ConstSize::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
+    void ConstSize::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator, bool includeLocation ) const
     {
-      Expr::appendJSONMembers( jsonObjectGenerator );
+      Expr::appendJSONMembers( jsonObjectGenerator, includeLocation );
       jsonObjectGenerator.makeMember( "value" ).makeInteger( m_value );
     }
     

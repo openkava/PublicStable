@@ -34,7 +34,7 @@ namespace Fabric
         return new CodeManager;
       }
       
-      RC::ConstHandle<Code> compileSourceCode( RC::ConstHandle<Context> const &context, std::string const &sourceCode );
+      RC::ConstHandle<Code> compileSourceCode( RC::ConstHandle<Context> const &context, std::string const &filename, std::string const &sourceCode );
       
     protected:
     
