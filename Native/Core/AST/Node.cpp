@@ -19,15 +19,16 @@ namespace Fabric
     {
     }
     
-    void Node::appendJSON( Util::JSONGenerator const &jsonGenerator ) const
+    void Node::appendJSON( Util::JSONGenerator const &jsonGenerator, bool includeLocation ) const
     {
-      appendJSONMembers( jsonGenerator.makeObject() );
+      appendJSONMembers( jsonGenerator.makeObject(), includeLocation );
     }
     
-    void Node::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
+    void Node::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator, bool includeLocation ) const
     {
       jsonObjectGenerator.makeMember( "+" ).makeString( nodeTypeName() );
-      m_location.appendJSON( jsonObjectGenerator.makeMember( "-" ) );
+      if ( includeLocation )
+        m_location.appendJSON( jsonObjectGenerator.makeMember( "-" ), includeLocation );
     }
 
     void Node::addWarning( CG::Diagnostics &diagnostics, Util::SimpleString const &desc ) const

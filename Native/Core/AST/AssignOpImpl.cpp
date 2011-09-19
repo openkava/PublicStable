@@ -49,9 +49,9 @@ namespace Fabric
     {
     }
     
-    void AssignOpImpl::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
+    void AssignOpImpl::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator, bool includeLocation ) const
     {
-      MethodOpImpl::appendJSONMembers( jsonObjectGenerator );
+      MethodOpImpl::appendJSONMembers( jsonObjectGenerator, includeLocation );
       jsonObjectGenerator.makeMember( "op" ).makeString( CG::assignOpTypeDesc( m_assignOpType ) );
     }
   };

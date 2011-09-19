@@ -488,7 +488,7 @@ namespace Fabric
 
     Token Scanner::createToken( Token::Type tokenType, SourceRange const &sourceRange ) const
     {
-      return Token( tokenType, sourceRange );
+      return Token( sourceRange, tokenType );
     }
   };
 };
