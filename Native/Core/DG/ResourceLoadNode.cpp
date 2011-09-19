@@ -5,6 +5,7 @@
 #include <Fabric/Core/DG/ResourceLoadNode.h>
 #include <Fabric/Core/DG/Context.h>
 #include <Fabric/Core/RT/Manager.h>
+#include <Fabric/Core/IO/Helpers.h>
 #include <Fabric/Core/IO/Manager.h>
 #include <Fabric/Core/RT/StructDesc.h>
 #include <Fabric/Core/RT/StringDesc.h>
@@ -128,9 +129,8 @@ namespace Fabric
       bool notify
       )
     {
-      std::string extension;
       std::string url = m_fabricResourceStreamData.getURL();
-
+      std::string extension = IO::GetURLExtension( url );
       size_t extensionPos = url.rfind('.');
       if( extensionPos != std::string::npos )
         extension = url.substr( extensionPos+1 );
