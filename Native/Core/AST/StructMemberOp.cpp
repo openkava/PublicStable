@@ -26,10 +26,10 @@ namespace Fabric
     {
     }
     
-    void StructMemberOp::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
+    void StructMemberOp::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator, bool includeLocation ) const
     {
-      Expr::appendJSONMembers( jsonObjectGenerator );
-      m_structExpr->appendJSON( jsonObjectGenerator.makeMember( "expr" ) );
+      Expr::appendJSONMembers( jsonObjectGenerator, includeLocation );
+      m_structExpr->appendJSON( jsonObjectGenerator.makeMember( "expr" ), includeLocation );
       jsonObjectGenerator.makeMember( "memberName" ).makeString( m_memberName );
     }
     

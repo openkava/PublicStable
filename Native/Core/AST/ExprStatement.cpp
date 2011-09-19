@@ -27,10 +27,10 @@ namespace Fabric
     {
     }
     
-    void ExprStatement::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
+    void ExprStatement::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator, bool includeLocation ) const
     {
-      Statement::appendJSONMembers( jsonObjectGenerator );
-      m_expr->appendJSON( jsonObjectGenerator.makeMember( "expr" ) );
+      Statement::appendJSONMembers( jsonObjectGenerator, includeLocation );
+      m_expr->appendJSON( jsonObjectGenerator.makeMember( "expr" ), includeLocation );
     }
     
     void ExprStatement::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const

@@ -33,11 +33,11 @@ namespace Fabric
     {
     }
     
-    void VarDeclStatement::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
+    void VarDeclStatement::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator, bool includeLocation ) const
     {
-      Statement::appendJSONMembers( jsonObjectGenerator );
+      Statement::appendJSONMembers( jsonObjectGenerator, includeLocation );
       jsonObjectGenerator.makeMember( "baseType" ).makeString( m_baseType );
-      m_varDecls->appendJSON( jsonObjectGenerator.makeMember( "varDecls" ) );
+      m_varDecls->appendJSON( jsonObjectGenerator.makeMember( "varDecls" ), includeLocation );
     }
     
     void VarDeclStatement::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const

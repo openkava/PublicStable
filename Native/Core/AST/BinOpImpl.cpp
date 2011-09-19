@@ -48,11 +48,11 @@ namespace Fabric
     {
     }
     
-    void BinOpImpl::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
+    void BinOpImpl::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator, bool includeLocation ) const
     {
-      FunctionBase::appendJSONMembers( jsonObjectGenerator );
+      FunctionBase::appendJSONMembers( jsonObjectGenerator, includeLocation );
       jsonObjectGenerator.makeMember( "op" ).makeString( CG::binOpUserName( m_binOpType ) );
-      m_params->appendJSON( jsonObjectGenerator.makeMember( "params" ) );
+      m_params->appendJSON( jsonObjectGenerator.makeMember( "params" ), includeLocation );
     }
     
     std::string BinOpImpl::getEntryName( RC::Handle<CG::Manager> const &cgManager ) const
