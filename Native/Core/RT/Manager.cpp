@@ -441,11 +441,32 @@ namespace Fabric
         RC::ConstHandle<RC::Object> klBindingsAST;
         try
         {
-          RC::ConstHandle<JSON::Value> klBindingsJSONValue = argJSONObject->maybeGet( "kBindings" );
+          RC::ConstHandle<JSON::Value> klBindingsJSONValue = argJSONObject->maybeGet( "klBindings" );
           if ( klBindingsJSONValue )
           {
-            std::string klBindings = klBindingsJSONValue->toString()->value();
-            klBindingsAST = m_klCompiler->compile( klBindings );
+            RC::ConstHandle<JSON::Object> klBindingsJSONObject = klBindingsJSONValue->toObject();
+            
+            std::string filename;
+            try
+            {
+              filename = klBindingsJSONObject->get("filename")->toString()->value();
+            }
+            catch ( Exception e )
+            {
+              throw "'filename': " + e;
+            }
+            
+            std::string sourceCode;
+            try
+            {
+              sourceCode = klBindingsJSONObject->get("sourceCode")->toString()->value();
+            }
+            catch ( Exception e )
+            {
+              throw "'sourceCode': " + e;
+            }
+
+            klBindingsAST = m_klCompiler->compile( filename, sourceCode );
           }
         }
         catch ( Exception e )

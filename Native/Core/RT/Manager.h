@@ -51,7 +51,7 @@ namespace Fabric
       {
       public:
       
-        virtual RC::ConstHandle<RC::Object> compile( std::string const &klSource ) const = 0;
+        virtual RC::ConstHandle<RC::Object> compile( std::string const &klFilename, std::string const &klSource ) const = 0;
       };
     
       typedef std::map< std::string, RC::ConstHandle<RT::Desc> > Types;
