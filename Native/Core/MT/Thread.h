@@ -48,7 +48,7 @@ namespace Fabric
 #if defined(FABRIC_POSIX)
         FABRIC_ASSERT( !m_posixThread );
         m_posixThread = new pthread_t;
-        if ( pthread_create( m_posixThread, 0, &Thread::Main, &m_startInfo ) != 0 )
+        if ( pthread_create( m_posixThread, &m_posixThreadAttr, &Thread::Main, &m_startInfo ) != 0 )
         {
           delete m_posixThread;
           m_posixThread = 0;
