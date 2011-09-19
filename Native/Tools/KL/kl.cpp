@@ -168,7 +168,7 @@ void handleFile( std::string const &filename, FILE *fp, unsigned int runFlags )
   {
     if ( runFlags & RF_Verbose )
       printf( "-- AST --\n" );
-    Util::SimpleString globalListJSONString = globalList->toJSON();
+    Util::SimpleString globalListJSONString = globalList->toJSON( true );
     printf( "%s\n", globalListJSONString.getCString() );
   }
 

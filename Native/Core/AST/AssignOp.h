@@ -42,7 +42,7 @@ namespace Fabric
       
       AssignOp( CG::Location const &location, CG::AssignOpType assignOpType, RC::ConstHandle<Expr> const &left, RC::ConstHandle<Expr> const &right );
       
-      virtual void appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const;
+      virtual void appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator, bool includeLocation ) const;
       
     private:
       

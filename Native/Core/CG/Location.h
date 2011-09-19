@@ -62,7 +62,7 @@ namespace Fabric
         return m_filename->stdString() + ":" + _(m_line) + ":" + _(m_column);
       }
       
-      void appendJSON( Util::JSONGenerator const &jsonGenerator ) const
+      void appendJSON( Util::JSONGenerator const &jsonGenerator, bool includeLocation ) const
       {
         Util::JSONArrayGenerator jsonArrayGenerator = jsonGenerator.makeArray();
         jsonArrayGenerator.makeElement().makeString( m_filename );
