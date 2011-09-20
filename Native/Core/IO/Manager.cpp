@@ -8,7 +8,6 @@
 #include <Fabric/Base/JSON/Object.h>
 #include <Fabric/Base/JSON/String.h>
 #include <Fabric/Core/IO/Manager.h>
-#include <Fabric/Core/IO/Dir.h>
 #include <Fabric/Core/IO/Helpers.h>
 #include <Fabric/Core/Util/Base64.h>
 #include <Fabric/Core/Util/Format.h>
@@ -60,23 +59,33 @@ namespace Fabric
       return result;
     }
 
-    void Manager::jsonQueryUserFileAndDir( RC::ConstHandle<JSON::Value> const &arg, bool *existingFile, const char *defaultExtension, RC::ConstHandle<Dir>& dir, std::string& filename ) const
+    void Manager::jsonQueryUserFileAndDir( RC::ConstHandle<JSON::Value> const &arg, bool *existingFile, const char *defaultExtension, RC::ConstHandle<Dir>& dir, std::string& filename, bool& writeAccess ) const
     {
       std::string defaultFilename;
       std::string extension;
       std::string title;
       bool existing = false;
+      writeAccess = false;
 
       RC::ConstHandle<JSON::Object> argJSONObject = arg->toObject();
       RC::ConstHandle<JSON::Value> val;
 
       if( existingFile )
+      {
         existing = *existingFile;
+        writeAccess = !existing;
+      }
       else
       {
-        val = argJSONObject->get( "existingFile" );//mandatory in this case
+        existing = argJSONObject->get( "existingFile" )->toBoolean( "existingFile must be a Boolean" )->value();//mandatory in this case
+
+        val = argJSONObject->get( "writeAccess" );
         if( val )
-          existing = val->toBoolean( "existingFile must be a Boolean" )->value();
+        {
+          writeAccess = val->toBoolean( "writeAccess must be a Boolean" )->value();
+          if( !existing && !writeAccess )
+            throw Exception("Error: trying to save a file with writeAccess == false");
+        }
       }
 
       if(existing && defaultExtension == NULL)
@@ -106,7 +115,12 @@ namespace Fabric
       if( title.empty() )
       {
         if( existing )
-          title = "Open File...";
+        {
+          if( writeAccess )
+            title = "Open File with read & write access to folder...";
+          else
+            title = "Open File...";
+        }
         else
           title = "Save File...";
       }
@@ -114,7 +128,12 @@ namespace Fabric
       {
         //[JCG 20110915] I'm prepending by Open/Save to ensure users can't be mislead, but maybe it's too much control?
         if( existing )
-          title = "Open File: " + title;
+        {
+          if( writeAccess )
+            title = "Open File with read & write access to folder: " + title;
+          else
+            title = "Open File: " + title;
+        }
         else
           title = "Save File: " + title;
       }
@@ -195,7 +214,8 @@ namespace Fabric
       std::string filename;
 
       bool existingFile = false;
-      jsonQueryUserFileAndDir( arg, &existingFile, defaultExtension, dir, filename );
+      bool writeAccess;
+      jsonQueryUserFileAndDir( arg, &existingFile, defaultExtension, dir, filename, writeAccess );
       putFile( dir, filename, size, data );
     }
 
@@ -203,7 +223,8 @@ namespace Fabric
     {
       RC::ConstHandle<Dir> dir;
       bool existingFile = true;
-      jsonQueryUserFileAndDir( arg, &existingFile, NULL, dir, filename );
+      bool writeAccess;
+      jsonQueryUserFileAndDir( arg, &existingFile, NULL, dir, filename, writeAccess );
 
       getFile( dir, filename, binary, bytes );
       extension = GetExtension( filename );
@@ -239,15 +260,20 @@ namespace Fabric
     {
       RC::ConstHandle<Dir> dir;
       std::string filename;
+      bool writeAccess;
 
-      jsonQueryUserFileAndDir( arg, NULL, NULL, dir, filename );
+      jsonQueryUserFileAndDir( arg, NULL, NULL, dir, filename, writeAccess );
 
       static const size_t folderIDByteCount = 96;
       uint8_t folderIDBytes[folderIDByteCount];
       Util::generateSecureRandomBytes( folderIDByteCount, folderIDBytes );
       std::string pathHandle = Util::encodeBase64( folderIDBytes, folderIDByteCount );
 
-      if( m_handleToDirMap.insert( std::make_pair( pathHandle, dir ) ).second == false )
+      DirInfo dirInfo;
+      dirInfo.m_dir = dir;
+      dirInfo.m_writeAccess = writeAccess;
+
+      if( m_handleToDirMap.insert( std::make_pair( pathHandle, dirInfo ) ).second == false )
         throw Exception( "Unexpected failure" );
 
       RC::Handle<JSON::Array> returnVal = JSON::Array::Create();
@@ -271,7 +297,10 @@ namespace Fabric
       if( handleIt == m_handleToDirMap.end() )
         throw Exception( "Unknown directory handle: '" + dirHandle + "'. Valid directory handles can only be obtained through 'IO.queryUserFileAndFolder'." );
 
-      dir = handleIt->second;
+      if(!existingFile && !handleIt->second.m_writeAccess)
+        throw Exception( "Directory handle '" + dirHandle + "' was not created with write permission." );
+
+      dir = handleIt->second.m_dir;
       
       size_t i;
       for( i = 1; i < pathJSONArray->size()-1; ++i )

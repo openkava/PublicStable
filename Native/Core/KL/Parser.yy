@@ -15,8 +15,12 @@
 // [pzion 20110919] Needed to avoid immediate "memory exhausted" error from Bison
 // The Bison docs state that the token stack cannot grow on the the parser when
 // compiled with a C++ compiler so this is actually the maximum depth as well.
-#define YYINITDEPTH 65536 
-#define YYMAXDEPTH 65536
+// [jcgagnon 20110920] Bumped that down from 65536 to 16384. This is not the number
+// of bytes, but the number of elements, which account for 26 bytes each.
+// 65536 elements caused a stack alloc of more than 1703936 bytes, which blew the 
+// stack limit of the plugin, who's stack size is decided by chrome and not by fabric.
+#define YYINITDEPTH 16384
+#define YYMAXDEPTH 16384
 
 #define RTLOC (CG::Location( yyloc.filename, yyloc.first_line, yyloc.first_column ))
 }

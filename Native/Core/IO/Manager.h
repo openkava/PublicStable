@@ -6,8 +6,9 @@
 #define _FABRIC_IO_MANAGER_H
 
 #include <Fabric/Core/IO/Stream.h>
-#include  <map>
-#include  <vector>
+#include <map>
+#include <vector>
+#include <Fabric/Core/IO/Dir.h>
 
 namespace Fabric
 {
@@ -22,7 +23,17 @@ namespace Fabric
 
     class Manager : public RC::Object
     {
-      typedef std::map<std::string, RC::ConstHandle<Dir> > HandleToDirMap;
+      struct DirInfo
+      {
+        DirInfo()
+          :m_writeAccess(false)
+        {}
+
+        RC::ConstHandle<Dir> m_dir;
+        bool m_writeAccess;
+      };
+
+      typedef std::map<std::string, DirInfo > HandleToDirMap;
 
     public:
     
@@ -63,7 +74,7 @@ namespace Fabric
       void putFile( RC::ConstHandle<Dir>& dir, std::string const &filename, size_t size, const void* data ) const;
       void getFile( RC::ConstHandle<Dir>& dir, std::string const &filename, bool binary, ByteContainer& bytes ) const;
 
-      void jsonQueryUserFileAndDir( RC::ConstHandle<JSON::Value> const &arg, bool *existingFile, const char *defaultExtension, RC::ConstHandle<Dir>& dir, std::string& filename ) const;
+      void jsonQueryUserFileAndDir( RC::ConstHandle<JSON::Value> const &arg, bool *existingFile, const char *defaultExtension, RC::ConstHandle<Dir>& dir, std::string& filename, bool& writeAccess ) const;
       void jsonGetFileAndDirFromHandlePath( RC::ConstHandle<JSON::Value> const &arg, bool existingFile, RC::ConstHandle<Dir>& dir, std::string& file ) const;
 
       RC::ConstHandle<JSON::Value> jsonExecQueryUserFileAndFolder( RC::ConstHandle<JSON::Value> const &arg );
