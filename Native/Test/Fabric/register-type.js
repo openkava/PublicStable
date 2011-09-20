@@ -1,5 +1,5 @@
 FC = createFabricClient();
-FABRIC = wrapFabricClient(FC);
+FABRIC = FC.wrapFabricClient(FC);
 
 var Vec2 = function( x, y ) {
   if ( typeof x === "number" && typeof y === "number" ) {
@@ -22,13 +22,16 @@ Vec2.prototype = {
 var desc = {
   members: { x:'Scalar', y:'Scalar' },
   constructor: Vec2,
-  kBindings: "\
+  klBindings: {
+    filename: "(inline)",
+    sourceCode: "\
 function Vec2(Scalar x, Scalar y)\n\
 {\n\
   this.x = x;\n\
   this.y = y;\n\
 }\n\
 "
+  }
 };
 
 FABRIC.RegisteredTypesManager.registerType( 'Vec2', desc );
@@ -42,8 +45,13 @@ print( JSON.stringify(data) );
 print(data.sum());
 
 var op = FABRIC.DG.createOperator("op");
-op.setSourceCode("use Vec2; operator entry( io Vec2 vec2 ) { vec2 = Vec2(8.9, 2.3); }");
+op.setSourceCode("(inline)", "use Vec2; operator entry( io Vec2 vec2 ) { vec2 = Vec2(8.9, 2.3); }");
 op.setEntryFunctionName("entry");
+if (op.getErrors().length > 0) {
+  printDeep(op.getErrors());
+  if (op.getDiagnostics().length > 0)
+    printDeep(op.getDiagnostics());
+}
 
 var binding = FABRIC.DG.createBinding();
 binding.setOperator(op);

@@ -59,7 +59,7 @@ namespace Fabric
         bool exportSymbol
         );
       
-      virtual void appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const;
+      virtual void appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator, bool includeLocation ) const;
     
     private:
     

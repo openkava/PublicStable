@@ -1,5 +1,5 @@
 FC = createFabricClient();
-F = wrapFabricClient(FC);
+F = FC.wrapFabricClient(FC);
 
 o = F.DG.createOperator("o");
 o.setEntryFunctionName("foo");

@@ -35,11 +35,11 @@ namespace Fabric
     {
     }
     
-    void ParamVector::appendJSON( Util::JSONGenerator const &jsonGenerator ) const
+    void ParamVector::appendJSON( Util::JSONGenerator const &jsonGenerator, bool includeLocation ) const
     {
       Util::JSONArrayGenerator jsonArrayGenerator = jsonGenerator.makeArray();
       for ( const_iterator it=begin(); it!=end(); ++it )
-        (*it)->appendJSON( jsonArrayGenerator.makeElement() );
+        (*it)->appendJSON( jsonArrayGenerator.makeElement(), includeLocation );
     }
       
     std::vector<CG::FunctionParam> ParamVector::getFunctionParams( RC::Handle<CG::Manager> const &cgManager ) const
