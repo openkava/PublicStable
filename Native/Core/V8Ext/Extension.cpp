@@ -11,7 +11,9 @@
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/DG/Context.h>
 #include <Fabric/Core/IO/Stream.h>
+#include <Fabric/Core/IO/Helpers.h>
 #include <Fabric/Core/IO/Manager.h>
+#include <Fabric/Core/IO/Dir.h>
 #include <Fabric/Core/OCL/OCL.h>
 #include <Fabric/Core/Plug/Manager.h>
 #include <stdlib.h>
@@ -118,12 +120,19 @@ namespace Fabric
         return IOStream::Create( url, dataCallback, endCallback, failureCallback, target, userData );
       }
 
-      virtual std::string getUserFilePath(
+      virtual std::string queryUserFilePath(
+        bool existingFile,
+        std::string const &title,
         std::string const &defaultFilename,
         std::string const &extension
         ) const
       {
-        return defaultFilename;
+        if ( !IO::DirExists( "TMP" ) )
+	        IO::CreateDir( "TMP" );
+        if(existingFile)
+          return IO::JoinPath("TMP", "default.txt");
+        else
+          return IO::JoinPath("TMP", defaultFilename);
       }
   
     protected:

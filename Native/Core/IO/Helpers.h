@@ -38,9 +38,14 @@ namespace Fabric
       return JoinPath( JoinPath( arg1, arg2, arg3, arg4, arg5, arg6 ), arg7 );
     }
 
+    void SplitPath( std::string const &path, std::string &parentDir, std::string &entry );
+    std::string GetExtension( std::string const &filename );
+    std::string GetURLExtension( std::string const &url );
+
     //void safeCall( void (*callback)( int fd ) );
     
     bool DirExists( std::string const &dirPath );
+    bool IsLink( std::string const &fullPath );
     void CreateDir( std::string const &dirPath );
     std::vector<std::string> GetSubDirEntries( std::string const &dirPath, bool followLinks = true );
     
