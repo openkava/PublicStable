@@ -11,10 +11,56 @@
 
 %code top {
 #define YYDEBUG 1
-#define RTLOC (CG::Location( yyloc.first_line, yyloc.first_column ))
+
+// [pzion 20110919] Needed to avoid immediate "memory exhausted" error from Bison
+// The Bison docs state that the token stack cannot grow on the the parser when
+// compiled with a C++ compiler so this is actually the maximum depth as well.
+// [jcgagnon 20110920] Bumped that down from 65536 to 16384. This is not the number
+// of bytes, but the number of elements, which account for 26 bytes each.
+// 65536 elements caused a stack alloc of more than 1703936 bytes, which blew the 
+// stack limit of the plugin, who's stack size is decided by chrome and not by fabric.
+#define YYINITDEPTH 16384
+#define YYMAXDEPTH 16384
+
+#define RTLOC (CG::Location( yyloc.filename, yyloc.first_line, yyloc.first_column ))
 }
 
 %code requires {
+#include <Fabric/Base/RC/String.h>
+#include <Fabric/Base/RC/ConstHandle.h>
+
+#if !defined(YYLTYPE) && !defined(YYLTYPE_IS_DECLARED)
+typedef struct YYLTYPE
+{
+  Fabric::RC::ConstHandle<Fabric::RC::String> filename;
+  int first_line;
+  int first_column;
+  int last_line;
+  int last_column;
+} YYLTYPE;
+# define yyltype YYLTYPE /* obsolescent; will be withdrawn */
+# define YYLTYPE_IS_DECLARED 1
+# define YYLLOC_DEFAULT(Current, Rhs, N)				\
+    do									\
+      if (YYID (N))                                                    \
+	{								\
+	  (Current).filename   = YYRHSLOC (Rhs, 1).filename;	\
+	  (Current).first_line   = YYRHSLOC (Rhs, 1).first_line;	\
+	  (Current).first_column = YYRHSLOC (Rhs, 1).first_column;	\
+	  (Current).last_line    = YYRHSLOC (Rhs, N).last_line;		\
+	  (Current).last_column  = YYRHSLOC (Rhs, N).last_column;	\
+	}								\
+      else								\
+	{								\
+	  (Current).filename   = YYRHSLOC (Rhs, 0).filename;	\
+	  (Current).first_line   = (Current).last_line   =		\
+	    YYRHSLOC (Rhs, 0).last_line;				\
+	  (Current).first_column = (Current).last_column =		\
+	    YYRHSLOC (Rhs, 0).last_column;				\
+	}								\
+    while (YYID (0))
+#endif
+
 #include <string>
 #include <Fabric/Core/AST/Alias.h>
 #include <Fabric/Core/AST/AndOp.h>
@@ -1365,17 +1411,20 @@ primary_expression
 
 %%
 
+#include <Fabric/Core/KL/Source.h>
+
 void kl_error( YYLTYPE *yyl, KL::Context &context, const char *msg )
 {
-  context.m_diagnostics.addError( CG::Location( yyl->first_line, yyl->first_column ), msg );
+  context.m_diagnostics.addError( CG::Location( yyl->filename, yyl->first_line, yyl->first_column ), msg );
 }
 
 int kl_lex( YYSTYPE *yys, YYLTYPE *yyl, KL::Context &context )
 {
-  KL::Location startLocation;
-  KL::Token token;
+  RC::ConstHandle<KL::Source> source = context.m_scanner->getSourceReader().getSource();
+  KL::Location startLocation( source->filename() );
+  KL::Token token( source );
   std::string text;
-  KL::Location endLocation;
+  KL::Location endLocation( source->filename() );
   while ( true )
   {
     startLocation = context.m_scanner->getLocationForStart();
@@ -1404,6 +1453,7 @@ int kl_lex( YYSTYPE *yys, YYLTYPE *yyl, KL::Context &context )
     || token.getType() == TOKEN_IDENTIFIER )
     yys->valueStringPtr = new std::string( token.toString() );
 
+  yyl->filename = startLocation.getFilename();
   yyl->first_line = startLocation.getLine();
   yyl->first_column = startLocation.getColumn();
   yyl->last_line = endLocation.getLine();

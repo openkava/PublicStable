@@ -29,7 +29,7 @@ static void _decBracket()
   if(gBracket > 0)
     gBracket--;
   else
-    throw Exception("Fabric::OGL::_decBracket: Unbalanced bracket.");
+    throwException("Fabric::OGL::_decBracket: Unbalanced bracket.");
 }
 static void _clearError()
 {
@@ -40,7 +40,7 @@ static void _clearError()
     if(error != GLEW_OK)
     {
       printf("[Fabric::OGL::glewInit] ERROR: %s\n",(const char*)glewGetErrorString(error));
-      throw Exception("[Fabric::OGL::glewInit] ERROR: %s",(const char*)glewGetErrorString(error));
+      throwException("[Fabric::OGL::glewInit] ERROR: %s",(const char*)glewGetErrorString(error));
     }
     gGlewInitialized = true;
   }
@@ -87,7 +87,7 @@ static void _checkError(const char * functionName)
       glError = glGetError();
     } while ( glError != GL_NO_ERROR );
     printf( "%s\n", buf );
-    throw Exception( "%s", buf );
+    throwException( "%s", buf );
   }
 }
 

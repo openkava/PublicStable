@@ -42,26 +42,19 @@
 #include <llvm/PassManager.h>
 #include <llvm/Support/StandardPasses.h>
 
-// [pzion 20110307] Include this last because it does lots of
-// #defines on Linux that mess up llvm
-// #include <Fabric/Core/OGL/OGL.h>
-
 namespace Fabric
 {
-  
-
   namespace DG
   {
-    static MT::Mutex s_globalCompileLock( "Global Compile Lock" );
-  
-    RC::ConstHandle<Code> Code::Create( RC::ConstHandle<Context> const &context, std::string const &sourceCode )
+    RC::ConstHandle<Code> Code::Create( RC::ConstHandle<Context> const &context, std::string const &filename, std::string const &sourceCode )
     {
-      return new Code( context, sourceCode );
+      return new Code( context, filename, sourceCode );
     }
 
-    Code::Code( RC::ConstHandle<Context> const &context, std::string const &sourceCode )
-      : m_context( context.ptr() )
+    Code::Code( RC::ConstHandle<Context> const &context, std::string const &filename, std::string const &sourceCode )
+      : m_contextWeakRef( context )
       , m_mutex( "DG::Code" )
+      , m_filename( filename )
       , m_sourceCode( sourceCode )
       , m_registeredFunctionSetMutex( "DG::Code::m_registeredFunctionSet" )
     {
@@ -79,9 +72,10 @@ namespace Fabric
       llvm::InitializeNativeTarget();
       LLVMLinkInJIT();
       
+      FABRIC_ASSERT( m_filename.length() > 0 );
       FABRIC_ASSERT( m_sourceCode.length() > 0 );
       
-      RC::ConstHandle<KL::Source> source = KL::StringSource::Create( m_sourceCode );
+      RC::ConstHandle<KL::Source> source = KL::StringSource::Create( m_filename, m_sourceCode );
       RC::Handle<KL::Scanner> scanner = KL::Scanner::Create( source );
       m_ast = AST::GlobalList::Create( m_ast, KL::Parse( scanner, m_diagnostics ) );
       if ( !m_diagnostics.containsError() )
@@ -90,8 +84,10 @@ namespace Fabric
     
     void Code::compileAST( bool optimize )
     {
-      MT::Mutex::Lock mutexLock( m_mutex );
-
+      RC::ConstHandle<Context> context = m_contextWeakRef.makeStrong();
+      if ( !context )
+        return;
+        
       FABRIC_ASSERT( m_ast );
       RC::ConstHandle<AST::GlobalList> ast = m_ast;
       
@@ -109,7 +105,7 @@ namespace Fabric
           if ( !useAST )
           {
             RC::ConstHandle<RC::Object> typeAST;
-            if ( m_context->getRTManager()->maybeGetASTForType( name, typeAST ) )
+            if ( context->getRTManager()->maybeGetASTForType( name, typeAST ) )
               useAST = typeAST? RC::ConstHandle<AST::GlobalList>::StaticCast( typeAST ): AST::GlobalList::Create();
           }
             
@@ -126,11 +122,11 @@ namespace Fabric
 
       if ( !m_diagnostics.containsError() )
       {
-        RC::Handle<CG::Manager> cgManager = m_context->getCGManager();
+        RC::Handle<CG::Manager> cgManager = context->getCGManager();
         RC::Handle<CG::Context> cgContext = CG::Context::Create();
         llvm::OwningPtr<llvm::Module> module( new llvm::Module( "DG::Code", cgContext->getLLVMContext() ) );
         CG::ModuleBuilder moduleBuilder( cgManager, cgContext, module.get() );
-        OCL::llvmPrepareModule( moduleBuilder, m_context->getRTManager() );
+        OCL::llvmPrepareModule( moduleBuilder, context->getRTManager() );
 
         CG::Diagnostics optimizeDiagnostics;
         CG::Diagnostics &diagnostics = (false && optimize)? optimizeDiagnostics: m_diagnostics;
@@ -142,7 +138,7 @@ namespace Fabric
         std::string ir = IRCache::Instance()->get( irCacheKeyForAST );
         if ( ir.length() > 0 )
         {
-          RC::Handle<CG::Manager> cgManager = m_context->getCGManager();
+          RC::Handle<CG::Manager> cgManager = context->getCGManager();
           
           llvm::SMDiagnostic error;
           llvm::ParseAssemblyString( ir.c_str(), module.get(), error, cgContext->getLLVMContext() );
@@ -204,9 +200,13 @@ namespace Fabric
     
     void Code::linkModule( RC::Handle<CG::Context> const &cgContext, llvm::OwningPtr<llvm::Module> &module, bool optimize )
     {
+      RC::ConstHandle<Context> context = m_contextWeakRef.makeStrong();
+      if ( !context )
+        return;
+        
       MT::Mutex::Lock mutexLock( m_mutex );
 
-      RC::ConstHandle<ExecutionEngine> executionEngine = ExecutionEngine::Create( m_context, cgContext, module.take() );
+      RC::ConstHandle<ExecutionEngine> executionEngine = ExecutionEngine::Create( context, cgContext, module.take() );
       
       {
         MT::Mutex::Lock lock( m_registeredFunctionSetMutex );
@@ -225,6 +225,11 @@ namespace Fabric
         retain();
         MT::IdleTaskQueue::Instance()->submit( &Code::CompileOptimizedAST, this );
       }
+    }
+    
+    std::string const &Code::getFilename() const
+    {
+      return m_filename;
     }
     
     std::string const &Code::getSourceCode() const
@@ -246,6 +251,7 @@ namespace Fabric
     
     RC::ConstHandle<ExecutionEngine> Code::getExecutionEngine() const
     {
+      MT::Mutex::Lock mutexLock( m_mutex );
       return m_executionEngine;
     }
     

@@ -1,5 +1,5 @@
 FC = createFabricClient();
-FABRIC = wrapFabricClient(FC);
+FABRIC = FC.wrapFabricClient(FC);
 
 var MyStruct = function( i, s ) {
   if ( typeof i === "number" && typeof s === "number" ) {

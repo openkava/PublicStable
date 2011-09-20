@@ -7,6 +7,7 @@
 
 #include <Fabric/Base/RC/Object.h>
 #include <Fabric/Base/RC/ConstHandle.h>
+#include <Fabric/Base/RC/WeakConstHandle.h>
 #include <Fabric/Core/MT/Mutex.h>
 
 #include <string>
@@ -60,7 +61,7 @@ namespace Fabric
       static void *LazyFunctionCreator( std::string const &functionName );
       static void Report( char const *data, size_t length );
     
-      Context const *m_context;
+      RC::WeakConstHandle<Context> m_contextWeakRef;
       RC::Handle<CG::Context> m_cgContext;
       llvm::OwningPtr<llvm::ExecutionEngine> m_llvmExecutionEngine;
       

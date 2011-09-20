@@ -3,6 +3,7 @@
  */
  
 #include <Fabric/Core/V8Ext/Client.h>
+#include <Fabric/Core/DG/Context.h>
 
 #include <string>
 
@@ -68,6 +69,30 @@ namespace Fabric
     v8::Handle<v8::Value> Client::V8SetJSONNotifyCallback( v8::Arguments const &args )
     {
       return static_cast<Client *>( args.This()->GetPointerFromInternalField( 0 ) )->v8SetJSONNotifyCallback( args );
+    }
+      
+    v8::Handle<v8::Value> Client::v8WrapFabricClient( v8::Arguments const &args )
+    {
+      v8::HandleScope handle_scope;
+      v8::TryCatch try_catch;
+      std::string const &wrapFabricClientJSSource = DG::Context::GetWrapFabricClientJSSource();
+      v8::Handle<v8::String> wrapFabricClientJSSourceV8String = v8::String::New( wrapFabricClientJSSource.data(), wrapFabricClientJSSource.length() );
+      v8::Handle<v8::Script> wrapFabricClientJSSourceV8Script = v8::Script::Compile( wrapFabricClientJSSourceV8String, v8::String::New("FABRIC.Wrappers.js") );
+      FABRIC_ASSERT( !wrapFabricClientJSSourceV8Script.IsEmpty() );
+      v8::Handle<v8::Value> wrapFabricClientV8Value = wrapFabricClientJSSourceV8Script->Run();
+      FABRIC_ASSERT( !wrapFabricClientV8Value.IsEmpty() );
+      FABRIC_ASSERT( wrapFabricClientV8Value->IsFunction() );
+      v8::Handle<v8::Function> wrapFabricClientV8Function = v8::Handle<v8::Function>::Cast( wrapFabricClientV8Value );
+      std::vector< v8::Handle<v8::Value> > argv;
+      for ( int i=0; i<args.Length(); ++i )
+        argv.push_back( args[i] );
+      v8::Handle<v8::Value> result = wrapFabricClientV8Function->Call( args.This(), argv.size(), &argv[0] );
+      return handle_scope.Close( result );
+    }
+    
+    v8::Handle<v8::Value> Client::V8WrapFabricClient( v8::Arguments const &args )
+    {
+      return static_cast<Client *>( args.This()->GetPointerFromInternalField( 0 ) )->v8WrapFabricClient( args );
     }
     
     v8::Handle<v8::Value> Client::V8Dispose( v8::Arguments const &args )
