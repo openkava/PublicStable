@@ -26,7 +26,7 @@ childBinding.setOperator( childOp );
 childBinding.setParameterLayout( [ "parent.output<>", "self.index", "self.output" ] );
 
 childNode = FABRIC.DependencyGraph.createNode( "child" );
-childNode.addDependency( parentNode, "parent" );
+childNode.setDependency( parentNode, "parent" );
 childNode.addMember( "output", "Scalar" );
 childNode.setCount( 2 );
 childNode.bindings.append( childBinding );

@@ -39,7 +39,7 @@ rlnode = FABRIC.DependencyGraph.createResourceLoadNode("rlnode");
 rlnode.setData("url", 0, "file:tomatoes_960_640.png");
 
 node = FABRIC.DependencyGraph.createNode("node");
-node.addDependency(rlnode, "loadnode");
+node.setDependency(rlnode, "loadnode");
 node.bindings.append(binding);
 if (node.getErrors().length > 0 )
   printDeep(node.getErrors());
