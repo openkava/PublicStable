@@ -4,6 +4,7 @@
  
 #include "objparser.h"
 #include <sstream>
+#include <set>
 
 class Exception
 {
@@ -62,6 +63,20 @@ bool skipSpaces( std::istream& stream )
   return c != 0;
 }
 
+void skipExpectedString( std::istream& stream, const char* str )
+{
+  while( true )
+  {
+    char c1 = str++[0], c2;
+    if( c1 == 0 )
+      break;
+    stream.get( c2 );
+    if( !stream.good() || c1 != c2 )
+      throw Exception( ("Expected token '" + std::string(str) + "' not found").c_str() );
+  }
+}
+
+
 void skipMandatorySpaces( std::istream& stream )
 {
   if( !skipSpaces(stream) )
@@ -108,8 +123,8 @@ void ObjParser::ParseF( std::istream& stream )
 {
   int nbFacePts = 0;
   int initalFacePt = (int)m_triangleIndices.size();
-  if( m_pointIndices.size() < m_points.size() )
-    m_pointIndices.resize( m_points.size() );
+  if( m_sharedPointIndices.size() < m_points.size() )
+    m_sharedPointIndices.resize( m_points.size() );
 
   while( true )
   {
@@ -178,14 +193,14 @@ void ObjParser::ParseF( std::istream& stream )
     // Note: this would be more complex (and might have to be done later) if we were taking smoothing groups into account...
 
     int ptIndex = indices.m_point;
-    if( !m_pointIndices[indices.m_point].isInitialized() )
+    if( !m_sharedPointIndices[indices.m_point].isInitialized() )
     {
-      m_pointIndices[indices.m_point] = indices;
+      m_sharedPointIndices[indices.m_point] = indices;
     }
-    else if( m_pointIndices[indices.m_point] != indices )
+    else if( m_sharedPointIndices[indices.m_point] != indices )
     {
-      ptIndex = (int)m_pointIndices.size();
-      m_pointIndices.push_back( indices );
+      ptIndex = (int)m_sharedPointIndices.size();
+      m_sharedPointIndices.push_back( indices );
     }
 
     nbFacePts++;
@@ -203,25 +218,43 @@ void ObjParser::ParseF( std::istream& stream )
       m_triangleIndices.push_back( second );
       m_triangleIndices.push_back( ptIndex );
     }
+    if( nbFacePts >= 3 )
+       m_triangleSmoothingGroups.push_back( m_currentSmoothingGroup );
   }
   if( nbFacePts < 3 )
     throw Exception("face has less than 3 points");
 }
 
+int ObjParser::ParseS( std::istream& stream )
+{
+  skipMandatorySpaces( stream );
+  char pc = stream.peek();
+  if( pc == 'o')
+  {
+    skipExpectedString( stream, "off" );
+    return -1;
+  }
+  else
+  {
+    int smoothingGroup;
+    stream >> smoothingGroup;
+    if( parsingError( stream ) )
+      throw Exception("int value expected for smoothing group");
+    return smoothingGroup;
+  }
+}
+
 void ObjParser::ComputeMissingNormals()
 {
   //Quick check if any normal is missing
-  size_t i;
+  size_t i, j;
   for( i = 0; i < m_triangleIndices.size(); ++i )
   {
-    if( m_pointIndices[ m_triangleIndices[i] ].m_normal == INT_MAX )
+    if( m_sharedPointIndices[ m_triangleIndices[i] ].m_normal == INT_MAX )
       break;
   }
-  if( i == m_triangleIndices.size() )
+  if( i == m_triangleIndices.size() )//This covers the nbPoints == 0 case too
     return;
-
-  // [jeromecg 20110728] Make it simple for now: if any normal is missing, recompute them all.
-  // [jeromecg 20110728] TODO: take smoothing groups into account
 
   // Compute triangle normals
   size_t nbTriangles = m_triangleIndices.size() / 3;
@@ -230,29 +263,123 @@ void ObjParser::ComputeMissingNormals()
 
   for( i = 0; i < nbTriangles; ++i )
   {
-    V3 v1 = m_points[ m_pointIndices[ m_triangleIndices[ i*3+1 ] ].m_point ] - m_points[ m_pointIndices[ m_triangleIndices[ i*3 ] ].m_point ];
-    V3 v2 = m_points[ m_pointIndices[ m_triangleIndices[ i*3+2 ] ].m_point ] - m_points[ m_pointIndices[ m_triangleIndices[ i*3 ] ].m_point ];
+    V3 v1 = m_points[ m_sharedPointIndices[ m_triangleIndices[ i*3+1 ] ].m_point ] - m_points[ m_sharedPointIndices[ m_triangleIndices[ i*3 ] ].m_point ];
+    V3 v2 = m_points[ m_sharedPointIndices[ m_triangleIndices[ i*3+2 ] ].m_point ] - m_points[ m_sharedPointIndices[ m_triangleIndices[ i*3 ] ].m_point ];
     triangleNormals[i] = v1.Cross( v2 );
     triangleNormals[i].Normalize();
   }
 
-  // Compute point normals by simply averaging adjacent triangle normals
-  m_normals.resize( m_points.size(), V3( 0, 0, 0 ) );
-
+  bool hasSmoothingGroups = false;
   for( i = 0; i < m_triangleIndices.size(); ++i )
   {
-    int ptIndex = m_pointIndices[ m_triangleIndices[i] ].m_point;
-    m_normals[ptIndex] = m_normals[ptIndex] + triangleNormals[i/3];
+    if( m_triangleSmoothingGroups[i] != -1 )
+    {
+      hasSmoothingGroups = true;
+      break;
+    }
   }
 
-  for( i = 0; i < m_normals.size(); ++i )
+  if( !hasSmoothingGroups )
   {
-    m_normals[i].Normalize();
-    m_pointIndices[i].m_normal = i;
+    //Optimize this simpler case
+    m_normals.resize( m_points.size(), V3( 0, 0, 0 ) );
+
+    for( i = 0; i < m_triangleIndices.size(); ++i )
+    {
+      int ptIndex = m_sharedPointIndices[ m_triangleIndices[i] ].m_point;
+      m_normals[ptIndex] = m_normals[ptIndex] + triangleNormals[i/3];
+    }
+
+    for( i = 0; i < m_normals.size(); ++i )
+    {
+      m_normals[i].Normalize();
+      m_sharedPointIndices[i].m_normal = i;
+    }
+  }
+  else
+  {
+    // Note: for simplicity, we only maintain vertex-based sharing (no per face sharing)
+    size_t nbPoints = m_points.size();
+    size_t nbFacePoints = m_triangleIndices.size();
+
+    //Take smoothing groups into account: build a point->face mapping (in a CPU and memory efficient way)
+    std::vector< int > nbFacesPerPoint;
+    nbFacesPerPoint.resize( nbPoints, 0 );
+
+    for( i = 0; i < nbFacePoints; ++i )
+      nbFacesPerPoint[ m_sharedPointIndices[ m_triangleIndices[ i ] ].m_point ]++;
+
+    std::vector< int > pointFacesOffset;
+    pointFacesOffset.resize( nbFacesPerPoint.size() );
+    pointFacesOffset[0] = 0;
+    for( i = 1; i < nbPoints; ++i )
+      pointFacesOffset[i] = pointFacesOffset[i-1] + nbFacesPerPoint[i-1];
+
+    std::vector< int > facePointsPerPoint;
+    facePointsPerPoint.resize( nbFacePoints );
+    for( i = 0; i < nbFacePoints; ++i )
+      facePointsPerPoint[ pointFacesOffset[ m_sharedPointIndices[ m_triangleIndices[ i ] ].m_point ]++ ] = i;
+
+    //Average normals per smoothing groups
+    std::set<int> smoothGroups;
+    size_t nbOriginalNormals = m_normals.size();
+    size_t facesOffset = 0;
+    for( i = 0; i < nbPoints; ++i )
+    {
+      size_t nbFaces = nbFacesPerPoint[i];
+      for( j = 0; j < nbFaces; ++j )
+      {
+        int faceIndex = facePointsPerPoint[facesOffset+j]/3;
+        smoothGroups.insert( m_triangleSmoothingGroups[faceIndex] );
+      }
+
+      for( std::set<int>::const_iterator it = smoothGroups.begin(); it != smoothGroups.end(); ++it )
+      {
+        int normalIndex = -1;
+        for( j = 0; j < nbFaces; ++j )
+        {
+          int facePoint = facePointsPerPoint[facesOffset+j];
+          int face = facePoint/3;
+          if( m_triangleSmoothingGroups[ face ] == *it )
+          {
+            int faceSharedPointIndex = m_triangleIndices[facePoint];
+            bool keepOriginalNormal = false;
+            int prevNormalIndex = m_sharedPointIndices[ faceSharedPointIndex ].m_normal;
+            if( prevNormalIndex != INT_MAX )
+            {
+              if( prevNormalIndex < int(nbOriginalNormals) )//Don't overwrite originally specified normals even if in a smoothing group
+                keepOriginalNormal = true;
+              else if( prevNormalIndex != normalIndex )//We need to split the point indices in order to preserve the existing normal
+              {
+                size_t nbPtIndices = m_sharedPointIndices.size();
+                m_sharedPointIndices.resize( nbPtIndices+1 );
+                m_sharedPointIndices[ nbPtIndices ] = m_sharedPointIndices[ faceSharedPointIndex ];
+                faceSharedPointIndex = m_triangleIndices[facePoint] = nbPtIndices;
+              }
+            }
+            if( !keepOriginalNormal )
+            {
+              if( normalIndex == -1 )
+              {
+                normalIndex = m_normals.size();
+                m_normals.resize( normalIndex+1, V3(0,0,0) );
+              }
+              m_normals[normalIndex] = m_normals[normalIndex] + triangleNormals[ face ];
+              m_sharedPointIndices[ faceSharedPointIndex ].m_normal = normalIndex;
+            }
+          }
+        }
+        if( normalIndex != -1 )
+          m_normals[normalIndex].Normalize();
+      }
+      smoothGroups.clear();
+      facesOffset += nbFaces;
+    }
   }
 }
 
 ObjParser::ObjParser( std::istream& stream )
+  : m_currentSmoothingGroup(-1)
 {
   // [jeromecg 20110728] Right now this parser is very simple as it agglomerates all points and faces in 1 big object,
   // ignoring materials, groups, smoothing groups, etc.
@@ -295,6 +422,9 @@ ObjParser::ObjParser( std::istream& stream )
       case 'f':
         ParseF( stream );
         break;
+      case 's':
+        m_currentSmoothingGroup = ParseS( stream );
+        break;
       default:
          skipToNextLine( stream );
       }
@@ -325,7 +455,7 @@ void ObjParser::GetTriangleIndices(int triIndex, int& i1, int& i2, int& i3)const
 
 V3 ObjParser::GetPoint(int ptIndex)const
 {
-  int index = m_pointIndices[ptIndex].m_point;
+  int index = m_sharedPointIndices[ptIndex].m_point;
   if( index == INT_MAX )
     return V3( 0, 0, 0 );
   else
@@ -334,7 +464,7 @@ V3 ObjParser::GetPoint(int ptIndex)const
 
 V3 ObjParser::GetNormal(int ptIndex)const
 {
-  int index = m_pointIndices[ptIndex].m_normal;
+  int index = m_sharedPointIndices[ptIndex].m_normal;
   if( index == INT_MAX )
     return V3( 0, 1, 0 );
   else
@@ -343,7 +473,7 @@ V3 ObjParser::GetNormal(int ptIndex)const
 
 V2 ObjParser::GetTextureCoord(int ptIndex)const
 {
-  int index = m_pointIndices[ptIndex].m_texCoord;
+  int index = m_sharedPointIndices[ptIndex].m_texCoord;
   if( index == INT_MAX )
     return V2( 0, 0 );
   else

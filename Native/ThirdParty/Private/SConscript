@@ -135,6 +135,42 @@ ffmpegFlags = {
 }
 Export( 'ffmpegFlags' )
 
+# alembic
+alembicLibs = []
+if buildOS == 'Windows':
+  alembicLibs.extend( archLibs( 'zlib', ['zlib'] ) )
+  archLibs( 'zlib', ['zlib'] )
+else:  
+  alembicLibs.extend(['z'])
+  archLibs( 'zlib', ['z'] )
+
+# todo: make this more elegant.. on Windows the libs currently look for their 
+# original lib dependency name when linking so I can't just rename them to shorter names.
+# Maybe there's a compile option for that...
+if buildOS == 'Windows':
+  if buildType == 'Debug':
+    alembicLibs.extend(archLibs( 'boost', ['libboost_program_options-vc100-mt-sgd-1_47', 'libboost_date_time-vc100-mt-sgd-1_47', 'libboost_iostreams-vc100-mt-sgd-1_47', 'libboost_thread-vc100-mt-sgd-1_47'] ))
+  else:
+    alembicLibs.extend(archLibs( 'boost', ['libboost_program_options-vc100-mt-s-1_47', 'libboost_date_time-vc100-mt-s-1_47', 'libboost_iostreams-vc100-mt-s-1_47', 'libboost_thread-vc100-mt-s-1_47'] ))
+else:  
+  alembicLibs.extend(archLibs( 'boost', ['boost_program_options', 'boost_date_time', 'boost_iostreams', 'boost_thread'] ))
+
+alembicLibs.extend(archLibs( 'alembic', ['AlembicAbcCoreHDF5', 'AlembicAbcCoreAbstract', 'AlembicUtil', 'AlembicAbcGeom', 'AlembicAbc'] ))
+alembicLibs.extend(archLibs( 'hdf5', ['hdf5_hl', 'hdf5'] ))
+alembicLibs.extend(archLibs( 'ilmbase', ['Iex', 'Imath', 'Half', 'IlmThread'] ))
+alembicFlags = {
+    'CPPPATH': [
+      os.path.join( includeBaseDir, 'zlib' ),
+      os.path.join( includeBaseDir, 'ilmbase' ),
+      os.path.join( includeBaseDir, 'hdf5' ),
+      os.path.join( osArchIncludeBaseDir, 'hdf5' ),
+      os.path.join( includeBaseDir, 'boost' ),
+      os.path.join( includeBaseDir, 'alembic' )
+    ],
+    'LIBS': alembicLibs
+}
+Export( 'alembicFlags' )
+
 # GTKGL
 if buildOS == 'Linux':
   gtkglFlags = {

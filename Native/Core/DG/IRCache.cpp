@@ -41,7 +41,7 @@ namespace Fabric
     
     std::string IRCache::keyForAST( RC::ConstHandle<AST::GlobalList> const &ast ) const
     {
-      Util::SimpleString astJSONString = ast->toJSON();
+      Util::SimpleString astJSONString = ast->toJSON( false );
       return Util::md5HexDigest( astJSONString.getData(), astJSONString.getLength() );
     }
     

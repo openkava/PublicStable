@@ -28,10 +28,10 @@ namespace Fabric
     {
     }
     
-    void UseGlobal::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
+    void UseGlobal::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator, bool includeLocation ) const
     {
-      Global::appendJSONMembers( jsonObjectGenerator );
-      m_useVector->appendJSON( jsonObjectGenerator.makeMember( "useVector" ) );
+      Global::appendJSONMembers( jsonObjectGenerator, includeLocation );
+      m_useVector->appendJSON( jsonObjectGenerator.makeMember( "useVector" ), includeLocation );
     }
     
     void UseGlobal::collectUses( UseNameToLocationMap &uses ) const

@@ -25,9 +25,9 @@ namespace Fabric
     {
     }
     
-    void BreakStatement::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
+    void BreakStatement::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator, bool includeLocation ) const
     {
-      Statement::appendJSONMembers( jsonObjectGenerator );
+      Statement::appendJSONMembers( jsonObjectGenerator, includeLocation );
     }
     
     void BreakStatement::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const

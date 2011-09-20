@@ -8,6 +8,7 @@
 #include <Fabric/Base/RC/Object.h>
 #include <Fabric/Base/RC/Handle.h>
 #include <Fabric/Base/RC/ConstHandle.h>
+#include <Fabric/Base/RC/WeakConstHandle.h>
 #include <Fabric/Core/CG/Diagnostics.h>
 #include <Fabric/Core/MT/Mutex.h>
 
@@ -51,8 +52,9 @@ namespace Fabric
     
       typedef void (*FunctionPtr)( ... );
     
-      static RC::ConstHandle<Code> Create( RC::ConstHandle<Context> const &context, std::string const &sourceCode );
+      static RC::ConstHandle<Code> Create( RC::ConstHandle<Context> const &context, std::string const &filename, std::string const &sourceCode );
       
+      std::string const &getFilename() const;
       std::string const &getSourceCode() const;
       RC::ConstHandle<AST::GlobalList> getAST() const;
       RC::ConstHandle<ExecutionEngine> getExecutionEngine() const;
@@ -66,7 +68,7 @@ namespace Fabric
 
     protected:
     
-      Code( RC::ConstHandle<Context> const &context, std::string const &sourceCode );
+      Code( RC::ConstHandle<Context> const &context, std::string const &filename, std::string const &sourceCode );
       ~Code();
       
       void compileSourceCode();
@@ -82,8 +84,9 @@ namespace Fabric
         code->release();
       }
     
-      Context const *m_context;
-      MT::Mutex m_mutex;
+      RC::WeakConstHandle<Context> m_contextWeakRef;
+      mutable MT::Mutex m_mutex;
+      std::string m_filename;
       std::string m_sourceCode;
 #if defined(FABRIC_BUILD_DEBUG)
       std::string m_byteCode;

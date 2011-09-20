@@ -22,7 +22,7 @@ operator entry()
   {
     if ( prime[i] )
       ++count;
-    if ( i==10 || i==100 || i==1000 || i==10000 || i==10000 )
+    if ( i==10 || i==100 || i==1000 || i==10000 || i==100000 || i==1000000 )
       reportStats( i, count );
   }
   reportStats( 1000000, count );

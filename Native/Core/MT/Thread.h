@@ -22,11 +22,16 @@ namespace Fabric
   {
     class Thread
     {
+      static const size_t s_stackSize = 64*1024*1024;
+
     public:
     
       Thread()
       {
 #if defined(FABRIC_POSIX)
+        pthread_attr_init( &m_posixThreadAttr );
+        pthread_attr_setstacksize( &m_posixThreadAttr, s_stackSize );
+
         m_posixThread = 0;
 #elif defined(FABRIC_WIN32)
         m_windowsThread = NULL;
@@ -43,7 +48,7 @@ namespace Fabric
 #if defined(FABRIC_POSIX)
         FABRIC_ASSERT( !m_posixThread );
         m_posixThread = new pthread_t;
-        if ( pthread_create( m_posixThread, 0, &Thread::Main, &m_startInfo ) != 0 )
+        if ( pthread_create( m_posixThread, &m_posixThreadAttr, &Thread::Main, &m_startInfo ) != 0 )
         {
           delete m_posixThread;
           m_posixThread = 0;
@@ -51,7 +56,7 @@ namespace Fabric
         }
 #elif defined(FABRIC_WIN32)
         FABRIC_ASSERT( m_windowsThread == NULL );
-        m_windowsThread = (HANDLE)_beginthreadex( NULL, 0, &Thread::Main, &m_startInfo, 0, NULL );
+        m_windowsThread = (HANDLE)_beginthreadex( NULL, s_stackSize, &Thread::Main, &m_startInfo, 0, NULL );
         if ( m_windowsThread == NULL )
           throw Exception( "_beginthreadex(): unknown failure" );
 #else
@@ -82,6 +87,8 @@ namespace Fabric
       {
 #if defined(FABRIC_POSIX)
         FABRIC_ASSERT( !m_posixThread );
+      
+        pthread_attr_destroy( &m_posixThreadAttr );
 #elif defined(FABRIC_WIN32)
         FABRIC_ASSERT( m_windowsThread == NULL );
 #else
@@ -117,6 +124,7 @@ namespace Fabric
 #endif
       
 #if defined(FABRIC_POSIX)
+      pthread_attr_t m_posixThreadAttr;
       pthread_t *m_posixThread;
 #elif defined(FABRIC_WIN32)
       HANDLE m_windowsThread;

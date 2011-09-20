@@ -11,6 +11,10 @@ set OPENEXR_NAME=openexr-1.7.0
 set V8_NAME=v8-1.3.18.22
 set LLVM_NAME=llvm-2.9
 set LASLIB_NAME=laslib
+set FFMPEG_NAME=ffmpeg-0.6.3
+set BOOST_NAME=boost_1_47_0
+set HDF5_NAME=hdf5-1.8.7
+set ALEMBIC_NAME=alembic-1.0_2011080800
 
 if "%1" NEQ "" goto %1
 
@@ -340,5 +344,135 @@ robocopy lastools\laslib\inc %TOP%\include\laslib *.hpp /s > NUL:
 
 touch %CHECKPOINT_DIR%\laslib_install
 :laslib_install_done
+
+rem =========== BOOST =============
+if EXIST %CHECKPOINT_DIR%\boost_unpack goto boost_unpack_done
+echo boost - Unpacking
+cd %BUILD_DIR%
+type %TOP%\SourcePackages\%BOOST_NAME%.tar.bz2 | bzip2 -d -c | tar -x -f- 2> NUL:
+touch %CHECKPOINT_DIR%\boost_unpack
+:boost_unpack_done
+
+if EXIST %CHECKPOINT_DIR%\boost_buildjam goto boost_buildjam_done
+echo boost - Build Jam
+cd %BUILD_DIR%\%BOOST_NAME%\tools\build\v2\engine
+call .\build.bat
+touch %CHECKPOINT_DIR%\boost_buildjam
+:boost_buildjam_done
+
+if EXIST %CHECKPOINT_DIR%\boost_compile goto boost_compile_done
+echo boost - Compile debug & release
+cd %BUILD_DIR%\%BOOST_NAME%
+.\tools\build\v2\engine\bin.ntx86\bjam program_options date_time iostreams thread variant=debug,release toolset=msvc link=static runtime-link=static threading=multi define=_SCL_SECURE_NO_WARNINGS=1 define=_ITERATOR_DEBUG_LEVEL=0 define=_SECURE_SCL=0
+
+touch %CHECKPOINT_DIR%\boost_compile
+:boost_compile_done
+
+if EXIST %CHECKPOINT_DIR%\boost_install goto boost_install_done
+echo boost - Installing
+cd %BUILD_DIR%\%BOOST_NAME%
+
+if NOT EXIST %LIB_ARCH_DIR%\Debug\boost mkdir %LIB_ARCH_DIR%\Debug\boost
+copy bin.v2\libs\program_options\build\msvc-10.0\debug\link-static\runtime-link-static\threading-multi\libboost_program_options-vc100-mt-sgd-1_47.lib %LIB_ARCH_DIR%\Debug\boost
+copy bin.v2\libs\date_time\build\msvc-10.0\debug\link-static\runtime-link-static\threading-multi\libboost_date_time-vc100-mt-sgd-1_47.lib %LIB_ARCH_DIR%\Debug\boost
+copy bin.v2\libs\iostreams\build\msvc-10.0\debug\link-static\runtime-link-static\threading-multi\libboost_iostreams-vc100-mt-sgd-1_47.lib %LIB_ARCH_DIR%\Debug\boost
+copy bin.v2\libs\thread\build\msvc-10.0\debug\link-static\runtime-link-static\threading-multi\libboost_thread-vc100-mt-sgd-1_47.lib %LIB_ARCH_DIR%\Debug\boost
+
+if NOT EXIST %LIB_ARCH_DIR%\Release\boost mkdir %LIB_ARCH_DIR%\Release\boost
+copy bin.v2\libs\program_options\build\msvc-10.0\release\link-static\runtime-link-static\threading-multi\libboost_program_options-vc100-mt-s-1_47.lib %LIB_ARCH_DIR%\Release\boost
+copy bin.v2\libs\date_time\build\msvc-10.0\release\link-static\runtime-link-static\threading-multi\libboost_date_time-vc100-mt-s-1_47.lib %LIB_ARCH_DIR%\Release\boost
+copy bin.v2\libs\iostreams\build\msvc-10.0\release\link-static\runtime-link-static\threading-multi\libboost_iostreams-vc100-mt-s-1_47.lib %LIB_ARCH_DIR%\Release\boost
+copy bin.v2\libs\thread\build\msvc-10.0\release\link-static\runtime-link-static\threading-multi\libboost_thread-vc100-mt-s-1_47.lib %LIB_ARCH_DIR%\Release\boost
+
+robocopy boost %TOP%\include\boost\boost *.* /S > NUL:
+
+touch %CHECKPOINT_DIR%\boost_install
+:boost_install_done
+
+rem ============= HDF5 ==============
+
+if EXIST %CHECKPOINT_DIR%\hdf5_unpack goto hdf5_unpack_done
+echo HDF5 - Unpacking
+cd %BUILD_DIR%
+type "%TOP%\SourcePackages\%HDF5_NAME%.tar.bz2" | bzip2 -d -c | tar -x -f-
+call %HDF5_NAME%\Windows\copy_hdf.bat
+type %TOP%\Patches\Windows\%HDF5_NAME%-patch.tar.bz2 | bzip2 -d -c | tar -x -f- 2> NUL:
+touch %CHECKPOINT_DIR%\hdf5_unpack
+:hdf5_unpack_done
+
+if EXIST %CHECKPOINT_DIR%\hdf5_compile_debug goto hdf5_compile_debug_done
+echo HDF5 - Compiling debug
+cd %BUILD_DIR%\%HDF5_NAME%\windows\proj\all
+devenv all.sln /build "Debug|%VSARCH%"
+touch %CHECKPOINT_DIR%\hdf5_compile_debug
+:hdf5_compile_debug_done
+
+if EXIST %CHECKPOINT_DIR%\hdf5_compile_release goto hdf5_compile_release_done
+echo HDF5 - Compiling release
+cd %BUILD_DIR%\%HDF5_NAME%\windows\proj\all
+devenv all.sln /build "Release|%VSARCH%"
+touch %CHECKPOINT_DIR%\hdf5_compile_release
+:hdf5_compile_release_done
+
+if EXIST %CHECKPOINT_DIR%\hdf5_install goto hdf5_install_done
+echo hdf5 - Installing
+
+cd %BUILD_DIR%\%HDF5_NAME%\proj
+
+if NOT EXIST %LIB_ARCH_DIR%\Debug\hdf5 mkdir %LIB_ARCH_DIR%\Debug\hdf5
+copy hdf5\Debug\hdf5d.lib %LIB_ARCH_DIR%\Debug\hdf5\hdf5.lib
+copy hdf5_hl\Debug\hdf5_hld.lib %LIB_ARCH_DIR%\Debug\hdf5\hdf5_hl.lib
+
+if NOT EXIST %LIB_ARCH_DIR%\Release\hdf5 mkdir %LIB_ARCH_DIR%\Release\hdf5
+copy hdf5\Release\*.lib %LIB_ARCH_DIR%\Release\hdf5
+copy hdf5_hl\Release\*.lib %LIB_ARCH_DIR%\Release\hdf5
+
+cd %BUILD_DIR%\%HDF5_NAME%
+robocopy src %TOP%\include\hdf5 *.h > NUL:
+robocopy hl\src %TOP%\include\hdf5 *.h > NUL:
+
+touch %CHECKPOINT_DIR%\hdf5_install
+:hdf5_install_done
+
+rem ============= ALEMBIC ==============
+
+if EXIST %CHECKPOINT_DIR%\alembic_unpack goto alembic_unpack_done
+echo ALEMBIC - Unpacking
+cd %BUILD_DIR%
+type %TOP%\SourcePackages\%ALEMBIC_NAME%.tar.bz2 | bzip2 -d -c | tar -x -f-
+type %TOP%\Patches\Windows\%ALEMBIC_NAME%-patch.tar.bz2 | bzip2 -d -c | tar -x -f- 2> NUL:
+if NOT EXIST %BUILD_DIR%\%ALEMBIC_NAME%\Output mkdir %BUILD_DIR%\%ALEMBIC_NAME%\Output
+if NOT EXIST %BUILD_DIR%\%ALEMBIC_NAME%\thirdparty mklink /J %BUILD_DIR%\%ALEMBIC_NAME%\thirdparty %BUILD_DIR%
+if NOT EXIST %BUILD_DIR%\%ALEMBIC_NAME%\thirdpartyinc mklink /J %BUILD_DIR%\%ALEMBIC_NAME%\thirdpartyinc %TOP%\include
+if NOT EXIST %BUILD_DIR%\%ALEMBIC_NAME%\thirdpartylib mklink /J %BUILD_DIR%\%ALEMBIC_NAME%\thirdpartylib %TOP%\lib\Windows
+touch %CHECKPOINT_DIR%\alembic_unpack
+:alembic_unpack_done
+
+SET ALEMBIC_ROOT=%BUILD_DIR%\%ALEMBIC_NAME%
+SET ALEMBIC_OUT=%BUILD_DIR%\%ALEMBIC_NAME%\Output
+
+if EXIST %CHECKPOINT_DIR%\alembic_createproj goto alembic_createproj_done
+echo ALEMBIC - Creating projects
+cd %BUILD_DIR%
+rem call %BUILD_DIR%\%ALEMBIC_NAME%\init_Alembic.cmd db:
+call %BUILD_DIR%\%ALEMBIC_NAME%\init_Alembic.cmd
+touch %CHECKPOINT_DIR%\alembic_createproj
+:alembic_createproj_done
+
+if EXIST %CHECKPOINT_DIR%\alembic_build goto alembic_build_done
+echo ALEMBIC - Buiding
+cd %BUILD_DIR%
+call %BUILD_DIR%\%ALEMBIC_NAME%\build_Alembic.cmd
+touch %CHECKPOINT_DIR%\alembic_build
+:alembic_build_done
+
+if EXIST %CHECKPOINT_DIR%\alembic_install goto alembic_install_done
+echo alembic - Installing
+cd %BUILD_DIR%\%ALEMBIC_NAME%
+robocopy Output\x86\alembic\RelWithDebInfo %LIB_ARCH_DIR%\Debug\alembic *.lib > NUL:
+robocopy Output\x86\alembic\RelWithDebInfo %LIB_ARCH_DIR%\Release\alembic *.lib > NUL:
+robocopy lib %TOP%\include\alembic *.h /S > NUL:
+touch %CHECKPOINT_DIR%\alembic_install
+:alembic_install_done
 
 rem exit
