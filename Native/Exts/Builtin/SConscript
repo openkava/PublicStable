@@ -7,6 +7,7 @@ Import( 'baseEnv', 'buildOS' )
 
 dirs = [
   'ALEMBIC',
+  'BULLET',
   'EXR',
   'HDR',
   'Math',
