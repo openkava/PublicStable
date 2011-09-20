@@ -273,18 +273,19 @@ namespace Fabric
       m_gdkGLStack.pop_back();
     }
 
-    std::string X11ViewPort::getPathFromSaveAsDialog( std::string const &defaultFilename, std::string const &extension )
+    std::string X11ViewPort::queryUserFilePath( bool existingFile, std::string const &title, std::string const &defaultFilename, std::string const &extension )
     {
-      GtkWidget *dialog = gtk_file_chooser_dialog_new( "Save File...",
+      GtkWidget *dialog = gtk_file_chooser_dialog_new( title.c_str(),
         NULL,
-        GTK_FILE_CHOOSER_ACTION_SAVE,
+        existingFile ? GTK_FILE_CHOOSER_ACTION_OPEN : GTK_FILE_CHOOSER_ACTION_SAVE,
         GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-        GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
+        existingFile ? GTK_STOCK_OPEN : GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
         NULL
         );
       gtk_file_chooser_set_do_overwrite_confirmation( GTK_FILE_CHOOSER(dialog), TRUE );
       //gtk_file_chooser_set_current_folder( GTK_FILE_CHOOSER(dialog), default_folder_for_saving );
-      gtk_file_chooser_set_current_name( GTK_FILE_CHOOSER(dialog), defaultFilename.c_str() );
+      if ( !existingFile )
+        gtk_file_chooser_set_current_name( GTK_FILE_CHOOSER(dialog), defaultFilename.c_str() );
        
       std::string result;
       gint runResult = gtk_dialog_run(GTK_DIALOG(dialog));
@@ -296,7 +297,9 @@ namespace Fabric
       }
       gtk_widget_destroy (dialog);
       if ( runResult != GTK_RESPONSE_ACCEPT )
-        throw Exception( "File save failed or was canceled by user" );
+      {
+        throw Exception( existingFile ? "Open file failed or was canceled by user" : "Save file failed or was canceled by user" );
+      }
       return result;
     }
   };
