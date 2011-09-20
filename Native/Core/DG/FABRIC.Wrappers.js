@@ -61,6 +61,32 @@
       executeQueuedCommands();
   };
 
+  var handleBasedPathToArray = function(handleBasedPath)
+  {
+    var result = [];
+    if(!handleBasedPath.folderHandle)
+      throw 'Error: handleBasePath must have a \'folderHandle\' member containing the handle returned by queryUserFileAndFolderHandle';
+    result[0] = handleBasedPath.folderHandle;
+    if(handleBasedPath.subFolders)
+      result = result.concat(handleBasedPath.subFolders);
+    if(!handleBasedPath.fileName)
+      throw 'Error: handleBasePath must have a \'fileName\' member';
+    result.push(handleBasedPath.fileName);
+    return result;
+  }
+
+  var arrayToHandleBasedPath = function(array)
+  {
+    if(array.length < 2)
+      throw 'Error: handleBasedPathArray should have at least 2 entries (folderHandle and fileName)';
+    var result = {
+      folderHandle: array[0],
+      fileName: array[array.length-1],
+      subFolders: array.slice(1,array.length-1)
+    };
+    return result;
+  }
+
   var createRT = function() {
     var RT = {};
 
@@ -698,18 +724,18 @@
         executeQueuedCommands();
       };
 
-      result.pub.getResourceFromFile = function(memberName, handleBasedPathArray) {
+      result.pub.getResourceFromFile = function(memberName, handleBasedPath) {
         result.queueCommand('getResourceFromFile', {
           'memberName': memberName,
-          'path': handleBasedPathArray
+          'path': handleBasedPathToArray(handleBasedPath)
         });
         executeQueuedCommands();
       }
 
-      result.pub.putResourceToFile = function(memberName, handleBasedPathArray) {
+      result.pub.putResourceToFile = function(memberName, handleBasedPath) {
         result.queueCommand('putResourceToFile', {
           'memberName': memberName,
-          'path': handleBasedPathArray
+          'path': handleBasedPathToArray(handleBasedPath)
         });
         executeQueuedCommands();
       }
@@ -1199,17 +1225,24 @@
   var createIO = function() {
 
     var IO = {
-      pub: {}
+      pub: {
+        forOpen: 'openMode',
+        forOpenWithWriteAccess: 'openWithWriteAccessMode',
+        forSave: 'saveMode'
+      }
     };
 
     IO.queueCommand = function(cmd, arg, unwind, callback) {
       queueCommand(['IO'], cmd, arg, unwind, callback);
     };
 
-    IO.pub.queryUserFileAndFolderHandle = function(existingFile, uiTitle, extension, defaultFileName) {
-      var handleBasedPathArray;
+    IO.pub.queryUserFileAndFolderHandle = function(mode, uiTitle, extension, defaultFileName) {
+      if(mode !== IO.pub.forOpen && mode !== IO.pub.forOpenWithWriteAccess && mode !== IO.pub.forSave)
+        throw 'Invalid mode: \"' + mode + '\': can be IO.forOpen, IO.forOpenWithWriteAccess or IO.forSave';
+      var handleBasedPath;
       IO.queueCommand('queryUserFileAndFolder', {
-        'existingFile': existingFile,
+        'existingFile': mode === IO.pub.forOpen,
+        'writeAccess': mode === IO.pub.forOpenWithWriteAccess || mode === IO.pub.forSave,
         'uiOptions': {
           'title': uiTitle,
           'extension': extension,
@@ -1217,16 +1250,16 @@
         }
       }, function() {
       }, function(data) {
-        handleBasedPathArray = data;
+        handleBasedPath = arrayToHandleBasedPath(data);
       });
       executeQueuedCommands();
-      return handleBasedPathArray;
+      return handleBasedPath;
     };
 
-    IO.pub.getTextFile = function(handleBasedPathArray) {
+    IO.pub.getTextFile = function(handleBasedPath) {
       var fileContent;
       IO.queueCommand('getTextFile', {
-        'path': handleBasedPathArray
+        'path': handleBasedPathToArray(handleBasedPath)
       }, function() {
       }, function(data) {
         fileContent = data;
@@ -1235,10 +1268,10 @@
       return fileContent;
     }
 
-    IO.pub.putTextFile = function(content, handleBasedPathArray) {
+    IO.pub.putTextFile = function(content, handleBasedPath) {
       IO.queueCommand('putTextFile', {
         'content': content,
-        'path': handleBasedPathArray
+        'path': handleBasedPathToArray(handleBasedPath)
       });
       executeQueuedCommands();
     }

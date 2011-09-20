@@ -1,5 +1,6 @@
 testfile.txt
-Fabric core exception: IO.putTextFile('{"content":"dummy","path":"pathS...'): command 'putTextFile': path must be an Array
+Error: handleBasePath must have a 'folderHandle' member containing the handle returned by queryUserFileAndFolderHandle
+ErrorCantWriteIfOpenMode
 Fabric core exception: IO.getTextFile('{"path":["badHandle","dummy.txt"...'): command 'getTextFile': Unknown directory handle: 'badHandle'. Valid directory handles can only be obtained through 'IO.queryUserFileAndFolder'.
 DirNotFound
 FileBody
