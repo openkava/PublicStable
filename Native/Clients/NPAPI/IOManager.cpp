@@ -6,8 +6,9 @@
 #include <Fabric/Clients/NPAPI/IOStream.h>
 #include <Fabric/Clients/NPAPI/Context.h>
 #include <Fabric/Base/Exception.h>
-#include <Fabric/Core/Util/Assert.h>
+#include <Fabric/Core/IO/Dir.h>
 #include <Fabric/Core/MT/LogCollector.h>
+#include <Fabric/Core/Util/Assert.h>
 
 namespace Fabric
 {
@@ -65,13 +66,10 @@ namespace Fabric
       return static_cast<IOStream *>( stream->notifyData )->nppDestroyStream( npp, stream, reason );
     }
 
-    std::string IOManager::getUserFilePath(
-        std::string const &defaultFilename,
-        std::string const &extension
-        ) const
+    std::string IOManager::queryUserFilePath( bool existingFile, std::string const &title, std::string const &defaultFilename, std::string const &extension ) const
     {
       FABRIC_ASSERT( m_context );
-      return m_context->getUserFilePath( defaultFilename, extension );
+      return m_context->queryUserFilePath( existingFile, title, defaultFilename, extension );
     }
   };
 };

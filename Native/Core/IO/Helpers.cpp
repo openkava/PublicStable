@@ -23,6 +23,14 @@ namespace Fabric
 {
   namespace IO
   {
+#if defined(FABRIC_POSIX)
+    static const char *s_pathSeparator = "/";
+#elif defined(FABRIC_WIN32)
+    static const char *s_pathSeparator = "\\";
+#else
+# error "Unsupported platform"
+#endif
+
     void validateEntry( std::string const &entry )
     {
       if ( entry.length() == 0 )
@@ -77,20 +85,49 @@ namespace Fabric
     
     std::string JoinPath( std::string const &lhs, std::string const &rhs )
     {
-#if defined(FABRIC_POSIX)
-      static const char *s_pathSeparator = "/";
-#elif defined(FABRIC_WIN32)
-      static const char *s_pathSeparator = "\\";
-#else
-# error "Unsupported platform"
-#endif
-
       if ( lhs.length() == 0 )
         return rhs;
       else if ( rhs.length() == 0 )
         return lhs;
       else
         return lhs + s_pathSeparator + rhs;
+    }
+
+    void SplitPath( std::string const &path, std::string &parentDir, std::string &entry )
+    {
+      size_t separatorPos = path.rfind( s_pathSeparator );
+      if( separatorPos == std::string::npos )
+      {
+        parentDir.clear();
+        entry = path;
+      }
+      else
+      {
+        entry = path.substr( separatorPos + strlen( s_pathSeparator ) );
+        parentDir = path.substr( 0, separatorPos );
+      }
+    }
+
+    std::string GetExtension( std::string const &filename, const char* separator )
+    {
+      size_t pos = filename.rfind('.');
+      if( pos != std::string::npos )
+      {
+        size_t separatorPos = filename.rfind( separator );
+        if( separatorPos == std::string::npos || separatorPos < pos )
+          return filename.substr( pos+1 );
+      }
+      return std::string();
+    }
+
+    std::string GetExtension( std::string const &filename )
+    {
+      return GetExtension( filename, s_pathSeparator );
+    }
+
+    std::string GetURLExtension( std::string const &filename )
+    {
+      return GetExtension( filename, "/" );
     }
     
     /*
@@ -136,6 +173,25 @@ namespace Fabric
       	&& (dwAttrib & FILE_ATTRIBUTE_DIRECTORY);
 #endif 
       return result;
+    }
+
+    bool IsLink( std::string const &fullPath )
+    {
+#if defined(FABRIC_POSIX)
+      struct stat st;
+      return lstat( fullPath.c_str(), &st ) == 0 && S_ISLNK( st.st_mode );
+#else
+      //[jcg 20110819] http://msdn.microsoft.com/en-us/library/aa365460(v=vs.85).aspx + http://msdn.microsoft.com/en-us/library/aa363940(v=vs.85).aspx
+      WIN32_FIND_DATAA fdLink;
+      ::ZeroMemory( &fdLink, sizeof( fdLink ) );
+      HANDLE hDir = ::FindFirstFileA( fullPath.c_str(), &fdLink );
+      if( hDir != INVALID_HANDLE_VALUE )
+      {
+        if( fdLink.dwReserved0 == IO_REPARSE_TAG_MOUNT_POINT )
+          return true;
+      }
+      return false;
+#endif
     }
     
     std::vector<std::string> GetSubDirEntries( std::string const &dirPath, bool followLinks )
@@ -185,17 +241,9 @@ namespace Fabric
 
         if ( !followLinks && ( fd.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT ) )
         {
-          //[jcg 20110819] http://msdn.microsoft.com/en-us/library/aa365460(v=vs.85).aspx
-          //[jcg 20110819] http://msdn.microsoft.com/en-us/library/aa363940(v=vs.85).aspx
           std::string potentialLinkFullPath = JoinPath( dirPath, entry );
-          WIN32_FIND_DATAA fdLink;
-          ::ZeroMemory( &fdLink, sizeof( fdLink ) );
-          HANDLE hDir = ::FindFirstFileA( potentialLinkFullPath.c_str(), &fdLink );
-          if( hDir != INVALID_HANDLE_VALUE )
-          {
-            if( fdLink.dwReserved0 == IO_REPARSE_TAG_MOUNT_POINT )
+          if( IsLink( potentialLinkFullPath ) )
               continue;
-          }
         }
 
         result.push_back( entry );
