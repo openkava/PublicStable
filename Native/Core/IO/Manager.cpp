@@ -170,7 +170,10 @@ namespace Fabric
       else
         fullPath = filename;
 
-      std::ifstream file( fullPath.c_str(), std::ios::in | std::ios::ate | (binary ? std::ios::binary : 0 ) );
+      std::ios_base::openmode mode = std::ios::in | std::ios::ate;
+      if ( binary )
+        mode |= std::ios::binary;
+      std::ifstream file( fullPath.c_str(), mode );
       if( !file.is_open() )
         throw Exception( "Unable to open file " + GetSafeDisplayPath(dir, filename) );
 
