@@ -11,6 +11,7 @@
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/DG/Context.h>
 #include <Fabric/Core/IO/Stream.h>
+#include <Fabric/Core/IO/Helpers.h>
 #include <Fabric/Core/IO/Manager.h>
 #include <Fabric/Core/IO/Dir.h>
 #include <Fabric/Core/OCL/OCL.h>
@@ -126,7 +127,12 @@ namespace Fabric
         std::string const &extension
         ) const
       {
-        return defaultFilename;
+        if ( !IO::DirExists( "TMP" ) )
+	        IO::CreateDir( "TMP" );
+        if(existingFile)
+          return IO::JoinPath("TMP", "default.txt");
+        else
+          return IO::JoinPath("TMP", defaultFilename);
       }
   
     protected:

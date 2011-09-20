@@ -40,6 +40,7 @@ else
   OUTPUT_FILTER=cat
 fi
 
+ERROR=0
 for f in "$@"; do
   TMPFILE=$(tmpfilename)
 
@@ -61,10 +62,17 @@ for f in "$@"; do
       cat $TMPFILE
       echo "To debug:"
       echo "gdb --args" $VALGRIND_CMD ../../build/$BUILD_OS/$BUILD_ARCH/$BUILD_TYPE/Fabric/Clients/CLI/fabric --exts="'$EXTS_DIR'" $f
-      exit 1
+			ERROR=1
+			break
     else
       echo "PASS $(basename $f)";
       rm $TMPFILE
     fi
   fi
 done
+if [ -d TMP ]; then
+	rm -r TMP
+fi
+if [ "$ERROR" -eq 1 ]; then
+	exit 1
+fi
