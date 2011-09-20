@@ -51,7 +51,7 @@ else {
 	binding.setParameterLayout(["parent.msa<>"]);
 
   node = FABRIC.DependencyGraph.createNode( "node" );
-  node.addDependency( parentNode, "parent" );
+  node.setDependency( parentNode, "parent" );
   node.bindings.append(binding);
 	var errors = node.getErrors();
   if ( errors.length > 0 ) {

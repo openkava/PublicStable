@@ -81,7 +81,7 @@ namespace Fabric
       }
     }
     
-    void Node::addDependency( RC::Handle<Node> const &dependencyNode, std::string const &dependencyName )
+    void Node::setDependency( RC::Handle<Node> const &dependencyNode, std::string const &dependencyName )
     {
       if ( dependencyName.length() == 0 )
         throw Exception( "dependencyName must be non-empty" );
@@ -89,7 +89,7 @@ namespace Fabric
         throw Exception( "dependencyName cannot be named 'self'" );
       
       if ( !canBeDependency( dependencyNode ) )
-        throw Exception( "cannot add dependency because it would create a dependency loop" );
+        throw Exception( "cannot set dependency because it would create a dependency loop" );
       
       Dependencies::iterator it = m_dependencies.find( dependencyName );
       if ( it != m_dependencies.end() )
@@ -458,7 +458,7 @@ namespace Fabric
     {
       RC::ConstHandle<JSON::Value> result;
 
-      if ( cmd == "addDependency" )
+      if ( cmd == "setDependency" )
         jsonExecAddDependency( arg );
       else if ( cmd == "evaluate" )
         jsonExecEvaluate();
@@ -496,7 +496,7 @@ namespace Fabric
         throw "'node': " + e;
       }
       
-      addDependency( node, name );
+      setDependency( node, name );
     }
     
     void Node::jsonExecEvaluate()

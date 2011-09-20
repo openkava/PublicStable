@@ -5,7 +5,7 @@ node1 = FABRIC.DependencyGraph.createNode("one");
 node2 = FABRIC.DependencyGraph.createNode("two");
 
 try {
-  node1.addDependency( node1, "reflex" );
+  node1.setDependency( node1, "reflex" );
   FABRIC.flush();
 }
 catch (e) {
@@ -13,8 +13,8 @@ catch (e) {
 }
 
 try {
-  node1.addDependency( node2, "one" );
-  node2.addDependency( node1, "two" );
+  node1.setDependency( node2, "one" );
+  node2.setDependency( node1, "two" );
   FABRIC.flush();
 }
 catch (e) {
