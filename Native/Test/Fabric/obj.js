@@ -1,5 +1,5 @@
 FC = createFabricClient();
-FABRIC = wrapFabricClient(FC);
+FABRIC = FC.wrapFabricClient(FC);
 
 loadOp = FABRIC.DependencyGraph.createOperator("load");
 loadOp.setEntryFunctionName("load");

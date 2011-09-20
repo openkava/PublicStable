@@ -29,11 +29,11 @@ namespace Fabric
     {
     }
     
-    void MemberDeclVector::appendJSON( Util::JSONGenerator const &jsonGenerator ) const
+    void MemberDeclVector::appendJSON( Util::JSONGenerator const &jsonGenerator, bool includeLocation ) const
     {
       Util::JSONArrayGenerator jsonArrayGenerator = jsonGenerator.makeArray();
       for ( const_iterator it=begin(); it!=end(); ++it )
-        (*it)->appendJSON( jsonArrayGenerator.makeElement() );
+        (*it)->appendJSON( jsonArrayGenerator.makeElement(), includeLocation );
     }
     
     void MemberDeclVector::buildStructMemberInfoVector( RC::ConstHandle<RT::Manager> const &rtManager, RT::StructMemberInfoVector &structMemberInfoVector ) const

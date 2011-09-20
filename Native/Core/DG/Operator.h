@@ -66,8 +66,9 @@ namespace Fabric
       std::string const &getEntryFunctionName() const;
       void setEntryFunctionName( std::string const &entryFunctionName );
       
+      std::string const &getFilename() const;
       std::string const &getSourceCode() const;
-      void setSourceCode( std::string const &sourceCode );
+      void setFilenameAndSourceCode( std::string const &filename, std::string const &sourceCode );
       
 #if defined(FABRIC_BUILD_DEBUG)
       std::string const &getByteCode() const;
@@ -102,6 +103,7 @@ namespace Fabric
       void jsonExecSetMainThreadOnly( RC::ConstHandle<JSON::Value> const &arg );
       virtual RC::Handle<JSON::Object> jsonDesc() const;
       virtual RC::ConstHandle<JSON::Value> jsonDescType() const;
+      RC::ConstHandle<JSON::Value> jsonDescFilename() const;
       RC::ConstHandle<JSON::Value> jsonDescSourceCode() const;
       RC::ConstHandle<JSON::Value> jsonDescEntryFunctionName() const;
       RC::ConstHandle<JSON::Value> jsonDescDiagnostics() const;
@@ -129,6 +131,7 @@ namespace Fabric
       Context *m_context;
     
       std::string m_entryFunctionName;
+      std::string m_filename;
       std::string m_sourceCode;
       RC::ConstHandle<Code> m_code;
       RC::ConstHandle<Function> m_function;

@@ -478,5 +478,9 @@ namespace Fabric
       }
       return dgJSONDesc;
     }
+    
+    std::string const Context::s_wrapFabricClientJSSource(
+#include <Fabric/Core/DG/FABRIC.Wrappers.js.inc>
+);
   };
 };

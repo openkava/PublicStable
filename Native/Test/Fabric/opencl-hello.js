@@ -1,5 +1,5 @@
 FC = createFabricClient();
-F = wrapFabricClient(FC);
+F = FC.wrapFabricClient(FC);
 
 op = F.DG.createOperator("op");
 op.setSourceCode("\
