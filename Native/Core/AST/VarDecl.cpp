@@ -35,9 +35,9 @@ namespace Fabric
     {
     }
     
-    void VarDecl::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
+    void VarDecl::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator, bool includeLocation ) const
     {
-      Node::appendJSONMembers( jsonObjectGenerator );
+      Node::appendJSONMembers( jsonObjectGenerator, includeLocation );
       jsonObjectGenerator.makeMember( "name" ).makeString( m_name );
       jsonObjectGenerator.makeMember( "arrayModifier" ).makeString( m_arrayModifier );
     }

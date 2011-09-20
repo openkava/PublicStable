@@ -1,5 +1,5 @@
 FC = createFabricClient();
-FABRIC = wrapFabricClient(FC);
+FABRIC = FC.wrapFabricClient(FC);
 
 for( var i = 1; i < 32; i++ )
 {

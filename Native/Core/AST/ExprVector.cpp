@@ -31,11 +31,11 @@ namespace Fabric
     {
     }
     
-    void ExprVector::appendJSON( Util::JSONGenerator const &jsonGenerator ) const
+    void ExprVector::appendJSON( Util::JSONGenerator const &jsonGenerator, bool includeLocation ) const
     {
       Util::JSONArrayGenerator jsonArrayGenerator = jsonGenerator.makeArray();
       for ( const_iterator it=begin(); it!=end(); ++it )
-        (*it)->appendJSON( jsonArrayGenerator.makeElement() );
+        (*it)->appendJSON( jsonArrayGenerator.makeElement(), includeLocation );
     }
 
     void ExprVector::appendTypes( CG::BasicBlockBuilder &basicBlockBuilder, std::vector< RC::ConstHandle<CG::Adapter> > &argTypes ) const

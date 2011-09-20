@@ -37,12 +37,12 @@ namespace Fabric
     {
     }
     
-    void TernaryOp::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
+    void TernaryOp::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator, bool includeLocation ) const
     {
-      Expr::appendJSONMembers( jsonObjectGenerator );
-      m_left->appendJSON( jsonObjectGenerator.makeMember( "condExpr" ) );
-      m_middle->appendJSON( jsonObjectGenerator.makeMember( "trueExpr" ) );
-      m_right->appendJSON( jsonObjectGenerator.makeMember( "falseExpr" ) );
+      Expr::appendJSONMembers( jsonObjectGenerator, includeLocation );
+      m_left->appendJSON( jsonObjectGenerator.makeMember( "condExpr" ), includeLocation );
+      m_middle->appendJSON( jsonObjectGenerator.makeMember( "trueExpr" ), includeLocation );
+      m_right->appendJSON( jsonObjectGenerator.makeMember( "falseExpr" ), includeLocation );
     }
     
     void TernaryOp::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const
