@@ -1,0 +1,11 @@
+testfile.txt
+Error: handleBasePath must have a 'folderHandle' member containing the handle returned by queryUserFileAndFolderHandle
+ErrorCantWriteIfOpenMode
+Fabric core exception: IO.getTextFile('{"path":["badHandle","dummy.txt"...'): command 'getTextFile': Unknown directory handle: 'badHandle'. Valid directory handles can only be obtained through 'IO.queryUserFileAndFolder'.
+DirNotFound
+FileBody
+FileBody2
+{data:[70,105,108,101,66,111,100,121,50],extension:"txt",mimeType:"",url:"default.txt"}
+FileBody2
+{data:[70,105,108,101,66,111,100,121,51],extension:"txt",mimeType:"",url:"testfile4.txt"}
+FileBody3

@@ -27,7 +27,12 @@ namespace Fabric
       {
         return new Dir( parentDir, path, createIfMissing );
       }
-      
+
+      static RC::ConstHandle<Dir> Create( std::string path, bool createIfMissing = true )
+      {
+        return Create( RC::ConstHandle<Dir>(), path, createIfMissing );
+      }
+
       RC::ConstHandle<Dir> getParentDir() const
       {
         return m_parentDir;
