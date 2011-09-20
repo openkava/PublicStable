@@ -777,7 +777,7 @@
         return 'Node';
       };
 
-      result.pub.addDependency = function(dependencyNode, dependencyName) {
+      result.pub.setDependency = function(dependencyNode, dependencyName) {
         try {
           if (typeof dependencyName !== 'string')
             throw 'must be a string';
@@ -789,7 +789,7 @@
         catch (e) {
           throw 'dependencyName: ' + e;
         }
-        result.queueCommand('addDependency', {
+        result.queueCommand('setDependency', {
           'name': dependencyName,
           'node': dependencyNode.getName()
         });

@@ -87,7 +87,7 @@ node = FABRIC.DG.createNode("dataNode");
 node.addMember("position", "Vec3");
 node.bindings.append(resizeBinding);
 node.bindings.append(setDataBinding);
-node.addDependency(rlnode, "rlnode");
+node.setDependency(rlnode, "rlnode");
 if ( node.getErrors().length > 0 )
   printDeep(node.getErrors());
 node.evaluate();

@@ -1,9 +1,9 @@
-[note] addDependency/getDependencies/getDependents
+[note] setDependency/getDependencies/getDependents
   [pass] parentName must be non-empty
   [pass] parentName must not be 'self'
-  [pass] addDependency works
-  [pass] addDependency works the second time with same name
-  [pass] addDependency works with same node but different name
+  [pass] setDependency works
+  [pass] setDependency works the second time with same name
+  [pass] setDependency works with same node but different name
   [pass] child.getDependency('parent').eq(parent)
   [pass] child.getDependency('parentAgain').eq(parent)
   [pass] child.getDependency('children') fails
@@ -11,4 +11,4 @@
   [pass] parent.getDependency('children') fails
   [pass] child.getDependencies().parent.eq(parent)
   [pass] child.getDependencies().parentAgain.eq(parent)
-[pass] addDependency/getDependencies/getDependents
+[pass] setDependency/getDependencies/getDependents
