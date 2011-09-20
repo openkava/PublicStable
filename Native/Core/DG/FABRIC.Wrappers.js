@@ -789,7 +789,7 @@
         catch (e) {
           throw 'dependencyName: ' + e;
         }
-        result.queueCommand('addDependency', {
+        result.queueCommand('setDependency', {
           'name': dependencyName,
           'node': dependencyNode.getName()
         });
