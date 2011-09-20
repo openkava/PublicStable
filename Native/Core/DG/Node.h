@@ -62,7 +62,7 @@ namespace Fabric
 
       virtual bool isNode() const { return true; }
 
-      void addDependency( RC::Handle<Node> const &dependencyNode, std::string const &dependencyName );
+      void setDependency( RC::Handle<Node> const &dependencyNode, std::string const &dependencyName );
       void removeDependency( std::string const &dependencyName );
       RC::Handle<Node> getDependency( std::string const &dependencyName ) const;
       Dependencies const &getDependencies() const;
