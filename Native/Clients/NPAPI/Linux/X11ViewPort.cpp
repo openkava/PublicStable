@@ -273,7 +273,7 @@ namespace Fabric
       m_gdkGLStack.pop_back();
     }
 
-    std::string X11ViewPort::queryUserFilePath( bool existingFile, std::string const &title, std::string const &defaultFilename, std::string const &extension );
+    std::string X11ViewPort::queryUserFilePath( bool existingFile, std::string const &title, std::string const &defaultFilename, std::string const &extension )
     {
       GtkWidget *dialog = gtk_file_chooser_dialog_new( title.c_str(),
         NULL,
@@ -284,7 +284,8 @@ namespace Fabric
         );
       gtk_file_chooser_set_do_overwrite_confirmation( GTK_FILE_CHOOSER(dialog), TRUE );
       //gtk_file_chooser_set_current_folder( GTK_FILE_CHOOSER(dialog), default_folder_for_saving );
-      gtk_file_chooser_set_current_name( GTK_FILE_CHOOSER(dialog), defaultFilename.c_str() );
+      if ( !existingFile )
+        gtk_file_chooser_set_current_name( GTK_FILE_CHOOSER(dialog), defaultFilename.c_str() );
        
       std::string result;
       gint runResult = gtk_dialog_run(GTK_DIALOG(dialog));
