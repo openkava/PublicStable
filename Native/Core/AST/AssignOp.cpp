@@ -33,12 +33,12 @@ namespace Fabric
     {
     }
     
-    void AssignOp::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator ) const
+    void AssignOp::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator, bool includeLocation ) const
     {
-      Expr::appendJSONMembers( jsonObjectGenerator );
+      Expr::appendJSONMembers( jsonObjectGenerator, includeLocation );
       jsonObjectGenerator.makeMember( "initialValue" ).makeString( assignOpTypeDesc( m_assignOpType ) );
-      m_left->appendJSON( jsonObjectGenerator.makeMember( "lhs" ) );
-      m_right->appendJSON( jsonObjectGenerator.makeMember( "rhs" ) );
+      m_left->appendJSON( jsonObjectGenerator.makeMember( "lhs" ), includeLocation );
+      m_right->appendJSON( jsonObjectGenerator.makeMember( "rhs" ), includeLocation );
     }
     
     void AssignOp::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const

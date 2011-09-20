@@ -17,7 +17,7 @@ namespace Fabric
     
       static RC::ConstHandle<Compiler> Create();
       
-      virtual RC::ConstHandle<RC::Object> compile( std::string const &klSource ) const;
+      virtual RC::ConstHandle<RC::Object> compile( std::string const &klFilename, std::string const &klSource ) const;
 
     protected:
     

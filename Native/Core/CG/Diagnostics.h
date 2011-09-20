@@ -78,7 +78,8 @@ namespace Fabric
     
     class Diagnostics
     {
-      typedef std::multimap< Location, Diagnostic, LocationLessThanComparator > Impl;
+      typedef std::pair< Location, Diagnostic > LocationDiagnostic;
+      typedef std::vector< LocationDiagnostic > Impl;
 
     public:
     
@@ -96,7 +97,7 @@ namespace Fabric
       void add( Diagnostic::Level level, Location const &location, Util::SimpleString const &desc )
       {
         Diagnostic diagnostic( level, desc );
-        m_impl.insert( Impl::value_type( location, diagnostic ) );
+        m_impl.push_back( Impl::value_type( location, diagnostic ) );
         if ( level == Diagnostic::LEVEL_ERROR )
           m_containsError = true;
         //FABRIC_LOG( "*** %u:%u: %s: %s\n", (unsigned)location.getLine(), (unsigned)location.getColumn(), diagnostic.getLevelDesc(), diagnostic.getDesc().c_str() );
