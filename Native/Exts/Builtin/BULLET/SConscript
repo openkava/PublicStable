@@ -1,0 +1,26 @@
+#
+# Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+#
+
+Import( 'extsEnv', 'fabricExtsDistDir', 'ExtSLName' )
+
+bulletPluginEnv = extsEnv.Clone()
+bulletPluginEnv.Append(CPPPATH = ['bullet-2.78/src'])
+bulletSources = Glob('*.cpp')
+bulletSources.extend(Glob('bullet-2.78/src/BulletCollision/CollisionShapes/*.cpp'))
+bulletSources.extend(Glob('bullet-2.78/src/BulletCollision/CollisionDispatch/*.cpp'))
+bulletSources.extend(Glob('bullet-2.78/src/BulletCollision/BroadphaseCollision/*.cpp'))
+bulletSources.extend(Glob('bullet-2.78/src/BulletCollision/NarrowPhaseCollision/*.cpp'))
+bulletSources.extend(Glob('bullet-2.78/src/BulletCollision/Gimpact/*.cpp'))
+bulletSources.extend(Glob('bullet-2.78/src/BulletSoftBody/*.cpp'))
+bulletSources.extend(Glob('bullet-2.78/src/LinearMath/*.cpp'))
+bulletSources.extend(Glob('bullet-2.78/src/BulletDynamics/Dynamics/*.cpp'))
+bulletSources.extend(Glob('bullet-2.78/src/BulletDynamics/Character/*.cpp'))
+bulletSources.extend(Glob('bullet-2.78/src/BulletDynamics/Vehicle/*.cpp'))
+bulletSources.extend(Glob('bullet-2.78/src/BulletDynamics/ConstraintSolver/*.cpp'))
+bulletPlugin = bulletPluginEnv.SharedLibrary( ExtSLName('FabricBULLET'), bulletSources ),
+bulletManifest = bulletPluginEnv.File('FabricBULLET.fpm.json'),
+bulletKL = bulletPluginEnv.File('FabricBULLET.kl'),
+bulletFiles = [bulletManifest, bulletPlugin, bulletKL]
+
+Return( 'bulletFiles' )
