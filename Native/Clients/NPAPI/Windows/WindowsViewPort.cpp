@@ -10,6 +10,8 @@
 #include <Fabric/Core/DG/Context.h>
 #include <Fabric/Core/DG/Event.h>
 #include <Fabric/Core/MT/LogCollector.h>
+#include <Fabric/Core/IO/Helpers.h>
+#include <Fabric/Core/IO/Dir.h>
 #include <Fabric/Base/Exception.h>
 #include <Fabric/Clients/NPAPI/Context.h>
 #include <Fabric/Clients/NPAPI/Interface.h>
@@ -340,7 +342,7 @@ namespace Fabric
       m_wglStack.pop_back();
     }
 
-    std::string WindowsViewPort::getPathFromSaveAsDialog( std::string const &defaultFilename, std::string const &extension )
+    std::string WindowsViewPort::queryUserFilePath( bool existingFile, std::string const &title, std::string const &defaultFilename, std::string const &extension )
     {
       OPENFILENAME options;
       memset( &options, 0, sizeof(options) );
@@ -355,28 +357,35 @@ namespace Fabric
       fullPathBuff[lenToCopy] = 0;
       options.lpstrFile = fullPathBuff;
 
-      options.Flags = OFN_OVERWRITEPROMPT | OFN_PATHMUSTEXIST;
-
+      std::string extFilter;
       if( !extension.empty() )
       {
         options.lpstrDefExt = extension.c_str();
-
-        char extFilter[100];
-        snprintf( extFilter, 100, "%s file\0*.%s\0\0", extension.c_str(), extension.c_str() );
-        options.lpstrFilter = extFilter;
+        extFilter = extension + " file";
+        extFilter.push_back('\0');
+        extFilter += "*." + extension;
+        extFilter.push_back('\0');
+        extFilter.push_back('\0');
+        options.lpstrFilter = extFilter.c_str();
         options.nFilterIndex = 1;
       }
 
-      bool success = GetSaveFileName(&options) != FALSE;
+      if( !title.empty() )
+        options.lpstrTitle = title.c_str();
 
-      std::string fullPath( options.nMaxFile, ' ' );
-      for( size_t i = 0; i < options.nMaxFile; ++i )
-        fullPath[i] = (char)options.lpstrFile[i];
-
-      if( !success )
-        throw Exception( "Saving file " + fullPath + " failed or was canceled by user" );
-
-      return fullPath;
+      if( existingFile )
+      {
+        options.Flags = OFN_FILEMUSTEXIST;
+        if( !GetOpenFileName(&options) )
+          throw Exception( "Open file failed or was canceled by user" );
+      }
+      else
+      {
+        options.Flags = OFN_OVERWRITEPROMPT | OFN_PATHMUSTEXIST;
+        if( !GetSaveFileName(&options) )
+          throw Exception( "Save file failed or was canceled by user" );
+      }
+      return options.lpstrFile;
     }
   };
 };
