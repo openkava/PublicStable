@@ -377,10 +377,10 @@ namespace Fabric
       m_cglContextStack.pop_back();
     }
 
-    std::string WindowedCAViewPort::getPathFromSaveAsDialog( std::string const &defaultFilename, std::string const &extension )
+    std::string WindowedCAViewPort::getPathFromSaveAsDialog( std::string const &title, std::string const &defaultFilename, std::string const &extension )
     {
       NSSavePanel *savePanel = [NSSavePanel savePanel];
-      [savePanel setTitle:@"Save File..."];
+      [savePanel setTitle:[NSString stringWithUTF8String:title.c_str()]];
       [savePanel setNameFieldStringValue:[NSString stringWithUTF8String:defaultFilename.c_str()]];
       [savePanel setCanCreateDirectories:YES];
       [savePanel setAllowedFileTypes:[NSArray arrayWithObject:[NSString stringWithUTF8String:extension.c_str()]]];
@@ -397,5 +397,33 @@ namespace Fabric
       else throw Exception( "File save failed or was canceled by user" );
       return result;
     }
+
+    std::string WindowedCAViewPort::getPathFromOpenDialog( std::string const &title, std::string const &extension )
+    {
+      NSOpenPanel *openPanel = [NSOpenPanel openPanel];
+      [openPanel setTitle:[NSString stringWithUTF8String:title.c_str()]];
+      [openPanel setAllowsMultipleSelection:NO];
+      [openPanel setAllowedFileTypes:[NSArray arrayWithObject:[NSString stringWithUTF8String:extension.c_str()]]];
+      [openPanel setExtensionHidden:NO];
+      
+      std::string result;
+      if ( [openPanel runModal] == NSFileHandlingPanelOKButton )
+      {
+        NSURL *url = [openPanel URL];
+        FABRIC_ASSERT( [url isFileURL] );
+        NSString *path = [url path];
+        result = std::string( [path UTF8String] );
+      }
+      else throw Exception( "File open failed or was canceled by user" );
+      return result;
+    }
+
+    std::string WindowedCAViewPort::queryUserFilePath( bool existingFile, std::string const &title, std::string const &defaultFilename, std::string const &extension )
+		{
+			if( existingFile )
+				return getPathFromOpenDialog( title, extension );
+			else
+				return getPathFromSaveAsDialog( title, defaultFilename, extension );
+		}
   };
 };
