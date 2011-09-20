@@ -129,7 +129,20 @@ namespace Fabric
 
       std::string dirString;
       IO::SplitPath( fullPath, dirString, filename );
+
+      if( !DirExists( dirString ) )
+        throw Exception("Error: user selected directory not found");//Important: don't display the directory as it is private information
+
       dir = IO::Dir::Create( dirString, false );
+    }
+
+    std::string GetSafeDisplayPath( RC::ConstHandle<Dir>& dir, std::string const &filename )
+    {
+      //The root parent directory corresponds to the handle; we don't want to show this as it is private information
+      std::string encodedPath = filename;
+      while( dir->getParentDir() )
+        encodedPath = JoinPath( dir->getEntry(), encodedPath );
+      return JoinPath( "[directoryHandle]", encodedPath );
     }
 
     void Manager::putFile( RC::ConstHandle<Dir>& dir, std::string const &filename, size_t size, const void* data ) const
@@ -142,11 +155,11 @@ namespace Fabric
 
       std::ofstream file( fullPath.c_str(), std::ios::out | std::ios::trunc | std::ios::binary );
       if( !file.is_open() )
-        throw Exception( "Unable to create file " + fullPath );
+        throw Exception( "Unable to create file " + GetSafeDisplayPath(dir, filename) );
 
       file.write( (const char*)data, size );
       if( file.bad() )
-        throw Exception( "Error while writing to file " + fullPath );
+        throw Exception( "Error while writing to file " + GetSafeDisplayPath(dir, filename) );
     }
 
     void Manager::getFile( RC::ConstHandle<Dir>& dir, std::string const &filename, bool binary, ByteContainer& bytes ) const
@@ -159,18 +172,18 @@ namespace Fabric
 
       std::ifstream file( fullPath.c_str(), std::ios::in | std::ios::ate | (binary ? std::ios::binary : 0 ) );
       if( !file.is_open() )
-        throw Exception( "Unable to open file " + fullPath );
+        throw Exception( "Unable to open file " + GetSafeDisplayPath(dir, filename) );
 
       size_t size = file.tellg();
       file.seekg (0, std::ios::beg);
 
       void* data = bytes.Allocate( size );
       if( !data && size )
-        throw Exception( "Out of memory while reading file " + fullPath );
+        throw Exception( "Out of memory while reading file " + GetSafeDisplayPath(dir, filename) );
 
       file.read( (char*)data, size );
       if( file.bad() )
-        throw Exception( "Error while reading file " + fullPath );
+        throw Exception( "Error while reading file " + GetSafeDisplayPath(dir, filename) );
     }
 
     void Manager::jsonExecPutUserFile( RC::ConstHandle<JSON::Value> const &arg, size_t size, const void* data, const char* defaultExtension ) const
