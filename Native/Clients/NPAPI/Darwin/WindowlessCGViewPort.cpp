@@ -248,7 +248,7 @@ namespace Fabric
       m_aglContextStack.pop_back();
     }
 
-    std::string WindowlessCGViewPort::getPathFromSaveAsDialog( std::string const &defaultFilename, std::string const &extension )
+    std::string WindowlessCGViewPort::queryUserFilePath( bool existingFile, std::string const &title, std::string const &defaultFilename, std::string const &extension )
     {
       throw Exception( "SaveAs dialog not implemented" );
     }
