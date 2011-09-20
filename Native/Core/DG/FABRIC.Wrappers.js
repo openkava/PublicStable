@@ -721,7 +721,7 @@
         return 'Node';
       };
 
-      result.pub.addDependency = function(dependencyNode, dependencyName) {
+      result.pub.setDependency = function(dependencyNode, dependencyName) {
         try {
           if (typeof dependencyName !== 'string')
             throw 'must be a string';
