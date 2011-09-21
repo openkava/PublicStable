@@ -1017,8 +1017,8 @@
         return result.childEventHandlers;
       };
 
-      result.pub.addScope = function(name, node) {
-        result.queueCommand('addScope', {
+      result.pub.setScope = function(name, node) {
+        result.queueCommand('setScope', {
           name: name,
           node: node.getName()
         });

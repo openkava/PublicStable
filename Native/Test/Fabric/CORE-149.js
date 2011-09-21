@@ -15,7 +15,7 @@ binding.setParameterLayout( [ "node.doesntExist" ] );
 
 eh1 = FABRIC.DependencyGraph.createEventHandler("eventHandlerOne");
 eh1.preDescendBindings.append(binding);
-eh1.addScope( 'node', node );
+eh1.setScope( 'node', node );
 
 eh2 = FABRIC.DependencyGraph.createEventHandler("eventHandlerTwo");
 

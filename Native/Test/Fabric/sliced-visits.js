@@ -50,7 +50,7 @@ parentEHPostBinding.setOperator( parentEHPostOp );
 parentEHPostBinding.setParameterLayout( [ "node.index", "node.output" ] );
 
 parentEH = FABRIC.DependencyGraph.createEventHandler( "parentEH" );
-parentEH.addScope( 'node', parentNode );
+parentEH.setScope( 'node', parentNode );
 parentEH.preDescendBindings.append( parentEHPreBinding );
 parentEH.postDescendBindings.append( parentEHPostBinding );
 
@@ -72,8 +72,8 @@ childEHPostBinding.setParameterLayout( [ "child.index", "child.output", "parent.
 
 childEH = FABRIC.DependencyGraph.createEventHandler( "childEH" );
 childEH.appendChildEventHandler( parentEH );
-childEH.addScope( 'parent', parentNode );
-childEH.addScope( 'child', childNode );
+childEH.setScope( 'parent', parentNode );
+childEH.setScope( 'child', childNode );
 childEH.preDescendBindings.append( childEHPreBinding );
 childEH.postDescendBindings.append( childEHPostBinding );
 
