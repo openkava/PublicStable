@@ -46,11 +46,25 @@ namespace Fabric
       m_args->appendJSON( jsonObjectGenerator.makeMember( "args" ), includeLocation );
     }
     
-    RC::ConstHandle<CG::FunctionSymbol> Call::getFunctionSymbol( CG::BasicBlockBuilder const &basicBlockBuilder ) const
+    RC::ConstHandle<CG::FunctionSymbol> Call::getFunctionSymbol( CG::BasicBlockBuilder &basicBlockBuilder ) const
     {
+      std::vector< RC::ConstHandle<CG::Adapter> > argTypes;
+      m_args->appendTypes( basicBlockBuilder, argTypes );
+      
       RC::ConstHandle<CG::Symbol> symbol = basicBlockBuilder.getScope().get( m_name );
       if ( !symbol )
-        throw Exception( "function " + _(m_name) + " not found" );
+      {
+        std::string functionDesc = m_name + "(";
+        for ( size_t i=0; i<argTypes.size(); ++i )
+        {
+          if ( i > 0 )
+            functionDesc += ",";
+          functionDesc += argTypes[i]->getUserName();
+        }
+        functionDesc += ")";
+        
+        throw Exception( "function " + _(functionDesc) + " not found" );
+      }
 
       if ( !symbol->isFunction() )
         throw Exception( _(m_name) + " is not a function" );
@@ -151,7 +165,7 @@ namespace Fabric
         try
         {
           std::vector<CG::FunctionParam> const functionParams = functionSymbol->getParams();
-          
+
           std::vector<CG::Usage> paramUsages;
           for ( size_t i=0; i<functionParams.size(); ++i )
             paramUsages.push_back( functionParams[i].getUsage() );
