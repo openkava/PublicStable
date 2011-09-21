@@ -397,11 +397,6 @@ namespace Fabric
         }
       }
     }
-    
-    void *SlicedArrayAdapter::llvmResolveExternalFunction( std::string const &functionName ) const
-    {
-      return 0;
-    }
 
     llvm::Value *SlicedArrayAdapter::llvmConstIndexOp( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *arrayRValue, llvm::Value *indexRValue ) const
     {
