@@ -31,10 +31,5 @@ namespace Fabric
     void SimpleAdapter::llvmRelease( BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const
     {
     }
-    
-    void *SimpleAdapter::llvmResolveExternalFunction( std::string const &functionName ) const
-    {
-      return 0;
-    }
   };
 };

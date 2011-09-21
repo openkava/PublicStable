@@ -76,8 +76,7 @@ namespace Fabric
       llvm::Value *errorMsg1PlusIndexPlusErrorMsg2PlusSizePlusErrorMsg3RValue = stringAdapter->llvmCallConcat( basicBlockBuilder, errorMsg1PlusIndexPlusErrorMsg2PlusSizeRValue, errorMsg3RValue );
       stringAdapter->llvmRelease( basicBlockBuilder, errorMsg1PlusIndexPlusErrorMsg2PlusSizeRValue );
       stringAdapter->llvmRelease( basicBlockBuilder, errorMsg3RValue );
-      stringAdapter->llvmReport( basicBlockBuilder, errorMsg1PlusIndexPlusErrorMsg2PlusSizePlusErrorMsg3RValue );
-      stringAdapter->llvmRelease( basicBlockBuilder, errorMsg1PlusIndexPlusErrorMsg2PlusSizePlusErrorMsg3RValue );
+      llvmThrowException( basicBlockBuilder, errorMsg1PlusIndexPlusErrorMsg2PlusSizePlusErrorMsg3RValue );
     }
   };
 };
