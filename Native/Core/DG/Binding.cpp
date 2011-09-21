@@ -109,6 +109,7 @@ namespace Fabric
     }
     
     RC::Handle<MT::ParallelCall> Binding::bind(
+      std::vector<std::string> &errors,
       Scope const &scope,
       size_t *newSize,
       unsigned prefixCount,
@@ -116,18 +117,17 @@ namespace Fabric
       ) const
     {
       if ( !m_prototype )
-        throw Exception( "no prototype set" );
+        errors.push_back( "no prototype set" );
       if ( !m_operator )
-        throw Exception( "no operator set" );
+        errors.push_back( "no operator set" );
         
       RC::Handle<MT::ParallelCall> result;
-      try
+      if ( m_prototype && m_operator )
       {
-        result = m_operator->bind( m_prototype, scope, newSize, prefixCount, prefixes );
-      }
-      catch ( Exception e )
-      {
-        throw "operator " + _(m_operator->getName()) + ": " + e;
+        std::string const operatorErrorPrefix = "operator " + _(m_operator->getName()) + ": ";
+        result = m_operator->bind( errors, m_prototype, scope, newSize, prefixCount, prefixes );
+        for ( size_t i=0; i<errors.size(); ++i )
+          errors[i] = operatorErrorPrefix + errors[i];
       }
       return result;
     }
