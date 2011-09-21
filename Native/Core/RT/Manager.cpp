@@ -415,7 +415,7 @@ namespace Fabric
                 throw "'type': " + e;
               }
               
-              memberInfo.defaultData.resize( memberInfo.desc->getSize() );
+              memberInfo.defaultData.resize( memberInfo.desc->getAllocSize() );
               try
               {
                 memberInfo.desc->setDataFromJSONValue( defaultValue->get( memberInfo.name ), &memberInfo.defaultData[0] );
@@ -500,7 +500,7 @@ namespace Fabric
         RC::ConstHandle<NumericDesc> rhsNumericDesc = RC::ConstHandle<NumericDesc>::StaticCast( rhsDesc );
         if ( lhsNumericDesc->isFloat() )
         {
-          if ( rhsNumericDesc->isFloat() && rhsNumericDesc->getSize() > lhsNumericDesc->getSize() )
+          if ( rhsNumericDesc->isFloat() && rhsNumericDesc->getAllocSize() > lhsNumericDesc->getAllocSize() )
             return rhsNumericDesc;
           else return lhsNumericDesc;
         }
@@ -508,8 +508,8 @@ namespace Fabric
           return rhsNumericDesc;
         else
         {
-          if ( rhsNumericDesc->getSize() > lhsNumericDesc->getSize()
-            || ( rhsNumericDesc->getSize() == lhsNumericDesc->getSize() && RC::ConstHandle<IntegerDesc>::StaticCast(rhsNumericDesc)->isSigned() ) )
+          if ( rhsNumericDesc->getAllocSize() > lhsNumericDesc->getAllocSize()
+            || ( rhsNumericDesc->getAllocSize() == lhsNumericDesc->getAllocSize() && RC::ConstHandle<IntegerDesc>::StaticCast(rhsNumericDesc)->isSigned() ) )
             return rhsNumericDesc;
           else return lhsNumericDesc;
         }

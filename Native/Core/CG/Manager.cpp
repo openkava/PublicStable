@@ -92,9 +92,9 @@ namespace Fabric
           case RT::DT_INTEGER:
           {
             RC::ConstHandle<RT::IntegerDesc> integerDesc = RC::ConstHandle<RT::IntegerDesc>::StaticCast( desc );
-            if ( integerDesc->getSize() == 1 && !integerDesc->isSigned() )
+            if ( integerDesc->getAllocSize() == 1 && !integerDesc->isSigned() )
               adapter = new ByteAdapter( this, integerDesc );
-            else if ( integerDesc->getSize() == 4 && integerDesc->isSigned() )
+            else if ( integerDesc->getAllocSize() == 4 && integerDesc->isSigned() )
               adapter = new IntegerAdapter( this, integerDesc );
             else adapter = new SizeAdapter( this, integerDesc );
           }
