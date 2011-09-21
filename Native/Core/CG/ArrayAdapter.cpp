@@ -35,8 +35,9 @@ namespace Fabric
       return result + "]";
     }
 
-    void ArrayAdapter::llvmReportOutOfRangeError(
+    void ArrayAdapter::llvmThrowOutOfRangeException(
       BasicBlockBuilder &basicBlockBuilder,
+      std::string const &item,
       RC::ConstHandle<ConstStringAdapter> const &constStringAdapter,
       RC::ConstHandle<StringAdapter> const &stringAdapter,
       RC::ConstHandle<SizeAdapter> const &sizeAdapter,
@@ -46,7 +47,7 @@ namespace Fabric
     {
       RC::Handle<Context> context = basicBlockBuilder.getContext();
       
-      std::string errorMsg1 = "KL: "+getUserName()+" index (";
+      std::string errorMsg1 = "KL: "+getUserName()+" "+item+" (";
       llvm::Value *errorMsg1RValue = stringAdapter->llvmCast( basicBlockBuilder,
         ExprValue( constStringAdapter, USAGE_RVALUE, context, constStringAdapter->llvmConst( basicBlockBuilder, errorMsg1 ) )
         );
@@ -76,8 +77,7 @@ namespace Fabric
       llvm::Value *errorMsg1PlusIndexPlusErrorMsg2PlusSizePlusErrorMsg3RValue = stringAdapter->llvmCallConcat( basicBlockBuilder, errorMsg1PlusIndexPlusErrorMsg2PlusSizeRValue, errorMsg3RValue );
       stringAdapter->llvmRelease( basicBlockBuilder, errorMsg1PlusIndexPlusErrorMsg2PlusSizeRValue );
       stringAdapter->llvmRelease( basicBlockBuilder, errorMsg3RValue );
-      stringAdapter->llvmReport( basicBlockBuilder, errorMsg1PlusIndexPlusErrorMsg2PlusSizePlusErrorMsg3RValue );
-      stringAdapter->llvmRelease( basicBlockBuilder, errorMsg1PlusIndexPlusErrorMsg2PlusSizePlusErrorMsg3RValue );
+      llvmThrowException( basicBlockBuilder, errorMsg1PlusIndexPlusErrorMsg2PlusSizePlusErrorMsg3RValue );
     }
   };
 };

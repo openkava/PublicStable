@@ -233,8 +233,9 @@ namespace Fabric
           basicBlockBuilder->CreateRet( llvmConstIndexOp_NoCheck( basicBlockBuilder, arrayRValue, indexRValue ) );
           
           basicBlockBuilder->SetInsertPoint( outOfRangeBB );
-          llvmReportOutOfRangeError(
+          llvmThrowOutOfRangeException(
             basicBlockBuilder,
+            "index",
             constStringAdapter,
             stringAdapter,
             sizeAdapter,
@@ -273,8 +274,9 @@ namespace Fabric
           basicBlockBuilder->CreateRet( llvmNonConstIndexOp_NoCheck( basicBlockBuilder, arrayLValue, indexRValue ) );
           
           basicBlockBuilder->SetInsertPoint( outOfRangeBB );
-          llvmReportOutOfRangeError(
+          llvmThrowOutOfRangeException(
             basicBlockBuilder,
+            "index",
             constStringAdapter,
             stringAdapter,
             sizeAdapter,
@@ -642,7 +644,7 @@ namespace Fabric
         return (void *)&VariableArrayAdapter::Split;
       else if ( functionName == "__"+getCodeName()+"__Append" )
         return (void *)&VariableArrayAdapter::Append;
-      else return 0;
+      else return ArrayAdapter::llvmResolveExternalFunction( functionName );
     }
     
     void VariableArrayAdapter::Resize( VariableArrayAdapter const *inst, void *dst, size_t newSize )
