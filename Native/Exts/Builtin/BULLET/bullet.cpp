@@ -39,6 +39,7 @@ struct fabricBulletShape {
 struct fabricBulletRigidBody {
   fabricBulletShape * mShape;
 	btRigidBody * mBody;
+  btTransform mInitialTransform;
 };
 
 // implement the callbacks
@@ -65,8 +66,18 @@ FABRIC_EXT_EXPORT void FabricBULLET_World_Create(
     btGImpactCollisionAlgorithm::registerAlgorithm(world->mDispatcher);
     world->mSoftBodyWorldInfo.m_sparsesdf.Initialize();
     world->mDynamicsWorld->getDispatchInfo().m_enableSPU = true;
-    
-    printf("   { FabricBULLET } Created Simulation World.\n");
+
+    // do the reset as well
+    world->mDynamicsWorld->getBroadphase()->resetPool(world->mDynamicsWorld->getDispatcher());
+    world->mDynamicsWorld->getConstraintSolver()->reset();
+    world->mDynamicsWorld->getSolverInfo().m_splitImpulse = false;
+    world->mSoftBodyWorldInfo.m_sparsesdf.Reset();
+    world->mSoftBodyWorldInfo.m_sparsesdf.GarbageCollect();
+
+    world->mSoftBodyWorldInfo.air_density = 0;
+    world->mSoftBodyWorldInfo.water_density = 0;
+    world->mSoftBodyWorldInfo.water_offset = 0;
+    world->mSoftBodyWorldInfo.water_normal = btVector3(0,0,0);
   }
 }
 
@@ -84,8 +95,6 @@ FABRIC_EXT_EXPORT void FabricBULLET_World_Delete(
     delete( world->mDispatcher );
     delete( world->mCollisionConfiguration );
     delete( world );
-
-    printf("   { FabricBULLET } Deleted Simulation World.\n");
   }
 }
 
@@ -97,6 +106,7 @@ FABRIC_EXT_EXPORT void FabricBULLET_World_SetGravity(
   if(worldData != NULL) {
     fabricBulletWorld * world = (fabricBulletWorld *)worldData;
     world->mDynamicsWorld->setGravity(btVector3(gravity.x,gravity.y,gravity.z));
+    world->mSoftBodyWorldInfo.m_gravity = world->mDynamicsWorld->getGravity();
   }
 }
 
@@ -109,9 +119,47 @@ FABRIC_EXT_EXPORT void FabricBULLET_World_Step(
 {
   if(worldData != NULL) {
     fabricBulletWorld * world = (fabricBulletWorld *)worldData;
-    KL::Scalar timeSubstep = timeStep / KL::Scalar(worldSubsteps);
-    for(KL::Size step=0; step<worldSubsteps; step++, worldStep++) {
-      world->mDynamicsWorld->stepSimulation(timeSubstep,0,timeStep);
+    KL::Scalar frameStep = 1.0f / 30.0f;
+    KL::Scalar dt = frameStep / KL::Scalar(worldSubsteps);
+    KL::Size nbTimeSteps = KL::Size(floorf(timeStep / frameStep));
+    nbTimeSteps *= worldSubsteps;
+
+    for(KL::Size step=0; step<nbTimeSteps; step++, worldStep++) {
+      world->mDynamicsWorld->stepSimulation(dt,0,frameStep);
+      timeStep -= dt;
+    }
+  }
+}
+
+FABRIC_EXT_EXPORT void FabricBULLET_World_Reset(
+  KL::Data & worldData,
+  KL::Size & worldStep
+)
+{
+  if(worldData != NULL) {
+    fabricBulletWorld * world = (fabricBulletWorld *)worldData;
+    worldStep = 0;
+
+    world->mDynamicsWorld->getBroadphase()->resetPool(world->mDynamicsWorld->getDispatcher());
+    world->mDynamicsWorld->getConstraintSolver()->reset();
+    world->mDynamicsWorld->getSolverInfo().m_splitImpulse = false;
+    world->mSoftBodyWorldInfo.m_sparsesdf.Reset();
+    world->mSoftBodyWorldInfo.m_sparsesdf.GarbageCollect();
+    
+    // loop over all rigid bodies and reset their transform
+    btCollisionObjectArray & collisionObjects = world->mDynamicsWorld->getCollisionObjectArray();
+    for(size_t i=0;i<collisionObjects.size();i++)
+    {
+      fabricBulletRigidBody * fabricBody = (fabricBulletRigidBody *)collisionObjects[i]->getUserPointer();
+      if(!fabricBody)
+        continue;
+      btRigidBody * body = static_cast<btRigidBody*>(collisionObjects[i]);
+      if(!body)
+        continue;
+
+      body->setLinearVelocity(btVector3(0.0f,0.0f,0.0f));
+      body->setAngularVelocity(btVector3(0.0f,0.0f,0.0f));
+      body->setWorldTransform(fabricBody->mInitialTransform);
     }
   }
 }
@@ -137,17 +185,6 @@ FABRIC_EXT_EXPORT void FabricBULLET_World_RemoveRigidBody(
     fabricBulletWorld * world = (fabricBulletWorld *)worldData;
     fabricBulletRigidBody * body = (fabricBulletRigidBody *)bodyData;
     world->mDynamicsWorld->removeRigidBody(body->mBody);
-  }
-}
-
-FABRIC_EXT_EXPORT void FabricBULLET_World_Reset(
-  KL::Data & worldData,
-  KL::Size & worldStep
-)
-{
-  if(worldData != NULL) {
-    fabricBulletWorld * world = (fabricBulletWorld *)worldData;
-    worldStep = 0;
   }
 }
 
@@ -201,12 +238,14 @@ FABRIC_EXT_EXPORT void FabricBULLET_Shape_Create(
       printf("   { FabricBULLET } ERROR: For the shape type %d is not supported.\n",int(shapeType));
       return;
     }
+    
+    collisionShape->setMargin(0.0);
 
     fabricBulletShape * shape = new fabricBulletShape();
     shapeData = shape;
     shape->mShape = collisionShape;
     
-    printf("   { FabricBULLET } Created Shape of type %d.\n",int(shapeType));
+    shape->mShape->setUserPointer(shape);
   }
 }
 
@@ -220,8 +259,6 @@ FABRIC_EXT_EXPORT void FabricBULLET_Shape_Delete(
 
     delete( shape->mShape );
     delete( shape );
-
-    printf("   { FabricBULLET } Deleted Shape.\n");
   }
 }
 
@@ -246,6 +283,7 @@ FABRIC_EXT_EXPORT void FabricBULLET_RigidBody_Create(
     btTransform transform;
     transform.setOrigin(btVector3(bodyTransform.tr.x,bodyTransform.tr.y,bodyTransform.tr.z));
     transform.setRotation(btQuaternion(bodyTransform.ori.v.x,bodyTransform.ori.v.y,bodyTransform.ori.v.z,bodyTransform.ori.w));
+    
     btMotionState* motionState = new btDefaultMotionState(transform);
 
     btVector3 inertia(0,0,0);
@@ -261,15 +299,28 @@ FABRIC_EXT_EXPORT void FabricBULLET_RigidBody_Create(
     fabricBulletRigidBody * body = new fabricBulletRigidBody();
     bodyData = body;
     
+    body->mInitialTransform = transform;
     body->mBody = new btRigidBody(info);
     body->mShape = shape;
 
     if(bodyMass == 0.0f)
+    {
       body->mBody->setCollisionFlags( body->mBody->getCollisionFlags() | btCollisionObject::CF_KINEMATIC_OBJECT);
+      if(shape->mShape->getShapeType() == STATIC_PLANE_PROXYTYPE)
+        body->mBody->setActivationState(ISLAND_SLEEPING);
+      else
+        body->mBody->setActivationState(DISABLE_DEACTIVATION);
+    }
     else
+    {
       body->mBody->setCollisionFlags( body->mBody->getCollisionFlags() & ~btCollisionObject::CF_KINEMATIC_OBJECT);
+      body->mBody->setActivationState(DISABLE_DEACTIVATION);
+    }
     
-    printf("   { FabricBULLET } Created RigidBody.\n");
+    body->mBody->setSleepingThresholds(0.8f,1.0f);
+    body->mBody->setDamping(0.3f,0.3f);
+
+    body->mBody->setUserPointer(body);
   }
 }
 
@@ -281,8 +332,6 @@ FABRIC_EXT_EXPORT void FabricBULLET_RigidBody_Delete(
     fabricBulletRigidBody * body = (fabricBulletRigidBody * )bodyData;
     delete(body);
     bodyData = NULL;
-
-    printf("   { FabricBULLET } Deleted RigidBody.\n");
   }  
 }
 
