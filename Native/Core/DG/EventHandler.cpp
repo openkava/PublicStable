@@ -138,7 +138,7 @@ namespace Fabric
       return m_parentEventHandlers;
     }
 
-    void EventHandler::addScope( std::string const &name, RC::Handle<Node> const &node )
+    void EventHandler::setScope( std::string const &name, RC::Handle<Node> const &node )
     {
       if ( name.length() == 0 )
         throw Exception( "name must be non-empty" );
@@ -507,7 +507,7 @@ namespace Fabric
         jsonExecAppendChildEventHandler( arg );
       else if ( cmd == "removeChildEventHandler" )
         jsonExecRemoveChildEventHandler( arg );
-      else if ( cmd == "addScope" )
+      else if ( cmd == "setScope" )
         jsonExecAddScope( arg );
       else if ( cmd == "setSelector" )
         jsonExecSetSelector( arg );
@@ -557,7 +557,7 @@ namespace Fabric
         throw "'node': " + e;
       }
       
-      addScope( name, node );
+      setScope( name, node );
     }
     
     void EventHandler::jsonExecSetSelector( RC::ConstHandle<JSON::Value> const &arg )
