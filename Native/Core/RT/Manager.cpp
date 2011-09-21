@@ -471,7 +471,7 @@ namespace Fabric
         }
         catch ( Exception e )
         {
-          throw "'kBindings': " + e;
+          throw "'klBindings': " + e;
         }
         
         RC::ConstHandle< RT::StructDesc > structDesc = registerStruct( name, memberInfos );

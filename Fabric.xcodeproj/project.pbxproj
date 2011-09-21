@@ -1168,6 +1168,8 @@
 		DBD2B8BE140D8D9A0000DEF7 /* SceneGraph */ = {isa = PBXFileReference; lastKnownFileType = folder; path = SceneGraph; sourceTree = "<group>"; };
 		DBD4340113D8B7D700E57C5F /* Tesselation.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = Tesselation.html; sourceTree = "<group>"; };
 		DBE4D7F213E9FB2E004A50E5 /* Tools */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Tools; sourceTree = "<group>"; };
+		DBE6FF24142A336A00DC4A01 /* index.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
+		DBE6FF25142A340200DC4A01 /* index.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -1248,6 +1250,7 @@
 		DB39A76513425AEB007026BA = {
 			isa = PBXGroup;
 			children = (
+				DBE6FF25142A340200DC4A01 /* index.html */,
 				DB966DC413A5422000616143 /* Native */,
 				DB96842E13A5445200616143 /* Web */,
 				DB9B27E3140FD8D700711AEE /* Util */,
@@ -1482,6 +1485,7 @@
 		DB96855813A79BC700616143 /* Sample */ = {
 			isa = PBXGroup;
 			children = (
+				DBE6FF24142A336A00DC4A01 /* index.html */,
 				DB5282E91428D37B00F2B6B0 /* Alembic */,
 				DB5282FA1428D37B00F2B6B0 /* Help */,
 				DB5282FC1428D37B00F2B6B0 /* Rendering */,
