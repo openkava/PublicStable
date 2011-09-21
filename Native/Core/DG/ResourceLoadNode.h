@@ -15,6 +15,11 @@ namespace Fabric
     class Stream;
   };
 
+  namespace Util
+  {
+    class Timer;
+  };
+
   namespace DG
   {
     class ResourceLoadNode : public Node
@@ -32,10 +37,10 @@ namespace Fabric
 
       virtual void evaluateLocal( void *userdata );
 
-      void streamData( std::string const &url, std::string const &mimeType, size_t offset, size_t size, void const *data, void *userData );
-      static void StreamData( std::string const &url, std::string const &mimeType, size_t offset, size_t size, void const *data, RC::Handle<RC::Object> const &target, void *userData )
+      void streamData( std::string const &url, std::string const &mimeType, size_t totalsize, size_t offset, size_t size, void const *data, void *userData );
+      static void StreamData( std::string const &url, std::string const &mimeType, size_t totalsize, size_t offset, size_t size, void const *data, RC::Handle<RC::Object> const &target, void *userData )
       {
-        RC::Handle<ResourceLoadNode>::StaticCast(target)->streamData( url, mimeType, offset, size, data, userData );
+        RC::Handle<ResourceLoadNode>::StaticCast(target)->streamData( url, mimeType, totalsize, offset, size, data, userData );
       }
 
       void streamEnd( std::string const &url, std::string const &mimeType, void *userData );
@@ -63,6 +68,10 @@ namespace Fabric
       RC::Handle<IO::Stream> m_stream;
       FabricResourceWrapper m_fabricResourceStreamData;
       size_t m_streamGeneration;
+
+      size_t m_nbStreamedAtLastProgressNotif;
+      size_t m_nbStreamed;
+      Util::Timer m_progressNotifTimer;
     };
   };
 };
