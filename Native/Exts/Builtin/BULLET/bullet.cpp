@@ -208,7 +208,22 @@ FABRIC_EXT_EXPORT void FabricBULLET_Shape_Create(
       }
       collisionShape = new btBoxShape(btVector3(shapeParameters[0],shapeParameters[1],shapeParameters[2]));
       
-    //} else if(shapeType == CONVEX_HULL_SHAPE_PROXYTYPE) {
+    } else if(shapeType == CONVEX_HULL_SHAPE_PROXYTYPE) {
+      
+      if(shapeParameters.size() != 0) {
+        printf("   { FabricBULLET } ERROR: For the convex hull shape you need to specify zero parameters.\n");
+        return;
+      }
+      if(shapeVertices.size() <= 3) {
+        printf("   { FabricBULLET } ERROR: For the convex hull shape you need to specify at least 3 vertices.\n");
+        return;
+      }
+      
+      btConvexHullShape * hullShape = new btConvexHullShape();
+      for(KL::Size i=0;i<shapeVertices.size();i++)
+         hullShape->addPoint(btVector3(shapeVertices[i].x,shapeVertices[i].y,shapeVertices[i].z));
+      collisionShape = hullShape;
+
     } else if(shapeType == SPHERE_SHAPE_PROXYTYPE) {
 
       if(shapeParameters.size() != 1) {
