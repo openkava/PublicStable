@@ -48,7 +48,7 @@ namespace Fabric
       ParentEventHandlers const &getParentEventHandlers() const;
       
       Bindings const &getScopes() const;
-      void addScope( std::string const &name, RC::Handle<Node> const &node );
+      void setScope( std::string const &name, RC::Handle<Node> const &node );
       std::string const &getScopeName() const;
       void setScopeName( std::string const &bindingName );
       

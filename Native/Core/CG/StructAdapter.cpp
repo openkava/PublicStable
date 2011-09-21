@@ -241,11 +241,6 @@ namespace Fabric
         }
       }
     }
-    
-    void *StructAdapter::llvmResolveExternalFunction( std::string const &functionName ) const
-    {
-      return 0;
-    }
    
     std::string StructAdapter::toString( void const *data ) const
     {

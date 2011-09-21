@@ -21,8 +21,6 @@ namespace Fabric
         RC::ConstHandle<Manager> const &manager,
         RC::ConstHandle<RT::Desc> const &desc
         );
-
-      virtual void *llvmResolveExternalFunction( std::string const &functionName ) const;
     };
   };
 };

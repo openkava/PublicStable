@@ -701,7 +701,7 @@ namespace Fabric
         return (void *)&StringAdapter::Append;
       else if ( functionName == "__String__Cast" )
         return (void *)&StringAdapter::Cast;
-      else return 0;
+      else return Adapter::llvmResolveExternalFunction( functionName );
     }
 
     void StringAdapter::llvmRetain( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const

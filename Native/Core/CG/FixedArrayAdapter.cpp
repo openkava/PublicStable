@@ -388,11 +388,6 @@ namespace Fabric
       }
     }
     
-    void *FixedArrayAdapter::llvmResolveExternalFunction( std::string const &functionName ) const
-    {
-      return 0;
-    }
-    
     llvm::Constant *FixedArrayAdapter::llvmDefaultValue( BasicBlockBuilder &basicBlockBuilder ) const
     {
       std::vector<llvm::Constant *> elementDefaultRValues;

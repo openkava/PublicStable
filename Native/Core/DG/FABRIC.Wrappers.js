@@ -61,6 +61,32 @@
       executeQueuedCommands();
   };
 
+  var handleBasedPathToArray = function(handleBasedPath)
+  {
+    var result = [];
+    if(!handleBasedPath.folderHandle)
+      throw 'Error: handleBasePath must have a \'folderHandle\' member containing the handle returned by queryUserFileAndFolderHandle';
+    result[0] = handleBasedPath.folderHandle;
+    if(handleBasedPath.subFolders)
+      result = result.concat(handleBasedPath.subFolders);
+    if(!handleBasedPath.fileName)
+      throw 'Error: handleBasePath must have a \'fileName\' member';
+    result.push(handleBasedPath.fileName);
+    return result;
+  }
+
+  var arrayToHandleBasedPath = function(array)
+  {
+    if(array.length < 2)
+      throw 'Error: handleBasedPathArray should have at least 2 entries (folderHandle and fileName)';
+    var result = {
+      folderHandle: array[0],
+      fileName: array[array.length-1],
+      subFolders: array.slice(1,array.length-1)
+    };
+    return result;
+  }
+
   var createRT = function() {
     var RT = {};
 
@@ -675,14 +701,44 @@
         }]);
       };
 
-      result.pub.writeResourceToUserFile = function(memberName, defaultFileName) {
-        result.queueCommand('writeResourceToUserFile', {
+      result.pub.putResourceToUserFile = function(memberName, uiTitle, extension, defaultFileName) {
+        result.queueCommand('putResourceToUserFile', {
           'memberName': memberName,
-          'defaultFileName': defaultFileName
+          'uiOptions': {
+            'title': uiTitle,
+            'extension': extension,
+            'defaultFileName': defaultFileName
+          }
         });
         executeQueuedCommands();
       };
 
+      result.pub.getResourceFromUserFile = function(memberName, uiTitle, extension) {
+        result.queueCommand('getResourceFromUserFile', {
+          'memberName': memberName,
+          'uiOptions': {
+            'title': uiTitle,
+            'extension': extension
+          }
+        });
+        executeQueuedCommands();
+      };
+
+      result.pub.getResourceFromFile = function(memberName, handleBasedPath) {
+        result.queueCommand('getResourceFromFile', {
+          'memberName': memberName,
+          'path': handleBasedPathToArray(handleBasedPath)
+        });
+        executeQueuedCommands();
+      }
+
+      result.pub.putResourceToFile = function(memberName, handleBasedPath) {
+        result.queueCommand('putResourceToFile', {
+          'memberName': memberName,
+          'path': handleBasedPathToArray(handleBasedPath)
+        });
+        executeQueuedCommands();
+      }
       return result;
     };
 
@@ -721,7 +777,7 @@
         return 'Node';
       };
 
-      result.pub.addDependency = function(dependencyNode, dependencyName) {
+      result.pub.setDependency = function(dependencyNode, dependencyName) {
         try {
           if (typeof dependencyName !== 'string')
             throw 'must be a string';
@@ -733,7 +789,7 @@
         catch (e) {
           throw 'dependencyName: ' + e;
         }
-        result.queueCommand('addDependency', {
+        result.queueCommand('setDependency', {
           'name': dependencyName,
           'node': dependencyNode.getName()
         });
@@ -961,8 +1017,8 @@
         return result.childEventHandlers;
       };
 
-      result.pub.addScope = function(name, node) {
-        result.queueCommand('addScope', {
+      result.pub.setScope = function(name, node) {
+        result.queueCommand('setScope', {
           name: name,
           node: node.getName()
         });
@@ -1165,6 +1221,91 @@
     return EX;
   };
   var EX = createEX();
+
+  var createIO = function() {
+
+    var IO = {
+      pub: {
+        forOpen: 'openMode',
+        forOpenWithWriteAccess: 'openWithWriteAccessMode',
+        forSave: 'saveMode'
+      }
+    };
+
+    IO.queueCommand = function(cmd, arg, unwind, callback) {
+      queueCommand(['IO'], cmd, arg, unwind, callback);
+    };
+
+    IO.pub.queryUserFileAndFolderHandle = function(mode, uiTitle, extension, defaultFileName) {
+      if(mode !== IO.pub.forOpen && mode !== IO.pub.forOpenWithWriteAccess && mode !== IO.pub.forSave)
+        throw 'Invalid mode: \"' + mode + '\': can be IO.forOpen, IO.forOpenWithWriteAccess or IO.forSave';
+      var handleBasedPath;
+      IO.queueCommand('queryUserFileAndFolder', {
+        'existingFile': mode === IO.pub.forOpen,
+        'writeAccess': mode === IO.pub.forOpenWithWriteAccess || mode === IO.pub.forSave,
+        'uiOptions': {
+          'title': uiTitle,
+          'extension': extension,
+          'defaultFileName': defaultFileName
+        }
+      }, function() {
+      }, function(data) {
+        handleBasedPath = arrayToHandleBasedPath(data);
+      });
+      executeQueuedCommands();
+      return handleBasedPath;
+    };
+
+    IO.pub.getTextFile = function(handleBasedPath) {
+      var fileContent;
+      IO.queueCommand('getTextFile', {
+        'path': handleBasedPathToArray(handleBasedPath)
+      }, function() {
+      }, function(data) {
+        fileContent = data;
+      });
+      executeQueuedCommands();
+      return fileContent;
+    }
+
+    IO.pub.putTextFile = function(content, handleBasedPath) {
+      IO.queueCommand('putTextFile', {
+        'content': content,
+        'path': handleBasedPathToArray(handleBasedPath)
+      });
+      executeQueuedCommands();
+    }
+
+    IO.pub.getUserTextFile = function(uiTitle, extension) {
+      var fileContent;
+      IO.queueCommand('getUserTextFile', {
+        'uiOptions': {
+          'title': uiTitle,
+          'extension': extension
+        }
+      }, function() {
+      }, function(data) {
+        fileContent = data;
+      });
+      executeQueuedCommands();
+      return fileContent;
+    };
+
+    IO.pub.putUserTextFile = function(content, uiTitle, extension, defaultFileName) {
+      IO.queueCommand('putUserTextFile', {
+        'content': content,
+        'uiOptions': {
+          'title': uiTitle,
+          'extension': extension,
+          'defaultFileName': defaultFileName
+        }
+      });
+      executeQueuedCommands();
+    };
+
+    return IO;
+  };
+  var IO = createIO();
 
   var createBuild = function() {
     var build = {
@@ -1466,6 +1607,14 @@
             throw 'EX: ' + e;
           }
           break;
+        case 'IO':
+          try {
+            IO.route(src, cmd, arg);
+          }
+          catch (e) {
+            throw 'IO: ' + e;
+          }
+          break;
         case 'VP':
           try {
             VP.route(src, cmd, arg);
@@ -1513,6 +1662,7 @@
     RegisteredTypesManager: RT.pub,
     DG: DG.pub,
     EX: EX.pub,
+    IO: IO.pub,
     DependencyGraph: DG.pub,
     VP: VP.pub,
     getLicenses: function() {
