@@ -42,6 +42,10 @@ struct fabricBulletRigidBody {
   btTransform mInitialTransform;
 };
 
+struct fabricBulletSoftBody {
+	btSoftBody * mBody;
+};
+
 // implement the callbacks
 FABRIC_EXT_EXPORT void FabricBULLET_World_Create(
   KL::Data & worldData
@@ -64,6 +68,7 @@ FABRIC_EXT_EXPORT void FabricBULLET_World_Create(
     world->mSoftBodyWorldInfo.m_broadphase = world->mBroadphase;
     world->mSoftBodyWorldInfo.m_dispatcher = world->mDispatcher;
     btGImpactCollisionAlgorithm::registerAlgorithm(world->mDispatcher);
+    
     world->mSoftBodyWorldInfo.m_sparsesdf.Initialize();
     world->mDynamicsWorld->getDispatchInfo().m_enableSPU = true;
 
@@ -128,6 +133,7 @@ FABRIC_EXT_EXPORT void FabricBULLET_World_Step(
       world->mDynamicsWorld->stepSimulation(dt,0,frameStep);
       timeStep -= dt;
     }
+    world->mSoftBodyWorldInfo.m_sparsesdf.GarbageCollect();
   }
 }
 
@@ -185,6 +191,30 @@ FABRIC_EXT_EXPORT void FabricBULLET_World_RemoveRigidBody(
     fabricBulletWorld * world = (fabricBulletWorld *)worldData;
     fabricBulletRigidBody * body = (fabricBulletRigidBody *)bodyData;
     world->mDynamicsWorld->removeRigidBody(body->mBody);
+  }
+}
+
+FABRIC_EXT_EXPORT void FabricBULLET_World_AddSoftBody(
+  KL::Data & worldData,
+  KL::Data & bodyData
+)
+{
+  if(worldData != NULL && bodyData != NULL) {
+    fabricBulletWorld * world = (fabricBulletWorld *)worldData;
+    fabricBulletSoftBody * body = (fabricBulletSoftBody *)bodyData;
+    world->mDynamicsWorld->addSoftBody(body->mBody);
+  }
+}
+
+FABRIC_EXT_EXPORT void FabricBULLET_World_RemoveSoftBody(
+  KL::Data & worldData,
+  KL::Data & bodyData
+)
+{
+  if(worldData != NULL && bodyData != NULL) {
+    fabricBulletWorld * world = (fabricBulletWorld *)worldData;
+    fabricBulletSoftBody * body = (fabricBulletSoftBody *)bodyData;
+    world->mDynamicsWorld->removeSoftBody(body->mBody);
   }
 }
 
@@ -343,8 +373,9 @@ FABRIC_EXT_EXPORT void FabricBULLET_RigidBody_Delete(
   KL::Data & bodyData
 )
 {
-  if(bodyData == NULL) {
+  if(bodyData != NULL) {
     fabricBulletRigidBody * body = (fabricBulletRigidBody * )bodyData;
+    delete(body->mBody);
     delete(body);
     bodyData = NULL;
   }  
@@ -456,3 +487,130 @@ FABRIC_EXT_EXPORT void FabricBULLET_RigidBody_SetAngularVelocity(
   }  
 }
 
+FABRIC_EXT_EXPORT void FabricBULLET_SoftBody_Create(
+  KL::Data & bodyData,
+  KL::Data & worldData,
+  KL::SlicedArray<KL::Vec3> & positions,
+  KL::VariableArray<KL::Integer> & indices,
+  KL::Xfo & bodyTransform,
+  KL::Integer & bodyClusters,
+  KL::Integer & bodyConstraints,
+  KL::Scalar & bodyMass,
+  KL::Scalar & bodyStiffness,
+  KL::Scalar & bodyFriction,
+  KL::Scalar & bodyConservation,
+  KL::Scalar & bodyPressure,
+  KL::Scalar & bodyRecover
+)
+{
+  if(bodyData == NULL && worldData != NULL) {
+    fabricBulletWorld * world = (fabricBulletWorld *)worldData;
+    
+    // convert the transform.
+    btTransform transform;
+    transform.setOrigin(btVector3(bodyTransform.tr.x,bodyTransform.tr.y,bodyTransform.tr.z));
+    transform.setRotation(btQuaternion(bodyTransform.ori.v.x,bodyTransform.ori.v.y,bodyTransform.ori.v.z,bodyTransform.ori.w));
+    btVector3 scaling(bodyTransform.sc.x,bodyTransform.sc.y,bodyTransform.sc.z);
+    
+    fabricBulletSoftBody * body = new fabricBulletSoftBody();
+    bodyData = body;
+
+    btAlignedObjectArray<btVector3> vtx;
+    vtx.resize(positions.size());
+    for(size_t i=0;i<vtx.size();i++) {
+      vtx[i] = transform * btVector3(positions[i].x,positions[i].y,positions[i].z);
+      //vtx[i] = transform * scaling * btVector3(positions[i].x,positions[i].y,positions[i].z);
+    }
+    
+    body->mBody = new btSoftBody(&world->mSoftBodyWorldInfo,vtx.size(),&vtx[0],0);
+    
+    for(KL::Size i=0;i<indices.size()-2;i+=3)
+    {
+      body->mBody->appendFace(indices[i],indices[i+1],indices[i+2]);
+      body->mBody->appendLink(indices[i],indices[i+1]);
+      body->mBody->appendLink(indices[i+1],indices[i+2]);
+      body->mBody->appendLink(indices[i+2],indices[i]);
+    }
+
+    KL::Scalar massPart = bodyMass / KL::Scalar(positions.size());
+    for(KL::Size i=0;i<positions.size();i++)
+      body->mBody->setMass(i,massPart);
+    
+    body->mBody->getCollisionShape()->setMargin(0.0f);
+    if(bodyClusters >= 0)
+    {
+      body->mBody->generateClusters(bodyClusters);
+      body->mBody->m_cfg.collisions = btSoftBody::fCollision::CL_SS + btSoftBody::fCollision::CL_RS + btSoftBody::fCollision::CL_SELF;
+    }
+    else
+      body->mBody->m_cfg.collisions += btSoftBody::fCollision::VF_SS;
+
+    body->mBody->m_cfg.aeromodel = btSoftBody::eAeroModel::V_TwoSided;
+
+    if(bodyConstraints > 0)
+      body->mBody->generateBendingConstraints(bodyConstraints,body->mBody->m_materials[0]);
+
+    body->mBody->setPose(true,true);
+    
+    body->mBody->m_materials[0]->m_kLST = bodyStiffness;
+    body->mBody->m_materials[0]->m_kAST = bodyStiffness;
+    body->mBody->m_materials[0]->m_kVST = bodyStiffness;
+    
+    body->mBody->m_cfg.kDP = 0.01f;
+    body->mBody->m_cfg.kDF = bodyFriction;
+    body->mBody->m_cfg.kDG = 0.1f;
+    body->mBody->m_cfg.kVC = bodyConservation;
+    body->mBody->m_cfg.kPR = bodyPressure;
+    body->mBody->m_cfg.kMT = bodyRecover;
+    body->mBody->m_cfg.kCHR = 0.25f;
+    body->mBody->m_cfg.kKHR = 0.25f;
+    body->mBody->m_cfg.kSHR = 0.25f;
+    body->mBody->m_cfg.kAHR = 0.25f;
+    
+    if(body->mBody->m_clusters.size() > 0)
+    {
+      for(int j=0;j<body->mBody->m_clusters.size();j++)
+      {
+        body->mBody->m_clusters[j]->m_ldamping = body->mBody->m_cfg.kDP;
+        body->mBody->m_clusters[j]->m_adamping = body->mBody->m_cfg.kDP;
+      }
+    }
+    
+    body->mBody->m_cfg.piterations = 4;
+    body->mBody->m_cfg.citerations = 4;
+    
+    body->mBody->setUserPointer(body);
+
+    printf("   { FabricBULLET } SoftBody created.\n");
+  }
+}
+
+FABRIC_EXT_EXPORT void FabricBULLET_SoftBody_Delete(
+  KL::Data & bodyData
+)
+{
+  if(bodyData != NULL) {
+    fabricBulletSoftBody * body = (fabricBulletSoftBody * )bodyData;
+    delete(body->mBody);
+    delete(body);
+    bodyData = NULL;
+  }  
+}
+
+FABRIC_EXT_EXPORT void FabricBULLET_SoftBody_GetPosition(
+  KL::Size index,
+  KL::Data & bodyData,
+  KL::Vec3 & position,
+  KL::Vec3 & normal
+)
+{
+  if(bodyData != NULL) {
+    fabricBulletSoftBody * body = (fabricBulletSoftBody * )bodyData;
+    position.x = body->mBody->m_nodes[index].m_x.getX();
+    position.y = body->mBody->m_nodes[index].m_x.getY();
+    position.z = body->mBody->m_nodes[index].m_x.getZ();
+    normal.x = body->mBody->m_nodes[index].m_n.getX();
+    normal.y = body->mBody->m_nodes[index].m_n.getY();
+    normal.z = body->mBody->m_nodes[index].m_n.getZ();
+  }  
+}
