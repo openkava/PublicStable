@@ -17,14 +17,14 @@ namespace Fabric
     FixedArrayImpl::FixedArrayImpl( std::string const &codeName, RC::ConstHandle<Impl> const &memberImpl, size_t length )
       : ArrayImpl( codeName, DT_FIXED_ARRAY, memberImpl )
       , m_memberImpl( memberImpl )
-      , m_memberSize( memberImpl->getSize() )
+      , m_memberSize( memberImpl->getAllocSize() )
       , m_memberIsShallow( memberImpl->isShallow() )
       , m_length( length )
     {
       setSize( m_memberSize * m_length );
 
-      m_defaultData = malloc( getSize() );
-      memset( m_defaultData, 0, getSize() );
+      m_defaultData = malloc( getAllocSize() );
+      memset( m_defaultData, 0, getAllocSize() );
       void const *memberDefaultData = m_memberImpl->getDefaultData();
       for ( size_t i=0; i<m_length; ++i )
         m_memberImpl->setData( memberDefaultData, getMemberData( m_defaultData, i ) );
@@ -48,7 +48,7 @@ namespace Fabric
         for ( size_t i=0; i<m_length; ++i )
           m_memberImpl->setData( getMemberData_NoCheck( src, i ), getMemberData_NoCheck( dst, i ) );
       }
-      else memcpy( dst, src, getSize() );
+      else memcpy( dst, src, getAllocSize() );
     }
 
     RC::Handle<JSON::Value> FixedArrayImpl::getJSONValue( void const *data ) const

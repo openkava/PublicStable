@@ -22,7 +22,7 @@ namespace Fabric
     VariableArrayImpl::VariableArrayImpl( std::string const &codeName, RC::ConstHandle<Impl> const &memberImpl )
       : ArrayImpl( codeName, DT_VARIABLE_ARRAY, memberImpl )
       , m_memberImpl( memberImpl )
-      , m_memberSize( memberImpl->getSize() )
+      , m_memberSize( memberImpl->getAllocSize() )
       , m_memberIsShallow( memberImpl->isShallow() )
     {
       setSize( sizeof(bits_t *) );
@@ -308,7 +308,7 @@ namespace Fabric
           {
             if ( !defaultMemberData )
               defaultMemberData = getMemberImpl()->getDefaultData();
-            size_t memberSize = getMemberImpl()->getSize();
+            size_t memberSize = getMemberImpl()->getAllocSize();
             memberData = bits->memberDatas + m_memberSize * oldNumMembers;
             memberDataEnd = bits->memberDatas + m_memberSize * newNumMembers;
             memset( memberData, 0, memberDataEnd - memberData );
@@ -369,6 +369,12 @@ namespace Fabric
         }
       }
       //FABRIC_LOG( "VariableArrayImpl::setNumMembers: %fms", ft.getElapsedMS() );
+    }
+
+    void *VariableArrayImpl::getBits( void *data ) const
+    {
+      bits_t *bits = *static_cast<bits_t *const *>( data );
+      return bits;
     }
   };
 };

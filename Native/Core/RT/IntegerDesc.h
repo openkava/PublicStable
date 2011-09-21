@@ -60,7 +60,7 @@ namespace Fabric
           internalType += "si";
         else
           internalType += "ui";
-        internalType += _(m_integerImplT->getSize() * 8);
+        internalType += _(m_integerImplT->getAllocSize() * 8);
         result->set( "internalType", JSON::String::Create(internalType) );
         return result;
       }
