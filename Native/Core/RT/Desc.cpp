@@ -23,9 +23,9 @@ namespace Fabric
     {
     }
     
-    size_t Desc::getSize() const
+    size_t Desc::getAllocSize() const
     {
-      return m_impl->getSize();
+      return m_impl->getAllocSize();
     }
     
     RC::ConstHandle<Impl> Desc::getImpl() const
@@ -98,7 +98,7 @@ namespace Fabric
     {
       RC::Handle<JSON::Object> result = JSON::Object::Create();
       result->set( "name", JSON::String::Create( getName() ) );
-      result->set( "size", JSON::Integer::Create( getSize() ) );
+      result->set( "size", JSON::Integer::Create( getAllocSize() ) );
       result->set( "defaultValue", getJSONValue( getDefaultData() ) );
       return result;
     }
