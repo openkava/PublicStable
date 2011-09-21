@@ -26,7 +26,7 @@ ut.test( "Graph Compilation", function() {
   var node;
   ut.expectSuccess( "create node and set event handler", function() {
     node = FABRIC.DependencyGraph.createNode("foo");
-    eventHandler.addScope( "self", node );
+    eventHandler.setScope( "self", node );
   } );
   ut.expectSuccess( "fire event", function() {
     event.fire();

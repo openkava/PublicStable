@@ -40,7 +40,7 @@ ut.test("Selectors (Vec3)", function() {
 		eventHandler = FABRIC.DependencyGraph.createEventHandler("UnitTests.Node.selectors.eventHandler");
 		event.appendEventHandler( eventHandler );
 		node = FABRIC.DependencyGraph.createNode( "UnitTests.Node.selectors.node" );
-		eventHandler.addScope( 'self', node );
+		eventHandler.setScope( 'self', node );
 	});
 
 	var nodeOne, operatorOne, bindingOne, eventHandlerOne;
@@ -60,7 +60,7 @@ ut.test("Selectors (Vec3)", function() {
 		});
 		ut.test("Create eventHandlerOne", function() {
 			eventHandlerOne = FABRIC.DependencyGraph.createEventHandler("UnitTests.Node.selectors.eventHandlerOne");
-			eventHandlerOne.addScope( 'self', nodeOne );
+			eventHandlerOne.setScope( 'self', nodeOne );
 			eventHandlerOne.setSelector( 'self', bindingOne );
 			eventHandler.appendChildEventHandler( eventHandlerOne );
 		});
@@ -74,7 +74,7 @@ ut.test("Selectors (Vec3)", function() {
 	bindingTwo.setOperator( operatorTwo );
 	bindingTwo.setParameterLayout( [] );
 	var eventHandlerTwo = FABRIC.DependencyGraph.createEventHandler("UnitTests.Node.selectors.eventHandlerTwo");
-	eventHandlerTwo.addScope( 'self', nodeTwo );
+	eventHandlerTwo.setScope( 'self', nodeTwo );
 	eventHandlerTwo.setSelector( 'self', bindingTwo );
 	eventHandler.appendChildEventHandler( eventHandlerTwo );
 
