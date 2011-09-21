@@ -527,7 +527,7 @@ namespace Fabric
         {
           BasicBlockBuilder basicBlockBuilder( functionBuilder );
           basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
-          llvm::Value *dataSizeRValue = llvm::ConstantInt::get( llvmRType( context ), getDesc()->getSize() );
+          llvm::Value *dataSizeRValue = llvm::ConstantInt::get( llvmRType( context ), getDesc()->getAllocSize() );
           basicBlockBuilder->CreateRet( dataSizeRValue );
         }
       }

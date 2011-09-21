@@ -46,7 +46,7 @@ namespace Fabric
       {
         return m_name;
       }
-      size_t getSize() const;
+      size_t getAllocSize() const;
       RC::ConstHandle<Impl> getImpl() const;
       
       ImplType getType() const;
