@@ -53,6 +53,9 @@ namespace Fabric
       
       // SlicedArrayImpl
       
+      size_t getOffset( void const *data ) const;
+      size_t getSize( void const *data ) const;
+      void *getVariableArrayBits( void const *data ) const;
       void set( size_t offset, size_t size, void *variableArrayBits, void *data ) const;
       RC::ConstHandle<VariableArrayImpl> getVariableArrayImpl() const;
       
