@@ -174,8 +174,11 @@ namespace Fabric
           basicBlockBuilder->CreateCondBr( offsetPlusSizeInRangeCond, offsetPlusSizeInRangeBB, offsetPlusSizeOutOfRangeBB );
           
           basicBlockBuilder->SetInsertPoint( offsetPlusSizeInRangeBB );
+          llvm::Value *srcOffsetLValue = basicBlockBuilder->CreateConstGEP2_32( srcSlicedArrayRValue, 0, 0 );
+          llvm::Value *srcOffsetRValue = sizeAdapter->llvmLValueToRValue( basicBlockBuilder, srcOffsetLValue );
+          llvm::Value *combinedOffsetRValue = basicBlockBuilder->CreateAdd( srcOffsetRValue, offsetRValue );
           llvm::Value *offsetLValue = basicBlockBuilder->CreateConstGEP2_32( dstSlicedArrayLValue, 0, 0 );
-          sizeAdapter->llvmDefaultAssign( basicBlockBuilder, offsetLValue, offsetRValue );
+          sizeAdapter->llvmDefaultAssign( basicBlockBuilder, offsetLValue, combinedOffsetRValue );
           llvm::Value *sizeLValue = basicBlockBuilder->CreateConstGEP2_32( dstSlicedArrayLValue, 0, 1 );
           sizeAdapter->llvmDefaultAssign( basicBlockBuilder, sizeLValue, sizeRValue );
           llvm::Value *srcSlicedArrayLValue = llvmRValueToLValue( basicBlockBuilder, srcSlicedArrayRValue );
