@@ -153,10 +153,5 @@ namespace Fabric
     void ConstStringAdapter::llvmRelease( BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const
     {
     }
-    
-    void *ConstStringAdapter::llvmResolveExternalFunction( std::string const &functionName ) const
-    {
-      return 0;
-    }
   };
 };

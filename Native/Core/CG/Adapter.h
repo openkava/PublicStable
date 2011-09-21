@@ -89,7 +89,7 @@ namespace Fabric
       virtual llvm::Constant *llvmDefaultLValue( BasicBlockBuilder &basicBlockBuilder ) const;
 
       virtual void llvmCompileToModule( ModuleBuilder &moduleBuilder ) const = 0;
-      virtual void *llvmResolveExternalFunction( std::string const &functionName ) const = 0;
+      virtual void *llvmResolveExternalFunction( std::string const &functionName ) const;
       
       virtual std::string toString( void const *data ) const = 0;
       
@@ -103,6 +103,11 @@ namespace Fabric
       RC::ConstHandle<Adapter> getAdapter( RC::ConstHandle<RT::Desc> const &desc ) const;
       
       llvm::Type const *llvmSizeType( RC::Handle<Context> const &context ) const;
+
+      void llvmThrowException(
+        BasicBlockBuilder &basicBlockBuilder,
+        llvm::Value *stringRValue
+        ) const;
       
     private:
     
