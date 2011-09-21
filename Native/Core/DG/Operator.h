@@ -89,6 +89,7 @@ namespace Fabric
       CG::Diagnostics const &getDiagnostics() const;
 
       RC::Handle<MT::ParallelCall> bind(
+        std::vector<std::string> &errors,
         Prototype *prototype,
         Scope const &scope,
         size_t *newSize,
