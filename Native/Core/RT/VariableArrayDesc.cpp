@@ -61,5 +61,10 @@ namespace Fabric
       result->set( "memberType", JSON::String::Create( getMemberDesc()->getName() ) );
       return result;
     }
+
+    void *VariableArrayDesc::getBits( void *data ) const
+    {
+      return m_variableArrayImpl->getBits( data );
+    }
   };
 };

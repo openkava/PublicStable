@@ -396,7 +396,7 @@ namespace Fabric
             basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
             llvm::Value *sizeLValue = basicBlockBuilder->CreateConstGEP2_32( selfRValue, 0, 1 );
             llvm::Value *sizeRValue = sizeAdapter->llvmLValueToRValue( basicBlockBuilder, sizeLValue );
-            llvm::Value *memberSizeRValue = sizeAdapter->llvmConst( context, m_memberAdapter->getDesc()->getSize() );
+            llvm::Value *memberSizeRValue = sizeAdapter->llvmConst( context, m_memberAdapter->getDesc()->getAllocSize() );
             llvm::Value *dataSizeRValue = basicBlockBuilder->CreateMul( sizeRValue, memberSizeRValue );
             basicBlockBuilder->CreateRet( dataSizeRValue );
           }

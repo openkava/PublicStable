@@ -33,7 +33,7 @@ namespace Fabric
     llvm::Type const *OpaqueAdapter::buildLLVMRawType( RC::Handle<Context> const &context ) const
     {
       llvm::Type const *result;
-      size_t size = m_opaqueDesc->getSize();
+      size_t size = m_opaqueDesc->getAllocSize();
       if ( size == sizeof( void * ) )
         result = llvm::Type::getInt8PtrTy( context->getLLVMContext() );
       else
@@ -64,7 +64,7 @@ namespace Fabric
     llvm::Constant *OpaqueAdapter::llvmDefaultValue( BasicBlockBuilder &basicBlockBuilder ) const
     {
       RC::Handle<Context> context = basicBlockBuilder.getContext();
-      if ( getDesc()->getSize() == sizeof( void * ) )
+      if ( getDesc()->getAllocSize() == sizeof( void * ) )
         return llvm::ConstantPointerNull::get( (llvm::PointerType const *)llvmRType( context ) );
       else 
         return llvm::ConstantInt::get( llvmRType( context ), 0 );
@@ -134,7 +134,7 @@ namespace Fabric
         {
           BasicBlockBuilder basicBlockBuilder( functionBuilder );
           basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
-          llvm::Value *dataSizeRValue = sizeAdapter->llvmConst( context, getDesc()->getSize() );
+          llvm::Value *dataSizeRValue = sizeAdapter->llvmConst( context, getDesc()->getAllocSize() );
           basicBlockBuilder->CreateRet( dataSizeRValue );
         }
       }
