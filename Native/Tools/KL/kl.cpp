@@ -44,6 +44,20 @@
 #include <llvm/PassManager.h>
 #include <llvm/Support/StandardPasses.h>
 #include <llvm/Support/raw_ostream.h>
+#include <llvm/Module.h>
+#include <llvm/Function.h>
+#include <llvm/Target/TargetData.h>
+#include <llvm/Target/TargetSelect.h>
+#include <llvm/Target/TargetOptions.h>
+#include <llvm/ExecutionEngine/JIT.h>
+#include <llvm/Assembly/Parser.h>
+#include <llvm/Support/SourceMgr.h>
+#include <llvm/Analysis/Verifier.h>
+#include <llvm/Transforms/Scalar.h>
+#include <llvm/Transforms/IPO.h>
+#include <llvm/Support/raw_ostream.h>
+#include <llvm/PassManager.h>
+#include <llvm/Support/StandardPasses.h>
 
 #include <getopt.h>
 
@@ -147,7 +161,8 @@ void handleFile( std::string const &filename, FILE *fp, unsigned int runFlags )
   
   llvm::InitializeNativeTarget();
   llvm::InitializeAllAsmPrinters();
-  //LLVMLinkInJIT();
+  llvm::NoFramePointerElim = true;
+  llvm::JITExceptionHandling = true;
 
   RC::Handle<RT::Manager> rtManager = RT::Manager::Create( KL::Compiler::Create() );
   cgManager = CG::Manager::Create( rtManager );
@@ -297,7 +312,18 @@ void handleFile( std::string const &filename, FILE *fp, unsigned int runFlags )
         void (*entryPtr)() = (void (*)())executionEngine->getPointerToFunction( llvmEntry );
         if ( !entryPtr )
           throw Exception("unable to get pointer to entry");
-        entryPtr();
+        try
+        {
+          entryPtr();
+        }
+        catch ( Fabric::Exception e )
+        {
+          printf( "Caught exception: %s\n", (const char *)e );
+        }
+        catch ( ... )
+        {
+          printf( "Caught generic exception\n" );
+        }
       }
 
       module.release();

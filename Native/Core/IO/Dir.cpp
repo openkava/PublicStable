@@ -57,7 +57,7 @@ namespace Fabric
       {
         std::string fullPath = getFullPath();
         if ( !DirExists( fullPath ) )
-	  CreateDir( fullPath );
+	        CreateDir( fullPath );
       }
     }
     

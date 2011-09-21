@@ -5,6 +5,7 @@
 #include "Adapter.h"
 #include "Context.h"
 #include "IntegerAdapter.h"
+#include "StringAdapter.h"
 #include "Manager.h"
 #include "ModuleBuilder.h"
 #include "FunctionBuilder.h"
@@ -14,6 +15,7 @@
 
 #include <Fabric/Core/RT/Desc.h>
 #include <Fabric/Core/RT/Impl.h>
+#include <Fabric/Core/RT/StringImpl.h>
 #include <Fabric/Core/RT/Manager.h>
 
 #include <llvm/LLVMContext.h>
@@ -333,6 +335,43 @@ namespace Fabric
       llvm::Value *defaultRValue = llvmDefaultRValue( basicBlockBuilder );
       llvmRetain( basicBlockBuilder, defaultRValue );
       llvmStore( basicBlockBuilder, lValue, defaultRValue );
+    }
+    
+    extern "C" void __KL__throwException( void *_stringAdapter, void *stringRValue )
+    {
+      StringAdapter const *stringAdapter = static_cast<StringAdapter const *>( _stringAdapter );
+      RC::ConstHandle<RT::StringImpl> stringImpl = RC::ConstHandle<RT::StringImpl>::StaticCast( stringAdapter->getImpl() );
+      std::string string( stringImpl->getValueData( &stringRValue ), stringImpl->getValueLength( &stringRValue ) );
+      stringImpl->disposeData( &stringRValue );
+      throw Exception( string );
+    }
+
+    void Adapter::llvmThrowException(
+      BasicBlockBuilder &basicBlockBuilder,
+      llvm::Value *stringRValue
+      ) const
+    {
+      RC::Handle<Context> context = basicBlockBuilder.getContext();
+      ModuleBuilder &moduleBuilder = basicBlockBuilder.getModuleBuilder();
+      llvm::Module *llvmModulePtr = moduleBuilder;
+      
+      RC::ConstHandle<StringAdapter> stringAdapter = getManager()->getStringAdapter();
+      llvm::Value *stringAdapterGlobalValue = stringAdapter->llvmAdapterGlobalValue( *llvmModulePtr );
+      
+      std::vector<llvm::Type const *> argTypes;
+      argTypes.push_back( stringAdapterGlobalValue->getType() );
+      argTypes.push_back( stringRValue->getType() );
+      llvm::FunctionType const *funcType = llvm::FunctionType::get( llvm::Type::getVoidTy( context->getLLVMContext() ), argTypes, false );
+      llvm::Constant *func = moduleBuilder->getOrInsertFunction( "__KL__throwException", funcType ); 
+        
+      basicBlockBuilder->CreateCall2( func, stringAdapterGlobalValue, stringRValue );
+    }
+    
+    void *Adapter::llvmResolveExternalFunction( std::string const &functionName ) const
+    {
+      if ( functionName == "__KL__throwException" )
+        return (void *)&__KL__throwException;
+      else return 0;
     }
   };
 };

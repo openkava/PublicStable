@@ -20,7 +20,7 @@ print(node.getData("foo", 0));
 print(node.getData("foo", 1));
 
 node2 = F.DG.createNode("node2");
-node.addDependency( node2, "parent" );
+node.setDependency( node2, "parent" );
 printDeep(mapNamedObjectsToNames(node.getDependencies()));
 
 FC.dispose();

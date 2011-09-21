@@ -1,0 +1,12 @@
+operator entry() {
+  Integer sa<>(Size(10));
+  for (Size i=0; i<10; ++i)
+    sa[i] = i;
+  report sa;
+
+  Integer nsa<>(sa, Size(2), Size(5));
+  report nsa;
+
+  Integer nnsa<>(nsa, Size(2), Size(2));
+  report nnsa;
+}

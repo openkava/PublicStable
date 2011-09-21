@@ -2,25 +2,25 @@ FC = createFabricClient();
 FABRIC = FC.wrapFabricClient(FC);
 load( "UnitTest.js.inc" );
 ut = new FABRIC.UnitTest;
-          ut.test( "addDependency/getDependencies/getDependents", function() {
+          ut.test( "setDependency/getDependencies/getDependents", function() {
             var parent = FABRIC.DependencyGraph.createNode( "UnitTests.Node.Dependencies.Parent" );
             
             var child = FABRIC.DependencyGraph.createNode( "UnitTests.Node.Dependencies.Child" );
             
             ut.expectException( "parentName must be non-empty", function() {
-              child.addDependency( parent, "" );
+              child.setDependency( parent, "" );
             } );
             ut.expectException( "parentName must not be 'self'", function() {
-              child.addDependency( parent, "self" );
+              child.setDependency( parent, "self" );
             } );
-            ut.expectSuccess( "addDependency works", function() {
-              child.addDependency( parent, "parent" );
+            ut.expectSuccess( "setDependency works", function() {
+              child.setDependency( parent, "parent" );
             } );
-            ut.expectSuccess( "addDependency works the second time with same name", function() {
-              child.addDependency( parent, "parent" );
+            ut.expectSuccess( "setDependency works the second time with same name", function() {
+              child.setDependency( parent, "parent" );
             } );
-            ut.expectSuccess( "addDependency works with same node but different name", function() {
-              child.addDependency( parent, "parentAgain" );
+            ut.expectSuccess( "setDependency works with same node but different name", function() {
+              child.setDependency( parent, "parentAgain" );
             } );
             
             ut.expect( "child.getDependency('parent').eq(parent)", child.getDependency('parent') === parent );
