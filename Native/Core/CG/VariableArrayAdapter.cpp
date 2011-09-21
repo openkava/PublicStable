@@ -233,8 +233,9 @@ namespace Fabric
           basicBlockBuilder->CreateRet( llvmConstIndexOp_NoCheck( basicBlockBuilder, arrayRValue, indexRValue ) );
           
           basicBlockBuilder->SetInsertPoint( outOfRangeBB );
-          llvmReportOutOfRangeError(
+          llvmThrowOutOfRangeException(
             basicBlockBuilder,
+            "index",
             constStringAdapter,
             stringAdapter,
             sizeAdapter,
@@ -273,8 +274,9 @@ namespace Fabric
           basicBlockBuilder->CreateRet( llvmNonConstIndexOp_NoCheck( basicBlockBuilder, arrayLValue, indexRValue ) );
           
           basicBlockBuilder->SetInsertPoint( outOfRangeBB );
-          llvmReportOutOfRangeError(
+          llvmThrowOutOfRangeException(
             basicBlockBuilder,
+            "index",
             constStringAdapter,
             stringAdapter,
             sizeAdapter,

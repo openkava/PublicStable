@@ -163,8 +163,17 @@ namespace Fabric
           llvm::Value *sizeRValue = functionBuilder[3];
         
           llvm::BasicBlock *entryBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "entry" );
+          llvm::BasicBlock *offsetPlusSizeInRangeBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "offsetPlusSizeInRange" );
+          llvm::BasicBlock *offsetPlusSizeOutOfRangeBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "offsetPlusSizeOutOfRange" );
           
           basicBlockBuilder->SetInsertPoint( entryBB );
+          llvm::Value *srcSizeLValue = basicBlockBuilder->CreateConstGEP2_32( srcSlicedArrayRValue, 0, 1 );
+          llvm::Value *srcSizeRValue = sizeAdapter->llvmLValueToRValue( basicBlockBuilder, srcSizeLValue );
+          llvm::Value *offsetPlusSizeRValue = basicBlockBuilder->CreateAdd( offsetRValue, sizeRValue );
+          llvm::Value *offsetPlusSizeInRangeCond = basicBlockBuilder->CreateICmpULT( offsetPlusSizeRValue, srcSizeRValue );
+          basicBlockBuilder->CreateCondBr( offsetPlusSizeInRangeCond, offsetPlusSizeInRangeBB, offsetPlusSizeOutOfRangeBB );
+          
+          basicBlockBuilder->SetInsertPoint( offsetPlusSizeInRangeBB );
           llvm::Value *offsetLValue = basicBlockBuilder->CreateConstGEP2_32( dstSlicedArrayLValue, 0, 0 );
           sizeAdapter->llvmDefaultAssign( basicBlockBuilder, offsetLValue, offsetRValue );
           llvm::Value *sizeLValue = basicBlockBuilder->CreateConstGEP2_32( dstSlicedArrayLValue, 0, 1 );
@@ -176,6 +185,18 @@ namespace Fabric
           m_variableArrayAdapter->llvmInit( basicBlockBuilder, dstVariableArrayLValue );
           m_variableArrayAdapter->llvmRetain( basicBlockBuilder, srcVariableArrayRValue );
           m_variableArrayAdapter->llvmDefaultAssign( basicBlockBuilder, dstVariableArrayLValue, srcVariableArrayRValue );
+          basicBlockBuilder->CreateRetVoid();
+
+          basicBlockBuilder->SetInsertPoint( offsetPlusSizeOutOfRangeBB );
+          llvmThrowOutOfRangeException(
+            basicBlockBuilder,
+            "offset+size",
+            constStringAdapter,
+            stringAdapter,
+            sizeAdapter,
+            offsetPlusSizeRValue,
+            srcSizeRValue
+            );
           basicBlockBuilder->CreateRetVoid();
         }
       }
@@ -244,8 +265,9 @@ namespace Fabric
           basicBlockBuilder->CreateRet( m_variableArrayAdapter->llvmConstIndexOp_NoCheck( basicBlockBuilder, variableArrayRValue, absoluteIndexRValue ) );
           
           basicBlockBuilder->SetInsertPoint( outOfRangeBB );
-          llvmReportOutOfRangeError(
+          llvmThrowOutOfRangeException(
             basicBlockBuilder,
+            "index",
             constStringAdapter,
             stringAdapter,
             sizeAdapter,
@@ -288,8 +310,9 @@ namespace Fabric
           basicBlockBuilder->CreateRet( m_variableArrayAdapter->llvmNonConstIndexOp_NoCheckNoSplit( basicBlockBuilder, variableArrayLValue, absoluteIndexRValue ) );
           
           basicBlockBuilder->SetInsertPoint( outOfRangeBB );
-          llvmReportOutOfRangeError(
+          llvmThrowOutOfRangeException(
             basicBlockBuilder,
+            "index",
             constStringAdapter,
             stringAdapter,
             sizeAdapter,
