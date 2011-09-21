@@ -37,7 +37,7 @@ namespace Fabric
       SelectedNode( RC::Handle<Node> const &_node, RC::ConstHandle<RT::Desc> desc )
         : node( _node )
       {
-        data.resize( desc->getSize() );
+        data.resize( desc->getAllocSize() );
       }
       
       SelectedNode &operator =( SelectedNode const &that )

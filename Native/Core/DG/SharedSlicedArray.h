@@ -24,7 +24,9 @@ namespace Fabric
     {
     public:
     
-      static RC::Handle<SharedSlicedArray> Create( RC::ConstHandle<RT::SlicedArrayImpl> const &slicedArrayImpl, void *variableArrayData );
+      static RC::Handle<SharedSlicedArray> Create( RC::ConstHandle<RT::SlicedArrayImpl> const &slicedArrayImpl, void *variableArrayBits, size_t size );
+      
+      void resize( size_t newSize, void *variableArrayBits );
       
       void *getData()
       {
@@ -33,7 +35,7 @@ namespace Fabric
 
     protected:
       
-      SharedSlicedArray( RC::ConstHandle<RT::SlicedArrayImpl> const &slicedArrayImpl, void *variableArrayData );
+      SharedSlicedArray( RC::ConstHandle<RT::SlicedArrayImpl> const &slicedArrayImpl, void *variableArrayBits, size_t size );
       ~SharedSlicedArray();
 
     private:

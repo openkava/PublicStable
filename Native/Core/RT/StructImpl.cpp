@@ -24,7 +24,7 @@ namespace Fabric
       for ( size_t i=0; i<m_memberInfos.size(); ++i )
       {
         StructMemberInfo const &memberInfo = getMemberInfo(i);
-        m_memberOffsets.push_back( m_memberOffsets.back() + memberInfo.desc->getSize() );
+        m_memberOffsets.push_back( m_memberOffsets.back() + memberInfo.desc->getAllocSize() );
         m_nameToIndexMap.insert( NameToIndexMap::value_type( memberInfo.name, i ) );
         m_isShallow = m_isShallow && memberInfo.desc->isShallow();
       }
@@ -42,7 +42,7 @@ namespace Fabric
         StructMemberInfo &memberInfo = m_memberInfos[i];
         if ( !memberInfo.defaultData.size() )
         {
-          memberInfo.defaultData.resize( memberInfo.desc->getSize(), 0 );
+          memberInfo.defaultData.resize( memberInfo.desc->getAllocSize(), 0 );
           memberInfo.desc->setData( memberInfo.desc->getDefaultData(), &memberInfo.defaultData[0] );
         }
         void const *srcMemberData = &memberInfo.defaultData[0];
@@ -65,7 +65,7 @@ namespace Fabric
     void StructImpl::setData( void const *srcData, void *dstData ) const
     {
       if ( m_isShallow )
-        memcpy( dstData, srcData, getSize() );
+        memcpy( dstData, srcData, getAllocSize() );
       else
       {
         for ( size_t i=0; i<m_numMembers; ++i )
