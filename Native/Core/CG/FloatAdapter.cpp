@@ -32,7 +32,7 @@ namespace Fabric
     llvm::Type const *FloatAdapter::buildLLVMRawType( RC::Handle<Context> const &context ) const
     {
       llvm::Type const *result = 0;
-      switch ( m_floatDesc->getSize() )
+      switch ( m_floatDesc->getAllocSize() )
       {
         case 4:
           result = llvm::Type::getFloatTy( context->getLLVMContext() );
@@ -142,7 +142,7 @@ namespace Fabric
         }
       }
       
-      if ( m_floatDesc->getSize() != 4 )
+      if ( m_floatDesc->getAllocSize() != 4 )
       {
         RC::ConstHandle<FloatAdapter> fp32Adapter = getManager()->getFP32Adapter();
         
@@ -163,7 +163,7 @@ namespace Fabric
         }
       }
       
-      if ( m_floatDesc->getSize() != 8 )
+      if ( m_floatDesc->getAllocSize() != 8 )
       {
         RC::ConstHandle<FloatAdapter> fp64Adapter = getManager()->getFP64Adapter();
         
@@ -414,7 +414,7 @@ namespace Fabric
         if ( buildFunctions )
         {
           llvm::Type const *integerTypeOfSameWidth = 0;
-          switch ( m_floatDesc->getSize() )
+          switch ( m_floatDesc->getAllocSize() )
           {
             case 4:
               integerTypeOfSameWidth = llvm::Type::getInt32Ty( context->getLLVMContext() );
@@ -714,7 +714,7 @@ namespace Fabric
         {
           BasicBlockBuilder basicBlockBuilder( functionBuilder );
           basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
-          llvm::Value *dataSizeRValue = llvm::ConstantInt::get( sizeAdapter->llvmRType( context ), getDesc()->getSize() );
+          llvm::Value *dataSizeRValue = llvm::ConstantInt::get( sizeAdapter->llvmRType( context ), getDesc()->getAllocSize() );
           basicBlockBuilder->CreateRet( dataSizeRValue );
         }
       }
@@ -746,7 +746,7 @@ namespace Fabric
     
     llvm::Constant *FloatAdapter::llvmDefaultValue( BasicBlockBuilder &basicBlockBuilder ) const
     {
-      switch ( m_floatDesc->getSize() )
+      switch ( m_floatDesc->getAllocSize() )
       {
         case 4:
         {
@@ -775,7 +775,7 @@ namespace Fabric
 
     std::string FloatAdapter::internalFunctionNameForType( std::string const &externalFunctionName ) const
     {
-      switch ( m_floatDesc->getSize() )
+      switch ( m_floatDesc->getAllocSize() )
       {
         case 4: return externalFunctionName;
         case 8: return externalFunctionName + "64";
@@ -787,7 +787,7 @@ namespace Fabric
 
     std::string FloatAdapter::externalFunctionNameForType( std::string const &externalFunctionName ) const
     {
-      switch ( m_floatDesc->getSize() )
+      switch ( m_floatDesc->getAllocSize() )
       {
         case 4: return "fp32_" + externalFunctionName;
         case 8: return "fp64_" + externalFunctionName;

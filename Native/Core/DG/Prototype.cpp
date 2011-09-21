@@ -341,9 +341,10 @@ namespace Fabric
                   RC::ConstHandle<RT::Desc> memberDesc;
                   RC::ConstHandle<RT::VariableArrayDesc> memberArrayDesc;
                   RC::ConstHandle<RT::SlicedArrayDesc> memberSlicedArrayDesc;
+                  RC::Handle<SharedSlicedArray> sharedSlicedArray;
                   try
                   {
-                    container->getMemberDescs( memberName, memberDesc, memberArrayDesc, memberSlicedArrayDesc );
+                    container->getMemberDescs( memberName, memberDesc, memberArrayDesc, memberSlicedArrayDesc, sharedSlicedArray );
                   }
                   catch ( Exception e )
                   {
@@ -378,7 +379,7 @@ namespace Fabric
                             adjustmentIndex = result->addAdjustment( container->getCount(), std::max<size_t>( 1, container->getCount()/MT::getNumCores() ) );
                             haveAdjustmentIndex = true;
                           }
-                          result->setAdjustmentOffset( adjustmentIndex, prefixCount+param->index(), memberImpl->getSize() );
+                          result->setAdjustmentOffset( adjustmentIndex, prefixCount+param->index(), memberImpl->getAllocSize() );
                         }
                       }
                     }
@@ -394,9 +395,7 @@ namespace Fabric
                       //if ( astParamExprType.getUsage() != CG::USAGE_LVALUE )
                       //  throw Exception( "array parmeters must bind to operator io parameters" );
                       
-                      RC::Handle<SharedSlicedArray> sharedSlicedArray = SharedSlicedArray::Create( slicedArrayImpl, memberArrayData );
                       result->setBaseAddress( prefixCount+param->index(), sharedSlicedArray->getData() );
-                      result->addOwnedObject( sharedSlicedArray );
                     }
                   }
                 }

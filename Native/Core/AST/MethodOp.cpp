@@ -47,13 +47,24 @@ namespace Fabric
     {
       RC::ConstHandle<CG::Adapter> thisType = m_expr->getType( basicBlockBuilder );
       
-      std::vector< RC::ConstHandle<CG::Adapter> > paramTypes;
-      m_args->appendTypes( basicBlockBuilder, paramTypes );
+      std::vector< RC::ConstHandle<CG::Adapter> > argTypes;
+      m_args->appendTypes( basicBlockBuilder, argTypes );
       
-      std::string functionName = CG::methodOverloadName( m_name, thisType, paramTypes );
+      std::string functionName = CG::methodOverloadName( m_name, thisType, argTypes );
       RC::ConstHandle<CG::FunctionSymbol> functionSymbol = basicBlockBuilder.maybeGetFunction( functionName );
       if ( !functionSymbol )
-        throw CG::Error( getLocation(), "type " + thisType->getUserName() + " has no method named " + _(m_name) );
+      {
+        std::string functionDesc = m_name + "(";
+        for ( size_t i=0; i<argTypes.size(); ++i )
+        {
+          if ( i > 0 )
+            functionDesc += ",";
+          functionDesc += argTypes[i]->getUserName();
+        }
+        functionDesc += ")";
+        
+        throw CG::Error( getLocation(), "type " + thisType->getUserName() + " has no method " + _(functionDesc) );
+      }
       return functionSymbol;
     }
     

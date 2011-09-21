@@ -1,0 +1,8 @@
+struct Foo {
+  String bar;
+};
+
+operator entry() {
+  Foo foo;
+  report foo.baz("Hello", 42, true);
+}
