@@ -29,6 +29,13 @@ namespace Fabric
         LARGE_INTEGER   pcFreq;
         ::QueryPerformanceFrequency( &pcFreq );
         m_pcFreq = float(pcFreq.QuadPart)/1000.f;
+#endif
+        reset();
+      }
+
+      void reset()
+      {
+#if defined(FABRIC_OS_WINDOWS)
         ::QueryPerformanceCounter( &m_pcBegin );
 #else
         gettimeofday( &m_tvBegin, NULL );

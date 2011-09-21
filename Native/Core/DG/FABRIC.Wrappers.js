@@ -823,6 +823,7 @@
     DG.createResourceLoadNode = function(name) {
       var parentHandle,
         onloadSuccessCallbacks = [],
+        onloadProgressCallbacks = [],
         onloadFailureCallbacks = [];
 
       var node = DG.createNode(name);
@@ -835,6 +836,11 @@
           case 'resourceLoadSuccess':
             for (i = 0; i < onloadSuccessCallbacks.length; i++) {
               onloadSuccessCallbacks[i](node.pub);
+            }
+            break;
+          case 'resourceLoadProgress':
+            for (i = 0; i < onloadProgressCallbacks.length; i++) {
+              onloadProgressCallbacks[i](node.pub, arg);
             }
             break;
           case 'resourceLoadFailure':
@@ -850,6 +856,10 @@
       node.pub.addOnLoadSuccessCallback = function(callback) {
         //At this 'core' level we don't try to detect same/different URLs or the fact that is it already loaded
         onloadSuccessCallbacks.push(callback);
+      }
+      node.pub.addOnLoadProgressCallback = function(callback) {
+        //At this 'core' level we don't try to detect same/different URLs or the fact that is it already loaded
+        onloadProgressCallbacks.push(callback);
       }
       node.pub.addOnLoadFailureCallback = function(callback) {
         onloadFailureCallbacks.push(callback);

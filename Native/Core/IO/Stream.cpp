@@ -28,10 +28,10 @@ namespace Fabric
     {
     }
     
-    void Stream::onData( std::string const &url, std::string const &mimeType, size_t offset, size_t size, void const *data )
+    void Stream::onData( std::string const &url, std::string const &mimeType, size_t totalsize, size_t offset, size_t size, void const *data )
     {
       FABRIC_ASSERT( m_target );
-      m_dataCallback( url, mimeType, offset, size, data, m_target.makeStrong(), m_userData );
+      m_dataCallback( url, mimeType, totalsize, offset, size, data, m_target.makeStrong(), m_userData );
     }
 
     void Stream::onEnd( std::string const &url, std::string const &mimeType )
