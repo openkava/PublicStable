@@ -43,8 +43,9 @@ namespace Fabric
     
       ArrayAdapter( RC::ConstHandle<Manager> const &manager, RC::ConstHandle<RT::ArrayDesc> const &arrayDesc, Flags flags );
 
-      void llvmReportOutOfRangeError(
+      void llvmThrowOutOfRangeException(
         BasicBlockBuilder &basicBlockBuilder,
+        std::string const &item,
         RC::ConstHandle<ConstStringAdapter> const &constStringAdapter,
         RC::ConstHandle<StringAdapter> const &stringAdapter,
         RC::ConstHandle<SizeAdapter> const &sizeAdapter,
