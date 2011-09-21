@@ -347,6 +347,7 @@ namespace Fabric
     }
       
     RC::Handle<MT::ParallelCall> Container::bind(
+      std::vector<std::string> &errors,
       RC::ConstHandle<Binding> const &binding,
       Scope const &scope,
       size_t *newCount,
@@ -356,7 +357,7 @@ namespace Fabric
     {
       SelfScope selfScope( this, &scope );
 
-      return binding->bind( selfScope, newCount, prefixCount, prefixes );
+      return binding->bind( errors, selfScope, newCount, prefixCount, prefixes );
     }
 
     Container::Member::Member( RC::Handle<RT::Manager> const &rtManager, RC::ConstHandle<RT::Desc> memberDesc, size_t count, void const *defaultMemberData )
