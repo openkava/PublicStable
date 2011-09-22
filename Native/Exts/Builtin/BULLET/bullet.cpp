@@ -44,6 +44,17 @@ struct fabricBulletRigidBody {
 
 struct fabricBulletSoftBody {
 	btSoftBody * mBody;
+  btAlignedObjectArray<btVector3> mInitialPositions;
+  btAlignedObjectArray<btVector3> mInitialNormals;
+  KL::Scalar kLST;
+  KL::Scalar kDP;
+  KL::Scalar kDF;
+  KL::Scalar kDG;
+  KL::Scalar kVC;
+  KL::Scalar kPR;
+  KL::Scalar kMT;
+  KL::Scalar kCHR;
+  KL::Integer piterations;
 };
 
 // implement the callbacks
@@ -166,6 +177,59 @@ FABRIC_EXT_EXPORT void FabricBULLET_World_Reset(
       body->setLinearVelocity(btVector3(0.0f,0.0f,0.0f));
       body->setAngularVelocity(btVector3(0.0f,0.0f,0.0f));
       body->setWorldTransform(fabricBody->mInitialTransform);
+    }
+    
+    // loop over all softbodies and reset their positions
+    btSoftBodyArray  & softBodies = world->mDynamicsWorld->getSoftBodyArray();
+    for(size_t i=0;i<softBodies.size();i++)
+    {
+      fabricBulletSoftBody * fabricBody = (fabricBulletSoftBody *)softBodies[i]->getUserPointer();
+      if(!fabricBody)
+        continue;
+      btSoftBody * body = static_cast<btSoftBody*>(softBodies[i]);
+      if(!body)
+        continue;
+      
+      btTransform identity;
+      identity.setIdentity();
+      body->transform(identity);
+      for(KL::Size j=0;j<body->m_nodes.size();j++)
+      {
+        body->m_nodes[j].m_x = fabricBody->mInitialPositions[j];
+        body->m_nodes[j].m_q = fabricBody->mInitialPositions[j];
+        body->m_nodes[j].m_n = fabricBody->mInitialNormals[j];
+        body->m_nodes[j].m_v = btVector3(0.0f,0.0f,0.0f);
+        body->m_nodes[j].m_f = btVector3(0.0f,0.0f,0.0f);
+      }
+      body->updateBounds();
+      body->setPose(true,true);
+      
+      body->m_materials[0]->m_kLST = fabricBody->kLST;
+      body->m_materials[0]->m_kAST = fabricBody->kLST;
+      body->m_materials[0]->m_kVST = fabricBody->kLST;
+      
+      body->m_cfg.kDP = fabricBody->kDP;
+      body->m_cfg.kDF = fabricBody->kDF;
+      body->m_cfg.kDG = fabricBody->kDG;
+      body->m_cfg.kVC = fabricBody->kVC;
+      body->m_cfg.kPR = fabricBody->kPR;
+      body->m_cfg.kMT = fabricBody->kMT;
+      body->m_cfg.kCHR = fabricBody->kCHR;
+      body->m_cfg.kKHR = fabricBody->kCHR;
+      body->m_cfg.kSHR = fabricBody->kCHR;
+      body->m_cfg.kAHR = fabricBody->kCHR;
+      
+      if(body->m_clusters.size() > 0)
+      {
+        for(int j=0;j<body->m_clusters.size();j++)
+        {
+          body->m_clusters[j]->m_ldamping = body->m_cfg.kDP;
+          body->m_clusters[j]->m_adamping = body->m_cfg.kDP;
+        }
+      }
+      
+      body->m_cfg.piterations = fabricBody->piterations;
+      body->m_cfg.citerations = fabricBody->piterations;
     }
   }
 }
@@ -491,6 +555,7 @@ FABRIC_EXT_EXPORT void FabricBULLET_SoftBody_Create(
   KL::Data & bodyData,
   KL::Data & worldData,
   KL::SlicedArray<KL::Vec3> & positions,
+  KL::SlicedArray<KL::Vec3> & normals,
   KL::VariableArray<KL::Integer> & indices,
   KL::Xfo & bodyTransform,
   KL::Integer & bodyClusters,
@@ -511,18 +576,20 @@ FABRIC_EXT_EXPORT void FabricBULLET_SoftBody_Create(
     transform.setOrigin(btVector3(bodyTransform.tr.x,bodyTransform.tr.y,bodyTransform.tr.z));
     transform.setRotation(btQuaternion(bodyTransform.ori.v.x,bodyTransform.ori.v.y,bodyTransform.ori.v.z,bodyTransform.ori.w));
     btVector3 scaling(bodyTransform.sc.x,bodyTransform.sc.y,bodyTransform.sc.z);
+    btVector3 axis = transform.getRotation().getAxis();
+    KL::Scalar angle = transform.getRotation().getAngle();
     
     fabricBulletSoftBody * body = new fabricBulletSoftBody();
     bodyData = body;
 
-    btAlignedObjectArray<btVector3> vtx;
-    vtx.resize(positions.size());
-    for(size_t i=0;i<vtx.size();i++) {
-      vtx[i] = transform * btVector3(positions[i].x,positions[i].y,positions[i].z);
-      //vtx[i] = transform * scaling * btVector3(positions[i].x,positions[i].y,positions[i].z);
+    body->mInitialPositions.resize(positions.size());
+    body->mInitialNormals.resize(normals.size());
+    for(size_t i=0;i<body->mInitialPositions.size();i++) {
+      body->mInitialPositions[i] = transform * btVector3(positions[i].x,positions[i].y,positions[i].z);
+      body->mInitialNormals[i] = btVector3(normals[i].x,normals[i].y,normals[i].z).rotate(axis,angle);
     }
     
-    body->mBody = new btSoftBody(&world->mSoftBodyWorldInfo,vtx.size(),&vtx[0],0);
+    body->mBody = new btSoftBody(&world->mSoftBodyWorldInfo,body->mInitialPositions.size(),&body->mInitialPositions[0],0);
     
     for(KL::Size i=0;i<indices.size()-2;i+=3)
     {
@@ -532,9 +599,12 @@ FABRIC_EXT_EXPORT void FabricBULLET_SoftBody_Create(
       body->mBody->appendLink(indices[i+2],indices[i]);
     }
 
-    KL::Scalar massPart = bodyMass / KL::Scalar(positions.size());
-    for(KL::Size i=0;i<positions.size();i++)
+    KL::Scalar massPart = bodyMass / KL::Scalar(body->mBody->m_nodes.size());
+    for(KL::Size i=0;i<body->mBody->m_nodes.size();i++)
+    {
       body->mBody->setMass(i,massPart);
+      body->mBody->m_nodes[i].m_n = body->mInitialNormals[i];
+    }
     
     body->mBody->getCollisionShape()->setMargin(0.0f);
     if(bodyClusters >= 0)
@@ -579,9 +649,17 @@ FABRIC_EXT_EXPORT void FabricBULLET_SoftBody_Create(
     body->mBody->m_cfg.piterations = 4;
     body->mBody->m_cfg.citerations = 4;
     
+    body->kLST = body->mBody->m_materials[0]->m_kLST;
+    body->kDP = body->mBody->m_cfg.kDP;
+    body->kDF = body->mBody->m_cfg.kDF;
+    body->kDG = body->mBody->m_cfg.kDG;
+    body->kVC = body->mBody->m_cfg.kVC;
+    body->kPR = body->mBody->m_cfg.kPR;
+    body->kMT = body->mBody->m_cfg.kMT;
+    body->kCHR = body->mBody->m_cfg.kCHR;
+    body->piterations = body->mBody->m_cfg.piterations;
+    
     body->mBody->setUserPointer(body);
-
-    printf("   { FabricBULLET } SoftBody created.\n");
   }
 }
 

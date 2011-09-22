@@ -36,6 +36,6 @@ function FabricBULLET_RigidBody_SetLinearVelocity(io Data bodyData, io Vec3 body
 function FabricBULLET_RigidBody_GetAngularVelocity(io Data bodyData, io Vec3 bodyVelocity);
 function FabricBULLET_RigidBody_SetAngularVelocity(io Data bodyData, io Vec3 bodyVelocity);
 
-function FabricBULLET_SoftBody_Create(io Data bodyData, io Data worldData, io Vec3 positions<>, io Integer indices[], io Xfo transform, io Integer cluster, io Integer constraints, io Scalar mass, io Scalar stiffness, io Scalar friction, io Scalar conservation, io Scalar pressure, io Scalar recover);
+function FabricBULLET_SoftBody_Create(io Data bodyData, io Data worldData, io Vec3 positions<>, io Vec3 normals<>, io Integer indices[], io Xfo transform, io Integer cluster, io Integer constraints, io Scalar mass, io Scalar stiffness, io Scalar friction, io Scalar conservation, io Scalar pressure, io Scalar recover);
 function FabricBULLET_SoftBody_Delete(io Data bodyData);
 function FabricBULLET_SoftBody_GetPosition(in Size index, io Data bodyData, io Vec3 position, io Vec3 normal);
