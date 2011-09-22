@@ -69,7 +69,6 @@ namespace Fabric
       FabricResourceWrapper m_fabricResourceStreamData;
       size_t m_streamGeneration;
 
-      size_t m_nbStreamedAtLastProgressNotif;
       size_t m_nbStreamed;
       Util::Timer m_progressNotifTimer;
     };
