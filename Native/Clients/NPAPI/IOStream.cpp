@@ -70,7 +70,7 @@ namespace Fabric
       FABRIC_ASSERT( stream->notifyData == this );
       try
       {
-        onData( m_url, m_mimeType, offset, len, buffer );
+        onData( m_url, m_mimeType, stream->end, offset, len, buffer );
       }
       catch ( Exception e )
       {
