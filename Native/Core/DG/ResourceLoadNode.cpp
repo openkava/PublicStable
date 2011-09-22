@@ -31,7 +31,6 @@ namespace Fabric
       : Node( name, context )
       , m_fabricResourceStreamData( context->getRTManager() )
       , m_streamGeneration( 0 )
-      , m_nbStreamedAtLastProgressNotif( 0 )
       , m_nbStreamed( 0 )
     {
       RC::ConstHandle<RT::StringDesc> stringDesc = context->getRTManager()->getStringDesc();
@@ -83,7 +82,6 @@ namespace Fabric
         else
         {
           m_nbStreamed = 0;
-          m_nbStreamedAtLastProgressNotif = 0;
           m_progressNotifTimer.reset();
 
           m_stream = getContext()->getIOManager()->createStream(
@@ -112,14 +110,11 @@ namespace Fabric
 
         m_nbStreamed += size;
         int deltaMS = (int)m_progressNotifTimer.getElapsedMS(false);
-        int deltaBytes = m_nbStreamed - m_nbStreamedAtLastProgressNotif;
 
-        const int progressNotifMinSize = 100000;
         const int progressNotifMinMS = 200;
 
-        if( deltaBytes > progressNotifMinSize && deltaMS > progressNotifMinMS )
+        if( deltaMS > progressNotifMinMS )
         {
-          m_nbStreamedAtLastProgressNotif = m_nbStreamed;
           m_progressNotifTimer.reset();
 
           std::vector<std::string> src;
