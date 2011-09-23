@@ -66,5 +66,10 @@ namespace Fabric
     {
       return m_variableArrayImpl->getBits( data );
     }
+    
+    bool VariableArrayDesc::isCopyOnWrite() const
+    {
+      return m_variableArrayImpl->isCopyOnWrite();
+    }
   };
 };

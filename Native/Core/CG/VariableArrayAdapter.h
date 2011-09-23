@@ -44,7 +44,6 @@ namespace Fabric
       llvm::Value *llvmConstIndexOp_NoCheckLValue( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *arrayRValue, llvm::Value *indexRValue ) const;
       llvm::Value *llvmConstIndexOp_NoCheck( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *arrayRValue, llvm::Value *indexRValue ) const;
       llvm::Value *llvmNonConstIndexOp_NoCheck( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *arrayLValue, llvm::Value *indexRValue ) const;
-      llvm::Value *llvmNonConstIndexOp_NoCheckNoSplit( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *arrayLValue, llvm::Value *indexRValue ) const;
 
     protected:
     
@@ -66,6 +65,7 @@ namespace Fabric
       void llvmCallResize( BasicBlockBuilder &basicBlockBuilder, llvm::Value *arrayLValue, llvm::Value *newSize ) const;
  
       RC::ConstHandle<RT::VariableArrayDesc> m_variableArrayDesc;
+      bool m_isCopyOnWrite;
       RC::ConstHandle<Adapter> m_memberAdapter;
    };
   };
