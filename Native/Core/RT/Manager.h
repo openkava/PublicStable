@@ -70,7 +70,6 @@ namespace Fabric
       RC::ConstHandle<FloatDesc> getFP64Desc() const;
       RC::ConstHandle<StringDesc> getStringDesc() const;
       RC::ConstHandle<OpaqueDesc> getDataDesc() const;
-      RC::ConstHandle<ConstStringDesc> getConstStringDesc( size_t length ) const;
       
       RC::ConstHandle<StructDesc> registerStruct( std::string const &name, StructMemberInfoVector const &memberInfos );
       RC::ConstHandle<OpaqueDesc> registerOpaque( std::string const &name, size_t size );
