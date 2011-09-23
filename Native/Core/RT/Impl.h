@@ -38,7 +38,7 @@ namespace Fabric
     public:
       
       std::string const &getCodeName() const { return m_codeName; }
-      size_t getSize() const { return m_size; }
+      size_t getAllocSize() const { return m_size; }
       ImplType getType() const { return m_implType; }
       
       virtual void const *getDefaultData() const = 0;

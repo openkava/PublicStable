@@ -228,7 +228,8 @@ namespace Fabric
       for ( size_t i=0; i<numPreDescendBindings; ++i )
       {
         RC::Handle<Binding> binding = m_preDescendBindings->get(i);
-        RC::Handle<MT::ParallelCall> parallelCall = binding->bind( selfScope, 0 );
+        std::vector<std::string> errors;
+        RC::Handle<MT::ParallelCall> parallelCall = binding->bind( errors, selfScope, 0 );
         parallelCall->executeSerial();
       }
       
@@ -242,7 +243,8 @@ namespace Fabric
       for ( size_t i=0; i<numPostDescendBindings; ++i )
       {
         RC::Handle<Binding> binding = m_postDescendBindings->get(i);
-        RC::Handle<MT::ParallelCall> parallelCall = binding->bind( selfScope, 0 );
+        std::vector<std::string> errors;
+        RC::Handle<MT::ParallelCall> parallelCall = binding->bind( errors, selfScope, 0 );
         parallelCall->executeSerial();
       }
       
@@ -254,7 +256,8 @@ namespace Fabric
         bool shouldSelect = false;
         SelectedNode selectedNode( node, selectorType );
         void *prefixes[2] = { &shouldSelect, &selectedNode.data[0] };
-        RC::Handle<MT::ParallelCall> parallelCall = m_selectBinding->bind( bindingsScope, 0, 2, prefixes );
+        std::vector<std::string> errors;
+        RC::Handle<MT::ParallelCall> parallelCall = m_selectBinding->bind( errors, bindingsScope, 0, 2, prefixes );
         parallelCall->executeSerial();
         if ( shouldSelect )
           selectedNodes->push_back( selectedNode );
@@ -272,14 +275,11 @@ namespace Fabric
       for ( size_t i=0; i<numPreDescendBindings; ++i )
       {
         RC::Handle<Binding> binding = m_preDescendBindings->get(i);
-        try
-        {
-          binding->bind( selfScope, 0 );
-        }
-        catch ( Exception e )
-        {
-          getErrors().push_back( "pre-descend operator " + _(i) + ": " + std::string( e ) );
-        }
+        std::string const errorPrefix = "pre-descend operator " + _(i) + ": ";
+        std::vector<std::string> errors;
+        binding->bind( errors, selfScope, 0 );
+        for ( size_t i=0; i<errors.size(); ++i )
+          getErrors().push_back( errorPrefix + errors[i] );
       }
       
       for ( size_t i=0; i<m_childEventHandlers.size(); ++i )
@@ -292,27 +292,21 @@ namespace Fabric
       for ( size_t i=0; i<numPostDescendBindings; ++i )
       {
         RC::Handle<Binding> binding = m_postDescendBindings->get(i);
-        try
-        {
-          binding->bind( selfScope, 0 );
-        }
-        catch ( Exception e )
-        {
-          getErrors().push_back( "post-descend operator " + _(i) + ": " + std::string( e ) );
-        }
+        std::string const errorPrefix = "post-descend operator " + _(i) + ": ";
+        std::vector<std::string> errors;
+        binding->bind( errors, selfScope, 0 );
+        for ( size_t i=0; i<errors.size(); ++i )
+          getErrors().push_back( errorPrefix + errors[i] );
       }
         
       if ( m_selectBinding )
       {
         void *prefixes[2] = { 0, 0 };
-        try
-        {
-          m_selectBinding->bind( bindingsScope, 0, 2, prefixes );
-        }
-        catch ( Exception e )
-        {
-          getErrors().push_back( "selector: " + std::string( e ) );
-        }
+        std::string const errorPrefix = "selector: ";
+        std::vector<std::string> errors;
+        m_selectBinding->bind( errors, bindingsScope, 0, 2, prefixes );
+        for ( size_t i=0; i<errors.size(); ++i )
+          getErrors().push_back( errorPrefix + errors[i] );
       }
     }
     

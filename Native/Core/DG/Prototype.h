@@ -56,12 +56,13 @@ namespace Fabric
       void clear();
     
       RC::Handle<MT::ParallelCall> bind(
+        std::vector<std::string> &errors,
         RC::ConstHandle<AST::Operator> const &astOperator,
         Scope const &scope,
         RC::ConstHandle<Function> const &function,
         size_t *newSize,
         unsigned prefixCount=0,
-        void * const *prefixes = 0
+        void * const *prefixes=0
         );
       
       std::vector<std::string> desc() const;

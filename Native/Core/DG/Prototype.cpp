@@ -248,6 +248,7 @@ namespace Fabric
     }
 
     RC::Handle<MT::ParallelCall> Prototype::bind(
+      std::vector<std::string> &errors,
       RC::ConstHandle<AST::Operator> const &astOperator,
       Scope const &scope,
       RC::ConstHandle<Function> const &function,
@@ -262,7 +263,7 @@ namespace Fabric
       size_t numASTParams = astParamList->size();
       size_t expectedNumASTParams = prefixCount + m_paramCount;
       if ( numASTParams != expectedNumASTParams )
-        throw Exception( "operator takes incorrect number of parameters (expected "+_(expectedNumASTParams)+", actual "+_(numASTParams)+")" );
+        errors.push_back( "operator takes incorrect number of parameters (expected "+_(expectedNumASTParams)+", actual "+_(numASTParams)+")" );
 
       RC::Handle<MT::ParallelCall> result = MT::ParallelCall::Create( function, prefixCount+m_paramCount, astOperator->getDeclaredName() );
       for ( unsigned i=0; i<prefixCount; ++i )
@@ -270,11 +271,14 @@ namespace Fabric
       for ( std::map< std::string, std::multimap< std::string, Param * > >::const_iterator it=m_params.begin(); it!=m_params.end(); ++it )
       {
         std::string const &nodeName = it->first;
-        try
+        std::string const nodeErrorPrefix = "node " + _(nodeName) + ": ";
         {
           RC::Handle<Container> container = scope.find( nodeName );
           if ( !container )
-            throw Exception( "not found" );
+          {
+            errors.push_back( nodeErrorPrefix + "not found" );
+            continue;
+          }
           
           bool haveAdjustmentIndex = false;
           unsigned adjustmentIndex = 0;
@@ -291,109 +295,113 @@ namespace Fabric
             RC::ConstHandle<RT::Desc> astParamDesc = astParamExprType.getDesc();
             RC::ConstHandle<RT::Impl> astParamImpl = astParamDesc->getImpl();
             
-            try
+            std::string const parameterErrorPrefix = nodeErrorPrefix + "parameter " + _(size_t(prefixCount+param->index()+1)) + ": ";
             {
               if ( param->isSizeParam() )
               {
                 if ( astParamImpl != m_rtSizeImpl
                   || astParamExprType.getUsage() != CG::USAGE_RVALUE )
-                  throw Exception( "'size' parmeters must bind to operator in parameters of type "+_(m_rtSizeDesc->getName()) );
+                  errors.push_back( parameterErrorPrefix + "'size' parmeters must bind to operator in parameters of type "+_(m_rtSizeDesc->getName()) );
                 result->setBaseAddress( prefixCount+param->index(), (void *)container->getCount() );
               }
               else if ( param->isNewSizeParam() )
               {
                 if ( astParamImpl != m_rtSizeImpl
                   || astParamExprType.getUsage() != CG::USAGE_LVALUE )
-                  throw Exception( "'newSize' parmeters must bind to operator io parameters of type "+_(m_rtSizeDesc->getName()) );
+                  errors.push_back( parameterErrorPrefix + "'newSize' parmeters must bind to operator io parameters of type "+_(m_rtSizeDesc->getName()) );
                 if ( !newSize )
-                  throw Exception( "can't access count" );
+                  errors.push_back( parameterErrorPrefix + "can't access count" );
                 result->setBaseAddress( prefixCount+param->index(), newSize );
               }
               else if ( param->isIndexParam() )
               {
                 if ( astParamImpl != m_rtIndexImpl
                   || astParamExprType.getUsage() != CG::USAGE_RVALUE )
-                  throw Exception( "'index' parmeters must bind to operator in parameters of type "+_(m_rtIndexDesc->getName()) );
-                result->setBaseAddress( prefixCount+param->index(), (void *)0 );
-                if ( container->getCount() != 1 )
+                  errors.push_back( parameterErrorPrefix + "'index' parmeters must bind to operator in parameters of type "+_(m_rtIndexDesc->getName()) );
+                else
                 {
-                  if ( !haveAdjustmentIndex )
+                  result->setBaseAddress( prefixCount+param->index(), (void *)0 );
+                  if ( container->getCount() != 1 )
                   {
-                    adjustmentIndex = result->addAdjustment( container->getCount(), std::max<size_t>( 1, container->getCount()/MT::getNumCores() ) );
-                    haveAdjustmentIndex = true;
+                    if ( !haveAdjustmentIndex )
+                    {
+                      adjustmentIndex = result->addAdjustment( container->getCount(), std::max<size_t>( 1, container->getCount()/MT::getNumCores() ) );
+                      haveAdjustmentIndex = true;
+                    }
+                    result->setAdjustmentOffset( adjustmentIndex, prefixCount+param->index(), 1 );
                   }
-                  result->setAdjustmentOffset( adjustmentIndex, prefixCount+param->index(), 1 );
                 }
               }
               else if ( param->isMemberParam() )
               {
                 MemberParam const *memberParam = static_cast<MemberParam const *>(param);
                 std::string const &memberName = memberParam->name();
-                try
+                std::string const memberErrorPrefix = parameterErrorPrefix + "member '" + memberName + "': ";
                 {
                   RC::ConstHandle<RT::Desc> memberDesc;
                   RC::ConstHandle<RT::VariableArrayDesc> memberArrayDesc;
                   RC::ConstHandle<RT::SlicedArrayDesc> memberSlicedArrayDesc;
-                  container->getMemberDescs( memberName, memberDesc, memberArrayDesc, memberSlicedArrayDesc );
-                  RC::ConstHandle<RT::VariableArrayImpl> memberArrayImpl = memberArrayDesc->getImpl();
-                  void *memberArrayData = container->getMemberArrayData( memberName );
-                  if ( param->isElementParam() )
+                  RC::Handle<SharedSlicedArray> sharedSlicedArray;
+                  try
                   {
-                    if ( arrayAccessSet.find( memberArrayData ) != arrayAccessSet.end() )
-                      throw Exception( "cannot access both per-slice and whole array data for the same member" );
-                    elementAccessSet.insert( memberArrayData );
-                    
-                    RC::ConstHandle<RT::Impl> memberImpl = memberDesc->getImpl();
-                    if ( astParamImpl != memberImpl )
-                      throw Exception( "parameter type mismatch: member element type is "+_(memberDesc->getName())+", operator parameter type is "+_(astParamDesc->getName()) );
-                    if ( astParamExprType.getUsage() != CG::USAGE_LVALUE )
-                      throw Exception( "element parmeters must bind to operator io parameters" );
-                    void *baseAddress;
-                    if ( memberArrayImpl->getNumMembers( memberArrayData ) > 0 )
-                      baseAddress = memberArrayImpl->getMemberData( memberArrayData, 0 );
-                    else baseAddress = 0;
-                    result->setBaseAddress( prefixCount+param->index(), baseAddress );
-                    if ( container->getCount() != 1 )
+                    container->getMemberDescs( memberName, memberDesc, memberArrayDesc, memberSlicedArrayDesc, sharedSlicedArray );
+                  }
+                  catch ( Exception e )
+                  {
+                    errors.push_back( memberErrorPrefix + std::string(e) );
+                  }
+                  if ( memberDesc && memberArrayDesc && memberSlicedArrayDesc )
+                  {
+                    RC::ConstHandle<RT::VariableArrayImpl> memberArrayImpl = memberArrayDesc->getImpl();
+                    void *memberArrayData = container->getMemberArrayData( memberName );
+                    if ( param->isElementParam() )
                     {
-                      if ( !haveAdjustmentIndex )
+                      if ( arrayAccessSet.find( memberArrayData ) != arrayAccessSet.end() )
+                        errors.push_back( memberErrorPrefix + "cannot access both per-slice and whole array data for the same member" );
+                      else
                       {
-                        adjustmentIndex = result->addAdjustment( container->getCount(), std::max<size_t>( 1, container->getCount()/MT::getNumCores() ) );
-                        haveAdjustmentIndex = true;
+                        elementAccessSet.insert( memberArrayData );
+                        
+                        RC::ConstHandle<RT::Impl> memberImpl = memberDesc->getImpl();
+                        if ( astParamImpl != memberImpl )
+                          errors.push_back( memberErrorPrefix + "parameter type mismatch: member element type is "+_(memberDesc->getName())+", operator parameter type is "+_(astParamDesc->getName()) );
+                        if ( astParamExprType.getUsage() != CG::USAGE_LVALUE )
+                          errors.push_back( memberErrorPrefix + "element parmeters must bind to operator io parameters" );
+                        void *baseAddress;
+                        if ( memberArrayImpl->getNumMembers( memberArrayData ) > 0 )
+                          baseAddress = memberArrayImpl->getMemberData( memberArrayData, 0 );
+                        else baseAddress = 0;
+                        result->setBaseAddress( prefixCount+param->index(), baseAddress );
+                        if ( container->getCount() != 1 )
+                        {
+                          if ( !haveAdjustmentIndex )
+                          {
+                            adjustmentIndex = result->addAdjustment( container->getCount(), std::max<size_t>( 1, container->getCount()/MT::getNumCores() ) );
+                            haveAdjustmentIndex = true;
+                          }
+                          result->setAdjustmentOffset( adjustmentIndex, prefixCount+param->index(), memberImpl->getAllocSize() );
+                        }
                       }
-                      result->setAdjustmentOffset( adjustmentIndex, prefixCount+param->index(), memberImpl->getSize() );
+                    }
+                    else
+                    {
+                      if ( elementAccessSet.find( memberArrayData ) != elementAccessSet.end() )
+                        errors.push_back( memberErrorPrefix + "cannot access both per-slice and whole array data for the same member" );
+                      else arrayAccessSet.insert( memberArrayData );
+                      
+                      RC::ConstHandle<RT::SlicedArrayImpl> slicedArrayImpl = memberSlicedArrayDesc->getImpl();
+                      if ( astParamImpl != slicedArrayImpl )
+                        errors.push_back( memberErrorPrefix + "parameter type mismatch: member array type is "+_(memberSlicedArrayDesc->getName())+", operator parameter type is "+_(astParamDesc->getName()) );
+                      //if ( astParamExprType.getUsage() != CG::USAGE_LVALUE )
+                      //  throw Exception( "array parmeters must bind to operator io parameters" );
+                      
+                      result->setBaseAddress( prefixCount+param->index(), sharedSlicedArray->getData() );
                     }
                   }
-                  else
-                  {
-                    if ( elementAccessSet.find( memberArrayData ) != elementAccessSet.end() )
-                      throw Exception( "cannot access both per-slice and whole array data for the same member" );
-                    arrayAccessSet.insert( memberArrayData );
-                    
-                    RC::ConstHandle<RT::SlicedArrayImpl> slicedArrayImpl = memberSlicedArrayDesc->getImpl();
-                    if ( astParamImpl != slicedArrayImpl )
-                      throw Exception( "parameter type mismatch: member array type is "+_(memberSlicedArrayDesc->getName())+", operator parameter type is "+_(astParamDesc->getName()) );
-                    //if ( astParamExprType.getUsage() != CG::USAGE_LVALUE )
-                    //  throw Exception( "array parmeters must bind to operator io parameters" );
-                    
-                    RC::Handle<SharedSlicedArray> sharedSlicedArray = SharedSlicedArray::Create( slicedArrayImpl, memberArrayData );
-                    result->setBaseAddress( prefixCount+param->index(), sharedSlicedArray->getData() );
-                    result->addOwnedObject( sharedSlicedArray );
-                  }
-                }
-                catch ( Exception e ) {
-                  throw "member '" + memberName + "': " + e;
                 }
               }
             }
-            catch ( Exception e )
-            {
-              throw "parameter " + _(size_t(prefixCount+param->index()+1)) + ": " + e;
-            }
           }
-        }
-        catch ( Exception e )
-        {
-          throw "node " + _(nodeName) + ": " + e;
         }
       }
       return result;

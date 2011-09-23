@@ -15,7 +15,7 @@
   [pass] fire event fails
   [pass] event has no errors
   [pass] eventHandler has no errors
-  [pass] node has one error
+  [pass] node has three errors
   [pass] load operator bytecode
   [pass] fire event fails
   [pass] event has no errors

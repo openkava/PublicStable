@@ -48,7 +48,7 @@ ut.test( "Graph Compilation", function() {
   } );
   ut.expect( "event has no errors", event.getErrors().length, 0 );
   ut.expect( "eventHandler has no errors", eventHandler.getErrors().length, 0 );
-  ut.expect( "node has one error", node.getErrors().length, 1 );
+  ut.expect( "node has three errors", node.getErrors().length, 3 );
  
   ut.expectSuccess( "load operator bytecode", function() {
     op.setEntryFunctionName("foo");

@@ -34,7 +34,7 @@ namespace Fabric
     
     void OpaqueImpl::setData( void const *src, void *dst ) const
     {
-      memcpy( dst, src, getSize() );
+      memcpy( dst, src, getAllocSize() );
     }
    
     void OpaqueImpl::disposeData( void *data ) const
@@ -50,12 +50,12 @@ namespace Fabric
     {
       if ( !jsonValue->isNull() )
         throw Exception("value is not null");
-      memset( dst, 0, getSize() );
+      memset( dst, 0, getAllocSize() );
     }
     
     std::string OpaqueImpl::descData( void const *src ) const
     {
-      return "Opaque<" + Util::hexBuf( getSize(), src ) + ">";
+      return "Opaque<" + Util::hexBuf( getAllocSize(), src ) + ">";
     }
 
     bool OpaqueImpl::isShallow() const
@@ -67,7 +67,7 @@ namespace Fabric
     {
       if ( !isOpaque( impl->getType() ) )
         return false;
-      return getSize() == impl->getSize();
+      return getAllocSize() == impl->getAllocSize();
     }
   }; // namespace RT
 }; // namespace FABRIC
