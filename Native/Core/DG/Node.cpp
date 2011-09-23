@@ -216,6 +216,7 @@ namespace Fabric
             SelfScope selfScope( this, &dependenciesScope );
             std::vector<std::string> errors;
             m_runState->m_evaluateParallelCallsPerOperator[i] = opParallelCall = binding->bind( errors, selfScope, &m_runState->m_newCount );
+            FABRIC_ASSERT( errors.empty() );
           }
 
           size_t oldCount = getCount();
