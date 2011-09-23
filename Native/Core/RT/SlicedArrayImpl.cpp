@@ -17,7 +17,7 @@ namespace Fabric
       , m_memberImpl( memberImpl )
       , m_memberSize( memberImpl->getAllocSize() )
       , m_memberIsShallow( memberImpl->isShallow() )
-      , m_variableArrayImpl( memberImpl->getVariableArrayImpl() )
+      , m_variableArrayImpl( memberImpl->getVariableArrayImpl( VariableArrayImpl::FLAG_SHARED ) )
     {
       setSize( sizeof(bits_t) );
     }
