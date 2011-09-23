@@ -57,7 +57,8 @@ namespace Fabric
         throw Exception( "JSON array size must equal sliced array size" );
 
       for ( size_t i=0; i<dstBits->size; ++i )
-        m_memberImpl->setDataFromJSONValue( jsonArray->get(i), m_variableArrayImpl->getMutableMemberData_NoCheck( &dstBits->variableArrayBits, dstBits->offset + i ) );
+        //m_memberImpl->setDataFromJSONValue( jsonArray->get(i), m_variableArrayImpl->getMutableMemberData_NoCheck( &dstBits->variableArrayBits, dstBits->offset + i ) );
+        m_memberImpl->setDataFromJSONValue( jsonArray->get(i), (void*)m_variableArrayImpl->getImmutableMemberData_NoCheck( &dstBits->variableArrayBits, dstBits->offset + i ) );
     }
 
     void SlicedArrayImpl::disposeData( void *data ) const
@@ -120,7 +121,8 @@ namespace Fabric
       bits_t *srcBits = reinterpret_cast<bits_t *>(data);
       if ( index >= srcBits->size )
         throw Exception( "index ("+_(index)+") out of range ("+_(srcBits->size)+")" );
-      return m_variableArrayImpl->getMutableMemberData_NoCheck( &srcBits->variableArrayBits, srcBits->offset + index );
+      return (void*)m_variableArrayImpl->getImmutableMemberData_NoCheck( &srcBits->variableArrayBits, srcBits->offset + index );
+      //return m_variableArrayImpl->getMutableMemberData_NoCheck( &srcBits->variableArrayBits, srcBits->offset + index );
     }
 
     size_t SlicedArrayImpl::getOffset( void const *data ) const
