@@ -12,8 +12,6 @@
 
 namespace Fabric
 {
-  
-  
   namespace Plug
   {
     static HostSpec parseHostSpec( RC::ConstHandle<JSON::Value> value )
@@ -72,7 +70,7 @@ namespace Fabric
         }
         catch ( Exception e )
         {
-          throw "lib "+_(lib)+" host spec: ";
+          throw "lib "+_(lib)+" host spec: "+e;
         }
         result.insert( HostStrings::value_type( lib, hostSpec ) );
       }
