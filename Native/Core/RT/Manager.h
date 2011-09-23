@@ -92,8 +92,6 @@ namespace Fabric
       
       RC::ConstHandle<Desc> getStrongerTypeOrNone( RC::ConstHandle<Desc> const &lhsDesc, RC::ConstHandle<Desc> const &rhsDesc ) const;
       
-      std::vector< RC::ConstHandle<Desc> > getTopoSortedDescs() const;
-      
       bool maybeGetASTForType( std::string const &typeName, RC::ConstHandle<RC::Object> &ast ) const;
 
     protected:
@@ -102,8 +100,6 @@ namespace Fabric
       
       RC::ConstHandle<Desc> maybeGetBaseDesc( std::string const &baseName ) const;
       RC::ConstHandle<Desc> registerDesc( RC::ConstHandle< Desc > const &desc ) const;
-
-      void buildTopoSortedDescs( RC::ConstHandle<Desc> const &desc, std::set< RC::ConstHandle<Desc> > &doneDescs, std::vector< RC::ConstHandle<Desc> > &result ) const;
       
     private:
     
