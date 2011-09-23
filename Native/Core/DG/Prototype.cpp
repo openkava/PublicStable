@@ -301,14 +301,14 @@ namespace Fabric
               {
                 if ( astParamImpl != m_rtSizeImpl
                   || astParamExprType.getUsage() != CG::USAGE_RVALUE )
-                  errors.push_back( parameterErrorPrefix + "'size' parmeters must bind to operator in parameters of type "+_(m_rtSizeDesc->getName()) );
+                  errors.push_back( parameterErrorPrefix + "'size' parmeters must bind to operator in parameters of type "+_(m_rtSizeDesc->getUserName()) );
                 result->setBaseAddress( prefixCount+param->index(), (void *)container->getCount() );
               }
               else if ( param->isNewSizeParam() )
               {
                 if ( astParamImpl != m_rtSizeImpl
                   || astParamExprType.getUsage() != CG::USAGE_LVALUE )
-                  errors.push_back( parameterErrorPrefix + "'newSize' parmeters must bind to operator io parameters of type "+_(m_rtSizeDesc->getName()) );
+                  errors.push_back( parameterErrorPrefix + "'newSize' parmeters must bind to operator io parameters of type "+_(m_rtSizeDesc->getUserName()) );
                 if ( !newSize )
                   errors.push_back( parameterErrorPrefix + "can't access count" );
                 result->setBaseAddress( prefixCount+param->index(), newSize );
@@ -317,7 +317,7 @@ namespace Fabric
               {
                 if ( astParamImpl != m_rtIndexImpl
                   || astParamExprType.getUsage() != CG::USAGE_RVALUE )
-                  errors.push_back( parameterErrorPrefix + "'index' parmeters must bind to operator in parameters of type "+_(m_rtIndexDesc->getName()) );
+                  errors.push_back( parameterErrorPrefix + "'index' parmeters must bind to operator in parameters of type "+_(m_rtIndexDesc->getUserName()) );
                 else
                 {
                   result->setBaseAddress( prefixCount+param->index(), (void *)0 );
@@ -364,7 +364,7 @@ namespace Fabric
                         
                         RC::ConstHandle<RT::Impl> memberImpl = memberDesc->getImpl();
                         if ( astParamImpl != memberImpl )
-                          errors.push_back( memberErrorPrefix + "parameter type mismatch: member element type is "+_(memberDesc->getName())+", operator parameter type is "+_(astParamDesc->getName()) );
+                          errors.push_back( memberErrorPrefix + "parameter type mismatch: member element type is "+_(memberDesc->getUserName())+", operator parameter type is "+_(astParamDesc->getUserName()) );
                         if ( astParamExprType.getUsage() != CG::USAGE_LVALUE )
                           errors.push_back( memberErrorPrefix + "element parmeters must bind to operator io parameters" );
                         void *baseAddress;
@@ -391,7 +391,7 @@ namespace Fabric
                       
                       RC::ConstHandle<RT::SlicedArrayImpl> slicedArrayImpl = memberSlicedArrayDesc->getImpl();
                       if ( astParamImpl != slicedArrayImpl )
-                        errors.push_back( memberErrorPrefix + "parameter type mismatch: member array type is "+_(memberSlicedArrayDesc->getName())+", operator parameter type is "+_(astParamDesc->getName()) );
+                        errors.push_back( memberErrorPrefix + "parameter type mismatch: member array type is "+_(memberSlicedArrayDesc->getUserName())+", operator parameter type is "+_(astParamDesc->getUserName()) );
                       //if ( astParamExprType.getUsage() != CG::USAGE_LVALUE )
                       //  throw Exception( "array parmeters must bind to operator io parameters" );
                       

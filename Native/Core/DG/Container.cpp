@@ -415,7 +415,7 @@ namespace Fabric
         RC::ConstHandle<Member> member = it->second;
         RC::ConstHandle<RT::Desc> memberDesc = member->getDesc();
         RC::Handle<JSON::Object> memberObject = JSON::Object::Create();
-        memberObject->set( "type", JSON::String::Create( memberDesc->getName() ) );
+        memberObject->set( "type", JSON::String::Create( memberDesc->getUserName() ) );
         
         std::string const &name = it->first;
         membersObject->set( name, memberObject );
@@ -763,7 +763,7 @@ namespace Fabric
 
       RC::ConstHandle<Container::Member> member = getMember( memberName );
       RC::ConstHandle<RT::Desc> desc = member->getDesc();
-      if( desc->getName() != "FabricResource" )
+      if( desc->getUserName() != "FabricResource" )
       {
         throw Exception( "member" + memberName + " is not of type FabricResource" );
       }

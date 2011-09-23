@@ -67,7 +67,7 @@ namespace Fabric
         RT::StructMemberInfo const &memberInfo = getMemberInfo( i );
         RC::Handle<JSON::Object> member = JSON::Object::Create();
         member->set( "name", JSON::String::Create( memberInfo.name ) );
-        member->set( "type", JSON::String::Create( memberInfo.desc->getName() ) );
+        member->set( "type", JSON::String::Create( memberInfo.desc->getUserName() ) );
         members->push_back( member );
       }
 
