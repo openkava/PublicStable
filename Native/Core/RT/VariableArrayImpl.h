@@ -32,6 +32,9 @@ namespace Fabric
     
     public:
     
+      static const size_t FLAG_SHARED = 0;
+      static const size_t FLAG_COPY_ON_WRITE = 1 << 0;
+    
       // Impl
       
       virtual void setData( void const *src, void *dst ) const;
@@ -53,6 +56,11 @@ namespace Fabric
       
       // VariableArrayImpl
       
+      bool isCopyOnWrite() const
+      {
+        return m_flags & FLAG_COPY_ON_WRITE;
+      }
+      
       void *getBits( void *data ) const;
       void setNumMembers( void *data, size_t newNumMembers, void const *defaultMemberData = 0 ) const;
       void setMembers( void *data, size_t numMembers, void const *members ) const;
@@ -66,7 +74,7 @@ namespace Fabric
       
     protected:
     
-      VariableArrayImpl( std::string const &codeName, RC::ConstHandle<RT::Impl> const &memberImpl );
+      VariableArrayImpl( std::string const &codeName, size_t flags, RC::ConstHandle<RT::Impl> const &memberImpl );
       
       static size_t AllocNumMembersForNumMembers( size_t numMembers )
       {
@@ -81,7 +89,8 @@ namespace Fabric
       
       void *getMutableMemberData_NoCheck( void *data, size_t index ) const
       { 
-        unshare( data );
+        if ( isCopyOnWrite() )
+          unshare( data );
         bits_t *bits = *reinterpret_cast<bits_t **>(data);
         return bits->memberDatas + m_memberSize * index;
       }    
@@ -129,6 +138,7 @@ namespace Fabric
 
     private:
 
+      size_t m_flags;
       RC::ConstHandle<Impl> m_memberImpl;
       size_t m_memberSize;
       bool m_memberIsShallow;
