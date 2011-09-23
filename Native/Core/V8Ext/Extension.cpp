@@ -16,6 +16,10 @@
 #include <Fabric/Core/IO/Dir.h>
 #include <Fabric/Core/OCL/OCL.h>
 #include <Fabric/Core/Plug/Manager.h>
+#include <Fabric/Base/JSON/Object.h>
+#include <Fabric/Base/JSON/String.h>
+#include <Fabric/Base/JSON/Value.h>
+#include <fstream>
 #include <stdlib.h>
 
 namespace Fabric
@@ -139,6 +143,42 @@ namespace Fabric
           return IO::JoinPath("TMP", defaultFilename);
       }
   
+      virtual RC::ConstHandle<JSON::Value> jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg )
+      {
+        if ( cmd == "getUserTextFile" )
+        {
+          //Special bypass to enable unit tests: support "unitTestFile://" directly, without validating that there is no '/../'
+          RC::ConstHandle<JSON::Object> argJSONObject = arg->toObject();
+          RC::ConstHandle<JSON::Value> val = argJSONObject->maybeGet( "uiOptions" );
+          if( val )
+          {
+            RC::ConstHandle<JSON::Object> uiOptionsJSONObject = val->toObject();
+            val = uiOptionsJSONObject->maybeGet( "title" );
+            if( val )
+            {
+              std::string defaultFilename = val->toString()->value();
+              if(defaultFilename.find("unitTestFile://" == 0))
+                return JSON::String::Create( unitTestGetTextFileFromPath( defaultFilename.substr(15) ) );
+            }
+          }
+        }
+        return IO::Manager::jsonExec( cmd, arg );
+      }
+
+      std::string unitTestGetTextFileFromPath( std::string path ) const
+      {
+        std::ifstream file( path.c_str(), std::ios::in | std::ios::ate );
+        if( !file.is_open() )
+          throw Exception( "Unable to open file " + path );
+
+        size_t size = file.tellg();
+        file.seekg( 0, std::ios::beg );
+
+        std::string content( size, 0 );
+        file.read( (char*)content.data(), size );
+        return content;
+      }
+
     protected:
     
       IOManager()
