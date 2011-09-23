@@ -49,6 +49,7 @@ namespace Fabric
     class Scope;
     class Context;
     class Binding;
+    class SharedSlicedArray;
     
     class Container : public NamedObject
     {
@@ -70,7 +71,13 @@ namespace Fabric
       MemberDescs getMemberDescs() const;
       void addMember( std::string const &name, RC::ConstHandle<RT::Desc> const &desc, void const *defaultData );
       void removeMember( std::string const &name );
-      void getMemberDescs( std::string const &name, RC::ConstHandle<RT::Desc> &memberDesc, RC::ConstHandle<RT::VariableArrayDesc> &variableArrayDesc, RC::ConstHandle<RT::SlicedArrayDesc> &slicedArrayDesc );
+      void getMemberDescs(
+        std::string const &name,
+        RC::ConstHandle<RT::Desc> &memberDesc, 
+        RC::ConstHandle<RT::VariableArrayDesc> &variableArrayDesc, 
+        RC::ConstHandle<RT::SlicedArrayDesc> &slicedArrayDesc,
+        RC::Handle<SharedSlicedArray> &sharedSlicedArray
+        );
     
       size_t getCount() const;
       void setCount( size_t count );
@@ -113,6 +120,7 @@ namespace Fabric
       virtual void setOutOfDate() = 0;
       
       virtual RC::Handle<MT::ParallelCall> bind(
+        std::vector<std::string> &errors,
         RC::ConstHandle<Binding> const &binding,
         Scope const &scope,
         size_t *newCount,

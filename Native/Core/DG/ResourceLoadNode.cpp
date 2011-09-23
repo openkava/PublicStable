@@ -14,6 +14,7 @@
 #include <Fabric/Base/JSON/Value.h>
 #include <Fabric/Base/JSON/Object.h>
 #include <Fabric/Base/JSON/String.h>
+#include <Fabric/Base/JSON/Integer.h>
 
 namespace Fabric
 {
@@ -30,6 +31,7 @@ namespace Fabric
       : Node( name, context )
       , m_fabricResourceStreamData( context->getRTManager() )
       , m_streamGeneration( 0 )
+      , m_nbStreamed( 0 )
     {
       RC::ConstHandle<RT::StringDesc> stringDesc = context->getRTManager()->getStringDesc();
 
@@ -79,6 +81,9 @@ namespace Fabric
         }
         else
         {
+          m_nbStreamed = 0;
+          m_progressNotifTimer.reset();
+
           m_stream = getContext()->getIOManager()->createStream(
             url,
             &ResourceLoadNode::StreamData,
@@ -91,7 +96,7 @@ namespace Fabric
       }
     }
 
-    void ResourceLoadNode::streamData( std::string const &url, std::string const &mimeType, size_t offset, size_t size, void const *data, void *userData )
+    void ResourceLoadNode::streamData( std::string const &url, std::string const &mimeType, size_t totalsize, size_t offset, size_t size, void const *data, void *userData )
     {
       if( (size_t)userData != m_streamGeneration )
         return;
@@ -102,6 +107,26 @@ namespace Fabric
         if ( offset + size > prevSize )
           m_fabricResourceStreamData.resizeData( offset + size );
         m_fabricResourceStreamData.setData( offset, size, data );
+
+        m_nbStreamed += size;
+        int deltaMS = (int)m_progressNotifTimer.getElapsedMS(false);
+
+        const int progressNotifMinMS = 200;
+
+        if( deltaMS > progressNotifMinMS )
+        {
+          m_progressNotifTimer.reset();
+
+          std::vector<std::string> src;
+          src.push_back( "DG" );
+          src.push_back( getName() );
+
+          RC::Handle<JSON::Object> progressInfo = JSON::Object::Create();
+          progressInfo->set( "received", JSON::Integer::Create( m_nbStreamed ) );
+          progressInfo->set( "total", JSON::Integer::Create( totalsize ) );
+
+          getContext()->jsonNotify( src, "resourceLoadProgress", progressInfo );
+        }
       }
     }
 

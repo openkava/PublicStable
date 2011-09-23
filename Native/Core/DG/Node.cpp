@@ -214,19 +214,15 @@ namespace Fabric
           {
             BindingsScope dependenciesScope( m_dependencies );
             SelfScope selfScope( this, &dependenciesScope );
-            m_runState->m_evaluateParallelCallsPerOperator[i] = opParallelCall = binding->bind( selfScope, &m_runState->m_newCount );
+            std::vector<std::string> errors;
+            m_runState->m_evaluateParallelCallsPerOperator[i] = opParallelCall = binding->bind( errors, selfScope, &m_runState->m_newCount );
           }
 
           size_t oldCount = getCount();
           m_runState->m_newCount = oldCount;
           opParallelCall->executeParallel( binding->getMainThreadOnly() );
           if ( m_runState->m_newCount != oldCount )
-          {
             setCount( m_runState->m_newCount );
-            
-            for ( size_t j=i+1; j<numBindings; ++j )
-              m_runState->m_evaluateParallelCallsPerOperator[j] = 0;
-          }
         }
         
         m_dirty = false;
@@ -234,6 +230,7 @@ namespace Fabric
     }
       
     RC::Handle<MT::ParallelCall> Node::bind(
+      std::vector<std::string> &errors,
       RC::ConstHandle<Binding> const &binding,
       Scope const &scope,
       size_t *newCount,
@@ -242,7 +239,7 @@ namespace Fabric
       )
     {
       BindingsScope dependenciesScope( m_dependencies, &scope );
-      return Container::bind( binding, dependenciesScope, newCount, prefixCount, prefixes );
+      return Container::bind( errors, binding, dependenciesScope, newCount, prefixCount, prefixes );
     }
     
     void Node::recalculateGlobalDependencyRank()
@@ -329,14 +326,11 @@ namespace Fabric
       {
         RC::ConstHandle<Binding> binding = m_bindingList->get(i);
         size_t newCount;
-        try
-        {
-          RC::Handle<MT::ParallelCall>( binding->bind( selfScope, &newCount ) );
-        }
-        catch ( Exception e )
-        {
-          errors.push_back( "binding " + _(i) + ": " + std::string( e ) );
-        }
+        std::string const errorPrefix = "binding " + _(i) + ": ";
+        std::vector<std::string> bindErrors;
+        RC::Handle<MT::ParallelCall>( binding->bind( bindErrors, selfScope, &newCount ) );
+        for ( size_t i=0; i<bindErrors.size(); ++i )
+          errors.push_back( errorPrefix + bindErrors[i] );
       }
     }
 

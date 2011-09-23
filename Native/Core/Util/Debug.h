@@ -9,6 +9,7 @@
 #include <Fabric/Core/Util/AutoPtr.h>
 #include <Fabric/Core/Util/TLS.h>
 #include <Fabric/Core/Util/Format.h>
+#include <Fabric/Core/Util/Timer.h>
 
 #include <stdarg.h>
 #include <string.h>
@@ -47,9 +48,6 @@ namespace Fabric
         LARGE_INTEGER   pcFreq;
         ::QueryPerformanceFrequency( &pcFreq );
         m_pcFreq = float(pcFreq.QuadPart)/1000.f;
-        ::QueryPerformanceCounter( &m_pcBegin );
-#else
-        gettimeofday( &m_tvBegin, NULL );
 #endif
       }
 
@@ -76,18 +74,7 @@ namespace Fabric
 
       ~Trace()
       {
-        float elapsed;
-
-#if defined(FABRIC_OS_WINDOWS)
-        LARGE_INTEGER   pcEnd;
-        ::QueryPerformanceCounter( &pcEnd );
-        elapsed = float(pcEnd.QuadPart - m_pcBegin.QuadPart)/m_pcFreq;
-#else
-        struct timeval tvEnd;
-        gettimeofday( &tvEnd, NULL );
-        elapsed = (float)(tvEnd.tv_sec-m_tvBegin.tv_sec)*1e3 + ((float)tvEnd.tv_usec - (float)m_tvBegin.tv_usec)*1e-3;
-#endif
-        
+        float elapsed = m_timer.getElapsedMS();
         m_indent = m_indent - 1;
         note( "end (elapsed=%.3fms)", elapsed );
       }
@@ -153,11 +140,9 @@ namespace Fabric
       static char **m_indentStrings;
       std::string m_desc;
       char m_module[80];
+      Timer m_timer;
 #if defined(FABRIC_OS_WINDOWS)
-      LARGE_INTEGER m_pcBegin;
       float m_pcFreq;
-#else
-      struct timeval m_tvBegin;
 #endif
     };
   };

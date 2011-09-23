@@ -48,6 +48,7 @@ namespace Fabric
       void removeBindingList( BindingList *bindingList );
 
       RC::Handle<MT::ParallelCall> bind(
+        std::vector<std::string> &errors,
         Scope const &scope,
         size_t *newSize,
         unsigned prefixCount = 0,

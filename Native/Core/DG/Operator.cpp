@@ -141,6 +141,7 @@ namespace Fabric
     }
     
     RC::Handle<MT::ParallelCall> Operator::bind(
+      std::vector<std::string> &errors,
       Prototype *prototype,
       Scope const &scope,
       size_t *newSize,
@@ -149,17 +150,20 @@ namespace Fabric
       ) const
     {
       if ( !m_filename.length() )
-        throw Exception( "no source code filename specified" );
+        errors.push_back( "no source code filename specified" );
       if ( !m_sourceCode.length() )
-        throw Exception( "no source code loaded" );
+        errors.push_back( "no source code loaded" );
       if ( !m_entryFunctionName.length() )
-        throw Exception( "no entry function specified" );
-      if ( !m_code || m_code->getDiagnostics().containsError() )
-        throw Exception( "compile failed" );
-      if ( !m_function )
-        throw Exception( "entry function not found" );
-        
-      return prototype->bind( m_astOperator, scope, m_function, newSize, prefixCount, prefixes );
+        errors.push_back( "no entry function specified" );
+      if ( m_sourceCode.length() && (!m_code || m_code->getDiagnostics().containsError()) )
+        errors.push_back( "compile failed" );
+      if ( m_entryFunctionName.length() && m_code && !m_code->getDiagnostics().containsError() && !m_function )
+        errors.push_back( "entry function not found" );
+      
+      RC::Handle<MT::ParallelCall> result;
+      if ( m_astOperator && m_function )
+        result = prototype->bind( errors, m_astOperator, scope, m_function, newSize, prefixCount, prefixes );
+      return result;
     }
     
     std::string const &Operator::getEntryFunctionName() const
