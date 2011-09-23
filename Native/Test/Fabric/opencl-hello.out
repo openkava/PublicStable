@@ -19,7 +19,7 @@
 [FABRIC] [MT] event = <Opaque>
 [FABRIC] [MT] clSetKernelArg returned 0
 [FABRIC] [MT] clGetKernelWorkGroupInfo returned 0
-[FABRIC] [MT] local = 512
+[FABRIC] [MT] local > 0 = true
 [FABRIC] [MT] clEnqueueNDRangeKernel returned 0
 [FABRIC] [MT] event = <Opaque>
 [FABRIC] [MT] clFinish returned 0
