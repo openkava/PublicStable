@@ -30,7 +30,7 @@ namespace Fabric
 
     void ConstStringImpl::setData( void const *src, void *dst ) const
     {
-      memcpy( dst, src, getSize() );
+      memcpy( dst, src, getAllocSize() );
     }
 
     RC::Handle<JSON::Value> ConstStringImpl::getJSONValue( void const *data ) const

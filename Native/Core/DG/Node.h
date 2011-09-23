@@ -97,6 +97,7 @@ namespace Fabric
       virtual void setOutOfDate();
       
       RC::Handle<MT::ParallelCall> bind(
+        std::vector<std::string> &errors,
         RC::ConstHandle<Binding> const &binding,
         Scope const &scope,
         size_t *newCount,

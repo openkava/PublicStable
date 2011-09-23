@@ -69,6 +69,10 @@ namespace Fabric
               FILE *fp = fopen( filename.c_str(), "rb" );
               if ( fp == NULL )
                 onFailure( m_url, "unable to open file" );
+
+              fseek(fp, 0, SEEK_END);
+              size_t totalSize = ftell(fp);
+              fseek(fp, 0, SEEK_SET); 
       
               static const size_t maxReadSize = 1<<16;//64K buffers
               uint8_t *data = static_cast<uint8_t *>( malloc(maxReadSize) );
@@ -79,7 +83,7 @@ namespace Fabric
                 if ( ferror( fp ) )
                   onFailure( m_url, "error while reading file" );
 
-                onData( m_url, "text/plain", offset, readSize, data );
+                onData( m_url, "text/plain", totalSize, offset, readSize, data );
 
                 if ( readSize < maxReadSize )
                   break;

@@ -50,7 +50,7 @@ namespace Fabric
       virtual RC::Handle<JSON::Object> jsonDesc() const
       {
         RC::Handle<JSON::Object> result = Desc::jsonDesc();
-        std::string internalType = "fp" + _(m_floatImpl->getSize() * 8);
+        std::string internalType = "fp" + _(m_floatImpl->getAllocSize() * 8);
         result->set( "internalType", JSON::String::Create(internalType) );
         return result;
       }

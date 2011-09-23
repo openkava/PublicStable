@@ -15,7 +15,7 @@ namespace Fabric
     SlicedArrayImpl::SlicedArrayImpl( std::string const &codeName, RC::ConstHandle<Impl> const &memberImpl )
       : ArrayImpl( codeName, DT_SLICED_ARRAY, memberImpl )
       , m_memberImpl( memberImpl )
-      , m_memberSize( memberImpl->getSize() )
+      , m_memberSize( memberImpl->getAllocSize() )
       , m_memberIsShallow( memberImpl->isShallow() )
       , m_variableArrayImpl( memberImpl->getVariableArrayImpl() )
     {
@@ -34,7 +34,7 @@ namespace Fabric
       bits_t *dstBits = reinterpret_cast<bits_t *>(dst);
       dstBits->offset = srcBits->offset;
       dstBits->size = srcBits->size;
-      m_variableArrayImpl->setData( &srcBits->variableArrayBits, &dstBits->variableArrayBits );
+      dstBits->variableArrayBits = srcBits->variableArrayBits;
     }
 
     RC::Handle<JSON::Value> SlicedArrayImpl::getJSONValue( void const *data ) const
@@ -62,8 +62,6 @@ namespace Fabric
 
     void SlicedArrayImpl::disposeData( void *data ) const
     {
-      bits_t *bits = reinterpret_cast<bits_t *>(data);
-      m_variableArrayImpl->disposeData( &bits->variableArrayBits );
     }
     
     std::string SlicedArrayImpl::descData( void const *data ) const
@@ -125,12 +123,30 @@ namespace Fabric
       return m_variableArrayImpl->getMutableMemberData_NoCheck( &srcBits->variableArrayBits, srcBits->offset + index );
     }
 
+    size_t SlicedArrayImpl::getOffset( void const *data ) const
+    {
+      bits_t const *bits = reinterpret_cast<bits_t const *>(data);
+      return bits->offset;
+    }
+    
+    size_t SlicedArrayImpl::getSize( void const *data ) const
+    {
+      bits_t const *bits = reinterpret_cast<bits_t const *>(data);
+      return bits->size;
+    }
+    
+    void *SlicedArrayImpl::getVariableArrayBits( void const *data ) const
+    {
+      bits_t const *bits = reinterpret_cast<bits_t const *>(data);
+      return bits->variableArrayBits;
+    }
+    
     void SlicedArrayImpl::set( size_t offset, size_t size, void *variableArrayBits, void *data ) const
     {
       bits_t *bits = reinterpret_cast<bits_t *>(data);
       bits->offset = offset;
       bits->size = size;
-      m_variableArrayImpl->setData( variableArrayBits, &bits->variableArrayBits );
+      bits->variableArrayBits = variableArrayBits;
     }
 
     RC::ConstHandle<VariableArrayImpl> SlicedArrayImpl::getVariableArrayImpl() const

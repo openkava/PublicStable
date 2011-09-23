@@ -8,12 +8,14 @@
 #include <Fabric/Core/DG/ExecutionEngine.h>
 #include <Fabric/Core/DG/Binding.h>
 #include <Fabric/Core/DG/FabricResource.h>
+#include <Fabric/Core/DG/SharedSlicedArray.h>
 #include <Fabric/Core/RT/StructDesc.h>
 #include <Fabric/Core/IO/Manager.h>
 #include <Fabric/Core/MT/LogCollector.h>
 #include <Fabric/Core/RT/NumericDesc.h>
 #include <Fabric/Core/RT/VariableArrayDesc.h>
 #include <Fabric/Core/RT/SlicedArrayDesc.h>
+#include <Fabric/Core/RT/SlicedArrayImpl.h>
 #include <Fabric/Core/RT/Manager.h>
 #include <Fabric/Core/RT/VariableArrayImpl.h>
 #include <Fabric/Base/JSON/Value.h>
@@ -49,11 +51,17 @@ namespace Fabric
         return m_memberDesc;
       }
       
-      void getDescs( RC::ConstHandle<RT::Desc> &memberDesc, RC::ConstHandle<RT::VariableArrayDesc> &variableArrayDesc, RC::ConstHandle<RT::SlicedArrayDesc> &slicedArrayDesc ) const
+      void getDescs(
+        RC::ConstHandle<RT::Desc> &memberDesc,
+        RC::ConstHandle<RT::VariableArrayDesc> &variableArrayDesc,
+        RC::ConstHandle<RT::SlicedArrayDesc> &slicedArrayDesc,
+        RC::Handle<SharedSlicedArray> &sharedSlicedArray
+        ) const
       {
         memberDesc = m_memberDesc;
         variableArrayDesc = m_variableArrayDesc;
         slicedArrayDesc = m_slicedArrayDesc;
+        sharedSlicedArray = m_slicedArray;
       }
       
       void *getArrayData() const
@@ -74,6 +82,7 @@ namespace Fabric
       void resize( size_t newCount )
       {
         m_variableArrayDesc->setNumMembers( m_arrayData, newCount, m_defaultMemberData );
+        m_slicedArray->resize( newCount, m_variableArrayDesc->getBits( m_arrayData ) );
       }
 
     protected:
@@ -88,7 +97,39 @@ namespace Fabric
       RC::ConstHandle<RT::VariableArrayDesc> m_variableArrayDesc;
       RC::ConstHandle<RT::SlicedArrayDesc> m_slicedArrayDesc;
       void *m_arrayData;
+      RC::Handle<SharedSlicedArray> m_slicedArray;
     };
+
+    Container::Member::Member( RC::Handle<RT::Manager> const &rtManager, RC::ConstHandle<RT::Desc> memberDesc, size_t count, void const *defaultMemberData )
+      : m_memberDesc( memberDesc )
+    {
+      if ( !defaultMemberData )
+        defaultMemberData = memberDesc->getDefaultData();
+      
+      size_t memberSize = memberDesc->getAllocSize();
+      m_defaultMemberData = malloc( memberSize );
+      memset( m_defaultMemberData, 0, memberSize );
+      memberDesc->setData( defaultMemberData, m_defaultMemberData );
+      
+      m_variableArrayDesc = rtManager->getVariableArrayOf( memberDesc );
+      m_slicedArrayDesc = rtManager->getSlicedArrayOf( memberDesc );
+      
+      size_t arraySize = m_variableArrayDesc->getAllocSize();
+      m_arrayData = malloc( arraySize );
+      memset( m_arrayData, 0, arraySize );
+      m_variableArrayDesc->setNumMembers( m_arrayData, count, m_defaultMemberData );
+
+      m_slicedArray = SharedSlicedArray::Create( m_slicedArrayDesc->getImpl(), m_variableArrayDesc->getBits( m_arrayData ), count );
+    }
+    
+    Container::Member::~Member()
+    {
+      m_variableArrayDesc->disposeData( m_arrayData );
+      free( m_arrayData );
+      
+      m_memberDesc->disposeData( m_defaultMemberData );
+      free( m_defaultMemberData );
+    }
 
     Container::Container( std::string const &name, RC::Handle<Context> const &context )
       : NamedObject( name, context )
@@ -140,12 +181,18 @@ namespace Fabric
       notifyDelta( "members", jsonDescMembers() );
     }
 
-    void Container::getMemberDescs( std::string const &name, RC::ConstHandle<RT::Desc> &memberDesc, RC::ConstHandle<RT::VariableArrayDesc> &variableArrayDesc, RC::ConstHandle<RT::SlicedArrayDesc> &slicedArrayDesc )
+    void Container::getMemberDescs(
+      std::string const &name,
+      RC::ConstHandle<RT::Desc> &memberDesc, 
+      RC::ConstHandle<RT::VariableArrayDesc> &variableArrayDesc, 
+      RC::ConstHandle<RT::SlicedArrayDesc> &slicedArrayDesc,
+      RC::Handle<SharedSlicedArray> &sharedSlicedArray
+      )
     {
       Members::const_iterator it = m_members.find( name );
       if ( it == m_members.end() )
         throw Exception( "'" + name + "': no such member" );
-      it->second->getDescs( memberDesc, variableArrayDesc, slicedArrayDesc );
+      it->second->getDescs( memberDesc, variableArrayDesc, slicedArrayDesc, sharedSlicedArray );
     }
     
     void *Container::getMemberArrayData( std::string const &name )
@@ -347,6 +394,7 @@ namespace Fabric
     }
       
     RC::Handle<MT::ParallelCall> Container::bind(
+      std::vector<std::string> &errors,
       RC::ConstHandle<Binding> const &binding,
       Scope const &scope,
       size_t *newCount,
@@ -356,36 +404,7 @@ namespace Fabric
     {
       SelfScope selfScope( this, &scope );
 
-      return binding->bind( selfScope, newCount, prefixCount, prefixes );
-    }
-
-    Container::Member::Member( RC::Handle<RT::Manager> const &rtManager, RC::ConstHandle<RT::Desc> memberDesc, size_t count, void const *defaultMemberData )
-      : m_memberDesc( memberDesc )
-    {
-      if ( !defaultMemberData )
-        defaultMemberData = memberDesc->getDefaultData();
-      
-      size_t memberSize = memberDesc->getSize();
-      m_defaultMemberData = malloc( memberSize );
-      memset( m_defaultMemberData, 0, memberSize );
-      memberDesc->setData( defaultMemberData, m_defaultMemberData );
-      
-      m_variableArrayDesc = rtManager->getVariableArrayOf( memberDesc );
-      m_slicedArrayDesc = rtManager->getSlicedArrayOf( memberDesc );
-      
-      size_t arraySize = m_variableArrayDesc->getSize();
-      m_arrayData = malloc( arraySize );
-      memset( m_arrayData, 0, arraySize );
-      m_variableArrayDesc->setNumMembers( m_arrayData, count, m_defaultMemberData );
-    }
-    
-    Container::Member::~Member()
-    {
-      m_variableArrayDesc->disposeData( m_arrayData );
-      free( m_arrayData );
-      
-      m_memberDesc->disposeData( m_defaultMemberData );
-      free( m_defaultMemberData );
+      return binding->bind( errors, selfScope, newCount, prefixCount, prefixes );
     }
     
     RC::ConstHandle<JSON::Value> Container::jsonDescMembers() const
@@ -486,7 +505,7 @@ namespace Fabric
         RC::ConstHandle<JSON::Value> defaultValueJSONValue = argJSONObject->maybeGet( "defaultValue" );
         if ( defaultValueJSONValue )
         {
-          defaultValue.resize( desc->getSize() );
+          defaultValue.resize( desc->getAllocSize() );
           desc->setDataFromJSONValue( defaultValueJSONValue, &defaultValue[0] );
         }
       }

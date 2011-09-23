@@ -18,7 +18,7 @@ namespace Fabric
     {
     public:
     
-      typedef void (*DataCallback)( std::string const &url, std::string const &mimeType, size_t offset, size_t size, void const *data, RC::Handle<RC::Object> const &target, void *userData );
+      typedef void (*DataCallback)( std::string const &url, std::string const &mimeType, size_t totalsize, size_t offset, size_t size, void const *data, RC::Handle<RC::Object> const &target, void *userData );
       typedef void (*EndCallback)( std::string const &url, std::string const &mimeType, RC::Handle<RC::Object> const &target, void *userData );
       typedef void (*FailureCallback)( std::string const &url, std::string const &errorDesc, RC::Handle<RC::Object> const &target, void *userData );
 
@@ -33,7 +33,7 @@ namespace Fabric
         );
       ~Stream();
       
-      void onData( std::string const &url, std::string const &mimeType, size_t offset, size_t size, void const *data );
+      void onData( std::string const &url, std::string const &mimeType, size_t totalsize, size_t offset, size_t size, void const *data );
       void onEnd( std::string const &url, std::string const &mimeType );
       void onFailure( std::string const &url, std::string const &errorDesc );
     
