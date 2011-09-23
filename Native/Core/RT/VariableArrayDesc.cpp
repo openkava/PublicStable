@@ -58,7 +58,7 @@ namespace Fabric
     {
       RC::Handle<JSON::Object> result = ArrayDesc::jsonDesc();
       result->set( "internalType", JSON::String::Create("variableArray") );
-      result->set( "memberType", JSON::String::Create( getMemberDesc()->getName() ) );
+      result->set( "memberType", JSON::String::Create( getMemberDesc()->getUserName() ) );
       return result;
     }
 

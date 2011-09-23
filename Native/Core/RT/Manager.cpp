@@ -68,7 +68,7 @@ namespace Fabric
     
     RC::ConstHandle<VariableArrayDesc> Manager::getVariableArrayOf( RC::ConstHandle<RT::Desc> const &memberDesc ) const
     {
-      std::string variableArrayName = memberDesc->getName() + "[]";
+      std::string variableArrayName = memberDesc->getUserName() + "[]";
       RC::ConstHandle<VariableArrayImpl> variableArrayImpl = memberDesc->getImpl()->getVariableArrayImpl();
       RC::ConstHandle<VariableArrayDesc> variableArrayDesc = new VariableArrayDesc( variableArrayName, variableArrayImpl, memberDesc );
       return RC::ConstHandle<VariableArrayDesc>::StaticCast( registerDesc( variableArrayDesc ) );
@@ -76,7 +76,7 @@ namespace Fabric
 
     RC::ConstHandle<SlicedArrayDesc> Manager::getSlicedArrayOf( RC::ConstHandle<RT::Desc> const &memberDesc ) const
     {
-      std::string slicedArrayName = memberDesc->getName() + "<>";
+      std::string slicedArrayName = memberDesc->getUserName() + "<>";
       RC::ConstHandle<SlicedArrayImpl> slicedArrayImpl = memberDesc->getImpl()->getSlicedArrayImpl();
       RC::ConstHandle<SlicedArrayDesc> slicedArrayDesc = new SlicedArrayDesc( slicedArrayName, slicedArrayImpl, memberDesc );
       return RC::ConstHandle<SlicedArrayDesc>::StaticCast( registerDesc( slicedArrayDesc ) );
@@ -84,7 +84,7 @@ namespace Fabric
 
     RC::ConstHandle<FixedArrayDesc> Manager::getFixedArrayOf( RC::ConstHandle<RT::Desc> const &memberDesc, size_t length ) const
     {
-      std::string fixedArrayName = memberDesc->getName() + "[" + _(length) + "]";
+      std::string fixedArrayName = memberDesc->getUserName() + "[" + _(length) + "]";
       RC::ConstHandle<FixedArrayImpl> fixedArrayImpl = memberDesc->getImpl()->getFixedArrayImpl( length );
       RC::ConstHandle<FixedArrayDesc> fixedArrayDesc = new FixedArrayDesc( fixedArrayName, fixedArrayImpl, memberDesc );
       return RC::ConstHandle<FixedArrayDesc>::StaticCast( registerDesc( fixedArrayDesc ) );
@@ -148,7 +148,7 @@ namespace Fabric
     
     RC::ConstHandle<Desc> Manager::registerDesc( RC::ConstHandle<RT::Desc> const &desc ) const
     {
-      std::string const &name = desc->getName();
+      std::string const &name = desc->getUserName();
       std::pair< Types::iterator, bool > insertResult = m_types.insert( Types::value_type( name, desc ) );
       if ( !insertResult.second )
       {
@@ -162,7 +162,7 @@ namespace Fabric
       {
         std::vector<std::string> dst;
         dst.push_back( "RT" );
-        dst.push_back( desc->getName() );
+        dst.push_back( desc->getUserName() );
         
         m_jsonCommandChannel->jsonNotify( dst, "delta", desc->jsonDesc() );
       }
