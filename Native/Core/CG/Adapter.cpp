@@ -62,7 +62,7 @@ namespace Fabric
   
     std::string const &Adapter::getUserName() const
     {
-      return getDesc()->getName();
+      return getDesc()->getUserName();
     }
     
     llvm::Value *Adapter::llvmCallMalloc( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *size ) const
