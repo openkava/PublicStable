@@ -23,7 +23,6 @@ namespace Fabric
       
       bool isCopyOnWrite() const;
 
-      void *getBits( void *data ) const;
       void setNumMembers( void *data, size_t newNumMembers, void const *defaultMemberData = 0 ) const;
       void setMembers( void *data, size_t numMembers, void const *members ) const;
       

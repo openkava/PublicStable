@@ -275,7 +275,7 @@ namespace Fabric
       size_t oldAllocNumMembers = bits? bits->allocNumMembers: 0;
       if ( oldNumMembers != newNumMembers )
       {
-        if ( bits && bits->refCount.getValue() == 1 )
+        if ( bits && ( !isCopyOnWrite() || bits->refCount.getValue() == 1 ) )
         {
           uint8_t *memberData, *memberDataEnd;
           
@@ -374,12 +374,6 @@ namespace Fabric
         }
       }
       //FABRIC_LOG( "VariableArrayImpl::setNumMembers: %fms", ft.getElapsedMS() );
-    }
-
-    void *VariableArrayImpl::getBits( void *data ) const
-    {
-      bits_t *bits = *static_cast<bits_t *const *>( data );
-      return bits;
     }
   };
 };

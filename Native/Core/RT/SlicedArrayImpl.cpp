@@ -34,7 +34,7 @@ namespace Fabric
       bits_t *dstBits = reinterpret_cast<bits_t *>(dst);
       dstBits->offset = srcBits->offset;
       dstBits->size = srcBits->size;
-      dstBits->variableArrayBits = srcBits->variableArrayBits;
+      m_variableArrayImpl->setData( &srcBits->variableArrayBits, &dstBits->variableArrayBits );
     }
 
     RC::Handle<JSON::Value> SlicedArrayImpl::getJSONValue( void const *data ) const
@@ -62,6 +62,8 @@ namespace Fabric
 
     void SlicedArrayImpl::disposeData( void *data ) const
     {
+      bits_t *bits = reinterpret_cast<bits_t *>(data);
+      m_variableArrayImpl->disposeData( &bits->variableArrayBits );
     }
     
     std::string SlicedArrayImpl::descData( void const *data ) const
