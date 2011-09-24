@@ -55,7 +55,6 @@ namespace Fabric
 
     void VariableArrayAdapter::llvmCompileToModule( ModuleBuilder &moduleBuilder ) const
     {
-      FABRIC_LOG( "VariableArrayAdapter::llvmCompileToModule( " + getCodeName() + " )" );
       if ( moduleBuilder.haveCompiledToModule( getCodeName() ) )
         return;
       
@@ -371,6 +370,7 @@ namespace Fabric
           basicBlockBuilder->CreateBr( uniqueBB );
           
           basicBlockBuilder->SetInsertPoint( uniqueBB );
+          arrayRValue = llvmLValueToRValue( basicBlockBuilder, arrayLValue );
           llvm::Value *memberData = basicBlockBuilder->CreateConstGEP2_32( basicBlockBuilder->CreateStructGEP( arrayRValue, 3 ), 0, 0 );
           llvm::Value *memberLValue = basicBlockBuilder->CreateGEP( memberData, indexRValue );
           basicBlockBuilder->CreateRet( memberLValue );
