@@ -74,9 +74,7 @@ namespace Fabric
       void getMemberDescs(
         std::string const &name,
         RC::ConstHandle<RT::Desc> &memberDesc, 
-        RC::ConstHandle<RT::VariableArrayDesc> &variableArrayDesc, 
-        RC::ConstHandle<RT::SlicedArrayDesc> &slicedArrayDesc,
-        RC::Handle<SharedSlicedArray> &sharedSlicedArray
+        RC::ConstHandle<RT::SlicedArrayDesc> &slicedArrayDesc
         );
     
       size_t getCount() const;
