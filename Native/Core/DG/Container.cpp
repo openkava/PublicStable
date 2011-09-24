@@ -8,7 +8,6 @@
 #include <Fabric/Core/DG/ExecutionEngine.h>
 #include <Fabric/Core/DG/Binding.h>
 #include <Fabric/Core/DG/FabricResource.h>
-#include <Fabric/Core/DG/SharedSlicedArray.h>
 #include <Fabric/Core/RT/StructDesc.h>
 #include <Fabric/Core/IO/Manager.h>
 #include <Fabric/Core/MT/LogCollector.h>
@@ -53,15 +52,11 @@ namespace Fabric
       
       void getDescs(
         RC::ConstHandle<RT::Desc> &memberDesc,
-        RC::ConstHandle<RT::VariableArrayDesc> &variableArrayDesc,
-        RC::ConstHandle<RT::SlicedArrayDesc> &slicedArrayDesc,
-        RC::Handle<SharedSlicedArray> &sharedSlicedArray
+        RC::ConstHandle<RT::SlicedArrayDesc> &slicedArrayDesc
         ) const
       {
         memberDesc = m_memberDesc;
-        variableArrayDesc = m_variableArrayDesc;
         slicedArrayDesc = m_slicedArrayDesc;
-        sharedSlicedArray = m_slicedArray;
       }
       
       void *getArrayData() const
@@ -71,18 +66,17 @@ namespace Fabric
       
       void const *getElementData( size_t index ) const
       {
-        return m_variableArrayDesc->getMemberData( (void const *)m_arrayData, index );
+        return m_slicedArrayDesc->getMemberData( (void const *)m_arrayData, index );
       }
       
       void *getElementData( size_t index )
       {
-        return m_variableArrayDesc->getMemberData( m_arrayData, index );
+        return m_slicedArrayDesc->getMemberData( m_arrayData, index );
       }
       
       void resize( size_t newCount )
       {
-        m_variableArrayDesc->setNumMembers( m_arrayData, newCount, m_defaultMemberData );
-        m_slicedArray->resize( newCount, m_variableArrayDesc->getBits( m_arrayData ) );
+        m_slicedArrayDesc->setNumMembers( m_arrayData, newCount, m_defaultMemberData );
       }
 
     protected:
@@ -94,10 +88,8 @@ namespace Fabric
     
       RC::ConstHandle<RT::Desc> m_memberDesc;
       void *m_defaultMemberData;
-      RC::ConstHandle<RT::VariableArrayDesc> m_variableArrayDesc;
       RC::ConstHandle<RT::SlicedArrayDesc> m_slicedArrayDesc;
       void *m_arrayData;
-      RC::Handle<SharedSlicedArray> m_slicedArray;
     };
 
     Container::Member::Member( RC::Handle<RT::Manager> const &rtManager, RC::ConstHandle<RT::Desc> memberDesc, size_t count, void const *defaultMemberData )
@@ -111,20 +103,17 @@ namespace Fabric
       memset( m_defaultMemberData, 0, memberSize );
       memberDesc->setData( defaultMemberData, m_defaultMemberData );
       
-      m_variableArrayDesc = rtManager->getVariableArrayOf( memberDesc );
       m_slicedArrayDesc = rtManager->getSlicedArrayOf( memberDesc );
       
-      size_t arraySize = m_variableArrayDesc->getAllocSize();
+      size_t arraySize = m_slicedArrayDesc->getAllocSize();
       m_arrayData = malloc( arraySize );
       memset( m_arrayData, 0, arraySize );
-      m_variableArrayDesc->setNumMembers( m_arrayData, count, m_defaultMemberData );
-
-      m_slicedArray = SharedSlicedArray::Create( m_slicedArrayDesc->getImpl(), m_variableArrayDesc->getBits( m_arrayData ), count );
+      m_slicedArrayDesc->setNumMembers( m_arrayData, count, m_defaultMemberData );
     }
     
     Container::Member::~Member()
     {
-      m_variableArrayDesc->disposeData( m_arrayData );
+      m_slicedArrayDesc->disposeData( m_arrayData );
       free( m_arrayData );
       
       m_memberDesc->disposeData( m_defaultMemberData );
@@ -184,15 +173,13 @@ namespace Fabric
     void Container::getMemberDescs(
       std::string const &name,
       RC::ConstHandle<RT::Desc> &memberDesc, 
-      RC::ConstHandle<RT::VariableArrayDesc> &variableArrayDesc, 
-      RC::ConstHandle<RT::SlicedArrayDesc> &slicedArrayDesc,
-      RC::Handle<SharedSlicedArray> &sharedSlicedArray
+      RC::ConstHandle<RT::SlicedArrayDesc> &slicedArrayDesc
       )
     {
       Members::const_iterator it = m_members.find( name );
       if ( it == m_members.end() )
         throw Exception( "'" + name + "': no such member" );
-      it->second->getDescs( memberDesc, variableArrayDesc, slicedArrayDesc, sharedSlicedArray );
+      it->second->getDescs( memberDesc, slicedArrayDesc );
     }
     
     void *Container::getMemberArrayData( std::string const &name )
