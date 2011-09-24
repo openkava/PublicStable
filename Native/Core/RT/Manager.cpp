@@ -66,10 +66,10 @@ namespace Fabric
       m_jsonCommandChannel = jsonCommandChannel;
     }
     
-    RC::ConstHandle<VariableArrayDesc> Manager::getVariableArrayOf( RC::ConstHandle<RT::Desc> const &memberDesc ) const
+    RC::ConstHandle<VariableArrayDesc> Manager::getVariableArrayOf( RC::ConstHandle<RT::Desc> const &memberDesc, size_t flags ) const
     {
-      std::string variableArrayName = memberDesc->getUserName() + "[]";
-      RC::ConstHandle<VariableArrayImpl> variableArrayImpl = memberDesc->getImpl()->getVariableArrayImpl( VariableArrayImpl::FLAG_COPY_ON_WRITE );
+      std::string variableArrayName = memberDesc->getUserName() + (flags && VariableArrayImpl::FLAG_COPY_ON_WRITE? "{}": "[]");
+      RC::ConstHandle<VariableArrayImpl> variableArrayImpl = memberDesc->getImpl()->getVariableArrayImpl( flags );
       RC::ConstHandle<VariableArrayDesc> variableArrayDesc = new VariableArrayDesc( variableArrayName, variableArrayImpl, memberDesc );
       return RC::ConstHandle<VariableArrayDesc>::StaticCast( registerDesc( variableArrayDesc ) );
     }
@@ -226,7 +226,7 @@ namespace Fabric
         if ( data != dataEnd && *data == ']' )
         {
           ++data;
-          return getVariableArrayOf( getComplexDesc( desc, data, dataEnd ) );
+          return getVariableArrayOf( getComplexDesc( desc, data, dataEnd ), VariableArrayImpl::FLAG_COPY_ON_WRITE );
         }
         else if ( data != dataEnd && isdigit( *data ) )
         {

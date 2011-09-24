@@ -16,6 +16,7 @@
 #include "OverloadNames.h"
 
 #include <Fabric/Core/RT/SlicedArrayDesc.h>
+#include <Fabric/Core/RT/VariableArrayImpl.h>
 #include <Fabric/Core/RT/Impl.h>
 
 #include <llvm/Module.h>
@@ -30,7 +31,7 @@ namespace Fabric
       : ArrayAdapter( manager, slicedArrayDesc, FL_PASS_BY_REFERENCE )
       , m_slicedArrayDesc( slicedArrayDesc )
       , m_memberAdapter( manager->getAdapter( slicedArrayDesc->getMemberDesc() ) )
-      , m_variableArrayAdapter( manager->getVariableArrayOf( m_memberAdapter ) )
+      , m_variableArrayAdapter( manager->getVariableArrayOf( m_memberAdapter, RT::VariableArrayImpl::FLAG_SHARED ) )
     {
     }
     

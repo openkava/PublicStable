@@ -47,7 +47,7 @@ namespace Fabric
       if ( !variableArrayImpl )
       {
         std::string name = m_codeName + "_VA_";
-        name += (flags & VariableArrayImpl::FLAG_COPY_ON_WRITE)? 'C': 'c';
+        name += (flags & VariableArrayImpl::FLAG_COPY_ON_WRITE)? "CopyOnWrite": "Shared";
         variableArrayImpl = new VariableArrayImpl( name, flags, this );
         variableArrayImplWeakHandle = variableArrayImpl;
       }
