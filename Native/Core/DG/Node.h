@@ -34,7 +34,6 @@ namespace Fabric
     class Manager;
     class Desc;
     class Impl;
-    class VariableArrayDesc;
   };
   
   namespace DG

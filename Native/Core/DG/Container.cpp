@@ -12,11 +12,9 @@
 #include <Fabric/Core/IO/Manager.h>
 #include <Fabric/Core/MT/LogCollector.h>
 #include <Fabric/Core/RT/NumericDesc.h>
-#include <Fabric/Core/RT/VariableArrayDesc.h>
 #include <Fabric/Core/RT/SlicedArrayDesc.h>
 #include <Fabric/Core/RT/SlicedArrayImpl.h>
 #include <Fabric/Core/RT/Manager.h>
-#include <Fabric/Core/RT/VariableArrayImpl.h>
 #include <Fabric/Base/JSON/Value.h>
 #include <Fabric/Base/JSON/Object.h>
 #include <Fabric/Base/JSON/Array.h>
