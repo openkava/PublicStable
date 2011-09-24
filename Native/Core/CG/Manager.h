@@ -68,7 +68,7 @@ namespace Fabric
       RC::ConstHandle<OpaqueAdapter> getDataAdapter() const;
       RC::ConstHandle<ConstStringAdapter> getConstStringAdapter() const;
       
-      RC::ConstHandle<VariableArrayAdapter> getVariableArrayOf( RC::ConstHandle<Adapter> const &adapter ) const;
+      RC::ConstHandle<VariableArrayAdapter> getVariableArrayOf( RC::ConstHandle<Adapter> const &adapter, size_t flags ) const;
       RC::ConstHandle<SlicedArrayAdapter> getSlicedArrayOf( RC::ConstHandle<Adapter> const &adapter ) const;
       RC::ConstHandle<FixedArrayAdapter> getFixedArrayOf( RC::ConstHandle<Adapter> const &adapter, size_t length ) const;
       

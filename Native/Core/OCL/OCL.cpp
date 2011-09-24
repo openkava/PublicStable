@@ -21,6 +21,7 @@
 #include <Fabric/Core/RT/IntegerDesc.h>
 #include <Fabric/Core/RT/StringDesc.h>
 #include <Fabric/Core/RT/VariableArrayDesc.h>
+#include <Fabric/Core/RT/VariableArrayImpl.h>
 #include <Fabric/Core/RT/OpaqueDesc.h>
 #include <Fabric/Core/RT/NumericDesc.h>
 #include <Fabric/Core/RT/Manager.h>
@@ -402,17 +403,17 @@ namespace Fabric
       
       
       clPlatformIDDesc = rtManager->registerOpaque( "cl_platform_id", sizeof(cl_platform_id) );
-      clPlatformIDVariableArrayDesc = rtManager->getVariableArrayOf( clPlatformIDDesc );
+      clPlatformIDVariableArrayDesc = rtManager->getVariableArrayOf( clPlatformIDDesc, RT::VariableArrayImpl::FLAG_COPY_ON_WRITE );
       clDeviceIDDesc = rtManager->registerOpaque( "cl_device_id", sizeof(cl_device_id) );
-      clDeviceIDVariableArrayDesc = rtManager->getVariableArrayOf( clDeviceIDDesc );
+      clDeviceIDVariableArrayDesc = rtManager->getVariableArrayOf( clDeviceIDDesc, RT::VariableArrayImpl::FLAG_COPY_ON_WRITE );
       clContextDesc = rtManager->registerOpaque( "cl_context", sizeof(cl_context) );
       clCommandQueueDesc = rtManager->registerOpaque( "cl_command_queue", sizeof(cl_command_queue) );
       clProgramDesc = rtManager->registerOpaque( "cl_program", sizeof(cl_program) );
       clKernelDesc = rtManager->registerOpaque( "cl_kernel", sizeof(cl_kernel) );
       clMemDesc = rtManager->registerOpaque( "cl_mem", sizeof(cl_mem) );
-      clMemVariableArrayDesc = rtManager->getVariableArrayOf( clMemDesc );
+      clMemVariableArrayDesc = rtManager->getVariableArrayOf( clMemDesc, RT::VariableArrayImpl::FLAG_COPY_ON_WRITE );
       clEventDesc = rtManager->registerOpaque( "cl_event", sizeof(cl_event) );
-      clEventVariableArrayDesc = rtManager->getVariableArrayOf( clEventDesc );
+      clEventVariableArrayDesc = rtManager->getVariableArrayOf( clEventDesc, RT::VariableArrayImpl::FLAG_COPY_ON_WRITE );
     }
 
 #define ADD_CONST_BOOL( name, value ) \

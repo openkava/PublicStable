@@ -80,7 +80,7 @@ namespace Fabric
       RC::ConstHandle<Desc> maybeGetDesc( std::string const &name ) const;
       RC::ConstHandle<Desc> getDesc( std::string const &name ) const;
       
-      RC::ConstHandle<VariableArrayDesc> getVariableArrayOf( RC::ConstHandle<Desc> const &memberDesc ) const;
+      RC::ConstHandle<VariableArrayDesc> getVariableArrayOf( RC::ConstHandle<Desc> const &memberDesc, size_t flags ) const;
       RC::ConstHandle<SlicedArrayDesc> getSlicedArrayOf( RC::ConstHandle<Desc> const &memberDesc ) const;
       RC::ConstHandle<FixedArrayDesc> getFixedArrayOf( RC::ConstHandle<Desc> const &memberDesc, size_t length ) const;
       

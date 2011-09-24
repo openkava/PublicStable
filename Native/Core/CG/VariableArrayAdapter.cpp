@@ -55,6 +55,7 @@ namespace Fabric
 
     void VariableArrayAdapter::llvmCompileToModule( ModuleBuilder &moduleBuilder ) const
     {
+      FABRIC_LOG( "VariableArrayAdapter::llvmCompileToModule( " + getCodeName() + " )" );
       if ( moduleBuilder.haveCompiledToModule( getCodeName() ) )
         return;
       
