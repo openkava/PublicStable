@@ -335,20 +335,20 @@ namespace Fabric
                 std::string const &memberName = memberParam->name();
                 std::string const memberErrorPrefix = parameterErrorPrefix + "member '" + memberName + "': ";
                 {
-                  RC::ConstHandle<RT::Desc> memberDesc;
                   RC::ConstHandle<RT::SlicedArrayDesc> slicedArrayDesc;
+                  void *slicedArrayData;
                   try
                   {
-                    container->getMemberDescs( memberName, memberDesc, slicedArrayDesc );
+                    container->getMemberArrayDescAndData( memberName, slicedArrayDesc, slicedArrayData );
                   }
                   catch ( Exception e )
                   {
                     errors.push_back( memberErrorPrefix + std::string(e) );
                   }
-                  if ( memberDesc && slicedArrayDesc )
+                  if ( slicedArrayDesc )
                   {
+                    RC::ConstHandle<RT::Desc> memberDesc = slicedArrayDesc->getMemberDesc();
                     RC::ConstHandle<RT::SlicedArrayImpl> slicedArrayImpl = slicedArrayDesc->getImpl();
-                    void *slicedArrayData = container->getMemberArrayData( memberName );
                     if ( param->isElementParam() )
                     {
                       if ( arrayAccessSet.find( slicedArrayData ) != arrayAccessSet.end() )

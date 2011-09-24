@@ -70,10 +70,10 @@ namespace Fabric
       MemberDescs getMemberDescs() const;
       void addMember( std::string const &name, RC::ConstHandle<RT::Desc> const &desc, void const *defaultData );
       void removeMember( std::string const &name );
-      void getMemberDescs(
+      void getMemberArrayDescAndData(
         std::string const &name,
-        RC::ConstHandle<RT::Desc> &memberDesc, 
-        RC::ConstHandle<RT::SlicedArrayDesc> &slicedArrayDesc
+        RC::ConstHandle<RT::SlicedArrayDesc> &slicedArrayDesc,
+        void *&slicedArrayData
         );
     
       size_t getCount() const;
@@ -131,8 +131,6 @@ namespace Fabric
       RC::ConstHandle<Member> getMember( std::string const &name ) const;
       RC::Handle<Member> getMember( std::string const &name );
 
-      void *getMemberArrayData( std::string const &name );
-    
       void* jsonGetResourceMember( RC::ConstHandle<JSON::Value> const &arg, std::string& memberName ) const;
 
     private:
