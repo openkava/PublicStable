@@ -19,8 +19,6 @@
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/RT/IntegerDesc.h>
 #include <Fabric/Core/RT/Manager.h>
-#include <Fabric/Core/RT/VariableArrayDesc.h>
-#include <Fabric/Core/RT/VariableArrayImpl.h>
 #include <Fabric/Core/RT/SlicedArrayImpl.h>
 #include <Fabric/Core/RT/SlicedArrayDesc.h>
 #include <Fabric/Core/MT/Util.h>
@@ -392,7 +390,7 @@ namespace Fabric
                       //if ( astParamExprType.getUsage() != CG::USAGE_LVALUE )
                       //  throw Exception( "array parmeters must bind to operator io parameters" );
                       
-                      result->setBaseAddress( prefixCount+param->index(),slicedArrayData );
+                      result->setBaseAddress( prefixCount+param->index(), slicedArrayData );
                     }
                   }
                 }

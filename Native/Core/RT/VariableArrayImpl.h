@@ -61,7 +61,6 @@ namespace Fabric
         return m_flags & FLAG_COPY_ON_WRITE;
       }
       
-      void *getBits( void *data ) const;
       void setNumMembers( void *data, size_t newNumMembers, void const *defaultMemberData = 0 ) const;
       void setMembers( void *data, size_t numMembers, void const *members ) const;
       void setMembers( void *data, size_t dstOffset, size_t numMembers, void const *members ) const;
