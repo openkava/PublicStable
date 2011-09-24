@@ -135,23 +135,13 @@ namespace Fabric
       return bits->size;
     }
     
-    void *SlicedArrayImpl::getVariableArrayBits( void const *data ) const
-    {
-      bits_t const *bits = reinterpret_cast<bits_t const *>(data);
-      return bits->variableArrayBits;
-    }
-    
-    void SlicedArrayImpl::set( size_t offset, size_t size, void *variableArrayBits, void *data ) const
+    void SlicedArrayImpl::setNumMembers( void *data, size_t numMembers, void const *defaultMemberData ) const
     {
       bits_t *bits = reinterpret_cast<bits_t *>(data);
-      bits->offset = offset;
-      bits->size = size;
-      bits->variableArrayBits = variableArrayBits;
-    }
-
-    RC::ConstHandle<VariableArrayImpl> SlicedArrayImpl::getVariableArrayImpl() const
-    {
-      return m_variableArrayImpl;
+      FABRIC_ASSERT( bits->offset == 0 );
+      FABRIC_ASSERT( bits->size == m_variableArrayImpl->getNumMembers( &bits->variableArrayBits ) );
+      m_variableArrayImpl->setNumMembers( &bits->variableArrayBits, numMembers, defaultMemberData );
+      bits->size = numMembers;
     }
   };
 };

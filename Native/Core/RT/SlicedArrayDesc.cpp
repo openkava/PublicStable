@@ -31,5 +31,10 @@ namespace Fabric
       result->set( "memberType", JSON::String::Create( getMemberDesc()->getUserName() ) );
       return result;
     }
+
+    void SlicedArrayDesc::setNumMembers( void *data, size_t numMembers, void const *defaultMemberData ) const
+    {
+      return m_slicedArrayImpl->setNumMembers( data, numMembers, defaultMemberData );
+    }
   };
 };
