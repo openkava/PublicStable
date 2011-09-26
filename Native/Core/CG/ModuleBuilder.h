@@ -48,6 +48,15 @@ namespace Fabric
       RC::ConstHandle<Adapter> maybeGetAdapter( std::string const &userName ) const;
       RC::ConstHandle<Adapter> getAdapter( std::string const &userName, CG::Location const &location );
       
+      bool getHaveDestructor( std::string const &typeName )
+      {
+        return m_haveDestructor[typeName];
+      }
+      void setHaveDestructor( std::string const &typeName, bool haveDestructor )
+      {
+        m_haveDestructor[typeName] = haveDestructor;
+      }
+      
     private:
     
       typedef std::map< std::string, RC::ConstHandle<FunctionSymbol> > Functions;
@@ -59,6 +68,7 @@ namespace Fabric
       std::set<std::string> m_havePreparedModule;
       std::set<std::string> m_haveCompiledToModule;
       Functions m_functions;
+      std::map< std::string, bool > m_haveDestructor;
     };
   };
 };
