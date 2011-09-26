@@ -17,7 +17,7 @@ namespace Fabric
       , m_memberImpl( memberImpl )
       , m_memberSize( memberImpl->getAllocSize() )
       , m_memberIsShallow( memberImpl->isShallow() )
-      , m_variableArrayImpl( memberImpl->getVariableArrayImpl() )
+      , m_variableArrayImpl( memberImpl->getVariableArrayImpl( VariableArrayImpl::FLAG_SHARED ) )
     {
       setSize( sizeof(bits_t) );
     }
@@ -34,7 +34,7 @@ namespace Fabric
       bits_t *dstBits = reinterpret_cast<bits_t *>(dst);
       dstBits->offset = srcBits->offset;
       dstBits->size = srcBits->size;
-      dstBits->variableArrayBits = srcBits->variableArrayBits;
+      m_variableArrayImpl->setData( &srcBits->variableArrayBits, &dstBits->variableArrayBits );
     }
 
     RC::Handle<JSON::Value> SlicedArrayImpl::getJSONValue( void const *data ) const
@@ -63,6 +63,8 @@ namespace Fabric
 
     void SlicedArrayImpl::disposeData( void *data ) const
     {
+      bits_t *bits = reinterpret_cast<bits_t *>(data);
+      m_variableArrayImpl->disposeData( &bits->variableArrayBits );
     }
     
     std::string SlicedArrayImpl::descData( void const *data ) const
@@ -137,23 +139,13 @@ namespace Fabric
       return bits->size;
     }
     
-    void *SlicedArrayImpl::getVariableArrayBits( void const *data ) const
-    {
-      bits_t const *bits = reinterpret_cast<bits_t const *>(data);
-      return bits->variableArrayBits;
-    }
-    
-    void SlicedArrayImpl::set( size_t offset, size_t size, void *variableArrayBits, void *data ) const
+    void SlicedArrayImpl::setNumMembers( void *data, size_t numMembers, void const *defaultMemberData ) const
     {
       bits_t *bits = reinterpret_cast<bits_t *>(data);
-      bits->offset = offset;
-      bits->size = size;
-      bits->variableArrayBits = variableArrayBits;
-    }
-
-    RC::ConstHandle<VariableArrayImpl> SlicedArrayImpl::getVariableArrayImpl() const
-    {
-      return m_variableArrayImpl;
+      FABRIC_ASSERT( bits->offset == 0 );
+      FABRIC_ASSERT( bits->size == m_variableArrayImpl->getNumMembers( &bits->variableArrayBits ) );
+      m_variableArrayImpl->setNumMembers( &bits->variableArrayBits, numMembers, defaultMemberData );
+      bits->size = numMembers;
     }
   };
 };

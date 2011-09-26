@@ -19,8 +19,9 @@ namespace Fabric
 {
   namespace RT
   {
-    VariableArrayImpl::VariableArrayImpl( std::string const &codeName, RC::ConstHandle<Impl> const &memberImpl )
+    VariableArrayImpl::VariableArrayImpl( std::string const &codeName, size_t flags, RC::ConstHandle<Impl> const &memberImpl )
       : ArrayImpl( codeName, DT_VARIABLE_ARRAY, memberImpl )
+      , m_flags( flags )
       , m_memberImpl( memberImpl )
       , m_memberSize( memberImpl->getAllocSize() )
       , m_memberIsShallow( memberImpl->isShallow() )
@@ -134,6 +135,8 @@ namespace Fabric
       
     void VariableArrayImpl::split( void *data ) const
     {
+      FABRIC_ASSERT( m_flags & FLAG_COPY_ON_WRITE );
+      
       bits_t *&bits = *reinterpret_cast<bits_t **>(data);
       
       bits_t *srcBits = bits;
@@ -209,7 +212,8 @@ namespace Fabric
         return false;
       RC::ConstHandle<VariableArrayImpl> variableArrayImpl = RC::ConstHandle<VariableArrayImpl>::StaticCast( that );
 
-      return getMemberImpl()->isEquivalentTo( variableArrayImpl->getMemberImpl() );
+      return m_flags == variableArrayImpl->m_flags
+        && getMemberImpl()->isEquivalentTo( variableArrayImpl->getMemberImpl() );
     }
 
     size_t VariableArrayImpl::getNumMembers( void const *data ) const
@@ -256,7 +260,8 @@ namespace Fabric
       }
       else
       {
-        unshare( data );
+        if ( isCopyOnWrite() )
+          unshare( data );
         bits_t *&bits = *reinterpret_cast<bits_t **>(data);
         memcpy( bits->memberDatas + dstOffset*m_memberSize, members, numMembers*m_memberSize );
       }
@@ -270,7 +275,7 @@ namespace Fabric
       size_t oldAllocNumMembers = bits? bits->allocNumMembers: 0;
       if ( oldNumMembers != newNumMembers )
       {
-        if ( bits && bits->refCount.getValue() == 1 )
+        if ( bits && ( !isCopyOnWrite() || bits->refCount.getValue() == 1 ) )
         {
           uint8_t *memberData, *memberDataEnd;
           
@@ -369,12 +374,6 @@ namespace Fabric
         }
       }
       //FABRIC_LOG( "VariableArrayImpl::setNumMembers: %fms", ft.getElapsedMS() );
-    }
-
-    void *VariableArrayImpl::getBits( void *data ) const
-    {
-      bits_t *bits = *static_cast<bits_t *const *>( data );
-      return bits;
     }
   };
 };

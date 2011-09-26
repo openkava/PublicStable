@@ -53,7 +53,7 @@ namespace Fabric
       virtual bool isShallow() const = 0;
       
       RC::ConstHandle<FixedArrayImpl> getFixedArrayImpl( size_t length ) const;
-      RC::ConstHandle<VariableArrayImpl> getVariableArrayImpl() const;
+      RC::ConstHandle<VariableArrayImpl> getVariableArrayImpl( size_t flags ) const;
       RC::ConstHandle<SlicedArrayImpl> getSlicedArrayImpl() const;
       
     protected:
@@ -68,7 +68,7 @@ namespace Fabric
       ImplType m_implType;
       size_t m_size;
       
-      mutable RC::WeakConstHandle<VariableArrayImpl> m_variableArrayImpl;
+      mutable Util::UnorderedMap< size_t, RC::WeakConstHandle<VariableArrayImpl> > m_variableArrayImpls;
       mutable RC::WeakConstHandle<SlicedArrayImpl> m_slicedArrayImpl;
       mutable Util::UnorderedMap< size_t, RC::WeakConstHandle<FixedArrayImpl> > m_fixedArrayImpls;  
     };

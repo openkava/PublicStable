@@ -58,13 +58,13 @@ namespace Fabric
     {
       RC::Handle<JSON::Object> result = ArrayDesc::jsonDesc();
       result->set( "internalType", JSON::String::Create("variableArray") );
-      result->set( "memberType", JSON::String::Create( getMemberDesc()->getName() ) );
+      result->set( "memberType", JSON::String::Create( getMemberDesc()->getUserName() ) );
       return result;
     }
-
-    void *VariableArrayDesc::getBits( void *data ) const
+    
+    bool VariableArrayDesc::isCopyOnWrite() const
     {
-      return m_variableArrayImpl->getBits( data );
+      return m_variableArrayImpl->isCopyOnWrite();
     }
   };
 };
