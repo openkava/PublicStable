@@ -52,7 +52,7 @@ namespace Fabric
 
     std::string destructorOverloadName( RC::ConstHandle<CG::Adapter> const &thisType )
     {
-      std::string result = "__destructor__" + thisType->getCodeName();
+      return "__destructor__" + thisType->getCodeName();
     }
   };
 };
