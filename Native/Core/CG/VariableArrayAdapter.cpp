@@ -29,6 +29,7 @@ namespace Fabric
     VariableArrayAdapter::VariableArrayAdapter( RC::ConstHandle<Manager> const &manager, RC::ConstHandle<RT::VariableArrayDesc> const &variableArrayDesc )
       : ArrayAdapter( manager, variableArrayDesc, 0 )
       , m_variableArrayDesc( variableArrayDesc )
+      , m_isCopyOnWrite( m_variableArrayDesc->isCopyOnWrite() )
       , m_memberAdapter( manager->getAdapter( variableArrayDesc->getMemberDesc() ) )
     {
     }
@@ -353,40 +354,23 @@ namespace Fabric
           basicBlockBuilder->CreateCondBr( basicBlockBuilder->CreateICmpUGT( refCount, llvm::ConstantInt::get( sizeAdapter->llvmRType( context ), 1 ) ), nonUniqueBB, uniqueBB );
           
           basicBlockBuilder->SetInsertPoint( nonUniqueBB );
-          std::vector< llvm::Type const * > argTypes;
-          argTypes.push_back( basicBlockBuilder->getInt8PtrTy() );
-          argTypes.push_back( llvmLType( context ) );
-          llvm::FunctionType const *funcType = llvm::FunctionType::get( basicBlockBuilder->getVoidTy(), argTypes, false );
-          llvm::Constant *func = basicBlockBuilder.getModuleBuilder()->getOrInsertFunction( "__"+getCodeName()+"__Split", funcType ); 
+          if ( m_isCopyOnWrite )
+          {
+            std::vector< llvm::Type const * > argTypes;
+            argTypes.push_back( basicBlockBuilder->getInt8PtrTy() );
+            argTypes.push_back( llvmLType( context ) );
+            llvm::FunctionType const *funcType = llvm::FunctionType::get( basicBlockBuilder->getVoidTy(), argTypes, false );
+            llvm::Constant *func = basicBlockBuilder.getModuleBuilder()->getOrInsertFunction( "__"+getCodeName()+"__Split", funcType ); 
 
-          std::vector<llvm::Value *> args;
-          args.push_back( llvmAdapterPtr( basicBlockBuilder ) );
-          args.push_back( arrayLValue );
-          basicBlockBuilder->CreateCall( func, args.begin(), args.end() );
+            std::vector<llvm::Value *> args;
+            args.push_back( llvmAdapterPtr( basicBlockBuilder ) );
+            args.push_back( arrayLValue );
+            basicBlockBuilder->CreateCall( func, args.begin(), args.end() );
+          }
           basicBlockBuilder->CreateBr( uniqueBB );
           
           basicBlockBuilder->SetInsertPoint( uniqueBB );
-          llvm::Value *memberLValue = llvmNonConstIndexOp_NoCheckNoSplit( basicBlockBuilder, arrayLValue, indexRValue );
-          basicBlockBuilder->CreateRet( memberLValue );
-        }
-      }
-
-      {
-        std::vector< FunctionParam > params;
-        params.push_back( FunctionParam( "array", this, CG::USAGE_LVALUE ) );
-        params.push_back( FunctionParam( "index", sizeAdapter, CG::USAGE_RVALUE ) );
-        FunctionBuilder functionBuilder( moduleBuilder, "__"+getCodeName()+"__NonConstIndexNoCheckNoSplit", ExprType( m_memberAdapter, USAGE_LVALUE ), params, false, 0, true );
-        if ( buildFunctions )
-        {
-          BasicBlockBuilder basicBlockBuilder( functionBuilder );
-
-          llvm::Value *arrayLValue = functionBuilder[0];
-          llvm::Value *indexRValue = functionBuilder[1];
-
-          llvm::BasicBlock *entryBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "entry" );
-
-          basicBlockBuilder->SetInsertPoint( entryBB );
-          llvm::Value *arrayRValue = llvmLValueToRValue( basicBlockBuilder, arrayLValue );
+          arrayRValue = llvmLValueToRValue( basicBlockBuilder, arrayLValue );
           llvm::Value *memberData = basicBlockBuilder->CreateConstGEP2_32( basicBlockBuilder->CreateStructGEP( arrayRValue, 3 ), 0, 0 );
           llvm::Value *memberLValue = basicBlockBuilder->CreateGEP( memberData, indexRValue );
           basicBlockBuilder->CreateRet( memberLValue );
@@ -640,7 +624,7 @@ namespace Fabric
         return (void *)&VariableArrayAdapter::Resize;
       else if ( functionName == "__"+getCodeName()+"__Pop" )
         return (void *)&VariableArrayAdapter::Pop;
-      else if ( functionName == "__"+getCodeName()+"__Split" )
+      else if ( m_isCopyOnWrite && functionName == "__"+getCodeName()+"__Split" )
         return (void *)&VariableArrayAdapter::Split;
       else if ( functionName == "__"+getCodeName()+"__Append" )
         return (void *)&VariableArrayAdapter::Append;
@@ -703,20 +687,10 @@ namespace Fabric
       FunctionBuilder functionBuilder( basicBlockBuilder.getModuleBuilder(), "__"+getCodeName()+"__NonConstIndexNoCheck", ExprType( m_memberAdapter, USAGE_LVALUE ), params, false, 0, true );
       return basicBlockBuilder->CreateCall2( functionBuilder.getLLVMFunction(), exprLValue, indexRValue );
     }
-
-    llvm::Value *VariableArrayAdapter::llvmNonConstIndexOp_NoCheckNoSplit( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *exprLValue, llvm::Value *indexRValue ) const
-    {
-      RC::ConstHandle<SizeAdapter> sizeAdapter = basicBlockBuilder.getManager()->getSizeAdapter();
-
-      std::vector< FunctionParam > params;
-      params.push_back( FunctionParam( "array", this, CG::USAGE_LVALUE ) );
-      params.push_back( FunctionParam( "index", sizeAdapter, CG::USAGE_RVALUE ) );
-      FunctionBuilder functionBuilder( basicBlockBuilder.getModuleBuilder(), "__"+getCodeName()+"__NonConstIndexNoCheckNoSplit", ExprType( m_memberAdapter, USAGE_LVALUE ), params, false, 0, true );
-      return basicBlockBuilder->CreateCall2( functionBuilder.getLLVMFunction(), exprLValue, indexRValue );
-    }
     
     void VariableArrayAdapter::Split( VariableArrayAdapter const *inst, void *data )
     {
+      FABRIC_ASSERT( inst->m_isCopyOnWrite );
       inst->m_variableArrayDesc->split( data );
     }
     

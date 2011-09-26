@@ -12,7 +12,6 @@
 #include "Scope.h"
 #include "Debug.h"
 
-#include <Fabric/Core/DG/SharedSlicedArray.h>
 #include <Fabric/Core/DG/Function.h>
 #include <Fabric/Core/AST/Operator.h>
 #include <Fabric/Core/AST/ParamVector.h>
@@ -20,8 +19,6 @@
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/RT/IntegerDesc.h>
 #include <Fabric/Core/RT/Manager.h>
-#include <Fabric/Core/RT/VariableArrayDesc.h>
-#include <Fabric/Core/RT/VariableArrayImpl.h>
 #include <Fabric/Core/RT/SlicedArrayImpl.h>
 #include <Fabric/Core/RT/SlicedArrayDesc.h>
 #include <Fabric/Core/MT/Util.h>
@@ -301,14 +298,14 @@ namespace Fabric
               {
                 if ( astParamImpl != m_rtSizeImpl
                   || astParamExprType.getUsage() != CG::USAGE_RVALUE )
-                  errors.push_back( parameterErrorPrefix + "'size' parmeters must bind to operator in parameters of type "+_(m_rtSizeDesc->getName()) );
+                  errors.push_back( parameterErrorPrefix + "'size' parmeters must bind to operator in parameters of type "+_(m_rtSizeDesc->getUserName()) );
                 result->setBaseAddress( prefixCount+param->index(), (void *)container->getCount() );
               }
               else if ( param->isNewSizeParam() )
               {
                 if ( astParamImpl != m_rtSizeImpl
                   || astParamExprType.getUsage() != CG::USAGE_LVALUE )
-                  errors.push_back( parameterErrorPrefix + "'newSize' parmeters must bind to operator io parameters of type "+_(m_rtSizeDesc->getName()) );
+                  errors.push_back( parameterErrorPrefix + "'newSize' parmeters must bind to operator io parameters of type "+_(m_rtSizeDesc->getUserName()) );
                 if ( !newSize )
                   errors.push_back( parameterErrorPrefix + "can't access count" );
                 result->setBaseAddress( prefixCount+param->index(), newSize );
@@ -317,7 +314,7 @@ namespace Fabric
               {
                 if ( astParamImpl != m_rtIndexImpl
                   || astParamExprType.getUsage() != CG::USAGE_RVALUE )
-                  errors.push_back( parameterErrorPrefix + "'index' parmeters must bind to operator in parameters of type "+_(m_rtIndexDesc->getName()) );
+                  errors.push_back( parameterErrorPrefix + "'index' parmeters must bind to operator in parameters of type "+_(m_rtIndexDesc->getUserName()) );
                 else
                 {
                   result->setBaseAddress( prefixCount+param->index(), (void *)0 );
@@ -338,38 +335,36 @@ namespace Fabric
                 std::string const &memberName = memberParam->name();
                 std::string const memberErrorPrefix = parameterErrorPrefix + "member '" + memberName + "': ";
                 {
-                  RC::ConstHandle<RT::Desc> memberDesc;
-                  RC::ConstHandle<RT::VariableArrayDesc> memberArrayDesc;
-                  RC::ConstHandle<RT::SlicedArrayDesc> memberSlicedArrayDesc;
-                  RC::Handle<SharedSlicedArray> sharedSlicedArray;
+                  RC::ConstHandle<RT::SlicedArrayDesc> slicedArrayDesc;
+                  void *slicedArrayData;
                   try
                   {
-                    container->getMemberDescs( memberName, memberDesc, memberArrayDesc, memberSlicedArrayDesc, sharedSlicedArray );
+                    container->getMemberArrayDescAndData( memberName, slicedArrayDesc, slicedArrayData );
                   }
                   catch ( Exception e )
                   {
                     errors.push_back( memberErrorPrefix + std::string(e) );
                   }
-                  if ( memberDesc && memberArrayDesc && memberSlicedArrayDesc )
+                  if ( slicedArrayDesc )
                   {
-                    RC::ConstHandle<RT::VariableArrayImpl> memberArrayImpl = memberArrayDesc->getImpl();
-                    void *memberArrayData = container->getMemberArrayData( memberName );
+                    RC::ConstHandle<RT::Desc> memberDesc = slicedArrayDesc->getMemberDesc();
+                    RC::ConstHandle<RT::SlicedArrayImpl> slicedArrayImpl = slicedArrayDesc->getImpl();
                     if ( param->isElementParam() )
                     {
-                      if ( arrayAccessSet.find( memberArrayData ) != arrayAccessSet.end() )
+                      if ( arrayAccessSet.find( slicedArrayData ) != arrayAccessSet.end() )
                         errors.push_back( memberErrorPrefix + "cannot access both per-slice and whole array data for the same member" );
                       else
                       {
-                        elementAccessSet.insert( memberArrayData );
+                        elementAccessSet.insert( slicedArrayData );
                         
                         RC::ConstHandle<RT::Impl> memberImpl = memberDesc->getImpl();
                         if ( astParamImpl != memberImpl )
-                          errors.push_back( memberErrorPrefix + "parameter type mismatch: member element type is "+_(memberDesc->getName())+", operator parameter type is "+_(astParamDesc->getName()) );
+                          errors.push_back( memberErrorPrefix + "parameter type mismatch: member element type is "+_(memberDesc->getUserName())+", operator parameter type is "+_(astParamDesc->getUserName()) );
                         if ( astParamExprType.getUsage() != CG::USAGE_LVALUE )
                           errors.push_back( memberErrorPrefix + "element parmeters must bind to operator io parameters" );
                         void *baseAddress;
-                        if ( memberArrayImpl->getNumMembers( memberArrayData ) > 0 )
-                          baseAddress = memberArrayImpl->getMemberData( memberArrayData, 0 );
+                        if ( slicedArrayDesc->getNumMembers( slicedArrayData ) > 0 )
+                          baseAddress = slicedArrayImpl->getMemberData( slicedArrayData, 0 );
                         else baseAddress = 0;
                         result->setBaseAddress( prefixCount+param->index(), baseAddress );
                         if ( container->getCount() != 1 )
@@ -385,17 +380,17 @@ namespace Fabric
                     }
                     else
                     {
-                      if ( elementAccessSet.find( memberArrayData ) != elementAccessSet.end() )
+                      if ( elementAccessSet.find( slicedArrayData ) != elementAccessSet.end() )
                         errors.push_back( memberErrorPrefix + "cannot access both per-slice and whole array data for the same member" );
-                      else arrayAccessSet.insert( memberArrayData );
+                      else arrayAccessSet.insert( slicedArrayData );
                       
-                      RC::ConstHandle<RT::SlicedArrayImpl> slicedArrayImpl = memberSlicedArrayDesc->getImpl();
+                      RC::ConstHandle<RT::SlicedArrayImpl> slicedArrayImpl = slicedArrayDesc->getImpl();
                       if ( astParamImpl != slicedArrayImpl )
-                        errors.push_back( memberErrorPrefix + "parameter type mismatch: member array type is "+_(memberSlicedArrayDesc->getName())+", operator parameter type is "+_(astParamDesc->getName()) );
+                        errors.push_back( memberErrorPrefix + "parameter type mismatch: member array type is "+_(slicedArrayDesc->getUserName())+", operator parameter type is "+_(astParamDesc->getUserName()) );
                       //if ( astParamExprType.getUsage() != CG::USAGE_LVALUE )
                       //  throw Exception( "array parmeters must bind to operator io parameters" );
                       
-                      result->setBaseAddress( prefixCount+param->index(), sharedSlicedArray->getData() );
+                      result->setBaseAddress( prefixCount+param->index(), slicedArrayData );
                     }
                   }
                 }

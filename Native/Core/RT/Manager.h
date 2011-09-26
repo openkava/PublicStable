@@ -70,7 +70,6 @@ namespace Fabric
       RC::ConstHandle<FloatDesc> getFP64Desc() const;
       RC::ConstHandle<StringDesc> getStringDesc() const;
       RC::ConstHandle<OpaqueDesc> getDataDesc() const;
-      RC::ConstHandle<ConstStringDesc> getConstStringDesc( size_t length ) const;
       
       RC::ConstHandle<StructDesc> registerStruct( std::string const &name, StructMemberInfoVector const &memberInfos );
       RC::ConstHandle<OpaqueDesc> registerOpaque( std::string const &name, size_t size );
@@ -81,7 +80,7 @@ namespace Fabric
       RC::ConstHandle<Desc> maybeGetDesc( std::string const &name ) const;
       RC::ConstHandle<Desc> getDesc( std::string const &name ) const;
       
-      RC::ConstHandle<VariableArrayDesc> getVariableArrayOf( RC::ConstHandle<Desc> const &memberDesc ) const;
+      RC::ConstHandle<VariableArrayDesc> getVariableArrayOf( RC::ConstHandle<Desc> const &memberDesc, size_t flags ) const;
       RC::ConstHandle<SlicedArrayDesc> getSlicedArrayOf( RC::ConstHandle<Desc> const &memberDesc ) const;
       RC::ConstHandle<FixedArrayDesc> getFixedArrayOf( RC::ConstHandle<Desc> const &memberDesc, size_t length ) const;
       
@@ -93,8 +92,6 @@ namespace Fabric
       
       RC::ConstHandle<Desc> getStrongerTypeOrNone( RC::ConstHandle<Desc> const &lhsDesc, RC::ConstHandle<Desc> const &rhsDesc ) const;
       
-      std::vector< RC::ConstHandle<Desc> > getTopoSortedDescs() const;
-      
       bool maybeGetASTForType( std::string const &typeName, RC::ConstHandle<RC::Object> &ast ) const;
 
     protected:
@@ -103,8 +100,6 @@ namespace Fabric
       
       RC::ConstHandle<Desc> maybeGetBaseDesc( std::string const &baseName ) const;
       RC::ConstHandle<Desc> registerDesc( RC::ConstHandle< Desc > const &desc ) const;
-
-      void buildTopoSortedDescs( RC::ConstHandle<Desc> const &desc, std::set< RC::ConstHandle<Desc> > &doneDescs, std::vector< RC::ConstHandle<Desc> > &result ) const;
       
     private:
     
