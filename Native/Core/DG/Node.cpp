@@ -12,9 +12,7 @@
 #include <Fabric/Core/DG/ExecutionEngine.h>
 #include <Fabric/Core/MT/LogCollector.h>
 #include <Fabric/Core/RT/NumericDesc.h>
-#include <Fabric/Core/RT/VariableArrayDesc.h>
 #include <Fabric/Core/RT/Manager.h>
-#include <Fabric/Core/RT/VariableArrayImpl.h>
 #include <Fabric/Base/JSON/Value.h>
 #include <Fabric/Base/JSON/Object.h>
 #include <Fabric/Base/JSON/Array.h>
@@ -216,6 +214,7 @@ namespace Fabric
             SelfScope selfScope( this, &dependenciesScope );
             std::vector<std::string> errors;
             m_runState->m_evaluateParallelCallsPerOperator[i] = opParallelCall = binding->bind( errors, selfScope, &m_runState->m_newCount );
+            FABRIC_ASSERT( errors.empty() );
           }
 
           size_t oldCount = getCount();
