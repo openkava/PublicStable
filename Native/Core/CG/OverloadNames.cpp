@@ -49,5 +49,10 @@ namespace Fabric
       }
       return result;
     }
+
+    std::string destructorOverloadName( RC::ConstHandle<CG::Adapter> const &thisType )
+    {
+      std::string result = "__destructor__" + thisType->getCodeName();
+    }
   };
 };
