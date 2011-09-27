@@ -72,5 +72,10 @@ namespace Fabric
         m_disposeCallback( lValue );
       disposeDataImpl( lValue );
     }
+
+    void Impl::setDisposeCallback( void (*disposeCallback)( void * ) ) const
+    {
+      m_disposeCallback = disposeCallback;
+    }
   };
 };
