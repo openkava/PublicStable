@@ -57,10 +57,7 @@ namespace Fabric
       RC::ConstHandle<VariableArrayImpl> getVariableArrayImpl( size_t flags ) const;
       RC::ConstHandle<SlicedArrayImpl> getSlicedArrayImpl() const;
       
-      void setDisposeCallback( void (*disposeCallback)( void * ) ) const
-      {
-        m_disposeCallback = disposeCallback;
-      }
+      void setDisposeCallback( void (*disposeCallback)( void * ) ) const;
       
     protected:
     

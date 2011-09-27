@@ -34,12 +34,26 @@ namespace Fabric
     //typedef void (*OnLoadFn)( SDK::Value FABRIC );
     //typedef void (*OnUnloadFn)( SDK::Value FABRIC );
     
-    RC::Handle<Inst> Inst::Create( RC::ConstHandle<IO::Dir> const &extensionDir, std::string const &name, std::string const &jsonDesc, std::vector<std::string> const &pluginDirs, RC::Handle<CG::Manager> const &cgManager )
+    RC::Handle<Inst> Inst::Create(
+      RC::ConstHandle<IO::Dir> const &extensionDir,
+      std::string const &extensionName,
+      std::string const &jsonDesc,
+      std::vector<std::string> const &pluginDirs,
+      RC::Handle<CG::Manager> const &cgManager,
+      std::map< std::string, void (*)( void * ) > &implNameToDestructorMap
+      )
     {
-      return new Inst( extensionDir, name, jsonDesc, pluginDirs, cgManager );
+      return new Inst( extensionDir, extensionName, jsonDesc, pluginDirs, cgManager, implNameToDestructorMap );
     }
       
-    Inst::Inst( RC::ConstHandle<IO::Dir> const &extensionDir, std::string const &extensionName, std::string const &jsonDesc, std::vector<std::string> const &pluginDirs, RC::Handle<CG::Manager> const &cgManager )
+    Inst::Inst(
+      RC::ConstHandle<IO::Dir> const &extensionDir,
+      std::string const &extensionName,
+      std::string const &jsonDesc,
+      std::vector<std::string> const &pluginDirs,
+      RC::Handle<CG::Manager> const &cgManager,
+      std::map< std::string, void (*)( void * ) > &implNameToDestructorMap
+      )
       : m_name( extensionName )
       , m_jsonDesc( jsonDesc )
     {
@@ -180,9 +194,7 @@ namespace Fabric
           {
             RC::ConstHandle<AST::Destructor> destructor = RC::ConstHandle<AST::Destructor>::StaticCast( function );
             std::string thisTypeName = destructor->getThisTypeName();
-            RC::ConstHandle<CG::Adapter> adapter = cgManager->getAdapter( thisTypeName );
-            RC::ConstHandle<RT::Impl> impl = adapter->getImpl();
-            impl->setDisposeCallback( (void (*)( void * )) resolvedFunction );
+            implNameToDestructorMap[thisTypeName] = (void (*)( void * )) resolvedFunction;
           }
         }
       }
