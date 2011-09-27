@@ -242,18 +242,20 @@ namespace Fabric
     void ViewPort::drawWatermark( size_t width, size_t height )
     {
       static bool doneInit = false;
+      static bool drawWatermark = false;
       if ( !doneInit )
       {
-        glewInit();
-          
-        if ( !GLEW_VERSION_2_0 )
-        {
+        GLenum glewInitError = glewInit();
+	if ( glewInitError != GLEW_OK )
+          FABRIC_LOG( "WARNING: glewInit() failed: %s", (char const *)glewGetErrorString( glewInitError ) );
+        else if ( !GLEW_VERSION_2_0 )
           FABRIC_LOG( "WARNING: OpenGL 2.0 is not supported, cannot draw watermark" );
-          return;
-        }
+        else drawWatermark = true;
+
+        doneInit = true;
       }
       
-      if ( width == 0 || height == 0 )
+      if ( !drawWatermark || width == 0 || height == 0 )
         return;
         
       try
