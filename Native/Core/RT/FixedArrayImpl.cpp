@@ -78,7 +78,7 @@ namespace Fabric
       }
     }
 
-    void FixedArrayImpl::disposeData( void *data ) const
+    void FixedArrayImpl::disposeDataImpl( void *data ) const
     {
       if ( !m_memberIsShallow )
       {
