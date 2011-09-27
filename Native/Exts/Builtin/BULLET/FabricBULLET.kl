@@ -22,6 +22,8 @@ function FabricBULLET_World_AddRigidBody(io Data worldData, io Data bodyData);
 function FabricBULLET_World_RemoveRigidBody(io Data worldData, io Data bodyData);
 function FabricBULLET_World_AddSoftBody(io Data worldData, io Data bodyData);
 function FabricBULLET_World_RemoveSoftBody(io Data worldData, io Data bodyData);
+function FabricBULLET_World_AddConstraint(io Data worldData, io Data constraintData);
+function FabricBULLET_World_RemoveConstraint(io Data worldData, io Data constraintData);
 
 function FabricBULLET_Shape_Create(io Data shapeData, io Integer shapeType, io Scalar shapeParams[], io Vec3 shapeVertices[]);
 function FabricBULLET_Shape_Delete(io Data shapeData);
@@ -39,3 +41,6 @@ function FabricBULLET_RigidBody_SetAngularVelocity(io Data bodyData, io Vec3 bod
 function FabricBULLET_SoftBody_Create(io Data bodyData, io Data worldData, io Vec3 positions<>, io Vec3 normals<>, io Integer indices[], io Xfo transform, io Integer cluster, io Integer constraints, io Scalar mass, io Scalar stiffness, io Scalar friction, io Scalar conservation, io Scalar pressure, io Scalar recover);
 function FabricBULLET_SoftBody_Delete(io Data bodyData);
 function FabricBULLET_SoftBody_GetPosition(in Size index, io Data bodyData, io Vec3 position, io Vec3 normal);
+
+function FabricBULLET_Constraint_Create(io Data constraintData, io Data bodyDataA, io Data bodyDataB, io Integer constraintType, io Xfo pivotA, io Xfo pivotB, io Scalar constraintParams[]);
+function FabricBULLET_Constraint_Delete(io Data constraintData);
