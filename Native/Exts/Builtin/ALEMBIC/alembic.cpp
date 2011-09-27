@@ -143,14 +143,12 @@ FABRIC_EXT_EXPORT void FabricALEMBICFreeAlembicHandle(
   AlembicHandle &handle
 )
 {
-  printf("  { ALEMBIC } Before FabricALEMBICFreeAlembicHandle\n");
   if(handle.pointer != NULL) {
     Alembic::Abc::IArchive * archive = (Alembic::Abc::IArchive *)handle.pointer;
     delete(archive);
     printf("  { ALEMBIC } Freed alembic resource.\n");
     handle.pointer = NULL;
   }
-  printf("  { ALEMBIC } After FabricALEMBICFreeAlembicHandle\n");
 }
 
 FABRIC_EXT_EXPORT void FabricALEMBICGetIdentifiers(

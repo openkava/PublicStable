@@ -94,13 +94,10 @@ namespace Fabric
       bits_t *bits = *static_cast<bits_t **>(data);
       if ( bits && bits->refCount.decrementAndGetValue() == 0 )
       {
-        if ( !m_memberIsShallow )
-        {
-          uint8_t *memberData = bits->memberDatas;
-          uint8_t *memberDataEnd = memberData + m_memberSize * bits->numMembers;
-          for ( ; memberData != memberDataEnd; memberData += m_memberSize )
-            getMemberImpl()->disposeData( memberData );
-        }
+        uint8_t *memberData = bits->memberDatas;
+        uint8_t *memberDataEnd = memberData + m_memberSize * bits->numMembers;
+        for ( ; memberData != memberDataEnd; memberData += m_memberSize )
+          getMemberImpl()->disposeData( memberData );
         
         free( bits );
       }
