@@ -57,7 +57,7 @@ namespace Fabric
       RC::ConstHandle<VariableArrayImpl> getVariableArrayImpl( size_t flags ) const;
       RC::ConstHandle<SlicedArrayImpl> getSlicedArrayImpl() const;
       
-      void setDisposeCallback( void (*disposeCallback)( void * ) )
+      void setDisposeCallback( void (*disposeCallback)( void * ) ) const
       {
         m_disposeCallback = disposeCallback;
       }
@@ -78,7 +78,7 @@ namespace Fabric
       mutable RC::WeakConstHandle<SlicedArrayImpl> m_slicedArrayImpl;
       mutable Util::UnorderedMap< size_t, RC::WeakConstHandle<FixedArrayImpl> > m_fixedArrayImpls;
       
-      void (*m_disposeCallback)( void *lValue );
+      mutable void (*m_disposeCallback)( void *lValue );
     };
   };
 };

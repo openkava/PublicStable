@@ -13,6 +13,7 @@
 #include <Fabric/Core/AST/GlobalList.h>
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/CG/ModuleBuilder.h>
+#include <Fabric/Core/RT/Impl.h>
 #include <Fabric/Core/DG/Context.h>
 #include <Fabric/Core/IO/Helpers.h>
 #include <Fabric/Core/IO/Dir.h>
@@ -172,6 +173,15 @@ namespace Fabric
           if ( !resolvedFunction )
             throw Exception( "error: symbol " + _(name) + ", prototyped in KL, not found in native code" );
           m_externalFunctionMap.insert( ExternalFunctionMap::value_type( name, resolvedFunction ) );
+          
+          if ( function->isDestructor() )
+          {
+            RC::ConstHandle<AST::Destructor> destructor = RC::ConstHandle<AST::Destructor>::StaticCast( function );
+            std::string thisTypeName = destructor->getThisTypeName();
+            RC::ConstHandle<CG::Adapter> adapter = cgManager->getAdapter( thisTypeName );
+            RC::ConstHandle<RT::Impl> impl = adapter->getImpl();
+            impl->setDisposeCallback( (void (*)( void * )) resolvedFunction );
+          }
         }
       }
 

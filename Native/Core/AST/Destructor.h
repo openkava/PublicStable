@@ -5,14 +5,13 @@
 #ifndef _FABRIC_AST_DESTRUCTOR_H
 #define _FABRIC_AST_DESTRUCTOR_H
 
-#include <Fabric/Core/AST/FunctionBase.h>
-#include <Fabric/Core/AST/ParamVector.h>
+#include <Fabric/Core/AST/Function.h>
 
 namespace Fabric
 {
   namespace AST
   {
-    class Destructor : public FunctionBase
+    class Destructor : public Function
     {
       FABRIC_AST_NODE_DECL( Destructor );
 
@@ -24,7 +23,11 @@ namespace Fabric
         std::string const &entryName,
         RC::ConstHandle<CompoundStatement> const &body
         );
+
+      virtual bool isDestructor() const { return true; }
       
+      std::string getThisTypeName() const;
+      virtual std::string const *getFriendlyName( RC::Handle<CG::Manager> const &cgManager ) const;
       virtual std::string getEntryName( RC::Handle<CG::Manager> const &cgManager ) const;
       virtual RC::ConstHandle<ParamVector> getParams( RC::Handle<CG::Manager> const &cgManager ) const;
       
