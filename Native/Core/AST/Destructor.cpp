@@ -32,7 +32,15 @@ namespace Fabric
       std::string const &entryName,
       RC::ConstHandle<CompoundStatement> const &body
       )
-      : FunctionBase( location, "", body, !body )
+      : Function(
+        location,
+        "",
+        entryName,
+        "",
+        ParamVector::Create(),
+        body,
+        !body
+        )
       , m_thisTypeName( thisTypeName )
       , m_entryName( entryName )
     {
@@ -40,9 +48,18 @@ namespace Fabric
     
     void Destructor::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator, bool includeLocation ) const
     {
-      FunctionBase::appendJSONMembers( jsonObjectGenerator, includeLocation );
+      Function::appendJSONMembers( jsonObjectGenerator, includeLocation );
       jsonObjectGenerator.makeMember( "thisTypeName" ).makeString( m_thisTypeName );
-      jsonObjectGenerator.makeMember( "entryName" ).makeString( m_entryName );
+    }
+    
+    std::string Destructor::getThisTypeName() const
+    {
+      return m_thisTypeName;
+    }
+    
+    std::string const *Destructor::getFriendlyName( RC::Handle<CG::Manager> const &cgManager ) const
+    {
+      return 0;
     }
 
     std::string Destructor::getEntryName( RC::Handle<CG::Manager> const &cgManager ) const
