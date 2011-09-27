@@ -37,7 +37,7 @@ namespace Fabric
       memcpy( dst, src, getAllocSize() );
     }
    
-    void OpaqueImpl::disposeData( void *data ) const
+    void OpaqueImpl::disposeDataImpl( void *data ) const
     {
     }
     

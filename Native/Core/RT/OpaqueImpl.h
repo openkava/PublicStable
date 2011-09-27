@@ -22,7 +22,7 @@ namespace Fabric
       virtual void setData( void const *value, void *data ) const;
       virtual std::string descData( void const *data ) const;
       virtual void const *getDefaultData() const;
-      virtual void disposeData( void *data ) const;
+      virtual void disposeDataImpl( void *data ) const;
       
       virtual RC::Handle<JSON::Value> getJSONValue( void const *data ) const;
       virtual void setDataFromJSONValue( RC::ConstHandle<JSON::Value> const &value, void *data ) const;

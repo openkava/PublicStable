@@ -19,6 +19,7 @@ namespace Fabric
       : m_codeName( codeName )
       , m_implType( implType )
       , m_size( 0 )
+      , m_disposeCallback( 0 )
     {
       FABRIC_ASSERT( Util::countBits( implType ) == 1 );
     }
@@ -63,6 +64,13 @@ namespace Fabric
         m_slicedArrayImpl = slicedArrayImpl;
       }
       return slicedArrayImpl;
+    }
+    
+    void Impl::disposeData( void *lValue ) const
+    {
+      if ( m_disposeCallback )
+        m_disposeCallback( lValue );
+      disposeDataImpl( lValue );
     }
   };
 };

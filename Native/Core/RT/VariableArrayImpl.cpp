@@ -89,7 +89,7 @@ namespace Fabric
       }
     }
 
-    void VariableArrayImpl::disposeData( void *data ) const
+    void VariableArrayImpl::disposeDataImpl( void *data ) const
     {
       bits_t *bits = *static_cast<bits_t **>(data);
       if ( bits && bits->refCount.decrementAndGetValue() == 0 )
