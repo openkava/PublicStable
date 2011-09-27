@@ -1,8 +1,29 @@
-use Vec2;
-use Vec3;
-use Quat;
-use Xfo;
-use AlembicHandle;
+struct Vec2 {
+  Scalar x;
+  Scalar y;
+};
+
+struct Vec3 {
+  Scalar x;
+  Scalar y;
+  Scalar z;
+};
+
+struct Quat {
+  Vec3 v;
+  Scalar w;
+};
+
+struct Xfo {
+  Quat ori;
+  Vec3 tr;
+  Vec3 sc;
+};
+
+struct AlembicHandle {
+  Data pointer;
+  Integer numSamples;
+};
 
 function FabricALEMBICDecode( Data objData, Size objDataSize, io AlembicHandle handle );
 function FabricALEMBICFreeAlembicHandle( io AlembicHandle handle );
@@ -12,11 +33,6 @@ function FabricALEMBICParseCamera( io AlembicHandle handle, io String identifier
 function FabricALEMBICParsePolyMeshCount( io AlembicHandle handle, io String identifier, io Size count );
 function FabricALEMBICParsePolyMeshUniforms( io AlembicHandle handle, io String identifier, io Integer indices[] );
 function FabricALEMBICParsePolyMeshAttributes( io AlembicHandle handle, io String identifier, io Integer sample, io Vec3 vertices<>, io Vec3 normals<>, io Boolean uvsLoaded, io Vec2 uvs<> );
-
-struct AlembicHandle {
-  Data pointer;
-  Integer numSamples;
-};
 
 function ~AlembicHandle() = "FabricALEMBICFreeAlembicHandle";
 
