@@ -64,6 +64,17 @@ struct fabricBulletConstraint {
   void * mWorld;
 };
 
+struct fabricBulletForce {
+  KL::Vec3 origin;
+  KL::Vec3 direction;
+  KL::Scalar radius;
+  KL::Scalar factor;
+  KL::Boolean useTorque;
+  KL::Boolean useFalloff;
+  KL::Boolean enabled;
+  KL::Boolean autoDisable;
+};
+
 // implement the callbacks
 FABRIC_EXT_EXPORT void FabricBULLET_World_Create(
   KL::Data & worldData
@@ -237,6 +248,78 @@ FABRIC_EXT_EXPORT void FabricBULLET_World_Reset(
       
       body->m_cfg.piterations = fabricBody->piterations;
       body->m_cfg.citerations = fabricBody->piterations;
+    }
+  }
+}
+
+FABRIC_EXT_EXPORT void FabricBULLET_World_Raycast(
+  KL::Data & worldData,
+  KL::Vec3 & rayOrigin,
+  KL::Vec3 & rayDirection,
+  KL::Boolean & hit,
+  KL::Vec3 & hitPosition
+)
+{
+  if(worldData != NULL) {
+    fabricBulletWorld * world = (fabricBulletWorld *)worldData;
+    
+    btVector3 from(rayOrigin.x,rayOrigin.y,rayOrigin.z);
+    btVector3 to = from + btVector3(rayDirection.x,rayDirection.y,rayDirection.z) * 10000.0f;
+    btCollisionWorld::ClosestRayResultCallback callback(from,to);
+    world->mDynamicsWorld->rayTest(from,to,callback);
+    hit = callback.hasHit();
+    if(hit) {
+      // filter out passive object
+      if(callback.m_collisionObject) {
+        btRigidBody * body = static_cast<btRigidBody*>(callback.m_collisionObject);
+        if(body) {
+          if(body->getInvMass() == 0.0f) {
+            hit = false;
+            return;
+          }
+        }
+      }
+      btVector3 position = from + (to-from) * callback.m_closestHitFraction;
+      hitPosition.x = position.getX();
+      hitPosition.y = position.getY();
+      hitPosition.z = position.getZ();
+    }
+  }
+}
+
+FABRIC_EXT_EXPORT void FabricBULLET_World_ApplyForce(
+  KL::Data & worldData,
+  fabricBulletForce & force
+)
+{
+  if(worldData != NULL) {
+    fabricBulletWorld * world = (fabricBulletWorld *)worldData;
+    
+    btVector3 origin(force.origin.x,force.origin.y,force.origin.z);
+    btVector3 direction(force.direction.x,force.direction.y,force.direction.z);
+    
+    // loop over all rigid bodies introduce a new force!
+    btCollisionObjectArray & collisionObjects = world->mDynamicsWorld->getCollisionObjectArray();
+    for(size_t i=0;i<collisionObjects.size();i++)
+    {
+      fabricBulletRigidBody * fabricBody = (fabricBulletRigidBody *)collisionObjects[i]->getUserPointer();
+      if(!fabricBody)
+        continue;
+      btRigidBody * body = static_cast<btRigidBody*>(collisionObjects[i]);
+      if(!body)
+        continue;
+
+      // first compute the distance
+      float distance = fabs((body->getWorldTransform().getOrigin() - origin).length());
+      if(distance > force.radius)
+        continue;
+      float factor = force.factor * (force.useFalloff ? 1.0f - distance / force.radius : 1.0f);
+      
+      // either apply central or torque force
+      if(force.useTorque) {
+        body->applyForce(direction * factor, body->getWorldTransform().inverse() * origin);
+      } else
+        body->applyCentralForce(direction * factor);
     }
   }
 }
