@@ -431,20 +431,23 @@ namespace Fabric
             {
               RC::ConstHandle<VariableSymbol> variableSymbol = RC::ConstHandle<VariableSymbol>::StaticCast( valueSymbol );
               ExprValue exprValue = variableSymbol->getExprValue();
-              llvm::Value *rValue = 0;
+              llvm::Value *rValue = 0, *lValue = 0;
+              RC::ConstHandle<Adapter> adapter = exprValue.getAdapter();
               switch ( exprValue.getUsage() )
               {
                 case USAGE_RVALUE:
                   rValue = exprValue.getValue();
+                  lValue = adapter->llvmRValueToLValue( bbb, rValue );
                   break;
                 case USAGE_LVALUE:
-                  rValue = exprValue.getAdapter()->llvmLValueToRValue( bbb, exprValue.getValue() );
+                  lValue = exprValue.getValue();
+                  rValue = adapter->llvmLValueToRValue( bbb, lValue );
                   break;
                 default:
                   FABRIC_ASSERT( false );
                   break;
               }
-              exprValue.getAdapter()->llvmRelease( bbb, rValue );
+              exprValue.getAdapter()->llvmDispose( bbb, lValue );
             }
           }
         }

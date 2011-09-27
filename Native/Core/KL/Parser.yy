@@ -7,7 +7,7 @@
 %error-verbose
 %debug
 
-%expect 1
+%expect 2
 
 %code top {
 #define YYDEBUG 1
@@ -83,6 +83,7 @@ typedef struct YYLTYPE
 #include <Fabric/Core/AST/ConstString.h>
 #include <Fabric/Core/AST/ContinueStatement.h>
 #include <Fabric/Core/AST/CStyleLoop.h>
+#include <Fabric/Core/AST/Destructor.h>
 #include <Fabric/Core/AST/ExprStatement.h>
 #include <Fabric/Core/AST/ExprVector.h>
 #include <Fabric/Core/AST/Function.h>
@@ -288,6 +289,7 @@ int kl_lex( YYSTYPE *yys, YYLTYPE *yyl, KL::Context &context );
 %type <astParamListPtr> parameter_list
 %type <astGlobalPtr> global
 %type <astGlobalPtr> function
+%type <astGlobalPtr> destructor
 %type <astGlobalPtr> prototype
 %type <astGlobalPtr> alias
 %type <astGlobalPtr> struct
@@ -515,6 +517,23 @@ function
     delete $2;
     $6->release();
     $8->release();
+  }
+  | destructor
+;
+
+destructor
+  : TOKEN_FUNCTION TOKEN_TILDE compound_type TOKEN_LPAREN TOKEN_RPAREN compound_statement
+  {
+    $$ = AST::Destructor::Create( RTLOC, *$3, "", $6 ).take();
+    delete $3;
+    $6->release();
+  }
+  | TOKEN_FUNCTION TOKEN_TILDE compound_type TOKEN_LPAREN TOKEN_RPAREN function_entry_name compound_statement
+  {
+    $$ = AST::Destructor::Create( RTLOC, *$3, *$6, $7 ).take();
+    delete $3;
+    delete $6;
+    $7->release();
   }
 ;
 
