@@ -1,0 +1,14 @@
+struct Foo {
+  Scalar bar;
+};
+
+function ~Foo() {
+  this.bar = 3.14;
+  report "Ran ~Foo";
+}
+
+operator entry() {
+  report "Start of entry";
+  Foo foo;
+  report "End of entry";
+}

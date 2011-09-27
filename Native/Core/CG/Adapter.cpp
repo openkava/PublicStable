@@ -373,5 +373,19 @@ namespace Fabric
         return (void *)&__KL__throwException;
       else return 0;
     }
+
+    void Adapter::llvmDispose( BasicBlockBuilder &basicBlockBuilder, llvm::Value *lValue ) const
+    {
+      ModuleBuilder &moduleBuilder = basicBlockBuilder.getModuleBuilder();
+      std::string destructorName = moduleBuilder.getDestructorName( getCodeName() );
+      if ( destructorName.length() > 0 )
+      {
+        RC::Handle<Context> context = basicBlockBuilder.getContext();
+        llvm::Constant *func = moduleBuilder->getFunction( destructorName );
+        FABRIC_ASSERT( func );
+        basicBlockBuilder->CreateCall( func, lValue );
+      }
+      llvmRelease( basicBlockBuilder, llvmLValueToRValue( basicBlockBuilder, lValue ) );
+    }
   };
 };
