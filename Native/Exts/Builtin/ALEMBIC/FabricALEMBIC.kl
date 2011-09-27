@@ -5,10 +5,54 @@ use Xfo;
 use AlembicHandle;
 
 function FabricALEMBICDecode( Data objData, Size objDataSize, io AlembicHandle handle );
-function FabricALEMBICFreeData( io AlembicHandle handle );
+function FabricALEMBICFreeAlembicHandle( io AlembicHandle handle );
 function FabricALEMBICGetIdentifiers( io AlembicHandle handle, io String identifiers[] );
 function FabricALEMBICParseXform( io AlembicHandle handle, io String identifier, io Integer sample, io Xfo transform );
 function FabricALEMBICParseCamera( io AlembicHandle handle, io String identifier, io Integer sample, io Scalar near, io Scalar far, io Scalar fovY );
 function FabricALEMBICParsePolyMeshCount( io AlembicHandle handle, io String identifier, io Size count );
 function FabricALEMBICParsePolyMeshUniforms( io AlembicHandle handle, io String identifier, io Integer indices[] );
 function FabricALEMBICParsePolyMeshAttributes( io AlembicHandle handle, io String identifier, io Integer sample, io Vec3 vertices<>, io Vec3 normals<>, io Boolean uvsLoaded, io Vec2 uvs<> );
+
+struct AlembicHandle {
+  Data pointer;
+  Integer numSamples;
+};
+
+function ~AlembicHandle() = "FabricALEMBICFreeAlembicHandle";
+
+function AlembicHandle.loadResource(io FabricResource resource) {
+  if(this.pointer)
+    return;
+  if(resource.data.dataSize() == 0)
+    return;
+  FabricALEMBICDecode(resource.data.data(), resource.data.dataSize(), this);
+}
+
+function AlembicHandle.getIdentifiers(io String identifiers[]) {
+  FabricALEMBICGetIdentifiers(this,identifiers);
+}
+
+function AlembicHandle.getIdentifiers(io String identifiers[]) {
+  FabricALEMBICGetIdentifiers(this,identifiers);
+}
+
+function AlembicHandle.parseXform(io String identifier, io Integer sample, io Xfo transform) {
+  FabricALEMBICParseXform(this,identifier,sample,transform);
+}
+
+function AlembicHandle.parseCamera(io String identifier, io Integer sample, io Scalar near, io Scalar far, io Scalar fovY) {
+  FabricALEMBICParseCamera(this,identifier,sample,near,far,fovY);
+}
+
+function AlembicHandle.parsePolyMeshCount(io String identifier, io Size count) {
+  FabricALEMBICParsePolyMeshCount(this,identifier,count);
+}
+
+function AlembicHandle.parsePolyMeshUniforms(io String identifier, io Integer indices[]) {
+  FabricALEMBICParsePolyMeshUniforms(this,identifier,indices);
+}
+
+
+function AlembicHandle.parsePolyMeshAttributes(io String identifier, io Integer sample, io Vec3 vertices<>, io Vec3 normals<>, io Boolean uvsLoaded, io Vec2 uvs<>) {
+  FabricALEMBICParsePolyMeshAttributes(this,identifier,sample,vertices,normals,uvsLoaded,uvs);
+}
