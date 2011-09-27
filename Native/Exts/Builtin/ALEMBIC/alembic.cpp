@@ -139,7 +139,7 @@ FABRIC_EXT_EXPORT void FabricALEMBICDecode(
   }
 }
 
-FABRIC_EXT_EXPORT void FabricALEMBICFreeData(
+FABRIC_EXT_EXPORT void FabricALEMBICFreeAlembicHandle(
   AlembicHandle &handle
 )
 {
