@@ -57,6 +57,10 @@ function appendKLInPlaceOpAdaptor(type, op, adaptor, otherType) {
 }
 
 function appendKLOpAdaptors(type, operators) {
+
+  var code = "\nfunction " + type + ".set( in " + type + " other ) {\n this = other;\n}\n\n";
+  appendToKLCode(type, code);
+
   for( var i = 0; i < operators.length; ++i ) {
     var op = operators[i];
     var otherType = type;
@@ -127,7 +131,7 @@ function defineInPlaceOpAdaptors(type, operators) {
         defineInPlaceOpAdaptor(type, 'multiply'+postfix);
         break;
       case '/=':
-        defineInPlaceOpAdaptor(type, '/=', 'divide'+postfix);
+        defineInPlaceOpAdaptor(type, 'divide'+postfix);
         break;
     }
   }
@@ -220,10 +224,17 @@ function loadType(type){
  onPostLoad();
 }
 
-function runTests(type, localVariables)
+function loadTestFile( prefix )
 {
-  var unitTestsCode = F.IO.getUserTextFile('unitTestFile://'+type+'UnitTests.js');
-  unitTestsCode = unitTestsCode.replace(/\0/g,'');//Not sure why I get /0 characters...
+  var unitTestsCode = F.IO.getUserTextFile('unitTestFile://'+prefix+'UnitTests.jskl');
+  return unitTestsCode.replace(/\0/g,'');//Not sure why I get /0 characters...
+}
+
+function runTests(type, localVariables, unitTestsCode)
+{
+  if( unitTestsCode === undefined ) {
+    unitTestsCode = loadTestFile( type );
+  }
   var testFuncName = 'run' + type + 'Tests';
 
   //1) Run in JS
@@ -256,15 +267,15 @@ function runTests(type, localVariables)
   var klCodePrefix = 
       'use ' + type + ';\n\n'
     + 'operator '+testFuncName+'(io String tests[], io Scalar results[][]) {\n';
-  var nbPrefixKLLines = 3;
+  var nbPrefixKLLines = 5;
   if( localVariables !== undefined )
   {
     nbPrefixKLLines += localVariables.length;
     for( i = 0; i < localVariables.length; i++ )
     {
-      var type = localVariables[i][0];
-      var name = localVariables[i][1];
-      klCodePrefix += type + ' ' + name + ';\n';
+      var varType = localVariables[i][0];
+      var varName = localVariables[i][1];
+      klCodePrefix += varType + ' ' + varName + ';\n';
     }
   }
   var klCode = klCodePrefix + unitTestsCode + '\n}\n';
@@ -275,7 +286,11 @@ function runTests(type, localVariables)
   var diagnostics = klOp.getDiagnostics();
   if (diagnostics.length > 0) {
     for( var i in diagnostics ) {
-      print(diagnostics[i].level +': '+ diagnostics[i].filename + ' (li ' + (diagnostics[i].line-nbPrefixKLLines) + ', col ' + diagnostics[i].column + '): ' + diagnostics[i].desc);
+      var li = diagnostics[i].line;
+      if(diagnostics[i].filename.match('.kl') === null) {
+        li -= nbPrefixKLLines;
+      }
+      print(diagnostics[i].level +': '+ diagnostics[i].filename + ' (li ' + li + ', col ' + diagnostics[i].column + '): ' + diagnostics[i].desc);
     }
   }
 
@@ -283,7 +298,7 @@ function runTests(type, localVariables)
   binding.setOperator(klOp);
   binding.setParameterLayout(["self.tests", "self.results"]);
 
-  node = FABRIC.DependencyGraph.createNode( "testNode" );
+  node = FABRIC.DependencyGraph.createNode( type + "TestNode" );
   node.addMember( "tests", "String[]" );
   node.addMember( "results", "Scalar[][]" );
   node.bindings.append(binding);

@@ -1,0 +1,110 @@
+****** Vec2 Tests ******
+Math.Warning: Vec2.invert this.x: bad divisor: 0
+Math.Warning: Vec2.invert this.y: bad divisor: 0
+[FABRIC] [MT] Math.Warning: Vec2.invert: this.x: bad divisor: 0
+[FABRIC] [MT] Math.Warning: Vec2.invert: this.y: bad divisor: 0
+'set': [ 1.0000, 4.0000 ]
+'setNull': [ 0.0000, 0.0000 ]
+'equal': [ 1.0000 ]
+'equal2': [ 0.0000 ]
+'equal3': [ 1.0000 ]
+'add': [ 3.0000, 5.0000 ]
+'addInPlace': [ 5.0000, 6.0000 ]
+'subtract': [ -1.0000, 3.0000 ]
+'subtractInPlace': [ -3.0000, 2.0000 ]
+'multiply': [ 2.0000, 4.0000 ]
+'multiplyInPlace': [ 4.0000, 4.0000 ]
+'multiplyScalar': [ 2.0000, 8.0000 ]
+'multiplyScalarInPlace': [ 3.0000, 12.000 ]
+'divide': [ 0.50000, 4.0000 ]
+'divideInPlace': [ 0.25000, 4.0000 ]
+'divideScalar': [ 0.50000, 2.0000 ]
+'dividecalarInPlace': [ 0.33333, 1.3333 ]
+'negate': [ -1.0000, -4.0000 ]
+'invert': [ 1.0000, 0.25000 ]
+'dot': [ 6.0000 ]
+'lengthSquared': [ 17.000 ]
+'length': [ 4.1231 ]
+'unit': [ 0.24254, 0.97014 ]
+'setUnit': [ 0.89443, 0.44721 ]
+'clampDown': [ 1.0000, 4.0000 ]
+'clampUp': [ -1.0000, -4.0000 ]
+'angleTo': [ 0.86217 ]
+'distanceTo': [ 3.1623 ]
+'linearInterpolate': [ 1.2500, 3.2500 ]
+'cross': [ -7.0000 ]
+****** Vec3 Tests ******
+Math.Warning: Vec3.invert this.x: bad divisor: 0
+Math.Warning: Vec3.invert this.y: bad divisor: 0
+Math.Warning: Vec3.invert this.z: bad divisor: 0
+[FABRIC] [MT] Math.Warning: Vec3.invert: this.x: bad divisor: 0
+[FABRIC] [MT] Math.Warning: Vec3.invert: this.y: bad divisor: 0
+[FABRIC] [MT] Math.Warning: Vec3.invert: this.z: bad divisor: 0
+'set': [ 1.0000, 2.0000, 3.0000 ]
+'setNull': [ 0.0000, 0.0000, 0.0000 ]
+'equal': [ 1.0000 ]
+'equal2': [ 0.0000 ]
+'equal3': [ 1.0000 ]
+'add': [ 3.0000, 4.0000, 4.0000 ]
+'addInPlace': [ 5.0000, 6.0000, 5.0000 ]
+'subtract': [ -1.0000, 0.0000, 2.0000 ]
+'subtractInPlace': [ -3.0000, -2.0000, 1.0000 ]
+'multiply': [ 2.0000, 4.0000, 3.0000 ]
+'multiplyInPlace': [ 4.0000, 8.0000, 3.0000 ]
+'multiplyScalar': [ 2.0000, 4.0000, 6.0000 ]
+'multiplyScalarInPlace': [ 3.0000, 6.0000, 9.0000 ]
+'divide': [ 0.50000, 1.0000, 3.0000 ]
+'divideInPlace': [ 0.25000, 0.50000, 3.0000 ]
+'divideScalar': [ 0.50000, 1.0000, 1.5000 ]
+'dividecalarInPlace': [ 0.33333, 0.66667, 1.0000 ]
+'negate': [ -1.0000, -2.0000, -3.0000 ]
+'invert': [ 1.0000, 0.50000, 0.33333 ]
+'dot': [ 9.0000 ]
+'lengthSquared': [ 14.000 ]
+'length': [ 3.7417 ]
+'unit': [ 0.26726, 0.53452, 0.80178 ]
+'setUnit': [ 0.66667, 0.66667, 0.33333 ]
+'clampDown': [ 1.0000, 2.0000, 3.0000 ]
+'clampUp': [ -1.0000, -2.0000, -3.0000 ]
+'angleTo': [ 0.64052 ]
+'distanceTo': [ 2.2361 ]
+'linearInterpolate': [ 1.2500, 2.0000, 2.5000 ]
+'cross': [ -4.0000, 5.0000, -2.0000 ]
+****** Vec4 Tests ******
+Math.Warning: Vec4.invert this.x: bad divisor: 0
+Math.Warning: Vec4.invert this.y: bad divisor: 0
+Math.Warning: Vec4.invert this.z: bad divisor: 0
+Math.Warning: Vec4.invert this.t: bad divisor: 0
+[FABRIC] [MT] Math.Warning: Vec4.invert: this.x: bad divisor: 0
+[FABRIC] [MT] Math.Warning: Vec4.invert: this.y: bad divisor: 0
+[FABRIC] [MT] Math.Warning: Vec4.invert: this.z: bad divisor: 0
+[FABRIC] [MT] Math.Warning: Vec4.invert: this.t: bad divisor: 0
+'set': [ 1.0000, 2.0000, 3.0000, 4.0000 ]
+'setNull': [ 0.0000, 0.0000, 0.0000, 0.0000 ]
+'equal': [ 1.0000 ]
+'equal2': [ 0.0000 ]
+'equal3': [ 1.0000 ]
+'add': [ 3.0000, 4.0000, 4.0000, 5.0000 ]
+'addInPlace': [ 5.0000, 6.0000, 5.0000, 6.0000 ]
+'subtract': [ -1.0000, 0.0000, 2.0000, 3.0000 ]
+'subtractInPlace': [ -3.0000, -2.0000, 1.0000, 2.0000 ]
+'multiply': [ 2.0000, 4.0000, 3.0000, 4.0000 ]
+'multiplyInPlace': [ 4.0000, 8.0000, 3.0000, 4.0000 ]
+'multiplyScalar': [ 2.0000, 4.0000, 6.0000, 8.0000 ]
+'multiplyScalarInPlace': [ 3.0000, 6.0000, 9.0000, 12.000 ]
+'divide': [ 0.50000, 1.0000, 3.0000, 4.0000 ]
+'divideInPlace': [ 0.25000, 0.50000, 3.0000, 4.0000 ]
+'divideScalar': [ 0.50000, 1.0000, 1.5000, 2.0000 ]
+'dividecalarInPlace': [ 0.33333, 0.66667, 1.0000, 1.3333 ]
+'negate': [ -1.0000, -2.0000, -3.0000, -4.0000 ]
+'invert': [ 1.0000, 0.50000, 0.33333, 0.25000 ]
+'dot': [ 13.000 ]
+'lengthSquared': [ 30.000 ]
+'length': [ 5.4772 ]
+'unit': [ 0.18257, 0.36515, 0.54772, 0.73030 ]
+'setUnit': [ 0.63246, 0.63246, 0.31623, 0.31623 ]
+'clampDown': [ 1.0000, 2.0000, 3.0000, 4.0000 ]
+'clampUp': [ -1.0000, -2.0000, -3.0000, -4.0000 ]
+'angleTo': [ 0.72189 ]
+'distanceTo': [ 3.7417 ]
+'linearInterpolate': [ 1.2500, 2.0000, 2.5000, 3.2500 ]
