@@ -60,7 +60,7 @@ namespace Fabric
     void Destructor::llvmCompileToModule( CG::ModuleBuilder &moduleBuilder, CG::Diagnostics &diagnostics, bool buildFunctionBodies ) const
     {
       FunctionBase::llvmCompileToModule( moduleBuilder, diagnostics, buildFunctionBodies );
-      moduleBuilder.setHaveDestructor( m_thisTypeName, true );
+      moduleBuilder.setDestructorName( m_thisTypeName, getEntryName( moduleBuilder.getManager() ) );
     }
   };
 };
