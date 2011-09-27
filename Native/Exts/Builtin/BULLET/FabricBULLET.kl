@@ -1,7 +1,3 @@
-use Vec3;
-use Quat;
-use Xfo;
-
 const Integer BULLET_BOX_SHAPE = 0;
 const Integer BULLET_CONVEX_HULL_SHAPE = 4;
 const Integer BULLET_SPHERE_SHAPE = 8;
@@ -18,6 +14,8 @@ function FabricBULLET_World_Delete(io Data worldData);
 function FabricBULLET_World_SetGravity(io Data worldData, io Vec3 gravity);
 function FabricBULLET_World_Step(io Data worldData, io Size worldStep, io Size worldSubsteps, io Scalar timeStep);
 function FabricBULLET_World_Reset(io Data worldData, io Size worldStep);
+function FabricBULLET_World_Raycast(io Data worldData, io Vec3 rayOrigin, io Vec3 rayDirection, io Boolean hit, io Vec3 hitPosition);
+function FabricBULLET_World_ApplyForce(io Data worldData, io BulletForce force);
 function FabricBULLET_World_AddRigidBody(io Data worldData, io Data bodyData);
 function FabricBULLET_World_RemoveRigidBody(io Data worldData, io Data bodyData);
 function FabricBULLET_World_AddSoftBody(io Data worldData, io Data bodyData);
