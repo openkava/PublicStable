@@ -429,6 +429,8 @@ def main():
       else:
         functionsCode.append('FABRIC_EXT_EXPORT KL::'+knownCTypes[returnTypeKey][3]+' '+name+'_wrapper()')
       functionsCode.append('{')
+    functionsCode.append('  if(!'+name+')')
+    functionsCode.append('    throwException( "OGL: '+name+': unsupported on this hardware" );')
     if not name == 'glGetError' and not name == 'gluErrorString':
       functionsCode.append('  _clearError();')
     if name.lower() == 'glbegin':
