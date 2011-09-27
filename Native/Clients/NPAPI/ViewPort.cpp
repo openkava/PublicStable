@@ -241,6 +241,18 @@ namespace Fabric
 
     void ViewPort::drawWatermark( size_t width, size_t height )
     {
+      static bool doneInit = false;
+      if ( !doneInit )
+      {
+        glewInit();
+          
+        if ( !GLEW_VERSION_2_0 )
+        {
+          FABRIC_LOG( "WARNING: OpenGL 2.0 is not supported, cannot draw watermark" );
+          return;
+        }
+      }
+      
       if ( width == 0 || height == 0 )
         return;
         
@@ -255,8 +267,6 @@ namespace Fabric
       
         if ( !m_watermarkShaderProgram )
         {
-          glewInit();
-          
           GLuint vertexShaderID = glCreateShader( GL_VERTEX_SHADER );
           if ( !vertexShaderID )
             throw Exception( "glCreateShader( GL_VERTEX_SHADER ) failed" );
