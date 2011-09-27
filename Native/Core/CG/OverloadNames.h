@@ -44,6 +44,8 @@ namespace Fabric
       paramTypes.push_back( param1Type );
       return methodOverloadName( name, thisType, paramTypes );
     }
+    
+    std::string destructorOverloadName( RC::ConstHandle<CG::Adapter> const &thisType );
   };
 };
 
