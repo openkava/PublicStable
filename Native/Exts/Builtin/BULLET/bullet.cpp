@@ -40,6 +40,7 @@ struct fabricBulletRigidBody {
   fabricBulletShape * mShape;
 	btRigidBody * mBody;
   btTransform mInitialTransform;
+  void * mWorld;
 };
 
 struct fabricBulletSoftBody {
@@ -55,6 +56,12 @@ struct fabricBulletSoftBody {
   KL::Scalar kMT;
   KL::Scalar kCHR;
   KL::Integer piterations;
+  void * mWorld;
+};
+
+struct fabricBulletConstraint {
+	btTypedConstraint * mConstraint;
+  void * mWorld;
 };
 
 // implement the callbacks
@@ -243,6 +250,7 @@ FABRIC_EXT_EXPORT void FabricBULLET_World_AddRigidBody(
     fabricBulletWorld * world = (fabricBulletWorld *)worldData;
     fabricBulletRigidBody * body = (fabricBulletRigidBody *)bodyData;
     world->mDynamicsWorld->addRigidBody(body->mBody);
+    body->mWorld = world;
   }
 }
 
@@ -255,6 +263,7 @@ FABRIC_EXT_EXPORT void FabricBULLET_World_RemoveRigidBody(
     fabricBulletWorld * world = (fabricBulletWorld *)worldData;
     fabricBulletRigidBody * body = (fabricBulletRigidBody *)bodyData;
     world->mDynamicsWorld->removeRigidBody(body->mBody);
+    body->mWorld = NULL;
   }
 }
 
@@ -267,6 +276,7 @@ FABRIC_EXT_EXPORT void FabricBULLET_World_AddSoftBody(
     fabricBulletWorld * world = (fabricBulletWorld *)worldData;
     fabricBulletSoftBody * body = (fabricBulletSoftBody *)bodyData;
     world->mDynamicsWorld->addSoftBody(body->mBody);
+    body->mWorld = world;
   }
 }
 
@@ -279,6 +289,33 @@ FABRIC_EXT_EXPORT void FabricBULLET_World_RemoveSoftBody(
     fabricBulletWorld * world = (fabricBulletWorld *)worldData;
     fabricBulletSoftBody * body = (fabricBulletSoftBody *)bodyData;
     world->mDynamicsWorld->removeSoftBody(body->mBody);
+    body->mWorld = NULL;
+  }
+}
+
+FABRIC_EXT_EXPORT void FabricBULLET_World_AddConstraint(
+  KL::Data & worldData,
+  KL::Data & constraintData
+)
+{
+  if(worldData != NULL && constraintData != NULL) {
+    fabricBulletWorld * world = (fabricBulletWorld *)worldData;
+    fabricBulletConstraint * constraint = (fabricBulletConstraint *)constraintData;
+    world->mDynamicsWorld->addConstraint(constraint->mConstraint);
+    constraint->mWorld = world;
+  }
+}
+
+FABRIC_EXT_EXPORT void FabricBULLET_World_RemoveConstraint(
+  KL::Data & worldData,
+  KL::Data & constraintData
+)
+{
+  if(worldData != NULL && constraintData != NULL) {
+    fabricBulletWorld * world = (fabricBulletWorld *)worldData;
+    fabricBulletConstraint * constraint = (fabricBulletConstraint *)constraintData;
+    world->mDynamicsWorld->removeConstraint(constraint->mConstraint);
+    constraint->mWorld = NULL;
   }
 }
 
@@ -297,7 +334,7 @@ FABRIC_EXT_EXPORT void FabricBULLET_Shape_Create(
     if(shapeType == BOX_SHAPE_PROXYTYPE) {
       
       if(shapeParameters.size() != 3) {
-        printf("   { FabricBULLET } ERROR: For the box shape you need to specify three parameters.\n");
+        throwException( "{FabricBULLET} ERROR: For the box shape you need to specify three parameters." );
         return;
       }
       collisionShape = new btBoxShape(btVector3(shapeParameters[0],shapeParameters[1],shapeParameters[2]));
@@ -305,11 +342,11 @@ FABRIC_EXT_EXPORT void FabricBULLET_Shape_Create(
     } else if(shapeType == CONVEX_HULL_SHAPE_PROXYTYPE) {
       
       if(shapeParameters.size() != 0) {
-        printf("   { FabricBULLET } ERROR: For the convex hull shape you need to specify zero parameters.\n");
+        throwException( "{FabricBULLET} ERROR: For the convex hull shape you need to specify zero parameters." );
         return;
       }
       if(shapeVertices.size() <= 3) {
-        printf("   { FabricBULLET } ERROR: For the convex hull shape you need to specify at least 3 vertices.\n");
+        throwException( "{FabricBULLET} ERROR: For the convex hull shape you need to specify at least 3 vertices." );
         return;
       }
       
@@ -321,7 +358,7 @@ FABRIC_EXT_EXPORT void FabricBULLET_Shape_Create(
     } else if(shapeType == SPHERE_SHAPE_PROXYTYPE) {
 
       if(shapeParameters.size() != 1) {
-        printf("   { FabricBULLET } ERROR: For the sphere shape you need to specify one parameter.\n");
+        throwException( "{FabricBULLET} ERROR: For the sphere shape you need to specify one parameter." );
         return;
       }
       collisionShape = new btSphereShape(shapeParameters[0]);
@@ -333,7 +370,7 @@ FABRIC_EXT_EXPORT void FabricBULLET_Shape_Create(
     } else if(shapeType == STATIC_PLANE_PROXYTYPE) {
 
       if(shapeParameters.size() != 4) {
-        printf("   { FabricBULLET } ERROR: For the plane shape you need to specify four parameters.\n");
+        throwException( "{FabricBULLET} ERROR: For the plane shape you need to specify four parameters." );
         return;
       }
       collisionShape = new btStaticPlaneShape(btVector3(shapeParameters[0],shapeParameters[1],shapeParameters[2]),shapeParameters[3]);
@@ -344,7 +381,8 @@ FABRIC_EXT_EXPORT void FabricBULLET_Shape_Create(
     
     // if we don't have a shape, we can't do this
     if(collisionShape == NULL) {
-      printf("   { FabricBULLET } ERROR: For the shape type %d is not supported.\n",int(shapeType));
+      printf("   { FabricBULLET } ERROR: Shape type %d is not supported.\n",int(shapeType));
+      throwException( "{FabricBULLET} ERROR: Shape type is not supported." );
       return;
     }
     
@@ -382,7 +420,7 @@ FABRIC_EXT_EXPORT void FabricBULLET_RigidBody_Create(
 {
   if(bodyData == NULL) {
     if(shapeData == NULL) {
-      printf("   { FabricBULLET } ERROR: Cannot create a RigidBody with a NULL shape.\n");
+      throwException( "{FabricBULLET} ERROR: Cannot create a RigidBody with a NULL shape." );
       return;
     }
     
@@ -411,6 +449,7 @@ FABRIC_EXT_EXPORT void FabricBULLET_RigidBody_Create(
     body->mInitialTransform = transform;
     body->mBody = new btRigidBody(info);
     body->mShape = shape;
+    body->mWorld = NULL;
 
     if(bodyMass == 0.0f)
     {
@@ -439,6 +478,8 @@ FABRIC_EXT_EXPORT void FabricBULLET_RigidBody_Delete(
 {
   if(bodyData != NULL) {
     fabricBulletRigidBody * body = (fabricBulletRigidBody * )bodyData;
+    if(body->mWorld != NULL)
+      FabricBULLET_World_RemoveRigidBody(body->mWorld,bodyData);
     delete(body->mBody);
     delete(body);
     bodyData = NULL;
@@ -590,6 +631,7 @@ FABRIC_EXT_EXPORT void FabricBULLET_SoftBody_Create(
     }
     
     body->mBody = new btSoftBody(&world->mSoftBodyWorldInfo,body->mInitialPositions.size(),&body->mInitialPositions[0],0);
+    body->mWorld = NULL;
     
     for(KL::Size i=0;i<indices.size()-2;i+=3)
     {
@@ -669,6 +711,8 @@ FABRIC_EXT_EXPORT void FabricBULLET_SoftBody_Delete(
 {
   if(bodyData != NULL) {
     fabricBulletSoftBody * body = (fabricBulletSoftBody * )bodyData;
+    if(body->mWorld != NULL)
+      FabricBULLET_World_RemoveSoftBody(body->mWorld,bodyData);
     delete(body->mBody);
     delete(body);
     bodyData = NULL;
@@ -691,4 +735,101 @@ FABRIC_EXT_EXPORT void FabricBULLET_SoftBody_GetPosition(
     normal.y = body->mBody->m_nodes[index].m_n.getY();
     normal.z = body->mBody->m_nodes[index].m_n.getZ();
   }  
+}
+
+FABRIC_EXT_EXPORT void FabricBULLET_Constraint_Create(
+  KL::Data & constraintData,
+  KL::Data & bodyDataA,
+  KL::Data & bodyDataB,
+  KL::Integer & constraintType,
+  KL::Xfo & pivotA,
+  KL::Xfo & pivotB,
+  KL::VariableArray<KL::Scalar> & constraintParameters
+)
+{
+  if(constraintData == NULL) {
+    
+    // check the bodies
+    fabricBulletRigidBody * bodyA = (fabricBulletRigidBody *)bodyDataA;
+    if(!bodyA)
+    {
+      throwException( "{FabricBULLET} ERROR: bodyA is NULL when creating constraint." );
+      return;
+    }
+    fabricBulletRigidBody * bodyB = (fabricBulletRigidBody *)bodyDataB;
+    if(!bodyB)
+    {
+      throwException( "{FabricBULLET} ERROR: bodyB is NULL when creating constraint." );
+      return;
+    }
+
+    // convert the transforms    
+    btTransform pivotTransformA;
+    pivotTransformA.setOrigin(btVector3(pivotA.tr.x,pivotA.tr.y,pivotA.tr.z));
+    pivotTransformA.setRotation(btQuaternion(pivotA.ori.v.x,pivotA.ori.v.y,pivotA.ori.v.z,pivotA.ori.w));
+    btTransform pivotTransformB;
+    pivotTransformB.setOrigin(btVector3(pivotB.tr.x,pivotB.tr.y,pivotB.tr.z));
+    pivotTransformB.setRotation(btQuaternion(pivotB.ori.v.x,pivotB.ori.v.y,pivotB.ori.v.z,pivotB.ori.w));
+
+    // validate the shape type first
+    btTypedConstraint * constraint = NULL;
+    if(constraintType == POINT2POINT_CONSTRAINT_TYPE) {
+      
+      if(constraintParameters.size() != 0) {
+        throwException( "{FabricBULLET} ERROR: For the point2point constraint you need to specify zero parameters." );
+        return;
+      }
+      
+      constraint = new btPoint2PointConstraint(
+         *bodyA->mBody,*bodyB->mBody,pivotTransformA.getOrigin(),pivotTransformB.getOrigin());
+    } else if(constraintType == HINGE_CONSTRAINT_TYPE) {
+      
+      if(constraintParameters.size() != 0) {
+        throwException( "{FabricBULLET} ERROR: For the hinge constraint you need to specify zero parameters." );
+        return;
+      }
+
+      btVector3 axisA = pivotTransformA.getBasis() * btVector3(1,0,0);
+      btVector3 axisB = pivotTransformB.getBasis() * btVector3(1,0,0);
+
+      constraint = new btHingeConstraint(
+         *bodyA->mBody,*bodyB->mBody,pivotTransformA.getOrigin(),pivotTransformB.getOrigin(),axisA,axisB,true);
+    } else if(constraintType == SLIDER_CONSTRAINT_TYPE) {
+      
+      if(constraintParameters.size() != 0) {
+        throwException( "{FabricBULLET} ERROR: For the slider constraint you need to specify zero parameters." );
+        return;
+      }
+
+      constraint = new btSliderConstraint(
+         *bodyA->mBody,*bodyB->mBody,pivotTransformA,pivotTransformB,true);
+    }
+    
+    // if we don't have a shape, we can't do this
+    if(constraint == NULL) {
+      printf("   { FabricBULLET } ERROR: Constraint type %d is not supported.\n",int(constraintType));
+      throwException( "{FabricBULLET} ERROR: Constraint type is not supported." );
+      return;
+    }
+
+    fabricBulletConstraint * fabricConstraint = new fabricBulletConstraint();
+    constraintData = fabricConstraint;
+    
+    fabricConstraint->mConstraint = constraint;
+    fabricConstraint->mWorld = NULL;
+  }
+}
+
+FABRIC_EXT_EXPORT void FabricBULLET_Constraint_Delete(
+  KL::Data & constraintData
+)
+{
+  if(constraintData != NULL) {
+    fabricBulletConstraint * constraint = (fabricBulletConstraint*)constraintData;
+    if(constraint->mWorld != NULL)
+      FabricBULLET_World_RemoveConstraint(constraint->mWorld,constraintData);
+    delete( constraint->mConstraint );
+    delete( constraint );
+    constraintData = NULL;
+  }
 }
