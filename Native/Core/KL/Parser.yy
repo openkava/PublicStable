@@ -7,7 +7,7 @@
 %error-verbose
 %debug
 
-%expect 2
+%expect 3
 
 %code top {
 #define YYDEBUG 1
@@ -291,6 +291,7 @@ int kl_lex( YYSTYPE *yys, YYLTYPE *yyl, KL::Context &context );
 %type <astGlobalPtr> function
 %type <astGlobalPtr> destructor
 %type <astGlobalPtr> prototype
+%type <astGlobalPtr> destructor_prototype
 %type <astGlobalPtr> alias
 %type <astGlobalPtr> struct
 %type <astGlobalPtr> global_const_decl
@@ -551,6 +552,21 @@ prototype
     $$ = AST::Function::Create( RTLOC, *$2, $6, "", $4, 0 ).take();
     delete $2;
     $4->release();
+    delete $6;
+  }
+  | destructor_prototype
+;
+
+destructor_prototype
+  : TOKEN_FUNCTION TOKEN_TILDE compound_type TOKEN_LPAREN TOKEN_RPAREN TOKEN_SEMICOLON
+  {
+    $$ = AST::Destructor::Create( RTLOC, *$3, "", 0 ).take();
+    delete $3;
+  }
+  | TOKEN_FUNCTION TOKEN_TILDE compound_type TOKEN_LPAREN TOKEN_RPAREN function_entry_name TOKEN_SEMICOLON
+  {
+    $$ = AST::Destructor::Create( RTLOC, *$3, *$6, 0 ).take();
+    delete $3;
     delete $6;
   }
 ;
