@@ -110,7 +110,7 @@ namespace Fabric
       }
     }
 
-    void StructImpl::disposeData( void *data ) const
+    void StructImpl::disposeDataImpl( void *data ) const
     {
       if ( !m_isShallow )
       {

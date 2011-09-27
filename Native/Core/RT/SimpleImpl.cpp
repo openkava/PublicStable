@@ -4,7 +4,7 @@ namespace Fabric
 {
   namespace RT
   {
-    void SimpleImpl::disposeData( void *data ) const
+    void SimpleImpl::disposeDataImpl( void *data ) const
     {
     }
     

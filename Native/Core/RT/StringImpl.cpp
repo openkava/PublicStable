@@ -59,7 +59,7 @@ namespace Fabric
       SetValue( jsonString->data(), jsonString->length(), dst );
     }
 
-    void StringImpl::disposeData( void *dst ) const
+    void StringImpl::disposeDataImpl( void *dst ) const
     {
       bits_t *bits = *reinterpret_cast<bits_t **>( dst );
       if ( bits && bits->refCount.decrementAndGetValue() == 0 )
