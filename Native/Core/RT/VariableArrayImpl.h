@@ -38,7 +38,7 @@ namespace Fabric
       // Impl
       
       virtual void setData( void const *src, void *dst ) const;
-      virtual void disposeData( void *data ) const;
+      virtual void disposeDatasImpl( void *data, size_t count, size_t stride ) const;
       virtual std::string descData( void const *data ) const;
       virtual void const *getDefaultData() const;
       
@@ -114,14 +114,9 @@ namespace Fabric
           
           size_t byteSize = m_memberSize * count;
           
-          size_t dstByteOffset = m_memberSize * dstOffset;
-          uint8_t *dstMemberDataStart = dstBits->memberDatas + dstByteOffset;
-          if ( disposeFirst && !m_memberIsShallow )
-          {
-            uint8_t *dstMemberDataEnd = dstMemberDataStart + byteSize;
-            for ( uint8_t *dstMemberData = dstMemberDataStart; dstMemberData != dstMemberDataEnd; dstMemberData += m_memberSize )
-              m_memberImpl->disposeData( dstMemberData );
-          }
+          uint8_t *dstMemberDataStart = dstBits->memberDatas + m_memberSize * dstOffset;
+          if ( disposeFirst )
+            m_memberImpl->disposeDatas( dstMemberDataStart, count, m_memberSize );
           
           size_t srcByteOffset = m_memberSize * srcOffset;
           uint8_t const *srcMemberData = srcBits->memberDatas + srcByteOffset;

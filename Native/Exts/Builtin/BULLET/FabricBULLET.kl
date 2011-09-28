@@ -1,3 +1,91 @@
+//===================================================================================
+// structs
+struct Vec3 {
+  Scalar x;
+  Scalar y;
+  Scalar z;
+};
+
+struct Quat {
+  Vec3 v;
+  Scalar w;
+};
+
+struct Xfo {
+  Quat ori;
+  Vec3 tr;
+  Vec3 sc;
+};
+
+struct BulletWorld {
+  Data localData;
+  Vec3 gravity;
+  Size step;
+  Size substeps;
+  Boolean hit;
+  Vec3 hitPosition;
+};
+
+struct BulletShape {
+  Data localData;
+  Integer type;
+  String name;
+  Scalar parameters[];
+  Vec3 vertices[];
+};
+
+struct BulletRigidBody {
+  Data localData;
+  String name;
+  Xfo transform;
+  Scalar mass;
+  Scalar friction;
+  Scalar restitution;
+};
+
+struct BulletSoftBody {
+  Data localData;
+  String name;
+  Xfo transform;
+  Integer clusters;
+  Integer constraints;
+  Scalar mass;
+  Scalar stiffness;
+  Scalar friction;
+  Scalar conservation;
+  Scalar pressure;
+  Scalar recover;
+};
+
+struct BulletConstraint {
+  Data localData;
+  Data bodyLocalDataA;
+  Data bodyLocalDataB;
+  Integer type;
+  String name;
+  Xfo pivotA;
+  Xfo pivotB;
+  String nameA;
+  String nameB;
+  Integer indexA;
+  Integer indexB;
+  Scalar parameters[];
+};
+
+struct BulletForce {
+  String name;
+  Vec3 origin;
+  Vec3 direction;
+  Scalar radius;
+  Scalar factor;
+  Boolean useTorque;
+  Boolean useFalloff;
+  Boolean enabled;
+  Boolean autoDisable;
+};
+
+//===================================================================================
+// constants
 const Integer BULLET_BOX_SHAPE = 0;
 const Integer BULLET_CONVEX_HULL_SHAPE = 4;
 const Integer BULLET_SPHERE_SHAPE = 8;
@@ -9,36 +97,193 @@ const Integer BULLET_PLANE_SHAPE = 28;
 const Integer BULLET_COMPOUND_SHAPE = 31;
 const Integer BULLET_SOFTBODY_SHAPE = 32;
 
-function FabricBULLET_World_Create(io Data worldData);
-function FabricBULLET_World_Delete(io Data worldData);
-function FabricBULLET_World_SetGravity(io Data worldData, io Vec3 gravity);
-function FabricBULLET_World_Step(io Data worldData, io Size worldStep, io Size worldSubsteps, io Scalar timeStep);
-function FabricBULLET_World_Reset(io Data worldData, io Size worldStep);
-function FabricBULLET_World_Raycast(io Data worldData, io Vec3 rayOrigin, io Vec3 rayDirection, io Boolean hit, io Vec3 hitPosition);
-function FabricBULLET_World_ApplyForce(io Data worldData, io BulletForce force);
-function FabricBULLET_World_AddRigidBody(io Data worldData, io Data bodyData);
-function FabricBULLET_World_RemoveRigidBody(io Data worldData, io Data bodyData);
-function FabricBULLET_World_AddSoftBody(io Data worldData, io Data bodyData);
-function FabricBULLET_World_RemoveSoftBody(io Data worldData, io Data bodyData);
-function FabricBULLET_World_AddConstraint(io Data worldData, io Data constraintData);
-function FabricBULLET_World_RemoveConstraint(io Data worldData, io Data constraintData);
+//===================================================================================
+// extension's functions
+function FabricBULLET_World_Create(io BulletWorld world);
+function FabricBULLET_World_Delete(io BulletWorld world);
+function FabricBULLET_World_SetGravity(io BulletWorld world);
+function FabricBULLET_World_Step(io BulletWorld world, io Scalar timeStep);
+function FabricBULLET_World_Reset(io BulletWorld world);
+function FabricBULLET_World_Raycast(io BulletWorld world, io Vec3 rayOrigin, io Vec3 rayDirection);
+function FabricBULLET_World_ApplyForce(io BulletWorld world, io BulletForce force);
+function FabricBULLET_World_AddRigidBody(io BulletWorld world, io BulletRigidBody body);
+function FabricBULLET_World_RemoveRigidBody(io BulletWorld world, io BulletRigidBody body);
+function FabricBULLET_World_AddSoftBody(io BulletWorld world, io BulletSoftBody body);
+function FabricBULLET_World_RemoveSoftBody(io BulletWorld world, io BulletSoftBody body);
+function FabricBULLET_World_AddConstraint(io BulletWorld world, io BulletConstraint constraint);
+function FabricBULLET_World_RemoveConstraint(io BulletWorld world, io BulletConstraint constraint);
+function FabricBULLET_Shape_Create(io BulletShape shape);
+function FabricBULLET_Shape_Delete(io BulletShape shape);
+function FabricBULLET_RigidBody_Create(io BulletRigidBody body, io BulletShape shape);
+function FabricBULLET_RigidBody_Delete(io BulletRigidBody body);
+function FabricBULLET_RigidBody_SetMass(io BulletRigidBody body);
+function FabricBULLET_RigidBody_GetTransform(io BulletRigidBody body);
+function FabricBULLET_RigidBody_SetTransform(io BulletRigidBody body);
+function FabricBULLET_RigidBody_GetLinearVelocity(io BulletRigidBody body, io Vec3 bodyVelocity);
+function FabricBULLET_RigidBody_SetLinearVelocity(io BulletRigidBody body, io Vec3 bodyVelocity);
+function FabricBULLET_RigidBody_GetAngularVelocity(io BulletRigidBody body, io Vec3 bodyVelocity);
+function FabricBULLET_RigidBody_SetAngularVelocity(io BulletRigidBody body, io Vec3 bodyVelocity);
+function FabricBULLET_SoftBody_Create(io BulletSoftBody body, io BulletWorld world, io Vec3 positions<>, io Vec3 normals<>, io Integer indices[]);
+function FabricBULLET_SoftBody_Delete(io BulletSoftBody body);
+function FabricBULLET_SoftBody_GetPosition(in Size index, io BulletSoftBody body, io Vec3 position, io Vec3 normal);
+function FabricBULLET_Constraint_Create(io BulletConstraint constraint);
+function FabricBULLET_Constraint_Delete(io BulletConstraint constraint);
 
-function FabricBULLET_Shape_Create(io Data shapeData, io Integer shapeType, io Scalar shapeParams[], io Vec3 shapeVertices[]);
-function FabricBULLET_Shape_Delete(io Data shapeData);
+//===================================================================================
+// world definition
+function ~BulletWorld() = "FabricBULLET_World_Delete";
 
-function FabricBULLET_RigidBody_Create(io Data bodyData, io Data shapeData, io Xfo bodyTransform, io Scalar bodyMass, io Scalar bodyFriction, io Scalar bodyRestitution);
-function FabricBULLET_RigidBody_Delete(io Data bodyData);
-function FabricBULLET_RigidBody_SetMass(io Data bodyData, io Scalar bodyMass);
-function FabricBULLET_RigidBody_GetTransform(io Data bodyData, io Xfo bodyTransform);
-function FabricBULLET_RigidBody_SetTransform(io Data bodyData, io Xfo bodyTransform);
-function FabricBULLET_RigidBody_GetLinearVelocity(io Data bodyData, io Vec3 bodyVelocity);
-function FabricBULLET_RigidBody_SetLinearVelocity(io Data bodyData, io Vec3 bodyVelocity);
-function FabricBULLET_RigidBody_GetAngularVelocity(io Data bodyData, io Vec3 bodyVelocity);
-function FabricBULLET_RigidBody_SetAngularVelocity(io Data bodyData, io Vec3 bodyVelocity);
+function BulletWorld.create(io Boolean result) {
+  if(!this.localData) {
+    report(this);
+    FabricBULLET_World_Create(this);
+    FabricBULLET_World_SetGravity(this);
+    result = true;
+  }
+  else
+    result = false;
+}
 
-function FabricBULLET_SoftBody_Create(io Data bodyData, io Data worldData, io Vec3 positions<>, io Vec3 normals<>, io Integer indices[], io Xfo transform, io Integer cluster, io Integer constraints, io Scalar mass, io Scalar stiffness, io Scalar friction, io Scalar conservation, io Scalar pressure, io Scalar recover);
-function FabricBULLET_SoftBody_Delete(io Data bodyData);
-function FabricBULLET_SoftBody_GetPosition(in Size index, io Data bodyData, io Vec3 position, io Vec3 normal);
+function BulletWorld.step(io Scalar timeStep) {
+  if(timeStep > 0)
+    FabricBULLET_World_Step(this,timeStep);
+}
 
-function FabricBULLET_Constraint_Create(io Data constraintData, io Data bodyDataA, io Data bodyDataB, io Integer constraintType, io Xfo pivotA, io Xfo pivotB, io Scalar constraintParams[]);
-function FabricBULLET_Constraint_Delete(io Data constraintData);
+function BulletWorld.reset() {
+  FabricBULLET_World_Reset(this);
+}
+
+function BulletWorld.raycast(io Vec3 origin, io Vec3 direction) {
+  FabricBULLET_World_Raycast(this,origin,direction);
+}
+
+function BulletWorld.applyForce(io BulletForce force) {
+  FabricBULLET_World_ApplyForce(this,force);
+}
+
+function BulletWorld.getGravity(io Vec3 gravity) {
+  gravity = this.gravity;
+}
+
+function BulletWorld.setGravity(io Vec3 gravity) {
+  this.gravity = gravity;
+  FabricBULLET_World_SetGravity(this);
+}
+
+function BulletWorld.addRigidBody(io BulletRigidBody body) {
+  FabricBULLET_World_AddRigidBody(this,body);
+}
+
+function BulletWorld.removeRigidBody(io BulletRigidBody body) {
+  FabricBULLET_World_RemoveRigidBody(this,body);
+}
+
+function BulletWorld.addSoftBody(io BulletSoftBody body) {
+  FabricBULLET_World_AddSoftBody(this,body);
+}
+
+function BulletWorld.removeSoftBody(io BulletSoftBody body) {
+  FabricBULLET_World_RemoveSoftBody(this,body);
+}
+
+function BulletWorld.addConstraint(io BulletConstraint constraint) {
+  FabricBULLET_World_AddConstraint(this,constraint);
+}
+
+function BulletWorld.removeConstraint(io BulletConstraint constraint) {
+  FabricBULLET_World_RemoveConstraint(this,constraint);
+}
+
+//===================================================================================
+// shape definition
+function ~BulletShape() = "FabricBULLET_Shape_Delete";
+
+function BulletShape.create(io Boolean result) {
+  if(!this.localData) {
+    report(this);
+    FabricBULLET_Shape_Create(this);
+    result = true;
+  }
+  else
+    result = false;
+}
+
+//===================================================================================
+// rigidbody definition
+function ~BulletRigidBody() = "FabricBULLET_RigidBody_Delete";
+
+function BulletRigidBody.create(io BulletShape shape, io Boolean result) {
+  if(this.localData) {
+    result = false;
+    return;
+  }
+  if(!shape.localData) {
+    result = false;
+    return;
+  }
+  FabricBULLET_RigidBody_Create(this,shape);
+  result = true;
+}
+
+function BulletRigidBody.setMass(io Scalar mass) {
+  this.mass = mass;
+  FabricBULLET_RigidBody_SetMass(this);
+}
+
+function BulletRigidBody.getTransform(io Xfo transform) {
+  FabricBULLET_RigidBody_GetTransform(this);
+  transform = this.transform;
+}
+
+function BulletRigidBody.setTransform(io Xfo transform) {
+  this.transform = transform;
+  FabricBULLET_RigidBody_SetTransform(this);
+}
+
+function BulletRigidBody.getLinearVelocity(io Vec3 velocity) {
+  FabricBULLET_RigidBody_GetLinearVelocity(this,velocity);
+}
+
+function BulletRigidBody.setLinearVelocity(io Vec3 velocity) {
+  FabricBULLET_RigidBody_SetLinearVelocity(this,velocity);
+}
+
+function BulletRigidBody.getAngularVelocity(io Vec3 velocity) {
+  FabricBULLET_RigidBody_GetAngularVelocity(this,velocity);
+}
+
+function BulletRigidBody.setAngularVelocity(io Vec3 velocity) {
+  FabricBULLET_RigidBody_SetAngularVelocity(this,velocity);
+}
+
+//===================================================================================
+// softbody definition
+function ~BulletSoftBody() = "FabricBULLET_SoftBody_Delete";
+
+function BulletSoftBody.create(io Boolean result, io BulletWorld world, io Vec3 positions<>, io Vec3 normals<>, io Integer indices[]) {
+  if(!this.localData) {
+    FabricBULLET_SoftBody_Create(this,world,positions,normals,indices);
+    result = true;
+  }
+  else
+    result = false;
+}
+
+function BulletSoftBody.getPosition(in Size index, io Vec3 position, io Vec3 normal) {
+  FabricBULLET_SoftBody_GetPosition(index, this, position, normal);
+}
+
+//===================================================================================
+// constraint definition
+function ~BulletConstraint() = "FabricBULLET_Constraint_Delete";
+
+function BulletConstraint.create(io Boolean result, io BulletRigidBody bodiesA[], io BulletRigidBody bodiesB[]) {
+  if(!this.localData) {
+    this.bodyLocalDataA = bodiesA[this.indexA].localData;
+    this.bodyLocalDataB = bodiesA[this.indexB].localData;
+    FabricBULLET_Constraint_Create(this);
+    result = true;
+  }
+  else
+    result = false;
+}

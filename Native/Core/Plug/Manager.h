@@ -20,6 +20,7 @@ namespace Fabric
   
   namespace RT
   {
+    class Impl;
     class Manager;
   };
   
@@ -83,6 +84,7 @@ namespace Fabric
       std::string m_fabricSDKSOLibResolvedName;
       //SOLibHandle m_fabricSDKSOLibHandle;
       NameToInstMap m_nameToInstMap;
+      std::map< std::string, void (*)( void * ) > m_implNameToDestructorMap;
     };
   };
 };
