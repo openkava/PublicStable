@@ -41,6 +41,8 @@ namespace Fabric
       {
         return m_numMembers;
       }
+
+      void setDefaultValues( StructMemberInfoVector const &memberInfos ) const;
       
       StructMemberInfo const &getMemberInfo( size_t index ) const
       {
@@ -94,7 +96,7 @@ namespace Fabric
     private:
     
       std::string m_name;
-      StructMemberInfoVector m_memberInfos;
+      mutable StructMemberInfoVector m_memberInfos;
       size_t m_numMembers;
       MemberOffsetVector m_memberOffsets;
       NameToIndexMap m_nameToIndexMap;
