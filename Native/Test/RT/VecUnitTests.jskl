@@ -12,61 +12,61 @@
 
 v1.appendResult(tests, results, 'set');
 
-v3.set(v1);
-v3.setNull();
-v3.appendResult(tests, results, 'setNull');
+res.set(v1);
+res.setNull();
+res.appendResult(tests, results, 'setNull');
 
-v3 = v1.multiplyScalar(1.000005);
+res = v1.multiplyScalar(1.000005);
 v1.appendBooleanResult(tests, results, 'equal', v1.equal(v1));
-v1.appendBooleanResult(tests, results, 'equal2', v1.equal(v3));
-v1.appendBooleanResult(tests, results, 'equal3', v1.almostEqual(v3, 1e-4));
+v1.appendBooleanResult(tests, results, 'equal2', v1.equal(res));
+v1.appendBooleanResult(tests, results, 'equal3', v1.almostEqual(res, 1e-4));
 
-v3 = v1.add(v2);
-v3.appendResult(tests, results, 'add');
+res = v1.add(v2);
+res.appendResult(tests, results, 'add');
 
-v3.addInPlace(v2);
-v3.appendResult(tests, results, 'addInPlace');
+res.addInPlace(v2);
+res.appendResult(tests, results, 'addInPlace');
 
-v3 = v1.subtract(v2);
-v3.appendResult(tests, results, 'subtract');
+res = v1.subtract(v2);
+res.appendResult(tests, results, 'subtract');
 
-v3.subtractInPlace(v2);
-v3.appendResult(tests, results, 'subtractInPlace');
+res.subtractInPlace(v2);
+res.appendResult(tests, results, 'subtractInPlace');
 
-v3 = v1.multiply(v2);
-v3.appendResult(tests, results, 'multiply');
+res = v1.multiply(v2);
+res.appendResult(tests, results, 'multiply');
 
-v3.multiplyInPlace(v2);
-v3.appendResult(tests, results, 'multiplyInPlace');
+res.multiplyInPlace(v2);
+res.appendResult(tests, results, 'multiplyInPlace');
 
-v3 = v1.multiplyScalar(2.0);
-v3.appendResult(tests, results, 'multiplyScalar');
+res = v1.multiplyScalar(2.0);
+res.appendResult(tests, results, 'multiplyScalar');
 
-v3.set(v1);
-v3.multiplyScalarInPlace(3.0);
-v3.appendResult(tests, results, 'multiplyScalarInPlace');
+res.set(v1);
+res.multiplyScalarInPlace(3.0);
+res.appendResult(tests, results, 'multiplyScalarInPlace');
 
-v3 = v1.divide(v2);
-v3.appendResult(tests, results, 'divide');
+res = v1.divide(v2);
+res.appendResult(tests, results, 'divide');
 
-v3.divideInPlace(v2);
-v3.appendResult(tests, results, 'divideInPlace');
+res.divideInPlace(v2);
+res.appendResult(tests, results, 'divideInPlace');
 
-v3 = v1.divideScalar(2.0);
-v3.appendResult(tests, results, 'divideScalar');
+res = v1.divideScalar(2.0);
+res.appendResult(tests, results, 'divideScalar');
 
-v3.set(v1);
-v3.divideScalarInPlace(3.0);
-v3.appendResult(tests, results, 'dividecalarInPlace');
+res.set(v1);
+res.divideScalarInPlace(3.0);
+res.appendResult(tests, results, 'dividecalarInPlace');
 
-v3 = v1.negate();
-v3.appendResult(tests, results, 'negate');
+res = v1.negate();
+res.appendResult(tests, results, 'negate');
 
-v3 = v1.invert();
-v3.appendResult(tests, results, 'invert');
+res = v1.inverse();
+res.appendResult(tests, results, 'inverse');
 
-v3.setNull();
-v3.invert();//log 'bad divisor'
+res.setNull();
+res.inverse();//log 'bad divisor'
 
 s1 = v1.dot(v2);
 v1.appendScalarResult(tests, results, 'dot', s1);
@@ -77,20 +77,20 @@ v1.appendScalarResult(tests, results, 'lengthSquared', s1);
 s1 = v1.length();
 v1.appendScalarResult(tests, results, 'length', s1);
 
-v3 = v1.unit();
-v3.appendResult(tests, results, 'unit');
+res = v1.unit();
+res.appendResult(tests, results, 'unit');
 
-v3.set(v2);
-v3.setUnit(); //todo: check return result when KL compile issue is fixed
-v3.appendResult(tests, results, 'setUnit');
+res.set(v2);
+res.setUnit(); //todo: check return result when KL compile issue is fixed
+res.appendResult(tests, results, 'setUnit');
 
-v3 = v1.multiplyScalar(2.0);
-v3 = v3.clamp(v1.negate(),v1);
-v3.appendResult(tests, results, 'clampDown');
+res = v1.multiplyScalar(2.0);
+res = res.clamp(v1.negate(),v1);
+res.appendResult(tests, results, 'clampDown');
 
-v3 = v1.multiplyScalar(-2.0);
-v3 = v3.clamp(v1.negate(),v1);
-v3.appendResult(tests, results, 'clampUp');
+res = v1.multiplyScalar(-2.0);
+res = res.clamp(v1.negate(),v1);
+res.appendResult(tests, results, 'clampUp');
 
 s1 = v1.angleTo( v2 );
 v1.appendScalarResult(tests, results, 'angleTo', s1);
@@ -98,5 +98,5 @@ v1.appendScalarResult(tests, results, 'angleTo', s1);
 s1 = v1.distanceTo( v2 );
 v1.appendScalarResult(tests, results, 'distanceTo', s1);
 
-v3 = v1.linearInterpolate( v2, 0.25 );
-v3.appendResult(tests, results, 'linearInterpolate');
+res = v1.linearInterpolate( v2, 0.25 );
+res.appendResult(tests, results, 'linearInterpolate');
