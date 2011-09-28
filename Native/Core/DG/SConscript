@@ -5,7 +5,7 @@
 import os
 Import( 'coreEnv', 'yajlFlags', 'licensesFlags', 'buildOS' )
 
-if buildOS == 'Darwin':
+if buildOS == 'Darwin' or buildOS == 'Linux':
   uglifyjsBin = os.environ['HOME'] + '/node_modules/uglify-js/bin/uglifyjs'
 
 quoteCString = coreEnv.File('quote-c-string.sed')
