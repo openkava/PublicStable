@@ -22,6 +22,8 @@ IMPLEMENT_FABRIC_EDK_ENTRIES
 const int maxProxies = 32766;
 const int maxOverlap = 65535;
 
+#pragma pack(1)
+
 // ====================================================================
 // KL structs
 struct BulletWorld {
@@ -139,7 +141,6 @@ FABRIC_EXT_EXPORT void FabricBULLET_World_Create(
 )
 {
   if(world.localData == NULL) {
-    printf("FabricBULLET_World_Create...\n");
     world.localData = new BulletWorld::LocalData();
     
     // iniate the world which can deal with softbodies and rigid bodies
@@ -178,7 +179,6 @@ FABRIC_EXT_EXPORT void FabricBULLET_World_Delete(
 )
 {
   if(world.localData != NULL) {
-    printf("FabricBULLET_World_Delete...\n");
     delete( world.localData->mDynamicsWorld );
     delete( world.localData->mSolver );
     delete( world.localData->mBroadphase );
@@ -194,7 +194,6 @@ FABRIC_EXT_EXPORT void FabricBULLET_World_SetGravity(
 )
 {
   if(world.localData != NULL) {
-    printf("FabricBULLET_World_SetGravity...\n");
     world.localData->mDynamicsWorld->setGravity(btVector3(world.gravity.x,world.gravity.y,world.gravity.z));
     world.localData->mSoftBodyWorldInfo.m_gravity = world.localData->mDynamicsWorld->getGravity();
   }
@@ -206,7 +205,6 @@ FABRIC_EXT_EXPORT void FabricBULLET_World_Step(
 )
 {
   if(world.localData != NULL) {
-    printf("FabricBULLET_World_Step...\n");
     KL::Scalar frameStep = 1.0f / 30.0f;
     KL::Scalar dt = frameStep / KL::Scalar(world.substeps);
     KL::Size nbTimeSteps = KL::Size(floorf(timeStep / frameStep));
@@ -225,7 +223,6 @@ FABRIC_EXT_EXPORT void FabricBULLET_World_Reset(
 )
 {
   if(world.localData != NULL) {
-    printf("FabricBULLET_World_Reset...\n");
     world.step = 0;
 
     world.localData->mDynamicsWorld->getBroadphase()->resetPool(world.localData->mDynamicsWorld->getDispatcher());
@@ -312,7 +309,6 @@ FABRIC_EXT_EXPORT void FabricBULLET_World_Raycast(
 )
 {
   if(world.localData != NULL) {
-    printf("FabricBULLET_World_Raycast...\n");
     
     btVector3 from(rayOrigin.x,rayOrigin.y,rayOrigin.z);
     btVector3 to = from + btVector3(rayDirection.x,rayDirection.y,rayDirection.z) * 10000.0f;
@@ -344,7 +340,6 @@ FABRIC_EXT_EXPORT void FabricBULLET_World_ApplyForce(
 )
 {
   if(world.localData != NULL) {
-    printf("FabricBULLET_World_ApplyForce...'%s'\n",force.name.data());
     
     btVector3 origin(force.origin.x,force.origin.y,force.origin.z);
     btVector3 direction(force.direction.x,force.direction.y,force.direction.z);
@@ -378,7 +373,6 @@ FABRIC_EXT_EXPORT void FabricBULLET_World_AddRigidBody(
 )
 {
   if(world.localData != NULL && body.localData != NULL) {
-    printf("FabricBULLET_World_AddRigidBody...\n");
     world.localData->mDynamicsWorld->addRigidBody(body.localData->mBody);
     body.localData->mWorld = world.localData;
   }
@@ -390,7 +384,6 @@ FABRIC_EXT_EXPORT void FabricBULLET_World_RemoveRigidBody(
 )
 {
   if(world.localData != NULL && body.localData != NULL) {
-    printf("FabricBULLET_World_RemoveRigidBody...\n");
     world.localData->mDynamicsWorld->removeRigidBody(body.localData->mBody);
     body.localData->mWorld = NULL;
   }
@@ -402,7 +395,6 @@ FABRIC_EXT_EXPORT void FabricBULLET_World_AddSoftBody(
 )
 {
   if(world.localData != NULL && body.localData != NULL) {
-    printf("FabricBULLET_World_AddSoftBody...\n");
     world.localData->mDynamicsWorld->addSoftBody(body.localData->mBody);
     body.localData->mWorld = world.localData;
   }
@@ -414,7 +406,6 @@ FABRIC_EXT_EXPORT void FabricBULLET_World_RemoveSoftBody(
 )
 {
   if(world.localData != NULL && body.localData != NULL) {
-    printf("FabricBULLET_World_RemoveSoftBody...\n");
     world.localData->mDynamicsWorld->removeSoftBody(body.localData->mBody);
     body.localData->mWorld = NULL;
   }
@@ -426,7 +417,6 @@ FABRIC_EXT_EXPORT void FabricBULLET_World_AddConstraint(
 )
 {
   if(world.localData != NULL && constraint.localData != NULL) {
-    printf("FabricBULLET_World_AddConstraint...\n");
     world.localData->mDynamicsWorld->addConstraint(constraint.localData->mConstraint);
     constraint.localData->mWorld = world.localData;
   }
@@ -438,7 +428,6 @@ FABRIC_EXT_EXPORT void FabricBULLET_World_RemoveConstraint(
 )
 {
   if(world.localData != NULL && constraint.localData != NULL) {
-    printf("FabricBULLET_World_RemoveConstraint...\n");
     world.localData->mDynamicsWorld->removeConstraint(constraint.localData->mConstraint);
     constraint.localData->mWorld = NULL;
   }
@@ -451,24 +440,16 @@ FABRIC_EXT_EXPORT void FabricBULLET_Shape_Create(
 )
 {
   if(shape.localData == NULL) {
-    printf("FabricBULLET_Shape_Create...\n");
     
     // validate the shape type first
     btCollisionShape * collisionShape = NULL;
     if(shape.type == BOX_SHAPE_PROXYTYPE) {
       
-      printf("creating shape, type '%d'\n",(int)shape.type);
-      printf("name is '%s'\n",shape.name.data());
-      printf("vertices.size(): %d\n",(int)shape.vertices.size());
-      printf("parameters.size(): %d\n",(int)shape.parameters.size());
       if(shape.parameters.size() != 3) {
         throwException( "{FabricBULLET} ERROR: For the box shape you need to specify three parameters." );
         return;
       }
-      printf("queried parameters.\n");
       collisionShape = new btBoxShape(btVector3(shape.parameters[0],shape.parameters[1],shape.parameters[2]));
-      printf("created box shape.\n");
-      
     } else if(shape.type  == CONVEX_HULL_SHAPE_PROXYTYPE) {
       
       if(shape.parameters.size() != 0) {
@@ -529,7 +510,6 @@ FABRIC_EXT_EXPORT void FabricBULLET_Shape_Delete(
 )
 {
   if(shape.localData != NULL) {
-    printf("FabricBULLET_Shape_Delete...\n");
     delete( shape.localData->mShape );
     delete( shape.localData );
     shape.localData = NULL;
@@ -544,7 +524,6 @@ FABRIC_EXT_EXPORT void FabricBULLET_RigidBody_Create(
 )
 {
   if(body.localData == NULL) {
-    printf("FabricBULLET_RigidBody_Create...\n");
     if(shape.localData == NULL) {
       throwException( "{FabricBULLET} ERROR: Cannot create a RigidBody with an uninitialized shape." );
       return;
@@ -599,7 +578,6 @@ FABRIC_EXT_EXPORT void FabricBULLET_RigidBody_Delete(
 )
 {
   if(body.localData != NULL) {
-    printf("FabricBULLET_RigidBody_Delete...\n");
     if(body.localData->mWorld != NULL)
       body.localData->mWorld->mDynamicsWorld->removeRigidBody(body.localData->mBody);
     delete(body.localData->mBody);
@@ -613,7 +591,6 @@ FABRIC_EXT_EXPORT void FabricBULLET_RigidBody_SetMass(
 )
 {
   if(body.localData != NULL) {
-    printf("FabricBULLET_RigidBody_SetMass...\n");
     btVector3 inertia(0,0,0);
     if(body.mass > 0.0f)
        body.localData->mBody->getCollisionShape()->calculateLocalInertia(body.mass,inertia);
@@ -630,7 +607,6 @@ FABRIC_EXT_EXPORT void FabricBULLET_RigidBody_GetTransform(
 )
 {
   if(body.localData != NULL) {
-    printf("FabricBULLET_RigidBody_GetTransform...\n");
     btTransform & transform = body.localData->mBody->getWorldTransform();
     body.transform.tr.x = transform.getOrigin().getX();
     body.transform.tr.y = transform.getOrigin().getY();
@@ -650,7 +626,6 @@ FABRIC_EXT_EXPORT void FabricBULLET_RigidBody_SetTransform(
 )
 {
   if(body.localData != NULL) {
-    printf("FabricBULLET_RigidBody_SetTransform...\n");
     if(body.localData->mBody->getInvMass() == 0.0f) {
       btTransform transform;
       transform.setOrigin(btVector3(body.transform.tr.x,body.transform.tr.y,body.transform.tr.z));
@@ -667,7 +642,6 @@ FABRIC_EXT_EXPORT void FabricBULLET_RigidBody_GetLinearVelocity(
 )
 {
   if(body.localData != NULL) {
-    printf("FabricBULLET_RigidBody_GetLinearVelocity...\n");
     btVector3 velocity = body.localData->mBody->getLinearVelocity();
     bodyVelocity.x = velocity.getX();
     bodyVelocity.y = velocity.getY();
@@ -681,7 +655,6 @@ FABRIC_EXT_EXPORT void FabricBULLET_RigidBody_SetLinearVelocity(
 )
 {
   if(body.localData != NULL) {
-    printf("FabricBULLET_RigidBody_SetLinearVelocity...\n");
     body.localData->mBody->setLinearVelocity(btVector3(bodyVelocity.x,bodyVelocity.y,bodyVelocity.z));
   }  
 }
@@ -692,7 +665,6 @@ FABRIC_EXT_EXPORT void FabricBULLET_RigidBody_GetAngularVelocity(
 )
 {
   if(body.localData != NULL) {
-    printf("FabricBULLET_RigidBody_GetAngularVelocity...\n");
     btVector3 velocity = body.localData->mBody->getAngularVelocity();
     bodyVelocity.x = velocity.getX();
     bodyVelocity.y = velocity.getY();
@@ -706,7 +678,6 @@ FABRIC_EXT_EXPORT void FabricBULLET_RigidBody_SetAngularVelocity(
 )
 {
   if(body.localData != NULL) {
-    printf("FabricBULLET_RigidBody_SetAngularVelocity...\n");
     body.localData->mBody->setAngularVelocity(btVector3(bodyVelocity.x,bodyVelocity.y,bodyVelocity.z));
   }  
 }
@@ -722,7 +693,6 @@ FABRIC_EXT_EXPORT void FabricBULLET_SoftBody_Create(
 )
 {
   if(body.localData == NULL && world.localData != NULL) {
-    printf("FabricBULLET_SoftBody_Create...\n");
     // convert the transform.
     btTransform transform;
     transform.setOrigin(btVector3(body.transform.tr.x,body.transform.tr.y,body.transform.tr.z));
@@ -820,7 +790,6 @@ FABRIC_EXT_EXPORT void FabricBULLET_SoftBody_Delete(
 )
 {
   if(body.localData != NULL) {
-    printf("FabricBULLET_SoftBody_Delete...\n");
     if(body.localData->mWorld != NULL)
       body.localData->mWorld->mDynamicsWorld->removeSoftBody(body.localData->mBody);
     delete(body.localData->mBody);
@@ -837,7 +806,6 @@ FABRIC_EXT_EXPORT void FabricBULLET_SoftBody_GetPosition(
 )
 {
   if(body.localData != NULL) {
-    printf("FabricBULLET_SoftBody_GetPosition...\n");
     position.x = body.localData->mBody->m_nodes[index].m_x.getX();
     position.y = body.localData->mBody->m_nodes[index].m_x.getY();
     position.z = body.localData->mBody->m_nodes[index].m_x.getZ();
@@ -854,7 +822,6 @@ FABRIC_EXT_EXPORT void FabricBULLET_Constraint_Create(
 )
 {
   if(constraint.localData == NULL) {
-    printf("FabricBULLET_Constraint_Create...\n");
     
     // check the bodies
     if(!constraint.bodyLocalDataA)
@@ -928,7 +895,6 @@ FABRIC_EXT_EXPORT void FabricBULLET_Constraint_Delete(
 )
 {
   if(constraint.localData != NULL) {
-    printf("FabricBULLET_Constraint_Delete...\n");
     if(constraint.localData->mWorld != NULL)
       constraint.localData->mWorld->mDynamicsWorld->removeConstraint(constraint.localData->mConstraint);
     delete( constraint.localData->mConstraint );

@@ -135,7 +135,6 @@ function ~BulletWorld() = "FabricBULLET_World_Delete";
 
 function BulletWorld.create(io Boolean result) {
   if(!this.localData) {
-    report(this);
     FabricBULLET_World_Create(this);
     FabricBULLET_World_SetGravity(this);
     result = true;
@@ -200,7 +199,6 @@ function ~BulletShape() = "FabricBULLET_Shape_Delete";
 
 function BulletShape.create(io Boolean result) {
   if(!this.localData) {
-    report(this);
     FabricBULLET_Shape_Create(this);
     result = true;
   }
