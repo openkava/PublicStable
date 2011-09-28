@@ -12,11 +12,27 @@ quoteCString = coreEnv.File('quote-c-string.sed')
 uglifiedWrappers = coreEnv.Command(
   'FABRIC.Wrappers.uglified.js',
   'FABRIC.Wrappers.js',
-  [[ uglifyjsBin, '$SOURCE', '>$TARGET' ]]
+  [[
+    uglifyjsBin,
+    '-o', '$TARGET',
+    '$SOURCE'
+  ]]
 )
+moreUglifiedWrappers = coreEnv.Command(
+  'FABRIC.Wrappers.more.uglified.js',
+  uglifiedWrappers,
+  [[
+    'sed',
+    '-e', 's/queueCommand/qc_/g',
+    '-e', 's/handleStateNotification/hsn_/g',
+    '-e', 's/patch/p_/g',
+    '$SOURCE',
+    '>$TARGET'
+  ]]
+)  
 wrappersINC = coreEnv.Command(
   'FABRIC.Wrappers.js.inc',
-  [uglifiedWrappers,quoteCString],
+  [moreUglifiedWrappers,quoteCString],
   [[ 'sed', '-f', quoteCString.path, '$SOURCE', '>$TARGET' ]]
 )
 
