@@ -26,6 +26,7 @@ namespace Fabric
   
   namespace AST
   {
+    class Destructor;
     class Function;
     class Global;
     class UseNameToLocationMap;
