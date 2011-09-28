@@ -44,7 +44,7 @@ namespace Fabric
       throw Exception( "cannot set constant string from a JSON value" );
     }
 
-    void ConstStringImpl::disposeDataImpl( void *data ) const
+    void ConstStringImpl::disposeDatasImpl( void *data, size_t count, size_t stride ) const
     {
     }
     

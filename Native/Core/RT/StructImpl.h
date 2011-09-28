@@ -25,7 +25,7 @@ namespace Fabric
       // Impl
       
       virtual void setData( void const *value, void *data ) const;
-      virtual void disposeDataImpl( void *data ) const;
+      virtual void disposeDatasImpl( void *data, size_t count, size_t impl ) const;
       virtual std::string descData( void const *data ) const;
       virtual void const *getDefaultData() const;
       

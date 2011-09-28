@@ -44,7 +44,8 @@ namespace Fabric
       virtual void const *getDefaultData() const = 0;
       virtual void setData( void const *value, void *data ) const = 0;
       void disposeData( void *data ) const;
-      virtual void disposeDataImpl( void *data ) const = 0;
+      void disposeDatas( void *data, size_t count, size_t stride ) const;
+      virtual void disposeDatasImpl( void *data, size_t count, size_t stride ) const = 0;
       virtual std::string descData( void const *data ) const = 0;
       
       virtual RC::Handle<JSON::Value> getJSONValue( void const *data ) const = 0;
