@@ -1,10 +1,14 @@
+/*
+ *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+ */
+ 
 #include "SimpleImpl.h"
 
 namespace Fabric
 {
   namespace RT
   {
-    void SimpleImpl::disposeDataImpl( void *data ) const
+    void SimpleImpl::disposeDatasImpl( void *data, size_t count, size_t stride ) const
     {
     }
     

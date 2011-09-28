@@ -110,16 +110,13 @@ namespace Fabric
       }
     }
 
-    void StructImpl::disposeDataImpl( void *data ) const
+    void StructImpl::disposeDatasImpl( void *data, size_t count, size_t stride ) const
     {
-      if ( !m_isShallow )
+      for ( size_t i=0; i<m_numMembers; ++i )
       {
-        for ( size_t i=0; i<m_numMembers; ++i )
-        {
-          StructMemberInfo const &memberInfo = m_memberInfos[i];
-          void *memberData = static_cast<uint8_t *>(data) + m_memberOffsets[i];
-          memberInfo.desc->disposeData( memberData );
-        }
+        StructMemberInfo const &memberInfo = m_memberInfos[i];
+        void *memberData = static_cast<uint8_t *>(data) + m_memberOffsets[i];
+        memberInfo.desc->disposeDatas( memberData, count, stride );
       }
     }
     

@@ -13,7 +13,7 @@ namespace Fabric
     
       // Impl
     
-      virtual void disposeDataImpl( void *data ) const;
+      virtual void disposeDatasImpl( void *data, size_t count, size_t stride ) const;
       
       virtual bool isEquivalentTo( RC::ConstHandle<Impl> const &impl ) const;
       virtual bool isShallow() const;
