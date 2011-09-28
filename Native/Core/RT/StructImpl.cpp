@@ -18,10 +18,11 @@ namespace Fabric
       : Impl( codeName, DT_STRUCT )
       , m_memberInfos( memberInfos )
       , m_numMembers( memberInfos.size() )
+      , m_defaultData( 0 )
     {
       m_isShallow = true;
       m_memberOffsets.push_back( 0 );
-      for ( size_t i=0; i<m_memberInfos.size(); ++i )
+      for ( size_t i=0; i<m_numMembers; ++i )
       {
         StructMemberInfo const &memberInfo = getMemberInfo(i);
         m_memberOffsets.push_back( m_memberOffsets.back() + memberInfo.desc->getAllocSize() );
@@ -29,23 +30,22 @@ namespace Fabric
         m_isShallow = m_isShallow && memberInfo.desc->isShallow();
       }
       
-      setSize( m_memberOffsets[m_numMembers] );
-      
-      // [pzion 20101118] This can't be combined in the loop above
-      // because the loop has a side effect of computing total size
-      // which is needed to create the default instance
-      size_t size = m_memberOffsets[m_memberInfos.size()];
+      size_t size = m_memberOffsets[m_numMembers];
+      setSize( size );
       m_defaultData = malloc( size );
       memset( m_defaultData, 0, size );
+      setDefaultValues( memberInfos );
+    }
+    
+    void StructImpl::setDefaultValues( StructMemberInfoVector const &memberInfos ) const
+    {
       for ( size_t i=0; i<m_numMembers; ++i )
       {
-        StructMemberInfo &memberInfo = m_memberInfos[i];
+        StructMemberInfo const &memberInfo = memberInfos[i];
+        void const *srcMemberData;
         if ( !memberInfo.defaultData.size() )
-        {
-          memberInfo.defaultData.resize( memberInfo.desc->getAllocSize(), 0 );
-          memberInfo.desc->setData( memberInfo.desc->getDefaultData(), &memberInfo.defaultData[0] );
-        }
-        void const *srcMemberData = &memberInfo.defaultData[0];
+          srcMemberData = memberInfo.desc->getDefaultData();
+        else srcMemberData = &memberInfo.defaultData[0];
         void *dstMemberData = static_cast<uint8_t *>(m_defaultData) + m_memberOffsets[i];
         memberInfo.desc->setData( srcMemberData, dstMemberData );
       }
