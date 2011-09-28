@@ -137,6 +137,17 @@ function defineInPlaceOpAdaptors(type, operators) {
   }
 }
 
+function roundNumber(num) {
+	if(Math.abs(num) <= 10e-4)
+		return 0;
+	var prec5 = num.toPrecision(5);
+	var roundedPrec5 = Math.round(prec5);
+	if(prec5 == roundedPrec5)
+		return roundedPrec5;
+	else
+		return prec5;
+}
+
 function getNumericalFields(type, path) {
   if( path === undefined )
     path = [];
@@ -334,8 +345,8 @@ function runTests(type, localVariables, unitTestsCode)
     var resultString = '[';
     for( var j in jsResult ) {
       //Be careful with floating point precision: it's not the same in KL (32 bit) and JS (64 bit)
-      var jsVal = jsResult[j].toPrecision(5);
-      var klVal = klResult[j].toPrecision(5);
+			var jsVal = roundNumber(jsResult[j]);
+      var klVal = roundNumber(klResult[j]);
       if( jsVal !== klVal ) {
         print('Unexpected: test \''+ test + '\' value # ' + j + ' differs between JS ( ' + jsVal + ' ) and KL (' + klVal + ')');
       }
