@@ -21,7 +21,7 @@ namespace Fabric
       // Impl
     
       virtual void setData( void const *src, void *dst ) const;
-      virtual void disposeData( void *data ) const;
+      virtual void disposeDatasImpl( void *data, size_t count, size_t stride ) const;
       virtual void const *getDefaultData() const;
       
       virtual RC::Handle<JSON::Value> getJSONValue( void const *data ) const;

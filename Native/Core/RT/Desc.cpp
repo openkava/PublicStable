@@ -52,6 +52,11 @@ namespace Fabric
     {
       m_impl->disposeData( data );
     }
+    
+    void Desc::disposeDatas( void *data, size_t count, size_t stride ) const
+    {
+      m_impl->disposeDatas( data, count, stride );
+    }
 
     std::string Desc::descData( void const *data ) const
     {
