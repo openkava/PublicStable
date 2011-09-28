@@ -68,9 +68,22 @@ namespace Fabric
     
     void Impl::disposeData( void *lValue ) const
     {
+      disposeDatas( lValue, 1, getAllocSize() );
+    }
+    
+    void Impl::disposeDatas( void *lValue, size_t count, size_t stride ) const
+    {
       if ( m_disposeCallback )
-        m_disposeCallback( lValue );
-      disposeDataImpl( lValue );
+      {
+        uint8_t *data = static_cast<uint8_t *>( lValue );
+        uint8_t * const dataEnd = data + count * stride;
+        while ( data != dataEnd )
+        {
+          m_disposeCallback( data );
+          data += stride;
+        }
+      }
+      disposeDatasImpl( lValue, count, stride );
     }
 
     void Impl::setDisposeCallback( void (*disposeCallback)( void * ) ) const

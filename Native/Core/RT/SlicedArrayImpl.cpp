@@ -60,10 +60,10 @@ namespace Fabric
         m_memberImpl->setDataFromJSONValue( jsonArray->get(i), m_variableArrayImpl->getMutableMemberData_NoCheck( &dstBits->variableArrayBits, dstBits->offset + i ) );
     }
 
-    void SlicedArrayImpl::disposeDataImpl( void *data ) const
+    void SlicedArrayImpl::disposeDatasImpl( void *data, size_t count, size_t stride ) const
     {
       bits_t *bits = reinterpret_cast<bits_t *>(data);
-      m_variableArrayImpl->disposeData( &bits->variableArrayBits );
+      m_variableArrayImpl->disposeDatas( &bits->variableArrayBits, count, stride );
     }
     
     std::string SlicedArrayImpl::descData( void const *data ) const
