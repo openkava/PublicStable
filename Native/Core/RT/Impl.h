@@ -43,7 +43,9 @@ namespace Fabric
       
       virtual void const *getDefaultData() const = 0;
       virtual void setData( void const *value, void *data ) const = 0;
-      virtual void disposeData( void *data ) const = 0;
+      void disposeData( void *data ) const;
+      void disposeDatas( void *data, size_t count, size_t stride ) const;
+      virtual void disposeDatasImpl( void *data, size_t count, size_t stride ) const = 0;
       virtual std::string descData( void const *data ) const = 0;
       
       virtual RC::Handle<JSON::Value> getJSONValue( void const *data ) const = 0;
@@ -55,6 +57,8 @@ namespace Fabric
       RC::ConstHandle<FixedArrayImpl> getFixedArrayImpl( size_t length ) const;
       RC::ConstHandle<VariableArrayImpl> getVariableArrayImpl( size_t flags ) const;
       RC::ConstHandle<SlicedArrayImpl> getSlicedArrayImpl() const;
+      
+      void setDisposeCallback( void (*disposeCallback)( void * ) ) const;
       
     protected:
     
@@ -70,7 +74,9 @@ namespace Fabric
       
       mutable Util::UnorderedMap< size_t, RC::WeakConstHandle<VariableArrayImpl> > m_variableArrayImpls;
       mutable RC::WeakConstHandle<SlicedArrayImpl> m_slicedArrayImpl;
-      mutable Util::UnorderedMap< size_t, RC::WeakConstHandle<FixedArrayImpl> > m_fixedArrayImpls;  
+      mutable Util::UnorderedMap< size_t, RC::WeakConstHandle<FixedArrayImpl> > m_fixedArrayImpls;
+      
+      mutable void (*m_disposeCallback)( void *lValue );
     };
   };
 };
