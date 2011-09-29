@@ -38,6 +38,7 @@ namespace Fabric
           
       virtual bool isFunction() const { return true; }
       virtual bool isOperator() const { return false; }
+      virtual bool isDestructor() const { return false; }
       
       std::string const &getDeclaredName() const
       {

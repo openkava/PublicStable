@@ -78,12 +78,15 @@ namespace Fabric
       }
     }
 
-    void FixedArrayImpl::disposeData( void *data ) const
+    void FixedArrayImpl::disposeDatasImpl( void *data, size_t count, size_t stride ) const
     {
-      if ( !m_memberIsShallow )
+      uint8_t *fixedArrayData = static_cast<uint8_t *>( data );
+      uint8_t * const fixedArrayDataEnd = fixedArrayData + count * stride;
+      while ( fixedArrayData != fixedArrayDataEnd )
       {
-        for ( size_t i=0; i<m_length; ++i )
-          m_memberImpl->disposeData( getMemberData_NoCheck( data, i) );
+        void *memberData = getMemberData_NoCheck( fixedArrayData, 0 );
+        m_memberImpl->disposeDatas( memberData, m_length, m_memberImpl->getAllocSize() );
+        fixedArrayData += stride;
       }
     }
     
