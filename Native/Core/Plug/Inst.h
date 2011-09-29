@@ -20,6 +20,7 @@ namespace Fabric
   
   namespace RT
   {
+    class Impl;
     class Manager;
   };
   
@@ -60,7 +61,14 @@ namespace Fabric
       
     public:
     
-      static RC::Handle<Inst> Create( RC::ConstHandle<IO::Dir> const &extensionDir, std::string const &name, std::string const &jsonDesc, std::vector<std::string> const &pluginDirs, RC::Handle<CG::Manager> const &cgManager );
+      static RC::Handle<Inst> Create(
+        RC::ConstHandle<IO::Dir> const &extensionDir,
+        std::string const &extensionName,
+        std::string const &jsonDesc,
+        std::vector<std::string> const &pluginDirs,
+        RC::Handle<CG::Manager> const &cgManager,
+        std::map< std::string, void (*)( void * ) > &implToDestructorMap
+        );
       
       std::string const &getJSONDesc() const
       {
@@ -85,7 +93,14 @@ namespace Fabric
       
     protected:
     
-      Inst( RC::ConstHandle<IO::Dir> const &extensionDir, std::string const &name, std::string const &jsonDesc, std::vector<std::string> const &pluginDirs, RC::Handle<CG::Manager> const &cgManager );
+      Inst(
+        RC::ConstHandle<IO::Dir> const &extensionDir,
+        std::string const &extensionName,
+        std::string const &jsonDesc,
+        std::vector<std::string> const &pluginDirs,
+        RC::Handle<CG::Manager> const &cgManager,
+        std::map< std::string, void (*)( void * ) > &implToDestructorMap
+        );
       ~Inst();
       
     private:

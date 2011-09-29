@@ -1,4 +1,5 @@
-(function(fabricClient, logCallback, debugLogCallback) {
+(function(){return (
+function (fabricClient, logCallback, debugLogCallback) {
 
   var queuedCommands = [];
   var queuedUnwinds = [];
@@ -1685,4 +1686,5 @@
       executeQueuedCommands();
     }
   };
-})
+}
+);})();
