@@ -48,6 +48,25 @@ namespace Fabric
 {
   namespace NPAPI
   {
+    enum Browser
+    {
+      Chrome,
+      Firefox,
+      Safari,
+      Unknown
+    };
+    
+    static Browser getBrowser( std::string const &userAgent )
+    {
+      if ( userAgent.find( "Chrome" ) != std::string::npos )
+        return Chrome;
+      else if ( userAgent.find( "Safari" ) != std::string::npos )
+        return Safari;
+      else if ( userAgent.find( "Firefox" ) != std::string::npos )
+        return Firefox;
+      else return Unknown;
+    }
+  
 #if defined(FABRIC_POSIX)
     static const size_t signalStackSize = 65536;
     static uint8_t signalStack[signalStackSize];
@@ -142,6 +161,50 @@ namespace Fabric
       }
       else
       {
+        Browser browser;
+        try
+        {
+          NPObject* windowObject = NULL;
+          NPError err = NPN_GetValue( npp, NPNVWindowNPObject, &windowObject );
+          if ( err != NPERR_NO_ERROR )
+            throw Exception( "NPN_GetValue( NPNVWindowNPObject ) failed" );
+          
+          /*
+          NPIdentifier *propertyIdentifiers;
+          uint32_t count;
+          NPN_Enumerate( npp, windowObject, &propertyIdentifiers, &count );
+          for ( uint32_t i=0; i<count; ++i )
+          {
+            FABRIC_LOG( "%u: %s", (unsigned)i, NPN_UTF8FromIdentifier( propertyIdentifiers[i] ) );
+          }
+          */
+          
+          NPVariant navigatorVariant;
+          if ( !NPN_GetProperty( npp, windowObject, NPN_GetStringIdentifier( "navigator" ), &navigatorVariant ) )
+            throw Exception( "NPN_GetProperty( windowObject, 'navigator' ) failed" );
+          NPN_ReleaseObject( windowObject );
+          if ( !NPVARIANT_IS_OBJECT( navigatorVariant ) )
+            throw Exception( "navigatorVariant is not an object" );
+          NPObject *navigatorObject = NPVARIANT_TO_OBJECT( navigatorVariant );
+          
+          NPVariant userAgentVariant;
+          if ( !NPN_GetProperty( npp, navigatorObject, NPN_GetStringIdentifier( "userAgent" ), &userAgentVariant ) )
+            throw Exception( "NPN_GetProperty( navigatorObject, 'userAgent' ) failed" );
+          NPN_ReleaseObject( navigatorObject );
+          if ( !NPVARIANT_IS_STRING( userAgentVariant ) )
+            throw Exception( "userAgentVariant is not a string" );
+          NPString const &userAgentNPString = NPVARIANT_TO_STRING( userAgentVariant );
+          std::string userAgent( userAgentNPString.UTF8Characters, userAgentNPString.UTF8Length );
+          NPN_ReleaseVariantValue( &userAgentVariant );
+
+          browser = getBrowser( userAgent );
+        }
+        catch ( Exception e )
+        {
+          FABRIC_LOG( "Unable to get browser type: " + e );
+          return NPERR_GENERIC_ERROR;
+        }
+        
       	std::vector<std::string> pluginPaths;
 
         std::string googleChromeProfilesPath;
@@ -194,13 +257,38 @@ namespace Fabric
         }
 #endif
 
-        std::string chromeExtensionsPathSpec = IO::JoinPath( "Default", "Extensions", "kdijpapodgbchkehlmacojcegohcmbel", std::string(buildPureVersion) + "_*" );
-        IO::GlobDirPaths( IO::JoinPath( googleChromeProfilesPath, chromeExtensionsPathSpec ), pluginPaths );
-        IO::GlobDirPaths( IO::JoinPath( chromiumProfilesPath, chromeExtensionsPathSpec ), pluginPaths );
-
-        std::string firefoxExtensionsPathSpec = IO::JoinPath( "*", "extensions", std::string(buildOS) + "-" + std::string(buildArch) + "@fabric-engine.com", "plugins" );
-        IO::GlobDirPaths( IO::JoinPath( firefoxProfilesPath, firefoxExtensionsPathSpec ), pluginPaths );
-      
+        switch ( browser )
+        {
+          case Chrome:
+          {
+            FABRIC_LOG( "Running on Chrome browser" );
+            std::string chromeExtensionsPathSpec = IO::JoinPath( "Default", "Extensions", "kdijpapodgbchkehlmacojcegohcmbel", std::string(buildPureVersion) + "_*" );
+            IO::GlobDirPaths( IO::JoinPath( googleChromeProfilesPath, chromeExtensionsPathSpec ), pluginPaths );
+            IO::GlobDirPaths( IO::JoinPath( chromiumProfilesPath, chromeExtensionsPathSpec ), pluginPaths );
+          }
+          break;
+          
+          case Firefox:
+          {
+            FABRIC_LOG( "Running on Firefox browser" );
+            std::string firefoxExtensionsPathSpec = IO::JoinPath( "*", "extensions", std::string(buildOS) + "-" + std::string(buildArch) + "@fabric-engine.com", "plugins" );
+            IO::GlobDirPaths( IO::JoinPath( firefoxProfilesPath, firefoxExtensionsPathSpec ), pluginPaths );
+          }
+          break;
+          
+          case Safari:
+          {
+            FABRIC_LOG( "Running on Safari browser" );
+          }
+          break;
+          
+          default:
+          {
+            FABRIC_LOG( "Running on an unrecognized browser" );
+          }
+          break;
+        }
+        
         RC::Handle<IOManager> ioManager = IOManager::Create( npp );
         context = Context::Create( ioManager, pluginPaths );
         ioManager->setContext( context );
