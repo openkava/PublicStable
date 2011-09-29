@@ -40,7 +40,8 @@ dimSpecificCodeTests[4] =
     'v1.appendResult(tests, results, \'multiplyVec4\');\n' +
     'v2.set(1.0,2.0,3.0);\n' +
     'v2 = m1.multiplyVector(v2);\n' +
-    'v2.appendResult(tests, results, \'multiplyVec3\');\n';
+    'v2.appendResult(tests, results, \'multiplyVec3\');\n' +
+    'm1.upperLeft().appendResult(tests, results, \'upperLeft\');\n';
 
 for( var dim = 2; dim <= 4; ++dim ) {
   var type = ('Mat' + dim) + dim;
