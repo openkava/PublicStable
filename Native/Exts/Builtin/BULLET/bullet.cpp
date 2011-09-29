@@ -22,11 +22,9 @@ IMPLEMENT_FABRIC_EDK_ENTRIES
 const int maxProxies = 32766;
 const int maxOverlap = 65535;
 
-#pragma pack(1)
-
 // ====================================================================
 // KL structs
-struct BulletWorld {
+FABRIC_EXT_KL_STRUCT( BulletWorld, {
   struct LocalData {
     btSoftRigidDynamicsWorld * mDynamicsWorld;
     btBroadphaseInterface*	mBroadphase;
@@ -42,9 +40,9 @@ struct BulletWorld {
   KL::Size substeps;
   KL::Boolean hit;
   KL::Vec3 hitPosition;
-};
+} );
 
-struct BulletShape {
+FABRIC_EXT_KL_STRUCT( BulletShape, {
   struct LocalData {
   	btCollisionShape * mShape;
   };
@@ -54,9 +52,9 @@ struct BulletShape {
   KL::String name;
   KL::VariableArray<KL::Scalar> parameters;
   KL::VariableArray<KL::Vec3> vertices;
-};
+} );
 
-struct BulletRigidBody {
+FABRIC_EXT_KL_STRUCT( BulletRigidBody, {
   struct LocalData {
     BulletShape::LocalData * mShape;
     btRigidBody * mBody;
@@ -70,9 +68,9 @@ struct BulletRigidBody {
   KL::Scalar mass;
   KL::Scalar friction;
   KL::Scalar restitution;
-};
+} );
 
-struct BulletSoftBody {
+FABRIC_EXT_KL_STRUCT( BulletSoftBody, {
   struct LocalData {
     btSoftBody * mBody;
     btAlignedObjectArray<btVector3> mInitialPositions;
@@ -100,9 +98,9 @@ struct BulletSoftBody {
   KL::Scalar conservation;
   KL::Scalar pressure;
   KL::Scalar recover;
-};
+} );
 
-struct BulletConstraint {
+FABRIC_EXT_KL_STRUCT( BulletConstraint, {
   struct LocalData {
     btTypedConstraint * mConstraint;
     BulletWorld::LocalData * mWorld;
@@ -120,9 +118,9 @@ struct BulletConstraint {
   KL::Integer indexA;
   KL::Integer indexB;
   KL::VariableArray<KL::Scalar> parameters;
-};
+} );
 
-struct BulletForce {
+FABRIC_EXT_KL_STRUCT( BulletForce, {
   KL::String name;
   KL::Vec3 origin;
   KL::Vec3 direction;
@@ -132,7 +130,7 @@ struct BulletForce {
   KL::Boolean useFalloff;
   KL::Boolean enabled;
   KL::Boolean autoDisable;
-};
+} );
 
 // ====================================================================
 // world implementation
