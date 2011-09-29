@@ -87,3 +87,4 @@ Math.Warning: Mat44.divideScalar: bad divisor: 0
 'transpose': [ 1, 5, 9, 13, 2, 6, 10, 14, 3, 7, 11, 15, 4, 8, 12, 16 ]
 'multiplyVec4': [ 18, 46, 74, 102 ]
 'multiplyVec3': [ 0.1765, 0.4510, 0.7255 ]
+'upperLeft': [ 1, 2, 3, 5, 6, 7, 9, 10, 11 ]
