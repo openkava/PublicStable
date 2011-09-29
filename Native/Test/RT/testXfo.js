@@ -11,6 +11,7 @@ loadType( 'Vec3' );
 loadType( 'Mat33' );
 loadType( 'Vec4' );
 appendToKLCode('Mat44', "\nfunction Vec4 Mat44.multiplyVector( in Vec4 other ) {\n  return this * other;\n}\n\n");
+appendToKLCode('Mat44', "\nfunction Vec3 Mat44.multiplyVector( in Vec3 other ) {\n  return this * other;\n}\n\n");
 loadType( 'Mat44' );
 appendKLOpAdaptors('Euler', []);
 loadType( 'Euler' );
