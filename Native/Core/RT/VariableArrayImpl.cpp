@@ -43,13 +43,7 @@ namespace Fabric
       {
         if ( dstBits && dstBits->refCount.decrementAndGetValue() == 0 )
         {
-          if ( !m_memberIsShallow )
-          {
-            uint8_t *dstMemberData = dstBits->memberDatas;
-            uint8_t *dstMemberDataEnd = dstMemberData + dstBits->numMembers * m_memberSize;
-            for ( ; dstMemberData != dstMemberDataEnd; dstMemberData += m_memberSize )
-              getMemberImpl()->disposeData( dstMemberData );
-          }
+          getMemberImpl()->disposeDatas( &dstBits->memberDatas[0], dstBits->numMembers, m_memberSize );
           free( dstBits );
         }
         
@@ -89,20 +83,19 @@ namespace Fabric
       }
     }
 
-    void VariableArrayImpl::disposeData( void *data ) const
+    void VariableArrayImpl::disposeDatasImpl( void *_data, size_t count, size_t stride ) const
     {
-      bits_t *bits = *static_cast<bits_t **>(data);
-      if ( bits && bits->refCount.decrementAndGetValue() == 0 )
+      uint8_t *data = static_cast<uint8_t *>( _data );
+      uint8_t * const dataEnd = data + count * stride;
+      while ( data != dataEnd )
       {
-        if ( !m_memberIsShallow )
+        bits_t *bits = *reinterpret_cast<bits_t **>(data);
+        if ( bits && bits->refCount.decrementAndGetValue() == 0 )
         {
-          uint8_t *memberData = bits->memberDatas;
-          uint8_t *memberDataEnd = memberData + m_memberSize * bits->numMembers;
-          for ( ; memberData != memberDataEnd; memberData += m_memberSize )
-            getMemberImpl()->disposeData( memberData );
+          getMemberImpl()->disposeDatas( &bits->memberDatas[0], bits->numMembers, m_memberSize );
+          free( bits );
         }
-        
-        free( bits );
+        data += stride;
       }
     }
     
@@ -153,14 +146,7 @@ namespace Fabric
       
       if ( srcBits->refCount.decrementAndGetValue() == 0 )
       {
-        if ( !m_memberIsShallow )
-        {
-          uint8_t *memberData = srcBits->memberDatas;
-          uint8_t *memberDataEnd = memberData + m_memberSize * srcBits->numMembers;
-          for ( ; memberData != memberDataEnd; memberData += m_memberSize )
-            getMemberImpl()->disposeData( memberData );
-        }
-        
+        getMemberImpl()->disposeDatas( &srcBits->memberDatas[0], srcBits->numMembers, m_memberSize );
         free( srcBits );
       }
     }
@@ -277,15 +263,8 @@ namespace Fabric
       {
         if ( bits && ( !isCopyOnWrite() || bits->refCount.getValue() == 1 ) )
         {
-          uint8_t *memberData, *memberDataEnd;
-          
-          if ( !m_memberIsShallow && newNumMembers < oldNumMembers )
-          {
-            memberData = bits->memberDatas + m_memberSize * newNumMembers;
-            memberDataEnd = bits->memberDatas + m_memberSize * oldNumMembers;
-            for ( ; memberData!=memberDataEnd; memberData += m_memberSize )
-              getMemberImpl()->disposeData( memberData );
-          }
+          if ( newNumMembers < oldNumMembers )
+            getMemberImpl()->disposeDatas( bits->memberDatas + m_memberSize * newNumMembers, oldNumMembers - newNumMembers, m_memberSize );
           
           if ( newNumMembers == 0 )
           {
@@ -314,8 +293,8 @@ namespace Fabric
             if ( !defaultMemberData )
               defaultMemberData = getMemberImpl()->getDefaultData();
             size_t memberSize = getMemberImpl()->getAllocSize();
-            memberData = bits->memberDatas + m_memberSize * oldNumMembers;
-            memberDataEnd = bits->memberDatas + m_memberSize * newNumMembers;
+            uint8_t *memberData = bits->memberDatas + m_memberSize * oldNumMembers;
+            uint8_t *memberDataEnd = bits->memberDatas + m_memberSize * newNumMembers;
             memset( memberData, 0, memberDataEnd - memberData );
             // [pzion 20110908] Very special case: if the default data is
             // all 0, we just memset to 0 and leave it at that
@@ -337,13 +316,7 @@ namespace Fabric
           {
             if ( bits->refCount.decrementAndGetValue() == 0 )
             {
-              if ( !m_memberIsShallow )
-              {
-                uint8_t *dstMemberData = bits->memberDatas;
-                uint8_t *dstMemberDataEnd = dstMemberData + bits->numMembers * m_memberSize;
-                for ( ; dstMemberData != dstMemberDataEnd; dstMemberData += m_memberSize )
-                  getMemberImpl()->disposeData( dstMemberData );
-              }
+              m_memberImpl->disposeDatas( &bits->memberDatas[0], bits->numMembers, m_memberSize );
               free( bits );
             }
           }

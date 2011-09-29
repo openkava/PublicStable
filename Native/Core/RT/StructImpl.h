@@ -25,7 +25,7 @@ namespace Fabric
       // Impl
       
       virtual void setData( void const *value, void *data ) const;
-      virtual void disposeData( void *data ) const;
+      virtual void disposeDatasImpl( void *data, size_t count, size_t impl ) const;
       virtual std::string descData( void const *data ) const;
       virtual void const *getDefaultData() const;
       
@@ -41,6 +41,8 @@ namespace Fabric
       {
         return m_numMembers;
       }
+
+      void setDefaultValues( StructMemberInfoVector const &memberInfos ) const;
       
       StructMemberInfo const &getMemberInfo( size_t index ) const
       {
@@ -94,7 +96,7 @@ namespace Fabric
     private:
     
       std::string m_name;
-      StructMemberInfoVector m_memberInfos;
+      mutable StructMemberInfoVector m_memberInfos;
       size_t m_numMembers;
       MemberOffsetVector m_memberOffsets;
       NameToIndexMap m_nameToIndexMap;
