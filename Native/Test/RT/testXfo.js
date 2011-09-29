@@ -17,7 +17,7 @@ loadType( 'Euler' );
 loadType( 'Quat' );
 loadType( 'Xfo' );
 
-runTests( 'Xfo', [['Xfo','xfo1'], ['Xfo','xfo2'], ['RotationOrder','ro1'], ['Euler','e1'], ['Euler','e2'], ['Euler','res'], ['Mat44','m1'], ['Vec4','v1']] );
+runTests( 'Xfo', [['Xfo','xfo1'], ['Xfo','xfo2'], ['Xfo','res'], ['RotationOrder','ro1'], ['Euler','e1'], ['Quat','q1'], ['Mat44','m1'], ['Vec3','v1'], ['Vec3','v2']] );
 
 F.flush();
 FC.dispose();
