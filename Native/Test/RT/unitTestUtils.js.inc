@@ -140,12 +140,12 @@ function defineInPlaceOpAdaptors(type, operators) {
 function roundNumber(num) {
 	if(Math.abs(num) <= 10e-4)
 		return 0;
-	var prec5 = num.toPrecision(5);
-	var roundedPrec5 = Math.round(prec5);
-	if(prec5 == roundedPrec5)
-		return roundedPrec5;
+	var prec4 = num.toPrecision(4);
+	var roundedPrec4 = Math.round(prec4);
+	if(prec4 == roundedPrec4)
+		return roundedPrec4;
 	else
-		return prec5;
+		return prec4;
 }
 
 function getNumericalFields(type, path) {
@@ -203,15 +203,16 @@ function generateAppendResult(type)
   }
 
   //2) Generate KL function
+	//Note: we return dummy Scalar to tell KL that we don't modify the data (r-value)
   var klCode =  
-       'function ' + type + '.appendScalarResult(io String tests[], io Scalar results[][], in String name, in Scalar value) {\n'
+       'function Scalar ' + type + '.appendScalarResult(io String tests[], io Scalar results[][], in String name, in Scalar value) {\n'
      + '  tests.push(name);\n'
      + '  Scalar data[];\n'
      + '  data.push(value);\n'
-     + '  results.push(data);\n}\n\n'
-     + 'function ' + type + '.appendBooleanResult(io String tests[], io Scalar results[][], in String name, in Boolean value) {\n'
-     + '  this.appendScalarResult( tests, results, name, value?1.0:0.0 );\n}\n\n'
-     + 'function ' + type + '.appendResult(io String tests[], io Scalar results[][], in String name) {\n'
+     + '  results.push(data);\nreturn 1.0;\n}\n\n'
+     + 'function Scalar ' + type + '.appendBooleanResult(io String tests[], io Scalar results[][], in String name, in Boolean value) {\n'
+     + '  this.appendScalarResult( tests, results, name, value?1.0:0.0 );\nreturn 1.0;\n}\n\n'
+     + 'function Scalar ' + type + '.appendResult(io String tests[], io Scalar results[][], in String name) {\n'
      + '  tests.push(name);\n'
      + '  Scalar data[];\n';
 
@@ -222,10 +223,10 @@ function generateAppendResult(type)
     {
       path += '.' + fields[i][j];
       if(j == fields[i].length-1)
-        klCode += '  data.push(this'+path+');\n';
+        klCode += '  data.push(Scalar(this'+path+'));\n';
     }
   }
-  klCode += '  results.push(data);\n}\n\n';
+  klCode += '  results.push(data);\nreturn 1.0;\n}\n\n';
   appendToKLCode(type, klCode);
 }
 
