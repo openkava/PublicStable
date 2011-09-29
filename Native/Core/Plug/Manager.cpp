@@ -6,11 +6,13 @@
 #include "Inst.h"
 
 #include <Fabric/Core/RT/Manager.h>
+#include <Fabric/Core/CG/Adapter.h>
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/AST/GlobalList.h>
 #include <Fabric/Core/DG/Context.h>
 #include <Fabric/Core/IO/Dir.h>
 #include <Fabric/Core/IO/Helpers.h>
+#include <Fabric/Core/RT/Impl.h>
 #include <Fabric/Base/JSON/Object.h>
 
 namespace Fabric
@@ -95,6 +97,15 @@ namespace Fabric
       {
         it->second->getAST()->registerTypes( cgManager, diagnostics );
       }
+
+      for ( std::map< std::string, void (*)( void * ) >::const_iterator it=m_implNameToDestructorMap.begin(); it!=m_implNameToDestructorMap.end(); ++it )
+      {
+        std::string const &implName = it->first;
+        RC::ConstHandle<CG::Adapter> adapter = cgManager->getAdapter( implName );
+        RC::ConstHandle<RT::Impl> impl = adapter->getImpl();
+        void (*destructor)( void * ) = it->second;
+        impl->setDisposeCallback( destructor );
+      }
     }
     
     Manager::~Manager()
@@ -115,7 +126,7 @@ namespace Fabric
       }
       else
       {
-        result = Inst::Create( extensionDir, name, jsonDesc, pluginDirs, cgManager );
+        result = Inst::Create( extensionDir, name, jsonDesc, pluginDirs, cgManager, m_implNameToDestructorMap );
         m_nameToInstMap.insert( NameToInstMap::value_type( name, result ) );
         FABRIC_LOG( "[%s] Extension registered", name.c_str() );
       }

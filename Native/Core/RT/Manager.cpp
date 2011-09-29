@@ -474,7 +474,14 @@ namespace Fabric
           throw "'klBindings': " + e;
         }
         
-        RC::ConstHandle< RT::StructDesc > structDesc = registerStruct( name, memberInfos );
+        RC::ConstHandle<RT::StructDesc> structDesc = registerStruct( name, memberInfos );
+
+        // [pzion 20110927] Special case: if we are registering a structure, replace
+        // the default values.  This exists purely so that if a structure is registered
+        // from an extension KL file first you can then register the same structure from
+        // Javascript but with default values
+        RC::ConstHandle<RT::StructImpl> structImpl = RC::ConstHandle<RT::StructImpl>::StaticCast( structDesc->getImpl() );
+        structImpl->setDefaultValues( memberInfos );
 
         for ( size_t i=0; i<memberInfos.size(); ++i )
         {

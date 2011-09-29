@@ -1,13 +1,74 @@
-use Vec2;
-use Vec3;
-use Quat;
-use Xfo;
+struct Vec2 {
+  Scalar x;
+  Scalar y;
+};
 
-function FabricALEMBICDecode( Data objData, Size objDataSize, io Integer archiveID, io Integer numSamples );
-function FabricALEMBICFreeData( io Integer archiveID );
-function FabricALEMBICGetIdentifiers( Integer archiveID, io String identifiers[] );
-function FabricALEMBICParseXform( Integer archiveID, io String identifier, io Integer sample, io Xfo transform );
-function FabricALEMBICParseCamera( Integer archiveID, io String identifier, io Integer sample, io Scalar near, io Scalar far, io Scalar fovY );
-function FabricALEMBICParsePolyMeshCount( Integer archiveID, io String identifier, io Size count );
-function FabricALEMBICParsePolyMeshUniforms( Integer archiveID, io String identifier, io Integer indices[] );
-function FabricALEMBICParsePolyMeshAttributes( Integer archiveID, io String identifier, io Integer sample, io Vec3 vertices<>, io Vec3 normals<>, io Boolean uvsLoaded, io Vec2 uvs<> );
+struct Vec3 {
+  Scalar x;
+  Scalar y;
+  Scalar z;
+};
+
+struct Quat {
+  Vec3 v;
+  Scalar w;
+};
+
+struct Xfo {
+  Quat ori;
+  Vec3 tr;
+  Vec3 sc;
+};
+
+struct AlembicHandle {
+  Data pointer;
+  Integer numSamples;
+};
+
+function FabricALEMBICDecode( Data objData, Size objDataSize, io AlembicHandle handle );
+function FabricALEMBICFreeAlembicHandle( io AlembicHandle handle );
+function FabricALEMBICGetIdentifiers( io AlembicHandle handle, io String identifiers[] );
+function FabricALEMBICParseXform( io AlembicHandle handle, io String identifier, io Integer sample, io Xfo transform );
+function FabricALEMBICParseCamera( io AlembicHandle handle, io String identifier, io Integer sample, io Scalar near, io Scalar far, io Scalar fovY );
+function FabricALEMBICParsePolyMeshCount( io AlembicHandle handle, io String identifier, io Size count );
+function FabricALEMBICParsePolyMeshUniforms( io AlembicHandle handle, io String identifier, io Integer indices[] );
+function FabricALEMBICParsePolyMeshAttributes( io AlembicHandle handle, io String identifier, io Integer sample, io Vec3 vertices<>, io Vec3 normals<>, io Boolean uvsLoaded, io Vec2 uvs<> );
+
+function ~AlembicHandle() = "FabricALEMBICFreeAlembicHandle";
+
+function AlembicHandle.loadResource(io FabricResource resource) {
+  if(this.pointer)
+    return;
+  if(resource.data.dataSize() == 0)
+    return;
+  FabricALEMBICDecode(resource.data.data(), resource.data.dataSize(), this);
+}
+
+function AlembicHandle.getIdentifiers(io String identifiers[]) {
+  FabricALEMBICGetIdentifiers(this,identifiers);
+}
+
+function AlembicHandle.getIdentifiers(io String identifiers[]) {
+  FabricALEMBICGetIdentifiers(this,identifiers);
+}
+
+function AlembicHandle.parseXform(io String identifier, io Integer sample, io Xfo transform) {
+  FabricALEMBICParseXform(this,identifier,sample,transform);
+}
+
+function AlembicHandle.parseCamera(io String identifier, io Integer sample, io Scalar near, io Scalar far, io Scalar fovY) {
+  FabricALEMBICParseCamera(this,identifier,sample,near,far,fovY);
+}
+
+function AlembicHandle.parsePolyMeshCount(io String identifier, io Size count) {
+  FabricALEMBICParsePolyMeshCount(this,identifier,count);
+}
+
+function AlembicHandle.parsePolyMeshUniforms(io String identifier, io Integer indices[]) {
+  FabricALEMBICParsePolyMeshUniforms(this,identifier,indices);
+}
+
+
+function AlembicHandle.parsePolyMeshAttributes(io String identifier, io Integer sample, io Vec3 vertices<>, io Vec3 normals<>, io Boolean uvsLoaded, io Vec2 uvs<>) {
+  FabricALEMBICParsePolyMeshAttributes(this,identifier,sample,vertices,normals,uvsLoaded,uvs);
+}
