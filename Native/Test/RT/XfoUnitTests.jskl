@@ -54,7 +54,13 @@ xfo2.multiplyInPlace(xfo1);
 xfo2.appendResult(tests, results, 'multiply');
 v1.set(1.0,0.0,0.0);
 m2.multiplyVector(v1).appendResult(tests, results, 'toMat44_multiplyVector_3');
-xfo2.transformVector(v1).appendResult(tests, results, 'xfo1_transformVector_3');
+v1 = xfo2.transformVector(v1);
+v1.appendResult(tests, results, 'xfo1_transformVector_3');
+
+xfo1.set(xfo2.inverse());
+xfo1.appendResult(tests, results, 'inverse');
+v1 = xfo1.transformVector(v1);
+v1.appendResult(tests, results, 'inverse_transformVector_3');
 
 
 /*
