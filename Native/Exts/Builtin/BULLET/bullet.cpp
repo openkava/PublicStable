@@ -146,22 +146,6 @@ FABRIC_EXT_KL_STRUCT( BulletAnchor, {
   KL::Boolean disableCollision;
 } );
 
-class BulletMotionState : public btMotionState {
-private:
-  btTransform mTransform;
-
-public:
-  BulletMotionState(btTransform initialTrans) {
-    mTransform = initialTrans;
-  }
-  virtual void getWorldTransform(btTransform & worldTrans) const{
-    worldTrans = mTransform;
-  }
-  virtual void setWorldTransform(const btTransform& worldTrans) {
-    mTransform = worldTrans;
-  }
-};
-
 // ====================================================================
 // world implementation
 FABRIC_EXT_EXPORT void FabricBULLET_World_Create(
@@ -169,6 +153,9 @@ FABRIC_EXT_EXPORT void FabricBULLET_World_Create(
 )
 {
   if(world.localData == NULL) {
+#ifndef NDEBUG
+    printf("  { FabricBULLET } : FabricBULLET_World_Create called.\n");
+#endif
     world.localData = new BulletWorld::LocalData();
     
     // iniate the world which can deal with softbodies and rigid bodies
@@ -199,6 +186,9 @@ FABRIC_EXT_EXPORT void FabricBULLET_World_Create(
     world.localData->mSoftBodyWorldInfo.water_density = 0;
     world.localData->mSoftBodyWorldInfo.water_offset = 0;
     world.localData->mSoftBodyWorldInfo.water_normal = btVector3(0,0,0);
+#ifndef NDEBUG
+    printf("  { FabricBULLET } : FabricBULLET_World_Create completed.\n");
+#endif
   }
 }
 
@@ -207,6 +197,9 @@ FABRIC_EXT_EXPORT void FabricBULLET_World_Delete(
 )
 {
   if(world.localData != NULL) {
+#ifndef NDEBUG
+    printf("  { FabricBULLET } : FabricBULLET_World_Delete called.\n");
+#endif
     delete( world.localData->mDynamicsWorld );
     delete( world.localData->mSolver );
     delete( world.localData->mBroadphase );
@@ -214,6 +207,9 @@ FABRIC_EXT_EXPORT void FabricBULLET_World_Delete(
     delete( world.localData->mCollisionConfiguration );
     delete( world.localData );
     world.localData = NULL;
+#ifndef NDEBUG
+    printf("  { FabricBULLET } : FabricBULLET_World_Delete completed.\n");
+#endif
   }
 }
 
@@ -222,8 +218,14 @@ FABRIC_EXT_EXPORT void FabricBULLET_World_SetGravity(
 )
 {
   if(world.localData != NULL) {
+#ifndef NDEBUG
+    printf("  { FabricBULLET } : FabricBULLET_World_SetGravity called.\n");
+#endif
     world.localData->mDynamicsWorld->setGravity(btVector3(world.gravity.x,world.gravity.y,world.gravity.z));
     world.localData->mSoftBodyWorldInfo.m_gravity = world.localData->mDynamicsWorld->getGravity();
+#ifndef NDEBUG
+    printf("  { FabricBULLET } : FabricBULLET_World_SetGravity completed.\n");
+#endif
   }
 }
 
@@ -233,6 +235,9 @@ FABRIC_EXT_EXPORT void FabricBULLET_World_Step(
 )
 {
   if(world.localData != NULL) {
+#ifndef NDEBUG
+    printf("  { FabricBULLET } : FabricBULLET_World_Step called.\n");
+#endif
     KL::Scalar frameStep = 1.0f / 30.0f;
     KL::Scalar dt = frameStep / KL::Scalar(world.substeps);
     KL::Size nbTimeSteps = KL::Size(floorf(timeStep / frameStep));
@@ -243,6 +248,9 @@ FABRIC_EXT_EXPORT void FabricBULLET_World_Step(
       timeStep -= dt;
     }
     world.localData->mSoftBodyWorldInfo.m_sparsesdf.GarbageCollect();
+#ifndef NDEBUG
+    printf("  { FabricBULLET } : FabricBULLET_World_Step completed.\n");
+#endif
   }
 }
 
@@ -251,6 +259,9 @@ FABRIC_EXT_EXPORT void FabricBULLET_World_Reset(
 )
 {
   if(world.localData != NULL) {
+#ifndef NDEBUG
+    printf("  { FabricBULLET } : FabricBULLET_World_Reset called.\n");
+#endif
     world.step = 0;
 
     world.localData->mDynamicsWorld->getBroadphase()->resetPool(world.localData->mDynamicsWorld->getDispatcher());
@@ -327,6 +338,9 @@ FABRIC_EXT_EXPORT void FabricBULLET_World_Reset(
       body->m_cfg.piterations = localData->piterations;
       body->m_cfg.citerations = localData->piterations;
     }
+#ifndef NDEBUG
+    printf("  { FabricBULLET } : FabricBULLET_World_Reset completed.\n");
+#endif
   }
 }
 
@@ -337,7 +351,9 @@ FABRIC_EXT_EXPORT void FabricBULLET_World_Raycast(
 )
 {
   if(world.localData != NULL) {
-    
+#ifndef NDEBUG
+    printf("  { FabricBULLET } : FabricBULLET_World_Raycast called.\n");
+#endif
     btVector3 from(rayOrigin.x,rayOrigin.y,rayOrigin.z);
     btVector3 to = from + btVector3(rayDirection.x,rayDirection.y,rayDirection.z) * 10000.0f;
     btCollisionWorld::ClosestRayResultCallback callback(from,to);
@@ -359,6 +375,9 @@ FABRIC_EXT_EXPORT void FabricBULLET_World_Raycast(
       world.hitPosition.y = position.getY();
       world.hitPosition.z = position.getZ();
     }
+#ifndef NDEBUG
+    printf("  { FabricBULLET } : FabricBULLET_World_Raycast completed.\n");
+#endif
   }
 }
 
@@ -368,7 +387,9 @@ FABRIC_EXT_EXPORT void FabricBULLET_World_ApplyForce(
 )
 {
   if(world.localData != NULL) {
-    
+#ifndef NDEBUG
+    printf("  { FabricBULLET } : FabricBULLET_World_ApplyForce called.\n");
+#endif
     btVector3 origin(force.origin.x,force.origin.y,force.origin.z);
     btVector3 direction(force.direction.x,force.direction.y,force.direction.z);
     
@@ -392,6 +413,9 @@ FABRIC_EXT_EXPORT void FabricBULLET_World_ApplyForce(
       } else
         body->applyCentralForce(direction * factor);
     }
+#ifndef NDEBUG
+    printf("  { FabricBULLET } : FabricBULLET_World_ApplyForce completed.\n");
+#endif
   }
 }
 
@@ -401,8 +425,14 @@ FABRIC_EXT_EXPORT void FabricBULLET_World_AddRigidBody(
 )
 {
   if(world.localData != NULL && body.localData != NULL) {
+#ifndef NDEBUG
+    printf("  { FabricBULLET } : FabricBULLET_World_AddRigidBody called.\n");
+#endif
     world.localData->mDynamicsWorld->addRigidBody(body.localData->mBody);
     body.localData->mWorld = world.localData;
+#ifndef NDEBUG
+    printf("  { FabricBULLET } : FabricBULLET_World_AddRigidBody completed.\n");
+#endif
   }
 }
 
@@ -412,8 +442,14 @@ FABRIC_EXT_EXPORT void FabricBULLET_World_RemoveRigidBody(
 )
 {
   if(world.localData != NULL && body.localData != NULL) {
+#ifndef NDEBUG
+    printf("  { FabricBULLET } : FabricBULLET_World_RemoveRigidBody called.\n");
+#endif
     world.localData->mDynamicsWorld->removeRigidBody(body.localData->mBody);
     body.localData->mWorld = NULL;
+#ifndef NDEBUG
+    printf("  { FabricBULLET } : FabricBULLET_World_RemoveRigidBody completed.\n");
+#endif
   }
 }
 
@@ -423,8 +459,14 @@ FABRIC_EXT_EXPORT void FabricBULLET_World_AddSoftBody(
 )
 {
   if(world.localData != NULL && body.localData != NULL) {
+#ifndef NDEBUG
+    printf("  { FabricBULLET } : FabricBULLET_World_AddSoftBody called.\n");
+#endif
     world.localData->mDynamicsWorld->addSoftBody(body.localData->mBody);
     body.localData->mWorld = world.localData;
+#ifndef NDEBUG
+    printf("  { FabricBULLET } : FabricBULLET_World_AddSoftBody completed.\n");
+#endif
   }
 }
 
@@ -434,8 +476,14 @@ FABRIC_EXT_EXPORT void FabricBULLET_World_RemoveSoftBody(
 )
 {
   if(world.localData != NULL && body.localData != NULL) {
+#ifndef NDEBUG
+    printf("  { FabricBULLET } : FabricBULLET_World_RemoveSoftBody called.\n");
+#endif
     world.localData->mDynamicsWorld->removeSoftBody(body.localData->mBody);
     body.localData->mWorld = NULL;
+#ifndef NDEBUG
+    printf("  { FabricBULLET } : FabricBULLET_World_RemoveSoftBody completed.\n");
+#endif
   }
 }
 
@@ -445,8 +493,14 @@ FABRIC_EXT_EXPORT void FabricBULLET_World_AddConstraint(
 )
 {
   if(world.localData != NULL && constraint.localData != NULL) {
+#ifndef NDEBUG
+    printf("  { FabricBULLET } : FabricBULLET_World_AddConstraint called.\n");
+#endif
     world.localData->mDynamicsWorld->addConstraint(constraint.localData->mConstraint);
     constraint.localData->mWorld = world.localData;
+#ifndef NDEBUG
+    printf("  { FabricBULLET } : FabricBULLET_World_AddConstraint completed.\n");
+#endif
   }
 }
 
@@ -456,8 +510,14 @@ FABRIC_EXT_EXPORT void FabricBULLET_World_RemoveConstraint(
 )
 {
   if(world.localData != NULL && constraint.localData != NULL) {
+#ifndef NDEBUG
+    printf("  { FabricBULLET } : FabricBULLET_World_RemoveConstraint called.\n");
+#endif
     world.localData->mDynamicsWorld->removeConstraint(constraint.localData->mConstraint);
     constraint.localData->mWorld = NULL;
+#ifndef NDEBUG
+    printf("  { FabricBULLET } : FabricBULLET_World_RemoveConstraint completed.\n");
+#endif
   }
 }
 
@@ -468,7 +528,9 @@ FABRIC_EXT_EXPORT void FabricBULLET_Shape_Create(
 )
 {
   if(shape.localData == NULL) {
-    
+#ifndef NDEBUG
+    printf("  { FabricBULLET } : FabricBULLET_Shape_Create called.\n");
+#endif
     // validate the shape type first
     btCollisionShape * collisionShape = NULL;
     if(shape.type == BOX_SHAPE_PROXYTYPE) {
@@ -530,6 +592,9 @@ FABRIC_EXT_EXPORT void FabricBULLET_Shape_Create(
     shape.localData = new BulletShape::LocalData();
     shape.localData->mShape = collisionShape;
     shape.localData->mShape->setUserPointer(shape.localData);
+#ifndef NDEBUG
+    printf("  { FabricBULLET } : FabricBULLET_Shape_Create completed.\n");
+#endif
   }
 }
 
@@ -538,9 +603,15 @@ FABRIC_EXT_EXPORT void FabricBULLET_Shape_Delete(
 )
 {
   if(shape.localData != NULL) {
+#ifndef NDEBUG
+    printf("  { FabricBULLET } : FabricBULLET_Shape_Delete called.\n");
+#endif
     delete( shape.localData->mShape );
     delete( shape.localData );
     shape.localData = NULL;
+#ifndef NDEBUG
+    printf("  { FabricBULLET } : FabricBULLET_Shape_Delete completed.\n");
+#endif
   }
 }
 
@@ -552,6 +623,9 @@ FABRIC_EXT_EXPORT void FabricBULLET_RigidBody_Create(
 )
 {
   if(body.localData == NULL) {
+#ifndef NDEBUG
+    printf("  { FabricBULLET } : FabricBULLET_RigidBody_Create called.\n");
+#endif
     if(shape.localData == NULL) {
       throwException( "{FabricBULLET} ERROR: Cannot create a RigidBody with an uninitialized shape." );
       return;
@@ -562,11 +636,7 @@ FABRIC_EXT_EXPORT void FabricBULLET_RigidBody_Create(
     transform.setOrigin(btVector3(body.transform.tr.x,body.transform.tr.y,body.transform.tr.z));
     transform.setRotation(btQuaternion(body.transform.ori.v.x,body.transform.ori.v.y,body.transform.ori.v.z,body.transform.ori.w));
     
-    btMotionState* motionState;
-    if(body.mass > 0.0f)
-      motionState = new btDefaultMotionState(transform);
-    else
-      motionState = new BulletMotionState(transform);
+    btMotionState* motionState = new btDefaultMotionState(transform);
 
     btVector3 inertia(0,0,0);
     if(body.mass > 0.0f)
@@ -602,6 +672,9 @@ FABRIC_EXT_EXPORT void FabricBULLET_RigidBody_Create(
     body.localData->mBody->setDamping(0.3f,0.3f);
 
     body.localData->mBody->setUserPointer(body.localData);
+#ifndef NDEBUG
+    printf("  { FabricBULLET } : FabricBULLET_RigidBody_Create completed.\n");
+#endif
   }
 }
 
@@ -610,11 +683,17 @@ FABRIC_EXT_EXPORT void FabricBULLET_RigidBody_Delete(
 )
 {
   if(body.localData != NULL) {
-    if(body.localData->mWorld != NULL)
-      body.localData->mWorld->mDynamicsWorld->removeRigidBody(body.localData->mBody);
+#ifndef NDEBUG
+    printf("  { FabricBULLET } : FabricBULLET_RigidBody_Delete called.\n");
+#endif
+    //if(body.localData->mWorld != NULL)
+    //  body.localData->mWorld->mDynamicsWorld->removeRigidBody(body.localData->mBody);
     delete(body.localData->mBody);
     delete(body.localData);
     body.localData = NULL;
+#ifndef NDEBUG
+    printf("  { FabricBULLET } : FabricBULLET_RigidBody_Delete completed.\n");
+#endif
   }  
 }
 
@@ -623,29 +702,21 @@ FABRIC_EXT_EXPORT void FabricBULLET_RigidBody_SetMass(
 )
 {
   if(body.localData != NULL) {
+#ifndef NDEBUG
+    printf("  { FabricBULLET } : FabricBULLET_RigidBody_SetMass called.\n");
+#endif
     btVector3 inertia(0,0,0);
     if(body.mass > 0.0f)
        body.localData->mBody->getCollisionShape()->calculateLocalInertia(body.mass,inertia);
-    
-    // check if we are switching motion states
-    if((body.mass > 0.0f) != body.localData->mBody->getInvMass() > 0.0f) {
-      btTransform worldTransform = body.localData->mBody->getWorldTransform();
-      if(body.localData->mBody->getInvMass() == 0.0) {
-        BulletMotionState * motionState = (BulletMotionState * )body.localData->mBody->getMotionState();
-        delete(motionState);
-        body.localData->mBody->setMotionState(new btDefaultMotionState(worldTransform));
-      } else {
-        btDefaultMotionState * motionState = (btDefaultMotionState * )body.localData->mBody->getMotionState();
-        delete(motionState);
-        body.localData->mBody->setMotionState(new BulletMotionState(worldTransform));
-      }
-    }
     
     body.localData->mBody->setMassProps(body.mass,inertia);
     if(body.mass == 0.0f)
       body.localData->mBody->setCollisionFlags( body.localData->mBody->getCollisionFlags() | btCollisionObject::CF_KINEMATIC_OBJECT);
     else
       body.localData->mBody->setCollisionFlags( body.localData->mBody->getCollisionFlags() & ~btCollisionObject::CF_KINEMATIC_OBJECT);
+#ifndef NDEBUG
+    printf("  { FabricBULLET } : FabricBULLET_RigidBody_SetMass completed.\n");
+#endif
   }  
 }
 
@@ -674,11 +745,17 @@ FABRIC_EXT_EXPORT void FabricBULLET_RigidBody_SetTransform(
 {
   if(body.localData != NULL) {
     if(body.localData->mBody->getInvMass() == 0.0f && body.localData->mWorld != NULL) {
+#ifndef NDEBUG
+      printf("  { FabricBULLET } : FabricBULLET_RigidBody_SetTransform called.\n");
+#endif
       btTransform transform;
       transform.setOrigin(btVector3(body.transform.tr.x,body.transform.tr.y,body.transform.tr.z));
       transform.setRotation(btQuaternion(body.transform.ori.v.x,body.transform.ori.v.y,body.transform.ori.v.z,body.transform.ori.w));
       body.localData->mBody->getMotionState()->setWorldTransform(transform);
       body.localData->mShape->mShape->setLocalScaling(btVector3(body.transform.sc.x,body.transform.sc.y,body.transform.sc.z));
+#ifndef NDEBUG
+      printf("  { FabricBULLET } : FabricBULLET_RigidBody_SetTransform completed.\n");
+#endif
     }
   }  
 }
@@ -689,10 +766,16 @@ FABRIC_EXT_EXPORT void FabricBULLET_RigidBody_GetLinearVelocity(
 )
 {
   if(body.localData != NULL) {
+#ifndef NDEBUG
+    printf("  { FabricBULLET } : FabricBULLET_RigidBody_GetLinearVelocity called.\n");
+#endif
     btVector3 velocity = body.localData->mBody->getLinearVelocity();
     bodyVelocity.x = velocity.getX();
     bodyVelocity.y = velocity.getY();
     bodyVelocity.z = velocity.getZ();
+#ifndef NDEBUG
+    printf("  { FabricBULLET } : FabricBULLET_RigidBody_GetLinearVelocity completed.\n");
+#endif
   }  
 }
 
@@ -702,7 +785,13 @@ FABRIC_EXT_EXPORT void FabricBULLET_RigidBody_SetLinearVelocity(
 )
 {
   if(body.localData != NULL) {
+#ifndef NDEBUG
+    printf("  { FabricBULLET } : FabricBULLET_RigidBody_SetLinearVelocity called.\n");
+#endif
     body.localData->mBody->setLinearVelocity(btVector3(bodyVelocity.x,bodyVelocity.y,bodyVelocity.z));
+#ifndef NDEBUG
+    printf("  { FabricBULLET } : FabricBULLET_RigidBody_SetLinearVelocity completed.\n");
+#endif
   }  
 }
 
@@ -712,10 +801,16 @@ FABRIC_EXT_EXPORT void FabricBULLET_RigidBody_GetAngularVelocity(
 )
 {
   if(body.localData != NULL) {
+#ifndef NDEBUG
+    printf("  { FabricBULLET } : FabricBULLET_RigidBody_GetAngularVelocity called.\n");
+#endif
     btVector3 velocity = body.localData->mBody->getAngularVelocity();
     bodyVelocity.x = velocity.getX();
     bodyVelocity.y = velocity.getY();
     bodyVelocity.z = velocity.getZ();
+#ifndef NDEBUG
+    printf("  { FabricBULLET } : FabricBULLET_RigidBody_GetAngularVelocity completed.\n");
+#endif
   }  
 }
 
@@ -725,7 +820,13 @@ FABRIC_EXT_EXPORT void FabricBULLET_RigidBody_SetAngularVelocity(
 )
 {
   if(body.localData != NULL) {
+#ifndef NDEBUG
+    printf("  { FabricBULLET } : FabricBULLET_RigidBody_SetAngularVelocity called.\n");
+#endif
     body.localData->mBody->setAngularVelocity(btVector3(bodyVelocity.x,bodyVelocity.y,bodyVelocity.z));
+#ifndef NDEBUG
+    printf("  { FabricBULLET } : FabricBULLET_RigidBody_SetAngularVelocity completed.\n");
+#endif
   }  
 }
 
@@ -740,6 +841,9 @@ FABRIC_EXT_EXPORT void FabricBULLET_SoftBody_Create(
 )
 {
   if(body.localData == NULL && world.localData != NULL) {
+#ifndef NDEBUG
+    printf("  { FabricBULLET } : FabricBULLET_SoftBody_Create called.\n");
+#endif
     // convert the transform.
     btTransform transform;
     transform.setOrigin(btVector3(body.transform.tr.x,body.transform.tr.y,body.transform.tr.z));
@@ -829,6 +933,9 @@ FABRIC_EXT_EXPORT void FabricBULLET_SoftBody_Create(
     body.localData->piterations = body.localData->mBody->m_cfg.piterations;
     
     body.localData->mBody->setUserPointer(body.localData);
+#ifndef NDEBUG
+    printf("  { FabricBULLET } : FabricBULLET_SoftBody_Create completed.\n");
+#endif
   }
 }
 
@@ -837,11 +944,17 @@ FABRIC_EXT_EXPORT void FabricBULLET_SoftBody_Delete(
 )
 {
   if(body.localData != NULL) {
-    if(body.localData->mWorld != NULL)
-      body.localData->mWorld->mDynamicsWorld->removeSoftBody(body.localData->mBody);
+#ifndef NDEBUG
+    printf("  { FabricBULLET } : FabricBULLET_SoftBody_Delete called.\n");
+#endif
+    //if(body.localData->mWorld != NULL)
+    //  body.localData->mWorld->mDynamicsWorld->removeSoftBody(body.localData->mBody);
     delete(body.localData->mBody);
     delete(body.localData);
     body.localData = NULL;
+#ifndef NDEBUG
+    printf("  { FabricBULLET } : FabricBULLET_SoftBody_Delete completed.\n");
+#endif
   }  
 }
 
@@ -869,7 +982,9 @@ FABRIC_EXT_EXPORT void FabricBULLET_Constraint_Create(
 )
 {
   if(constraint.localData == NULL) {
-    
+#ifndef NDEBUG
+    printf("  { FabricBULLET } : FabricBULLET_Constraint_Create called.\n");
+#endif
     // check the bodies
     if(!constraint.bodyLocalDataA)
     {
@@ -934,6 +1049,9 @@ FABRIC_EXT_EXPORT void FabricBULLET_Constraint_Create(
     constraint.localData = new BulletConstraint::LocalData();
     constraint.localData->mConstraint = typedConstraint;
     constraint.localData->mWorld = NULL;
+#ifndef NDEBUG
+    printf("  { FabricBULLET } : FabricBULLET_Constraint_Create completed.\n");
+#endif
   }
 }
 
@@ -942,11 +1060,17 @@ FABRIC_EXT_EXPORT void FabricBULLET_Constraint_Delete(
 )
 {
   if(constraint.localData != NULL) {
-    if(constraint.localData->mWorld != NULL)
-      constraint.localData->mWorld->mDynamicsWorld->removeConstraint(constraint.localData->mConstraint);
+#ifndef NDEBUG
+    printf("  { FabricBULLET } : FabricBULLET_Constraint_Delete called.\n");
+#endif
+    //if(constraint.localData->mWorld != NULL)
+    //  constraint.localData->mWorld->mDynamicsWorld->removeConstraint(constraint.localData->mConstraint);
     delete( constraint.localData->mConstraint );
     delete( constraint.localData );
     constraint.localData = NULL;
+#ifndef NDEBUG
+    printf("  { FabricBULLET } : FabricBULLET_Constraint_Delete completed.\n");
+#endif
   }
 }
 
@@ -957,7 +1081,9 @@ FABRIC_EXT_EXPORT void FabricBULLET_Anchor_Create(
 )
 {
   if(anchor.localData == NULL) {
-    
+#ifndef NDEBUG
+    printf("  { FabricBULLET } : FabricBULLET_Anchor_Create called.\n");
+#endif
     // check the bodies
     if(!anchor.rigidBodyLocalData)
     {
@@ -981,6 +1107,9 @@ FABRIC_EXT_EXPORT void FabricBULLET_Anchor_Create(
 
     anchor.localData = new BulletAnchor::LocalData();
     anchor.localData->mCreated = true;
+#ifndef NDEBUG
+    printf("  { FabricBULLET } : FabricBULLET_Anchor_Create completed.\n");
+#endif
   }
 }
 
@@ -989,7 +1118,13 @@ FABRIC_EXT_EXPORT void FabricBULLET_Anchor_Delete(
 )
 {
   if(anchor.localData != NULL) {
+#ifndef NDEBUG
+    printf("  { FabricBULLET } : FabricBULLET_Anchor_Delete called.\n");
+#endif
     delete( anchor.localData );
     anchor.localData = NULL;
+#ifndef NDEBUG
+    printf("  { FabricBULLET } : FabricBULLET_Anchor_Delete completed.\n");
+#endif
   }
 }
