@@ -126,13 +126,13 @@ function FabricBULLET_Shape_Create(io BulletShape shape);
 function FabricBULLET_Shape_Delete(io BulletShape shape);
 function FabricBULLET_RigidBody_Create(io BulletRigidBody body, io BulletShape shape);
 function FabricBULLET_RigidBody_Delete(io BulletRigidBody body);
-function FabricBULLET_RigidBody_SetMass(io BulletRigidBody body);
-function FabricBULLET_RigidBody_GetTransform(io BulletRigidBody body);
-function FabricBULLET_RigidBody_SetTransform(io BulletRigidBody body);
-function FabricBULLET_RigidBody_GetLinearVelocity(io BulletRigidBody body, io Vec3 bodyVelocity);
-function FabricBULLET_RigidBody_SetLinearVelocity(io BulletRigidBody body, io Vec3 bodyVelocity);
-function FabricBULLET_RigidBody_GetAngularVelocity(io BulletRigidBody body, io Vec3 bodyVelocity);
-function FabricBULLET_RigidBody_SetAngularVelocity(io BulletRigidBody body, io Vec3 bodyVelocity);
+function FabricBULLET_RigidBody_SetMass(io BulletRigidBody body, in Scalar mass);
+function Xfo FabricBULLET_RigidBody_GetTransform(in BulletRigidBody body);
+function FabricBULLET_RigidBody_SetTransform(in BulletRigidBody body, in Xfo transform);
+function Vec3 FabricBULLET_RigidBody_GetLinearVelocity(in BulletRigidBody body);
+function FabricBULLET_RigidBody_SetLinearVelocity(io BulletRigidBody body, in Vec3 bodyVelocity);
+function Vec3 FabricBULLET_RigidBody_GetAngularVelocity(in BulletRigidBody body);
+function FabricBULLET_RigidBody_SetAngularVelocity(io BulletRigidBody body, in Vec3 bodyVelocity);
 function FabricBULLET_SoftBody_Create(io BulletSoftBody body, io BulletWorld world, io Vec3 positions<>, io Vec3 normals<>, io Integer indices[]);
 function FabricBULLET_SoftBody_Delete(io BulletSoftBody body);
 function FabricBULLET_SoftBody_GetPosition(in Size index, io BulletSoftBody body, io Vec3 position, io Vec3 normal);
@@ -235,34 +235,33 @@ function BulletRigidBody.create(io BulletShape shape, io Boolean result) {
   result = true;
 }
 
-function BulletRigidBody.setMass(io Scalar mass) {
+function BulletRigidBody.setMass(in Scalar mass) {
   this.mass = mass;
-  FabricBULLET_RigidBody_SetMass(this);
+  FabricBULLET_RigidBody_SetMass(this, mass);
 }
 
-function BulletRigidBody.getTransform(io Xfo transform) {
-  FabricBULLET_RigidBody_GetTransform(this);
-  transform = this.transform;
+function Xfo BulletRigidBody.getTransform() {
+  return FabricBULLET_RigidBody_GetTransform(this);
 }
 
-function BulletRigidBody.setTransform(io Xfo transform) {
+function BulletRigidBody.setTransform(in Xfo transform) {
   this.transform = transform;
-  FabricBULLET_RigidBody_SetTransform(this);
+  FabricBULLET_RigidBody_SetTransform(this, transform);
 }
 
-function BulletRigidBody.getLinearVelocity(io Vec3 velocity) {
-  FabricBULLET_RigidBody_GetLinearVelocity(this,velocity);
+function Vec3 BulletRigidBody.getLinearVelocity() {
+  return FabricBULLET_RigidBody_GetLinearVelocity(this);
 }
 
-function BulletRigidBody.setLinearVelocity(io Vec3 velocity) {
+function BulletRigidBody.setLinearVelocity(in Vec3 velocity) {
   FabricBULLET_RigidBody_SetLinearVelocity(this,velocity);
 }
 
-function BulletRigidBody.getAngularVelocity(io Vec3 velocity) {
-  FabricBULLET_RigidBody_GetAngularVelocity(this,velocity);
+function Vec3 BulletRigidBody.getAngularVelocity() {
+  return FabricBULLET_RigidBody_GetAngularVelocity(this);
 }
 
-function BulletRigidBody.setAngularVelocity(io Vec3 velocity) {
+function BulletRigidBody.setAngularVelocity(in Vec3 velocity) {
   FabricBULLET_RigidBody_SetAngularVelocity(this,velocity);
 }
 
