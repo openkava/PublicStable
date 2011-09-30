@@ -7,6 +7,7 @@
 #include <Fabric/Base/Exception.h>
 
 #include <windows.h>
+#include <Shlwapi.h>
 
 #include <vector>
 
@@ -89,7 +90,7 @@ namespace Fabric
         if( m_keyPath.size() < 2 )
           throw Exception( "Key path is too short." );
 
-        ::RegDeleteTreeA( m_keyPath[ m_keyPath.size() - 2 ], m_leafKeyName.c_str() );
+        ::SHDeleteKeyA( m_keyPath[ m_keyPath.size() - 2 ], m_leafKeyName.c_str() );
       }
 
       void SetValue( const char *name, const std::string &value )
