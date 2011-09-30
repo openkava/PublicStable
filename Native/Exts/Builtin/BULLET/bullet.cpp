@@ -723,27 +723,31 @@ FABRIC_EXT_EXPORT void FabricBULLET_RigidBody_SetMass(
   }  
 }
 
-FABRIC_EXT_EXPORT void FabricBULLET_RigidBody_GetTransform(
+FABRIC_EXT_EXPORT KL::Xfo FabricBULLET_RigidBody_GetTransform(
   BulletRigidBody & body
 )
 {
   if(body.localData != NULL) {
-    btTransform & transform = body.localData->mBody->getWorldTransform();
-    body.transform.tr.x = transform.getOrigin().getX();
-    body.transform.tr.y = transform.getOrigin().getY();
-    body.transform.tr.z = transform.getOrigin().getZ();
-    body.transform.ori.v.x = transform.getRotation().getX();
-    body.transform.ori.v.y = transform.getRotation().getY();
-    body.transform.ori.v.z = transform.getRotation().getZ();
-    body.transform.ori.w = transform.getRotation().getW();
-    body.transform.sc.x = body.localData->mShape->mShape->getLocalScaling().getX();
-    body.transform.sc.y = body.localData->mShape->mShape->getLocalScaling().getY();
-    body.transform.sc.z = body.localData->mShape->mShape->getLocalScaling().getZ();
-  }  
+    btTransform & bodyTransform = body.localData->mBody->getWorldTransform();
+    KL::Xfo transform;
+    transform.tr.x = bodyTransform.getOrigin().getX();
+    transform.tr.y = bodyTransform.getOrigin().getY();
+    transform.tr.z = bodyTransform.getOrigin().getZ();
+    transform.ori.v.x = bodyTransform.getRotation().getX();
+    transform.ori.v.y = bodyTransform.getRotation().getY();
+    transform.ori.v.z = bodyTransform.getRotation().getZ();
+    transform.ori.w = bodyTransform.getRotation().getW();
+    transform.sc.x = body.localData->mShape->mShape->getLocalScaling().getX();
+    transform.sc.y = body.localData->mShape->mShape->getLocalScaling().getY();
+    transform.sc.z = body.localData->mShape->mShape->getLocalScaling().getZ();
+    return transform;
+  }
+  return body.transform;
 }
 
 FABRIC_EXT_EXPORT void FabricBULLET_RigidBody_SetTransform(
-  BulletRigidBody & body
+  BulletRigidBody & body,
+  const KL::Xfo & transform
 )
 {
   if(body.localData != NULL) {
@@ -751,11 +755,11 @@ FABRIC_EXT_EXPORT void FabricBULLET_RigidBody_SetTransform(
 #ifndef NDEBUG
       printf("  { FabricBULLET } : FabricBULLET_RigidBody_SetTransform called.\n");
 #endif
-      btTransform transform;
-      transform.setOrigin(btVector3(body.transform.tr.x,body.transform.tr.y,body.transform.tr.z));
-      transform.setRotation(btQuaternion(body.transform.ori.v.x,body.transform.ori.v.y,body.transform.ori.v.z,body.transform.ori.w));
-      body.localData->mBody->getMotionState()->setWorldTransform(transform);
-      body.localData->mShape->mShape->setLocalScaling(btVector3(body.transform.sc.x,body.transform.sc.y,body.transform.sc.z));
+      btTransform bulletTransform;
+      bulletTransform.setOrigin(btVector3(transform.tr.x,transform.tr.y,transform.tr.z));
+      bulletTransform.setRotation(btQuaternion(transform.ori.v.x,transform.ori.v.y,transform.ori.v.z,transform.ori.w));
+      body.localData->mBody->getMotionState()->setWorldTransform(bulletTransform);
+      body.localData->mShape->mShape->setLocalScaling(btVector3(transform.sc.x,transform.sc.y,transform.sc.z));
 #ifndef NDEBUG
       printf("  { FabricBULLET } : FabricBULLET_RigidBody_SetTransform completed.\n");
 #endif
@@ -763,23 +767,25 @@ FABRIC_EXT_EXPORT void FabricBULLET_RigidBody_SetTransform(
   }  
 }
 
-FABRIC_EXT_EXPORT void FabricBULLET_RigidBody_GetLinearVelocity(
-  BulletRigidBody & body,
-  KL::Vec3 & bodyVelocity
+FABRIC_EXT_EXPORT KL::Vec3 FabricBULLET_RigidBody_GetLinearVelocity(
+  BulletRigidBody & body
 )
 {
+  KL::Vec3 result;
+  result.x = result.y = result.z = 0.0f;
   if(body.localData != NULL) {
 #ifndef NDEBUG
     printf("  { FabricBULLET } : FabricBULLET_RigidBody_GetLinearVelocity called.\n");
 #endif
     btVector3 velocity = body.localData->mBody->getLinearVelocity();
-    bodyVelocity.x = velocity.getX();
-    bodyVelocity.y = velocity.getY();
-    bodyVelocity.z = velocity.getZ();
+    result.x = velocity.getX();
+    result.y = velocity.getY();
+    result.z = velocity.getZ();
 #ifndef NDEBUG
     printf("  { FabricBULLET } : FabricBULLET_RigidBody_GetLinearVelocity completed.\n");
 #endif
-  }  
+  }
+  return result;
 }
 
 FABRIC_EXT_EXPORT void FabricBULLET_RigidBody_SetLinearVelocity(
@@ -798,23 +804,25 @@ FABRIC_EXT_EXPORT void FabricBULLET_RigidBody_SetLinearVelocity(
   }  
 }
 
-FABRIC_EXT_EXPORT void FabricBULLET_RigidBody_GetAngularVelocity(
-  BulletRigidBody & body,
-  KL::Vec3 & bodyVelocity
+FABRIC_EXT_EXPORT KL::Vec3 FabricBULLET_RigidBody_GetAngularVelocity(
+  BulletRigidBody & body
 )
 {
+  KL::Vec3 result;
+  result.x = result.y = result.z = 0.0f;
   if(body.localData != NULL) {
 #ifndef NDEBUG
     printf("  { FabricBULLET } : FabricBULLET_RigidBody_GetAngularVelocity called.\n");
 #endif
     btVector3 velocity = body.localData->mBody->getAngularVelocity();
-    bodyVelocity.x = velocity.getX();
-    bodyVelocity.y = velocity.getY();
-    bodyVelocity.z = velocity.getZ();
+    result.x = velocity.getX();
+    result.y = velocity.getY();
+    result.z = velocity.getZ();
 #ifndef NDEBUG
     printf("  { FabricBULLET } : FabricBULLET_RigidBody_GetAngularVelocity completed.\n");
 #endif
-  }  
+  }
+  return result;
 }
 
 FABRIC_EXT_EXPORT void FabricBULLET_RigidBody_SetAngularVelocity(
@@ -975,7 +983,7 @@ FABRIC_EXT_EXPORT void FabricBULLET_SoftBody_GetPosition(
     normal.x = body.localData->mBody->m_nodes[index].m_n.getX();
     normal.y = body.localData->mBody->m_nodes[index].m_n.getY();
     normal.z = body.localData->mBody->m_nodes[index].m_n.getZ();
-  }  
+  }
 }
 
 // ====================================================================
