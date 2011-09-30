@@ -366,6 +366,9 @@ FABRIC_EXT_EXPORT void FabricBULLET_World_Raycast(
         if(body) {
           if(body->getInvMass() == 0.0f) {
             world.hit = false;
+#ifndef NDEBUG
+            printf("  { FabricBULLET } : FabricBULLET_World_Raycast completed.\n");
+#endif
             return;
           }
         }
