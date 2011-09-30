@@ -132,6 +132,36 @@ FABRIC_EXT_KL_STRUCT( BulletForce, {
   KL::Boolean autoDisable;
 } );
 
+FABRIC_EXT_KL_STRUCT( BulletAnchor, {
+  struct LocalData {
+    bool mCreated;
+  };
+
+  LocalData * localData;
+  BulletRigidBody::LocalData * rigidBodyLocalData;
+  BulletSoftBody::LocalData * softBodyLocalData;
+  KL::String name;
+  KL::Integer rigidBodyIndex;
+  KL::VariableArray<KL::Integer> softBodyNodeIndices;
+  KL::Boolean disableCollision;
+} );
+
+class BulletMotionState : public btMotionState {
+private:
+  btTransform mTransform;
+
+public:
+  BulletMotionState(btTransform initialTrans) {
+    mTransform = initialTrans;
+  }
+  virtual void getWorldTransform(btTransform & worldTrans) const{
+    worldTrans = mTransform;
+  }
+  virtual void setWorldTransform(const btTransform& worldTrans) {
+    mTransform = worldTrans;
+  }
+};
+
 // ====================================================================
 // world implementation
 FABRIC_EXT_EXPORT void FabricBULLET_World_Create(
@@ -532,7 +562,11 @@ FABRIC_EXT_EXPORT void FabricBULLET_RigidBody_Create(
     transform.setOrigin(btVector3(body.transform.tr.x,body.transform.tr.y,body.transform.tr.z));
     transform.setRotation(btQuaternion(body.transform.ori.v.x,body.transform.ori.v.y,body.transform.ori.v.z,body.transform.ori.w));
     
-    btMotionState* motionState = new btDefaultMotionState(transform);
+    btMotionState* motionState;
+    if(body.mass > 0.0f)
+      motionState = new btDefaultMotionState(transform);
+    else
+      motionState = new BulletMotionState(transform);
 
     btVector3 inertia(0,0,0);
     if(body.mass > 0.0f)
@@ -592,6 +626,21 @@ FABRIC_EXT_EXPORT void FabricBULLET_RigidBody_SetMass(
     btVector3 inertia(0,0,0);
     if(body.mass > 0.0f)
        body.localData->mBody->getCollisionShape()->calculateLocalInertia(body.mass,inertia);
+    
+    // check if we are switching motion states
+    if((body.mass > 0.0f) != body.localData->mBody->getInvMass() > 0.0f) {
+      btTransform worldTransform = body.localData->mBody->getWorldTransform();
+      if(body.localData->mBody->getInvMass() == 0.0) {
+        BulletMotionState * motionState = (BulletMotionState * )body.localData->mBody->getMotionState();
+        delete(motionState);
+        body.localData->mBody->setMotionState(new btDefaultMotionState(worldTransform));
+      } else {
+        btDefaultMotionState * motionState = (btDefaultMotionState * )body.localData->mBody->getMotionState();
+        delete(motionState);
+        body.localData->mBody->setMotionState(new BulletMotionState(worldTransform));
+      }
+    }
+    
     body.localData->mBody->setMassProps(body.mass,inertia);
     if(body.mass == 0.0f)
       body.localData->mBody->setCollisionFlags( body.localData->mBody->getCollisionFlags() | btCollisionObject::CF_KINEMATIC_OBJECT);
@@ -624,11 +673,11 @@ FABRIC_EXT_EXPORT void FabricBULLET_RigidBody_SetTransform(
 )
 {
   if(body.localData != NULL) {
-    if(body.localData->mBody->getInvMass() == 0.0f) {
+    if(body.localData->mBody->getInvMass() == 0.0f && body.localData->mWorld != NULL) {
       btTransform transform;
       transform.setOrigin(btVector3(body.transform.tr.x,body.transform.tr.y,body.transform.tr.z));
       transform.setRotation(btQuaternion(body.transform.ori.v.x,body.transform.ori.v.y,body.transform.ori.v.z,body.transform.ori.w));
-      body.localData->mBody->setWorldTransform(transform);
+      body.localData->mBody->getMotionState()->setWorldTransform(transform);
       body.localData->mShape->mShape->setLocalScaling(btVector3(body.transform.sc.x,body.transform.sc.y,body.transform.sc.z));
     }
   }  
@@ -898,5 +947,49 @@ FABRIC_EXT_EXPORT void FabricBULLET_Constraint_Delete(
     delete( constraint.localData->mConstraint );
     delete( constraint.localData );
     constraint.localData = NULL;
+  }
+}
+
+// ====================================================================
+// anchor implementation
+FABRIC_EXT_EXPORT void FabricBULLET_Anchor_Create(
+  BulletAnchor & anchor
+)
+{
+  if(anchor.localData == NULL) {
+    
+    // check the bodies
+    if(!anchor.rigidBodyLocalData)
+    {
+      throwException( "{FabricBULLET} ERROR: rigidBodyLocalData is NULL when creating anchor." );
+      return;
+    }
+    if(!anchor.softBodyLocalData)
+    {
+      throwException( "{FabricBULLET} ERROR: softBodyLocalData is NULL when creating anchor." );
+      return;
+    }
+    if(!anchor.softBodyNodeIndices.size())
+    {
+      throwException( "{FabricBULLET} ERROR: softBodyNodeIndices doesn't contain elements when creating anchor." );
+      return;
+    }
+    
+    // create each anchor
+    for(KL::Size i=0;i<anchor.softBodyNodeIndices.size();i++)
+      anchor.softBodyLocalData->mBody->appendAnchor(anchor.softBodyNodeIndices[i],anchor.rigidBodyLocalData->mBody,anchor.disableCollision);
+
+    anchor.localData = new BulletAnchor::LocalData();
+    anchor.localData->mCreated = true;
+  }
+}
+
+FABRIC_EXT_EXPORT void FabricBULLET_Anchor_Delete(
+  BulletAnchor & anchor
+)
+{
+  if(anchor.localData != NULL) {
+    delete( anchor.localData );
+    anchor.localData = NULL;
   }
 }
