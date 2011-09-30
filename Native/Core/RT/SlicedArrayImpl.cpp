@@ -63,6 +63,8 @@ namespace Fabric
 
     void SlicedArrayImpl::disposeDatasImpl( void *data, size_t count, size_t stride ) const
     {
+      if ( m_memberImpl->getCodeName() == "BulletRigidBody" )
+        FABRIC_LOG( "SlicedArrayImpl::disposeDatasImpl BulletRigidBody" );
       bits_t *bits = reinterpret_cast<bits_t *>(data);
       m_variableArrayImpl->disposeDatas( &bits->variableArrayBits, count, stride );
     }

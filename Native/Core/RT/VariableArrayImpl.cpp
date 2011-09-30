@@ -85,6 +85,8 @@ namespace Fabric
 
     void VariableArrayImpl::disposeDatasImpl( void *_data, size_t count, size_t stride ) const
     {
+      if ( m_memberImpl->getCodeName() == "BulletRigidBody" )
+        FABRIC_LOG( "VariableArrayImpl::disposeDatasImpl BulletRigidBody" );
       uint8_t *data = static_cast<uint8_t *>( _data );
       uint8_t * const dataEnd = data + count * stride;
       while ( data != dataEnd )
