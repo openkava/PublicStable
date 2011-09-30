@@ -84,6 +84,16 @@ struct BulletForce {
   Boolean autoDisable;
 };
 
+struct BulletAnchor {
+  Data localData;
+  Data rigidBodyLocalData;
+  Data softBodyLocalData;
+  String name;
+  Integer rigidBodyIndex;
+  Integer softBodyNodeIndices[];
+  Boolean disableCollision;
+};
+
 //===================================================================================
 // constants
 const Integer BULLET_BOX_SHAPE = 0;
@@ -128,6 +138,8 @@ function FabricBULLET_SoftBody_Delete(io BulletSoftBody body);
 function FabricBULLET_SoftBody_GetPosition(in Size index, io BulletSoftBody body, io Vec3 position, io Vec3 normal);
 function FabricBULLET_Constraint_Create(io BulletConstraint constraint);
 function FabricBULLET_Constraint_Delete(io BulletConstraint constraint);
+function FabricBULLET_Anchor_Create(io BulletAnchor anchor);
+function FabricBULLET_Anchor_Delete(io BulletAnchor anchor);
 
 //===================================================================================
 // world definition
@@ -280,6 +292,21 @@ function BulletConstraint.create(io Boolean result, io BulletRigidBody bodiesA[]
     this.bodyLocalDataA = bodiesA[this.indexA].localData;
     this.bodyLocalDataB = bodiesB[this.indexB].localData;
     FabricBULLET_Constraint_Create(this);
+    result = true;
+  }
+  else
+    result = false;
+}
+
+//===================================================================================
+// anchor definition
+function ~BulletAnchor() = "FabricBULLET_Anchor_Delete";
+
+function BulletAnchor.create(io Boolean result, io BulletRigidBody rigidBodies[], io BulletSoftBody softBody) {
+  if(!this.localData) {
+    this.rigidBodyLocalData = rigidBodies[this.rigidBodyIndex].localData;
+    this.softBodyLocalData = softBody.localData;
+    FabricBULLET_Anchor_Create(this);
     result = true;
   }
   else
