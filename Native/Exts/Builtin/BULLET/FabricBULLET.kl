@@ -278,7 +278,7 @@ function ~BulletConstraint() = "FabricBULLET_Constraint_Delete";
 function BulletConstraint.create(io Boolean result, io BulletRigidBody bodiesA[], io BulletRigidBody bodiesB[]) {
   if(!this.localData) {
     this.bodyLocalDataA = bodiesA[this.indexA].localData;
-    this.bodyLocalDataB = bodiesA[this.indexB].localData;
+    this.bodyLocalDataB = bodiesB[this.indexB].localData;
     FabricBULLET_Constraint_Create(this);
     result = true;
   }
