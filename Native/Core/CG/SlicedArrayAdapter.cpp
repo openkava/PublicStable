@@ -425,7 +425,12 @@ namespace Fabric
       }
     }
 
-    llvm::Value *SlicedArrayAdapter::llvmConstIndexOp( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *arrayRValue, llvm::Value *indexRValue ) const
+    llvm::Value *SlicedArrayAdapter::llvmConstIndexOp(
+      CG::BasicBlockBuilder &basicBlockBuilder,
+      llvm::Value *arrayRValue,
+      llvm::Value *indexRValue,
+      CG::Location const *location
+      ) const
     {
       RC::ConstHandle<SizeAdapter> sizeAdapter = basicBlockBuilder.getManager()->getSizeAdapter();
       std::vector< FunctionParam > params;
@@ -436,10 +441,14 @@ namespace Fabric
     }
 
 
-    llvm::Value *SlicedArrayAdapter::llvmNonConstIndexOp( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *exprLValue, llvm::Value *indexRValue ) const
+    llvm::Value *SlicedArrayAdapter::llvmNonConstIndexOp(
+      CG::BasicBlockBuilder &basicBlockBuilder,
+      llvm::Value *exprLValue,
+      llvm::Value *indexRValue,
+      CG::Location const *location
+      ) const
     {
       RC::ConstHandle<SizeAdapter> sizeAdapter = basicBlockBuilder.getManager()->getSizeAdapter();
-
       std::vector< FunctionParam > params;
       params.push_back( FunctionParam( "array", this, CG::USAGE_LVALUE ) );
       params.push_back( FunctionParam( "index", sizeAdapter, CG::USAGE_RVALUE ) );
