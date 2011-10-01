@@ -483,7 +483,7 @@ namespace Fabric
           llvm::Value *oldSize = llvmCallSize( basicBlockBuilder, thisRValue );
           llvm::Value *newSize = basicBlockBuilder->CreateAdd( oldSize, sizeAdapter->llvmConst( context, 1 ) );
           llvmCallResize( basicBlockBuilder, thisLValue, newSize );
-          llvm::Value *newElementLValue = llvmNonConstIndexOp( basicBlockBuilder, thisLValue, oldSize );
+          llvm::Value *newElementLValue = llvmNonConstIndexOp( basicBlockBuilder, thisLValue, oldSize, 0 );
           m_memberAdapter->llvmRetain( basicBlockBuilder, memberRValue );
           m_memberAdapter->llvmAssign( basicBlockBuilder, newElementLValue, memberRValue );
           basicBlockBuilder->CreateRet( thisLValue );
@@ -636,7 +636,12 @@ namespace Fabric
       inst->m_variableArrayDesc->setNumMembers( dst, newSize );
     }
 
-    llvm::Value *VariableArrayAdapter::llvmConstIndexOp( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *arrayRValue, llvm::Value *indexRValue ) const
+    llvm::Value *VariableArrayAdapter::llvmConstIndexOp(
+      CG::BasicBlockBuilder &basicBlockBuilder,
+      llvm::Value *arrayRValue,
+      llvm::Value *indexRValue,
+      CG::Location const *location
+      ) const
     {
       RC::ConstHandle<SizeAdapter> sizeAdapter = basicBlockBuilder.getManager()->getSizeAdapter();
       std::vector< FunctionParam > params;
@@ -646,10 +651,14 @@ namespace Fabric
       return basicBlockBuilder->CreateCall2( functionBuilder.getLLVMFunction(), arrayRValue, indexRValue );
     }
 
-    llvm::Value *VariableArrayAdapter::llvmNonConstIndexOp( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *exprLValue, llvm::Value *indexRValue ) const
+    llvm::Value *VariableArrayAdapter::llvmNonConstIndexOp(
+      CG::BasicBlockBuilder &basicBlockBuilder,
+      llvm::Value *exprLValue,
+      llvm::Value *indexRValue,
+      CG::Location const *location
+      ) const
     {
       RC::ConstHandle<SizeAdapter> sizeAdapter = basicBlockBuilder.getManager()->getSizeAdapter();
-
       std::vector< FunctionParam > params;
       params.push_back( FunctionParam( "array", this, CG::USAGE_LVALUE ) );
       params.push_back( FunctionParam( "index", sizeAdapter, CG::USAGE_RVALUE ) );

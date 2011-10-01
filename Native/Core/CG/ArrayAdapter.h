@@ -18,6 +18,7 @@ namespace Fabric
   {
     class BasicBlockBuilder;
     class ConstStringAdapter;
+    class Location;
     class SizeAdapter;
     class StringAdapter;
     
@@ -36,8 +37,18 @@ namespace Fabric
         return m_memberAdapter;
       }
 
-      virtual llvm::Value *llvmConstIndexOp( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *arrayRValue, llvm::Value *indexRValue ) const = 0;
-      virtual llvm::Value *llvmNonConstIndexOp( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *arrayLValue, llvm::Value *indexRValue ) const = 0;
+      virtual llvm::Value *llvmConstIndexOp(
+        CG::BasicBlockBuilder &basicBlockBuilder,
+        llvm::Value *arrayRValue,
+        llvm::Value *indexRValue,
+        CG::Location const *location
+        ) const = 0;
+      virtual llvm::Value *llvmNonConstIndexOp(
+        CG::BasicBlockBuilder &basicBlockBuilder,
+        llvm::Value *arrayLValue,
+        llvm::Value *indexRValue,
+        CG::Location const *location
+        ) const = 0;
       
     protected:
     
@@ -50,9 +61,16 @@ namespace Fabric
         RC::ConstHandle<StringAdapter> const &stringAdapter,
         RC::ConstHandle<SizeAdapter> const &sizeAdapter,
         llvm::Value *indexRValue,
-        llvm::Value *sizeRValue
+        llvm::Value *sizeRValue,
+        llvm::Value *errorDescConstant = 0
         ) const;
-
+        
+      llvm::Value *llvmLocationConstStringRValue(
+        BasicBlockBuilder &basicBlockBuilder,
+        RC::ConstHandle<ConstStringAdapter> const &constStringAdapter,
+        CG::Location const &location
+        ) const;
+        
     private:
     
       RC::ConstHandle<RT::ArrayDesc> m_arrayDesc;
