@@ -442,7 +442,8 @@ namespace Fabric
       params.push_back( FunctionParam( "errorDesc", constStringAdapter, CG::USAGE_RVALUE ) );
       FunctionBuilder functionBuilder( basicBlockBuilder.getModuleBuilder(), "__"+getCodeName()+"__ConstIndex", ExprType( m_memberAdapter, USAGE_RVALUE ), params, false, 0, true );
       return basicBlockBuilder->CreateCall3( functionBuilder.getLLVMFunction(), arrayRValue, indexRValue,
-        location? llvmLocationConstStringRValue( basicBlockBuilder, constStringAdapter, *location ): 0 );
+        llvmLocationConstStringRValue( basicBlockBuilder, constStringAdapter, location )
+        );
     }
 
 
@@ -461,7 +462,8 @@ namespace Fabric
       params.push_back( FunctionParam( "errorDesc", constStringAdapter, CG::USAGE_RVALUE ) );
       FunctionBuilder functionBuilder( basicBlockBuilder.getModuleBuilder(), "__"+getCodeName()+"__NonConstIndex", ExprType( m_memberAdapter, USAGE_LVALUE ), params, false, 0, true );
       return basicBlockBuilder->CreateCall3( functionBuilder.getLLVMFunction(), arrayLValue, indexRValue,
-        location? llvmLocationConstStringRValue( basicBlockBuilder, constStringAdapter, *location ): 0 );
+        llvmLocationConstStringRValue( basicBlockBuilder, constStringAdapter, location )
+        );
     }
     
     void FixedArrayAdapter::llvmRelease( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const

@@ -44,7 +44,7 @@ namespace Fabric
       RC::ConstHandle<SizeAdapter> const &sizeAdapter,
       llvm::Value *indexRValue,
       llvm::Value *sizeRValue,
-      llvm::Value *errorDescConstant
+      llvm::Value *errorDescRValue
       ) const
     {
       RC::Handle<Context> context = basicBlockBuilder.getContext();
@@ -52,7 +52,7 @@ namespace Fabric
       llvm::Value *errorMsg0RValue = stringAdapter->llvmCast(
         basicBlockBuilder,
         ExprValue( constStringAdapter, USAGE_RVALUE, context,
-          errorDescConstant? errorDescConstant: constStringAdapter->llvmConst( basicBlockBuilder, "KL" )
+          errorDescRValue? errorDescRValue: constStringAdapter->llvmConst( basicBlockBuilder, "KL" )
           )
         );
       
@@ -103,12 +103,16 @@ namespace Fabric
     llvm::Value *ArrayAdapter::llvmLocationConstStringRValue(
       BasicBlockBuilder &basicBlockBuilder,
       RC::ConstHandle<ConstStringAdapter> const &constStringAdapter,
-      CG::Location const &location
+      CG::Location const *location
       ) const
     {
-      RC::ConstHandle<RC::String> filename = location.getFilename();
-      std::string locationString = (filename? filename->stdString(): std::string("(unknown)")) + ":" + _(location.getLine()) + ":" + _(location.getColumn());
-      return constStringAdapter->llvmConst( basicBlockBuilder, locationString );
+      if ( location )
+      {
+        RC::ConstHandle<RC::String> filename = location->getFilename();
+        std::string locationString = (filename? filename->stdString(): std::string("(unknown)")) + ":" + _(location->getLine()) + ":" + _(location->getColumn());
+        return constStringAdapter->llvmConst( basicBlockBuilder, locationString );
+      }
+      else return constStringAdapter->llvmConst( basicBlockBuilder, "KL" );
     }
   };
 };
