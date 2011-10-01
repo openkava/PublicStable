@@ -35,8 +35,10 @@ namespace Fabric
         
         ~Task()
         {
-          FABRIC_ASSERT( m_nextIndex == m_count );
-          FABRIC_ASSERT( m_completedCount == m_count );
+          // [pzion 20110930] We would like to assert here, but
+          // it's possible an exception caused us to exit prematurely
+          //FABRIC_ASSERT( m_nextIndex == m_count );
+          //FABRIC_ASSERT( m_completedCount == m_count );
         }
         
         void preExecute_CRITICAL_SECTION( size_t &index, bool &keep )
