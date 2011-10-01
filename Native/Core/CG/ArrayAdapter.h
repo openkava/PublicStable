@@ -68,7 +68,7 @@ namespace Fabric
       llvm::Value *llvmLocationConstStringRValue(
         BasicBlockBuilder &basicBlockBuilder,
         RC::ConstHandle<ConstStringAdapter> const &constStringAdapter,
-        CG::Location const &location
+        CG::Location const *location
         ) const;
         
     private:

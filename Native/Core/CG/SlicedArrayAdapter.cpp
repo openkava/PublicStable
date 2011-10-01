@@ -241,6 +241,7 @@ namespace Fabric
         std::vector< FunctionParam > params;
         params.push_back( FunctionParam( "array", this, CG::USAGE_RVALUE ) );
         params.push_back( FunctionParam( "index", sizeAdapter, CG::USAGE_RVALUE ) );
+        params.push_back( FunctionParam( "errorDesc", constStringAdapter, CG::USAGE_RVALUE ) );
         FunctionBuilder functionBuilder( moduleBuilder, "__"+getCodeName()+"__ConstIndex", ExprType( m_memberAdapter, USAGE_RVALUE ), params, false, 0, true );
         if ( buildFunctions )
         {
@@ -248,6 +249,7 @@ namespace Fabric
 
           llvm::Value *arrayRValue = functionBuilder[0];
           llvm::Value *indexRValue = functionBuilder[1];
+          llvm::Value *errorDescRValue = functionBuilder[2];
 
           llvm::BasicBlock *entryBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "entry" );
           llvm::BasicBlock *inRangeBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "inRange" );
@@ -276,7 +278,8 @@ namespace Fabric
             stringAdapter,
             sizeAdapter,
             indexRValue,
-            sizeRValue
+            sizeRValue,
+            errorDescRValue
             );
           llvm::Value *defaultRValue = m_memberAdapter->llvmDefaultRValue( basicBlockBuilder );
           m_memberAdapter->llvmRetain( basicBlockBuilder, defaultRValue );
@@ -288,6 +291,7 @@ namespace Fabric
         std::vector< FunctionParam > params;
         params.push_back( FunctionParam( "array", this, CG::USAGE_LVALUE ) );
         params.push_back( FunctionParam( "index", sizeAdapter, CG::USAGE_RVALUE ) );
+        params.push_back( FunctionParam( "errorDesc", constStringAdapter, CG::USAGE_RVALUE ) );
         FunctionBuilder functionBuilder( moduleBuilder, "__"+getCodeName()+"__NonConstIndex", ExprType( m_memberAdapter, USAGE_LVALUE ), params, false, 0, true );
         if ( buildFunctions )
         {
@@ -295,6 +299,7 @@ namespace Fabric
 
           llvm::Value *arrayLValue = functionBuilder[0];
           llvm::Value *indexRValue = functionBuilder[1];
+          llvm::Value *errorDescRValue = functionBuilder[2];
 
           llvm::BasicBlock *entryBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "entry" );
           llvm::BasicBlock *inRangeBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "inRange" );
@@ -321,7 +326,8 @@ namespace Fabric
             stringAdapter,
             sizeAdapter,
             indexRValue,
-            sizeRValue
+            sizeRValue,
+            errorDescRValue
             );
           llvm::Constant *defaultLValue = m_memberAdapter->llvmDefaultLValue( basicBlockBuilder );
           basicBlockBuilder->CreateRet( defaultLValue );
@@ -433,11 +439,15 @@ namespace Fabric
       ) const
     {
       RC::ConstHandle<SizeAdapter> sizeAdapter = basicBlockBuilder.getManager()->getSizeAdapter();
+      RC::ConstHandle<ConstStringAdapter> constStringAdapter = basicBlockBuilder.getManager()->getConstStringAdapter();
       std::vector< FunctionParam > params;
       params.push_back( FunctionParam( "array", this, CG::USAGE_RVALUE ) );
       params.push_back( FunctionParam( "index", sizeAdapter, CG::USAGE_RVALUE ) );
+      params.push_back( FunctionParam( "constString", constStringAdapter, CG::USAGE_RVALUE ) );
       FunctionBuilder functionBuilder( basicBlockBuilder.getModuleBuilder(), "__"+getCodeName()+"__ConstIndex", ExprType( m_memberAdapter, USAGE_RVALUE ), params, false, 0, true );
-      return basicBlockBuilder->CreateCall2( functionBuilder.getLLVMFunction(), arrayRValue, indexRValue );
+      return basicBlockBuilder->CreateCall3( functionBuilder.getLLVMFunction(), arrayRValue, indexRValue,
+        llvmLocationConstStringRValue( basicBlockBuilder, constStringAdapter, location )
+        );
     }
 
 
@@ -449,11 +459,15 @@ namespace Fabric
       ) const
     {
       RC::ConstHandle<SizeAdapter> sizeAdapter = basicBlockBuilder.getManager()->getSizeAdapter();
+      RC::ConstHandle<ConstStringAdapter> constStringAdapter = basicBlockBuilder.getManager()->getConstStringAdapter();
       std::vector< FunctionParam > params;
       params.push_back( FunctionParam( "array", this, CG::USAGE_LVALUE ) );
       params.push_back( FunctionParam( "index", sizeAdapter, CG::USAGE_RVALUE ) );
+      params.push_back( FunctionParam( "constString", constStringAdapter, CG::USAGE_RVALUE ) );
       FunctionBuilder functionBuilder( basicBlockBuilder.getModuleBuilder(), "__"+getCodeName()+"__NonConstIndex", ExprType( m_memberAdapter, USAGE_LVALUE ), params, false, 0, true );
-      return basicBlockBuilder->CreateCall2( functionBuilder.getLLVMFunction(), exprLValue, indexRValue );
+      return basicBlockBuilder->CreateCall3( functionBuilder.getLLVMFunction(), exprLValue, indexRValue,
+        llvmLocationConstStringRValue( basicBlockBuilder, constStringAdapter, location )
+        );
     }
     
     void SlicedArrayAdapter::llvmRelease( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const
