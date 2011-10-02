@@ -93,13 +93,13 @@ namespace Fabric
         execute( 0, m_baseAddresses, NULL, functionPtr );
       }
       
-      void executeParallel( bool mainThreadOnly ) const
+      void executeParallel( RC::Handle<LogCollector> const &logCollector, bool mainThreadOnly ) const
       {
         RC::ConstHandle<RC::Object> objectToAvoidFreeDuringExecution;
         ParallelExecutionUserData parallelExecutionUserData;
         parallelExecutionUserData.parallelCall = this;
         parallelExecutionUserData.functionPtr = m_function->getFunctionPtr( objectToAvoidFreeDuringExecution );
-        MT::executeParallel( m_totalParallelCalls, &ParallelCall::ExecuteParallel, &parallelExecutionUserData, mainThreadOnly );
+        MT::executeParallel( logCollector, m_totalParallelCalls, &ParallelCall::ExecuteParallel, &parallelExecutionUserData, mainThreadOnly );
       }
       
     protected:

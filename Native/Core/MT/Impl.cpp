@@ -96,7 +96,7 @@ namespace Fabric
         terminate();
     }
 
-    void ThreadPool::executeParallel( size_t count, void (*callback)( void *userdata, size_t index ), void *userdata, bool mainThreadOnly )
+    void ThreadPool::executeParallel( RC::Handle<LogCollector> const &logCollector, size_t count, void (*callback)( void *userdata, size_t index ), void *userdata, bool mainThreadOnly )
     {
       if ( count == 0 )
         return;
@@ -104,7 +104,7 @@ namespace Fabric
         callback( userdata, 0 );
       else
       {
-        Task task( count, callback, userdata );
+        Task task( logCollector, count, callback, userdata );
         
         m_stateMutex.acquire();
         
@@ -142,7 +142,24 @@ namespace Fabric
           taskQueue->pop_back();
 
         m_stateMutex.release();
-        task->execute( index );
+        try
+        {
+          task->execute( index );
+        }
+        catch ( Exception e )
+        {
+          Util::SimpleString prefixedException = "Exception: " + e.getDesc();
+          RC::Handle<LogCollector> logCollector = task->getLogCollector();
+          if ( logCollector )
+            logCollector->add( prefixedException.data(), prefixedException.length() );
+        }
+        catch ( ... )
+        {
+          static Util::SimpleString const genericException = "Exception (unknown)";
+          RC::Handle<LogCollector> logCollector = task->getLogCollector();
+          if ( logCollector )
+            logCollector->add( genericException.data(), genericException.length() );
+        }
         m_stateMutex.acquire();
         
         task->postExecute_CRITICAL_SECTION();
