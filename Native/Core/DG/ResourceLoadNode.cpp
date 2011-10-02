@@ -29,6 +29,7 @@ namespace Fabric
     
     ResourceLoadNode::ResourceLoadNode( std::string const &name, RC::Handle<Context> const &context )
       : Node( name, context )
+      , m_context( context )
       , m_fabricResourceStreamData( context->getRTManager() )
       , m_streamGeneration( 0 )
       , m_nbStreamed( 0 )
@@ -47,7 +48,7 @@ namespace Fabric
     void ResourceLoadNode::evaluateLocal( void *userdata )
     {
       // [JeromeCG 20110727]Important: Url streaming task must be run in main thread only since it might use some thread-sensitive APIs such as NPAPI's stream interface
-      MT::executeParallel( 1, &ResourceLoadNode::EvaluateResource, (void *)this, true );
+      MT::executeParallel( m_context->getLogCollector(), 1, &ResourceLoadNode::EvaluateResource, (void *)this, true );
       Node::evaluateLocal( userdata );
     }
 
