@@ -44,7 +44,11 @@ namespace Fabric
     
       typedef void (*FunctionPtr)( ... );
 
-      static RC::Handle<ParallelCall> Create( RC::ConstHandle<Function> const &function, size_t paramCount, std::string const &debugDesc )
+      static RC::Handle<ParallelCall> Create(
+        RC::ConstHandle<Function> const &function,
+        size_t paramCount,
+        std::string const &debugDesc
+        )
       {
         return new ParallelCall( function, paramCount, debugDesc );
       }
@@ -88,6 +92,7 @@ namespace Fabric
       
       void executeSerial() const
       {
+        //FABRIC_DEBUG_LOG( "executeSerial('%s')", m_debugDesc.c_str() );
         RC::ConstHandle<RC::Object> objectToAvoidFreeDuringExecution;
         void (*functionPtr)( ... ) = m_function->getFunctionPtr( objectToAvoidFreeDuringExecution );
         execute( 0, m_baseAddresses, NULL, functionPtr );
@@ -95,6 +100,7 @@ namespace Fabric
       
       void executeParallel( RC::Handle<LogCollector> const &logCollector, bool mainThreadOnly ) const
       {
+        //FABRIC_DEBUG_LOG( "executeParallel('%s')", m_debugDesc.c_str() );
         RC::ConstHandle<RC::Object> objectToAvoidFreeDuringExecution;
         ParallelExecutionUserData parallelExecutionUserData;
         parallelExecutionUserData.parallelCall = this;
@@ -153,9 +159,7 @@ namespace Fabric
       
       void executeParallel( size_t iteration, void (*functionPtr)( ... ) ) const
       {
-        //Util::Timer timer;
         execute( 0, m_baseAddresses, &iteration, functionPtr );
-        //FABRIC_DEBUG_LOG( "[%p] debugDesc='%s' iteration=%u elapsed=%gms", (void *)getCurrentThreadID(), m_debugDesc.c_str(), (unsigned)iteration, timer.getElapsed() );
       }
       
       static void ExecuteParallel( void *userdata, size_t iteration )
