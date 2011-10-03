@@ -723,8 +723,9 @@ FABRIC_EXT_EXPORT void FabricBULLET_RigidBody_SetMass(
   }  
 }
 
-FABRIC_EXT_EXPORT KL::Xfo FabricBULLET_RigidBody_GetTransform(
-  BulletRigidBody & body
+FABRIC_EXT_EXPORT void FabricBULLET_RigidBody_GetTransform(
+  BulletRigidBody & body,
+  KL::Xfo &result
 )
 {
   if(body.localData != NULL) {
@@ -740,9 +741,9 @@ FABRIC_EXT_EXPORT KL::Xfo FabricBULLET_RigidBody_GetTransform(
     transform.sc.x = body.localData->mShape->mShape->getLocalScaling().getX();
     transform.sc.y = body.localData->mShape->mShape->getLocalScaling().getY();
     transform.sc.z = body.localData->mShape->mShape->getLocalScaling().getZ();
-    return transform;
+    result = transform;
   }
-  return body.transform;
+  else result = body.transform;
 }
 
 FABRIC_EXT_EXPORT void FabricBULLET_RigidBody_SetTransform(
