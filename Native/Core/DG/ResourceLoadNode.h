@@ -65,7 +65,7 @@ namespace Fabric
 
     private:
 
-      RC::Handle<Context> m_context;
+      Context *m_context;
       RC::Handle<IO::Stream> m_stream;
       FabricResourceWrapper m_fabricResourceStreamData;
       size_t m_streamGeneration;

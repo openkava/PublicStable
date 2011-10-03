@@ -29,7 +29,7 @@ namespace Fabric
     
     ResourceLoadNode::ResourceLoadNode( std::string const &name, RC::Handle<Context> const &context )
       : Node( name, context )
-      , m_context( context )
+      , m_context( context.ptr() )
       , m_fabricResourceStreamData( context->getRTManager() )
       , m_streamGeneration( 0 )
       , m_nbStreamed( 0 )
