@@ -112,8 +112,6 @@ namespace Fabric
 
     void StructImpl::disposeDatasImpl( void *data, size_t count, size_t stride ) const
     {
-      if ( getCodeName() == "BulletRigidBody" )
-        FABRIC_LOG( "StructImpl::disposeDatasImpl BulletRigidBody" );
       for ( size_t i=0; i<m_numMembers; ++i )
       {
         StructMemberInfo const &memberInfo = m_memberInfos[i];
