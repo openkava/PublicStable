@@ -127,7 +127,7 @@ function FabricBULLET_Shape_Delete(io BulletShape shape);
 function FabricBULLET_RigidBody_Create(io BulletRigidBody body, io BulletShape shape);
 function FabricBULLET_RigidBody_Delete(io BulletRigidBody body);
 function FabricBULLET_RigidBody_SetMass(io BulletRigidBody body, in Scalar mass);
-function Xfo FabricBULLET_RigidBody_GetTransform(in BulletRigidBody body);
+function FabricBULLET_RigidBody_GetTransform(in BulletRigidBody body, io Xfo result);
 function FabricBULLET_RigidBody_SetTransform(in BulletRigidBody body, in Xfo transform);
 function Vec3 FabricBULLET_RigidBody_GetLinearVelocity(in BulletRigidBody body);
 function FabricBULLET_RigidBody_SetLinearVelocity(io BulletRigidBody body, in Vec3 bodyVelocity);
@@ -241,7 +241,9 @@ function BulletRigidBody.setMass(in Scalar mass) {
 }
 
 function Xfo BulletRigidBody.getTransform() {
-  return FabricBULLET_RigidBody_GetTransform(this);
+  Xfo result;
+  FabricBULLET_RigidBody_GetTransform(this, result);
+  return result;
 }
 
 function BulletRigidBody.setTransform(in Xfo transform) {

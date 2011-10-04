@@ -9,6 +9,7 @@
 #define _FABRIC_MT_TASK_SET_H
 
 #include <Fabric/Base/Config.h>
+#include <Fabric/Base/RC/Handle.h>
 
 #include <vector>
 #if defined(FABRIC_OS_LINUX)
@@ -19,6 +20,7 @@ namespace Fabric
 {
   namespace MT
   {
+    class LogCollector;
     class TaskBase;
     
     class TaskGroup
@@ -34,7 +36,7 @@ namespace Fabric
       void clear();
       void add( TaskBase const *task );
       
-      void execute( void *userdata ) const;
+      void execute( RC::Handle<LogCollector> const &logCollector, void *userdata ) const;
       
       std::string desc() const;
     

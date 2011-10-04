@@ -1,1 +1,1 @@
-KL: Integer[2] index out-of-bounds
+Caught exception: fa-out-of-bounds-non-const.kl:6:3: Integer[2] index (2) out of range (2)

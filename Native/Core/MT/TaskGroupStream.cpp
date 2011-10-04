@@ -31,10 +31,10 @@ namespace Fabric
       m_taskGroups[rank].add( task );
     }
     
-    void TaskGroupStream::execute( void *userdata ) const
+    void TaskGroupStream::execute( RC::Handle<LogCollector> const &logCollector, void *userdata ) const
     {
       for ( std::vector< TaskGroup >::const_iterator it=m_taskGroups.begin(); it!=m_taskGroups.end(); ++it )
-        it->execute( userdata );
+        it->execute( logCollector, userdata );
     }
 
     std::string TaskGroupStream::desc() const
