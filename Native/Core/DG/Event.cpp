@@ -92,7 +92,7 @@ namespace Fabric
         throw Exception( "cannot execute because of errors" );
  
       ExecutionEngine::ContextSetter contextSetter( m_context );
-      m_runState->taskGroupStream.execute(0);
+      m_runState->taskGroupStream.execute( m_context->getLogCollector(), 0 );
       for ( EventHandlers::const_iterator it=m_eventHandlers.begin(); it!=m_eventHandlers.end(); ++it )
       {
         RC::Handle<EventHandler> const &eventHandler = *it;

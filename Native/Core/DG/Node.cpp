@@ -192,10 +192,11 @@ namespace Fabric
       if ( !m_runState->canEvaluate )
         throw Exception( "cannot execute because of errors" );
 
+      RC::Handle<MT::LogCollector> logCollector( m_context->getLogCollector() );
       ExecutionEngine::ContextSetter contextSetter( m_context );
-      m_runState->taskGroupStream.execute(0);
-      if ( m_context->getLogCollector() )
-        m_context->getLogCollector()->flush();
+      m_runState->taskGroupStream.execute( logCollector, 0 );
+      if ( logCollector )
+        logCollector->flush();
     }
 
     void Node::evaluateLocal( void *userdata )
@@ -219,7 +220,7 @@ namespace Fabric
 
           size_t oldCount = getCount();
           m_runState->m_newCount = oldCount;
-          opParallelCall->executeParallel( binding->getMainThreadOnly() );
+          opParallelCall->executeParallel( m_context->getLogCollector(), binding->getMainThreadOnly() );
           if ( m_runState->m_newCount != oldCount )
             setCount( m_runState->m_newCount );
         }
