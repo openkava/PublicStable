@@ -10,6 +10,7 @@
 #include <Fabric/Core/MT/Cond.h>
 #include <Fabric/Core/MT/Thread.h>
 #include <Fabric/Core/MT/Cond.h>
+#include <Fabric/Core/MT/LogCollector.h>
 #include <Fabric/Core/Util/TLS.h>
 
 #include <vector>
@@ -18,14 +19,22 @@ namespace Fabric
 {
   namespace MT
   {
+    class LogCollector;
+
     class ThreadPool
     {
       class Task 
       {
       public:
       
-        Task( size_t count, void (*callback)( void *, size_t ), void *userdata )
-          : m_count( count )
+        Task(
+          RC::Handle<LogCollector> const &logCollector,
+          size_t count,
+          void (*callback)( void *, size_t ),
+          void *userdata
+          )
+          : m_logCollector( logCollector )
+          , m_count( count )
           , m_callback( callback )
           , m_userdata( userdata )
           , m_nextIndex( 0 )
@@ -61,9 +70,15 @@ namespace Fabric
         {
           return m_completedCount == m_count;
         }
+
+        RC::Handle<LogCollector> getLogCollector() const
+        {
+          return m_logCollector;
+        }
         
       private:
         
+        RC::Handle<LogCollector> m_logCollector;
         size_t m_count;
         void (*m_callback)( void *, size_t );
         void *m_userdata;
@@ -79,7 +94,13 @@ namespace Fabric
       ThreadPool();
       ~ThreadPool();
       
-      void executeParallel( size_t count, void (*callback)( void *userdata, size_t index ), void *userdata, bool mainThreadOnly );
+      void executeParallel(
+        RC::Handle<LogCollector> const &logCollector,
+        size_t count,
+        void (*callback)( void *userdata, size_t index ),
+        void *userdata,
+        bool mainThreadOnly
+        );
       
       void terminate();
       
@@ -107,9 +128,9 @@ namespace Fabric
       bool m_running;
     };
     
-    inline void executeParallel( size_t count, void (*callback)( void *userdata, size_t index ), void *userdata, bool mainThreadOnly )
+    inline void executeParallel( RC::Handle<LogCollector> const &logCollector, size_t count, void (*callback)( void *userdata, size_t index ), void *userdata, bool mainThreadOnly )
     {
-      ThreadPool::Instance()->executeParallel( count, callback, userdata, mainThreadOnly );
+      ThreadPool::Instance()->executeParallel( logCollector, count, callback, userdata, mainThreadOnly );
     }
   };
 };
