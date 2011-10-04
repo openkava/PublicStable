@@ -40,6 +40,48 @@ m1 = q1.toMat33();
 m1.multiplyVector(v1).appendResult(tests, results, 'toMat33_rotateVector');
 m1.multiplyVector(v2).appendResult(tests, results, 'toMat33_rotateVector2');
 
+ro1.setXYZ();
+e1.set(0.3, 0.5, 0.7, ro1);
+q1.setFromEuler(e1);
+q1.appendResult(tests, results, 'XYZeuler->quat');
+q1.setFromMat33(e1.toMat33());
+q1.appendResult(tests, results, 'XYZeuler->mat->quat');
+
+ro1.setXZY();
+e1.set(0.3, 0.5, 0.7, ro1);
+q1.setFromEuler(e1);
+q1.appendResult(tests, results, 'XZYeuler->quat');
+q1.setFromMat33(e1.toMat33());
+q1.appendResult(tests, results, 'XZYeuler->mat->quat');
+
+ro1.setYXZ();
+e1.set(0.3, 0.5, 0.7, ro1);
+q1.setFromEuler(e1);
+q1.appendResult(tests, results, 'YXZeuler->quat');
+q1.setFromMat33(e1.toMat33());
+q1.appendResult(tests, results, 'YXZeuler->mat->quat');
+
+ro1.setYZX();
+e1.set(0.3, 0.5, 0.7, ro1);
+q1.setFromEuler(e1);
+q1.appendResult(tests, results, 'YZXeuler->quat');
+q1.setFromMat33(e1.toMat33());
+q1.appendResult(tests, results, 'YZXeuler->mat->quat');
+
+ro1.setZXY();
+e1.set(0.3, 0.5, 0.7, ro1);
+q1.setFromEuler(e1);
+q1.appendResult(tests, results, 'ZXYeuler->quat');
+q1.setFromMat33(e1.toMat33());
+q1.appendResult(tests, results, 'ZXYeuler->mat->quat');
+
+ro1.setZYX();
+e1.set(0.3, 0.5, 0.7, ro1);
+q1.setFromEuler(e1);
+q1.appendResult(tests, results, 'ZYXeuler->quat');
+q1.setFromMat33(e1.toMat33());
+q1.appendResult(tests, results, 'ZYXeuler->mat->quat');
+
 v1.set(1.0, 0.0, 0.0);
 v2.set(1.0, -1.0, 2.0);
 v2.setUnit();
