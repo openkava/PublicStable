@@ -84,6 +84,16 @@ struct BulletForce {
   Boolean autoDisable;
 };
 
+struct BulletAnchor {
+  Data localData;
+  Data rigidBodyLocalData;
+  Data softBodyLocalData;
+  String name;
+  Integer rigidBodyIndex;
+  Integer softBodyNodeIndices[];
+  Boolean disableCollision;
+};
+
 //===================================================================================
 // constants
 const Integer BULLET_BOX_SHAPE = 0;
@@ -116,18 +126,20 @@ function FabricBULLET_Shape_Create(io BulletShape shape);
 function FabricBULLET_Shape_Delete(io BulletShape shape);
 function FabricBULLET_RigidBody_Create(io BulletRigidBody body, io BulletShape shape);
 function FabricBULLET_RigidBody_Delete(io BulletRigidBody body);
-function FabricBULLET_RigidBody_SetMass(io BulletRigidBody body);
-function FabricBULLET_RigidBody_GetTransform(io BulletRigidBody body);
-function FabricBULLET_RigidBody_SetTransform(io BulletRigidBody body);
-function FabricBULLET_RigidBody_GetLinearVelocity(io BulletRigidBody body, io Vec3 bodyVelocity);
-function FabricBULLET_RigidBody_SetLinearVelocity(io BulletRigidBody body, io Vec3 bodyVelocity);
-function FabricBULLET_RigidBody_GetAngularVelocity(io BulletRigidBody body, io Vec3 bodyVelocity);
-function FabricBULLET_RigidBody_SetAngularVelocity(io BulletRigidBody body, io Vec3 bodyVelocity);
+function FabricBULLET_RigidBody_SetMass(io BulletRigidBody body, in Scalar mass);
+function FabricBULLET_RigidBody_GetTransform(in BulletRigidBody body, io Xfo result);
+function FabricBULLET_RigidBody_SetTransform(in BulletRigidBody body, in Xfo transform);
+function Vec3 FabricBULLET_RigidBody_GetLinearVelocity(in BulletRigidBody body);
+function FabricBULLET_RigidBody_SetLinearVelocity(io BulletRigidBody body, in Vec3 bodyVelocity);
+function Vec3 FabricBULLET_RigidBody_GetAngularVelocity(in BulletRigidBody body);
+function FabricBULLET_RigidBody_SetAngularVelocity(io BulletRigidBody body, in Vec3 bodyVelocity);
 function FabricBULLET_SoftBody_Create(io BulletSoftBody body, io BulletWorld world, io Vec3 positions<>, io Vec3 normals<>, io Integer indices[]);
 function FabricBULLET_SoftBody_Delete(io BulletSoftBody body);
 function FabricBULLET_SoftBody_GetPosition(in Size index, io BulletSoftBody body, io Vec3 position, io Vec3 normal);
 function FabricBULLET_Constraint_Create(io BulletConstraint constraint);
 function FabricBULLET_Constraint_Delete(io BulletConstraint constraint);
+function FabricBULLET_Anchor_Create(io BulletAnchor anchor);
+function FabricBULLET_Anchor_Delete(io BulletAnchor anchor);
 
 //===================================================================================
 // world definition
@@ -223,34 +235,35 @@ function BulletRigidBody.create(io BulletShape shape, io Boolean result) {
   result = true;
 }
 
-function BulletRigidBody.setMass(io Scalar mass) {
+function BulletRigidBody.setMass(in Scalar mass) {
   this.mass = mass;
-  FabricBULLET_RigidBody_SetMass(this);
+  FabricBULLET_RigidBody_SetMass(this, mass);
 }
 
-function BulletRigidBody.getTransform(io Xfo transform) {
-  FabricBULLET_RigidBody_GetTransform(this);
-  transform = this.transform;
+function Xfo BulletRigidBody.getTransform() {
+  Xfo result;
+  FabricBULLET_RigidBody_GetTransform(this, result);
+  return result;
 }
 
-function BulletRigidBody.setTransform(io Xfo transform) {
+function BulletRigidBody.setTransform(in Xfo transform) {
   this.transform = transform;
-  FabricBULLET_RigidBody_SetTransform(this);
+  FabricBULLET_RigidBody_SetTransform(this, transform);
 }
 
-function BulletRigidBody.getLinearVelocity(io Vec3 velocity) {
-  FabricBULLET_RigidBody_GetLinearVelocity(this,velocity);
+function Vec3 BulletRigidBody.getLinearVelocity() {
+  return FabricBULLET_RigidBody_GetLinearVelocity(this);
 }
 
-function BulletRigidBody.setLinearVelocity(io Vec3 velocity) {
+function BulletRigidBody.setLinearVelocity(in Vec3 velocity) {
   FabricBULLET_RigidBody_SetLinearVelocity(this,velocity);
 }
 
-function BulletRigidBody.getAngularVelocity(io Vec3 velocity) {
-  FabricBULLET_RigidBody_GetAngularVelocity(this,velocity);
+function Vec3 BulletRigidBody.getAngularVelocity() {
+  return FabricBULLET_RigidBody_GetAngularVelocity(this);
 }
 
-function BulletRigidBody.setAngularVelocity(io Vec3 velocity) {
+function BulletRigidBody.setAngularVelocity(in Vec3 velocity) {
   FabricBULLET_RigidBody_SetAngularVelocity(this,velocity);
 }
 
@@ -278,8 +291,23 @@ function ~BulletConstraint() = "FabricBULLET_Constraint_Delete";
 function BulletConstraint.create(io Boolean result, io BulletRigidBody bodiesA[], io BulletRigidBody bodiesB[]) {
   if(!this.localData) {
     this.bodyLocalDataA = bodiesA[this.indexA].localData;
-    this.bodyLocalDataB = bodiesA[this.indexB].localData;
+    this.bodyLocalDataB = bodiesB[this.indexB].localData;
     FabricBULLET_Constraint_Create(this);
+    result = true;
+  }
+  else
+    result = false;
+}
+
+//===================================================================================
+// anchor definition
+function ~BulletAnchor() = "FabricBULLET_Anchor_Delete";
+
+function BulletAnchor.create(io Boolean result, io BulletRigidBody rigidBodies[], io BulletSoftBody softBody) {
+  if(!this.localData) {
+    this.rigidBodyLocalData = rigidBodies[this.rigidBodyIndex].localData;
+    this.softBodyLocalData = softBody.localData;
+    FabricBULLET_Anchor_Create(this);
     result = true;
   }
   else
