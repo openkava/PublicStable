@@ -4,7 +4,14 @@
 #
 
 git filter-branch -f --prune-empty --index-filter 'git rm -r --cached --ignore-unmatch \
+  .gitignore \
   Native \
+  Web/LICENSE.TXT \
+  Web/README.TXT \
+  Web/.gitignore \
+  Web/index.html \
+  Web/ThirdParty \
+  Web/Themes \
   Web/Core \
   Web/SceneGraph \
   Web/Apps/Sample \
