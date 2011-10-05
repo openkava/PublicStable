@@ -1,5 +1,5 @@
+NODE_VERSION := 0.5.8
 LLVM_VERSION := 2.9
-V8_VERSION := 1.3.18.22
 PNG_VERSION := 1.4.4
 ZLIB_VERSION := 1.2.5
 LIBEDIT_VERSION := 3.0
@@ -42,7 +42,7 @@ endif
   unpack_llvm patch_llvm configure_llvm build_llvm install_llvm clean_llvm \
   unpack_libpng patch_libpng configure_libpng build_libpng install_libpng clean_libpng \
   unpack_ffmpeg patch_ffmpeg configure_ffmpeg build_ffmpeg install_ffmpeg clean_ffmpeg \
-  unpack_v8 patch_v8 configure_v8 build_v8 install_v8 clean_v8 \
+  unpack_node patch_node configure_node build_node install_node clean_node \
   unpack_zlib patch_zlib configure_zlib build_zlib install_zlib clean_zlib \
   unpack_libedit patch_libedit configure_libedit build_libedit install_libedit clean_libedit \
   unpack_gtkglext patch_gtkglext configure_gtkglext build_gtkglext install_gtkglext clean_gtkglext \
@@ -53,9 +53,9 @@ endif
 
 all: build
 
-build: check_env_vars build_ilmbase build_openexr build_llvm build_libpng build_ffmpeg build_v8 build_libedit
+build: check_env_vars build_ilmbase build_openexr build_llvm build_libpng build_ffmpeg build_node build_libedit
 
-unpack: check_env_vars unpack_ilmbase unpack_openexr unpack_llvm unpack_libpng unpack_ffmpeg unpack_v8 unpack_libedit
+unpack: check_env_vars unpack_ilmbase unpack_openexr unpack_llvm unpack_libpng unpack_ffmpeg unpack_node unpack_libedit
 
 check_env_vars: 
 ifeq ($(BUILD_PLATFORM),Darwin)
@@ -212,40 +212,52 @@ Build/.llvm.unpack:
 	done
 	touch $@
 
-build_v8: Build/.v8.build
+build_node: Build/.node.build
 
-configure_v8: Build/.v8.configure
+configure_node: Build/.node.configure
 
-patch_v8: Build/.v8.patch
+patch_node: Build/.node.patch
 
-unpack_v8: Build/.v8.unpack
+unpack_node: Build/.node.unpack
 
-Build/.v8.build: Build/.v8.configure
-ifeq ($(BUILD_PLATFORM),Linux)
-	# replace the strict aliasing setting for gcc 4.4
+Build/.node.build: Build/.node.configure
 	for ARCH in $(ARCHS); do \
-		cat Build/v8-$(V8_VERSION)-$$ARCH/SConstruct | sed -e "s/-fno-tree-vrp/-fno-tree-vrp', '-fno-strict-aliasing/" > Build/v8-$(V8_VERSION)-$$ARCH/SConstruct_replaced; \
-		mv Build/v8-$(V8_VERSION)-$$ARCH/SConstruct_replaced Build/v8-$(V8_VERSION)-$$ARCH/SConstruct; \
-		( cd Build/v8-$(V8_VERSION)-$$ARCH && GCC_VERSION='44' scons ); \
+          if [ "$$ARCH" = "x86_64" ]; then \
+            export CFLAGS=-m64; \
+            export CXXFLAGS=-m64; \
+            export LINKFLAGS=-m64; \
+          else \
+            export CFLAGS=-m32; \
+            export CXXFLAGS=-m32; \
+            export LINKFLAGS=-m32; \
+          fi; \
+		( cd Build/node-$(NODE_VERSION)-$$ARCH && make ); \
 	done
-else
+
+Build/.node.configure: Build/.node.patch
 	for ARCH in $(ARCHS); do \
-                if [ "$$ARCH" = "x86_64" ]; then V8_ARCH=x64; else V8_ARCH=ia32; fi; \
-		( cd Build/v8-$(V8_VERSION)-$$ARCH && scons arch=$$V8_ARCH ); \
+          if [ "$$ARCH" = "x86_64" ]; then \
+            NODE_ARCH=x64; \
+            export CFLAGS=-m64; \
+            export CXXFLAGS=-m64; \
+            export LINKFLAGS=-m64; \
+          else \
+            NODE_ARCH=ia32; \
+            export CFLAGS=-m32; \
+            export CXXFLAGS=-m32; \
+            export LINKFLAGS=-m32; \
+          fi; \
+          ( cd Build/node-$(NODE_VERSION)-$$ARCH && ./configure --dest-cpu=$$NODE_ARCH ); \
 	done
-endif
 	touch $@
 
-Build/.v8.configure: Build/.v8.patch
+Build/.node.patch: Build/.node.unpack
 	touch $@
 
-Build/.v8.patch: Build/.v8.unpack
-	touch $@
-
-Build/.v8.unpack:
+Build/.node.unpack:
 	mkdir -p Build
 	for ARCH in $(ARCHS); do \
-		( cd Build && tar jxf ../SourcePackages/v8-$(V8_VERSION).tar.bz2 && mv v8-$(V8_VERSION) v8-$(V8_VERSION)-$$ARCH ); \
+		( cd Build && tar jxf ../SourcePackages/node-$(NODE_VERSION).tar.bz2 && mv node-$(NODE_VERSION) node-$(NODE_VERSION)-$$ARCH ); \
 	done
 	touch $@
 
@@ -587,7 +599,7 @@ Build/.zlib.patch: Build/.zlib.unpack
 Build/.zlib.unpack:
 	touch $@
   
-install: check_env_vars install_ilmbase install_openexr install_llvm install_libpng install_ffmpeg install_v8 install_libedit install_gtkglext
+install: check_env_vars install_ilmbase install_openexr install_llvm install_libpng install_ffmpeg install_node install_libedit install_gtkglext
 
 install_ilmbase: install_ilmbase_headers install_ilmbase_libraries
 
@@ -643,18 +655,18 @@ install_llvm_libraries:
           $(RSYNC) --progress --recursive --delete --include='*/' --include='libLLVM*.a' --exclude='*' Build/llvm-$(LLVM_VERSION)-$$ARCH/Release/lib/ $(TARGET_BASE)/lib/$(BUILD_PLATFORM)/$$ARCH/Release/llvm/; \
         done
 
-install_v8: install_v8_headers install_v8_libraries
+install_node: install_node_headers
 
-install_v8_headers:
+install_node_headers:
 	mkdir -p include/v8/v8
-	$(RSYNC) --progress --recursive --delete --include='*/' --include='*.h' --exclude='*' Build/v8-$(V8_VERSION)-$(FIRST_ARCH)/include/ $(TARGET_BASE)/include/v8/v8/
+	$(RSYNC) --progress --recursive --delete --include='*/' --include='*.h' --exclude='*' Build/node-$(NODE_VERSION)-$(FIRST_ARCH)/deps/v8/include/ $(TARGET_BASE)/include/v8/v8/
 
-install_v8_libraries:
+install_node_bin:
 	for ARCH in $(ARCHS); do \
-		mkdir -p $(TARGET_BASE)/lib/$(BUILD_PLATFORM)/$$ARCH/v8; \
-		cp Build/v8-$(V8_VERSION)-$$ARCH/libv8.a $(TARGET_BASE)/lib/$(BUILD_PLATFORM)/$$ARCH/v8/; \
-	done
-
+          mkdir -p $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/bin; \
+          cp Build/node-$(NODE_VERSION)-$$ARCH/out/Release/node $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/bin/; \
+        done
+	
 install_boost: install_boost_headers install_boost_libraries
 
 install_boost_headers:
@@ -760,7 +772,7 @@ ifeq ($(BUILD_PLATFORM),"mingw")
 	cp Build/zlib-$(ZLIB_VERSION)-$(FIRST_ARCH)/zlib.h $(TARGET_BASE)/include/zlib/zlib/
 endif
 
-clean: clean_ilmbase clean_openexr clean_llvm clean_libpng clean_ffmpeg clean_v8 clean_libedit clean_gtkglext clean_boost clean_hdf5 clean_alembic
+clean: clean_ilmbase clean_openexr clean_llvm clean_libpng clean_ffmpeg clean_node clean_libedit clean_gtkglext clean_boost clean_hdf5 clean_alembic
 	rm -rf Build
 
 clean_ilmbase:
@@ -781,11 +793,11 @@ clean_llvm:
 	done
 	rm -rf Build/.llvm.*
 
-clean_v8:
+clean_node:
 	for ARCH in $(ARCHS); do \
-		rm -rf Build/v8-$(V8_VERSION)-i386; \
+		rm -rf Build/node-$(NODE_VERSION)-$$ARCH; \
 	done
-	rm -rf Build/.v8.*
+	rm -rf Build/.node.*
 
 clean_ffmpeg:
 	for ARCH in $(ARCHS); do \
