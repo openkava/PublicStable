@@ -717,8 +717,10 @@ FABRIC_EXT_EXPORT void FabricBULLET_RigidBody_Delete(
 #ifndef NDEBUG
     printf("  { FabricBULLET } : FabricBULLET_RigidBody_Delete called.\n");
 #endif
-    if(body.localData->mWorld != NULL)
+    if(body.localData->mWorld != NULL) {
       body.localData->mWorld->mDynamicsWorld->removeRigidBody(body.localData->mBody);
+      body.localData->mWorld->release();
+    }
     delete(body.localData->mBody);
     delete(body.localData);
     body.localData = NULL;
@@ -987,8 +989,11 @@ FABRIC_EXT_EXPORT void FabricBULLET_SoftBody_Delete(
 #ifndef NDEBUG
     printf("  { FabricBULLET } : FabricBULLET_SoftBody_Delete called.\n");
 #endif
-    //if(body.localData->mWorld != NULL)
-    //  body.localData->mWorld->mDynamicsWorld->removeSoftBody(body.localData->mBody);
+    if(body.localData->mWorld != NULL) {
+      body.localData->mWorld->mDynamicsWorld->removeSoftBody(body.localData->mBody);
+      body.localData->mWorld->release();
+      body.localData->mWorld = NULL;
+    }
     delete(body.localData->mBody);
     delete(body.localData);
     body.localData = NULL;
@@ -1103,8 +1108,11 @@ FABRIC_EXT_EXPORT void FabricBULLET_Constraint_Delete(
 #ifndef NDEBUG
     printf("  { FabricBULLET } : FabricBULLET_Constraint_Delete called.\n");
 #endif
-    //if(constraint.localData->mWorld != NULL)
-    //  constraint.localData->mWorld->mDynamicsWorld->removeConstraint(constraint.localData->mConstraint);
+    if(constraint.localData->mWorld != NULL) {
+      constraint.localData->mWorld->mDynamicsWorld->removeConstraint(constraint.localData->mConstraint);
+      constraint.localData->mWorld->release();
+      constraint.localData->mWorld = NULL;
+    }
     delete( constraint.localData->mConstraint );
     delete( constraint.localData );
     constraint.localData = NULL;
