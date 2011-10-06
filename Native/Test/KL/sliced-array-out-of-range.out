@@ -1,2 +1,2 @@
 7
-Caught exception: KL: String<> index (16) out of range (16)
+Caught exception: sliced-array-out-of-range.kl:6:10: String<> index (16) out of range (16)

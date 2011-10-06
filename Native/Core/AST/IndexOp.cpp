@@ -76,10 +76,30 @@ namespace Fabric
           switch ( usage )
           {
             case CG::USAGE_LVALUE:
-              result = CG::ExprValue( arrayAdapter->getMemberAdapter(), CG::USAGE_LVALUE, basicBlockBuilder.getContext(), arrayAdapter->llvmNonConstIndexOp( basicBlockBuilder, arrayExprValue.getValue(), indexExprRValue ) );
+              result = CG::ExprValue(
+                arrayAdapter->getMemberAdapter(),
+                CG::USAGE_LVALUE,
+                basicBlockBuilder.getContext(),
+                arrayAdapter->llvmNonConstIndexOp(
+                  basicBlockBuilder,
+                  arrayExprValue.getValue(),
+                  indexExprRValue,
+                  &getLocation()
+                  )
+                );
               break;
             default:
-              result = CG::ExprValue( arrayAdapter->getMemberAdapter(), CG::USAGE_RVALUE, basicBlockBuilder.getContext(), arrayAdapter->llvmConstIndexOp( basicBlockBuilder, arrayExprValue.getValue(), indexExprRValue ) );
+              result = CG::ExprValue(
+                arrayAdapter->getMemberAdapter(),
+                CG::USAGE_RVALUE,
+                basicBlockBuilder.getContext(),
+                arrayAdapter->llvmConstIndexOp(
+                  basicBlockBuilder,
+                  arrayExprValue.getValue(),
+                  indexExprRValue,
+                  &getLocation()
+                  )
+                );
               break;
           }
           arrayExprValue.llvmDispose( basicBlockBuilder );

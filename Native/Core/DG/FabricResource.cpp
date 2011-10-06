@@ -31,7 +31,7 @@ namespace Fabric
       memberInfos.resize(NB_FABRIC_RESOURCE_MEMBERS);
 
       memberInfos[FABRIC_RESOURCE_DATA_MEMBER_INDEX].name = "data";
-      memberInfos[FABRIC_RESOURCE_DATA_MEMBER_INDEX].desc = rtManager->getVariableArrayOf( rtManager->getByteDesc() );
+      memberInfos[FABRIC_RESOURCE_DATA_MEMBER_INDEX].desc = rtManager->getVariableArrayOf( rtManager->getByteDesc(), RT::VariableArrayImpl::FLAG_COPY_ON_WRITE );
       memberInfos[FABRIC_RESOURCE_MIMETYPE_MEMBER_INDEX].name = "mimeType";
       memberInfos[FABRIC_RESOURCE_MIMETYPE_MEMBER_INDEX].desc = stringDesc;
       memberInfos[FABRIC_RESOURCE_EXTENSION_MEMBER_INDEX].name = "extension";

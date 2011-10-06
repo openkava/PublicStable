@@ -37,14 +37,14 @@ namespace Fabric
       
     public:
       
-      static RC::ConstHandle<Desc> Create( std::string const &name, RC::ConstHandle<Impl> const &impl )
+      static RC::ConstHandle<Desc> Create( std::string const &userName, RC::ConstHandle<Impl> const &impl )
       {
-        return new Desc( name, impl );
+        return new Desc( userName, impl );
       }
     
-      std::string const &getName() const
+      std::string const &getUserName() const
       {
-        return m_name;
+        return m_userName;
       }
       size_t getAllocSize() const;
       RC::ConstHandle<Impl> getImpl() const;
@@ -55,6 +55,7 @@ namespace Fabric
       void const *getDefaultData() const;
       void setData( void const *value, void *data ) const;
       void disposeData( void *data ) const;
+      void disposeDatas( void *data, size_t count, size_t stride ) const;
       std::string descData( void const *data ) const;
       std::string toString( void const *data ) const;
       
@@ -67,30 +68,20 @@ namespace Fabric
       bool isEquivalentTo( RC::ConstHandle< RT::Desc > const &desc ) const;
       bool isShallow() const;
       
-      std::string const &desc() const
-      {
-        return m_name;
-      }
-      
       virtual RC::Handle<JSON::Object> jsonDesc() const;
       
     protected:
     
-      Desc( std::string const &name, RC::ConstHandle<Impl> const &impl );
+      Desc( std::string const &userName, RC::ConstHandle<Impl> const &impl );
       
     private:
     
-      std::string m_name;
+      std::string m_userName;
       RC::ConstHandle<Impl> m_impl;
       
       mutable RC::ConstHandle<RC::Object> m_klBindingsAST;
     };
   };
-  
-  inline std::string _( RC::ConstHandle<RT::Desc> const &desc )
-  {
-    return desc->desc();
-  }
 };
 
 #endif // _FABRIC_RT_DESC_H
