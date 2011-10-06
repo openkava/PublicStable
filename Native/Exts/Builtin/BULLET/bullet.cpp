@@ -3,6 +3,7 @@
  */
  
 #include <Fabric/EDK/EDK.h>
+#include <Fabric/Base/RC/Object.h>
 
 #include <string>
 
@@ -25,13 +26,23 @@ const int maxOverlap = 65535;
 // ====================================================================
 // KL structs
 FABRIC_EXT_KL_STRUCT( BulletWorld, {
-  struct LocalData {
+  class LocalData : public Fabric::RC::Object {
+  public:
+  
+    LocalData();
+    
+    void reset();
+    
     btSoftRigidDynamicsWorld * mDynamicsWorld;
     btBroadphaseInterface*	mBroadphase;
     btCollisionDispatcher*	mDispatcher;
     btConstraintSolver*	mSolver;
     btSoftBodyRigidBodyCollisionConfiguration* mCollisionConfiguration;
     btSoftBodyWorldInfo	mSoftBodyWorldInfo;
+  
+  protected:
+  
+    virtual ~LocalData();
   };
 
   LocalData * localData;
@@ -146,6 +157,125 @@ FABRIC_EXT_KL_STRUCT( BulletAnchor, {
   KL::Boolean disableCollision;
 } );
 
+BulletWorld::LocalData::LocalData() {
+  // iniate the world which can deal with softbodies and rigid bodies
+  mCollisionConfiguration = new btSoftBodyRigidBodyCollisionConfiguration();
+  mDispatcher = new btCollisionDispatcher(mCollisionConfiguration);
+  btVector3 worldAabbMin(-10000,-10000,-10000);
+  btVector3 worldAabbMax(10000,10000,10000);
+  mBroadphase = new btAxisSweep3(worldAabbMin,worldAabbMax,maxProxies);
+  btSequentialImpulseConstraintSolver* sol = new btSequentialImpulseConstraintSolver;
+  mSolver = sol;
+  mDynamicsWorld = new btSoftRigidDynamicsWorld(mDispatcher,mBroadphase,mSolver,mCollisionConfiguration);
+  mSoftBodyWorldInfo.m_dispatcher = mDispatcher;
+  mSoftBodyWorldInfo.m_broadphase = mBroadphase;
+  mSoftBodyWorldInfo.m_dispatcher = mDispatcher;
+  btGImpactCollisionAlgorithm::registerAlgorithm(mDispatcher);
+  
+  mSoftBodyWorldInfo.m_sparsesdf.Initialize();
+  mDynamicsWorld->getDispatchInfo().m_enableSPU = true;
+
+  // do the reset as well
+  mDynamicsWorld->getBroadphase()->resetPool(mDynamicsWorld->getDispatcher());
+  mDynamicsWorld->getConstraintSolver()->reset();
+  mDynamicsWorld->getSolverInfo().m_splitImpulse = false;
+  mSoftBodyWorldInfo.m_sparsesdf.Reset();
+  mSoftBodyWorldInfo.m_sparsesdf.GarbageCollect();
+
+  mSoftBodyWorldInfo.air_density = 0;
+  mSoftBodyWorldInfo.water_density = 0;
+  mSoftBodyWorldInfo.water_offset = 0;
+  mSoftBodyWorldInfo.water_normal = btVector3(0,0,0);
+}
+
+void BulletWorld::LocalData::reset() {
+  mDynamicsWorld->getBroadphase()->resetPool(mDynamicsWorld->getDispatcher());
+  mDynamicsWorld->getConstraintSolver()->reset();
+  mDynamicsWorld->getSolverInfo().m_splitImpulse = false;
+  mSoftBodyWorldInfo.m_sparsesdf.Reset();
+  mSoftBodyWorldInfo.m_sparsesdf.GarbageCollect();
+  
+  // loop over all rigid bodies and reset their transform
+  btCollisionObjectArray & collisionObjects = mDynamicsWorld->getCollisionObjectArray();
+  for(int i=0;i<collisionObjects.size();i++)
+  {
+    BulletRigidBody::LocalData * localData = (BulletRigidBody::LocalData *)collisionObjects[i]->getUserPointer();
+    if(!localData)
+      continue;
+    btRigidBody * body = static_cast<btRigidBody*>(collisionObjects[i]);
+    if(!body)
+      continue;
+
+    body->setLinearVelocity(btVector3(0.0f,0.0f,0.0f));
+    body->setAngularVelocity(btVector3(0.0f,0.0f,0.0f));
+    body->setWorldTransform(localData->mInitialTransform);
+  }
+  
+  // loop over all softbodies and reset their positions
+  btSoftBodyArray  & softBodies = mDynamicsWorld->getSoftBodyArray();
+  for(int i=0;i<softBodies.size();i++)
+  {
+    BulletSoftBody::LocalData * localData = (BulletSoftBody::LocalData *)softBodies[i]->getUserPointer();
+    if(!localData)
+      continue;
+    btSoftBody * body = static_cast<btSoftBody*>(softBodies[i]);
+    if(!body)
+      continue;
+    
+    btTransform identity;
+    identity.setIdentity();
+    body->transform(identity);
+    for(int j=0;j<body->m_nodes.size();j++)
+    {
+      body->m_nodes[j].m_x = localData->mInitialPositions[j];
+      body->m_nodes[j].m_q = localData->mInitialPositions[j];
+      body->m_nodes[j].m_n = localData->mInitialNormals[j];
+      body->m_nodes[j].m_v = btVector3(0.0f,0.0f,0.0f);
+      body->m_nodes[j].m_f = btVector3(0.0f,0.0f,0.0f);
+    }
+    body->updateBounds();
+    body->setPose(true,true);
+    
+    body->m_materials[0]->m_kLST = localData->kLST;
+    body->m_materials[0]->m_kAST = localData->kLST;
+    body->m_materials[0]->m_kVST = localData->kLST;
+    
+    body->m_cfg.kDP = localData->kDP;
+    body->m_cfg.kDF = localData->kDF;
+    body->m_cfg.kDG = localData->kDG;
+    body->m_cfg.kVC = localData->kVC;
+    body->m_cfg.kPR = localData->kPR;
+    body->m_cfg.kMT = localData->kMT;
+    body->m_cfg.kCHR = localData->kCHR;
+    body->m_cfg.kKHR = localData->kCHR;
+    body->m_cfg.kSHR = localData->kCHR;
+    body->m_cfg.kAHR = localData->kCHR;
+    
+    if(body->m_clusters.size() > 0)
+    {
+      for(int j=0;j<body->m_clusters.size();j++)
+      {
+        body->m_clusters[j]->m_ldamping = body->m_cfg.kDP;
+        body->m_clusters[j]->m_adamping = body->m_cfg.kDP;
+      }
+    }
+    
+    body->m_cfg.piterations = localData->piterations;
+    body->m_cfg.citerations = localData->piterations;
+  }
+}
+
+BulletWorld::LocalData::~LocalData() {
+#ifndef NDEBUG
+    printf("  { FabricBULLET } :   Calling BulletWorld::LocalData::~LocalData()\n");
+#endif
+  delete mDynamicsWorld;
+  delete mSolver;
+  delete mBroadphase;
+  delete mDispatcher;
+  delete mCollisionConfiguration;
+}
+
 // ====================================================================
 // world implementation
 FABRIC_EXT_EXPORT void FabricBULLET_World_Create(
@@ -157,35 +287,7 @@ FABRIC_EXT_EXPORT void FabricBULLET_World_Create(
     printf("  { FabricBULLET } : FabricBULLET_World_Create called.\n");
 #endif
     world.localData = new BulletWorld::LocalData();
-    
-    // iniate the world which can deal with softbodies and rigid bodies
-    world.localData->mCollisionConfiguration = new btSoftBodyRigidBodyCollisionConfiguration();
-    world.localData->mDispatcher = new btCollisionDispatcher(world.localData->mCollisionConfiguration);
-    btVector3 worldAabbMin(-10000,-10000,-10000);
-    btVector3 worldAabbMax(10000,10000,10000);
-    world.localData->mBroadphase = new btAxisSweep3(worldAabbMin,worldAabbMax,maxProxies);
-    btSequentialImpulseConstraintSolver* sol = new btSequentialImpulseConstraintSolver;
-    world.localData->mSolver = sol;
-    world.localData->mDynamicsWorld = new btSoftRigidDynamicsWorld(world.localData->mDispatcher,world.localData->mBroadphase,world.localData->mSolver,world.localData->mCollisionConfiguration);
-    world.localData->mSoftBodyWorldInfo.m_dispatcher = world.localData->mDispatcher;
-    world.localData->mSoftBodyWorldInfo.m_broadphase = world.localData->mBroadphase;
-    world.localData->mSoftBodyWorldInfo.m_dispatcher = world.localData->mDispatcher;
-    btGImpactCollisionAlgorithm::registerAlgorithm(world.localData->mDispatcher);
-    
-    world.localData->mSoftBodyWorldInfo.m_sparsesdf.Initialize();
-    world.localData->mDynamicsWorld->getDispatchInfo().m_enableSPU = true;
-
-    // do the reset as well
-    world.localData->mDynamicsWorld->getBroadphase()->resetPool(world.localData->mDynamicsWorld->getDispatcher());
-    world.localData->mDynamicsWorld->getConstraintSolver()->reset();
-    world.localData->mDynamicsWorld->getSolverInfo().m_splitImpulse = false;
-    world.localData->mSoftBodyWorldInfo.m_sparsesdf.Reset();
-    world.localData->mSoftBodyWorldInfo.m_sparsesdf.GarbageCollect();
-
-    world.localData->mSoftBodyWorldInfo.air_density = 0;
-    world.localData->mSoftBodyWorldInfo.water_density = 0;
-    world.localData->mSoftBodyWorldInfo.water_offset = 0;
-    world.localData->mSoftBodyWorldInfo.water_normal = btVector3(0,0,0);
+    world.localData->retain();
 #ifndef NDEBUG
     printf("  { FabricBULLET } : FabricBULLET_World_Create completed.\n");
 #endif
@@ -200,12 +302,7 @@ FABRIC_EXT_EXPORT void FabricBULLET_World_Delete(
 #ifndef NDEBUG
     printf("  { FabricBULLET } : FabricBULLET_World_Delete called.\n");
 #endif
-    delete( world.localData->mDynamicsWorld );
-    delete( world.localData->mSolver );
-    delete( world.localData->mBroadphase );
-    delete( world.localData->mDispatcher );
-    delete( world.localData->mCollisionConfiguration );
-    delete( world.localData );
+    world.localData->release();
     world.localData = NULL;
 #ifndef NDEBUG
     printf("  { FabricBULLET } : FabricBULLET_World_Delete completed.\n");
@@ -263,81 +360,7 @@ FABRIC_EXT_EXPORT void FabricBULLET_World_Reset(
     printf("  { FabricBULLET } : FabricBULLET_World_Reset called.\n");
 #endif
     world.step = 0;
-
-    world.localData->mDynamicsWorld->getBroadphase()->resetPool(world.localData->mDynamicsWorld->getDispatcher());
-    world.localData->mDynamicsWorld->getConstraintSolver()->reset();
-    world.localData->mDynamicsWorld->getSolverInfo().m_splitImpulse = false;
-    world.localData->mSoftBodyWorldInfo.m_sparsesdf.Reset();
-    world.localData->mSoftBodyWorldInfo.m_sparsesdf.GarbageCollect();
-    
-    // loop over all rigid bodies and reset their transform
-    btCollisionObjectArray & collisionObjects = world.localData->mDynamicsWorld->getCollisionObjectArray();
-    for(size_t i=0;i<collisionObjects.size();i++)
-    {
-      BulletRigidBody::LocalData * localData = (BulletRigidBody::LocalData *)collisionObjects[i]->getUserPointer();
-      if(!localData)
-        continue;
-      btRigidBody * body = static_cast<btRigidBody*>(collisionObjects[i]);
-      if(!body)
-        continue;
-
-      body->setLinearVelocity(btVector3(0.0f,0.0f,0.0f));
-      body->setAngularVelocity(btVector3(0.0f,0.0f,0.0f));
-      body->setWorldTransform(localData->mInitialTransform);
-    }
-    
-    // loop over all softbodies and reset their positions
-    btSoftBodyArray  & softBodies = world.localData->mDynamicsWorld->getSoftBodyArray();
-    for(size_t i=0;i<softBodies.size();i++)
-    {
-      BulletSoftBody::LocalData * localData = (BulletSoftBody::LocalData *)softBodies[i]->getUserPointer();
-      if(!localData)
-        continue;
-      btSoftBody * body = static_cast<btSoftBody*>(softBodies[i]);
-      if(!body)
-        continue;
-      
-      btTransform identity;
-      identity.setIdentity();
-      body->transform(identity);
-      for(KL::Size j=0;j<body->m_nodes.size();j++)
-      {
-        body->m_nodes[j].m_x = localData->mInitialPositions[j];
-        body->m_nodes[j].m_q = localData->mInitialPositions[j];
-        body->m_nodes[j].m_n = localData->mInitialNormals[j];
-        body->m_nodes[j].m_v = btVector3(0.0f,0.0f,0.0f);
-        body->m_nodes[j].m_f = btVector3(0.0f,0.0f,0.0f);
-      }
-      body->updateBounds();
-      body->setPose(true,true);
-      
-      body->m_materials[0]->m_kLST = localData->kLST;
-      body->m_materials[0]->m_kAST = localData->kLST;
-      body->m_materials[0]->m_kVST = localData->kLST;
-      
-      body->m_cfg.kDP = localData->kDP;
-      body->m_cfg.kDF = localData->kDF;
-      body->m_cfg.kDG = localData->kDG;
-      body->m_cfg.kVC = localData->kVC;
-      body->m_cfg.kPR = localData->kPR;
-      body->m_cfg.kMT = localData->kMT;
-      body->m_cfg.kCHR = localData->kCHR;
-      body->m_cfg.kKHR = localData->kCHR;
-      body->m_cfg.kSHR = localData->kCHR;
-      body->m_cfg.kAHR = localData->kCHR;
-      
-      if(body->m_clusters.size() > 0)
-      {
-        for(int j=0;j<body->m_clusters.size();j++)
-        {
-          body->m_clusters[j]->m_ldamping = body->m_cfg.kDP;
-          body->m_clusters[j]->m_adamping = body->m_cfg.kDP;
-        }
-      }
-      
-      body->m_cfg.piterations = localData->piterations;
-      body->m_cfg.citerations = localData->piterations;
-    }
+    world.localData->reset();
 #ifndef NDEBUG
     printf("  { FabricBULLET } : FabricBULLET_World_Reset completed.\n");
 #endif
@@ -398,7 +421,7 @@ FABRIC_EXT_EXPORT void FabricBULLET_World_ApplyForce(
     
     // loop over all rigid bodies introduce a new force!
     btCollisionObjectArray & collisionObjects = world.localData->mDynamicsWorld->getCollisionObjectArray();
-    for(size_t i=0;i<collisionObjects.size();i++)
+    for(int i=0;i<collisionObjects.size();i++)
     {
       btRigidBody * body = static_cast<btRigidBody*>(collisionObjects[i]);
       if(!body)
@@ -431,8 +454,9 @@ FABRIC_EXT_EXPORT void FabricBULLET_World_AddRigidBody(
 #ifndef NDEBUG
     printf("  { FabricBULLET } : FabricBULLET_World_AddRigidBody called.\n");
 #endif
-    world.localData->mDynamicsWorld->addRigidBody(body.localData->mBody);
     body.localData->mWorld = world.localData;
+    body.localData->mWorld->retain();
+    world.localData->mDynamicsWorld->addRigidBody(body.localData->mBody);
 #ifndef NDEBUG
     printf("  { FabricBULLET } : FabricBULLET_World_AddRigidBody completed.\n");
 #endif
@@ -449,6 +473,7 @@ FABRIC_EXT_EXPORT void FabricBULLET_World_RemoveRigidBody(
     printf("  { FabricBULLET } : FabricBULLET_World_RemoveRigidBody called.\n");
 #endif
     world.localData->mDynamicsWorld->removeRigidBody(body.localData->mBody);
+    body.localData->mWorld->release();
     body.localData->mWorld = NULL;
 #ifndef NDEBUG
     printf("  { FabricBULLET } : FabricBULLET_World_RemoveRigidBody completed.\n");
@@ -465,8 +490,9 @@ FABRIC_EXT_EXPORT void FabricBULLET_World_AddSoftBody(
 #ifndef NDEBUG
     printf("  { FabricBULLET } : FabricBULLET_World_AddSoftBody called.\n");
 #endif
-    world.localData->mDynamicsWorld->addSoftBody(body.localData->mBody);
     body.localData->mWorld = world.localData;
+    body.localData->mWorld->retain();
+    world.localData->mDynamicsWorld->addSoftBody(body.localData->mBody);
 #ifndef NDEBUG
     printf("  { FabricBULLET } : FabricBULLET_World_AddSoftBody completed.\n");
 #endif
@@ -483,6 +509,7 @@ FABRIC_EXT_EXPORT void FabricBULLET_World_RemoveSoftBody(
     printf("  { FabricBULLET } : FabricBULLET_World_RemoveSoftBody called.\n");
 #endif
     world.localData->mDynamicsWorld->removeSoftBody(body.localData->mBody);
+    body.localData->mWorld->release();
     body.localData->mWorld = NULL;
 #ifndef NDEBUG
     printf("  { FabricBULLET } : FabricBULLET_World_RemoveSoftBody completed.\n");
@@ -501,6 +528,7 @@ FABRIC_EXT_EXPORT void FabricBULLET_World_AddConstraint(
 #endif
     world.localData->mDynamicsWorld->addConstraint(constraint.localData->mConstraint);
     constraint.localData->mWorld = world.localData;
+    constraint.localData->mWorld->retain();
 #ifndef NDEBUG
     printf("  { FabricBULLET } : FabricBULLET_World_AddConstraint completed.\n");
 #endif
@@ -517,6 +545,7 @@ FABRIC_EXT_EXPORT void FabricBULLET_World_RemoveConstraint(
     printf("  { FabricBULLET } : FabricBULLET_World_RemoveConstraint called.\n");
 #endif
     world.localData->mDynamicsWorld->removeConstraint(constraint.localData->mConstraint);
+    constraint.localData->mWorld->release();
     constraint.localData->mWorld = NULL;
 #ifndef NDEBUG
     printf("  { FabricBULLET } : FabricBULLET_World_RemoveConstraint completed.\n");
@@ -689,8 +718,10 @@ FABRIC_EXT_EXPORT void FabricBULLET_RigidBody_Delete(
 #ifndef NDEBUG
     printf("  { FabricBULLET } : FabricBULLET_RigidBody_Delete called.\n");
 #endif
-    if(body.localData->mWorld != NULL)
+    if(body.localData->mWorld != NULL) {
       body.localData->mWorld->mDynamicsWorld->removeRigidBody(body.localData->mBody);
+      body.localData->mWorld->release();
+    }
     delete(body.localData->mBody);
     delete(body.localData);
     body.localData = NULL;
@@ -868,7 +899,7 @@ FABRIC_EXT_EXPORT void FabricBULLET_SoftBody_Create(
 
     body.localData->mInitialPositions.resize(positions.size());
     body.localData->mInitialNormals.resize(normals.size());
-    for(size_t i=0;i<body.localData->mInitialPositions.size();i++) {
+    for(int i=0;i<body.localData->mInitialPositions.size();i++) {
       body.localData->mInitialPositions[i] = transform * btVector3(positions[i].x,positions[i].y,positions[i].z);
       body.localData->mInitialNormals[i] = btVector3(normals[i].x,normals[i].y,normals[i].z).rotate(axis,angle);
     }
@@ -876,7 +907,7 @@ FABRIC_EXT_EXPORT void FabricBULLET_SoftBody_Create(
     body.localData->mBody = new btSoftBody(&world.localData->mSoftBodyWorldInfo,body.localData->mInitialPositions.size(),&body.localData->mInitialPositions[0],0);
     body.localData->mWorld = NULL;
     
-    for(KL::Size i=0;i<indices.size()-2;i+=3)
+    for(size_t i=0;i<indices.size()-2;i+=3)
     {
       body.localData->mBody->appendFace(indices[i],indices[i+1],indices[i+2]);
       body.localData->mBody->appendLink(indices[i],indices[i+1]);
@@ -885,7 +916,7 @@ FABRIC_EXT_EXPORT void FabricBULLET_SoftBody_Create(
     }
 
     KL::Scalar massPart = body.mass / KL::Scalar(body.localData->mBody->m_nodes.size());
-    for(KL::Size i=0;i<body.localData->mBody->m_nodes.size();i++)
+    for(int i=0;i<body.localData->mBody->m_nodes.size();i++)
     {
       body.localData->mBody->setMass(i,massPart);
       body.localData->mBody->m_nodes[i].m_n = body.localData->mInitialNormals[i];
@@ -959,8 +990,11 @@ FABRIC_EXT_EXPORT void FabricBULLET_SoftBody_Delete(
 #ifndef NDEBUG
     printf("  { FabricBULLET } : FabricBULLET_SoftBody_Delete called.\n");
 #endif
-    //if(body.localData->mWorld != NULL)
-    //  body.localData->mWorld->mDynamicsWorld->removeSoftBody(body.localData->mBody);
+    if(body.localData->mWorld != NULL) {
+      body.localData->mWorld->mDynamicsWorld->removeSoftBody(body.localData->mBody);
+      body.localData->mWorld->release();
+      body.localData->mWorld = NULL;
+    }
     delete(body.localData->mBody);
     delete(body.localData);
     body.localData = NULL;
@@ -1075,8 +1109,11 @@ FABRIC_EXT_EXPORT void FabricBULLET_Constraint_Delete(
 #ifndef NDEBUG
     printf("  { FabricBULLET } : FabricBULLET_Constraint_Delete called.\n");
 #endif
-    //if(constraint.localData->mWorld != NULL)
-    //  constraint.localData->mWorld->mDynamicsWorld->removeConstraint(constraint.localData->mConstraint);
+    if(constraint.localData->mWorld != NULL) {
+      constraint.localData->mWorld->mDynamicsWorld->removeConstraint(constraint.localData->mConstraint);
+      constraint.localData->mWorld->release();
+      constraint.localData->mWorld = NULL;
+    }
     delete( constraint.localData->mConstraint );
     delete( constraint.localData );
     constraint.localData = NULL;
