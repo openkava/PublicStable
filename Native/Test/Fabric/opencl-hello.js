@@ -25,14 +25,14 @@ operator entry()\n\
   report 'clCreateCommandQueue: ' + err;\n\
   report 'clCommandQueue: ' + clCommandQueue;\n\
 \n\
-  String source = '\n\
+  String source = '\
 __kernel void square(                                                  \n\
    __global float* input,                                              \n\
    __global float* output,                                             \n\
    const unsigned int count)                                           \n\
 {                                                                      \n\
    int i = get_global_id(0);                                           \n\
-   if(i < count)                                                       \n\
+   if(i < (int)count)                                                  \n\
        output[i] = input[i] * input[i];                                \n\
 }                                                                      \n\
 ';\n\
@@ -77,7 +77,7 @@ __kernel void square(                                                  \n\
   Size local;\n\
   err = clGetKernelWorkGroupInfo( clKernel, clDeviceIDs[0], CL_KERNEL_WORK_GROUP_SIZE, local.dataSize, local.data, NULL );\n\
   report 'clGetKernelWorkGroupInfo returned ' + err;\n\
-  report 'local = ' + local;\n\
+  report 'local > 0 = ' + (local > 0);\n\
 \n\
   Size global = count;\n\
   err = clEnqueueNDRangeKernel( clCommandQueue, clKernel, 1, NULL, global.data, local.data, eventWaitList, event );\n\

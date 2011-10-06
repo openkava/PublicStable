@@ -17,8 +17,8 @@ namespace Fabric
 {
   namespace RT
   {
-    Desc::Desc( std::string const &name, RC::ConstHandle<Impl> const &impl )
-      : m_name( name )
+    Desc::Desc( std::string const &userName, RC::ConstHandle<Impl> const &impl )
+      : m_userName( userName )
       , m_impl( impl )
     {
     }
@@ -52,10 +52,15 @@ namespace Fabric
     {
       m_impl->disposeData( data );
     }
+    
+    void Desc::disposeDatas( void *data, size_t count, size_t stride ) const
+    {
+      m_impl->disposeDatas( data, count, stride );
+    }
 
     std::string Desc::descData( void const *data ) const
     {
-      return m_name + ":" + m_impl->descData( data );
+      return m_userName + ":" + m_impl->descData( data );
     }
 
     std::string Desc::toString( void const *data ) const
@@ -85,7 +90,7 @@ namespace Fabric
 
     bool Desc::isEquivalentTo( RC::ConstHandle<Desc> const &desc ) const
     {
-      return m_name == desc->m_name
+      return m_userName == desc->m_userName
         && m_impl->isEquivalentTo( desc->m_impl );
     }
     
@@ -97,7 +102,7 @@ namespace Fabric
     RC::Handle<JSON::Object> Desc::jsonDesc() const
     {
       RC::Handle<JSON::Object> result = JSON::Object::Create();
-      result->set( "name", JSON::String::Create( getName() ) );
+      result->set( "name", JSON::String::Create( getUserName() ) );
       result->set( "size", JSON::Integer::Create( getAllocSize() ) );
       result->set( "defaultValue", getJSONValue( getDefaultData() ) );
       return result;

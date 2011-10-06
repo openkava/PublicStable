@@ -13,6 +13,7 @@
 #include <Fabric/Core/AST/GlobalList.h>
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/CG/ModuleBuilder.h>
+#include <Fabric/Core/RT/Impl.h>
 #include <Fabric/Core/DG/Context.h>
 #include <Fabric/Core/IO/Helpers.h>
 #include <Fabric/Core/IO/Dir.h>
@@ -33,12 +34,26 @@ namespace Fabric
     //typedef void (*OnLoadFn)( SDK::Value FABRIC );
     //typedef void (*OnUnloadFn)( SDK::Value FABRIC );
     
-    RC::Handle<Inst> Inst::Create( RC::ConstHandle<IO::Dir> const &extensionDir, std::string const &name, std::string const &jsonDesc, std::vector<std::string> const &pluginDirs, RC::Handle<CG::Manager> const &cgManager )
+    RC::Handle<Inst> Inst::Create(
+      RC::ConstHandle<IO::Dir> const &extensionDir,
+      std::string const &extensionName,
+      std::string const &jsonDesc,
+      std::vector<std::string> const &pluginDirs,
+      RC::Handle<CG::Manager> const &cgManager,
+      std::map< std::string, void (*)( void * ) > &implNameToDestructorMap
+      )
     {
-      return new Inst( extensionDir, name, jsonDesc, pluginDirs, cgManager );
+      return new Inst( extensionDir, extensionName, jsonDesc, pluginDirs, cgManager, implNameToDestructorMap );
     }
       
-    Inst::Inst( RC::ConstHandle<IO::Dir> const &extensionDir, std::string const &extensionName, std::string const &jsonDesc, std::vector<std::string> const &pluginDirs, RC::Handle<CG::Manager> const &cgManager )
+    Inst::Inst(
+      RC::ConstHandle<IO::Dir> const &extensionDir,
+      std::string const &extensionName,
+      std::string const &jsonDesc,
+      std::vector<std::string> const &pluginDirs,
+      RC::Handle<CG::Manager> const &cgManager,
+      std::map< std::string, void (*)( void * ) > &implNameToDestructorMap
+      )
       : m_name( extensionName )
       , m_jsonDesc( jsonDesc )
     {
@@ -144,6 +159,8 @@ namespace Fabric
       RC::ConstHandle<KL::Source> source = KL::StringSource::Create( filename, m_code );
       RC::Handle<KL::Scanner> scanner = KL::Scanner::Create( source );
       m_ast = KL::Parse( scanner, m_diagnostics );
+      if ( !m_diagnostics.containsError() )
+        m_ast->registerTypes( cgManager, m_diagnostics );
       for ( CG::Diagnostics::const_iterator it=m_diagnostics.begin(); it!=m_diagnostics.end(); ++it )
       {
         CG::Location const &location = it->first;
@@ -172,6 +189,13 @@ namespace Fabric
           if ( !resolvedFunction )
             throw Exception( "error: symbol " + _(name) + ", prototyped in KL, not found in native code" );
           m_externalFunctionMap.insert( ExternalFunctionMap::value_type( name, resolvedFunction ) );
+          
+          if ( function->isDestructor() )
+          {
+            RC::ConstHandle<AST::Destructor> destructor = RC::ConstHandle<AST::Destructor>::StaticCast( function );
+            std::string thisTypeName = destructor->getThisTypeName();
+            implNameToDestructorMap[thisTypeName] = (void (*)( void * )) resolvedFunction;
+          }
         }
       }
 

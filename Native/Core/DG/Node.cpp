@@ -12,9 +12,7 @@
 #include <Fabric/Core/DG/ExecutionEngine.h>
 #include <Fabric/Core/MT/LogCollector.h>
 #include <Fabric/Core/RT/NumericDesc.h>
-#include <Fabric/Core/RT/VariableArrayDesc.h>
 #include <Fabric/Core/RT/Manager.h>
-#include <Fabric/Core/RT/VariableArrayImpl.h>
 #include <Fabric/Base/JSON/Value.h>
 #include <Fabric/Base/JSON/Object.h>
 #include <Fabric/Base/JSON/Array.h>
@@ -194,10 +192,11 @@ namespace Fabric
       if ( !m_runState->canEvaluate )
         throw Exception( "cannot execute because of errors" );
 
+      RC::Handle<MT::LogCollector> logCollector( m_context->getLogCollector() );
       ExecutionEngine::ContextSetter contextSetter( m_context );
-      m_runState->taskGroupStream.execute(0);
-      if ( m_context->getLogCollector() )
-        m_context->getLogCollector()->flush();
+      m_runState->taskGroupStream.execute( logCollector, 0 );
+      if ( logCollector )
+        logCollector->flush();
     }
 
     void Node::evaluateLocal( void *userdata )
@@ -216,11 +215,12 @@ namespace Fabric
             SelfScope selfScope( this, &dependenciesScope );
             std::vector<std::string> errors;
             m_runState->m_evaluateParallelCallsPerOperator[i] = opParallelCall = binding->bind( errors, selfScope, &m_runState->m_newCount );
+            FABRIC_ASSERT( errors.empty() );
           }
 
           size_t oldCount = getCount();
           m_runState->m_newCount = oldCount;
-          opParallelCall->executeParallel( binding->getMainThreadOnly() );
+          opParallelCall->executeParallel( m_context->getLogCollector(), binding->getMainThreadOnly() );
           if ( m_runState->m_newCount != oldCount )
             setCount( m_runState->m_newCount );
         }

@@ -8,16 +8,13 @@
 #include <Fabric/Core/DG/ExecutionEngine.h>
 #include <Fabric/Core/DG/Binding.h>
 #include <Fabric/Core/DG/FabricResource.h>
-#include <Fabric/Core/DG/SharedSlicedArray.h>
 #include <Fabric/Core/RT/StructDesc.h>
 #include <Fabric/Core/IO/Manager.h>
 #include <Fabric/Core/MT/LogCollector.h>
 #include <Fabric/Core/RT/NumericDesc.h>
-#include <Fabric/Core/RT/VariableArrayDesc.h>
 #include <Fabric/Core/RT/SlicedArrayDesc.h>
 #include <Fabric/Core/RT/SlicedArrayImpl.h>
 #include <Fabric/Core/RT/Manager.h>
-#include <Fabric/Core/RT/VariableArrayImpl.h>
 #include <Fabric/Base/JSON/Value.h>
 #include <Fabric/Base/JSON/Object.h>
 #include <Fabric/Base/JSON/Array.h>
@@ -51,38 +48,28 @@ namespace Fabric
         return m_memberDesc;
       }
       
-      void getDescs(
-        RC::ConstHandle<RT::Desc> &memberDesc,
-        RC::ConstHandle<RT::VariableArrayDesc> &variableArrayDesc,
+      void getArrayDescAndData(
         RC::ConstHandle<RT::SlicedArrayDesc> &slicedArrayDesc,
-        RC::Handle<SharedSlicedArray> &sharedSlicedArray
+        void *&slicedArrayData
         ) const
       {
-        memberDesc = m_memberDesc;
-        variableArrayDesc = m_variableArrayDesc;
         slicedArrayDesc = m_slicedArrayDesc;
-        sharedSlicedArray = m_slicedArray;
-      }
-      
-      void *getArrayData() const
-      {
-        return m_arrayData;
+        slicedArrayData = m_slicedArrayData;
       }
       
       void const *getElementData( size_t index ) const
       {
-        return m_variableArrayDesc->getMemberData( (void const *)m_arrayData, index );
+        return m_slicedArrayDesc->getMemberData( (void const *)m_slicedArrayData, index );
       }
       
       void *getElementData( size_t index )
       {
-        return m_variableArrayDesc->getMemberData( m_arrayData, index );
+        return m_slicedArrayDesc->getMemberData( m_slicedArrayData, index );
       }
       
       void resize( size_t newCount )
       {
-        m_variableArrayDesc->setNumMembers( m_arrayData, newCount, m_defaultMemberData );
-        m_slicedArray->resize( newCount, m_variableArrayDesc->getBits( m_arrayData ) );
+        m_slicedArrayDesc->setNumMembers( m_slicedArrayData, newCount, m_defaultMemberData );
       }
 
     protected:
@@ -94,10 +81,8 @@ namespace Fabric
     
       RC::ConstHandle<RT::Desc> m_memberDesc;
       void *m_defaultMemberData;
-      RC::ConstHandle<RT::VariableArrayDesc> m_variableArrayDesc;
       RC::ConstHandle<RT::SlicedArrayDesc> m_slicedArrayDesc;
-      void *m_arrayData;
-      RC::Handle<SharedSlicedArray> m_slicedArray;
+      void *m_slicedArrayData;
     };
 
     Container::Member::Member( RC::Handle<RT::Manager> const &rtManager, RC::ConstHandle<RT::Desc> memberDesc, size_t count, void const *defaultMemberData )
@@ -111,21 +96,18 @@ namespace Fabric
       memset( m_defaultMemberData, 0, memberSize );
       memberDesc->setData( defaultMemberData, m_defaultMemberData );
       
-      m_variableArrayDesc = rtManager->getVariableArrayOf( memberDesc );
       m_slicedArrayDesc = rtManager->getSlicedArrayOf( memberDesc );
       
-      size_t arraySize = m_variableArrayDesc->getAllocSize();
-      m_arrayData = malloc( arraySize );
-      memset( m_arrayData, 0, arraySize );
-      m_variableArrayDesc->setNumMembers( m_arrayData, count, m_defaultMemberData );
-
-      m_slicedArray = SharedSlicedArray::Create( m_slicedArrayDesc->getImpl(), m_variableArrayDesc->getBits( m_arrayData ), count );
+      size_t arraySize = m_slicedArrayDesc->getAllocSize();
+      m_slicedArrayData = malloc( arraySize );
+      memset( m_slicedArrayData, 0, arraySize );
+      m_slicedArrayDesc->setNumMembers( m_slicedArrayData, count, m_defaultMemberData );
     }
     
     Container::Member::~Member()
     {
-      m_variableArrayDesc->disposeData( m_arrayData );
-      free( m_arrayData );
+      m_slicedArrayDesc->disposeData( m_slicedArrayData );
+      free( m_slicedArrayData );
       
       m_memberDesc->disposeData( m_defaultMemberData );
       free( m_defaultMemberData );
@@ -181,26 +163,16 @@ namespace Fabric
       notifyDelta( "members", jsonDescMembers() );
     }
 
-    void Container::getMemberDescs(
+    void Container::getMemberArrayDescAndData(
       std::string const &name,
-      RC::ConstHandle<RT::Desc> &memberDesc, 
-      RC::ConstHandle<RT::VariableArrayDesc> &variableArrayDesc, 
       RC::ConstHandle<RT::SlicedArrayDesc> &slicedArrayDesc,
-      RC::Handle<SharedSlicedArray> &sharedSlicedArray
+      void *&slicedArrayData
       )
     {
       Members::const_iterator it = m_members.find( name );
       if ( it == m_members.end() )
-        throw Exception( "'" + name + "': no such member" );
-      it->second->getDescs( memberDesc, variableArrayDesc, slicedArrayDesc, sharedSlicedArray );
-    }
-    
-    void *Container::getMemberArrayData( std::string const &name )
-    {
-      Members::const_iterator it = m_members.find( name );
-      if ( it == m_members.end() )
-        throw Exception( "'" + name + "': no such member" );
-      return it->second->getArrayData();
+        throw Exception( _(name) + ": no such member" );
+      it->second->getArrayDescAndData( slicedArrayDesc, slicedArrayData );
     }
 
     size_t Container::getCount() const
@@ -415,7 +387,7 @@ namespace Fabric
         RC::ConstHandle<Member> member = it->second;
         RC::ConstHandle<RT::Desc> memberDesc = member->getDesc();
         RC::Handle<JSON::Object> memberObject = JSON::Object::Create();
-        memberObject->set( "type", JSON::String::Create( memberDesc->getName() ) );
+        memberObject->set( "type", JSON::String::Create( memberDesc->getUserName() ) );
         
         std::string const &name = it->first;
         membersObject->set( name, memberObject );
@@ -763,7 +735,7 @@ namespace Fabric
 
       RC::ConstHandle<Container::Member> member = getMember( memberName );
       RC::ConstHandle<RT::Desc> desc = member->getDesc();
-      if( desc->getName() != "FabricResource" )
+      if( desc->getUserName() != "FabricResource" )
       {
         throw Exception( "member" + memberName + " is not of type FabricResource" );
       }

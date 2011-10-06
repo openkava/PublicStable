@@ -33,8 +33,18 @@ namespace Fabric
 
       // ArrayAdapter
 
-      virtual llvm::Value *llvmConstIndexOp( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *arrayRValue, llvm::Value *indexRValue ) const;
-      virtual llvm::Value *llvmNonConstIndexOp( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *arrayLValue, llvm::Value *indexRValue ) const;
+      virtual llvm::Value *llvmConstIndexOp(
+        CG::BasicBlockBuilder &basicBlockBuilder,
+        llvm::Value *arrayRValue,
+        llvm::Value *indexRValue,
+        CG::Location const *location
+        ) const;
+      virtual llvm::Value *llvmNonConstIndexOp(
+        CG::BasicBlockBuilder &basicBlockBuilder,
+        llvm::Value *arrayLValue,
+        llvm::Value *indexRValue,
+        CG::Location const *location
+        ) const;
 
     protected:
     

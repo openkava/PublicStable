@@ -54,14 +54,14 @@ namespace Fabric
       context->taskGroup->executeTask( context->userdata, index );
     }
 
-    void TaskGroup::execute( void *userdata ) const
+    void TaskGroup::execute( RC::Handle<LogCollector> const &logCollector, void *userdata ) const
     {
       if ( !m_tasks.empty() )
       {
         Context context;
         context.taskGroup = this;
         context.userdata = userdata;
-        executeParallel( m_tasks.size(), &TaskGroup::ExecuteTask, &context, false );
+        executeParallel( logCollector, m_tasks.size(), &TaskGroup::ExecuteTask, &context, false );
       }
     }
 

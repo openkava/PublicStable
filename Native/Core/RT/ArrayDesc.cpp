@@ -47,7 +47,7 @@ namespace Fabric
     RC::Handle<JSON::Object> ArrayDesc::jsonDesc() const
     {
       RC::Handle<JSON::Object> result = Desc::jsonDesc();
-      result->set( "memberType", JSON::String::Create( getMemberDesc()->getName() ) );
+      result->set( "memberType", JSON::String::Create( getMemberDesc()->getUserName() ) );
       return result;
     }
   };

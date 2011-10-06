@@ -35,7 +35,7 @@ namespace Fabric
       // Impl
       
       virtual void setData( void const *src, void *dst ) const;
-      virtual void disposeData( void *data ) const;
+      virtual void disposeDatasImpl( void *data, size_t count, size_t stride ) const;
       virtual std::string descData( void const *data ) const;
       virtual void const *getDefaultData() const;
       
@@ -55,9 +55,7 @@ namespace Fabric
       
       size_t getOffset( void const *data ) const;
       size_t getSize( void const *data ) const;
-      void *getVariableArrayBits( void const *data ) const;
-      void set( size_t offset, size_t size, void *variableArrayBits, void *data ) const;
-      RC::ConstHandle<VariableArrayImpl> getVariableArrayImpl() const;
+      void setNumMembers( void *data, size_t numMembers, void const *defaultMemberData ) const;
       
     protected:
     

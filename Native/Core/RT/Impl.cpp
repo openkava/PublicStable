@@ -19,6 +19,7 @@ namespace Fabric
       : m_codeName( codeName )
       , m_implType( implType )
       , m_size( 0 )
+      , m_disposeCallback( 0 )
     {
       FABRIC_ASSERT( Util::countBits( implType ) == 1 );
     }
@@ -40,13 +41,16 @@ namespace Fabric
       return fixedArrayImpl;
     }
 
-    RC::ConstHandle<VariableArrayImpl> Impl::getVariableArrayImpl() const
+    RC::ConstHandle<VariableArrayImpl> Impl::getVariableArrayImpl( size_t flags ) const
     {
-      RC::ConstHandle<VariableArrayImpl> variableArrayImpl = m_variableArrayImpl.makeStrong();
+      RC::WeakConstHandle<VariableArrayImpl> &variableArrayImplWeakHandle = m_variableArrayImpls[flags];
+      RC::ConstHandle<VariableArrayImpl> variableArrayImpl = variableArrayImplWeakHandle.makeStrong();
       if ( !variableArrayImpl )
       {
-        variableArrayImpl = new VariableArrayImpl( m_codeName + "_VA", this );
-        m_variableArrayImpl = variableArrayImpl;
+        std::string name = m_codeName + "_VA_";
+        name += (flags & VariableArrayImpl::FLAG_COPY_ON_WRITE)? "CopyOnWrite": "Shared";
+        variableArrayImpl = new VariableArrayImpl( name, flags, this );
+        variableArrayImplWeakHandle = variableArrayImpl;
       }
       return variableArrayImpl;
     }
@@ -60,6 +64,31 @@ namespace Fabric
         m_slicedArrayImpl = slicedArrayImpl;
       }
       return slicedArrayImpl;
+    }
+    
+    void Impl::disposeData( void *lValue ) const
+    {
+      disposeDatas( lValue, 1, getAllocSize() );
+    }
+    
+    void Impl::disposeDatas( void *lValue, size_t count, size_t stride ) const
+    {
+      if ( m_disposeCallback )
+      {
+        uint8_t *data = static_cast<uint8_t *>( lValue );
+        uint8_t * const dataEnd = data + count * stride;
+        while ( data != dataEnd )
+        {
+          m_disposeCallback( data );
+          data += stride;
+        }
+      }
+      disposeDatasImpl( lValue, count, stride );
+    }
+
+    void Impl::setDisposeCallback( void (*disposeCallback)( void * ) ) const
+    {
+      m_disposeCallback = disposeCallback;
     }
   };
 };
