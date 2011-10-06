@@ -10,7 +10,7 @@
 
 namespace Fabric
 {
-  namespace V8Ext
+  namespace CLI
   {
     class Client : public DG::Client
     {

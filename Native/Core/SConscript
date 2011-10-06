@@ -26,6 +26,5 @@ SConscript(
     'IO',
     'Plug',
     'DG',
-    'V8Ext',
   ]
   )

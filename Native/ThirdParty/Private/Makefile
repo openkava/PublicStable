@@ -655,9 +655,9 @@ install_llvm_libraries:
           $(RSYNC) --progress --recursive --delete --include='*/' --include='libLLVM*.a' --exclude='*' Build/llvm-$(LLVM_VERSION)-$$ARCH/Release/lib/ $(TARGET_BASE)/lib/$(BUILD_PLATFORM)/$$ARCH/Release/llvm/; \
         done
 
-install_node: install_node_headers
+install_node: install_node_inc install_node_bin install_node_lib
 
-install_node_headers:
+install_node_inc:
 	mkdir -p include/v8/v8
 	$(RSYNC) --progress --recursive --delete --include='*/' --include='*.h' --exclude='*' Build/node-$(NODE_VERSION)-$(FIRST_ARCH)/deps/v8/include/ $(TARGET_BASE)/include/v8/v8/
 
@@ -665,6 +665,12 @@ install_node_bin:
 	for ARCH in $(ARCHS); do \
           mkdir -p $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/bin; \
           cp Build/node-$(NODE_VERSION)-$$ARCH/out/Release/node $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/bin/; \
+        done
+	
+install_node_lib:
+	for ARCH in $(ARCHS); do \
+          mkdir -p $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/lib/v8; \
+          cp Build/node-$(NODE_VERSION)-$$ARCH/out/Release/libv8.a $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/lib/v8/; \
         done
 	
 install_boost: install_boost_headers install_boost_libraries

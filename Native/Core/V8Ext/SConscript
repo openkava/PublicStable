@@ -1,3 +1,0 @@
-Import( 'coreEnv', 'v8Flags' )
-coreEnv.MergeFlags( v8Flags )
-coreEnv.Prepend( LIBS = coreEnv.StaticLibrary( 'V8Ext', Glob('*.cpp') ) )
