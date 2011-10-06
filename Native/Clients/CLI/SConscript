@@ -4,11 +4,11 @@
 
 import os.path
 
-Import( 'coreEnv', 'buildOS', 'buildObject' )
-if buildOS != 'Windows':
-  Import( 'libeditFlags' )
+Import( 'coreEnv', 'buildOS', 'buildObject', 'v8Flags' )
 
 cliEnv = coreEnv.Clone()
+cliEnv.MergeFlags( v8Flags )
+cliEnv.Append( LINKFLAGS = ["-undefined", "dynamic_lookup"] )
 
 extraObjects = []
 
@@ -19,8 +19,5 @@ if buildOS == 'Windows':
         '/IMPLIB:${TARGET.dir}/fabric_cmd.lib',
         '/STACK:4194304'
     ] )
-else:
-  cliEnv.MergeFlags( libeditFlags )
 
-cliBin = cliEnv.Program( 'fabric', [Glob('*.cpp'),buildObject,extraObjects] )
-Alias( 'cli', cliBin )
+cliLoadableModule = cliEnv.LoadableModule( 'Fabric.node', [Glob('*.cpp'),buildObject,extraObjects] )

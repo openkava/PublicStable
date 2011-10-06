@@ -11,6 +11,7 @@ if [ "${BUILD_OS#MINGW}" != "$BUILD_OS" ]; then
   BUILD_ARCH=x86
 fi
 if [ "$BUILD_OS" = "Darwin" ]; then
+  BUILD_REAL_ARCH=$BUILD_ARCH
   BUILD_ARCH=universal
 fi
 
@@ -44,7 +45,8 @@ ERROR=0
 for f in "$@"; do
   TMPFILE=$(tmpfilename)
 
-  LD_LIBRARY_PATH=build/ $VALGRIND_CMD ../../build/$BUILD_OS/$BUILD_ARCH/$BUILD_TYPE/Fabric/Clients/CLI/fabric --exts="$EXTS_DIR" $f 2>&1 \
+  echo NODE_PATH=../../build/$BUILD_OS/$BUILD_ARCH/$BUILD_TYPE/Fabric/Clients/CLI $VALGRIND_CMD ../../ThirdParty/Private/$BUILD_OS/$BUILD_REAL_ARCH/$BUILD_TYPE/bin/node $f
+  NODE_PATH=../../build/$BUILD_OS/$BUILD_ARCH/$BUILD_TYPE/Fabric/Clients/CLI $VALGRIND_CMD ../../ThirdParty/Private/$BUILD_OS/$BUILD_REAL_ARCH/$BUILD_TYPE/bin/node $f 2>&1 \
     | grep -v '^\[FABRIC\] .*Extension registered' \
     | grep -v '^\[FABRIC\] .*Searching extension directory' \
     | grep -v '^\[FABRIC\] .*unable to open extension directory' \
