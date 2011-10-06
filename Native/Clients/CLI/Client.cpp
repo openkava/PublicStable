@@ -2,14 +2,14 @@
  *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
  */
  
-#include <Fabric/Core/V8Ext/Client.h>
+#include <Fabric/Clients/CLI/Client.h>
 #include <Fabric/Core/DG/Context.h>
 
 #include <string>
 
 namespace Fabric
 {
-  namespace V8Ext
+  namespace CLI
   {
     RC::Handle<Client> Client::Create( RC::Handle<DG::Context> const &context )
     {
