@@ -59,11 +59,17 @@ namespace Fabric
       SetValue( jsonString->data(), jsonString->length(), dst );
     }
 
-    void StringImpl::disposeData( void *dst ) const
+    void StringImpl::disposeDatasImpl( void *dst, size_t count, size_t stride ) const
     {
-      bits_t *bits = *reinterpret_cast<bits_t **>( dst );
-      if ( bits && bits->refCount.decrementAndGetValue() == 0 )
-        free( bits );
+      uint8_t *data = static_cast<uint8_t *>( dst );
+      uint8_t * const dataEnd = data + count * stride;
+      while ( data != dataEnd )
+      {
+        bits_t *bits = *reinterpret_cast<bits_t **>( data );
+        if ( bits && bits->refCount.decrementAndGetValue() == 0 )
+          free( bits );
+        data += stride;
+      }
     }
     
     std::string StringImpl::descData( void const *data ) const

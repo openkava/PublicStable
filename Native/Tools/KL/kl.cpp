@@ -120,7 +120,7 @@ static void *LazyFunctionCreator( std::string const &functionName )
     if ( result )
       return result;
   }
-  fprintf( stderr, "Unable to look up symbol for '%s'\n", functionName.c_str() );
+  throw Exception( "Unable to look up symbol for '%s'", functionName.c_str() );
   return 0;
 }
 

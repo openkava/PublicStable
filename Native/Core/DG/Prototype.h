@@ -26,8 +26,6 @@ namespace Fabric
     class Manager;
     class Desc;
     class Impl;
-    class VariableArrayImpl;
-    class SlicedArrayImpl;
   };
   
   namespace CG

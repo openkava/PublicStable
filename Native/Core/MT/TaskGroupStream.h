@@ -24,7 +24,7 @@ namespace Fabric
       void clear();
       void add( unsigned rank, TaskBase const *task );
       
-      void execute( void *userdata ) const;
+      void execute( RC::Handle<LogCollector> const &logCollector, void *userdata ) const;
       
       std::string desc() const;
     
