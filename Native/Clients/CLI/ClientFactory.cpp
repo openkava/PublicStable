@@ -163,12 +163,6 @@ namespace Fabric
       value.Dispose();
     }
 
-    static void ClientV8ObjectTemplateWeakReferenceCallback( v8::Persistent<v8::Value> value, void * )
-    {
-      FABRIC_LOG( "ClientV8ObjectTemplateWeakReferenceCallback()" );
-      value.Dispose();
-    }
-
     static v8::Handle<v8::Value> CreateClientV8FunctionCallback( v8::Arguments const &args )
     {
       //FABRIC_LOG( "CreateClientV8FunctionCallback()" );
@@ -189,7 +183,6 @@ namespace Fabric
         v8ClientObjectTemplate->Set( setJSONNotifyCallbackV8String, v8::FunctionTemplate::New( &Client::V8SetJSONNotifyCallback ) );
         v8ClientObjectTemplate->Set( wrapFabricClientV8String, v8::FunctionTemplate::New( &Client::V8WrapFabricClient ) );
         v8ClientObjectTemplate->Set( disposeV8String, v8::FunctionTemplate::New( &Client::V8Dispose ) );
-        v8ClientObjectTemplate.MakeWeak( 0, &ClientV8ObjectTemplateWeakReferenceCallback );
       }
       
       std::vector<std::string> pluginPaths;
@@ -244,12 +237,6 @@ namespace Fabric
       return handleScope.Close( result );
     }
     
-    static void CreateClientV8FunctionTemplateWeakReferenceCallback( v8::Persistent<v8::Value> value, void * )
-    {
-      FABRIC_LOG( "CreateClientV8FunctionTemplateWeakReferenceCallback()" );
-      value.Dispose();
-    }
-
     v8::Handle<v8::Value> CreateClientV8Function()
     {
       //FABRIC_LOG( "CreateClientV8Function()" );
@@ -260,7 +247,6 @@ namespace Fabric
       if ( createClientV8FunctionTemplate.IsEmpty() )
       {
         createClientV8FunctionTemplate = v8::Persistent<v8::FunctionTemplate>::New( v8::FunctionTemplate::New( &CreateClientV8FunctionCallback ) );
-        createClientV8FunctionTemplate.MakeWeak( 0, &CreateClientV8FunctionTemplateWeakReferenceCallback );
       }
       
       return handleScope.Close( createClientV8FunctionTemplate->GetFunction() );
