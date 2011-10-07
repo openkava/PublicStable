@@ -10,7 +10,7 @@ operator solveFKBone(
   io PoseParameterBinding binding,
   io PoseParameters poseParameters
 ) {
-  if (bones[index].parent == - 1) {
+  if (bones[binding.target].parent == - 1) {
     pose[binding.target] = poseParameters.xfoValues[binding.target];
   }
   else {
@@ -25,7 +25,8 @@ operator solveFKHierarchy(
   io PoseParameters poseParameters
 ) {
   for (var Integer i = 0; i < bindings.size(); i++) {
-    if (bones[indices[i]].parent == - 1) {
+    report(bindings[i]);
+    if (bones[bindings[i].target].parent == - 1) {
       pose[bindings[i].target] = poseParameters.xfoValues[i];
     }
     else {
@@ -40,11 +41,11 @@ operator solveInvParentList(
   io PoseParameterBinding bindings[],
   io PoseParameters poseParameters
 ) {
-  for (var Integer i = 0; i < indices.size(); i++) {
-    if (bones[indices[i]].parent == - 1)
-      poseParameters.xfoValues[indices[i]] = pose[indices[i]];
+  for (var Integer i = 0; i < bindings.size(); i++) {
+    if (bones[bindings[i].target].parent == - 1)
+      poseParameters.xfoValues[bindings[i].source] = pose[bindings[i].target];
     else
-      poseParameters.xfoValues[indices[i]] = pose[bones[indices[i]].parent].inverse() * pose[indices[i]];
+      poseParameters.xfoValues[bindings[i].source] = pose[bones[bindings[i].target].parent].inverse() * pose[bindings[i].target];
   }
 }
 

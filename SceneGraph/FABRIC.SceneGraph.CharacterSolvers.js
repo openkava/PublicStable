@@ -150,17 +150,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('FKHierarchySolver',{
         size,
         name = options.name;
 
-      // if no id list is specified,
-      // create a complete one
-      var boneIndices = options.boneIndices;
-      if (!boneIndices) {
-        boneIndices = [];
-        for (var i = 0; i < bones.length; i++) {
-          boneIndices.push(i);
-        }
-      }
-
-      constantsNode.addMember(name + 'boneIndices', 'Integer[]', boneIndices);
+      constantsNode.addMember(name + 'bindings', 'PoseParameterBinding[]', options.poseParameterBindings);
       
       rigNode.addSolverOperator(scene.constructOperator({
           operatorName: 'solveFKHierarchy',
@@ -169,8 +159,8 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('FKHierarchySolver',{
           parameterLayout: solver.setParameterBinding([
             'self.pose',
             'skeleton.bones',
-            'constants.' + name + 'boneIndices',
-            'variables.poseVariables'
+            'constants.' + name + 'bindings',
+            'variables.poseParameters'
           ])
         }));
     };

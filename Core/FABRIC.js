@@ -291,8 +291,11 @@ FABRIC = (function() {
         }
       }
       return urlSections.join('/') + '/' + url;
+    }else{
+      var urlSections = document.location.href.split('/');
+      urlSections.pop();
+      return urlSections.join('/') + '/' + url;
     }
-    return url;
   };
 
   var activeAsyncTaskCount = 0;
