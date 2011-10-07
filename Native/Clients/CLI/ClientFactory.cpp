@@ -192,13 +192,38 @@ namespace Fabric
         v8ClientObjectTemplate.MakeWeak( 0, &ClientV8ObjectTemplateWeakReferenceCallback );
       }
       
+      std::vector<std::string> pluginPaths;
+#if defined(FABRIC_OS_MACOSX)
+      char const *home = getenv("HOME");
+      if ( home && *home )
+      {
+        std::string homePath( home );
+        pluginPaths.push_back( IO::JoinPath( homePath, "Library", "Fabric", "Exts" ) );
+      }
+      pluginPaths.push_back( "/Library/Fabric/Exts" );
+#elif defined(FABRIC_OS_LINUX)
+      char const *home = getenv("HOME");
+      if ( home && *home )
+      {
+        std::string homePath( home );
+        pluginPaths.push_back( IO::JoinPath( homePath, ".fabric", "Exts" ) );
+      }
+      pluginPaths.push_back( "/usr/lib/fabric/Exts" );
+#elif defined(FABRIC_OS_WINDOWS)
+      char const *appData = getenv("APPDATA");
+      if ( appData && *appData )
+      {
+        std::string appDataDir(appData);
+        pluginPaths.push_back( IO::JoinPath( appDataDir, "Fabric" , "Exts" ) );
+      }
+#endif
+
       RC::Handle<IO::Manager> ioManager = IOManager::Create();
-      std::vector<std::string> pluginDirs;
-      RC::Handle<DG::Context> dgContext = DG::Context::Create( ioManager, pluginDirs );
+      RC::Handle<DG::Context> dgContext = DG::Context::Create( ioManager, pluginPaths );
       OCL::registerTypes( dgContext->getRTManager() );
 
       RC::Handle<Client> client = Client::Create( dgContext );
-      Plug::Manager::Instance()->loadBuiltInPlugins( pluginDirs, dgContext->getCGManager() );
+      Plug::Manager::Instance()->loadBuiltInPlugins( pluginPaths, dgContext->getCGManager() );
 
       v8::Persistent<v8::Object> v8ClientObject = v8::Persistent<v8::Object>::New( v8ClientObjectTemplate->NewInstance() );
       v8ClientObject->SetPointerInInternalField( 0, client.take() );
