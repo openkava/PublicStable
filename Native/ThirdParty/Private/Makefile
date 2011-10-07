@@ -655,7 +655,9 @@ install_llvm_libraries:
           $(RSYNC) --progress --recursive --delete --include='*/' --include='libLLVM*.a' --exclude='*' Build/llvm-$(LLVM_VERSION)-$$ARCH/Release/lib/ $(TARGET_BASE)/lib/$(BUILD_PLATFORM)/$$ARCH/Release/llvm/; \
         done
 
-install_node: install_node_inc install_node_bin install_node_lib
+# [pzion 20111007] Note that the "install_node_lib" target is intentionally left
+# out here; we don't V8 for the Node.js add-on
+install_node: install_node_inc install_node_bin
 
 install_node_inc:
 	mkdir -p include/v8/v8
