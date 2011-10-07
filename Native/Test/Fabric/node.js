@@ -1,4 +1,4 @@
-FC = require('Fabric').client;
+FC = require('Fabric').createClient();
 F = FC.wrapFabricClient(FC);
 
 var mapNamedObjectsToNames = function (namedObjects) {
