@@ -373,13 +373,20 @@ FABRIC.SceneGraph.registerNodeType('AnimationEvaluator', {
               memberBindingCode += '  tempEuler = Euler(tempVec3);\n';
               memberBindingCode += '  ' + memberAccessor + '.setFromEuler(tempEuler);\n';
             }else if (memberBinding.length === 4) {
-
+              if (memberBinding[0] < 0 || memberBinding[1] < 0 || memberBinding[2] < 0  || memberBinding[3] < 0 ){
+                throw 'incorrect binding for Quat:' + JSON.stringify(memberBinding);
+              }
+              memberBindingCode += '  ' + memberAccessor + '.set( curvevalues[' + memberBinding[0] + '],\n';
+              memberBindingCode += '    curvevalues[' + memberBinding[1] + '],\n';
+              memberBindingCode += '    curvevalues[' + memberBinding[2] + '],\n';
+              memberBindingCode += '    curvevalues[' + memberBinding[3] + ']);\n';
+              memberBindingCode += '  ' + memberAccessor + ' = ' + memberAccessor + '.unit();\n';
             }
             break;
 
         }
         operatorBodySrc += '\n' + memberBindingCode;
-
+        console.log(operatorBodySrc);
         if (parameterLayout.indexOf('self.' + memberName) == -1) {
           operatorHeaderSrc += ',\n  io ' + boundMemberType + ' ' + memberName + (isArray ? '[]' : '');
           parameterLayout.push('self.' + memberName);
