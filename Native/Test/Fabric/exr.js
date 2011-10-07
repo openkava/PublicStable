@@ -1,5 +1,4 @@
-FC = createFabricClient();
-FABRIC = FC.wrapFabricClient(FC);
+FABRIC = require('Fabric').createClient();
 
 op = FABRIC.DependencyGraph.createOperator("op");
 op.setEntryFunctionName("load");
@@ -26,7 +25,7 @@ operator load( io String url, io FabricResource resource )\n\
 }\n\
 ');
 if (op.getDiagnostics().length > 0)
-  printDeep(op.getDiagnostics());
+  console.log(JSON.stringify(op.getDiagnostics()));
 
 binding = FABRIC.DG.createBinding();
 binding.setOperator(op);
@@ -44,4 +43,3 @@ node.bindings.append(binding);
 node.evaluate();
 
 FABRIC.flush();
-FC.dispose();

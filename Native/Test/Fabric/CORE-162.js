@@ -1,5 +1,4 @@
-FC = createFabricClient();
-FABRIC = FC.wrapFabricClient(FC);
+FABRIC = require('Fabric').createClient();
 
 var ShaderSource = function( code, type ) {
 	this.code = (code!=undefined) ? code : "";
@@ -24,7 +23,7 @@ klCode += "\t\treport( \"Code: \" + shaders[i].code );\n";
 klCode += "\t}\n";
 klCode += "}\n";
 
-print( klCode );
+console.log( klCode );
 
 var sources = [];
 sources.push( new ShaderSource( "Zero", 0 ) );
@@ -46,11 +45,10 @@ node.bindings.append( binding );
 var errors = node.getErrors();
 if ( errors.length > 0 ) {
   for ( var i in errors )
-    print( errors[i] );
+    console.log( errors[i] );
 }
 else {
   node.evaluate();
 }
 
 FABRIC.flush();
-FC.dispose();

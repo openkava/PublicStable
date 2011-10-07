@@ -1,5 +1,4 @@
-FC = createFabricClient();
-F = FC.wrapFabricClient(FC);
+F = require('Fabric').createClient();
 
 o = F.DG.createOperator("op");
 o.setEntryFunctionName("entry");
@@ -21,7 +20,6 @@ eh.preDescendBindings.append( binding );
 e = F.DG.createEvent("e");
 e.appendEventHandler( eh );
 e.fire();
-print( eh.getData( "string" ) );
+console.log( eh.getData( "string" ) );
 
 F.flush();
-FC.dispose();

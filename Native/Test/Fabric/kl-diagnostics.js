@@ -1,15 +1,13 @@
-FC = createFabricClient();
-FABRIC = FC.wrapFabricClient(FC);
+FABRIC = require('Fabric').createClient();
 
 op = FABRIC.DependencyGraph.createOperator( "op" );
-print( op.getDiagnostics().length );
+console.log( op.getDiagnostics().length );
 
 op.setSourceCode("operator entry( io Scalar input, io Scalar output ) { foo; }");
-print( op.getDiagnostics().length );
-print( op.getDiagnostics()[0].desc );
+console.log( op.getDiagnostics().length );
+console.log( op.getDiagnostics()[0].desc );
 
 op.setSourceCode("operator entry( io Scalar input, io Scalar output ) { output = 2 * input; }");
-print( op.getDiagnostics().length );
+console.log( op.getDiagnostics().length );
 
 FABRIC.flush();
-FC.dispose();

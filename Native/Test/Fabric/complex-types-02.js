@@ -1,5 +1,4 @@
-FC = createFabricClient();
-FABRIC = FC.wrapFabricClient(FC);
+FABRIC = require('Fabric').createClient();
 
 var MyStruct = function( i, s ) {
   if ( typeof i === "number" && typeof s === "number" ) {
@@ -32,10 +31,10 @@ operator entry( io MyStruct arg<>[] )\n\
 var diagnostics = op.getDiagnostics();
 if ( diagnostics.length > 0 ) {
   for ( var i in diagnostics ) {
-    print( diagnostics[i].line + ": " + diagnostics[i].desc );
+    console.log( diagnostics[i].line + ": " + diagnostics[i].desc );
   }
-  print( "Full code:" );
-  print( op.getFullSourceCode() );
+  console.log( "Full code:" );
+  console.log( op.getFullSourceCode() );
 }
 else {
   parentNode = FABRIC.DependencyGraph.createNode( "parentNode" );
@@ -43,8 +42,8 @@ else {
   parentNode.setCount( 2 );
   parentNode.setData( "msa", 0, [new MyStruct( 42, 3.141 ), new MyStruct( 64, 5.67 ) ] );
   parentNode.setData( "msa", 1, [new MyStruct( 7, 2.718 )] );
-  printDeep( parentNode.getData("msa", 0) );
-  printDeep( parentNode.getData("msa", 1) );
+  console.log(JSON.stringify( parentNode.getData("msa", 0) ));
+  console.log(JSON.stringify( parentNode.getData("msa", 1) ));
 
 	var binding = FABRIC.DG.createBinding();
 	binding.setOperator(op);
@@ -56,7 +55,7 @@ else {
 	var errors = node.getErrors();
   if ( errors.length > 0 ) {
     for ( var i in errors ) {
-      print( errors[i] );
+      console.log( errors[i] );
     }
   }
   else {
@@ -65,4 +64,3 @@ else {
 }
 
 FABRIC.flush();
-FC.dispose();

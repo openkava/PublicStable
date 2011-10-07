@@ -1,4 +1,6 @@
 [FABRIC] [MT] before test exception
-FABRIC.Wrappers.js:1: Fabric core exception: DG.e.fire(): command 'fire': test exception
-=h.length;p-->m;){var q=h[p];q&&q()}throw"Fabric core exception: "+n.exception
-                                                                    ^
+
+node.js:207
+        throw e; // process.nextTick error, or 'error' event on first tick
+              ^
+Fabric core exception: DG.e.fire(): command 'fire': test exception
