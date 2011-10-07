@@ -299,6 +299,57 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
 
     var characterVariablesNode = scene.constructNode('SceneGraphNode', options);
     var dgnode = characterVariablesNode.constructDGNode('DGNode');
+    
+    var poseVariables = new PoseVariables();
+    dgnode.addMember('poseVariables', 'PoseVariables', poseVariables);
+    // extend the private interface
+    characterVariablesNode.pub.addVariable = function(type, value) {
+      var id = -1;
+      switch(type){
+        case 'Scalar':
+          id = poseVariables.scalarValues.length;
+          poseVariables.scalarValues.push( value ? value : 0.0);
+          break;
+        case 'Vec3':
+          id = poseVariables.vec3Values.length;
+          poseVariables.vec3Values.push( value ? value : new FABRIC.Math.Vec3());
+          break;
+        case 'Quat':
+          id = poseVariables.quatValues.length;
+          poseVariables.quatValues.push( value ? value : new FABRIC.Math.Quat());
+          break;
+        case 'Xfo':
+          id = poseVariables.xfoValues.length;
+          poseVariables.xfoValues.push( value ? value : new FABRIC.Math.Xfo());
+          break;
+        case 'Xfo[]':
+          for(var i=0; i<value.length; i++){
+            id = poseVariables.xfoValues.length;
+            poseVariables.xfoValues.push( value[i] );
+          }
+          break;
+        default:
+          throw "unsupported Type:" + type;
+      }
+      dgnode.setData('poseVariables', 0, poseVariables);
+      return id;
+    };
+
+    return characterVariablesNode;
+  }});
+
+
+
+FABRIC.SceneGraph.registerNodeType('CharacterConstants', {
+  briefDesc: 'The CharacterConstants node is similar to a CharacterVariables node, but values don\'t change over time.',
+  detailedDesc: 'The CharacterConstants node is similar to a CharacterVariables node, but values don\'t change over time.',
+  parentNodeDesc: 'SceneGraphNode',
+  optionsDesc: {
+  },
+  factoryFn: function(options, scene) {
+
+    var characterVariablesNode = scene.constructNode('SceneGraphNode', options);
+    var dgnode = characterVariablesNode.constructDGNode('DGNode');
 
     // extend the private interface
     characterVariablesNode.pub.addMember = function(name, type, value) {
@@ -325,25 +376,6 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
 
     return characterVariablesNode;
   }});
-
-
-// These are the values that represent the evaluation
-// algorithm for this character instance.
-// Note: Do we need different node types for CharacterVariables and CharacterConstants?
-// The 'CharacterConstants' adds nothing to the variables. We could generalise them to
-// 'CharacterParameters' and use the same node type for Constants and Variables. 
-FABRIC.SceneGraph.registerNodeType('CharacterConstants', {
-  briefDesc: 'The CharacterConstants node is similar to a CharacterVariables node, but values don\'t change over time.',
-  detailedDesc: 'The CharacterConstants node is similar to a CharacterVariables node, but values don\'t change over time.',
-  parentNodeDesc: 'CharacterVariables',
-  optionsDesc: {
-  },
-  factoryFn: function(options, scene) {
-
-    var characterConstantsNode = scene.constructNode('CharacterVariables', options);
-    return characterConstantsNode;
-  }});
-
 
 // The character rig computes the pose of a character
 FABRIC.SceneGraph.registerNodeType('CharacterRig', {

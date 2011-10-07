@@ -850,7 +850,8 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
         color: [],
         keys: []
       };
-      var binding = {};
+      var bindings = new FABRIC.Animation.KeyframeTrackBindings();
+      var poseParameterBindings = [];//PoseParameterBinding
       for (var i = 0; i < bones.length; i++) {
         var channels = colladaData.libraryAnimations.channelMap[bones[i].name];
         
@@ -871,7 +872,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
           var interpolationSource = animation.sources[sampler.INTERPOLATION.source.slice(1)];
           
           
-          var generateKeyframeTrack = function(channelName, keytimes, keyvalues){
+          var generateKeyframeTrack = function(channelName, keytimes, keyvalues, binding){
             
             // now let's reformat the linear data
             var key = FABRIC.Animation.linearKeyframe;
@@ -883,27 +884,22 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
             var trackid = tracks.keys.length;
             tracks.keys.push(keys);
             tracks.name.push(bones[i].name+'.'+channelName);
-     
-            var target = 'localxfos[' + i + '].' + channelName.substr(0, channelName.lastIndexOf('.'));
-           
-            if (!binding[target]) {
-              binding[target] = [];
-            }
+            
             switch (channelName.substr(channelName.lastIndexOf('.')+1)) {
             case 'x':
-              binding[target][0] = trackid;
+              binding[0] = trackid;
               tracks.color.push(FABRIC.RT.rgb(1, 0, 0));
               break;
             case 'y':
-              binding[target][1] = trackid;
+              binding[1] = trackid;
               tracks.color.push(FABRIC.RT.rgb(0, 1, 0));
               break;
             case 'z':
-              binding[target][2] = trackid;
+              binding[2] = trackid;
               tracks.color.push(FABRIC.RT.rgb(0, 0, 1));
               break;
             case 'w':
-              binding[target][3] = trackid;
+              binding[3] = trackid;
               tracks.color.push(FABRIC.RT.rgb(0.7, 0.7, 0.7));
               break;
             default:
@@ -915,53 +911,55 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
           // Check the channel type. TODO
           var channelType = channelName.substr(channelName.lastIndexOf('.') + 1).toUpperCase();
           switch(channelType){
-            case 'ANGLE':
-              for (var j = 0; j < outputSource.data.length; j++){
-                outputSource.data[j] = Math.degToRad( outputSource.data[j] );
+          case 'ANGLE':
+            for (var j = 0; j < outputSource.data.length; j++){
+              outputSource.data[j] = Math.degToRad( outputSource.data[j] );
+            }
+            break;
+          case 'MATRIX':
+            // convert the input source to tr and ori keyframe tracks.
+            var tr_x_keyvalues = [];
+            var tr_y_keyvalues = [];
+            var tr_z_keyvalues = [];
+            var ori_x_keyvalues = [];
+            var ori_y_keyvalues = [];
+            var ori_z_keyvalues = [];
+            var ori_w_keyvalues = [];
+            var prevQuat;
+            var makeClosest = function(q, other) {
+              if(q.dot(other) < 0.0){
+                q.set(-q.w, q.v.negate());
               }
-              break;
-            case 'MATRIX':
-              // convert the input source to tr and ori keyframe tracks.
-              var tr_x_keyvalues = [];
-              var tr_y_keyvalues = [];
-              var tr_z_keyvalues = [];
-              var ori_x_keyvalues = [];
-              var ori_y_keyvalues = [];
-              var ori_z_keyvalues = [];
-              var ori_w_keyvalues = [];
-              var prevQuat;
-              var makeClosest = function(q, other) {
-                if(q.dot(other) < 0.0){
-                  q.set(-q.w, q.v.negate());
-                }
-              }
-              for (var j = 0; j < outputSource.technique.accessor.count; j++) {
-                var matrixValues = getSourceData(outputSource, j);
-                var mat = makeRT(FABRIC.RT.Mat44, matrixValues);
-                var xfo = new FABRIC.RT.Xfo();
-                xfo.setFromMat44(mat);
-                tr_x_keyvalues.push(xfo.tr.x);
-                tr_y_keyvalues.push(xfo.tr.y);
-                tr_z_keyvalues.push(xfo.tr.z);
-                
-                if(j > 0){
-                  makeClosest(xfo.ori, prevQuat);
-                }
-                prevQuat = xfo.ori;
-                ori_x_keyvalues.push(xfo.ori.v.x);
-                ori_y_keyvalues.push(xfo.ori.v.y);
-                ori_z_keyvalues.push(xfo.ori.v.z);
-                ori_w_keyvalues.push(xfo.ori.w);
-              }
-              generateKeyframeTrack('tr.x', inputSource.data, tr_x_keyvalues);
-              generateKeyframeTrack('tr.y', inputSource.data, tr_y_keyvalues);
-              generateKeyframeTrack('tr.z', inputSource.data, tr_z_keyvalues);
+            }
+            for (var j = 0; j < outputSource.technique.accessor.count; j++) {
+              var matrixValues = getSourceData(outputSource, j);
+              var mat = makeRT(FABRIC.RT.Mat44, matrixValues);
+              var xfo = new FABRIC.RT.Xfo();
+              xfo.setFromMat44(mat);
+              tr_x_keyvalues.push(xfo.tr.x);
+              tr_y_keyvalues.push(xfo.tr.y);
+              tr_z_keyvalues.push(xfo.tr.z);
               
-              generateKeyframeTrack('ori.x', inputSource.data, ori_x_keyvalues);
-              generateKeyframeTrack('ori.y', inputSource.data, ori_y_keyvalues);
-              generateKeyframeTrack('ori.z', inputSource.data, ori_z_keyvalues);
-              generateKeyframeTrack('ori.w', inputSource.data, ori_w_keyvalues);
-              continue;
+              if(j > 0){
+                makeClosest(xfo.ori, prevQuat);
+              }
+              prevQuat = xfo.ori;
+              ori_x_keyvalues.push(xfo.ori.v.x);
+              ori_y_keyvalues.push(xfo.ori.v.y);
+              ori_z_keyvalues.push(xfo.ori.v.z);
+              ori_w_keyvalues.push(xfo.ori.w);
+            }
+            var binding = [];
+            generateKeyframeTrack('tr.x', inputSource.data, tr_x_keyvalues, binding);
+            generateKeyframeTrack('tr.y', inputSource.data, tr_y_keyvalues, binding);
+            generateKeyframeTrack('tr.z', inputSource.data, tr_z_keyvalues, binding);
+            
+            generateKeyframeTrack('ori.x', inputSource.data, ori_x_keyvalues, binding);
+            generateKeyframeTrack('ori.y', inputSource.data, ori_y_keyvalues, binding);
+            generateKeyframeTrack('ori.z', inputSource.data, ori_z_keyvalues, binding);
+            generateKeyframeTrack('ori.w', inputSource.data, ori_w_keyvalues, binding);
+            bindings.xfoBindings.push(binding);
+            continue;
           }
         
           // remap the target names
@@ -1018,16 +1016,17 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
       });
       trackNode.setTrackCount(tracks.name.length);
       trackNode.setTracksData(tracks);
-  
+      /*
       // create the evaluator node
       var evaluatorNode = scene.constructNode('AnimationEvaluator', {
         name: controllerName+'Evaluator',
         animationControllerNode: controllerNode,
         animationTrackNode: trackNode
       });
-      
       variablesNode.addMember('localxfos', 'Xfo[]', skeletonNode.getReferenceLocalPose());
       evaluatorNode.bindNodeMembersToEvaluatorTracks(variablesNode, binding, rigNode.getName());
+      */
+      variablesNode.addVariable('Xfo[]', skeletonNode.getReferenceLocalPose());
       rigNode.addSolver('solveColladaPose', 'FKHierarchySolver', { localxfoMemberName: 'localxfos' });
       
       assetNodes[trackNode.getName()] = trackNode;
