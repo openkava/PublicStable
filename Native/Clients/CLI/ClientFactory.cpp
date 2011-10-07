@@ -153,13 +153,19 @@ namespace Fabric
     
     static void ClientV8ObjectWeakReferenceCallback( v8::Persistent<v8::Value> value, void * )
     {
-      //FABRIC_LOG( "ClientV8ObjectWeakReferenceCallback()" );
+      FABRIC_LOG( "ClientV8ObjectWeakReferenceCallback()" );
       
       v8::Handle<v8::Object> v8ClientObject = v8::Handle<v8::Object>::Cast( value );
       
       Client *client = static_cast<Client *>( v8ClientObject->GetPointerFromInternalField( 0 ) );
       client->release();
       
+      value.Dispose();
+    }
+
+    static void ClientV8ObjectTemplateWeakReferenceCallback( v8::Persistent<v8::Value> value, void * )
+    {
+      FABRIC_LOG( "ClientV8ObjectTemplateWeakReferenceCallback()" );
       value.Dispose();
     }
 
@@ -183,6 +189,7 @@ namespace Fabric
         v8ClientObjectTemplate->Set( setJSONNotifyCallbackV8String, v8::FunctionTemplate::New( &Client::V8SetJSONNotifyCallback ) );
         v8ClientObjectTemplate->Set( wrapFabricClientV8String, v8::FunctionTemplate::New( &Client::V8WrapFabricClient ) );
         v8ClientObjectTemplate->Set( disposeV8String, v8::FunctionTemplate::New( &Client::V8Dispose ) );
+        v8ClientObjectTemplate.MakeWeak( 0, &ClientV8ObjectTemplateWeakReferenceCallback );
       }
       
       RC::Handle<IO::Manager> ioManager = IOManager::Create();
@@ -212,6 +219,12 @@ namespace Fabric
       return handleScope.Close( result );
     }
     
+    static void CreateClientV8FunctionTemplateWeakReferenceCallback( v8::Persistent<v8::Value> value, void * )
+    {
+      FABRIC_LOG( "CreateClientV8FunctionTemplateWeakReferenceCallback()" );
+      value.Dispose();
+    }
+
     v8::Handle<v8::Value> CreateClientV8Function()
     {
       //FABRIC_LOG( "CreateClientV8Function()" );
@@ -222,6 +235,7 @@ namespace Fabric
       if ( createClientV8FunctionTemplate.IsEmpty() )
       {
         createClientV8FunctionTemplate = v8::Persistent<v8::FunctionTemplate>::New( v8::FunctionTemplate::New( &CreateClientV8FunctionCallback ) );
+        createClientV8FunctionTemplate.MakeWeak( 0, &CreateClientV8FunctionTemplateWeakReferenceCallback );
       }
       
       return handleScope.Close( createClientV8FunctionTemplate->GetFunction() );

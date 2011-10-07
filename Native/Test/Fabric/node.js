@@ -1,5 +1,4 @@
-FC = require('Fabric').createClient();
-F = FC.wrapFabricClient(FC);
+F = require('Fabric').createClient();
 
 var mapNamedObjectsToNames = function (namedObjects) {
   var result = {};
@@ -22,5 +21,3 @@ console.log(node.getData("foo", 1));
 node2 = F.DG.createNode("node2");
 node.setDependency( node2, "parent" );
 console.log((mapNamedObjectsToNames(node.getDependencies())));
-
-FC.dispose();

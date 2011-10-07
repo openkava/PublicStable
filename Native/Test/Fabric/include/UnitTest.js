@@ -7,7 +7,7 @@ FABRIC.UnitTest = function() {
       line += "  ";
     line += "[" + level + "] ";
     line += description;
-    print( line );
+    console.log( line );
   }
 
   var nestedResults = [];
