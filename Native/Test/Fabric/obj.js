@@ -1,5 +1,4 @@
-FC = createFabricClient();
-FABRIC = FC.wrapFabricClient(FC);
+FABRIC = require('Fabric').createClient();
 
 loadOp = FABRIC.DependencyGraph.createOperator("load");
 loadOp.setEntryFunctionName("load");
@@ -18,7 +17,7 @@ operator load(\n\
 }\n\
 ');
 if (loadOp.getDiagnostics().length > 0 ) {
-  printDeep(loadOp.getDiagnostics());
+  console.log(JSON.stringify(loadOp.getDiagnostics()));
 }
 
 loadOpBinding = FABRIC.DG.createBinding();
@@ -48,7 +47,7 @@ operator resize(\n\
 }\n\
 ');
 if (resizeOp.getDiagnostics().length > 0 ) {
-  printDeep(resizeOp.getDiagnostics());
+  console.log(JSON.stringify(resizeOp.getDiagnostics()));
 }
 
 resizeBinding = FABRIC.DG.createBinding();
@@ -73,7 +72,7 @@ operator setData(\n\
 }\n\
 ');
 if (setDataOp.getDiagnostics().length > 0 ) {
-  printDeep(setDataOp.getDiagnostics());
+  console.log(JSON.stringify(setDataOp.getDiagnostics()));
 }
 
 setDataBinding = FABRIC.DG.createBinding();
@@ -89,8 +88,7 @@ node.bindings.append(resizeBinding);
 node.bindings.append(setDataBinding);
 node.setDependency(rlnode, "rlnode");
 if ( node.getErrors().length > 0 )
-  printDeep(node.getErrors());
+  console.log(JSON.stringify((node.getErrors())));
 node.evaluate();
 
 FABRIC.flush();
-FC.dispose();

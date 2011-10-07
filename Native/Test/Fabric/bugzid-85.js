@@ -1,5 +1,4 @@
-FC = createFabricClient();
-F = FC.wrapFabricClient(FC);
+F = require('Fabric').createClient();
 
   var dgnode1 = F.DG.createNode("myNode1");
   dgnode1.addMember('a','Size[]');
@@ -15,7 +14,7 @@ F = FC.wrapFabricClient(FC);
   operatorInit.setMainThreadOnly(true);
   if (operatorInit.getErrors().length > 0) {
     if (operatorInit.getDiagnostics().length > 0)
-      printDeep(operatorInit.getDiagnostics());
+      console.log(JSON.stringify(operatorInit.getDiagnostics()));
   }
 
   var bindingInit = F.DG.createBinding();
@@ -35,7 +34,7 @@ F = FC.wrapFabricClient(FC);
   operatorInit2.setMainThreadOnly(true);
   if (operatorInit2.getErrors().length > 0) {
     if (operatorInit2.getDiagnostics().length > 0)
-      printDeep(operatorInit2.getDiagnostics());
+      console.log(JSON.stringify(operatorInit2.getDiagnostics()));
   }
 
   var bindingInit2 = F.DG.createBinding();
@@ -71,4 +70,3 @@ operator reportValues(io Size a<>[]) {\n\
   e.fire();
 
 F.flush();
-FC.dispose();

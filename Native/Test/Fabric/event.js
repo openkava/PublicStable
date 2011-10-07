@@ -1,5 +1,4 @@
-FC = createFabricClient();
-F = FC.wrapFabricClient(FC);
+F = require('Fabric').createClient();
 
 var mapNamedObjectsToNames = function (namedObjects) {
   var result = [];
@@ -9,19 +8,19 @@ var mapNamedObjectsToNames = function (namedObjects) {
 };
 
 e = F.DG.createEvent("event");
-print(e.getName());
-print(e.getType());
+console.log(e.getName());
+console.log(e.getType());
 
-printDeep(mapNamedObjectsToNames(e.getEventHandlers()));
+console.log(JSON.stringify(mapNamedObjectsToNames(e.getEventHandlers())));
 eh = F.DG.createEventHandler("eventHandler");
 e.appendEventHandler(eh);
-printDeep(mapNamedObjectsToNames(e.getEventHandlers()));
+console.log(JSON.stringify(mapNamedObjectsToNames(e.getEventHandlers())));
 
-print(e.getDidFireCallback());
+console.log(e.getDidFireCallback());
 e.setDidFireCallback(function () {
-  print(this.getName() + " fired");
+  console.log(this.getName() + " fired");
 });
-print(e.getDidFireCallback());
+console.log(e.getDidFireCallback());
 e.fire();
 
-FC.dispose();
+F.flush();

@@ -1,5 +1,4 @@
-FC = createFabricClient();
-F = FC.wrapFabricClient(FC);
+F = require('Fabric').createClient();
 
   // create a new dgnode
   var dgnode1 = F.DG.createNode("myNode1");
@@ -30,7 +29,7 @@ F = FC.wrapFabricClient(FC);
   operatorInit.setEntryFunctionName('initiate');
   if (operatorInit.getErrors().length > 0) {
     if (operatorInit.getDiagnostics().length > 0)
-      printDeep(opreatorInit.getDiagnostics());
+      console.log(JSON.stringify(opreatorInit.getDiagnostics()));
   }
   
   var operatorAdd = F.DG.createOperator("add");
@@ -41,7 +40,7 @@ F = FC.wrapFabricClient(FC);
   operatorAdd.setEntryFunctionName('add');
   if (operatorAdd.getErrors().length > 0) {
     if (operatorAdd.getDiagnostics().length > 0)
-      printDeep(opreatorInit.getDiagnostics());
+      console.log(JSON.stringify(opreatorInit.getDiagnostics()));
   }
   
   var operatorMul = F.DG.createOperator("operatorMul");
@@ -52,7 +51,7 @@ F = FC.wrapFabricClient(FC);
   operatorMul.setEntryFunctionName('mul');
   if (operatorMul.getErrors().length > 0) {
     if (operatorMul.getDiagnostics().length > 0)
-      printDeep(opreatorInit.getDiagnostics());
+      console.log(JSON.stringify(opreatorInit.getDiagnostics()));
   }
   
   // create bindings between the nodes and the operator
@@ -82,10 +81,10 @@ F = FC.wrapFabricClient(FC);
   dgnode1.bindings.append(binding1init);
   dgnode1.bindings.append(binding1add);
   if (dgnode1.getErrors().length > 0)
-    printDeep(dgnode1.getErrors());
+    console.log(JSON.stringify(dgnode1.getErrors()));
   dgnode2.bindings.append(binding2);
   if (dgnode2.getErrors().length > 0)
-    printDeep(dgnode2.getErrors());
+    console.log(JSON.stringify(dgnode2.getErrors()));
   
   // evaluate the node!
   dgnode2.evaluate();
@@ -96,8 +95,7 @@ F = FC.wrapFabricClient(FC);
   for(var i=0;i<displayCount;i++)
     indices.push(i);
 
-  printDeep(dgnode1.getSlicesBulkData(indices));
-  printDeep(dgnode2.getSlicesBulkData(indices));
+  console.log(JSON.stringify(dgnode1.getSlicesBulkData(indices)));
+  console.log(JSON.stringify(dgnode2.getSlicesBulkData(indices)));
 
 F.flush();
-FC.dispose();

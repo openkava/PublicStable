@@ -1,5 +1,4 @@
-FC = createFabricClient();
-F = FC.wrapFabricClient(FC);
+F = require('Fabric').createClient();
 
 op = F.DG.createOperator("op");
 op.setSourceCode("\
@@ -122,4 +121,3 @@ else {
 }
 
 F.flush();
-FC.dispose();

@@ -1,5 +1,4 @@
-FC = createFabricClient();
-FABRIC = FC.wrapFabricClient(FC);
+FABRIC = require('Fabric').createClient();
 
 parentOp = FABRIC.DependencyGraph.createOperator( "parentOp" );
 parentOp.setEntryFunctionName('entry');
@@ -29,7 +28,6 @@ childNode.addMember( "output", "Scalar" );
 childNode.bindings.append(childBinding);
 
 childNode.evaluate();
-print( childNode.getData( 'output', 0 ) );
+console.log( childNode.getData( 'output', 0 ) );
 
 FABRIC.flush();
-FC.dispose();

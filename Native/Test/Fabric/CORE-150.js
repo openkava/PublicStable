@@ -1,5 +1,4 @@
-FC = createFabricClient();
-FABRIC = FC.wrapFabricClient(FC);
+FABRIC = require('Fabric').createClient();
 
 op = FABRIC.DependencyGraph.createOperator( "op" );
 op.setEntryFunctionName('entry');
@@ -13,7 +12,6 @@ node = FABRIC.DependencyGraph.createNode( "node" );
 node.addMember( "input", "Scalar[]" );
 node.bindings.append( binding );
 node.setData( "input", [17] );
-print( node.getErrors() );
+console.log( node.getErrors() );
 
 FABRIC.flush();
-FC.dispose();
