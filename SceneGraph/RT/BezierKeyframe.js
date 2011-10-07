@@ -4,11 +4,6 @@
 //
 
 /**
- * The basic Animation module.
- */
-FABRIC.Animation = FABRIC.Animation ? FABRIC.Animation : {};
-
-/**
  * A function to create a bezier key frame object.
  * @constructor
  * @param {number} time The time of the keyframe.
@@ -16,7 +11,7 @@ FABRIC.Animation = FABRIC.Animation ? FABRIC.Animation : {};
  * @param {number} intan The input tangent of the keyframe.
  * @param {number} outtan The output tangent of the keyframe.
  */
-FABRIC.Animation.BezierKeyframe = function(time, value, intan, outtan) {
+FABRIC.RT.BezierKeyframe = function(time, value, intan, outtan) {
   this.time = typeof time === 'number' ? time : 0;
   this.value = typeof value === 'number' ? value : 0;
   this.intangent = (intan &&
@@ -27,14 +22,14 @@ FABRIC.Animation.BezierKeyframe = function(time, value, intan, outtan) {
     outtan.getType() === 'FABRIC.RT.Vec2') ? outtan : new FABRIC.RT.Vec2(0.333, 0);
 };
 
-FABRIC.Animation.BezierKeyframe.prototype = {
+FABRIC.RT.BezierKeyframe.prototype = {
   // This method enables an animation evaluator to know what kind of data
   // track full of these data types should evaluate to.
   get valueType() {
     return 'Scalar';
   },
   getType: function() {
-    return 'FABRIC.Animation.BezierKeyframe';
+    return 'FABRIC.RT.BezierKeyframe';
   }
 };
 
@@ -46,8 +41,8 @@ FABRIC.Animation.BezierKeyframe.prototype = {
  * @param {number} outtan The output tangent of the keyframe.
  * @return {object} The bezier key frame object.
  */
-FABRIC.Animation.bezierKeyframe = function(value, time, intan, outtan) {
-  return new FABRIC.Animation.BezierKeyframe(value, time, intan, outtan);
+FABRIC.RT.bezierKeyframe = function(value, time, intan, outtan) {
+  return new FABRIC.RT.BezierKeyframe(value, time, intan, outtan);
 };
 
 FABRIC.appendOnCreateContextCallback(function(context) {
@@ -55,7 +50,7 @@ FABRIC.appendOnCreateContextCallback(function(context) {
     members: {
       time: 'Scalar', value: 'Scalar', intangent: 'Vec2', outtangent: 'Vec2'
     },
-    constructor: FABRIC.Animation.BezierKeyframe,
+    constructor: FABRIC.RT.BezierKeyframe,
     klBindings: {
       filename: 'BezierKeyframe.kl',
       sourceCode: FABRIC.loadResourceURL('FABRIC_ROOT/SceneGraph/RT/BezierKeyframe.kl')

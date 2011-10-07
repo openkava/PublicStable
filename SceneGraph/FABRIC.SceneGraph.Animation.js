@@ -3,7 +3,7 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
-FABRIC.SceneGraph.registerNodeType('AnimationTrack', {
+FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
   briefDesc: 'The AnimationTrack node implements an array of animation tracks.',
   detailedDesc: 'The AnimationTrack node is an abstract node type that stores an animation track per-slice. Drived nodes must specify the KeyframeType that is being interpollated',
   parentNodeDesc: 'SceneGraphNode',
@@ -23,21 +23,37 @@ FABRIC.SceneGraph.registerNodeType('AnimationTrack', {
 
     var rTypes = scene.getRegisteredTypesManager().getRegisteredTypes();
     if (!rTypes[options.keyframetype]) {
-      throw ('Keyframetype "' + options.keyframetype + '" is not registered. Load the RT file.');
+      throw ('Type "' + options.keyframetype + '" is not registered. Load the RT file.');
     }
+    if (!rTypes[options.keyframetype+'Track']) {
+      throw ('Type "' + options.keyframetype + 'Track" is not registered. Load the RT file.');
+    }
+    if (!rTypes[options.keyframetype+'TrackSet']) {
+      throw ('Type "' + options.keyframetype + 'TrackSet" is not registered. Load the RT file.');
+    }
+    /*
     var defaultKeyframeValue = rTypes[options.keyframetype].defaultValue;
     if (!defaultKeyframeValue.valueType) {
       throw ('The keyframe registered type must provide a ' +
           'valueType that indicates what the keyframes will evaluate to. ' +
           'Normally this is a Scalar, but could be a Vec2 of any other value');
     }
-
+    */
+    
     var animationTrackNode = scene.constructNode('SceneGraphNode', options);
     var dgnode = animationTrackNode.constructDGNode('DGNode');
-    dgnode.addMember('name', 'String', 'keyframeAnimationTrack');
-    dgnode.addMember('color', 'Color', FABRIC.RT.rgb(1, 1, 1));
-    dgnode.addMember('keys', options.keyframetype + '[]');
-
+  //  dgnode.addMember('name', 'String', 'keyframeAnimationTrack');
+  //  dgnode.addMember('color', 'Color', FABRIC.RT.rgb(1, 1, 1));
+  //  dgnode.addMember('keys', options.keyframetype + '[]');
+    dgnode.addMember('trackSet', options.keyframetype + 'TrackSet');
+    
+    animationTrackNode.pub.addTrackSet = function(trackset) {
+      var trackSetId = dgnode.getCount();
+      dgnode.setCount(trackSetId+1);
+      dgnode.setData('trackSet', trackSetId, trackset);
+      return trackSetId;
+    };
+/*
     // extend the public interface
     animationTrackNode.pub.getKeyframeType = function() {
       return options.keyframetype;
@@ -80,7 +96,8 @@ FABRIC.SceneGraph.registerNodeType('AnimationTrack', {
       keys[keyid] = keydata;
       dgnode.setData('keys', trackid, keys);
     };
-
+*/
+/*
     // extend private interface
     animationTrackNode.getInterpolatorOperator = function() {
       return scene.constructOperator({
@@ -100,6 +117,7 @@ FABRIC.SceneGraph.registerNodeType('AnimationTrack', {
           ]
         });
     };
+*/
     animationTrackNode.getDrawOperator = function() {
       return scene.constructOperator({
           operatorName: 'evaluate'+options.keyframetype+'Curve',
@@ -138,23 +156,23 @@ FABRIC.SceneGraph.registerNodeType('AnimationTrack', {
   }});
 
 
-FABRIC.SceneGraph.registerNodeType('LinearKeyAnimationTrack', {
+FABRIC.SceneGraph.registerNodeType('LinearKeyAnimationLibrary', {
   briefDesc: 'The LinearKeyAnimationTrack node implements an array of linear keyframe animation tracks.',
   detailedDesc: 'The LinearKeyAnimationTrack node derrives from AnimationTrack and specifies that the tracks should contains \'LinearKeyframes\'',
   parentNodeDesc: 'AnimationTrack',
   factoryFn: function(options, scene) {
     options.keyframetype = 'LinearKeyframe';
-    return scene.constructNode('AnimationTrack', options);
+    return scene.constructNode('AnimationLibrary', options);
   }});
 
 
-FABRIC.SceneGraph.registerNodeType('BezierKeyAnimationTrack', {
+FABRIC.SceneGraph.registerNodeType('BezierKeyAnimationLibrary', {
   briefDesc: 'The BezierKeyAnimationTrack node implements an array of bezier keyframe animation tracks.',
   detailedDesc: 'The BezierKeyAnimationTrack node derrives from AnimationTrack and specifies that the tracks should contains \'BezierKeyframe\'',
   parentNodeDesc: 'AnimationTrack',
   factoryFn: function(options, scene) {
     options.keyframetype = 'BezierKeyframe';
-    return scene.constructNode('AnimationTrack', options);
+    return scene.constructNode('AnimationLibrary', options);
   }});
 
 

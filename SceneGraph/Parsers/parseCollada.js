@@ -772,6 +772,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
     return geometryNode;
   }
 
+  var libraryAnimations;
   var libraryRigs = {};
   var constructRigFromHierarchy = function(sceneData, rootNodeName, controllerName){
     if(!controllerName){
@@ -844,15 +845,23 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
     
       
     if(colladaData.libraryAnimations){
+      if(!libraryAnimations){
+        libraryAnimations = scene.constructNode('LinearKeyAnimationLibrary');
+      }
       // fill in all of the tracks...
+      var trackSet = new FABRIC.RT.LinearKeyframeTrackSet();
       var tracks = {
         name: [],
         color: [],
         keys: []
       };
-      var bindings = new FABRIC.Animation.KeyframeTrackBindings();
-      var poseParameterBindings = [];//PoseParameterBinding
+      
+      var localPose = skeletonNode.getReferenceLocalPose();
+      var bindings = new FABRIC.RT.KeyframeTrackBindings();
+      var poseParameterBindings = [];
       for (var i = 0; i < bones.length; i++) {
+        // In a simple FK hierarchy, each local xfo maps to a global xfo.
+        poseParameterBindings.push(new FABRIC.RT.PoseParameterBinding(i, i));
         var channels = colladaData.libraryAnimations.channelMap[bones[i].name];
         
         if (!channels)
@@ -871,39 +880,36 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
           var outputSource = animation.sources[sampler.OUTPUT.source.slice(1)];
           var interpolationSource = animation.sources[sampler.INTERPOLATION.source.slice(1)];
           
-          
           var generateKeyframeTrack = function(channelName, keytimes, keyvalues, binding){
             
-            // now let's reformat the linear data
-            var key = FABRIC.Animation.linearKeyframe;
-            var keys = [];
-            for (var j = 0; j < keytimes.length; j++) {
-              keys.push(key(keytimes[j], keyvalues[j]));
-            }
-            
-            var trackid = tracks.keys.length;
-            tracks.keys.push(keys);
-            tracks.name.push(bones[i].name+'.'+channelName);
-            
+            var color;
+            var trackid = trackSet.tracks.length;
             switch (channelName.substr(channelName.lastIndexOf('.')+1)) {
             case 'x':
               binding[0] = trackid;
-              tracks.color.push(FABRIC.RT.rgb(1, 0, 0));
+              color = FABRIC.RT.rgb(1, 0, 0);
               break;
             case 'y':
               binding[1] = trackid;
-              tracks.color.push(FABRIC.RT.rgb(0, 1, 0));
+              color = FABRIC.RT.rgb(0, 1, 0);
               break;
             case 'z':
               binding[2] = trackid;
-              tracks.color.push(FABRIC.RT.rgb(0, 0, 1));
+              color = FABRIC.RT.rgb(0, 0, 1);
               break;
             case 'w':
               binding[3] = trackid;
-              tracks.color.push(FABRIC.RT.rgb(0.7, 0.7, 0.7));
+              color = FABRIC.RT.rgb(0.7, 0.7, 0.7);
               break;
             default:
               throw 'unsupported channel:' + channelName;
+            }
+            
+            // now let's reformat the linear data
+            var track = new FABRIC.RT.linearKeyframeTrack(bones[i].name+'.'+channelName, color);
+            var key =- FABRIC.RT.linearKeyframe;
+            for (var j = 0; j < keytimes.length; j++) {
+              track.keys.push(key(keytimes[j], keyvalues[j]));
             }
           }
           
@@ -1026,11 +1032,12 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
       variablesNode.addMember('localxfos', 'Xfo[]', skeletonNode.getReferenceLocalPose());
       evaluatorNode.bindNodeMembersToEvaluatorTracks(variablesNode, binding, rigNode.getName());
       */
+      
       variablesNode.addVariable('Xfo[]', skeletonNode.getReferenceLocalPose());
-      rigNode.addSolver('solveColladaPose', 'FKHierarchySolver', { localxfoMemberName: 'localxfos' });
+      rigNode.addSolver('solveColladaPose', 'FKHierarchySolver', { poseParameterBindings: poseParameterBindings });
       
       assetNodes[trackNode.getName()] = trackNode;
-      assetNodes[evaluatorNode.getName()] = evaluatorNode;
+    //  assetNodes[evaluatorNode.getName()] = evaluatorNode;
       assetNodes[controllerNode.getName()] = controllerNode;
     }
     

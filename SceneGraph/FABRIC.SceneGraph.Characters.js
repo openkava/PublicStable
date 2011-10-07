@@ -300,40 +300,73 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
     var characterVariablesNode = scene.constructNode('SceneGraphNode', options);
     var dgnode = characterVariablesNode.constructDGNode('DGNode');
     
-    var poseVariables = new PoseVariables();
-    dgnode.addMember('poseVariables', 'PoseVariables', poseVariables);
+    var poseParameters = new FABRIC.RT.PoseParameters();
+    dgnode.addMember('poseParameters', 'PoseParameters', poseParameters);
     // extend the private interface
     characterVariablesNode.pub.addVariable = function(type, value) {
       var id = -1;
       switch(type){
         case 'Scalar':
-          id = poseVariables.scalarValues.length;
-          poseVariables.scalarValues.push( value ? value : 0.0);
+          id = poseParameters.scalarValues.length;
+          poseParameters.scalarValues.push( value ? value : 0.0);
           break;
         case 'Vec3':
-          id = poseVariables.vec3Values.length;
-          poseVariables.vec3Values.push( value ? value : new FABRIC.Math.Vec3());
+          id = poseParameters.vec3Values.length;
+          poseParameters.vec3Values.push( value ? value : new FABRIC.Math.Vec3());
           break;
         case 'Quat':
-          id = poseVariables.quatValues.length;
-          poseVariables.quatValues.push( value ? value : new FABRIC.Math.Quat());
+          id = poseParameters.quatValues.length;
+          poseParameters.quatValues.push( value ? value : new FABRIC.Math.Quat());
           break;
         case 'Xfo':
-          id = poseVariables.xfoValues.length;
-          poseVariables.xfoValues.push( value ? value : new FABRIC.Math.Xfo());
+          id = poseParameters.xfoValues.length;
+          poseParameters.xfoValues.push( value ? value : new FABRIC.Math.Xfo());
           break;
         case 'Xfo[]':
           for(var i=0; i<value.length; i++){
-            id = poseVariables.xfoValues.length;
-            poseVariables.xfoValues.push( value[i] );
+            id = poseParameters.xfoValues.length;
+            poseParameters.xfoValues.push( value[i] );
           }
           break;
         default:
           throw "unsupported Type:" + type;
       }
-      dgnode.setData('poseVariables', 0, poseVariables);
+      dgnode.setData('poseParameters', 0, poseParameters);
       return id;
     };
+    
+    var animationControllerNode;
+    var animationTrackNode;
+    
+    characterVariablesNode.pub.bindToAnimationTracks = function( animationTracksNode, animationControllerNode ){
+      if (!animationTracksNode.isTypeOf('AnimationTrack')) {
+        throw ('Incorrect type assignment. Must assign a AnimationTrack');
+      }
+      if (!animationControllerNode.isTypeOf('AnimationController')) {
+        throw ('Incorrect type assignment. Must assign a AnimationController');
+      }
+      animationTracksNode = scene.getPrivateInterface(animationTracksNode);
+      animationControllerNode = scene.getPrivateInterface(animationControllerNode);
+      
+      dgnode.setDependency(animationTrackNode.getDGNode(), 'animationtrack');
+      dgnode.setDependency(node.getDGNode(), 'controller');
+      
+      dgnode.addMember('keyIndices', 'Integer[]');
+      dgnode.addMember('trackIndex', 'Integer', 0);
+      dgnode.bindings.append(scene.constructOperator({
+          operatorName: 'evaluatePoseTracks',
+          srcFile: 'FABRIC_ROOT/SceneGraph/KL/evaluatePoseTracks.kl',
+          entryFunctionName: 'evaluatePoseTracks',
+          parameterLayout: [
+            'animationtrack.trackSet<>',
+            'controller.time',
+  io KeyframeTrackBindings bindings,
+            'self.keyIndices',
+            'self.poseParameters',
+            'self.trackIndex'
+          ]
+        }));
+    }
 
     return characterVariablesNode;
   }});
@@ -352,7 +385,7 @@ FABRIC.SceneGraph.registerNodeType('CharacterConstants', {
     var dgnode = characterVariablesNode.constructDGNode('DGNode');
 
     // extend the private interface
-    characterVariablesNode.pub.addMember = function(name, type, value) {
+    characterVariablesNode.addMember = function(name, type, value) {
       dgnode.addMember(name, type, value);
     };
     characterVariablesNode.pub.getData = function(name, index) {
