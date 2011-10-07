@@ -1,5 +1,4 @@
-FC = createFabricClient();
-FABRIC = FC.wrapFabricClient(FC);
+FABRIC = require('Fabric').createClient();
 
 var Vec2 = function( x, y ) {
   if ( typeof x === "number" && typeof y === "number" ) {
@@ -35,22 +34,22 @@ function Vec2(Scalar x, Scalar y)\n\
 };
 
 FABRIC.RegisteredTypesManager.registerType( 'Vec2', desc );
-printDeep(FABRIC.RT.getRegisteredTypes()['Vec2']);
+console.log(JSON.stringify(FABRIC.RT.getRegisteredTypes()['Vec2']));
 
 var node = FABRIC.DependencyGraph.createNode("foo");
 node.addMember( 'vec2', 'Vec2' );
 node.setData( 'vec2', 0, new Vec2( 5.6, 4.3 ) );
 var data = node.getData("vec2", 0);
-print( JSON.stringify(data) );
-print(data.sum());
+console.log( JSON.stringify(data) );
+console.log(data.sum());
 
 var op = FABRIC.DG.createOperator("op");
 op.setSourceCode("(inline)", "use Vec2; operator entry( io Vec2 vec2 ) { vec2 = Vec2(8.9, 2.3); }");
 op.setEntryFunctionName("entry");
 if (op.getErrors().length > 0) {
-  printDeep(op.getErrors());
+  console.log(op.getErrors());
   if (op.getDiagnostics().length > 0)
-    printDeep(op.getDiagnostics());
+    console.log(op.getDiagnostics());
 }
 
 var binding = FABRIC.DG.createBinding();
@@ -60,8 +59,8 @@ binding.setParameterLayout(["self.vec2"]);
 node.bindings.append(binding);
 node.evaluate();
 var data = node.getData("vec2", 0);
-print( JSON.stringify(data) );
-print(data.sum());
+console.log( JSON.stringify(data) );
+console.log(data.sum());
 
 var ComplexType = function() {
   var vec2 = new Vec2(3.14, 2.71);
@@ -76,9 +75,8 @@ var complexTypeDesc = {
   constructor: ComplexType,
 };
 FABRIC.RT.registerType('ComplexType', complexTypeDesc);
-printDeep(FABRIC.RT.getRegisteredTypes()['ComplexType']);
+console.log(JSON.stringify(FABRIC.RT.getRegisteredTypes()['ComplexType'].defaultValue));
 node.addMember( 'ct', 'ComplexType' );
-printDeep( node.getData( 'ct', 0 ) );
+console.log(JSON.stringify( node.getData( 'ct', 0 ) ));
 
 FABRIC.flush();
-FC.dispose();
