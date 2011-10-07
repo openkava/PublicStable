@@ -287,6 +287,7 @@ FABRIC_EXT_EXPORT void FabricBULLET_World_Create(
     printf("  { FabricBULLET } : FabricBULLET_World_Create called.\n");
 #endif
     world.localData = new BulletWorld::LocalData();
+    world.localData->retain();
 #ifndef NDEBUG
     printf("  { FabricBULLET } : FabricBULLET_World_Create completed.\n");
 #endif
