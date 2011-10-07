@@ -1,5 +1,4 @@
-FC = createFabricClient();
-F = FC.wrapFabricClient(FC);
+F = require('Fabric').createClient();
 
 o = F.DG.createOperator("op");
 o.setSourceCode("\
@@ -20,7 +19,6 @@ n = F.DG.createNode("node");
 n.addMember("foo", "String");
 n.addMember("bar", "Size");
 n.bindings.append(b);
-printDeep(n.getErrors());
+console.log(JSON.stringify(n.getErrors()));
 
 F.flush();
-FC.dispose();

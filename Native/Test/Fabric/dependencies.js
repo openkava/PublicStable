@@ -1,6 +1,5 @@
-FC = createFabricClient();
-FABRIC = FC.wrapFabricClient(FC);
-load( "UnitTest.js.inc" );
+FABRIC = require('Fabric').createClient();
+require( "./include/UnitTest.js" );
 ut = new FABRIC.UnitTest;
           ut.test( "setDependency/getDependencies/getDependents", function() {
             var parent = FABRIC.DependencyGraph.createNode( "UnitTests.Node.Dependencies.Parent" );
@@ -38,4 +37,3 @@ ut = new FABRIC.UnitTest;
             ut.expect( "child.getDependencies().parent.eq(parent)", child.getDependencies().parent === parent );
             ut.expect( "child.getDependencies().parentAgain.eq(parent)", child.getDependencies().parentAgain === parent );
           } );
-FC.dispose();

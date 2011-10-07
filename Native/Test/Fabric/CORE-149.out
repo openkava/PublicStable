@@ -1,4 +1,4 @@
 Errors on eh1:
-["pre-descend operator 0: operator 'op': node 'node': parameter 1: member 'doesntExist': 'doesntExist': no such member"]
+[ 'pre-descend operator 0: operator \'op\': node \'node\': parameter 1: member \'doesntExist\': \'doesntExist\': no such member' ]
 Errors on eh2:
 []

@@ -1,5 +1,4 @@
-FC = createFabricClient();
-FABRIC = FC.wrapFabricClient(FC);
+FABRIC = require('Fabric').createClient();
 
 node = FABRIC.DependencyGraph.createNode( "node" );
 node.addMember( "input", "Scalar" );
@@ -23,10 +22,9 @@ e = FABRIC.DependencyGraph.createEvent("event");
 e.appendEventHandler( eh1 );
 e.appendEventHandler( eh2 );
 
-print( "Errors on eh1:" );
-print( eh1.getErrors() );
-print( "Errors on eh2:" );
-print( eh2.getErrors() );
+console.log( "Errors on eh1:" );
+console.log( eh1.getErrors() );
+console.log( "Errors on eh2:" );
+console.log( eh2.getErrors() );
 
 FABRIC.flush();
-FC.dispose();
