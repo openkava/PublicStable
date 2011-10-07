@@ -1,5 +1,4 @@
-FC = createFabricClient();
-FABRIC = FC.wrapFabricClient(FC);
+FABRIC = require('Fabric').createClient();
 
 parentOp = FABRIC.DependencyGraph.createOperator( "parentOp" );
 parentOp.setEntryFunctionName('entry');
@@ -31,7 +30,7 @@ childNode.addMember( "output", "Scalar" );
 childNode.setCount( 2 );
 childNode.bindings.append( childBinding );
 if (childNode.getErrors().length)
-  printDeep(childNode.getErrors());
+  console.log(childNode.getErrors());
 
 parentEHPreOp = FABRIC.DependencyGraph.createOperator( "parentEHPreOp" );
 parentEHPreOp.setEntryFunctionName('entry');
@@ -82,4 +81,3 @@ event.appendEventHandler( childEH );
 event.fire();
 
 FABRIC.flush();
-FC.dispose();

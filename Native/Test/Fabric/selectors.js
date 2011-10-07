@@ -1,6 +1,5 @@
-FC = createFabricClient();
-FABRIC = FC.wrapFabricClient(FC);
-load( "UnitTest.js.inc" );
+FABRIC = require('Fabric').createClient();
+require( "./include/UnitTest.js" );
 ut = new FABRIC.UnitTest;
         ut.test( "Selectors", function() {
           var event = FABRIC.DependencyGraph.createEvent("UnitTests.Node.selectors.event");
@@ -38,4 +37,3 @@ ut = new FABRIC.UnitTest;
           ut.expect( "Correct result value", result[0].value, 7 );
         } );
 FABRIC.flush();
-FC.dispose();

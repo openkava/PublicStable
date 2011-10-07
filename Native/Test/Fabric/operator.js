@@ -1,11 +1,9 @@
-FC = createFabricClient();
-F = FC.wrapFabricClient(FC);
+F = require('Fabric').createClient();
 
 o = F.DG.createOperator("op");
 o.setSourceCode("operator entry() { report 'Hello'; }");
 o.setEntryFunctionName("entry");
-print(o.getSourceCode());
-print(o.getEntryFunctionName());
+console.log(o.getSourceCode());
+console.log(o.getEntryFunctionName());
 
 F.flush();
-FC.dispose();
