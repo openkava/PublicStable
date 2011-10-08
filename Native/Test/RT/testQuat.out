@@ -1,5 +1,19 @@
+TRACE: 1.454728264932426e-15
+TRACE: 2.3315531792572886
+TRACE: 2.1490077401200587
+TRACE: 2.1490077401200587
+TRACE: 2.3315531792572886
+TRACE: 2.3315531792572886
+TRACE: 2.1490077401200587
 Math.Warning: Quat.setFrom2Vectors: bad divisor (ambiguous answer)
 Math.Warning: Vec3.divideScalar: bad divisor: 0
+[FABRIC] [MT] TRACE: -8.74227E-8
+[FABRIC] [MT] TRACE: 2.33155
+[FABRIC] [MT] TRACE: 2.14901
+[FABRIC] [MT] TRACE: 2.14901
+[FABRIC] [MT] TRACE: 2.33155
+[FABRIC] [MT] TRACE: 2.33155
+[FABRIC] [MT] TRACE: 2.14901
 [FABRIC] [MT] Math.Warning: Quat.setFromMat33: ambiguous answer: bad divisor: 0
 [FABRIC] [MT] Math.Warning: Vec3.divide: bad divisor: 0
 'set': [ 1, 2, 3, 4 ]
@@ -10,7 +24,6 @@ Math.Warning: Vec3.divideScalar: bad divisor: 0
 'setFromEuler_rotateVector2': [ -1, 0, 0 ]
 'eulerMat_rotateVector': [ 0, 0, -1 ]
 'eulerMat_rotateVector2': [ -1, 0, 0 ]
-'setFromMat33': [ -0.5000, 0.5000, 0.5000, 0.5000 ]
 'setFromMat33_rotateVector': [ 0, 0, -1 ]
 'setFromMat33_rotateVector2': [ -1, 0, 0 ]
 'toMat33_rotateVector': [ 0, 0, -1 ]

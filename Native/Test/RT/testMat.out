@@ -59,7 +59,7 @@ Math.Warning: Mat33.divideScalar: bad divisor: 0
 ****** Mat44 Tests ******
 Math.Warning: Mat44.inverse: bad divisor: 0
 Math.Warning: Mat44.divideScalar: bad divisor: 0
-[FABRIC] [MT] Math.Warning: Mat33.inverse: bad divisor: 0
+[FABRIC] [MT] Math.Warning: Mat44.inverse: bad divisor: 0
 [FABRIC] [MT] Math.Warning: Mat44.divide: bad divisor: 0
 'set': [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 ]
 'setNull': [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
