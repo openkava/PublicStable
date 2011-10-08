@@ -33,7 +33,8 @@ m1 = e1.toMat33();
 m1.multiplyVector(v1).appendResult(tests, results, 'eulerMat_rotateVector');
 m1.multiplyVector(v2).appendResult(tests, results, 'eulerMat_rotateVector2');
 q1.setFromMat33(m1);
-q1.appendResult(tests, results, 'setFromMat33');
+//Don't output this result since the 'trace' is almost 0 and outputs different but equivalent quaternion in KL and JS depending on epsilon
+//q1.appendResult(tests, results, 'setFromMat33');
 q1.rotateVector(v1).appendResult(tests, results, 'setFromMat33_rotateVector');
 q1.rotateVector(v2).appendResult(tests, results, 'setFromMat33_rotateVector2');
 m1 = q1.toMat33();
