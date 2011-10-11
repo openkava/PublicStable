@@ -1020,6 +1020,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
       variablesNode.addMember('localxfos', 'Xfo[]', skeletonNode.getReferenceLocalPose());
       evaluatorNode.bindNodeMembersToEvaluatorTracks(variablesNode, binding, rigNode.getName());
       */
+      
       var trackSetID = libraryAnimations.addTrackSet(trackSet);
       
       variablesNode.bindToAnimationTracks( libraryAnimations, controllerNode, trackSetID, trackBindings );

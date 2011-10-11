@@ -14,8 +14,8 @@ function Scalar LinearKeyframe.interpolate(LinearKeyframe key2, Scalar t) {
 }
 
 
-function LinearKeyframeTrack.evaluate(
-  io Scalar time,
+function Scalar LinearKeyframeTrack.evaluate(
+  in Scalar time,
   io Integer keyIndex
 ) {
   var Integer numKeys = this.keys.size;
