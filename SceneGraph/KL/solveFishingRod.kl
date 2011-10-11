@@ -37,6 +37,7 @@ function applyFishingRod(
   in Scalar maxLineLength,
   in Vec2 maxLineLengthSoftening
 ) {
+
   Vec3 vecToTarget, boneLengthVector, bendAxis;
   Scalar distBoneBaseToTarget, distBoneTipToTarget, newDistBoneTipToTarget;
 
@@ -65,37 +66,44 @@ function applyFishingRod(
     Scalar a = boneLength;
     Scalar b = distBoneBaseToTarget;
     Scalar c = newDistBoneTipToTarget;
+    
     Scalar ikBoneAngle = acos(clamp(((a * a) + (b * b) - (c * c)) / (2.0 * a * b), - 1.0, 1.0));
 
     // Subtract off the current angle the bone has with the vecToTarget to keep the delta
     Scalar deltaBoneAngle = (ikBoneAngle - fkBoneAngle);
 
     bendAxis = vecToTarget.cross(boneLengthVector);
-    boneXfo.ori.setFromAxisAndAngle(bendAxis, deltaBoneAngle) * boneXfo.ori;
+  //  boneXfo.ori.setFromAxisAndAngle(bendAxis, deltaBoneAngle) * boneXfo.ori;
+    Quat offset;
+    offset.setFromAxisAndAngle(bendAxis, deltaBoneAngle);
+    boneXfo.ori = offset * boneXfo.ori;
   }
 }
 
 operator fishingRodOp(
   io Xfo pose[],
   io Bone bones[],
-  io Integer boneIndex,
+  
   io Scalar restLineLength,
   io Scalar minLineLength,
   io Scalar maxLineLength,
-  io Xfo target
+  
+  io Integer boneIndex,
+  io Integer targetId,
+  
+  io PoseVariables poseVariables
 ) {
-
   // Compute the FK pose of the chain.
   // Note: this should be moved to a separate solver.
   pose[boneIndex] = bones[boneIndex].referencePose;
 
   Vec2 minLineLengthSoftening(restLineLength - minLineLength, restLineLength - minLineLength);
   Vec2 maxLineLengthSoftening(maxLineLength - restLineLength, maxLineLength - restLineLength);
-
+  
   applyFishingRod(
     pose[boneIndex],
     bones[boneIndex].length,
-    target,
+    poseVariables.xfoValues[targetId],
     Vec3(1.0, 0.0, 0.0),
 
     minLineLength,

@@ -7,13 +7,6 @@ use LinearKeyframe;
 use LinearKeyframeTrack;
 use LinearKeyframeTrackSet;
 
-function PoseVariables.setIdentity() {
-  this.v = Vec3(0.0, 0.0, 0.0);
-  this.w = 1.0;
-  report("setIdentity()");
-}
-
-
 
 function PoseVariables.evaluateKeyframeTracks(
   in LinearKeyframeTrackSet trackSet,
