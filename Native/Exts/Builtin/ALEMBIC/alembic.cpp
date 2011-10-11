@@ -491,7 +491,7 @@ FABRIC_EXT_EXPORT void FabricALEMBICParsePolyMeshAttributes(
               for(int j=0;j<3;j++)
               {
                 uvs[vertexOffset].x = usp->get()[indexOffset+j].x;
-                uvs[vertexOffset++].y = 1.0f - usp->get()[indexOffset+j].y;
+                uvs[vertexOffset++].y = usp->get()[indexOffset+j].y;
               }
             }
             else if(count == 4)
@@ -499,12 +499,12 @@ FABRIC_EXT_EXPORT void FabricALEMBICParsePolyMeshAttributes(
               for(int j=0;j<3;j++)
               {
                 uvs[vertexOffset].x = usp->get()[indexOffset+j].x;
-                uvs[vertexOffset++].y = 1.0f - usp->get()[indexOffset+j].y;
+                uvs[vertexOffset++].y = usp->get()[indexOffset+j].y;
               }
               for(int j=2;j<5;j++)
               {
                 uvs[vertexOffset].x = usp->get()[indexOffset+(j%4)].x;
-                uvs[vertexOffset++].y = 1.0f - usp->get()[indexOffset+(j%4)].y;
+                uvs[vertexOffset++].y = usp->get()[indexOffset+(j%4)].y;
               }
             }
             else
