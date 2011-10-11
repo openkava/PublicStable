@@ -370,6 +370,17 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
     return joints;
   }
   
+  var parseMatrix = function(node) {
+    var text_array = node.textContent.split(new RegExp("\\s+"));
+    var float_array = [];
+    for(var i=0; i<text_array.length; i++){
+      if(text_array[i] != ""){
+        float_array.push(parseFloat(text_array[i]));
+      }
+    }
+    return makeRT(FABRIC.RT.Mat44, float_array);
+  }
+  
   var parseSkin = function(node) {
     var skin = {
       source: node.getAttribute('source'),
@@ -381,16 +392,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
     while(child){
       switch (child.nodeName) {
         case 'bind_shape_matrix':
-          var text_array = child.textContent.split(new RegExp("\\s+"));
-          var float_array = [];
-          for(var i=0; i<text_array.length; i++){
-            if(text_array[i] != ""){
-              float_array.push(parseFloat(text_array[i]));
-            }
-          }
-          
-          var matrix44 = makeRT(FABRIC.RT.Mat44, float_array);
-          skin.bind_shape_matrix = matrix44;//.transpose();
+          skin.bind_shape_matrix = parseMatrix(child);
           break;
         case 'source':
           skin.sources[child.getAttribute('id')] = parseSource(child);
@@ -512,6 +514,13 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
           nodeData.xfo = nodeData.xfo.multiply(new FABRIC.RT.Xfo({sc:sc}));
           break;
         }
+        case 'matrix':
+          nodeData.xfo.setFromMat44(parseMatrix(child));
+          if(nodeData.xfo.sc.length() > 1.01){
+            console.warn("collada file contains non uniform scaling in its matrices.");
+          }
+          nodeData.xfo.sc.set(1,1,1);
+          break;
         case 'instance_geometry':
           nodeData.instance_geometry = parseInstanceGeometry(child);
           break;
@@ -795,7 +804,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
       }
       boneOptions.referenceLocalPose = nodeData.xfo;
       if (boneOptions.parent !== -1) {
-        boneOptions.referencePose = bones[boneOptions.parent].referencePose * nodeData.xfo;
+        boneOptions.referencePose = bones[boneOptions.parent].referencePose.multiply(nodeData.xfo);
 
         // set the length of the parent bone based on the child bone local offset.
         if(nodeData.xfo.tr.x > (Math.abs(nodeData.xfo.tr.y) + Math.abs(nodeData.xfo.tr.z)) &&
