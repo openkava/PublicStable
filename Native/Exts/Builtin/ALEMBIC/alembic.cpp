@@ -219,21 +219,31 @@ FABRIC_EXT_EXPORT void FabricALEMBICGetIdentifiers(
     {
       identifiers[offset] = iObjects[i].getFullName().c_str();
       identifiers[offset] += "|";
+      int numSamples = 1;
       const Alembic::Abc::MetaData &md = iObjects[i].getMetaData();
-      if(Alembic::AbcGeom::IXform::matches(md))
-        identifiers[offset] += "Xform";
-      else if(Alembic::AbcGeom::IPolyMesh::matches(md))
-        identifiers[offset] += "PolyMesh";
-      else if(Alembic::AbcGeom::ICurves::matches(md))
-        identifiers[offset] += "Curves";
-      else if(Alembic::AbcGeom::INuPatch::matches(md))
-        identifiers[offset] += "NuPatch";
-      else if(Alembic::AbcGeom::IPoints::matches(md))
-        identifiers[offset] += "Points";
-      else if(Alembic::AbcGeom::ISubD::matches(md))
-        identifiers[offset] += "SubD";
-      else if(Alembic::AbcGeom::ICamera::matches(md))
-        identifiers[offset] += "Camera";
+      if(Alembic::AbcGeom::IXform::matches(md)) {
+        identifiers[offset] += "Xform|";
+        numSamples = Alembic::AbcGeom::IXform(iObjects[i],Alembic::Abc::kWrapExisting).getSchema().getNumSamples();
+      } else if(Alembic::AbcGeom::IPolyMesh::matches(md)) {
+        identifiers[offset] += "PolyMesh|";
+        numSamples = Alembic::AbcGeom::IPolyMesh(iObjects[i],Alembic::Abc::kWrapExisting).getSchema().getNumSamples();
+      } else if(Alembic::AbcGeom::ICurves::matches(md)) {
+        identifiers[offset] += "Curves|";
+        numSamples = Alembic::AbcGeom::ICurves(iObjects[i],Alembic::Abc::kWrapExisting).getSchema().getNumSamples();
+      } else if(Alembic::AbcGeom::INuPatch::matches(md)) {
+        identifiers[offset] += "NuPatch|";
+        numSamples = Alembic::AbcGeom::INuPatch(iObjects[i],Alembic::Abc::kWrapExisting).getSchema().getNumSamples();
+      } else if(Alembic::AbcGeom::IPoints::matches(md)) {
+        identifiers[offset] += "Points|";
+        numSamples = Alembic::AbcGeom::IPoints(iObjects[i],Alembic::Abc::kWrapExisting).getSchema().getNumSamples();
+      } else if(Alembic::AbcGeom::ISubD::matches(md)) {
+        identifiers[offset] += "SubD|";
+        numSamples = Alembic::AbcGeom::ISubD(iObjects[i],Alembic::Abc::kWrapExisting).getSchema().getNumSamples();
+      } else if(Alembic::AbcGeom::ICamera::matches(md)) {
+        identifiers[offset] += "Camera|";
+        numSamples = Alembic::AbcGeom::ICamera(iObjects[i],Alembic::Abc::kWrapExisting).getSchema().getNumSamples();
+      }
+      identifiers[offset] += boost::lexical_cast<std::string>(numSamples).c_str();
       offset++;
     }
   }
@@ -409,7 +419,6 @@ FABRIC_EXT_EXPORT void FabricALEMBICParsePolyMeshCount(
 
     // loop on all counts
     Alembic::Abc::Int32ArraySamplePtr faceCounts = sample.getFaceCounts();
-    std::vector<KL::Integer> vecIndices;
     count = 0;
     for(size_t i=0;i<faceCounts->size();i++)
     {
@@ -515,8 +524,6 @@ FABRIC_EXT_EXPORT void FabricALEMBICParsePolyMeshAttributes(
           vertexOffset++;
         }
       }
-      else
-        continue;
       indexOffset += count;
     }
     
@@ -614,8 +621,6 @@ FABRIC_EXT_EXPORT void FabricALEMBICParsePolyMeshAttributes(
               vertexOffset++;
             }
           }
-          else
-            continue;
           indexOffset += count;
         }
       }
@@ -658,8 +663,6 @@ FABRIC_EXT_EXPORT void FabricALEMBICParsePolyMeshAttributes(
                 uvs[vertexOffset++].y = usp->get()[currentIndex].y;
               }
             }
-            else
-              continue;
             indexOffset += count;
           }
         }
