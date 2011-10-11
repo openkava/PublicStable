@@ -29,7 +29,7 @@ operator solveNCFIK(
   Xfo boneXfo, boneParentXfo;
   Bone bone;
 
-  fkChainTip = pose[lastBoneIndex] * Vec3(bones[lastBoneIndex].length, 0.0, 0.0);
+  fkChainTip = pose[lastBoneIndex].transformVector(Vec3(bones[lastBoneIndex].length, 0.0, 0.0));
   chainRootPos = pose[boneIndices[0]].tr;
 
   for (Integer i = 0; i < boneIndices.size(); i++) {
@@ -55,10 +55,10 @@ operator solveNCFIK(
     }
     else {
       // Transform the bone position by the overall chain offset.
-      vecToFkChainTip = fkChainTip - (chainRootPos + (chainOffsetRotation * (boneXfo.tr - chainRootPos)));
+      vecToFkChainTip = fkChainTip - (chainRootPos + (chainOffsetRotation.rotateVector((boneXfo.tr - chainRootPos))));
 
       // Calculate a new pose position based on the parent bones new orientation
-      boneXfo.tr = pose[bone.parent] * Vec3(bones[bone.parent].length, 0.0, 0.0);
+      boneXfo.tr = pose[bone.parent].transformVector(Vec3(bones[bone.parent].length, 0.0, 0.0));
     }
     distToFkChainTip = vecToFkChainTip.length();
     vecToFkChainTip *= 1.0 / distToFkChainTip;
@@ -127,7 +127,9 @@ operator solveNCFIK(
       deltaBoneAngle = (ikBoneAngle - fkBoneAngle);
 
       // Apply the rotation to the current bones
-      boneXfo.ori.setFromAxisAndAngle(bendAxis, deltaBoneAngle) * boneXfo.ori;
+      Quat offset;
+      offset.setFromAxisAndAngle(bendAxis, deltaBoneAngle);
+      boneXfo.ori = offset * boneXfo.ori;
     }
 
     pose[boneIndex] = boneXfo;
@@ -140,5 +142,5 @@ operator solveInvNCFIK(
   io Integer boneIndices[],
   io Xfo target
 ) {
-  target.tr = pose[boneIndices[boneIndices.size() - 1]] * Vec3(bones[boneIndices.size() - 1].length, 0.0, 0.0);
+  target.tr = pose[boneIndices[boneIndices.size() - 1]].transformVector(Vec3(bones[boneIndices.size() - 1].length, 0.0, 0.0));
 }

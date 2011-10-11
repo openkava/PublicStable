@@ -14,13 +14,15 @@ use BezierKeyframe;
 operator solveArmRig(
   io Xfo pose[],
   io Bone bones[],
-
+  
   io Integer boneIndices[],
-  io Xfo wristOffsetXfo,
+  io Integer wristOffsetXfoId,
+  io Integer handControlXfoId,
+  io Integer ikBlendId,
 
-  io Xfo handControlXfo,
-  io Scalar ikBlend,
+  io PoseVariables poseVariables
 ) {
+  Scalar ikBlend = poseVariables.scalarValues[ikBlendId];
   if (ikBlend > 0.0) {
     Xfo fkPose[];
     fkPose.resize(boneIndices.size());
@@ -29,7 +31,7 @@ operator solveArmRig(
     }
 
     Xfo targetXfo;
-    targetXfo = wristOffsetXfo * handControlXfo;
+    targetXfo = poseVariables.xfoValues[wristOffsetXfoId] * poseVariables.xfoValues[handControlXfoId];
 
     Scalar maxLineLength = bones[boneIndices[1]].length + bones[boneIndices[2]].length;
     Vec2 maxLineLengthSoftening(maxLineLength * 0.1, maxLineLength * 0.1);
@@ -79,7 +81,7 @@ operator solveLegRig(
 
   io PoseVariables poseVariables
 ) {
-  Scalar ikBlend = poseVariables.floatValues[ikBlendId];
+  Scalar ikBlend = poseVariables.scalarValues[ikBlendId];
   if (ikBlend > 0.0) {
     Xfo fkPose[];
     fkPose.resize(boneIndices.size());
