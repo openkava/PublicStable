@@ -22,3 +22,20 @@ FABRIC.appendOnCreateContextCallback(function(context) {
     }
   });
 });
+
+
+FABRIC.RT.PoseParameterBinding = function(source, target) {
+  this.source = (source != undefined) ? source : -1;
+  this.target = (target != undefined) ? target : -1;
+};
+
+FABRIC.appendOnCreateContextCallback(function(context) {
+  context.RegisteredTypesManager.registerType('PoseParameterBinding', {
+    members: {
+      source: 'Integer',
+      target: 'Integer'
+    },
+    constructor: FABRIC.RT.PoseParameterBinding
+  });
+});
+

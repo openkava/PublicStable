@@ -32,16 +32,16 @@ function PoseVariables.evaluateKeyframeTracks(
     }
     if(trackIds.size == 3){
       // Euler to Quat
-      Euler euler(Vec3( trackSet.tracks[trackId+1].evaluate(time, currKeys[trackId++]),
-                        trackSet.tracks[trackId+2].evaluate(time, currKeys[trackId++]),
-                        trackSet.tracks[trackId+3].evaluate(time, currKeys[trackId++])));
+      Euler euler(Vec3( trackSet.tracks[trackIds[0]].evaluate(time, currKeys[trackId++]),
+                        trackSet.tracks[trackIds[1]].evaluate(time, currKeys[trackId++]),
+                        trackSet.tracks[trackIds[2]].evaluate(time, currKeys[trackId++])));
       this.quatValues[i].setFromEuler(euler);
     }
     else if(trackIds.size == 4){
-      this.quatValues[i].set( trackSet.tracks[trackId].evaluate(time, currKeys[trackId++]),
-                              trackSet.tracks[trackId+1].evaluate(time, currKeys[trackId++]),
-                              trackSet.tracks[trackId+2].evaluate(time, currKeys[trackId++]),
-                              trackSet.tracks[trackId+3].evaluate(time, currKeys[trackId++]) );
+      this.quatValues[i].set( trackSet.tracks[trackIds[0]].evaluate(time, currKeys[trackId++]),
+                              trackSet.tracks[trackIds[1]].evaluate(time, currKeys[trackId++]),
+                              trackSet.tracks[trackIds[2]].evaluate(time, currKeys[trackId++]),
+                              trackSet.tracks[trackIds[3]].evaluate(time, currKeys[trackId++]) );
     }
   }
   
@@ -69,3 +69,65 @@ function PoseVariables.evaluateKeyframeTracks(
   }
 }
 
+/*
+
+function PoseVariables.keyTracks(
+  in LinearKeyframeTrackSet trackSet,
+  in Scalar time,
+  in KeyframeTrackBindings bindings,
+  io Integer currKeys[]
+) {
+  Integer trackId = 0;
+  if (currKeys.size < trackId + bindings.scalarBindings.size){
+    currKeys.resize(trackId + bindings.scalarBindings.size);
+  }
+  for (Integer i = 0; i < bindings.scalarBindings.size; i++) {
+    trackSet.tracks[bindings.scalarBindings[i]].setValue(time, this.scalarValues[i], currKeys[trackId++]),
+  }
+  for (Integer i = 0; i < bindings.quatBindings.size; i++) {
+    Integer trackIds[] = bindings.quatBindings[i];
+    if(trackIds.size != 3 && trackIds.size != 4){
+      report('incorrect binding for Quat:' + trackIds);
+      continue;
+    }
+    if(currKeys.size < trackId + trackIds.size){
+      currKeys.resize(trackId + trackIds.size);
+    }
+    if(trackIds.size == 3){
+      //  Quat to Euler
+      Euler euler;
+      euler.setFromQuat(this.quatValues[i]);
+      trackSet.tracks[trackIds[0]].setValue(time, euler.x, currKeys[trackId++]),
+      trackSet.tracks[trackIds[1]].setValue(time, euler.y, currKeys[trackId++]),
+      trackSet.tracks[trackIds[2]].setValue(time, euler.z, currKeys[trackId++])));
+      addKey
+    }
+    else if(trackIds.size == 4){
+      trackSet.tracks[trackIds[0]].setValue(time, this.quatValues[i].v.x , currKeys[trackId++]);
+      trackSet.tracks[trackIds[1]].setValue(time, this.quatValues[i].v.y , currKeys[trackId++]);
+      trackSet.tracks[trackIds[2]].setValue(time, this.quatValues[i].v.z , currKeys[trackId++]);
+      trackSet.tracks[trackIds[3]].setValue(time, this.quatValues[i].w , currKeys[trackId++]);
+    }
+  }
+  
+  for (Integer i = 0; i < bindings.xfoBindings.size; i++) {
+    Integer trackIds[] = bindings.xfoBindings[i];
+    if(trackIds.size != 7){
+      report('incorrect binding for Xfo:' + trackIds);
+      continue;
+    }
+    if(currKeys.size < trackId + trackIds.size){
+      currKeys.resize(trackId + trackIds.size);
+    }
+    
+    trackSet.tracks[trackIds[0]].setValue(time, this.xfoValues[i].tr.x, currKeys[trackId++]);
+    trackSet.tracks[trackIds[1]].setValue(time, this.xfoValues[i].tr.y, currKeys[trackId++]);
+    trackSet.tracks[trackIds[2]].setValue(time, this.xfoValues[i].tr.z, currKeys[trackId++]);
+    
+    trackSet.tracks[trackIds[3]].setValue(time, this.xfoValues[i].ori.v.x, currKeys[trackId++]);
+    trackSet.tracks[trackIds[4]].setValue(time, this.xfoValues[i].ori.v.y, currKeys[trackId++]);
+    trackSet.tracks[trackIds[5]].setValue(time, this.xfoValues[i].ori.v.z, currKeys[trackId++]);
+    trackSet.tracks[trackIds[6]].setValue(time, this.xfoValues[i].ori.w, currKeys[trackId++]);
+  }
+}
+*/

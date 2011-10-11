@@ -9,7 +9,7 @@ function LinearKeyframe(Scalar time, Scalar value) {
 }
 
 function Scalar LinearKeyframe.interpolate(LinearKeyframe key2, Scalar t) {
-  var Scalar u = (t - this.time) / (key2.time - this.time);
+  Scalar u = (t - this.time) / (key2.time - this.time);
   return this.value + ((key2.value - this.value) * u);
 }
 
@@ -18,7 +18,7 @@ function Scalar LinearKeyframeTrack.evaluate(
   in Scalar time,
   io Integer keyIndex
 ) {
-  var Integer numKeys = this.keys.size;
+  Integer numKeys = this.keys.size;
   if (time >= this.keys[numKeys - 1].time) {
     return this.keys[numKeys - 1].value;
   }
@@ -42,4 +42,20 @@ function Scalar LinearKeyframeTrack.evaluate(
     }
     return this.keys[keyIndex].interpolate(this.keys[keyIndex + 1], time);
   }
+}
+
+
+
+
+function LinearKeyframeTrack.setValue(
+  in Scalar time,
+  in Scalar value,
+  io Integer keyIndex
+) {
+  LinearKeyframe key;
+  key.time = time;
+  key.value = value;
+  
+  keyIndex = this.keys.size();
+  this.keys.push(key);
 }
