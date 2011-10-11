@@ -119,8 +119,6 @@ FABRIC.SceneGraph.registerNodeType('ShapeMixer', {
     }
     code += "}\n"
     
-    console.log(code);
-    
     var parameterLayout = [
       'self.positions',
       'self.original_positions',
@@ -131,8 +129,6 @@ FABRIC.SceneGraph.registerNodeType('ShapeMixer', {
       parameterLayout.push('shapeMixer.'+name);
       parameterLayout.push(name+".positions<>");
     }
-
-    console.log(parameterLayout);
 
     attributesdgnode.bindings.append(scene.constructOperator({
       operatorName: 'mixShapes',
@@ -190,11 +186,17 @@ $(document).ready(function() {
 
   var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(10, 30, 100).multiplyScalar(3) });
 
+  $('#loadingDialog').dialog({
+    modal: true
+  });
+
   // create the alembic content, and fire the load once it is loaded
   var resourceName = 'shapes';
   var assets = scene.importAssetFile('Models/'+resourceName+'.abc', {
-    dependentNode: viewport,
-    onLoadSuccessCallback: function(){
+    dependentNode: viewport
+  });
+
+  assets[resourceName].addOnLoadSuccessCallback(function(){
       
       var shaderColor = {
         '/head/headShape': FABRIC.RT.rgb(1.0, 0.6, 0.0, 1),
@@ -244,12 +246,8 @@ $(document).ready(function() {
 
       $('#loadingDialog').dialog('close');
       viewport.redraw();
-    }
-  });
+    });
 
-  $('#loadingDialog').dialog({
-    modal: true
-  });
   FABRIC.appendOnResolveAsyncTaskCallback(function(label, nbRemaining, doneWeight, totalWeight) {
     $('#loadingProgressBar').progressbar({
       value: (1.0-(doneWeight/totalWeight))*100
