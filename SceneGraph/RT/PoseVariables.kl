@@ -1,0 +1,80 @@
+//
+// Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+//
+
+use Math, Vec3, Euler, Quat;
+use LinearKeyframe;
+use LinearKeyframeTrack;
+use LinearKeyframeTrackSet;
+
+function PoseVariables.setIdentity() {
+  this.v = Vec3(0.0, 0.0, 0.0);
+  this.w = 1.0;
+  report("setIdentity()");
+}
+
+
+
+function PoseVariables.evaluateKeyframeTracks(
+  in LinearKeyframeTrackSet trackSet,
+  in Scalar time,
+  in KeyframeTrackBindings bindings,
+  io Integer currKeys[]
+) {
+  report("PoseVariables.evaluateKeyframeTracks");
+  Integer trackId = 0;
+  if (currKeys.size < trackId + bindings.scalarBindings.size){
+    currKeys.resize(trackId + bindings.scalarBindings.size);
+  }
+  for (Integer i = 0; i < bindings.scalarBindings.size; i++) {
+    this.scalarValues[i] = trackSet.tracks[bindings.scalarBindings[i]].evaluate(time, currKeys[trackId++]);
+  }
+  for (Integer i = 0; i < bindings.quatBindings.size; i++) {
+    Integer trackIds[] = bindings.quatBindings[i];
+    if(trackIds.size != 3 && trackIds.size != 4){
+      report('incorrect binding for Quat:' + trackIds);
+      continue;
+    }
+    if(currKeys.size < trackId + trackIds.size){
+      currKeys.resize(trackId + trackIds.size);
+    }
+    if(trackIds.size == 3){
+      // Euler to Quat
+      Euler euler(Vec3( trackSet.tracks[trackId+1].evaluate(time, currKeys[trackId++]),
+                        trackSet.tracks[trackId+2].evaluate(time, currKeys[trackId++]),
+                        trackSet.tracks[trackId+3].evaluate(time, currKeys[trackId++])));
+      this.quatValues[i].setFromEuler(euler);
+    }
+    else if(trackIds.size == 4){
+      this.quatValues[i].set( trackSet.tracks[trackId].evaluate(time, currKeys[trackId++]),
+                              trackSet.tracks[trackId+1].evaluate(time, currKeys[trackId++]),
+                              trackSet.tracks[trackId+2].evaluate(time, currKeys[trackId++]),
+                              trackSet.tracks[trackId+3].evaluate(time, currKeys[trackId++]) );
+    }
+  }
+  
+  for (Integer i = 0; i < bindings.xfoBindings.size; i++) {
+    Integer trackIds[] = bindings.xfoBindings[i];
+    if(trackIds.size != 7){
+      report('incorrect binding for Xfo:' + trackIds);
+      continue;
+    }
+    if(currKeys.size < trackId + trackIds.size){
+      currKeys.resize(trackId + trackIds.size);
+    }
+    
+    this.xfoValues[i].tr.set(
+      trackSet.tracks[trackIds[0]].evaluate(time, currKeys[trackId++]),
+      trackSet.tracks[trackIds[1]].evaluate(time, currKeys[trackId++]),
+      trackSet.tracks[trackIds[2]].evaluate(time, currKeys[trackId++])
+    );
+    this.xfoValues[i].ori.set(
+      trackSet.tracks[trackIds[3]].evaluate(time, currKeys[trackId++]),
+      trackSet.tracks[trackIds[4]].evaluate(time, currKeys[trackId++]),
+      trackSet.tracks[trackIds[5]].evaluate(time, currKeys[trackId++]),
+      trackSet.tracks[trackIds[6]].evaluate(time, currKeys[trackId++])
+    );
+  //  report(this.xfoValues[i]);
+  }
+}
+

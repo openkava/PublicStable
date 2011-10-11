@@ -8,13 +8,13 @@ operator solveFKBone(
   io Xfo pose[],
   io Bone bones[],
   io PoseParameterBinding binding,
-  io PoseParameters poseParameters
+  io PoseVariables poseVariables
 ) {
   if (bones[binding.target].parent == - 1) {
-    pose[binding.target] = poseParameters.xfoValues[binding.target];
+    pose[binding.target] = poseVariables.xfoValues[binding.target];
   }
   else {
-    pose[binding.target] = pose[bones[binding.target].parent] * poseParameters.xfoValues[binding.source];
+    pose[binding.target] = pose[bones[binding.target].parent] * poseVariables.xfoValues[binding.source];
   }
 }
 
@@ -22,15 +22,14 @@ operator solveFKHierarchy(
   io Xfo pose[],
   io Bone bones[],
   io PoseParameterBinding bindings[],
-  io PoseParameters poseParameters
+  io PoseVariables poseVariables
 ) {
   for (var Integer i = 0; i < bindings.size(); i++) {
-    report(bindings[i]);
     if (bones[bindings[i].target].parent == - 1) {
-      pose[bindings[i].target] = poseParameters.xfoValues[i];
+      pose[bindings[i].target] = poseVariables.xfoValues[i];
     }
     else {
-      pose[bindings[i].target] = pose[bones[bindings[i].target].parent] * poseParameters.xfoValues[bindings[i].source];
+      pose[bindings[i].target] = pose[bones[bindings[i].target].parent] * poseVariables.xfoValues[bindings[i].source];
     }
   }
 }
@@ -39,13 +38,13 @@ operator solveInvParentList(
   io Xfo pose[],
   io Bone bones[],
   io PoseParameterBinding bindings[],
-  io PoseParameters poseParameters
+  io PoseVariables poseVariables
 ) {
   for (var Integer i = 0; i < bindings.size(); i++) {
     if (bones[bindings[i].target].parent == - 1)
-      poseParameters.xfoValues[bindings[i].source] = pose[bindings[i].target];
+      poseVariables.xfoValues[bindings[i].source] = pose[bindings[i].target];
     else
-      poseParameters.xfoValues[bindings[i].source] = pose[bones[bindings[i].target].parent].inverse() * pose[bindings[i].target];
+      poseVariables.xfoValues[bindings[i].source] = pose[bones[bindings[i].target].parent].inverse() * pose[bindings[i].target];
   }
 }
 

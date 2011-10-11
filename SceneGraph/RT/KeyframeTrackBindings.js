@@ -13,7 +13,7 @@ FABRIC.RT.KeyframeTrackBindings = function() {
 FABRIC.appendOnCreateContextCallback(function(context) {
   context.RegisteredTypesManager.registerType('KeyframeTrackBindings', {
     members: {
-      scalarBindings: 'Integer[][]',
+      scalarBindings: 'Integer[]',
       vec3Bindings: 'Integer[][]',
       quatBindings: 'Integer[][]',
       xfoBindings: 'Integer[][]'

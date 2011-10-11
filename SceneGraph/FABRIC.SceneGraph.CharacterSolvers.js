@@ -160,7 +160,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('FKHierarchySolver',{
             'self.pose',
             'skeleton.bones',
             'constants.' + name + 'bindings',
-            'variables.poseParameters'
+            'variables.poseVariables'
           ])
         }));
     };

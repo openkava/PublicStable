@@ -300,38 +300,38 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
     var characterVariablesNode = scene.constructNode('SceneGraphNode', options);
     var dgnode = characterVariablesNode.constructDGNode('DGNode');
     
-    var poseParameters = new FABRIC.RT.PoseParameters();
-    dgnode.addMember('poseParameters', 'PoseParameters', poseParameters);
+    var poseVariables = new FABRIC.RT.PoseVariables();
+    dgnode.addMember('poseVariables', 'PoseVariables', poseVariables);
     // extend the private interface
     characterVariablesNode.pub.addVariable = function(type, value) {
       var id = -1;
       switch(type){
         case 'Scalar':
-          id = poseParameters.scalarValues.length;
-          poseParameters.scalarValues.push( value ? value : 0.0);
+          id = poseVariables.scalarValues.length;
+          poseVariables.scalarValues.push( value ? value : 0.0);
           break;
         case 'Vec3':
-          id = poseParameters.vec3Values.length;
-          poseParameters.vec3Values.push( value ? value : new FABRIC.Math.Vec3());
+          id = poseVariables.vec3Values.length;
+          poseVariables.vec3Values.push( value ? value : new FABRIC.Math.Vec3());
           break;
         case 'Quat':
-          id = poseParameters.quatValues.length;
-          poseParameters.quatValues.push( value ? value : new FABRIC.Math.Quat());
+          id = poseVariables.quatValues.length;
+          poseVariables.quatValues.push( value ? value : new FABRIC.Math.Quat());
           break;
         case 'Xfo':
-          id = poseParameters.xfoValues.length;
-          poseParameters.xfoValues.push( value ? value : new FABRIC.Math.Xfo());
+          id = poseVariables.xfoValues.length;
+          poseVariables.xfoValues.push( value ? value : new FABRIC.Math.Xfo());
           break;
         case 'Xfo[]':
           for(var i=0; i<value.length; i++){
-            id = poseParameters.xfoValues.length;
-            poseParameters.xfoValues.push( value[i] );
+            id = poseVariables.xfoValues.length;
+            poseVariables.xfoValues.push( value[i] );
           }
           break;
         default:
           throw "unsupported Type:" + type;
       }
-      dgnode.setData('poseParameters', 0, poseParameters);
+      dgnode.setData('poseVariables', 0, poseVariables);
       return id;
     };
     
@@ -367,7 +367,7 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
             'self.trackSetId',
             'self.bindings',
             'self.keyIndices',
-            'self.poseParameters'
+            'self.poseVariables'
           ]
         }));
     }
