@@ -338,32 +338,36 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
     var animationControllerNode;
     var animationTrackNode;
     
-    characterVariablesNode.pub.bindToAnimationTracks = function( animationTracksNode, animationControllerNode ){
-      if (!animationTracksNode.isTypeOf('AnimationTrack')) {
-        throw ('Incorrect type assignment. Must assign a AnimationTrack');
+    characterVariablesNode.pub.bindToAnimationTracks = function( animationLibraryNode, animationControllerNode, trackSetId, bindings ){
+      if (!animationLibraryNode.isTypeOf('AnimationLibrary')) {
+        throw ('Incorrect type assignment. Must assign a AnimationLibrary');
       }
       if (!animationControllerNode.isTypeOf('AnimationController')) {
         throw ('Incorrect type assignment. Must assign a AnimationController');
       }
-      animationTracksNode = scene.getPrivateInterface(animationTracksNode);
+      animationLibraryNode = scene.getPrivateInterface(animationLibraryNode);
       animationControllerNode = scene.getPrivateInterface(animationControllerNode);
       
-      dgnode.setDependency(animationTrackNode.getDGNode(), 'animationtrack');
-      dgnode.setDependency(node.getDGNode(), 'controller');
+      dgnode.setDependency(animationLibraryNode.getDGNode(), 'animationlibrary');
+      dgnode.setDependency(animationControllerNode.getDGNode(), 'controller');
       
       dgnode.addMember('keyIndices', 'Integer[]');
-      dgnode.addMember('trackIndex', 'Integer', 0);
+      dgnode.addMember('trackSetId', 'Integer', trackSetId);
+      dgnode.addMember('bindings', 'KeyframeTrackBindings', bindings);
       dgnode.bindings.append(scene.constructOperator({
           operatorName: 'evaluatePoseTracks',
           srcFile: 'FABRIC_ROOT/SceneGraph/KL/evaluatePoseTracks.kl',
+          preProcessorDefinitions: {
+            KEYFRAMETRACKSETTYPE: 'LinearKeyframeTrackSet'
+          },
           entryFunctionName: 'evaluatePoseTracks',
           parameterLayout: [
-            'animationtrack.trackSet<>',
-            'controller.time',
-  io KeyframeTrackBindings bindings,
+            'animationlibrary.trackSet<>',
+            'controller.localTime',
+            'self.trackSetId',
+            'self.bindings',
             'self.keyIndices',
-            'self.poseParameters',
-            'self.trackIndex'
+            'self.poseParameters'
           ]
         }));
     }
