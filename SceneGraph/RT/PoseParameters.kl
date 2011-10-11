@@ -1,0 +1,65 @@
+
+ertyhj
+use LinearKeyframeTrackSet;
+
+function PoseParameters.evaluateKeyframeTracks(
+  in LinearKeyframeTrackSet trackSet,
+  in Scalar time,
+  in KeyframeTrackBindings bindings,
+  in Integer currKeys[]
+) {
+  Integer trackid = 0;
+  if (currKeys.size < trackid + bindings.scalarBindings.size){
+    currKeys.resize(trackid + bindings.scalarBindings.size);
+  }
+  for (Integer i = 0; i < bindings.scalarBindings.size; i++) {
+    this.pose.scalarValues[i] = trackSet[bindings.scalarBindings[i]].evaluate(time, currKeys[trackid++]);
+  }
+  
+  for (Integer i = 0; i < bindings.quatBindings.size; i++) {
+    Integer trackIds[] = bindings.quatBindings[i];
+    if(trackIds.size != 3 && trackIds.size != 4){
+      report('incorrect binding for Quat:' + trackIds);
+      continue;
+    }
+    if(currKeys.size < trackid + trackIds.size){
+      currKeys.resize(trackid + trackIds.size);
+    }
+    if(trackIds.size == 3){
+      // Euler to Quat
+      this.quatValues[i].setFromEuler(EulerAngles(values[trackId+1],
+                                                  values[trackId+2],
+                                                  values[trackId+3]));
+    }
+    else if(trackIds.size == 4){
+      this.pose.quatValues[i].set(trackSet[trackId].evaluate(time, currKeys[trackid++]),
+                                  trackSet[trackId+1].evaluate(time, currKeys[trackid++]),
+                                  trackSet[trackId+2].evaluate(time, currKeys[trackid++]),
+                                  trackSet[trackId+3].evaluate(time, currKeys[trackid++]));
+    }
+  }
+  
+  for (Integer i = 0; i < bindings.xfoBindings.size; i++) {
+    Integer trackIds[] = bindings.xfoBindings[i];
+    if(trackIds.size != 7){
+      report('incorrect binding for Xfo:' + trackIds);
+      continue;
+    }
+    if(currKeys.size < trackid + trackIds.size){
+      currKeys.resize(trackid + trackIds.size);
+    }
+    
+    this.pose.xfoValues[i].ori.set(
+      trackSet[trackIds[0]].evaluate(time, currKeys[trackid++]),
+      trackSet[trackIds[1]].evaluate(time, currKeys[trackid++]),
+      trackSet[trackIds[2]].evaluate(time, currKeys[trackid++]),
+      trackSet[trackIds[3]].evaluate(time, currKeys[trackid++])
+    );
+    this.pose.xfoValues[i].set(
+      trackSet[trackIds[4]].evaluate(time, currKeys[trackid++]),
+      trackSet[trackIds[5]].evaluate(time, currKeys[trackid++]),
+      trackSet[trackIds[6]].evaluate(time, currKeys[trackid++])
+    );
+  }
+}
+

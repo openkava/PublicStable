@@ -47,3 +47,41 @@ FABRIC.appendOnCreateContextCallback(function(context) {
     }
   });
 });
+
+
+FABRIC.RT.LinearKeyframeTrack = function(name, color) {
+  this.name = name ? name : "";
+  this.color = color ? color : FABRIC.RT.rgb(1.0, 0.0, 0.0);
+  this.keys = [];
+};
+
+FABRIC.appendOnCreateContextCallback(function(context) {
+  context.RegisteredTypesManager.registerType('LinearKeyframeTrack', {
+    members: {
+      name: 'String',
+      color: 'Color',
+      keys: 'LinearKeyframe[]'
+    },
+    constructor: FABRIC.RT.LinearKeyframeTrack,
+    kBindings: FABRIC.loadResourceURL('FABRIC_ROOT/SceneGraph/RT/LinearKeyframe.kl')
+  });
+});
+
+
+FABRIC.RT.LinearKeyframeTrackSet = function( name ) {
+  this.name = name ? name : 'animationTrack';
+  this.tracks = [];
+};
+
+FABRIC.appendOnCreateContextCallback(function(context) {
+  context.RegisteredTypesManager.registerType('LinearKeyframeTrackSet', {
+    members: {
+      name: 'String',
+      tracks: 'LinearKeyframeTrack[]'
+    },
+    constructor: FABRIC.RT.LinearKeyframeTrackSet,
+    kBindings: FABRIC.loadResourceURL('FABRIC_ROOT/SceneGraph/RT/LinearKeyframe.kl')
+  });
+});
+
+
