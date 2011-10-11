@@ -68,7 +68,6 @@ function AlembicHandle.parsePolyMeshUniforms(io String identifier, io Integer in
   FabricALEMBICParsePolyMeshUniforms(this,identifier,indices);
 }
 
-
 function AlembicHandle.parsePolyMeshAttributes(io String identifier, io Scalar time, io Vec3 vertices<>, io Vec3 normals<>, io Boolean uvsLoaded, io Vec2 uvs<>) {
   FabricALEMBICParsePolyMeshAttributes(this,identifier,time,vertices,normals,uvsLoaded,uvs);
 }
