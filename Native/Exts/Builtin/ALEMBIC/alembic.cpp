@@ -41,8 +41,58 @@ IMPLEMENT_FABRIC_EDK_ENTRIES
 
 struct AlembicHandle{
   KL::Data pointer;
-  KL::Integer numSamples;
+  KL::Vec2 timeRange;
 };
+
+struct SampleInfo
+{
+   Alembic::AbcCoreAbstract::index_t floorIndex;
+   Alembic::AbcCoreAbstract::index_t ceilIndex;
+   double alpha;
+};
+
+SampleInfo getSampleInfo
+(
+   double iFrame,
+   Alembic::AbcCoreAbstract::TimeSamplingPtr iTime,
+   size_t numSamps
+)
+{
+   SampleInfo result;
+   if (numSamps == 0)
+      numSamps = 1;
+
+   std::pair<Alembic::AbcCoreAbstract::index_t, double> floorIndex =
+   iTime->getFloorIndex(iFrame, numSamps);
+
+   result.floorIndex = floorIndex.first;
+   result.ceilIndex = result.floorIndex;
+
+   if (fabs(iFrame - floorIndex.second) < 0.0001) {
+      result.alpha = 0.0f;
+      return result;
+   }
+
+   std::pair<Alembic::AbcCoreAbstract::index_t, double> ceilIndex =
+   iTime->getCeilIndex(iFrame, numSamps);
+
+   if (fabs(iFrame - ceilIndex.second) < 0.0001) {
+      result.floorIndex = ceilIndex.first;
+      result.ceilIndex = result.floorIndex;
+      result.alpha = 0.0f;
+      return result;
+   }
+
+   if (result.floorIndex == ceilIndex.first) {
+      result.alpha = 0.0f;
+      return result;
+   }
+
+   result.ceilIndex = ceilIndex.first;
+
+   result.alpha = (iFrame - floorIndex.second) / (ceilIndex.second - floorIndex.second);
+   return result;
+}
 
 Alembic::Abc::IObject getObjectFromArchive(Alembic::Abc::IArchive * archive, const std::string & identifier)
 {
@@ -94,36 +144,24 @@ FABRIC_EXT_EXPORT void FabricALEMBICDecode(
       Alembic::AbcCoreHDF5::ReadArchive(),fileName.c_str());
     handle.pointer = archive;
     
-    // determine the number of samples
-    handle.numSamples = 0;
-    std::vector<Alembic::Abc::IObject> iObjects;
-    iObjects.push_back(archive->getTop());
-    for(size_t i=0;i<iObjects.size();i++)
-    {
-      Alembic::Abc::IObject obj(iObjects[i],Alembic::Abc::kWrapExisting);
-
-      const Alembic::Abc::MetaData &md = obj.getMetaData();
-      KL::Integer numCurrent = 0;
-      if(Alembic::AbcGeom::IXform::matches(md))
-        numCurrent = Alembic::AbcGeom::IXform(obj,Alembic::Abc::kWrapExisting).getSchema().getNumSamples();
-      else if(Alembic::AbcGeom::IPolyMesh::matches(md))
-        numCurrent = Alembic::AbcGeom::IPolyMesh(obj,Alembic::Abc::kWrapExisting).getSchema().getNumSamples();
-      else if(Alembic::AbcGeom::ICurves::matches(md))
-        numCurrent = Alembic::AbcGeom::ICurves(obj,Alembic::Abc::kWrapExisting).getSchema().getNumSamples();
-      else if(Alembic::AbcGeom::INuPatch::matches(md))
-        numCurrent = Alembic::AbcGeom::INuPatch(obj,Alembic::Abc::kWrapExisting).getSchema().getNumSamples();
-      else if(Alembic::AbcGeom::IPoints::matches(md))
-        numCurrent = Alembic::AbcGeom::IPoints(obj,Alembic::Abc::kWrapExisting).getSchema().getNumSamples();
-      else if(Alembic::AbcGeom::ISubD::matches(md))
-        numCurrent = Alembic::AbcGeom::ISubD(obj,Alembic::Abc::kWrapExisting).getSchema().getNumSamples();
-      else if(Alembic::AbcGeom::ICamera::matches(md))
-        numCurrent = Alembic::AbcGeom::ICamera(obj,Alembic::Abc::kWrapExisting).getSchema().getNumSamples();
-
-      if(numCurrent > handle.numSamples)
-        handle.numSamples = numCurrent;
-
-      for(size_t j=0;j<obj.getNumChildren();j++)
-        iObjects.push_back(obj.getChild(j));
+    // determine the time range
+    handle.timeRange.x = 1000000;
+    handle.timeRange.y = -1000000;
+    
+    // let's skip the first one
+    for(uint32_t i=1;i<archive->getNumTimeSamplings();i++){
+      AbcA::TimeSamplingPtr ts = archive->getTimeSampling(i);
+      const std::vector<chrono_t> & times = ts->getStoredTimes();
+      if(times.size() == 0)
+        continue;
+      if(handle.timeRange.x > times[0])
+        handle.timeRange.x = times[0];
+      if(handle.timeRange.y < times[times.size()-1])
+        handle.timeRange.y = times[times.size()-1];
+    }
+    
+    if(handle.timeRange.x == 1000000) {
+      handle.timeRange.x = handle.timeRange.y = 0.0f;
     }
   }
 }
@@ -204,7 +242,7 @@ FABRIC_EXT_EXPORT void FabricALEMBICGetIdentifiers(
 FABRIC_EXT_EXPORT void FabricALEMBICParseXform(
   AlembicHandle &handle,
   KL::String & identifier,
-  KL::Integer & sample,
+  KL::Scalar & time,
   KL::Xfo & transform
   )
 {
@@ -217,34 +255,44 @@ FABRIC_EXT_EXPORT void FabricALEMBICParseXform(
   {
     // get the schema
     Alembic::AbcGeom::IXformSchema schema = obj.getSchema();
-    if(sample < 0)
-      sample = 0;
-    else if(sample >= KL::Integer(schema.getNumSamples()))
-      sample = schema.getNumSamples()-1;
+
+    // get the sample information
+    SampleInfo sampleInfo = getSampleInfo(time,schema.getTimeSampling(),schema.getNumSamples());
       
     // get the sample
-    Alembic::AbcGeom::XformSample xform;
-    schema.get(xform,sample);
+    Alembic::AbcGeom::XformSample sample;
+    schema.get(sample,sampleInfo.floorIndex);
+
+    // blend
+    Alembic::Abc::M44d matrix = sample.getMatrix();
+    if(sampleInfo.alpha != 0.0)
+    {
+      obj.getSchema().get(sample,sampleInfo.ceilIndex);
+      Alembic::Abc::M44d ceilMatrix = sample.getMatrix();
+      matrix = (1.0 - sampleInfo.alpha) * matrix + sampleInfo.alpha * ceilMatrix;
+    }
     
-    // extract the information
-    float halfAngle = 0.5f * xform.getAngle() * 3.14f / 180.0f;
-    transform.ori.v.x = xform.getAxis().x * sin(halfAngle);
-    transform.ori.v.y = xform.getAxis().y * sin(halfAngle);
-    transform.ori.v.z = xform.getAxis().z * sin(halfAngle);
-    transform.ori.w = cos(halfAngle);
-    transform.tr.x = xform.getTranslation().x;
-    transform.tr.y = xform.getTranslation().y;
-    transform.tr.z = xform.getTranslation().z;
-    transform.sc.x = xform.getScale().x;
-    transform.sc.y = xform.getScale().y;
-    transform.sc.z = xform.getScale().z;
+    Alembic::Abc::Quatd ori = extractQuat(matrix);
+    Alembic::Abc::V3d sc;
+    extractScaling(matrix,sc);
+    
+    transform.ori.v.x = (KL::Scalar)ori.v.x;
+    transform.ori.v.y = (KL::Scalar)ori.v.y;
+    transform.ori.v.z = (KL::Scalar)ori.v.z;
+    transform.ori.w = (KL::Scalar)ori.r;
+    transform.tr.x = (KL::Scalar)matrix[3][0];
+    transform.tr.y = (KL::Scalar)matrix[3][1];
+    transform.tr.z = (KL::Scalar)matrix[3][2];
+    transform.sc.x = (KL::Scalar)sc.x;
+    transform.sc.y = (KL::Scalar)sc.y;
+    transform.sc.z = (KL::Scalar)sc.z;
   }
 }
 
 FABRIC_EXT_EXPORT void FabricALEMBICParseCamera(
   AlembicHandle &handle,
   KL::String & identifier,
-  KL::Integer & sample,
+  KL::Scalar & time,
   KL::Scalar & near,
   KL::Scalar & far,
   KL::Scalar & fovY
@@ -259,23 +307,34 @@ FABRIC_EXT_EXPORT void FabricALEMBICParseCamera(
   {
     // get the schema
     Alembic::AbcGeom::ICameraSchema schema = obj.getSchema();
-    if(sample < 0)
-      sample = 0;
-    else if(sample >= KL::Integer(schema.getNumSamples()))
-      sample = schema.getNumSamples()-1;
       
+    // get the sample information
+    SampleInfo sampleInfo = getSampleInfo(time,schema.getTimeSampling(),schema.getNumSamples());
+
     // get the sample
-    Alembic::AbcGeom::CameraSample camera;
-    schema.get(camera,sample);
+    Alembic::AbcGeom::CameraSample sample;
+    schema.get(sample,sampleInfo.floorIndex);
 
     // clipping planes
-    near = camera.getNearClippingPlane();    
-    far = camera.getFarClippingPlane();
+    near = sample.getNearClippingPlane();    
+    far = sample.getFarClippingPlane();
     
     // compute fovY from aspect and aperture
-    KL::Scalar focallength = camera.getFocalLength();
-    KL::Scalar aperture = camera.getVerticalAperture();
+    KL::Scalar focallength = sample.getFocalLength();
+    KL::Scalar aperture = sample.getVerticalAperture();
     fovY = 1.0f * atanf(50.0f * aperture / focallength);
+    
+    // blend
+    if(sampleInfo.alpha != 0.0)
+    {
+      schema.get(sample,sampleInfo.ceilIndex);
+      float ialpha = 1.0f - sampleInfo.alpha;
+      near = ialpha * near + sampleInfo.alpha * sample.getNearClippingPlane();
+      far = ialpha * far + sampleInfo.alpha * sample.getFarClippingPlane();
+      focallength = sample.getFocalLength();
+      aperture = sample.getVerticalAperture();
+      fovY = ialpha * fovY + sampleInfo.alpha * (1.0f * atanf(50.0f * aperture / focallength));
+    }
   }
 }
 
@@ -365,7 +424,7 @@ FABRIC_EXT_EXPORT void FabricALEMBICParsePolyMeshCount(
 FABRIC_EXT_EXPORT void FabricALEMBICParsePolyMeshAttributes(
   AlembicHandle &handle,
   KL::String & identifier,
-  KL::Integer & sampleIndex,
+  KL::Scalar & time,
   KL::SlicedArray<KL::Vec3>& vertices,
   KL::SlicedArray<KL::Vec3>& normals,
   KL::Boolean & uvsLoaded,
@@ -381,22 +440,30 @@ FABRIC_EXT_EXPORT void FabricALEMBICParsePolyMeshAttributes(
   {
     // get the schema
     Alembic::AbcGeom::IPolyMeshSchema schema = obj.getSchema();
-    if(sampleIndex < 0)
-      sampleIndex = 0;
-    else if(sampleIndex >= KL::Integer(schema.getNumSamples()))
-      sampleIndex = schema.getNumSamples()-1;
-      
+
+    // get the sample information
+    SampleInfo sampleInfo = getSampleInfo(time,schema.getTimeSampling(),schema.getNumSamples());
+    
     // get the sample
-    Alembic::AbcCoreAbstract::index_t timeIndex = (Alembic::AbcCoreAbstract::index_t)sampleIndex;
-    Alembic::AbcGeom::IPolyMeshSchema::Sample firstSample = schema.getValue(0);
-    Alembic::AbcGeom::IPolyMeshSchema::Sample sample = schema.getValue(timeIndex);
+    Alembic::AbcGeom::IPolyMeshSchema::Sample sample = schema.getValue(sampleInfo.floorIndex);
+    Alembic::AbcGeom::IPolyMeshSchema::Sample sampleB;
     Alembic::Abc::P3fArraySamplePtr abcPoints = sample.getPositions();
-    Alembic::Abc::Int32ArraySamplePtr faceCounts = firstSample.getFaceCounts();
-    Alembic::Abc::Int32ArraySamplePtr faceIndices= firstSample.getFaceIndices();
+    Alembic::Abc::P3fArraySamplePtr abcPointsB;
+    bool requiresInterpolation = sampleInfo.alpha != 0.0;
+    if(requiresInterpolation)
+    {
+       sampleB = schema.getValue(sampleInfo.ceilIndex);
+       abcPointsB = sampleB.getPositions();
+    }
+    float iAlpha = 1.0 - sampleInfo.alpha;
+    
+    Alembic::Abc::Int32ArraySamplePtr faceCounts = sample.getFaceCounts();
+    Alembic::Abc::Int32ArraySamplePtr faceIndices= sample.getFaceIndices();
     
     // load the vertices
     size_t vertexOffset = 0;
     size_t indexOffset = 0;
+    size_t currentIndex;
     for(size_t i=0;i<faceCounts->size();i++)
     {
       size_t count = faceCounts->get()[i];
@@ -404,24 +471,48 @@ FABRIC_EXT_EXPORT void FabricALEMBICParsePolyMeshAttributes(
       {
         for(int j=0;j<3;j++)
         {
-          vertices[vertexOffset].x = abcPoints->get()[faceIndices->get()[indexOffset+j]].x;
-          vertices[vertexOffset].y = abcPoints->get()[faceIndices->get()[indexOffset+j]].y;
-          vertices[vertexOffset++].z = abcPoints->get()[faceIndices->get()[indexOffset+j]].z;
+          currentIndex = indexOffset + j;
+          vertices[vertexOffset].x = iAlpha * abcPoints->get()[faceIndices->get()[currentIndex]].x;
+          vertices[vertexOffset].y = iAlpha * abcPoints->get()[faceIndices->get()[currentIndex]].y;
+          vertices[vertexOffset].z = iAlpha * abcPoints->get()[faceIndices->get()[currentIndex]].z;
+          if(requiresInterpolation)
+          {
+            vertices[vertexOffset].x += sampleInfo.alpha * abcPointsB->get()[faceIndices->get()[currentIndex]].x;
+            vertices[vertexOffset].y += sampleInfo.alpha * abcPointsB->get()[faceIndices->get()[currentIndex]].y;
+            vertices[vertexOffset].z += sampleInfo.alpha * abcPointsB->get()[faceIndices->get()[currentIndex]].z;
+          }
+          vertexOffset++;
         }
       }
       else if(count == 4)
       {
         for(int j=0;j<3;j++)
         {
-          vertices[vertexOffset].x = abcPoints->get()[faceIndices->get()[indexOffset+j]].x;
-          vertices[vertexOffset].y = abcPoints->get()[faceIndices->get()[indexOffset+j]].y;
-          vertices[vertexOffset++].z = abcPoints->get()[faceIndices->get()[indexOffset+j]].z;
+          currentIndex = indexOffset + j;
+          vertices[vertexOffset].x = iAlpha * abcPoints->get()[faceIndices->get()[currentIndex]].x;
+          vertices[vertexOffset].y = iAlpha * abcPoints->get()[faceIndices->get()[currentIndex]].y;
+          vertices[vertexOffset].z = iAlpha * abcPoints->get()[faceIndices->get()[currentIndex]].z;
+          if(requiresInterpolation)
+          {
+            vertices[vertexOffset].x += sampleInfo.alpha * abcPointsB->get()[faceIndices->get()[currentIndex]].x;
+            vertices[vertexOffset].y += sampleInfo.alpha * abcPointsB->get()[faceIndices->get()[currentIndex]].y;
+            vertices[vertexOffset].z += sampleInfo.alpha * abcPointsB->get()[faceIndices->get()[currentIndex]].z;
+          }
+          vertexOffset++;
         }
         for(int j=2;j<5;j++)
         {
-          vertices[vertexOffset].x = abcPoints->get()[faceIndices->get()[indexOffset+(j%4)]].x;
-          vertices[vertexOffset].y = abcPoints->get()[faceIndices->get()[indexOffset+(j%4)]].y;
-          vertices[vertexOffset++].z = abcPoints->get()[faceIndices->get()[indexOffset+(j%4)]].z;
+          currentIndex = indexOffset+(j%4);
+          vertices[vertexOffset].x = iAlpha * abcPoints->get()[faceIndices->get()[currentIndex]].x;
+          vertices[vertexOffset].y = iAlpha * abcPoints->get()[faceIndices->get()[currentIndex]].y;
+          vertices[vertexOffset].z = iAlpha * abcPoints->get()[faceIndices->get()[currentIndex]].z;
+          if(requiresInterpolation)
+          {
+            vertices[vertexOffset].x += sampleInfo.alpha * abcPointsB->get()[faceIndices->get()[currentIndex]].x;
+            vertices[vertexOffset].y += sampleInfo.alpha * abcPointsB->get()[faceIndices->get()[currentIndex]].y;
+            vertices[vertexOffset].z += sampleInfo.alpha * abcPointsB->get()[faceIndices->get()[currentIndex]].z;
+          }
+          vertexOffset++;
         }
       }
       else
@@ -433,12 +524,15 @@ FABRIC_EXT_EXPORT void FabricALEMBICParsePolyMeshAttributes(
     Alembic::AbcGeom::IN3fGeomParam N = schema.getNormalsParam();
     if(N.valid())
     {
-      Alembic::AbcGeom::N3fArraySamplePtr nsp = N.getExpandedValue(sampleIndex).getVals();
+      Alembic::AbcGeom::N3fArraySamplePtr nsp = N.getExpandedValue(sampleInfo.floorIndex).getVals();
+      Alembic::AbcGeom::N3fArraySamplePtr nspB;
+      if(requiresInterpolation)
+        nspB = N.getExpandedValue(sampleInfo.ceilIndex).getVals();
       
       if(nsp->size() > 0)
       {
-        size_t vertexOffset = 0;
-        size_t indexOffset = 0;
+        vertexOffset = 0;
+        indexOffset = 0;
         for(size_t i=0;i<faceCounts->size();i++)
         {
           size_t count = faceCounts->get()[i];
@@ -446,24 +540,78 @@ FABRIC_EXT_EXPORT void FabricALEMBICParsePolyMeshAttributes(
           {
             for(int j=0;j<3;j++)
             {
-              normals[vertexOffset].x = nsp->get()[indexOffset+j].x;
-              normals[vertexOffset].y = nsp->get()[indexOffset+j].y;
-              normals[vertexOffset++].z = nsp->get()[indexOffset+j].z;
+              currentIndex = indexOffset + j;
+              normals[vertexOffset].x = iAlpha * nsp->get()[currentIndex].x;
+              normals[vertexOffset].y = iAlpha * nsp->get()[currentIndex].y;
+              normals[vertexOffset].z = iAlpha * nsp->get()[currentIndex].z;
+              if(requiresInterpolation)
+              {
+                normals[vertexOffset].x += sampleInfo.alpha * nspB->get()[currentIndex].x;
+                normals[vertexOffset].y += sampleInfo.alpha * nspB->get()[currentIndex].y;
+                normals[vertexOffset].z += sampleInfo.alpha * nspB->get()[currentIndex].z;
+                float length = normals[vertexOffset].x * normals[vertexOffset].x +
+                               normals[vertexOffset].y * normals[vertexOffset].y +
+                               normals[vertexOffset].z * normals[vertexOffset].z;
+                if(length > 0.0f)
+                {
+                  length = sqrtf(length);
+                  normals[vertexOffset].x /= length;
+                  normals[vertexOffset].y /= length;
+                  normals[vertexOffset].z /= length;
+                }
+              }
+              vertexOffset++;
             }
           }
           else if(count == 4)
           {
             for(int j=0;j<3;j++)
             {
-              normals[vertexOffset].x = nsp->get()[indexOffset+j].x;
-              normals[vertexOffset].y = nsp->get()[indexOffset+j].y;
-              normals[vertexOffset++].z = nsp->get()[indexOffset+j].z;
+              currentIndex = indexOffset + j;
+              normals[vertexOffset].x = iAlpha * nsp->get()[currentIndex].x;
+              normals[vertexOffset].y = iAlpha * nsp->get()[currentIndex].y;
+              normals[vertexOffset].z = iAlpha * nsp->get()[currentIndex].z;
+              if(requiresInterpolation)
+              {
+                normals[vertexOffset].x += sampleInfo.alpha * nspB->get()[currentIndex].x;
+                normals[vertexOffset].y += sampleInfo.alpha * nspB->get()[currentIndex].y;
+                normals[vertexOffset].z += sampleInfo.alpha * nspB->get()[currentIndex].z;
+                float length = normals[vertexOffset].x * normals[vertexOffset].x +
+                               normals[vertexOffset].y * normals[vertexOffset].y +
+                               normals[vertexOffset].z * normals[vertexOffset].z;
+                if(length > 0.0f)
+                {
+                  length = sqrtf(length);
+                  normals[vertexOffset].x /= length;
+                  normals[vertexOffset].y /= length;
+                  normals[vertexOffset].z /= length;
+                }
+              }
+              vertexOffset++;
             }
             for(int j=2;j<5;j++)
             {
-              normals[vertexOffset].x = nsp->get()[indexOffset+(j%4)].x;
-              normals[vertexOffset].y = nsp->get()[indexOffset+(j%4)].y;
-              normals[vertexOffset++].z = nsp->get()[indexOffset+(j%4)].z;
+              currentIndex = indexOffset+(j%4);
+              normals[vertexOffset].x = iAlpha * nsp->get()[currentIndex].x;
+              normals[vertexOffset].y = iAlpha * nsp->get()[currentIndex].y;
+              normals[vertexOffset].z = iAlpha * nsp->get()[currentIndex].z;
+              if(requiresInterpolation)
+              {
+                normals[vertexOffset].x += sampleInfo.alpha * nspB->get()[currentIndex].x;
+                normals[vertexOffset].y += sampleInfo.alpha * nspB->get()[currentIndex].y;
+                normals[vertexOffset].z += sampleInfo.alpha * nspB->get()[currentIndex].z;
+                float length = normals[vertexOffset].x * normals[vertexOffset].x +
+                               normals[vertexOffset].y * normals[vertexOffset].y +
+                               normals[vertexOffset].z * normals[vertexOffset].z;
+                if(length > 0.0f)
+                {
+                  length = sqrtf(length);
+                  normals[vertexOffset].x /= length;
+                  normals[vertexOffset].y /= length;
+                  normals[vertexOffset].z /= length;
+                }
+              }
+              vertexOffset++;
             }
           }
           else
@@ -481,8 +629,8 @@ FABRIC_EXT_EXPORT void FabricALEMBICParsePolyMeshAttributes(
         Alembic::AbcGeom::V2fArraySamplePtr usp = U.getExpandedValue(0).getVals();
         if(usp->size() > 0)
         {
-          size_t vertexOffset = 0;
-          size_t indexOffset = 0;
+          vertexOffset = 0;
+          indexOffset = 0;
           for(size_t i=0;i<faceCounts->size();i++)
           {
             size_t count = faceCounts->get()[i];
@@ -490,21 +638,24 @@ FABRIC_EXT_EXPORT void FabricALEMBICParsePolyMeshAttributes(
             {
               for(int j=0;j<3;j++)
               {
-                uvs[vertexOffset].x = usp->get()[indexOffset+j].x;
-                uvs[vertexOffset++].y = usp->get()[indexOffset+j].y;
+                currentIndex = indexOffset + j;
+                uvs[vertexOffset].x = usp->get()[currentIndex].x;
+                uvs[vertexOffset++].y = usp->get()[currentIndex].y;
               }
             }
             else if(count == 4)
             {
               for(int j=0;j<3;j++)
               {
-                uvs[vertexOffset].x = usp->get()[indexOffset+j].x;
-                uvs[vertexOffset++].y = usp->get()[indexOffset+j].y;
+                currentIndex = indexOffset + j;
+                uvs[vertexOffset].x = usp->get()[currentIndex].x;
+                uvs[vertexOffset++].y = usp->get()[currentIndex].y;
               }
               for(int j=2;j<5;j++)
               {
-                uvs[vertexOffset].x = usp->get()[indexOffset+(j%4)].x;
-                uvs[vertexOffset++].y = usp->get()[indexOffset+(j%4)].y;
+                currentIndex = indexOffset+(j%4);
+                uvs[vertexOffset].x = usp->get()[currentIndex].x;
+                uvs[vertexOffset++].y = usp->get()[currentIndex].y;
               }
             }
             else
