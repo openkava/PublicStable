@@ -50,9 +50,6 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('CharacterSolver', {
       getBoneIDs: function() {
         return boneIDs;
       },
-      getBoneIndex: function(name) {
-        return boneIDs[name];
-      },
       constructManipulator: function(name, manipulatorType, options) {
         if (manipulators[name]) {
           throw (" Manipulator names must be unique. Solver '" + name + "' already contains :'" + name + "'");
@@ -63,13 +60,6 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('CharacterSolver', {
       },
       getManipulators: function() {
         return manipulators;
-      },
-      getParameterBinding: function() {
-        return parameterLayout;
-      },
-      setParameterBinding: function(binding) {
-        parameterLayout = binding;
-        return parameterLayout;
       }
     };
 
@@ -150,12 +140,12 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('FKHierarchySolver',{
         operatorName: 'solveFKHierarchy',
         srcFile: 'FABRIC_ROOT/SceneGraph/KL/solveFKHierarchy.kl',
         entryFunctionName: 'solveFKHierarchy',
-        parameterLayout: solver.setParameterBinding([
+        parameterLayout: [
           'self.pose',
           'skeleton.bones',
           'constants.' + name + 'bindings',
           'variables.poseVariables'
-        ])
+        ]
       }));
     return solver;
   }
@@ -191,11 +181,11 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('ReferencePoseSolver',{
         operatorName: 'solveReferencePose',
         srcFile: 'FABRIC_ROOT/SceneGraph/KL/solveReferencePose.kl',
         entryFunctionName: 'solveReferencePose',
-        parameterLayout: solver.setParameterBinding([
+        parameterLayout: [
           'self.pose',
           'skeleton.bones',
           'constants.' + name + 'boneIndices'
-        ])
+        ]
       }));
 
     return solver;
@@ -255,13 +245,13 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('FKChainSolver', {
         operatorName: 'solveChain',
         srcFile: 'FABRIC_ROOT/SceneGraph/KL/solveFKHierarchy.kl',
         entryFunctionName: 'solveChain',
-        parameterLayout: solver.setParameterBinding([
+        parameterLayout: [
           'self.pose',
           'self.' + name + 'globalXfos',
           'skeleton.bones',
           'constants.' + name + 'boneIndices',
           'variables.' + name + 'localXfos'
-        ])
+        ]
       }));
 
     if (options.createManipulators) {
@@ -338,12 +328,12 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('RootBoneSolver', {
         operatorName: 'solveFKBone',
         srcFile: 'FABRIC_ROOT/SceneGraph/KL/solveFKHierarchy.kl',
         entryFunctionName: 'solveFKBone',
-        parameterLayout: solver.setParameterBinding([
+        parameterLayout: [
           'self.pose',
           'skeleton.bones',
           'constants.' + name + 'boneIndex',
           'variables.' + name + 'rootXfo'
-        ])
+        ]
       }));
 
     if (options.createManipulators) {
@@ -449,7 +439,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('IK2BoneSolver', {
         operatorName: 'solveIK2Bone',
         srcFile: 'FABRIC_ROOT/SceneGraph/KL/solveIK2Bone.kl',
         entryFunctionName: 'solveIK2Bone',
-        parameterLayout: solver.setParameterBinding([
+        parameterLayout: [
           'self.pose',
           'skeleton.bones',
           'constants.' + name + 'boneA',
@@ -461,7 +451,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('IK2BoneSolver', {
           'variables.' + name + 'upvector',
           'variables.' + name + 'directionBlend',
           'variables.' + name + 'upvectorBlend'
-        ])
+        ]
       }));
 
     if (options.createManipulators) {
@@ -550,7 +540,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('SpineSolver', {
         operatorName: 'solveSpine',
         srcFile: 'FABRIC_ROOT/SceneGraph/KL/solveSpine.kl',
         entryFunctionName: 'solveSpine',
-        parameterLayout: solver.setParameterBinding([
+        parameterLayout: [
           'self.pose',
           'skeleton.bones',
           'variables.poseVariables',
@@ -562,7 +552,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('SpineSolver', {
           'constants.' + name + 'endTangent',
           'constants.' + name + 'startXfoID',
           'constants.' + name + 'endXfoID'
-        ])
+        ]
       }));
 
     if (options.createManipulators) {
@@ -836,7 +826,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('FishingRodSolver', {
         operatorName: 'solveFishingRod',
         srcFile: 'FABRIC_ROOT/SceneGraph/KL/solveFishingRod.kl',
         entryFunctionName: 'fishingRodOp',
-        parameterLayout: solver.setParameterBinding([
+        parameterLayout: [
           'self.pose',
           'skeleton.bones',
           'constants.' + name + 'boneIndex',
@@ -844,7 +834,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('FishingRodSolver', {
           'variables.' + name + 'minLineLength',
           'variables.' + name + 'maxLineLength',
           'variables.' + name + 'target'
-        ])
+        ]
       }));
 
     if (options.createManipulators) {
@@ -902,12 +892,12 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('NCFIKSolver', {
         operatorName: 'solveNCFIK',
         srcFile: 'FABRIC_ROOT/SceneGraph/KL/solveNCFIK.kl',
         entryFunctionName: 'solveNCFIK',
-        parameterLayout: solver.setParameterBinding([
+        parameterLayout: [
           'self.pose',
           'skeleton.bones',
           'constants.' + name + 'boneIndices',
           'variables.' + name + 'target'
-        ])
+        ]
       }));
 
     if (options.createManipulators) {
@@ -984,7 +974,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('ArmSolver', {
         operatorName: 'solveArmRig',
         srcFile: 'FABRIC_ROOT/SceneGraph/KL/solveLimbIK.kl',
         entryFunctionName: 'solveArmRig',
-        parameterLayout: solver.setParameterBinding([
+        parameterLayout: [
           'self.pose',
           'skeleton.bones',
           'constants.' + name + 'bones',
@@ -992,7 +982,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('ArmSolver', {
 
           'variables.' + name + 'handControlXfo',
           'variables.' + name + 'IKBlend'
-        ])
+        ]
       }));
 
     if (options.createManipulators) {
@@ -1101,7 +1091,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('LegSolver', {
         operatorName: 'solveLegRig',
         srcFile: 'FABRIC_ROOT/SceneGraph/KL/solveLimbIK.kl',
         entryFunctionName: 'solveLegRig',
-        parameterLayout: solver.setParameterBinding([
+        parameterLayout: [
           'self.pose',
           'skeleton.bones',
           'constants.' + name + 'bones',
@@ -1109,7 +1099,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('LegSolver', {
           'variables.' + name + 'footPlatformXfo',
           'variables.' + name + 'ankleIKAnimationXfo',
           'variables.' + name + 'IKBlend'
-        ])
+        ]
       }));
 
     if (options.createManipulators) {
