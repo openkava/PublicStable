@@ -848,10 +848,10 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
     });
     
     var rigNode = scene.constructNode('CharacterRig', {
-        name: controllerName+'CharacterRig',
-        skeletonNode: skeletonNode,
-        variablesNode: variablesNode
-      });
+      name: controllerName+'CharacterRig',
+      skeletonNode: skeletonNode,
+      variablesNode: variablesNode
+    });
     
       
     if(colladaData.libraryAnimations){
@@ -1125,7 +1125,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
     // the vcount table tells us how many bindings deform this vertex.
     // the vertices array is a pair of indices for each joint binding.
     // The first is the JOINT, and then 2nd the WEIGHT
-    var makevec4 = function(data) {
+    var makeVec4 = function(data) {
       // The following is a bit of a hack. Not sure if we can combine new and apply.
       if (data.length === 0) return new FABRIC.RT.Vec4();
       if (data.length === 1) return new FABRIC.RT.Vec4(data[0], 0, 0, 0);
@@ -1150,8 +1150,8 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
         bid += 2;
       }
       bubbleSortWeights(boneWeightsArray, boneIdsArray, 0, numbindings);
-      boneIds.push(makevec4(boneIdsArray));
-      boneWeights.push(makevec4(boneWeightsArray));
+      boneIds.push(makeVec4(boneIdsArray));
+      boneWeights.push(makeVec4(boneWeightsArray));
     }
     
     // Now remap the generated arrays to the vertices in the mesh we store.

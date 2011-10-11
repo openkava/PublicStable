@@ -24,7 +24,14 @@ FABRIC.SceneGraph.CharacterSolvers = {
     solver.name = options.name;
     solver.type = type;
     return solver;
-  }
+  },
+  invertSolver: function(type, options, scene) {
+    if (!this.solvers[type]) {
+      throw ("CharacterSolver '" + type + "' is not registered.");
+    }
+    this.solvers[type].invert(options, scene);
+    return solver;
+  },
 };
 
 FABRIC.SceneGraph.CharacterSolvers.registerSolver('CharacterSolver', {
@@ -1058,7 +1065,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('LegSolver', {
       }
       twistManipulators.push(true); //i != 1);
     }
-
+/*
     rigNode.pub.addSolver(name + 'fk', 'FKChainSolver', {
       chainManipulators: false,
       bones: options.bones,
@@ -1066,6 +1073,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('LegSolver', {
       twistManipulators: twistManipulators,
       twistManipulatorRadius: bones[boneIDs.bones[0]].length * 0.3
     });
+ */
 
     // compute the target
     ankleTipXfo = referencePose[ankleIndex].clone();
@@ -1083,10 +1091,18 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('LegSolver', {
 
     constantsNode.addMember(name + 'bones', 'Integer[]', boneIDs.bones);
   //  constantsNode.addMember(name+"ankleOffsetXfo", "Xfo", ankleOffsetXfo);
-    variablesNode.addMember(name + 'footPlatformXfo', 'Xfo', footPlatformXfo);
-    variablesNode.addMember(name + 'ankleIKAnimationXfo', 'Xfo', ankleOffsetXfo);
-    variablesNode.addMember(name + 'IKBlend', 'Scalar', 1.0);
-
+  //  variablesNode.addMember(name + 'footPlatformXfo', 'Xfo', footPlatformXfo);
+  //  variablesNode.addMember(name + 'ankleIKAnimationXfo', 'Xfo', ankleOffsetXfo);
+  //  variablesNode.addMember(name + 'IKBlend', 'Scalar', 1.0);
+    
+    var footPlatformXfoId = variablesNode.pub.addVariable('Xfo', footPlatformXfo);
+    var ankleIKAnimationXfoId = variablesNode.pub.addVariable('Xfo', ankleOffsetXfo);
+    var ikblendId = variablesNode.pub.addVariable('Scalar', 1.0);
+    
+    constantsNode.addMember(name + 'footPlatformXfoId', 'Integer', footPlatformXfoId);
+    constantsNode.addMember(name + 'ankleIKAnimationXfoId', 'Integer', ankleIKAnimationXfoId);
+    constantsNode.addMember(name + 'ikblendId', 'Integer', ikblendId);
+    
     rigNode.addSolverOperator(scene.constructOperator({
         operatorName: 'solveLegRig',
         srcFile: 'FABRIC_ROOT/SceneGraph/KL/solveLimbIK.kl',
@@ -1095,10 +1111,13 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('LegSolver', {
           'self.pose',
           'skeleton.bones',
           'constants.' + name + 'bones',
-
+          'constants.' + name + 'footPlatformXfoId',
+          'constants.' + name + 'ankleIKAnimationXfoId',
+          'constants.' + name + 'ikblendId',
+          'variables.poseVariables'/*
           'variables.' + name + 'footPlatformXfo',
           'variables.' + name + 'ankleIKAnimationXfo',
-          'variables.' + name + 'IKBlend'
+          'variables.' + name + 'IKBlend'*/
         ]
       }));
 
@@ -1135,7 +1154,79 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('LegSolver', {
     return solver;
   },
   invert: function(){
-    
+    scene.assignDefaults(options, {
+        rigNode: undefined
+      });
+    options.identifiers = [['bones']];
+    var solver = FABRIC.SceneGraph.CharacterSolvers.createSolver('CharacterSolver', options, scene);
+
+    var rigNode = scene.getPrivateInterface(options.rigNode),
+      constantsNode = scene.getPrivateInterface(rigNode.pub.getConstantsNode()),
+      variablesNode = scene.getPrivateInterface(rigNode.pub.getVariablesNode()),
+      skeletonNode = rigNode.pub.getSkeletonNode(),
+      bones = skeletonNode.getBones(),
+      referencePose = skeletonNode.getReferencePose(),
+      referenceLocalPose = skeletonNode.getReferenceLocalPose(),
+      boneIDs = solver.getBoneIDs(),
+      name = options.name,
+      footPlatformXfo,
+      ankleOffsetXfo,
+      ankleTipXfo,
+      i,
+      ankleIndex = boneIDs.bones[boneIDs.bones.length - 1],
+      twistManipulators = [];
+
+    // check if the bones have a length
+    for (i = 0; i < boneIDs.bones.length; i++) {
+      if (bones[boneIDs.bones[i]].length <= 0.0) {
+        throw ('Cannot solve IK2Bone for bone ' + bones[boneIDs.bones[i]].name + ', because it has length == 0.');
+      }
+      twistManipulators.push(true); //i != 1);
+    }
+
+    rigNode.pub.addSolver(name + 'fk', 'FKChainSolver', {
+      chainManipulators: false,
+      bones: options.bones,
+      color: options.color,
+      twistManipulators: twistManipulators,
+      twistManipulatorRadius: bones[boneIDs.bones[0]].length * 0.3
+    });
+
+    // compute the target
+    ankleTipXfo = referencePose[ankleIndex].clone();
+    ankleTipXfo.tr = referencePose[ankleIndex].transformVector(new FABRIC.RT.Vec3(bones[ankleIndex].length, 0, 0));
+    footPlatformXfo = ankleTipXfo.clone();
+    footPlatformXfo.tr.y = 0;
+    footPlatformXfo.ori = footPlatformXfo.ori.multiply(
+      new FABRIC.RT.Quat().setFrom2Vectors(
+        footPlatformXfo.ori.rotateVector(new FABRIC.RT.Vec3(0, 1, 0)),
+        new FABRIC.RT.Vec3(0, 1, 0)
+      )
+    );
+
+    ankleOffsetXfo = footPlatformXfo.inverse().multiply(ankleTipXfo);
+
+    constantsNode.addMember(name + 'bones', 'Integer[]', boneIDs.bones);
+  //  constantsNode.addMember(name+"ankleOffsetXfo", "Xfo", ankleOffsetXfo);
+    variablesNode.addMember(name + 'footPlatformXfo', 'Xfo', footPlatformXfo);
+    variablesNode.addMember(name + 'ankleIKAnimationXfo', 'Xfo', ankleOffsetXfo);
+    variablesNode.addMember(name + 'IKBlend', 'Scalar', 1.0);
+
+    variablesNode.getDGNode().bindings.append(scene.constructOperator({
+        operatorName: 'invertLegRig',
+        srcFile: 'FABRIC_ROOT/SceneGraph/KL/solveLimbIK.kl',
+        entryFunctionName: 'solveLegRig',
+        parameterLayout: [
+          'sourcerig.pose',
+          'self.poseVariables',
+          'skeleton.bones',
+          'constants.' + name + 'bones',
+
+          'variables.' + name + 'footPlatformXfo',
+          'variables.' + name + 'ankleIKAnimationXfo',
+          'variables.' + name + 'IKBlend'
+        ]
+      }));
   }
 });
 

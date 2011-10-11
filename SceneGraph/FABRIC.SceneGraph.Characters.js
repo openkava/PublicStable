@@ -510,6 +510,22 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
       dgnode.bindings.insert(operator, numSolverOperators);
       numSolverOperators++;
     }
+    characterRigNode.pub.invertSolver = function(name, type, solverOptions) {
+      solverOptions = scene.assignDefaults(solverOptions, {
+        rigNode: characterRigNode.pub,
+        index: solvers.length
+      });
+      for (var i = 0; i < solvers.length; i++) {
+        if (solvers[i].name == name) {
+          throw (" Solver names must be unique. Solver '" + name +
+                 "' already applied to :" + characterRigNode.pub.getName());
+        }
+      }
+      solverOptions.name = name;
+      var solver = FABRIC.SceneGraph.CharacterSolvers.invertSolver(type, solverOptions, scene);
+    //  solvers.push(solver);
+      return solver;
+    };
     //////////////////////////////////////////
     characterRigNode.pub.addMember = function(name, type, value) {
       dgnode.addMember(name, type, value);

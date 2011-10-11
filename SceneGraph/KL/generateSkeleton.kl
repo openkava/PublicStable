@@ -60,8 +60,8 @@ operator generateSkeleton(
 
   var Integer offset = 0;
   for (Integer i = 0; i < bones.size(); i++) {
-    Xfo xfo = finalPose[i];
-  //  Xfo xfo = bones[i].referencePose;
+  //  Xfo xfo = finalPose[i];
+    Xfo xfo = bones[i].referencePose;
     
     if (bones[i].length <= 0.0) {
       indices[offset] = offset;

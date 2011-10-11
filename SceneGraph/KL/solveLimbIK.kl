@@ -2,12 +2,14 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
-#include 'FABRIC_ROOT/SceneGraph/KL/solveFishingRod.kl'
-#include 'FABRIC_ROOT/SceneGraph/KL/solveNCFIK.kl'
 
 use Xfo;
 use Bone;
 use BezierKeyframe;
+
+
+#include 'FABRIC_ROOT/SceneGraph/KL/solveFishingRod.kl'
+#include 'FABRIC_ROOT/SceneGraph/KL/solveNCFIK.kl'
 
 operator solveArmRig(
   io Xfo pose[],
@@ -71,11 +73,13 @@ operator solveLegRig(
   io Bone bones[],
 
   io Integer boneIndices[],
+  io Integer footPlatformXfoId,
+  io Integer ankleIKAnimationXfoId,
+  io Integer ikBlendId,
 
-  io Xfo footPlatformXfo,
-  io Xfo ankleIKAnimationXfo,
-  io Scalar ikBlend,
+  io PoseVariables poseVariables
 ) {
+  Scalar ikBlend = poseVariables.floatValues[ikBlendId];
   if (ikBlend > 0.0) {
     Xfo fkPose[];
     fkPose.resize(boneIndices.size());
@@ -88,7 +92,7 @@ operator solveLegRig(
     Integer ankleIndex = boneIndices[2];
 
     Xfo targetXfo;
-    targetXfo = ankleIKAnimationXfo * footPlatformXfo;
+    targetXfo = poseVariables.xfoValues[ankleIKAnimationXfoId] * poseVariables.xfoValues[footPlatformXfoId];
 
     Scalar maxLineLength = bones[thighIndex].length + bones[calfIndex].length;
     Vec2 maxLineLengthSoftening(maxLineLength * 0.03, maxLineLength * 0.03);
