@@ -21,7 +21,6 @@ function PoseVariables.evaluateKeyframeTracks(
   in KeyframeTrackBindings bindings,
   io Integer currKeys[]
 ) {
-  report("PoseVariables.evaluateKeyframeTracks");
   Integer trackId = 0;
   if (currKeys.size < trackId + bindings.scalarBindings.size){
     currKeys.resize(trackId + bindings.scalarBindings.size);
@@ -74,7 +73,6 @@ function PoseVariables.evaluateKeyframeTracks(
       trackSet.tracks[trackIds[5]].evaluate(time, currKeys[trackId++]),
       trackSet.tracks[trackIds[6]].evaluate(time, currKeys[trackId++])
     );
-  //  report(this.xfoValues[i]);
   }
 }
 
