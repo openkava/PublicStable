@@ -1,0 +1,91 @@
+//
+// Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+//
+
+
+use Xfo;
+use Bone;
+use BezierKeyframe;
+
+#include 'FABRIC_ROOT/SceneGraph/KL/solveFishingRod.kl'
+#include 'FABRIC_ROOT/SceneGraph/KL/solveNCFIK.kl'
+
+operator solveLegRig(
+  io Xfo pose[],
+  io Bone bones[],
+
+  io Integer boneIndices[],
+  io Integer footPlatformXfoId,
+  io Xfo ankleOffsetXfo,
+  io Integer ikBlendId,
+
+  io PoseVariables poseVariables
+) {
+  Scalar ikBlend = poseVariables.scalarValues[ikBlendId];
+  if (ikBlend > 0.0) {
+    Xfo fkPose[];
+    fkPose.resize(boneIndices.size());
+    for (Integer i = 0; i < boneIndices.size(); i++) {
+      fkPose[i] = pose[boneIndices[i]];
+    }
+
+    Integer thighIndex = boneIndices[0];
+    Integer calfIndex = boneIndices[1];
+    Integer ankleIndex = boneIndices[2];
+
+    Xfo targetXfo;
+    targetXfo = ankleOffsetXfo * poseVariables.xfoValues[footPlatformXfoId];
+
+    Scalar maxLineLength = bones[thighIndex].length + bones[calfIndex].length;
+    Vec2 maxLineLengthSoftening(maxLineLength * 0.03, maxLineLength * 0.03);
+    applyFishingRod(
+      targetXfo,
+      bones[ankleIndex].length,
+      pose[thighIndex],
+      Vec3(-1.0, 0.0, 0.0),
+
+      0.0,
+      Vec2(0.0, 0.0),
+      maxLineLength,
+      maxLineLengthSoftening
+    );
+
+    targetXfo.tr = targetXfo.transformVector(Vec3(-bones[ankleIndex].length, 0.0, 0.0));
+
+    Integer ikboneIndices[];
+    ikboneIndices.push(thighIndex);
+    ikboneIndices.push(calfIndex);
+
+    solveNCFIK(pose, bones, ikboneIndices, targetXfo);
+
+    pose[ankleIndex].tr = pose[calfIndex].transformVector(Vec3(bones[calfIndex].length, 0.0, 0.0));
+    pose[ankleIndex].ori = targetXfo.ori;
+
+    for (Integer i = 0; i < boneIndices.size(); i++) {
+      pose[boneIndices[i]].ori = fkPose[i].ori.sphericalLinearInterpolate(pose[boneIndices[i]].ori, ikBlend);
+      if (i > 0) {
+        pose[boneIndices[i]].tr = pose[boneIndices[i - 1]].transformVector(bones[boneIndices[i]].referenceLocalPose.tr);
+      }
+    }
+  }
+}
+
+
+
+operator invertLegRig(
+  io Xfo pose[],
+  io Bone bones[],
+
+  io Integer boneIndices[],
+  io Integer footPlatformXfoId,
+  io Integer ankleIKAnimationXfoId,
+  io Integer ikBlendId,
+
+  io PoseVariables poseVariables
+) {
+  Integer ankleIndex = boneIndices[2];
+  Xfo targetXfo;
+  targetXfo = pose[ankleIndex] * ankleOffsetXfo.inverse();
+
+  poseVariables.xfoValues[footPlatformXfoId] = targetXfo;
+}
