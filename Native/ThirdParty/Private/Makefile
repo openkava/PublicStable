@@ -247,7 +247,7 @@ Build/.node.configure: Build/.node.patch
             export CXXFLAGS=-m32; \
             export LINKFLAGS=-m32; \
           fi; \
-          ( cd Build/node-$(NODE_VERSION)-$$ARCH && ./configure --dest-cpu=$$NODE_ARCH ); \
+          ( cd Build/node-$(NODE_VERSION)-$$ARCH && ./configure --dest-cpu=$$NODE_ARCH --prefix=/usr/local ); \
 	done
 	touch $@
 
