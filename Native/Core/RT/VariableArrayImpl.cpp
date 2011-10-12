@@ -277,10 +277,16 @@ namespace Fabric
             {
               size_t newAllocNumMembers = AllocNumMembersForNumMembers( newNumMembers );
               if ( oldNumMembers )
-                bits = static_cast<bits_t *>( realloc( bits, sizeof(bits_t) + m_memberSize * newAllocNumMembers ) );
+              {
+                size_t size = sizeof(bits_t) + m_memberSize * newAllocNumMembers;
+                //FABRIC_LOG( "realloc(%u)", (unsigned)size );
+                bits = static_cast<bits_t *>( realloc( bits, size ) );
+              }
               else
               {
-                bits = static_cast<bits_t *>( malloc( sizeof(bits_t) + m_memberSize * newAllocNumMembers ) );
+                size_t size = sizeof(bits_t) + m_memberSize * newAllocNumMembers;
+                //FABRIC_LOG( "malloc(%u)", (unsigned)size );
+                bits = static_cast<bits_t *>( malloc( size ) );
                 bits->refCount.setValue( 1 );
               }
               bits->allocNumMembers = newAllocNumMembers;
@@ -325,7 +331,9 @@ namespace Fabric
           {
             bits_t const *srcBits = bits;
             size_t allocNumMembers = AllocNumMembersForNumMembers( newNumMembers );
-            bits = static_cast<bits_t *>( malloc( sizeof(bits_t) + m_memberSize * allocNumMembers ) );
+            size_t size = sizeof(bits_t) + m_memberSize * allocNumMembers;
+            //FABRIC_LOG( "malloc(%u)", (unsigned)size );
+            bits = static_cast<bits_t *>( malloc( size ) );
             bits->refCount.setValue( 1 );
             bits->allocNumMembers = allocNumMembers;
             bits->numMembers = newNumMembers;
