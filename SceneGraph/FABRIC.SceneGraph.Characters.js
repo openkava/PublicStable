@@ -534,7 +534,7 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
           warn("Solver does not provide invert function:" + solvers[i].name);
           continue;
         }
-        solvers[i].invert(scene, options);
+        solvers[i].invert(options, scene);
       }
     };
     //////////////////////////////////////////

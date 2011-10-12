@@ -162,6 +162,28 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('FKHierarchySolver',{
           'variables.poseVariables'
         ]
       }));
+    
+ 
+    solver.invert = function(options, scene){
+      scene.assignDefaults(options, {
+          variablesNode: undefined
+        });
+      
+      options.variablesNode.getDGNode().bindings.append(scene.constructOperator({
+          operatorName: 'invertFKHierarchy',
+          srcFile: 'FABRIC_ROOT/SceneGraph/KL/solveFKHierarchy.kl',
+          entryFunctionName: 'invertFKHierarchy',
+          parameterLayout: [
+            'sourcerig.pose',
+            'skeleton.bones',
+            
+            'constants.' + name + 'bindings',
+            
+            'self.poseVariables'
+          ]
+        }));
+    }
+    
     return solver;
   }
 });
@@ -1103,15 +1125,24 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('LegSolver', {
 
     // compute the target
     ankleTipXfo = referencePose[ankleIndex].clone();
-    ankleTipXfo.tr = referencePose[ankleIndex].transformVector(new FABRIC.RT.Vec3(bones[ankleIndex].length, 0, 0));
+    var angleLength = bones[ankleIndex].length;
+    var downVec = new FABRIC.RT.Vec3(0, -1, 0);
+    var ankleVec = referencePose[ankleIndex].ori.rotateVector(new FABRIC.RT.Vec3(bones[ankleIndex].length, 0, 0));
+    // If the tip of the ankle is below the floor, then retract the
+    //  ankle tip till it touches the floor.
+  //  if(ankleVec.dot(downVec) > referencePose[ankleIndex].tr.y){
+  //    angleLength *= referencePose[ankleIndex].tr.y / ankleVec.dot(downVec);
+  //  }
+    ankleTipXfo.tr = referencePose[ankleIndex].transformVector(new FABRIC.RT.Vec3(angleLength, 0, 0));
     footPlatformXfo = ankleTipXfo.clone();
     footPlatformXfo.tr.y = 0;
     var alignmentQuat = new FABRIC.RT.Quat();
     alignmentQuat.setFrom2Vectors(
       footPlatformXfo.ori.rotateVector(new FABRIC.RT.Vec3(1, 0, 0)),
-      new FABRIC.RT.Vec3(0, -1, 0)
+      downVec
     );
     footPlatformXfo.ori = alignmentQuat.multiply(footPlatformXfo.ori);
+  //  ankleTipOffsetXfo = referencePose[ankleIndex].inverse().multiply(ankleTipXfo);
     ankleOffsetXfo = footPlatformXfo.inverse().multiply(ankleTipXfo);
     
     var footPlatformXfoId = variablesNode.addVariable('Xfo', footPlatformXfo);
@@ -1133,6 +1164,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('LegSolver', {
     
     constantsNode.addMember(name + 'bones', 'Integer[]', boneIDs.bones);
     constantsNode.addMember(name + 'footPlatformXfoId', 'Integer', footPlatformXfoId);
+  //  constantsNode.addMember(name + 'ankleTipOffsetXfo', 'Xfo', ankleTipOffsetXfo);
     constantsNode.addMember(name + 'ankleOffsetXfo', 'Xfo', ankleOffsetXfo);
     constantsNode.addMember(name + 'ikblendId', 'Integer', ikblendId);
     
@@ -1205,7 +1237,8 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('LegSolver', {
             'constants.' + name + 'ankleOffsetXfo',
             'constants.' + name + 'ikblendId',
             
-            'self.poseVariables'
+            'self.poseVariables',
+            'sourcerig.debugGeometry'
           ]
         }));
     }

@@ -34,7 +34,7 @@ operator solveFKHierarchy(
   }
 }
 
-operator solveInvParentList(
+operator invertFKHierarchy(
   io Xfo pose[],
   io Bone bones[],
   io PoseParameterBinding bindings[],
