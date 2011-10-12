@@ -49,13 +49,75 @@ function Scalar LinearKeyframeTrack.evaluate(
 
 function LinearKeyframeTrack.setValue(
   in Scalar time,
-  in Scalar value,
-  io Integer keyIndex
+  in Scalar value
 ) {
   LinearKeyframe key;
   key.time = time;
   key.value = value;
   
-  keyIndex = this.keys.size();
   this.keys.push(key);
+}
+
+
+
+
+
+function LinearKeyframeTrackSet.setValues(
+  io PoseVariables values,
+  in Scalar time,
+  io KeyframeTrackBindings bindings
+) {
+  for (Integer i = 0; i < bindings.scalarBindings.size; i++) {
+    this.tracks[bindings.scalarBindings[i]].setValue(time, values.scalarValues[i]);
+  }
+  
+  for (Integer i = 0; i < bindings.quatBindings.size; i++) {
+    Integer binding[] = bindings.quatBindings[i];
+    if(binding.size == 3){
+      //  Quat to Euler
+      report("TODO:Euler.setFromQuat");
+      /*
+      Euler euler;
+      euler.setFromQuat(values.quatValues[i]);
+      this.tracks[binding[0]].setValue(time, euler.x),
+      this.tracks[binding[1]].setValue(time, euler.y),
+      this.tracks[binding[2]].setValue(time, euler.z)));
+    */
+    }
+    else if(binding.size == 4){
+      this.tracks[binding[0]].setValue(time, values.quatValues[i].v.x );
+      this.tracks[binding[1]].setValue(time, values.quatValues[i].v.y );
+      this.tracks[binding[2]].setValue(time, values.quatValues[i].v.z );
+      this.tracks[binding[3]].setValue(time, values.quatValues[i].w );
+    }
+  }
+  
+  for (Integer i = 0; i < bindings.xfoBindings.size; i++) {
+    Integer binding[] = bindings.xfoBindings[i];
+    if(binding.size != 7){
+      report('incorrect binding for Xfo:' + binding);
+      continue;
+    }
+    
+    this.tracks[binding[0]].setValue(time, values.xfoValues[i].tr.x);
+    this.tracks[binding[1]].setValue(time, values.xfoValues[i].tr.y);
+    this.tracks[binding[2]].setValue(time, values.xfoValues[i].tr.z);
+    
+    if(binding.size == 6){
+      //  Quat to Euler
+      report("TODO:Euler.setFromQuat");
+      /*
+      Euler euler;
+      euler.setFromQuat(values.quatValues[i]);
+      this.tracks[binding[0]].setValue(time, euler.x),
+      this.tracks[binding[1]].setValue(time, euler.y),
+      this.tracks[binding[2]].setValue(time, euler.z)));
+    */
+    }else if(binding.size == 7){
+      this.tracks[binding[3]].setValue(time, values.xfoValues[i].ori.v.x);
+      this.tracks[binding[4]].setValue(time, values.xfoValues[i].ori.v.y);
+      this.tracks[binding[5]].setValue(time, values.xfoValues[i].ori.v.z);
+      this.tracks[binding[6]].setValue(time, values.xfoValues[i].ori.w);
+    }
+  }
 }

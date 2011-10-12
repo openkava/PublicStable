@@ -331,9 +331,9 @@ $(document).ready(function() {
         }
       }
       if(!parentPos){
-        pos = FABRIC.vec2(1, 0);
+        pos = new FABRIC.Vec2(1, 0);
       }else{
-        pos = parentPos.add(FABRIC.vec2(1, 0));
+        pos = parentPos.add(new FABRIC.Vec2(1, 0));
       }
       
       if(!dgcolumns[pos.x]){
@@ -393,9 +393,9 @@ $(document).ready(function() {
         }
       }
       if(!childPos){
-        childPos = FABRIC.vec2(ehcolumns.length-1, 0);
+        childPos = new FABRIC.Vec2(ehcolumns.length-1, 0);
       }
-      var pos = childPos.subtract(FABRIC.vec2(1, 0));
+      var pos = childPos.subtract(new FABRIC.Vec2(1, 0));
       if(!ehcolumns[pos.x]) ehcolumns[pos.x] = 0;
       
       // nodes are inline with parent nodes. 
@@ -728,8 +728,8 @@ $(document).ready(function() {
   
   var redisplayGraph = function(){
     // TODO: figure out why I can't set the button to be checked by default.
-    displayGraph(!$('#displayEventHandlers').attr('checked'),
-                 !$('#displayDependencyGraph').attr('checked'),
+    displayGraph($('#displayEventHandlers').attr('checked'),
+                 $('#displayDependencyGraph').attr('checked'),
                  true)
   }
   
@@ -738,11 +738,12 @@ $(document).ready(function() {
         layoutGraph();
         redisplayGraph();
       });
-    
+  $('#displayEventHandlers').attr('checked', true);
   $("#displayEventHandlers").change(function() {
     redisplayGraph();
   });
   
+  $('#displayDependencyGraph').attr('checked', true);
   $("#displayDependencyGraph").change(function() {
     redisplayGraph();
   });

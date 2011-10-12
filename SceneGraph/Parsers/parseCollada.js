@@ -827,6 +827,14 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
     for (i = 0; i < bones.length; i++) {
       if (bones[i].length === 0 && bones[i].parent != -1) {
         bones[i].length = bones[bones[i].parent].length * 0.5;
+        
+        // If the tip of the bone is below the floor, then 
+        // shorten the bone till it touches the floor.
+        var downVec = new FABRIC.RT.Vec3(0, -1, 0);
+        var boneVec = bones[i].referencePose.ori.rotateVector(new FABRIC.RT.Vec3(bones[i].length, 0, 0));
+        if(boneVec.dot(downVec) > bones[i].referencePose.tr.y){
+          bones[i].length *= bones[i].referencePose.tr.y / boneVec.dot(downVec);
+        }
       }
       bones[i].radius = bones[i].length * 0.1;
     }

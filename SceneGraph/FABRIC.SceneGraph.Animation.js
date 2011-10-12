@@ -47,7 +47,14 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
   //  dgnode.addMember('keys', options.keyframetype + '[]');
     dgnode.addMember('trackSet', options.keyframetype + 'TrackSet');
     
+    var firstTrackAdded = false;
     animationTrackNode.pub.addTrackSet = function(trackset) {
+      if(!firstTrackAdded){
+        // Nodes default to having 1 slice, so we use up the first slot here. 
+        dgnode.setData('trackSet', 0, trackset);
+        firstTrackAdded = true;
+        return 0;
+      }
       var trackSetId = dgnode.getCount();
       dgnode.setCount(trackSetId+1);
       dgnode.setData('trackSet', trackSetId, trackset);
@@ -118,6 +125,79 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
         });
     };
 */
+    
+    animationTrackNode.pub.bindToVariables = function( variablesNode, name ){
+      if (!variablesNode.isTypeOf('CharacterVariables')) {
+        throw ('Incorrect type. Must be a CharacterVariables');
+      }
+      
+      variablesNode = scene.getPrivateInterface(variablesNode);
+      dgnode.setDependency(variablesNode.getDGNode(), 'variables');
+      dgnode.setDependency(scene.getGlobalsNode(), 'globals');
+      
+      var trackBindings = new FABRIC.RT.KeyframeTrackBindings();
+      var trackSet = new FABRIC.RT.LinearKeyframeTrackSet(name);
+      var variables = variablesNode.getVariables();
+      
+      // generate the bindings.
+      var i, trackId=0;
+      var addTrack = function(name, color, bindings){
+        trackSet.tracks.push(new FABRIC.RT.LinearKeyframeTrack(name, color)); bindings.push(trackId++); 
+      }
+      for (i = 0; i < variables.scalarValues.length; i++) {
+        addTrack("ScalarTrack"+i, FABRIC.RT.rgb(1,0,0), trackBindings.scalarBindings);
+      }
+      for (i = 0; i < variables.vec3Values.length; i++) {
+        var binding = [];
+        addTrack("Vec3Track"+i, FABRIC.RT.rgb(1,0,0), binding);
+        addTrack("Vec3Track"+i+".x", FABRIC.RT.rgb(1, 0, 0), binding);
+        addTrack("Vec3Track"+i+".y", FABRIC.RT.rgb(0, 1, 0), binding);
+        addTrack("Vec3Track"+i+".z", FABRIC.RT.rgb(0, 0, 1), binding);
+        trackBindings.vec3Bindings.push(binding);
+      }
+      for (i = 0; i < variables.quatValues.length; i++) {
+        var binding = [];
+        addTrack("QuatTrack"+i+".v.x", FABRIC.RT.rgb(1, 0, 0), binding);
+        addTrack("QuatTrack"+i+".v.y", FABRIC.RT.rgb(0, 1, 0), binding);
+        addTrack("QuatTrack"+i+".v.z", FABRIC.RT.rgb(0, 0, 1), binding);
+        addTrack("QuatTrack"+i+".w", FABRIC.RT.rgb(1, 1, 0), binding);
+        trackBindings.quatBindings.push(binding);
+      }
+      
+      for (i = 0; i < variables.xfoValues.length; i++) {
+        var binding = [];
+        addTrack("XfoTrack"+i+".tr.x", FABRIC.RT.rgb(1, 0, 0), binding);
+        addTrack("XfoTrack"+i+".tr.y", FABRIC.RT.rgb(0, 1, 0), binding);
+        addTrack("XfoTrack"+i+".tr.z", FABRIC.RT.rgb(0, 0, 1), binding);
+        
+        addTrack("XfoTrack"+i+".ori.v.x", FABRIC.RT.rgb(1, 0, 0), binding);
+        addTrack("XfoTrack"+i+".ori.v.y", FABRIC.RT.rgb(0, 1, 0), binding);
+        addTrack("XfoTrack"+i+".ori.v.z", FABRIC.RT.rgb(0, 0, 1), binding); 
+        addTrack("XfoTrack"+i+".ori.w", FABRIC.RT.rgb(1, 1, 0), binding);
+        trackBindings.xfoBindings.push(binding);
+      }
+      var trackSetId = animationTrackNode.pub.addTrackSet(trackSet);
+      dgnode.addMember('bindings', 'KeyframeTrackBindings', trackBindings);
+      dgnode.bindings.append(scene.constructOperator({
+          operatorName: 'keyCurvesFromVariables',
+          srcFile: 'FABRIC_ROOT/SceneGraph/KL/keyCurvesFromVariables.kl',
+          preProcessorDefinitions: {
+            KEYFRAMETRACKSETTYPE: 'LinearKeyframeTrackSet'
+          },
+          entryFunctionName: 'keyCurvesFromVariables',
+          parameterLayout: [
+            'self.trackSet',
+            'globals.time',
+            'self.bindings',
+            'variables.poseVariables'
+          ]
+        }));
+      animationTrackNode.pub.evaluateBindings = function(){
+        dgnode.evaluate();
+      }
+      return trackBindings;
+    }
+
     animationTrackNode.getDrawOperator = function() {
       return scene.constructOperator({
           operatorName: 'evaluate'+options.keyframetype+'Curve',
