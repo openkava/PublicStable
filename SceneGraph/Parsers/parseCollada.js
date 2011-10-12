@@ -848,9 +848,6 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
     skeletonNode.setBones(bones);
     
     ///////////////////////////////
-    // Rig Variables node
-     
-    
     var variablesNode = scene.constructNode('CharacterVariables', {
       name: controllerName+'Variables'
     });
@@ -936,11 +933,6 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
             var ori_z_keyvalues = [];
             var ori_w_keyvalues = [];
             var prevQuat;
-            var makeClosest = function(q, other) {
-              if(q.dot(other) < 0.0){
-                q.set(-q.w, q.v.negate());
-              }
-            }
             for (var j = 0; j < outputSource.technique.accessor.count; j++) {
               var matrixValues = getSourceData(outputSource, j);
               var mat = makeRT(FABRIC.RT.Mat44, matrixValues);
@@ -951,7 +943,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
               tr_z_keyvalues.push(xfo.tr.z);
               
               if(j > 0){
-                makeClosest(xfo.ori, prevQuat);
+                xfo.ori.alignWith(prevQuat);
               }
               prevQuat = xfo.ori;
               ori_x_keyvalues.push(xfo.ori.v.x);
@@ -1016,35 +1008,11 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
           generateKeyframeTrack(channelName, inputSource.data, outputSource.data);
         }
       }
-  
-      // create the base animation nodes
-      /*
-    //  var trackNode = scene.constructNode('LinearKeyframeAnimationTrack', {
-    //    name: controllerName+'AnimationTrack'
-    //  });
-      trackNode.setTrackCount(tracks.name.length);
-      trackNode.setTracksData(tracks);
-      
-      // create the evaluator node
-      var evaluatorNode = scene.constructNode('AnimationEvaluator', {
-        name: controllerName+'Evaluator',
-        animationControllerNode: controllerNode,
-        animationTrackNode: trackNode
-      });
-      variablesNode.addMember('localxfos', 'Xfo[]', skeletonNode.getReferenceLocalPose());
-      evaluatorNode.bindNodeMembersToEvaluatorTracks(variablesNode, binding, rigNode.getName());
-      */
       
       var trackSetID = libraryAnimations.addTrackSet(trackSet);
       
-      variablesNode.bindToAnimationTracks( libraryAnimations, controllerNode, trackSetID, trackBindings );
-      
-    //  variablesNode.addVariable('Xfo[]', skeletonNode.getReferenceLocalPose());
+      variablesNode.bindToAnimationTracks(libraryAnimations, controllerNode, trackSetID, trackBindings);
       rigNode.addSolver('solveColladaPose', 'FKHierarchySolver');
-      
-    //  assetNodes[trackNode.getName()] = trackNode;
-    //  assetNodes[evaluatorNode.getName()] = evaluatorNode;
-    //  assetNodes[controllerNode.getName()] = controllerNode;
     }
     
     // Store the created scene graph nodes in the returned asset map.
