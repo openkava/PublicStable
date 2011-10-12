@@ -4,7 +4,7 @@
 
 import os.path
 
-Import( 'coreEnv', 'buildOS', 'buildObject', 'v8Flags' )
+Import( 'coreEnv', 'buildOS', 'buildType', 'buildObject', 'archDistDir', 'packageName', 'v8Flags' )
 
 cliEnv = coreEnv.Clone()
 cliEnv.MergeFlags( v8Flags )
@@ -21,3 +21,31 @@ if buildOS == 'Windows':
     ] )
 
 cliLoadableModule = cliEnv.LoadableModule( 'Fabric.node', [Glob('*.cpp'),buildObject,extraObjects] )
+
+nodeModulesDistDir = archDistDir.Dir(packageName).Dir('node_modules')
+fabricNodeModuleDistDir = nodeModulesDistDir.Dir('Fabric')
+fabricNodePackage = cliEnv.Command(
+  fabricNodeModuleDistDir.File('package.json'),
+  'package.json',
+  [
+    Copy( "$TARGET", "$SOURCE" )
+  ])
+fabricNodeAddOn = cliEnv.Command(
+  fabricNodeModuleDistDir.File('Fabric.node'),
+  cliLoadableModule,
+  [
+    Copy( "$TARGET", "$SOURCE" )
+  ])
+
+binDistDir = archDistDir.Dir(packageName).Dir('bin')
+if buildOS == 'Darwin':
+  lipoCmd = ['lipo', '-create', '-output', '$TARGET']
+  for arch in ['i386', 'x86_64']:
+    lipoCmd.append('-arch')
+    lipoCmd.append(arch)
+    lipoCmd.append( File(os.path.join( '#ThirdParty', 'Private', buildOS, arch, buildType, 'bin', 'node' )).abspath )
+  nodeBin = cliEnv.Command(
+    binDistDir.File('node'),
+    [],
+    [lipoCmd]
+  )
