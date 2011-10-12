@@ -524,9 +524,11 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
       dgnode.bindings.insert(operator, numSolverOperators);
       numSolverOperators++;
     }
-    characterRigNode.pub.invertSolvers = function(sourceRigNode) {
-      
-      sourceRigNode = scene.getPrivateInterface(sourceRigNode);
+    characterRigNode.pub.invertSolvers = function(node) {
+      if (!node.isTypeOf('CharacterRig')) {
+        throw ('Incorrect type assignment. Must assign a CharacterRig');
+      }
+      sourceRigNode = scene.getPrivateInterface(node);
       variablesNode.getDGNode().setDependency(sourceRigNode.getDGNode(), 'sourcerig');
       variablesNode.getDGNode().setDependency(constantsNode.getDGNode(), 'constants');
       variablesNode.getDGNode().setDependency(skeletonNode.getDGNode(), 'skeleton');
@@ -535,7 +537,7 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
       };
       for (var i = 0; i < solvers.length; i++) {
         if(!solvers[i].invert){
-          warn("Solver does not provide invert function:" + solvers[i].name);
+          console.warn("Solver does not provide invert function:" + solvers[i].name);
           continue;
         }
         solvers[i].invert(options, scene);

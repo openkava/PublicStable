@@ -396,6 +396,13 @@ FABRIC.RT.Quat.prototype = {
     var q = new FABRIC.RT.Quat(this.v.linearInterpolate(other.v, t), this.w + ((other.w - this.w) * t));
     return q.unit();
   },
+  
+  alignWith: function(other) {
+    if(this.dot(other) < 0.0){
+      this.w = -this.w;
+      this.v = this.v.negate();
+    }
+  },
 
   clone: function() {
     return new FABRIC.RT.Quat(this.w, this.v.clone());
