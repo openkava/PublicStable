@@ -34,11 +34,12 @@ operator solveLegRig(
     Integer thighIndex = boneIndices[0];
     Integer calfIndex = boneIndices[1];
     Integer ankleIndex = boneIndices[2];
+    
+    debugGeometry.drawAxis(poseVariables.xfoValues[footPlatformXfoId], 3.0, Color(0.0, 1.0, 1.0, 1.0));
 
     Xfo targetXfo;
     targetXfo = poseVariables.xfoValues[footPlatformXfoId] * ankleOffsetXfo;
-    debugGeometry.drawAxis(targetXfo, 3.0, Color(1.0, 1.0, 0.0, 1.0));
-
+    
     Scalar maxLineLength = bones[thighIndex].length + bones[calfIndex].length;
     Vec2 maxLineLengthSoftening(maxLineLength * 0.03, maxLineLength * 0.03);
     applyFishingRod(
@@ -83,11 +84,12 @@ operator invertLegRig(
   io Xfo ankleOffsetXfo,
   io Integer ikBlendId,
 
-  io PoseVariables poseVariables
+  io PoseVariables poseVariables,
+  io DebugGeometry debugGeometry
 ) {
   Integer ankleIndex = boneIndices[2];
-  Xfo targetXfo;
-  targetXfo = pose[ankleIndex] * ankleOffsetXfo.inverse();
-
-  poseVariables.xfoValues[footPlatformXfoId] = targetXfo;
+  Xfo ankleTipXfo = pose[ankleIndex];
+  ankleTipXfo.tr = ankleTipXfo.transformVector(Vec3(bones[ankleIndex].length, 0.0, 0.0));
+  
+  poseVariables.xfoValues[footPlatformXfoId] = ankleTipXfo * ankleOffsetXfo.inverse();
 }
