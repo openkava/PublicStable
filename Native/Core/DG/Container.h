@@ -87,6 +87,7 @@ namespace Fabric
 
       RC::ConstHandle<JSON::Value> getJSON() const;
       RC::ConstHandle<JSON::Value> getSliceJSON( size_t index ) const;
+      RC::ConstHandle<JSON::Value> getMemberJSON( std::string const &member ) const;
 
       void setJSON( RC::ConstHandle<JSON::Value> const &value );
       void setSliceJSON( size_t index, RC::ConstHandle<JSON::Value> const &value );
@@ -103,6 +104,7 @@ namespace Fabric
       void jsonExecSetBulkData( RC::ConstHandle<JSON::Value> const &arg );
       RC::ConstHandle<JSON::Value> jsonExecGetSlicesBulkData( RC::ConstHandle<JSON::Value> const &arg ) const;
       void jsonExecSetSlicesBulkData( RC::ConstHandle<JSON::Value> const &arg );
+      RC::ConstHandle<JSON::Value> jsonExecGetMembersBulkData( RC::ConstHandle<JSON::Value> const &arg ) const;
       void jsonExecPutResourceToFile( RC::ConstHandle<JSON::Value> const &arg, bool userFile ) const;
       void jsonExecGetResourceFromFile( RC::ConstHandle<JSON::Value> const &arg, bool userFile );
       virtual RC::Handle<JSON::Object> jsonDesc() const;

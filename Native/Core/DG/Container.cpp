@@ -67,6 +67,11 @@ namespace Fabric
         return m_slicedArrayDesc->getMemberData( m_slicedArrayData, index );
       }
       
+      size_t size() const
+      {
+        return m_slicedArrayDesc->getNumMembers( m_slicedArrayData );
+      }
+      
       void resize( size_t newCount )
       {
         m_slicedArrayDesc->setNumMembers( m_slicedArrayData, newCount, m_defaultMemberData );
@@ -293,6 +298,23 @@ namespace Fabric
       }
       return result;
     }
+    
+    RC::ConstHandle<JSON::Value> Container::getMemberJSON( std::string const &memberName ) const
+    {
+      Members::const_iterator it = m_members.find( memberName );
+      if ( it == m_members.end() )
+        throw Exception( "no such member "+_(memberName) );
+      RC::ConstHandle<Member> member = it->second;
+      RC::ConstHandle<RT::Desc> memberDesc = member->getDesc();
+      
+      size_t sliceCount = member->size();
+      RC::Handle<JSON::Array> result = JSON::Array::Create(sliceCount);
+      for ( size_t sliceIndex=0; sliceIndex<sliceCount; ++sliceIndex )
+      {
+        result->set( sliceIndex, memberDesc->getJSONValue( member->getElementData( sliceIndex ) ) );
+      }
+      return result;
+    }
 
     void Container::setJSON( RC::ConstHandle<JSON::Value> const &value )
     {
@@ -435,6 +457,8 @@ namespace Fabric
         result = jsonExecGetSlicesBulkData( arg );
       else if ( cmd == "setSlicesBulkData" )
         jsonExecSetSlicesBulkData( arg );
+      else if ( cmd == "getMembersBulkData" )
+        result = jsonExecGetMembersBulkData( arg );
       else if ( cmd == "addMember" )
         jsonExecAddMember( arg );
       else if ( cmd == "removeMember" )
@@ -672,6 +696,27 @@ namespace Fabric
         {
           size_t index = argJSONArray->get( i )->toInteger()->value();
           result->push_back( getSliceJSON( index ) );
+        }
+        catch ( Exception e )
+        {
+          throw "index " + _(i) + ": " + e;
+        }
+      }
+      return result;
+    }
+      
+    RC::ConstHandle<JSON::Value> Container::jsonExecGetMembersBulkData( RC::ConstHandle<JSON::Value> const &arg ) const
+    {
+      RC::ConstHandle<JSON::Array> argJSONArray = arg->toArray();
+      size_t argJSONArraySize = argJSONArray->size();
+      
+      RC::Handle<JSON::Object> result = JSON::Object::Create();
+      for ( size_t i=0; i<argJSONArraySize; ++i )
+      {
+        try
+        {
+          std::string member = argJSONArray->get(i)->toString()->value();
+          result->set( member, getMemberJSON(member) );
         }
         catch ( Exception e )
         {
