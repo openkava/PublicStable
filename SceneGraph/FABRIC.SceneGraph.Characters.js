@@ -303,7 +303,7 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
     var poseVariables = new FABRIC.RT.PoseVariables();
     dgnode.addMember('poseVariables', 'PoseVariables', poseVariables);
     // extend the private interface
-    characterVariablesNode.pub.addVariable = function(type, value) {
+    characterVariablesNode.addVariable = function(type, value) {
       var id = -1;
       switch(type){
         case 'Scalar':
@@ -323,8 +323,9 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
           poseVariables.xfoValues.push( value ? value : new FABRIC.Math.Xfo());
           break;
         case 'Xfo[]':
+          id = [];
           for(var i=0; i<value.length; i++){
-            id = poseVariables.xfoValues.length;
+            id.push(poseVariables.xfoValues.length);
             poseVariables.xfoValues.push( value[i] );
           }
           break;
@@ -498,7 +499,7 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
         }
       }
       solverOptions.name = name;
-      var solver = FABRIC.SceneGraph.CharacterSolvers.createSolver(type, solverOptions, scene);
+      var solver = FABRIC.SceneGraph.CharacterSolvers.constructSolver(type, solverOptions, scene);
       solvers.push(solver);
       return solver;
     };
@@ -510,21 +511,22 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
       dgnode.bindings.insert(operator, numSolverOperators);
       numSolverOperators++;
     }
-    characterRigNode.pub.invertSolver = function(name, type, solverOptions) {
-      solverOptions = scene.assignDefaults(solverOptions, {
-        rigNode: characterRigNode.pub,
-        index: solvers.length
-      });
+    characterRigNode.pub.invertSolvers = function(sourceRigNode) {
+      
+      sourceRigNode = scene.getPrivateInterface(sourceRigNode);
+      variablesNode.getDGNode().setDependency(sourceRigNode.getDGNode(), 'sourcerig');
+      variablesNode.getDGNode().setDependency(constantsNode.getDGNode(), 'constants');
+      variablesNode.getDGNode().setDependency(skeletonNode.getDGNode(), 'skeleton');
+      var options = {
+        variablesNode: variablesNode
+      };
       for (var i = 0; i < solvers.length; i++) {
-        if (solvers[i].name == name) {
-          throw (" Solver names must be unique. Solver '" + name +
-                 "' already applied to :" + characterRigNode.pub.getName());
+        if(!solvers[i].invert){
+          warn("Solver does not provide invert function:" + solvers[i].name);
+          continue;
         }
+        solvers[i].invert(scene, options);
       }
-      solverOptions.name = name;
-      var solver = FABRIC.SceneGraph.CharacterSolvers.invertSolver(type, solverOptions, scene);
-    //  solvers.push(solver);
-      return solver;
     };
     //////////////////////////////////////////
     characterRigNode.pub.addMember = function(name, type, value) {

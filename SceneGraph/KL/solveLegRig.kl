@@ -78,7 +78,7 @@ operator invertLegRig(
 
   io Integer boneIndices[],
   io Integer footPlatformXfoId,
-  io Integer ankleIKAnimationXfoId,
+  io Xfo ankleOffsetXfo,
   io Integer ikBlendId,
 
   io PoseVariables poseVariables

@@ -868,10 +868,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
       
       var localPose = skeletonNode.getReferenceLocalPose();
       var trackBindings = new FABRIC.RT.KeyframeTrackBindings();
-      var poseParameterBindings = [];
       for (var i = 0; i < bones.length; i++) {
-        // In a simple FK hierarchy, each local xfo maps to a global xfo.
-        poseParameterBindings.push(new FABRIC.RT.PoseParameterBinding(i, i));
         var channels = colladaData.libraryAnimations.channelMap[bones[i].name];
         
         if (!channels)
@@ -1034,8 +1031,8 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
       
       variablesNode.bindToAnimationTracks( libraryAnimations, controllerNode, trackSetID, trackBindings );
       
-      variablesNode.addVariable('Xfo[]', skeletonNode.getReferenceLocalPose());
-      rigNode.addSolver('solveColladaPose', 'FKHierarchySolver', { poseParameterBindings: poseParameterBindings });
+    //  variablesNode.addVariable('Xfo[]', skeletonNode.getReferenceLocalPose());
+      rigNode.addSolver('solveColladaPose', 'FKHierarchySolver');
       
     //  assetNodes[trackNode.getName()] = trackNode;
     //  assetNodes[evaluatorNode.getName()] = evaluatorNode;
