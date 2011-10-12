@@ -4,22 +4,20 @@
 
 use Xfo;
 use Bone;
+use DebugGeometry;
 
 function Scalar sq(Scalar v) {
   return v * v;
 }
 
-operator solveNCFIK(
+function solveNCFIK(
   io Xfo pose[],
-  io Bone bones[],
-  io Integer boneIndices[],
-  io Xfo target
+  in Bone bones[],
+  in Integer boneIndices[],
+  in Xfo target,
+  io DebugGeometry debugGeometry
 ) {
-  // Compute the FK pose of the chain.
-  // Note: this should be moved to a separate solver.
-  for (Integer i = 0; i < boneIndices.size(); i++) {
-    pose[boneIndices[i]] = bones[boneIndices[i]].referenceLocalPose * pose[bones[boneIndices[i]].parent];
-  }
+
   Integer boneIndex, lastBoneIndex = boneIndices[boneIndices.size() - 1];
   Scalar distToIkGoal, distToFkChainTip, remainingChainLength = 0;
   Scalar fkBoneAngle, ikBoneAngle, deltaBoneAngle;
@@ -134,6 +132,27 @@ operator solveNCFIK(
 
     pose[boneIndex] = boneXfo;
   }
+}
+
+operator solveNCFIKOp(
+  io Xfo pose[],
+  io Bone bones[],
+  io Integer boneIndices[],
+  io Xfo target,
+  io DebugGeometry debugGeometry
+) {
+  // Compute the FK pose of the chain.
+  // Note: this should be moved to a separate solver.
+  for (Integer i = 0; i < boneIndices.size(); i++) {
+    pose[boneIndices[i]] = bones[boneIndices[i]].referenceLocalPose * pose[bones[boneIndices[i]].parent];
+  }
+  solveNCFIKOp(
+    pose,
+    bones,
+    boneIndices,
+    target,
+    debugGeometry
+  );
 }
 
 operator solveInvNCFIK(

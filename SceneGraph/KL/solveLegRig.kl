@@ -6,6 +6,7 @@
 use Xfo;
 use Bone;
 use BezierKeyframe;
+use DebugGeometry;
 
 #include 'FABRIC_ROOT/SceneGraph/KL/solveFishingRod.kl'
 #include 'FABRIC_ROOT/SceneGraph/KL/solveNCFIK.kl'
@@ -19,7 +20,8 @@ operator solveLegRig(
   io Xfo ankleOffsetXfo,
   io Integer ikBlendId,
 
-  io PoseVariables poseVariables
+  io PoseVariables poseVariables,
+  io DebugGeometry debugGeometry
 ) {
   Scalar ikBlend = poseVariables.scalarValues[ikBlendId];
   if (ikBlend > 0.0) {
@@ -34,7 +36,8 @@ operator solveLegRig(
     Integer ankleIndex = boneIndices[2];
 
     Xfo targetXfo;
-    targetXfo = ankleOffsetXfo * poseVariables.xfoValues[footPlatformXfoId];
+    targetXfo = poseVariables.xfoValues[footPlatformXfoId] * ankleOffsetXfo;
+    debugGeometry.drawAxis(targetXfo, 3.0, Color(1.0, 1.0, 0.0, 1.0));
 
     Scalar maxLineLength = bones[thighIndex].length + bones[calfIndex].length;
     Vec2 maxLineLengthSoftening(maxLineLength * 0.03, maxLineLength * 0.03);
@@ -49,14 +52,13 @@ operator solveLegRig(
       maxLineLength,
       maxLineLengthSoftening
     );
-
     targetXfo.tr = targetXfo.transformVector(Vec3(-bones[ankleIndex].length, 0.0, 0.0));
 
     Integer ikboneIndices[];
     ikboneIndices.push(thighIndex);
     ikboneIndices.push(calfIndex);
 
-    solveNCFIK(pose, bones, ikboneIndices, targetXfo);
+    solveNCFIK(pose, bones, ikboneIndices, targetXfo, debugGeometry);
 
     pose[ankleIndex].tr = pose[calfIndex].transformVector(Vec3(bones[calfIndex].length, 0.0, 0.0));
     pose[ankleIndex].ori = targetXfo.ori;

@@ -428,7 +428,8 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
         skeletonNode: undefined,
-        computeInverseXfos: false
+        computeInverseXfos: false,
+        debug: true
       });
 
     if (!options.skeletonNode) {
@@ -441,6 +442,14 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
       variablesNode,
       constantsNode,
       solvers = [];
+      
+    
+    dgnode.addMember('debug', 'Boolean', options.debug );
+    dgnode.addMember('debugGeometry', 'DebugGeometry' );
+    var debugGeometryDraw = scene.constructNode('DebugGeometryDraw', {
+        dgnode: dgnode,
+        debugGemetryMemberName: 'debugGeometry'
+    });
 
     // extend the public interface
     characterRigNode.addMemberInterface(dgnode, 'pose', true);
