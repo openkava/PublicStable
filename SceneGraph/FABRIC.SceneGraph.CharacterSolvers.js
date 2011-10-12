@@ -1106,13 +1106,12 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('LegSolver', {
     ankleTipXfo.tr = referencePose[ankleIndex].transformVector(new FABRIC.RT.Vec3(bones[ankleIndex].length, 0, 0));
     footPlatformXfo = ankleTipXfo.clone();
     footPlatformXfo.tr.y = 0;
-    footPlatformXfo.ori = footPlatformXfo.ori.multiply(
-      new FABRIC.RT.Quat().setFrom2Vectors(
-        footPlatformXfo.ori.rotateVector(new FABRIC.RT.Vec3(0, 1, 0)),
-        new FABRIC.RT.Vec3(0, 1, 0)
-      )
+    var alignmentQuat = new FABRIC.RT.Quat();
+    alignmentQuat.setFrom2Vectors(
+      footPlatformXfo.ori.rotateVector(new FABRIC.RT.Vec3(1, 0, 0)),
+      new FABRIC.RT.Vec3(0, -1, 0)
     );
-
+    footPlatformXfo.ori = alignmentQuat.multiply(footPlatformXfo.ori);
     ankleOffsetXfo = footPlatformXfo.inverse().multiply(ankleTipXfo);
     
     var footPlatformXfoId = variablesNode.addVariable('Xfo', footPlatformXfo);
@@ -1150,7 +1149,8 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('LegSolver', {
           'constants.' + name + 'ankleOffsetXfo',
           'constants.' + name + 'ikblendId',
           
-          'variables.poseVariables'
+          'variables.poseVariables',
+          'self.debugGeometry'
         ]
       }));
 
