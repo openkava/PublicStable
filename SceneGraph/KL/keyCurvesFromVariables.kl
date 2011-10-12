@@ -1,0 +1,21 @@
+
+
+
+use Vec2, KEYFRAMETRACKSETTYPE;
+use LinearKeyframe;
+use LinearKeyframeTrack;
+use LinearKeyframeTrackSet;
+
+operator keyCurvesFromVariables(
+  io KEYFRAMETRACKSETTYPE trackSet,
+  io Scalar time,
+  io KeyframeTrackBindings bindings,
+  io PoseVariables poseVariables
+) {
+  trackSet.setValues(
+    poseVariables,
+    time,
+    bindings
+  );
+}
+
