@@ -372,6 +372,10 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
           ]
         }));
     }
+    
+    characterVariablesNode.getVariables = function(){
+      return dgnode.getData('poseVariables');
+    }
 
     return characterVariablesNode;
   }});
