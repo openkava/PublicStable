@@ -24,13 +24,13 @@
 
 $(document).ready(function() {
 
-  if(!keyframeTrackNode){
-    alert("this page must be opened from a running demo, passing it the correct keyframeTrackNode");
+  if(!animationLibraryNode){
+    alert("this page must be opened from a running demo, passing it the correct animationLibraryNode");
   }
   
   var windowWidth = $('#viewer').width();
   var windowHeight = $('#viewer').height();
-  var curveEditor = constructCurveEditor('viewer', keyframeTrackNode);
+  var curveEditor = constructCurveEditor('viewer', animationLibraryNode);
   
   window.onresize = function () {
     curveEditor.resize();
