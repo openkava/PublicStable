@@ -7,6 +7,15 @@ use LinearKeyframe;
 use LinearKeyframeTrack;
 use LinearKeyframeTrackSet;
 
+function PoseVariables.addScalarValue(){
+  this.scalarValues.push(0.0);
+}
+
+function PoseVariables.addXfoValue() {
+  Xfo xfo;
+  this.xfoValues.push(xfo);
+}
+
 
 function PoseVariables.evaluateKeyframeTracks(
   in LinearKeyframeTrackSet trackSet,

@@ -76,6 +76,64 @@ function LinearKeyframeTrack.setValue(
   }
 }
 
+function LinearKeyframeTrackSet.addScalarTrack(
+  io KeyframeTrackBindings bindings
+) {
+  LinearKeyframeTrack track;
+  this.tracks.push(track);
+  bindings.scalarBindings.push(this.tracks.size - 1);
+}
+
+
+function LinearKeyframeTrackSet.addVec3Track(
+  io KeyframeTrackBindings bindings
+) {
+  LinearKeyframeTrack track;
+  Integer binding[];
+  this.tracks.push(track); binding.push(this.tracks.size - 1);
+  this.tracks.push(track); binding.push(this.tracks.size - 1);
+  this.tracks.push(track); binding.push(this.tracks.size - 1);
+  bindings.vec3Bindings.push(binding);
+}
+
+
+function LinearKeyframeTrackSet.addQuatTrack(
+  io KeyframeTrackBindings bindings,
+  in Boolean storeEulerAngles
+) {
+  LinearKeyframeTrack track;
+  Integer binding[];
+  this.tracks.push(track); binding.push(this.tracks.size - 1);
+  this.tracks.push(track); binding.push(this.tracks.size - 1);
+  this.tracks.push(track); binding.push(this.tracks.size - 1);
+  if(!storeEulerAngles){
+    this.tracks.push(track); binding.push(this.tracks.size - 1);
+  }
+  bindings.quatBindings.push(binding);
+}
+
+
+function LinearKeyframeTrackSet.addXfoTrack(
+  io KeyframeTrackBindings bindings,
+  in Boolean storeEulerAngles
+) {
+  LinearKeyframeTrack track;
+  Integer binding[];
+  
+  this.tracks.push(track); binding.push(this.tracks.size - 1);
+  this.tracks.push(track); binding.push(this.tracks.size - 1);
+  this.tracks.push(track); binding.push(this.tracks.size - 1);
+  
+  this.tracks.push(track); binding.push(this.tracks.size - 1);
+  this.tracks.push(track); binding.push(this.tracks.size - 1);
+  this.tracks.push(track); binding.push(this.tracks.size - 1);
+  if(!storeEulerAngles){
+    this.tracks.push(track); binding.push(this.tracks.size - 1);
+  }
+  bindings.xfoBindings.push(binding);
+}
+
+
 
 function LinearKeyframeTrackSet.setValues(
   io PoseVariables values,
