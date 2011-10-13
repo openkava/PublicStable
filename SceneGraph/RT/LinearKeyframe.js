@@ -73,6 +73,7 @@ FABRIC.RT.LinearKeyframeTrackSet = function( name ) {
   this.tracks = [];
 };
 
+
 FABRIC.appendOnCreateContextCallback(function(context) {
   context.RegisteredTypesManager.registerType('LinearKeyframeTrackSet', {
     members: {
