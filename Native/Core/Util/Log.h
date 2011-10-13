@@ -34,17 +34,25 @@ void FABRIC_WRITE_CSTR( char const *data, size_t length );
 
 inline void FABRIC_LOG_CSTR( char const *data )
 {
-  char buf[65536];
-  int length = snprintf(buf, 65536, "[FABRIC] %s\n", data);
+  static int maxBufLength = 65535;
+  char buf[maxBufLength+1];
+  int length = snprintf(buf, maxBufLength, "[FABRIC] %s\n", data);
+  if ( length > maxBufLength )
+    length = maxBufLength;
+  buf[length] = '\0';
   FABRIC_WRITE_CSTR( buf, length );
 }
 
 inline void FABRIC_LOG( char const *format, ... )
 {
-  char buf[65536];
+  static int maxBufLength = 65535;
+  char buf[maxBufLength+1];
   va_list args;
   va_start( args, format );
-  int length = vsnprintf( buf, 65536, format, args );
+  int length = vsnprintf( buf, maxBufLength, format, args );
+  if ( length > maxBufLength )
+    length = maxBufLength;
+  buf[length] = '\0';
   va_end( args );
   if ( length > 0 )
     FABRIC_LOG_CSTR( buf );
