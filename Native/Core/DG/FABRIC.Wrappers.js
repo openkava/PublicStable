@@ -964,7 +964,7 @@ function (fabricClient, logCallback, debugLogCallback) {
 
     DG.createEventHandler = function(name) {
       var result = DG.createContainer(name);
-
+      result.scopes = {};
       result.preDescendBindings = DG.createBindingList([name, 'preDescendBindings']);
       result.postDescendBindings = DG.createBindingList([name, 'postDescendBindings']);
 
@@ -1051,16 +1051,47 @@ function (fabricClient, logCallback, debugLogCallback) {
       };
 
       result.pub.setScope = function(name, node) {
+        try {
+          if (typeof name !== 'string')
+            throw 'must be a string';
+          else if (name == '')
+            throw 'must not be empty';
+        }
+        catch (e) {
+          throw "name: " + e;
+        }
+        var oldNode = result.scopes[name];
+        result.scopes[name] = node;
         result.queueCommand('setScope', {
           name: name,
           node: node.getName()
+        }, function () {
+          if (oldNode)
+            result.scopes[name] = oldNode;
+          else delete result.scopes[name];
         });
-        delete result.scopes;
+      };
+
+      result.pub.removeScope = function(name) {
+        try {
+          if (typeof name !== 'string')
+            throw 'must be a string';
+          else if (name == '')
+            throw 'must not be empty';
+        }
+        catch (e) {
+          throw "name: " + e;
+        }
+        var oldNode = result.scopes[name];
+        delete result.scopes[name];
+        result.queueCommand('removeScope', name, function () {
+          if (oldNode)
+            result.scopes[name] = oldNode;
+          else delete result.scopes[name];
+        });
       };
 
       result.pub.getScopes = function() {
-        if (!('scopes' in result))
-          executeQueuedCommands();
         return result.scopes;
       };
 
