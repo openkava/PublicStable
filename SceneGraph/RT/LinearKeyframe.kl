@@ -77,75 +77,6 @@ function LinearKeyframeTrack.setValue(
 }
 
 
-function LinearKeyframeTrackSet.addScalarTrack(
-  io KeyframeTrackBindings bindings
-) {
-  this.tracks.push(LinearKeyframeTrack());
-  bindings.scalarBindings.push(this.tracks.length - 1);
-}
-
-
-function LinearKeyframeTrackSet.addVec3Track(
-  io KeyframeTrackBindings bindings
-) {
-  Integer binding[];
-  this.tracks.push(LinearKeyframeTrack()); binding.push(this.tracks.length - 1);
-  this.tracks.push(LinearKeyframeTrack()); binding.push(this.tracks.length - 1);
-  this.tracks.push(LinearKeyframeTrack()); binding.push(this.tracks.length - 1);
-  bindings.vec3Bindings.push(binding);
-}
-
-
-function LinearKeyframeTrackSet.addQuatTrack(
-  io KeyframeTrackBindings bindings,
-  in Boolean storeEulerAngles
-) {
-  Integer binding[];
-  this.tracks.push(LinearKeyframeTrack()); binding.push(this.tracks.length - 1);
-  this.tracks.push(LinearKeyframeTrack()); binding.push(this.tracks.length - 1);
-  this.tracks.push(LinearKeyframeTrack()); binding.push(this.tracks.length - 1);
-  if(!storeEulerAngles){
-    this.tracks.push(LinearKeyframeTrack()); binding.push(this.tracks.length - 1);
-  }
-  bindings.quatBindings.push(binding);
-}
-
-
-function LinearKeyframeTrackSet.addXfoTrack(
-  io KeyframeTrackBindings bindings,
-  in Boolean storeEulerAngles
-) {
-  Integer binding[];
-  
-  this.tracks.push(LinearKeyframeTrack()); binding.push(this.tracks.length - 1);
-  this.tracks.push(LinearKeyframeTrack()); binding.push(this.tracks.length - 1);
-  this.tracks.push(LinearKeyframeTrack()); binding.push(this.tracks.length - 1);
-  
-  this.tracks.push(LinearKeyframeTrack()); binding.push(this.tracks.length - 1);
-  this.tracks.push(LinearKeyframeTrack()); binding.push(this.tracks.length - 1);
-  this.tracks.push(LinearKeyframeTrack()); binding.push(this.tracks.length - 1);
-  if(!storeEulerAngles){
-    this.tracks.push(LinearKeyframeTrack()); binding.push(this.tracks.length - 1);
-  }
-  bindings.xfoBindings.push(binding);
-}
-
-
-function Vec2 LinearKeyframeTrackSet.getTimeRange() {
-  Vec2 range;
-  for(var i=0; i<this.tracks.length; i++){
-    LinearKeyframeTrack track = this.tracks[i];
-    if(i==0){
-      range.set(track.keys[0].time, track.keys[track.keys.size-1].time);
-    }else{
-      if(track.keys[0].time < range.x) range.x = track.keys[0].time;
-      if(track.keys[track.keys.size-1].time > range.y) range.y = track.keys[track.keys.size-1].time;
-    }
-  }
-  return range;
-}
-
-
 function LinearKeyframeTrackSet.setValues(
   io PoseVariables values,
   in Scalar time,
@@ -154,16 +85,6 @@ function LinearKeyframeTrackSet.setValues(
   for (Integer i = 0; i < bindings.scalarBindings.size; i++) {
     Scalar val = values.scalarValues[i];
     this.tracks[bindings.scalarBindings[i]].setValue(time, val);
-  }
-  
-  for (Integer i = 0; i < bindings.vec3Bindings.size; i++) {
-    Integer binding[] = bindings.vec3Bindings[i];
-    if(binding.size == 3){
-      Vec3 v = values.vec3Values[i];
-      this.tracks[binding[0]].setValue(time, v.x);
-      this.tracks[binding[1]].setValue(time, v.y);
-      this.tracks[binding[2]].setValue(time, v.z);
-    }
   }
   
   for (Integer i = 0; i < bindings.quatBindings.size; i++) {
