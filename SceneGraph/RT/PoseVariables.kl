@@ -8,6 +8,27 @@ use LinearKeyframeTrack;
 use LinearKeyframeTrackSet;
 
 
+function PoseVariables.addScalarValue(){
+  bindings.scalarValues.push(0.0);
+  return this.scalarValues.length-1;
+}
+
+function PoseVariables.addVec3Value() {
+  bindings.vec3Values.push(Quat());
+  return this.vec3Values.length-1;
+}
+
+function PoseVariables.addQuatValue() {
+  bindings.quatValues.push(Quat());
+  return this.quatValues.length-1;
+}
+
+function PoseVariables.addXfoValue() {
+  bindings.xfoValues.push(Xfo());
+  return this.xfoValues.length-1;
+}
+
+
 function PoseVariables.evaluateKeyframeTracks(
   in LinearKeyframeTrackSet trackSet,
   in Scalar time,
