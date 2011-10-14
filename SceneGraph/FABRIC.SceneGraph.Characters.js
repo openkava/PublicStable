@@ -172,6 +172,11 @@ FABRIC.SceneGraph.registerNodeType('CharacterSkeleton', {
       }
       dgnode.setData('bones', skeletonId ? skeletonId : 0, bones );
     };
+    
+    
+    characterSkeletonNode.addMember = function(name, type, value) {
+      dgnode.addMember(name, type, value);
+    };
 
     if (options.calcReferenceLocalPose) {
       // For skeletons that are built procedurally, or using
@@ -381,7 +386,7 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
   }});
 
 
-
+/*
 FABRIC.SceneGraph.registerNodeType('CharacterConstants', {
   briefDesc: 'The CharacterConstants node is similar to a CharacterVariables node, but values don\'t change over time.',
   detailedDesc: 'The CharacterConstants node is similar to a CharacterVariables node, but values don\'t change over time.',
@@ -418,6 +423,7 @@ FABRIC.SceneGraph.registerNodeType('CharacterConstants', {
 
     return characterVariablesNode;
   }});
+*/
 
 // The character rig computes the pose of a character
 FABRIC.SceneGraph.registerNodeType('CharacterRig', {
@@ -443,8 +449,8 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
     var characterRigNode = scene.constructNode('SceneGraphNode', options);
     var dgnode = characterRigNode.constructDGNode('DGNode');
     var skeletonNode,
-      variablesNode,
-      constantsNode,
+      variablesNode,/*
+      constantsNode,*/
       solvers = [];
       
     
@@ -487,6 +493,7 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
     characterRigNode.pub.getVariablesNode = function() {
       return scene.getPublicInterface(variablesNode);
     };
+    /*
     characterRigNode.pub.setConstantsNode = function(node) {
       if (!node.isTypeOf('CharacterConstants')) {
         throw ('Incorrect type assignment. Must assign a CharacterConstants');
@@ -498,6 +505,7 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
     characterRigNode.pub.getConstantsNode = function() {
       return scene.getPublicInterface(constantsNode);
     };
+    */
     //////////////////////////////////////////
     // Solver Interfaces
     characterRigNode.pub.addSolver = function(name, type, solverOptions) {
@@ -530,17 +538,14 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
       }
       sourceRigNode = scene.getPrivateInterface(node);
       variablesNode.getDGNode().setDependency(sourceRigNode.getDGNode(), 'sourcerig');
-      variablesNode.getDGNode().setDependency(constantsNode.getDGNode(), 'constants');
+    //  variablesNode.getDGNode().setDependency(constantsNode.getDGNode(), 'constants');
       variablesNode.getDGNode().setDependency(skeletonNode.getDGNode(), 'skeleton');
-      var options = {
-        variablesNode: variablesNode
-      };
       for (var i = 0; i < solvers.length; i++) {
         if(!solvers[i].invert){
           console.warn("Solver does not provide invert function:" + solvers[i].name);
           continue;
         }
-        solvers[i].invert(options, scene);
+        solvers[i].invert(variablesNode);
       }
     };
     //////////////////////////////////////////
@@ -574,13 +579,14 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
     else {
       characterRigNode.pub.setVariablesNode(scene.constructNode('CharacterVariables').pub);
     }
-
+/*
     if (options.constantsNode) {
       characterRigNode.pub.setConstantsNode(options.constantsNode);
     }
     else {
       characterRigNode.pub.setConstantsNode(scene.constructNode('CharacterConstants').pub);
     }
+*/
     return characterRigNode;
   }});
 
@@ -613,7 +619,7 @@ FABRIC.SceneGraph.registerNodeType('CharacterRigDebug', {
 
       characterRigDebugNode.pub.addVertexAttributeValue('vertexColors', 'Color', { genVBO:true } );
       characterRigDebugNode.getUniformsDGNode().setDependency(rigNode.getDGNode(), 'rig');
-      characterRigDebugNode.getUniformsDGNode().setDependency(rigNode.getConstantsNode().getDGNode(), 'constants');
+    //  characterRigDebugNode.getUniformsDGNode().setDependency(rigNode.getConstantsNode().getDGNode(), 'constants');
       characterRigDebugNode.getUniformsDGNode().setDependency(rigNode.getVariablesNode().getDGNode(), 'variables');
       characterRigDebugNode.pub.addUniformValue('debugpose', 'Xfo[]');
       characterRigDebugNode.pub.addUniformValue('singlecolor', 'Color', options.color);
