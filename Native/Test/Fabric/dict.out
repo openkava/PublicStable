@@ -1,2 +1,10 @@
+[FABRIC] [{},{},{"result":{}}]
 {}
+[FABRIC] [{},{"result":{"x":"bar"}}]
 {x:"bar"}
+[FABRIC] [{},{"result":{"x":"baz"}}]
+{x:"baz"}
+[FABRIC] [{},{"result":{}}]
+{}
+[FABRIC] [{},{"result":{"2.4":3.14,"7.9":2.71}}]
+{2.4:3.14,7.9:2.71}

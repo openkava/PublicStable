@@ -38,9 +38,7 @@ namespace Fabric
         yajl_status yajlStatus;
         RC::ConstHandle<Value> result;
         m_contextStack.push_back( new DirectContext( result ) );
-        yajlStatus = yajl_parse( m_yajlHandle, (const unsigned char *)data, len );
-        if ( yajlStatus != yajl_status_ok )
-          throw Exception( "JSON parser error: " + std::string( yajl_status_to_string( yajlStatus ) ) );
+        yajl_parse( m_yajlHandle, (const unsigned char *)data, len );
         yajlStatus = yajl_parse_complete( m_yajlHandle );
         if ( yajlStatus != yajl_status_ok )
           throw Exception( "JSON parser error: " + std::string( yajl_status_to_string( yajlStatus ) ) );
