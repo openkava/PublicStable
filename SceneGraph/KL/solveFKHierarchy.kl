@@ -2,21 +2,7 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
-use Xfo, Bone;
-
-operator solveFKBone(
-  io Xfo pose[],
-  io Bone bones[],
-  io PoseParameterBinding binding,
-  io PoseVariables poseVariables
-) {
-  if (bones[binding.target].parent == - 1) {
-    pose[binding.target] = poseVariables.xfoValues[binding.target];
-  }
-  else {
-    pose[binding.target] = pose[bones[binding.target].parent] * poseVariables.xfoValues[binding.source];
-  }
-}
+use Xfo;
 
 operator solveFKHierarchy(
   io Xfo pose[],
@@ -33,6 +19,7 @@ operator solveFKHierarchy(
     }
   }
 }
+
 
 operator invertFKHierarchy(
   io Xfo pose[],
