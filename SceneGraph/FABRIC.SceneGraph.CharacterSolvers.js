@@ -1102,10 +1102,10 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('ArmSolver', {
 
 
 FABRIC.Characters.Limb = function(boneIds, ikGoalXfoId, ikGoalOffsetXfo, ikblendId) {
-  this.boneIds = boneIds ? boneIds : [];
-  this.ikGoalXfoId = ikGoalXfoId ? ikGoalXfoId : -1;
-  this.ikGoalOffsetXfo = ikGoalOffsetXfo ? ikGoalOffsetXfo : new FABRIC.RT.Xfo();
-  this.ikblendId = ikblendId ? ikblendId : -1;
+  this.boneIds = boneIds != undefined ? boneIds : [];
+  this.ikGoalXfoId = ikGoalXfoId != undefined ? ikGoalXfoId : -1;
+  this.ikGoalOffsetXfo = ikGoalOffsetXfo != undefined ? ikGoalOffsetXfo : new FABRIC.RT.Xfo();
+  this.ikblendId = ikblendId != undefined ? ikblendId : -1;
 };
 
 FABRIC.appendOnCreateContextCallback(function(context) {
@@ -1199,7 +1199,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('LegSolver', {
     
     var limb = new FABRIC.Characters.Limb(boneIDs.bones, footPlatformXfoId, ankleOffsetXfo, ikblendId);
     skeletonNode.addMember(name + 'Limb', 'Limb', limb);
-    /*
+    
     rigNode.addSolverOperator(scene.constructOperator({
         operatorName: 'solveLegRig',
         srcFile: 'FABRIC_ROOT/SceneGraph/KL/solveLegRig.kl',
@@ -1213,7 +1213,6 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('LegSolver', {
           'self.debugGeometry'
         ]
       }));
-    */
 
     if (options.createManipulators) {
       /*
@@ -1257,10 +1256,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('LegSolver', {
             'sourcerig.pose',
             'skeleton.bones',
             
-            'skeleton.' + name + 'bones',
-            'skeleton.' + name + 'footPlatformXfoId',
-            'skeleton.' + name + 'ankleOffsetXfo',
-            'skeleton.' + name + 'ikblendId',
+            'skeleton.' + name + 'Limb',
             
             'self.poseVariables',
             'sourcerig.debugGeometry'
