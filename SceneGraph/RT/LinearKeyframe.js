@@ -73,6 +73,23 @@ FABRIC.RT.LinearKeyframeTrackSet = function( name ) {
   this.tracks = [];
 };
 
+FABRIC.RT.LinearKeyframeTrackSet.prototype = {
+  addXfoTrack: function(bindings, storeEulerAngles){
+    var binding = [];
+    this.tracks.push(new FABRIC.RT.LinearKeyframeTrack()); binding.push(this.tracks.length - 1);
+    this.tracks.push(new FABRIC.RT.LinearKeyframeTrack()); binding.push(this.tracks.length - 1);
+    this.tracks.push(new FABRIC.RT.LinearKeyframeTrack()); binding.push(this.tracks.length - 1);
+    
+    this.tracks.push(new FABRIC.RT.LinearKeyframeTrack()); binding.push(this.tracks.length - 1);
+    this.tracks.push(new FABRIC.RT.LinearKeyframeTrack()); binding.push(this.tracks.length - 1);
+    this.tracks.push(new FABRIC.RT.LinearKeyframeTrack()); binding.push(this.tracks.length - 1);
+    if(!storeEulerAngles){
+      this.tracks.push(new FABRIC.RT.LinearKeyframeTrack()); binding.push(this.tracks.length - 1);
+    }
+    return binding;
+  }
+};
+
 FABRIC.appendOnCreateContextCallback(function(context) {
   context.RegisteredTypesManager.registerType('LinearKeyframeTrackSet', {
     members: {

@@ -323,15 +323,15 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
           break;
         case 'Vec3':
           id = poseVariables.vec3Values.length;
-          poseVariables.vec3Values.push( value ? value : new FABRIC.Math.Vec3());
+          poseVariables.vec3Values.push( value ? value : new FABRIC.RT.Vec3());
           break;
         case 'Quat':
           id = poseVariables.quatValues.length;
-          poseVariables.quatValues.push( value ? value : new FABRIC.Math.Quat());
+          poseVariables.quatValues.push( value ? value : new FABRIC.RT.Quat());
           break;
         case 'Xfo':
           id = poseVariables.xfoValues.length;
-          poseVariables.xfoValues.push( value ? value : new FABRIC.Math.Xfo());
+          poseVariables.xfoValues.push( value ? value : new FABRIC.RT.Xfo());
           break;
         case 'Xfo[]':
           id = [];
