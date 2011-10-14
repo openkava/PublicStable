@@ -13,7 +13,6 @@ operator evaluatePoseTracks(
   io Integer keyIndices[],
   io PoseVariables poseVariables
 ) {
-  
   poseVariables.evaluateKeyframeTracks(
     trackSets[trackIndex],
     time,

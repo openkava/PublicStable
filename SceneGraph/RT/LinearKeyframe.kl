@@ -134,6 +134,25 @@ function LinearKeyframeTrackSet.addXfoTrack(
 }
 
 
+function Vec2 LinearKeyframeTrackSet.getTimeRange() {
+  Vec2 timeRange;
+  for (Integer i = 0; i < this.tracks.size; i++) {
+    if(i==0){
+      timeRange.x = this.tracks[i].keys[0].time;
+      timeRange.y = this.tracks[i].keys[this.tracks[i].keys.size-1].time;
+    }
+    else{
+      if(timeRange.x > this.tracks[i].keys[0].time){
+        timeRange.x = this.tracks[i].keys[0].time;
+      }
+      if(timeRange.y < this.tracks[i].keys[this.tracks[i].keys.size-1].time){
+        timeRange.y =  this.tracks[i].keys[this.tracks[i].keys.size-1].time;
+      }
+    }
+  }
+  return timeRange;
+}
+
 
 function LinearKeyframeTrackSet.setValues(
   io PoseVariables values,
