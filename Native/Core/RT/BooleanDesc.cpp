@@ -13,7 +13,7 @@ namespace Fabric
   namespace RT
   {
     BooleanDesc::BooleanDesc( std::string const &name, RC::ConstHandle<BooleanImpl> const &booleanImpl )
-      : Desc( name, booleanImpl )
+      : ComparableDesc( name, booleanImpl )
       , m_booleanImpl( booleanImpl )
     {
     }

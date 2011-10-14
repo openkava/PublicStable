@@ -1,0 +1,125 @@
+/*
+ *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+ */
+ 
+#ifndef _FABRIC_RT_VARIABLE_DICT_IMPL_H
+#define _FABRIC_RT_VARIABLE_DICT_IMPL_H
+
+#include <Fabric/Core/RT/Impl.h>
+#include <Fabric/Base/Util/AtomicSize.h>
+#include <Fabric/Base/Util/Bits.h>
+
+namespace Fabric
+{
+  namespace RT
+  {
+    class ComparableImpl;
+    
+#define RT_DICT_IMPL_MINIMUM_BUCKET_COUNT size_t(16)
+    
+    class DictImpl : public Impl
+    {
+      friend class Manager;
+      friend class Impl;
+      friend class SlicedArrayImpl;
+      
+      struct node_t
+      {
+        node_t *bitsPrevNode;
+        node_t *bitsNextNode;
+        node_t *bucketPrevNode;
+        node_t *bucketNextNode;
+        size_t keyHash;
+        char keyAndValue[0];
+      };
+      
+      struct bucket_t
+      {
+        node_t *firstNode;
+        node_t *lastNode;
+      };
+        
+      struct bits_t
+      {
+        size_t bucketCount;
+        size_t nodeCount;
+        node_t *firstNode;
+        node_t *lastNode;
+        bucket_t *buckets;
+      };
+    
+    public:
+    
+      // Impl
+      
+      virtual void setData( void const *src, void *dst ) const;
+      virtual void disposeDatasImpl( void *data, size_t count, size_t stride ) const;
+      virtual std::string descData( void const *data ) const;
+      virtual void const *getDefaultData() const;
+      
+      virtual RC::Handle<JSON::Value> getJSONValue( void const *data ) const;
+      virtual void setDataFromJSONValue( RC::ConstHandle<JSON::Value> const &value, void *data ) const;
+      
+      virtual bool isShallow() const;
+      virtual bool isEquivalentTo( RC::ConstHandle<RT::Impl> const &desc ) const;
+
+      // DictImpl
+      
+      void const *getImmutable( void const *data, void const *keyData ) const;
+      void *getMutable( void *data, void const *keyData ) const;
+      size_t getSize( void const *data ) const;
+
+    protected:
+    
+      DictImpl(
+        std::string const &codeName,
+        RC::ConstHandle<RT::ComparableImpl> const &keyImpl,
+        RC::ConstHandle<RT::Impl> const &valueImpl
+        );
+      
+      void const *immutableKeyData( node_t const *node ) const
+      {
+        return &node->keyAndValue[0];
+      }
+      
+      void *mutableKeyData( node_t *node ) const
+      {
+        return &node->keyAndValue[0];
+      }
+      
+      void const *immutableValueData( node_t const *node ) const
+      {
+        return &node->keyAndValue[m_keySize];
+      }
+      
+      void *mutableValueData( node_t *node ) const
+      {
+        return &node->keyAndValue[m_keySize];
+      }
+      
+      static size_t BucketCountForNodeCount( size_t nodeCount )
+      {
+        return std::min( RT_DICT_IMPL_MINIMUM_BUCKET_COUNT, Util::nextPowerOfTwoMinusOne( nodeCount ) + 1 );
+      }
+      
+      void disposeNode( node_t *node ) const;
+      void disposeBits( bits_t *bits ) const;
+      void const *getImmutable( bucket_t const *bucket, void const *keyData ) const;
+      void *getMutable( bits_t *bits, bucket_t *bucket, void const *keyData, size_t keyHash ) const;
+      void insertNode( bits_t *bits, bucket_t *bucket, node_t *node ) const;
+      void adjustBucketCount( bits_t *bits, size_t newBucketCount ) const;
+
+    private:
+
+      RC::ConstHandle<ComparableImpl> m_keyImpl;
+      size_t m_keySize;
+      bool m_keyIsShallow;
+      RC::ConstHandle<Impl> m_valueImpl;
+      size_t m_valueSize;
+      bool m_valueIsShallow;
+      size_t m_nodeSize;
+   };
+  };
+};
+
+#endif //_FABRIC_RT_VARIABLE_DICT_IMPL_H
