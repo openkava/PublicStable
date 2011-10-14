@@ -21,6 +21,7 @@ operator solveLegRig(
   for( Integer i=0; i<legs.size; i++){
     Limb leg = legs[i];
     
+    // Calculate the FK pose of the limb.
     Xfo fkPose[];
     fkPose.resize(leg.boneIds.size());
     for (Integer j = 0; j < leg.boneIds.size(); j++) {
@@ -35,6 +36,7 @@ operator solveLegRig(
       else {
         fkPose[j] = fkPose[j-1] * poseVariables.xfoValues[leg.xfoIds[j]];
       }
+      pose[leg.boneIds[j]] = fkPose[j];
     }
       
     Scalar ikBlend = poseVariables.scalarValues[leg.ikblendId];
@@ -55,9 +57,6 @@ operator solveLegRig(
       Integer firstBoneId = leg.boneIds[0];
       Integer lastBoneId = leg.boneIds[leg.boneIds.size-1];
       Integer secondLastBoneId = leg.boneIds[leg.boneIds.size-2];
-      report(firstBoneId + ":"+ lastBoneId + ":"+ secondLastBoneId);
-      report(ikboneIndices);
-      report("leg.boneIds:"+leg.boneIds);
       applyFishingRod(
         targetXfo,
         bones[lastBoneId].length,
@@ -86,11 +85,6 @@ operator solveLegRig(
         }
       }
     }
-    else{
-      for (Integer j = 0; j < leg.boneIds.size(); j++) {
-        pose[leg.boneIds[j]] = fkPose[j];
-      }
-    }
   }
 }
 
@@ -105,6 +99,14 @@ operator invertLegRig(
 ) {
   for( Integer i=0; i<legs.size; i++){
     Limb leg = legs[i];
+    
+    for (var Integer j = 0; j < leg.boneIds.size; j++) {
+      if (bones[leg.boneIds[j]].parent == - 1)
+        poseVariables.xfoValues[leg.xfoIds[j]] = pose[leg.boneIds[j]];
+      else
+        poseVariables.xfoValues[leg.xfoIds[j]] = pose[bones[leg.boneIds[j]].parent].inverse() * pose[leg.boneIds[j]];
+    }
+    
     Integer ankleIndex = leg.boneIds[2];
     Xfo ankleTipXfo = pose[ankleIndex];
     ankleTipXfo.tr = ankleTipXfo.transformVector(Vec3(bones[ankleIndex].length, 0.0, 0.0));

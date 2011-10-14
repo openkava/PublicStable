@@ -64,23 +64,24 @@ operator generateSkeleton(
   //  Xfo xfo = bones[i].referencePose;
     
     if (bones[i].length <= 0.0) {
+      Scalar size = boneradius * 8.0;
       indices[offset] = offset;
-      positions[offset] = xfo.transformVector(Vec3(boneradius * -2.0, 0.0, 0.0));
+      positions[offset] = xfo.transformVector(Vec3(-size, 0.0, 0.0));
       offset++;
       indices[offset] = offset;
-      positions[offset] = xfo.transformVector(Vec3(boneradius * 2.0, 0.0, 0.0));
+      positions[offset] = xfo.transformVector(Vec3(size, 0.0, 0.0));
       offset++;
       indices[offset] = offset;
-      positions[offset] = xfo.transformVector(Vec3(0.0, boneradius * -2.0, 0.0));
+      positions[offset] = xfo.transformVector(Vec3(0.0, -size, 0.0));
       offset++;
       indices[offset] = offset;
-      positions[offset] = xfo.transformVector(Vec3(0.0, boneradius * 2.0, 0.0));
+      positions[offset] = xfo.transformVector(Vec3(0.0, size, 0.0));
       offset++;
       indices[offset] = offset;
-      positions[offset] = xfo.transformVector(Vec3(0.0, 0.0, boneradius * -2.0));
+      positions[offset] = xfo.transformVector(Vec3(0.0, 0.0, -size));
       offset++;
       indices[offset] = offset;
-      positions[offset] = xfo.transformVector(Vec3(0.0, 0.0, boneradius * 2.0));
+      positions[offset] = xfo.transformVector(Vec3(0.0, 0.0, size));
       offset++;
       continue;
     }
