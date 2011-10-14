@@ -83,9 +83,9 @@ namespace Fabric
     
       // ComparableImpl
     
-      virtual uint32_t hash( void const *data ) const
+      virtual size_t hash( void const *data ) const
       {
-        return uint32_t( getValue( data ) );
+        return size_t( getValue( data ) );
       }
       
       virtual int compare( void const *lhsData, void const *rhsData ) const

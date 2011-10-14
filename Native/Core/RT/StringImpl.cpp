@@ -97,18 +97,21 @@ namespace Fabric
       return false;
     }
 
-    uint32_t StringImpl::hash( void const *data ) const
+    size_t StringImpl::hash( void const *data ) const
     {
+      // [pzion 20111014] Note that this only hashes to values that are at most 2^32-1,
+      // but that should be OK for hashes -- it's hard to imagine needing more than
+      // 2^32 buckets.
       size_t stringLength = getValueLength( data );
       uint8_t const *stringData = reinterpret_cast<uint8_t const *>( getValueData( data ) );
-      uint32_t result = 0;
+      size_t result = 0;
       size_t limit = (stringLength + 1) / 2;
       if ( limit > 16 )
         limit = 16;
       for ( size_t i=limit; i--; )
         result = (result << 2)
-          ^ (uint32_t( stringData[stringLength-i-1] ) << 1)
-          ^ (uint32_t( stringData[i] ) << 0);
+          ^ (size_t( stringData[stringLength-i-1] ) << 1)
+          ^ (size_t( stringData[i] ) << 0);
       return result;
     }
     
