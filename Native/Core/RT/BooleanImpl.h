@@ -25,6 +25,11 @@ namespace Fabric
       
       virtual RC::Handle<JSON::Value> getJSONValue( void const *data ) const;
       virtual void setDataFromJSONValue( RC::ConstHandle<JSON::Value> const &value, void *data ) const;
+    
+      // ComparableImpl
+    
+      virtual uint32_t hash( void const *data ) const;
+      virtual int compare( void const *lhsData, void const *rhsData ) const;
 
       // BooleanImpl
 

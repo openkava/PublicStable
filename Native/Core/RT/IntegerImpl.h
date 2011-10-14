@@ -80,6 +80,24 @@ namespace Fabric
       {
         return _( getValue( data ) );
       }
+    
+      // ComparableImpl
+    
+      virtual uint32_t hash( void const *data ) const
+      {
+        return uint32_t( getValue( data ) );
+      }
+      
+      virtual int compare( void const *lhsData, void const *rhsData ) const
+      {
+        T lhsValue = getValue( lhsData );
+        T rhsValue = getValue( rhsData );
+        if ( lhsValue < rhsValue )
+          return -1;
+        else if ( lhsValue == rhsValue )
+          return 0;
+        else return 1;
+      }
       
       // IntegerImpl
 
