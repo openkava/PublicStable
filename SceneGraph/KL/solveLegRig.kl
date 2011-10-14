@@ -20,7 +20,6 @@ operator solveLegRig(
   io PoseVariables poseVariables,
   io DebugGeometry debugGeometry
 ) {
-/*
   Scalar ikBlend = poseVariables.scalarValues[limb.ikblendId];
   if (ikBlend > 0.0) {
     Xfo fkPose[];
@@ -69,7 +68,6 @@ operator solveLegRig(
       }
     }
   }
-  */
 }
 
 
@@ -83,11 +81,9 @@ operator invertLegRig(
   io PoseVariables poseVariables,
   io DebugGeometry debugGeometry
 ) {
-/*
   Integer ankleIndex = limb.boneIds[2];
   Xfo ankleTipXfo = pose[ankleIndex];
   ankleTipXfo.tr = ankleTipXfo.transformVector(Vec3(bones[ankleIndex].length, 0.0, 0.0));
   
   poseVariables.xfoValues[limb.ikGoalXfoId] = ankleTipXfo * limb.ikGoalOffsetXfo.inverse();
-  */
 }
