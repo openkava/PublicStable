@@ -116,22 +116,22 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('CharacterSolver', {
   }
 });
 
-/*
-FABRIC.Characters.FKHierarchy = function(options) {
-  this.boneIDs = [];
-  this.xfoVariableIds = [];
+
+FABRIC.Characters.FKHierarchy = function(boneIds, xfoIds) {
+  this.boneIds = boneIds ? boneIds : [];
+  this.xfoIds = xfoIds ? xfoIds : [];
 };
 
 FABRIC.appendOnCreateContextCallback(function(context) {
   context.RegisteredTypesManager.registerType('FKHierarchy', {
     members: {
-      boneIDs: 'Integer[]',
-      xfoVariableIds: 'Integer[]'
+      boneIds: 'Integer[]',
+      xfoIds: 'Integer[]'
     },
     constructor: FABRIC.Characters.FKHierarchy
   });
 });
-*/
+
 
 FABRIC.SceneGraph.CharacterSolvers.registerSolver('FKHierarchySolver',{
   constructSolver: function(options, scene) {
@@ -160,13 +160,10 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('FKHierarchySolver',{
     for(var i=0; i<boneIDs.bones.length; i++){
       defaultValues.push(referenceLocalPose[boneIDs.bones[i]]);
     }
-    var ids = variablesNode.addVariable('Xfo[]', defaultValues);
+    var xfoIds = variablesNode.addVariable('Xfo[]', defaultValues);
     
-    var poseParameterBindings = [];
-    for(var i=0; i<boneIDs.bones.length; i++){
-      poseParameterBindings.push(new FABRIC.RT.PoseParameterBinding(boneIDs.bones[i], ids[i]));
-    }
-    skeletonNode.addMember(name + 'bindings', 'PoseParameterBinding[]', poseParameterBindings);
+    var binding = new FABRIC.Characters.FKHierarchy(boneIDs.bones, xfoIds);
+    skeletonNode.addMember(name + 'bindings', 'FKHierarchy', binding);
     
     rigNode.addSolverOperator(scene.constructOperator({
         operatorName: 'solveFKHierarchy',
@@ -1103,6 +1100,26 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('ArmSolver', {
   }
 });
 
+
+FABRIC.Characters.Limb = function(boneIds, ikGoalXfoId, ikGoalOffsetXfo, ikblendId) {
+  this.boneIds = boneIds ? boneIds : [];
+  this.ikGoalXfoId = ikGoalXfoId ? ikGoalXfoId : -1;
+  this.ikGoalOffsetXfo = ikGoalOffsetXfo ? ikGoalOffsetXfo : new FABRIC.RT.Xfo();
+  this.ikblendId = ikblendId ? ikblendId : -1;
+};
+
+FABRIC.appendOnCreateContextCallback(function(context) {
+  context.RegisteredTypesManager.registerType('Limb', {
+    members: {
+      boneIds: 'Integer[]',
+      ikGoalXfoId: 'Integer',
+      ikGoalOffsetXfo: 'Xfo',
+      ikblendId: 'Integer'
+    },
+    constructor: FABRIC.Characters.Limb
+  });
+});
+
 FABRIC.SceneGraph.CharacterSolvers.registerSolver('LegSolver', {
   constructSolver: function(options, scene) {
     scene.assignDefaults(options, {
@@ -1173,12 +1190,16 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('LegSolver', {
     }
     constantsNode.addMember(name + 'bindings', 'PoseParameterBinding[]', poseParameterBindings);
     */
-    
+    /*
     skeletonNode.addMember(name + 'bones', 'Integer[]', boneIDs.bones);
     skeletonNode.addMember(name + 'footPlatformXfoId', 'Integer', footPlatformXfoId);
     skeletonNode.addMember(name + 'ankleOffsetXfo', 'Xfo', ankleOffsetXfo);
     skeletonNode.addMember(name + 'ikblendId', 'Integer', ikblendId);
+    */
     
+    var limb = new FABRIC.Characters.Limb(boneIDs.bones, footPlatformXfoId, ankleOffsetXfo, ikblendId);
+    skeletonNode.addMember(name + 'Limb', 'Limb', limb);
+    /*
     rigNode.addSolverOperator(scene.constructOperator({
         operatorName: 'solveLegRig',
         srcFile: 'FABRIC_ROOT/SceneGraph/KL/solveLegRig.kl',
@@ -1186,20 +1207,13 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('LegSolver', {
         parameterLayout: [
           'self.pose',
           'skeleton.bones',
-          
-          'skeleton.' + name + 'bones',
-          'skeleton.' + name + 'footPlatformXfoId',
-          'skeleton.' + name + 'ankleOffsetXfo',
-          'skeleton.' + name + 'ikblendId',
+          'skeleton.' + name + 'Limb',
           
           'variables.poseVariables',
           'self.debugGeometry'
         ]
       }));
-    
-    solver.getFootXfoID = function(){
-      return skeletonNode.pub.getData(name + 'footPlatformXfoId');
-    }
+    */
 
     if (options.createManipulators) {
       /*
