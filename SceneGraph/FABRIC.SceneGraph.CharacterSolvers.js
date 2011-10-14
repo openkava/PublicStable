@@ -86,7 +86,8 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('CharacterSolver', {
       if (options.identifiers[i].constructor.name === 'Array') {
         var name = options.identifiers[i][0];
         if (!options.bones[name]) {
-          throw ("'" + name + "' were not specified.");
+          console.warn ("'" + name + "' were not specified.");
+          continue;
         }
         if (typeof(options.bones[name]) !== typeof(options.identifiers[i])) {
           throw ('Bone ' + name + ' was uncorrectly specified. Should be name array.');
@@ -100,10 +101,12 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('CharacterSolver', {
           chainBones.push(name2id[dynNames[j]]);
         }
         boneIDs[name] = chainBones;
-      }else {
+      }
+      else {
         var name = options.identifiers[i];
         if (!options.bones[name]) {
-          throw ("'" + name + "' were not specified.");
+          console.warn ("'" + name + "' were not specified.");
+          continue;
         }
         if (name2id[options.bones[name]] == undefined) {
           throw ('Bone ' + options.bones[name] + ' is not part of the skeleton.');
@@ -1107,6 +1110,7 @@ FABRIC.Characters.Limb = function(boneIds, xfoIds, ikGoalXfoId, ikGoalOffsetXfo,
   this.ikGoalXfoId = ikGoalXfoId != undefined ? ikGoalXfoId : -1;
   this.ikGoalOffsetXfo = ikGoalOffsetXfo != undefined ? ikGoalOffsetXfo : new FABRIC.RT.Xfo();
   this.ikblendId = ikblendId != undefined ? ikblendId : -1;
+  this.hubId = -1; // This is used by the locomotion system.
 };
 
 FABRIC.appendOnCreateContextCallback(function(context) {
@@ -1116,7 +1120,8 @@ FABRIC.appendOnCreateContextCallback(function(context) {
       xfoIds: 'Integer[]',
       ikGoalXfoId: 'Integer',
       ikGoalOffsetXfo: 'Xfo',
-      ikblendId: 'Integer'
+      ikblendId: 'Integer',
+      hubId: 'Integer'
     },
     constructor: FABRIC.Characters.Limb
   });
@@ -1176,14 +1181,13 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('LegSolver', {
     footPlatformXfo.ori = alignmentQuat.multiply(footPlatformXfo.ori);
     ankleOffsetXfo = footPlatformXfo.inverse().multiply(ankleTipXfo);
     
-    var footPlatformXfoId = variablesNode.addVariable('Xfo', footPlatformXfo);
-    var ikblendId = variablesNode.addVariable('Scalar', 1.0);
-    
     var xfos = [];
     for(var i=0; i<boneIDs.bones.length; i++){
       xfos.push(referenceLocalPose[boneIDs.bones[i]]);
     }
     var xfoIds = variablesNode.addVariable('Xfo[]', xfos);
+    var footPlatformXfoId = variablesNode.addVariable('Xfo', footPlatformXfo);
+    var ikblendId = variablesNode.addVariable('Scalar', 1.0);
     
     var leg = new FABRIC.Characters.Limb(boneIDs.bones, xfoIds, footPlatformXfoId, ankleOffsetXfo, ikblendId);
     try{
