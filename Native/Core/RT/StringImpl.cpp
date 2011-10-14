@@ -16,7 +16,7 @@ namespace Fabric
   namespace RT
   {
     StringImpl::StringImpl( std::string const &codeName )
-      : Impl( codeName, DT_STRING )
+      : ComparableImpl( codeName, DT_STRING )
     {
       setSize( sizeof(bits_t *) );
     }
@@ -95,6 +95,40 @@ namespace Fabric
     bool StringImpl::isShallow() const
     {
       return false;
+    }
+
+    uint32_t StringImpl::hash( void const *data ) const
+    {
+      size_t stringLength = getValueLength( data );
+      uint8_t const *stringData = reinterpret_cast<uint8_t const *>( getValueData( data ) );
+      uint32_t result = 0;
+      size_t limit = (stringLength + 1) / 2;
+      if ( limit > 16 )
+        limit = 16;
+      for ( size_t i=limit; i--; )
+        result = (result << 2)
+          ^ (uint32_t( stringData[stringLength-i-1] ) << 1)
+          ^ (uint32_t( stringData[i] ) << 0);
+      return result;
+    }
+    
+    int StringImpl::compare( void const *lhsData, void const *rhsData ) const
+    {
+      char const *lhsStringData = getValueData( lhsData );
+      size_t lhsStringLength = getValueLength( lhsData );
+      char const *rhsStringData = getValueData( rhsData );
+      size_t rhsStringLength = getValueLength( rhsData );
+      size_t minStringLength = std::min( lhsStringLength, rhsStringLength );
+      int cmp = memcmp( lhsStringData, rhsStringData, minStringLength );
+      if ( cmp == 0 )
+      {
+        if ( lhsStringLength < rhsStringLength )
+          return -1;
+        else if ( lhsStringLength == rhsStringLength )
+          return 0;
+        else return 1;
+      }
+      else return cmp;
     }
   };
 };
