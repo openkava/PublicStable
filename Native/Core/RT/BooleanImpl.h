@@ -28,7 +28,7 @@ namespace Fabric
     
       // ComparableImpl
     
-      virtual uint32_t hash( void const *data ) const;
+      virtual size_t hash( void const *data ) const;
       virtual int compare( void const *lhsData, void const *rhsData ) const;
 
       // BooleanImpl

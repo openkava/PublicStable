@@ -12,6 +12,7 @@
 #include <Fabric/Base/JSON/Integer.h>
 #include <Fabric/Base/JSON/Scalar.h>
 #include <Fabric/Base/Exception.h>
+#include <Fabric/Base/Config.h>
 
 namespace Fabric
 {
@@ -91,7 +92,7 @@ namespace Fabric
     
       // ComparableImpl
     
-      virtual uint32_t hash( void const *data ) const;
+      virtual size_t hash( void const *data ) const;
       virtual int compare( void const *lhsData, void const *rhsData ) const
       {
         T lhsValue = getValue( lhsData );
@@ -124,18 +125,32 @@ namespace Fabric
       }
     };
     
-    template<> inline uint32_t FloatImplT<float>::hash( void const *data ) const
+    template<> inline size_t FloatImplT<float>::hash( void const *data ) const
     {
       float value = getValue( data );
+#if defined(FABRIC_ARCH_64BIT)
       uint32_t const *valuePtrAsUInt32 = reinterpret_cast<uint32_t const *>( &value );
-      return valuePtrAsUInt32[0];
+      return size_t(valuePtrAsUInt32[0]);
+#elif defined(FABRIC_ARCH_32BIT)
+      size_t const *valuePtrAsSize = reinterpret_cast<size_t const *>( &value );
+      return valuePtrAsSize[0];
+#else
+# error "Unsupported FABRIC_ARCH_..."
+#endif
     }
     
-    template<> inline uint32_t FloatImplT<double>::hash( void const *data ) const
+    template<> inline size_t FloatImplT<double>::hash( void const *data ) const
     {
       double value = getValue( data );
+#if defined(FABRIC_ARCH_64BIT)
+      size_t const *valuePtrAsSize = reinterpret_cast<size_t const *>( &value );
+      return valuePtrAsSize[0];
+#elif defined(FABRIC_ARCH_32BIT)
       uint32_t const *valuePtrAsUInt32 = reinterpret_cast<uint32_t const *>( &value );
-      return valuePtrAsUInt32[0] ^ valuePtrAsUInt32[1];
+      return size_t(valuePtrAsUInt32[0] ^ valuePtrAsUInt32[1]);
+#else
+# error "Unsupported FABRIC_ARCH_..."
+#endif
     }
 
     class FP32Impl : public FloatImplT<float>

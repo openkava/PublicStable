@@ -13,7 +13,7 @@ namespace Fabric
     
       // ComparableImpl
     
-      virtual uint32_t hash( void const *data ) const = 0;
+      virtual size_t hash( void const *data ) const = 0;
       virtual int compare( void const *lhsData, void const *rhsData ) const = 0;
     
     protected:
