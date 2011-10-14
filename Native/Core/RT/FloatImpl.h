@@ -88,6 +88,21 @@ namespace Fabric
       {
         return _( getValue( data ) );
       }
+    
+      // ComparableImpl
+    
+      virtual uint32_t hash( void const *data ) const;
+      virtual int compare( void const *lhsData, void const *rhsData ) const
+      {
+        T lhsValue = getValue( lhsData );
+        T rhsValue = getValue( rhsData );
+        // [pzion 20111014] The order here is important since NaN != NaN
+        if ( lhsValue < rhsValue )
+          return -1;
+        else if ( lhsValue > rhsValue )
+          return 1;
+        else return 0;
+      }
       
       // FloatImplT
       
@@ -109,10 +124,24 @@ namespace Fabric
       }
     };
     
+    template<> inline uint32_t FloatImplT<float>::hash( void const *data ) const
+    {
+      float value = getValue( data );
+      uint32_t const *valuePtrAsUInt32 = reinterpret_cast<uint32_t const *>( &value );
+      return valuePtrAsUInt32[0];
+    }
+    
+    template<> inline uint32_t FloatImplT<double>::hash( void const *data ) const
+    {
+      double value = getValue( data );
+      uint32_t const *valuePtrAsUInt32 = reinterpret_cast<uint32_t const *>( &value );
+      return valuePtrAsUInt32[0] ^ valuePtrAsUInt32[1];
+    }
+
     class FP32Impl : public FloatImplT<float>
     {
       friend class Manager;
-      
+    
     protected:
     
       FP32Impl( std::string const &codeName )
@@ -124,7 +153,7 @@ namespace Fabric
     class FP64Impl : public FloatImplT<double>
     {
       friend class Manager;
-      
+    
     protected:
     
       FP64Impl( std::string const &codeName )
