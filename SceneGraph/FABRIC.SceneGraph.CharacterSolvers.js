@@ -1101,8 +1101,9 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('ArmSolver', {
 });
 
 
-FABRIC.Characters.Limb = function(boneIds, ikGoalXfoId, ikGoalOffsetXfo, ikblendId) {
+FABRIC.Characters.Limb = function(boneIds, xfoIds, ikGoalXfoId, ikGoalOffsetXfo, ikblendId) {
   this.boneIds = boneIds != undefined ? boneIds : [];
+  this.xfoIds = xfoIds != undefined ? xfoIds : [];
   this.ikGoalXfoId = ikGoalXfoId != undefined ? ikGoalXfoId : -1;
   this.ikGoalOffsetXfo = ikGoalOffsetXfo != undefined ? ikGoalOffsetXfo : new FABRIC.RT.Xfo();
   this.ikblendId = ikblendId != undefined ? ikblendId : -1;
@@ -1112,6 +1113,7 @@ FABRIC.appendOnCreateContextCallback(function(context) {
   context.RegisteredTypesManager.registerType('Limb', {
     members: {
       boneIds: 'Integer[]',
+      xfoIds: 'Integer[]',
       ikGoalXfoId: 'Integer',
       ikGoalOffsetXfo: 'Xfo',
       ikblendId: 'Integer'
@@ -1177,15 +1179,13 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('LegSolver', {
     var footPlatformXfoId = variablesNode.addVariable('Xfo', footPlatformXfo);
     var ikblendId = variablesNode.addVariable('Scalar', 1.0);
     
-    /*
-    var defaultValues = [];
+    var xfos = [];
     for(var i=0; i<boneIDs.bones.length; i++){
-      defaultValues.push(referenceLocalPose[boneIDs.bones[i]]);
+      xfos.push(referenceLocalPose[boneIDs.bones[i]]);
     }
-    var ids = variablesNode.addVariable('Xfo[]', defaultValues);
-    */
+    var xfoIds = variablesNode.addVariable('Xfo[]', xfos);
     
-    var leg = new FABRIC.Characters.Limb(boneIDs.bones, footPlatformXfoId, ankleOffsetXfo, ikblendId);
+    var leg = new FABRIC.Characters.Limb(boneIDs.bones, xfoIds, footPlatformXfoId, ankleOffsetXfo, ikblendId);
     try{
       var legs = skeletonNode.getData('legs');
       legs.push(leg);
