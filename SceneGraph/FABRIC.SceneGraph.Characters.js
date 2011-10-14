@@ -177,6 +177,12 @@ FABRIC.SceneGraph.registerNodeType('CharacterSkeleton', {
     characterSkeletonNode.addMember = function(name, type, value) {
       dgnode.addMember(name, type, value);
     };
+    characterSkeletonNode.getData = function(name, skeletonId) {
+      return dgnode.getData(name, skeletonId ? skeletonId : 0);
+    };
+    characterSkeletonNode.setData = function(name, data, skeletonId) {
+      dgnode.setData(name, skeletonId ? skeletonId : 0, data );
+    };
 
     if (options.calcReferenceLocalPose) {
       // For skeletons that are built procedurally, or using

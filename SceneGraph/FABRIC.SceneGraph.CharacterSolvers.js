@@ -1183,37 +1183,29 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('LegSolver', {
       defaultValues.push(referenceLocalPose[boneIDs.bones[i]]);
     }
     var ids = variablesNode.addVariable('Xfo[]', defaultValues);
+    */
     
-    var poseParameterBindings = [];
-    for(var i=0; i<boneIDs.bones.length; i++){
-      poseParameterBindings.push(new FABRIC.RT.PoseParameterBinding(boneIDs.bones[i], ids[i]));
+    var leg = new FABRIC.Characters.Limb(boneIDs.bones, footPlatformXfoId, ankleOffsetXfo, ikblendId);
+    try{
+      var legs = skeletonNode.getData('legs');
+      legs.push(leg);
+      skeletonNode.setData('legs', legs);
     }
-    constantsNode.addMember(name + 'bindings', 'PoseParameterBinding[]', poseParameterBindings);
-    */
-    /*
-    skeletonNode.addMember(name + 'bones', 'Integer[]', boneIDs.bones);
-    skeletonNode.addMember(name + 'footPlatformXfoId', 'Integer', footPlatformXfoId);
-    skeletonNode.addMember(name + 'ankleOffsetXfo', 'Xfo', ankleOffsetXfo);
-    skeletonNode.addMember(name + 'ikblendId', 'Integer', ikblendId);
-    */
-    
-    var limb = new FABRIC.Characters.Limb(boneIDs.bones, footPlatformXfoId, ankleOffsetXfo, ikblendId);
-    skeletonNode.addMember(name + 'Limb', 'Limb', limb);
-    
-    rigNode.addSolverOperator(scene.constructOperator({
-        operatorName: 'solveLegRig',
-        srcFile: 'FABRIC_ROOT/SceneGraph/KL/solveLegRig.kl',
-        entryFunctionName: 'solveLegRig',
-        parameterLayout: [
-          'self.pose',
-          'skeleton.bones',
-          'skeleton.' + name + 'Limb',
-          
-          'variables.poseVariables',
-          'self.debugGeometry'
-        ]
-      }));
-
+    catch(e){
+      skeletonNode.addMember('legs', 'Limb[]', [leg]);
+      rigNode.addSolverOperator(scene.constructOperator({
+          operatorName: 'solveLegRig',
+          srcFile: 'FABRIC_ROOT/SceneGraph/KL/solveLegRig.kl',
+          entryFunctionName: 'solveLegRig',
+          parameterLayout: [
+            'self.pose',
+            'skeleton.bones',
+            'skeleton.legs',
+            'variables.poseVariables',
+            'self.debugGeometry'
+          ]
+        }));
+    }
     if (options.createManipulators) {
       /*
       // add a manipulation for target and upvector
@@ -1255,9 +1247,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('LegSolver', {
           parameterLayout: [
             'sourcerig.pose',
             'skeleton.bones',
-            
-            'skeleton.' + name + 'Limb',
-            
+            'skeleton.legs',
             'self.poseVariables',
             'sourcerig.debugGeometry'
           ]
