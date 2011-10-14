@@ -30,7 +30,9 @@ namespace Fabric
     class Desc;
     class BooleanDesc;
     class ByteDesc;
+    class ComparableDesc;
     class ConstStringDesc;
+    class DictDesc;
     class IntegerDesc;
     class SizeDesc;
     class FloatDesc;
@@ -83,6 +85,7 @@ namespace Fabric
       RC::ConstHandle<VariableArrayDesc> getVariableArrayOf( RC::ConstHandle<Desc> const &memberDesc, size_t flags ) const;
       RC::ConstHandle<SlicedArrayDesc> getSlicedArrayOf( RC::ConstHandle<Desc> const &memberDesc ) const;
       RC::ConstHandle<FixedArrayDesc> getFixedArrayOf( RC::ConstHandle<Desc> const &memberDesc, size_t length ) const;
+      RC::ConstHandle<DictDesc> getDictOf( RC::ConstHandle<ComparableDesc> const &keyDesc, RC::ConstHandle<Desc> const &valueDesc ) const;
       
       RC::ConstHandle<JSON::Value> jsonRoute( std::vector<std::string> const &dst, size_t dstOffset, std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg );
       RC::ConstHandle<JSON::Value> jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg );
