@@ -2,7 +2,6 @@
  *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
  */
 
-
 #include "Debug.h"
 
 #if defined(FABRIC_OS_WINDOWS)
