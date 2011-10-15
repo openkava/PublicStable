@@ -270,6 +270,9 @@ namespace Fabric
       RC::ConstHandle<StringImpl> keyImplAsStringImpl;
       if ( isString( m_keyImpl->getType() ) )
         keyImplAsStringImpl = RC::ConstHandle<StringImpl>::StaticCast( m_keyImpl );
+      
+      disposeDatas( data, 1, 0 );
+      memset( data, 0, sizeof(bits_t) );
         
       void *keyData = alloca( m_keySize );
       memset( keyData, 0, m_keySize );
