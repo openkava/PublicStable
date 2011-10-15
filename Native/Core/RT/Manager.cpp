@@ -274,7 +274,7 @@ namespace Fabric
                 break;
               else --bracketCount;
             }
-            else if ( *type == '[' )
+            else if ( *typeEnd == '[' )
               ++bracketCount;
             ++typeEnd;
           }
@@ -284,7 +284,8 @@ namespace Fabric
             throw Exception( "key type must be comparable" );
           RC::ConstHandle<ComparableDesc> keyComparableDesc = RC::ConstHandle<ComparableDesc>::StaticCast( keyDesc );
           
-          return getDictOf( keyComparableDesc, desc );
+          ++typeEnd;
+          return getDictOf( keyComparableDesc, getComplexDesc( desc, typeEnd, dataEnd ) );
         }
       }
       else if ( data != dataEnd && *data == '<' )

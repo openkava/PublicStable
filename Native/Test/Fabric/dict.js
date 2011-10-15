@@ -22,3 +22,27 @@ a[7.9] = 2.71;
 n.setData("bar", 0, a );
 a = n.getData("bar", 0);
 printDeep(a);
+
+a = {};
+for ( var i=0; i<4096; ++i ) {
+  a["key "+i] = "value "+i;
+}
+n.setData("foo",0,a);
+a = n.getData("foo", 0);
+printDeep(a);
+
+n.addMember("baz","Scalar[String][String]");
+a = {
+ foo: {
+   a: 5.6,
+   b: 7.8
+ },
+ bar: {
+   a: 3.1,
+   b: -2.1
+ }
+};
+n.setData("baz", 0, a);
+a = n.getData("baz", 0);
+printDeep(a);
+
