@@ -160,7 +160,7 @@ namespace Fabric
       {
         FABRIC_ASSERT( !bucket->lastNode );
         node->bucketNextNode = 0;
-        bucket->firstNode = bucket->lastNode = 0;
+        bucket->firstNode = bucket->lastNode = node;
       }
     }
     
@@ -231,7 +231,7 @@ namespace Fabric
       size_t bucketIndex = keyHash & (bits->bucketCount - 1);
       bucket_t *bucket = &bits->buckets[bucketIndex];
       void *result = getMutable( bits, bucket, keyData, keyHash );
-      size_t newBucketCount = BucketCountForNodeCount( bits->nodeCount + 1 );
+      size_t newBucketCount = BucketCountForNodeCount( bits->nodeCount );
       if ( newBucketCount > bits->bucketCount )
         adjustBucketCount( bits, newBucketCount );
       return result;
