@@ -99,19 +99,17 @@ namespace Fabric
 
     size_t StringImpl::hash( void const *data ) const
     {
-      // [pzion 20111014] Note that this only hashes to values that are at most 2^32-1,
-      // but that should be OK for hashes -- it's hard to imagine needing more than
-      // 2^32 buckets.
+      // [pzion 20111014] This hash function is referred to as djb2.
+      // Thanks Manon!!
       size_t stringLength = getValueLength( data );
       uint8_t const *stringData = reinterpret_cast<uint8_t const *>( getValueData( data ) );
-      size_t result = 0;
-      size_t limit = (stringLength + 1) / 2;
-      if ( limit > 16 )
-        limit = 16;
-      for ( size_t i=limit; i--; )
-        result = (result << 2)
-          ^ (size_t( stringData[stringLength-i-1] ) << 1)
-          ^ (size_t( stringData[i] ) << 0);
+      size_t result = 5381;
+      while ( stringLength > 0 )
+      {
+        result = ((result << 5) + result) ^ uint32_t(*stringData);
+        --stringLength;
+        ++stringData;
+      }
       return result;
     }
     
