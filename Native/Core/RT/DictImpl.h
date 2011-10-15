@@ -99,7 +99,7 @@ namespace Fabric
       
       static size_t BucketCountForNodeCount( size_t nodeCount )
       {
-        return std::min( RT_DICT_IMPL_MINIMUM_BUCKET_COUNT, Util::nextPowerOfTwoMinusOne( nodeCount ) + 1 );
+        return std::max( RT_DICT_IMPL_MINIMUM_BUCKET_COUNT, Util::nextPowerOfTwoMinusOne( nodeCount ) + 1 );
       }
       
       void disposeNode( node_t *node ) const;
