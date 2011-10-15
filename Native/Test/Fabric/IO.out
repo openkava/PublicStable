@@ -5,7 +5,7 @@ Fabric core exception: IO.getTextFile('{"path":["badHandle","dummy.txt"...'): co
 DirNotFound
 FileBody
 FileBody2
-{data:[70,105,108,101,66,111,100,121,50],extension:"txt",mimeType:"",url:"default.txt"}
+{data:[70,105,108,101,66,111,100,121,50],mimeType:"",extension:"txt",url:"default.txt"}
 FileBody2
-{data:[70,105,108,101,66,111,100,121,51],extension:"txt",mimeType:"",url:"testfile4.txt"}
+{data:[70,105,108,101,66,111,100,121,51],mimeType:"",extension:"txt",url:"testfile4.txt"}
 FileBody3
