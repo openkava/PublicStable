@@ -147,7 +147,8 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('FKHierarchySolver',{
       referenceLocalPose = skeletonNode.pub.getReferenceLocalPose();
 
     if(!options.bones){
-      options.bones = {bones:[]};
+      // Collect all the bones in the skeleton.
+      options.bones = { bones:[] };
       for(var i=0; i<bones.length; i++){
         options.bones.bones.push(bones[i].name);
       }
@@ -180,7 +181,14 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('FKHierarchySolver',{
         ]
       }));
     
- 
+    solver.getXfoVarBindings = function(){
+      var boneXfoVarBindings = {};
+      for(var i=0; i<options.bones.bones.length; i++){
+        boneXfoVarBindings[options.bones.bones[i]] = xfoIds[i];
+      }
+      return boneXfoVarBindings;
+    }
+    
     solver.invert = function(variablesNode){
       variablesNode.getDGNode().bindings.append(scene.constructOperator({
           operatorName: 'invertFKHierarchy',

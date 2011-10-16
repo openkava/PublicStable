@@ -163,32 +163,35 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
       var variables = variablesNode.getVariables();
       
       // generate the bindings.
-      var i, trackId=0;
+      var i, binding;
       var addTrack = function(name, color, bindings){
-        trackSet.tracks.push(new FABRIC.RT.LinearKeyframeTrack(name, color)); bindings.push(trackId++); 
+        trackSet.tracks.push(new FABRIC.RT.LinearKeyframeTrack(name, color));
+        bindings.push(trackSet.tracks.length - 1);
       }
       for (i = 0; i < variables.scalarValues.length; i++) {
-        addTrack("ScalarTrack"+i, FABRIC.RT.rgb(1,0,0), trackBindings.scalarBindings);
+        binding = [];
+        addTrack("ScalarTrack"+i, FABRIC.RT.rgb(1,0,0), binding);
+        trackBindings.addScalarBinding(i, binding[0]);
       }
       for (i = 0; i < variables.vec3Values.length; i++) {
-        var binding = [];
+        binding = [];
         addTrack("Vec3Track"+i, FABRIC.RT.rgb(1,0,0), binding);
         addTrack("Vec3Track"+i+".x", FABRIC.RT.rgb(1, 0, 0), binding);
         addTrack("Vec3Track"+i+".y", FABRIC.RT.rgb(0, 1, 0), binding);
         addTrack("Vec3Track"+i+".z", FABRIC.RT.rgb(0, 0, 1), binding);
-        trackBindings.vec3Bindings.push(binding);
+        trackBindings.addVec3Binding(i, binding);
       }
       for (i = 0; i < variables.quatValues.length; i++) {
-        var binding = [];
+        binding = [];
         addTrack("QuatTrack"+i+".v.x", FABRIC.RT.rgb(1, 0, 0), binding);
         addTrack("QuatTrack"+i+".v.y", FABRIC.RT.rgb(0, 1, 0), binding);
         addTrack("QuatTrack"+i+".v.z", FABRIC.RT.rgb(0, 0, 1), binding);
         addTrack("QuatTrack"+i+".w", FABRIC.RT.rgb(1, 1, 0), binding);
-        trackBindings.quatBindings.push(binding);
+        trackBindings.addQuatBinding(i, binding);
       }
       
       for (i = 0; i < variables.xfoValues.length; i++) {
-        var binding = [];
+        binding = [];
         addTrack("XfoTrack"+i+".tr.x", FABRIC.RT.rgb(1, 0, 0), binding);
         addTrack("XfoTrack"+i+".tr.y", FABRIC.RT.rgb(0, 1, 0), binding);
         addTrack("XfoTrack"+i+".tr.z", FABRIC.RT.rgb(0, 0, 1), binding);
@@ -197,7 +200,7 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
         addTrack("XfoTrack"+i+".ori.v.y", FABRIC.RT.rgb(0, 1, 0), binding);
         addTrack("XfoTrack"+i+".ori.v.z", FABRIC.RT.rgb(0, 0, 1), binding); 
         addTrack("XfoTrack"+i+".ori.w", FABRIC.RT.rgb(1, 1, 0), binding);
-        trackBindings.xfoBindings.push(binding);
+        trackBindings.addXfoBinding(i, binding);
       }
       var trackSetId = animationLibraryNode.pub.addTrackSet(trackSet);
       dgnode.addMember('bindings', 'KeyframeTrackBindings', trackBindings);

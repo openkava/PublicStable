@@ -315,34 +315,7 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
     dgnode.addMember('poseVariables', 'PoseVariables', poseVariables);
     // extend the private interface
     characterVariablesNode.addVariable = function(type, value) {
-      var id = -1;
-      switch(type){
-        case 'Scalar':
-          id = poseVariables.scalarValues.length;
-          poseVariables.scalarValues.push( value ? value : 0.0);
-          break;
-        case 'Vec3':
-          id = poseVariables.vec3Values.length;
-          poseVariables.vec3Values.push( value ? value : new FABRIC.RT.Vec3());
-          break;
-        case 'Quat':
-          id = poseVariables.quatValues.length;
-          poseVariables.quatValues.push( value ? value : new FABRIC.RT.Quat());
-          break;
-        case 'Xfo':
-          id = poseVariables.xfoValues.length;
-          poseVariables.xfoValues.push( value ? value : new FABRIC.RT.Xfo());
-          break;
-        case 'Xfo[]':
-          id = [];
-          for(var i=0; i<value.length; i++){
-            id.push(poseVariables.xfoValues.length);
-            poseVariables.xfoValues.push( value[i] );
-          }
-          break;
-        default:
-          throw "unsupported Type:" + type;
-      }
+      var id = poseVariables.addVariable(type, value);
       dgnode.setData('poseVariables', 0, poseVariables);
       return id;
     };

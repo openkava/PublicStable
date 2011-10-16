@@ -28,58 +28,61 @@ function PoseVariables.evaluateKeyframeTracks(
     currKeys.resize(trackId + bindings.scalarBindings.size);
   }
   for (Integer i = 0; i < bindings.scalarBindings.size; i++) {
-    this.scalarValues[i] = trackSet.tracks[bindings.scalarBindings[i]].evaluate(time, currKeys[trackId++]);
+    KeyframeTrackBinding binding = bindings.scalarBindings[i];
+    this.scalarValues[binding.varId] = trackSet.tracks[binding.trackIds[0]].evaluate(time, currKeys[trackId++]);
   }
   for (Integer i = 0; i < bindings.quatBindings.size; i++) {
-    Integer binding[] = bindings.quatBindings[i];
-    if(binding.size != 3 && binding.size != 4){
+    KeyframeTrackBinding binding = bindings.quatBindings[i];
+    if(binding.trackIds.size != 3 && binding.trackIds.size != 4){
       report('incorrect binding for Quat:' + binding);
       continue;
     }
-    if(currKeys.size < trackId + binding.size){
-      currKeys.resize(trackId + binding.size);
+    if(currKeys.size < trackId + binding.trackIds.size){
+      currKeys.resize(trackId + binding.trackIds.size);
     }
-    if(binding.size == 3){
+    if(binding.trackIds.size == 3){
       // Euler to Quat
-      Euler euler(Vec3( trackSet.tracks[binding[0]].evaluate(time, currKeys[trackId++]),
-                        trackSet.tracks[binding[1]].evaluate(time, currKeys[trackId++]),
-                        trackSet.tracks[binding[2]].evaluate(time, currKeys[trackId++])));
-      this.quatValues[i].setFromEuler(euler);
+      Euler euler(Vec3( trackSet.tracks[binding.trackIds[0]].evaluate(time, currKeys[trackId++]),
+                        trackSet.tracks[binding.trackIds[1]].evaluate(time, currKeys[trackId++]),
+                        trackSet.tracks[binding.trackIds[2]].evaluate(time, currKeys[trackId++])));
+      this.quatValues[binding.varId].setFromEuler(euler);
     }
-    else if(binding.size == 4){
-      this.quatValues[i].set( trackSet.tracks[binding[0]].evaluate(time, currKeys[trackId++]),
-                              trackSet.tracks[binding[1]].evaluate(time, currKeys[trackId++]),
-                              trackSet.tracks[binding[2]].evaluate(time, currKeys[trackId++]),
-                              trackSet.tracks[binding[3]].evaluate(time, currKeys[trackId++]) );
+    else if(binding.trackIds.size == 4){
+      this.quatValues[binding.varId].set(
+        trackSet.tracks[binding.trackIds[0]].evaluate(time, currKeys[trackId++]),
+        trackSet.tracks[binding.trackIds[1]].evaluate(time, currKeys[trackId++]),
+        trackSet.tracks[binding.trackIds[2]].evaluate(time, currKeys[trackId++]),
+        trackSet.tracks[binding.trackIds[3]].evaluate(time, currKeys[trackId++])
+      );
     }
   }
   
   for (Integer i = 0; i < bindings.xfoBindings.size; i++) {
-    Integer binding[] = bindings.xfoBindings[i];
-    if(binding.size != 7){
+    KeyframeTrackBinding binding = bindings.xfoBindings[i];
+    if(binding.trackIds.size != 7){
       report('incorrect binding for Xfo:' + binding);
       continue;
     }
-    if(currKeys.size < trackId + binding.size){
-      currKeys.resize(trackId + binding.size);
+    if(currKeys.size < trackId + binding.trackIds.size){
+      currKeys.resize(trackId + binding.trackIds.size);
     }
     
-    this.xfoValues[i].tr.set(
-      trackSet.tracks[binding[0]].evaluate(time, currKeys[trackId++]),
-      trackSet.tracks[binding[1]].evaluate(time, currKeys[trackId++]),
-      trackSet.tracks[binding[2]].evaluate(time, currKeys[trackId++])
+    this.xfoValues[binding.varId].tr.set(
+      trackSet.tracks[binding.trackIds[0]].evaluate(time, currKeys[trackId++]),
+      trackSet.tracks[binding.trackIds[1]].evaluate(time, currKeys[trackId++]),
+      trackSet.tracks[binding.trackIds[2]].evaluate(time, currKeys[trackId++])
     );
-    if(binding.size == 6){
-      Euler euler(Vec3( trackSet.tracks[binding[3]].evaluate(time, currKeys[trackId++]),
-                        trackSet.tracks[binding[4]].evaluate(time, currKeys[trackId++]),
-                        trackSet.tracks[binding[5]].evaluate(time, currKeys[trackId++])));
-      this.xfoValues[i].ori.setFromEuler(euler);
-    }else if(binding.size == 7){
-      this.xfoValues[i].ori.set(
-        trackSet.tracks[binding[3]].evaluate(time, currKeys[trackId++]),
-        trackSet.tracks[binding[4]].evaluate(time, currKeys[trackId++]),
-        trackSet.tracks[binding[5]].evaluate(time, currKeys[trackId++]),
-        trackSet.tracks[binding[6]].evaluate(time, currKeys[trackId++])
+    if(binding.trackIds.size == 6){
+      Euler euler(Vec3( trackSet.tracks[binding.trackIds[3]].evaluate(time, currKeys[trackId++]),
+                        trackSet.tracks[binding.trackIds[4]].evaluate(time, currKeys[trackId++]),
+                        trackSet.tracks[binding.trackIds[5]].evaluate(time, currKeys[trackId++])));
+      this.xfoValues[binding.varId].ori.setFromEuler(euler);
+    }else if(binding.trackIds.size == 7){
+      this.xfoValues[binding.varId].ori.set(
+        trackSet.tracks[binding.trackIds[3]].evaluate(time, currKeys[trackId++]),
+        trackSet.tracks[binding.trackIds[4]].evaluate(time, currKeys[trackId++]),
+        trackSet.tracks[binding.trackIds[5]].evaluate(time, currKeys[trackId++]),
+        trackSet.tracks[binding.trackIds[6]].evaluate(time, currKeys[trackId++])
       );
     }
   }
