@@ -872,14 +872,18 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
       var trackSet = new FABRIC.RT.LinearKeyframeTrackSet(controllerName);
       
       var localPose = skeletonNode.getReferenceLocalPose();
+      var fksolver = rigNode.addSolver('solveColladaPose', 'FKHierarchySolver');
+      var xfoVarBindings = fksolver.getXfoVarBindings();
       var trackBindings = new FABRIC.RT.KeyframeTrackBindings();
+      
       for (var i = 0; i < bones.length; i++) {
-        var channels = colladaData.libraryAnimations.channelMap[bones[i].name];
+        var boneName = bones[i].name;
+        var channels = colladaData.libraryAnimations.channelMap[boneName];
         
         if (!channels)
           continue;
         
-        var binding = [];
+        var trackIds = [];
         for (var channelName in channels) {
           var animation = channels[channelName];
           var sampler = animation.sampler;
@@ -893,7 +897,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
           var outputSource = animation.sources[sampler.OUTPUT.source.slice(1)];
           var interpolationSource = animation.sources[sampler.INTERPOLATION.source.slice(1)];
           
-          var generateKeyframeTrack = function(channelName, keytimes, keyvalues, binding){
+          var generateKeyframeTrack = function(channelName, keytimes, keyvalues){
             var color;
             switch (channelName.substr(channelName.lastIndexOf('.')+1)) {
             case 'x': color = FABRIC.RT.rgb(1, 0, 0);        break;
@@ -911,7 +915,8 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
               track.keys.push(key(keytimes[j], keyvalues[j]));
             }
             trackSet.tracks.push(track);
-            binding.push(trackSet.tracks.length - 1);
+          //  trackIds[channelName] = trackSet.tracks.length - 1;
+            trackIds.push(trackSet.tracks.length - 1);
           }
           
           
@@ -951,16 +956,15 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
               ori_z_keyvalues.push(xfo.ori.v.z);
               ori_w_keyvalues.push(xfo.ori.w);
             }
-            generateKeyframeTrack('tr.x', inputSource.data, tr_x_keyvalues, binding);
-            generateKeyframeTrack('tr.y', inputSource.data, tr_y_keyvalues, binding);
-            generateKeyframeTrack('tr.z', inputSource.data, tr_z_keyvalues, binding);
+            generateKeyframeTrack('tr.x', inputSource.data, tr_x_keyvalues);
+            generateKeyframeTrack('tr.y', inputSource.data, tr_y_keyvalues);
+            generateKeyframeTrack('tr.z', inputSource.data, tr_z_keyvalues);
             
-            generateKeyframeTrack('ori.x', inputSource.data, ori_x_keyvalues, binding);
-            generateKeyframeTrack('ori.y', inputSource.data, ori_y_keyvalues, binding);
-            generateKeyframeTrack('ori.z', inputSource.data, ori_z_keyvalues, binding);
-            generateKeyframeTrack('ori.w', inputSource.data, ori_w_keyvalues, binding);
+            generateKeyframeTrack('ori.v.x', inputSource.data, ori_x_keyvalues);
+            generateKeyframeTrack('ori.v.y', inputSource.data, ori_y_keyvalues);
+            generateKeyframeTrack('ori.v.z', inputSource.data, ori_z_keyvalues);
+            generateKeyframeTrack('ori.w', inputSource.data, ori_w_keyvalues);
             
-            trackBindings.xfoBindings.push(binding);
             continue;
           }
         
@@ -977,10 +981,6 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
           case 'rotation_z.ANGLE':
           case 'rotateZ.ANGLE':
             channelName = 'ori.z';
-            break;
-          case 'rotation_w.ANGLE':
-          case 'rotateW.ANGLE':
-            channelName = 'ori.w';
             break;
           case 'translation.X':
           case 'translate.X':
@@ -1007,12 +1007,11 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
           
           generateKeyframeTrack(channelName, inputSource.data, outputSource.data);
         }
+        trackBindings.addXfoBinding(xfoVarBindings[boneName], trackIds);
       }
       
       var trackSetID = libraryAnimations.addTrackSet(trackSet);
-      
       variablesNode.bindToAnimationTracks(libraryAnimations, controllerNode, trackSetID, trackBindings);
-      rigNode.addSolver('solveColladaPose', 'FKHierarchySolver');
     }
     
     // Store the created scene graph nodes in the returned asset map.

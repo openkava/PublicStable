@@ -74,17 +74,27 @@ FABRIC.RT.LinearKeyframeTrackSet = function( name ) {
 };
 
 FABRIC.RT.LinearKeyframeTrackSet.prototype = {
-  addXfoTrack: function(bindings, storeEulerAngles){
+  addScalarTrack: function(name, color){
+    this.tracks.push(new FABRIC.RT.LinearKeyframeTrack(name, color));
+    return this.tracks.length - 1;
+  },
+  addXfoTrack: function(name, storeEulerAngles){
     var binding = [];
-    this.tracks.push(new FABRIC.RT.LinearKeyframeTrack()); binding.push(this.tracks.length - 1);
-    this.tracks.push(new FABRIC.RT.LinearKeyframeTrack()); binding.push(this.tracks.length - 1);
-    this.tracks.push(new FABRIC.RT.LinearKeyframeTrack()); binding.push(this.tracks.length - 1);
+    var red
+    this.tracks.push(new FABRIC.RT.LinearKeyframeTrack(name+'tr.x', FABRIC.RT.Color.red));      binding.push(this.tracks.length - 1);
+    this.tracks.push(new FABRIC.RT.LinearKeyframeTrack(name+'tr.y', FABRIC.RT.Color.green));    binding.push(this.tracks.length - 1);
+    this.tracks.push(new FABRIC.RT.LinearKeyframeTrack(name+'tr.z', FABRIC.RT.Color.blue));     binding.push(this.tracks.length - 1);
     
-    this.tracks.push(new FABRIC.RT.LinearKeyframeTrack()); binding.push(this.tracks.length - 1);
-    this.tracks.push(new FABRIC.RT.LinearKeyframeTrack()); binding.push(this.tracks.length - 1);
-    this.tracks.push(new FABRIC.RT.LinearKeyframeTrack()); binding.push(this.tracks.length - 1);
-    if(!storeEulerAngles){
-      this.tracks.push(new FABRIC.RT.LinearKeyframeTrack()); binding.push(this.tracks.length - 1);
+    if(storeEulerAngles == true){
+      this.tracks.push(new FABRIC.RT.LinearKeyframeTrack(name+'euler.x', FABRIC.RT.Color.red));   binding.push(this.tracks.length - 1);
+      this.tracks.push(new FABRIC.RT.LinearKeyframeTrack(name+'euler.x', FABRIC.RT.Color.green)); binding.push(this.tracks.length - 1);
+      this.tracks.push(new FABRIC.RT.LinearKeyframeTrack(name+'euler.x', FABRIC.RT.Color.blue));  binding.push(this.tracks.length - 1);
+    }
+    else{
+      this.tracks.push(new FABRIC.RT.LinearKeyframeTrack(name+'ori.v.x', FABRIC.RT.Color.red));   binding.push(this.tracks.length - 1);
+      this.tracks.push(new FABRIC.RT.LinearKeyframeTrack(name+'ori.v.x', FABRIC.RT.Color.green)); binding.push(this.tracks.length - 1);
+      this.tracks.push(new FABRIC.RT.LinearKeyframeTrack(name+'ori.v.x', FABRIC.RT.Color.blue));  binding.push(this.tracks.length - 1);
+      this.tracks.push(new FABRIC.RT.LinearKeyframeTrack(name+'ori.w', FABRIC.RT.Color.cyan)); binding.push(this.tracks.length - 1);
     }
     return binding;
   }
