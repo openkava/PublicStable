@@ -100,7 +100,7 @@ function Vec2 LinearKeyframeTrackSet.getTimeRange() {
         timeRange.x = this.tracks[i].keys[0].time;
       }
       if(timeRange.y < this.tracks[i].keys[this.tracks[i].keys.size-1].time){
-        timeRange.y =  this.tracks[i].keys[this.tracks[i].keys.size-1].time;
+        timeRange.y = this.tracks[i].keys[this.tracks[i].keys.size-1].time;
       }
     }
   }

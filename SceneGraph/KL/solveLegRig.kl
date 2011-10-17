@@ -41,7 +41,7 @@ operator solveLegRig(
       
     Scalar ikBlend = poseVariables.scalarValues[leg.ikblendId];
     if (ikBlend > 0.0) {
-      debugGeometry.drawAxis(poseVariables.xfoValues[leg.ikGoalXfoId], 3.0, Color(0.0, 1.0, 1.0, 1.0));
+    //  debugGeometry.drawAxis(poseVariables.xfoValues[leg.ikGoalXfoId], 3.0, Color(0.0, 1.0, 1.0, 1.0));
       
       Xfo targetXfo;
       targetXfo = poseVariables.xfoValues[leg.ikGoalXfoId] * leg.ikGoalOffsetXfo;

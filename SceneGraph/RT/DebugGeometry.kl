@@ -7,6 +7,12 @@ use Math;
 use Color;
 
 
+function DebugGeometry.reset() {
+  this.positions.resize(0);
+  this.vertexColors.resize(0);
+  this.pointsIndices.resize(0);
+  this.linesIndices.resize(0);
+}
 
 function DebugGeometry.drawPoint(Vec3 pos, Color color) {
   this.pointsIndices.push(Integer(this.positions.size()));
@@ -61,9 +67,3 @@ function DebugGeometry.drawCircle(Xfo xfo, Scalar radius, Color color) {
 }
 
 
-function DebugGeometry.reset() {
-  this.positions.resize(0);
-  this.vertexColors.resize(0);
-  this.pointsIndices.resize(0);
-  this.linesIndices.resize(0);
-}
