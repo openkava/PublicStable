@@ -229,7 +229,7 @@ FABRIC.SceneGraph.registerNodeType('CharacterSkeletonDebug', {
       boneradius: 1.0,
       color: FABRIC.RT.rgba(1.0, 1.0, 1.0, 1.0),
       drawOverlayed: true
-      });
+    });
 
     var rigNode,
       instanceNode;
@@ -307,11 +307,23 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
   optionsDesc: {
   },
   factoryFn: function(options, scene) {
+    scene.assignDefaults(options, {
+      baseVariables: undefined
+    });
 
     var characterVariablesNode = scene.constructNode('SceneGraphNode', options);
     var dgnode = characterVariablesNode.constructDGNode('DGNode');
     
-    var poseVariables = new FABRIC.RT.PoseVariables();
+    var poseVariables;
+    if(options.baseVariables){
+      if (!options.baseVariables.isTypeOf('CharacterVariables')) {
+        throw ('Incorrect type assignment. Must assign a CharacterVariables');
+      }
+      poseVariables = scene.getPrivateInterface(options.baseVariables).getVariables();
+    }
+    else{
+      poseVariables = new FABRIC.RT.PoseVariables();
+    }
     dgnode.addMember('poseVariables', 'PoseVariables', poseVariables);
     // extend the private interface
     characterVariablesNode.addVariable = function(type, value) {
@@ -323,7 +335,16 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
     var animationControllerNode;
     var animationTrackNode;
     
-    characterVariablesNode.pub.bindToAnimationTracks = function( animationLibraryNode, animationControllerNode, trackSetId, bindings ){
+    characterVariablesNode.setBinding = function(bindings){
+      if(dgnode.getMembers().bindings){
+        dgnode.setData('bindings', 0, bindings);
+      }
+      else{
+        dgnode.addMember('bindings', 'KeyframeTrackBindings', bindings);
+      }
+    }
+    
+    characterVariablesNode.pub.bindToAnimationTracks = function(animationLibraryNode, animationControllerNode, trackSetId, bindings){
       if (!animationLibraryNode.isTypeOf('AnimationLibrary')) {
         throw ('Incorrect type assignment. Must assign a AnimationLibrary');
       }
@@ -340,21 +361,21 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
       dgnode.addMember('trackSetId', 'Integer', trackSetId);
       dgnode.addMember('bindings', 'KeyframeTrackBindings', bindings);
       dgnode.bindings.append(scene.constructOperator({
-          operatorName: 'evaluatePoseTracks',
-          srcFile: 'FABRIC_ROOT/SceneGraph/KL/evaluatePoseTracks.kl',
-          preProcessorDefinitions: {
-            KEYFRAMETRACKSETTYPE: 'LinearKeyframeTrackSet'
-          },
-          entryFunctionName: 'evaluatePoseTracks',
-          parameterLayout: [
-            'animationlibrary.trackSet<>',
-            'controller.localTime',
-            'self.trackSetId',
-            'self.bindings',
-            'self.keyIndices',
-            'self.poseVariables'
-          ]
-        }));
+        operatorName: 'evaluatePoseTracks',
+        srcFile: 'FABRIC_ROOT/SceneGraph/KL/evaluatePoseTracks.kl',
+        preProcessorDefinitions: {
+          KEYFRAMETRACKSETTYPE: 'LinearKeyframeTrackSet'
+        },
+        entryFunctionName: 'evaluatePoseTracks',
+        parameterLayout: [
+          'animationlibrary.trackSet<>',
+          'controller.localTime',
+          'self.trackSetId',
+          'self.bindings',
+          'self.keyIndices',
+          'self.poseVariables'
+        ]
+      }));
     }
     
     characterVariablesNode.getVariables = function(){
@@ -412,12 +433,14 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
   parentNodeDesc: 'SceneGraphNode',
   optionsDesc: {
     skeletonNode: 'The skeletonNode to use for this CharacterRig',
-    computeInverseXfos: 'Determines if the inverse transforms should be computes based on the CharacterSkeleton\'s reference pose.'
+    variablesNode: 'The variablesNode to use for this CharacterRig',
+    baseCharacterRig: 'Copy all solvers from this base rig to male a clone'
   },
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
         skeletonNode: undefined,
-        computeInverseXfos: false,
+        variablesNode: undefined,
+        baseCharacterRig: undefined,
         debug: true
       });
 
@@ -506,11 +529,19 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
     characterRigNode.pub.getSolvers = function() {
       return solvers;
     };
-    var numSolverOperators = 0;
-    characterRigNode.addSolverOperator = function(operator) {
-      dgnode.bindings.insert(operator, numSolverOperators);
-      numSolverOperators++;
+    var solverOperatorBindings = [];
+  //  var numSolverOperators = 0;
+    characterRigNode.addSolverOperator = function(operatorBinding) {
+    //  dgnode.bindings.insert(operator, numSolverOperators);
+    //  numSolverOperators++;
+      dgnode.bindings.append(operatorBinding);
+      solverOperatorBindings.push(operatorBinding);
     }
+    // This method is a work around to the issue that we can't retrieve bindings
+    // directly from the dgnode. I use this to clone a character rig. 
+    characterRigNode.getSolverOperatorBindings = function() {
+      return solverOperatorBindings;
+    };
     characterRigNode.pub.invertSolvers = function(node) {
       if (!node.isTypeOf('CharacterRig')) {
         throw ('Incorrect type assignment. Must assign a CharacterRig');
@@ -566,6 +597,16 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
       characterRigNode.pub.setConstantsNode(scene.constructNode('CharacterConstants').pub);
     }
 */
+    if (options.baseCharacterRig) {
+      // Clone the baseCharacterRig solvers.
+      var baseCharacterRigNode = scene.getPrivateInterface(options.baseCharacterRig);
+      solvers = baseCharacterRigNode.pub.getSolvers();
+      solverOperatorBindings = baseCharacterRigNode.getSolverOperatorBindings();
+      for(var i=0; i < baseCharacterRigNode.getDGNode().bindings.getLength(); i++){
+        dgnode.bindings.append(solverOperatorBindings[i]);//baseCharacterRigNode.getDGNode().bindings.getOperator(i));
+      }
+    }
+    
     return characterRigNode;
   }});
 
