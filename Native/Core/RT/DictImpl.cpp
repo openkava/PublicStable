@@ -114,10 +114,14 @@ namespace Fabric
     void const *DictImpl::getImmutable( void const *data, void const *keyData ) const
     {
       bits_t const *bits = reinterpret_cast<bits_t const *>( data );
-      size_t keyHash = m_keyImpl->hash( keyData );
-      size_t bucketIndex = keyHash & (bits->bucketCount - 1);
-      bucket_t const *bucket = &bits->buckets[bucketIndex];
-      return getImmutable( bucket, keyData );
+      if ( bits->bucketCount > 0 )
+      {
+        size_t keyHash = m_keyImpl->hash( keyData );
+        size_t bucketIndex = keyHash & (bits->bucketCount - 1);
+        bucket_t const *bucket = &bits->buckets[bucketIndex];
+        return getImmutable( bucket, keyData );
+      }
+      else return m_valueImpl->getDefaultData();
     }
     
     void DictImpl::insertNode( bits_t *bits, bucket_t *bucket, node_t *node ) const

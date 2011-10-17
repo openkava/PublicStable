@@ -27,6 +27,11 @@ namespace Fabric
     {
     }
     
+    RC::ConstHandle<RT::DictImpl> DictDesc::getImpl() const
+    {
+      return m_dictImpl;
+    }
+    
     void const *DictDesc::getImmutable( void const *data, void const *keyData ) const
     {
       return m_dictImpl->getImmutable( data, keyData );

@@ -2,4 +2,7 @@ operator entry() {
   Scalar a[String];
   report "a = " + a;
   report "a.size = " + a.size;
+  report "a['foo'] = " + a['foo'];
+  a['foo'] = 3.14;
+  report "a['foo'] = " + a['foo'];
 }
