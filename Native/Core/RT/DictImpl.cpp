@@ -168,35 +168,39 @@ namespace Fabric
       }
     }
     
-    void DictImpl::adjustBucketCount( bits_t *bits, size_t newBucketCount ) const
+    void DictImpl::maybeResize( bits_t *bits ) const
     {
       size_t oldBucketCount = bits->bucketCount;
-      FABRIC_ASSERT( oldBucketCount < newBucketCount );
-      FABRIC_ASSERT( (newBucketCount & (newBucketCount - 1)) == 0 );
-      bits->bucketCount = newBucketCount;
-      
-      size_t oldNodeCount = bits->nodeCount;
-      bits->nodeCount = 0;
-      
-      bucket_t *oldBuckets = bits->buckets;
-      size_t bucketsSize = bits->bucketCount * sizeof(bucket_t);
-      bits->buckets = reinterpret_cast<bucket_t *>( malloc( bucketsSize ) );
-      memset( bits->buckets, 0, bucketsSize );
-      
-      node_t *node = bits->firstNode;
-      bits->firstNode = 0;
-      bits->lastNode = 0;
-      while ( node )
+      size_t newBucketCount = BucketCountForNodeCount( bits->nodeCount + 1 );
+      if ( oldBucketCount < newBucketCount )
       {
-        node_t *nextNode = node->bitsNextNode;
-        size_t bucketIndex = node->keyHash & (bits->bucketCount - 1);
-        bucket_t *bucket = &bits->buckets[bucketIndex];
-        insertNode( bits, bucket, node );
-        node = nextNode;
+        FABRIC_ASSERT( (newBucketCount & (newBucketCount - 1)) == 0 );
+        bits->bucketCount = newBucketCount;
+        
+        size_t oldNodeCount = bits->nodeCount;
+        bits->nodeCount = 0;
+        
+        bucket_t *oldBuckets = bits->buckets;
+        size_t bucketsSize = bits->bucketCount * sizeof(bucket_t);
+        bits->buckets = reinterpret_cast<bucket_t *>( malloc( bucketsSize ) );
+        memset( bits->buckets, 0, bucketsSize );
+        
+        node_t *node = bits->firstNode;
+        bits->firstNode = 0;
+        bits->lastNode = 0;
+        while ( node )
+        {
+          node_t *nextNode = node->bitsNextNode;
+          size_t bucketIndex = node->keyHash & (bits->bucketCount - 1);
+          bucket_t *bucket = &bits->buckets[bucketIndex];
+          insertNode( bits, bucket, node );
+          node = nextNode;
+        }
+        
+        free( oldBuckets );
+        
+        FABRIC_ASSERT( bits->nodeCount == oldNodeCount );
       }
-      
-      free( oldBuckets );
-      FABRIC_ASSERT( bits->nodeCount == oldNodeCount );
     }
     
     void *DictImpl::getMutable( bits_t *bits, bucket_t *bucket, void const *keyData, size_t keyHash ) const
@@ -229,15 +233,14 @@ namespace Fabric
     void *DictImpl::getMutable( void *data, void const *keyData ) const
     {
       bits_t *bits = reinterpret_cast<bits_t *>( data );
-      if ( bits->bucketCount == 0 )
-        adjustBucketCount( bits, RT_DICT_IMPL_MINIMUM_BUCKET_COUNT );
+      // [pzion 20111017] Only maybe resize when our node count
+      // is zero or a power of two minus one
+      if ( (bits->nodeCount & (bits->nodeCount - 1)) == 0 )
+        maybeResize( bits );
       size_t keyHash = m_keyImpl->hash( keyData );
       size_t bucketIndex = keyHash & (bits->bucketCount - 1);
       bucket_t *bucket = &bits->buckets[bucketIndex];
       void *result = getMutable( bits, bucket, keyData, keyHash );
-      size_t newBucketCount = BucketCountForNodeCount( bits->nodeCount );
-      if ( newBucketCount > bits->bucketCount )
-        adjustBucketCount( bits, newBucketCount );
       return result;
     }
 
