@@ -50,5 +50,20 @@ namespace Fabric
       result->set( "valueType", JSON::String::Create( m_valueDesc->getUserName() ) );
       return result;
     }
+
+    RC::ConstHandle<ComparableDesc> DictDesc::getKeyDesc() const
+    {
+      return m_keyDesc;
+    }
+    
+    RC::ConstHandle<Desc> DictDesc::getValueDesc() const
+    {
+      return m_valueDesc;
+    }
+      
+    std::string DictDesc::descData( void const *data, size_t limit ) const
+    {
+      return m_dictImpl->descData( data, limit );
+    }
   };
 };

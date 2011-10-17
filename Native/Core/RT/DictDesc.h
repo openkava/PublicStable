@@ -26,6 +26,11 @@ namespace Fabric
       void *getMutable( void *data, void const *keyData ) const;
       size_t getSize( void const *data ) const;
       
+      RC::ConstHandle<ComparableDesc> getKeyDesc() const;
+      RC::ConstHandle<Desc> getValueDesc() const;
+      
+      std::string descData( void const *data, size_t limit = SIZE_MAX ) const;
+      
       virtual RC::Handle<JSON::Object> jsonDesc() const;
       
     protected:
