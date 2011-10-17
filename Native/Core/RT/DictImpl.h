@@ -108,7 +108,7 @@ namespace Fabric
       void const *getImmutable( bucket_t const *bucket, void const *keyData ) const;
       void *getMutable( bits_t *bits, bucket_t *bucket, void const *keyData, size_t keyHash ) const;
       void insertNode( bits_t *bits, bucket_t *bucket, node_t *node ) const;
-      void adjustBucketCount( bits_t *bits, size_t newBucketCount ) const;
+      void maybeResize( bits_t *bits ) const;
 
     private:
 
