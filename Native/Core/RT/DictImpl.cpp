@@ -290,9 +290,8 @@ namespace Fabric
       m_keyImpl->disposeDatas( keyData, 1, m_keySize );
     }
     
-    std::string DictImpl::descData( void const *data ) const
+    std::string DictImpl::descData( void const *data, size_t maxNumToDisplay ) const
     {
-      static const size_t maxNumToDisplay = 16;
       size_t numDisplayed = 0;
       std::string result = "{";
       bits_t const *bits = *reinterpret_cast<bits_t const * const *>( data );
@@ -319,6 +318,11 @@ namespace Fabric
       }
       result += "}";
       return result;
+    }
+    
+    std::string DictImpl::descData( void const *data ) const
+    {
+      return descData( data, 16 );
     }
     
     bool DictImpl::isShallow() const

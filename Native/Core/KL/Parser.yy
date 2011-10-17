@@ -716,6 +716,14 @@ array_modifier
       $$ = result;
     }
   }
+  | TOKEN_LBRACKET compound_type TOKEN_RBRACKET array_modifier
+  {
+    std::string *result = new std::string( "[" + *$2 + "]" );
+    delete $2;
+    result->append( *$4 );
+    delete $4;
+    $$ = result;
+  }
   | /* empty */
   {
     $$ = new std::string;
