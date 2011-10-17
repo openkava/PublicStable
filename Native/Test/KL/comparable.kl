@@ -64,6 +64,17 @@ function testFloat64() {
   report "sm.compare(sm) = " + sm.compare(sm);
 }
 
+function testString() {
+  report "String:";
+  String gr = "beta", sm = "";
+  report "gr.hash = " + gr.hash;
+  report "sm.hash = " + sm.hash;
+  report "gr.compare(gr) = " + gr.compare(gr);
+  report "gr.compare(sm) = " + gr.compare(sm);
+  report "sm.compare(gr) = " + sm.compare(gr);
+  report "sm.compare(sm) = " + sm.compare(sm);
+}
+
 operator entry() {
   testBoolean();
   testByte();
@@ -71,4 +82,5 @@ operator entry() {
   testSize();
   testScalar();
   testFloat64();
+  testString();
 }
