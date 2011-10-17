@@ -40,3 +40,10 @@ gr.compare(gr) = 0
 gr.compare(sm) = 1
 sm.compare(gr) = -1
 sm.compare(sm) = 0
+String:
+gr.hash = 6382696023
+sm.hash = 5381
+gr.compare(gr) = 0
+gr.compare(sm) = 1
+sm.compare(gr) = -1
+sm.compare(sm) = 0

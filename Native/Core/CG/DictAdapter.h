@@ -12,6 +12,7 @@ namespace Fabric
   namespace RT
   {
     class DictDesc;
+    class DictImpl;
   };
   
   namespace CG
@@ -40,21 +41,20 @@ namespace Fabric
       virtual std::string toString( void const *data ) const;
 
       // DictAdapter
+      
+      RC::ConstHandle<ComparableAdapter> getKeyAdapter() const;
+      RC::ConstHandle<Adapter> getValueAdapter() const;
 
-      /*
       virtual llvm::Value *llvmGetRValue(
         CG::BasicBlockBuilder &basicBlockBuilder,
         llvm::Value *dictRValue,
-        llvm::Value *keyRValue,
-        CG::Location const *location
+        llvm::Value *keyRValue
         ) const;
       virtual llvm::Value *llvmGetLValue(
         CG::BasicBlockBuilder &basicBlockBuilder,
         llvm::Value *dictLValue,
-        llvm::Value *keyRValue,
-        CG::Location const *location
+        llvm::Value *keyRValue
         ) const;
-      */
 
     protected:
     
@@ -67,11 +67,16 @@ namespace Fabric
 
       llvm::Value *llvmCallSize( BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const;
       
+      static void const *GetRValue( void *_dictAdapter, void const *dictRValue, void const *keyRValue );
+      static void *GetLValue( void *_dictAdapter, void *dictLValue, void const *keyRValue );
+
     private:
     
       RC::ConstHandle<RT::DictDesc> m_dictDesc;
       RC::ConstHandle<ComparableAdapter> m_keyAdapter;
       RC::ConstHandle<Adapter> m_valueAdapter;
+      
+      RT::DictImpl const *m_dictImpl;
    };
   };
 };
