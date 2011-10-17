@@ -13,9 +13,9 @@ namespace Fabric
   {
     SimpleAdapter::SimpleAdapter(
       RC::ConstHandle<Manager> const &manager,
-      RC::ConstHandle<RT::Desc> const &desc
+      RC::ConstHandle<RT::ComparableDesc> const &desc
       )
-      : Adapter( manager, desc, 0 )
+      : ComparableAdapter( manager, desc, 0 )
     {
     }
 

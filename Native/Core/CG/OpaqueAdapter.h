@@ -16,12 +16,17 @@ namespace Fabric
   
   namespace CG
   {
-    class OpaqueAdapter : public SimpleAdapter
+    class OpaqueAdapter : public Adapter
     {
       friend class Manager;
 
     public:
 
+      // Adapter
+    
+      virtual void llvmDefaultAssign( BasicBlockBuilder &basicBlockBuilder, llvm::Value *dstLValue, llvm::Value *srcRValue ) const;
+      virtual void llvmRetain( BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const;
+      virtual void llvmRelease( BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const;
       virtual void llvmCompileToModule( ModuleBuilder &moduleBuilder ) const;
       
     protected:

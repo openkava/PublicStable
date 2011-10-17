@@ -37,6 +37,11 @@ namespace Fabric
       virtual void *llvmResolveExternalFunction( std::string const &functionName ) const;
       
       virtual std::string toString( void const *data ) const;
+      
+      // ComparableAdapter
+      
+      virtual llvm::Value *llvmHash( BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const;
+      virtual llvm::Value *llvmCompare( BasicBlockBuilder &basicBlockBuilder, llvm::Value *lhsRValue, llvm::Value *rhsRValue ) const;
 
       // StringAdapter
 

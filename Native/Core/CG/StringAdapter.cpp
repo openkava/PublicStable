@@ -547,6 +547,74 @@ namespace Fabric
       }
       
       {
+        std::string name = methodOverloadName( "hash", this );
+        std::vector<FunctionParam> params;
+        params.push_back( FunctionParam( "rValue", this, USAGE_RVALUE ) );
+        FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( sizeAdapter, USAGE_RVALUE ), params );
+        if ( buildFunctions )
+        {
+          llvm::Value *rValue = functionBuilder[0];
+          
+          BasicBlockBuilder basicBlockBuilder( functionBuilder );
+          llvm::BasicBlock *entryBB = functionBuilder.createBasicBlock( "entry" );
+          llvm::BasicBlock *notNullBB = functionBuilder.createBasicBlock( "notNull" );
+          llvm::BasicBlock *loopCheckBB = functionBuilder.createBasicBlock( "loopCheck" );
+          llvm::BasicBlock *loopStepBB = functionBuilder.createBasicBlock( "loopStep" );
+          llvm::BasicBlock *doneBB = functionBuilder.createBasicBlock( "done" );
+          
+          basicBlockBuilder->SetInsertPoint( entryBB );
+          llvm::Value *resultLValue = sizeAdapter->llvmAlloca( basicBlockBuilder, "result" );
+          sizeAdapter->llvmDefaultAssign( basicBlockBuilder, resultLValue, sizeAdapter->llvmConst( context, 5381 ) );
+          llvm::Value *isNullRValue = basicBlockBuilder->CreateIsNull(rValue);
+          basicBlockBuilder->CreateCondBr( isNullRValue, doneBB, notNullBB );
+          
+          basicBlockBuilder->SetInsertPoint( notNullBB );
+          llvm::Value *cStrRValue = basicBlockBuilder->CreateConstGEP2_32( basicBlockBuilder->CreateStructGEP( rValue, 3 ), 0, 0, "cStr" );
+          llvm::Value *lengthRValue = llvmCallLength( basicBlockBuilder, rValue );
+          llvm::Value *indexLValue = sizeAdapter->llvmAlloca( basicBlockBuilder, "index" );
+          sizeAdapter->llvmDefaultAssign( basicBlockBuilder, indexLValue, sizeAdapter->llvmConst( context, 0 ) );
+          basicBlockBuilder->CreateBr( loopCheckBB );
+          
+          basicBlockBuilder->SetInsertPoint( loopCheckBB );
+          llvm::Value *indexRValue = sizeAdapter->llvmLValueToRValue( basicBlockBuilder, indexLValue );
+          llvm::Value *cmpRValue = basicBlockBuilder->CreateICmpULT( indexRValue, lengthRValue );
+          basicBlockBuilder->CreateCondBr( cmpRValue, loopStepBB, doneBB );
+          
+          basicBlockBuilder->SetInsertPoint( loopStepBB );
+          llvm::Value *charLValue = basicBlockBuilder->CreateGEP( cStrRValue, indexRValue, "charLValue" );
+          llvm::Value *charRValue = basicBlockBuilder->CreateLoad( charLValue, "charRValue" );
+          llvm::Value *resultRValue = sizeAdapter->llvmLValueToRValue( basicBlockBuilder, resultLValue );
+          sizeAdapter->llvmDefaultAssign(
+            basicBlockBuilder,
+            resultLValue,
+            basicBlockBuilder->CreateXor(
+              basicBlockBuilder->CreateMul(
+                resultRValue,
+                sizeAdapter->llvmConst( context, 33 )
+                ),
+              basicBlockBuilder->CreateZExt(
+                charRValue,
+                sizeAdapter->llvmRType( context )
+                )
+              )
+            );
+          sizeAdapter->llvmDefaultAssign(
+            basicBlockBuilder,
+            indexLValue,
+            basicBlockBuilder->CreateAdd(
+              indexRValue,
+              sizeAdapter->llvmConst( context, 1 )
+              )
+            );
+          basicBlockBuilder->CreateBr( loopCheckBB );
+          
+          basicBlockBuilder->SetInsertPoint( doneBB );
+          resultRValue = sizeAdapter->llvmLValueToRValue( basicBlockBuilder, resultLValue );
+          basicBlockBuilder->CreateRet( resultRValue );
+        }
+      }
+      
+      {
         std::string name = binOpOverloadName( BIN_OP_EQ, this, this );
         std::vector< FunctionParam > params;
         params.push_back( FunctionParam( "lhsRValue", this, USAGE_RVALUE ) );
@@ -779,6 +847,25 @@ namespace Fabric
     llvm::Constant *StringAdapter::llvmDefaultValue( BasicBlockBuilder &basicBlockBuilder ) const
     {
       return llvm::ConstantPointerNull::get( static_cast<llvm::PointerType const *>( llvmRawType( basicBlockBuilder.getContext() ) ) );
+    }
+
+    llvm::Value *StringAdapter::llvmHash( BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const
+    {
+      RC::ConstHandle<SizeAdapter> sizeAdapter = getManager()->getSizeAdapter();
+      std::vector<FunctionParam> params;
+      params.push_back( FunctionParam( "rValue", this, CG::USAGE_RVALUE ) );
+      FunctionBuilder functionBuilder( basicBlockBuilder.getModuleBuilder(), methodOverloadName( "hash", this ), ExprType( sizeAdapter, USAGE_RVALUE ), params, false );
+      return basicBlockBuilder->CreateCall( functionBuilder.getLLVMFunction(), rValue );
+    }
+    
+    llvm::Value *StringAdapter::llvmCompare( BasicBlockBuilder &basicBlockBuilder, llvm::Value *lhsRValue, llvm::Value *rhsRValue ) const
+    {
+      RC::ConstHandle<IntegerAdapter> integerAdapter = getManager()->getIntegerAdapter();
+      std::vector<FunctionParam> params;
+      params.push_back( FunctionParam( "lhsRValue", this, CG::USAGE_RVALUE ) );
+      params.push_back( FunctionParam( "rhsRValue", this, CG::USAGE_RVALUE ) );
+      FunctionBuilder functionBuilder( basicBlockBuilder.getModuleBuilder(), methodOverloadName( "compare", this, this ), ExprType( integerAdapter, USAGE_RVALUE ), params, false );
+      return basicBlockBuilder->CreateCall2( functionBuilder.getLLVMFunction(), lhsRValue, rhsRValue );
     }
   };
 };
