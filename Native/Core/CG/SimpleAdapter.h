@@ -1,15 +1,17 @@
 #ifndef _FABRIC_CG_SIMPLE_ADAPTER_H
 #define _FABRIC_CG_SIMPLE_ADAPTER_H
 
-#include <Fabric/Core/CG/Adapter.h>
+#include <Fabric/Core/CG/ComparableAdapter.h>
 
 namespace Fabric
 {
   namespace CG
   {
-    class SimpleAdapter : public Adapter
+    class SimpleAdapter : public ComparableAdapter
     {
     public:
+    
+      // Adapter
     
       virtual void llvmDefaultAssign( BasicBlockBuilder &basicBlockBuilder, llvm::Value *dstLValue, llvm::Value *srcRValue ) const;
       virtual void llvmRetain( BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const;
@@ -19,7 +21,7 @@ namespace Fabric
     
       SimpleAdapter(
         RC::ConstHandle<Manager> const &manager,
-        RC::ConstHandle<RT::Desc> const &desc
+        RC::ConstHandle<RT::ComparableDesc> const &comparableDesc
         );
     };
   };

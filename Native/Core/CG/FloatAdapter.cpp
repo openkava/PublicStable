@@ -18,6 +18,7 @@
 #include <llvm/Module.h>
 #include <llvm/Function.h>
 #include <llvm/Intrinsics.h>
+#include <llvm/Type.h>
 
 namespace Fabric
 {
@@ -730,6 +731,112 @@ namespace Fabric
           BasicBlockBuilder basicBlockBuilder( functionBuilder );
           basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
           basicBlockBuilder->CreateRet( basicBlockBuilder->CreatePointerCast( thisLValue, dataAdapter->llvmRType( context ) ) );
+        }
+      }
+     
+      {
+        std::string name = methodOverloadName( "hash", this );
+        std::vector<FunctionParam> params;
+        params.push_back( FunctionParam( "rValue", this, USAGE_RVALUE ) );
+        FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( sizeAdapter, USAGE_RVALUE ), params );
+        if ( buildFunctions )
+        {
+          llvm::Value *rValue = functionBuilder[0];
+          BasicBlockBuilder basicBlockBuilder( functionBuilder );
+          basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
+          llvm::Value *resultRValue;
+          switch ( m_floatDesc->getAllocSize() )
+          {
+            case 4:
+            {
+#if defined(FABRIC_ARCH_32BIT)
+              resultRValue = basicBlockBuilder->CreateBitCast(
+                rValue,
+                sizeAdapter->llvmRType( context )
+                );
+#elif defined(FABRIC_ARCH_64BIT)
+              resultRValue = basicBlockBuilder->CreateZExt(
+                basicBlockBuilder->CreateBitCast(
+                  rValue,
+                  llvm::Type::getInt32Ty( context->getLLVMContext() )
+                  ),
+                sizeAdapter->llvmRType( context )
+                );
+#else
+# error "Unsupported FABRIC_ARCH_..."
+#endif
+            }
+            break;
+            
+            case 8:
+            {
+#if defined(FABRIC_ARCH_32BIT)
+              resultRValue = basicBlockBuilder->CreateXor(
+                basicBlockBuilder->CreateTrunc(
+                  basicBlockBuilder->CreateBitCast(
+                    rValue,
+                    llvm::Type::getInt64Ty( context->getLLVMContext() )
+                    ),
+                  sizeAdapter->llvmRType( context )
+                  ),
+                basicBlockBuilder->CreateTrunc(
+                  basicBlockBuilder->CreateLShr(
+                    basicBlockBuilder->CreateBitCast(
+                      rValue,
+                      llvm::Type::getInt64Ty( context->getLLVMContext() )
+                      ),
+                    llvm::ConstantInt::get( llvm::Type::getInt64Ty( context->getLLVMContext() ), 32, false )
+                  ),
+                  sizeAdapter->llvmRType( context )
+                  )
+                );
+#elif defined(FABRIC_ARCH_64BIT)
+              resultRValue = basicBlockBuilder->CreateBitCast(
+                rValue,
+                sizeAdapter->llvmRType( context )
+                );
+#else
+# error "Unsupported FABRIC_ARCH_..."
+#endif
+            }
+            break;
+          }
+          basicBlockBuilder->CreateRet( resultRValue );
+        }
+      }
+      
+      {
+        std::string name = methodOverloadName( "compare", this, this );
+        std::vector<FunctionParam> params;
+        params.push_back( FunctionParam( "lhsRValue", this, USAGE_RVALUE ) );
+        params.push_back( FunctionParam( "rhsRValue", this, USAGE_RVALUE ) );
+        FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( integerAdapter, USAGE_RVALUE ), params );
+        if ( buildFunctions )
+        {
+          llvm::Value *lhsRValue = functionBuilder[0];
+          llvm::Value *rhsRValue = functionBuilder[1];
+          
+          BasicBlockBuilder basicBlockBuilder( functionBuilder );
+          llvm::BasicBlock *entryBB = functionBuilder.createBasicBlock( "entry" );
+          llvm::BasicBlock *ltBB = functionBuilder.createBasicBlock( "lt" );
+          llvm::BasicBlock *geBB = functionBuilder.createBasicBlock( "ge" );
+          llvm::BasicBlock *eqBB = functionBuilder.createBasicBlock( "eq" );
+          llvm::BasicBlock *gtBB = functionBuilder.createBasicBlock( "gt" );
+          
+          basicBlockBuilder->SetInsertPoint( entryBB );
+          basicBlockBuilder->CreateCondBr( basicBlockBuilder->CreateFCmpOLT( lhsRValue, rhsRValue ), ltBB, geBB );
+          
+          basicBlockBuilder->SetInsertPoint( ltBB );
+          basicBlockBuilder->CreateRet( integerAdapter->llvmConst( context, -1 ) );
+          
+          basicBlockBuilder->SetInsertPoint( geBB );
+          basicBlockBuilder->CreateCondBr( basicBlockBuilder->CreateFCmpOEQ( lhsRValue, rhsRValue ), eqBB, gtBB );
+          
+          basicBlockBuilder->SetInsertPoint( eqBB );
+          basicBlockBuilder->CreateRet( integerAdapter->llvmConst( context, 0 ) );
+          
+          basicBlockBuilder->SetInsertPoint( gtBB );
+          basicBlockBuilder->CreateRet( integerAdapter->llvmConst( context, 1 ) );
         }
       }
     }
