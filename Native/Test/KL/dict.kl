@@ -1,0 +1,5 @@
+operator entry() {
+  Scalar a[String];
+  report "a = " + a;
+  report "a.size = " + a.size;
+}

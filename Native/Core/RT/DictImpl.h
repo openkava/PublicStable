@@ -68,6 +68,7 @@ namespace Fabric
       void const *getImmutable( void const *data, void const *keyData ) const;
       void *getMutable( void *data, void const *keyData ) const;
       size_t getSize( void const *data ) const;
+      std::string descData( void const *data, size_t limit ) const;
 
     protected:
     
