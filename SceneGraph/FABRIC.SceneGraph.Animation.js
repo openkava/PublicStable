@@ -63,6 +63,9 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
         var range = new FABRIC.RT.Vec2();
         for(var i=0; i<trackSet.tracks.length; i++){
           var track = trackSet.tracks[i];
+          if(track.keys.length<=1){
+            continue;
+          }
           if(i==0){
             range.set(track.keys[0].time, track.keys[track.keys.length-1].time);
           }else{
