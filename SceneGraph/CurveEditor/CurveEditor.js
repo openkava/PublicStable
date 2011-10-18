@@ -46,6 +46,9 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
     fitToScreen:function(){
       for (var i = 0; i < trackCount; i++) {
         var keys = tracksData.tracks[i].keys;//animationLibraryNode.getTrackKeys(i);
+        if(keys.length <= 1){
+          continue;
+        }
         if (timeRange.x > keys[0].time) {
           timeRange.x = keys[0].time;
         }
