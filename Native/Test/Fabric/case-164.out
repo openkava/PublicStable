@@ -1,0 +1,4 @@
+["binding 0: operator 'op': operator takes incorrect number of parameters (expected 2, actual 1)"]
+FABRIC.Wrappers.js:1: Fabric core exception: DG.node.evaluate(): command 'evaluate': cannot execute because of errors
+=h.length;p-->m;){var q=h[p];q&&q()}throw"Fabric core exception: "+n.exception
+                                                                    ^
