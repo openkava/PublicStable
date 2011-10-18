@@ -916,7 +916,7 @@ FABRIC_EXT_EXPORT void FabricALEMBICParseCurvesAttributes(
     // store all of the points, and do proper interpolation
     if(positionsPtr->size() == vertices.size())
     {
-      if(sampleInfo.alpha != 0.0 && false)
+      if(sampleInfo.alpha != 0.0)
       {
         Alembic::AbcGeom::ICurvesSchema::Sample sample2;
         schema.get(sample2,sampleInfo.ceilIndex);
