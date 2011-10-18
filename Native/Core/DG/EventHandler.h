@@ -49,6 +49,7 @@ namespace Fabric
       
       Bindings const &getScopes() const;
       void setScope( std::string const &name, RC::Handle<Node> const &node );
+      void removeScope( std::string const &name );
       std::string const &getScopeName() const;
       void setScopeName( std::string const &bindingName );
       
@@ -65,6 +66,7 @@ namespace Fabric
       void jsonExecAppendChildEventHandler( RC::ConstHandle<JSON::Value> const &arg );
       void jsonExecRemoveChildEventHandler( RC::ConstHandle<JSON::Value> const &arg );
       void jsonExecAddScope( RC::ConstHandle<JSON::Value> const &arg );
+      void jsonExecRemoveScope( RC::ConstHandle<JSON::Value> const &arg );
       void jsonExecSetSelector( RC::ConstHandle<JSON::Value> const &arg );
       void jsonExecSetBindingName( RC::ConstHandle<JSON::Value> const &arg );
       virtual RC::Handle<JSON::Object> jsonDesc() const;
