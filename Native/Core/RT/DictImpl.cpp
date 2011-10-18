@@ -301,25 +301,24 @@ namespace Fabric
     {
       size_t numDisplayed = 0;
       std::string result = "{";
-      bits_t const *bits = *reinterpret_cast<bits_t const * const *>( data );
+      bits_t const *bits = reinterpret_cast<bits_t const *>( data );
       if ( bits )
       {
         node_t *node = bits->firstNode;
         while ( node )
-        {
-          if ( node->bitsPrevNode )
+      {
+          if ( numDisplayed > 0 )
+            result += ',';
+          if ( numDisplayed == maxNumToDisplay )
           {
-            if ( numDisplayed == 0 )
-              result += ',';
-            if ( numDisplayed == maxNumToDisplay )
-            {
-              result += "...";
-              break;
-            }
-            result += m_keyImpl->descData( immutableKeyData( node ) );
-            result += ':';
-            result += m_valueImpl->descData( immutableValueData( node ) );
+            result += "...";
+            break;
           }
+          result += m_keyImpl->descData( immutableKeyData( node ) );
+          result += ':';
+          result += m_valueImpl->descData( immutableValueData( node ) );
+          ++numDisplayed;
+
           node = node->bitsNextNode;
         }
       }
