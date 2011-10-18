@@ -111,37 +111,17 @@ Alembic::Abc::IObject getObjectFromArchive(Alembic::Abc::IArchive * archive, con
   return obj; 
 }
 
-FABRIC_EXT_EXPORT void FabricALEMBICDecode(
-  KL::Data objData,
-  KL::Size objDataSize,
+FABRIC_EXT_EXPORT void FabricALEMBICOpen(
+  KL::String fileName,
   AlembicHandle &handle
   )
 {
   Alembic::Abc::IArchive * archive = (Alembic::Abc::IArchive *)handle.pointer;
   if( archive == NULL )
   {
-#if defined(FABRIC_OS_WINDOWS)
-    char const *dir = getenv("APPDATA");
-    if(dir == NULL)
-      dir = getenv("TEMP");
-    if(dir == NULL)
-      dir = getenv("TMP");
-    if(dir == NULL)
-      Fabric::EDK::throwException("Alembic extension: environment variable APP_DATA or TMP or TEMP is undefined");
-    std::string fileName( _tempnam( dir, "tmpfab_" ) );
-#else
-    std::string fileName(tmpnam(NULL));
-#endif
-      
-    // save the file to disk
-    FILE * file = fopen(fileName.c_str(),"wb");
-    fwrite(objData,objDataSize,1,file);
-    fclose(file);
-    file = NULL;
-
     // load the file    
     archive = new Alembic::Abc::IArchive(
-      Alembic::AbcCoreHDF5::ReadArchive(),fileName.c_str());
+      Alembic::AbcCoreHDF5::ReadArchive(),fileName.data());
     handle.pointer = archive;
     
     // determine the time range
@@ -163,6 +143,39 @@ FABRIC_EXT_EXPORT void FabricALEMBICDecode(
     if(handle.timeRange.x == 1000000) {
       handle.timeRange.x = handle.timeRange.y = 0.0f;
     }
+  }
+}
+
+
+FABRIC_EXT_EXPORT void FabricALEMBICDecode(
+  KL::Data objData,
+  KL::Size objDataSize,
+  AlembicHandle &handle
+  )
+{
+  Alembic::Abc::IArchive * archive = (Alembic::Abc::IArchive *)handle.pointer;
+  if( archive == NULL )
+  {
+#if defined(FABRIC_OS_WINDOWS)
+    char const *dir = getenv("APPDATA");
+    if(dir == NULL)
+      dir = getenv("TEMP");
+    if(dir == NULL)
+      dir = getenv("TMP");
+    if(dir == NULL)
+      Fabric::EDK::throwException("Alembic extension: environment variable APP_DATA or TMP or TEMP is undefined");
+    KL::String fileName( _tempnam( dir, "tmpfab_" ) );
+#else
+    KL::String fileName(tmpnam(NULL));
+#endif
+
+    // save the file to disk
+    FILE * file = fopen(fileName.data(),"wb");
+    fwrite(objData,objDataSize,1,file);
+    fclose(file);
+    file = NULL;
+
+    return FabricALEMBICOpen(fileName,handle);
   }
 }
 
@@ -667,6 +680,135 @@ FABRIC_EXT_EXPORT void FabricALEMBICParsePolyMeshAttributes(
           }
         }
         uvsLoaded = true;
+      }
+    }
+  }
+}
+
+FABRIC_EXT_EXPORT void FabricALEMBICParsePointsCount(
+  AlembicHandle &handle,
+  KL::String & identifier,
+  KL::Scalar & time,
+  KL::Size & count
+  )
+{
+  Alembic::Abc::IArchive * archive = (Alembic::Abc::IArchive *)handle.pointer;
+  if(archive == NULL)
+    return;
+    
+  Alembic::AbcGeom::IPoints obj(getObjectFromArchive(archive,identifier.data()),Alembic::Abc::kWrapExisting);
+  if( obj.valid() )
+  {
+    // get the schema
+    Alembic::AbcGeom::IPointsSchema schema = obj.getSchema();
+
+    // get the sample information
+    SampleInfo sampleInfo = getSampleInfo(time,schema.getTimeSampling(),schema.getNumSamples());
+
+    // get the sample
+    Alembic::AbcGeom::IPointsSchema::Sample sample;
+    schema.get(sample,sampleInfo.floorIndex);
+
+    // access the points
+    Alembic::Abc::P3fArraySamplePtr ptr = sample.getPositions();
+    count = ptr->size();
+  }
+}
+
+FABRIC_EXT_EXPORT void FabricALEMBICParsePointsAttributes(
+  AlembicHandle &handle,
+  KL::String & identifier,
+  KL::Scalar & time,
+  KL::SlicedArray<KL::Vec3>& vertices,
+  KL::SlicedArray<KL::Scalar>& sizes,
+  KL::SlicedArray<KL::Color>& colors
+  )
+{
+  Alembic::Abc::IArchive * archive = (Alembic::Abc::IArchive *)handle.pointer;
+  if(archive == NULL)
+    return;
+    
+  Alembic::AbcGeom::IPoints obj(getObjectFromArchive(archive,identifier.data()),Alembic::Abc::kWrapExisting);
+  if( obj.valid() )
+  {
+    // get the schema
+    Alembic::AbcGeom::IPointsSchema schema = obj.getSchema();
+
+    // get the sample information
+    SampleInfo sampleInfo = getSampleInfo(time,schema.getTimeSampling(),schema.getNumSamples());
+
+    // get the sample
+    Alembic::AbcGeom::IPointsSchema::Sample sample;
+    schema.get(sample,sampleInfo.floorIndex);
+
+    // get points and velocities
+    Alembic::Abc::P3fArraySamplePtr positionsPtr = sample.getPositions();
+    Alembic::Abc::V3fArraySamplePtr velocitiesPtr = sample.getVelocities();
+    
+    // store all of the points, and do proper interpolation
+    if(positionsPtr->size() == vertices.size())
+    {
+      if(sampleInfo.alpha != 0.0 && velocitiesPtr != NULL)
+      {
+        for(KL::Size i=0;i<vertices.size();i++)
+        {
+          vertices[i].x = positionsPtr->get()[i].x + velocitiesPtr->get()[i].x * sampleInfo.alpha;
+          vertices[i].y = positionsPtr->get()[i].y + velocitiesPtr->get()[i].y * sampleInfo.alpha;
+          vertices[i].z = positionsPtr->get()[i].z + velocitiesPtr->get()[i].z * sampleInfo.alpha;
+        }
+      }
+      else
+      {
+        for(KL::Size i=0;i<vertices.size();i++)
+        {
+          vertices[i].x = positionsPtr->get()[i].x;
+          vertices[i].y = positionsPtr->get()[i].y;
+          vertices[i].z = positionsPtr->get()[i].z;
+        }
+      }
+    }
+    
+    // check if we can store the sizes
+    Alembic::AbcGeom::IFloatGeomParam widthParam = schema.getWidthsParam();
+    if(widthParam)
+    {
+      if(widthParam.getNumSamples() >= sampleInfo.floorIndex)
+      {
+        Alembic::Abc::FloatArraySamplePtr ptr = widthParam.getExpandedValue(sampleInfo.floorIndex).getVals();
+        if(ptr != NULL)
+        {
+          if(ptr->size() == sizes.size())
+          {
+            for(KL::Size i=0;i<sizes.size();i++)
+              sizes[i] = ptr->get()[i];
+          }
+        }
+      }
+    }
+
+    // check if we can store the colors
+    if ( schema.getPropertyHeader( ".color" ) != NULL )
+    {
+      Alembic::Abc::IC4fArrayProperty prop = Alembic::Abc::IC4fArrayProperty( schema, ".color" );
+      if(prop.valid())
+      {
+        if(prop.getNumSamples() >= sampleInfo.floorIndex)
+        {
+          Alembic::Abc::C4fArraySamplePtr ptr = prop.getValue(sampleInfo.floorIndex);
+          if(ptr != NULL)
+          {
+            if(ptr->size() == colors.size())
+            {
+              for(KL::Size i=0;i<colors.size();i++)
+              {
+                colors[i].r = ptr->get()[i].r;
+                colors[i].g = ptr->get()[i].g;
+                colors[i].b = ptr->get()[i].b;
+                colors[i].a = ptr->get()[i].a;
+              }
+            }
+          }
+        }
       }
     }
   }
