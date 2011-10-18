@@ -83,6 +83,7 @@ namespace Fabric
       virtual RC::ConstHandle<JSON::Value> jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg );
       static void jsonExecCreate( RC::ConstHandle<JSON::Value> const &arg, RC::Handle<Context> const &context );
       void jsonExecAddDependency( RC::ConstHandle<JSON::Value> const &arg );
+      void jsonExecRemoveDependency( RC::ConstHandle<JSON::Value> const &arg );
       void jsonExecEvaluate();
       virtual RC::Handle<JSON::Object> jsonDesc() const;
       virtual RC::ConstHandle<JSON::Value> jsonDescType() const;
