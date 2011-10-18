@@ -813,3 +813,218 @@ FABRIC_EXT_EXPORT void FabricALEMBICParsePointsAttributes(
     }
   }
 }
+
+FABRIC_EXT_EXPORT void FabricALEMBICParseCurvesUniforms(
+  AlembicHandle &handle,
+  KL::String & identifier,
+  KL::VariableArray<KL::Integer>& indices
+  )
+{
+  Alembic::Abc::IArchive * archive = (Alembic::Abc::IArchive *)handle.pointer;
+  if(archive == NULL)
+    return;
+    
+  Alembic::AbcGeom::ICurves obj(getObjectFromArchive(archive,identifier.data()),Alembic::Abc::kWrapExisting);
+  if( obj.valid() )
+  {
+    // get the schema
+    Alembic::AbcGeom::ICurvesSchema schema = obj.getSchema();
+
+    // get the sample
+    Alembic::AbcGeom::ICurvesSchema::Sample sample;
+    schema.get(sample,0);
+
+    // get the number of vertices per curve
+    Alembic::Abc::Int32ArraySamplePtr ptr = sample.getCurvesNumVertices();
+    KL::Size count = 0;
+    for(KL::Size i=0;i<ptr->size();i++)
+      count += (ptr->get()[i] - 1) * 2;
+      
+    // now compute the indices
+    indices.resize(count);
+    KL::Size offset = 0;
+    KL::Size pntOffset = 0;
+    for(KL::Size i=0;i<ptr->size();i++)
+    {
+      for(KL::Size j=1;j<ptr->get()[i];j++)
+      {
+        indices[offset++] = pntOffset + j - 1;
+        indices[offset++] = pntOffset + j;
+      }
+      pntOffset += ptr->get()[i];
+    }
+  }
+}
+
+FABRIC_EXT_EXPORT void FabricALEMBICParseCurvesCount(
+  AlembicHandle &handle,
+  KL::String & identifier,
+  KL::Size & count
+  )
+{
+  Alembic::Abc::IArchive * archive = (Alembic::Abc::IArchive *)handle.pointer;
+  if(archive == NULL)
+    return;
+
+  Alembic::AbcGeom::ICurves obj(getObjectFromArchive(archive,identifier.data()),Alembic::Abc::kWrapExisting);
+  if( obj.valid() )
+  {
+    // get the schema
+    Alembic::AbcGeom::ICurvesSchema schema = obj.getSchema();
+
+    // get the sample
+    Alembic::AbcGeom::ICurvesSchema::Sample sample;
+    schema.get(sample,0);
+
+    // access the points
+    Alembic::Abc::P3fArraySamplePtr ptr = sample.getPositions();
+    count = ptr->size();
+  }
+}
+
+FABRIC_EXT_EXPORT void FabricALEMBICParseCurvesAttributes(
+  AlembicHandle &handle,
+  KL::String & identifier,
+  KL::Scalar & time,
+  KL::SlicedArray<KL::Vec3>& vertices,
+  KL::SlicedArray<KL::Scalar>& sizes,
+  KL::Boolean & uvsLoaded,
+  KL::SlicedArray<KL::Vec2>& uvs,
+  KL::SlicedArray<KL::Color>& colors
+  )
+{
+  Alembic::Abc::IArchive * archive = (Alembic::Abc::IArchive *)handle.pointer;
+  if(archive == NULL)
+    return;
+
+  Alembic::AbcGeom::ICurves obj(getObjectFromArchive(archive,identifier.data()),Alembic::Abc::kWrapExisting);
+  if( obj.valid() )
+  {
+    // get the schema
+    Alembic::AbcGeom::ICurvesSchema schema = obj.getSchema();
+
+    // get the sample information
+    SampleInfo sampleInfo = getSampleInfo(time,schema.getTimeSampling(),schema.getNumSamples());
+
+    // get the sample
+    Alembic::AbcGeom::ICurvesSchema::Sample sample;
+    schema.get(sample,sampleInfo.floorIndex);
+
+    // get points and velocities
+    Alembic::Abc::P3fArraySamplePtr positionsPtr = sample.getPositions();
+    
+    // store all of the points, and do proper interpolation
+    if(positionsPtr->size() == vertices.size())
+    {
+      if(sampleInfo.alpha != 0.0 && false)
+      {
+        Alembic::AbcGeom::ICurvesSchema::Sample sample2;
+        schema.get(sample2,sampleInfo.ceilIndex);
+        Alembic::Abc::P3fArraySamplePtr positionsPtr2 = sample2.getPositions();
+        float ialpha = 1.0f - sampleInfo.alpha;
+        
+        for(KL::Size i=0;i<vertices.size();i++)
+        {
+          vertices[i].x = ialpha * positionsPtr->get()[i].x + sampleInfo.alpha * positionsPtr2->get()[i].x;
+          vertices[i].y = ialpha * positionsPtr->get()[i].y + sampleInfo.alpha * positionsPtr2->get()[i].y;
+          vertices[i].z = ialpha * positionsPtr->get()[i].z + sampleInfo.alpha * positionsPtr2->get()[i].z;
+        }
+      }
+      else
+      {
+        for(KL::Size i=0;i<vertices.size();i++)
+        {
+          vertices[i].x = positionsPtr->get()[i].x;
+          vertices[i].y = positionsPtr->get()[i].y;
+          vertices[i].z = positionsPtr->get()[i].z;
+        }
+      }
+    }
+
+    if(!uvsLoaded)
+    {
+      Alembic::AbcGeom::IV2fGeomParam uvsParam = schema.getUVsParam();
+      if(uvsParam)
+      {
+        if(uvsParam.getNumSamples() > 0)
+        {
+          Alembic::Abc::V2fArraySamplePtr ptr = uvsParam.getExpandedValue(0).getVals();
+          if(ptr != NULL)
+          {
+            if(ptr->size() == uvs.size())
+            {
+              for(KL::Size i=0;i<uvs.size();i++)
+              {
+                uvs[i].x = ptr->get()[i].x;
+                uvs[i].y = ptr->get()[i].y;
+              }
+            }
+            else if(ptr->size() > 0)
+            {
+              Alembic::Abc::Int32ArraySamplePtr countPtr = sample.getCurvesNumVertices();
+              if(ptr->size() == countPtr->size())
+              {
+                KL::Size offset = 0;
+                KL::Size curveOffset = 0;
+                for(KL::Size i=0;i<countPtr->size();i++)
+                {
+                  for(KL::Size j=0;j<countPtr->get()[i];j++)
+                  {
+                    uvs[offset].x = ptr->get()[curveOffset].x;
+                    uvs[offset++].y = ptr->get()[curveOffset].y;
+                  }
+                  curveOffset++;
+                }
+              }
+            }
+          }
+        }
+      }
+      if ( schema.getPropertyHeader( ".color" ) != NULL )
+      {
+        Alembic::Abc::IC4fArrayProperty prop = Alembic::Abc::IC4fArrayProperty( schema, ".color" );
+        if(prop.valid())
+        {
+          if(prop.getNumSamples() > 0)
+          {
+            Alembic::Abc::C4fArraySamplePtr ptr = prop.getValue(0);
+            if(ptr != NULL)
+            {
+              if(ptr->size() == colors.size())
+              {
+                for(KL::Size i=0;i<colors.size();i++)
+                {
+                  colors[i].r = ptr->get()[i].r;
+                  colors[i].g = ptr->get()[i].g;
+                  colors[i].b = ptr->get()[i].b;
+                  colors[i].a = ptr->get()[i].a;
+                }
+              }
+              else
+              {
+                Alembic::Abc::Int32ArraySamplePtr countPtr = sample.getCurvesNumVertices();
+                if(ptr->size() == countPtr->size())
+                {
+                  KL::Size offset = 0;
+                  KL::Size curveOffset = 0;
+                  for(KL::Size i=0;i<countPtr->size();i++)
+                  {
+                    for(KL::Size j=0;j<countPtr->get()[i];j++)
+                    {
+                      colors[offset].r = ptr->get()[curveOffset].r;
+                      colors[offset].g = ptr->get()[curveOffset].g;
+                      colors[offset].b = ptr->get()[curveOffset].b;
+                      colors[offset++].a = ptr->get()[curveOffset].a;
+                    }
+                    curveOffset++;
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
