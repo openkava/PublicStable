@@ -745,7 +745,7 @@ function (fabricClient, logCallback, debugLogCallback) {
 
     DG.createNode = function(name) {
       var result = DG.createContainer(name);
-
+      result.dependencies = {};
       result.bindings = DG.createBindingList([name, 'bindings']);
 
       var parentPatch = result.patch;
@@ -790,25 +790,47 @@ function (fabricClient, logCallback, debugLogCallback) {
         catch (e) {
           throw 'dependencyName: ' + e;
         }
+        var oldDependency = result.dependencies[dependencyName];
+        result.dependencies[dependencyName] = dependencyNode;
         result.queueCommand('setDependency', {
           'name': dependencyName,
           'node': dependencyNode.getName()
+        }, function () {
+          if (oldDependency)
+            result.dependencies[dependencyName] = oldDependency;
+          else delete result.dependencies[dependencyName];
         });
-        delete result.dependencies;
       };
 
       result.pub.getDependencies = function() {
-        if (!('dependencies' in result))
-          executeQueuedCommands();
         return result.dependencies;
       };
 
       result.pub.getDependency = function(name) {
-        if (!('dependencies' in result))
-          executeQueuedCommands();
         if (!(name in result.dependencies))
           throw "no dependency named '" + name + "'";
         return result.dependencies[name];
+      };
+      
+      result.pub.removeDependency = function(dependencyName) {
+        try {
+          if (typeof dependencyName !== 'string')
+            throw 'must be a string';
+          else if (dependencyName == '')
+            throw 'must not be empty';
+          else if (dependencyName == 'self')
+            throw "must not be 'self'";
+        }
+        catch (e) {
+          throw 'dependencyName: ' + e;
+        }
+        var oldDependency = result.dependencies[dependencyName];
+        delete result.dependencies[dependencyName];
+        result.queueCommand('removeDependency', dependencyName, function () {
+          if (oldDependency)
+            result.dependencies[dependencyName] = oldDependency;
+          else delete result.dependencies[dependencyName];
+        });
       };
 
       result.pub.evaluate = function() {
@@ -942,7 +964,7 @@ function (fabricClient, logCallback, debugLogCallback) {
 
     DG.createEventHandler = function(name) {
       var result = DG.createContainer(name);
-
+      result.scopes = {};
       result.preDescendBindings = DG.createBindingList([name, 'preDescendBindings']);
       result.postDescendBindings = DG.createBindingList([name, 'postDescendBindings']);
 
@@ -1029,16 +1051,47 @@ function (fabricClient, logCallback, debugLogCallback) {
       };
 
       result.pub.setScope = function(name, node) {
+        try {
+          if (typeof name !== 'string')
+            throw 'must be a string';
+          else if (name == '')
+            throw 'must not be empty';
+        }
+        catch (e) {
+          throw "name: " + e;
+        }
+        var oldNode = result.scopes[name];
+        result.scopes[name] = node;
         result.queueCommand('setScope', {
           name: name,
           node: node.getName()
+        }, function () {
+          if (oldNode)
+            result.scopes[name] = oldNode;
+          else delete result.scopes[name];
         });
-        delete result.scopes;
+      };
+
+      result.pub.removeScope = function(name) {
+        try {
+          if (typeof name !== 'string')
+            throw 'must be a string';
+          else if (name == '')
+            throw 'must not be empty';
+        }
+        catch (e) {
+          throw "name: " + e;
+        }
+        var oldNode = result.scopes[name];
+        delete result.scopes[name];
+        result.queueCommand('removeScope', name, function () {
+          if (oldNode)
+            result.scopes[name] = oldNode;
+          else delete result.scopes[name];
+        });
       };
 
       result.pub.getScopes = function() {
-        if (!('scopes' in result))
-          executeQueuedCommands();
         return result.scopes;
       };
 
