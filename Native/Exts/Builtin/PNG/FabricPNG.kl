@@ -6,4 +6,4 @@ struct RGBA {
 };
 
 function FabricPNGDecode( Data pngData, Size pngDataSize, io Size imageWidth, io Size imageHeight, io RGBA imagePixels[] );
-function FabricPNGEncode( Size imageWidth, Size imageHeight, RGBA imagePixels[], io Byte pngData[] );
+function FabricPNGEncode( Size imageWidth, Size imageHeight, Data imagePixels, io Byte pngData[] );
