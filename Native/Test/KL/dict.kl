@@ -2,8 +2,10 @@ function simpleTest() {
   Scalar a[String];
   report "a = " + a;
   report "a.size = " + a.size;
+  report "a.has('foo') = " + a.has('foo');
   report "a['foo'] = " + a['foo'];
   a['foo'] = 3.14;
+  report "a.has('foo') = " + a.has('foo');
   report "a['foo'] = " + a['foo'];
   report "a = " + a;
 }
