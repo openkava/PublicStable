@@ -613,10 +613,10 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
     characterRigNode.writeData = function(sceneSaver, constructionOptions, nodeData) {
       parentWriteData(sceneSaver, constructionOptions, nodeData);
       
-      sceneSaver.addNode(skeletonNode);
-      sceneSaver.addNode(variablesNode);
-      nodeData.skeletonNode = skeletonNode.getName();
-      nodeData.variablesNode = variablesNode.getName();
+      sceneSaver.addNode(skeletonNode.pub);
+      sceneSaver.addNode(variablesNode.pub);
+      nodeData.skeletonNode = skeletonNode.pub.getName();
+      nodeData.variablesNode = variablesNode.pub.getName();
       
       nodeData.solverParams = solverParams;
     };
