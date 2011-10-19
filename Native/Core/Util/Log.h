@@ -32,26 +32,26 @@ void FABRIC_WRITE_CSTR( char const *data, size_t length );
 
 #endif
 
+#define LOG_MAXBUFLENGTH 65535
+
 inline void FABRIC_LOG_CSTR( char const *data )
 {
-  static int maxBufLength = 65535;
-  char buf[maxBufLength+1];
-  int length = snprintf(buf, maxBufLength, "[FABRIC] %s\n", data);
-  if ( length > maxBufLength )
-    length = maxBufLength;
+  char buf[LOG_MAXBUFLENGTH+1];
+  int length = snprintf(buf, LOG_MAXBUFLENGTH, "[FABRIC] %s\n", data);
+  if ( length > LOG_MAXBUFLENGTH )
+    length = LOG_MAXBUFLENGTH;
   buf[length] = '\0';
   FABRIC_WRITE_CSTR( buf, length );
 }
 
 inline void FABRIC_LOG( char const *format, ... )
 {
-  static int maxBufLength = 65535;
-  char buf[maxBufLength+1];
+  char buf[LOG_MAXBUFLENGTH+1];
   va_list args;
   va_start( args, format );
-  int length = vsnprintf( buf, maxBufLength, format, args );
-  if ( length > maxBufLength )
-    length = maxBufLength;
+  int length = vsnprintf( buf, LOG_MAXBUFLENGTH, format, args );
+  if ( length > LOG_MAXBUFLENGTH )
+    length = LOG_MAXBUFLENGTH;
   buf[length] = '\0';
   va_end( args );
   if ( length > 0 )
