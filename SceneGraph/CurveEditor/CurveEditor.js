@@ -1,6 +1,8 @@
 
 var constructCurveEditor = function(domRootID, animationLibraryNode, options){
   
+  var keyColor = FABRIC.rgb(.0, .0, .0);
+  
   options = options ? options : {};
   options.timeStripe = options.timeStripe ? options.timeStripe : true;
   options.draggable = options.draggable ? options.draggable : true;
@@ -189,7 +191,7 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
                 updateCurve();
                 scene.redrawAllWindows();
               });
-          var keyNode = keyGroupNode.createRect().translate(-4, -4).size(8, 8).stroke(FABRIC.rgb(1, 1, 1));
+          var keyNode = keyGroupNode.createRect().translate(-4, -4).size(8, 8).stroke(keyColor);
           
           if(isBezier) {
             ///////////////////////////////////////////////
@@ -200,7 +202,7 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
               inTanLineNode.attr('d', 'M 0 0 L ' + inTanSsVal.x + ' ' + inTanSsVal.y);
               var inTanNode = keyGroupNode.createRect()
                                                   .translate(inTanSsVal.x - 3, inTanSsVal.y - 3)
-                                                  .size(6, 6).stroke(FABRIC.rgb(1, 1, 1));
+                                                  .size(6, 6).stroke(keyColor);
               inTanNode.draggable({ mouseButton: 0 })
                 .addOnDragBeginCallback(
                   function(evt){
@@ -244,7 +246,7 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
               outTanLineNode.attr('d', 'M 0 0 L ' + outTanSsVal.x + ' ' + outTanSsVal.y);
               var outTanNode = keyGroupNode.createRect()
                                                    .translate(outTanSsVal.x - 3, outTanSsVal.y - 3)
-                                                   .size(6, 6).stroke(FABRIC.rgb(1, 1, 1));
+                                                   .size(6, 6).stroke(keyColor);
       
               outTanNode.draggable({ mouseButton: 0 })
                 .addOnDragBeginCallback(
