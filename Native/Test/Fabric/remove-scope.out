@@ -1,0 +1,3 @@
+{node:<Object>}
+eventHandler.removeScope('notANode'): Fabric core exception: DG.eventHandler.removeScope('"notANode"'): command 'removeScope': 'notANode': no such scope
+{}
