@@ -632,5 +632,30 @@ namespace Fabric
     {
       return m_valueAdapter;
     }
+    
+    llvm::StructType const *DictAdapter::getLLVMBitsType( RC::Handle<Context> const &context ) const
+    {
+      return static_cast<llvm::StructType const *>( llvmRawType( context ) );
+    }
+    
+    llvm::PointerType const *DictAdapter::getLLVMBucketPtrType( RC::Handle<Context> const &context ) const
+    {
+      return static_cast<llvm::PointerType const *>( getLLVMBitsType(context )->getTypeAtIndex( 4 ) );
+    }
+    
+    llvm::StructType const *DictAdapter::getLLVMBucketType( RC::Handle<Context> const &context ) const
+    {
+      return static_cast<llvm::StructType const *>( getLLVMBucketPtrType( context )->getElementType() );
+    }
+    
+    llvm::PointerType const *DictAdapter::getLLVMNodePtrType( RC::Handle<Context> const &context ) const
+    {
+      return static_cast<llvm::PointerType const *>( getLLVMBitsType(context )->getTypeAtIndex( 2 ) );
+    }
+    
+    llvm::StructType const *DictAdapter::getLLVMNodeType( RC::Handle<Context> const &context ) const
+    {
+      return static_cast<llvm::StructType const *>( getLLVMNodePtrType( context )->getElementType() );
+    }
   };
 };

@@ -1,0 +1,8 @@
+operator entry() {
+  Scalar a[String];
+  a['pi'] = 3.14;
+  a['e'] = 2.71;
+  for ( k in a ) {
+    report "a['" + k + "'] = " + a[k];
+  }
+}
