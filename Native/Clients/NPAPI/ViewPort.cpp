@@ -24,6 +24,8 @@ namespace Fabric
 {
   namespace NPAPI
   {
+    std::set<ViewPort*> ViewPort::s_nppAliveViewports;
+
     ViewPort::ViewPort( RC::ConstHandle<Interface> const &interface )
       : m_npp( interface->getNPP() )
       , m_name( "viewPort" )
@@ -41,6 +43,8 @@ namespace Fabric
       , m_watermarkLastWidth( 0 )
       , m_watermarkLastHeight( 0 )
     {
+      s_nppAliveViewports.insert(this);
+
       RC::Handle<RT::Manager> rtManager = m_context->getRTManager();
       m_integerDesc = rtManager->getIntegerDesc();
       
@@ -128,15 +132,17 @@ namespace Fabric
       
       m_logCollector->flush();
 
-      retain();
+      //[JCG 20111911] Don't retain until ViewPort::AsyncRedrawFinished is called back, since in Windows FireFox will 
+      // sometimes never call it while destroying the client. Instead we use s_nppAliveViewports as a weak pointer set.
       NPN_PluginThreadAsyncCall( m_npp, &ViewPort::AsyncRedrawFinished, this );
     }
     
     void ViewPort::AsyncRedrawFinished( void *_this )
     {
       ViewPort *viewPort = static_cast<ViewPort *>(_this);
-      viewPort->asyncRedrawFinished();
-      viewPort->release();
+
+      if(s_nppAliveViewports.find(viewPort) != s_nppAliveViewports.end())
+        viewPort->asyncRedrawFinished();
     }
     
     void ViewPort::setRedrawFinishedCallback( NPObject *npObject )
@@ -174,6 +180,7 @@ namespace Fabric
 
     NPError ViewPort::nppDestroy( NPSavedData** save )
     {
+      s_nppAliveViewports.erase(this);
       return NPERR_NO_ERROR;
     }
 
