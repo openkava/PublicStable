@@ -364,17 +364,34 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
       curveEditorWindow.drawKeys = (drawKeys!=undefined) ? drawKeys : true;
     }
     
+    
     var parentWriteData = animationLibraryNode.writeData;
     var parentReadData = animationLibraryNode.readData;
     animationLibraryNode.writeData = function(sceneSaver, constructionOptions, nodeData) {
       parentWriteData(sceneSaver, constructionOptions, nodeData);
       constructionOptions.keyframetype = options.keyframetype;
-      nodeData.data = dgnode.getSlicesBulkData();
+      nodeData.members = dgnode.getMembers();
+      nodeData.data = {};
+      for(var memberName in nodeData.members){
+        nodeData.data[memberName] = dgnode.getData(memberName);
+      }
+    //  nodeData.data = dgnode.getSlicesBulkData();
     };
     animationLibraryNode.readData = function(sceneLoader, nodeData) {
       parentReadData(sceneLoader, constructionOptions, nodeData);
+      if (nodeData.members) {
+        var defaultMembers = dgnode.getMembers();
+        for(var memberName in members){
+          if(!defaultMembers[memberName]){
+            dgnode.addMember( memberName, members[memberName], nodeData.data ? nodeData.data[memberName] : undefined );
+          }
+        }
+      }
       if (nodeData.data) {
-        dgnode.setSlicesBulkData( nodeData.data );
+        for(var memberName in nodeData.members){
+          dgnode.setData(memberName, 0, nodeData.data[memberName]);
+        }
+      //  dgnode.setSlicesBulkData( nodeData.data );
       }
     };
     

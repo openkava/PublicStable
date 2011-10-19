@@ -189,7 +189,11 @@ FABRIC.SceneGraph.registerNodeType('CharacterSkeleton', {
     characterSkeletonNode.writeData = function(sceneSaver, constructionOptions, nodeData) {
       parentWriteData(sceneSaver, constructionOptions, nodeData);
       nodeData.members = dgnode.getMembers();
-      nodeData.data = dgnode.getSlicesBulkData();
+      nodeData.data = {};
+      for(var memberName in nodeData.members){
+        nodeData.data[memberName] = dgnode.getData(memberName);
+      }
+    //  nodeData.data = dgnode.getSlicesBulkData();
     };
     characterSkeletonNode.readData = function(sceneLoader, nodeData) {
       parentReadData(sceneLoader, constructionOptions, nodeData);
@@ -202,7 +206,10 @@ FABRIC.SceneGraph.registerNodeType('CharacterSkeleton', {
         }
       }
       if (nodeData.data) {
-        dgnode.setSlicesBulkData( nodeData.data );
+        for(var memberName in nodeData.members){
+          dgnode.setData(memberName, 0, nodeData.data[memberName]);
+        }
+      //  dgnode.setSlicesBulkData( nodeData.data );
       }
     };
 
