@@ -67,6 +67,7 @@ namespace Fabric
 
       llvm::Value *llvmCallSize( BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const;
       
+      static bool Has( void *_dictAdapter, void const *dictLValue, void const *keyLValue );
       static void const *GetRValue( void *_dictAdapter, void const *dictRValue, void const *keyRValue );
       static void *GetLValue( void *_dictAdapter, void *dictLValue, void const *keyRValue );
 

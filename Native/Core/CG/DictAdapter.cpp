@@ -151,6 +151,48 @@ namespace Fabric
           basicBlockBuilder->CreateRet( nodeCountRValue );
         }
       }
+      
+      {
+        std::string name = methodOverloadName( "has", this, m_keyAdapter );
+        std::vector<FunctionParam> params;
+        params.push_back( FunctionParam( "rValue", this, CG::USAGE_RVALUE ) );
+        params.push_back( FunctionParam( "keyRValue", m_keyAdapter, CG::USAGE_RVALUE ) );
+        FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( booleanAdapter, USAGE_RVALUE ), params, false );
+        if ( buildFunctions )
+        {
+          BasicBlockBuilder basicBlockBuilder( functionBuilder );
+          
+          llvm::Value *dictRValue = functionBuilder[0];
+          llvm::Value *keyRValue = functionBuilder[1];
+
+          llvm::BasicBlock *entryBB = functionBuilder.createBasicBlock( "entry" );
+          
+          basicBlockBuilder->SetInsertPoint( entryBB );
+
+          std::vector< llvm::Type const * > argTypes;
+          argTypes.push_back( basicBlockBuilder->getInt8PtrTy() );
+          argTypes.push_back( llvmLType( context ) );
+          argTypes.push_back( m_keyAdapter->llvmLType( context ) );
+          llvm::FunctionType const *funcType = llvm::FunctionType::get( booleanAdapter->llvmRType( context ), argTypes, false );
+          
+          llvm::AttributeWithIndex AWI[1];
+          AWI[0] = llvm::AttributeWithIndex::get( ~0u, llvm::Attribute::InlineHint | llvm::Attribute::NoUnwind );
+          llvm::AttrListPtr attrListPtr = llvm::AttrListPtr::get( AWI, 1 );
+          
+          llvm::Function *func = llvm::cast<llvm::Function>( basicBlockBuilder.getModuleBuilder()->getOrInsertFunction( "__"+getCodeName()+"_Has", funcType, attrListPtr ) ); 
+
+          llvm::Value *dictLValue = llvmRValueToLValue( basicBlockBuilder, dictRValue );
+          llvm::Value *keyLValue = m_keyAdapter->llvmRValueToLValue( basicBlockBuilder, keyRValue );
+
+          std::vector<llvm::Value *> args;
+          args.push_back( llvmAdapterPtr( basicBlockBuilder ) );
+          args.push_back( dictLValue );
+          args.push_back( keyLValue );
+          basicBlockBuilder->CreateRet(
+            basicBlockBuilder->CreateCall( func, args.begin(), args.end() )
+            );
+        }
+      }
 
       {
         std::string name = constructOverloadName( booleanAdapter, this );
@@ -379,7 +421,9 @@ namespace Fabric
     
     void *DictAdapter::llvmResolveExternalFunction( std::string const &functionName ) const
     {
-      if ( functionName == "__" + getCodeName() + "_GetRValue" )
+      if ( functionName == "__" + getCodeName() + "_Has" )
+        return (void *)&DictAdapter::Has;
+      else if ( functionName == "__" + getCodeName() + "_GetRValue" )
         return (void *)&DictAdapter::GetRValue;
       else if ( functionName == "__" + getCodeName() + "_GetLValue" )
         return (void *)&DictAdapter::GetLValue;
@@ -511,6 +555,12 @@ namespace Fabric
       args.push_back( dictLValue );
       args.push_back( keyLValue );
       return basicBlockBuilder->CreateCall( func, args.begin(), args.end() );
+    }
+
+    bool DictAdapter::Has( void *_dictAdapter, void const *dictLValue, void const *keyLValue )
+    {
+      DictAdapter const *dictAdapter = static_cast<DictAdapter const *>( _dictAdapter );
+      return dictAdapter->m_dictImpl->has( dictLValue, keyLValue );
     }
 
     void const *DictAdapter::GetRValue( void *_dictAdapter, void const *dictLValue, void const *keyLValue )
