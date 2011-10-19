@@ -183,6 +183,28 @@ FABRIC.SceneGraph.registerNodeType('CharacterSkeleton', {
     characterSkeletonNode.setData = function(name, data, skeletonId) {
       dgnode.setData(name, skeletonId ? skeletonId : 0, data );
     };
+    
+    var parentWriteData = characterSkeletonNode.writeData;
+    var parentReadData = characterSkeletonNode.readData;
+    characterSkeletonNode.writeData = function(sceneSaver, constructionOptions, nodeData) {
+      parentWriteData(sceneSaver, constructionOptions, nodeData);
+      nodeData.members = dgnode.getMembers();
+      nodeData.data = dgnode.getSlicesBulkData();
+    };
+    characterSkeletonNode.readData = function(sceneLoader, nodeData) {
+      parentReadData(sceneLoader, constructionOptions, nodeData);
+      if (nodeData.members) {
+        var defaultMembers = dgnode.getMembers();
+        for(var memberName in members){
+          if(!defaultMembers[memberName]){
+            dgnode.addMember( memberName, members[memberName], nodeData.data ? nodeData.data[memberName] : undefined );
+          }
+        }
+      }
+      if (nodeData.data) {
+        dgnode.setSlicesBulkData( nodeData.data );
+      }
+    };
 
     if (options.calcReferenceLocalPose) {
       // For skeletons that are built procedurally, or using
@@ -470,15 +492,12 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
       if (!node.isTypeOf('CharacterSkeleton')) {
         throw ('Incorrect type assignment. Must assign a CharacterSkeleton');
       }
-      node = scene.getPrivateInterface(node);
-
-      dgnode.setDependency(node.getDGNode(), 'skeleton');
-      skeletonNode = node;
+      skeletonNode = scene.getPrivateInterface(node);
+      dgnode.setDependency(skeletonNode.getDGNode(), 'skeleton');
 
       // This member will store the computed pose.
       var referencePose = skeletonNode.pub.getReferencePose();
       dgnode.addMember('pose', 'Xfo[]', referencePose);
-
     }
     characterRigNode.pub.getSkeletonNode = function() {
       return scene.getPublicInterface(skeletonNode);
@@ -488,9 +507,8 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
       if (!node || !node.isTypeOf('CharacterVariables')) {
         throw ('Incorrect type assignment. Must assign a CharacterVariables');
       }
-      node = scene.getPrivateInterface(node);
-      dgnode.setDependency(node.getDGNode(), 'variables');
-      variablesNode = node;
+      variablesNode = scene.getPrivateInterface(node);
+      dgnode.setDependency(variablesNode.getDGNode(), 'variables');
     };
     characterRigNode.pub.getVariablesNode = function() {
       return scene.getPublicInterface(variablesNode);
@@ -510,6 +528,7 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
     */
     //////////////////////////////////////////
     // Solver Interfaces
+    var solverParams = [];
     characterRigNode.pub.addSolver = function(name, type, solverOptions) {
       solverOptions = scene.assignDefaults(solverOptions, {
         rigNode: characterRigNode.pub,
@@ -524,6 +543,11 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
       solverOptions.name = name;
       var solver = FABRIC.SceneGraph.CharacterSolvers.constructSolver(type, solverOptions, scene);
       solvers.push(solver);
+      solverParams.push({
+        name: name,
+        type: type,
+        options: solverOptions
+      });
       return solver;
     };
     characterRigNode.pub.getSolvers = function() {
@@ -580,6 +604,33 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
       }
       dgnode.setData(name, 0, xfo);
     }
+    
+    
+    //////////////////////////////////////////
+    // Persistence
+    var parentWriteData = characterRigNode.writeData;
+    var parentReadData = characterRigNode.readData;
+    characterRigNode.writeData = function(sceneSaver, constructionOptions, nodeData) {
+      parentWriteData(sceneSaver, constructionOptions, nodeData);
+      
+      sceneSaver.addNode(skeletonNode);
+      sceneSaver.addNode(variablesNode);
+      nodeData.skeletonNode = skeletonNode.getName();
+      nodeData.variablesNode = variablesNode.getName();
+      
+      nodeData.solverParams = solverParams;
+    };
+    characterRigNode.readData = function(sceneLoader, nodeData) {
+      parentReadData(sceneLoader, constructionOptions, nodeData);
+      
+      setSkeletonNode(sceneLoader.getNode(nodeData.skeletonNode));
+      characterRigNode.pub.setVariablesNode(sceneLoader.getNode(nodeData.variablesNode));
+      
+      for(var i=0; i<nodeData.solverParams.length; i++){
+        var solverParams = nodeData.solverParams;
+        characterRigNode.pub.addSolver(solverParams.name, solverParams.type, solverParams.options);
+      }
+    };
 
     setSkeletonNode(options.skeletonNode);
     
