@@ -243,14 +243,14 @@ FABRIC.SceneGraph.registerNodeType('CharacterSkeletonDebug', {
   optionsDesc: {
     boneradius: 'The radius of the bones to use for drawing.',
     color: 'The color of the lines to use for drawing.',
-    drawOverlayed: 'Set to true, this will enable overlayed drawing for the CharacterSkeletonDebug node.'
+    drawOverlaid: 'Set to true, this will enable overlaid drawing for the CharacterSkeletonDebug node.'
   },
   factoryFn: function(options, scene) {
 
     scene.assignDefaults(options, {
       boneradius: 1.0,
       color: FABRIC.RT.rgba(0.2, 0.2, 0.73, 1.0),
-      drawOverlayed: true
+      drawOverlaid: true
     });
 
     var rigNode,
@@ -311,7 +311,7 @@ FABRIC.SceneGraph.registerNodeType('CharacterSkeletonDebug', {
         geometryNode: characterSkeletonDebug.pub,
         materialNode: scene.constructNode('FlatMaterial', {
           color: options.color,
-          drawOverlayed: options.drawOverlayed
+          drawOverlaid: options.drawOverlaid
         }).pub
       });
     characterSkeletonDebug.pub.getInstanceNode = function() {

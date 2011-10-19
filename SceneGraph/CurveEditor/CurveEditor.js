@@ -189,7 +189,7 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
                 
                 animationLibraryNode.setKeyData(trackIndex, keyIndex, keyData);
                 updateCurve();
-                scene.redrawAllWindows();
+                scene.redrawAllViewports();
               });
           var keyNode = keyGroupNode.createRect().translate(-4, -4).size(8, 8).stroke(keyColor);
           
@@ -224,7 +224,7 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
                     keyData.setInTan(keyData.intangent);
                     animationLibraryNode.setKeyData(trackIndex, keyIndex, keyData);
                     updateCurve();
-                    scene.redrawAllWindows();
+                    scene.redrawAllViewports();
                   });
             }
             keyData.setInTan = function(intangent, setKeyData){
@@ -269,7 +269,7 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
                     keyData.setOutTan(keyData.outtangent);
                     animationLibraryNode.setKeyData(trackIndex, keyIndex, keyData);
                     updateCurve();
-                    scene.redrawAllWindows();
+                    scene.redrawAllViewports();
                   });
             }
             keyData.setOutTan = function(outtangent, setKeyData){
