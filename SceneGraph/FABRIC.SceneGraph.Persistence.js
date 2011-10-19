@@ -47,7 +47,7 @@ FABRIC.SceneGraph.registerManagerType('SceneSaver', {
           }
           if(!isNodeBeingSaved(node)){
             savedNodes.push(node);
-          }
+          };
           return node;
         },
         wrapQuotes: function(val) {
@@ -62,7 +62,7 @@ FABRIC.SceneGraph.registerManagerType('SceneSaver', {
               str += ',';
             }
     
-            str += '\n\t{';
+            str += '\n  {';
     
             str += '\n    \"name\":' + this.wrapQuotes(node.getName());
             str += ',\n    \"type\":' + this.wrapQuotes(node.getType());
@@ -128,7 +128,7 @@ FABRIC.SceneGraph.registerManagerType('SceneLoader', {
     scene.assignDefaults(options, {
       });
     
-    var dataObj = JSON.parse(reader.read());
+    var dataObj;
     var preLoadedNodes = {};
   
     var constructedNodeMap = {};
@@ -155,7 +155,8 @@ FABRIC.SceneGraph.registerManagerType('SceneLoader', {
             return constructedNodeMap[ nodeName ];
           }
         },
-      */ load: function() {
+      */ load: function(storage) {
+          dataObj = JSON.parse(storage.read());
           for (var i = 0; i < dataObj.length; i++) {
             var nodeData = dataObj[i];
             var options = nodeData.options;
@@ -163,7 +164,7 @@ FABRIC.SceneGraph.registerManagerType('SceneLoader', {
             options.name = nodeData.name;
             var node = preLoadedNodes[nodeData.name];
             if (!node) {
-              node = scene.createNode(nodeData.type, options);
+              node = scene.constructNode(nodeData.type, options);
             }
           //  if(constructedNodeMap[ node.name ]){
           //    // TODO:Generate a unique name, and rename this node.
@@ -217,8 +218,39 @@ FABRIC.SceneGraph.registerManagerType('SceneLoader', {
  * @constructor
  */
 FABRIC.SceneGraph.LogWriter = function() {
-  this.write = function(str) {
+  var str = "";
+  this.write = function(instr) {
+    str = instr;
+  }
+  this.log = function(instr) {
     console.log(str);
+  }
+};
+
+
+/**
+ * Constructor to create a logWriter object.
+ * @constructor
+ */
+FABRIC.SceneGraph.LogWriter = function() {
+  var str = "";
+  this.write = function(instr) {
+    str = instr;
+  }
+  this.log = function(instr) {
+    console.log(str);
+  }
+};
+
+FABRIC.SceneGraph.LocalStorage = function(name) {
+  this.write = function(instr) {
+    localStorage.setItem(name, instr);
+  }
+  this.read = function(){
+    return localStorage.getItem(name);
+  }
+  this.log = function(instr) {
+    console.log(localStorage.getItem(name));
   }
 };
 
