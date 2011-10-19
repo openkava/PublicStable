@@ -99,6 +99,31 @@ namespace Fabric
       }
     }
     
+    bool DictImpl::has( bucket_t const *bucket, void const *keyData ) const
+    {
+      node_t const *node = bucket->firstNode;
+      while ( node )
+      {
+        if ( m_keyImpl->compare( keyData, immutableKeyData( node ) ) == 0 )
+          return true;
+        node = node->bucketNextNode;
+      }
+      return false;
+    }
+    
+    bool DictImpl::has( void const *data, void const *keyData ) const
+    {
+      bits_t const *bits = reinterpret_cast<bits_t const *>( data );
+      if ( bits->bucketCount > 0 )
+      {
+        size_t keyHash = m_keyImpl->hash( keyData );
+        size_t bucketIndex = keyHash & (bits->bucketCount - 1);
+        bucket_t const *bucket = &bits->buckets[bucketIndex];
+        return has( bucket, keyData );
+      }
+      else return false;
+    }
+    
     void const *DictImpl::getImmutable( bucket_t const *bucket, void const *keyData ) const
     {
       node_t const *node = bucket->firstNode;

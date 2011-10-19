@@ -65,6 +65,7 @@ namespace Fabric
 
       // DictImpl
       
+      bool has( void const *data, void const *keyData ) const;
       void const *getImmutable( void const *data, void const *keyData ) const;
       void *getMutable( void *data, void const *keyData ) const;
       size_t getSize( void const *data ) const;
@@ -105,6 +106,7 @@ namespace Fabric
       
       void disposeNode( node_t *node ) const;
       void disposeBits( bits_t *bits ) const;
+      bool has( bucket_t const *bucket, void const *keyData ) const;
       void const *getImmutable( bucket_t const *bucket, void const *keyData ) const;
       void *getMutable( bits_t *bits, bucket_t *bucket, void const *keyData, size_t keyHash ) const;
       void insertNode( bits_t *bits, bucket_t *bucket, node_t *node ) const;
