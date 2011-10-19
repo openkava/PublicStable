@@ -68,6 +68,9 @@ namespace Fabric
     
     ViewPort::~ViewPort()
     {
+      //[JCG 20111911] This might not be required (done in ViewPort::nppDestroy too), but I'm playing safe to be sure we are compatible with the old retain/release behaviour
+      s_nppAliveViewports.erase(this);
+
       m_context->unregisterViewPort( m_name, this );
 
       if ( m_redrawFinishedCallback )
