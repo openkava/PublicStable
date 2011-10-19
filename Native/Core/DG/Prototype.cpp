@@ -287,7 +287,7 @@ namespace Fabric
           {
             Param const *param = jt->second;
             
-            if ( prefixCount + param->index() >= expectedNumASTParams )
+            if ( prefixCount + param->index() >= numASTParams )
               continue;
 
             RC::ConstHandle<AST::Param> astParam = astParamList->get( prefixCount + param->index() );
