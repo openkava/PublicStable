@@ -23,6 +23,7 @@
 #include <GL/glew.h>
 #endif
 #include <vector>
+#include <set>
 
 namespace Fabric
 {
@@ -136,7 +137,7 @@ namespace Fabric
       RC::ConstHandle<RT::IntegerDesc> m_integerDesc;
       RC::Handle<DG::Node> m_windowNode;
       RC::Handle<DG::Event> m_redrawEvent;
-      
+
       NPObject *m_redrawFinishedCallback;
 #if defined(FABRIC_OS_WINDOWS)
       LARGE_INTEGER m_fpsStart;
@@ -156,6 +157,8 @@ namespace Fabric
       GLuint m_watermarkIndexesBufferID;
       size_t m_watermarkLastWidth;
       size_t m_watermarkLastHeight;
+
+      static std::set<ViewPort*> s_nppAliveViewports;
     };
   };
 };
