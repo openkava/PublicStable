@@ -764,13 +764,13 @@ $(document).ready(function() {
       scene.animation.pause();
       scene.animation.setTime(time);
       $('#localtime').slider('value', time);
-      scene.redrawAllWindows();
+      scene.redrawAllViewports();
     } else if(evt.keyCode == 39 && time < timeRange.y) { // right arrow
       time += 1.0 / 30.0;
       scene.animation.pause();
       scene.animation.setTime(time);
       $('#localtime').slider('value', time);
-      scene.redrawAllWindows();
+      scene.redrawAllViewports();
     } else if(evt.keyCode == 38) { // up arrow
       $('#play').button('option', {
         label: 'Pause',
@@ -849,7 +849,7 @@ $(document).ready(function() {
         var rot = new FABRIC.RT.Quat().setFromAxisAndAngle(new FABRIC.RT.Vec3(0,1,0), Math.degToRad(ui.value));
         pos = rot.rotateVector(pos);
         light.setPosition(pos);
-        scene.redrawAllWindows();
+        scene.redrawAllViewports();
     });  
 
   $('#localtime').slider().bind('slide',
@@ -862,7 +862,7 @@ $(document).ready(function() {
         });
         scene.animation.pause();
         scene.animation.setTime(ui.value);
-        scene.redrawAllWindows();
+        scene.redrawAllViewports();
     });  
   $('#planeblend').slider({
       min: 0.0,
