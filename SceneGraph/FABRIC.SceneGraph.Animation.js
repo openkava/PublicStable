@@ -96,62 +96,6 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
       return dgnode.getData('trackSet', trackSetId);
     };
     
-    /*
-    animationLibraryNode.pub.getTrackCount = function(trackSetId) {
-      return dgnode.getData('trackSet', trackSetId);
-    };
-    animationLibraryNode.pub.setTrackCount = function(count) {
-      dgnode.setCount(count);
-    };
-    animationLibraryNode.pub.getTrackName = function(trackid) {
-      return dgnode.getData('name', trackid);
-    };
-    animationLibraryNode.pub.getTrackColor = function(trackid) {
-      return dgnode.getData('color', trackid);
-    };
-    animationLibraryNode.pub.getTrackKeys = function(trackid) {
-      return dgnode.getData('keys', trackid);
-    };
-    animationLibraryNode.pub.setTrackKeys = function(trackid, keys) {
-      dgnode.setData('keys', trackid, keys);
-    };
-    animationLibraryNode.pub.getTrackData = function(trackid) {
-      return dgnode.getSliceBulkData(trackid);
-    };
-    animationLibraryNode.pub.setTrackData = function(trackid, trackData) {
-      dgnode.setSliceBulkData(trackid, trackData);
-    };
-    animationLibraryNode.pub.setTracksData = function(tracksData) {
-      dgnode.setBulkData(tracksData);
-    };
-    animationLibraryNode.pub.setKeyData = function(trackid, keyid, keydata) {
-      var keys = dgnode.getData('keys', trackid);
-      keys[keyid] = keydata;
-      dgnode.setData('keys', trackid, keys);
-    };
-*/
-/*
-    // extend private interface
-    animationLibraryNode.getInterpolatorOperator = function() {
-      return scene.constructOperator({
-          operatorName: 'evaluate'+options.keyframetype+'KeyframeAnimationTrack',
-          srcFile: 'FABRIC_ROOT/SceneGraph/KL/evaluateKeyframeAnimationTrack.kl',
-          preProcessorDefinitions: {
-            KEYFRAMETYPE: options.keyframetype,
-            KEYFRAME_EVALUATEDTYPE: defaultKeyframeValue.valueType
-          },
-          entryFunctionName: 'evaluateKeyframeAnimationTracks',
-          parameterLayout: [
-            'animationtrack.keys<>',
-            'controller.localTime',
-            'self.index',
-            'self.value',
-            'self.keyid'
-          ]
-        });
-    };
-*/
-    
     animationLibraryNode.pub.bindToVariables = function( variablesNode, name ){
       if (!variablesNode.isTypeOf('CharacterVariables')) {
         throw ('Incorrect type. Must be a CharacterVariables');
@@ -392,23 +336,21 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
 
       if (targetnode.getDGNode().bindings.length > 0) {
         targetnode.getDGNode().bindings.insert(scene.constructOperator({
-            operatorName: operatorName,
-            srcCode: operatorHeaderSrc + operatorBodySrc,
-            entryFunctionName: operatorName,
-            parameterLayout: parameterLayout
-          }), 0);
+          operatorName: operatorName,
+          srcCode: operatorHeaderSrc + operatorBodySrc,
+          entryFunctionName: operatorName,
+          parameterLayout: parameterLayout
+        }), 0);
       }
       else {
         targetnode.getDGNode().bindings.append(scene.constructOperator({
-            operatorName: operatorName,
-            srcCode: operatorHeaderSrc + operatorBodySrc,
-            entryFunctionName: operatorName,
-            parameterLayout: parameterLayout
-          }));
+          operatorName: operatorName,
+          srcCode: operatorHeaderSrc + operatorBodySrc,
+          entryFunctionName: operatorName,
+          parameterLayout: parameterLayout
+        }));
       }
     };
-
-    
     
     animationLibraryNode.pub.openCurveEditor = function(trackSetId, drawKeys) {
       var curveEditorWindow = window.open(
@@ -421,6 +363,21 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
       curveEditorWindow.scene = scene.pub;
       curveEditorWindow.drawKeys = (drawKeys!=undefined) ? drawKeys : true;
     }
+    
+    var parentWriteData = animationLibraryNode.writeData;
+    var parentReadData = animationLibraryNode.readData;
+    animationLibraryNode.writeData = function(sceneSaver, constructionOptions, nodeData) {
+      parentWriteData(sceneSaver, constructionOptions, nodeData);
+      constructionOptions.keyframetype = options.keyframetype;
+      nodeData.data = dgnode.getSlicesBulkData();
+    };
+    animationLibraryNode.readData = function(sceneLoader, nodeData) {
+      parentReadData(sceneLoader, constructionOptions, nodeData);
+      if (nodeData.data) {
+        dgnode.setSlicesBulkData( nodeData.data );
+      }
+    };
+    
     return animationLibraryNode;
   }});
 

@@ -794,6 +794,7 @@ FABRIC.SceneGraph.registerNodeType('SceneGraphNode', {
     };
     
     // ensure the name is unique
+    var type = options.type;
     var name = options.name ? options.name : options.type;
     if (scene.pub.getSceneGraphNode(name)) {
       var prefix = 1;
@@ -810,7 +811,7 @@ FABRIC.SceneGraph.registerNodeType('SceneGraphNode', {
           return name;
         },
         getType: function() {
-          return options.type;
+          return type;
         }
       },
       addMemberInterface : function(corenode, memberName, defineSetter) {
@@ -879,6 +880,12 @@ FABRIC.SceneGraph.registerNodeType('SceneGraphNode', {
         eventnode.sceneGraphNode = sceneGraphNode;
         eventnodes[eventname] = eventnode;
         return eventnode;
+      },
+      
+      writeData: function(sceneSaver, constructionOptions, nodeData) {
+        constructionOptions.name = name;
+      },
+      readData: function(sceneLoader, nodeData) {
       }
     }
 

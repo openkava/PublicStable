@@ -28,6 +28,9 @@ FABRIC.SceneGraph.constructSceneSaver = function(scene) {
 
   var savedNodes = [];
 
+  var isNodeBeingSaved = function(node) {
+    return (savedNodes.indexOf(node) !== -1);
+  };
   var SceneSaver = function() {
 
   }
@@ -36,11 +39,10 @@ FABRIC.SceneGraph.constructSceneSaver = function(scene) {
       if (!node || !node.isTypeOf || !node.isTypeOf('SceneGraphNode')) {
         throw 'SceneSaver can only save SceneGraphNodes';
       }
-      savedNodes.push(node);
+      if(!isNodeBeingSaved(node)){
+        savedNodes.push(node);
+      }
       return node;
-    },
-    isNodeBeingSaved: function(node) {
-      return (savedNodeMap[node.name] !== undefined);
     },
     wrapQuotes: function(val) {
       return '\"' + ((typeof val === 'string') ? val : val.toString()) + '\"';
@@ -56,9 +58,9 @@ FABRIC.SceneGraph.constructSceneSaver = function(scene) {
 
         str += '\n\t{';
 
-        str += '\n\t\t\"name\":' + this.wrapQuotes(node.name);
-        str += ',\n\t\t\"type\":' + this.wrapQuotes(node.type);
-
+        str += '\n    \"name\":' + this.wrapQuotes(node.getName());
+        str += ',\n    \"type\":' + this.wrapQuotes(node.getType());
+/*
         str += ',\n\t\t\"properties\":{';
         var first = true;
         for (propName in node) {
@@ -74,15 +76,16 @@ FABRIC.SceneGraph.constructSceneSaver = function(scene) {
           }
         }
         str += '\n\t\t}';
+*/
 
         var constructionOptions = {};
         var nodeData = {};
         if (node.writeData) {
           node.writeData(this, constructionOptions, nodeData);
-          str += ',\n\t\t\"options\":' + JSON.stringify(constructionOptions);
-          str += ',\n\t\t\"data\":' + JSON.stringify(nodeData);
+          str += ',\n\    "options\":' + JSON.stringify(constructionOptions);
+          str += ',\n\    "data\":' + JSON.stringify(nodeData);
         }
-        str += '\n\t}';
+        str += '\n  }';
 
       }
       str += '\n]';
@@ -199,11 +202,10 @@ FABRIC.SceneGraph.constructSceneLoader = function(scene, reader) {
  * Constructor to create a logWriter object.
  * @constructor
  */
-FABRIC.SceneGraph.logWriter = function() {
+FABRIC.SceneGraph.LogWriter = function() {
   this.write = function(str) {
     console.log(str);
   }
-
 };
 
 /**
