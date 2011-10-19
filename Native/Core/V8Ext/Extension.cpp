@@ -157,7 +157,7 @@ namespace Fabric
             if( val )
             {
               std::string defaultFilename = val->toString()->value();
-              if(defaultFilename.find("unitTestFile://" == 0))
+              if ( defaultFilename.length() >= 15 && defaultFilename.substr(0, 15) == "unitTestFile://" )
                 return JSON::String::Create( unitTestGetTextFileFromPath( defaultFilename.substr(15) ) );
             }
           }
