@@ -1,6 +1,4 @@
-Math.Warning: Mat44.multiply: Cannot multiply to xfos having non-uniform scaling without causing shearing. Use Mat44s instead.
 Math.Warning: Mat44.setFromMat44: Cannot invert xfo with non-uniform scaling without causing shearing. Try using inverseTransformVector, or use Mat44s instead.
-[FABRIC] [MT] Math.Warning: Mat44.multiply: Cannot multiply to xfos having non-uniform scaling without causing shearing. Use Mat44s instead.
 [FABRIC] [MT] Math.Warning: Mat44.setFromMat44: Cannot invert xfo with non-uniform scaling without causing shearing. Try using inverseTransformVector, use Mat44s instead.
 'set': [ -1, -2, -3, 1, 2, 3, 4, 4, 5, 6 ]
 'setIdentity': [ 0, 0, 0, 0, 0, 0, 1, 1, 1, 1 ]
@@ -26,7 +24,7 @@ Math.Warning: Mat44.setFromMat44: Cannot invert xfo with non-uniform scaling wit
 'toMat44': [ 1.145, 1.982, -1.939, 2, 2.552, -1.573, -0.1003, -3, 1.083, 1.612, 2.287, 4, 0, 0, 0, 1 ]
 'toMat44_multiplyVector': [ 10.64, -8.398, -0.7201 ]
 'xfo1_transformVector': [ 10.64, -8.398, -0.7201 ]
-'setFromMat44': [ 2, -3, 4, 0.3084, -0.1542, -0.8168, 0.4626, -3, 3, 3 ]
+'setFromMat44': [ 2, -3, 4, -0.3084, 0.1542, 0.8168, -0.4626, -3, 3, 3 ]
 'setFromMat44_transformVector': [ 10.64, -8.398, -0.7201 ]
 'originalXfo_2': [ -10, 3, 5, 0.2007, -0.08027, 0.1204, 0.9689, 4, 4, 4 ]
 'toMat44_2': [ 3.832, -1.062, -0.4289, -10, 0.8044, 3.562, -1.633, 3, 0.8155, 1.478, 3.626, 5, 0, 0, 0, 1 ]
