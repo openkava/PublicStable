@@ -322,6 +322,82 @@ namespace Fabric
       m_keyImpl->disposeDatas( keyData, 1, m_keySize );
     }
     
+    void DictImpl::removeNode( bits_t *bits, bucket_t *bucket, node_t *node ) const
+    {
+      if ( node->bitsPrevNode )
+      {
+        FABRIC_ASSERT( node->bitsPrevNode->bitsNextNode == node );
+        node->bitsPrevNode->bitsNextNode = node->bitsNextNode;
+      }
+      else
+      {
+        FABRIC_ASSERT( bits->firstNode == node );
+        bits->firstNode = node->bitsNextNode;
+      }
+      
+      if ( node->bitsNextNode )
+      {
+        FABRIC_ASSERT( node->bitsNextNode->bitsPrevNode == node );
+        node->bitsNextNode->bitsPrevNode = node->bitsPrevNode;
+      }
+      else
+      {
+        FABRIC_ASSERT( bits->lastNode == node );
+        bits->lastNode = node->bitsPrevNode;
+      }
+      
+      if ( node->bucketPrevNode )
+      {
+        FABRIC_ASSERT( node->bucketPrevNode->bucketNextNode == node );
+        node->bucketPrevNode->bucketNextNode = node->bucketNextNode;
+      }
+      else
+      {
+        FABRIC_ASSERT( bucket->firstNode == node );
+        bucket->firstNode = node->bucketNextNode;
+      }
+      
+      if ( node->bucketNextNode )
+      {
+        FABRIC_ASSERT( node->bucketNextNode->bucketPrevNode == node );
+        node->bucketNextNode->bucketPrevNode = node->bucketPrevNode;
+      }
+      else
+      {
+        FABRIC_ASSERT( bucket->lastNode == node );
+        bucket->lastNode = node->bucketPrevNode;
+      }
+      
+      --bits->nodeCount;
+      disposeNode( node );
+    }
+    
+    void DictImpl::delete_( bits_t *bits, bucket_t *bucket, void const *keyData ) const
+    {
+      node_t *node = bucket->firstNode;
+      while ( node )
+      {
+        if ( m_keyImpl->compare( keyData, immutableKeyData( node ) ) == 0 )
+        {
+          removeNode( bits, bucket, node );
+          break;
+        }
+        node = node->bucketNextNode;
+      }
+    }
+    
+    void DictImpl::delete_( void *data, void const *keyData ) const
+    {
+      bits_t *bits = reinterpret_cast<bits_t *>( data );
+      if ( bits->bucketCount > 0 )
+      {
+        size_t keyHash = m_keyImpl->hash( keyData );
+        size_t bucketIndex = keyHash & (bits->bucketCount - 1);
+        bucket_t *bucket = &bits->buckets[bucketIndex];
+        delete_( bits, bucket, keyData );
+      }
+    }
+    
     std::string DictImpl::descData( void const *data, size_t maxNumToDisplay ) const
     {
       size_t numDisplayed = 0;

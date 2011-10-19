@@ -1,10 +1,21 @@
 function simpleTest() {
   Scalar a[String];
-  report "a = " + a;
   report "a.size = " + a.size;
   report "a.has('foo') = " + a.has('foo');
   report "a['foo'] = " + a['foo'];
+  report "a = " + a;
   a['foo'] = 3.14;
+  report "a.size = " + a.size;
+  report "a.has('foo') = " + a.has('foo');
+  report "a['foo'] = " + a['foo'];
+  report "a = " + a;
+  a['foo'] = 2.71;
+  report "a.size = " + a.size;
+  report "a.has('foo') = " + a.has('foo');
+  report "a['foo'] = " + a['foo'];
+  report "a = " + a;
+  a.delete('foo');
+  report "a.size = " + a.size;
   report "a.has('foo') = " + a.has('foo');
   report "a['foo'] = " + a['foo'];
   report "a = " + a;
@@ -12,8 +23,20 @@ function simpleTest() {
 
 function largeTest() {
   String a[String];
-  for (Size i=0; i<1024; ++i)
-    a["key "+i] = "value "+i;
+  for (Size i=0; i<1024; ++i) {
+    String key = "key " + i;
+    a[key] = "value "+i;
+  }
+  report "a = " + a;
+  report "a.size = " + a.size;
+  for (Size i=0; i<32; ++i) {
+    String key = "key " + (i*3)%1024;
+    report "a.has('" + key + "') = " + a.has(key);
+  }
+  for (Size i=0; i<32; ++i) {
+    String key = "key " + (i*5)%1024;
+    a.delete( key );
+  }
   report "a = " + a;
   report "a.size = " + a.size;
 }
