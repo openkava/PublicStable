@@ -81,6 +81,7 @@ typedef struct YYLTYPE
 #include <Fabric/Core/AST/ConstSize.h>
 #include <Fabric/Core/AST/ConstScalar.h>
 #include <Fabric/Core/AST/ConstString.h>
+#include <Fabric/Core/AST/ContainerLoop.h>
 #include <Fabric/Core/AST/ContinueStatement.h>
 #include <Fabric/Core/AST/CStyleLoop.h>
 #include <Fabric/Core/AST/Destructor.h>
@@ -885,6 +886,13 @@ loop_statement
       $6->release();
     if ( $8 )
       $8->release();
+  }
+  | TOKEN_FOR TOKEN_LPAREN TOKEN_IDENTIFIER TOKEN_IN expression TOKEN_RPAREN statement
+  {
+    $$ = AST::ContainerLoop::Create( RTLOC, $5, *$3, $7 ).take();
+    $5->release();
+    delete $3;
+    $7->release();
   }
   | TOKEN_WHILE TOKEN_LPAREN optional_expression TOKEN_RPAREN statement
   {

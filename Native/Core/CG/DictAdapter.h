@@ -7,12 +7,23 @@
 
 #include <Fabric/Core/CG/Adapter.h>
 
+namespace llvm
+{
+  class StructType;
+  class PointerType;
+};
+
 namespace Fabric
 {
   namespace RT
   {
     class DictDesc;
     class DictImpl;
+  };
+  
+  namespace AST
+  {
+    class ContainerLoop;
   };
   
   namespace CG
@@ -22,6 +33,7 @@ namespace Fabric
     class DictAdapter : public Adapter
     {
       friend class Manager;
+      friend class AST::ContainerLoop;
     
     public:
 
@@ -71,6 +83,12 @@ namespace Fabric
       static void const *GetRValue( void *_dictAdapter, void const *dictRValue, void const *keyRValue );
       static void *GetLValue( void *_dictAdapter, void *dictLValue, void const *keyRValue );
       static void Delete( void *_dictAdapter, void *dictLValue, void const *keyLValue );
+
+      llvm::StructType const *getLLVMBitsType( RC::Handle<Context> const &context ) const;
+      llvm::PointerType const *getLLVMBucketPtrType( RC::Handle<Context> const &context ) const;
+      llvm::StructType const *getLLVMBucketType( RC::Handle<Context> const &context ) const;
+      llvm::PointerType const *getLLVMNodePtrType( RC::Handle<Context> const &context ) const;
+      llvm::StructType const *getLLVMNodeType( RC::Handle<Context> const &context ) const;
 
     private:
     
