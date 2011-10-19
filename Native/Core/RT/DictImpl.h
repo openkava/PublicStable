@@ -69,6 +69,8 @@ namespace Fabric
       void const *getImmutable( void const *data, void const *keyData ) const;
       void *getMutable( void *data, void const *keyData ) const;
       size_t getSize( void const *data ) const;
+      void delete_( void *data, void const *keyData ) const;
+      
       std::string descData( void const *data, size_t limit ) const;
 
     protected:
@@ -106,10 +108,15 @@ namespace Fabric
       
       void disposeNode( node_t *node ) const;
       void disposeBits( bits_t *bits ) const;
+      
       bool has( bucket_t const *bucket, void const *keyData ) const;
       void const *getImmutable( bucket_t const *bucket, void const *keyData ) const;
       void *getMutable( bits_t *bits, bucket_t *bucket, void const *keyData, size_t keyHash ) const;
+      void delete_( bits_t *bits, bucket_t *bucket, void const *keyData ) const;
+      
       void insertNode( bits_t *bits, bucket_t *bucket, node_t *node ) const;
+      void removeNode( bits_t *bits, bucket_t *bucket, node_t *node ) const;
+      
       void maybeResize( bits_t *bits ) const;
 
     private:

@@ -193,6 +193,46 @@ namespace Fabric
             );
         }
       }
+      
+      {
+        std::string name = methodOverloadName( "delete", this, m_keyAdapter );
+        std::vector<FunctionParam> params;
+        params.push_back( FunctionParam( "dictLValue", this, CG::USAGE_LVALUE ) );
+        params.push_back( FunctionParam( "keyRValue", m_keyAdapter, CG::USAGE_RVALUE ) );
+        FunctionBuilder functionBuilder( moduleBuilder, name, ExprType(), params, false );
+        if ( buildFunctions )
+        {
+          BasicBlockBuilder basicBlockBuilder( functionBuilder );
+          
+          llvm::Value *dictLValue = functionBuilder[0];
+          llvm::Value *keyRValue = functionBuilder[1];
+
+          llvm::BasicBlock *entryBB = functionBuilder.createBasicBlock( "entry" );
+          
+          basicBlockBuilder->SetInsertPoint( entryBB );
+
+          std::vector< llvm::Type const * > argTypes;
+          argTypes.push_back( basicBlockBuilder->getInt8PtrTy() );
+          argTypes.push_back( llvmLType( context ) );
+          argTypes.push_back( m_keyAdapter->llvmLType( context ) );
+          llvm::FunctionType const *funcType = llvm::FunctionType::get( llvm::Type::getVoidTy( context->getLLVMContext() ), argTypes, false );
+          
+          llvm::AttributeWithIndex AWI[1];
+          AWI[0] = llvm::AttributeWithIndex::get( ~0u, llvm::Attribute::InlineHint | llvm::Attribute::NoUnwind );
+          llvm::AttrListPtr attrListPtr = llvm::AttrListPtr::get( AWI, 1 );
+          
+          llvm::Function *func = llvm::cast<llvm::Function>( basicBlockBuilder.getModuleBuilder()->getOrInsertFunction( "__"+getCodeName()+"_Delete", funcType, attrListPtr ) ); 
+
+          llvm::Value *keyLValue = m_keyAdapter->llvmRValueToLValue( basicBlockBuilder, keyRValue );
+
+          std::vector<llvm::Value *> args;
+          args.push_back( llvmAdapterPtr( basicBlockBuilder ) );
+          args.push_back( dictLValue );
+          args.push_back( keyLValue );
+          basicBlockBuilder->CreateCall( func, args.begin(), args.end() );
+          basicBlockBuilder->CreateRetVoid();
+        }
+      }
 
       {
         std::string name = constructOverloadName( booleanAdapter, this );
@@ -427,6 +467,8 @@ namespace Fabric
         return (void *)&DictAdapter::GetRValue;
       else if ( functionName == "__" + getCodeName() + "_GetLValue" )
         return (void *)&DictAdapter::GetLValue;
+      else if ( functionName == "__" + getCodeName() + "_Delete" )
+        return (void *)&DictAdapter::Delete;
       else return Adapter::llvmResolveExternalFunction( functionName );
     }
 
@@ -573,6 +615,12 @@ namespace Fabric
     {
       DictAdapter const *dictAdapter = static_cast<DictAdapter const *>( _dictAdapter );
       return dictAdapter->m_dictImpl->getMutable( dictLValue, keyLValue );
+    }
+
+    void DictAdapter::Delete( void *_dictAdapter, void *dictLValue, void const *keyLValue )
+    {
+      DictAdapter const *dictAdapter = static_cast<DictAdapter const *>( _dictAdapter );
+      dictAdapter->m_dictImpl->delete_( dictLValue, keyLValue );
     }
 
     RC::ConstHandle<ComparableAdapter> DictAdapter::getKeyAdapter() const
