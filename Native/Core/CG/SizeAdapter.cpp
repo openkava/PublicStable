@@ -545,6 +545,57 @@ namespace Fabric
           basicBlockBuilder->CreateRet( basicBlockBuilder->CreatePointerCast( thisLValue, dataAdapter->llvmRType( context ) ) );
         }
       }
+     
+      {
+        std::string name = methodOverloadName( "hash", this );
+        std::vector<FunctionParam> params;
+        params.push_back( FunctionParam( "rValue", this, USAGE_RVALUE ) );
+        FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( this, USAGE_RVALUE ), params );
+        if ( buildFunctions )
+        {
+          llvm::Value *rValue = functionBuilder[0];
+          BasicBlockBuilder basicBlockBuilder( functionBuilder );
+          basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
+          basicBlockBuilder->CreateRet(
+            rValue
+            );
+        }
+      }
+      
+      {
+        std::string name = methodOverloadName( "compare", this, this );
+        std::vector<FunctionParam> params;
+        params.push_back( FunctionParam( "lhsRValue", this, USAGE_RVALUE ) );
+        params.push_back( FunctionParam( "rhsRValue", this, USAGE_RVALUE ) );
+        FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( integerAdapter, USAGE_RVALUE ), params );
+        if ( buildFunctions )
+        {
+          llvm::Value *lhsRValue = functionBuilder[0];
+          llvm::Value *rhsRValue = functionBuilder[1];
+          
+          BasicBlockBuilder basicBlockBuilder( functionBuilder );
+          llvm::BasicBlock *entryBB = functionBuilder.createBasicBlock( "entry" );
+          llvm::BasicBlock *ltBB = functionBuilder.createBasicBlock( "lt" );
+          llvm::BasicBlock *geBB = functionBuilder.createBasicBlock( "ge" );
+          llvm::BasicBlock *eqBB = functionBuilder.createBasicBlock( "eq" );
+          llvm::BasicBlock *gtBB = functionBuilder.createBasicBlock( "gt" );
+          
+          basicBlockBuilder->SetInsertPoint( entryBB );
+          basicBlockBuilder->CreateCondBr( basicBlockBuilder->CreateICmpULT( lhsRValue, rhsRValue ), ltBB, geBB );
+          
+          basicBlockBuilder->SetInsertPoint( ltBB );
+          basicBlockBuilder->CreateRet( integerAdapter->llvmConst( context, -1 ) );
+          
+          basicBlockBuilder->SetInsertPoint( geBB );
+          basicBlockBuilder->CreateCondBr( basicBlockBuilder->CreateICmpEQ ( lhsRValue, rhsRValue ), eqBB, gtBB );
+          
+          basicBlockBuilder->SetInsertPoint( eqBB );
+          basicBlockBuilder->CreateRet( integerAdapter->llvmConst( context, 0 ) );
+          
+          basicBlockBuilder->SetInsertPoint( gtBB );
+          basicBlockBuilder->CreateRet( integerAdapter->llvmConst( context, 1 ) );
+        }
+      }
     }
 
     llvm::Constant *SizeAdapter::llvmConst( RC::Handle<Context> const &context, size_t value ) const

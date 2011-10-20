@@ -48,5 +48,15 @@ namespace Fabric
     {
       return _( getValue(data) );
     }
+
+    size_t BooleanImpl::hash( void const *data ) const
+    {
+      return size_t( getValue( data ) );
+    }
+    
+    int BooleanImpl::compare( void const *lhsData, void const *rhsData ) const
+    {
+      return int( getValue( lhsData ) ) - int( getValue( rhsData ) );
+    }
   };
 };
