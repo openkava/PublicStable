@@ -71,15 +71,21 @@ namespace Fabric
       }
       else
       {
-        if( !m_hWnd )
-          return;
+        if( m_hWnd ) {
+          termOGLContext();
+          ::ReleaseDC( m_hWnd, m_hDC );
+          m_hWnd = NULL;
+        }
+      }
+    }
 
-        
+    NPError WindowsViewPort::nppDestroy( NPSavedData** save ) {
+      if( m_hWnd ) {
         termOGLContext();
         ::ReleaseDC( m_hWnd, m_hDC );
         m_hWnd = NULL;
-
       }
+      return ViewPort::nppDestroy( save );
     }
       
     void WindowsViewPort::needsRedraw()
@@ -95,7 +101,8 @@ namespace Fabric
       }
       else
       {
-        ::InvalidateRect( m_hWnd, NULL, FALSE );
+        if( m_hWnd )
+          ::InvalidateRect( m_hWnd, NULL, FALSE );
       }
     }
     
@@ -194,60 +201,62 @@ namespace Fabric
 
     LRESULT WindowsViewPort::processMessage( UINT message, WPARAM wParam, LPARAM lParam )
     {
-      DG::Context::NotificationBracket notificationBracket( getInterface()->getContext() );
-      switch( message )
+      if( m_hWnd )
       {
-      case WM_PAINT:
-      {
-        HDC     hDC;
-        RECT   rcPaint;
-        PAINTSTRUCT     ps;
+        DG::Context::NotificationBracket notificationBracket( getInterface()->getContext() );
+        switch( message )
+        {
+        case WM_PAINT:
+        {
+          HDC     hDC;
+          RECT   rcPaint;
+          PAINTSTRUCT     ps;
 
-        ::ZeroMemory( &ps, sizeof( ps ) );
-        hDC = BeginPaint( m_hWnd, &ps );
-        rcPaint = ps.rcPaint;
+          ::ZeroMemory( &ps, sizeof( ps ) );
+          hDC = BeginPaint( m_hWnd, &ps );
+          rcPaint = ps.rcPaint;
 
-        fireRedrawEvent( );
+          fireRedrawEvent( );
         
-        ::glFinish( );
-        ::SwapBuffers( m_hDC );
+          ::glFinish( );
+          ::SwapBuffers( m_hDC );
 
-        ::EndPaint( m_hWnd, &ps );
+          ::EndPaint( m_hWnd, &ps );
         
-        if ( m_logCollector )
-          m_logCollector->flush();
+          if ( m_logCollector )
+            m_logCollector->flush();
         
-        redrawFinished();
-        return( 0 );
+          redrawFinished();
+          return( 0 );
+        }
+
+        case WM_ERASEBKGND:
+          return( 1 );
+
+        case WM_SETFOCUS:
+
+        case WM_KILLFOCUS:
+
+          break;
+        }
+
+        if( message >= WM_MOUSEFIRST && 
+            message <= WM_MOUSELAST &&
+            message != WM_MOUSEWHEEL /* Chrome will redirect the wheel */ )
+        {
+          POINT   p = { GET_X_LPARAM( lParam ), GET_Y_LPARAM( lParam ) };
+          ::MapWindowPoints( m_hWnd, m_hParentWnd, &p, 1 );
+
+          LPARAM    lParentParam = MAKELONG( p.x, p.y );
+          ::PostMessage( m_hParentWnd, message, wParam, lParentParam );
+          return( 0 );
+        }
+        else if( message >= WM_KEYFIRST && message <= WM_KEYLAST )
+        {
+          ::PostMessage( m_hParentWnd, message, wParam, lParam );
+          return( 0 );
+        }
       }
-
-      case WM_ERASEBKGND:
-        return( 1 );
-
-      case WM_SETFOCUS:
-
-      case WM_KILLFOCUS:
-
-        break;
-      }
-
-      if( message >= WM_MOUSEFIRST && 
-          message <= WM_MOUSELAST &&
-          message != WM_MOUSEWHEEL /* Chrome will redirect the wheel */ )
-      {
-        POINT   p = { GET_X_LPARAM( lParam ), GET_Y_LPARAM( lParam ) };
-        ::MapWindowPoints( m_hWnd, m_hParentWnd, &p, 1 );
-
-        LPARAM    lParentParam = MAKELONG( p.x, p.y );
-        ::PostMessage( m_hParentWnd, message, wParam, lParentParam );
-        return( 0 );
-      }
-      else if( message >= WM_KEYFIRST && message <= WM_KEYLAST )
-      {
-        ::PostMessage( m_hParentWnd, message, wParam, lParam );
-        return( 0 );
-      }
-
       return( DefWindowProc( m_hWnd, message, wParam, lParam ) );
     }
 
