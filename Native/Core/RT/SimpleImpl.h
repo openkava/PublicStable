@@ -1,13 +1,13 @@
 #ifndef _FABRIC_RT_SIMPLE_IMPL_H
 #define _FABRIC_RT_SIMPLE_IMPL_H
 
-#include <Fabric/Core/RT/Impl.h>
+#include <Fabric/Core/RT/ComparableImpl.h>
 
 namespace Fabric
 {
   namespace RT
   {
-    class SimpleImpl : public Impl
+    class SimpleImpl : public ComparableImpl
     {
     public:
     
@@ -21,7 +21,7 @@ namespace Fabric
     protected:
     
       SimpleImpl( std::string const &codeName, ImplType implType, size_t size )
-        : Impl( codeName, implType )
+        : ComparableImpl( codeName, implType )
       {
         setSize( size );
       }

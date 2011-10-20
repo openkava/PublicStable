@@ -1,3 +1,7 @@
+/*
+ *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+ */
+
 #ifndef _FABRIC_UTIL_HEX_H
 #define _FABRIC_UTIL_HEX_H
 

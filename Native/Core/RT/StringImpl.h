@@ -5,7 +5,7 @@
 #ifndef _FABRIC_RT_STRING_IMPL_H
 #define _FABRIC_RT_STRING_IMPL_H
 
-#include <Fabric/Core/RT/Impl.h>
+#include <Fabric/Core/RT/ComparableImpl.h>
 #include <Fabric/Base/Util/AtomicSize.h>
 
 #include <string.h>
@@ -15,7 +15,7 @@ namespace Fabric
 {
   namespace RT
   {
-    class StringImpl : public Impl
+    class StringImpl : public ComparableImpl
     {
       friend class Manager;
       
@@ -41,6 +41,11 @@ namespace Fabric
 
       virtual bool isEquivalentTo( RC::ConstHandle<Impl> const &impl ) const;
       virtual bool isShallow() const;
+    
+      // ComparableImpl
+    
+      virtual size_t hash( void const *data ) const;
+      virtual int compare( void const *lhsData, void const *rhsData ) const;
       
       // StringImpl
       
