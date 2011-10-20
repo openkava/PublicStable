@@ -47,6 +47,18 @@ static inline float roundf( float x ) { return floorf(x+0.5f); }
 # error Unknown platform.
 #endif
 
+// Build architecture
+#if defined(FABRIC_POSIX)
+# if defined(__x86_64)
+#  define FABRIC_ARCH_64BIT
+# else
+#  define FABRIC_ARCH_32BIT
+# endif
+#else
+// [pzion 20111014] FIXME: we should properly detect Windows bit architecture
+# define FABRIC_ARCH_32BIT
+#endif
+
 // Build settings
 #if defined(NDEBUG)
 # define FABRIC_BUILD_RELEASE
