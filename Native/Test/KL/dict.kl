@@ -39,6 +39,12 @@ function largeTest() {
   }
   report "a = " + a;
   report "a.size = " + a.size;
+  Size displayed = 0;
+  for ( k, v in a ) {
+    report "a['" + k + "'] = " + v;
+    if ( ++displayed == 32 )
+      break;
+  }
 }
 
 function nestedTest() {

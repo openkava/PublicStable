@@ -889,10 +889,18 @@ loop_statement
   }
   | TOKEN_FOR TOKEN_LPAREN TOKEN_IDENTIFIER TOKEN_IN expression TOKEN_RPAREN statement
   {
-    $$ = AST::ContainerLoop::Create( RTLOC, $5, *$3, $7 ).take();
+    $$ = AST::ContainerLoop::Create( RTLOC, $5, *$3, "", $7 ).take();
     $5->release();
     delete $3;
     $7->release();
+  }
+  | TOKEN_FOR TOKEN_LPAREN TOKEN_IDENTIFIER TOKEN_COMMA TOKEN_IDENTIFIER TOKEN_IN expression TOKEN_RPAREN statement
+  {
+    $$ = AST::ContainerLoop::Create( RTLOC, $7, *$3, *$5, $9 ).take();
+    $7->release();
+    delete $3;
+    delete $5;
+    $9->release();
   }
   | TOKEN_WHILE TOKEN_LPAREN optional_expression TOKEN_RPAREN statement
   {

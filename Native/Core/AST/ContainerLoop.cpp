@@ -11,6 +11,7 @@
 #include <Fabric/Core/CG/Scope.h>
 #include <Fabric/Core/CG/Error.h>
 #include <Fabric/Core/CG/FunctionBuilder.h>
+#include <Fabric/Core/RT/Impl.h>
 #include <Fabric/Base/Util/SimpleString.h>
 
 #include <llvm/Function.h>
@@ -25,6 +26,7 @@ namespace Fabric
       CG::Location const &location,
       RC::ConstHandle<Expr> const &dictExpr,
       std::string const &keyName,
+      std::string const &valueName,
       RC::ConstHandle<Statement> const &body
       )
     {
@@ -32,6 +34,7 @@ namespace Fabric
         location,
         dictExpr,
         keyName,
+        valueName,
         body
         );
     }
@@ -40,11 +43,13 @@ namespace Fabric
       CG::Location const &location,
       RC::ConstHandle<Expr> const &dictExpr,
       std::string const &keyName,
+      std::string const &valueName,
       RC::ConstHandle<Statement> const &body
       )
       : Statement( location )
       , m_dictExpr( dictExpr )
       , m_keyName( keyName )
+      , m_valueName( valueName )
       , m_body( body )
     {
     }
@@ -54,6 +59,8 @@ namespace Fabric
       Statement::appendJSONMembers( jsonObjectGenerator, includeLocation );
       m_dictExpr->appendJSON( jsonObjectGenerator.makeMember( "dictExpr" ), includeLocation );
       jsonObjectGenerator.makeMember( "keyName" ).makeString( m_keyName );
+      if ( m_valueName.length() > 0 )
+        jsonObjectGenerator.makeMember( "valueName" ).makeString( m_valueName );
       m_body->appendJSON( jsonObjectGenerator.makeMember( "body" ), includeLocation );
     }
     
@@ -77,6 +84,7 @@ namespace Fabric
           throw CG::Error( m_dictExpr->getLocation(), "must be a dictionary" );
         RC::ConstHandle<CG::DictAdapter> dictAdapter = RC::ConstHandle<CG::DictAdapter>::StaticCast( adapter );
         RC::ConstHandle<CG::ComparableAdapter> keyAdapter = dictAdapter->getKeyAdapter();
+        RC::ConstHandle<CG::Adapter> valueAdapter = dictAdapter->getValueAdapter();
 
         llvm::Type const *nodePtrType = dictAdapter->getLLVMNodePtrType( context );
         llvm::Instruction *nodePtrPtr = new llvm::AllocaInst( nodePtrType );
@@ -128,8 +136,41 @@ namespace Fabric
             );
           llvm::Value *keyRValue = keyAdapter->llvmLValueToRValue( basicBlockBuilder, keyLValue );
           loopScope.put( m_keyName, CG::ParameterSymbol::Create( CG::ExprValue( keyAdapter, CG::USAGE_RVALUE, context, keyRValue ) ) );
+          llvm::Value *valueRValue = 0;
+          if ( m_valueName.length() > 0 )
+          {
+            llvm::Value *valueLValue = basicBlockBuilder->CreatePointerCast(
+              basicBlockBuilder->CreateConstGEP2_32(
+                basicBlockBuilder->CreateStructGEP( nodePtr, 5 ),
+                0,
+                keyAdapter->getImpl()->getAllocSize()
+                ),
+              valueAdapter->llvmLType( context )
+              );
+            switch ( dictExprValue.getUsage() )
+            {
+              case CG::USAGE_RVALUE:
+              {
+                valueRValue = valueAdapter->llvmLValueToRValue( basicBlockBuilder, valueLValue );
+                loopScope.put( m_valueName, CG::ParameterSymbol::Create( CG::ExprValue( valueAdapter, CG::USAGE_RVALUE, context, valueRValue ) ) );
+              }
+              break;
+              
+              case CG::USAGE_LVALUE:
+              {
+                loopScope.put( m_valueName, CG::ParameterSymbol::Create( CG::ExprValue( valueAdapter, CG::USAGE_LVALUE, context, valueLValue ) ) );
+              }
+              break;
+              
+              default:
+                FABRIC_ASSERT(false);
+                break;
+            }
+          }
           CG::BasicBlockBuilder loopBasicBlockBuilder( parentBasicBlockBuilder, loopScope );
           m_body->llvmCompileToBuilder( loopBasicBlockBuilder, diagnostics );
+          if ( valueRValue )
+            valueAdapter->llvmRelease( basicBlockBuilder, valueRValue );
           loopScope.llvmUnwind( loopBasicBlockBuilder ); // [pzion 20111019] This should be a no-op anyway
         }
         basicBlockBuilder->CreateBr( stepBB );
