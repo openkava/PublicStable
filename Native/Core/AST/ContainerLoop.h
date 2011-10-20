@@ -29,6 +29,7 @@ namespace Fabric
         CG::Location const &location,
         RC::ConstHandle<Expr> const &dictExpr,
         std::string const &keyName,
+        std::string const &valueName,
         RC::ConstHandle<Statement> const &body
         );
       
@@ -42,6 +43,7 @@ namespace Fabric
         CG::Location const &location,
         RC::ConstHandle<Expr> const &dictExpr,
         std::string const &keyName,
+        std::string const &valueName,
         RC::ConstHandle<Statement> const &body
         );
       
@@ -51,6 +53,7 @@ namespace Fabric
     
       RC::ConstHandle<Expr> m_dictExpr;
       std::string m_keyName;
+      std::string m_valueName;
       RC::ConstHandle<Statement> m_body;
     };
   };
