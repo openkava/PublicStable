@@ -317,3 +317,4 @@ operator setNbSlicesFrom3DImage(
   if(nbSlices < 8)
     nbSlices = 8;
 }
+
