@@ -286,6 +286,9 @@ namespace Fabric
           for ( std::multimap< std::string, Param * >::const_iterator jt=it->second.begin(); jt!=it->second.end(); ++jt )
           {
             Param const *param = jt->second;
+            
+            if ( prefixCount + param->index() >= numASTParams )
+              continue;
 
             RC::ConstHandle<AST::Param> astParam = astParamList->get( prefixCount + param->index() );
             CG::ExprType astParamExprType = astParam->getExprType( m_cgManager );
