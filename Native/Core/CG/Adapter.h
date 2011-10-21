@@ -60,7 +60,7 @@ namespace Fabric
       RC::ConstHandle<RT::Manager> getRTManager() const;    
       RC::ConstHandle<RT::Desc> getDesc() const;
       RC::ConstHandle<RT::Impl> getImpl() const;
-      
+    
       llvm::Value *llvmAlloca( BasicBlockBuilder &basicBlockBuilder, std::string const &name ) const;
       void llvmAssign( BasicBlockBuilder &basicBlockBuilder, llvm::Value *dstLValue, llvm::Value *srcRValue ) const;
       llvm::Value *llvmCast( BasicBlockBuilder &basicBlockBuilder, ExprValue exprValue ) const;
