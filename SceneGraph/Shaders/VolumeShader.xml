@@ -96,7 +96,6 @@
 */
 
 				gl_FragColor = vec4(1.0, 1.0, 1.0, opacity * u_opacityFactor );
-				gl_FragColor = vec4(1.0, 1.0, 1.0, opacity * blendFactor );
 			}
 			]]>
 		</source>
