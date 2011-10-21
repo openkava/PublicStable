@@ -299,3 +299,21 @@ operator generateVolumeSlices(
   }
 }
 
+operator setNbSlicesFrom3DImage(
+  io Scalar resolutionFactor,
+  io Size imageWidth,
+  io Size imageHeight,
+  io Size imageDepth,
+  io Size nbSlices
+){
+  //This could be enhanced to ajust nb slices based on camera direction (nb pixels might vary per dim)
+  Size maxNbVoxels = imageWidth;
+  if(imageHeight > maxNbVoxels)
+    maxNbVoxels = imageHeight;
+  if(imageDepth > maxNbVoxels)
+    maxNbVoxels = imageDepth;
+
+  nbSlices = Size(Scalar(maxNbVoxels) * resolutionFactor * 2.0);
+  if(nbSlices < 8)
+    nbSlices = 8;
+}
