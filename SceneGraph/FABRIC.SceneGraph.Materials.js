@@ -1618,7 +1618,7 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
     cropMin: '3D vector specifying the min cropping bbox coordinate (in the range 0..1 for X, Y, Z)',
     cropMax: '3D vector specifying the max cropping bbox coordinate (in the range 0..1 for X, Y, Z)',
     transformNode: 'Transform applied to the volume geometry.',
-    cameraNode: 'Active camera (required)',
+    viewportNode: 'Active viewport',
     lightNode: 'Active light',
     resolutionFactor: 'Resolution of the volume render, in the range 0.0 to 1.0, 1.0 being 2 slices per voxel slice',
     opacityFactor: 'Factor for the global relative opacity, 0 being tansparent, 1.0 being opaque'
@@ -1629,6 +1629,8 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
       resolutionFactor: 0.5,
       opacityFactor: 0.5
     });
+
+    options.cameraNode = options.viewportNode.getCameraNode();
 
     var volumeNodePub = scene.pub.constructNode('VolumeSlices', options);
     var volumeNode = scene.getPrivateInterface(volumeNodePub);
@@ -1654,9 +1656,43 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
       srcFile: 'FABRIC_ROOT/SceneGraph/KL/generateVolumeSlices.kl'
     }));
 
+    var offscreenNode = scene.constructNode('OffscreenViewport', {
+      mainViewportNode: options.viewportNode,
+      cameraNode: options.cameraNode,
+      eventName: 'DummyEvent'
+    });
+
+    var offscreenNodeRedrawEventHandler = offscreenNode.getRedrawEventHandler();
+    scene.getSceneRedrawTransparentObjectsEventHandler().appendChildEventHandler(offscreenNodeRedrawEventHandler);
+    offscreenNodeRedrawEventHandler.addMember('renderTargetToViewShaderProgram', 'Integer');
+
+    offscreenNodeRedrawEventHandler.postDescendBindings.append(
+      scene.constructOperator({
+          operatorName: 'drawVolumeRenderTargetToView',
+          srcFile: 'FABRIC_ROOT/SceneGraph/KL/renderTarget.kl',
+          entryFunctionName: 'drawRenderTargetToView_progID',
+          parameterLayout: [
+            'data.renderTarget',
+            'self.renderTargetToViewShaderProgram'
+          ]
+        }));
+
     var volumeMaterialNodePub = scene.pub.constructNode('VolumeMaterial', {
-        parentEventHandler: scene.getSceneRedrawTransparentObjectsEventHandler(),
-        opacityTextureNode: options.opacityTextureNode
+        parentEventHandler: offscreenNodeRedrawEventHandler,
+        opacityTextureNode: options.opacityTextureNode,
+        renderTarget: FABRIC.RT.oglRenderTarget(0,  0, [
+          new FABRIC.RT.OGLRenderTargetTextureDesc(
+              2, /*COLOR*/
+              new FABRIC.RT.OGLTexture2D(
+                FABRIC.SceneGraph.OpenGLConstants.GL_RG16F,
+                FABRIC.SceneGraph.OpenGLConstants.GL_RG,
+                FABRIC.SceneGraph.OpenGLConstants.GL_FLOAT)
+            )
+          ],
+          {
+            clearColor: FABRIC.RT.rgba(0,0,0,1)
+          }
+        )
   //      gradientTextureNode: options.gradientTextureNode,
   //      lightNode: options.lightNode
     });
@@ -1672,8 +1708,7 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
                     'Scalar opacityPerSlice = 1.0 / Scalar(nbSlices);\n' +
                     'Scalar opacityFactorExp = log( opacityPerSlice ) / log( 0.5 );' + //We modulate by an exponential function else all the interesting values are close to opacityFactor 0.5
                     'Scalar ajustedOpacityPerSlice = pow( opacityFactor, opacityFactorExp);' +
-                    'ajustedOpacityFactor = ajustedOpacityPerSlice / (1.0 - pow(ajustedOpacityPerSlice, Scalar(nbSlices))*0.99999);\n' +
-                    'report "ajustedOpacityFactor " + ajustedOpacityFactor + " perslice " + opacityPerSlice + " opacityFactorExp " + opacityFactorExp + " ajustedOpacityPerSlice " + ajustedOpacityPerSlice;}\n',
+                    'ajustedOpacityFactor = ajustedOpacityPerSlice / (1.0 - pow(ajustedOpacityPerSlice, Scalar(nbSlices))*0.99999);}\n',
       entryFunctionName: 'setOpacityFactor',
       parameterLayout: [
         'volumeUniforms.opacityFactor',

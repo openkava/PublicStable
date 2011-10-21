@@ -108,12 +108,12 @@ FABRIC.SceneGraph.registerNodeType('OffscreenViewport', {
       }
       return materialNode.pub;
     }
-    
+
     // setup the known scopes
     offscreenNode.pub.setViewportNode(mainViewportNode);
     offscreenNode.pub.setCameraNode(cameraNode);
     eventHandlerNode.setScope('data',dgnode);
-    
+
     // setup the prebindings in order
     var preBindings = eventHandlerNode.preDescendBindings;
     preBindings.append(

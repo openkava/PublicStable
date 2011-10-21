@@ -35,10 +35,9 @@ operator unbindRenderTarget(
   renderTarget.unbind();
 }
 
-
-operator drawRenderTargetToView(
+function drawRenderTargetToViewInternal(
   io OGLRenderTarget renderTarget,
-  io OGLShaderProgram shaderProgram
+  io Integer shaderProgramId
 ) {
 //  report("drawRenderTargetToView>>>");
 
@@ -55,11 +54,27 @@ operator drawRenderTargetToView(
     
     Vec2 tl(-1.0, 1.0);
     Vec2 br(1.0, -1.0);
-    drawTexture(textureUnit, shaderProgram.programId, tl, br, false);
+    drawTexture(textureUnit, shaderProgramId, tl, br, false);
   }else{
     report("Error: no color textures found");
   }
 
+ // report("<<<drawRenderTargetToView");
+}
+
+operator drawRenderTargetToView_progID(
+  io OGLRenderTarget renderTarget,
+  io Integer shaderProgramId
+) {
+  drawRenderTargetToViewInternal(renderTarget, shaderProgramId);
+}
+
+operator drawRenderTargetToView(
+  io OGLRenderTarget renderTarget,
+  io OGLShaderProgram shaderProgram
+) {
+//  report("drawRenderTargetToView>>>");
+  drawRenderTargetToViewInternal(renderTarget, shaderProgram.programId);
  // report("<<<drawRenderTargetToView");
 }
 
