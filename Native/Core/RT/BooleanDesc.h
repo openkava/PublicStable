@@ -5,7 +5,7 @@
 #ifndef _FABRIC_RT_BOOLEAN_DESC_H
 #define _FABRIC_RT_BOOLEAN_DESC_H
 
-#include <Fabric/Core/RT/Desc.h>
+#include <Fabric/Core/RT/ComparableDesc.h>
 
 namespace Fabric
 {
@@ -13,7 +13,7 @@ namespace Fabric
   {
     class BooleanImpl;
     
-    class BooleanDesc : public Desc
+    class BooleanDesc : public ComparableDesc
     {
       friend class Manager;
       

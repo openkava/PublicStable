@@ -39,6 +39,8 @@ namespace Fabric
 
       virtual std::string queryUserFilePath( bool existingFile, std::string const &title, std::string const &defaultFilename, std::string const &extension );
     
+      virtual NPError nppDestroy( NPSavedData** save );
+
     protected:
   
       WindowsViewPort( RC::ConstHandle<Interface> const &interface );

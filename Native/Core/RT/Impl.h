@@ -12,6 +12,7 @@
 #include <Fabric/Core/Util/Assert.h>
 
 #include <stdint.h>
+#include <map>
 
 namespace Fabric
 {
@@ -32,6 +33,9 @@ namespace Fabric
     class VariableArrayImpl;
     class SlicedArrayImpl;
     class FixedArrayImpl;
+    class FixedArrayImpl;
+    class ComparableImpl;
+    class DictImpl;
     
     class Impl : public RC::Object
     {
@@ -57,6 +61,7 @@ namespace Fabric
       RC::ConstHandle<FixedArrayImpl> getFixedArrayImpl( size_t length ) const;
       RC::ConstHandle<VariableArrayImpl> getVariableArrayImpl( size_t flags ) const;
       RC::ConstHandle<SlicedArrayImpl> getSlicedArrayImpl() const;
+      RC::ConstHandle<DictImpl> getDictImpl( RC::ConstHandle<ComparableImpl> const &comparableImpl ) const;
       
       void setDisposeCallback( void (*disposeCallback)( void * ) ) const;
       
@@ -75,6 +80,7 @@ namespace Fabric
       mutable Util::UnorderedMap< size_t, RC::WeakConstHandle<VariableArrayImpl> > m_variableArrayImpls;
       mutable RC::WeakConstHandle<SlicedArrayImpl> m_slicedArrayImpl;
       mutable Util::UnorderedMap< size_t, RC::WeakConstHandle<FixedArrayImpl> > m_fixedArrayImpls;
+      mutable std::map< RC::WeakConstHandle<ComparableImpl>, RC::WeakConstHandle<DictImpl> > m_dictImpls;
       
       mutable void (*m_disposeCallback)( void *lValue );
     };

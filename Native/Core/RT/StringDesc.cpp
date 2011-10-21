@@ -12,7 +12,7 @@ namespace Fabric
   namespace RT
   {
     StringDesc::StringDesc( std::string const &name, RC::ConstHandle<StringImpl> const &stringImpl )
-      : Desc( name, stringImpl )
+      : ComparableDesc( name, stringImpl )
       , m_stringImpl( stringImpl )
     {
     }
