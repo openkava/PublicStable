@@ -12,6 +12,7 @@ use DebugGeometry;
 #include 'FABRIC_ROOT/SceneGraph/KL/solveNCFIK.kl'
 
 operator solveLegRig(
+  io CharacterController controller,
   io Xfo pose[],
   io Bone bones[],
   io Limb legs[],
@@ -27,7 +28,7 @@ operator solveLegRig(
     for (Integer j = 0; j < leg.boneIds.size(); j++) {
       if(j==0){
         if (bones[leg.boneIds[j]].parent == - 1) {
-          fkPose[j] = poseVariables.xfoValues[j];
+          fkPose[j] = controller.xfo * poseVariables.xfoValues[j];
         }
         else {
           fkPose[j] = pose[bones[leg.boneIds[j]].parent] * poseVariables.xfoValues[leg.xfoIds[j]];
@@ -44,7 +45,7 @@ operator solveLegRig(
     //  debugGeometry.drawAxis(poseVariables.xfoValues[leg.ikGoalXfoId], 3.0, Color(0.0, 1.0, 1.0, 1.0));
       
       Xfo targetXfo;
-      targetXfo = poseVariables.xfoValues[leg.ikGoalXfoId] * leg.ikGoalOffsetXfo;
+      targetXfo = controller.xfo * poseVariables.xfoValues[leg.ikGoalXfoId] * leg.ikGoalOffsetXfo;
       
       Scalar maxLineLength = 0.0;
       Integer ikboneIndices[];
