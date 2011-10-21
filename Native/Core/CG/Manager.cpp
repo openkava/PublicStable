@@ -6,6 +6,7 @@
 #include "BooleanAdapter.h"
 #include "ByteAdapter.h"
 #include "ConstStringAdapter.h"
+#include "DictAdapter.h"
 #include "IntegerAdapter.h"
 #include "SizeAdapter.h"
 #include "FloatAdapter.h"
@@ -18,6 +19,7 @@
 #include "ModuleBuilder.h"
 
 #include <Fabric/Core/RT/BooleanDesc.h>
+#include <Fabric/Core/RT/DictDesc.h>
 #include <Fabric/Core/RT/IntegerDesc.h>
 #include <Fabric/Core/RT/FloatDesc.h>
 #include <Fabric/Core/RT/OpaqueDesc.h>
@@ -146,6 +148,13 @@ namespace Fabric
           {
             RC::ConstHandle<RT::SlicedArrayDesc> slicedArrayDesc = RC::ConstHandle<RT::SlicedArrayDesc>::StaticCast( desc );
             adapter = new SlicedArrayAdapter( this, slicedArrayDesc );
+          }
+          break;
+          
+          case RT::DT_DICT:
+          {
+            RC::ConstHandle<RT::DictDesc> dictDesc = RC::ConstHandle<RT::DictDesc>::StaticCast( desc );
+            adapter = new DictAdapter( this, dictDesc );
           }
           break;
           

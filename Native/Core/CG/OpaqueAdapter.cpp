@@ -25,7 +25,7 @@ namespace Fabric
   namespace CG
   {
     OpaqueAdapter::OpaqueAdapter( RC::ConstHandle<Manager> const &manager, RC::ConstHandle<RT::OpaqueDesc> const &opaqueDesc )
-      : SimpleAdapter( manager, opaqueDesc )
+      : Adapter( manager, opaqueDesc, 0 )
       , m_opaqueDesc( opaqueDesc )
     {
     }
@@ -161,6 +161,19 @@ namespace Fabric
 #else
       return "<Opaque>";
 #endif
+    }
+
+    void OpaqueAdapter::llvmRetain( BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const
+    {
+    }
+
+    void OpaqueAdapter::llvmDefaultAssign( BasicBlockBuilder &basicBlockBuilder, llvm::Value *dstLValue, llvm::Value *srcRValue ) const
+    {
+      basicBlockBuilder->CreateStore( srcRValue, dstLValue );
+    }
+    
+    void OpaqueAdapter::llvmRelease( BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const
+    {
     }
   }; // namespace CG
 }; // namespace FABRIC

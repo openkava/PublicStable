@@ -7,6 +7,8 @@
 #include "BooleanImpl.h"
 #include "ConstStringDesc.h"
 #include "ConstStringImpl.h"
+#include "DictDesc.h"
+#include "DictImpl.h"
 #include "FixedArrayDesc.h"
 #include "FixedArrayImpl.h"
 #include "FloatDesc.h"
@@ -88,6 +90,17 @@ namespace Fabric
       RC::ConstHandle<FixedArrayImpl> fixedArrayImpl = memberDesc->getImpl()->getFixedArrayImpl( length );
       RC::ConstHandle<FixedArrayDesc> fixedArrayDesc = new FixedArrayDesc( fixedArrayName, fixedArrayImpl, memberDesc );
       return RC::ConstHandle<FixedArrayDesc>::StaticCast( registerDesc( fixedArrayDesc ) );
+    }
+
+    RC::ConstHandle<DictDesc> Manager::getDictOf(
+      RC::ConstHandle<RT::ComparableDesc> const &keyDesc,
+      RC::ConstHandle<RT::Desc> const &valueDesc
+      ) const
+    {
+      std::string dictName = valueDesc->getUserName() + "[" + keyDesc->getUserName() + "]";
+      RC::ConstHandle<DictImpl> dictImpl = valueDesc->getImpl()->getDictImpl( keyDesc->getImpl() );
+      RC::ConstHandle<DictDesc> dictDesc = new DictDesc( dictName, dictImpl, keyDesc, valueDesc );
+      return RC::ConstHandle<DictDesc>::StaticCast( registerDesc( dictDesc ) );
     }
 
     Manager::Types const &Manager::getTypes() const
@@ -244,7 +257,36 @@ namespace Fabric
           
           return getFixedArrayOf( getComplexDesc( desc, data, dataEnd ), length );
         }
-        else throw Exception( "malformed type expression" );
+        else
+        {
+          // [pzion 20111014] count brackets to get subtype
+          
+          size_t bracketCount = 0;
+          char const *type = data;
+          char const *typeEnd = data;
+          for (;;)
+          {
+            if ( typeEnd == dataEnd )
+              throw Exception( "malformed type expression" );
+            else if ( *typeEnd == ']' )
+            {
+              if ( bracketCount == 0 )
+                break;
+              else --bracketCount;
+            }
+            else if ( *typeEnd == '[' )
+              ++bracketCount;
+            ++typeEnd;
+          }
+          
+          RC::ConstHandle<Desc> keyDesc = getDesc( std::string( type, typeEnd - type ) );
+          if ( !isComparable( keyDesc->getType() ) )
+            throw Exception( "key type must be comparable" );
+          RC::ConstHandle<ComparableDesc> keyComparableDesc = RC::ConstHandle<ComparableDesc>::StaticCast( keyDesc );
+          
+          ++typeEnd;
+          return getDictOf( keyComparableDesc, getComplexDesc( desc, typeEnd, dataEnd ) );
+        }
       }
       else if ( data != dataEnd && *data == '<' )
       {
