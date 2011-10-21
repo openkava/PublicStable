@@ -186,7 +186,6 @@ FABRIC.SceneGraph.registerNodeType('Texture2DSliceDisplay', {
 
     var postDrawEventHandler = sliceDisplayNode.constructEventHandlerNode('PostDraw');
     postDrawEventHandler.appendChildEventHandler(sliceDisplayNode.getRedrawEventHandler());
-    scene.getScenePostRedrawEventHandler().appendChildEventHandler(postDrawEventHandler);
 
     postDrawEventHandler.addMember('tl', 'Vec2', options.tl );
     postDrawEventHandler.addMember('br', 'Vec2', options.br );
@@ -210,6 +209,22 @@ FABRIC.SceneGraph.registerNodeType('Texture2DSliceDisplay', {
           ]
         }
     ));
+
+    var enabled = false;
+    sliceDisplayNode.pub.enable = function() {
+      if(!enabled) {
+        scene.getScenePostRedrawEventHandler().appendChildEventHandler(postDrawEventHandler);
+        enabled = true;
+      }
+    };
+
+    sliceDisplayNode.pub.disable = function() {
+      if(enabled) {
+        scene.getScenePostRedrawEventHandler().removeChildEventHandler(postDrawEventHandler);
+        enabled = false;
+      }
+    };
+    sliceDisplayNode.pub.enable();
     return sliceDisplayNode;
   }
 });
@@ -221,6 +236,9 @@ $(document).ready(function() {
       $('#rangeY3D').slider({min: 0, max: 1, step: 0.005, range: true, values: [0,1] }),
       $('#rangeZ3D').slider({min: 0, max: 1, step: 0.005, range: true, values: [0,1] })
   ];
+  var $opacityFactorSlider = $('#opacityFactor').slider({min: 0, max: 1, step: 0.05, value: 0.5 });
+  var $resolutionFactorSlider = $('#resolutionFactor').slider({min: 0.01, max: 1, step: 0.05, value: 0.5 });
+
   var $sliders2D = [
     $('#xRatio').slider({min: 0, max: 1, step: 0.005 }),
     $('#yRatio').slider({min: 0, max: 1, step: 0.005 }),
@@ -253,25 +271,20 @@ $(document).ready(function() {
     globalXfo: new FABRIC.RT.Xfo({ tr: new FABRIC.RT.Vec3(0, 0, 0), sc: new FABRIC.RT.Vec3(5.0, 5.0, 5.0) })
   });
 
-  var volume = scene.constructNode('VolumeSlices', { nbSlices: 128, cameraNode: camera, transformNode: transform, cropMin: new FABRIC.RT.Vec3(0, 0, 0), cropMax: new FABRIC.RT.Vec3(1, 1, 1) });
-
   var textureGen = scene.constructNode('3DTextureGenerator');
   var texture2DSlice = [];
   texture2DSlice[0] = scene.constructNode('Texture2DSliceDisplay', {tl: new FABRIC.RT.Vec2(2.0/3.0, 1.0), br: new FABRIC.RT.Vec2(1.0, 1.0/3.0), sourceImageNode: textureGen, sliceRatio: 0.5, sliceAxis : 0});
   texture2DSlice[1] = scene.constructNode('Texture2DSliceDisplay', {tl: new FABRIC.RT.Vec2(2.0/3.0, 1.0/3.0), br: new FABRIC.RT.Vec2(1.0, -1.0/3.0), sourceImageNode: textureGen, sliceRatio: 0.5, sliceAxis : 1});
   texture2DSlice[2] = scene.constructNode('Texture2DSliceDisplay', {tl: new FABRIC.RT.Vec2(2.0/3.0, -1.0/3.0), br: new FABRIC.RT.Vec2(1.0, -1.0), sourceImageNode: textureGen, sliceRatio: 0.5, sliceAxis : 2});
 
-  var volumeMaterial = scene.constructNode('VolumeMaterial', {
-      //parentEventHandler: scene.getSceneRedrawTransparentObjectsEventHandler(),
+  var volumeNode = scene.constructNode('VolumeOpacityInstance', {
+      cameraNode: camera,
+      transformNode: transform,
+      cropMin: new FABRIC.RT.Vec3(0, 0, 0),
+      cropMax: new FABRIC.RT.Vec3(1, 1, 1),
       opacityTextureNode: textureGen
 //      gradientTextureNode: textureGen.getGradientNode(),
 //      lightNode: light
-    });
-
-  scene.constructNode('Instance', {
-      transformNode:transform,
-      geometryNode: volume,
-      materialNode: volumeMaterial
     });
     
   var sliders2DBindFunction = function(index) {
@@ -286,11 +299,11 @@ $(document).ready(function() {
   var sliders3DBindFunction = function(index) {
     var sliderIndex = index;
     return function(event, ui) {
-        var min = volume.getCropMin(), max = volume.getCropMax();
+        var min = volumeNode.getCropMin(), max = volumeNode.getCropMax();
         min.setComponent( sliderIndex, ui.values[0] );
         max.setComponent( sliderIndex, ui.values[1] );
-        volume.setCropMin(min);
-        volume.setCropMax(max);
+        volumeNode.setCropMin(min);
+        volumeNode.setCropMax(max);
         viewport.redraw();
         return true;
       };
@@ -300,11 +313,27 @@ $(document).ready(function() {
     $sliders2D[i].slider('value', texture2DSlice[i].getSliceRatio());
     $sliders2D[i].bind('slide', sliders2DBindFunction(i) );
     
-    var cropMax = volume.getCropMax();
-    var cropMin = volume.getCropMin();
+    var cropMax = volumeNode.getCropMax();
+    var cropMin = volumeNode.getCropMin();
     $sliders3D[i].slider('option', 'values', [cropMin.component(i), cropMax.component(i)]);
     $sliders3D[i].bind('slide', sliders3DBindFunction(i) );
   }
+
+  $resolutionFactorSlider.slider('value', volumeNode.getResolutionFactor());
+  $resolutionFactorSlider.bind('slide', function(event, ui) {
+    volumeNode.setResolutionFactor(ui.value);
+    viewport.redraw();
+    viewport.redraw();//For some reason it takes 2 redraw to get the properly ajusted opacity factor upadted to the shader (???)
+    return true;
+  });
+  
+  $opacityFactorSlider.slider('value', volumeNode.getOpacityFactor());
+  $opacityFactorSlider.bind('slide', function(event, ui) {
+    volumeNode.setOpacityFactor(ui.value);
+    viewport.redraw();
+    viewport.redraw();//For some reason it takes 2 redraw to get the properly ajusted opacity factor upadted to the shader (???)
+    return true;
+  });
   
   $("#displayGradientWeight").attr('checked', false).change(function() {
     var displayGradientWeight = $('#displayGradientWeight').attr('checked');
@@ -312,6 +341,36 @@ $(document).ready(function() {
       texture2DSlice[i].setOpacityElseGradientWeight(!displayGradientWeight);
     }
     viewport.redraw();
+  });
+
+  var ajustViewportLayout = function() {
+    var displayAxisSlices = $('#displayAxisSlices').attr('checked');
+    if(displayAxisSlices) {
+      var aspectRatio = viewport.getWidth() / viewport.getHeight();
+      var sliceViewWidth = (2.0/3.0) / aspectRatio;
+
+      for( i = 0; i < 3; ++i ) {
+        var tl = texture2DSlice[i].getTl();
+        tl.x = 1.0 - sliceViewWidth;
+        texture2DSlice[i].setTl(tl);
+      }
+      camera.setScreenOffset(new FABRIC.RT.Vec2(-sliceViewWidth/2.0, 0.0));
+    }
+    else
+      camera.setScreenOffset(new FABRIC.RT.Vec2(0.0, 0.0));
+    viewport.redraw();
+  };
+
+  $("#displayAxisSlices").attr('checked', true).change(function() {
+    var displayAxisSlices = $('#displayAxisSlices').attr('checked');
+    for( i = 0; i < 3; ++i ) {
+      if(displayAxisSlices)
+        texture2DSlice[i].enable();
+      else
+        texture2DSlice[i].disable();
+    }
+    $("#axisSlicesParams").attr('hidden', !displayAxisSlices);
+    ajustViewportLayout();
   });
   
   $('#loadingDialog').dialog({
@@ -327,19 +386,7 @@ $(document).ready(function() {
       if (errors.length > 0) {
         throw (errors.toString());
       }
-      
-      var aspectRatio = viewport.getWidth() / viewport.getHeight();
-      var sliceViewWidth = (2.0/3.0) / aspectRatio;
-
-      for( i = 0; i < 3; ++i ) {
-        var tl = texture2DSlice[i].getTl();
-        tl.x = 1.0 - sliceViewWidth;
-        texture2DSlice[i].setTl(tl);
-      }
-
-      camera.setScreenOffset(new FABRIC.RT.Vec2(-sliceViewWidth/2.0, 0.0));
-      
-      viewport.redraw();
+      ajustViewportLayout();
       return true;
     }
   });
@@ -381,15 +428,25 @@ $(document).ready(function() {
               <label for="rangeZ3D" >Z:</label>
               <div id='rangeZ3D' style="margin-top:10px;"></div>
             </div><!--content-->
+            <h2>Volume render options</h2>
+            <div class="content">
+              <label for="opacityFactor" >Opacity factor:</label>
+              <div id='opacityFactor' style="margin-top:10px;"></div>
+              <label for="resolutionFactor" >Depth resolution factor:</label>
+              <div id='resolutionFactor' style="margin-top:10px;"></div>
+            </div><!--content-->
             <h2>Axis slices</h2>
             <div class="content">
-              <input type="checkbox" id="displayGradientWeight" style="margin-top:10px;" /><label for="displayGradientWeight" style="margin-top:10px;" >Display gradient weight</label><br>
-              <label for="xRatio" >X:</label>
-              <div id='xRatio' style="margin-top:10px;"></div>
-              <label for="yRatio" >Y:</label>
-              <div id='yRatio' style="margin-top:10px;"></div>
-              <label for="zRatio" >Z:</label>
-              <div id='zRatio' style="margin-top:10px;"></div>
+              <input type="checkbox" id="displayAxisSlices" style="margin-top:10px;" /><label for="displayAxisSlices" style="margin-top:10px;" >Display axis slices</label><br>
+              <div class="subcontent" id="axisSlicesParams">
+                <input type="checkbox" id="displayGradientWeight" style="margin-top:10px;" /><label for="displayGradientWeight" style="margin-top:10px;" >Display gradient weight</label><br>
+                <label for="xRatio" >X:</label>
+                <div id='xRatio' style="margin-top:10px;"></div>
+                <label for="yRatio" >Y:</label>
+                <div id='yRatio' style="margin-top:10px;"></div>
+                <label for="zRatio" >Z:</label>
+                <div id='zRatio' style="margin-top:10px;"></div>
+            </div><!--subcontent-->
             </div><!--content-->
           </div><!--box-->
             

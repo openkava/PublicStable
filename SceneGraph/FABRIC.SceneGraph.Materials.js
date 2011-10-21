@@ -1605,3 +1605,90 @@ FABRIC.SceneGraph.registerNodeType('ScreenGrab', {
   }
 });
 
+FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
+  briefDesc: '',
+  detailedDesc: '',
+  parentNodeDesc: 'VolumeMaterial',
+  optionsDesc: {
+    opacityTextureNode: 'Image3D of Bytes containing a 3D opacity texture',
+    gradientTextureNode: 'Image3D of RGBA containing a gradient vector in RGB, plus a gradient weight in A' + 
+                         'Gradient is basically a surface normal to be used for shading areas where the opacity changes, ' +
+                         'and the gradient weight is the gradient amplitude (length); areas of constant opacity should have ' +
+                         'a gradient weight of 0.',
+    cropMin: '3D vector specifying the min cropping bbox coordinate (in the range 0..1 for X, Y, Z)',
+    cropMax: '3D vector specifying the max cropping bbox coordinate (in the range 0..1 for X, Y, Z)',
+    transformNode: 'Transform applied to the volume geometry.',
+    cameraNode: 'Active camera (required)',
+    lightNode: 'Active light',
+    resolutionFactor: 'Resolution of the volume render, in the range 0.0 to 1.0, 1.0 being 2 slices per voxel slice',
+    opacityFactor: 'Factor for the global relative opacity, 0 being tansparent, 1.0 being opaque'
+  },
+  factoryFn: function(options, scene) {
+
+    scene.assignDefaults(options, {
+      resolutionFactor: 0.5,
+      opacityFactor: 0.5
+    });
+
+    var volumeNodePub = scene.pub.constructNode('VolumeSlices', options);
+    var volumeNode = scene.getPrivateInterface(volumeNodePub);
+    var volumeUniformsDGNode = volumeNode.getUniformsDGNode();
+    var opacityTextureDGNode = scene.getPrivateInterface(options.opacityTextureNode).getDGNode();
+
+    volumeUniformsDGNode.addMember('resolutionFactor', 'Scalar', options.resolutionFactor );
+    volumeUniformsDGNode.addMember('opacityFactor', 'Scalar', options.opacityFactor );
+    volumeNode.addMemberInterface(volumeUniformsDGNode, 'resolutionFactor', true);
+    volumeNode.addMemberInterface(volumeUniformsDGNode, 'opacityFactor', true);
+
+    volumeUniformsDGNode.setDependency(opacityTextureDGNode, 'opacityImage3D');
+    volumeUniformsDGNode.bindings.append(scene.constructOperator({
+      operatorName: 'setNbSlicesFrom3DImage',
+      parameterLayout: [
+        'self.resolutionFactor',
+        'opacityImage3D.width',
+        'opacityImage3D.height',
+        'opacityImage3D.depth',
+        'self.nbSlices'
+      ],
+      entryFunctionName: 'setNbSlicesFrom3DImage',
+      srcFile: 'FABRIC_ROOT/SceneGraph/KL/generateVolumeSlices.kl'
+    }));
+
+    var volumeMaterialNodePub = scene.pub.constructNode('VolumeMaterial', {
+        parentEventHandler: scene.getSceneRedrawTransparentObjectsEventHandler(),
+        opacityTextureNode: options.opacityTextureNode
+  //      gradientTextureNode: options.gradientTextureNode,
+  //      lightNode: options.lightNode
+    });
+
+    var volumeMaterialNode = scene.getPrivateInterface(volumeMaterialNodePub);
+    var volumeMaterialNodeRedrawEvent = volumeMaterialNode.getRedrawEventHandler();
+    volumeMaterialNodeRedrawEvent.setScope('volumeUniforms', volumeUniformsDGNode);
+    volumeMaterialNodeRedrawEvent.addMember('ajustedOpacityFactor', 'Scalar', 1.0 );
+
+    volumeMaterialNodeRedrawEvent.preDescendBindings.append(scene.constructOperator({
+      operatorName: 'setOpacityFactor',
+      srcCode: 'operator setOpacityFactor(io Scalar opacityFactor, io Size nbSlices, io Scalar ajustedOpacityFactor){ \n' +
+                    'Scalar opacityPerSlice = 1.0 / Scalar(nbSlices);\n' +
+                    'Scalar opacityFactorExp = log( opacityPerSlice ) / log( 0.5 );' + //We modulate by an exponential function else all the interesting values are close to opacityFactor 0.5
+                    'Scalar ajustedOpacityPerSlice = pow( opacityFactor, opacityFactorExp);' +
+                    'ajustedOpacityFactor = ajustedOpacityPerSlice / (1.0 - pow(ajustedOpacityPerSlice, Scalar(nbSlices))*0.99999);\n' +
+                    'report "ajustedOpacityFactor " + ajustedOpacityFactor + " perslice " + opacityPerSlice + " opacityFactorExp " + opacityFactorExp + " ajustedOpacityPerSlice " + ajustedOpacityPerSlice;}\n',
+      entryFunctionName: 'setOpacityFactor',
+      parameterLayout: [
+        'volumeUniforms.opacityFactor',
+        'volumeUniforms.nbSlices',
+        'self.opacityFactor'
+      ]
+    }));
+
+    var instanceNode = scene.constructNode('Instance', {
+        transformNode: options.transformNode,
+        geometryNode: volumeNodePub,
+        materialNode: volumeMaterialNodePub
+    });
+
+    return volumeNode;
+  }
+});
+

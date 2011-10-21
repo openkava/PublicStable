@@ -767,7 +767,7 @@ FABRIC.SceneGraph.registerNodeType('VolumeSlices', {
     scene.assignDefaults(options, {
         cropMin: new FABRIC.RT.Vec3(0.0, 0.0, 0.0),
         cropMax: new FABRIC.RT.Vec3(1.0, 1.0, 1.0),
-        nbSlices: 20
+        nbSlices: 64
       });
 
     var volumeSlicesNode = scene.constructNode('Triangles', options);
