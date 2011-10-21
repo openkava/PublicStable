@@ -63,6 +63,72 @@ s.parentNode.insertBefore(ga, s);
 
     <script type="text/javascript">
     
+    
+FABRIC.SceneGraph.registerNodeType('Flock', {
+  briefDesc: 'The Flock node is a Particles node which simulates flocking behaviour.',
+  detailedDesc: 'The Flock node is a Particles node which simulates flocking behaviour through KL operators. ' +
+                'The node is furthermore able to visualize the current flocking targets for each particle.',
+  parentNodeDesc: 'Particles',
+  optionsDesc: {
+    displayDebugging: 'Set to true to draw the current flocking target for each particle.',
+  },
+  factoryFn: function(options, scene) {
+    scene.assignDefaults(options, {
+      displayDebugging: true
+    });
+
+    options.createSpatialHashTable = true;
+    options.animated = true;
+    options.simulated = true;
+
+    var flockNode = scene.constructNode('Particles', options);
+    flockNode.pub.addVertexAttributeValue('goals', 'Vec3');
+    flockNode.pub.addVertexAttributeValue('neighborIndices', 'Integer[]');
+    flockNode.pub.addVertexAttributeValue('neighborDistances', 'Scalar[]');
+    
+    flockNode.pub.addVertexAttributeValue('initialized', 'Boolean', false );
+    flockNode.pub.addVertexAttributeValue('debugDraw', 'DebugGeometry' );
+    flockNode.pub.addUniformValue('displayDebugging', 'Boolean', options.displayDebugging, true );
+    
+    flockNode.getAttributesDGNode().bindings.append(scene.constructOperator({
+      operatorName: 'simulateParticles',
+      srcFile: 'KL/flocking.kl',
+      entryFunctionName: 'simulateFlock',
+      parameterLayout: [
+        'self.index',
+        'self.initialized',
+
+        'self.positions',
+        'self.velocities',
+        'self.goals',
+        'self.cellindices',
+        'self.cellcoords',
+
+        'self.previousframe_positions<>',
+        'self.previousframe_velocities<>',
+
+        'self.neighborinfluencerange',
+        'uniforms.hashtable',
+
+        'globals.timestep',
+
+        'self.neighborIndices',
+        'self.neighborDistances',
+        'self.debugDraw',
+        'uniforms.displayDebugging'
+      ]
+    }));
+    
+    
+    var debugGeometryDraw = scene.constructNode('DebugGeometryDraw', {
+        dgnode: flockNode.getAttributesDGNode(),
+        debugGemetryMemberName: 'debugDraw'
+    });
+    
+    return flockNode;
+  }});
+
+    
 $(document).ready(function() {
 
   $('#play').button({
