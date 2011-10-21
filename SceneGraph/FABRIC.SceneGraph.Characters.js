@@ -184,33 +184,17 @@ FABRIC.SceneGraph.registerNodeType('CharacterSkeleton', {
       dgnode.setData(name, skeletonId ? skeletonId : 0, data );
     };
     
+    ////////////////////////////////////
+    // Peristence
     var parentWriteData = characterSkeletonNode.writeData;
     var parentReadData = characterSkeletonNode.readData;
     characterSkeletonNode.writeData = function(sceneSaver, constructionOptions, nodeData) {
       parentWriteData(sceneSaver, constructionOptions, nodeData);
-      nodeData.members = dgnode.getMembers();
-      nodeData.data = {};
-      for(var memberName in nodeData.members){
-        nodeData.data[memberName] = dgnode.getData(memberName);
-      }
-    //  nodeData.data = dgnode.getSlicesBulkData();
+      nodeData['dgnode'] = characterSkeletonNode.writeDGNode(dgnode);
     };
     characterSkeletonNode.readData = function(sceneLoader, nodeData) {
-      parentReadData(sceneLoader, constructionOptions, nodeData);
-      if (nodeData.members) {
-        var defaultMembers = dgnode.getMembers();
-        for(var memberName in members){
-          if(!defaultMembers[memberName]){
-            dgnode.addMember( memberName, members[memberName], nodeData.data ? nodeData.data[memberName] : undefined );
-          }
-        }
-      }
-      if (nodeData.data) {
-        for(var memberName in nodeData.members){
-          dgnode.setData(memberName, 0, nodeData.data[memberName]);
-        }
-      //  dgnode.setSlicesBulkData( nodeData.data );
-      }
+      parentReadData(sceneLoader, nodeData);
+      characterSkeletonNode.readDGNode(dgnode, nodeData['dgnode']);
     };
 
     if (options.calcReferenceLocalPose) {
@@ -410,6 +394,20 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
     characterVariablesNode.getVariables = function(){
       return dgnode.getData('poseVariables');
     }
+    
+    
+    //////////////////////////////////////////
+    // Persistence
+    var parentWriteData = characterVariablesNode.writeData;
+    var parentReadData = characterVariablesNode.readData;
+    characterVariablesNode.writeData = function(sceneSaver, constructionOptions, nodeData) {
+      parentWriteData(sceneSaver, constructionOptions, nodeData);
+      nodeData['dgnode'] = characterVariablesNode.writeDGNode(dgnode);
+    };
+    characterVariablesNode.readData = function(sceneLoader, nodeData) {
+      parentReadData(sceneLoader, nodeData);
+      characterVariablesNode.readDGNode(dgnode, nodeData['dgnode']);
+    };
 
     return characterVariablesNode;
   }});
@@ -472,30 +470,23 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
         baseCharacterRig: undefined,
         debug: true
       });
-
-    if (!options.skeletonNode) {
-      throw ('skeletonNode must be specified.');
-    }
-
+    
     var characterRigNode = scene.constructNode('SceneGraphNode', options);
     var dgnode = characterRigNode.constructDGNode('DGNode');
     var skeletonNode,
-      variablesNode,/*
-      constantsNode,*/
+      variablesNode,
       solvers = [];
       
-    
     dgnode.addMember('debug', 'Boolean', options.debug );
     dgnode.addMember('debugGeometry', 'DebugGeometry' );
     var debugGeometryDraw = scene.constructNode('DebugGeometryDraw', {
         dgnode: dgnode,
         debugGemetryMemberName: 'debugGeometry'
     });
-
     // extend the public interface
     characterRigNode.addMemberInterface(dgnode, 'pose', true);
     
-    var setSkeletonNode = function(node) {
+    characterRigNode.pub.setSkeletonNode = function(node) {
       if (!node.isTypeOf('CharacterSkeleton')) {
         throw ('Incorrect type assignment. Must assign a CharacterSkeleton');
       }
@@ -520,19 +511,7 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
     characterRigNode.pub.getVariablesNode = function() {
       return scene.getPublicInterface(variablesNode);
     };
-    /*
-    characterRigNode.pub.setConstantsNode = function(node) {
-      if (!node.isTypeOf('CharacterConstants')) {
-        throw ('Incorrect type assignment. Must assign a CharacterConstants');
-      }
-      node = scene.getPrivateInterface(node);
-      dgnode.setDependency(node.getDGNode(), 'constants');
-      constantsNode = node;
-    };
-    characterRigNode.pub.getConstantsNode = function() {
-      return scene.getPublicInterface(constantsNode);
-    };
-    */
+    
     //////////////////////////////////////////
     // Solver Interfaces
     var solverParams = [];
@@ -579,7 +558,6 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
       }
       sourceRigNode = scene.getPrivateInterface(node);
       variablesNode.getDGNode().setDependency(sourceRigNode.getDGNode(), 'sourcerig');
-    //  variablesNode.getDGNode().setDependency(constantsNode.getDGNode(), 'constants');
       variablesNode.getDGNode().setDependency(skeletonNode.getDGNode(), 'skeleton');
       for (var i = 0; i < solvers.length; i++) {
         if(!solvers[i].invert){
@@ -619,27 +597,31 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
     var parentReadData = characterRigNode.readData;
     characterRigNode.writeData = function(sceneSaver, constructionOptions, nodeData) {
       parentWriteData(sceneSaver, constructionOptions, nodeData);
-      
+      constructionOptions.debug = options.debug;
       sceneSaver.addNode(skeletonNode.pub);
       sceneSaver.addNode(variablesNode.pub);
       nodeData.skeletonNode = skeletonNode.pub.getName();
       nodeData.variablesNode = variablesNode.pub.getName();
-      
+      /*
       nodeData.solverParams = solverParams;
+      */
     };
     characterRigNode.readData = function(sceneLoader, nodeData) {
-      parentReadData(sceneLoader, constructionOptions, nodeData);
+      parentReadData(sceneLoader, nodeData);
       
-      setSkeletonNode(sceneLoader.getNode(nodeData.skeletonNode));
+      characterRigNode.pub.setSkeletonNode(sceneLoader.getNode(nodeData.skeletonNode));
       characterRigNode.pub.setVariablesNode(sceneLoader.getNode(nodeData.variablesNode));
-      
+      /*
       for(var i=0; i<nodeData.solverParams.length; i++){
         var solverParams = nodeData.solverParams;
         characterRigNode.pub.addSolver(solverParams.name, solverParams.type, solverParams.options);
       }
+      */
     };
-
-    setSkeletonNode(options.skeletonNode);
+  
+    if (options.skeletonNode) {
+      characterRigNode.pub.setSkeletonNode(options.skeletonNode);
+    }
     
     if (options.variablesNode) {
       characterRigNode.pub.setVariablesNode(options.variablesNode);
