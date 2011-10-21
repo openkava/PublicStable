@@ -357,7 +357,7 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
       }
     }
     
-    characterVariablesNode.pub.bindToAnimationTracks = function(animationLibraryNode, animationControllerNode, trackSetId, bindings){
+    characterVariablesNode.pub.bindToAnimationTracks = function(animationLibraryNode, animationControllerNode, trackSetId, keyframeTrackBindings){
       if (!animationLibraryNode.isTypeOf('AnimationLibrary')) {
         throw ('Incorrect type assignment. Must assign a AnimationLibrary');
       }
@@ -372,7 +372,12 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
       
       dgnode.addMember('keyIndices', 'Integer[]');
       dgnode.addMember('trackSetId', 'Integer', trackSetId);
-      dgnode.addMember('bindings', 'KeyframeTrackBindings', bindings);
+      if(keyframeTrackBindings){
+        dgnode.addMember('bindings', 'KeyframeTrackBindings', keyframeTrackBindings);
+      }
+      else if(!dgnode.getMembers().bindings){
+        throw "keyframeTrackBindings not defined";
+      }
       dgnode.bindings.append(scene.constructOperator({
         operatorName: 'evaluatePoseTracks',
         srcFile: 'FABRIC_ROOT/SceneGraph/KL/evaluatePoseTracks.kl',
@@ -395,7 +400,6 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
       return dgnode.getData('poseVariables');
     }
     
-    
     //////////////////////////////////////////
     // Persistence
     var parentWriteData = characterVariablesNode.writeData;
@@ -413,44 +417,28 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
   }});
 
 
-/*
-FABRIC.SceneGraph.registerNodeType('CharacterConstants', {
-  briefDesc: 'The CharacterConstants node is similar to a CharacterVariables node, but values don\'t change over time.',
-  detailedDesc: 'The CharacterConstants node is similar to a CharacterVariables node, but values don\'t change over time.',
+
+FABRIC.SceneGraph.registerNodeType('CharacterController', {
+  briefDesc: 'The CharacterController places a character in a scene.',
+  detailedDesc: 'The CharacterController node is used to place a character in a scene. The animation of the character is relative to the controller. ' +
+                'The Character controlle rprovides a base transfrom which the pose of the character built on.',
   parentNodeDesc: 'SceneGraphNode',
   optionsDesc: {
+    controllerXfo: 'The initial transfrom of the character.'
   },
   factoryFn: function(options, scene) {
-
-    var characterVariablesNode = scene.constructNode('SceneGraphNode', options);
-    var dgnode = characterVariablesNode.constructDGNode('DGNode');
-
-    // extend the private interface
-    characterVariablesNode.addMember = function(name, type, value) {
-      dgnode.addMember(name, type, value);
-    };
-    characterVariablesNode.pub.getData = function(name, index) {
-      var value = dgnode.getData(name, 0);
-      if (index != undefined) {
-        value = value[index];
-      }
-      return value;
-    };
-    characterVariablesNode.pub.setData = function(name, value, index) {
-      var newValue;
-      if (index != undefined) {
-        newValue = dgnode.getData(name, 0);
-        newValue[index] = value;
-      }
-      else {
-        newValue = value;
-      }
-      dgnode.setData(name, 0, newValue);
-    };
-
-    return characterVariablesNode;
+    scene.assignDefaults(options, {
+      controllerXfo: new FABRIC.RT.Xfo()
+    });
+    var characterControllerNode = scene.constructNode('SceneGraphNode', options);
+    var dgnode = characterControllerNode.constructDGNode('DGNode');
+    
+    var controller = new FABRIC.Characters.CharacterController(options.controllerXfo);
+    dgnode.addMember('controller', 'CharacterController', controller);
+    
+    return characterControllerNode;
   }});
-*/
+
 
 // The character rig computes the pose of a character
 FABRIC.SceneGraph.registerNodeType('CharacterRig', {
@@ -465,23 +453,25 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
   },
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
-        skeletonNode: undefined,
-        variablesNode: undefined,
-        baseCharacterRig: undefined,
-        debug: true
-      });
+      skeletonNode: undefined,
+      variablesNode: undefined,
+      controllerNode: undefined,
+      baseCharacterRig: undefined,
+      debug: true
+    });
     
     var characterRigNode = scene.constructNode('SceneGraphNode', options);
     var dgnode = characterRigNode.constructDGNode('DGNode');
     var skeletonNode,
       variablesNode,
+      controllerNode,
       solvers = [];
       
     dgnode.addMember('debug', 'Boolean', options.debug );
     dgnode.addMember('debugGeometry', 'DebugGeometry' );
     var debugGeometryDraw = scene.constructNode('DebugGeometryDraw', {
-        dgnode: dgnode,
-        debugGemetryMemberName: 'debugGeometry'
+      dgnode: dgnode,
+      debugGemetryMemberName: 'debugGeometry'
     });
     // extend the public interface
     characterRigNode.addMemberInterface(dgnode, 'pose', true);
@@ -511,6 +501,17 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
     characterRigNode.pub.getVariablesNode = function() {
       return scene.getPublicInterface(variablesNode);
     };
+
+    characterRigNode.pub.setControllerNode = function(node) {
+      if (!node || !node.isTypeOf('CharacterController')) {
+        throw ('Incorrect type assignment. Must assign a CharacterController');
+      }
+      controllerNode = scene.getPrivateInterface(node);
+      dgnode.setDependency(controllerNode.getDGNode(), 'charactercontroller');
+    };
+    characterRigNode.pub.getControllerNode = function() {
+      return scene.getPublicInterface(controllerNode);
+    };
     
     //////////////////////////////////////////
     // Solver Interfaces
@@ -539,18 +540,18 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
     characterRigNode.pub.getSolvers = function() {
       return solvers;
     };
+    var solverOperatorDefs = [];
     var solverOperatorBindings = [];
-  //  var numSolverOperators = 0;
-    characterRigNode.addSolverOperator = function(operatorBinding) {
-    //  dgnode.bindings.insert(operator, numSolverOperators);
-    //  numSolverOperators++;
+    characterRigNode.addSolverOperator = function(operatorDef) {
+      operatorBinding = scene.constructOperator(operatorDef);
       dgnode.bindings.append(operatorBinding);
+      solverOperatorDefs.push(operatorDef);
       solverOperatorBindings.push(operatorBinding);
     }
     // This method is a work around to the issue that we can't retrieve bindings
     // directly from the dgnode. I use this to clone a character rig. 
     characterRigNode.getSolverOperatorBindings = function() {
-      return solverOperatorBindings;
+      return solverOperatorDefs;
     };
     characterRigNode.pub.invertSolvers = function(node) {
       if (!node.isTypeOf('CharacterRig')) {
@@ -602,21 +603,16 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
       sceneSaver.addNode(variablesNode.pub);
       nodeData.skeletonNode = skeletonNode.pub.getName();
       nodeData.variablesNode = variablesNode.pub.getName();
-      /*
-      nodeData.solverParams = solverParams;
-      */
+      nodeData.solverOperatorDefs = solverOperatorDefs;
     };
     characterRigNode.readData = function(sceneLoader, nodeData) {
       parentReadData(sceneLoader, nodeData);
       
       characterRigNode.pub.setSkeletonNode(sceneLoader.getNode(nodeData.skeletonNode));
       characterRigNode.pub.setVariablesNode(sceneLoader.getNode(nodeData.variablesNode));
-      /*
-      for(var i=0; i<nodeData.solverParams.length; i++){
-        var solverParams = nodeData.solverParams;
-        characterRigNode.pub.addSolver(solverParams.name, solverParams.type, solverParams.options);
+      for(var i=0; i<nodeData.solverOperatorDefs.length; i++){
+        characterRigNode.addSolverOperator(nodeData.solverOperatorDefs[i]);
       }
-      */
     };
   
     if (options.skeletonNode) {
@@ -629,21 +625,20 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
     else {
       characterRigNode.pub.setVariablesNode(scene.constructNode('CharacterVariables').pub);
     }
-/*
-    if (options.constantsNode) {
-      characterRigNode.pub.setConstantsNode(options.constantsNode);
+    if (options.controllerNode) {
+      characterRigNode.pub.setControllerNode(options.controllerNode);
     }
     else {
-      characterRigNode.pub.setConstantsNode(scene.constructNode('CharacterConstants').pub);
+      characterRigNode.pub.setControllerNode(scene.constructNode('CharacterController').pub);
     }
-*/
+    
     if (options.baseCharacterRig) {
       // Clone the baseCharacterRig solvers.
       var baseCharacterRigNode = scene.getPrivateInterface(options.baseCharacterRig);
       solvers = baseCharacterRigNode.pub.getSolvers();
-      solverOperatorBindings = baseCharacterRigNode.getSolverOperatorBindings();
-      for(var i=0; i < baseCharacterRigNode.getDGNode().bindings.getLength(); i++){
-        dgnode.bindings.append(solverOperatorBindings[i]);//baseCharacterRigNode.getDGNode().bindings.getOperator(i));
+      solverOperatorDefs = baseCharacterRigNode.getSolverOperatorBindings();
+      for(var i=0; i < solverOperatorDefs.length; i++){
+        characterRigNode.addSolverOperator(solverOperatorDefs[i]);
       }
     }
     
