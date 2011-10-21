@@ -158,6 +158,22 @@ namespace Fabric
       }
     }
 
+    void EventHandler::removeScope( std::string const &name )
+    {
+      if ( name.length() == 0 )
+        throw Exception( "name must be non-empty" );
+      
+      ExternalScopes::iterator it = m_bindings.find(name);
+      if ( it == m_bindings.end() )
+        throw Exception( _(name) + ": no such scope" );
+      it->second->removeEventHandler( this );
+      m_bindings.erase( it );
+        
+      markForRecompile();
+      
+      notifyDelta( "scopes", jsonDescScopes() );
+    }
+
     EventHandler::Bindings const &EventHandler::getScopes() const
     {
       return m_bindings;
@@ -503,6 +519,8 @@ namespace Fabric
         jsonExecRemoveChildEventHandler( arg );
       else if ( cmd == "setScope" )
         jsonExecAddScope( arg );
+      else if ( cmd == "removeScope" )
+        jsonExecRemoveScope( arg );
       else if ( cmd == "setSelector" )
         jsonExecSetSelector( arg );
       else if ( cmd == "setScopeName" )
@@ -552,6 +570,13 @@ namespace Fabric
       }
       
       setScope( name, node );
+    }
+    
+    void EventHandler::jsonExecRemoveScope( RC::ConstHandle<JSON::Value> const &arg )
+    {
+      std::string scopeName = arg->toString()->value();
+      
+      removeScope( scopeName );
     }
     
     void EventHandler::jsonExecSetSelector( RC::ConstHandle<JSON::Value> const &arg )

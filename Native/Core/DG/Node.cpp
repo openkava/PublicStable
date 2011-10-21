@@ -135,6 +135,8 @@ namespace Fabric
       recalculateGlobalDependencyRank();
       
       markForRecompile();
+      
+      notifyDelta( "dependencies", jsonDescDependencies() );
     }
     
     void Node::refreshRunState()
@@ -454,6 +456,8 @@ namespace Fabric
 
       if ( cmd == "setDependency" )
         jsonExecAddDependency( arg );
+      else if ( cmd == "removeDependency" )
+        jsonExecRemoveDependency( arg );
       else if ( cmd == "evaluate" )
         jsonExecEvaluate();
       else result = Container::jsonExec( cmd, arg );
@@ -491,6 +495,12 @@ namespace Fabric
       }
       
       setDependency( node, name );
+    }
+    
+    void Node::jsonExecRemoveDependency( RC::ConstHandle<JSON::Value> const &arg )
+    {
+      std::string dependencyName = arg->toString()->value();
+      removeDependency( dependencyName );
     }
     
     void Node::jsonExecEvaluate()

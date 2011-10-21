@@ -111,7 +111,7 @@ FABRIC_EXT_EXPORT void FabricPNGDecode(
   imagePixels.resize( width * height );
   
   const png_uint_32 bytesPerRow = png_get_rowbytes( png_ptr, info_ptr );
-  uint8_t *rowData = (uint8_t *)alloca( bytesPerRow );
+  uint8_t *rowData = (uint8_t *)malloc( bytesPerRow );
 
   size_t index = 0;
   for ( png_uint_32 rowIdx = 0; rowIdx < height; ++rowIdx )
@@ -140,7 +140,7 @@ FABRIC_EXT_EXPORT void FabricPNGDecode(
 FABRIC_EXT_EXPORT void FabricPNGEncode(
   KL::Size imageWidth,
   KL::Size imageHeight,
-  KL::VariableArray<KL::RGBA> imagePixels,
+  KL::Data imagePixels,
   KL::VariableArray<KL::Byte> &pngData
   )
 {
@@ -163,10 +163,11 @@ FABRIC_EXT_EXPORT void FabricPNGEncode(
   png_set_IHDR(png_ptr, info_ptr, imageWidth, imageHeight,
                 8, PNG_COLOR_TYPE_RGB_ALPHA, PNG_INTERLACE_NONE,
                 PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
-
-  png_bytep *rowPointers = (png_bytep *)alloca( sizeof(png_bytep)*imageHeight );
+  
+  png_bytep imagePixelsPtr = (png_bytep)imagePixels;
+  png_bytep *rowPointers = (png_bytep *)malloc( sizeof(png_bytep)*imageHeight );
   for( size_t i = 0; i < imageHeight; ++i )
-    rowPointers[i] = (png_bytep)&imagePixels[ i*imageWidth ];
+    rowPointers[i] = imagePixelsPtr + i * imageWidth * 4;
 
   png_set_rows(png_ptr, info_ptr, rowPointers);
 
