@@ -4,7 +4,11 @@
 	
   <uniforms>
     <uniform name="u_modelViewProjectionMatrix" constant="modelViewProjectionMatrix" type="Mat44" owner="instance"/>
-    <uniform name="u_opacityFactor" constant="opacityFactor" type="Scalar" defaultValue="0.02"/>
+    <uniform name="u_alphaFactor" constant="alphaFactor" type="Scalar" defaultValue="0.02"/>
+    <uniform name="u_transparency" constant="transparency" type="Scalar" defaultValue="1.0"/>
+    <uniform name="u_brightness" constant="brightness" type="Scalar" defaultValue="1.0"/>
+    <uniform name="u_minOpacity" constant="minOpacity" type="Scalar" defaultValue="0.0"/>
+    <uniform name="u_maxOpacity" constant="maxOpacity" type="Scalar" defaultValue="1.0"/>
   </uniforms>
 
   <attributes>
@@ -56,7 +60,12 @@
 	<fragmentshader>
 		<source>
 			<![CDATA[
-      uniform float u_opacityFactor;
+      uniform float u_alphaFactor;
+      uniform float u_transparency;
+      uniform float u_brightness;
+      uniform float u_minOpacity;
+      uniform float u_maxOpacity;
+      
 /*			uniform int u_lightType;
 			uniform vec3 u_lightDir;
 			uniform vec4 u_lightColor;
@@ -82,20 +91,25 @@
         float opacity = 0.0;
 
         opacity = texture3D( u_samplerOpacityMap, gl_TexCoord[0].xyz).r;
+        if(opacity < u_minOpacity || opacity > u_maxOpacity)
+          opacity = 0.0;
 
-/*
-        vec3 coord = (gl_TexCoord[0].xyz - vec3(0.5, 0.5, 0.5))*2.0;
-        float n = sqrt(coord.x*coord.x + coord.y*coord.y + coord.z*coord.z);
-        
-        if( n < 0.3 )
-          opacity = 0.75;
-        else if( n < 0.6 )
-          opacity = 0.5;
-        else if( n < 0.9 )
-          opacity = 0.25;
-*/
+        if(u_brightness > 0.5)
+        {
+          if(opacity > 0.0)
+            opacity = mix(opacity, 1.0, (u_brightness-0.5)*2.0);
+        }
+        else
+          opacity = mix(0.0, opacity, u_brightness*2.0);
 
-				gl_FragColor = vec4(1.0, 1.0, 1.0, opacity * u_opacityFactor );
+        float color = opacity;//mix(opacity, 1.0, u_transparency);
+        float alpha = mix(1.0-u_transparency, opacity * u_alphaFactor, u_transparency );
+        if(alpha > 1.0)
+          alpha = 1.0;
+        if(opacity == 0.0)
+          alpha = 0.0;
+
+				gl_FragColor = vec4(color, color, color, alpha );
 			}
 			]]>
 		</source>
