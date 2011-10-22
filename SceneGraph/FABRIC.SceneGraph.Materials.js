@@ -1621,13 +1621,19 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
     viewportNode: 'Active viewport',
     lightNode: 'Active light',
     resolutionFactor: 'Resolution of the volume render, in the range 0.0 to 1.0, 1.0 being 2 slices per voxel slice',
-    opacityFactor: 'Factor for the global relative opacity, 0 being tansparent, 1.0 being opaque'
+    brightness: 'Brightness from 0 to 1',
+    transparency: 'Transparency from 0 to 1',
+    minOpacity: 'MinOpacity from 0 to 1',
+    maxOpacity: 'MaxOpacity from 0 to 1'
   },
   factoryFn: function(options, scene) {
 
     scene.assignDefaults(options, {
       resolutionFactor: 0.5,
-      opacityFactor: 0.5
+      brightness: 0.5,
+      transparency: 1.0,
+      minOpacity: 0.0,
+      maxOpacity: 1.0
     });
 
     options.cameraNode = options.viewportNode.getCameraNode();
@@ -1638,9 +1644,9 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
     var opacityTextureDGNode = scene.getPrivateInterface(options.opacityTextureNode).getDGNode();
 
     volumeUniformsDGNode.addMember('resolutionFactor', 'Scalar', options.resolutionFactor );
-    volumeUniformsDGNode.addMember('opacityFactor', 'Scalar', options.opacityFactor );
+    volumeUniformsDGNode.addMember('brightness', 'Scalar', options.brightness );
     volumeNode.addMemberInterface(volumeUniformsDGNode, 'resolutionFactor', true);
-    volumeNode.addMemberInterface(volumeUniformsDGNode, 'opacityFactor', true);
+    volumeNode.addMemberInterface(volumeUniformsDGNode, 'brightness', true);
 
     volumeUniformsDGNode.setDependency(opacityTextureDGNode, 'opacityImage3D');
     volumeUniformsDGNode.bindings.append(scene.constructOperator({
@@ -1700,20 +1706,31 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
     var volumeMaterialNode = scene.getPrivateInterface(volumeMaterialNodePub);
     var volumeMaterialNodeRedrawEvent = volumeMaterialNode.getRedrawEventHandler();
     volumeMaterialNodeRedrawEvent.setScope('volumeUniforms', volumeUniformsDGNode);
-    volumeMaterialNodeRedrawEvent.addMember('ajustedOpacityFactor', 'Scalar', 1.0 );
+
+    volumeNode.addMemberInterface(volumeMaterialNodeRedrawEvent, 'brightness', true);
+    volumeNode.addMemberInterface(volumeMaterialNodeRedrawEvent, 'transparency', true);
+    volumeNode.addMemberInterface(volumeMaterialNodeRedrawEvent, 'minOpacity', true);
+    volumeNode.addMemberInterface(volumeMaterialNodeRedrawEvent, 'maxOpacity', true);
+
+    volumeNode.pub.setBrightness(options.brightness);
+    volumeNode.pub.setTransparency(options.transparency);
+    volumeNode.pub.setMinOpacity(options.minOpacity);
+    volumeNode.pub.setMaxOpacity(options.maxOpacity);
 
     volumeMaterialNodeRedrawEvent.preDescendBindings.append(scene.constructOperator({
-      operatorName: 'setOpacityFactor',
-      srcCode: 'operator setOpacityFactor(io Scalar opacityFactor, io Size nbSlices, io Scalar ajustedOpacityFactor){ \n' +
+      operatorName: 'setAlphaFactor',
+      srcCode: 'operator setAlphaFactor(io Scalar brightness, io Scalar transparency, io Size nbSlices, io Scalar alphaFactor){ \n' +
+                    'Scalar ajustedBrightness = transparency*sqrt(brightness) + (1.0-transparency)*brightness;\n' +
                     'Scalar opacityPerSlice = 1.0 / Scalar(nbSlices);\n' +
-                    'Scalar opacityFactorExp = log( opacityPerSlice ) / log( 0.5 );' + //We modulate by an exponential function else all the interesting values are close to opacityFactor 0.5
-                    'Scalar ajustedOpacityPerSlice = pow( opacityFactor, opacityFactorExp);' +
-                    'ajustedOpacityFactor = ajustedOpacityPerSlice / (1.0 - pow(ajustedOpacityPerSlice, Scalar(nbSlices))*0.99999);}\n',
-      entryFunctionName: 'setOpacityFactor',
+                    'Scalar brightnessExp = log( opacityPerSlice ) / log( 0.5 );' + //We modulate by an exponential function else all the interesting values are close to brightness 0.5
+                    'Scalar ajustedAlphaPerSlice = pow( ajustedBrightness, brightnessExp);' +
+                    'alphaFactor = ajustedAlphaPerSlice / (1.0 - pow(ajustedAlphaPerSlice, Scalar(nbSlices))*0.99999);}\n',
+      entryFunctionName: 'setAlphaFactor',
       parameterLayout: [
-        'volumeUniforms.opacityFactor',
+        'self.brightness',
+        'self.transparency',
         'volumeUniforms.nbSlices',
-        'self.opacityFactor'
+        'self.alphaFactor'
       ]
     }));
 

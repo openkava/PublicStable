@@ -259,7 +259,9 @@ $(document).ready(function() {
       $('#rangeY3D').slider({min: 0, max: 1, step: 0.005, range: true, values: [0,1] }),
       $('#rangeZ3D').slider({min: 0, max: 1, step: 0.005, range: true, values: [0,1] })
   ];
-  var $opacityFactorSlider = $('#opacityFactor').slider({min: 0, max: 1, step: 0.01, value: 0.5 });
+  var $opacityRangeSlider = $('#opacityRange').slider({min: 0, max: 1, step: 0.005, range: true, values: [0,1] });
+  var $brightnessSlider = $('#brightness').slider({min: 0, max: 1, step: 0.01, value: 0.5 });
+  var $transparencySlider = $('#transparency').slider({min: 0, max: 1, step: 0.01, value: 1.0 });
   var $resolutionFactorSlider = $('#resolutionFactor').slider({min: 0.01, max: 1, step: 0.01, value: 0.5 });
 
   var $sliders2D = [
@@ -331,6 +333,15 @@ $(document).ready(function() {
       };
   };
 
+  $opacityRangeSlider.slider('option', 'values', [volumeNode.getMinOpacity(), volumeNode.getMaxOpacity()]);
+  $opacityRangeSlider.bind('slide', function(event, ui){
+    volumeNode.setMinOpacity(ui.values[0]);
+    volumeNode.setMaxOpacity(ui.values[1]);
+    viewport.redraw();
+    viewport.redraw();//For some reason it takes 2 redraw to get the properly ajusted opacity factor upadted to the shader (???)
+    return true;
+  });
+
   for( i = 0; i < 3; ++i ) {
     $sliders2D[i].slider('value', texture2DSlice[i].getSliceRatio());
     $sliders2D[i].bind('slide', sliders2DBindFunction(i) );
@@ -349,9 +360,17 @@ $(document).ready(function() {
     return true;
   });
   
-  $opacityFactorSlider.slider('value', volumeNode.getOpacityFactor());
-  $opacityFactorSlider.bind('slide', function(event, ui) {
-    volumeNode.setOpacityFactor(ui.value);
+  $brightnessSlider.slider('value', volumeNode.getBrightness());
+  $brightnessSlider.bind('slide', function(event, ui) {
+    volumeNode.setBrightness(ui.value);
+    viewport.redraw();
+    viewport.redraw();//For some reason it takes 2 redraw to get the properly ajusted opacity factor upadted to the shader (???)
+    return true;
+  });
+  
+  $transparencySlider.slider('value', volumeNode.getTransparency());
+  $transparencySlider.bind('slide', function(event, ui) {
+    volumeNode.setTransparency(ui.value);
     viewport.redraw();
     viewport.redraw();//For some reason it takes 2 redraw to get the properly ajusted opacity factor upadted to the shader (???)
     return true;
@@ -461,8 +480,12 @@ $(document).ready(function() {
             </div><!--content-->
             <h2>Volume render options</h2>
             <div class="content">
-              <label for="opacityFactor" >Opacity factor:</label>
-              <div id='opacityFactor' style="margin-top:10px;"></div>
+              <label for="opacityRange" >Opacity range:</label>
+              <div id='opacityRange' style="margin-top:10px;"></div>
+              <label for="brightness" >Brightness:</label>
+              <div id='brightness' style="margin-top:10px;"></div>
+              <label for="transparency" >Transparency:</label>
+              <div id='transparency' style="margin-top:10px;"></div>
               <label for="resolutionFactor" >Depth resolution factor:</label>
               <div id='resolutionFactor' style="margin-top:10px;"></div>
             </div><!--content-->
