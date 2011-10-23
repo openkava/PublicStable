@@ -18,7 +18,7 @@ namespace Fabric
     
       static RC::Handle<Client> Create( RC::Handle<DG::Context> const &context );
       
-      virtual void notify( std::string const &jsonEncodedNotifications ) const;
+      virtual void notify( Util::SimpleString const &jsonEncodedNotifications ) const;
       
       v8::Handle<v8::Value> v8JSONExec( v8::Arguments const &args );
       static v8::Handle<v8::Value> V8JSONExec( v8::Arguments const &args );

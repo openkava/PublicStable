@@ -30,7 +30,7 @@ namespace Fabric
       void const *getMemberData( void const *data, size_t index ) const;
       void *getMemberData( void *data, size_t index ) const;
       
-      virtual RC::Handle<JSON::Object> jsonDesc() const;
+      virtual void jsonDesc( Util::JSONObjectGenerator &resultJOG ) const;
             
     protected:
     

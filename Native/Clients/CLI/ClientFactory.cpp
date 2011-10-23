@@ -19,6 +19,7 @@
 #include <Fabric/Core/IO/Stream.h>
 #include <Fabric/Core/OCL/OCL.h>
 #include <Fabric/Core/Plug/Manager.h>
+#include <Fabric/Core/Util/Log.h>
 
 #include <v8/v8.h>
 #include <string>
@@ -162,6 +163,39 @@ namespace Fabric
       
       value.Dispose();
     }
+    
+//#define FABRIC_CLI_LOG
+
+#if defined(FABRIC_CLI_LOG)    
+    static v8::Handle<v8::Value> LogCallbackV8FunctionCallback( v8::Arguments const &args )
+    {
+      //FABRIC_LOG( "LogCallbackV8FunctionCallback()" );
+      
+      v8::HandleScope handleScope;
+      
+      v8::Handle<v8::String> v8ArgAsString = args[0]->ToString();
+      v8::String::Utf8Value v8ArgAsStringUtf8Value( v8ArgAsString );
+
+      FABRIC_LOG( *v8ArgAsStringUtf8Value );
+      
+      return handleScope.Close( v8::Handle<v8::Value>() );
+    }
+      
+    static v8::Handle<v8::Value> LogCallbackV8Function()
+    {
+      //FABRIC_LOG( "LogCallbackV8Function()" );
+      
+      v8::HandleScope handleScope;
+      
+      v8::Persistent<v8::FunctionTemplate> logCallbackV8FunctionTemplate;
+      if ( logCallbackV8FunctionTemplate.IsEmpty() )
+      {
+        logCallbackV8FunctionTemplate = v8::Persistent<v8::FunctionTemplate>::New( v8::FunctionTemplate::New( &LogCallbackV8FunctionCallback ) );
+      }
+      
+      return handleScope.Close( logCallbackV8FunctionTemplate->GetFunction() );
+    }
+#endif
 
     static v8::Handle<v8::Value> CreateClientV8FunctionCallback( v8::Arguments const &args )
     {
@@ -233,6 +267,10 @@ namespace Fabric
       v8::Handle<v8::Function> wrapFabricClientV8Function = v8::Handle<v8::Function>::Cast( wrapFabricClientV8Value );
       std::vector< v8::Handle<v8::Value> > argv;
       argv.push_back( v8ClientObject );
+#if defined(FABRIC_CLI_LOG)    
+      argv.push_back( v8::Boolean::New( false ) );
+      argv.push_back( LogCallbackV8Function() );
+#endif
       v8::Handle<v8::Value> result = wrapFabricClientV8Function->Call( args.This(), argv.size(), &argv[0] );
       return handleScope.Close( result );
     }

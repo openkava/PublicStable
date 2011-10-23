@@ -177,7 +177,12 @@ namespace Fabric
         dst.push_back( "RT" );
         dst.push_back( desc->getUserName() );
         
-        m_jsonCommandChannel->jsonNotify( dst, "delta", desc->jsonDesc() );
+        Util::SimpleString json;
+        {
+          Util::JSONGenerator jg( &json );
+          desc->jsonDesc( jg );
+        }
+        m_jsonCommandChannel->jsonNotify( dst, "delta", 5, &json );
       }
       
       return desc;
@@ -352,30 +357,30 @@ namespace Fabric
       return m_constStringDesc;
     }
       
-    RC::Handle<JSON::Object> Manager::jsonDesc() const
+    void Manager::jsonDesc( Util::JSONGenerator &resultJG ) const
     {
-      RC::Handle<JSON::Object> result = JSON::Object::Create();
-      result->set( "registeredTypes", jsonDescRegisteredTypes() );
-      return result;
+      Util::JSONObjectGenerator resultJOG = resultJG.makeObject();
+      Util::JSONGenerator registeredTypesJG = resultJOG.makeMember( "registeredTypes", 15 );
+      jsonDescRegisteredTypes( registeredTypesJG );
     }
       
-    RC::Handle<JSON::Object> Manager::jsonDescRegisteredTypes() const
+    void Manager::jsonDescRegisteredTypes( Util::JSONGenerator &resultJG ) const
     {
-      RC::Handle<JSON::Object> registeredTypes = JSON::Object::Create();
+      Util::JSONObjectGenerator resultJOG = resultJG.makeObject();
       for ( Types::const_iterator it=m_types.begin(); it!=m_types.end(); ++it )
-        registeredTypes->set( it->first, it->second->jsonDesc() );
-      return registeredTypes;
+      {
+        Util::JSONGenerator memberJG = resultJOG.makeMember( it->first );
+        it->second->jsonDesc( memberJG );
+      }
     }
 
-    RC::ConstHandle<JSON::Value> Manager::jsonRoute( std::vector<std::string> const &dst, size_t dstOffset, std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg )
+    void Manager::jsonRoute( std::vector<std::string> const &dst, size_t dstOffset, std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
     {
-      RC::ConstHandle<JSON::Value> result;
-
       if ( dst.size() - dstOffset == 0 )
       {
         try
         {
-          result = jsonExec( cmd, arg );
+          jsonExec( cmd, arg, resultJAG );
         }
         catch ( Exception e )
         {
@@ -383,20 +388,16 @@ namespace Fabric
         }
       }
       else throw Exception( "unroutable" );
-      
-      return result;
     }
 
-    RC::ConstHandle<JSON::Value> Manager::jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg )
+    void Manager::jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
     {
-      RC::ConstHandle<JSON::Value> result;
       if ( cmd == "registerType" )
-        jsonExecRegisterType( arg );
+        jsonExecRegisterType( arg, resultJAG );
       else throw Exception( "unknown command" );
-      return result;
     }
     
-    void Manager::jsonExecRegisterType( RC::ConstHandle<JSON::Value> const &arg )
+    void Manager::jsonExecRegisterType( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
     {
       RC::ConstHandle<JSON::Object> argJSONObject = arg->toObject();
       

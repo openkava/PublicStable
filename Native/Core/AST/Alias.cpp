@@ -40,8 +40,14 @@ namespace Fabric
     void Alias::appendJSONMembers( Util::JSONObjectGenerator const &jsonObjectGenerator, bool includeLocation ) const
     {
       Global::appendJSONMembers( jsonObjectGenerator, includeLocation );
-      jsonObjectGenerator.makeMember( "newTypeName" ).makeString( m_name );
-      jsonObjectGenerator.makeMember( "oldTypeName" ).makeString( m_adapterName );
+      {
+        Util::JSONGenerator memberJG = jsonObjectGenerator.makeMember( "newTypeName" );
+        memberJG.makeString( m_name );
+      }
+      {
+        Util::JSONGenerator memberJG = jsonObjectGenerator.makeMember( "oldTypeName" );
+        memberJG.makeString( m_adapterName );
+      }
     }
     
     void Alias::registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const

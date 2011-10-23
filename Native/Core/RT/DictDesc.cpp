@@ -9,6 +9,7 @@
 #include <Fabric/Base/JSON/String.h>
 #include <Fabric/Base/JSON/Object.h>
 #include <Fabric/Base/Exception.h>
+#include <Fabric/Core/Util/JSONGenerator.h>
 
 namespace Fabric
 {
@@ -47,13 +48,12 @@ namespace Fabric
       return m_dictImpl->getSize( data );
     }    
         
-    RC::Handle<JSON::Object> DictDesc::jsonDesc() const
+    void DictDesc::jsonDesc( Util::JSONObjectGenerator &resultJOG ) const
     {
-      RC::Handle<JSON::Object> result = Desc::jsonDesc();
-      result->set( "internalType", JSON::String::Create("dict") );
-      result->set( "keyType", JSON::String::Create( m_keyDesc->getUserName() ) );
-      result->set( "valueType", JSON::String::Create( m_valueDesc->getUserName() ) );
-      return result;
+      Desc::jsonDesc( resultJOG );
+      resultJOG.makeMember( "internalType" ).makeString( "dict" );
+      resultJOG.makeMember( "keyType" ).makeString( m_keyDesc->getUserName() );
+      resultJOG.makeMember( "valueType" ).makeString( m_valueDesc->getUserName() );
     }
 
     RC::ConstHandle<ComparableDesc> DictDesc::getKeyDesc() const

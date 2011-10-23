@@ -32,7 +32,7 @@ namespace Fabric
       RC::Handle<RC::Object> getPrototype() const;
       void setPrototype( RC::Handle<RC::Object> const &prototype ) const;
       
-      virtual RC::Handle<JSON::Object> jsonDesc() const;
+      virtual void jsonDesc( Util::JSONObjectGenerator &resultJOG ) const;
 
     protected:
     

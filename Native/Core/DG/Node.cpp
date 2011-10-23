@@ -39,7 +39,14 @@ namespace Fabric
     RC::Handle<Node> Node::Create( std::string const &name, RC::Handle<Context> const &context )
     {
       RC::Handle<Node> node = new Node( name, context );
-      node->notifyDelta( node->jsonDesc() );
+
+      Util::SimpleString json;
+      {
+        Util::JSONGenerator jg( &json );
+        node->jsonDesc( jg );
+      }
+      node->jsonNotifyDelta( json );
+      
       return node;
     }
     
@@ -117,7 +124,12 @@ namespace Fabric
       
       markForRecompile();
       
-      notifyDelta( "dependencies", jsonDescDependencies() );
+      Util::SimpleString json;
+      {
+        Util::JSONGenerator jg( &json );
+        jsonDescDependencies( jg );
+      }
+      jsonNotifyMemberDelta( "dependencies", 12, json );
     }
     
     void Node::removeDependency( std::string const &dependencyName )
@@ -136,7 +148,12 @@ namespace Fabric
       
       markForRecompile();
       
-      notifyDelta( "dependencies", jsonDescDependencies() );
+      Util::SimpleString json;
+      {
+        Util::JSONGenerator jg( &json );
+        jsonDescDependencies( jg );
+      }
+      jsonNotifyMemberDelta( "dependencies", 12, json );
     }
     
     void Node::refreshRunState()
@@ -430,47 +447,48 @@ namespace Fabric
       return m_context;
     }
 
-    RC::ConstHandle<JSON::Value> Node::jsonRoute( std::vector<std::string> const &dst, size_t dstOffset, std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg )
+    void Node::jsonRoute(
+      std::vector<std::string> const &dst,
+      size_t dstOffset,
+      std::string const &cmd,
+      RC::ConstHandle<JSON::Value> const &arg,
+      Util::JSONArrayGenerator &resultJAG
+      )
     {
-      RC::ConstHandle<JSON::Value> result;
-
       if ( dst.size() - dstOffset == 1 && dst[dstOffset] == "bindings" )
       {
         try
         {
-          result = m_bindingList->jsonRoute( dst, dstOffset+1, cmd, arg );
+          m_bindingList->jsonRoute( dst, dstOffset+1, cmd, arg, resultJAG );
         }
         catch ( Exception e )
         {
           throw "bindings: " + e;
         }
       }
-      else result = NamedObject::jsonRoute( dst, dstOffset, cmd, arg );
-      
-      return result;
-    }
+      else NamedObject::jsonRoute( dst, dstOffset, cmd, arg, resultJAG );
+     }
 
-    RC::ConstHandle<JSON::Value> Node::jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg )
+    void Node::jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
     {
-      RC::ConstHandle<JSON::Value> result;
-
       if ( cmd == "setDependency" )
-        jsonExecAddDependency( arg );
+        jsonExecAddDependency( arg, resultJAG );
       else if ( cmd == "removeDependency" )
-        jsonExecRemoveDependency( arg );
+        jsonExecRemoveDependency( arg, resultJAG );
       else if ( cmd == "evaluate" )
-        jsonExecEvaluate();
-      else result = Container::jsonExec( cmd, arg );
-      
-      return result;
+        jsonExecEvaluate( resultJAG );
+      else Container::jsonExec( cmd, arg, resultJAG );
     }
     
-    void Node::jsonExecCreate( RC::ConstHandle<JSON::Value> const &arg, RC::Handle<Context> const &context )
+    void Node::jsonExecCreate( RC::ConstHandle<JSON::Value> const &arg, RC::Handle<Context> const &context, Util::JSONArrayGenerator &resultJAG )
     {
       Create( arg->toString()->value(), context );
     }
       
-    void Node::jsonExecAddDependency( RC::ConstHandle<JSON::Value> const &arg )
+    void Node::jsonExecAddDependency(
+      RC::ConstHandle<JSON::Value> const &arg,
+      Util::JSONArrayGenerator &resultJAG
+      )
     {
       RC::ConstHandle<JSON::Object> argJSONObject = arg->toObject();
     
@@ -497,41 +515,52 @@ namespace Fabric
       setDependency( node, name );
     }
     
-    void Node::jsonExecRemoveDependency( RC::ConstHandle<JSON::Value> const &arg )
+    void Node::jsonExecRemoveDependency( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
     {
       std::string dependencyName = arg->toString()->value();
       removeDependency( dependencyName );
     }
     
-    void Node::jsonExecEvaluate()
+    void Node::jsonExecEvaluate( Util::JSONArrayGenerator &resultJAG )
     {
       evaluate();
     }
       
-    RC::Handle<JSON::Object> Node::jsonDesc() const
+    void Node::jsonDesc( Util::JSONGenerator &resultJG ) const
     {
-      RC::Handle<JSON::Object> result = Container::jsonDesc();
-      result->set( "dependencies", jsonDescDependencies() );
-      result->set( "bindings", m_bindingList->jsonDesc() );
-      return result;
+      Container::jsonDesc( resultJG );
     }
     
-    RC::ConstHandle<JSON::Value> Node::jsonDescType() const
+    void Node::jsonDesc( Util::JSONObjectGenerator &resultJOG ) const
     {
-      static RC::ConstHandle<JSON::Value> result = JSON::String::Create( "Node" );
-      return result;
+      Container::jsonDesc( resultJOG );
+      
+      {
+        Util::JSONGenerator memberJG = resultJOG.makeMember( "dependencies", 12 );
+        jsonDescDependencies( memberJG );
+      }
+
+      {
+        Util::JSONGenerator memberJG = resultJOG.makeMember( "bindings", 8 );
+        m_bindingList->jsonDesc( memberJG );
+      }
+    }
+    
+    void Node::jsonDescType( Util::JSONGenerator &resultJG ) const
+    {
+      resultJG.makeString( "Node", 4 );
     }
       
-    RC::ConstHandle<JSON::Value> Node::jsonDescDependencies() const
+    void Node::jsonDescDependencies( Util::JSONGenerator &resultJG ) const
     {
-      RC::Handle<JSON::Object> dependenciesJSONObject = JSON::Object::Create();
+      Util::JSONObjectGenerator resultJOG = resultJG.makeObject();
       for ( Dependencies::const_iterator it=m_dependencies.begin(); it!=m_dependencies.end(); ++it )
       {
         std::string const &name = it->first;
         RC::Handle<Node> const &node = it->second;
-        dependenciesJSONObject->set( name, JSON::String::Create( node->getName() ) );
+        Util::JSONGenerator dependencyJG = resultJOG.makeMember( name );
+        dependencyJG.makeString( node->getName() );
       }
-      return dependenciesJSONObject;
     }
   };
 };

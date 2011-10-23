@@ -339,7 +339,12 @@ namespace Fabric
           src.push_back("VP");
           src.push_back("viewPort");
           
-          context->jsonNotify( src, "delta", viewPort->jsonDesc() ); 
+          Util::SimpleString json;
+          {
+            Util::JSONGenerator jg( &json );
+            viewPort->jsonDesc( jg );
+          }
+          context->jsonNotify( src, "delta", 5, &json ); 
         }
       }
       

@@ -12,6 +12,7 @@
 #include <Fabric/Core/Util/Decoder.h>
 #include <Fabric/Base/Util/SimpleString.h>
 #include <Fabric/Core/Util/Format.h>
+#include <Fabric/Core/Util/JSONGenerator.h>
 #include <Fabric/Core/Util/Timer.h>
 #include <Fabric/Base/Config.h>
 #include <Fabric/Base/Util/Bits.h>
@@ -291,6 +292,41 @@ namespace Fabric
         }
       }
       return result;
+    }
+    
+    void DictImpl::generateJSON( void const *data, Util::JSONGenerator &jsonGenerator ) const
+    {
+      RC::ConstHandle<StringImpl> keyImplAsStringImpl;
+      if ( isString( m_keyImpl->getType() ) )
+        keyImplAsStringImpl = RC::ConstHandle<StringImpl>::StaticCast( m_keyImpl );
+      
+      Util::JSONObjectGenerator jsonObjectGenerator = jsonGenerator.makeObject();
+      bits_t const *bits = reinterpret_cast<bits_t const *>( data );
+      if ( bits )
+      {
+        node_t *node = bits->firstNode;
+        while ( node )
+        {
+          void const *keyData = immutableKeyData( node );
+          void const *valueData = immutableValueData( node );
+          if ( keyImplAsStringImpl )
+          {
+            Util::JSONGenerator memberJG = jsonObjectGenerator.makeMember( keyImplAsStringImpl->getValueData( keyData ), keyImplAsStringImpl->getValueLength( keyData ) );
+            m_valueImpl->generateJSON( valueData, memberJG );
+          }
+          else
+          {
+            Util::SimpleString encodedKey;
+            {
+              Util::JSONGenerator encodedKeyJG( &encodedKey );
+              m_keyImpl->generateJSON( keyData, encodedKeyJG );
+            }
+            Util::JSONGenerator memberJG = jsonObjectGenerator.makeMember( encodedKey );
+            m_valueImpl->generateJSON( valueData, memberJG );
+          }
+          node = node->bitsNextNode;
+        }
+      }
     }
     
     void DictImpl::setDataFromJSONValue( RC::ConstHandle<JSON::Value> const &jsonValue, void *data ) const

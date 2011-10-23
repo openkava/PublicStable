@@ -8,6 +8,7 @@
 #include <Fabric/Core/Util/Encoder.h>
 #include <Fabric/Core/Util/Decoder.h>
 #include <Fabric/Base/Util/SimpleString.h>
+#include <Fabric/Core/Util/JSONGenerator.h>
 
 #include <llvm/Intrinsics.h>
 
@@ -49,6 +50,11 @@ namespace Fabric
     RC::Handle<JSON::Value> StringImpl::getJSONValue( void const *src ) const
     {
       return JSON::String::Create( getValueData(src), getValueLength(src) );
+    }
+    
+    void StringImpl::generateJSON( void const *data, Util::JSONGenerator &jsonGenerator ) const
+    {
+      jsonGenerator.makeString( getValueData(data), getValueLength(data) );
     }
     
     void StringImpl::setDataFromJSONValue( RC::ConstHandle<JSON::Value> const &jsonValue, void *dst ) const

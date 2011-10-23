@@ -18,9 +18,9 @@ namespace Fabric
 {
   namespace Util
   {
-    class Encoder;
     class Decoder;
-    class SimpleString;
+    class JSONGenerator;
+    class Encoder;
   };
   
   namespace JSON
@@ -54,6 +54,7 @@ namespace Fabric
       
       virtual RC::Handle<JSON::Value> getJSONValue( void const *data ) const = 0;
       virtual void setDataFromJSONValue( RC::ConstHandle<JSON::Value> const &value, void *data ) const = 0;
+      virtual void generateJSON( void const *data, Util::JSONGenerator &jsonGenerator ) const = 0;
       
       virtual bool isEquivalentTo( RC::ConstHandle<Impl> const &impl ) const = 0;
       virtual bool isShallow() const = 0;

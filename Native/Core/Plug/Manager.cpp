@@ -154,12 +154,14 @@ namespace Fabric
       return result;
     }
 
-    RC::Handle<JSON::Object> Manager::jsonDesc() const
+    void Manager::jsonDesc( Util::JSONGenerator &resultJG ) const
     {
-      RC::Handle<JSON::Object> result = JSON::Object::Create();
+      Util::JSONObjectGenerator resultJOG = resultJG.makeObject();
       for ( NameToInstMap::const_iterator it=m_nameToInstMap.begin(); it!=m_nameToInstMap.end(); ++it )
-        result->set( it->first, it->second->jsonDesc() );
-      return result;
+      {
+        Util::JSONGenerator instJG = resultJOG.makeMember( it->first );
+        it->second->jsonDesc( instJG );
+      }
     }
 
     RC::ConstHandle<AST::GlobalList> Manager::maybeGetASTForExt( std::string const &extName ) const

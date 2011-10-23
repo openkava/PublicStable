@@ -5,6 +5,7 @@
 #include "ArrayDesc.h"
 
 #include <Fabric/Core/RT/ArrayImpl.h>
+#include <Fabric/Core/Util/JSONGenerator.h>
 #include <Fabric/Base/JSON/String.h>
 #include <Fabric/Base/JSON/Object.h>
 
@@ -44,11 +45,10 @@ namespace Fabric
       return m_arrayImpl->getMemberData( data, index );
     }
     
-    RC::Handle<JSON::Object> ArrayDesc::jsonDesc() const
+    void ArrayDesc::jsonDesc( Util::JSONObjectGenerator &resultJOG ) const
     {
-      RC::Handle<JSON::Object> result = Desc::jsonDesc();
-      result->set( "memberType", JSON::String::Create( getMemberDesc()->getUserName() ) );
-      return result;
+      Desc::jsonDesc( resultJOG );
+      resultJOG.makeMember( "memberType" ).makeString( getMemberDesc()->getUserName() );
     }
   };
 };

@@ -9,6 +9,7 @@
 #include <Fabric/Core/Util/Decoder.h>
 #include <Fabric/Base/Util/SimpleString.h>
 #include <Fabric/Core/Util/Format.h>
+#include <Fabric/Core/Util/JSONGenerator.h>
 
 namespace Fabric
 {
@@ -22,6 +23,11 @@ namespace Fabric
     RC::Handle<JSON::Value> BooleanImpl::getJSONValue( void const *src ) const
     {
       return JSON::Boolean::Create( getValue(src) );
+    }
+    
+    void BooleanImpl::generateJSON( void const *data, Util::JSONGenerator &jsonGenerator ) const
+    {
+      jsonGenerator.makeBoolean( getValue(data) );
     }
     
     void BooleanImpl::setData( void const *src, void *dst ) const

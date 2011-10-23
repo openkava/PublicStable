@@ -9,6 +9,7 @@
 #include <Fabric/Core/Util/Decoder.h>
 #include <Fabric/Base/Util/SimpleString.h>
 #include <Fabric/Core/Util/Format.h>
+#include <Fabric/Core/Util/JSONGenerator.h>
 
 namespace Fabric
 {
@@ -46,7 +47,7 @@ namespace Fabric
       if ( !m_memberIsShallow )
       {
         for ( size_t i=0; i<m_length; ++i )
-          m_memberImpl->setData( getMemberData_NoCheck( src, i ), getMemberData_NoCheck( dst, i ) );
+          m_memberImpl->setData( getImmutableMemberData_NoCheck( src, i ), getMutableMemberData_NoCheck( dst, i ) );
       }
       else memcpy( dst, src, getAllocSize() );
     }
@@ -56,10 +57,21 @@ namespace Fabric
       RC::Handle<JSON::Array> arrayValue = JSON::Array::Create( m_length );
       for ( size_t i = 0; i < m_length; ++i )
       {
-        void const *srcMemberData = getMemberData_NoCheck( data, i );
+        void const *srcMemberData = getImmutableMemberData_NoCheck( data, i );
         arrayValue->set( i, m_memberImpl->getJSONValue( srcMemberData ) );
       }
       return arrayValue;
+    }
+    
+    void FixedArrayImpl::generateJSON( void const *data, Util::JSONGenerator &jsonGenerator ) const
+    {
+      Util::JSONArrayGenerator jsonArrayGenerator = jsonGenerator.makeArray();
+      for ( size_t i = 0; i < m_length; ++i )
+      {
+        void const *memberData = getImmutableMemberData_NoCheck( data, i );
+        Util::JSONGenerator elementJG = jsonArrayGenerator.makeElement();
+        m_memberImpl->generateJSON( memberData, elementJG );
+      }
     }
     
     void FixedArrayImpl::setDataFromJSONValue( RC::ConstHandle<JSON::Value> const &jsonValue, void *data ) const
@@ -73,7 +85,7 @@ namespace Fabric
 
       for ( size_t i=0; i<m_length; ++i )
       {
-        void *memberData = getMemberData_NoCheck( data, i );
+        void *memberData = getMutableMemberData_NoCheck( data, i );
         m_memberImpl->setDataFromJSONValue( jsonArray->get(i), memberData );
       }
     }
@@ -84,7 +96,7 @@ namespace Fabric
       uint8_t * const fixedArrayDataEnd = fixedArrayData + count * stride;
       while ( fixedArrayData != fixedArrayDataEnd )
       {
-        void *memberData = getMemberData_NoCheck( fixedArrayData, 0 );
+        void *memberData = getMutableMemberData_NoCheck( fixedArrayData, 0 );
         m_memberImpl->disposeDatas( memberData, m_length, m_memberImpl->getAllocSize() );
         fixedArrayData += stride;
       }
@@ -109,14 +121,14 @@ namespace Fabric
     { 
       if ( index >= m_length )
         throw Exception( "index out of range" );
-      return getMemberData_NoCheck( data, index );
+      return getImmutableMemberData_NoCheck( data, index );
     }
     
     void *FixedArrayImpl::getMemberData( void *data, size_t index ) const
     { 
       if ( index >= m_length )
         throw Exception( "index out of range" );
-      return getMemberData_NoCheck( data, index );
+      return getMutableMemberData_NoCheck( data, index );
     }
     
     size_t FixedArrayImpl::getNumMembers() const

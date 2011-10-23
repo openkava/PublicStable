@@ -153,7 +153,12 @@ namespace Fabric
       
       markForRecompile();
       
-      notifyDelta( "members", jsonDescMembers() );
+      Util::SimpleString json;
+      {
+        Util::JSONGenerator jg( &json );
+        jsonDescMembers( jg );
+      }
+      jsonNotifyMemberDelta( "members", 7, json );
     }
     
     void Container::removeMember( std::string const &name )
@@ -165,7 +170,12 @@ namespace Fabric
       
       markForRecompile();
       
-      notifyDelta( "members", jsonDescMembers() );
+      Util::SimpleString json;
+      {
+        Util::JSONGenerator jg( &json );
+        jsonDescMembers( jg );
+      }
+      jsonNotifyMemberDelta( "members", 7, json );
     }
 
     void Container::getMemberArrayDescAndData(
@@ -195,7 +205,12 @@ namespace Fabric
 
         markForRefresh();
       
-        notifyDelta( "count", jsonDescCount() );
+        Util::SimpleString json;
+        {
+          Util::JSONGenerator jg( &json );
+          jsonDescCount( jg );
+        }
+        jsonNotifyMemberDelta( "count", 5, json );
       }
     }
     
@@ -235,10 +250,22 @@ namespace Fabric
         
       setOutOfDate();
       
-      RC::Handle<JSON::Object> dataChangeJSONObject = JSON::Object::Create();
-      dataChangeJSONObject->set( "memberName", JSON::String::Create( name ) );
-      dataChangeJSONObject->set( "sliceIndex", JSON::Integer::Create( index ) );
-      notify( "dataChange", dataChangeJSONObject );
+      Util::SimpleString json;
+      {
+        Util::JSONGenerator jg( &json );
+        Util::JSONObjectGenerator jog = jg.makeObject();
+        
+        {
+          Util::JSONGenerator memberNameJG = jog.makeMember( "memberName", 10 );
+          memberNameJG.makeString( name );
+        }
+        
+        {
+          Util::JSONGenerator memberNameJG = jog.makeMember( "sliceIndex", 10 );
+          memberNameJG.makeInteger( index );
+        }
+      }
+      jsonNotify( "dataChange", 10, &json );
 
       return getMember( name )->getElementData( index );
     }
@@ -260,46 +287,59 @@ namespace Fabric
       setOutOfDate();
       member->getDesc()->setData( data, member->getElementData( index ) );
       
-      RC::Handle<JSON::Object> dataChangeJSONObject = JSON::Object::Create();
-      dataChangeJSONObject->set( "memberName", JSON::String::Create( name ) );
-      dataChangeJSONObject->set( "sliceIndex", JSON::Integer::Create( index ) );
-      notify( "dataChange", dataChangeJSONObject );
+      Util::SimpleString json;
+      {
+        Util::JSONGenerator jg( &json );
+        Util::JSONObjectGenerator jog = jg.makeObject();
+        
+        {
+          Util::JSONGenerator memberNameJG = jog.makeMember( "memberName", 10 );
+          memberNameJG.makeString( name );
+        }
+        
+        {
+          Util::JSONGenerator memberNameJG = jog.makeMember( "sliceIndex", 10 );
+          memberNameJG.makeInteger( index );
+        }
+      }
+      jsonNotify( "dataChange", 10, &json );
     }
     
-    RC::ConstHandle<JSON::Value> Container::getJSON() const
+    void Container::generateJSON( Util::JSONGenerator &jsonGenerator ) const
     {
-      RC::Handle<JSON::Object> result = JSON::Object::Create();
+      Util::JSONObjectGenerator jsonObjectGenerator = jsonGenerator.makeObject();
       for ( Members::const_iterator it=m_members.begin(); it!=m_members.end(); ++it )
       {
+        std::string const &name = it->first;
         RC::ConstHandle<Member> member = it->second;
         RC::ConstHandle<RT::Desc> memberDesc = member->getDesc();
-        RC::Handle<JSON::Array> memberJSONArray = JSON::Array::Create();
+        Util::JSONGenerator memberJG = jsonObjectGenerator.makeMember( name );
+        Util::JSONArrayGenerator memberJAG = memberJG.makeArray();
         for ( size_t i=0; i<m_count; ++i )
-          memberJSONArray->push_back( memberDesc->getJSONValue( member->getElementData( i ) ) );
-        
-        std::string const &name = it->first;
-        result->set( name, memberJSONArray );
+        {
+          Util::JSONGenerator elementJG = memberJAG.makeElement();
+          memberDesc->generateJSON( member->getElementData(i), elementJG );
+        }
       }
-      return result;
     }
     
-    RC::ConstHandle<JSON::Value> Container::getSliceJSON( size_t index ) const
+    void Container::generateSliceJSON( size_t index, Util::JSONGenerator &jsonGenerator ) const
     {
       if ( index >= m_count )
         throw Exception( "index "+_(index)+" out of range (slice count is "+_(m_count)+")" );
         
-      RC::Handle<JSON::Object> result = JSON::Object::Create();
+      Util::JSONObjectGenerator jsonObjectGenerator = jsonGenerator.makeObject();
       for ( Members::const_iterator it=m_members.begin(); it!=m_members.end(); ++it )
       {
+        std::string const &name = it->first;
         RC::ConstHandle<Member> member = it->second;
         RC::ConstHandle<RT::Desc> memberDesc = member->getDesc();
-        std::string const &name = it->first;
-        result->set( name, memberDesc->getJSONValue( member->getElementData( index ) ) );
+        Util::JSONGenerator memberJG = jsonObjectGenerator.makeMember(name);
+        memberDesc->generateJSON( member->getElementData( index ), memberJG );
       }
-      return result;
     }
     
-    RC::ConstHandle<JSON::Value> Container::getMemberJSON( std::string const &memberName ) const
+    void Container::generateMemberJSON( std::string const &memberName, Util::JSONGenerator &jsonGenerator ) const
     {
       Members::const_iterator it = m_members.find( memberName );
       if ( it == m_members.end() )
@@ -308,12 +348,12 @@ namespace Fabric
       RC::ConstHandle<RT::Desc> memberDesc = member->getDesc();
       
       size_t sliceCount = member->size();
-      RC::Handle<JSON::Array> result = JSON::Array::Create(sliceCount);
+      Util::JSONArrayGenerator jsonArrayGenerator = jsonGenerator.makeArray();
       for ( size_t sliceIndex=0; sliceIndex<sliceCount; ++sliceIndex )
       {
-        result->set( sliceIndex, memberDesc->getJSONValue( member->getElementData( sliceIndex ) ) );
+        Util::JSONGenerator elementJG = jsonArrayGenerator.makeElement();
+        memberDesc->generateJSON( member->getElementData( sliceIndex ), elementJG );
       }
-      return result;
     }
 
     void Container::setJSON( RC::ConstHandle<JSON::Value> const &value )
@@ -401,76 +441,84 @@ namespace Fabric
       return binding->bind( errors, selfScope, newCount, prefixCount, prefixes );
     }
     
-    RC::ConstHandle<JSON::Value> Container::jsonDescMembers() const
+    void Container::jsonDescMembers( Util::JSONGenerator &resultJG ) const
     {
-      RC::Handle<JSON::Object> membersObject = JSON::Object::Create();
+      Util::JSONObjectGenerator resultJSONObject = resultJG.makeObject();
       for ( Members::const_iterator it=m_members.begin(); it!=m_members.end(); ++it )
       {
+        std::string const &name = it->first;
         RC::ConstHandle<Member> member = it->second;
         RC::ConstHandle<RT::Desc> memberDesc = member->getDesc();
-        RC::Handle<JSON::Object> memberObject = JSON::Object::Create();
-        memberObject->set( "type", JSON::String::Create( memberDesc->getUserName() ) );
-        
-        std::string const &name = it->first;
-        membersObject->set( name, memberObject );
+        Util::JSONGenerator memberJG = resultJSONObject.makeMember( name );
+        Util::JSONObjectGenerator memberJOG = memberJG.makeObject();
+        memberJOG.makeMember( "type", 4 ).makeString( memberDesc->getUserName() );
       }
-      return membersObject;
     }
       
-    RC::ConstHandle<JSON::Value> Container::jsonDescCount() const
+    void Container::jsonDescCount( Util::JSONGenerator &resultJG ) const
     {
-      return JSON::Integer::Create( getCount() );
+      resultJG.makeInteger( getCount() );
     }
       
-    RC::Handle<JSON::Object> Container::jsonDesc() const
+    void Container::jsonDesc( Util::JSONGenerator &resultJG ) const
     {
-      RC::Handle<JSON::Object> result = NamedObject::jsonDesc();
-      result->set( "members", jsonDescMembers() );
-      result->set( "count", jsonDescCount() );
-      return result;
+      NamedObject::jsonDesc( resultJG );
+    }
+      
+    void Container::jsonDesc( Util::JSONObjectGenerator &resultJOG ) const
+    {
+      NamedObject::jsonDesc( resultJOG );
+      
+      {
+        Util::JSONGenerator membersJG = resultJOG.makeMember( "members", 7 );
+        jsonDescMembers( membersJG );
+      }
+      
+      {
+        Util::JSONGenerator countJG = resultJOG.makeMember( "count", 5 );
+        jsonDescCount( countJG );
+      }
     }
     
-    RC::ConstHandle<JSON::Value> Container::jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg )
+    void Container::jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
     {
-      RC::ConstHandle<JSON::Value> result;
       if ( cmd == "getData" )
-        result = jsonExecGetData( arg );
+        jsonExecGetData( arg, resultJAG );
       else if ( cmd == "getDataSize" )
-        result = jsonExecGetDataSize( arg );
+        jsonExecGetDataSize( arg, resultJAG );
       else if ( cmd == "getDataElement" )
-        result = jsonExecGetDataElement( arg );
+        jsonExecGetDataElement( arg, resultJAG );
       else if ( cmd == "putResourceToUserFile" )
-        jsonExecPutResourceToFile( arg, true );
+        jsonExecPutResourceToFile( arg, true, resultJAG );
       else if ( cmd == "getResourceFromUserFile" )
-        jsonExecGetResourceFromFile( arg, true );
+        jsonExecGetResourceFromFile( arg, true, resultJAG );
       else if ( cmd == "putResourceToFile" )
-        jsonExecPutResourceToFile( arg, false );
+        jsonExecPutResourceToFile( arg, false, resultJAG );
       else if ( cmd == "getResourceFromFile" )
-        jsonExecGetResourceFromFile( arg, false );
+        jsonExecGetResourceFromFile( arg, false, resultJAG );
       else if ( cmd == "setData" )
-        jsonExecSetData( arg );
+        jsonExecSetData( arg, resultJAG );
       else if ( cmd == "getBulkData" )
-        result = jsonExecGetBulkData();
+        jsonExecGetBulkData( resultJAG );
       else if ( cmd == "setBulkData" )
-        jsonExecSetBulkData( arg );
+        jsonExecSetBulkData( arg, resultJAG );
       else if ( cmd == "getSlicesBulkData" )
-        result = jsonExecGetSlicesBulkData( arg );
+        jsonExecGetSlicesBulkData( arg, resultJAG );
       else if ( cmd == "setSlicesBulkData" )
-        jsonExecSetSlicesBulkData( arg );
+        jsonExecSetSlicesBulkData( arg, resultJAG );
       else if ( cmd == "getMembersBulkData" )
-        result = jsonExecGetMembersBulkData( arg );
+        jsonExecGetMembersBulkData( arg, resultJAG );
       else if ( cmd == "addMember" )
-        jsonExecAddMember( arg );
+        jsonExecAddMember( arg, resultJAG );
       else if ( cmd == "removeMember" )
-        jsonExecRemoveMember( arg );
+        jsonExecRemoveMember( arg, resultJAG );
       else if ( cmd == "setCount" )
-        jsonSetCount( arg );
+        jsonSetCount( arg, resultJAG );
       else
-        result = NamedObject::jsonExec( cmd, arg );
-      return result;
+        NamedObject::jsonExec( cmd, arg, resultJAG );
     }
 
-    void Container::jsonExecAddMember( RC::ConstHandle<JSON::Value> const &arg )
+    void Container::jsonExecAddMember( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
     {
       RC::ConstHandle<JSON::Object> argJSONObject = arg->toObject();
       
@@ -516,12 +564,12 @@ namespace Fabric
         desc->disposeData( &defaultValue[0] );
     }
 
-    void Container::jsonExecRemoveMember( RC::ConstHandle<JSON::Value> const &arg )
+    void Container::jsonExecRemoveMember( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
     {
       removeMember( arg->toString()->value() );
     }
 
-    void Container::jsonSetCount( RC::ConstHandle<JSON::Value> const &arg )
+    void Container::jsonSetCount( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
     {
       int32_t newCount = arg->toInteger()->value();
       if ( newCount < 0 )
@@ -529,7 +577,7 @@ namespace Fabric
       setCount( size_t( newCount ) );
     }
       
-    RC::ConstHandle<JSON::Value> Container::jsonExecGetData( RC::ConstHandle<JSON::Value> const &arg )
+    void Container::jsonExecGetData( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
     {
       RC::ConstHandle<JSON::Object> argJSONObject = arg->toObject();
       
@@ -556,10 +604,11 @@ namespace Fabric
       }
       
       void const *data = getConstData( memberName, sliceIndex );
-      return desc->getJSONValue( data );
+      Util::JSONGenerator resultJG = resultJAG.makeElement();
+      desc->generateJSON( data, resultJG );
     }
       
-    RC::ConstHandle<JSON::Integer> Container::jsonExecGetDataSize( RC::ConstHandle<JSON::Value> const &arg )
+    void Container::jsonExecGetDataSize( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
     {
       RC::ConstHandle<JSON::Object> argJSONObject = arg->toObject();
       
@@ -589,10 +638,11 @@ namespace Fabric
       }
       
       void const *data = getConstData( memberName, sliceIndex );
-      return JSON::Integer::Create( arrayDesc->getNumMembers( data ) );
+      Util::JSONGenerator resultJG = resultJAG.makeElement();
+      resultJG.makeInteger( arrayDesc->getNumMembers( data ) );
     }
       
-    RC::ConstHandle<JSON::Value> Container::jsonExecGetDataElement( RC::ConstHandle<JSON::Value> const &arg )
+    void Container::jsonExecGetDataElement( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
     {
       RC::ConstHandle<JSON::Object> argJSONObject = arg->toObject();
       
@@ -634,10 +684,11 @@ namespace Fabric
       }
       
       void const *memberData = arrayDesc->getMemberData( data, elementIndex );
-      return arrayDesc->getMemberDesc()->getJSONValue( memberData );
+      Util::JSONGenerator resultJG = resultJAG.makeElement();
+      arrayDesc->getMemberDesc()->generateJSON( memberData, resultJG );
     }
       
-    void Container::jsonExecSetData( RC::ConstHandle<JSON::Value> const &arg )
+    void Container::jsonExecSetData( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
     {
       RC::ConstHandle<JSON::Object> argJSONObject = arg->toObject();
       
@@ -674,59 +725,62 @@ namespace Fabric
       getDesc( memberName )->setDataFromJSONValue( dataJSONValue, getMutableData( memberName, sliceIndex ) );
     }
       
-    RC::ConstHandle<JSON::Value> Container::jsonExecGetBulkData() const
+    void Container::jsonExecGetBulkData( Util::JSONArrayGenerator &resultJAG ) const
     {
-      return getJSON();
+      Util::JSONGenerator resultJG = resultJAG.makeElement();
+      generateJSON( resultJG );
     }
       
-    void Container::jsonExecSetBulkData( RC::ConstHandle<JSON::Value> const &arg )
+    void Container::jsonExecSetBulkData( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
     {
       setJSON( arg );
     }
       
-    RC::ConstHandle<JSON::Value> Container::jsonExecGetSlicesBulkData( RC::ConstHandle<JSON::Value> const &arg ) const
+    void Container::jsonExecGetSlicesBulkData( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG ) const
     {
       RC::ConstHandle<JSON::Array> argJSONArray = arg->toArray();
       size_t argJSONArraySize = argJSONArray->size();
       
-      RC::Handle<JSON::Array> result = JSON::Array::Create();
+      Util::JSONGenerator resultJG = resultJAG.makeElement();
+      Util::JSONArrayGenerator slicesJAG = resultJG.makeArray();
       for ( size_t i=0; i<argJSONArraySize; ++i )
       {
         try
         {
           size_t index = argJSONArray->get( i )->toInteger()->value();
-          result->push_back( getSliceJSON( index ) );
+          Util::JSONGenerator sliceJG = slicesJAG.makeElement();
+          generateSliceJSON( index, sliceJG );
         }
         catch ( Exception e )
         {
           throw "index " + _(i) + ": " + e;
         }
       }
-      return result;
     }
       
-    RC::ConstHandle<JSON::Value> Container::jsonExecGetMembersBulkData( RC::ConstHandle<JSON::Value> const &arg ) const
+    void Container::jsonExecGetMembersBulkData( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG ) const
     {
       RC::ConstHandle<JSON::Array> argJSONArray = arg->toArray();
       size_t argJSONArraySize = argJSONArray->size();
       
-      RC::Handle<JSON::Object> result = JSON::Object::Create();
+      Util::JSONGenerator resultJG = resultJAG.makeElement();
+      Util::JSONObjectGenerator membersJOG = resultJG.makeObject();
       for ( size_t i=0; i<argJSONArraySize; ++i )
       {
         try
         {
-          std::string member = argJSONArray->get(i)->toString()->value();
-          result->set( member, getMemberJSON(member) );
+          std::string memberName = argJSONArray->get(i)->toString()->value();
+          Util::JSONGenerator memberJG = membersJOG.makeMember( memberName );
+          generateMemberJSON( memberName, memberJG );
         }
         catch ( Exception e )
         {
           throw "index " + _(i) + ": " + e;
         }
       }
-      return result;
     }
       
-    void Container::jsonExecSetSlicesBulkData( RC::ConstHandle<JSON::Value> const &arg )
+    void Container::jsonExecSetSlicesBulkData( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
     {
       RC::ConstHandle<JSON::Array> argJSONArray = arg->toArray();
       size_t argJSONArraySize = argJSONArray->size();
@@ -802,7 +856,7 @@ namespace Fabric
       FabricResourceWrapper& m_resource;
     };
 
-    void Container::jsonExecGetResourceFromFile( RC::ConstHandle<JSON::Value> const &arg, bool userFile )
+    void Container::jsonExecGetResourceFromFile( RC::ConstHandle<JSON::Value> const &arg, bool userFile, Util::JSONArrayGenerator &resultJAG )
     {
       std::string memberName;
       FabricResourceWrapper resourceMember( m_context->getRTManager(), jsonGetResourceMember( arg, memberName ) );
@@ -813,24 +867,23 @@ namespace Fabric
 
       std::string filename, extension;
       if( userFile )
-        m_context->getIOManager()->jsonExecGetUserFile( arg, tempResourceAdapter, true, filename, extension );
+        m_context->getIOManager()->jsonExecGetUserFile( arg, tempResourceAdapter, true, filename, extension, resultJAG );
       else
-        m_context->getIOManager()->jsonExecGetFile( arg, tempResourceAdapter, true, filename, extension );
+        m_context->getIOManager()->jsonExecGetFile( arg, tempResourceAdapter, true, filename, extension, resultJAG );
 
       tempResource.setExtension( extension );
       tempResource.setURL( filename );
       setData( memberName, 0, tempResource.get() );
     }
 
-    void Container::jsonExecPutResourceToFile( RC::ConstHandle<JSON::Value> const &arg, bool userFile ) const
+    void Container::jsonExecPutResourceToFile( RC::ConstHandle<JSON::Value> const &arg, bool userFile, Util::JSONArrayGenerator &resultJAG ) const
     {
       std::string memberName;
       FabricResourceWrapper resource( m_context->getRTManager(), jsonGetResourceMember( arg, memberName ) );
       if( userFile )
-        m_context->getIOManager()->jsonExecPutUserFile( arg, resource.getDataSize(), resource.getDataPtr(), resource.getExtension().c_str() );
+        m_context->getIOManager()->jsonExecPutUserFile( arg, resource.getDataSize(), resource.getDataPtr(), resource.getExtension().c_str(), resultJAG );
       else
-        m_context->getIOManager()->jsonExecPutFile( arg, resource.getDataSize(), resource.getDataPtr() );
+        m_context->getIOManager()->jsonExecPutFile( arg, resource.getDataSize(), resource.getDataPtr(), resultJAG );
     }
-
   };
 };

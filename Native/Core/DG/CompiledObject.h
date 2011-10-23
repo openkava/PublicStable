@@ -13,6 +13,12 @@
 
 namespace Fabric
 {
+  namespace Util
+  {
+    class JSONGenerator;
+    class JSONArrayGenerator;
+  };
+  
   namespace MT
   {
     class TaskGroupStream;
@@ -45,7 +51,7 @@ namespace Fabric
       static void PrepareForExecution();
       
       virtual void jsonNotifyErrorDelta() const;
-      RC::ConstHandle<JSON::Value> jsonDescErrors() const;
+      void jsonDescErrors( Util::JSONGenerator &resultJG ) const;
 
     protected:
     

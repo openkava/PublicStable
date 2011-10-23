@@ -79,7 +79,7 @@ namespace Fabric
       RC::Handle<KL::Scanner> scanner = KL::Scanner::Create( source );
       m_ast = AST::GlobalList::Create( m_ast, KL::Parse( scanner, m_diagnostics ) );
       if ( !m_diagnostics.containsError() )
-        compileAST( false );
+        compileAST( true );
     }
     
     void Code::compileAST( bool optimize )

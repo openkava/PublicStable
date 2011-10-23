@@ -27,6 +27,13 @@
 
 namespace Fabric
 {
+  namespace Util
+  {
+    class JSONGenerator;
+    class JSONArrayGenerator;
+    class SimpleString;
+  };
+  
   namespace IO
   {
     class Dir;
@@ -88,11 +95,11 @@ namespace Fabric
       RC::Handle<MT::LogCollector> getLogCollector() const;
       virtual void redrawFinished();
       
-      virtual RC::ConstHandle<JSON::Value> jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg );
-      void jsonExecAddPopupItem( RC::ConstHandle<JSON::Value> const &arg );
-      virtual RC::Handle<JSON::Object> jsonDesc() const;
-      void jsonNotify( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg ) const;
-      void jsonNotifyPopUpItem( RC::ConstHandle<JSON::Value> const &arg ) const;
+      virtual void jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
+      void jsonExecAddPopupItem( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
+      virtual void jsonDesc( Util::JSONGenerator &resultJG ) const;
+      void jsonNotify( std::string const &cmd, Util::SimpleString const *arg ) const;
+      void jsonNotifyPopUpItem( Util::SimpleString const &arg ) const;
 
       virtual void pushOGLContext() = 0;
       virtual void popOGLContext() = 0;
@@ -123,7 +130,7 @@ namespace Fabric
 
     private:
     
-      RC::Handle<JSON::Value> jsonExecGetFPS() const;
+      void jsonExecGetFPS( Util::JSONArrayGenerator &resultJAG ) const;
 
       static void AsyncRedrawFinished( void *_this );
           

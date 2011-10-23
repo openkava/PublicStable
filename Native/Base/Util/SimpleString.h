@@ -191,6 +191,17 @@ namespace Fabric
         append( string );
         return *this;
       }
+      
+      void append( SimpleString const &ss )
+      {
+        append( ss.data(), ss.length() );
+      }
+       
+      SimpleString &operator +=( SimpleString const &ss )
+      {
+        append( ss );
+        return *this;
+      }
     
     protected:
     
