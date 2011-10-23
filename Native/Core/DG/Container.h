@@ -85,31 +85,32 @@ namespace Fabric
       void getData( std::string const &name, size_t index, void *dstData ) const;
       void setData( std::string const &name, size_t index, void const *data );
 
-      RC::ConstHandle<JSON::Value> getJSON() const;
-      RC::ConstHandle<JSON::Value> getSliceJSON( size_t index ) const;
-      RC::ConstHandle<JSON::Value> getMemberJSON( std::string const &member ) const;
+      void generateJSON( Util::JSONGenerator &jsonGenerator ) const;
+      void generateSliceJSON( size_t index, Util::JSONGenerator &jsonGenerator ) const;
+      void generateMemberJSON( std::string const &member, Util::JSONGenerator &jsonGenerator ) const;
 
       void setJSON( RC::ConstHandle<JSON::Value> const &value );
       void setSliceJSON( size_t index, RC::ConstHandle<JSON::Value> const &value );
 
-      virtual RC::ConstHandle<JSON::Value> jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg );
-      void jsonExecAddMember( RC::ConstHandle<JSON::Value> const &arg );
-      void jsonExecRemoveMember( RC::ConstHandle<JSON::Value> const &arg );
-      void jsonSetCount( RC::ConstHandle<JSON::Value> const &arg );
-      RC::ConstHandle<JSON::Value> jsonExecGetData( RC::ConstHandle<JSON::Value> const &arg );
-      RC::ConstHandle<JSON::Integer> jsonExecGetDataSize( RC::ConstHandle<JSON::Value> const &arg );
-      RC::ConstHandle<JSON::Value> jsonExecGetDataElement( RC::ConstHandle<JSON::Value> const &arg );
-      void jsonExecSetData( RC::ConstHandle<JSON::Value> const &arg );
-      RC::ConstHandle<JSON::Value> jsonExecGetBulkData() const;
-      void jsonExecSetBulkData( RC::ConstHandle<JSON::Value> const &arg );
-      RC::ConstHandle<JSON::Value> jsonExecGetSlicesBulkData( RC::ConstHandle<JSON::Value> const &arg ) const;
-      void jsonExecSetSlicesBulkData( RC::ConstHandle<JSON::Value> const &arg );
-      RC::ConstHandle<JSON::Value> jsonExecGetMembersBulkData( RC::ConstHandle<JSON::Value> const &arg ) const;
-      void jsonExecPutResourceToFile( RC::ConstHandle<JSON::Value> const &arg, bool userFile ) const;
-      void jsonExecGetResourceFromFile( RC::ConstHandle<JSON::Value> const &arg, bool userFile );
-      virtual RC::Handle<JSON::Object> jsonDesc() const;
-      RC::ConstHandle<JSON::Value> jsonDescMembers() const;
-      RC::ConstHandle<JSON::Value> jsonDescCount() const;
+      virtual void jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
+      void jsonExecAddMember( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
+      void jsonExecRemoveMember( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
+      void jsonSetCount( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
+      void jsonExecGetData( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
+      void jsonExecGetDataSize( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
+      void jsonExecGetDataElement( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
+      void jsonExecSetData( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
+      void jsonExecGetBulkData( Util::JSONArrayGenerator &resultJAG ) const;
+      void jsonExecSetBulkData( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
+      void jsonExecGetSlicesBulkData( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG ) const;
+      void jsonExecSetSlicesBulkData( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
+      void jsonExecGetMembersBulkData( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG ) const;
+      void jsonExecPutResourceToFile( RC::ConstHandle<JSON::Value> const &arg, bool userFile, Util::JSONArrayGenerator &resultJAG ) const;
+      void jsonExecGetResourceFromFile( RC::ConstHandle<JSON::Value> const &arg, bool userFile, Util::JSONArrayGenerator &resultJAG );
+      void jsonDesc( Util::JSONGenerator &resultJG ) const;
+      virtual void jsonDesc( Util::JSONObjectGenerator &resultJOG ) const;
+      void jsonDescMembers( Util::JSONGenerator &resultJG ) const;
+      void jsonDescCount( Util::JSONGenerator &resultJG ) const;
       
     protected:
     

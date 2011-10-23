@@ -8,6 +8,7 @@
 #include <Fabric/Core/JSON/CommandChannel.h>
 #include <Fabric/Base/RC/WeakHandleSet.h>
 #include <Fabric/Core/MT/Mutex.h>
+#include <Fabric/Core/Util/JSONGenerator.h>
 #include <Fabric/Core/Util/UnorderedMap.h>
 #include <Fabric/Base/Util/AtomicSize.h>
 
@@ -113,16 +114,16 @@ namespace Fabric
       RC::Handle<Event> getEvent( std::string const &name ) const;
       RC::Handle<EventHandler> getEventHandler( std::string const &name ) const;
     
-      virtual RC::ConstHandle<JSON::Value> jsonRoute( std::vector<std::string> const &dst, size_t dstOffset, std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg );
-      virtual RC::ConstHandle<JSON::Value> jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg );
-      virtual RC::Handle<JSON::Object> jsonDesc() const;
+      virtual void jsonRoute( std::vector<std::string> const &dst, size_t dstOffset, std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
+      virtual void jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
+      virtual void jsonDesc( Util::JSONGenerator &resultJG ) const;
       
-      RC::ConstHandle<JSON::Value> jsonRouteDG( std::vector<std::string> const &dst, size_t dstOffset, std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg );
-      RC::ConstHandle<JSON::Value> jsonExecDG( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg );
-      RC::Handle<JSON::Object> jsonDescDG() const;
+      void jsonRouteDG( std::vector<std::string> const &dst, size_t dstOffset, std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
+      void jsonExecDG( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
+      void jsonDescDG( Util::JSONGenerator &resultJG ) const;
 
       void registerClient( Client *client );
-      void jsonNotify( std::vector<std::string> const &src, std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg );
+      virtual void jsonNotify( std::vector<std::string> const &srcs, char const *cmdData, size_t cmdLength, Util::SimpleString const *arg = 0 );
       void unregisterClient( Client *client );
       
       static std::string const &GetWrapFabricClientJSSource()
@@ -152,7 +153,9 @@ namespace Fabric
       
       Util::AtomicSize m_notificationBracketCount;
       MT::Mutex m_pendingNotificationsMutex;
-      RC::Handle<JSON::Array> m_pendingNotifications;
+      Util::SimpleString *m_pendingNotificationsJSON;
+      Util::JSONGenerator *m_pendingNotificationsJSONGenerator;
+      Util::JSONArrayGenerator *m_pendingNotificationsJSONArrayGenerator;
       
       static std::string const s_wrapFabricClientJSSource;
     };

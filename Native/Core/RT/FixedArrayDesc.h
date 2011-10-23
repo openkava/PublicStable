@@ -21,7 +21,7 @@ namespace Fabric
     
       size_t getNumMembers() const;
       
-      virtual RC::Handle<JSON::Object> jsonDesc() const;
+      virtual void jsonDesc( Util::JSONObjectGenerator &resultJOG ) const;
             
     protected:
     

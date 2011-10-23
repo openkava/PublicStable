@@ -13,6 +13,12 @@
 
 namespace Fabric
 {
+  namespace Util
+  {
+    class JSONGenerator;
+    class JSONArrayGenerator;
+  };
+  
   namespace MT
   {
     class LogCollector;
@@ -87,11 +93,11 @@ namespace Fabric
       RC::ConstHandle<FixedArrayDesc> getFixedArrayOf( RC::ConstHandle<Desc> const &memberDesc, size_t length ) const;
       RC::ConstHandle<DictDesc> getDictOf( RC::ConstHandle<ComparableDesc> const &keyDesc, RC::ConstHandle<Desc> const &valueDesc ) const;
       
-      RC::ConstHandle<JSON::Value> jsonRoute( std::vector<std::string> const &dst, size_t dstOffset, std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg );
-      RC::ConstHandle<JSON::Value> jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg );
-      void jsonExecRegisterType( RC::ConstHandle<JSON::Value> const &arg );
-      RC::Handle<JSON::Object> jsonDesc() const;
-      RC::Handle<JSON::Object> jsonDescRegisteredTypes() const;
+      void jsonRoute( std::vector<std::string> const &dst, size_t dstOffset, std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
+      void jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
+      void jsonExecRegisterType( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
+      void jsonDesc( Util::JSONGenerator &resultJG ) const;
+      void jsonDescRegisteredTypes( Util::JSONGenerator &resultJG ) const;
       
       RC::ConstHandle<Desc> getStrongerTypeOrNone( RC::ConstHandle<Desc> const &lhsDesc, RC::ConstHandle<Desc> const &rhsDesc ) const;
       

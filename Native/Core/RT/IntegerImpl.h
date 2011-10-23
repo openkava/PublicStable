@@ -8,6 +8,7 @@
 #include <Fabric/Core/RT/SimpleImpl.h>
 #include <Fabric/Core/Util/Math.h>
 #include <Fabric/Core/Util/Format.h>
+#include <Fabric/Core/Util/JSONGenerator.h>
 #include <Fabric/Base/JSON/Null.h>
 #include <Fabric/Base/JSON/Integer.h>
 #include <Fabric/Base/JSON/Scalar.h>
@@ -60,6 +61,15 @@ namespace Fabric
         if ( T( int32_t( value ) ) != value )
           throw Exception( "value is too large for JSON representation" );
         return JSON::Integer::Create( int32_t( value ) );
+      }
+      
+      void generateJSON( void const *data, Util::JSONGenerator &jsonGenerator ) const
+      {
+        T value = getValue( data );
+        int32_t int32Value = int32_t( value );
+        if ( T( int32Value ) != value )
+          throw Exception( "value is too large for JSON representation" );
+        jsonGenerator.makeInteger( int32Value );
       }
       
       void setDataFromJSONValue( RC::ConstHandle<JSON::Value> const &jsonValue, void *dst ) const

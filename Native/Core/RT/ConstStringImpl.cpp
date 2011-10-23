@@ -7,6 +7,7 @@
 #include <Fabric/Core/Util/Encoder.h>
 #include <Fabric/Core/Util/Decoder.h>
 #include <Fabric/Core/Util/Format.h>
+#include <Fabric/Core/Util/JSONGenerator.h>
 
 namespace Fabric
 {
@@ -37,6 +38,12 @@ namespace Fabric
     {
       bits_t const *bits = static_cast<bits_t const *>( data );
       return JSON::String::Create( bits->data, bits->length );
+    }
+    
+    void ConstStringImpl::generateJSON( void const *data, Util::JSONGenerator &jsonGenerator ) const
+    {
+      bits_t const *bits = static_cast<bits_t const *>( data );
+      jsonGenerator.makeString( bits->data, bits->length );
     }
     
     void ConstStringImpl::setDataFromJSONValue( RC::ConstHandle<JSON::Value> const &jsonValue, void *data ) const

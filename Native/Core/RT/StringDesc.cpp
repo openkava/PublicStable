@@ -6,6 +6,7 @@
 #include "StringImpl.h"
 #include <Fabric/Base/JSON/String.h>
 #include <Fabric/Base/JSON/Object.h>
+#include <Fabric/Core/Util/JSONGenerator.h>
 
 namespace Fabric
 {
@@ -32,11 +33,10 @@ namespace Fabric
       return StringImpl::SetValue( cStr, length, dst );
     }
     
-    RC::Handle<JSON::Object> StringDesc::jsonDesc() const
+    void StringDesc::jsonDesc( Util::JSONObjectGenerator &resultJOG ) const
     {
-      RC::Handle<JSON::Object> result = Desc::jsonDesc();
-      result->set( "internalType", JSON::String::Create("string") );
-      return result;
+      Desc::jsonDesc( resultJOG );
+      resultJOG.makeMember( "internalType" ).makeString( "string" );
     }
   };
 };

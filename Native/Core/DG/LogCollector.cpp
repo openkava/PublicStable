@@ -29,7 +29,12 @@ namespace Fabric
       std::vector<std::string> src;
       src.push_back( "DG" );
       
-      m_context->jsonNotify( src, "log", JSON::String::Create( data, length ) );
+      Util::SimpleString json;
+      {
+        Util::JSONGenerator jg( &json );
+        jg.makeString( data, length );
+      }
+      m_context->jsonNotify( src, "log", 3, &json );
     }
   };
 };

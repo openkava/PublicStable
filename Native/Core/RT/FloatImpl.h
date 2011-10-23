@@ -8,6 +8,7 @@
 #include <Fabric/Core/RT/NumericImpl.h>
 #include <Fabric/Core/Util/Math.h>
 #include <Fabric/Core/Util/Format.h>
+#include <Fabric/Core/Util/JSONGenerator.h>
 #include <Fabric/Base/JSON/Null.h>
 #include <Fabric/Base/JSON/Integer.h>
 #include <Fabric/Base/JSON/Scalar.h>
@@ -60,6 +61,15 @@ namespace Fabric
         if ( Util::isnan( doubleValue ) || Util::isinf( doubleValue ) )
           return JSON::Null::Create();
         else return JSON::Scalar::Create( doubleValue );
+      }
+      
+      void generateJSON( void const *data, Util::JSONGenerator &jsonGenerator ) const
+      {
+        T value = getValue( data );
+        double doubleValue = double(value);
+        if ( Util::isnan( doubleValue ) || Util::isinf( doubleValue ) )
+          jsonGenerator.makeNull();
+        else jsonGenerator.makeScalar( doubleValue );
       }
       
       void setDataFromJSONValue( RC::ConstHandle<JSON::Value> const &jsonValue, void *dst ) const

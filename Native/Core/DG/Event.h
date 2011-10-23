@@ -41,14 +41,15 @@ namespace Fabric
       void fire() const;
       void select( RC::ConstHandle<RT::Desc> selectorType, SelectedNodeList &selectedNodes ) const;
       
-      virtual RC::ConstHandle<JSON::Value> jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg );
-      static void jsonExecCreate( RC::ConstHandle<JSON::Value> const &arg, RC::Handle<Context> const &context );
-      void jsonExecAppendEventHandler( RC::ConstHandle<JSON::Value> const &arg );
-      void jsonExecFire();
-      RC::ConstHandle<JSON::Value> jsonExecSelect( RC::ConstHandle<JSON::Value> const &arg );
-      virtual RC::Handle<JSON::Object> jsonDesc() const;
-      virtual RC::ConstHandle<JSON::Value> jsonDescType() const;
-      RC::ConstHandle<JSON::Value> jsonDescEventHandlers() const;
+      virtual void jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
+      static void jsonExecCreate( RC::ConstHandle<JSON::Value> const &arg, RC::Handle<Context> const &context, Util::JSONArrayGenerator &resultJAG );
+      void jsonExecAppendEventHandler( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
+      void jsonExecFire( Util::JSONArrayGenerator &resultJAG );
+      void jsonExecSelect( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
+      void jsonDesc( Util::JSONGenerator &resultJG ) const;
+      virtual void jsonDesc( Util::JSONObjectGenerator &resultJOG ) const;
+      virtual void jsonDescType( Util::JSONGenerator &resultJG ) const;
+      void jsonDescEventHandlers( Util::JSONGenerator &resultJG ) const;
       
     protected:
     
