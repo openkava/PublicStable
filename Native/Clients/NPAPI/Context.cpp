@@ -53,28 +53,36 @@ namespace Fabric
       return m_ioManager;
     }
 
-    RC::ConstHandle<JSON::Value> Context::jsonRoute( std::vector<std::string> const &dst, size_t dstOffset, std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg )
+    void Context::jsonRoute(
+      std::vector<std::string> const &dst, size_t dstOffset, std::string const &cmd,
+      RC::ConstHandle<JSON::Value> const &arg,
+      Util::JSONArrayGenerator &resultJAG
+      )
     {
       if ( dst.size() - dstOffset >= 1 && dst[dstOffset] == "VP" )
       {
         try
         {
-          return jsonRouteViewPorts( dst, dstOffset + 1, cmd, arg );
+          jsonRouteViewPorts( dst, dstOffset + 1, cmd, arg, resultJAG );
         }
         catch ( Exception e )
         {
           throw "'viewPorts': " + e;
         }
       }
-      else return DG::Context::jsonRoute( dst, dstOffset, cmd, arg );
+      else return DG::Context::jsonRoute( dst, dstOffset, cmd, arg, resultJAG );
     }
     
-    RC::ConstHandle<JSON::Value> Context::jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg )
+    void Context::jsonExec(
+      std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg,
+      Util::JSONArrayGenerator &resultJAG
+      )
     {
-      return DG::Context::jsonExec( cmd, arg );
+      DG::Context::jsonExec( cmd, arg, resultJAG );
     }
 
-    RC::ConstHandle<JSON::Value> Context::jsonRouteViewPorts( std::vector<std::string> const &dst, size_t dstOffset, std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg )
+    void Context::jsonRouteViewPorts( std::vector<std::string> const &dst, size_t dstOffset, std::string const &cmd,
+      RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
     {
       if ( dst.size() - dstOffset == 1 )
       {
@@ -85,7 +93,7 @@ namespace Fabric
         
         try
         {
-          return it->second->jsonExec( cmd, arg );
+          it->second->jsonExec( cmd, arg, resultJAG );
         }
         catch ( Exception e )
         {
@@ -95,19 +103,21 @@ namespace Fabric
       else throw Exception( "unroutable" );
     }
     
-    RC::Handle<JSON::Object> Context::jsonDesc() const
+    void Context::jsonDesc( Util::JSONGenerator &resultJG ) const
     {
-      RC::Handle<JSON::Object> result = DG::Context::jsonDesc();
-      result->set( "VP", jsonDescViewPorts() );
-      return result;
+      Util::JSONObjectGenerator resultJOG = resultJG.makeObject();
+      Util::JSONGenerator memberJG = resultJOG.makeMember( "VP", 2 );
+      jsonDescViewPorts( memberJG );
     }
     
-    RC::Handle<JSON::Object> Context::jsonDescViewPorts() const
+    void Context::jsonDescViewPorts( Util::JSONGenerator &resultJG ) const
     {
-      RC::Handle<JSON::Object> result = JSON::Object::Create();
+      Util::JSONObjectGenerator resultJOG = resultJG.makeObject();
       for ( ViewPorts::const_iterator it=m_viewPorts.begin(); it!=m_viewPorts.end(); ++it )
-        result->set( it->first, it->second->jsonDesc() );
-      return result;
+      {
+        Util::JSONGenerator viewPortJG = resultJOG.makeMember( it->first );
+        it->second->jsonDesc( viewPortJG );
+      }
     }
 
     std::string Context::queryUserFilePath( bool existingFile, std::string const &title, std::string const &defaultFilename, std::string const &extension ) const

@@ -18,10 +18,12 @@ namespace Fabric
     NamedObject::NamedObject( std::string const &name, RC::Handle<Context> const &context )
       : CompiledObject( context )
       , m_context( context.ptr() )
-      , m_name( name )
     {
       if ( name.length() == 0 )
         throw Exception( "name must be non-empty" );
+        
+      m_notificationSrc.push_back( "DG" );
+      m_notificationSrc.push_back( name );
       
       Context::NamedObjectMap &namedObjectMap = context->getNamedObjectRegistry();
       bool insertResult = namedObjectMap.insert( Context::NamedObjectMap::value_type( name, this ) ).second;
@@ -31,18 +33,22 @@ namespace Fabric
     
     std::string const &NamedObject::getName() const
     {
-      return m_name;
+      return m_notificationSrc[1];
     }
 
-    RC::ConstHandle<JSON::Value> NamedObject::jsonRoute( std::vector<std::string> const &dst, size_t dstOffset, std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg )
+    void NamedObject::jsonRoute(
+      std::vector<std::string> const &dst,
+      size_t dstOffset,
+      std::string const &cmd,
+      RC::ConstHandle<JSON::Value> const &arg,
+      Util::JSONArrayGenerator &resultJAG
+      )
     {
-      RC::ConstHandle<JSON::Value> result;
-
       if ( dst.size() - dstOffset == 0 )
       {
         try
         {
-          result = jsonExec( cmd, arg );
+          jsonExec( cmd, arg, resultJAG );
         }
         catch ( Exception e )
         {
@@ -50,47 +56,65 @@ namespace Fabric
         }
       }
       else throw Exception( "unroutable" );
-      
-      return result;
     }
       
-    RC::ConstHandle<JSON::Value> NamedObject::jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg )
+    void NamedObject::jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
     {
       throw Exception( "unknown command" );
     }
       
-    RC::Handle<JSON::Object> NamedObject::jsonDesc() const
+    void NamedObject::jsonDesc( Util::JSONGenerator &resultJG ) const
     {
-      RC::Handle<JSON::Object> result = JSON::Object::Create();
-      result->set( "type", jsonDescType() );
-      result->set( "errors", jsonDescErrors() );
-      return result;
+      Util::JSONObjectGenerator resultJOG = resultJG.makeObject();
+      jsonDesc( resultJOG );
     }
     
-    void NamedObject::notify( std::string const &cmd, RC::ConstHandle<JSON::Object> const &arg ) const
+    void NamedObject::jsonDesc( Util::JSONObjectGenerator &resultJOG ) const
     {
-      std::vector<std::string> src;
-      src.push_back( "DG" );
-      src.push_back( getName() );
-      
-      m_context->jsonNotify( src, cmd, arg );
+      {
+        Util::JSONGenerator memberJG = resultJOG.makeMember( "type", 4 );
+        jsonDescType( memberJG );
+      }
+      {
+        Util::JSONGenerator memberJG = resultJOG.makeMember( "errors", 6 );
+        jsonDescErrors( memberJG );
+      }
     }
     
-    void NamedObject::notifyDelta( RC::ConstHandle<JSON::Object> const &delta ) const
+    void NamedObject::jsonNotify( char const *cmdData, size_t cmdLength, Util::SimpleString const *arg ) const
     {
-      notify( "delta", delta );
+      m_context->jsonNotify( m_notificationSrc, cmdData, cmdLength, arg );
     }
     
-    void NamedObject::notifyDelta( std::string const &propertyName, RC::ConstHandle<JSON::Value> const &propertyValue ) const
+    void NamedObject::jsonNotifyDelta( Util::SimpleString const &delta ) const
     {
-      RC::Handle<JSON::Object> deltas = JSON::Object::Create();
-      deltas->set( propertyName, propertyValue );
-      notifyDelta( deltas );
+      jsonNotify( "delta", 5, &delta );
+    }
+    
+    void NamedObject::jsonNotifyMemberDelta(
+      char const *memberData,
+      size_t memberLength,
+      Util::SimpleString const &memberDeltaJSON
+      ) const
+    {
+      Util::SimpleString json;
+      {
+        Util::JSONGenerator jg( &json );
+        Util::JSONObjectGenerator jog = jg.makeObject();
+        Util::JSONGenerator deltaJG = jog.makeMember( memberData, memberLength );
+        deltaJG.appendJSON( memberDeltaJSON );
+      }
+      jsonNotifyDelta( json );
     }
     
     void NamedObject::jsonNotifyErrorDelta() const
     {
-      notifyDelta( "errors", jsonDescErrors() );
+      Util::SimpleString json;
+      {
+        Util::JSONGenerator jg( &json );
+        jsonDescErrors( jg );
+      }
+      jsonNotifyMemberDelta( "errors", 6, json );
     }
   };
 };

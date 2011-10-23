@@ -89,7 +89,11 @@ namespace Fabric
               throw Exception( "takes 1 string parameter (jsonEncodedCommands)" );
             NPString const &npString = NPVARIANT_TO_STRING( args[0] );
             
-            std::string jsonEncodedResults = m_interface->jsonExec( npString.UTF8Characters, npString.UTF8Length );
+            Util::SimpleString jsonEncodedResults;
+            {
+              Util::JSONGenerator jg( &jsonEncodedResults );
+              m_interface->jsonExec( npString.UTF8Characters, npString.UTF8Length, jg );
+            }
             
             char *utf8Characters = (char *)NPN_MemAlloc( jsonEncodedResults.length() );
             memcpy( utf8Characters, jsonEncodedResults.data(), jsonEncodedResults.length() );
@@ -365,14 +369,13 @@ namespace Fabric
       return m_context->getIOManager()->nppDestroyStream( npp, stream, reason );
     }
       
-    std::string Interface::jsonExec( char const *jsonEncodedCommandsData, size_t jsonEncodedCommandsLength )
+    void Interface::jsonExec( char const *jsonEncodedCommandsData, size_t jsonEncodedCommandsLength, Util::JSONGenerator &resultJG )
     {
       if ( m_viewPort )
         m_viewPort->pushOGLContext();
-      std::string result = DG::Client::jsonExec( jsonEncodedCommandsData, jsonEncodedCommandsLength );
+      DG::Client::jsonExec( jsonEncodedCommandsData, jsonEncodedCommandsLength, resultJG );
       if ( m_viewPort )
         m_viewPort->popOGLContext();
-      return result;
     }
 
     void Interface::setJSONNotifyCallback( NPObject *npObject )
@@ -394,7 +397,7 @@ namespace Fabric
       return m_context;
     }
       
-    void Interface::notify( std::string const &jsonEncodedNotifications ) const
+    void Interface::notify( Util::SimpleString const &jsonEncodedNotifications ) const
     {
       if ( m_callbackNPObject )
       {

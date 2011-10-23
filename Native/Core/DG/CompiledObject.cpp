@@ -6,6 +6,7 @@
 #include <Fabric/Base/JSON/String.h>
 #include <Fabric/Base/JSON/Array.h>
 #include <Fabric/Core/Util/Timer.h>
+#include <Fabric/Core/Util/JSONGenerator.h>
 
 #include <map>
 
@@ -128,14 +129,16 @@ namespace Fabric
     
     unsigned CompiledObject::s_collectTasksGlobalGeneration = 0;
       
-    RC::ConstHandle<JSON::Value> CompiledObject::jsonDescErrors() const
+    void CompiledObject::jsonDescErrors( Util::JSONGenerator &resultJG ) const
     {
       Errors const &errors = getErrors();
-      
-      RC::Handle<JSON::Array> result = JSON::Array::Create();
+
+      Util::JSONArrayGenerator errorsJAG = resultJG.makeArray();
       for ( size_t i=0; i<errors.size(); ++i )
-        result->push_back( JSON::String::Create( errors[i] ) );
-      return result;
+      {
+        Util::JSONGenerator errorJG = errorsJAG.makeElement();
+        errorJG.makeString( errors[i] );
+      }
     }
     
     void CompiledObject::jsonNotifyErrorDelta() const

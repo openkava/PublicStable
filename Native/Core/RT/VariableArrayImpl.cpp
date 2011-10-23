@@ -12,6 +12,7 @@
 #include <Fabric/Core/Util/Timer.h>
 #include <Fabric/Base/Config.h>
 #include <Fabric/Base/Util/Bits.h>
+#include <Fabric/Core/Util/JSONGenerator.h>
 
 #include <algorithm>
 
@@ -61,10 +62,23 @@ namespace Fabric
       RC::Handle<JSON::Array> arrayValue = JSON::Array::Create( numMembers );
       for ( size_t i = 0; i < numMembers; ++i )
       {
-        void const *srcMemberData = getMemberData( data, i );
-        arrayValue->set( i, getMemberImpl()->getJSONValue( srcMemberData ) );
+        void const *srcMemberData = getImmutableMemberData_NoCheck( data, i );
+        arrayValue->set( i, m_memberImpl->getJSONValue( srcMemberData ) );
       }
       return arrayValue;
+    }
+    
+    void VariableArrayImpl::generateJSON( void const *data, Util::JSONGenerator &jsonGenerator ) const
+    {
+      size_t numMembers = getNumMembers(data);
+      
+      Util::JSONArrayGenerator jsonArrayGenerator = jsonGenerator.makeArray();
+      for ( size_t i = 0; i < numMembers; ++i )
+      {
+        void const *memberData = getImmutableMemberData_NoCheck( data, i );
+        Util::JSONGenerator elementJG = jsonArrayGenerator.makeElement();
+        m_memberImpl->generateJSON( memberData, elementJG );
+      }
     }
     
     void VariableArrayImpl::setDataFromJSONValue( RC::ConstHandle<JSON::Value> const &jsonValue, void *data ) const

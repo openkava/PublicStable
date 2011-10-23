@@ -10,6 +10,11 @@
 
 namespace Fabric
 {
+  namespace Util
+  {
+    class JSONGenerator;
+  };
+  
   namespace MT
   {
     class ParallelCall;
@@ -56,7 +61,7 @@ namespace Fabric
         ) const;      
       bool getMainThreadOnly() const;
       
-      RC::ConstHandle<JSON::Value> jsonDesc() const;
+      void jsonDesc( Util::JSONGenerator &resultJG ) const;
       
     protected:
     

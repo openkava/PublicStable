@@ -12,6 +12,7 @@
 #include <Fabric/Base/JSON/Decode.h>
 #include <Fabric/Base/Exception.h>
 #include <Fabric/Core/Util/Format.h>
+#include <Fabric/Core/Util/JSONGenerator.h>
 #include <Fabric/Core/Util/Timer.h>
 
 namespace Fabric
@@ -34,7 +35,11 @@ namespace Fabric
       m_context->unregisterClient( this );
     }
 
-    std::string Client::jsonExec( char const *jsonEncodedCommandsData, size_t jsonEncodedCommandsLength ) const
+    void Client::jsonExec(
+      char const *jsonEncodedCommandsData,
+      size_t jsonEncodedCommandsLength,
+      Util::JSONGenerator &resultJG
+      ) const
     {
       Context::NotificationBracket notificationBracket( m_context );
       
@@ -42,12 +47,12 @@ namespace Fabric
       cmdsAndArgsJSONArray = JSON::decode( jsonEncodedCommandsData, jsonEncodedCommandsLength )->toArray();
       size_t cmdsAndArgsJSONArraySize = cmdsAndArgsJSONArray->size();
       
-      RC::Handle<JSON::Array> resultJSONArray = JSON::Array::Create();
+      Util::JSONArrayGenerator resultJSONArray = resultJG.makeArray();
       for ( size_t i=0; i<cmdsAndArgsJSONArraySize; ++i )
       {
         RC::ConstHandle<JSON::Object> cmdAndArgJSONObject = cmdsAndArgsJSONArray->get(i)->toObject();
         
-        RC::Handle<JSON::Object> result = JSON::Object::Create();
+        Util::JSONObjectGenerator resultJSONObject = resultJSONArray.makeElement().makeObject();
         try
         {
           std::vector<std::string> dst;
@@ -86,10 +91,17 @@ namespace Fabric
         
           try
           {
-            RC::ConstHandle<JSON::Value> callResult = m_context->jsonRoute( dst, 0, cmd, arg );
-            if ( callResult )
-              result->set( "result", callResult );
-            resultJSONArray->push_back( result );
+            Util::SimpleString resultJSON;
+            Util::JSONGenerator resultJG( &resultJSON );
+            Util::JSONArrayGenerator resultJAG = resultJG.makeArray();
+            m_context->jsonRoute( dst, 0, cmd, arg, resultJAG );
+            if ( resultJAG.getCount() > 0 )
+            {
+              resultJAG.flush();
+              resultJG.flush();
+              Util::JSONGenerator memberJG = resultJSONObject.makeMember( "result", 6 );
+              memberJG.appendJSON( resultJSON.data()+1, resultJSON.length()-2 );
+            }
           }
           catch ( Exception e )
           {
@@ -110,58 +122,74 @@ namespace Fabric
         }
         catch ( Exception e )
         {
-          result->set( "exception", JSON::String::Create( e.getDesc().getData(), e.getDesc().getLength() ) );
-          resultJSONArray->push_back( result );
+          resultJSONObject.makeMember( "exception", 9 ).makeString( e.getDesc() );
           break;
         }
       }
       
       CompiledObject::PrepareForExecution();
-      
-      return JSON::encode( resultJSONArray );
     }
     
     void Client::notifyInitialState() const
     {
-      RC::Handle<JSON::Array> srcJSONArray = JSON::Array::Create();
-      
-      RC::Handle<JSON::Object> notification = JSON::Object::Create();
-      notification->set( "src", srcJSONArray );
-      notification->set( "cmd", JSON::String::Create( "state" ) );
-      notification->set( "arg", jsonDesc() );
-      
-      RC::Handle<JSON::Array> notifications = JSON::Array::Create();
-      notifications->push_back( notification );
-
-      notify( JSON::encode( notifications ) );
+      Util::SimpleString json;
+      {
+        Util::JSONGenerator arrayJG( &json );
+        Util::JSONArrayGenerator arrayJAG = arrayJG.makeArray();
+        
+        {
+          Util::JSONGenerator jg = arrayJAG.makeElement();
+          Util::JSONObjectGenerator jog = jg.makeObject();
+          
+          {
+            Util::JSONGenerator srcJG = jog.makeMember( "src", 3 );
+            Util::JSONArrayGenerator srcJAG = srcJG.makeArray();
+          }
+          
+          {
+            Util::JSONGenerator cmdJG = jog.makeMember( "cmd", 3 );
+            cmdJG.makeString( "state", 5 );
+          }
+          
+          {
+            Util::JSONGenerator argJG = jog.makeMember( "arg", 3 );
+            jsonDesc( argJG );
+          }
+        }
+      }
+      notify( json );
     }
 
-    RC::ConstHandle<JSON::Value> Client::jsonRoute( std::vector<std::string> const &dst, size_t dstOffset, std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg )
+    void Client::jsonRoute(
+      std::vector<std::string> const &dst,
+      size_t dstOffset,
+      std::string const &cmd,
+      RC::ConstHandle<JSON::Value> const &arg,
+      Util::JSONArrayGenerator &resultJAG
+      )
     {
-      RC::ConstHandle<JSON::Value> result;
       if ( dst.size() - dstOffset == 1 && dst[dstOffset] == "client" )
       {
         try
         {
-          result = jsonExec( cmd, arg );
+          jsonExec( cmd, arg, resultJAG );
         }
         catch ( Exception e )
         {
           throw "'client': command " + _(cmd) + ": " + e;
         }
       }
-      else result = m_context->jsonRoute( dst, dstOffset, cmd, arg );
-      return result;
+      else m_context->jsonRoute( dst, dstOffset, cmd, arg, resultJAG );
     }
     
-    RC::ConstHandle<JSON::Value> Client::jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg )
+    void Client::jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
     {
       throw Exception( "unknown command" );
     }
     
-    RC::Handle<JSON::Object> Client::jsonDesc() const
+    void Client::jsonDesc( Util::JSONGenerator &resultJG ) const
     {
-      return m_context->jsonDesc();
+      return m_context->jsonDesc( resultJG );
     }
   };
 };

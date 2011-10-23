@@ -4,6 +4,7 @@
  
 #include <Fabric/Clients/CLI/Client.h>
 #include <Fabric/Core/DG/Context.h>
+#include <Fabric/Core/Util/JSONGenerator.h>
 
 #include <string>
 
@@ -26,7 +27,7 @@ namespace Fabric
       m_v8Callback.Dispose();
     }
     
-    void Client::notify( std::string const &jsonEncodedNotifications ) const
+    void Client::notify( Util::SimpleString const &jsonEncodedNotifications ) const
     {
       if ( !m_v8Callback.IsEmpty() )
       {
@@ -43,7 +44,15 @@ namespace Fabric
         return v8::ThrowException( v8::String::New( "v8JSONExec: takes one string parameter (jsonEncodedCommands)" ) );
       v8::Handle<v8::String> v8JSONEncodedCommands = v8::Handle<v8::String>::Cast( args[0] );
       v8::String::Utf8Value v8JSONEncodedCommandsUtf8Value( v8JSONEncodedCommands );
-      std::string jsonEncodedResults = jsonExec( *v8JSONEncodedCommandsUtf8Value, v8JSONEncodedCommandsUtf8Value.length() );
+      Util::SimpleString jsonEncodedResults;
+      {
+        Util::JSONGenerator resultJSON( &jsonEncodedResults );
+        jsonExec(
+          const_cast<char const *>(*v8JSONEncodedCommandsUtf8Value),
+          size_t(v8JSONEncodedCommandsUtf8Value.length()),
+          resultJSON
+          );
+      }
       v8::Handle<v8::String> v8JSONEncodedResults = v8::String::New( jsonEncodedResults.data(), jsonEncodedResults.length() );
       return v8HandleScope.Close( v8JSONEncodedResults );
     }

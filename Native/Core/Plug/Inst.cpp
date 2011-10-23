@@ -254,12 +254,17 @@ namespace Fabric
     }
       */
 
-    RC::Handle<JSON::Object> Inst::jsonDesc() const
+    void Inst::jsonDesc( Util::JSONGenerator &resultJG ) const
     {
-      RC::Handle<JSON::Object> result = JSON::Object::Create();
-      result->set( "code", JSON::String::Create( m_code ) );
-      result->set( "jsConstants", JSON::String::Create( m_jsConstants ) );
-      return result;
+      Util::JSONObjectGenerator resultJOG = resultJG.makeObject();
+      {
+        Util::JSONGenerator memberJG = resultJOG.makeMember( "code", 4 );
+        memberJG.makeString( m_code );
+      }
+      {
+        Util::JSONGenerator memberJG = resultJOG.makeMember( "jsConstants", 11 );
+        memberJG.makeString( m_jsConstants );
+      }
     }
 
       
