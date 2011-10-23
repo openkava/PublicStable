@@ -612,6 +612,22 @@ function (fabricClient, logCallback, debugLogCallback) {
         return functionResult;
       };
 
+      result.pub.getDataJSON = function(memberName, sliceIndex) {
+        if (sliceIndex === undefined)
+          sliceIndex = 0;
+
+        var functionResult;
+        result.queueCommand('getDataJSON', {
+          'memberName': memberName,
+          'sliceIndex': sliceIndex
+        }, function() {
+        }, function(data) {
+          functionResult = data;
+        });
+        executeQueuedCommands();
+        return functionResult;
+      };
+
       result.pub.getDataSize = function(memberName, sliceIndex) {
         var dataSize;
         result.queueCommand('getDataSize', {
