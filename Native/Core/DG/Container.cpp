@@ -57,12 +57,12 @@ namespace Fabric
         slicedArrayData = m_slicedArrayData;
       }
       
-      void const *getElementData( size_t index ) const
+      void const *getImmutableElementData( size_t index ) const
       {
         return m_slicedArrayDesc->getMemberData( (void const *)m_slicedArrayData, index );
       }
       
-      void *getElementData( size_t index )
+      void *getMutableElementData( size_t index )
       {
         return m_slicedArrayDesc->getMemberData( m_slicedArrayData, index );
       }
@@ -240,7 +240,7 @@ namespace Fabric
     {
       if ( index >= m_count )
         throw Exception( "index out of range" );
-      return getMember( name )->getElementData( index );
+      return getMember( name )->getImmutableElementData( index );
     }
 
     void *Container::getMutableData( std::string const &name, size_t index )
@@ -267,7 +267,7 @@ namespace Fabric
       }
       jsonNotify( "dataChange", 10, &json );
 
-      return getMember( name )->getElementData( index );
+      return getMember( name )->getMutableElementData( index );
     }
     
     void Container::getData( std::string const &name, size_t index, void *dstData ) const
@@ -275,9 +275,17 @@ namespace Fabric
       if ( index >= m_count )
         throw Exception( "index out of range" );
       RC::ConstHandle<Member> member = getMember( name );
-      return member->getDesc()->setData( member->getElementData( index ), dstData );
+      return member->getDesc()->setData( member->getImmutableElementData( index ), dstData );
     }
 
+    void Container::getDataJSON( std::string const &name, size_t index, Util::JSONGenerator &resultJG ) const
+    {
+      if ( index >= m_count )
+        throw Exception( "index out of range" );
+      RC::ConstHandle<Member> member = getMember( name );
+      return member->getDesc()->generateJSON( member->getImmutableElementData( index ), resultJG );
+    }
+    
     void Container::setData( std::string const &name, size_t index, void const *data )
     {
       if ( index >= m_count )
@@ -285,7 +293,7 @@ namespace Fabric
       
       RC::Handle<Member> member = getMember( name );
       setOutOfDate();
-      member->getDesc()->setData( data, member->getElementData( index ) );
+      member->getDesc()->setData( data, member->getMutableElementData( index ) );
       
       Util::SimpleString json;
       {
@@ -318,7 +326,7 @@ namespace Fabric
         for ( size_t i=0; i<m_count; ++i )
         {
           Util::JSONGenerator elementJG = memberJAG.makeElement();
-          memberDesc->generateJSON( member->getElementData(i), elementJG );
+          memberDesc->generateJSON( member->getImmutableElementData(i), elementJG );
         }
       }
     }
@@ -335,7 +343,7 @@ namespace Fabric
         RC::ConstHandle<Member> member = it->second;
         RC::ConstHandle<RT::Desc> memberDesc = member->getDesc();
         Util::JSONGenerator memberJG = jsonObjectGenerator.makeMember(name);
-        memberDesc->generateJSON( member->getElementData( index ), memberJG );
+        memberDesc->generateJSON( member->getImmutableElementData( index ), memberJG );
       }
     }
     
@@ -352,7 +360,7 @@ namespace Fabric
       for ( size_t sliceIndex=0; sliceIndex<sliceCount; ++sliceIndex )
       {
         Util::JSONGenerator elementJG = jsonArrayGenerator.makeElement();
-        memberDesc->generateJSON( member->getElementData( sliceIndex ), elementJG );
+        memberDesc->generateJSON( member->getImmutableElementData( sliceIndex ), elementJG );
       }
     }
 
@@ -386,7 +394,7 @@ namespace Fabric
           
             RC::ConstHandle<RT::Desc> memberDesc = member->getDesc();
             for ( size_t i=0; i<m_count; ++i )
-              memberDesc->setDataFromJSONValue( arrayValue->get(i), member->getElementData(i) );
+              memberDesc->setDataFromJSONValue( arrayValue->get(i), member->getMutableElementData(i) );
             setOutOfDate();
           }
           catch ( Exception e )
@@ -417,7 +425,7 @@ namespace Fabric
         
         try
         {
-          member->getDesc()->setDataFromJSONValue( it->second, member->getElementData(index) );
+          member->getDesc()->setDataFromJSONValue( it->second, member->getMutableElementData(index) );
           setOutOfDate();
         }
         catch ( Exception e )
@@ -484,6 +492,8 @@ namespace Fabric
     {
       if ( cmd == "getData" )
         jsonExecGetData( arg, resultJAG );
+      else if ( cmd == "getDataJSON" )
+        jsonExecGetDataJSON( arg, resultJAG );
       else if ( cmd == "getDataSize" )
         jsonExecGetDataSize( arg, resultJAG );
       else if ( cmd == "getDataElement" )
@@ -606,6 +616,42 @@ namespace Fabric
       void const *data = getConstData( memberName, sliceIndex );
       Util::JSONGenerator resultJG = resultJAG.makeElement();
       desc->generateJSON( data, resultJG );
+    }
+      
+    void Container::jsonExecGetDataJSON( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
+    {
+      RC::ConstHandle<JSON::Object> argJSONObject = arg->toObject();
+      
+      std::string memberName;
+      try
+      {
+        memberName = argJSONObject->get( "memberName" )->toString()->value();
+      }
+      catch ( Exception e )
+      {
+        throw "'memberName': " + e;
+      }
+      
+      RC::ConstHandle<RT::Desc> desc = getDesc( memberName );
+
+      size_t sliceIndex;
+      try
+      {
+        sliceIndex = argJSONObject->get( "sliceIndex" )->toInteger()->value();
+      }
+      catch ( Exception e )
+      {
+        throw "'sliceIndex': " + e;
+      }
+      
+      Util::SimpleString json;
+      {
+        Util::JSONGenerator jg( &json );
+        getDataJSON( memberName, sliceIndex, jg );
+      }
+      
+      Util::JSONGenerator resultJG = resultJAG.makeElement();
+      resultJG.makeString( json );
     }
       
     void Container::jsonExecGetDataSize( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
@@ -819,7 +865,7 @@ namespace Fabric
       }
     }
 
-    void* Container::jsonGetResourceMember( RC::ConstHandle<JSON::Value> const &arg, std::string& memberName ) const
+    void *Container::jsonGetResourceMember( RC::ConstHandle<JSON::Value> const &arg, std::string& memberName )
     {
       RC::ConstHandle<JSON::Object> argJSONObject = arg->toObject();
       
@@ -832,13 +878,13 @@ namespace Fabric
         throw "'memberName': " + e;
       }
 
-      RC::ConstHandle<Container::Member> member = getMember( memberName );
+      RC::Handle<Container::Member> member = getMember( memberName );
       RC::ConstHandle<RT::Desc> desc = member->getDesc();
       if( desc->getUserName() != "FabricResource" )
       {
         throw Exception( "member" + memberName + " is not of type FabricResource" );
       }
-      return (void*)member->getElementData( 0 );
+      return member->getMutableElementData( 0 );
     }
 
     struct FabricResourceByteContainerAdapter : public IO::Manager::ByteContainer
@@ -876,7 +922,7 @@ namespace Fabric
       setData( memberName, 0, tempResource.get() );
     }
 
-    void Container::jsonExecPutResourceToFile( RC::ConstHandle<JSON::Value> const &arg, bool userFile, Util::JSONArrayGenerator &resultJAG ) const
+    void Container::jsonExecPutResourceToFile( RC::ConstHandle<JSON::Value> const &arg, bool userFile, Util::JSONArrayGenerator &resultJAG )
     {
       std::string memberName;
       FabricResourceWrapper resource( m_context->getRTManager(), jsonGetResourceMember( arg, memberName ) );
