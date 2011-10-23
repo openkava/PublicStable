@@ -83,6 +83,7 @@ namespace Fabric
       void const *getConstData( std::string const &name, size_t index ) const;
       void *getMutableData( std::string const &name, size_t index );
       void getData( std::string const &name, size_t index, void *dstData ) const;
+      void getDataJSON( std::string const &name, size_t index, Util::JSONGenerator &resultJG ) const;
       void setData( std::string const &name, size_t index, void const *data );
 
       void generateJSON( Util::JSONGenerator &jsonGenerator ) const;
@@ -97,6 +98,7 @@ namespace Fabric
       void jsonExecRemoveMember( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
       void jsonSetCount( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
       void jsonExecGetData( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
+      void jsonExecGetDataJSON( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
       void jsonExecGetDataSize( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
       void jsonExecGetDataElement( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
       void jsonExecSetData( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
@@ -105,7 +107,7 @@ namespace Fabric
       void jsonExecGetSlicesBulkData( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG ) const;
       void jsonExecSetSlicesBulkData( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
       void jsonExecGetMembersBulkData( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG ) const;
-      void jsonExecPutResourceToFile( RC::ConstHandle<JSON::Value> const &arg, bool userFile, Util::JSONArrayGenerator &resultJAG ) const;
+      void jsonExecPutResourceToFile( RC::ConstHandle<JSON::Value> const &arg, bool userFile, Util::JSONArrayGenerator &resultJAG );
       void jsonExecGetResourceFromFile( RC::ConstHandle<JSON::Value> const &arg, bool userFile, Util::JSONArrayGenerator &resultJAG );
       void jsonDesc( Util::JSONGenerator &resultJG ) const;
       virtual void jsonDesc( Util::JSONObjectGenerator &resultJOG ) const;
@@ -134,7 +136,7 @@ namespace Fabric
       RC::ConstHandle<Member> getMember( std::string const &name ) const;
       RC::Handle<Member> getMember( std::string const &name );
 
-      void* jsonGetResourceMember( RC::ConstHandle<JSON::Value> const &arg, std::string& memberName ) const;
+      void* jsonGetResourceMember( RC::ConstHandle<JSON::Value> const &arg, std::string& memberName );
 
     private:
     
