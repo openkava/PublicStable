@@ -70,16 +70,16 @@ namespace Fabric
     void DictImpl::disposeNode( node_t *node ) const
     {
       if ( !m_keyIsShallow )
-        m_keyImpl->disposeDatas( mutableKeyData( node ), 1, 0 );
+        m_keyImpl->disposeData( mutableKeyData( node ) );
       if ( !m_valueIsShallow )
-        m_valueImpl->disposeDatas( mutableValueData( node ), 1, 0 );
+        m_valueImpl->disposeData( mutableValueData( node ) );
       free( node );
     }
     
     void DictImpl::disposeBits( bits_t *bits ) const
     {
       node_t *node = bits->firstNode;
-      while ( node != 0 )
+      while ( node )
       {
         node_t *nextNode = node->bitsNextNode;
         disposeNode( node );

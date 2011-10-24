@@ -152,6 +152,7 @@ namespace Fabric
                   );
                 break;
             }
+            keyAdapter->llvmRelease( basicBlockBuilder, indexExprRValue );
             arrayExprValue.llvmDispose( basicBlockBuilder );
           }
         }
