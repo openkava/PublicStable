@@ -37,7 +37,7 @@ namespace Fabric
       MT::tlsLogCollector.get()->add( buffer );
     }
 
-    MT::Mutex ExecutionEngine::s_currentContextMutex( "DG::ExecutionEngine::s_currentContext" );
+    Util::Mutex ExecutionEngine::s_currentContextMutex( "DG::ExecutionEngine::s_currentContext" );
     RC::ConstHandle<Context> ExecutionEngine::s_currentContext;
     
     void ExecutionEngine::Report( char const *data, size_t length )
