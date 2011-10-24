@@ -2,24 +2,28 @@ struct RGB {
   Byte r; Byte g; Byte b;
 };
 
-function FabricVIDEOOpenStream(
-  io String filename,
-  io Size stream,
-  io Size width,
-  io Size height,
-  io Scalar duration,
-  io Scalar fps
-  );
-function FabricVIDEOSeekTime( io Size stream, io Scalar time);
+struct VideoHandle {
+  Data pointer;
+  Size width;
+  Size height;
+  Scalar duration;
+  Scalar fps;
+  Scalar time;
+};
+
+function FabricVIDEOOpenResource(
+  io Data resourceData,
+  io Size resourceDataSize,
+  io VideoHandle handle
+);
+
+function FabricVIDEOFreeHandle( io VideoHandle handle );
+  
+function FabricVIDEOSeekTime( io VideoHandle handle, io Scalar time);
+
 function FabricVIDEOGetAllPixels(
-  io Size stream,
-  io Size width,
-  io Size height,
+  io VideoHandle handle,
   io RGB pixels[]
-  );
-function FabricVIDEOGetPixel(
-  io Size stream,
-  io Size x,
-  io Size y,
-  io RGB pixel
-  );
+);
+
+function ~VideoHandle() = "FabricVIDEOFreeHandle";
