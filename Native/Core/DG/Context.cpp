@@ -83,8 +83,6 @@ namespace Fabric
     Context::~Context()
     {
       FABRIC_ASSERT( !m_pendingNotificationsJSON );
-      FABRIC_ASSERT( !m_pendingNotificationsJSONGenerator );
-      FABRIC_ASSERT( !m_pendingNotificationsJSONArrayGenerator );
       
       FABRIC_ASSERT( m_clients.empty() );
       
