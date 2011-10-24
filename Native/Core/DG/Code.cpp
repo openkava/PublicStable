@@ -67,7 +67,7 @@ namespace Fabric
 
     void Code::compileSourceCode()
     {
-      MT::Mutex::Lock mutexLock( m_mutex );
+      Util::Mutex::Lock mutexLock( m_mutex );
 
       llvm::InitializeNativeTarget();
       LLVMLinkInJIT();
@@ -204,12 +204,12 @@ namespace Fabric
       if ( !context )
         return;
         
-      MT::Mutex::Lock mutexLock( m_mutex );
+      Util::Mutex::Lock mutexLock( m_mutex );
 
       RC::ConstHandle<ExecutionEngine> executionEngine = ExecutionEngine::Create( context, cgContext, module.take() );
       
       {
-        MT::Mutex::Lock lock( m_registeredFunctionSetMutex );
+        Util::Mutex::Lock lock( m_registeredFunctionSetMutex );
         for ( RegisteredFunctionSet::const_iterator it=m_registeredFunctionSet.begin();
           it!=m_registeredFunctionSet.end(); ++it )
         {
@@ -251,7 +251,7 @@ namespace Fabric
     
     RC::ConstHandle<ExecutionEngine> Code::getExecutionEngine() const
     {
-      MT::Mutex::Lock mutexLock( m_mutex );
+      Util::Mutex::Lock mutexLock( m_mutex );
       return m_executionEngine;
     }
     
@@ -262,13 +262,13 @@ namespace Fabric
 
     void Code::registerFunction( Function *function ) const
     {
-      MT::Mutex::Lock lock( m_registeredFunctionSetMutex );
+      Util::Mutex::Lock lock( m_registeredFunctionSetMutex );
       m_registeredFunctionSet.insert( function );
     }
     
     void Code::unregisterFunction( Function *function ) const
     {
-      MT::Mutex::Lock lock( m_registeredFunctionSetMutex );
+      Util::Mutex::Lock lock( m_registeredFunctionSetMutex );
       RegisteredFunctionSet::iterator it = m_registeredFunctionSet.find( function );
       FABRIC_ASSERT( it != m_registeredFunctionSet.end() );
       m_registeredFunctionSet.erase( it );

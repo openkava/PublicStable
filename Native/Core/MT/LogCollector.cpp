@@ -22,7 +22,7 @@ namespace Fabric
     
     void LogCollector::add( char const *data, size_t length )
     {
-      MT::Mutex::Lock lock( m_bufferMutex );
+      Util::Mutex::Lock lock( m_bufferMutex );
       std::string prefixedString = getPrefix_CRIT() + std::string( data, length );
       FABRIC_LOG( prefixedString );
       if ( !m_buffer.empty() )
@@ -47,7 +47,7 @@ namespace Fabric
     
     void LogCollector::flush()
     {
-      MT::Mutex::Lock lock( m_bufferMutex );
+      Util::Mutex::Lock lock( m_bufferMutex );
       if ( !m_buffer.empty() )
       {
         logString( m_buffer.data(), m_buffer.length() );

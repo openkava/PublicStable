@@ -55,7 +55,7 @@ namespace Fabric
     
     void IdleTaskQueue::submit( Callback callback, void *userdata )
     {
-      Mutex::Lock stateMutexLock( m_stateMutex );
+      Util::Mutex::Lock stateMutexLock( m_stateMutex );
       size_t oldSize = m_tasks.size();
       m_tasks.resize( oldSize + 1 );
       Task &task = m_tasks[oldSize];
@@ -66,7 +66,7 @@ namespace Fabric
     
     void IdleTaskQueue::wait() const
     {
-      Mutex::Lock stateMutexLock( m_stateMutex );
+      Util::Mutex::Lock stateMutexLock( m_stateMutex );
       m_tasks.clear();
       while ( m_executingTasks > 0 )
         m_stateCond.wait( m_stateMutex );

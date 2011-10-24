@@ -143,7 +143,7 @@ namespace Fabric
         }
       }
       
-      MT::Mutex::Lock pendingNotificationsMutexLock( m_pendingNotificationsMutex );
+      Util::Mutex::Lock pendingNotificationsMutexLock( m_pendingNotificationsMutex );
       if ( !m_pendingNotificationsJSON )
       {
         m_pendingNotificationsJSON = new Util::SimpleString;
@@ -173,7 +173,7 @@ namespace Fabric
       {
         Util::SimpleString *pendingNotificationJSON;
         {
-          MT::Mutex::Lock pendingNotificationsMutexLock( m_pendingNotificationsMutex );
+          Util::Mutex::Lock pendingNotificationsMutexLock( m_pendingNotificationsMutex );
           pendingNotificationJSON = m_pendingNotificationsJSON;
           delete m_pendingNotificationsJSONArrayGenerator;
           delete m_pendingNotificationsJSONGenerator;

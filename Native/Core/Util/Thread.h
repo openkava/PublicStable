@@ -2,9 +2,10 @@
  *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
  */
  
-#ifndef _FABRIC_MT_THREAD_H
-#define _FABRIC_MT_THREAD_H
+#ifndef _FABRIC_UTIL_THREAD_H
+#define _FABRIC_UTIL_THREAD_H
 
+#include <Fabric/Base/Config.h>
 #include <Fabric/Base/Exception.h>
 
 #if defined(FABRIC_POSIX)
@@ -18,7 +19,7 @@
 
 namespace Fabric
 {
-  namespace MT
+  namespace Util
   {
     class Thread
     {
@@ -136,4 +137,4 @@ namespace Fabric
   };
 };
 
-#endif //_FABRIC_MT_THREAD_H
+#endif //_FABRIC_UTIL_THREAD_H
