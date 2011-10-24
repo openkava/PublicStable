@@ -70,6 +70,7 @@ FABRIC.appendOnCreateContextCallback(function(context) {
 
 FABRIC.RT.LinearKeyframeTrackSet = function( name ) {
   this.name = name ? name : 'animationTrack';
+  this.timeRange = new FABRIC.RT.Vec2(0,0);
   this.tracks = [];
 };
 
@@ -94,7 +95,7 @@ FABRIC.RT.LinearKeyframeTrackSet.prototype = {
       this.tracks.push(new FABRIC.RT.LinearKeyframeTrack(name+'ori.v.x', FABRIC.RT.Color.red));   binding.push(this.tracks.length - 1);
       this.tracks.push(new FABRIC.RT.LinearKeyframeTrack(name+'ori.v.x', FABRIC.RT.Color.green)); binding.push(this.tracks.length - 1);
       this.tracks.push(new FABRIC.RT.LinearKeyframeTrack(name+'ori.v.x', FABRIC.RT.Color.blue));  binding.push(this.tracks.length - 1);
-      this.tracks.push(new FABRIC.RT.LinearKeyframeTrack(name+'ori.w', FABRIC.RT.Color.cyan)); binding.push(this.tracks.length - 1);
+      this.tracks.push(new FABRIC.RT.LinearKeyframeTrack(name+'ori.w',   FABRIC.RT.Color.cyan));  binding.push(this.tracks.length - 1);
     }
     return binding;
   }
@@ -104,6 +105,7 @@ FABRIC.appendOnCreateContextCallback(function(context) {
   context.RegisteredTypesManager.registerType('LinearKeyframeTrackSet', {
     members: {
       name: 'String',
+      timeRange: 'Vec2',
       tracks: 'LinearKeyframeTrack[]'
     },
     constructor: FABRIC.RT.LinearKeyframeTrackSet,

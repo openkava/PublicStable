@@ -326,17 +326,7 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
 
     var characterVariablesNode = scene.constructNode('SceneGraphNode', options);
     var dgnode = characterVariablesNode.constructDGNode('DGNode');
-    
-    var poseVariables;
-    if(options.baseVariables){
-      if (!options.baseVariables.isTypeOf('CharacterVariables')) {
-        throw ('Incorrect type assignment. Must assign a CharacterVariables');
-      }
-      poseVariables = scene.getPrivateInterface(options.baseVariables).getVariables();
-    }
-    else{
-      poseVariables = new FABRIC.RT.PoseVariables();
-    }
+    var poseVariables = new FABRIC.RT.PoseVariables();
     dgnode.addMember('poseVariables', 'PoseVariables', poseVariables);
     // extend the private interface
     characterVariablesNode.addVariable = function(type, value) {
@@ -348,7 +338,7 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
     var animationControllerNode;
     var animationTrackNode;
     
-    characterVariablesNode.setBinding = function(bindings){
+    characterVariablesNode.setBindings = function(bindings){
       if(dgnode.getMembers().bindings){
         dgnode.setData('bindings', 0, bindings);
       }
@@ -373,7 +363,7 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
       dgnode.addMember('keyIndices', 'Integer[]');
       dgnode.addMember('trackSetId', 'Integer', trackSetId);
       if(keyframeTrackBindings){
-        dgnode.addMember('bindings', 'KeyframeTrackBindings', keyframeTrackBindings);
+        characterVariablesNode.setBindings(keyframeTrackBindings);
       }
       else if(!dgnode.getMembers().bindings){
         throw "keyframeTrackBindings not defined";
@@ -412,6 +402,20 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
       parentReadData(sceneLoader, nodeData);
       characterVariablesNode.readDGNode(dgnode, nodeData['dgnode']);
     };
+    
+    // If a base Vaiables node is provided, we clone the values. 
+    if(options.baseVariables){
+      if (!options.baseVariables.isTypeOf('CharacterVariables')) {
+        throw ('Incorrect type assignment. Must assign a CharacterVariables');
+      }
+      var baseVariables = scene.getPrivateInterface(options.baseVariables);
+      poseVariables = baseVariables.getVariables();
+      dgnode.setData('poseVariables', 0, poseVariables);
+      
+      if(baseVariables.getDGNode().getMembers().bindings){
+        characterVariablesNode.setBindings(baseVariables.getDGNode().getData('bindings'));
+      }
+    }
 
     return characterVariablesNode;
   }});
@@ -635,10 +639,10 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
     if (options.baseCharacterRig) {
       // Clone the baseCharacterRig solvers.
       var baseCharacterRigNode = scene.getPrivateInterface(options.baseCharacterRig);
-      solvers = baseCharacterRigNode.pub.getSolvers();
-      solverOperatorDefs = baseCharacterRigNode.getSolverOperatorBindings();
-      for(var i=0; i < solverOperatorDefs.length; i++){
-        characterRigNode.addSolverOperator(solverOperatorDefs[i]);
+      var baseRigSolvers = baseCharacterRigNode.pub.getSolvers();
+      var baseRigSolverOperatorDefs = baseCharacterRigNode.getSolverOperatorBindings();
+      for(var i=0; i < baseRigSolverOperatorDefs.length; i++){
+        characterRigNode.addSolverOperator(baseRigSolverOperatorDefs[i]);
       }
     }
     
