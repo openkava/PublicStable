@@ -35,7 +35,7 @@ namespace Fabric
       , m_valueImpl( valueImpl )
       , m_valueSize( valueImpl->getAllocSize() )
       , m_valueIsShallow( valueImpl->isShallow() )
-      , m_nodeSize( sizeof(node_t) + m_keySize + m_valueSize )
+      , m_nodeAllocator( sizeof(node_t) + m_keySize + m_valueSize )
     {
       setSize( sizeof(bits_t) );
     }
@@ -73,7 +73,7 @@ namespace Fabric
         m_keyImpl->disposeData( mutableKeyData( node ) );
       if ( !m_valueIsShallow )
         m_valueImpl->disposeData( mutableValueData( node ) );
-      free( node );
+      m_nodeAllocator.free( node );
     }
     
     void DictImpl::disposeBits( bits_t *bits ) const
@@ -243,7 +243,7 @@ namespace Fabric
       
       // [pzion 20111014] The node doesn't exist; create a new one.
       
-      node = reinterpret_cast<node_t *>( malloc( m_nodeSize ) );
+      node = reinterpret_cast<node_t *>( m_nodeAllocator.alloc() );
       node->keyHash = keyHash;
       insertNode( bits, bucket, node );
       
