@@ -36,6 +36,7 @@ operator videoSeekTime(
   io Integer pixelCacheLimit
 ) {
   Integer frameIndex = floor(time * handle.fps + 0.5);
+  Scalar localTime = Scalar(frameIndex) / handle.fps;
   Integer position = -1;
   for(Size i=0;i<pixelCacheIndex.size();i++)
   {
@@ -49,7 +50,7 @@ operator videoSeekTime(
     return;
   }
 
-  FabricVIDEOSeekTime(handle, time);
+  FabricVIDEOSeekTime(handle, localTime);
   FabricVIDEOGetAllPixels(handle, pixels);
 
   if(pixelCacheLimit > pixelCacheIndex.size()) {
