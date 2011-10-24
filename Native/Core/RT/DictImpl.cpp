@@ -54,7 +54,7 @@ namespace Fabric
 
     void DictImpl::setData( void const *srcData, void *dstData ) const
     {
-      disposeDatas( dstData, 1, 0 );
+      disposeData( dstData );
       memset( dstData, 0, sizeof(bits_t) );
       
       bits_t const *srcBits = reinterpret_cast<bits_t const *>( srcData );
@@ -339,7 +339,7 @@ namespace Fabric
       if ( isString( m_keyImpl->getType() ) )
         keyImplAsStringImpl = RC::ConstHandle<StringImpl>::StaticCast( m_keyImpl );
       
-      disposeDatas( data, 1, 0 );
+      disposeData( data );
       memset( data, 0, sizeof(bits_t) );
         
       void *keyData = alloca( m_keySize );
@@ -355,7 +355,7 @@ namespace Fabric
         void *valueData = getMutable( data, keyData );
         m_valueImpl->setDataFromJSONValue( valueJSONValue, valueData );
       }
-      m_keyImpl->disposeDatas( keyData, 1, m_keySize );
+      m_keyImpl->disposeData( keyData );
     }
     
     void DictImpl::removeNode( bits_t *bits, bucket_t *bucket, node_t *node ) const
