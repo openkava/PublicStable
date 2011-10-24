@@ -45,6 +45,8 @@ function largeTest() {
     if ( ++displayed == 32 )
       break;
   }
+  a.clear();
+  report "a = " + a;
 }
 
 function nestedTest() {

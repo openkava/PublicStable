@@ -73,6 +73,7 @@ namespace Fabric
         m_keyImpl->disposeDatas( mutableKeyData( node ), 1, 0 );
       if ( !m_valueIsShallow )
         m_valueImpl->disposeDatas( mutableValueData( node ), 1, 0 );
+      free( node );
     }
     
     void DictImpl::disposeBits( bits_t *bits ) const
@@ -82,7 +83,6 @@ namespace Fabric
       {
         node_t *nextNode = node->bitsNextNode;
         disposeNode( node );
-        free( node );
         node = nextNode;
       }
       free( bits->buckets );
@@ -434,6 +434,25 @@ namespace Fabric
       }
     }
     
+    void DictImpl::clear( void *data ) const
+    {
+      bits_t *bits = reinterpret_cast<bits_t *>( data );
+      node_t *node = bits->firstNode;
+      while ( node )
+      {
+        node_t *nextNode = node->bucketNextNode;
+        disposeNode( node );
+        node = nextNode;
+      }
+      bits->nodeCount = 0;
+      bits->firstNode = bits->lastNode = 0;
+      for ( size_t i=0; i<bits->bucketCount; ++i )
+      {
+        bucket_t *bucket = &bits->buckets[i];
+        bucket->firstNode = bucket->lastNode = 0;
+      }
+    }
+    
     std::string DictImpl::descData( void const *data, size_t maxNumToDisplay ) const
     {
       size_t numDisplayed = 0;
@@ -443,7 +462,7 @@ namespace Fabric
       {
         node_t *node = bits->firstNode;
         while ( node )
-      {
+        {
           if ( numDisplayed > 0 )
             result += ',';
           if ( numDisplayed == maxNumToDisplay )
