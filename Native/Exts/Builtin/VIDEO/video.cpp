@@ -277,8 +277,8 @@ FABRIC_EXT_EXPORT void FabricVIDEOOpenFileName(
 }
 
 FABRIC_EXT_EXPORT void FabricVIDEOOpenResource(
-  KL::Data & resourceData,
-  KL::Size & resourceDataSize,
+  KL::Data resourceData,
+  KL::Size resourceDataSize,
   videoHandle &handle
 )
 {
@@ -302,11 +302,6 @@ FABRIC_EXT_EXPORT void FabricVIDEOOpenResource(
     fwrite(resourceData,resourceDataSize,1,file);
     fclose(file);
     file = NULL;
-    
-    // free memory
-    free(resourceData);
-    resourceData = NULL;
-    resourceDataSize = 0;
     
     return FabricVIDEOOpenFileName(fileName,handle);
   }
