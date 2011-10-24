@@ -8,8 +8,6 @@
 #ifndef _FABRIC_MT_TASK_H
 #define _FABRIC_MT_TASK_H
 
-#include <Fabric/Core/MT/Debug.h>
-
 namespace Fabric
 {
   namespace MT
