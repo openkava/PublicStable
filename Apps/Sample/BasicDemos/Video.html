@@ -61,9 +61,13 @@ s.parentNode.insertBefore(ga, s);
     
 $(document).ready(function() {
 
+  // load our custom material
+  FABRIC.SceneGraph.defineEffectFromFile('VideoDemoMaterial', 'VideoDemoShader.xml');
+
   // create a scene with 25 fps  
   var scene = FABRIC.SceneGraph.createScene({timeStep: 1.0/25.0});
-  
+
+  // create the viewport  
   var viewport = scene.constructNode('Viewport', {
     windowElement: document.getElementById('FabricContainer'),
     backgroundColor: FABRIC.RT.rgb(0.0, 0.05, 0.15)
@@ -103,12 +107,12 @@ $(document).ready(function() {
   });
 
   // create a simple material to show the video
-  var flatTexturedMaterial = scene.constructNode('FlatTextureMaterial', {
+  var videoMaterial = scene.constructNode('VideoDemoMaterial', {
     textureNode: videoNode
   });
   
   var instanceNode = scene.constructNode('Instance', {
-    materialNode: flatTexturedMaterial,
+    materialNode: videoMaterial,
     geometryNode: planeNode,
     transformNode: scene.constructNode('Transform', {
       globalXfo: new FABRIC.RT.Xfo({
@@ -136,7 +140,7 @@ $(document).ready(function() {
       scene.animation.pause();
     }
     scene.animation.setTime(ui.value);
-    scene.redrawAllWindows();
+    viewport.redraw();
   });
   
   $('#play').button({
@@ -166,6 +170,24 @@ $(document).ready(function() {
       });
       scene.animation.pause();
     }
+  });
+
+  $("#enableBloom").attr('checked', false).change(function() {
+    videoMaterial.setEnableBloom(!$('#enableBloom').attr('checked') == false);
+    viewport.redraw();
+  });
+  $("#enableNegative").attr('checked', false).change(function() {
+    videoMaterial.setEnableNegative(!$('#enableNegative').attr('checked') == false);
+    viewport.redraw();
+  });
+
+  $('#blurSize').slider({
+    min: 0.0,
+    max: 0.01,
+    step: 0.0001
+  }).bind('slide', function(event, ui) {
+    videoMaterial.setBlurSize(ui.value);
+    viewport.redraw();
   });
 
   $('#loadingDialog').dialog({
@@ -229,8 +251,11 @@ $(document).ready(function() {
             <h2>CONTROLS</h2>
             <div class="content">
               <button id="play">Play</button>
-              <div>Sample Index:</div>
-              <div id="globalTime"></div>
+              <div id="globalTime"></div><br>
+              <input type="checkbox" id="enableBloom"/><label for="enableBloom" style="margin-top:10px;" >Enable Bloom</label><br>
+              <input type="checkbox" id="enableNegative"/><label for="enableNegative" style="margin-top:10px;" >Enable Negative</label><br>
+              <div>Horizontal Blur Size:</div>
+              <div id="blurSize"></div>
             </div><!--content-->
           </div><!--box-->
             
