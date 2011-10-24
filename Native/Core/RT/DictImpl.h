@@ -71,6 +71,7 @@ namespace Fabric
       void *getMutable( void *data, void const *keyData ) const;
       size_t getSize( void const *data ) const;
       void delete_( void *data, void const *keyData ) const;
+      void clear( void *data ) const;
       
       std::string descData( void const *data, size_t limit ) const;
 

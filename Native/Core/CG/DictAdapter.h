@@ -83,6 +83,7 @@ namespace Fabric
       static void const *GetRValue( void *_dictAdapter, void const *dictRValue, void const *keyRValue );
       static void *GetLValue( void *_dictAdapter, void *dictLValue, void const *keyRValue );
       static void Delete( void *_dictAdapter, void *dictLValue, void const *keyLValue );
+      static void Clear( void *_dictAdapter, void *dictLValue );
 
       llvm::StructType const *getLLVMBitsType( RC::Handle<Context> const &context ) const;
       llvm::PointerType const *getLLVMBucketPtrType( RC::Handle<Context> const &context ) const;
