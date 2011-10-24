@@ -385,6 +385,11 @@ namespace Fabric
         FABRIC_ASSERT( func );
         basicBlockBuilder->CreateCall( func, lValue );
       }
+      llvmDisposeImpl( basicBlockBuilder, lValue );
+    }
+
+    void Adapter::llvmDisposeImpl( BasicBlockBuilder &basicBlockBuilder, llvm::Value *lValue ) const
+    {
       llvmRelease( basicBlockBuilder, llvmLValueToRValue( basicBlockBuilder, lValue ) );
     }
   };

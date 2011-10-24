@@ -505,6 +505,8 @@ namespace Fabric
         return (void *)&DictAdapter::Delete;
       else if ( functionName == "__" + getCodeName() + "_Clear" )
         return (void *)&DictAdapter::Clear;
+      else if ( functionName == "__" + getCodeName() + "_Dispose" )
+        return (void *)&DictAdapter::Dispose;
       else return Adapter::llvmResolveExternalFunction( functionName );
     }
 
@@ -514,6 +516,27 @@ namespace Fabric
     
     void DictAdapter::llvmRelease( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const
     {
+    }
+
+    void DictAdapter::llvmDisposeImpl( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *lValue ) const
+    {
+      RC::Handle<Context> context = basicBlockBuilder.getContext();
+
+      std::vector<llvm::Type const *> argTypes;
+      argTypes.push_back( basicBlockBuilder->getInt8PtrTy() );
+      argTypes.push_back( llvmLType( context ) );
+      llvm::FunctionType const *funcType = llvm::FunctionType::get( llvm::Type::getVoidTy( context->getLLVMContext() ), argTypes, false );
+      
+      llvm::AttributeWithIndex AWI[1];
+      AWI[0] = llvm::AttributeWithIndex::get( ~0u, llvm::Attribute::InlineHint | llvm::Attribute::NoUnwind );
+      llvm::AttrListPtr attrListPtr = llvm::AttrListPtr::get( AWI, 1 );
+      
+      llvm::Function *func = llvm::cast<llvm::Function>( basicBlockBuilder.getModuleBuilder()->getOrInsertFunction( "__"+getCodeName()+"_Dispose", funcType, attrListPtr ) ); 
+
+      std::vector<llvm::Value *> args;
+      args.push_back( llvmAdapterPtr( basicBlockBuilder ) );
+      args.push_back( lValue );
+      basicBlockBuilder->CreateCall( func, args.begin(), args.end() );
     }
 
     void DictAdapter::llvmDefaultAssign( BasicBlockBuilder &basicBlockBuilder, llvm::Value *dstLValue, llvm::Value *srcRValue ) const
@@ -663,6 +686,12 @@ namespace Fabric
     {
       DictAdapter const *dictAdapter = static_cast<DictAdapter const *>( _dictAdapter );
       dictAdapter->m_dictImpl->clear( dictLValue );
+    }
+
+    void DictAdapter::Dispose( void *_dictAdapter, void *dictLValue )
+    {
+      DictAdapter const *dictAdapter = static_cast<DictAdapter const *>( _dictAdapter );
+      dictAdapter->m_dictImpl->disposeData( dictLValue );
     }
 
     RC::ConstHandle<ComparableAdapter> DictAdapter::getKeyAdapter() const

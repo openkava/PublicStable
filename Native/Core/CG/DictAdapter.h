@@ -42,6 +42,7 @@ namespace Fabric
       virtual void llvmRetain( BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const;
       virtual void llvmDefaultAssign( BasicBlockBuilder &basicBlockBuilder, llvm::Value *dstLValue, llvm::Value *srcRValue ) const;
       virtual void llvmRelease( BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const;
+      virtual void llvmDisposeImpl( BasicBlockBuilder &basicBlockBuilder, llvm::Value *lValue ) const;
 
       virtual llvm::Constant *llvmDefaultValue( BasicBlockBuilder &basicBlockBuilder ) const;
       virtual llvm::Constant *llvmDefaultRValue( BasicBlockBuilder &basicBlockBuilder ) const;
@@ -84,6 +85,7 @@ namespace Fabric
       static void *GetLValue( void *_dictAdapter, void *dictLValue, void const *keyRValue );
       static void Delete( void *_dictAdapter, void *dictLValue, void const *keyLValue );
       static void Clear( void *_dictAdapter, void *dictLValue );
+      static void Dispose( void *_dictAdapter, void *dictLValue );
 
       llvm::StructType const *getLLVMBitsType( RC::Handle<Context> const &context ) const;
       llvm::PointerType const *getLLVMBucketPtrType( RC::Handle<Context> const &context ) const;
