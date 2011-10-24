@@ -8,7 +8,8 @@ Import( 'coreEnv', 'buildOS', 'buildType', 'buildObject', 'archDistDir', 'packag
 
 cliEnv = coreEnv.Clone()
 cliEnv.MergeFlags( v8Flags )
-cliEnv.Append( LINKFLAGS = ["-undefined", "dynamic_lookup"] )
+if buildOS == 'Darwin':
+  cliEnv.Append( LINKFLAGS = ["-undefined", "dynamic_lookup"] )
 
 extraObjects = []
 
