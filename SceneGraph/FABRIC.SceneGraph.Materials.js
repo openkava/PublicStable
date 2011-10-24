@@ -208,7 +208,7 @@ FABRIC.SceneGraph.registerNodeType('Video', {
     scene.assignDefaults(options, {
         url: '',
         loop: false,
-        nbCachedFrames: -1,
+        nbCachedFrames: 0,
         animationControllerNode: undefined
       });
 
