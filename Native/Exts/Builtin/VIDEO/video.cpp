@@ -7,14 +7,24 @@
 using namespace Fabric::EDK;
 IMPLEMENT_FABRIC_EDK_ENTRIES
 
-#include <map>
-
 extern "C" {
 #include <stdint.h>
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
 #include <libswscale/swscale.h>
 }
+
+class videoStream;
+
+struct videoHandle
+{
+  videoStream * pointer;
+  KL::Size width;
+  KL::Size height;
+  KL::Scalar duration;
+  KL::Scalar fps;
+  KL::Scalar time;
+};
 
 class videoStream
 {
@@ -27,13 +37,15 @@ private:
   AVFrame * mFrameYUV;
   AVFrame * mFrameRGB;
   uint8_t * mBuffer;
-  KL::Scalar mTime;
   SwsContext * mConvertCtx;
+  videoHandle * mHandle;
 
 public:
     
-  videoStream()
+  videoStream(videoHandle * in_Handle)
   {
+    mHandle = in_Handle;
+    
     if(!sRegistered)
     {
       av_register_all();
@@ -47,7 +59,6 @@ public:
     mFrameYUV = NULL;
     mFrameRGB = NULL;
     mBuffer = NULL;
-    mTime = -1000.0;
     mConvertCtx = NULL;
   }
   
@@ -84,7 +95,7 @@ public:
   
   KL::Scalar getTime()
   {
-    return mTime;
+    return mHandle->time;
   }
   
   bool init(KL::String & filename)
@@ -157,7 +168,14 @@ public:
     }
 
     // connect the picture frame with the buffer      
-    avpicture_fill((AVPicture *)mFrameRGB, mBuffer, PIX_FMT_RGB24, getWidth(), getHeight());      
+    avpicture_fill((AVPicture *)mFrameRGB, mBuffer, PIX_FMT_RGB24, getWidth(), getHeight());
+    
+    // init the handle's values
+    mHandle->time = -10000.0;
+    mHandle->width = getWidth();
+    mHandle->height = getHeight();
+    mHandle->duration = getDuration();
+    mHandle->fps = getFPS();
 
     return true;
   }
@@ -204,44 +222,29 @@ public:
     if(!result && loop)
       av_seek_frame(mFormatCtx,mVideoStreamID,0,0);
     else
-      mTime += 1.0 / getFPS();
+      mHandle->time += 1.0 / getFPS();
 
     return result;
   }
 
   bool seekTime(KL::Scalar &time)
   {
-    if(fabs(time - mTime) < 0.0000001)
+    if(fabs(time - mHandle->time) < 0.0000001)
       return true;
 
-    if(fabs(time - mTime) > 1.0 / getFPS() + 0.0001)
+    if(fabs(time - mHandle->time) > 1.0 / getFPS() + 0.0001)
     {
       int64_t frame = (int64_t)(0.5 * time * KL::Scalar(mCodecCtx->time_base.den) / KL::Scalar(mCodecCtx->time_base.num));
       av_seek_frame(mFormatCtx,mVideoStreamID,frame,0);
-      mTime = time;
+      mHandle->time = time;
     }
     
     KL::Boolean loop = false;
     return readNextFrame(loop);
   }
   
-  bool getPixel(KL::Size &x,KL::Size &y,KL::RGB &pixel)
+  bool getAllPixels(KL::VariableArray<KL::RGB> &pixels)
   {
-    if(x >= getWidth() || y >= getHeight())
-      return false;
-    
-    KL::Size offset = x*3 + y*mFrameRGB->linesize[0];
-    pixel.r = (int)mFrameRGB->data[0][offset++];
-    pixel.g = (int)mFrameRGB->data[0][offset++];
-    pixel.b = (int)mFrameRGB->data[0][offset++];
-
-    return true;
-  }
-  
-  bool getAllPixels(KL::Size &width, KL::Size &height, KL::VariableArray<KL::RGB> &pixels)
-  {
-    width = getWidth();
-    height = getHeight();
     pixels.resize(getHeight() * getWidth());
     memcpy(&pixels[0],mFrameRGB->data[0],sizeof(pixels[0]) * getHeight() * getWidth());
     return true;
@@ -250,113 +253,91 @@ public:
 };
 bool videoStream::sRegistered = false;
 
-std::map<KL::Size,videoStream*> gvideoStreams;
-KL::Size gLastStream = 0;
-videoStream * gLastVideo = NULL;
-
-videoStream * getStream(KL::Size &stream)
+FABRIC_EXT_EXPORT void FabricVIDEOOpenFileName(
+  KL::String filename,
+  videoHandle &handle
+)
 {
-  if(gLastStream == stream)
-    return gLastVideo;
-  
-  std::map<KL::Size,videoStream*>::iterator it = gvideoStreams.find(stream);
-  if(it == gvideoStreams.end())
+  if(handle.pointer == NULL)
   {
-    printf("=======> VIDEO-ERROR: Unable to find stream %d.\n",(int)stream);
-    return NULL;
-  }
-  return it->second;
-}
-
-FABRIC_EXT_EXPORT void FabricVIDEOOpenStream(
-  KL::String &filename,
-  KL::Size &stream,
-  KL::Size &width,
-  KL::Size &height,
-  KL::Scalar &duration,
-  KL::Scalar &fps
-  )
-{
-  if(stream == 0)
-  {
-    // let's find out the highest stream key
-    for(std::map<KL::Size,videoStream*>::iterator it = gvideoStreams.begin(); it != gvideoStreams.end(); it++)
-    {
-      if(it->first > stream)
-        stream = it->first;
-    }
-    stream++;
-
     // init the stream
-    videoStream * video = new videoStream();
-    if(!video){
+    handle.pointer = new videoStream(&handle);
+    if(!handle.pointer){
       printf("=======> VIDEO-ERROR: Could not create videoStream object.\n");
-      stream = 0;
+      handle.pointer = NULL;
       return;
     }
-    if(!video->init(filename))
+    if(!handle.pointer->init(filename))
     {
-      delete(video);
-      stream = 0;
-      
+      delete(handle.pointer);
+      handle.pointer = NULL;
       return;
     }
-    
-    // extract the frame information
-    width = video->getWidth();
-    height = video->getHeight();
-    duration = video->getDuration();
-    fps = video->getFPS();
-    
-    // out of the sequence to later then access single frames....! :)
-    gvideoStreams.insert(std::pair<KL::Size,videoStream*>(stream,video));
   }
 }
 
-FABRIC_EXT_EXPORT void FabricVIDEOLoadNextFrame(
-  KL::Size &stream,
-  KL::Boolean &loop
-  )
+FABRIC_EXT_EXPORT void FabricVIDEOOpenResource(
+  KL::Data & resourceData,
+  KL::Size & resourceDataSize,
+  videoHandle &handle
+)
 {
-  videoStream * video = getStream(stream);
-  if(!video)
-    return;
-  video->readNextFrame(loop);
+  if(handle.pointer == NULL && resourceData != NULL && resourceDataSize > 0)
+  {
+#if defined(FABRIC_OS_WINDOWS)
+    char const *dir = getenv("APPDATA");
+    if(dir == NULL)
+      dir = getenv("TEMP");
+    if(dir == NULL)
+      dir = getenv("TMP");
+    if(dir == NULL)
+      Fabric::EDK::throwException("Alembic extension: environment variable APP_DATA or TMP or TEMP is undefined");
+    KL::String fileName( _tempnam( dir, "tmpfab_" ) );
+#else
+    KL::String fileName(tmpnam(NULL));
+#endif
+
+    // save the file to disk
+    FILE * file = fopen(fileName.data(),"wb");
+    fwrite(resourceData,resourceDataSize,1,file);
+    fclose(file);
+    file = NULL;
+    
+    // free memory
+    free(resourceData);
+    resourceData = NULL;
+    resourceDataSize = 0;
+    
+    return FabricVIDEOOpenFileName(fileName,handle);
+  }
 }
 
 FABRIC_EXT_EXPORT void FabricVIDEOSeekTime(
-  KL::Size &stream,
+  videoHandle & handle,
   KL::Scalar &time
-  )
+)
 {
-  videoStream * video = getStream(stream);
-  if(!video)
+  if(handle.pointer == NULL)
     return;
-  video->seekTime(time);
-}
-
-FABRIC_EXT_EXPORT void FabricVIDEOGetPixel(
-  KL::Size &stream,
-  KL::Size &x,
-  KL::Size &y,
-  KL::RGB &pixel
-  )
-{
-  videoStream * video = getStream(stream);
-  if(!video)
-    return;
-  video->getPixel(x,y,pixel);
+  handle.pointer->seekTime(time);
 }
 
 FABRIC_EXT_EXPORT void FabricVIDEOGetAllPixels(
-  KL::Size &stream,
-  KL::Size &width,
-  KL::Size &height,
+  videoHandle & handle,
   KL::VariableArray<KL::RGB> &pixels
-  )
+)
 {
-  videoStream * video = getStream(stream);
-  if(!video)
+  if(handle.pointer == NULL)
     return;
-  video->getAllPixels(width,height,pixels);
+  handle.pointer->getAllPixels(pixels);
+}
+
+FABRIC_EXT_EXPORT void FabricVIDEOFreeHandle(
+  videoHandle &handle
+)
+{
+  if(handle.pointer != NULL) {
+    delete(handle.pointer);
+    handle.pointer = NULL;
+  }
 }
