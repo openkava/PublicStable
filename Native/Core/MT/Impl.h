@@ -5,12 +5,12 @@
 #ifndef _FABRIC_MT_IMPL_H
 #define _FABRIC_MT_IMPL_H
 
-#include <Fabric/Core/MT/Debug.h>
 #include <Fabric/Core/MT/Mutex.h>
 #include <Fabric/Core/MT/Cond.h>
 #include <Fabric/Core/MT/Thread.h>
 #include <Fabric/Core/MT/Cond.h>
 #include <Fabric/Core/MT/LogCollector.h>
+#include <Fabric/Core/Util/Debug.h>
 #include <Fabric/Core/Util/TLS.h>
 
 #include <vector>

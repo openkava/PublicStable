@@ -8,7 +8,6 @@
  */
 
 #include "TaskGroupStream.h"
-#include "Debug.h"
 
 namespace Fabric
 {
