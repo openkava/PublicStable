@@ -12,8 +12,8 @@ struct VideoHandle {
 };
 
 function FabricVIDEOOpenResource(
-  io Data resourceData,
-  io Size resourceDataSize,
+  Data resourceData,
+  Size resourceDataSize,
   io VideoHandle handle
 );
 
