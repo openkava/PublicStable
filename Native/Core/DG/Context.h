@@ -7,10 +7,10 @@
 
 #include <Fabric/Core/JSON/CommandChannel.h>
 #include <Fabric/Base/RC/WeakHandleSet.h>
-#include <Fabric/Core/MT/Mutex.h>
-#include <Fabric/Core/Util/JSONGenerator.h>
-#include <Fabric/Core/Util/UnorderedMap.h>
 #include <Fabric/Base/Util/AtomicSize.h>
+#include <Fabric/Core/Util/JSONGenerator.h>
+#include <Fabric/Core/Util/Mutex.h>
+#include <Fabric/Core/Util/UnorderedMap.h>
 
 #include <vector>
 
@@ -152,7 +152,7 @@ namespace Fabric
       Clients m_clients;
       
       Util::AtomicSize m_notificationBracketCount;
-      MT::Mutex m_pendingNotificationsMutex;
+      Util::Mutex m_pendingNotificationsMutex;
       Util::SimpleString *m_pendingNotificationsJSON;
       Util::JSONGenerator *m_pendingNotificationsJSONGenerator;
       Util::JSONArrayGenerator *m_pendingNotificationsJSONArrayGenerator;

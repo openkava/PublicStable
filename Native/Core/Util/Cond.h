@@ -2,11 +2,12 @@
  *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
  */
  
-#ifndef _FABRIC_MT_COND_H
-#define _FABRIC_MT_COND_H
+#ifndef _FABRIC_UTIL_COND_H
+#define _FABRIC_UTIL_COND_H
 
 // [pzion 20110713] Windows implementation taken from http://www1.cse.wustl.edu/~schmidt/win32-cv-1.html
 
+#include <Fabric/Base/Config.h>
 #include <Fabric/Base/Exception.h>
 
 #if defined(FABRIC_POSIX)
@@ -19,7 +20,7 @@
 
 namespace Fabric
 {
-  namespace MT
+  namespace Util
   {
     class Cond
     {
@@ -147,4 +148,4 @@ namespace Fabric
   };
 };
 
-#endif
+#endif //_FABRIC_UTIL_COND_H

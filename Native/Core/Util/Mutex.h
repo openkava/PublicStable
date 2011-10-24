@@ -2,9 +2,10 @@
  *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
  */
 
-#ifndef _FABRIC_MT_MUTEX_H
-#define _FABRIC_MT_MUTEX_H
+#ifndef _FABRIC_UTIL_MUTEX_H
+#define _FABRIC_UTIL_MUTEX_H
 
+#include <Fabric/Base/Config.h>
 #include <Fabric/Core/Util/Assert.h>
 #include <Fabric/Core/Util/Debug.h>
 
@@ -18,7 +19,7 @@
 
 namespace Fabric
 {
-  namespace MT
+  namespace Util
   {
     class Mutex
     {
@@ -103,4 +104,4 @@ namespace Fabric
   };
 };
 
-#endif //_FABRIC_MT_MUTEX_H
+#endif //_FABRIC_UTIL_MUTEX_H

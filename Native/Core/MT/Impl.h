@@ -5,12 +5,11 @@
 #ifndef _FABRIC_MT_IMPL_H
 #define _FABRIC_MT_IMPL_H
 
-#include <Fabric/Core/MT/Mutex.h>
-#include <Fabric/Core/MT/Cond.h>
-#include <Fabric/Core/MT/Thread.h>
-#include <Fabric/Core/MT/Cond.h>
 #include <Fabric/Core/MT/LogCollector.h>
+#include <Fabric/Core/Util/Cond.h>
 #include <Fabric/Core/Util/Debug.h>
+#include <Fabric/Core/Util/Mutex.h>
+#include <Fabric/Core/Util/Thread.h>
 #include <Fabric/Core/Util/TLS.h>
 
 #include <vector>
@@ -119,9 +118,9 @@ namespace Fabric
     
       static void WorkerMainCallback( void *_this );
 
-      Mutex m_stateMutex;
-      Cond m_stateCond;
-      std::vector<Thread> m_workerThreads;
+      Util::Mutex m_stateMutex;
+      Util::Cond m_stateCond;
+      std::vector<Util::Thread> m_workerThreads;
       std::vector<Task *> m_tasks;
       Util::TLSVar<bool> m_isMainThread;
       std::vector<Task *> m_mainThreadTasks;
