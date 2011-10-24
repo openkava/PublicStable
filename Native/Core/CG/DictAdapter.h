@@ -86,6 +86,7 @@ namespace Fabric
       static void Delete( void *_dictAdapter, void *dictLValue, void const *keyLValue );
       static void Clear( void *_dictAdapter, void *dictLValue );
       static void Dispose( void *_dictAdapter, void *dictLValue );
+      static void DefaultAssign( void *_dictAdapter, void const *srcLValue, void *dstLValue );
 
       llvm::StructType const *getLLVMBitsType( RC::Handle<Context> const &context ) const;
       llvm::PointerType const *getLLVMBucketPtrType( RC::Handle<Context> const &context ) const;
