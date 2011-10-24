@@ -6,13 +6,16 @@
 use FabricOGL;
 use FabricVIDEO;
 
+struct RGBCache{
+  RGB pixels[];
+};
+
 operator videoLoadResource(
   io FabricResource resource,
   io VideoHandle handle
 ) {
   if(!handle.pointer){
     FabricVIDEOOpenResource(resource.data.data(), resource.data.dataSize(), handle);
-    report("Loaded Video, Dimensions: "+handle.width+"x"+handle.height+", duration: "+handle.duration+", fps: "+handle.fps);
   }
 }
 
@@ -26,16 +29,33 @@ operator videoSetTimeRange(
 
 operator videoSeekTime(
   io VideoHandle handle,
-  io Scalar time
+  io Scalar time,
+  io RGB pixels[],
+  io RGB pixelCache[][],
+  io Integer pixelCacheIndex[],
+  io Integer pixelCacheLimit
 ) {
-  FabricVIDEOSeekTime(handle, time);
-}
+  Integer frameIndex = floor(time * handle.fps + 0.5);
+  Integer position = -1;
+  for(Size i=0;i<pixelCacheIndex.size();i++)
+  {
+    if(pixelCacheIndex[i] == frameIndex) {
+      position = i;
+      break;
+    }
+  }
+  if(position > -1){
+    pixels = pixelCache[position];
+    return;
+  }
 
-operator videoGetPixels(
-  io VideoHandle handle,
-  io RGB pixels[]
-) {
+  FabricVIDEOSeekTime(handle, time);
   FabricVIDEOGetAllPixels(handle, pixels);
+
+  if(pixelCacheLimit > pixelCacheIndex.size()) {
+    pixelCacheIndex.push(frameIndex);
+    pixelCache.push(pixels);
+  }
 }
 
 operator videoLoadToGPU(
