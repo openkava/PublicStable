@@ -16,6 +16,8 @@ extern "C" {
 
 class videoStream;
 
+const float cFrameSkipTolerance = 0.005f;
+
 struct videoHandle
 {
   videoStream * pointer;
@@ -229,17 +231,25 @@ public:
 
   bool seekTime(KL::Scalar &time)
   {
-    if(fabs(time - mHandle->time) < 0.0000001)
+    KL::Boolean loop = false;
+
+    if(fabs(time - mHandle->time) < cFrameSkipTolerance)
       return true;
 
-    if(fabs(time - mHandle->time) > 1.0 / getFPS() + 0.0001)
+    if(fabs(time - mHandle->time) > 1.0 / getFPS() + cFrameSkipTolerance)
     {
-      int64_t frame = (int64_t)(0.5 * time * KL::Scalar(mCodecCtx->time_base.den) / KL::Scalar(mCodecCtx->time_base.num));
-      av_seek_frame(mFormatCtx,mVideoStreamID,frame,0);
-      mHandle->time = time;
+      if(fabs(time - mHandle->time) < 2.0 / getFPS() + cFrameSkipTolerance)
+      {
+        readNextFrame(loop);
+      }
+      else
+      {
+        int64_t frame = (int64_t)(0.5 * (time - 1.0 / getFPS()) * KL::Scalar(mCodecCtx->time_base.den) / KL::Scalar(mCodecCtx->time_base.num));
+        av_seek_frame(mFormatCtx,mVideoStreamID,frame,0);
+        mHandle->time = time - 1.0 / getFPS();
+      }
     }
     
-    KL::Boolean loop = false;
     return readNextFrame(loop);
   }
   
