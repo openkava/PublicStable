@@ -440,7 +440,7 @@ namespace Fabric
       node_t *node = bits->firstNode;
       while ( node )
       {
-        node_t *nextNode = node->bucketNextNode;
+        node_t *nextNode = node->bitsNextNode;
         disposeNode( node );
         node = nextNode;
       }
