@@ -3,6 +3,8 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
+use Vec2;
+
 function LinearKeyframe(Scalar time, Scalar value) {
   this.time = time;
   this.value = value;
@@ -28,7 +30,10 @@ function Scalar LinearKeyframeTrack.evaluate(
   if(numKeys == 0){
     return 0.0;
   }
-  if (time >= this.keys[numKeys - 1].time) {
+  else if(numKeys == 1){
+    return this.keys[0].value;
+  }
+  else if (time >= this.keys[numKeys - 1].time) {
     return this.keys[numKeys - 1].value;
   }
   else if (time <= this.keys[0].time) {
@@ -83,28 +88,30 @@ function LinearKeyframeTrack.setValue(
     }
   }
 }
-
-
 function Vec2 LinearKeyframeTrackSet.getTimeRange() {
-  Vec2 timeRange;
+  return this.timeRange;
+}
+
+
+function LinearKeyframeTrackSet.calcTimeRange() {
+  this.timeRange.set(0.0, 0.0);
   for (Integer i = 0; i < this.tracks.size; i++) {
     if(this.tracks[i].keys.size == 0){
       continue;
     }
     if(i==0){
-      timeRange.x = this.tracks[i].keys[0].time;
-      timeRange.y = this.tracks[i].keys[this.tracks[i].keys.size-1].time;
+      this.timeRange.x = this.tracks[i].keys[0].time;
+      this.timeRange.y = this.tracks[i].keys[this.tracks[i].keys.size-1].time;
     }
     else{
-      if(timeRange.x > this.tracks[i].keys[0].time){
-        timeRange.x = this.tracks[i].keys[0].time;
+      if(this.timeRange.x > this.tracks[i].keys[0].time){
+        this.timeRange.x = this.tracks[i].keys[0].time;
       }
-      if(timeRange.y < this.tracks[i].keys[this.tracks[i].keys.size-1].time){
-        timeRange.y = this.tracks[i].keys[this.tracks[i].keys.size-1].time;
+      if(this.timeRange.y < this.tracks[i].keys[this.tracks[i].keys.size-1].time){
+        this.timeRange.y = this.tracks[i].keys[this.tracks[i].keys.size-1].time;
       }
     }
   }
-  return timeRange;
 }
 
 
