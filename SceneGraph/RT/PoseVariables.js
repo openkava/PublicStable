@@ -87,6 +87,21 @@ FABRIC.RT.PoseVariables.prototype = {
         throw "unsupported Type:" + type;
     }
     return id;
+  },
+  setIdentity: function(){
+    var i;
+    for(i=0; i<this.scalarValues.length; i++){
+      this.scalarValues[i] = 0.0;
+    }
+    for(i=0; i<this.vec3Values.length; i++){
+      this.vec3Values[i].set(0.0,0.0,0.0);
+    }
+    for(i=0; i<this.quatValues.length; i++){
+      this.quatValues[i].setIdentity();
+    }
+    for(i=0; i<this.xfoValues.length; i++){
+      this.xfoValues[i].setIdentity();
+    }
   }
 };
 
