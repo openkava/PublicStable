@@ -79,9 +79,9 @@ function generate3DTexture(
             }
           }
 
-          weightedGradientsVoxels[index].r = Byte(gradient.x*255.99);
-          weightedGradientsVoxels[index].g = Byte(gradient.y*255.99);
-          weightedGradientsVoxels[index].b = Byte(gradient.z*255.99);
+          weightedGradientsVoxels[index].r = Byte(((gradient.x*0.5)+0.5)*255.99);
+          weightedGradientsVoxels[index].g = Byte(((gradient.y*0.5)+0.5)*255.99);
+          weightedGradientsVoxels[index].b = Byte(((gradient.z*0.5)+0.5)*255.99);
           weightedGradientsVoxels[index].a = Byte(gradientWeight*255.99);
         }
 
