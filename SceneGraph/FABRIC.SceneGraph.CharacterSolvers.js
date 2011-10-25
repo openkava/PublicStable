@@ -41,15 +41,16 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('CharacterSolver', {
       throw ('You must specify the rigNode.');
     }
 
-    var parameterLayout;
-
-    var boneIDs = {},
+    var parameterLayout,
+      skeletonNode = options.rigNode.getSkeletonNode(),
       manipulators = {};
-
+    var name2id = {};
+    var boneNames = skeletonNode.getBoneNames();
+    for (var i = 0; i < boneNames.length; i++) {
+      name2id[boneNames[i]] = i;
+    }
+    
     var solver = {
-      getBoneIDs: function() {
-        return boneIDs;
-      },
       constructManipulator: function(name, manipulatorType, options) {
         if (manipulators[name]) {
           throw (" Manipulator names must be unique. Solver '" + name + "' already contains :'" + name + "'");
@@ -60,60 +61,54 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('CharacterSolver', {
       },
       getManipulators: function() {
         return manipulators;
+      },
+      generateBoneMapping: function(bones, identifiers){
+        // Define the mapping between the named bones and the bone ids.
+        if (!bones) {
+          throw ('We need to specify the bones dictionary for any CharacterSolver.');
+        }
+        if (!identifiers) {
+          throw ('We need to specify the identifiers for any CharacterSolver.');
+        }
+    
+        // create a temp map for boneName 2 id
+        var boneIDs = {};
+        // let's check the identifiers
+        for (var i = 0; i < identifiers.length; i++){
+          if (identifiers[i].constructor.name === 'Array') {
+            var name = identifiers[i][0];
+            if (!bones[name]) {
+              console.warn ("'" + name + "' were not specified.");
+              continue;
+            }
+            if (typeof(bones[name]) !== typeof(identifiers[i])) {
+              throw ('Bone ' + name + ' was uncorrectly specified. Should be name array.');
+            }
+            var chainBones = [];
+            var dynNames = bones[name];
+            for (var j = 0; j < dynNames.length; j++) {
+              if (name2id[dynNames[j]] == undefined) {
+                throw ('Bone ' + dynNames[j] + ' is not part of the skeleton.');
+              }
+              chainBones.push(name2id[dynNames[j]]);
+            }
+            boneIDs[name] = chainBones;
+          }
+          else {
+            var name = identifiers[i];
+            if (!bones[name]) {
+              console.warn ("'" + name + "' were not specified.");
+              continue;
+            }
+            if (name2id[bones[name]] == undefined) {
+              throw ('Bone ' + bones[name] + ' is not part of the skeleton.');
+            }
+            boneIDs[name] = name2id[bones[name]];
+          }
+        }
+        return boneIDs;
       }
     };
-
-    /////////////////////////////////////////////////
-    // Now define the mapping between the named bones,
-    // and the bone ids.
-    if (!options.bones) {
-      throw ('We need to specify the bones dictionary for any CharacterSolver.');
-    }
-    if (!options.identifiers) {
-      throw ('We need to specify the identifiers for any CharacterSolver.');
-    }
-
-    // create a temp map for boneName 2 id
-    var name2id = {};
-    var boneNames = options.rigNode.getSkeletonNode().getBoneNames();
-    for (var i = 0; i < boneNames.length; i++) {
-      name2id[boneNames[i]] = i;
-    }
-    // let's check the identifiers
-    for (var i = 0; i < options.identifiers.length; i++)
-    {
-
-      if (options.identifiers[i].constructor.name === 'Array') {
-        var name = options.identifiers[i][0];
-        if (!options.bones[name]) {
-          console.warn ("'" + name + "' were not specified.");
-          continue;
-        }
-        if (typeof(options.bones[name]) !== typeof(options.identifiers[i])) {
-          throw ('Bone ' + name + ' was uncorrectly specified. Should be name array.');
-        }
-        var chainBones = [];
-        var dynNames = options.bones[name];
-        for (var j = 0; j < dynNames.length; j++) {
-          if (name2id[dynNames[j]] == undefined) {
-            throw ('Bone ' + dynNames[j] + ' is not part of the skeleton.');
-          }
-          chainBones.push(name2id[dynNames[j]]);
-        }
-        boneIDs[name] = chainBones;
-      }
-      else {
-        var name = options.identifiers[i];
-        if (!options.bones[name]) {
-          console.warn ("'" + name + "' were not specified.");
-          continue;
-        }
-        if (name2id[options.bones[name]] == undefined) {
-          throw ('Bone ' + options.bones[name] + ' is not part of the skeleton.');
-        }
-        boneIDs[name] = name2id[options.bones[name]];
-      }
-    }
 
     return solver;
   }
@@ -146,6 +141,8 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('FKHierarchySolver',{
       bones = skeletonNode.pub.getBones(),
       referenceLocalPose = skeletonNode.pub.getReferenceLocalPose();
 
+    var solver = FABRIC.SceneGraph.CharacterSolvers.constructSolver('CharacterSolver', options, scene);
+    
     if(!options.bones){
       // Collect all the bones in the skeleton.
       options.bones = { bones:[] };
@@ -153,11 +150,8 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('FKHierarchySolver',{
         options.bones.bones.push(bones[i].name);
       }
     }
-    options.identifiers = [['bones']];
-
-    var solver = FABRIC.SceneGraph.CharacterSolvers.constructSolver('CharacterSolver', options, scene);
     
-    var boneIDs = solver.getBoneIDs(),
+    var boneIDs = solver.generateBoneMapping(options.bones, [['bones']]),
       name = options.name;
 
     var defaultValues = [];
@@ -548,11 +542,8 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('SpineSolver', {
         createBaseManipulators: true,
         manipulatorSize: undefined
       });
-      
-    options.identifiers = [['vertebra'], 'hub'];
-
+    
     var solver = FABRIC.SceneGraph.CharacterSolvers.constructSolver('CharacterSolver', options, scene);
-
 
     var rigNode = scene.getPrivateInterface(options.rigNode),
       skeletonNode = rigNode.pub.getSkeletonNode(),
@@ -560,7 +551,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('SpineSolver', {
       constantsNode = scene.getPrivateInterface(rigNode.pub.getConstantsNode()),*/
       bones = skeletonNode.getBones(),
       referencePose = skeletonNode.getReferencePose(),
-      boneIDs = solver.getBoneIDs(),
+      boneIDs = solver.generateBoneMapping(options.bones, [['vertebra'], 'hub']),
       baseVertebreIndex = boneIDs.vertebra[0],
       size,
       name = options.name;
@@ -716,13 +707,9 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('SpineSolver', {
 FABRIC.SceneGraph.CharacterSolvers.registerSolver('TwistBoneSolver', {
   constructSolver: function(options, scene) {
 
-    var solver,
+    var solver = FABRIC.SceneGraph.CharacterSolvers.constructSolver('CharacterSolver', options, scene),
       parameterLayout,
       bindToRig;
-
-    options.identifiers = ['start', 'end', ['twistBones']];
-
-    solver = FABRIC.SceneGraph.CharacterSolvers.constructSolver('CharacterSolver', options, scene);
 
     bindToRig = function() {
 
@@ -732,7 +719,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('TwistBoneSolver', {
         skeletonNode = rigNode.pub.getSkeletonNode(),
         bones = skeletonNode.getBones(),
         referencePose = skeletonNode.getReferencePose(),
-        boneIDs = solver.getBoneIDs(),
+        boneIDs = solver.generateBoneMapping(options.bones, ['start', 'end', ['twistBones']]),
         size,
         name = options.name;
 
@@ -788,8 +775,6 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('TwistBoneSolver', {
 FABRIC.SceneGraph.CharacterSolvers.registerSolver('BlendBoneSolver', {
   constructSolver: function(options, scene) {
 
-    options.identifiers = ['start', 'end', ['blendBones']];
-
     var solver = FABRIC.SceneGraph.CharacterSolvers.constructSolver('CharacterSolver', options, scene);
 
     var rigNode = scene.getPrivateInterface(options.rigNode),/*
@@ -798,7 +783,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('BlendBoneSolver', {
       skeletonNode = rigNode.pub.getSkeletonNode(),
       bones = skeletonNode.getBones(),
       referencePose = skeletonNode.getReferencePose(),
-      boneIDs = solver.getBoneIDs(),
+      boneIDs = solver.generateBoneMapping(options.bones, ['start', 'end', ['blendBones']]),
       size,
       name = options.name;
 
@@ -998,8 +983,6 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('ArmSolver', {
     scene.assignDefaults(options, {
       });
 
-    options.identifiers = [['bones']];
-
     var solver = FABRIC.SceneGraph.CharacterSolvers.constructSolver('CharacterSolver', options, scene);
 
     var rigNode = scene.getPrivateInterface(options.rigNode),
@@ -1009,7 +992,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('ArmSolver', {
       bones = skeletonNode.getBones(),
       referencePose = skeletonNode.getReferencePose(),
       referenceLocalPose = skeletonNode.getReferenceLocalPose(),
-      boneIDs = solver.getBoneIDs(),
+      boneIDs = solver.generateBoneMapping(options.bones, [['bones']]),
       name = options.name,
       footPlatformXfo,
       wristOffsetXfo,
@@ -1137,12 +1120,96 @@ FABRIC.appendOnCreateContextCallback(function(context) {
   });
 });
 
+
+FABRIC.SceneGraph.CharacterSolvers.registerSolver('InsectLegSolver', {
+  constructSolver: function(options, scene) {
+    scene.assignDefaults(options, {
+        rigNode: undefined
+      });
+    var solver = FABRIC.SceneGraph.CharacterSolvers.constructSolver('CharacterSolver', options, scene);
+
+    var rigNode = scene.getPrivateInterface(options.rigNode),
+      skeletonNode = scene.getPrivateInterface(rigNode.pub.getSkeletonNode()),
+      variablesNode = scene.getPrivateInterface(rigNode.pub.getVariablesNode()),
+      bones = skeletonNode.pub.getBones(),
+      referencePose = skeletonNode.pub.getReferencePose(),
+      referenceLocalPose = skeletonNode.pub.getReferenceLocalPose(),
+      name = options.name,
+      footPlatformXfo,
+      lastBoneOffsetXfo,
+      lastBoneTipXfo,
+      i, j;
+      
+    var legs = [];
+    for(j=0; j<options.limbs.length; j++){
+      var boneIDs = solver.generateBoneMapping(options.limbs[j], [['bones']]);
+      var lastBoneId = boneIDs.bones[boneIDs.bones.length-1];
+      
+      // compute the target
+      lastBoneTipXfo = referencePose[lastBoneId].clone();
+      lastBoneTipXfo.tr = referencePose[lastBoneId].transformVector(new FABRIC.RT.Vec3(bones[lastBoneId].length, 0, 0));
+      footPlatformXfo = lastBoneTipXfo.clone();
+      footPlatformXfo.tr.y = 0;
+      var alignmentQuat = new FABRIC.RT.Quat();
+      alignmentQuat.setFrom2Vectors(
+        footPlatformXfo.ori.rotateVector(new FABRIC.RT.Vec3(1, 0, 0)),
+        new FABRIC.RT.Vec3(0, -1, 0)
+      );
+      footPlatformXfo.ori = alignmentQuat.multiply(footPlatformXfo.ori);
+      lastBoneOffsetXfo = footPlatformXfo.inverse().multiply(lastBoneTipXfo);
+      
+      var xfos = [];
+      for(var i=0; i<boneIDs.bones.length; i++){
+        xfos.push(referenceLocalPose[boneIDs.bones[i]]);
+      }
+      var xfoIds = variablesNode.addVariable('Xfo[]', xfos);
+      var footPlatformXfoId = variablesNode.addVariable('Xfo', footPlatformXfo);
+      var ikblendId = variablesNode.addVariable('Scalar', 1.0);
+      
+      var leg = new FABRIC.Characters.Limb(boneIDs.bones, -1, xfoIds, footPlatformXfoId, lastBoneOffsetXfo, ikblendId);
+      legs.push(leg);
+    }
+    
+    skeletonNode.addMember('legs', 'Limb[]', legs);
+    rigNode.addSolverOperator({
+      operatorName: 'solveInsectLegRig',
+      srcFile: 'FABRIC_ROOT/SceneGraph/KL/solveLegRig.kl',
+      entryFunctionName: 'solveInsectLegRig',
+      parameterLayout: [
+        'charactercontroller.controller',
+        'self.pose',
+        'skeleton.bones',
+        'skeleton.legs',
+        'variables.poseVariables',
+        'self.debugGeometry'
+      ]
+    });
+ 
+    solver.invert = function(variablesNode){
+      variablesNode.getDGNode().bindings.append(scene.constructOperator({
+        operatorName: 'invertInsectLegRig',
+        srcFile: 'FABRIC_ROOT/SceneGraph/KL/solveLegRig.kl',
+        entryFunctionName: 'invertInsectLegRig',
+        parameterLayout: [
+          'sourcerig.pose',
+          'skeleton.bones',
+          'skeleton.legs',
+          'self.poseVariables',
+          'sourcerig.debugGeometry'
+        ]
+      }));
+    }
+    return solver; 
+  }
+});
+
+
 FABRIC.SceneGraph.CharacterSolvers.registerSolver('HumanoidLegSolver', {
   constructSolver: function(options, scene) {
     scene.assignDefaults(options, {
         rigNode: undefined
       });
-    options.identifiers = [['bones'], 'ankle'];
+    
     var solver = FABRIC.SceneGraph.CharacterSolvers.constructSolver('CharacterSolver', options, scene);
 
     var rigNode = scene.getPrivateInterface(options.rigNode),
@@ -1152,7 +1219,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('HumanoidLegSolver', {
       bones = skeletonNode.pub.getBones(),
       referencePose = skeletonNode.pub.getReferencePose(),
       referenceLocalPose = skeletonNode.pub.getReferenceLocalPose(),
-      boneIDs = solver.getBoneIDs(),
+      boneIDs = solver.generateBoneMapping(options.bones, [['bones'], 'ankle']),
       name = options.name,
       footPlatformXfo,
       ankleOffsetXfo,
