@@ -8,7 +8,6 @@
 #include <Fabric/Core/RT/Impl.h>
 #include <Fabric/Base/Util/AtomicSize.h>
 #include <Fabric/Base/Util/Bits.h>
-#include <Fabric/Core/Util/SlabAllocator.h>
 
 namespace Fabric
 {
@@ -130,7 +129,7 @@ namespace Fabric
       RC::ConstHandle<Impl> m_valueImpl;
       size_t m_valueSize;
       bool m_valueIsShallow;
-      mutable Util::SlabAllocator m_nodeAllocator;
+      size_t m_nodeSize;
    };
   };
 };
