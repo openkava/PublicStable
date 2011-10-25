@@ -1112,8 +1112,9 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('ArmSolver', {
 });
 
 
-FABRIC.Characters.Limb = function(boneIds, xfoIds, ikGoalXfoId, ikGoalOffsetXfo, ikblendId) {
+FABRIC.Characters.Limb = function(boneIds, ankleId, xfoIds, ikGoalXfoId, ikGoalOffsetXfo, ikblendId) {
   this.boneIds = boneIds != undefined ? boneIds : [];
+  this.ankleId = ankleId != undefined ? ankleId : -1;
   this.xfoIds = xfoIds != undefined ? xfoIds : [];
   this.ikGoalXfoId = ikGoalXfoId != undefined ? ikGoalXfoId : -1;
   this.ikGoalOffsetXfo = ikGoalOffsetXfo != undefined ? ikGoalOffsetXfo : new FABRIC.RT.Xfo();
@@ -1125,6 +1126,7 @@ FABRIC.appendOnCreateContextCallback(function(context) {
   context.RegisteredTypesManager.registerType('Limb', {
     members: {
       boneIds: 'Integer[]',
+      ankleId: 'Integer',
       xfoIds: 'Integer[]',
       ikGoalXfoId: 'Integer',
       ikGoalOffsetXfo: 'Xfo',
@@ -1135,12 +1137,12 @@ FABRIC.appendOnCreateContextCallback(function(context) {
   });
 });
 
-FABRIC.SceneGraph.CharacterSolvers.registerSolver('LegSolver', {
+FABRIC.SceneGraph.CharacterSolvers.registerSolver('HumanoidLegSolver', {
   constructSolver: function(options, scene) {
     scene.assignDefaults(options, {
         rigNode: undefined
       });
-    options.identifiers = [['bones']];
+    options.identifiers = [['bones'], 'ankle'];
     var solver = FABRIC.SceneGraph.CharacterSolvers.constructSolver('CharacterSolver', options, scene);
 
     var rigNode = scene.getPrivateInterface(options.rigNode),
@@ -1156,7 +1158,6 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('LegSolver', {
       ankleOffsetXfo,
       ankleTipXfo,
       i,
-      ankleIndex = boneIDs.bones[boneIDs.bones.length - 1],
       twistManipulators = [];
 
 /*
@@ -1177,8 +1178,8 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('LegSolver', {
  */
 
     // compute the target
-    ankleTipXfo = referencePose[ankleIndex].clone();
-    ankleTipXfo.tr = referencePose[ankleIndex].transformVector(new FABRIC.RT.Vec3(bones[ankleIndex].length, 0, 0));
+    ankleTipXfo = referencePose[boneIDs.ankle].clone();
+    ankleTipXfo.tr = referencePose[boneIDs.ankle].transformVector(new FABRIC.RT.Vec3(bones[boneIDs.ankle].length, 0, 0));
     footPlatformXfo = ankleTipXfo.clone();
     footPlatformXfo.tr.y = 0;
     var alignmentQuat = new FABRIC.RT.Quat();
@@ -1193,11 +1194,12 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('LegSolver', {
     for(var i=0; i<boneIDs.bones.length; i++){
       xfos.push(referenceLocalPose[boneIDs.bones[i]]);
     }
+    xfos.push(referenceLocalPose[boneIDs.ankle]);
     var xfoIds = variablesNode.addVariable('Xfo[]', xfos);
     var footPlatformXfoId = variablesNode.addVariable('Xfo', footPlatformXfo);
     var ikblendId = variablesNode.addVariable('Scalar', 1.0);
     
-    var leg = new FABRIC.Characters.Limb(boneIDs.bones, xfoIds, footPlatformXfoId, ankleOffsetXfo, ikblendId);
+    var leg = new FABRIC.Characters.Limb(boneIDs.bones, boneIDs.ankle, xfoIds, footPlatformXfoId, ankleOffsetXfo, ikblendId);
     try{
       var legs = skeletonNode.getData('legs');
       legs.push(leg);
@@ -1206,9 +1208,9 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('LegSolver', {
     catch(e){
       skeletonNode.addMember('legs', 'Limb[]', [leg]);
       rigNode.addSolverOperator({
-          operatorName: 'solveLegRig',
+          operatorName: 'solveHumanoidLegRig',
           srcFile: 'FABRIC_ROOT/SceneGraph/KL/solveLegRig.kl',
-          entryFunctionName: 'solveLegRig',
+          entryFunctionName: 'solveHumanoidLegRig',
           parameterLayout: [
             'charactercontroller.controller',
             'self.pose',
@@ -1226,17 +1228,17 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('LegSolver', {
         parentNode: variablesNode.pub,
         parentMember: 'poseVariables.xfoValues',
         parentMemberIndex: 'footPlatformXfoId',
-        geometryNode: scene.pub.constructNode('Cross', { size: bones[ankleIndex].length * 0.5 }),
+        geometryNode: scene.pub.constructNode('Cross', { size: bones[boneIDs.ankle].length * 0.5 }),
         color: FABRIC.RT.rgb(1, 0, 0)
       });
 
       solver.constructManipulator(name + 'FootRotate', 'PivotRotationManipulator', {
         parentNode: variablesNode.pub,
         parentMember: name + 'footPlatformXfo',
-        radius: bones[ankleIndex].length,
+        radius: bones[boneIDs.ankle].length,
         geometryNode: scene.pub.constructNode('Rectangle', {
-          length: bones[ankleIndex].length * 2,
-          width: bones[ankleIndex].length
+          length: bones[boneIDs.ankle].length * 2,
+          width: bones[boneIDs.ankle].length
         }),
         color: FABRIC.RT.rgb(0, 0, 1)
       });
@@ -1245,7 +1247,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('LegSolver', {
         targetNode: variablesNode.pub,
         targetMember: name + 'ankleIKAnimationXfo',
         parentMember: name + 'footPlatformXfo',
-        length: bones[ankleIndex].length * 2.0,
+        length: bones[boneIDs.ankle].length * 2.0,
         boneVector: new FABRIC.RT.Vec3(-1, 0, 0),
         color: FABRIC.RT.rgb(0, 0, 1)
       });
@@ -1254,9 +1256,9 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('LegSolver', {
  
     solver.invert = function(variablesNode){
       variablesNode.getDGNode().bindings.append(scene.constructOperator({
-          operatorName: 'invertLegRig',
+          operatorName: 'invertHumanoidLegRig',
           srcFile: 'FABRIC_ROOT/SceneGraph/KL/solveLegRig.kl',
-          entryFunctionName: 'invertLegRig',
+          entryFunctionName: 'invertHumanoidLegRig',
           parameterLayout: [
             'sourcerig.pose',
             'skeleton.bones',
