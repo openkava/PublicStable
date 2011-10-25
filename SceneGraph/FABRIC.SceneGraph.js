@@ -924,35 +924,22 @@ FABRIC.SceneGraph.registerNodeType('SceneGraphNode', {
       writeDGNode: function( dgnode ){
         var dgnodeData = {};
         dgnodeData.members = dgnode.getMembers();
-        dgnodeData.data = {};
-        for(var memberName in dgnodeData.members){
-          dgnodeData.data[memberName] = dgnode.getData(memberName);
-        }
+        dgnodeData.sliceCount = dgnode.getCount();
+        dgnodeData.data = dgnode.getBulkData();
         return dgnodeData;
       },
       readData: function(sceneLoader, nodeData) {
       },
       readDGNode: function( dgnode, dgnodeData ){
-        var loadedMembers = {};
-        if (dgnodeData.members) {
-          var members = dgnodeData.members;
-          var defaultMembers = dgnode.getMembers();
-          for(var memberName in members){
-            if(!defaultMembers[memberName]){
-              dgnode.addMember( memberName, members[memberName].type, dgnodeData.data ? dgnodeData.data[memberName] : undefined );
-              if(dgnodeData.data && dgnodeData.data[memberName]){
-                loadedMembers[memberName] = true;
-              }
-            }
+        var members = dgnodeData.members;
+        var defaultMembers = dgnode.getMembers();
+        for(var memberName in members){
+          if(!defaultMembers[memberName]){
+            dgnode.addMember( memberName, members[memberName].type);
           }
         }
-        if (dgnodeData.data) {
-          for(var memberName in dgnodeData.data){
-            if(loadedMembers[memberName]!= true){
-              dgnode.setData(memberName, 0, dgnodeData.data[memberName]);
-            }
-          }
-        }
+        dgnode.setCount(dgnodeData.sliceCount);
+        dgnode.setBulkData(dgnodeData.data);
       }
     }
 

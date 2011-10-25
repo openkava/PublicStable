@@ -206,6 +206,21 @@ FABRIC.SceneGraph.registerNodeType('Geometry', {
       }
     };
     
+    var parentWriteData = geometryNode.writeData;
+    var parentReadData = geometryNode.readData;
+    geometryNode.writeData = function(sceneSaver, constructionOptions, nodeData) {
+      parentWriteData(sceneSaver, constructionOptions, nodeData);
+      constructionOptions.drawable = options.drawable;
+      constructionOptions.createBoundingBoxNode = options.createBoundingBoxNode;
+      nodeData['uniformsdgnode'] = geometryNode.writeDGNode(uniformsdgnode);
+      nodeData['attributesdgnode'] = geometryNode.writeDGNode(attributesdgnode);
+    };
+    geometryNode.readData = function(sceneLoader, nodeData) {
+      parentReadData(sceneLoader, nodeData);
+      geometryNode.readDGNode(uniformsdgnode, nodeData['uniformsdgnode']);
+      geometryNode.readDGNode(attributesdgnode, nodeData['attributesdgnode']);
+    };
+    
     return geometryNode;
   }});
 
@@ -592,15 +607,13 @@ FABRIC.SceneGraph.registerNodeType('Triangles', {
           ]
         });
     };
+    
+    var parentWriteData = trianglesNode.writeData;
+    var parentReadData = trianglesNode.readData;
     trianglesNode.writeData = function(sceneSaver, constructionOptions, nodeData) {
       if (options.uvSets) constructionOptions.uvSets = options.uvSets;
       if (options.tangentsFromUV) constructionOptions.tangentsFromUV = options.tangentsFromUV;
-      nodeData.data = this.getAttributesDGNode().getBinary();
-    };
-    trianglesNode.readData = function(sceneLoader, nodeData) {
-      if (nodeData.data) {
-        this.getAttributesDGNode().setBinary(nodeData.data);
-      }
+      parentWriteData(sceneSaver, constructionOptions, nodeData);
     };
 
     trianglesNode.pub.addUniformValue('indices', 'Integer[]');
