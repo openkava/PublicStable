@@ -53,7 +53,7 @@ function generate3DTexture(
 
         if(generateOpacity)
         {
-          Scalar opacity = 0.0;
+          Scalar opacity = sphereOpacity[0];
           for(l = 3; l--; ) {
             if(distToCenter < sphereRadius[l]) {
               opacity = sphereOpacity[l];
