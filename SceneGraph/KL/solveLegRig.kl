@@ -11,7 +11,7 @@ use DebugGeometry;
 #include 'FABRIC_ROOT/SceneGraph/KL/solveFishingRod.kl'
 #include 'FABRIC_ROOT/SceneGraph/KL/solveNCFIK.kl'
 
-operator solveLegRig(
+operator solveHumanoidLegRig(
   io CharacterController controller,
   io Xfo pose[],
   io Bone bones[],
@@ -24,7 +24,7 @@ operator solveLegRig(
     
     // Calculate the FK pose of the limb.
     Xfo fkPose[];
-    fkPose.resize(leg.boneIds.size());
+    fkPose.resize(leg.boneIds.size()+1);
     for (Integer j = 0; j < leg.boneIds.size(); j++) {
       if(j==0){
         if (bones[leg.boneIds[j]].parent == - 1) {
@@ -39,6 +39,8 @@ operator solveLegRig(
       }
       pose[leg.boneIds[j]] = fkPose[j];
     }
+    fkPose[leg.boneIds.size()] = fkPose[leg.boneIds.size()-1] * poseVariables.xfoValues[leg.ankleId];
+    pose[leg.ankleId] = fkPose[leg.boneIds.size()];
       
     Scalar ikBlend = poseVariables.scalarValues[leg.ikblendId];
     if (ikBlend > 0.0) {
@@ -49,18 +51,18 @@ operator solveLegRig(
       
       Scalar maxLineLength = 0.0;
       Integer ikboneIndices[];
-      for (Integer j = 0; j < leg.boneIds.size-1; j++) {
+      for (Integer j = 0; j < leg.boneIds.size; j++) {
         maxLineLength += bones[leg.boneIds[j]].length;
         ikboneIndices.push(leg.boneIds[j]);
       }
     
-      Vec2 maxLineLengthSoftening(maxLineLength * 0.03, maxLineLength * 0.03);
+      Vec2 maxLineLengthSoftening(maxLineLength * 0.05, maxLineLength * 0.05);
       Integer firstBoneId = leg.boneIds[0];
       Integer lastBoneId = leg.boneIds[leg.boneIds.size-1];
-      Integer secondLastBoneId = leg.boneIds[leg.boneIds.size-2];
+      
       applyFishingRod(
         targetXfo,
-        bones[lastBoneId].length,
+        bones[leg.ankleId].length,
         pose[firstBoneId],
         Vec3(-1.0, 0.0, 0.0),
   
@@ -69,21 +71,25 @@ operator solveLegRig(
         maxLineLength,
         maxLineLengthSoftening
       );
-      targetXfo.tr = targetXfo.transformVector(Vec3(-bones[lastBoneId].length, 0.0, 0.0));
+      targetXfo.tr = targetXfo.transformVector(Vec3(-bones[leg.ankleId].length, 0.0, 0.0));
   
       solveNCFIK(pose, bones, ikboneIndices, targetXfo, debugGeometry);
       
-      pose[lastBoneId].tr = pose[secondLastBoneId].transformVector(Vec3(bones[secondLastBoneId].length, 0.0, 0.0));
-      pose[lastBoneId].ori = targetXfo.ori;
+      pose[leg.ankleId].tr = pose[lastBoneId].transformVector(Vec3(bones[lastBoneId].length, 0.0, 0.0));
+      pose[leg.ankleId].ori = targetXfo.ori;
       
       if (ikBlend < 1.0) {
         // Now blend the IK pose with the FK pose.
-        for (Integer j = 0; j < leg.boneIds.size(); j++) {
+        Integer j;
+        for (j = 0; j < leg.boneIds.size(); j++) {
           pose[leg.boneIds[j]].ori = fkPose[j].ori.sphericalLinearInterpolate(pose[leg.boneIds[j]].ori, ikBlend);
           if (j > 0) {
             pose[leg.boneIds[j]].tr = pose[leg.boneIds[j - 1]].transformVector(bones[leg.boneIds[j]].referenceLocalPose.tr);
           }
         }
+        j = leg.boneIds.size();
+        pose[leg.ankleId].ori = fkPose[j].ori.sphericalLinearInterpolate(pose[leg.ankleId].ori, ikBlend);
+        pose[leg.ankleId].tr = pose[leg.boneIds[j - 1]].transformVector(bones[leg.ankleId].referenceLocalPose.tr);
       }
     }
   }
@@ -91,7 +97,7 @@ operator solveLegRig(
 
 
 
-operator invertLegRig(
+operator invertHumanoidLegRig(
   io Xfo pose[],
   io Bone bones[],
   io Limb legs[],
@@ -101,16 +107,18 @@ operator invertLegRig(
   for( Integer i=0; i<legs.size; i++){
     Limb leg = legs[i];
     
-    for (var Integer j = 0; j < leg.boneIds.size; j++) {
+    Integer j;
+    for (j = 0; j < leg.boneIds.size; j++) {
       if (bones[leg.boneIds[j]].parent == - 1)
         poseVariables.xfoValues[leg.xfoIds[j]] = pose[leg.boneIds[j]];
       else
         poseVariables.xfoValues[leg.xfoIds[j]] = pose[bones[leg.boneIds[j]].parent].inverse() * pose[leg.boneIds[j]];
     }
+    j = leg.boneIds.size;
+    poseVariables.xfoValues[leg.ankleId] = pose[bones[leg.ankleId].parent].inverse() * pose[leg.ankleId];
     
-    Integer ankleIndex = leg.boneIds[2];
-    Xfo ankleTipXfo = pose[ankleIndex];
-    ankleTipXfo.tr = ankleTipXfo.transformVector(Vec3(bones[ankleIndex].length, 0.0, 0.0));
+    Xfo ankleTipXfo = pose[leg.ankleId];
+    ankleTipXfo.tr = ankleTipXfo.transformVector(Vec3(bones[leg.ankleId].length, 0.0, 0.0));
     poseVariables.xfoValues[leg.ikGoalXfoId] = ankleTipXfo * leg.ikGoalOffsetXfo.inverse();
   }
 }
