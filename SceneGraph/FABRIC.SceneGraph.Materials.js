@@ -1624,12 +1624,13 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
     brightness: 'Brightness from 0 to 1',
     transparency: 'Transparency from 0 to 1',
     minOpacity: 'MinOpacity from 0 to 1',
-    maxOpacity: 'MaxOpacity from 0 to 1'
+    maxOpacity: 'MaxOpacity from 0 to 1',
+    specularFactor: 'Specular amount from 0 to 1'
   },
   factoryFn: function(options, scene) {
 
     scene.assignDefaults(options, {
-      resolutionFactor: 0.5,
+      resolutionFactor: 1.0,
       brightness: 0.5,
       transparency: 1.0,
       minOpacity: 0.0,
@@ -1686,6 +1687,8 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
     var volumeMaterialNodePub = scene.pub.constructNode('VolumeMaterial', {
         parentEventHandler: offscreenNodeRedrawEventHandler,
         opacityTextureNode: options.opacityTextureNode,
+        gradientTextureNode: options.gradientTextureNode,
+        lightNode: options.lightNode,
         renderTarget: FABRIC.RT.oglRenderTarget(0,  0, [
           new FABRIC.RT.OGLRenderTargetTextureDesc(
               2, /*COLOR*/
@@ -1699,8 +1702,6 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
             clearColor: FABRIC.RT.rgba(0,0,0,1)
           }
         )
-  //      gradientTextureNode: options.gradientTextureNode,
-  //      lightNode: options.lightNode
     });
 
     var volumeMaterialNode = scene.getPrivateInterface(volumeMaterialNodePub);
@@ -1711,6 +1712,7 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
     volumeNode.addMemberInterface(volumeMaterialNodeRedrawEvent, 'transparency', true);
     volumeNode.addMemberInterface(volumeMaterialNodeRedrawEvent, 'minOpacity', true);
     volumeNode.addMemberInterface(volumeMaterialNodeRedrawEvent, 'maxOpacity', true);
+    volumeNode.addMemberInterface(volumeMaterialNodeRedrawEvent, 'specularFactor', true);
 
     volumeNode.pub.setBrightness(options.brightness);
     volumeNode.pub.setTransparency(options.transparency);

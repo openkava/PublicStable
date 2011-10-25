@@ -3,12 +3,29 @@
 	<name>VolumeMaterial</name>
 	
   <uniforms>
-    <uniform name="u_modelViewProjectionMatrix" constant="modelViewProjectionMatrix" type="Mat44" owner="instance"/>
     <uniform name="u_alphaFactor" constant="alphaFactor" type="Scalar" defaultValue="0.02"/>
     <uniform name="u_transparency" constant="transparency" type="Scalar" defaultValue="1.0"/>
     <uniform name="u_brightness" constant="brightness" type="Scalar" defaultValue="1.0"/>
     <uniform name="u_minOpacity" constant="minOpacity" type="Scalar" defaultValue="0.0"/>
     <uniform name="u_maxOpacity" constant="maxOpacity" type="Scalar" defaultValue="1.0"/>
+    <uniform name="u_specularFactor" constant="specularFactor" type="Scalar" defaultValue="1.0"/>
+
+    <uniform name="u_lightPosition" constant="lightPosition" type="Vec3" owner="light"/>
+    <uniform name="u_lightType" constant="lightType" type="Integer" owner="light"/>
+    <uniform name="u_lightDir" constant="lightDir" type="Vec3" owner="light"/>
+    <uniform name="u_lightColor" constant="lightColor" type="Color" owner="light"/>
+    <uniform name="u_lightCosCutoff" constant="lightCosCutoff" type="Scalar" owner="light"/>
+
+    <uniform name="u_materialAmbientColor" constant="ambientColor" type="Color" defaultValue="FABRIC.RT.rgba(0.7,0.7,0.7,1)"/>
+    <uniform name="u_materialShininess" constant="shininess" type="Scalar" defaultValue="5.0"/>
+
+    <uniform name="u_samplerOpacityMap" constant="opacityTexture" type="Integer" owner="texture"/>
+    <uniform name="u_samplerGradientMap" constant="gradientTexture" type="Integer" owner="texture"/>
+
+    <uniform name="u_modelViewProjectionMatrix" constant="modelViewProjectionMatrix" type="Mat44" owner="instance"/>
+    <uniform name="u_modelViewMatrix" constant="modelViewMatrix" type="Mat44" owner="instance"/>
+    <uniform name="u_normalMatrix" constant="normalMatrix" type="Mat33" owner="instance"/>
+
   </uniforms>
 
   <attributes>
@@ -17,10 +34,12 @@
   </attributes>
 
   <lights>
-	</lights>
+    <light type="Light" binding="light"/>
+  </lights>
 
 	<textures>
     <texture binding="opacityTexture"/>
+    <texture binding="gradientTexture"/>
   </textures>
 
   <openglstateparams>
@@ -35,22 +54,22 @@
 		<source>
 			<![CDATA[
 			uniform mat4 u_modelViewProjectionMatrix;
-/*			uniform mat4 u_modelViewMatrix;
+			uniform mat4 u_modelViewMatrix;
 			uniform vec4 u_lightPosition;
-	*/		
+
 			attribute vec4 a_position;
 			attribute vec3 a_normal;
-/*
+
 			varying vec3 lightDir;
 			varying vec3 viewDir;
-*/
+
 			void main()
 			{
 				gl_TexCoord[0].xyz = a_normal.xyz;
 
-/*				vec4 modelCameraPosition = u_modelViewMatrix * a_position;
+				vec4 modelCameraPosition = u_modelViewMatrix * a_position;
 				lightDir = vec3(u_lightPosition - modelCameraPosition);
-				viewDir = vec3(-modelCameraPosition);*/
+				viewDir = vec3(-modelCameraPosition);
 				gl_Position = u_modelViewProjectionMatrix * a_position;
 			}
 			]]>
@@ -65,8 +84,9 @@
       uniform float u_brightness;
       uniform float u_minOpacity;
       uniform float u_maxOpacity;
+      uniform float u_specularFactor;
       
-/*			uniform int u_lightType;
+			uniform int u_lightType;
 			uniform vec3 u_lightDir;
 			uniform vec4 u_lightColor;
 			uniform float u_lightCosCutoff;
@@ -74,23 +94,23 @@
 
 			uniform float u_materialShininess;
 			uniform vec4 u_materialAmbientColor;
-*/
+
 			uniform sampler3D u_samplerOpacityMap;
-//			uniform sampler3D u_samplerGradientMap;
-/*			
+			uniform sampler3D u_samplerGradientMap;
+      
 			varying vec3 lightDir;
 			varying vec3 viewDir;
-*/
-			]]>
-			<![CDATA[
 
 			void main(){
-/*				vec3 Ln = normalize(lightDir);
-				vec3 Vn = normalize(viewDir);
-*/
-        float opacity = 0.0;
 
-        opacity = texture3D( u_samplerOpacityMap, gl_TexCoord[0].xyz).r;
+        //Lighting computations
+				vec3 Ln = normalize(lightDir);
+				vec3 Vn = normalize(viewDir);
+
+        float opacity = texture3D( u_samplerOpacityMap, gl_TexCoord[0].xyz).r;
+        vec4 gradient = texture3D( u_samplerGradientMap, gl_TexCoord[0].xyz);
+
+        //Opacity & alpha modulation
         if(opacity < u_minOpacity || opacity > u_maxOpacity)
           opacity = 0.0;
 
@@ -102,15 +122,27 @@
         else
           opacity = mix(0.0, opacity, u_brightness*2.0);
 
-        float color = opacity;//mix(opacity, 1.0, u_transparency);
-        float alpha = mix(1.0-u_transparency, opacity * u_alphaFactor, u_transparency );
-        if(alpha > 1.0)
-          alpha = 1.0;
-        if(opacity == 0.0)
-          alpha = 0.0;
+        float alpha = min( mix(1.0-u_transparency, opacity * u_alphaFactor, u_transparency ), 1.0 );
 
-				gl_FragColor = vec4(color, color, color, alpha );
-			}
+        float gradientWeight = gradient.a;
+        if(opacity == 0.0) {
+          alpha = 0.0;
+          gradientWeight = 0.0;
+        }
+
+				vec4 volumeColor = vec4(opacity, opacity, opacity, alpha );
+        
+        //Point light phong shading with additive-only specular
+				vec3 Nn = normalize( u_normalMatrix * (gradient.xyz - vec3(0.5, 0.5, 0.5)) );
+        vec4 shadedColor = volumeColor;
+
+        //float lightBehind = dot(Nn,Ln);
+        vec3 Rn = reflect(-Ln, Nn);
+        float specular = pow( max(dot(Rn, Vn), 0.0), u_materialShininess );
+        shadedColor += vec4( u_lightColor.xyz, gradientWeight ) * specular * u_specularFactor;
+        shadedColor.a = min( shadedColor.a, 1.0 );
+        gl_FragColor = shadedColor;
+      }
 			]]>
 		</source>
 	</fragmentshader>
