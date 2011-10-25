@@ -1,7 +1,3 @@
-/*
- *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
- */
-
 #include "Random.h"
 #include "Debug.h"
 
