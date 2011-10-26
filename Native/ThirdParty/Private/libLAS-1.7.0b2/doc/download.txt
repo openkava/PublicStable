@@ -1,0 +1,214 @@
+.. _download:
+
+******************************************************************************
+Download
+******************************************************************************
+
+
+Current Release(s)
+------------------------------------------------------------------------------
+
+* **2011-04-05** 
+
+  - `libLAS-1.7.0b1-src.tar.gz  <http://download.osgeo.org/liblas/libLAS-1.7.0b1.tar.gz>`__ 
+    `(md5) <http://download.osgeo.org/liblas/libLAS-1.7.0b1.tar.gz.md5>`__ 
+
+  - `libLAS-1.7.0b1-src.zip <http://download.osgeo.org/liblas/libLAS-1.7.0b1.zip>`_ 
+    `(md5) <http://download.osgeo.org/liblas/libLAS-1.7.0b1.zip.md5>`__
+
+  - See `OSGeo4W <http://trac.osgeo.org/osgeo4w>`__ for Windows release.
+  
+  - `Release Notes <http://lists.osgeo.org/pipermail/liblas-devel/2011-June/001409.html>`__
+
+
+.. note::
+    You may also want `LASzip`_ for compression support.
+
+.. seealso::
+    :ref:`source`
+
+.. seealso::
+    A `sample library <http://liblas.org/samples>`__ is also available to provide 
+    data to test your tools.
+
+.. seealso::
+    See :ref:`start` for information 
+    how to get started using the tools once they are installed.
+
+
+Past Releases
+------------------------------------------------------------------------------
+
+
+* **2011-04-05** 
+
+  - `libLAS-1.6.1-src.tar.gz  <http://download.osgeo.org/liblas/libLAS-1.6.1.tar.gz>`__ 
+    `(md5) <http://download.osgeo.org/liblas/libLAS-1.6.1.tar.gz.md5>`__ 
+
+  - `libLAS-1.6.1-src.zip <http://download.osgeo.org/liblas/libLAS-1.6.1.zip>`_ 
+    `(md5) <http://download.osgeo.org/liblas/libLAS-1.6.1.zip.md5>`__
+
+  - See `OSGeo4W <http://trac.osgeo.org/osgeo4w>`__ for Windows release.
+  
+  - `Release Notes <http://lists.osgeo.org/pipermail/liblas-devel/2011-April/001303.html>`__
+
+* **2011-02-01** 
+
+  - `libLAS-1.6.0-src.tar.gz  <http://download.osgeo.org/liblas/libLAS-1.6.0.tar.gz>`__ 
+    `(md5) <http://download.osgeo.org/liblas/libLAS-1.6.0.tar.gz.md5>`__ 
+
+  - `libLAS-1.6.0-src.zip <http://download.osgeo.org/liblas/libLAS-1.6.0.zip>`_ 
+    `(md5) <http://download.osgeo.org/liblas/libLAS-1.6.0.zip.md5>`__
+
+  - See `OSGeo4W <http://trac.osgeo.org/osgeo4w>`__ for Windows release.
+  
+  - `Release Notes <http://lists.osgeo.org/pipermail/liblas-devel/2011-February/001194.html>`__
+
+* **2011-1-7** 
+
+  - `libLAS-1.6.0b4-src.tar.gz  <http://download.osgeo.org/liblas/libLAS-1.6.0b4.tar.gz>`__ 
+    `(md5) <http://download.osgeo.org/liblas/libLAS-1.6.0b4.tar.gz.md5>`__ 
+
+  - `libLAS-1.6.0b4-src.zip <http://download.osgeo.org/liblas/libLAS-1.6.0b4.zip>`_ 
+    `(md5) <http://download.osgeo.org/liblas/libLAS-1.6.0b4.zip.md5>`__
+
+  - See `OSGeo4W <http://trac.osgeo.org/osgeo4w>`__ for Windows release.
+  
+  - `Release Notes <http://lists.osgeo.org/pipermail/liblas-devel/2010-December/001108.html>`__
+
+
+
+* **2010-12-15** 
+
+  - `libLAS-1.6.0b3-src.tar.gz`_ 
+    `(md5) <http://download.osgeo.org/liblas/libLAS-1.6.0b3.tar.gz.md5>`__ 
+
+  - `libLAS-1.6.0b3-src.zip <http://download.osgeo.org/liblas/libLAS-1.6.0b3.zip>`_ 
+    `(md5) <http://download.osgeo.org/liblas/libLAS-1.6.0b3.zip.md5>`__
+
+  - See `OSGeo4W <http://trac.osgeo.org/osgeo4w>`__ for Windows release.
+  
+  - `Release Notes <http://lists.osgeo.org/pipermail/liblas-devel/2010-December/001108.html>`__
+
+.. _`libLAS-1.6.0b3-src.tar.gz`: http://download.osgeo.org/liblas/libLAS-1.6.0b3.tar.gz
+
+
+* **2010-11-05** 
+
+  - `libLAS-1.6.0b2-src.tar.gz`_ 
+    `(md5) <http://trac.liblas.org/raw-attachment/wiki/1.6.0b2/libLAS-1.6.0b2.tar.gz.md5>`__ 
+
+  - `libLAS-1.6.0b2-src.zip <http://trac.liblas.org/raw-attachment/wiki/1.6.0b2/libLAS-1.6.0b2.zip>`_ 
+    `(md5) <http://trac.liblas.org/raw-attachment/wiki/1.6.0b2/libLAS-1.6.0b2.zip.md5>`__
+
+  - See `OSGeo4W <http://trac.osgeo.org/osgeo4w>`__ for Windows release.
+  
+  - `Release Notes <http://trac.liblas.org/wiki/1.6.0b2>`__
+
+.. _`libLAS-1.6.0b2-src.tar.gz`: http://trac.liblas.org/raw-attachment/wiki/1.6.0b2/libLAS-1.6.0b2.tar.gz
+
+* **2010-10-12** 
+
+  - `libLAS-1.6.0b1-src.tar.gz`_ 
+    `(md5) <http://trac.liblas.org/raw-attachment/wiki/1.6.0b1/libLAS-1.6.0b1.tar.gz.md5>`__ 
+
+  - `libLAS-1.6.0b1-src.zip <http://trac.liblas.org/raw-attachment/wiki/1.6.0b1/libLAS-1.6.0b1.zip>`_ 
+    `(md5) <http://trac.liblas.org/raw-attachment/wiki/1.6.0b1/libLAS-1.6.0b1.zip.md5>`__
+
+  - `Release Notes <http://trac.liblas.org/wiki/1.6.0b1>`__
+
+.. _`libLAS-1.6.0b1-src.tar.gz`: http://trac.liblas.org/raw-attachment/wiki/1.6.0b1/libLAS-1.6.0b1.tar.gz
+
+
+* **2009-10-02** 
+
+  - `liblas-src-1.2.1.tar.gz`_ 
+    `(md5) <http://trac.liblas.org/raw-attachment/wiki/1.2.1/liblas-src-1.2.1.tar.gz.md5>`__ 
+
+  - `liblas-1.2.1-win32 <http://trac.liblas.org/raw-attachment/wiki/1.2.1/liblas-1.2.1-win32.zip>`_ 
+    `(md5) <http://trac.liblas.org/raw-attachment/wiki/1.2.1/liblas-1.2.1-win32.zip.md5>`__
+
+  - `Release Notes <http://trac.liblas.org/wiki/1.2.1>`__
+
+.. _`liblas-src-1.2.1.tar.gz`: http://trac.liblas.org/raw-attachment/wiki/1.2.1/liblas-src-1.2.1.tar.gz
+
+
+* **2009-03-25** 
+
+  - `liblas-src-1.2.0.tar.gz`_ 
+    `(md5) <http://trac.liblas.org/raw-attachment/wiki/1.2.0/liblas-src-1.2.0.tar.gz.md5>`__
+
+  - `liblas-1.2.0-win32 <http://trac.liblas.org/raw-attachment/wiki/1.2.0/liblas-1.2.0-win32.zip>`_ 
+    `(md5) <http://trac.liblas.org/raw-attachment/wiki/1.2.0/liblas-1.2.0-win32.zip.md5>`__
+
+  - `Release Notes <http://trac.liblas.org/wiki/1.2.0>`__
+
+.. _`liblas-src-1.2.0.tar.gz`: http://trac.liblas.org/raw-attachment/wiki/1.2.0/liblas-src-1.2.0.tar.gz
+
+
+Development Source
+..............................................................................
+
+* Current Trunk: http://hg.liblas.org/main
+
+
+Documentation
+------------------------------------------------------------------------------
+
+To start on the documentation, please visit :ref:`docs`. Additionally, the
+entire documentation is available as a `single PDF document <./libLAS.pdf>`__
+|image|.
+
+.. |image| image:: ./_static/pdf.png
+   :height: 15
+   :width: 15
+   :alt: PDF icon
+   :target: /libLAS.pdf
+
+
+
+Binaries
+------------------------------------------------------------------------------
+
+.. _windows:
+
+Windows
+..............................................................................
+
+
+`OSGeo4W`_
+    OSGeo4W is a binary distribution of a broad set of Open Source geospatial
+    software for Win32 environments (Windows XP, Vista, etc). OSGeo4W includes
+    GDAL/OGR, GRASS, MapServer, OpenEV, uDig, as well as many other packages
+    (about 70 as of summer 2008).
+    
+    .. note::
+        OSGeo4W is the preferred and only supported way to get a binary 
+        of libLAS as of the 1.6 release.  The OSGeo4W libLAS build contains 
+        a fully-featured set of utilities including support for GDAL, 
+        :ref:`las2oci <las2oci>`, and reprojection.  
+    
+    .. seealso::
+        :ref:`osgeo4w_install` contains information how to install and configure 
+        your OSGeo4W build to utilize libLAS.  
+
+    
+.. _`OSGeo4W`: http://trac.osgeo.org/osgeo4w/
+
+
+.. _linux:
+
+Linux
+..............................................................................
+
+
+`DebianGIS`_
+    DebianGIS provides a number of packages including MapServer, PostGIS, 
+    GDAL, QGIS, GEOS, and libLAS.  It sometimes lags a little bit behind the absolute 
+    latest release, but DebianGIS provides a solid integration environment 
+    for a giant slug of Open Source GIS software.
+    
+.. _`DebianGIS`: http://wiki.debian.org/DebianGis
+
+
+.. _`LASzip`: http://laszip.org
