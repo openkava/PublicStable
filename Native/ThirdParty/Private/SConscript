@@ -179,11 +179,11 @@ lidarLibs = []
 # Maybe there's a compile option for that...
 if buildOS == 'Windows':
   if buildType == 'Debug':
-    lidarLibs.extend(archLibs( 'boost', ['libboost_program_options-vc100-mt-sgd-1_47', 'libboost_serialization-vc100-mt-sgd-1_47'] ))
+    lidarLibs.extend(archLibs( 'boost', ['libboost_program_options-vc100-mt-sgd-1_47', 'libboost_serialization-vc100-mt-sgd-1_47', 'libboost_thread-vc100-mt-sgd-1_47'] ))
   else:
-    lidarLibs.extend(archLibs( 'boost', ['libboost_program_options-vc100-mt-s-1_47', 'libboost_serialization-vc100-mt-s-1_47'] ))
+    lidarLibs.extend(archLibs( 'boost', ['libboost_program_options-vc100-mt-s-1_47', 'libboost_serialization-vc100-mt-s-1_47', 'libboost_thread-vc100-mt-s-1_47'] ))
 else:  
-  lidarLibs.extend(archLibs( 'boost', ['boost_program_options', 'boost_serialization', 'boost_date_time', 'boost_iostreams', 'boost_thread'] ))
+  lidarLibs.extend(archLibs( 'boost', ['boost_program_options', 'boost_serialization', 'boost_thread'] ))
 
 lidarFlags = {
     'CPPPATH': [
