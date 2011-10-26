@@ -5,13 +5,12 @@
 #include <Fabric/EDK/EDK.h>
 #include <Fabric/Base/RC/Object.h>
 
-#include <string>
-#include <sstream>
-
-#include <lasreadersingle.hpp>
-
 using namespace Fabric::EDK;
 IMPLEMENT_FABRIC_EDK_ENTRIES
+
+#include <string>
+#include <sstream>
+#include <liblas/reader.hpp>
 
 // ====================================================================
 // KL structs
@@ -24,7 +23,7 @@ FABRIC_EXT_KL_STRUCT( LidarReader, {
     void reset();
     
     std::stringstream mStream;
-    LASreaderSingle * mReader;
+    liblas::Reader * mReader;
   
   protected:
   
@@ -36,7 +35,7 @@ FABRIC_EXT_KL_STRUCT( LidarReader, {
 
 LidarReader::LocalData::LocalData(void * pointer, KL::Size size) {
   mStream.write((const char*)pointer,size);
-  mReader = new LASreaderSingle(mStream);
+  mReader = new liblas::Reader(mStream);
 }
 
 LidarReader::LocalData::~LocalData() {
