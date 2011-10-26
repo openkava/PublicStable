@@ -1,0 +1,16 @@
+struct LidarReader {
+  Data pointer;
+};
+
+function FabricLIDAR_Reader_Decode( Data resourceData, Size resourceDataSize, io LidarReader lidar );
+function FabricLIDAR_Reader_Free( io LidarReader lidar );
+
+function ~LidarReader() = "FabricLIDAR_Reader_Free";
+
+function LidarReader.loadResource(io FabricResource resource) {
+  if(this.pointer)
+    return;
+  if(resource.data.dataSize() == 0)
+    return;
+  FabricLIDAR_Reader_Decode(resource.data.data(), resource.data.dataSize(), this);
+}
