@@ -370,7 +370,7 @@ endif
 
 Build/.boost.configure: Build/.boost.patch
 	for ARCH in $(ARCHS); do \
-		( cd Build/boost-$(BOOST_VERSION)-$$ARCH && ./bootstrap.sh --with-libraries=date_time,program_options,iostreams,thread ); \
+		( cd Build/boost-$(BOOST_VERSION)-$$ARCH && ./bootstrap.sh --with-libraries=date_time,program_options,iostreams,thread,serialization ); \
 	done
 	touch $@
 
