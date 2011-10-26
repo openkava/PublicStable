@@ -2,12 +2,17 @@
 # Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 #
 
-Import( 'extsEnv', 'fabricExtsDistDir', 'ExtSLName' )
+Import( 'extsEnv', 'lidarFlags', 'fabricExtsDistDir', 'ExtSLName' )
 
 lidarPluginEnv = extsEnv.Clone()
-lidarPluginEnv.Append(CPPPATH = ['../../../ThirdParty/Private/laslib'])
+lidarPluginEnv.MergeFlags(lidarFlags)
+lidarPluginEnv.Append(CPPPATH = ['../../../ThirdParty/Private/libLAS-1.7.0b2/include'])
 lidarSources = Glob('*.cpp')
-lidarSources = Glob('../../../ThirdParty/Private/laslib/*.cpp')
+lidarSources.extend(Glob('../../../ThirdParty/Private/libLAS-1.7.0b2/src/*.cpp'))
+lidarSources.extend(Glob('../../../ThirdParty/Private/libLAS-1.7.0b2/src/detail/*.cpp'))
+lidarSources.extend(Glob('../../../ThirdParty/Private/libLAS-1.7.0b2/src/detail/index/*.cpp'))
+lidarSources.extend(Glob('../../../ThirdParty/Private/libLAS-1.7.0b2/src/detail/reader/*.cpp'))
+lidarSources.extend(Glob('../../../ThirdParty/Private/libLAS-1.7.0b2/src/detail/writer/*.cpp'))
 lidarPlugin = lidarPluginEnv.SharedLibrary( ExtSLName('FabricLIDAR'), lidarSources ),
 lidarManifest = lidarPluginEnv.File('FabricLIDAR.fpm.json'),
 lidarKL = lidarPluginEnv.File('FabricLIDAR.kl'),
