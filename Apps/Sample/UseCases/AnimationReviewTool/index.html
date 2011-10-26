@@ -304,7 +304,7 @@ FABRIC.SceneGraph.registerNodeType('PaintPlaneInstance', {
 
     // create a frame operator to the texture
     texturedgnode.addMember('drawFrame','Boolean',true);
-    texturedgnode.addMember('frameColor','RGBA',FABRIC.RT.rgba(255,255,255,255));
+    texturedgnode.addMember('frameColor','RGBA',FABRIC.RT.rgba(255,0,0,255));
     texturedgnode.bindings.append(scene.constructOperator({
       operatorName: 'setFramePixels',
       entryFunctionName: 'setFramePixels',

@@ -206,72 +206,92 @@ FABRIC.SceneGraph.registerNodeType('Video', {
   },
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
-        localFileName: ''
+        url: '',
+        loop: false
       });
 
     // ensure to use the right settings for video
-    options.createResourceLoadNode = false;
+    options.createResourceLoadNode = true;
     options.createLoadTextureEventHandler = false;
-    options.createDgNode = true;
+    options.createDgNode = false;
     options.initImage = false;
     options.wantHDR = false;
     options.wantRGBA = false;
 
-    // check if we have a filename
-    if (!options.localFileName) {
-        throw ('You need to specify a valid localFileName for a video node!');
+    // check if we have an url
+    if (!options.url) {
+        throw ('You need to specify a valid url for a video node!');
     }
 
     var videoNode = scene.constructNode('Image', options);
     // add all members
-    var dgnode = videoNode.getDGNode();
-    dgnode.addMember('filename', 'String', options.localFileName);
-    dgnode.addMember('stream', 'Size', 0);
-    dgnode.addMember('duration', 'Scalar', 0);
-    dgnode.addMember('fps', 'Scalar', 0);
-    dgnode.addMember('loop', 'Boolean', true);
+    var dgnode = scene.getPrivateInterface(videoNode.pub.getResourceLoadNode()).getDGLoadNode();
+    dgnode.addMember('handle', 'VideoHandle');
+    dgnode.addMember('pixels', 'RGB[]');
 
-    videoNode.addMemberInterface(dgnode, 'filename');
-    videoNode.addMemberInterface(dgnode, 'stream');
-    videoNode.addMemberInterface(dgnode, 'duration');
-    videoNode.addMemberInterface(dgnode, 'fps');
-    videoNode.addMemberInterface(dgnode, 'loop');
+    videoNode.addMemberInterface(dgnode, 'handle');
+  
+    // decode the resource
+    dgnode.bindings.append(scene.constructOperator({
+      operatorName: 'videoLoadResource',
+      srcFile: 'FABRIC_ROOT/SceneGraph/KL/loadVideo.kl',
+      entryFunctionName: 'videoLoadResource',
+      parameterLayout: [
+        'self.resource',
+        'self.handle'
+      ]
+    }));
 
     // make it dependent on the scene time
-    dgnode.setDependency(scene.getGlobalsNode(), 'globals');
-
-    dgnode.bindings.append(scene.constructOperator({
-      operatorName: 'videoLoadInfo',
-      srcFile: 'FABRIC_ROOT/SceneGraph/KL/loadVideo.kl',
-      entryFunctionName: 'videoLoadInfo',
-      parameterLayout: [
-        'self.filename',
-        'self.stream',
-        'self.width',
-        'self.height',
-        'self.duration',
-        'self.fps'
-      ]
-    }));
-
-    dgnode.bindings.append(scene.constructOperator({
-      operatorName: 'videoSeekTime',
-      srcFile: 'FABRIC_ROOT/SceneGraph/KL/loadVideo.kl',
-      entryFunctionName: 'videoSeekTime',
-      parameterLayout: [
-        'self.stream',
-        'globals.time'
-      ]
-    }));
+    if(options.loop)
+    {
+      var animationController = scene.constructNode('AnimationController');
+      var animationControllerDGNode = animationController.getDGNode();
+      dgnode.setDependency(animationControllerDGNode, 'controller');
+      dgnode.bindings.append(scene.constructOperator({
+        operatorName: 'videoSetTimeRange',
+        srcFile: 'FABRIC_ROOT/SceneGraph/KL/loadVideo.kl',
+        entryFunctionName: 'videoSetTimeRange',
+        parameterLayout: [
+          'self.handle',
+          'controller.timeRange',
+        ]
+      }));
+      
+      videoNode.pub.getAnimationController = function(){
+        return animationController.pub;
+      };
+      
+      dgnode.bindings.append(scene.constructOperator({
+        operatorName: 'videoSeekTime',
+        srcFile: 'FABRIC_ROOT/SceneGraph/KL/loadVideo.kl',
+        entryFunctionName: 'videoSeekTime',
+        parameterLayout: [
+          'self.handle',
+          'controller.localTime'
+        ]
+      }));
+    }
+    else
+    {
+      dgnode.setDependency(scene.getGlobalsNode(), 'globals');
+      dgnode.bindings.append(scene.constructOperator({
+        operatorName: 'videoSeekTime',
+        srcFile: 'FABRIC_ROOT/SceneGraph/KL/loadVideo.kl',
+        entryFunctionName: 'videoSeekTime',
+        parameterLayout: [
+          'self.handle',
+          'globals.time'
+        ]
+      }));
+    }
 
     dgnode.bindings.append(scene.constructOperator({
       operatorName: 'videoGetPixels',
       srcFile: 'FABRIC_ROOT/SceneGraph/KL/loadVideo.kl',
       entryFunctionName: 'videoGetPixels',
       parameterLayout: [
-        'self.stream',
-        'self.width',
-        'self.height',
+        'self.handle',
         'self.pixels'
       ]
     }));
@@ -284,8 +304,7 @@ FABRIC.SceneGraph.registerNodeType('Video', {
         srcFile: 'FABRIC_ROOT/SceneGraph/KL/loadVideo.kl',
         entryFunctionName: 'videoLoadToGPU',
         parameterLayout: [
-          'video.width',
-          'video.height',
+          'video.handle',
           'video.pixels',
           'self.bufferID',
           'textureStub.textureUnit'
