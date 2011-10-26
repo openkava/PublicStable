@@ -342,7 +342,7 @@ ifeq ($(BUILD_PLATFORM),Linux)
 		else \
 			BJAM_FLAGS="toolset=gcc architecture=x86 instruction-set=i686 address-model=32"; \
 		fi; \
-		( cd Build/boost-$(BOOST_VERSION)-$$ARCH && ./bjam -d+2 $$BJAM_FLAGS ); \
+		( cd Build/boost-$(BOOST_VERSION)-$$ARCH && ./bjam -d+2 $$BJAM_FLAGS link=static threading=multi variant=release cflags=-fPIC ); \
 	done
 else
 	for ARCH in $(ARCHS); do \
