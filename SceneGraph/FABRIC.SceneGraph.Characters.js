@@ -437,8 +437,7 @@ FABRIC.SceneGraph.registerNodeType('CharacterController', {
     var characterControllerNode = scene.constructNode('SceneGraphNode', options);
     var dgnode = characterControllerNode.constructDGNode('DGNode');
     
-    var controller = new FABRIC.Characters.CharacterController(options.controllerXfo);
-    dgnode.addMember('controller', 'CharacterController', controller);
+    dgnode.addMember('xfo', 'Xfo', options.controllerXfo);
     
     return characterControllerNode;
   }});

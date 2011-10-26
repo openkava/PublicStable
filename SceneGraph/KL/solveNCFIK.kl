@@ -84,12 +84,18 @@ function solveNCFIK(
       // Remove the current bones length from the chain.
       remainingChainLength -= bone.length;
       Vec3 boneLengthVector = boneXfo.ori.rotateVector(Vec3(1.0, 0.0, 0.0));
+      
+      // this is the current angle of the bone.
+      fkBoneAngle = acos(clamp(boneLengthVector.dot(vecToIkGoal), -1.0, 1.0));
+      if(fkBoneAngle < 0.0001){
+        // If the bone is already pointing directly at the target, we can't work with it.
+        // in debug mode, report and error. 
+        continue;
+      }
+      
       Vec3 bendAxis = vecToIkGoal.cross(boneLengthVector);
       bendAxis.setUnit();
-
-      // this is the current angle of the bone.
-      fkBoneAngle = acos(boneLengthVector.dot(vecToIkGoal));
-
+      
       if (i == (boneIndices.size() - 2)) {
         // Use trigonometry to determine the ikBoneAngle
         // Law of cosines. a = BoneLength; b = Child BoneLength; c = Distance to the Ik Goal;
@@ -128,6 +134,7 @@ function solveNCFIK(
       Quat offset;
       offset.setFromAxisAndAngle(bendAxis, deltaBoneAngle);
       boneXfo.ori = offset * boneXfo.ori;
+      
     }
 
     pose[boneIndex] = boneXfo;
