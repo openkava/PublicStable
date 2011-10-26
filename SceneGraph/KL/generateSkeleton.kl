@@ -64,7 +64,7 @@ operator generateSkeleton(
   //  Xfo xfo = bones[i].referencePose;
     
     if (bones[i].length <= 0.0) {
-      Scalar size = boneradius * 8.0;
+      Scalar size = boneradius * 2.0;
       indices[offset] = offset;
       positions[offset] = xfo.transformVector(Vec3(-size, 0.0, 0.0));
       offset++;
