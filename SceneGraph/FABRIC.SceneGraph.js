@@ -299,6 +299,16 @@ FABRIC.SceneGraph = {
       return sceneGraphNode;
     };
     
+    scene.renameNode = function(privateNode, newname) {
+      if (!sceneGraphNodes[privateNode.pub.getName()]) {
+        throw ('SceneGraphNode "' + privateNode.pub.getName() + '" does not exist!');
+      }
+      if (sceneGraphNodes[newname]) {
+        throw ('Name "' + newname + '" is already taken');
+      }
+      delete sceneGraphNodes[privateNode.pub.getName()];
+      sceneGraphNodes[newname] = privateNode;
+    }
     scene.getPrivateInterface = function(publicNode) {
       if (publicNode.pub && publicNode.pub.getName) {
         return publicNode;
@@ -830,21 +840,25 @@ FABRIC.SceneGraph.registerNodeType('SceneGraphNode', {
     };
     
     // ensure the name is unique
-    var type = options.type;
-    var name = options.name ? options.name : options.type;
-    if (scene.pub.getSceneGraphNode(name)) {
-      var prefix = 1;
-      while (scene.pub.getSceneGraphNode(name + prefix)) {
-        prefix++;
-      }
-      name = name + prefix;
-    }
-    options.name = name;
-
+    var name, type = options.type;
+    
     var sceneGraphNode = {
       pub: {
         getName: function() {
           return name;
+        },
+        setName: function(newname) {
+          if (scene.pub.getSceneGraphNode(newname)) {
+            var prefix = 1;
+            while (scene.pub.getSceneGraphNode(newname + prefix)) {
+              prefix++;
+            }
+            newname = newname + prefix;
+          }
+          if(name){
+            scene.renameNode(sceneGraphNode, newname);
+          }
+          name = newname;
         },
         getType: function() {
           return type;
@@ -942,7 +956,8 @@ FABRIC.SceneGraph.registerNodeType('SceneGraphNode', {
         dgnode.setBulkData(dgnodeData.data);
       }
     }
-
+    
+    sceneGraphNode.pub.setName(options.name ? options.name : options.type);
 
     // store it to the map
     scene.setSceneGraphNode(name, sceneGraphNode);
