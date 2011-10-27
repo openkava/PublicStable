@@ -7,9 +7,9 @@
 #if defined(FABRIC_POSIX)
 # include <unistd.h>
 # include <sys/mman.h>
-#else
-# error "Unsupported FABRIC_PLATFORM_...."
-#endif
+//#else //[JCG 20111027] Not used for now so don't output an error in Windows
+//# error "Unsupported FABRIC_PLATFORM_...."
+//#endif
 
 namespace Fabric
 {
@@ -189,3 +189,5 @@ namespace Fabric
     }
   };
 };
+
+#endif//defined(FABRIC_POSIX)
