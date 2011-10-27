@@ -195,7 +195,7 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
     };
     
     
-    animationLibraryNode.pub.bindNodeMembersToTracks = function(targetnode, memberBindings, targetName, trackSetId) {
+    animationLibraryNode.pub.bindNodeMembersToTracks = function(targetnode, memberBindings, trackSetId, targetName) {
       // Generate a unique operator that binds this 
       // animation curves to the target node's members.
       trackSetId = trackSetId ? trackSetId : 0;

@@ -49,10 +49,10 @@ FABRIC.appendOnCreateContextCallback(function(context) {
 });
 
 
-FABRIC.RT.LinearKeyframeTrack = function(name, color) {
+FABRIC.RT.LinearKeyframeTrack = function(name, color, keys) {
   this.name = name ? name : "";
   this.color = color ? color : FABRIC.RT.rgb(1.0, 0.0, 0.0);
-  this.keys = [];
+  this.keys = keys ? keys : [];
 };
 
 FABRIC.appendOnCreateContextCallback(function(context) {
