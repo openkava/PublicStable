@@ -16,6 +16,7 @@ if buildOS == 'Windows':
         '/IMPLIB:${TARGET.dir}/kl_cmd.lib',
         '/STACK:4194304'
     ] )
+    klEnv.Append( LIBS = [ 'advapi32' ] )
 
 klBin = klEnv.Program( 'kl', [ Glob('*.cpp'), extraObjects ] )
   
