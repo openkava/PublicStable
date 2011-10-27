@@ -294,81 +294,6 @@ FABRIC.SceneGraph = {
       shaderNodeStore[shaderType] = shader;
       return shader;
     };
-    scene.preProcessCode = function(baseCode, preProcessorDefinitions, includedCodeSections) {
-
-      var pos = 0,
-        preprocessortagstart,
-        preporcessortag,
-        includeStart,
-        includeEnd,
-        includedFile,
-        includedCode,
-        resultCode = baseCode;
-      while (pos < resultCode.length) {
-        preprocessortagstart = resultCode.indexOf('#', pos);
-        if (preprocessortagstart == -1) {
-          pos = resultCode.length;
-          continue;
-        }
-
-        // TODO: reimpliment this and test thorougly
-      //  var blockcomment = resultCode.indexOf('/*', pos);
-      //  if(blockcomment > 0 && blockcomment < preprocessortagstart){
-      //    blockcomment = resultCode.indexOf('*/', blockcomment);
-      //    pos = blockcomment+1;
-      //    continue;
-      //  }
-      //  var linecomment = resultCode.lastIndexOf('//', preprocessortagstart);
-      //  if(linecomment > 0 && linecomment < preprocessortagstart ){
-      //    var newline = resultCode.indexOf('\n', linecomment);
-      //    if(newline == -1 || newline < preprocessortagstart){
-      //      pos = newline+3;
-      //      continue;
-      //    }
-      //  }
-        preporcessortag = resultCode.substring(preprocessortagstart, resultCode.indexOf(' ', preprocessortagstart));
-        switch (preporcessortag) {
-          case '#include':
-            //includeStartDouble = resultCode.indexOf('"', preprocessortagstart + 7);
-            //includeEndDouble = resultCode.indexOf('"', includeStartDouble + 1);
-            includeStartSingle= resultCode.indexOf("'", preprocessortagstart + 7);
-            includeEndSingle = resultCode.indexOf("'", includeStartSingle + 1);
-            includeStart = includeStartSingle
-            includeEnd = includeEndSingle
-            //if(includeStart > includeStartSingle){
-            //  includeStart = includeStartSingle
-            //  includeEnd = includeEndSingle
-            //}
-            includedFile = resultCode.substring(includeStart + 1, includeEnd);
-            try {
-              includedCode = scene.loadResourceURL(includedFile);
-              includedCode = this.preProcessCode.call(
-                this, includedCode, preProcessorDefinitions, includedCodeSections);
-              resultCode = resultCode.substr(
-                0, preprocessortagstart) + includedCode + resultCode.substr(includeEnd + 1);
-              if (includedCodeSections) {
-                includedCodeSections.push({ start: preprocessortagstart, length: includedCode.length });
-              }
-              pos = preprocessortagstart + includedCode.length;
-            }
-            catch (e) {
-              throw ('Failed to include file:' + includedFile);
-            }
-            break;
-          default:
-            pos = resultCode.indexOf('\n', preprocessortagstart) + 1;
-        }
-      }
-      if (preProcessorDefinitions) {
-        for (var def in preProcessorDefinitions) {
-          while (resultCode.indexOf(def) != -1) {
-            resultCode = resultCode.replace(def, preProcessorDefinitions[def]);
-          }
-        }
-      }
-      return resultCode;
-    };
-    
     scene.constructOperator = function(operatorDef) {
       
       var constructBinding = function(operator) {
@@ -391,7 +316,6 @@ FABRIC.SceneGraph = {
       
       ///////////////////////////////////////////////////
       // Construct the operator
-      var includedCodeSections = [];
       var configureOperator = function(code) {
         var descDiags;
         
@@ -443,11 +367,11 @@ FABRIC.SceneGraph = {
         filename = operatorDef.srcFile.split('/').pop();
         if(operatorDef.async === false){
           var code = FABRIC.loadResourceURL(operatorDef.srcFile, 'text/plain');
-          code = scene.preProcessCode(code, operatorDef.preProcessorDefinitions, includedCodeSections);
+          code = FABRIC.preProcessCode(code, operatorDef.preProcessorDefinitions);
           configureOperator(code);
         }else{
           FABRIC.loadResourceURL(operatorDef.srcFile, 'text/plain', function(code){
-            code = scene.preProcessCode(code, operatorDef.preProcessorDefinitions, includedCodeSections);
+            code = FABRIC.preProcessCode(code, operatorDef.preProcessorDefinitions);
             configureOperator(code);
           });
         }
@@ -457,11 +381,11 @@ FABRIC.SceneGraph = {
         // Fake an asynchronous operator construction so that we don't block waiting
         // for the operator compilation.
         if(operatorDef.async === false){
-          var code = scene.preProcessCode(operatorDef.srcCode, operatorDef.preProcessorDefinitions, includedCodeSections);
+          var code = FABRIC.preProcessCode(operatorDef.srcCode, operatorDef.preProcessorDefinitions);
           configureOperator(code);
         }else{
           FABRIC.createAsyncTask(function(){
-            var code = scene.preProcessCode(operatorDef.srcCode, operatorDef.preProcessorDefinitions, includedCodeSections);
+            var code = FABRIC.preProcessCode(operatorDef.srcCode, operatorDef.preProcessorDefinitions);
             configureOperator(code);
           });
         }
