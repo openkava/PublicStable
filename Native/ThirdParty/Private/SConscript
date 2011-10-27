@@ -171,6 +171,28 @@ alembicFlags = {
 }
 Export( 'alembicFlags' )
 
+# lidar
+lidarLibs = []
+
+# todo: make this more elegant.. on Windows the libs currently look for their 
+# original lib dependency name when linking so I can't just rename them to shorter names.
+# Maybe there's a compile option for that...
+if buildOS == 'Windows':
+  if buildType == 'Debug':
+    lidarLibs.extend(archLibs( 'boost', ['libboost_program_options-vc100-mt-sgd-1_47', 'libboost_serialization-vc100-mt-sgd-1_47', 'libboost_thread-vc100-mt-sgd-1_47'] ))
+  else:
+    lidarLibs.extend(archLibs( 'boost', ['libboost_program_options-vc100-mt-s-1_47', 'libboost_serialization-vc100-mt-s-1_47', 'libboost_thread-vc100-mt-s-1_47'] ))
+else:  
+  lidarLibs.extend(archLibs( 'boost', ['boost_program_options', 'boost_serialization', 'boost_thread'] ))
+
+lidarFlags = {
+    'CPPPATH': [
+      os.path.join( includeBaseDir, 'boost' )
+    ],
+    'LIBS': lidarLibs
+}
+Export( 'lidarFlags' )
+
 # GTKGL
 if buildOS == 'Linux':
   gtkglFlags = {
