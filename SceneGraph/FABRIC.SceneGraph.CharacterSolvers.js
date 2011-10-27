@@ -1167,6 +1167,9 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('InsectLegSolver', {
       var ikblendId = variablesNode.addVariable('Scalar', 1.0);
       
       var leg = new FABRIC.Characters.Limb(boneIDs.bones, -1, xfoIds, footPlatformXfoId, lastBoneOffsetXfo, ikblendId);
+      if(options.hubIds){
+        leg.hubId = options.hubIds[j];
+      }
       legs.push(leg);
     }
     
