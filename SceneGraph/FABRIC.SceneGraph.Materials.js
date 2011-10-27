@@ -1358,6 +1358,7 @@ FABRIC.SceneGraph.defineEffectFromFile('WireframeMaterial', 'FABRIC_ROOT/SceneGr
 FABRIC.SceneGraph.defineEffectFromFile('OutlineShader', 'FABRIC_ROOT/SceneGraph/Shaders/OutlineShader.xml');
 
 FABRIC.SceneGraph.defineEffectFromFile('PointFlatMaterial', 'FABRIC_ROOT/SceneGraph/Shaders/PointFlatShader.xml');
+FABRIC.SceneGraph.defineEffectFromFile('PointColorMaterial', 'FABRIC_ROOT/SceneGraph/Shaders/PointColorShader.xml');
 
 
 FABRIC.SceneGraph.registerNodeType('BloomPostProcessEffect', {
