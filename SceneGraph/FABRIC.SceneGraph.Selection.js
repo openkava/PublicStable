@@ -286,18 +286,6 @@ FABRIC.SceneGraph.registerManagerType('SelectionManipulationManager', {
       rotationManipulators.push(rotManip);
     }
     if(translationManipulators.length == 0){
-      var transManip1 = scene.pub.constructNode('LinearTranslationManipulator', {
-          name: options.name + 'TranslateYaxisManipulator',
-          color: FABRIC.RT.rgb(0, 0.8, 0),
-          size: 16,
-          parentNode: groupTransform.pub,
-          drawToggle: false,
-          drawOverlaid: true
-        });
-      transManip1.addEventListener('dragstart', dragStartFn);
-      transManip1.addEventListener('drag', dragFn);
-      translationManipulators.push(transManip1);
-      
       var transManip2 = scene.pub.constructNode('ScreenTranslationManipulator', {
           name: options.name + 'ScreenTranslationManipulator',
           color: FABRIC.RT.rgb(0, 0.8, 0, 1),
