@@ -69,6 +69,19 @@ function OGLTexture3D.bindByteImage(
   this.bind(textureUnit);
 }
 
+function OGLTexture3D.bindUShortImage(
+  io Size width,
+  io Size height,
+  io Size depth,
+  io Byte bitmap[],
+  io Integer textureUnit
+) {
+  if (this.bufferID == 0 || this.forceRefresh) {
+    this.configure(width, height, depth, bitmap.data(), Size(bitmap.size()/2), textureUnit);
+  }
+  this.bind(textureUnit);
+}
+
 function OGLTexture3D.bindColorImage(
   io Size width,
   io Size height,

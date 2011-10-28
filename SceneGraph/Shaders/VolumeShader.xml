@@ -11,12 +11,7 @@
     <uniform name="u_specularFactor" constant="specularFactor" type="Scalar" defaultValue="1.0"/>
 
     <uniform name="u_lightPosition" constant="lightPosition" type="Vec3" owner="light"/>
-    <uniform name="u_lightType" constant="lightType" type="Integer" owner="light"/>
-    <uniform name="u_lightDir" constant="lightDir" type="Vec3" owner="light"/>
-    <uniform name="u_lightColor" constant="lightColor" type="Color" owner="light"/>
-    <uniform name="u_lightCosCutoff" constant="lightCosCutoff" type="Scalar" owner="light"/>
 
-    <uniform name="u_materialAmbientColor" constant="ambientColor" type="Color" defaultValue="FABRIC.RT.rgba(0.7,0.7,0.7,1)"/>
     <uniform name="u_materialShininess" constant="shininess" type="Scalar" defaultValue="5.0"/>
 
     <uniform name="u_samplerOpacityMap" constant="opacityTexture" type="Integer" owner="texture"/>
@@ -84,16 +79,10 @@
       uniform float u_brightness;
       uniform float u_minOpacity;
       uniform float u_maxOpacity;
-      uniform float u_specularFactor;
-      
-			uniform int u_lightType;
-			uniform vec3 u_lightDir;
-			uniform vec4 u_lightColor;
-			uniform float u_lightCosCutoff;
-			uniform mat3 u_normalMatrix;
 
+      uniform float u_specularFactor;
+			uniform mat3 u_normalMatrix;
 			uniform float u_materialShininess;
-			uniform vec4 u_materialAmbientColor;
 
 			uniform sampler3D u_samplerOpacityMap;
 			uniform sampler3D u_samplerGradientMap;
@@ -139,7 +128,8 @@
         //float lightBehind = dot(Nn,Ln);
         vec3 Rn = reflect(-Ln, Nn);
         float specular = pow( max(dot(Rn, Vn), 0.0), u_materialShininess );
-        shadedColor += vec4( u_lightColor.xyz, gradientWeight ) * specular * u_specularFactor;
+
+        shadedColor += vec4( vec3(1.0,1.0,1.0), gradientWeight ) * specular * u_specularFactor;
         shadedColor.a = min( shadedColor.a, 1.0 );
         gl_FragColor = shadedColor;
       }
