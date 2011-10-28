@@ -18,6 +18,7 @@ operator rayIntersectTriangles(
   io RayIntersection intersection,
   io Ray ray,
   io Boolean drawToggle,
+  io Boolean raycastOverLaid,
   io Xfo globalXfo,
   io Vec3 positions<>,
   io Integer indices[],
@@ -55,5 +56,8 @@ operator rayIntersectTriangles(
         intersection.elementid = i;
       }
     }
+  }
+  if(select && raycastOverLaid){
+    intersection.distance = 0.0;
   }
 }

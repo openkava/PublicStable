@@ -15,6 +15,7 @@ operator rayIntersectLines(
   io Ray ray,
   io Scalar threshold,
   io Boolean drawToggle,
+  io Boolean raycastOverLaid,
   io Xfo globalXfo,
   io Vec3 positions<>,
   io Integer indices[],
@@ -61,6 +62,7 @@ operator rayIntersectLineStrip(
   io Ray ray,
   io Scalar threshold,
   io Boolean drawToggle,
+  io Boolean raycastOverLaid,
   io Xfo globalXfo,
   io Vec3 positions[],
   io Integer indices[],
@@ -97,6 +99,10 @@ operator rayIntersectLineStrip(
         }
       }
     }
+  }
+  
+  if(select && raycastOverLaid){
+    intersection.distance = 0.0;
   }
 }
 
