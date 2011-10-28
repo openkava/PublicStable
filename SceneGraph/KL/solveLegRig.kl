@@ -7,9 +7,7 @@ use Xfo;
 use Bone;
 use BezierKeyframe;
 use DebugGeometry;
-
-#include 'FABRIC_ROOT/SceneGraph/KL/solveFishingRod.kl'
-#include 'FABRIC_ROOT/SceneGraph/KL/solveNCFIK.kl'
+use SolverHelperFunctions;
 
 
 operator solveInsectLegRig(

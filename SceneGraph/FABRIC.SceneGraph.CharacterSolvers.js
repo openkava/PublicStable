@@ -3,6 +3,22 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
+FABRIC.RT.SolverHelperFunctions = function() {
+};
+
+FABRIC.appendOnCreateContextCallback(function(context) {
+  context.RegisteredTypesManager.registerType('SolverHelperFunctions', {
+    members: {
+    },
+    constructor: FABRIC.RT.SolverHelperFunctions,
+    klBindings: {
+      filename: 'solverHelperFunctions.kl',
+      sourceCode: FABRIC.loadResourceURL('FABRIC_ROOT/SceneGraph/KL/solverHelperFunctions.kl')
+    }
+  });
+});
+
+
 /**
  * A character solver represents one computation in
  * the evaluation of a character's pose.
