@@ -64,7 +64,7 @@ FABRIC.SceneGraph.registerNodeType('LidarLoadNode', {
       // create the points node
       var pointsNode = scene.constructNode('Points');
       var pointsAttributeDGNode = pointsNode.getAttributesDGNode();
-      pointsNode.pub.addVertexAttributeValue('colors','Color',{ genVBO:true });
+      pointsNode.pub.addVertexAttributeValue('vertexColors','Color',{ genVBO:true });
       pointsAttributeDGNode.setDependency(resourceloaddgnode,'resource');
 
       pointsAttributeDGNode.bindings.append(scene.constructOperator({
@@ -83,7 +83,7 @@ FABRIC.SceneGraph.registerNodeType('LidarLoadNode', {
         parameterLayout: [
           'resource.lidar',
           'self.positions<>',
-          'self.colors<>'
+          'self.vertexColors<>'
         ],
         entryFunctionName: 'lidarGetPoints',
         srcFile: 'FABRIC_ROOT/SceneGraph/KL/loadLidar.kl',
