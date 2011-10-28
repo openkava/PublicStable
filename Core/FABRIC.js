@@ -389,31 +389,17 @@ FABRIC = (function() {
     xhreq.send(null);
     return result;
   };
-
-  var convertImageURLToDataURL = function(imageURL, callback, mimeType) {
-    if (mimeType === undefined) {
-      mimeType = 'image/png';
+  
+  
+  var preProcessCode = function(baseCode, preProcessorDefinitions) {
+    for (var def in preProcessorDefinitions) {
+      while (baseCode.indexOf(def) != -1) {
+        baseCode = baseCode.replace(def, preProcessorDefinitions[def]);
+      }
     }
-    var img = new Image;
-    img.onload = function() {
-      var canvas = document.createElement('canvas');
-      canvas.width = img.width;
-      canvas.height = img.height;
-
-      var ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0);
-
-      callback(canvas.toDataURL(mimeType));
-    };
-    img.src = imageURL;
+    return baseCode;
   };
-
-  var isObjectEmpty = function(o) {
-    for (var i in o)
-      return false;
-    return true;
-  };
-
+  
   return {
     createContext: createContext,
     getContextIDs: function() { return contextIDs; },
@@ -427,6 +413,6 @@ FABRIC = (function() {
     getAsyncTasksWeight: function() { return asyncTasksWeight; },
     getAsyncTasksMaxWeight: function() { return asyncTasksMaxWeight; },
     appendOnResolveAsyncTaskCallback: appendOnResolveAsyncTaskCallback,
-    convertImageURLToDataURL: convertImageURLToDataURL
+    preProcessCode: preProcessCode
   };
 })();

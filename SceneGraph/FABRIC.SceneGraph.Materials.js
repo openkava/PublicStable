@@ -207,7 +207,9 @@ FABRIC.SceneGraph.registerNodeType('Video', {
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
         url: '',
-        loop: false
+        loop: false,
+        nbCachedFrames: 0,
+        animationControllerNode: undefined
       });
 
     // ensure to use the right settings for video
@@ -243,56 +245,56 @@ FABRIC.SceneGraph.registerNodeType('Video', {
     }));
 
     // make it dependent on the scene time
-    if(options.loop)
+    var timeBinding = 'globals.time';
+    if(options.loop || options.animationControllerNode)
     {
-      var animationController = scene.constructNode('AnimationController');
-      var animationControllerDGNode = animationController.getDGNode();
-      dgnode.setDependency(animationControllerDGNode, 'controller');
-      dgnode.bindings.append(scene.constructOperator({
-        operatorName: 'videoSetTimeRange',
-        srcFile: 'FABRIC_ROOT/SceneGraph/KL/loadVideo.kl',
-        entryFunctionName: 'videoSetTimeRange',
-        parameterLayout: [
-          'self.handle',
-          'controller.timeRange',
-        ]
-      }));
-      
+      // use the options animation controller
+      var animationController = undefined;
+      if(options.animationControllerNode)
+      {
+        animationController = scene.getPrivateInterface(options.animationControllerNode);
+        var animationControllerDGNode = animationController.getDGNode();
+        dgnode.setDependency(animationControllerDGNode, 'controller');
+      }
+      else
+      {
+        animationController = scene.constructNode('AnimationController');
+        var animationControllerDGNode = animationController.getDGNode();
+        dgnode.setDependency(animationControllerDGNode, 'controller');
+        dgnode.bindings.append(scene.constructOperator({
+          operatorName: 'videoSetTimeRange',
+          srcFile: 'FABRIC_ROOT/SceneGraph/KL/loadVideo.kl',
+          entryFunctionName: 'videoSetTimeRange',
+          parameterLayout: [
+            'self.handle',
+            'controller.timeRange',
+          ]
+        }));
+      }
       videoNode.pub.getAnimationController = function(){
         return animationController.pub;
       };
-      
-      dgnode.bindings.append(scene.constructOperator({
-        operatorName: 'videoSeekTime',
-        srcFile: 'FABRIC_ROOT/SceneGraph/KL/loadVideo.kl',
-        entryFunctionName: 'videoSeekTime',
-        parameterLayout: [
-          'self.handle',
-          'controller.localTime'
-        ]
-      }));
+      timeBinding = 'controller.localTime';
     }
     else
-    {
       dgnode.setDependency(scene.getGlobalsNode(), 'globals');
-      dgnode.bindings.append(scene.constructOperator({
-        operatorName: 'videoSeekTime',
-        srcFile: 'FABRIC_ROOT/SceneGraph/KL/loadVideo.kl',
-        entryFunctionName: 'videoSeekTime',
-        parameterLayout: [
-          'self.handle',
-          'globals.time'
-        ]
-      }));
-    }
 
+    // use a dict for storing the already parsed frames
+    dgnode.addMember('pixelCache','RGB[][]')
+    dgnode.addMember('pixelCacheIndex','Integer[]')
+    dgnode.addMember('pixelCacheLimit','Integer',options.nbCachedFrames)
+    
     dgnode.bindings.append(scene.constructOperator({
-      operatorName: 'videoGetPixels',
+      operatorName: 'videoSeekTimeCached',
       srcFile: 'FABRIC_ROOT/SceneGraph/KL/loadVideo.kl',
-      entryFunctionName: 'videoGetPixels',
+      entryFunctionName: 'videoSeekTime',
       parameterLayout: [
         'self.handle',
-        'self.pixels'
+        timeBinding,
+        'self.pixels',
+        'self.pixelCache',
+        'self.pixelCacheIndex',
+        'self.pixelCacheLimit'
       ]
     }));
 
@@ -1279,19 +1281,19 @@ FABRIC.SceneGraph.defineEffectFromFile = function(effectName, effectfile) {
       }
       if (preProcessCode) {
         if (effectParameters.vertexShader) {
-          options.vertexShader = scene.preProcessCode(effectParameters.vertexShader, directives);
+          options.vertexShader = FABRIC.preProcessCode(effectParameters.vertexShader, directives);
         }
         if (effectParameters.tessControlShader) {
-          options.tessControlShader = scene.preProcessCode(effectParameters.tessControlShader, directives);
+          options.tessControlShader = FABRIC.preProcessCode(effectParameters.tessControlShader, directives);
         }
         if (effectParameters.tessEvalShader) {
-          options.tessEvalShader = scene.preProcessCode(effectParameters.tessEvalShader, directives);
+          options.tessEvalShader = FABRIC.preProcessCode(effectParameters.tessEvalShader, directives);
         }
         if (effectParameters.geometryShader) {
-          options.geometryShader = scene.preProcessCode(effectParameters.geometryShader, directives);
+          options.geometryShader = FABRIC.preProcessCode(effectParameters.geometryShader, directives);
         }
         if (effectParameters.fragmentShader) {
-          options.fragmentShader = scene.preProcessCode(effectParameters.fragmentShader, directives);
+          options.fragmentShader = FABRIC.preProcessCode(effectParameters.fragmentShader, directives);
         }
         options.shaderNameDecoration = '';
         for (i in directives) {
@@ -1357,6 +1359,7 @@ FABRIC.SceneGraph.defineEffectFromFile('WireframeMaterial', 'FABRIC_ROOT/SceneGr
 FABRIC.SceneGraph.defineEffectFromFile('OutlineShader', 'FABRIC_ROOT/SceneGraph/Shaders/OutlineShader.xml');
 
 FABRIC.SceneGraph.defineEffectFromFile('PointFlatMaterial', 'FABRIC_ROOT/SceneGraph/Shaders/PointFlatShader.xml');
+FABRIC.SceneGraph.defineEffectFromFile('FlatGradientMaterial', 'FABRIC_ROOT/SceneGraph/Shaders/FlatGradientShader.xml');
 
 
 FABRIC.SceneGraph.registerNodeType('BloomPostProcessEffect', {

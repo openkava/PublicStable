@@ -599,7 +599,8 @@ FABRIC.SceneGraph.registerNodeType('Manipulator', {
           enableRaycasting: true,
           geometryNode: options.geometryNode,
           materialNode: material,
-          transformNode: transformNode
+          transformNode: transformNode,
+          raycastOverlaid: options.drawOverlaid
         });
 
     manipulatorNode.getTargetNode = function() {
@@ -969,13 +970,13 @@ FABRIC.SceneGraph.registerNodeType('ScreenTranslationManipulator', {
   optionsDesc: {
     radius: 'The size of the screen space translation Manipulator.',
     name: 'The name of the screen space translation Manipulator.',
-    drawOverLaid: 'If set to true the Manipulator will be drawn overlaid.'
+    drawOverlaid: 'If set to true the Manipulator will be drawn overlaid.'
   },
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
         radius: 0.5,
         name: 'ScreenTranslationManipulator',
-        drawOverLaid: true
+        drawOverlaid: true
       });
 
     if (!options.geometryNode) {

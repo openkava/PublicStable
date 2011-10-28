@@ -73,7 +73,7 @@ FABRIC.SceneGraph.registerNodeType('Geometry', {
       }
     };
     geometryNode.getRayIntersectionOperator = function() {
-      throw ('Geometry must define this');
+      throw ('Derived Geometries must define a ray intersection operator.');
     };
     
     var capitalizeFirstLetter = function(str) {
@@ -445,6 +445,7 @@ FABRIC.SceneGraph.registerNodeType('Points', {
             'raycastData.ray',
             'raycastData.threshold',
             'instance.drawToggle',
+            'instance.raycastOverlaid',
             'transform.' + transformNodeMember,
             'geometry_attributes.positions<>',
             'boundingbox.min',
@@ -495,6 +496,7 @@ FABRIC.SceneGraph.registerNodeType('Lines', {
             'raycastData.ray',
             'raycastData.threshold',
             'instance.drawToggle',
+            'instance.raycastOverlaid',
             'transform.' + transformNodeMember,
             'geometry_attributes.positions<>',
             'geometry_uniforms.indices',
@@ -546,6 +548,7 @@ FABRIC.SceneGraph.registerNodeType('LineStrip', {
             'raycastData.ray',
             'raycastData.threshold',
             'instance.drawToggle',
+            'instance.raycastOverlaid',
             'transform.' + transformNodeMember,
             'geometry_attributes.positions<>',
             'geometry_uniforms.indices',
@@ -599,6 +602,7 @@ FABRIC.SceneGraph.registerNodeType('Triangles', {
           parameterLayout: [
             'raycastData.ray',
             'instance.drawToggle',
+            'instance.raycastOverlaid',
             'transform.' + transformNodeMember,
             'geometry_attributes.positions<>',
             'geometry_uniforms.indices',
@@ -672,7 +676,8 @@ FABRIC.SceneGraph.registerNodeType('Instance', {
         constructDefaultTransformNode: true,
         geometryNode: undefined,
         enableRaycasting: false,
-        enableDrawing: true
+        enableDrawing: true,
+        raycastOverlaid: false
       });
     
     var instanceNode = scene.constructNode('SceneGraphNode', options),
@@ -685,6 +690,7 @@ FABRIC.SceneGraph.registerNodeType('Instance', {
 
     dgnode.addMember('drawToggle', 'Boolean', options.enableDrawing);
     instanceNode.addMemberInterface(dgnode, 'drawToggle', true);
+    
     
     redrawEventHandler.setScope('instance', dgnode);
 
@@ -744,6 +750,7 @@ FABRIC.SceneGraph.registerNodeType('Instance', {
         options.enableRaycasting &&
         geometryNode.getRayIntersectionOperator
       ) {
+        dgnode.addMember('raycastOverlaid', 'Boolean', options.raycastOverlaid);
         // check if this is a sliced transform node
         if(transformNode.getRaycastEventHandler) {
           // In some cases, the transform node can provide raycasting services.

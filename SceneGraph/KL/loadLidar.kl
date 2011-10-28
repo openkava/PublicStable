@@ -1,0 +1,31 @@
+//
+// Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+//
+
+use FabricLIDAR;
+
+operator lidarLoad(
+  io String url,
+  io FabricResource resource,
+  io LidarReader lidar
+) {
+  if(resource.data.dataSize() > 0) {
+    lidar.loadResource(resource,url);
+  }
+}
+
+operator lidarGetCount(
+  io LidarReader lidar,
+  io Size count
+) {
+  lidar.getCount(count);
+  report("Parsed "+count+" LIDAR points");
+}
+
+operator lidarGetPoints(
+  io LidarReader lidar,
+  io Vec3 positions<>,
+  io Color colors<>
+) {
+  lidar.getPoints(positions,colors);
+}
