@@ -9,6 +9,7 @@ operator rayIntersectPoints(
   io Ray ray,
   io Scalar threshold,
   io Boolean drawToggle,
+  io Boolean raycastOverLaid,
   io Xfo globalXfo,
   io Vec3 positions[],
   io Vec3 bboxmin,
@@ -31,5 +32,9 @@ operator rayIntersectPoints(
         intersection.elementid = i;
       }
     }
+  }
+  
+  if(select && raycastOverLaid){
+    intersection.distance = 0.0;
   }
 }
