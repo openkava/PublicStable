@@ -84,10 +84,15 @@ $(document).ready(function() {
     modal: true
   });
 
-  var pointMaterial = scene.constructNode('PointColorMaterial', {
-      prototypeMaterialType: 'PointMaterial',
-      pointSize: 1,
-    });
+  var pointMaterial = scene.constructNode('FlatGradientMaterial', {
+    prototypeMaterialType: 'PointMaterial',
+    pointSize: 1,
+    axis: 1,
+    center: 0.25,
+    bottomColor: FABRIC.RT.rgba(0.0,0.0,1.0,1.0),
+    middleColor: FABRIC.RT.rgba(0.0,1.0,0.0,1.0),
+    topColor: FABRIC.RT.rgba(1.0,0.0,0.0,1.0)
+  });
 
   // create the alembic content, and fire the load once it is loaded
   var resourceName = 'MtStHelens';
@@ -130,11 +135,42 @@ $(document).ready(function() {
         }
         
         var center = min.add(max).multiplyScalar(0.5);
-        var pos = center.add(new FABRIC.RT.Vec3(0,0,0.25 * Math.abs(min.z - max.z)));
+        var pos = center.add(new FABRIC.RT.Vec3(0,0,0.5 * Math.abs(min.z - max.z)));
         camera.getTransformNode().setGlobalXfo(FABRIC.RT.xfo({tr:pos}));
         camera.getTransformNode().setTarget(center);
         camera.setNearDistance(Math.abs(min.z - max.z) * 0.001);
         camera.setFarDistance(Math.abs(min.z - max.z) * 100);
+        
+        pointMaterial.setMinimum(min.y + (max.y - min.y) * 0.5);
+        pointMaterial.setMaximum(max.y);
+        
+        $('#minimum').slider({
+          min: min.y,
+          max: max.y,
+          value: pointMaterial.getMinimum(),
+          step: (max.y - min.y) * 0.01
+        }).bind('slide',function(event, ui) {
+          pointMaterial.setMinimum(ui.value)
+          scene.redrawAllWindows();
+        });
+        $('#maximum').slider({
+          min: min.y,
+          max: max.y,
+          value: pointMaterial.getMaximum(),
+          step: (max.y - min.y) * 0.01
+        }).bind('slide',function(event, ui) {
+          pointMaterial.setMaximum(ui.value)
+          scene.redrawAllWindows();
+        });
+        $('#center').slider({
+          min: 0,
+          max: 1,
+          value: pointMaterial.getCenter(),
+          step: 0.01
+        }).bind('slide',function(event, ui) {
+          pointMaterial.setCenter(ui.value)
+          scene.redrawAllWindows();
+        });
       }
     });
 
@@ -187,7 +223,14 @@ $(document).ready(function() {
               The data is parsed using a custom extension based on the libLAS library.
             </div><!--content-->
           </div><!--box-->
-
+          <div class="box">
+            <h2>CONTROLS</h2>
+            <div class="content">
+              <div id="minimum"></div>
+              <div id="maximum"></div>
+              <div id="center"></div>
+            </div><!--content-->
+          </div><!--box-->
         </div><!--sidebar-->
       </div> <!--editor-->
     </div><!--wrapper-->
