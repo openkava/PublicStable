@@ -157,7 +157,7 @@ FABRIC.SceneGraph.registerNodeType('Image3D', {
                 'will be created from the image.',
   parentNodeDesc: 'Texture',
   optionsDesc: {
-    format: 'Pixel format. Currently supported: RGBA, Byte, Color, Scalar.',
+    format: 'Pixel format. Currently supported: RGBA, UShort, Byte, Color, Scalar.',
     createDgNode: 'If this is set to true the Image node will contain a dgnode to store the pixel data.',
     createResourceLoadNode: 'Set to true this flag will enable the Image node to load a texture off a resource load node.',
     createLoadTextureEventHandler: 'If the image uses a ResouceLoadNode and this flag is set, it will create an EventHandler for the Image being loaded.',
@@ -194,7 +194,10 @@ FABRIC.SceneGraph.registerNodeType('Image3D', {
       dgnode.addMember('width', 'Size', options.width);
       dgnode.addMember('height', 'Size', options.height);
       dgnode.addMember('depth', 'Size', options.depth);
-      dgnode.addMember('pixels', options.format + '[]');
+      if(options.format === 'UShort')
+        dgnode.addMember('pixels', 'Byte[]');
+      else
+        dgnode.addMember('pixels', options.format + '[]');
   
       imageNode.addMemberInterface(dgnode, 'width');
       imageNode.addMemberInterface(dgnode, 'height');
@@ -229,7 +232,10 @@ FABRIC.SceneGraph.registerNodeType('Image3D', {
       };*/
     } else {
       if(options.createDgNode && options.initImage && options.width && options.height && options.depth){
-        dgnode.addMember('color', options.format, options.color);
+        if(options.format === 'UShort')
+          dgnode.addMember('color', 'Byte', options.color);
+        else
+          dgnode.addMember('color', options.format, options.color);
         dgnode.addMember('initiated', 'Boolean', false);
         dgnode.bindings.append(scene.constructOperator({
           operatorName: 'initImageFrom' + options.format,
@@ -258,6 +264,8 @@ FABRIC.SceneGraph.registerNodeType('Image3D', {
          oglTexture = FABRIC.RT.oglTexture3D_Color();
       else if(options.format === 'Scalar')
          oglTexture = FABRIC.RT.oglTexture3D_Scalar();
+      else if(options.format === 'UShort')
+         oglTexture = FABRIC.RT.oglTexture3D_UShort();
       else
          oglTexture = FABRIC.RT.oglTexture3D_RGBA();
 

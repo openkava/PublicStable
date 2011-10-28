@@ -9,7 +9,7 @@ function generate3DTexture(
   io Size width,
   io Size heigth,
   io Size depth,
-  io Byte opacityVoxels[],
+  io Byte opacityUShortVoxels[],
   io RGBA weightedGradientsVoxels[],
   Boolean generateOpacity,
   Boolean generateGradient
@@ -19,7 +19,7 @@ function generate3DTexture(
   depth = resolution;
 
   if(generateOpacity)
-    opacityVoxels.resize(width*heigth*depth);
+    opacityUShortVoxels.resize(width*heigth*depth*2);//*2: UShort
   if(generateGradient)
     weightedGradientsVoxels.resize(width*heigth*depth);
 
@@ -35,7 +35,7 @@ function generate3DTexture(
   Vec3 delta(2.0 / Scalar(width), 2.0 / Scalar(heigth), 2.0 / Scalar(depth));
   Vec3 currPos;
 
-  Scalar gradientThreshold = 1.5 / Scalar(resolution);
+  Scalar voxelThreshold = 2.0 / Scalar(resolution);
 
   Scalar sphereRadius[3], sphereOpacity[3];
   sphereRadius[0] = 0.9; sphereOpacity[0] = 0.25;
@@ -53,14 +53,16 @@ function generate3DTexture(
 
         if(generateOpacity)
         {
-          Scalar opacity = sphereOpacity[0];
+          Scalar opacity = 0.0;
           for(l = 3; l--; ) {
             if(distToCenter < sphereRadius[l]) {
               opacity = sphereOpacity[l];
               break;
             }
           }
-          opacityVoxels[index] = Byte(opacity*255.99);
+          //We convert to UShorts. KL has no ushorts so we store in a Byte array, assuming little endian.
+          opacityUShortVoxels[index*2] = Byte(opacity*255.99*256.0);
+          opacityUShortVoxels[index*2+1] = Byte(opacity*255.99);
         }
 
         if(generateGradient)
@@ -73,8 +75,8 @@ function generate3DTexture(
 
           for(l = 3; l--; ) {
             Scalar sphereDist = abs(distToCenter - sphereRadius[l]);
-            if(sphereDist < gradientThreshold) {
-              gradientWeight = 1.0;// - sphereDist / gradientThreshold;
+            if(sphereDist < voxelThreshold) {
+              gradientWeight = 1.0;// - sphereDist / voxelThreshold;
               break;
             }
           }
@@ -99,10 +101,10 @@ operator generate3DTextureOpacity(
   io Size width,
   io Size heigth,
   io Size depth,
-  io Byte opacityVoxels[]
+  io Byte opacityUShortVoxels[]
 ){
   RGBA dummy[];
-  generate3DTexture( resolution, width, heigth, depth, opacityVoxels, dummy, true, false);
+  generate3DTexture( resolution, width, heigth, depth, opacityUShortVoxels, dummy, true, false);
 }
 
 operator generate3DTextureGradient(
@@ -123,7 +125,7 @@ operator slice3DTexture(
   io Size sourceWidth,
   io Size sourceHeight,
   io Size sourceDepth,
-  io Byte sourceOpacityVoxels[],
+  io Byte sourceOpacityUShortVoxels[],
   io RGBA sourceWeightedGradientsVoxels[],
   io Size width,
   io Size height,
@@ -170,7 +172,7 @@ operator slice3DTexture(
     for( j = 0; j < dim1; ++j ) {
       Byte value;
       if(opacityElseGradientWeight)
-        value = sourceOpacityVoxels[offset];
+        value = sourceOpacityUShortVoxels[offset*2+1];
       else
         value = sourceWeightedGradientsVoxels[offset].a;
       pixels[target++] = RGBA(value, value, value, Byte(255));

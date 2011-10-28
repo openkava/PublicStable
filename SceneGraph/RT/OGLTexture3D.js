@@ -30,6 +30,13 @@ FABRIC.RT.oglTexture3D_Byte = function(){
     FABRIC.SceneGraph.OpenGLConstants.GL_UNSIGNED_BYTE);
 }
 
+FABRIC.RT.oglTexture3D_UShort = function(){
+  return new FABRIC.RT.OGLTexture3D(
+    FABRIC.SceneGraph.OpenGLConstants.GL_INTENSITY16,
+    FABRIC.SceneGraph.OpenGLConstants.GL_LUMINANCE,
+    FABRIC.SceneGraph.OpenGLConstants.GL_UNSIGNED_SHORT);
+}
+
 FABRIC.RT.oglTexture3D_Color = function(){
   return new FABRIC.RT.OGLTexture3D(
     FABRIC.SceneGraph.OpenGLConstants.GL_RGBA32F,

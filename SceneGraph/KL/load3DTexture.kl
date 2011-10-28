@@ -27,6 +27,17 @@ operator bindByteTexture3D(
   oglTexture3D.bindByteImage(width, height, depth, bitmap, textureUnit);
 }
 
+operator bindUShortTexture3D(
+  io Size width,
+  io Size height,
+  io Size depth,
+  io Byte bitmap[],//KL has no UShort; so we assume properly packed ushorts
+  io OGLTexture3D oglTexture3D,
+  io Integer textureUnit
+) {
+  oglTexture3D.bindUShortImage(width, height, depth, bitmap, textureUnit);
+}
+
 operator bindColorTexture3D(
   io Size width,
   io Size height,
@@ -108,6 +119,25 @@ operator initImageFromByte(
     pixels.resize(width * height * depth);
     for(Size i=0;i<pixels.size();i++)
       pixels[i] = color;
+    initiated = true;
+  }
+}
+
+operator initImageFromUShort(
+  io Size width,
+  io Size height,
+  io Size depth,
+  io Byte color,
+  io Byte pixels[],
+  io Boolean initiated
+) {
+  if(!initiated) {
+    Size nbPix = width * height * depth;
+    pixels.resize(nbPix * 2);
+    for(Size i=0;i<nbPix;i++) {
+      pixels[i*2] = 0;
+      pixels[i*2+1] = color;
+    }
     initiated = true;
   }
 }

@@ -73,7 +73,7 @@ FABRIC.SceneGraph.registerNodeType('3DTextureGenerator', {
       });
 
     options.name = '3DTextureGenerator_Opacity';
-    options.format = 'Byte';
+    options.format = 'UShort';
     options.createDgNode = true;
     var generatorNodeOpacity = scene.constructNode('Image3D', options);
     var dgnodeOpacity = generatorNodeOpacity.getDGNode();
