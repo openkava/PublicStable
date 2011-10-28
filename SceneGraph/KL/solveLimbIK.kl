@@ -6,10 +6,8 @@
 use Xfo;
 use Bone;
 use BezierKeyframe;
+use SolverHelperFunctions;
 
-
-#include 'FABRIC_ROOT/SceneGraph/KL/solveFishingRod.kl'
-#include 'FABRIC_ROOT/SceneGraph/KL/solveNCFIK.kl'
 
 operator solveArmRig(
   io Xfo pose[],
