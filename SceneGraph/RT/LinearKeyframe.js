@@ -49,12 +49,6 @@ FABRIC.appendOnCreateContextCallback(function(context) {
 });
 
 
-FABRIC.RT.LinearKeyframeTrack = function(name, color, keys) {
-  this.name = name ? name : "";
-  this.color = color ? color : FABRIC.RT.rgb(1.0, 0.0, 0.0);
-  this.keys = keys ? keys : [];
-};
-
 FABRIC.appendOnCreateContextCallback(function(context) {
   context.RegisteredTypesManager.registerType('LinearKeyframeTrack', {
     members: {
@@ -62,44 +56,16 @@ FABRIC.appendOnCreateContextCallback(function(context) {
       color: 'Color',
       keys: 'LinearKeyframe[]'
     },
-    constructor: FABRIC.RT.LinearKeyframeTrack,
-    kBindings: FABRIC.loadResourceURL('FABRIC_ROOT/SceneGraph/RT/LinearKeyframe.kl')
+    constructor: FABRIC.RT.KeyframeTrack,
+    klBindings: {
+      filename: 'FABRIC_ROOT/SceneGraph/RT/KeyframeTrack.kl',
+      sourceCode: FABRIC.preProcessCode(
+        FABRIC.loadResourceURL('FABRIC_ROOT/SceneGraph/RT/KeyframeTrack.kl'), {
+          KEYFRAMETYPE: 'LinearKeyframe'
+        })
+    }
   });
 });
-
-
-FABRIC.RT.LinearKeyframeTrackSet = function( name ) {
-  this.name = name ? name : 'animationTrack';
-  this.timeRange = new FABRIC.RT.Vec2(0,0);
-  this.tracks = [];
-};
-
-FABRIC.RT.LinearKeyframeTrackSet.prototype = {
-  addScalarTrack: function(name, color){
-    this.tracks.push(new FABRIC.RT.LinearKeyframeTrack(name, color));
-    return this.tracks.length - 1;
-  },
-  addXfoTrack: function(name, storeEulerAngles){
-    var binding = [];
-    var red
-    this.tracks.push(new FABRIC.RT.LinearKeyframeTrack(name+'tr.x', FABRIC.RT.Color.red));      binding.push(this.tracks.length - 1);
-    this.tracks.push(new FABRIC.RT.LinearKeyframeTrack(name+'tr.y', FABRIC.RT.Color.green));    binding.push(this.tracks.length - 1);
-    this.tracks.push(new FABRIC.RT.LinearKeyframeTrack(name+'tr.z', FABRIC.RT.Color.blue));     binding.push(this.tracks.length - 1);
-    
-    if(storeEulerAngles == true){
-      this.tracks.push(new FABRIC.RT.LinearKeyframeTrack(name+'euler.x', FABRIC.RT.Color.red));   binding.push(this.tracks.length - 1);
-      this.tracks.push(new FABRIC.RT.LinearKeyframeTrack(name+'euler.x', FABRIC.RT.Color.green)); binding.push(this.tracks.length - 1);
-      this.tracks.push(new FABRIC.RT.LinearKeyframeTrack(name+'euler.x', FABRIC.RT.Color.blue));  binding.push(this.tracks.length - 1);
-    }
-    else{
-      this.tracks.push(new FABRIC.RT.LinearKeyframeTrack(name+'ori.v.x', FABRIC.RT.Color.red));   binding.push(this.tracks.length - 1);
-      this.tracks.push(new FABRIC.RT.LinearKeyframeTrack(name+'ori.v.x', FABRIC.RT.Color.green)); binding.push(this.tracks.length - 1);
-      this.tracks.push(new FABRIC.RT.LinearKeyframeTrack(name+'ori.v.x', FABRIC.RT.Color.blue));  binding.push(this.tracks.length - 1);
-      this.tracks.push(new FABRIC.RT.LinearKeyframeTrack(name+'ori.w',   FABRIC.RT.Color.cyan));  binding.push(this.tracks.length - 1);
-    }
-    return binding;
-  }
-};
 
 FABRIC.appendOnCreateContextCallback(function(context) {
   context.RegisteredTypesManager.registerType('LinearKeyframeTrackSet', {
@@ -108,8 +74,14 @@ FABRIC.appendOnCreateContextCallback(function(context) {
       timeRange: 'Vec2',
       tracks: 'LinearKeyframeTrack[]'
     },
-    constructor: FABRIC.RT.LinearKeyframeTrackSet,
-    kBindings: FABRIC.loadResourceURL('FABRIC_ROOT/SceneGraph/RT/LinearKeyframe.kl')
+    constructor: FABRIC.RT.KeyframeTrackSet,
+    klBindings: {
+      filename: 'FABRIC_ROOT/SceneGraph/RT/KeyframeTrack.kl',
+      sourceCode: FABRIC.preProcessCode(
+        FABRIC.loadResourceURL('FABRIC_ROOT/SceneGraph/RT/KeyframeTrack.kl'),
+        { KEYFRAMETYPE: 'LinearKeyframe' }
+      )
+    }
   });
 });
 

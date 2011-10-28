@@ -57,3 +57,41 @@ FABRIC.appendOnCreateContextCallback(function(context) {
     }
   });
 });
+
+
+
+FABRIC.appendOnCreateContextCallback(function(context) {
+  context.RegisteredTypesManager.registerType('BezierKeyframeTrack', {
+    members: {
+      name: 'String',
+      color: 'Color',
+      keys: 'BezierKeyframe[]'
+    },
+    constructor: FABRIC.RT.KeyframeTrack,
+    klBindings: {
+      filename: 'FABRIC_ROOT/SceneGraph/RT/KeyframeTrack.kl',
+      sourceCode: FABRIC.preProcessCode(
+        FABRIC.loadResourceURL('FABRIC_ROOT/SceneGraph/RT/KeyframeTrack.kl'), {
+          KEYFRAMETYPE: 'BezierKeyframe'
+        })
+    }
+  });
+});
+
+FABRIC.appendOnCreateContextCallback(function(context) {
+  context.RegisteredTypesManager.registerType('BezierKeyframeTrackSet', {
+    members: {
+      name: 'String',
+      timeRange: 'Vec2',
+      tracks: 'BezierKeyframeTrack[]'
+    },
+    constructor: FABRIC.RT.KeyframeTrackSet,
+    klBindings: {
+      filename: 'FABRIC_ROOT/SceneGraph/RT/KeyframeTrack.kl',
+      sourceCode: FABRIC.preProcessCode(
+        FABRIC.loadResourceURL('FABRIC_ROOT/SceneGraph/RT/KeyframeTrack.kl'), {
+          KEYFRAMETYPE: 'BezierKeyframe'
+        })
+    }
+  });
+});

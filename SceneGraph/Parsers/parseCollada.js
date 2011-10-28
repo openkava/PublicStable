@@ -869,7 +869,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
         assetNodes[libraryAnimations.getName()] = libraryAnimations;
       }
       // Construct the track set for this rig.
-      var trackSet = new FABRIC.RT.LinearKeyframeTrackSet(controllerName);
+      var trackSet = new FABRIC.RT.KeyframeTrackSet(controllerName);
       
       var localPose = skeletonNode.getReferenceLocalPose();
       var fksolver = rigNode.addSolver('solveColladaPose', 'FKHierarchySolver');
@@ -909,7 +909,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
             }
             
             // now let's reformat the linear data
-            var track = new FABRIC.RT.LinearKeyframeTrack(bones[i].name+'.'+channelName, color);
+            var track = new FABRIC.RT.KeyframeTrack(bones[i].name+'.'+channelName, color);
             var key = FABRIC.RT.linearKeyframe;
             for (var j = 0; j < keytimes.length; j++) {
               track.keys.push(key(keytimes[j], keyvalues[j]));

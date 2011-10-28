@@ -4,12 +4,20 @@
 //
 
 use Math;
+use Vec2;
 
 function BezierKeyframe(Scalar time, Scalar value, Vec2 intangent, Vec2 outtangent) {
   this.time = time;
   this.value = value;
   this.intangent = intangent;
   this.outtangent = outtangent;
+}
+
+function BezierKeyframe(Scalar time, Scalar value) {
+  this.time = time;
+  this.value = value;
+  this.intangent.set(-0.333, 0.0);
+  this.outtangent.set(0.333, 0.0);
 }
 
 function Boolean isZero(Scalar x) {
