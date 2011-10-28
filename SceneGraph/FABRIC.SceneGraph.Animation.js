@@ -20,6 +20,7 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
     if (options.keyframetype == undefined) {
       throw ('Please specify a type of data to interpollate');
     }
+    var keyframeType = options.keyframetype;
     var keyframeTrackType = options.keyframetype+'Track';
     var keyframeTrackSetType = options.keyframetype+'TrackSet';
     var rTypes = scene.getRegisteredTypesManager().getRegisteredTypes();
@@ -37,13 +38,13 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
     if (!defaultKeyframeValue.valueType) {
       throw ('The keyframe registered type must provide a ' +
           'valueType that indicates what the keyframes will evaluate to. ' +
-          'Normally this is a Scalar, but could be a Vec2 of any other value');
+          'Normally this is a Scalar, but could be a Vec2, Color or any other value');
     }
     
     
     var animationLibraryNode = scene.constructNode('SceneGraphNode', options);
     var dgnode = animationLibraryNode.constructDGNode('DGNode');
-    dgnode.addMember('trackSet', options.keyframetype + 'TrackSet');
+    dgnode.addMember('trackSet', keyframeTrackSetType);
     
     var firstTrackAdded = false;
     animationLibraryNode.pub.addTrackSet = function(trackset) {
@@ -106,13 +107,13 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
       dgnode.setDependency(scene.getGlobalsNode(), 'globals');
       
       var trackBindings = new FABRIC.RT.KeyframeTrackBindings();
-      var trackSet = new FABRIC.RT.LinearKeyframeTrackSet(name);
+      var trackSet = new FABRIC.RT.KeyframeTrackSet(name);
       var variables = variablesNode.getVariables();
       
       // generate the bindings.
       var i, binding;
       var addTrack = function(name, color, bindings){
-        trackSet.tracks.push(new FABRIC.RT.LinearKeyframeTrack(name, color));
+        trackSet.tracks.push(new FABRIC.RT.KeyframeTrack(name, color));
         bindings.push(trackSet.tracks.length - 1);
       }
       for (i = 0; i < variables.scalarValues.length; i++) {
@@ -155,7 +156,7 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
           operatorName: 'keyCurvesFromVariables',
           srcFile: 'FABRIC_ROOT/SceneGraph/KL/keyCurvesFromVariables.kl',
           preProcessorDefinitions: {
-            KEYFRAMETRACKSETTYPE: 'LinearKeyframeTrackSet'
+            KEYFRAMETRACKSETTYPE: keyframeTrackSetType
           },
           entryFunctionName: 'keyCurvesFromVariables',
           parameterLayout: [
@@ -199,25 +200,35 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
       // Generate a unique operator that binds this 
       // animation curves to the target node's members.
       trackSetId = trackSetId ? trackSetId : 0;
-
-      var registeredTypes = scene.getRegisteredTypesManager().getRegisteredTypes();
       targetnode = scene.getPrivateInterface(targetnode);
-      targetnode.getDGNode().setDependency(dgnode, 'animationevaluator');
+      targetnode.getDGNode().setDependency(dgnode, 'animationlibrary');
+      targetnode.getDGNode().setDependency(scene.getGlobalsNode(), 'globals');
 
       var targetNodeMembers = targetnode.getDGNode().getMembers();
-      
+      var trackDataType = defaultKeyframeValue.valueType;
       var operatorName;
       if(targetName){
-        operatorName = 'bindAnimationTracksTo' + targetName;
+        operatorName = 'bindKeyframeTracksTo' + targetName;
       }
       else{
-        operatorName = 'bindAnimationTracksTo' + JSON.stringify(memberBindings).replace(/[^a-zA-Z 0-9]+/g, '');
+        operatorName = 'bindKeyframeTracksTo' + JSON.stringify(memberBindings).replace(/[^a-zA-Z 0-9]+/g, '');
       }
       
-      var operatorHeaderSrc = '\nuse Vec3, Euler, Quat, RotationOrder;\n\noperator ' + operatorName + '(\n  io ' + evaluatorDatatype + ' curvevalues<>';
+      var operatorHeaderSrc = '\nuse Vec3, Euler, Quat, RotationOrder;\n';
+      operatorHeaderSrc += 'use '+keyframeType+';\n';
+      operatorHeaderSrc += 'use '+keyframeTrackType+';\n';
+      operatorHeaderSrc += 'use '+keyframeTrackSetType+';\n';
+      operatorHeaderSrc += '\n\noperator ' + operatorName + '(\n';
+      operatorHeaderSrc += '  io Scalar time,\n';
+      operatorHeaderSrc += '  io ' + keyframeTrackSetType + ' trackSets<>';
       var operatorArraySrc = {};
-      var operatorBodySrc = '';
-      var parameterLayout = ['animationevaluator.value<>'];
+      var operatorBodySrc = '  '+keyframeTrackSetType + ' trackSet = trackSets['+trackSetId+'];\n';
+      var parameterLayout = ['globals.time', 'animationlibrary.trackSet<>'];
+      var numEvaluatedTracks = 0;
+      var addTrackEvaluation = function(trackid){
+        numEvaluatedTracks++;
+        return 'trackSet.tracks['+trackid+'].evaluate(time, currKeys['+ (numEvaluatedTracks-1) +'])';
+      }
       var tempVariables = {};
       for (var memberAccessor in memberBindings) {
         var memberBinding = memberBindings[memberAccessor];
@@ -244,7 +255,7 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
           isArray = true;
         }
         var memberType = boundMemberType;
-        var typeDesc = registeredTypes[memberType];
+        var typeDesc = rTypes[memberType];
         for (i = 1; i < splitMemberAccessor.length; i++) {
           var newMemberType = null;
           for (var j = 0; j < typeDesc.members.length; ++j) {
@@ -256,7 +267,7 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
           if (!newMemberType)
             throw 'unable to find member "' + splitMemberAccessor[i] + '" of type "' + memberType + '"';
           memberType = newMemberType;
-          typeDesc = registeredTypes[memberType];
+          typeDesc = rTypes[memberType];
         }
         var memberBindingCode = '';
         switch (memberType) {
@@ -264,15 +275,15 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
 
             break;
           case 'Scalar':
-            memberBindingCode = memberAccessor + ' = curvevalues[' + memberBindings[memberAccessor][0] + '];\n';
+            memberBindingCode = memberAccessor + ' = ' + addTrackEvaluation(memberBinding);
             break;
           case 'Vec3':
             if (memberBinding[0] >= 0)
-              memberBindingCode += '  ' + memberAccessor + '.x = curvevalues[' + memberBinding[0] + '];\n';
+              memberBindingCode += '  ' + memberAccessor + '.x = ' + addTrackEvaluation(memberBinding[0]) + ';\n';
             if (memberBinding[1] >= 0)
-              memberBindingCode += '  ' + memberAccessor + '.y = curvevalues[' + memberBinding[1] + '];\n';
+              memberBindingCode += '  ' + memberAccessor + '.y = ' + addTrackEvaluation(memberBinding[1]) + ';\n';
             if (memberBinding[2] >= 0)
-              memberBindingCode += '  ' + memberAccessor + '.z = curvevalues[' + memberBinding[2] + '];\n';
+              memberBindingCode += '  ' + memberAccessor + '.z = ' + addTrackEvaluation(memberBinding[2]) + ';\n';
             break;
           case 'Quat':
             if (memberBinding.length === 3) {
@@ -283,15 +294,15 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
                 tempVariables['tempEuler'] = '  var Euler tempEuler;\n';
               }
               if (memberBinding[0] >= 0)
-                memberBindingCode += '  tempVec3.x = curvevalues[' + memberBinding[0] + '];\n';
+                memberBindingCode += '  tempVec3.x = ' + addTrackEvaluation(memberBinding[0]) + ';\n';
               else
                 memberBindingCode += '  tempVec3.x = 0.0;\n';
               if (memberBinding[1] >= 0)
-                memberBindingCode += '  tempVec3.y = curvevalues[' + memberBinding[1] + '];\n';
+                memberBindingCode += '  tempVec3.y = ' + addTrackEvaluation(memberBinding[1]) + ';\n';
               else
                 memberBindingCode += '  tempVec3.y = 0.0;\n';
               if (memberBinding[2] >= 0)
-                memberBindingCode += '  tempVec3.z = curvevalues[' + memberBinding[2] + '];\n';
+                memberBindingCode += '  tempVec3.z = ' + addTrackEvaluation(memberBinding[2]) + ';\n';
               else
                 memberBindingCode += '  tempVec3.z = 0.0;\n';
               memberBindingCode += '  tempEuler = Euler(tempVec3);\n';
@@ -300,17 +311,18 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
               if (memberBinding[0] < 0 || memberBinding[1] < 0 || memberBinding[2] < 0  || memberBinding[3] < 0 ){
                 throw 'incorrect binding for Quat:' + JSON.stringify(memberBinding);
               }
-              memberBindingCode += '  ' + memberAccessor + '.set( curvevalues[' + memberBinding[0] + '],\n';
-              memberBindingCode += '    curvevalues[' + memberBinding[1] + '],\n';
-              memberBindingCode += '    curvevalues[' + memberBinding[2] + '],\n';
-              memberBindingCode += '    curvevalues[' + memberBinding[3] + ']);\n';
+              memberBindingCode += '  ' + memberAccessor + '.set( '+ addTrackEvaluation(memberBinding[0]) + ',\n';
+              memberBindingCode += '    ' + addTrackEvaluation(memberBinding[1]) + ',\n';
+              memberBindingCode += '    ' + addTrackEvaluation(memberBinding[2]) + ',\n';
+              memberBindingCode += '    ' + addTrackEvaluation(memberBinding[3]) + ');\n';
               memberBindingCode += '  ' + memberAccessor + ' = ' + memberAccessor + '.unit();\n';
             }
             break;
 
         }
+        
         operatorBodySrc += '\n' + memberBindingCode;
-        console.log(operatorBodySrc);
+        
         if (parameterLayout.indexOf('self.' + memberName) == -1) {
           operatorHeaderSrc += ',\n  io ' + boundMemberType + ' ' + memberName + (isArray ? '[]' : '');
           parameterLayout.push('self.' + memberName);
@@ -329,11 +341,12 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
       for (i in tempVariables) {
         operatorBodySrc = tempVariables[i] + operatorBodySrc;
       }
+      operatorBodySrc = '  Integer currKeys['+numEvaluatedTracks+'];\n' + operatorBodySrc;
       operatorBodySrc = '\n' + operatorBodySrc + '}';
 
       //console.log(operatorHeaderSrc + operatorBodySrc);
       //console.log(parameterLayout);
-
+      console.log(operatorHeaderSrc + operatorBodySrc);
       if (targetnode.getDGNode().bindings.length > 0) {
         targetnode.getDGNode().bindings.insert(scene.constructOperator({
           operatorName: operatorName,
@@ -501,11 +514,11 @@ FABRIC.SceneGraph.registerNodeType('TrackDisplay', {
         throw ('Incorrect type assignment. Must assign a AnimationLibrary');
       }
       animationLibraryNode = scene.getPrivateInterface(node);
-      evaluatorDatatype = animationLibraryNode.pub.getValueType();
+      var trackDataType = animationLibraryNode.pub.getValueType();
       var trackSet = animationLibraryNode.pub.getTrackSet();
       dgnode.setDependency(animationLibraryNode.getDGNode(), 'animationlibrary');
 
-      dgnode.addMember('values', evaluatorDatatype+'[]');
+      dgnode.addMember('values', trackDataType+'[]');
       parametersdgnode.setData('trackSetId', trackSetId ? trackSetId : 0);
       parametersdgnode.setData('timeRange', animationLibraryNode.pub.getTimeRange(trackSetId));
       dgnode.setCount(trackSet.tracks.length);
