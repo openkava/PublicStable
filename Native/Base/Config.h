@@ -82,6 +82,8 @@ static inline float roundf( float x ) { return floorf(x+0.5f); }
 # define FABRIC_SDK_EXPORT __attribute__ ((visibility("default")))
 #endif
 
+#define FABRIC_CLI_EXPORT FABRIC_SDK_EXPORT
+
 #include <string>
 
 namespace Fabric
