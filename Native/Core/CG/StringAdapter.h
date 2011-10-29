@@ -32,6 +32,8 @@ namespace Fabric
       virtual void llvmRelease( BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const;
 
       virtual llvm::Constant *llvmDefaultValue( BasicBlockBuilder &basicBlockBuilder ) const;
+      virtual llvm::Constant *llvmDefaultRValue( BasicBlockBuilder &basicBlockBuilder ) const;
+      virtual llvm::Constant *llvmDefaultLValue( BasicBlockBuilder &basicBlockBuilder ) const;
       
       virtual void llvmCompileToModule( ModuleBuilder &moduleBuilder ) const;
       virtual void *llvmResolveExternalFunction( std::string const &functionName ) const;
@@ -47,10 +49,9 @@ namespace Fabric
 
       void llvmReport( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *stringRValue ) const;
 
-      llvm::Value *llvmCallRefCount( BasicBlockBuilder &basicBlockBuilder, llvm::Value *stringRValue ) const;
       llvm::Value *llvmCallLength( BasicBlockBuilder &basicBlockBuilder, llvm::Value *stringRValue ) const;
       llvm::Value *llvmCallCompare( BasicBlockBuilder &basicBlockBuilder, llvm::Value *lhsRValue, llvm::Value *rhsRValue ) const;
-      llvm::Value *llvmCallCast( BasicBlockBuilder &basicBlockBuilder, RC::ConstHandle<Adapter> const &adapter, llvm::Value *rValue ) const;
+      void llvmCallCast( BasicBlockBuilder &basicBlockBuilder, RC::ConstHandle<Adapter> const &adapter, llvm::Value *srcLValue, llvm::Value *dstLValue ) const;
       llvm::Value *llvmCallConcat( BasicBlockBuilder &basicBlockBuilder, llvm::Value *lhsRValue, llvm::Value *rhsRValue ) const;
 
     protected:
@@ -64,7 +65,7 @@ namespace Fabric
     private:
       
       static void Append( void *dstLValue, void const *srcRValue );
-      static void *Cast( void const *lValue, Adapter const *adapter );
+      static void Cast( Adapter const *adapter, void const *srcLValue, void *dstLValue );
       
       RC::ConstHandle<RT::StringDesc> m_stringDesc;
     };
