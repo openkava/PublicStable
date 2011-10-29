@@ -2,12 +2,12 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
-use RGBA, Vec3;
+use RGBA, Vec3, Math;
 
 function generate3DTexture(
   io Size resolution,
   io Size width,
-  io Size heigth,
+  io Size height,
   io Size depth,
   io Byte opacityUShortVoxels[],
   io RGBA weightedGradientsVoxels[],
@@ -15,13 +15,13 @@ function generate3DTexture(
   Boolean generateGradient
 ){
   width = resolution;
-  heigth = resolution;
+  height = resolution;
   depth = resolution;
 
   if(generateOpacity)
-    opacityUShortVoxels.resize(width*heigth*depth*2);//*2: UShort
+    opacityUShortVoxels.resize(width*height*depth*2);//*2: UShort
   if(generateGradient)
-    weightedGradientsVoxels.resize(width*heigth*depth);
+    weightedGradientsVoxels.resize(width*height*depth);
 
   if(resolution == 0)
     resolution = 1;
@@ -32,10 +32,11 @@ function generate3DTexture(
 
   Size i,j,k,l;
   Size index = 0;
-  Vec3 delta(2.0 / Scalar(width), 2.0 / Scalar(heigth), 2.0 / Scalar(depth));
+  Vec3 delta(2.0 / Scalar(width), 2.0 / Scalar(height), 2.0 / Scalar(depth));
   Vec3 currPos;
 
   Scalar voxelThreshold = 2.0 / Scalar(resolution);
+  Scalar voxelHalfSize = 0.5 / Scalar(resolution);
 
   Scalar sphereRadius[3], sphereOpacity[3];
   sphereRadius[0] = 0.9; sphereOpacity[0] = 0.25;
@@ -45,7 +46,7 @@ function generate3DTexture(
   currPos.z = -1.0;
   for(i = 0; i < depth; ++i) {
     currPos.y = -1.0;
-    for(j = 0; j < heigth; ++j) {
+    for(j = 0; j < height; ++j) {
       currPos.x = -1.0;
       for(k = 0; k < width; ++k) {
 
@@ -53,10 +54,16 @@ function generate3DTexture(
 
         if(generateOpacity)
         {
+          //Do some cheap antialiasing to help gradient generation...
           Scalar opacity = 0.0;
           for(l = 3; l--; ) {
-            if(distToCenter < sphereRadius[l]) {
+            if(distToCenter+voxelHalfSize < sphereRadius[l]) {
               opacity = sphereOpacity[l];
+              break;
+            }
+            else if(distToCenter-voxelHalfSize < sphereRadius[l]) {
+              Scalar ratio = (sphereRadius[l] - (distToCenter-voxelHalfSize)) / (voxelHalfSize*2.0);
+              opacity = (1.0-ratio)*(l == 0 ? 0.0 : sphereOpacity[l-1]) + ratio*sphereOpacity[l];
               break;
             }
           }
@@ -80,7 +87,6 @@ function generate3DTexture(
               break;
             }
           }
-
           weightedGradientsVoxels[index].r = Byte(((gradient.x*0.5)+0.5)*255.99);
           weightedGradientsVoxels[index].g = Byte(((gradient.y*0.5)+0.5)*255.99);
           weightedGradientsVoxels[index].b = Byte(((gradient.z*0.5)+0.5)*255.99);
@@ -99,23 +105,231 @@ function generate3DTexture(
 operator generate3DTextureOpacity(
   io Size resolution,
   io Size width,
-  io Size heigth,
+  io Size height,
   io Size depth,
   io Byte opacityUShortVoxels[]
 ){
   RGBA dummy[];
-  generate3DTexture( resolution, width, heigth, depth, opacityUShortVoxels, dummy, true, false);
+  generate3DTexture( resolution, width, height, depth, opacityUShortVoxels, dummy, true, false);
 }
 
 operator generate3DTextureGradient(
   io Size resolution,
   io Size width,
-  io Size heigth,
+  io Size height,
   io Size depth,
   io RGBA weightedGradientsVoxels[],
 ){
   Byte dummy[];
-  generate3DTexture( resolution, width, heigth, depth, dummy, weightedGradientsVoxels, false, true);
+  generate3DTexture( resolution, width, height, depth, dummy, weightedGradientsVoxels, false, true);
+}
+
+operator computeGradientSlices( 
+  io Size width,
+  io Size height,
+  io Size depth,
+  io Byte opacityUShortVoxels[],
+  io RGBA sliceGradients[],
+  in Size index)
+{
+  //This implementation is a compromise between memory consumption,
+  //multithreading (slicing) and performance. In order to factorize
+  //as much computations while still multithreading, slices correspond
+  //to a 3D image plane, with slice count == depth.
+  //
+  //In order to avoid too many redundant computations pre pixel, we keep
+  //a full row of intermediary results.
+
+  sliceGradients.resize(width * height);
+  Integer i, j, k, l, dst = 0;
+
+  Integer nei3D2H_0[][3][2];
+  nei3D2H_0.resize(width + 2);
+
+  Integer nei2D1H_1[][2];
+  nei2D1H_1.resize(width + 2);
+
+  Integer nei2D2H_2[][2][2];
+  nei2D2H_2.resize(width + 1);
+
+  Integer DOffsets[3];
+  DOffsets[0] = (index == 0 ? index : index-1) * width * height;
+  DOffsets[1] = index * width * height;
+  DOffsets[2] = (index == depth-1 ? index : index+1) * width * height;
+
+  for(i = -1; i < height; ++i) {
+    Integer nextHOffset = (i == -1 ? 0 : i) * width;
+
+    //Update nei3D2H_0: contains neighbor pixels, including padding at borders
+    Integer HOffsets[3];
+    for(j = 0; j < 3; ++j) {
+      HOffsets[j] = DOffsets[j] + nextHOffset;
+    }
+    for(j = -1; j < width+1; ++j) {
+      Integer WOffset = j < 0 ? 0 : (j == width ? width-1 : j);
+      for(k = 0; k < 3; ++k) {
+        nei3D2H_0[j+1][k][0] = nei3D2H_0[j+1][k][1];
+        Integer src = HOffsets[k] + WOffset;
+        nei3D2H_0[j+1][k][1] = Integer(opacityUShortVoxels[src*2]) + Integer(opacityUShortVoxels[src*2+1])*256;
+      }
+    }
+    //Update nei2D1H_1: contains D+H average of nei3D2H_0
+    for(j = 0; j < width+2; ++j) {
+      Integer hSum[3];
+      for(k = 0; k < 3; ++k) {
+        hSum[k] = nei3D2H_0[j][k][0] + nei3D2H_0[j][k][1];
+      }
+      nei2D1H_1[j][0] = hSum[0]+hSum[1];
+      nei2D1H_1[j][1] = hSum[1]+hSum[2];
+    }
+    //Update nei2D2H_2: contains 2X2 cube of current pixel's surrounding dual average
+    if(i >= 0) {
+      for(j = 0; j < width+1; ++j) {
+        for(k = 0; k < 2; ++k) {
+          nei2D2H_2[j][k][0] = nei2D2H_2[j][k][1];
+          nei2D2H_2[j][k][1] = nei2D1H_1[j][k] + nei2D1H_1[j+1][k];
+        }
+      }
+
+      //Compute gradients
+      for(j = 0; j < width; ++j) {
+        Integer delta[3];
+        Integer v0, v1;
+        //W
+        v0 = nei2D2H_2[j][0][0] + nei2D2H_2[j][0][1] + nei2D2H_2[j][1][0] + nei2D2H_2[j][0][1];
+        v1 = nei2D2H_2[j+1][0][0] + nei2D2H_2[j+1][0][1] + nei2D2H_2[j+1][1][0] + nei2D2H_2[j+1][0][1];
+        delta[0] = v0 - v1;
+        //H
+        v0 = nei2D2H_2[j][0][0] + nei2D2H_2[j][1][0] + nei2D2H_2[j+1][0][0] + nei2D2H_2[j+1][1][0];
+        v1 = nei2D2H_2[j][0][1] + nei2D2H_2[j][1][1] + nei2D2H_2[j+1][0][1] + nei2D2H_2[j+1][1][1];
+        delta[1] = v0 - v1;
+        //D
+        v0 = nei2D2H_2[j][0][0] + nei2D2H_2[j][0][1] + nei2D2H_2[j+1][0][0] + nei2D2H_2[j+1][0][1];
+        v1 = nei2D2H_2[j][1][0] + nei2D2H_2[j][1][1] + nei2D2H_2[j+1][1][0] + nei2D2H_2[j+1][1][1];
+        delta[2] = v0 - v1;
+        //Note: at this point, delta has 32X magnitude (because we added all values without dividing at each step)
+
+        //Convert to normalized vector
+        Vec3 grad = Vec3(Scalar(delta[0]), Scalar(delta[1]), Scalar(delta[2]));
+        Scalar magnitude = grad.length();
+        if(magnitude > DIVIDEPRECISION)
+          grad /= magnitude;
+        magnitude *= (1.0/(32.0*256.0));//UShort -> Byte, and divide the pixel sums done previously
+        magnitude *= 2.0;//Arbitrary ajustment factor: todo: make this an option...
+        if(magnitude >= 256.0)
+          magnitude = 255.0;
+
+        //Rescale gradient from [-1..1] to [0..255.99]
+        grad += Vec3(1.0, 1.0, 1.0);
+        grad *= 127.99;
+        sliceGradients[dst++] = RGBA(Byte(grad.x), Byte(grad.y), Byte(grad.z), Byte(magnitude));
+      }
+    }
+  }
+}
+
+operator smoothGradients( 
+  io Size width,
+  io Size height,
+  io Size depth,
+  io RGBA sliceGradients<>[],
+  io RGBA smoothedSliceGradients[],
+  in Size index)
+{
+  //This implementation is a compromise between memory consumption,
+  //multithreading (slicing) and performance. In order to factorize
+  //as much computations while still multithreading, slices correspond
+  //to a 3D image plane, with slice count == depth.
+  //
+  //In order to avoid too many redundant computations pre pixel, we keep
+  //a full row of intermediary results.
+
+  smoothedSliceGradients.resize(width * height);
+  Integer i, j, k, l, m, n, dst = 0;
+
+  Integer nei3D2H_0[][3][2][3];
+  nei3D2H_0.resize(width + 2);
+
+  Integer nei2D1H_1[][2][3];
+  nei2D1H_1.resize(width + 2);
+
+  Integer nei2D2H_2[][2][2][3];
+  nei2D2H_2.resize(width + 1);
+
+  Integer DIndices[3];
+  DIndices[0] = index == 0 ? index : index-1;
+  DIndices[1] = index;
+  DIndices[2] = index == depth-1 ? index : index+1;
+
+  for(i = -1; i < height; ++i) {
+    Integer nextHOffset = (i == -1 ? 0 : i) * width;
+
+    //Update nei3D2H_0: contains neighbor pixels, including padding at borders
+    for(j = -1; j < width+1; ++j) {
+      Integer WOffset = j < 0 ? 0 : (j == width ? width-1 : j);
+      for(k = 0; k < 3; ++k) {
+        nei3D2H_0[j+1][k][0] = nei3D2H_0[j+1][k][1];
+        Integer offset = nextHOffset + WOffset;
+        RGBA srcData = sliceGradients[DIndices[k]][offset];
+        Integer intData[3];
+        Integer magnitude = Integer(srcData.a);
+        intData[0] = (Integer(srcData.r) - 127) * magnitude;
+        intData[1] = (Integer(srcData.g) - 127) * magnitude;
+        intData[2] = (Integer(srcData.b) - 127) * magnitude;
+        nei3D2H_0[j+1][k][1] = intData;
+      }
+    }
+    //Update nei2D1H_1: contains D+H average of nei3D2H_0
+    for(j = 0; j < width+2; ++j) {
+      Integer hSum[3][3];
+      for(k = 0; k < 3; ++k) {
+        for(l = 0; l < 3; ++l) {
+          hSum[k][l] = nei3D2H_0[j][k][0][l] + nei3D2H_0[j][k][1][l];
+        }
+      }
+      for(k = 0; k < 3; ++k) {
+        nei2D1H_1[j][0][k] = hSum[0][k]+hSum[1][k];
+        nei2D1H_1[j][1][k] = hSum[1][k]+hSum[2][k];
+      }
+    }
+    //Update nei2D2H_2: contains 2X2 cube of current pixel's surrounding dual average
+    if(i >= 0) {
+      for(j = 0; j < width+1; ++j) {
+        for(k = 0; k < 2; ++k) {
+          nei2D2H_2[j][k][0] = nei2D2H_2[j][k][1];
+          for(l = 0; l < 3; ++l) {
+            nei2D2H_2[j][k][1][l] = nei2D1H_1[j][k][l] + nei2D1H_1[j+1][k][l];
+          }
+        }
+      }
+
+      //Compute average
+      for(j = 0; j < width; ++j) {
+        Integer sum[3];
+        sum[0] = 0;
+        sum[1] = 0;
+        sum[2] = 0;
+
+        for(k = 0; k < 2; ++k) {
+          for(l = 0; l < 2; ++l) {
+            for(m = 0; m < 2; ++m) {
+              for(n = 0; n < 3; ++n) {
+                sum[n] += nei2D2H_2[j+k][l][m][n];
+              }
+            }
+          }
+        }
+        Vec3 grad = Vec3(Scalar(sum[0]), Scalar(sum[1]), Scalar(sum[2]));
+        if(sum[0] != 0 || sum[1] != 0 || sum[2] != 0 )
+          grad.setUnit();
+        //Rescale gradient from [-1..1] to [0..255.99]
+        grad += Vec3(1.0, 1.0, 1.0);
+        grad *= 127.99;
+        smoothedSliceGradients[dst] = RGBA(Byte(grad.x), Byte(grad.y), Byte(grad.z), sliceGradients[index][dst].a);
+        ++dst;
+      }
+    }
+  }
 }
 
 operator slice3DTexture(
