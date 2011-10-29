@@ -12,7 +12,7 @@
 
     <uniform name="u_lightPosition" constant="lightPosition" type="Vec3" owner="light"/>
 
-    <uniform name="u_materialShininess" constant="shininess" type="Scalar" defaultValue="5.0"/>
+    <uniform name="u_materialShininess" constant="shininess" type="Scalar" defaultValue="20.0"/>
 
     <uniform name="u_samplerOpacityMap" constant="opacityTexture" type="Integer" owner="texture"/>
     <uniform name="u_samplerGradientMap" constant="gradientTexture" type="Integer" owner="texture"/>
