@@ -8,11 +8,11 @@
     <uniform name="u_brightness" constant="brightness" type="Scalar" defaultValue="1.0"/>
     <uniform name="u_minOpacity" constant="minOpacity" type="Scalar" defaultValue="0.0"/>
     <uniform name="u_maxOpacity" constant="maxOpacity" type="Scalar" defaultValue="1.0"/>
-    <uniform name="u_specularFactor" constant="specularFactor" type="Scalar" defaultValue="1.0"/>
+    <uniform name="u_specularFactor" constant="scaledSpecularFactor" type="Scalar" defaultValue="1.0"/>
 
     <uniform name="u_lightPosition" constant="lightPosition" type="Vec3" owner="light"/>
 
-    <uniform name="u_materialShininess" constant="shininess" type="Scalar" defaultValue="20.0"/>
+    <uniform name="u_materialShininess" constant="shininess" type="Scalar" defaultValue="10.0"/>
 
     <uniform name="u_samplerOpacityMap" constant="opacityTexture" type="Integer" owner="texture"/>
     <uniform name="u_samplerGradientMap" constant="gradientTexture" type="Integer" owner="texture"/>
@@ -129,7 +129,11 @@
         vec3 Rn = reflect(-Ln, Nn);
         float specular = pow( max(dot(Rn, Vn), 0.0), u_materialShininess );
 
-        shadedColor += vec4( vec3(1.0,1.0,1.0), gradientWeight ) * specular * u_specularFactor;
+        float specColor = specular * u_specularFactor * gradientWeight;
+        shadedColor.a += min( shadedColor.a+specColor, 1.0 );
+        if(shadedColor.a > 0.0001)
+          specColor /= shadedColor.a;//Try to maintain specular contibution no matter how much alpha
+        shadedColor.rgb += vec3( specColor, specColor, specColor );
         shadedColor.a = min( shadedColor.a, 1.0 );
         gl_FragColor = shadedColor;
       }

@@ -1642,7 +1642,8 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
       brightness: 0.5,
       transparency: 1.0,
       minOpacity: 0.0,
-      maxOpacity: 1.0
+      maxOpacity: 1.0,
+      specularFactor: 0.7
     });
 
     options.cameraNode = options.viewportNode.getCameraNode();
@@ -1653,9 +1654,7 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
     var opacityTextureDGNode = scene.getPrivateInterface(options.opacityTextureNode).getDGNode();
 
     volumeUniformsDGNode.addMember('resolutionFactor', 'Scalar', options.resolutionFactor );
-    volumeUniformsDGNode.addMember('brightness', 'Scalar', options.brightness );
     volumeNode.addMemberInterface(volumeUniformsDGNode, 'resolutionFactor', true);
-    volumeNode.addMemberInterface(volumeUniformsDGNode, 'brightness', true);
 
     volumeUniformsDGNode.setDependency(opacityTextureDGNode, 'opacityImage3D');
     volumeUniformsDGNode.bindings.append(scene.constructOperator({
@@ -1716,6 +1715,8 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
     var volumeMaterialNodeRedrawEvent = volumeMaterialNode.getRedrawEventHandler();
     volumeMaterialNodeRedrawEvent.setScope('volumeUniforms', volumeUniformsDGNode);
 
+    volumeMaterialNodeRedrawEvent.addMember('specularFactor', 'Scalar', options.specularFactor );
+
     volumeNode.addMemberInterface(volumeMaterialNodeRedrawEvent, 'brightness', true);
     volumeNode.addMemberInterface(volumeMaterialNodeRedrawEvent, 'transparency', true);
     volumeNode.addMemberInterface(volumeMaterialNodeRedrawEvent, 'minOpacity', true);
@@ -1728,19 +1729,23 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
     volumeNode.pub.setMaxOpacity(options.maxOpacity);
 
     volumeMaterialNodeRedrawEvent.preDescendBindings.append(scene.constructOperator({
-      operatorName: 'setAlphaFactor',
-      srcCode: 'operator setAlphaFactor(io Scalar brightness, io Scalar transparency, io Size nbSlices, io Scalar alphaFactor){ \n' +
+      operatorName: 'setFactors',
+      srcCode: 'operator setFactors(io Scalar specular, io Scalar brightness, io Scalar transparency, io Size nbSlices, io Scalar alphaFactor, io Scalar scaledSpecular){ \n' +
+                    'scaledSpecular = 1.00001 / (1.00001 - specular) - 1.0;\n' +
+                    'scaledSpecular *= scaledSpecular;\n' +
                     'Scalar ajustedBrightness = transparency*sqrt(brightness) + (1.0-transparency)*brightness;\n' +
                     'Scalar opacityPerSlice = 1.0 / Scalar(nbSlices);\n' +
                     'Scalar brightnessExp = log( opacityPerSlice ) / log( 0.5 );' + //We modulate by an exponential function else all the interesting values are close to brightness 0.5
                     'Scalar ajustedAlphaPerSlice = pow( ajustedBrightness, brightnessExp);' +
                     'alphaFactor = ajustedAlphaPerSlice / (1.0 - pow(ajustedAlphaPerSlice, Scalar(nbSlices))*0.99999);}\n',
-      entryFunctionName: 'setAlphaFactor',
+      entryFunctionName: 'setFactors',
       parameterLayout: [
+        'self.specularFactor',
         'self.brightness',
         'self.transparency',
         'volumeUniforms.nbSlices',
-        'self.alphaFactor'
+        'self.alphaFactor',
+        'self.scaledSpecularFactor'
       ]
     }));
 
