@@ -11,7 +11,7 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
   var rootDomNode = document.getElementById(domRootID);
   var windowWidth = rootDomNode.clientWidth;
   var windowHeight = rootDomNode.clientHeight;
-  var isBezier = animationLibraryNode.isTypeOf('BezierKeyAnimationTrack');
+  var isBezier = animationLibraryNode.isTypeOf('BezierKeyAnimationLibrary');
   
   var svgRoot = FABRIC.createSVGRootElem(domRootID);
 

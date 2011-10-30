@@ -1111,12 +1111,13 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('ArmSolver', {
 });
 
 
-FABRIC.Characters.Limb = function(boneIds, ankleId, xfoIds, ikGoalXfoId, ikGoalOffsetXfo, ikblendId) {
+FABRIC.Characters.Limb = function(boneIds, ankleId, xfoIds, ikGoalXfoId, ikGoalOffsetXfo, ikGoalReferenceXfo, ikblendId) {
   this.boneIds = boneIds != undefined ? boneIds : [];
   this.ankleId = ankleId != undefined ? ankleId : -1;
   this.xfoIds = xfoIds != undefined ? xfoIds : [];
   this.ikGoalXfoId = ikGoalXfoId != undefined ? ikGoalXfoId : -1;
   this.ikGoalOffsetXfo = ikGoalOffsetXfo != undefined ? ikGoalOffsetXfo : new FABRIC.RT.Xfo();
+  this.ikGoalReferenceXfo = ikGoalReferenceXfo != undefined ? ikGoalReferenceXfo : new FABRIC.RT.Xfo();
   this.ikblendId = ikblendId != undefined ? ikblendId : -1;
   this.hubId = -1; // This is used by the locomotion system.
 };
@@ -1129,6 +1130,7 @@ FABRIC.appendOnCreateContextCallback(function(context) {
       xfoIds: 'Integer[]',
       ikGoalXfoId: 'Integer',
       ikGoalOffsetXfo: 'Xfo',
+      ikGoalReferenceXfo: 'Xfo',
       ikblendId: 'Integer',
       hubId: 'Integer'
     },
@@ -1182,9 +1184,11 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('InsectLegSolver', {
       var footPlatformXfoId = variablesNode.addVariable('Xfo', footPlatformXfo);
       var ikblendId = variablesNode.addVariable('Scalar', 1.0);
       
-      var leg = new FABRIC.Characters.Limb(boneIDs.bones, -1, xfoIds, footPlatformXfoId, lastBoneOffsetXfo, ikblendId);
+      var leg = new FABRIC.Characters.Limb(boneIDs.bones, -1, xfoIds, footPlatformXfoId, lastBoneOffsetXfo, footPlatformXfo, ikblendId);
       if(options.hubIds){
         leg.hubId = options.hubIds[j];
+        var hubs = skeletonNode.getData('hubs');
+        leg.ikGoalReferenceXfo = bones[hubs[leg.hubId].boneId].inverse().multiply(footPlatformXfo);
       }
       legs.push(leg);
     }
@@ -1285,7 +1289,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('HumanoidLegSolver', {
     var footPlatformXfoId = variablesNode.addVariable('Xfo', footPlatformXfo);
     var ikblendId = variablesNode.addVariable('Scalar', 1.0);
     
-    var leg = new FABRIC.Characters.Limb(boneIDs.bones, boneIDs.ankle, xfoIds, footPlatformXfoId, ankleOffsetXfo, ikblendId);
+    var leg = new FABRIC.Characters.Limb(boneIDs.bones, boneIDs.ankle, xfoIds, footPlatformXfoId, ankleOffsetXfo, footPlatformXfoId, ikblendId);
     try{
       var legs = skeletonNode.getData('legs');
       legs.push(leg);
