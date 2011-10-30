@@ -1618,8 +1618,8 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
   detailedDesc: '',
   parentNodeDesc: 'VolumeMaterial',
   optionsDesc: {
-    opacityTextureNode: 'Image3D of Bytes containing a 3D opacity texture',
-    gradientTextureNode: 'Image3D of RGBA containing a gradient vector in RGB, plus a gradient weight in A' + 
+    opacityTextureNode: 'Image3D of UShorts containing a 3D opacity texture',
+    gradientTextureNode: 'Optional (else, generated): Image3D of RGBA containing a gradient vector in RGB, plus a gradient weight in A' + 
                          'Gradient is basically a surface normal to be used for shading areas where the opacity changes, ' +
                          'and the gradient weight is the gradient amplitude (length); areas of constant opacity should have ' +
                          'a gradient weight of 0.',
@@ -1650,8 +1650,101 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
 
     var volumeNodePub = scene.pub.constructNode('VolumeSlices', options);
     var volumeNode = scene.getPrivateInterface(volumeNodePub);
-    var volumeUniformsDGNode = volumeNode.getUniformsDGNode();
     var opacityTextureDGNode = scene.getPrivateInterface(options.opacityTextureNode).getDGNode();
+
+    volumeNode.getOpacityDGNode = function(){return opacityTextureDGNode;};
+    volumeNode.pub.getOpacityNode = function(){return options.opacityTextureNode;};
+
+    //Generate gradient if not available
+    if(options.gradientTextureNode === undefined) {
+
+      //Here, to optimize, we will slice only in the image depth component, so we can still save a lot of common precomputation overhead
+      var dgnodeSlicedGradient = volumeNode.constructDGNode('SlicedGradientDGNode');
+      dgnodeSlicedGradient.addMember('sliceGradients', 'RGBA[]');
+      dgnodeSlicedGradient.addMember('smoothedSliceGradients', 'RGBA[]');
+      dgnodeSlicedGradient.setDependency(opacityTextureDGNode, 'opacity');
+
+      dgnodeSlicedGradient.bindings.append(scene.constructOperator({
+        operatorName: 'initCount',
+        parameterLayout: [
+          'opacity.depth',
+          'self.newCount'
+        ],
+        entryFunctionName: 'initCount',
+        srcCode: 'operator initCount(io Size depth, io Size newCount){newCount = depth;}'
+      }));
+
+      dgnodeSlicedGradient.bindings.append(scene.constructOperator({
+        operatorName: 'computeGradients_depthSliced',
+        parameterLayout: [
+          'opacity.width',
+          'opacity.height',
+          'opacity.depth',
+          'opacity.pixels',
+          'self.sliceGradients',
+          'self.index'
+        ],
+        entryFunctionName: 'computeGradients_depthSliced',
+        srcFile: 'FABRIC_ROOT/SceneGraph/KL/generateVolumeSlices.kl'
+      }));
+
+      dgnodeSlicedGradient.bindings.append(scene.constructOperator({
+        operatorName: 'smoothGradients_depthSliced',
+        parameterLayout: [
+          'opacity.width',
+          'opacity.height',
+          'opacity.depth',
+          'self.sliceGradients<>',
+          'self.smoothedSliceGradients',
+          'self.index'
+        ],
+        entryFunctionName: 'smoothGradients_depthSliced',
+        srcFile: 'FABRIC_ROOT/SceneGraph/KL/generateVolumeSlices.kl'
+      }));
+
+      var gradientOptions = {}
+      gradientOptions.name = '3DTextureGenerator_Gradient';
+      gradientOptions.format = 'RGBA';
+      gradientOptions.createDgNode = true;
+      var generatorNodeGradientPub = scene.pub.constructNode('Image3D', gradientOptions);
+      var generatorNodeGradient = scene.getPrivateInterface(generatorNodeGradientPub);
+      var dgnodeGradient = generatorNodeGradient.getDGNode();
+      dgnodeGradient.setDependency(opacityTextureDGNode, 'opacity');
+      dgnodeGradient.setDependency(dgnodeSlicedGradient, 'slicedGradient');
+
+      dgnodeGradient.bindings.append(scene.constructOperator({
+        operatorName: 'setGradients',
+        parameterLayout: [
+          'opacity.width',
+          'opacity.height',
+          'opacity.depth',
+          'slicedGradient.smoothedSliceGradients<>',
+          'self.width',
+          'self.height',
+          'self.depth',
+          'self.pixels'
+        ],
+        entryFunctionName: 'setGradients',
+        srcCode: 'operator setGradients(io Size inW, io Size inH, io Size inD, io RGBA sliceGradients<>[], io Size W, io Size H, io Size D, io RGBA pixels[]) {\n' +
+                                'W = inW; H = inH; D = inD;\n' +
+                                'pixels.resize(W*H*D);\n' +
+                                'Size dst = 0, i, j;\n' +
+                                'for( i = 0; i < sliceGradients.size(); ++i ) {\n' +
+                                '  Size nb = sliceGradients[i].size();\n' +
+                                '  for( j = 0; j < nb; ++j ) {\n' +
+                                '    pixels[dst++] = sliceGradients[i][j];\n' +
+                                '  }\n' +
+                                '}\n' +
+                              '}\n'
+      }));
+
+      options.gradientTextureNode = generatorNodeGradientPub;
+
+      volumeNode.getGradientDGNode = function(){return dgnodeGradient;};
+      volumeNode.pub.getGradientTextureNode = function(){return generatorNodeGradientPub;};
+    }
+
+    var volumeUniformsDGNode = volumeNode.getUniformsDGNode();
 
     volumeUniformsDGNode.addMember('resolutionFactor', 'Scalar', options.resolutionFactor );
     volumeNode.addMemberInterface(volumeUniformsDGNode, 'resolutionFactor', true);
