@@ -174,9 +174,9 @@ FABRIC.SceneGraph.registerNodeType('Image3D', {
       createResourceLoadNode: false,
       createLoadTextureEventHandler: true,
       initImage: true,
-      width: 128,
-      height: 128,
-      depth: 128,
+      width: 16,
+      height: 16,
+      depth: 16,
       url: undefined
     });
     if(options.color === undefined) {
@@ -1623,6 +1623,9 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
                          'Gradient is basically a surface normal to be used for shading areas where the opacity changes, ' +
                          'and the gradient weight is the gradient amplitude (length); areas of constant opacity should have ' +
                          'a gradient weight of 0.',
+    reducedGradientTexture: 'If true, the gradient texture will be 2X smaller than the opacity one, which is usually ok since it reduces ' +
+                          'noise and makes the computations much faster.',
+    smoothGradient: 'If true, a smoothing pass will be applied to the computed gradient (only if gradientTextureNode is undefined)',
     cropMin: '3D vector specifying the min cropping bbox coordinate (in the range 0..1 for X, Y, Z)',
     cropMax: '3D vector specifying the max cropping bbox coordinate (in the range 0..1 for X, Y, Z)',
     transformNode: 'Transform applied to the volume geometry.',
@@ -1638,6 +1641,8 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
   factoryFn: function(options, scene) {
 
     scene.assignDefaults(options, {
+      reducedGradientTexture: true,
+      smoothGradient: true,
       resolutionFactor: 1.0,
       brightness: 0.5,
       transparency: 1.0,
@@ -1658,11 +1663,38 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
     //Generate gradient if not available
     if(options.gradientTextureNode === undefined) {
 
+      var sourceOpacityDGNodeForGradient = opacityTextureDGNode;
+
+      if(options.reducedGradientTexture) {
+        var generatorNodeOpacity = scene.constructNode('Image3D', {
+          name: 'ReducedOpacity',
+          format: 'UShort',
+          createDgNode: true
+        });
+        var reducedOpacityDGNode = generatorNodeOpacity.getDGNode();
+        reducedOpacityDGNode.setDependency(opacityTextureDGNode, 'opacity');
+        reducedOpacityDGNode.bindings.append(scene.constructOperator({
+          operatorName: 'reduceOpacityTexture',
+          parameterLayout: [
+            'opacity.width',
+            'opacity.height',
+            'opacity.depth',
+            'opacity.pixels',
+            'self.width',
+            'self.height',
+            'self.depth',
+            'self.pixels'
+          ],
+          entryFunctionName: 'reduceOpacityTexture',
+          srcFile: 'FABRIC_ROOT/SceneGraph/KL/generateVolumeSlices.kl'
+        }));
+        var sourceOpacityDGNodeForGradient = reducedOpacityDGNode;
+      }
+
       //Here, to optimize, we will slice only in the image depth component, so we can still save a lot of common precomputation overhead
       var dgnodeSlicedGradient = volumeNode.constructDGNode('SlicedGradientDGNode');
       dgnodeSlicedGradient.addMember('sliceGradients', 'RGBA[]');
-      dgnodeSlicedGradient.addMember('smoothedSliceGradients', 'RGBA[]');
-      dgnodeSlicedGradient.setDependency(opacityTextureDGNode, 'opacity');
+      dgnodeSlicedGradient.setDependency(sourceOpacityDGNodeForGradient, 'opacity');
 
       dgnodeSlicedGradient.bindings.append(scene.constructOperator({
         operatorName: 'initCount',
@@ -1688,28 +1720,31 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
         srcFile: 'FABRIC_ROOT/SceneGraph/KL/generateVolumeSlices.kl'
       }));
 
-      dgnodeSlicedGradient.bindings.append(scene.constructOperator({
-        operatorName: 'smoothGradients_depthSliced',
-        parameterLayout: [
-          'opacity.width',
-          'opacity.height',
-          'opacity.depth',
-          'self.sliceGradients<>',
-          'self.smoothedSliceGradients',
-          'self.index'
-        ],
-        entryFunctionName: 'smoothGradients_depthSliced',
-        srcFile: 'FABRIC_ROOT/SceneGraph/KL/generateVolumeSlices.kl'
-      }));
+      if(options.smoothGradient) {
+        dgnodeSlicedGradient.addMember('smoothedSliceGradients', 'RGBA[]');
+        dgnodeSlicedGradient.bindings.append(scene.constructOperator({
+          operatorName: 'smoothGradients_depthSliced',
+          parameterLayout: [
+            'opacity.width',
+            'opacity.height',
+            'opacity.depth',
+            'self.sliceGradients<>',
+            'self.smoothedSliceGradients',
+            'self.index'
+          ],
+          entryFunctionName: 'smoothGradients_depthSliced',
+          srcFile: 'FABRIC_ROOT/SceneGraph/KL/generateVolumeSlices.kl'
+        }));
+      }
 
-      var gradientOptions = {}
-      gradientOptions.name = '3DTextureGenerator_Gradient';
-      gradientOptions.format = 'RGBA';
-      gradientOptions.createDgNode = true;
-      var generatorNodeGradientPub = scene.pub.constructNode('Image3D', gradientOptions);
+      var generatorNodeGradientPub = scene.pub.constructNode('Image3D', {
+        name: '3DTextureGenerator_Gradient',
+        format: 'RGBA',
+        createDgNode: true
+      });
       var generatorNodeGradient = scene.getPrivateInterface(generatorNodeGradientPub);
       var dgnodeGradient = generatorNodeGradient.getDGNode();
-      dgnodeGradient.setDependency(opacityTextureDGNode, 'opacity');
+      dgnodeGradient.setDependency(sourceOpacityDGNodeForGradient, 'opacity');
       dgnodeGradient.setDependency(dgnodeSlicedGradient, 'slicedGradient');
 
       dgnodeGradient.bindings.append(scene.constructOperator({
@@ -1718,7 +1753,7 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
           'opacity.width',
           'opacity.height',
           'opacity.depth',
-          'slicedGradient.smoothedSliceGradients<>',
+          options.smoothGradient ? 'slicedGradient.smoothedSliceGradients<>' : 'slicedGradient.sliceGradients<>',
           'self.width',
           'self.height',
           'self.depth',

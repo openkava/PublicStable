@@ -208,6 +208,9 @@ FABRIC.SceneGraph.registerNodeType('Texture2DSliceDisplay', {
     dgnode.addMember('sliceRatio', 'Scalar', options.sliceRatio );
     dgnode.addMember('sliceAxis', 'Size', options.sliceAxis );
     dgnode.addMember('opacityElseGradientWeight', 'Boolean', options.opacityElseGradientWeight );
+    dgnode.addMember('sourceWidth', 'Size' );
+    dgnode.addMember('sourceHeight', 'Size' );
+    dgnode.addMember('sourceDepth', 'Size' );
 
     sliceDisplayNode.addMemberInterface(dgnode, 'sliceRatio', true);
     sliceDisplayNode.addMemberInterface(dgnode, 'sliceAxis', true);
@@ -220,14 +223,32 @@ FABRIC.SceneGraph.registerNodeType('Texture2DSliceDisplay', {
     dgnode.setDependency(gradientNode.getDGNode(), 'sourceGradient');
     
     dgnode.bindings.append(scene.constructOperator({
+      operatorName: 'selectSourceSize',
+      parameterLayout: [
+        'self.opacityElseGradientWeight',
+        'sourceOpacity.width',
+        'sourceOpacity.height',
+        'sourceOpacity.depth',
+        'sourceGradient.width',
+        'sourceGradient.height',
+        'sourceGradient.depth',
+        'self.sourceWidth',
+        'self.sourceHeight',
+        'self.sourceDepth'
+      ],
+      entryFunctionName: 'selectSourceSize',
+      srcCode: 'operator selectSourceSize(io Boolean o, io Size ow, io Size oh, io Size od, io Size gw, io Size gh, io Size gd, io Size w, io Size h, io Size d){w = o ? ow : gw; h = o ? oh : gh; d = o ? od : gd; }'
+    }));
+
+    dgnode.bindings.append(scene.constructOperator({
       operatorName: 'slice3DTexture',
       parameterLayout: [
         'self.sliceRatio',
         'self.sliceAxis',
         'self.opacityElseGradientWeight',
-        'sourceOpacity.width',
-        'sourceOpacity.height',
-        'sourceOpacity.depth',
+        'self.sourceWidth',
+        'self.sourceHeight',
+        'self.sourceDepth',
         'sourceOpacity.pixels',
         'sourceGradient.pixels',
         'self.width',
