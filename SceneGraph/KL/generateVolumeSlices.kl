@@ -526,3 +526,54 @@ operator smoothGradients_depthSliced(
   }
 }
 
+operator reduceOpacityTexture(
+  io Size srcWidth,
+  io Size srcHeight,
+  io Size srcDepth,
+  io Byte srcUShortPixels[],
+  io Size width,
+  io Size height,
+  io Size depth,
+  io Byte UShortPixels[]
+){
+  width = srcWidth/2;
+  height = srcHeight/2;
+  depth = srcDepth/2;
+  UShortPixels.resize(width*height*depth*2);
+
+  Size src = 0, dst = 0;
+  Size i, j, k, ii, jj, kk;
+  Size srcDepthDelta = srcWidth * srcHeight;
+
+  for(i = 0; i < depth; ++i) {
+    for(j = 0; j < height; ++j) {
+      for(k = 0; k < width; ++k) {
+
+        //Sum 8 source pixels
+        Integer sum = 0;
+
+        Size subSrc = src;
+        for(ii = 0; ii < 2; ++ii) {
+          Size subSrc2 = subSrc;
+          for(jj = 0; jj < 2; ++jj) {
+            for(kk = 0; kk < 2; ++kk) {
+              sum += Integer(srcUShortPixels[subSrc2*2]) + Integer(srcUShortPixels[subSrc2*2+1])*256;
+              ++subSrc2;
+            }
+            subSrc2 = subSrc + srcWidth;
+          }
+          subSrc = src + srcDepthDelta;
+        }
+        sum /= 8;
+        
+        UShortPixels[dst*2] = Byte(sum);
+        UShortPixels[dst*2+1] = Byte(sum/256);
+        
+        ++dst;
+        src += 2;
+      }
+      src += srcHeight;
+    }
+    src += srcDepthDelta;
+  }
+}
