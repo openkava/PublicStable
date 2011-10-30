@@ -215,7 +215,6 @@ operator computeGradientSlices(
         if(magnitude > DIVIDEPRECISION)
           grad /= magnitude;
         magnitude *= (1.0/(32.0*256.0));//UShort -> Byte, and divide the pixel sums done previously
-        magnitude *= 2.0;//Arbitrary ajustment factor: todo: make this an option...
         if(magnitude >= 256.0)
           magnitude = 255.0;
 
