@@ -94,85 +94,6 @@ FABRIC.SceneGraph.registerNodeType('3DTextureGenerator', {
       srcFile: 'KL/3DTextureUtils.kl'
     }));
 
-    //Here, to optimize, we will slice only in the image depth component, so we can still save a lot of common precomputation overhead
-    var dgnodeSlicedGradient = generatorNodeOpacity.constructDGNode('SlicedGradientDGNode');
-    dgnodeSlicedGradient.addMember('sliceGradients', 'RGBA[]');
-    dgnodeSlicedGradient.addMember('smoothedSliceGradients', 'RGBA[]');
-    dgnodeSlicedGradient.setDependency(dgnodeOpacity, 'opacity');
-
-    dgnodeSlicedGradient.bindings.append(scene.constructOperator({
-      operatorName: 'initCount',
-      parameterLayout: [
-        'opacity.depth',
-        'self.newCount'
-      ],
-      entryFunctionName: 'initCount',
-      srcCode: 'operator initCount(io Size depth, io Size newCount){newCount = depth;}'
-    }));
-
-    dgnodeSlicedGradient.bindings.append(scene.constructOperator({
-      operatorName: 'computeGradientSlices',
-      parameterLayout: [
-        'opacity.width',
-        'opacity.height',
-        'opacity.depth',
-        'opacity.pixels',
-        'self.sliceGradients',
-        'self.index'
-      ],
-      entryFunctionName: 'computeGradientSlices',
-      srcFile: 'KL/3DTextureUtils.kl'
-    }));
-
-    dgnodeSlicedGradient.bindings.append(scene.constructOperator({
-      operatorName: 'smoothGradients',
-      parameterLayout: [
-        'opacity.width',
-        'opacity.height',
-        'opacity.depth',
-        'self.sliceGradients<>',
-        'self.smoothedSliceGradients',
-        'self.index'
-      ],
-      entryFunctionName: 'smoothGradients',
-      srcFile: 'KL/3DTextureUtils.kl'
-    }));
-
-    options.name = '3DTextureGenerator_Gradient';
-    options.format = 'RGBA';
-    options.color = undefined;
-    var generatorNodeGradientPub = scene.pub.constructNode('Image3D', options);
-    var generatorNodeGradient = scene.getPrivateInterface(generatorNodeGradientPub);
-    var dgnodeGradient = generatorNodeGradient.getDGNode();
-    dgnodeGradient.setDependency(dgnodeOpacity, 'opacity');
-    dgnodeGradient.setDependency(dgnodeSlicedGradient, 'slicedGradient');
-
-    dgnodeGradient.bindings.append(scene.constructOperator({
-      operatorName: 'setGradients',
-      parameterLayout: [
-        'opacity.width',
-        'opacity.height',
-        'opacity.depth',
-        'slicedGradient.smoothedSliceGradients<>',
-        'self.width',
-        'self.height',
-        'self.depth',
-        'self.pixels'
-      ],
-      entryFunctionName: 'setGradients',
-      srcCode: 'operator setGradients(io Size inW, io Size inH, io Size inD, io RGBA sliceGradients<>[], io Size W, io Size H, io Size D, io RGBA pixels[]) {\n' +
-                              'W = inW; H = inH; D = inD;\n' +
-                              'pixels.resize(W*H*D);\n' +
-                              'Size dst = 0, i, j;\n' +
-                              'for( i = 0; i < sliceGradients.size(); ++i ) {\n' +
-                              '  Size nb = sliceGradients[i].size();\n' +
-                              '  for( j = 0; j < nb; ++j ) {\n' +
-                              '    pixels[dst++] = sliceGradients[i][j];\n' +
-                              '  }\n' +
-                              '}\n' +
-                            '}\n'
-    }));
-
 /*    dgnodeGradient.bindings.append(scene.constructOperator({
       operatorName: 'generate3DTextureGradient',
       parameterLayout: [
@@ -185,11 +106,6 @@ FABRIC.SceneGraph.registerNodeType('3DTextureGenerator', {
       entryFunctionName: 'generate3DTextureGradient',
       srcFile: 'KL/3DTextureUtils.kl'
     }));*/
-
-    generatorNodeOpacity.getOpacityDGNode = function(){return dgnodeOpacity;};
-    generatorNodeOpacity.getGradientDGNode = function(){return dgnodeGradient;};
-
-    generatorNodeOpacity.pub.getGradientNode = function(){return generatorNodeGradientPub;};
 
     return generatorNodeOpacity;
   }
@@ -271,7 +187,8 @@ FABRIC.SceneGraph.registerNodeType('Texture2DSliceDisplay', {
   detailedDesc: '',
   parentNodeDesc: 'DrawRectangle',
   optionsDesc: {
-    sourceImageNode: 'The source 3D image node',
+    opacityNode: 'The source 3D opacity UShort texture node',
+    gradientNode: 'The source 3D gradient RGBA texture node',
     sliceRatio: 'Slice ratio (0 to 1) along sliceAxis',
     sliceAxis: 'Slice axis (0=X, 1=Y, 2=Z) along which the image is extracted',
     opacityElseGradientWeight: 'Show opacity, else will be gradient weight'
@@ -296,9 +213,11 @@ FABRIC.SceneGraph.registerNodeType('Texture2DSliceDisplay', {
     sliceDisplayNode.addMemberInterface(dgnode, 'sliceAxis', true);
     sliceDisplayNode.addMemberInterface(dgnode, 'opacityElseGradientWeight', true);
 
-    var sourceImageNode = scene.getPrivateInterface(options.sourceImageNode);
-    dgnode.setDependency(sourceImageNode.getOpacityDGNode(), 'sourceOpacity');
-    dgnode.setDependency(sourceImageNode.getGradientDGNode(), 'sourceGradient');
+    var opacityNode = scene.getPrivateInterface(options.opacityNode);
+    dgnode.setDependency(opacityNode.getDGNode(), 'sourceOpacity');
+
+    var gradientNode = scene.getPrivateInterface(options.gradientNode);
+    dgnode.setDependency(gradientNode.getDGNode(), 'sourceGradient');
     
     dgnode.bindings.append(scene.constructOperator({
       operatorName: 'slice3DTexture',
@@ -368,10 +287,6 @@ $(document).ready(function() {
   var borderSize = 0.01;
 
   var textureGen = scene.constructNode('3DTextureGenerator');
-  var texture2DSlice = [];
-  texture2DSlice[0] = scene.constructNode('Texture2DSliceDisplay', {tl: new FABRIC.RT.Vec2(2.0/3.0+borderSize, 1.0-borderSize), br: new FABRIC.RT.Vec2(1.0-borderSize, 1.0/3.0+borderSize), sourceImageNode: textureGen, sliceRatio: 0.5, sliceAxis : 0});
-  texture2DSlice[1] = scene.constructNode('Texture2DSliceDisplay', {tl: new FABRIC.RT.Vec2(2.0/3.0+borderSize, 1.0/3.0-borderSize), br: new FABRIC.RT.Vec2(1.0-borderSize, -1.0/3.0+borderSize), sourceImageNode: textureGen, sliceRatio: 0.5, sliceAxis : 1});
-  texture2DSlice[2] = scene.constructNode('Texture2DSliceDisplay', {tl: new FABRIC.RT.Vec2(2.0/3.0+borderSize, -1.0/3.0-borderSize), br: new FABRIC.RT.Vec2(1.0-borderSize, -1.0+borderSize), sourceImageNode: textureGen, sliceRatio: 0.5, sliceAxis : 2});
 
   var volumeNode = scene.constructNode('VolumeOpacityInstance', {
       viewportNode: viewport,
@@ -379,9 +294,13 @@ $(document).ready(function() {
       cropMin: new FABRIC.RT.Vec3(0, 0, 0),
       cropMax: new FABRIC.RT.Vec3(1, 1, 1),
       opacityTextureNode: textureGen,
-      gradientTextureNode: textureGen.getGradientNode(),
       lightNode: light
     });
+
+  var texture2DSlice = [];
+  texture2DSlice[0] = scene.constructNode('Texture2DSliceDisplay', {tl: new FABRIC.RT.Vec2(2.0/3.0+borderSize, 1.0-borderSize), br: new FABRIC.RT.Vec2(1.0-borderSize, 1.0/3.0+borderSize), opacityNode: textureGen, gradientNode: volumeNode.getGradientTextureNode(), sliceRatio: 0.5, sliceAxis : 0});
+  texture2DSlice[1] = scene.constructNode('Texture2DSliceDisplay', {tl: new FABRIC.RT.Vec2(2.0/3.0+borderSize, 1.0/3.0-borderSize), br: new FABRIC.RT.Vec2(1.0-borderSize, -1.0/3.0+borderSize), opacityNode: textureGen, gradientNode: volumeNode.getGradientTextureNode(), sliceRatio: 0.5, sliceAxis : 1});
+  texture2DSlice[2] = scene.constructNode('Texture2DSliceDisplay', {tl: new FABRIC.RT.Vec2(2.0/3.0+borderSize, -1.0/3.0-borderSize), br: new FABRIC.RT.Vec2(1.0-borderSize, -1.0+borderSize), opacityNode: textureGen, gradientNode: volumeNode.getGradientTextureNode(), sliceRatio: 0.5, sliceAxis : 2});
     
   var sliders2DBindFunction = function(index) {
     var sliderIndex = index;
