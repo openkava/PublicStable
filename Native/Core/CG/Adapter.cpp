@@ -191,7 +191,6 @@ namespace Fabric
         llvmInit( basicBlockBuilder, dstLValue );
         ExprValue dstExprValue( this, USAGE_LVALUE, basicBlockBuilder.getContext(), dstLValue );
         functionSymbol->llvmCreateCall( basicBlockBuilder, dstExprValue, srcExprValue );
-        basicBlockBuilder.getScope().put( VariableSymbol::Create( dstExprValue ) );
         return llvmLValueToRValue( basicBlockBuilder, dstLValue );
       }
     }

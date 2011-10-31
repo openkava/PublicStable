@@ -587,21 +587,16 @@ namespace Fabric
       {
       }
       
-      llvm::Value *llvmGetReturnLValue() const
-      {
-        FABRIC_ASSERT( m_returnInfo.usesReturnLValue() );
-        llvm::Value *returnLValue = m_returnInfo.getReturnLValue();
-        FABRIC_ASSERT( returnLValue );
-        return returnLValue;
-      }
-      
       virtual void llvmReturn( BasicBlockBuilder &bbb, llvm::Value *value ) const
       {
         llvmUnwind( bbb );
 
         if( m_returnInfo.usesReturnLValue() )
         {
-          m_returnInfo.getAdapter()->llvmAssign( bbb, llvmGetReturnLValue(), value );
+          llvm::Value   *aggregateReturn = m_returnInfo.getReturnLValue();
+          FABRIC_ASSERT( aggregateReturn );
+
+          m_returnInfo.getAdapter()->llvmAssign( bbb, aggregateReturn, value );
           bbb->CreateRetVoid();
         }
         else
