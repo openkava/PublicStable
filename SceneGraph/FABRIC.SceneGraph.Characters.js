@@ -531,6 +531,7 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
       }
       solverOptions = solverOptions ? solverOptions : {};
       solverOptions.rigNode = characterRigNode.pub;
+      solverOptions.name = name;
       var solver = FABRIC.SceneGraph.CharacterSolvers.constructSolver(type, solverOptions, scene);
       solvers.push(solver);
       delete solverOptions.rigNode;

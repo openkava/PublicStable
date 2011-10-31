@@ -246,6 +246,10 @@ FABRIC.SceneGraph.registerNodeType('LocomotionAnimationLibrary', {
       FABRIC.createAsyncTask(function(){
         FABRIC.createAsyncTask(function(){
           dgnode.evaluate();
+          dgnode.bindings.remove(0);
+          dgnode.removeDependency('variables');
+          dgnode.removeDependency('skeleton');
+          dgnode.removeDependency('params');
           if(callback){
             callback.call();
           }
