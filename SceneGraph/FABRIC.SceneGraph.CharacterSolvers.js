@@ -1362,3 +1362,94 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('HumanoidLegSolver', {
   }
 });
 
+
+FABRIC.Characters.Hub = function(boneId, xfoId, hubParentSpaceId, inSpineBoneIds, inSpineBoneXfoId) {
+  this.boneId = boneId != undefined ? boneId : -1;
+  this.xfoId = xfoId != undefined ? xfoId : -1;
+  this.hubParentSpaceId = hubParentSpaceId != undefined ? hubParentSpaceId : -1;
+  this.inSpineBoneIds = inSpineBoneIds != undefined ? inSpineBoneIds : [];
+  this.inSpineBoneXfoId = inSpineBoneXfoId != undefined ? inSpineBoneXfoId : [];
+};
+
+FABRIC.appendOnCreateContextCallback(function(context) {
+  context.RegisteredTypesManager.registerType('Hub', {
+    members: {
+      boneId: 'Integer',
+      xfoId: 'Integer',
+      hubParentSpaceId: 'Integer',
+      inSpineBoneIds: 'Integer[]',
+      inSpineBoneXfoId: 'Integer[]'
+    },
+    constructor: FABRIC.Characters.Hub
+  });
+});
+
+FABRIC.SceneGraph.CharacterSolvers.registerSolver('HubSolver', {
+  constructSolver: function(options, scene) {
+    scene.assignDefaults(options, {
+        rigNode: undefined
+      });
+    
+    var solver = FABRIC.SceneGraph.CharacterSolvers.constructSolver('CharacterSolver', options, scene);
+
+    var rigNode = scene.getPrivateInterface(options.rigNode),
+      skeletonNode = scene.getPrivateInterface(rigNode.pub.getSkeletonNode()),
+      variablesNode = scene.getPrivateInterface(rigNode.pub.getVariablesNode()),
+      bones = skeletonNode.pub.getBones(),
+      referencePose = skeletonNode.pub.getReferencePose(),
+      referenceLocalPose = skeletonNode.pub.getReferenceLocalPose(),
+      name = options.name;
+    
+    var hubs = [];
+    for(j=0; j<options.hubs.length; j++){
+      var boneIDs = solver.generateBoneMapping(options.hubs[j], ['bone', 'parentSpaceBone', ['inSpineBones']]);
+      var hubXfoId = variablesNode.addVariable('Xfo', referencePose[boneIDs.bone]);
+      var inSpineBoneXfos = [];
+      var inSpineBoneXfoIds;
+      if(boneIDs.inSpineBones){
+        for(var i=0; i<boneIDs.inSpineBones.length; i++){
+          inSpineBoneXfos.push(bones[boneIDs.inSpineBones[i]].referenceLocalPose);
+        }
+        inSpineBoneXfoIds = variablesNode.addVariable('Xfo[]', inSpineBoneXfos);
+      }
+      
+      var hub = new FABRIC.Characters.Hub(boneIDs.bone, hubXfoId, boneIDs.parentSpaceBone, boneIDs.inSpineBones, inSpineBoneXfoIds);
+      hubs.push(hub);
+    }
+    skeletonNode.addMember('hubs', 'Hub[]', hubs);
+    rigNode.addSolverOperator({
+      operatorName: 'solveHubRigs',
+      srcFile: 'FABRIC_ROOT/SceneGraph/KL/solveHubRig.kl',
+      entryFunctionName: 'solveHubRigs',
+      parameterLayout: [
+        'charactercontroller.xfo',
+        'self.pose',
+        'skeleton.bones',
+        'skeleton.hubs',
+        'variables.poseVariables',
+        'self.debugGeometry'
+      ]
+    });
+      
+    if (options.createManipulators) {
+    }
+ 
+    solver.invert = function(variablesNode){
+      variablesNode.getDGNode().bindings.append(scene.constructOperator({
+        operatorName: 'invertHubRigs',
+        srcFile: 'FABRIC_ROOT/SceneGraph/KL/solveHubRig.kl',
+        entryFunctionName: 'invertHubRigs',
+        parameterLayout: [
+          'sourcerig.pose',
+          'skeleton.bones',
+          'skeleton.hubs',
+          'self.poseVariables',
+          'sourcerig.debugGeometry'
+        ]
+      }));
+    }
+    return solver; 
+  }
+});
+
+

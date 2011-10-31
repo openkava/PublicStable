@@ -1,0 +1,96 @@
+
+use Vec3, Quat, Xfo;
+use DebugGeometry;
+
+operator evaluateCharacterController(
+  io Xfo controllerXfo,
+  io CharacterControllerParams controllerparams,
+  
+  io Vec2 translationControls,
+  io Vec2 orientationControls,
+  
+  io Vec2 maxLinearVelocity,
+  io Euler maxAngularVelocity,
+  
+  io Scalar maxLinearAcceleration,
+  io Scalar maxAngularAcceleration,
+  
+  io DebugGeometry debugGeometry1,
+  io DebugGeometry debugGeometry2,
+  
+  io Mat44 cameraMat44,
+  io Mat44 projectionMat44,
+  
+  io Scalar timestep
+) {
+ // report("evaluateCharacterController:"+timestep);
+  debugGeometry1.reset();
+  if(timestep==0){
+    return;
+  }
+  
+  Xfo camXfo;
+  camXfo.setFromMat44(cameraMat44.inverse());
+  // Ensure that the com is aligned with the 
+  Quat alignment;
+  alignment.setFrom2Vectors(camXfo.ori.rotateVector(Vec3(0.0, 0.0, -1.0)), Vec3(0.0, -1.0, 0.0));
+  camXfo.ori = alignment * camXfo.ori;
+  Vec3 translationX = camXfo.ori.rotateVector(Vec3(translationControls.x * maxLinearVelocity.x, 0.0, 0.0));
+  Vec3 translationZ = camXfo.ori.rotateVector(Vec3(0.0, translationControls.y * maxLinearVelocity.y, 0.0));
+
+  Vec3 currLinearVelocity = controllerparams.displacement.tr / timestep;
+  Vec3 goalLinearVelocity = translationX + translationZ;
+  Vec3 acceleration = goalLinearVelocity - currLinearVelocity;
+  if(acceleration.length() > maxLinearAcceleration){
+    acceleration = acceleration.unit() * maxLinearAcceleration;
+  }
+  currLinearVelocity += acceleration;
+  controllerparams.displacement.tr = currLinearVelocity * timestep;
+  controllerXfo.tr += controllerparams.displacement.tr;
+  
+  if(currLinearVelocity.length() > 0.0){
+    Vec3 currDir = controllerXfo.ori.rotateVector(Vec3(0.0, 0.0, 1.0));
+    Vec3 displacementDir = currLinearVelocity.unit();
+    Scalar deltaAngle = currDir.angleTo(displacementDir);
+    
+    if(deltaAngle > maxAngularVelocity.y){
+      deltaAngle = maxAngularVelocity.y;
+    }
+    if(currDir.cross(displacementDir).y < 0.0){
+      deltaAngle = -deltaAngle;
+    }
+    
+    controllerparams.displacement.ori.setFromAxisAndAngle(Vec3(0.0, 1.0, 0.0), deltaAngle);
+    controllerXfo.ori = controllerparams.displacement.ori * controllerXfo.ori;
+    controllerparams.displacementDir = displacementDir;
+  }
+  else{
+    controllerparams.displacement.ori.setIdentity();
+  }
+  
+  if(controllerparams.trail.size > 0){
+    Xfo lastTrailPoint = controllerparams.trail[controllerparams.trailCircularArrayIndex];
+    
+    Scalar trailSegmentDist = (controllerXfo.tr - lastTrailPoint.tr).length();
+    Scalar trailSegmentLength = controllerparams.trailLength/Scalar(controllerparams.trail.size);
+    
+    if(trailSegmentDist > trailSegmentLength){
+    //  report("newTrailPoint:"+trailSegmentDist);
+      Xfo newTrailPoint = lastTrailPoint.linearInterpolate(controllerXfo, trailSegmentLength/trailSegmentDist);
+      alignment.setFrom2Vectors(newTrailPoint.ori.rotateVector(Vec3(0.0, 0.0, 1.0)), controllerparams.displacementDir);
+      newTrailPoint.ori = alignment * newTrailPoint.ori;
+      controllerparams.trailCircularArrayIndex = (controllerparams.trailCircularArrayIndex+1) % controllerparams.trail.size;
+      controllerparams.trail[controllerparams.trailCircularArrayIndex] = newTrailPoint;
+    }
+    
+    for(Integer i=0; i < controllerparams.trail.size; i++){
+      debugGeometry1.drawPoint(controllerparams.trail[i].tr, Color(1.0,1.0,0.0,1.0));
+    }
+  }
+
+  debugGeometry1.drawAxis(controllerXfo, 13.0, Color(1.0,0.0,0.0,1.0));
+  debugGeometry1.drawCircle(controllerXfo, 20.0, Color(1.0,0.0,0.0,1.0));
+//  debugGeometry2.drawPoint(controllerXfo.tr, Color(0.7,0.7,0.0,1.0));
+}
+
+
