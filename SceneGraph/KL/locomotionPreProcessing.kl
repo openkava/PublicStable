@@ -276,7 +276,7 @@ operator locomotionPreProcessing(/*
       Scalar gradient = climb / velocity.length();
       
       report("velocity:"+velocity);
-      Vec3 facingVec = comXfo.ori.rotateVector(Vec3(0.0, 1.0, 0.0));
+      Vec3 facingVec = comXfo.ori.rotateVector(Vec3(0.0, 0.0, 1.0));
       facingVec.y = 0.0;
       facingVec.setUnit();
       velocity.setUnit();
