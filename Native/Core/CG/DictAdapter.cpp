@@ -300,7 +300,8 @@ namespace Fabric
           BasicBlockBuilder basicBlockBuilder( functionBuilder );
           basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
           llvm::Value *lValue = llvmRValueToLValue( basicBlockBuilder, rValue );
-          stringAdapter->llvmCallCast( basicBlockBuilder, this, lValue, stringLValue );
+          llvm::Value *stringRValue = stringAdapter->llvmCallCast( basicBlockBuilder, this, lValue );
+          stringAdapter->llvmAssign( basicBlockBuilder, stringLValue, stringRValue );
           basicBlockBuilder->CreateRetVoid();
         }
       }
