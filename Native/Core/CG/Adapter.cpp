@@ -192,9 +192,7 @@ namespace Fabric
         ExprValue dstExprValue( this, USAGE_LVALUE, basicBlockBuilder.getContext(), dstLValue );
         functionSymbol->llvmCreateCall( basicBlockBuilder, dstExprValue, srcExprValue );
         basicBlockBuilder.getScope().put( VariableSymbol::Create( dstExprValue ) );
-        llvm::Value *dstRValue = llvmLValueToRValue( basicBlockBuilder, dstLValue );
-        llvmRetain( basicBlockBuilder, dstRValue );
-        return dstRValue;
+        return llvmLValueToRValue( basicBlockBuilder, dstLValue );
       }
     }
 
