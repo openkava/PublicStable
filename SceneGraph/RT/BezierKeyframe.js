@@ -59,6 +59,9 @@ FABRIC.appendOnCreateContextCallback(function(context) {
 });
 
 
+if(!FABRIC.RT.KeyframeTrack){
+  throw("please include the SceneGraph/RT/KeyframeTrack.js file before this one.");
+}
 
 FABRIC.appendOnCreateContextCallback(function(context) {
   context.RegisteredTypesManager.registerType('BezierKeyframeTrack', {

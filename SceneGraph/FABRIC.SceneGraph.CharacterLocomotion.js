@@ -194,42 +194,9 @@ FABRIC.SceneGraph.registerNodeType('LocomotionAnimationLibrary', {
       
       var comsolver = rigNode.addSolver('COM', 'COMSolver');
       comsolver.addTracks(trackSet, keyframeTrackBindings);
+      
       var locomotionFeedSolver = rigNode.addSolver('Feet', 'LocomotionFeetSolver');
       locomotionFeedSolver.addTracks(trackSet, keyframeTrackBindings);
-      /*
-      var comXfoId = variablesNode.addVariable('Xfo');
-      var comXfoTrackBindings = trackSet.addXfoTrack('com');
-      keyframeTrackBindings.addXfoBinding(comXfoId, comXfoTrackBindings);
-      
-      var comParam0VarId = variablesNode.addVariable('Scalar');
-      var comParam0TrackId = trackSet.addScalarTrack('stepFrequency', FABRIC.RT.Color.yellow);
-      keyframeTrackBindings.addScalarBinding(comParam0VarId, comParam0TrackId);
-      
-      var comParam1VarId = variablesNode.addVariable('Scalar');
-      var comParam1TrackId = trackSet.addScalarTrack('speed', FABRIC.RT.Color.yellow);
-      keyframeTrackBindings.addScalarBinding(comParam1VarId, comParam1TrackId);
-      
-      var comParam2VarId = variablesNode.addVariable('Scalar');
-      var comParam2TrackId = trackSet.addScalarTrack('gradient', FABRIC.RT.Color.yellow);
-      keyframeTrackBindings.addScalarBinding(comParam2VarId, comParam2TrackId);
-      
-      var comParam3VarId = variablesNode.addVariable('Scalar');
-      var comParam3TrackId = trackSet.addScalarTrack('direction', FABRIC.RT.Color.yellow);
-      keyframeTrackBindings.addScalarBinding(comParam3VarId, comParam3TrackId);
-      
-      var com = new FABRIC.Characters.COM(comXfoId, [comParam0VarId, comParam1VarId, comParam2VarId, comParam3VarId] );
-      skeletonNode.addMember('com', 'COM', com);
-      
-      var limbs = skeletonNode.getData('legs');
-      var locomotionFeet = [];
-      for(var i=0; i<limbs.length; i++){
-        var stepTimeVarId = variablesNode.addVariable('Scalar');
-        var stepTimeTrackId = trackSet.addScalarTrack('foot'+i+'StepTime', FABRIC.RT.Color.yellow);
-        keyframeTrackBindings.addScalarBinding(stepTimeVarId, stepTimeTrackId);
-        locomotionFeet.push(new FABRIC.Characters.LocomotionFoot(i, stepTimeVarId));
-      }
-      skeletonNode.addMember('locomotionFeet', 'LocomotionFoot[]', locomotionFeet);
-      */
       
       variablesNode.setBindings(keyframeTrackBindings);
       
