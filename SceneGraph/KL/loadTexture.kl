@@ -99,7 +99,6 @@ operator loadAndBindTextureLDR(
     RGBA imageLDR[];
     decodeLDRImageData(resource, width, height, imageLDR);
     oglTexture2D.configure(width, height, imageLDR.data(), imageLDR.size(), textureUnit);
-    var Data NULL;
     resource.data.resize(0);
   }
   oglTexture2D.bind(textureUnit);

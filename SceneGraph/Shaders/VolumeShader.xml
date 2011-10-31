@@ -5,9 +5,10 @@
   <uniforms>
     <uniform name="u_alphaFactor" constant="alphaFactor" type="Scalar" defaultValue="0.02"/>
     <uniform name="u_transparency" constant="transparency" type="Scalar" defaultValue="1.0"/>
-    <uniform name="u_brightness" constant="brightness" type="Scalar" defaultValue="1.0"/>
+    <uniform name="u_brightness" constant="brightness" type="Scalar" defaultValue="0.5"/>
     <uniform name="u_minOpacity" constant="minOpacity" type="Scalar" defaultValue="0.0"/>
     <uniform name="u_maxOpacity" constant="maxOpacity" type="Scalar" defaultValue="1.0"/>
+    <uniform name="u_invertColor" constant="invertColor" type="Integer" defaultValue="0"/>
     <uniform name="u_specularFactor" constant="scaledSpecularFactor" type="Scalar" defaultValue="1.0"/>
 
     <uniform name="u_lightPosition" constant="lightPosition" type="Vec3" owner="light"/>
@@ -79,6 +80,7 @@
       uniform float u_brightness;
       uniform float u_minOpacity;
       uniform float u_maxOpacity;
+      uniform int u_invertColor;
 
       uniform float u_specularFactor;
 			uniform mat3 u_normalMatrix;
@@ -102,14 +104,10 @@
         //Opacity & alpha modulation
         if(opacity < u_minOpacity || opacity > u_maxOpacity)
           opacity = 0.0;
-
-        if(u_brightness > 0.5)
-        {
-          if(opacity > 0.0)
-            opacity = mix(opacity, 1.0, (u_brightness-0.5)*2.0);
-        }
         else
-          opacity = mix(0.0, opacity, u_brightness*2.0);
+          opacity = (opacity - u_minOpacity)*(u_maxOpacity - u_minOpacity);//rescale
+
+        opacity *= u_brightness;
 
         float alpha = min( mix(1.0-u_transparency, opacity * u_alphaFactor, u_transparency ), 1.0 );
 
@@ -119,7 +117,9 @@
           gradientWeight = 0.0;
         }
 
-				vec4 volumeColor = vec4(opacity, opacity, opacity, alpha );
+				vec4 volumeColor = u_invertColor == 0 ? 
+                              vec4(opacity, opacity, opacity, alpha ) : 
+                              max( vec4(1.0-opacity, 1.0-opacity, 1.0-opacity, alpha ), vec4(0.0, 0.0, 0.0, 0.0) );
         
         //Point light phong shading with additive-only specular
 				vec3 Nn = normalize( u_normalMatrix * (gradient.xyz - vec3(0.5, 0.5, 0.5)) );
