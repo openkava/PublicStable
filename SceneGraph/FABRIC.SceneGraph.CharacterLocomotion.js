@@ -20,6 +20,47 @@ FABRIC.appendOnCreateContextCallback(function(context) {
 });
 
 
+FABRIC.SceneGraph.CharacterSolvers.registerSolver('COMSolver', {
+  constructSolver: function(options, scene) {
+    
+    var rigNode = scene.getPrivateInterface(options.rigNode),
+      skeletonNode = scene.getPrivateInterface(rigNode.pub.getSkeletonNode()),
+      variablesNode = scene.getPrivateInterface(rigNode.pub.getVariablesNode()),
+      solver = {};
+
+    var comXfoId = variablesNode.addVariable('Xfo');
+    // stepFrequency
+    var comParam0VarId = variablesNode.addVariable('Scalar');
+    // speed
+    var comParam1VarId = variablesNode.addVariable('Scalar');
+    // gradient
+    var comParam2VarId = variablesNode.addVariable('Scalar');
+    // direction
+    var comParam3VarId = variablesNode.addVariable('Scalar');
+    
+    var com = new FABRIC.Characters.COM(comXfoId, [comParam0VarId, comParam1VarId, comParam2VarId, comParam3VarId] );
+    skeletonNode.addMember('com', 'COM', com);
+    
+    solver.addTracks = function(trackSet, keyframeTrackBindings){
+      var comXfoTrackBindings = trackSet.addXfoTrack('com');
+      keyframeTrackBindings.addXfoBinding(comXfoId, comXfoTrackBindings);
+      
+      var comParam0TrackId = trackSet.addScalarTrack('stepFrequency', FABRIC.RT.Color.yellow);
+      keyframeTrackBindings.addScalarBinding(comParam0VarId, comParam0TrackId);
+      
+      var comParam1TrackId = trackSet.addScalarTrack('speed', FABRIC.RT.Color.yellow);
+      keyframeTrackBindings.addScalarBinding(comParam1VarId, comParam1TrackId);
+      
+      var comParam2TrackId = trackSet.addScalarTrack('gradient', FABRIC.RT.Color.yellow);
+      keyframeTrackBindings.addScalarBinding(comParam2VarId, comParam2TrackId);
+      
+      var comParam3TrackId = trackSet.addScalarTrack('direction', FABRIC.RT.Color.yellow);
+      keyframeTrackBindings.addScalarBinding(comParam3VarId, comParam3TrackId);
+    }
+    return solver; 
+  }
+});
+
 
 FABRIC.Characters.LocomotionFoot = function(limbId, stepTimeVarId) {
   this.limbId = limbId != undefined ? limbId : -1;
@@ -35,6 +76,37 @@ FABRIC.appendOnCreateContextCallback(function(context) {
     constructor: FABRIC.Characters.LocomotionFoot
   });
 });
+
+
+
+FABRIC.SceneGraph.CharacterSolvers.registerSolver('LocomotionFeetSolver', {
+  constructSolver: function(options, scene) {
+    
+    var rigNode = scene.getPrivateInterface(options.rigNode),
+      skeletonNode = scene.getPrivateInterface(rigNode.pub.getSkeletonNode()),
+      variablesNode = scene.getPrivateInterface(rigNode.pub.getVariablesNode()),
+      solver = {};
+
+    var limbs = skeletonNode.getData('legs');
+    var locomotionFeet = [];
+    var stepTimeVarIds = [];
+    for(var i=0; i<limbs.length; i++){
+      var stepTimeVarId = variablesNode.addVariable('Scalar');
+      locomotionFeet.push(new FABRIC.Characters.LocomotionFoot(i, stepTimeVarId));
+      stepTimeVarIds.push(stepTimeVarId);
+    }
+    skeletonNode.addMember('locomotionFeet', 'LocomotionFoot[]', locomotionFeet);
+    
+    solver.addTracks = function(trackSet, keyframeTrackBindings){
+      for(var i=0; i<limbs.length; i++){
+        var stepTimeTrackId = trackSet.addScalarTrack('foot'+i+'StepTime', FABRIC.RT.Color.yellow);
+        keyframeTrackBindings.addScalarBinding(stepTimeVarIds[i], stepTimeTrackId);
+      }
+    }
+    return solver; 
+  }
+});
+
 
 FABRIC.RT.LocomotionMarker = function() {
   this.localtime = 0.0;
@@ -96,22 +168,19 @@ FABRIC.SceneGraph.registerNodeType('LocomotionAnimationLibrary', {
     animationLibraryNode.pub.preProcessTracks = function(
       sourceAnimationLibrary,
       keyframeTrackBindings,
-      variablesNode,
-      skeletonNode,
+      rigNode,
       callback
     ){
       if (!sourceAnimationLibrary.isTypeOf('AnimationLibrary')) {
         throw ('Incorrect type. Must be a AnimationLibrary');
       }
-      if (!variablesNode.isTypeOf('CharacterVariables')) {
-        throw ('Incorrect type. Must be a CharacterVariables');
+      if (!rigNode.isTypeOf('CharacterRig')) {
+        throw ('Incorrect type. Must be a CharacterRig');
       }
-      if (!skeletonNode.isTypeOf('CharacterSkeleton')) {
-        throw ('Incorrect type. Must be a CharacterSkeleton');
-      }
+      
       sourceAnimationLibrary = scene.getPrivateInterface(sourceAnimationLibrary);
-      variablesNode = scene.getPrivateInterface(variablesNode);
-      skeletonNode = scene.getPrivateInterface(skeletonNode);
+      variablesNode = scene.getPrivateInterface(rigNode.getVariablesNode());
+      skeletonNode = scene.getPrivateInterface(rigNode.getSkeletonNode());
     //  dgnode.setDependency(sourceAnimationLibrary.getDGNode(), 'sourceAnimationLibrary');
       dgnode.setDependency(skeletonNode.getDGNode(), 'skeleton');
       dgnode.setDependency(variablesNode.getDGNode(), 'variables');
@@ -122,6 +191,12 @@ FABRIC.SceneGraph.registerNodeType('LocomotionAnimationLibrary', {
       paramsdgnode.addMember('footMovementThreshold', 'Scalar', 0.2);
       
       var trackSet = sourceAnimationLibrary.pub.getTrackSet(0);
+      
+      var comsolver = rigNode.addSolver('COM', 'COMSolver');
+      comsolver.addTracks(trackSet, keyframeTrackBindings);
+      var locomotionFeedSolver = rigNode.addSolver('Feet', 'LocomotionFeetSolver');
+      locomotionFeedSolver.addTracks(trackSet, keyframeTrackBindings);
+      /*
       var comXfoId = variablesNode.addVariable('Xfo');
       var comXfoTrackBindings = trackSet.addXfoTrack('com');
       keyframeTrackBindings.addXfoBinding(comXfoId, comXfoTrackBindings);
@@ -154,7 +229,7 @@ FABRIC.SceneGraph.registerNodeType('LocomotionAnimationLibrary', {
         locomotionFeet.push(new FABRIC.Characters.LocomotionFoot(i, stepTimeVarId));
       }
       skeletonNode.addMember('locomotionFeet', 'LocomotionFoot[]', locomotionFeet);
-      
+      */
       
       variablesNode.setBindings(keyframeTrackBindings);
       
@@ -398,7 +473,7 @@ FABRIC.SceneGraph.registerNodeType('LocomotionPoseVariables', {
   
     dgnode.bindings.append(scene.constructOperator({
       operatorName: 'evaluateLocomotionPoseVariables',
-      srcFile: 'KL/locomotion.kl',
+      srcFile: 'FABRIC_ROOT/SceneGraph/KL/locomotion.kl',
       entryFunctionName: 'evaluateLocomotionPoseVariables',
       parameterLayout: [
         'globals.timestep',
