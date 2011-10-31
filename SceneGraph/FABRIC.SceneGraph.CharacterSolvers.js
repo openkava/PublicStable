@@ -1231,13 +1231,11 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('HumanoidLegSolver', {
     var solver = FABRIC.SceneGraph.CharacterSolvers.constructSolver('CharacterSolver', options, scene);
 
     var rigNode = scene.getPrivateInterface(options.rigNode),
-      skeletonNode = scene.getPrivateInterface(rigNode.pub.getSkeletonNode()),/*
-      constantsNode = scene.getPrivateInterface(rigNode.pub.getConstantsNode()),*/
+      skeletonNode = scene.getPrivateInterface(rigNode.pub.getSkeletonNode()),
       variablesNode = scene.getPrivateInterface(rigNode.pub.getVariablesNode()),
       bones = skeletonNode.pub.getBones(),
       referencePose = skeletonNode.pub.getReferencePose(),
       referenceLocalPose = skeletonNode.pub.getReferenceLocalPose(),
-      boneIDs = solver.generateBoneMapping(options.bones, [['bones'], 'ankle']),
       name = options.name,
       footPlatformXfo,
       ankleOffsetXfo,
@@ -1245,67 +1243,68 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('HumanoidLegSolver', {
       i,
       twistManipulators = [];
 
-/*
-    // check if the bones have a length
-    for (i = 0; i < boneIDs.bones.length; i++) {
-      if (bones[boneIDs.bones[i]].length <= 0.0) {
-        throw ('Cannot solve IK2Bone for bone ' + bones[boneIDs.bones[i]].name + ', because it has length == 0.');
+  var legs = [];
+  for(j=0; j<options.limbs.length; j++){
+      var boneIDs = solver.generateBoneMapping(options.limbs[j], [['bones'], 'ankle']);
+      
+  /*
+      // check if the bones have a length
+      for (i = 0; i < boneIDs.bones.length; i++) {
+        if (bones[boneIDs.bones[i]].length <= 0.0) {
+          throw ('Cannot solve IK2Bone for bone ' + bones[boneIDs.bones[i]].name + ', because it has length == 0.');
+        }
+        twistManipulators.push(true); //i != 1);
       }
-      twistManipulators.push(true); //i != 1);
-    }
-    rigNode.pub.addSolver(name + 'fk', 'FKChainSolver', {
-      chainManipulators: false,
-      bones: options.bones,
-      color: options.color,
-      twistManipulators: twistManipulators,
-      twistManipulatorRadius: bones[boneIDs.bones[0]].length * 0.3
-    });
- */
-
-    // compute the target
-    ankleTipXfo = referencePose[boneIDs.ankle].clone();
-    ankleTipXfo.tr = referencePose[boneIDs.ankle].transformVector(new FABRIC.RT.Vec3(bones[boneIDs.ankle].length, 0, 0));
-    footPlatformXfo = ankleTipXfo.clone();
-    footPlatformXfo.tr.y = 0;
-    var alignmentQuat = new FABRIC.RT.Quat();
-    alignmentQuat.setFrom2Vectors(
-      footPlatformXfo.ori.rotateVector(new FABRIC.RT.Vec3(1, 0, 0)),
-      new FABRIC.RT.Vec3(0, -1, 0)
-    );
-    footPlatformXfo.ori = alignmentQuat.multiply(footPlatformXfo.ori);
-    ankleOffsetXfo = footPlatformXfo.inverse().multiply(ankleTipXfo);
-    
-    var xfos = [];
-    for(var i=0; i<boneIDs.bones.length; i++){
-      xfos.push(referenceLocalPose[boneIDs.bones[i]]);
-    }
-    xfos.push(referenceLocalPose[boneIDs.ankle]);
-    var xfoIds = variablesNode.addVariable('Xfo[]', xfos);
-    var footPlatformXfoId = variablesNode.addVariable('Xfo', footPlatformXfo);
-    var ikblendId = variablesNode.addVariable('Scalar', 1.0);
-    
-    var leg = new FABRIC.Characters.Limb(boneIDs.bones, boneIDs.ankle, xfoIds, footPlatformXfoId, ankleOffsetXfo, footPlatformXfoId, ikblendId);
-    try{
-      var legs = skeletonNode.getData('legs');
+      rigNode.pub.addSolver(name + 'fk', 'FKChainSolver', {
+        chainManipulators: false,
+        bones: options.bones,
+        color: options.color,
+        twistManipulators: twistManipulators,
+        twistManipulatorRadius: bones[boneIDs.bones[0]].length * 0.3
+      });
+   */
+  
+      // compute the target
+      ankleTipXfo = referencePose[boneIDs.ankle].clone();
+      ankleTipXfo.tr = referencePose[boneIDs.ankle].transformVector(new FABRIC.RT.Vec3(bones[boneIDs.ankle].length, 0, 0));
+      footPlatformXfo = ankleTipXfo.clone();
+      footPlatformXfo.tr.y = 0;
+      var alignmentQuat = new FABRIC.RT.Quat();
+      alignmentQuat.setFrom2Vectors(
+        footPlatformXfo.ori.rotateVector(new FABRIC.RT.Vec3(1, 0, 0)),
+        new FABRIC.RT.Vec3(0, -1, 0)
+      );
+      footPlatformXfo.ori = alignmentQuat.multiply(footPlatformXfo.ori);
+      ankleOffsetXfo = footPlatformXfo.inverse().multiply(ankleTipXfo);
+      
+      var xfos = [];
+      for(var i=0; i<boneIDs.bones.length; i++){
+        xfos.push(referenceLocalPose[boneIDs.bones[i]]);
+      }
+      xfos.push(referenceLocalPose[boneIDs.ankle]);
+      var xfoIds = variablesNode.addVariable('Xfo[]', xfos);
+      var footPlatformXfoId = variablesNode.addVariable('Xfo', footPlatformXfo);
+      var ikblendId = variablesNode.addVariable('Scalar', 1.0);
+      
+      var leg = new FABRIC.Characters.Limb(boneIDs.bones, boneIDs.ankle, xfoIds, footPlatformXfoId, ankleOffsetXfo, footPlatformXfo, ikblendId);
       legs.push(leg);
-      skeletonNode.setData('legs', legs);
     }
-    catch(e){
-      skeletonNode.addMember('legs', 'Limb[]', [leg]);
-      rigNode.addSolverOperator({
-          operatorName: 'solveHumanoidLegRig',
-          srcFile: 'FABRIC_ROOT/SceneGraph/KL/solveLegRig.kl',
-          entryFunctionName: 'solveHumanoidLegRig',
-          parameterLayout: [
-            'charactercontroller.xfo',
-            'self.pose',
-            'skeleton.bones',
-            'skeleton.legs',
-            'variables.poseVariables',
-            'self.debugGeometry'
-          ]
-        });
-    }
+    
+    skeletonNode.addMember('legs', 'Limb[]', legs);
+    rigNode.addSolverOperator({
+        operatorName: 'solveHumanoidLegRig',
+        srcFile: 'FABRIC_ROOT/SceneGraph/KL/solveLegRig.kl',
+        entryFunctionName: 'solveHumanoidLegRig',
+        parameterLayout: [
+          'charactercontroller.xfo',
+          'self.pose',
+          'skeleton.bones',
+          'skeleton.legs',
+          'variables.poseVariables',
+          'self.debugGeometry'
+        ]
+      });
+      
     if (options.createManipulators) {
       /*
       // add a manipulation for target and upvector

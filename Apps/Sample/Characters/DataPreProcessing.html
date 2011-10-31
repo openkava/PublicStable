@@ -38,7 +38,6 @@
     
     <script type="text/javascript" src="../../../SceneGraph/RT/KeyframeTrackBindings.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/RT/PoseVariables.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/TrackSetController.js" charset="utf-8"></script>
     
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Lights.js" charset="utf-8"></script>
@@ -119,7 +118,7 @@ $(document).ready(function() {
     materialNode: scene.constructNode('FlatMaterial')
   });
   
-  var rigName = 'walker';
+  var rigName = 'marama';
   var assetNodes, fkrigNode, rigInstanceNode, skeletonNode, animationLibrary, animationController, characterMesh;
   switch(rigName){
   case 'hopper':
@@ -253,7 +252,52 @@ $(document).ready(function() {
     rigInstanceNode.setRigNode(ikrigNode);
     
     break;
+  case 'marama':
+    assetNodes = scene.importAssetFile('Assets/Marama.DAE');
+  
+    fkrigNode = assetNodes.MaramaPelvis001CharacterRig;
+    rigInstanceNode = assetNodes.MaramaPelvis001CharacterInstance;
+    characterMesh = assetNodes.MaramaPelvis001Mesh;
+    
+    skeletonNode = fkrigNode.getSkeletonNode();
+    var ikrigNode = scene.constructNode('CharacterRig', {
+      name: 'IKRig',
+      skeletonNode: skeletonNode
+    });
+    
+    ikrigNode.addSolver('Pelvis', 'HubSolver', { hubs: [{ bone:['MaramaPelvis'] }] } );
+    ikrigNode.addSolver('Legs', 'HumanoidLegSolver', {
+      limbs: [ { bones:['MaramaLThigh', 'MaramaLCalf'], ankle:'MaramaLAnkle' },
+               { bones:['MaramaRThigh', 'MaramaRCalf'], ankle:'MaramaRAnkle' }]
+    });
+    
+    ikrigNode.addSolver('toes', 'FKHierarchySolver', {
+      bones: {
+        bones:['MaramaLToe', 'MaramaRToe' ]
+      }
+    });
+    
+    ikrigNode.addSolver('upperbody', 'FKHierarchySolver', {
+      bones: {
+        bones:['MaramaSpine1', 'MaramaSpine2', 'MaramaSpine3', 'MaramaRibcage', 'MaramaNeck', 'MaramaHead',
+               'MaramaLCollarbone', 'MaramaLUpperArm', 'MaramaLForeArm2', 'MaramaLForeArm2_ncl1_1',
+               'MaramaRCollarbone', 'MaramaRUpperArm', 'MaramaRForeArm2', 'MaramaRForeArm2_ncl1_1',
+               'MaramaLPalm', 'MaramaLThumb1', 'MaramaLThumb2' , 'MaramaLIndex1', 'MaramaLIndex2', 'MaramaLFingers1' , 'MaramaLFingers2',
+               'MaramaRPalm', 'MaramaRThumb1', 'MaramaRThumb2' , 'MaramaRIndex1', 'MaramaRIndex2', 'MaramaRFingers1' , 'MaramaRFingers2' ]
+      }
+    });
+    
+    var animationAssetNodes = scene.importAssetFile('Assets/Marama_Walk.DAE');
+    animationLibrary = animationAssetNodes.AnimationLibrary;
+    animationController = animationAssetNodes.MaramaPelvis001Controller;
+    
+    
+    ikrigNode.invertSolvers(animationAssetNodes.MaramaPelvis001CharacterRig1);
+    rigInstanceNode.setRigNode(ikrigNode);
+  
+    break;
   }
+  
   
   var materialNode = scene.constructNode('PhongSkinningMaterial', {
       lightNode: scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) }),
@@ -268,13 +312,13 @@ $(document).ready(function() {
     boneradius: 0.2,
     color: FABRIC.RT.rgba(0.0, 0.0, 1.0, 1.0)
   });
-  /*
+  
   var skeletonGeometryNode = scene.constructNode("CharacterSkeletonDebug",{
     characterRigNode:ikrigNode,
     boneradius: 0.2,
     color: FABRIC.RT.rgba(0.0, 1.0, 0.0, 1.0)
   });
-  */
+  
   //
   var libraryProcessedAnimations = scene.constructNode('LinearKeyAnimationLibrary', {
     name: 'LibraryProcessedAnimations'
@@ -298,14 +342,14 @@ $(document).ready(function() {
       name: 'LocomotionProcessingVariables',
       baseVariables:ikrigNode.getVariablesNode()
     });
-    /*
-    var locomotionRigNode = scene.constructNode('CharacterRig', {
-      name: 'LocomotionRig',
-      skeletonNode: skeletonNode,
-      variablesNode: locomotionProcessingVariables,
-      baseCharacterRig: ikrigNode
-    });
-    */
+    
+  //  var locomotionRigNode = scene.constructNode('CharacterRig', {
+  //    name: 'LocomotionRig',
+  //    skeletonNode: skeletonNode,
+  //    variablesNode: locomotionProcessingVariables,
+  //    baseCharacterRig: ikrigNode
+   // });
+   
     
     libraryLocomotionAnimations = scene.constructNode('LocomotionAnimationLibrary', {
       name: 'LibraryLocomotionAnimations',
@@ -317,25 +361,7 @@ $(document).ready(function() {
       bindings,
       ikrigNode,
       function(){
-        //////////////////////////////////////////////////////
-    //    var boundLocomotionVariables = scene.constructNode('CharacterVariables', {
-    //      name: 'BoundLocomotionVariables',
-    //      baseVariables:locomotionProcessingVariables
-    //    });
-    //    boundLocomotionVariables.bindToAnimationTracks(libraryLocomotionAnimations, animationController, 0, bindings);
-    //    var locomotionRigNode = scene.constructNode('CharacterRig', {
-    //      name: 'LocomotionRig',
-    //      skeletonNode: skeletonNode,
-    //      baseCharacterRig: ikrigNode,
-    //      variablesNode: boundLocomotionVariables
-    //    });
-    //    
-    //    var skeletonGeometryNode = scene.constructNode("CharacterSkeletonDebug", {
-    //      characterRigNode:locomotionRigNode,
-    //      boneradius: 0.2,
-    //      color: FABRIC.RT.rgba(0.0, 0.0, 1.0, 1.0)
-    //    });
-    
+    /*
           var rigSaver = scene.constructManager('SceneSaver');
           rigSaver.addNode(ikrigNode);
           rigSaver.addNode(characterMesh);
@@ -343,14 +369,21 @@ $(document).ready(function() {
           var storage = new FABRIC.SceneGraph.LocalStorage(rigName);
           rigSaver.save(storage);
           
-          
           storage.log();
+    */
       });
     
     
     
   });
-        
+  
+  var timeRange = animationLibrary.getTimeRange(0);
+  var $globalTimeSlider = $('#globalTime').slider({
+      min: timeRange.x,
+      max: timeRange.y,
+      step: 0.01
+    });
+  
   $globalTimeSlider.slider('value', 0.0);
   $globalTimeSlider.bind('slide',
     function(event, ui) {

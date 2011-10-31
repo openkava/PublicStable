@@ -6,6 +6,90 @@ use Vec2, Vec3, Quat, Xfo;
 use LinearKeyframeTrackSet, PoseVariables;
 use DebugGeometry;
 
+function Vec2[][] calcFootPlantTimes(
+  in Limb legs[],
+  in Vec2 timeRange,
+  in Integer numSamples,
+  io Scalar movementThreshold,
+  
+  io PoseVariables poseVariables,
+  in KeyframeTrackBindings bindings,
+  
+  io LinearKeyframeTrackSet trackSet,
+  
+  io DebugGeometry debugGeometry
+){
+  Integer currKeys[];
+  
+  // Calculate the foot plant time ranges.
+  Vec3 feetPositions[];
+  feetPositions.resize(legs.size);
+  Boolean footPlanted[];
+  Vec2 footSteps[][];
+  Vec3 footPrints[][];
+  footPlanted.resize(legs.size);
+  footSteps.resize(legs.size);
+  footPrints.resize(legs.size);
+  
+  for(Integer t=0; t <= numSamples; t++){
+    Scalar time = ((Scalar(t)/Scalar(numSamples)) * (timeRange.y - timeRange.x)) + timeRange.x;
+    trackSet.evaluateKeyframeTracks(time, bindings, poseVariables, currKeys);
+    
+    for(Integer i=0; i < legs.size; i++){
+      Limb leg = legs[i];
+      if(t > 0){
+        Vec3 footPos = poseVariables.xfoValues[leg.ikGoalXfoId].tr;
+        Scalar dist = (footPos - feetPositions[i]).length();
+        if(t == 1){
+          footPlanted[i] = (dist < movementThreshold);
+          if(footPlanted[i]){
+            footSteps[i].push(Vec2(timeRange.x, 0.0));
+            footPrints[i].push(footPos);
+          }
+        }
+        else{
+          if(footPlanted[i]){
+            if(dist > movementThreshold){
+              // Add a foot lift key
+              footSteps[i][footSteps[i].size-1].y = time;
+              footPlanted[i] = false;
+            }
+          }
+          else{
+            if(dist < movementThreshold){
+              // Add a foot plant key
+              footSteps[i].push(Vec2(time, 0.0));
+              footPrints[i].push(footPos);
+              footPlanted[i] = true;
+            }
+          }
+        }
+      }
+      feetPositions[i] = poseVariables.xfoValues[leg.ikGoalXfoId].tr;
+    }
+  }
+  
+  // If a foot was planted at the end of the clip, then its lift time
+  for(Integer i=0; i < legs.size; i++){
+    Limb leg = legs[i];
+    if(footPlanted[i]){
+      // This should only be done on looping animations.
+      footSteps[i][0].x = -(timeRange.y - footSteps[i][footSteps[i].size-1].x);
+      footSteps[i][footSteps[i].size-1].y = (timeRange.y - timeRange.x) + footSteps[i][0].y;
+    }
+  }
+  
+  for(Integer i=0; i < footPrints.size; i++){
+    for(Integer j=0; j < footPrints[i].size; j++){
+      Xfo xfo;
+      xfo.setIdentity();
+      xfo.tr = footPrints[i][j];
+      debugGeometry.drawCircle(xfo, 1.2, Color(1.0, 0.0, 0.0, 1.0));
+    }
+  }
+  return footSteps;
+}
+
 operator locomotionPreProcessing(/*
   io LinearKeyframeTrackSet sourceAnimationLibrary<>,
   */
@@ -41,58 +125,8 @@ operator locomotionPreProcessing(/*
   Vec2 timeRange = trackSet.getTimeRange();
   Integer numSamples = Integer((timeRange.y - timeRange.x) / sampleFrequency);
   
-  // Calculate the foot plant time ranges.
-  Vec3 footPos[];
-  footPos.resize(legs.size);
-  Boolean footPlanted[];
-  footPlanted.resize(legs.size);
   Vec2 footSteps[][];
-  footSteps.resize(legs.size);
-  
-  for(Integer t=0; t <= numSamples; t++){
-    Scalar time = ((Scalar(t)/Scalar(numSamples)) * (timeRange.y - timeRange.x)) + timeRange.x;
-    trackSet.evaluateKeyframeTracks(time, bindings, poseVariables, currKeys);
-    
-    for(Integer i=0; i < legs.size; i++){
-      Limb leg = legs[i];
-      if(t > 0){
-        Scalar dist = (poseVariables.xfoValues[leg.ikGoalXfoId].tr - footPos[i]).length();
-        if(t == 1){
-          footPlanted[i] = (dist < movementThreshold);
-          if(footPlanted[i]){
-            footSteps[i].push(Vec2(timeRange.x, 0.0));
-          }
-        }
-        else{
-          if(footPlanted[i]){
-            if(dist > movementThreshold){
-              // Add a foot lift key
-              footSteps[i][footSteps[i].size-1].y = time;
-              footPlanted[i] = false;
-            }
-          }
-          else{
-            if(dist < movementThreshold){
-              // Add a foot plant key
-              footSteps[i].push(Vec2(time, 0.0));
-              footPlanted[i] = true;
-            }
-          }
-        }
-      }
-      footPos[i] = poseVariables.xfoValues[leg.ikGoalXfoId].tr;
-    }
-  }
-  
-  // If a foot was planted at the end of the clip, then its lift time
-  for(Integer i=0; i < legs.size; i++){
-    Limb leg = legs[i];
-    if(footPlanted[i]){
-      // This should only be done on looping animations.
-      footSteps[i][0].x = -(timeRange.y - footSteps[i][footSteps[i].size-1].x);
-      footSteps[i][footSteps[i].size-1].y = (timeRange.y - timeRange.x) + footSteps[i][0].y;
-    }
-  }
+  footSteps = calcFootPlantTimes(legs, timeRange,  numSamples, movementThreshold, poseVariables, bindings, trackSet, debugGeometry);
   report("footSteps:"+footSteps);
   
   footStepTracks.resize(legs.size);
@@ -135,7 +169,7 @@ operator locomotionPreProcessing(/*
     */
   }
   report("footStepTracks:"+footStepTracks);
-  
+  /*
   ///////////////////////////////////////////////////
   // Calculate the COM.
   // Here we build a bindings that will enable us to key just the COM values. 
@@ -173,25 +207,25 @@ operator locomotionPreProcessing(/*
   Scalar weight = 0.0;
   comAlignment.setIdentity();
   
-/*
-  for(Integer i=0; i < hubs.size; i++){
-    Hub hub = hubs[i];
-    
-  //  solveHubRig(pose, bones, hub, poseVariables);
-  
-  //  comAlignment.tr += bones[hub.boneId].referencePose.tr;
-  //  weight += 1.0;
-    comAlignment.ori = bones[hub.boneId].referencePose.ori;
-  }
-  for(Integer j=0; j < legs.size; j++){
-    Limb leg = legs[j];
-    
-    comAlignment.tr += leg.ikGoalReferenceXfo.tr;
-    weight += 1.0;
-  }
-  comAlignment.tr *= 1.0/weight;
-  comAlignment.ori.setUnit();
-*/
+
+//  for(Integer i=0; i < hubs.size; i++){
+//    Hub hub = hubs[i];
+//    
+//  //  solveHubRig(pose, bones, hub, poseVariables);
+//  
+//  //  comAlignment.tr += bones[hub.boneId].referencePose.tr;
+//  //  weight += 1.0;
+//    comAlignment.ori = bones[hub.boneId].referencePose.ori;
+//  }
+//  for(Integer j=0; j < legs.size; j++){
+//    Limb leg = legs[j];
+//    
+//    comAlignment.tr += leg.ikGoalReferenceXfo.tr;
+//    weight += 1.0;
+//  }
+//  comAlignment.tr *= 1.0/weight;
+//  comAlignment.ori.setUnit();
+
   
   comAlignment = bones[hubs[0].boneId].referencePose;
   debugGeometry.drawAxis(comAlignment, 5.0, Color(1.0, 0.0, 1.0, 1.0));
@@ -212,31 +246,31 @@ operator locomotionPreProcessing(/*
   while(true){
     trackSet.evaluateKeyframeTracks(currKeyt, bindings, poseVariables, currKeys);
     
-    /*
-    comXfo.setIdentity();
-    weight = 0.0;
-    for(Integer i=0; i < hubs.size; i++){
-      Hub hub = hubs[i];
-      pose[hub.boneId] = poseVariables.xfoValues[hub.xfoId];
-    //  solveHubRig(pose, bones, hub, poseVariables);
     
-    //  comXfo.tr += pose[hub.boneId].tr;
-    //  weight += 1.0;
-      if(i==0){
-        comXfo.ori = pose[hub.boneId].ori;
-      }else{
-        pose[hub.boneId].ori.alignWith(comXfo.ori);
-        comXfo.ori += pose[hub.boneId].ori;
-      }
-    }
-    for(Integer j=0; j < legs.size; j++){
-      Limb leg = legs[j];
-      comXfo.tr += poseVariables.xfoValues[leg.ikGoalXfoId].tr;
-      weight += 1.0;
-    }
-    comXfo.tr *= 1.0/weight;
-    comXfo.ori.setUnit();
-    */
+  //  comXfo.setIdentity();
+  //  weight = 0.0;
+  //  for(Integer i=0; i < hubs.size; i++){
+  //    Hub hub = hubs[i];
+  //    pose[hub.boneId] = poseVariables.xfoValues[hub.xfoId];
+  //  //  solveHubRig(pose, bones, hub, poseVariables);
+  //  
+  //  //  comXfo.tr += pose[hub.boneId].tr;
+  //  //  weight += 1.0;
+  //    if(i==0){
+  //      comXfo.ori = pose[hub.boneId].ori;
+  //    }else{
+  //      pose[hub.boneId].ori.alignWith(comXfo.ori);
+  //      comXfo.ori += pose[hub.boneId].ori;
+  //    }
+  //  }
+  //  for(Integer j=0; j < legs.size; j++){
+  //    Limb leg = legs[j];
+  //    comXfo.tr += poseVariables.xfoValues[leg.ikGoalXfoId].tr;
+  //    weight += 1.0;
+  //  }
+  //  comXfo.tr *= 1.0/weight;
+  //  comXfo.ori.setUnit();
+  
     comXfo = poseVariables.xfoValues[hubs[0].xfoId];
     report("comXfo:"+comXfo);
         debugGeometry.drawAxis(comXfo, 10.0, Color(1.0, 0.0, 1.0, 1.0));
@@ -431,8 +465,9 @@ operator locomotionPreProcessing(/*
     trackSet.setValues(poseVariables, time, limbValueBindings);
     
   }
-  trackSet.calcTimeRange();
   
+  trackSet.calcTimeRange();
+  */
 }
 
 
