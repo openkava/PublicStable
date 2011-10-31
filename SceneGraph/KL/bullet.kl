@@ -35,7 +35,9 @@ operator raycastBulletWorld(
   io BulletWorld world,
   io Boolean enable
 ) {
-  world.raycast(ray.start,ray.direction);
+  Vec3 to = ray.start + ray.direction * 10000.0;
+  Boolean filterPassiveObjects = true;
+  world.raycast(ray.start,to,filterPassiveObjects);
   if(world.hit) {
     select = true;
     intersection.point = world.hitPosition;
