@@ -42,7 +42,7 @@ namespace Fabric
       if ( m_returnInfo.usesReturnLValue() )
       {
         RC::ConstHandle<Adapter> returnAdapter = m_returnInfo.getAdapter();
-        returnValue = returnAdapter->llvmAlloca( basicBlockBuilder, "resultLValue" );
+        returnValue = returnAdapter->llvmAlloca( basicBlockBuilder, "retVal" );
         returnAdapter->llvmInit( basicBlockBuilder, returnValue );
         args.resize( args.size() + 1, ExprValue(context) );
         for ( size_t i=1; i<args.size(); ++i )
