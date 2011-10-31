@@ -75,6 +75,7 @@ FABRIC.SceneGraph.registerNodeType('3DTextureGenerator', {
     options.name = '3DTextureGenerator_Opacity';
     options.format = 'UShort';
     options.createDgNode = true;
+    options.createResourceLoadNode = false;
     var generatorNodeOpacity = scene.constructNode('Image3D', options);
     var dgnodeOpacity = generatorNodeOpacity.getDGNode();
 
@@ -94,7 +95,9 @@ FABRIC.SceneGraph.registerNodeType('3DTextureGenerator', {
       srcFile: 'KL/3DTextureUtils.kl'
     }));
 
-/*    dgnodeGradient.bindings.append(scene.constructOperator({
+/*  
+    //Note: this generates perfect analytic gradients
+    dgnodeGradient.bindings.append(scene.constructOperator({
       operatorName: 'generate3DTextureGradient',
       parameterLayout: [
         'opacity.resolution',
@@ -270,9 +273,9 @@ $(document).ready(function() {
       $('#rangeY3D').slider({min: 0, max: 1, step: 0.005, range: true, values: [0,1] }),
       $('#rangeZ3D').slider({min: 0, max: 1, step: 0.005, range: true, values: [0,1] })
   ];
-  var $opacityRangeSlider = $('#opacityRange').slider({min: 0, max: 1, step: 0.005, range: true, values: [0,1] });
-  var $brightnessSlider = $('#brightness').slider({min: 0, max: 1, step: 0.01, value: 0.5 });
-  var $transparencySlider = $('#transparency').slider({min: 0, max: 1, step: 0.01, value: 1.0 });
+  var $opacityRangeSlider = $('#opacityRange').slider({min: 0, max: 1, step: 0.005, range: true, values: [0.05,1] });
+  var $brightnessSlider = $('#brightness').slider({min: 0, max: 1, step: 0.01, value: 0.75 });
+  var $transparencySlider = $('#transparency').slider({min: 0, max: 1, step: 0.01, value: 0.75 });
   var $specularFactorSlider = $('#specularFactor').slider({min: 0, max: 1, step: 0.01, value: 1.0 });
   var $resolutionFactorSlider = $('#resolutionFactor').slider({min: 0.01, max: 1, step: 0.01, value: 1.0 });
 
@@ -290,8 +293,9 @@ $(document).ready(function() {
   
   // Create a camera to draw the scene from
   var camera = scene.constructNode('TargetCamera', {
-      position: new FABRIC.RT.Vec3(0, 0, 20),
+      position: new FABRIC.RT.Vec3(0, 0, 2.5),
       target: new FABRIC.RT.Vec3(0, 0, 0),
+      nearDistance: 0.25,
       screenOffset: new FABRIC.RT.Vec2(-0.25, 0.0)
     });
 
@@ -301,27 +305,34 @@ $(document).ready(function() {
   var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(100.0, 100.0, 100.0) });
   var transform =  scene.constructNode('Transform', {
     hierarchical: false,
-    globalXfo: new FABRIC.RT.Xfo({ tr: new FABRIC.RT.Vec3(0, 0, 0), sc: new FABRIC.RT.Vec3(5.0, 5.0, 5.0) })
+    globalXfo: new FABRIC.RT.Xfo()
   });
 
   var layoutRectangle = scene.constructNode('DrawRectangle', {color: new FABRIC.RT.RGBA(128,128,128,255), tl: new FABRIC.RT.Vec2(2.0/3.0, 1.0), br: new FABRIC.RT.Vec2(1.0, -1.0) });
   var borderSize = 0.01;
 
-  var textureGen = scene.constructNode('3DTextureGenerator');
+  //var opacityTexture = scene.constructNode('3DTextureGenerator');
+  var opacityTexture = scene.constructNode('Image3D',  { url: 'Resources/HeadHigh.nrrd', resourceTargetTransformNode: transform });
+  //TODO: connect image Xfo to transform node...
 
   var volumeNode = scene.constructNode('VolumeOpacityInstance', {
       viewportNode: viewport,
       transformNode: transform,
       cropMin: new FABRIC.RT.Vec3(0, 0, 0),
       cropMax: new FABRIC.RT.Vec3(1, 1, 1),
-      opacityTextureNode: textureGen,
-      lightNode: light
+      opacityTextureNode: opacityTexture,
+      lightNode: light,
+      brightnessFactor: 0.75,
+      transparency: 0.70,
+      minOpacity: 0.05,
+      maxOpacity: 1.0,
+      backgroundColor: new FABRIC.RT.Color(1.0, 1.0, 1.0, 1.0)
     });
 
   var texture2DSlice = [];
-  texture2DSlice[0] = scene.constructNode('Texture2DSliceDisplay', {tl: new FABRIC.RT.Vec2(2.0/3.0+borderSize, 1.0-borderSize), br: new FABRIC.RT.Vec2(1.0-borderSize, 1.0/3.0+borderSize), opacityNode: textureGen, gradientNode: volumeNode.getGradientTextureNode(), sliceRatio: 0.5, sliceAxis : 0});
-  texture2DSlice[1] = scene.constructNode('Texture2DSliceDisplay', {tl: new FABRIC.RT.Vec2(2.0/3.0+borderSize, 1.0/3.0-borderSize), br: new FABRIC.RT.Vec2(1.0-borderSize, -1.0/3.0+borderSize), opacityNode: textureGen, gradientNode: volumeNode.getGradientTextureNode(), sliceRatio: 0.5, sliceAxis : 1});
-  texture2DSlice[2] = scene.constructNode('Texture2DSliceDisplay', {tl: new FABRIC.RT.Vec2(2.0/3.0+borderSize, -1.0/3.0-borderSize), br: new FABRIC.RT.Vec2(1.0-borderSize, -1.0+borderSize), opacityNode: textureGen, gradientNode: volumeNode.getGradientTextureNode(), sliceRatio: 0.5, sliceAxis : 2});
+  texture2DSlice[0] = scene.constructNode('Texture2DSliceDisplay', {tl: new FABRIC.RT.Vec2(2.0/3.0+borderSize, 1.0-borderSize), br: new FABRIC.RT.Vec2(1.0-borderSize, 1.0/3.0+borderSize), opacityNode: opacityTexture, gradientNode: volumeNode.getGradientTextureNode(), sliceRatio: 0.5, sliceAxis : 0});
+  texture2DSlice[1] = scene.constructNode('Texture2DSliceDisplay', {tl: new FABRIC.RT.Vec2(2.0/3.0+borderSize, 1.0/3.0-borderSize), br: new FABRIC.RT.Vec2(1.0-borderSize, -1.0/3.0+borderSize), opacityNode: opacityTexture, gradientNode: volumeNode.getGradientTextureNode(), sliceRatio: 0.5, sliceAxis : 1});
+  texture2DSlice[2] = scene.constructNode('Texture2DSliceDisplay', {tl: new FABRIC.RT.Vec2(2.0/3.0+borderSize, -1.0/3.0-borderSize), br: new FABRIC.RT.Vec2(1.0-borderSize, -1.0+borderSize), opacityNode: opacityTexture, gradientNode: volumeNode.getGradientTextureNode(), sliceRatio: 0.5, sliceAxis : 2});
     
   var sliders2DBindFunction = function(index) {
     var sliderIndex = index;
@@ -372,9 +383,9 @@ $(document).ready(function() {
     return true;
   });
   
-  $brightnessSlider.slider('value', volumeNode.getBrightness());
+  $brightnessSlider.slider('value', volumeNode.getBrightnessFactor());
   $brightnessSlider.bind('slide', function(event, ui) {
-    volumeNode.setBrightness(ui.value);
+    volumeNode.setBrightnessFactor(ui.value);
     viewport.redraw();
     viewport.redraw();//For some reason it takes 2 redraw to get the properly ajusted opacity factor upadted to the shader (???)
     return true;
@@ -401,6 +412,18 @@ $(document).ready(function() {
     for( i = 0; i < 3; ++i ) {
       texture2DSlice[i].setOpacityElseGradientWeight(!displayGradientWeight);
     }
+    viewport.redraw();
+  });
+
+  $("#whiteBackground").attr('checked', true).change(function() {
+    var whiteBackground = $('#whiteBackground').attr('checked');
+    volumeNode.setBackgroundColor(whiteBackground ? new FABRIC.RT.Color(1.0, 1.0, 1.0, 1.0) : new FABRIC.RT.Color(0.0, 0.0, 0.0, 1.0));
+    viewport.redraw();
+  });
+
+  $("#invert").attr('checked', false).change(function() {
+    var invertColor = $('#invert').attr('checked');
+    volumeNode.setInvertColor(invertColor ? 1 : 0);
     viewport.redraw();
   });
 
@@ -502,6 +525,7 @@ $(document).ready(function() {
             <div class="content">
               <label for="opacityRange" >Opacity range:</label>
               <div id='opacityRange' style="margin-top:10px;"></div>
+              <input type="checkbox" id="whiteBackground" style="margin-top:10px;" /><label for="whiteBackground" style="margin-top:10px;" >White background:</label><br>
               <label for="brightness" >Brightness:</label>
               <div id='brightness' style="margin-top:10px;"></div>
               <label for="transparency" >Transparency:</label>
@@ -510,6 +534,7 @@ $(document).ready(function() {
               <div id='resolutionFactor' style="margin-top:10px;"></div>
               <label for="specularFactor" >Shininess:</label>
               <div id='specularFactor' style="margin-top:10px;"></div>
+              <input type="checkbox" id="invert" style="margin-top:10px;" /><label for="invert" style="margin-top:10px;" >Invert</label><br>
             </div><!--content-->
             <h2>Axis slices</h2>
             <div class="content">

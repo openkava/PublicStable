@@ -4,6 +4,40 @@
 
 use OGLTexture3D;
 use OGLShaderProgram;
+use FabricTEEM;
+use Mat44;
+
+function decode3DImageUShortData(
+  in FabricResource resource,
+  io Size imageWidth,
+  io Size imageHeight,
+  io Size imageDepth,
+  io Byte imageUShortVoxels[],
+  io Mat44 xfoMat
+) {
+  xfoMat.setIdentity();
+  if(resource.data.size() == 0)
+    return;
+  String ext = resource.extension ? resource.extension : resource.mimeType;
+  switch (ext) {
+    case'nrrd':
+      FabricTeemNRRDLoadUShort(resource.data.data(), resource.data.dataSize(), imageWidth, imageHeight, imageDepth, imageUShortVoxels, xfoMat);
+    break;
+    default:
+      report "Unsupported 3D image format: " + ext;
+  }
+}
+
+operator load3DImageUShortData(
+  io FabricResource resource,
+  io Size imageWidth,
+  io Size imageHeight,
+  io Size imageDepth,
+  io Byte imageUShortVoxels[],
+  io Mat44 xfoMat
+) {
+  decode3DImageUShortData( resource, imageWidth, imageHeight, imageDepth, imageUShortVoxels, xfoMat );
+}
 
 operator bindRGBATexture3D(
   io Size width,
@@ -38,6 +72,27 @@ operator bindUShortTexture3D(
   oglTexture3D.bindUShortImage(width, height, depth, bitmap, textureUnit);
 }
 
+// This operator takes a resource, decodes it, and immediately
+// uploads it to the GPU. This simplifies the graph, because 
+// a node is not created to store the data in main memory. 
+operator loadAndBindUShortTexture(
+  io FabricResource resource,
+  io OGLTexture3D oglTexture3D,
+  io Integer textureUnit
+) {
+  if(resource.data.size() == 0)
+    return;
+  if(oglTexture3D.bufferID == 0 || oglTexture3D.forceRefresh){
+    Size width, height, depth;
+    Mat44 xfoMat;
+    Byte imageUShortVoxels[];
+    decode3DImageUShortData(resource, width, height, depth, imageUShortVoxels, xfoMat);
+    oglTexture3D.configure(width, height, depth, imageUShortVoxels.data(), Size(imageUShortVoxels.size()/2), textureUnit);
+    resource.data.resize(0);
+  }
+  oglTexture3D.bind(textureUnit);
+}
+
 operator bindColorTexture3D(
   io Size width,
   io Size height,
@@ -59,28 +114,6 @@ operator bindScalarTexture3D(
 ) {
   oglTexture3D.bindScalarImage(width, height, depth, bitmap, textureUnit);
 }
-
-// This operator takes a resource, decodes it, and immediately
-// uploads it to the GPU. This simplifies the graph, because 
-// a node is not created to store the data in main memory. 
-/*operator loadAndBindTextureLDR(
-  io FabricResource resource,
-  io OGLTexture2D oglTexture2D,
-  io Integer textureUnit
-) {
-//  report("loadAndBindTextureLDR -> textureUnit:" + textureUnit);
-  if(resource.data.size() == 0)
-    return;
-  if(oglTexture2D.bufferID == 0 || oglTexture2D.forceRefresh){
-    Size width, height;
-    RGBA imageLDR[];
-    decodeLDRImageData(resource, width, height, imageLDR);
-    oglTexture2D.configure(width, height, imageLDR.data(), imageLDR.size(), textureUnit);
-    var Data NULL;
-    resource.data.resize(0);
-  }
-  oglTexture2D.bind(textureUnit);
-}*/
 
 operator unbindTextures(
   io Size numTextures

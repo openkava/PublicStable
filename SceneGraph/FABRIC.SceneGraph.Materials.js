@@ -165,13 +165,14 @@ FABRIC.SceneGraph.registerNodeType('Image3D', {
     height: 'The height of the empty Image',
     depth: 'The depth of the empty Image',
     color: 'The standard color for the empty Image',
+    resourceTargetTransformNode: 'If loaded from resource, set the resource-stored transfo to that node',
     url: 'The URL to load the Image from'
   },
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
-      format: 'RGBA',
-      createDgNode: false,
-      createResourceLoadNode: false,
+      format: 'UShort',
+      createDgNode: true,
+      createResourceLoadNode: true,
       createLoadTextureEventHandler: true,
       initImage: true,
       width: 16,
@@ -204,23 +205,44 @@ FABRIC.SceneGraph.registerNodeType('Image3D', {
       imageNode.addMemberInterface(dgnode, 'depth');
     }
 
-    //options.createResourceLoadNode: TODO
-    if (options.createResourceLoadNode) {/*
+    if (options.createResourceLoadNode) {
+      if(options.format !== 'UShort')
+        throw ('Only UShort 3D textures are currently supported');
+
       var resourceLoadNode = scene.constructNode('ResourceLoad', options);
       var resourceloaddgnode = resourceLoadNode.getDGLoadNode();
       if(options.createDgNode){
+        dgnode.addMember('xfoMat', 'Mat44');
         dgnode.setDependency(resourceloaddgnode, 'resource');
         dgnode.bindings.append(scene.constructOperator({
-          operatorName: (options.wantHDR ? 'loadImageHDR' : 'loadImageLDR'),
+          operatorName: 'load3DImageUShortData',
           parameterLayout: [
             'resource.resource',
             'self.width',
             'self.height',
-            'self.pixels'
+            'self.depth',
+            'self.pixels',
+            'self.xfoMat'
           ],
-          entryFunctionName: (options.wantHDR ? 'loadImageHDR' : 'loadImageLDR'),
-          srcFile: 'FABRIC_ROOT/SceneGraph/KL/loadTexture.kl'
+          entryFunctionName: 'load3DImageUShortData',
+          srcFile: 'FABRIC_ROOT/SceneGraph/KL/load3DTexture.kl'
         }));
+
+        if(options.resourceTargetTransformNode) {
+          var resourceTargetTransformNode = scene.getPrivateInterface(options.resourceTargetTransformNode);
+          var resourceTargetTransformDGNode = resourceTargetTransformNode.getDGNode();
+          resourceTargetTransformDGNode.setDependency(dgnode, 'image3DSource');
+          resourceTargetTransformDGNode.bindings.insert(scene.constructOperator({
+            operatorName: 'setFromImage3DSource',
+            parameterLayout: [
+              'image3DSource.xfoMat',
+              'self.globalXfo'
+            ],
+            entryFunctionName: 'setFromImage3DSource',
+            srcCode: 'use Xfo; operator setFromImage3DSource(io Mat44 src, io Xfo dst){dst.setFromMat44(src.inverse());}'
+          }),0);
+
+        }
       };
 
       imageNode.pub.getResourceLoadNode = function() {
@@ -229,7 +251,7 @@ FABRIC.SceneGraph.registerNodeType('Image3D', {
 
       imageNode.pub.isImageLoaded = function() {
         return resourceLoadNode ? resourceLoadNode.pub.isLoaded() : false;
-      };*/
+      };
     } else {
       if(options.createDgNode && options.initImage && options.width && options.height && options.depth){
         if(options.format === 'UShort')
@@ -286,24 +308,24 @@ FABRIC.SceneGraph.registerNodeType('Image3D', {
           ]
         }));
       }
-/*      else if(options.createResourceLoadNode){
+      else if(options.createResourceLoadNode){
         redrawEventHandler.setScope('resource', resourceloaddgnode);
         redrawEventHandler.preDescendBindings.append(scene.constructOperator({
-          operatorName: 'loadAndBindTextureLDR',
-          srcFile: 'FABRIC_ROOT/SceneGraph/KL/loadTexture.kl',
-          entryFunctionName: 'loadAndBindTextureLDR',
+          operatorName: 'loadAndBindUShortTexture',
+          srcFile: 'FABRIC_ROOT/SceneGraph/KL/load3DTexture.kl',
+          entryFunctionName: 'loadAndBindUShortTexture',
           parameterLayout: [
             'resource.resource',
-            'self.oglTexture2D',
+            'self.oglTexture3D',
             'textureStub.textureUnit'
           ]
         }));
-      }*/
+      }
     }
 
-/*    imageNode.pub.getURL = function() {
+    imageNode.pub.getURL = function() {
       return resourceLoadNode ? resourceLoadNode.pub.getUrl() : '';
-    };*/
+    };
 
     return imageNode;
   }});
@@ -1632,11 +1654,13 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
     viewportNode: 'Active viewport',
     lightNode: 'Active light',
     resolutionFactor: 'Resolution of the volume render, in the range 0.0 to 1.0, 1.0 being 2 slices per voxel slice',
-    brightness: 'Brightness from 0 to 1',
+    brightnessFactor: 'Brightness from 0 to 1',
     transparency: 'Transparency from 0 to 1',
     minOpacity: 'MinOpacity from 0 to 1',
     maxOpacity: 'MaxOpacity from 0 to 1',
-    specularFactor: 'Specular amount from 0 to 1'
+    specularFactor: 'Specular amount from 0 to 1',
+    backgroundColor: 'Background color',
+    invertColor: 'Invert color: inverted if == 1'
   },
   factoryFn: function(options, scene) {
 
@@ -1644,11 +1668,13 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
       reducedGradientTexture: true,
       smoothGradient: true,
       resolutionFactor: 1.0,
-      brightness: 0.5,
+      brightnessFactor: 0.5,
       transparency: 1.0,
       minOpacity: 0.0,
       maxOpacity: 1.0,
-      specularFactor: 0.7
+      specularFactor: 0.7,
+      backgroundColor: new FABRIC.RT.Color(0,0,0,1),
+      invertColor: 0
     });
 
     options.cameraNode = options.viewportNode.getCameraNode();
@@ -1669,6 +1695,7 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
         var generatorNodeOpacity = scene.constructNode('Image3D', {
           name: 'ReducedOpacity',
           format: 'UShort',
+          createResourceLoadNode: false,
           createDgNode: true
         });
         var reducedOpacityDGNode = generatorNodeOpacity.getDGNode();
@@ -1740,6 +1767,7 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
       var generatorNodeGradientPub = scene.pub.constructNode('Image3D', {
         name: '3DTextureGenerator_Gradient',
         format: 'RGBA',
+        createResourceLoadNode: false,
         createDgNode: true
       });
       var generatorNodeGradient = scene.getPrivateInterface(generatorNodeGradientPub);
@@ -1804,6 +1832,20 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
       eventName: 'DummyEvent'
     });
 
+    var offscreenNodeDGNode = offscreenNode.getDGNode();
+    offscreenNodeDGNode.addMember('backgroundColor', 'Color', options.backgroundColor );
+    volumeNode.addMemberInterface(offscreenNodeDGNode, 'backgroundColor', true);
+
+    offscreenNodeDGNode.bindings.append(scene.constructOperator({
+      operatorName: 'setBackgroundColor',
+      srcCode: 'use OGLRenderTarget; operator setBackgroundColor(io Color color, io OGLRenderTarget renderTarget){ renderTarget.clearColor = color; }',
+      entryFunctionName: 'setBackgroundColor',
+      parameterLayout: [
+        'self.backgroundColor',
+        'self.renderTarget'
+      ]
+    }));
+
     var offscreenNodeRedrawEventHandler = offscreenNode.getRedrawEventHandler();
     scene.getSceneRedrawTransparentObjectsEventHandler().appendChildEventHandler(offscreenNodeRedrawEventHandler);
     offscreenNodeRedrawEventHandler.addMember('renderTargetToViewShaderProgram', 'Integer');
@@ -1823,20 +1865,7 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
         parentEventHandler: offscreenNodeRedrawEventHandler,
         opacityTextureNode: options.opacityTextureNode,
         gradientTextureNode: options.gradientTextureNode,
-        lightNode: options.lightNode,
-        renderTarget: FABRIC.RT.oglRenderTarget(0,  0, [
-          new FABRIC.RT.OGLRenderTargetTextureDesc(
-              2, /*COLOR*/
-              new FABRIC.RT.OGLTexture2D(
-                FABRIC.SceneGraph.OpenGLConstants.GL_RG16F,
-                FABRIC.SceneGraph.OpenGLConstants.GL_RG,
-                FABRIC.SceneGraph.OpenGLConstants.GL_FLOAT)
-            )
-          ],
-          {
-            clearColor: FABRIC.RT.rgba(0,0,0,1)
-          }
-        )
+        lightNode: options.lightNode
     });
 
     var volumeMaterialNode = scene.getPrivateInterface(volumeMaterialNodePub);
@@ -1844,24 +1873,27 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
     volumeMaterialNodeRedrawEvent.setScope('volumeUniforms', volumeUniformsDGNode);
 
     volumeMaterialNodeRedrawEvent.addMember('specularFactor', 'Scalar', options.specularFactor );
+    volumeMaterialNodeRedrawEvent.addMember('brightnessFactor', 'Scalar', options.brightnessFactor );
 
-    volumeNode.addMemberInterface(volumeMaterialNodeRedrawEvent, 'brightness', true);
     volumeNode.addMemberInterface(volumeMaterialNodeRedrawEvent, 'transparency', true);
     volumeNode.addMemberInterface(volumeMaterialNodeRedrawEvent, 'minOpacity', true);
     volumeNode.addMemberInterface(volumeMaterialNodeRedrawEvent, 'maxOpacity', true);
     volumeNode.addMemberInterface(volumeMaterialNodeRedrawEvent, 'specularFactor', true);
+    volumeNode.addMemberInterface(volumeMaterialNodeRedrawEvent, 'brightnessFactor', true);
+    volumeNode.addMemberInterface(volumeMaterialNodeRedrawEvent, 'invertColor', true);
 
-    volumeNode.pub.setBrightness(options.brightness);
     volumeNode.pub.setTransparency(options.transparency);
     volumeNode.pub.setMinOpacity(options.minOpacity);
     volumeNode.pub.setMaxOpacity(options.maxOpacity);
+    volumeNode.pub.setInvertColor(options.invertColor);
 
     volumeMaterialNodeRedrawEvent.preDescendBindings.append(scene.constructOperator({
       operatorName: 'setFactors',
-      srcCode: 'operator setFactors(io Scalar specular, io Scalar brightness, io Scalar transparency, io Size nbSlices, io Scalar alphaFactor, io Scalar scaledSpecular){ \n' +
+      srcCode: 'operator setFactors(io Scalar specular, io Scalar brightnessFactor, io Scalar transparency, io Size nbSlices, io Scalar alphaFactor, io Scalar scaledSpecular, io Scalar brightness){ \n' +
                     'scaledSpecular = 1.00001 / (1.00001 - specular) - 1.0;\n' +
                     'scaledSpecular *= scaledSpecular;\n' +
-                    'Scalar ajustedBrightness = transparency*sqrt(brightness) + (1.0-transparency)*brightness;\n' +
+                    'brightness = 1.00001 / (1.00001 - brightnessFactor) - 1.0;\n' +
+                    'Scalar ajustedBrightness = 0.5;//transparency*sqrt(brightness) + (1.0-transparency)*brightness;\n' +
                     'Scalar opacityPerSlice = 1.0 / Scalar(nbSlices);\n' +
                     'Scalar brightnessExp = log( opacityPerSlice ) / log( 0.5 );' + //We modulate by an exponential function else all the interesting values are close to brightness 0.5
                     'Scalar ajustedAlphaPerSlice = pow( ajustedBrightness, brightnessExp);' +
@@ -1869,11 +1901,12 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
       entryFunctionName: 'setFactors',
       parameterLayout: [
         'self.specularFactor',
-        'self.brightness',
+        'self.brightnessFactor',
         'self.transparency',
         'volumeUniforms.nbSlices',
         'self.alphaFactor',
-        'self.scaledSpecularFactor'
+        'self.scaledSpecularFactor',
+        'self.brightness'
       ]
     }));
 

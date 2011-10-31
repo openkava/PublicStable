@@ -3,6 +3,8 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
+use FabricOGL, OGLTexture2D;
+
 function OGLRenderTarget.genTextures() {
 //  report("OGLTexture2D.genTextures width:" + this.width + " height:" + this.height);
 
