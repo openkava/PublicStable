@@ -1,8 +1,5 @@
 /*
- *
- *  Created by Peter Zion on 10-12-04.
- *  Copyright 2010 Fabric Technologies Inc. All rights reserved.
- *
+ *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
  */
 
 #ifndef _FABRIC_CG_EXPR_VALUE_H
