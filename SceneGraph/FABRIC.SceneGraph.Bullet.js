@@ -206,6 +206,7 @@ FABRIC.SceneGraph.registerNodeType('BulletWorldNode', {
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
       createGroundPlane: true,
+      createGroundPlaneGrid: true,
       connectToSceneTime: true,
       gravity: new FABRIC.RT.Vec3(0,-40,0),
       substeps: 3
@@ -246,8 +247,7 @@ FABRIC.SceneGraph.registerNodeType('BulletWorldNode', {
       shapedgnode.addMember(shapeName+'Shape', 'BulletShape', shape);
 
       // copy the points for convex hulls
-      if(shape.type == FABRIC.RT.BulletShape.BULLET_CONVEX_HULL_SHAPE)
-      {
+      if(shape.type == FABRIC.RT.BulletShape.BULLET_CONVEX_HULL_SHAPE) {
         if(!shape.geometryNode)
           throw('You need to specify geometryNode for a convex hull shape!')
           
@@ -459,22 +459,23 @@ FABRIC.SceneGraph.registerNodeType('BulletWorldNode', {
 
     // create the ground plane
     if(options.createGroundPlane) {
-
       // create a shape
       // create the ground rigid body
       var groundTrans = FABRIC.RT.xfo({tr: new FABRIC.RT.Vec3(0,-1000,0)});
       bulletWorldNode.pub.addShape('Ground',FABRIC.RT.BulletShape.createBox(new FABRIC.RT.Vec3(1000,1000,1000)));
       bulletWorldNode.pub.addRigidBody('Ground',new FABRIC.RT.BulletRigidBody({mass: 0, transform: groundTrans}),'Ground');
       
-      var instanceNode = scene.constructNode('Instance', {
-        geometryNode: scene.constructNode('Grid', {
-          size_x: 40.0,
-          size_z: 40.0,
-          sections_x: 20,
-          sections_z: 20 }).pub,
-        materialNode: scene.constructNode('FlatMaterial').pub
-      });
-      instanceNode.getDGNode().setDependency(rbddgnode,'rigidbodies');
+      if(options.createGroundPlaneGrid){
+        var instanceNode = scene.constructNode('Instance', {
+          geometryNode: scene.constructNode('Grid', {
+            size_x: 40.0,
+            size_z: 40.0,
+            sections_x: 20,
+            sections_z: 20 }).pub,
+          materialNode: scene.constructNode('FlatMaterial').pub
+        });
+        instanceNode.getDGNode().setDependency(rbddgnode,'rigidbodies');
+      }
     }
     
     // setup raycast relevant members
