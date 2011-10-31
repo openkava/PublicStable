@@ -226,14 +226,16 @@ $(document).ready(function() {
   var nodeMap = rigLoader.load(storage);
 
   var libraryAnimations = nodeMap.LibraryLocomotionAnimations;
-  var characterVariables = nodeMap.LocomotionProcessingVariables;
+  var locomotionRig = nodeMap.LocomotionRig;
+  
+  var characterVariables = nodeMap.CharacterVariables;
   var ikrig = nodeMap.IKRig;
   var characterMesh =  nodeMap.Walker_ncl1_1;
   if(!characterMesh){
     characterMesh =  nodeMap.characterMesh;
   }
   var skeletonNode = ikrig.getSkeletonNode();
-      
+  
   var locomotionControllerNode = scene.constructNode('LocomotionCharacterController', {
     cameraNode: camera,
     maxLinearVelocity: maxLinearVelocity,

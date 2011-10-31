@@ -145,7 +145,7 @@ $(document).ready(function() {
   
     break;
   case 'walker':
-    assetNodes = scene.importAssetFile('Assets/WalkerSkeleton.DAE');
+    assetNodes = scene.importAssetFile('Assets/Walker_Skeleton.DAE');
   
     fkrigNode = assetNodes.Walker_ncl1_1CharacterRig;
     rigInstanceNode = assetNodes.Walker_ncl1_1CharacterInstance;
@@ -166,7 +166,7 @@ $(document).ready(function() {
     });
     
     
-    var animationAssetNodes = scene.importAssetFile('Assets/Walker_WalkForward1Step.DAE');
+    var animationAssetNodes = scene.importAssetFile('Assets/Walker_Walk.DAE');
     animationLibrary = animationAssetNodes.AnimationLibrary;
     animationController = animationAssetNodes.Walker_ncl1_1Controller;
     
@@ -298,6 +298,14 @@ $(document).ready(function() {
       name: 'LocomotionProcessingVariables',
       baseVariables:ikrigNode.getVariablesNode()
     });
+    /*
+    var locomotionRigNode = scene.constructNode('CharacterRig', {
+      name: 'LocomotionRig',
+      skeletonNode: skeletonNode,
+      variablesNode: locomotionProcessingVariables,
+      baseCharacterRig: ikrigNode
+    });
+    */
     
     libraryLocomotionAnimations = scene.constructNode('LocomotionAnimationLibrary', {
       name: 'LibraryLocomotionAnimations',
@@ -307,8 +315,7 @@ $(document).ready(function() {
     libraryLocomotionAnimations.preProcessTracks(
       libraryProcessedAnimations,
       bindings,
-      locomotionProcessingVariables,
-      skeletonNode,
+      ikrigNode,
       function(){
         //////////////////////////////////////////////////////
     //    var boundLocomotionVariables = scene.constructNode('CharacterVariables', {
@@ -332,13 +339,12 @@ $(document).ready(function() {
           var rigSaver = scene.constructManager('SceneSaver');
           rigSaver.addNode(ikrigNode);
           rigSaver.addNode(characterMesh);
-          rigSaver.addNode(locomotionProcessingVariables);
           rigSaver.addNode(libraryLocomotionAnimations);
           var storage = new FABRIC.SceneGraph.LocalStorage(rigName);
           rigSaver.save(storage);
           
           
-    //  storage.log();
+          storage.log();
       });
     
     

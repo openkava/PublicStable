@@ -190,11 +190,11 @@ FABRIC.SceneGraph.registerNodeType('CharacterSkeleton', {
     var parentReadData = characterSkeletonNode.readData;
     characterSkeletonNode.writeData = function(sceneSaver, constructionOptions, nodeData) {
       parentWriteData(sceneSaver, constructionOptions, nodeData);
-      nodeData['dgnode'] = characterSkeletonNode.writeDGNode(dgnode);
+      nodeData.bones = dgnode.getData('bones');
     };
     characterSkeletonNode.readData = function(sceneLoader, nodeData) {
       parentReadData(sceneLoader, nodeData);
-      characterSkeletonNode.readDGNode(dgnode, nodeData['dgnode']);
+      dgnode.setData('bones', 0, nodeData.bones);
     };
 
     if (options.calcReferenceLocalPose) {
@@ -396,13 +396,16 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
     var parentReadData = characterVariablesNode.readData;
     characterVariablesNode.writeData = function(sceneSaver, constructionOptions, nodeData) {
       parentWriteData(sceneSaver, constructionOptions, nodeData);
-      nodeData['dgnode'] = characterVariablesNode.writeDGNode(dgnode);
+      if(dgnode.getMembers().bindings){
+        nodeData.bindings = dgnode.getData('bindings');
+      }
     };
     characterVariablesNode.readData = function(sceneLoader, nodeData) {
       parentReadData(sceneLoader, nodeData);
-      characterVariablesNode.readDGNode(dgnode, nodeData['dgnode']);
+      if(nodeData.bindings){
+        characterVariablesNode.setBindings(nodeData.bindings);
+      }
     };
-    
     // If a base Vaiables node is provided, we clone the values. 
     if(options.baseVariables){
       if (!options.baseVariables.isTypeOf('CharacterVariables')) {
@@ -520,16 +523,15 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
     // Solver Interfaces
     var solverParams = [];
     characterRigNode.pub.addSolver = function(name, type, solverOptions) {
-      solverOptions = scene.assignDefaults(solverOptions, {
-        rigNode: characterRigNode.pub,
-        index: solvers.length
-      });
       for (var i = 0; i < solvers.length; i++) {
         if (solvers[i].name == name) {
           throw (" Solver names must be unique. Solver '" + name +
                  "' already applied to :" + characterRigNode.pub.getName());
         }
       }
+      solverOptions = solverOptions ? solverOptions : {};
+      solverOptions.rigNode = characterRigNode.pub;
+      solverOptions.index = solvers.length;
       solverOptions.name = name;
       var solver = FABRIC.SceneGraph.CharacterSolvers.constructSolver(type, solverOptions, scene);
       solvers.push(solver);
@@ -540,22 +542,16 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
       });
       return solver;
     };
+    characterRigNode.getSolverParams = function() {
+      return solverParams;
+    };
     characterRigNode.pub.getSolvers = function() {
       return solvers;
     };
-    var solverOperatorDefs = [];
-    var solverOperatorBindings = [];
     characterRigNode.addSolverOperator = function(operatorDef) {
       operatorBinding = scene.constructOperator(operatorDef);
       dgnode.bindings.append(operatorBinding);
-      solverOperatorDefs.push(operatorDef);
-      solverOperatorBindings.push(operatorBinding);
     }
-    // This method is a work around to the issue that we can't retrieve bindings
-    // directly from the dgnode. I use this to clone a character rig. 
-    characterRigNode.getSolverOperatorBindings = function() {
-      return solverOperatorDefs;
-    };
     characterRigNode.pub.invertSolvers = function(node) {
       if (!node.isTypeOf('CharacterRig')) {
         throw ('Incorrect type assignment. Must assign a CharacterRig');
@@ -564,10 +560,8 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
       variablesNode.getDGNode().setDependency(sourceRigNode.getDGNode(), 'sourcerig');
       variablesNode.getDGNode().setDependency(skeletonNode.getDGNode(), 'skeleton');
       for (var i = 0; i < solvers.length; i++) {
-        if(!solvers[i].invert){
-          console.warn("Solver does not provide invert function:" + solvers[i].name);
+        if(!solvers[i].invert)
           continue;
-        }
         solvers[i].invert(variablesNode);
       }
     };
@@ -594,7 +588,6 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
       dgnode.setData(name, 0, xfo);
     }
     
-    
     //////////////////////////////////////////
     // Persistence
     var parentWriteData = characterRigNode.writeData;
@@ -606,15 +599,17 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
       sceneSaver.addNode(variablesNode.pub);
       nodeData.skeletonNode = skeletonNode.pub.getName();
       nodeData.variablesNode = variablesNode.pub.getName();
-      nodeData.solverOperatorDefs = solverOperatorDefs;
+      nodeData.solvers = [];
+      for (var i = 0; i < solverParams.length; i++) {
+        nodeData.solvers[i] = solverParams[i];
+      }
     };
     characterRigNode.readData = function(sceneLoader, nodeData) {
       parentReadData(sceneLoader, nodeData);
-      
       characterRigNode.pub.setSkeletonNode(sceneLoader.getNode(nodeData.skeletonNode));
       characterRigNode.pub.setVariablesNode(sceneLoader.getNode(nodeData.variablesNode));
-      for(var i=0; i<nodeData.solverOperatorDefs.length; i++){
-        characterRigNode.addSolverOperator(nodeData.solverOperatorDefs[i]);
+      for (var i = 0; i < nodeData.solvers.length; i++) {
+        characterRigNode.pub.addSolver(nodeData.solvers[i].name, nodeData.solvers[i].type, nodeData.solvers[i].options);
       }
     };
   
@@ -636,12 +631,11 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
     }
     
     if (options.baseCharacterRig) {
-      // Clone the baseCharacterRig solvers.
+      // Apply the baseCharacterRig solvers.
       var baseCharacterRigNode = scene.getPrivateInterface(options.baseCharacterRig);
-      var baseRigSolvers = baseCharacterRigNode.pub.getSolvers();
-      var baseRigSolverOperatorDefs = baseCharacterRigNode.getSolverOperatorBindings();
-      for(var i=0; i < baseRigSolverOperatorDefs.length; i++){
-        characterRigNode.addSolverOperator(baseRigSolverOperatorDefs[i]);
+      var baseRigSolvers = baseCharacterRigNode.getSolverParams();
+      for (var i = 0; i < baseRigSolvers.length; i++) {
+        characterRigNode.pub.addSolver(baseRigSolvers[i].name, baseRigSolvers[i].type, baseRigSolvers[i].options);
       }
     }
     

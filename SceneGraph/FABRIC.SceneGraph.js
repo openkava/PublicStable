@@ -1032,11 +1032,11 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
 
     var getElementCoords = function(evt) {
       var browserZoom = fabricwindow.windowNode.getData('width') / evt.target.clientWidth;
-      if (evt.offsetX) {
+      if (evt.offsetX != undefined) {
         // Webkit
         return new FABRIC.RT.Vec2(Math.floor(evt.offsetX*browserZoom), Math.floor(evt.offsetY*browserZoom));
       }
-      else if (evt.layerX) {
+      else if (evt.layerX != undefined) {
         // Firefox
         return new FABRIC.RT.Vec2(Math.floor(evt.layerX*browserZoom), Math.floor(evt.layerY*browserZoom));
       }
