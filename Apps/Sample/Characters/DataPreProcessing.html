@@ -1,0 +1,426 @@
+<html xmlns="http://www.w3.org/1999/xhtml"> 
+  <!--
+    Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+    -->
+  <head> 
+    <title>FABRIC - Character Locomotion PreProcessing</title> 
+    
+    <meta charset="iso-8859-1"/>
+  
+    <script type="text/javascript" src="../../../ThirdParty/jQuery/jquery-1.6.2.min.js"></script>
+    <script type="text/javascript" src="../../../ThirdParty/jQuery/jquery-ui-1.8.16.custom.min.js"></script>
+
+    <link type="text/css" href="../../../ThirdParty/jQuery/css/fabric/main.css" rel="stylesheet" />
+    <link type="text/css" href="../../../ThirdParty/jQuery/css/fabric/jquery-ui-1.8.16.custom.css" rel="stylesheet" />
+    
+    <script type="text/javascript" src="../../../Core/FABRIC.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Math.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Vec2.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Vec3.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Vec4.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Mat22.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Mat33.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Mat44.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Quat.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Xfo.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Color.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Ray.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/RGBA.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Euler.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Bone.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/OGLShaderProgram.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/OGLTexture2D.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/OGLBuffer.js" charset="utf-8"></script>
+    
+    <script type="text/javascript" src="../../../SceneGraph/RT/KeyframeTrack.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/BezierKeyframe.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/LinearKeyframe.js" charset="utf-8"></script>
+    
+    <script type="text/javascript" src="../../../SceneGraph/RT/KeyframeTrackBindings.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/PoseVariables.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/TrackSetController.js" charset="utf-8"></script>
+    
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Lights.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Materials.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Geometry.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Manipulation.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Primitives.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Animation.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Kinematics.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Persistence.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.DebugGeometry.js" charset="utf-8"></script>
+    
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Characters.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.CharacterSolvers.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.CharacterLocomotion.js" charset="utf-8"></script>
+    
+    
+    
+    <script type="text/javascript" src="../../../SceneGraph/Parsers/parseCollada.js" charset="utf-8"></script>
+    
+<script type="text/javascript">
+
+ var _gaq = _gaq || [];
+ _gaq.push(['_setAccount', 'UA-25833362-1']);
+ _gaq.push(['_trackPageview']);
+
+ (function() {
+   var ga = document.createElement('script'); ga.type =
+'text/javascript'; ga.async = true;
+   ga.src = ('https:' == document.location.protocol ? 'https://ssl' :
+'http://www') + '.google-analytics.com/ga.js';
+   var s = document.getElementsByTagName('script')[0];
+s.parentNode.insertBefore(ga, s);
+ })();
+
+</script>
+<script type="text/javascript">
+
+$(document).ready(function() {
+  
+  var $globalTimeSlider = $('#globalTime').slider({
+      min: 0.0,
+      max: 0.8333333333333334,
+      step: 0.01
+    });
+
+  $('#curveEditor').button();
+
+  // Create the scene.
+  var scene = FABRIC.SceneGraph.createScene();
+  var viewport = scene.constructNode('Viewport', {
+    enableRaycasting: true,
+    windowElement: document.getElementById('FabricContainer')
+  });
+  
+  viewport.setBackgroundTextureImage(scene.constructNode('Image', {
+    url: '../../Sample/BasicDemos/Resources/fabric-demo-gradient.png'
+  }));
+
+  // Create a camera to draw the scene from
+  var camera = scene.constructNode('TargetCamera', {
+      position: new FABRIC.RT.Vec3(60, 42, 60),
+      target: new FABRIC.RT.Vec3(0, -10, 0),
+      roll: 0,
+      nearDistance: 10.0,
+      farDistance: 1200
+    });
+  scene.constructNode('CameraManipulator', { targetNode: camera });
+  viewport.setCameraNode(camera);
+  
+  // create the scene grid
+  scene.constructNode('Instance', {
+    geometryNode: scene.constructNode('Grid', {
+        size_x: 140.0,
+        size_z: 140.0,
+        sections_x: 20,
+        sections_z: 20 }),
+    materialNode: scene.constructNode('FlatMaterial')
+  });
+  
+  var rigName = 'walker';
+  var assetNodes, fkrigNode, rigInstanceNode, skeletonNode, animationLibrary, animationController, characterMesh;
+  switch(rigName){
+  case 'hopper':
+    assetNodes = scene.importAssetFile('Assets/hopper.DAE');
+  
+    fkrigNode = assetNodes.CATRigHub003CharacterRig;
+    rigInstanceNode = assetNodes.CATRigHub003CharacterInstance;
+    animationLibrary = assetNodes.AnimationLibrary;
+    animationController = assetNodes.CATRigHub003Controller;
+    characterMesh = assetNodes.CATRigHub003Mesh;
+    
+    skeletonNode = fkrigNode.getSkeletonNode();
+    var ikrigNode = scene.constructNode('CharacterRig', {
+      name: 'IKRig',
+      skeletonNode: skeletonNode
+    });
+    
+    ikrigNode.addSolver('Hip', 'HubSolver', { bones:{ bone:['CATRigHub001'] } } );
+    ikrigNode.addSolver('Leg', 'HumanoidLegSolver', {
+      bones: { bones:['CATRigLLeg1', 'CATRigLLeg2'], ankle:'CATRigLLegAnkle' }
+    });
+    ikrigNode.invertSolvers(fkrigNode);
+  
+    break;
+  case 'walker':
+    assetNodes = scene.importAssetFile('Assets/WalkerSkeleton.DAE');
+  
+    fkrigNode = assetNodes.Walker_ncl1_1CharacterRig;
+    rigInstanceNode = assetNodes.Walker_ncl1_1CharacterInstance;
+    characterMesh = assetNodes.Walker_ncl1_1Mesh;
+    
+    skeletonNode = fkrigNode.getSkeletonNode();
+    var ikrigNode = scene.constructNode('CharacterRig', {
+      name: 'IKRig',
+      skeletonNode: skeletonNode
+    });
+    
+    ikrigNode.addSolver('Hip', 'HubSolver', { hubs: [{ bone:['WalkerBody'] }] } );
+    ikrigNode.addSolver('Limbs', 'InsectLegSolver', {
+      limbs: [ { bones:['WalkerLFLeg1', 'WalkerLFLeg2', 'WalkerLFLeg3'] },
+               { bones:['WalkerRFLeg1', 'WalkerRFLeg2', 'WalkerRFLeg3'] },
+               { bones:['WalkerLRLeg1', 'WalkerLRLeg2', 'WalkerLRLeg3'] },
+               { bones:['WalkerRRLeg1', 'WalkerRRLeg2', 'WalkerRRLeg3'] } ]
+    });
+    
+    
+    var animationAssetNodes = scene.importAssetFile('Assets/Walker_WalkForward1Step.DAE');
+    animationLibrary = animationAssetNodes.AnimationLibrary;
+    animationController = animationAssetNodes.Walker_ncl1_1Controller;
+    
+    
+    ikrigNode.invertSolvers(animationAssetNodes.Walker_ncl1_1CharacterRig1);
+    rigInstanceNode.setRigNode(ikrigNode);
+  
+    break;
+  case 'centipede':
+    assetNodes = scene.importAssetFile('Assets/Centipede_Skeleton.DAE');
+  
+    fkrigNode = assetNodes.CentipedeHub010CharacterRig;
+    rigInstanceNode = assetNodes.CentipedeHub010CharacterInstance;
+    characterMesh = assetNodes.CentipedeHub010Mesh;
+    
+    skeletonNode = fkrigNode.getSkeletonNode();
+    
+    var ikrigNode = scene.constructNode('CharacterRig', {
+      name: 'IKRig',
+      skeletonNode: skeletonNode
+    });
+    
+    ikrigNode.addSolver('Hip', 'HubSolver', {
+      hubs: [
+        { bone:'CentipedeHub1', inSpineBones:[] },
+        { bone:'CentipedeHub2', inSpineBones:['CentipedeHub1Spine'] },
+        { bone:'CentipedeHub3', inSpineBones:['CentipedeHub2Spine'] },
+        { bone:'CentipedeHub4', inSpineBones:['CentipedeHub3Spine'] },
+        { bone:'CentipedeHub5', inSpineBones:['CentipedeHub4Spine'] },
+        { bone:'CentipedeHub6', inSpineBones:['CentipedeHub5Spine'] },
+        { bone:'CentipedeHub7', inSpineBones:['CentipedeHub6Spine'] },
+        { bone:'CentipedeHub8', inSpineBones:['CentipedeHub7Spine'] },
+        { bone:'CentipedeHub9', inSpineBones:['CentipedeHub8Spine'] }
+      ]
+    });
+    
+    ikrigNode.addSolver('Limbs', 'InsectLegSolver', {
+      limbs: [
+        { bones:['CentipedeHub1RLeg1', 'CentipedeHub1RLeg2', 'CentipedeHub1RLeg3', 'CentipedeHub1RLeg4'] },
+        { bones:['CentipedeHub1LLeg1', 'CentipedeHub1LLeg2', 'CentipedeHub1LLeg3', 'CentipedeHub1LLeg4'] },
+        { bones:['CentipedeHub2RLeg1', 'CentipedeHub2RLeg2', 'CentipedeHub2RLeg3', 'CentipedeHub2RLeg4'] },
+        { bones:['CentipedeHub2LLeg1', 'CentipedeHub2LLeg2', 'CentipedeHub2LLeg3', 'CentipedeHub2LLeg4'] },
+        { bones:['CentipedeHub3RLeg1', 'CentipedeHub3RLeg2', 'CentipedeHub3RLeg3', 'CentipedeHub3RLeg4'] },
+        { bones:['CentipedeHub3LLeg1', 'CentipedeHub3LLeg2', 'CentipedeHub3LLeg3', 'CentipedeHub3LLeg4'] },
+        { bones:['CentipedeHub4RLeg1', 'CentipedeHub4RLeg2', 'CentipedeHub4RLeg3', 'CentipedeHub4RLeg4'] },
+        { bones:['CentipedeHub4LLeg1', 'CentipedeHub4LLeg2', 'CentipedeHub4LLeg3', 'CentipedeHub4LLeg4'] },
+        { bones:['CentipedeHub5RLeg1', 'CentipedeHub5RLeg2', 'CentipedeHub5RLeg3', 'CentipedeHub5RLeg4'] },
+        { bones:['CentipedeHub5LLeg1', 'CentipedeHub5LLeg2', 'CentipedeHub5LLeg3', 'CentipedeHub5LLeg4'] },
+        { bones:['CentipedeHub6RLeg1', 'CentipedeHub6RLeg2', 'CentipedeHub6RLeg3', 'CentipedeHub6RLeg4'] },
+        { bones:['CentipedeHub6LLeg1', 'CentipedeHub6LLeg2', 'CentipedeHub6LLeg3', 'CentipedeHub6LLeg4'] },
+        { bones:['CentipedeHub7RLeg1', 'CentipedeHub7RLeg2', 'CentipedeHub7RLeg3', 'CentipedeHub7RLeg4'] },
+        { bones:['CentipedeHub7LLeg1', 'CentipedeHub7LLeg2', 'CentipedeHub7LLeg3', 'CentipedeHub7LLeg4'] },
+        { bones:['CentipedeHub8RLeg1', 'CentipedeHub8RLeg2', 'CentipedeHub8RLeg3', 'CentipedeHub8RLeg4'] },
+        { bones:['CentipedeHub8LLeg1', 'CentipedeHub8LLeg2', 'CentipedeHub8LLeg3', 'CentipedeHub8LLeg4'] },
+        { bones:['CentipedeHub9RLeg1', 'CentipedeHub9RLeg2', 'CentipedeHub9RLeg3', 'CentipedeHub9RLeg4'] },
+        { bones:['CentipedeHub9LLeg1', 'CentipedeHub9LLeg2', 'CentipedeHub9LLeg3', 'CentipedeHub9LLeg4'] }
+      ],
+      hubIds: [
+        0, 0,
+        1, 1,
+        2, 2,
+        3, 3,
+        4, 4,
+        5, 5,
+        6, 6,
+        7, 7,
+        8, 8
+      ]
+    });
+    
+    ikrigNode.addSolver('antennae', 'FKHierarchySolver', {
+      bones: {
+        bones:['CentipedeLAntennae1', 'CentipedeLAntennae2', 'CentipedeLAntennae3', 'CentipedeLAntennae4', 'CentipedeLAntennae5',
+               'CentipedeRAntennae1', 'CentipedeRAntennae2', 'CentipedeRAntennae3', 'CentipedeRAntennae4', 'CentipedeRAntennae5' ]
+      }
+    });
+    
+    var animationAssetNodes = scene.importAssetFile('Assets/Centipede_Walk.DAE');
+    animationLibrary = animationAssetNodes.AnimationLibrary;
+    animationController = animationAssetNodes.CentipedeHub010Controller;
+    
+    ikrigNode.invertSolvers(animationAssetNodes.CentipedeHub010CharacterRig1);
+  
+    rigInstanceNode.setRigNode(ikrigNode);
+    
+    break;
+  }
+  
+  var materialNode = scene.constructNode('PhongSkinningMaterial', {
+      lightNode: scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) }),
+      diffuseColor: FABRIC.RT.rgba(1.0, 0.0, 0.0, 1.0),
+      numBones: skeletonNode.getNumBones()
+    });
+  rigInstanceNode.setMaterialNode(materialNode);
+  characterMesh.setName('characterMesh');
+  
+  var skeletonGeometryNode = scene.constructNode("CharacterSkeletonDebug",{
+    characterRigNode:fkrigNode,
+    boneradius: 0.2,
+    color: FABRIC.RT.rgba(0.0, 0.0, 1.0, 1.0)
+  });
+  /*
+  var skeletonGeometryNode = scene.constructNode("CharacterSkeletonDebug",{
+    characterRigNode:ikrigNode,
+    boneradius: 0.2,
+    color: FABRIC.RT.rgba(0.0, 1.0, 0.0, 1.0)
+  });
+  */
+  //
+  var libraryProcessedAnimations = scene.constructNode('LinearKeyAnimationLibrary', {
+    name: 'LibraryProcessedAnimations'
+  });
+  var bindings = libraryProcessedAnimations.bindToVariables(ikrigNode.getVariablesNode(), 'DrivenTracks');
+  
+  
+  var locomotionProcessingVariables, libraryLocomotionAnimations;
+  FABRIC.createAsyncTask(function(){
+    var timeRange = animationLibrary.getTimeRange();
+    var t = 0;
+    var sampleFrequency = 1/30;
+    for(var i=0; i <= Math.round((timeRange.y-timeRange.x) / sampleFrequency); i++){
+      scene.animation.setTime(t, false);
+      libraryProcessedAnimations.evaluateBindings();
+      t += sampleFrequency;
+    }
+    scene.animation.setTime(0, false);
+    
+    locomotionProcessingVariables = scene.constructNode('CharacterVariables', {
+      name: 'LocomotionProcessingVariables',
+      baseVariables:ikrigNode.getVariablesNode()
+    });
+    
+    libraryLocomotionAnimations = scene.constructNode('LocomotionAnimationLibrary', {
+      name: 'LibraryLocomotionAnimations',
+      sampleFrequency: sampleFrequency
+    });
+    
+    libraryLocomotionAnimations.preProcessTracks(
+      libraryProcessedAnimations,
+      bindings,
+      locomotionProcessingVariables,
+      skeletonNode,
+      function(){
+        //////////////////////////////////////////////////////
+    //    var boundLocomotionVariables = scene.constructNode('CharacterVariables', {
+    //      name: 'BoundLocomotionVariables',
+    //      baseVariables:locomotionProcessingVariables
+    //    });
+    //    boundLocomotionVariables.bindToAnimationTracks(libraryLocomotionAnimations, animationController, 0, bindings);
+    //    var locomotionRigNode = scene.constructNode('CharacterRig', {
+    //      name: 'LocomotionRig',
+    //      skeletonNode: skeletonNode,
+    //      baseCharacterRig: ikrigNode,
+    //      variablesNode: boundLocomotionVariables
+    //    });
+    //    
+    //    var skeletonGeometryNode = scene.constructNode("CharacterSkeletonDebug", {
+    //      characterRigNode:locomotionRigNode,
+    //      boneradius: 0.2,
+    //      color: FABRIC.RT.rgba(0.0, 0.0, 1.0, 1.0)
+    //    });
+    
+          var rigSaver = scene.constructManager('SceneSaver');
+          rigSaver.addNode(ikrigNode);
+          rigSaver.addNode(characterMesh);
+          rigSaver.addNode(locomotionProcessingVariables);
+          rigSaver.addNode(libraryLocomotionAnimations);
+          var storage = new FABRIC.SceneGraph.LocalStorage(rigName);
+          rigSaver.save(storage);
+          
+          
+    //  storage.log();
+      });
+    
+    
+    
+  });
+        
+  $globalTimeSlider.slider('value', 0.0);
+  $globalTimeSlider.bind('slide',
+    function(event, ui) {
+      scene.animation.setTime(ui.value);
+      scene.redrawAllViewports();
+    });
+
+  var keyframeTrackNode = assetNodes.polymshAnimationTrack;
+  $('#curveEditor').button()
+    .click(function() {
+      libraryLocomotionAnimations.openCurveEditor( 0, false );
+    });
+    
+
+  $('#loadingDialog').dialog({
+    modal: true
+  });
+  FABRIC.appendOnResolveAsyncTaskCallback(function(label, nbRemaining, doneWeight, totalWeight) {
+    $('#loadingProgressBar').progressbar({
+      value: (1.0-(doneWeight/totalWeight))*100
+    });
+    if (nbRemaining===0) {
+      $('#loadingDialog').dialog('close');
+      var errors = scene.getErrors();
+      if (errors.length > 0) {
+        throw (errors.toString());
+      }
+      viewport.redraw();
+      
+      
+      
+      return true;
+    }
+  });
+  
+});
+
+// jQuert UI Styling classes
+$(document).ready(function() {
+	$(".box").addClass("ui-widget");
+	$(".box h2").addClass("ui-widget-header ui-corner-all");
+	$(".content").addClass("ui-widget-content");
+});
+
+</script>
+
+  </head> 
+  <body>
+    <div id="loadingDialog" title="Loading...">
+      <h4 id="loadingDesc" style="margin-bottom: 10px"></h4>
+      <div id="loadingProgressBar" class="ui-progressbar-value"></div>
+    </div>
+    <div id="wrapper">
+      <div id="editor">
+        <div id="viewer">
+          <div id="FabricContainer"></div> 
+        </div><!--viewer-->
+        <div id="sidebar">
+          
+          <div class="box">
+            <h2>INFO</h2>
+            <div class="content">
+            </div><!--content-->
+          </div><!--box-->
+
+          <div class="box">
+            <h2>CONTROLS</h2>
+            <div class="content">
+              <div>Sample Index:</div>
+              <div id='globalTime' style="margin-top:10px;"></div>
+              <button id="curveEditor" style="margin-top:30px;">Open Curve Editor</button>
+            </div><!--content-->
+          </div><!--box-->
+
+        </div><!--sidebar-->
+      </div> <!--editor-->
+    </div><!--wrapper-->
+  </body> 
+  </html>
