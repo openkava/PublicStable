@@ -772,7 +772,10 @@ namespace Fabric
       params.push_back( FunctionParam( "rhsRValue", this, CG::USAGE_RVALUE ) );
       std::string name = binOpOverloadName( BIN_OP_ADD, this, this );
       FunctionBuilder functionBuilder( basicBlockBuilder.getModuleBuilder(), name, ExprType( this, CG::USAGE_RVALUE ), params, false );
-      return basicBlockBuilder->CreateCall2( functionBuilder.getLLVMFunction(), lhsRValue, rhsRValue );
+      llvm::Value *returnLValue = llvmAlloca( basicBlockBuilder, "concatLValue" );
+      llvmInit( basicBlockBuilder, returnLValue );
+      basicBlockBuilder->CreateCall3( functionBuilder.getLLVMFunction(), returnLValue, lhsRValue, rhsRValue );
+      return llvmLValueToRValue( basicBlockBuilder, returnLValue );
     }
     
     std::string StringAdapter::toString( void const *data ) const
