@@ -46,25 +46,14 @@ FABRIC.SceneGraph.CharacterSolvers = {
 FABRIC.SceneGraph.CharacterSolvers.registerSolver('CharacterSolver', {
   constructSolver: function(options, scene) {
 
-    scene.assignDefaults(options, {
-        color: FABRIC.RT.rgb(0, 0.8, 0, 1),
-        highlightcolor: FABRIC.RT.rgb(0.8, 0.8, 0.8, 1),
-        rigNode: undefined,
-        createManipulators: true
-      });
-
     if (!options.rigNode) {
       throw ('You must specify the rigNode.');
     }
 
     var parameterLayout,
       skeletonNode = options.rigNode.getSkeletonNode(),
-      manipulators = {};
-    var name2id = {};
-    var boneNames = skeletonNode.getBoneNames();
-    for (var i = 0; i < boneNames.length; i++) {
-      name2id[boneNames[i]] = i;
-    }
+      manipulators = {},
+      name2id;
     
     var solver = {
       constructManipulator: function(name, manipulatorType, options) {
@@ -85,6 +74,13 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('CharacterSolver', {
         }
         if (!identifiers) {
           throw ('We need to specify the identifiers for any CharacterSolver.');
+        }
+        if(!name2id){
+          name2id = {};
+          var boneNames = skeletonNode.getBoneNames();
+          for (var i = 0; i < boneNames.length; i++) {
+            name2id[boneNames[i]] = i;
+          }
         }
     
         // create a temp map for boneName 2 id
@@ -151,8 +147,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('FKHierarchySolver',{
   constructSolver: function(options, scene) {
     
     var rigNode = scene.getPrivateInterface(options.rigNode),
-      skeletonNode = scene.getPrivateInterface(rigNode.pub.getSkeletonNode()),/*
-      constantsNode = scene.getPrivateInterface(rigNode.pub.getConstantsNode()),*/
+      skeletonNode = scene.getPrivateInterface(rigNode.pub.getSkeletonNode()),
       variablesNode = scene.getPrivateInterface(rigNode.pub.getVariablesNode()),
       bones = skeletonNode.pub.getBones(),
       referenceLocalPose = skeletonNode.pub.getReferenceLocalPose();
