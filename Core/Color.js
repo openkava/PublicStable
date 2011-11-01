@@ -230,14 +230,13 @@ FABRIC.Color.prototype = {
     delta.mulInPlace(weight);
     return this.add(delta);
   },
-
+  
   toHex: function() {
     var toHex = function(N) {
-      if (N == null)return '00';
-        N = parseInt(N); if (N == 0 || isNaN(N))return '00';
-      N = Math.max(0, N); N = Math.min(N, 255); N = Math.round(N);
-      return '0123456789ABCDEF'.charAt((N - N % 16) / 16) +
-        '0123456789ABCDEF'.charAt(N % 16);
+      if (N == null) return '00';
+      N = parseInt(N); 
+      if (N == 0 || isNaN(N)) return '00';
+      return Math.max(0, Math.min(Math.round(N), 255)).toString(16);
     };
     return toHex(255 * this.r) + toHex(255 * this.g) + toHex(255 * this.b); // + toHex(255*this.a);
   },

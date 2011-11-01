@@ -50,8 +50,10 @@
     <script type="text/javascript" src="../../../Core/Color.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../Core/FABRIC.SVG.js"></script>
     <script type="text/javascript" src="../../../SceneGraph/CurveEditor/CurveEditor.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/ColorGradient/ColorGradient.js" charset="utf-8"></script>
     
     <link href="../../../SceneGraph/CurveEditor/CurveEditor.css" rel="stylesheet" type="text/css" />
+
 <script type="text/javascript">
 
  var _gaq = _gaq || [];
@@ -79,19 +81,19 @@ s.parentNode.insertBefore(ga, s);
   right:400px;
 }
 
+#histogram {
+  height:60px;
+  background-color:#A9A9A9;
+}
+
 #opacityMapping {
   height:60px;
-  background-color:#8fbc8f;
+  background-color:#A9A9A9;
 }
 
 #colorMapping {
   height:60px;
-  background-color:#8fbc8f;
-}
-
-#histogram {
-  height:60px;
-  background-color:#8fbc8f;
+  background-color:#A9A9A9;
 }
 
 
@@ -134,7 +136,7 @@ FABRIC.SceneGraph.registerNodeType('3DTextureGenerator', {
       srcFile: 'KL/3DTextureUtils.kl'
     }));
 
-/*  
+/* 
     //Note: this generates perfect analytic gradients
     dgnodeGradient.bindings.append(scene.constructOperator({
       operatorName: 'generate3DTextureGradient',
@@ -324,6 +326,8 @@ $(document).ready(function() {
     $('#zRatio').slider({min: 0, max: 1, step: 0.005 })
   ];
   var scene = FABRIC.SceneGraph.createScene();
+  
+
   var viewport = scene.constructNode('Viewport', {
     windowElement: document.getElementById('FabricContainer'),
     backgroundColor: FABRIC.RT.rgb(0.0, 0.05, 0.15)
@@ -339,8 +343,6 @@ $(document).ready(function() {
 
   scene.constructNode("CameraManipulator", { targetNode:camera } );
   viewport.setCameraNode(camera);
-
-/*
   var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(100.0, 100.0, 100.0) });
   var transform =  scene.constructNode('Transform', {
     hierarchical: false,
@@ -525,9 +527,21 @@ $(document).ready(function() {
       return true;
     }
   });
-  */
+
 
   window.scene = scene;
+  
+});
+
+// jQuert UI Styling classes
+$(document).ready(function() {
+	$(".box").addClass("ui-widget");
+	$(".box h2").addClass("ui-widget-header ui-corner-all");
+	$(".content").addClass("ui-widget-content");
+  
+	$(function() {
+		$( "#tabs" ).tabs();
+  
   var key = FABRIC.Animation.linearKeyframe;
   var linearPosKeyframeTrackNode = scene.constructNode('LinearKeyAnimationTrack', {
     name:'LinearPosKeyAnimationTrack'
@@ -542,28 +556,27 @@ $(document).ready(function() {
     timeStripe: false,
     timeRange: new FABRIC.RT.Vec2(0, 1),
   });
+
   
-  
-  $('#brushColor').ColorPicker({
+  var colorGradient = constructColorGradient('colorMapping', linearPosKeyframeTrackNode, {
+
+  });
+  colorGradient.addEventListener('keyclicked', function(evt){
+    gradientKey = evt.key;
+    colorPicker.ColorPickerSetColor(evt.keycolor.toHex());
+  });
+  var gradientKey;
+  var colorPicker = $('#brushColor').ColorPicker({
       flat: true,
       color: { r: 1.0 * 255, g: 0.5 * 255, b: 0.5 * 255} ,
       onChange: function(hsb, hex, rgb) {
-        
+        if(gradientKey){
+          gradientKey.setColor(FABRIC.RT.rgb255(rgb.r, rgb.g, rgb.b));
+        }
       }
     });
-  
-});
-
-// jQuert UI Styling classes
-$(document).ready(function() {
-	$(".box").addClass("ui-widget");
-	$(".box h2").addClass("ui-widget-header ui-corner-all");
-	$(".content").addClass("ui-widget-content");
-  
-	$(function() {
-		$( "#tabs" ).tabs();
+    
 	});
-  
 });
 
 </script>
@@ -582,10 +595,43 @@ $(document).ready(function() {
         <div id="sidebar">
           <div id="tabs">
           <ul>
-            <li><a href="#volumeCroppingTab">Cropping</a></li>
             <li><a href="#volumeRenderTab">Render Parameters</a></li>
+            <li><a href="#volumeCroppingTab">Cropping</a></li>
             <li><a href="#volumeSlicesTab">Axial Slices</a></li>
           </ul>
+          <div id="volumeRenderTab">
+            <div class="box">
+          <!--    <h2>Volume render options</h2>
+            <div class="content">-->
+            
+              <label for="opacityRange" >Opacity range:</label>
+              <div id='opacityRange'></div>
+              
+              <p>Histogram:</p>                           
+              <div id='histogram'></div>
+              
+              <p>Opacity Mapping:</p>
+              <div id='opacityMapping'></div>
+              
+              <p>Color Mapping:</p>
+              <div id='colorMapping'></div>
+              <p id="brushColor"></p>
+              
+                                                                     
+              <input type="checkbox" id="whiteBackground"/><label for="whiteBackground">White background:</label><br>
+              <label for="brightness" >Brightness:</label>
+              <div id='brightness' style="margin-top:10px;"></div>
+              <label for="transparency" >Transparency:</label>
+              <div id='transparency' style="margin-top:10px;"></div>
+              <label for="resolutionFactor" >Depth resolution factor:</label>
+              <div id='resolutionFactor' style="margin-top:10px;"></div>
+              <label for="specularFactor" >Shininess:</label>
+              <div id='specularFactor' style="margin-top:10px;"></div>
+              <input type="checkbox" id="invert" style="margin-top:10px;" /><label for="invert" style="margin-top:10px;" >Invert</label><br>
+           <!-- </div>content-->
+            </div><!--box-->
+          </div><!--volumeRenderTab-->
+          
           <div id="volumeCroppingTab">
             <div class="box">
             <!--  <h2>Volume cropping</h2> 
@@ -599,39 +645,7 @@ $(document).ready(function() {
             <!--  </div>content-->
             </div><!--box-->
           </div><!--volumeCroppingTab-->
-          <div id="volumeRenderTab">
-            <div class="box">
-          <!--    <h2>Volume render options</h2>
-            <div class="content">-->
-            
-              
-              <label for="opacityRange" >Opacity range:</label>
-              <div id='opacityRange'></div>
-              
-              <p style="margin-top:10px;">Histogram:</p>                           
-              <div id='histogram'></div>
-              
-              <p style="margin-top:10px;">Opacity Mapping:</p>
-              <div id='opacityMapping'></div>
-              
-              <p style="margin-top:10px;">Color Mapping:</p>
-              <div id='colorMapping'></div>
-              <p id="brushColor" style="margin-bottom: 10px; margin-top: 10px"></p>
-              
-                                                                     
-              <input type="checkbox" id="whiteBackground" style="margin-top:10px;" /><label for="whiteBackground" style="margin-top:10px;" >White background:</label><br>
-              <label for="brightness" >Brightness:</label>
-              <div id='brightness' style="margin-top:10px;"></div>
-              <label for="transparency" >Transparency:</label>
-              <div id='transparency' style="margin-top:10px;"></div>
-              <label for="resolutionFactor" >Depth resolution factor:</label>
-              <div id='resolutionFactor' style="margin-top:10px;"></div>
-              <label for="specularFactor" >Shininess:</label>
-              <div id='specularFactor' style="margin-top:10px;"></div>
-              <input type="checkbox" id="invert" style="margin-top:10px;" /><label for="invert" style="margin-top:10px;" >Invert</label><br>
-           <!-- </div>content-->
-            </div><!--box-->
-          </div><!--volumeRenderTab-->
+
           <div id="volumeSlicesTab">
             <div class="box">
           <!--    <h2>Axis slices</h2>
