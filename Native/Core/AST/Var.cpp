@@ -58,8 +58,6 @@ namespace Fabric
     {
       RC::ConstHandle<CG::ValueSymbol> valueSymbol = getValueSymbol( basicBlockBuilder );
       CG::ExprValue resultExprValue = valueSymbol->getExprValue();
-      if ( resultExprValue.getUsage() == CG::USAGE_RVALUE )
-        resultExprValue.getAdapter()->llvmRetain( basicBlockBuilder, resultExprValue.getValue() );
       return resultExprValue.castTo( basicBlockBuilder, usage );
     }
   };

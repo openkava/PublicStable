@@ -113,7 +113,6 @@ namespace Fabric
                   );
                 break;
             }
-            arrayExprValue.llvmDispose( basicBlockBuilder );
           }
         }
         else if ( RT::isDict( arrayExprValue.getAdapter()->getType() ) )
@@ -152,8 +151,6 @@ namespace Fabric
                   );
                 break;
             }
-            keyAdapter->llvmRelease( basicBlockBuilder, indexExprRValue );
-            arrayExprValue.llvmDispose( basicBlockBuilder );
           }
         }
         else throw CG::Error( getLocation(), "only arrays and dictionaries can be indexed" );

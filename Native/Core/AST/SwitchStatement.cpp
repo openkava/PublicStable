@@ -126,14 +126,11 @@ namespace Fabric
             if ( !functionSymbol )
               throw Exception( "binary operator " + _(CG::binOpUserName(CG::BIN_OP_EQ)) + " not supported for types " + _(exprValue.getTypeUserName()) + " and " + _(caseExprValue.getTypeUserName()) );
             CG::ExprValue newCaseExprValue( exprValue.getAdapter(), CG::USAGE_RVALUE, basicBlockBuilder.getContext(), exprValue.getAdapter()->llvmCast( basicBlockBuilder, caseExprValue ) );
-            caseExprValue.llvmDispose( basicBlockBuilder );
             caseExprValue = newCaseExprValue;
           }
           
-          exprValue.llvmRetain( basicBlockBuilder );
           CG::ExprValue cmpExprValue = functionSymbol->llvmCreateCall( basicBlockBuilder, exprValue, caseExprValue );
           llvm::Value *cmpBooleanRValue = booleanAdapter->llvmCast( basicBlockBuilder, cmpExprValue );
-          cmpExprValue.llvmDispose( basicBlockBuilder );
           
           basicBlockBuilder->CreateCondBr( cmpBooleanRValue, caseBodyBBs[caseIndex], caseTestBBs[i] );
           
@@ -150,8 +147,6 @@ namespace Fabric
             basicBlockBuilder->CreateBr( i+1 == numCases? doneBB: caseBodyBBs[i+1] );
         }
         basicBlockBuilder->SetInsertPoint( doneBB );
-        
-        exprValue.llvmDispose( basicBlockBuilder );
       }
       catch ( CG::Error e )
       {

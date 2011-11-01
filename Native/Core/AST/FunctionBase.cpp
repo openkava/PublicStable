@@ -99,6 +99,8 @@ namespace Fabric
 
           llvm::BasicBlock *basicBlock = functionBuilder.createBasicBlock( "entry" );
           basicBlockBuilder->SetInsertPoint( basicBlock );
+          functionBuilder.getScope().llvmPrepareReturnLValue( basicBlockBuilder );
+          
           m_body->llvmCompileToBuilder( basicBlockBuilder, diagnostics );
 
           llvm::BasicBlock *bb = basicBlockBuilder->GetInsertBlock();
