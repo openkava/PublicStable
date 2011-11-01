@@ -37,7 +37,6 @@
     
     <script type="text/javascript" src="../../../SceneGraph/RT/KeyframeTrackBindings.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/RT/PoseVariables.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/TrackSetController.js" charset="utf-8"></script>
     
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Lights.js" charset="utf-8"></script>
@@ -49,8 +48,9 @@
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Kinematics.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Persistence.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.DebugGeometry.js" charset="utf-8"></script>
+    <!--
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Bullet.js" charset="utf-8"></script>
-    
+    -->
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Characters.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.CharacterSolvers.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.CharacterLocomotion.js" charset="utf-8"></script>
@@ -123,7 +123,7 @@ $(document).ready(function() {
         sections_z: 20 }),
     materialNode: scene.constructNode('FlatMaterial')
   });
-  
+  /*
   // create a simulation world
   var bulletWorldNode = scene.constructNode('BulletWorldNode', { createGroundPlaneGrid:false } );
   
@@ -183,6 +183,7 @@ $(document).ready(function() {
     enableRaycasting: true
   });
    */
+  /*
   var nonslicedTransform3 = scene.constructNode('BulletRigidBodyTransform', {
     bulletWorldNode: bulletWorldNode,
     shapeName: 'Box',
@@ -204,9 +205,10 @@ $(document).ready(function() {
     transformNode: nonslicedTransform3,
     enableRaycasting: true
   });
+  */
   
     
-  var rigName = 'walker';
+  var rigName = 'marama';
   switch(rigName){
   case 'walker':
     var maxLinearVelocity = new FABRIC.RT.Vec2(80.0, 80.0);
@@ -217,6 +219,11 @@ $(document).ready(function() {
     var maxLinearVelocity = new FABRIC.RT.Vec2(80.0, 80.0);
     var maxLinearAcceleration = 15.0;
     var maxAngularVelocity = new FABRIC.RT.Euler(0.0,1.0,0.0);
+    break;
+  case 'marama':
+    var maxLinearVelocity = new FABRIC.RT.Vec2(40.0, 40.0);
+    var maxLinearAcceleration = 2.0;
+    var maxAngularVelocity = new FABRIC.RT.Euler(0.0,0.5,0.0);
     break;
   }
   
@@ -240,14 +247,14 @@ $(document).ready(function() {
     cameraNode: camera,
     maxLinearVelocity: maxLinearVelocity,
     maxLinearAcceleration: maxLinearAcceleration,
-    maxAngularVelocity: maxAngularVelocity,
-    bulletWorldNode: bulletWorldNode
+    maxAngularVelocity: maxAngularVelocity/*,
+    bulletWorldNode: bulletWorldNode*/
   });
     
   
   var locomotionVariables = scene.constructNode('LocomotionPoseVariables', {
-    baseVariables: characterVariables,
-    bulletWorldNode: bulletWorldNode
+    baseVariables: characterVariables/*,
+    bulletWorldNode: bulletWorldNode*/
   });
   locomotionVariables.setCharacterController(locomotionControllerNode);
   locomotionVariables.setAnimationLibrary(libraryAnimations);
