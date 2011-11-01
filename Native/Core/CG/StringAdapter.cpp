@@ -715,6 +715,15 @@ namespace Fabric
       else return Adapter::llvmResolveExternalFunction( functionName );
     }
 
+    void StringAdapter::llvmInit( BasicBlockBuilder &basicBlockBuilder, llvm::Value *lValue ) const
+    {
+      llvm::PointerType const *rawType = static_cast<llvm::PointerType const *>( llvmRawType( basicBlockBuilder.getContext() ) );
+      basicBlockBuilder->CreateStore(
+        llvm::ConstantPointerNull::get( rawType ),
+        lValue
+        );
+    }
+    
     void StringAdapter::llvmRetain( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const
     {
       FABRIC_ASSERT( rValue->getType() == llvmRType( basicBlockBuilder.getContext() ) );
