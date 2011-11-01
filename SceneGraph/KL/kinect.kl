@@ -1,0 +1,26 @@
+//
+// Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+//
+use FabricKINECT;
+
+operator initKinectCamera(
+  io KinectCamera camera
+){
+  Boolean result;
+  camera.init(result);  
+}
+
+operator tiltKinectCamera(
+  io KinectCamera camera,
+  io Integer angle
+){
+  Boolean result;
+  camera.tilt(angle,result);
+}
+
+operator getKinectCameraColorPixels(
+  io KinectCamera camera,
+  io Scalar time
+){
+  camera.getColorPixels();  
+}
