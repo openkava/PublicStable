@@ -1,8 +1,40 @@
 //===================================================================================
 // structs
+struct RGB {
+  Byte r;
+  Byte g;
+  Byte b;
+};
+
+struct Vec3 {
+  Scalar x;
+  Scalar y;
+  Scalar z;
+};
+
+struct Quat {
+  Vec3 v;
+  Scalar w;
+};
+
+struct Xfo {
+  Quat ori;
+  Vec3 tr;
+  Vec3 sc;
+};
+
 struct KinectCamera {
+  Data localData;
   Boolean initiated;
-  Integer tileAngle;
+  Integer tiltAngle;
+  Size width;
+  Size height;
+  Boolean supportsColor;
+  Boolean supportsDepth;
+  Boolean supportsSkeleton;
+  RGB colorData[];
+  Scalar depthData[];
+  Xfo skeletonData[];
 };
 
 //===================================================================================
@@ -10,6 +42,7 @@ struct KinectCamera {
 function FabricKINECT_Init(io KinectCamera camera);
 function FabricKINECT_Shutdown(io KinectCamera camera);
 function FabricKINECT_Tilt(io KinectCamera camera, io Integer angle);
+function FabricKINECT_GetColorPixels(io KinectCamera camera);
 
 //===================================================================================
 // camera definition
@@ -25,11 +58,15 @@ function KinectCamera.init(io Boolean result) {
 }
 
 function KinectCamera.tilt(io Integer angle, io Boolean result) {
-  if(this.tileAngle != angle) {
+  if(this.tiltAngle != angle) {
     FabricKINECT_Tilt(this,angle);
-    result = (this.tileAngle == angle);
+    result = (this.tiltAngle == angle);
   }
   else
     result = false;
+}
+
+function KinectCamera.getColorPixels() {
+  FabricKINECT_GetColorPixels(this);
 }
 
