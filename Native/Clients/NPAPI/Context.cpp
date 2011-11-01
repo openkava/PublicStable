@@ -25,7 +25,7 @@ namespace Fabric
     }
     
     Context::Context( RC::Handle<IOManager> const &ioManager, std::vector<std::string> const &pluginDirs )
-      : DG::Context( ioManager, pluginDirs )
+      : DG::Context( ioManager, pluginDirs, false )
       , m_ioManager( ioManager )
     {
     }

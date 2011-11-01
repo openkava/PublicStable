@@ -46,9 +46,9 @@ namespace Fabric
   {
     Context::ContextMap Context::s_contextMap;
     
-    RC::Handle<Context> Context::Create( RC::Handle<IO::Manager> const &ioManager, std::vector<std::string> const &pluginDirs )
+    RC::Handle<Context> Context::Create( RC::Handle<IO::Manager> const &ioManager, std::vector<std::string> const &pluginDirs, bool optimizeSynchronously )
     {
-       return new Context( ioManager, pluginDirs );
+       return new Context( ioManager, pluginDirs, optimizeSynchronously );
     }
     
     RC::Handle<Context> Context::Bind( std::string const &contextID )
@@ -59,12 +59,12 @@ namespace Fabric
       return it->second;
     }
     
-    Context::Context( RC::Handle<IO::Manager> const &ioManager, std::vector<std::string> const &pluginDirs )
+    Context::Context( RC::Handle<IO::Manager> const &ioManager, std::vector<std::string> const &pluginDirs, bool optimizeSynchronously )
       : m_logCollector( LogCollector::Create( this ) )
       , m_rtManager( RT::Manager::Create( KL::Compiler::Create() ) )
       , m_ioManager( ioManager )
       , m_cgManager( CG::Manager::Create( m_rtManager ) )
-      , m_codeManager( CodeManager::Create() )
+      , m_codeManager( CodeManager::Create( optimizeSynchronously ) )
       , m_notificationBracketCount( 0 )
       , m_pendingNotificationsMutex( "pending notifications" )
       , m_pendingNotificationsJSON( 0 )
