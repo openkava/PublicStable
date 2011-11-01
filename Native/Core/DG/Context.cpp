@@ -388,20 +388,12 @@ namespace Fabric
       return result;
     }
 
-    static RC::Handle<JSON::Object> jsonDescLicenses_liblas()
-    {
-      RC::Handle<JSON::Object> result = JSON::Object::Create();
-      result->set( ThirdPartyLicenses::liblas::filename, JSON::String::Create( ThirdPartyLicenses::liblas::text ) );
-      return result;
-    }
-    
     static RC::Handle<JSON::Object> jsonDescLicenses()
     {
       RC::Handle<JSON::Object> result = JSON::Object::Create();
       result->set( "llvm", jsonDescLicenses_llvm() );
       result->set( "md5", jsonDescLicenses_md5() );
       result->set( "libpng", jsonDescLicenses_libpng() );
-      result->set( "liblas", jsonDescLicenses_liblas() );
       return result;
     }
 
