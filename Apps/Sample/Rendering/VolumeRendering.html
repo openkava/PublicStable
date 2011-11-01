@@ -5,14 +5,15 @@
   <head> 
     <title>FABRIC - Volume Rendering</title> 
     
-    <meta charset="iso-8859-1"/>
-    <link href="../../../themes/default/style.css" rel="stylesheet" type="text/css" />
-    <link href="../../../themes/default/viewer.css" rel="stylesheet" type="text/css" />
-    
-    <script type="text/javascript" src="../../../ThirdParty/jQuery/jquery-1.4.2.min.js"></script>
-    <script type="text/javascript" src="../../../ThirdParty/jQuery/jquery-ui-1.8.5.custom.min.js"></script>
+    <script type="text/javascript" src="../../../ThirdParty/jQuery/jquery-1.6.2.min.js"></script>
+    <script type="text/javascript" src="../../../ThirdParty/jQuery/jquery-ui-1.8.16.custom.min.js"></script>
 
-    <link type="text/css" href="../../../ThirdParty/jQuery/css/vader/jquery-ui-1.8.5.custom.css" rel="stylesheet" />
+    <link type="text/css" href="../../../ThirdParty/jQuery/css/fabric/main.css" rel="stylesheet" />
+    <link type="text/css" href="../../../ThirdParty/jQuery/css/fabric/jquery-ui-1.8.16.custom.css" rel="stylesheet" />
+
+    <script type="text/javascript" src="../../../ThirdParty/jQuery/colorpicker/js/colorpicker.js"></script>
+    <link href="../../../ThirdParty/jQuery/colorpicker/css/colorpicker.css" rel="stylesheet" type="text/css" />
+    
 
     <script type="text/javascript" src="../../../Core/FABRIC.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/RT/Math.js" charset="utf-8"></script>
@@ -32,6 +33,8 @@
     <script type="text/javascript" src="../../../SceneGraph/RT/OGLTexture3D.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/RT/OGLBuffer.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/RT/OGLRenderTarget.js" charset="utf-8"></script>
+    
+    <script type="text/javascript" src="../../../SceneGraph/RT/LinearKeyframe.js" charset="utf-8"></script>
 
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Geometry.js" charset="utf-8"></script>
@@ -42,6 +45,13 @@
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Kinematics.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Rendering.js" charset="utf-8"></script>
     
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Animation.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../Core/Vec2.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../Core/Color.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../Core/FABRIC.SVG.js"></script>
+    <script type="text/javascript" src="../../../SceneGraph/CurveEditor/CurveEditor.js" charset="utf-8"></script>
+    
+    <link href="../../../SceneGraph/CurveEditor/CurveEditor.css" rel="stylesheet" type="text/css" />
 <script type="text/javascript">
 
  var _gaq = _gaq || [];
@@ -59,6 +69,35 @@ s.parentNode.insertBefore(ga, s);
 
 </script>
 
+
+<style type="text/css">
+    
+#sidebar {
+  width:410px;
+}  
+#viewer {
+  right:400px;
+}
+
+#opacityMapping {
+  height:60px;
+  background-color:#8fbc8f;
+}
+
+#colorMapping {
+  height:60px;
+  background-color:#8fbc8f;
+}
+
+#histogram {
+  height:60px;
+  background-color:#8fbc8f;
+}
+
+
+
+</style>
+    
     <script type="text/javascript">
 
 FABRIC.SceneGraph.registerNodeType('3DTextureGenerator', {
@@ -284,7 +323,6 @@ $(document).ready(function() {
     $('#yRatio').slider({min: 0, max: 1, step: 0.005 }),
     $('#zRatio').slider({min: 0, max: 1, step: 0.005 })
   ];
-
   var scene = FABRIC.SceneGraph.createScene();
   var viewport = scene.constructNode('Viewport', {
     windowElement: document.getElementById('FabricContainer'),
@@ -302,6 +340,7 @@ $(document).ready(function() {
   scene.constructNode("CameraManipulator", { targetNode:camera } );
   viewport.setCameraNode(camera);
 
+/*
   var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(100.0, 100.0, 100.0) });
   var transform =  scene.constructNode('Transform', {
     hierarchical: false,
@@ -486,6 +525,32 @@ $(document).ready(function() {
       return true;
     }
   });
+  */
+
+  window.scene = scene;
+  var key = FABRIC.Animation.linearKeyframe;
+  var linearPosKeyframeTrackNode = scene.constructNode('LinearKeyAnimationTrack', {
+    name:'LinearPosKeyAnimationTrack'
+  } );
+  
+  linearPosKeyframeTrackNode.setTrackData(0, {
+    name: 'PosX',
+    color: FABRIC.RT.rgb(1, 0, 0),
+    keys: [key(0, 0), key(.1, 1), key(0.2, 0), key(.5, 0), key(.75, 1), key(1.0, 1)]
+  });
+  var curveEditor = constructCurveEditor('opacityMapping', linearPosKeyframeTrackNode, {
+    timeStripe: false,
+    timeRange: new FABRIC.RT.Vec2(0, 1),
+  });
+  
+  
+  $('#brushColor').ColorPicker({
+      flat: true,
+      color: { r: 1.0 * 255, g: 0.5 * 255, b: 0.5 * 255} ,
+      onChange: function(hsb, hex, rgb) {
+        
+      }
+    });
   
 });
 
@@ -494,6 +559,11 @@ $(document).ready(function() {
 	$(".box").addClass("ui-widget");
 	$(".box h2").addClass("ui-widget-header ui-corner-all");
 	$(".content").addClass("ui-widget-content");
+  
+	$(function() {
+		$( "#tabs" ).tabs();
+	});
+  
 });
 
 </script>
@@ -505,29 +575,50 @@ $(document).ready(function() {
       <div id="loadingProgressBar" class="ui-progressbar-value"></div>
     </div>
     <div id="wrapper">
-      <ul id="nav">
-        <li><a href="#" id="fabric-logo"><img src="../../../themes/default/_img/projects/fabric-logo.png" /></a></li>
-      </ul>
       <div id="editor">
         <div id="viewer">
           <div id="FabricContainer"></div> 
         </div><!--viewer-->
         <div id="sidebar">
-          
-          <div class="box">
-            <h2>Volume cropping</h2>
-            <div class="content">
-              <label for="rangeX3D" >X:</label>
-              <div id='rangeX3D' style="margin-top:10px;"></div>
-              <label for="rangeY3D" >Y:</label>
-              <div id='rangeY3D' style="margin-top:10px;"></div>
-              <label for="rangeZ3D" >Z:</label>
-              <div id='rangeZ3D' style="margin-top:10px;"></div>
-            </div><!--content-->
-            <h2>Volume render options</h2>
-            <div class="content">
+          <div id="tabs">
+          <ul>
+            <li><a href="#volumeCroppingTab">Cropping</a></li>
+            <li><a href="#volumeRenderTab">Render Parameters</a></li>
+            <li><a href="#volumeSlicesTab">Axial Slices</a></li>
+          </ul>
+          <div id="volumeCroppingTab">
+            <div class="box">
+            <!--  <h2>Volume cropping</h2> 
+              <div class="content">-->
+                <label for="rangeX3D" >X:</label>
+                <div id='rangeX3D' style="margin-top:10px;"></div>
+                <label for="rangeY3D" >Y:</label>
+                <div id='rangeY3D' style="margin-top:10px;"></div>
+                <label for="rangeZ3D" >Z:</label>
+                <div id='rangeZ3D' style="margin-top:10px;"></div>
+            <!--  </div>content-->
+            </div><!--box-->
+          </div><!--volumeCroppingTab-->
+          <div id="volumeRenderTab">
+            <div class="box">
+          <!--    <h2>Volume render options</h2>
+            <div class="content">-->
+            
+              
               <label for="opacityRange" >Opacity range:</label>
-              <div id='opacityRange' style="margin-top:10px;"></div>
+              <div id='opacityRange'></div>
+              
+              <p style="margin-top:10px;">Histogram:</p>                           
+              <div id='histogram'></div>
+              
+              <p style="margin-top:10px;">Opacity Mapping:</p>
+              <div id='opacityMapping'></div>
+              
+              <p style="margin-top:10px;">Color Mapping:</p>
+              <div id='colorMapping'></div>
+              <p id="brushColor" style="margin-bottom: 10px; margin-top: 10px"></p>
+              
+                                                                     
               <input type="checkbox" id="whiteBackground" style="margin-top:10px;" /><label for="whiteBackground" style="margin-top:10px;" >White background:</label><br>
               <label for="brightness" >Brightness:</label>
               <div id='brightness' style="margin-top:10px;"></div>
@@ -538,9 +629,13 @@ $(document).ready(function() {
               <label for="specularFactor" >Shininess:</label>
               <div id='specularFactor' style="margin-top:10px;"></div>
               <input type="checkbox" id="invert" style="margin-top:10px;" /><label for="invert" style="margin-top:10px;" >Invert</label><br>
-            </div><!--content-->
-            <h2>Axis slices</h2>
-            <div class="content">
+           <!-- </div>content-->
+            </div><!--box-->
+          </div><!--volumeRenderTab-->
+          <div id="volumeSlicesTab">
+            <div class="box">
+          <!--    <h2>Axis slices</h2>
+            <div class="content">-->
               <input type="checkbox" id="displayAxisSlices" style="margin-top:10px;" /><label for="displayAxisSlices" style="margin-top:10px;" >Display axis slices</label><br>
               <div class="subcontent" id="axisSlicesParams">
                 <input type="checkbox" id="displayGradientWeight" style="margin-top:10px;" /><label for="displayGradientWeight" style="margin-top:10px;" >Display gradient weight</label><br>
@@ -550,9 +645,10 @@ $(document).ready(function() {
                 <div id='yRatio' style="margin-top:10px;"></div>
                 <label for="zRatio" >Z:</label>
                 <div id='zRatio' style="margin-top:10px;"></div>
-            </div><!--subcontent-->
-            </div><!--content-->
+              </div><!--subcontent-->
+          <!--  </div>content-->
           </div><!--box-->
+          </div><!--volumeRenderTab-->
             
         </div><!--sidebar-->
       </div> <!--editor-->
