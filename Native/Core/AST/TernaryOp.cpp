@@ -112,7 +112,7 @@ namespace Fabric
               CG::ExprValue trueExprValue = m_middle->buildExprValue( subBasicBlockBuilder, usage, lValueErrorDesc );
               trueRValue = resultAdapter->llvmCast( subBasicBlockBuilder, trueExprValue );
               resultAdapter->llvmAssign( subBasicBlockBuilder, resultLValue, trueRValue );
-              subScope.llvmUnwind( basicBlockBuilder );
+              subScope.llvmUnwind( subBasicBlockBuilder );
             }
             catch ( Exception e )
             {
@@ -129,7 +129,7 @@ namespace Fabric
               CG::ExprValue falseExprValue = m_right->buildExprValue( subBasicBlockBuilder, usage, lValueErrorDesc );
               falseRValue = resultAdapter->llvmCast( subBasicBlockBuilder, falseExprValue );
               resultAdapter->llvmAssign( subBasicBlockBuilder, resultLValue, falseRValue );
-              subScope.llvmUnwind( basicBlockBuilder );
+              subScope.llvmUnwind( subBasicBlockBuilder );
             }
             catch ( Exception e )
             {
