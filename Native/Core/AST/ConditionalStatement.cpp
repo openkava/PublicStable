@@ -77,7 +77,12 @@ namespace Fabric
         
         basicBlockBuilder->SetInsertPoint( trueBB );
         if ( m_trueStatement )
-          m_trueStatement->llvmCompileToBuilder( basicBlockBuilder, diagnostics );
+        {
+          CG::Scope subScope( basicBlockBuilder.getScope() );
+          CG::BasicBlockBuilder subBasicBlockBuilder( basicBlockBuilder, subScope );
+          m_trueStatement->llvmCompileToBuilder( subBasicBlockBuilder, diagnostics );
+          subScope.llvmUnwind( subBasicBlockBuilder );
+        }
         if ( !basicBlockBuilder->GetInsertBlock()->getTerminator() )
         {
           if ( !doneBB )
@@ -87,7 +92,12 @@ namespace Fabric
         
         basicBlockBuilder->SetInsertPoint( falseBB );
         if ( m_falseStatement )
-          m_falseStatement->llvmCompileToBuilder( basicBlockBuilder, diagnostics );
+        {
+          CG::Scope subScope( basicBlockBuilder.getScope() );
+          CG::BasicBlockBuilder subBasicBlockBuilder( basicBlockBuilder, subScope );
+          m_falseStatement->llvmCompileToBuilder( subBasicBlockBuilder, diagnostics );
+          subScope.llvmUnwind( subBasicBlockBuilder );
+        }
         if ( !basicBlockBuilder->GetInsertBlock()->getTerminator() )
         {
           if ( !doneBB )
