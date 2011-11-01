@@ -21,6 +21,8 @@ dirs = [
 
 if buildOS != 'Windows':
   dirs += ['VIDEO']
+else:
+  dirs += ['TEEM']
 
 builtinExtFiles = SConscript( dirs=dirs )
 
