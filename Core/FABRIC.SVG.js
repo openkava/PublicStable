@@ -3,7 +3,20 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
-// TODO: Move this function into a namespace. FABRIC.helpers possibly.
+/**
+ * SVG defines the dom graphic utility.
+ */
+FABRIC.SVG = FABRIC.SVG ? FABRIC.SVG : {};
+
+/**
+ * Constructor to create the root element for the
+ * SVG dom.
+ * @constructor
+ * @param {string} domRootID The dom id of the root element.
+ */
+FABRIC.createSVGRootElem = function(domRootID) {
+
+
 function clone_obj(obj, deepclone) {
     var c = obj instanceof Array ? [] : {};
     
@@ -31,19 +44,6 @@ function clone_obj(obj, deepclone) {
     
     return c;
 }
-
-/**
- * SVG defines the dom graphic utility.
- */
-FABRIC.SVG = FABRIC.SVG ? FABRIC.SVG : {};
-
-/**
- * Constructor to create the root element for the
- * SVG dom.
- * @constructor
- * @param {string} domRootID The dom id of the root element.
- */
-FABRIC.createSVGRootElem = function(domRootID) {
 
   var SVGFactory = function(type) {
     this.elem = this.createSVGElement(type);
@@ -798,8 +798,7 @@ FABRIC.createSVGRootElem = function(domRootID) {
       this.elem.addEventListener('mouseover', highlightFn, false);
       this.elem.addEventListener('mousedown',
         function(evt) {
-          if (evt.button === 0)
-          {
+          if (evt.button === 0) {
             if (options.checkButton === true) {
               buttonState = !buttonState;
               if (options.addClasses) {
@@ -812,7 +811,8 @@ FABRIC.createSVGRootElem = function(domRootID) {
                 }
               }
               fireOnClickCallbacks(evt);
-            }else {
+            }
+            else {
               fireOnMouseDownCallbacks(evt);
               if (options.addClasses) {
               //  self.removeClass("Pressed");
@@ -950,10 +950,27 @@ FABRIC.createSVGRootElem = function(domRootID) {
         return this.defs;
       },
       createClipPath: function() {
-        if (!this.defs) {
-          this.defs = this.appendAndReturnChild(this.extend(this.create('defs'), this.groupObj));
-        }
+        this.createDefs();
         return this.defs.appendAndReturnChild(this.extend(this.create('clipPath'), this.groupObj));
+      },
+      createLinearGradient: function() {
+        this.createDefs();
+        var linearGradient = this.defs.appendAndReturnChild(this.extend(this.create('linearGradient'), this.groupObj));
+        linearGradient.addKey = function(pos, color){
+          var key = linearGradient.appendAndReturnChild(this.create('stop').attr('offset',(pos * 100)+"%").attr('stop-color', color.toHex()));
+          key.setParam = function(pos){
+            key.attr('offset',(pos * 100)+"%");
+          }
+          key.getColor = function(color){
+            var col = new FABRIC.Color();
+            col.fromHex(key.attr('stop-color'));
+          }
+          key.setColor = function(color){
+            key.attr('stop-color', color.toHex());
+          }
+          return key;
+        }
+        return linearGradient;
       },
       // MARK: factoryFunctions
       // Composition rather than inheritance.
