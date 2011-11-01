@@ -4,9 +4,10 @@ var constructCurveEditor = function(domRootID, keyframeTrackNode, options){
   var keyColor = FABRIC.rgb(.0, .0, .0);
   
   options = options ? options : {};
-  options.timeStripe = options.timeStripe ? options.timeStripe : true;
-  options.draggable = options.draggable ? options.draggable : true;
-  options.zoomable = options.zoomable ? options.zoomable : true;
+  options.timeStripe = options.timeStripe!=undefined ? options.timeStripe : true;
+  options.draggable = options.draggable!=undefined ? options.draggable : true;
+  options.zoomable = options.zoomable!=undefined ? options.zoomable : true;
+  options.timeRange = options.timeRange!=undefined ? options.timeRange : new FABRIC.RT.Vec2(0, 100);
   
   var rootDomNode = document.getElementById(domRootID);
   var windowWidth = rootDomNode.clientWidth;
@@ -36,7 +37,8 @@ var constructCurveEditor = function(domRootID, keyframeTrackNode, options){
     trackCurves[i] = curvesHolderGroup.createPath().addClass('CurvePath').stroke(trackData.color);
     trackDisplayNodes[i] = scene.constructNode('TrackDisplay', {
       animationTrackNode: keyframeTrackNode,
-      trackIndex: i
+      trackIndex: i,
+      timeRange: options.timeRange
     });
   }
   
@@ -118,8 +120,8 @@ var constructCurveEditor = function(domRootID, keyframeTrackNode, options){
       var drawKey = function(keyIndex, keyData) {
         
         if(isBezier ? ((keyData.time + keyData.intangent.x) < timeRange.y &&
-           (keyData.time + keyData.outtangent.x) > timeRange.x) :
-           keyData.time < timeRange.y && keyData.time > timeRange.x ){
+           (keyData.time + keyData.outtangent.x) >= timeRange.x) :
+           keyData.time <= timeRange.y && keyData.time >= timeRange.x ){
           ///////////////////////////////////////////////
           // Key
           var keySsVal = screenXfo.toScreenSpace(new FABRIC.Vec2(keyData.time, keyData.value));
@@ -320,7 +322,9 @@ var constructCurveEditor = function(domRootID, keyframeTrackNode, options){
       trackDisplayNodes[i].setTimeRange(timeRange);
       curvesData[i] = trackDisplayNodes[i].getCurveData();
     }
-    updateGraphTimeStripe();
+    if(options.timeStripe){
+      updateGraphTimeStripe();
+    }
     keysHolderGroup.removeAllChildren();
     drawTrackCurves();
   }
