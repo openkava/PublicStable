@@ -10,6 +10,7 @@ GTKGLEXT_VERSION := 1.2.0
 BOOST_VERSION := 1.47.0
 HDF5_VERSION := 1.8.7
 ALEMBIC_VERSION := 1.0_2011080800
+TEEM_VERSION := 1.10.0
 
 RSYNC := rsync
 
@@ -49,13 +50,14 @@ endif
   unpack_boost patch_boost configure_boost build_boost install_boost clean_boost \
   unpack_hdf5 patch_hdf5 configure_hdf5 build_hdf5 install_hdf5 clean_hdf5 \
   unpack_alembic patch_alembic configure_alembic build_alembic install_alembic clean_alembic \
+  unpack_teem patch_teem configure_teem build_teem install_teem clean_teem \
   install_llvm_headers install_llvm_libraries
 
 all: build
 
-build: check_env_vars build_ilmbase build_openexr build_llvm build_libpng build_ffmpeg build_v8 build_libedit
+build: check_env_vars build_ilmbase build_openexr build_llvm build_libpng build_ffmpeg build_teem build_v8 build_libedit
 
-unpack: check_env_vars unpack_ilmbase unpack_openexr unpack_llvm unpack_libpng unpack_ffmpeg unpack_v8 unpack_libedit
+unpack: check_env_vars unpack_ilmbase unpack_openexr unpack_llvm unpack_libpng unpack_ffmpeg unpack_teem unpack_v8 unpack_libedit
 
 check_env_vars: 
 ifeq ($(BUILD_PLATFORM),Darwin)
@@ -342,7 +344,7 @@ ifeq ($(BUILD_PLATFORM),Linux)
 		else \
 			BJAM_FLAGS="toolset=gcc architecture=x86 instruction-set=i686 address-model=32"; \
 		fi; \
-		( cd Build/boost-$(BOOST_VERSION)-$$ARCH && ./bjam -d+2 $$BJAM_FLAGS ); \
+		( cd Build/boost-$(BOOST_VERSION)-$$ARCH && ./bjam -d+2 $$BJAM_FLAGS link=static threading=multi variant=release cflags=-fPIC ); \
 	done
 else
 	for ARCH in $(ARCHS); do \
@@ -358,7 +360,7 @@ endif
 
 Build/.boost.configure: Build/.boost.patch
 	for ARCH in $(ARCHS); do \
-		( cd Build/boost-$(BOOST_VERSION)-$$ARCH && ./bootstrap.sh --with-libraries=date_time,program_options,iostreams,thread ); \
+		( cd Build/boost-$(BOOST_VERSION)-$$ARCH && ./bootstrap.sh --with-libraries=date_time,program_options,iostreams,thread,serialization ); \
 	done
 	touch $@
 
@@ -567,6 +569,40 @@ Build/.ffmpeg.unpack:
 	done
 	touch $@
 
+build_teem: build_zlib Build/.teem.build
+
+configure_teem: Build/.teem.configure
+
+patch_teem: Build/.teem.patch
+
+unpack_teem: Build/.teem.unpack
+
+Build/.teem.build: Build/.teem.configure
+ifeq ($(BUILD_PLATFORM),Darwin)
+	for ARCH in $(ARCHS); do \
+		if [ $$ARCH = "x86_64" ]; then \
+			TEEM_ARCH="darwin.64"; \
+		else \
+			TEEM_ARCH="darwin.32"; \
+		fi; \
+		( cd Build/teem-$(TEEM_VERSION)-$$ARCH/src && make -e TEEM_ARCH=$$TEEM_ARCH -e TEEM_ZLIB.IPATH="include/zlib" ); \
+	done
+endif
+	touch $@
+
+Build/.teem.configure: Build/.teem.patch
+	touch $@
+
+Build/.teem.patch: Build/.teem.unpack
+	touch $@
+
+Build/.teem.unpack:
+	mkdir -p Build
+	for ARCH in $(ARCHS); do \
+		( cd Build && tar jxf ../SourcePackages/teem-$(TEEM_VERSION).tar.bz2 && mv teem-$(TEEM_VERSION) teem-$(TEEM_VERSION)-$$ARCH ) ; \
+	done
+	touch $@
+
 build_zlib: Build/.zlib.build
 
 configure_zlib: Build/.zlib.configure
@@ -587,7 +623,7 @@ Build/.zlib.patch: Build/.zlib.unpack
 Build/.zlib.unpack:
 	touch $@
   
-install: check_env_vars install_ilmbase install_openexr install_llvm install_libpng install_ffmpeg install_v8 install_libedit install_gtkglext
+install: check_env_vars install_ilmbase install_openexr install_llvm install_libpng install_ffmpeg install_teem install_v8 install_libedit install_gtkglext
 
 install_ilmbase: install_ilmbase_headers install_ilmbase_libraries
 
@@ -730,6 +766,24 @@ install_ffmpeg_headers:
 		cp Build/ffmpeg-$(FFMPEG_VERSION)-$(FIRST_ARCH)/$$l/*.h $(TARGET_BASE)/include/ffmpeg/$$l/; \
 	done
 	
+install_teem: install_teem_headers install_teem_libs
+	
+install_teem_libs:
+	for ARCH in $(ARCHS); do \
+		mkdir -p $(TARGET_BASE)/lib/$(BUILD_PLATFORM)/$$ARCH/Release/teem; \
+		if [ $$ARCH = "x86_64" ]; then \
+			TEEM_ARCH="darwin.64"; \
+		else \
+			TEEM_ARCH="darwin.32"; \
+		fi; \
+		cp Build/teem-$(TEEM_VERSION)-$$ARCH/arch/$$TEEM_ARCH/lib/libteem.a $(TARGET_BASE)/lib/$(BUILD_PLATFORM)/$$ARCH/Release/teem/; \
+	done
+
+install_teem_headers:
+	mkdir -p $(TARGET_BASE)/include/teem
+	mkdir -p $(TARGET_BASE)/include/teem/teem
+	cp Build/teem-$(TEEM_VERSION)-$(FIRST_ARCH)/include/teem/*.h $(TARGET_BASE)/include/teem/teem/;
+
 install_libedit:
 	for ARCH in $(ARCHS); do \
 		mkdir -p $(TARGET_BASE)/lib/$(BUILD_PLATFORM)/$$ARCH/libedit && cp Build/libedit-$(LIBEDIT_VERSION)-$$ARCH/src/.libs/libedit.a $(TARGET_BASE)/lib/$(BUILD_PLATFORM)/$$ARCH/libedit/; \
@@ -760,7 +814,7 @@ ifeq ($(BUILD_PLATFORM),"mingw")
 	cp Build/zlib-$(ZLIB_VERSION)-$(FIRST_ARCH)/zlib.h $(TARGET_BASE)/include/zlib/zlib/
 endif
 
-clean: clean_ilmbase clean_openexr clean_llvm clean_libpng clean_ffmpeg clean_v8 clean_libedit clean_gtkglext clean_boost clean_hdf5 clean_alembic
+clean: clean_ilmbase clean_openexr clean_llvm clean_libpng clean_ffmpeg clean_teem clean_v8 clean_libedit clean_gtkglext clean_boost clean_hdf5 clean_alembic
 	rm -rf Build
 
 clean_ilmbase:
@@ -798,6 +852,12 @@ clean_libpng:
 		rm -rf Build/libpng-$(PNG_VERSION)-$$ARCH; \
 	done
 	rm -rf Build/.libpng.*
+
+clean_teem:
+	for ARCH in $(ARCHS); do \
+		rm -rf Build/teem-$(TEEM_VERSION)-$$ARCH; \
+	done
+	rm -rf Build/.teem.*
 
 clean_libedit:
 	for ARCH in $(ARCHS); do \
