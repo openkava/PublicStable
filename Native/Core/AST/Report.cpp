@@ -47,7 +47,6 @@ namespace Fabric
         llvm::Value *stringRValue = stringAdapter->llvmCast( basicBlockBuilder, exprExprValue );
         
         stringAdapter->llvmReport( basicBlockBuilder, stringRValue );
-        stringAdapter->llvmRelease( basicBlockBuilder, stringRValue );
       }
       catch ( CG::Error e )
       {

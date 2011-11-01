@@ -162,17 +162,9 @@ namespace Fabric
 #endif
     }
 
-    void OpaqueAdapter::llvmRetain( BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const
-    {
-    }
-
     void OpaqueAdapter::llvmDefaultAssign( BasicBlockBuilder &basicBlockBuilder, llvm::Value *dstLValue, llvm::Value *srcRValue ) const
     {
       basicBlockBuilder->CreateStore( srcRValue, dstLValue );
     }
-    
-    void OpaqueAdapter::llvmRelease( BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const
-    {
-    }
-  }; // namespace CG
-}; // namespace FABRIC
+  };
+};

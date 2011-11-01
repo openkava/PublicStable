@@ -140,17 +140,9 @@ namespace Fabric
       return m_constStringDesc->toString( data );
     }
 
-    void ConstStringAdapter::llvmRetain( BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const
-    {
-    }
-
     void ConstStringAdapter::llvmDefaultAssign( BasicBlockBuilder &basicBlockBuilder, llvm::Value *dstLValue, llvm::Value *srcRValue ) const
     {
       basicBlockBuilder->CreateStore( srcRValue, dstLValue );
-    }
-    
-    void ConstStringAdapter::llvmRelease( BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const
-    {
     }
   };
 };

@@ -511,14 +511,6 @@ namespace Fabric
       else return Adapter::llvmResolveExternalFunction( functionName );
     }
 
-    void DictAdapter::llvmRetain( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const
-    {
-    }
-    
-    void DictAdapter::llvmRelease( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const
-    {
-    }
-
     void DictAdapter::llvmDisposeImpl( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *lValue ) const
     {
       RC::Handle<Context> context = basicBlockBuilder.getContext();
