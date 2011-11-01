@@ -246,7 +246,7 @@ namespace Fabric
 #endif
 
       RC::Handle<IO::Manager> ioManager = IOManager::Create();
-      RC::Handle<DG::Context> dgContext = DG::Context::Create( ioManager, pluginPaths );
+      RC::Handle<DG::Context> dgContext = DG::Context::Create( ioManager, pluginPaths, true );
       OCL::registerTypes( dgContext->getRTManager() );
 
       RC::Handle<Client> client = Client::Create( dgContext );

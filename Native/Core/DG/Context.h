@@ -94,7 +94,7 @@ namespace Fabric
     
       typedef Util::UnorderedMap< std::string, RC::Handle<NamedObject> > NamedObjectMap;
     
-      static RC::Handle<Context> Create( RC::Handle<IO::Manager> const &ioManager, std::vector<std::string> const &pluginDirs );
+      static RC::Handle<Context> Create( RC::Handle<IO::Manager> const &ioManager, std::vector<std::string> const &pluginDirs, bool optimizeSynchronously );
       static RC::Handle<Context> Bind( std::string const &contextID );
       
       std::string const &getContextID() const;
@@ -133,7 +133,7 @@ namespace Fabric
       
     protected:
     
-      Context( RC::Handle<IO::Manager> const &ioManager, std::vector<std::string> const &pluginDirs );
+      Context( RC::Handle<IO::Manager> const &ioManager, std::vector<std::string> const &pluginDirs, bool optimizeSynchronously );
       ~Context();
 
       void jsonDesc( Util::JSONObjectGenerator &resultJOG ) const;

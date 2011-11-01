@@ -52,7 +52,7 @@ namespace Fabric
     
       typedef void (*FunctionPtr)( ... );
     
-      static RC::ConstHandle<Code> Create( RC::ConstHandle<Context> const &context, std::string const &filename, std::string const &sourceCode );
+      static RC::ConstHandle<Code> Create( RC::ConstHandle<Context> const &context, std::string const &filename, std::string const &sourceCode, bool optimizeSynchronously );
       
       std::string const &getFilename() const;
       std::string const &getSourceCode() const;
@@ -68,7 +68,7 @@ namespace Fabric
 
     protected:
     
-      Code( RC::ConstHandle<Context> const &context, std::string const &filename, std::string const &sourceCode );
+      Code( RC::ConstHandle<Context> const &context, std::string const &filename, std::string const &sourceCode, bool optimizeSynchronously );
       ~Code();
       
       void compileSourceCode();
@@ -97,6 +97,8 @@ namespace Fabric
       
       mutable Util::Mutex m_registeredFunctionSetMutex;
       mutable RegisteredFunctionSet m_registeredFunctionSet;
+      
+      bool m_optimizeSynchronously;
     };
   };
 };
