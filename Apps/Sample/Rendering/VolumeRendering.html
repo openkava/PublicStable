@@ -273,9 +273,9 @@ $(document).ready(function() {
       $('#rangeY3D').slider({min: 0, max: 1, step: 0.005, range: true, values: [0,1] }),
       $('#rangeZ3D').slider({min: 0, max: 1, step: 0.005, range: true, values: [0,1] })
   ];
-  var $opacityRangeSlider = $('#opacityRange').slider({min: 0, max: 1, step: 0.005, range: true, values: [0.05,1] });
+  var $opacityRangeSlider = $('#opacityRange').slider({min: 0, max: 1, step: 0.005, range: true, values: [0.1,1] });
   var $brightnessSlider = $('#brightness').slider({min: 0, max: 1, step: 0.01, value: 0.75 });
-  var $transparencySlider = $('#transparency').slider({min: 0, max: 1, step: 0.01, value: 0.75 });
+  var $transparencySlider = $('#transparency').slider({min: 0, max: 1, step: 0.01, value: 0.8 });
   var $specularFactorSlider = $('#specularFactor').slider({min: 0, max: 1, step: 0.01, value: 1.0 });
   var $resolutionFactorSlider = $('#resolutionFactor').slider({min: 0.01, max: 1, step: 0.01, value: 1.0 });
 
@@ -323,8 +323,8 @@ $(document).ready(function() {
       opacityTextureNode: opacityTexture,
       lightNode: light,
       brightnessFactor: 0.75,
-      transparency: 0.70,
-      minOpacity: 0.05,
+      transparency: 0.80,
+      minOpacity: 0.1,
       maxOpacity: 1.0,
       backgroundColor: new FABRIC.RT.Color(1.0, 1.0, 1.0, 1.0)
     });
@@ -424,7 +424,10 @@ $(document).ready(function() {
   $("#invert").attr('checked', false).change(function() {
     var invertColor = $('#invert').attr('checked');
     volumeNode.setInvertColor(invertColor ? 1 : 0);
+    volumeNode.setBrightnessFactor(1.0-volumeNode.getBrightnessFactor());
+    $brightnessSlider.slider('value', volumeNode.getBrightnessFactor());
     viewport.redraw();
+    viewport.redraw();//For some reason it takes 2 redraw to get the properly ajusted opacity factor upadted to the shader (???)
   });
 
   var ajustViewportLayout = function() {
