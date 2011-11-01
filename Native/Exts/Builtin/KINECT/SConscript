@@ -1,0 +1,35 @@
+#
+# Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+#
+
+Import( 'extsEnv', 'fabricExtsDistDir', 'ExtSLName', 'buildOS', 'buildArch' )
+
+import os
+import os.path
+
+# only do this for windows
+if buildOS != 'Windows':
+    Return()
+    
+kinectPluginEnv = extsEnv.Clone()
+
+# find the kinect sdk
+kinectInclude = 'C:\\Program Files (x86)\\Microsoft Research KinectSDK\inc'
+if not os.path.exists(kinectInclude):
+    print('WARNING: Skipping build of KINECT extension, no KINECT SDK found!')
+    Return()
+
+kinectLib = 'C:\\Program Files (x86)\\Microsoft Research KinectSDK\lib\MSRKinectNUI.lib'
+if not os.path.exists(kinectLib):
+    print('WARNING: Skipping build of KINECT extension, no KINECT SDK found!')
+    Return()
+    
+kinectPluginEnv.Append(CPPPATH = [kinectInclude])
+kinectPluginEnv.Append(LIBS = [kinectLib])
+kinectSources = Glob('*.cpp')
+kinectPlugin = kinectPluginEnv.SharedLibrary( ExtSLName('FabricKINECT'), kinectSources ),
+kinectManifest = kinectPluginEnv.File('FabricKINECT.fpm.json'),
+kinectKL = kinectPluginEnv.File('FabricKINECT.kl'),
+kinectFiles = [kinectManifest, kinectPlugin, kinectKL]
+
+Return( 'kinectFiles' )
