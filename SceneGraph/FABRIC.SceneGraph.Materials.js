@@ -1889,10 +1889,10 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
 
     volumeMaterialNodeRedrawEvent.preDescendBindings.append(scene.constructOperator({
       operatorName: 'setFactors',
-      srcCode: 'operator setFactors(io Scalar specular, io Scalar brightnessFactor, io Scalar transparency, io Size nbSlices, io Scalar alphaFactor, io Scalar scaledSpecular, io Scalar brightness){ \n' +
+      srcCode: 'operator setFactors(io Integer invertColor, io Scalar specular, io Scalar brightnessFactor, io Scalar transparency, io Size nbSlices, io Scalar alphaFactor, io Scalar scaledSpecular, io Scalar brightness){ \n' +
                     'scaledSpecular = 1.00001 / (1.00001 - specular) - 1.0;\n' +
                     'scaledSpecular *= scaledSpecular;\n' +
-                    'brightness = 1.00001 / (1.00001 - brightnessFactor) - 1.0;\n' +
+                    'brightness = 1.00001 / (1.00001 - (invertColor == 0 ? brightnessFactor : 1.0 - brightnessFactor)) - 1.0;\n' +
                     'Scalar ajustedBrightness = 0.5;//transparency*sqrt(brightness) + (1.0-transparency)*brightness;\n' +
                     'Scalar opacityPerSlice = 1.0 / Scalar(nbSlices);\n' +
                     'Scalar brightnessExp = log( opacityPerSlice ) / log( 0.5 );' + //We modulate by an exponential function else all the interesting values are close to brightness 0.5
@@ -1900,6 +1900,7 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
                     'alphaFactor = ajustedAlphaPerSlice / (1.0 - pow(ajustedAlphaPerSlice, Scalar(nbSlices))*0.99999);}\n',
       entryFunctionName: 'setFactors',
       parameterLayout: [
+        'self.invertColor',
         'self.specularFactor',
         'self.brightnessFactor',
         'self.transparency',
