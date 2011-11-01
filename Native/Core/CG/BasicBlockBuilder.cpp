@@ -32,7 +32,10 @@ namespace Fabric
     BasicBlockBuilder::~BasicBlockBuilder()
     {
       if ( m_parentBasicBlockBuilder )
-        m_parentBasicBlockBuilder->m_irBuilder.SetInsertPoint( m_irBuilder.GetInsertBlock() );
+        m_parentBasicBlockBuilder->m_irBuilder.SetInsertPoint(
+          m_irBuilder.GetInsertBlock(),
+          m_irBuilder.GetInsertPoint()
+          );
     }
     
     llvm::IRBuilder<> *BasicBlockBuilder::operator ->()
