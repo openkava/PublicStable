@@ -1825,30 +1825,55 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
       entryFunctionName: 'setNbSlicesFrom3DImage',
       srcFile: 'FABRIC_ROOT/SceneGraph/KL/generateVolumeSlices.kl'
     }));
-
-    var offscreenNode = scene.constructNode('OffscreenViewport', {
-      mainViewportNode: options.viewportNode,
-      cameraNode: options.cameraNode,
-      eventName: 'DummyEvent'
-    });
-
-    var offscreenNodeDGNode = offscreenNode.getDGNode();
-    offscreenNodeDGNode.addMember('backgroundColor', 'Color', options.backgroundColor );
-    volumeNode.addMemberInterface(offscreenNodeDGNode, 'backgroundColor', true);
-
-    offscreenNodeDGNode.bindings.append(scene.constructOperator({
-      operatorName: 'setBackgroundColor',
-      srcCode: 'use OGLRenderTarget; operator setBackgroundColor(io Color color, io OGLRenderTarget renderTarget){ renderTarget.clearColor = color; }',
-      entryFunctionName: 'setBackgroundColor',
-      parameterLayout: [
-        'self.backgroundColor',
-        'self.renderTarget'
-      ]
-    }));
-
-    var offscreenNodeRedrawEventHandler = offscreenNode.getRedrawEventHandler();
+    
+    var offscreenNode = scene.constructNode('SceneGraphNode', { name: (options.name + "RT") } );
+    var offscreenNodeRedrawEventHandler = offscreenNode.constructEventHandlerNode('Redraw');
     scene.getSceneRedrawTransparentObjectsEventHandler().appendChildEventHandler(offscreenNodeRedrawEventHandler);
     offscreenNodeRedrawEventHandler.addMember('renderTargetToViewShaderProgram', 'Integer');
+    offscreenNodeRedrawEventHandler.addMember('renderTarget', 'OGLRenderTarget', FABRIC.RT.oglRenderTarget(0,0,[
+      new FABRIC.RT.OGLRenderTargetTextureDesc (
+          2,
+          new FABRIC.RT.OGLTexture2D (
+            FABRIC.SceneGraph.OpenGLConstants.GL_RGBA16,
+            FABRIC.SceneGraph.OpenGLConstants.GL_RGBA,
+            FABRIC.SceneGraph.OpenGLConstants.GL_FLOAT)
+        )
+    ]));
+    
+    offscreenNodeRedrawEventHandler.addMember('backgroundColor', 'Color', options.backgroundColor );
+    
+    offscreenNodeRedrawEventHandler.preDescendBindings.append(
+      scene.constructOperator({
+          operatorName: 'setBackgroundColor',
+          srcCode: 'use OGLRenderTarget; operator setBackgroundColor(io Color color, io OGLRenderTarget renderTarget){ renderTarget.clearColor = color; }',
+          entryFunctionName: 'setBackgroundColor',
+          parameterLayout: [
+            'self.backgroundColor',
+            'self.renderTarget'
+          ]
+        }));
+
+    offscreenNodeRedrawEventHandler.preDescendBindings.append(
+      scene.constructOperator({
+          operatorName: 'bindScreenRenderTarget',
+          srcFile: 'FABRIC_ROOT/SceneGraph/KL/renderTarget.kl',
+          entryFunctionName: 'bindScreenRenderTarget',
+          parameterLayout: [
+            'window.width',
+            'window.height',
+            'self.renderTarget'
+          ]
+        }));
+
+    offscreenNodeRedrawEventHandler.postDescendBindings.insert(
+      scene.constructOperator({
+          operatorName: 'unbindRenderTarget',
+          srcFile: 'FABRIC_ROOT/SceneGraph/KL/renderTarget.kl',
+          entryFunctionName: 'unbindRenderTarget',
+          parameterLayout: [
+            'self.renderTarget'
+          ]
+        }), 0);
 
     offscreenNodeRedrawEventHandler.postDescendBindings.append(
       scene.constructOperator({
@@ -1856,7 +1881,7 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
           srcFile: 'FABRIC_ROOT/SceneGraph/KL/renderTarget.kl',
           entryFunctionName: 'drawRenderTargetToView_progID',
           parameterLayout: [
-            'data.renderTarget',
+            'self.renderTarget',
             'self.renderTargetToViewShaderProgram'
           ]
         }));
@@ -1881,6 +1906,7 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
     volumeNode.addMemberInterface(volumeMaterialNodeRedrawEvent, 'specularFactor', true);
     volumeNode.addMemberInterface(volumeMaterialNodeRedrawEvent, 'brightnessFactor', true);
     volumeNode.addMemberInterface(volumeMaterialNodeRedrawEvent, 'invertColor', true);
+    volumeNode.addMemberInterface(offscreenNodeRedrawEventHandler, 'backgroundColor', true);
 
     volumeNode.pub.setTransparency(options.transparency);
     volumeNode.pub.setMinOpacity(options.minOpacity);
