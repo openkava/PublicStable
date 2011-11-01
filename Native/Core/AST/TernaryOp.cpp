@@ -82,10 +82,19 @@ namespace Fabric
           case CG::TERNARY_OP_COND:
           {
             RC::ConstHandle<CG::BooleanAdapter> booleanAdapter = basicBlockBuilder.getManager()->getBooleanAdapter();
+            RC::ConstHandle<CG::Adapter> resultAdapter = getType( basicBlockBuilder );
 
-            llvm::BasicBlock *trueBasicBlock = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "cond_true" );
-            llvm::BasicBlock *falseBasicBlock = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "cond_false" );
-            llvm::BasicBlock *mergeBasicBlock = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "cond_merge" );
+            llvm::BasicBlock *trueBasicBlock = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "ternaryTrue" );
+            llvm::BasicBlock *falseBasicBlock = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "ternaryFalse" );
+            llvm::BasicBlock *mergeBasicBlock = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "ternaryMerge" );
+
+            llvm::Value *resultLValue = resultAdapter->llvmAlloca( basicBlockBuilder, "ternaryResult" );
+            resultAdapter->llvmInit( basicBlockBuilder, resultLValue );
+            basicBlockBuilder.getScope().put(
+              CG::VariableSymbol::Create(
+                CG::ExprValue( resultAdapter, CG::USAGE_LVALUE, basicBlockBuilder.getContext(), resultLValue )
+                )
+              );
 
             llvm::Value *condValue = 0;
             CG::ExprValue exprExprValue = m_left->buildExprValue( basicBlockBuilder, CG::USAGE_RVALUE, lValueErrorDesc );
@@ -95,21 +104,15 @@ namespace Fabric
             basicBlockBuilder->CreateCondBr( condValue, trueBasicBlock, falseBasicBlock );
 
             basicBlockBuilder->SetInsertPoint( trueBasicBlock );
-            CG::ExprValue trueExprValue = m_middle->buildExprValue( basicBlockBuilder, usage, lValueErrorDesc );
-            trueBasicBlock = basicBlockBuilder->GetInsertBlock();
-            
-            basicBlockBuilder->SetInsertPoint( falseBasicBlock );
-            CG::ExprValue falseExprValue = m_right->buildExprValue( basicBlockBuilder, usage, lValueErrorDesc );
-            falseBasicBlock = basicBlockBuilder->GetInsertBlock();
-
-            RC::ConstHandle<CG::Adapter> castAdapter = getType( basicBlockBuilder );
-            
-            // The true value
-            basicBlockBuilder->SetInsertPoint( trueBasicBlock );
             llvm::Value *trueRValue = 0;
             try
             {
-              trueRValue = castAdapter->llvmCast( basicBlockBuilder, trueExprValue );
+              CG::Scope subScope( basicBlockBuilder.getScope() );
+              CG::BasicBlockBuilder subBasicBlockBuilder( basicBlockBuilder, subScope );
+              CG::ExprValue trueExprValue = m_middle->buildExprValue( subBasicBlockBuilder, usage, lValueErrorDesc );
+              trueRValue = resultAdapter->llvmCast( subBasicBlockBuilder, trueExprValue );
+              resultAdapter->llvmAssign( subBasicBlockBuilder, resultLValue, trueRValue );
+              subScope.llvmUnwind( basicBlockBuilder );
             }
             catch ( Exception e )
             {
@@ -117,12 +120,16 @@ namespace Fabric
             }
             basicBlockBuilder->CreateBr( mergeBasicBlock );
             
-            // The false value
             basicBlockBuilder->SetInsertPoint( falseBasicBlock );
             llvm::Value *falseRValue = 0;
             try
             {
-              falseRValue = castAdapter->llvmCast( basicBlockBuilder, falseExprValue );
+              CG::Scope subScope( basicBlockBuilder.getScope() );
+              CG::BasicBlockBuilder subBasicBlockBuilder( basicBlockBuilder, subScope );
+              CG::ExprValue falseExprValue = m_right->buildExprValue( subBasicBlockBuilder, usage, lValueErrorDesc );
+              falseRValue = resultAdapter->llvmCast( subBasicBlockBuilder, falseExprValue );
+              resultAdapter->llvmAssign( subBasicBlockBuilder, resultLValue, falseRValue );
+              subScope.llvmUnwind( basicBlockBuilder );
             }
             catch ( Exception e )
             {
@@ -132,11 +139,8 @@ namespace Fabric
             
             // The merge path
             basicBlockBuilder->SetInsertPoint( mergeBasicBlock );
-            llvm::PHINode *phi = basicBlockBuilder->CreatePHI( castAdapter->llvmRType( basicBlockBuilder.getContext() ), "cond_phi" );
-            phi->addIncoming( trueRValue, trueBasicBlock );
-            phi->addIncoming( falseRValue, falseBasicBlock );
-            
-            return CG::ExprValue( castAdapter, usage, basicBlockBuilder.getContext(), phi );
+            llvm::Value *resultRValue = resultAdapter->llvmLValueToRValue( basicBlockBuilder, resultLValue );
+            return CG::ExprValue( resultAdapter, CG::USAGE_RVALUE, basicBlockBuilder.getContext(), resultRValue );
           }
         }
       }
