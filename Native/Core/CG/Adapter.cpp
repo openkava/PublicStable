@@ -344,8 +344,8 @@ namespace Fabric
     {
       StringAdapter const *stringAdapter = static_cast<StringAdapter const *>( _stringAdapter );
       RC::ConstHandle<RT::StringImpl> stringImpl = RC::ConstHandle<RT::StringImpl>::StaticCast( stringAdapter->getImpl() );
-      std::string string( stringImpl->getValueData( &stringRValue ), stringImpl->getValueLength( &stringRValue ) );
-      stringImpl->disposeData( &stringRValue );
+      std::string string( stringImpl->getValueData( stringRValue ), stringImpl->getValueLength( stringRValue ) );
+      stringImpl->disposeData( stringRValue );
       throw Exception( string );
     }
 
