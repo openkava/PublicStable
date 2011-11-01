@@ -56,6 +56,9 @@ FABRIC_EXT_KL_STRUCT( BulletWorld, {
 FABRIC_EXT_KL_STRUCT( BulletShape, {
   struct LocalData {
   	btCollisionShape * mShape;
+    btTriangleIndexVertexArray * mTriangles;
+    int * mTriangleIDs;
+    btScalar * mTrianglePos;
   };
 
   LocalData * localData;
@@ -63,6 +66,7 @@ FABRIC_EXT_KL_STRUCT( BulletShape, {
   KL::String name;
   KL::VariableArray<KL::Scalar> parameters;
   KL::VariableArray<KL::Vec3> vertices;
+  KL::VariableArray<KL::Integer> indices;
 } );
 
 FABRIC_EXT_KL_STRUCT( BulletRigidBody, {
@@ -599,7 +603,46 @@ FABRIC_EXT_EXPORT void FabricBULLET_Shape_Create(
     //} else if(shape.type  == CAPSULE_SHAPE_PROXYTYPE) {
     //} else if(shape.type  == CONE_SHAPE_PROXYTYPE) {
     //} else if(shape.type  == CYLINDER_SHAPE_PROXYTYPE) {
-    //} else if(shape.type  == GIMPACT_SHAPE_PROXYTYPE) {
+    } else if(shape.type  == GIMPACT_SHAPE_PROXYTYPE) {
+
+      if(shape.parameters.size() != 0) {
+        throwException( "{FabricBULLET} ERROR: For the GImpact shape you need to specify zero parameters." );
+        return;
+      }
+
+      if(shape.vertices.size() <= 3) {
+        throwException( "{FabricBULLET} ERROR: For the GImpact shape you need to specify at least 3 vertices." );
+        return;
+      }
+
+      if(shape.indices.size() <= 3) {
+        throwException( "{FabricBULLET} ERROR: For the GImpact shape you need to specify at least 3 indices." );
+        return;
+      }
+      
+      shape.localData = new BulletShape::LocalData();
+      shape.localData->mTriangleIDs = (int*)malloc(sizeof(int)*shape.indices.size());
+      shape.localData->mTrianglePos = (btScalar*)malloc(sizeof(btScalar)*shape.vertices.size()*3);
+
+       // copy the data
+      for(int i=0;i<shape.indices.size();i++)
+         shape.localData->mTriangleIDs[i] = shape.indices[i];
+      size_t offset = 0;
+      for(int i = 0;i<shape.vertices.size();i++)
+      {
+         shape.localData->mTrianglePos[offset++] = shape.vertices[i].x;
+         shape.localData->mTrianglePos[offset++] = shape.vertices[i].y;
+         shape.localData->mTrianglePos[offset++] = shape.vertices[i].z;
+      }
+
+      shape.localData->mTriangles = new btTriangleIndexVertexArray(
+         shape.indices.size() / 3,shape.localData->mTriangleIDs,3*sizeof(int),
+         shape.vertices.size(), shape.localData->mTrianglePos,3*sizeof(btScalar));
+
+      btGImpactMeshShape * gimpactShape = new btGImpactMeshShape(shape.localData->mTriangles);
+      gimpactShape->updateBound();
+      collisionShape = gimpactShape;
+      
     } else if(shape.type  == STATIC_PLANE_PROXYTYPE) {
 
       if(shape.parameters.size() != 4) {
@@ -621,7 +664,13 @@ FABRIC_EXT_EXPORT void FabricBULLET_Shape_Create(
     
     collisionShape->setMargin(0.0);
     
-    shape.localData = new BulletShape::LocalData();
+    if(shape.localData == NULL)
+    {
+      shape.localData = new BulletShape::LocalData();
+      shape.localData->mTrianglePos = NULL;
+      shape.localData->mTriangleIDs = NULL;
+      shape.localData->mTriangles = NULL;
+    }
     shape.localData->mShape = collisionShape;
     shape.localData->mShape->setUserPointer(shape.localData);
 #ifndef NDEBUG
@@ -639,6 +688,12 @@ FABRIC_EXT_EXPORT void FabricBULLET_Shape_Delete(
     printf("  { FabricBULLET } : FabricBULLET_Shape_Delete called.\n");
 #endif
     delete( shape.localData->mShape );
+    if(shape.localData->mTriangles != NULL)
+      delete(shape.localData->mTriangles);
+    if(shape.localData->mTriangleIDs != NULL)
+      free(shape.localData->mTriangleIDs);
+    if(shape.localData->mTrianglePos != NULL)
+      free(shape.localData->mTrianglePos);
     delete( shape.localData );
     shape.localData = NULL;
 #ifndef NDEBUG
