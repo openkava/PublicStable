@@ -18,9 +18,7 @@ var constructColorGradient = function(domRootID, keyframeTrackNode, options){
   var gradientRect = svgRoot.createRect().size(windowWidth, windowHeight).attr('fill', "url(#grad1)");
   var graphCenterGroup = svgRoot.createGroup().id('graphCenterGroup').translate(0, windowHeight * 0.5);
   var keysHolderGroup = graphCenterGroup.createGroup().id('keysHolderGroup');
- /* svgRoot.svgRoot = svgRoot;
-  svgRoot.state = 'Normal';
-  */
+
 
   gradientRect.attr('stroke', "black");
   gradientRect.attr('stroke-width', 3);
