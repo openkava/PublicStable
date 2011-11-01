@@ -135,6 +135,8 @@ namespace Fabric
     
       Context( RC::Handle<IO::Manager> const &ioManager, std::vector<std::string> const &pluginDirs );
       ~Context();
+
+      void jsonDesc( Util::JSONObjectGenerator &resultJOG ) const;
       
     private:
     
