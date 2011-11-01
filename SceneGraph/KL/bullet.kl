@@ -72,6 +72,15 @@ operator copyShapeVertices(
     shape.vertices[i] = positions[i];
 }
 
+operator copyShapeIndices(
+  io BulletShape shape,
+  io Integer indices[]
+){
+  shape.indices.resize(indices.size());
+  for(Size i=0;i<indices.size();i++)
+    shape.indices[i] = indices[i];
+}
+
 operator createBulletRigidBody(
   io BulletWorld world,
   io BulletShape shape,
