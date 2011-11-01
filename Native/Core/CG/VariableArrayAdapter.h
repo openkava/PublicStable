@@ -26,9 +26,8 @@ namespace Fabric
       // Adapter
     
       virtual void llvmInit( BasicBlockBuilder &basicBlockBuilder, llvm::Value *value ) const;
-      virtual void llvmRetain( BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const;
       virtual void llvmDefaultAssign( BasicBlockBuilder &basicBlockBuilder, llvm::Value *dstLValue, llvm::Value *srcRValue ) const;
-      virtual void llvmRelease( BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const;
+      virtual void llvmDisposeImpl( BasicBlockBuilder &basicBlockBuilder, llvm::Value *lValue ) const;
 
       virtual llvm::Constant *llvmDefaultValue( BasicBlockBuilder &basicBlockBuilder ) const;
       virtual llvm::Constant *llvmDefaultRValue( BasicBlockBuilder &basicBlockBuilder ) const;
@@ -65,6 +64,9 @@ namespace Fabric
       virtual llvm::Type const *buildLLVMRawType( RC::Handle<Context> const &context ) const;
 
       llvm::Type const *getLLVMImplType( RC::Handle<Context> const &context ) const;
+
+      void llvmRetain( BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const;
+      void llvmRelease( BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const;
       
     private:
     

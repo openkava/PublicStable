@@ -42,7 +42,7 @@ namespace Fabric
     {
       try
       {
-        m_expr->buildExprValue( basicBlockBuilder, CG::USAGE_UNSPECIFIED, "cannot be an l-value" ).llvmDispose( basicBlockBuilder );
+        m_expr->buildExprValue( basicBlockBuilder, CG::USAGE_UNSPECIFIED, "cannot be an l-value" );
       }
       catch ( CG::Error e )
       {

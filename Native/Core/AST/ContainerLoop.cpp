@@ -169,9 +169,7 @@ namespace Fabric
           }
           CG::BasicBlockBuilder loopBasicBlockBuilder( parentBasicBlockBuilder, loopScope );
           m_body->llvmCompileToBuilder( loopBasicBlockBuilder, diagnostics );
-          if ( valueRValue )
-            valueAdapter->llvmRelease( basicBlockBuilder, valueRValue );
-          loopScope.llvmUnwind( loopBasicBlockBuilder ); // [pzion 20111019] This should be a no-op anyway
+          loopScope.llvmUnwind( loopBasicBlockBuilder );
         }
         basicBlockBuilder->CreateBr( stepBB );
 

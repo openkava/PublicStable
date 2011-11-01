@@ -29,8 +29,6 @@ namespace Fabric
       ExprValue( ExprValue const &that );
       
       ExprValue &operator =( ExprValue const &that );
-
-      void set( BasicBlockBuilder &basicBlockBuilder, RC::ConstHandle<Adapter> const &adapter, Usage usage, llvm::Value *value );
       
       bool isValid() const;
       
@@ -55,7 +53,6 @@ namespace Fabric
       ExprValue &castTo( BasicBlockBuilder &basicBlockBuilder, RC::ConstHandle<Adapter> const &adapter );
       ExprValue &castTo( BasicBlockBuilder &basicBlockBuilder, Usage usage );
 
-      void llvmRetain( BasicBlockBuilder &basicBlockBuilder );
       void llvmDispose( BasicBlockBuilder &basicBlockBuilder );
     
       std::string desc() const;

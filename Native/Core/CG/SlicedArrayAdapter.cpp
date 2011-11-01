@@ -72,48 +72,6 @@ namespace Fabric
       m_variableArrayAdapter->llvmCompileToModule( moduleBuilder );
       
       static const bool buildFunctions = true;
-      
-      {
-        std::vector< FunctionParam > params;
-        params.push_back( FunctionParam( "array", this, CG::USAGE_RVALUE ) );
-        FunctionBuilder functionBuilder( moduleBuilder, "__"+getCodeName()+"__Retain", ExprType(), params, false );
-        if ( buildFunctions )
-        {
-          BasicBlockBuilder basicBlockBuilder( functionBuilder );
-
-          llvm::Value *rValue = functionBuilder[0];
-
-          llvm::BasicBlock *entryBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "entry" );
-          
-          basicBlockBuilder->SetInsertPoint( entryBB );
-          llvm::Value *slicedArayLValue = llvmRValueToLValue( basicBlockBuilder, rValue );
-          llvm::Value *variableArrayLValue = basicBlockBuilder->CreateStructGEP( slicedArayLValue, 2 );
-          llvm::Value *variableArrayRValue = m_variableArrayAdapter->llvmLValueToRValue( basicBlockBuilder, variableArrayLValue );
-          m_variableArrayAdapter->llvmRetain( basicBlockBuilder, variableArrayRValue );
-          basicBlockBuilder->CreateRetVoid();
-        }
-      }
-
-      {
-        std::vector< FunctionParam > params;
-        params.push_back( FunctionParam( "array", this, CG::USAGE_RVALUE ) );
-        FunctionBuilder functionBuilder( moduleBuilder, "__"+getCodeName()+"__Release", ExprType(), params, false );
-        if ( buildFunctions )
-        {
-          BasicBlockBuilder basicBlockBuilder( functionBuilder );
-
-          llvm::Value *rValue = functionBuilder[0];
-
-          llvm::BasicBlock *entryBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "entry" );
-          
-          basicBlockBuilder->SetInsertPoint( entryBB );
-          llvm::Value *slicedArayLValue = llvmRValueToLValue( basicBlockBuilder, rValue );
-          llvm::Value *variableArrayLValue = basicBlockBuilder->CreateStructGEP( slicedArayLValue, 2 );
-          llvm::Value *variableArrayRValue = m_variableArrayAdapter->llvmLValueToRValue( basicBlockBuilder, variableArrayLValue );
-          m_variableArrayAdapter->llvmRelease( basicBlockBuilder, variableArrayRValue );
-          basicBlockBuilder->CreateRetVoid();
-        }
-      }
 
       {
         std::vector< FunctionParam > params;
@@ -187,7 +145,6 @@ namespace Fabric
           llvm::Value *srcVariableArrayRValue = m_variableArrayAdapter->llvmLValueToRValue( basicBlockBuilder, srcVariableArrayLValue );
           llvm::Value *dstVariableArrayLValue = basicBlockBuilder->CreateStructGEP( dstSlicedArrayLValue, 2 );
           m_variableArrayAdapter->llvmInit( basicBlockBuilder, dstVariableArrayLValue );
-          m_variableArrayAdapter->llvmRetain( basicBlockBuilder, srcVariableArrayRValue );
           m_variableArrayAdapter->llvmDefaultAssign( basicBlockBuilder, dstVariableArrayLValue, srcVariableArrayRValue );
           basicBlockBuilder->CreateRetVoid();
 
@@ -282,7 +239,6 @@ namespace Fabric
             errorDescRValue
             );
           llvm::Value *defaultRValue = m_memberAdapter->llvmDefaultRValue( basicBlockBuilder );
-          m_memberAdapter->llvmRetain( basicBlockBuilder, defaultRValue );
           basicBlockBuilder->CreateRet( defaultRValue );
         }
       }
@@ -468,14 +424,6 @@ namespace Fabric
         llvmLocationConstStringRValue( basicBlockBuilder, constStringAdapter, location )
         );
     }
-    
-    void SlicedArrayAdapter::llvmRelease( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const
-    {
-      std::vector< FunctionParam > params;
-      params.push_back( FunctionParam( "array", this, CG::USAGE_RVALUE ) );
-      FunctionBuilder functionBuilder( basicBlockBuilder.getModuleBuilder(), "__"+getCodeName()+"__Release", ExprType(), params, false );
-      basicBlockBuilder->CreateCall( functionBuilder.getLLVMFunction(), rValue );
-    }
 
     void SlicedArrayAdapter::llvmDefaultAssign( BasicBlockBuilder &basicBlockBuilder, llvm::Value *dstLValue, llvm::Value *srcRValue ) const
     {
@@ -484,14 +432,6 @@ namespace Fabric
       params.push_back( FunctionParam( "srcRValue", this, CG::USAGE_RVALUE ) );
       FunctionBuilder functionBuilder( basicBlockBuilder.getModuleBuilder(), "__"+getCodeName()+"__DefaultAssign", ExprType(), params, false );
       basicBlockBuilder->CreateCall2( functionBuilder.getLLVMFunction(), dstLValue, srcRValue );
-    }
-
-    void SlicedArrayAdapter::llvmRetain( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const
-    {
-      std::vector< FunctionParam > params;
-      params.push_back( FunctionParam( "array", this, CG::USAGE_RVALUE ) );
-      FunctionBuilder functionBuilder( basicBlockBuilder.getModuleBuilder(), "__"+getCodeName()+"__Retain", ExprType(), params, false );
-      basicBlockBuilder->CreateCall( functionBuilder.getLLVMFunction(), rValue );
     }
     
     llvm::Constant *SlicedArrayAdapter::llvmDefaultValue( BasicBlockBuilder &basicBlockBuilder ) const

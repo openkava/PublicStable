@@ -87,7 +87,6 @@ namespace Fabric
               case CG::USAGE_RVALUE:
               {
                 llvm::Value *memberRValue = memberAdapter->llvmLValueToRValue( basicBlockBuilder, memberLValue );
-                memberAdapter->llvmRetain( basicBlockBuilder, memberRValue );
                 result = CG::ExprValue( memberAdapter, CG::USAGE_RVALUE, basicBlockBuilder.getContext(), memberRValue );
               }
               break;
@@ -100,7 +99,6 @@ namespace Fabric
                 FABRIC_ASSERT( false );
                 throw Exception( "unspecified usage" );
             }
-            structExprValue.llvmDispose( basicBlockBuilder );
             return result;
           }
         }

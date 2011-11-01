@@ -153,11 +153,7 @@ namespace Fabric
           case USAGE_RVALUE:
             return exprValue.getValue();
           case USAGE_LVALUE:
-          {
-            llvm::Value *rValue = llvmLValueToRValue( basicBlockBuilder, exprValue.getValue() );
-            llvmRetain( basicBlockBuilder, rValue );
-            return rValue;
-          }
+            return llvmLValueToRValue( basicBlockBuilder, exprValue.getValue() );
           default:
             FABRIC_ASSERT( false );
             return 0;
@@ -179,7 +175,6 @@ namespace Fabric
             break;
           case USAGE_LVALUE:
             srcRValue = exprValue.getAdapter()->llvmLValueToRValue( basicBlockBuilder, exprValue.getValue() );
-            exprValue.getAdapter()->llvmRetain( basicBlockBuilder, srcRValue );
             break;
           default:
             FABRIC_ASSERT( false );
@@ -193,7 +188,6 @@ namespace Fabric
         functionSymbol->llvmCreateCall( basicBlockBuilder, dstExprValue, srcExprValue );
         basicBlockBuilder.getScope().put( VariableSymbol::Create( dstExprValue ) );
         llvm::Value *dstRValue = llvmLValueToRValue( basicBlockBuilder, dstLValue );
-        llvmRetain( basicBlockBuilder, dstRValue );
         return dstRValue;
       }
     }
@@ -336,7 +330,6 @@ namespace Fabric
     void Adapter::llvmInit( BasicBlockBuilder &basicBlockBuilder, llvm::Value *lValue ) const
     {
       llvm::Value *defaultRValue = llvmDefaultRValue( basicBlockBuilder );
-      llvmRetain( basicBlockBuilder, defaultRValue );
       llvmStore( basicBlockBuilder, lValue, defaultRValue );
     }
     
@@ -393,7 +386,6 @@ namespace Fabric
 
     void Adapter::llvmDisposeImpl( BasicBlockBuilder &basicBlockBuilder, llvm::Value *lValue ) const
     {
-      llvmRelease( basicBlockBuilder, llvmLValueToRValue( basicBlockBuilder, lValue ) );
     }
   };
 };

@@ -19,17 +19,9 @@ namespace Fabric
     {
     }
 
-    void SimpleAdapter::llvmRetain( BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const
-    {
-    }
-
     void SimpleAdapter::llvmDefaultAssign( BasicBlockBuilder &basicBlockBuilder, llvm::Value *dstLValue, llvm::Value *srcRValue ) const
     {
       basicBlockBuilder->CreateStore( srcRValue, dstLValue );
-    }
-    
-    void SimpleAdapter::llvmRelease( BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const
-    {
     }
   };
 };

@@ -58,13 +58,6 @@ namespace Fabric
       return *this;
     }
     
-    void ExprValue::set( BasicBlockBuilder &basicBlockBuilder, RC::ConstHandle<Adapter> const &adapter, Usage usage, llvm::Value *value )
-    {
-      llvmDispose( basicBlockBuilder );
-      m_exprType.set( adapter, usage );
-      m_value = value;
-    }
-    
     bool ExprValue::isValid() const
     {
       return m_exprType.isValid() && m_value;
@@ -105,21 +98,11 @@ namespace Fabric
       return m_value;
     }
 
-    void ExprValue::llvmRetain( BasicBlockBuilder &basicBlockBuilder )
-    {
-      if ( isValid() )
-      {
-        if ( getUsage() == USAGE_RVALUE )
-          getAdapter()->llvmRetain( basicBlockBuilder, getValue() );
-      }
-    }
-
     void ExprValue::llvmDispose( BasicBlockBuilder &basicBlockBuilder )
     {
       if ( isValid() )
       {
-        if ( getUsage() == USAGE_RVALUE )
-          getAdapter()->llvmRelease( basicBlockBuilder, getValue() );
+        getAdapter()->llvmDispose( basicBlockBuilder, getValue() );
         m_value = 0;
       }
     }
@@ -161,7 +144,9 @@ namespace Fabric
       if ( m_value )
       {
         if ( !dstAdapter )
-          llvmDispose( basicBlockBuilder );
+        {
+          //
+        }
         else if ( srcAdapter->getImpl() != dstAdapter->getImpl() )
         {
           switch ( dstUsage )
@@ -188,8 +173,6 @@ namespace Fabric
             case USAGE_RVALUE:
             {
               llvm::Value *rValue = srcAdapter->llvmLValueToRValue( basicBlockBuilder, m_value );
-              srcAdapter->llvmRetain( basicBlockBuilder, rValue );
-              llvmDispose( basicBlockBuilder );
               m_value = rValue;
             }
             break;
