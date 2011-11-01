@@ -512,6 +512,11 @@ namespace Fabric
     void Context::jsonDesc( Util::JSONGenerator &resultJG ) const
     {
       Util::JSONObjectGenerator resultJGObject = resultJG.makeObject();
+      jsonDesc( resultJGObject );
+    }
+    
+    void Context::jsonDesc( Util::JSONObjectGenerator &resultJGObject ) const
+    {
       {
         Util::JSONGenerator memberJG = resultJGObject.makeMember( "contextID", 9 );
         memberJG.makeString( getContextID() );
