@@ -81,7 +81,8 @@ namespace Fabric
           CG::Scope subScope( basicBlockBuilder.getScope() );
           CG::BasicBlockBuilder subBasicBlockBuilder( basicBlockBuilder, subScope );
           m_trueStatement->llvmCompileToBuilder( subBasicBlockBuilder, diagnostics );
-          subScope.llvmUnwind( subBasicBlockBuilder );
+          if( !subBasicBlockBuilder->GetInsertBlock()->getTerminator() )
+            subScope.llvmUnwind( subBasicBlockBuilder );
         }
         if ( !basicBlockBuilder->GetInsertBlock()->getTerminator() )
         {
@@ -96,7 +97,8 @@ namespace Fabric
           CG::Scope subScope( basicBlockBuilder.getScope() );
           CG::BasicBlockBuilder subBasicBlockBuilder( basicBlockBuilder, subScope );
           m_falseStatement->llvmCompileToBuilder( subBasicBlockBuilder, diagnostics );
-          subScope.llvmUnwind( subBasicBlockBuilder );
+          if( !subBasicBlockBuilder->GetInsertBlock()->getTerminator() )
+            subScope.llvmUnwind( subBasicBlockBuilder );
         }
         if ( !basicBlockBuilder->GetInsertBlock()->getTerminator() )
         {
