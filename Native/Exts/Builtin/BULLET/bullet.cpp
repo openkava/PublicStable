@@ -369,25 +369,26 @@ FABRIC_EXT_EXPORT void FabricBULLET_World_Reset(
 
 FABRIC_EXT_EXPORT void FabricBULLET_World_Raycast(
   BulletWorld & world,
-  KL::Vec3 & rayOrigin,
-  KL::Vec3 & rayDirection
+  KL::Vec3 & from,
+  KL::Vec3 & to,
+  KL::Boolean & filterPassiveObjects
 )
 {
   if(world.localData != NULL) {
 #ifndef NDEBUG
     printf("  { FabricBULLET } : FabricBULLET_World_Raycast called.\n");
 #endif
-    btVector3 from(rayOrigin.x,rayOrigin.y,rayOrigin.z);
-    btVector3 to = from + btVector3(rayDirection.x,rayDirection.y,rayDirection.z) * 10000.0f;
-    btCollisionWorld::ClosestRayResultCallback callback(from,to);
-    world.localData->mDynamicsWorld->rayTest(from,to,callback);
+    btVector3 fromVec(from.x,from.y,from.z);
+    btVector3 toVec(to.x,to.y,to.z);
+    btCollisionWorld::ClosestRayResultCallback callback(fromVec,toVec);
+    world.localData->mDynamicsWorld->rayTest(fromVec,toVec,callback);
     world.hit = callback.hasHit();
     if(world.hit) {
       // filter out passive object
       if(callback.m_collisionObject) {
         btRigidBody * body = static_cast<btRigidBody*>(callback.m_collisionObject);
         if(body) {
-          if(body->getInvMass() == 0.0f) {
+          if(body->getInvMass() == 0.0f && filterPassiveObjects) {
             world.hit = false;
 #ifndef NDEBUG
             printf("  { FabricBULLET } : FabricBULLET_World_Raycast completed.\n");
@@ -396,7 +397,7 @@ FABRIC_EXT_EXPORT void FabricBULLET_World_Raycast(
           }
         }
       }
-      btVector3 position = from + (to-from) * callback.m_closestHitFraction;
+      btVector3 position = fromVec + (toVec-fromVec) * callback.m_closestHitFraction;
       world.hitPosition.x = position.getX();
       world.hitPosition.y = position.getY();
       world.hitPosition.z = position.getZ();
