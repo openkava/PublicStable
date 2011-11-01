@@ -106,8 +106,11 @@ namespace Fabric
     void Context::jsonDesc( Util::JSONGenerator &resultJG ) const
     {
       Util::JSONObjectGenerator resultJOG = resultJG.makeObject();
-      Util::JSONGenerator memberJG = resultJOG.makeMember( "VP", 2 );
-      jsonDescViewPorts( memberJG );
+      DG::Context::jsonDesc( resultJOG );
+      {
+        Util::JSONGenerator memberJG = resultJOG.makeMember( "VP", 2 );
+        jsonDescViewPorts( memberJG );
+      }
     }
     
     void Context::jsonDescViewPorts( Util::JSONGenerator &resultJG ) const
