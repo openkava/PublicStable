@@ -286,7 +286,6 @@ namespace Fabric
           llvmRetain( basicBlockBuilder, lhsRValue );
           llvmAssign( basicBlockBuilder, resultLValue, lhsRValue );
           basicBlockBuilder->CreateCall2( assignAddFunction, resultLValue, rhsRValue );
-          llvm::Value *resultRValue = llvmLValueToRValue( basicBlockBuilder, resultLValue );
           basicBlockBuilder->CreateRetVoid();
         }
       }
