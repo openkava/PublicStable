@@ -1,0 +1,14 @@
+#
+# Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+#
+
+Import( 'extsEnv', 'teemFlags', 'ExtSLName' )
+
+teemPluginEnv = extsEnv.Clone()
+teemPluginEnv.MergeFlags( teemFlags )
+teemPlugin = teemPluginEnv.SharedLibrary( ExtSLName('FabricTEEM'), Glob('*.cpp') ),
+teemManifest = teemPluginEnv.File('FabricTEEM.fpm.json'),
+teemKL = teemPluginEnv.File('FabricTEEM.kl'),
+teemFiles = [teemManifest, teemPlugin, teemKL]
+
+Return( 'teemFiles' )
