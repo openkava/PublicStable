@@ -1,0 +1,35 @@
+//===================================================================================
+// structs
+struct KinectCamera {
+  Boolean initiated;
+  Integer tileAngle;
+};
+
+//===================================================================================
+// extension's functions
+function FabricKINECT_Init(io KinectCamera camera);
+function FabricKINECT_Shutdown(io KinectCamera camera);
+function FabricKINECT_Tilt(io KinectCamera camera, io Integer angle);
+
+//===================================================================================
+// camera definition
+function ~KinectCamera() = "FabricKINECT_Shutdown";
+
+function KinectCamera.init(io Boolean result) {
+  if(!this.initiated) {
+    FabricKINECT_Init(this);
+    result = true;
+  }
+  else
+    result = false;
+}
+
+function KinectCamera.tilt(io Integer angle, io Boolean result) {
+  if(this.tileAngle != angle) {
+    FabricKINECT_Tilt(this,angle);
+    result = (this.tileAngle == angle);
+  }
+  else
+    result = false;
+}
+
