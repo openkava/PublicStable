@@ -114,7 +114,7 @@ function FabricBULLET_World_Delete(io BulletWorld world);
 function FabricBULLET_World_SetGravity(io BulletWorld world);
 function FabricBULLET_World_Step(io BulletWorld world, io Scalar timeStep);
 function FabricBULLET_World_Reset(io BulletWorld world);
-function FabricBULLET_World_Raycast(io BulletWorld world, io Vec3 rayOrigin, io Vec3 rayDirection);
+function FabricBULLET_World_Raycast(io BulletWorld world, io Vec3 from, io Vec3 to, io Boolean filterPassiveObjects);
 function FabricBULLET_World_ApplyForce(io BulletWorld world, io BulletForce force);
 function FabricBULLET_World_AddRigidBody(io BulletWorld world, io BulletRigidBody body);
 function FabricBULLET_World_RemoveRigidBody(io BulletWorld world, io BulletRigidBody body);
@@ -164,8 +164,8 @@ function BulletWorld.reset() {
   FabricBULLET_World_Reset(this);
 }
 
-function BulletWorld.raycast(io Vec3 origin, io Vec3 direction) {
-  FabricBULLET_World_Raycast(this,origin,direction);
+function BulletWorld.raycast(io Vec3 from, io Vec3 to, io Boolean filterPassiveObjects) {
+  FabricBULLET_World_Raycast(this,from,to,filterPassiveObjects);
 }
 
 function BulletWorld.applyForce(io BulletForce force) {
