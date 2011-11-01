@@ -387,6 +387,8 @@ FABRIC.RT.TrackSetController = function( activeTrackSet ) {
   this.tick = 0;
   this.comParams = [];
   this.stepIds = [];
+  this.deactivate = false;;
+  this.pivotFoot = 0;
 };
 
 FABRIC.appendOnCreateContextCallback(function(context) {
@@ -398,7 +400,9 @@ FABRIC.appendOnCreateContextCallback(function(context) {
       trackWeight: 'Scalar',
       tick: 'Size',
       comParams: 'Scalar[]',
-      stepIds: 'Integer[]'
+      stepIds: 'Integer[]',
+      deactivate: 'Boolean',
+      pivotFoot: 'Integer'
     },
     constructor: FABRIC.RT.TrackSetController
   });
@@ -425,8 +429,7 @@ FABRIC.SceneGraph.registerNodeType('LocomotionPoseVariables', {
       var bulletWorldNode = scene.getPrivateInterface(options.bulletWorldNode);
       dgnode.setDependency(bulletWorldNode.getDGNode(), 'bulletworld');
     }
-    dgnode.addMember('trackcontrollers', 'TrackSetController[]');
-    dgnode.setData('trackcontrollers', 0, [new FABRIC.RT.TrackSetController(0)]);
+    dgnode.addMember('trackcontroller', 'TrackSetController');
     dgnode.addMember('plantedFeet', 'Boolean[]');
     dgnode.addMember('plantLocations', 'Vec3[]');
     
@@ -450,15 +453,15 @@ FABRIC.SceneGraph.registerNodeType('LocomotionPoseVariables', {
         'globals.timestep',
         'charactercontroller.xfo',
         'charactercontroller.controllerparams',
-        
+        /*
         'bulletworld.world',
-        
+        */
         'animationlibrary.trackSet<>',
         'animationlibrary.locomotionMarkers<>',
         'animationlibrary.footStepTracks<>',
         
         'self.bindings',
-        'self.trackcontrollers',
+        'self.trackcontroller',
         
         'skeleton.hubs',
         'skeleton.legs',
