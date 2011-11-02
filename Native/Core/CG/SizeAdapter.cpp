@@ -323,6 +323,7 @@ namespace Fabric
           ExprValue errorExprValue( constStringAdapter, USAGE_RVALUE, context, constStringAdapter->llvmConst( basicBlockBuilder, errorMsg ) );
           llvm::Value *errorStringRValue = stringAdapter->llvmCast( basicBlockBuilder, errorExprValue );
           stringAdapter->llvmReport( basicBlockBuilder, errorStringRValue );
+          stringAdapter->llvmDispose( basicBlockBuilder, errorStringRValue );
           llvm::Value *defaultRValue = llvmDefaultRValue( basicBlockBuilder );
           basicBlockBuilder->CreateRet( defaultRValue );
         }
@@ -357,6 +358,7 @@ namespace Fabric
           ExprValue errorExprValue( constStringAdapter, USAGE_RVALUE, context, constStringAdapter->llvmConst( basicBlockBuilder, errorMsg ) );
           llvm::Value *errorStringRValue = stringAdapter->llvmCast( basicBlockBuilder, errorExprValue );
           stringAdapter->llvmReport( basicBlockBuilder, errorStringRValue );
+          stringAdapter->llvmDispose( basicBlockBuilder, errorStringRValue );
           llvm::Value *defaultRValue = llvmDefaultRValue( basicBlockBuilder );
           basicBlockBuilder->CreateRet( defaultRValue );
         }
