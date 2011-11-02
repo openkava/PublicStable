@@ -23,9 +23,18 @@ HANDLE	nextDepthFrameEvent;
 FABRIC_EXT_KL_STRUCT( KinectCamera, {
   struct LocalData{
     DWORD initFlags;
+    size_t width;
+    size_t height;
+    size_t numPixels;
+    size_t colorBytes;
+    size_t depthBytes;
     HANDLE  colorStream;
     HANDLE  depthStream;
-    HANDLE  skeletonStream;
+    HANDLE  colorEvent;
+    HANDLE  depthEvent;
+    HANDLE  skeletonEvent;
+    const NUI_IMAGE_FRAME* colorFrame;
+    const NUI_IMAGE_FRAME* depthFrame;
   };
   
   LocalData * localData;
@@ -36,7 +45,7 @@ FABRIC_EXT_KL_STRUCT( KinectCamera, {
   KL::Boolean supportsColor;
   KL::Boolean supportsDepth;
   KL::Boolean supportsSkeleton;
-  KL::VariableArray<KL::RGB> colorData;
+  KL::VariableArray<KL::RGBA> colorData;
   KL::VariableArray<KL::Scalar> depthData;
   KL::VariableArray<KL::Xfo> skeletonData;
 } );
@@ -57,9 +66,9 @@ FABRIC_EXT_EXPORT void FabricKINECT_Init(
     if(camera.supportsDepth)
       initFlags = initFlags | NUI_INITIALIZE_FLAG_USES_SKELETON;
     if(camera.supportsSkeleton)
-      initFlags = initFlags | NUI_INITIALIZE_FLAG_USES_DEPTH;
+      initFlags = initFlags | NUI_INITIALIZE_FLAG_USES_DEPTH_AND_PLAYER_INDEX;
       
-    if(NuiInitialize(initFlags) >= 0)
+    if(SUCCEEDED(NuiInitialize(initFlags)))
     {
       camera.initiated = true;
       
@@ -69,7 +78,7 @@ FABRIC_EXT_EXPORT void FabricKINECT_Init(
       
       // retrieve the angle from the camera
       LONG angle;
-      if(NuiCameraElevationGetAngle(&angle) >= 0)
+      if(SUCCEEDED(NuiCameraElevationGetAngle(&angle)))
 	camera.tiltAngle = (int)angle;
       else
 	camera.tiltAngle = 0;
@@ -77,8 +86,35 @@ FABRIC_EXT_EXPORT void FabricKINECT_Init(
       // setup the image resolutions
       camera.width = 640;
       camera.height = 480;
-      camera.colorData.resize(camera.width * camera.height);
-      camera.depthData.resize(camera.width * camera.height);
+      camera.localData->width = camera.width;
+      camera.localData->height = camera.height;
+      camera.localData->numPixels = camera.width * camera.height;
+      camera.colorData.resize(camera.localData->numPixels);
+      camera.depthData.resize(camera.localData->numPixels);
+      
+      // setup the handles
+      if(camera.supportsColor)
+      {
+	camera.localData->colorEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+	camera.localData->colorFrame = NULL;
+	camera.localData->colorBytes = camera.localData->numPixels * 4;
+	if(FAILED(NuiImageStreamOpen(NUI_IMAGE_TYPE_COLOR, NUI_IMAGE_RESOLUTION_640x480 , 0, 2, camera.localData->colorEvent, &camera.localData->colorStream)))
+	  camera.supportsColor = false;
+      }
+      if(camera.supportsDepth)
+      {
+	camera.localData->depthEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+	camera.localData->depthFrame = NULL;
+	camera.localData->depthBytes = camera.localData->numPixels * 3;
+	if(FAILED(NuiImageStreamOpen(NUI_IMAGE_TYPE_DEPTH, NUI_IMAGE_RESOLUTION_640x480 , 0, 2, camera.localData->depthEvent, &camera.localData->depthStream)))
+	  camera.supportsDepth = false;
+      }
+      if(camera.supportsSkeleton)
+      {
+	camera.localData->skeletonEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+	if(FAILED(NuiSkeletonTrackingEnable(camera.localData->skeletonEvent,0)))
+	  camera.supportsSkeleton = false;
+      }
     }
   }
 #ifndef NDEBUG
@@ -122,7 +158,7 @@ FABRIC_EXT_EXPORT void FabricKINECT_Tilt(
       angle = 27;
     else if(angle < -27)
       angle = -27;
-    if(NuiCameraElevationSetAngle(angle) >= 0)
+    if(SUCCEEDED(NuiCameraElevationSetAngle(angle)))
       camera.tiltAngle = angle;
   }
 #ifndef NDEBUG
@@ -137,9 +173,36 @@ FABRIC_EXT_EXPORT void FabricKINECT_GetColorPixels(
 #ifndef NDEBUG
   printf("  { FabricKINECT } : FabricKINECT_GetColorPixels called.\n");
 #endif
-  if(camera.initiated)
+  if(camera.initiated && camera.supportsColor && camera.localData != NULL)
   {
-    
+    //WaitForSingleObject(camera.localData->colorEvent, 10);
+    // pull the frame
+    if(SUCCEEDED(NuiImageStreamGetNextFrame(camera.localData->colorStream, 0, &camera.localData->colorFrame)))
+    {
+      // get the actual frame struct
+      NuiImageBuffer * buffer = camera.localData->colorFrame->pFrameTexture;
+      KINECT_LOCKED_RECT LockedRect;
+      buffer->LockRect(0, &LockedRect, NULL, 0);
+      
+      // extract the pixel information
+      if(LockedRect.Pitch != 0)
+      {
+	BYTE * pBuffer = (BYTE*)LockedRect.pBits;
+	size_t offset = 0;
+	for(size_t i=0;i<camera.localData->numPixels;i++)
+	{
+	  camera.colorData[i].b = pBuffer[offset++];
+	  camera.colorData[i].g = pBuffer[offset++];
+	  camera.colorData[i].r = pBuffer[offset++];
+	  camera.colorData[i].a = pBuffer[offset++];
+	}
+      }
+      
+      // release the frame
+      buffer->UnlockRect(0);
+      if(SUCCEEDED(NuiImageStreamReleaseFrame(camera.localData->colorStream,camera.localData->colorFrame)))
+	camera.localData->colorFrame = NULL;
+    }
   }
 #ifndef NDEBUG
   printf("  { FabricKINECT } : FabricKINECT_GetColorPixels completed.\n");
