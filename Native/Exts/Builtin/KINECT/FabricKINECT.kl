@@ -28,13 +28,12 @@ struct KinectCamera {
   Data localData;
   Boolean initiated;
   Integer tiltAngle;
-  Size width;
-  Size height;
   Boolean supportsColor;
   Boolean supportsDepth;
   Boolean supportsSkeleton;
   RGBA colorData[];
-  Scalar depthData[];
+  Integer depthData[];
+  Integer playerData[];
   Xfo skeletonData[];
 };
 
@@ -44,6 +43,7 @@ function FabricKINECT_Init(io KinectCamera camera);
 function FabricKINECT_Shutdown(io KinectCamera camera);
 function FabricKINECT_Tilt(io KinectCamera camera, io Integer angle);
 function FabricKINECT_GetColorPixels(io KinectCamera camera);
+function FabricKINECT_GetDepthPixels(io KinectCamera camera);
 
 //===================================================================================
 // camera definition
@@ -71,3 +71,6 @@ function KinectCamera.getColorPixels() {
   FabricKINECT_GetColorPixels(this);
 }
 
+function KinectCamera.getDepthPixels() {
+  FabricKINECT_GetDepthPixels(this);
+}
