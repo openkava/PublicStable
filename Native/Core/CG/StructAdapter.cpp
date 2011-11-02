@@ -38,7 +38,6 @@ namespace Fabric
     
     llvm::Type const *StructAdapter::buildLLVMRawType( RC::Handle<Context> const &context ) const
     {
-      
       std::vector<llvm::Type const *> memberLLVMTypes;
       memberLLVMTypes.reserve( m_memberAdapters.size() );
       for ( size_t i=0; i<m_memberAdapters.size(); ++i )
@@ -79,6 +78,15 @@ namespace Fabric
         basicBlockBuilder->CreateCall2( functionBuilder.getLLVMFunction(), dstLValue, srcRValue );
       }
       else basicBlockBuilder->CreateStore( basicBlockBuilder->CreateLoad( srcRValue ), dstLValue );
+    }
+
+    void StructAdapter::llvmDisposeImpl( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *lValue ) const
+    {
+      for ( size_t i=0; i<m_memberAdapters.size(); ++i )
+      {
+        llvm::Value *memberLValue = basicBlockBuilder->CreateStructGEP( lValue, i );
+        m_memberAdapters[i]->llvmDispose( basicBlockBuilder, memberLValue );
+      }
     }
 
     void StructAdapter::llvmCompileToModule( ModuleBuilder &moduleBuilder ) const
