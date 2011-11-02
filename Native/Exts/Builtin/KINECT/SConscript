@@ -16,10 +16,14 @@ kinectPluginEnv = extsEnv.Clone()
 # find the kinect sdk
 kinectInclude = 'C:\\Program Files (x86)\\Microsoft Research KinectSDK\inc'
 if not os.path.exists(kinectInclude):
+    kinectInclude = 'C:\\Program Files\\Microsoft Research KinectSDK\inc'
+if not os.path.exists(kinectInclude):
     print('WARNING: Skipping build of KINECT extension, no KINECT SDK found!')
     Return()
 
 kinectLib = 'C:\\Program Files (x86)\\Microsoft Research KinectSDK\lib\MSRKinectNUI.lib'
+if not os.path.exists(kinectLib):
+    kinectLib = 'C:\\Program Files\\Microsoft Research KinectSDK\lib\MSRKinectNUI.lib'
 if not os.path.exists(kinectLib):
     print('WARNING: Skipping build of KINECT extension, no KINECT SDK found!')
     Return()
