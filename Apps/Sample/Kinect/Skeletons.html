@@ -70,7 +70,7 @@ $(document).ready(function() {
   var camera = scene.constructNode('TargetCamera', {
       nearDistance: 0.1,
       farDistance: 2000,
-      position: new FABRIC.RT.Vec3(3.5,0,0),
+      position: new FABRIC.RT.Vec3(0,0,3.5),
       target: new FABRIC.RT.Vec3(0, 0, 1.5),
       fovY: Math.degToRad(45.6)
     });
@@ -89,7 +89,10 @@ $(document).ready(function() {
   var lines = kinect.constructLinesNode();
   
   // draw it
-  var lineMaterial = scene.constructNode('VertexColorMaterial', {});
+  var lineMaterial = scene.constructNode('VertexColorMaterial',{
+    prototypeMaterialType: 'LineMaterial',
+    lineWidth: 6,
+  });
   scene.constructNode('Instance', {
     materialNode: lineMaterial,
     geometryNode: lines
@@ -162,12 +165,22 @@ $(document).ready(function() {
         </div><!--viewer-->
         <div id="sidebar">
           <p class="box">&larr; <a href="../../../index.html">back to Demo list</a></p>
+          
           <div class="box">
-            <h2>INFO</h2>
+            <h2>NOTICE</h2>
+            <div class="content">
+              This sample depends on the Microsoft Kinect Research SDK to be installed on the system. If you don't have it yet,
+              resp. this sample isn't working, ensure to download it here and install it to this system:
+              <a href="http://research.microsoft.com/en-us/um/redmond/projects/kinectsdk/download.aspx">Microsoft Kinect SDK</a>
+            </div><!--content-->
+          </div><!--box-->
+          <div class="box">
+            <h2>DESCRIPTION</h2>
             <div class="content">
               Kinect Viewer.<br>
-              The points in this sample are driven by the depth and color channel of the Kinect Camera.
-              The minimum distance the camera can grab is 800mm.
+              The lines in this sample are driven by the skeleton data of the Kinect Camera.
+              Up to 6 characters can be tracked at the same time, they are colored uniquely.
+              The minimum distance the camera can grab is 800mm. 
             </div><!--content-->
           </div><!--box-->
                   <div class="box">

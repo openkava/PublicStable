@@ -140,20 +140,20 @@ operator getKinectCameraLines(
   for(Size i=0;i<KINECT_SKELETON_COUNT;i++){
     for(Size j=0;j<KINECT_POSITION_COUNT;j++){
       positions[offset] = camera.skeletonData[i].positions[j];
-      if(camera.skeletonData[i].trackingID == 1){
-        colors[offset] = Color(1.0,0.0,0.0,1.0);
-      } else if(camera.skeletonData[i].trackingID == 2){
-        colors[offset] = Color(0.0,1.0,0.0,1.0);
-      } else if(camera.skeletonData[i].trackingID == 3){
-        colors[offset] = Color(0.0,0.0,1.0,1.0);
-      } else if(camera.skeletonData[i].trackingID == 4){
-        colors[offset] = Color(1.0,0.0,1.0,1.0);
-      } else if(camera.skeletonData[i].trackingID == 5){
-        colors[offset] = Color(1.0,1.0,0.0,1.0);
-      } else if(camera.skeletonData[i].trackingID == 6){
-        colors[offset] = Color(0.0,1.0,1.0,1.0);
-      } else {
+      if(camera.skeletonData[i].trackingID == 0){
         colors[offset] = Color(0.0,0.0,0.0,1.0);
+      } else if(camera.skeletonData[i].trackingID % 6 == 0){
+        colors[offset] = Color(0.5,0.0,0.0,1.0);
+      } else if(camera.skeletonData[i].trackingID % 6 == 1){
+        colors[offset] = Color(0.0,0.5,0.0,1.0);
+      } else if(camera.skeletonData[i].trackingID % 6 == 2){
+        colors[offset] = Color(0.0,0.0,0.5,1.0);
+      } else if(camera.skeletonData[i].trackingID % 6 == 3){
+        colors[offset] = Color(0.5,0.0,0.5,1.0);
+      } else if(camera.skeletonData[i].trackingID % 6 == 4){
+        colors[offset] = Color(0.5,0.5,0.0,1.0);
+      } else if(camera.skeletonData[i].trackingID % 6 == 5){
+        colors[offset] = Color(0.0,0.5,0.5,1.0);
       }
       offset++;
     }
