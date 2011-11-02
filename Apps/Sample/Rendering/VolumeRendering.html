@@ -353,8 +353,7 @@ $(document).ready(function() {
   var borderSize = 0.01;
 
   //var opacityTexture = scene.constructNode('3DTextureGenerator');
-  var opacityTexture = scene.constructNode('Image3D',  { url: 'Resources/HeadHigh.nrrd', resourceTargetTransformNode: transform });
-  //TODO: connect image Xfo to transform node...
+  var opacityTexture = scene.constructNode('Image3D',  { url: 'Resources/ChestMid.nrrd', resourceTargetTransformNode: transform });
 
   var volumeNode = scene.constructNode('VolumeOpacityInstance', {
       viewportNode: viewport,
