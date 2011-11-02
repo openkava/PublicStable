@@ -648,35 +648,32 @@ FABRIC.SceneGraph = {
         globalsNode.addMember('time', 'Scalar', 0);
         globalsNode.addMember('time_prevupdate', 'Scalar', 0);
         globalsNode.addMember('timestep', 'Scalar', 0);
+        globalsNode.bindings.append(scene.constructOperator( {
+          operatorName:'calcTimeStep',
+          srcCode:'operator calcTimeStep(io Scalar t, io Scalar prev_t, io Scalar delta_t){ delta_t = t - prev_t; prev_t = t; }',
+          entryFunctionName:'calcTimeStep',
+          parameterLayout: [
+            'self.time',
+            'self.time_prevupdate',
+            'self.timestep'
+          ]
+        }));
         
-        var isPlaying = false, animationTime = 0;
+        var isPlaying = false, time = 0;
         var prevTime, onAdvanceCallback;
-        var requestAnimFrame = (function(){
-          return  window.requestAnimationFrame       || 
-                  window.webkitRequestAnimationFrame || 
-                  window.mozRequestAnimationFrame    || 
-                  window.oRequestAnimationFrame      || 
-                  window.msRequestAnimationFrame     || 
-                  function(/* function */ callback, /* DOMElement */ element){
-                    window.setTimeout(callback, 1000 / 60);
-                  };
-        })();
-        var setTime = function(t, timestep, redraw) {
-          animationTime = t;
-          globalsNode.setBulkData({ time:[t], timestep:[timestep] } );
+        var setTime = function(t, redraw) {
+          time = Math.round(t/sceneOptions.timeStep) * sceneOptions.timeStep;
+          globalsNode.setData('time', 0, t);
           
           if( onAdvanceCallback){
             onAdvanceCallback.call();
           }
           if(redraw !== false){
             scene.pub.redrawAllViewports();
-            if(isPlaying){
-              // Queue up the next redraw immediately. 
-              requestAnimFrame( advanceTime, viewports[0].getWindowElement() );
-            }
           }
         }
-        var advanceTime = function(currTime) {
+        var advanceTime = function() {
+          var currTime = (new Date).getTime();
           var deltaTime = (currTime - prevTime)/1000;
           prevTime = currTime;
           // The computer will attempt to play back
@@ -684,29 +681,26 @@ FABRIC.SceneGraph = {
           // it plays as fast as possible.
           // The time step as used throughout the graph will always be fixed at the
           // given rate.
-          var t = animationTime + sceneOptions.timeStep;
+          var t = time + sceneOptions.timeStep;
           if(deltaTime < sceneOptions.timeStep){
             var delay = (sceneOptions.timeStep - deltaTime)*1000;
             setTimeout(function(){
-                setTime(t, sceneOptions.timeStep);
+                setTime(t);
               },
               delay
             );
           }else{
-            setTime(t, sceneOptions.timeStep);
+            setTime(t);
           }
         }
         /////////////////////////////////////////////////////////
         // Animation Interface
         scene.pub.animation = {
           setTime:function(t, redraw) {
-            setTime(t, (t - animationTime), redraw);
+            setTime(t, redraw);
           },
           getTime:function() {
-            return animationTime;
-          },
-          setTimeStep:function(val) {
-            sceneOptions.timeStep = val;
+            return time;
           },
           getTimeStep:function() {
             return sceneOptions.timeStep;
@@ -719,18 +713,21 @@ FABRIC.SceneGraph = {
             // we have zero or more windows. What happens when we have
             // multiple viewports? Should the 'play' controls be moved to
             // Viewport?
-            requestAnimFrame( advanceTime, viewports[0].getWindowElement() );
+              prevTime = (new Date).getTime();
+              scene.getContext().VP.viewPort.setRedrawFinishedCallback(advanceTime);
+              scene.getContext().VP.viewPort.needsRedraw();
           },
           isPlaying: function(){
             return isPlaying;
           },
           pause: function() {
             isPlaying = false;
+            scene.getContext().VP.viewPort.setRedrawFinishedCallback(null);
           },
           reset: function() {
             isPlaying = false;
-            animationTime = 0.0;
-            globalsNode.setData('time', 0.0);
+            time = 0.0;
+            globalsNode.setBulkData({'time': [0], time_prevupdate: [0] });
           },
           step: function() {
             advanceTime();
