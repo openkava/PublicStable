@@ -32,6 +32,7 @@ struct BulletShape {
   String name;
   Scalar parameters[];
   Vec3 vertices[];
+  Integer indices[];
 };
 
 struct BulletRigidBody {
