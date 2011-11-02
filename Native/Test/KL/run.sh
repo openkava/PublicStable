@@ -21,8 +21,14 @@ else
 fi
 
 REPLACE=0
+OS_SPEC=0
 if [ "$1" = "-r" ]; then
   REPLACE=1
+  shift
+fi
+if [ "$1" = "-s" ]; then
+  REPLACE=1
+  OS_SPEC=1
   shift
 fi
 
@@ -37,23 +43,34 @@ for f in "$@"; do
   fi
 
   if [ "$REPLACE" -eq 1 ]; then
-    mv $TMPFILE ${f%.kl}.out
-    echo "REPL $(basename $f)";
-  elif ! cmp $TMPFILE ${f%.kl}.out; then
-    echo "FAIL $(basename $f)"
-    echo "Expected output:"
-    if [ -f ${f%.kl}.out ]; then
-      cat ${f%.kl}.out
+    if [ "$OS_SPEC" -eq 1 ]; then
+      OUTFILE=${f%.kl}.$BUILD_OS.$BUILD_ARCH.out
     else
-      echo "(missing ${f%.kl}.out)"
+      OUTFILE=${f%.kl}.out
     fi
-    echo "Actual output ($TMPFILE):"
-    cat $TMPFILE
-    echo "To debug, run:"
-    echo "gdb --args" $VALGRIND_CMD ../../build/$BUILD_OS/$BUILD_ARCH/$BUILD_TYPE/Fabric/Tools/KL/kl --run $f
-    exit 1
+    mv "$TMPFILE" "$OUTFILE"
+    echo "REPL $(basename $f)";
   else
-    echo "PASS $(basename $f)";
-    rm $TMPFILE
+    EXPFILE=${f%.kl}.$BUILD_OS.$BUILD_ARCH.out
+    [ -f "$EXPFILE" ] || EXPFILE=${f%.kl}.out
+    if ! cmp $TMPFILE $EXPFILE; then
+      echo "FAIL $(basename $f)"
+      echo "Expected output:"
+      if [ -f $EXPFILE ]; then
+        cat $EXPFILE
+      else
+        echo "(missing $EXPFILE)"
+      fi
+      echo "Actual output ($TMPFILE):"
+      cat $TMPFILE
+      echo "diff -u:"
+      diff -u $EXPFILE $TMPFILE
+      echo "To debug, run:"
+      echo "gdb --args" $VALGRIND_CMD ../../build/$BUILD_OS/$BUILD_ARCH/$BUILD_TYPE/Fabric/Tools/KL/kl --run $f
+      exit 1
+    else
+      echo "PASS $(basename $f)";
+      rm $TMPFILE
+    fi
   fi
 done
