@@ -645,36 +645,72 @@ namespace Fabric
     
     void StringAdapter::llvmRetain( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *bitsLValue ) const
     {    
+      RC::Handle<Context> context = basicBlockBuilder.getContext();
       RC::ConstHandle<SizeAdapter> sizeAdapter = basicBlockBuilder.getManager()->getSizeAdapter();
 
-      llvm::BasicBlock *nonNullBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "stringRetainNonNull" );
-      llvm::BasicBlock *doneBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "stringRetainDone" );
+      std::vector<llvm::Type const *> argTypes;
+      argTypes.push_back( bitsLValue->getType() );
+      llvm::FunctionType const *funcType = llvm::FunctionType::get( llvm::Type::getVoidTy( context->getLLVMContext() ), argTypes, false );
       
-      basicBlockBuilder->CreateCondBr(
-        basicBlockBuilder->CreateIsNotNull( bitsLValue ),
-        nonNullBB,
-        doneBB
-        );
-      
-      basicBlockBuilder->SetInsertPoint( nonNullBB );
-      llvm::Value *oneRValue = sizeAdapter->llvmConst( basicBlockBuilder.getContext(), 1 );
-      llvm::Value *refCountLValue = basicBlockBuilder->CreateStructGEP( bitsLValue, 0 );
-      static const size_t numIntrinsicTypes = 2;
-      llvm::Type const *intrinsicTypes[numIntrinsicTypes] =
-      {
-        oneRValue->getType(),
-        refCountLValue->getType()
-      };
-      llvm::Function *intrinsic = llvm::Intrinsic::getDeclaration( basicBlockBuilder.getModuleBuilder(), llvm::Intrinsic::atomic_load_add, intrinsicTypes, numIntrinsicTypes );
-      FABRIC_ASSERT( intrinsic );
-      basicBlockBuilder->CreateCall2(
-        intrinsic,
-        refCountLValue,
-        oneRValue
-        );
-      basicBlockBuilder->CreateBr( doneBB );
+      llvm::AttributeWithIndex AWI[1];
+      AWI[0] = llvm::AttributeWithIndex::get( ~0u, llvm::Attribute::InlineHint | llvm::Attribute::NoUnwind );
+      llvm::AttrListPtr attrListPtr = llvm::AttrListPtr::get( AWI, 1 );
 
-      basicBlockBuilder->SetInsertPoint( doneBB );
+      std::string name = "__"+getCodeName()+"_Retain";
+      llvm::Function *func = llvm::cast<llvm::Function>( basicBlockBuilder.getModuleBuilder()->getFunction( name ) );
+      if ( !func )
+      {
+        ModuleBuilder &mb = basicBlockBuilder.getModuleBuilder();
+        
+        func = llvm::cast<llvm::Function>( mb->getOrInsertFunction( name, funcType, attrListPtr ) ); 
+        func->setLinkage( llvm::GlobalValue::PrivateLinkage );
+        
+        FunctionBuilder fb( mb, funcType, func );
+        llvm::Value *bitsLValue = fb[0];
+        
+        BasicBlockBuilder bbb( fb );
+
+        llvm::BasicBlock *entryBB = fb.createBasicBlock( "entry" );
+        llvm::BasicBlock *nonNullBB = fb.createBasicBlock( "nonNull" );
+        llvm::BasicBlock *doneBB = fb.createBasicBlock( "done" );
+        
+        bbb->SetInsertPoint( entryBB );
+        bbb->CreateCondBr(
+          bbb->CreateIsNotNull( bitsLValue ),
+          nonNullBB,
+          doneBB
+          );
+        
+        bbb->SetInsertPoint( nonNullBB );
+        llvm::Value *oneRValue = sizeAdapter->llvmConst( context, 1 );
+        llvm::Value *refCountLValue = bbb->CreateStructGEP( bitsLValue, 0 );
+        static const size_t numIntrinsicTypes = 2;
+        llvm::Type const *intrinsicTypes[numIntrinsicTypes] =
+        {
+          oneRValue->getType(),
+          refCountLValue->getType()
+        };
+        llvm::Function *intrinsic = llvm::Intrinsic::getDeclaration(
+          mb,
+          llvm::Intrinsic::atomic_load_add,
+          intrinsicTypes,
+          numIntrinsicTypes
+          );
+        FABRIC_ASSERT( intrinsic );
+        bbb->CreateCall2(
+          intrinsic,
+          refCountLValue,
+          oneRValue
+          );
+        bbb->CreateBr( doneBB );
+
+        bbb->SetInsertPoint( doneBB );
+        bbb->CreateRetVoid();
+      }
+
+      std::vector<llvm::Value *> args;
+      args.push_back( bitsLValue );
+      basicBlockBuilder->CreateCall( func, args.begin(), args.end() );
     }
     
     void StringAdapter::llvmRelease( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *bitsLValue ) const
@@ -694,10 +730,10 @@ namespace Fabric
       llvm::Function *func = llvm::cast<llvm::Function>( basicBlockBuilder.getModuleBuilder()->getFunction( name ) );
       if ( !func )
       {
-        func = llvm::cast<llvm::Function>( basicBlockBuilder.getModuleBuilder()->getOrInsertFunction( name, funcType, attrListPtr ) ); 
-        func->setLinkage( llvm::GlobalValue::PrivateLinkage );
-        
         ModuleBuilder &mb = basicBlockBuilder.getModuleBuilder();
+        
+        func = llvm::cast<llvm::Function>( mb->getOrInsertFunction( name, funcType, attrListPtr ) ); 
+        func->setLinkage( llvm::GlobalValue::PrivateLinkage );
         
         FunctionBuilder fb( mb, funcType, func );
         llvm::Value *bitsLValue = fb[0];
