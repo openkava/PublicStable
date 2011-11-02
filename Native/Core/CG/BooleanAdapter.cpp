@@ -65,24 +65,20 @@ namespace Fabric
           basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
           llvm::BasicBlock *trueBB = functionBuilder.createBasicBlock( "true" );
           llvm::BasicBlock *falseBB = functionBuilder.createBasicBlock( "false" );
-          llvm::BasicBlock *mergeBB = functionBuilder.createBasicBlock( "merge" );
           basicBlockBuilder->CreateCondBr( booleanRValue, trueBB, falseBB );
           
           basicBlockBuilder->SetInsertPoint( trueBB );
           ExprValue trueExprValue( constStringAdapter, USAGE_RVALUE, context, constStringAdapter->llvmConst( basicBlockBuilder, "true", 4 ) );
           llvm::Value *trueStringRValue = stringAdapter->llvmCast( basicBlockBuilder, trueExprValue );
-          basicBlockBuilder->CreateBr( mergeBB );
+          stringAdapter->llvmAssign( basicBlockBuilder, stringLValue, trueStringRValue );
+          stringAdapter->llvmDispose( basicBlockBuilder, trueStringRValue );
+          basicBlockBuilder->CreateRetVoid();
           
           basicBlockBuilder->SetInsertPoint( falseBB );
           ExprValue falseExprValue( constStringAdapter, USAGE_RVALUE, context, constStringAdapter->llvmConst( basicBlockBuilder, "false", 5 ) );
           llvm::Value *falseStringRValue = stringAdapter->llvmCast( basicBlockBuilder, falseExprValue );
-          basicBlockBuilder->CreateBr( mergeBB );
-          
-          basicBlockBuilder->SetInsertPoint( mergeBB );
-          llvm::PHINode *stringRValue = basicBlockBuilder->CreatePHI( stringAdapter->llvmRType( context ), "stringRValue" );
-          stringRValue->addIncoming( trueStringRValue, trueBB );
-          stringRValue->addIncoming( falseStringRValue, falseBB );
-          stringAdapter->llvmAssign( basicBlockBuilder, stringLValue, stringRValue );
+          stringAdapter->llvmAssign( basicBlockBuilder, stringLValue, falseStringRValue );
+          stringAdapter->llvmDispose( basicBlockBuilder, falseStringRValue );
           basicBlockBuilder->CreateRetVoid();
         }
       }
