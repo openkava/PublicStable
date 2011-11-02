@@ -50,6 +50,7 @@ FABRIC_EXT_KL_STRUCT( KinectCamera, {
     const NUI_IMAGE_FRAME* colorFrame;
     const NUI_IMAGE_FRAME* depthFrame;
     NUI_SKELETON_FRAME skeletonFrame;
+    NUI_TRANSFORM_SMOOTH_PARAMETERS smoothParameters;
   };
   
   LocalData * localData;
@@ -62,6 +63,12 @@ FABRIC_EXT_KL_STRUCT( KinectCamera, {
   KL::VariableArray<KL::Integer> depthData;
   KL::VariableArray<KL::Integer> playerData;
   KL::VariableArray<KinectSkeletonData> skeletonData;
+  KL::Boolean supportsSmoothing;
+  KL::Scalar skeletonSmoothing;
+  KL::Scalar skeletonCorrection;
+  KL::Scalar skeletonPrediction;
+  KL::Scalar skeletonJitterRadius;
+  KL::Scalar skeletonMaxDeviationRadius;
 } );
 
 FABRIC_EXT_EXPORT void FabricKINECT_Init(
@@ -322,6 +329,18 @@ FABRIC_EXT_EXPORT void FabricKINECT_GetSkeleton(
 #endif
   if(camera.initiated && camera.supportsSkeleton && camera.localData != NULL)
   {
+    // setup smoothing
+    if(camera.supportsSmoothing)
+    {
+      camera.localData->smoothParameters.fSmoothing = camera.skeletonSmoothing;
+      camera.localData->smoothParameters.fCorrection = camera.skeletonCorrection;
+      camera.localData->smoothParameters.fPrediction = camera.skeletonPrediction;
+      camera.localData->smoothParameters.fJitterRadius = camera.skeletonJitterRadius;
+      camera.localData->smoothParameters.fMaxDeviationRadius = camera.skeletonMaxDeviationRadius;
+      NuiTransformSmooth(&camera.localData->skeletonFrame,&camera.localData->smoothParameters);
+    } else
+      NuiTransformSmooth(&camera.localData->skeletonFrame,NULL);
+
     // pull the frame
     if(SUCCEEDED(NuiSkeletonGetNextFrame(0,&camera.localData->skeletonFrame)))
     {
