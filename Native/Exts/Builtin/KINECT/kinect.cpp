@@ -20,6 +20,17 @@ HANDLE	nextDepthFrameEvent;
 
 // ====================================================================
 // KL structs
+
+FABRIC_EXT_KL_STRUCT( KinectSkeletonData, {
+  KL::Integer trackingState;
+  KL::Integer trackingID;
+  KL::Integer userID;
+  KL::Vec3 center;
+  KL::VariableArray<KL::Vec3> positions;
+  KL::VariableArray<KL::Integer> positionTrackingStates;
+  KL::Integer quality;
+} );
+
 FABRIC_EXT_KL_STRUCT( KinectCamera, {
   struct LocalData{
     DWORD initFlags;
@@ -38,6 +49,7 @@ FABRIC_EXT_KL_STRUCT( KinectCamera, {
     HANDLE  skeletonEvent;
     const NUI_IMAGE_FRAME* colorFrame;
     const NUI_IMAGE_FRAME* depthFrame;
+    NUI_SKELETON_FRAME skeletonFrame;
   };
   
   LocalData * localData;
@@ -49,7 +61,7 @@ FABRIC_EXT_KL_STRUCT( KinectCamera, {
   KL::VariableArray<KL::RGBA> colorData;
   KL::VariableArray<KL::Integer> depthData;
   KL::VariableArray<KL::Integer> playerData;
-  KL::VariableArray<KL::Xfo> skeletonData;
+  KL::VariableArray<KinectSkeletonData> skeletonData;
 } );
 
 FABRIC_EXT_EXPORT void FabricKINECT_Init(
@@ -300,3 +312,55 @@ FABRIC_EXT_EXPORT void FabricKINECT_GetPoints(
   printf("  { FabricKINECT } : FabricKINECT_GetPoint completed.\n");
 #endif
 }
+
+FABRIC_EXT_EXPORT void FabricKINECT_GetSkeleton(
+  KinectCamera & camera
+)
+{
+#ifndef NDEBUG
+  printf("  { FabricKINECT } : FabricKINECT_GetSkeleton called.\n");
+#endif
+  if(camera.initiated && camera.supportsSkeleton && camera.localData != NULL)
+  {
+    // pull the frame
+    if(SUCCEEDED(NuiSkeletonGetNextFrame(0,&camera.localData->skeletonFrame)))
+    {
+      NUI_SKELETON_FRAME * frame = &camera.localData->skeletonFrame;
+      // allocate the space for the skeletons
+      camera.skeletonData.resize(NUI_SKELETON_COUNT);
+      for(KL::Size i=0;i<NUI_SKELETON_COUNT;i++)
+      {
+	NUI_SKELETON_DATA * data = &frame->SkeletonData[i];
+	camera.skeletonData[i].trackingState = (KL::Integer)data->eTrackingState;
+	camera.skeletonData[i].trackingID = (KL::Integer)data->dwTrackingID;
+	camera.skeletonData[i].userID = (KL::Integer)data->dwUserIndex;
+	camera.skeletonData[i].center.x = data->Position.x;
+	camera.skeletonData[i].center.y = data->Position.y;
+	camera.skeletonData[i].center.z = data->Position.z;
+	camera.skeletonData[i].positions.resize(NUI_SKELETON_POSITION_COUNT);
+	camera.skeletonData[i].positionTrackingStates.resize(NUI_SKELETON_POSITION_COUNT);
+	for(KL::Size j=0;j<NUI_SKELETON_POSITION_COUNT;j++)
+	{
+	  camera.skeletonData[i].positions[j].x = data->SkeletonPositions[j].x;
+	  camera.skeletonData[i].positions[j].y = data->SkeletonPositions[j].y;
+	  camera.skeletonData[i].positions[j].z = data->SkeletonPositions[j].z;
+	  camera.skeletonData[i].positionTrackingStates[j] = (KL::Integer)data->eSkeletonPositionTrackingState[j];
+	}
+	camera.skeletonData[i].quality = (KL::Integer)data->dwQualityFlags;
+      }
+    }
+  }
+#ifndef NDEBUG
+  printf("  { FabricKINECT } : FabricKINECT_GetSkeleton completed.\n");
+#endif
+}
+
+
+/*
+  KL::Integer trackingID;
+  KL::Integer userID;
+  KL::Vec3 center;
+  KL::VariableArray<KL::Vec3> positions;
+  KL::VariableArray<KL::Integer> positionTrackingStates;
+  KL::Integer quality;
+*/
