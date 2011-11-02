@@ -48,9 +48,9 @@
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Kinematics.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Persistence.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.DebugGeometry.js" charset="utf-8"></script>
-    <!--
+    
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Bullet.js" charset="utf-8"></script>
-    -->
+    
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Characters.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.CharacterSolvers.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.CharacterLocomotion.js" charset="utf-8"></script>
@@ -123,7 +123,7 @@ $(document).ready(function() {
         sections_z: 20 }),
     materialNode: scene.constructNode('FlatMaterial')
   });
-  /*
+  
   // create a simulation world
   var bulletWorldNode = scene.constructNode('BulletWorldNode', { createGroundPlaneGrid:false } );
   
@@ -141,7 +141,7 @@ $(document).ready(function() {
     width: 2.0,
     height: 2.0
   });
-  /*
+  
   var nonslicedTransform = scene.constructNode('BulletRigidBodyTransform', {
     bulletWorldNode: bulletWorldNode,
     shapeName: 'Box',
@@ -182,20 +182,17 @@ $(document).ready(function() {
     transformNode: nonslicedTransform2,
     enableRaycasting: true
   });
-   */
-  /*
+  
   var nonslicedTransform3 = scene.constructNode('BulletRigidBodyTransform', {
     bulletWorldNode: bulletWorldNode,
     shapeName: 'Box',
     rigidBody: new FABRIC.RT.BulletRigidBody({
       transform: FABRIC.RT.xfo({
-        tr: new FABRIC.RT.Vec3(-53,14,60),
+        tr: new FABRIC.RT.Vec3(-53,7,60),
         ori: new FABRIC.RT.Quat().setFromAxisAndAngle(new FABRIC.RT.Vec3(0,0,1),-0.3),
         sc: new FABRIC.RT.Vec3(30.0,1,40),
       }),
-                  friction: 0.8,
-                  restitution: 0.3,
-                  mass: 0.0
+      mass: 0.0
     })
   });
   
@@ -205,7 +202,6 @@ $(document).ready(function() {
     transformNode: nonslicedTransform3,
     enableRaycasting: true
   });
-  */
   
     
   var rigName = 'marama';
@@ -230,8 +226,8 @@ $(document).ready(function() {
         cameraNode: camera,
         maxLinearVelocity: new FABRIC.RT.Vec2(40.0, 40.0),
         maxLinearAcceleration: 2.0,
-        maxAngularVelocity:  new FABRIC.RT.Euler(0.0,0.5,0.0)/*,
-        bulletWorldNode: bulletWorldNode*/,
+        maxAngularVelocity:  new FABRIC.RT.Euler(0.0,0.5,0.0),
+        bulletWorldNode: bulletWorldNode,
         numTrailSegments: 0,
         gravity: -15.0,
         comHeight: 18,
@@ -261,8 +257,8 @@ $(document).ready(function() {
     
   
   var locomotionVariables = scene.constructNode('LocomotionPoseVariables', {
-    baseVariables: characterVariables/* ,
-    bulletWorldNode: bulletWorldNode*/
+    baseVariables: characterVariables,
+    bulletWorldNode: bulletWorldNode
   });
   locomotionVariables.setCharacterController(locomotionControllerNode);
   locomotionVariables.setAnimationLibrary(libraryAnimations);
