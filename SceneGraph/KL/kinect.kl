@@ -2,6 +2,9 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 use FabricKINECT;
+use Vec3;
+use Euler;
+use Quat;
 
 operator initKinectCamera(
   io KinectCamera camera
@@ -20,18 +23,26 @@ operator tiltKinectCamera(
   camera.tilt(angle,result);
 }
 
+operator getKinectCameraAllPixels(
+  io KinectCamera camera,
+  io Scalar time
+){
+  if(camera.initiated){
+    camera.getColorPixels();
+    camera.getDepthPixels();
+  }
+}
+
 operator getKinectCameraColorPixels(
   io KinectCamera camera,
   io RGBA pixels[],
   io Size width,
-  io Size height,
-  io Scalar time
+  io Size height
 ){
   if(pixels.size() == 0)
     pixels.resize(width*height);
     
   if(pixels.size() == camera.colorData.size() && camera.initiated && camera.supportsColor){
-    camera.getColorPixels();
     pixels = camera.colorData;
   }
 }
@@ -40,14 +51,12 @@ operator getKinectCameraDepthPixels(
   io KinectCamera camera,
   io Integer pixels[],
   io Size width,
-  io Size height,
-  io Scalar time
+  io Size height
 ){
   if(pixels.size() == 0)
     pixels.resize(width*height);
     
   if(pixels.size() == camera.depthData.size() && camera.initiated && camera.supportsDepth){
-    camera.getDepthPixels();
     pixels = camera.depthData;
   }
 }
@@ -56,14 +65,12 @@ operator getKinectCameraPlayerPixels(
   io KinectCamera camera,
   io Integer pixels[],
   io Size width,
-  io Size height,
-  io Scalar time
+  io Size height
 ){
   if(pixels.size() == 0)
     pixels.resize(width*height);
     
   if(pixels.size() == camera.depthData.size() && camera.initiated && camera.supportsDepth){
-    camera.getDepthPixels();
     pixels = camera.playerData;
   }
 }
@@ -74,14 +81,12 @@ operator getKinectCameraDepthAsColorPixels(
   io Size width,
   io Size height,
   io Integer depthMin,
-  io Integer depthMax,
-  io Scalar time
+  io Integer depthMax
 ){
   if(pixels.size() == 0)
     pixels.resize(width*height);
     
   if(pixels.size() == camera.depthData.size() && camera.initiated && camera.supportsDepth){
-    camera.getDepthPixels();
     for(Size i=0;i<pixels.size();i++){
       if(camera.depthData[i] == 0){
         pixels[i].r = pixels[i].g = pixels[i].b = pixels[i].a = 0;
@@ -115,4 +120,12 @@ operator getKinectCameraDepthAsColorPixels(
       }
     }
   }
+}
+
+operator getKinectCameraPoints(
+  io KinectCamera camera,
+  io Vec3 positions<>,
+  io Color colors<>
+){
+  camera.getPoints(positions,colors);
 }

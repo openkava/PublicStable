@@ -43,6 +43,7 @@ FABRIC.SceneGraph.registerNodeType('KinectCamera', {
     kinectNode.addMemberInterface(dgnode, 'tiltAngle', true);
     kinectNode.addMemberInterface(dgnode, 'depthMin', true);
     kinectNode.addMemberInterface(dgnode, 'depthMax', true);
+    dgnode.setDependency(scene.getGlobalsNode(), 'globals');
 
     // create init operator
     dgnode.bindings.append(scene.constructOperator({
@@ -64,6 +65,17 @@ FABRIC.SceneGraph.registerNodeType('KinectCamera', {
       entryFunctionName: 'tiltKinectCamera',
       srcFile: 'FABRIC_ROOT/SceneGraph/KL/kinect.kl'
     }));
+
+    // create tilt operator
+    dgnode.bindings.append(scene.constructOperator({
+      operatorName: 'getKinectCameraAllPixels',
+      parameterLayout: [
+        'self.camera',
+        'globals.time'
+      ],
+      entryFunctionName: 'getKinectCameraAllPixels',
+      srcFile: 'FABRIC_ROOT/SceneGraph/KL/kinect.kl'
+    }));
     
     // see if we need to support color
     if(options.supportsColor) {
@@ -77,7 +89,6 @@ FABRIC.SceneGraph.registerNodeType('KinectCamera', {
           forceRefresh: true
         });
         var textureDGNode = textureNode.getDGNode();
-        textureDGNode.setDependency(scene.getGlobalsNode(), 'globals');
         textureDGNode.setDependency(dgnode,'kinect');
 
         // create init operator
@@ -87,8 +98,7 @@ FABRIC.SceneGraph.registerNodeType('KinectCamera', {
             'kinect.camera',
             'self.pixels',
             'self.width',
-            'self.height',
-            'globals.time'
+            'self.height'
           ],
           entryFunctionName: 'getKinectCameraColorPixels',
           srcFile: 'FABRIC_ROOT/SceneGraph/KL/kinect.kl'
@@ -110,7 +120,6 @@ FABRIC.SceneGraph.registerNodeType('KinectCamera', {
           forceRefresh: true
         });
         var textureDGNode = textureNode.getDGNode();
-        textureDGNode.setDependency(scene.getGlobalsNode(), 'globals');
         textureDGNode.setDependency(dgnode,'kinect');
 
         // create init operator
@@ -122,8 +131,7 @@ FABRIC.SceneGraph.registerNodeType('KinectCamera', {
             'self.width',
             'self.height',
             'kinect.depthMin',
-            'kinect.depthMax',
-            'globals.time'
+            'kinect.depthMax'
           ],
           entryFunctionName: 'getKinectCameraDepthAsColorPixels',
           srcFile: 'FABRIC_ROOT/SceneGraph/KL/kinect.kl'
@@ -132,6 +140,31 @@ FABRIC.SceneGraph.registerNodeType('KinectCamera', {
         return textureNode.pub;
       };
     }
+
+    kinectNode.pub.constructPointsNode = function() {
+      var pointsNode = scene.constructNode('Points', {});
+      pointsNode.pub.addVertexAttributeValue('vertexColors','Color',{ genVBO:true });
+      pointsNode.pub.setAttributeDynamic('positions');
+      pointsNode.pub.setAttributeDynamic('vertexColors');
+      var pointsAttributesDGNode = pointsNode.getAttributesDGNode();
+      pointsAttributesDGNode.setDependency(scene.getGlobalsNode(), 'globals');
+      pointsAttributesDGNode.setDependency(dgnode,'kinect');
+      pointsAttributesDGNode.setCount(320*240);
+
+      // create init operator
+      pointsAttributesDGNode.bindings.append(scene.constructOperator({
+        operatorName: 'getKinectCameraPoints',
+        parameterLayout: [
+          'kinect.camera',
+          'self.positions<>',
+          'self.vertexColors<>'
+        ],
+        entryFunctionName: 'getKinectCameraPoints',
+        srcFile: 'FABRIC_ROOT/SceneGraph/KL/kinect.kl'
+      }));
+
+      return pointsNode.pub;
+    };
     
     return kinectNode;
   }});
