@@ -109,15 +109,15 @@ FABRIC.SceneGraph.registerNodeType('Image', {
     if (options.createLoadTextureEventHandler) {
       // Construct the handler for loading the image into texture memory.
       var redrawEventHandler = imageNode.constructEventHandlerNode('Redraw');
-      var oglTexture = FABRIC.RT.oglTexture2D();
+      var oglTexture = options.wantHDR ? FABRIC.RT.oglTexture2D_Color() : FABRIC.RT.oglTexture2D();
       oglTexture.forceRefresh = options.forceRefresh;
       redrawEventHandler.addMember('oglTexture2D', 'OGLTexture2D', oglTexture);
       if(options.createDgNode){
         redrawEventHandler.setScope('image', dgnode);
         redrawEventHandler.preDescendBindings.append(scene.constructOperator({
-          operatorName: 'bindTextureLDR',
+          operatorName: 'bindTexture' + (options.wantHDR ? 'HDR' : 'LDR'),
           srcFile: 'FABRIC_ROOT/SceneGraph/KL/loadTexture.kl',
-          entryFunctionName: 'bindTextureLDR',
+          entryFunctionName: 'bindTexture' + (options.wantHDR ? 'HDR' : 'LDR'),
           parameterLayout: [
             'image.width',
             'image.height',
@@ -1886,10 +1886,47 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
           ]
         }));
 
+    //Create transfer function images
+    var transferFunctionImageNode = scene.constructNode('Image', {
+      wantHDR: true,
+      createDgNode: true,
+      createResourceLoadNode: false,
+      createLoadTextureEventHandler: true,
+      width: 1024,
+      height: 1,
+      forceRefresh: true,
+      initImage: false
+    });
+    var transferFunctionImageDGNode = transferFunctionImageNode.getDGNode();
+    transferFunctionImageDGNode.addMember('opacityFactors', 'Scalar[1024]');
+    transferFunctionImageDGNode.addMember('opacityColors', 'RGBA[1024]');
+
+    transferFunctionImageDGNode.bindings.append(scene.constructOperator({
+      operatorName: 'initTransferFunctionValues',
+      parameterLayout: [
+        'self.opacityFactors',
+        'self.opacityColors'
+      ],
+      entryFunctionName: 'initTransferFunctionValues',
+      srcFile: 'FABRIC_ROOT/SceneGraph/KL/generateVolumeSlices.kl'
+    }));
+
+    transferFunctionImageDGNode.bindings.append(scene.constructOperator({
+      operatorName: 'updateTransferFunctionImage',
+      parameterLayout: [
+        'self.opacityFactors',
+        'self.opacityColors',
+        'self.pixels'
+      ],
+      entryFunctionName: 'updateTransferFunctionImage',
+      srcFile: 'FABRIC_ROOT/SceneGraph/KL/generateVolumeSlices.kl'
+    }));
+
     var volumeMaterialNodePub = scene.pub.constructNode('VolumeMaterial', {
         parentEventHandler: offscreenNodeRedrawEventHandler,
         opacityTextureNode: options.opacityTextureNode,
         gradientTextureNode: options.gradientTextureNode,
+        transferFunctionTextureNode: transferFunctionImageNode.pub,
         lightNode: options.lightNode
     });
 

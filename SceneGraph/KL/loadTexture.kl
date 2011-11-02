@@ -107,8 +107,8 @@ operator loadAndBindTextureLDR(
 operator bindTextureHDR(
   io Size width,
   io Size height,
-  io OGLTexture2D oglTexture2D,
   io Color bitmap[],
+  io OGLTexture2D oglTexture2D,
   io Integer textureUnit
 ) {
   oglTexture2D.bindImageHDR(width, height, bitmap, textureUnit);

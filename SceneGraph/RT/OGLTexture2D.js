@@ -28,6 +28,13 @@ FABRIC.RT.oglTexture2D = function(){
     FABRIC.SceneGraph.OpenGLConstants.GL_UNSIGNED_BYTE);
 }
 
+FABRIC.RT.oglTexture2D_Color = function(){
+  return new FABRIC.RT.OGLTexture2D(
+    FABRIC.SceneGraph.OpenGLConstants.GL_RGBA32F,
+    FABRIC.SceneGraph.OpenGLConstants.GL_RGBA,
+    FABRIC.SceneGraph.OpenGLConstants.GL_FLOAT);
+}
+
 FABRIC.RT.oglMatrixBuffer2D = function(){
   var oglTexture = new FABRIC.RT.OGLTexture2D();
   oglTexture.glInternalFormat = FABRIC.SceneGraph.OpenGLConstants.GL_RGBA32F;
