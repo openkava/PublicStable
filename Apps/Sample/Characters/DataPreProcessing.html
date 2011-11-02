@@ -253,7 +253,7 @@ $(document).ready(function() {
     
     break;
   case 'marama':
-    assetNodes = scene.importAssetFile('Assets/Marama.DAE');
+    assetNodes = scene.importAssetFile('Assets/Marama.DAE', { scaleFactor: 0.1 } );
   
     fkrigNode = assetNodes.MaramaPelvis001CharacterRig;
     rigInstanceNode = assetNodes.MaramaPelvis001CharacterInstance;
@@ -287,7 +287,7 @@ $(document).ready(function() {
       }
     });
     
-    var animationAssetNodes = scene.importAssetFile('Assets/Marama_Walk.DAE');
+    var animationAssetNodes = scene.importAssetFile('Assets/Marama_Walk.DAE', { scaleFactor: 0.1 });
     animationLibrary = animationAssetNodes.AnimationLibrary;
     animationController = animationAssetNodes.MaramaPelvis001Controller;
     

@@ -6,6 +6,8 @@
 FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
   
   if(!options.constructMaterialNodes) options.constructMaterialNodes = false;
+  if(!options.scaleFactor) options.scaleFactor = 1.0;
+  if(!options.logWarnings) options.logWarnings = false;
 
   var assetNodes = {};
   var warn = function( warningText ){
@@ -378,7 +380,9 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
         float_array.push(parseFloat(text_array[i]));
       }
     }
-    return makeRT(FABRIC.RT.Mat44, float_array);
+    var mat = makeRT(FABRIC.RT.Mat44, float_array);
+    mat.setTranslation(mat.getTranslation().multiplyScalar(options.scaleFactor));
+    return mat;
   }
   
   var parseSkin = function(node) {
@@ -492,6 +496,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
           var sid = child.getAttribute('sid');
           var str = child.textContent.split(new RegExp("\\s+"));
           var tr = new FABRIC.RT.Vec3(parseFloat(str[0]), parseFloat(str[1]), parseFloat(str[2]));
+          tr = tr.multiplyScalar(options.scaleFactor);
           nodeData.xfo = nodeData.xfo.multiply(new FABRIC.RT.Xfo({tr:tr}));
           break;
         }
@@ -516,7 +521,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
         }
         case 'matrix':
           nodeData.xfo.setFromMat44(parseMatrix(child));
-          if(nodeData.xfo.sc.length() > 1.01){
+          if(nodeData.xfo.sc.length() > 1.01 && options.logWarnings){
             console.warn("collada file contains non uniform scaling in its matrices.");
           }
           nodeData.xfo.sc.set(1,1,1);
@@ -677,6 +682,9 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
             source: meshData.sources[meshData.vertices.source.slice(1)],
             constructorFn: FABRIC.RT.Vec3
           };
+          for(var i=0; i< meshTriangleSourceData.positions.source.data.length; i++){
+            meshTriangleSourceData.positions.source.data[i] *= options.scaleFactor;
+          }
           processedData.geometryData.positions = [];
           break;
         case 'NORMAL':
@@ -896,6 +904,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
           var inputSource = animation.sources[sampler.INPUT.source.slice(1)];
           var outputSource = animation.sources[sampler.OUTPUT.source.slice(1)];
           var interpolationSource = animation.sources[sampler.INTERPOLATION.source.slice(1)];
+          var scaleFactor = 1.0;
           
           var generateKeyframeTrack = function(channelName, keytimes, keyvalues){
             var color;
@@ -912,7 +921,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
             var track = new FABRIC.RT.KeyframeTrack(bones[i].name+'.'+channelName, color);
             var key = FABRIC.RT.linearKeyframe;
             for (var j = 0; j < keytimes.length; j++) {
-              track.keys.push(key(keytimes[j], keyvalues[j]));
+              track.keys.push(key(keytimes[j], keyvalues[j] * scaleFactor));
             }
             trackSet.tracks.push(track);
           //  trackIds[channelName] = trackSet.tracks.length - 1;
@@ -956,10 +965,12 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
               ori_z_keyvalues.push(xfo.ori.v.z);
               ori_w_keyvalues.push(xfo.ori.w);
             }
+            scaleFactor = options.scaleFactor;
             generateKeyframeTrack('tr.x', inputSource.data, tr_x_keyvalues);
             generateKeyframeTrack('tr.y', inputSource.data, tr_y_keyvalues);
             generateKeyframeTrack('tr.z', inputSource.data, tr_z_keyvalues);
             
+            scaleFactor = 1.0;
             generateKeyframeTrack('ori.v.x', inputSource.data, ori_x_keyvalues);
             generateKeyframeTrack('ori.v.y', inputSource.data, ori_y_keyvalues);
             generateKeyframeTrack('ori.v.z', inputSource.data, ori_z_keyvalues);
@@ -985,14 +996,17 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
           case 'translation.X':
           case 'translate.X':
             channelName = 'tr.x';
+            scaleFactor = options.scaleFactor;
             break;
           case 'translation.Y':
           case 'translate.Y':
             channelName = 'tr.y';
+            scaleFactor = options.scaleFactor;
             break;
           case 'translation.Z':
           case 'translate.Z':
             channelName = 'tr.z';
+            scaleFactor = options.scaleFactor;
             break;
           case 'scale.X':
             channelName = 'sc.x';
@@ -1162,6 +1176,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
     for (var j = 0; j < jointDataSource.data.length; j++) {
       var bindPoseValues = getSourceData(bindPoseDataSource, j);
       var mat = makeRT(FABRIC.RT.Mat44, bindPoseValues);//.transpose();
+      mat.setTranslation(mat.getTranslation().multiplyScalar(options.scaleFactor));
       invmatrices[j] = mat.multiply(controllerData.bind_shape_matrix);
     }
     characterMeshNode.setInvMatrices(invmatrices, jointRemapping);
