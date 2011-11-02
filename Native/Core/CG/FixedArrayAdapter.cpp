@@ -402,5 +402,36 @@ namespace Fabric
       FunctionBuilder functionBuilder( basicBlockBuilder.getModuleBuilder(), "__"+getCodeName()+"__Store", ExprType(), params, false );
       basicBlockBuilder->CreateCall2( functionBuilder.getLLVMFunction(), dstLValue, srcRValue );
     }
+
+    void FixedArrayAdapter::llvmDisposeImpl( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *lValue ) const
+    {
+      RC::ConstHandle<SizeAdapter> sizeAdapter = basicBlockBuilder.getManager()->getSizeAdapter();
+
+      llvm::BasicBlock *checkBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "faDisposeCheck" );
+      llvm::BasicBlock *notDoneBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "faDisposeNotDone" );
+      llvm::BasicBlock *doneBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "faDisposeDone" );
+
+      llvm::Value *lengthRValue = sizeAdapter->llvmConst( basicBlockBuilder.getContext(), m_length );
+      llvm::Value *indexLValue = sizeAdapter->llvmAlloca( basicBlockBuilder, "index" );
+      basicBlockBuilder->CreateStore( sizeAdapter->llvmConst( basicBlockBuilder.getContext(), 0 ), indexLValue );
+      basicBlockBuilder->CreateBr( checkBB );
+
+      basicBlockBuilder->SetInsertPoint( checkBB );
+      llvm::Value *indexRValue = basicBlockBuilder->CreateLoad( indexLValue );
+      basicBlockBuilder->CreateCondBr( basicBlockBuilder->CreateICmpULT( indexRValue, lengthRValue ), notDoneBB, doneBB );
+
+      basicBlockBuilder->SetInsertPoint( notDoneBB );
+      indexRValue = basicBlockBuilder->CreateLoad( indexLValue );
+      llvm::Value *memberLValue = basicBlockBuilder->CreateGEP(
+        basicBlockBuilder->CreateConstGEP2_32( lValue, 0, 0 ),
+        indexRValue
+        );
+      m_memberAdapter->llvmDispose( basicBlockBuilder, memberLValue );
+      llvm::Value *newIndexRValue = basicBlockBuilder->CreateAdd( indexRValue, sizeAdapter->llvmConst( basicBlockBuilder.getContext(), 1 ) );
+      basicBlockBuilder->CreateStore( newIndexRValue, indexLValue );
+      basicBlockBuilder->CreateBr( checkBB );
+
+      basicBlockBuilder->SetInsertPoint( doneBB );
+    }
   };
 };
