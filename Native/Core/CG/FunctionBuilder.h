@@ -4,6 +4,8 @@
 #include <Fabric/Core/CG/Scope.h>
 #include <Fabric/Base/RC/Handle.h>
 
+#include <llvm/Argument.h>
+
 namespace llvm
 {
   class LLVMContext;
@@ -59,7 +61,7 @@ namespace Fabric
 
       RC::Handle<Context> getContext();
       
-      llvm::Value *operator[]( size_t index );
+      llvm::Argument *operator[]( size_t index );
       
       FunctionScope &getScope();
       RC::ConstHandle<FunctionSymbol> maybeGetFunction( std::string const &entryName ) const;
