@@ -467,9 +467,9 @@ FABRIC.SceneGraph.registerNodeType('LocomotionPoseVariables', {
         'globals.timestep',
         'charactercontroller.xfo',
         'charactercontroller.controllerparams',
-        /*
+        
         'bulletworld.world',
-        */
+        
         'animationlibrary.trackSet<>',
         'animationlibrary.locomotionMarkers<>',
         'animationlibrary.footStepTracks<>',

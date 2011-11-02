@@ -7,10 +7,10 @@ use LinearKeyframeTrackSet;
 use PoseVariables;
 use CharacterControllerParams;
 use DebugGeometry;
-/*
+
 use FabricBULLET;
 use BulletWorld;
-*/
+
 function activateClip(
   in Integer currFoot,
   in LinearKeyframeTrackSet animationLibrary<>,
@@ -67,9 +67,8 @@ operator evaluateLocomotionPoseVariables(
   io Xfo controllerXfo,
   io CharacterControllerParams charactercontrollerparams,
   
-  /*
   io BulletWorld  bulletworld,
-  */
+  
   io LinearKeyframeTrackSet animationLibrary<>,
   io LocomotionMarker locomotionMarkers<>[],
   io FootStepTrack footStepTracksLibrary<>[],
@@ -248,7 +247,10 @@ operator evaluateLocomotionPoseVariables(
       footXfo.tr -= charactercontrollerparams.balanceXfo.tr;
       
       Vec3 displacementDir;
-      if(leg.hubId < 0){
+      if(leg.hubId >= 0 && charactercontrollerparams.trail.size > 0){
+        displacementDir = hubComXfo.ori.rotateVector(Vec3(0.0,0.0,1.0));
+      }
+      else{
         displacementDir = charactercontrollerparams.displacementDir;
         
       //  displacementDir = (charactercontrollerparams.displacement * leg.ikGoalReferenceXfo).tr - leg.ikGoalReferenceXfo.tr;
@@ -256,30 +258,39 @@ operator evaluateLocomotionPoseVariables(
       //  displacementDir /= (timestep * trackcontroller.comParams[1]);
       //  displacementDir = leg.ikGoalReferenceXfo.tr charactercontrollerparams.displacementDir;
       }
-      else{
-        displacementDir = hubComXfo.ori.rotateVector(Vec3(0.0,0.0,1.0));
-      }
       
       Xfo footPlantXfo = hubComXfo * leg.ikGoalReferenceXfo;
       Vec3 lift = footPlantXfo.tr - (displacementDir * (strideLength * 0.25 * strideLengthMultiplier));
       footPlantXfo.tr += displacementDir * (strideLength * 0.25 * strideLengthMultiplier);
       footXfo.tr += displacementDir * stepValue * strideLengthMultiplier;
-      debugGeometry.drawLine(lift, footPlantXfo.tr, Color(0.0, 1.0, 1.0, 1.0));
+    //  debugGeometry.drawLine(lift, footPlantXfo.tr, Color(0.0, 1.0, 1.0, 1.0));
       
      //   report(j+" t:"+t+" stepId:"+stepId +" currStep:"+currStep + " stepRatio:"+stepRatio + " planted:"+plantedFeet[j]);
-   
-        /*
-        Vec3 rayStart = footPlantXfo.tr + Vec3(0.0, 10.0, 0.0);
-        Vec3 rayDirection = Vec3(0.0, -1.0, 0.0);
-        bulletworld.raycast(rayStart,rayDirection);
+      
+      Vec3 rayStart, rayEnd, refPos;
+      if(stepRatio < 0.0){
+        refPos = footXfo.tr;
+      }else{
+        refPos = footPlantXfo.tr;
+      }
+      rayStart = refPos + Vec3(0.0, 10.0, 0.0);
+      rayEnd = refPos - Vec3(0.0, 10.0, 0.0);
+        
+        Boolean filterPassiveObjects = false;
+        bulletworld.raycast(rayStart,rayEnd, filterPassiveObjects);
         if(bulletworld.hit) {
-          report("hit");
+          Vec3 hitDelta = bulletworld.hitPosition - refPos;
           debugGeometry.drawLine(rayStart, bulletworld.hitPosition, Color(0.0, 1.0, 1.0, 1.0));
+        //  report("bulletworld.hitPosition:"+bulletworld.hitPosition + " hitDelta:"+hitDelta );
+          if(stepRatio > 0.0 && stepRatio < 1.0){
+            hitDelta *= stepRatio;
+          }
+          footXfo.tr += hitDelta;
+          hitDelta /= Scalar(legs.size);
+          trackPose.xfoValues[hubs[0].xfoId].tr += hitDelta;
+          controllerXfo.tr += hitDelta;
         }
-        else{
-          debugGeometry.drawLine(rayStart, rayStart + (rayDirection * 10.0), Color(1.0, 1.0, 0.0, 1.0));
-        }
-        */
+        
       Vec3 footError;
       if(stepRatio > 0.0 && stepRatio < 1.0){
       
@@ -305,7 +316,7 @@ operator evaluateLocomotionPoseVariables(
           }
         }
         
-        debugGeometry.drawCircle(footPlantXfo * rot90, 1.0, Color(0.0, 1.0, 1.0, 1.0));
+      //  debugGeometry.drawCircle(footPlantXfo * rot90, 1.0, Color(0.0, 1.0, 1.0, 1.0));
       }
       else{
         if(!plantedFeet[j]){
@@ -320,9 +331,11 @@ operator evaluateLocomotionPoseVariables(
           }
         }
         else{
+          // Calculate the error each update to hold the foot in place while planted.
           footError = invcontrollerXfo.ori.rotateVector(plantLocations[j] - footXfo.tr);
         }
-        debugGeometry.drawCircle(footXfo * rot90, 1.0, Color(1.0, 1.0, 0.0, 1.0));
+      //  debugGeometry.drawCircle(footXfo * rot90, 1.0, Color(1.0, 1.0, 0.0, 1.0));
+      //  debugGeometry.drawLine(footXfo.tr, plantLocations[j], Color(1.0, 1.0, 0.0, 1.0));
       }
       
       footXfo = invcontrollerXfo * footXfo;
