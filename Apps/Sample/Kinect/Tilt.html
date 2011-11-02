@@ -82,7 +82,13 @@ $(document).ready(function() {
   var kinect = scene.constructNode('KinectCamera');
   
   // create a texture
-  var texture = scene.constructNode('Image', {createResourceLoadNode: false, createDgNode: true, width: 640, height: 480});
+  var texture = scene.constructNode('Image', {
+    createResourceLoadNode: false,
+    createDgNode: true,
+    width: 640,
+    height: 480,
+    forceRefresh: true
+  });
 
   // drive the texture with the kinect
   kinect.connectToTexture(texture);

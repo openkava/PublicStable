@@ -20,7 +20,16 @@ operator tiltKinectCamera(
 
 operator getKinectCameraColorPixels(
   io KinectCamera camera,
+  io RGBA pixels[],
+  io Size width,
+  io Size height,
   io Scalar time
 ){
-  camera.getColorPixels();  
+  if(pixels.size() == 0)
+    pixels.resize(width*height);
+    
+  if(pixels.size() == camera.colorData.size()){
+    camera.getColorPixels();
+    pixels = camera.colorData;
+  }
 }
