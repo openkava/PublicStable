@@ -63,34 +63,37 @@ function Xfo.setFromMat44(Mat44 m) {
   this.tr.y = m.row1.t;
   this.tr.z = m.row2.t;
 
-  Mat33 mat33(
-              m.row0.x, m.row0.y, m.row0.z,
-              m.row1.x, m.row1.y, m.row1.z,
-              m.row2.x, m.row2.y, m.row2.z);
+  Vec3 col0(m.row0.x, m.row1.x, m.row2.x);
+  Vec3 col1(m.row0.y, m.row1.y, m.row2.y);
+  Vec3 col2(m.row0.z, m.row1.z, m.row2.z);
 
-  // Grab the X scale and normalize the first row
-  this.sc.x = mat33.row0.length();
+  // Grab the X scale and normalize the first column
+  this.sc.x = col0.length();
   if( Math_badDivisor( this.sc.x ) )//Perf: check first to avoid building the report string
     Math_reportBadDivisor( this.sc.x, "Mat44.setFromMat44: Matrix is singular" );
-  mat33.row0 /= this.sc.x;
+  col0 /= this.sc.x;
 
   // Make the 2nd row orthogonal to the 1st
-  mat33.row1 -= mat33.row0 * mat33.row0.dot(mat33.row1);
+  col1 -= col0 * col0.dot(col1);
 
   // Grab the Y scale and normalize
-  this.sc.y = mat33.row1.length();
+  this.sc.y = col1.length();
   if( Math_badDivisor( this.sc.y ) )//Perf: check first to avoid building the report string
     Math_reportBadDivisor( this.sc.y, "Mat44.setFromMat44: Matrix is singular" );
-  mat33.row1 /= this.sc.y;
+  col1 /= this.sc.y;
 
   // Make the 3rd row orthogonal to the 1st and 2nd
-  mat33.row2 -= mat33.row0 * mat33.row0.dot(mat33.row2);
-  mat33.row2 -= mat33.row1 * mat33.row1.dot(mat33.row2);
+  col2 -= col0 * col0.dot(col2);
+  col2 -= col1 * col1.dot(col2);
 
-  this.sc.z = mat33.row2.length();
+  this.sc.z = col2.length();
   if( Math_badDivisor( this.sc.z ) )//Perf: check first to avoid building the report string
     Math_reportBadDivisor( this.sc.z, "Mat44.setFromMat44: Matrix is singular" );
-  mat33.row2 /= this.sc.z;
+  col2 /= this.sc.z;
+
+  Mat33 mat33(col0.x, col1.x, col2.x,
+              col0.y, col1.y, col2.y,
+              col0.z, col1.z, col2.z);
 
   // Fix negative scaling
   Scalar det = mat33.determinant();
