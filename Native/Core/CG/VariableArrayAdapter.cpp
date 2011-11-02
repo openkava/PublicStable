@@ -704,7 +704,9 @@ namespace Fabric
         func->setLinkage( llvm::GlobalValue::PrivateLinkage );
         
         FunctionBuilder fb( mb, funcType, func );
-        llvm::Value *bitsLValue = fb[0];
+        llvm::Argument *bitsLValue = fb[0];
+        bitsLValue->setName( "bitsLValue" );
+        bitsLValue->addAttr( llvm::Attribute::NoCapture );
         
         BasicBlockBuilder bbb( fb );
 
@@ -769,7 +771,9 @@ namespace Fabric
         func->setLinkage( llvm::GlobalValue::PrivateLinkage );
         
         FunctionBuilder fb( mb, funcType, func );
-        llvm::Value *bitsLValue = fb[0];
+        llvm::Argument *bitsLValue = fb[0];
+        bitsLValue->setName( "bitsLValue" );
+        bitsLValue->addAttr( llvm::Attribute::NoCapture );
         
         BasicBlockBuilder bbb( fb );
 
