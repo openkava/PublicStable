@@ -19,6 +19,12 @@ FABRIC_EXT_EXPORT void FabricTeemNRRDLoadUShort(
   KL::Mat44 &xfoMat
   )
 {
+  imageWidth = 0;
+  imageHeight = 0;
+  imageDepth = 0;
+
+  imageUShortVoxels.resize( 0 );
+
   //The library expects a file; so create a temporary one until we have use File-based IO in Fabric
 #if defined(FABRIC_OS_WINDOWS)
   char const *dir = getenv("APPDATA");
@@ -47,16 +53,6 @@ FABRIC_EXT_EXPORT void FabricTeemNRRDLoadUShort(
   if(nin->type != nrrdTypeUShort)
     Fabric::EDK::throwException("FabricTeemNRRDLoadUShort: only images of UShort precision are supported");
 
-  //Flip X and Y axis; seems to be flipped in example files
-  xfoMat.row0.x = (float)nin->axis[1].spaceDirection[0]; xfoMat.row0.y = -(float)nin->axis[0].spaceDirection[0]; xfoMat.row0.z = (float)nin->axis[2].spaceDirection[0]; xfoMat.row0.t = 0.0;
-  xfoMat.row1.x = (float)nin->axis[1].spaceDirection[1]; xfoMat.row1.y = -(float)nin->axis[0].spaceDirection[1]; xfoMat.row1.z = (float)nin->axis[2].spaceDirection[1]; xfoMat.row1.t = 0.0;
-  xfoMat.row2.x = (float)nin->axis[1].spaceDirection[2]; xfoMat.row2.y = -(float)nin->axis[0].spaceDirection[2]; xfoMat.row2.z = (float)nin->axis[2].spaceDirection[2]; xfoMat.row2.t = 0.0;
-  xfoMat.row3.x = 0.0; xfoMat.row3.y = 0.0; xfoMat.row3.z = 0.0; xfoMat.row3.t = 1.0;
-
-  imageWidth = nin->axis[0].size;
-  imageHeight = nin->axis[1].size;
-  imageDepth = nin->axis[2].size;
-
   size_t i;
   for( i = 0; i < 3; ++i ) {
     unsigned int s = nin->axis[i].size;
@@ -66,6 +62,26 @@ FABRIC_EXT_EXPORT void FabricTeemNRRDLoadUShort(
       s = s >> 1;
     }
   }
+
+  size_t maxDimSize = 0;
+  for( i = 0; i < 3; ++i ) {
+    if(nin->axis[i].size > maxDimSize)
+      maxDimSize = nin->axis[i].size;
+  }
+  float factors[3];
+  for( i = 0; i < 3; ++i ) {
+    factors[i] = float(nin->axis[i].size) / float(maxDimSize);
+  }
+
+  //Flip X and Y axis; seems to be flipped in example files
+  xfoMat.row0.x = factors[0]*(float)nin->axis[0].spaceDirection[0]; xfoMat.row0.y = factors[1]*(float)nin->axis[1].spaceDirection[0]; xfoMat.row0.z = factors[2]*(float)nin->axis[2].spaceDirection[0]; xfoMat.row0.t = 0.0;
+  xfoMat.row1.x = factors[0]*(float)nin->axis[0].spaceDirection[2]; xfoMat.row1.y = factors[1]*(float)nin->axis[1].spaceDirection[2]; xfoMat.row1.z = factors[2]*(float)nin->axis[2].spaceDirection[2]; xfoMat.row1.t = 0.0;
+  xfoMat.row2.x = -factors[0]*(float)nin->axis[0].spaceDirection[1]; xfoMat.row2.y = -factors[1]*(float)nin->axis[1].spaceDirection[1]; xfoMat.row2.z = -factors[2]*(float)nin->axis[2].spaceDirection[1]; xfoMat.row2.t = 0.0;
+  xfoMat.row3.x = 0.0; xfoMat.row3.y = 0.0; xfoMat.row3.z = 0.0; xfoMat.row3.t = 1.0;
+
+  imageWidth = nin->axis[0].size;
+  imageHeight = nin->axis[1].size;
+  imageDepth = nin->axis[2].size;
 
   imageUShortVoxels.resize( imageWidth * imageHeight * imageDepth * 2 );
   ::memcpy( &(imageUShortVoxels[0]), nin->data, imageUShortVoxels.size() );
