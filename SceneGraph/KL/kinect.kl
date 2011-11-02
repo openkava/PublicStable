@@ -4,7 +4,7 @@
 use FabricKINECT;
 use Vec3;
 use Euler;
-use Quat;
+use Color;
 
 operator initKinectCamera(
   io KinectCamera camera
@@ -28,8 +28,9 @@ operator getKinectCameraAllPixels(
   io Scalar time
 ){
   if(camera.initiated){
-    camera.getColorPixels();
     camera.getDepthPixels();
+    camera.getColorPixels();
+    camera.getSkeleton();
   }
 }
 
@@ -128,4 +129,33 @@ operator getKinectCameraPoints(
   io Color colors<>
 ){
   camera.getPoints(positions,colors);
+}
+
+operator getKinectCameraLines(
+  io KinectCamera camera,
+  io Vec3 positions<>,
+  io Color colors<>
+){
+  Size offset = 0;
+  for(Size i=0;i<KINECT_SKELETON_COUNT;i++){
+    for(Size j=0;j<KINECT_POSITION_COUNT;j++){
+      positions[offset] = camera.skeletonData[i].positions[j];
+      if(camera.skeletonData[i].trackingID == 1){
+        colors[offset] = Color(1.0,0.0,0.0,1.0);
+      } else if(camera.skeletonData[i].trackingID == 2){
+        colors[offset] = Color(0.0,1.0,0.0,1.0);
+      } else if(camera.skeletonData[i].trackingID == 3){
+        colors[offset] = Color(0.0,0.0,1.0,1.0);
+      } else if(camera.skeletonData[i].trackingID == 4){
+        colors[offset] = Color(1.0,0.0,1.0,1.0);
+      } else if(camera.skeletonData[i].trackingID == 5){
+        colors[offset] = Color(1.0,1.0,0.0,1.0);
+      } else if(camera.skeletonData[i].trackingID == 6){
+        colors[offset] = Color(0.0,1.0,1.0,1.0);
+      } else {
+        colors[offset] = Color(0.0,0.0,0.0,1.0);
+      }
+      offset++;
+    }
+  }
 }

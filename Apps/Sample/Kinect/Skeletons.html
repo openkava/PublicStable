@@ -5,7 +5,7 @@
   <!--
     Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
     -->
-    <title>FABRIC - Kinect Depth Points</title> 
+    <title>FABRIC - Kinect Skeleton</title> 
     
     <link type="text/css" href="../../../ThirdParty/jQuery/css/fabric/main.css" rel="stylesheet" />
     <link type="text/css" href="../../../ThirdParty/jQuery/css/fabric/jquery-ui-1.8.16.custom.css" rel="stylesheet" />
@@ -70,8 +70,8 @@ $(document).ready(function() {
   var camera = scene.constructNode('TargetCamera', {
       nearDistance: 0.1,
       farDistance: 2000,
-      position: new FABRIC.RT.Vec3(1,0,0),
-      target: new FABRIC.RT.Vec3(0, -.5, 1.5),
+      position: new FABRIC.RT.Vec3(5,0,0),
+      target: new FABRIC.RT.Vec3(0, 0, 1.5),
       fovY: Math.degToRad(45.6)
     });
 
@@ -83,19 +83,16 @@ $(document).ready(function() {
   });
 
   // construct a kinect camera
-  var kinect = scene.constructNode('KinectCamera', {supportsDepth: true, supportsColor: true});
+  var kinect = scene.constructNode('KinectCamera', {supportsSkeleton: true});
   
-  // create a geometry node
-  var points = kinect.constructPointsNode();
+  // create the geometry node
+  var lines = kinect.constructLinesNode();
   
   // draw it
-  var pointMaterial = scene.constructNode('VertexColorMaterial', {
-      prototypeMaterialType: 'PointMaterial',
-      pointSize: 6,
-    });
+  var lineMaterial = scene.constructNode('VertexColorMaterial', {});
   scene.constructNode('Instance', {
-    materialNode: pointMaterial,
-    geometryNode: points
+    materialNode: lineMaterial,
+    geometryNode: lines
   });
 
   scene.animation.play();
