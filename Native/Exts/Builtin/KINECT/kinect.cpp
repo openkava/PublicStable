@@ -253,3 +253,50 @@ FABRIC_EXT_EXPORT void FabricKINECT_GetDepthPixels(
   printf("  { FabricKINECT } : FabricKINECT_GetDepthPixels completed.\n");
 #endif
 }
+
+FABRIC_EXT_EXPORT void FabricKINECT_GetPoints(
+  KinectCamera & camera,
+  KL::SlicedArray<KL::Vec3> & positions,
+  KL::SlicedArray<KL::Color> & colors
+)
+{
+#ifndef NDEBUG
+  printf("  { FabricKINECT } : FabricKINECT_GetPoint called.\n");
+#endif
+  if(camera.initiated && camera.supportsDepth && camera.supportsColor && camera.localData != NULL)
+  {
+    if(camera.localData->numDepthPixels == positions.size())
+    {
+      size_t index = 0;
+      for(LONG y=0;y<camera.localData->depthHeight;y++)
+      {
+	for(LONG x=0;x<camera.localData->depthWidth;x++)
+	{
+	  // first get the pixel color
+	  KL::Scalar depthX = KL::Scalar(x) / KL::Scalar(camera.localData->depthWidth-1);
+	  KL::Scalar depthY = KL::Scalar(y) / KL::Scalar(camera.localData->depthHeight-1);
+	  int z = camera.depthData[index];
+	  
+	  LONG colorX,colorY;
+	  NuiImageGetColorPixelCoordinatesFromDepthPixel(NUI_IMAGE_RESOLUTION_640x480,0,x,y,z << 3,&colorX,&colorY);
+	  KL::Size colorIndex = (KL::Size)(colorX + colorY * camera.localData->colorWidth);
+	  colors[index].r = KL::Scalar(camera.colorData[colorIndex].r) / 255.0f;
+	  colors[index].g = KL::Scalar(camera.colorData[colorIndex].g) / 255.0f;
+	  colors[index].b = KL::Scalar(camera.colorData[colorIndex].b) / 255.0f;
+	  colors[index].a = KL::Scalar(camera.colorData[colorIndex].a) / 255.0f;
+	  
+	  // now let's get the global position
+	  Vector4 pos = NuiTransformDepthImageToSkeletonF(depthX,depthY,z<<3);
+	  positions[index].x = pos.x;
+	  positions[index].y = pos.y;
+	  positions[index].z = pos.z;
+	  
+	  index++;
+	}
+      }
+    }
+  }
+#ifndef NDEBUG
+  printf("  { FabricKINECT } : FabricKINECT_GetPoint completed.\n");
+#endif
+}
