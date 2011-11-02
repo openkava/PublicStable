@@ -1,9 +1,10 @@
 //===================================================================================
 // structs
-struct RGB {
+struct RGBA {
   Byte r;
   Byte g;
   Byte b;
+  Byte a;
 };
 
 struct Vec3 {
@@ -32,7 +33,7 @@ struct KinectCamera {
   Boolean supportsColor;
   Boolean supportsDepth;
   Boolean supportsSkeleton;
-  RGB colorData[];
+  RGBA colorData[];
   Scalar depthData[];
   Xfo skeletonData[];
 };
