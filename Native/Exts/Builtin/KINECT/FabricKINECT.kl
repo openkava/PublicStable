@@ -7,6 +7,13 @@ struct RGBA {
   Byte a;
 };
 
+struct Color {
+  Scalar r;
+  Scalar g;
+  Scalar b;
+  Scalar a;
+};
+
 struct Vec3 {
   Scalar x;
   Scalar y;
@@ -44,6 +51,8 @@ function FabricKINECT_Shutdown(io KinectCamera camera);
 function FabricKINECT_Tilt(io KinectCamera camera, io Integer angle);
 function FabricKINECT_GetColorPixels(io KinectCamera camera);
 function FabricKINECT_GetDepthPixels(io KinectCamera camera);
+function FabricKINECT_GetPoints(io KinectCamera camera, io Vec3 positions<>, io Color colors<>);
+
 
 //===================================================================================
 // camera definition
@@ -74,3 +83,8 @@ function KinectCamera.getColorPixels() {
 function KinectCamera.getDepthPixels() {
   FabricKINECT_GetDepthPixels(this);
 }
+
+function KinectCamera.getPoints(io Vec3 positions<>, io Color colors<>) {
+  FabricKINECT_GetPoints(this, positions, colors);
+}
+
