@@ -433,6 +433,12 @@ namespace Fabric
       FunctionBuilder functionBuilder( basicBlockBuilder.getModuleBuilder(), "__"+getCodeName()+"__DefaultAssign", ExprType(), params, false );
       basicBlockBuilder->CreateCall2( functionBuilder.getLLVMFunction(), dstLValue, srcRValue );
     }
+
+    void SlicedArrayAdapter::llvmDisposeImpl( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *lValue ) const
+    {
+      llvm::Value *vaLValue = basicBlockBuilder->CreateStructGEP( lValue, 2 );
+      m_variableArrayAdapter->llvmDispose( basicBlockBuilder, vaLValue );
+    }
     
     llvm::Constant *SlicedArrayAdapter::llvmDefaultValue( BasicBlockBuilder &basicBlockBuilder ) const
     {
