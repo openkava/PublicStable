@@ -694,7 +694,7 @@ namespace Fabric
       AWI[0] = llvm::AttributeWithIndex::get( ~0u, llvm::Attribute::InlineHint | llvm::Attribute::NoUnwind );
       llvm::AttrListPtr attrListPtr = llvm::AttrListPtr::get( AWI, 1 );
 
-      std::string name = "__"+getCodeName()+"_Release";
+      std::string name = "__"+getCodeName()+"_Retain";
       llvm::Function *func = llvm::cast<llvm::Function>( basicBlockBuilder.getModuleBuilder()->getFunction( name ) );
       if ( !func )
       {
@@ -711,8 +711,8 @@ namespace Fabric
         BasicBlockBuilder bbb( fb );
 
         llvm::BasicBlock *entryBB = fb.createBasicBlock( "entry" );
-        llvm::BasicBlock *nonNullBB = fb.createBasicBlock( "vaRetainNonNull" );
-        llvm::BasicBlock *doneBB = fb.createBasicBlock( "vaRetainDone" );
+        llvm::BasicBlock *nonNullBB = fb.createBasicBlock( "nonNull" );
+        llvm::BasicBlock *doneBB = fb.createBasicBlock( "done" );
         
         bbb->SetInsertPoint( entryBB );
         bbb->CreateCondBr(
