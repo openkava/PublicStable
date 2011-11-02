@@ -79,7 +79,7 @@ $(document).ready(function() {
   });
 
   // construct a kinect camera
-  var kinect = scene.constructNode('KinectCamera');
+  var kinect = scene.constructNode('KinectCamera', {supportsColor: true});
   
   // create a texture
   var texture = kinect.constructColorTextureNode();
@@ -136,7 +136,7 @@ $(document).ready(function() {
   </head> 
   <body>
     <div id="loadingDialog" title="Loading...">
-      <h4 id="loadingDesc">Downloading Alembic File.<br>This may take some time.</h4>
+      <h4 id="loadingDesc">Setting up Kinect Scene...<br>This may take some time.</h4>
       <div id="loadingProgressBar" class="ui-progressbar-value"></div>
     </div>
     <div id="wrapper">

@@ -24,7 +24,7 @@ FABRIC.SceneGraph.registerNodeType('KinectCamera', {
   detailedDesc: 'The KinectCamera represents a Microsoft Kinect Camera, providing access to its rgba and depth channel, as well as NUI skeleton data.',
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
-      supportsColor: true,
+      supportsColor: false,
       supportsDepth: false,
       supportsSkeleton: false,
       tiltAngle: 0,
@@ -138,6 +138,76 @@ FABRIC.SceneGraph.registerNodeType('KinectCamera', {
         }));
 
         return textureNode.pub;
+      };
+    }
+
+    // see if we need to support skeletons
+    if(options.supportsSkeleton) {
+      
+      kinectNode.pub.constructLinesNode = function() {
+        var linesNode = scene.constructNode('Lines', {});
+        linesNode.pub.addVertexAttributeValue('vertexColors','Color',{ genVBO:true });
+        linesNode.pub.setAttributeDynamic('positions');
+        linesNode.pub.setAttributeDynamic('vertexColors');
+        var linesAttributesDGNode = linesNode.getAttributesDGNode();
+        linesAttributesDGNode.setDependency(scene.getGlobalsNode(), 'globals');
+        linesAttributesDGNode.setDependency(dgnode,'kinect');
+        linesAttributesDGNode.setCount(120); // 6 skeletons, 20 positions
+        var indices = [];
+        for(var i=0;i<6;i++){
+          indices.push(i*20+0);  // KINECT_POSITION_HIP_CENTER
+          indices.push(i*20+1);  // KINECT_POSITION_SPINE
+          indices.push(i*20+1);  // KINECT_POSITION_SPINE
+          indices.push(i*20+2);  // KINECT_POSITION_SHOULDER_CENTER
+          indices.push(i*20+2);  // KINECT_POSITION_SHOULDER_CENTER
+          indices.push(i*20+3);  // KINECT_POSITION_HEAD
+          indices.push(i*20+2);  // KINECT_POSITION_SHOULDER_CENTER
+          indices.push(i*20+4);  // KINECT_POSITION_SHOULDER_LEFT
+          indices.push(i*20+4);  // KINECT_POSITION_SHOULDER_LEFT
+          indices.push(i*20+5);  // KINECT_POSITION_ELBOW_LEFT
+          indices.push(i*20+5);  // KINECT_POSITION_ELBOW_LEFT
+          indices.push(i*20+6);  // KINECT_POSITION_WRIST_LEFT
+          indices.push(i*20+6);  // KINECT_POSITION_WRIST_LEFT
+          indices.push(i*20+7);  // KINECT_POSITION_HAND_LEFT
+          indices.push(i*20+2);  // KINECT_POSITION_SHOULDER_CENTER
+          indices.push(i*20+8);  // KINECT_POSITION_SHOULDER_RIGHT
+          indices.push(i*20+8);  // KINECT_POSITION_SHOULDER_RIGHT
+          indices.push(i*20+9);  // KINECT_POSITION_ELBOW_RIGHT
+          indices.push(i*20+9);  // KINECT_POSITION_ELBOW_RIGHT
+          indices.push(i*20+10); // KINECT_POSITION_WRIST_RIGHT
+          indices.push(i*20+10); // KINECT_POSITION_WRIST_RIGHT
+          indices.push(i*20+11); // KINECT_POSITION_HAND_RIGHT
+          indices.push(i*20+0);  // KINECT_POSITION_HIP_CENTER
+          indices.push(i*20+12);  // KINECT_POSITION_HIP_LEFT
+          indices.push(i*20+12);  // KINECT_POSITION_HIP_LEFT
+          indices.push(i*20+13);  // KINECT_POSITION_KNEE_LEFT
+          indices.push(i*20+13);  // KINECT_POSITION_KNEE_LEFT
+          indices.push(i*20+14);  // KINECT_POSITION_ANKLE_LEFT
+          indices.push(i*20+14);  // KINECT_POSITION_ANKLE_LEFT
+          indices.push(i*20+15);  // KINECT_POSITION_FOOT_LEFT
+          indices.push(i*20+0);  // KINECT_POSITION_HIP_CENTER
+          indices.push(i*20+16);  // KINECT_POSITION_HIP_RIGHT
+          indices.push(i*20+16);  // KINECT_POSITION_HIP_RIGHT
+          indices.push(i*20+17);  // KINECT_POSITION_KNEE_RIGHT
+          indices.push(i*20+17);  // KINECT_POSITION_KNEE_RIGHT
+          indices.push(i*20+18);  // KINECT_POSITION_ANKLE_RIGHT
+          indices.push(i*20+18);  // KINECT_POSITION_ANKLE_RIGHT
+          indices.push(i*20+19);  // KINECT_POSITION_FOOT_RIGHT
+        }
+        linesNode.getUniformsDGNode().setData('indices',0,indices);
+  
+        // create init operator
+        linesAttributesDGNode.bindings.append(scene.constructOperator({
+          operatorName: 'getKinectCameraLines',
+          parameterLayout: [
+            'kinect.camera',
+            'self.positions<>',
+            'self.vertexColors<>'
+          ],
+          entryFunctionName: 'getKinectCameraLines',
+          srcFile: 'FABRIC_ROOT/SceneGraph/KL/kinect.kl'
+        }));
+        return linesNode.pub;
       };
     }
 
