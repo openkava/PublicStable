@@ -5,7 +5,7 @@
   <!--
     Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
     -->
-    <title>FABRIC - Kinect Tilt</title> 
+    <title>FABRIC - Kinect Depth</title> 
     
     <link type="text/css" href="../../../ThirdParty/jQuery/css/fabric/main.css" rel="stylesheet" />
     <link type="text/css" href="../../../ThirdParty/jQuery/css/fabric/jquery-ui-1.8.16.custom.css" rel="stylesheet" />
@@ -79,31 +79,35 @@ $(document).ready(function() {
   });
 
   // construct a kinect camera
-  var kinect = scene.constructNode('KinectCamera');
+  var kinect = scene.constructNode('KinectCamera', {supportsDepth: true});
   
   // create a texture
-  var texture = kinect.constructColorTextureNode();
+  var texture = kinect.constructDepthTextureNode();
 
   // show it in the viewport
   viewport.setBackgroundTextureImage(texture);
 
-  $('#tiltangle')
+  $('#depthmin')
   .slider({
-    min: -27.0,
-    max: 27.0,
+    min: 50,
+    max: 3000,
     step: 1.0,
-    value: 0,
+    value: kinect.getDepthMin(),
   })
   .bind('slide',
     function(event, ui) {
-      document.tiltAngle = ui.value;
-      if(document.kinect == undefined)
-      {
-        document.kinect = kinect;
-        setTimeout("document.kinect.setTiltAngle(document.tiltAngle);" +
-                   "document.tiltAngle = undefined;" +
-                   "document.kinect = undefined;",1000);
-      }
+      kinect.setDepthMin(ui.value);
+    });
+  $('#depthmax')
+  .slider({
+    min: 50,
+    max: 3000,
+    step: 1.0,
+    value: kinect.getDepthMax(),
+  })
+  .bind('slide',
+    function(event, ui) {
+      kinect.setDepthMax(ui.value);
     });
   
   scene.animation.play();
@@ -157,8 +161,10 @@ $(document).ready(function() {
           <div class="box">
             <h2>CONTROLS</h2>
             <div class="content">
-                <div>Tilt Angle:</div>
-                <div id='tiltangle' style="margin-top:10px;"></div>
+                <div>Depth Minimum:</div>
+                <div id='depthmin' style="margin-top:10px;"></div>
+                <div>Depth Maximum:</div>
+                <div id='depthmax' style="margin-top:10px;"></div>
             </div><!--content-->
           </div><!--box-->
 
