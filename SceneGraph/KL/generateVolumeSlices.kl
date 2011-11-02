@@ -337,7 +337,7 @@ operator computeGradients_depthSliced(
   Integer i, j, k, l, dst = 0;
 
   Scalar scalingFactor[3];
-  Scalar maxSize = width;
+  Size maxSize = width;
   if(height > maxSize)
     maxSize = height;
   if(depth > maxSize)
@@ -345,11 +345,6 @@ operator computeGradients_depthSliced(
   scalingFactor[0] = Scalar(width)/Scalar(maxSize);
   scalingFactor[1] = Scalar(height)/Scalar(maxSize);
   scalingFactor[2] = Scalar(depth)/Scalar(maxSize);
-
-  Scalar invMaxScaling = 1.0/maxScaling;
-  for(i = 0; i < 3; ++i) {
-    scalingFactor[i] *= invMaxScaling;
-  }
 
   sliceGradients.resize(width * height);
 
