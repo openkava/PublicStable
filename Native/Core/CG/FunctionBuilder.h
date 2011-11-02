@@ -40,6 +40,13 @@ namespace Fabric
         std::string const *friendlyName = 0, 
         bool returnsStaticDataPtr = false
         );
+        
+      FunctionBuilder(
+        ModuleBuilder &moduleBuilder,
+        llvm::FunctionType const *llvmFunctionType,
+        llvm::Function *llvmFunction
+        );
+      
       ~FunctionBuilder();
       
       llvm::Function *getLLVMFunction();

@@ -679,38 +679,74 @@ namespace Fabric
     
     void StringAdapter::llvmRelease( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *bitsLValue ) const
     {
+      RC::Handle<Context> context = basicBlockBuilder.getContext();
       RC::ConstHandle<SizeAdapter> sizeAdapter = basicBlockBuilder.getManager()->getSizeAdapter();
 
-      llvm::BasicBlock *nonNullBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "stringReleaseNonNull" );
-      llvm::BasicBlock *freeBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "stringReleaseFree" );
-      llvm::BasicBlock *doneBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "stringReleaseDone" );
+      std::vector<llvm::Type const *> argTypes;
+      argTypes.push_back( bitsLValue->getType() );
+      llvm::FunctionType const *funcType = llvm::FunctionType::get( llvm::Type::getVoidTy( context->getLLVMContext() ), argTypes, false );
+      
+      llvm::AttributeWithIndex AWI[1];
+      AWI[0] = llvm::AttributeWithIndex::get( ~0u, llvm::Attribute::InlineHint | llvm::Attribute::NoUnwind );
+      llvm::AttrListPtr attrListPtr = llvm::AttrListPtr::get( AWI, 1 );
 
-      basicBlockBuilder->CreateCondBr(
-        basicBlockBuilder->CreateIsNotNull( bitsLValue ),
-        nonNullBB,
-        doneBB
-        );
-
-      basicBlockBuilder->SetInsertPoint( nonNullBB );
-      llvm::Value *refCountLValue = basicBlockBuilder->CreateStructGEP( bitsLValue, 0 );
-      llvm::Value *oneRValue = sizeAdapter->llvmConst( basicBlockBuilder.getContext(), 1 );
-      static const size_t numIntrinsicTypes = 2;
-      llvm::Type const *intrinsicTypes[numIntrinsicTypes] =
+      std::string name = "__"+getCodeName()+"_Release";
+      llvm::Function *func = llvm::cast<llvm::Function>( basicBlockBuilder.getModuleBuilder()->getFunction( name ) );
+      if ( !func )
       {
-        oneRValue->getType(),
-        refCountLValue->getType()
-      };
-      llvm::Function *intrinsic = llvm::Intrinsic::getDeclaration( basicBlockBuilder.getModuleBuilder(), llvm::Intrinsic::atomic_load_sub, intrinsicTypes, numIntrinsicTypes );
-      FABRIC_ASSERT( intrinsic );
-      llvm::Value *oldRefCountRValue = basicBlockBuilder->CreateCall2( intrinsic, refCountLValue, oneRValue );
-      llvm::Value *shouldFreeRValue = basicBlockBuilder->CreateICmpEQ( oldRefCountRValue, oneRValue );
-      basicBlockBuilder->CreateCondBr( shouldFreeRValue, freeBB, doneBB );
+        func = llvm::cast<llvm::Function>( basicBlockBuilder.getModuleBuilder()->getOrInsertFunction( name, funcType, attrListPtr ) ); 
+        func->setLinkage( llvm::GlobalValue::PrivateLinkage );
+        
+        ModuleBuilder &mb = basicBlockBuilder.getModuleBuilder();
+        
+        FunctionBuilder fb( mb, funcType, func );
+        llvm::Value *bitsLValue = fb[0];
+        
+        BasicBlockBuilder bbb( fb );
 
-      basicBlockBuilder->SetInsertPoint( freeBB );
-      llvmCallFree( basicBlockBuilder, bitsLValue );
-      basicBlockBuilder->CreateBr( doneBB );
+        llvm::BasicBlock *entryBB = fb.createBasicBlock( "entry" );
+        llvm::BasicBlock *nonNullBB = fb.createBasicBlock( "nonNull" );
+        llvm::BasicBlock *freeBB = fb.createBasicBlock( "free" );
+        llvm::BasicBlock *doneBB = fb.createBasicBlock( "done" );
 
-      basicBlockBuilder->SetInsertPoint( doneBB );
+        bbb->SetInsertPoint( entryBB );
+        bbb->CreateCondBr(
+          bbb->CreateIsNotNull( bitsLValue ),
+          nonNullBB,
+          doneBB
+          );
+
+        bbb->SetInsertPoint( nonNullBB );
+        llvm::Value *refCountLValue = bbb->CreateStructGEP( bitsLValue, 0 );
+        llvm::Value *oneRValue = sizeAdapter->llvmConst( bbb.getContext(), 1 );
+        static const size_t numIntrinsicTypes = 2;
+        llvm::Type const *intrinsicTypes[numIntrinsicTypes] =
+        {
+          oneRValue->getType(),
+          refCountLValue->getType()
+        };
+        llvm::Function *intrinsic = llvm::Intrinsic::getDeclaration(
+          bbb.getModuleBuilder(),
+          llvm::Intrinsic::atomic_load_sub,
+          intrinsicTypes,
+          numIntrinsicTypes
+          );
+        FABRIC_ASSERT( intrinsic );
+        llvm::Value *oldRefCountRValue = bbb->CreateCall2( intrinsic, refCountLValue, oneRValue );
+        llvm::Value *shouldFreeRValue = bbb->CreateICmpEQ( oldRefCountRValue, oneRValue );
+        bbb->CreateCondBr( shouldFreeRValue, freeBB, doneBB );
+
+        bbb->SetInsertPoint( freeBB );
+        llvmCallFree( bbb, bitsLValue );
+        bbb->CreateBr( doneBB );
+
+        bbb->SetInsertPoint( doneBB );
+        bbb->CreateRetVoid();
+      }
+
+      std::vector<llvm::Value *> args;
+      args.push_back( bitsLValue );
+      basicBlockBuilder->CreateCall( func, args.begin(), args.end() );
     }
 
     void StringAdapter::llvmDefaultAssign( BasicBlockBuilder &basicBlockBuilder, llvm::Value *dstLValue, llvm::Value *srcRValue ) const
