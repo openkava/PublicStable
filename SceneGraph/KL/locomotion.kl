@@ -1,4 +1,5 @@
 
+use Math;
 use Vec3, Quat, Xfo;
 use LinearKeyframe;
 use LinearKeyframeTrack;
@@ -268,14 +269,14 @@ operator evaluateLocomotionPoseVariables(
           debugGeometry.drawLine(rayStart, rayStart + (rayDirection * 10.0), Color(1.0, 1.0, 0.0, 1.0));
         }
         */
-        
+      Vec3 footError;
       if(stepRatio > 0.0 && stepRatio < 1.0){
+      
         if(plantedFeet[j]){
           // Record the error at lift time.
+          footError = plantLocations[j] - footXfo.tr;
           plantLocations[j] = plantLocations[j] - footXfo.tr;
-          plantLocations[j].y = 0.0;
           plantedFeet[j] = false;
-          
           
           if(footStepTrack.footSteps.size > 1){
             if(stepId == footStepTrack.footSteps.size-1){
@@ -285,10 +286,14 @@ operator evaluateLocomotionPoseVariables(
             }
           }
         }
-        
-        
-        // Interpolate the error across the step.
-        footXfo.tr += plantLocations[j] * (1.0 - stepRatio);
+        else{
+          // Interpolate the error across the step.
+          if(stepRatio < 0.5){
+            Scalar errorDissipation = 1.0 - sin(stepRatio * 2.0 * HALF_PI);
+            footError = plantLocations[j] * errorDissipation;
+            footError.y = 0.0;
+          }
+        }
         
         debugGeometry.drawCircle(footPlantXfo, 1.0, Color(0.0, 1.0, 1.0, 1.0));
       }
@@ -305,13 +310,20 @@ operator evaluateLocomotionPoseVariables(
           }
         }
         else{
-          footXfo.tr.x = plantLocations[j].x;
-          footXfo.tr.z = plantLocations[j].z;
+          footError = plantLocations[j] - footXfo.tr;
         }
         debugGeometry.drawCircle(footXfo, 1.0, Color(1.0, 1.0, 0.0, 1.0));
       }
       
-      trackPose.xfoValues[leg.ikGoalXfoId] = controllerXfo.inverse() * footXfo;
+      footError.y = 0.0;
+      Vec3 upVector = controllerXfo.ori.rotateVector(Vec3(0.0, 1.0, 0.0));
+      footXfo.tr -= upVector * footError.dot(upVector);
+      footXfo.tr += footError;
+        
+      Xfo invcontrollerXfo = controllerXfo.inverse();
+      trackPose.xfoValues[leg.ikGoalXfoId] = invcontrollerXfo * footXfo;
+    //  trackPose.xfoValues[hubs[0].xfoId].tr += invcontrollerXfo.ori.rotateVector(footError) * 0.5;
+      
     }
     
   poseVariables = trackPose;
