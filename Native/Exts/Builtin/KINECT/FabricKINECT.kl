@@ -52,6 +52,12 @@ struct KinectCamera {
   Integer depthData[];
   Integer playerData[];
   KinectSkeletonData skeletonData[];
+  Boolean supportsSmoothing;
+  Scalar skeletonSmoothing;
+  Scalar skeletonCorrection;
+  Scalar skeletonPrediction;
+  Scalar skeletonJitterRadius;
+  Scalar skeletonMaxDeviationRadius;
 };
 
 //===================================================================================
