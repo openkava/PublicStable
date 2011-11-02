@@ -110,7 +110,12 @@ namespace Fabric
         
         loopBasicBlockBuilder->SetInsertPoint( bodyBB );
         if ( m_body )
-          m_body->llvmCompileToBuilder( loopBasicBlockBuilder, diagnostics );
+        {
+          CG::Scope subScope( loopScope );
+          CG::BasicBlockBuilder subBBB( loopBasicBlockBuilder, subScope );
+          m_body->llvmCompileToBuilder( subBBB, diagnostics );
+          subScope.llvmUnwind( subBBB );
+        }
         loopBasicBlockBuilder->CreateBr( stepBB );
         
         loopBasicBlockBuilder->SetInsertPoint( stepBB );
