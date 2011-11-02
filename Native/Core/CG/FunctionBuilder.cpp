@@ -228,7 +228,7 @@ namespace Fabric
       delete m_functionScope;
     }
       
-    llvm::Value *FunctionBuilder::operator[]( size_t index )
+    llvm::Argument *FunctionBuilder::operator[]( size_t index )
     {
       llvm::Function::ArgumentListType &argumentList = m_llvmFunction->getArgumentList();
       llvm::Function::ArgumentListType::iterator it = argumentList.begin();
