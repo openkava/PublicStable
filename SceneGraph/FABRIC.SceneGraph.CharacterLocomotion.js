@@ -266,6 +266,7 @@ FABRIC.Characters.CharacterControllerParams = function() {
   this.trail = [];
   this.trailLength = 0;
   this.trailCircularArrayIndex = 0;
+  this.balanceXfo = new FABRIC.RT.Xfo();
 };
 
 FABRIC.appendOnCreateContextCallback(function(context) {
@@ -275,7 +276,8 @@ FABRIC.appendOnCreateContextCallback(function(context) {
       displacementDir: 'Vec3',
       trail: 'Xfo[]',
       trailLength: 'Scalar',
-      trailCircularArrayIndex: 'Integer'
+      trailCircularArrayIndex: 'Integer',
+      balanceXfo: 'Xfo'
     },
     constructor: FABRIC.Characters.CharacterControllerParams
   });
@@ -303,7 +305,11 @@ FABRIC.SceneGraph.registerNodeType('LocomotionCharacterController', {
       cameraNode: undefined,
       
       trailLength: 120.0,
-      numTrailSegments: 12
+      numTrailSegments: 0,
+      
+      gravity: -25.0,
+      comHeight: 15,
+      circleSize: 20
     });
     var cameraNode = scene.getPrivateInterface(options.cameraNode);
     var characterControllerNode = scene.constructNode('CharacterController', options);
@@ -327,6 +333,10 @@ FABRIC.SceneGraph.registerNodeType('LocomotionCharacterController', {
     
     dgnode.setDependency(scene.getGlobalsNode(), 'globals');
     dgnode.setDependency(cameraNode.getDGNode(), 'camera');
+    
+    dgnode.addMember('gravity', 'Scalar', options.gravity);
+    dgnode.addMember('comHeight', 'Scalar', options.comHeight);
+    dgnode.addMember('circleSize', 'Scalar', options.circleSize);
     
     dgnode.addMember('translationControls', 'Vec2', options.translationControls);
     dgnode.addMember('orientationControls', 'Vec2', options.orientationControls);
@@ -364,6 +374,10 @@ FABRIC.SceneGraph.registerNodeType('LocomotionCharacterController', {
         'self.maxAngularVelocity',
         'self.maxLinearAcceleration',
         'self.maxAngularAcceleration',
+        
+        'self.gravity',
+        'self.comHeight',
+        'self.circleSize',
         
         'self.debugGeometry1',
         'self.debugGeometry2',
