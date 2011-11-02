@@ -122,32 +122,35 @@ FABRIC.RT.Xfo.prototype = {
     this.tr.y = m.row1.t;
     this.tr.z = m.row2.t;
 
-    var mat33 = new FABRIC.RT.Mat33(
-                  m.row0.x, m.row0.y, m.row0.z,
-                  m.row1.x, m.row1.y, m.row1.z,
-                  m.row2.x, m.row2.y, m.row2.z);
+    var col0 = new FABRIC.RT.Vec3(m.row0.x, m.row1.x, m.row2.x);
+    var col1 = new FABRIC.RT.Vec3(m.row0.y, m.row1.y, m.row2.y);
+    var col2 = new FABRIC.RT.Vec3(m.row0.z, m.row1.z, m.row2.z);
 
     // Grab the X scale and normalize the first row
-    this.sc.x = mat33.row0.length();
+    this.sc.x = col0.length();
     Math.checkDivisor(this.sc.x, 'Xfo.setFromMat44: Matrix is singular');
-    mat33.row0 = mat33.row0.divideScalar(this.sc.x);
+    col0 = col0.divideScalar(this.sc.x);
 
     // Make the 2nd row orthogonal to the 1st
-    mat33.row1 = mat33.row1.subtract(mat33.row0.multiplyScalar(mat33.row0.dot(mat33.row1)));
+    col1 = col1.subtract(col0.multiplyScalar(col0.dot(col1)));
 
     // Grab the Y scale and normalize the 2nd row
-    this.sc.y = mat33.row1.length();
+    this.sc.y = col1.length();
     Math.checkDivisor(this.sc.y, 'Xfo.setFromMat44: Matrix is singular');
-    mat33.row1 = mat33.row1.divideScalar(this.sc.y);
+    col1 = col1.divideScalar(this.sc.y);
 
     // Make the 3rd row orthogonal to the 1st and 2nd
-    mat33.row2 = mat33.row2.subtract(mat33.row0.multiplyScalar(mat33.row0.dot(mat33.row2)));
-    mat33.row2 = mat33.row2.subtract(mat33.row1.multiplyScalar(mat33.row1.dot(mat33.row2)));
+    col2 = col2.subtract(col0.multiplyScalar(col0.dot(col2)));
+    col2 = col2.subtract(col1.multiplyScalar(col1.dot(col2)));
 
     // Grab the Y scale and normalize the 2nd row
-    this.sc.z = mat33.row2.length();
+    this.sc.z = col2.length();
     Math.checkDivisor(this.sc.z, 'Xfo.setFromMat44: Matrix is singular');
-    mat33.row2 = mat33.row2.divideScalar(this.sc.z);
+    col2 = col2.divideScalar(this.sc.z);
+
+    var mat33 = new FABRIC.RT.Mat33(col0.x, col1.x, col2.x,
+              col0.y, col1.y, col2.y,
+              col0.z, col1.z, col2.z);
 
     // Fix negative scaling
     var det = mat33.determinant();
