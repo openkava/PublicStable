@@ -17,6 +17,12 @@ FABRIC.RT.KinectCamera = function(options) {
   this.playerData = [];
   this.depthData = [];
   this.skeletonData = [];
+  this.supportsSmoothing = options.supportsSmoothing == undefined ? true : options.supportsSmoothing;;
+  this.skeletonSmoothing = options.skeletonSmoothing == undefined ? 0.05 : options.skeletonSmoothing;;
+  this.skeletonCorrection = options.skeletonCorrection == undefined ? 0.5 : options.skeletonCorrection;;
+  this.skeletonPrediction = options.skeletonPrediction == undefined ? 0.5 : options.skeletonPrediction;;
+  this.skeletonJitterRadius = options.skeletonJitterRadius == undefined ? 0.05 : options.skeletonJitterRadius;;
+  this.skeletonMaxDeviationRadius = options.skeletonMaxDeviationRadius == undefined ? 0.04 : options.skeletonMaxDeviationRadius;;
 };
 
 FABRIC.SceneGraph.registerNodeType('KinectCamera', {
