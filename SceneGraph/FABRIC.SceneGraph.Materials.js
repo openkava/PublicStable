@@ -239,7 +239,7 @@ FABRIC.SceneGraph.registerNodeType('Image3D', {
               'self.globalXfo'
             ],
             entryFunctionName: 'setFromImage3DSource',
-            srcCode: 'use Xfo; operator setFromImage3DSource(io Mat44 src, io Xfo dst){dst.setFromMat44(src.inverse());}'
+            srcCode: 'use Xfo; operator setFromImage3DSource(io Mat44 src, io Xfo dst){dst.setFromMat44(src);}'
           }),0);
 
         }

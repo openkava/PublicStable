@@ -334,9 +334,24 @@ operator computeGradients_depthSliced(
   //
   //In order to avoid too many redundant computations pre pixel, we keep
   //a full row of intermediary results.
+  Integer i, j, k, l, dst = 0;
+
+  Scalar scalingFactor[3];
+  Scalar maxSize = width;
+  if(height > maxSize)
+    maxSize = height;
+  if(depth > maxSize)
+    maxSize = depth;
+  scalingFactor[0] = Scalar(width)/Scalar(maxSize);
+  scalingFactor[1] = Scalar(height)/Scalar(maxSize);
+  scalingFactor[2] = Scalar(depth)/Scalar(maxSize);
+
+  Scalar invMaxScaling = 1.0/maxScaling;
+  for(i = 0; i < 3; ++i) {
+    scalingFactor[i] *= invMaxScaling;
+  }
 
   sliceGradients.resize(width * height);
-  Integer i, j, k, l, dst = 0;
 
   Integer nei3D2H_0[][3][2];
   nei3D2H_0.resize(width + 2);
@@ -405,7 +420,7 @@ operator computeGradients_depthSliced(
         //Note: at this point, delta has 32X magnitude (because we added all values without dividing at each step)
 
         //Convert to normalized vector
-        Vec3 grad = Vec3(Scalar(delta[0]), Scalar(delta[1]), Scalar(delta[2]));
+        Vec3 grad = Vec3(Scalar(delta[0])*scalingFactor[0], Scalar(delta[1])*scalingFactor[1], Scalar(delta[2])*scalingFactor[2]);
         Scalar magnitude = grad.length();
         if(magnitude > DIVIDEPRECISION)
           grad /= magnitude;
