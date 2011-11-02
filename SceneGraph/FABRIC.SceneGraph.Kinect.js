@@ -32,7 +32,6 @@ FABRIC.SceneGraph.registerNodeType('KinectCamera', {
     // create the bullet node
     var kinectNode = scene.constructNode('SceneGraphNode', {name: 'KinectCameraNode'});
     var dgnode = kinectNode.constructDGNode('DGNode');
-    dgnode.setDependency(scene.getGlobalsNode(), 'globals');
     dgnode.addMember('camera', 'KinectCamera', new FABRIC.RT.KinectCamera(options));
     dgnode.addMember('tiltAngle', 'Integer', options.tiltAngle);
     kinectNode.addMemberInterface(dgnode, 'camera', false);
@@ -61,21 +60,25 @@ FABRIC.SceneGraph.registerNodeType('KinectCamera', {
     
     // see if we need to support color
     if(options.supportsColor) {
-      // create init operator
-      dgnode.bindings.append(scene.constructOperator({
-        operatorName: 'getKinectCameraColorPixels',
-        parameterLayout: [
-          'self.camera',
-          'globals.time'
-        ],
-        entryFunctionName: 'getKinectCameraColorPixels',
-        srcFile: 'FABRIC_ROOT/SceneGraph/KL/kinect.kl'
-      }));
       
       kinectNode.pub.connectToTexture = function(textureNode) {
         var textureDGNode = scene.getPrivateInterface(textureNode).getDGNode();
+        textureDGNode.setDependency(scene.getGlobalsNode(), 'globals');
         textureDGNode.setDependency(dgnode,'kinect');
-        
+
+        // create init operator
+        textureDGNode.bindings.append(scene.constructOperator({
+          operatorName: 'getKinectCameraColorPixels',
+          parameterLayout: [
+            'kinect.camera',
+            'self.pixels',
+            'self.width',
+            'self.height',
+            'globals.time'
+          ],
+          entryFunctionName: 'getKinectCameraColorPixels',
+          srcFile: 'FABRIC_ROOT/SceneGraph/KL/kinect.kl'
+        }));
       };
     }
     
