@@ -209,6 +209,7 @@ $(document).ready(function() {
   
     
   var rigName = 'marama';
+  var locomotionControllerNode;
   switch(rigName){
   case 'walker':
     var maxLinearVelocity = new FABRIC.RT.Vec2(80.0, 80.0);
@@ -219,13 +220,27 @@ $(document).ready(function() {
     var maxLinearVelocity = new FABRIC.RT.Vec2(80.0, 80.0);
     var maxLinearAcceleration = 15.0;
     var maxAngularVelocity = new FABRIC.RT.Euler(0.0,1.0,0.0);
+    var numTrailSegments = 12;
     break;
   case 'marama':
     var maxLinearVelocity = new FABRIC.RT.Vec2(40.0, 40.0);
     var maxLinearAcceleration = 2.0;
     var maxAngularVelocity = new FABRIC.RT.Euler(0.0,0.5,0.0);
+    var locomotionControllerNode = scene.constructNode('LocomotionCharacterController', {
+        cameraNode: camera,
+        maxLinearVelocity: new FABRIC.RT.Vec2(40.0, 40.0),
+        maxLinearAcceleration: 2.0,
+        maxAngularVelocity:  new FABRIC.RT.Euler(0.0,0.5,0.0)/*,
+        bulletWorldNode: bulletWorldNode*/,
+        numTrailSegments: 0,
+        gravity: -15.0,
+        comHeight: 18,
+        circleSize: 6
+      });
     break;
   }
+  
+
   
   
   var rigLoader = scene.constructManager('SceneLoader');
@@ -243,17 +258,10 @@ $(document).ready(function() {
   }
   var skeletonNode = ikrig.getSkeletonNode();
   
-  var locomotionControllerNode = scene.constructNode('LocomotionCharacterController', {
-    cameraNode: camera,
-    maxLinearVelocity: maxLinearVelocity,
-    maxLinearAcceleration: maxLinearAcceleration,
-    maxAngularVelocity: maxAngularVelocity/*,
-    bulletWorldNode: bulletWorldNode*/
-  });
     
   
   var locomotionVariables = scene.constructNode('LocomotionPoseVariables', {
-    baseVariables: characterVariables/*,
+    baseVariables: characterVariables/* ,
     bulletWorldNode: bulletWorldNode*/
   });
   locomotionVariables.setCharacterController(locomotionControllerNode);
@@ -265,11 +273,6 @@ $(document).ready(function() {
   
   ikrig.setControllerNode(locomotionControllerNode);
   
-  var skeletonGeometryNode = scene.constructNode("CharacterSkeletonDebug", {
-    characterRigNode:ikrig,
-    boneradius: 0.2,
-    color: FABRIC.RT.rgba(0.0, 0.0, 1.0, 1.0)
-  });
   
   var materialNode = scene.constructNode('PhongSkinningMaterial', {
     lightNode: light,
@@ -282,7 +285,16 @@ $(document).ready(function() {
     geometryNode: characterMesh,
     materialNode: materialNode
   });
-      
+  
+  
+  /*
+  var skeletonGeometryNode = scene.constructNode("CharacterSkeletonDebug", {
+    characterRigNode:ikrig,
+    boneradius: 0.2,
+    color: FABRIC.RT.rgba(0.0, 0.0, 1.0, 1.0)
+  });
+  */
+  
   var translationControls = new FABRIC.RT.Vec2();
   var downKeys = [];
   var arrowKeys = {
