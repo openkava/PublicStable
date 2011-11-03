@@ -354,7 +354,7 @@ $(document).ready(function() {
   var borderSize = 0.01;
 
   //var opacityTexture = scene.constructNode('3DTextureGenerator');
-  var opacityTexture = scene.constructNode('Image3D',  { url: 'Resources/ChestMid.nrrd', resourceTargetTransformNode: transform, glRepeat: false });
+  var opacityTexture = scene.constructNode('Image3D',  { url: 'Resources/HeadHigh.nrrd', resourceTargetTransformNode: transform, glRepeat: false });
 
   var volumeNode = scene.constructNode('VolumeOpacityInstance', {
       viewportNode: viewport,
@@ -623,7 +623,7 @@ $(document).ready(function() {
               <div id='brightness' style="margin-top:10px;"></div>
               <label for="transparency" >Transparency:</label>
               <div id='transparency' style="margin-top:10px;"></div>
-              <label for="resolutionFactor" >Depth resolution factor:</label>
+              <label for="resolutionFactor" >Resolution factor:</label>
               <div id='resolutionFactor' style="margin-top:10px;"></div>
               <label for="specularFactor" >Shininess:</label>
               <div id='specularFactor' style="margin-top:10px;"></div>

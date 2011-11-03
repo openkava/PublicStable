@@ -60,6 +60,10 @@ function OGLRenderTarget.genTextures() {
           }
           
           glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, this.textures[i].texture.bufferID, 0);
+          if(this.resolution != 1.0) {
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+          }
           
           this.depthBuffer = i;
           this.hasDepthBufferTexture = true;
@@ -73,6 +77,10 @@ function OGLRenderTarget.genTextures() {
             continue;
           }
           glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0+this.numColorBuffers, GL_TEXTURE_2D, this.textures[i].texture.bufferID, 0);
+          if(this.resolution != 1.0) {
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+          }
           
           this.numColorBuffers++;
         }
@@ -120,11 +128,11 @@ function OGLRenderTarget.prebind(
 ) {
 //  report("prebind:"+currWidth + ","+currHeight );
   if(this.fbo == 0){
-    this.width = currWidth;
-    this.height = currHeight;
+    this.width = currWidth * this.resolution;
+    this.height = currHeight * this.resolution;
   }
   else {
-    if (this.width != currWidth || this.height != currHeight) {
+    if (this.width != currWidth * this.resolution || this.height != currHeight * this.resolution) {
       // If this FBO is a full screen FBO, then we check to see
       // if the viewport dimensions have changed, and rebuild
       // the textures if they have.
@@ -147,8 +155,8 @@ function OGLRenderTarget.prebind(
       this.fbo = 0;
       this.depthBuffer = -1;
       this.hasDepthBufferTexture = false;
-      this.width = currWidth;
-      this.height = currHeight;
+      this.width = currWidth * this.resolution;
+      this.height = currHeight * this.resolution;
     }
   }
 }
