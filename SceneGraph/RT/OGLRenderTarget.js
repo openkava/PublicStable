@@ -36,6 +36,7 @@ FABRIC.appendOnCreateContextCallback(function(context) {
 FABRIC.RT.OGLRenderTarget = function(width, height, textures, options) {
   this.width = width ? width : 0;
   this.height = height ? height : 0;
+  this.resolution = 1.0;
   this.textures = textures ? textures : [];
   this.fbo = 0;
   this.prevFbo = 0;
@@ -56,6 +57,7 @@ FABRIC.appendOnCreateContextCallback(function(context) {
     members: {
       width: 'Size',
       height: 'Size',
+      resolution: 'Scalar',
       textures: 'OGLRenderTargetTextureDesc[]',
       fbo: 'Size',
       prevFbo: 'Size',
