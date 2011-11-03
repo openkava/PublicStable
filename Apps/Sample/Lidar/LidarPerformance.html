@@ -58,6 +58,34 @@ s.parentNode.insertBefore(ga, s);
 </script>
 
     <script type="text/javascript">
+
+FABRIC.SceneGraph.registerNodeType('LidarInstance', {
+  factoryFn: function(options, scene) {
+    
+    scene.assignDefaults(options, {
+      color: FABRIC.RT.rgba(1.0,0.0,0.0,1.0)
+    });
+
+    var instanceNode = scene.constructNode('Instance', options);
+    var redrawEventHandler = instanceNode.getRedrawEventHandler();
+    redrawEventHandler.addMember('color', 'Color', options.color);
+    redrawEventHandler.preDescendBindings.append(scene.constructOperator({
+      operatorName: 'loadColor',
+      srcFile: 'FABRIC_ROOT/SceneGraph/KL/loadUniforms.kl',
+      preProcessorDefinitions: {
+        ATTRIBUTE_NAME: 'color',
+        ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('color'),
+        DATA_TYPE: 'Color'
+      },
+      entryFunctionName: 'loadUniform',
+      parameterLayout: [
+        'shader.shaderProgram',
+        'self.color'
+      ]
+    }));
+
+    return instanceNode;
+}});
     
 $(document).ready(function() {
   
@@ -67,7 +95,7 @@ $(document).ready(function() {
   });
   
   // define how many las files to load
-  var numLasFiles = 250;
+  var numLasFiles = 150;
   var filesLoaded = 0;
   $('#loadingDesc').html("Downloading "+numLasFiles+" LIDAR files...<br>This may take some time (several minutes).");
 
@@ -80,8 +108,8 @@ $(document).ready(function() {
     nearDistance: 0.1,
     farDistance: 2000000,
     roll: 0,
-    target: new FABRIC.RT.Vec3(0,0,0),
-    position: new FABRIC.RT.Vec3(1,1,1).multiplyScalar(10000),
+    target: new FABRIC.RT.Vec3(523514.4375,-133.8986663818359,4333323),
+    position: new FABRIC.RT.Vec3(518182.625,3154.17138671875,4336417)
   });
 
   scene.constructNode('CameraManipulator', { targetNode: camera });
@@ -94,18 +122,31 @@ $(document).ready(function() {
     minimum: 275,
     maximum: 450,
     bottomColor: FABRIC.RT.rgba(0.0,0.0,0.0,1.0),
-    middleColor: FABRIC.RT.rgba(0.0,0.0,1.0,1.0),
-    topColor: FABRIC.RT.rgba(0.8,0.8,0.8,1.0)
+    middleColor: FABRIC.RT.rgba(0.0,0.8,0.0,1.0),
+    topColor: FABRIC.RT.rgba(0.8,0.0,0.0,1.0)
+  });
+
+  var flatMaterial = scene.constructNode('FlatPerInstanceMaterial', {
+    prototypeMaterialType: 'PointMaterial',
+    pointSize: 1,
   });
   
+  var pointNodes = {};
   var pointInstances = {};
-  var pointMaterials = {};
 
   var boxes = [];
   var pointCount = 0;
   function loadLas(lasID){ return function(){
-    var assets = scene.importAssetFile('http://www.wvview.org/data/lidar/Gilmer/las/First/'+lasID+'.las', {});
-    assets[lasID].addOnLoadSuccessCallback(function(){
+    var resourceName = ''+(lasID+1);
+    while(resourceName.length<6)
+      resourceName = '0'+resourceName;
+    
+    var url = 'http://www.wvview.org/data/lidar/Gilmer/las/First/'+resourceName+'.las';
+    if(document.URL.toLowerCase().substr(0,16) == 'http://localhost')
+      url = 'http://localhost/~helge/Fabric/Apps/Sample/Lidar/wwview.org/'+resourceName+'.las';
+
+    var assets = scene.importAssetFile(url, {blockRedrawingTillResourceIsLoaded: true});
+    assets[resourceName].addOnLoadSuccessCallback(function(){
       
       var colors = [];
       colors.push(new FABRIC.RT.rgb(0.0,0.0,0.0,1.0));
@@ -116,84 +157,70 @@ $(document).ready(function() {
       colors.push(new FABRIC.RT.rgb(0.0,1.0,1.0,1.0));
       colors.push(new FABRIC.RT.rgb(1.0,0.0,1.0,1.0));
       
-      var pointMaterial = scene.constructNode('FlatMaterial', {
-          prototypeMaterialType: 'PointMaterial',
-          pointSize: 2,
-          color: colors[parseInt(lasID)%colors.length]
-        });
-      pointMaterials[lasID] = pointMaterial;
-
       // loop over all assets and create an instance
-      for(var name in assets[lasID].getParsedNodes()) {
-        if(assets[lasID].getParsedNodes()[name].isTypeOf('Points'))
+      for(var name in assets[resourceName].getParsedNodes()) {
+        if(assets[resourceName].getParsedNodes()[name].isTypeOf('Points'))
         {
-          pointInstances[lasID] = scene.constructNode('Instance', {
-            geometryNode: assets[lasID].getParsedNodes()[name],
-            materialNode: pointMaterial
+          pointNodes[resourceName] = assets[resourceName].getParsedNodes()[name];
+          
+          setTimeout(function(){
+            pointNodes[resourceName].getBoundingBox();
+            
+            // compute the new point count!
+            pointCount += pointNodes[resourceName].getVertexCount();
+            var pointCountStr = ''+pointCount;
+            var pointCountHtml = '';
+            while(pointCountStr.length>0)
+            {
+              if(pointCountStr.length > 3)
+              {
+                pointCountHtml = '.'+pointCountStr.substr(pointCountStr.length-3,3) + pointCountHtml;
+                pointCountStr = pointCountStr.substr(0,pointCountStr.length-3)
+              }
+              else
+              {
+                pointCountHtml = pointCountStr + pointCountHtml;
+                break;
+              }
+            }
+            $('#pointCount').html(pointCountHtml);
+            viewport.redraw();
+          }, 150);
+          
+          // create an instance!
+          pointInstances[resourceName] = scene.constructNode('LidarInstance', {
+            geometryNode: pointNodes[resourceName],
+            color: colors[parseInt(resourceName)%colors.length]
           });
+          
+          pointInstances[resourceName].setMaterialNode(flatMaterial);
         }
       }
       filesLoaded++;
-      $('#fileCount').html(filesLoaded);
+      $('#fileCount').html(filesLoaded+' of '+numLasFiles);
 
-      viewport.redraw();
-    });
-
-    // append a call back to compute the bbox values
-    FABRIC.appendOnResolveAsyncTaskCallback(function(label, nbRemaining, doneWeight, totalWeight) {
-      if (nbRemaining===1) {
-        
-        // place the camera based on the center
-        var min = new FABRIC.RT.Vec3(10000000,10000000,10000000);
-        var max = new FABRIC.RT.Vec3(-10000000,-10000000,-10000000);
-        for(var name in assets[lasID].getParsedNodes()) {
-          if(assets[lasID].getParsedNodes()[name].isTypeOf('Points'))
-          {
-            // compute the bbox
-            var bbox = assets[lasID].getParsedNodes()[name].getBoundingBox();
-            pointCount += assets[lasID].getParsedNodes()[name].getVertexCount();
-            $('#pointCount').html(pointCount);
-            boxes.push(bbox);
-          }
-        }
-
-        for(var i=0;i<boxes.length;i++){
-          if(min.x > boxes[i].min.x)min.x = boxes[i].min.x;
-          if(min.y > boxes[i].min.y)min.y = boxes[i].min.y;
-          if(min.z > boxes[i].min.z)min.z = boxes[i].min.z;
-          if(max.x < boxes[i].max.x)max.x = boxes[i].max.x;
-          if(max.y < boxes[i].max.y)max.y = boxes[i].max.y;
-          if(max.z < boxes[i].max.z)max.z = boxes[i].max.z;
-        }
-        var center = min.add(max).multiplyScalar(0.5);
-        var pos = center.add(new FABRIC.RT.Vec3(0,0,0.25 * Math.abs(min.z - max.z)));
-        camera.getTransformNode().setGlobalXfo(FABRIC.RT.xfo({tr:pos}));
-        camera.getTransformNode().setTarget(center);
-        camera.setNearDistance(Math.abs(min.z - max.z) * 0.001);
-        camera.setFarDistance(Math.abs(min.z - max.z) * 100);
-      }
+      // now load the next one
+      if(lasID < numLasFiles-1)
+        loadLas(lasID+1)();
     });
   }};
 
-  for(var i=0;i<numLasFiles;i++){
-    var resourceName = ''+(i+1);
-    while(resourceName.length<6)
-      resourceName = '0'+resourceName;
-    loadLas(resourceName)();
-  }
-  
   $("#useElevationShader").attr('checked', false).change(function() {
     var useGradient = $('#useElevationShader').attr('checked');
-    for(var lasID in pointInstances){
+    for(var resourceName in pointInstances){
       if(useGradient)
       {
-        pointInstances[lasID].removeMaterialNode(pointMaterials[lasID]);
-        pointInstances[lasID].setMaterialNode(gradientMaterial);
+        try{
+          pointInstances[resourceName].removeMaterialNode(flatMaterial);
+          pointInstances[resourceName].setMaterialNode(gradientMaterial);
+        }catch(e){}
       }
       else
       {
-        pointInstances[lasID].removeMaterialNode(gradientMaterial);
-        pointInstances[lasID].setMaterialNode(pointMaterials[lasID]);
+        try{
+          pointInstances[resourceName].removeMaterialNode(gradientMaterial);
+          pointInstances[resourceName].setMaterialNode(flatMaterial);
+        }catch(e){}
       }
       viewport.redraw();
     }
@@ -203,29 +230,22 @@ $(document).ready(function() {
     modal: true
   });
   
-  // create a grid in the scene
-  scene.constructNode('Instance', {
-    geometryNode: scene.constructNode('Grid', {
-      size_x: 20.0,
-      size_z: 20.0,
-      sections_x: 20,
-      sections_z: 20 }),
-    materialNode: scene.constructNode('FlatMaterial', {
-      color: new FABRIC.RT.rgb(0.3,0.3,0.3,1.0)
-    } )
-  });
-
   FABRIC.appendOnResolveAsyncTaskCallback(function(label, nbRemaining, doneWeight, totalWeight) {
     $('#loadingProgressBar').progressbar({
       value: (1.0-(doneWeight/totalWeight))*100
     });
     if (nbRemaining===0) {
+      
       $('#loadingDialog').dialog('close');
       viewport.redraw();
       var errors = scene.getErrors();
       if (errors.length > 0) {
         throw (errors.toString());
       }
+
+      // load a single file
+      loadLas(0)();
+
       return true;
     }
   });
