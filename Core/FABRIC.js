@@ -12,9 +12,9 @@ FABRIC = (function() {
   var displayPluginInstallPage = function( div ){
     var iframeTag = document.createElement('iframe');
     iframeTag.setAttributeNS(null, 'src', 'http://demos.fabric-engine.com/Fabric/Core/pluginInstall.html');
-    iframeTag.setAttributeNS(null, 'style', 'position:absolute; left:10px; right:10px; top:10px; bottom:10px; z-index:10');
-    iframeTag.setAttributeNS(null, 'width', '98%');
-    iframeTag.setAttributeNS(null, 'height', '98%');
+    iframeTag.setAttributeNS(null, 'style', 'position:absolute; left:0; right:0; top:0; bottom:0; z-index:10');
+    iframeTag.setAttributeNS(null, 'width', '100%');
+    iframeTag.setAttributeNS(null, 'height', '100%');
     document.body.appendChild(iframeTag);
     window.downloadAndInstallPlugin = function(url, message){
       // Remove the iframe, and display the message.
@@ -386,31 +386,17 @@ FABRIC = (function() {
     xhreq.send(null);
     return result;
   };
-
-  var convertImageURLToDataURL = function(imageURL, callback, mimeType) {
-    if (mimeType === undefined) {
-      mimeType = 'image/png';
+  
+  
+  var preProcessCode = function(baseCode, preProcessorDefinitions) {
+    for (var def in preProcessorDefinitions) {
+      while (baseCode.indexOf(def) != -1) {
+        baseCode = baseCode.replace(def, preProcessorDefinitions[def]);
+      }
     }
-    var img = new Image;
-    img.onload = function() {
-      var canvas = document.createElement('canvas');
-      canvas.width = img.width;
-      canvas.height = img.height;
-
-      var ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0);
-
-      callback(canvas.toDataURL(mimeType));
-    };
-    img.src = imageURL;
+    return baseCode;
   };
-
-  var isObjectEmpty = function(o) {
-    for (var i in o)
-      return false;
-    return true;
-  };
-
+  
   return {
     createContext: createContext,
     getContextIDs: function() { return contextIDs; },
@@ -424,6 +410,6 @@ FABRIC = (function() {
     getAsyncTasksWeight: function() { return asyncTasksWeight; },
     getAsyncTasksMaxWeight: function() { return asyncTasksMaxWeight; },
     appendOnResolveAsyncTaskCallback: appendOnResolveAsyncTaskCallback,
-    convertImageURLToDataURL: convertImageURLToDataURL
+    preProcessCode: preProcessCode
   };
 })();

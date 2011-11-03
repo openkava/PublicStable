@@ -35,10 +35,13 @@ operator raycastBulletWorld(
   io BulletWorld world,
   io Boolean enable
 ) {
-  world.raycast(ray.start,ray.direction);
+  Vec3 to = ray.start + ray.direction * 10000.0;
+  Boolean filterPassiveObjects = true;
+  world.raycast(ray.start,to,filterPassiveObjects);
   if(world.hit) {
     select = true;
     intersection.point = world.hitPosition;
+    intersection.normal = world.hitNormal;
     intersection.distance = (ray.start - world.hitPosition).length();
   }
 }
@@ -70,6 +73,15 @@ operator copyShapeVertices(
   shape.vertices.resize(positions.size());
   for(Size i=0;i<positions.size();i++)
     shape.vertices[i] = positions[i];
+}
+
+operator copyShapeIndices(
+  io BulletShape shape,
+  io Integer indices[]
+){
+  shape.indices.resize(indices.size());
+  for(Size i=0;i<indices.size();i++)
+    shape.indices[i] = indices[i];
 }
 
 operator createBulletRigidBody(

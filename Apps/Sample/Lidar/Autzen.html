@@ -5,7 +5,7 @@
   <!--
     Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
     -->
-    <title>FABRIC - Tesselation</title> 
+    <title>FABRIC - Lidar Viewer</title> 
     
     <link type="text/css" href="../../../ThirdParty/jQuery/css/fabric/main.css" rel="stylesheet" />
     <link type="text/css" href="../../../ThirdParty/jQuery/css/fabric/jquery-ui-1.8.16.custom.css" rel="stylesheet" />
@@ -18,6 +18,7 @@
     <script type="text/javascript" src="../../../SceneGraph/RT/Vec2.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/RT/Vec3.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/RT/Vec4.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Mat22.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/RT/Mat33.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/RT/Mat44.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/RT/Quat.js" charset="utf-8"></script>
@@ -36,10 +37,10 @@
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Materials.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Manipulation.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Kinematics.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/Parsers/parseCollada.js" charset="utf-8"></script>
-    
-<script type="text/javascript">
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Animation.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Lidar.js" charset="utf-8"></script>
 
+<script type="text/javascript">
 
  var _gaq = _gaq || [];
  _gaq.push(['_setAccount', 'UA-25833362-1']);
@@ -57,89 +58,96 @@ s.parentNode.insertBefore(ga, s);
 </script>
 
     <script type="text/javascript">
-    
 $(document).ready(function() {
-  
+
   var scene = FABRIC.SceneGraph.createScene();
-  var viewport = scene.constructNode('Viewport', {
-    windowElement: document.getElementById('FabricContainer'),
-  });
-  
+  var viewport = scene.constructNode('Viewport', { windowElement: document.getElementById('FabricContainer') });
+
   viewport.setBackgroundTextureImage(scene.constructNode('Image', {
-    url: 'Resources/fabric-demo-gradient.png'
+    url: '../BasicDemos/Resources/fabric-demo-gradient.png'
   }));
-  
+
   // Create a camera to draw the scene from
   var camera = scene.constructNode('TargetCamera', {
-    nearDistance: 0.1,
-    farDistance: 500,
-    position: new FABRIC.RT.Vec3(0, 5, 10).multiplyScalar(2.0)
-  });
+      nearDistance: 0.1,
+      farDistance: 2000000,
+      position: new FABRIC.RT.Vec3(10,10,10).multiplyScalar(100),
+      target: new FABRIC.RT.Vec3(1224257,314934,4275),
+    });
 
-  scene.constructNode("CameraManipulator", { targetNode:camera } );
-
+  scene.constructNode('CameraManipulator', { targetNode: camera });
   viewport.setCameraNode(camera);
 
-  var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) });
-  var assetNodes = scene.importAssetFile('Models/bricks.dae');
-  
-  var depthTexture = scene.constructNode('Image', { url: 'Resources/bricks_depth.png' });
-  
-  var tesselationMaterial = scene.constructNode('PhongTesselationMaterial', {
-    color: FABRIC.RT.rgb(0.7, 0.7, 0.7, 1),
-    wireColor: FABRIC.RT.rgb(0, 0, 0, 1),
-    wireOpacity: 1.0,
-    lightNode: light,
-    depthTextureNode: depthTexture
-  });
-
-  assetNodes.sphere.setMaterialNode(tesselationMaterial);
-  
-  $('#tesselationlevel')
-  .slider({
-    min: 1.0,
-    max: 64.0,
-    step: 1.0,
-    value: tesselationMaterial.getTesselationInner(),
-  })
-  .bind('slide',
-    function(event, ui) {
-      tesselationMaterial.setTesselationInner(ui.value);
-      tesselationMaterial.setTesselationOuter(ui.value);
-      scene.redrawAllViewports();
-    });
-
-  $('#wireopacity')
-  .slider({
-    min: 0.0,
-    max: 1.0,
-    step: 0.01,
-    value: tesselationMaterial.getWireOpacity(),
-  })
-  .bind('slide',
-    function(event, ui) {
-      tesselationMaterial.setWireOpacity(ui.value);
-      scene.redrawAllViewports();
-    });
-  
+  var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(10, 30, 100).multiplyScalar(3) });
 
   $('#loadingDialog').dialog({
     modal: true
   });
+
+  var pointMaterial = scene.constructNode('VertexColorMaterial', {
+      prototypeMaterialType: 'PointMaterial',
+      pointSize: 1,
+    });
+
+  // create the alembic content, and fire the load once it is loaded
+  var resourceName = 'autzen';
+  var assets = scene.importAssetFile('Models/'+resourceName+'.laz', {
+    dependentNode: viewport
+  });
+  
+  assets[resourceName].addOnLoadSuccessCallback(function(){
+    // loop over all assets and create an instance
+    for(var name in assets[resourceName].getParsedNodes()) {
+      if(assets[resourceName].getParsedNodes()[name].isTypeOf('Points'))
+      {
+        scene.constructNode('Instance', {
+          geometryNode: assets[resourceName].getParsedNodes()[name],
+          materialNode: pointMaterial
+        });
+      }
+    }
+
+    // append a call back to compute the bbox values
+    FABRIC.appendOnResolveAsyncTaskCallback(function(label, nbRemaining, doneWeight, totalWeight) {
+      if (nbRemaining===1) {
+        // place the camera based on the center
+        var min = new FABRIC.RT.Vec3(10000000,10000000,10000000);
+        var max = new FABRIC.RT.Vec3(-10000000,-10000000,-10000000);
+        for(var name in assets[resourceName].getParsedNodes()) {
+          if(assets[resourceName].getParsedNodes()[name].isTypeOf('Points'))
+          {
+            // compute the bbox
+            var bbox = assets[resourceName].getParsedNodes()[name].getBoundingBox();
+            if(min.x > bbox.min.x)min.x = bbox.min.x;
+            if(min.y > bbox.min.y)min.y = bbox.min.y;
+            if(min.z > bbox.min.z)min.z = bbox.min.z;
+            if(max.x < bbox.max.x)max.x = bbox.max.x;
+            if(max.y < bbox.max.y)max.y = bbox.max.y;
+            if(max.z < bbox.max.z)max.z = bbox.max.z;
+          }
+        }
+        
+        var center = min.add(max).multiplyScalar(0.5);
+        var pos = center.add(new FABRIC.RT.Vec3(0,0,0.25 * Math.abs(min.z - max.z)));
+        camera.getTransformNode().setGlobalXfo(FABRIC.RT.xfo({tr:pos}));
+        camera.getTransformNode().setTarget(center);
+        camera.setNearDistance(Math.abs(min.z - max.z) * 0.001);
+        camera.setFarDistance(Math.abs(min.z - max.z) * 100);
+      }
+    });
+
+    $('#loadingDialog').dialog('close');
+    viewport.redraw();
+  });
+
   FABRIC.appendOnResolveAsyncTaskCallback(function(label, nbRemaining, doneWeight, totalWeight) {
     $('#loadingProgressBar').progressbar({
       value: (1.0-(doneWeight/totalWeight))*100
     });
     if (nbRemaining===0) {
-      $('#loadingDialog').dialog('close');
       var errors = scene.getErrors();
       if (errors.length > 0) {
         throw (errors.toString());
-      }
-      viewport.redraw();
-      if(!viewport.getGlewSupported('GL_ARB_tessellation_shader')){
-        alert("This demo requires OpenGL 4.0 features such as 'GL_ARB_tessellation_shader' to run.\n\nIt appears that your graphics card does not support tesselation shaders.");
-        throw("This demo requires OpenGL 4.0 features such as 'GL_ARB_tessellation_shader' to run.\n\nIt appears that your graphics card does not support tesselation shaders.");
       }
       return true;
     }
@@ -149,9 +157,9 @@ $(document).ready(function() {
 
 // jQuert UI Styling classes
 $(document).ready(function() {
-	$(".box").addClass("ui-widget");
-	$(".box h2").addClass("ui-widget-header ui-corner-all");
-	$(".content").addClass("ui-widget-content");
+  $(".box").addClass("ui-widget");
+  $(".box h2").addClass("ui-widget-header ui-corner-all");
+  $(".content").addClass("ui-widget-content");
 });
 
 </script>
@@ -159,7 +167,7 @@ $(document).ready(function() {
   </head> 
   <body>
     <div id="loadingDialog" title="Loading...">
-      <h4 id="loadingDesc"></h4>
+      <h4 id="loadingDesc">Downloading LIDAR File (61MB).<br>This may take some time.</h4>
       <div id="loadingProgressBar" class="ui-progressbar-value"></div>
     </div>
     <div id="wrapper">
@@ -172,21 +180,12 @@ $(document).ready(function() {
           <div class="box">
             <h2>INFO</h2>
             <div class="content">
-              Tesselation.<br>
-              This sample shows the use of GPU based tesselation. This is achieved by implementing a
-              GLSL geometry shader.
+              LIDAR Viewer.<br>
+              This scene shows the LIDAR parser in action. The scene contains 10.5 million points.
+              The data is parsed using a custom extension based on the libLAS library.
             </div><!--content-->
           </div><!--box-->
-          <div class="box">
-            <h2>CONTROLS</h2>
-            <div class="content">
-                <div>Tesselation Level:</div>
-                <div id='tesselationlevel' style="margin-top:10px;"></div>
-                <div>Wire Opacity:</div>
-                <div id='wireopacity' style="margin-top:10px;"></div>
-            </div><!--content-->
-          </div><!--box-->
-            
+
         </div><!--sidebar-->
       </div> <!--editor-->
     </div><!--wrapper-->

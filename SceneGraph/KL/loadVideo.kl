@@ -6,36 +6,61 @@
 use FabricOGL;
 use FabricVIDEO;
 
-operator videoLoadInfo(
-  io String filename,
-  io Size stream,
-  io Size width,
-  io Size height,
-  io Scalar duration,
-  io Scalar fps
+struct RGBCache{
+  RGB pixels[];
+};
+
+operator videoLoadResource(
+  io FabricResource resource,
+  io VideoHandle handle
 ) {
-  FabricVIDEOOpenStream(filename, stream, width, height, duration, fps);
+  if(!handle.pointer){
+    FabricVIDEOOpenResource(resource.data.data(), resource.data.dataSize(), handle);
+  }
+}
+
+operator videoSetTimeRange(
+  io VideoHandle handle,
+  io Vec2 timeRange
+) {
+  timeRange.x = 0.0;
+  timeRange.y = handle.duration;
 }
 
 operator videoSeekTime(
-  io Size stream,
-  io Scalar time
+  io VideoHandle handle,
+  io Scalar time,
+  io RGB pixels[],
+  io RGB pixelCache[][],
+  io Integer pixelCacheIndex[],
+  io Integer pixelCacheLimit
 ) {
-  FabricVIDEOSeekTime(stream, time);
-}
+  Integer frameIndex = floor(time * handle.fps + 0.5);
+  Scalar localTime = Scalar(frameIndex) / handle.fps;
+  Integer position = -1;
+  for(Size i=0;i<pixelCacheIndex.size();i++)
+  {
+    if(pixelCacheIndex[i] == frameIndex) {
+      position = i;
+      break;
+    }
+  }
+  if(position > -1){
+    pixels = pixelCache[position];
+    return;
+  }
 
-operator videoGetPixels(
-  io Size stream,
-  io Size width,
-  io Size height,
-  io RGB pixels[]
-) {
-  FabricVIDEOGetAllPixels(stream, width, height, pixels);
+  FabricVIDEOSeekTime(handle, localTime);
+  FabricVIDEOGetAllPixels(handle, pixels);
+
+  if(pixelCacheLimit > pixelCacheIndex.size()) {
+    pixelCacheIndex.push(frameIndex);
+    pixelCache.push(pixels);
+  }
 }
 
 operator videoLoadToGPU(
-  io Size width,
-  io Size height,
+  io VideoHandle handle,
   io RGB pixels[],
   io Size bufferID,
   io Integer textureUnit
@@ -62,7 +87,7 @@ operator videoLoadToGPU(
 
     //Generate the texture
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-    if (pixels.size() == (width * height))
-      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, pixels.data());
+    if (pixels.size() == (handle.width * handle.height))
+      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, handle.width, handle.height, 0, GL_RGB, GL_UNSIGNED_BYTE, pixels.data());
   }
 }
