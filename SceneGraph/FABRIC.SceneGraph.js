@@ -8,22 +8,37 @@
  * node graph in javascript.
  */
 FABRIC.SceneGraph = {
+  managerDescriptions: {},
   nodeDescriptions: {},
   assetLoaders: {},
-  registerNodeType: function(type, nodeDescription) {
+  registerManagerType: function(type, description) {
+    if (this.managerDescriptions[type]) {
+      throw ('Manager Constructor already Registered:' + type);
+    }else {
+        // Commented out till we can finish the documentation.
+  //    if (!nodeDescription.briefDesc || !nodeDescription.detailedDesc)
+  //      console.log('WARNING: Node Constructor "'+type+'" does not provide a proper description.');
+      if(!description.briefDesc) description.briefDesc = '';
+      if(!description.detailedDesc) description.detailedDesc = '';
+      if(!description.optionsDesc) description.optionsDesc = {};
+      if(!description.parentNodeDesc) description.parentNodeDesc = '';
+      this.managerDescriptions[type] = description;
+    }
+  },
+  registerNodeType: function(type, description) {
     if (this.nodeDescriptions[type]) {
       throw ('Node Constructor already Registered:' + type);
     }else {
-      if (!nodeDescription.factoryFn)
+      if (!description.factoryFn)
         throw ('Node Constructor "'+type+'" does not implement the factoryFn');
         // Commented out till we can finish the documentation.
   //    if (!nodeDescription.briefDesc || !nodeDescription.detailedDesc)
   //      console.log('WARNING: Node Constructor "'+type+'" does not provide a proper description.');
-      if(!nodeDescription.briefDesc) nodeDescription.briefDesc = '';
-      if(!nodeDescription.detailedDesc) nodeDescription.detailedDesc = '';
-      if(!nodeDescription.optionsDesc) nodeDescription.optionsDesc = {};
-      if(!nodeDescription.parentNodeDesc) nodeDescription.parentNodeDesc = '';
-      this.nodeDescriptions[type] = nodeDescription;
+      if(!description.briefDesc) description.briefDesc = '';
+      if(!description.detailedDesc) description.detailedDesc = '';
+      if(!description.optionsDesc) description.optionsDesc = {};
+      if(!description.parentNodeDesc) description.parentNodeDesc = '';
+      this.nodeDescriptions[type] = description;
     }
   },
   help: function(type) {
@@ -238,20 +253,35 @@ FABRIC.SceneGraph = {
         return context.DependencyGraph.createNode(name);
       }
     };
-
+    
+    scene.constructManager = function(type, options) {
+      if (!FABRIC.SceneGraph.managerDescriptions[type]) {
+        throw ('Manager Constructor not Registered:' + type);
+      }
+      options = (options ? options : {});
+      var managerNode = FABRIC.SceneGraph.managerDescriptions[type].factoryFn(options, scene);
+      if (!managerNode) {
+        throw (' Factory function method must return an object');
+      }
+      var parentTypeOfFn = managerNode.pub.isTypeOf;
+      managerNode.pub.isTypeOf = function(classname) {
+        if (classname == type) {
+          return true;
+        }else if (parentTypeOfFn !== undefined) {
+          return parentTypeOfFn(classname);
+        }else {
+          return false;
+        }
+      }
+      return managerNode;
+    };
+    
     scene.constructNode = function(type, options) {
       if (!FABRIC.SceneGraph.nodeDescriptions[type]) {
         throw ('Node Constructor not Registered:' + type);
       }
       options = (options ? options : {});
-      if(!options.type ){
-        options.__defineGetter__('type', function() {
-          return type;
-        });
-        options.__defineSetter__('type', function(val) {
-          throw ('Type is readonly');
-        });
-      }
+      if(!options.type) options.type = type;
       var sceneGraphNode = FABRIC.SceneGraph.nodeDescriptions[type].factoryFn(options, scene);
       if (!sceneGraphNode) {
         throw (' Factory function method must return an object');
@@ -268,6 +298,7 @@ FABRIC.SceneGraph = {
       }
       return sceneGraphNode;
     };
+    
     scene.getPrivateInterface = function(publicNode) {
       if (publicNode.pub && publicNode.pub.getName) {
         return publicNode;
@@ -294,81 +325,6 @@ FABRIC.SceneGraph = {
       shaderNodeStore[shaderType] = shader;
       return shader;
     };
-    scene.preProcessCode = function(baseCode, preProcessorDefinitions, includedCodeSections) {
-
-      var pos = 0,
-        preprocessortagstart,
-        preporcessortag,
-        includeStart,
-        includeEnd,
-        includedFile,
-        includedCode,
-        resultCode = baseCode;
-      while (pos < resultCode.length) {
-        preprocessortagstart = resultCode.indexOf('#', pos);
-        if (preprocessortagstart == -1) {
-          pos = resultCode.length;
-          continue;
-        }
-
-        // TODO: reimpliment this and test thorougly
-      //  var blockcomment = resultCode.indexOf('/*', pos);
-      //  if(blockcomment > 0 && blockcomment < preprocessortagstart){
-      //    blockcomment = resultCode.indexOf('*/', blockcomment);
-      //    pos = blockcomment+1;
-      //    continue;
-      //  }
-      //  var linecomment = resultCode.lastIndexOf('//', preprocessortagstart);
-      //  if(linecomment > 0 && linecomment < preprocessortagstart ){
-      //    var newline = resultCode.indexOf('\n', linecomment);
-      //    if(newline == -1 || newline < preprocessortagstart){
-      //      pos = newline+3;
-      //      continue;
-      //    }
-      //  }
-        preporcessortag = resultCode.substring(preprocessortagstart, resultCode.indexOf(' ', preprocessortagstart));
-        switch (preporcessortag) {
-          case '#include':
-            //includeStartDouble = resultCode.indexOf('"', preprocessortagstart + 7);
-            //includeEndDouble = resultCode.indexOf('"', includeStartDouble + 1);
-            includeStartSingle= resultCode.indexOf("'", preprocessortagstart + 7);
-            includeEndSingle = resultCode.indexOf("'", includeStartSingle + 1);
-            includeStart = includeStartSingle
-            includeEnd = includeEndSingle
-            //if(includeStart > includeStartSingle){
-            //  includeStart = includeStartSingle
-            //  includeEnd = includeEndSingle
-            //}
-            includedFile = resultCode.substring(includeStart + 1, includeEnd);
-            try {
-              includedCode = scene.loadResourceURL(includedFile);
-              includedCode = this.preProcessCode.call(
-                this, includedCode, preProcessorDefinitions, includedCodeSections);
-              resultCode = resultCode.substr(
-                0, preprocessortagstart) + includedCode + resultCode.substr(includeEnd + 1);
-              if (includedCodeSections) {
-                includedCodeSections.push({ start: preprocessortagstart, length: includedCode.length });
-              }
-              pos = preprocessortagstart + includedCode.length;
-            }
-            catch (e) {
-              throw ('Failed to include file:' + includedFile);
-            }
-            break;
-          default:
-            pos = resultCode.indexOf('\n', preprocessortagstart) + 1;
-        }
-      }
-      if (preProcessorDefinitions) {
-        for (var def in preProcessorDefinitions) {
-          while (resultCode.indexOf(def) != -1) {
-            resultCode = resultCode.replace(def, preProcessorDefinitions[def]);
-          }
-        }
-      }
-      return resultCode;
-    };
-    
     scene.constructOperator = function(operatorDef) {
       
       var constructBinding = function(operator) {
@@ -391,7 +347,6 @@ FABRIC.SceneGraph = {
       
       ///////////////////////////////////////////////////
       // Construct the operator
-      var includedCodeSections = [];
       var configureOperator = function(code) {
         var descDiags;
         
@@ -443,11 +398,11 @@ FABRIC.SceneGraph = {
         filename = operatorDef.srcFile.split('/').pop();
         if(operatorDef.async === false){
           var code = FABRIC.loadResourceURL(operatorDef.srcFile, 'text/plain');
-          code = scene.preProcessCode(code, operatorDef.preProcessorDefinitions, includedCodeSections);
+          code = FABRIC.preProcessCode(code, operatorDef.preProcessorDefinitions);
           configureOperator(code);
         }else{
           FABRIC.loadResourceURL(operatorDef.srcFile, 'text/plain', function(code){
-            code = scene.preProcessCode(code, operatorDef.preProcessorDefinitions, includedCodeSections);
+            code = FABRIC.preProcessCode(code, operatorDef.preProcessorDefinitions);
             configureOperator(code);
           });
         }
@@ -457,11 +412,11 @@ FABRIC.SceneGraph = {
         // Fake an asynchronous operator construction so that we don't block waiting
         // for the operator compilation.
         if(operatorDef.async === false){
-          var code = scene.preProcessCode(operatorDef.srcCode, operatorDef.preProcessorDefinitions, includedCodeSections);
+          var code = FABRIC.preProcessCode(operatorDef.srcCode, operatorDef.preProcessorDefinitions);
           configureOperator(code);
         }else{
           FABRIC.createAsyncTask(function(){
-            var code = scene.preProcessCode(operatorDef.srcCode, operatorDef.preProcessorDefinitions, includedCodeSections);
+            var code = FABRIC.preProcessCode(operatorDef.srcCode, operatorDef.preProcessorDefinitions);
             configureOperator(code);
           });
         }
@@ -511,12 +466,14 @@ FABRIC.SceneGraph = {
       // We store a map of arrays of event listener functions.
       var eventListeners = {};
       obj.pub.addEventListener = function(type, fn) {
+        if(!fn) throw "Listener Function not provided";
         if (!eventListeners[type]) {
           eventListeners[type] = [];
         }
         eventListeners[type].push(fn);
       };
       obj.pub.removeEventListener = function(type, fn) {
+        if(!fn) throw "Listener Function not provided";
         if (eventListeners[type]) {
           var id = eventListeners[type].indexOf(fn);
           if (id !== -1) {
@@ -549,6 +506,9 @@ FABRIC.SceneGraph = {
     scene.pub.getRootTransformNode = function() {
       return rootNode;
     };
+    scene.pub.constructManager = function(type, options) {
+      return scene.constructManager(type, options).pub;
+    };
     scene.pub.constructNode = function(type, options) {
       return scene.constructNode(type, options).pub;
     };
@@ -573,7 +533,7 @@ FABRIC.SceneGraph = {
       }
     };
     scene.pub.IO = context.IO;
-    scene.pub.redrawAllWindows = function() {
+    scene.pub.redrawAllViewports = function() {
       for (var i=0; i<viewports.length; i++) {
         viewports[i].pub.redraw();
       }
@@ -699,7 +659,7 @@ FABRIC.SceneGraph = {
             onAdvanceCallback.call();
           }
           if(redraw !== false){
-            scene.pub.redrawAllWindows();
+            scene.pub.redrawAllViewports();
             if(isPlaying){
               // Queue up the next redraw immediately. 
               requestAnimFrame( advanceTime, viewports[0].getWindowElement() );
@@ -1224,6 +1184,7 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
       var mouseOverNodeData;
       var propagateEvent = true;
       var bindEventProperties = function(evt) {
+        evt.mouseScreenPos  = getElementCoords(evt);
         evt.scene = scene.pub;
         evt.viewportNode = viewportNode.pub;
         if (cameraNode) {
@@ -1417,7 +1378,7 @@ FABRIC.SceneGraph.registerNodeType('ResourceLoad', {
         // this callback is called early. For the Alpha11 release I am adding this
         // here, but it needs to be thoroughly understood and possibly removed. 
         setTimeout(function(){
-          scene.pub.redrawAllWindows();
+          scene.pub.redrawAllViewports();
         }, 100);
       }
     }

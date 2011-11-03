@@ -11,6 +11,7 @@ FABRIC.RT.BulletWorld = function(options) {
   this.substeps = options.substeps ? options.substeps : 3;
   this.hit = false;
   this.hitPosition = new FABRIC.RT.Vec3(0,0,0);
+  this.hitNormal= new FABRIC.RT.Vec3(0,1,0);
 };
 
 FABRIC.RT.BulletWorld.prototype = {
@@ -44,6 +45,7 @@ FABRIC.RT.BulletShape = function(options) {
   this.type = options.type ? options.type : -1;
   this.parameters = [];
   this.vertices = [];
+  this.indices = [];
 };
 
 FABRIC.RT.BulletShape.BULLET_BOX_SHAPE = 0;
@@ -101,6 +103,16 @@ FABRIC.RT.BulletShape.createConvexHull = function(geometryNode) {
   }
   var shape = new FABRIC.RT.BulletShape();
   shape.type = FABRIC.RT.BulletShape.BULLET_CONVEX_HULL_SHAPE;
+  shape.geometryNode = geometryNode;
+  return shape;
+};
+
+FABRIC.RT.BulletShape.createGImpact = function(geometryNode) {
+  if(geometryNode == undefined) {
+    throw('You need to specify the '+geometryNode+' for createGImpact.');
+  }
+  var shape = new FABRIC.RT.BulletShape();
+  shape.type = FABRIC.RT.BulletShape.BULLET_GIMPACT_SHAPE;
   shape.geometryNode = geometryNode;
   return shape;
 };
@@ -260,6 +272,35 @@ FABRIC.SceneGraph.registerNodeType('BulletWorldNode', {
             shapeName+"Shape_attributes.positions<>",
           ],
           entryFunctionName: 'copyShapeVertices',
+          srcFile: 'FABRIC_ROOT/SceneGraph/KL/bullet.kl'
+        }));
+      }
+
+      // copy the points for convex hulls
+      if(shape.type == FABRIC.RT.BulletShape.BULLET_GIMPACT_SHAPE)
+      {
+        if(!shape.geometryNode)
+          throw('You need to specify geometryNode for a gimpact shape!')
+          
+        // create rigid body operator
+        shapedgnode.setDependency(scene.getPrivateInterface(shape.geometryNode).getAttributesDGNode(),shapeName+"Shape_attributes");
+        shapedgnode.setDependency(scene.getPrivateInterface(shape.geometryNode).getUniformsDGNode(),shapeName+"Shape_uniforms");
+        shapedgnode.bindings.append(scene.constructOperator({
+          operatorName: 'copyShapeVertices',
+          parameterLayout: [
+            'self.'+shapeName+'Shape',
+            shapeName+"Shape_attributes.positions<>",
+          ],
+          entryFunctionName: 'copyShapeVertices',
+          srcFile: 'FABRIC_ROOT/SceneGraph/KL/bullet.kl'
+        }));
+        shapedgnode.bindings.append(scene.constructOperator({
+          operatorName: 'copyShapeIndices',
+          parameterLayout: [
+            'self.'+shapeName+'Shape',
+            shapeName+"Shape_uniforms.indices",
+          ],
+          entryFunctionName: 'copyShapeIndices',
           srcFile: 'FABRIC_ROOT/SceneGraph/KL/bullet.kl'
         }));
       }
@@ -672,7 +713,7 @@ FABRIC.SceneGraph.registerNodeType('BulletForceManipulator', {
     var mouseDownScreenPos, viewportNode;
     var getCameraValues = function(evt) {
       viewportNode = evt.viewportNode;
-      mouseDownScreenPos = FABRIC.RT.Vec2(evt.screenX, evt.screenY);
+      mouseDownScreenPos = evt.mouseScreenPos;
       viewportNode = evt.viewportNode;
       cameraXfo = evt.cameraNode.getTransformNode().getGlobalXfo();
       swaxis = cameraXfo.ori.getXaxis();
