@@ -441,9 +441,12 @@ namespace Fabric
     }
 
     static void jsonDescLicenses_liblas( Util::JSONGenerator &resultJG )
+    {
       Util::JSONObjectGenerator resultJOG = resultJG.makeObject();
       Util::JSONGenerator memberJG = resultJOG.makeMember( ThirdPartyLicenses::liblas::filename );
       memberJG.makeString( ThirdPartyLicenses::liblas::text );
+    }
+
     static void jsonDescLicenses( Util::JSONGenerator &resultJG )
     {
       Util::JSONObjectGenerator resultJGObject = resultJG.makeObject();
