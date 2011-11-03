@@ -11,6 +11,7 @@ FABRIC.RT.BulletWorld = function(options) {
   this.substeps = options.substeps ? options.substeps : 3;
   this.hit = false;
   this.hitPosition = new FABRIC.RT.Vec3(0,0,0);
+  this.hitNormal= new FABRIC.RT.Vec3(0,1,0);
 };
 
 FABRIC.RT.BulletWorld.prototype = {
