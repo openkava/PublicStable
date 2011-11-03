@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+  <meta charset="utf-8">  
+  <!--
+    Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+    -->
+    <title>FABRIC - Lidar Performance Test</title> 
+    
+    <link type="text/css" href="../../../ThirdParty/jQuery/css/fabric/main.css" rel="stylesheet" />
+    <link type="text/css" href="../../../ThirdParty/jQuery/css/fabric/jquery-ui-1.8.16.custom.css" rel="stylesheet" />
+    
+    <script type="text/javascript" src="../../../ThirdParty/jQuery/jquery-1.6.2.min.js"></script>
+    <script type="text/javascript" src="../../../ThirdParty/jQuery/jquery-ui-1.8.16.custom.min.js"></script>
+
+    <script type="text/javascript" src="../../../Core/FABRIC.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Math.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Vec2.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Vec3.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Vec4.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Mat22.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Mat33.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Mat44.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Quat.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Xfo.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/RGBA.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Color.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Euler.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/OGLShaderProgram.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/OGLTexture2D.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/OGLBuffer.js" charset="utf-8"></script>
+
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Geometry.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Primitives.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Lights.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Materials.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Manipulation.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Kinematics.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Animation.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Lidar.js" charset="utf-8"></script>
+
+<script type="text/javascript">
+
+ var _gaq = _gaq || [];
+ _gaq.push(['_setAccount', 'UA-25833362-1']);
+ _gaq.push(['_trackPageview']);
+
+ (function() {
+   var ga = document.createElement('script'); ga.type =
+'text/javascript'; ga.async = true;
+   ga.src = ('https:' == document.location.protocol ? 'https://ssl' :
+'http://www') + '.google-analytics.com/ga.js';
+   var s = document.getElementsByTagName('script')[0];
+s.parentNode.insertBefore(ga, s);
+ })();
+
+</script>
+
+    <script type="text/javascript">
+    
+$(document).ready(function() {
+  
+  var scene = FABRIC.SceneGraph.createScene();
+  var viewport = scene.constructNode('Viewport', {
+    windowElement: document.getElementById('FabricContainer'),
+  });
+  
+  // define how many las files to load
+  var numLasFiles = 250;
+  var filesLoaded = 0;
+  $('#loadingDesc').html("Downloading "+numLasFiles+" LIDAR files...<br>This may take some time (several minutes).");
+
+  viewport.setBackgroundTextureImage(scene.constructNode('Image', {
+    url: '../BasicDemos/Resources/fabric-demo-gradient.png'
+  }));
+
+  // Create a camera to draw the scene from
+  var camera = scene.constructNode('TargetCamera', {
+    nearDistance: 0.1,
+    farDistance: 2000000,
+    roll: 0,
+    target: new FABRIC.RT.Vec3(0,0,0),
+    position: new FABRIC.RT.Vec3(1,1,1).multiplyScalar(10000),
+  });
+
+  scene.constructNode('CameraManipulator', { targetNode: camera });
+  viewport.setCameraNode(camera);
+
+  var gradientMaterial = scene.constructNode('FlatGradientMaterial', {
+    prototypeMaterialType: 'PointMaterial',
+    pointSize: 1,
+    axis: 1,
+    minimum: 275,
+    maximum: 450,
+    bottomColor: FABRIC.RT.rgba(0.0,0.0,0.0,1.0),
+    middleColor: FABRIC.RT.rgba(0.0,0.0,1.0,1.0),
+    topColor: FABRIC.RT.rgba(0.8,0.8,0.8,1.0)
+  });
+  
+  var pointInstances = {};
+  var pointMaterials = {};
+
+  var boxes = [];
+  var pointCount = 0;
+  function loadLas(lasID){ return function(){
+    var assets = scene.importAssetFile('http://www.wvview.org/data/lidar/Gilmer/las/First/'+lasID+'.las', {});
+    assets[lasID].addOnLoadSuccessCallback(function(){
+      
+      var colors = [];
+      colors.push(new FABRIC.RT.rgb(0.0,0.0,0.0,1.0));
+      colors.push(new FABRIC.RT.rgb(1.0,0.0,0.0,1.0));
+      colors.push(new FABRIC.RT.rgb(0.0,1.0,0.0,1.0));
+      colors.push(new FABRIC.RT.rgb(0.0,0.0,1.0,1.0));
+      colors.push(new FABRIC.RT.rgb(1.0,1.0,0.0,1.0));
+      colors.push(new FABRIC.RT.rgb(0.0,1.0,1.0,1.0));
+      colors.push(new FABRIC.RT.rgb(1.0,0.0,1.0,1.0));
+      
+      var pointMaterial = scene.constructNode('FlatMaterial', {
+          prototypeMaterialType: 'PointMaterial',
+          pointSize: 2,
+          color: colors[parseInt(lasID)%colors.length]
+        });
+      pointMaterials[lasID] = pointMaterial;
+
+      // loop over all assets and create an instance
+      for(var name in assets[lasID].getParsedNodes()) {
+        if(assets[lasID].getParsedNodes()[name].isTypeOf('Points'))
+        {
+          pointInstances[lasID] = scene.constructNode('Instance', {
+            geometryNode: assets[lasID].getParsedNodes()[name],
+            materialNode: pointMaterial
+          });
+        }
+      }
+      filesLoaded++;
+      $('#fileCount').html(filesLoaded);
+
+      viewport.redraw();
+    });
+
+    // append a call back to compute the bbox values
+    FABRIC.appendOnResolveAsyncTaskCallback(function(label, nbRemaining, doneWeight, totalWeight) {
+      if (nbRemaining===1) {
+        
+        // place the camera based on the center
+        var min = new FABRIC.RT.Vec3(10000000,10000000,10000000);
+        var max = new FABRIC.RT.Vec3(-10000000,-10000000,-10000000);
+        for(var name in assets[lasID].getParsedNodes()) {
+          if(assets[lasID].getParsedNodes()[name].isTypeOf('Points'))
+          {
+            // compute the bbox
+            var bbox = assets[lasID].getParsedNodes()[name].getBoundingBox();
+            pointCount += assets[lasID].getParsedNodes()[name].getVertexCount();
+            $('#pointCount').html(pointCount);
+            boxes.push(bbox);
+          }
+        }
+
+        for(var i=0;i<boxes.length;i++){
+          if(min.x > boxes[i].min.x)min.x = boxes[i].min.x;
+          if(min.y > boxes[i].min.y)min.y = boxes[i].min.y;
+          if(min.z > boxes[i].min.z)min.z = boxes[i].min.z;
+          if(max.x < boxes[i].max.x)max.x = boxes[i].max.x;
+          if(max.y < boxes[i].max.y)max.y = boxes[i].max.y;
+          if(max.z < boxes[i].max.z)max.z = boxes[i].max.z;
+        }
+        var center = min.add(max).multiplyScalar(0.5);
+        var pos = center.add(new FABRIC.RT.Vec3(0,0,0.25 * Math.abs(min.z - max.z)));
+        camera.getTransformNode().setGlobalXfo(FABRIC.RT.xfo({tr:pos}));
+        camera.getTransformNode().setTarget(center);
+        camera.setNearDistance(Math.abs(min.z - max.z) * 0.001);
+        camera.setFarDistance(Math.abs(min.z - max.z) * 100);
+      }
+    });
+  }};
+
+  for(var i=0;i<numLasFiles;i++){
+    var resourceName = ''+(i+1);
+    while(resourceName.length<6)
+      resourceName = '0'+resourceName;
+    loadLas(resourceName)();
+  }
+  
+  $("#useElevationShader").attr('checked', false).change(function() {
+    var useGradient = $('#useElevationShader').attr('checked');
+    for(var lasID in pointInstances){
+      if(useGradient)
+      {
+        pointInstances[lasID].removeMaterialNode(pointMaterials[lasID]);
+        pointInstances[lasID].setMaterialNode(gradientMaterial);
+      }
+      else
+      {
+        pointInstances[lasID].removeMaterialNode(gradientMaterial);
+        pointInstances[lasID].setMaterialNode(pointMaterials[lasID]);
+      }
+      viewport.redraw();
+    }
+  });
+
+  $('#loadingDialog').dialog({
+    modal: true
+  });
+  
+  // create a grid in the scene
+  scene.constructNode('Instance', {
+    geometryNode: scene.constructNode('Grid', {
+      size_x: 20.0,
+      size_z: 20.0,
+      sections_x: 20,
+      sections_z: 20 }),
+    materialNode: scene.constructNode('FlatMaterial', {
+      color: new FABRIC.RT.rgb(0.3,0.3,0.3,1.0)
+    } )
+  });
+
+  FABRIC.appendOnResolveAsyncTaskCallback(function(label, nbRemaining, doneWeight, totalWeight) {
+    $('#loadingProgressBar').progressbar({
+      value: (1.0-(doneWeight/totalWeight))*100
+    });
+    if (nbRemaining===0) {
+      $('#loadingDialog').dialog('close');
+      viewport.redraw();
+      var errors = scene.getErrors();
+      if (errors.length > 0) {
+        throw (errors.toString());
+      }
+      return true;
+    }
+  });
+  
+});
+
+// jQuert UI Styling classes
+$(document).ready(function() {
+  $(".box").addClass("ui-widget");
+  $(".box h2").addClass("ui-widget-header ui-corner-all");
+  $(".content").addClass("ui-widget-content");
+});
+
+</script>
+
+  </head> 
+  <body>
+    <div id="loadingDialog" title="Loading...">
+      <h4 id="loadingDesc">Downloading...<br>This may take some time (minutes).</h4>
+      <div id="loadingProgressBar" class="ui-progressbar-value"></div>
+    </div>
+    <div id="wrapper">
+      <div id="editor">
+        <div id="viewer">
+          <div id="FabricContainer"></div> 
+        </div><!--viewer-->
+        <div id="sidebar">
+          <p class="box">&larr; <a href="../../../index.html">back to Demo list</a></p>
+          <div class="box">
+            <h2>INFO</h2>
+            <div class="content">
+              LIDAR Performance Test.<br>
+              This scene downloads LIDAR data, provided by <a href="http://www.wvview.org/">http://www.wvview.org/</a>,
+              and presents it as a 3D grid. The source code of this sample defines how many files should be loaded off that website,
+              they are colored randomly so that you can distinguish between each file's content.
+            </div><!--content-->
+          </div><!--box-->
+          <div class="box">
+            <h2>DATA</h2>
+            <div class="content">
+              Loaded Files: <b id='fileCount'>0</b><br>
+              Loaded Points: <b id='pointCount'>0</b><br>
+            </div><!--content-->
+          </div><!--box-->
+          <div class="box">
+            <h2>OPTIONS</h2>
+            <div class="content">
+              <input type="checkbox" id="useElevationShader" style="margin-top:10px;" checked=false/><label for="useElevationShader" style="margin-top:10px;" >Enable Elevation Shader</label><br>
+            </div><!--content-->
+          </div><!--box-->
+        </div><!--sidebar-->
+      </div> <!--editor-->
+    </div><!--wrapper-->
+  </body> 
+  </html>
