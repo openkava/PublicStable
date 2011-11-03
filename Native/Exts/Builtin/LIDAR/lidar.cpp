@@ -42,21 +42,18 @@ LidarReader::LocalData::LocalData(KL::String & fileName, KL::Boolean & compresse
 #endif
   mStream.open(fileName.data());
   liblas::ReaderFactory f;
-  try
-  {
-    mReader = new liblas::Reader(f.CreateWithStream(mStream));
-  }
-  catch(std::runtime_error e)
-  {
-    printf("exception: %s\n",e.what());
-  }
+  mReader = NULL;
+  //liblas::Reader * reader = new liblas::Reader(f.CreateWithStream(mStream));
+  //mReader = reader;
+  mReader = new liblas::Reader(f.CreateWithStream(mStream));
 }
 
 LidarReader::LocalData::~LocalData() {
 #ifndef NDEBUG
     printf("  { FabricLIDAR } : Calling LidarReader::LocalData::~LocalData()\n");
 #endif
-  delete(mReader);
+  if(mReader != NULL)
+    delete(mReader);
   mStream.clear();
 }
 
@@ -71,7 +68,15 @@ FABRIC_EXT_EXPORT void FabricLIDAR_Reader_Open(
 #endif
 
     lidar.compressed = lidar.url.data()[lidar.url.length()-1] == 'z' || lidar.url.data()[lidar.url.length()-1] == 'Z';
-    lidar.localData = new LidarReader::LocalData(fileName,lidar.compressed);
+    try
+    {
+      lidar.localData = new LidarReader::LocalData(fileName,lidar.compressed);
+    }
+    catch(std::runtime_error e)
+    {
+      printf("  { FabricLIDAR } : Exception caught: '%s'.\n",e.what());
+      lidar.localData = NULL;
+    }
 
 #ifndef NDEBUG
     printf("  { FabricLIDAR } : FabricLIDAR_Reader_Open completed.\n");
