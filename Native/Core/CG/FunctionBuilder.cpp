@@ -184,6 +184,19 @@ namespace Fabric
       m_moduleBuilder.addFunction( entryName, functionSymbol, friendlyName );
     }
 
+    FunctionBuilder::FunctionBuilder(
+      ModuleBuilder &moduleBuilder,
+      llvm::FunctionType const *llvmFunctionType,
+      llvm::Function *llvmFunction
+      )
+      : m_moduleBuilder( moduleBuilder )
+      , m_llvmFunctionType( llvmFunctionType )
+      , m_llvmFunction( llvmFunction )
+    {
+      ReturnInfo returnInfo( ExprType(), false );
+      m_functionScope = new FunctionScope( m_moduleBuilder.getScope(), returnInfo );
+    }
+    
     ModuleBuilder &FunctionBuilder::getModuleBuilder()
     {
       return m_moduleBuilder;
@@ -215,7 +228,7 @@ namespace Fabric
       delete m_functionScope;
     }
       
-    llvm::Value *FunctionBuilder::operator[]( size_t index )
+    llvm::Argument *FunctionBuilder::operator[]( size_t index )
     {
       llvm::Function::ArgumentListType &argumentList = m_llvmFunction->getArgumentList();
       llvm::Function::ArgumentListType::iterator it = argumentList.begin();
@@ -236,6 +249,7 @@ namespace Fabric
       
     FunctionScope &FunctionBuilder::getScope()
     {
+      FABRIC_ASSERT( m_functionScope );
       return *m_functionScope;
     }
 

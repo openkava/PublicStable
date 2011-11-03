@@ -5,7 +5,7 @@
 #ifndef _FABRIC_RT_BOOLEAN_DESC_H
 #define _FABRIC_RT_BOOLEAN_DESC_H
 
-#include <Fabric/Core/RT/Desc.h>
+#include <Fabric/Core/RT/ComparableDesc.h>
 
 namespace Fabric
 {
@@ -13,7 +13,7 @@ namespace Fabric
   {
     class BooleanImpl;
     
-    class BooleanDesc : public Desc
+    class BooleanDesc : public ComparableDesc
     {
       friend class Manager;
       
@@ -22,7 +22,7 @@ namespace Fabric
       bool getValue( void const *data ) const;
       void setValue( bool value, void *data ) const;
       
-      virtual RC::Handle<JSON::Object> jsonDesc() const;
+      virtual void jsonDesc( Util::JSONObjectGenerator &resultJOG ) const;
       
     protected:
     

@@ -5,6 +5,8 @@
 #include "BooleanAdapter.h"
 #include "ConstStringAdapter.h"
 #include "Context.h"
+#include "IntegerAdapter.h"
+#include "SizeAdapter.h"
 #include "StringAdapter.h"
 #include "Manager.h"
 #include "ModuleBuilder.h"
@@ -37,6 +39,10 @@ namespace Fabric
         
       RC::Handle<Context> context = moduleBuilder.getContext();
       
+      RC::ConstHandle<IntegerAdapter> integerAdapter = getManager()->getIntegerAdapter();
+      integerAdapter->llvmCompileToModule( moduleBuilder );
+      RC::ConstHandle<SizeAdapter> sizeAdapter = getManager()->getSizeAdapter();
+      sizeAdapter->llvmCompileToModule( moduleBuilder );
       RC::ConstHandle<StringAdapter> stringAdapter = getManager()->getStringAdapter();
       stringAdapter->llvmCompileToModule( moduleBuilder );
       RC::ConstHandle<ConstStringAdapter> constStringAdapter = getManager()->getConstStringAdapter();
@@ -59,24 +65,20 @@ namespace Fabric
           basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
           llvm::BasicBlock *trueBB = functionBuilder.createBasicBlock( "true" );
           llvm::BasicBlock *falseBB = functionBuilder.createBasicBlock( "false" );
-          llvm::BasicBlock *mergeBB = functionBuilder.createBasicBlock( "merge" );
           basicBlockBuilder->CreateCondBr( booleanRValue, trueBB, falseBB );
           
           basicBlockBuilder->SetInsertPoint( trueBB );
           ExprValue trueExprValue( constStringAdapter, USAGE_RVALUE, context, constStringAdapter->llvmConst( basicBlockBuilder, "true", 4 ) );
           llvm::Value *trueStringRValue = stringAdapter->llvmCast( basicBlockBuilder, trueExprValue );
-          basicBlockBuilder->CreateBr( mergeBB );
+          stringAdapter->llvmAssign( basicBlockBuilder, stringLValue, trueStringRValue );
+          stringAdapter->llvmDispose( basicBlockBuilder, trueStringRValue );
+          basicBlockBuilder->CreateRetVoid();
           
           basicBlockBuilder->SetInsertPoint( falseBB );
           ExprValue falseExprValue( constStringAdapter, USAGE_RVALUE, context, constStringAdapter->llvmConst( basicBlockBuilder, "false", 5 ) );
           llvm::Value *falseStringRValue = stringAdapter->llvmCast( basicBlockBuilder, falseExprValue );
-          basicBlockBuilder->CreateBr( mergeBB );
-          
-          basicBlockBuilder->SetInsertPoint( mergeBB );
-          llvm::PHINode *stringRValue = basicBlockBuilder->CreatePHI( stringAdapter->llvmRType( context ), "stringRValue" );
-          stringRValue->addIncoming( trueStringRValue, trueBB );
-          stringRValue->addIncoming( falseStringRValue, falseBB );
-          stringAdapter->llvmAssign( basicBlockBuilder, stringLValue, stringRValue );
+          stringAdapter->llvmAssign( basicBlockBuilder, stringLValue, falseStringRValue );
+          stringAdapter->llvmDispose( basicBlockBuilder, falseStringRValue );
           basicBlockBuilder->CreateRetVoid();
         }
       }
@@ -218,6 +220,48 @@ namespace Fabric
           basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
           llvm::Value *resultRValue = basicBlockBuilder->CreateICmpNE( lhsRValue, rhsRValue );
           basicBlockBuilder->CreateRet( resultRValue );
+        }
+      }
+      
+      {
+        std::string name = methodOverloadName( "hash", this );
+        std::vector<FunctionParam> params;
+        params.push_back( FunctionParam( "rValue", this, USAGE_RVALUE ) );
+        FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( sizeAdapter, USAGE_RVALUE ), params );
+        if ( buildFunctions )
+        {
+          llvm::Value *rValue = functionBuilder[0];
+          BasicBlockBuilder basicBlockBuilder( functionBuilder );
+          basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
+          basicBlockBuilder->CreateRet(
+            basicBlockBuilder->CreateZExt(
+              rValue,
+              sizeAdapter->llvmRType( context )
+              )
+            );
+        }
+      }
+      
+      {
+        std::string name = methodOverloadName( "compare", this, this );
+        std::vector< FunctionParam > params;
+        params.push_back( FunctionParam( "lhsRValue", this, USAGE_RVALUE ) );
+        params.push_back( FunctionParam( "rhsRValue", this, USAGE_RVALUE ) );
+        FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( integerAdapter, USAGE_RVALUE ), params );
+        if ( buildFunctions )
+        {
+          llvm::Value *lhsRValue = functionBuilder[0];
+          llvm::Value *rhsRValue = functionBuilder[1];
+          BasicBlockBuilder basicBlockBuilder( functionBuilder );
+          basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
+          llvm::Value *lhsRValueAsInteger = basicBlockBuilder->CreateZExt( lhsRValue, integerAdapter->llvmRType( context ) );
+          llvm::Value *rhsRValueAsInteger = basicBlockBuilder->CreateZExt( rhsRValue, integerAdapter->llvmRType( context ) );
+          basicBlockBuilder->CreateRet(
+            basicBlockBuilder->CreateSub(
+              lhsRValueAsInteger,
+              rhsRValueAsInteger
+              )
+            );
         }
       }
     }

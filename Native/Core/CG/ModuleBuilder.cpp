@@ -43,14 +43,19 @@ namespace Fabric
       return m_context;
     }
     
-    ModuleBuilder::operator llvm::Module *()
+    llvm::Module *ModuleBuilder::getModule()
     {
       return m_module;
     }
     
+    ModuleBuilder::operator llvm::Module *()
+    {
+      return getModule();
+    }
+    
     llvm::Module *ModuleBuilder::operator ->()
     {
-      return m_module;
+      return getModule();
     }
       
     ModuleScope &ModuleBuilder::getScope()

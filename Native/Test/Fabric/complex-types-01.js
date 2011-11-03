@@ -1,5 +1,4 @@
-FC = createFabricClient();
-FABRIC = FC.wrapFabricClient(FC);
+FABRIC = require('Fabric').createClient();
 
 var MyStruct = function( i, s ) {
   if ( typeof i === "number" && typeof s === "number" ) {
@@ -36,10 +35,10 @@ operator entry( io MyStruct arg[] )\n\
 var diagnostics = op.getDiagnostics();
 if ( diagnostics.length > 0 ) {
   for ( var i in diagnostics ) {
-    print( diagnostics[i].line + ": " + diagnostics[i].desc );
+    console.log( diagnostics[i].line + ": " + diagnostics[i].desc );
   }
-  print( "Full code:" );
-  print( op.getFullSourceCode() );
+  console.log( "Full code:" );
+  console.log( op.getFullSourceCode() );
 }
 else {
 	var binding = FABRIC.DG.createBinding();
@@ -52,14 +51,13 @@ else {
 	var errors = node.getErrors();
   if ( errors.length > 0 ) {
     for ( var i in errors ) {
-      print( errors[i] );
+      console.log( errors[i] );
     }
   }
   else {
     node.evaluate();
-    printDeep( node.getData("msaa", 0) );
+    console.log(JSON.stringify( node.getData("msaa", 0) ));
   }
 }
 
 FABRIC.flush();
-FC.dispose();

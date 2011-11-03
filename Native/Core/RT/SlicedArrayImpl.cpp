@@ -46,6 +46,12 @@ namespace Fabric
       return arrayValue;
     }
     
+    void SlicedArrayImpl::generateJSON( void const *data, Util::JSONGenerator &jsonGenerator ) const
+    {
+      bits_t const *bits = reinterpret_cast<bits_t const *>(data);
+      m_variableArrayImpl->generateJSON( &bits->variableArrayBits, jsonGenerator );
+    }
+    
     void SlicedArrayImpl::setDataFromJSONValue( RC::ConstHandle<JSON::Value> const &jsonValue, void *data ) const
     {
       if ( !jsonValue->isArray() )

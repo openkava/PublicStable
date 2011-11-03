@@ -1,5 +1,4 @@
-FC = createFabricClient();
-F = FC.wrapFabricClient(FC);
+F = require('Fabric').createClient();
 
 o = F.DG.createOperator("op");
 o.setEntryFunctionName("entry");
@@ -14,7 +13,7 @@ operator entry() {\n\
 }\n\
 ");
 if (o.getDiagnostics().length > 0 )
-  printDeep(o.getDiagnostics());
+  console.log(JSON.stringify(o.getDiagnostics()));
 
 binding = F.DependencyGraph.createBinding();
 binding.setOperator( o );
@@ -28,4 +27,3 @@ e.appendEventHandler( eh );
 e.fire();
 
 F.flush();
-FC.dispose();

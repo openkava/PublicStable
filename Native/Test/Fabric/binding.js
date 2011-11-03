@@ -1,16 +1,14 @@
-FC = createFabricClient();
-F = FC.wrapFabricClient(FC);
+F = require('Fabric').createClient();
 
 b = F.DG.createBinding();
-printDeep(b.getOperator());
-printDeep(b.getParameterLayout());
+console.log(JSON.stringify(b.getOperator()));
+console.log(JSON.stringify(b.getParameterLayout()));
 
 o = F.DG.createOperator("op");
 b.setOperator(o);
-printDeep(b.getOperator().getName());
+console.log(JSON.stringify(b.getOperator().getName()));
 
 b.setParameterLayout(["self.foo"]);
-printDeep(b.getParameterLayout());
+console.log(JSON.stringify(b.getParameterLayout()));
 
 F.flush();
-FC.dispose();

@@ -257,7 +257,7 @@ namespace Fabric
             ( *s_callbacks.m_free )( m_bits );
         }
         
-        typedef StringBase IN;
+        typedef StringBase const &IN;
         typedef StringBase &IO;
       });
     

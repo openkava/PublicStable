@@ -31,6 +31,7 @@ namespace Fabric
     
       ModuleBuilder( RC::Handle<Manager> const &manager, RC::Handle<Context> const &context, llvm::Module *module );
       
+      llvm::Module *getModule();
       operator llvm::Module *();
       llvm::Module *operator ->();
       

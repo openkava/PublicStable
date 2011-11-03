@@ -11,6 +11,7 @@ if [ "${BUILD_OS#MINGW}" != "$BUILD_OS" ]; then
   BUILD_ARCH=x86
 fi
 if [ "$BUILD_OS" = "Darwin" ]; then
+  BUILD_REAL_ARCH=$BUILD_ARCH
   BUILD_ARCH=universal
 fi
 
@@ -44,7 +45,10 @@ ERROR=0
 for f in "$@"; do
   TMPFILE=$(tmpfilename)
 
-  LD_LIBRARY_PATH=build/ $VALGRIND_CMD ../../build/$BUILD_OS/$BUILD_ARCH/$BUILD_TYPE/Fabric/Clients/CLI/fabric --exts="$EXTS_DIR" $f 2>&1 \
+  NODE_PATH="../../dist/$BUILD_OS/$BUILD_ARCH/$BUILD_TYPE/FabricEngine/node_modules"
+  CMD="../../dist/$BUILD_OS/$BUILD_ARCH/$BUILD_TYPE/FabricEngine/bin/node $f"
+  
+  NODE_PATH="$NODE_PATH" $VALGRIND_CMD $CMD 2>&1 \
     | grep -v '^\[FABRIC\] .*Extension registered' \
     | grep -v '^\[FABRIC\] .*Searching extension directory' \
     | grep -v '^\[FABRIC\] .*unable to open extension directory' \
@@ -61,9 +65,9 @@ for f in "$@"; do
       echo "Actual output ($TMPFILE):"
       cat $TMPFILE
       echo "To debug:"
-      echo "gdb --args" $VALGRIND_CMD ../../build/$BUILD_OS/$BUILD_ARCH/$BUILD_TYPE/Fabric/Clients/CLI/fabric --exts="'$EXTS_DIR'" $f
-			ERROR=1
-			break
+      echo NODE_PATH="$NODE_PATH" "gdb --args" $CMD
+      ERROR=1
+      break
     else
       echo "PASS $(basename $f)";
       rm $TMPFILE

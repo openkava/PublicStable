@@ -13,11 +13,10 @@
 #include <Fabric/Base/JSON/Array.h>
 #include <Fabric/Base/Exception.h>
 #include <Fabric/Core/Util/Format.h>
+#include <Fabric/Core/Util/JSONGenerator.h>
 
 namespace Fabric
 {
-  
-  
   namespace DG
   {
     RC::Handle<BindingList> BindingList::Create( RC::Handle<Context> const &context )
@@ -85,7 +84,12 @@ namespace Fabric
       src.push_back( m_owner->getName() );
       src.push_back( m_subName );
       
-      m_context->jsonNotify( src, "delta", jsonDesc() );
+      Util::SimpleString json;
+      {
+        Util::JSONGenerator jg( &json );
+        jsonDesc( jg );
+      }
+      m_context->jsonNotify( src, "delta", 5, &json );
     }
 
     void BindingList::insert( RC::Handle<Binding> const &binding, size_t beforeIdx )
@@ -209,15 +213,19 @@ namespace Fabric
       return true;
     }
 
-    RC::ConstHandle<JSON::Value> BindingList::jsonRoute( std::vector<std::string> const &dst, size_t dstOffset, std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg )
+    void BindingList::jsonRoute(
+      std::vector<std::string> const &dst,
+      size_t dstOffset,
+      std::string const &cmd,
+      RC::ConstHandle<JSON::Value> const &arg,
+      Util::JSONArrayGenerator &resultJAG
+      )
     {
-      RC::ConstHandle<JSON::Value> result;
-
       if ( dst.size() - dstOffset == 0 )
       {
         try
         {
-          result = jsonExec( cmd, arg );
+          jsonExec( cmd, arg, resultJAG );
         }
         catch ( Exception e )
         {
@@ -225,26 +233,24 @@ namespace Fabric
         }
       }
       else throw Exception( "unroutable" );
-      
-      return result;
     }
 
-    RC::ConstHandle<JSON::Value> BindingList::jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg )
+    void BindingList::jsonExec(
+      std::string const &cmd,
+      RC::ConstHandle<JSON::Value> const &arg,
+      Util::JSONArrayGenerator &resultJAG
+      )
     {
-      RC::ConstHandle<JSON::Value> result;
-
       if ( cmd == "append" )
-        jsonExecAppend( arg );
+        jsonExecAppend( arg, resultJAG );
       else if ( cmd == "insert" )
-        jsonExecInsert( arg );
+        jsonExecInsert( arg, resultJAG );
       else if ( cmd == "remove" )
-        jsonExecRemove( arg );
+        jsonExecRemove( arg, resultJAG );
       else throw Exception( "unknown command" );
-      
-      return result;
     }
       
-    void BindingList::jsonExecAppend( RC::ConstHandle<JSON::Value> const &arg )
+    void BindingList::jsonExecAppend( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
     {
       RC::ConstHandle<JSON::Object> argJSONObject = arg->toObject();
     
@@ -286,7 +292,7 @@ namespace Fabric
       append( binding );
     }
       
-    void BindingList::jsonExecInsert( RC::ConstHandle<JSON::Value> const &arg )
+    void BindingList::jsonExecInsert( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
     {
       RC::ConstHandle<JSON::Object> argJSONObject = arg->toObject();
     
@@ -338,7 +344,7 @@ namespace Fabric
       insert( binding, beforeIndex );
     }
       
-    void BindingList::jsonExecRemove( RC::ConstHandle<JSON::Value> const &arg )
+    void BindingList::jsonExecRemove( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
     {
       RC::ConstHandle<JSON::Object> argJSONObject = arg->toObject();
           
@@ -355,12 +361,14 @@ namespace Fabric
       remove( index );
     }
     
-    RC::Handle<JSON::Array> BindingList::jsonDesc() const
+    void BindingList::jsonDesc( Util::JSONGenerator &resultJG ) const
     {
-      RC::Handle<JSON::Array> result = JSON::Array::Create();
+      Util::JSONArrayGenerator resultJSONArray = resultJG.makeArray();
       for ( Bindings::const_iterator it=m_bindings.begin(); it!=m_bindings.end(); ++it )
-        result->push_back( (*it)->jsonDesc() );
-      return result;
+      {
+        Util::JSONGenerator elementJG = resultJSONArray.makeElement();
+        (*it)->jsonDesc( elementJG );
+      }
     }
   };
 };

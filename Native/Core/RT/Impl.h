@@ -12,14 +12,15 @@
 #include <Fabric/Core/Util/Assert.h>
 
 #include <stdint.h>
+#include <map>
 
 namespace Fabric
 {
   namespace Util
   {
-    class Encoder;
     class Decoder;
-    class SimpleString;
+    class JSONGenerator;
+    class Encoder;
   };
   
   namespace JSON
@@ -32,6 +33,9 @@ namespace Fabric
     class VariableArrayImpl;
     class SlicedArrayImpl;
     class FixedArrayImpl;
+    class FixedArrayImpl;
+    class ComparableImpl;
+    class DictImpl;
     
     class Impl : public RC::Object
     {
@@ -50,6 +54,7 @@ namespace Fabric
       
       virtual RC::Handle<JSON::Value> getJSONValue( void const *data ) const = 0;
       virtual void setDataFromJSONValue( RC::ConstHandle<JSON::Value> const &value, void *data ) const = 0;
+      virtual void generateJSON( void const *data, Util::JSONGenerator &jsonGenerator ) const = 0;
       
       virtual bool isEquivalentTo( RC::ConstHandle<Impl> const &impl ) const = 0;
       virtual bool isShallow() const = 0;
@@ -57,6 +62,7 @@ namespace Fabric
       RC::ConstHandle<FixedArrayImpl> getFixedArrayImpl( size_t length ) const;
       RC::ConstHandle<VariableArrayImpl> getVariableArrayImpl( size_t flags ) const;
       RC::ConstHandle<SlicedArrayImpl> getSlicedArrayImpl() const;
+      RC::ConstHandle<DictImpl> getDictImpl( RC::ConstHandle<ComparableImpl> const &comparableImpl ) const;
       
       void setDisposeCallback( void (*disposeCallback)( void * ) ) const;
       
@@ -75,6 +81,7 @@ namespace Fabric
       mutable Util::UnorderedMap< size_t, RC::WeakConstHandle<VariableArrayImpl> > m_variableArrayImpls;
       mutable RC::WeakConstHandle<SlicedArrayImpl> m_slicedArrayImpl;
       mutable Util::UnorderedMap< size_t, RC::WeakConstHandle<FixedArrayImpl> > m_fixedArrayImpls;
+      mutable std::map< RC::WeakConstHandle<ComparableImpl>, RC::WeakConstHandle<DictImpl> > m_dictImpls;
       
       mutable void (*m_disposeCallback)( void *lValue );
     };

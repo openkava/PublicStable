@@ -87,8 +87,7 @@ namespace Fabric
           BasicBlockBuilder basicBlockBuilder( functionBuilder );
           basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
           llvm::Value *constStringLValue = llvmRValueToLValue( basicBlockBuilder, constStringRValue );
-          llvm::Value *stringRValue = stringAdapter->llvmCallCast( basicBlockBuilder, this, constStringLValue );
-          stringAdapter->llvmAssign( basicBlockBuilder, stringLValue, stringRValue );
+          stringAdapter->llvmCallCast( basicBlockBuilder, this, constStringLValue, stringLValue );
           basicBlockBuilder->CreateRetVoid();
         }
       }
@@ -141,17 +140,9 @@ namespace Fabric
       return m_constStringDesc->toString( data );
     }
 
-    void ConstStringAdapter::llvmRetain( BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const
-    {
-    }
-
     void ConstStringAdapter::llvmDefaultAssign( BasicBlockBuilder &basicBlockBuilder, llvm::Value *dstLValue, llvm::Value *srcRValue ) const
     {
       basicBlockBuilder->CreateStore( srcRValue, dstLValue );
-    }
-    
-    void ConstStringAdapter::llvmRelease( BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const
-    {
     }
   };
 };

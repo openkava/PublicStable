@@ -79,15 +79,16 @@ namespace Fabric
 
       RC::Handle<Context> getContext() const;
 
-      virtual RC::ConstHandle<JSON::Value> jsonRoute( std::vector<std::string> const &dst, size_t dstOffset, std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg );
-      virtual RC::ConstHandle<JSON::Value> jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg );
-      static void jsonExecCreate( RC::ConstHandle<JSON::Value> const &arg, RC::Handle<Context> const &context );
-      void jsonExecAddDependency( RC::ConstHandle<JSON::Value> const &arg );
-      void jsonExecRemoveDependency( RC::ConstHandle<JSON::Value> const &arg );
-      void jsonExecEvaluate();
-      virtual RC::Handle<JSON::Object> jsonDesc() const;
-      virtual RC::ConstHandle<JSON::Value> jsonDescType() const;
-      RC::ConstHandle<JSON::Value> jsonDescDependencies() const;
+      virtual void jsonRoute( std::vector<std::string> const &dst, size_t dstOffset, std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
+      virtual void jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
+      static void jsonExecCreate( RC::ConstHandle<JSON::Value> const &arg, RC::Handle<Context> const &context, Util::JSONArrayGenerator &resultJAG );
+      void jsonExecAddDependency( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
+      void jsonExecRemoveDependency( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
+      void jsonExecEvaluate( Util::JSONArrayGenerator &resultJAG );
+      void jsonDesc( Util::JSONGenerator &resultJG ) const;
+      virtual void jsonDesc( Util::JSONObjectGenerator &resultJOG ) const;
+      virtual void jsonDescType( Util::JSONGenerator &resultJG ) const;
+      void jsonDescDependencies( Util::JSONGenerator &resultJG ) const;
       
     protected:
     

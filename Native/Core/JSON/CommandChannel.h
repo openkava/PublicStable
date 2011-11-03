@@ -13,6 +13,11 @@
 
 namespace Fabric
 {
+  namespace Util
+  {
+    class SimpleString;
+  };
+  
   namespace JSON
   {
     class Value;
@@ -21,7 +26,12 @@ namespace Fabric
     {
     public:
     
-      virtual void jsonNotify( std::vector<std::string> const &src, std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg ) = 0;
+      virtual void jsonNotify(
+        std::vector<std::string> const &src,
+        char const *cmdData,
+        size_t cmdLength,
+        Util::SimpleString const *argJSON = 0
+        ) = 0;
     };
   };
 };

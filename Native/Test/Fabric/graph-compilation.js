@@ -1,6 +1,5 @@
-FC = createFabricClient();
-FABRIC = FC.wrapFabricClient(FC);
-load( "UnitTest.js.inc" );
+FABRIC = require('Fabric').createClient();
+require( "./include/UnitTest.js" );
 ut = new FABRIC.UnitTest;
 ut.test( "Graph Compilation", function() {
   var event;
@@ -84,4 +83,3 @@ ut.test( "Graph Compilation", function() {
   ut.expect( "node has one error", node.getErrors().length, 1 );
 } );
 FABRIC.flush();
-FC.dispose();

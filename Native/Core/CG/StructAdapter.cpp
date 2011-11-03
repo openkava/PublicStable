@@ -38,7 +38,6 @@ namespace Fabric
     
     llvm::Type const *StructAdapter::buildLLVMRawType( RC::Handle<Context> const &context ) const
     {
-      
       std::vector<llvm::Type const *> memberLLVMTypes;
       memberLLVMTypes.reserve( m_memberAdapters.size() );
       for ( size_t i=0; i<m_memberAdapters.size(); ++i )
@@ -67,18 +66,6 @@ namespace Fabric
       return m_memberAdapters[memberIndex];
     }
     
-    void StructAdapter::llvmRetain( BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const
-    {
-      if ( !m_isShallow )
-      {
-        std::string name = "__" + getCodeName() + "__Retain";
-        std::vector< FunctionParam > params;
-        params.push_back( FunctionParam( "rValue", this, USAGE_RVALUE ) );
-        FunctionBuilder functionBuilder( basicBlockBuilder.getModuleBuilder(), name, ExprType(), params );
-        basicBlockBuilder->CreateCall( functionBuilder.getLLVMFunction(), rValue );
-      }
-    }
-    
     void StructAdapter::llvmDefaultAssign( BasicBlockBuilder &basicBlockBuilder, llvm::Value *dstLValue, llvm::Value *srcRValue ) const
     {
       if ( !m_isShallow )
@@ -92,16 +79,13 @@ namespace Fabric
       }
       else basicBlockBuilder->CreateStore( basicBlockBuilder->CreateLoad( srcRValue ), dstLValue );
     }
-    
-    void StructAdapter::llvmRelease( BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const
+
+    void StructAdapter::llvmDisposeImpl( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *lValue ) const
     {
-      if ( !m_isShallow )
+      for ( size_t i=0; i<m_memberAdapters.size(); ++i )
       {
-        std::string name = "__" + getCodeName() + "__Release";
-        std::vector< FunctionParam > params;
-        params.push_back( FunctionParam( "rValue", this, USAGE_RVALUE ) );
-        FunctionBuilder functionBuilder( basicBlockBuilder.getModuleBuilder(), name, ExprType(), params );
-        basicBlockBuilder->CreateCall( functionBuilder.getLLVMFunction(), rValue );
+        llvm::Value *memberLValue = basicBlockBuilder->CreateStructGEP( lValue, i );
+        m_memberAdapters[i]->llvmDispose( basicBlockBuilder, memberLValue );
       }
     }
 
@@ -129,26 +113,6 @@ namespace Fabric
       {
         {
           std::vector< FunctionParam > params;
-          params.push_back( FunctionParam( "rValue", this, USAGE_RVALUE ) );
-          FunctionBuilder functionBuilder( moduleBuilder, "__" + getCodeName() + "__Retain", ExprType(), params );
-          if ( buildFunctions )
-          {
-            llvm::Value *rValue = functionBuilder[0];
-            BasicBlockBuilder basicBlockBuilder( functionBuilder );
-            basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
-            for ( size_t i=0; i<getNumMembers(); ++i )
-            {
-              RC::ConstHandle<Adapter> const &memberAdapter = m_memberAdapters[i];
-              llvm::Value *memberLValue = basicBlockBuilder->CreateConstGEP2_32( rValue, 0, i );
-              llvm::Value *memberRValue = memberAdapter->llvmLValueToRValue( basicBlockBuilder, memberLValue );
-              memberAdapter->llvmRetain( basicBlockBuilder, memberRValue );
-            }
-            basicBlockBuilder->CreateRetVoid();
-          }
-        }
-
-        {
-          std::vector< FunctionParam > params;
           params.push_back( FunctionParam( "dstLValue", this, USAGE_LVALUE ) );
           params.push_back( FunctionParam( "srcRValue", this, USAGE_RVALUE ) );
           FunctionBuilder functionBuilder( moduleBuilder, "__" + getCodeName() + "__DefaultAssign", ExprType(), params );
@@ -169,26 +133,6 @@ namespace Fabric
             basicBlockBuilder->CreateRetVoid();
           }
         }
-
-        {
-          std::vector< FunctionParam > params;
-          params.push_back( FunctionParam( "rValue", this, USAGE_RVALUE ) );
-          FunctionBuilder functionBuilder( moduleBuilder, "__" + getCodeName() + "__Release", ExprType(), params );
-          if ( buildFunctions )
-          {
-            llvm::Value *rValue = functionBuilder[0];
-            BasicBlockBuilder basicBlockBuilder( functionBuilder );
-            basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
-            for ( size_t i=0; i<getNumMembers(); ++i )
-            {
-              RC::ConstHandle<Adapter> const &memberAdapter = m_memberAdapters[i];
-              llvm::Value *memberLValue = basicBlockBuilder->CreateConstGEP2_32( rValue, 0, i );
-              llvm::Value *memberRValue = memberAdapter->llvmLValueToRValue( basicBlockBuilder, memberLValue );
-              memberAdapter->llvmRelease( basicBlockBuilder, memberRValue );
-            }
-            basicBlockBuilder->CreateRetVoid();
-          }
-        }
       }
       
       {
@@ -204,8 +148,7 @@ namespace Fabric
           BasicBlockBuilder basicBlockBuilder( functionBuilder );
           basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
           llvm::Value *structLValue = llvmRValueToLValue( basicBlockBuilder, structRValue );
-          llvm::Value *stringRValue = stringAdapter->llvmCallCast( basicBlockBuilder, this, structLValue );
-          stringAdapter->llvmAssign( basicBlockBuilder, stringLValue, stringRValue );
+          stringAdapter->llvmCallCast( basicBlockBuilder, this, structLValue, stringLValue );
           basicBlockBuilder->CreateRetVoid();
         }
       }

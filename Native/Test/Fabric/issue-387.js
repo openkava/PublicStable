@@ -1,5 +1,4 @@
-FC = createFabricClient();
-FABRIC = FC.wrapFabricClient(FC);
+FABRIC = require('Fabric').createClient();
 
 opOne = FABRIC.DependencyGraph.createOperator( "opOne" );
 opOne.setEntryFunctionName('entry');
@@ -26,36 +25,35 @@ node.setData( 'input', 1, 7 );
 node.setData( 'output', 0, 0 );
 node.setData( 'output', 1, 0 );
 node.evaluate();
-printDeep(node.getBulkData());
-print("bindings.length = " + node.bindings.getLength());
+console.log(JSON.stringify(node.getBulkData()));
+console.log("bindings.length = " + node.bindings.getLength());
 
 node.setData( 'output', 0, 0 );
 node.setData( 'output', 1, 0 );
 node.bindings.append( bindingOne );
 node.evaluate();
-printDeep(node.getBulkData());
-print("bindings.length = " + node.bindings.getLength());
+console.log(JSON.stringify(node.getBulkData()));
+console.log("bindings.length = " + node.bindings.getLength());
 
 node.setData( 'output', 0, 0 );
 node.setData( 'output', 1, 0 );
 node.bindings.remove(0);
 node.evaluate();
-printDeep(node.getBulkData());
-print("bindings.length = " + node.bindings.getLength());
+console.log(JSON.stringify(node.getBulkData()));
+console.log("bindings.length = " + node.bindings.getLength());
 
 node.setData( 'output', 0, 0 );
 node.setData( 'output', 1, 0 );
 node.bindings.append(bindingTwo);
 node.evaluate();
-printDeep(node.getBulkData());
-print("bindings.length = " + node.bindings.getLength());
+console.log(JSON.stringify(node.getBulkData()));
+console.log("bindings.length = " + node.bindings.getLength());
 
 node.setData( 'output', 0, 0 );
 node.setData( 'output', 1, 0 );
 node.bindings.remove(0);
 node.evaluate();
-printDeep(node.getBulkData());
-print("bindings.length = " + node.bindings.getLength());
+console.log(JSON.stringify(node.getBulkData()));
+console.log("bindings.length = " + node.bindings.getLength());
 
 FABRIC.flush();
-FC.dispose();

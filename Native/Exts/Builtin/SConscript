@@ -11,6 +11,7 @@ dirs = [
   'EXR',
   'HDR',
   'Math',
+  'LIDAR',
   'OBJ',
   #'OCL',
   'OGL',

@@ -60,7 +60,7 @@ namespace Fabric
       RC::ConstHandle<RT::Manager> getRTManager() const;    
       RC::ConstHandle<RT::Desc> getDesc() const;
       RC::ConstHandle<RT::Impl> getImpl() const;
-      
+    
       llvm::Value *llvmAlloca( BasicBlockBuilder &basicBlockBuilder, std::string const &name ) const;
       void llvmAssign( BasicBlockBuilder &basicBlockBuilder, llvm::Value *dstLValue, llvm::Value *srcRValue ) const;
       llvm::Value *llvmCast( BasicBlockBuilder &basicBlockBuilder, ExprValue exprValue ) const;
@@ -78,12 +78,11 @@ namespace Fabric
       llvm::Value *llvmLValueToRValue( BasicBlockBuilder &basicBlockBuilder, llvm::Value *lValue ) const;
       llvm::Value *llvmRValueToLValue( BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const;
       
-      void llvmInit( BasicBlockBuilder &basicBlockBuilder, llvm::Value *value ) const;
-      virtual void llvmRetain( BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const = 0;
+      virtual void llvmInit( BasicBlockBuilder &basicBlockBuilder, llvm::Value *value ) const;
       virtual void llvmDefaultAssign( BasicBlockBuilder &basicBlockBuilder, llvm::Value *dstLValue, llvm::Value *srcRValue ) const = 0;
       virtual void llvmStore( BasicBlockBuilder &basicBlockBuilder, llvm::Value *dstLValue, llvm::Value *srcRValue ) const;
-      virtual void llvmRelease( BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const = 0;
       void llvmDispose( BasicBlockBuilder &basicBlockBuilder, llvm::Value *lValue ) const;
+      virtual void llvmDisposeImpl( BasicBlockBuilder &basicBlockBuilder, llvm::Value *lValue ) const;
       
       virtual llvm::Constant *llvmDefaultValue( BasicBlockBuilder &basicBlockBuilder ) const = 0;
       virtual llvm::Constant *llvmDefaultRValue( BasicBlockBuilder &basicBlockBuilder ) const;

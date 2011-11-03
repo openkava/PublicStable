@@ -35,6 +35,9 @@ namespace Fabric
     static const ImplType DT_FIXED_ARRAY = size_t(1) << 24;
     static const ImplType DT_VARIABLE_ARRAY = size_t(1) << 25;
     static const ImplType DT_SLICED_ARRAY = size_t(1) << 26;
+    
+    // Dict type
+    static const ImplType DT_DICT = size_t(1) << 30;
 
     inline bool isBoolean( ImplType implType ) { return implType & DT_BOOLEAN; }
     inline bool isInteger( ImplType implType ) { return implType & DT_INTEGER; }
@@ -49,6 +52,8 @@ namespace Fabric
     inline bool isVariableArray( ImplType implType ) { return implType & DT_VARIABLE_ARRAY; }
     inline bool isSlicedArray( ImplType implType ) { return implType & DT_SLICED_ARRAY; }
     inline bool isArray( ImplType implType ) { return isFixedArray(implType) || isVariableArray(implType) || isSlicedArray(implType); }
+    inline bool isDict( ImplType implType ) { return implType & DT_DICT; }
+    inline bool isComparable( ImplType implType ) { return isSimple(implType) || isString(implType); }
   };
 };
 

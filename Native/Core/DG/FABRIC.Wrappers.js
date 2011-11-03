@@ -612,6 +612,22 @@ function (fabricClient, logCallback, debugLogCallback) {
         return functionResult;
       };
 
+      result.pub.getDataJSON = function(memberName, sliceIndex) {
+        if (sliceIndex === undefined)
+          sliceIndex = 0;
+
+        var functionResult;
+        result.queueCommand('getDataJSON', {
+          'memberName': memberName,
+          'sliceIndex': sliceIndex
+        }, function() {
+        }, function(data) {
+          functionResult = data;
+        });
+        executeQueuedCommands();
+        return functionResult;
+      };
+
       result.pub.getDataSize = function(memberName, sliceIndex) {
         var dataSize;
         result.queueCommand('getDataSize', {
@@ -689,6 +705,28 @@ function (fabricClient, logCallback, debugLogCallback) {
         });
         executeQueuedCommands();
         return slicesBulkData;
+      };
+
+      result.pub.getMemberBulkData = function(member) {
+        if (typeof member !== 'string') {
+          throw 'member: must be a string';
+        }
+        return result.pub.getMembersBulkData([member])[member];
+      };
+
+      result.pub.getMembersBulkData = function(members) {
+        var membersBulkData;
+        result.queueCommand('getMembersBulkData', members, function() { }, function(data) {
+          for (var member in data) {
+            var memberData = data[member];
+            for (var i=0; i<memberData.length; ++i) {
+              RT.assignPrototypes(memberData[i], result.members[member].type);
+            }
+          }
+          membersBulkData = data;
+        });
+        executeQueuedCommands();
+        return membersBulkData;
       };
 
       result.pub.setSlicesBulkData = function(data) {
@@ -1737,6 +1775,9 @@ function (fabricClient, logCallback, debugLogCallback) {
     },
     flush: function() {
       executeQueuedCommands();
+    },
+    dispose: function() {
+      fabricClient.dispose();
     }
   };
 }

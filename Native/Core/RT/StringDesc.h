@@ -5,7 +5,7 @@
 #ifndef _FABRIC_RT_STRING_DESC_H
 #define _FABRIC_RT_STRING_DESC_H
 
-#include <Fabric/Core/RT/Desc.h>
+#include <Fabric/Core/RT/ComparableDesc.h>
 
 namespace Fabric
 {
@@ -13,7 +13,7 @@ namespace Fabric
   {
     class StringImpl;
     
-    class StringDesc : public Desc
+    class StringDesc : public ComparableDesc
     {
       friend class Manager;
       
@@ -23,7 +23,7 @@ namespace Fabric
       size_t getValueLength( void const *src ) const;
       void setValue( char const *data, size_t length, void *dst ) const;
       
-      virtual RC::Handle<JSON::Object> jsonDesc() const;
+      virtual void jsonDesc( Util::JSONObjectGenerator &resultJOG ) const;
       
     protected:
     

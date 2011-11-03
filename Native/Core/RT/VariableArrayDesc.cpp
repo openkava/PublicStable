@@ -8,6 +8,7 @@
 #include <Fabric/Base/JSON/String.h>
 #include <Fabric/Base/JSON/Object.h>
 #include <Fabric/Base/Exception.h>
+#include <Fabric/Core/Util/JSONGenerator.h>
 
 namespace Fabric
 {
@@ -54,12 +55,11 @@ namespace Fabric
       return RC::ConstHandle<RT::VariableArrayImpl>::StaticCast( Desc::getImpl() );
     }
     
-    RC::Handle<JSON::Object> VariableArrayDesc::jsonDesc() const
+    void VariableArrayDesc::jsonDesc( Util::JSONObjectGenerator &resultJOG ) const
     {
-      RC::Handle<JSON::Object> result = ArrayDesc::jsonDesc();
-      result->set( "internalType", JSON::String::Create("variableArray") );
-      result->set( "memberType", JSON::String::Create( getMemberDesc()->getUserName() ) );
-      return result;
+      ArrayDesc::jsonDesc( resultJOG );
+      resultJOG.makeMember( "internalType" ).makeString( "variableArray" );
+      resultJOG.makeMember( "memberType" ).makeString( getMemberDesc()->getUserName() );
     }
     
     bool VariableArrayDesc::isCopyOnWrite() const

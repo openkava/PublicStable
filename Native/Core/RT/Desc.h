@@ -17,6 +17,8 @@ namespace Fabric
     class SimpleString;
     class Encoder;
     class Decoder;
+    class JSONGenerator;
+    class JSONObjectGenerator;
   };
   
   namespace JSON
@@ -61,6 +63,7 @@ namespace Fabric
       
       RC::Handle<JSON::Value> getJSONValue( void const *data ) const;
       void setDataFromJSONValue( RC::ConstHandle<JSON::Value> const &value, void *data ) const;
+      void generateJSON( void const *data, Util::JSONGenerator &jsonGenerator ) const;
 
       void setKLBindingsAST( RC::ConstHandle<RC::Object> const &klBindingsAST ) const;
       RC::ConstHandle<RC::Object> getKLBindingsAST() const;
@@ -68,7 +71,8 @@ namespace Fabric
       bool isEquivalentTo( RC::ConstHandle< RT::Desc > const &desc ) const;
       bool isShallow() const;
       
-      virtual RC::Handle<JSON::Object> jsonDesc() const;
+      void jsonDesc( Util::JSONGenerator &resultJG ) const;
+      virtual void jsonDesc( Util::JSONObjectGenerator &resultJOG ) const;
       
     protected:
     

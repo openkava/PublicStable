@@ -1,9 +1,8 @@
-FC = createFabricClient();
-F = FC.wrapFabricClient(FC);
+F = require('Fabric').createClient();
 
 eh = F.DG.createEventHandler("event handler");
-print(eh.getName());
-print(eh.getType());
+console.log(eh.getName());
+console.log(eh.getType());
 
 var mapNamedObjectsToNames = function (namedObjects) {
   var result = [];
@@ -13,14 +12,13 @@ var mapNamedObjectsToNames = function (namedObjects) {
 };
 
 
-printDeep(mapNamedObjectsToNames(eh.getChildEventHandlers()));
+console.log(JSON.stringify((mapNamedObjectsToNames(eh.getChildEventHandlers()))));
 var childEventHandler = F.DG.createEventHandler("child event handler");
 eh.appendChildEventHandler(childEventHandler);
-printDeep(mapNamedObjectsToNames(eh.getChildEventHandlers()));
+console.log(JSON.stringify((mapNamedObjectsToNames(eh.getChildEventHandlers()))));
 eh.appendChildEventHandler(F.DG.createEventHandler("another child event handler"));
-printDeep(mapNamedObjectsToNames(eh.getChildEventHandlers()));
+console.log(JSON.stringify((mapNamedObjectsToNames(eh.getChildEventHandlers()))));
 eh.removeChildEventHandler(childEventHandler);
-printDeep(mapNamedObjectsToNames(eh.getChildEventHandlers()));
+console.log(JSON.stringify((mapNamedObjectsToNames(eh.getChildEventHandlers()))));
 
 F.flush();
-FC.dispose();

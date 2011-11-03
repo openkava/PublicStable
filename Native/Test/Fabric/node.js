@@ -1,5 +1,4 @@
-FC = createFabricClient();
-F = FC.wrapFabricClient(FC);
+F = require('Fabric').createClient();
 
 var mapNamedObjectsToNames = function (namedObjects) {
   var result = {};
@@ -9,18 +8,16 @@ var mapNamedObjectsToNames = function (namedObjects) {
 };
 
 node = F.DG.createNode("node");
-print(node.getType());
+console.log(node.getType());
 node.addMember("foo", "String");
-printDeep(node.getMembers());
+console.log(node.getMembers());
 node.setCount(2);
-print(node.getCount());
+console.log(node.getCount());
 node.setData("foo", 0, "fred");
 node.setData("foo", 1, "joe");
-print(node.getData("foo", 0));
-print(node.getData("foo", 1));
+console.log(node.getData("foo", 0));
+console.log(node.getData("foo", 1));
 
 node2 = F.DG.createNode("node2");
 node.setDependency( node2, "parent" );
-printDeep(mapNamedObjectsToNames(node.getDependencies()));
-
-FC.dispose();
+console.log((mapNamedObjectsToNames(node.getDependencies())));

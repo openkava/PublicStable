@@ -1,5 +1,4 @@
-FC = createFabricClient();
-F = FC.wrapFabricClient(FC);
+F = require('Fabric').createClient();
 
 o = F.DG.createOperator("o");
 o.setEntryFunctionName("foo");
@@ -29,4 +28,3 @@ e.appendEventHandler( peh );
 e.fire();
 
 F.flush();
-FC.dispose();
