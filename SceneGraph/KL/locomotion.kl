@@ -83,6 +83,8 @@ operator evaluateLocomotionPoseVariables(
   
   io Boolean plantedFeet[],
   io Vec3 plantLocations[],
+  io Vec3 rayDeltas[],
+  
   io PoseVariables poseError,
   io PoseVariables poseVariables,
   
@@ -223,6 +225,11 @@ operator evaluateLocomotionPoseVariables(
     trackcontroller.stepIds.resize(locomotionFeet.size);
     plantedFeet.resize(locomotionFeet.size);
     plantLocations.resize(locomotionFeet.size);
+    rayDeltas.resize(locomotionFeet.size);
+    
+    Vec3 appliedComRayDelta;
+    Vec3 appliedFeetRayDeltas[];
+    appliedFeetRayDeltas.resize(locomotionFeet.size);
     
     for(Integer j=0; j < locomotionFeet.size; j++){
       LocomotionFoot foot = locomotionFeet[j];
@@ -267,29 +274,33 @@ operator evaluateLocomotionPoseVariables(
       
      //   report(j+" t:"+t+" stepId:"+stepId +" currStep:"+currStep + " stepRatio:"+stepRatio + " planted:"+plantedFeet[j]);
       
-      Vec3 rayStart, rayEnd, refPos;
-      if(stepRatio < 0.0){
-        refPos = footXfo.tr;
-      }else{
-        refPos = footPlantXfo.tr;
-      }
-      rayStart = refPos + Vec3(0.0, 10.0, 0.0);
-      rayEnd = refPos - Vec3(0.0, 10.0, 0.0);
-        
-        Boolean filterPassiveObjects = false;
-        bulletworld.raycast(rayStart,rayEnd, filterPassiveObjects);
-        if(bulletworld.hit) {
-          Vec3 hitDelta = bulletworld.hitPosition - refPos;
-          debugGeometry.drawLine(rayStart, bulletworld.hitPosition, Color(0.0, 1.0, 1.0, 1.0));
-        //  report("bulletworld.hitPosition:"+bulletworld.hitPosition + " hitDelta:"+hitDelta );
-          if(stepRatio > 0.0 && stepRatio < 1.0){
-            hitDelta *= stepRatio;
-          }
-          footXfo.tr += hitDelta;
-          hitDelta /= Scalar(legs.size);
-          trackPose.xfoValues[hubs[0].xfoId].tr += hitDelta;
-          controllerXfo.tr += hitDelta;
+      Scalar rayDelta;
+      Vec3 rayStart, rayEnd, hitDelta;
+      rayStart = footPlantXfo.tr + Vec3(0.0, 1.0, 0.0);
+      rayEnd = footPlantXfo.tr - Vec3(0.0, 1.0, 0.0);
+      
+      Boolean filterPassiveObjects = false;
+      bulletworld.raycast(rayStart,rayEnd, filterPassiveObjects);
+      if(bulletworld.hit) {
+        hitDelta = bulletworld.hitPosition - footPlantXfo.tr;
+        Xfo tmp = footPlantXfo;
+        tmp.tr = bulletworld.hitPosition;
+        debugGeometry.drawCircle(tmp * rot90, 0.03, Color(0.0, 1.0, 1.0, 1.0));
+        debugGeometry.drawLine(rayStart, bulletworld.hitPosition, Color(0.0, 1.0, 1.0, 1.0));
+      
+        Vec3 appliedDelta;
+        if(plantedFeet[j]){
+          appliedDelta = hitDelta;
+        }else{
+          appliedDelta = rayDeltas[j].linearInterpolate(hitDelta, stepRatio);
         }
+        appliedFeetRayDeltas[j] = appliedDelta;
+        appliedComRayDelta += appliedDelta /= Scalar(legs.size);
+      }
+      if(plantedFeet[j] && stepRatio > 0.0){
+        // at lift time, store the hit delta.
+        rayDeltas[j] = hitDelta;
+      }
         
       Vec3 footError;
       if(stepRatio > 0.0 && stepRatio < 1.0){
@@ -316,7 +327,7 @@ operator evaluateLocomotionPoseVariables(
           }
         }
         
-      //  debugGeometry.drawCircle(footPlantXfo * rot90, 1.0, Color(0.0, 1.0, 1.0, 1.0));
+      //  debugGeometry.drawCircle(footPlantXfo * rot90, 0.1, Color(0.0, 1.0, 1.0, 1.0));
       }
       else{
         if(!plantedFeet[j]){
@@ -334,8 +345,8 @@ operator evaluateLocomotionPoseVariables(
           // Calculate the error each update to hold the foot in place while planted.
           footError = invcontrollerXfo.ori.rotateVector(plantLocations[j] - footXfo.tr);
         }
-      //  debugGeometry.drawCircle(footXfo * rot90, 1.0, Color(1.0, 1.0, 0.0, 1.0));
-      //  debugGeometry.drawLine(footXfo.tr, plantLocations[j], Color(1.0, 1.0, 0.0, 1.0));
+      //  debugGeometry.drawCircle(footXfo * rot90, 0.1, Color(1.0, 1.0, 0.0, 1.0));
+        debugGeometry.drawLine(footXfo.tr, plantLocations[j], Color(1.0, 1.0, 0.0, 1.0));
       }
       
       footXfo = invcontrollerXfo * footXfo;
@@ -344,6 +355,16 @@ operator evaluateLocomotionPoseVariables(
       footXfo.tr += footError;
       
       trackPose.xfoValues[leg.ikGoalXfoId] = footXfo;
+    }
+    
+    // Now apply the foot ray deltas now that we know how much will be
+    // applied to the COM.
+    controllerXfo.tr += appliedComRayDelta;
+    appliedComRayDelta = invcontrollerXfo.ori.rotateVector(appliedComRayDelta);
+    for(Integer j=0; j < locomotionFeet.size; j++){
+      LocomotionFoot foot = locomotionFeet[j];
+      Limb leg = legs[foot.limbId];
+      trackPose.xfoValues[leg.ikGoalXfoId].tr += invcontrollerXfo.ori.rotateVector(appliedFeetRayDeltas[j]) - appliedComRayDelta;
     }
     
   poseVariables = trackPose;

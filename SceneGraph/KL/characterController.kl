@@ -27,12 +27,12 @@ operator evaluateCharacterController(
   
   io Scalar timestep
 ) {
- // report("evaluateCharacterController:"+timestep);
+// report("evaluateCharacterController:"+timestep);
   debugGeometry1.reset();
   if(timestep==0){
     return;
   }
-  
+ // report(translationControls);
   Xfo camXfo;
   camXfo.setFromMat44(cameraMat44.inverse());
   // Ensure that the com is aligned with the 
@@ -79,8 +79,8 @@ operator evaluateCharacterController(
     Vec3 displacementDir = currLinearVelocity.unit();
     Scalar deltaAngle = currDir.angleTo(displacementDir);
     
-    if(deltaAngle > maxAngularVelocity.y){
-      deltaAngle = maxAngularVelocity.y;
+    if((deltaAngle/timestep) > maxAngularVelocity.y){
+      deltaAngle = maxAngularVelocity.y * timestep;
     }
     if(currDir.cross(displacementDir).y < 0.0){
       deltaAngle = -deltaAngle;
