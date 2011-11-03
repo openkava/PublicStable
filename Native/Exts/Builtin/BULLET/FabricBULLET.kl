@@ -24,6 +24,7 @@ struct BulletWorld {
   Size substeps;
   Boolean hit;
   Vec3 hitPosition;
+  Vec3 hitNormal;
 };
 
 struct BulletShape {
