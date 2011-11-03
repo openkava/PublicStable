@@ -2,8 +2,7 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
-use FabricOGL;
-use Vec2;
+use FabricOGL, Vec2, Vec3, OGLShaderProgram;
 
 function OGLTexture2D.configure(
   Size width,
