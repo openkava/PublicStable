@@ -29,7 +29,7 @@ namespace Fabric
     
       static RC::Handle<ResourceLoadNode> Create( std::string const &name, RC::Handle<Context> const &context );
       
-      static void jsonExecCreate( RC::ConstHandle<JSON::Value> const &arg, RC::Handle<Context> const &context );
+      static void jsonExecCreate( RC::ConstHandle<JSON::Value> const &arg, RC::Handle<Context> const &context, Util::JSONArrayGenerator &resultJAG );
 
     protected:
     

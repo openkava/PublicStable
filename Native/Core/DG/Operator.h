@@ -97,18 +97,19 @@ namespace Fabric
         void * const *prefixes
         ) const;
 
-      virtual RC::ConstHandle<JSON::Value> jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg );
-      static void jsonExecCreate( RC::ConstHandle<JSON::Value> const &arg, RC::Handle<Context> const &context );
-      void jsonExecSetSourceCode( RC::ConstHandle<JSON::Value> const &arg );
-      void jsonExecSetEntryFunctionName( RC::ConstHandle<JSON::Value> const &arg );
-      void jsonExecSetMainThreadOnly( RC::ConstHandle<JSON::Value> const &arg );
-      virtual RC::Handle<JSON::Object> jsonDesc() const;
-      virtual RC::ConstHandle<JSON::Value> jsonDescType() const;
-      RC::ConstHandle<JSON::Value> jsonDescFilename() const;
-      RC::ConstHandle<JSON::Value> jsonDescSourceCode() const;
-      RC::ConstHandle<JSON::Value> jsonDescEntryFunctionName() const;
-      RC::ConstHandle<JSON::Value> jsonDescDiagnostics() const;
-      RC::ConstHandle<JSON::Value> jsonDescMainThreadOnly() const;
+      virtual void jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
+      static void jsonExecCreate( RC::ConstHandle<JSON::Value> const &arg, RC::Handle<Context> const &context, Util::JSONArrayGenerator &resultJAG );
+      void jsonExecSetSourceCode( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
+      void jsonExecSetEntryFunctionName( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
+      void jsonExecSetMainThreadOnly( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
+      void jsonDesc( Util::JSONGenerator &resultJG ) const;
+      virtual void jsonDesc( Util::JSONObjectGenerator &resultJOG ) const;
+      virtual void jsonDescType( Util::JSONGenerator &resultJG ) const;
+      void jsonDescFilename( Util::JSONGenerator &resultJG ) const;
+      void jsonDescSourceCode( Util::JSONGenerator &resultJG ) const;
+      void jsonDescEntryFunctionName( Util::JSONGenerator &resultJG ) const;
+      void jsonDescDiagnostics( Util::JSONGenerator &resultJG ) const;
+      void jsonDescMainThreadOnly( Util::JSONGenerator &resultJG ) const;
       
     protected:
     

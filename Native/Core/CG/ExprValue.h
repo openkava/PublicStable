@@ -1,8 +1,5 @@
 /*
- *
- *  Created by Peter Zion on 10-12-04.
- *  Copyright 2010 Fabric Technologies Inc. All rights reserved.
- *
+ *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
  */
 
 #ifndef _FABRIC_CG_EXPR_VALUE_H
@@ -32,8 +29,6 @@ namespace Fabric
       ExprValue( ExprValue const &that );
       
       ExprValue &operator =( ExprValue const &that );
-
-      void set( BasicBlockBuilder &basicBlockBuilder, RC::ConstHandle<Adapter> const &adapter, Usage usage, llvm::Value *value );
       
       bool isValid() const;
       
@@ -58,7 +53,6 @@ namespace Fabric
       ExprValue &castTo( BasicBlockBuilder &basicBlockBuilder, RC::ConstHandle<Adapter> const &adapter );
       ExprValue &castTo( BasicBlockBuilder &basicBlockBuilder, Usage usage );
 
-      void llvmRetain( BasicBlockBuilder &basicBlockBuilder );
       void llvmDispose( BasicBlockBuilder &basicBlockBuilder );
     
       std::string desc() const;

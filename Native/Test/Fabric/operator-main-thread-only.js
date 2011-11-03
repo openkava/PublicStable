@@ -1,12 +1,11 @@
-FC = createFabricClient();
-F = FC.wrapFabricClient(FC);
+F = require('Fabric').createClient();
 
 o = F.DG.createOperator("op");
 o.setSourceCode("operator entry( io Integer foo ) { report 'Hello'; }");
 o.setEntryFunctionName("entry");
-print(o.getMainThreadOnly());
+console.log(o.getMainThreadOnly());
 o.setMainThreadOnly(true);
-print(o.getMainThreadOnly());
+console.log(o.getMainThreadOnly());
 
 b = F.DG.createBinding();
 b.setOperator(o);
@@ -19,4 +18,3 @@ n.bindings.append(b);
 n.evaluate();
 
 F.flush();
-FC.dispose();

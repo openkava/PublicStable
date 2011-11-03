@@ -8,9 +8,9 @@
 #include <Fabric/Base/RC/Object.h>
 #include <Fabric/Base/RC/Handle.h>
 #include <Fabric/Base/Config.h>
-#include <Fabric/Core/MT/Mutex.h>
-#include <Fabric/Core/MT/Cond.h>
-#include <Fabric/Core/MT/Thread.h>
+#include <Fabric/Core/Util/Mutex.h>
+#include <Fabric/Core/Util/Cond.h>
+#include <Fabric/Core/Util/Thread.h>
 
 namespace Fabric
 {
@@ -52,10 +52,10 @@ namespace Fabric
       size_t m_executingTasks;
       bool m_exiting;
 
-      mutable Mutex m_stateMutex;
-      mutable Cond m_stateCond;
+      mutable Util::Mutex m_stateMutex;
+      mutable Util::Cond m_stateCond;
       
-      Thread m_thread;
+      Util::Thread m_thread;
 
       bool m_terminated;
     };

@@ -13,6 +13,11 @@
  
 namespace Fabric
 {
+  namespace Util
+  {
+    class JSONGenerator;
+  };
+  
   namespace JSON
   {
     class Object;
@@ -68,7 +73,7 @@ namespace Fabric
       RC::ConstHandle<AST::GlobalList> maybeGetASTForExt( std::string const &extName ) const;
       void *llvmResolveExternalFunction( std::string const &name ) const;
 
-      virtual RC::Handle<JSON::Object> jsonDesc() const;
+      virtual void jsonDesc( Util::JSONGenerator &resultJG ) const;
 
     protected:
     

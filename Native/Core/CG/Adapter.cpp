@@ -153,11 +153,7 @@ namespace Fabric
           case USAGE_RVALUE:
             return exprValue.getValue();
           case USAGE_LVALUE:
-          {
-            llvm::Value *rValue = llvmLValueToRValue( basicBlockBuilder, exprValue.getValue() );
-            llvmRetain( basicBlockBuilder, rValue );
-            return rValue;
-          }
+            return llvmLValueToRValue( basicBlockBuilder, exprValue.getValue() );
           default:
             FABRIC_ASSERT( false );
             return 0;
@@ -179,7 +175,6 @@ namespace Fabric
             break;
           case USAGE_LVALUE:
             srcRValue = exprValue.getAdapter()->llvmLValueToRValue( basicBlockBuilder, exprValue.getValue() );
-            exprValue.getAdapter()->llvmRetain( basicBlockBuilder, srcRValue );
             break;
           default:
             FABRIC_ASSERT( false );
@@ -191,7 +186,9 @@ namespace Fabric
         llvmInit( basicBlockBuilder, dstLValue );
         ExprValue dstExprValue( this, USAGE_LVALUE, basicBlockBuilder.getContext(), dstLValue );
         functionSymbol->llvmCreateCall( basicBlockBuilder, dstExprValue, srcExprValue );
-        return llvmLValueToRValue( basicBlockBuilder, dstLValue );
+        basicBlockBuilder.getScope().put( VariableSymbol::Create( dstExprValue ) );
+        llvm::Value *dstRValue = llvmLValueToRValue( basicBlockBuilder, dstLValue );
+        return dstRValue;
       }
     }
 
@@ -333,7 +330,6 @@ namespace Fabric
     void Adapter::llvmInit( BasicBlockBuilder &basicBlockBuilder, llvm::Value *lValue ) const
     {
       llvm::Value *defaultRValue = llvmDefaultRValue( basicBlockBuilder );
-      llvmRetain( basicBlockBuilder, defaultRValue );
       llvmStore( basicBlockBuilder, lValue, defaultRValue );
     }
     
@@ -341,8 +337,8 @@ namespace Fabric
     {
       StringAdapter const *stringAdapter = static_cast<StringAdapter const *>( _stringAdapter );
       RC::ConstHandle<RT::StringImpl> stringImpl = RC::ConstHandle<RT::StringImpl>::StaticCast( stringAdapter->getImpl() );
-      std::string string( stringImpl->getValueData( &stringRValue ), stringImpl->getValueLength( &stringRValue ) );
-      stringImpl->disposeData( &stringRValue );
+      std::string string( stringImpl->getValueData( stringRValue ), stringImpl->getValueLength( stringRValue ) );
+      stringImpl->disposeData( stringRValue );
       throw Exception( string );
     }
 
@@ -385,7 +381,11 @@ namespace Fabric
         FABRIC_ASSERT( func );
         basicBlockBuilder->CreateCall( func, lValue );
       }
-      llvmRelease( basicBlockBuilder, llvmLValueToRValue( basicBlockBuilder, lValue ) );
+      llvmDisposeImpl( basicBlockBuilder, lValue );
+    }
+
+    void Adapter::llvmDisposeImpl( BasicBlockBuilder &basicBlockBuilder, llvm::Value *lValue ) const
+    {
     }
   };
 };

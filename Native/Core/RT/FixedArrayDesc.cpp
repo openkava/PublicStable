@@ -9,6 +9,7 @@
 #include <Fabric/Base/JSON/String.h>
 #include <Fabric/Base/JSON/Object.h>
 #include <Fabric/Base/Exception.h>
+#include <Fabric/Core/Util/JSONGenerator.h>
 
 namespace Fabric
 {
@@ -27,12 +28,11 @@ namespace Fabric
       return m_fixedArrayImpl->getNumMembers();
     }
     
-    RC::Handle<JSON::Object> FixedArrayDesc::jsonDesc() const
+    void FixedArrayDesc::jsonDesc( Util::JSONObjectGenerator &resultJOG ) const
     {
-      RC::Handle<JSON::Object> result = ArrayDesc::jsonDesc();
-      result->set( "internalType", JSON::String::Create("fixedArray") );
-      result->set( "numMembers", JSON::Integer::Create( getNumMembers() ) );
-      return result;
+      ArrayDesc::jsonDesc( resultJOG );
+      resultJOG.makeMember( "internalType" ).makeString( "fixedArray" );
+      resultJOG.makeMember( "numMembers" ).makeInteger( getNumMembers() );
     }
   };
 };

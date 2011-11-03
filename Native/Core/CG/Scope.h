@@ -475,32 +475,39 @@ namespace Fabric
         return m_parentScope->getReturnInfo();
       }
             
+      virtual llvm::Value *llvmGetReturnLValue() const
+      {
+        FABRIC_ASSERT( m_parentScope );
+        return m_parentScope->llvmGetReturnLValue();
+      }
+      
       void llvmReturn( BasicBlockBuilder &bbb, ExprValue &exprValue ) const
       {
         ExprType const &returnExprType = getReturnInfo().getExprType();
-        llvm::Value *returnValue = 0;
-        switch ( returnExprType.getUsage() )
+        if ( returnExprType )
         {
-          case USAGE_RVALUE:
-            returnValue = returnExprType.getAdapter()->llvmCast( bbb, exprValue );
-            break;
-          case USAGE_LVALUE:
-            if ( exprValue.getExprType() != returnExprType )
-              throw Exception( "cannot return l-value through casting" );
-            returnValue = exprValue.getValue();
-            break;
-          case USAGE_UNSPECIFIED:
-            FABRIC_ASSERT( false );
-            throw Exception( "unspecified usage" );
+          FABRIC_ASSERT( exprValue );
+          RC::ConstHandle<Adapter> returnAdapter = returnExprType.getAdapter();
+          llvm::Value *returnValue = 0;
+          switch ( returnExprType.getUsage() )
+          {
+            case USAGE_RVALUE:
+              returnValue = returnAdapter->llvmCast( bbb, exprValue );
+              break;
+            case USAGE_LVALUE:
+              if ( exprValue.getExprType() != returnExprType )
+                throw Exception( "cannot return l-value through casting" );
+              returnValue = exprValue.getValue();
+              break;
+            case USAGE_UNSPECIFIED:
+              FABRIC_ASSERT( false );
+              throw Exception( "unspecified usage" );
+          }
+          llvm::Value *returnLValue = llvmGetReturnLValue();
+          returnAdapter->llvmAssign( bbb, returnLValue, returnValue );
         }
-        llvmReturn( bbb, returnValue );
-      }
-      
-      virtual void llvmReturn( BasicBlockBuilder &bbb, llvm::Value *value ) const
-      {
-        llvmUnwind( bbb );
-        FABRIC_ASSERT( m_parentScope );
-        m_parentScope->llvmReturn( bbb, value );
+        else FABRIC_ASSERT( !exprValue );
+        llvmReturn( bbb );
       }
       
     protected:
@@ -508,6 +515,13 @@ namespace Fabric
       Scope()
         : m_parentScope( 0 )
       {
+      }
+      
+      virtual void llvmReturn( BasicBlockBuilder &bbb ) const
+      {
+        llvmUnwind( bbb );
+        FABRIC_ASSERT( m_parentScope );
+        m_parentScope->llvmReturn( bbb );
       }
       
     private:
@@ -584,23 +598,36 @@ namespace Fabric
       FunctionScope( ModuleScope const &parentScope, ReturnInfo const &returnInfo )
         : Scope( parentScope )
         , m_returnInfo( returnInfo )
+        , m_returnLValue( 0 )
       {
       }
       
-      virtual void llvmReturn( BasicBlockBuilder &bbb, llvm::Value *value ) const
+      void llvmPrepareReturnLValue( BasicBlockBuilder &bbb )
       {
-        llvmUnwind( bbb );
-
-        if( m_returnInfo.usesReturnLValue() )
+        RC::ConstHandle<Adapter> returnAdapter = m_returnInfo.getAdapter();
+        if ( returnAdapter )
         {
-          llvm::Value   *aggregateReturn = m_returnInfo.getReturnLValue();
-          FABRIC_ASSERT( aggregateReturn );
-
-          m_returnInfo.getAdapter()->llvmAssign( bbb, aggregateReturn, value );
-          bbb->CreateRetVoid();
+          if ( !m_returnInfo.usesReturnLValue() )
+          {
+            m_returnLValue = returnAdapter->llvmAlloca( bbb, "returnLValue" );
+            returnAdapter->llvmInit( bbb, m_returnLValue );
+          }
         }
-        else
-          bbb->CreateRet( value );
+      }
+      
+      virtual llvm::Value *llvmGetReturnLValue() const
+      {
+        RC::ConstHandle<Adapter> returnAdapter = m_returnInfo.getAdapter();
+        if ( returnAdapter )
+        {
+          if ( !m_returnInfo.usesReturnLValue() )
+          {
+            FABRIC_ASSERT( m_returnLValue );
+            return m_returnLValue;
+          }
+          else return m_returnInfo.getReturnLValue();
+        }
+        else return 0;
       }
       
       virtual ReturnInfo const &getReturnInfo() const
@@ -608,9 +635,32 @@ namespace Fabric
         return m_returnInfo;
       }
       
+    protected:
+      
+      virtual void llvmReturn( BasicBlockBuilder &bbb ) const
+      {
+        llvmUnwind( bbb );
+
+        RC::ConstHandle<Adapter> returnAdapter = m_returnInfo.getAdapter();
+        if ( returnAdapter )
+        {
+          if( m_returnInfo.usesReturnLValue() )
+          {
+            bbb->CreateRetVoid();
+          }
+          else
+          {
+            llvm::Value *returnRValue = returnAdapter->llvmLValueToRValue( bbb, llvmGetReturnLValue() );
+            bbb->CreateRet( returnRValue );
+          }
+        }
+        else bbb->CreateRetVoid();
+      }
+      
     private:
     
       ReturnInfo m_returnInfo;
+      llvm::Value *m_returnLValue;
     };
   };
   

@@ -16,6 +16,11 @@
 
 namespace Fabric
 {
+  namespace Util
+  {
+    class JSONGenerator;
+  };
+  
   namespace JSON
   {
     class Value;
@@ -65,7 +70,7 @@ namespace Fabric
       
       std::vector<std::string> desc() const;
 
-      RC::ConstHandle<JSON::Value> jsonDesc() const;
+      void jsonDesc( Util::JSONGenerator &resultJG ) const;
     
     private:
     

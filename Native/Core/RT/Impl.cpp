@@ -6,6 +6,8 @@
 #include <Fabric/Core/RT/FixedArrayImpl.h>
 #include <Fabric/Core/RT/VariableArrayImpl.h>
 #include <Fabric/Core/RT/SlicedArrayImpl.h>
+#include <Fabric/Core/RT/ComparableImpl.h>
+#include <Fabric/Core/RT/DictImpl.h>
 #include <Fabric/Core/Util/Encoder.h>
 #include <Fabric/Base/Util/Bits.h>
 #include <Fabric/Base/Exception.h>
@@ -27,6 +29,18 @@ namespace Fabric
     void Impl::setSize( size_t size )
     {
       m_size = size;
+    }
+
+    RC::ConstHandle<DictImpl> Impl::getDictImpl( RC::ConstHandle<ComparableImpl> const &comparableImpl ) const
+    {
+      RC::WeakConstHandle<DictImpl> &dictImplWeakHandle = m_dictImpls[comparableImpl];
+      RC::ConstHandle<DictImpl> dictImpl = dictImplWeakHandle.makeStrong();
+      if ( !dictImpl )
+      {
+        dictImpl = new DictImpl( m_codeName + "_D_" + comparableImpl->getCodeName(), comparableImpl, this );
+        dictImplWeakHandle = dictImpl;
+      }
+      return dictImpl;
     }
 
     RC::ConstHandle<FixedArrayImpl> Impl::getFixedArrayImpl( size_t length ) const

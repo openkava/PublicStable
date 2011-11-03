@@ -8,6 +8,7 @@
 #include <Fabric/Base/JSON/String.h>
 #include <Fabric/Base/JSON/Object.h>
 #include <Fabric/Base/Exception.h>
+#include <Fabric/Core/Util/JSONGenerator.h>
 
 namespace Fabric
 {
@@ -24,12 +25,11 @@ namespace Fabric
       return RC::ConstHandle<RT::SlicedArrayImpl>::StaticCast( Desc::getImpl() );
     }
     
-    RC::Handle<JSON::Object> SlicedArrayDesc::jsonDesc() const
+    void SlicedArrayDesc::jsonDesc( Util::JSONObjectGenerator &resultJOG ) const
     {
-      RC::Handle<JSON::Object> result = ArrayDesc::jsonDesc();
-      result->set( "internalType", JSON::String::Create("slicedArray") );
-      result->set( "memberType", JSON::String::Create( getMemberDesc()->getUserName() ) );
-      return result;
+      ArrayDesc::jsonDesc( resultJOG );
+      resultJOG.makeMember( "internalType" ).makeString( "slicedArray" );
+      resultJOG.makeMember( "memberType" ).makeString( getMemberDesc()->getUserName() );
     }
 
     void SlicedArrayDesc::setNumMembers( void *data, size_t numMembers, void const *defaultMemberData ) const

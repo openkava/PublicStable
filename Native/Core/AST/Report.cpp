@@ -10,6 +10,7 @@
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/CG/Error.h>
 #include <Fabric/Core/CG/BasicBlockBuilder.h>
+#include <Fabric/Core/CG/Scope.h>
 #include <Fabric/Base/Util/SimpleString.h>
 
 namespace Fabric
@@ -42,12 +43,12 @@ namespace Fabric
 
       try
       {
-        CG::ExprValue exprExprValue = m_expr->buildExprValue( basicBlockBuilder, CG::USAGE_RVALUE, "cannot be an l-value" );
-
-        llvm::Value *stringRValue = stringAdapter->llvmCast( basicBlockBuilder, exprExprValue );
-        
-        stringAdapter->llvmReport( basicBlockBuilder, stringRValue );
-        stringAdapter->llvmRelease( basicBlockBuilder, stringRValue );
+        CG::Scope subScope( basicBlockBuilder.getScope() );
+        CG::BasicBlockBuilder subBBB( basicBlockBuilder, subScope );
+        CG::ExprValue exprExprValue = m_expr->buildExprValue( subBBB, CG::USAGE_RVALUE, "cannot be an l-value" );
+        llvm::Value *stringRValue = stringAdapter->llvmCast( subBBB, exprExprValue );
+        stringAdapter->llvmReport( subBBB, stringRValue );
+        subScope.llvmUnwind( subBBB );
       }
       catch ( CG::Error e )
       {

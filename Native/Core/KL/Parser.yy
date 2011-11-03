@@ -81,6 +81,7 @@ typedef struct YYLTYPE
 #include <Fabric/Core/AST/ConstSize.h>
 #include <Fabric/Core/AST/ConstScalar.h>
 #include <Fabric/Core/AST/ConstString.h>
+#include <Fabric/Core/AST/ContainerLoop.h>
 #include <Fabric/Core/AST/ContinueStatement.h>
 #include <Fabric/Core/AST/CStyleLoop.h>
 #include <Fabric/Core/AST/Destructor.h>
@@ -716,6 +717,14 @@ array_modifier
       $$ = result;
     }
   }
+  | TOKEN_LBRACKET compound_type TOKEN_RBRACKET array_modifier
+  {
+    std::string *result = new std::string( "[" + *$2 + "]" );
+    delete $2;
+    result->append( *$4 );
+    delete $4;
+    $$ = result;
+  }
   | /* empty */
   {
     $$ = new std::string;
@@ -877,6 +886,21 @@ loop_statement
       $6->release();
     if ( $8 )
       $8->release();
+  }
+  | TOKEN_FOR TOKEN_LPAREN TOKEN_IDENTIFIER TOKEN_IN expression TOKEN_RPAREN statement
+  {
+    $$ = AST::ContainerLoop::Create( RTLOC, $5, *$3, "", $7 ).take();
+    $5->release();
+    delete $3;
+    $7->release();
+  }
+  | TOKEN_FOR TOKEN_LPAREN TOKEN_IDENTIFIER TOKEN_COMMA TOKEN_IDENTIFIER TOKEN_IN expression TOKEN_RPAREN statement
+  {
+    $$ = AST::ContainerLoop::Create( RTLOC, $7, *$3, *$5, $9 ).take();
+    $7->release();
+    delete $3;
+    delete $5;
+    $9->release();
   }
   | TOKEN_WHILE TOKEN_LPAREN optional_expression TOKEN_RPAREN statement
   {

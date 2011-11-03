@@ -8,10 +8,12 @@
 #include <Fabric/Core/RT/NumericImpl.h>
 #include <Fabric/Core/Util/Math.h>
 #include <Fabric/Core/Util/Format.h>
+#include <Fabric/Core/Util/JSONGenerator.h>
 #include <Fabric/Base/JSON/Null.h>
 #include <Fabric/Base/JSON/Integer.h>
 #include <Fabric/Base/JSON/Scalar.h>
 #include <Fabric/Base/Exception.h>
+#include <Fabric/Base/Config.h>
 
 namespace Fabric
 {
@@ -61,6 +63,15 @@ namespace Fabric
         else return JSON::Scalar::Create( doubleValue );
       }
       
+      void generateJSON( void const *data, Util::JSONGenerator &jsonGenerator ) const
+      {
+        T value = getValue( data );
+        double doubleValue = double(value);
+        if ( Util::isnan( doubleValue ) || Util::isinf( doubleValue ) )
+          jsonGenerator.makeNull();
+        else jsonGenerator.makeScalar( doubleValue );
+      }
+      
       void setDataFromJSONValue( RC::ConstHandle<JSON::Value> const &jsonValue, void *dst ) const
       {
         if ( jsonValue->isInteger() )
@@ -88,6 +99,21 @@ namespace Fabric
       {
         return _( getValue( data ) );
       }
+    
+      // ComparableImpl
+    
+      virtual size_t hash( void const *data ) const;
+      virtual int compare( void const *lhsData, void const *rhsData ) const
+      {
+        T lhsValue = getValue( lhsData );
+        T rhsValue = getValue( rhsData );
+        // [pzion 20111014] The order here is important since NaN != NaN
+        if ( lhsValue < rhsValue )
+          return -1;
+        else if ( lhsValue > rhsValue )
+          return 1;
+        else return 0;
+      }
       
       // FloatImplT
       
@@ -109,10 +135,38 @@ namespace Fabric
       }
     };
     
+    template<> inline size_t FloatImplT<float>::hash( void const *data ) const
+    {
+      float value = getValue( data );
+#if defined(FABRIC_ARCH_64BIT)
+      uint32_t const *valuePtrAsUInt32 = reinterpret_cast<uint32_t const *>( &value );
+      return size_t(valuePtrAsUInt32[0]);
+#elif defined(FABRIC_ARCH_32BIT)
+      size_t const *valuePtrAsSize = reinterpret_cast<size_t const *>( &value );
+      return valuePtrAsSize[0];
+#else
+# error "Unsupported FABRIC_ARCH_..."
+#endif
+    }
+    
+    template<> inline size_t FloatImplT<double>::hash( void const *data ) const
+    {
+      double value = getValue( data );
+#if defined(FABRIC_ARCH_64BIT)
+      size_t const *valuePtrAsSize = reinterpret_cast<size_t const *>( &value );
+      return valuePtrAsSize[0];
+#elif defined(FABRIC_ARCH_32BIT)
+      uint32_t const *valuePtrAsUInt32 = reinterpret_cast<uint32_t const *>( &value );
+      return size_t(valuePtrAsUInt32[0] ^ valuePtrAsUInt32[1]);
+#else
+# error "Unsupported FABRIC_ARCH_..."
+#endif
+    }
+
     class FP32Impl : public FloatImplT<float>
     {
       friend class Manager;
-      
+    
     protected:
     
       FP32Impl( std::string const &codeName )
@@ -124,7 +178,7 @@ namespace Fabric
     class FP64Impl : public FloatImplT<double>
     {
       friend class Manager;
-      
+    
     protected:
     
       FP64Impl( std::string const &codeName )

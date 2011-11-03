@@ -21,7 +21,7 @@ namespace Fabric
     
       RC::ConstHandle<RT::SlicedArrayImpl> getImpl() const;
 
-      virtual RC::Handle<JSON::Object> jsonDesc() const;
+      virtual void jsonDesc( Util::JSONObjectGenerator &resultJOG ) const;
 
       void setNumMembers( void *data, size_t numMembers, void const *defaultMemberData ) const;
       

@@ -1,7 +1,6 @@
-FC = createFabricClient();
-FABRIC = FC.wrapFabricClient(FC);
+FABRIC = require('Fabric').createClient();
 
-load( "UnitTest.js.inc" );
+require( "./include/UnitTest.js" );
 
 var Vec3 = function( x, y, z ) {
   if ( typeof x === "number" && typeof y === "number" && typeof z === "number" ) {
@@ -84,4 +83,3 @@ ut.test("Selectors (Vec3)", function() {
 });
 
 FABRIC.flush();
-FC.dispose();

@@ -46,17 +46,18 @@ namespace Fabric
 {
   namespace DG
   {
-    RC::ConstHandle<Code> Code::Create( RC::ConstHandle<Context> const &context, std::string const &filename, std::string const &sourceCode )
+    RC::ConstHandle<Code> Code::Create( RC::ConstHandle<Context> const &context, std::string const &filename, std::string const &sourceCode, bool optimizeSynchronously )
     {
-      return new Code( context, filename, sourceCode );
+      return new Code( context, filename, sourceCode, optimizeSynchronously );
     }
 
-    Code::Code( RC::ConstHandle<Context> const &context, std::string const &filename, std::string const &sourceCode )
+    Code::Code( RC::ConstHandle<Context> const &context, std::string const &filename, std::string const &sourceCode, bool optimizeSynchronously )
       : m_contextWeakRef( context )
       , m_mutex( "DG::Code" )
       , m_filename( filename )
       , m_sourceCode( sourceCode )
       , m_registeredFunctionSetMutex( "DG::Code::m_registeredFunctionSet" )
+      , m_optimizeSynchronously( optimizeSynchronously )
     {
       compileSourceCode();
     }
@@ -67,7 +68,7 @@ namespace Fabric
 
     void Code::compileSourceCode()
     {
-      MT::Mutex::Lock mutexLock( m_mutex );
+      Util::Mutex::Lock mutexLock( m_mutex );
 
       llvm::InitializeNativeTarget();
       LLVMLinkInJIT();
@@ -79,7 +80,7 @@ namespace Fabric
       RC::Handle<KL::Scanner> scanner = KL::Scanner::Create( source );
       m_ast = AST::GlobalList::Create( m_ast, KL::Parse( scanner, m_diagnostics ) );
       if ( !m_diagnostics.containsError() )
-        compileAST( false );
+        compileAST( m_optimizeSynchronously );
     }
     
     void Code::compileAST( bool optimize )
@@ -204,12 +205,12 @@ namespace Fabric
       if ( !context )
         return;
         
-      MT::Mutex::Lock mutexLock( m_mutex );
+      Util::Mutex::Lock mutexLock( m_mutex );
 
       RC::ConstHandle<ExecutionEngine> executionEngine = ExecutionEngine::Create( context, cgContext, module.take() );
       
       {
-        MT::Mutex::Lock lock( m_registeredFunctionSetMutex );
+        Util::Mutex::Lock lock( m_registeredFunctionSetMutex );
         for ( RegisteredFunctionSet::const_iterator it=m_registeredFunctionSet.begin();
           it!=m_registeredFunctionSet.end(); ++it )
         {
@@ -251,7 +252,7 @@ namespace Fabric
     
     RC::ConstHandle<ExecutionEngine> Code::getExecutionEngine() const
     {
-      MT::Mutex::Lock mutexLock( m_mutex );
+      Util::Mutex::Lock mutexLock( m_mutex );
       return m_executionEngine;
     }
     
@@ -262,13 +263,13 @@ namespace Fabric
 
     void Code::registerFunction( Function *function ) const
     {
-      MT::Mutex::Lock lock( m_registeredFunctionSetMutex );
+      Util::Mutex::Lock lock( m_registeredFunctionSetMutex );
       m_registeredFunctionSet.insert( function );
     }
     
     void Code::unregisterFunction( Function *function ) const
     {
-      MT::Mutex::Lock lock( m_registeredFunctionSetMutex );
+      Util::Mutex::Lock lock( m_registeredFunctionSetMutex );
       RegisteredFunctionSet::iterator it = m_registeredFunctionSet.find( function );
       FABRIC_ASSERT( it != m_registeredFunctionSet.end() );
       m_registeredFunctionSet.erase( it );

@@ -1,5 +1,4 @@
-FC = createFabricClient();
-FABRIC = FC.wrapFabricClient(FC);
+FABRIC = require('Fabric').createClient();
 
 node1 = FABRIC.DependencyGraph.createNode("one");
 node2 = FABRIC.DependencyGraph.createNode("two");
@@ -9,7 +8,7 @@ try {
   FABRIC.flush();
 }
 catch (e) {
-  print( e );
+  console.log( e );
 }
 
 try {
@@ -18,8 +17,7 @@ try {
   FABRIC.flush();
 }
 catch (e) {
-  print( e );
+  console.log( e );
 }
 
 FABRIC.flush();
-FC.dispose();

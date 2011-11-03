@@ -7,6 +7,8 @@
 #include "BooleanImpl.h"
 #include "ConstStringDesc.h"
 #include "ConstStringImpl.h"
+#include "DictDesc.h"
+#include "DictImpl.h"
 #include "FixedArrayDesc.h"
 #include "FixedArrayImpl.h"
 #include "FloatDesc.h"
@@ -90,6 +92,17 @@ namespace Fabric
       return RC::ConstHandle<FixedArrayDesc>::StaticCast( registerDesc( fixedArrayDesc ) );
     }
 
+    RC::ConstHandle<DictDesc> Manager::getDictOf(
+      RC::ConstHandle<RT::ComparableDesc> const &keyDesc,
+      RC::ConstHandle<RT::Desc> const &valueDesc
+      ) const
+    {
+      std::string dictName = valueDesc->getUserName() + "[" + keyDesc->getUserName() + "]";
+      RC::ConstHandle<DictImpl> dictImpl = valueDesc->getImpl()->getDictImpl( keyDesc->getImpl() );
+      RC::ConstHandle<DictDesc> dictDesc = new DictDesc( dictName, dictImpl, keyDesc, valueDesc );
+      return RC::ConstHandle<DictDesc>::StaticCast( registerDesc( dictDesc ) );
+    }
+
     Manager::Types const &Manager::getTypes() const
     {
       return m_types;
@@ -164,7 +177,12 @@ namespace Fabric
         dst.push_back( "RT" );
         dst.push_back( desc->getUserName() );
         
-        m_jsonCommandChannel->jsonNotify( dst, "delta", desc->jsonDesc() );
+        Util::SimpleString json;
+        {
+          Util::JSONGenerator jg( &json );
+          desc->jsonDesc( jg );
+        }
+        m_jsonCommandChannel->jsonNotify( dst, "delta", 5, &json );
       }
       
       return desc;
@@ -244,7 +262,36 @@ namespace Fabric
           
           return getFixedArrayOf( getComplexDesc( desc, data, dataEnd ), length );
         }
-        else throw Exception( "malformed type expression" );
+        else
+        {
+          // [pzion 20111014] count brackets to get subtype
+          
+          size_t bracketCount = 0;
+          char const *type = data;
+          char const *typeEnd = data;
+          for (;;)
+          {
+            if ( typeEnd == dataEnd )
+              throw Exception( "malformed type expression" );
+            else if ( *typeEnd == ']' )
+            {
+              if ( bracketCount == 0 )
+                break;
+              else --bracketCount;
+            }
+            else if ( *typeEnd == '[' )
+              ++bracketCount;
+            ++typeEnd;
+          }
+          
+          RC::ConstHandle<Desc> keyDesc = getDesc( std::string( type, typeEnd - type ) );
+          if ( !isComparable( keyDesc->getType() ) )
+            throw Exception( "key type must be comparable" );
+          RC::ConstHandle<ComparableDesc> keyComparableDesc = RC::ConstHandle<ComparableDesc>::StaticCast( keyDesc );
+          
+          ++typeEnd;
+          return getDictOf( keyComparableDesc, getComplexDesc( desc, typeEnd, dataEnd ) );
+        }
       }
       else if ( data != dataEnd && *data == '<' )
       {
@@ -310,30 +357,30 @@ namespace Fabric
       return m_constStringDesc;
     }
       
-    RC::Handle<JSON::Object> Manager::jsonDesc() const
+    void Manager::jsonDesc( Util::JSONGenerator &resultJG ) const
     {
-      RC::Handle<JSON::Object> result = JSON::Object::Create();
-      result->set( "registeredTypes", jsonDescRegisteredTypes() );
-      return result;
+      Util::JSONObjectGenerator resultJOG = resultJG.makeObject();
+      Util::JSONGenerator registeredTypesJG = resultJOG.makeMember( "registeredTypes", 15 );
+      jsonDescRegisteredTypes( registeredTypesJG );
     }
       
-    RC::Handle<JSON::Object> Manager::jsonDescRegisteredTypes() const
+    void Manager::jsonDescRegisteredTypes( Util::JSONGenerator &resultJG ) const
     {
-      RC::Handle<JSON::Object> registeredTypes = JSON::Object::Create();
+      Util::JSONObjectGenerator resultJOG = resultJG.makeObject();
       for ( Types::const_iterator it=m_types.begin(); it!=m_types.end(); ++it )
-        registeredTypes->set( it->first, it->second->jsonDesc() );
-      return registeredTypes;
+      {
+        Util::JSONGenerator memberJG = resultJOG.makeMember( it->first );
+        it->second->jsonDesc( memberJG );
+      }
     }
 
-    RC::ConstHandle<JSON::Value> Manager::jsonRoute( std::vector<std::string> const &dst, size_t dstOffset, std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg )
+    void Manager::jsonRoute( std::vector<std::string> const &dst, size_t dstOffset, std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
     {
-      RC::ConstHandle<JSON::Value> result;
-
       if ( dst.size() - dstOffset == 0 )
       {
         try
         {
-          result = jsonExec( cmd, arg );
+          jsonExec( cmd, arg, resultJAG );
         }
         catch ( Exception e )
         {
@@ -341,20 +388,16 @@ namespace Fabric
         }
       }
       else throw Exception( "unroutable" );
-      
-      return result;
     }
 
-    RC::ConstHandle<JSON::Value> Manager::jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg )
+    void Manager::jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
     {
-      RC::ConstHandle<JSON::Value> result;
       if ( cmd == "registerType" )
-        jsonExecRegisterType( arg );
+        jsonExecRegisterType( arg, resultJAG );
       else throw Exception( "unknown command" );
-      return result;
     }
     
-    void Manager::jsonExecRegisterType( RC::ConstHandle<JSON::Value> const &arg )
+    void Manager::jsonExecRegisterType( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
     {
       RC::ConstHandle<JSON::Object> argJSONObject = arg->toObject();
       

@@ -7,7 +7,6 @@
 
 #include "TaskGroup.h"
 #include "Task.h"
-#include "Debug.h"
 #include "Impl.h"
 
 namespace Fabric

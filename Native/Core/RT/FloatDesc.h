@@ -47,12 +47,11 @@ namespace Fabric
         m_floatImpl->setValue( t, data );
       }
           
-      virtual RC::Handle<JSON::Object> jsonDesc() const
+      virtual void jsonDesc( Util::JSONObjectGenerator &resultJOG ) const
       {
-        RC::Handle<JSON::Object> result = Desc::jsonDesc();
+        Desc::jsonDesc( resultJOG );
         std::string internalType = "fp" + _(m_floatImpl->getAllocSize() * 8);
-        result->set( "internalType", JSON::String::Create(internalType) );
-        return result;
+        resultJOG.makeMember( "internalType" ).makeString( internalType );
       }
       
     protected:

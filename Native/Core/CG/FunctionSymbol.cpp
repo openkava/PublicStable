@@ -42,12 +42,13 @@ namespace Fabric
       if ( m_returnInfo.usesReturnLValue() )
       {
         RC::ConstHandle<Adapter> returnAdapter = m_returnInfo.getAdapter();
-        returnValue = returnAdapter->llvmAlloca( basicBlockBuilder, "retVal" );
+        returnValue = returnAdapter->llvmAlloca( basicBlockBuilder, "resultLValue" );
         returnAdapter->llvmInit( basicBlockBuilder, returnValue );
         args.resize( args.size() + 1, ExprValue(context) );
         for ( size_t i=1; i<args.size(); ++i )
           args[args.size()-i] = args[args.size()-i-1];
         args[0] = ExprValue( returnAdapter, USAGE_LVALUE, context, returnValue );
+        basicBlockBuilder.getScope().put( CG::VariableSymbol::Create( args[0] ) );
       }
       
       std::vector<llvm::Value *> argValues;
@@ -57,9 +58,6 @@ namespace Fabric
       llvm::Value *resultValue = basicBlockBuilder->CreateCall( m_llvmFunction, argValues.begin(), argValues.end() );
       if( !m_returnInfo.usesReturnLValue() )
         returnValue = resultValue;
-
-      for ( size_t i=0; i<args.size(); ++i )
-        args[i].llvmDispose( basicBlockBuilder );
 
       return CG::ExprValue( m_returnInfo.getExprType(), context, returnValue );
     }

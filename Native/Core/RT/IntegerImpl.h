@@ -8,6 +8,7 @@
 #include <Fabric/Core/RT/SimpleImpl.h>
 #include <Fabric/Core/Util/Math.h>
 #include <Fabric/Core/Util/Format.h>
+#include <Fabric/Core/Util/JSONGenerator.h>
 #include <Fabric/Base/JSON/Null.h>
 #include <Fabric/Base/JSON/Integer.h>
 #include <Fabric/Base/JSON/Scalar.h>
@@ -62,6 +63,15 @@ namespace Fabric
         return JSON::Integer::Create( int32_t( value ) );
       }
       
+      void generateJSON( void const *data, Util::JSONGenerator &jsonGenerator ) const
+      {
+        T value = getValue( data );
+        int32_t int32Value = int32_t( value );
+        if ( T( int32Value ) != value )
+          throw Exception( "value is too large for JSON representation" );
+        jsonGenerator.makeInteger( int32Value );
+      }
+      
       void setDataFromJSONValue( RC::ConstHandle<JSON::Value> const &jsonValue, void *dst ) const
       {
         if ( jsonValue->isInteger() )
@@ -79,6 +89,24 @@ namespace Fabric
       std::string descData( void const *data ) const
       {
         return _( getValue( data ) );
+      }
+    
+      // ComparableImpl
+    
+      virtual size_t hash( void const *data ) const
+      {
+        return size_t( getValue( data ) );
+      }
+      
+      virtual int compare( void const *lhsData, void const *rhsData ) const
+      {
+        T lhsValue = getValue( lhsData );
+        T rhsValue = getValue( rhsData );
+        if ( lhsValue < rhsValue )
+          return -1;
+        else if ( lhsValue == rhsValue )
+          return 0;
+        else return 1;
       }
       
       // IntegerImpl

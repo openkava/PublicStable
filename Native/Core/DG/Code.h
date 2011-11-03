@@ -10,7 +10,7 @@
 #include <Fabric/Base/RC/ConstHandle.h>
 #include <Fabric/Base/RC/WeakConstHandle.h>
 #include <Fabric/Core/CG/Diagnostics.h>
-#include <Fabric/Core/MT/Mutex.h>
+#include <Fabric/Core/Util/Mutex.h>
 
 #include <set>
 #include <llvm/ADT/OwningPtr.h>
@@ -52,7 +52,7 @@ namespace Fabric
     
       typedef void (*FunctionPtr)( ... );
     
-      static RC::ConstHandle<Code> Create( RC::ConstHandle<Context> const &context, std::string const &filename, std::string const &sourceCode );
+      static RC::ConstHandle<Code> Create( RC::ConstHandle<Context> const &context, std::string const &filename, std::string const &sourceCode, bool optimizeSynchronously );
       
       std::string const &getFilename() const;
       std::string const &getSourceCode() const;
@@ -68,7 +68,7 @@ namespace Fabric
 
     protected:
     
-      Code( RC::ConstHandle<Context> const &context, std::string const &filename, std::string const &sourceCode );
+      Code( RC::ConstHandle<Context> const &context, std::string const &filename, std::string const &sourceCode, bool optimizeSynchronously );
       ~Code();
       
       void compileSourceCode();
@@ -85,7 +85,7 @@ namespace Fabric
       }
     
       RC::WeakConstHandle<Context> m_contextWeakRef;
-      mutable MT::Mutex m_mutex;
+      mutable Util::Mutex m_mutex;
       std::string m_filename;
       std::string m_sourceCode;
 #if defined(FABRIC_BUILD_DEBUG)
@@ -95,8 +95,10 @@ namespace Fabric
       CG::Diagnostics m_diagnostics;
       RC::ConstHandle<ExecutionEngine> m_executionEngine;
       
-      mutable MT::Mutex m_registeredFunctionSetMutex;
+      mutable Util::Mutex m_registeredFunctionSetMutex;
       mutable RegisteredFunctionSet m_registeredFunctionSet;
+      
+      bool m_optimizeSynchronously;
     };
   };
 };

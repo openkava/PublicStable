@@ -7,9 +7,9 @@
 
 #include <Fabric/Base/RC/Object.h>
 #include <Fabric/Base/RC/Handle.h>
-#include <Fabric/Core/MT/Mutex.h>
 #include <Fabric/Core/MT/Util.h>
 #include <Fabric/Core/Util/AutoSet.h>
+#include <Fabric/Core/Util/Mutex.h>
 #include <Fabric/Core/Util/UnorderedMap.h>
 
 namespace Fabric
@@ -45,7 +45,7 @@ namespace Fabric
       
     private:
     
-      MT::Mutex m_bufferMutex;
+      Util::Mutex m_bufferMutex;
       std::string m_buffer;
       ThreadPrefixMap m_threadPrefixes;
     };
