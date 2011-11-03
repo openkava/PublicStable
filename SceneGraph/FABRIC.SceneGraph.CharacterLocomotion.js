@@ -169,6 +169,7 @@ FABRIC.SceneGraph.registerNodeType('LocomotionAnimationLibrary', {
       sourceAnimationLibrary,
       keyframeTrackBindings,
       rigNode,
+      footMovementThreshold,
       callback
     ){
       if (!sourceAnimationLibrary.isTypeOf('AnimationLibrary')) {
@@ -188,7 +189,7 @@ FABRIC.SceneGraph.registerNodeType('LocomotionAnimationLibrary', {
       var paramsdgnode = animationLibraryNode.constructDGNode('ParamsDGNode');
       dgnode.setDependency(paramsdgnode, 'params');
       paramsdgnode.addMember('sampleFrequency', 'Scalar', 1/60);
-      paramsdgnode.addMember('footMovementThreshold', 'Scalar', 0.2);
+      paramsdgnode.addMember('footMovementThreshold', 'Scalar', footMovementThreshold);
       
       var trackSet = sourceAnimationLibrary.pub.getTrackSet(0);
       
@@ -446,6 +447,7 @@ FABRIC.SceneGraph.registerNodeType('LocomotionPoseVariables', {
     dgnode.addMember('trackcontroller', 'TrackSetController');
     dgnode.addMember('plantedFeet', 'Boolean[]');
     dgnode.addMember('plantLocations', 'Vec3[]');
+    dgnode.addMember('rayDeltas', 'Vec3[]');
     
     var poseError = locomotionVariables.getVariables();
     poseError.setIdentity();
@@ -484,6 +486,8 @@ FABRIC.SceneGraph.registerNodeType('LocomotionPoseVariables', {
         
         'self.plantedFeet',
         'self.plantLocations',
+        'self.rayDeltas',
+        
         'self.poseError',
         'self.poseVariables',
         

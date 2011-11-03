@@ -99,11 +99,11 @@ $(document).ready(function() {
 
   // Create a camera to draw the scene from
   var camera = scene.constructNode('TargetCamera', {
-      position: new FABRIC.RT.Vec3(60, 42, 60),
-      target: new FABRIC.RT.Vec3(0, -10, 0),
+      position: new FABRIC.RT.Vec3(6, 4.2, 6),
+      target: new FABRIC.RT.Vec3(0, -1, 0),
       roll: 0,
-      nearDistance: 10.0,
-      farDistance: 1200
+      nearDistance: 1.0,
+      farDistance: 120
     });
   scene.constructNode('CameraManipulator', { targetNode: camera });
   viewport.setCameraNode(camera);
@@ -111,8 +111,8 @@ $(document).ready(function() {
   // create the scene grid
   scene.constructNode('Instance', {
     geometryNode: scene.constructNode('Grid', {
-        size_x: 140.0,
-        size_z: 140.0,
+        size_x: 14.0,
+        size_z: 14.0,
         sections_x: 20,
         sections_z: 20 }),
     materialNode: scene.constructNode('FlatMaterial')
@@ -360,6 +360,7 @@ $(document).ready(function() {
       libraryProcessedAnimations,
       bindings,
       ikrigNode,
+      0.02,
       function(){
         
           var rigSaver = scene.constructManager('SceneSaver');

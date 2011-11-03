@@ -207,6 +207,7 @@ FABRIC.SceneGraph.registerNodeType('BulletWorldNode', {
     scene.assignDefaults(options, {
       createGroundPlane: true,
       createGroundPlaneGrid: true,
+      groundPlanseSize: 40.0,
       connectToSceneTime: true,
       gravity: new FABRIC.RT.Vec3(0,-40,0),
       substeps: 3
@@ -461,15 +462,15 @@ FABRIC.SceneGraph.registerNodeType('BulletWorldNode', {
     if(options.createGroundPlane) {
       // create a shape
       // create the ground rigid body
-      var groundTrans = FABRIC.RT.xfo({tr: new FABRIC.RT.Vec3(0,-1000,0)});
-      bulletWorldNode.pub.addShape('Ground',FABRIC.RT.BulletShape.createBox(new FABRIC.RT.Vec3(1000,1000,1000)));
+      var groundTrans = FABRIC.RT.xfo({tr: new FABRIC.RT.Vec3(0,-options.groundPlanseSize,0)});
+      bulletWorldNode.pub.addShape('Ground',FABRIC.RT.BulletShape.createBox(new FABRIC.RT.Vec3(options.groundPlanseSize,options.groundPlanseSize,options.groundPlanseSize)));
       bulletWorldNode.pub.addRigidBody('Ground',new FABRIC.RT.BulletRigidBody({mass: 0, transform: groundTrans}),'Ground');
       
       if(options.createGroundPlaneGrid){
         var instanceNode = scene.constructNode('Instance', {
           geometryNode: scene.constructNode('Grid', {
-            size_x: 40.0,
-            size_z: 40.0,
+            size_x: options.groundPlanseSize,
+            size_z: options.groundPlanseSize,
             sections_x: 20,
             sections_z: 20 }).pub,
           materialNode: scene.constructNode('FlatMaterial').pub

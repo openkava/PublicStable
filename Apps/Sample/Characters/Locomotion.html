@@ -103,17 +103,17 @@ $(document).ready(function() {
   }));
   
   var camera = scene.constructNode('TargetCamera', {
-      position: new FABRIC.RT.Vec3(30, 22, 30).multiplyScalar(6.5),
-      target: new FABRIC.RT.Vec3(0, -5, 0),
+      position: new FABRIC.RT.Vec3(3, 2.2, 3).multiplyScalar(6.5),
+      target: new FABRIC.RT.Vec3(0, -0.5, 0),
       roll: 0,
-      nearDistance: 10.0,
-      farDistance: 600
+      nearDistance: 1.0,
+      farDistance: 60
     });
   scene.constructNode('CameraManipulator', { targetNode: camera });
   viewport.setCameraNode(camera);
   
   var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) });
-  
+  /*
     // create the scene grid
   scene.constructNode('Instance', {
     geometryNode: scene.constructNode('Grid', {
@@ -123,9 +123,13 @@ $(document).ready(function() {
         sections_z: 20 }),
     materialNode: scene.constructNode('FlatMaterial')
   });
+  */
   
   // create a simulation world
-  var bulletWorldNode = scene.constructNode('BulletWorldNode', { createGroundPlaneGrid:false } );
+  var bulletWorldNode = scene.constructNode('BulletWorldNode', {
+    createGroundPlaneGrid:true,
+    groundPlanseSize: 30,
+  } );
   
   // add a box shape
   bulletWorldNode.addShape('Box',new FABRIC.RT.BulletShape.createBox());
@@ -147,9 +151,9 @@ $(document).ready(function() {
     shapeName: 'Box',
     rigidBody: new FABRIC.RT.BulletRigidBody({
       transform: FABRIC.RT.xfo({
-        tr: new FABRIC.RT.Vec3(-120,10,60),
+        tr: new FABRIC.RT.Vec3(-12,1,6),
         ori: new FABRIC.RT.Quat().setFromAxisAndAngle(new FABRIC.RT.Vec3(0,1,0),0.0),
-        sc: new FABRIC.RT.Vec3(40.0,10,40),
+        sc: new FABRIC.RT.Vec3(4.0,1,4),
       }),
       mass: 0.0
     })
@@ -168,9 +172,9 @@ $(document).ready(function() {
     shapeName: 'Box',
     rigidBody: new FABRIC.RT.BulletRigidBody({
       transform: FABRIC.RT.xfo({
-        tr: new FABRIC.RT.Vec3(-120,5,10),
+        tr: new FABRIC.RT.Vec3(-12,0.5,1),
         ori: new FABRIC.RT.Quat().setFromAxisAndAngle(new FABRIC.RT.Vec3(0,1,0),0.0),
-        sc: new FABRIC.RT.Vec3(40.0,5,40),
+        sc: new FABRIC.RT.Vec3(4.0,0.5,4),
       }),
       mass: 0.0
     })
@@ -188,9 +192,9 @@ $(document).ready(function() {
     shapeName: 'Box',
     rigidBody: new FABRIC.RT.BulletRigidBody({
       transform: FABRIC.RT.xfo({
-        tr: new FABRIC.RT.Vec3(-53,7,60),
+        tr: new FABRIC.RT.Vec3(-5.5,0,6),
         ori: new FABRIC.RT.Quat().setFromAxisAndAngle(new FABRIC.RT.Vec3(0,0,1),-0.3),
-        sc: new FABRIC.RT.Vec3(30.0,1,40),
+        sc: new FABRIC.RT.Vec3(3,1,4),
       }),
       mass: 0.0
     })
@@ -208,30 +212,27 @@ $(document).ready(function() {
   var locomotionControllerNode;
   switch(rigName){
   case 'walker':
-    var maxLinearVelocity = new FABRIC.RT.Vec2(80.0, 80.0);
+    var maxLinearVelocity = new FABRIC.RT.Vec2(80, 80);
     var maxLinearAcceleration = 15.0;
-    var maxAngularVelocity = new FABRIC.RT.Euler(0.0,0.05,0.0);
+    var maxAngularVelocity = new FABRIC.RT.Euler(0,0.05,0);
     break;
   case 'centipede':
-    var maxLinearVelocity = new FABRIC.RT.Vec2(80.0, 80.0);
+    var maxLinearVelocity = new FABRIC.RT.Vec2(80, 80);
     var maxLinearAcceleration = 15.0;
-    var maxAngularVelocity = new FABRIC.RT.Euler(0.0,1.0,0.0);
+    var maxAngularVelocity = new FABRIC.RT.Euler(0,1,0);
     var numTrailSegments = 12;
     break;
   case 'marama':
-    var maxLinearVelocity = new FABRIC.RT.Vec2(40.0, 40.0);
-    var maxLinearAcceleration = 2.0;
-    var maxAngularVelocity = new FABRIC.RT.Euler(0.0,0.5,0.0);
     var locomotionControllerNode = scene.constructNode('LocomotionCharacterController', {
         cameraNode: camera,
-        maxLinearVelocity: new FABRIC.RT.Vec2(40.0, 40.0),
-        maxLinearAcceleration: 2.0,
-        maxAngularVelocity:  new FABRIC.RT.Euler(0.0,0.5,0.0),
+        maxLinearVelocity: new FABRIC.RT.Vec2(4, 4),
+        maxLinearAcceleration: 0.3,
+        maxAngularVelocity:  new FABRIC.RT.Euler(0, 4, 0),
         bulletWorldNode: bulletWorldNode,
         numTrailSegments: 0,
-        gravity: -15.0,
-        comHeight: 18,
-        circleSize: 6
+        gravity: -1.50,
+        comHeight: 1.8,
+        circleSize: 0.6
       });
     break;
   }
