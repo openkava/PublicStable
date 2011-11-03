@@ -51,6 +51,7 @@ FABRIC_EXT_KL_STRUCT( BulletWorld, {
   KL::Size substeps;
   KL::Boolean hit;
   KL::Vec3 hitPosition;
+  KL::Vec3 hitNormal;
 } );
 
 FABRIC_EXT_KL_STRUCT( BulletShape, {
@@ -401,10 +402,12 @@ FABRIC_EXT_EXPORT void FabricBULLET_World_Raycast(
           }
         }
       }
-      btVector3 position = fromVec + (toVec-fromVec) * callback.m_closestHitFraction;
-      world.hitPosition.x = position.getX();
-      world.hitPosition.y = position.getY();
-      world.hitPosition.z = position.getZ();
+      world.hitPosition.x = callback.m_hitPointWorld.getX();
+      world.hitPosition.y = callback.m_hitPointWorld.getY();
+      world.hitPosition.z = callback.m_hitPointWorld.getZ();
+      world.hitNormal.x = callback.m_hitNormalWorld.getX();
+      world.hitNormal.y = callback.m_hitNormalWorld.getY();
+      world.hitNormal.z = callback.m_hitNormalWorld.getZ();
     }
 #ifndef NDEBUG
     printf("  { FabricBULLET } : FabricBULLET_World_Raycast completed.\n");
