@@ -12,6 +12,11 @@
 
 namespace Fabric
 {
+  namespace Util
+  {
+    class JSONArrayGenerator;
+  };
+  
   namespace LIB
   {
     class Value;
@@ -39,12 +44,12 @@ namespace Fabric
       void registerViewPort( std::string const &name, ViewPort *viewPort );
       void unregisterViewPort( std::string const &name, ViewPort *viewPort );
       
-      virtual RC::ConstHandle<JSON::Value> jsonRoute( std::vector<std::string> const &dst, size_t dstOffset, std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg );
-      virtual RC::ConstHandle<JSON::Value> jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg );
-      virtual RC::Handle<JSON::Object> jsonDesc() const;
+      virtual void jsonRoute( std::vector<std::string> const &dst, size_t dstOffset, std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
+      virtual void jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
+      virtual void jsonDesc( Util::JSONGenerator &resultJG ) const;
       
-      RC::ConstHandle<JSON::Value> jsonRouteViewPorts( std::vector<std::string> const &dst, size_t dstOffset, std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg );
-      RC::Handle<JSON::Object> jsonDescViewPorts() const;
+      void jsonRouteViewPorts( std::vector<std::string> const &dst, size_t dstOffset, std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
+      void jsonDescViewPorts( Util::JSONGenerator &resultJG ) const;
 
       RC::Handle<IOManager> getIOManager() const;
 

@@ -42,7 +42,7 @@ namespace Fabric
       std::vector<llvm::Type const *> memberLLVMTypes;
       memberLLVMTypes.push_back( llvmSizeTy ); // offset
       memberLLVMTypes.push_back( llvmSizeTy ); // size
-      memberLLVMTypes.push_back( m_variableArrayAdapter->llvmRType( context ) ); // variableArrayBits
+      memberLLVMTypes.push_back( m_variableArrayAdapter->llvmRawType( context ) ); // variableArrayBits
       llvm::Type const *implType = llvm::StructType::get( context->getLLVMContext(), memberLLVMTypes, true );
       
       return implType;
@@ -72,48 +72,6 @@ namespace Fabric
       m_variableArrayAdapter->llvmCompileToModule( moduleBuilder );
       
       static const bool buildFunctions = true;
-      
-      {
-        std::vector< FunctionParam > params;
-        params.push_back( FunctionParam( "array", this, CG::USAGE_RVALUE ) );
-        FunctionBuilder functionBuilder( moduleBuilder, "__"+getCodeName()+"__Retain", ExprType(), params, false );
-        if ( buildFunctions )
-        {
-          BasicBlockBuilder basicBlockBuilder( functionBuilder );
-
-          llvm::Value *rValue = functionBuilder[0];
-
-          llvm::BasicBlock *entryBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "entry" );
-          
-          basicBlockBuilder->SetInsertPoint( entryBB );
-          llvm::Value *slicedArayLValue = llvmRValueToLValue( basicBlockBuilder, rValue );
-          llvm::Value *variableArrayLValue = basicBlockBuilder->CreateConstGEP2_32( slicedArayLValue, 0, 2 );
-          llvm::Value *variableArrayRValue = m_variableArrayAdapter->llvmLValueToRValue( basicBlockBuilder, variableArrayLValue );
-          m_variableArrayAdapter->llvmRetain( basicBlockBuilder, variableArrayRValue );
-          basicBlockBuilder->CreateRetVoid();
-        }
-      }
-
-      {
-        std::vector< FunctionParam > params;
-        params.push_back( FunctionParam( "array", this, CG::USAGE_RVALUE ) );
-        FunctionBuilder functionBuilder( moduleBuilder, "__"+getCodeName()+"__Release", ExprType(), params, false );
-        if ( buildFunctions )
-        {
-          BasicBlockBuilder basicBlockBuilder( functionBuilder );
-
-          llvm::Value *rValue = functionBuilder[0];
-
-          llvm::BasicBlock *entryBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "entry" );
-          
-          basicBlockBuilder->SetInsertPoint( entryBB );
-          llvm::Value *slicedArayLValue = llvmRValueToLValue( basicBlockBuilder, rValue );
-          llvm::Value *variableArrayLValue = basicBlockBuilder->CreateConstGEP2_32( slicedArayLValue, 0, 2 );
-          llvm::Value *variableArrayRValue = m_variableArrayAdapter->llvmLValueToRValue( basicBlockBuilder, variableArrayLValue );
-          m_variableArrayAdapter->llvmRelease( basicBlockBuilder, variableArrayRValue );
-          basicBlockBuilder->CreateRetVoid();
-        }
-      }
 
       {
         std::vector< FunctionParam > params;
@@ -131,11 +89,11 @@ namespace Fabric
           llvm::BasicBlock *entryBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "entry" );
           
           basicBlockBuilder->SetInsertPoint( entryBB );
-          llvm::Value *offsetLValue = basicBlockBuilder->CreateConstGEP2_32( slicedArayLValue, 0, 0 );
+          llvm::Value *offsetLValue = basicBlockBuilder->CreateStructGEP( slicedArayLValue, 0 );
           sizeAdapter->llvmDefaultAssign( basicBlockBuilder, offsetLValue, sizeAdapter->llvmConst( context, 0 ) );
-          llvm::Value *sizeLValue = basicBlockBuilder->CreateConstGEP2_32( slicedArayLValue, 0, 1 );
+          llvm::Value *sizeLValue = basicBlockBuilder->CreateStructGEP( slicedArayLValue, 1 );
           sizeAdapter->llvmDefaultAssign( basicBlockBuilder, sizeLValue, sizeRValue );
-          llvm::Value *variableArrayLValue = basicBlockBuilder->CreateConstGEP2_32( slicedArayLValue, 0, 2 );
+          llvm::Value *variableArrayLValue = basicBlockBuilder->CreateStructGEP( slicedArayLValue, 2 );
           m_variableArrayAdapter->llvmInit( basicBlockBuilder, variableArrayLValue );
           m_variableArrayAdapter->llvmCallResize( basicBlockBuilder, variableArrayLValue, sizeRValue );
           basicBlockBuilder->CreateRetVoid();
@@ -175,19 +133,18 @@ namespace Fabric
           basicBlockBuilder->CreateCondBr( offsetPlusSizeInRangeCond, offsetPlusSizeInRangeBB, offsetPlusSizeOutOfRangeBB );
           
           basicBlockBuilder->SetInsertPoint( offsetPlusSizeInRangeBB );
-          llvm::Value *srcOffsetLValue = basicBlockBuilder->CreateConstGEP2_32( srcSlicedArrayRValue, 0, 0 );
+          llvm::Value *srcOffsetLValue = basicBlockBuilder->CreateStructGEP( srcSlicedArrayRValue, 0 );
           llvm::Value *srcOffsetRValue = sizeAdapter->llvmLValueToRValue( basicBlockBuilder, srcOffsetLValue );
           llvm::Value *combinedOffsetRValue = basicBlockBuilder->CreateAdd( srcOffsetRValue, offsetRValue );
-          llvm::Value *offsetLValue = basicBlockBuilder->CreateConstGEP2_32( dstSlicedArrayLValue, 0, 0 );
+          llvm::Value *offsetLValue = basicBlockBuilder->CreateStructGEP( dstSlicedArrayLValue, 0 );
           sizeAdapter->llvmDefaultAssign( basicBlockBuilder, offsetLValue, combinedOffsetRValue );
-          llvm::Value *sizeLValue = basicBlockBuilder->CreateConstGEP2_32( dstSlicedArrayLValue, 0, 1 );
+          llvm::Value *sizeLValue = basicBlockBuilder->CreateStructGEP( dstSlicedArrayLValue, 1 );
           sizeAdapter->llvmDefaultAssign( basicBlockBuilder, sizeLValue, sizeRValue );
           llvm::Value *srcSlicedArrayLValue = llvmRValueToLValue( basicBlockBuilder, srcSlicedArrayRValue );
-          llvm::Value *srcVariableArrayLValue = basicBlockBuilder->CreateConstGEP2_32( srcSlicedArrayLValue, 0, 2 );
+          llvm::Value *srcVariableArrayLValue = basicBlockBuilder->CreateStructGEP( srcSlicedArrayLValue, 2 );
           llvm::Value *srcVariableArrayRValue = m_variableArrayAdapter->llvmLValueToRValue( basicBlockBuilder, srcVariableArrayLValue );
-          llvm::Value *dstVariableArrayLValue = basicBlockBuilder->CreateConstGEP2_32( dstSlicedArrayLValue, 0, 2 );
+          llvm::Value *dstVariableArrayLValue = basicBlockBuilder->CreateStructGEP( dstSlicedArrayLValue, 2 );
           m_variableArrayAdapter->llvmInit( basicBlockBuilder, dstVariableArrayLValue );
-          m_variableArrayAdapter->llvmRetain( basicBlockBuilder, srcVariableArrayRValue );
           m_variableArrayAdapter->llvmDefaultAssign( basicBlockBuilder, dstVariableArrayLValue, srcVariableArrayRValue );
           basicBlockBuilder->CreateRetVoid();
 
@@ -221,17 +178,17 @@ namespace Fabric
           
           basicBlockBuilder->SetInsertPoint( entryBB );
           llvm::Value *srcLValue = llvmRValueToLValue( basicBlockBuilder, srcRValue );
-          llvm::Value *srcOffsetLValue = basicBlockBuilder->CreateConstGEP2_32( srcLValue, 0, 0 );
+          llvm::Value *srcOffsetLValue = basicBlockBuilder->CreateStructGEP( srcLValue, 0 );
           llvm::Value *srcOffsetRValue = sizeAdapter->llvmLValueToRValue( basicBlockBuilder, srcOffsetLValue );
-          llvm::Value *dstOffsetLValue = basicBlockBuilder->CreateConstGEP2_32( dstLValue, 0, 0 );
+          llvm::Value *dstOffsetLValue = basicBlockBuilder->CreateStructGEP( dstLValue, 0 );
           sizeAdapter->llvmDefaultAssign( basicBlockBuilder, dstOffsetLValue, srcOffsetRValue );
-          llvm::Value *srcSizeLValue = basicBlockBuilder->CreateConstGEP2_32( srcLValue, 0, 1 );
+          llvm::Value *srcSizeLValue = basicBlockBuilder->CreateStructGEP( srcLValue, 1 );
           llvm::Value *srcSizeRValue = sizeAdapter->llvmLValueToRValue( basicBlockBuilder, srcSizeLValue );
-          llvm::Value *dstSizeLValue = basicBlockBuilder->CreateConstGEP2_32( dstLValue, 0, 1 );
+          llvm::Value *dstSizeLValue = basicBlockBuilder->CreateStructGEP( dstLValue, 1 );
           sizeAdapter->llvmDefaultAssign( basicBlockBuilder, dstSizeLValue, srcSizeRValue );
-          llvm::Value *srcVariableArrayLValue = basicBlockBuilder->CreateConstGEP2_32( srcLValue, 0, 2 );
+          llvm::Value *srcVariableArrayLValue = basicBlockBuilder->CreateStructGEP( srcLValue, 2 );
           llvm::Value *srcVariableArrayRValue = m_variableArrayAdapter->llvmLValueToRValue( basicBlockBuilder, srcVariableArrayLValue );
-          llvm::Value *dstVariableArrayLValue = basicBlockBuilder->CreateConstGEP2_32( dstLValue, 0, 2 );
+          llvm::Value *dstVariableArrayLValue = basicBlockBuilder->CreateStructGEP( dstLValue, 2 );
           m_variableArrayAdapter->llvmDefaultAssign( basicBlockBuilder, dstVariableArrayLValue, srcVariableArrayRValue );
           basicBlockBuilder->CreateRetVoid();
         }
@@ -282,7 +239,6 @@ namespace Fabric
             errorDescRValue
             );
           llvm::Value *defaultRValue = m_memberAdapter->llvmDefaultRValue( basicBlockBuilder );
-          m_memberAdapter->llvmRetain( basicBlockBuilder, defaultRValue );
           basicBlockBuilder->CreateRet( defaultRValue );
         }
       }
@@ -367,8 +323,7 @@ namespace Fabric
           BasicBlockBuilder basicBlockBuilder( functionBuilder );
           basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
           llvm::Value *arrayLValue = llvmRValueToLValue( basicBlockBuilder, arrayRValue );
-          llvm::Value *stringRValue = stringAdapter->llvmCallCast( basicBlockBuilder, this, arrayLValue );
-          stringAdapter->llvmAssign( basicBlockBuilder, stringLValue, stringRValue );
+          stringAdapter->llvmCallCast( basicBlockBuilder, this, arrayLValue, stringLValue );
           basicBlockBuilder->CreateRetVoid();
         }
       }
@@ -469,14 +424,6 @@ namespace Fabric
         llvmLocationConstStringRValue( basicBlockBuilder, constStringAdapter, location )
         );
     }
-    
-    void SlicedArrayAdapter::llvmRelease( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const
-    {
-      std::vector< FunctionParam > params;
-      params.push_back( FunctionParam( "array", this, CG::USAGE_RVALUE ) );
-      FunctionBuilder functionBuilder( basicBlockBuilder.getModuleBuilder(), "__"+getCodeName()+"__Release", ExprType(), params, false );
-      basicBlockBuilder->CreateCall( functionBuilder.getLLVMFunction(), rValue );
-    }
 
     void SlicedArrayAdapter::llvmDefaultAssign( BasicBlockBuilder &basicBlockBuilder, llvm::Value *dstLValue, llvm::Value *srcRValue ) const
     {
@@ -487,12 +434,10 @@ namespace Fabric
       basicBlockBuilder->CreateCall2( functionBuilder.getLLVMFunction(), dstLValue, srcRValue );
     }
 
-    void SlicedArrayAdapter::llvmRetain( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const
+    void SlicedArrayAdapter::llvmDisposeImpl( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *lValue ) const
     {
-      std::vector< FunctionParam > params;
-      params.push_back( FunctionParam( "array", this, CG::USAGE_RVALUE ) );
-      FunctionBuilder functionBuilder( basicBlockBuilder.getModuleBuilder(), "__"+getCodeName()+"__Retain", ExprType(), params, false );
-      basicBlockBuilder->CreateCall( functionBuilder.getLLVMFunction(), rValue );
+      llvm::Value *vaLValue = basicBlockBuilder->CreateStructGEP( lValue, 2 );
+      m_variableArrayAdapter->llvmDispose( basicBlockBuilder, vaLValue );
     }
     
     llvm::Constant *SlicedArrayAdapter::llvmDefaultValue( BasicBlockBuilder &basicBlockBuilder ) const
@@ -501,7 +446,7 @@ namespace Fabric
       std::vector<llvm::Constant *> elementDefaultRValues;
       elementDefaultRValues.push_back( sizeAdapter->llvmDefaultValue( basicBlockBuilder ) );
       elementDefaultRValues.push_back( sizeAdapter->llvmDefaultValue( basicBlockBuilder ) );
-      elementDefaultRValues.push_back( m_variableArrayAdapter->llvmDefaultValue( basicBlockBuilder ) );
+      elementDefaultRValues.push_back( llvm::ConstantPointerNull::get( static_cast<llvm::PointerType const *>( m_variableArrayAdapter->llvmRType( basicBlockBuilder.getContext() ) ) ) );
       return llvm::ConstantStruct::get( (llvm::StructType const *)llvmRawType( basicBlockBuilder.getContext() ), elementDefaultRValues );
     }
       

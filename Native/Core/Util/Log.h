@@ -20,7 +20,7 @@ inline void FABRIC_WRITE_CSTR( char const *data, size_t length )
 {
   for (;;)
   {
-    int result = write( 1, data, length );
+    int result = write( 2, data, length );
     if ( result != EINTR )
       break;
   }

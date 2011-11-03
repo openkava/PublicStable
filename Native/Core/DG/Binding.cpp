@@ -9,6 +9,7 @@
 #include <Fabric/Core/DG/Context.h>
 #include <Fabric/Core/RT/Manager.h>
 #include <Fabric/Core/CG/Manager.h>
+#include <Fabric/Core/Util/JSONGenerator.h>
 #include <Fabric/Base/JSON/Null.h>
 #include <Fabric/Base/JSON/String.h>
 #include <Fabric/Base/JSON/Object.h>
@@ -151,22 +152,23 @@ namespace Fabric
       m_bindingLists.erase( it );
     }
       
-    RC::ConstHandle<JSON::Value> Binding::jsonDesc() const
+    void Binding::jsonDesc( Util::JSONGenerator &resultJG ) const
     {
-      RC::ConstHandle<JSON::Value> parameterLayoutJSONValue;
-      if ( m_prototype )
-        parameterLayoutJSONValue = m_prototype->jsonDesc();
-      else parameterLayoutJSONValue = JSON::Null::Create();
+      Util::JSONObjectGenerator resultJOG = resultJG.makeObject();
       
-      RC::ConstHandle<JSON::Value> operatorJSONValue;
-      if ( m_operator )
-        operatorJSONValue = JSON::String::Create( m_operator->getName() );
-      else operatorJSONValue = JSON::Null::Create();
-    
-      RC::Handle<JSON::Object> result = JSON::Object::Create();
-      result->set( "parameterLayout", parameterLayoutJSONValue );
-      result->set( "operator", operatorJSONValue );
-      return result;
+      {
+        Util::JSONGenerator parameterLayoutJG = resultJOG.makeMember( "parameterLayout", 15 );
+        if ( m_prototype )
+          m_prototype->jsonDesc( parameterLayoutJG );
+        else parameterLayoutJG.makeNull();
+      }
+      
+      {
+        Util::JSONGenerator operatorJG = resultJOG.makeMember( "operator", 8 );
+        if ( m_operator )
+          operatorJG.makeString( m_operator->getName() );
+        else operatorJG.makeNull();
+      }
     }
     
     bool Binding::getMainThreadOnly() const

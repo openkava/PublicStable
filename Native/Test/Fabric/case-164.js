@@ -1,5 +1,4 @@
-FC = createFabricClient();
-F = FC.wrapFabricClient(FC);
+F = require('Fabric').createClient();
 
 operator = F.DG.createOperator("op");
 operator.setEntryFunctionName("entry");
@@ -9,7 +8,7 @@ operator entry( io Size foo ) {\n\
 }\n\
 ");
 if (operator.getDiagnostics().length > 0 )
-  printDeep(operator.getDiagnostics());
+  console.log(operator.getDiagnostics());
 
 binding = F.DependencyGraph.createBinding();
 binding.setOperator(operator);
@@ -20,8 +19,7 @@ node.addMember('bar', 'Size');
 node.setData('bar', 0, 42);
 node.bindings.append(binding);
 if (node.getErrors().length > 0)
-  printDeep(node.getErrors());
+  console.log(node.getErrors());
 node.evaluate();
 
 F.flush();
-FC.dispose();

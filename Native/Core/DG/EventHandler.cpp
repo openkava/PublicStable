@@ -23,7 +23,14 @@ namespace Fabric
     RC::Handle<EventHandler> EventHandler::Create( std::string const &name, RC::Handle<Context> const &context )
     {
       RC::Handle<EventHandler> eventHandler = new EventHandler( name, context );
-      eventHandler->notifyDelta( eventHandler->jsonDesc() );
+
+      Util::SimpleString json;
+      {
+        Util::JSONGenerator jg( &json );
+        eventHandler->jsonDesc( jg );
+      }
+      eventHandler->jsonNotifyDelta( json );
+      
       return eventHandler;
     }
     
@@ -102,7 +109,12 @@ namespace Fabric
           
       markForRecompile();
       
-      notifyDelta( "childEventHandlers", jsonDescChildEventHandlers() );
+      Util::SimpleString json;
+      {
+        Util::JSONGenerator jg( &json );
+        jsonDescChildEventHandlers( jg );
+      }
+      jsonNotifyMemberDelta( "childEventHandlers", 18, json );
     }
     
     EventHandler::ChildEventHandlers const &EventHandler::getChildEventHandlers() const
@@ -130,7 +142,12 @@ namespace Fabric
           
       markForRecompile();
       
-      notifyDelta( "childEventHandlers", jsonDescChildEventHandlers() );
+      Util::SimpleString json;
+      {
+        Util::JSONGenerator jg( &json );
+        jsonDescChildEventHandlers( jg );
+      }
+      jsonNotifyMemberDelta( "childEventHandlers", 18, json );
     }
 
     EventHandler::ParentEventHandlers const &EventHandler::getParentEventHandlers() const
@@ -154,7 +171,12 @@ namespace Fabric
           
         markForRecompile();
         
-        notifyDelta( "scopes", jsonDescScopes() );
+        Util::SimpleString json;
+        {
+          Util::JSONGenerator jg( &json );
+          jsonDescScopes( jg );
+        }
+        jsonNotifyMemberDelta( "scopes", 6, json );
       }
     }
 
@@ -171,7 +193,12 @@ namespace Fabric
         
       markForRecompile();
       
-      notifyDelta( "scopes", jsonDescScopes() );
+      Util::SimpleString json;
+      {
+        Util::JSONGenerator jg( &json );
+        jsonDescScopes( jg );
+      }
+      jsonNotifyMemberDelta( "scopes", 6, json );
     }
 
     EventHandler::Bindings const &EventHandler::getScopes() const
@@ -189,8 +216,15 @@ namespace Fabric
       if ( bindingName != m_bindingName )
       {
         m_bindingName = bindingName;
+
         markForRecompile();
-        notifyDelta( "bindingName", JSON::String::Create( m_bindingName ) );
+        
+        Util::SimpleString json;
+        {
+          Util::JSONGenerator jg( &json );
+          jsonDescBindingName( jg );
+        }
+        jsonNotifyMemberDelta( "bindingName", 11, json );
       }
     }
     
@@ -432,120 +466,138 @@ namespace Fabric
     {
     }
       
-    RC::ConstHandle<JSON::Value> EventHandler::jsonDescChildEventHandlers() const
+    void EventHandler::jsonDescChildEventHandlers( Util::JSONGenerator &resultJG ) const
     {
-      RC::Handle<JSON::Array> childEventHandlersJSONArray = JSON::Array::Create();
+      Util::JSONArrayGenerator childEventHandlersJAG = resultJG.makeArray();
       for ( ChildEventHandlers::const_iterator it=m_childEventHandlers.begin(); it!=m_childEventHandlers.end(); ++it )
       {
         RC::Handle<EventHandler> const &childEventHandler = *it;
-        childEventHandlersJSONArray->push_back( JSON::String::Create( childEventHandler->getName() ) );
+        Util::JSONGenerator childEventHandlerJG = childEventHandlersJAG.makeElement();
+        childEventHandlerJG.makeString( childEventHandler->getName() );
       }
-      return childEventHandlersJSONArray;
+    }
+      
+    void EventHandler::jsonDesc( Util::JSONGenerator &resultJG ) const
+    {
+      Container::jsonDesc( resultJG );
     }
 
-    RC::Handle<JSON::Object> EventHandler::jsonDesc() const
+    void EventHandler::jsonDesc( Util::JSONObjectGenerator &resultJOG ) const
     {
-      RC::Handle<JSON::Object> result = Container::jsonDesc();
+      Container::jsonDesc( resultJOG );
       
-      result->set( "childEventHandlers", jsonDescChildEventHandlers() );
-      result->set( "scopes", jsonDescScopes() );
-      result->set( "scopeName", JSON::String::Create( m_bindingName ) );
-      result->set( "preDescendBindings", m_preDescendBindings->jsonDesc() );
-      result->set( "postDescendBindings", m_postDescendBindings->jsonDesc() );
+      {
+        Util::JSONGenerator memberJG = resultJOG.makeMember( "childEventHandlers", 18 );
+        jsonDescChildEventHandlers( memberJG );
+      }
       
-      RC::ConstHandle<JSON::Value> selectorJSONValue;
+      {
+        Util::JSONGenerator memberJG = resultJOG.makeMember( "scopes", 6 );
+        jsonDescScopes( memberJG );
+      }
+      
+      {
+        Util::JSONGenerator memberJG = resultJOG.makeMember( "scopeName", 9 );
+        memberJG.makeString( m_bindingName );
+      }
+      
+      {
+        Util::JSONGenerator memberJG = resultJOG.makeMember( "preDescendBindings", 18 );
+        m_preDescendBindings->jsonDesc( memberJG );
+      }
+      
+      {
+        Util::JSONGenerator memberJG = resultJOG.makeMember( "postDescendBindings", 19 );
+        m_preDescendBindings->jsonDesc( memberJG );
+      }
+      
+      Util::JSONGenerator selectorGenerator = resultJOG.makeMember( "selector", 8 );
       if ( !m_selectBinding && m_selectNodeBindingName.empty() )
-        selectorJSONValue = JSON::Null::Create();
+        selectorGenerator.makeNull();
       else
       {
-        RC::ConstHandle<JSON::Value> selectorBindingJSONValue;
-        if ( m_selectBinding )
-          selectorBindingJSONValue = m_selectBinding->jsonDesc();
-        else selectorBindingJSONValue = JSON::Null::Create();
+        Util::JSONObjectGenerator selectorGeneratorObject = selectorGenerator.makeObject();
         
-        RC::ConstHandle<JSON::Value> selectorTargetScopeJSONValue;
-        if ( !m_selectNodeBindingName.empty() )
-          selectorTargetScopeJSONValue = JSON::String::Create( m_selectNodeBindingName );
-        else selectorTargetScopeJSONValue = JSON::Null::Create();
+        {
+          Util::JSONGenerator bindingJG = selectorGeneratorObject.makeMember( "binding", 7 );
+          if ( m_selectBinding )
+            m_selectBinding->jsonDesc( bindingJG );
+          else bindingJG.makeNull();
+        }
         
-        RC::Handle<JSON::Object> selectorJSONObject = JSON::Object::Create();
-        selectorJSONObject->set( "binding", selectorBindingJSONValue );
-        selectorJSONObject->set( "targetScopeName", selectorTargetScopeJSONValue );
-        selectorJSONValue = selectorJSONObject;
+        {
+          Util::JSONGenerator targetScopeNameJG = selectorGeneratorObject.makeMember( "targetScopeName", 15 );
+          if ( !m_selectNodeBindingName.empty() )
+            targetScopeNameJG.makeString( m_selectNodeBindingName );
+          else targetScopeNameJG.makeNull();
+        }
       }
-      result->set( "selector", selectorJSONValue );
-
-      return result;
     }
       
-    RC::ConstHandle<JSON::Value> EventHandler::jsonDescType() const
+    void EventHandler::jsonDescType( Util::JSONGenerator &resultJG ) const
     {
-      static RC::ConstHandle<JSON::Value> result = JSON::String::Create( "EventHandler" );
-      return result;
+      resultJG.makeString( "EventHandler", 12 );
     }
       
-    RC::Handle<JSON::Object> EventHandler::jsonDescScopes() const
+    void EventHandler::jsonDescScopes( Util::JSONGenerator &resultJG ) const
     {
-      RC::Handle<JSON::Object> result = JSON::Object::Create();
+      Util::JSONObjectGenerator resultJSONObject = resultJG.makeObject();
       for ( ExternalScopes::const_iterator it=m_bindings.begin(); it!=m_bindings.end(); ++it )
       {
         std::string const &name = it->first;
         RC::Handle<Node> const &node = it->second;
-        result->set( name, JSON::String::Create( node->getName() ) );
+        Util::JSONGenerator memberJG = resultJSONObject.makeMember( name );
+        memberJG.makeString( node->getName() );
       }
-      return result;
+    }
+      
+    void EventHandler::jsonDescBindingName( Util::JSONGenerator &resultJG ) const
+    {
+      resultJG.makeString( m_bindingName );
     }
 
-    RC::ConstHandle<JSON::Value> EventHandler::jsonRoute( std::vector<std::string> const &dst, size_t dstOffset, std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg )
+    void EventHandler::jsonRoute( std::vector<std::string> const &dst, size_t dstOffset, std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
     {
-      RC::ConstHandle<JSON::Value> result;
-
       if ( dst.size() - dstOffset == 1 && dst[dstOffset] == "preDescendBindings" )
-        result = m_preDescendBindings->jsonRoute( dst, dstOffset+1, cmd, arg );
+        m_preDescendBindings->jsonRoute( dst, dstOffset+1, cmd, arg, resultJAG );
       else if ( dst.size() - dstOffset == 1 && dst[dstOffset] == "postDescendBindings" )
-        result = m_postDescendBindings->jsonRoute( dst, dstOffset+1, cmd, arg );
-      else result = NamedObject::jsonRoute( dst, dstOffset, cmd, arg );
-      
-      return result;
+        m_postDescendBindings->jsonRoute( dst, dstOffset+1, cmd, arg, resultJAG );
+      else NamedObject::jsonRoute( dst, dstOffset, cmd, arg, resultJAG );
     }
       
-    RC::ConstHandle<JSON::Value> EventHandler::jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg )
+    void EventHandler::jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
     {
-      RC::ConstHandle<JSON::Value> result;
-
       if ( cmd == "appendChildEventHandler" )
-        jsonExecAppendChildEventHandler( arg );
+        jsonExecAppendChildEventHandler( arg, resultJAG );
       else if ( cmd == "removeChildEventHandler" )
-        jsonExecRemoveChildEventHandler( arg );
+        jsonExecRemoveChildEventHandler( arg, resultJAG );
       else if ( cmd == "setScope" )
-        jsonExecAddScope( arg );
+        jsonExecAddScope( arg, resultJAG );
       else if ( cmd == "removeScope" )
-        jsonExecRemoveScope( arg );
+        jsonExecRemoveScope( arg, resultJAG );
       else if ( cmd == "setSelector" )
-        jsonExecSetSelector( arg );
+        jsonExecSetSelector( arg, resultJAG );
       else if ( cmd == "setScopeName" )
-        jsonExecSetBindingName( arg );
-      else result = Container::jsonExec( cmd, arg );
-      
-      return result;
+        jsonExecSetBindingName( arg, resultJAG );
+      else Container::jsonExec( cmd, arg, resultJAG );
     }
 
-    void EventHandler::jsonExecCreate( RC::ConstHandle<JSON::Value> const &arg, RC::Handle<Context> const &context )
+    void EventHandler::jsonExecCreate( RC::ConstHandle<JSON::Value> const &arg, RC::Handle<Context> const &context, Util::JSONArrayGenerator &resultJAG )
     {
       Create( arg->toString()->value(), context );
     }
     
-    void EventHandler::jsonExecAppendChildEventHandler( RC::ConstHandle<JSON::Value> const &arg )
+    void EventHandler::jsonExecAppendChildEventHandler( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
     {
       appendChildEventHandler( m_context->getEventHandler( arg->toString()->value() ) );
     }
     
-    void EventHandler::jsonExecRemoveChildEventHandler( RC::ConstHandle<JSON::Value> const &arg )
+    void EventHandler::jsonExecRemoveChildEventHandler( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
     {
       removeChildEventHandler( m_context->getEventHandler( arg->toString()->value() ) );
     }
     
-    void EventHandler::jsonExecAddScope( RC::ConstHandle<JSON::Value> const &arg )
+    void EventHandler::jsonExecAddScope( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
     {
       RC::ConstHandle<JSON::Object> argJSONObject = arg->toObject();
       
@@ -572,14 +624,14 @@ namespace Fabric
       setScope( name, node );
     }
     
-    void EventHandler::jsonExecRemoveScope( RC::ConstHandle<JSON::Value> const &arg )
+    void EventHandler::jsonExecRemoveScope( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
     {
       std::string scopeName = arg->toString()->value();
       
       removeScope( scopeName );
     }
     
-    void EventHandler::jsonExecSetSelector( RC::ConstHandle<JSON::Value> const &arg )
+    void EventHandler::jsonExecSetSelector( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
     {
       RC::ConstHandle<JSON::Object> argJSONObject = arg->toObject();
       
@@ -632,7 +684,7 @@ namespace Fabric
       setSelector( targetName, binding );
     }
     
-    void EventHandler::jsonExecSetBindingName( RC::ConstHandle<JSON::Value> const &arg )
+    void EventHandler::jsonExecSetBindingName( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
     {
       setScopeName( arg->toString()->value() );
     }

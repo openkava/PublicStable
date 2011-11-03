@@ -12,6 +12,7 @@
 #include <Fabric/Base/JSON/Object.h>
 #include <Fabric/Core/Util/Encoder.h>
 #include <Fabric/Base/Exception.h>
+#include <Fabric/Core/Util/JSONGenerator.h>
 
 namespace Fabric
 {
@@ -73,6 +74,11 @@ namespace Fabric
       return m_impl->getJSONValue( data );
     }
     
+    void Desc::generateJSON( void const *data, Util::JSONGenerator &jsonGenerator ) const
+    {
+      return m_impl->generateJSON( data, jsonGenerator );
+    }
+    
     void Desc::setDataFromJSONValue( RC::ConstHandle<JSON::Value> const &value, void *data ) const
     {
       m_impl->setDataFromJSONValue( value, data );
@@ -99,13 +105,18 @@ namespace Fabric
       return m_impl->isShallow();
     }
 
-    RC::Handle<JSON::Object> Desc::jsonDesc() const
+    void Desc::jsonDesc( Util::JSONGenerator &resultJG ) const
     {
-      RC::Handle<JSON::Object> result = JSON::Object::Create();
-      result->set( "name", JSON::String::Create( getUserName() ) );
-      result->set( "size", JSON::Integer::Create( getAllocSize() ) );
-      result->set( "defaultValue", getJSONValue( getDefaultData() ) );
-      return result;
+      Util::JSONObjectGenerator resultJOG = resultJG.makeObject();
+      jsonDesc( resultJOG );
+    }
+    
+    void Desc::jsonDesc( Util::JSONObjectGenerator &resultJOG ) const
+    {
+      resultJOG.makeMember( "name" ).makeString( getUserName() );
+      resultJOG.makeMember( "size" ).makeInteger( getAllocSize() );
+      Util::JSONGenerator defaultValueJG = resultJOG.makeMember( "defaultValue" );
+      generateJSON( getDefaultData(), defaultValueJG );
     }
   };
 };

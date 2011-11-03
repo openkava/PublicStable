@@ -13,23 +13,15 @@ namespace Fabric
   {
     SimpleAdapter::SimpleAdapter(
       RC::ConstHandle<Manager> const &manager,
-      RC::ConstHandle<RT::Desc> const &desc
+      RC::ConstHandle<RT::ComparableDesc> const &desc
       )
-      : Adapter( manager, desc, 0 )
-    {
-    }
-
-    void SimpleAdapter::llvmRetain( BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const
+      : ComparableAdapter( manager, desc, 0 )
     {
     }
 
     void SimpleAdapter::llvmDefaultAssign( BasicBlockBuilder &basicBlockBuilder, llvm::Value *dstLValue, llvm::Value *srcRValue ) const
     {
       basicBlockBuilder->CreateStore( srcRValue, dstLValue );
-    }
-    
-    void SimpleAdapter::llvmRelease( BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const
-    {
     }
   };
 };

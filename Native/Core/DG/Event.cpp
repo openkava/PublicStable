@@ -29,7 +29,14 @@ namespace Fabric
     RC::Handle<Event> Event::Create( std::string const &name, RC::Handle<Context> const &context )
     {
       RC::Handle<Event> event = new Event( name, context );
-      event->notifyDelta( event->jsonDesc() );
+      
+      Util::SimpleString json;
+      {
+        Util::JSONGenerator jg( &json );
+        event->jsonDesc( jg );
+      }
+      event->jsonNotifyDelta( json );
+
       return event;
     }
     
@@ -65,7 +72,12 @@ namespace Fabric
       
       markForRecompile();
       
-      notifyDelta( "eventHandlers", jsonDescEventHandlers() );
+      Util::SimpleString json;
+      {
+        Util::JSONGenerator jg( &json );
+        jsonDescEventHandlers( jg );
+      }
+      jsonNotifyMemberDelta( "eventHandlers", 13, json );
     }
     
     Event::EventHandlers const &Event::getEventHandlers() const
@@ -101,7 +113,7 @@ namespace Fabric
       if ( m_context->getLogCollector() )
         m_context->getLogCollector()->flush();
       
-      notify( "didFire" );
+      jsonNotify( "didFire", 7 );
     }
       
     void Event::collectTasksImpl( unsigned generation, MT::TaskGroupStream &taskGroupStream ) const
@@ -182,79 +194,83 @@ namespace Fabric
       return m_runState->canExecute;
     }
       
-    RC::ConstHandle<JSON::Value> Event::jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg )
+    void Event::jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
     {
-      RC::ConstHandle<JSON::Value> result;
-
       if ( cmd == "appendEventHandler" )
-        jsonExecAppendEventHandler( arg );
+        jsonExecAppendEventHandler( arg, resultJAG );
       else if ( cmd == "fire" )
-        jsonExecFire();
+        jsonExecFire( resultJAG );
       else if ( cmd == "select" )
-        result = jsonExecSelect( arg );
-      else result = Container::jsonExec( cmd, arg );
-      
-      return result;
+        jsonExecSelect( arg, resultJAG );
+      else Container::jsonExec( cmd, arg, resultJAG );
     }
 
-    void Event::jsonExecCreate( RC::ConstHandle<JSON::Value> const &arg, RC::Handle<Context> const &context )
+    void Event::jsonExecCreate( RC::ConstHandle<JSON::Value> const &arg, RC::Handle<Context> const &context, Util::JSONArrayGenerator &resultJAG )
     {
       Create( arg->toString()->value(), context );
     }
     
-    void Event::jsonExecAppendEventHandler( RC::ConstHandle<JSON::Value> const &arg )
+    void Event::jsonExecAppendEventHandler( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
     {
       appendEventHandler( m_context->getEventHandler( arg->toString()->value() ) );
     }
     
-    void Event::jsonExecFire()
+    void Event::jsonExecFire( Util::JSONArrayGenerator &resultJAG )
     {
       fire();
     }
     
-    RC::ConstHandle<JSON::Value> Event::jsonExecSelect( RC::ConstHandle<JSON::Value> const &arg )
+    void Event::jsonExecSelect( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
     {
       RC::ConstHandle<RT::Desc> desc = m_context->getRTManager()->getDesc( arg->toString()->value() );
       
       SelectedNodeList selectedNodeList;
       select( desc, selectedNodeList );
       
-      RC::Handle<JSON::Array> result = JSON::Array::Create();
+      Util::JSONGenerator resultJG = resultJAG.makeElement();
+      Util::JSONArrayGenerator elementsJAG = resultJG.makeArray();
       for ( SelectedNodeList::const_iterator it=selectedNodeList.begin(); it!=selectedNodeList.end(); ++it )
       {
         SelectedNode const &selectedNode = *it;
-        RC::Handle<JSON::Object> item = JSON::Object::Create();
-        item->set( "node", JSON::String::Create( selectedNode.node->getName() ) );
-        item->set( "data", desc->getJSONValue( &selectedNode.data[0] ) );
-        result->push_back( item );
+        Util::JSONGenerator elementJG = elementsJAG.makeElement();
+        Util::JSONObjectGenerator elementJOG = elementJG.makeObject();
+        {
+          Util::JSONGenerator nodeJG = elementJOG.makeMember( "node", 4 );
+          nodeJG.makeString( selectedNode.node->getName() );
+        }
+        {
+          Util::JSONGenerator dataJG = elementJOG.makeMember( "data", 4 );
+          desc->generateJSON( &selectedNode.data[0], dataJG );
+        }
       }
-      return result;
+    }
+      
+    void Event::jsonDesc( Util::JSONGenerator &resultJG ) const
+    {
+      Container::jsonDesc( resultJG );
     }
     
-    RC::Handle<JSON::Object> Event::jsonDesc() const
+    void Event::jsonDesc( Util::JSONObjectGenerator &resultJOG ) const
     {
-      RC::Handle<JSON::Object> result = Container::jsonDesc();
-      
-      result->set( "eventHandlers", jsonDescEventHandlers() );
-      
-      return result;
+      Container::jsonDesc( resultJOG );
+      Util::JSONGenerator eventHandlersJG = resultJOG.makeMember( "eventHandlers", 13 );
+      jsonDescEventHandlers( eventHandlersJG );
     }
       
-    RC::ConstHandle<JSON::Value> Event::jsonDescType() const
+    void Event::jsonDescType( Util::JSONGenerator &resultJG ) const
     {
-      static RC::ConstHandle<JSON::Value> result = JSON::String::Create( "Event" );
-      return result;
+      resultJG.makeString( "Event", 5 );
     }
       
-    RC::ConstHandle<JSON::Value> Event::jsonDescEventHandlers() const
+    void Event::jsonDescEventHandlers( Util::JSONGenerator &resultJG ) const
     {
-      RC::Handle<JSON::Array> eventHandlersJSONArray = JSON::Array::Create();
+      Util::JSONArrayGenerator eventHandlersJAG = resultJG.makeArray();
       for ( EventHandlers::const_iterator it=m_eventHandlers.begin(); it!=m_eventHandlers.end(); ++it )
       {
         RC::Handle<EventHandler> const &eventHandler = *it;
-        eventHandlersJSONArray->push_back( JSON::String::Create( eventHandler->getName() ) );
+        Util::JSONGenerator eventHandlerJG = eventHandlersJAG.makeElement();
+        eventHandlerJG.makeString( eventHandler->getName() );
       }
-      return eventHandlersJSONArray;
     }
   };
 };

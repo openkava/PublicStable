@@ -1,5 +1,4 @@
-FC = createFabricClient();
-FABRIC = FC.wrapFabricClient(FC);
+FABRIC = require('Fabric').createClient();
 
 op = FABRIC.DependencyGraph.createOperator( "op" );
 op.setEntryFunctionName('entry');
@@ -16,4 +15,3 @@ node.setData( "input", 17 );
 node.evaluate();
 
 FABRIC.flush();
-FC.dispose();

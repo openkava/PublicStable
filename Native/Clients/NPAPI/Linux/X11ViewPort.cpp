@@ -4,6 +4,7 @@
 
 #include <Fabric/Clients/NPAPI/Linux/X11ViewPort.h>
 #include <Fabric/Clients/NPAPI/Interface.h>
+#include <Fabric/Base/JSON/Encode.h>
 #include <Fabric/Base/JSON/Value.h>
 #include <Fabric/Base/Exception.h>
 #include <Fabric/Clients/NPAPI/Context.h>
@@ -95,13 +96,13 @@ namespace Fabric
     struct ViewPortAndJSONValue
     {
       ViewPort const *viewPort;
-      JSON::Value const *value;
+      Util::SimpleString json;
     };
 
     void X11ViewPort::MenuItemActivateCallback( void *_viewPortAndJSONValue )
     {
       ViewPortAndJSONValue const *viewPortAndJSONValue = (ViewPortAndJSONValue const *)_viewPortAndJSONValue;
-      viewPortAndJSONValue->viewPort->jsonNotifyPopUpItem( viewPortAndJSONValue->value );
+      viewPortAndJSONValue->viewPort->jsonNotifyPopUpItem( viewPortAndJSONValue->json );
     }
 
     gboolean X11ViewPort::EventCallback( GtkWidget *widget, GdkEvent *event, gpointer user_data )
@@ -131,7 +132,7 @@ namespace Fabric
 
                 ViewPortAndJSONValue *viewPortAndJSONValue = new ViewPortAndJSONValue;
                 viewPortAndJSONValue->viewPort = x11ViewPort;
-                viewPortAndJSONValue->value = popUpItem.value.ptr();
+                viewPortAndJSONValue->json = JSON::encode( popUpItem.value );
                 g_signal_connect_swapped( G_OBJECT(menuItem), "activate",
                   G_CALLBACK(&X11ViewPort::MenuItemActivateCallback),
                   viewPortAndJSONValue );

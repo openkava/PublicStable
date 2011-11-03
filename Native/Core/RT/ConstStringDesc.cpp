@@ -7,6 +7,7 @@
 #include <Fabric/Base/JSON/Integer.h>
 #include <Fabric/Base/JSON/String.h>
 #include <Fabric/Base/JSON/Object.h>
+#include <Fabric/Core/Util/JSONGenerator.h>
 
 namespace Fabric
 {
@@ -18,11 +19,10 @@ namespace Fabric
     {
     }
     
-    RC::Handle<JSON::Object> ConstStringDesc::jsonDesc() const
+    void ConstStringDesc::jsonDesc( Util::JSONObjectGenerator &resultJOG ) const
     {
-      RC::Handle<JSON::Object> result = Desc::jsonDesc();
-      result->set( "internalType", JSON::String::Create("ConstString") );
-      return result;
+      Desc::jsonDesc( resultJOG );
+      resultJOG.makeMember( "internalType" ).makeString( "ConstString" );
     }
 
     std::string ConstStringDesc::toString( void const *data ) const

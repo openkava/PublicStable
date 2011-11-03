@@ -43,19 +43,19 @@ namespace Fabric
         CG::ReturnInfo const &returnInfo = basicBlockBuilder.getFunctionBuilder().getScope().getReturnInfo();
         if ( basicBlockBuilder->GetInsertBlock()->getTerminator() )
           throw CG::Error( getLocation(), "unreachable code" );
+        CG::ExprValue returnExprValue( CG::ExprValue( basicBlockBuilder.getContext() ) );
         if ( m_expr )
         {
           if ( !returnInfo )
             throw CG::Error( getLocation(), "functions with no return types do not return values" );
-          CG::ExprValue returnExprValue = m_expr->buildExprValue( basicBlockBuilder, returnInfo.getUsage(), "cannot be assigned to" );
-          basicBlockBuilder.getScope().llvmReturn( basicBlockBuilder, returnExprValue );
+          returnExprValue = m_expr->buildExprValue( basicBlockBuilder, returnInfo.getUsage(), "cannot be assigned to" );
         }
         else
         {
           if ( returnInfo )
             throw CG::Error( getLocation(), "function must return a value" );
-          basicBlockBuilder.getScope().llvmReturn( basicBlockBuilder, 0 );
         }
+        basicBlockBuilder.getScope().llvmReturn( basicBlockBuilder, returnExprValue );
       }
       catch ( Exception e )
       {

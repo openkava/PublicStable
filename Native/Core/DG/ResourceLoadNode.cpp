@@ -22,9 +22,16 @@ namespace Fabric
   {
     RC::Handle<ResourceLoadNode> ResourceLoadNode::Create( std::string const &name, RC::Handle<Context> const &context )
     {
-      RC::Handle<ResourceLoadNode> node = new ResourceLoadNode( name, context );
-      node->notifyDelta( node->jsonDesc() );
-      return node;
+      RC::Handle<ResourceLoadNode> resourceLoadNode = new ResourceLoadNode( name, context );
+      
+      Util::SimpleString json;
+      {
+        Util::JSONGenerator jg( &json );
+        resourceLoadNode->jsonDesc( jg );
+      }
+      resourceLoadNode->jsonNotifyDelta( json );
+
+      return resourceLoadNode;
     }
     
     ResourceLoadNode::ResourceLoadNode( std::string const &name, RC::Handle<Context> const &context )
@@ -40,7 +47,11 @@ namespace Fabric
       addMember( "resource", m_fabricResourceStreamData.getDesc(), m_fabricResourceStreamData.getDesc()->getDefaultData() );
     }
 
-    void ResourceLoadNode::jsonExecCreate( RC::ConstHandle<JSON::Value> const &arg, RC::Handle<Context> const &context )
+    void ResourceLoadNode::jsonExecCreate(
+      RC::ConstHandle<JSON::Value> const &arg,
+      RC::Handle<Context> const &context,
+      Util::JSONArrayGenerator &resultJAG
+      )
     {
       Create( arg->toString()->value(), context );
     }
@@ -122,11 +133,20 @@ namespace Fabric
           src.push_back( "DG" );
           src.push_back( getName() );
 
-          RC::Handle<JSON::Object> progressInfo = JSON::Object::Create();
-          progressInfo->set( "received", JSON::Integer::Create( m_nbStreamed ) );
-          progressInfo->set( "total", JSON::Integer::Create( totalsize ) );
-
-          getContext()->jsonNotify( src, "resourceLoadProgress", progressInfo );
+          Util::SimpleString json;
+          {
+            Util::JSONGenerator jg( &json );
+            Util::JSONObjectGenerator jog = jg.makeObject();
+            {
+              Util::JSONGenerator memberJG = jog.makeMember( "received", 8 );
+              memberJG.makeInteger( m_nbStreamed );
+            }
+            {
+              Util::JSONGenerator memberJG = jog.makeMember( "total", 5 );
+              memberJG.makeInteger( totalsize );
+            }
+          }
+          getContext()->jsonNotify( src, "resourceLoadProgress", 20, &json );
         }
       }
     }
@@ -188,9 +208,9 @@ namespace Fabric
           src.push_back( getName() );
 
           if( errorDesc )
-            getContext()->jsonNotify( src, "resourceLoadFailure", RC::ConstHandle<JSON::Value>() );
+            getContext()->jsonNotify( src, "resourceLoadFailure", 19 );
           else
-            getContext()->jsonNotify( src, "resourceLoadSuccess", RC::ConstHandle<JSON::Value>() );
+            getContext()->jsonNotify( src, "resourceLoadSuccess", 19 );
         }
       }
     }

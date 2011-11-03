@@ -12,6 +12,12 @@
 
 namespace Fabric
 {
+  namespace Util
+  {
+    class JSONGenerator;
+    class JSONArrayGenerator;
+  };
+  
   namespace JSON
   {
     class Value;
@@ -43,12 +49,12 @@ namespace Fabric
       void clear();
       size_t size() const;
       
-      RC::ConstHandle<JSON::Value> jsonRoute( std::vector<std::string> const &dst, size_t dstOffset, std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg );
-      RC::ConstHandle<JSON::Value> jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg );
-      void jsonExecAppend( RC::ConstHandle<JSON::Value> const &arg );
-      void jsonExecInsert( RC::ConstHandle<JSON::Value> const &arg );
-      void jsonExecRemove( RC::ConstHandle<JSON::Value> const &arg );
-      RC::Handle<JSON::Array> jsonDesc() const;
+      void jsonRoute( std::vector<std::string> const &dst, size_t dstOffset, std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
+      void jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
+      void jsonExecAppend( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
+      void jsonExecInsert( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
+      void jsonExecRemove( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
+      void jsonDesc( Util::JSONGenerator &resultJG ) const;
       
     protected:
     

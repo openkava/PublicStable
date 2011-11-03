@@ -12,6 +12,13 @@
 
 namespace Fabric
 {
+  namespace Util
+  {
+    class JSONGenerator;
+    class JSONArrayGenerator;
+    class SimpleString;
+  };
+  
   namespace JSON
   {
     class Value;
@@ -29,13 +36,23 @@ namespace Fabric
     
       RC::Handle<Context> getContext() const;
       
-      std::string jsonExec( char const *jsonEncodedCommandsData, size_t jsonEncodedCommandsLength ) const;
+      void jsonExec(
+        char const *jsonEncodedCommandsData,
+        size_t jsonEncodedCommandsLength,
+        Util::JSONGenerator &resultJG
+        ) const;
 
-      virtual void notify( std::string const &jsonEncodedNotifications ) const = 0;
+      virtual void notify( Util::SimpleString const &jsonEncodedNotifications ) const = 0;
       
-      RC::ConstHandle<JSON::Value> jsonRoute( std::vector<std::string> const &dst, size_t dstOffset, std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg );
-      virtual RC::ConstHandle<JSON::Value> jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg );
-      RC::Handle<JSON::Object> jsonDesc() const;
+      void jsonRoute(
+        std::vector<std::string> const &dst,
+        size_t dstOffset,
+        std::string const &cmd,
+        RC::ConstHandle<JSON::Value> const &arg,
+        Util::JSONArrayGenerator &resultJAG
+        );
+      virtual void jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
+      void jsonDesc( Util::JSONGenerator &resultJG ) const;
 
     protected:
     

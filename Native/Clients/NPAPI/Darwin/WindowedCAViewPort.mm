@@ -9,6 +9,7 @@
 #include <Fabric/Base/Exception.h>
 #include <Fabric/Core/DG/Event.h>
 #include <Fabric/Core/MT/LogCollector.h>
+#include <Fabric/Base/JSON/Encode.h>
 #include <Fabric/Core/Util/Format.h>
 
 #include <Cocoa/Cocoa.h>
@@ -175,22 +176,22 @@ namespace Fabric
 {
 @private
   Fabric::NPAPI::ViewPort const *viewPort;
-  Fabric::JSON::Value const *arg;
+  Fabric::Util::SimpleString *arg;
 }
 
-+(id) menuItemWithTitle:(NSString *)title viewPort:(Fabric::NPAPI::ViewPort const *)viewPort arg:(Fabric::JSON::Value const *)arg;
--(id) initWithTitle:(NSString *)title viewPort:(Fabric::NPAPI::ViewPort const *)viewPort arg:(Fabric::JSON::Value const *)arg;
++(id) menuItemWithTitle:(NSString *)title viewPort:(Fabric::NPAPI::ViewPort const *)viewPort arg:(Fabric::Util::SimpleString const *)arg;
+-(id) initWithTitle:(NSString *)title viewPort:(Fabric::NPAPI::ViewPort const *)viewPort arg:(Fabric::Util::SimpleString const *)arg;
 -(void) runCallback:(id)sender;
 @end
 
 @implementation MenuItem
 
-+(id) menuItemWithTitle:(NSString *)title viewPort:(Fabric::NPAPI::ViewPort const *)_viewPort arg:(Fabric::JSON::Value *)_arg
++(id) menuItemWithTitle:(NSString *)title viewPort:(Fabric::NPAPI::ViewPort const *)_viewPort arg:(Fabric::Util::SimpleString const *)_arg
 {
   return [[[MenuItem alloc] initWithTitle:title viewPort:_viewPort arg:_arg] autorelease];
 }
 
--(id) initWithTitle:(NSString *)title viewPort:(Fabric::NPAPI::ViewPort const *)_viewPort arg:(Fabric::JSON::Value *)_arg
+-(id) initWithTitle:(NSString *)title viewPort:(Fabric::NPAPI::ViewPort const *)_viewPort arg:(Fabric::Util::SimpleString const *)_arg
 {
   if ( (self = [super initWithTitle:title action:@selector(runCallback:) keyEquivalent:@""]) )
   {
@@ -199,22 +200,21 @@ namespace Fabric
     viewPort = _viewPort;
     viewPort->retain();
     
-    arg = _arg;
-    arg->retain();
+    arg = new Fabric::Util::SimpleString( *_arg );
   }
   return self;
 }
 
 -(void) dealloc
 {
-  arg->release();
+  delete arg;
   viewPort->release();
   [super dealloc];
 }
 
 -(void) runCallback:(id)sender
 {
-  viewPort->jsonNotifyPopUpItem( arg );
+  viewPort->jsonNotifyPopUpItem( *arg );
 }
 
 @end
@@ -312,7 +312,8 @@ namespace Fabric
             
               for ( PopUpItems::const_iterator it=m_popUpItems.begin(); it!=m_popUpItems.end(); ++it )
               {
-                NSMenuItem *nsMenuItem = [MenuItem menuItemWithTitle:[NSString stringWithCString:it->desc.c_str() encoding:NSUTF8StringEncoding] viewPort:this arg:it->value.ptr()];
+                Util::SimpleString arg = JSON::encode( it->value );
+                NSMenuItem *nsMenuItem = [MenuItem menuItemWithTitle:[NSString stringWithCString:it->desc.c_str() encoding:NSUTF8StringEncoding] viewPort:this arg:&arg];
                 [nsMenuItem setEnabled:YES];
                 [nsMenu addItem:nsMenuItem];
               }

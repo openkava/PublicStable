@@ -8,7 +8,7 @@
 #include <Fabric/Base/RC/Object.h>
 #include <Fabric/Base/RC/ConstHandle.h>
 #include <Fabric/Base/RC/WeakConstHandle.h>
-#include <Fabric/Core/MT/Mutex.h>
+#include <Fabric/Core/Util/Mutex.h>
 
 #include <string>
 #include <llvm/ADT/OwningPtr.h>
@@ -65,7 +65,7 @@ namespace Fabric
       RC::Handle<CG::Context> m_cgContext;
       llvm::OwningPtr<llvm::ExecutionEngine> m_llvmExecutionEngine;
       
-      static MT::Mutex s_currentContextMutex;
+      static Util::Mutex s_currentContextMutex;
       static RC::ConstHandle<Context> s_currentContext;
     };
   };

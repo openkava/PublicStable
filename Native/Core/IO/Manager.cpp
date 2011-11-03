@@ -11,23 +11,28 @@
 #include <Fabric/Core/IO/Helpers.h>
 #include <Fabric/Core/Util/Base64.h>
 #include <Fabric/Core/Util/Format.h>
+#include <Fabric/Core/Util/JSONGenerator.h>
 #include <Fabric/Core/Util/Random.h>
+
 #include <fstream>
 
 namespace Fabric
 {
   namespace IO
   {
-
-    RC::ConstHandle<JSON::Value> Manager::jsonRoute( std::vector<std::string> const &dst, size_t dstOffset, std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg )
+    void Manager::jsonRoute(
+      std::vector<std::string> const &dst,
+      size_t dstOffset,
+      std::string const &cmd,
+      RC::ConstHandle<JSON::Value> const &arg,
+      Util::JSONArrayGenerator &resultJAG
+      )
     {
-      RC::ConstHandle<JSON::Value> result;
-
       if ( dst.size() - dstOffset == 0 )
       {
         try
         {
-          result = jsonExec( cmd, arg );
+          jsonExec( cmd, arg, resultJAG );
         }
         catch ( Exception e )
         {
@@ -35,31 +40,36 @@ namespace Fabric
         }
       }
       else throw Exception( "unroutable" );
-      
-      return result;
     }
 
-    RC::ConstHandle<JSON::Value> Manager::jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg )
+    void Manager::jsonExec(
+      std::string const &cmd,
+      RC::ConstHandle<JSON::Value> const &arg,
+      Util::JSONArrayGenerator &resultJAG
+      )
     {
-      RC::ConstHandle<JSON::Value> result;
-
       if ( cmd == "getUserTextFile" )
-        result = jsonExecGetUserTextFile( arg );
+        jsonExecGetUserTextFile( arg, resultJAG );
       else if ( cmd == "putUserTextFile" )
-        jsonExecPutUserTextFile( arg );
+        jsonExecPutUserTextFile( arg, resultJAG );
       else if ( cmd == "getTextFile" )
-        result = jsonExecGetTextFile( arg );
+        jsonExecGetTextFile( arg, resultJAG );
       else if ( cmd == "putTextFile" )
-        jsonExecPutTextFile( arg );
+        jsonExecPutTextFile( arg, resultJAG );
       else if ( cmd == "queryUserFileAndFolder" )
-        result = jsonExecQueryUserFileAndFolder( arg );
+        jsonExecQueryUserFileAndFolder( arg, resultJAG );
       else
         throw Exception( "unknown command" );
-
-      return result;
     }
 
-    void Manager::jsonQueryUserFileAndDir( RC::ConstHandle<JSON::Value> const &arg, bool *existingFile, const char *defaultExtension, RC::ConstHandle<Dir>& dir, std::string& filename, bool& writeAccess ) const
+    void Manager::jsonQueryUserFileAndDir(
+      RC::ConstHandle<JSON::Value> const &arg,
+      bool *existingFile,
+      const char *defaultExtension,
+      RC::ConstHandle<Dir>& dir,
+      std::string& filename,
+      bool& writeAccess
+      ) const
     {
       std::string defaultFilename;
       std::string extension;
@@ -208,7 +218,12 @@ namespace Fabric
         throw Exception( "Error while reading file " + GetSafeDisplayPath(dir, filename) );
     }
 
-    void Manager::jsonExecPutUserFile( RC::ConstHandle<JSON::Value> const &arg, size_t size, const void* data, const char* defaultExtension ) const
+    void Manager::jsonExecPutUserFile(
+      RC::ConstHandle<JSON::Value> const &arg,
+      size_t size, const void* data,
+      const char* defaultExtension,
+      Util::JSONArrayGenerator &resultJAG
+      ) const
     {
       RC::ConstHandle<Dir> dir;
       std::string filename;
@@ -219,7 +234,13 @@ namespace Fabric
       putFile( dir, filename, size, data );
     }
 
-    void Manager::jsonExecGetUserFile( RC::ConstHandle<JSON::Value> const &arg, ByteContainer& bytes, bool binary, std::string& filename, std::string& extension ) const
+    void Manager::jsonExecGetUserFile(
+      RC::ConstHandle<JSON::Value> const &arg,
+      ByteContainer& bytes, bool binary,
+      std::string& filename,
+      std::string& extension,
+      Util::JSONArrayGenerator &resultJAG
+      ) const
     {
       RC::ConstHandle<Dir> dir;
       bool existingFile = true;
@@ -241,22 +262,23 @@ namespace Fabric
       std::string m_string;
     };
 
-    RC::ConstHandle<JSON::Value> Manager::jsonExecGetUserTextFile( RC::ConstHandle<JSON::Value> const &arg ) const
+    void Manager::jsonExecGetUserTextFile( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG ) const
     {
       std::string filename, extension;
       StringByteContainerAdapter stringData;
-      jsonExecGetUserFile( arg, stringData, false, filename, extension );
-      return JSON::String::Create( stringData.m_string );
+      jsonExecGetUserFile( arg, stringData, false, filename, extension, resultJAG );
+      Util::JSONGenerator resultJG = resultJAG.makeElement();
+      resultJG.makeString( stringData.m_string );
     }
 
-    void Manager::jsonExecPutUserTextFile( RC::ConstHandle<JSON::Value> const &arg ) const
+    void Manager::jsonExecPutUserTextFile( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG ) const
     {
       RC::ConstHandle<JSON::Object> argJSONObject = arg->toObject();
       RC::ConstHandle<JSON::String> content  = argJSONObject->get( "content" )->toString( "content must be a string" );
-      jsonExecPutUserFile( arg, content->length(), content->data(), "txt" );//"txt": overriden by arg's extension if provided
+      jsonExecPutUserFile( arg, content->length(), content->data(), "txt", resultJAG );//"txt": overriden by arg's extension if provided
     }
 
-    RC::ConstHandle<JSON::Value> Manager::jsonExecQueryUserFileAndFolder( RC::ConstHandle<JSON::Value> const &arg )
+    void Manager::jsonExecQueryUserFileAndFolder( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
     {
       RC::ConstHandle<Dir> dir;
       std::string filename;
@@ -276,13 +298,21 @@ namespace Fabric
       if( m_handleToDirMap.insert( std::make_pair( pathHandle, dirInfo ) ).second == false )
         throw Exception( "Unexpected failure" );
 
-      RC::Handle<JSON::Array> returnVal = JSON::Array::Create();
-      returnVal->push_back( JSON::String::Create( pathHandle ) );
-      returnVal->push_back( JSON::String::Create( filename ) );
-      return returnVal;
+      Util::JSONGenerator resultJG = resultJAG.makeElement();
+      Util::JSONArrayGenerator pathHandleAndFilenameJAG = resultJG.makeArray();
+      {
+        Util::JSONGenerator pathHandleJG = pathHandleAndFilenameJAG.makeElement();
+        pathHandleJG.makeString( pathHandle );
+      }
+      {
+        Util::JSONGenerator filenameJG = pathHandleAndFilenameJAG.makeElement();
+        filenameJG.makeString( filename );
+      }
     }
 
-    void Manager::jsonGetFileAndDirFromHandlePath( RC::ConstHandle<JSON::Value> const &arg, bool existingFile, RC::ConstHandle<Dir>& dir, std::string& file ) const
+    void Manager::jsonGetFileAndDirFromHandlePath(
+      RC::ConstHandle<JSON::Value> const &arg, bool existingFile, RC::ConstHandle<Dir>& dir, std::string& file
+      ) const
     {
       RC::ConstHandle<JSON::Object> argJSONObject = arg->toObject();
       RC::ConstHandle<JSON::Array> pathJSONArray = argJSONObject->get( "path" )->toArray( "path must be an Array" );
@@ -323,7 +353,12 @@ namespace Fabric
       file = pathJSONArray->get( pathJSONArray->size()-1 )->toString( pathStringError )->value();
     }
 
-    void Manager::jsonExecPutFile( RC::ConstHandle<JSON::Value> const &arg, size_t size, const void* data ) const
+    void Manager::jsonExecPutFile(
+      RC::ConstHandle<JSON::Value> const &arg,
+      size_t size,
+      const void* data,
+      Util::JSONArrayGenerator &resultJAG
+      ) const
     {
       RC::ConstHandle<Dir> dir;
       std::string filename;
@@ -331,7 +366,13 @@ namespace Fabric
       putFile( dir, filename, size, data );
     }
 
-    void Manager::jsonExecGetFile( RC::ConstHandle<JSON::Value> const &arg, ByteContainer& bytes, bool binary, std::string& filename, std::string& extension ) const
+    void Manager::jsonExecGetFile(
+      RC::ConstHandle<JSON::Value> const &arg,
+      ByteContainer& bytes, bool binary,
+      std::string& filename,
+      std::string& extension,
+      Util::JSONArrayGenerator &resultJAG
+      ) const
     {
       RC::ConstHandle<Dir> dir;
       jsonGetFileAndDirFromHandlePath( arg, true, dir, filename );
@@ -340,7 +381,7 @@ namespace Fabric
       extension = GetExtension( filename );
     }
 
-    RC::ConstHandle<JSON::Value> Manager::jsonExecGetTextFile( RC::ConstHandle<JSON::Value> const &arg ) const
+    void Manager::jsonExecGetTextFile( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG ) const
     {
       RC::ConstHandle<Dir> dir;
       std::string filename;
@@ -348,10 +389,11 @@ namespace Fabric
 
       StringByteContainerAdapter stringData;
       getFile( dir, filename, false, stringData );
-      return JSON::String::Create( stringData.m_string );
+      Util::JSONGenerator resultJG = resultJAG.makeElement();
+      resultJG.makeString( stringData.m_string );
     }
 
-    void Manager::jsonExecPutTextFile( RC::ConstHandle<JSON::Value> const &arg )
+    void Manager::jsonExecPutTextFile( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
     {
       RC::ConstHandle<Dir> dir;
       std::string filename;

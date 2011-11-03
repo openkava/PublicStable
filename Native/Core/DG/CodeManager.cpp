@@ -10,7 +10,8 @@ namespace Fabric
 {
   namespace DG
   {
-    CodeManager::CodeManager()
+    CodeManager::CodeManager( bool optimizeSynchronously )
+      : m_optimizeSynchonrously( optimizeSynchronously )
     {
     }
     
@@ -25,7 +26,7 @@ namespace Fabric
       if ( !result )
       {
         //FABRIC_DEBUG_LOG( "No compiled code in cache; compiling" );
-        result = Code::Create( context, filename, sourceCode );
+        result = Code::Create( context, filename, sourceCode, m_optimizeSynchonrously );
         it = m_sourceCodeToCodeMap.insert( SourceCodeToCodeMap::value_type( sourceCode, result ) ).first;
         FABRIC_ASSERT( it != m_sourceCodeToCodeMap.end() );
       }

@@ -149,8 +149,7 @@ namespace Fabric
           BasicBlockBuilder basicBlockBuilder( functionBuilder );
           basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
           llvm::Value *byteLValue = llvmRValueToLValue( basicBlockBuilder, byteRValue );
-          llvm::Value *stringRValue = stringAdapter->llvmCallCast( basicBlockBuilder, this, byteLValue );
-          stringAdapter->llvmAssign( basicBlockBuilder, stringLValue, stringRValue );
+          stringAdapter->llvmCallCast( basicBlockBuilder, this, byteLValue, stringLValue );
           basicBlockBuilder->CreateRetVoid();
         }
       }
@@ -332,7 +331,7 @@ namespace Fabric
           ExprValue errorExprValue( constStringAdapter, USAGE_RVALUE, context, constStringAdapter->llvmConst( basicBlockBuilder, errorMsg ) );
           llvm::Value *errorStringRValue = stringAdapter->llvmCast( basicBlockBuilder, errorExprValue );
           stringAdapter->llvmReport( basicBlockBuilder, errorStringRValue );
-          stringAdapter->llvmRelease( basicBlockBuilder, errorStringRValue );
+          stringAdapter->llvmDispose( basicBlockBuilder, errorStringRValue );
           llvm::Value *defaultRValue = llvmDefaultRValue( basicBlockBuilder );
           basicBlockBuilder->CreateRet( defaultRValue );
         }
@@ -367,7 +366,7 @@ namespace Fabric
           ExprValue errorExprValue( constStringAdapter, USAGE_RVALUE, context, constStringAdapter->llvmConst( basicBlockBuilder, errorMsg ) );
           llvm::Value *errorStringRValue = stringAdapter->llvmCast( basicBlockBuilder, errorExprValue );
           stringAdapter->llvmReport( basicBlockBuilder, errorStringRValue );
-          stringAdapter->llvmRelease( basicBlockBuilder, errorStringRValue );
+          stringAdapter->llvmDispose( basicBlockBuilder, errorStringRValue );
           llvm::Value *defaultRValue = llvmDefaultRValue( basicBlockBuilder );
           basicBlockBuilder->CreateRet( defaultRValue );
         }
@@ -551,6 +550,48 @@ namespace Fabric
           BasicBlockBuilder basicBlockBuilder( functionBuilder );
           basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
           basicBlockBuilder->CreateRet( basicBlockBuilder->CreatePointerCast( thisLValue, dataAdapter->llvmRType( context ) ) );
+        }
+      }
+      
+      {
+        std::string name = methodOverloadName( "hash", this );
+        std::vector<FunctionParam> params;
+        params.push_back( FunctionParam( "rValue", this, USAGE_RVALUE ) );
+        FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( sizeAdapter, USAGE_RVALUE ), params );
+        if ( buildFunctions )
+        {
+          llvm::Value *rValue = functionBuilder[0];
+          BasicBlockBuilder basicBlockBuilder( functionBuilder );
+          basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
+          basicBlockBuilder->CreateRet(
+            basicBlockBuilder->CreateZExt(
+              rValue,
+              sizeAdapter->llvmRType( context )
+              )
+            );
+        }
+      }
+      
+      {
+        std::string name = methodOverloadName( "compare", this, this );
+        std::vector< FunctionParam > params;
+        params.push_back( FunctionParam( "lhsRValue", this, USAGE_RVALUE ) );
+        params.push_back( FunctionParam( "rhsRValue", this, USAGE_RVALUE ) );
+        FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( integerAdapter, USAGE_RVALUE ), params );
+        if ( buildFunctions )
+        {
+          llvm::Value *lhsRValue = functionBuilder[0];
+          llvm::Value *rhsRValue = functionBuilder[1];
+          BasicBlockBuilder basicBlockBuilder( functionBuilder );
+          basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
+          llvm::Value *lhsRValueAsInteger = basicBlockBuilder->CreateZExt( lhsRValue, integerAdapter->llvmRType( context ) );
+          llvm::Value *rhsRValueAsInteger = basicBlockBuilder->CreateZExt( rhsRValue, integerAdapter->llvmRType( context ) );
+          basicBlockBuilder->CreateRet(
+            basicBlockBuilder->CreateSub(
+              lhsRValueAsInteger,
+              rhsRValueAsInteger
+              )
+            );
         }
       }
     }

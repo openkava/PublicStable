@@ -22,6 +22,7 @@
 #include <Fabric/Core/RT/SlicedArrayImpl.h>
 #include <Fabric/Core/RT/SlicedArrayDesc.h>
 #include <Fabric/Core/MT/Util.h>
+#include <Fabric/Core/Util/JSONGenerator.h>
 #include <Fabric/Base/JSON/String.h>
 #include <Fabric/Base/JSON/Array.h>
 
@@ -325,7 +326,7 @@ namespace Fabric
                   {
                     if ( !haveAdjustmentIndex )
                     {
-                      adjustmentIndex = result->addAdjustment( container->getCount(), std::max<size_t>( 1, container->getCount()/MT::getNumCores() ) );
+                      adjustmentIndex = result->addAdjustment( container->getCount(), std::max<size_t>( 1, container->getCount()/(4*MT::getNumCores()) ) );
                       haveAdjustmentIndex = true;
                     }
                     result->setAdjustmentOffset( adjustmentIndex, prefixCount+param->index(), 1 );
@@ -374,7 +375,7 @@ namespace Fabric
                         {
                           if ( !haveAdjustmentIndex )
                           {
-                            adjustmentIndex = result->addAdjustment( container->getCount(), std::max<size_t>( 1, container->getCount()/MT::getNumCores() ) );
+                            adjustmentIndex = result->addAdjustment( container->getCount(), std::max<size_t>( 1, container->getCount()/(4*MT::getNumCores()) ) );
                             haveAdjustmentIndex = true;
                           }
                           result->setAdjustmentOffset( adjustmentIndex, prefixCount+param->index(), memberImpl->getAllocSize() );
@@ -421,14 +422,16 @@ namespace Fabric
       return result;
     }
       
-    RC::ConstHandle<JSON::Value> Prototype::jsonDesc() const
+    void Prototype::jsonDesc( Util::JSONGenerator &resultJG ) const
     {
-      std::vector<std::string> items = desc();
+      Util::JSONArrayGenerator resultJAG = resultJG.makeArray();
       
-      RC::Handle<JSON::Array> result = JSON::Array::Create();
+      std::vector<std::string> items = desc();
       for ( size_t i=0; i<items.size(); ++i )
-        result->push_back( JSON::String::Create( items[i] ) );
-      return result;
+      {
+        Util::JSONGenerator elementJG = resultJAG.makeElement();
+        elementJG.makeString( items[i] );
+      }
     }
   };
 };

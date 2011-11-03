@@ -77,13 +77,13 @@ namespace Fabric
         NPN_ReleaseObject( m_redrawFinishedCallback );
     }
     
-    void ViewPort::jsonNotify( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg ) const
+    void ViewPort::jsonNotify( std::string const &cmd, Util::SimpleString const *arg ) const
     {
       std::vector<std::string> src;
       src.push_back("VP");
       src.push_back("viewPort");
       
-      m_context->jsonNotify( src, cmd, arg );
+      m_context->jsonNotify( src, cmd.data(), cmd.length(), arg );
     }
     
     void ViewPort::asyncRedrawFinished()
@@ -202,39 +202,37 @@ namespace Fabric
       return m_interface;
     }
     
-    RC::Handle<JSON::Value> ViewPort::jsonExecGetFPS() const
+    void ViewPort::jsonExecGetFPS( Util::JSONArrayGenerator &resultJAG ) const
     {
-      return JSON::Scalar::Create( m_fps );
+      Util::JSONGenerator resultJG = resultJAG.makeElement();
+      resultJG.makeScalar( m_fps );
     }
 
-    RC::Handle<JSON::Object> ViewPort::jsonDesc() const
+    void ViewPort::jsonDesc( Util::JSONGenerator &resultJG ) const
     {
       size_t width, height;
       getWindowSize( width, height );
       
-      RC::Handle<JSON::Object> result = JSON::Object::Create();
-      result->set( "fps", JSON::Scalar::Create( m_fps ) );
-      result->set( "width", JSON::Integer::Create( width ) );
-      result->set( "height", JSON::Integer::Create( height ) );
-      result->set( "windowNode", JSON::String::Create( m_windowNode->getName() ) );
-      result->set( "redrawEvent", JSON::String::Create( m_redrawEvent->getName() ) );
-      return result;
+      Util::JSONObjectGenerator resultJOG = resultJG.makeObject();
+      resultJOG.makeMember( "fps", 3 ).makeScalar( m_fps );
+      resultJOG.makeMember( "width", 5 ).makeInteger( width );
+      resultJOG.makeMember( "height", 6 ).makeInteger( height );
+      resultJOG.makeMember( "windowNode", 10 ).makeString( m_windowNode->getName() );
+      resultJOG.makeMember( "redrawEvent", 11 ).makeString( m_redrawEvent->getName() );
     }
 
-    RC::ConstHandle<JSON::Value> ViewPort::jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg )
+    void ViewPort::jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
     {
-      RC::ConstHandle<JSON::Value> result;
       if ( cmd == "needsRedraw" )
         needsRedraw();
       else if ( cmd == "getFPS" )
-        result = jsonExecGetFPS();
+        jsonExecGetFPS( resultJAG );
       else if ( cmd == "addPopUpMenuItem" )
-        jsonExecAddPopupItem( arg );
+        jsonExecAddPopupItem( arg, resultJAG );
       else throw Exception( "unrecognized command" );
-      return result;
     }
     
-    void ViewPort::jsonExecAddPopupItem( RC::ConstHandle<JSON::Value> const &arg )
+    void ViewPort::jsonExecAddPopupItem( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
     {
       RC::ConstHandle<JSON::Object> argObject = arg->toObject();
       
@@ -244,9 +242,9 @@ namespace Fabric
       m_popUpItems.push_back( popUpItem );
     }
     
-    void ViewPort::jsonNotifyPopUpItem( RC::ConstHandle<JSON::Value> const &arg ) const
+    void ViewPort::jsonNotifyPopUpItem( Util::SimpleString const &arg ) const
     {
-      jsonNotify( "popUpMenuItemSelected", arg );
+      jsonNotify( "popUpMenuItemSelected", &arg );
     }
 
     void ViewPort::drawWatermark( size_t width, size_t height )

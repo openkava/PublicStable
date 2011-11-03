@@ -7,7 +7,7 @@
 
 #include <Fabric/Base/RC/Object.h>
 #include <Fabric/Base/RC/ConstHandle.h>
-#include <Fabric/Core/MT/Mutex.h>
+#include <Fabric/Core/Util/Mutex.h>
 
 #include <set>
 
@@ -33,7 +33,7 @@ namespace Fabric
       
     private:
     
-      mutable MT::Mutex m_mutex;
+      mutable Util::Mutex m_mutex;
       FunctionPtr m_functionPtr;
       RC::ConstHandle<RC::Object> m_objectOwningFunctionPtr;
     };

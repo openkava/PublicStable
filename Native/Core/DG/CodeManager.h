@@ -29,20 +29,21 @@ namespace Fabric
       
     public:
     
-      static RC::Handle<CodeManager> Create()
+      static RC::Handle<CodeManager> Create( bool optimizeSynchonrously )
       {
-        return new CodeManager;
+        return new CodeManager( optimizeSynchonrously );
       }
       
       RC::ConstHandle<Code> compileSourceCode( RC::ConstHandle<Context> const &context, std::string const &filename, std::string const &sourceCode );
       
     protected:
     
-      CodeManager();
+      CodeManager( bool optimizeSynchonrously );
       
     private:
     
       SourceCodeToCodeMap m_sourceCodeToCodeMap;
+      bool m_optimizeSynchonrously;
     };
   };
 };

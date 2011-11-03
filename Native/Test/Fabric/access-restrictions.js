@@ -1,5 +1,4 @@
-FC = createFabricClient();
-FABRIC = FC.wrapFabricClient(FC);
+FABRIC = require('Fabric').createClient();
 
 op = FABRIC.DependencyGraph.createOperator("foo");
 op.setEntryFunctionName("entry");
@@ -21,7 +20,7 @@ node.bindings.append(binding);
 var errors = node.getErrors();
 if ( errors.length > 0 ) {
   for ( var i in errors )
-    print( errors[i] );
+    console.log( errors[i] );
 }
 else {
   node.evaluate();
@@ -29,4 +28,3 @@ else {
 */
 
 FABRIC.flush();
-FC.dispose();

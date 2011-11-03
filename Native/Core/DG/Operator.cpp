@@ -30,7 +30,14 @@ namespace Fabric
     RC::Handle<Operator> Operator::Create( std::string const &name, RC::Handle<Context> const &context )
     {
       RC::Handle<Operator> operator_ = new Operator( name, context );
-      operator_->notifyDelta( operator_->jsonDesc() );
+      
+      Util::SimpleString json;
+      {
+        Util::JSONGenerator jg( &json );
+        operator_->jsonDesc( jg );
+      }
+      operator_->jsonNotifyDelta( json );
+
       return operator_;
     }
 
@@ -115,7 +122,6 @@ namespace Fabric
       FABRIC_ASSERT( !m_function );
       
       m_code = m_context->getCodeManager()->compileSourceCode( m_context, m_filename, m_sourceCode );
-      notifyDelta( "diagnostics", jsonDescDiagnostics() );
       
       if ( !m_code->getDiagnostics().containsError() )
       {
@@ -127,6 +133,13 @@ namespace Fabric
       }
       
       markForRecompile();
+      
+      Util::SimpleString json;
+      {
+        Util::JSONGenerator jg( &json );
+        jsonDescDiagnostics( jg );
+      }
+      jsonNotifyMemberDelta( "diagnostics", 11, json );
     }
     
     void Operator::resolveEntryFunction()
@@ -187,7 +200,12 @@ namespace Fabric
           resolveEntryFunction();
         }
         
-        notifyDelta( "entryFunctionName", jsonDescEntryFunctionName() );
+        Util::SimpleString json;
+        {
+          Util::JSONGenerator jg( &json );
+          jsonDescEntryFunctionName( jg );
+        }
+        jsonNotifyMemberDelta( "entryFunctionName", 17, json );
       }
     }
     
@@ -220,12 +238,28 @@ namespace Fabric
         m_code = 0;
         
         m_filename = filename;
-        notifyDelta( "filename", jsonDescFilename() );
         m_sourceCode = sourceCode;
-        notifyDelta( "sourceCode", jsonDescSourceCode() );
 
         if ( m_filename.length() > 0 && m_sourceCode.length() > 0 )
           compile();
+        
+        {
+          Util::SimpleString json;
+          {
+            Util::JSONGenerator jg( &json );
+            jsonDescFilename( jg );
+          }
+          jsonNotifyMemberDelta( "filename", 8, json );
+        }
+        
+        {
+          Util::SimpleString json;
+          {
+            Util::JSONGenerator jg( &json );
+            jsonDescSourceCode( jg );
+          }
+          jsonNotifyMemberDelta( "sourceCode", 10, json );
+        }
       }
     }
     
@@ -269,38 +303,58 @@ namespace Fabric
         throw Exception( "missing operator " + _(m_entryFunctionName) );
     }
       
-    RC::Handle<JSON::Object> Operator::jsonDesc() const
+    void Operator::jsonDesc( Util::JSONGenerator &resultJG ) const
     {
-      RC::Handle<JSON::Object> result = NamedObject::jsonDesc();
-      result->set( "filename", jsonDescFilename() );
-      result->set( "sourceCode", jsonDescSourceCode() );
-      result->set( "entryFunctionName", jsonDescEntryFunctionName() );
-      result->set( "diagnostics", jsonDescDiagnostics() );
-      result->set( "mainThreadOnly", jsonDescMainThreadOnly() );
-      return result;
+      NamedObject::jsonDesc( resultJG );
+    }
+      
+    void Operator::jsonDesc( Util::JSONObjectGenerator &resultJOG ) const
+    {
+      NamedObject::jsonDesc( resultJOG );
+      
+      {
+        Util::JSONGenerator memberJG = resultJOG.makeMember( "filename", 8 );
+        jsonDescFilename( memberJG );
+      }
+      {
+        Util::JSONGenerator memberJG = resultJOG.makeMember( "sourceCode", 10 );
+        jsonDescSourceCode( memberJG );
+      }
+      {
+        Util::JSONGenerator memberJG = resultJOG.makeMember( "entryFunctionName", 17 );
+        jsonDescEntryFunctionName( memberJG );
+      }
+      {
+        Util::JSONGenerator memberJG = resultJOG.makeMember( "diagnostics", 11 );
+        jsonDescDiagnostics( memberJG );
+      }
+      {
+        Util::JSONGenerator memberJG = resultJOG.makeMember( "mainThreadOnly", 14 );
+        jsonDescMainThreadOnly( memberJG );
+      }
     }
 
-    RC::ConstHandle<JSON::Value> Operator::jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg )
+    void Operator::jsonExec(
+      std::string const &cmd,
+      RC::ConstHandle<JSON::Value> const &arg,
+      Util::JSONArrayGenerator &resultJAG
+      )
     {
-      RC::ConstHandle<JSON::Value> result;
-
       if ( cmd == "setEntryFunctionName" )
-        jsonExecSetEntryFunctionName( arg );
+        jsonExecSetEntryFunctionName( arg, resultJAG );
       else if ( cmd == "setSourceCode" )
-        jsonExecSetSourceCode( arg );
+        jsonExecSetSourceCode( arg, resultJAG );
       else if ( cmd == "setMainThreadOnly" )
-        jsonExecSetMainThreadOnly( arg );
-      else result = NamedObject::jsonExec( cmd, arg );
-      
-      return result;
+        jsonExecSetMainThreadOnly( arg, resultJAG );
+      else NamedObject::jsonExec( cmd, arg, resultJAG );
     }
     
-    void Operator::jsonExecCreate( RC::ConstHandle<JSON::Value> const &arg, RC::Handle<Context> const &context )
+    void Operator::jsonExecCreate( RC::ConstHandle<JSON::Value> const &arg, RC::Handle<Context> const &context, Util::JSONArrayGenerator &resultJAG )
     {
       Create( arg->toString()->value(), context );
     }
       
-    void Operator::jsonExecSetSourceCode( RC::ConstHandle<JSON::Value> const &arg )
+    void Operator::jsonExecSetSourceCode( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
     {
       RC::ConstHandle<JSON::Object> argObject = arg->toObject();
       
@@ -327,40 +381,39 @@ namespace Fabric
       setFilenameAndSourceCode( filename, sourceCode );
     }
       
-    void Operator::jsonExecSetEntryFunctionName( RC::ConstHandle<JSON::Value> const &arg )
+    void Operator::jsonExecSetEntryFunctionName( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
     {
       setEntryFunctionName( arg->toString()->value() );
     }
     
-    void Operator::jsonExecSetMainThreadOnly( RC::ConstHandle<JSON::Value> const &arg )
+    void Operator::jsonExecSetMainThreadOnly( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
     {
       setMainThreadOnly( arg->toBoolean()->value() );
     }
     
-    RC::ConstHandle<JSON::Value> Operator::jsonDescType() const
+    void Operator::jsonDescType( Util::JSONGenerator &resultJG ) const
     {
-      static RC::ConstHandle<JSON::Value> result = JSON::String::Create( "Operator" );
-      return result;
+      resultJG.makeString( "Operator", 8 );
     }
     
-    RC::ConstHandle<JSON::Value> Operator::jsonDescFilename() const
+    void Operator::jsonDescFilename( Util::JSONGenerator &resultJG ) const
     {
-      return JSON::String::Create( m_filename );
+      resultJG.makeString( m_filename );
     }
     
-    RC::ConstHandle<JSON::Value> Operator::jsonDescSourceCode() const
+    void Operator::jsonDescSourceCode( Util::JSONGenerator &resultJG ) const
     {
-      return JSON::String::Create( m_sourceCode );
+      resultJG.makeString( m_sourceCode );
     }
     
-    RC::ConstHandle<JSON::Value> Operator::jsonDescEntryFunctionName() const
+    void Operator::jsonDescEntryFunctionName( Util::JSONGenerator &resultJG ) const
     {
-      return JSON::String::Create( m_entryFunctionName );
+      resultJG.makeString( m_entryFunctionName );
     }
     
-    RC::ConstHandle<JSON::Value> Operator::jsonDescDiagnostics() const
+    void Operator::jsonDescDiagnostics( Util::JSONGenerator &resultJG ) const
     {
-      RC::Handle<JSON::Array> result = JSON::Array::Create();
+      Util::JSONArrayGenerator resultJAG = resultJG.makeArray();
       if ( m_code )
       {
         CG::Diagnostics const &diagnostics = m_code->getDiagnostics();
@@ -369,22 +422,34 @@ namespace Fabric
           CG::Location const &location = it->first;
           CG::Diagnostic const &diagnostic = it->second;
           
-          RC::Handle<JSON::Object> sub = JSON::Object::Create();
-          sub->set( "filename", JSON::String::Create( location.getFilename() ) );
-          sub->set( "line", JSON::Integer::Create( location.getLine() ) );
-          sub->set( "column", JSON::Integer::Create( location.getColumn() ) );
-          sub->set( "level", JSON::String::Create( diagnostic.getLevelDesc() ) );
-          sub->set( "desc", JSON::String::Create( diagnostic.getDesc().getData(), diagnostic.getDesc().getLength() ) );
-          
-          result->push_back( sub );
+          Util::JSONObjectGenerator resultJOG = resultJAG.makeElement().makeObject();
+          {
+            Util::JSONGenerator memberJG = resultJOG.makeMember( "filename", 8 );
+            memberJG.makeString( location.getFilename() );
+          }
+          {
+            Util::JSONGenerator memberJG = resultJOG.makeMember( "line", 4 );
+            memberJG.makeInteger( location.getLine() );
+          }
+          {
+            Util::JSONGenerator memberJG = resultJOG.makeMember( "column", 6 );
+            memberJG.makeInteger( location.getColumn() );
+          }
+          {
+            Util::JSONGenerator memberJG = resultJOG.makeMember( "level", 5 );
+            memberJG.makeString( diagnostic.getLevelDesc() );
+          }
+          {
+            Util::JSONGenerator memberJG = resultJOG.makeMember( "desc", 4 );
+            memberJG.makeString( diagnostic.getDesc().getData(), diagnostic.getDesc().getLength() );
+          }
         }
       }
-      return result;
     }
     
-    RC::ConstHandle<JSON::Value> Operator::jsonDescMainThreadOnly() const
+    void Operator::jsonDescMainThreadOnly( Util::JSONGenerator &resultJG ) const
     {
-      return JSON::Boolean::Create( m_mainThreadOnly );
+      resultJG.makeBoolean( m_mainThreadOnly );
     }
   };
 };

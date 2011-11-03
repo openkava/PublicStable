@@ -28,7 +28,16 @@ namespace Fabric
       
       ~JSONGenerator()
       {
-        FABRIC_ASSERT( !m_ss );
+        // [pzion 20111023] We would like to assert here but
+        // we can't because an exception might be thrown
+        //FABRIC_ASSERT( !m_ss );
+      }
+      
+      void makeNull() const
+      {
+        FABRIC_ASSERT( m_ss );
+        m_ss->append( "null", 4 );
+        FABRIC_ASSERT( !(m_ss = 0) );
       }
       
       void makeBoolean( bool value ) const
@@ -51,7 +60,7 @@ namespace Fabric
       void makeScalar( float value ) const
       {
         FABRIC_ASSERT( m_ss );
-        m_ss->increaseLength( snprintf( m_ss->expand( 32 ), 32, "%f", value ) );
+        m_ss->increaseLength( snprintf( m_ss->expand( 40 ), 40, "%.16g", value ) );
         FABRIC_ASSERT( !(m_ss = 0) );
       }
       
@@ -122,12 +131,25 @@ namespace Fabric
       JSONObjectGenerator makeObject() const;
       
       JSONArrayGenerator makeArray() const;
+      JSONArrayGenerator *newArray() const;
+      
+      void appendJSON( char const *data, size_t length ) const
+      {  
+        FABRIC_ASSERT( m_ss );
+        m_ss->append( data, length );
+        FABRIC_ASSERT( !(m_ss = 0) );
+      }
       
       void appendJSON( Util::SimpleString const &ss ) const
       {  
         FABRIC_ASSERT( m_ss );
         m_ss->append( ss );
         FABRIC_ASSERT( !(m_ss = 0) );
+      }
+      
+      void flush()
+      {
+        FABRIC_ASSERT( !m_ss );
       }
       
     private:
@@ -148,16 +170,41 @@ namespace Fabric
       
       ~JSONObjectGenerator()
       {
-        m_ss->append( '}' );
+        flush();
+      }
+      
+      void flush()
+      {
+        if ( m_ss )
+        {
+          m_ss->append( '}' );
+          m_ss = 0;
+        }
+      }
+      
+      JSONGenerator makeMember( char const *data, size_t length ) const
+      {
+        FABRIC_ASSERT( m_ss );
+        if ( m_count++ > 0 )
+          m_ss->append( ',' );
+        JSONGenerator( m_ss ).makeString( data, length );
+        m_ss->append( ':' );
+        return JSONGenerator( m_ss );
       }
       
       JSONGenerator makeMember( char const *name ) const
       {
-        if ( m_count++ > 0 )
-          m_ss->append( ',' );
-        JSONGenerator( m_ss ).makeString( name );
-        m_ss->append( ':' );
-        return JSONGenerator( m_ss );
+        return makeMember( name, strlen( name ) );
+      }
+      
+      JSONGenerator makeMember( std::string const &string ) const
+      {
+        return makeMember( string.data(), string.length() );
+      }
+      
+      JSONGenerator makeMember( Util::SimpleString const &ss ) const
+      {
+        return makeMember( ss.getData(), ss.getLength() );
       }
       
     private:
@@ -187,14 +234,29 @@ namespace Fabric
       
       ~JSONArrayGenerator()
       {
-        m_ss->append( ']' );
+        flush();
+      }
+      
+      void flush()
+      {
+        if ( m_ss )
+        {
+          m_ss->append( ']' );
+          m_ss = 0;
+        }
       }
       
       JSONGenerator makeElement() const
       {
+        FABRIC_ASSERT( m_ss );
         if ( m_count++ > 0 )
           m_ss->append( ',' );
         return JSONGenerator( m_ss );
+      }
+      
+      size_t getCount() const
+      {
+        return m_count;
       }
       
     private:
@@ -207,6 +269,14 @@ namespace Fabric
     {
       FABRIC_ASSERT( m_ss );
       JSONArrayGenerator result = JSONArrayGenerator( m_ss );
+      FABRIC_ASSERT( !(m_ss = 0) );
+      return result;
+    }
+    
+    inline JSONArrayGenerator *JSONGenerator::newArray() const
+    {
+      FABRIC_ASSERT( m_ss );
+      JSONArrayGenerator *result = new JSONArrayGenerator( m_ss );
       FABRIC_ASSERT( !(m_ss = 0) );
       return result;
     }

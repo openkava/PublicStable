@@ -1,5 +1,4 @@
-FC = createFabricClient();
-FABRIC = FC.wrapFabricClient(FC);
+FABRIC = require('Fabric').createClient();
 
 for( var i = 1; i < 32; i++ )
 {
@@ -38,9 +37,8 @@ for( var i = 1; i < 32; i++ )
   for( var j = 0; j < i; j++ )
   {
     if( node.getData( "p" + j, 0 ) != 0 )
-      print( "Parameter " + j + " fails when evaluating " + i + " params" );
+      console.log( "Parameter " + j + " fails when evaluating " + i + " params" );
   }
 }
 
 FABRIC.flush();
-FC.dispose();

@@ -52,17 +52,16 @@ namespace Fabric
         m_integerImplT->setValue( t, data );
       }
           
-      virtual RC::Handle<JSON::Object> jsonDesc() const
+      virtual void jsonDesc( Util::JSONObjectGenerator &resultJOG ) const
       {
-        RC::Handle<JSON::Object> result = Desc::jsonDesc();
+        Desc::jsonDesc( resultJOG );
         std::string internalType;
         if ( m_integerImplT->isSigned() )
           internalType += "si";
         else
           internalType += "ui";
         internalType += _(m_integerImplT->getAllocSize() * 8);
-        result->set( "internalType", JSON::String::Create(internalType) );
-        return result;
+        resultJOG.makeMember( "internalType" ).makeString( internalType );
       }
       
     protected:

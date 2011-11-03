@@ -6,7 +6,7 @@
 #include <Fabric/Clients/NPAPI/Interface.h>
 #include <Fabric/Core/DG/Event.h>
 #include <Fabric/Core/MT/LogCollector.h>
-#include <Fabric/Core/MT/Mutex.h>
+#include <Fabric/Core/Util/Mutex.h>
 
 namespace Fabric
 {

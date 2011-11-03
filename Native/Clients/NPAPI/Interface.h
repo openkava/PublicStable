@@ -30,7 +30,7 @@ namespace Fabric
       
       static RC::Handle<Interface> Create( NPP npp, RC::Handle<Context> const &context );
       
-      virtual void notify( std::string const &jsonEncodedNotifications ) const;
+      virtual void notify( Util::SimpleString const &jsonEncodedNotifications ) const;
       
       void setViewPort( RC::Handle<ViewPort> const &viewPort );
       
@@ -55,7 +55,9 @@ namespace Fabric
       Interface( NPP npp, RC::Handle<Context> const &context );
       ~Interface();
           
-      std::string jsonExec( char const *jsonEncodedCommandsData, size_t jsonEncodedCommandsLength );
+      void jsonExec( char const *jsonEncodedCommandsData, size_t jsonEncodedCommandsLength,
+        Util::JSONGenerator &resultJG
+        );
       void setJSONNotifyCallback( NPObject *npObject );
       
     private:

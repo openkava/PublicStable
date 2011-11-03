@@ -9,6 +9,7 @@
 #include <Fabric/Core/Util/Encoder.h>
 #include <Fabric/Core/Util/Decoder.h>
 #include <Fabric/Base/Util/SimpleString.h>
+#include <Fabric/Core/Util/JSONGenerator.h>
 
 namespace Fabric
 {
@@ -89,6 +90,18 @@ namespace Fabric
         result->set( memberInfo.name, memberInfo.desc->getJSONValue( memberData ) );
       }
       return result;
+    }
+    
+    void StructImpl::generateJSON( void const *data, Util::JSONGenerator &jsonGenerator ) const
+    {
+      Util::JSONObjectGenerator jsonObjectGenerator = jsonGenerator.makeObject();
+      for ( size_t i=0; i<m_numMembers; ++i )
+      {
+        StructMemberInfo const &memberInfo = m_memberInfos[i];
+        void const *memberData = static_cast<uint8_t const *>(data) + m_memberOffsets[i];
+        Util::JSONGenerator memberJG = jsonObjectGenerator.makeMember( memberInfo.name );
+        memberInfo.desc->generateJSON( memberData, memberJG );
+      }
     }
     
     void StructImpl::setDataFromJSONValue( RC::ConstHandle<JSON::Value> const &jsonValue, void *data ) const

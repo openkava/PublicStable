@@ -25,7 +25,7 @@ namespace Fabric
   namespace CG
   {
     OpaqueAdapter::OpaqueAdapter( RC::ConstHandle<Manager> const &manager, RC::ConstHandle<RT::OpaqueDesc> const &opaqueDesc )
-      : SimpleAdapter( manager, opaqueDesc )
+      : Adapter( manager, opaqueDesc, 0 )
       , m_opaqueDesc( opaqueDesc )
     {
     }
@@ -119,8 +119,7 @@ namespace Fabric
           BasicBlockBuilder basicBlockBuilder( functionBuilder );
           basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
           llvm::Value *opaqueLValue = llvmRValueToLValue( basicBlockBuilder, opaqueRValue );
-          llvm::Value *stringRValue = stringAdapter->llvmCallCast( basicBlockBuilder, this, opaqueLValue );
-          stringAdapter->llvmAssign( basicBlockBuilder, stringLValue, stringRValue );
+          stringAdapter->llvmCallCast( basicBlockBuilder, this, opaqueLValue, stringLValue );
           basicBlockBuilder->CreateRetVoid();
         }
       }
@@ -162,5 +161,10 @@ namespace Fabric
       return "<Opaque>";
 #endif
     }
-  }; // namespace CG
-}; // namespace FABRIC
+
+    void OpaqueAdapter::llvmDefaultAssign( BasicBlockBuilder &basicBlockBuilder, llvm::Value *dstLValue, llvm::Value *srcRValue ) const
+    {
+      basicBlockBuilder->CreateStore( srcRValue, dstLValue );
+    }
+  };
+};
