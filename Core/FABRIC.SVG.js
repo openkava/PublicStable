@@ -715,6 +715,7 @@ function clone_obj(obj, deepclone) {
         selected = false;
         fireOnDeselectCallbacks();
       };
+      this.fireOnDeselectCallbacks = fireOnDeselectCallbacks;
 
       var self = this;
         this.elem.addEventListener('mousedown',
@@ -864,6 +865,9 @@ function clone_obj(obj, deepclone) {
         this.selection.push(obj);
       },
       replaceSelection: function(objArray) {
+        for(var i=0; i<this.selection.length; i++){
+            this.selection[i].fireOnDeselectCallbacks();
+        }
         this.selection = objArray;
       }
       /*  createClipPath:function(){
@@ -959,6 +963,9 @@ function clone_obj(obj, deepclone) {
       createLinearGradient: function() {
         this.createDefs();
         var linearGradient = this.defs.appendAndReturnChild(this.extend(this.create('linearGradient'), this.groupObj));
+        linearGradient.clearKeys = function(){
+            linearGradient.removeAllChildren();
+        }
         linearGradient.addKey = function(pos, color){
           var key = linearGradient.appendAndReturnChild(this.create('stop').attr('offset',(pos * 100)+"%").attr('stop-color', color.toHex()));
           key.setParam = function(pos){

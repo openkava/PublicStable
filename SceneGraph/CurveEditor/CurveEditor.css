@@ -25,6 +25,11 @@ rect.EventCatcher {
   stroke-opacity:0.0;
 }
 
+
+rect.Selected {
+  stroke:white;
+}
+
 #curveContainer {
   position: absolute;
   top: 0;
