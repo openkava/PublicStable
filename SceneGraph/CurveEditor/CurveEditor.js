@@ -9,6 +9,9 @@ var constructCurveEditor = function(domRootID, keyframeTrackNode, options){
   options.zoomable = options.zoomable!=undefined ? options.zoomable : true;
   options.timeRange = options.timeRange!=undefined ? options.timeRange : new FABRIC.RT.Vec2(0, 100);
   
+  var valueRange = options.valueRange!=undefined ? options.valueRange : new FABRIC.RT.Vec2(0, 1);
+  var clampValues = options.clampValues!=undefined ? options.clampValues : false;
+  
   var rootDomNode = document.getElementById(domRootID);
   var windowWidth = rootDomNode.clientWidth;
   var windowHeight = rootDomNode.clientHeight;
@@ -24,6 +27,15 @@ var constructCurveEditor = function(domRootID, keyframeTrackNode, options){
   svgRoot.svgRoot = svgRoot;
   svgRoot.state = 'Normal';
   
+  
+  
+  var containmentRect;
+  if(clampValues){
+    containmentRect = graphCenterGroup.createRect().size(windowWidth, windowHeight).translate(0, windowHeight * -0.5);;
+    containmentRect.attr('fill', 'none');
+    containmentRect.attr('stroke', "black");
+    containmentRect.attr('stroke-width', 2);
+  }
   ///////////////
   var trackDisplayNodes = [];
   var trackCount = keyframeTrackNode.getTrackCount();
@@ -43,6 +55,9 @@ var constructCurveEditor = function(domRootID, keyframeTrackNode, options){
   }
   
 
+  if(clampValues){
+    yRange = valueRange;
+  }
 
   var screenXfo = {
     tr: new FABRIC.Vec2(0, 0),
@@ -58,6 +73,10 @@ var constructCurveEditor = function(domRootID, keyframeTrackNode, options){
         }
       }
       var getCurveYRange = function(curveData) {
+        if(clampValues){
+          yRange = valueRange;
+          return;
+        }
         for (var i = 1; i < curveData.time.length; i++) {
           if (yRange.x > curveData.value[i]) {
             yRange.x = curveData.value[i];
@@ -75,7 +94,12 @@ var constructCurveEditor = function(domRootID, keyframeTrackNode, options){
         }
         getCurveYRange(curvesData[i]);
       }
-      this.sc = new FABRIC.Vec2(windowWidth/(timeRange.y - timeRange.x), -(windowHeight - 40) / (yRange.y - yRange.x));
+      
+      if(clampValues){
+        this.sc = new FABRIC.Vec2(windowWidth/(timeRange.y - timeRange.x), -(windowHeight) / (yRange.y - yRange.x));
+      }else{
+        this.sc = new FABRIC.Vec2(windowWidth/(timeRange.y - timeRange.x), -(windowHeight - 40) / (yRange.y - yRange.x));
+      }
       this.tr = new FABRIC.Vec2(-timeRange.x, (yRange.y + yRange.x) * -0.5);
     },
     update: function(){
@@ -133,7 +157,7 @@ var constructCurveEditor = function(domRootID, keyframeTrackNode, options){
               nextKey = trackData.keys[keyIndex+1],
               tangentNormalizedValues = [];
           var keyGroupNode = keysHolderGroup.createGroup().translate(keySsVal)
-            .draggable({ mouseButton: 0 })
+            .draggable({ mouseButton: 0, containment:containmentRect })
             .addOnDragBeginCallback(
               function(evt){
                 var deltat, i=0;
@@ -173,7 +197,7 @@ var constructCurveEditor = function(domRootID, keyframeTrackNode, options){
                     keyData.setInTan(keyData.intangent);
                   }
                 }
-                if(keyIndex < trackData.keys.length){
+                if(keyIndex < trackData.keys.length-1){
                   deltat = nextKey.time - keyData.time;
                   if(isBezier) {
                     keyData.outtangent.x = deltat * tangentNormalizedValues[i++];
@@ -254,7 +278,7 @@ var constructCurveEditor = function(domRootID, keyframeTrackNode, options){
                   function(evt) {
                     keyData.outtangent = screenXfo.toGraphSpace(evt.localPos, true);
                     // Clamp the handle lengths > 0 && < deltat
-                   if(keyIndex < trackData.keys.length){
+                   if(keyIndex < trackData.keys.length-1){
                       var deltat = nextKey.time - keyData.time;
                       keyData.outtangent.x = keyData.outtangent.x > deltat ? deltat : keyData.outtangent.x;
                     }

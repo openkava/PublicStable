@@ -538,9 +538,12 @@ function clone_obj(obj, deepclone) {
               var delta = mousePos.subtract(mouseDraggedStartPos);
               pos = draggedStartPos.add(delta);
               if (options.containment) {
-                var canvasSize = options.containment.size();
+                var containmentSize = options.containment.size();
+                var containmentPos = options.containment.translate();
                 var size = self.size();
-                pos = pos.clamp(new FABRIC.Vec2(0, 0), canvasSize.subtract(size));
+                pos = pos.subtract(containmentPos);
+                pos = pos.clamp(new FABRIC.Vec2(0, 0), containmentSize.subtract(size));
+                pos = pos.add(containmentPos);
               }
               if (options.snapSize > 0) {
                 pos = pos.multiplyScalar(1.0 / options.snapSize);

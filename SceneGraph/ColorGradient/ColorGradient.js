@@ -1,5 +1,5 @@
 
-var constructColorGradient = function(domRootID, keyframeTrackNode, options){
+var constructColorGradient = function(domRootID, colorKeyTrackNode, options){
   
   var keyColor = FABRIC.rgb(.0, .0, .0);
   
@@ -19,12 +19,12 @@ var constructColorGradient = function(domRootID, keyframeTrackNode, options){
   var graphCenterGroup = svgRoot.createGroup().id('graphCenterGroup').translate(0, windowHeight * 0.5);
   var keysHolderGroup = graphCenterGroup.createGroup().id('keysHolderGroup');
 
-
   gradientRect.attr('stroke', "black");
-  gradientRect.attr('stroke-width', 3);
+  gradientRect.attr('stroke-width', 2);
 
+  var gradientKeyData = colorKeyTrackNode.getTrackKeys();
 
-  var addKey = function(param, color){
+  var addKey = function(index, param, color){
     var gradientKey = gradient.addKey(param, color);
     var keyGroupNode = keysHolderGroup.createGroup()
       .translate(param * windowWidth, 0)
@@ -39,23 +39,29 @@ var constructColorGradient = function(domRootID, keyframeTrackNode, options){
       .draggable({ mouseButton: 0, axis: 'X', containment:gradientRect })
       .addOnDragCallback(
         function(evt) {
-          gradientKey.setParam(evt.localPos.x / windowWidth);
+          var time = evt.localPos.x / windowWidth;
+          gradientKey.setParam(time);
+          gradientKeyData[index].time = time;
+          colorKeyTrackNode.setTrackKeys(0, gradientKeyData);
+          gradientWidget.fireEvent('gradientchanged');
         });
     
-    var keyRect = keyGroupNode.createRect().translate(-2, windowHeight * -0.45).size(4, windowHeight * 0.9 ).stroke(keyColor).attr('fill', color.toHex());
+    var keyRect = keyGroupNode.createRect().translate(-2, 0).size(6, windowHeight * 0.4 ).stroke(keyColor).attr('fill', color.toHex());
     
     var gradientKeySetColor = gradientKey.setColor;
     gradientKey.setColor = function(col){
       gradientKeySetColor(col);
       keyRect.attr('fill', col.toHex());
+      gradientKeyData[index].value = col;
+      colorKeyTrackNode.setTrackKeys(0, gradientKeyData);
+      
+      gradientWidget.fireEvent('gradientchanged');
     }
   }
   
-  addKey(0, new FABRIC.Color(1, 1, 0.3));
-  addKey(0.3, new FABRIC.Color(1, 0.3, 0));
-  addKey(0.45, new FABRIC.Color(1, 1, 0.3));
-  addKey(0.75, new FABRIC.Color(1,  0.3, 0));
-  addKey(1, new FABRIC.Color(1, 1, 0.3));
+  for(var i=0; i<gradientKeyData.length; i++){
+    addKey(i, gradientKeyData[i].time, gradientKeyData[i].value);
+  }
   
   /*
   

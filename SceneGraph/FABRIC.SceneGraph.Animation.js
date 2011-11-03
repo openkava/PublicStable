@@ -157,6 +157,15 @@ FABRIC.SceneGraph.registerNodeType('BezierKeyAnimationTrack', {
     return scene.constructNode('AnimationTrack', options);
   }});
 
+FABRIC.SceneGraph.registerNodeType('ColorKeyAnimationTrack', {
+  briefDesc: 'The ColorKeyAnimationTrack node implements an array of linear keyframe animation tracks.',
+  detailedDesc: 'The ColorKeyAnimationTrack node derrives from AnimationTrack and specifies that the tracks should contains \'LinearKeyframes\'',
+  parentNodeDesc: 'AnimationTrack',
+  factoryFn: function(options, scene) {
+    options.keyframetype = 'ColorKeyframe';
+    return scene.constructNode('AnimationTrack', options);
+  }});
+
 
 FABRIC.SceneGraph.registerNodeType('AnimationController', {
   briefDesc: 'The AnimationController node controls the time at which an AnimationTrack is evaluated.',
@@ -459,7 +468,7 @@ FABRIC.SceneGraph.registerNodeType('TrackDisplay', {
     parametersdgnode.addMember('trackIndex', 'Integer', options.trackIndex);
 
     dgnode.addMember('time', 'Scalar', 0);
-    dgnode.addMember('value', options.animationTrackNode.getValueType(), 0);
+    dgnode.addMember('value', options.animationTrackNode.getValueType());
     dgnode.addMember('keyid', 'Integer', 0);
     dgnode.setDependency(parametersdgnode, 'parameters');
 
