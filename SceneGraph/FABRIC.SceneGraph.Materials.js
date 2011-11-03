@@ -47,7 +47,8 @@ FABRIC.SceneGraph.registerNodeType('Image', {
       height: 128,
       color: FABRIC.RT.rgba(0.0,0.0,0.0,0.0),
       url: undefined,
-      forceRefresh: false
+      forceRefresh: false,
+      glRepeat: true
     });
     
     var imageNode = scene.constructNode('Texture', options);
@@ -110,6 +111,10 @@ FABRIC.SceneGraph.registerNodeType('Image', {
       // Construct the handler for loading the image into texture memory.
       var redrawEventHandler = imageNode.constructEventHandlerNode('Redraw');
       var oglTexture = options.wantHDR ? FABRIC.RT.oglTexture2D_Color() : FABRIC.RT.oglTexture2D();
+      if(!options.glRepeat) {
+        oglTexture.wrapS = FABRIC.SceneGraph.OpenGLConstants.GL_CLAMP;
+        oglTexture.wrapT = FABRIC.SceneGraph.OpenGLConstants.GL_CLAMP;
+      }
       oglTexture.forceRefresh = options.forceRefresh;
       redrawEventHandler.addMember('oglTexture2D', 'OGLTexture2D', oglTexture);
       if(options.createDgNode){
@@ -178,7 +183,8 @@ FABRIC.SceneGraph.registerNodeType('Image3D', {
       width: 16,
       height: 16,
       depth: 16,
-      url: undefined
+      url: undefined,
+      glRepeat: true
     });
     if(options.color === undefined) {
       if(options.format === 'RGBA')
@@ -291,6 +297,11 @@ FABRIC.SceneGraph.registerNodeType('Image3D', {
       else
          oglTexture = FABRIC.RT.oglTexture3D_RGBA();
 
+      if(!options.glRepeat) {
+        oglTexture.wrapS = FABRIC.SceneGraph.OpenGLConstants.GL_CLAMP;
+        oglTexture.wrapT = FABRIC.SceneGraph.OpenGLConstants.GL_CLAMP;
+        oglTexture.wrapR = FABRIC.SceneGraph.OpenGLConstants.GL_CLAMP;
+      }
       redrawEventHandler.addMember('oglTexture3D', 'OGLTexture3D', oglTexture);
       if(options.createDgNode){
         redrawEventHandler.setScope('image', dgnode);
@@ -1696,7 +1707,8 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
           name: 'ReducedOpacity',
           format: 'UShort',
           createResourceLoadNode: false,
-          createDgNode: true
+          createDgNode: true,
+          glRepeat: false
         });
         var reducedOpacityDGNode = generatorNodeOpacity.getDGNode();
         reducedOpacityDGNode.setDependency(opacityTextureDGNode, 'opacity');
@@ -1768,7 +1780,8 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
         name: '3DTextureGenerator_Gradient',
         format: 'RGBA',
         createResourceLoadNode: false,
-        createDgNode: true
+        createDgNode: true,
+        glRepeat: false
       });
       var generatorNodeGradient = scene.getPrivateInterface(generatorNodeGradientPub);
       var dgnodeGradient = generatorNodeGradient.getDGNode();
@@ -1893,9 +1906,10 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
       createResourceLoadNode: false,
       createLoadTextureEventHandler: true,
       width: 1024,
-      height: 1,
+      height: 2,
       forceRefresh: true,
-      initImage: false
+      initImage: false,
+      glRepeat: false
     });
     var transferFunctionImageDGNode = transferFunctionImageNode.getDGNode();
     transferFunctionImageDGNode.addMember('opacityFactors', 'Scalar[1024]');
@@ -1911,9 +1925,26 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
       srcFile: 'FABRIC_ROOT/SceneGraph/KL/generateVolumeSlices.kl'
     }));
 
+    transferFunctionImageDGNode.addMember('minOpacity', 'Scalar', options.minOpacity);
+    transferFunctionImageDGNode.addMember('maxOpacity', 'Scalar', options.maxOpacity);
+    volumeNode.addMemberInterface(transferFunctionImageDGNode, 'minOpacity', true);
+    volumeNode.addMemberInterface(transferFunctionImageDGNode, 'maxOpacity', true);
+
+    transferFunctionImageDGNode.bindings.append(scene.constructOperator({
+      operatorName: 'initTransferFunctionValues',
+      parameterLayout: [
+        'self.opacityFactors',
+        'self.opacityColors'
+      ],
+      entryFunctionName: 'initTransferFunctionValues',
+      srcFile: 'FABRIC_ROOT/SceneGraph/KL/generateVolumeSlices.kl'
+    }));
+
     transferFunctionImageDGNode.bindings.append(scene.constructOperator({
       operatorName: 'updateTransferFunctionImage',
       parameterLayout: [
+        'self.minOpacity',
+        'self.maxOpacity',
         'self.opacityFactors',
         'self.opacityColors',
         'self.pixels'
@@ -1938,16 +1969,12 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
     volumeMaterialNodeRedrawEvent.addMember('brightnessFactor', 'Scalar', options.brightnessFactor );
 
     volumeNode.addMemberInterface(volumeMaterialNodeRedrawEvent, 'transparency', true);
-    volumeNode.addMemberInterface(volumeMaterialNodeRedrawEvent, 'minOpacity', true);
-    volumeNode.addMemberInterface(volumeMaterialNodeRedrawEvent, 'maxOpacity', true);
     volumeNode.addMemberInterface(volumeMaterialNodeRedrawEvent, 'specularFactor', true);
     volumeNode.addMemberInterface(volumeMaterialNodeRedrawEvent, 'brightnessFactor', true);
     volumeNode.addMemberInterface(volumeMaterialNodeRedrawEvent, 'invertColor', true);
     volumeNode.addMemberInterface(offscreenNodeRedrawEventHandler, 'backgroundColor', true);
 
     volumeNode.pub.setTransparency(options.transparency);
-    volumeNode.pub.setMinOpacity(options.minOpacity);
-    volumeNode.pub.setMaxOpacity(options.maxOpacity);
     volumeNode.pub.setInvertColor(options.invertColor);
 
     volumeMaterialNodeRedrawEvent.preDescendBindings.append(scene.constructOperator({

@@ -604,7 +604,7 @@ operator initTransferFunctionValues(
 
   Size i;
   for(i = 0; i < 1024; ++i) {
-    Scalar factor = Scalar(i)/Scalar(1024);
+    Scalar factor = Scalar(i)/Scalar(1023);
     opacityFactors[i] = factor;
 
     Scalar f1;
@@ -642,17 +642,35 @@ operator initTransferFunctionValues(
 }
 
 operator updateTransferFunctionImage(
+  io Scalar minOpacity,
+  io Scalar maxOpacity,
   io Scalar opacityFactors[1024],
   io RGBA opacityColors[1024],
   io Color pixels[]
 ){
-  pixels.resize(1024);
+  pixels.resize(1024*2);
   Size i;
   for(i = 0; i < 1024; ++i) {
     pixels[i].r = Scalar(opacityColors[i].r)/255.0;
     pixels[i].g = Scalar(opacityColors[i].g)/255.0;
     pixels[i].b = Scalar(opacityColors[i].b)/255.0;
     pixels[i].a = Scalar(opacityFactors[i]);
+
+    //In the 2nd pixel row, bake the opacity clamping function.
+    //We keep it in a separate texture so that we can reduce artifacts even if "transparency" is not 0
+    //We bake it with an ease-in and ease-out curve to reduce visual artifacts (aliasing)
+    Scalar rampFactor = 0.05;//Arbitrary: should be an option.
+
+    Scalar X = Scalar(i)/Scalar(1023);
+    Scalar clampFactor = 1.0;
+    if(X < minOpacity-rampFactor || X > maxOpacity+rampFactor)
+      clampFactor = 0.0;
+    else if(X < minOpacity)
+      clampFactor = 1.0-(minOpacity-X)/rampFactor;
+    else if(X > maxOpacity)
+      clampFactor = 1.0-(X-maxOpacity)/rampFactor;
+
+    pixels[i+1024].a = Scalar(clampFactor);
   }
 }
 
