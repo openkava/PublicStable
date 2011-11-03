@@ -95,7 +95,7 @@ $(document).ready(function() {
   });
   
   // define how many las files to load
-  var numLasFiles = 150;
+  var numLasFiles = 100;
   var filesLoaded = 0;
   $('#loadingDesc').html("Downloading "+numLasFiles+" LIDAR files...<br>This may take some time (several minutes).");
 
@@ -145,7 +145,7 @@ $(document).ready(function() {
     if(document.URL.toLowerCase().substr(0,16) == 'http://localhost')
       url = 'http://localhost/~helge/Fabric/Apps/Sample/Lidar/wwview.org/'+resourceName+'.las';
 
-    var assets = scene.importAssetFile(url, {blockRedrawingTillResourceIsLoaded: true});
+    var assets = scene.importAssetFile(url, {blockRedrawingTillResourceIsLoaded: false});
     assets[resourceName].addOnLoadSuccessCallback(function(){
       
       var colors = [];
@@ -184,8 +184,7 @@ $(document).ready(function() {
               }
             }
             $('#pointCount').html(pointCountHtml);
-            viewport.redraw();
-          }, 150);
+          }, 1000);
           
           // create an instance!
           pointInstances[resourceName] = scene.constructNode('LidarInstance', {
@@ -193,7 +192,11 @@ $(document).ready(function() {
             color: colors[parseInt(resourceName)%colors.length]
           });
           
-          pointInstances[resourceName].setMaterialNode(flatMaterial);
+          var useGradient = $('#useElevationShader').attr('checked');
+          if(useGradient)
+            pointInstances[resourceName].setMaterialNode(gradientMaterial);
+          else
+            pointInstances[resourceName].setMaterialNode(flatMaterial);
         }
       }
       filesLoaded++;
