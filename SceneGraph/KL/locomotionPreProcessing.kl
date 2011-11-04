@@ -119,7 +119,7 @@ operator locomotionPreProcessing(/*
   
   io DebugGeometry debugGeometry
 ) {
-  report("locomotionPreProcessing:" + index);
+  report("locomotionPreProcessing <<<:" + index);
 
   PoseVariables poseVariables = referenceVariables;
   Xfo pose[];
@@ -507,6 +507,7 @@ operator locomotionPreProcessing(/*
   
   trackSet.calcTimeRange();
   
+  report("locomotionPreProcessing >>>:" + index);
 }
 
 

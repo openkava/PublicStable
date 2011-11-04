@@ -25,18 +25,17 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('COMSolver', {
     
     var rigNode = scene.getPrivateInterface(options.rigNode),
       skeletonNode = scene.getPrivateInterface(rigNode.pub.getSkeletonNode()),
-      variablesNode = scene.getPrivateInterface(rigNode.pub.getVariablesNode()),
       solver = {};
 
-    var comXfoId = variablesNode.addVariable('Xfo');
+    var comXfoId = rigNode.addVariable('Xfo');
     // stepFrequency
-    var comParam0VarId = variablesNode.addVariable('Scalar');
+    var comParam0VarId = rigNode.addVariable('Scalar');
     // speed
-    var comParam1VarId = variablesNode.addVariable('Scalar');
+    var comParam1VarId = rigNode.addVariable('Scalar');
     // gradient
-    var comParam2VarId = variablesNode.addVariable('Scalar');
+    var comParam2VarId = rigNode.addVariable('Scalar');
     // direction
-    var comParam3VarId = variablesNode.addVariable('Scalar');
+    var comParam3VarId = rigNode.addVariable('Scalar');
     
     var com = new FABRIC.Characters.COM(comXfoId, [comParam0VarId, comParam1VarId, comParam2VarId, comParam3VarId] );
     skeletonNode.addMember('com', 'COM', com);
@@ -84,14 +83,13 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('LocomotionFeetSolver', {
     
     var rigNode = scene.getPrivateInterface(options.rigNode),
       skeletonNode = scene.getPrivateInterface(rigNode.pub.getSkeletonNode()),
-      variablesNode = scene.getPrivateInterface(rigNode.pub.getVariablesNode()),
       solver = {};
 
     var limbs = skeletonNode.getData('legs');
     var locomotionFeet = [];
     var stepTimeVarIds = [];
     for(var i=0; i<limbs.length; i++){
-      var stepTimeVarId = variablesNode.addVariable('Scalar');
+      var stepTimeVarId = rigNode.addVariable('Scalar');
       locomotionFeet.push(new FABRIC.Characters.LocomotionFoot(i, stepTimeVarId));
       stepTimeVarIds.push(stepTimeVarId);
     }
@@ -157,9 +155,7 @@ FABRIC.SceneGraph.registerNodeType('LocomotionAnimationLibrary', {
   optionsDesc: {
   },
   factoryFn: function(options, scene) {
-    scene.assignDefaults(options, {
-      sampleFrequency: 1/60
-    });
+    
     var animationLibraryNode = scene.constructNode('LinearKeyAnimationLibrary', options);
     var dgnode = animationLibraryNode.getDGNode();
     dgnode.addMember('markers', 'LocomotionMarker[]');
@@ -169,6 +165,7 @@ FABRIC.SceneGraph.registerNodeType('LocomotionAnimationLibrary', {
       sourceAnimationLibrary,
       keyframeTrackBindings,
       rigNode,
+      sampleFrequency,
       footMovementThreshold,
       callback
     ){
@@ -178,7 +175,7 @@ FABRIC.SceneGraph.registerNodeType('LocomotionAnimationLibrary', {
       if (!rigNode.isTypeOf('CharacterRig')) {
         throw ('Incorrect type. Must be a CharacterRig');
       }
-      
+    
       sourceAnimationLibrary = scene.getPrivateInterface(sourceAnimationLibrary);
       variablesNode = scene.getPrivateInterface(rigNode.getVariablesNode());
       skeletonNode = scene.getPrivateInterface(rigNode.getSkeletonNode());
@@ -188,7 +185,7 @@ FABRIC.SceneGraph.registerNodeType('LocomotionAnimationLibrary', {
       
       var paramsdgnode = animationLibraryNode.constructDGNode('ParamsDGNode');
       dgnode.setDependency(paramsdgnode, 'params');
-      paramsdgnode.addMember('sampleFrequency', 'Scalar', 1/60);
+      paramsdgnode.addMember('sampleFrequency', 'Scalar', sampleFrequency);
       paramsdgnode.addMember('footMovementThreshold', 'Scalar', footMovementThreshold);
       
       var trackSet = sourceAnimationLibrary.pub.getTrackSet(0);
@@ -241,21 +238,15 @@ FABRIC.SceneGraph.registerNodeType('LocomotionAnimationLibrary', {
           'self.index',
           
           'self.debugGeometry'
-        ]
+        ],
+        async: false
       }));
       
-      FABRIC.createAsyncTask(function(){
-        FABRIC.createAsyncTask(function(){
-          dgnode.evaluate();
-          dgnode.bindings.remove(0);
-          dgnode.removeDependency('variables');
-          dgnode.removeDependency('skeleton');
-          dgnode.removeDependency('params');
-          if(callback){
-            callback.call();
-          }
-        });
-      });
+      dgnode.evaluate();
+      dgnode.bindings.remove(0);
+      dgnode.removeDependency('variables');
+      dgnode.removeDependency('skeleton');
+      dgnode.removeDependency('params');
     }
     return animationLibraryNode;
   }});
@@ -433,13 +424,8 @@ FABRIC.SceneGraph.registerNodeType('LocomotionPoseVariables', {
     });
     
     var locomotionVariables = scene.constructNode('CharacterVariables', options);
-    var dgnode;
-    if(options.baseVariables){
-      dgnode = locomotionVariables.getDGNode();
-    }
-    else{
-      dgnode = locomotionVariables.constructDGNode('DGNode');
-    }
+    var dgnode = locomotionVariables.getDGNode();
+    
     if(options.bulletWorldNode){
       var bulletWorldNode = scene.getPrivateInterface(options.bulletWorldNode);
       dgnode.setDependency(bulletWorldNode.getDGNode(), 'bulletworld');
