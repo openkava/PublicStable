@@ -103,60 +103,6 @@ s.parentNode.insertBefore(ga, s);
     
     <script type="text/javascript">
 
-FABRIC.SceneGraph.registerNodeType('3DTextureGenerator', {
-  briefDesc: '',
-  detailedDesc: '',
-  parentNodeDesc: 'Scene',
-  optionsDesc: {
-  },
-  factoryFn: function(options, scene) {
-    scene.assignDefaults(options, {
-        resolution: 128
-      });
-
-    options.name = '3DTextureGenerator_Opacity';
-    options.format = 'UShort';
-    options.createDgNode = true;
-    options.createResourceLoadNode = false;
-    options.glRepeat = false;
-    var generatorNodeOpacity = scene.constructNode('Image3D', options);
-    var dgnodeOpacity = generatorNodeOpacity.getDGNode();
-
-    dgnodeOpacity.addMember('resolution', 'Size', options.resolution );
-    generatorNodeOpacity.addMemberInterface(dgnodeOpacity, 'resolution', true);
-
-    dgnodeOpacity.bindings.append(scene.constructOperator({
-      operatorName: 'generate3DTextureOpacity',
-      parameterLayout: [
-        'self.resolution',
-        'self.width',
-        'self.height',
-        'self.depth',
-        'self.pixels'
-      ],
-      entryFunctionName: 'generate3DTextureOpacity',
-      srcFile: 'KL/3DTextureUtils.kl'
-    }));
-
-/* 
-    //Note: this generates perfect analytic gradients
-    dgnodeGradient.bindings.append(scene.constructOperator({
-      operatorName: 'generate3DTextureGradient',
-      parameterLayout: [
-        'opacity.resolution',
-        'self.width',
-        'self.height',
-        'self.depth',
-        'self.pixels'
-      ],
-      entryFunctionName: 'generate3DTextureGradient',
-      srcFile: 'KL/3DTextureUtils.kl'
-    }));*/
-
-    return generatorNodeOpacity;
-  }
-});
-
 FABRIC.SceneGraph.registerNodeType('Image3DWithHistogram', {
   briefDesc: '',
   detailedDesc: '',
@@ -355,7 +301,7 @@ $(document).ready(function() {
       $('#rangeZ3D').slider({min: 0, max: 1, step: 0.005, range: true, values: [0,1] })
   ];
   var $opacityRangeSlider = $('#opacityRange').slider({min: 0, max: 1, step: 0.005, range: true, values: [0.1,1] });
-  var $brightnessSlider = $('#brightness').slider({min: 0, max: 1, step: 0.01, value: 0.75 });
+  var $brightnessSlider = $('#brightness').slider({min: 0, max: 1, step: 0.01, value: 0.5 });
   var $transparencySlider = $('#transparency').slider({min: 0, max: 1, step: 0.01, value: 0.8 });
   var $specularFactorSlider = $('#specularFactor').slider({min: 0, max: 1, step: 0.01, value: 1.0 });
   var $resolutionFactorSlider = $('#resolutionFactor').slider({min: 0.01, max: 1, step: 0.01, value: 1.0 });
@@ -378,7 +324,7 @@ $(document).ready(function() {
   opacityKeyframeTrackNode.setTrackData(0, {
     name: 'opacityFactors',
     color: FABRIC.RT.rgb(1, 0, 0),
-    keys: [key(0, 0), key(.1, 1), key(0.2, 0), key(.5, 0), key(.75, 1), key(1.0, 1)]
+    keys: [key(0, 0), key(.1, .9), key(.2, 0.75), key(.4, 0.05), key(.5, 1), key(1.0, 1)]
   });
   
   var opacityDisplayNode = scene.constructNode('TrackDisplay', {
@@ -398,9 +344,13 @@ $(document).ready(function() {
     name: 'Gradient',
     color: FABRIC.RT.rgb(1, 0, 0),
     keys: [
-      key(0.0, FABRIC.RT.rgb(1, 0, 0)),
-      key(.5, FABRIC.RT.rgb(0, 1, 0)),
-      key(1.0, FABRIC.RT.rgb(0, 1, 1))
+      key(.0, FABRIC.RT.rgb(.7, 0, 0)),
+      key(.2, FABRIC.RT.rgb(0, .7, 0)),
+      key(.25, FABRIC.RT.rgb(0, .7, .7)),
+      key(.3, FABRIC.RT.rgb(.7, .7, 0)),
+      key(.4, FABRIC.RT.rgb(.7, 0, .7)),
+      key(.5, FABRIC.RT.rgb(0, 0, .7)),
+      key(1.0, FABRIC.RT.rgb(0, .3, .7))
     ]
   });
       
@@ -409,9 +359,6 @@ $(document).ready(function() {
       timeRange: new FABRIC.RT.Vec2(0, 1),
       segmentCount: 1024
     });
-  
-  
-  
 
   var viewport = scene.constructNode('Viewport', {
     windowElement: document.getElementById('FabricContainer'),
@@ -437,7 +384,6 @@ $(document).ready(function() {
   var layoutRectangle = scene.constructNode('DrawRectangle', {color: new FABRIC.RT.RGBA(128,128,128,255), tl: new FABRIC.RT.Vec2(2.0/3.0, 1.0), br: new FABRIC.RT.Vec2(1.0, -1.0) });
   var borderSize = 0.01;
 
-  //var opacityTexture = scene.constructNode('3DTextureGenerator');
   var opacityTexture = scene.constructNode('Image3DWithHistogram',  { url: 'Resources/ChestMid.nrrd', resourceTargetTransformNode: transform, glRepeat: false, histogramResolution: 1024 });
 
   opacityTexture.getResourceLoadNode().addOnLoadSuccessCallback(function (){
@@ -447,15 +393,15 @@ $(document).ready(function() {
   var volumeNode = scene.constructNode('VolumeOpacityInstance', {
       viewportNode: viewport,
       transformNode: transform,
-      cropMin: new FABRIC.RT.Vec3(0, 0, 0),
+      cropMin: new FABRIC.RT.Vec3(0, 0.4, 0),
       cropMax: new FABRIC.RT.Vec3(1, 1, 1),
       opacityTextureNode: opacityTexture,
       lightNode: light,
-      brightnessFactor: 0.75,
-      transparency: 0.80,
+      brightnessFactor: 0.5,
+      transparency: 0.70,
       minOpacity: 0.1,
       maxOpacity: 1.0,
-      backgroundColor: new FABRIC.RT.Color(1.0, 1.0, 1.0, 1.0),
+      backgroundColor: new FABRIC.RT.Color(0.0, 0.0, 0.0, 0.0),
       opacityFactorsNode: opacityDisplayNode,
       opacityColorsNode: gradientDisplayNode
     });
@@ -546,7 +492,7 @@ $(document).ready(function() {
     viewport.redraw();
   });
 
-  $("#whiteBackground").attr('checked', true).change(function() {
+  $("#whiteBackground").attr('checked', false).change(function() {
     var whiteBackground = $('#whiteBackground').attr('checked');
     volumeNode.setBackgroundColor(whiteBackground ? new FABRIC.RT.Color(1.0, 1.0, 1.0, 1.0) : new FABRIC.RT.Color(0.0, 0.0, 0.0, 1.0));
     viewport.redraw();
