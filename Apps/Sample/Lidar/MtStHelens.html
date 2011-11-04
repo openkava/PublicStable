@@ -112,11 +112,8 @@ $(document).ready(function() {
           materialNode: pointMaterial
         });
       }
-    }
-
-    // append a call back to compute the bbox values
-    FABRIC.appendOnResolveAsyncTaskCallback(function(label, nbRemaining, doneWeight, totalWeight) {
-      if (nbRemaining===1) {
+      
+      setTimeout(function(){
         // place the camera based on the center
         var min = new FABRIC.RT.Vec3(10000000,10000000,10000000);
         var max = new FABRIC.RT.Vec3(-10000000,-10000000,-10000000);
@@ -151,7 +148,7 @@ $(document).ready(function() {
           step: (max.y - min.y) * 0.01
         }).bind('slide',function(event, ui) {
           pointMaterial.setMinimum(ui.value)
-          scene.redrawAllWindows();
+          viewport.redraw();
         });
         $('#maximum').slider({
           min: min.y,
@@ -160,7 +157,7 @@ $(document).ready(function() {
           step: (max.y - min.y) * 0.01
         }).bind('slide',function(event, ui) {
           pointMaterial.setMaximum(ui.value)
-          scene.redrawAllWindows();
+          viewport.redraw();
         });
         $('#center').slider({
           min: 0,
@@ -169,10 +166,10 @@ $(document).ready(function() {
           step: 0.01
         }).bind('slide',function(event, ui) {
           pointMaterial.setCenter(ui.value)
-          scene.redrawAllWindows();
+          viewport.redraw();
         });
-      }
-    });
+      },150);
+    }
 
     $('#loadingDialog').dialog('close');
     viewport.redraw();
