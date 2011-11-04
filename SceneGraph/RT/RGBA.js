@@ -114,7 +114,7 @@ FABRIC.RT.RGBA.prototype = {
     return this;
   },
 
-  interpTowards: function(rgba, weight) {
+  linearInterpolate: function(rgba, weight) {
     var delta = rgba.subtract(this);
     delta.mulInPlace(weight);
     return this.add(delta);

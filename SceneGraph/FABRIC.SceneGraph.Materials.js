@@ -1946,46 +1946,31 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
       glRepeat: false
     });
     var transferFunctionImageDGNode = transferFunctionImageNode.getDGNode();
-    transferFunctionImageDGNode.addMember('opacityFactors', 'Scalar[1024]');
-    transferFunctionImageDGNode.addMember('opacityColors', 'RGBA[1024]');
-
-    transferFunctionImageDGNode.bindings.append(scene.constructOperator({
-      operatorName: 'initTransferFunctionValues',
-      parameterLayout: [
-        'self.opacityFactors',
-        'self.opacityColors'
-      ],
-      entryFunctionName: 'initTransferFunctionValues',
-      srcFile: 'FABRIC_ROOT/SceneGraph/KL/generateVolumeSlices.kl'
-    }));
-
+    
     transferFunctionImageDGNode.addMember('minOpacity', 'Scalar', options.minOpacity);
     transferFunctionImageDGNode.addMember('maxOpacity', 'Scalar', options.maxOpacity);
     volumeNode.addMemberInterface(transferFunctionImageDGNode, 'minOpacity', true);
     volumeNode.addMemberInterface(transferFunctionImageDGNode, 'maxOpacity', true);
-
-    transferFunctionImageDGNode.bindings.append(scene.constructOperator({
-      operatorName: 'initTransferFunctionValues',
-      parameterLayout: [
-        'self.opacityFactors',
-        'self.opacityColors'
-      ],
-      entryFunctionName: 'initTransferFunctionValues',
-      srcFile: 'FABRIC_ROOT/SceneGraph/KL/generateVolumeSlices.kl'
-    }));
-
-    transferFunctionImageDGNode.bindings.append(scene.constructOperator({
-      operatorName: 'updateTransferFunctionImage',
-      parameterLayout: [
-        'self.minOpacity',
-        'self.maxOpacity',
-        'self.opacityFactors',
-        'self.opacityColors',
-        'self.pixels'
-      ],
-      entryFunctionName: 'updateTransferFunctionImage',
-      srcFile: 'FABRIC_ROOT/SceneGraph/KL/generateVolumeSlices.kl'
-    }));
+    
+    if(options.opacityFactorsNode && options.opacityColorsNode){
+      var opacityFactorsNode = scene.getPrivateInterface(options.opacityFactorsNode);
+      transferFunctionImageDGNode.setDependency(opacityFactorsNode.getDGNode(), 'opacityFactors');
+      var opacityColorsNode = scene.getPrivateInterface(options.opacityColorsNode);
+      transferFunctionImageDGNode.setDependency(opacityColorsNode.getDGNode(), 'opacityColors');
+      
+      transferFunctionImageDGNode.bindings.append(scene.constructOperator({
+        operatorName: 'updateTransferFunctionImage',
+        parameterLayout: [
+          'self.minOpacity',
+          'self.maxOpacity',
+          'opacityFactors.value<>',
+          'opacityColors.value<>',
+          'self.pixels'
+        ],
+        entryFunctionName: 'updateTransferFunctionImage',
+        srcFile: 'FABRIC_ROOT/SceneGraph/KL/generateVolumeSlices.kl'
+      }));
+    }
 
     var volumeMaterialNodePub = scene.pub.constructNode('VolumeMaterial', {
         parentEventHandler: offscreenNodeRedrawEventHandler,
