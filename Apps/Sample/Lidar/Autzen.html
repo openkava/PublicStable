@@ -107,34 +107,32 @@ $(document).ready(function() {
       }
     }
 
-    // append a call back to compute the bbox values
-    FABRIC.appendOnResolveAsyncTaskCallback(function(label, nbRemaining, doneWeight, totalWeight) {
-      if (nbRemaining===1) {
-        // place the camera based on the center
-        var min = new FABRIC.RT.Vec3(10000000,10000000,10000000);
-        var max = new FABRIC.RT.Vec3(-10000000,-10000000,-10000000);
-        for(var name in assets[resourceName].getParsedNodes()) {
-          if(assets[resourceName].getParsedNodes()[name].isTypeOf('Points'))
-          {
-            // compute the bbox
-            var bbox = assets[resourceName].getParsedNodes()[name].getBoundingBox();
-            if(min.x > bbox.min.x)min.x = bbox.min.x;
-            if(min.y > bbox.min.y)min.y = bbox.min.y;
-            if(min.z > bbox.min.z)min.z = bbox.min.z;
-            if(max.x < bbox.max.x)max.x = bbox.max.x;
-            if(max.y < bbox.max.y)max.y = bbox.max.y;
-            if(max.z < bbox.max.z)max.z = bbox.max.z;
-          }
+    setTimeout(function(){
+      // place the camera based on the center
+      var min = new FABRIC.RT.Vec3(10000000,10000000,10000000);
+      var max = new FABRIC.RT.Vec3(-10000000,-10000000,-10000000);
+      for(var name in assets[resourceName].getParsedNodes()) {
+        if(assets[resourceName].getParsedNodes()[name].isTypeOf('Points'))
+        {
+          // compute the bbox
+          var bbox = assets[resourceName].getParsedNodes()[name].getBoundingBox();
+          if(min.x > bbox.min.x)min.x = bbox.min.x;
+          if(min.y > bbox.min.y)min.y = bbox.min.y;
+          if(min.z > bbox.min.z)min.z = bbox.min.z;
+          if(max.x < bbox.max.x)max.x = bbox.max.x;
+          if(max.y < bbox.max.y)max.y = bbox.max.y;
+          if(max.z < bbox.max.z)max.z = bbox.max.z;
         }
-        
-        var center = min.add(max).multiplyScalar(0.5);
-        var pos = center.add(new FABRIC.RT.Vec3(0,0,0.25 * Math.abs(min.z - max.z)));
-        camera.getTransformNode().setGlobalXfo(FABRIC.RT.xfo({tr:pos}));
-        camera.getTransformNode().setTarget(center);
-        camera.setNearDistance(Math.abs(min.z - max.z) * 0.001);
-        camera.setFarDistance(Math.abs(min.z - max.z) * 100);
       }
-    });
+      
+      var center = min.add(max).multiplyScalar(0.5);
+      var pos = center.add(new FABRIC.RT.Vec3(0,0,0.25 * Math.abs(min.z - max.z)));
+      camera.getTransformNode().setGlobalXfo(FABRIC.RT.xfo({tr:pos}));
+      camera.getTransformNode().setTarget(center);
+      camera.setNearDistance(Math.abs(min.z - max.z) * 0.001);
+      camera.setFarDistance(Math.abs(min.z - max.z) * 100);
+      viewport.redraw();
+    }, 150);
 
     $('#loadingDialog').dialog('close');
     viewport.redraw();

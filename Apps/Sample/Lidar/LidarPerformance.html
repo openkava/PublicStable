@@ -142,8 +142,8 @@ $(document).ready(function() {
       resourceName = '0'+resourceName;
     
     var url = 'http://www.wvview.org/data/lidar/Gilmer/las/First/'+resourceName+'.las';
-    if(document.URL.toLowerCase().substr(0,16) == 'http://localhost')
-      url = 'http://localhost/~helge/Fabric/Apps/Sample/Lidar/wwview.org/'+resourceName+'.las';
+    //if(document.URL.toLowerCase().substr(0,16) == 'http://localhost')
+    //  url = 'http://localhost/~helge/Fabric/Apps/Sample/Lidar/wwview.org/'+resourceName+'.las';
 
     var assets = scene.importAssetFile(url, {blockRedrawingTillResourceIsLoaded: false});
     assets[resourceName].addOnLoadSuccessCallback(function(){
@@ -156,6 +156,7 @@ $(document).ready(function() {
       colors.push(new FABRIC.RT.rgb(1.0,1.0,0.0,1.0));
       colors.push(new FABRIC.RT.rgb(0.0,1.0,1.0,1.0));
       colors.push(new FABRIC.RT.rgb(1.0,0.0,1.0,1.0));
+      colors.push(new FABRIC.RT.rgb(0.2,0.5,0.8,1.0));
       
       // loop over all assets and create an instance
       for(var name in assets[resourceName].getParsedNodes()) {
@@ -189,7 +190,7 @@ $(document).ready(function() {
           // create an instance!
           pointInstances[resourceName] = scene.constructNode('LidarInstance', {
             geometryNode: pointNodes[resourceName],
-            color: colors[parseInt(resourceName)%colors.length]
+            color: colors[parseInt(resourceName,10)%colors.length]
           });
           
           var useGradient = $('#useElevationShader').attr('checked');
