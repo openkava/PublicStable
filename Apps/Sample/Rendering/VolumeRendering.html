@@ -44,7 +44,7 @@
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Materials.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Manipulation.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Kinematics.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Rendering.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.VolumeRendering.js" charset="utf-8"></script>
     
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Animation.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../Core/Vec2.js" charset="utf-8"></script>
@@ -384,7 +384,7 @@ $(document).ready(function() {
   var layoutRectangle = scene.constructNode('DrawRectangle', {color: new FABRIC.RT.RGBA(128,128,128,255), tl: new FABRIC.RT.Vec2(2.0/3.0, 1.0), br: new FABRIC.RT.Vec2(1.0, -1.0) });
   var borderSize = 0.01;
 
-  var opacityTexture = scene.constructNode('Image3DWithHistogram',  { url: 'Resources/ChestMid.nrrd', resourceTargetTransformNode: transform, glRepeat: false, histogramResolution: 1024 });
+  var opacityTexture = scene.constructNode('Image3DWithHistogram',  { url: 'Resources/HeadHigh.nrrd', resourceTargetTransformNode: transform, glRepeat: false, histogramResolution: 1024 });
 
   opacityTexture.getResourceLoadNode().addOnLoadSuccessCallback(function (){
       console.log( 'TODO: display histogram of ' + opacityTexture.getHistogram().length + ' values');
