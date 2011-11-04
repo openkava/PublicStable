@@ -89,7 +89,7 @@ function Vec2[][] calcFootPlantTimes(
       Xfo xfo;
       xfo.setIdentity();
       xfo.tr = footPrints[i][j];
-      debugGeometry.drawCircle(xfo, 1.2, Color(1.0, 0.0, 0.0, 1.0));
+      debugGeometry.drawCircle(xfo, 0.12, Color(0.0, 0.0, 1.0, 1.0));
     }
   }
   return footSteps;
@@ -260,7 +260,7 @@ operator locomotionPreProcessing(/*
 
   
 //  comAlignment = bones[hubs[0].boneId].referencePose;
-  debugGeometry.drawAxis(comAlignment, 5.0, Color(1.0, 0.0, 1.0, 1.0));
+  debugGeometry.drawAxis(comAlignment, 0.5, Color(1.0, 0.0, 1.0, 1.0));
   debugGeometry.drawLine(comAlignment.tr, Vec3(0.0,0.0,0.0), Color(1.0, 1.0, 1.0, 1.0));
   comAlignment = comAlignment.inverse();
     
@@ -272,7 +272,7 @@ operator locomotionPreProcessing(/*
 //  comAlignment.setUnit();
 //  Xfo temp;
 //  temp.ori = comAlignment;
-//  debugGeometry.drawAxis(temp, 5.0, Color(1.0, 0.0, 1.0, 1.0));
+//  debugGeometry.drawAxis(temp, 0.5, Color(1.0, 0.0, 1.0, 1.0));
 //  comAlignment = comAlignment.inverse();
   
   while(true){
@@ -316,10 +316,10 @@ operator locomotionPreProcessing(/*
     
     debugGeometry.drawLine(poseVariables.xfoValues[hubs[0].xfoId].tr, comXfo.tr, Color(1.0, 1.0, 1.0, 1.0));
     report("comXfo:"+comXfo);
-   //     debugGeometry.drawAxis(comXfo, 10.0, Color(1.0, 0.0, 1.0, 1.0));
+   //     debugGeometry.drawAxis(comXfo, 1.0, Color(1.0, 0.0, 1.0, 1.0));
     comXfo = comXfo * comAlignment;
     comXfo.tr.y = poseVariables.xfoValues[legs[footId].ikGoalXfoId].tr.y;
-    debugGeometry.drawAxis(comXfo, 7.0, Color(1.0, 0.0, 1.0, 1.0));
+    debugGeometry.drawAxis(comXfo, 0.7, Color(1.0, 0.0, 1.0, 1.0));
       
     if(currKeyt > startT){
       
@@ -341,7 +341,7 @@ operator locomotionPreProcessing(/*
       comXfo.ori = alignment * prevComXfo.ori;
       poseVariables.xfoValues[com.xfoId] = comXfo;
       trackSet.setValues(poseVariables, currKeyt, comXfoBindings);
-      debugGeometry.drawAxis(comXfo, 10.0, Color(1.0, 0.0, 1.0, 1.0));
+      debugGeometry.drawAxis(comXfo, 1.0, Color(1.0, 0.0, 1.0, 1.0));
       
       Scalar deltaT = currKeyt - prevKeyt;
       Vec3 velocity = displacement/deltaT;
