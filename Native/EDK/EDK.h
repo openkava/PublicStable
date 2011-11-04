@@ -339,6 +339,9 @@ namespace Fabric
         };
 
       public:
+        
+        typedef VariableArray const &IN;
+        typedef VariableArray &IO;
     
         VariableArray()
           : m_bits(0)
@@ -456,6 +459,9 @@ namespace Fabric
       FABRIC_EXT_DECL_BEGIN //Note: FABRIC_EXT_KL_CLASS macro can't be used on templated classes
       template< class Member > class SlicedArray {
       public:
+        
+        typedef SlicedArray const &IN;
+        typedef SlicedArray &IO;
     
         SlicedArray( size_t size )
           : m_offset( 0 )
