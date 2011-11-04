@@ -337,8 +337,7 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
       return dgnode.getData('poseVariables');
     };
     
-    var animationControllerNode;
-    var animationTrackNode;
+    var animationLibrary;
     
     characterVariablesNode.setBindings = function(bindings){
       if(dgnode.getMembers().bindings){
@@ -348,7 +347,7 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
         dgnode.addMember('bindings', 'KeyframeTrackBindings', bindings);
       }
     }
-    
+    var boundToAnimationTracks = false;
     characterVariablesNode.pub.bindToAnimationTracks = function(animationLibraryNode, animationControllerNode, trackSetId, keyframeTrackBindings){
       if (!animationLibraryNode.isTypeOf('AnimationLibrary')) {
         throw ('Incorrect type assignment. Must assign a AnimationLibrary');
@@ -358,18 +357,16 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
       }
       animationLibraryNode = scene.getPrivateInterface(animationLibraryNode);
       animationControllerNode = scene.getPrivateInterface(animationControllerNode);
-      
       dgnode.setDependency(animationLibraryNode.getDGNode(), 'animationlibrary');
       dgnode.setDependency(animationControllerNode.getDGNode(), 'controller');
+      if(boundToAnimationTracks){
+        return;
+      }
       
       dgnode.addMember('keyIndices', 'Integer[]');
       dgnode.addMember('trackSetId', 'Integer', trackSetId);
-      if(keyframeTrackBindings){
-        characterVariablesNode.setBindings(keyframeTrackBindings);
-      }
-      else if(!dgnode.getMembers().bindings){
-        throw "keyframeTrackBindings not defined";
-      }
+      characterVariablesNode.setBindings(keyframeTrackBindings);
+      
       dgnode.bindings.append(scene.constructOperator({
         operatorName: 'evaluatePoseTracks',
         srcFile: 'FABRIC_ROOT/SceneGraph/KL/evaluatePoseTracks.kl',
@@ -386,6 +383,7 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
           'self.poseVariables'
         ]
       }));
+      boundToAnimationTracks = true;
     }
     
     
@@ -518,7 +516,10 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
       dgnode.setDependency(variablesNode.getDGNode(), 'variables');
     };
     characterRigNode.pub.getVariablesNode = function() {
-      return scene.getPublicInterface(variablesNode);
+      if(variablesNode){
+        return scene.getPublicInterface(variablesNode);
+      }
+      return undefined;
     };
     characterRigNode.addVariable = function(type, value) {
       var id = poseVariables.addVariable(type, value);
@@ -563,6 +564,14 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
       });
       return solver;
     };
+    characterRigNode.pub.getSolver = function(name) {
+      for (var i = 0; i < solvers.length; i++) {
+        if(solvers[i].getName() == name)
+          return solvers[i];
+      }
+      return undefined;
+    };
+    
     characterRigNode.getSolverParams = function() {
       return solverParams;
     };

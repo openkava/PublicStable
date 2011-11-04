@@ -5,9 +5,10 @@
 
 FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
   
-  if(!options.constructMaterialNodes) options.constructMaterialNodes = false;
-  if(!options.scaleFactor) options.scaleFactor = 1.0;
-  if(!options.logWarnings) options.logWarnings = false;
+  if(options.constructMaterialNodes == undefined) options.constructMaterialNodes = false;
+  if(options.scaleFactor == undefined) options.scaleFactor = 1.0;
+  if(options.logWarnings == undefined) options.logWarnings = false;
+  if(options.constructScene == undefined) options.constructScene = true;
 
   var assetNodes = {};
   var warn = function( warningText ){
@@ -789,94 +790,28 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
     return geometryNode;
   }
 
-  var libraryAnimations;
-  var controllerNode;
-  var libraryRigs = {};
-  var constructRigFromHierarchy = function(sceneData, rootNodeName, controllerName){
-    if(!controllerName){
-      controllerName = rootNodeName;
-    }
-    
-    if(libraryRigs[rootNodeName]){
-      return libraryRigs[rootNodeName];
-    }
-    
-    // recurse on the hierarchy
-    var boneIndicesMap = {};
-    var bones = [];
-    var traverseChildren = function(nodeData, parentName) {
-      var boneOptions = { name: nodeData.name, parent: -1, length: 0 };
-      boneIndicesMap[nodeData.name] = bones.length;
-      if (parentName) {
-        boneOptions.parent = boneIndicesMap[parentName];
-      }
-      boneOptions.referenceLocalPose = nodeData.xfo;
-      if (boneOptions.parent !== -1) {
-        boneOptions.referencePose = bones[boneOptions.parent].referencePose.multiply(nodeData.xfo);
-
-        // set the length of the parent bone based on the child bone local offset.
-        if(nodeData.xfo.tr.x > (Math.abs(nodeData.xfo.tr.y) + Math.abs(nodeData.xfo.tr.z)) &&
-          nodeData.xfo.tr.x > bones[boneOptions.parent].length) {
-          bones[boneOptions.parent].length = nodeData.xfo.tr.x;
-        }
-      }
-      else {
-        boneOptions.referencePose = nodeData.xfo;
-      }
-      bones.push(boneOptions);
-      if (nodeData.children) {
-        for (var i = 0; i < nodeData.children.length; i++) {
-          traverseChildren(nodeData.children[i], nodeData.name);
-        }
-      }
-    };
-    traverseChildren(sceneData.nodeLibrary[rootNodeName]);
-    // If any bones didn't get a size, then give them the length of the parent bone * 0.5
-    for (i = 0; i < bones.length; i++) {
-      if (bones[i].length === 0 && bones[i].parent != -1) {
-        bones[i].length = bones[bones[i].parent].length * 0.5;
-        
-        // If the tip of the bone is below the floor, then 
-        // shorten the bone till it touches the floor.
-        var downVec = new FABRIC.RT.Vec3(0, -1, 0);
-        var boneVec = bones[i].referencePose.ori.rotateVector(new FABRIC.RT.Vec3(bones[i].length, 0, 0));
-        if(boneVec.dot(downVec) > bones[i].referencePose.tr.y){
-          bones[i].length *= bones[i].referencePose.tr.y / boneVec.dot(downVec);
-        }
-      }
-      bones[i].radius = bones[i].length * 0.1;
-    }
-    
-    var skeletonNode = scene.constructNode('CharacterSkeleton', {
-      name:controllerName+"Skeleton",
-      calcReferenceLocalPose: false,
-      calcReferenceGlobalPose: false,
-      calcInvMatrices: false
-    });
-    skeletonNode.setBones(bones);
-    
-    ///////////////////////////////
-    
-    var rigNode = scene.constructNode('CharacterRig', {
-      name: controllerName+'CharacterRig',
-      skeletonNode: skeletonNode
-    });
-    
-      
+  var libraryAnimations = options.animationLibrary;
+  var controllerNode = options.controllerNode;
+  
+  var loadRigAnimation = function(rigNode){
     if(colladaData.libraryAnimations){
       if(!libraryAnimations){
         libraryAnimations = scene.constructNode('LinearKeyAnimationLibrary');
-        controllerNode = scene.constructNode('AnimationController', {
-          name: controllerName+'Controller'
-        } );
-        assetNodes[controllerNode.getName()] = controllerNode;
         assetNodes[libraryAnimations.getName()] = libraryAnimations;
       }
-      // Construct the track set for this rig.
-      var trackSet = new FABRIC.RT.KeyframeTrackSet(controllerName);
+      if(!controllerNode){
+        controllerNode = scene.constructNode('AnimationController');
+        assetNodes[controllerNode.getName()] = controllerNode;
+      }
       
-      var localPose = skeletonNode.getReferenceLocalPose();
-      var fksolver = rigNode.addSolver('solveColladaPose', 'FKHierarchySolver');
+      var skeletonNode = rigNode.getSkeletonNode();
+      var bones = skeletonNode.getBones();
+      var fksolver = rigNode.getSolver('solveColladaPose');
+      if(!fksolver){
+        fksolver = rigNode.addSolver('solveColladaPose', 'FKHierarchySolver');
+      }
+      // Construct the track set for this rig.
+      var trackSet = new FABRIC.RT.KeyframeTrackSet(skeletonNode.getName()+'Animation');
       var xfoVarBindings = fksolver.getXfoVarBindings();
       var trackBindings = new FABRIC.RT.KeyframeTrackBindings();
       
@@ -1021,12 +956,89 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
       }
       
       var trackSetID = libraryAnimations.addTrackSet(trackSet);
-      
-      var variablesNode = rigNode.constructVariablesNode(rigNode.getName() + 'Variables', true);
+      var variablesNode = rigNode.getVariablesNode();
+      if(!variablesNode){
+        variablesNode = rigNode.constructVariablesNode(rigNode.getName() + 'Variables', true);
+        assetNodes[variablesNode.getName()] = variablesNode;
+      }
       variablesNode.bindToAnimationTracks(libraryAnimations, controllerNode, trackSetID, trackBindings);
       
-      assetNodes[variablesNode.getName()] = variablesNode;
     }
+  }
+  
+  var controllerNode;
+  var libraryRigs = {};
+  var constructRigFromHierarchy = function(sceneData, rootNodeName, controllerName){
+    if(!controllerName){
+      controllerName = rootNodeName;
+    }
+    
+    if(libraryRigs[rootNodeName]){
+      return libraryRigs[rootNodeName];
+    }
+    
+    // recurse on the hierarchy
+    var boneIndicesMap = {};
+    var bones = [];
+    var traverseChildren = function(nodeData, parentName) {
+      var boneOptions = { name: nodeData.name, parent: -1, length: 0 };
+      boneIndicesMap[nodeData.name] = bones.length;
+      if (parentName) {
+        boneOptions.parent = boneIndicesMap[parentName];
+      }
+      boneOptions.referenceLocalPose = nodeData.xfo;
+      if (boneOptions.parent !== -1) {
+        boneOptions.referencePose = bones[boneOptions.parent].referencePose.multiply(nodeData.xfo);
+
+        // set the length of the parent bone based on the child bone local offset.
+        if(nodeData.xfo.tr.x > (Math.abs(nodeData.xfo.tr.y) + Math.abs(nodeData.xfo.tr.z)) &&
+          nodeData.xfo.tr.x > bones[boneOptions.parent].length) {
+          bones[boneOptions.parent].length = nodeData.xfo.tr.x;
+        }
+      }
+      else {
+        boneOptions.referencePose = nodeData.xfo;
+      }
+      bones.push(boneOptions);
+      if (nodeData.children) {
+        for (var i = 0; i < nodeData.children.length; i++) {
+          traverseChildren(nodeData.children[i], nodeData.name);
+        }
+      }
+    };
+    traverseChildren(sceneData.nodeLibrary[rootNodeName]);
+    // If any bones didn't get a size, then give them the length of the parent bone * 0.5
+    for (i = 0; i < bones.length; i++) {
+      if (bones[i].length === 0 && bones[i].parent != -1) {
+        bones[i].length = bones[bones[i].parent].length * 0.5;
+        
+        // If the tip of the bone is below the floor, then 
+        // shorten the bone till it touches the floor.
+        var downVec = new FABRIC.RT.Vec3(0, -1, 0);
+        var boneVec = bones[i].referencePose.ori.rotateVector(new FABRIC.RT.Vec3(bones[i].length, 0, 0));
+        if(boneVec.dot(downVec) > bones[i].referencePose.tr.y){
+          bones[i].length *= bones[i].referencePose.tr.y / boneVec.dot(downVec);
+        }
+      }
+      bones[i].radius = bones[i].length * 0.1;
+    }
+    
+    var skeletonNode = scene.constructNode('CharacterSkeleton', {
+      name:controllerName+"Skeleton",
+      calcReferenceLocalPose: false,
+      calcReferenceGlobalPose: false,
+      calcInvMatrices: false
+    });
+    skeletonNode.setBones(bones);
+    
+    ///////////////////////////////
+    
+    var rigNode = scene.constructNode('CharacterRig', {
+      name: controllerName+'CharacterRig',
+      skeletonNode: skeletonNode
+    });
+    
+    loadRigAnimation(rigNode);
     
     // Store the created scene graph nodes in the returned asset map.
     assetNodes[skeletonNode.getName()] = skeletonNode;
@@ -1280,19 +1292,25 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
         constructInstance(sceneData.nodes[i]);
       }
     }
-    
-    
-    // The file may contain a hierarchy that can be used to generate a skeleton
-    if (options.constructRigFromHierarchy) {
-      var skeletonNode = constructRigFromHierarchy(sceneData, options.constructRigFromHierarchy);
-    }
   }
   
   if(colladaData.scene){
-    constructScene(colladaData.libraryVisualScenes[colladaData.scene.url.slice(1)]);
+    if(options.constructScene){
+      constructScene(colladaData.libraryVisualScenes[colladaData.scene.url.slice(1)]);
+    }
+    else{
+      // The file may contain a hierarchy that can be used to generate a skeleton
+      if (options.constructRigFromHierarchy) {
+        constructRigFromHierarchy(sceneData, options.constructRigFromHierarchy);
+      }
+      
+      if (options.loadAnimationUsingRig) {
+        loadRigAnimation(options.loadAnimationUsingRig);
+      }
+    }
   }
   
-
+  
   return assetNodes;
 });
 

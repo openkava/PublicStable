@@ -120,7 +120,7 @@ $(document).ready(function() {
   });
   
   var rigName = 'marama';
-  var assetNodes, bindPoseRig, fkrigNode, rigInstanceNode, skeletonNode, animationLibrary, animationController, characterMesh;
+  var assetNodes, bindPoseRig, fkrigNode, rigInstanceNode, skeletonNode, characterMesh;
   switch(rigName){
   case 'hopper':
     assetNodes = scene.importAssetFile('Assets/hopper.DAE');
@@ -128,7 +128,6 @@ $(document).ready(function() {
     fkrigNode = assetNodes.CATRigHub003CharacterRig;
     rigInstanceNode = assetNodes.CATRigHub003CharacterInstance;
     animationLibrary = assetNodes.AnimationLibrary;
-    animationController = assetNodes.CATRigHub003Controller;
     characterMesh = assetNodes.CATRigHub003Mesh;
     
     skeletonNode = fkrigNode.getSkeletonNode();
@@ -168,7 +167,6 @@ $(document).ready(function() {
     
     var animationAssetNodes = scene.importAssetFile('Assets/Walker_Walk.DAE');
     animationLibrary = animationAssetNodes.AnimationLibrary;
-    animationController = animationAssetNodes.Walker_ncl1_1Controller;
     
     
     var invertedVariablesNode = ikrigNode.invertSolvers(animationAssetNodes.Walker_ncl1_1CharacterRig1, true);
@@ -246,7 +244,6 @@ $(document).ready(function() {
     
     var animationAssetNodes = scene.importAssetFile('Assets/Centipede_Walk.DAE');
     animationLibrary = animationAssetNodes.AnimationLibrary;
-    animationController = animationAssetNodes.CentipedeHub010Controller;
     
     var invertedVariablesNode = ikrigNode.invertSolvers(animationAssetNodes.CentipedeHub010CharacterRig1, true);
   
@@ -256,11 +253,11 @@ $(document).ready(function() {
   case 'marama':
     assetNodes = scene.importAssetFile('Assets/Marama.DAE', { scaleFactor: 0.1 } );
   
-    bindPoseRig = assetNodes.MaramaPelvis001CharacterRig;
+    fkrigNode = assetNodes.MaramaPelvis001CharacterRig;
     rigInstanceNode = assetNodes.MaramaPelvis001CharacterInstance;
     characterMesh = assetNodes.MaramaPelvis001Mesh;
     
-    skeletonNode = bindPoseRig.getSkeletonNode();
+    skeletonNode = fkrigNode.getSkeletonNode();
     var ikrigNode = scene.constructNode('CharacterRig', {
       name: 'IKRig',
       skeletonNode: skeletonNode
@@ -288,12 +285,22 @@ $(document).ready(function() {
       }
     });
     
-    var animationAssetNodes = scene.importAssetFile('Assets/Marama_Walk.DAE', { scaleFactor: 0.1 });
+    var animationAssetNodes = scene.importAssetFile('Assets/Marama_Walk.DAE', {
+      scaleFactor: 0.1,
+      constructScene: false,
+      loadAnimationUsingRig:fkrigNode
+    });
     animationLibrary = animationAssetNodes.AnimationLibrary;
-    animationController = animationAssetNodes.MaramaPelvis001Controller;
-    fkrigNode = animationAssetNodes.MaramaPelvis001CharacterRig1;
     
-    var invertedVariablesNode = ikrigNode.invertSolvers(animationAssetNodes.MaramaPelvis001CharacterRig1, true);
+    var animationAssetNodes = scene.importAssetFile('Assets/Marama_Run.DAE', {
+      scaleFactor: 0.1,
+      constructScene: false,
+      loadAnimationUsingRig:fkrigNode,
+      animationLibrary:animationLibrary,
+      animationController:animationAssetNodes.AnimationController
+    });
+    
+    var invertedVariablesNode = ikrigNode.invertSolvers(fkrigNode, true);
     rigInstanceNode.setRigNode(ikrigNode);
   
     break;
@@ -307,13 +314,13 @@ $(document).ready(function() {
     });
   rigInstanceNode.setMaterialNode(materialNode);
   characterMesh.setName('characterMesh');
-  
+  /*
   var sourceSkeleton = scene.constructNode("CharacterSkeletonDebug",{
     characterRigNode:bindPoseRig,
     boneradius: 0.2,
     color: FABRIC.RT.rgba(0.0, 1.0, 0.0, 1.0)
   });
-  
+  */
   var animatedSkeleton = scene.constructNode("CharacterSkeletonDebug",{
     characterRigNode:fkrigNode,
     boneradius: 0.2,
