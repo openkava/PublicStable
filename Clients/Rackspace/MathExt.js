@@ -19,9 +19,34 @@ module.exports = {
     return result;
   },
 
+  randomCovariance: function (n) {
+    var N = [];
+    for (var i=0; i<n; ++i)
+      N.push(this.randomNormal());
+    var M = [];
+    for (var i=0; i<n; ++i) {
+      M[i] = [];
+      for (var j=0; j<n; ++j)
+        M[i][j] = N[i] * N[j];
+    }
+    return M;
+  },
+
+  randomCorrelation: function (n) {
+    var M = this.randomCovariance(n);
+
+    var s = [];
+    for (var i=0; i<n; ++i)
+      s.push(1.0/Math.sqrt(M[i][i]));
+
+    for (var i=0; i<n; ++i)
+      for (var j=0; j<n; ++j)
+        M[i][j] *= s[i] * s[j];
+    return M;
+  },
+
   cholesky: function (A) {
     var n = A.length;
-    console.log(A);
     
     var L = [];
     for (var i=0; i<n; ++i) {
