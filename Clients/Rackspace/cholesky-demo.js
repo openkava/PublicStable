@@ -1,10 +1,10 @@
-var cholesky = require('./cholesky.js');
+var MathExt = require('./MathExt.js');
 
 var test = function(M) {
   console.log("M:");
   console.log(M);
-  console.log("cholesky.decompose(M)");
-  console.log(cholesky.decompose(M));
+  console.log("MathExt.cholesky(M)");
+  console.log(MathExt.cholesky(M));
 };
 
 test([
