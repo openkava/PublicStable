@@ -171,6 +171,8 @@ FABRIC_EXT_EXPORT void FabricALEMBICDecode(
 
     // save the file to disk
     FILE * file = fopen(fileName.data(),"wb");
+    if(!file)
+      Fabric::EDK::throwException("Alembic extension: Cannot write to temporary file.");
     fwrite(objData,objDataSize,1,file);
     fclose(file);
     file = NULL;
