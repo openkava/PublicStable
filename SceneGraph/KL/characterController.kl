@@ -59,7 +59,7 @@ operator evaluateCharacterController(
   balanceVector.y = 0.0;
   controllerparams.balanceXfo.tr = controllerparams.balanceXfo.tr.linearInterpolate(balanceVector, 0.1);
   Scalar len = controllerparams.balanceXfo.tr.length();
-  if(len > 0.0){
+  if(len > 0.001){
     Scalar balanceAngle = acos(len / comHeight);
     Vec3 axis = Vec3(0.0, 1.0, 0.0).cross(controllerparams.balanceXfo.tr).unit();
     controllerparams.balanceXfo.ori.setFromAxisAndAngle(axis, HALF_PI - balanceAngle);
@@ -74,7 +74,7 @@ operator evaluateCharacterController(
   balanceDisplayXfo.tr = controllerXfo.tr + controllerparams.balanceXfo.tr;
   balanceDisplayXfo.ori = controllerparams.balanceXfo.ori * controllerXfo.ori;
   
-  if(currLinearVelocity.length() > 0.0){
+  if(currLinearVelocity.length() > 0.001){
     Vec3 currDir = controllerXfo.ori.rotateVector(Vec3(0.0, 0.0, 1.0));
     Vec3 displacementDir = currLinearVelocity.unit();
     Scalar deltaAngle = currDir.angleTo(displacementDir);
