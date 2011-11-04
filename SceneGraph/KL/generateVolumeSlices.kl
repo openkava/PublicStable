@@ -37,10 +37,6 @@ operator generateVolumeSlices(
     fixedCrop[0].z = 1.0-fixedCrop[1].z;
     fixedCrop[1].z = 1.0-tmp;
 
-report "X: " + volumeXfo.ori.rotateVector(Vec3(1.0,0.0,0.0));
-report "Y: " + volumeXfo.ori.rotateVector(Vec3(0.0,1.0,0.0));
-report "Z: " + volumeXfo.ori.rotateVector(Vec3(0.0,0.0,1.0));
-report "Before: " + fixedCrop[0] + " " + fixedCrop[1];
     for(i = 0; i <2; ++i)
       fixedCrop[i] = volumeXfo.ori.inverse().rotateVector(fixedCrop[i]);
 
@@ -50,7 +46,6 @@ report "Before: " + fixedCrop[0] + " " + fixedCrop[1];
         fixedCrop[1].setComponent(i, 1.0+fixedCrop[1].component(i));
       }
     }
-report "After: " + fixedCrop[0] + " " + fixedCrop[1];
   }
 
   for(i = 0; i <3; ++i) {
