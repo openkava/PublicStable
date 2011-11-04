@@ -452,6 +452,8 @@ FABRIC.SceneGraph.registerNodeType('LocomotionPoseVariables', {
     var poseError = locomotionVariables.getVariables();
     poseError.setIdentity();
     dgnode.addMember('poseError', 'PoseVariables', poseError);
+    dgnode.addMember('prevUpdatePose', 'PoseVariables', poseError);
+    dgnode.addMember('clipActivationTime', 'Scalar', -1.0);
     
     dgnode.addMember('debugGeometry', 'DebugGeometry' );
     var debugGeometryDraw = scene.constructNode('DebugGeometryDraw', {
@@ -488,8 +490,10 @@ FABRIC.SceneGraph.registerNodeType('LocomotionPoseVariables', {
         'self.plantLocations',
         'self.rayDeltas',
         
-        'self.poseError',
         'self.poseVariables',
+        'self.prevUpdatePose',
+        'self.poseError',
+        'self.clipActivationTime',
         
         'self.debugGeometry'
       ]
