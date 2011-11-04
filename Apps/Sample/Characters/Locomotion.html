@@ -226,11 +226,11 @@ $(document).ready(function() {
     var locomotionControllerNode = scene.constructNode('LocomotionCharacterController', {
         cameraNode: camera,
         maxLinearVelocity: new FABRIC.RT.Vec2(4, 4),
-        maxLinearAcceleration: 0.3,
+        maxLinearAcceleration: 0.2,
         maxAngularVelocity:  new FABRIC.RT.Euler(0, 4, 0),
         bulletWorldNode: bulletWorldNode,
         numTrailSegments: 0,
-        gravity: -1.50,
+        gravity: -1.0,
         comHeight: 1.8,
         circleSize: 0.6
       });
@@ -306,7 +306,7 @@ $(document).ready(function() {
     }
     var speed = 1.0;
     if(evt.shiftKey){
-      speed = 0.4;
+      speed = 0.2;
     }
     if(evt.keyCode == arrowKeys.left) {
       translationControls.x = -speed;
