@@ -230,7 +230,7 @@ FABRIC.RT.Color.prototype = {
     return len;
   },
 
-  interpTowards: function(col, weight) {
+  linearInterpolate: function(col, weight) {
     var delta = col.subtract(this);
     delta.mulInPlace(weight);
     return this.add(delta);

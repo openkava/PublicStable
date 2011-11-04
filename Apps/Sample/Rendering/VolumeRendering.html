@@ -35,6 +35,7 @@
     <script type="text/javascript" src="../../../SceneGraph/RT/OGLRenderTarget.js" charset="utf-8"></script>
     
     <script type="text/javascript" src="../../../SceneGraph/RT/LinearKeyframe.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/ColorKeyframe.js" charset="utf-8"></script>
 
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Geometry.js" charset="utf-8"></script>
@@ -364,7 +365,52 @@ $(document).ready(function() {
     $('#yRatio').slider({min: 0, max: 1, step: 0.005 }),
     $('#zRatio').slider({min: 0, max: 1, step: 0.005 })
   ];
+  
   var scene = FABRIC.SceneGraph.createScene();
+  
+  ///////////////////////////////////////////////////////////
+  // Opacity Mapping
+  var key = FABRIC.Animation.linearKeyframe;
+  var opacityKeyframeTrackNode = scene.constructNode('LinearKeyAnimationTrack', {
+    name:'opacityKeyframeTrack'
+  } );
+  
+  opacityKeyframeTrackNode.setTrackData(0, {
+    name: 'opacityFactors',
+    color: FABRIC.RT.rgb(1, 0, 0),
+    keys: [key(0, 0), key(.1, 1), key(0.2, 0), key(.5, 0), key(.75, 1), key(1.0, 1)]
+  });
+  
+  var opacityDisplayNode = scene.constructNode('TrackDisplay', {
+      animationTrackNode: opacityKeyframeTrackNode,
+      timeRange: new FABRIC.RT.Vec2(0, 1),
+      segmentCount: 1024
+    });
+  
+  ///////////////////////////////////////////////////////////
+  // Color Mapping
+  var key = FABRIC.Animation.colorKeyframe;
+  var gradientKeyTrack = scene.constructNode('ColorKeyAnimationTrack', {
+    name:'GradientKeyTrack'
+  } );
+  
+  gradientKeyTrack.setTrackData(0, {
+    name: 'Gradient',
+    color: FABRIC.RT.rgb(1, 0, 0),
+    keys: [
+      key(0.0, FABRIC.RT.rgb(1, 0, 0)),
+      key(.5, FABRIC.RT.rgb(0, 1, 0)),
+      key(1.0, FABRIC.RT.rgb(0, 1, 1))
+    ]
+  });
+      
+  var gradientDisplayNode = scene.constructNode('TrackDisplay', {
+      animationTrackNode: gradientKeyTrack,
+      timeRange: new FABRIC.RT.Vec2(0, 1),
+      segmentCount: 1024
+    });
+  
+  
   
 
   var viewport = scene.constructNode('Viewport', {
@@ -409,7 +455,9 @@ $(document).ready(function() {
       transparency: 0.80,
       minOpacity: 0.1,
       maxOpacity: 1.0,
-      backgroundColor: new FABRIC.RT.Color(1.0, 1.0, 1.0, 1.0)
+      backgroundColor: new FABRIC.RT.Color(1.0, 1.0, 1.0, 1.0),
+      opacityFactorsNode: opacityDisplayNode,
+      opacityColorsNode: gradientDisplayNode
     });
 
   var texture2DSlice = [];
@@ -572,53 +620,44 @@ $(document).ready(function() {
 
 
   window.scene = scene;
-  
-});
 
-// jQuert UI Styling classes
-$(document).ready(function() {
-	$(".box").addClass("ui-widget");
-	$(".box h2").addClass("ui-widget-header ui-corner-all");
-	$(".content").addClass("ui-widget-content");
-  
-	$(function() {
-		$( "#tabs" ).tabs();
-  
-  var key = FABRIC.Animation.linearKeyframe;
-  var linearPosKeyframeTrackNode = scene.constructNode('LinearKeyAnimationTrack', {
-    name:'LinearPosKeyAnimationTrack'
-  } );
-  
-  linearPosKeyframeTrackNode.setTrackData(0, {
-    name: 'PosX',
-    color: FABRIC.RT.rgb(1, 0, 0),
-    keys: [key(0, 0), key(.1, 1), key(0.2, 0), key(.5, 0), key(.75, 1), key(1.0, 1)]
-  });
-  var curveEditor = constructCurveEditor('opacityMapping', linearPosKeyframeTrackNode, {
-    timeStripe: false,
-    timeRange: new FABRIC.RT.Vec2(0, 1),
-  });
+  $(".box").addClass("ui-widget");
+  $(".box h2").addClass("ui-widget-header ui-corner-all");
+  $(".content").addClass("ui-widget-content");
 
-  
-  var colorGradient = constructColorGradient('colorMapping', linearPosKeyframeTrackNode, {
+  $(function() {
+          $( "#tabs" ).tabs();
 
-  });
-  colorGradient.addEventListener('keyclicked', function(evt){
-    gradientKey = evt.key;
-    colorPicker.ColorPickerSetColor(evt.keycolor.toHex());
-  });
-  var gradientKey;
-  var colorPicker = $('#brushColor').ColorPicker({
-      flat: true,
-      color: { r: 1.0 * 255, g: 0.5 * 255, b: 0.5 * 255} ,
-      onChange: function(hsb, hex, rgb) {
-        if(gradientKey){
-          gradientKey.setColor(FABRIC.RT.rgb255(rgb.r, rgb.g, rgb.b));
-        }
-      }
+
+    var curveEditor = constructCurveEditor('opacityMapping', opacityKeyframeTrackNode, {
+      timeStripe: false,
+      draggable: false,
+      zoomable: false,
+      timeRange: new FABRIC.RT.Vec2(0, 1),
+      clampValues: true
     });
-    
-	});
+
+    var colorGradient = constructColorGradient('colorMapping', gradientKeyTrack, {
+  
+    });
+    colorGradient.addEventListener('gradientchanged', function(evt){
+      viewport.redraw();
+    });
+    colorGradient.addEventListener('keyclicked', function(evt){
+      gradientKey = evt.key;
+      colorPicker.ColorPickerSetColor(evt.keycolor.toHex());
+    });
+    var gradientKey;
+    var colorPicker = $('#brushColor').ColorPicker({
+        flat: true,
+        color: { r: 1.0 * 255, g: 0.5 * 255, b: 0.5 * 255} ,
+        onChange: function(hsb, hex, rgb) {
+          if(gradientKey){
+            gradientKey.setColor(FABRIC.RT.rgb255(rgb.r, rgb.g, rgb.b));
+          }
+        }
+      });
+  });
 });
 
 </script>

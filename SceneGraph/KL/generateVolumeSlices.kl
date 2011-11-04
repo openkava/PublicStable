@@ -588,73 +588,25 @@ operator reduceOpacityTexture(
   }
 }
 
-operator initTransferFunctionValues(
-  io Scalar opacityFactors[1024],
-  io RGBA opacityColors[1024]
-){
-  Color C[9];
-  C[0] = Color(0.0,0.0,0.0,1.0);
-  C[1] = Color(0.0,1.0,0.0,1.0);
-  C[2] = Color(0.0,1.0,1.0,1.0);
-  C[3] = Color(1.0,1.0,0.0,1.0);
-  C[4] = Color(1.0,0.0,0.0,1.0);
-  C[5] = Color(0.0,0.0,1.0,1.0);
-  C[6] = Color(0.0,0.5,0.5,1.0);
-  C[7] = Color(0.5,0.5,0.0,1.0);
-
-  Size i;
-  for(i = 0; i < 1024; ++i) {
-    Scalar factor = Scalar(i)/Scalar(1023);
-    opacityFactors[i] = factor;
-
-    Scalar f1;
-    Size c1;
-
-    if(factor < 0.2){
-      f1 = factor/0.2;
-      c1 = 0;
-    } else if(factor < 0.25) {
-      f1 = (factor-0.2)/0.05;
-      c1 = 1;
-    } else if(factor < 0.3) {
-      f1 = (factor-0.25)/0.05;
-      c1 = 2;
-    } else if(factor < 0.35) {
-      f1 = (factor-0.3)/0.05;
-      c1 = 3;
-    } else if(factor < 0.4){
-      f1 = (factor-0.35)/0.05;
-      c1 = 4;
-    } else if(factor < 0.5){
-      f1 = (factor-0.4)/0.1;
-      c1 = 5;
-    } else {
-      f1 = (factor-0.5)/0.5;
-      c1 = 6;
-    }
-    Scalar f2 = 1.0-f1;
-    Size c2 = c1+1;
-
-    opacityColors[i].r = Byte((f2*C[c1].r+f1*C[c2].r)*255.9);
-    opacityColors[i].g = Byte((f2*C[c1].g+f1*C[c2].g)*255.9);
-    opacityColors[i].b = Byte((f2*C[c1].b+f1*C[c2].b)*255.9);
-  }
-}
 
 operator updateTransferFunctionImage(
   io Scalar minOpacity,
   io Scalar maxOpacity,
-  io Scalar opacityFactors[1024],
-  io RGBA opacityColors[1024],
+  io Scalar opacityFactors<>,
+  io Color opacityColors<>,
   io Color pixels[]
 ){
+  if(opacityFactors.size != 1024 && opacityColors.size != 1024){
+    report("ERROR in updateTransferFunctionImage: opacityFactors.size != 1024 || opacityColors.size != 1024" );
+    return;
+  }
   pixels.resize(1024*2);
   Size i;
   for(i = 0; i < 1024; ++i) {
-    pixels[i].r = Scalar(opacityColors[i].r)/255.0;
-    pixels[i].g = Scalar(opacityColors[i].g)/255.0;
-    pixels[i].b = Scalar(opacityColors[i].b)/255.0;
-    pixels[i].a = Scalar(opacityFactors[i]);
+    pixels[i].r = opacityColors[i].r;
+    pixels[i].g = opacityColors[i].g;
+    pixels[i].b = opacityColors[i].b;
+    pixels[i].a = opacityFactors[i];
 
     //In the 2nd pixel row, bake the opacity clamping function.
     //We keep it in a separate texture so that we can reduce artifacts even if "transparency" is not 0
