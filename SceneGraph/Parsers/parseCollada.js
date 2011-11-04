@@ -856,14 +856,10 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
     skeletonNode.setBones(bones);
     
     ///////////////////////////////
-    var variablesNode = scene.constructNode('CharacterVariables', {
-      name: controllerName+'Variables'
-    });
     
     var rigNode = scene.constructNode('CharacterRig', {
       name: controllerName+'CharacterRig',
-      skeletonNode: skeletonNode,
-      variablesNode: variablesNode
+      skeletonNode: skeletonNode
     });
     
       
@@ -1025,11 +1021,14 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
       }
       
       var trackSetID = libraryAnimations.addTrackSet(trackSet);
+      
+      var variablesNode = rigNode.constructVariablesNode(rigNode.getName() + 'Variables', true);
       variablesNode.bindToAnimationTracks(libraryAnimations, controllerNode, trackSetID, trackBindings);
+      
+      assetNodes[variablesNode.getName()] = variablesNode;
     }
     
     // Store the created scene graph nodes in the returned asset map.
-    assetNodes[variablesNode.getName()] = variablesNode;
     assetNodes[skeletonNode.getName()] = skeletonNode;
     assetNodes[rigNode.getName()] = rigNode;
     

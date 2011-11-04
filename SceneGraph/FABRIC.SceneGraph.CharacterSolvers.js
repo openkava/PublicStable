@@ -148,7 +148,6 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('FKHierarchySolver',{
     
     var rigNode = scene.getPrivateInterface(options.rigNode),
       skeletonNode = scene.getPrivateInterface(rigNode.pub.getSkeletonNode()),
-      variablesNode = scene.getPrivateInterface(rigNode.pub.getVariablesNode()),
       bones = skeletonNode.pub.getBones(),
       referenceLocalPose = skeletonNode.pub.getReferenceLocalPose();
 
@@ -169,7 +168,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('FKHierarchySolver',{
     for(var i=0; i<boneIDs.bones.length; i++){
       defaultValues.push(referenceLocalPose[boneIDs.bones[i]]);
     }
-    var xfoIds = variablesNode.addVariable('Xfo[]', defaultValues);
+    var xfoIds = rigNode.addVariable('Xfo[]', defaultValues);
     
     var binding = new FABRIC.Characters.FKHierarchy(boneIDs.bones, xfoIds);
     skeletonNode.addMember(name + 'bindings', 'FKHierarchy', binding);
@@ -273,7 +272,6 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('FKChainSolver', {
 
     var rigNode = scene.getPrivateInterface(options.rigNode),
       constantsNode = scene.getPrivateInterface(rigNode.pub.getConstantsNode()),
-      variablesNode = scene.getPrivateInterface(rigNode.pub.getVariablesNode()),
       skeletonNode = rigNode.pub.getSkeletonNode(),
       bones = skeletonNode.getBones(),
       referenceLocalPose = skeletonNode.getReferenceLocalPose(),
@@ -301,7 +299,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('FKChainSolver', {
     }
 
     constantsNode.addMember(name + 'boneIndices', 'Integer[]', boneIDs.bones);
-    variablesNode.addMember(name + 'localXfos', 'Xfo[]', chainLocalReferencePose);
+    rigNode.addVariable(name + 'localXfos', 'Xfo[]', chainLocalReferencePose);
     // This member is used only to bind the manipulators to.
     rigNode.addMember(name + 'globalXfos', 'Xfo[]', chainGlobalReferencePose);
 
@@ -387,7 +385,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('RootBoneSolver', {
       name = options.name;
 
     constantsNode.addMember(name + 'boneIndex', 'Integer', boneIDs.bone);
-    variablesNode.addMember(name + 'rootXfo', 'Xfo', referencePose[boneIDs.bone]);
+    rigNode.addVariable(name + 'rootXfo', 'Xfo', referencePose[boneIDs.bone]);
 
     rigNode.addSolverOperator({
         operatorName: 'solveFKBone',
@@ -447,7 +445,6 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('IK2BoneSolver', {
 
     var rigNode = scene.getPrivateInterface(options.rigNode),
       constantsNode = scene.getPrivateInterface(rigNode.pub.getConstantsNode()),
-      variablesNode = scene.getPrivateInterface(rigNode.pub.getVariablesNode()),
       skeletonNode = rigNode.pub.getSkeletonNode(),
       bones = skeletonNode.getBones(),
       referencePose = skeletonNode.getReferencePose(),
@@ -493,12 +490,12 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('IK2BoneSolver', {
     constantsNode.addMember(name + 'targetParent', 'Integer', boneIDs.targetParent);
     constantsNode.addMember(name + 'upvectorParent', 'Integer', boneIDs.upvectorParent);
 
-    variablesNode.addMember(name + 'target', 'Xfo', targetXfo);
-    variablesNode.addMember(name + 'upvector', 'Xfo', upvector);
+    rigNode.addVariable(name + 'target', 'Xfo', targetXfo);
+    rigNode.addVariable(name + 'upvector', 'Xfo', upvector);
 
-    variablesNode.addMember(name + 'directionBlend', 'Scalar',
+    rigNode.addVariable(name + 'directionBlend', 'Scalar',
       options.directionBlend != undefined ? options.directionBlend : 1.0);
-    variablesNode.addMember(name + 'upvectorBlend', 'Scalar',
+    rigNode.addVariable(name + 'upvectorBlend', 'Scalar',
       options.upvectorBlend != undefined ? options.upvectorBlend : 1.0);
 
     rigNode.addSolverOperator({
@@ -546,7 +543,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('IK2BoneSolver', {
   }
 });
  */
-
+/*
 FABRIC.SceneGraph.CharacterSolvers.registerSolver('SpineSolver', {
   constructSolver: function(options, scene) {
     scene.assignDefaults(options, {
@@ -558,8 +555,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('SpineSolver', {
 
     var rigNode = scene.getPrivateInterface(options.rigNode),
       skeletonNode = rigNode.pub.getSkeletonNode(),
-      skeletonNode = scene.getPrivateInterface(skeletonNode.pub.getVariablesNode()),/*
-      constantsNode = scene.getPrivateInterface(rigNode.pub.getConstantsNode()),*/
+      skeletonNode = scene.getPrivateInterface(skeletonNode.pub.getVariablesNode()),
       bones = skeletonNode.getBones(),
       referencePose = skeletonNode.getReferencePose(),
       boneIDs = solver.generateBoneMapping(options.bones, [['vertebra'], 'hub']),
@@ -594,8 +590,8 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('SpineSolver', {
     skeletonNode.addMember(name + 'startTangent', 'Scalar', 0.3);
     skeletonNode.addMember(name + 'endTangent', 'Scalar', 0.3);
 
-    var startXfoID = variablesNode.addMember(name + 'startlocalXfo', 'Xfo', startlocalXfo);
-    var endXfoID = variablesNode.addMember(name + 'endlocalXfo', 'Xfo', endlocalXfo);
+    var startXfoID = rigNode.addVariable(name + 'startlocalXfo', 'Xfo', startlocalXfo);
+    var endXfoID = rigNode.addVariable(name + 'endlocalXfo', 'Xfo', endlocalXfo);
     
     skeletonNode.addMember(name + 'startXfoID', 'Integer', startLocalID);
     skeletonNode.addMember(name + 'endXfoID', 'Integer', endXfoID);
@@ -626,7 +622,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('SpineSolver', {
 
       if (options.createBaseManipulators) {
         solver.constructManipulator(name + 'startRotation', 'RotationManipulator', {
-            targetNode: variablesNode.pub,
+            targetNode: rigNode.addVariable.pub,
             targetMember: 'poseVariables',
             targetMemberIndex: startXfoID,
             parentNode: rigNode.pub,
@@ -638,7 +634,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('SpineSolver', {
           });
 
         solver.constructManipulator(name + 'startBoneRotation', 'BoneManipulator', {
-            targetNode: variablesNode.pub,
+            targetNode: rigNode.addVariable.pub,
             targetMember: 'poseVariables',
             targetMemberIndex: startXfoID,
             parentNode: rigNode.pub,
@@ -651,7 +647,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('SpineSolver', {
 
         // add two translations for the start and end as well
         solver.constructManipulator(name + 'startTranslation', 'ScreenTranslationManipulator', {
-            targetNode: variablesNode.pub,
+            targetNode: rigNode.addVariable.pub,
             targetMember: 'poseVariables',
             targetMemberIndex: startXfoID,
             parentNode: rigNode.pub,
@@ -665,7 +661,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('SpineSolver', {
           });
       }
       solver.constructManipulator(name + 'endRotation', 'RotationManipulator', {
-          targetNode: variablesNode.pub,
+          targetNode: rigNode.addVariable.pub,
           targetMember: 'poseVariables',
           targetMemberIndex: endXfoID,
           parentNode: rigNode.pub,
@@ -678,7 +674,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('SpineSolver', {
 
 
       solver.constructManipulator(name + 'endBoneRotation', 'BoneManipulator', {
-          targetNode: variablesNode.pub,
+          targetNode: rigNode.addVariable.pub,
           targetMember: 'poseVariables',
           targetMemberIndex: endXfoID,
           parentNode: rigNode.pub,
@@ -691,7 +687,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('SpineSolver', {
 
 
       solver.constructManipulator(name + 'endTranslation', 'ScreenTranslationManipulator', {
-          targetNode: variablesNode.pub,
+          targetNode: rigNode.addVariable.pub,
           targetMember: 'poseVariables',
           targetMemberIndex: endXfoID,
           parentNode: rigNode.pub,
@@ -712,7 +708,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('SpineSolver', {
     
   }
 });
-
+*/
 
 
 FABRIC.SceneGraph.CharacterSolvers.registerSolver('TwistBoneSolver', {
@@ -724,9 +720,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('TwistBoneSolver', {
 
     bindToRig = function() {
 
-      var rigNode = scene.getPrivateInterface(options.rigNode),/*
-        constantsNode = scene.getPrivateInterface(rigNode.pub.getConstantsNode()),*/
-        variablesNode = scene.getPrivateInterface(rigNode.pub.getVariablesNode()),
+      var rigNode = scene.getPrivateInterface(options.rigNode),
         skeletonNode = rigNode.pub.getSkeletonNode(),
         bones = skeletonNode.getBones(),
         referencePose = skeletonNode.getReferencePose(),
@@ -788,9 +782,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('BlendBoneSolver', {
 
     var solver = FABRIC.SceneGraph.CharacterSolvers.constructSolver('CharacterSolver', options, scene);
 
-    var rigNode = scene.getPrivateInterface(options.rigNode),/*
-      constantsNode = scene.getPrivateInterface(rigNode.pub.getConstantsNode()),*/
-      variablesNode = scene.getPrivateInterface(rigNode.pub.getVariablesNode()),
+    var rigNode = scene.getPrivateInterface(options.rigNode),
       skeletonNode = rigNode.pub.getSkeletonNode(),
       bones = skeletonNode.getBones(),
       referencePose = skeletonNode.getReferencePose(),
@@ -840,81 +832,6 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('BlendBoneSolver', {
   }
 });
 
-
-
-/*
-FABRIC.SceneGraph.CharacterSolvers.registerSolver('FishingRodSolver', {
-  constructSolver: function(options, scene) {
-    scene.assignDefaults(options, {
-        rigNode: undefined,
-        targetXfo: new FABRIC.RT.Xfo()
-      });
-
-    options.identifiers = ['rod'];
-
-    var solver = FABRIC.SceneGraph.CharacterSolvers.constructSolver('CharacterSolver', options, scene);
-
-    var rigNode = scene.getPrivateInterface(options.rigNode),
-      constantsNode = scene.getPrivateInterface(rigNode.pub.getConstantsNode()),
-      variablesNode = scene.getPrivateInterface(rigNode.pub.getVariablesNode()),
-      skeletonNode = rigNode.pub.getSkeletonNode(),
-      bones = skeletonNode.getBones(),
-      referencePose = skeletonNode.getReferencePose(),
-      boneIDs = solver.getBoneIDs(),
-      name = options.name,
-      rodTipPos,
-      lineLength,
-      i,
-      lastBoneIndex;
-
-    // check if the bones have a length
-    if (bones[boneIDs.rod].length <= 0.0) {
-      throw ("Cannot solve FishingRodSolver for bone '" +
-        bones[boneIDs.bones[i]].name + "', because it has length == 0.");
-    }
-
-    // compute the target
-    rodTipPos = referencePose[boneIDs.rod].transformVector(new FABRIC.RT.Vec3(bones[boneIDs.rod].length, 0, 0));
-    lineLength = rodTipPos.distanceTo(options.targetXfo.tr);
-    
-    var targetXfoId = variablesNode.addVariable('Xfo', options.targetXfo);
-    
-    constantsNode.addMember(name + 'targetXfoId', 'Integer', targetXfoId);
-    constantsNode.addMember(name + 'boneIndex', 'Integer', boneIDs.rod);
-    constantsNode.addMember(name + 'lineLength', 'Scalar', lineLength);
-    constantsNode.addMember(name + 'minLineLength', 'Scalar', lineLength * 0.5);
-    constantsNode.addMember(name + 'maxLineLength', 'Scalar', lineLength * 2.0);
-
-    rigNode.addSolverOperator({
-        operatorName: 'solveFishingRod',
-        srcFile: 'FABRIC_ROOT/SceneGraph/KL/solveFishingRod.kl',
-        entryFunctionName: 'fishingRodOp',
-        parameterLayout: [
-          'self.pose',
-          'skeleton.bones',
-          'constants.' + name + 'lineLength',
-          'constants.' + name + 'minLineLength',
-          'constants.' + name + 'maxLineLength',
-          
-          'constants.' + name + 'boneIndex',
-          'constants.' + name + 'targetXfoId',
-          
-          'variables.poseVariables'
-        ]
-      });
-    /*
-    if (options.createManipulators) {
-      // add a manipulation for target and upvector
-      solver.constructManipulator(name + 'targetScreen', 'ScreenTranslationManipulator', {
-        parentNode: variablesNode.pub,
-        parentMember: 'poseVariables'
-      });
-    }
-    * /
-    return solver;
-  }
-});
-    */
     
 /*
 FABRIC.SceneGraph.CharacterSolvers.registerSolver('NCFIKSolver', {
@@ -929,7 +846,6 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('NCFIKSolver', {
 
     var rigNode = scene.getPrivateInterface(options.rigNode),
       constantsNode = scene.getPrivateInterface(rigNode.pub.getConstantsNode()),
-      variablesNode = scene.getPrivateInterface(rigNode.pub.getVariablesNode()),
       skeletonNode = rigNode.pub.getSkeletonNode(),
       bones = skeletonNode.getBones(),
       referencePose = skeletonNode.getReferencePose(),
@@ -953,7 +869,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('NCFIKSolver', {
     targetPos = referencePose[lastBoneIndex].transformVector(new FABRIC.RT.Vec3(bones[lastBoneIndex].length, 0, 0));
     targetXfo = referencePose[boneIDs.targetParent].inverse().multiply(new FABRIC.RT.Xfo({ tr: targetPos }));
 
-    var targetXfoId = variablesNode.addVariable('Xfo', targetXfo);
+    var targetXfoId = rigNode.addVariable('Xfo', targetXfo);
     
     constantsNode.addMember(name + 'boneIndices', 'Integer[]', boneIDs.bones);
     constantsNode.addMember(name + 'targetXfoId', 'Integer', targetXfoId);
@@ -997,9 +913,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('ArmSolver', {
     var solver = FABRIC.SceneGraph.CharacterSolvers.constructSolver('CharacterSolver', options, scene);
 
     var rigNode = scene.getPrivateInterface(options.rigNode),
-      skeletonNode = rigNode.pub.getSkeletonNode(),/*
-      constantsNode = scene.getPrivateInterface(rigNode.pub.getConstantsNode()),*/
-      variablesNode = scene.getPrivateInterface(rigNode.pub.getVariablesNode()),
+      skeletonNode = rigNode.pub.getSkeletonNode(),
       bones = skeletonNode.getBones(),
       referencePose = skeletonNode.getReferencePose(),
       referenceLocalPose = skeletonNode.getReferenceLocalPose(),
@@ -1035,8 +949,8 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('ArmSolver', {
     handControlXfo.tr = referencePose[wristBoneIndex].transformVector(new FABRIC.RT.Vec3(bones[wristBoneIndex].length, 0, 0));
     wristOffsetXfo = handControlXfo.inverse().multiply(referencePose[wristBoneIndex]);
     
-    var handControlXfoId = variablesNode.addVariable('Xfo', handControlXfo);
-    var ikblendId = variablesNode.addVariable('Scalar', 1.0);
+    var handControlXfoId = rigNode.addVariable('Xfo', handControlXfo);
+    var ikblendId = rigNode.addVariable('Scalar', 1.0);
     
     skeletonNode.addMember(name + 'bones', 'Integer[]', boneIDs.bones);
     skeletonNode.addMember(name + 'wristOffsetXfo', 'Xfo', wristOffsetXfo);
@@ -1059,6 +973,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('ArmSolver', {
         ]
       });
 
+/*
     if (options.createManipulators) {
       var size = bones[wristBoneIndex].length;
 
@@ -1100,6 +1015,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('ArmSolver', {
         color: FABRIC.RT.rgb(1, 0, 0)
       });
     }
+ */
 
     return solver;
   }
@@ -1143,7 +1059,6 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('InsectLegSolver', {
 
     var rigNode = scene.getPrivateInterface(options.rigNode),
       skeletonNode = scene.getPrivateInterface(rigNode.pub.getSkeletonNode()),
-      variablesNode = scene.getPrivateInterface(rigNode.pub.getVariablesNode()),
       bones = skeletonNode.pub.getBones(),
       referencePose = skeletonNode.pub.getReferencePose(),
       referenceLocalPose = skeletonNode.pub.getReferenceLocalPose(),
@@ -1175,9 +1090,9 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('InsectLegSolver', {
       for(var i=0; i<boneIDs.bones.length; i++){
         xfos.push(referenceLocalPose[boneIDs.bones[i]]);
       }
-      var xfoIds = variablesNode.addVariable('Xfo[]', xfos);
-      var footPlatformXfoId = variablesNode.addVariable('Xfo', footPlatformXfo);
-      var ikblendId = variablesNode.addVariable('Scalar', 1.0);
+      var xfoIds = rigNode.addVariable('Xfo[]', xfos);
+      var footPlatformXfoId = rigNode.addVariable('Xfo', footPlatformXfo);
+      var ikblendId = rigNode.addVariable('Scalar', 1.0);
       
       var leg = new FABRIC.Characters.Limb(boneIDs.bones, -1, xfoIds, footPlatformXfoId, lastBoneOffsetXfo, footPlatformXfo, ikblendId);
       if(options.hubIds){
@@ -1232,7 +1147,6 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('HumanoidLegSolver', {
 
     var rigNode = scene.getPrivateInterface(options.rigNode),
       skeletonNode = scene.getPrivateInterface(rigNode.pub.getSkeletonNode()),
-      variablesNode = scene.getPrivateInterface(rigNode.pub.getVariablesNode()),
       bones = skeletonNode.pub.getBones(),
       referencePose = skeletonNode.pub.getReferencePose(),
       referenceLocalPose = skeletonNode.pub.getReferenceLocalPose(),
@@ -1282,9 +1196,9 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('HumanoidLegSolver', {
         xfos.push(referenceLocalPose[boneIDs.bones[i]]);
       }
       xfos.push(referenceLocalPose[boneIDs.ankle]);
-      var xfoIds = variablesNode.addVariable('Xfo[]', xfos);
-      var footPlatformXfoId = variablesNode.addVariable('Xfo', footPlatformXfo);
-      var ikblendId = variablesNode.addVariable('Scalar', 1.0);
+      var xfoIds = rigNode.addVariable('Xfo[]', xfos);
+      var footPlatformXfoId = rigNode.addVariable('Xfo', footPlatformXfo);
+      var ikblendId = rigNode.addVariable('Scalar', 1.0);
       
       var leg = new FABRIC.Characters.Limb(boneIDs.bones, boneIDs.ankle, xfoIds, footPlatformXfoId, ankleOffsetXfo, footPlatformXfo, ikblendId);
       legs.push(leg);
@@ -1388,7 +1302,6 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('HubSolver', {
 
     var rigNode = scene.getPrivateInterface(options.rigNode),
       skeletonNode = scene.getPrivateInterface(rigNode.pub.getSkeletonNode()),
-      variablesNode = scene.getPrivateInterface(rigNode.pub.getVariablesNode()),
       bones = skeletonNode.pub.getBones(),
       referencePose = skeletonNode.pub.getReferencePose(),
       referenceLocalPose = skeletonNode.pub.getReferenceLocalPose(),
@@ -1397,14 +1310,14 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('HubSolver', {
     var hubs = [];
     for(j=0; j<options.hubs.length; j++){
       var boneIDs = solver.generateBoneMapping(options.hubs[j], ['bone', 'parentSpaceBone', ['inSpineBones']]);
-      var hubXfoId = variablesNode.addVariable('Xfo', referencePose[boneIDs.bone]);
+      var hubXfoId = rigNode.addVariable('Xfo', referencePose[boneIDs.bone]);
       var inSpineBoneXfos = [];
       var inSpineBoneXfoIds;
       if(boneIDs.inSpineBones){
         for(var i=0; i<boneIDs.inSpineBones.length; i++){
           inSpineBoneXfos.push(bones[boneIDs.inSpineBones[i]].referenceLocalPose);
         }
-        inSpineBoneXfoIds = variablesNode.addVariable('Xfo[]', inSpineBoneXfos);
+        inSpineBoneXfoIds = rigNode.addVariable('Xfo[]', inSpineBoneXfos);
       }
       
       var hub = new FABRIC.Characters.Hub(boneIDs.bone, hubXfoId, boneIDs.parentSpaceBone, boneIDs.inSpineBones, inSpineBoneXfoIds);

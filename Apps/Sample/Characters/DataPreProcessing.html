@@ -84,6 +84,7 @@ $(document).ready(function() {
       step: 0.01
     });
 
+  $('#processTracks').button();
   $('#curveEditor').button();
 
   // Create the scene.
@@ -170,7 +171,7 @@ $(document).ready(function() {
     animationController = animationAssetNodes.Walker_ncl1_1Controller;
     
     
-    ikrigNode.invertSolvers(animationAssetNodes.Walker_ncl1_1CharacterRig1);
+    var invertedVariablesNode = ikrigNode.invertSolvers(animationAssetNodes.Walker_ncl1_1CharacterRig1, true);
     rigInstanceNode.setRigNode(ikrigNode);
   
     break;
@@ -247,7 +248,7 @@ $(document).ready(function() {
     animationLibrary = animationAssetNodes.AnimationLibrary;
     animationController = animationAssetNodes.CentipedeHub010Controller;
     
-    ikrigNode.invertSolvers(animationAssetNodes.CentipedeHub010CharacterRig1);
+    var invertedVariablesNode = ikrigNode.invertSolvers(animationAssetNodes.CentipedeHub010CharacterRig1, true);
   
     rigInstanceNode.setRigNode(ikrigNode);
     
@@ -292,7 +293,7 @@ $(document).ready(function() {
     animationController = animationAssetNodes.MaramaPelvis001Controller;
     
     
-    ikrigNode.invertSolvers(animationAssetNodes.MaramaPelvis001CharacterRig1);
+    var invertedVariablesNode = ikrigNode.invertSolvers(animationAssetNodes.MaramaPelvis001CharacterRig1, true);
     rigInstanceNode.setRigNode(ikrigNode);
   
     break;
@@ -323,60 +324,11 @@ $(document).ready(function() {
   var libraryProcessedAnimations = scene.constructNode('LinearKeyAnimationLibrary', {
     name: 'LibraryProcessedAnimations'
   });
-  var bindings = libraryProcessedAnimations.bindToVariables(ikrigNode.getVariablesNode(), 'DrivenTracks');
   
-  
-  var locomotionProcessingVariables, libraryLocomotionAnimations;
-  FABRIC.createAsyncTask(function(){
-    var timeRange = animationLibrary.getTimeRange();
-    var t = 0;
-    var sampleFrequency = 1/30;
-    for(var i=0; i <= Math.round((timeRange.y-timeRange.x) / sampleFrequency); i++){
-      scene.animation.setTime(t, false);
-      libraryProcessedAnimations.evaluateBindings();
-      t += sampleFrequency;
-    }
-    scene.animation.setTime(0, false);
-    
-    locomotionProcessingVariables = scene.constructNode('CharacterVariables', {
-      name: 'LocomotionProcessingVariables',
-      baseVariables:ikrigNode.getVariablesNode()
-    });
-    
-  //  var locomotionRigNode = scene.constructNode('CharacterRig', {
-  //    name: 'LocomotionRig',
-  //    skeletonNode: skeletonNode,
-  //    variablesNode: locomotionProcessingVariables,
-  //    baseCharacterRig: ikrigNode
-   // });
-   
-    
-    libraryLocomotionAnimations = scene.constructNode('LocomotionAnimationLibrary', {
-      name: 'LibraryLocomotionAnimations',
-      sampleFrequency: sampleFrequency
-    });
-    
-    libraryLocomotionAnimations.preProcessTracks(
-      libraryProcessedAnimations,
-      bindings,
-      ikrigNode,
-      0.02,
-      function(){
-        
-          var rigSaver = scene.constructManager('SceneSaver');
-          rigSaver.addNode(ikrigNode);
-          rigSaver.addNode(characterMesh);
-          rigSaver.addNode(libraryLocomotionAnimations);
-          var storage = new FABRIC.SceneGraph.LocalStorage(rigName);
-          rigSaver.save(storage);
-          
-        //  storage.log();
-          
-      });
-    
-    
-    
+  var libraryLocomotionAnimations = scene.constructNode('LocomotionAnimationLibrary', {
+    name: 'LibraryLocomotionAnimations'
   });
+  
   
   var timeRange = animationLibrary.getTimeRange(0);
   var $globalTimeSlider = $('#globalTime').slider({
@@ -391,6 +343,39 @@ $(document).ready(function() {
       scene.animation.setTime(ui.value);
       scene.redrawAllViewports();
     });
+  
+  
+  $('#processTracks').button()
+    .click(function() {
+      var bindings = libraryProcessedAnimations.bindToVariables(invertedVariablesNode, 'DrivenTracks');
+  
+      var timeRange = animationLibrary.getTimeRange(0);
+      var sampleFrequency = 1/30;
+      libraryProcessedAnimations.plotKeyframes(timeRange, sampleFrequency);
+      var footMovementThreshold = 0.02;
+      libraryLocomotionAnimations.preProcessTracks(
+        libraryProcessedAnimations,
+        bindings,
+        ikrigNode,
+        sampleFrequency,
+        footMovementThreshold
+      );
+      
+      viewport.redraw();
+    });
+  
+  $('#saveData').button()
+    .click(function() {
+      invertedVariablesNode.setName('CharacterVariables');
+      var rigSaver = scene.constructManager('SceneSaver');
+      rigSaver.addNode(ikrigNode);
+      rigSaver.addNode(characterMesh);
+      rigSaver.addNode(libraryLocomotionAnimations);
+      var storage = new FABRIC.SceneGraph.LocalStorage(rigName);
+      rigSaver.save(storage);
+      storage.log();
+    });
+
 
   var keyframeTrackNode = assetNodes.polymshAnimationTrack;
   $('#curveEditor').button()
@@ -455,7 +440,9 @@ $(document).ready(function() {
             <div class="content">
               <div>Sample Index:</div>
               <div id='globalTime' style="margin-top:10px;"></div>
-              <button id="curveEditor" style="margin-top:30px;">Open Curve Editor</button>
+              <button id="processTracks" style="margin-top:3px;">Process Tracks</button>
+              <button id="curveEditor" style="margin-top:3px;">Open Curve Editor</button>
+              <button id="saveData" style="margin-top:3px;">Write Data</button>
             </div><!--content-->
           </div><!--box-->
 
