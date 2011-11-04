@@ -7,6 +7,7 @@ use Xfo, RGBA, Color;
 operator generateVolumeSlices(
   io Vec3 cropMin,
   io Vec3 cropMax,
+  io Boolean cropInTransformedSpace,
   io Size nbSlices,
   io Xfo volumeXfo,
   io Mat44 camera,
