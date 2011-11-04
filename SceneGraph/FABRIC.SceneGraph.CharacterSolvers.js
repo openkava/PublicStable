@@ -50,17 +50,20 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('CharacterSolver', {
       throw ('You must specify the rigNode.');
     }
 
-    var parameterLayout,
+    var name = options.name,
+      parameterLayout,
       skeletonNode = options.rigNode.getSkeletonNode(),
       manipulators = {},
       name2id;
     
     var solver = {
+      getName: function(){
+        return name;
+      },
       constructManipulator: function(name, manipulatorType, options) {
         if (manipulators[name]) {
           throw (" Manipulator names must be unique. Solver '" + name + "' already contains :'" + name + "'");
         }
-        options.name = name;
         manipulators[name] = scene.constructNode(manipulatorType, options);
         return manipulators[name];
       },
