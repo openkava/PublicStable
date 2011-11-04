@@ -1892,7 +1892,7 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
     offscreenNodeRedrawEventHandler.preDescendBindings.append(
       scene.constructOperator({
           operatorName: 'setResolutionFactor',
-          srcCode: 'use OGLRenderTarget; operator setResolutionFactor(io Scalar factor, io OGLRenderTarget renderTarget){ renderTarget.resolution = (factor < 0.95 ? factor : 1.0); report "Res: " + renderTarget.resolution; }',
+          srcCode: 'use OGLRenderTarget; operator setResolutionFactor(io Scalar factor, io OGLRenderTarget renderTarget){ renderTarget.resolution = (factor < 0.95 ? factor : 1.0); }',
           entryFunctionName: 'setResolutionFactor',
           parameterLayout: [
             'volumeUniforms.resolutionFactor',

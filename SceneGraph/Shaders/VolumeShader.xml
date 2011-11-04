@@ -110,7 +110,7 @@
         //if there is a quadratic progression ((1.0-u_transparency)^2). The reason is that the alpha is ajusted with
         //u_alphaFactor so that the accumulation over all the slices sums properly (u_alphaFactor depends on number of slices).
         //Because alphas are summing up in a non-linear fashion, we can't just modulate it linearly based on the transparency factor...
-        float alpha = clampFactor * min( mix( 1.0-u_transparency, opacityFactor * u_brightness * u_alphaFactor, u_transparency ), 1.0 );
+        float alpha = opacityFactor * min( mix( 1.0-u_transparency, u_brightness * u_alphaFactor, u_transparency ), 1.0 );
         
         float gradientWeight = gradient.a;
 
