@@ -384,7 +384,7 @@ $(document).ready(function() {
   var layoutRectangle = scene.constructNode('DrawRectangle', {color: new FABRIC.RT.RGBA(128,128,128,255), tl: new FABRIC.RT.Vec2(2.0/3.0, 1.0), br: new FABRIC.RT.Vec2(1.0, -1.0) });
   var borderSize = 0.01;
 
-  var opacityTexture = scene.constructNode('Image3DWithHistogram',  { url: 'Resources/HeadHigh.nrrd', resourceTargetTransformNode: transform, glRepeat: false, histogramResolution: 1024 });
+  var opacityTexture = scene.constructNode('Image3DWithHistogram',  { url: 'Resources/ChestMid.nrrd', resourceTargetTransformNode: transform, glRepeat: false, histogramResolution: 1024 });
 
   opacityTexture.getResourceLoadNode().addOnLoadSuccessCallback(function (){
       console.log( 'TODO: display histogram of ' + opacityTexture.getHistogram().length + ' values');
@@ -393,15 +393,15 @@ $(document).ready(function() {
   var volumeNode = scene.constructNode('VolumeOpacityInstance', {
       viewportNode: viewport,
       transformNode: transform,
-      cropMin: new FABRIC.RT.Vec3(0, 0.4, 0),
-      cropMax: new FABRIC.RT.Vec3(1, 0.75, 1),
+      cropMin: new FABRIC.RT.Vec3(0, 0, 0.4),
+      cropMax: new FABRIC.RT.Vec3(1, 1, 0.75),
       opacityTextureNode: opacityTexture,
       lightNode: light,
       brightnessFactor: 0.5,
       transparency: 0.70,
       minOpacity: 0.1,
       maxOpacity: 1.0,
-      backgroundColor: new FABRIC.RT.Color(0.0, 0.0, 0.0, 0.0),
+      backgroundColor: new FABRIC.RT.Color(0, 0, 0, 0),
       opacityFactorsNode: opacityDisplayNode,
       opacityColorsNode: gradientDisplayNode
     });
@@ -448,6 +448,11 @@ $(document).ready(function() {
     
     var cropMax = volumeNode.getCropMax();
     var cropMin = volumeNode.getCropMin();
+
+    if(cropMin > cropMax) {
+      cropMin = cropMax;
+    }
+
     $sliders3D[i].slider('option', 'values', [cropMin.component(i), cropMax.component(i)]);
     $sliders3D[i].bind('slide', sliders3DBindFunction(i) );
   }
@@ -494,7 +499,7 @@ $(document).ready(function() {
 
   $("#whiteBackground").attr('checked', false).change(function() {
     var whiteBackground = $('#whiteBackground').attr('checked');
-    volumeNode.setBackgroundColor(whiteBackground ? new FABRIC.RT.Color(1.0, 1.0, 1.0, 1.0) : new FABRIC.RT.Color(0.0, 0.0, 0.0, 1.0));
+    volumeNode.setBackgroundColor(whiteBackground ? new FABRIC.RT.Color(1, 1, 1, 1) : new FABRIC.RT.Color(0, 0, 0, 1));
     viewport.redraw();
   });
 
