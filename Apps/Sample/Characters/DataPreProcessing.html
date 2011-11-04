@@ -120,7 +120,7 @@ $(document).ready(function() {
   });
   
   var rigName = 'marama';
-  var assetNodes, fkrigNode, rigInstanceNode, skeletonNode, animationLibrary, animationController, characterMesh;
+  var assetNodes, bindPoseRig, fkrigNode, rigInstanceNode, skeletonNode, animationLibrary, animationController, characterMesh;
   switch(rigName){
   case 'hopper':
     assetNodes = scene.importAssetFile('Assets/hopper.DAE');
@@ -256,11 +256,11 @@ $(document).ready(function() {
   case 'marama':
     assetNodes = scene.importAssetFile('Assets/Marama.DAE', { scaleFactor: 0.1 } );
   
-    fkrigNode = assetNodes.MaramaPelvis001CharacterRig;
+    bindPoseRig = assetNodes.MaramaPelvis001CharacterRig;
     rigInstanceNode = assetNodes.MaramaPelvis001CharacterInstance;
     characterMesh = assetNodes.MaramaPelvis001Mesh;
     
-    skeletonNode = fkrigNode.getSkeletonNode();
+    skeletonNode = bindPoseRig.getSkeletonNode();
     var ikrigNode = scene.constructNode('CharacterRig', {
       name: 'IKRig',
       skeletonNode: skeletonNode
@@ -291,7 +291,7 @@ $(document).ready(function() {
     var animationAssetNodes = scene.importAssetFile('Assets/Marama_Walk.DAE', { scaleFactor: 0.1 });
     animationLibrary = animationAssetNodes.AnimationLibrary;
     animationController = animationAssetNodes.MaramaPelvis001Controller;
-    
+    fkrigNode = animationAssetNodes.MaramaPelvis001CharacterRig1;
     
     var invertedVariablesNode = ikrigNode.invertSolvers(animationAssetNodes.MaramaPelvis001CharacterRig1, true);
     rigInstanceNode.setRigNode(ikrigNode);
@@ -308,16 +308,22 @@ $(document).ready(function() {
   rigInstanceNode.setMaterialNode(materialNode);
   characterMesh.setName('characterMesh');
   
-  var skeletonGeometryNode = scene.constructNode("CharacterSkeletonDebug",{
-    characterRigNode:fkrigNode,
-    boneradius: 0.2,
-    color: FABRIC.RT.rgba(0.0, 0.0, 1.0, 1.0)
-  });
-  
-  var skeletonGeometryNode = scene.constructNode("CharacterSkeletonDebug",{
-    characterRigNode:ikrigNode,
+  var sourceSkeleton = scene.constructNode("CharacterSkeletonDebug",{
+    characterRigNode:bindPoseRig,
     boneradius: 0.2,
     color: FABRIC.RT.rgba(0.0, 1.0, 0.0, 1.0)
+  });
+  
+  var animatedSkeleton = scene.constructNode("CharacterSkeletonDebug",{
+    characterRigNode:fkrigNode,
+    boneradius: 0.2,
+    color: FABRIC.RT.rgba(1.0, 1.0, 0.0, 1.0)
+  });
+  
+  var riggedSkeleton = scene.constructNode("CharacterSkeletonDebug",{
+    characterRigNode:ikrigNode,
+    boneradius: 0.2,
+    color: FABRIC.RT.rgba(0.0, 0.0, 1.0, 1.0)
   });
   
   //
@@ -384,6 +390,22 @@ $(document).ready(function() {
     });
     
 
+  $("#displaySourceSkeleton").attr('checked', true);
+  $("#displayAnimatedSkeleton").attr('checked', true);
+  $("#displayRiggedSkeleton").attr('checked', true);
+  $("#displaySourceSkeleton").change(function() {
+    sourceSkeleton.getInstanceNode().setDrawToggle($("#displaySourceSkeleton").is(":checked"));
+    viewport.redraw();
+  });
+  $("#displayAnimatedSkeleton").change(function() {
+    animatedSkeleton.getInstanceNode().setDrawToggle($("#displayAnimatedSkeleton").is(":checked"));
+    viewport.redraw();
+  });
+  $("#displayRiggedSkeleton").change(function() {
+    riggedSkeleton.getInstanceNode().setDrawToggle($("#displayRiggedSkeleton").is(":checked"));
+    viewport.redraw();
+  });
+  
   $('#loadingDialog').dialog({
     modal: true
   });
@@ -439,10 +461,17 @@ $(document).ready(function() {
             <h2>CONTROLS</h2>
             <div class="content">
               <div>Sample Index:</div>
+              <input type="checkbox" id="displaySourceSkeleton" style="margin-top:10px;"/><label for="displaySourceSkeleton">Display Source Skeleton:</label>
+              </br>
+              <input type="checkbox" id="displayAnimatedSkeleton" style="margin-top:10px;"/><label for="displayAnimatedSkeleton">Display Animated Skeleton:</label>
+              </br>
+              <input type="checkbox" id="displayRiggedSkeleton" style="margin-top:10px;"/><label for="displayRiggedSkeleton">Display Rigged Skeleton:</label>
+              </br>
               <div id='globalTime' style="margin-top:10px;"></div>
               <button id="processTracks" style="margin-top:3px;">Process Tracks</button>
               <button id="curveEditor" style="margin-top:3px;">Open Curve Editor</button>
               <button id="saveData" style="margin-top:3px;">Write Data</button>
+              
             </div><!--content-->
           </div><!--box-->
 
