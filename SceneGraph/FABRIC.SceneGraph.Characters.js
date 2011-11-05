@@ -360,6 +360,7 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
       dgnode.setDependency(animationLibraryNode.getDGNode(), 'animationlibrary');
       dgnode.setDependency(animationControllerNode.getDGNode(), 'controller');
       if(boundToAnimationTracks){
+        dgnode.setData('trackSetId', 0, trackSetId);
         return;
       }
       
@@ -452,14 +453,14 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
   optionsDesc: {
     skeletonNode: 'The skeletonNode to use for this CharacterRig',
     variablesNode: 'The variablesNode to use for this CharacterRig',
-    baseCharacterRig: 'Copy all solvers from this base rig to male a clone'
+    baseCharacterRigNode: 'Copy all solvers from this base rig to male a clone'
   },
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
       skeletonNode: undefined,
       variablesNode: undefined,
       controllerNode: undefined,
-      baseCharacterRig: undefined,
+      baseCharacterRigNode: undefined,
       debug: true
     });
     
@@ -664,9 +665,10 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
       characterRigNode.pub.setControllerNode(scene.constructNode('CharacterController').pub);
     }
     
-    if (options.baseCharacterRig) {
-      // Apply the baseCharacterRig solvers.
-      var baseCharacterRigNode = scene.getPrivateInterface(options.baseCharacterRig);
+    if (options.baseCharacterRigNode) {
+      // Apply the baseCharacterRigNode solvers.
+      var baseCharacterRigNode = scene.getPrivateInterface(options.baseCharacterRigNode);
+      characterRigNode.pub.setSkeletonNode(baseCharacterRigNode.pub.getSkeletonNode());
       var baseRigSolvers = baseCharacterRigNode.getSolverParams();
       for (var i = 0; i < baseRigSolvers.length; i++) {
         characterRigNode.pub.addSolver(baseRigSolvers[i].name, baseRigSolvers[i].type, baseRigSolvers[i].options);

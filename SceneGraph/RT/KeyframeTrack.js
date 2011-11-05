@@ -23,7 +23,6 @@ FABRIC.RT.KeyframeTrackSet.prototype = {
   },
   addXfoTrack: function(name, storeEulerAngles){
     var binding = [];
-    var red
     this.tracks.push(new FABRIC.RT.KeyframeTrack(name+'tr.x', FABRIC.RT.Color.red));      binding.push(this.tracks.length - 1);
     this.tracks.push(new FABRIC.RT.KeyframeTrack(name+'tr.y', FABRIC.RT.Color.green));    binding.push(this.tracks.length - 1);
     this.tracks.push(new FABRIC.RT.KeyframeTrack(name+'tr.z', FABRIC.RT.Color.blue));     binding.push(this.tracks.length - 1);

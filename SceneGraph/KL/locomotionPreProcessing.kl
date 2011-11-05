@@ -3,8 +3,49 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 use Vec2, Vec3, Quat, Xfo;
-use LinearKeyframeTrackSet, PoseVariables;
+use LinearKeyframeTrackSet, PoseVariables, KeyframeTrackBindings;
 use DebugGeometry;
+
+
+function addCOMTracks(
+  io LinearKeyframeTrackSet trackSet,
+  io KeyframeTrackBindings bindings,
+  in COM com,
+){
+  Integer trackIds[];
+  trackSet.addXfoTracks('com', false, trackIds);
+  bindings.addXfoBinding(com.xfoId, trackIds);
+  
+  Integer trackId;
+  Color yellow(1.0, 1.0, 0.0, 1.0);
+  
+  trackSet.addTrack('stepFrequency', yellow, trackId);
+  bindings.addScalarBinding(com.parameterVarIds[0], trackId);
+  
+  trackSet.addTrack('speed', yellow, trackId);
+  bindings.addScalarBinding(com.parameterVarIds[1], trackId);
+  
+  trackSet.addTrack('gradient', yellow, trackId);
+  bindings.addScalarBinding(com.parameterVarIds[2], trackId);
+  
+  trackSet.addTrack('direction', yellow, trackId);
+  bindings.addScalarBinding(com.parameterVarIds[3], trackId);
+}
+
+
+function addLegTracks(
+  io LinearKeyframeTrackSet trackSet,
+  io KeyframeTrackBindings bindings,
+  io LocomotionFoot feet[]
+){
+  Color yellow(1.0, 1.0, 0.0, 1.0);
+  
+  Integer trackId;
+  for(Integer i=0; i<feet.size; i++){
+    trackSet.addTrack('foot'+i+'StepTime', yellow, trackId);
+    bindings.addScalarBinding(feet[i].stepTimeVarId, trackId);
+  }
+}
 
 function Vec2[][] calcFootPlantTimes(
   in Limb legs[],
@@ -97,22 +138,23 @@ function Vec2[][] calcFootPlantTimes(
 
 
 
-operator locomotionPreProcessing(/*
+operator locomotionPreProcessing(
   io LinearKeyframeTrackSet sourceAnimationLibrary<>,
-  */
+  io PoseVariables referenceVariables,
+  io KeyframeTrackBindings referenceBindings,
+  
   io Bone bones[],
   io Hub hubs[],
   io Limb legs[],
   io COM com,
   io LocomotionFoot locomotionFeet[],
   
-  io PoseVariables referenceVariables,
-  io KeyframeTrackBindings bindings,
-  
   io Scalar sampleFrequency,
   io Scalar movementThreshold,
   
   io LinearKeyframeTrackSet trackSet,
+  io KeyframeTrackBindings bindings,
+  
   io LocomotionMarker locomotionMarkers[],
   io FootStepTrack footStepTracks[],
   in Size index,
@@ -120,8 +162,14 @@ operator locomotionPreProcessing(/*
   io DebugGeometry debugGeometry
 ) {
   report("locomotionPreProcessing <<<:" + index);
-
+  
+  trackSet = sourceAnimationLibrary[index];
   PoseVariables poseVariables = referenceVariables;
+  bindings = referenceBindings;
+  
+  addCOMTracks(trackSet, bindings, com);
+  addLegTracks(trackSet, bindings, locomotionFeet);
+
   Xfo pose[];
   pose.resize(bones.size);
   for(Integer i=0; i < bones.size; i++){

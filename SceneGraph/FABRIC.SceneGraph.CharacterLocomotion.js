@@ -39,7 +39,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('COMSolver', {
     
     var com = new FABRIC.Characters.COM(comXfoId, [comParam0VarId, comParam1VarId, comParam2VarId, comParam3VarId] );
     skeletonNode.addMember('com', 'COM', com);
-    
+    /*
     solver.addTracks = function(trackSet, keyframeTrackBindings){
       var comXfoTrackBindings = trackSet.addXfoTrack('com');
       keyframeTrackBindings.addXfoBinding(comXfoId, comXfoTrackBindings);
@@ -56,6 +56,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('COMSolver', {
       var comParam3TrackId = trackSet.addScalarTrack('direction', FABRIC.RT.Color.yellow);
       keyframeTrackBindings.addScalarBinding(comParam3VarId, comParam3TrackId);
     }
+    */
     return solver; 
   }
 });
@@ -94,17 +95,42 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('LocomotionFeetSolver', {
       stepTimeVarIds.push(stepTimeVarId);
     }
     skeletonNode.addMember('locomotionFeet', 'LocomotionFoot[]', locomotionFeet);
-    
+    /*
     solver.addTracks = function(trackSet, keyframeTrackBindings){
       for(var i=0; i<limbs.length; i++){
         var stepTimeTrackId = trackSet.addScalarTrack('foot'+i+'StepTime', FABRIC.RT.Color.yellow);
         keyframeTrackBindings.addScalarBinding(stepTimeVarIds[i], stepTimeTrackId);
       }
-    }
+    }*/
     return solver; 
   }
 });
 
+
+
+FABRIC.SceneGraph.registerNodeType('LocomotionCharacterRig', {
+  parentNodeDesc: 'CharacterRig',
+  optionsDesc: {
+  },
+  factoryFn: function(options, scene) {
+    scene.assignDefaults(options, {
+      baseCharacterRig: undefined
+    });
+  
+    if (!options.baseCharacterRigNode) {
+      throw ('Must Provide a base rig.');
+    }
+    if (!options.baseCharacterRigNode.isTypeOf('CharacterRig')) {
+      throw ('Incorrect type. Must be a CharacterRig');
+    }
+    var locomotionRigNode = scene.getPrivateInterface(options.baseCharacterRigNode);
+  //  var locomotionRigNode = scene.constructNode('CharacterRig', options);
+    
+    locomotionRigNode.pub.addSolver('COM', 'COMSolver');
+    locomotionRigNode.pub.addSolver('Feet', 'LocomotionFeetSolver');
+    
+    return locomotionRigNode;
+  }});
 
 FABRIC.RT.LocomotionMarker = function() {
   this.localtime = 0.0;
@@ -161,6 +187,7 @@ FABRIC.SceneGraph.registerNodeType('LocomotionAnimationLibrary', {
     dgnode.addMember('markers', 'LocomotionMarker[]');
     dgnode.addMember('footStepTracks', 'FootStepTrack[]');
     
+    var paramsdgnode, debugGeometryDraw;
     animationLibraryNode.pub.preProcessTracks = function(
       sourceAnimationLibrary,
       keyframeTrackBindings,
@@ -175,39 +202,46 @@ FABRIC.SceneGraph.registerNodeType('LocomotionAnimationLibrary', {
       if (!rigNode.isTypeOf('CharacterRig')) {
         throw ('Incorrect type. Must be a CharacterRig');
       }
-    
+      rigNode = scene.getPrivateInterface(rigNode);
       sourceAnimationLibrary = scene.getPrivateInterface(sourceAnimationLibrary);
-      variablesNode = scene.getPrivateInterface(rigNode.getVariablesNode());
-      skeletonNode = scene.getPrivateInterface(rigNode.getSkeletonNode());
-    //  dgnode.setDependency(sourceAnimationLibrary.getDGNode(), 'sourceAnimationLibrary');
+    //  variablesNode = scene.getPrivateInterface(rigNode.getVariablesNode());
+      skeletonNode = scene.getPrivateInterface(rigNode.pub.getSkeletonNode());
+      dgnode.setDependency(sourceAnimationLibrary.getDGNode(), 'sourceAnimationLibrary');
       dgnode.setDependency(skeletonNode.getDGNode(), 'skeleton');
-      dgnode.setDependency(variablesNode.getDGNode(), 'variables');
+    //  dgnode.setDependency(variablesNode.getDGNode(), 'variables');
       
-      var paramsdgnode = animationLibraryNode.constructDGNode('ParamsDGNode');
-      dgnode.setDependency(paramsdgnode, 'params');
-      paramsdgnode.addMember('sampleFrequency', 'Scalar', sampleFrequency);
-      paramsdgnode.addMember('footMovementThreshold', 'Scalar', footMovementThreshold);
+      if(!paramsdgnode){
+        paramsdgnode = animationLibraryNode.constructDGNode('ParamsDGNode');
+        dgnode.setDependency(paramsdgnode, 'params');
+        paramsdgnode.addMember('sampleFrequency', 'Scalar', sampleFrequency);
+        paramsdgnode.addMember('footMovementThreshold', 'Scalar', footMovementThreshold);
+        
+        
+        paramsdgnode.addMember('bindings', 'KeyframeTrackBindings', keyframeTrackBindings);
+        paramsdgnode.addMember('poseVariables', 'PoseVariables', rigNode.getVariables());
+        dgnode.addMember('bindings', 'KeyframeTrackBindings');
+      }
       
-      var trackSet = sourceAnimationLibrary.pub.getTrackSet(0);
+    //  var trackSet = sourceAnimationLibrary.pub.getTrackSet(0);
       
-      var comsolver = rigNode.addSolver('COM', 'COMSolver');
-      comsolver.addTracks(trackSet, keyframeTrackBindings);
+    //  var comsolver = rigNode.addSolver('COM', 'COMSolver');
+    //  comsolver.addTracks(trackSet, keyframeTrackBindings);
       
-      var locomotionFeedSolver = rigNode.addSolver('Feet', 'LocomotionFeetSolver');
-      locomotionFeedSolver.addTracks(trackSet, keyframeTrackBindings);
+    //  var locomotionFeedSolver = rigNode.addSolver('Feet', 'LocomotionFeetSolver');
+    //  locomotionFeedSolver.addTracks(trackSet, keyframeTrackBindings);
       
-      variablesNode.setBindings(keyframeTrackBindings);
+    //  variablesNode.setBindings(keyframeTrackBindings);
       
-      dgnode.addMember('locomotionMarkers', 'LocomotionMarker[]');
-      
-      dgnode.addMember('debugGeometry', 'DebugGeometry' );
-      var debugGeometryDraw = scene.constructNode('DebugGeometryDraw', {
-          dgnode: dgnode,
-          debugGemetryMemberName: 'debugGeometry'
-      });
+      if(!debugGeometryDraw){
+        dgnode.addMember('debugGeometry', 'DebugGeometry' );
+        debugGeometryDraw = scene.constructNode('DebugGeometryDraw', {
+            dgnode: dgnode,
+            debugGemetryMemberName: 'debugGeometry'
+        });
+      }
       
       // Clone the data from the sourceAnimationLibrary
-      dgnode.setData('trackSet', 0, trackSet);
+    //  dgnode.setData('trackSet', 0, trackSet);
     //  dgnode.setCount(sourceAnimationLibrary.pub.getTrackSetCount());
     //  for(var i=0; i<trackSets.length; i++){
     //    dgnode.setData('trackSet', i, sourceAnimationLibrary.pub.getTrackSet());
@@ -217,23 +251,23 @@ FABRIC.SceneGraph.registerNodeType('LocomotionAnimationLibrary', {
         operatorName: 'locomotionPreProcessing',
         srcFile: 'FABRIC_ROOT/SceneGraph/KL/locomotionPreProcessing.kl',
         entryFunctionName: 'locomotionPreProcessing',
-        parameterLayout: [/*
+        parameterLayout: [
           'sourceAnimationLibrary.trackSet<>',
-                          */
+          'params.poseVariables',
+          'params.bindings',
+                          
           'skeleton.bones',
           'skeleton.hubs',
           'skeleton.legs',
           'skeleton.com',
           'skeleton.locomotionFeet',
           
-          'variables.poseVariables',
-          'variables.bindings',
-          
           'params.sampleFrequency',
           'params.footMovementThreshold',
           
           'self.trackSet',
-          'self.locomotionMarkers',
+          'self.bindings',
+          'self.markers',
           'self.footStepTracks',
           'self.index',
           
@@ -242,11 +276,9 @@ FABRIC.SceneGraph.registerNodeType('LocomotionAnimationLibrary', {
         async: false
       }));
       
-      dgnode.evaluate();
-      dgnode.bindings.remove(0);
-      dgnode.removeDependency('variables');
-      dgnode.removeDependency('skeleton');
-      dgnode.removeDependency('params');
+    //  dgnode.evaluate();
+    //  dgnode.bindings.remove(0);
+    //  dgnode.removeDependency('skeleton');
     }
     return animationLibraryNode;
   }});
@@ -461,10 +493,10 @@ FABRIC.SceneGraph.registerNodeType('LocomotionPoseVariables', {
         'bulletworld.world',
         
         'animationlibrary.trackSet<>',
-        'animationlibrary.locomotionMarkers<>',
+        'animationlibrary.markers<>',
         'animationlibrary.footStepTracks<>',
         
-        'self.bindings',
+        'animationlibrary.bindings',
         'self.trackcontroller',
         
         'skeleton.hubs',
