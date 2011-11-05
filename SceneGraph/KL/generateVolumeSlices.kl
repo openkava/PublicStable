@@ -617,13 +617,12 @@ operator updateTransferFunctionImage(
     report("ERROR in updateTransferFunctionImage: opacityFactors.size != 1024 || opacityColors.size != 1024" );
     return;
   }
-  pixels.resize(1024*2);
+  pixels.resize(1024);
   Size i;
   for(i = 0; i < 1024; ++i) {
     pixels[i].r = opacityColors[i].r;
     pixels[i].g = opacityColors[i].g;
     pixels[i].b = opacityColors[i].b;
-    pixels[i].a = opacityFactors[i];
 
     //In the 2nd pixel row, bake the opacity clamping function.
     //We keep it in a separate texture so that we can reduce artifacts even if "transparency" is not 0
@@ -639,7 +638,7 @@ operator updateTransferFunctionImage(
     else if(X > maxOpacity)
       clampFactor = 1.0-(X-maxOpacity)/rampFactor;
 
-    pixels[i+1024].a = Scalar(clampFactor);
+    pixels[i].a = opacityFactors[i] * clampFactor;
   }
 }
 

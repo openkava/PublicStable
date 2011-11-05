@@ -104,6 +104,16 @@ FABRIC.SceneGraph.registerNodeType('Image', {
           entryFunctionName: 'initImageFromColor',
           srcFile: 'FABRIC_ROOT/SceneGraph/KL/loadTexture.kl'
         }));
+
+        imageNode.pub.setColor = function(color) {
+          dgnode.setData('initiated', 0, false);
+          if( color.getType() === 'FABRIC.RT.Color' ) {
+            var byteColor = new FABRIC.RT.RGBA();
+            byteColor.setFromScalarColor(color);
+            color = byteColor;
+          }
+          dgnode.setData('color', 0, color );
+        }
       };
     }
 
