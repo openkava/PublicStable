@@ -4,10 +4,9 @@ var constructColorGradient = function(domRootID, colorKeyTrackNode, options){
   var keyColor = FABRIC.rgb(.0, .0, .0);
   
   options = options ? options : {};
-  options.timeStripe = options.timeStripe!=undefined ? options.timeStripe : true;
   options.draggable = options.draggable!=undefined ? options.draggable : true;
   options.zoomable = options.zoomable!=undefined ? options.zoomable : true;
-  options.timeRange = options.timeRange!=undefined ? options.timeRange : new FABRIC.RT.Vec2(0, 100);
+  options.timeRange = options.timeRange!=undefined ? options.timeRange : new FABRIC.RT.Vec2(0, 1);
   
   var rootDomNode = document.getElementById(domRootID);
   var windowWidth = rootDomNode.clientWidth;
@@ -71,6 +70,7 @@ var constructColorGradient = function(domRootID, colorKeyTrackNode, options){
     }
   }
   
+  
   var displayGradient = function(){
     keysHolderGroup.removeAllChildren();
     gradient.clearKeys();
@@ -103,6 +103,17 @@ var constructColorGradient = function(domRootID, colorKeyTrackNode, options){
     }
     colorKeyTrackNode.setTrackKeys(0, gradientKeyData);
     displayGradient();
+  });
+  
+  window.addEventListener('keydown', function(evt) {
+    if(evt.keyIdentifier == "U+007F"){
+      console.log(evt.target.nodeName);
+      if(selectedKeyIndex >= 0){
+        gradientKeyData.splice(selectedKeyIndex, 1);
+        colorKeyTrackNode.setTrackKeys(0, gradientKeyData);
+        displayGradient();
+      }
+    }
   });
   
   displayGradient();
