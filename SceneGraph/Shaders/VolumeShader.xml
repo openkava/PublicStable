@@ -99,10 +99,8 @@
 
         float opacity = texture3D( u_samplerOpacityMap, gl_TexCoord[0].xyz).r;
         vec4 gradient = texture3D( u_samplerGradientMap, gl_TexCoord[0].xyz);
-        vec4 transferFunction = texture2D( u_samplerTransferFunctionMap, vec2(opacity, 0.25) );
-        
-        float clampFactor = texture2D( u_samplerTransferFunctionMap, vec2(opacity, 0.75) ).a;
-        float opacityFactor = transferFunction.a * clampFactor;
+        vec4 transferFunction = texture2D( u_samplerTransferFunctionMap, vec2(opacity, 0.5) );
+        float opacityFactor = transferFunction.a;
 
         transferFunction.rgb *= u_brightness;
         

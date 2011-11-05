@@ -348,7 +348,7 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
       createResourceLoadNode: false,
       createLoadTextureEventHandler: true,
       width: 1024,
-      height: 2,
+      height: 1,
       forceRefresh: true,
       initImage: false,
       glRepeat: false
@@ -385,26 +385,28 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
         opacityTextureNode: options.opacityTextureNode,
         gradientTextureNode: options.gradientTextureNode,
         transferFunctionTextureNode: transferFunctionImageNode.pub,
-        lightNode: options.lightNode
+        lightNode: options.lightNode,
+        storeUniformsInDGNode: true,
+        separateShaderNode: false //We don't want it to be shared with VolumeSliceRender nodes
     });
 
     var volumeMaterialNode = scene.getPrivateInterface(volumeMaterialNodePub);
-    var volumeMaterialNodeRedrawEvent = volumeMaterialNode.getRedrawEventHandler();
-    volumeMaterialNodeRedrawEvent.setScope('volumeUniforms', volumeUniformsDGNode);
+    var volumeMaterialDGNode = volumeMaterialNode.getDGNode();
+    volumeMaterialDGNode.setDependency(volumeUniformsDGNode, 'volumeUniforms');
 
-    volumeMaterialNodeRedrawEvent.addMember('specularFactor', 'Scalar', options.specularFactor );
-    volumeMaterialNodeRedrawEvent.addMember('brightnessFactor', 'Scalar', options.brightnessFactor );
+    volumeMaterialDGNode.addMember('specularFactor', 'Scalar', options.specularFactor );
+    volumeMaterialDGNode.addMember('brightnessFactor', 'Scalar', options.brightnessFactor );
 
-    volumeNode.addMemberInterface(volumeMaterialNodeRedrawEvent, 'transparency', true);
-    volumeNode.addMemberInterface(volumeMaterialNodeRedrawEvent, 'specularFactor', true);
-    volumeNode.addMemberInterface(volumeMaterialNodeRedrawEvent, 'brightnessFactor', true);
-    volumeNode.addMemberInterface(volumeMaterialNodeRedrawEvent, 'invertColor', true);
+    volumeNode.addMemberInterface(volumeMaterialDGNode, 'transparency', true);
+    volumeNode.addMemberInterface(volumeMaterialDGNode, 'specularFactor', true);
+    volumeNode.addMemberInterface(volumeMaterialDGNode, 'brightnessFactor', true);
+    volumeNode.addMemberInterface(volumeMaterialDGNode, 'invertColor', true);
     volumeNode.addMemberInterface(offscreenNodeRedrawEventHandler, 'backgroundColor', true);
 
     volumeNode.pub.setTransparency(options.transparency);
     volumeNode.pub.setInvertColor(options.invertColor);
 
-    volumeMaterialNodeRedrawEvent.preDescendBindings.append(scene.constructOperator({
+    volumeMaterialDGNode.bindings.append(scene.constructOperator({
       operatorName: 'setFactors',
       srcCode: 'operator setFactors(io Integer invertColor, io Scalar specular, io Scalar brightnessFactor, io Scalar transparency, io Size nbSlices, io Scalar alphaFactor, io Scalar scaledSpecular, io Scalar brightness){ \n' +
                     'scaledSpecular = 1.00001 / (1.00001 - specular) - 1.0;\n' +
@@ -434,7 +436,265 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
         materialNode: volumeMaterialNodePub
     });
 
+    volumeNode.getMaterialNode = function(){return volumeMaterialNodePub;}
+    volumeNode.getOpacityTextureNode = function(){return options.opacityTextureNode;}
+    volumeNode.getGradientTextureNode = function(){return options.gradientTextureNode;}
+    volumeNode.getTransferFunctionTextureNode = function(){return transferFunctionImageNode.pub;}
+    volumeNode.getLightNode = function(){return options.lightNode;}
+
     return volumeNode;
+  }
+});
+
+FABRIC.SceneGraph.registerNodeType('DrawRectangle', {
+  briefDesc: '',
+  detailedDesc: '',
+  parentNodeDesc: 'Image',
+  optionsDesc: {
+    tl: 'Top left screenspace coord',
+    br: 'Bottom right screenspace coord',
+    color: 'Rectangle color'
+  },
+
+  factoryFn: function(options, scene) {
+    scene.assignDefaults(options, {
+        tl: new FABRIC.RT.Vec2(-1.0, 1.0),
+        br: new FABRIC.RT.Vec2(1.0, -1.0),
+        color: new FABRIC.RT.RGBA(255, 255, 255, 255),
+        forceRefresh: false,
+        width: 1,
+        height: 1,
+        createDgNode: false,
+        parentEventHandler: scene.getSceneRedrawOverlayObjectsEventHandler()
+      });
+
+    options.wantHDR = false;
+    options.createResourceLoadNode = false;
+    options.createLoadTextureEventHandler = true;
+
+    var rectangleImageNode = scene.constructNode('Image', options);
+
+    var preRedrawEventHandler = rectangleImageNode.constructEventHandlerNode('PreRedraw');
+    preRedrawEventHandler.appendChildEventHandler(rectangleImageNode.getRedrawEventHandler());
+
+    preRedrawEventHandler.addMember('tl', 'Vec2', options.tl );
+    preRedrawEventHandler.addMember('br', 'Vec2', options.br );
+
+    rectangleImageNode.addMemberInterface(preRedrawEventHandler, 'tl', true);
+    rectangleImageNode.addMemberInterface(preRedrawEventHandler, 'br', true);
+
+    preRedrawEventHandler.setScopeName('textureStub');
+    preRedrawEventHandler.addMember('textureUnit', 'Integer', 0);
+    preRedrawEventHandler.addMember('program', 'Integer', 0);
+    preRedrawEventHandler.postDescendBindings.append(
+      scene.constructOperator({
+          operatorName: 'drawTexture',
+          srcFile: 'FABRIC_ROOT/SceneGraph/KL/drawTexture.kl',
+          entryFunctionName: 'drawTextureAt',
+          parameterLayout: [
+            'self.tl',
+            'self.br',
+            'self.textureUnit',
+            'self.program'
+          ]
+        }
+    ));
+
+    var enabled = false;
+    rectangleImageNode.pub.enable = function() {
+      if(!enabled) {
+        options.parentEventHandler.appendChildEventHandler(preRedrawEventHandler);
+        enabled = true;
+      }
+    };
+
+    rectangleImageNode.pub.disable = function() {
+      if(enabled) {
+        options.parentEventHandler.removeChildEventHandler(preRedrawEventHandler);
+        enabled = false;
+      }
+    };
+    rectangleImageNode.pub.enable();
+
+    return rectangleImageNode;
+  }
+});
+
+FABRIC.SceneGraph.registerNodeType('VolumeSliceRender', {
+  briefDesc: '',
+  detailedDesc: '',
+  parentNodeDesc: 'SceneGraphNode',
+  optionsDesc: {
+    volumeOpacityInstanceNode: 'VolumeOpacityInstanceNode to be sliced',
+    axis: 'Axis that should be sliced (0=X, 1=Y, 2=Z)',
+    ratio: 'Slice ratio from 0 to 1',
+    tl: 'Top left screenspace coord',
+    br: 'Bottom right screenspace coord',
+    backgroundColor: 'Background color',
+    sharedVolumeSliceRender: 'In case more than one VolumeSliceRender is created for the same 3D texture, various nodes can be shared.'
+  },
+  factoryFn: function(options, scene) {
+
+    scene.assignDefaults(options, {
+      axis: 0,
+      ratio: 0.5,
+      tl: new FABRIC.RT.Vec2(-1.0, 1.0),
+      br: new FABRIC.RT.Vec2(-0.5, 0.5),
+      backgroundColor: new FABRIC.RT.Color(0,0,0,1),
+      name: 'VolumeSliceRender'
+    });
+
+    var sliceNode = scene.constructNode('SceneGraphNode', options );
+
+    //We create a root event handler which will hold background and material render passes.
+    //This enbles to share with other compatible VolumeSliceRender.
+    var backgroundRootEventHandler, volumeMaterialNodePub, sliceRedrawEventHandler;
+
+    if( options.sharedVolumeSliceRender !== undefined ) {
+      var sharedVolumeSliceRenderPriv = scene.getPrivateInterface(options.sharedVolumeSliceRender);
+      backgroundRootEventHandler = sharedVolumeSliceRenderPriv.getBackgroundRedrawEventHandler();
+      volumeMaterialNodePub = sharedVolumeSliceRenderPriv.getMaterial();
+      sliceRedrawEventHandler = sharedVolumeSliceRenderPriv.getSliceRedrawEventHandler();
+    } else {
+      backgroundRootEventHandler = sliceNode.constructEventHandlerNode('BackgroundRedraw');
+      scene.getSceneRedrawOverlayObjectsEventHandler().appendChildEventHandler(backgroundRootEventHandler);
+    }
+
+    options.name = options.name + "Backgound";
+    options.createDgNode = true;
+    options.forceRefresh = true;
+    options.parentEventHandler = backgroundRootEventHandler;
+
+    var backgroundDrawNode = scene.constructNode('DrawRectangle', options );
+    var backgroundImageDGNode = backgroundDrawNode.getDGNode();
+
+    sliceNode.addMemberInterface(backgroundDrawNode.getPreRedrawEventHandler(), 'tl', true);
+    sliceNode.addMemberInterface(backgroundDrawNode.getPreRedrawEventHandler(), 'br', true);
+
+    sliceNode.pub.setBackgroundColor = function(color) {
+      backgroundDrawNode.pub.setColor( color );
+    };
+    sliceNode.pub.setBackgroundColor(options.backgroundColor);
+
+    var volumeOpacityInstanceNode = scene.getPrivateInterface(options.volumeOpacityInstanceNode);
+
+    if(volumeMaterialNodePub == undefined) {
+
+      volumeMaterialNodePub = scene.pub.constructNode('VolumeMaterial', {
+          parentEventHandler: scene.getSceneRedrawOverlayObjectsEventHandler(),
+          opacityTextureNode: volumeOpacityInstanceNode.getOpacityTextureNode(),
+          gradientTextureNode: volumeOpacityInstanceNode.getGradientTextureNode(),
+          transferFunctionTextureNode: volumeOpacityInstanceNode.getTransferFunctionTextureNode(),
+          lightNode: volumeOpacityInstanceNode.getLightNode(),
+          storeUniformsInDGNode: true,
+          separateShaderNode: false
+      });
+
+      var volumeMaterialNode = scene.getPrivateInterface(volumeMaterialNodePub);
+      var volumeMaterialDGNode = volumeMaterialNode.getDGNode();
+
+      var volumeOpacityInstanceMaterialDGNode = scene.getPrivateInterface( volumeOpacityInstanceNode.getMaterialNode() ).getDGNode();
+      volumeMaterialDGNode.setDependency(volumeOpacityInstanceMaterialDGNode, 'source');
+
+      volumeMaterialDGNode.bindings.append(scene.constructOperator({
+        operatorName: 'copyParams',
+        srcCode: 'operator copyParams(io Integer srcInvertColor, io Integer dstInvertColor, io Scalar srcBrightness, io Scalar dstBrightness){ \n' +
+                      'srcInvertColor = dstInvertColor;\n' +
+                      'srcBrightness = dstBrightness;}\n',
+        entryFunctionName: 'copyParams',
+        parameterLayout: [
+          'source.invertColor',
+          'self.invertColor',
+          'source.brightnessFactor',
+          'self.brightness'
+        ]
+      }));
+
+      volumeMaterialNodePub.setAlphaFactor(1.0);
+      volumeMaterialNodePub.setTransparency(1.0);
+      volumeMaterialNodePub.setScaledSpecularFactor(0.0);
+
+      sliceRedrawEventHandler = sliceNode.constructEventHandlerNode('SliceRedraw');
+      scene.getPrivateInterface(volumeMaterialNodePub).getRedrawEventHandler().appendChildEventHandler(sliceRedrawEventHandler);;
+
+      sliceRedrawEventHandler.preDescendBindings.append(
+        scene.constructOperator({
+            operatorName: 'preSliceRender',
+            srcCode: 'use Mat33, Mat44, OGLShaderProgram;\n' +
+                     'operator preSliceRender(io OGLShaderProgram shaderProgram) {\n' +
+                       'Mat44 mat44;\n' +
+                       'mat44.setIdentity();\n' +
+                       'Mat33 mat33;\n' +
+                       'mat33.setIdentity();\n' +
+                       'Integer location = shaderProgram.getUniformLocation(' + FABRIC.SceneGraph.getShaderParamID('normalMatrix') + ');\n' +
+                       'if(location!=-1)\n' +
+                       '  shaderProgram.loadMat33Uniform(location, mat33);\n' +
+                       'location = shaderProgram.getUniformLocation(' + FABRIC.SceneGraph.getShaderParamID('modelViewMatrix') + ');\n' +
+                       'if(location!=-1)\n' +
+                       '  shaderProgram.loadMat44Uniform(location, mat44);\n' +
+                       'location = shaderProgram.getUniformLocation(' + FABRIC.SceneGraph.getShaderParamID('modelViewProjectionMatrix') + ');\n' +
+                       'if(location!=-1)\n' +
+                       '  shaderProgram.loadMat44Uniform(location, mat44);\n' +
+                       'glPushAttrib(GL_ENABLE_BIT | GL_DEPTH_BUFFER_BIT);\n' +
+                       'glPushClientAttrib(GL_CLIENT_VERTEX_ARRAY_BIT);\n' +
+                       'glDisable(GL_DEPTH_TEST);\n' +
+                       'glDisable(GL_CULL_FACE);}'
+            ,
+            entryFunctionName: 'preSliceRender',
+            parameterLayout: [
+              'shader.shaderProgram'
+            ]
+          }));
+
+      sliceRedrawEventHandler.postDescendBindings.append(
+        scene.constructOperator({
+            operatorName: 'postSliceRender',
+            srcCode: 'use FabricOGL;\n' +
+                     'operator postSliceRender() {\n' +
+                       'glPopClientAttrib();\n' +
+                       'glPopAttrib();}',
+            entryFunctionName: 'postSliceRender'
+          }));
+   }
+
+
+//TODO:
+// - create draw instance nodes with proper ratio/axis
+
+//dummy
+sliceNode.pub.setRatio = function(){}
+sliceNode.pub.getRatio = function(){return 0.5;}
+/*
+    rootEventHandler.addMember('ratio', 'Scalar', options.sliceRatio );
+    rootEventHandler.addMember('axis', 'Size', options.sliceAxis );
+
+    sliceNode.addMemberInterface(rootEventHandler, 'ratio', true);
+    sliceNode.addMemberInterface(rootEventHandler, 'axis', true);
+    */
+
+    /*
+    var enabled = false;
+    rectangleImageNode.pub.enable = function() {
+      if(!enabled) {
+        scene.getSceneRedrawOverlayObjectsEventHandler().appendChildEventHandler(redrawEventHandler);
+        enabled = true;
+      }
+    };
+
+    rectangleImageNode.pub.disable = function() {
+      if(enabled) {
+        scene.getSceneRedrawOverlayObjectsEventHandler().removeChildEventHandler(redrawEventHandler);
+        enabled = false;
+      }
+    };
+    rectangleImageNode.pub.enable();
+    return rectangleImageNode;
+*/
+    sliceNode.getMaterial = function(){
+      return volumeMaterialNodePub;
+    };
+
+    return sliceNode;
   }
 });
 

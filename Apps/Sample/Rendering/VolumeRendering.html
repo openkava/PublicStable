@@ -141,77 +141,6 @@ FABRIC.SceneGraph.registerNodeType('Image3DWithHistogram', {
   }
 });
 
-FABRIC.SceneGraph.registerNodeType('DrawRectangle', {
-  briefDesc: '',
-  detailedDesc: '',
-  parentNodeDesc: 'Image',
-  optionsDesc: {
-    tl: 'Top left screenspace coord',
-    br: 'Bottom right screenspace coord',
-    color: 'Rectangle color'
-  },
-
-  factoryFn: function(options, scene) {
-    scene.assignDefaults(options, {
-        tl: new FABRIC.RT.Vec2(-1.0, 1.0),
-        br: new FABRIC.RT.Vec2(1.0, -1.0),
-        color: new FABRIC.RT.RGBA(255, 255, 255, 255),
-        forceRefresh: false
-      });
-
-    options.wantHDR = false;
-    options.createDgNode = true;
-    options.createResourceLoadNode = false;
-    options.createLoadTextureEventHandler = true;
-
-    var rectangleImageNode = scene.constructNode('Image', options);
-    var dgnode = rectangleImageNode.getDGNode();
-
-    var postDrawEventHandler = rectangleImageNode.constructEventHandlerNode('PostDraw');
-    postDrawEventHandler.appendChildEventHandler(rectangleImageNode.getRedrawEventHandler());
-
-    postDrawEventHandler.addMember('tl', 'Vec2', options.tl );
-    postDrawEventHandler.addMember('br', 'Vec2', options.br );
-
-    rectangleImageNode.addMemberInterface(postDrawEventHandler, 'tl', true);
-    rectangleImageNode.addMemberInterface(postDrawEventHandler, 'br', true);
-
-    postDrawEventHandler.setScopeName('textureStub');
-    postDrawEventHandler.addMember('textureUnit', 'Integer', 0);
-    postDrawEventHandler.addMember('program', 'Integer', 0);
-    postDrawEventHandler.postDescendBindings.append(
-      scene.constructOperator({
-          operatorName: 'drawTexture',
-          srcFile: 'FABRIC_ROOT/SceneGraph/KL/drawTexture.kl',
-          entryFunctionName: 'drawTextureAt',
-          parameterLayout: [
-            'self.tl',
-            'self.br',
-            'self.textureUnit',
-            'self.program'
-          ]
-        }
-    ));
-
-    var enabled = false;
-    rectangleImageNode.pub.enable = function() {
-      if(!enabled) {
-        scene.getScenePostRedrawEventHandler().appendChildEventHandler(postDrawEventHandler);
-        enabled = true;
-      }
-    };
-
-    rectangleImageNode.pub.disable = function() {
-      if(enabled) {
-        scene.getScenePostRedrawEventHandler().removeChildEventHandler(postDrawEventHandler);
-        enabled = false;
-      }
-    };
-    rectangleImageNode.pub.enable();
-    return rectangleImageNode;
-  }
-});
-
 FABRIC.SceneGraph.registerNodeType('Texture2DSliceDisplay', {
   briefDesc: '',
   detailedDesc: '',
@@ -228,7 +157,8 @@ FABRIC.SceneGraph.registerNodeType('Texture2DSliceDisplay', {
     scene.assignDefaults(options, {
         sliceRatio: 0.5,
         sliceAxis: 0,
-        opacityElseGradientWeight: true
+        opacityElseGradientWeight: true,
+        createDgNode: true
       });
 
     options.forceRefresh = true;
@@ -381,7 +311,7 @@ $(document).ready(function() {
     globalXfo: new FABRIC.RT.Xfo()
   });
 
-  var layoutRectangle = scene.constructNode('DrawRectangle', {color: new FABRIC.RT.RGBA(128,128,128,255), tl: new FABRIC.RT.Vec2(2.0/3.0, 1.0), br: new FABRIC.RT.Vec2(1.0, -1.0) });
+  var layoutRectangle = scene.constructNode('DrawRectangle', {color: new FABRIC.RT.RGBA(255,255,255,255), tl: new FABRIC.RT.Vec2(2.0/3.0, 1.0), br: new FABRIC.RT.Vec2(1.0, -1.0), forceRefresh: true, createDgNode: true });
   var borderSize = 0.01;
 
   var opacityTexture = scene.constructNode('Image3DWithHistogram',  { url: 'Resources/ChestMid.nrrd', resourceTargetTransformNode: transform, glRepeat: false, histogramResolution: 1024 });
@@ -407,14 +337,14 @@ $(document).ready(function() {
     });
 
   var texture2DSlice = [];
-  texture2DSlice[0] = scene.constructNode('Texture2DSliceDisplay', {tl: new FABRIC.RT.Vec2(2.0/3.0+borderSize, 1.0-borderSize), br: new FABRIC.RT.Vec2(1.0-borderSize, 1.0/3.0+borderSize), opacityNode: opacityTexture, gradientNode: volumeNode.getGradientTextureNode(), sliceRatio: 0.5, sliceAxis : 0});
-  texture2DSlice[1] = scene.constructNode('Texture2DSliceDisplay', {tl: new FABRIC.RT.Vec2(2.0/3.0+borderSize, 1.0/3.0-borderSize), br: new FABRIC.RT.Vec2(1.0-borderSize, -1.0/3.0+borderSize), opacityNode: opacityTexture, gradientNode: volumeNode.getGradientTextureNode(), sliceRatio: 0.5, sliceAxis : 1});
-  texture2DSlice[2] = scene.constructNode('Texture2DSliceDisplay', {tl: new FABRIC.RT.Vec2(2.0/3.0+borderSize, -1.0/3.0-borderSize), br: new FABRIC.RT.Vec2(1.0-borderSize, -1.0+borderSize), opacityNode: opacityTexture, gradientNode: volumeNode.getGradientTextureNode(), sliceRatio: 0.5, sliceAxis : 2});
+  texture2DSlice[0] = scene.constructNode('VolumeSliceRender', {tl: new FABRIC.RT.Vec2(2.0/3.0+borderSize, 1.0-borderSize), br: new FABRIC.RT.Vec2(1.0-borderSize, 1.0/3.0+borderSize), volumeOpacityInstanceNode: volumeNode, ratio: 0.5, axis : 0});
+  texture2DSlice[1] = scene.constructNode('VolumeSliceRender', {tl: new FABRIC.RT.Vec2(2.0/3.0+borderSize, 1.0/3.0-borderSize), br: new FABRIC.RT.Vec2(1.0-borderSize, -1.0/3.0+borderSize), volumeOpacityInstanceNode: volumeNode, ratio: 0.5, axis : 1, sharedVolumeSliceRender: texture2DSlice[0] });
+  texture2DSlice[2] = scene.constructNode('VolumeSliceRender', {tl: new FABRIC.RT.Vec2(2.0/3.0+borderSize, -1.0/3.0-borderSize), br: new FABRIC.RT.Vec2(1.0-borderSize, -1.0+borderSize), volumeOpacityInstanceNode: volumeNode, ratio: 0.5, axis : 2, sharedVolumeSliceRender: texture2DSlice[0]});
     
   var sliders2DBindFunction = function(index) {
     var sliderIndex = index;
     return function(event, ui) {
-        texture2DSlice[sliderIndex].setSliceRatio(ui.value);
+        texture2DSlice[sliderIndex].setRatio(ui.value);
         viewport.redraw();
         return true;
       };
@@ -443,7 +373,7 @@ $(document).ready(function() {
   });
 
   for( i = 0; i < 3; ++i ) {
-    $sliders2D[i].slider('value', texture2DSlice[i].getSliceRatio());
+    $sliders2D[i].slider('value', texture2DSlice[i].getRatio());
     $sliders2D[i].bind('slide', sliders2DBindFunction(i) );
     
     var cropMax = volumeNode.getCropMax();
@@ -489,17 +419,16 @@ $(document).ready(function() {
     return true;
   });
 
-  $("#displayGradientWeight").attr('checked', false).change(function() {
-    var displayGradientWeight = $('#displayGradientWeight').attr('checked');
-    for( i = 0; i < 3; ++i ) {
-      texture2DSlice[i].setOpacityElseGradientWeight(!displayGradientWeight);
-    }
-    viewport.redraw();
-  });
-
   $("#whiteBackground").attr('checked', false).change(function() {
     var whiteBackground = $('#whiteBackground').attr('checked');
-    volumeNode.setBackgroundColor(whiteBackground ? new FABRIC.RT.Color(1, 1, 1, 1) : new FABRIC.RT.Color(0, 0, 0, 1));
+    var white = new FABRIC.RT.Color(1, 1, 1, 1);
+    var black = new FABRIC.RT.Color(0, 0, 0, 1);
+    var backgroundColor = whiteBackground ? white : black;
+    volumeNode.setBackgroundColor( backgroundColor );
+    for( i = 0; i < 3; ++i ) {
+      texture2DSlice[i].setBackgroundColor( backgroundColor );
+    }
+    layoutRectangle.setColor( whiteBackground ? black : white );
     viewport.redraw();
   });
 
@@ -684,7 +613,6 @@ $(document).ready(function() {
             <div class="content">-->
               <input type="checkbox" id="displayAxisSlices" style="margin-top:10px;" /><label for="displayAxisSlices" style="margin-top:10px;" >Display axis slices</label><br>
               <div class="subcontent" id="axisSlicesParams">
-                <input type="checkbox" id="displayGradientWeight" style="margin-top:10px;" /><label for="displayGradientWeight" style="margin-top:10px;" >Display gradient weight</label><br>
                 <label for="xRatio" >X:</label>
                 <div id='xRatio' style="margin-top:10px;"></div>
                 <label for="yRatio" >Y:</label>
