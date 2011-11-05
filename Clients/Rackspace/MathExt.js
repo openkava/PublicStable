@@ -1,5 +1,10 @@
 module.exports = {
-  randomNormal: function() {
+  randomNormal: function(mean, dev) {
+    if (mean === undefined)
+      mean = 0.0;
+    if (dev === undefined)
+      dev = 1.0;
+
     var result;
     if ("randomNormalCache" in this) {
       result = this.randomNormalCache;
@@ -16,7 +21,16 @@ module.exports = {
       result = x1 * w;
       this.randomNormalCache = x2 * w;
     }
-    return result;
+    return result * dev + mean;
+  },
+
+  randomNormalVec: function (n, mean, dev) {
+    if (n === undefined)
+      throw "vec.randomNormal: missing length";
+    var v = [];
+    for (var i=0; i<n; ++i)
+      v[i] = this.randomNormal(mean, dev);
+    return v;
   },
 
   mat: {
@@ -28,6 +42,17 @@ module.exports = {
           M[i][j] = 0.0;
       }
       return M;
+    },
+
+    mulVec: function (M, v) {
+      var r = [];
+      for (var i=0; i<M.length; ++i) {
+        var sum = 0.0;
+        for (var j=0; j<v.length; ++j)
+          sum += M[i][j] * v[j];
+        r[i] = sum;
+      }
+      return v;
     },
 
     mul: function (M, N) {
@@ -83,7 +108,7 @@ module.exports = {
     return this.mat.mul(this.mat.trans(T), T);
   },
 
-  cholesky: function (A) {
+  choleskyTrans: function (A) {
     var n = A.length;
     
     var L = this.mat.zero(n, n);
@@ -98,6 +123,10 @@ module.exports = {
           L[i][j] = 1.0/L[j][j]*(A[i][j]-s);
       }
     }
-    return this.mat.trans(L);
+    return L;
+  },
+
+  cholesky: function (A) {
+    return this.mat.trans(this.choleskyTrans(A));
   }
 };
