@@ -291,7 +291,7 @@ $(document).ready(function() {
       loadAnimationUsingRig:fkrigNode
     });
     animationLibrary = animationAssetNodes.AnimationLibrary;
-    
+    /*
     var animationAssetNodes = scene.importAssetFile('Assets/Marama_Run.DAE', {
       scaleFactor: 0.1,
       constructScene: false,
@@ -299,6 +299,7 @@ $(document).ready(function() {
       animationLibrary:animationLibrary,
       animationController:animationAssetNodes.AnimationController
     });
+    */
     
     var invertedVariablesNode = ikrigNode.invertSolvers(fkrigNode, true);
     rigInstanceNode.setRigNode(ikrigNode);
@@ -343,6 +344,11 @@ $(document).ready(function() {
   });
   
   
+  var locomotionRig = scene.constructNode('LocomotionCharacterRig', {
+    baseCharacterRigNode: ikrigNode
+  });
+  
+  
   var timeRange = animationLibrary.getTimeRange(0);
   var $globalTimeSlider = $('#globalTime').slider({
       min: timeRange.x,
@@ -365,11 +371,13 @@ $(document).ready(function() {
       var timeRange = animationLibrary.getTimeRange(0);
       var sampleFrequency = 1/30;
       libraryProcessedAnimations.plotKeyframes(timeRange, sampleFrequency);
-      var footMovementThreshold = 0.02;
+      
+    //  var footMovementThreshold = 0.02;// walk
+      var footMovementThreshold = 0.04;// run
       libraryLocomotionAnimations.preProcessTracks(
         libraryProcessedAnimations,
         bindings,
-        ikrigNode,
+        locomotionRig,
         sampleFrequency,
         footMovementThreshold
       );

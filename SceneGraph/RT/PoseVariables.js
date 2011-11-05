@@ -43,7 +43,11 @@ FABRIC.appendOnCreateContextCallback(function(context) {
       quatBindings: 'KeyframeTrackBinding[]',
       xfoBindings: 'KeyframeTrackBinding[]'
     },
-    constructor: FABRIC.RT.KeyframeTrackBindings
+    constructor: FABRIC.RT.KeyframeTrackBindings,
+    klBindings: {
+      filename: 'KeyframeTrackBindings.kl',
+      sourceCode: FABRIC.loadResourceURL('FABRIC_ROOT/SceneGraph/RT/KeyframeTrackBindings.kl')
+    }
   });
 });
 
