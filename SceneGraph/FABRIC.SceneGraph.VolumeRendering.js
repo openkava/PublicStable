@@ -441,6 +441,7 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
     volumeNode.getGradientTextureNode = function(){return options.gradientTextureNode;}
     volumeNode.getTransferFunctionTextureNode = function(){return transferFunctionImageNode.pub;}
     volumeNode.getLightNode = function(){return options.lightNode;}
+    volumeNode.getTransformNode = function(){return options.transformNode;}
 
     return volumeNode;
   }
@@ -560,16 +561,12 @@ FABRIC.SceneGraph.registerNodeType('VolumeSliceRender', {
       scene.getSceneRedrawOverlayObjectsEventHandler().appendChildEventHandler(backgroundRootEventHandler);
     }
 
-    options.name = options.name + "Backgound";
     options.createDgNode = true;
     options.forceRefresh = true;
     options.parentEventHandler = backgroundRootEventHandler;
 
     var backgroundDrawNode = scene.constructNode('DrawRectangle', options );
     var backgroundImageDGNode = backgroundDrawNode.getDGNode();
-
-    sliceNode.addMemberInterface(backgroundDrawNode.getPreRedrawEventHandler(), 'tl', true);
-    sliceNode.addMemberInterface(backgroundDrawNode.getPreRedrawEventHandler(), 'br', true);
 
     sliceNode.pub.setBackgroundColor = function(color) {
       backgroundDrawNode.pub.setColor( color );
@@ -655,41 +652,68 @@ FABRIC.SceneGraph.registerNodeType('VolumeSliceRender', {
                        'glPopAttrib();}',
             entryFunctionName: 'postSliceRender'
           }));
-   }
+    }
 
+    var sliceGeomRedrawEventHandler = sliceNode.constructEventHandlerNode(options.name+'SliceGeomRedraw');
+    sliceRedrawEventHandler.appendChildEventHandler(sliceGeomRedrawEventHandler);
 
-//TODO:
-// - create draw instance nodes with proper ratio/axis
+    sliceGeomRedrawEventHandler.addMember('ratio', 'Scalar', options.ratio );
+    sliceGeomRedrawEventHandler.addMember('axis', 'Size', options.axis );
+    sliceGeomRedrawEventHandler.addMember('tl', 'Vec2', options.tl );
+    sliceGeomRedrawEventHandler.addMember('br', 'Vec2', options.br );
 
-//dummy
-sliceNode.pub.setRatio = function(){}
-sliceNode.pub.getRatio = function(){return 0.5;}
-/*
-    rootEventHandler.addMember('ratio', 'Scalar', options.sliceRatio );
-    rootEventHandler.addMember('axis', 'Size', options.sliceAxis );
+    sliceNode.addMemberInterface(sliceGeomRedrawEventHandler, 'ratio', true);
+    sliceNode.addMemberInterface(sliceGeomRedrawEventHandler, 'axis', true);
 
-    sliceNode.addMemberInterface(rootEventHandler, 'ratio', true);
-    sliceNode.addMemberInterface(rootEventHandler, 'axis', true);
-    */
+    sliceNode.pub.getTl = function(val) {
+      return backgroundDrawNode.pub.getTl();
+    };
+    sliceNode.pub.getBr = function(val) {
+      return backgroundDrawNode.pub.getBr();
+    };
+    sliceNode.pub.setTl = function(val) {
+      sliceGeomRedrawEventHandler.setData('tl', 0, val);
+      backgroundDrawNode.pub.setTl(val);
+    };
+    sliceNode.pub.setBr = function(val) {
+      sliceGeomRedrawEventHandler.setData('br', 0, val);
+      backgroundDrawNode.pub.setBr(val);
+    };
 
-    /*
-    var enabled = false;
-    rectangleImageNode.pub.enable = function() {
-      if(!enabled) {
-        scene.getSceneRedrawOverlayObjectsEventHandler().appendChildEventHandler(redrawEventHandler);
+    var transformNode = scene.getPrivateInterface(volumeOpacityInstanceNode.getTransformNode());
+    sliceGeomRedrawEventHandler.setScope('transform', transformNode.getDGNode());
+
+    sliceGeomRedrawEventHandler.preDescendBindings.append(scene.constructOperator({
+      operatorName: 'drawVolumeSlice',
+      srcFile: 'FABRIC_ROOT/SceneGraph/KL/drawVolume2DSlice.kl',
+      entryFunctionName: 'draw2DVolumeSlice',
+      parameterLayout: [
+        'transform.globalXfo',
+        'self.axis',
+        'self.ratio',
+        'self.tl',
+        'self.br'
+      ]
+    }));
+
+    var enabled = true;
+    sliceNode.pub.enable = function() {
+      if(options.sharedVolumeSliceRender === undefined && !enabled) {
+        scene.getSceneRedrawOverlayObjectsEventHandler().appendChildEventHandler(backgroundRootEventHandler);
+        scene.getSceneRedrawOverlayObjectsEventHandler().appendChildEventHandler(scene.getPrivateInterface(volumeMaterialNodePub).getRedrawEventHandler());
         enabled = true;
       }
     };
 
-    rectangleImageNode.pub.disable = function() {
-      if(enabled) {
-        scene.getSceneRedrawOverlayObjectsEventHandler().removeChildEventHandler(redrawEventHandler);
+    sliceNode.pub.disable = function() {
+      if(options.sharedVolumeSliceRender === undefined && enabled) {
+        scene.getSceneRedrawOverlayObjectsEventHandler().removeChildEventHandler(backgroundRootEventHandler);
+        scene.getSceneRedrawOverlayObjectsEventHandler().removeChildEventHandler(scene.getPrivateInterface(volumeMaterialNodePub).getRedrawEventHandler());
         enabled = false;
       }
     };
-    rectangleImageNode.pub.enable();
-    return rectangleImageNode;
-*/
+    sliceNode.pub.enable();
+
     sliceNode.getMaterial = function(){
       return volumeMaterialNodePub;
     };
