@@ -21,22 +21,24 @@ var constructHistogram = function(domRootID, options){
   polygon.attr('stroke-width', 0.5);
   polygon.attr('fill', "#33CC00");
 
-  var generateGraph = function(histogramData){
+  var generateGraph = function(histogramData, maxYValue){
+    maxYValue = maxYValue ? maxYValue : 1.0;
     polygon.addPoint(0, windowHeight);
     polygon.addPoint(0, windowHeight*0.9);
     var numSamples = windowWidth;
     for(var i=0; i<numSamples; i++){
       var x = Math.round((i/numSamples)*windowWidth);
-      var y = (1.0 - histogramData[Math.round((i/numSamples)*histogramData.length)]) * (windowHeight*0.9);
-      polygon.addPoint(x, y);
+      var y = histogramData[Math.round((i/numSamples)*histogramData.length)] * 1/maxYValue;
+      if(y>1.0) y = 1.0;
+      polygon.addPoint(x, (1.0 - y)*(windowHeight*0.9));
     };
     polygon.addPoint(windowWidth, windowHeight*0.9);
     polygon.addPoint(windowWidth, windowHeight);
     polygon.updateShape();
   }
   var histogramWidget = {
-    setData:function(data){
-      generateGraph(data);
+    setData:function(data, maxYValue){
+      generateGraph(data, maxYValue);
     }
   };
   return histogramWidget;  

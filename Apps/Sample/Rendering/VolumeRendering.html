@@ -384,7 +384,7 @@ $(document).ready(function() {
   var opacityTexture = scene.constructNode('Image3DWithHistogram',  { url: 'Resources/ChestMid.nrrd', resourceTargetTransformNode: transform, glRepeat: false, histogramResolution: 1024 });
 
   opacityTexture.getResourceLoadNode().addOnLoadSuccessCallback(function (){
-    histogram.setData(opacityTexture.getHistogram());
+    histogram.setData(opacityTexture.getHistogram(), 0.4);
   });
 
   var volumeNode = scene.constructNode('VolumeOpacityInstance', {
