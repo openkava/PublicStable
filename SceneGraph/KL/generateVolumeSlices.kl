@@ -641,4 +641,3 @@ operator updateTransferFunctionImage(
     pixels[i].a = opacityFactors[i] * clampFactor;
   }
 }
-

@@ -1,0 +1,14 @@
+//
+// Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+//
+
+use Xfo, FabricOGL;
+
+operator draw2DVolumeSlice(
+  io Xfo volumeXfo,
+  io Size axis,
+  io Scalar ratio,
+  io Vec2 tl,
+  io Vec2 br
+){
+}
