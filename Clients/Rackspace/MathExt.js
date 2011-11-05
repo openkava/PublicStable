@@ -19,53 +19,85 @@ module.exports = {
     return result;
   },
 
-  randomCovariance: function (n) {
-    var N = [];
-    for (var i=0; i<n; ++i)
-      N.push(this.randomNormal());
-    var M = [];
-    for (var i=0; i<n; ++i) {
-      M[i] = [];
-      for (var j=0; j<n; ++j)
-        M[i][j] = N[i] * N[j];
+  mat: {
+    zero: function (rows, cols) {
+      var M = [];
+      for (var i=0; i<rows; ++i) {
+        M[i] = [];
+        for (var j=0; j<cols; ++j)
+          M[i][j] = 0.0;
+      }
+      return M;
+    },
+
+    mul: function (M, N) {
+      var R = [];
+      for (var i=0; i<M.length; ++i) {
+        if (M[i].length != N.length)
+          throw "bad matricies";
+        R[i] = [];
+        for (var j=0; j<N[0].length; ++j) {
+          var sum = 0;
+          for (var k=0; k<N.length; ++k)
+            sum += M[i][k] * N[k][j];
+          R[i][j] = sum;
+        }
+      }
+      return R;
+    },
+
+    trans: function (M) {
+      var R = [];
+      for (var i=0; i<M[0].length; ++i) {
+        R[i] = [];
+        for (var j=0; j<M.length; ++j) {
+          R[i][j] = M[j][i];
+        }
+      }
+      return R;
     }
-    return M;
   },
 
   randomCorrelation: function (n) {
-    var M = this.randomCovariance(n);
+    var T = [];
 
-    var s = [];
-    for (var i=0; i<n; ++i)
-      s.push(1.0/Math.sqrt(M[i][i]));
+    // Generate n uniform random columns
+    for (var i=0; i<n; ++i) {
+      T[i] = [];
+      for (var j=0; j<n; ++j) {
+        T[i][j] = this.randomNormal();
+      }
+    }
 
-    for (var i=0; i<n; ++i)
-      for (var j=0; j<n; ++j)
-        M[i][j] *= s[i] * s[j];
-    return M;
+    // Normalize the columns
+    for (var j=0; j<n; ++j) {
+      var sqSum = 0;
+      for (var i=0; i<n; ++i)
+        sqSum += T[i][j] * T[i][j];
+      var norm = Math.sqrt(sqSum);
+      for (var i=0; i<n; ++i)
+        T[i][j] /= norm;
+    }
+
+    // result is T'*T
+    return this.mat.mul(this.mat.trans(T), T);
   },
 
   cholesky: function (A) {
     var n = A.length;
     
-    var L = [];
-    for (var i=0; i<n; ++i) {
-      L[i] = [];
-      for (var j=0; j<n; ++j)
-        L[i].push(0.0);
-    }
-
+    var L = this.mat.zero(n, n);
     for (var i=0; i<n; ++i) {
       for (var j=0; j<(i+1); ++j ) {
         var s = 0.0;
         for (var k=0; k<j; ++k)
           s += L[i][k] * L[j][k];
         if (i == j)
-          L[i][j] = Math.sqrt(A[i][i]-s);
+          L[i][i] = Math.sqrt(A[i][i]-s);
         else
           L[i][j] = 1.0/L[j][j]*(A[i][j]-s);
       }
     }
-    return L;
+    return this.mat.trans(L);
   }
 };
