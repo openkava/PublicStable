@@ -19,6 +19,10 @@ var constructCurveEditor = function(domRootID, keyframeTrackNode, options){
   console.log(isBezier);
   
   var svgRoot = FABRIC.createSVGRootElem(domRootID);
+  if(options.volumerenderdemohack){
+    svgRoot.attr('style', "position:relative; top:-"+windowHeight+"px;z-index:0");
+  }
+  
 
   var graphBGRect = svgRoot.createRect().size(windowWidth, windowHeight).addClass('EventCatcher');
   var graphCenterGroup = svgRoot.createGroup().id('graphCenterGroup').translate(0, windowHeight * 0.5);

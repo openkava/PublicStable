@@ -1045,8 +1045,7 @@ function clone_obj(obj, deepclone) {
       // MARK: createRect
       createRect: function() {
         var __onSizeCallbacks = [];
-        return this.appendAndReturnChild(this.extend(this.create('rect'),
-        {
+        return this.appendAndReturnChild(this.extend(this.create('rect'), {
           addOnSizeCallback: function(cb) {
             __onSizeCallbacks.push(cb);
           },
@@ -1403,6 +1402,36 @@ function clone_obj(obj, deepclone) {
           //                                      .translate(options.offset);
           //  this.parent.insertBefore(dropShadow, this);
           //  this.addOnSizeCallback(function(size){  dropShadow.size(size);});
+            return this;
+          }
+        }));
+      },
+      // MARK: createPolygon
+      createPolygon: function() {
+        var points = [];
+        return this.appendAndReturnChild(this.extend(this.create('polygon'), {
+          addPoint: function() {
+            if (arguments.length === 1) {
+              points.push(arguments[0]);
+            }else if(arguments.length === 2) {
+              points.push({ x:arguments[0], y:arguments[1]});
+            }
+            return this;
+          },
+          updateShape: function(){
+            var polygonDesc = "";
+            for(var i=0; i<points.length; i++){
+              polygonDesc += (i>0?" ":"") + points[i].x + "," + points[i].y;
+            }
+            this.attr('points', polygonDesc);
+          },
+          thickness: function() {
+            if (arguments.length === 0) {
+              return this.attr('stroke-width');
+            }
+            else if (arguments.length === 1 && (typeof arguments[0]) == 'number') {
+              this.attr('stroke-width', arguments[0]);
+            }
             return this;
           }
         }));
