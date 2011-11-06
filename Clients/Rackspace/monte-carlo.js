@@ -40,8 +40,9 @@ for (var i=0; i<numStocks; ++i)
   drifts[i] = priceMeans[i] - priceCovariance[i][i]/2;
 
 var numTrials = 65536;
+//var numTrials = 256;
 
-var trialResults;
+var valueAtRisk;
 if (useFabric) {
   var params = FABRIC.DG.createNode("params");
   params.addMember('numTradingDays', 'Size', numTradingDays);
@@ -74,18 +75,35 @@ if (useFabric) {
     'self.value'
   ]);
 
+  var sortOp = FABRIC.DG.createOperator("sort");
+  sort = fs.readFileSync('sort.kl', 'utf8').split('%NS%').join(numStocks);
+  //console.log(sort);
+  sortOp.setSourceCode('sort.kl', sort);
+  sortOp.setEntryFunctionName('sort');
+  if (sortOp.getDiagnostics().length > 0 ) {
+    console.log(sortOp.getDiagnostics());
+    throw "Compile errors, aborting";
+  }
+
+  var sortBinding = FABRIC.DG.createBinding();
+  sortBinding.setOperator(sortOp);
+  sortBinding.setParameterLayout([
+    'self.value<>'
+  ]);
+
   var trials = FABRIC.DG.createNode('trials');
   trials.setCount(numTrials);
   trials.setDependency(params, 'params');
   trials.addMember('value', 'Scalar');
   trials.bindings.append(runTrialBinding);
+  trials.bindings.append(sortBinding);
   if (trials.getErrors().length > 0) {
     console.log(trials.getErrors());
     throw "DG errors, aborting";
   }
   trials.evaluate();
 
-  trialResults = trials.getBulkData('value').value;
+  valueAtRisk = (numStocks * 100.0) - trials.getData('value', Math.round(numTrials*0.05));
 }
 else {
   trialResults = [];
@@ -112,41 +130,41 @@ else {
       value += amounts[i];
     trialResults.push(value);
   }
-}
-console.log(trialResults);
 
-var sort = function (v) {
-  var partition = function (a, begin, end, pivot) {
-    var piv = a[pivot];
-    a[pivot] = a[end-1];
-    a[end-1] = piv;
-    var store = begin;
-    for (var i=begin; i<end-1; ++i) {
-      if (a[i] <= piv) {
-        var t = a[store];
-        a[store] = a[i];
-        a[i] = t;
-        ++store;
+  var sort = function (v) {
+    var partition = function (a, begin, end, pivot) {
+      var piv = a[pivot];
+      a[pivot] = a[end-1];
+      a[end-1] = piv;
+      var store = begin;
+      for (var i=begin; i<end-1; ++i) {
+        if (a[i] <= piv) {
+          var t = a[store];
+          a[store] = a[i];
+          a[i] = t;
+          ++store;
+        }
       }
-    }
-    var t = a[end-1];
-    a[end-1] = a[store];
-    a[store] = t;
-    return store;
+      var t = a[end-1];
+      a[end-1] = a[store];
+      a[store] = t;
+      return store;
+    };
+
+    var qsort = function (a, begin, end) {
+      if (end - begin <= 1)
+        return;
+      else {
+        var pivot = partition(a, begin, end, begin+Math.round((end-begin)/2));
+        qsort(a, begin, pivot);
+        qsort(a, pivot+1, end);
+      }
+    };
+
+    return qsort(v, 0, v.length);
   };
 
-  var qsort = function (a, begin, end) {
-    if (end - begin <= 1)
-      return;
-    else {
-      var pivot = partition(a, begin, end, begin+Math.round((end-begin)/2));
-      qsort(a, begin, pivot);
-      qsort(a, pivot+1, end);
-    }
-  };
-
-  return qsort(v, 0, v.length);
-};
-
-sort(trialResults);
-console.log("ValueAtRisk = " + ((numStocks * 100.0) - trialResults[numTrials*0.05]));
+  sort(trialResults);
+  valueAtRisk = (numStocks * 100.0) - trialResults[Math.round(numTrials*0.05)];
+}
+console.log("ValueAtRisk = " + valueAtRisk);
