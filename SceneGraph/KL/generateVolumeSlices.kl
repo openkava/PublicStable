@@ -7,6 +7,7 @@ use Xfo, RGBA, Color;
 operator generateVolumeSlices(
   io Vec3 cropMin,
   io Vec3 cropMax,
+  io Vec3 halfPixelCrop,
   io Boolean cropInTransformedSpace,
   io Size nbSlices,
   io Xfo volumeXfo,
@@ -47,6 +48,9 @@ operator generateVolumeSlices(
       }
     }
   }
+
+  fixedCrop[0] += halfPixelCrop;
+  fixedCrop[1] -= halfPixelCrop;
 
   for(i = 0; i <3; ++i) {
     if(fixedCrop[0].component(i) > fixedCrop[1].component(i)) {
@@ -322,8 +326,7 @@ operator setNbSlicesFrom3DImage(
   io Size imageHeight,
   io Size imageDepth,
   io Size nbSlices,
-  io Vec3 cropMin,
-  io Vec3 cropMax
+  io Vec3 halfPixelCrop
 ){
   //This could be enhanced to ajust nb slices based on camera direction (nb pixels might vary per dim)
   Size maxNbVoxels = imageWidth;
@@ -337,10 +340,9 @@ operator setNbSlicesFrom3DImage(
     nbSlices = 8;
 
   //Ajust cropMin & cropMax: remove 1/2 pixel
-  Scalar halfPixel = 0.5 / Scalar(maxNbVoxels);
-  Vec3 halfPixelVector( halfPixel, halfPixel, halfPixel );
-  cropMin += halfPixelVector;
-  cropMax -= halfPixelVector;
+  halfPixelCrop.x = 0.5 / Scalar(imageWidth);
+  halfPixelCrop.y = 0.5 / Scalar(imageHeight);
+  halfPixelCrop.z = 0.5 / Scalar(imageDepth);
 }
 
 
