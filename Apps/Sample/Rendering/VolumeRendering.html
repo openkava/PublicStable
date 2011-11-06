@@ -251,7 +251,7 @@ $(document).ready(function() {
   opacityKeyframeTrackNode.setTrackData(0, {
     name: 'opacityFactors',
     color: FABRIC.RT.rgb(1, 0, 0),
-    keys: [key(0, 0), key(.1, .9), key(.2, 0.75), key(.4, 0.05), key(.5, 1), key(1.0, 1)]
+    keys: [key(.1, 0), key(.2, 0.75), key(.4, 0.05), key(.5, 1), key(1.0, 1)]
   });
   
   var opacityDisplayNode = scene.constructNode('TrackDisplay', {
@@ -326,7 +326,7 @@ $(document).ready(function() {
       lightNode: light,
       brightnessFactor: 0.5,
       transparency: 0.70,
-      minOpacity: 0.1,
+      minOpacity: 0.0,
       maxOpacity: 1.0,
       backgroundColor: new FABRIC.RT.Color(0, 0, 0, 0),
       opacityFactorsNode: opacityDisplayNode,
@@ -556,8 +556,8 @@ $(document).ready(function() {
           <div id="tabs">
           <ul>
             <li><a href="#volumeRenderTab">Render Parameters</a></li>
-            <li><a href="#volumeCroppingTab">Cropping</a></li>
-            <li><a href="#volumeSlicesTab">Axial Slices</a></li>
+            <li><a href="#volumeCroppingTab">3D Cropping</a></li>
+            <li><a href="#volumeSlicesTab">2D Axial Slices</a></li>
           </ul>
           <div id="volumeRenderTab">
             <div class="box">
