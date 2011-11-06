@@ -1,6 +1,10 @@
+fs = require('fs');
 MathExt = require('./MathExt.js');
+FABRIC = require('Fabric').createClient();
 
-var numStocks = 4;
+var useFabric = true;
+
+var numStocks = 10;
 var numTradingDays = 252;
 var dt = 1.0/numTradingDays;
 var sqrtDT = Math.sqrt(dt);
@@ -8,12 +12,12 @@ var sqrtDT = Math.sqrt(dt);
 //var priceMeans = MathExt.randomNormalVec(numStocks,5.0/numTradingDays,1.0/numTradingDays);
 var priceMeans = [];
 for (var i=0; i<numStocks; ++i)
-  priceMeans[i] = 10.0/numTradingDays;
+  priceMeans[i] = 25.0/numTradingDays;
 
 //var priceDevs = MathExt.randomNormalVec(numStocks,1.0/numTradingDays,0.1/numTradingDays);
 var priceDevs = [];
 for (var i=0; i<numStocks; ++i)
-  priceDevs[i] = 2.0/numTradingDays;
+  priceDevs[i] = 25.0/numTradingDays;
 
 var priceCorrelations = MathExt.randomCorrelation(numStocks);
 console.log("priceCorrelations:");
@@ -35,26 +39,81 @@ var drifts = [];
 for (var i=0; i<numStocks; ++i)
   drifts[i] = priceMeans[i] - priceCovariance[i][i]/2;
 
-var numTrials = 10000;
-var trialResults = [];
-for (var trial=0; trial<numTrials; ++trial) {
-  var amounts = [];
-  for (var i=0; i<numStocks; ++i)
-    amounts[i] = 100;
+var numTrials = 65536;
 
-  for (var day=1; day<=numTradingDays; ++day) {
-    var Z = MathExt.randomNormalVec(numStocks);
-    var X = MathExt.mat.mulVec(choleskyTrans, Z);
-    for (var i=0; i<numStocks; ++i) {
-      amounts[i] *= Math.exp(drifts[i]*dt + X[i]*sqrtDT);
-    }
+var trialResults;
+if (useFabric) {
+  var params = FABRIC.DG.createNode("params");
+  params.addMember('numTradingDays', 'Size', numTradingDays);
+  params.addMember('dt', 'Scalar', dt);
+  params.addMember('sqrtDT', 'Scalar', sqrtDT);
+  params.addMember('choleskyTrans', 'Scalar['+numStocks+']['+numStocks+']');
+  params.setData('choleskyTrans', choleskyTrans);
+  params.addMember('drifts', 'Scalar['+numStocks+']');
+  params.setData('drifts', drifts);
+
+  var runTrialOp = FABRIC.DG.createOperator("runTrial");
+  runTrial = fs.readFileSync('runTrial.kl', 'utf8').split('%NS%').join(numStocks);
+  //console.log(runTrial);
+  runTrialOp.setSourceCode('runTrial.kl', runTrial);
+  runTrialOp.setEntryFunctionName('runTrial');
+  if (runTrialOp.getDiagnostics().length > 0 ) {
+    console.log(runTrialOp.getDiagnostics());
+    throw "Compile errors, aborting";
   }
 
-  var value = 0.0;
-  for (var i=0; i<numStocks; ++i)
-    value += amounts[i];
-  trialResults.push(value);
+  var runTrialBinding = FABRIC.DG.createBinding();
+  runTrialBinding.setOperator(runTrialOp);
+  runTrialBinding.setParameterLayout([
+    'self.index',
+    'params.numTradingDays',
+    'params.dt',
+    'params.sqrtDT',
+    'params.choleskyTrans',
+    'params.drifts',
+    'self.value'
+  ]);
+
+  var trials = FABRIC.DG.createNode('trials');
+  trials.setCount(numTrials);
+  trials.setDependency(params, 'params');
+  trials.addMember('value', 'Scalar');
+  trials.bindings.append(runTrialBinding);
+  if (trials.getErrors().length > 0) {
+    console.log(trials.getErrors());
+    throw "DG errors, aborting";
+  }
+  trials.evaluate();
+
+  trialResults = trials.getBulkData('value').value;
 }
+else {
+  trialResults = [];
+  for (var trial=0; trial<numTrials; ++trial) {
+    //console.log("trial="+trial+" numTradingDays="+numTradingDays+" dt="+dt+" sqrtDT="+sqrtDT);
+    //console.log("choleskyTrans="+choleskyTrans);
+    //console.log("drifts="+drifts);
+    var amounts = [];
+    for (var i=0; i<numStocks; ++i)
+      amounts[i] = 100;
+
+    for (var day=1; day<=numTradingDays; ++day) {
+      var Z = MathExt.randomNormalVec(numStocks);
+      //console.log("Z = "+Z);
+      var X = MathExt.mat.mulVec(choleskyTrans, Z);
+      //console.log("X = "+X);
+      for (var i=0; i<numStocks; ++i) {
+        amounts[i] *= Math.exp(drifts[i]*dt + X[i]*sqrtDT);
+      }
+    }
+
+    var value = 0.0;
+    for (var i=0; i<numStocks; ++i)
+      value += amounts[i];
+    trialResults.push(value);
+  }
+}
+console.log(trialResults);
 
 var sort = function (v) {
   var partition = function (a, begin, end, pivot) {
