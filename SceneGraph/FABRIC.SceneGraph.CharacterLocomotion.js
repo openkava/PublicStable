@@ -476,23 +476,23 @@ FABRIC.SceneGraph.registerNodeType('LocomotionPoseVariables', {
       entryFunctionName: 'evaluateLocomotionPoseVariables',
       parameterLayout: [
         'globals.timestep',
-        'charactercontroller.xfo',
-        'charactercontroller.controllerparams',
         
         'bulletworld.world',
         
         'animationlibrary.trackSet<>',
         'animationlibrary.markers<>',
         'animationlibrary.footStepTracks<>',
-        
-        'animationlibrary.bindings',
-        'self.trackcontroller',
+        'animationlibrary.bindings<>',
         
         'skeleton.hubs',
         'skeleton.legs',
         'skeleton.com',
         'skeleton.locomotionFeet',
         
+        'charactercontroller.xfo<>',
+        'charactercontroller.controllerparams<>',
+        
+        'self.trackcontroller',
         'self.plantedFeet',
         'self.plantLocations',
         'self.rayDeltas',
@@ -501,6 +501,7 @@ FABRIC.SceneGraph.registerNodeType('LocomotionPoseVariables', {
         'self.prevUpdatePose',
         'self.poseError',
         'self.clipActivationTime',
+        'self.index',
         
         'self.debugGeometry'
       ]

@@ -20,7 +20,7 @@ function activateClip(
 ){
   trackcontroller.activeTrackSet = clipId;
   
-  LinearKeyframeTrackSet trackSet = animationLibrary[clipId];
+//  LinearKeyframeTrackSet trackSet = animationLibrary[clipId];
   FootStepTrack footStepTracks[] = footStepTracksLibrary[clipId];
   trackcontroller.stepIds.resize(footStepTracks.size);
   Scalar t;
@@ -53,23 +53,23 @@ function activateClip(
 
 operator evaluateLocomotionPoseVariables(
   io Scalar timestep,
-  io Xfo controllerXfo,
-  io CharacterControllerParams charactercontrollerparams,
   
   io BulletWorld  bulletworld,
   
   io LinearKeyframeTrackSet animationLibrary<>,
   io LocomotionMarker locomotionMarkers<>[],
   io FootStepTrack footStepTracksLibrary<>[],
-  
-  io KeyframeTrackBindings bindings,
-  io TrackSetController trackcontroller,
+  io KeyframeTrackBindings bindingsLibrary<>,
   
   io Hub hubs[],
   io Limb legs[],
   io COM com,
   io LocomotionFoot locomotionFeet[],
   
+  io Xfo controllerXfoSet<>,
+  io CharacterControllerParams controllerparamsSet<>,
+  
+  io TrackSetController trackcontroller,
   io Boolean plantedFeet[],
   io Vec3 plantLocations[],
   io Vec3 hitPositions[],
@@ -78,15 +78,21 @@ operator evaluateLocomotionPoseVariables(
   io PoseVariables prevUpdatePose,
   io PoseVariables poseError,
   io Scalar clipActivationTime,
+  in Size index,
   
   io DebugGeometry debugGeometry
 ) {
-//  report("evaluateLocomotionPoseVariables:");
+//  report("evaluateLocomotionPoseVariables:"+index);
   if(timestep==0){
     return;
   }
   debugGeometry.reset();
   
+  Xfo controllerXfo = controllerXfoSet[index];
+  CharacterControllerParams controllerparams = controllerparamsSet[index];
+  
+    /////////////////////////////////////////////////
+    // Clip Activation
     if(trackcontroller.tick == 0){
       activateClip(
         -1,
@@ -108,12 +114,15 @@ operator evaluateLocomotionPoseVariables(
 
     LinearKeyframeTrackSet trackSet = animationLibrary[trackcontroller.activeTrackSet];
     FootStepTrack footStepTracks[] = footStepTracksLibrary[trackcontroller.activeTrackSet];
+    KeyframeTrackBindings bindings = bindingsLibrary[trackcontroller.activeTrackSet];
     
+    /////////////////////////////////////////////////
+    // Clip Frequency and Stride Length calculation
     Xfo invcontrollerXfo = controllerXfo.inverse();
     Vec2 timeRange = trackSet.timeRange;
     Scalar t = trackcontroller.time;
     
-    Vec3 linearVelocity = charactercontrollerparams.displacement.tr / timestep;
+    Vec3 linearVelocity = controllerparams.displacement.tr / timestep;
     Scalar currSpeed = linearVelocity.length();
     Scalar clipSpeedRatio = 1.0;
     Scalar strideLengthModulationFactor = 0.3;
@@ -129,7 +138,7 @@ operator evaluateLocomotionPoseVariables(
       if(clipSpeed > 0.001){
         clipSpeedRatio = (currSpeed / clipSpeed);
         // When turning, speed up the playback a little to stop the legs getting tangled. 
-        clipFrequencyMultiplier += abs(charactercontrollerparams.displacement.ori.getAngle()) * 5.0;
+        clipFrequencyMultiplier += abs(controllerparams.displacement.ori.getAngle()) * 5.0;
       }
       
       if(clipSpeed > 0.001){
@@ -137,11 +146,14 @@ operator evaluateLocomotionPoseVariables(
         clipFrequencyMultiplier = clipSpeedRatio / strideLengthMultiplier;
       }
     }
+    
+    /////////////////////////////////////////////////
+    // Active Clip Evaluation
     t += timestep * clipFrequencyMultiplier;
     
     // Looping animaiton clips simply loop here. 
     if(t > timeRange.y){
-    
+      report("ERROR:");
       t -= (timeRange.y-timeRange.x);
       for(Integer j=0; j < locomotionFeet.size; j++){
         trackcontroller.stepIds[j] = 0;
@@ -191,37 +203,37 @@ operator evaluateLocomotionPoseVariables(
     for(Integer j=0; j < hubs.size; j++){
       Hub hub = hubs[j];
       Xfo hubXfo = poseVariables.xfoValues[hub.xfoId];
-      hubXfo.tr -= invcontrollerXfo.ori.rotateVector(charactercontrollerparams.balanceXfo.tr);
-      hubXfo.ori = invcontrollerXfo.ori * charactercontrollerparams.balanceXfo.ori * controllerXfo.ori * hubXfo.ori;
+      hubXfo.tr -= invcontrollerXfo.ori.rotateVector(controllerparams.balanceXfo.tr);
+      hubXfo.ori = invcontrollerXfo.ori * controllerparams.balanceXfo.ori * controllerXfo.ori * hubXfo.ori;
       
-      if(charactercontrollerparams.trail.size > 0){
+      if(controllerparams.trail.size > 0){
         hubComs.resize(hubs.size);
         Xfo trailXfo1, trailXfo2;
         Integer id1, id2;
-        Xfo lastTrailPoint = charactercontrollerparams.trail[charactercontrollerparams.trailCircularArrayIndex];
+        Xfo lastTrailPoint = controllerparams.trail[controllerparams.trailCircularArrayIndex];
         Scalar trailSegmentDist = (controllerXfo.tr - lastTrailPoint.tr).length();
           
         Scalar trailDistance = hubXfo.tr.z;
         if(trailDistance < 0.0 && hubs.size > 1){
           
-          Scalar trailLookup = ((-trailDistance-trailSegmentDist)/charactercontrollerparams.trailLength) * Scalar(charactercontrollerparams.trail.size);
+          Scalar trailLookup = ((-trailDistance-trailSegmentDist)/controllerparams.trailLength) * Scalar(controllerparams.trail.size);
           Integer trailIndex = Integer(floor(trailLookup));
           Scalar trailInterp = 1.0 - (trailLookup - floor(trailLookup));
           
-          id1 = (charactercontrollerparams.trailCircularArrayIndex - trailIndex);
+          id1 = (controllerparams.trailCircularArrayIndex - trailIndex);
           if(id1 < 0){
-            id1 += charactercontrollerparams.trail.size;
+            id1 += controllerparams.trail.size;
           }
           if(trailIndex < 0){
             trailXfo1 = controllerXfo;
           }else{
-            trailXfo1 = charactercontrollerparams.trail[id1];
+            trailXfo1 = controllerparams.trail[id1];
           }
           id2 = (id1 - 1);
           if(id2 < 0){
-            id2 += charactercontrollerparams.trail.size;
+            id2 += controllerparams.trail.size;
           }
-          trailXfo2 = charactercontrollerparams.trail[id2];
+          trailXfo2 = controllerparams.trail[id2];
           
           Xfo trailXfo;
           trailXfo.setIdentity();
@@ -261,7 +273,7 @@ operator evaluateLocomotionPoseVariables(
       Scalar stepRatio = (t - currStep.liftTime) / (currStep.plantTime - currStep.liftTime);
       
       Xfo footXfo, hubComXfo;
-      if(leg.hubId > 0 && charactercontrollerparams.trail.size > 0){
+      if(leg.hubId > 0 && controllerparams.trail.size > 0){
         hubComXfo = hubComs[leg.hubId];
       }else{
         hubComXfo = controllerXfo;
@@ -271,14 +283,14 @@ operator evaluateLocomotionPoseVariables(
     //  debugGeometry.drawLine(footXfo.tr, hubComXfo.tr, Color(1.0, 0.0, 1.0, 1.0));
     //  debugGeometry.drawAxis(footXfo, 20.0, Color(1.0, 0.0, 1.0, 1.0));
       
-      footXfo.tr -= charactercontrollerparams.balanceXfo.tr;
+      footXfo.tr -= controllerparams.balanceXfo.tr;
       
       Vec3 displacementDir;
-      if(leg.hubId >= 0 && charactercontrollerparams.trail.size > 0){
+      if(leg.hubId >= 0 && controllerparams.trail.size > 0){
         displacementDir = hubComXfo.ori.rotateVector(Vec3(0.0,0.0,1.0));
       }
       else{
-        displacementDir = charactercontrollerparams.displacementDir;
+        displacementDir = controllerparams.displacementDir;
       }
       
       Xfo footPlantXfo = hubComXfo * leg.ikGoalReferenceXfo;
