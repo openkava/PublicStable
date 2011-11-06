@@ -136,88 +136,6 @@ FABRIC.SceneGraph.registerNodeType('Image3DWithHistogram', {
   }
 });
 
-FABRIC.SceneGraph.registerNodeType('Texture2DSliceDisplay', {
-  briefDesc: '',
-  detailedDesc: '',
-  parentNodeDesc: 'DrawRectangle',
-  optionsDesc: {
-    opacityNode: 'The source 3D opacity UShort texture node',
-    gradientNode: 'The source 3D gradient RGBA texture node',
-    sliceRatio: 'Slice ratio (0 to 1) along sliceAxis',
-    sliceAxis: 'Slice axis (0=X, 1=Y, 2=Z) along which the image is extracted',
-    opacityElseGradientWeight: 'Show opacity, else will be gradient weight'
-  },
-
-  factoryFn: function(options, scene) {
-    scene.assignDefaults(options, {
-        sliceRatio: 0.5,
-        sliceAxis: 0,
-        opacityElseGradientWeight: true,
-        createDgNode: true
-      });
-
-    options.forceRefresh = true;
-    var sliceDisplayNode = scene.constructNode('DrawRectangle', options);
-    var dgnode = sliceDisplayNode.getDGNode();
-
-    dgnode.addMember('sliceRatio', 'Scalar', options.sliceRatio );
-    dgnode.addMember('sliceAxis', 'Size', options.sliceAxis );
-    dgnode.addMember('opacityElseGradientWeight', 'Boolean', options.opacityElseGradientWeight );
-    dgnode.addMember('sourceWidth', 'Size' );
-    dgnode.addMember('sourceHeight', 'Size' );
-    dgnode.addMember('sourceDepth', 'Size' );
-
-    sliceDisplayNode.addMemberInterface(dgnode, 'sliceRatio', true);
-    sliceDisplayNode.addMemberInterface(dgnode, 'sliceAxis', true);
-    sliceDisplayNode.addMemberInterface(dgnode, 'opacityElseGradientWeight', true);
-
-    var opacityNode = scene.getPrivateInterface(options.opacityNode);
-    dgnode.setDependency(opacityNode.getDGNode(), 'sourceOpacity');
-
-    var gradientNode = scene.getPrivateInterface(options.gradientNode);
-    dgnode.setDependency(gradientNode.getDGNode(), 'sourceGradient');
-    
-    dgnode.bindings.append(scene.constructOperator({
-      operatorName: 'selectSourceSize',
-      parameterLayout: [
-        'self.opacityElseGradientWeight',
-        'sourceOpacity.width',
-        'sourceOpacity.height',
-        'sourceOpacity.depth',
-        'sourceGradient.width',
-        'sourceGradient.height',
-        'sourceGradient.depth',
-        'self.sourceWidth',
-        'self.sourceHeight',
-        'self.sourceDepth'
-      ],
-      entryFunctionName: 'selectSourceSize',
-      srcCode: 'operator selectSourceSize(io Boolean o, io Size ow, io Size oh, io Size od, io Size gw, io Size gh, io Size gd, io Size w, io Size h, io Size d){w = o ? ow : gw; h = o ? oh : gh; d = o ? od : gd; }'
-    }));
-
-    dgnode.bindings.append(scene.constructOperator({
-      operatorName: 'slice3DTexture',
-      parameterLayout: [
-        'self.sliceRatio',
-        'self.sliceAxis',
-        'self.opacityElseGradientWeight',
-        'self.sourceWidth',
-        'self.sourceHeight',
-        'self.sourceDepth',
-        'sourceOpacity.pixels',
-        'sourceGradient.pixels',
-        'self.width',
-        'self.height',
-        'self.pixels'
-      ],
-      entryFunctionName: 'slice3DTexture',
-      srcFile: 'KL/3DTextureUtils.kl'
-    }));
-
-    return sliceDisplayNode;
-  }
-});
-    
 $(document).ready(function() {
   var i, j;
   var $sliders3D = [
@@ -365,7 +283,6 @@ $(document).ready(function() {
     volumeNode.setMinOpacity(ui.values[0]);
     volumeNode.setMaxOpacity(ui.values[1]);
     viewport.redraw();
-    viewport.redraw();//For some reason it takes 2 redraw to get the properly ajusted opacity factor upadted to the shader (???)
     return true;
   });
 
@@ -388,7 +305,6 @@ $(document).ready(function() {
   $resolutionFactorSlider.bind('slide', function(event, ui) {
     volumeNode.setResolutionFactor(ui.value);
     viewport.redraw();
-    viewport.redraw();//For some reason it takes 2 redraw to get the properly ajusted opacity factor upadted to the shader (???)
     return true;
   });
   
@@ -396,7 +312,6 @@ $(document).ready(function() {
   $brightnessSlider.bind('slide', function(event, ui) {
     volumeNode.setBrightnessFactor(ui.value);
     viewport.redraw();
-    viewport.redraw();//For some reason it takes 2 redraw to get the properly ajusted opacity factor upadted to the shader (???)
     return true;
   });
   
@@ -404,7 +319,6 @@ $(document).ready(function() {
   $transparencySlider.bind('slide', function(event, ui) {
     volumeNode.setTransparency(ui.value);
     viewport.redraw();
-    viewport.redraw();//For some reason it takes 2 redraw to get the properly ajusted opacity factor upadted to the shader (???)
     return true;
   });
   
@@ -412,7 +326,6 @@ $(document).ready(function() {
   $specularFactorSlider.bind('slide', function(event, ui) {
     volumeNode.setSpecularFactor(ui.value);
     viewport.redraw();
-    viewport.redraw();//For some reason it takes 2 redraw to get the properly ajusted opacity factor upadted to the shader (???)
     return true;
   });
 
@@ -435,7 +348,6 @@ $(document).ready(function() {
     volumeNode.setBrightnessFactor(1.0-volumeNode.getBrightnessFactor());
     $brightnessSlider.slider('value', volumeNode.getBrightnessFactor());
     viewport.redraw();
-    viewport.redraw();//For some reason it takes 2 redraw to get the properly ajusted opacity factor upadted to the shader (???)
   });
 
   var ajustViewportLayout = function() {
