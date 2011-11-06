@@ -163,12 +163,16 @@ operator locomotionPreProcessing(
 ) {
   report("locomotionPreProcessing <<<:" + index);
   
+  debugGeometry.reset();
+  
   trackSet = sourceAnimationLibrary[index];
   PoseVariables poseVariables = referenceVariables;
   bindings = referenceBindings;
   
   addCOMTracks(trackSet, bindings, com);
   addLegTracks(trackSet, bindings, locomotionFeet);
+  
+  report(bindings);
 
   Xfo pose[];
   pose.resize(bones.size);
@@ -366,7 +370,7 @@ operator locomotionPreProcessing(
     report("comXfo:"+comXfo);
    //     debugGeometry.drawAxis(comXfo, 1.0, Color(1.0, 0.0, 1.0, 1.0));
     comXfo = comXfo * comAlignment;
-    comXfo.tr.y = poseVariables.xfoValues[legs[footId].ikGoalXfoId].tr.y;
+    comXfo.tr.y = 0;//poseVariables.xfoValues[legs[footId].ikGoalXfoId].tr.y;
     debugGeometry.drawAxis(comXfo, 0.7, Color(1.0, 0.0, 1.0, 1.0));
       
     if(currKeyt > startT){

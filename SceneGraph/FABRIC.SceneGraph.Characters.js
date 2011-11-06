@@ -384,6 +384,9 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
           'self.poseVariables'
         ]
       }));
+      characterVariablesNode.pub.setBoundTrack = function(trackSetId){
+        dgnode.setData('trackSetId', 0, trackSetId);
+      }
       boundToAnimationTracks = true;
     }
     

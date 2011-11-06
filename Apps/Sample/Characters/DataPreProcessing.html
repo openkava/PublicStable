@@ -74,6 +74,15 @@ s.parentNode.insertBefore(ga, s);
  })();
 
 </script>
+
+<style>
+  #animationTracksList .ui-selecting { background: #757a9f; }
+  #animationTracksList .ui-selected { background: #4e516a; color: white; }
+  #animationTracksList { list-style-type: none; margin: 0; padding: 0; }
+  #animationTracksList li { margin: 3px; padding: 0.4em; font-size: 1.0em; height: 10px; }
+</style>
+
+
 <script type="text/javascript">
 
 $(document).ready(function() {
@@ -86,6 +95,8 @@ $(document).ready(function() {
 
   $('#processTracks').button();
   $('#curveEditor').button();
+  
+  $( "#animationTracksList" ).selectable();
 
   // Create the scene.
   var scene = FABRIC.SceneGraph.createScene();
@@ -119,6 +130,45 @@ $(document).ready(function() {
     materialNode: scene.constructNode('FlatMaterial')
   });
   
+  //////////////////////////////////////////////
+  // 
+  var sampleFrequency = 1/30;
+  var scaleFactor = 0.1;
+  var libraryFKAnimations, animationController;
+  
+  var libraryIKAnimations = scene.constructNode('LinearKeyAnimationLibrary', {
+    name: 'LibraryIKAnimations'
+  });
+  
+  var libraryLocomotionAnimations = scene.constructNode('LocomotionAnimationLibrary', {
+    name: 'LibraryLocomotionAnimations'
+  });
+  var trackCount = 0;
+  var loadAnimationFile = function(file, fkrigNode){
+    
+    var animationAssetNodes = scene.importAssetFile(file, {
+      scaleFactor: scaleFactor,
+      constructScene: false,
+      loadAnimationUsingRig: fkrigNode,
+      animationLibrary: libraryFKAnimations,
+      animationController: animationController
+    });
+    if(!libraryFKAnimations){
+      libraryFKAnimations = animationAssetNodes.AnimationLibrary;
+      animationController = animationAssetNodes.AnimationController;
+    }
+    
+    $("#animationTracksList").children().each(function(){
+      $(this).removeClass('ui-selected');
+    });
+    $("#animationTracksList").append('<li class="ui-widget-content ui-selected" id="'+trackCount+'">'+file+'</li>');
+    trackCount++;
+  }
+  
+  
+  //////////////////////////////////////////////
+  // 
+  
   var rigName = 'marama';
   var assetNodes, bindPoseRig, fkrigNode, rigInstanceNode, skeletonNode, characterMesh;
   switch(rigName){
@@ -127,7 +177,7 @@ $(document).ready(function() {
   
     fkrigNode = assetNodes.CATRigHub003CharacterRig;
     rigInstanceNode = assetNodes.CATRigHub003CharacterInstance;
-    animationLibrary = assetNodes.AnimationLibrary;
+    libraryFKAnimations = assetNodes.AnimationLibrary;
     characterMesh = assetNodes.CATRigHub003Mesh;
     
     skeletonNode = fkrigNode.getSkeletonNode();
@@ -166,7 +216,7 @@ $(document).ready(function() {
     
     
     var animationAssetNodes = scene.importAssetFile('Assets/Walker_Walk.DAE');
-    animationLibrary = animationAssetNodes.AnimationLibrary;
+    libraryFKAnimations = animationAssetNodes.AnimationLibrary;
     
     
     var invertedVariablesNode = ikrigNode.invertSolvers(animationAssetNodes.Walker_ncl1_1CharacterRig1, true);
@@ -243,7 +293,7 @@ $(document).ready(function() {
     });
     
     var animationAssetNodes = scene.importAssetFile('Assets/Centipede_Walk.DAE');
-    animationLibrary = animationAssetNodes.AnimationLibrary;
+    libraryFKAnimations = animationAssetNodes.AnimationLibrary;
     
     var invertedVariablesNode = ikrigNode.invertSolvers(animationAssetNodes.CentipedeHub010CharacterRig1, true);
   
@@ -284,25 +334,15 @@ $(document).ready(function() {
                'MaramaRPalm', 'MaramaRThumb1', 'MaramaRThumb2' , 'MaramaRIndex1', 'MaramaRIndex2', 'MaramaRFingers1' , 'MaramaRFingers2' ]
       }
     });
+
+    fkrigNode.setName("FKRig");
+    var fkRigVariablesNode = fkrigNode.constructVariablesNode('FKRigVariables', true);
+    var ikRigVariablesNode = ikrigNode.invertSolvers(fkrigNode, true);
     
-    var animationAssetNodes = scene.importAssetFile('Assets/Marama_Walk.DAE', {
-      scaleFactor: 0.1,
-      constructScene: false,
-      loadAnimationUsingRig:fkrigNode
-    });
-    animationLibrary = animationAssetNodes.AnimationLibrary;
-    /*
-    var animationAssetNodes = scene.importAssetFile('Assets/Marama_Run.DAE', {
-      scaleFactor: 0.1,
-      constructScene: false,
-      loadAnimationUsingRig:fkrigNode,
-      animationLibrary:animationLibrary,
-      animationController:animationAssetNodes.AnimationController
-    });
-    */
-    
-    var invertedVariablesNode = ikrigNode.invertSolvers(fkrigNode, true);
     rigInstanceNode.setRigNode(ikrigNode);
+    
+    loadAnimationFile('Assets/Marama_Walk.DAE', fkrigNode);
+    loadAnimationFile('Assets/Marama_Run.DAE', fkrigNode);
   
     break;
   }
@@ -334,22 +374,12 @@ $(document).ready(function() {
     color: FABRIC.RT.rgba(0.0, 0.0, 1.0, 1.0)
   });
   
-  //
-  var libraryProcessedAnimations = scene.constructNode('LinearKeyAnimationLibrary', {
-    name: 'LibraryProcessedAnimations'
-  });
-  
-  var libraryLocomotionAnimations = scene.constructNode('LocomotionAnimationLibrary', {
-    name: 'LibraryLocomotionAnimations'
-  });
-  
-  
   var locomotionRig = scene.constructNode('LocomotionCharacterRig', {
     baseCharacterRigNode: ikrigNode
   });
   
   
-  var timeRange = animationLibrary.getTimeRange(0);
+  var timeRange = libraryFKAnimations.getTimeRange(0);
   var $globalTimeSlider = $('#globalTime').slider({
       min: timeRange.x,
       max: timeRange.y,
@@ -359,35 +389,71 @@ $(document).ready(function() {
   $globalTimeSlider.slider('value', 0.0);
   $globalTimeSlider.bind('slide',
     function(event, ui) {
+      $("#timeValue").val( ui.value.toFixed(2) );
       scene.animation.setTime(ui.value);
       scene.redrawAllViewports();
     });
+  $( "#timeValue" )
+    .val( $globalTimeSlider.slider( "value" ) )
+    .change(function() {
+      $globalTimeSlider.slider('value', $(this).val()  );
+    });
+
+  $( "#animationTracksList" ).selectable({
+    stop: function(event, ui) {
+      var selectedChildren = $("#animationTracksList").children('.ui-selected');
+      var id = parseInt($(selectedChildren[0]).attr('id'));
+      // Set the animation that the FK rig is using.
+      fkRigVariablesNode.setBoundTrack(id);
+        
+      var timeRange = libraryFKAnimations.getTimeRange(id);
+      $('#globalTime').slider({
+          min: timeRange.x,
+          max: timeRange.y,
+          step: 0.01
+        });
+      viewport.redraw();
+    }
+  });
   
-  
+  var plottedAnimations = 0, bound = false;
   $('#processTracks').button()
     .click(function() {
-      var bindings = libraryProcessedAnimations.bindToVariables(invertedVariablesNode, 'DrivenTracks');
-  
-      var timeRange = animationLibrary.getTimeRange(0);
-      var sampleFrequency = 1/30;
-      libraryProcessedAnimations.plotKeyframes(timeRange, sampleFrequency);
       
-    //  var footMovementThreshold = 0.02;// walk
-      var footMovementThreshold = 0.04;// run
-      libraryLocomotionAnimations.preProcessTracks(
-        libraryProcessedAnimations,
-        bindings,
-        locomotionRig,
-        sampleFrequency,
-        footMovementThreshold
-      );
       
+      for(var i=plottedAnimations; i<libraryFKAnimations.getTrackSetCount(); i++){
+        // Set the animation that the FK rig is using.
+        fkRigVariablesNode.setBoundTrack(i);
+        
+        // Bind the IK Animation to the variables. This generates a new TrackSet and bindings.
+        var bindings = libraryIKAnimations.bindToVariables(ikRigVariablesNode, 'DrivenTracks');
+        
+        var timeRange = libraryFKAnimations.getTimeRange(i);
+        libraryIKAnimations.plotKeyframes(i, timeRange, sampleFrequency);
+      }
+      plottedAnimations = libraryFKAnimations.getTrackSetCount();
+      
+      
+      if(!bound){
+      //  var footMovementThreshold = 0.02;// walk
+        var footMovementThreshold = 0.02;// run
+        libraryLocomotionAnimations.bindToSourceAnimationLibrary(
+          libraryIKAnimations,
+          bindings,
+          locomotionRig,
+          sampleFrequency,
+          footMovementThreshold
+        );
+        bound = true;
+      }
+      
+      libraryLocomotionAnimations.preProcessTracks();
       viewport.redraw();
     });
   
   $('#saveData').button()
     .click(function() {
-      invertedVariablesNode.setName('CharacterVariables');
+      ikRigVariablesNode.setName('CharacterVariables');
       var rigSaver = scene.constructManager('SceneSaver');
       rigSaver.addNode(ikrigNode);
       rigSaver.addNode(characterMesh);
@@ -482,7 +548,11 @@ $(document).ready(function() {
               </br>
               <input type="checkbox" id="displayRiggedSkeleton" style="margin-top:10px;"/><label for="displayRiggedSkeleton">Display Rigged Skeleton:</label>
               </br>
-              <div id='globalTime' style="margin-top:10px;"></div>
+              
+              <label for="timeValue" >Time:</label>
+              <input type="text" id="timeValue" style="border:0; font-weight:bold;" />
+              <div id='globalTime' style="margin-bottom:10px;"></div>
+                
               <button id="processTracks" style="margin-top:3px;">Process Tracks</button>
               <button id="curveEditor" style="margin-top:3px;">Open Curve Editor</button>
               <button id="saveData" style="margin-top:3px;">Write Data</button>
@@ -490,6 +560,14 @@ $(document).ready(function() {
             </div><!--content-->
           </div><!--box-->
 
+          <div class="box">
+            <h2>ANIMATIONS</h2>
+            <div class="content">
+              <ol id="animationTracksList">
+              </ol>
+            </div>
+          </div><!--box-->
+          
         </div><!--sidebar-->
       </div> <!--editor-->
     </div><!--wrapper-->
