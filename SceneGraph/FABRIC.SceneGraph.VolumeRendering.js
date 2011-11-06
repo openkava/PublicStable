@@ -596,13 +596,13 @@ FABRIC.SceneGraph.registerNodeType('VolumeSliceRender', {
       volumeMaterialDGNode.bindings.append(scene.constructOperator({
         operatorName: 'copyParams',
         srcCode: 'operator copyParams(io Integer srcInvertColor, io Integer dstInvertColor, io Scalar srcBrightness, io Scalar dstBrightness){ \n' +
-                      'srcInvertColor = dstInvertColor;\n' +
-                      'srcBrightness = dstBrightness;}\n',
+                      'dstInvertColor = srcInvertColor;\n' +
+                      'dstBrightness = srcBrightness;}\n',
         entryFunctionName: 'copyParams',
         parameterLayout: [
           'source.invertColor',
           'self.invertColor',
-          'source.brightnessFactor',
+          'source.brightness',
           'self.brightness'
         ]
       }));
@@ -614,30 +614,21 @@ FABRIC.SceneGraph.registerNodeType('VolumeSliceRender', {
       sliceRedrawEventHandler = sliceNode.constructEventHandlerNode('SliceRedraw');
       scene.getPrivateInterface(volumeMaterialNodePub).getRedrawEventHandler().appendChildEventHandler(sliceRedrawEventHandler);;
 
+
+      var preProcessorDefinitions = {
+        POSITIONS_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('positions'),
+        NORMALS_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('normals'),
+        NORMALMATRIX_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('normalMatrix'),
+        MODELVIEW_MATRIX_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('modelViewMatrix'),
+        MODELVIEWPROJECTION_MATRIX_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('modelViewProjectionMatrix')
+      };
+
       sliceRedrawEventHandler.preDescendBindings.append(
         scene.constructOperator({
             operatorName: 'preSliceRender',
-            srcCode: 'use Mat33, Mat44, OGLShaderProgram;\n' +
-                     'operator preSliceRender(io OGLShaderProgram shaderProgram) {\n' +
-                       'Mat44 mat44;\n' +
-                       'mat44.setIdentity();\n' +
-                       'Mat33 mat33;\n' +
-                       'mat33.setIdentity();\n' +
-                       'Integer location = shaderProgram.getUniformLocation(' + FABRIC.SceneGraph.getShaderParamID('normalMatrix') + ');\n' +
-                       'if(location!=-1)\n' +
-                       '  shaderProgram.loadMat33Uniform(location, mat33);\n' +
-                       'location = shaderProgram.getUniformLocation(' + FABRIC.SceneGraph.getShaderParamID('modelViewMatrix') + ');\n' +
-                       'if(location!=-1)\n' +
-                       '  shaderProgram.loadMat44Uniform(location, mat44);\n' +
-                       'location = shaderProgram.getUniformLocation(' + FABRIC.SceneGraph.getShaderParamID('modelViewProjectionMatrix') + ');\n' +
-                       'if(location!=-1)\n' +
-                       '  shaderProgram.loadMat44Uniform(location, mat44);\n' +
-                       'glPushAttrib(GL_ENABLE_BIT | GL_DEPTH_BUFFER_BIT);\n' +
-                       'glPushClientAttrib(GL_CLIENT_VERTEX_ARRAY_BIT);\n' +
-                       'glDisable(GL_DEPTH_TEST);\n' +
-                       'glDisable(GL_CULL_FACE);}'
-            ,
+            srcFile: 'FABRIC_ROOT/SceneGraph/KL/drawVolume2DSlice.kl',
             entryFunctionName: 'preSliceRender',
+            preProcessorDefinitions: preProcessorDefinitions,
             parameterLayout: [
               'shader.shaderProgram'
             ]
@@ -646,11 +637,9 @@ FABRIC.SceneGraph.registerNodeType('VolumeSliceRender', {
       sliceRedrawEventHandler.postDescendBindings.append(
         scene.constructOperator({
             operatorName: 'postSliceRender',
-            srcCode: 'use FabricOGL;\n' +
-                     'operator postSliceRender() {\n' +
-                       'glPopClientAttrib();\n' +
-                       'glPopAttrib();}',
-            entryFunctionName: 'postSliceRender'
+            srcFile: 'FABRIC_ROOT/SceneGraph/KL/drawVolume2DSlice.kl',
+            entryFunctionName: 'postSliceRender',
+            preProcessorDefinitions: preProcessorDefinitions
           }));
     }
 
@@ -687,12 +676,14 @@ FABRIC.SceneGraph.registerNodeType('VolumeSliceRender', {
       operatorName: 'drawVolumeSlice',
       srcFile: 'FABRIC_ROOT/SceneGraph/KL/drawVolume2DSlice.kl',
       entryFunctionName: 'draw2DVolumeSlice',
+      preProcessorDefinitions: preProcessorDefinitions,
       parameterLayout: [
         'transform.globalXfo',
         'self.axis',
         'self.ratio',
         'self.tl',
-        'self.br'
+        'self.br',
+        'shader.shaderProgram'
       ]
     }));
 
