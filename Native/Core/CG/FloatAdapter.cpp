@@ -282,31 +282,67 @@ namespace Fabric
         std::vector< FunctionParam > params;
         params.push_back( FunctionParam( "x", this, USAGE_RVALUE ) );
         std::string name = internalFunctionNameForType("tan");
-        FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( this, USAGE_RVALUE ), params, false, &name );
+        FunctionBuilder internalFunctionBuilder( moduleBuilder, name, ExprType( this, USAGE_RVALUE ), params, false, &name );
         if ( buildFunctions )
         {
-          llvm::Value *x = functionBuilder[0];
-          BasicBlockBuilder basicBlockBuilder( functionBuilder );
-          basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
+          llvm::Value *x = internalFunctionBuilder[0];
+          BasicBlockBuilder basicBlockBuilder( internalFunctionBuilder );
+          basicBlockBuilder->SetInsertPoint( internalFunctionBuilder.createBasicBlock( "entry" ) );
           basicBlockBuilder->CreateRet( basicBlockBuilder->CreateCall( tanfFunctionBuilder.getLLVMFunction(), x ) );
         }
       }
 
       {
-        std::vector< FunctionParam > logfParams;
-        logfParams.push_back( FunctionParam( "x", this, USAGE_RVALUE ) );
-        FunctionBuilder logfFunctionBuilder( moduleBuilder, externalFunctionNameForType("log"), ExprType( this, USAGE_RVALUE ), logfParams, true );
+        std::vector< FunctionParam > externalFunctionParams;
+        externalFunctionParams.push_back( FunctionParam( "x", this, USAGE_RVALUE ) );
+        FunctionBuilder externalFunctionBuilder( moduleBuilder, externalFunctionNameForType("log10"), ExprType( this, USAGE_RVALUE ), externalFunctionParams, true );
 
         std::vector< FunctionParam > params;
         params.push_back( FunctionParam( "x", this, USAGE_RVALUE ) );
-        std::string name = internalFunctionNameForType("log");
-        FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( this, USAGE_RVALUE ), params, false, &name );
+        std::string name = internalFunctionNameForType("log10");
+        FunctionBuilder internalFunctionBuilder( moduleBuilder, name, ExprType( this, USAGE_RVALUE ), params, false, &name );
         if ( buildFunctions )
         {
-          llvm::Value *x = functionBuilder[0];
-          BasicBlockBuilder basicBlockBuilder( functionBuilder );
-          basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
-          basicBlockBuilder->CreateRet( basicBlockBuilder->CreateCall( logfFunctionBuilder.getLLVMFunction(), x ) );
+          llvm::Value *x = internalFunctionBuilder[0];
+          BasicBlockBuilder basicBlockBuilder( internalFunctionBuilder );
+          basicBlockBuilder->SetInsertPoint( internalFunctionBuilder.createBasicBlock( "entry" ) );
+          basicBlockBuilder->CreateRet( basicBlockBuilder->CreateCall( externalFunctionBuilder.getLLVMFunction(), x ) );
+        }
+      }
+
+      {
+        std::vector< FunctionParam > externalFunctionParams;
+        externalFunctionParams.push_back( FunctionParam( "x", this, USAGE_RVALUE ) );
+        FunctionBuilder externalFunctionBuilder( moduleBuilder, externalFunctionNameForType("log"), ExprType( this, USAGE_RVALUE ), externalFunctionParams, true );
+
+        std::vector< FunctionParam > internalFunctionParams;
+        internalFunctionParams.push_back( FunctionParam( "x", this, USAGE_RVALUE ) );
+        std::string name = internalFunctionNameForType("log");
+        FunctionBuilder internalFunctionBuilder( moduleBuilder, name, ExprType( this, USAGE_RVALUE ), internalFunctionParams, false, &name );
+        if ( buildFunctions )
+        {
+          llvm::Value *x = internalFunctionBuilder[0];
+          BasicBlockBuilder basicBlockBuilder( internalFunctionBuilder );
+          basicBlockBuilder->SetInsertPoint( internalFunctionBuilder.createBasicBlock( "entry" ) );
+          basicBlockBuilder->CreateRet( basicBlockBuilder->CreateCall( externalFunctionBuilder.getLLVMFunction(), x ) );
+        }
+      }
+
+      {
+        std::vector<FunctionParam> externalFunctionParams;
+        externalFunctionParams.push_back( FunctionParam( "x", this, USAGE_RVALUE ) );
+        FunctionBuilder externalFunctionBuilder( moduleBuilder, externalFunctionNameForType("exp"), ExprType( this, USAGE_RVALUE ), externalFunctionParams, true );
+
+        std::vector<FunctionParam> internalFunctionParams;
+        internalFunctionParams.push_back( FunctionParam( "x", this, USAGE_RVALUE ) );
+        std::string name = internalFunctionNameForType("exp");
+        FunctionBuilder internalFunctionBuilder( moduleBuilder, name, ExprType( this, USAGE_RVALUE ), internalFunctionParams, false, &name );
+        if ( buildFunctions )
+        {
+          llvm::Value *x = internalFunctionBuilder[0];
+          BasicBlockBuilder basicBlockBuilder( internalFunctionBuilder );
+          basicBlockBuilder->SetInsertPoint( internalFunctionBuilder.createBasicBlock( "entry" ) );
+          basicBlockBuilder->CreateRet( basicBlockBuilder->CreateCall( externalFunctionBuilder.getLLVMFunction(), x ) );
         }
       }
 

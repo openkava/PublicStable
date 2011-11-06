@@ -9,7 +9,9 @@ operator entry() {
   report sin(x);
   report cos(x);
   report tan(x);
+  report log10(x);
   report log(x);
+  report exp(x);
   report asin(z);
   report acos(z);
   report atan(z);
