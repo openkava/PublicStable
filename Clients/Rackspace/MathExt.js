@@ -52,7 +52,7 @@ module.exports = {
           sum += M[i][j] * v[j];
         r[i] = sum;
       }
-      return v;
+      return r;
     },
 
     mul: function (M, N) {
