@@ -27,6 +27,7 @@ FABRIC.SceneGraph.registerNodeType('VolumeSlices', {
     volumeSlicesNode.pub.addUniformValue('cropMax', 'Vec3', options.cropMax);
     volumeSlicesNode.pub.addUniformValue('cropInTransformedSpace', 'Boolean', options.cropInTransformedSpace);
     volumeSlicesNode.pub.addUniformValue('nbSlices', 'Size', options.nbSlices);
+    volumeSlicesNode.pub.addUniformValue('halfPixelCrop', 'Vec3', new FABRIC.RT.Vec3(0, 0, 0));
 
     volumeSlicesNode.pub.setAttributeDynamic('positions');
     volumeSlicesNode.pub.setAttributeDynamic('normals');
@@ -62,6 +63,7 @@ FABRIC.SceneGraph.registerNodeType('VolumeSlices', {
         parameterLayout: [
           'uniforms.cropMin',
           'uniforms.cropMax',
+          'uniforms.halfPixelCrop',
           'uniforms.cropInTransformedSpace',
           'uniforms.nbSlices',
           'transform.globalXfo',
@@ -264,8 +266,7 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
         'opacityImage3D.height',
         'opacityImage3D.depth',
         'self.nbSlices',
-        'self.cropMin',
-        'self.cropMax'
+        'self.halfPixelCrop'
       ],
       entryFunctionName: 'setNbSlicesFrom3DImage',
       srcFile: 'FABRIC_ROOT/SceneGraph/KL/generateVolumeSlices.kl'
