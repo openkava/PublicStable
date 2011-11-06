@@ -42,18 +42,37 @@ operator evaluateCharacterController(
   Vec3 translationX = camXfo.ori.rotateVector(Vec3(translationControls.x * maxLinearVelocity.x, 0.0, 0.0));
   Vec3 translationZ = camXfo.ori.rotateVector(Vec3(0.0, translationControls.y * maxLinearVelocity.y, 0.0));
 
+  ////////////////////////////
+  // Movement
+  
   Vec3 currLinearVelocity = controllerparams.displacement.tr / timestep;
   Vec3 goalLinearVelocity = translationX + translationZ;
   Vec3 acceleration = goalLinearVelocity - currLinearVelocity;
-  if(acceleration.length() > maxLinearAcceleration){
-    acceleration = acceleration.unit() * maxLinearAcceleration;
+  
+  // decompose acceleration into forwards and and non-forwards acceleration,
+  // and apply different limits basedon the direction.
+  Vec3 facingDir = controllerXfo.ori.rotateVector(Vec3(0.0, 0.0, 1.0));
+  Scalar fwAccelerationStrength = acceleration.dot(facingDir);
+  
+  if(fwAccelerationStrength < 0.0){
+    fwAccelerationStrength = 0.0;
   }
-  
-  
+  else if(fwAccelerationStrength > maxLinearAcceleration){
+    fwAccelerationStrength = maxLinearAcceleration;
+  }
+  Vec3 nonFwAcceleration = acceleration - (facingDir * fwAccelerationStrength);
+  if(nonFwAcceleration.length() > (maxLinearAcceleration * 0.65)){
+    nonFwAcceleration = nonFwAcceleration.unit() * (maxLinearAcceleration * 0.65);
+  }
+  acceleration = (facingDir * fwAccelerationStrength) + nonFwAcceleration;
+    
   currLinearVelocity += acceleration;
   controllerparams.displacement.tr = currLinearVelocity * timestep;
   controllerXfo.tr += controllerparams.displacement.tr;
-    
+  
+  ////////////////////////////
+  // Ballance
+  
   Vec3 balanceVector = acceleration + Vec3(0.0, gravity, 0.0);
   balanceVector.unit() * -comHeight;
   balanceVector.y = 0.0;
@@ -74,6 +93,9 @@ operator evaluateCharacterController(
   balanceDisplayXfo.tr = controllerXfo.tr + controllerparams.balanceXfo.tr;
   balanceDisplayXfo.ori = controllerparams.balanceXfo.ori * controllerXfo.ori;
   
+  ////////////////////////////
+  // Alignment
+  
   if(currLinearVelocity.length() > 0.001){
     Vec3 currDir = controllerXfo.ori.rotateVector(Vec3(0.0, 0.0, 1.0));
     Vec3 displacementDir = currLinearVelocity.unit();
@@ -93,6 +115,10 @@ operator evaluateCharacterController(
   else{
     controllerparams.displacement.ori.setIdentity();
   }
+  controllerXfo.ori = controllerXfo.ori.unit();
+  
+  ////////////////////////////
+  // Trail
   
   if(controllerparams.trail.size > 0){
     Xfo lastTrailPoint = controllerparams.trail[controllerparams.trailCircularArrayIndex];
