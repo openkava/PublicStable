@@ -263,7 +263,9 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
         'opacityImage3D.width',
         'opacityImage3D.height',
         'opacityImage3D.depth',
-        'self.nbSlices'
+        'self.nbSlices',
+        'self.cropMin',
+        'self.cropMax'
       ],
       entryFunctionName: 'setNbSlicesFrom3DImage',
       srcFile: 'FABRIC_ROOT/SceneGraph/KL/generateVolumeSlices.kl'

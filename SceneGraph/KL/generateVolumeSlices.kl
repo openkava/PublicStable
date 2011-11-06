@@ -321,7 +321,9 @@ operator setNbSlicesFrom3DImage(
   io Size imageWidth,
   io Size imageHeight,
   io Size imageDepth,
-  io Size nbSlices
+  io Size nbSlices,
+  io Vec3 cropMin,
+  io Vec3 cropMax
 ){
   //This could be enhanced to ajust nb slices based on camera direction (nb pixels might vary per dim)
   Size maxNbVoxels = imageWidth;
@@ -333,6 +335,12 @@ operator setNbSlicesFrom3DImage(
   nbSlices = Size(Scalar(maxNbVoxels) * resolutionFactor * 2.0);
   if(nbSlices < 8)
     nbSlices = 8;
+
+  //Ajust cropMin & cropMax: remove 1/2 pixel
+  Scalar halfPixel = 0.5 / Scalar(maxNbVoxels);
+  Vec3 halfPixelVector( halfPixel, halfPixel, halfPixel );
+  cropMin += halfPixelVector;
+  cropMax -= halfPixelVector;
 }
 
 
