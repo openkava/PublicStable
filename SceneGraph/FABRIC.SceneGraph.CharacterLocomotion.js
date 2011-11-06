@@ -106,7 +106,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('LocomotionFeetSolver', {
   }
 });
 
-
+/*
 
 FABRIC.SceneGraph.registerNodeType('LocomotionCharacterRig', {
   parentNodeDesc: 'CharacterRig',
@@ -131,6 +131,8 @@ FABRIC.SceneGraph.registerNodeType('LocomotionCharacterRig', {
     
     return locomotionRigNode;
   }});
+*/
+
 
 FABRIC.RT.LocomotionMarker = function() {
   this.localtime = 0.0;
@@ -521,9 +523,9 @@ FABRIC.SceneGraph.registerNodeType('LocomotionPoseVariables', {
       }
       animationLibraryNode = scene.getPrivateInterface(animationLibraryNode);
       dgnode.setDependency(animationLibraryNode.getDGNode(), 'animationlibrary');
-      if(keyframeTrackBindings){
-        dgnode.addMember('bindings', 'KeyframeTrackBindings', keyframeTrackBindings);
-      }
+    //  if(keyframeTrackBindings){
+    //    dgnode.addMember('bindings', 'KeyframeTrackBindings', keyframeTrackBindings);
+    //  }
     };
     
     var skeletonNode;

@@ -3,7 +3,7 @@
     Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
     -->
   <head> 
-    <title>FABRIC - Character Locomotion PreProcessing</title> 
+    <title>FABRIC - PreProcessing</title> 
     
     <meta charset="iso-8859-1"/>
   
@@ -347,6 +347,12 @@ $(document).ready(function() {
     break;
   }
   
+//  var locomotionRig = scene.constructNode('LocomotionCharacterRig', {
+//    baseCharacterRigNode: ikrigNode
+//  });
+  
+  ikrigNode.addSolver('COM', 'COMSolver');
+  ikrigNode.addSolver('Feet', 'LocomotionFeetSolver');
   
   var materialNode = scene.constructNode('PhongSkinningMaterial', {
       lightNode: scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) }),
@@ -374,10 +380,6 @@ $(document).ready(function() {
     color: FABRIC.RT.rgba(0.0, 0.0, 1.0, 1.0)
   });
   
-  var locomotionRig = scene.constructNode('LocomotionCharacterRig', {
-    baseCharacterRigNode: ikrigNode
-  });
-  
   
   var timeRange = libraryFKAnimations.getTimeRange(0);
   var $globalTimeSlider = $('#globalTime').slider({
@@ -391,12 +393,14 @@ $(document).ready(function() {
     function(event, ui) {
       $("#timeValue").val( ui.value.toFixed(2) );
       scene.animation.setTime(ui.value);
-      scene.redrawAllViewports();
+      viewport.redraw();
     });
   $( "#timeValue" )
     .val( $globalTimeSlider.slider( "value" ) )
     .change(function() {
       $globalTimeSlider.slider('value', $(this).val()  );
+      scene.animation.setTime(parseFloat($(this).val()));
+      viewport.redraw();
     });
 
   $( "#animationTracksList" ).selectable({
@@ -426,7 +430,10 @@ $(document).ready(function() {
         fkRigVariablesNode.setBoundTrack(i);
         
         // Bind the IK Animation to the variables. This generates a new TrackSet and bindings.
-        var bindings = libraryIKAnimations.bindToVariables(ikRigVariablesNode, 'DrivenTracks');
+        // NOTE: currently the ikrigNode is actually the locomotion rig, because the locomotion rig
+        // simply adds 2 solvers to the rig. We should disolve the Locomotion rig and simply add the
+        // solvers to the IK rig, clarifying the situation
+        var bindings = libraryIKAnimations.bindToRig(ikrigNode, libraryFKAnimations.getTrackSetName(i));
         
         var timeRange = libraryFKAnimations.getTimeRange(i);
         libraryIKAnimations.plotKeyframes(i, timeRange, sampleFrequency);
@@ -440,7 +447,7 @@ $(document).ready(function() {
         libraryLocomotionAnimations.bindToSourceAnimationLibrary(
           libraryIKAnimations,
           bindings,
-          locomotionRig,
+          ikrigNode,
           sampleFrequency,
           footMovementThreshold
         );
