@@ -130,7 +130,7 @@ $(document).ready(function() {
     createGroundPlaneGrid:true,
     groundPlanseSize: 30,
   } );
-  
+  /*
   // add a box shape
   bulletWorldNode.addShape('Box',new FABRIC.RT.BulletShape.createBox());
   
@@ -206,7 +206,7 @@ $(document).ready(function() {
     transformNode: nonslicedTransform3,
     enableRaycasting: true
   });
-  
+  */
     
   var rigName = 'marama';
   var locomotionControllerNode;
@@ -225,7 +225,7 @@ $(document).ready(function() {
   case 'marama':
     var locomotionControllerNode = scene.constructNode('LocomotionCharacterController', {
         cameraNode: camera,
-        maxLinearVelocity: new FABRIC.RT.Vec2(4, 4),
+        maxLinearVelocity: new FABRIC.RT.Vec2(3, 3),
         maxLinearAcceleration: 0.2,
         maxAngularVelocity:  new FABRIC.RT.Euler(0, 4, 0),
         bulletWorldNode: bulletWorldNode,
@@ -292,6 +292,26 @@ $(document).ready(function() {
   });
   */
   
+  var togglePlay = function(){
+    if ($('#play').text() == 'Play') {
+      $('#play').button('option', {
+        label: 'Pause',
+        icons: {
+          primary: 'ui-icon-pause'
+        }
+      });
+      scene.animation.play();
+    } else {
+      $('#play').button('option', {
+        label: 'Play',
+        icons: {
+          primary: 'ui-icon-play'
+        }
+      });
+      scene.animation.pause();
+    }
+  }
+  
   var translationControls = new FABRIC.RT.Vec2();
   var downKeys = [];
   var arrowKeys = {
@@ -303,6 +323,9 @@ $(document).ready(function() {
   window.onkeydown = function(evt) {
     if(downKeys[evt.keyCode]){
       return;
+    }
+    if(evt.keyCode==90){ // 'z'
+      togglePlay();
     }
     var speed = 1.0;
     if(evt.shiftKey){
@@ -375,24 +398,7 @@ $(document).ready(function() {
       
       $('#play').button()
         .click(function() {
-          var options;
-          if ($(this).text() == 'Play') {
-            $(this).button('option', {
-              label: 'Pause',
-              icons: {
-                primary: 'ui-icon-pause'
-              }
-            });
-            scene.animation.play();
-          } else {
-            $(this).button('option', {
-              label: 'Play',
-              icons: {
-                primary: 'ui-icon-play'
-              }
-            });
-            scene.animation.pause();
-          }
+          togglePlay();
         });
       
       $('#step').button()

@@ -72,7 +72,7 @@ operator evaluateCharacterController(
   
   ////////////////////////////
   // Ballance
-  
+  /*
   Vec3 balanceVector = acceleration + Vec3(0.0, gravity, 0.0);
   balanceVector.unit() * -comHeight;
   balanceVector.y = 0.0;
@@ -92,7 +92,8 @@ operator evaluateCharacterController(
   Xfo balanceDisplayXfo;
   balanceDisplayXfo.tr = controllerXfo.tr + controllerparams.balanceXfo.tr;
   balanceDisplayXfo.ori = controllerparams.balanceXfo.ori * controllerXfo.ori;
-  
+  */
+  controllerparams.balanceXfo.setIdentity();
   ////////////////////////////
   // Alignment
   

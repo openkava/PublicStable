@@ -168,11 +168,13 @@ operator locomotionPreProcessing(
   trackSet = sourceAnimationLibrary[index];
   PoseVariables poseVariables = referenceVariables;
   bindings = referenceBindings;
+  report("referenceBindings.scalarBindings:"+referenceBindings.scalarBindings);
+  report("-----------");
   
-  addCOMTracks(trackSet, bindings, com);
-  addLegTracks(trackSet, bindings, locomotionFeet);
+//  addCOMTracks(trackSet, bindings, com);
+//  addLegTracks(trackSet, bindings, locomotionFeet);
   
-  report(bindings);
+//  report(bindings);
 
   Xfo pose[];
   pose.resize(bones.size);
@@ -190,6 +192,32 @@ operator locomotionPreProcessing(
   report("footSteps:"+footSteps);
   
   ///////////////////////////////////////////////////
+  // Find the first foot lift and the last foot lift, and clamp the range.
+  Boolean singleStepLoop;
+  Scalar firstFootLift = timeRange.y;
+  Scalar lastFootLift = timeRange.x;
+  Integer leadingFoot = 0;
+  for(Integer i=0; i < legs.size; i++){
+    if(footSteps[i].size == 0){
+      report("ERROR: No foot steps detected for foot "+i);
+      return;
+    }
+    if(footSteps[i].size == 1){
+      singleStepLoop = true;
+    }
+    if(footSteps[i][0].y < firstFootLift){
+      firstFootLift = footSteps[i][0].y;
+      leadingFoot = i;
+    }
+    if(footSteps[i][footSteps[i].size-1].y > lastFootLift){
+      lastFootLift = footSteps[i][footSteps[i].size-1].y;
+    }
+  }
+  timeRange.x = firstFootLift;
+  timeRange.y = lastFootLift;
+  
+  report("clamped timeRange:"+timeRange);
+  ///////////////////////////////////////////////////
   // Convert foot steps into strides.
   footStepTracks.resize(legs.size);
   for(Integer i=0; i < legs.size; i++){
@@ -206,6 +234,13 @@ operator locomotionPreProcessing(
       step.liftTime = footSteps[i][0].y;
       step.plantTime = footSteps[i][1].x;
       footStepTracks[i].footSteps.push(step);
+      
+      if(footSteps[i][1].y <= timeRange.y){
+        Vec2 lastStep = footSteps[i][1];
+        step.liftTime = lastStep.y;
+        step.plantTime = lastStep.x + (timeRange.y - timeRange.x);
+        footStepTracks[i].footSteps.push(step);
+      }
     }
     else{
       if(footSteps[i][0].x > timeRange.x){
@@ -215,13 +250,15 @@ operator locomotionPreProcessing(
         step.plantTime = firstStep.x;
         footStepTracks[i].footSteps.push(step);
       }
-      for(Integer j=1; j < footSteps[i].size; j++){
-        step.liftTime = footSteps[i][j-1].y;
-        step.plantTime = footSteps[i][j].x;
-        footStepTracks[i].footSteps.push(step);
+    
+      if(footSteps[i].size > 1){
+        for(Integer j=1; j < footSteps[i].size; j++){
+          step.liftTime = footSteps[i][j-1].y;
+          step.plantTime = footSteps[i][j].x;
+          footStepTracks[i].footSteps.push(step);
+        }
       }
-      
-      if(footSteps[i][footSteps[i].size-1].y < timeRange.y){
+      if(footSteps[i][footSteps[i].size-1].y <= timeRange.y){
         Vec2 lastStep = footSteps[i][footSteps[i].size-1];
         Vec2 secondLastStep = footSteps[i][footSteps[i].size-2];
         step.liftTime = lastStep.y;
@@ -242,6 +279,10 @@ operator locomotionPreProcessing(
     if(bindings.xfoBindings[i].varId == com.xfoId){
       comXfoBindings.xfoBindings.push(bindings.xfoBindings[i]);
       comXfoBinding = bindings.xfoBindings[i];
+      
+      for(Integer j=0; j < comXfoBinding.trackIds.size; j++){
+        trackSet.tracks[comXfoBinding.trackIds[j]].clear();
+      }
     }
   }
   if(comXfoBindings.xfoBindings.size == 0){
@@ -252,6 +293,7 @@ operator locomotionPreProcessing(
     for(Integer j=0; j < bindings.scalarBindings.size; j++){
       if(bindings.scalarBindings[j].varId == com.parameterVarIds[i]){
         comParamBindings.scalarBindings.push(bindings.scalarBindings[j]);
+        trackSet.tracks[bindings.scalarBindings[j].trackIds[0]].clear();
       }
     }
   }
@@ -261,22 +303,24 @@ operator locomotionPreProcessing(
   Integer footId, stepId;
   comParams.resize(com.parameterVarIds.size);  
   Scalar prevKeyt, currKeyt, startT;
-  currKeyt = timeRange.x;
+  startT = timeRange.x;
+  footId = leadingFoot;
   
-  if(footSteps[0].size > 2){
-    startT = timeRange.y;
-    for(Integer i=0; i < legs.size; i++){
-      Vec2 step = footSteps[i][0];
-      Scalar midPlant = (step.x + step.y) * 0.5;
-     // if(midPlant < startT){
-      //  startT = midPlant;
-      if(step.y < startT){
-        startT = step.y;
-        footId = i;
-        stepId = 0;
-      }
-    }
-  }
+//  if(!singleStepLoop){
+//    startT = timeRange.y;
+//    for(Integer i=0; i < legs.size; i++){
+//      Vec2 step = footSteps[i][0];
+//      Scalar midPlant = (step.x + step.y) * 0.5;
+//     // if(midPlant < startT){
+//      //  startT = midPlant;
+//      if(step.y < startT){
+//        startT = step.y;
+//        footId = i;
+//        stepId = 0;
+//      }
+//    }
+//  }
+
   prevKeyt = currKeyt = startT;
   
   Quat alignment;
@@ -471,10 +515,12 @@ operator locomotionPreProcessing(
     }
   }
   
-  
+  report("com.parameterVarIds:"+com.parameterVarIds);
+  report("bindings.scalarBindings:"+bindings.scalarBindings);
   for(Integer i=0; i < com.parameterVarIds.size; i++){
     for(Integer j=0; j < bindings.scalarBindings.size; j++){
       if(bindings.scalarBindings[j].varId == com.parameterVarIds[i]){
+        report("---------:"+i);
         report(trackSet.tracks[bindings.scalarBindings[j].trackIds[0]]);
       }
     }
@@ -513,6 +559,7 @@ operator locomotionPreProcessing(
     for(Integer j=0; j < bindings.scalarBindings.size; j++){
       if(bindings.scalarBindings[j].varId == foot.stepTimeVarId){
         limbValueBindings.scalarBindings.push(bindings.scalarBindings[j]);
+        trackSet.tracks[bindings.scalarBindings[j].trackIds[0]].clear();
       }
     }
   }
@@ -557,8 +604,8 @@ operator locomotionPreProcessing(
     
   }
   
-  trackSet.calcTimeRange();
-  
+ // trackSet.calcTimeRange();
+  trackSet.timeRange = timeRange;
   report("locomotionPreProcessing >>>:" + index);
 }
 

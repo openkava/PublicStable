@@ -96,20 +96,25 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
     animationLibraryNode.pub.getTrackSet = function(trackSetId) {
       return dgnode.getData('trackSet', trackSetId);
     };
+    animationLibraryNode.pub.getTrackSetName = function(trackSetId) {
+      return dgnode.getData('trackSet', trackSetId).name;
+    };
     
     var paramsdgnode;
-    animationLibraryNode.pub.bindToVariables = function(variablesNode, name){
-      if (!variablesNode.isTypeOf('CharacterVariables')) {
-        throw ('Incorrect type. Must be a CharacterVariables');
+    animationLibraryNode.pub.bindToRig = function(rigNode, name){
+      if (!rigNode.isTypeOf('CharacterRig')) {
+        throw ('Incorrect type. Must be a CharacterRig');
       }
       
-      variablesNode = scene.getPrivateInterface(variablesNode);
+      rigNode = scene.getPrivateInterface(rigNode);
       
       var trackBindings = new FABRIC.RT.KeyframeTrackBindings();
       var trackSet = new FABRIC.RT.KeyframeTrackSet(name);
-      var variables = variablesNode.getVariables();
+      var variables = rigNode.getVariables();
       
       // generate the bindings.
+      // TODO: look up the solver that uses a particular binding,
+      // and generate a name for the track.
       var i, binding;
       var addTrack = function(name, color, bindings){
         trackSet.tracks.push(new FABRIC.RT.KeyframeTrack(name, color));
@@ -117,7 +122,7 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
       }
       for (i = 0; i < variables.scalarValues.length; i++) {
         binding = [];
-        addTrack("ScalarTrack"+i, FABRIC.RT.rgb(1,0,0), binding);
+        addTrack("ScalarTrack"+i, FABRIC.RT.rgb(1,1,0), binding);
         trackBindings.addScalarBinding(i, binding[0]);
       }
       for (i = 0; i < variables.vec3Values.length; i++) {
@@ -164,6 +169,7 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
       }
       
       animationLibraryNode.pub.plotKeyframes = function(trackSetId, timeRange, sampleFrequency){
+        var variablesNode = scene.getPrivateInterface(rigNode.pub.getVariablesNode());
         dgnode.setDependency(variablesNode.getDGNode(), 'variables');
         dgnode.setDependency(scene.getGlobalsNode(), 'globals');
         
@@ -541,7 +547,7 @@ FABRIC.SceneGraph.registerNodeType('TrackDisplay', {
       }
       animationLibraryNode = scene.getPrivateInterface(node);
       var trackDataType = animationLibraryNode.pub.getValueType();
-      var trackSet = animationLibraryNode.pub.getTrackSet();
+      var trackSet = animationLibraryNode.pub.getTrackSet(trackSetId);
       dgnode.setDependency(animationLibraryNode.getDGNode(), 'animationlibrary');
 
       dgnode.addMember('values', trackDataType+'[]');
