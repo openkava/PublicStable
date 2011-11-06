@@ -188,13 +188,12 @@ FABRIC.SceneGraph.registerNodeType('LocomotionAnimationLibrary', {
     dgnode.addMember('footStepTracks', 'FootStepTrack[]');
     
     var paramsdgnode, debugGeometryDraw;
-    animationLibraryNode.pub.preProcessTracks = function(
+    animationLibraryNode.pub.bindToSourceAnimationLibrary = function(
       sourceAnimationLibrary,
       keyframeTrackBindings,
       rigNode,
       sampleFrequency,
-      footMovementThreshold,
-      callback
+      footMovementThreshold
     ){
       if (!sourceAnimationLibrary.isTypeOf('AnimationLibrary')) {
         throw ('Incorrect type. Must be a AnimationLibrary');
@@ -202,50 +201,39 @@ FABRIC.SceneGraph.registerNodeType('LocomotionAnimationLibrary', {
       if (!rigNode.isTypeOf('CharacterRig')) {
         throw ('Incorrect type. Must be a CharacterRig');
       }
+      
       rigNode = scene.getPrivateInterface(rigNode);
       sourceAnimationLibrary = scene.getPrivateInterface(sourceAnimationLibrary);
-    //  variablesNode = scene.getPrivateInterface(rigNode.getVariablesNode());
       skeletonNode = scene.getPrivateInterface(rigNode.pub.getSkeletonNode());
       dgnode.setDependency(sourceAnimationLibrary.getDGNode(), 'sourceAnimationLibrary');
       dgnode.setDependency(skeletonNode.getDGNode(), 'skeleton');
-    //  dgnode.setDependency(variablesNode.getDGNode(), 'variables');
       
-      if(!paramsdgnode){
-        paramsdgnode = animationLibraryNode.constructDGNode('ParamsDGNode');
-        dgnode.setDependency(paramsdgnode, 'params');
-        paramsdgnode.addMember('sampleFrequency', 'Scalar', sampleFrequency);
-        paramsdgnode.addMember('footMovementThreshold', 'Scalar', footMovementThreshold);
-        
-        
-        paramsdgnode.addMember('bindings', 'KeyframeTrackBindings', keyframeTrackBindings);
-        paramsdgnode.addMember('poseVariables', 'PoseVariables', rigNode.getVariables());
-        dgnode.addMember('bindings', 'KeyframeTrackBindings');
-      }
+      paramsdgnode = animationLibraryNode.constructDGNode('ParamsDGNode');
+      dgnode.setDependency(paramsdgnode, 'params');
+      paramsdgnode.addMember('sampleFrequency', 'Scalar', sampleFrequency);
+      paramsdgnode.addMember('footMovementThreshold', 'Scalar', footMovementThreshold);
       
-    //  var trackSet = sourceAnimationLibrary.pub.getTrackSet(0);
       
-    //  var comsolver = rigNode.addSolver('COM', 'COMSolver');
-    //  comsolver.addTracks(trackSet, keyframeTrackBindings);
+      paramsdgnode.addMember('bindings', 'KeyframeTrackBindings', keyframeTrackBindings);
+      paramsdgnode.addMember('poseVariables', 'PoseVariables', rigNode.getVariables());
+      dgnode.addMember('bindings', 'KeyframeTrackBindings');
       
-    //  var locomotionFeedSolver = rigNode.addSolver('Feet', 'LocomotionFeetSolver');
-    //  locomotionFeedSolver.addTracks(trackSet, keyframeTrackBindings);
+      dgnode.addMember('debugGeometry', 'DebugGeometry' );
+      debugGeometryDraw = scene.constructNode('DebugGeometryDraw', {
+          dgnode: dgnode,
+          debugGemetryMemberName: 'debugGeometry'
+      });
       
-    //  variablesNode.setBindings(keyframeTrackBindings);
-      
-      if(!debugGeometryDraw){
-        dgnode.addMember('debugGeometry', 'DebugGeometry' );
-        debugGeometryDraw = scene.constructNode('DebugGeometryDraw', {
-            dgnode: dgnode,
-            debugGemetryMemberName: 'debugGeometry'
-        });
-      }
-      
-      // Clone the data from the sourceAnimationLibrary
-    //  dgnode.setData('trackSet', 0, trackSet);
-    //  dgnode.setCount(sourceAnimationLibrary.pub.getTrackSetCount());
-    //  for(var i=0; i<trackSets.length; i++){
-    //    dgnode.setData('trackSet', i, sourceAnimationLibrary.pub.getTrackSet());
-    //  }
+      dgnode.bindings.append(scene.constructOperator({
+        operatorName: 'matchCount',
+        srcCode: 'operator matchCount(Size parentCount, io Size selfCount) { selfCount = parentCount; report("matchCount:"+parentCount); }',
+        entryFunctionName: 'matchCount',
+        parameterLayout: [
+          'sourceAnimationLibrary.count',
+          'self.newCount'
+        ],
+        async: false
+      }));
       
       dgnode.bindings.append(scene.constructOperator({
         operatorName: 'locomotionPreProcessing',
@@ -276,9 +264,10 @@ FABRIC.SceneGraph.registerNodeType('LocomotionAnimationLibrary', {
         async: false
       }));
       
-    //  dgnode.evaluate();
-    //  dgnode.bindings.remove(0);
-    //  dgnode.removeDependency('skeleton');
+      animationLibraryNode.pub.preProcessTracks = function(){
+        dgnode.evaluate();
+      }
+      
     }
     return animationLibraryNode;
   }});

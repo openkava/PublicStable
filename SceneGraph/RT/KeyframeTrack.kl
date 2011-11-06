@@ -28,10 +28,10 @@ function Scalar KEYFRAMETYPETrack.evaluate(
     return this.keys[0].value;
   }
   else {
-    if (this.keys[keyIndex].time <= time && time <= this.keys[keyIndex + 1].time) {
+    if (keyIndex < this.keys.size-1 && this.keys[keyIndex].time <= time && time <= this.keys[keyIndex + 1].time) {
       // we are still on the same segment as the previous evaluation.
     }
-    else if (this.keys[keyIndex + 1].time < time && time < this.keys[keyIndex + 2].time) {
+    else if (keyIndex < this.keys.size-2 && this.keys[keyIndex + 1].time < time && time < this.keys[keyIndex + 2].time) {
       keyIndex++;
     }
     else {

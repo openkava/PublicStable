@@ -154,18 +154,20 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
       if(!paramsdgnode){
         paramsdgnode = animationLibraryNode.constructDGNode('ParamsDGNode');
         
-        dgnode.setDependency(scene.getGlobalsNode(), 'globals');
         dgnode.setDependency(paramsdgnode, 'params');
         paramsdgnode.addMember('boundTrack', 'Integer', trackSetId);
         
         dgnode.addMember('bindings', 'KeyframeTrackBindings', trackBindings);
       }else{
         paramsdgnode.setData('boundTrack', 0, trackSetId);
-        dgnode.setData('boundTrack', 0, trackSetId);
+        dgnode.setData('bindings', 0, trackBindings);
       }
       
-      animationLibraryNode.pub.plotKeyframes = function(timeRange, sampleFrequency){
+      animationLibraryNode.pub.plotKeyframes = function(trackSetId, timeRange, sampleFrequency){
         dgnode.setDependency(variablesNode.getDGNode(), 'variables');
+        dgnode.setDependency(scene.getGlobalsNode(), 'globals');
+        
+        paramsdgnode.setData('boundTrack', 0, trackSetId);
         dgnode.bindings.append(scene.constructOperator({
           operatorName: 'keyCurvesFromVariables',
           srcFile: 'FABRIC_ROOT/SceneGraph/KL/keyCurvesFromVariables.kl',
@@ -182,16 +184,15 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
           ],
           async: false
         }));
-        
         var t = 0;
         for(var i=0; i <= Math.round((timeRange.y-timeRange.x) / sampleFrequency); i++){
           scene.pub.animation.setTime(t, false);
           dgnode.evaluate();
           t += sampleFrequency;
         }
-        
         dgnode.bindings.remove(0);
         dgnode.removeDependency('variables');
+        dgnode.removeDependency('globals');
         scene.pub.animation.setTime(0, false);
       }
       return trackBindings;
