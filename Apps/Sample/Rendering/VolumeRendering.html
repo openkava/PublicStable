@@ -52,6 +52,7 @@
     <script type="text/javascript" src="../../../Core/FABRIC.SVG.js"></script>
     <script type="text/javascript" src="../../../SceneGraph/CurveEditor/CurveEditor.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/ColorGradient/ColorGradient.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Histogram/Histogram.js" charset="utf-8"></script>
     
     <link href="../../../SceneGraph/CurveEditor/CurveEditor.css" rel="stylesheet" type="text/css" />
 
@@ -82,19 +83,13 @@ s.parentNode.insertBefore(ga, s);
   right:400px;
 }
 
-#histogram {
-  height:60px;
-  background-color:#A9A9A9;
-}
-
 #opacityMapping {
   height:60px;
   background-color:#A9A9A9;
 }
 
 #colorMapping {
-  height:60px;
-  background-color:#A9A9A9;
+  height:40px;
 }
 
 
@@ -244,6 +239,8 @@ $(document).ready(function() {
   
   var scene = FABRIC.SceneGraph.createScene();
   
+  var histogram = constructHistogram('opacityMapping');
+  
   ///////////////////////////////////////////////////////////
   // Opacity Mapping
   var key = FABRIC.Animation.linearKeyframe;
@@ -317,7 +314,7 @@ $(document).ready(function() {
   var opacityTexture = scene.constructNode('Image3DWithHistogram',  { url: 'Resources/ChestMid.nrrd', resourceTargetTransformNode: transform, glRepeat: false, histogramResolution: 1024 });
 
   opacityTexture.getResourceLoadNode().addOnLoadSuccessCallback(function (){
-      console.log( 'TODO: display histogram of ' + opacityTexture.getHistogram().length + ' values');
+    histogram.setData(opacityTexture.getHistogram(), 0.4);
   });
 
   var volumeNode = scene.constructNode('VolumeOpacityInstance', {
@@ -515,7 +512,8 @@ $(document).ready(function() {
       draggable: false,
       zoomable: false,
       timeRange: new FABRIC.RT.Vec2(0, 1),
-      clampValues: true
+      clampValues: true,
+      volumerenderdemohack: true
     });
 
     var colorGradient = constructColorGradient('colorMapping', gradientKeyTrack, {
@@ -563,19 +561,11 @@ $(document).ready(function() {
           </ul>
           <div id="volumeRenderTab">
             <div class="box">
-          <!--    <h2>Volume render options</h2>
-            <div class="content">-->
-            
-              <label for="opacityRange" >Opacity range:</label>
-              <div id='opacityRange'></div>
-              
-              <p>Histogram:</p>                           
-              <div id='histogram'></div>
-              
               <p>Opacity Mapping:</p>
               <div id='opacityMapping'></div>
+              <div id='opacityRange' style="margin-top:5px;"></div>
               
-              <p>Color Mapping:</p>
+              <p style="margin-top:5px;">Color Mapping:</p>
               <div id='colorMapping'></div>
               <p id="brushColor"></p>
               
