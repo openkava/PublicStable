@@ -5,7 +5,7 @@
   <!--
     Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
     -->
-    <title>FABRIC - Lidar Viewer</title> 
+    <title>FABRIC - Kinect Skeleton</title> 
     
     <link type="text/css" href="../../../ThirdParty/jQuery/css/fabric/main.css" rel="stylesheet" />
     <link type="text/css" href="../../../ThirdParty/jQuery/css/fabric/jquery-ui-1.8.16.custom.css" rel="stylesheet" />
@@ -38,7 +38,7 @@
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Manipulation.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Kinematics.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Animation.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Lidar.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Kinect.js" charset="utf-8"></script>
 
 <script type="text/javascript">
 
@@ -62,7 +62,6 @@ $(document).ready(function() {
 
   var scene = FABRIC.SceneGraph.createScene();
   var viewport = scene.constructNode('Viewport', { windowElement: document.getElementById('FabricContainer') });
-
   viewport.setBackgroundTextureImage(scene.constructNode('Image', {
     url: '../BasicDemos/Resources/fabric-demo-gradient.png'
   }));
@@ -70,116 +69,70 @@ $(document).ready(function() {
   // Create a camera to draw the scene from
   var camera = scene.constructNode('TargetCamera', {
       nearDistance: 0.1,
-      farDistance: 2000000,
-      position: new FABRIC.RT.Vec3(10,10,10).multiplyScalar(100),
-      target: new FABRIC.RT.Vec3(1224257,314934,4275),
+      farDistance: 2000,
+      position: new FABRIC.RT.Vec3(0,0,3.5),
+      target: new FABRIC.RT.Vec3(0, 0, 1.5),
+      fovY: Math.degToRad(45.6)
     });
 
   scene.constructNode('CameraManipulator', { targetNode: camera });
   viewport.setCameraNode(camera);
 
-  var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(10, 30, 100).multiplyScalar(3) });
-
   $('#loadingDialog').dialog({
     modal: true
   });
 
-  var pointMaterial = scene.constructNode('FlatGradientMaterial', {
-    prototypeMaterialType: 'PointMaterial',
-    pointSize: 1,
-    axis: 1,
-    center: 0.25,
-    bottomColor: FABRIC.RT.rgba(0.0,0.0,1.0,1.0),
-    middleColor: FABRIC.RT.rgba(0.0,1.0,0.0,1.0),
-    topColor: FABRIC.RT.rgba(1.0,0.0,0.0,1.0)
+  // construct a kinect camera
+  var kinect = scene.constructNode('KinectCamera', {supportsSkeleton: true});
+  
+  // create the geometry node
+  var lines = kinect.constructLinesNode();
+  
+  // draw it
+  var lineMaterial = scene.constructNode('VertexColorMaterial',{
+    prototypeMaterialType: 'LineMaterial',
+    lineWidth: 6,
+  });
+  scene.constructNode('Instance', {
+    materialNode: lineMaterial,
+    geometryNode: lines
   });
 
-  // create the alembic content, and fire the load once it is loaded
-  var resourceName = 'MtStHelens';
-  //var resourceName = 'palmbeach';
-  //var resourceName = 'autzen';
-  var assets = scene.importAssetFile('Models/'+resourceName+'.laz', {
-    dependentNode: viewport
+  scene.animation.play();
+  
+  $('#play').button({
+    text: true,
+    icons: {
+      primary: 'ui-icon-pause'
+    }
+  }).click(function() {
+    var options;
+    if ($(this).text() == 'Play') {
+      $(this).button('option', {
+        label: 'Pause',
+        icons: {
+          primary: 'ui-icon-pause'
+        }
+      });
+      scene.animation.play();
+    } else {
+      $(this).button('option', {
+        label: 'Play',
+        icons: {
+          primary: 'ui-icon-play'
+        }
+      });
+      scene.animation.pause();
+    }
   });
   
-  assets[resourceName].addOnLoadSuccessCallback(function(){
-    // loop over all assets and create an instance
-    for(var name in assets[resourceName].getParsedNodes()) {
-      if(assets[resourceName].getParsedNodes()[name].isTypeOf('Points'))
-      {
-        scene.constructNode('Instance', {
-          geometryNode: assets[resourceName].getParsedNodes()[name],
-          materialNode: pointMaterial
-        });
-      }
-      
-      setTimeout(function(){
-        // place the camera based on the center
-        var min = new FABRIC.RT.Vec3(10000000,10000000,10000000);
-        var max = new FABRIC.RT.Vec3(-10000000,-10000000,-10000000);
-        for(var name in assets[resourceName].getParsedNodes()) {
-          if(assets[resourceName].getParsedNodes()[name].isTypeOf('Points'))
-          {
-            // compute the bbox
-            var bbox = assets[resourceName].getParsedNodes()[name].getBoundingBox();
-            if(min.x > bbox.min.x)min.x = bbox.min.x;
-            if(min.y > bbox.min.y)min.y = bbox.min.y;
-            if(min.z > bbox.min.z)min.z = bbox.min.z;
-            if(max.x < bbox.max.x)max.x = bbox.max.x;
-            if(max.y < bbox.max.y)max.y = bbox.max.y;
-            if(max.z < bbox.max.z)max.z = bbox.max.z;
-          }
-        }
-        
-        var center = min.add(max).multiplyScalar(0.5);
-        var pos = center.add(new FABRIC.RT.Vec3(0,0,0.5 * Math.abs(min.z - max.z)));
-        camera.getTransformNode().setGlobalXfo(FABRIC.RT.xfo({tr:pos}));
-        camera.getTransformNode().setTarget(center);
-        camera.setNearDistance(Math.abs(min.z - max.z) * 0.001);
-        camera.setFarDistance(Math.abs(min.z - max.z) * 100);
-        
-        pointMaterial.setMinimum(min.y + (max.y - min.y) * 0.5);
-        pointMaterial.setMaximum(max.y);
-        
-        $('#minimum').slider({
-          min: min.y,
-          max: max.y,
-          value: pointMaterial.getMinimum(),
-          step: (max.y - min.y) * 0.01
-        }).bind('slide',function(event, ui) {
-          pointMaterial.setMinimum(ui.value)
-          viewport.redraw();
-        });
-        $('#maximum').slider({
-          min: min.y,
-          max: max.y,
-          value: pointMaterial.getMaximum(),
-          step: (max.y - min.y) * 0.01
-        }).bind('slide',function(event, ui) {
-          pointMaterial.setMaximum(ui.value)
-          viewport.redraw();
-        });
-        $('#center').slider({
-          min: 0,
-          max: 1,
-          value: pointMaterial.getCenter(),
-          step: 0.01
-        }).bind('slide',function(event, ui) {
-          pointMaterial.setCenter(ui.value)
-          viewport.redraw();
-        });
-      },150);
-    }
-
-    $('#loadingDialog').dialog('close');
-    viewport.redraw();
-  });
 
   FABRIC.appendOnResolveAsyncTaskCallback(function(label, nbRemaining, doneWeight, totalWeight) {
     $('#loadingProgressBar').progressbar({
       value: (1.0-(doneWeight/totalWeight))*100
     });
     if (nbRemaining===0) {
+      $('#loadingDialog').dialog('close');
       var errors = scene.getErrors();
       if (errors.length > 0) {
         throw (errors.toString());
@@ -202,7 +155,7 @@ $(document).ready(function() {
   </head> 
   <body>
     <div id="loadingDialog" title="Loading...">
-      <h4 id="loadingDesc">Downloading LIDAR File (9MB).<br>This may take some time.</h4>
+      <h4 id="loadingDesc">Setting up Kinect Scene...<br>This may take some time.</h4>
       <div id="loadingProgressBar" class="ui-progressbar-value"></div>
     </div>
     <div id="wrapper">
@@ -212,22 +165,31 @@ $(document).ready(function() {
         </div><!--viewer-->
         <div id="sidebar">
           <p class="box">&larr; <a href="../../../index.html">back to Demo list</a></p>
+          
           <div class="box">
-            <h2>INFO</h2>
+            <h2>NOTICE</h2>
             <div class="content">
-              LIDAR Viewer.<br>
-              This scene shows the LIDAR parser in action. The scene contains 5.6 million points.
-              The data is parsed using a custom extension based on the libLAS library.
+              This sample depends on the Microsoft Kinect Research SDK to be installed on the system. If you don't have it yet,
+              resp. this sample isn't working, ensure to download it here and install it to this system:
+              <a href="http://research.microsoft.com/en-us/um/redmond/projects/kinectsdk/download.aspx">Microsoft Kinect SDK</a>
             </div><!--content-->
           </div><!--box-->
           <div class="box">
-            <h2>CONTROLS</h2>
+            <h2>DESCRIPTION</h2>
             <div class="content">
-              <div id="minimum"></div>
-              <div id="maximum"></div>
-              <div id="center"></div>
+              Kinect Viewer.<br>
+              The lines in this sample are driven by the skeleton data of the Kinect Camera.
+              Up to 6 characters can be tracked at the same time, they are colored uniquely.
+              The minimum distance the camera can grab is 800mm. 
             </div><!--content-->
           </div><!--box-->
+                  <div class="box">
+                    <h2>CONTROLS</h2>
+                    <div class="content">
+                      <button id="play">Pause</button>
+                    </div><!--content-->
+                </div><!--box-->
+
         </div><!--sidebar-->
       </div> <!--editor-->
     </div><!--wrapper-->

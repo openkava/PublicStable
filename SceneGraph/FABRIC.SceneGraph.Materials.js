@@ -984,6 +984,41 @@ FABRIC.SceneGraph.registerNodeType('PointMaterial', {
     return pointMaterial;
   }});
 
+FABRIC.SceneGraph.registerNodeType('LineMaterial', {
+  briefDesc: 'The LineMaterial node is a prototype for materials for lines.',
+  detailedDesc: 'The LineMaterial node is a prototype for materials for lines. It introduces a new ' +
+                'uniform, the lineWidth, which can be used to draw lines.',
+  parentNodeDesc: 'Material',
+  optionsDesc: {
+    lineWidth: 'The width of the drawn lines.'
+  },
+  factoryFn: function(options, scene) {
+    scene.assignDefaults(options, {
+        lineWidth: 5.0
+      });
+
+    var lineMaterial = scene.constructNode('Material', options);
+    var dgnode;
+    if(lineMaterial.getDGNode){
+      dgnode = lineMaterial.getDGNode();
+    }
+    else{
+      dgnode = lineMaterial.constructDGNode('DGNode');
+      lineMaterial.getRedrawEventHandler().setScope('material', dgnode);
+    }
+    dgnode.addMember('lineWidth', 'Scalar', options.lineWidth);
+    lineMaterial.addMemberInterface(dgnode, 'lineWidth', true);
+
+    // Note: this method of setting the linewidth size is probably obsolete.
+    // TODO: Define a new effect and use material uniforms.
+    lineMaterial.getRedrawEventHandler().preDescendBindings.append(scene.constructOperator({
+        operatorName: 'setLineWidth',
+        srcFile: 'FABRIC_ROOT/SceneGraph/KL/drawLines.kl',
+        entryFunctionName: 'setLineWidth',
+        parameterLayout: ['material.lineWidth']
+      }));
+    return lineMaterial;
+  }});
 
 FABRIC.SceneGraph.registerNodeType('PointSpriteMaterial', {
   briefDesc: 'The PointSpriteMaterial allows to draw sprites for each point in a Points node.',
