@@ -8,15 +8,17 @@ FABRIC.SceneGraph.registerNodeType('VolumeSlices', {
   detailedDesc: '',
   parentNodeDesc: 'Triangles',
   optionsDesc: {
-    cropMin: 'Crop min param (0 to 1 for XYZ)',
-    cropMax: 'Crop max param (0 to 1 for XYZ)',
+    cropMin: 'Crop min param (-1 to 1 for XYZ)',
+    cropMax: 'Crop max param (-1 to 1 for XYZ)',
     nbSlices: 'The number of slices to be generated.',
     cameraNode: 'The cameraNode being used',
-    transformNode: 'The transformNode for the volume instance'
+    transformNode: 'The transformNode for the volume instance',
+    textureXfoMat44Node: 'The node containing the texture Xfo',
+    textureXfoMat44Member: 'The member containing the texture Xfo'
   },
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
-        cropMin: new FABRIC.RT.Vec3(0.0, 0.0, 0.0),
+        cropMin: new FABRIC.RT.Vec3(-1.0, -1.0, -1.0),
         cropMax: new FABRIC.RT.Vec3(1.0, 1.0, 1.0),
         nbSlices: 64,
         cropInTransformedSpace: true
@@ -33,6 +35,24 @@ FABRIC.SceneGraph.registerNodeType('VolumeSlices', {
     volumeSlicesNode.pub.setAttributeDynamic('normals');
     volumeSlicesNode.pub.setAttributeDynamic('indices');
 
+    var transformWithTextureNode = scene.pub.constructNode('Transform', {
+      hierarchical: true,
+      parentTransformNode: options.transformNode
+//      localXfo: new FABRIC.RT.Xfo({ ori: new FABRIC.RT.Quat().setFromAxisAndAngle(FABRIC.RT.Vec3.xAxis, Math.HALF_PI) })
+    });
+    options.transformNode = transformWithTextureNode;
+    var transformDGNode = scene.getPrivateInterface(transformWithTextureNode).getDGNode();
+    transformDGNode.setDependency(options.textureXfoMat44Node, 'textureTransform');
+    transformDGNode.bindings.insert(scene.constructOperator({
+           operatorName: 'setFromTexture3DSource',
+           parameterLayout: [
+             'textureTransform.' + options.textureXfoMat44Member,
+             'self.localXfo'
+           ],
+           entryFunctionName: 'setFromTexture3DSource',
+           srcCode: 'use Xfo; operator setFromTexture3DSource(io Mat44 src, io Xfo dst){dst.setFromMat44(src);}'
+         }),0);
+
     // getters and setters
     var uniforms = volumeSlicesNode.getUniformsDGNode();
     volumeSlicesNode.addMemberInterface(uniforms, 'cropMin', true);
@@ -44,6 +64,7 @@ FABRIC.SceneGraph.registerNodeType('VolumeSlices', {
     var transformNode = scene.getPrivateInterface(options.transformNode);
     attributes.setDependency(cameraNode.getDGNode(), 'camera');
     attributes.setDependency(transformNode.getDGNode(), 'transform');
+    attributes.setDependency(options.textureXfoMat44Node, 'textureTransform');
 
     volumeSlicesNode.setGeneratorOps([
       //Upper bound for count: 10 per slices (6 with volume bbox cropping, plus 4 for view volume cropping)
@@ -66,6 +87,7 @@ FABRIC.SceneGraph.registerNodeType('VolumeSlices', {
           'uniforms.halfPixelCrop',
           'uniforms.cropInTransformedSpace',
           'uniforms.nbSlices',
+          'textureTransform.' + options.textureXfoMat44Member,
           'transform.globalXfo',
           'camera.cameraMat44',
           'camera.projectionMat44',
@@ -102,7 +124,6 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
     minOpacity: 'MinOpacity from 0 to 1',
     maxOpacity: 'MaxOpacity from 0 to 1',
     specularFactor: 'Specular amount from 0 to 1',
-    backgroundColor: 'Background color',
     invertColor: 'Invert color: inverted if == 1'
   },
   factoryFn: function(options, scene) {
@@ -116,15 +137,16 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
       minOpacity: 0.0,
       maxOpacity: 1.0,
       specularFactor: 0.7,
-      backgroundColor: new FABRIC.RT.Color(0,0,0,1),
       invertColor: 0
     });
 
     options.cameraNode = options.viewportNode.getCameraNode();
+    var opacityTextureDGNode = scene.getPrivateInterface(options.opacityTextureNode).getDGNode();
 
+    options.textureXfoMat44Node = opacityTextureDGNode;
+    options.textureXfoMat44Member = 'xfoMat';
     var volumeNodePub = scene.pub.constructNode('VolumeSlices', options);
     var volumeNode = scene.getPrivateInterface(volumeNodePub);
-    var opacityTextureDGNode = scene.getPrivateInterface(options.opacityTextureNode).getDGNode();
 
     volumeNode.getOpacityDGNode = function(){return opacityTextureDGNode;};
     volumeNode.pub.getOpacityNode = function(){return options.opacityTextureNode;};
@@ -275,31 +297,25 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
     
     var offscreenNode = scene.constructNode('SceneGraphNode', { name: (options.name + "RT") } );
     var offscreenNodeRedrawEventHandler = offscreenNode.constructEventHandlerNode('Redraw');
+
+       //>>>>>>>>>>>>>>>>>>>>>
     scene.getSceneRedrawTransparentObjectsEventHandler().appendChildEventHandler(offscreenNodeRedrawEventHandler);
     offscreenNodeRedrawEventHandler.addMember('renderTargetToViewShaderProgram', 'Integer');
     offscreenNodeRedrawEventHandler.addMember('renderTarget', 'OGLRenderTarget', FABRIC.RT.oglRenderTarget(0,0,[
-      new FABRIC.RT.OGLRenderTargetTextureDesc (
-          2,
-          new FABRIC.RT.OGLTexture2D (
-            FABRIC.SceneGraph.OpenGLConstants.GL_RGBA16,
-            FABRIC.SceneGraph.OpenGLConstants.GL_RGBA,
-            FABRIC.SceneGraph.OpenGLConstants.GL_FLOAT)
-        )
-    ]));
+        new FABRIC.RT.OGLRenderTargetTextureDesc (
+            2,
+            new FABRIC.RT.OGLTexture2D (
+              FABRIC.SceneGraph.OpenGLConstants.GL_RGBA16,
+              FABRIC.SceneGraph.OpenGLConstants.GL_RGBA,
+              FABRIC.SceneGraph.OpenGLConstants.GL_FLOAT)
+          )
+      ],
+      {
+        clearColor: FABRIC.RT.rgba(0,0,0,1)
+      }
+    ));
     
-    offscreenNodeRedrawEventHandler.addMember('backgroundColor', 'Color', options.backgroundColor );
     offscreenNodeRedrawEventHandler.setScope('volumeUniforms', volumeUniformsDGNode);
-
-    offscreenNodeRedrawEventHandler.preDescendBindings.append(
-      scene.constructOperator({
-          operatorName: 'setBackgroundColor',
-          srcCode: 'use OGLRenderTarget; operator setBackgroundColor(io Color color, io OGLRenderTarget renderTarget){ renderTarget.clearColor = color; }',
-          entryFunctionName: 'setBackgroundColor',
-          parameterLayout: [
-            'self.backgroundColor',
-            'self.renderTarget'
-          ]
-        }));
 
     offscreenNodeRedrawEventHandler.preDescendBindings.append(
       scene.constructOperator({

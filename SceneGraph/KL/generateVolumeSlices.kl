@@ -10,6 +10,7 @@ operator generateVolumeSlices(
   io Vec3 halfPixelCrop,
   io Boolean cropInTransformedSpace,
   io Size nbSlices,
+  io Mat44 textureXfoMat,
   io Xfo volumeXfo,
   io Mat44 camera,
   io Mat44 projection,
@@ -29,8 +30,11 @@ operator generateVolumeSlices(
     return;
 
   Vec3 fixedCrop[2];
-  fixedCrop[0] = cropMin;
-  fixedCrop[1] = cropMax;
+  fixedCrop[0] = cropMin*0.5 + Vec3(0.5, 0.5, 0.5);
+  fixedCrop[1] = cropMax*0.5 + Vec3(0.5, 0.5, 0.5);
+
+  Xfo textureXfo;
+  textureXfo.setFromMat44( textureXfoMat );
 
   if(cropInTransformedSpace) {
     //Flip the Z axis (camera points to -Z)
@@ -39,7 +43,7 @@ operator generateVolumeSlices(
     fixedCrop[1].z = 1.0-tmp;
 
     for(i = 0; i <2; ++i)
-      fixedCrop[i] = volumeXfo.ori.inverse().rotateVector(fixedCrop[i]);
+      fixedCrop[i] = textureXfo.ori.inverse().rotateVector(fixedCrop[i]);
 
     for(i = 0; i < 3; ++i) {
       if( ( fixedCrop[0].component(i) + fixedCrop[1].component(i) ) < 0.0 ) {
