@@ -271,8 +271,13 @@ FABRIC.RT.Mat44.prototype = {
       this.row0.t, this.row1.t, this.row2.t, this.row3.t);
   },
 
-  translation: function () {
+  getTranslation: function () {
     return new FABRIC.RT.Vec3(this.row0.t, this.row1.t, this.row2.t);
+  },
+  setTranslation: function (tr) {
+    this.row0.t = tr.x;
+    this.row1.t = tr.y;
+    this.row2.t = tr.z;
   },
 
   upperLeft: function() {

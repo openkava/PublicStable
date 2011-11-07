@@ -1,5 +1,5 @@
 
-var constructCurveEditor = function(domRootID, keyframeTrackNode, options){
+var constructCurveEditor = function(domRootID, animationLibraryNode, options){
   
   var keyColor = FABRIC.rgb(.0, .0, .0);
   
@@ -7,16 +7,16 @@ var constructCurveEditor = function(domRootID, keyframeTrackNode, options){
   options.timeStripe = options.timeStripe!=undefined ? options.timeStripe : true;
   options.draggable = options.draggable!=undefined ? options.draggable : true;
   options.zoomable = options.zoomable!=undefined ? options.zoomable : true;
-  options.timeRange = options.timeRange!=undefined ? options.timeRange : new FABRIC.RT.Vec2(0, 100);
+  options.timeRange = options.timeRange!=undefined ? options.timeRange : new FABRIC.Vec2(0, 100);
+  trackSetId =  options.trackSetId!=undefined ? options.trackSetId : 0;
   
-  var valueRange = options.valueRange!=undefined ? options.valueRange : new FABRIC.RT.Vec2(0, 1);
+  var valueRange = options.valueRange!=undefined ? options.valueRange : new FABRIC.Vec2(0, 1);
   var clampValues = options.clampValues!=undefined ? options.clampValues : false;
   
   var rootDomNode = document.getElementById(domRootID);
   var windowWidth = rootDomNode.clientWidth;
   var windowHeight = rootDomNode.clientHeight;
-  var isBezier = keyframeTrackNode.isTypeOf('BezierKeyAnimationTrack');
-  console.log(isBezier);
+  var isBezier = animationLibraryNode.isTypeOf('BezierKeyAnimationLibrary');
   
   var svgRoot = FABRIC.createSVGRootElem(domRootID);
   if(options.volumerenderdemohack){
@@ -41,21 +41,21 @@ var constructCurveEditor = function(domRootID, keyframeTrackNode, options){
     containmentRect.attr('stroke-width', 2);
   }
   ///////////////
-  var trackDisplayNodes = [];
-  var trackCount = keyframeTrackNode.getTrackCount();
+  tracksData = animationLibraryNode.getTrackSet(trackSetId);
+  var trackCount = tracksData.tracks.length;
   var timeRange = new FABRIC.Vec2(0, 0);
   var yRange = new FABRIC.Vec2(0, 0);
-  var curvesData = [];
+  curvesData = [];
   var trackCurves = [];
+  trackDisplayNode = scene.constructNode('TrackDisplay', {
+      animationLibraryNode: animationLibraryNode,
+      trackSetId: trackSetId
+    });
+  
   for (var i = 0; i < trackCount; i++) {
-    var trackData = keyframeTrackNode.getTrackData(i);
+    var trackData = tracksData.tracks[i];
     $('#keyframeTracks').append('<div style="margin-top:10px;">' + trackData.name + '</div>');
     trackCurves[i] = curvesHolderGroup.createPath().addClass('CurvePath').stroke(trackData.color);
-    trackDisplayNodes[i] = scene.constructNode('TrackDisplay', {
-      animationTrackNode: keyframeTrackNode,
-      trackIndex: i,
-      timeRange: options.timeRange
-    });
   }
   
 
@@ -68,7 +68,10 @@ var constructCurveEditor = function(domRootID, keyframeTrackNode, options){
     sc: new FABRIC.Vec2(1, 1),
     fitToScreen:function(){
       for (var i = 0; i < trackCount; i++) {
-        var keys = keyframeTrackNode.getTrackKeys(i);
+        var keys = tracksData.tracks[i].keys;
+        if(keys.length <= 1){
+          continue;
+        }
         if (timeRange.x > keys[0].time) {
           timeRange.x = keys[0].time;
         }
@@ -81,22 +84,22 @@ var constructCurveEditor = function(domRootID, keyframeTrackNode, options){
           yRange = valueRange;
           return;
         }
-        for (var i = 1; i < curveData.time.length; i++) {
-          if (yRange.x > curveData.value[i]) {
-            yRange.x = curveData.value[i];
+        for (var i = 1; i < curveData.length; i++) {
+          if (yRange.x > curveData[i]) {
+            yRange.x = curveData[i];
           }
-          if (yRange.y < curveData.value[i]) {
-            yRange.y = curveData.value[i];
+          if (yRange.y < curveData[i]) {
+            yRange.y = curveData[i];
           }
         }
       }
+      trackDisplayNode.setTimeRange(timeRange);
+      curvesData = trackDisplayNode.getCurveData();
       for (var i = 0; i < trackCount; i++) {
-        trackDisplayNodes[i].setTimeRange(timeRange);
-        curvesData[i] = trackDisplayNodes[i].getCurveData();
         if(i==0){
-          yRange = new FABRIC.Vec2(curvesData[0].value[0], curvesData[0].value[0]);
+          yRange = new FABRIC.Vec2(curvesData.values[i][0], curvesData.values[i][0]);
         }
-        getCurveYRange(curvesData[i]);
+        getCurveYRange(curvesData.values[i]);
       }
       
       if(clampValues){
@@ -129,20 +132,21 @@ var constructCurveEditor = function(domRootID, keyframeTrackNode, options){
   var drawTrackCurves = function(){
     var drawTrackCurve = function(trackIndex) {
       var setPathCurveValues = function(curveData) {
-        var val = screenXfo.toScreenSpace(new FABRIC.Vec2(curveData.time[0], curveData.value[0]))
+        var val = screenXfo.toScreenSpace(new FABRIC.Vec2(0, curveData[0]))
         var path = ['M', val.x, val.y, 'L', 100, 100, 300, 200];
-        for (var i = 0; i < curveData.time.length; i++) {
-          val = screenXfo.toScreenSpace(new FABRIC.Vec2(curveData.time[i], curveData.value[i]))
+        for (var i = 0; i < curveData.length; i++) {
+          var t = ((i/curveData.length)*(timeRange.y - timeRange.x))+timeRange.x;
+          val = screenXfo.toScreenSpace(new FABRIC.Vec2(t, curveData[i]));
           path[(i * 2) + 4] = val.x;
           path[(i * 2) + 5] = val.y;
         }
         trackCurves[trackIndex].attr('d', path.join(' '));
       }
-      setPathCurveValues(curvesData[trackIndex]);
+      setPathCurveValues(curvesData.values[trackIndex]);
   
       var updateCurve = function() {
-        curvesData[trackIndex] = trackDisplayNodes[trackIndex].getCurveData();
-        setPathCurveValues(curvesData[trackIndex]);
+        curvesData = trackDisplayNode.getCurveData();
+        setPathCurveValues(curvesData.values[trackIndex]);
       }
   
       var drawKey = function(keyIndex, keyData) {
@@ -212,8 +216,9 @@ var constructCurveEditor = function(domRootID, keyframeTrackNode, options){
                     nextKey.setInTan(nextKey.intangent, true);
                   }
                 }
-                
-                keyframeTrackNode.setKeyData(trackIndex, keyIndex, keyData);
+                tracksData.tracks[trackIndex].keys[keyIndex] = keyData;
+                animationLibraryNode.setTrackSet(tracksData, trackSetId);
+              //  animationLibraryNode.setKeyData(trackIndex, keyIndex, keyData);
                 updateCurve();
                 scene.redrawAllViewports();
               });
@@ -248,7 +253,9 @@ var constructCurveEditor = function(domRootID, keyframeTrackNode, options){
                       keyData.setOutTan(keyData.outtangent);
                     }
                     keyData.setInTan(keyData.intangent);
-                    keyframeTrackNode.setKeyData(trackIndex, keyIndex, keyData);
+                    tracksData.tracks[trackIndex].keys[keyIndex] = keyData;
+                    animationLibraryNode.setTrackSet(tracksData, trackSetId);
+                  //  animationLibraryNode.setKeyData(trackIndex, keyIndex, keyData);
                     updateCurve();
                     scene.redrawAllViewports();
                   });
@@ -261,7 +268,9 @@ var constructCurveEditor = function(domRootID, keyframeTrackNode, options){
               }
               if(setKeyData){
                 keyData.intangent = intangent;
-                keyframeTrackNode.setKeyData(trackIndex, keyIndex, keyData);
+                tracksData.tracks[trackIndex].keys[keyIndex] = keyData;
+                animationLibraryNode.setTrackSet(tracksData, trackSetId);
+              //  animationLibraryNode.setKeyData(trackIndex, keyIndex, keyData);
               }
             }
             ///////////////////////////////////////////////
@@ -293,7 +302,10 @@ var constructCurveEditor = function(domRootID, keyframeTrackNode, options){
                       keyData.setInTan(keyData.intangent);
                     }
                     keyData.setOutTan(keyData.outtangent);
-                    keyframeTrackNode.setKeyData(trackIndex, keyIndex, keyData);
+                    
+                    tracksData.tracks[trackIndex].keys[keyIndex] = keyData;
+                    animationLibraryNode.setTrackSet(tracksData, trackSetId);
+                  //  animationLibraryNode.setKeyData(trackIndex, keyIndex, keyData);
                     updateCurve();
                     scene.redrawAllViewports();
                   });
@@ -306,14 +318,17 @@ var constructCurveEditor = function(domRootID, keyframeTrackNode, options){
               }
               if(setKeyData){
                 keyData.outtangent = outtangent;
-                keyframeTrackNode.setKeyData(trackIndex, keyIndex, keyData);
+                
+                tracksData.tracks[trackIndex].keys[keyIndex] = keyData;
+                animationLibraryNode.setTrackSet(tracksData, trackSetId);
+              //  animationLibraryNode.setKeyData(trackIndex, keyIndex, keyData);
               }
             }
           }
         }
       }
       if (window.drawKeys !== false) {
-        var trackData = keyframeTrackNode.getTrackData(trackIndex);
+        var trackData = tracksData.tracks[trackIndex];
         for (var i = 0; i < trackData.keys.length; i++) {
           drawKey(i, trackData.keys[i]);
         }
@@ -346,10 +361,9 @@ var constructCurveEditor = function(domRootID, keyframeTrackNode, options){
   }
   
   var updateTimeRange = function(){
-    for (var i = 0; i < trackCount; i++) {
-      trackDisplayNodes[i].setTimeRange(timeRange);
-      curvesData[i] = trackDisplayNodes[i].getCurveData();
-    }
+    trackDisplayNode.setTimeRange(timeRange);
+    curvesData = trackDisplayNode.getCurveData();
+    
     if(options.timeStripe){
       updateGraphTimeStripe();
     }
@@ -374,7 +388,7 @@ var constructCurveEditor = function(domRootID, keyframeTrackNode, options){
   if(options.draggable){
     var dragStartTimeRange;
     var dragStartOffset;
-    graphBGRect.draggable( {mouseButton:1, delegateTranslateObj:false, highlight:false } )
+    graphBGRect.draggable( {mouseButton:0, delegateTranslateObj:false, highlight:false } )
       .addOnDragBeginCallback(
         function(evt){
           dragStartTimeRange = timeRange.clone();

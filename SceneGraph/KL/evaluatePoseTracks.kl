@@ -1,0 +1,22 @@
+
+//
+// Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+//
+
+use KEYFRAMETRACKSETTYPE;
+
+operator evaluatePoseTracks(
+  io KEYFRAMETRACKSETTYPE trackSets<>,
+  io Scalar time,
+  io Integer trackIndex,
+  io KeyframeTrackBindings bindings,
+  io Integer keyIndices[],
+  io PoseVariables poseVariables
+) {
+  trackSets[trackIndex].evaluateKeyframeTracks(
+    time,
+    bindings,
+    poseVariables,
+    keyIndices
+  );
+}
