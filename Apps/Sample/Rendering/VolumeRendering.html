@@ -278,24 +278,8 @@ $(document).ready(function() {
       colorkey(.25, FABRIC.RT.rgb(0, .7, .7)),
       colorkey(.3, FABRIC.RT.rgb(.7, .7, 0)),
       colorkey(.4, FABRIC.RT.rgb(.7, 0, .7)),
-      colorkey(.5, FABRIC.RT.rgb(0, 0, .7)),
-      colorkey(1.0, FABRIC.RT.rgb(0, .3, .7))
+      colorkey(.5, FABRIC.RT.rgb(0, 0, .7))
     ]));
-  /*
-  gradientKeyTrack.setTrackData(0, {
-    name: 'Gradient',
-    color: FABRIC.RT.rgb(1, 0, 0),
-    keys: [
-      colorkey(.0, FABRIC.RT.rgb(.7, 0, 0)),
-      colorkey(.2, FABRIC.RT.rgb(0, .7, 0)),
-      colorkey(.25, FABRIC.RT.rgb(0, .7, .7)),
-      colorkey(.3, FABRIC.RT.rgb(.7, .7, 0)),
-      colorkey(.4, FABRIC.RT.rgb(.7, 0, .7)),
-      colorkey(.5, FABRIC.RT.rgb(0, 0, .7)),
-      colorkey(1.0, FABRIC.RT.rgb(0, .3, .7))
-    ]
-  });
-  */
   var trackSetID = gradientKeyTrackLibrary.addTrackSet(gradientKeyTrackSet);
   var gradientDisplayNode = scene.constructNode('TrackDisplay', {
       animationLibraryNode: gradientKeyTrackLibrary,
