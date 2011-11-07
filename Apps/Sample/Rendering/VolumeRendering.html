@@ -216,9 +216,9 @@ operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){
 $(document).ready(function() {
   var i, j;
   var $sliders3D = [
-      $('#rangeX3D').slider({min: 0, max: 1, step: 0.005, range: true, values: [0,1] }),
-      $('#rangeY3D').slider({min: 0, max: 1, step: 0.005, range: true, values: [0,1] }),
-      $('#rangeZ3D').slider({min: 0, max: 1, step: 0.005, range: true, values: [0,1] })
+      $('#rangeX3D').slider({min: -1, max: 1, step: 0.005, range: true, values: [-1,1] }),
+      $('#rangeY3D').slider({min: -1, max: 1, step: 0.005, range: true, values: [-1,1] }),
+      $('#rangeZ3D').slider({min: -1, max: 1, step: 0.005, range: true, values: [-1,1] })
   ];
   var $opacityRangeSlider = $('#opacityRange').slider({min: 0, max: 1, step: 0.005, range: true, values: [0.1,1] });
   var $brightnessSlider = $('#brightness').slider({min: 0, max: 1, step: 0.01, value: 0.5 });
@@ -284,7 +284,7 @@ $(document).ready(function() {
 
   var viewport = scene.constructNode('Viewport', {
     windowElement: document.getElementById('FabricContainer'),
-    backgroundColor: FABRIC.RT.rgb(0.0, 0.05, 0.15)
+    backgroundColor: FABRIC.RT.rgb(0.0, 0.0, 0.0)
   });
   
   // Create a camera to draw the scene from
@@ -300,13 +300,13 @@ $(document).ready(function() {
   var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(100.0, 100.0, 100.0) });
   var transform =  scene.constructNode('Transform', {
     hierarchical: false,
-    globalXfo: new FABRIC.RT.Xfo()
+    globalXfo: new FABRIC.RT.Xfo({tr: new FABRIC.RT.Vec3(0, 0, 0), sc: new FABRIC.RT.Vec3(1.0, 1.0, 1.0)})
   });
 
   var layoutRectangle = scene.constructNode('DrawRectangle', {color: new FABRIC.RT.RGBA(255,255,255,255), tl: new FABRIC.RT.Vec2(2.0/3.0, 1.0), br: new FABRIC.RT.Vec2(1.0, -1.0), forceRefresh: true, createDgNode: true });
   var borderSize = 0.01;
 
-  var opacityTexture = scene.constructNode('Image3DWithHistogram',  { url: 'Resources/ChestMid.nrrd', resourceTargetTransformNode: transform, glRepeat: false, histogramResolution: 1024 });
+  var opacityTexture = scene.constructNode('Image3DWithHistogram',  { url: 'Resources/ChestMid.nrrd', glRepeat: false, histogramResolution: 1024 });
 
   opacityTexture.getResourceLoadNode().addOnLoadSuccessCallback(function (){
     histogram.setData(opacityTexture.getHistogram(), 0.4);
@@ -315,8 +315,8 @@ $(document).ready(function() {
   var volumeNode = scene.constructNode('VolumeOpacityInstance', {
       viewportNode: viewport,
       transformNode: transform,
-      cropMin: new FABRIC.RT.Vec3(0, 0, 0.4),
-      cropMax: new FABRIC.RT.Vec3(1, 1, 0.75),
+      cropMin: new FABRIC.RT.Vec3(-1, -1, -0.2),
+      cropMax: new FABRIC.RT.Vec3(1, 1, 0.5),
       opacityTextureNode: opacityTexture,
       lightNode: light,
       brightnessFactor: 0.5,
@@ -416,7 +416,8 @@ $(document).ready(function() {
     var white = new FABRIC.RT.Color(1, 1, 1, 1);
     var black = new FABRIC.RT.Color(0, 0, 0, 1);
     var backgroundColor = whiteBackground ? white : black;
-    volumeNode.setBackgroundColor( backgroundColor );
+    viewport.setBackgroundColor( backgroundColor );
+//    volumeNode.setBackgroundColor( backgroundColor );
     for( i = 0; i < 3; ++i ) {
       texture2DSlice[i].setBackgroundColor( backgroundColor );
     }

@@ -180,7 +180,6 @@ FABRIC.SceneGraph.registerNodeType('Image3D', {
     height: 'The height of the empty Image',
     depth: 'The depth of the empty Image',
     color: 'The standard color for the empty Image',
-    resourceTargetTransformNode: 'If loaded from resource, set the resource-stored transfo to that node',
     url: 'The URL to load the Image from'
   },
   factoryFn: function(options, scene) {
@@ -243,22 +242,6 @@ FABRIC.SceneGraph.registerNodeType('Image3D', {
           entryFunctionName: 'load3DImageUShortData',
           srcFile: 'FABRIC_ROOT/SceneGraph/KL/load3DTexture.kl'
         }));
-
-        if(options.resourceTargetTransformNode) {
-          var resourceTargetTransformNode = scene.getPrivateInterface(options.resourceTargetTransformNode);
-          var resourceTargetTransformDGNode = resourceTargetTransformNode.getDGNode();
-          resourceTargetTransformDGNode.setDependency(dgnode, 'image3DSource');
-          resourceTargetTransformDGNode.bindings.insert(scene.constructOperator({
-            operatorName: 'setFromImage3DSource',
-            parameterLayout: [
-              'image3DSource.xfoMat',
-              'self.globalXfo'
-            ],
-            entryFunctionName: 'setFromImage3DSource',
-            srcCode: 'use Xfo; operator setFromImage3DSource(io Mat44 src, io Xfo dst){dst.setFromMat44(src);}'
-          }),0);
-
-        }
       };
 
       imageNode.pub.getResourceLoadNode = function() {
