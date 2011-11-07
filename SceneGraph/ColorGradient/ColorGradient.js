@@ -34,11 +34,11 @@ var constructColorGradient = function(domRootID, colorKeyTrackLibraryNode, optio
         function(evt) {
           keyRect.attr('stroke', "white");
           keyRect.attr('stroke-width', 3);
+          selectedKeyIndex = index;
           gradientWidget.fireEvent('keyclicked', {
             key: gradientKey,
             keycolor: color
           });
-          selectedKeyIndex = index;
         })
       .addOnDeselectCallback(
         function(evt) {
@@ -82,8 +82,7 @@ var constructColorGradient = function(domRootID, colorKeyTrackLibraryNode, optio
   }
   gradientRect.elem.addEventListener('mousedown', function(evt) {
     var newKeyT = evt.offsetX/windowWidth;
-    console.log("add key:"+ newKeyT);
-    
+    var newKey;
     var insertId = 0;
     for(var i=0; i<trackData.keys.length; i++){
       if(trackData.keys[i].time > newKeyT){
@@ -94,24 +93,30 @@ var constructColorGradient = function(domRootID, colorKeyTrackLibraryNode, optio
         }else{
           newKeyVal = trackData.keys[i];
         }
-        trackData.keys.splice(i, 0, FABRIC.Animation.colorKeyframe(newKeyT, newKeyVal));
+        newKey = FABRIC.RT.colorKeyframe(newKeyT, newKeyVal);
+        trackData.keys.splice(i, 0, newKey);
         selectedKeyIndex = i;
         break;
       }
     }
     if(i==trackData.keys.length){
       selectedKeyIndex = trackData.keys.length;
-      trackData.keys.append(FABRIC.Animation.colorKeyframe(newKeyT, trackData.keys[trackData.keys.length-1].value));
+      newKey = FABRIC.RT.colorKeyframe(newKeyT, trackData.keys[trackData.keys.length-1].value);
+      trackData.keys.push(newKey);
     }
     colorKeyTrackLibraryNode.setTrackSet(tracksData);
     displayGradient();
+    
+    gradientWidget.fireEvent('keyclicked', {
+      key: newKey,
+      keycolor: newKey.value
+    });
   });
   
   window.addEventListener('keydown', function(evt) {
     if(evt.keyIdentifier == "U+007F"){
-      console.log(evt.target.nodeName);
       if(selectedKeyIndex >= 0){
-        gradientKeyData.splice(selectedKeyIndex, 1);
+        trackData.keys.splice(selectedKeyIndex, 1);
         colorKeyTrackLibraryNode.setTrackSet(tracksData);
         displayGradient();
       }
