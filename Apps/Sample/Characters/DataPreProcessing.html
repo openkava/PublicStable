@@ -169,11 +169,11 @@ $(document).ready(function() {
   //////////////////////////////////////////////
   // 
   
-  var rigName = 'marama';
+  var rigName = 'walker';
   var assetNodes, bindPoseRig, fkrigNode, rigInstanceNode, skeletonNode, characterMesh;
   switch(rigName){
   case 'hopper':
-    assetNodes = scene.importAssetFile('Assets/hopper.DAE');
+    assetNodes = scene.importAssetFile('Assets/hopper.DAE', { scaleFactor: scaleFactor });
   
     fkrigNode = assetNodes.CATRigHub003CharacterRig;
     rigInstanceNode = assetNodes.CATRigHub003CharacterInstance;
@@ -194,7 +194,7 @@ $(document).ready(function() {
   
     break;
   case 'walker':
-    assetNodes = scene.importAssetFile('Assets/Walker_Skeleton.DAE');
+    assetNodes = scene.importAssetFile('Assets/Walker_Skeleton.DAE', { scaleFactor: scaleFactor });
   
     fkrigNode = assetNodes.Walker_ncl1_1CharacterRig;
     rigInstanceNode = assetNodes.Walker_ncl1_1CharacterInstance;
@@ -214,17 +214,18 @@ $(document).ready(function() {
                { bones:['WalkerRRLeg1', 'WalkerRRLeg2', 'WalkerRRLeg3'] } ]
     });
     
+
+    fkrigNode.setName("FKRig");
+    var fkRigVariablesNode = fkrigNode.constructVariablesNode('FKRigVariables', true);
+    var ikRigVariablesNode = ikrigNode.invertSolvers(fkrigNode, true);
     
-    var animationAssetNodes = scene.importAssetFile('Assets/Walker_Walk.DAE');
-    libraryFKAnimations = animationAssetNodes.AnimationLibrary;
-    
-    
-    var invertedVariablesNode = ikrigNode.invertSolvers(animationAssetNodes.Walker_ncl1_1CharacterRig1, true);
     rigInstanceNode.setRigNode(ikrigNode);
+    
+    loadAnimationFile('Assets/Walker_Walk.DAE', fkrigNode);
   
     break;
   case 'centipede':
-    assetNodes = scene.importAssetFile('Assets/Centipede_Skeleton.DAE');
+    assetNodes = scene.importAssetFile('Assets/Centipede_Skeleton.DAE', { scaleFactor: scaleFactor });
   
     fkrigNode = assetNodes.CentipedeHub010CharacterRig;
     rigInstanceNode = assetNodes.CentipedeHub010CharacterInstance;
@@ -301,7 +302,7 @@ $(document).ready(function() {
     
     break;
   case 'marama':
-    assetNodes = scene.importAssetFile('Assets/Marama.DAE', { scaleFactor: 0.1 } );
+    assetNodes = scene.importAssetFile('Assets/Marama.DAE', { scaleFactor: scaleFactor } );
   
     fkrigNode = assetNodes.MaramaPelvis001CharacterRig;
     rigInstanceNode = assetNodes.MaramaPelvis001CharacterInstance;
@@ -342,7 +343,7 @@ $(document).ready(function() {
     rigInstanceNode.setRigNode(ikrigNode);
     
     loadAnimationFile('Assets/Marama_Walk.DAE', fkrigNode);
-    loadAnimationFile('Assets/Marama_Run.DAE', fkrigNode);
+  //  loadAnimationFile('Assets/Marama_Run.DAE', fkrigNode);
   
     break;
   }

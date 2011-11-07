@@ -111,6 +111,7 @@ function Vec2[][] calcFootPlantTimes(
   }
   
   // If a foot was planted at the end of the clip, then its lift time
+  
   for(Integer i=0; i < legs.size; i++){
     Limb leg = legs[i];
     if(footPlanted[i]){

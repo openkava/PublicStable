@@ -365,27 +365,29 @@ operator evaluateLocomotionPoseVariables(
           
           /////////////////////////////////////////////////
           // Clip Deactivation
+          if(animationLibrary.size > 1){
        //   report("currSpeed:"+currSpeed);
-          Scalar buffer = 0.3;
-          Scalar speedDelta = (currSpeed - trackcontroller.comParams[1]);
-          if(abs(speedDelta) > buffer){
-            report("speedDelta:"+trackcontroller.activeTrackSet+":"+j+":"+speedDelta);
-            for(Integer clipId=0; clipId<locomotionMarkers.size; clipId++){
-            // Note: here we block blending from a clip onto its self, but soon we will enable this.
-              if(trackcontroller.activeTrackSet == clipId){
-                continue;
-              }
-              for(Integer l=0; l<locomotionMarkers[clipId][j].size; l++){
-                Scalar speedDelta2 = (currSpeed - locomotionMarkers[clipId][j][l].params[1]);
-              //  report("speedDelta2 "+clipId+":"+l+":"+speedDelta2);
-                if(abs(speedDelta2) < abs(speedDelta)){
-                  report("deactivate fromClip:" +trackcontroller.activeTrackSet + " toClip:"+ clipId + " foot:"+j+ " fromStep:"+stepId+ " toStep:"+l);
-                  trackcontroller.deactivate = true;
-                  trackcontroller.pivotFoot = j;
-                  trackcontroller.pivotStepId = l;
-                  trackcontroller.activeTrackSet = clipId;
-                  
-                  break;
+            Scalar buffer = 0.3;
+            Scalar speedDelta = (currSpeed - trackcontroller.comParams[1]);
+            if(abs(speedDelta) > buffer){
+              report("speedDelta:"+trackcontroller.activeTrackSet+":"+j+":"+speedDelta);
+              for(Integer clipId=0; clipId<locomotionMarkers.size; clipId++){
+              // Note: here we block blending from a clip onto its self, but soon we will enable this.
+                if(trackcontroller.activeTrackSet == clipId){
+                  continue;
+                }
+                for(Integer l=0; l<locomotionMarkers[clipId][j].size; l++){
+                  Scalar speedDelta2 = (currSpeed - locomotionMarkers[clipId][j][l].params[1]);
+                //  report("speedDelta2 "+clipId+":"+l+":"+speedDelta2);
+                  if(abs(speedDelta2) < abs(speedDelta)){
+                    report("deactivate fromClip:" +trackcontroller.activeTrackSet + " toClip:"+ clipId + " foot:"+j+ " fromStep:"+stepId+ " toStep:"+l);
+                    trackcontroller.deactivate = true;
+                    trackcontroller.pivotFoot = j;
+                    trackcontroller.pivotStepId = l;
+                    trackcontroller.activeTrackSet = clipId;
+                    
+                    break;
+                  }
                 }
               }
             }
@@ -393,7 +395,7 @@ operator evaluateLocomotionPoseVariables(
           
           if(!trackcontroller.deactivate && currStep.liftTime >= timeRange.y){  
             // Deactivate the current clip if a foot reaches the last step.
-         //         report("deactivate - end of clip:" + trackcontroller.time);
+            report("deactivate - end of clip:" + trackcontroller.time);
             trackcontroller.deactivate = true;
             trackcontroller.pivotFoot = j;
             trackcontroller.pivotStepId = 0;
