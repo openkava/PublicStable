@@ -347,10 +347,6 @@ $(document).ready(function() {
     break;
   }
   
-//  var locomotionRig = scene.constructNode('LocomotionCharacterRig', {
-//    baseCharacterRigNode: ikrigNode
-//  });
-  
   ikrigNode.addSolver('COM', 'COMSolver');
   ikrigNode.addSolver('Feet', 'LocomotionFeetSolver');
   
@@ -361,13 +357,7 @@ $(document).ready(function() {
     });
   rigInstanceNode.setMaterialNode(materialNode);
   characterMesh.setName('characterMesh');
-  /*
-  var sourceSkeleton = scene.constructNode("CharacterSkeletonDebug",{
-    characterRigNode:bindPoseRig,
-    boneradius: 0.2,
-    color: FABRIC.RT.rgba(0.0, 1.0, 0.0, 1.0)
-  });
-  */
+  
   var animatedSkeleton = scene.constructNode("CharacterSkeletonDebug",{
     characterRigNode:fkrigNode,
     boneradius: 0.2,
@@ -424,7 +414,6 @@ $(document).ready(function() {
   $('#processTracks').button()
     .click(function() {
       
-      
       for(var i=plottedAnimations; i<libraryFKAnimations.getTrackSetCount(); i++){
         // Set the animation that the FK rig is using.
         fkRigVariablesNode.setBoundTrack(i);
@@ -442,8 +431,7 @@ $(document).ready(function() {
       
       
       if(!bound){
-      //  var footMovementThreshold = 0.02;// walk
-        var footMovementThreshold = 0.03;// run
+        var footMovementThreshold = 0.03;
         libraryLocomotionAnimations.bindToSourceAnimationLibrary(
           libraryIKAnimations,
           bindings,
@@ -478,13 +466,9 @@ $(document).ready(function() {
     });
     
 
-  $("#displaySourceSkeleton").attr('checked', true);
   $("#displayAnimatedSkeleton").attr('checked', true);
   $("#displayRiggedSkeleton").attr('checked', true);
-  $("#displaySourceSkeleton").change(function() {
-    sourceSkeleton.getInstanceNode().setDrawToggle($("#displaySourceSkeleton").is(":checked"));
-    viewport.redraw();
-  });
+  
   $("#displayAnimatedSkeleton").change(function() {
     animatedSkeleton.getInstanceNode().setDrawToggle($("#displayAnimatedSkeleton").is(":checked"));
     viewport.redraw();
@@ -549,8 +533,6 @@ $(document).ready(function() {
             <h2>CONTROLS</h2>
             <div class="content">
               <div>Sample Index:</div>
-              <input type="checkbox" id="displaySourceSkeleton" style="margin-top:10px;"/><label for="displaySourceSkeleton">Display Source Skeleton:</label>
-              </br>
               <input type="checkbox" id="displayAnimatedSkeleton" style="margin-top:10px;"/><label for="displayAnimatedSkeleton">Display Animated Skeleton:</label>
               </br>
               <input type="checkbox" id="displayRiggedSkeleton" style="margin-top:10px;"/><label for="displayRiggedSkeleton">Display Rigged Skeleton:</label>

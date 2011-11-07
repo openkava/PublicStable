@@ -40,8 +40,8 @@ function PoseVariables PoseVariables.subtract(PoseVariables other) {
   result.xfoValues.resize(this.xfoValues.size);
   for(i=0; i<this.xfoValues.size; i++){
   //  result.xfoValues[i] = other.xfoValues[i].inverse() * this.xfoValues[i];
-    result.xfoValues[i].tr = other.xfoValues[i].tr - this.xfoValues[i].tr;
-    result.xfoValues[i].ori = other.xfoValues[i].ori * this.xfoValues[i].ori.inverse();
+    result.xfoValues[i].tr = this.xfoValues[i].tr - other.xfoValues[i].tr;
+    result.xfoValues[i].ori = this.xfoValues[i].ori * other.xfoValues[i].ori.inverse();
   }
   return result;
 }
