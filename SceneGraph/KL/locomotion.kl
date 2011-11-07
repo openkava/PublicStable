@@ -156,10 +156,10 @@ operator evaluateLocomotionPoseVariables(
   //  }
     trackcontroller.time = t;
     
-    trackSet.evaluateKeyframeTracks(
+    poseVariables.evaluateKeyframeTracks(
       trackcontroller.time,
+      trackSet,
       bindings,
-      poseVariables,
       trackcontroller.currKeys
     );
     

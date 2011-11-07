@@ -74,7 +74,7 @@ function Vec2[][] calcFootPlantTimes(
   
   for(Integer t=0; t <= numSamples; t++){
     Scalar time = ((Scalar(t)/Scalar(numSamples)) * (timeRange.y - timeRange.x)) + timeRange.x;
-    trackSet.evaluateKeyframeTracks(time, bindings, poseVariables, currKeys);
+    poseVariables.evaluateKeyframeTracks(time, trackSet, bindings, currKeys);
     
     for(Integer i=0; i < legs.size; i++){
       Limb leg = legs[i];
@@ -368,7 +368,7 @@ operator locomotionPreProcessing(
   
   while(true){
     report("currKeyt:"+currKeyt + " footId:" + footId + " stepId:"+ stepId);
-    trackSet.evaluateKeyframeTracks(currKeyt, bindings, poseVariables, currKeys);
+    poseVariables.evaluateKeyframeTracks(currKeyt, trackSet, bindings, currKeys);
     
     
     comXfo.setIdentity();
@@ -556,7 +556,7 @@ operator locomotionPreProcessing(
   
   for(Integer t=0; t <= numSamples; t++){
     Scalar time = ((Scalar(t)/Scalar(numSamples)) * (timeRange.y - timeRange.x)) + timeRange.x;
-    sourceTrackSet.evaluateKeyframeTracks(time, bindings, poseVariables, currKeys);
+    poseVariables.evaluateKeyframeTracks(time, sourceTrackSet, bindings, currKeys);
     
     comXfo = poseVariables.xfoValues[com.xfoId];
     for(Integer i=0; i < hubs.size; i++){
@@ -612,7 +612,7 @@ operator locomotionPreProcessing(
       marker.time = t;
       marker.stepId = j;
       
-      trackSet.evaluateKeyframeTracks(t, comParamBindings, poseVariables, currKeys);
+      poseVariables.evaluateKeyframeTracks(t, trackSet, comParamBindings, currKeys);
       marker.params.resize(comParamBindings.scalarBindings.size);
       for(Integer k=0; k < comParamBindings.scalarBindings.size; k++){
         marker.params[k] = poseVariables.scalarValues[comParamBindings.scalarBindings[k].varId];

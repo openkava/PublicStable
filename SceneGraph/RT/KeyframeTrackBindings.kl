@@ -17,3 +17,4 @@ function KeyframeTrackBindings.addXfoBinding(
   this.xfoBindings[this.xfoBindings.size-1].varId = varId;
   this.xfoBindings[this.xfoBindings.size-1].trackIds = trackIds;
 }
+
