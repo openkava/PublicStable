@@ -12,47 +12,34 @@ use FabricBULLET;
 use BulletWorld;
 
 function activateClip(
-  in Integer currFoot,
   in LinearKeyframeTrackSet animationLibrary<>,
+  io LocomotionMarker locomotionMarkers<>[][],
   in FootStepTrack footStepTracksLibrary<>[],
-  in Integer clipId,
   io TrackSetController trackcontroller,
 ){
-  trackcontroller.activeTrackSet = clipId;
-  
-  LinearKeyframeTrackSet trackSet = animationLibrary[clipId];
-  FootStepTrack footStepTracks[] = footStepTracksLibrary[clipId];
+//  LinearKeyframeTrackSet trackSet = animationLibrary[trackcontroller.activeTrackSet];
+  LocomotionMarker markers[][] = locomotionMarkers[trackcontroller.activeTrackSet];
+  FootStepTrack footStepTracks[] = footStepTracksLibrary[trackcontroller.activeTrackSet];
   trackcontroller.stepIds.resize(footStepTracks.size);
-  Scalar t;
-  if(currFoot < 0){
-  //  report("activateClip");
-  //  report("find the first foot lift time:"+trackSet.timeRange+" :"+footStepTracks);
-    trackcontroller.time = footStepTracks[0].footSteps[0].liftTime;
-    for(Integer j=1; j < footStepTracks.size; j++){
-      if(footStepTracks[j].footSteps[0].liftTime > trackcontroller.time){
-        trackcontroller.time = footStepTracks[j].footSteps[0].liftTime;
-      }
-      trackcontroller.stepIds[j] = 0;
-    }
-  }else{
-  //  report("activateClip from foot:"+currFoot+ " t:"+trackcontroller.time);
-    // find the first foot lift time for the foot we are on.
-    trackcontroller.time = footStepTracks[currFoot].footSteps[0].liftTime;
-  //  for(Integer j=0; j < footStepTracks[currFoot].footSteps.size; j++){
-  //    if(footStepTracks[currFoot].footSteps[j].liftTime >= 0.0){
-  //      trackcontroller.time = footStepTracks[currFoot].footSteps[j].liftTime;
-        // Reset all the feet to the start of the track.
-        for(Integer k=0; k < footStepTracks.size; k++){
-          trackcontroller.stepIds[k] = 0;
-        }
-  //      break;
-  //    }
-  //  }
-    
-    for(Integer j=0; j < trackcontroller.currKeys.size; j++){
-      trackcontroller.currKeys[j] = 0;
-    }
+
+/*
+  // find the first foot lift time for the foot we are on.
+  trackcontroller.time = footStepTracks[trackcontroller.pivotFoot].footSteps[trackcontroller.pivotStepId].liftTime;
+  // Reset all the feet to the start of the track.
+  for(Integer k=0; k < footStepTracks.size; k++){
+    trackcontroller.stepIds[k] = 0;
   }
+  report("activateClip:"+trackcontroller.activeTrackSet+" foot:"+trackcontroller.pivotFoot+ " step:"+trackcontroller.pivotStepId + " t:"+trackcontroller.time);
+
+  */
+  LocomotionMarker marker = markers[trackcontroller.pivotFoot][trackcontroller.pivotStepId];
+  trackcontroller.time = marker.time;
+  
+  for(Integer k=0; k < footStepTracks.size; k++){
+    trackcontroller.stepIds[k] = 0;
+  }
+  report("activateClip:"+trackcontroller.activeTrackSet+" foot:"+trackcontroller.pivotFoot+ " step:"+marker.stepId + " t:"+trackcontroller.time);
+
   
 //  report("trackcontroller:" + trackcontroller.time);
 }
@@ -63,7 +50,7 @@ operator evaluateLocomotionPoseVariables(
   io BulletWorld  bulletworld,
   
   io LinearKeyframeTrackSet animationLibrary<>,
-  io LocomotionMarker locomotionMarkers<>[],
+  io LocomotionMarker locomotionMarkers<>[][],
   io FootStepTrack footStepTracksLibrary<>[],
   io KeyframeTrackBindings bindingsLibrary<>,
   
@@ -101,19 +88,21 @@ operator evaluateLocomotionPoseVariables(
     // Clip Activation
     if(trackcontroller.tick == 0){
       activateClip(
-        -1,
         animationLibrary,
+        locomotionMarkers,
         footStepTracksLibrary,
-        0,
         trackcontroller,
       );
+      plantedFeet.resize(locomotionFeet.size);
+      for(Integer j=0; j<plantedFeet.size; j++){
+        plantedFeet[j] = !(j==trackcontroller.pivotFoot);
+      }
     }
     else if(trackcontroller.deactivate){
       activateClip(
-        trackcontroller.pivotFoot,
         animationLibrary,
+        locomotionMarkers,
         footStepTracksLibrary,
-        0,
         trackcontroller,
       );
     }
@@ -200,6 +189,9 @@ operator evaluateLocomotionPoseVariables(
       trackcontroller.comParams[j] = poseVariables.scalarValues[com.parameterVarIds[j]];
     }
     trackcontroller.tick++;
+    /////////////////////////////////////////////////
+  //  report(trackcontroller.tick);
+    
     /////////////////////////////////////////////////
     Xfo rot90;
     rot90.setIdentity();
@@ -371,18 +363,41 @@ operator evaluateLocomotionPoseVariables(
           plantLocations[j] = footError;
           plantedFeet[j] = false;
           
-          if(currStep.liftTime >= timeRange.y){
+          /////////////////////////////////////////////////
+          // Clip Deactivation
+       //   report("currSpeed:"+currSpeed);
+          Scalar buffer = 0.3;
+          Scalar speedDelta = (currSpeed - trackcontroller.comParams[1]);
+          if(abs(speedDelta) > buffer){
+            report("speedDelta:"+trackcontroller.activeTrackSet+":"+j+":"+speedDelta);
+            for(Integer clipId=0; clipId<locomotionMarkers.size; clipId++){
+            // Note: here we block blending from a clip onto its self, but soon we will enable this.
+              if(trackcontroller.activeTrackSet == clipId){
+                continue;
+              }
+              for(Integer l=0; l<locomotionMarkers[clipId][j].size; l++){
+                Scalar speedDelta2 = (currSpeed - locomotionMarkers[clipId][j][l].params[1]);
+              //  report("speedDelta2 "+clipId+":"+l+":"+speedDelta2);
+                if(abs(speedDelta2) < abs(speedDelta)){
+                  report("deactivate fromClip:" +trackcontroller.activeTrackSet + " toClip:"+ clipId + " foot:"+j+ " fromStep:"+stepId+ " toStep:"+l);
+                  trackcontroller.deactivate = true;
+                  trackcontroller.pivotFoot = j;
+                  trackcontroller.pivotStepId = l;
+                  trackcontroller.activeTrackSet = clipId;
+                  
+                  break;
+                }
+              }
+            }
+          }
+          
+          if(!trackcontroller.deactivate && currStep.liftTime >= timeRange.y){  
             // Deactivate the current clip if a foot reaches the last step.
+         //         report("deactivate - end of clip:" + trackcontroller.time);
             trackcontroller.deactivate = true;
             trackcontroller.pivotFoot = j;
+            trackcontroller.pivotStepId = 0;
           }
-        //  if(footStepTrack.footSteps.size > 1){
-        //    if(stepId == footStepTrack.footSteps.size-1){
-        //      // Deactivate the current clip if a foot reaches the last step.
-        //      trackcontroller.deactivate = true;
-        //      trackcontroller.pivotFoot = j;
-        //    }
-        //  }
         }
         else{
           // Interpolate the error across the step.

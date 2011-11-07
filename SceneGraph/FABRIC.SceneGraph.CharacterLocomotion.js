@@ -39,24 +39,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('COMSolver', {
     
     var com = new FABRIC.Characters.COM(comXfoId, [comParam0VarId, comParam1VarId, comParam2VarId, comParam3VarId] );
     skeletonNode.addMember('com', 'COM', com);
-    /*
-    solver.addTracks = function(trackSet, keyframeTrackBindings){
-      var comXfoTrackBindings = trackSet.addXfoTrack('com');
-      keyframeTrackBindings.addXfoBinding(comXfoId, comXfoTrackBindings);
-      
-      var comParam0TrackId = trackSet.addScalarTrack('stepFrequency', FABRIC.RT.Color.yellow);
-      keyframeTrackBindings.addScalarBinding(comParam0VarId, comParam0TrackId);
-      
-      var comParam1TrackId = trackSet.addScalarTrack('speed', FABRIC.RT.Color.yellow);
-      keyframeTrackBindings.addScalarBinding(comParam1VarId, comParam1TrackId);
-      
-      var comParam2TrackId = trackSet.addScalarTrack('gradient', FABRIC.RT.Color.yellow);
-      keyframeTrackBindings.addScalarBinding(comParam2VarId, comParam2TrackId);
-      
-      var comParam3TrackId = trackSet.addScalarTrack('direction', FABRIC.RT.Color.yellow);
-      keyframeTrackBindings.addScalarBinding(comParam3VarId, comParam3TrackId);
-    }
-    */
+    
     return solver; 
   }
 });
@@ -95,28 +78,24 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('LocomotionFeetSolver', {
       stepTimeVarIds.push(stepTimeVarId);
     }
     skeletonNode.addMember('locomotionFeet', 'LocomotionFoot[]', locomotionFeet);
-    /*
-    solver.addTracks = function(trackSet, keyframeTrackBindings){
-      for(var i=0; i<limbs.length; i++){
-        var stepTimeTrackId = trackSet.addScalarTrack('foot'+i+'StepTime', FABRIC.RT.Color.yellow);
-        keyframeTrackBindings.addScalarBinding(stepTimeVarIds[i], stepTimeTrackId);
-      }
-    }*/
+    
     return solver; 
   }
 });
 
 
 FABRIC.RT.LocomotionMarker = function() {
-  this.localtime = 0.0;
-  this.params = [0,0,0];
+  this.time = 0.0;
+  this.stepId = 0;
+  this.params = [];
 };
 
 FABRIC.appendOnCreateContextCallback(function(context) {
   context.RegisteredTypesManager.registerType('LocomotionMarker', {
     members: {
-      localtime: 'Scalar',
-      params: 'Scalar[3]'
+      time: 'Scalar',
+      stepId: 'Integer',
+      params: 'Scalar[]'
     },
     constructor: FABRIC.RT.LocomotionMarker
   });
@@ -159,7 +138,7 @@ FABRIC.SceneGraph.registerNodeType('LocomotionAnimationLibrary', {
     
     var animationLibraryNode = scene.constructNode('LinearKeyAnimationLibrary', options);
     var dgnode = animationLibraryNode.getDGNode();
-    dgnode.addMember('markers', 'LocomotionMarker[]');
+    dgnode.addMember('markers', 'LocomotionMarker[][]');
     dgnode.addMember('footStepTracks', 'FootStepTrack[]');
     
     var paramsdgnode, debugGeometryDraw;
@@ -236,7 +215,8 @@ FABRIC.SceneGraph.registerNodeType('LocomotionAnimationLibrary', {
           
           'self.debugGeometry'
         ],
-        async: false
+        async: false,
+        mainThreadOnly: true
       }));
       
       animationLibraryNode.pub.preProcessTracks = function(){
@@ -382,15 +362,16 @@ FABRIC.SceneGraph.registerNodeType('LocomotionCharacterController', {
 
 
 FABRIC.RT.TrackSetController = function( activeTrackSet ) {
-  this.activeTrackSet = activeTrackSet != undefined ? activeTrackSet : -1;
+  this.activeTrackSet = activeTrackSet != undefined ? activeTrackSet : 0;
   this.time = 0.0;
   this.currKeys = [];
   this.trackWeight = 0.0;
   this.tick = 0;
   this.comParams = [];
   this.stepIds = [];
-  this.deactivate = false;;
+  this.deactivate = false;
   this.pivotFoot = 0;
+  this.pivotStepId = 0;
 };
 
 FABRIC.appendOnCreateContextCallback(function(context) {
@@ -404,7 +385,8 @@ FABRIC.appendOnCreateContextCallback(function(context) {
       comParams: 'Scalar[]',
       stepIds: 'Integer[]',
       deactivate: 'Boolean',
-      pivotFoot: 'Integer'
+      pivotFoot: 'Integer',
+      pivotStepId: 'Integer'
     },
     constructor: FABRIC.RT.TrackSetController
   });
