@@ -5,7 +5,10 @@
 
 FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
   
-  if(!options.constructMaterialNodes) options.constructMaterialNodes = false;
+  if(options.constructMaterialNodes == undefined) options.constructMaterialNodes = false;
+  if(options.scaleFactor == undefined) options.scaleFactor = 1.0;
+  if(options.logWarnings == undefined) options.logWarnings = false;
+  if(options.constructScene == undefined) options.constructScene = true;
 
   var assetNodes = {};
   var warn = function( warningText ){
@@ -209,11 +212,12 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
         case 'animation':
           // Note: collada files exported from 3dsmax have an extra level here
           // where animation is nested under animation. it also has a 'name'
-          // attribute for the name of the target node. 
-          if(child.firstElementChild.nodeName == 'animation'){
-            child = child.firstElementChild;
+          // attribute for the name of the target node.
+          var animationNode = child;
+          if(animationNode.firstElementChild.nodeName == 'animation'){
+            animationNode = animationNode.firstElementChild;
           }
-          libraryAnimations.animations[child.getAttribute('id')] = parseAnimation(child, libraryAnimations.channelMap);
+          libraryAnimations.animations[child.getAttribute('id')] = parseAnimation(animationNode, libraryAnimations.channelMap);
           break;
         default:
           warn("Warning in parseLibaryGeometries: Unhandled node '" +child.nodeName + "'");
@@ -369,6 +373,19 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
     return joints;
   }
   
+  var parseMatrix = function(node) {
+    var text_array = node.textContent.split(new RegExp("\\s+"));
+    var float_array = [];
+    for(var i=0; i<text_array.length; i++){
+      if(text_array[i] != ""){
+        float_array.push(parseFloat(text_array[i]));
+      }
+    }
+    var mat = makeRT(FABRIC.RT.Mat44, float_array);
+    mat.setTranslation(mat.getTranslation().multiplyScalar(options.scaleFactor));
+    return mat;
+  }
+  
   var parseSkin = function(node) {
     var skin = {
       source: node.getAttribute('source'),
@@ -380,16 +397,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
     while(child){
       switch (child.nodeName) {
         case 'bind_shape_matrix':
-          var text_array = child.textContent.split(new RegExp("\\s+"));
-          var float_array = [];
-          for(var i=0; i<text_array.length; i++){
-            if(text_array[i] != ""){
-              float_array.push(parseFloat(text_array[i]));
-            }
-          }
-          
-          var matrix44 = makeRT(FABRIC.RT.Mat44, float_array);
-          skin.bind_shape_matrix = matrix44;//.transpose();
+          skin.bind_shape_matrix = parseMatrix(child);
           break;
         case 'source':
           skin.sources[child.getAttribute('id')] = parseSource(child);
@@ -489,6 +497,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
           var sid = child.getAttribute('sid');
           var str = child.textContent.split(new RegExp("\\s+"));
           var tr = new FABRIC.RT.Vec3(parseFloat(str[0]), parseFloat(str[1]), parseFloat(str[2]));
+          tr = tr.multiplyScalar(options.scaleFactor);
           nodeData.xfo = nodeData.xfo.multiply(new FABRIC.RT.Xfo({tr:tr}));
           break;
         }
@@ -511,6 +520,13 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
           nodeData.xfo = nodeData.xfo.multiply(new FABRIC.RT.Xfo({sc:sc}));
           break;
         }
+        case 'matrix':
+          nodeData.xfo.setFromMat44(parseMatrix(child));
+          if(nodeData.xfo.sc.length() > 1.01 && options.logWarnings){
+            console.warn("collada file contains non uniform scaling in its matrices.");
+          }
+          nodeData.xfo.sc.set(1,1,1);
+          break;
         case 'instance_geometry':
           nodeData.instance_geometry = parseInstanceGeometry(child);
           break;
@@ -667,6 +683,9 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
             source: meshData.sources[meshData.vertices.source.slice(1)],
             constructorFn: FABRIC.RT.Vec3
           };
+          for(var i=0; i< meshTriangleSourceData.positions.source.data.length; i++){
+            meshTriangleSourceData.positions.source.data[i] *= options.scaleFactor;
+          }
           processedData.geometryData.positions = [];
           break;
         case 'NORMAL':
@@ -771,6 +790,183 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
     return geometryNode;
   }
 
+  var libraryAnimations = options.animationLibrary;
+  var controllerNode = options.controllerNode;
+  
+  var loadRigAnimation = function(rigNode){
+    if(colladaData.libraryAnimations){
+      if(!libraryAnimations){
+        libraryAnimations = scene.constructNode('LinearKeyAnimationLibrary');
+        assetNodes[libraryAnimations.getName()] = libraryAnimations;
+      }
+      if(!controllerNode){
+        controllerNode = scene.constructNode('AnimationController');
+        assetNodes[controllerNode.getName()] = controllerNode;
+      }
+      
+      var skeletonNode = rigNode.getSkeletonNode();
+      var bones = skeletonNode.getBones();
+      var fksolver = rigNode.getSolver('solveColladaPose');
+      if(!fksolver){
+        fksolver = rigNode.addSolver('solveColladaPose', 'FKHierarchySolver');
+      }
+      // Construct the track set for this rig.
+      var trackSet = new FABRIC.RT.KeyframeTrackSet(skeletonNode.getName()+'Animation');
+      var xfoVarBindings = fksolver.getXfoVarBindings();
+      var trackBindings = new FABRIC.RT.KeyframeTrackBindings();
+      
+      for (var i = 0; i < bones.length; i++) {
+        var boneName = bones[i].name;
+        var channels = colladaData.libraryAnimations.channelMap[boneName];
+        
+        if (!channels)
+          continue;
+        
+        var trackIds = [];
+        for (var channelName in channels) {
+          var animation = channels[channelName];
+          var sampler = animation.sampler;
+          
+          if (!sampler.INPUT || !sampler.OUTPUT || !sampler.INTERPOLATION)
+            throw "Animation Channel must provide 'INPUT', 'OUTPUT', and 'INTERPOLATION' sources";
+          
+          // allright - now we need to create the data
+          // let's check the first element of the INTERPOLATION semantic
+          var inputSource = animation.sources[sampler.INPUT.source.slice(1)];
+          var outputSource = animation.sources[sampler.OUTPUT.source.slice(1)];
+          var interpolationSource = animation.sources[sampler.INTERPOLATION.source.slice(1)];
+          var scaleFactor = 1.0;
+          
+          var generateKeyframeTrack = function(channelName, keytimes, keyvalues){
+            var color;
+            switch (channelName.substr(channelName.lastIndexOf('.')+1)) {
+            case 'x': color = FABRIC.RT.rgb(1, 0, 0);        break;
+            case 'y': color = FABRIC.RT.rgb(0, 1, 0);        break;
+            case 'z': color = FABRIC.RT.rgb(0, 0, 1);        break;
+            case 'w': color = FABRIC.RT.rgb(0.7, 0.7, 0.7);  break;
+            default:
+              throw 'unsupported channel:' + channelName;
+            }
+            
+            // now let's reformat the linear data
+            var track = new FABRIC.RT.KeyframeTrack(bones[i].name+'.'+channelName, color);
+            var key = FABRIC.RT.linearKeyframe;
+            for (var j = 0; j < keytimes.length; j++) {
+              track.keys.push(key(keytimes[j], keyvalues[j] * scaleFactor));
+            }
+            trackSet.tracks.push(track);
+          //  trackIds[channelName] = trackSet.tracks.length - 1;
+            trackIds.push(trackSet.tracks.length - 1);
+          }
+          
+          
+          // Check the channel type. TODO
+          var channelType = channelName.substr(channelName.lastIndexOf('.') + 1).toUpperCase();
+          switch(channelType){
+          case 'ANGLE':
+            for (var j = 0; j < outputSource.data.length; j++){
+              outputSource.data[j] = Math.degToRad( outputSource.data[j] );
+            }
+            break;
+          case 'MATRIX':
+            // convert the input source to tr and ori keyframe tracks.
+            var tr_x_keyvalues = [];
+            var tr_y_keyvalues = [];
+            var tr_z_keyvalues = [];
+            var ori_x_keyvalues = [];
+            var ori_y_keyvalues = [];
+            var ori_z_keyvalues = [];
+            var ori_w_keyvalues = [];
+            var prevQuat;
+            for (var j = 0; j < outputSource.technique.accessor.count; j++) {
+              var matrixValues = getSourceData(outputSource, j);
+              var mat = makeRT(FABRIC.RT.Mat44, matrixValues);
+              var xfo = new FABRIC.RT.Xfo();
+              xfo.setFromMat44(mat);
+              tr_x_keyvalues.push(xfo.tr.x);
+              tr_y_keyvalues.push(xfo.tr.y);
+              tr_z_keyvalues.push(xfo.tr.z);
+              
+              if(j > 0){
+                xfo.ori.alignWith(prevQuat);
+              }
+              prevQuat = xfo.ori;
+              ori_x_keyvalues.push(xfo.ori.v.x);
+              ori_y_keyvalues.push(xfo.ori.v.y);
+              ori_z_keyvalues.push(xfo.ori.v.z);
+              ori_w_keyvalues.push(xfo.ori.w);
+            }
+            scaleFactor = options.scaleFactor;
+            generateKeyframeTrack('tr.x', inputSource.data, tr_x_keyvalues);
+            generateKeyframeTrack('tr.y', inputSource.data, tr_y_keyvalues);
+            generateKeyframeTrack('tr.z', inputSource.data, tr_z_keyvalues);
+            
+            scaleFactor = 1.0;
+            generateKeyframeTrack('ori.v.x', inputSource.data, ori_x_keyvalues);
+            generateKeyframeTrack('ori.v.y', inputSource.data, ori_y_keyvalues);
+            generateKeyframeTrack('ori.v.z', inputSource.data, ori_z_keyvalues);
+            generateKeyframeTrack('ori.w', inputSource.data, ori_w_keyvalues);
+            
+            continue;
+          }
+        
+          // remap the target names
+          switch(channelName){
+          case 'rotation_x.ANGLE':
+          case 'rotateX.ANGLE':
+            channelName = 'ori.x';
+            break;
+          case 'rotation_y.ANGLE':
+          case 'rotateY.ANGLE':
+            channelName = 'ori.y';
+            break;
+          case 'rotation_z.ANGLE':
+          case 'rotateZ.ANGLE':
+            channelName = 'ori.z';
+            break;
+          case 'translation.X':
+          case 'translate.X':
+            channelName = 'tr.x';
+            scaleFactor = options.scaleFactor;
+            break;
+          case 'translation.Y':
+          case 'translate.Y':
+            channelName = 'tr.y';
+            scaleFactor = options.scaleFactor;
+            break;
+          case 'translation.Z':
+          case 'translate.Z':
+            channelName = 'tr.z';
+            scaleFactor = options.scaleFactor;
+            break;
+          case 'scale.X':
+            channelName = 'sc.x';
+            break;
+          case 'scale.Y':
+            channelName = 'sc.y';
+            break;
+          case 'scale.Z':
+            channelName = 'sc.z';
+            break;
+          }
+          
+          generateKeyframeTrack(channelName, inputSource.data, outputSource.data);
+        }
+        trackBindings.addXfoBinding(xfoVarBindings[boneName], trackIds);
+      }
+      
+      var trackSetID = libraryAnimations.addTrackSet(trackSet);
+      var variablesNode = rigNode.getVariablesNode();
+      if(!variablesNode){
+        variablesNode = rigNode.constructVariablesNode(rigNode.getName() + 'Variables', true);
+        assetNodes[variablesNode.getName()] = variablesNode;
+      }
+      variablesNode.bindToAnimationTracks(libraryAnimations, controllerNode, trackSetID, trackBindings);
+      
+    }
+  }
+  
+  var controllerNode;
   var libraryRigs = {};
   var constructRigFromHierarchy = function(sceneData, rootNodeName, controllerName){
     if(!controllerName){
@@ -815,6 +1011,14 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
     for (i = 0; i < bones.length; i++) {
       if (bones[i].length === 0 && bones[i].parent != -1) {
         bones[i].length = bones[bones[i].parent].length * 0.5;
+        
+        // If the tip of the bone is below the floor, then 
+        // shorten the bone till it touches the floor.
+        var downVec = new FABRIC.RT.Vec3(0, -1, 0);
+        var boneVec = bones[i].referencePose.ori.rotateVector(new FABRIC.RT.Vec3(bones[i].length, 0, 0));
+        if(boneVec.dot(downVec) > bones[i].referencePose.tr.y){
+          bones[i].length *= bones[i].referencePose.tr.y / boneVec.dot(downVec);
+        }
       }
       bones[i].radius = bones[i].length * 0.1;
     }
@@ -828,153 +1032,15 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
     skeletonNode.setBones(bones);
     
     ///////////////////////////////
-    // Rig Variables node
-     
-    
-    var variablesNode = scene.constructNode('CharacterVariables', {
-      name: controllerName+'Variables'
-    });
     
     var rigNode = scene.constructNode('CharacterRig', {
-        name: controllerName+'CharacterRig',
-        skeletonNode: skeletonNode,
-        variablesNode: variablesNode
-      });
+      name: controllerName+'CharacterRig',
+      skeletonNode: skeletonNode
+    });
     
-      
-    if(colladaData.libraryAnimations){
-      // fill in all of the tracks...
-      var tracks = {
-        name: [],
-        color: [],
-        keys: []
-      };
-      var binding = {};
-      for (var i = 0; i < bones.length; i++) {
-        var channels = colladaData.libraryAnimations.channelMap[bones[i].name];
-        
-        if (!channels)
-          continue;
-        
-        for (var channelName in channels) {
-          var animation = channels[channelName];
-          var sampler = animation.sampler;
-          
-          if (!sampler.INPUT || !sampler.OUTPUT || !sampler.INTERPOLATION)
-            throw "Animation Channel must provide 'INPUT', 'OUTPUT', and 'INTERPOLATION' sources";
-          
-          // allright - now we need to create the data
-          // let's check the first element of the INTERPOLATION semantic
-          var inputSource = animation.sources[sampler.INPUT.source.slice(1)];
-          var outputSource = animation.sources[sampler.OUTPUT.source.slice(1)];
-          var interpolationSource = animation.sources[sampler.INTERPOLATION.source.slice(1)];
-          
-          
-          // ensure to convert ANGLE to RADIANS
-          if (channelName.substr(channelName.lastIndexOf('.') + 1) == 'ANGLE') {
-            for (var j = 0; j < outputSource.data.length; j++){
-              outputSource.data[j] = Math.degToRad( outputSource.data[j] );
-            }
-          }
-          
-          // now let's reformat the linear data
-          var key = FABRIC.Animation.linearKeyframe;
-          var keys = [];
-          for (var j = 0; j < inputSource.data.length; j++) {
-            keys.push(key(inputSource.data[j], outputSource.data[j]));
-          }
-          
-          // remap the target names
-          switch(channelName){
-          case 'rotation_x.ANGLE':
-          case 'rotateX.ANGLE':
-            channelName = 'ori.x';
-            break;
-          case 'rotation_y.ANGLE':
-          case 'rotateY.ANGLE':
-            channelName = 'ori.y';
-            break;
-          case 'rotation_z.ANGLE':
-          case 'rotateZ.ANGLE':
-            channelName = 'ori.z';
-            break;
-          case 'translation.X':
-          case 'translate.X':
-            channelName = 'tr.x';
-            break;
-          case 'translation.Y':
-          case 'translate.Y':
-            channelName = 'tr.y';
-            break;
-          case 'translation.Z':
-          case 'translate.Z':
-            channelName = 'tr.z';
-            break;
-          case 'scale.X':
-            channelName = 'sc.x';
-            break;
-          case 'scale.Y':
-            channelName = 'sc.y';
-            break;
-          case 'scale.Z':
-            channelName = 'sc.z';
-            break;
-          }
-          
-          var trackid = tracks.keys.length;
-          tracks.keys.push(keys);
-          tracks.name.push(bones[i].name+'.'+channelName);
-   
-          var target = 'localxfos[' + i + '].' + channelName.split('.')[0];
-         
-          if (!binding[target]) {
-            binding[target] = [-1, -1, -1];
-          }
-          switch (channelName.split('.')[1]) {
-          case 'x':
-            binding[target][0] = trackid;
-            tracks.color.push(FABRIC.RT.rgb(1, 0, 0));
-            break;
-           case 'y':
-            binding[target][1] = trackid;
-            tracks.color.push(FABRIC.RT.rgb(0, 1, 0));
-            break;
-           case 'z':
-            binding[target][2] = trackid;
-            tracks.color.push(FABRIC.RT.rgb(0, 0, 1));
-            break;
-          }
-        }
-      }
-  
-      // create the base animation nodes
-      var controllerNode = scene.constructNode('AnimationController', {
-        name: controllerName+'Controller'
-      } );
-      var trackNode = scene.constructNode('LinearKeyAnimationTrack', {
-        name: controllerName+'AnimationTrack'
-      });
-      trackNode.setTrackCount(tracks.name.length);
-      trackNode.setTracksData(tracks);
-  
-      // create the evaluator node
-      var evaluatorNode = scene.constructNode('AnimationEvaluator', {
-        name: controllerName+'Evaluator',
-        animationControllerNode: controllerNode,
-        animationTrackNode: trackNode
-      });
-      
-      variablesNode.addMember('localxfos', 'Xfo[]', skeletonNode.getReferenceLocalPose());
-      evaluatorNode.bindNodeMembersToEvaluatorTracks(variablesNode, binding, rigNode.getName());
-      rigNode.addSolver('solveColladaPose', 'FKHierarchySolver', { localxfoMemberName: 'localxfos' });
-      
-      assetNodes[trackNode.getName()] = trackNode;
-      assetNodes[evaluatorNode.getName()] = evaluatorNode;
-      assetNodes[controllerNode.getName()] = controllerNode;
-    }
+    loadRigAnimation(rigNode);
     
     // Store the created scene graph nodes in the returned asset map.
-    assetNodes[variablesNode.getName()] = variablesNode;
     assetNodes[skeletonNode.getName()] = skeletonNode;
     assetNodes[rigNode.getName()] = rigNode;
     
@@ -1056,7 +1122,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
     // the vcount table tells us how many bindings deform this vertex.
     // the vertices array is a pair of indices for each joint binding.
     // The first is the JOINT, and then 2nd the WEIGHT
-    var makevec4 = function(data) {
+    var makeVec4 = function(data) {
       // The following is a bit of a hack. Not sure if we can combine new and apply.
       if (data.length === 0) return new FABRIC.RT.Vec4();
       if (data.length === 1) return new FABRIC.RT.Vec4(data[0], 0, 0, 0);
@@ -1081,8 +1147,8 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
         bid += 2;
       }
       bubbleSortWeights(boneWeightsArray, boneIdsArray, 0, numbindings);
-      boneIds.push(makevec4(boneIdsArray));
-      boneWeights.push(makevec4(boneWeightsArray));
+      boneIds.push(makeVec4(boneIdsArray));
+      boneWeights.push(makeVec4(boneWeightsArray));
     }
     
     // Now remap the generated arrays to the vertices in the mesh we store.
@@ -1121,6 +1187,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
     for (var j = 0; j < jointDataSource.data.length; j++) {
       var bindPoseValues = getSourceData(bindPoseDataSource, j);
       var mat = makeRT(FABRIC.RT.Mat44, bindPoseValues);//.transpose();
+      mat.setTranslation(mat.getTranslation().multiplyScalar(options.scaleFactor));
       invmatrices[j] = mat.multiply(controllerData.bind_shape_matrix);
     }
     characterMeshNode.setInvMatrices(invmatrices, jointRemapping);
@@ -1225,19 +1292,25 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
         constructInstance(sceneData.nodes[i]);
       }
     }
-    
-    
-    // The file may contain a hierarchy that can be used to generate a skeleton
-    if (options.constructRigFromHierarchy) {
-      var skeletonNode = constructRigFromHierarchy(sceneData, options.constructRigFromHierarchy);
-    }
   }
   
   if(colladaData.scene){
-    constructScene(colladaData.libraryVisualScenes[colladaData.scene.url.slice(1)]);
+    if(options.constructScene){
+      constructScene(colladaData.libraryVisualScenes[colladaData.scene.url.slice(1)]);
+    }
+    else{
+      // The file may contain a hierarchy that can be used to generate a skeleton
+      if (options.constructRigFromHierarchy) {
+        constructRigFromHierarchy(sceneData, options.constructRigFromHierarchy);
+      }
+      
+      if (options.loadAnimationUsingRig) {
+        loadRigAnimation(options.loadAnimationUsingRig);
+      }
+    }
   }
   
-
+  
   return assetNodes;
 });
 

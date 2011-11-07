@@ -2,72 +2,36 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
-use Xfo, Bone;
-
-operator solveFKBone(
-  io Xfo pose[],
-  io Bone bones[],
-  io Integer index,
-  io Xfo local
-) {
-  if (bones[index].parent == - 1) {
-    pose[index] = local;
-  }
-  else {
-    pose[index] =  pose[bones[index].parent] * local;
-  }
-}
+use Xfo;
 
 operator solveFKHierarchy(
   io Xfo pose[],
   io Bone bones[],
-  io Integer indices[],
-  io Xfo local[]
+  io FKHierarchy bindings,
+  io PoseVariables poseVariables
 ) {
-  for (var Integer i = 0; i < indices.size(); i++) {
-    if (bones[indices[i]].parent == - 1) {
-      pose[indices[i]] = local[i];
+  for (var Integer i = 0; i < bindings.boneIds.size; i++) {
+    if (bones[bindings.boneIds[i]].parent == - 1) {
+      pose[bindings.boneIds[i]] = poseVariables.xfoValues[i];
     }
     else {
-      pose[indices[i]] = pose[bones[indices[i]].parent] * local[i];
+      pose[bindings.boneIds[i]] = pose[bones[bindings.boneIds[i]].parent] * poseVariables.xfoValues[bindings.xfoIds[i]];
     }
   }
 }
 
-operator solveChain(
-  io Xfo pose[],
-  io Xfo chainpose[],
-  io Bone bones[],
-  io Integer indices[],
-  io Xfo local[]
-) {
-  if (indices.size() != local.size() || indices.size() != chainpose.size()) {
-    report('solveChain Error: indices.size() != local.size() || indices.size() != chainpose.size()');
-    return;
-  }
 
-  for (var Integer i = 0; i < indices.size(); i++) {
-    if (bones[indices[i]].parent == - 1) {
-      chainpose[i] = local[i];
-    }
-    else {
-      chainpose[i] = pose[bones[indices[i]].parent] * local[i];
-    }
-    pose[indices[i]] = chainpose[i];
-  }
-}
-
-operator solveInvParentList(
+operator invertFKHierarchy(
   io Xfo pose[],
   io Bone bones[],
-  io Integer indices[],
-  io Xfo local[]
+  io FKHierarchy bindings,
+  io PoseVariables poseVariables
 ) {
-  local.resize(pose.size());
-  for (var Integer i = 0; i < indices.size(); i++) {
-    if (bones[indices[i]].parent == - 1)
-      local[indices[i]] = pose[indices[i]];
+  for (var Integer i = 0; i < bindings.boneIds.size; i++) {
+    if (bones[bindings.boneIds[i]].parent == - 1)
+      poseVariables.xfoValues[bindings.xfoIds[i]] = pose[bindings.boneIds[i]];
     else
-      local[indices[i]] = pose[bones[indices[i]].parent].inverse() * pose[indices[i]];
+      poseVariables.xfoValues[bindings.xfoIds[i]] = pose[bones[bindings.boneIds[i]].parent].inverse() * pose[bindings.boneIds[i]];
   }
 }
+

@@ -26,11 +26,14 @@
     <script type="text/javascript" src="../../../SceneGraph/RT/Euler.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/RT/Xfo.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/RT/Color.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/BezierKeyframe.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/LinearKeyframe.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/RT/OGLShaderProgram.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/RT/OGLBuffer.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/RT/OGLTexture2D.js" charset="utf-8"></script>
+    
+    <script type="text/javascript" src="../../../SceneGraph/RT/KeyframeTrack.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/BezierKeyframe.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/LinearKeyframe.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/PoseVariables.js" charset="utf-8"></script>
 
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Geometry.js" charset="utf-8"></script>
@@ -125,6 +128,11 @@ $(document).ready(function() {
   var animationControllerNode = scene.constructNode('AnimationController', {
       timeRange: new FABRIC.RT.Vec2(0, 100)
     });
+  var linearKeyAnimationLibrary = scene.constructNode('LinearKeyAnimationLibrary');
+  var bezierKeyAnimationLibrary = scene.constructNode('BezierKeyAnimationLibrary');
+
+  var linearkey = FABRIC.RT.linearKeyframe;
+  var bezierkey = FABRIC.RT.bezierKeyframe;
 
   // Note on bounding values
   // "globalXfo.tr":[-1,0,1]
@@ -134,94 +142,101 @@ $(document).ready(function() {
 
   ///////////////////////////////////////////////
   // LinearKeyAnimationTrack
-  var linearPosKeyframeTrackNode = scene.constructNode('LinearKeyAnimationTrack', {
-    name:'LinearPosKeyAnimationTrack'
-  } );
-  linearPosKeyframeTrackNode.setTrackCount(2);
-  var key = FABRIC.Animation.linearKeyframe;
-  linearPosKeyframeTrackNode.setTrackData(1, {
-    name: 'PosX',
-    color: FABRIC.RT.rgb(1, 0, 0),
-    keys: [key(0, 0), key(10, 20), key(20, -5), key(50, -5), key(75, 50), key(100, 0)]
-  });
-  linearPosKeyframeTrackNode.setTrackData(0, {
-    name: 'PosY',
-    color: FABRIC.RT.rgb(1, 0, 0),
-    keys: [key(0, 0), key(50, 0), key(75, 20), key(100, 0)]
-  });
+  var trackSet = new FABRIC.RT.KeyframeTrackSet('LinearPosKeyAnimationTrack');
+  
+  trackSet.tracks.push(new FABRIC.RT.KeyframeTrack('tr.x', FABRIC.RT.rgb(0, 1, 0), [
+      linearkey(0, 0), linearkey(50, 0), linearkey(75, 50), linearkey(100, 0)
+    ]));
+  trackSet.tracks.push(new FABRIC.RT.KeyframeTrack('tr.y', FABRIC.RT.rgb(1, 0, 0), [
+      linearkey(0, 0), linearkey(10, 20), linearkey(20, -5), linearkey(50, -5), linearkey(75, 50), linearkey(100, 0)
+    ]));
+  trackSet.tracks.push(new FABRIC.RT.KeyframeTrack('tr.z', FABRIC.RT.rgb(0, 1, 0), [
+      linearkey(0, 0), linearkey(50, 0), linearkey(75, 20), linearkey(100, 0)
+    ]));
+  
+  trackSet.tracks.push(new FABRIC.RT.KeyframeTrack('ori.x', FABRIC.RT.rgb(0, 1, 0), [
+    ]));
+  trackSet.tracks.push(new FABRIC.RT.KeyframeTrack('ori.x', FABRIC.RT.rgb(0, 1, 0), [
+    ]));
+  trackSet.tracks.push(new FABRIC.RT.KeyframeTrack('ori.x', FABRIC.RT.rgb(0, 1, 0), [
+    ]));
+  var trackSetID = linearKeyAnimationLibrary.addTrackSet(trackSet);
+  
 
-  var linearAnimationEvaluatorNode = scene.constructNode('AnimationEvaluator', {
-    name:'LinearPosAnimationEvaluator' ,
-    animationControllerNode: animationControllerNode,
-    animationTrackNode: linearPosKeyframeTrackNode
-  });
-
-  var xfo = new FABRIC.RT.Xfo({ tr: new FABRIC.RT.Vec3(-50, 0, 0) });
   var linearAnimatedTransformNode = scene.constructNode('Transform', {
     hierarchical: false,
-    globalXfo: xfo
+    globalXfo: new FABRIC.RT.Xfo({ tr: new FABRIC.RT.Vec3(-50, 0, 0) })
   });
-  linearAnimationEvaluatorNode.bindNodeMembersToEvaluatorTracks(
+  
+  linearKeyAnimationLibrary.bindNodeMembersToTracks(
     linearAnimatedTransformNode, {
-      'globalXfo.tr': [-1, 0, 1]
-    });
+      'globalXfo.tr': [0, 1, 2]
+    },
+    trackSetID);
+  
   scene.constructNode('Instance', {
     transformNode: linearAnimatedTransformNode,
     geometryNode: cube,
     materialNode: redMaterial
   });
+  
 
   ///////////////////////////////////////////////
   // BezierKeyAnimationTrack
-  var bezierPosKeyframeTrackNode = scene.constructNode('BezierKeyAnimationTrack', {
-    name:'BezierPosKeyAnimationTrack'
-  } );
-  bezierPosKeyframeTrackNode.setTrackCount(2);
-  var key = FABRIC.Animation.bezierKeyframe;
-  bezierPosKeyframeTrackNode.setTrackData(0, {
-    name: 'PosX',
-    color: FABRIC.RT.rgb(1, 0, 0),
-    keys: [
-      key(0, -20, null, new FABRIC.RT.Vec2(3, 0)),
-      key(10, 0, new FABRIC.RT.Vec2(-3, 0), new FABRIC.RT.Vec2(3, 0)),
-      key(20, 20, new FABRIC.RT.Vec2(-3, 0), new FABRIC.RT.Vec2(10, 0)),
-      key(50, 0, new FABRIC.RT.Vec2(-10, 0), new FABRIC.RT.Vec2(7, 0)),
-      key(75, -20, new FABRIC.RT.Vec2(-7, 0), null)
-    ]
-  });
-  bezierPosKeyframeTrackNode.setTrackData(1, {
-    name: 'PosY',
-    color: FABRIC.RT.rgb(1, 0, 0),
-    keys: [
-      key(0, 0, null, new FABRIC.RT.Vec2(3, 0)),
-      key(10, 20, new FABRIC.RT.Vec2(-3, 0), new FABRIC.RT.Vec2(3, 0)),
-      key(20, 0, new FABRIC.RT.Vec2(-3, 0), new FABRIC.RT.Vec2(10, 0)),
-      key(50, -20, new FABRIC.RT.Vec2(-10, 0), new FABRIC.RT.Vec2(7, 0)),
-      key(75, 0, new FABRIC.RT.Vec2(-7, 0), null)
-    ]
-  });
+  var trackSet = new FABRIC.RT.KeyframeTrackSet('BezierPosKeyAnimationTrack');
+  trackSet.tracks.push(new FABRIC.RT.KeyframeTrack('tr.x', FABRIC.RT.rgb(1, 0, 0), [
+      bezierkey(0, -20, null, new FABRIC.RT.Vec2(3, 0)),
+      bezierkey(10, 0, new FABRIC.RT.Vec2(-3, 0), new FABRIC.RT.Vec2(3, 0)),
+      bezierkey(20, 20, new FABRIC.RT.Vec2(-3, 0), new FABRIC.RT.Vec2(10, 0)),
+      bezierkey(50, 0, new FABRIC.RT.Vec2(-10, 0), new FABRIC.RT.Vec2(7, 0)),
+      bezierkey(75, -20, new FABRIC.RT.Vec2(-7, 0), null)
+    ]));
+  trackSet.tracks.push(new FABRIC.RT.KeyframeTrack('tr.y', FABRIC.RT.rgb(0, 1, 0), [
+    ]));
+  trackSet.tracks.push(new FABRIC.RT.KeyframeTrack('tr.z', FABRIC.RT.rgb(0, 1, 0), [
+      bezierkey(0, 0, null, new FABRIC.RT.Vec2(3, 0)),
+      bezierkey(10, 20, new FABRIC.RT.Vec2(-3, 0), new FABRIC.RT.Vec2(3, 0)),
+      bezierkey(20, 0, new FABRIC.RT.Vec2(-3, 0), new FABRIC.RT.Vec2(10, 0)),
+      bezierkey(50, -20, new FABRIC.RT.Vec2(-10, 0), new FABRIC.RT.Vec2(7, 0)),
+      bezierkey(75, 0, new FABRIC.RT.Vec2(-7, 0), null)
+    ]));
+                       
+  trackSet.tracks.push(new FABRIC.RT.KeyframeTrack('ori.x', FABRIC.RT.rgb(1, 0, 0), [
+      bezierkey(0, 0, null, new FABRIC.RT.Vec2(3, 0)),
+      bezierkey(10, 0, new FABRIC.RT.Vec2(-3, 0), new FABRIC.RT.Vec2(3, 0)),
+      bezierkey(20, 2, new FABRIC.RT.Vec2(-3, 0), new FABRIC.RT.Vec2(10, 0)),
+      bezierkey(50, 2, new FABRIC.RT.Vec2(-10, 0), new FABRIC.RT.Vec2(7, 0)),
+      bezierkey(75, 0, new FABRIC.RT.Vec2(-7, 0), null)
+    ]));
+  trackSet.tracks.push(new FABRIC.RT.KeyframeTrack('ori.y', FABRIC.RT.rgb(0, 1, 0), [
+      bezierkey(0, 0, null, new FABRIC.RT.Vec2(3, 0)),
+      bezierkey(20, 0, new FABRIC.RT.Vec2(-3, 0), new FABRIC.RT.Vec2(10, 0)),
+      bezierkey(50, -2, new FABRIC.RT.Vec2(-10, 0), new FABRIC.RT.Vec2(7, 0)),
+      bezierkey(75, 0, new FABRIC.RT.Vec2(-7, 0), null)
+    ]));
+  trackSet.tracks.push(new FABRIC.RT.KeyframeTrack('ori.z', FABRIC.RT.rgb(0, 0, 1), [
+    ]));
+  
+  var trackSetID = bezierKeyAnimationLibrary.addTrackSet(trackSet);
 
-  var bezierAnimationEvaluatorNode = scene.constructNode('AnimationEvaluator', {
-    name:'BezierPosKeyAnimationTrack' ,
-    animationControllerNode: animationControllerNode,
-    animationTrackNode: bezierPosKeyframeTrackNode
-  });
-
-  var xfo = new FABRIC.RT.Xfo({ tr: new FABRIC.RT.Vec3(0, 0, 0) });
   var bezierAnimatedTransformNode = scene.constructNode('Transform', {
     hierarchical: false,
-    globalXfo: xfo
+    globalXfo: new FABRIC.RT.Xfo({ tr: new FABRIC.RT.Vec3(0, 0, 0) })
   });
-  bezierAnimationEvaluatorNode.bindNodeMembersToEvaluatorTracks(
+  
+  bezierKeyAnimationLibrary.bindNodeMembersToTracks(
     bezierAnimatedTransformNode, {
-      'globalXfo.tr': [0, -1, 1]
-    });
+      'globalXfo.tr': [0, 1, 2],
+      'globalXfo.ori': [3, 4, 5]
+    },
+    trackSetID);
   scene.constructNode('Instance', {
     transformNode: bezierAnimatedTransformNode,
     geometryNode: cube,
     materialNode: blueMaterial
   });
-
+  
+/*
   ///////////////////////////////////////////////
   // EulerRotation
   var bezierEulerKeyframeTrackNode = scene.constructNode('BezierKeyAnimationTrack', {
@@ -272,6 +287,7 @@ $(document).ready(function() {
     materialNode: blueMaterial
   });
   
+*/
 
   $globalTimeSlider.slider('value', 1.0);
   $globalTimeSlider.bind('slide',
@@ -282,7 +298,7 @@ $(document).ready(function() {
 
   $('#curveEditor').button()
     .click(function() {
-      bezierEulerKeyframeTrackNode.openCurveEditor();
+      bezierKeyAnimationLibrary.openCurveEditor();
     });
 
   

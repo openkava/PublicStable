@@ -291,8 +291,11 @@ FABRIC = (function() {
         }
       }
       return urlSections.join('/') + '/' + url;
+    }else{
+      var urlSections = document.location.href.split('/');
+      urlSections.pop();
+      return urlSections.join('/') + '/' + url;
     }
-    return url;
   };
 
   var activeAsyncTaskCount = 0;
@@ -329,7 +332,7 @@ FABRIC = (function() {
     }, 1);
   }
   // Tasks can be registered that contribute to the async workload. E.g. resource
-  // loading can be defined to contribute to the intitial loading of the graph. 
+  // loading can be defined to contribute to the initial loading of the graph. 
   var addAsyncTask = function(label, weight) {
     activeAsyncTaskCount++;
     if (!weight)
