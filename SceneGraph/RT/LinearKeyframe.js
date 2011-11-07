@@ -4,29 +4,24 @@
 //
 
 /**
- * The basic Animation module.
- */
-FABRIC.Animation = FABRIC.Animation ? FABRIC.Animation : {};
-
-/**
  * A function to create a linear key frame object.
  * @constructor
  * @param {number} time The time of the keyframe.
  * @param {number} value The value of the keyframe.
  */
-FABRIC.Animation.LinearKeyframe = function(time, value) {
+FABRIC.RT.LinearKeyframe = function(time, value) {
   this.time = typeof time === 'number' ? time : 0;
   this.value = typeof value === 'number' ? value : 0;
 };
 
-FABRIC.Animation.LinearKeyframe.prototype = {
+FABRIC.RT.LinearKeyframe.prototype = {
   // This method enables an animation evaluator to know what kind of data
   // track full of these data types should evaluate to.
   get valueType() {
     return 'Scalar';
   },
   getType: function() {
-    return 'FABRIC.Animation.LinearKeyframe';
+    return 'FABRIC.RT.LinearKeyframe';
   }
 };
 
@@ -36,8 +31,8 @@ FABRIC.Animation.LinearKeyframe.prototype = {
  * @param {number} time The time of the keyframe.
  * @return {object} The linear key frame object.
  */
-FABRIC.Animation.linearKeyframe = function(value, time) {
-  return new FABRIC.Animation.LinearKeyframe(value, time);
+FABRIC.RT.linearKeyframe = function(value, time) {
+  return new FABRIC.RT.LinearKeyframe(value, time);
 };
 
 FABRIC.appendOnCreateContextCallback(function(context) {
@@ -45,10 +40,52 @@ FABRIC.appendOnCreateContextCallback(function(context) {
     members: {
       time: 'Scalar', value: 'Scalar'
     },
-    constructor: FABRIC.Animation.LinearKeyframe,
+    constructor: FABRIC.RT.LinearKeyframe,
     klBindings: {
       filename: 'LinearKeyframe.kl',
       sourceCode: FABRIC.loadResourceURL('FABRIC_ROOT/SceneGraph/RT/LinearKeyframe.kl')
     }
   });
 });
+
+if(!FABRIC.RT.KeyframeTrack){
+  throw("please include the SceneGraph/RT/KeyframeTrack.js file before this one.");
+}
+
+FABRIC.appendOnCreateContextCallback(function(context) {
+  context.RegisteredTypesManager.registerType('LinearKeyframeTrack', {
+    members: {
+      name: 'String',
+      color: 'Color',
+      keys: 'LinearKeyframe[]'
+    },
+    constructor: FABRIC.RT.KeyframeTrack,
+    klBindings: {
+      filename: 'FABRIC_ROOT/SceneGraph/RT/KeyframeTrack.kl',
+      sourceCode: FABRIC.preProcessCode(
+        FABRIC.loadResourceURL('FABRIC_ROOT/SceneGraph/RT/KeyframeTrack.kl'), {
+          KEYFRAMETYPE: 'LinearKeyframe'
+        })
+    }
+  });
+});
+
+FABRIC.appendOnCreateContextCallback(function(context) {
+  context.RegisteredTypesManager.registerType('LinearKeyframeTrackSet', {
+    members: {
+      name: 'String',
+      timeRange: 'Vec2',
+      tracks: 'LinearKeyframeTrack[]'
+    },
+    constructor: FABRIC.RT.KeyframeTrackSet,
+    klBindings: {
+      filename: 'FABRIC_ROOT/SceneGraph/RT/KeyframeTrack.kl',
+      sourceCode: FABRIC.preProcessCode(
+        FABRIC.loadResourceURL('FABRIC_ROOT/SceneGraph/RT/KeyframeTrack.kl'),
+        { KEYFRAMETYPE: 'LinearKeyframe' }
+      )
+    }
+  });
+});
+
+

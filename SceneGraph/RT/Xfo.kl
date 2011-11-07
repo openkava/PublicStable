@@ -183,3 +183,12 @@ function Vec3 Xfo.inverseTransformVector(in Vec3 vec) {
   return this.ori.inverse().rotateVector(vec - this.tr) * this.sc.inverse();
 }
 
+function Xfo Xfo.linearInterpolate(in Xfo other, in Scalar t) {
+  Xfo result;
+  result.tr = this.tr.linearInterpolate(other.tr, t);
+  result.ori = this.ori.linearInterpolate(other.ori, t);
+  result.sc = this.sc.linearInterpolate(other.sc, t);
+  return result;
+}
+
+
