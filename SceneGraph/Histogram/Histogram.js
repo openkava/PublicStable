@@ -19,7 +19,7 @@ var constructHistogram = function(domRootID, options){
 
   polygon.attr('stroke', "black");
   polygon.attr('stroke-width', 0.5);
-  polygon.attr('fill', "#33CC00");
+  polygon.attr('fill', "#66CC00");
 
   var generateGraph = function(histogramData, maxYValue){
     maxYValue = maxYValue ? maxYValue : 1.0;
