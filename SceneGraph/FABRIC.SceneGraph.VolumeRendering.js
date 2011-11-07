@@ -128,6 +128,7 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
 
     volumeNode.getOpacityDGNode = function(){return opacityTextureDGNode;};
     volumeNode.pub.getOpacityNode = function(){return options.opacityTextureNode;};
+    volumeNode.pub.getVolumeSlicesNode = function(){return volumeNodePub;};
 
     //Generate gradient if not available
     if(options.gradientTextureNode === undefined) {

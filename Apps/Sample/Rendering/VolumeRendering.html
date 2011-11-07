@@ -77,7 +77,7 @@ s.parentNode.insertBefore(ga, s);
 <style type="text/css">
     
 #sidebar {
-  width:410px;
+  width:400px;
 }  
 #viewer {
   right:400px;
@@ -135,6 +135,83 @@ FABRIC.SceneGraph.registerNodeType('Image3DWithHistogram', {
     return histogramNode;
   }
 });
+
+
+
+FABRIC.SceneGraph.registerNodeType('CropVolumeManipulator', {
+  briefDesc: '',
+  detailedDesc: '',
+  parentNodeDesc: '',
+  optionsDesc: {
+  },
+
+  factoryFn: function(options, scene) {
+    scene.assignDefaults(options, {
+      volumeInstanceNode: undefined,
+      color: FABRIC.RT.rgb(0.8, 0, 0, 1)
+      });
+
+    var volumeInstanceNode = scene.getPrivateInterface(options.volumeInstanceNode);
+    var cropVolumeManipulator = scene.constructNode('SceneGraphNode', options);
+    var volumeSlicesNode = scene.getPrivateInterface(volumeInstanceNode.pub.getVolumeSlicesNode());
+    
+    var flatMaterial = scene.pub.constructNode('FlatMaterial', {
+      color:options.color
+    });
+    
+    var constructEdgeManipulator = function(name, srcCode){
+      var lineGeom = scene.constructNode('LineVector');
+      lineGeom.getAttributesDGNode().setDependency(volumeSlicesNode.getUniformsDGNode(), 'volume_uniforms');
+      lineGeom.getAttributesDGNode().bindings.append(scene.constructOperator({
+        operatorName: name+'GeneratorOp',
+        parameterLayout: [
+          'volume_uniforms.cropMin',
+          'volume_uniforms.cropMax',
+          'self.positions<>'
+        ],
+        entryFunctionName: 'setLineSegmentPositions',
+        srcCode: srcCode
+      }));
+      var inst = scene.constructNode('Instance', {
+        name: name+"Instance",
+        transformNode: volumeInstanceNode.getTransformNode(),
+        geometryNode: lineGeom.pub,
+        materialNode: flatMaterial
+      });
+    }
+    
+    constructEdgeManipulator( 'vertical1', 'use Vec3;\
+operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){\
+  positions[0] = Vec3(min.x, min.y, min.z);\
+  positions[1] = Vec3(min.x, max.y, min.z);\
+  report("vertical1:"+positions);\
+}');
+    
+    constructEdgeManipulator( 'vertical2', 'use Vec3;\
+operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){\
+  positions[0] = Vec3(min.x, min.y, max.z);\
+  positions[1] = Vec3(min.x, max.y, max.z);\
+  report("vertical2:"+positions);\
+}');
+    
+    constructEdgeManipulator( 'vertical3', 'use Vec3;\
+operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){\
+  positions[0] = Vec3(max.x, min.y, min.z);\
+  positions[1] = Vec3(max.x, max.y, min.z);\
+  report("vertical3:"+positions);\
+}');
+    
+    constructEdgeManipulator( 'vertical4', 'use Vec3;\
+operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){\
+  positions[0] = Vec3(max.x, min.y, max.z);\
+  positions[1] = Vec3(max.x, max.y, max.z);\
+  report("vertical4:"+positions);\
+}');
+    
+    return cropVolumeManipulator;
+  }
+});
+
 
 $(document).ready(function() {
   var i, j;
@@ -255,6 +332,11 @@ $(document).ready(function() {
   texture2DSlice[0] = scene.constructNode('VolumeSliceRender', {tl: new FABRIC.RT.Vec2(2.0/3.0+borderSize, 1.0-borderSize), br: new FABRIC.RT.Vec2(1.0-borderSize, 1.0/3.0+borderSize), volumeOpacityInstanceNode: volumeNode, ratio: 0.5, axis : 0});
   texture2DSlice[1] = scene.constructNode('VolumeSliceRender', {tl: new FABRIC.RT.Vec2(2.0/3.0+borderSize, 1.0/3.0-borderSize), br: new FABRIC.RT.Vec2(1.0-borderSize, -1.0/3.0+borderSize), volumeOpacityInstanceNode: volumeNode, ratio: 0.5, axis : 1, sharedVolumeSliceRender: texture2DSlice[0] });
   texture2DSlice[2] = scene.constructNode('VolumeSliceRender', {tl: new FABRIC.RT.Vec2(2.0/3.0+borderSize, -1.0/3.0-borderSize), br: new FABRIC.RT.Vec2(1.0-borderSize, -1.0+borderSize), volumeOpacityInstanceNode: volumeNode, ratio: 0.5, axis : 2, sharedVolumeSliceRender: texture2DSlice[0]});
+    
+    
+  scene.constructNode('CropVolumeManipulator', {
+    volumeInstanceNode: volumeNode
+  });
     
   var sliders2DBindFunction = function(index) {
     var sliderIndex = index;
@@ -481,17 +563,17 @@ $(document).ready(function() {
               <div id='colorMapping'></div>
               <p id="brushColor"></p>
               
-                                                                     
-              <input type="checkbox" id="whiteBackground"/><label for="whiteBackground">White background:</label><br>
+              <input type="checkbox" id="invert" style="margin-top:10px;" /><label for="invert">Invert Colors</label><br>
+              <input type="checkbox" id="whiteBackground" style="margin-bottom:10px;"/><label for="whiteBackground">White background</label><br>
+              
               <label for="brightness" >Brightness:</label>
-              <div id='brightness' style="margin-top:10px;"></div>
+              <div id='brightness' style="margin-bottom:10px;"></div>
               <label for="transparency" >Transparency:</label>
-              <div id='transparency' style="margin-top:10px;"></div>
+              <div id='transparency' style="margin-bottom:10px;"></div>
               <label for="resolutionFactor" >Resolution factor:</label>
-              <div id='resolutionFactor' style="margin-top:10px;"></div>
+              <div id='resolutionFactor' style="margin-bottom:10px;"></div>
               <label for="specularFactor" >Shininess:</label>
-              <div id='specularFactor' style="margin-top:10px;"></div>
-              <input type="checkbox" id="invert" style="margin-top:10px;" /><label for="invert" style="margin-top:10px;" >Invert</label><br>
+              <div id='specularFactor' style="margin-bottom:10px;"></div>
            <!-- </div>content-->
             </div><!--box-->
           </div><!--volumeRenderTab-->
