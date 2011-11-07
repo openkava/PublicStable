@@ -97,7 +97,7 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
       return dgnode.getData('trackSet', trackSetId);
     };
     animationLibraryNode.pub.setTrackSet = function(trackSet, trackSetId) {
-      return dgnode.setData('trackSet', trackSetId, trackSet);
+      return dgnode.setData('trackSet', trackSetId ? trackSetId : 0, trackSet);
     };
     animationLibraryNode.pub.getTrackSetName = function(trackSetId) {
       return dgnode.getData('trackSet', trackSetId).name;

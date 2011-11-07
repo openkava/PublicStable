@@ -1,12 +1,13 @@
 
-var constructColorGradient = function(domRootID, colorKeyTrackNode, options){
+var constructColorGradient = function(domRootID, colorKeyTrackLibraryNode, options){
   
   var keyColor = FABRIC.rgb(.0, .0, .0);
   
   options = options ? options : {};
-  options.draggable = options.draggable!=undefined ? options.draggable : true;
-  options.zoomable = options.zoomable!=undefined ? options.zoomable : true;
-  options.timeRange = options.timeRange!=undefined ? options.timeRange : new FABRIC.RT.Vec2(0, 1);
+  var draggable = options.draggable!=undefined ? options.draggable : true;
+  var zoomable = options.zoomable!=undefined ? options.zoomable : true;
+  var timeRange = options.timeRange!=undefined ? options.timeRange : new FABRIC.RT.Vec2(0, 1);
+  trackSetId =  options.trackSetId!=undefined ? options.trackSetId : 0;
   
   var rootDomNode = document.getElementById(domRootID);
   var windowWidth = rootDomNode.clientWidth;
@@ -21,7 +22,8 @@ var constructColorGradient = function(domRootID, colorKeyTrackNode, options){
   gradientRect.attr('stroke', "black");
   gradientRect.attr('stroke-width', 2);
 
-  var gradientKeyData = colorKeyTrackNode.getTrackKeys();
+  var tracksData = colorKeyTrackLibraryNode.getTrackSet(trackSetId);
+  var trackData = tracksData.tracks[0];
   var selectedKeyIndex = -1;
   var addKey = function(index, param, color){
     var gradientKey = gradient.addKey(param, color);
@@ -48,8 +50,8 @@ var constructColorGradient = function(domRootID, colorKeyTrackNode, options){
         function(evt) {
           var time = evt.localPos.x / windowWidth;
           gradientKey.setParam(time);
-          gradientKeyData[index].time = time;
-          colorKeyTrackNode.setTrackKeys(0, gradientKeyData);
+          trackData.keys[index].time = time;
+          colorKeyTrackLibraryNode.setTrackSet(tracksData);
           gradientWidget.fireEvent('gradientchanged');
         });
     
@@ -63,8 +65,8 @@ var constructColorGradient = function(domRootID, colorKeyTrackNode, options){
     gradientKey.setColor = function(col){
       gradientKeySetColor(col);
       keyRect.attr('fill', col.toHex());
-      gradientKeyData[index].value = col;
-      colorKeyTrackNode.setTrackKeys(0, gradientKeyData);
+      trackData.keys[index].value = col;
+      colorKeyTrackLibraryNode.setTrackSet(tracksData);
       
       gradientWidget.fireEvent('gradientchanged');
     }
@@ -74,8 +76,8 @@ var constructColorGradient = function(domRootID, colorKeyTrackNode, options){
   var displayGradient = function(){
     keysHolderGroup.removeAllChildren();
     gradient.clearKeys();
-    for(var i=0; i<gradientKeyData.length; i++){
-      addKey(i, gradientKeyData[i].time, gradientKeyData[i].value);
+    for(var i=0; i<trackData.keys.length; i++){
+      addKey(i, trackData.keys[i].time, trackData.keys[i].value);
     }
   }
   gradientRect.elem.addEventListener('mousedown', function(evt) {
@@ -83,25 +85,25 @@ var constructColorGradient = function(domRootID, colorKeyTrackNode, options){
     console.log("add key:"+ newKeyT);
     
     var insertId = 0;
-    for(var i=0; i<gradientKeyData.length; i++){
-      if(gradientKeyData[i].time > newKeyT){
+    for(var i=0; i<trackData.keys.length; i++){
+      if(trackData.keys[i].time > newKeyT){
         var newKeyVal;
         if(i>0){
-          var interp = (newKeyT - gradientKeyData[i-1].time) / (gradientKeyData[i].time - gradientKeyData[i-1].time);
-          newKeyVal = gradientKeyData[i-1].value.linearInterpolate(gradientKeyData[i].value, interp);
+          var interp = (newKeyT - trackData.keys[i-1].time) / (trackData.keys[i].time - trackData.keys[i-1].time);
+          newKeyVal = trackData.keys[i-1].value.linearInterpolate(trackData.keys[i].value, interp);
         }else{
-          newKeyVal = gradientKeyData[i];
+          newKeyVal = trackData.keys[i];
         }
-        gradientKeyData.splice(i, 0, FABRIC.Animation.colorKeyframe(newKeyT, newKeyVal));
+        trackData.keys.splice(i, 0, FABRIC.Animation.colorKeyframe(newKeyT, newKeyVal));
         selectedKeyIndex = i;
         break;
       }
     }
-    if(i==gradientKeyData.length){
-      selectedKeyIndex = gradientKeyData.length;
-      gradientKeyData.append(FABRIC.Animation.colorKeyframe(newKeyT, gradientKeyData[gradientKeyData.length-1].value));
+    if(i==trackData.keys.length){
+      selectedKeyIndex = trackData.keys.length;
+      trackData.keys.append(FABRIC.Animation.colorKeyframe(newKeyT, trackData.keys[trackData.keys.length-1].value));
     }
-    colorKeyTrackNode.setTrackKeys(0, gradientKeyData);
+    colorKeyTrackLibraryNode.setTrackSet(tracksData);
     displayGradient();
   });
   
@@ -110,7 +112,7 @@ var constructColorGradient = function(domRootID, colorKeyTrackNode, options){
       console.log(evt.target.nodeName);
       if(selectedKeyIndex >= 0){
         gradientKeyData.splice(selectedKeyIndex, 1);
-        colorKeyTrackNode.setTrackKeys(0, gradientKeyData);
+        colorKeyTrackLibraryNode.setTrackSet(tracksData);
         displayGradient();
       }
     }
