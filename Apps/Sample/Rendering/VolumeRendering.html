@@ -34,6 +34,8 @@
     <script type="text/javascript" src="../../../SceneGraph/RT/OGLBuffer.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/RT/OGLRenderTarget.js" charset="utf-8"></script>
     
+    <script type="text/javascript" src="../../../SceneGraph/RT/PoseVariables.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/KeyframeTrack.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/RT/LinearKeyframe.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/RT/ColorKeyframe.js" charset="utf-8"></script>
 
@@ -238,7 +240,13 @@ $(document).ready(function() {
   
   ///////////////////////////////////////////////////////////
   // Opacity Mapping
-  var key = FABRIC.Animation.linearKeyframe;
+  var linearkey = FABRIC.RT.linearKeyframe;
+  var opacityKeyAnimationLibrary = scene.constructNode('LinearKeyAnimationLibrary');
+  var trackSet = new FABRIC.RT.KeyframeTrackSet('LinearPosKeyAnimationTrack');
+  trackSet.tracks.push(new FABRIC.RT.KeyframeTrack('opacityKeyframeTrack', FABRIC.RT.rgb(0, 1, 0), [
+      linearkey(.1, 0), linearkey(.2, 0.75), linearkey(.4, 0.05), linearkey(.5, 1), linearkey(1.0, 1)
+    ]));
+  /*
   var opacityKeyframeTrackNode = scene.constructNode('LinearKeyAnimationTrack', {
     name:'opacityKeyframeTrack'
   } );
@@ -248,36 +256,49 @@ $(document).ready(function() {
     color: FABRIC.RT.rgb(1, 0, 0),
     keys: [key(.1, 0), key(.2, 0.75), key(.4, 0.05), key(.5, 1), key(1.0, 1)]
   });
-  
+  */
+  var trackSetID = opacityKeyAnimationLibrary.addTrackSet(trackSet);
   var opacityDisplayNode = scene.constructNode('TrackDisplay', {
-      animationTrackNode: opacityKeyframeTrackNode,
+      animationLibraryNode: opacityKeyAnimationLibrary,
       timeRange: new FABRIC.RT.Vec2(0, 1),
       segmentCount: 1024
     });
   
   ///////////////////////////////////////////////////////////
   // Color Mapping
-  var key = FABRIC.Animation.colorKeyframe;
-  var gradientKeyTrack = scene.constructNode('ColorKeyAnimationTrack', {
+  var colorkey = FABRIC.RT.colorKeyframe;
+  var gradientKeyTrackLibrary = scene.constructNode('ColorKeyAnimationLibrary', {
     name:'GradientKeyTrack'
-  } );
+  });
   
+  var gradientKeyTrackSet = new FABRIC.RT.KeyframeTrackSet('GradientKeyTrack');
+  gradientKeyTrackSet.tracks.push(new FABRIC.RT.KeyframeTrack('opacityKeyframeTrack', FABRIC.RT.rgb(0, 1, 0), [
+      colorkey(.0, FABRIC.RT.rgb(.7, 0, 0)),
+      colorkey(.2, FABRIC.RT.rgb(0, .7, 0)),
+      colorkey(.25, FABRIC.RT.rgb(0, .7, .7)),
+      colorkey(.3, FABRIC.RT.rgb(.7, .7, 0)),
+      colorkey(.4, FABRIC.RT.rgb(.7, 0, .7)),
+      colorkey(.5, FABRIC.RT.rgb(0, 0, .7)),
+      colorkey(1.0, FABRIC.RT.rgb(0, .3, .7))
+    ]));
+  /*
   gradientKeyTrack.setTrackData(0, {
     name: 'Gradient',
     color: FABRIC.RT.rgb(1, 0, 0),
     keys: [
-      key(.0, FABRIC.RT.rgb(.7, 0, 0)),
-      key(.2, FABRIC.RT.rgb(0, .7, 0)),
-      key(.25, FABRIC.RT.rgb(0, .7, .7)),
-      key(.3, FABRIC.RT.rgb(.7, .7, 0)),
-      key(.4, FABRIC.RT.rgb(.7, 0, .7)),
-      key(.5, FABRIC.RT.rgb(0, 0, .7)),
-      key(1.0, FABRIC.RT.rgb(0, .3, .7))
+      colorkey(.0, FABRIC.RT.rgb(.7, 0, 0)),
+      colorkey(.2, FABRIC.RT.rgb(0, .7, 0)),
+      colorkey(.25, FABRIC.RT.rgb(0, .7, .7)),
+      colorkey(.3, FABRIC.RT.rgb(.7, .7, 0)),
+      colorkey(.4, FABRIC.RT.rgb(.7, 0, .7)),
+      colorkey(.5, FABRIC.RT.rgb(0, 0, .7)),
+      colorkey(1.0, FABRIC.RT.rgb(0, .3, .7))
     ]
   });
-      
+  */
+  var trackSetID = gradientKeyTrackLibrary.addTrackSet(gradientKeyTrackSet);
   var gradientDisplayNode = scene.constructNode('TrackDisplay', {
-      animationTrackNode: gradientKeyTrack,
+      animationLibraryNode: gradientKeyTrackLibrary,
       timeRange: new FABRIC.RT.Vec2(0, 1),
       segmentCount: 1024
     });
@@ -307,6 +328,7 @@ $(document).ready(function() {
   var borderSize = 0.01;
 
   var opacityTexture = scene.constructNode('Image3DWithHistogram',  { url: 'Resources/ChestMid.nrrd', resourceTargetTransformNode: transform, glRepeat: false, histogramResolution: 1024 });
+//  var opacityTexture = scene.constructNode('Image3DWithHistogram',  { url: 'Resources/HeadHigh.nrrd', resourceTargetTransformNode: transform, glRepeat: false, histogramResolution: 1024 });
 
   opacityTexture.getResourceLoadNode().addOnLoadSuccessCallback(function (){
     histogram.setData(opacityTexture.getHistogram(), 0.4);
@@ -500,8 +522,8 @@ $(document).ready(function() {
   $(function() {
           $( "#tabs" ).tabs();
 
-
-    var curveEditor = constructCurveEditor('opacityMapping', opacityKeyframeTrackNode, {
+/*
+    var curveEditor = constructCurveEditor('opacityMapping', opacityKeyAnimationLibrary, {
       timeStripe: false,
       draggable: false,
       zoomable: false,
@@ -530,6 +552,7 @@ $(document).ready(function() {
           }
         }
       });
+ */
   });
 });
 

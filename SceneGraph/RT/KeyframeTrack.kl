@@ -3,20 +3,20 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
-use KEYFRAMETYPE;
+use KEYFRAMEDATATYPE, KEYFRAMETYPE;
 
 function KEYFRAMETYPETrack.clear() {
   this.keys.resize(0);
 }
 
 
-function Scalar KEYFRAMETYPETrack.evaluate(
+function KEYFRAMEDATATYPE KEYFRAMETYPETrack.evaluate(
   in Scalar time,
   io Integer keyIndex
 ) {
   Integer numKeys = this.keys.size;
   if(numKeys == 0){
-    return 0.0;
+    return KEYFRAMEDATADEFAULTVALUE;
   }
   else if(numKeys == 1){
     return this.keys[0].value;
@@ -48,7 +48,7 @@ function Scalar KEYFRAMETYPETrack.evaluate(
 /*
 Note: this function caused a wierd compiler error.
 TODO: log a bug.
-function Scalar KEYFRAMETYPETrack.evaluate(
+function KEYFRAMEDATATYPE KEYFRAMETYPETrack.evaluate(
   in Scalar time
 ) {
   Integer keyIndex = 0;
@@ -58,7 +58,7 @@ function Scalar KEYFRAMETYPETrack.evaluate(
 
 function KEYFRAMETYPETrack.setValue(
   in Scalar time,
-  in Scalar value
+  in KEYFRAMEDATATYPE value
 ) {
   Integer numKeys = this.keys.size;
   if (numKeys == 0 || time > this.keys[numKeys - 1].time) {
@@ -164,6 +164,7 @@ function KEYFRAMETYPETrackSet.clearTracks(
   }
 }
 
+/*
 
 function KEYFRAMETYPETrackSet.setValues(
   io PoseVariables values,
@@ -317,3 +318,5 @@ function KEYFRAMETYPETrackSet.evaluateKeyframeTracks(
     }
   }
 }
+
+*/

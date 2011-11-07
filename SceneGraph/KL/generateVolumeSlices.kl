@@ -619,8 +619,8 @@ operator reduceOpacityTexture(
 operator updateTransferFunctionImage(
   io Scalar minOpacity,
   io Scalar maxOpacity,
-  io Scalar opacityFactors<>,
-  io Color opacityColors<>,
+  io Scalar opacityFactors[],
+  io Color opacityColors[],
   io Color pixels[]
 ){
   if(opacityFactors.size != 1024 && opacityColors.size != 1024){

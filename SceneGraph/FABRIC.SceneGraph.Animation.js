@@ -448,6 +448,15 @@ FABRIC.SceneGraph.registerNodeType('BezierKeyAnimationLibrary', {
     return scene.constructNode('AnimationLibrary', options);
   }});
 
+FABRIC.SceneGraph.registerNodeType('ColorKeyAnimationLibrary', {
+  briefDesc: 'The ColorKeyAnimationLibrary node implements an array of color keyframe animation tracks.',
+  detailedDesc: 'The ColorKeyAnimationLibrary node derrives from AnimationTrack and specifies that the tracks should contains \'ColorKeyframe\'',
+  parentNodeDesc: 'AnimationTrack',
+  factoryFn: function(options, scene) {
+    options.keyframetype = 'ColorKeyframe';
+    return scene.constructNode('AnimationLibrary', options);
+  }});
+
 
 FABRIC.SceneGraph.registerNodeType('AnimationController', {
   briefDesc: 'The AnimationController node controls the time at which an AnimationTrack is evaluated.',
