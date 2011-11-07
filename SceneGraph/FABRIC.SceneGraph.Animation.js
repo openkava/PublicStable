@@ -534,7 +534,8 @@ FABRIC.SceneGraph.registerNodeType('TrackDisplay', {
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
         animationLibraryNode: undefined,
-        segmentCount: 100
+        segmentCount: 100,
+        timeRange: new FABRIC.RT.Vec2(0, 1)
       });
 
     var trackDisplayNode = scene.constructNode('SceneGraphNode', options);
@@ -543,7 +544,7 @@ FABRIC.SceneGraph.registerNodeType('TrackDisplay', {
     var animationLibraryNode;
 
     parametersdgnode.addMember('trackSetId', 'Integer');
-    parametersdgnode.addMember('timeRange', 'Vec2');
+    parametersdgnode.addMember('timeRange', 'Vec2', options.timeRange);
     parametersdgnode.addMember('segmentCount', 'Size', options.segmentCount);
 
     dgnode.setDependency(parametersdgnode, 'parameters');
@@ -564,7 +565,6 @@ FABRIC.SceneGraph.registerNodeType('TrackDisplay', {
 
       dgnode.addMember('values', trackDataType+'[]');
       parametersdgnode.setData('trackSetId', trackSetId ? trackSetId : 0);
-      parametersdgnode.setData('timeRange', animationLibraryNode.pub.getTimeRange(trackSetId));
       dgnode.setCount(trackSet.tracks.length);
 
       dgnode.bindings.append(animationLibraryNode.getEvaluateCurveOperator());
