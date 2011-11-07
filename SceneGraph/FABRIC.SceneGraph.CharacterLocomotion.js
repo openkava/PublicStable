@@ -106,33 +106,6 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('LocomotionFeetSolver', {
   }
 });
 
-/*
-
-FABRIC.SceneGraph.registerNodeType('LocomotionCharacterRig', {
-  parentNodeDesc: 'CharacterRig',
-  optionsDesc: {
-  },
-  factoryFn: function(options, scene) {
-    scene.assignDefaults(options, {
-      baseCharacterRig: undefined
-    });
-  
-    if (!options.baseCharacterRigNode) {
-      throw ('Must Provide a base rig.');
-    }
-    if (!options.baseCharacterRigNode.isTypeOf('CharacterRig')) {
-      throw ('Incorrect type. Must be a CharacterRig');
-    }
-    var locomotionRigNode = scene.getPrivateInterface(options.baseCharacterRigNode);
-  //  var locomotionRigNode = scene.constructNode('CharacterRig', options);
-    
-    locomotionRigNode.pub.addSolver('COM', 'COMSolver');
-    locomotionRigNode.pub.addSolver('Feet', 'LocomotionFeetSolver');
-    
-    return locomotionRigNode;
-  }});
-*/
-
 
 FABRIC.RT.LocomotionMarker = function() {
   this.localtime = 0.0;

@@ -131,7 +131,7 @@ operator evaluateLocomotionPoseVariables(
     Vec3 linearVelocity = controllerparams.displacement.tr / timestep;
     Scalar currSpeed = linearVelocity.length();
     Scalar clipSpeedRatio = 1.0;
-    Scalar strideLengthModulationFactor = 0.0;
+    Scalar strideLengthModulationFactor = 0.4;
     Scalar clipFrequencyMultiplier = 1.0;
     Scalar strideLengthMultiplier = 1.0;
     Scalar strideLength = 0.0;
@@ -178,8 +178,8 @@ operator evaluateLocomotionPoseVariables(
     // Error dissapation
     if(trackcontroller.tick > 0){
       if(trackcontroller.deactivate){
-        poseError = poseVariables.subtract(prevUpdatePose);
-        clipActivationTime = t;//-timestep;
+        poseError = prevUpdatePose.subtract(poseVariables);
+        clipActivationTime = t-timestep;
         trackcontroller.deactivate = false;
       }
       if(clipActivationTime > 0.0){
@@ -357,8 +357,12 @@ operator evaluateLocomotionPoseVariables(
         hitPositions[j] = hitPosition;
       }
       */
+      
       /////////////////////////////////////////////////
       // Foot Pinning
+      if(displayFootPinningDebugging){
+        debugGeometry.drawCircle(footXfo * rot90, 0.1, Color(0.0, 0.5, 0.5, 1.0));
+      }
       Vec3 footError;
       if(stepRatio > 0.0 && stepRatio < 1.0){
         if(plantedFeet[j]){
@@ -367,11 +371,10 @@ operator evaluateLocomotionPoseVariables(
           plantLocations[j] = footError;
           plantedFeet[j] = false;
           
-        //  report("currStep:"+currStep + " timeRange:"+timeRange);
           if(currStep.liftTime >= timeRange.y){
-              // Deactivate the current clip if a foot reaches the last step.
-             trackcontroller.deactivate = true;
-             trackcontroller.pivotFoot = j;
+            // Deactivate the current clip if a foot reaches the last step.
+            trackcontroller.deactivate = true;
+            trackcontroller.pivotFoot = j;
           }
         //  if(footStepTrack.footSteps.size > 1){
         //    if(stepId == footStepTrack.footSteps.size-1){
@@ -416,8 +419,8 @@ operator evaluateLocomotionPoseVariables(
       }
       footXfo = invcontrollerXfo * footXfo;
       // Apply the error in COM space. 
-    //  footError.y = 0.0;
-    //  footXfo.tr += footError;
+      footError.y = 0.0;
+      footXfo.tr += footError;
       
       poseVariables.xfoValues[leg.ikGoalXfoId] = footXfo;
     }
