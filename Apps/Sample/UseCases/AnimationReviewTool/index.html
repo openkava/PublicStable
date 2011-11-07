@@ -993,7 +993,7 @@ $(document).ready(function() {
         brushColor.g = rgb.g;
         brushColor.b = rgb.b;
         currentPlane.instance.setPaintColor(brushColor);
-        scene.redrawAllWindows();
+        scene.redrawAllViewports();
       }
     });
   $('#brushOpacity').slider({
@@ -1005,7 +1005,7 @@ $(document).ready(function() {
       function(event, ui) {
         brushColor.a = ui.value;
         currentPlane.instance.setPaintColor(brushColor);
-        scene.redrawAllWindows();
+        scene.redrawAllViewports();
     });  
   $('#brushRadius').slider({
       min: 0.5,
@@ -1016,7 +1016,7 @@ $(document).ready(function() {
       function(event, ui) {
         brushRadius = ui.value;
         currentPlane.instance.setPaintRadius(brushRadius);
-        scene.redrawAllWindows();
+        scene.redrawAllViewports();
     });  
   $('#planeblend').slider({
     });

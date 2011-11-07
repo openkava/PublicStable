@@ -21,10 +21,11 @@
 
 $(document).ready(function() {
 
-  if(!keyframeTrackNode){
-    alert("this page must be opened from a running demo, passing it the correct keyframeTrackNode");
+  if(!animationLibraryNode){
+    alert("this page must be opened from a running demo, passing it the correct animationLibraryNode");
   }
-  var curveEditor = constructCurveEditor('curveContainer', keyframeTrackNode);
+  
+  var curveEditor = constructCurveEditor('curveContainer', animationLibraryNode);
   
   window.onresize = function () {
     curveEditor.resize();

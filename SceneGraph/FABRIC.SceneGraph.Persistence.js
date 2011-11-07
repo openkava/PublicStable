@@ -24,74 +24,68 @@
  * @param {object} scene The scene to save.
  * @return {object} The created SceneSaver object.
  */
-FABRIC.SceneGraph.constructSceneSaver = function(scene) {
-
-  var savedNodes = [];
-
-  var SceneSaver = function() {
-
-  }
-  SceneSaver.prototype = {
-    addNode: function(node) {
-      if (!node || !node.isTypeOf || !node.isTypeOf('SceneGraphNode')) {
-        throw 'SceneSaver can only save SceneGraphNodes';
-      }
-      savedNodes.push(node);
-      return node;
-    },
-    isNodeBeingSaved: function(node) {
-      return (savedNodeMap[node.name] !== undefined);
-    },
-    wrapQuotes: function(val) {
-      return '\"' + ((typeof val === 'string') ? val : val.toString()) + '\"';
-    },
-    save: function(writer) {
-      var str = '[';
-      for (var i = 0; i < savedNodes.length; i++) {
-        var node = savedNodes[i];
-
-        if (i > 0) {
-          str += ',';
+FABRIC.SceneGraph.registerManagerType('SceneSaver', {
+  briefDesc: 'The SceneSaver manages the persistence of objects.',
+  detailedDesc: '.',
+  parentManagerDesc: '',
+  optionsDesc: {
+  },
+  factoryFn: function(options, scene) {
+    scene.assignDefaults(options, {
+      });
+  
+    var savedNodes = [];
+    var savedData = [];
+    var currentIndex = 0;
+    var isNodeBeingSaved = function(node) {
+      return (savedNodes.indexOf(node) !== -1);
+    };
+    var sceneSaver = {
+      addNode: function(node) {
+        if (!node || !node.isTypeOf || !node.isTypeOf('SceneGraphNode')) {
+          throw 'SceneSaver can only save SceneGraphNodes';
         }
-
-        str += '\n\t{';
-
-        str += '\n\t\t\"name\":' + this.wrapQuotes(node.name);
-        str += ',\n\t\t\"type\":' + this.wrapQuotes(node.type);
-
-        str += ',\n\t\t\"properties\":{';
-        var first = true;
-        for (propName in node) {
-          if (propName !== 'name' && propName !== 'type' && typeof node[propName] !== 'function') {
-            var propValue = node[propName];
-            if (propValue.getType || (typeof node) == 'string') {
-              str += (first ? '\n' : ',\n') + '\t\t\t' + this.wrapQuotes(propName) + ':' + this.wrapQuotes(propValue);
+        if(!isNodeBeingSaved(node)){
+          var constructionOptions = {};
+          var nodeData = {};
+          var nodePrivate = scene.getPrivateInterface(node);
+          nodePrivate.writeData(sceneSaver, constructionOptions, nodeData);
+          savedData.push({
+            options: constructionOptions,
+            data: nodeData
+          });
+          savedNodes.push(node);
+        };
+        return node;
+      },
+      pub:{
+        addNode: function(node) {
+          return sceneSaver.addNode(node);
+        },
+        wrapQuotes: function(val) {
+          return '\"' + ((typeof val === 'string') ? val : val.toString()) + '\"';
+        },
+        save: function(writer) {
+          var str = '[';
+          for (var i = 0; i < savedNodes.length; i++) {
+            if (i > 0) {
+              str += ',';
             }
-            else if ((typeof node) == 'number' || (typeof node) == 'boolean') {
-              str += (first ? '\n' : ',\n') + '\t\t\t' + this.wrapQuotes(propName) + ':' + propValue;
-            }
-            first = false;
+            str += '\n  {';
+            str += '\n    \"name\":' + this.wrapQuotes(savedNodes[i].getName());
+            str += ',\n    \"type\":' + this.wrapQuotes(savedNodes[i].getType());
+            str += ',\n\    "options\":' + JSON.stringify(savedData[i].options);
+            str += ',\n\    "data\":' + JSON.stringify(savedData[i].data);
+            str += '\n  }';
           }
+          str += '\n]';
+          writer.write(str);
+          return true;
         }
-        str += '\n\t\t}';
-
-        var constructionOptions = {};
-        var nodeData = {};
-        if (node.writeData) {
-          node.writeData(this, constructionOptions, nodeData);
-          str += ',\n\t\t\"options\":' + JSON.stringify(constructionOptions);
-          str += ',\n\t\t\"data\":' + JSON.stringify(nodeData);
-        }
-        str += '\n\t}';
-
       }
-      str += '\n]';
-      writer.write(str);
-      return true;
-    }
-  };
-  return new SceneSaver();
-};
+    };
+    return sceneSaver;
+  }});
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -108,102 +102,96 @@ FABRIC.SceneGraph.constructSceneSaver = function(scene) {
  * @param {object} reader The reader object to read from.
  * @return {object} The created SceneLoader object.
  */
-FABRIC.SceneGraph.constructSceneLoader = function(scene, reader) {
-  var dataObj = JSON.parse(reader.read());
-  var preLoadedNodes = {};
-
-  var constructedNodeMap = {};
-  var nodeNameRemapping = {};
-
-  var SceneLoader = function() {
-
-  }
-  SceneLoader.prototype = {
-    preLoadNode: function(node) {
+FABRIC.SceneGraph.registerManagerType('SceneLoader', {
+  briefDesc: 'The SceneLoader manages the loading of persisted objects.',
+  detailedDesc: '.',
+  parentManagerDesc: '',
+  optionsDesc: {
+  },
+  factoryFn: function(options, scene) {
+    scene.assignDefaults(options, {
+      });
+    
+    var dataObj;
+    var preLoadedNodes = {};
+  
+    var constructedNodeMap = {};
+    var nodeNameRemapping = {};
+  
+    var preLoadNode = function(node) {
       preLoadedNodes[node.name] = node;
-    },
-    getNode: function(nodeName) {
-      if (preLoadedNodes[nodeName]) {
-        return preLoadedNodes[nodeName];
-      }else if (constructedNodeMap[nodeName]) {
-        return constructedNodeMap[nodeName];
-      }else {
-        return scene.getSceneGraphNode(nodeName);
-      }
-    },
-  /*  getLoadedNode:function(nodeName){
-      if(nodeNameRemapping[ nodeName ]){
-        return constructedNodeMap[ nodeNameRemapping[ nodeName ] ];
-      }else{
-        return constructedNodeMap[ nodeName ];
-      }
-    },
-  */ load: function() {
-      for (var i = 0; i < dataObj.length; i++) {
-        var nodeData = dataObj[i];
-        var options = nodeData.options;
-        if (!options) options = {};
-        options.name = nodeData.name;
-        var node = preLoadedNodes[nodeData.name];
-        if (!node) {
-          node = scene.createNode(nodeData.type, options);
+    };
+    var sceneLoader = {
+      getNode: function(nodeName) {
+        nodeName = nodeNameRemapping[ nodeName ]
+        if (constructedNodeMap[nodeName]) {
+          return constructedNodeMap[nodeName];
+        }else {
+          return scene.getSceneGraphNode(nodeName);
         }
-      //  if(constructedNodeMap[ node.name ]){
-      //    // TODO:Generate a unique name, and rename this node.
-      //    // Store a remapping table, which gets passed into the postload callbacks.
-      //    nodeNameRemapping[ node.name ] = newuniquename;
-      //    node.name = newuniquename;
-      //  }
-
-        for (propName in nodeData.properties) {
-        //  if(nodeData.properties[propName].substring(0, 10) == "FABRIC.RT"){
-        //    node[propName] = eval(nodeData.properties[propName]);
-        //  }else{
-        //
-        //  }
-          try {
-
-            if ((typeof nodeData.properties[propName]) == 'string') {
-              node[propName] = eval(nodeData.properties[propName]);
-            }else {
-              node[propName] = nodeData.properties[propName];
+      },
+      pub: {
+        load: function(storage) {
+          dataObj = JSON.parse(storage.read());
+          
+          for (var i = 0; i < dataObj.length; i++) {
+            var nodeData = dataObj[i];
+            var node = preLoadedNodes[nodeData.name];
+            if (!node) {
+              node = scene.pub.constructNode(nodeData.type, nodeData.options);
             }
-
+            // in case a name collision occured, store a name remapping table.
+            nodeNameRemapping[ nodeData.name ] = node.getName();
+            var nodePrivate = scene.getPrivateInterface(node);
+            nodePrivate.readData(sceneLoader, nodeData.data);
+            constructedNodeMap[node.getName()] = node;
           }
-          catch (e) {
-            console.log('Error setting ' + propName + ' :' + e);
-          }
-        }
-
-        constructedNodeMap[node.name] = node;
-      }
-
-      // The postload callbacks are usefull for re-connecting dependencies.
-      // Each node can now get any dependcies and re connect them.
-      for (var i = 0; i < dataObj.length; i++) {
-        var nodeData = dataObj[i];
-        var nodeName = nodeData.name;
-        var node = constructedNodeMap[nodeName];
-        if (nodeData && nodeData.data && node.readData) {
-          node.readData(this, nodeData.data);
+          return constructedNodeMap;
         }
       }
-      return constructedNodeMap;
-    }
-  };
-  return new SceneLoader();
-
-};
+    };
+    return sceneLoader;
+  }});
 
 /**
  * Constructor to create a logWriter object.
  * @constructor
  */
-FABRIC.SceneGraph.logWriter = function() {
-  this.write = function(str) {
+FABRIC.SceneGraph.LogWriter = function() {
+  var str = "";
+  this.write = function(instr) {
+    str = instr;
+  }
+  this.log = function(instr) {
     console.log(str);
   }
+};
 
+
+/**
+ * Constructor to create a logWriter object.
+ * @constructor
+ */
+FABRIC.SceneGraph.LogWriter = function() {
+  var str = "";
+  this.write = function(instr) {
+    str = instr;
+  }
+  this.log = function(instr) {
+    console.log(str);
+  }
+};
+
+FABRIC.SceneGraph.LocalStorage = function(name) {
+  this.write = function(instr) {
+    localStorage.setItem(name, instr);
+  }
+  this.read = function(){
+    return localStorage.getItem(name);
+  }
+  this.log = function(instr) {
+    console.log(localStorage.getItem(name));
+  }
 };
 
 /**

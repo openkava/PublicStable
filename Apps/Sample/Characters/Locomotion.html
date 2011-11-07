@@ -1,0 +1,490 @@
+<html xmlns="http://www.w3.org/1999/xhtml"> 
+  <!--
+    Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+    -->
+  <head> 
+    <title>FABRIC - Character Locomotion</title> 
+    
+    <meta charset="iso-8859-1"/>
+    <script type="text/javascript" src="../../../ThirdParty/jQuery/jquery-1.6.2.min.js"></script>
+    <script type="text/javascript" src="../../../ThirdParty/jQuery/jquery-ui-1.8.16.custom.min.js"></script>
+
+    <link type="text/css" href="../../../ThirdParty/jQuery/css/fabric/main.css" rel="stylesheet" />
+    <link type="text/css" href="../../../ThirdParty/jQuery/css/fabric/jquery-ui-1.8.16.custom.css" rel="stylesheet" />
+    
+    <script type="text/javascript" src="../../../Core/FABRIC.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Math.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Vec2.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Vec3.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Vec4.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Mat22.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Mat33.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Mat44.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Quat.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Xfo.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Color.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Ray.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/RGBA.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Euler.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Bone.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/OGLShaderProgram.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/OGLTexture2D.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/OGLBuffer.js" charset="utf-8"></script>
+    
+    <script type="text/javascript" src="../../../SceneGraph/RT/KeyframeTrack.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/BezierKeyframe.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/LinearKeyframe.js" charset="utf-8"></script>
+    
+    <script type="text/javascript" src="../../../SceneGraph/RT/KeyframeTrackBindings.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/PoseVariables.js" charset="utf-8"></script>
+    
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Lights.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Materials.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Geometry.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Manipulation.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Primitives.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Animation.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Kinematics.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Persistence.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.DebugGeometry.js" charset="utf-8"></script>
+    
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Bullet.js" charset="utf-8"></script>
+    
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Characters.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.CharacterSolvers.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.CharacterLocomotion.js" charset="utf-8"></script>
+    
+    <script type="text/javascript" src="../../../SceneGraph/Parsers/parseCollada.js" charset="utf-8"></script>
+    
+<script type="text/javascript">
+
+ var _gaq = _gaq || [];
+ _gaq.push(['_setAccount', 'UA-25833362-1']);
+ _gaq.push(['_trackPageview']);
+
+ (function() {
+   var ga = document.createElement('script'); ga.type =
+'text/javascript'; ga.async = true;
+   ga.src = ('https:' == document.location.protocol ? 'https://ssl' :
+'http://www') + '.google-analytics.com/ga.js';
+   var s = document.getElementsByTagName('script')[0];
+s.parentNode.insertBefore(ga, s);
+ })();
+
+</script>
+<script type="text/javascript">
+
+$(document).ready(function() {
+
+
+  $('#play').button({
+      text: true,
+      icons: {
+        primary: 'ui-icon-play'
+      }
+    });
+  $('#step').button({
+    text: true,
+    icons: {
+      primary: 'ui-icon-step'
+    }
+  });
+
+  // Create the scene.
+  var scene = FABRIC.SceneGraph.createScene();
+  var viewport = scene.constructNode('Viewport', {
+    enableRaycasting: true,
+    windowElement: document.getElementById('FabricContainer')
+  });
+  
+  viewport.setBackgroundTextureImage(scene.constructNode('Image', {
+    url: '../../Sample/BasicDemos/Resources/fabric-demo-gradient.png'
+  }));
+  
+  var camera = scene.constructNode('TargetCamera', {
+      position: new FABRIC.RT.Vec3(3, 2.2, 3).multiplyScalar(6.5),
+      target: new FABRIC.RT.Vec3(0, -0.5, 0),
+      roll: 0,
+      nearDistance: 1.0,
+      farDistance: 60
+    });
+  scene.constructNode('CameraManipulator', { targetNode: camera });
+  viewport.setCameraNode(camera);
+  
+  var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) });
+  /*
+    // create the scene grid
+  scene.constructNode('Instance', {
+    geometryNode: scene.constructNode('Grid', {
+        size_x: 140.0,
+        size_z: 140.0,
+        sections_x: 20,
+        sections_z: 20 }),
+    materialNode: scene.constructNode('FlatMaterial')
+  });
+  */
+  
+  // create a simulation world
+  var bulletWorldNode = scene.constructNode('BulletWorldNode', {
+    createGroundPlaneGrid:true,
+    groundPlanseSize: 30,
+  } );
+  /*
+  // add a box shape
+  bulletWorldNode.addShape('Box',new FABRIC.RT.BulletShape.createBox());
+  
+  var materialNode = scene.constructNode('PhongMaterial', {
+    diffuseColor: FABRIC.RT.rgb255(10,10,255),
+    lightNode: light
+  });
+  
+  // create a cube to draw it
+  var cuboidNode = scene.constructNode('Cuboid', {
+    length: 2.0,
+    width: 2.0,
+    height: 2.0
+  });
+  
+  var nonslicedTransform = scene.constructNode('BulletRigidBodyTransform', {
+    bulletWorldNode: bulletWorldNode,
+    shapeName: 'Box',
+    rigidBody: new FABRIC.RT.BulletRigidBody({
+      transform: FABRIC.RT.xfo({
+        tr: new FABRIC.RT.Vec3(-12,1,6),
+        ori: new FABRIC.RT.Quat().setFromAxisAndAngle(new FABRIC.RT.Vec3(0,1,0),0.0),
+        sc: new FABRIC.RT.Vec3(4.0,1,4),
+      }),
+      mass: 0.0
+    })
+  });
+  
+  scene.constructNode('Instance', {
+    geometryNode: cuboidNode,
+    materialNode: materialNode,
+    transformNode: nonslicedTransform,
+    enableRaycasting: true
+  });
+  
+   
+  var nonslicedTransform2 = scene.constructNode('BulletRigidBodyTransform', {
+    bulletWorldNode: bulletWorldNode,
+    shapeName: 'Box',
+    rigidBody: new FABRIC.RT.BulletRigidBody({
+      transform: FABRIC.RT.xfo({
+        tr: new FABRIC.RT.Vec3(-12,0.5,1),
+        ori: new FABRIC.RT.Quat().setFromAxisAndAngle(new FABRIC.RT.Vec3(0,1,0),0.0),
+        sc: new FABRIC.RT.Vec3(4.0,0.5,4),
+      }),
+      mass: 0.0
+    })
+  });
+  
+  scene.constructNode('Instance', {
+    geometryNode: cuboidNode,
+    materialNode: materialNode,
+    transformNode: nonslicedTransform2,
+    enableRaycasting: true
+  });
+  
+  var nonslicedTransform3 = scene.constructNode('BulletRigidBodyTransform', {
+    bulletWorldNode: bulletWorldNode,
+    shapeName: 'Box',
+    rigidBody: new FABRIC.RT.BulletRigidBody({
+      transform: FABRIC.RT.xfo({
+        tr: new FABRIC.RT.Vec3(-5.5,0,6),
+        ori: new FABRIC.RT.Quat().setFromAxisAndAngle(new FABRIC.RT.Vec3(0,0,1),-0.3),
+        sc: new FABRIC.RT.Vec3(3,1,4),
+      }),
+      mass: 0.0
+    })
+  });
+  
+  scene.constructNode('Instance', {
+    geometryNode: cuboidNode,
+    materialNode: materialNode,
+    transformNode: nonslicedTransform3,
+    enableRaycasting: true
+  });
+  */
+    
+  var rigName = 'walker';
+  var locomotionControllerNode;
+  switch(rigName){
+  case 'walker':
+    var locomotionControllerNode = scene.constructNode('LocomotionCharacterController', {
+        cameraNode: camera,
+        maxLinearVelocity: new FABRIC.RT.Vec2(10, 10),
+        maxLinearAcceleration: 0.15,
+        maxAngularVelocity:  new FABRIC.RT.Euler(0, 1.5, 0),
+        bulletWorldNode: bulletWorldNode,
+        numTrailSegments: 0,
+        gravity: -1.0,
+        comHeight: 1.8,
+        circleSize: 0.6
+      });
+  case 'centipede':
+    var maxLinearVelocity = new FABRIC.RT.Vec2(80, 80);
+    var maxLinearAcceleration = 15.0;
+    var maxAngularVelocity = new FABRIC.RT.Euler(0,1,0);
+    var numTrailSegments = 12;
+    break;
+  case 'marama':
+    var locomotionControllerNode = scene.constructNode('LocomotionCharacterController', {
+        cameraNode: camera,
+        maxLinearVelocity: new FABRIC.RT.Vec2(7, 7),
+        maxLinearAcceleration: 0.2,
+        maxAngularVelocity:  new FABRIC.RT.Euler(0, 4, 0),
+        bulletWorldNode: bulletWorldNode,
+        numTrailSegments: 0,
+        gravity: -1.0,
+        comHeight: 1.8,
+        circleSize: 0.6
+      });
+    break;
+  }
+  
+
+  
+  
+  var rigLoader = scene.constructManager('SceneLoader');
+  var storage = new FABRIC.SceneGraph.LocalStorage(rigName);
+  var nodeMap = rigLoader.load(storage);
+
+  var libraryAnimations = nodeMap.LibraryLocomotionAnimations;
+  var locomotionRig = nodeMap.LocomotionRig;
+  
+  var characterVariables = nodeMap.CharacterVariables;
+  var ikrig = nodeMap.IKRig;
+  var characterMesh =  nodeMap.Walker_ncl1_1;
+  if(!characterMesh){
+    characterMesh =  nodeMap.characterMesh;
+  }
+  var skeletonNode = ikrig.getSkeletonNode();
+  
+    
+  
+  var locomotionVariables = scene.constructNode('LocomotionPoseVariables', {
+    baseVariables: characterVariables,
+    bulletWorldNode: bulletWorldNode
+  });
+  locomotionVariables.setCharacterController(locomotionControllerNode);
+  locomotionVariables.setAnimationLibrary(libraryAnimations);
+  locomotionVariables.setSkeletonNode(skeletonNode);
+  
+  
+  ikrig.setVariablesNode(locomotionVariables);
+  
+  ikrig.setControllerNode(locomotionControllerNode);
+  
+  
+  var materialNode = scene.constructNode('PhongSkinningMaterial', {
+    lightNode: light,
+    diffuseColor: FABRIC.RT.rgba(1.0, 0.0, 0.0, 1.0),
+    numBones: skeletonNode.getNumBones()
+  });
+  
+  var characterInstance = scene.constructNode("CharacterInstance", {
+    rigNode:ikrig,
+    geometryNode: characterMesh,
+    materialNode: materialNode
+  });
+  
+  
+  /*
+  var skeletonGeometryNode = scene.constructNode("CharacterSkeletonDebug", {
+    characterRigNode:ikrig,
+    boneradius: 0.2,
+    color: FABRIC.RT.rgba(0.0, 0.0, 1.0, 1.0)
+  });
+  */
+  
+  var togglePlay = function(){
+    if ($('#play').text() == 'Play') {
+      $('#play').button('option', {
+        label: 'Pause',
+        icons: {
+          primary: 'ui-icon-pause'
+        }
+      });
+      scene.animation.play();
+    } else {
+      $('#play').button('option', {
+        label: 'Play',
+        icons: {
+          primary: 'ui-icon-play'
+        }
+      });
+      scene.animation.pause();
+    }
+  }
+  
+  var translationControls = new FABRIC.RT.Vec2();
+  var downKeys = [];
+  var arrowKeys = {
+    left: 37,
+    right: 39,
+    up: 38,
+    down: 40
+  }
+  var speed = 0.4;
+  window.onkeydown = function(evt) {
+    if(downKeys[evt.keyCode]){
+      return;
+    }
+    if(evt.keyCode==90){ // 'z'
+      togglePlay();
+    }
+    
+    if(evt.shiftKey){
+      speed = 1.0;
+    }
+    else{
+      speed = 0.4;
+    }
+    
+    if(evt.keyCode == arrowKeys.left) {
+      translationControls.x = -1.0;
+      downKeys[arrowKeys.left] = true;
+    } else if(evt.keyCode == arrowKeys.right) {
+      translationControls.x = 1.0;
+      downKeys[arrowKeys.right] = true;
+    } else if(evt.keyCode == arrowKeys.up) {
+      translationControls.y = 1.0;
+      downKeys[arrowKeys.up] = true;
+    } else if(evt.keyCode == arrowKeys.down) {
+      translationControls.y = -1.0;
+      downKeys[arrowKeys.down] = true;
+    }
+    
+    if(translationControls.length() > 1.0){
+      translationControls.setUnit();
+    }
+    locomotionControllerNode.setTranslationControls(translationControls.multiplyScalar(speed));
+  };
+  
+  window.onkeyup = function(evt) {
+    if(evt.shiftKey) {
+      speed = 0.4;
+    }
+    if(evt.keyCode == arrowKeys.left) {
+      if(!downKeys[arrowKeys.right]){
+        translationControls.x = 0.0;
+      }
+      downKeys[arrowKeys.left] = false;
+    } else if(evt.keyCode == arrowKeys.right) {
+      if(!downKeys[arrowKeys.left]){
+        translationControls.x = 0.0;
+      }
+      downKeys[arrowKeys.right] = false;
+    } else if(evt.keyCode == arrowKeys.up) {
+      if(!downKeys[arrowKeys.down]){
+        translationControls.y = 0.0;
+      }
+      downKeys[arrowKeys.up] = false;
+    } else if(evt.keyCode == arrowKeys.down) {
+      if(!downKeys[arrowKeys.up]){
+        translationControls.y = 0.0;
+      }
+      downKeys[arrowKeys.down] = false;
+    }
+    
+    locomotionControllerNode.setTranslationControls(translationControls.multiplyScalar(speed));
+  }
+  
+  $('#loadingDialog').dialog({
+    modal: true
+  });
+  FABRIC.appendOnResolveAsyncTaskCallback(function(label, nbRemaining, doneWeight, totalWeight) {
+    $('#loadingProgressBar').progressbar({
+      value: (1.0-(doneWeight/totalWeight))*100
+    });
+    if (nbRemaining===0) {
+      $('#loadingDialog').dialog('close');
+      var errors = scene.getErrors();
+      if (errors.length > 0) {
+        throw (errors.toString());
+      }
+      viewport.redraw();
+      
+      
+      $('#play').button()
+        .click(function() {
+          togglePlay();
+        });
+      
+      $('#step').button()
+        .click(function() {
+          scene.animation.step();
+        });
+        
+        /*
+      var controllerNode = scene.constructNode('AnimationController', {
+        timeRange: new FABRIC.RT.Vec2(0, 25/30),
+        timeControl: 1, /* 0: absolute, 1: increment * /
+        outOfRange: 1 /* 0: linear, 1: loop, 3: clamp * /
+      });
+      
+      
+    //  characterVariables.bindToAnimationTracks(libraryAnimations, controllerNode, 0);
+      
+      var locomotionRigNode = scene.constructNode('CharacterRig', {
+        name: 'LocomotionRig',
+        skeletonNode: ikrig.getSkeletonNode(),
+        baseCharacterRig: ikrig,
+        variablesNode: characterVariables
+      });
+      */
+   //   ikrig.setVariablesNode(characterVariables);
+   //   ikrig.setControllerNode(locomotionControllerNode);
+      
+      /*
+
+      */
+      return true;
+    }
+  });
+  
+});
+
+// jQuert UI Styling classes
+$(document).ready(function() {
+	$(".box").addClass("ui-widget");
+	$(".box h2").addClass("ui-widget-header ui-corner-all");
+	$(".content").addClass("ui-widget-content");
+});
+
+</script>
+
+  </head> 
+  <body>
+    <div id="loadingDialog" title="Loading...">
+      <h4 id="loadingDesc" style="margin-bottom: 10px"></h4>
+      <div id="loadingProgressBar" class="ui-progressbar-value"></div>
+    </div>
+    <div id="wrapper">
+      <div id="editor">
+        <div id="viewer">
+          <div id="FabricContainer"></div> 
+        </div><!--viewer-->
+        <div id="sidebar">
+          
+          <div class="box">
+            <h2>INFO</h2>
+            <div class="content">
+            </div><!--content-->
+          </div><!--box-->
+    
+          <div class="box">
+            <h2>CONTROLS</h2>
+            <div class="content">
+              <button id="play" style="margin-top:10px;">Play</button>
+              <button id="step" style="margin-top:10px;">Step</button>
+            </div><!--content-->
+          </div><!--box-->
+
+        </div><!--sidebar-->
+      </div> <!--editor-->
+    </div><!--wrapper-->
+  </body> 
+  </html>
