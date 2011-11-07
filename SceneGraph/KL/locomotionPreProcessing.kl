@@ -155,7 +155,7 @@ operator locomotionPreProcessing(
   io LinearKeyframeTrackSet trackSet,
   io KeyframeTrackBindings bindings,
   
-  io LocomotionMarker locomotionMarkers[],
+  io LocomotionMarker locomotionMarkers[][],
   io FootStepTrack footStepTracks[],
   in Size index,
   
@@ -168,14 +168,7 @@ operator locomotionPreProcessing(
   trackSet = sourceAnimationLibrary[index];
   PoseVariables poseVariables = referenceVariables;
   bindings = referenceBindings;
-  report("referenceBindings.scalarBindings:"+referenceBindings.scalarBindings);
-  report("-----------");
   
-//  addCOMTracks(trackSet, bindings, com);
-//  addLegTracks(trackSet, bindings, locomotionFeet);
-  
-//  report(bindings);
-
   Xfo pose[];
   pose.resize(bones.size);
   for(Integer i=0; i < bones.size; i++){
@@ -244,6 +237,7 @@ operator locomotionPreProcessing(
     }
     else{
       if(footSteps[i][0].x > timeRange.x){
+        
         Vec2 firstStep = footSteps[i][0];
         Vec2 nextStep = footSteps[i][1];
         step.liftTime = firstStep.x - (nextStep.x - firstStep.y);
@@ -411,7 +405,6 @@ operator locomotionPreProcessing(
     
     
     debugGeometry.drawLine(poseVariables.xfoValues[hubs[0].xfoId].tr, comXfo.tr, Color(1.0, 1.0, 1.0, 1.0));
-    report("comXfo:"+comXfo);
    //     debugGeometry.drawAxis(comXfo, 1.0, Color(1.0, 0.0, 1.0, 1.0));
     comXfo = comXfo * comAlignment;
     comXfo.tr.y = 0;//poseVariables.xfoValues[legs[footId].ikGoalXfoId].tr.y;
@@ -501,11 +494,7 @@ operator locomotionPreProcessing(
       for(Integer i=0; i < legs.size; i++){
         for(Integer j=0; j < footSteps[i].size; j++){
           Vec2 step = footSteps[i][j];
-        //  Scalar midPlant = (step.x + step.y) * 0.5;
-        //  if(midPlant > prevKeyt && midPlant < currKeyt && !(footId == i && stepId == j)){
           if(step.y > prevKeyt && step.y < currKeyt){
-            report(step);
-         //  currKeyt = midPlant;
             currKeyt = step.y;
             footId = i;
             stepId = j;
@@ -604,7 +593,34 @@ operator locomotionPreProcessing(
     
   }
   
- // trackSet.calcTimeRange();
+  ///////////////////////////////////////////////////
+  // Add Animation Markers
+  locomotionMarkers.resize(legs.size);
+  for(Integer i=0; i < legs.size; i++){
+    for(Integer j=0; j < footStepTracks[i].footSteps.size; j++){
+      if(footStepTracks[i].footSteps[j].liftTime < timeRange.x ||
+         footStepTracks[i].footSteps[j].liftTime >= timeRange.y){
+        continue;
+      }
+      // This is just temporary. Only enable one marker per foot.
+      if(locomotionMarkers[i].size > 0){
+        continue;
+      }
+      LocomotionMarker marker;
+      Scalar t = footStepTracks[i].footSteps[j].liftTime;
+      marker.time = t;
+      marker.stepId = j;
+      
+      trackSet.evaluateKeyframeTracks(t, comParamBindings, poseVariables, currKeys);
+      marker.params.resize(comParamBindings.scalarBindings.size);
+      for(Integer k=0; k < comParamBindings.scalarBindings.size; k++){
+        marker.params[k] = poseVariables.scalarValues[comParamBindings.scalarBindings[k].varId];
+      }
+      locomotionMarkers[i].push(marker);
+    }
+  }
+  report("locomotionMarkers:"+locomotionMarkers);
+  
   trackSet.timeRange = timeRange;
   report("locomotionPreProcessing >>>:" + index);
 }

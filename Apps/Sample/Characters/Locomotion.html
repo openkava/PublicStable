@@ -225,7 +225,7 @@ $(document).ready(function() {
   case 'marama':
     var locomotionControllerNode = scene.constructNode('LocomotionCharacterController', {
         cameraNode: camera,
-        maxLinearVelocity: new FABRIC.RT.Vec2(3, 3),
+        maxLinearVelocity: new FABRIC.RT.Vec2(7, 7),
         maxLinearAcceleration: 0.2,
         maxAngularVelocity:  new FABRIC.RT.Euler(0, 4, 0),
         bulletWorldNode: bulletWorldNode,
@@ -320,6 +320,7 @@ $(document).ready(function() {
     up: 38,
     down: 40
   }
+  var speed = 0.4;
   window.onkeydown = function(evt) {
     if(downKeys[evt.keyCode]){
       return;
@@ -327,33 +328,38 @@ $(document).ready(function() {
     if(evt.keyCode==90){ // 'z'
       togglePlay();
     }
-    var speed = 1.0;
+    
     if(evt.shiftKey){
-      speed = 0.2;
-    }
-    if(evt.keyCode == arrowKeys.left) {
-      translationControls.x = -speed;
-      downKeys[arrowKeys.left] = true;
-    } else if(evt.keyCode == arrowKeys.right) {
-      translationControls.x = speed;
-      downKeys[arrowKeys.right] = true;
-    } else if(evt.keyCode == arrowKeys.up) {
-      translationControls.y = speed;
-      downKeys[arrowKeys.up] = true;
-    } else if(evt.keyCode == arrowKeys.down) {
-      translationControls.y = -speed;
-      downKeys[arrowKeys.down] = true;
+      speed = 1.0;
     }
     else{
-      return;
+      speed = 0.4;
     }
+    
+    if(evt.keyCode == arrowKeys.left) {
+      translationControls.x = -1.0;
+      downKeys[arrowKeys.left] = true;
+    } else if(evt.keyCode == arrowKeys.right) {
+      translationControls.x = 1.0;
+      downKeys[arrowKeys.right] = true;
+    } else if(evt.keyCode == arrowKeys.up) {
+      translationControls.y = 1.0;
+      downKeys[arrowKeys.up] = true;
+    } else if(evt.keyCode == arrowKeys.down) {
+      translationControls.y = -1.0;
+      downKeys[arrowKeys.down] = true;
+    }
+    
     if(translationControls.length() > 1.0){
       translationControls.setUnit();
     }
-    locomotionControllerNode.setTranslationControls(translationControls);
+    locomotionControllerNode.setTranslationControls(translationControls.multiplyScalar(speed));
   };
   
   window.onkeyup = function(evt) {
+    if(evt.shiftKey) {
+      speed = 0.4;
+    }
     if(evt.keyCode == arrowKeys.left) {
       if(!downKeys[arrowKeys.right]){
         translationControls.x = 0.0;
@@ -375,11 +381,10 @@ $(document).ready(function() {
       }
       downKeys[arrowKeys.down] = false;
     }
-    else{
-      return;
-    }
-    locomotionControllerNode.setTranslationControls(translationControls);
+    
+    locomotionControllerNode.setTranslationControls(translationControls.multiplyScalar(speed));
   }
+  
   $('#loadingDialog').dialog({
     modal: true
   });
