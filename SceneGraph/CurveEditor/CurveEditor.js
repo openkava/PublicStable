@@ -7,9 +7,9 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
   options.timeStripe = options.timeStripe!=undefined ? options.timeStripe : true;
   options.draggable = options.draggable!=undefined ? options.draggable : true;
   options.zoomable = options.zoomable!=undefined ? options.zoomable : true;
-  options.timeRange = options.timeRange!=undefined ? options.timeRange : new FABRIC.Vec2(0, 100);
   trackSetId =  options.trackSetId!=undefined ? options.trackSetId : 0;
   
+  var timeRange = options.timeRange!=undefined ? options.timeRange : new FABRIC.Vec2(0, 100);
   var valueRange = options.valueRange!=undefined ? options.valueRange : new FABRIC.Vec2(0, 1);
   var clampValues = options.clampValues!=undefined ? options.clampValues : false;
   
@@ -43,8 +43,7 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
   ///////////////
   tracksData = animationLibraryNode.getTrackSet(trackSetId);
   var trackCount = tracksData.tracks.length;
-  var timeRange = new FABRIC.Vec2(0, 0);
-  var yRange = new FABRIC.Vec2(0, 0);
+  var timeRange, yRange = new FABRIC.Vec2(0, 0);
   curvesData = [];
   var trackCurves = [];
   trackDisplayNode = scene.constructNode('TrackDisplay', {
@@ -67,23 +66,23 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
     tr: new FABRIC.Vec2(0, 0),
     sc: new FABRIC.Vec2(1, 1),
     fitToScreen:function(){
-      for (var i = 0; i < trackCount; i++) {
-        var keys = tracksData.tracks[i].keys;
-        if(keys.length <= 1){
-          continue;
+      if(!clampValues){
+        timeRange = new FABRIC.Vec2(0, 0);
+        for (var i = 0; i < trackCount; i++) {
+          var keys = tracksData.tracks[i].keys;
+          if(keys.length <= 1){
+            continue;
+          }
+          if (timeRange.x > keys[0].time) {
+            timeRange.x = keys[0].time;
+          }
+          if (timeRange.y < keys[keys.length - 1].time) {
+            timeRange.y = keys[keys.length - 1].time;
+          }
         }
-        if (timeRange.x > keys[0].time) {
-          timeRange.x = keys[0].time;
-        }
-        if (timeRange.y < keys[keys.length - 1].time) {
-          timeRange.y = keys[keys.length - 1].time;
-        }
+        trackDisplayNode.setTimeRange(timeRange);
       }
       var getCurveYRange = function(curveData) {
-        if(clampValues){
-          yRange = valueRange;
-          return;
-        }
         for (var i = 1; i < curveData.length; i++) {
           if (yRange.x > curveData[i]) {
             yRange.x = curveData[i];
@@ -93,15 +92,19 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
           }
         }
       }
-      trackDisplayNode.setTimeRange(timeRange);
-      curvesData = trackDisplayNode.getCurveData();
-      for (var i = 0; i < trackCount; i++) {
-        if(i==0){
-          yRange = new FABRIC.Vec2(curvesData.values[i][0], curvesData.values[i][0]);
-        }
-        getCurveYRange(curvesData.values[i]);
-      }
       
+      if(!clampValues){
+        yRange = valueRange;
+      }
+      else{
+        curvesData = trackDisplayNode.getCurveData();
+        for (var i = 0; i < trackCount; i++) {
+          if(i==0){
+            yRange = new FABRIC.Vec2(curvesData.values[i][0], curvesData.values[i][0]);
+          }
+          getCurveYRange(curvesData.values[i]);
+        }
+      }
       if(clampValues){
         this.sc = new FABRIC.Vec2(windowWidth/(timeRange.y - timeRange.x), -(windowHeight) / (yRange.y - yRange.x));
       }else{
