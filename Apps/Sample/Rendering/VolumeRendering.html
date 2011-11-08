@@ -179,6 +179,12 @@ FABRIC.SceneGraph.registerNodeType('CropVolumeManipulator', {
     var cropMin, cropMax;
     var invxfo, xfo;
     
+    var lineMaterial = scene.pub.constructNode('FlatMaterial', {
+      prototypeMaterialType: "LineMaterial",
+      color:options.color,
+      lineWidth: 2.0
+    });
+
     var constructEdgeManipulator = function(name, srcCode, modifierFn){
       var lineGeom = scene.constructNode('LineVector');
       lineGeom.pub.setAttributeDynamic('positions');
@@ -193,13 +199,7 @@ FABRIC.SceneGraph.registerNodeType('CropVolumeManipulator', {
         entryFunctionName: 'setLineSegmentPositions',
         srcCode: srcCode
       }));
-      
-      var lineMaterial = scene.pub.constructNode('FlatMaterial', {
-        prototypeMaterialType: "LineMaterial",
-        color:options.color,
-        lineWidth: 2.0
-      });
-      
+            
       var manipulatorNode = scene.constructNode('Manipulator', {
         name: name+"Manipulator",
         transformNode: cropVolumeManipulatorTransform,
@@ -363,6 +363,23 @@ operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){
       cropMax.x += delta.x;
       cropMax.y += delta.y;
     });
+
+    var lineMaterialPrivate = scene.getPrivateInterface(lineMaterial);
+    var parentRedrawHandler = lineMaterialPrivate.getShaderNode().getParentEventHandler();
+    var enabled = true;
+
+    cropVolumeManipulator.pub.enable = function() {
+      if(!enabled) {
+        parentRedrawHandler.appendChildEventHandler(lineMaterialPrivate.getShaderNode().getRedrawEventHandler());
+        enabled = true;
+      }
+    };
+    cropVolumeManipulator.pub.disable = function() {
+      if(enabled) {
+        parentRedrawHandler.removeChildEventHandler(lineMaterialPrivate.getShaderNode().getRedrawEventHandler());
+        enabled = false;
+      }
+    };
     
     return cropVolumeManipulator;
   }
@@ -490,7 +507,7 @@ $(document).ready(function() {
   texture2DSlice[2] = scene.constructNode('VolumeSliceRender', {tl: new FABRIC.RT.Vec2(2.0/3.0+borderSize, -1.0/3.0-borderSize), br: new FABRIC.RT.Vec2(1.0-borderSize, -1.0+borderSize), volumeOpacityInstanceNode: volumeNode, ratio: 0.5, axis : 2, sharedVolumeSliceRender: texture2DSlice[0]});
     
     
-  scene.constructNode('CropVolumeManipulator', {
+  var cropManipulator = scene.constructNode('CropVolumeManipulator', {
     volumeInstanceNode: volumeNode
   });
     
@@ -569,6 +586,25 @@ $(document).ready(function() {
     volumeNode.setInvertColor(invertColor ? 1 : 0);
     volumeNode.setBrightnessFactor(1.0-volumeNode.getBrightnessFactor());
     $brightnessSlider.slider('value', volumeNode.getBrightnessFactor());
+    viewport.redraw();
+  });
+
+  var savedCropMin, savedCropMax;
+  $("#enableCropping").attr('checked', true).change(function() {
+    var enableCropping = $('#enableCropping').attr('checked');
+    if( !enableCropping ) {
+      savedCropMin = volumeNode.getCropMin().clone();
+      savedCropMax = volumeNode.getCropMax().clone();
+      volumeNode.setCropMin( new FABRIC.RT.Vec3(-1,-1,-1));
+      volumeNode.setCropMax( new FABRIC.RT.Vec3( 1, 1, 1));
+      cropManipulator.disable();
+      viewport.disableRaycasting();
+    } else {
+      volumeNode.setCropMin( savedCropMin );
+      volumeNode.setCropMax( savedCropMax );
+      cropManipulator.enable();
+      viewport.enableRaycasting();
+    }
     viewport.redraw();
   });
 
@@ -811,6 +847,7 @@ $(document).ready(function() {
               <p id="brushColor"></p>
 
               <input type="checkbox" id="invert" style="margin-top:10px;" /><label for="invert">Invert Colors</label><br>
+              <input type="checkbox" id="enableCropping" style="margin-top:10px;" /><label for="invert">Enable Cropping</label><br>
            <!-- </div>content-->
             </div><!--box-->
           </div><!--volumeRenderTab-->

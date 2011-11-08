@@ -925,6 +925,8 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
     }
 
     var cameraNode = undefined, fabricwindow;
+    var raycastingEnabled = false;
+    var loading = true;
     var windowElement = options.windowElement;
     var viewportNode = scene.constructNode('SceneGraphNode', options),
       dgnode = viewportNode.constructDGNode('DGNode'),
@@ -950,6 +952,7 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
     
     FABRIC.appendOnResolveAsyncTaskCallback(function(label, countRemaining){
       if(countRemaining===0){
+        loading = false;
         redrawEventHandler.setScope('window', fabricwindow.windowNode);
         if(scene.getScenePreRedrawEventHandler()){
           fabricwindow.redrawEvent.appendEventHandler(scene.getScenePreRedrawEventHandler());
@@ -958,7 +961,7 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
         if(scene.getScenePostRedrawEventHandler()){
           fabricwindow.redrawEvent.appendEventHandler(scene.getScenePostRedrawEventHandler());
         }
-        if(viewPortRaycastEventHandler){
+        if(raycastingEnabled){
           // the sceneRaycastEventHandler propogates the event throughtout the scene.
           viewPortRaycastEventHandler.appendChildEventHandler(scene.getSceneRaycastEventHandler());
         }
@@ -997,41 +1000,60 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
     ///////////////////////////////////////////////////////////////////
     // Raycasting
     var viewPortRaycastEvent, viewPortRaycastEventHandler, viewPortRayCastDgNode;
-    if (scene.getSceneRaycastEventHandler() && options.enableRaycasting) {
+    var raycastingConstructed = false;
 
-      viewPortRayCastDgNode = viewportNode.constructDGNode('RayCastDgNodeDGNode');
-      viewPortRayCastDgNode.addMember('x', 'Integer');
-      viewPortRayCastDgNode.addMember('y', 'Integer');
-      viewPortRayCastDgNode.addMember('ray', 'Ray');
-      viewPortRayCastDgNode.addMember('threshold', 'Scalar', options.rayIntersectionThreshold);
-      viewPortRayCastDgNode.setDependency(fabricwindow.windowNode, 'window');
+    var enableRaycasting = function() {
+      if( !raycastingEnabled && scene.getSceneRaycastEventHandler() ) {
+        raycastingEnabled = true;
+        if( !raycastingConstructed ) {
+          raycastingConstructed = true;
+          viewPortRayCastDgNode = viewportNode.constructDGNode('RayCastDgNodeDGNode');
+          viewPortRayCastDgNode.addMember('x', 'Integer');
+          viewPortRayCastDgNode.addMember('y', 'Integer');
+          viewPortRayCastDgNode.addMember('ray', 'Ray');
+          viewPortRayCastDgNode.addMember('threshold', 'Scalar', options.rayIntersectionThreshold);
+          viewPortRayCastDgNode.setDependency(fabricwindow.windowNode, 'window');
 
-      // this operator calculates the rayOri and rayDir from the scopes collected so far.
-      // The scopes should be the window, viewport, camera and projection.
-      viewPortRayCastDgNode.bindings.append(scene.constructOperator({
-        operatorName: 'ViewportRaycast',
-        srcFile: 'FABRIC_ROOT/SceneGraph/KL/viewPortUpdateRayCast.kl',
-        entryFunctionName: 'viewPortUpdateRayCast',
-        parameterLayout: [
-          'camera.cameraMat44',
-          'camera.projectionMat44',
-          'window.width',
-          'window.height',
-          'self.x',
-          'self.y',
-          'self.ray'
-        ]
-      }));
+          // this operator calculates the rayOri and rayDir from the scopes collected so far.
+          // The scopes should be the window, viewport, camera and projection.
+          viewPortRayCastDgNode.bindings.append(scene.constructOperator({
+            operatorName: 'ViewportRaycast',
+            srcFile: 'FABRIC_ROOT/SceneGraph/KL/viewPortUpdateRayCast.kl',
+            entryFunctionName: 'viewPortUpdateRayCast',
+            parameterLayout: [
+              'camera.cameraMat44',
+              'camera.projectionMat44',
+              'window.width',
+              'window.height',
+              'self.x',
+              'self.y',
+              'self.ray'
+            ]
+          }));
 
-      viewPortRaycastEventHandler = viewportNode.constructEventHandlerNode('Raycast');
-      viewPortRaycastEventHandler.setScope('raycastData', viewPortRayCastDgNode);
+          viewPortRaycastEventHandler = viewportNode.constructEventHandlerNode('Raycast');
+          viewPortRaycastEventHandler.setScope('raycastData', viewPortRayCastDgNode);
+          viewPortRaycastEvent = viewportNode.constructEventNode('RaycastEvent');
 
-      // Raycast events are fired from the viewport. As the event
-      // propagates down the tree it collects scopes and fires operators.
-      // The operators us the collected scopes to calculate the ray.
-      viewPortRaycastEvent = viewportNode.constructEventNode('RaycastEvent');
-      viewPortRaycastEvent.appendEventHandler(viewPortRaycastEventHandler);
-    }
+          // Raycast events are fired from the viewport. As the event
+          // propagates down the tree it collects scopes and fires operators.
+          // The operators us the collected scopes to calculate the ray.
+          viewPortRaycastEvent.appendEventHandler(viewPortRaycastEventHandler);
+        }
+        if( !loading )
+          viewPortRaycastEventHandler.appendChildEventHandler(scene.getSceneRaycastEventHandler());
+      }
+    };
+
+    var disableRaycasting = function() {
+      if( raycastingEnabled ) {
+        raycastingEnabled = false;
+        viewPortRaycastEventHandler.removeChildEventHandler(scene.getSceneRaycastEventHandler());
+      }
+    };
+
+    if (options.enableRaycasting)
+      enableRaycasting();
 
     var getElementCoords = function(evt) {
       var browserZoom = fabricwindow.windowNode.getData('width') / evt.target.clientWidth;
@@ -1079,6 +1101,8 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
     viewportNode.pub.getCameraNode = function() {
       return cameraNode.pub;
     };
+    viewportNode.pub.disableRaycasting = disableRaycasting;
+    viewportNode.pub.enableRaycasting = enableRaycasting;
     viewportNode.pub.setBackgroundTextureImage = function(textureNode) {
       if (!textureStubdgnode) {
         textureStub.setScopeName('textureStub');
@@ -1155,28 +1179,30 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
       }
     };
     viewportNode.pub.rayCast = function(evt, options) {
+      var result = {
+        rayData: undefined
+      };
       options = scene.assignDefaults(options, {
           returnOnlyClosestNode: true
         });
-      var elementCoords = getElementCoords(evt);
-      viewPortRayCastDgNode.setData('x', elementCoords.x);
-      viewPortRayCastDgNode.setData('y', elementCoords.y);
-      var nodes = viewPortRaycastEvent.select('RayIntersection');
-      
-      var result = {
-        rayData: viewPortRayCastDgNode.getData('ray')
-      };
-      if (options.returnOnlyClosestNode) {
-        for (var i = 0; i < nodes.length; i++) {
-          if (!result.closestNode || nodes[i].value.distance < result.closestNode.value.distance) {
-            result.closestNode = nodes[i];
+      if( raycastingEnabled ) {
+        var elementCoords = getElementCoords(evt);
+        viewPortRayCastDgNode.setData('x', elementCoords.x);
+        viewPortRayCastDgNode.setData('y', elementCoords.y);
+        var nodes = viewPortRaycastEvent.select('RayIntersection');
+        result.rayData = viewPortRayCastDgNode.getData('ray');
+
+        if (options.returnOnlyClosestNode) {
+          for (var i = 0; i < nodes.length; i++) {
+            if (!result.closestNode || nodes[i].value.distance < result.closestNode.value.distance) {
+              result.closestNode = nodes[i];
+            }
           }
+        }else {
+          result.nodes = nodes;
         }
-        return result;
-      }else {
-        result.nodes = nodes;
-        return result;
       }
+      return result;
     };
     viewportNode.pub.calcRayFromMouseEvent = function(evt) {
       var elementCoords = getElementCoords(evt);
