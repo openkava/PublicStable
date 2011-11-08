@@ -700,6 +700,10 @@ FABRIC.SceneGraph.registerNodeType('Shader', {
       // handle passing render events to the shader from the cameras.
       options.parentEventHandler.appendChildEventHandler(redrawEventHandler);
     }
+
+    shaderNode.getParentEventHandler = function() {
+      return options.parentEventHandler;
+    }
     
     shaderNode.getVBORequirements = function() {
       return options.shaderAttributes;
