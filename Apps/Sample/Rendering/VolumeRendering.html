@@ -399,7 +399,10 @@ $(document).ready(function() {
   var opacityKeyAnimationLibrary = scene.constructNode('LinearKeyAnimationLibrary');
   var trackSet = new FABRIC.RT.KeyframeTrackSet('LinearPosKeyAnimationTrack');
   trackSet.tracks.push(new FABRIC.RT.KeyframeTrack('opacityKeyframeTrack', FABRIC.RT.rgb(0, 1, 0), [
-      linearkey(.1, 0), linearkey(.2, 0.75), linearkey(.4, 0.05), linearkey(.5, 1), linearkey(1.0, 1)
+      linearkey(.1, 0),
+      linearkey(.2, 0.75),
+      linearkey(.4, 0.05),
+      linearkey(.5, 1)
     ]));
   
   var trackSetID = opacityKeyAnimationLibrary.addTrackSet(trackSet);
@@ -660,8 +663,9 @@ $(document).ready(function() {
       timeStripe: false,
       draggable: false,
       zoomable: false,
+      valueRange: new FABRIC.RT.Vec2(0, 1),
       timeRange: new FABRIC.RT.Vec2(0, 1),
-      clampValues: true,
+      fitEditorToKeyRanges: false,
       volumerenderdemohack: true
     });
 
