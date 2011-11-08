@@ -1,5 +1,5 @@
 #
-# Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+# Copyright 2010-2011 Fabric Engine Inc. All rights reserved.
 #
 
 import os, platform, posixpath, glob
@@ -23,7 +23,7 @@ thirdPartyDir = os.path.join(os.getcwd(), 'ThirdParty' )
 # and cache generation!!
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 FABRIC_NAME='Fabric Engine'
-FABRIC_COMPANY_NAME='Fabric Technologies Inc.'
+FABRIC_COMPANY_NAME='Fabric Engine Inc.'
 FABRIC_DESC='High Performance Computing for the Web'
 FABRIC_COPYRIGHT='Copyright 2010-2011 ' + FABRIC_COMPANY_NAME + '  All rights reserved.'
 FABRIC_URL="http://fabric-engine.com"
