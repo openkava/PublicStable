@@ -431,6 +431,10 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
   return {
     resize: function(){
       fitCurveEditorToWindow();
+    },
+    redraw: function(){
+      tracksData = animationLibraryNode.getTrackSet(trackSetId);
+      updateTimeRange();
     }
   }
 };

@@ -502,10 +502,12 @@ FABRIC.SceneGraph = {
     };
 
     /////////////////////////////////////////////////////////////////////
-    // Public Scene Interface
 
     scene.pub.displayDebugger = function() {
       FABRIC.displayDebugger(context);
+    };
+    scene.getSceneGraphNodes = function(name) {
+      return sceneGraphNodes;
     };
     scene.pub.getSceneGraphNode = function(name) {
       return sceneGraphNodes[name];
@@ -1197,7 +1199,7 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
       }
     };
     viewportNode.pub.writeData = function(sceneSaver, constructionOptions, nodeData) {
-      nodeData.camera = sceneSaver.wrapQuotes(cameraNode.name);
+      nodeData.camera = cameraNode.getName();
     };
     viewportNode.pub.readData = function(sceneLoader, nodeData) {
       if (nodeData.camera) {
@@ -1590,6 +1592,34 @@ FABRIC.SceneGraph.registerNodeType('Camera', {
     cameraNode.addMemberInterface(dgnode, 'focalDistance', true);
 
     scene.addEventHandlingFunctions(cameraNode);
+    
+    
+    var parentWriteData = cameraNode.writeData;
+    var parentReadData = cameraNode.readData;
+    cameraNode.writeData = function(sceneSaver, constructionOptions, nodeData) {
+      if(transformNodeMember){
+        nodeData.transformNodeMember = transformNodeMember;
+      }
+      sceneSaver.addNode(transformNode.pub);
+      nodeData.transformNode = transformNode.pub.getName();
+      
+      nodeData.nearDistance = cameraNode.pub.getNearDistance();
+      nodeData.farDistance = cameraNode.pub.getFarDistance();
+      nodeData.fovY = cameraNode.pub.getFovY();
+      nodeData.focalDistance = cameraNode.pub.getFocalDistance();
+      
+      parentWriteData(sceneSaver, constructionOptions, nodeData);
+    };
+    cameraNode.readData = function(sceneLoader, nodeData) {
+      cameraNode.pub.setTransformNode(sceneLoader.getNode(nodeData.transformNode), nodeData.transformNodeMember);
+      
+      cameraNode.pub.setNearDistance(nodeData.nearDistance);
+      cameraNode.pub.setFarDistance(nodeData.farDistance);
+      cameraNode.pub.setFovY(nodeData.fovY);
+      cameraNode.pub.setFocalDistance(nodeData.focalDistance);
+      
+      parentReadData(sceneLoader, nodeData);
+    };
 
     if (typeof options.transformNode == 'string') {
       cameraNode.pub.setTransformNode(scene.constructNode(options.transformNode, { hierarchical: false }).pub);

@@ -208,17 +208,21 @@ FABRIC.SceneGraph.registerNodeType('Geometry', {
     
     var parentWriteData = geometryNode.writeData;
     var parentReadData = geometryNode.readData;
+    geometryNode.writeGeometryData = function(sceneSaver, constructionOptions, nodeData) {
+      nodeData['uniformsdgnode'] = geometryNode.writeDGNode(uniformsdgnode);
+      nodeData['attributesdgnode'] = geometryNode.writeDGNode(attributesdgnode);
+    }
+    geometryNode.readGeometryData = function(sceneLoader, nodeData) {
+      geometryNode.readDGNode(uniformsdgnode, nodeData['uniformsdgnode']);
+      geometryNode.readDGNode(attributesdgnode, nodeData['attributesdgnode']);
+    }
     geometryNode.writeData = function(sceneSaver, constructionOptions, nodeData) {
       parentWriteData(sceneSaver, constructionOptions, nodeData);
       constructionOptions.drawable = options.drawable;
       constructionOptions.createBoundingBoxNode = options.createBoundingBoxNode;
-      nodeData['uniformsdgnode'] = geometryNode.writeDGNode(uniformsdgnode);
-      nodeData['attributesdgnode'] = geometryNode.writeDGNode(attributesdgnode);
     };
     geometryNode.readData = function(sceneLoader, nodeData) {
       parentReadData(sceneLoader, nodeData);
-      geometryNode.readDGNode(uniformsdgnode, nodeData['uniformsdgnode']);
-      geometryNode.readDGNode(attributesdgnode, nodeData['attributesdgnode']);
     };
     
     return geometryNode;

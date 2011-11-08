@@ -131,10 +131,11 @@ var constructColorGradient = function(domRootID, colorKeyTrackLibraryNode, optio
   var eventListeners = {};
 
   var gradientWidget = {
-    resize: function(){
-      fitCurveEditorToWindow();
+    redraw: function(){
+      tracksData = colorKeyTrackLibraryNode.getTrackSet(trackSetId);
+      trackData = tracksData.tracks[0];
+      displayGradient();
     },
-    
     addEventListener: function(type, fn) {
       if (!eventListeners[type]) {
         eventListeners[type] = [];
