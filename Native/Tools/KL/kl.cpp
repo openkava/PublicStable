@@ -116,9 +116,11 @@ static void *LazyFunctionCreator( std::string const &functionName )
     result = cgManager->llvmResolveExternalFunction( functionName );
     if ( result )
       return result;
+#if defined(FABRIC_MODULE_OPENCL)
     result = OCL::llvmResolveExternalFunction( functionName );
     if ( result )
       return result;
+#endif
   }
   throw Exception( "Unable to look up symbol for '%s'", functionName.c_str() );
   return 0;
@@ -170,7 +172,9 @@ void handleFile( std::string const &filename, FILE *fp, unsigned int runFlags )
   std::auto_ptr<llvm::Module> module( new llvm::Module( "kl", cgContext->getLLVMContext() ) );
 
   CG::ModuleBuilder moduleBuilder( cgManager, cgContext, module.get() );
+#if defined(FABRIC_MODULE_OPENCL)
   OCL::llvmPrepareModule( moduleBuilder, rtManager );
+#endif
   
   RC::ConstHandle<AST::GlobalList> globalList = KL::Parse( scanner, diagnostics );
   if ( diagnostics.containsError() )

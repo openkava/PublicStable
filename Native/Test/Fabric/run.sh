@@ -45,8 +45,7 @@ ERROR=0
 for f in "$@"; do
   TMPFILE=$(tmpfilename)
 
-  NODE_PATH="../../dist/$BUILD_OS/$BUILD_ARCH/$BUILD_TYPE/FabricEngine/node_modules"
-  CMD="../../dist/$BUILD_OS/$BUILD_ARCH/$BUILD_TYPE/FabricEngine/bin/node $f"
+  CMD="node $f"
   
   NODE_PATH="$NODE_PATH" $VALGRIND_CMD $CMD 2>&1 \
     | grep -v '^\[FABRIC\] .*Extension registered' \
