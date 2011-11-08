@@ -93,7 +93,7 @@ FABRIC.SceneGraph = {
         preDraw: true,
         postDraw: true,
         constructAnimationInterface: true,
-        timeStep: 1/50, /* 50 fps */
+        timeStep: 1/50 /* 50 fps */
       });
     
     // first let's create the basic scene object
@@ -1267,7 +1267,7 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
             if (mouseOverNode == undefined ||
                 mouseOverNode.pub.getName() !== hitNode.pub.getName()) {
               if (mouseOverNode) {
-                evt.toElement = hitNode;
+                evt.toNode = hitNode;
                 evt.hitData = mouseOverNodeData;
                 fireGeomEvent('mouseout_geom', evt, mouseOverNode);
               }
