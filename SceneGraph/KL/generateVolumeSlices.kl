@@ -198,8 +198,8 @@ operator generateVolumeSlices(
       axisSteps[i] = step / dot;
     else
       axisSteps[i] = 1;//in fact we won't use it...
-    axisInvLen[i] = 1.0 / volSize.component(i);
-    axisTexCoordSteps[i] = axisSteps[i] * axisInvLen[i] * (fixedCrop[1].component(i) - fixedCrop[0].component(i));
+    axisInvLen[i] = (fixedCrop[1].component(i) - fixedCrop[0].component(i)) / volSize.component(i);
+    axisTexCoordSteps[i] = axisSteps[i] * axisInvLen[i];
   }
 
   Size nbEdges = 0;
