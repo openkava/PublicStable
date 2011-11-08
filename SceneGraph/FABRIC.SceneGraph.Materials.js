@@ -981,16 +981,9 @@ FABRIC.SceneGraph.registerNodeType('LineMaterial', {
       });
 
     var lineMaterial = scene.constructNode('Material', options);
-    var dgnode;
-    if(lineMaterial.getDGNode){
-      dgnode = lineMaterial.getDGNode();
-    }
-    else{
-      dgnode = lineMaterial.constructDGNode('DGNode');
-      lineMaterial.getRedrawEventHandler().setScope('material', dgnode);
-    }
-    dgnode.addMember('lineWidth', 'Scalar', options.lineWidth);
-    lineMaterial.addMemberInterface(dgnode, 'lineWidth', true);
+    var redrawEventHandler = lineMaterial.getRedrawEventHandler()
+    redrawEventHandler.addMember('lineWidth', 'Scalar', options.lineWidth);
+    lineMaterial.addMemberInterface(redrawEventHandler, 'lineWidth', true);
 
     // Note: this method of setting the linewidth size is probably obsolete.
     // TODO: Define a new effect and use material uniforms.
@@ -998,7 +991,7 @@ FABRIC.SceneGraph.registerNodeType('LineMaterial', {
         operatorName: 'setLineWidth',
         srcFile: 'FABRIC_ROOT/SceneGraph/KL/drawLines.kl',
         entryFunctionName: 'setLineWidth',
-        parameterLayout: ['material.lineWidth']
+        parameterLayout: ['self.lineWidth']
       }));
     return lineMaterial;
   }});
