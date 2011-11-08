@@ -28,6 +28,7 @@
     <script type="text/javascript" src="../../../SceneGraph/RT/RGBA.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/RT/Color.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/RT/Euler.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Ray.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/RT/OGLShaderProgram.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/RT/OGLTexture2D.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/RT/OGLTexture3D.js" charset="utf-8"></script>
@@ -150,19 +151,26 @@ FABRIC.SceneGraph.registerNodeType('CropVolumeManipulator', {
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
       volumeInstanceNode: undefined,
-      color: FABRIC.RT.rgb(0.8, 0, 0, 1)
+      color: FABRIC.RT.rgb(0.5, 0.5, 0.5, 1)
       });
 
     var volumeInstanceNode = scene.getPrivateInterface(options.volumeInstanceNode);
     var cropVolumeManipulator = scene.constructNode('SceneGraphNode', options);
     var volumeSlicesNode = scene.getPrivateInterface(volumeInstanceNode.pub.getVolumeSlicesNode());
     
-    var flatMaterial = scene.pub.constructNode('FlatMaterial', {
-      color:options.color
-    });
     
-    var constructEdgeManipulator = function(name, srcCode){
+    var cropVolumeManipulatorTransform = scene.pub.constructNode('Transform', {
+        hierarchical: true,
+        parentTransformNode: volumeInstanceNode.getTransformNode(),
+        localXfo: new FABRIC.RT.Xfo({ sc: new FABRIC.RT.Vec3(1.01, 1.01, 1.01) })
+      });
+    
+    var cropMin, cropMax;
+    var invxfo, xfo;
+    
+    var constructEdgeManipulator = function(name, srcCode, modifierFn){
       var lineGeom = scene.constructNode('LineVector');
+      lineGeom.pub.setAttributeDynamic('positions');
       lineGeom.getAttributesDGNode().setDependency(volumeSlicesNode.getUniformsDGNode(), 'volume_uniforms');
       lineGeom.getAttributesDGNode().bindings.append(scene.constructOperator({
         operatorName: name+'GeneratorOp',
@@ -174,41 +182,176 @@ FABRIC.SceneGraph.registerNodeType('CropVolumeManipulator', {
         entryFunctionName: 'setLineSegmentPositions',
         srcCode: srcCode
       }));
-      var inst = scene.constructNode('Instance', {
-        name: name+"Instance",
-        transformNode: volumeInstanceNode.getTransformNode(),
-        geometryNode: lineGeom.pub,
-        materialNode: flatMaterial
+      
+      var lineMaterial = scene.pub.constructNode('FlatMaterial', {
+        prototypeMaterialType: "LineMaterial",
+        color:options.color,
+        lineWidth: 2.0
       });
+      
+      var manipulatorNode = scene.constructNode('Manipulator', {
+        name: name+"Manipulator",
+        transformNode: cropVolumeManipulatorTransform,
+        geometryNode: lineGeom.pub,
+        materialNode: lineMaterial
+      });
+      
+      var viewportNode;
+      var planePoint, planeNormal;
+      var dragStartFn = function(evt) {
+        viewportNode = evt.viewportNode;
+        planePoint = evt.hitData.point;
+        planeNormal = evt.cameraNode.getTransformNode().getGlobalXfo().ori.rotateVector(new FABRIC.RT.Vec3(0, 0, 1));
+        
+        invxfo = volumeInstanceNode.getTransformNode().getGlobalXfo().inverse();
+        cropMin = volumeSlicesNode.pub.getCropMin();
+        cropMax = volumeSlicesNode.pub.getCropMax();
+      }
+      manipulatorNode.pub.addEventListener('dragstart', dragStartFn);
+  
+      var dragFn = function(evt) {
+        var ray2 = viewportNode.calcRayFromMouseEvent(evt);
+        var hitPoint2 = ray2.intersectPlane(planePoint, planeNormal).point;
+        if (!hitPoint2)
+          return;
+        
+        var delta = invxfo.transformVector(hitPoint2).subtract(invxfo.transformVector(planePoint));
+        
+        var newCropMin = cropMin.clone();
+        var newCropMax = cropMax.clone();
+        modifierFn(newCropMin, newCropMax, delta);
+        newCropMin.x = Math.clamp(newCropMin.x, -1, 1);
+        newCropMin.y = Math.clamp(newCropMin.y, -1, 1);
+        newCropMin.z = Math.clamp(newCropMin.z, -1, 1);
+        newCropMax.x = Math.clamp(newCropMax.x, -1, 1);
+        newCropMax.y = Math.clamp(newCropMax.y, -1, 1);
+        newCropMax.z = Math.clamp(newCropMax.z, -1, 1);
+        volumeSlicesNode.pub.setCropMin(newCropMin);
+        volumeSlicesNode.pub.setCropMax(newCropMax);
+      }
+      manipulatorNode.pub.addEventListener('drag', dragFn);
     }
     
-    constructEdgeManipulator( 'vertical1', 'use Vec3;\
+    constructEdgeManipulator( 'xaxis1', 'use Vec3;\
+operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){\
+  positions[0] = Vec3(min.x, min.y, min.z);\
+  positions[1] = Vec3(max.x, min.y, min.z);\
+}',
+    function(cropMin, cropMax, delta){
+      cropMin.y += delta.y;
+      cropMin.z += delta.z;
+    });
+    
+    constructEdgeManipulator( 'xaxis2', 'use Vec3;\
+operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){\
+  positions[0] = Vec3(min.x, max.y, min.z);\
+  positions[1] = Vec3(max.x, max.y, min.z);\
+}',
+    function(cropMin, cropMax, delta){
+      cropMax.y += delta.y;
+      cropMin.z += delta.z;
+    });
+    
+    constructEdgeManipulator( 'xaxis3', 'use Vec3;\
+operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){\
+  positions[0] = Vec3(min.x, min.y, max.z);\
+  positions[1] = Vec3(max.x, min.y, max.z);\
+}',
+    function(cropMin, cropMax, delta){
+      cropMin.y += delta.y;
+      cropMax.z += delta.z;
+    });
+    
+    constructEdgeManipulator( 'xaxis4', 'use Vec3;\
+operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){\
+  positions[0] = Vec3(min.x, max.y, max.z);\
+  positions[1] = Vec3(max.x, max.y, max.z);\
+}',
+    function(cropMin, cropMax, delta){
+      cropMax.y += delta.y;
+      cropMax.z += delta.z;
+    });
+    
+    
+    constructEdgeManipulator( 'yaxis1', 'use Vec3;\
 operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){\
   positions[0] = Vec3(min.x, min.y, min.z);\
   positions[1] = Vec3(min.x, max.y, min.z);\
-  report("vertical1:"+positions);\
-}');
+}',
+    function(cropMin, cropMax, delta){
+      cropMin.x += delta.x;
+      cropMin.z += delta.z;
+    });
     
-    constructEdgeManipulator( 'vertical2', 'use Vec3;\
+    constructEdgeManipulator( 'yaxis2', 'use Vec3;\
 operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){\
   positions[0] = Vec3(min.x, min.y, max.z);\
   positions[1] = Vec3(min.x, max.y, max.z);\
-  report("vertical2:"+positions);\
-}');
+}',
+    function(cropMin, cropMax, delta){
+      cropMin.x += delta.x;
+      cropMax.z += delta.z;
+    });
     
-    constructEdgeManipulator( 'vertical3', 'use Vec3;\
+    constructEdgeManipulator( 'yaxis3', 'use Vec3;\
 operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){\
   positions[0] = Vec3(max.x, min.y, min.z);\
   positions[1] = Vec3(max.x, max.y, min.z);\
-  report("vertical3:"+positions);\
-}');
+}',
+    function(cropMin, cropMax, delta){
+      cropMax.x += delta.x;
+      cropMin.z += delta.z;
+    });
     
-    constructEdgeManipulator( 'vertical4', 'use Vec3;\
+    constructEdgeManipulator( 'yaxis4', 'use Vec3;\
 operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){\
   positions[0] = Vec3(max.x, min.y, max.z);\
   positions[1] = Vec3(max.x, max.y, max.z);\
-  report("vertical4:"+positions);\
-}');
+}',
+    function(cropMin, cropMax, delta){
+      cropMax.x += delta.x;
+      cropMax.z += delta.z;
+    });
+    
+    constructEdgeManipulator( 'zaxis1', 'use Vec3;\
+operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){\
+  positions[0] = Vec3(min.x, min.y, min.z);\
+  positions[1] = Vec3(min.x, min.y, max.z);\
+}',
+    function(cropMin, cropMax, delta){
+      cropMin.x += delta.x;
+      cropMin.y += delta.y;
+    });
+    
+    constructEdgeManipulator( 'zaxis2', 'use Vec3;\
+operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){\
+  positions[0] = Vec3(min.x, max.y, min.z);\
+  positions[1] = Vec3(min.x, max.y, max.z);\
+}',
+    function(cropMin, cropMax, delta){
+      cropMin.x += delta.x;
+      cropMax.y += delta.y;
+    });
+    
+    constructEdgeManipulator( 'zaxis3', 'use Vec3;\
+operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){\
+  positions[0] = Vec3(max.x, min.y, min.z);\
+  positions[1] = Vec3(max.x, min.y, max.z);\
+}',
+    function(cropMin, cropMax, delta){
+      cropMax.x += delta.x;
+      cropMin.y += delta.y;
+    });
+    
+    constructEdgeManipulator( 'zaxis4', 'use Vec3;\
+operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){\
+  positions[0] = Vec3(max.x, max.y, min.z);\
+  positions[1] = Vec3(max.x, max.y, max.z);\
+}',
+    function(cropMin, cropMax, delta){
+      cropMax.x += delta.x;
+      cropMax.y += delta.y;
+    });
     
     return cropVolumeManipulator;
   }
@@ -241,17 +384,7 @@ $(document).ready(function() {
   trackSet.tracks.push(new FABRIC.RT.KeyframeTrack('opacityKeyframeTrack', FABRIC.RT.rgb(0, 1, 0), [
       linearkey(.1, 0), linearkey(.2, 0.75), linearkey(.4, 0.05), linearkey(.5, 1), linearkey(1.0, 1)
     ]));
-  /*
-  var opacityKeyframeTrackNode = scene.constructNode('LinearKeyAnimationTrack', {
-    name:'opacityKeyframeTrack'
-  } );
   
-  opacityKeyframeTrackNode.setTrackData(0, {
-    name: 'opacityFactors',
-    color: FABRIC.RT.rgb(1, 0, 0),
-    keys: [key(.1, 0), key(.2, 0.75), key(.4, 0.05), key(.5, 1), key(1.0, 1)]
-  });
-  */
   var trackSetID = opacityKeyAnimationLibrary.addTrackSet(trackSet);
   var opacityDisplayNode = scene.constructNode('TrackDisplay', {
       animationLibraryNode: opacityKeyAnimationLibrary,
@@ -284,7 +417,9 @@ $(document).ready(function() {
 
   var viewport = scene.constructNode('Viewport', {
     windowElement: document.getElementById('FabricContainer'),
-    backgroundColor: FABRIC.RT.rgb(0.0, 0.0, 0.0)
+    enableRaycasting: true,
+    backgroundColor: FABRIC.RT.rgb(0.0, 0.0, 0.0),
+    rayIntersectionThreshold: 0.03
   });
   
   // Create a camera to draw the scene from

@@ -428,6 +428,25 @@ FABRIC.SceneGraph.registerNodeType('Manipulator', {
   },
   manipulating: false,
   factoryFn: function(options, scene) {
+    
+    scene.assignDefaults(options, {
+        materialNode: undefined,
+        color: FABRIC.RT.rgb(0, 0.8, 0, 1),
+        highlightcolor: FABRIC.RT.rgb(0.8, 0.8, 0.8, 1),
+    });
+    if(!options.materialNode){
+      options.materialNode = scene.pub.constructNode('FlatMaterial', {
+        color: options.color,
+        drawOverlaid: options.drawOverlaid
+      });
+    }
+    options.enableRaycasting = true;
+    var manipulatorNode = scene.constructNode('Instance', options),
+      manipulating = false,
+      material = options.materialNode,
+      color = material.getColor(),
+      highlightColor = options.highlightcolor;
+/*
     scene.assignDefaults(options, {
         targetNode: undefined,
         targetMember: undefined,
@@ -437,14 +456,17 @@ FABRIC.SceneGraph.registerNodeType('Manipulator', {
         parentMemberIndex: undefined,
         color: FABRIC.RT.rgb(0, 0.8, 0, 1),
         highlightcolor: FABRIC.RT.rgb(0.8, 0.8, 0.8, 1),
-        localXfo: new FABRIC.RT.Xfo()
+        localXfo: new FABRIC.RT.Xfo(),
+        materialNode: undefined,
+        geometryNode: undefined
       });
 
+    
     var compensation = true,
       manipulating = false,
       color = options.color,
       highlightColor = options.highlightcolor,
-      material = scene.pub.constructNode('FlatMaterial', {
+      material = options.materialNode ? options.materialNode : scene.pub.constructNode('FlatMaterial', {
         color: options.color,
         drawOverlaid: options.drawOverlaid
       });
@@ -480,10 +502,9 @@ FABRIC.SceneGraph.registerNodeType('Manipulator', {
     if (!parentNode) {
       parentNode = targetNode;
     }
-
     if (!targetNode || !targetMember) {
       // Note: this might be redundant. TODO: check and possibly remove
-      throw ('Cannot set a transform if the targetNode is not set.');
+  //    throw ('Cannot set a transform if the targetNode is not set.');
     }
 
     targetNode = scene.getPrivateInterface(targetNode);
@@ -593,7 +614,7 @@ FABRIC.SceneGraph.registerNodeType('Manipulator', {
       xfo.ori = ori;
       setTargetXfo(xfo);
     }
-
+    
     var manipulatorNode = scene.constructNode('Instance', {
           name: options.name,
           enableRaycasting: true,
@@ -602,7 +623,7 @@ FABRIC.SceneGraph.registerNodeType('Manipulator', {
           transformNode: transformNode,
           raycastOverlaid: options.drawOverlaid
         });
-
+    
     manipulatorNode.getTargetNode = function() {
       return targetNode;
     };
@@ -661,7 +682,7 @@ FABRIC.SceneGraph.registerNodeType('Manipulator', {
         setTargetOri(getParentXfo().ori.inverse().multiply(ori));
       }
     };
-    
+*/
     var manipulatorGlobals = this;
     var highlightNode = function(){
       material.setColor(highlightColor);
@@ -672,15 +693,17 @@ FABRIC.SceneGraph.registerNodeType('Manipulator', {
     manipulatorNode.pub.addEventListener('mouseover_geom', function(evt) {
         if(!manipulatorGlobals.manipulating){
           highlightNode();
+          manipulatorNode.pub.fireEvent('highlight', evt);
           evt.viewportNode.redraw();
         }
       });
     manipulatorNode.pub.addEventListener('mouseout_geom', function(evt) {
         if(!manipulating){
           unhighlightNode();
-          if(!evt.toElement){
-            // if there is a 'toElement' then there will be a mouseover event.
-            // the redraw will occur then.
+          manipulatorNode.pub.fireEvent('unhighlight', evt);
+          if(!evt.toNode){
+            // if there is a 'toElement' then there will be a 
+            // mouseover event. the redraw will occur then.
             evt.viewportNode.redraw();
           }
         }
