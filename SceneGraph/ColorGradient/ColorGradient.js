@@ -119,6 +119,7 @@ var constructColorGradient = function(domRootID, colorKeyTrackLibraryNode, optio
         trackData.keys.splice(selectedKeyIndex, 1);
         colorKeyTrackLibraryNode.setTrackSet(tracksData);
         displayGradient();
+        gradientWidget.fireEvent('gradientchanged');
       }
     }
   });
