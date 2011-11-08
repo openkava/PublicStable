@@ -40,11 +40,9 @@ LidarReader::LocalData::LocalData(KL::String & fileName, KL::Boolean & compresse
 #ifndef NDEBUG
     printf("  { FabricLIDAR } : Opening file %s\n",fileName.data());
 #endif
-  mStream.open(fileName.data());
+  mStream.open(fileName.data(), std::ifstream::in | std::ifstream::binary);
   liblas::ReaderFactory f;
   mReader = NULL;
-  //liblas::Reader * reader = new liblas::Reader(f.CreateWithStream(mStream));
-  //mReader = reader;
   mReader = new liblas::Reader(f.CreateWithStream(mStream));
 }
 
@@ -74,7 +72,14 @@ FABRIC_EXT_EXPORT void FabricLIDAR_Reader_Open(
     }
     catch(std::runtime_error e)
     {
+      printf("  { FabricLIDAR } : RuntimeError caught: '%s'.\n",e.what());
+      Fabric::EDK::throwException("  { FabricLIDAR } : RuntimeError caught: '%s'",e.what());
+      lidar.localData = NULL;
+    }
+    catch(std::exception e)
+    {
       printf("  { FabricLIDAR } : Exception caught: '%s'.\n",e.what());
+      Fabric::EDK::throwException("  { FabricLIDAR } : Exception caught: '%s'",e.what());
       lidar.localData = NULL;
     }
 
@@ -96,13 +101,13 @@ FABRIC_EXT_EXPORT void FabricLIDAR_Reader_Decode(
 #endif
 
 #if defined(FABRIC_OS_WINDOWS)
-    char const *dir = getenv("APPDATA");
-    if(dir == NULL)
-      dir = getenv("TEMP");
+    char const *dir = getenv("TEMP");
     if(dir == NULL)
       dir = getenv("TMP");
     if(dir == NULL)
-      Fabric::EDK::throwException("Lidar extension: environment variable APP_DATA or TMP or TEMP is undefined");
+      dir = getenv("APPDATA");
+    if(dir == NULL)
+      Fabric::EDK::throwException("  { FabricLIDAR } : environment variable APP_DATA or TMP or TEMP is undefined");
     KL::String fileName( _tempnam( dir, "tmpfab_" ) );
 #else
     KL::String fileName(tmpnam(NULL));
@@ -110,6 +115,8 @@ FABRIC_EXT_EXPORT void FabricLIDAR_Reader_Decode(
 
     // save the file to disk
     FILE * file = fopen(fileName.data(),"wb");
+    if(!file)
+      Fabric::EDK::throwException("  { FabricLIDAR } : Cannot write to temporary file.");
     fwrite(resourceData,resourceDataSize,1,file);
     fclose(file);
     file = NULL;
@@ -150,7 +157,20 @@ FABRIC_EXT_EXPORT void FabricLIDAR_Reader_GetCount(
     printf("  { FabricLIDAR} : FabricLIDAR_Reader_Count called.\n");
 #endif
 
-    count = (KL::Size)lidar.localData->mReader->GetHeader().GetPointRecordsCount();
+    try
+    {
+      count = (KL::Size)lidar.localData->mReader->GetHeader().GetPointRecordsCount();
+    }
+    catch(std::runtime_error e)
+    {
+      printf("  { FabricLIDAR } : RuntimeError caught: '%s'.\n",e.what());
+      Fabric::EDK::throwException("  { FabricLIDAR } : RuntimeError caught: '%s'",e.what());
+    }
+    catch(std::exception e)
+    {
+      printf("  { FabricLIDAR } : Exception caught: '%s'.\n",e.what());
+      Fabric::EDK::throwException("  { FabricLIDAR } : Exception caught: '%s'",e.what());
+    }
 
 #ifndef NDEBUG
     printf("  { FabricLIDAR } : FabricLIDAR_Reader_Count completed.\n");
@@ -160,8 +180,8 @@ FABRIC_EXT_EXPORT void FabricLIDAR_Reader_GetCount(
 
 FABRIC_EXT_EXPORT void FabricLIDAR_Reader_GetPoints(
   LidarReader & lidar,
-  KL::SlicedArray<KL::Vec3> positions,
-  KL::SlicedArray<KL::Color> colors
+  KL::SlicedArray<KL::Vec3>& positions,
+  KL::SlicedArray<KL::Color>& colors
 )
 {
   if(lidar.localData != NULL) {
@@ -170,21 +190,48 @@ FABRIC_EXT_EXPORT void FabricLIDAR_Reader_GetPoints(
 #endif
 
     // only do this if the counts match
-    KL::Size count = (KL::Size)lidar.localData->mReader->GetHeader().GetPointRecordsCount();
+    KL::Size count = 0;
+    try
+    {
+      count = (KL::Size)lidar.localData->mReader->GetHeader().GetPointRecordsCount();
+    }
+    catch(std::runtime_error e)
+    {
+      printf("  { FabricLIDAR } : RuntimeError caught: '%s'.\n",e.what());
+      Fabric::EDK::throwException("  { FabricLIDAR } : RuntimeError caught: '%s'",e.what());
+    }
+    catch(std::exception e)
+    {
+      printf("  { FabricLIDAR } : Exception caught: '%s'.\n",e.what());
+      Fabric::EDK::throwException("  { FabricLIDAR } : Exception caught: '%s'",e.what());
+    }
     if(positions.size() == count)
     {
       KL::Size offset = 0;
-      while (lidar.localData->mReader->ReadNextPoint())
+      try
       {
-          liblas::Point const& p = lidar.localData->mReader->GetPoint();
-          positions[offset].x = (KL::Scalar)p.GetX();
-          positions[offset].y = (KL::Scalar)p.GetZ();
-          positions[offset].z = (KL::Scalar)p.GetY();
-          colors[offset].r = float(p.GetColor().GetRed()) / 255.0f;
-          colors[offset].g = float(p.GetColor().GetGreen()) / 255.0f;
-          colors[offset].b = float(p.GetColor().GetBlue()) / 255.0f;
-          colors[offset].a = 1.0;
-          offset++;
+        while (lidar.localData->mReader->ReadNextPoint())
+        {
+            liblas::Point const& p = lidar.localData->mReader->GetPoint();
+            positions[offset].x = (KL::Scalar)p.GetX();
+            positions[offset].y = (KL::Scalar)p.GetZ();
+            positions[offset].z = (KL::Scalar)p.GetY();
+            colors[offset].r = float(p.GetColor().GetRed()) / 255.0f;
+            colors[offset].g = float(p.GetColor().GetGreen()) / 255.0f;
+            colors[offset].b = float(p.GetColor().GetBlue()) / 255.0f;
+            colors[offset].a = 1.0;
+            offset++;
+        }
+      }
+      catch(std::runtime_error e)
+      {
+        printf("  { FabricLIDAR } : RuntimeError caught: '%s'.\n",e.what());
+        Fabric::EDK::throwException("  { FabricLIDAR } : RuntimeError caught: '%s'",e.what());
+      }
+      catch(std::exception e)
+      {
+        printf("  { FabricLIDAR } : Exception caught: '%s'.\n",e.what());
+        Fabric::EDK::throwException("  { FabricLIDAR } : Exception caught: '%s'",e.what());
       }
     }
 

@@ -9,7 +9,9 @@ operator entry() {
   report sin64(x);
   report cos64(x);
   report tan64(x);
+  report log1064(x);
   report log64(x);
+  report exp64(x);
   report asin64( sin64(x) );
   report acos64( cos64(x) );
   report atan64( tan64(x) );

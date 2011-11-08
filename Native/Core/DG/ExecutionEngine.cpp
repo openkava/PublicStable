@@ -56,8 +56,10 @@ namespace Fabric
           result = KL::LookupExternalSymbol( functionName );
         if ( !result )
           result = Plug::Manager::Instance()->llvmResolveExternalFunction( functionName );
+#if defined(FABRIC_MODULE_OPENCL)
         if ( !result )
           result = OCL::llvmResolveExternalFunction( functionName );
+#endif
         if ( !result )
           result = s_currentContext->getCGManager()->llvmResolveExternalFunction( functionName );
 

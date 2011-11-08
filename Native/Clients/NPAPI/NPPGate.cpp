@@ -297,7 +297,9 @@ namespace Fabric
         contextID = context->getContextID();
         FABRIC_DEBUG_LOG( "Created new context '%s'", contextID.c_str() );
     
+#if defined(FABRIC_MODULE_OPENCL)
         OCL::registerTypes( context->getRTManager() );
+#endif
       }
       
       RC::Handle<Interface> interface = Interface::Create( npp, context );
