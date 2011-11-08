@@ -183,9 +183,6 @@ for subType in subTypes:
     if 'linkflags' in osSubFlags:
       env.Append( LINKFLAGS = osSubFlags['linkflags'] )
 
-# [pzion 20110823] Horrible hack: ensure that GLEW_STATIC is defined everywhere
-env.Append( CPPDEFINES = ['GLEW_STATIC'] )
-
 buildDirBase = os.path.join( '#build', buildOS, buildArch, buildType )
 buildDir = os.path.join( buildDirBase, 'Fabric' )
 env.Append( BUILDDIR = [Dir(buildDir).abspath] )
