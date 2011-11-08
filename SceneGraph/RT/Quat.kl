@@ -296,6 +296,11 @@ function Quat.alignWith(in Quat other) {
   }
 }
 
+
+function Scalar Quat.getAngle() {
+  return acos(this.w) * 2.0;
+}
+
 function Vec3 Quat.getXaxis() {
   Vec3 temp;
   Scalar xy = this.v.x * this.v.y; Scalar xz = this.v.x * this.v.z;

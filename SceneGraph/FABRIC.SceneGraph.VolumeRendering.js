@@ -421,8 +421,8 @@ operator bindShadowMapBuffer(
         parameterLayout: [
           'self.minOpacity',
           'self.maxOpacity',
-          'opacityFactors.value<>',
-          'opacityColors.value<>',
+          'opacityFactors.values',
+          'opacityColors.values',
           'self.pixels'
         ],
         entryFunctionName: 'updateTransferFunctionImage',

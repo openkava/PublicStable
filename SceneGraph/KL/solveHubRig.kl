@@ -1,0 +1,88 @@
+//
+// Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+//
+
+use Xfo;
+
+operator solveHubRigs(
+  io Xfo controllerXfo,
+  io Xfo pose[],
+  io Bone bones[],
+  io Hub hubs[],
+  io PoseVariables poseVariables,
+  io DebugGeometry debugGeometry
+) {
+  for(Integer i=0; i < hubs.size; i++){
+    Hub hub = hubs[i];
+  //  pose[hub.boneId] = hubCOM * poseVariables.xfoValues[hub.xfoId];
+    
+    
+    if(hub.inSpineBoneIds.size > 0){
+      if(hub.hubParentSpaceId == -1)
+        pose[hub.boneId] = controllerXfo * poseVariables.xfoValues[hub.xfoId];
+      else
+        pose[hub.boneId] = pose[hub.hubParentSpaceId] * poseVariables.xfoValues[hub.xfoId];
+    }
+    else{
+      if (bones[hub.boneId].parent == -1) 
+        pose[hub.boneId] = controllerXfo * poseVariables.xfoValues[hub.xfoId];
+      else 
+        pose[hub.boneId] = pose[bones[hub.boneId].parent] * poseVariables.xfoValues[hub.xfoId];
+    }
+    if(hub.inSpineBoneIds.size > 0){
+      for(Integer j=0; j < hub.inSpineBoneIds.size; j++){
+        Integer spineBoneId = hub.inSpineBoneIds[j];
+        if(bones[spineBoneId].parent >= 0){
+          pose[spineBoneId] = pose[bones[spineBoneId].parent] * poseVariables.xfoValues[hub.inSpineBoneXfoId[j]];
+        }else{
+          pose[spineBoneId] = poseVariables.xfoValues[hub.inSpineBoneXfoId[j]];
+        }
+      }
+      /*
+      Xfo spineError =  pose[hub.inSpineBoneIds[hub.inSpineBoneIds.size-1]].inverse() * pose[hub.boneId];
+      
+      for(Integer j=0; j < hub.inSpineBoneIds.size; j++){
+        Integer spineBoneId = hub.inSpineBoneIds[j];
+        Quat spineBoneError = spineError.ori;
+        
+        pose[spineBoneId].ori = spineBoneError * pose[spineBoneId].ori;
+        if(j > 0){
+          pose[spineBoneId].tr = pose[bones[spineBoneId].parent].transformVector(bones[spineBoneId].referencePose.tr);
+        }
+      }
+      */
+    }
+  }
+}
+
+
+operator invertHubRigs(
+  io Xfo pose[],
+  io Bone bones[],
+  io Hub hubs[],
+  io PoseVariables poseVariables,
+  io DebugGeometry debugGeometry
+) {
+  for(Integer i=0; i < hubs.size; i++){
+    Hub hub = hubs[i];
+    if(hub.inSpineBoneIds.size > 0){
+      if(hub.hubParentSpaceId == -1)
+        poseVariables.xfoValues[hub.xfoId] = pose[hub.boneId];
+      else
+        poseVariables.xfoValues[hub.xfoId] = pose[hub.hubParentSpaceId].inverse() * pose[hub.boneId];
+    }
+    else{
+      if (bones[hub.boneId].parent == -1)
+        poseVariables.xfoValues[hub.xfoId] = pose[hub.boneId];
+      else
+        poseVariables.xfoValues[hub.xfoId] = pose[bones[hub.boneId].parent].inverse() * pose[hub.boneId];
+    }
+    for (var Integer j = 0; j < hub.inSpineBoneIds.size; j++) {
+      if (bones[hub.inSpineBoneIds[j]].parent == - 1)
+        poseVariables.xfoValues[hub.inSpineBoneXfoId[j]] = pose[hub.inSpineBoneIds[j]];
+      else
+        poseVariables.xfoValues[hub.inSpineBoneXfoId[j]] = pose[bones[hub.inSpineBoneIds[j]].parent].inverse() * pose[hub.inSpineBoneIds[j]];
+    }
+  }
+}
+
