@@ -708,7 +708,7 @@ $(document).ready(function() {
   
   ///////////////////////////////////////////////////
   // Preset Saving and Loading
-  var currPresetName;
+  var currPresetName = 'Default';
   var presetsFound = false;
   var rebuildPresetNamesList = function(){
     $('#resourceSelector').empty();
@@ -752,12 +752,10 @@ $(document).ready(function() {
     modal: true
   });
   
-  
   $("#resourceSelector").change(function() {
     currPresetName = $("#resourceSelector :selected").attr("value");
     loadPreset();
   });
-  
   
   $savePresetButton.button()
     .click(function() {
@@ -766,34 +764,37 @@ $(document).ready(function() {
   
   $newPresetButton.button()
     .click(function() {
-      
       $('#presetNameDialog').dialog({
         autoOpen: true,
         position: 'right top',
         buttons: {
           Ok: function() {
+            currPresetName = $("#presetName").val();
+            savePreset();
+            rebuildPresetNamesList();
+            $("#resourceSelector").val(currPresetName);
             $( this ).dialog( "close" );
           }
         },
-        closeOnEscape: true,
-        close: function(ev, ui) {
-          currPresetName = $("#presetName").val();
-          savePreset();
-          rebuildPresetNamesList();
-        }
+        closeOnEscape: true
       });
     });
   
   rebuildPresetNamesList();
-  if(!presetsFound){
-    currPresetName = 'Default';
-    savePreset();
-    rebuildPresetNamesList();
-  }else{
-    currPresetName = localStorage.getItem('VolumeRenderingSelectedPreset');
-    $("#resourceSelector").val(currPresetName);
-    loadPreset();
-  }
+  FABRIC.appendOnResolveAsyncTaskCallback(function(label, nbRemaining) {
+    if (nbRemaining===0) {
+      if(!presetsFound){
+        currPresetName = 'Default';
+        savePreset();
+        rebuildPresetNamesList();
+      }else{
+        currPresetName = localStorage.getItem('VolumeRenderingSelectedPreset');
+        $("#resourceSelector").val(currPresetName);
+        loadPreset();
+      }
+      return true;
+    }
+  });
   
 });
 
@@ -820,7 +821,7 @@ $(document).ready(function() {
               <h2>PRESETS</h2>
               <div class="box" style="margin-top:5px;margin-left:10px;margin-bottom:10px;">
               <button id="newPreset" style="margin-top:10px;">New Preset</button>
-              <button id="savePreset" style="margin-top:10px;">Save Preset</button>
+              <button id="savePreset" style="margin-top:10px;">Save</button>
               
               </br>
               <select id='resourceSelector' style="width: 380px; margin-top:10px;">
