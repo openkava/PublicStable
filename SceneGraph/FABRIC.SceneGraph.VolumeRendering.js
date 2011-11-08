@@ -551,6 +551,10 @@ operator bindShadowMapBuffer(
       nodeData.specularFactor = volumeNode.pub.getSpecularFactor();
       nodeData.brightnessFactor = volumeNode.pub.getBrightnessFactor();
       nodeData.invertColor = volumeNode.pub.getInvertColor();
+      
+      nodeData.minOpacity = volumeNode.pub.getMinOpacity();
+      nodeData.maxOpacity = volumeNode.pub.getMaxOpacity();
+      
       parentWriteData(sceneSaver, constructionOptions, nodeData);
     };
     volumeNode.readData = function(sceneLoader, nodeData) {
@@ -558,6 +562,9 @@ operator bindShadowMapBuffer(
       volumeNode.pub.setSpecularFactor(nodeData.specularFactor);
       volumeNode.pub.setBrightnessFactor(nodeData.brightnessFactor);
       volumeNode.pub.setInvertColor(nodeData.invertColor);
+      
+      volumeNode.pub.setMinOpacity(nodeData.minOpacity);
+      volumeNode.pub.setMaxOpacity(nodeData.maxOpacity);
       parentReadData(sceneLoader, nodeData);
     };
     
