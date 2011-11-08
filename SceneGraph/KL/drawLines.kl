@@ -43,3 +43,7 @@ operator drawLineStrip(
   }
   shaderProgram.postDraw();
 }
+
+operator setLineWidth(io Scalar lineWidth) {
+  glLineWidth(lineWidth);
+}
