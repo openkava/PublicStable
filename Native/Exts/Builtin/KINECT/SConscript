@@ -18,14 +18,18 @@ kinectInclude = 'C:\\Program Files (x86)\\Microsoft Research KinectSDK\inc'
 if not os.path.exists(kinectInclude):
     kinectInclude = 'C:\\Program Files\\Microsoft Research KinectSDK\inc'
 if not os.path.exists(kinectInclude):
-    print('WARNING: Skipping build of KINECT extension, no KINECT SDK found!')
+    kinectInclude = 'C:\\Program Files\\Microsoft SDKs\Kinect\\v1.0 Beta2\\inc'
+if not os.path.exists(kinectInclude):
+    print('WARNING: Skipping build of KINECT extension, no KINECT Include found!')
     Return()
 
 kinectLib = 'C:\\Program Files (x86)\\Microsoft Research KinectSDK\lib\MSRKinectNUI.lib'
 if not os.path.exists(kinectLib):
     kinectLib = 'C:\\Program Files\\Microsoft Research KinectSDK\lib\MSRKinectNUI.lib'
+if not os.path.exists(kinectLib ):
+    kinectLib = 'C:\\Program Files\\Microsoft SDKs\\Kinect\\v1.0 Beta2\\lib\\x86\\MSRKinectNUI.lib'
 if not os.path.exists(kinectLib):
-    print('WARNING: Skipping build of KINECT extension, no KINECT SDK found!')
+    print('WARNING: Skipping build of KINECT extension, no KINECT Library found!')
     Return()
     
 kinectPluginEnv.Append(CPPPATH = [kinectInclude])
