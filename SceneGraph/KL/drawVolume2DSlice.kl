@@ -47,45 +47,32 @@ operator draw2DVolumeSlice(
   p[1] = Vec3(br.x, tl.y, 0.0);
   p[2] = Vec3(br.x, br.y, 0.0);
   p[3] = Vec3(tl.x, br.y, 0.0);
-  
-  Vec3 texCoords[2];
-  texCoords[0] = Vec3( 0.0, 0.0, 0.0 );
-  texCoords[1] = Vec3( 1.0, 1.0, 1.0 );
-
-  Scalar fixedRatio = ratio;
-
-  //Rotate axis; 3D texture is not necessarily aligned with global axis
-  Size i;
-  for(i = 0; i <2; ++i)
-    texCoords[i] = volumeXfo.ori.inverse().rotateVector(texCoords[i]);
-
-  for(i = 0; i < 3; ++i) {
-    if( ( texCoords[0].component(i) + texCoords[1].component(i) ) < 0.0 ) {
-      texCoords[0].setComponent(i, 1.0+texCoords[0].component(i));
-      texCoords[1].setComponent(i, 1.0+texCoords[1].component(i));
-      if(axis == i)
-        fixedRatio = 1.0 - fixedRatio;
-    }
-  }
 
   Vec3 t[4];
   if(axis == 0) {
-    t[0] = Vec3(fixedRatio, texCoords[0].y, texCoords[1].z);
-    t[1] = Vec3(fixedRatio, texCoords[1].y, texCoords[1].z);
-    t[2] = Vec3(fixedRatio, texCoords[1].y, texCoords[0].z);
-    t[3] = Vec3(fixedRatio, texCoords[0].y, texCoords[0].z);
+    t[0] = Vec3(ratio, 1.0, 0.0);
+    t[1] = Vec3(ratio, 1.0, 1.0);
+    t[2] = Vec3(ratio, 0.0, 1.0);
+    t[3] = Vec3(ratio, 0.0, 0.0);
   } else if(axis == 1) {
-    t[0] = Vec3(texCoords[0].x, fixedRatio, texCoords[1].z);
-    t[1] = Vec3(texCoords[1].x, fixedRatio, texCoords[1].z);
-    t[2] = Vec3(texCoords[1].x, fixedRatio, texCoords[0].z);
-    t[3] = Vec3(texCoords[0].x, fixedRatio, texCoords[0].z);
+    t[0] = Vec3(0.0, ratio, 0.0);
+    t[1] = Vec3(1.0, ratio, 0.0);
+    t[2] = Vec3(1.0, ratio, 1.0);
+    t[3] = Vec3(0.0, ratio, 1.0);
   } else { //Z is flipped
-    t[0] = Vec3(texCoords[0].x, texCoords[0].y, fixedRatio);
-    t[1] = Vec3(texCoords[1].x, texCoords[0].y, fixedRatio);
-    t[2] = Vec3(texCoords[1].x, texCoords[1].y, fixedRatio);
-    t[3] = Vec3(texCoords[0].x, texCoords[1].y, fixedRatio);
+    t[0] = Vec3(0.0, 1.0, 1.0-ratio);
+    t[1] = Vec3(1.0, 1.0, 1.0-ratio);
+    t[2] = Vec3(1.0, 0.0, 1.0-ratio);
+    t[3] = Vec3(0.0, 0.0, 1.0-ratio);
   }
-  
+
+  Quat invOri = volumeXfo.ori.inverse();
+  Size i;
+
+  for(i = 0; i < 4; ++i) {
+    t[i] = invOri.rotateVector(t[i]-Vec3(0.5, 0.5, 0.5)) + Vec3(0.5, 0.5, 0.5);
+  }
+
   Integer idx[4];
   idx[0] = 0; idx[1] = 1; idx[2] = 2; idx[3] = 3;
 

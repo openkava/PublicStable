@@ -18,6 +18,7 @@ operator generateVolumeSlices(
   io Vec3 positions<>,
   io Vec3 normals<>
 ){
+
   Size i, j, k;
   indices.resize(0);
 

@@ -3,6 +3,9 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
+FABRIC.SceneGraph.defineEffectFromFile('VolumeMaterial', 'FABRIC_ROOT/SceneGraph/Shaders/VolumeShader.xml');
+FABRIC.SceneGraph.defineEffectFromFile('ScreenProjectionTextureMaterial', 'FABRIC_ROOT/SceneGraph/Shaders/ScreenProjectionTextureShader.xml');
+
 FABRIC.SceneGraph.registerNodeType('VolumeSlices', {
   briefDesc: '',
   detailedDesc: '',
@@ -21,7 +24,7 @@ FABRIC.SceneGraph.registerNodeType('VolumeSlices', {
         cropMin: new FABRIC.RT.Vec3(-1.0, -1.0, -1.0),
         cropMax: new FABRIC.RT.Vec3(1.0, 1.0, 1.0),
         nbSlices: 64,
-        cropInTransformedSpace: true
+        cropInTransformedSpace: false
       });
 
     var volumeSlicesNode = scene.constructNode('Triangles', options);
@@ -38,7 +41,6 @@ FABRIC.SceneGraph.registerNodeType('VolumeSlices', {
     var transformWithTextureNode = scene.pub.constructNode('Transform', {
       hierarchical: true,
       parentTransformNode: options.transformNode
-//      localXfo: new FABRIC.RT.Xfo({ ori: new FABRIC.RT.Quat().setFromAxisAndAngle(FABRIC.RT.Vec3.xAxis, Math.HALF_PI) })
     });
     options.transformNode = transformWithTextureNode;
     var transformDGNode = scene.getPrivateInterface(transformWithTextureNode).getDGNode();
@@ -97,6 +99,9 @@ FABRIC.SceneGraph.registerNodeType('VolumeSlices', {
         ]
       })
     ]);
+
+    volumeSlicesNode.getTransformNode = function(){return transformWithTextureNode;};
+
     return volumeSlicesNode;
   }});
 
@@ -294,12 +299,16 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
       entryFunctionName: 'setNbSlicesFrom3DImage',
       srcFile: 'FABRIC_ROOT/SceneGraph/KL/generateVolumeSlices.kl'
     }));
-    
+
+    var rootRedrawEventHandler = volumeNode.constructEventHandlerNode('RootRedraw');
+    scene.getSceneRedrawTransparentObjectsEventHandler().appendChildEventHandler(rootRedrawEventHandler);
+    rootRedrawEventHandler.addMember('volumeRenderTextureID', 'Integer', 0);
+    rootRedrawEventHandler.setScopeName('volumeRootRedraw');
+
     var offscreenNode = scene.constructNode('SceneGraphNode', { name: (options.name + "RT") } );
     var offscreenNodeRedrawEventHandler = offscreenNode.constructEventHandlerNode('Redraw');
+    rootRedrawEventHandler.appendChildEventHandler(offscreenNodeRedrawEventHandler);
 
-       //>>>>>>>>>>>>>>>>>>>>>
-    scene.getSceneRedrawTransparentObjectsEventHandler().appendChildEventHandler(offscreenNodeRedrawEventHandler);
     offscreenNodeRedrawEventHandler.addMember('renderTargetToViewShaderProgram', 'Integer');
     offscreenNodeRedrawEventHandler.addMember('renderTarget', 'OGLRenderTarget', FABRIC.RT.oglRenderTarget(0,0,[
         new FABRIC.RT.OGLRenderTargetTextureDesc (
@@ -311,7 +320,7 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
           )
       ],
       {
-        clearColor: FABRIC.RT.rgba(0,0,0,1)
+        clearColor: FABRIC.RT.rgba(0,0,0,0)
       }
     ));
     
@@ -352,6 +361,18 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
 
     offscreenNodeRedrawEventHandler.postDescendBindings.append(
       scene.constructOperator({
+          operatorName: 'setVolumeRenderTextureID',
+          srcCode: 'use OGLRenderTarget; operator setVolumeRenderTextureID(io OGLRenderTarget renderTarget, io Integer textureID){ textureID = renderTarget.textures[0].texture.bufferID; }',
+          entryFunctionName: 'setVolumeRenderTextureID',
+          parameterLayout: [
+            'self.renderTarget',
+            'volumeRootRedraw.volumeRenderTextureID'
+          ]
+        }));
+
+/*
+    offscreenNodeRedrawEventHandler.postDescendBindings.append(
+      scene.constructOperator({
           operatorName: 'drawVolumeRenderTargetToView',
           srcFile: 'FABRIC_ROOT/SceneGraph/KL/renderTarget.kl',
           entryFunctionName: 'drawRenderTargetToView_progID',
@@ -359,8 +380,17 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
             'self.renderTarget',
             'self.renderTargetToViewShaderProgram'
           ]
-        }));
+        }));*/
 
+/*
+operator bindShadowMapBuffer(
+  io Size textureUnit,
+  io OGLRenderTarget depthRenderTarget
+) {
+  Integer depthTextureID = depthRenderTarget.textures[depthRenderTarget.depthBuffer].texture.bufferID;
+  glActiveTexture(GL_TEXTURE0 + textureUnit);
+  glBindTexture(GL_TEXTURE_2D, depthTextureID);
+}*/
     //Create transfer function images
     var transferFunctionImageNode = scene.constructNode('Image', {
       wantHDR: true,
@@ -421,7 +451,6 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
     volumeNode.addMemberInterface(volumeMaterialDGNode, 'specularFactor', true);
     volumeNode.addMemberInterface(volumeMaterialDGNode, 'brightnessFactor', true);
     volumeNode.addMemberInterface(volumeMaterialDGNode, 'invertColor', true);
-    volumeNode.addMemberInterface(offscreenNodeRedrawEventHandler, 'backgroundColor', true);
 
     volumeNode.pub.setTransparency(options.transparency);
     volumeNode.pub.setInvertColor(options.invertColor);
@@ -450,10 +479,47 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
       ]
     }));
 
+    //In order to have depth from the volume with the right alpha, draw a cube 
+    //corresponding to the right size (minCrop, maxCrop) which will use the
+    //rendered volume as a screenspace texture.
+
+//TODO: update xfo/size from cropping params
     var instanceNode = scene.constructNode('Instance', {
         transformNode: options.transformNode,
         geometryNode: volumeNodePub,
         materialNode: volumeMaterialNodePub
+    });
+
+    var screenTextureMaterial = scene.pub.constructNode('ScreenProjectionTextureMaterial', {
+      parentEventHandler: rootRedrawEventHandler
+    });
+    screenTextureMaterial.setAlphaFactor(20.0);//We need to scale up the alpha for proper alpha blending. TODO: find the proper fix!!!
+
+    var screenTextureMaterialRedrawEventHandler = scene.getPrivateInterface(screenTextureMaterial).getRedrawEventHandler();
+    screenTextureMaterialRedrawEventHandler.preDescendBindings.append(
+      scene.constructOperator({
+          operatorName: 'setTextureID',
+          srcCode:  'use FabricOGL; operator setTextureID(io Integer textureID){ \n' +
+                    '  glActiveTexture(GL_TEXTURE0);\n' +
+                    '  glBindTexture(GL_TEXTURE_2D, textureID);}',
+          entryFunctionName: 'setTextureID',
+          parameterLayout: [
+            'volumeRootRedraw.volumeRenderTextureID'
+          ]
+    }));
+
+    var cubeGeom = scene.constructNode('Instance', {
+      transformNode: scene.pub.constructNode('Transform', {
+        hierarchical: true,
+        parentTransformNode: volumeNode.getTransformNode(),
+        globalXfo: new FABRIC.RT.Xfo({tr: new FABRIC.RT.Vec3(-1, -1, -1)})
+      }),
+      geometryNode: scene.pub.constructNode('Cuboid', {
+        length: 2,
+        width: 2,
+        height: 2
+      }),
+      materialNode: screenTextureMaterial
     });
 
     volumeNode.getMaterialNode = function(){return volumeMaterialNodePub;}
