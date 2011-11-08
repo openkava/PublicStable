@@ -127,7 +127,9 @@ namespace Fabric
         RC::Handle<CG::Context> cgContext = CG::Context::Create();
         llvm::OwningPtr<llvm::Module> module( new llvm::Module( "DG::Code", cgContext->getLLVMContext() ) );
         CG::ModuleBuilder moduleBuilder( cgManager, cgContext, module.get() );
+#if defined(FABRIC_MODULE_OPENCL)
         OCL::llvmPrepareModule( moduleBuilder, context->getRTManager() );
+#endif
 
         CG::Diagnostics optimizeDiagnostics;
         CG::Diagnostics &diagnostics = (false && optimize)? optimizeDiagnostics: m_diagnostics;

@@ -247,7 +247,9 @@ namespace Fabric
 
       RC::Handle<IO::Manager> ioManager = IOManager::Create();
       RC::Handle<DG::Context> dgContext = DG::Context::Create( ioManager, pluginPaths, true );
+#if defined(FABRIC_MODULE_OPENCL)
       OCL::registerTypes( dgContext->getRTManager() );
+#endif
 
       RC::Handle<Client> client = Client::Create( dgContext );
       Plug::Manager::Instance()->loadBuiltInPlugins( pluginPaths, dgContext->getCGManager() );
