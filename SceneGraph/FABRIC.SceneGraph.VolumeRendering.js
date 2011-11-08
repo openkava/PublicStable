@@ -59,7 +59,6 @@ FABRIC.SceneGraph.registerNodeType('VolumeSlices', {
     var uniforms = volumeSlicesNode.getUniformsDGNode();
     volumeSlicesNode.addMemberInterface(uniforms, 'cropMin', true);
     volumeSlicesNode.addMemberInterface(uniforms, 'cropMax', true);
-    volumeSlicesNode.addMemberInterface(uniforms, 'nbSlices', true);
 
     var attributes = volumeSlicesNode.getAttributesDGNode();
     var cameraNode = scene.getPrivateInterface(options.cameraNode);
@@ -101,6 +100,20 @@ FABRIC.SceneGraph.registerNodeType('VolumeSlices', {
     ]);
 
     volumeSlicesNode.getTransformNode = function(){return transformWithTextureNode;};
+    
+    
+    var parentWriteData = volumeSlicesNode.writeData;
+    var parentReadData = volumeSlicesNode.readData;
+    volumeSlicesNode.writeData = function(sceneSaver, constructionOptions, nodeData) {
+      nodeData.cropMin = volumeSlicesNode.pub.getCropMin();
+      nodeData.cropMax = volumeSlicesNode.pub.getCropMax();
+      parentWriteData(sceneSaver, constructionOptions, nodeData);
+    };
+    volumeSlicesNode.readData = function(sceneLoader, nodeData) {
+      volumeSlicesNode.pub.setCropMin(nodeData.cropMin);
+      volumeSlicesNode.pub.setCropMax(nodeData.cropMax);
+      parentReadData(sceneLoader, nodeData);
+    };
 
     return volumeSlicesNode;
   }});
@@ -529,6 +542,25 @@ operator bindShadowMapBuffer(
     volumeNode.getLightNode = function(){return options.lightNode;}
     volumeNode.getTransformNode = function(){return options.transformNode;}
 
+
+    
+    var parentWriteData = volumeNode.writeData;
+    var parentReadData = volumeNode.readData;
+    volumeNode.writeData = function(sceneSaver, constructionOptions, nodeData) {
+      nodeData.transparency = volumeNode.pub.getTransparency();
+      nodeData.specularFactor = volumeNode.pub.getSpecularFactor();
+      nodeData.brightnessFactor = volumeNode.pub.getBrightnessFactor();
+      nodeData.invertColor = volumeNode.pub.getInvertColor();
+      parentWriteData(sceneSaver, constructionOptions, nodeData);
+    };
+    volumeNode.readData = function(sceneLoader, nodeData) {
+      volumeNode.pub.setTransparency(nodeData.transparency);
+      volumeNode.pub.setSpecularFactor(nodeData.specularFactor);
+      volumeNode.pub.setBrightnessFactor(nodeData.brightnessFactor);
+      volumeNode.pub.setInvertColor(nodeData.invertColor);
+      parentReadData(sceneLoader, nodeData);
+    };
+    
     return volumeNode;
   }
 });

@@ -110,18 +110,26 @@ FABRIC.SceneGraph.registerManagerType('SceneLoader', {
   },
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
-      });
+      preLoadScene: true
+    });
     
     var dataObj;
     var preLoadedNodes = {};
   
     var constructedNodeMap = {};
     var nodeNameRemapping = {};
-  
-    var preLoadNode = function(node) {
-      preLoadedNodes[node.name] = node;
+    
+    if(options.preLoadScene){
+      var sceneNodes = scene.getSceneGraphNodes();
+      for(var name in sceneNodes){
+        preLoadedNodes[name] = sceneNodes[name].pub;
+      }
     };
+      
     var sceneLoader = {
+      preLoadNode: function(node) {
+        preLoadedNodes[node.getName()] = node;
+      },
       getNode: function(nodeName) {
         nodeName = nodeNameRemapping[ nodeName ]
         if (constructedNodeMap[nodeName]) {

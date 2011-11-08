@@ -57,6 +57,8 @@
     <script type="text/javascript" src="../../../SceneGraph/ColorGradient/ColorGradient.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/Histogram/Histogram.js" charset="utf-8"></script>
     
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Persistence.js" charset="utf-8"></script>
+    
     <link href="../../../SceneGraph/CurveEditor/CurveEditor.css" rel="stylesheet" type="text/css" />
 
 <script type="text/javascript">
@@ -84,6 +86,15 @@ s.parentNode.insertBefore(ga, s);
 }  
 #viewer {
   right:400px;
+}
+#sidebar .box{
+  margin: 0px;
+}
+#sidebar .box h2{
+  padding: 5px 10px 1px;
+}
+#sidebar .box .content{
+  padding: 0px;
 }
 
 #opacityMapping {
@@ -360,6 +371,10 @@ operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){
 
 $(document).ready(function() {
   var i, j;
+  
+  var $savePresetButton = $('#savePreset').button({ text: true });
+  var $newPresetButton = $('#newPreset').button({ text: true });
+  
   var $opacityRangeSlider = $('#opacityRange').slider({min: 0, max: 1, step: 0.005, range: true, values: [0.1,1] });
   var $brightnessSlider = $('#brightness').slider({min: 0, max: 1, step: 0.01, value: 0.5 });
   var $transparencySlider = $('#transparency').slider({min: 0, max: 1, step: 0.01, value: 0.8 });
@@ -371,6 +386,8 @@ $(document).ready(function() {
     $('#yRatio').slider({min: 0, max: 1, step: 0.005 }),
     $('#zRatio').slider({min: 0, max: 1, step: 0.005 })
   ];
+  
+  
   
   var scene = FABRIC.SceneGraph.createScene();
   
@@ -620,41 +637,128 @@ $(document).ready(function() {
   $(".box h2").addClass("ui-widget-header ui-corner-all");
   $(".content").addClass("ui-widget-content");
 
-  $(function() {
-          $( "#tabs" ).tabs();
+  $( "#tabs" ).tabs();
 
-    var curveEditor = constructCurveEditor('opacityMapping', opacityKeyAnimationLibrary, {
-      timeStripe: false,
-      draggable: false,
-      zoomable: false,
-      valueRange: new FABRIC.RT.Vec2(0, 1),
-      timeRange: new FABRIC.RT.Vec2(0, 1),
-      fitEditorToKeyRanges: false,
-      volumerenderdemohack: true
+  var curveEditor = constructCurveEditor('opacityMapping', opacityKeyAnimationLibrary, {
+    timeStripe: false,
+    draggable: false,
+    zoomable: false,
+    valueRange: new FABRIC.RT.Vec2(0, 1),
+    timeRange: new FABRIC.RT.Vec2(0, 1),
+    fitEditorToKeyRanges: false,
+    volumerenderdemohack: true
+  });
+
+  var colorGradient = constructColorGradient('colorMapping', gradientKeyTrackLibrary, {
+
+  });
+  colorGradient.addEventListener('gradientchanged', function(evt){
+    viewport.redraw();
+  });
+  colorGradient.addEventListener('keyclicked', function(evt){
+    gradientKey = evt.key;
+    colorPicker.ColorPickerSetColor(evt.keycolor.toHex());
+  });
+  var gradientKey;
+  var colorPicker = $('#brushColor').ColorPicker({
+      flat: true,
+      color: { r: 1.0 * 255, g: 0.5 * 255, b: 0.5 * 255} ,
+      onChange: function(hsb, hex, rgb) {
+        if(gradientKey){
+          gradientKey.setColor(FABRIC.RT.rgb255(rgb.r, rgb.g, rgb.b));
+        }
+      }
     });
-
-    var colorGradient = constructColorGradient('colorMapping', gradientKeyTrackLibrary, {
   
+  ///////////////////////////////////////////////////
+  // Preset Saving and Loading
+  var currPresetName;
+  var presetsFound = false;
+  var rebuildPresetNamesList = function(){
+    $('#resourceSelector').empty();
+    for(var i=0; i<localStorage.length; i++){
+      if(localStorage.key(i).split('.')[0]=='VolumeRenderingPresets'){
+      //  presetNames.push(localStorage.key(i).slipt('.')[1]);
+        var presetName = localStorage.key(i).split('.')[1];
+        $('#resourceSelector').append('<option value="'+presetName+'">'+presetName);
+        presetsFound = true;
+      }
+    }
+  }
+  
+  var savePreset = function(){
+    var presetSaver = scene.constructManager('SceneSaver');
+    presetSaver.addNode(camera);
+    presetSaver.addNode(opacityKeyAnimationLibrary);
+    presetSaver.addNode(gradientKeyTrackLibrary);
+    presetSaver.addNode(volumeNode);
+
+    var storage = new FABRIC.SceneGraph.LocalStorage('VolumeRenderingPresets.'+currPresetName);
+    presetSaver.save(storage);
+    
+    localStorage.setItem('VolumeRenderingSelectedPreset', currPresetName);
+  }
+  
+  var loadPreset = function(){
+    var presetLoader = scene.constructManager('SceneLoader', { preLoadScene: true } );
+    var storage = new FABRIC.SceneGraph.LocalStorage('VolumeRenderingPresets.'+currPresetName);
+    var nodeMap = presetLoader.load(storage);
+    
+    $resolutionFactorSlider.slider('value', volumeNode.getResolutionFactor());
+    curveEditor.redraw();
+    colorGradient.redraw();
+    viewport.redraw();
+    localStorage.setItem('VolumeRenderingSelectedPreset', currPresetName);
+  }
+  
+  $('#presetNameDialog').dialog({
+    autoOpen: false,
+    modal: true
+  });
+  
+  
+  $("#resourceSelector").change(function() {
+    currPresetName = $("#resourceSelector :selected").attr("value");
+    loadPreset();
+  });
+  
+  
+  $savePresetButton.button()
+    .click(function() {
+      savePreset();
     });
-    colorGradient.addEventListener('gradientchanged', function(evt){
-      viewport.redraw();
-    });
-    colorGradient.addEventListener('keyclicked', function(evt){
-      gradientKey = evt.key;
-      colorPicker.ColorPickerSetColor(evt.keycolor.toHex());
-    });
-    var gradientKey;
-    var colorPicker = $('#brushColor').ColorPicker({
-        flat: true,
-        color: { r: 1.0 * 255, g: 0.5 * 255, b: 0.5 * 255} ,
-        onChange: function(hsb, hex, rgb) {
-          if(gradientKey){
-            gradientKey.setColor(FABRIC.RT.rgb255(rgb.r, rgb.g, rgb.b));
+  
+  $newPresetButton.button()
+    .click(function() {
+      
+      $('#presetNameDialog').dialog({
+        autoOpen: true,
+        position: 'right top',
+        buttons: {
+          Ok: function() {
+            $( this ).dialog( "close" );
           }
+        },
+        closeOnEscape: true,
+        close: function(ev, ui) {
+          currPresetName = $("#presetName").val();
+          savePreset();
+          rebuildPresetNamesList();
         }
       });
-    
-  });
+    });
+  
+  rebuildPresetNamesList();
+  if(!presetsFound){
+    currPresetName = 'Default';
+    savePreset();
+    rebuildPresetNamesList();
+  }else{
+    currPresetName = localStorage.getItem('VolumeRenderingSelectedPreset');
+    $("#resourceSelector").val(currPresetName);
+    loadPreset();
+  }
+  
 });
 
 </script>
@@ -665,18 +769,37 @@ $(document).ready(function() {
       <h4 id="loadingDesc" style="margin-bottom: 10px"></h4>
       <div id="loadingProgressBar" class="ui-progressbar-value"></div>
     </div>
+    <div id="presetNameDialog" title="Preset Name">
+      <input type="text" id="presetName" style="border:0; font-weight:bold;" />
+    </div>
     <div id="wrapper">
       <div id="editor">
         <div id="viewer">
           <div id="FabricContainer"></div> 
         </div><!--viewer-->
         <div id="sidebar">
+          
+          <div class="box">
+            <div class="content">
+              <h2>PRESETS</h2>
+              <div class="box" style="margin-top:5px;margin-left:10px;margin-bottom:10px;">
+              <button id="newPreset" style="margin-top:10px;">New Preset</button>
+              <button id="savePreset" style="margin-top:10px;">Save Preset</button>
+              
+              </br>
+              <select id='resourceSelector' style="width: 380px; margin-top:10px;">
+              </select>
+              </div><!--box-->
+            </div><!--content-->
+         </div><!--box-->
+          
           <div id="tabs">
           <ul>
             <li><a href="#densityMapping">Density Mapping</a></li>
             <li><a href="#displayTab">Display</a></li>
             <li><a href="#volumeSlicesTab">2D Axial Slices</a></li>
           </ul>
+          
           <div id="densityMapping">
             <div class="box">
               <p>Opacity</p>
