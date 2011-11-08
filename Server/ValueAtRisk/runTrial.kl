@@ -1,0 +1,85 @@
+function Size initialSeed(Size index) {
+  Size result = 1;
+  Size mult = 300773;
+  Size mask = 1;
+  while (mask != 0) {
+    if (index & mask)
+      result *= mult;
+    mult *= mult;
+    mask *= 2;
+  }
+  return result;
+}
+
+function Scalar random(io Size seed) {
+  seed = (seed * 300773) % 1073741824;
+  Scalar result = Scalar(seed) / 1073741824.0;
+  return result;
+}
+
+function Scalar randomNormal(io Size seed) {
+  Scalar x1, x2, w;
+  do {
+    x1 = 2.0 * random(seed) - 1.0;
+    x2 = 2.0 * random(seed) - 1.0;
+    w = x1 * x1 + x2 * x2;
+  } while (w >= 1.0);
+  w = sqrt( (-2.0 * log(w)) / w );
+  return x1 * w;
+}   
+
+alias Scalar Vec[%NS%];
+
+function Vec randomNormalVec(io Size seed) {
+  Vec result;
+  for (Size i=0; i<%NS%; ++i)
+    result[i] = randomNormal(seed);
+  return result;
+}
+
+alias Scalar Mat[%NS%][%NS%];
+
+function Vec *( Mat mat, Vec vec ) {
+  Vec result;
+  for (Size i=0; i<%NS%; ++i) {
+    result[i] = 0.0;
+    for (Size j=0; j<%NS%; ++j)
+      result[i] += mat[i][j] * vec[j];
+  }
+  return result;
+}
+
+operator runTrial(
+  Size index,
+  io Size numTradingDays,
+  io Scalar dt,
+  io Scalar sqrtDT,
+  io Mat choleskyTrans,
+  io Vec drifts,
+  io Scalar value
+  )
+{
+  //report "index="+index+" numTradingDays="+numTradingDays+" dt="+dt+" sqrtDT="+sqrtDT;
+  //report "choleskyTrans="+choleskyTrans;
+  //report "drifts="+drifts;
+
+  Size seed = initialSeed(4096 * index);
+
+  Vec amounts;
+  for (Size i=0; i<%NS%; ++i)
+    amounts[i] = 100;
+
+  for (Size day=0; day<numTradingDays; ++day) {
+    Vec Z = randomNormalVec(seed);
+    //report "Z="+Z;
+    Vec X = choleskyTrans * Z;
+    //report "X="+X;
+    for (Size i=0; i<%NS%; ++i) {
+      amounts[i] *= exp(drifts[i]*dt + X[i]*sqrtDT);
+    }
+  }
+
+  value = 0.0;
+  for (Size i=0; i<%NS%; ++i)
+    value += amounts[i];
+}
