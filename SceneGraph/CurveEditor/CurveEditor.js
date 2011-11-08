@@ -11,7 +11,7 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
   
   var timeRange = options.timeRange!=undefined ? options.timeRange : new FABRIC.Vec2(0, 100);
   var valueRange = options.valueRange!=undefined ? options.valueRange : new FABRIC.Vec2(0, 1);
-  var clampValues = options.clampValues!=undefined ? options.clampValues : false;
+  var fitEditorToKeyRanges = options.fitEditorToKeyRanges!=undefined ? options.fitEditorToKeyRanges : true;
   
   var rootDomNode = document.getElementById(domRootID);
   var windowWidth = rootDomNode.clientWidth;
@@ -34,7 +34,7 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
   
   
   var containmentRect;
-  if(clampValues){
+  if(!fitEditorToKeyRanges){
     containmentRect = graphCenterGroup.createRect().size(windowWidth, windowHeight).translate(0, windowHeight * -0.5);;
     containmentRect.attr('fill', 'none');
     containmentRect.attr('stroke', "black");
@@ -58,7 +58,7 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
   }
   
 
-  if(clampValues){
+  if(!fitEditorToKeyRanges){
     yRange = valueRange;
   }
 
@@ -66,7 +66,7 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
     tr: new FABRIC.Vec2(0, 0),
     sc: new FABRIC.Vec2(1, 1),
     fitToScreen:function(){
-      if(!clampValues){
+      if(fitEditorToKeyRanges){
         timeRange = new FABRIC.Vec2(0, 0);
         for (var i = 0; i < trackCount; i++) {
           var keys = tracksData.tracks[i].keys;
@@ -93,11 +93,11 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
         }
       }
       
-      if(!clampValues){
+      curvesData = trackDisplayNode.getCurveData();
+      if(!fitEditorToKeyRanges){
         yRange = valueRange;
       }
       else{
-        curvesData = trackDisplayNode.getCurveData();
         for (var i = 0; i < trackCount; i++) {
           if(i==0){
             yRange = new FABRIC.Vec2(curvesData.values[i][0], curvesData.values[i][0]);
@@ -105,7 +105,7 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
           getCurveYRange(curvesData.values[i]);
         }
       }
-      if(clampValues){
+      if(!fitEditorToKeyRanges){
         this.sc = new FABRIC.Vec2(windowWidth/(timeRange.y - timeRange.x), -(windowHeight) / (yRange.y - yRange.x));
       }else{
         this.sc = new FABRIC.Vec2(windowWidth/(timeRange.y - timeRange.x), -(windowHeight - 40) / (yRange.y - yRange.x));
