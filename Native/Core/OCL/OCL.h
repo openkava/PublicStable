@@ -8,9 +8,12 @@
 #ifndef _FABRIC_OCL_H
 #define _FABRIC_OCL_H
 
-#include <Fabric/Base/RC/Handle.h>
+#include <Fabric/Base/Config.h>
 
-#include <string>
+#if defined(FABRIC_MODULE_OPENCL)
+# include <Fabric/Base/RC/Handle.h>
+
+# include <string>
 
 namespace Fabric
 {
@@ -31,5 +34,6 @@ namespace Fabric
     void *llvmResolveExternalFunction( std::string const &name );
   };
 };
+#endif
 
 #endif //_FABRIC_OCL_H
