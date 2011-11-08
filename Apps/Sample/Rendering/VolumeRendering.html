@@ -215,11 +215,6 @@ operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){
 
 $(document).ready(function() {
   var i, j;
-  var $sliders3D = [
-      $('#rangeX3D').slider({min: -1, max: 1, step: 0.005, range: true, values: [-1,1] }),
-      $('#rangeY3D').slider({min: -1, max: 1, step: 0.005, range: true, values: [-1,1] }),
-      $('#rangeZ3D').slider({min: -1, max: 1, step: 0.005, range: true, values: [-1,1] })
-  ];
   var $opacityRangeSlider = $('#opacityRange').slider({min: 0, max: 1, step: 0.005, range: true, values: [0.1,1] });
   var $brightnessSlider = $('#brightness').slider({min: 0, max: 1, step: 0.01, value: 0.5 });
   var $transparencySlider = $('#transparency').slider({min: 0, max: 1, step: 0.01, value: 0.8 });
@@ -315,8 +310,8 @@ $(document).ready(function() {
   var volumeNode = scene.constructNode('VolumeOpacityInstance', {
       viewportNode: viewport,
       transformNode: transform,
-      cropMin: new FABRIC.RT.Vec3(-1, -1, -0.2),
-      cropMax: new FABRIC.RT.Vec3(1, 1, 0.5),
+      cropMin: new FABRIC.RT.Vec3(-1, -0.2, -1),
+      cropMax: new FABRIC.RT.Vec3(1, 0.5, 1),
       opacityTextureNode: opacityTexture,
       lightNode: light,
       brightnessFactor: 0.5,
@@ -347,19 +342,6 @@ $(document).ready(function() {
       };
   };
 
-  var sliders3DBindFunction = function(index) {
-    var sliderIndex = index;
-    return function(event, ui) {
-        var min = volumeNode.getCropMin(), max = volumeNode.getCropMax();
-        min.setComponent( sliderIndex, ui.values[0] );
-        max.setComponent( sliderIndex, ui.values[1] );
-        volumeNode.setCropMin(min);
-        volumeNode.setCropMax(max);
-        viewport.redraw();
-        return true;
-      };
-  };
-
   $opacityRangeSlider.slider('option', 'values', [volumeNode.getMinOpacity(), volumeNode.getMaxOpacity()]);
   $opacityRangeSlider.bind('slide', function(event, ui){
     volumeNode.setMinOpacity(ui.values[0]);
@@ -378,9 +360,6 @@ $(document).ready(function() {
     if(cropMin > cropMax) {
       cropMin = cropMax;
     }
-
-    $sliders3D[i].slider('option', 'values', [cropMin.component(i), cropMax.component(i)]);
-    $sliders3D[i].bind('slide', sliders3DBindFunction(i) );
   }
 
   $resolutionFactorSlider.slider('value', volumeNode.getResolutionFactor());
@@ -417,7 +396,6 @@ $(document).ready(function() {
     var black = new FABRIC.RT.Color(0, 0, 0, 1);
     var backgroundColor = whiteBackground ? white : black;
     viewport.setBackgroundColor( backgroundColor );
-//    volumeNode.setBackgroundColor( backgroundColor );
     for( i = 0; i < 3; ++i ) {
       texture2DSlice[i].setBackgroundColor( backgroundColor );
     }
@@ -550,48 +528,41 @@ $(document).ready(function() {
         <div id="sidebar">
           <div id="tabs">
           <ul>
-            <li><a href="#volumeRenderTab">Render Parameters</a></li>
-            <li><a href="#volumeCroppingTab">3D Cropping</a></li>
+            <li><a href="#densityMapping">Density Mapping</a></li>
+            <li><a href="#displayTab">Display</a></li>
             <li><a href="#volumeSlicesTab">2D Axial Slices</a></li>
           </ul>
-          <div id="volumeRenderTab">
+          <div id="densityMapping">
             <div class="box">
-              <p>Opacity Mapping:</p>
+              <p>Opacity</p>
               <div id='opacityMapping'></div>
               <div id='opacityRange' style="margin-top:5px;"></div>
               
-              <p style="margin-top:5px;">Color Mapping:</p>
+              <p style="margin-top:5px;">Color:</p>
               <div id='colorMapping'></div>
               <p id="brushColor"></p>
-              
+
               <input type="checkbox" id="invert" style="margin-top:10px;" /><label for="invert">Invert Colors</label><br>
+           <!-- </div>content-->
+            </div><!--box-->
+          </div><!--volumeRenderTab-->
+
+          <div id="displayTab">
+            <div class="box">
+              <p>Display</p>
               <input type="checkbox" id="whiteBackground" style="margin-bottom:10px;"/><label for="whiteBackground">White background</label><br>
               
               <label for="brightness" >Brightness:</label>
               <div id='brightness' style="margin-bottom:10px;"></div>
               <label for="transparency" >Transparency:</label>
               <div id='transparency' style="margin-bottom:10px;"></div>
-              <label for="resolutionFactor" >Resolution factor:</label>
+              <label for="resolutionFactor" >Resolution:</label>
               <div id='resolutionFactor' style="margin-bottom:10px;"></div>
               <label for="specularFactor" >Shininess:</label>
               <div id='specularFactor' style="margin-bottom:10px;"></div>
            <!-- </div>content-->
             </div><!--box-->
           </div><!--volumeRenderTab-->
-          
-          <div id="volumeCroppingTab">
-            <div class="box">
-            <!--  <h2>Volume cropping</h2> 
-              <div class="content">-->
-                <label for="rangeX3D" >X:</label>
-                <div id='rangeX3D' style="margin-top:10px;"></div>
-                <label for="rangeY3D" >Y:</label>
-                <div id='rangeY3D' style="margin-top:10px;"></div>
-                <label for="rangeZ3D" >Z:</label>
-                <div id='rangeZ3D' style="margin-top:10px;"></div>
-            <!--  </div>content-->
-            </div><!--box-->
-          </div><!--volumeCroppingTab-->
 
           <div id="volumeSlicesTab">
             <div class="box">

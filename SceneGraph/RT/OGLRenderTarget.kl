@@ -187,7 +187,7 @@ function OGLRenderTarget.bind() {
   
   glPushAttrib(attribs);
   if(attribs&GL_COLOR_BUFFER_BIT){
-    glClearColor(this.clearColor.r, this.clearColor.g, this.clearColor.b, 1.0);
+    glClearColor(this.clearColor.r, this.clearColor.g, this.clearColor.b, this.clearColor.a);
   }
   glViewport(0,0, this.width, this.height);
   glClear(options);
