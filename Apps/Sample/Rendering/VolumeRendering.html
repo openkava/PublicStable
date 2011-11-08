@@ -178,14 +178,18 @@ FABRIC.SceneGraph.registerNodeType('CropVolumeManipulator', {
     
     var cropMin, cropMax;
     var invxfo, xfo;
-    
-    var lineMaterial = scene.pub.constructNode('FlatMaterial', {
-      prototypeMaterialType: "LineMaterial",
-      color:options.color,
-      lineWidth: 2.0
-    });
-
+    var lineShaderNode;
     var constructEdgeManipulator = function(name, srcCode, modifierFn){
+      
+      var lineMaterial = scene.pub.constructNode('FlatMaterial', {
+        prototypeMaterialType: "LineMaterial",
+        color:options.color,
+        lineWidth: 2.0
+      });
+
+      var lineMaterialPrivate = scene.getPrivateInterface(lineMaterial);
+      lineShaderNode = lineMaterialPrivate.getShaderNode();
+    
       var lineGeom = scene.constructNode('LineVector');
       lineGeom.pub.setAttributeDynamic('positions');
       lineGeom.getAttributesDGNode().setDependency(volumeSlicesNode.getUniformsDGNode(), 'volume_uniforms');
@@ -364,19 +368,16 @@ operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){
       cropMax.y += delta.y;
     });
 
-    var lineMaterialPrivate = scene.getPrivateInterface(lineMaterial);
-    var parentRedrawHandler = lineMaterialPrivate.getShaderNode().getParentEventHandler();
     var enabled = true;
-
     cropVolumeManipulator.pub.enable = function() {
       if(!enabled) {
-        parentRedrawHandler.appendChildEventHandler(lineMaterialPrivate.getShaderNode().getRedrawEventHandler());
+        lineShaderNode.getParentEventHandler().appendChildEventHandler(lineShaderNode.getRedrawEventHandler());
         enabled = true;
       }
     };
     cropVolumeManipulator.pub.disable = function() {
       if(enabled) {
-        parentRedrawHandler.removeChildEventHandler(lineMaterialPrivate.getShaderNode().getRedrawEventHandler());
+        lineShaderNode.getParentEventHandler().removeChildEventHandler(lineShaderNode.getRedrawEventHandler());
         enabled = false;
       }
     };
