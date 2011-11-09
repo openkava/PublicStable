@@ -6,6 +6,7 @@
 #include <Fabric/Core/IO/Dir.h>
 #include <Fabric/Core/Util/MD5.h>
 #include <Fabric/Core/AST/GlobalList.h>
+#include <Fabric/Core/CG/CompileOptions.h>
 #include <Fabric/Base/Exception.h>
 #include <Fabric/Base/JSON/Object.h>
 #include <Fabric/Base/JSON/Array.h>
@@ -21,22 +22,25 @@ namespace Fabric
 {
   namespace DG
   {
-    RC::Handle<IRCache> IRCache::Instance()
+    RC::Handle<IRCache> IRCache::Instance( CG::CompileOptions const *compileOptions )
     {
-      static RC::Handle<IRCache> instance;
+      std::string compileOptionsString = compileOptions->getString();
+      static std::map< std::string, RC::Handle<IRCache> > instances;
+      RC::Handle<IRCache> &instance = instances[compileOptionsString];
       if ( !instance )
-        instance = new IRCache();
+        instance = new IRCache( compileOptionsString );
       return instance;
     }
       
-    IRCache::IRCache()
+    IRCache::IRCache( std::string const &compileOptionsString )
     {
       RC::ConstHandle<IO::Dir> rootDir = IO::Dir::Private();
       RC::ConstHandle<IO::Dir> baseDir = IO::Dir::Create( rootDir, "IRCache" );
       baseDir->recursiveDeleteFilesOlderThan( time(NULL) - FABRIC_IR_CACHE_EXPIRY_SEC );
       RC::ConstHandle<IO::Dir> osDir = IO::Dir::Create( baseDir, buildOS );
       RC::ConstHandle<IO::Dir> archDir = IO::Dir::Create( osDir, runningArch );
-      m_dir = IO::Dir::Create( archDir, _(buildCacheGeneration) );
+      RC::ConstHandle<IO::Dir> compileOptionsDir = IO::Dir::Create( archDir, compileOptionsString );
+      m_dir = IO::Dir::Create( compileOptionsDir, _(buildCacheGeneration) );
     }
     
     std::string IRCache::keyForAST( RC::ConstHandle<AST::GlobalList> const &ast ) const
