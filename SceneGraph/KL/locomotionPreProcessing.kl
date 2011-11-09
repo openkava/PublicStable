@@ -49,7 +49,10 @@ function addLegTracks(
 
 function Vec2[][] calcFootPlantTimes(
   in Limb legs[],
-  in Vec2 timeRange,
+  io Vec2 timeRange,
+  io Integer leadingFoot,
+  io Scalar averageFootPlantTime,
+  io Scalar averageFootLiftedTime,
   in Integer numSamples,
   io Scalar movementThreshold,
   
@@ -110,30 +113,67 @@ function Vec2[][] calcFootPlantTimes(
     }
   }
   
-  // If a foot was planted at the end of the clip, then set the plant time as
+  ///////////////////////////////////////////////////
+  // Find the first foot lift and the last foot lift, and clamp the range.
+  Boolean singleStepLoop;
+  Scalar firstFootLift = timeRange.y;
+  Scalar lastFootLift = timeRange.x;
   for(Integer i=0; i < legs.size; i++){
-    if(footSteps[i].size == 1){
-      report("Error: sequence too short);
+    if(footSteps[i].size == 0){
+      report("ERROR: No foot steps detected for foot "+i);
       continue;
     }
-    Limb leg = legs[i];
-    
-    if(footSteps[i][0].x == timeRange.x && footSteps[i][footSteps[i].size-1].y == timeRange.y){
-      // If the foot was planted at the end of the animaiton sequence, we
-      // calculate the lift time. 
-      // This should only be done on looping animations.
-      Vec2 prevStep = footSteps[i][footSteps[i].size-2];
-      footSteps[i][footSteps[i].size-1].y = footSteps[i][footSteps[i].size-1].x + (prevStep.y - prevStep.x);
+    if(footSteps[i].size == 1){
+      singleStepLoop = true;
     }
-    else if(footSteps[i][footSteps[i].size-1].y == timeRange.y){
-      // If the foot was planted at the end of the animaiton sequence, we
-      // calculate the lift time. 
-      // This should only be done on looping animations.
-      Vec2 prevStep = footSteps[i][footSteps[i].size-2];
-      footSteps[i][footSteps[i].size-1].y = footSteps[i][footSteps[i].size-1].x + (prevStep.y - prevStep.x);
+    if(footSteps[i][0].y < firstFootLift){
+      firstFootLift = footSteps[i][0].y;
+      leadingFoot = i;
+    }
+    if(footSteps[i][footSteps[i].size-1].y > lastFootLift){
+      lastFootLift = footSteps[i][footSteps[i].size-1].y;
     }
   }
   
+  ///////////////////////////////////////////////////
+  averageFootPlantTime = 0.0;
+  Scalar numFootPlants = 0.0;
+  averageFootLiftedTime = 0.0;
+  Scalar numFootLifts = 0.0;
+  for(Integer j=0; j < footSteps.size; j++){
+    for(Integer i=0; i < footSteps[j].size; i++){
+      Vec2 step = footSteps[j][i];
+      if(step.x > timeRange.x && step.y < timeRange.y){
+        averageFootPlantTime += step.y - step.x;
+        numFootPlants += 1.0;
+      }
+      if(i<footSteps[j].size-1){
+        Vec2 nextStep = footSteps[j][i+1];
+        averageFootLiftedTime += nextStep.x - step.y;
+        numFootLifts += 1.0;
+      }
+    }
+  }
+  averageFootPlantTime /= numFootPlants;
+  averageFootLiftedTime /= numFootLifts;
+  
+  report("averageFootPlantTime:"+averageFootPlantTime);
+  report("detected footSteps:"+footSteps);
+  
+  // If a foot was planted at the end of the clip, then set the plant time as
+  for(Integer i=0; i < legs.size; i++){
+    Limb leg = legs[i];
+    if(footSteps[i][0].x == timeRange.x){
+      footSteps[i][0].x = footSteps[i][0].y - averageFootPlantTime;
+    }
+    if(footSteps[i][footSteps[i].size-1].y == timeRange.y){
+      footSteps[i][footSteps[i].size-1].y = footSteps[i][footSteps[i].size-1].x + averageFootPlantTime;
+    }
+  }
+  
+  
+  timeRange.x = firstFootLift;
+  timeRange.y = lastFootLift;
   
   for(Integer i=0; i < footPrints.size; i++){
     for(Integer j=0; j < footPrints[i].size; j++){
@@ -191,85 +231,54 @@ operator locomotionPreProcessing(
   Integer numSamples = Integer((timeRange.y - timeRange.x) / sampleFrequency);
   
   Vec2 footSteps[][];
-  footSteps = calcFootPlantTimes(legs, timeRange,  numSamples, movementThreshold, poseVariables, bindings, trackSet, debugGeometry);
+  Integer leadingFoot = 0;
+  Scalar averageFootPlantTime;
+  Scalar averageFootLiftedTime;
+  footSteps = calcFootPlantTimes(
+    legs,
+    timeRange,
+    leadingFoot,
+    averageFootPlantTime,
+    averageFootLiftedTime,
+    numSamples,
+    movementThreshold,
+    poseVariables,
+    bindings,
+    trackSet,
+    debugGeometry);
   report("footSteps:"+footSteps);
   
-  ///////////////////////////////////////////////////
-  // Find the first foot lift and the last foot lift, and clamp the range.
-  Boolean singleStepLoop;
-  Scalar firstFootLift = timeRange.y;
-  Scalar lastFootLift = timeRange.x;
-  Integer leadingFoot = 0;
-  for(Integer i=0; i < legs.size; i++){
-    if(footSteps[i].size == 0){
-      report("ERROR: No foot steps detected for foot "+i);
-      return;
-    }
-    if(footSteps[i].size == 1){
-      singleStepLoop = true;
-    }
-    if(footSteps[i][0].y < firstFootLift){
-      firstFootLift = footSteps[i][0].y;
-      leadingFoot = i;
-    }
-    if(footSteps[i][footSteps[i].size-1].y > lastFootLift){
-      lastFootLift = footSteps[i][footSteps[i].size-1].y;
-    }
-  }
-  timeRange.x = firstFootLift;
-  timeRange.y = lastFootLift;
-  
   report("clamped timeRange:"+timeRange);
+  report("leadingFoot:"+leadingFoot);
+  report("averageFootPlantTime:"+averageFootPlantTime);
+  report("averageFootLiftedTime:"+averageFootLiftedTime);
+
   ///////////////////////////////////////////////////
   // Convert foot steps into strides.
   footStepTracks.resize(legs.size);
   for(Integer i=0; i < legs.size; i++){
     FootStep step;
-    if(footSteps[i].size == 1){
-      step.liftTime = footSteps[i][0].y - (timeRange.y - timeRange.x);
-      step.plantTime = footSteps[i][0].x;
-      footStepTracks[i].footSteps.push(step);
-      step.liftTime = footSteps[i][0].y;
-      step.plantTime = footSteps[i][0].x + (timeRange.y - timeRange.x);
+    if(footSteps[i][0].x > timeRange.x){
+      report("Adding first step:"+i);
+      Vec2 firstStep = footSteps[i][0];
+      step.liftTime = firstStep.x - averageFootLiftedTime;
+      step.plantTime = firstStep.x;
       footStepTracks[i].footSteps.push(step);
     }
-    else if(footSteps[i].size == 2){
-      step.liftTime = footSteps[i][0].y;
-      step.plantTime = footSteps[i][1].x;
+    for(Integer j=0; j < footSteps[i].size-1; j++){
+      step.liftTime = footSteps[i][j].y;
+      step.plantTime = footSteps[i][j+1].x;
       footStepTracks[i].footSteps.push(step);
-      
-      if(footSteps[i][1].y <= timeRange.y){
-        Vec2 lastStep = footSteps[i][1];
-        step.liftTime = lastStep.y;
-        step.plantTime = lastStep.x + (timeRange.y - timeRange.x);
-        footStepTracks[i].footSteps.push(step);
-      }
     }
-    else{
-      if(footSteps[i][0].x > timeRange.x){
-        
-        Vec2 firstStep = footSteps[i][0];
-        Vec2 nextStep = footSteps[i][1];
-        step.liftTime = firstStep.x - (nextStep.x - firstStep.y);
-        step.plantTime = firstStep.x;
-        footStepTracks[i].footSteps.push(step);
-      }
-    
-      if(footSteps[i].size > 1){
-        for(Integer j=1; j < footSteps[i].size; j++){
-          step.liftTime = footSteps[i][j-1].y;
-          step.plantTime = footSteps[i][j].x;
-          footStepTracks[i].footSteps.push(step);
-        }
-      }
-      if(footSteps[i][footSteps[i].size-1].y <= timeRange.y){
-        Vec2 lastStep = footSteps[i][footSteps[i].size-1];
-        Vec2 secondLastStep = footSteps[i][footSteps[i].size-2];
-        step.liftTime = lastStep.y;
-        step.plantTime = lastStep.y + (lastStep.x - secondLastStep.y);
-        footStepTracks[i].footSteps.push(step);
-      }
-    }
+    report("lastStep lift timee:"+footSteps[i][footSteps[i].size-1].y);
+    report("delta:" + (footSteps[i][footSteps[i].size-1].y - timeRange.y));
+  //  if(footSteps[i][footSteps[i].size-1].y <= timeRange.y){
+      report("Adding last step:"+i);
+      Vec2 lastStep = footSteps[i][footSteps[i].size-1];
+      step.liftTime = lastStep.y;
+      step.plantTime = lastStep.y + averageFootLiftedTime;
+      footStepTracks[i].footSteps.push(step);
+  //  }
   }
   report("footStepTracks:"+footStepTracks);
   
