@@ -187,20 +187,19 @@ elif buildOS == 'Darwin':
   openclFlags['FRAMEWORKS'] = ['OpenCL']
 Export( 'openclFlags' )
 
-# teem: todo: Linux
-if buildOS != 'Linux':
-  teemLibs = [archLibs( 'teem', ['teem'] )]
-  if buildOS == 'Windows':
-    teemLibs.extend( archLibs( 'zlib', ['zlib'] ) )
-  else:
-    teemLibs.extend(['z'])
-  teemFlags = {
-    'CPPDEFINES': [ 'TEEM_STATIC' ],
-    'CPPPATH': [os.path.join( includeBaseDir, 'teem' ), os.path.join( includeBaseDir, 'zlib' )],
-    'LIBS': teemLibs
-  }
+# teem
+teemLibs = [archLibs( 'teem', ['teem'] )]
+if buildOS == 'Windows':
+  teemLibs.extend( archLibs( 'zlib', ['zlib'] ) )
+else:
+  teemLibs.extend(['z'])
+teemFlags = {
+  'CPPDEFINES': [ 'TEEM_STATIC' ],
+  'CPPPATH': [os.path.join( includeBaseDir, 'teem' ), os.path.join( includeBaseDir, 'zlib' )],
+  'LIBS': teemLibs
+}
 
-  Export( 'teemFlags' )
+Export( 'teemFlags' )
 
 # Licenses
 licensesFlags = {

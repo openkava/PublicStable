@@ -15,14 +15,13 @@ dirs = [
   #'OCL',
   'OGL',
   'PNG',
+  'TEEM',
   'TGA',
   'VICON',
 ]
 
 if buildOS != 'Windows':
   dirs += ['VIDEO']
-if buildOS != 'Linux':
-  dirs += ['TEEM']
 
 builtinExtFiles = SConscript( dirs=dirs )
 
