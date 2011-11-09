@@ -744,8 +744,12 @@ $(document).ready(function() {
   var loadPreset = function(){
 
     var loadPresetTask;
-    if(!initialLoad)//Make sure there is at least 1 asynch task ongoing...
+    if(!initialLoad) {//Make sure there is at least 1 asynch task ongoing...
       loadPresetTask = FABRIC.addAsyncTask("Loading preset");
+      viewport.startLoadMode();
+      displayProgressBar();
+      loadPresetTask( true );
+    }
 
     var presetLoader = scene.constructManager('SceneLoader', { preLoadScene: true } );
     var storage = new FABRIC.SceneGraph.LocalStorage('VolumeRenderingPresets.'+currPresetName);
@@ -756,13 +760,9 @@ $(document).ready(function() {
     curveEditor.redraw();
     colorGradient.redraw();
     viewport.redraw();
+    viewport.redraw();
     localStorage.setItem('VolumeRenderingSelectedPreset', currPresetName);
 
-    if(!initialLoad) {
-      viewport.startLoadMode();
-      displayProgressBar();
-      loadPresetTask( true );
-    }
     initialLoad = false;
   }
   
