@@ -128,8 +128,8 @@ Export( 'libpngFlags' )
 ffmpegFlags = {}
 if buildOS == 'Windows':
   ffmpegFlags = {
-      #'CPPDEFINES': [ '__STDC_LIMIT_MACROS', '__STDC_CONSTANT_MACROS' ],
-      'CPPPATH': [os.path.join( includeBaseDir, 'ffmpeg'), os.path.join( includeBaseDir, 'ffmpeg', 'Windows' )],
+      'CPPDEFINES': [ '__STDC_LIMIT_MACROS', '__STDC_CONSTANT_MACROS' ],
+      'CPPPATH': [os.path.join( '..', '..', '..', 'ThirdParty', 'Private', 'Windows', buildArch, buildType, 'lib', 'ffmpeg', 'inc'), os.path.join( includeBaseDir, 'ffmpeg', 'Windows' )],
       'LIBS': [archLibs( 'ffmpeg', ['swscale','avformat','avcodec','avutil'] )],
   }
 else:
