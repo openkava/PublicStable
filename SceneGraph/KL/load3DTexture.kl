@@ -36,7 +36,6 @@ operator load3DImageUShortData(
   io Byte imageUShortVoxels[],
   io Mat44 xfoMat
 ) {
-imageUShortVoxels.resize(0);
   decode3DImageUShortData( resource, imageWidth, imageHeight, imageDepth, imageUShortVoxels, xfoMat );
 }
 
