@@ -191,9 +191,9 @@ FABRIC.SceneGraph.registerNodeType('Image3D', {
       createResourceLoadNode: true,
       createLoadTextureEventHandler: true,
       initImage: true,
-      width: 16,
-      height: 16,
-      depth: 16,
+      width: 0,
+      height: 0,
+      depth: 0,
       url: undefined,
       glRepeat: true
     });

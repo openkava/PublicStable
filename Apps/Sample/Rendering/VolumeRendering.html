@@ -479,15 +479,13 @@ $(document).ready(function() {
   var layoutRectangle = scene.constructNode('DrawRectangle', {color: new FABRIC.RT.RGBA(255,255,255,255), tl: new FABRIC.RT.Vec2(2.0/3.0, 1.0), br: new FABRIC.RT.Vec2(1.0, -1.0), forceRefresh: true, createDgNode: true });
   var borderSize = 0.01;
 
-  var currUrl = 'Resources/ChestMid.nrrd';
-  var opacityTexture = scene.constructNode('Image3DWithHistogram',  { url: currUrl, glRepeat: false, histogramResolution: 1024 });
+  var opacityTexture = scene.constructNode('Image3DWithHistogram',  { url: '', glRepeat: false, histogramResolution: 1024 });
 
   var addOnLoadCallback = function (){
    opacityTexture.getResourceLoadNode().addOnLoadSuccessCallback(function(){
      histogram.setData(opacityTexture.getHistogram(), 0.4);
      viewport.redraw();
   })};
-  addOnLoadCallback();
 
   var volumeNode = scene.constructNode('VolumeOpacityInstance', {
       viewportNode: viewport,
@@ -744,7 +742,6 @@ $(document).ready(function() {
     var presetLoader = scene.constructManager('SceneLoader', { preLoadScene: true } );
     var storage = new FABRIC.SceneGraph.LocalStorage('VolumeRenderingPresets.'+currPresetName);
     var nodeMap = presetLoader.load(storage);
-    // Note: do we need to do this? We already have one added. 
     addOnLoadCallback();
     
     $resolutionFactorSlider.slider('value', volumeNode.getResolutionFactor());
