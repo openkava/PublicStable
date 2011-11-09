@@ -393,6 +393,27 @@ $(document).ready(function() {
   var $savePresetButton = $('#savePreset').button({ text: true });
   var $newPresetButton = $('#newPreset').button({ text: true });
   
+  $('#aboutDialog').dialog({
+    autoOpen: false,
+    modal: true
+  });
+  var $aboutButton = $('#aboutButton').button({ text: true })
+    .click(function() {
+      viewport.hide();
+      $('#aboutDialog').dialog({
+        autoOpen: true,
+        modal: true,
+        buttons: {
+          Ok: function() {
+            $(this).dialog( "close" );
+          }
+        },
+        closeOnEscape: true,
+        close: function(ev, ui) { viewport.show(); },
+      });
+    });
+  
+              
   var $opacityRangeSlider = $('#opacityRange').slider({min: 0, max: 1, step: 0.005, range: true, values: [0.1,1] });
   var $brightnessSlider = $('#brightness').slider({min: 0, max: 1, step: 0.01, value: 0.5 });
   var $transparencySlider = $('#transparency').slider({min: 0, max: 1, step: 0.01, value: 0.8 });
@@ -839,6 +860,10 @@ $(document).ready(function() {
     <div id="presetNameDialog" title="Preset Name">
       <input type="text" id="presetName" style="border:0; font-weight:bold;" />
     </div>
+    <div id="aboutDialog" title="About">
+      Volume Rendering demo by Fabric Engine Inc.</br>
+      Data used under license from  <a href='http://www.slicer.org/pages/LicenseText'>http://www.slicer.org/</a></br>
+    </div>
     <div id="wrapper">
       <div id="editor">
         <div id="viewer">
@@ -852,6 +877,7 @@ $(document).ready(function() {
               <div class="box" style="margin-top:5px;margin-left:10px;margin-bottom:10px;">
               <button id="newPreset" style="margin-top:10px;">New Preset</button>
               <button id="savePreset" style="margin-top:10px;">Save</button>
+              <button id="aboutButton" style="margin-top:10px;">About</button>
               </br>
               <select id='resourceSelector' style="width: 380px; margin-top:10px;">
               </select>
