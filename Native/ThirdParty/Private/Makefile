@@ -585,6 +585,9 @@ ifeq ($(BUILD_PLATFORM),Darwin)
 		else \
 			TEEM_ARCH="darwin.32"; \
 		fi; \
+		( mkdir -p Build/teem-$(TEEM_VERSION)-$$ARCH/arch/$$TEEM_ARCH/obj ); \
+		( mkdir -p Build/teem-$(TEEM_VERSION)-$$ARCH/arch/$$TEEM_ARCH/lib ); \
+		( mkdir -p Build/teem-$(TEEM_VERSION)-$$ARCH/arch/$$TEEM_ARCH/bin ); \
 		( cd Build/teem-$(TEEM_VERSION)-$$ARCH/src && make -e TEEM_ARCH=$$TEEM_ARCH -e TEEM_ZLIB.IPATH="include/zlib" ); \
 	done
 else ifeq ($(BUILD_PLATFORM),Linux)
@@ -788,13 +791,13 @@ install_teem: install_teem_headers install_teem_libs
 install_teem_libs:
 ifeq ($(BUILD_PLATFORM),Darwin)
 	for ARCH in $(ARCHS); do \
-		mkdir -p $(TARGET_BASE)/lib/$(BUILD_PLATFORM)/$$ARCH/Release/teem; \
+		mkdir -p $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/lib/teem; \
 		if [ $$ARCH = "x86_64" ]; then \
 			TEEM_ARCH="darwin.64"; \
 		else \
 			TEEM_ARCH="darwin.32"; \
 		fi; \
-		cp Build/teem-$(TEEM_VERSION)-$$ARCH/arch/$$TEEM_ARCH/lib/libteem.a $(TARGET_BASE)/lib/$(BUILD_PLATFORM)/$$ARCH/Release/teem/; \
+		cp Build/teem-$(TEEM_VERSION)-$$ARCH/arch/$$TEEM_ARCH/lib/libteem.a $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/lib/teem/; \
 	done
 else ifeq ($(BUILD_PLATFORM),Linux)
 	for ARCH in $(ARCHS); do \
