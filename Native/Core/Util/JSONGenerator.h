@@ -168,6 +168,7 @@ namespace Fabric
         m_ss->append( '{' );
       }
 
+#if defined(FABRIC_OS_WINDOWS)
       JSONObjectGenerator(JSONObjectGenerator& other) {
         *this = other;
       }
@@ -178,6 +179,8 @@ namespace Fabric
         other.m_ss = 0;
         return *this;
       }
+		
+#endif
 
       ~JSONObjectGenerator()
       {
@@ -243,6 +246,7 @@ namespace Fabric
         m_ss->append( '[' );
       }
 
+#if defined(FABRIC_OS_WINDOWS)
       JSONArrayGenerator(JSONArrayGenerator& other) {
         *this = other;
       }
@@ -253,7 +257,8 @@ namespace Fabric
         other.m_ss = 0;
         return *this;
       }
-
+#endif
+		
       ~JSONArrayGenerator()
       {
         flush();
