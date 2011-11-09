@@ -193,6 +193,7 @@ public:
   bool readNextFrame(KL::Boolean &loop)
   {
     AVPacket packet;
+    av_init_packet(&packet);
     int frameFinished = 0;
     bool result = false;
     while(av_read_frame(mFormatCtx, &packet)>=0)
@@ -263,8 +264,10 @@ public:
   
   bool getAllPixels(KL::VariableArray<KL::RGB> &pixels)
   {
+    mHandle->width = getWidth();
+    mHandle->height = getHeight();
     pixels.resize(getHeight() * getWidth());
-    memcpy(&pixels[0],mFrameRGB->data[0],sizeof(pixels[0]) * getHeight() * getWidth());
+    memcpy(&pixels[0],mFrameRGB->data[0],sizeof(KL::RGB) * getHeight() * getWidth());
     return true;
   }
   
