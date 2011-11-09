@@ -35,6 +35,7 @@ function activateClip(
   LocomotionMarker marker = markers[trackcontroller.pivotFoot][trackcontroller.pivotStepId];
   trackcontroller.time = marker.time;
   
+  // TODO: store the other step ids in the marker.
   for(Integer k=0; k < footStepTracks.size; k++){
     trackcontroller.stepIds[k] = 0;
   }
@@ -93,10 +94,6 @@ operator evaluateLocomotionPoseVariables(
         footStepTracksLibrary,
         trackcontroller,
       );
-      plantedFeet.resize(locomotionFeet.size);
-      for(Integer j=0; j<plantedFeet.size; j++){
-        plantedFeet[j] = false;//!(j==trackcontroller.pivotFoot);
-      }
     }
     else if(trackcontroller.deactivate){
       activateClip(
@@ -133,10 +130,8 @@ operator evaluateLocomotionPoseVariables(
       if(clipSpeed > 0.001){
         clipSpeedRatio = (currSpeed / clipSpeed);
         // When turning, speed up the playback a little to stop the legs getting tangled. 
-        clipFrequencyMultiplier += abs(controllerparams.displacement.ori.getAngle()) * 5.0;
-      }
-      
-      if(clipSpeed > 0.001){
+        clipFrequencyMultiplier += abs(controllerparams.displacement.ori.getAngle()) * 15.0;
+
         strideLengthMultiplier = clipSpeedRatio + ((1.0 - clipSpeedRatio) * (1.0 - strideLengthModulationFactor));
         clipFrequencyMultiplier = clipSpeedRatio / strideLengthMultiplier;
       }
@@ -146,14 +141,7 @@ operator evaluateLocomotionPoseVariables(
     // Clip Evaluation
     t += timestep * clipFrequencyMultiplier;
     
-    // Looping animaiton clips simply loop here. 
-  //  if(t > timeRange.y){
-  //    report("ERROR:");
-  //    t -= (timeRange.y-timeRange.x);
-  //    for(Integer j=0; j < locomotionFeet.size; j++){
-  //      trackcontroller.stepIds[j] = 0;
-  //    }
-  //  }
+      
     trackcontroller.time = t;
     
     poseVariables.evaluateKeyframeTracks(
@@ -167,9 +155,9 @@ operator evaluateLocomotionPoseVariables(
     // Error dissapation
     if(trackcontroller.tick > 0){
       if(trackcontroller.deactivate){
+        report("calculate pose delta");
         poseError = prevUpdatePose.subtract(poseVariables);
         clipActivationTime = t-timestep;
-        trackcontroller.deactivate = false;
       }
       if(clipActivationTime > 0.0){
         // Blend off the error across the first half a stride. 
@@ -181,6 +169,7 @@ operator evaluateLocomotionPoseVariables(
       }
     }
     prevUpdatePose = poseVariables;
+    trackcontroller.deactivate = false;
     
     /////////////////////////////////////////////////
     
@@ -301,7 +290,7 @@ operator evaluateLocomotionPoseVariables(
         debugGeometry.drawLine(lift, footPlantXfo.tr, Color(0.0, 1.0, 1.0, 1.0));
       }
       
-        report(j+" t:"+t+" stepId:"+stepId +" currStep:"+currStep + " stepRatio:"+stepRatio + " planted:"+plantedFeet[j]);
+     //   report(j+" t:"+t+" stepId:"+stepId +" currStep:"+currStep + " stepRatio:"+stepRatio + " planted:"+plantedFeet[j]);
       /*
       /////////////////////////////////////////////////
       // Raycasting
@@ -365,6 +354,8 @@ operator evaluateLocomotionPoseVariables(
           
           /////////////////////////////////////////////////
           // Clip Deactivation
+          
+    
           if(animationLibrary.size > 1){
        //   report("currSpeed:"+currSpeed);
             Scalar buffer = 0.3;
@@ -392,7 +383,6 @@ operator evaluateLocomotionPoseVariables(
               }
             }
           }
-          
           if(!trackcontroller.deactivate && currStep.liftTime >= timeRange.y){  
             // Deactivate the current clip if a foot reaches the last step.
             report("deactivate - end of clip:" + trackcontroller.time);
@@ -440,6 +430,7 @@ operator evaluateLocomotionPoseVariables(
       footXfo.tr += footError;
       
       poseVariables.xfoValues[leg.ikGoalXfoId] = footXfo;
+      
     }
     
     // Now apply the foot ray deltas now that we know how much will be
@@ -449,6 +440,14 @@ operator evaluateLocomotionPoseVariables(
       LocomotionFoot foot = locomotionFeet[j];
       Limb leg = legs[foot.limbId];
       poseVariables.xfoValues[leg.ikGoalXfoId].tr += upvector * (appliedFeetRayDeltas[j] - appliedComRayDelta);
+    }
+    
+    
+    // Looping animaiton clips simply loop here. 
+    if(t >= timeRange.y){
+      trackcontroller.deactivate = true;
+      trackcontroller.pivotFoot = 0;
+      trackcontroller.pivotStepId = 0;
     }
     
 }
