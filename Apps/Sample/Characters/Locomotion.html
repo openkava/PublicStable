@@ -113,24 +113,24 @@ $(document).ready(function() {
   viewport.setCameraNode(camera);
   
   var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) });
-  /*
+  
     // create the scene grid
   scene.constructNode('Instance', {
     geometryNode: scene.constructNode('Grid', {
-        size_x: 140.0,
-        size_z: 140.0,
+        size_x: 30.0,
+        size_z: 30.0,
         sections_x: 20,
         sections_z: 20 }),
     materialNode: scene.constructNode('FlatMaterial')
   });
-  */
+  
+  
   
   // create a simulation world
-  var bulletWorldNode = scene.constructNode('BulletWorldNode', {
-    createGroundPlaneGrid:true,
+  var bulletWorldNode;/* = scene.constructNode('BulletWorldNode', {
+    createGroundPlaneGrid:false,
     groundPlanseSize: 30,
   } );
-  /*
   // add a box shape
   bulletWorldNode.addShape('Box',new FABRIC.RT.BulletShape.createBox());
   
@@ -214,14 +214,14 @@ $(document).ready(function() {
   case 'walker':
     var locomotionControllerNode = scene.constructNode('LocomotionCharacterController', {
         cameraNode: camera,
-        maxLinearVelocity: new FABRIC.RT.Vec2(10, 10),
-        maxLinearAcceleration: 0.15,
-        maxAngularVelocity:  new FABRIC.RT.Euler(0, 1.5, 0),
+        maxLinearVelocity: new FABRIC.RT.Vec2(15, 15),
+        maxLinearAcceleration: 0.45,
+        maxAngularVelocity:  new FABRIC.RT.Euler(0, 2, 0),
         bulletWorldNode: bulletWorldNode,
         numTrailSegments: 0,
         gravity: -1.0,
         comHeight: 1.8,
-        circleSize: 0.6
+        circleSize: 1.6
       });
   case 'centipede':
     var maxLinearVelocity = new FABRIC.RT.Vec2(80, 80);
@@ -248,7 +248,9 @@ $(document).ready(function() {
   
   
   var rigLoader = scene.constructManager('SceneLoader');
-  var storage = new FABRIC.SceneGraph.LocalStorage(rigName);
+//  var storage = new FABRIC.SceneGraph.LocalStorage(rigName);
+//  var nodeMap = rigLoader.load(storage);
+  var storage = new FABRIC.SceneGraph.URLReader('Assets/' + rigName + '.txt');
   var nodeMap = rigLoader.load(storage);
 
   var libraryAnimations = nodeMap.LibraryLocomotionAnimations;
@@ -472,6 +474,7 @@ $(document).ready(function() {
           <div class="box">
             <h2>INFO</h2>
             <div class="content">
+              Use the arrow keys to move arround, and hold down shift to run faster. 
             </div><!--content-->
           </div><!--box-->
     

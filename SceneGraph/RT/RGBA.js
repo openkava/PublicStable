@@ -66,6 +66,14 @@ FABRIC.RT.RGBA.prototype = {
     return this;
   },
 
+  setFromScalarColor: function( color ) {
+    this.r = Math.floor(color.r*256);
+    this.g = Math.floor(color.g*256);
+    this.b = Math.floor(color.g*256);
+    this.a = Math.floor(color.g*256);
+    this.clampRGBAValues();
+  },
+
   // Returns the result of adding the argument to the vector
   add: function(rgba) {
     var c = new FABRIC.RT.RGBA(this.r + rgba.r, this.g + rgba.g, this.b + rgba.b, this.a + rgba.a);
@@ -114,7 +122,7 @@ FABRIC.RT.RGBA.prototype = {
     return this;
   },
 
-  interpTowards: function(rgba, weight) {
+  linearInterpolate: function(rgba, weight) {
     var delta = rgba.subtract(this);
     delta.mulInPlace(weight);
     return this.add(delta);

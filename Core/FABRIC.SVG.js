@@ -3,7 +3,20 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
-// TODO: Move this function into a namespace. FABRIC.helpers possibly.
+/**
+ * SVG defines the dom graphic utility.
+ */
+FABRIC.SVG = FABRIC.SVG ? FABRIC.SVG : {};
+
+/**
+ * Constructor to create the root element for the
+ * SVG dom.
+ * @constructor
+ * @param {string} domRootID The dom id of the root element.
+ */
+FABRIC.createSVGRootElem = function(domRootID) {
+
+
 function clone_obj(obj, deepclone) {
     var c = obj instanceof Array ? [] : {};
     
@@ -31,19 +44,6 @@ function clone_obj(obj, deepclone) {
     
     return c;
 }
-
-/**
- * SVG defines the dom graphic utility.
- */
-FABRIC.SVG = FABRIC.SVG ? FABRIC.SVG : {};
-
-/**
- * Constructor to create the root element for the
- * SVG dom.
- * @constructor
- * @param {string} domRootID The dom id of the root element.
- */
-FABRIC.createSVGRootElem = function(domRootID) {
 
   var SVGFactory = function(type) {
     this.elem = this.createSVGElement(type);
@@ -538,9 +538,12 @@ FABRIC.createSVGRootElem = function(domRootID) {
               var delta = mousePos.subtract(mouseDraggedStartPos);
               pos = draggedStartPos.add(delta);
               if (options.containment) {
-                var canvasSize = options.containment.size();
+                var containmentSize = options.containment.size();
+                var containmentPos = options.containment.translate();
                 var size = self.size();
-                pos = pos.clamp(new FABRIC.Vec2(0, 0), canvasSize.subtract(size));
+                pos = pos.subtract(containmentPos);
+                pos = pos.clamp(new FABRIC.Vec2(0, 0), containmentSize.subtract(size));
+                pos = pos.add(containmentPos);
               }
               if (options.snapSize > 0) {
                 pos = pos.multiplyScalar(1.0 / options.snapSize);
@@ -712,6 +715,7 @@ FABRIC.createSVGRootElem = function(domRootID) {
         selected = false;
         fireOnDeselectCallbacks();
       };
+      this.fireOnDeselectCallbacks = fireOnDeselectCallbacks;
 
       var self = this;
         this.elem.addEventListener('mousedown',
@@ -798,8 +802,7 @@ FABRIC.createSVGRootElem = function(domRootID) {
       this.elem.addEventListener('mouseover', highlightFn, false);
       this.elem.addEventListener('mousedown',
         function(evt) {
-          if (evt.button === 0)
-          {
+          if (evt.button === 0) {
             if (options.checkButton === true) {
               buttonState = !buttonState;
               if (options.addClasses) {
@@ -812,7 +815,8 @@ FABRIC.createSVGRootElem = function(domRootID) {
                 }
               }
               fireOnClickCallbacks(evt);
-            }else {
+            }
+            else {
               fireOnMouseDownCallbacks(evt);
               if (options.addClasses) {
               //  self.removeClass("Pressed");
@@ -861,6 +865,9 @@ FABRIC.createSVGRootElem = function(domRootID) {
         this.selection.push(obj);
       },
       replaceSelection: function(objArray) {
+        for(var i=0; i<this.selection.length; i++){
+            this.selection[i].fireOnDeselectCallbacks();
+        }
         this.selection = objArray;
       }
       /*  createClipPath:function(){
@@ -950,10 +957,30 @@ FABRIC.createSVGRootElem = function(domRootID) {
         return this.defs;
       },
       createClipPath: function() {
-        if (!this.defs) {
-          this.defs = this.appendAndReturnChild(this.extend(this.create('defs'), this.groupObj));
-        }
+        this.createDefs();
         return this.defs.appendAndReturnChild(this.extend(this.create('clipPath'), this.groupObj));
+      },
+      createLinearGradient: function() {
+        this.createDefs();
+        var linearGradient = this.defs.appendAndReturnChild(this.extend(this.create('linearGradient'), this.groupObj));
+        linearGradient.clearKeys = function(){
+            linearGradient.removeAllChildren();
+        }
+        linearGradient.addKey = function(pos, color){
+          var key = linearGradient.appendAndReturnChild(this.create('stop').attr('offset',(pos * 100)+"%").attr('stop-color', color.toHex()));
+          key.setParam = function(pos){
+            key.attr('offset',(pos * 100)+"%");
+          }
+          key.getColor = function(color){
+            var col = new FABRIC.Color();
+            col.fromHex(key.attr('stop-color'));
+          }
+          key.setColor = function(color){
+            key.attr('stop-color', color.toHex());
+          }
+          return key;
+        }
+        return linearGradient;
       },
       // MARK: factoryFunctions
       // Composition rather than inheritance.
@@ -1018,8 +1045,7 @@ FABRIC.createSVGRootElem = function(domRootID) {
       // MARK: createRect
       createRect: function() {
         var __onSizeCallbacks = [];
-        return this.appendAndReturnChild(this.extend(this.create('rect'),
-        {
+        return this.appendAndReturnChild(this.extend(this.create('rect'), {
           addOnSizeCallback: function(cb) {
             __onSizeCallbacks.push(cb);
           },
@@ -1376,6 +1402,36 @@ FABRIC.createSVGRootElem = function(domRootID) {
           //                                      .translate(options.offset);
           //  this.parent.insertBefore(dropShadow, this);
           //  this.addOnSizeCallback(function(size){  dropShadow.size(size);});
+            return this;
+          }
+        }));
+      },
+      // MARK: createPolygon
+      createPolygon: function() {
+        var points = [];
+        return this.appendAndReturnChild(this.extend(this.create('polygon'), {
+          addPoint: function() {
+            if (arguments.length === 1) {
+              points.push(arguments[0]);
+            }else if(arguments.length === 2) {
+              points.push({ x:arguments[0], y:arguments[1]});
+            }
+            return this;
+          },
+          updateShape: function(){
+            var polygonDesc = "";
+            for(var i=0; i<points.length; i++){
+              polygonDesc += (i>0?" ":"") + points[i].x + "," + points[i].y;
+            }
+            this.attr('points', polygonDesc);
+          },
+          thickness: function() {
+            if (arguments.length === 0) {
+              return this.attr('stroke-width');
+            }
+            else if (arguments.length === 1 && (typeof arguments[0]) == 'number') {
+              this.attr('stroke-width', arguments[0]);
+            }
             return this;
           }
         }));

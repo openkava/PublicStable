@@ -75,7 +75,9 @@ FABRIC.appendOnCreateContextCallback(function(context) {
       filename: 'FABRIC_ROOT/SceneGraph/RT/KeyframeTrack.kl',
       sourceCode: FABRIC.preProcessCode(
         FABRIC.loadResourceURL('FABRIC_ROOT/SceneGraph/RT/KeyframeTrack.kl'), {
-          KEYFRAMETYPE: 'BezierKeyframe'
+          KEYFRAMEDATATYPE:'Scalar',
+          KEYFRAMETYPE: 'BezierKeyframe',
+          KEYFRAMEDATADEFAULTVALUE: '0.0'
         })
     }
   });
@@ -93,7 +95,9 @@ FABRIC.appendOnCreateContextCallback(function(context) {
       filename: 'FABRIC_ROOT/SceneGraph/RT/KeyframeTrack.kl',
       sourceCode: FABRIC.preProcessCode(
         FABRIC.loadResourceURL('FABRIC_ROOT/SceneGraph/RT/KeyframeTrack.kl'), {
-          KEYFRAMETYPE: 'BezierKeyframe'
+          KEYFRAMEDATATYPE:'Scalar',
+          KEYFRAMETYPE: 'BezierKeyframe',
+          KEYFRAMEDATADEFAULTVALUE: '0.0'
         })
     }
   });

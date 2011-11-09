@@ -1,0 +1,904 @@
+<html xmlns="http://www.w3.org/1999/xhtml"> 
+  <!--
+    Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+    -->
+  <head> 
+    <title>FABRIC - Volume Rendering</title> 
+    
+    <script type="text/javascript" src="../../../ThirdParty/jQuery/jquery-1.6.2.min.js"></script>
+    <script type="text/javascript" src="../../../ThirdParty/jQuery/jquery-ui-1.8.16.custom.min.js"></script>
+
+    <link type="text/css" href="../../../ThirdParty/jQuery/css/fabric/main.css" rel="stylesheet" />
+    <link type="text/css" href="../../../ThirdParty/jQuery/css/fabric/jquery-ui-1.8.16.custom.css" rel="stylesheet" />
+
+    <script type="text/javascript" src="../../../ThirdParty/jQuery/colorpicker/js/colorpicker.js"></script>
+    <link href="../../../ThirdParty/jQuery/colorpicker/css/colorpicker.css" rel="stylesheet" type="text/css" />
+    
+
+    <script type="text/javascript" src="../../../Core/FABRIC.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Math.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Vec2.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Vec3.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Vec4.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Mat22.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Mat33.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Mat44.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Quat.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Xfo.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/RGBA.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Color.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Euler.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Ray.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/OGLShaderProgram.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/OGLTexture2D.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/OGLTexture3D.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/OGLBuffer.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/OGLRenderTarget.js" charset="utf-8"></script>
+    
+    <script type="text/javascript" src="../../../SceneGraph/RT/PoseVariables.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/KeyframeTrack.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/LinearKeyframe.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/ColorKeyframe.js" charset="utf-8"></script>
+
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Geometry.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Primitives.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Lights.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Materials.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Manipulation.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Kinematics.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.VolumeRendering.js" charset="utf-8"></script>
+    
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Animation.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../Core/Vec2.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../Core/Color.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../Core/FABRIC.SVG.js"></script>
+    <script type="text/javascript" src="../../../SceneGraph/CurveEditor/CurveEditor.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/ColorGradient/ColorGradient.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Histogram/Histogram.js" charset="utf-8"></script>
+    
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Persistence.js" charset="utf-8"></script>
+    
+    <link href="../../../SceneGraph/CurveEditor/CurveEditor.css" rel="stylesheet" type="text/css" />
+
+<script type="text/javascript">
+
+ var _gaq = _gaq || [];
+ _gaq.push(['_setAccount', 'UA-25833362-1']);
+ _gaq.push(['_trackPageview']);
+
+ (function() {
+   var ga = document.createElement('script'); ga.type =
+'text/javascript'; ga.async = true;
+   ga.src = ('https:' == document.location.protocol ? 'https://ssl' :
+'http://www') + '.google-analytics.com/ga.js';
+   var s = document.getElementsByTagName('script')[0];
+s.parentNode.insertBefore(ga, s);
+ })();
+
+</script>
+
+
+<style type="text/css">
+    
+#sidebar {
+  width:400px;
+}  
+#viewer {
+  right:400px;
+}
+#sidebar .box{
+  margin: 0px;
+}
+#sidebar .box h2{
+  padding: 5px 10px 1px;
+}
+#sidebar .box .content{
+  padding: 0px;
+}
+
+#opacityMapping {
+  height:60px;
+  background-color:#A9A9A9;
+}
+
+#colorMapping {
+  height:40px;
+}
+
+
+
+</style>
+    
+    <script type="text/javascript">
+
+FABRIC.SceneGraph.registerNodeType('Image3DWithHistogram', {
+  briefDesc: '',
+  detailedDesc: '',
+  parentNodeDesc: '',
+  optionsDesc: {
+    histogramResolution: 'histogram resolution'
+  },
+
+  factoryFn: function(options, scene) {
+    scene.assignDefaults(options, {
+        histogramResolution: 1024
+      });
+
+    var histogramNode = scene.constructNode('Image3D', options);
+    var dgnode = histogramNode.getDGNode();
+
+    dgnode.addMember('histogramResolution', 'Size', options.histogramResolution);
+    dgnode.addMember('histogram', 'Scalar[]');
+    histogramNode.addMemberInterface(dgnode, 'histogramResolution', true);
+    histogramNode.pub.getHistogram = function() {
+      dgnode.evaluate();
+      return dgnode.getData('histogram');
+    }
+
+    dgnode.bindings.append(scene.constructOperator({
+      operatorName: 'generate3DImageHistogram',
+      parameterLayout: [
+        'self.pixels',
+        'self.histogramResolution',
+        'self.histogram'
+      ],
+      entryFunctionName: 'generate3DImageHistogram',
+      srcFile: 'KL/3DTextureUtils.kl'
+    }));
+    return histogramNode;
+  }
+});
+
+
+
+FABRIC.SceneGraph.registerNodeType('CropVolumeManipulator', {
+  briefDesc: '',
+  detailedDesc: '',
+  parentNodeDesc: '',
+  optionsDesc: {
+  },
+
+  factoryFn: function(options, scene) {
+    scene.assignDefaults(options, {
+      volumeInstanceNode: undefined,
+      color: FABRIC.RT.rgb(0.5, 0.5, 0.5, 1)
+      });
+
+    var volumeInstanceNode = scene.getPrivateInterface(options.volumeInstanceNode);
+    var cropVolumeManipulator = scene.constructNode('SceneGraphNode', options);
+    var volumeSlicesNode = scene.getPrivateInterface(volumeInstanceNode.pub.getVolumeSlicesNode());
+    
+    
+    var cropVolumeManipulatorTransform = scene.pub.constructNode('Transform', {
+        hierarchical: true,
+        parentTransformNode: volumeInstanceNode.getTransformNode(),
+        localXfo: new FABRIC.RT.Xfo({ sc: new FABRIC.RT.Vec3(1.01, 1.01, 1.01) })
+      });
+    
+    var cropMin, cropMax;
+    var invxfo, xfo;
+    var lineShaderNode;
+    var constructEdgeManipulator = function(name, srcCode, modifierFn){
+      
+      var lineMaterial = scene.pub.constructNode('FlatMaterial', {
+        prototypeMaterialType: "LineMaterial",
+        color:options.color,
+        lineWidth: 2.0
+      });
+
+      var lineMaterialPrivate = scene.getPrivateInterface(lineMaterial);
+      lineShaderNode = lineMaterialPrivate.getShaderNode();
+    
+      var lineGeom = scene.constructNode('LineVector');
+      lineGeom.pub.setAttributeDynamic('positions');
+      lineGeom.getAttributesDGNode().setDependency(volumeSlicesNode.getUniformsDGNode(), 'volume_uniforms');
+      lineGeom.getAttributesDGNode().bindings.append(scene.constructOperator({
+        operatorName: name+'GeneratorOp',
+        parameterLayout: [
+          'volume_uniforms.cropMin',
+          'volume_uniforms.cropMax',
+          'self.positions<>'
+        ],
+        entryFunctionName: 'setLineSegmentPositions',
+        srcCode: srcCode
+      }));
+            
+      var manipulatorNode = scene.constructNode('Manipulator', {
+        name: name+"Manipulator",
+        transformNode: cropVolumeManipulatorTransform,
+        geometryNode: lineGeom.pub,
+        materialNode: lineMaterial
+      });
+      
+      var viewportNode;
+      var planePoint, planeNormal;
+      var dragStartFn = function(evt) {
+        viewportNode = evt.viewportNode;
+        planePoint = evt.hitData.point;
+        planeNormal = evt.cameraNode.getTransformNode().getGlobalXfo().ori.rotateVector(new FABRIC.RT.Vec3(0, 0, 1));
+        
+        invxfo = volumeInstanceNode.getTransformNode().getGlobalXfo().inverse();
+        cropMin = volumeSlicesNode.pub.getCropMin();
+        cropMax = volumeSlicesNode.pub.getCropMax();
+      }
+      manipulatorNode.pub.addEventListener('dragstart', dragStartFn);
+  
+      var dragFn = function(evt) {
+        var ray2 = viewportNode.calcRayFromMouseEvent(evt);
+        var hitPoint2 = ray2.intersectPlane(planePoint, planeNormal).point;
+        if (!hitPoint2)
+          return;
+        
+        var delta = invxfo.transformVector(hitPoint2).subtract(invxfo.transformVector(planePoint));
+        
+        var newCropMin = cropMin.clone();
+        var newCropMax = cropMax.clone();
+        modifierFn(newCropMin, newCropMax, delta);
+        newCropMin.x = Math.clamp(newCropMin.x, -1, 1);
+        newCropMin.y = Math.clamp(newCropMin.y, -1, 1);
+        newCropMin.z = Math.clamp(newCropMin.z, -1, 1);
+        newCropMax.x = Math.clamp(newCropMax.x, -1, 1);
+        newCropMax.y = Math.clamp(newCropMax.y, -1, 1);
+        newCropMax.z = Math.clamp(newCropMax.z, -1, 1);
+        volumeSlicesNode.pub.setCropMin(newCropMin);
+        volumeSlicesNode.pub.setCropMax(newCropMax);
+      }
+      manipulatorNode.pub.addEventListener('drag', dragFn);
+    }
+    
+    constructEdgeManipulator( 'xaxis1', 'use Vec3;\
+operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){\
+  positions[0] = Vec3(min.x, min.y, min.z);\
+  positions[1] = Vec3(max.x, min.y, min.z);\
+}',
+    function(cropMin, cropMax, delta){
+      cropMin.y += delta.y;
+      cropMin.z += delta.z;
+    });
+    
+    constructEdgeManipulator( 'xaxis2', 'use Vec3;\
+operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){\
+  positions[0] = Vec3(min.x, max.y, min.z);\
+  positions[1] = Vec3(max.x, max.y, min.z);\
+}',
+    function(cropMin, cropMax, delta){
+      cropMax.y += delta.y;
+      cropMin.z += delta.z;
+    });
+    
+    constructEdgeManipulator( 'xaxis3', 'use Vec3;\
+operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){\
+  positions[0] = Vec3(min.x, min.y, max.z);\
+  positions[1] = Vec3(max.x, min.y, max.z);\
+}',
+    function(cropMin, cropMax, delta){
+      cropMin.y += delta.y;
+      cropMax.z += delta.z;
+    });
+    
+    constructEdgeManipulator( 'xaxis4', 'use Vec3;\
+operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){\
+  positions[0] = Vec3(min.x, max.y, max.z);\
+  positions[1] = Vec3(max.x, max.y, max.z);\
+}',
+    function(cropMin, cropMax, delta){
+      cropMax.y += delta.y;
+      cropMax.z += delta.z;
+    });
+    
+    
+    constructEdgeManipulator( 'yaxis1', 'use Vec3;\
+operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){\
+  positions[0] = Vec3(min.x, min.y, min.z);\
+  positions[1] = Vec3(min.x, max.y, min.z);\
+}',
+    function(cropMin, cropMax, delta){
+      cropMin.x += delta.x;
+      cropMin.z += delta.z;
+    });
+    
+    constructEdgeManipulator( 'yaxis2', 'use Vec3;\
+operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){\
+  positions[0] = Vec3(min.x, min.y, max.z);\
+  positions[1] = Vec3(min.x, max.y, max.z);\
+}',
+    function(cropMin, cropMax, delta){
+      cropMin.x += delta.x;
+      cropMax.z += delta.z;
+    });
+    
+    constructEdgeManipulator( 'yaxis3', 'use Vec3;\
+operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){\
+  positions[0] = Vec3(max.x, min.y, min.z);\
+  positions[1] = Vec3(max.x, max.y, min.z);\
+}',
+    function(cropMin, cropMax, delta){
+      cropMax.x += delta.x;
+      cropMin.z += delta.z;
+    });
+    
+    constructEdgeManipulator( 'yaxis4', 'use Vec3;\
+operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){\
+  positions[0] = Vec3(max.x, min.y, max.z);\
+  positions[1] = Vec3(max.x, max.y, max.z);\
+}',
+    function(cropMin, cropMax, delta){
+      cropMax.x += delta.x;
+      cropMax.z += delta.z;
+    });
+    
+    constructEdgeManipulator( 'zaxis1', 'use Vec3;\
+operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){\
+  positions[0] = Vec3(min.x, min.y, min.z);\
+  positions[1] = Vec3(min.x, min.y, max.z);\
+}',
+    function(cropMin, cropMax, delta){
+      cropMin.x += delta.x;
+      cropMin.y += delta.y;
+    });
+    
+    constructEdgeManipulator( 'zaxis2', 'use Vec3;\
+operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){\
+  positions[0] = Vec3(min.x, max.y, min.z);\
+  positions[1] = Vec3(min.x, max.y, max.z);\
+}',
+    function(cropMin, cropMax, delta){
+      cropMin.x += delta.x;
+      cropMax.y += delta.y;
+    });
+    
+    constructEdgeManipulator( 'zaxis3', 'use Vec3;\
+operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){\
+  positions[0] = Vec3(max.x, min.y, min.z);\
+  positions[1] = Vec3(max.x, min.y, max.z);\
+}',
+    function(cropMin, cropMax, delta){
+      cropMax.x += delta.x;
+      cropMin.y += delta.y;
+    });
+    
+    constructEdgeManipulator( 'zaxis4', 'use Vec3;\
+operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){\
+  positions[0] = Vec3(max.x, max.y, min.z);\
+  positions[1] = Vec3(max.x, max.y, max.z);\
+}',
+    function(cropMin, cropMax, delta){
+      cropMax.x += delta.x;
+      cropMax.y += delta.y;
+    });
+
+    var enabled = true;
+    cropVolumeManipulator.pub.enable = function() {
+      if(!enabled) {
+        lineShaderNode.getParentEventHandler().appendChildEventHandler(lineShaderNode.getRedrawEventHandler());
+        enabled = true;
+      }
+    };
+    cropVolumeManipulator.pub.disable = function() {
+      if(enabled) {
+        lineShaderNode.getParentEventHandler().removeChildEventHandler(lineShaderNode.getRedrawEventHandler());
+        enabled = false;
+      }
+    };
+    
+    return cropVolumeManipulator;
+  }
+});
+
+
+$(document).ready(function() {
+  var i, j;
+  
+  var $savePresetButton = $('#savePreset').button({ text: true });
+  var $newPresetButton = $('#newPreset').button({ text: true });
+  
+  var $opacityRangeSlider = $('#opacityRange').slider({min: 0, max: 1, step: 0.005, range: true, values: [0.1,1] });
+  var $brightnessSlider = $('#brightness').slider({min: 0, max: 1, step: 0.01, value: 0.5 });
+  var $transparencySlider = $('#transparency').slider({min: 0, max: 1, step: 0.01, value: 0.8 });
+  var $specularFactorSlider = $('#specularFactor').slider({min: 0, max: 1, step: 0.01, value: 1.0 });
+  var $resolutionFactorSlider = $('#resolutionFactor').slider({min: 0.01, max: 1, step: 0.01, value: 1.0 });
+
+  var $sliders2D = [
+    $('#xRatio').slider({min: 0, max: 1, step: 0.005 }),
+    $('#yRatio').slider({min: 0, max: 1, step: 0.005 }),
+    $('#zRatio').slider({min: 0, max: 1, step: 0.005 })
+  ];
+  
+  
+  
+  var scene = FABRIC.SceneGraph.createScene();
+  
+  var histogram = constructHistogram('opacityMapping');
+  
+  ///////////////////////////////////////////////////////////
+  // Opacity Mapping
+  var linearkey = FABRIC.RT.linearKeyframe;
+  var opacityKeyAnimationLibrary = scene.constructNode('LinearKeyAnimationLibrary');
+  var trackSet = new FABRIC.RT.KeyframeTrackSet('LinearPosKeyAnimationTrack');
+  trackSet.tracks.push(new FABRIC.RT.KeyframeTrack('opacityKeyframeTrack', FABRIC.RT.rgb(0, 1, 0), [
+      linearkey(.1, 0),
+      linearkey(.2, 0.75),
+      linearkey(.4, 0.05),
+      linearkey(.5, 1)
+    ]));
+  
+  var trackSetID = opacityKeyAnimationLibrary.addTrackSet(trackSet);
+  var opacityDisplayNode = scene.constructNode('TrackDisplay', {
+      animationLibraryNode: opacityKeyAnimationLibrary,
+      timeRange: new FABRIC.RT.Vec2(0, 1),
+      segmentCount: 1024
+    });
+  
+  ///////////////////////////////////////////////////////////
+  // Color Mapping
+  var colorkey = FABRIC.RT.colorKeyframe;
+  var gradientKeyTrackLibrary = scene.constructNode('ColorKeyAnimationLibrary', {
+    name:'GradientKeyTrack'
+  });
+  
+  var gradientKeyTrackSet = new FABRIC.RT.KeyframeTrackSet('GradientKeyTrack');
+  gradientKeyTrackSet.tracks.push(new FABRIC.RT.KeyframeTrack('opacityKeyframeTrack', FABRIC.RT.rgb(0, 1, 0), [
+      colorkey(.0, FABRIC.RT.rgb(.7, 0, 0)),
+      colorkey(.2, FABRIC.RT.rgb(0, .7, 0)),
+      colorkey(.25, FABRIC.RT.rgb(0, .7, .7)),
+      colorkey(.3, FABRIC.RT.rgb(.7, .7, 0)),
+      colorkey(.4, FABRIC.RT.rgb(.7, 0, .7)),
+      colorkey(.5, FABRIC.RT.rgb(0, 0, .7))
+    ]));
+  var trackSetID = gradientKeyTrackLibrary.addTrackSet(gradientKeyTrackSet);
+  var gradientDisplayNode = scene.constructNode('TrackDisplay', {
+      animationLibraryNode: gradientKeyTrackLibrary,
+      timeRange: new FABRIC.RT.Vec2(0, 1),
+      segmentCount: 1024
+    });
+
+  var viewport = scene.constructNode('Viewport', {
+    windowElement: document.getElementById('FabricContainer'),
+    enableRaycasting: true,
+    backgroundColor: FABRIC.RT.rgb(0.0, 0.0, 0.0),
+    rayIntersectionThreshold: 0.03
+  });
+  
+  // Create a camera to draw the scene from
+  var camera = scene.constructNode('TargetCamera', {
+      position: new FABRIC.RT.Vec3(0, 0, 5),
+      target: new FABRIC.RT.Vec3(0, 0, 0),
+      nearDistance: 0.25,
+      screenOffset: new FABRIC.RT.Vec2(-0.25, 0.0)
+    });
+
+  scene.constructNode("CameraManipulator", { targetNode:camera } );
+  viewport.setCameraNode(camera);
+  var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(100.0, 100.0, 100.0) });
+  var transform =  scene.constructNode('Transform', {
+    hierarchical: false,
+    globalXfo: new FABRIC.RT.Xfo({tr: new FABRIC.RT.Vec3(0, 0, 0), sc: new FABRIC.RT.Vec3(1.0, 1.0, 1.0)})
+  });
+
+  var layoutRectangle = scene.constructNode('DrawRectangle', {color: new FABRIC.RT.RGBA(255,255,255,255), tl: new FABRIC.RT.Vec2(2.0/3.0, 1.0), br: new FABRIC.RT.Vec2(1.0, -1.0), forceRefresh: true, createDgNode: true });
+  var borderSize = 0.01;
+
+  var opacityTexture = scene.constructNode('Image3DWithHistogram',  { url: 'Resources/ChestMid.nrrd', glRepeat: false, histogramResolution: 1024 });
+//  var opacityTexture = scene.constructNode('Image3DWithHistogram',  { url: 'Resources/HeadHigh.nrrd', resourceTargetTransformNode: transform, glRepeat: false, histogramResolution: 1024 });
+
+  opacityTexture.getResourceLoadNode().addOnLoadSuccessCallback(function (){
+    histogram.setData(opacityTexture.getHistogram(), 0.4);
+  });
+
+  var volumeNode = scene.constructNode('VolumeOpacityInstance', {
+      viewportNode: viewport,
+      transformNode: transform,
+      cropMin: new FABRIC.RT.Vec3(-1, -0.2, -1),
+      cropMax: new FABRIC.RT.Vec3(1, 0.5, 1),
+      opacityTextureNode: opacityTexture,
+      lightNode: light,
+      brightnessFactor: 0.5,
+      transparency: 0.70,
+      minOpacity: 0.0,
+      maxOpacity: 1.0,
+      backgroundColor: new FABRIC.RT.Color(0, 0, 0, 0),
+      opacityFactorsNode: opacityDisplayNode,
+      opacityColorsNode: gradientDisplayNode
+    });
+
+  var texture2DSlice = [];
+  texture2DSlice[0] = scene.constructNode('VolumeSliceRender', {tl: new FABRIC.RT.Vec2(2.0/3.0+borderSize, 1.0-borderSize), br: new FABRIC.RT.Vec2(1.0-borderSize, 1.0/3.0+borderSize), volumeOpacityInstanceNode: volumeNode, ratio: 0.5, axis : 0});
+  texture2DSlice[1] = scene.constructNode('VolumeSliceRender', {tl: new FABRIC.RT.Vec2(2.0/3.0+borderSize, 1.0/3.0-borderSize), br: new FABRIC.RT.Vec2(1.0-borderSize, -1.0/3.0+borderSize), volumeOpacityInstanceNode: volumeNode, ratio: 0.5, axis : 1, sharedVolumeSliceRender: texture2DSlice[0] });
+  texture2DSlice[2] = scene.constructNode('VolumeSliceRender', {tl: new FABRIC.RT.Vec2(2.0/3.0+borderSize, -1.0/3.0-borderSize), br: new FABRIC.RT.Vec2(1.0-borderSize, -1.0+borderSize), volumeOpacityInstanceNode: volumeNode, ratio: 0.5, axis : 2, sharedVolumeSliceRender: texture2DSlice[0]});
+    
+    
+  var cropManipulator = scene.constructNode('CropVolumeManipulator', {
+    volumeInstanceNode: volumeNode
+  });
+    
+  var sliders2DBindFunction = function(index) {
+    var sliderIndex = index;
+    return function(event, ui) {
+        texture2DSlice[sliderIndex].setRatio(ui.value);
+        viewport.redraw();
+        return true;
+      };
+  };
+
+  $opacityRangeSlider.slider('option', 'values', [volumeNode.getMinOpacity(), volumeNode.getMaxOpacity()]);
+  $opacityRangeSlider.bind('slide', function(event, ui){
+    volumeNode.setMinOpacity(ui.values[0]);
+    volumeNode.setMaxOpacity(ui.values[1]);
+    viewport.redraw();
+    return true;
+  });
+
+  for( i = 0; i < 3; ++i ) {
+    $sliders2D[i].slider('value', texture2DSlice[i].getRatio());
+    $sliders2D[i].bind('slide', sliders2DBindFunction(i) );
+    
+    var cropMax = volumeNode.getCropMax();
+    var cropMin = volumeNode.getCropMin();
+
+    if(cropMin > cropMax) {
+      cropMin = cropMax;
+    }
+  }
+
+  $resolutionFactorSlider.slider('value', volumeNode.getResolutionFactor());
+  $resolutionFactorSlider.bind('slide', function(event, ui) {
+    volumeNode.setResolutionFactor(ui.value);
+    viewport.redraw();
+    return true;
+  });
+  
+  $brightnessSlider.slider('value', volumeNode.getBrightnessFactor());
+  $brightnessSlider.bind('slide', function(event, ui) {
+    volumeNode.setBrightnessFactor(ui.value);
+    viewport.redraw();
+    return true;
+  });
+  
+  $transparencySlider.slider('value', volumeNode.getTransparency());
+  $transparencySlider.bind('slide', function(event, ui) {
+    volumeNode.setTransparency(ui.value);
+    viewport.redraw();
+    return true;
+  });
+  
+  $specularFactorSlider.slider('value', volumeNode.getSpecularFactor());
+  $specularFactorSlider.bind('slide', function(event, ui) {
+    volumeNode.setSpecularFactor(ui.value);
+    viewport.redraw();
+    return true;
+  });
+
+  $("#whiteBackground").attr('checked', false).change(function() {
+    var whiteBackground = $('#whiteBackground').attr('checked');
+    var white = new FABRIC.RT.Color(1, 1, 1, 1);
+    var black = new FABRIC.RT.Color(0, 0, 0, 1);
+    var backgroundColor = whiteBackground ? white : black;
+    viewport.setBackgroundColor( backgroundColor );
+    for( i = 0; i < 3; ++i ) {
+      texture2DSlice[i].setBackgroundColor( backgroundColor );
+    }
+    layoutRectangle.setColor( whiteBackground ? black : white );
+    viewport.redraw();
+  });
+
+  $("#invert").attr('checked', false).change(function() {
+    var invertColor = $('#invert').attr('checked');
+    volumeNode.setInvertColor(invertColor ? 1 : 0);
+    volumeNode.setBrightnessFactor(1.0-volumeNode.getBrightnessFactor());
+    $brightnessSlider.slider('value', volumeNode.getBrightnessFactor());
+    viewport.redraw();
+  });
+
+  var savedCropMin, savedCropMax;
+  $("#enableCropping").attr('checked', true).change(function() {
+    var enableCropping = $('#enableCropping').attr('checked');
+    if( !enableCropping ) {
+      savedCropMin = volumeNode.getCropMin().clone();
+      savedCropMax = volumeNode.getCropMax().clone();
+      volumeNode.setCropMin( new FABRIC.RT.Vec3(-1,-1,-1));
+      volumeNode.setCropMax( new FABRIC.RT.Vec3( 1, 1, 1));
+      cropManipulator.disable();
+      viewport.disableRaycasting();
+    } else {
+      volumeNode.setCropMin( savedCropMin );
+      volumeNode.setCropMax( savedCropMax );
+      cropManipulator.enable();
+      viewport.enableRaycasting();
+    }
+    viewport.redraw();
+  });
+
+  var ajustViewportLayout = function() {
+    var displayAxisSlices = $('#displayAxisSlices').attr('checked');
+    if(displayAxisSlices) {
+      var aspectRatio = viewport.getWidth() / viewport.getHeight();
+      var sliceViewWidth = (2.0/3.0) / aspectRatio;
+      var tl;
+      for( i = 0; i < 3; ++i ) {
+        tl = texture2DSlice[i].getTl();
+        tl.x = 1.0 - (sliceViewWidth - borderSize);
+        texture2DSlice[i].setTl(tl);
+      }
+      tl = layoutRectangle.getTl();
+      tl.x = 1.0 - sliceViewWidth;
+      layoutRectangle.setTl(tl);
+      camera.setScreenOffset(new FABRIC.RT.Vec2(-sliceViewWidth/2.0, 0.0));
+    }
+    else
+      camera.setScreenOffset(new FABRIC.RT.Vec2(0.0, 0.0));
+    viewport.redraw();
+  };
+
+  $("#displayAxisSlices").attr('checked', true).change(function() {
+    var displayAxisSlices = $('#displayAxisSlices').attr('checked');
+
+    if(displayAxisSlices)
+      layoutRectangle.enable();
+    else
+      layoutRectangle.disable();
+
+    for( i = 0; i < 3; ++i ) {
+      if(displayAxisSlices)
+        texture2DSlice[i].enable();
+      else
+        texture2DSlice[i].disable();
+    }
+
+    $("#axisSlicesParams").attr('hidden', !displayAxisSlices);
+    ajustViewportLayout();
+  });
+  
+  $('#loadingDialog').dialog({
+    modal: true
+  });
+  FABRIC.appendOnResolveAsyncTaskCallback(function(label, nbRemaining, doneWeight, totalWeight) {
+    $('#loadingProgressBar').progressbar({
+      value: (1.0-(doneWeight/totalWeight))*100
+    });
+    if (nbRemaining===0) {
+      $('#loadingDialog').dialog('close');
+      var errors = scene.getErrors();
+      if (errors.length > 0) {
+        throw (errors.toString());
+      }
+      ajustViewportLayout();
+      return true;
+    }
+  });
+
+
+  window.scene = scene;
+
+  $(".box").addClass("ui-widget");
+  $(".box h2").addClass("ui-widget-header ui-corner-all");
+  $(".content").addClass("ui-widget-content");
+
+  $( "#tabs" ).tabs();
+
+  var curveEditor = constructCurveEditor('opacityMapping', opacityKeyAnimationLibrary, {
+    timeStripe: false,
+    draggable: false,
+    zoomable: false,
+    valueRange: new FABRIC.RT.Vec2(0, 1),
+    timeRange: new FABRIC.RT.Vec2(0, 1),
+    fitEditorToKeyRanges: false,
+    volumerenderdemohack: true
+  });
+
+  var colorGradient = constructColorGradient('colorMapping', gradientKeyTrackLibrary, {
+
+  });
+  colorGradient.addEventListener('gradientchanged', function(evt){
+    viewport.redraw();
+  });
+  colorGradient.addEventListener('keyclicked', function(evt){
+    gradientKey = evt.key;
+    colorPicker.ColorPickerSetColor(evt.keycolor.toHex());
+  });
+  var gradientKey;
+  var colorPicker = $('#brushColor').ColorPicker({
+      flat: true,
+      color: { r: 1.0 * 255, g: 0.5 * 255, b: 0.5 * 255} ,
+      onChange: function(hsb, hex, rgb) {
+        if(gradientKey){
+          gradientKey.setColor(FABRIC.RT.rgb255(rgb.r, rgb.g, rgb.b));
+        }
+      }
+    });
+  
+  ///////////////////////////////////////////////////
+  // Preset Saving and Loading
+  var currPresetName = 'Default';
+  var presetsFound = false;
+  var rebuildPresetNamesList = function(){
+    $('#resourceSelector').empty();
+    for(var i=0; i<localStorage.length; i++){
+      if(localStorage.key(i).split('.')[0]=='VolumeRenderingPresets'){
+      //  presetNames.push(localStorage.key(i).slipt('.')[1]);
+        var presetName = localStorage.key(i).split('.')[1];
+        $('#resourceSelector').append('<option value="'+presetName+'">'+presetName);
+        presetsFound = true;
+      }
+    }
+  }
+  
+  var savePreset = function(){
+    var presetSaver = scene.constructManager('SceneSaver');
+    presetSaver.addNode(camera);
+    presetSaver.addNode(opacityKeyAnimationLibrary);
+    presetSaver.addNode(gradientKeyTrackLibrary);
+    presetSaver.addNode(volumeNode);
+
+    var storage = new FABRIC.SceneGraph.LocalStorage('VolumeRenderingPresets.'+currPresetName);
+    presetSaver.save(storage);
+    
+    localStorage.setItem('VolumeRenderingSelectedPreset', currPresetName);
+  }
+  
+  var loadPreset = function(){
+    var presetLoader = scene.constructManager('SceneLoader', { preLoadScene: true } );
+    var storage = new FABRIC.SceneGraph.LocalStorage('VolumeRenderingPresets.'+currPresetName);
+    var nodeMap = presetLoader.load(storage);
+    
+    $resolutionFactorSlider.slider('value', volumeNode.getResolutionFactor());
+    curveEditor.redraw();
+    colorGradient.redraw();
+    viewport.redraw();
+    localStorage.setItem('VolumeRenderingSelectedPreset', currPresetName);
+  }
+  
+  $("#resourceSelector").change(function() {
+    currPresetName = $("#resourceSelector :selected").attr("value");
+    loadPreset();
+  });
+  
+  $('#presetNameDialog').dialog({
+    autoOpen: false,
+    modal: true
+  });
+  
+  $savePresetButton.button()
+    .click(function() {
+      savePreset();
+    });
+  
+  $newPresetButton.button()
+    .click(function() {
+      var closeDialogAndSavePreset = function(){
+        currPresetName = $("#presetName").val();
+        savePreset();
+        rebuildPresetNamesList();
+        $("#resourceSelector").val(currPresetName);
+        $("#presetNameDialog").dialog( "close" );
+      }
+      $('#presetNameDialog').dialog({
+        autoOpen: true,
+        position: 'right top',
+        buttons: {
+          Ok: function() {
+            closeDialogAndSavePreset();
+          }
+        },
+        closeOnEscape: true
+      }).keyup(function(e) {
+        if (e.keyCode == 13) { // Enter key
+          closeDialogAndSavePreset();
+        }
+      });
+    });
+    
+  
+  // On startup....
+  rebuildPresetNamesList();
+  FABRIC.appendOnResolveAsyncTaskCallback(function(label, nbRemaining) {
+    if (nbRemaining===0) {
+      if(!presetsFound){
+        currPresetName = 'Default';
+        savePreset();
+        rebuildPresetNamesList();
+      }else{
+        currPresetName = localStorage.getItem('VolumeRenderingSelectedPreset');
+        $("#resourceSelector").val(currPresetName);
+        loadPreset();
+      }
+      return true;
+    }
+  });
+  
+});
+
+</script>
+
+  </head> 
+  <body>
+    <div id="loadingDialog" title="Loading...">
+      <h4 id="loadingDesc" style="margin-bottom: 10px"></h4>
+      <div id="loadingProgressBar" class="ui-progressbar-value"></div>
+    </div>
+    <div id="presetNameDialog" title="Preset Name">
+      <input type="text" id="presetName" style="border:0; font-weight:bold;" />
+    </div>
+    <div id="wrapper">
+      <div id="editor">
+        <div id="viewer">
+          <div id="FabricContainer"></div> 
+        </div><!--viewer-->
+        <div id="sidebar">
+          
+          <div class="box">
+            <div class="content">
+              <h2>PRESETS</h2>
+              <div class="box" style="margin-top:5px;margin-left:10px;margin-bottom:10px;">
+              <button id="newPreset" style="margin-top:10px;">New Preset</button>
+              <button id="savePreset" style="margin-top:10px;">Save</button>
+              
+              </br>
+              <select id='resourceSelector' style="width: 380px; margin-top:10px;">
+              </select>
+              </div><!--box-->
+            </div><!--content-->
+         </div><!--box-->
+          
+          <div id="tabs">
+          <ul>
+            <li><a href="#densityMapping">Density Mapping</a></li>
+            <li><a href="#displayTab">Display</a></li>
+            <li><a href="#volumeSlicesTab">2D Axial Slices</a></li>
+          </ul>
+          
+          <div id="densityMapping">
+            <div class="box">
+              <p>Opacity</p>
+              <div id='opacityMapping'></div>
+              <div id='opacityRange' style="margin-top:5px;"></div>
+              
+              <p style="margin-top:5px;">Color:</p>
+              <div id='colorMapping'></div>
+              <p id="brushColor"></p>
+
+              <input type="checkbox" id="invert" style="margin-top:10px;" /><label for="invert">Invert Colors</label><br>
+              <input type="checkbox" id="enableCropping" style="margin-top:10px;" /><label for="invert">Enable Cropping</label><br>
+           <!-- </div>content-->
+            </div><!--box-->
+          </div><!--volumeRenderTab-->
+
+          <div id="displayTab">
+            <div class="box">
+              <p>Display</p>
+              <input type="checkbox" id="whiteBackground" style="margin-bottom:10px;"/><label for="whiteBackground">White background</label><br>
+              
+              <label for="brightness" >Brightness:</label>
+              <div id='brightness' style="margin-bottom:10px;"></div>
+              <label for="transparency" >Transparency:</label>
+              <div id='transparency' style="margin-bottom:10px;"></div>
+              <label for="resolutionFactor" >Resolution:</label>
+              <div id='resolutionFactor' style="margin-bottom:10px;"></div>
+              <label for="specularFactor" >Shininess:</label>
+              <div id='specularFactor' style="margin-bottom:10px;"></div>
+           <!-- </div>content-->
+            </div><!--box-->
+          </div><!--volumeRenderTab-->
+
+          <div id="volumeSlicesTab">
+            <div class="box">
+          <!--    <h2>Axis slices</h2>
+            <div class="content">-->
+              <input type="checkbox" id="displayAxisSlices" style="margin-top:10px;" /><label for="displayAxisSlices" style="margin-top:10px;" >Display axis slices</label><br>
+              <div class="subcontent" id="axisSlicesParams">
+                <label for="xRatio" >X:</label>
+                <div id='xRatio' style="margin-top:10px;"></div>
+                <label for="yRatio" >Y:</label>
+                <div id='yRatio' style="margin-top:10px;"></div>
+                <label for="zRatio" >Z:</label>
+                <div id='zRatio' style="margin-top:10px;"></div>
+              </div><!--subcontent-->
+          <!--  </div>content-->
+          </div><!--box-->
+          </div><!--volumeRenderTab-->
+            
+        </div><!--sidebar-->
+      </div> <!--editor-->
+    </div><!--wrapper-->
+  </body> 
+  </html>

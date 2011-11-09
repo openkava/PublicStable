@@ -4,9 +4,14 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
   var keyColor = FABRIC.rgb(.0, .0, .0);
   
   options = options ? options : {};
-  options.timeStripe = options.timeStripe ? options.timeStripe : true;
-  options.draggable = options.draggable ? options.draggable : true;
-  options.zoomable = options.zoomable ? options.zoomable : true;
+  options.timeStripe = options.timeStripe!=undefined ? options.timeStripe : true;
+  options.draggable = options.draggable!=undefined ? options.draggable : true;
+  options.zoomable = options.zoomable!=undefined ? options.zoomable : true;
+  trackSetId =  options.trackSetId!=undefined ? options.trackSetId : 0;
+  
+  var timeRange = options.timeRange!=undefined ? options.timeRange : new FABRIC.Vec2(0, 100);
+  var valueRange = options.valueRange!=undefined ? options.valueRange : new FABRIC.Vec2(0, 1);
+  var fitEditorToKeyRanges = options.fitEditorToKeyRanges!=undefined ? options.fitEditorToKeyRanges : true;
   
   var rootDomNode = document.getElementById(domRootID);
   var windowWidth = rootDomNode.clientWidth;
@@ -14,6 +19,10 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
   var isBezier = animationLibraryNode.isTypeOf('BezierKeyAnimationLibrary');
   
   var svgRoot = FABRIC.createSVGRootElem(domRootID);
+  if(options.volumerenderdemohack){
+    svgRoot.attr('style', "position:relative; top:-"+windowHeight+"px;z-index:0");
+  }
+  
 
   var graphBGRect = svgRoot.createRect().size(windowWidth, windowHeight).addClass('EventCatcher');
   var graphCenterGroup = svgRoot.createGroup().id('graphCenterGroup').translate(0, windowHeight * 0.5);
@@ -22,11 +31,19 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
   svgRoot.svgRoot = svgRoot;
   svgRoot.state = 'Normal';
   
+  
+  
+  var containmentRect;
+  if(!fitEditorToKeyRanges){
+    containmentRect = graphCenterGroup.createRect().size(windowWidth, windowHeight).translate(0, windowHeight * -0.5);;
+    containmentRect.attr('fill', 'none');
+    containmentRect.attr('stroke', "black");
+    containmentRect.attr('stroke-width', 2);
+  }
   ///////////////
   tracksData = animationLibraryNode.getTrackSet(trackSetId);
-  var trackCount = tracksData.tracks.length; //animationLibraryNode.getTrackCount();
-  var timeRange = new FABRIC.Vec2(0, 0);
-  var yRange = new FABRIC.Vec2(0, 0);
+  var trackCount = tracksData.tracks.length;
+  var timeRange, yRange = new FABRIC.Vec2(0, 0);
   curvesData = [];
   var trackCurves = [];
   trackDisplayNode = scene.constructNode('TrackDisplay', {
@@ -35,28 +52,35 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
     });
   
   for (var i = 0; i < trackCount; i++) {
-    var trackData = tracksData.tracks[i];//animationLibraryNode.getTrackData(i);
+    var trackData = tracksData.tracks[i];
     $('#keyframeTracks').append('<div style="margin-top:10px;">' + trackData.name + '</div>');
     trackCurves[i] = curvesHolderGroup.createPath().addClass('CurvePath').stroke(trackData.color);
   }
   
 
+  if(!fitEditorToKeyRanges){
+    yRange = valueRange;
+  }
 
   var screenXfo = {
     tr: new FABRIC.Vec2(0, 0),
     sc: new FABRIC.Vec2(1, 1),
     fitToScreen:function(){
-      for (var i = 0; i < trackCount; i++) {
-        var keys = tracksData.tracks[i].keys;//animationLibraryNode.getTrackKeys(i);
-        if(keys.length <= 1){
-          continue;
+      if(fitEditorToKeyRanges){
+        timeRange = new FABRIC.Vec2(0, 0);
+        for (var i = 0; i < trackCount; i++) {
+          var keys = tracksData.tracks[i].keys;
+          if(keys.length <= 1){
+            continue;
+          }
+          if (timeRange.x > keys[0].time) {
+            timeRange.x = keys[0].time;
+          }
+          if (timeRange.y < keys[keys.length - 1].time) {
+            timeRange.y = keys[keys.length - 1].time;
+          }
         }
-        if (timeRange.x > keys[0].time) {
-          timeRange.x = keys[0].time;
-        }
-        if (timeRange.y < keys[keys.length - 1].time) {
-          timeRange.y = keys[keys.length - 1].time;
-        }
+        trackDisplayNode.setTimeRange(timeRange);
       }
       var getCurveYRange = function(curveData) {
         for (var i = 1; i < curveData.length; i++) {
@@ -68,15 +92,24 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
           }
         }
       }
-      trackDisplayNode.setTimeRange(timeRange);
+      
       curvesData = trackDisplayNode.getCurveData();
-      for (var i = 0; i < trackCount; i++) {
-        if(i==0){
-          yRange = new FABRIC.Vec2(curvesData.values[i][0], curvesData.values[i][0]);
-        }
-        getCurveYRange(curvesData.values[i]);
+      if(!fitEditorToKeyRanges){
+        yRange = valueRange;
       }
-      this.sc = new FABRIC.Vec2(windowWidth/(timeRange.y - timeRange.x), -(windowHeight - 40) / (yRange.y - yRange.x));
+      else{
+        for (var i = 0; i < trackCount; i++) {
+          if(i==0){
+            yRange = new FABRIC.Vec2(curvesData.values[i][0], curvesData.values[i][0]);
+          }
+          getCurveYRange(curvesData.values[i]);
+        }
+      }
+      if(!fitEditorToKeyRanges){
+        this.sc = new FABRIC.Vec2(windowWidth/(timeRange.y - timeRange.x), -(windowHeight) / (yRange.y - yRange.x));
+      }else{
+        this.sc = new FABRIC.Vec2(windowWidth/(timeRange.y - timeRange.x), -(windowHeight - 40) / (yRange.y - yRange.x));
+      }
       this.tr = new FABRIC.Vec2(-timeRange.x, (yRange.y + yRange.x) * -0.5);
     },
     update: function(){
@@ -122,8 +155,8 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
       var drawKey = function(keyIndex, keyData) {
         
         if(isBezier ? ((keyData.time + keyData.intangent.x) < timeRange.y &&
-           (keyData.time + keyData.outtangent.x) > timeRange.x) :
-           keyData.time < timeRange.y && keyData.time > timeRange.x ){
+           (keyData.time + keyData.outtangent.x) >= timeRange.x) :
+           keyData.time <= timeRange.y && keyData.time >= timeRange.x ){
           ///////////////////////////////////////////////
           // Key
           var keySsVal = screenXfo.toScreenSpace(new FABRIC.Vec2(keyData.time, keyData.value));
@@ -135,7 +168,7 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
               nextKey = trackData.keys[keyIndex+1],
               tangentNormalizedValues = [];
           var keyGroupNode = keysHolderGroup.createGroup().translate(keySsVal)
-            .draggable({ mouseButton: 0 })
+            .draggable({ mouseButton: 0, containment:containmentRect })
             .addOnDragBeginCallback(
               function(evt){
                 var deltat, i=0;
@@ -175,7 +208,7 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
                     keyData.setInTan(keyData.intangent);
                   }
                 }
-                if(keyIndex < trackData.keys.length){
+                if(keyIndex < trackData.keys.length-1){
                   deltat = nextKey.time - keyData.time;
                   if(isBezier) {
                     keyData.outtangent.x = deltat * tangentNormalizedValues[i++];
@@ -186,8 +219,9 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
                     nextKey.setInTan(nextKey.intangent, true);
                   }
                 }
-                
-                animationLibraryNode.setKeyData(trackIndex, keyIndex, keyData);
+                tracksData.tracks[trackIndex].keys[keyIndex] = keyData;
+                animationLibraryNode.setTrackSet(tracksData, trackSetId);
+              //  animationLibraryNode.setKeyData(trackIndex, keyIndex, keyData);
                 updateCurve();
                 scene.redrawAllViewports();
               });
@@ -222,7 +256,9 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
                       keyData.setOutTan(keyData.outtangent);
                     }
                     keyData.setInTan(keyData.intangent);
-                    animationLibraryNode.setKeyData(trackIndex, keyIndex, keyData);
+                    tracksData.tracks[trackIndex].keys[keyIndex] = keyData;
+                    animationLibraryNode.setTrackSet(tracksData, trackSetId);
+                  //  animationLibraryNode.setKeyData(trackIndex, keyIndex, keyData);
                     updateCurve();
                     scene.redrawAllViewports();
                   });
@@ -235,7 +271,9 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
               }
               if(setKeyData){
                 keyData.intangent = intangent;
-                animationLibraryNode.setKeyData(trackIndex, keyIndex, keyData);
+                tracksData.tracks[trackIndex].keys[keyIndex] = keyData;
+                animationLibraryNode.setTrackSet(tracksData, trackSetId);
+              //  animationLibraryNode.setKeyData(trackIndex, keyIndex, keyData);
               }
             }
             ///////////////////////////////////////////////
@@ -256,7 +294,7 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
                   function(evt) {
                     keyData.outtangent = screenXfo.toGraphSpace(evt.localPos, true);
                     // Clamp the handle lengths > 0 && < deltat
-                   if(keyIndex < trackData.keys.length){
+                   if(keyIndex < trackData.keys.length-1){
                       var deltat = nextKey.time - keyData.time;
                       keyData.outtangent.x = keyData.outtangent.x > deltat ? deltat : keyData.outtangent.x;
                     }
@@ -267,7 +305,10 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
                       keyData.setInTan(keyData.intangent);
                     }
                     keyData.setOutTan(keyData.outtangent);
-                    animationLibraryNode.setKeyData(trackIndex, keyIndex, keyData);
+                    
+                    tracksData.tracks[trackIndex].keys[keyIndex] = keyData;
+                    animationLibraryNode.setTrackSet(tracksData, trackSetId);
+                  //  animationLibraryNode.setKeyData(trackIndex, keyIndex, keyData);
                     updateCurve();
                     scene.redrawAllViewports();
                   });
@@ -280,7 +321,10 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
               }
               if(setKeyData){
                 keyData.outtangent = outtangent;
-                animationLibraryNode.setKeyData(trackIndex, keyIndex, keyData);
+                
+                tracksData.tracks[trackIndex].keys[keyIndex] = keyData;
+                animationLibraryNode.setTrackSet(tracksData, trackSetId);
+              //  animationLibraryNode.setKeyData(trackIndex, keyIndex, keyData);
               }
             }
           }
@@ -322,7 +366,10 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
   var updateTimeRange = function(){
     trackDisplayNode.setTimeRange(timeRange);
     curvesData = trackDisplayNode.getCurveData();
-    updateGraphTimeStripe();
+    
+    if(options.timeStripe){
+      updateGraphTimeStripe();
+    }
     keysHolderGroup.removeAllChildren();
     drawTrackCurves();
   }
@@ -384,6 +431,10 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
   return {
     resize: function(){
       fitCurveEditorToWindow();
+    },
+    redraw: function(){
+      tracksData = animationLibraryNode.getTrackSet(trackSetId);
+      updateTimeRange();
     }
   }
 };

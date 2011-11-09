@@ -110,18 +110,26 @@ FABRIC.SceneGraph.registerManagerType('SceneLoader', {
   },
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
-      });
+      preLoadScene: true
+    });
     
     var dataObj;
     var preLoadedNodes = {};
   
     var constructedNodeMap = {};
     var nodeNameRemapping = {};
-  
-    var preLoadNode = function(node) {
-      preLoadedNodes[node.name] = node;
+    
+    if(options.preLoadScene){
+      var sceneNodes = scene.getSceneGraphNodes();
+      for(var name in sceneNodes){
+        preLoadedNodes[name] = sceneNodes[name].pub;
+      }
     };
+      
     var sceneLoader = {
+      preLoadNode: function(node) {
+        preLoadedNodes[node.getName()] = node;
+      },
       getNode: function(nodeName) {
         nodeName = nodeNameRemapping[ nodeName ]
         if (constructedNodeMap[nodeName]) {
@@ -189,7 +197,7 @@ FABRIC.SceneGraph.LocalStorage = function(name) {
   this.read = function(){
     return localStorage.getItem(name);
   }
-  this.log = function(instr) {
+  this.log = function() {
     console.log(localStorage.getItem(name));
   }
 };
@@ -199,35 +207,19 @@ FABRIC.SceneGraph.LocalStorage = function(name) {
  * @constructor
  * @param {string} filepath The path to the file to write to.
  */
-FABRIC.SceneGraph.FileWriter = function(filepath) {
-
-  // Here we write out a file relative to the folder where the
-  // document location.
-  var dir;
-  var pathSections = document.location.href.split('/');
-  while (pathSections[0] !== 'Projects') { pathSections.splice(0, 1); }
-  pathSections.splice(0, 1);
-
-  // Now navigate to the folder that the project is stored in.
-  var dir = new FABRIC.IO.Dir(FABRIC.IO.root, 'Projects');
-  while (pathSections.length > 1) {
-    dir = new FABRIC.IO.Dir(dir, pathSections[0]);
-    pathSections.splice(0, 1);
+FABRIC.SceneGraph.FileWriter = function(scene, title, suggestedFileName) {
+  
+  var path = scene.IO.queryUserFileAndFolderHandle(scene.IO.forOpenWithWriteAccess, title, "json", suggestedFileName);
+  var str = "";
+  this.write = function(instr) {
+    str = instr;
+    scene.IO.putTextFile(str, path);
   }
-
-  var pathSections = filepath.split('/');
-  if (pathSections[0] == '.') {
-    pathSections.splice(0, 1);
+  this.read = function(){
+    return localStorage.getItem(name);
   }
-  var fileName = pathSections.pop();
-  while (pathSections.length > 0) {
-    dir = new FABRIC.IO.Dir(dir, pathSections[0]);
-    pathSections.splice(0, 1);
-  }
-
-  this.write = function(str) {
-  //  console.log(str);
-    dir.putFileContents(fileName, str);
+  this.log = function(instr) {
+    console.log(str);
   }
 
 };
@@ -237,37 +229,25 @@ FABRIC.SceneGraph.FileWriter = function(filepath) {
  * @constructor
  * @param {string} filepath The path to the file to read from.
  */
-FABRIC.SceneGraph.FileReader = function(filepath) {
+FABRIC.SceneGraph.FileReader = function(scene, title, suggestedFileName) {
 
-  // Here we write out a file relative to the folder where the
-  // document location.
-  var dir;
-  var pathSections = document.location.href.split('/');
-  while (pathSections[0] !== 'Projects') { pathSections.splice(0, 1); }
-  pathSections.splice(0, 1);
+  var path = scene.IO.queryUserFileAndFolderHandle(scene.IO.forOpen, title, "json", suggestedFileName);
 
-  // Now navigate to the folder that the project is stored in.
-  var dir = new FABRIC.IO.Dir(FABRIC.IO.root, 'Projects');
-  while (pathSections.length > 1) {
-    dir = new FABRIC.IO.Dir(dir, pathSections[0]);
-    pathSections.splice(0, 1);
+  this.read = function() {
+    return JSON.parse(scene.IO.getTextFile(path));
   }
+};
 
-  var pathSections = filepath.split('/');
-  if (pathSections[0] == '.') {
-    pathSections.splice(0, 1);
-  }
-  var fileName = pathSections.pop();
-  while (pathSections.length > 0) {
-    dir = new FABRIC.IO.Dir(dir, pathSections[0]);
-    pathSections.splice(0, 1);
-  }
 
-  this.read = function(str) {
-  //  console.log(dir.getFileContents(fileName));
-    return dir.getFileContents(fileName);
+/**
+ * Constructor to create a FileReader object.
+ * @constructor
+ * @param {string} filepath The path to the file to read from.
+ */
+FABRIC.SceneGraph.URLReader = function(url) {
+  this.read = function() {
+    return FABRIC.loadResourceURL(url);
   }
-
 };
 
 
