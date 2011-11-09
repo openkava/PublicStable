@@ -13,10 +13,16 @@ namespace Fabric
 {
   namespace CG
   {
-    ModuleBuilder::ModuleBuilder( RC::Handle<Manager> const &manager, RC::Handle<Context> const &context, llvm::Module *module )
+    ModuleBuilder::ModuleBuilder(
+      RC::Handle<Manager> const &manager,
+      RC::Handle<Context> const &context,
+      llvm::Module *module,
+      CompileOptions const *compileOptions
+      )
       : m_manager( manager )
       , m_context( context )
       , m_module( module )
+      , m_compileOptions( compileOptions )
     {
     }
     

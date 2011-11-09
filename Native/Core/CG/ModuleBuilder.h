@@ -21,6 +21,7 @@ namespace Fabric
 {
   namespace CG
   {
+    class CompileOptions;
     class Context;
     class Location;
     class Manager;
@@ -29,7 +30,12 @@ namespace Fabric
     {
     public:
     
-      ModuleBuilder( RC::Handle<Manager> const &manager, RC::Handle<Context> const &context, llvm::Module *module );
+      ModuleBuilder(
+        RC::Handle<Manager> const &manager,
+        RC::Handle<Context> const &context,
+        llvm::Module *module,
+        CompileOptions const *compileOptions
+        );
       
       llvm::Module *getModule();
       operator llvm::Module *();
@@ -58,6 +64,11 @@ namespace Fabric
         m_destructorNames[typeName] = destructorName;
       }
       
+      CompileOptions const *getCompileOptions() const
+      {
+        return m_compileOptions;
+      }
+      
     private:
     
       typedef std::map< std::string, RC::ConstHandle<FunctionSymbol> > Functions;
@@ -70,6 +81,7 @@ namespace Fabric
       std::set<std::string> m_haveCompiledToModule;
       Functions m_functions;
       std::map< std::string, std::string > m_destructorNames;
+      CompileOptions const *m_compileOptions;
     };
   };
 };
