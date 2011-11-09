@@ -748,14 +748,14 @@ $(document).ready(function() {
     localStorage.setItem('VolumeRenderingSelectedPreset', currPresetName);
   }
   
-  $('#presetNameDialog').dialog({
-    autoOpen: false,
-    modal: true
-  });
-  
   $("#resourceSelector").change(function() {
     currPresetName = $("#resourceSelector :selected").attr("value");
     loadPreset();
+  });
+  
+  $('#presetNameDialog').dialog({
+    autoOpen: false,
+    modal: true
   });
   
   $savePresetButton.button()
@@ -765,22 +765,31 @@ $(document).ready(function() {
   
   $newPresetButton.button()
     .click(function() {
+      var closeDialogAndSavePreset = function(){
+        currPresetName = $("#presetName").val();
+        savePreset();
+        rebuildPresetNamesList();
+        $("#resourceSelector").val(currPresetName);
+        $("#presetNameDialog").dialog( "close" );
+      }
       $('#presetNameDialog').dialog({
         autoOpen: true,
         position: 'right top',
         buttons: {
           Ok: function() {
-            currPresetName = $("#presetName").val();
-            savePreset();
-            rebuildPresetNamesList();
-            $("#resourceSelector").val(currPresetName);
-            $( this ).dialog( "close" );
+            closeDialogAndSavePreset();
           }
         },
         closeOnEscape: true
+      }).keyup(function(e) {
+        if (e.keyCode == 13) { // Enter key
+          closeDialogAndSavePreset();
+        }
       });
     });
+    
   
+  // On startup....
   rebuildPresetNamesList();
   FABRIC.appendOnResolveAsyncTaskCallback(function(label, nbRemaining) {
     if (nbRemaining===0) {
