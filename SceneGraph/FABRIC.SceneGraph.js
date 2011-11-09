@@ -954,42 +954,51 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
 
     var fabricwindow = scene.bindViewportToWindow(windowElement, viewportNode);
     
-    FABRIC.appendOnResolveAsyncTaskCallback(function(label, countRemaining){
-      if(countRemaining===0){
-        loading = false;
-        redrawEventHandler.setScope('window', fabricwindow.windowNode);
-        if(scene.getScenePreRedrawEventHandler()){
-          fabricwindow.redrawEvent.appendEventHandler(scene.getScenePreRedrawEventHandler());
-        }
-        fabricwindow.redrawEvent.appendEventHandler(redrawEventHandler);
-        if(scene.getScenePostRedrawEventHandler()){
-          fabricwindow.redrawEvent.appendEventHandler(scene.getScenePostRedrawEventHandler());
-        }
-        if(raycastingEnabled){
-          // the sceneRaycastEventHandler propogates the event throughtout the scene.
-          viewPortRaycastEventHandler.appendChildEventHandler(scene.getSceneRaycastEventHandler());
-        }
-        
-        // These functions cannot be called during the initial construction of the
-        // graph because they rely on an OpenGL context being set up, and this occurs
-        // during the 1st redraw.
-        viewportNode.pub.getOpenGLVersion = fabricwindow.getOpenGLVersion;
-        viewportNode.pub.getGlewSupported = fabricwindow.getGlewSupported;
-        viewportNode.pub.show = function(){ fabricwindow.show(); };
-        viewportNode.pub.hide = function(){ fabricwindow.hide(); };
+    var initialLoad = true;
+    var startLoadMode = function() {
+      fabricwindow.hide();
+      FABRIC.appendOnResolveAsyncTaskCallback(function(label, countRemaining){
+        if(countRemaining===0){
 
-        viewportNode.pub.getWidth = function(){ return fabricwindow.windowNode.getData('width'); };
-        viewportNode.pub.getHeight = function(){ return fabricwindow.windowNode.getData('height'); };
-        viewportNode.pub.getGlewSupported = fabricwindow.getGlewSupported;
+          if(initialLoad) {
+            initialLoad = false;
+            loading = false;
+            redrawEventHandler.setScope('window', fabricwindow.windowNode);
+            if(scene.getScenePreRedrawEventHandler()){
+              fabricwindow.redrawEvent.appendEventHandler(scene.getScenePreRedrawEventHandler());
+            }
+            fabricwindow.redrawEvent.appendEventHandler(redrawEventHandler);
+            if(scene.getScenePostRedrawEventHandler()){
+              fabricwindow.redrawEvent.appendEventHandler(scene.getScenePostRedrawEventHandler());
+            }
+            if(raycastingEnabled){
+              // the sceneRaycastEventHandler propogates the event throughtout the scene.
+              viewPortRaycastEventHandler.appendChildEventHandler(scene.getSceneRaycastEventHandler());
+            }
         
-        if(options.checkOpenGL2Support && !fabricwindow.getGlewSupported('GL_VERSION_2_0')){
-          alert('ERROR: Your graphics driver does not support OpenGL 2.0, which is required to run Fabric.')
-        }else{
-          fabricwindow.show();
+            // These functions cannot be called during the initial construction of the
+            // graph because they rely on an OpenGL context being set up, and this occurs
+            // during the 1st redraw.
+            viewportNode.pub.getOpenGLVersion = fabricwindow.getOpenGLVersion;
+            viewportNode.pub.getGlewSupported = fabricwindow.getGlewSupported;
+            viewportNode.pub.show = function(){ fabricwindow.show(); };
+            viewportNode.pub.hide = function(){ fabricwindow.hide(); };
+
+            viewportNode.pub.getWidth = function(){ return fabricwindow.windowNode.getData('width'); };
+            viewportNode.pub.getHeight = function(){ return fabricwindow.windowNode.getData('height'); };
+            viewportNode.pub.getGlewSupported = fabricwindow.getGlewSupported;
+          }
+
+          if(options.checkOpenGL2Support && !fabricwindow.getGlewSupported('GL_VERSION_2_0')){
+            alert('ERROR: Your graphics driver does not support OpenGL 2.0, which is required to run Fabric.')
+          }else{
+            fabricwindow.show();
+          }
+          return true;
         }
-        return true;
-      }
-    });
+      });
+    };
+    startLoadMode();
     
     var propagationRedrawEventHandler = viewportNode.constructEventHandlerNode('DrawPropagation');
     redrawEventHandler.appendChildEventHandler(propagationRedrawEventHandler);
@@ -1105,6 +1114,7 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
     viewportNode.pub.getCameraNode = function() {
       return cameraNode.pub;
     };
+    viewportNode.pub.startLoadMode = startLoadMode;
     viewportNode.pub.disableRaycasting = disableRaycasting;
     viewportNode.pub.enableRaycasting = enableRaycasting;
     viewportNode.pub.setBackgroundTextureImage = function(textureNode) {

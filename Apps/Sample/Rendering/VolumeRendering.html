@@ -650,24 +650,25 @@ $(document).ready(function() {
     ajustViewportLayout();
   });
   
-  $('#loadingDialog').dialog({
-    modal: true
-  });
-  FABRIC.appendOnResolveAsyncTaskCallback(function(label, nbRemaining, doneWeight, totalWeight) {
-    $('#loadingProgressBar').progressbar({
-      value: (1.0-(doneWeight/totalWeight))*100
+  var displayProgressBar = function() {
+    $('#loadingDialog').dialog({
+      modal: true
     });
-    if (nbRemaining===0) {
-      $('#loadingDialog').dialog('close');
-      var errors = scene.getErrors();
-      if (errors.length > 0) {
-        throw (errors.toString());
+    FABRIC.appendOnResolveAsyncTaskCallback(function(label, nbRemaining, doneWeight, totalWeight) {
+      $('#loadingProgressBar').progressbar({
+        value: (1.0-(doneWeight/totalWeight))*100
+      });
+      if (nbRemaining===0) {
+        $('#loadingDialog').dialog('close');
+        var errors = scene.getErrors();
+        if (errors.length > 0) {
+          throw (errors.toString());
+        }
+        ajustViewportLayout();
+        return true;
       }
-      ajustViewportLayout();
-      return true;
-    }
-  });
-
+  })};
+  displayProgressBar();
 
   window.scene = scene;
 
@@ -738,7 +739,14 @@ $(document).ready(function() {
     localStorage.setItem('VolumeRenderingSelectedPreset', currPresetName);
   }
   
+  var initialLoad = true;
+
   var loadPreset = function(){
+
+    var loadPresetTask;
+    if(!initialLoad)//Make sure there is at least 1 asynch task ongoing...
+      loadPresetTask = FABRIC.addAsyncTask("Loading preset");
+
     var presetLoader = scene.constructManager('SceneLoader', { preLoadScene: true } );
     var storage = new FABRIC.SceneGraph.LocalStorage('VolumeRenderingPresets.'+currPresetName);
     var nodeMap = presetLoader.load(storage);
@@ -749,21 +757,13 @@ $(document).ready(function() {
     colorGradient.redraw();
     viewport.redraw();
     localStorage.setItem('VolumeRenderingSelectedPreset', currPresetName);
-    /*
-     // We should be displaying a progress bar during load of the new asset
-     // But I coudn't get the progress bar to re-open. 
-    if(!opacityTexture.getResourceLoadNode().isLoaded()){
-       $('#loadingProgressBar').dialog({
-          autoOpen: false,
-          modal: true
-        });
-      opacityTexture.getResourceLoadNode().addOnLoadProgressCallback(function(resourceLoadNode, progress){
-        $('#loadingProgressBar').progressbar({
-          value: progress.received / progress.total
-        });
-      });
+
+    if(!initialLoad) {
+      viewport.startLoadMode();
+      displayProgressBar();
+      loadPresetTask( true );
     }
-    */
+    initialLoad = false;
   }
   
   $("#resourceSelector").change(function() {
