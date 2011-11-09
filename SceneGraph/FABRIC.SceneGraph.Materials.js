@@ -362,6 +362,24 @@ FABRIC.SceneGraph.registerNodeType('Image3D', {
         resourceLoadNode.pub.setUrl(url);
       }
     };
+    
+    var parentWriteData = imageNode.writeData;
+    var parentReadData = imageNode.readData;
+    imageNode.writeData = function(sceneSaver, constructionOptions, nodeData) {
+      parentWriteData(sceneSaver, constructionOptions, nodeData);
+      constructionOptions.createDgNode = options.createDgNode;
+      constructionOptions.createResourceLoadNode = options.createResourceLoadNode;
+      constructionOptions.createLoadTextureEventHandler = options.createLoadTextureEventHandler;
+      if(resourceLoadNode){
+        nodeData.url = resourceLoadNode.pub.getUrl();
+      }
+    };
+    imageNode.readData = function(sceneLoader, nodeData) {
+      parentReadData(sceneLoader, nodeData);
+      if(nodeData.url){
+        imageNode.pub.setUrl(nodeData.url);
+      }
+    };
 
     return imageNode;
   }});

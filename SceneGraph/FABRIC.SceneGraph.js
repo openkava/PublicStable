@@ -1464,7 +1464,7 @@ FABRIC.SceneGraph.registerNodeType('ResourceLoad', {
 
       var i;
       for (i = 0; i < onloadProgressCallbacks.length; i++) {
-        callbacks[i](resourceLoadNode.pub, progress);
+        onloadProgressCallbacks[i](resourceLoadNode.pub, progress);
       }
     }
     var onLoadFailureCallbackFunction = function(node) {
@@ -1478,6 +1478,16 @@ FABRIC.SceneGraph.registerNodeType('ResourceLoad', {
     resourceLoadNode.pub.isLoaded = function() {
       return lastLoadCallbackURL !== '' && lastLoadCallbackURL === resourceLoadNode.pub.getUrl();
     }
+
+    resourceLoadNode.pub.addOnLoadProgressCallback = function(callback) {
+      //It is possible that a resourceLoadNode actually loads multiple resources in a sequence;
+      //make sure the callback is only fired when the 'next' resource is loaded.
+      if (resourceLoadNode.pub.isLoaded()) {
+        callback.call(); //Already loaded. Todo: we don't keep track of success/failure state, which is wrong.
+      } else {
+        onloadProgressCallbacks.push(callback);
+      }
+    };
 
     resourceLoadNode.pub.addOnLoadSuccessCallback = function(callback) {
       //It is possible that a resourceLoadNode actually loads multiple resources in a sequence;
