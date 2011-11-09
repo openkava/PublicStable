@@ -11,7 +11,7 @@ npapiBuildPath = npapiEnv.Dir('.')
 npapiSources.append( Glob( '*.cpp' ) )
 
 npapiEnv.Append( CPPDEFINES = [ '_AFXDLL', 'FABRIC_INCLUDE_WINDOWS_UI' ] )
-npapiEnv.Append( CPPPATH = [ os.path.join( '#NPAPI', 'Windows' ) ] )
+npapiEnv.Append( CPPPATH = [ os.path.join( '#NPAPI', 'Windows' ), '.' ] )
 npapiEnv.Append( LIBS = [ 'User32', 'Gdi32', 'comdlg32', 'Shlwapi', 'advapi32' ] )
 
 defFile = npapiBuildPath.File( 'FabricPlugin.def' )
@@ -32,6 +32,8 @@ npapiEnv.MergeFlags( glewFlags )
 rcFile = npapiBuildPath.File( "FabricPlugin.rc" )
 npapiEnv.Template( rcFile, 'FabricPlugin.rc.template' )
 Depends( rcFile, 'resource.h' )
+Depends( rcFile, 'afxres.h' )
+Depends( rcFile, 'winres.h' )
 npapiSources += [npapiEnv.RES( 'FabricPlugin.rc' )]
 npapiPlugin = npapiEnv.LoadableModule( 'npFabricPlugin', npapiSources, register=1 )
 
