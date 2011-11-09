@@ -19,13 +19,31 @@ namespace Fabric
 {
   namespace NPAPI
   {
-    RC::Handle<Context> Context::Create( RC::Handle<IOManager> const &ioManager, std::vector<std::string> const &pluginDirs )
+    static CG::CompileOptions const &GetCompileOptions()
+    {
+      static CG::CompileOptions compileOptions;
+      static bool initialized = false;
+      if ( !initialized )
+      {
+        initialized = true;
+        compileOptions.setGuarded( true );
+      }
+      return compileOptions;
+    }
+    
+    RC::Handle<Context> Context::Create(
+      RC::Handle<IOManager> const &ioManager,
+      std::vector<std::string> const &pluginDirs
+      )
     {
       return new NPAPI::Context( ioManager, pluginDirs );
     }
     
-    Context::Context( RC::Handle<IOManager> const &ioManager, std::vector<std::string> const &pluginDirs )
-      : DG::Context( ioManager, pluginDirs, false )
+    Context::Context(
+      RC::Handle<IOManager> const &ioManager,
+      std::vector<std::string> const &pluginDirs
+      )
+      : DG::Context( ioManager, pluginDirs, GetCompileOptions(), false )
       , m_ioManager( ioManager )
     {
     }

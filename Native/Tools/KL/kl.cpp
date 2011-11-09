@@ -16,9 +16,10 @@
 #include <Fabric/Core/RT/StructDesc.h>
 #include <Fabric/Core/RT/OpaqueDesc.h>
 #include <Fabric/Core/MT/LogCollector.h>
-#include <Fabric/Core/CG/ModuleBuilder.h>
+#include <Fabric/Core/CG/CompileOptions.h>
 #include <Fabric/Core/CG/Diagnostics.h>
 #include <Fabric/Core/CG/Manager.h>
+#include <Fabric/Core/CG/ModuleBuilder.h>
 #include <Fabric/Core/OCL/OCL.h>
 #include <Fabric/Core/OCL/Debug.h>
 #include <Fabric/Base/JSON/String.h>
@@ -76,6 +77,8 @@ enum RunFlags
   RF_ShowOptASM	 = 1 << 7,
   RF_ShowTokens	 = 1 << 8
 };
+
+static CG::CompileOptions compileOptions;
 
 
 void dumpDiagnostics( CG::Diagnostics const &diagnostics )
@@ -168,8 +171,8 @@ void handleFile( std::string const &filename, FILE *fp, unsigned int runFlags )
   cgManager = CG::Manager::Create( rtManager );
   RC::Handle<CG::Context> cgContext = CG::Context::Create();
   std::auto_ptr<llvm::Module> module( new llvm::Module( "kl", cgContext->getLLVMContext() ) );
-
-  CG::ModuleBuilder moduleBuilder( cgManager, cgContext, module.get() );
+  
+  CG::ModuleBuilder moduleBuilder( cgManager, cgContext, module.get(), &compileOptions );
   OCL::llvmPrepareModule( moduleBuilder, rtManager );
   
   RC::ConstHandle<AST::GlobalList> globalList = KL::Parse( scanner, diagnostics );
@@ -349,6 +352,8 @@ int main( int argc, char **argv )
       { "run", 0, NULL, 'r' },
       { "tokens", 0, NULL, 't' },
       { "verbose", 0, NULL, 'v' },
+      { "guarded", 0, NULL, 'g' },
+      { "unguarded", 0, NULL, 'u' },
       { NULL, 0, NULL, 0 }
     };
     int option_index = 0;
@@ -391,6 +396,14 @@ int main( int argc, char **argv )
       
       case 'v':
         runFlags |= RF_Verbose;
+        break;
+      
+      case 'u':
+        compileOptions.setGuarded( false );
+        break;
+      
+      case 'g':
+        compileOptions.setGuarded( true );
         break;
         
       default:
