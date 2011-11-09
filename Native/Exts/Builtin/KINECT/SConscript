@@ -14,22 +14,19 @@ if buildOS != 'Windows':
 kinectPluginEnv = extsEnv.Clone()
 
 # find the kinect sdk
-kinectInclude = 'C:\\Program Files (x86)\\Microsoft Research KinectSDK\inc'
+kinectInclude = 'C:\\Program Files\\Microsoft SDKs\Kinect\\v1.0 Beta2\\inc'
 if not os.path.exists(kinectInclude):
-    kinectInclude = 'C:\\Program Files\\Microsoft Research KinectSDK\inc'
-if not os.path.exists(kinectInclude):
-    kinectInclude = 'C:\\Program Files\\Microsoft SDKs\Kinect\\v1.0 Beta2\\inc'
-if not os.path.exists(kinectInclude):
-    print('WARNING: Skipping build of KINECT extension, no KINECT Include found!')
+    print('WARNING: Skipping build of KINECT extension, no KINECT Include Folder found!')
     Return()
 
-kinectLib = 'C:\\Program Files (x86)\\Microsoft Research KinectSDK\lib\MSRKinectNUI.lib'
+kinectLib = 'C:\\Program Files\\Microsoft SDKs\\Kinect\\v1.0 Beta2\\lib\\x86\\MSRKinectNUI.lib'
 if not os.path.exists(kinectLib):
-    kinectLib = 'C:\\Program Files\\Microsoft Research KinectSDK\lib\MSRKinectNUI.lib'
-if not os.path.exists(kinectLib ):
-    kinectLib = 'C:\\Program Files\\Microsoft SDKs\\Kinect\\v1.0 Beta2\\lib\\x86\\MSRKinectNUI.lib'
-if not os.path.exists(kinectLib):
-    print('WARNING: Skipping build of KINECT extension, no KINECT Library found!')
+    print('WARNING: Skipping build of KINECT extension, no KINECT Object Library found!')
+    Return()
+
+kinectDllPath = 'C:\\Windows\\system32\\MSRKINECTNUI.DLL'
+if not os.path.exists(kinectDllPath):
+    print('WARNING: Skipping build of KINECT extension, no KINECT DLL found!')
     Return()
     
 kinectPluginEnv.Append(CPPPATH = [kinectInclude])
@@ -38,6 +35,7 @@ kinectSources = Glob('*.cpp')
 kinectPlugin = kinectPluginEnv.SharedLibrary( ExtSLName('FabricKINECT'), kinectSources ),
 kinectManifest = kinectPluginEnv.File('FabricKINECT.fpm.json'),
 kinectKL = kinectPluginEnv.File('FabricKINECT.kl'),
-kinectFiles = [kinectManifest, kinectPlugin, kinectKL]
+kinectDLL = kinectPluginEnv.File(kinectDllPath),
+kinectFiles = [kinectManifest, kinectPlugin, kinectKL, kinectDLL]
 
 Return( 'kinectFiles' )
