@@ -167,7 +167,18 @@ namespace Fabric
       {
         m_ss->append( '{' );
       }
-      
+
+      JSONObjectGenerator(JSONObjectGenerator& other) {
+        *this = other;
+      }
+
+      JSONObjectGenerator& operator=(JSONObjectGenerator& other) {
+        m_ss = other.m_ss;
+        m_count = other.m_count;
+        other.m_ss = 0;
+        return *this;
+      }
+
       ~JSONObjectGenerator()
       {
         flush();
@@ -231,7 +242,18 @@ namespace Fabric
       {
         m_ss->append( '[' );
       }
-      
+
+      JSONArrayGenerator(JSONArrayGenerator& other) {
+        *this = other;
+      }
+
+      JSONArrayGenerator& operator=(JSONArrayGenerator& other) {
+        m_ss = other.m_ss;
+        m_count = other.m_count;
+        other.m_ss = 0;
+        return *this;
+      }
+
       ~JSONArrayGenerator()
       {
         flush();
