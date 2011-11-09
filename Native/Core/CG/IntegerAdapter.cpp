@@ -48,8 +48,10 @@ namespace Fabric
       byteAdapter->llvmCompileToModule( moduleBuilder );
       RC::ConstHandle<SizeAdapter> sizeAdapter = getManager()->getSizeAdapter();
       sizeAdapter->llvmCompileToModule( moduleBuilder );
-      RC::ConstHandle<FloatAdapter> scalarAdapter = getManager()->getFP32Adapter();
-      scalarAdapter->llvmCompileToModule( moduleBuilder );
+      RC::ConstHandle<FloatAdapter> fp32Adapter = getManager()->getFP32Adapter();
+      fp32Adapter->llvmCompileToModule( moduleBuilder );
+      RC::ConstHandle<FloatAdapter> fp64Adapter = getManager()->getFP64Adapter();
+      fp64Adapter->llvmCompileToModule( moduleBuilder );
       RC::ConstHandle<StringAdapter> stringAdapter = getManager()->getStringAdapter();
       stringAdapter->llvmCompileToModule( moduleBuilder );
       RC::ConstHandle<OpaqueAdapter> dataAdapter = getManager()->getDataAdapter();
@@ -114,9 +116,9 @@ namespace Fabric
       }
       
       {
-        std::string name = constructOverloadName( scalarAdapter, this );
+        std::string name = constructOverloadName( fp32Adapter, this );
         std::vector< FunctionParam > params;
-        params.push_back( FunctionParam( "scalarLValue", scalarAdapter, USAGE_LVALUE ) );
+        params.push_back( FunctionParam( "scalarLValue", fp32Adapter, USAGE_LVALUE ) );
         params.push_back( FunctionParam( "integerRValue", this, USAGE_RVALUE ) );
         FunctionBuilder functionBuilder( moduleBuilder, name, ExprType(), params );
         if ( buildFunctions )
@@ -125,8 +127,26 @@ namespace Fabric
           llvm::Value *integerRValue = functionBuilder[1];
           BasicBlockBuilder basicBlockBuilder( functionBuilder );
           basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
-          llvm::Value *scalarRValue = basicBlockBuilder->CreateSIToFP( integerRValue, scalarAdapter->llvmRType( context ) );
-          scalarAdapter->llvmAssign( basicBlockBuilder, scalarLValue, scalarRValue );
+          llvm::Value *scalarRValue = basicBlockBuilder->CreateSIToFP( integerRValue, fp32Adapter->llvmRType( context ) );
+          fp32Adapter->llvmAssign( basicBlockBuilder, scalarLValue, scalarRValue );
+          basicBlockBuilder->CreateRetVoid();
+        }
+      }
+      
+      {
+        std::string name = constructOverloadName( fp64Adapter, this );
+        std::vector< FunctionParam > params;
+        params.push_back( FunctionParam( "scalarLValue", fp64Adapter, USAGE_LVALUE ) );
+        params.push_back( FunctionParam( "integerRValue", this, USAGE_RVALUE ) );
+        FunctionBuilder functionBuilder( moduleBuilder, name, ExprType(), params );
+        if ( buildFunctions )
+        {
+          llvm::Value *scalarLValue = functionBuilder[0];
+          llvm::Value *integerRValue = functionBuilder[1];
+          BasicBlockBuilder basicBlockBuilder( functionBuilder );
+          basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
+          llvm::Value *scalarRValue = basicBlockBuilder->CreateSIToFP( integerRValue, fp64Adapter->llvmRType( context ) );
+          fp64Adapter->llvmAssign( basicBlockBuilder, scalarLValue, scalarRValue );
           basicBlockBuilder->CreateRetVoid();
         }
       }
