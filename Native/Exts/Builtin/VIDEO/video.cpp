@@ -7,8 +7,16 @@
 using namespace Fabric::EDK;
 IMPLEMENT_FABRIC_EDK_ENTRIES
 
-extern "C" {
 #include <stdint.h>
+
+#ifdef _WIN32
+  #ifndef INT64_C
+    #define INT64_C(c) (c ## LL)
+    #define UINT64_C(c) (c ## ULL)
+  #endif
+#endif
+
+extern "C" {
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
 #include <libswscale/swscale.h>
