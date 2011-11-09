@@ -28,6 +28,7 @@
     <script type="text/javascript" src="../../../SceneGraph/RT/RGBA.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/RT/Color.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/RT/Euler.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Ray.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/RT/OGLShaderProgram.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/RT/OGLTexture2D.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/RT/OGLTexture3D.js" charset="utf-8"></script>
@@ -56,6 +57,8 @@
     <script type="text/javascript" src="../../../SceneGraph/ColorGradient/ColorGradient.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/Histogram/Histogram.js" charset="utf-8"></script>
     
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Persistence.js" charset="utf-8"></script>
+    
     <link href="../../../SceneGraph/CurveEditor/CurveEditor.css" rel="stylesheet" type="text/css" />
 
 <script type="text/javascript">
@@ -83,6 +86,15 @@ s.parentNode.insertBefore(ga, s);
 }  
 #viewer {
   right:400px;
+}
+#sidebar .box{
+  margin: 0px;
+}
+#sidebar .box h2{
+  padding: 5px 10px 1px;
+}
+#sidebar .box .content{
+  padding: 0px;
 }
 
 #opacityMapping {
@@ -150,19 +162,36 @@ FABRIC.SceneGraph.registerNodeType('CropVolumeManipulator', {
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
       volumeInstanceNode: undefined,
-      color: FABRIC.RT.rgb(0.8, 0, 0, 1)
+      color: FABRIC.RT.rgb(0.5, 0.5, 0.5, 1)
       });
 
     var volumeInstanceNode = scene.getPrivateInterface(options.volumeInstanceNode);
     var cropVolumeManipulator = scene.constructNode('SceneGraphNode', options);
     var volumeSlicesNode = scene.getPrivateInterface(volumeInstanceNode.pub.getVolumeSlicesNode());
     
-    var flatMaterial = scene.pub.constructNode('FlatMaterial', {
-      color:options.color
-    });
     
-    var constructEdgeManipulator = function(name, srcCode){
+    var cropVolumeManipulatorTransform = scene.pub.constructNode('Transform', {
+        hierarchical: true,
+        parentTransformNode: volumeInstanceNode.getTransformNode(),
+        localXfo: new FABRIC.RT.Xfo({ sc: new FABRIC.RT.Vec3(1.01, 1.01, 1.01) })
+      });
+    
+    var cropMin, cropMax;
+    var invxfo, xfo;
+    var lineShaderNode;
+    var constructEdgeManipulator = function(name, srcCode, modifierFn){
+      
+      var lineMaterial = scene.pub.constructNode('FlatMaterial', {
+        prototypeMaterialType: "LineMaterial",
+        color:options.color,
+        lineWidth: 2.0
+      });
+
+      var lineMaterialPrivate = scene.getPrivateInterface(lineMaterial);
+      lineShaderNode = lineMaterialPrivate.getShaderNode();
+    
       var lineGeom = scene.constructNode('LineVector');
+      lineGeom.pub.setAttributeDynamic('positions');
       lineGeom.getAttributesDGNode().setDependency(volumeSlicesNode.getUniformsDGNode(), 'volume_uniforms');
       lineGeom.getAttributesDGNode().bindings.append(scene.constructOperator({
         operatorName: name+'GeneratorOp',
@@ -174,41 +203,184 @@ FABRIC.SceneGraph.registerNodeType('CropVolumeManipulator', {
         entryFunctionName: 'setLineSegmentPositions',
         srcCode: srcCode
       }));
-      var inst = scene.constructNode('Instance', {
-        name: name+"Instance",
-        transformNode: volumeInstanceNode.getTransformNode(),
+            
+      var manipulatorNode = scene.constructNode('Manipulator', {
+        name: name+"Manipulator",
+        transformNode: cropVolumeManipulatorTransform,
         geometryNode: lineGeom.pub,
-        materialNode: flatMaterial
+        materialNode: lineMaterial
       });
+      
+      var viewportNode;
+      var planePoint, planeNormal;
+      var dragStartFn = function(evt) {
+        viewportNode = evt.viewportNode;
+        planePoint = evt.hitData.point;
+        planeNormal = evt.cameraNode.getTransformNode().getGlobalXfo().ori.rotateVector(new FABRIC.RT.Vec3(0, 0, 1));
+        
+        invxfo = volumeInstanceNode.getTransformNode().getGlobalXfo().inverse();
+        cropMin = volumeSlicesNode.pub.getCropMin();
+        cropMax = volumeSlicesNode.pub.getCropMax();
+      }
+      manipulatorNode.pub.addEventListener('dragstart', dragStartFn);
+  
+      var dragFn = function(evt) {
+        var ray2 = viewportNode.calcRayFromMouseEvent(evt);
+        var hitPoint2 = ray2.intersectPlane(planePoint, planeNormal).point;
+        if (!hitPoint2)
+          return;
+        
+        var delta = invxfo.transformVector(hitPoint2).subtract(invxfo.transformVector(planePoint));
+        
+        var newCropMin = cropMin.clone();
+        var newCropMax = cropMax.clone();
+        modifierFn(newCropMin, newCropMax, delta);
+        newCropMin.x = Math.clamp(newCropMin.x, -1, 1);
+        newCropMin.y = Math.clamp(newCropMin.y, -1, 1);
+        newCropMin.z = Math.clamp(newCropMin.z, -1, 1);
+        newCropMax.x = Math.clamp(newCropMax.x, -1, 1);
+        newCropMax.y = Math.clamp(newCropMax.y, -1, 1);
+        newCropMax.z = Math.clamp(newCropMax.z, -1, 1);
+        volumeSlicesNode.pub.setCropMin(newCropMin);
+        volumeSlicesNode.pub.setCropMax(newCropMax);
+      }
+      manipulatorNode.pub.addEventListener('drag', dragFn);
     }
     
-    constructEdgeManipulator( 'vertical1', 'use Vec3;\
+    constructEdgeManipulator( 'xaxis1', 'use Vec3;\
+operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){\
+  positions[0] = Vec3(min.x, min.y, min.z);\
+  positions[1] = Vec3(max.x, min.y, min.z);\
+}',
+    function(cropMin, cropMax, delta){
+      cropMin.y += delta.y;
+      cropMin.z += delta.z;
+    });
+    
+    constructEdgeManipulator( 'xaxis2', 'use Vec3;\
+operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){\
+  positions[0] = Vec3(min.x, max.y, min.z);\
+  positions[1] = Vec3(max.x, max.y, min.z);\
+}',
+    function(cropMin, cropMax, delta){
+      cropMax.y += delta.y;
+      cropMin.z += delta.z;
+    });
+    
+    constructEdgeManipulator( 'xaxis3', 'use Vec3;\
+operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){\
+  positions[0] = Vec3(min.x, min.y, max.z);\
+  positions[1] = Vec3(max.x, min.y, max.z);\
+}',
+    function(cropMin, cropMax, delta){
+      cropMin.y += delta.y;
+      cropMax.z += delta.z;
+    });
+    
+    constructEdgeManipulator( 'xaxis4', 'use Vec3;\
+operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){\
+  positions[0] = Vec3(min.x, max.y, max.z);\
+  positions[1] = Vec3(max.x, max.y, max.z);\
+}',
+    function(cropMin, cropMax, delta){
+      cropMax.y += delta.y;
+      cropMax.z += delta.z;
+    });
+    
+    
+    constructEdgeManipulator( 'yaxis1', 'use Vec3;\
 operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){\
   positions[0] = Vec3(min.x, min.y, min.z);\
   positions[1] = Vec3(min.x, max.y, min.z);\
-  report("vertical1:"+positions);\
-}');
+}',
+    function(cropMin, cropMax, delta){
+      cropMin.x += delta.x;
+      cropMin.z += delta.z;
+    });
     
-    constructEdgeManipulator( 'vertical2', 'use Vec3;\
+    constructEdgeManipulator( 'yaxis2', 'use Vec3;\
 operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){\
   positions[0] = Vec3(min.x, min.y, max.z);\
   positions[1] = Vec3(min.x, max.y, max.z);\
-  report("vertical2:"+positions);\
-}');
+}',
+    function(cropMin, cropMax, delta){
+      cropMin.x += delta.x;
+      cropMax.z += delta.z;
+    });
     
-    constructEdgeManipulator( 'vertical3', 'use Vec3;\
+    constructEdgeManipulator( 'yaxis3', 'use Vec3;\
 operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){\
   positions[0] = Vec3(max.x, min.y, min.z);\
   positions[1] = Vec3(max.x, max.y, min.z);\
-  report("vertical3:"+positions);\
-}');
+}',
+    function(cropMin, cropMax, delta){
+      cropMax.x += delta.x;
+      cropMin.z += delta.z;
+    });
     
-    constructEdgeManipulator( 'vertical4', 'use Vec3;\
+    constructEdgeManipulator( 'yaxis4', 'use Vec3;\
 operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){\
   positions[0] = Vec3(max.x, min.y, max.z);\
   positions[1] = Vec3(max.x, max.y, max.z);\
-  report("vertical4:"+positions);\
-}');
+}',
+    function(cropMin, cropMax, delta){
+      cropMax.x += delta.x;
+      cropMax.z += delta.z;
+    });
+    
+    constructEdgeManipulator( 'zaxis1', 'use Vec3;\
+operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){\
+  positions[0] = Vec3(min.x, min.y, min.z);\
+  positions[1] = Vec3(min.x, min.y, max.z);\
+}',
+    function(cropMin, cropMax, delta){
+      cropMin.x += delta.x;
+      cropMin.y += delta.y;
+    });
+    
+    constructEdgeManipulator( 'zaxis2', 'use Vec3;\
+operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){\
+  positions[0] = Vec3(min.x, max.y, min.z);\
+  positions[1] = Vec3(min.x, max.y, max.z);\
+}',
+    function(cropMin, cropMax, delta){
+      cropMin.x += delta.x;
+      cropMax.y += delta.y;
+    });
+    
+    constructEdgeManipulator( 'zaxis3', 'use Vec3;\
+operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){\
+  positions[0] = Vec3(max.x, min.y, min.z);\
+  positions[1] = Vec3(max.x, min.y, max.z);\
+}',
+    function(cropMin, cropMax, delta){
+      cropMax.x += delta.x;
+      cropMin.y += delta.y;
+    });
+    
+    constructEdgeManipulator( 'zaxis4', 'use Vec3;\
+operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){\
+  positions[0] = Vec3(max.x, max.y, min.z);\
+  positions[1] = Vec3(max.x, max.y, max.z);\
+}',
+    function(cropMin, cropMax, delta){
+      cropMax.x += delta.x;
+      cropMax.y += delta.y;
+    });
+
+    var enabled = true;
+    cropVolumeManipulator.pub.enable = function() {
+      if(!enabled) {
+        lineShaderNode.getParentEventHandler().appendChildEventHandler(lineShaderNode.getRedrawEventHandler());
+        enabled = true;
+      }
+    };
+    cropVolumeManipulator.pub.disable = function() {
+      if(enabled) {
+        lineShaderNode.getParentEventHandler().removeChildEventHandler(lineShaderNode.getRedrawEventHandler());
+        enabled = false;
+      }
+    };
     
     return cropVolumeManipulator;
   }
@@ -217,11 +389,10 @@ operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){
 
 $(document).ready(function() {
   var i, j;
-  var $sliders3D = [
-      $('#rangeX3D').slider({min: 0, max: 1, step: 0.005, range: true, values: [0,1] }),
-      $('#rangeY3D').slider({min: 0, max: 1, step: 0.005, range: true, values: [0,1] }),
-      $('#rangeZ3D').slider({min: 0, max: 1, step: 0.005, range: true, values: [0,1] })
-  ];
+  
+  var $savePresetButton = $('#savePreset').button({ text: true });
+  var $newPresetButton = $('#newPreset').button({ text: true });
+  
   var $opacityRangeSlider = $('#opacityRange').slider({min: 0, max: 1, step: 0.005, range: true, values: [0.1,1] });
   var $brightnessSlider = $('#brightness').slider({min: 0, max: 1, step: 0.01, value: 0.5 });
   var $transparencySlider = $('#transparency').slider({min: 0, max: 1, step: 0.01, value: 0.8 });
@@ -234,6 +405,8 @@ $(document).ready(function() {
     $('#zRatio').slider({min: 0, max: 1, step: 0.005 })
   ];
   
+  
+  
   var scene = FABRIC.SceneGraph.createScene();
   
   var histogram = constructHistogram('opacityMapping');
@@ -244,19 +417,12 @@ $(document).ready(function() {
   var opacityKeyAnimationLibrary = scene.constructNode('LinearKeyAnimationLibrary');
   var trackSet = new FABRIC.RT.KeyframeTrackSet('LinearPosKeyAnimationTrack');
   trackSet.tracks.push(new FABRIC.RT.KeyframeTrack('opacityKeyframeTrack', FABRIC.RT.rgb(0, 1, 0), [
-      linearkey(.1, 0), linearkey(.2, 0.75), linearkey(.4, 0.05), linearkey(.5, 1), linearkey(1.0, 1)
+      linearkey(.1, 0),
+      linearkey(.2, 0.75),
+      linearkey(.4, 0.05),
+      linearkey(.5, 1)
     ]));
-  /*
-  var opacityKeyframeTrackNode = scene.constructNode('LinearKeyAnimationTrack', {
-    name:'opacityKeyframeTrack'
-  } );
   
-  opacityKeyframeTrackNode.setTrackData(0, {
-    name: 'opacityFactors',
-    color: FABRIC.RT.rgb(1, 0, 0),
-    keys: [key(.1, 0), key(.2, 0.75), key(.4, 0.05), key(.5, 1), key(1.0, 1)]
-  });
-  */
   var trackSetID = opacityKeyAnimationLibrary.addTrackSet(trackSet);
   var opacityDisplayNode = scene.constructNode('TrackDisplay', {
       animationLibraryNode: opacityKeyAnimationLibrary,
@@ -289,7 +455,9 @@ $(document).ready(function() {
 
   var viewport = scene.constructNode('Viewport', {
     windowElement: document.getElementById('FabricContainer'),
-    backgroundColor: FABRIC.RT.rgb(0.0, 0.05, 0.15)
+    enableRaycasting: true,
+    backgroundColor: FABRIC.RT.rgb(0.0, 0.0, 0.0),
+    rayIntersectionThreshold: 0.03
   });
   
   // Create a camera to draw the scene from
@@ -305,13 +473,13 @@ $(document).ready(function() {
   var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(100.0, 100.0, 100.0) });
   var transform =  scene.constructNode('Transform', {
     hierarchical: false,
-    globalXfo: new FABRIC.RT.Xfo()
+    globalXfo: new FABRIC.RT.Xfo({tr: new FABRIC.RT.Vec3(0, 0, 0), sc: new FABRIC.RT.Vec3(1.0, 1.0, 1.0)})
   });
 
   var layoutRectangle = scene.constructNode('DrawRectangle', {color: new FABRIC.RT.RGBA(255,255,255,255), tl: new FABRIC.RT.Vec2(2.0/3.0, 1.0), br: new FABRIC.RT.Vec2(1.0, -1.0), forceRefresh: true, createDgNode: true });
   var borderSize = 0.01;
 
-  var opacityTexture = scene.constructNode('Image3DWithHistogram',  { url: 'Resources/ChestMid.nrrd', resourceTargetTransformNode: transform, glRepeat: false, histogramResolution: 1024 });
+  var opacityTexture = scene.constructNode('Image3DWithHistogram',  { url: 'Resources/ChestMid.nrrd', glRepeat: false, histogramResolution: 1024 });
 //  var opacityTexture = scene.constructNode('Image3DWithHistogram',  { url: 'Resources/HeadHigh.nrrd', resourceTargetTransformNode: transform, glRepeat: false, histogramResolution: 1024 });
 
   opacityTexture.getResourceLoadNode().addOnLoadSuccessCallback(function (){
@@ -321,8 +489,8 @@ $(document).ready(function() {
   var volumeNode = scene.constructNode('VolumeOpacityInstance', {
       viewportNode: viewport,
       transformNode: transform,
-      cropMin: new FABRIC.RT.Vec3(0, 0, 0.4),
-      cropMax: new FABRIC.RT.Vec3(1, 1, 0.75),
+      cropMin: new FABRIC.RT.Vec3(-1, -0.2, -1),
+      cropMax: new FABRIC.RT.Vec3(1, 0.5, 1),
       opacityTextureNode: opacityTexture,
       lightNode: light,
       brightnessFactor: 0.5,
@@ -340,7 +508,7 @@ $(document).ready(function() {
   texture2DSlice[2] = scene.constructNode('VolumeSliceRender', {tl: new FABRIC.RT.Vec2(2.0/3.0+borderSize, -1.0/3.0-borderSize), br: new FABRIC.RT.Vec2(1.0-borderSize, -1.0+borderSize), volumeOpacityInstanceNode: volumeNode, ratio: 0.5, axis : 2, sharedVolumeSliceRender: texture2DSlice[0]});
     
     
-  scene.constructNode('CropVolumeManipulator', {
+  var cropManipulator = scene.constructNode('CropVolumeManipulator', {
     volumeInstanceNode: volumeNode
   });
     
@@ -348,19 +516,6 @@ $(document).ready(function() {
     var sliderIndex = index;
     return function(event, ui) {
         texture2DSlice[sliderIndex].setRatio(ui.value);
-        viewport.redraw();
-        return true;
-      };
-  };
-
-  var sliders3DBindFunction = function(index) {
-    var sliderIndex = index;
-    return function(event, ui) {
-        var min = volumeNode.getCropMin(), max = volumeNode.getCropMax();
-        min.setComponent( sliderIndex, ui.values[0] );
-        max.setComponent( sliderIndex, ui.values[1] );
-        volumeNode.setCropMin(min);
-        volumeNode.setCropMax(max);
         viewport.redraw();
         return true;
       };
@@ -384,9 +539,6 @@ $(document).ready(function() {
     if(cropMin > cropMax) {
       cropMin = cropMax;
     }
-
-    $sliders3D[i].slider('option', 'values', [cropMin.component(i), cropMax.component(i)]);
-    $sliders3D[i].bind('slide', sliders3DBindFunction(i) );
   }
 
   $resolutionFactorSlider.slider('value', volumeNode.getResolutionFactor());
@@ -422,7 +574,7 @@ $(document).ready(function() {
     var white = new FABRIC.RT.Color(1, 1, 1, 1);
     var black = new FABRIC.RT.Color(0, 0, 0, 1);
     var backgroundColor = whiteBackground ? white : black;
-    volumeNode.setBackgroundColor( backgroundColor );
+    viewport.setBackgroundColor( backgroundColor );
     for( i = 0; i < 3; ++i ) {
       texture2DSlice[i].setBackgroundColor( backgroundColor );
     }
@@ -435,6 +587,25 @@ $(document).ready(function() {
     volumeNode.setInvertColor(invertColor ? 1 : 0);
     volumeNode.setBrightnessFactor(1.0-volumeNode.getBrightnessFactor());
     $brightnessSlider.slider('value', volumeNode.getBrightnessFactor());
+    viewport.redraw();
+  });
+
+  var savedCropMin, savedCropMax;
+  $("#enableCropping").attr('checked', true).change(function() {
+    var enableCropping = $('#enableCropping').attr('checked');
+    if( !enableCropping ) {
+      savedCropMin = volumeNode.getCropMin().clone();
+      savedCropMax = volumeNode.getCropMax().clone();
+      volumeNode.setCropMin( new FABRIC.RT.Vec3(-1,-1,-1));
+      volumeNode.setCropMax( new FABRIC.RT.Vec3( 1, 1, 1));
+      cropManipulator.disable();
+      viewport.disableRaycasting();
+    } else {
+      volumeNode.setCropMin( savedCropMin );
+      volumeNode.setCropMax( savedCropMax );
+      cropManipulator.enable();
+      viewport.enableRaycasting();
+    }
     viewport.redraw();
   });
 
@@ -503,40 +674,138 @@ $(document).ready(function() {
   $(".box h2").addClass("ui-widget-header ui-corner-all");
   $(".content").addClass("ui-widget-content");
 
-  $(function() {
-          $( "#tabs" ).tabs();
+  $( "#tabs" ).tabs();
 
-    var curveEditor = constructCurveEditor('opacityMapping', opacityKeyAnimationLibrary, {
-      timeStripe: false,
-      draggable: false,
-      zoomable: false,
-      timeRange: new FABRIC.RT.Vec2(0, 1),
-      clampValues: true,
-      volumerenderdemohack: true
+  var curveEditor = constructCurveEditor('opacityMapping', opacityKeyAnimationLibrary, {
+    timeStripe: false,
+    draggable: false,
+    zoomable: false,
+    valueRange: new FABRIC.RT.Vec2(0, 1),
+    timeRange: new FABRIC.RT.Vec2(0, 1),
+    fitEditorToKeyRanges: false,
+    volumerenderdemohack: true
+  });
+
+  var colorGradient = constructColorGradient('colorMapping', gradientKeyTrackLibrary, {
+
+  });
+  colorGradient.addEventListener('gradientchanged', function(evt){
+    viewport.redraw();
+  });
+  colorGradient.addEventListener('keyclicked', function(evt){
+    gradientKey = evt.key;
+    colorPicker.ColorPickerSetColor(evt.keycolor.toHex());
+  });
+  var gradientKey;
+  var colorPicker = $('#brushColor').ColorPicker({
+      flat: true,
+      color: { r: 1.0 * 255, g: 0.5 * 255, b: 0.5 * 255} ,
+      onChange: function(hsb, hex, rgb) {
+        if(gradientKey){
+          gradientKey.setColor(FABRIC.RT.rgb255(rgb.r, rgb.g, rgb.b));
+        }
+      }
     });
-
-    var colorGradient = constructColorGradient('colorMapping', gradientKeyTrackLibrary, {
   
+  ///////////////////////////////////////////////////
+  // Preset Saving and Loading
+  var currPresetName = 'Default';
+  var presetsFound = false;
+  var rebuildPresetNamesList = function(){
+    $('#resourceSelector').empty();
+    for(var i=0; i<localStorage.length; i++){
+      if(localStorage.key(i).split('.')[0]=='VolumeRenderingPresets'){
+      //  presetNames.push(localStorage.key(i).slipt('.')[1]);
+        var presetName = localStorage.key(i).split('.')[1];
+        $('#resourceSelector').append('<option value="'+presetName+'">'+presetName);
+        presetsFound = true;
+      }
+    }
+  }
+  
+  var savePreset = function(){
+    var presetSaver = scene.constructManager('SceneSaver');
+    presetSaver.addNode(camera);
+    presetSaver.addNode(opacityKeyAnimationLibrary);
+    presetSaver.addNode(gradientKeyTrackLibrary);
+    presetSaver.addNode(volumeNode);
+
+    var storage = new FABRIC.SceneGraph.LocalStorage('VolumeRenderingPresets.'+currPresetName);
+    presetSaver.save(storage);
+    
+    localStorage.setItem('VolumeRenderingSelectedPreset', currPresetName);
+  }
+  
+  var loadPreset = function(){
+    var presetLoader = scene.constructManager('SceneLoader', { preLoadScene: true } );
+    var storage = new FABRIC.SceneGraph.LocalStorage('VolumeRenderingPresets.'+currPresetName);
+    var nodeMap = presetLoader.load(storage);
+    
+    $resolutionFactorSlider.slider('value', volumeNode.getResolutionFactor());
+    curveEditor.redraw();
+    colorGradient.redraw();
+    viewport.redraw();
+    localStorage.setItem('VolumeRenderingSelectedPreset', currPresetName);
+  }
+  
+  $("#resourceSelector").change(function() {
+    currPresetName = $("#resourceSelector :selected").attr("value");
+    loadPreset();
+  });
+  
+  $('#presetNameDialog').dialog({
+    autoOpen: false,
+    modal: true
+  });
+  
+  $savePresetButton.button()
+    .click(function() {
+      savePreset();
     });
-    colorGradient.addEventListener('gradientchanged', function(evt){
-      viewport.redraw();
-    });
-    colorGradient.addEventListener('keyclicked', function(evt){
-      gradientKey = evt.key;
-      colorPicker.ColorPickerSetColor(evt.keycolor.toHex());
-    });
-    var gradientKey;
-    var colorPicker = $('#brushColor').ColorPicker({
-        flat: true,
-        color: { r: 1.0 * 255, g: 0.5 * 255, b: 0.5 * 255} ,
-        onChange: function(hsb, hex, rgb) {
-          if(gradientKey){
-            gradientKey.setColor(FABRIC.RT.rgb255(rgb.r, rgb.g, rgb.b));
+  
+  $newPresetButton.button()
+    .click(function() {
+      var closeDialogAndSavePreset = function(){
+        currPresetName = $("#presetName").val();
+        savePreset();
+        rebuildPresetNamesList();
+        $("#resourceSelector").val(currPresetName);
+        $("#presetNameDialog").dialog( "close" );
+      }
+      $('#presetNameDialog').dialog({
+        autoOpen: true,
+        position: 'right top',
+        buttons: {
+          Ok: function() {
+            closeDialogAndSavePreset();
           }
+        },
+        closeOnEscape: true
+      }).keyup(function(e) {
+        if (e.keyCode == 13) { // Enter key
+          closeDialogAndSavePreset();
         }
       });
+    });
     
+  
+  // On startup....
+  rebuildPresetNamesList();
+  FABRIC.appendOnResolveAsyncTaskCallback(function(label, nbRemaining) {
+    if (nbRemaining===0) {
+      if(!presetsFound){
+        currPresetName = 'Default';
+        savePreset();
+        rebuildPresetNamesList();
+      }else{
+        currPresetName = localStorage.getItem('VolumeRenderingSelectedPreset');
+        $("#resourceSelector").val(currPresetName);
+        loadPreset();
+      }
+      return true;
+    }
   });
+  
 });
 
 </script>
@@ -547,56 +816,69 @@ $(document).ready(function() {
       <h4 id="loadingDesc" style="margin-bottom: 10px"></h4>
       <div id="loadingProgressBar" class="ui-progressbar-value"></div>
     </div>
+    <div id="presetNameDialog" title="Preset Name">
+      <input type="text" id="presetName" style="border:0; font-weight:bold;" />
+    </div>
     <div id="wrapper">
       <div id="editor">
         <div id="viewer">
           <div id="FabricContainer"></div> 
         </div><!--viewer-->
         <div id="sidebar">
+          
+          <div class="box">
+            <div class="content">
+              <h2>PRESETS</h2>
+              <div class="box" style="margin-top:5px;margin-left:10px;margin-bottom:10px;">
+              <button id="newPreset" style="margin-top:10px;">New Preset</button>
+              <button id="savePreset" style="margin-top:10px;">Save</button>
+              
+              </br>
+              <select id='resourceSelector' style="width: 380px; margin-top:10px;">
+              </select>
+              </div><!--box-->
+            </div><!--content-->
+         </div><!--box-->
+          
           <div id="tabs">
           <ul>
-            <li><a href="#volumeRenderTab">Render Parameters</a></li>
-            <li><a href="#volumeCroppingTab">3D Cropping</a></li>
+            <li><a href="#densityMapping">Density Mapping</a></li>
+            <li><a href="#displayTab">Display</a></li>
             <li><a href="#volumeSlicesTab">2D Axial Slices</a></li>
           </ul>
-          <div id="volumeRenderTab">
+          
+          <div id="densityMapping">
             <div class="box">
-              <p>Opacity Mapping:</p>
+              <p>Opacity</p>
               <div id='opacityMapping'></div>
               <div id='opacityRange' style="margin-top:5px;"></div>
               
-              <p style="margin-top:5px;">Color Mapping:</p>
+              <p style="margin-top:5px;">Color:</p>
               <div id='colorMapping'></div>
               <p id="brushColor"></p>
-              
+
               <input type="checkbox" id="invert" style="margin-top:10px;" /><label for="invert">Invert Colors</label><br>
+              <input type="checkbox" id="enableCropping" style="margin-top:10px;" /><label for="invert">Enable Cropping</label><br>
+           <!-- </div>content-->
+            </div><!--box-->
+          </div><!--volumeRenderTab-->
+
+          <div id="displayTab">
+            <div class="box">
+              <p>Display</p>
               <input type="checkbox" id="whiteBackground" style="margin-bottom:10px;"/><label for="whiteBackground">White background</label><br>
               
               <label for="brightness" >Brightness:</label>
               <div id='brightness' style="margin-bottom:10px;"></div>
               <label for="transparency" >Transparency:</label>
               <div id='transparency' style="margin-bottom:10px;"></div>
-              <label for="resolutionFactor" >Resolution factor:</label>
+              <label for="resolutionFactor" >Resolution:</label>
               <div id='resolutionFactor' style="margin-bottom:10px;"></div>
               <label for="specularFactor" >Shininess:</label>
               <div id='specularFactor' style="margin-bottom:10px;"></div>
            <!-- </div>content-->
             </div><!--box-->
           </div><!--volumeRenderTab-->
-          
-          <div id="volumeCroppingTab">
-            <div class="box">
-            <!--  <h2>Volume cropping</h2> 
-              <div class="content">-->
-                <label for="rangeX3D" >X:</label>
-                <div id='rangeX3D' style="margin-top:10px;"></div>
-                <label for="rangeY3D" >Y:</label>
-                <div id='rangeY3D' style="margin-top:10px;"></div>
-                <label for="rangeZ3D" >Z:</label>
-                <div id='rangeZ3D' style="margin-top:10px;"></div>
-            <!--  </div>content-->
-            </div><!--box-->
-          </div><!--volumeCroppingTab-->
 
           <div id="volumeSlicesTab">
             <div class="box">
