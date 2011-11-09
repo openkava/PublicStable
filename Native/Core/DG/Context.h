@@ -6,6 +6,7 @@
 #define _FABRIC_DG_CONTEXT_H
 
 #include <Fabric/Core/JSON/CommandChannel.h>
+#include <Fabric/Core/CG/CompileOptions.h>
 #include <Fabric/Base/RC/WeakHandleSet.h>
 #include <Fabric/Base/Util/AtomicSize.h>
 #include <Fabric/Core/Util/JSONGenerator.h>
@@ -94,7 +95,12 @@ namespace Fabric
     
       typedef Util::UnorderedMap< std::string, RC::Handle<NamedObject> > NamedObjectMap;
     
-      static RC::Handle<Context> Create( RC::Handle<IO::Manager> const &ioManager, std::vector<std::string> const &pluginDirs, bool optimizeSynchronously );
+      static RC::Handle<Context> Create(
+        RC::Handle<IO::Manager> const &ioManager,
+        std::vector<std::string> const &pluginDirs,
+        CG::CompileOptions const &compileOptions,
+        bool optimizeSynchronously
+        );
       static RC::Handle<Context> Bind( std::string const &contextID );
       
       std::string const &getContextID() const;
@@ -133,7 +139,12 @@ namespace Fabric
       
     protected:
     
-      Context( RC::Handle<IO::Manager> const &ioManager, std::vector<std::string> const &pluginDirs, bool optimizeSynchronously );
+      Context(
+        RC::Handle<IO::Manager> const &ioManager,
+        std::vector<std::string> const &pluginDirs,
+        CG::CompileOptions const &compileOptions,
+        bool optimizeSynchronously
+        );
       ~Context();
 
       void jsonDesc( Util::JSONObjectGenerator &resultJOG ) const;
@@ -147,6 +158,7 @@ namespace Fabric
       RC::Handle<RT::Manager> m_rtManager;
       RC::Handle<IO::Manager> m_ioManager;
       RC::Handle<CG::Manager> m_cgManager;
+      CG::CompileOptions m_compileOptions;
       RC::Handle<CodeManager> m_codeManager;
       
       mutable NamedObjectMap m_namedObjectRegistry;
