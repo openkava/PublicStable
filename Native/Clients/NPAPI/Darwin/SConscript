@@ -3,10 +3,11 @@
 #
 
 import os
-Import( 'coreEnv', 'npapiSources', 'npapiDistDir', 'buildArch', 'npapiFlags' )
+Import( 'coreEnv', 'npapiSources', 'npapiDistDir', 'buildArch', 'npapiFlags', 'glewFlags' )
 
 npapiEnv = coreEnv.Clone()
 npapiEnv.MergeFlags( npapiFlags )
+npapiEnv.MergeFlags( glewFlags )
 
 npapiEnv.Append( FRAMEWORKS = ['AppKit', 'AGL', 'QuartzCore'] )
 npapiSources.append( ['WindowedCAViewPort.mm','WindowedInvalidatingCAViewPort.mm'] )
