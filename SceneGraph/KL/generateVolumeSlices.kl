@@ -306,8 +306,8 @@ operator generateVolumeSlices(
     //Add triangle indices
     for(i = 2; i < nbEdges; ++i) {
       indices.push(currPosIndex);
-      indices.push(currPosIndex+i);
-      indices.push(currPosIndex+i-1);
+      indices.push(Integer(currPosIndex+i));
+      indices.push(Integer(currPosIndex+i-1));
     }
 
     //Add & increment positions & textures coordinates
