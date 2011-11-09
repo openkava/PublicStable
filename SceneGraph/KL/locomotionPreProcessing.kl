@@ -130,8 +130,9 @@ function Vec2[][] calcFootPlantTimes(
       firstFootLift = footSteps[i][0].y;
       leadingFoot = i;
     }
-    if(footSteps[i][footSteps[i].size-1].y > lastFootLift){
+    if(footSteps[i][footSteps[i].size-1].y > lastFootLift && footSteps[i][footSteps[i].size-1].y < timeRange.y){
       lastFootLift = footSteps[i][footSteps[i].size-1].y;
+      report("lastFootLift "+i+":"+lastFootLift);
     }
   }
   

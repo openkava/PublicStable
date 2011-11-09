@@ -214,14 +214,14 @@ $(document).ready(function() {
   case 'walker':
     var locomotionControllerNode = scene.constructNode('LocomotionCharacterController', {
         cameraNode: camera,
-        maxLinearVelocity: new FABRIC.RT.Vec2(10, 10),
-        maxLinearAcceleration: 0.15,
-        maxAngularVelocity:  new FABRIC.RT.Euler(0, 1.5, 0),
+        maxLinearVelocity: new FABRIC.RT.Vec2(15, 15),
+        maxLinearAcceleration: 0.45,
+        maxAngularVelocity:  new FABRIC.RT.Euler(0, 2, 0),
         bulletWorldNode: bulletWorldNode,
         numTrailSegments: 0,
         gravity: -1.0,
         comHeight: 1.8,
-        circleSize: 0.6
+        circleSize: 1.6
       });
   case 'centipede':
     var maxLinearVelocity = new FABRIC.RT.Vec2(80, 80);
