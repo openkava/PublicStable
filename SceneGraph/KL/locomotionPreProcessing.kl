@@ -3,7 +3,7 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 use Vec2, Vec3, Quat, Xfo;
-use LinearKeyframeTrackSet, PoseVariables, KeyframeTrackBindings;
+use PoseVariables, KeyframeTrackBindings;
 use DebugGeometry;
 
 
@@ -84,7 +84,7 @@ function Vec2[][] calcFootPlantTimes(
         if(t == 1){
           footPlanted[i] = (dist < movementThreshold);
           if(footPlanted[i]){
-            footSteps[i].push(Vec2(timeRange.x, 0.0));
+            footSteps[i].push(Vec2(timeRange.x, timeRange.x));
             footPrints[i].push(footPos);
           }
         }
@@ -99,7 +99,7 @@ function Vec2[][] calcFootPlantTimes(
           else{
             if(dist < movementThreshold){
               // Add a foot plant key
-              footSteps[i].push(Vec2(time, 0.0));
+              footSteps[i].push(Vec2(time, timeRange.y));
               footPrints[i].push(footPos);
               footPlanted[i] = true;
             }
@@ -110,21 +110,30 @@ function Vec2[][] calcFootPlantTimes(
     }
   }
   
-  // If a foot was planted at the end of the clip, then its lift time
-  
+  // If a foot was planted at the end of the clip, then set the plant time as
   for(Integer i=0; i < legs.size; i++){
+    if(footSteps[i].size == 1){
+      report("Error: sequence too short);
+      continue;
+    }
     Limb leg = legs[i];
-    if(footPlanted[i]){
-      if(footSteps[i].size == 2){
-        // This should only be done on looping animations.
-        footSteps[i][0].x = -(timeRange.y - footSteps[i][footSteps[i].size-1].x);
-        footSteps[i][footSteps[i].size-1].y = (timeRange.y - timeRange.x) + footSteps[i][0].y;
-      }
-      else{
-        footSteps[i][footSteps[i].size-1].y = timeRange.y;
-      }
+    
+    if(footSteps[i][0].x == timeRange.x && footSteps[i][footSteps[i].size-1].y == timeRange.y){
+      // If the foot was planted at the end of the animaiton sequence, we
+      // calculate the lift time. 
+      // This should only be done on looping animations.
+      Vec2 prevStep = footSteps[i][footSteps[i].size-2];
+      footSteps[i][footSteps[i].size-1].y = footSteps[i][footSteps[i].size-1].x + (prevStep.y - prevStep.x);
+    }
+    else if(footSteps[i][footSteps[i].size-1].y == timeRange.y){
+      // If the foot was planted at the end of the animaiton sequence, we
+      // calculate the lift time. 
+      // This should only be done on looping animations.
+      Vec2 prevStep = footSteps[i][footSteps[i].size-2];
+      footSteps[i][footSteps[i].size-1].y = footSteps[i][footSteps[i].size-1].x + (prevStep.y - prevStep.x);
     }
   }
+  
   
   for(Integer i=0; i < footPrints.size; i++){
     for(Integer j=0; j < footPrints[i].size; j++){
@@ -421,7 +430,7 @@ operator locomotionPreProcessing(
         alignment.setFrom2Vectors(prevComXfo.ori.getZaxis(), horizontalDisplacement.unit());
         prevComXfo.ori = alignment * prevComXfo.ori;
         poseVariables.xfoValues[com.xfoId] = prevComXfo;
-        trackSet.setValues(poseVariables, prevKeyt, comXfoBindings);
+        poseVariables.setTrackValues(prevKeyt, trackSet, comXfoBindings);
         
         debugGeometry.drawAxis(prevComXfo, 5.0, Color(1.0, 0.0, 1.0, 1.0));
       }
@@ -430,7 +439,7 @@ operator locomotionPreProcessing(
       alignment.setFrom2Vectors(prevComXfo.ori.getZaxis(), horizontalDisplacement.unit());
       comXfo.ori = alignment * prevComXfo.ori;
       poseVariables.xfoValues[com.xfoId] = comXfo;
-      trackSet.setValues(poseVariables, currKeyt, comXfoBindings);
+      poseVariables.setTrackValues(currKeyt, trackSet, comXfoBindings);
       debugGeometry.drawAxis(comXfo, 1.0, Color(1.0, 0.0, 1.0, 1.0));
       
       Scalar deltaT = currKeyt - prevKeyt;
@@ -475,7 +484,7 @@ operator locomotionPreProcessing(
         poseVariables.scalarValues[com.parameterVarIds[i]] = comParams[i];
       }
       
-      trackSet.setValues(poseVariables, prevKeyt, comParamBindings);
+      poseVariables.setTrackValues(prevKeyt, trackSet, comParamBindings);
     }
     
     prevComXfo = comXfo;
@@ -565,7 +574,7 @@ operator locomotionPreProcessing(
     //  debugGeometry.drawPoint(hubXfo.tr, Color(1.0, 1.0, 0.0, 1.0));
     //  debugGeometry.drawLine(hubXfo.tr, comXfo.tr, Color(1.0, 0.0, 0.0, 1.0));
       poseVariables.xfoValues[hub.xfoId] = comXfo.inverse() * hubXfo;
-      trackSet.setValues(poseVariables, time, hubValueBindings);
+      poseVariables.setTrackValues(time, trackSet, hubValueBindings);
     }
     
     
@@ -590,7 +599,7 @@ operator locomotionPreProcessing(
       poseVariables.scalarValues[foot.stepTimeVarId] = stepValue;
       poseVariables.xfoValues[leg.ikGoalXfoId] = footInCOMSpace;
     }
-    trackSet.setValues(poseVariables, time, limbValueBindings);
+    poseVariables.setTrackValues(time, trackSet, limbValueBindings);
     
   }
   
