@@ -454,9 +454,12 @@ $(document).ready(function() {
       rigSaver.addNode(ikrigNode);
       rigSaver.addNode(characterMesh);
       rigSaver.addNode(libraryLocomotionAnimations);
-      var storage = new FABRIC.SceneGraph.LocalStorage(rigName);
+    //  var storage = new FABRIC.SceneGraph.LocalStorage(rigName);
+    //  rigSaver.save(storage);
+    //  storage.log();
+    
+      var storage = new FABRIC.SceneGraph.FileWriter(scene, "Save AnimationData", rigName);
       rigSaver.save(storage);
-      storage.log();
     });
 
 

@@ -41,6 +41,18 @@ FABRIC.SceneGraph.registerNodeType('CharacterMesh', {
       characterMeshNode.getUniformsDGNode().setData('boneMapping', 0, boneMapping);
     };
     
+    
+    var parentWriteData = characterMeshNode.writeData;
+    var parentReadData = characterMeshNode.readData;
+    characterMeshNode.writeData = function(sceneSaver, constructionOptions, nodeData) {
+      characterMeshNode.writeGeometryData(sceneSaver, constructionOptions, nodeData);
+      parentWriteData(sceneSaver, constructionOptions, nodeData);
+    };
+    characterMeshNode.readData = function(sceneLoader, nodeData) {
+      characterMeshNode.readGeometryData(sceneLoader, nodeData);
+      parentReadData(sceneLoader, nodeData);
+    };
+    
     return characterMeshNode;
   }});
 
