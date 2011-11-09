@@ -180,7 +180,6 @@ FABRIC.SceneGraph.registerNodeType('Image3D', {
     height: 'The height of the empty Image',
     depth: 'The depth of the empty Image',
     color: 'The standard color for the empty Image',
-    resourceTargetTransformNode: 'If loaded from resource, set the resource-stored transfo to that node',
     url: 'The URL to load the Image from'
   },
   factoryFn: function(options, scene) {
@@ -243,22 +242,6 @@ FABRIC.SceneGraph.registerNodeType('Image3D', {
           entryFunctionName: 'load3DImageUShortData',
           srcFile: 'FABRIC_ROOT/SceneGraph/KL/load3DTexture.kl'
         }));
-
-        if(options.resourceTargetTransformNode) {
-          var resourceTargetTransformNode = scene.getPrivateInterface(options.resourceTargetTransformNode);
-          var resourceTargetTransformDGNode = resourceTargetTransformNode.getDGNode();
-          resourceTargetTransformDGNode.setDependency(dgnode, 'image3DSource');
-          resourceTargetTransformDGNode.bindings.insert(scene.constructOperator({
-            operatorName: 'setFromImage3DSource',
-            parameterLayout: [
-              'image3DSource.xfoMat',
-              'self.globalXfo'
-            ],
-            entryFunctionName: 'setFromImage3DSource',
-            srcCode: 'use Xfo; operator setFromImage3DSource(io Mat44 src, io Xfo dst){dst.setFromMat44(src);}'
-          }),0);
-
-        }
       };
 
       imageNode.pub.getResourceLoadNode = function() {
@@ -717,6 +700,10 @@ FABRIC.SceneGraph.registerNodeType('Shader', {
       // handle passing render events to the shader from the cameras.
       options.parentEventHandler.appendChildEventHandler(redrawEventHandler);
     }
+
+    shaderNode.getParentEventHandler = function() {
+      return options.parentEventHandler;
+    }
     
     shaderNode.getVBORequirements = function() {
       return options.shaderAttributes;
@@ -998,16 +985,9 @@ FABRIC.SceneGraph.registerNodeType('LineMaterial', {
       });
 
     var lineMaterial = scene.constructNode('Material', options);
-    var dgnode;
-    if(lineMaterial.getDGNode){
-      dgnode = lineMaterial.getDGNode();
-    }
-    else{
-      dgnode = lineMaterial.constructDGNode('DGNode');
-      lineMaterial.getRedrawEventHandler().setScope('material', dgnode);
-    }
-    dgnode.addMember('lineWidth', 'Scalar', options.lineWidth);
-    lineMaterial.addMemberInterface(dgnode, 'lineWidth', true);
+    var redrawEventHandler = lineMaterial.getRedrawEventHandler()
+    redrawEventHandler.addMember('lineWidth', 'Scalar', options.lineWidth);
+    lineMaterial.addMemberInterface(redrawEventHandler, 'lineWidth', true);
 
     // Note: this method of setting the linewidth size is probably obsolete.
     // TODO: Define a new effect and use material uniforms.
@@ -1015,7 +995,7 @@ FABRIC.SceneGraph.registerNodeType('LineMaterial', {
         operatorName: 'setLineWidth',
         srcFile: 'FABRIC_ROOT/SceneGraph/KL/drawLines.kl',
         entryFunctionName: 'setLineWidth',
-        parameterLayout: ['material.lineWidth']
+        parameterLayout: ['self.lineWidth']
       }));
     return lineMaterial;
   }});
@@ -1598,9 +1578,6 @@ FABRIC.SceneGraph.defineEffectFromFile('OutlineShader', 'FABRIC_ROOT/SceneGraph/
 
 FABRIC.SceneGraph.defineEffectFromFile('PointFlatMaterial', 'FABRIC_ROOT/SceneGraph/Shaders/PointFlatShader.xml');
 FABRIC.SceneGraph.defineEffectFromFile('FlatGradientMaterial', 'FABRIC_ROOT/SceneGraph/Shaders/FlatGradientShader.xml');
-
-FABRIC.SceneGraph.defineEffectFromFile('VolumeMaterial', 'FABRIC_ROOT/SceneGraph/Shaders/VolumeShader.xml');
-
 
 FABRIC.SceneGraph.registerNodeType('BloomPostProcessEffect', {
   briefDesc: 'The BloomPostProcessEffect node draws a bloom effect after the viewport has been drawn.',

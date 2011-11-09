@@ -90,16 +90,11 @@ FABRIC.SceneGraph.registerNodeType('Transform', {
       }
     }else {
       transformNode.pub.setGlobalXfo = function(val) {
-        if(val.constructor.toString().indexOf("Array") != -1)
-        {
+        if(val.constructor.toString().indexOf("Array") != -1) {
           dgnode.setCount(val.length);
           dgnode.setBulkData({ globalXfo: val});
         }
-        else
-        {
-          if (!val.getType || val.getType() !== 'FABRIC.RT.Xfo') {
-            throw ('Incorrect type assignment. Must assign a FABRIC.RT.Xfo');
-          }
+        else {
           dgnode.setData('globalXfo', 0, val);
         }
       };
@@ -131,6 +126,28 @@ FABRIC.SceneGraph.registerNodeType('Transform', {
       transformNode.setupInstanceDrawing(dynamic);
       return textureNode.pub;
     }
+    
+    
+    var parentWriteData = transformNode.writeData;
+    var parentReadData = transformNode.readData;
+    transformNode.writeData = function(sceneSaver, constructionOptions, nodeData) {
+      constructionOptions.hierarchical = options.hierarchical;
+      if(parentTransformNode){
+        sceneSaver.addNode(parentTransformNode.pub);
+        nodeData.parentTransformNode = parentTransformNode.pub.getName();
+      }
+      nodeData.globalXfo = transformNode.pub.getGlobalXfo();
+      
+      parentWriteData(sceneSaver, constructionOptions, nodeData);
+    };
+    transformNode.readData = function(sceneLoader, nodeData) {
+      if(nodeData.parentTransformNode){
+        transformNode.pub.setParentNode(sceneLoader.getNode(nodeData.parentTransformNode));
+      }
+      transformNode.pub.setGlobalXfo(nodeData.globalXfo);
+      
+      parentReadData(sceneLoader, nodeData);
+    };
 
     return transformNode;
   }});
@@ -186,6 +203,7 @@ FABRIC.SceneGraph.registerNodeType('TransformTexture', {
         'transform.textureMatrix<>'
       ]
     }));
+    
     
     return textureNode;
   }});
