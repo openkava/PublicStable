@@ -1,7 +1,8 @@
 //
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
-
+use Vec3, Quat, Xfo;
+use KEYFRAMETYPETrackSet;
 
 function PoseVariables.addScalarValue(){
   this.scalarValues.push(0.0);
@@ -75,7 +76,7 @@ function PoseVariables.addWeighted(PoseVariables other, Scalar weight) {
 
 
 
-function PoseVariables.setTrackSetValues(
+function PoseVariables.setTrackValues(
   in Scalar time,
   io KEYFRAMETYPETrackSet trackSet,
   io KeyframeTrackBindings bindings

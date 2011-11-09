@@ -46,9 +46,9 @@ function activateClip(
 
 operator evaluateLocomotionPoseVariables(
   io Scalar timestep,
-  
+  /*
   io BulletWorld  bulletworld,
-  
+  */
   io LinearKeyframeTrackSet animationLibrary<>,
   io LocomotionMarker locomotionMarkers<>[][],
   io FootStepTrack footStepTracksLibrary<>[],
@@ -95,7 +95,7 @@ operator evaluateLocomotionPoseVariables(
       );
       plantedFeet.resize(locomotionFeet.size);
       for(Integer j=0; j<plantedFeet.size; j++){
-        plantedFeet[j] = !(j==trackcontroller.pivotFoot);
+        plantedFeet[j] = false;//!(j==trackcontroller.pivotFoot);
       }
     }
     else if(trackcontroller.deactivate){
@@ -301,7 +301,7 @@ operator evaluateLocomotionPoseVariables(
         debugGeometry.drawLine(lift, footPlantXfo.tr, Color(0.0, 1.0, 1.0, 1.0));
       }
       
-     //   report(j+" t:"+t+" stepId:"+stepId +" currStep:"+currStep + " stepRatio:"+stepRatio + " planted:"+plantedFeet[j]);
+        report(j+" t:"+t+" stepId:"+stepId +" currStep:"+currStep + " stepRatio:"+stepRatio + " planted:"+plantedFeet[j]);
       /*
       /////////////////////////////////////////////////
       // Raycasting

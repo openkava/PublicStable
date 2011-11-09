@@ -113,24 +113,24 @@ $(document).ready(function() {
   viewport.setCameraNode(camera);
   
   var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) });
-  /*
+  
     // create the scene grid
   scene.constructNode('Instance', {
     geometryNode: scene.constructNode('Grid', {
-        size_x: 140.0,
-        size_z: 140.0,
+        size_x: 30.0,
+        size_z: 30.0,
         sections_x: 20,
         sections_z: 20 }),
     materialNode: scene.constructNode('FlatMaterial')
   });
-  */
+  
+  
   
   // create a simulation world
-  var bulletWorldNode = scene.constructNode('BulletWorldNode', {
-    createGroundPlaneGrid:true,
+  var bulletWorldNode;/* = scene.constructNode('BulletWorldNode', {
+    createGroundPlaneGrid:false,
     groundPlanseSize: 30,
   } );
-  /*
   // add a box shape
   bulletWorldNode.addShape('Box',new FABRIC.RT.BulletShape.createBox());
   
