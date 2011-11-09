@@ -850,7 +850,8 @@ FABRIC.SceneGraph.registerNodeType('Instance', {
       return transformNodeMember;
     };
     instanceNode.pub.getMaterialNode = function(index) {
-      return scene.getPublicInterface(materialNodes[index ? index : 0]);
+      var material = materialNodes[index ? index : 0];
+      return material ? scene.getPublicInterface(material) : undefined;
     };
     instanceNode.pub.setMaterialNode = function(node) {
       if (!node.isTypeOf('Material')) {
