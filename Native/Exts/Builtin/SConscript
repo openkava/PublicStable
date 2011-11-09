@@ -19,10 +19,8 @@ dirs = [
   'PNG',
   'TGA',
   'VICON',
+  'VIDEO'
 ]
-
-if buildOS != 'Windows':
-  dirs += ['VIDEO']
 
 builtinExtFiles = SConscript( dirs=dirs )
 
