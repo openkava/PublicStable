@@ -158,6 +158,7 @@ ifeq ($(BUILD_PLATFORM),Darwin)
 endif
 	for ARCH in $(ARCHS); do \
 		( cd Build/openexr-$(OPENEXR_VERSION)-$$ARCH && patch -p1 <../../Patches/openexr-linux-mem.diff ); \
+		( cd Build && patch -p1 <../Patches/openexr-universal-memset.diff ); \
 	done
 	touch $@
 
