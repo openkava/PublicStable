@@ -875,8 +875,12 @@ FABRIC.SceneGraph.registerNodeType('SceneGraphNode', {
             dgnode.addMember( memberName, members[memberName].type);
           }
         }
-        dgnode.setCount(dgnodeData.sliceCount);
-        dgnode.setBulkData(dgnodeData.data);
+        if(dgnodeData.sliceCount){
+          dgnode.setCount(dgnodeData.sliceCount);
+        }
+        if(dgnodeData.data){
+          dgnode.setBulkData(dgnodeData.data);
+        }
       }
     }
     
