@@ -392,7 +392,6 @@ $(document).ready(function() {
   
   var $savePresetButton = $('#savePreset').button({ text: true });
   var $newPresetButton = $('#newPreset').button({ text: true });
-  var $loadOtherButton = $('#loadOther').button({ text: true });
   
   var $opacityRangeSlider = $('#opacityRange').slider({min: 0, max: 1, step: 0.005, range: true, values: [0.1,1] });
   var $brightnessSlider = $('#brightness').slider({min: 0, max: 1, step: 0.01, value: 0.5 });
@@ -733,7 +732,8 @@ $(document).ready(function() {
     presetSaver.addNode(opacityKeyAnimationLibrary);
     presetSaver.addNode(gradientKeyTrackLibrary);
     presetSaver.addNode(volumeNode);
-
+    presetSaver.addNode(opacityTexture);
+    
     var storage = new FABRIC.SceneGraph.LocalStorage('VolumeRenderingPresets.'+currPresetName);
     presetSaver.save(storage);
     
@@ -744,12 +744,29 @@ $(document).ready(function() {
     var presetLoader = scene.constructManager('SceneLoader', { preLoadScene: true } );
     var storage = new FABRIC.SceneGraph.LocalStorage('VolumeRenderingPresets.'+currPresetName);
     var nodeMap = presetLoader.load(storage);
+    // Note: do we need to do this? We already have one added. 
+    addOnLoadCallback();
     
     $resolutionFactorSlider.slider('value', volumeNode.getResolutionFactor());
     curveEditor.redraw();
     colorGradient.redraw();
     viewport.redraw();
     localStorage.setItem('VolumeRenderingSelectedPreset', currPresetName);
+    /*
+     // We should be displaying a progress bar during load of the new asset
+     // But I coudn't get the progress bar to re-open. 
+    if(!opacityTexture.getResourceLoadNode().isLoaded()){
+       $('#loadingProgressBar').dialog({
+          autoOpen: false,
+          modal: true
+        });
+      opacityTexture.getResourceLoadNode().addOnLoadProgressCallback(function(resourceLoadNode, progress){
+        $('#loadingProgressBar').progressbar({
+          value: progress.received / progress.total
+        });
+      });
+    }
+    */
   }
   
   $("#resourceSelector").change(function() {
@@ -794,24 +811,14 @@ $(document).ready(function() {
     
   // On startup....
 
-  $loadOtherButton.button()
-    .click(function() {
-  
-      if(currUrl === 'Resources/ChestMid.nrrd')
-        currUrl = 'Resources/HeadHigh.nrrd';
-      else
-        currUrl = 'Resources/ChestMid.nrrd';
-
-      opacityTexture.setUrl(currUrl);
-      addOnLoadCallback();
-    });
-
   rebuildPresetNamesList();
   FABRIC.appendOnResolveAsyncTaskCallback(function(label, nbRemaining) {
     if (nbRemaining===0) {
       if(!presetsFound){
-        currPresetName = 'Default';
-        savePreset();
+        localStorage.setItem('VolumeRenderingPresets.Chest', FABRIC.loadResourceURL('Resources/ChestPreset.txt'));
+        localStorage.setItem('VolumeRenderingPresets.Head', FABRIC.loadResourceURL('Resources/HeadPreset.txt'));
+        currPresetName = 'Chest';
+        loadPreset();
         rebuildPresetNamesList();
       }else{
         currPresetName = localStorage.getItem('VolumeRenderingSelectedPreset');
@@ -848,7 +855,6 @@ $(document).ready(function() {
               <div class="box" style="margin-top:5px;margin-left:10px;margin-bottom:10px;">
               <button id="newPreset" style="margin-top:10px;">New Preset</button>
               <button id="savePreset" style="margin-top:10px;">Save</button>
-              <button id="loadOther" style="margin-top:10px;">Load Other</button>
               </br>
               <select id='resourceSelector' style="width: 380px; margin-top:10px;">
               </select>
