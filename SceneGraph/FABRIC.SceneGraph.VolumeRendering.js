@@ -59,6 +59,7 @@ FABRIC.SceneGraph.registerNodeType('VolumeSlices', {
     var uniforms = volumeSlicesNode.getUniformsDGNode();
     volumeSlicesNode.addMemberInterface(uniforms, 'cropMin', true);
     volumeSlicesNode.addMemberInterface(uniforms, 'cropMax', true);
+    volumeSlicesNode.addMemberInterface(uniforms, 'nbSlices', true);
 
     var attributes = volumeSlicesNode.getAttributesDGNode();
     var cameraNode = scene.getPrivateInterface(options.cameraNode);
@@ -100,20 +101,6 @@ FABRIC.SceneGraph.registerNodeType('VolumeSlices', {
     ]);
 
     volumeSlicesNode.getTransformNode = function(){return transformWithTextureNode;};
-    
-    
-    var parentWriteData = volumeSlicesNode.writeData;
-    var parentReadData = volumeSlicesNode.readData;
-    volumeSlicesNode.writeData = function(sceneSaver, constructionOptions, nodeData) {
-      nodeData.cropMin = volumeSlicesNode.pub.getCropMin();
-      nodeData.cropMax = volumeSlicesNode.pub.getCropMax();
-      parentWriteData(sceneSaver, constructionOptions, nodeData);
-    };
-    volumeSlicesNode.readData = function(sceneLoader, nodeData) {
-      volumeSlicesNode.pub.setCropMin(nodeData.cropMin);
-      volumeSlicesNode.pub.setCropMax(nodeData.cropMax);
-      parentReadData(sceneLoader, nodeData);
-    };
 
     return volumeSlicesNode;
   }});
@@ -258,6 +245,7 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
       });
       var generatorNodeGradient = scene.getPrivateInterface(generatorNodeGradientPub);
       var dgnodeGradient = generatorNodeGradient.getDGNode();
+      dgnodeGradient.addMember('version', 'Integer', 0);//Support dynamic change of source (to re-upload the texture)
       dgnodeGradient.setDependency(sourceOpacityDGNodeForGradient, 'opacity');
       dgnodeGradient.setDependency(dgnodeSlicedGradient, 'slicedGradient');
 
@@ -271,10 +259,12 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
           'self.width',
           'self.height',
           'self.depth',
-          'self.pixels'
+          'self.pixels',
+          'self.version'
         ],
         entryFunctionName: 'setGradients',
-        srcCode: 'operator setGradients(io Size inW, io Size inH, io Size inD, io RGBA sliceGradients<>[], io Size W, io Size H, io Size D, io RGBA pixels[]) {\n' +
+        srcCode: 'operator setGradients(io Size inW, io Size inH, io Size inD, io RGBA sliceGradients<>[], io Size W, io Size H, io Size D, io RGBA pixels[], io Integer version) {\n' +
+                                'version = version+1;\n' +
                                 'W = inW; H = inH; D = inD;\n' +
                                 'pixels.resize(W*H*D);\n' +
                                 'Size dst = 0, i, j;\n' +
@@ -286,6 +276,24 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
                                 '}\n' +
                               '}\n'
       }));
+
+      //Make sure we refresh dynamically. This should be automatic; dgnode dirtyness should propagate to event handlers...
+      var gradientRedrawHandler = generatorNodeGradient.getRedrawEventHandler();
+      gradientRedrawHandler.addMember('version', 'Integer', -1);
+
+      gradientRedrawHandler.preDescendBindings.insert(scene.constructOperator({
+        operatorName: 'detectChange',
+        srcCode: 'operator detectChange(io Integer srcVersion, io Integer version, io Boolean refresh){\n' + 
+                      '  if(version != srcVersion){' +
+                      '    version = srcVersion;\n' +
+                      '    refresh = true;} }',
+        entryFunctionName: 'detectChange',
+        parameterLayout: [
+          'image.version',
+          'self.version',
+          'self.forceSingleRefresh'
+        ]
+      }), 0);
 
       options.gradientTextureNode = generatorNodeGradientPub;
 
@@ -542,32 +550,6 @@ operator bindShadowMapBuffer(
     volumeNode.getLightNode = function(){return options.lightNode;}
     volumeNode.getTransformNode = function(){return options.transformNode;}
 
-
-    
-    var parentWriteData = volumeNode.writeData;
-    var parentReadData = volumeNode.readData;
-    volumeNode.writeData = function(sceneSaver, constructionOptions, nodeData) {
-      nodeData.transparency = volumeNode.pub.getTransparency();
-      nodeData.specularFactor = volumeNode.pub.getSpecularFactor();
-      nodeData.brightnessFactor = volumeNode.pub.getBrightnessFactor();
-      nodeData.invertColor = volumeNode.pub.getInvertColor();
-      
-      nodeData.minOpacity = volumeNode.pub.getMinOpacity();
-      nodeData.maxOpacity = volumeNode.pub.getMaxOpacity();
-      
-      parentWriteData(sceneSaver, constructionOptions, nodeData);
-    };
-    volumeNode.readData = function(sceneLoader, nodeData) {
-      volumeNode.pub.setTransparency(nodeData.transparency);
-      volumeNode.pub.setSpecularFactor(nodeData.specularFactor);
-      volumeNode.pub.setBrightnessFactor(nodeData.brightnessFactor);
-      volumeNode.pub.setInvertColor(nodeData.invertColor);
-      
-      volumeNode.pub.setMinOpacity(nodeData.minOpacity);
-      volumeNode.pub.setMaxOpacity(nodeData.maxOpacity);
-      parentReadData(sceneLoader, nodeData);
-    };
-    
     return volumeNode;
   }
 });
