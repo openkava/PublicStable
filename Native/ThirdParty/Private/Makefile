@@ -158,6 +158,7 @@ ifeq ($(BUILD_PLATFORM),Darwin)
 endif
 	for ARCH in $(ARCHS); do \
 		( cd Build/openexr-$(OPENEXR_VERSION)-$$ARCH && patch -p1 <../../Patches/openexr-linux-mem.diff ); \
+		( cd Build && patch -p1 <../Patches/openexr-universal-memset.diff ); \
 	done
 	touch $@
 
@@ -597,6 +598,21 @@ ifeq ($(BUILD_PLATFORM),Darwin)
 		else \
 			TEEM_ARCH="darwin.32"; \
 		fi; \
+		( mkdir -p Build/teem-$(TEEM_VERSION)-$$ARCH/arch/$$TEEM_ARCH/obj ); \
+		( mkdir -p Build/teem-$(TEEM_VERSION)-$$ARCH/arch/$$TEEM_ARCH/lib ); \
+		( mkdir -p Build/teem-$(TEEM_VERSION)-$$ARCH/arch/$$TEEM_ARCH/bin ); \
+		( cd Build/teem-$(TEEM_VERSION)-$$ARCH/src && make -e TEEM_ARCH=$$TEEM_ARCH -e TEEM_ZLIB.IPATH="include/zlib" ); \
+	done
+else ifeq ($(BUILD_PLATFORM),Linux)
+	for ARCH in $(ARCHS); do \
+		if [ $$ARCH = "x86_64" ]; then \
+			TEEM_ARCH="linux.amd64"; \
+		else \
+			TEEM_ARCH="linux.32"; \
+		fi; \
+		( mkdir -p Build/teem-$(TEEM_VERSION)-$$ARCH/arch/$$TEEM_ARCH/obj ); \
+		( mkdir -p Build/teem-$(TEEM_VERSION)-$$ARCH/arch/$$TEEM_ARCH/lib ); \
+		( mkdir -p Build/teem-$(TEEM_VERSION)-$$ARCH/arch/$$TEEM_ARCH/bin ); \
 		( cd Build/teem-$(TEEM_VERSION)-$$ARCH/src && make -e TEEM_ARCH=$$TEEM_ARCH -e TEEM_ZLIB.IPATH="include/zlib" ); \
 	done
 endif
@@ -612,6 +628,7 @@ Build/.teem.unpack:
 	mkdir -p Build
 	for ARCH in $(ARCHS); do \
 		( cd Build && tar jxf ../SourcePackages/teem-$(TEEM_VERSION).tar.bz2 && mv teem-$(TEEM_VERSION) teem-$(TEEM_VERSION)-$$ARCH ) ; \
+		( cd Build && chmod -R 777 teem-$(TEEM_VERSION)-$$ARCH ) ; \
 	done
 	touch $@
 
@@ -624,15 +641,19 @@ patch_zlib: Build/.zlib.patch
 unpack_zlib: Build/.zlib.unpack
 
 Build/.zlib.build: Build/.zlib.configure
+	mkdir -p Build
 	touch $@
 
 Build/.zlib.configure: Build/.zlib.patch
+	mkdir -p Build
 	touch $@
 
 Build/.zlib.patch: Build/.zlib.unpack
+	mkdir -p Build
 	touch $@
 
 Build/.zlib.unpack:
+	mkdir -p Build
 	touch $@
   
 install: check_env_vars install_ilmbase install_openexr install_llvm install_libpng install_ffmpeg install_teem install_node install_libedit install_gtkglext
@@ -789,15 +810,27 @@ install_ffmpeg_headers:
 install_teem: install_teem_headers install_teem_libs
 	
 install_teem_libs:
+ifeq ($(BUILD_PLATFORM),Darwin)
 	for ARCH in $(ARCHS); do \
-		mkdir -p $(TARGET_BASE)/lib/$(BUILD_PLATFORM)/$$ARCH/Release/teem; \
+		mkdir -p $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/lib/teem; \
 		if [ $$ARCH = "x86_64" ]; then \
 			TEEM_ARCH="darwin.64"; \
 		else \
 			TEEM_ARCH="darwin.32"; \
 		fi; \
-		cp Build/teem-$(TEEM_VERSION)-$$ARCH/arch/$$TEEM_ARCH/lib/libteem.a $(TARGET_BASE)/lib/$(BUILD_PLATFORM)/$$ARCH/Release/teem/; \
+		cp Build/teem-$(TEEM_VERSION)-$$ARCH/arch/$$TEEM_ARCH/lib/libteem.a $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/lib/teem/; \
 	done
+else ifeq ($(BUILD_PLATFORM),Linux)
+	for ARCH in $(ARCHS); do \
+		mkdir -p $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/lib/teem; \
+		if [ $$ARCH = "x86_64" ]; then \
+			TEEM_ARCH="linux.amd64"; \
+		else \
+			TEEM_ARCH="linux.32"; \
+		fi; \
+		cp Build/teem-$(TEEM_VERSION)-$$ARCH/arch/$$TEEM_ARCH/lib/libteem.a $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/lib/teem/; \
+	done
+endif
 
 install_teem_headers:
 	mkdir -p $(TARGET_BASE)/include/teem
