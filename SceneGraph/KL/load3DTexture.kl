@@ -36,6 +36,7 @@ operator load3DImageUShortData(
   io Byte imageUShortVoxels[],
   io Mat44 xfoMat
 ) {
+imageUShortVoxels.resize(0);
   decode3DImageUShortData( resource, imageWidth, imageHeight, imageDepth, imageUShortVoxels, xfoMat );
 }
 
@@ -45,9 +46,18 @@ operator bindRGBATexture3D(
   io Size depth,
   io RGBA bitmap[],
   io OGLTexture3D oglTexture3D,
-  io Integer textureUnit
+  io Integer textureUnit,
+  io Boolean forceSingleRefresh
 ) {
+  if(forceSingleRefresh)
+    oglTexture3D.forceRefresh = true;
+
   oglTexture3D.bindRGBAImage(width, height, depth, bitmap, textureUnit);
+
+  if(forceSingleRefresh) {
+    oglTexture3D.forceRefresh = false;
+    forceSingleRefresh = false;
+  }
 }
 
 operator bindByteTexture3D(
@@ -56,9 +66,18 @@ operator bindByteTexture3D(
   io Size depth,
   io Byte bitmap[],
   io OGLTexture3D oglTexture3D,
-  io Integer textureUnit
+  io Integer textureUnit,
+  io Boolean forceSingleRefresh
 ) {
+  if(forceSingleRefresh)
+    oglTexture3D.forceRefresh = true;
+
   oglTexture3D.bindByteImage(width, height, depth, bitmap, textureUnit);
+
+  if(forceSingleRefresh) {
+    oglTexture3D.forceRefresh = false;
+    forceSingleRefresh = false;
+  }
 }
 
 operator bindUShortTexture3D(
@@ -67,9 +86,18 @@ operator bindUShortTexture3D(
   io Size depth,
   io Byte bitmap[],//KL has no UShort; so we assume properly packed ushorts
   io OGLTexture3D oglTexture3D,
-  io Integer textureUnit
+  io Integer textureUnit,
+  io Boolean forceSingleRefresh
 ) {
+  if(forceSingleRefresh)
+    oglTexture3D.forceRefresh = true;
+
   oglTexture3D.bindUShortImage(width, height, depth, bitmap, textureUnit);
+
+  if(forceSingleRefresh) {
+    oglTexture3D.forceRefresh = false;
+    forceSingleRefresh = false;
+  }
 }
 
 // This operator takes a resource, decodes it, and immediately
@@ -78,7 +106,8 @@ operator bindUShortTexture3D(
 operator loadAndBindUShortTexture(
   io FabricResource resource,
   io OGLTexture3D oglTexture3D,
-  io Integer textureUnit
+  io Integer textureUnit,
+  io Boolean forceSingleRefresh
 ) {
   if(resource.data.size() == 0)
     return;
@@ -99,9 +128,18 @@ operator bindColorTexture3D(
   io Size depth,
   io Color bitmap[],
   io OGLTexture3D oglTexture3D,
-  io Integer textureUnit
+  io Integer textureUnit,
+  io Boolean forceSingleRefresh
 ) {
+  if(forceSingleRefresh)
+    oglTexture3D.forceRefresh = true;
+
   oglTexture3D.bindColorImage(width, height, depth, bitmap, textureUnit);
+
+  if(forceSingleRefresh) {
+    oglTexture3D.forceRefresh = false;
+    forceSingleRefresh = false;
+  }
 }
 
 operator bindScalarTexture3D(
@@ -110,9 +148,18 @@ operator bindScalarTexture3D(
   io Size depth,
   io Scalar bitmap[],
   io OGLTexture3D oglTexture3D,
-  io Integer textureUnit
+  io Integer textureUnit,
+  io Boolean forceSingleRefresh
 ) {
+  if(forceSingleRefresh)
+    oglTexture3D.forceRefresh = true;
+
   oglTexture3D.bindScalarImage(width, height, depth, bitmap, textureUnit);
+
+  if(forceSingleRefresh) {
+    oglTexture3D.forceRefresh = false;
+    forceSingleRefresh = false;
+  }
 }
 
 operator unbindTextures(
