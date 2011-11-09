@@ -95,7 +95,7 @@ $(document).ready(function() {
         lightNode: light
       })
     });
-  scene.constructNode('3AxisRotationManipulator', { parentNode: cube1Draw });
+  scene.constructNode('3AxisRotationManipulator', { targetNode: cube1Draw });
 
   // Translation
   var cube2Draw = scene.constructNode('Instance', {
@@ -109,7 +109,7 @@ $(document).ready(function() {
         lightNode: light
       })
     });
-  scene.constructNode('3AxisTranslationManipulator', { parentNode: cube2Draw });
+  scene.constructNode('3AxisTranslationManipulator', { targetNode: cube2Draw });
 
   // Screen Space Translation
   var cube2Draw = scene.constructNode('Instance', {
@@ -123,7 +123,7 @@ $(document).ready(function() {
         lightNode: light
       })
     });
-  scene.constructNode('ScreenTranslationManipulator', { parentNode: cube2Draw, radius:2 });
+  scene.constructNode('ScreenTranslationManipulator', { targetNode: cube2Draw, radius:2 });
 
   // Pivot
   var cube3Draw = scene.constructNode('Instance', {
@@ -137,8 +137,8 @@ $(document).ready(function() {
         lightNode: light
       })
     });
-  scene.constructNode('PivotRotationManipulator', { parentNode: cube3Draw });
-  
+  scene.constructNode('PivotRotationManipulator', { targetNode: cube3Draw });
+
   
   
   $('#loadingDialog').dialog({
