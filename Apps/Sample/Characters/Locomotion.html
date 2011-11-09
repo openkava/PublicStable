@@ -250,7 +250,7 @@ $(document).ready(function() {
   var rigLoader = scene.constructManager('SceneLoader');
 //  var storage = new FABRIC.SceneGraph.LocalStorage(rigName);
 //  var nodeMap = rigLoader.load(storage);
-  var storage = new FABRIC.SceneGraph.URLReader('Assets/' + rigName + '.json');
+  var storage = new FABRIC.SceneGraph.URLReader('Assets/' + rigName + '.txt');
   var nodeMap = rigLoader.load(storage);
 
   var libraryAnimations = nodeMap.LibraryLocomotionAnimations;
