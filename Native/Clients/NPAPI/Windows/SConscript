@@ -29,10 +29,10 @@ if npapiEnv['FABRIC_BUILD_TYPE'] == 'Debug':
 Import( 'glewFlags' )
 npapiEnv.MergeFlags( glewFlags )
 
-#rcFile = npapiBuildPath.File( "FabricPlugin.rc" )
-#npapiEnv.Template( rcFile, 'FabricPlugin.rc.template' )
-#Depends( rcFile, 'resource.h' )
-#npapiSources += [npapiEnv.RES( 'FabricPlugin.rc' )]
+rcFile = npapiBuildPath.File( "FabricPlugin.rc" )
+npapiEnv.Template( rcFile, 'FabricPlugin.rc.template' )
+Depends( rcFile, 'resource.h' )
+npapiSources += [npapiEnv.RES( 'FabricPlugin.rc' )]
 npapiPlugin = npapiEnv.LoadableModule( 'npFabricPlugin', npapiSources, register=1 )
 
 npapiEnv.AddPostAction( npapiPlugin, 'mt.exe -nologo -manifest ${TARGET}.manifest -outputresource:$TARGET;2' )
