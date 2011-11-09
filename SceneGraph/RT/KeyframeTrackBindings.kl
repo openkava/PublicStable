@@ -1,0 +1,20 @@
+
+
+function KeyframeTrackBindings.addScalarBinding(
+  in Integer varId,
+  in Integer trackId
+){
+  this.scalarBindings.resize(this.scalarBindings.size + 1);
+  this.scalarBindings[this.scalarBindings.size-1].varId = varId;
+  this.scalarBindings[this.scalarBindings.size-1].trackIds.push(trackId);
+}
+
+function KeyframeTrackBindings.addXfoBinding(
+  in Integer varId,
+  in Integer trackIds[]
+){
+  this.xfoBindings.resize(this.xfoBindings.size + 1);
+  this.xfoBindings[this.xfoBindings.size-1].varId = varId;
+  this.xfoBindings[this.xfoBindings.size-1].trackIds = trackIds;
+}
+

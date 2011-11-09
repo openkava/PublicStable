@@ -64,7 +64,9 @@ FABRIC.appendOnCreateContextCallback(function(context) {
       filename: 'FABRIC_ROOT/SceneGraph/RT/KeyframeTrack.kl',
       sourceCode: FABRIC.preProcessCode(
         FABRIC.loadResourceURL('FABRIC_ROOT/SceneGraph/RT/KeyframeTrack.kl'), {
-          KEYFRAMETYPE: 'LinearKeyframe'
+          KEYFRAMEDATATYPE:'Scalar',
+          KEYFRAMETYPE: 'LinearKeyframe',
+          KEYFRAMEDATADEFAULTVALUE: '0.0'
         })
     }
   });
@@ -81,8 +83,11 @@ FABRIC.appendOnCreateContextCallback(function(context) {
     klBindings: {
       filename: 'FABRIC_ROOT/SceneGraph/RT/KeyframeTrack.kl',
       sourceCode: FABRIC.preProcessCode(
-        FABRIC.loadResourceURL('FABRIC_ROOT/SceneGraph/RT/KeyframeTrack.kl'),
-        { KEYFRAMETYPE: 'LinearKeyframe' }
+        FABRIC.loadResourceURL('FABRIC_ROOT/SceneGraph/RT/KeyframeTrack.kl'), {
+          KEYFRAMEDATATYPE: 'Scalar',
+          KEYFRAMETYPE: 'LinearKeyframe',
+          KEYFRAMEDATADEFAULTVALUE: '0.0'
+        }
       )
     }
   });

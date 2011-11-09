@@ -96,6 +96,9 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
     animationLibraryNode.pub.getTrackSet = function(trackSetId) {
       return dgnode.getData('trackSet', trackSetId);
     };
+    animationLibraryNode.pub.setTrackSet = function(trackSet, trackSetId) {
+      return dgnode.setData('trackSet', trackSetId ? trackSetId : 0, trackSet);
+    };
     animationLibraryNode.pub.getTrackSetName = function(trackSetId) {
       return dgnode.getData('trackSet', trackSetId).name;
     };
@@ -227,11 +230,11 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
         });
     };
     
-    
     animationLibraryNode.pub.bindNodeMembersToTracks = function(targetnode, memberBindings, trackSetId, targetName) {
       // Generate a unique operator that binds this 
       // animation curves to the target node's members.
       trackSetId = trackSetId ? trackSetId : 0;
+
       targetnode = scene.getPrivateInterface(targetnode);
       targetnode.getDGNode().setDependency(dgnode, 'animationlibrary');
       targetnode.getDGNode().setDependency(scene.getGlobalsNode(), 'globals');
@@ -445,6 +448,15 @@ FABRIC.SceneGraph.registerNodeType('BezierKeyAnimationLibrary', {
     return scene.constructNode('AnimationLibrary', options);
   }});
 
+FABRIC.SceneGraph.registerNodeType('ColorKeyAnimationLibrary', {
+  briefDesc: 'The ColorKeyAnimationLibrary node implements an array of color keyframe animation tracks.',
+  detailedDesc: 'The ColorKeyAnimationLibrary node derrives from AnimationTrack and specifies that the tracks should contains \'ColorKeyframe\'',
+  parentNodeDesc: 'AnimationTrack',
+  factoryFn: function(options, scene) {
+    options.keyframetype = 'ColorKeyframe';
+    return scene.constructNode('AnimationLibrary', options);
+  }});
+
 
 FABRIC.SceneGraph.registerNodeType('AnimationController', {
   briefDesc: 'The AnimationController node controls the time at which an AnimationTrack is evaluated.',
@@ -522,7 +534,8 @@ FABRIC.SceneGraph.registerNodeType('TrackDisplay', {
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
         animationLibraryNode: undefined,
-        segmentCount: 100
+        segmentCount: 100,
+        timeRange: new FABRIC.RT.Vec2(0, 1)
       });
 
     var trackDisplayNode = scene.constructNode('SceneGraphNode', options);
@@ -531,7 +544,7 @@ FABRIC.SceneGraph.registerNodeType('TrackDisplay', {
     var animationLibraryNode;
 
     parametersdgnode.addMember('trackSetId', 'Integer');
-    parametersdgnode.addMember('timeRange', 'Vec2');
+    parametersdgnode.addMember('timeRange', 'Vec2', options.timeRange);
     parametersdgnode.addMember('segmentCount', 'Size', options.segmentCount);
 
     dgnode.setDependency(parametersdgnode, 'parameters');
@@ -552,7 +565,6 @@ FABRIC.SceneGraph.registerNodeType('TrackDisplay', {
 
       dgnode.addMember('values', trackDataType+'[]');
       parametersdgnode.setData('trackSetId', trackSetId ? trackSetId : 0);
-      parametersdgnode.setData('timeRange', animationLibraryNode.pub.getTimeRange(trackSetId));
       dgnode.setCount(trackSet.tracks.length);
 
       dgnode.bindings.append(animationLibraryNode.getEvaluateCurveOperator());

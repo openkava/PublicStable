@@ -1295,14 +1295,16 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
   }
   
   if(colladaData.scene){
+    var sceneData = colladaData.libraryVisualScenes[colladaData.scene.url.slice(1)];
     if(options.constructScene){
-      constructScene(colladaData.libraryVisualScenes[colladaData.scene.url.slice(1)]);
-    }
-    else{
+      constructScene(sceneData);
+      
       // The file may contain a hierarchy that can be used to generate a skeleton
       if (options.constructRigFromHierarchy) {
         constructRigFromHierarchy(sceneData, options.constructRigFromHierarchy);
       }
+    }
+    else{
       
       if (options.loadAnimationUsingRig) {
         loadRigAnimation(options.loadAnimationUsingRig);

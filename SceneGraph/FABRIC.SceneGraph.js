@@ -93,7 +93,7 @@ FABRIC.SceneGraph = {
         preDraw: true,
         postDraw: true,
         constructAnimationInterface: true,
-        timeStep: 1/50, /* 50 fps */
+        timeStep: 1/50 /* 50 fps */
       });
     
     // first let's create the basic scene object
@@ -502,10 +502,12 @@ FABRIC.SceneGraph = {
     };
 
     /////////////////////////////////////////////////////////////////////
-    // Public Scene Interface
 
     scene.pub.displayDebugger = function() {
       FABRIC.displayDebugger(context);
+    };
+    scene.getSceneGraphNodes = function(name) {
+      return sceneGraphNodes;
     };
     scene.pub.getSceneGraphNode = function(name) {
       return sceneGraphNodes[name];
@@ -873,8 +875,12 @@ FABRIC.SceneGraph.registerNodeType('SceneGraphNode', {
             dgnode.addMember( memberName, members[memberName].type);
           }
         }
-        dgnode.setCount(dgnodeData.sliceCount);
-        dgnode.setBulkData(dgnodeData.data);
+        if(dgnodeData.sliceCount){
+          dgnode.setCount(dgnodeData.sliceCount);
+        }
+        if(dgnodeData.data){
+          dgnode.setBulkData(dgnodeData.data);
+        }
       }
     }
     
@@ -923,6 +929,8 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
     }
 
     var cameraNode = undefined, fabricwindow;
+    var raycastingEnabled = false;
+    var loading = true;
     var windowElement = options.windowElement;
     var viewportNode = scene.constructNode('SceneGraphNode', options),
       dgnode = viewportNode.constructDGNode('DGNode'),
@@ -948,6 +956,7 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
     
     FABRIC.appendOnResolveAsyncTaskCallback(function(label, countRemaining){
       if(countRemaining===0){
+        loading = false;
         redrawEventHandler.setScope('window', fabricwindow.windowNode);
         if(scene.getScenePreRedrawEventHandler()){
           fabricwindow.redrawEvent.appendEventHandler(scene.getScenePreRedrawEventHandler());
@@ -956,7 +965,7 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
         if(scene.getScenePostRedrawEventHandler()){
           fabricwindow.redrawEvent.appendEventHandler(scene.getScenePostRedrawEventHandler());
         }
-        if(viewPortRaycastEventHandler){
+        if(raycastingEnabled){
           // the sceneRaycastEventHandler propogates the event throughtout the scene.
           viewPortRaycastEventHandler.appendChildEventHandler(scene.getSceneRaycastEventHandler());
         }
@@ -968,6 +977,10 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
         viewportNode.pub.getGlewSupported = fabricwindow.getGlewSupported;
         viewportNode.pub.show = function(){ fabricwindow.show(); };
         viewportNode.pub.hide = function(){ fabricwindow.hide(); };
+
+        viewportNode.pub.getWidth = function(){ return fabricwindow.windowNode.getData('width'); };
+        viewportNode.pub.getHeight = function(){ return fabricwindow.windowNode.getData('height'); };
+        viewportNode.pub.getGlewSupported = fabricwindow.getGlewSupported;
         
         if(options.checkOpenGL2Support && !fabricwindow.getGlewSupported('GL_VERSION_2_0')){
           alert('ERROR: Your graphics driver does not support OpenGL 2.0, which is required to run Fabric.')
@@ -991,41 +1004,60 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
     ///////////////////////////////////////////////////////////////////
     // Raycasting
     var viewPortRaycastEvent, viewPortRaycastEventHandler, viewPortRayCastDgNode;
-    if (scene.getSceneRaycastEventHandler() && options.enableRaycasting) {
+    var raycastingConstructed = false;
 
-      viewPortRayCastDgNode = viewportNode.constructDGNode('RayCastDgNodeDGNode');
-      viewPortRayCastDgNode.addMember('x', 'Integer');
-      viewPortRayCastDgNode.addMember('y', 'Integer');
-      viewPortRayCastDgNode.addMember('ray', 'Ray');
-      viewPortRayCastDgNode.addMember('threshold', 'Scalar', options.rayIntersectionThreshold);
-      viewPortRayCastDgNode.setDependency(fabricwindow.windowNode, 'window');
+    var enableRaycasting = function() {
+      if( !raycastingEnabled && scene.getSceneRaycastEventHandler() ) {
+        raycastingEnabled = true;
+        if( !raycastingConstructed ) {
+          raycastingConstructed = true;
+          viewPortRayCastDgNode = viewportNode.constructDGNode('RayCastDgNodeDGNode');
+          viewPortRayCastDgNode.addMember('x', 'Integer');
+          viewPortRayCastDgNode.addMember('y', 'Integer');
+          viewPortRayCastDgNode.addMember('ray', 'Ray');
+          viewPortRayCastDgNode.addMember('threshold', 'Scalar', options.rayIntersectionThreshold);
+          viewPortRayCastDgNode.setDependency(fabricwindow.windowNode, 'window');
 
-      // this operator calculates the rayOri and rayDir from the scopes collected so far.
-      // The scopes should be the window, viewport, camera and projection.
-      viewPortRayCastDgNode.bindings.append(scene.constructOperator({
-        operatorName: 'ViewportRaycast',
-        srcFile: 'FABRIC_ROOT/SceneGraph/KL/viewPortUpdateRayCast.kl',
-        entryFunctionName: 'viewPortUpdateRayCast',
-        parameterLayout: [
-          'camera.cameraMat44',
-          'camera.projectionMat44',
-          'window.width',
-          'window.height',
-          'self.x',
-          'self.y',
-          'self.ray'
-        ]
-      }));
+          // this operator calculates the rayOri and rayDir from the scopes collected so far.
+          // The scopes should be the window, viewport, camera and projection.
+          viewPortRayCastDgNode.bindings.append(scene.constructOperator({
+            operatorName: 'ViewportRaycast',
+            srcFile: 'FABRIC_ROOT/SceneGraph/KL/viewPortUpdateRayCast.kl',
+            entryFunctionName: 'viewPortUpdateRayCast',
+            parameterLayout: [
+              'camera.cameraMat44',
+              'camera.projectionMat44',
+              'window.width',
+              'window.height',
+              'self.x',
+              'self.y',
+              'self.ray'
+            ]
+          }));
 
-      viewPortRaycastEventHandler = viewportNode.constructEventHandlerNode('Raycast');
-      viewPortRaycastEventHandler.setScope('raycastData', viewPortRayCastDgNode);
+          viewPortRaycastEventHandler = viewportNode.constructEventHandlerNode('Raycast');
+          viewPortRaycastEventHandler.setScope('raycastData', viewPortRayCastDgNode);
+          viewPortRaycastEvent = viewportNode.constructEventNode('RaycastEvent');
 
-      // Raycast events are fired from the viewport. As the event
-      // propagates down the tree it collects scopes and fires operators.
-      // The operators us the collected scopes to calculate the ray.
-      viewPortRaycastEvent = viewportNode.constructEventNode('RaycastEvent');
-      viewPortRaycastEvent.appendEventHandler(viewPortRaycastEventHandler);
-    }
+          // Raycast events are fired from the viewport. As the event
+          // propagates down the tree it collects scopes and fires operators.
+          // The operators us the collected scopes to calculate the ray.
+          viewPortRaycastEvent.appendEventHandler(viewPortRaycastEventHandler);
+        }
+        if( !loading )
+          viewPortRaycastEventHandler.appendChildEventHandler(scene.getSceneRaycastEventHandler());
+      }
+    };
+
+    var disableRaycasting = function() {
+      if( raycastingEnabled ) {
+        raycastingEnabled = false;
+        viewPortRaycastEventHandler.removeChildEventHandler(scene.getSceneRaycastEventHandler());
+      }
+    };
+
+    if (options.enableRaycasting)
+      enableRaycasting();
 
     var getElementCoords = function(evt) {
       var browserZoom = fabricwindow.windowNode.getData('width') / evt.target.clientWidth;
@@ -1073,6 +1105,8 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
     viewportNode.pub.getCameraNode = function() {
       return cameraNode.pub;
     };
+    viewportNode.pub.disableRaycasting = disableRaycasting;
+    viewportNode.pub.enableRaycasting = enableRaycasting;
     viewportNode.pub.setBackgroundTextureImage = function(textureNode) {
       if (!textureStubdgnode) {
         textureStub.setScopeName('textureStub');
@@ -1149,28 +1183,30 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
       }
     };
     viewportNode.pub.rayCast = function(evt, options) {
+      var result = {
+        rayData: undefined
+      };
       options = scene.assignDefaults(options, {
           returnOnlyClosestNode: true
         });
-      var elementCoords = getElementCoords(evt);
-      viewPortRayCastDgNode.setData('x', elementCoords.x);
-      viewPortRayCastDgNode.setData('y', elementCoords.y);
-      var nodes = viewPortRaycastEvent.select('RayIntersection');
-      
-      var result = {
-        rayData: viewPortRayCastDgNode.getData('ray')
-      };
-      if (options.returnOnlyClosestNode) {
-        for (var i = 0; i < nodes.length; i++) {
-          if (!result.closestNode || nodes[i].value.distance < result.closestNode.value.distance) {
-            result.closestNode = nodes[i];
+      if( raycastingEnabled ) {
+        var elementCoords = getElementCoords(evt);
+        viewPortRayCastDgNode.setData('x', elementCoords.x);
+        viewPortRayCastDgNode.setData('y', elementCoords.y);
+        var nodes = viewPortRaycastEvent.select('RayIntersection');
+        result.rayData = viewPortRayCastDgNode.getData('ray');
+
+        if (options.returnOnlyClosestNode) {
+          for (var i = 0; i < nodes.length; i++) {
+            if (!result.closestNode || nodes[i].value.distance < result.closestNode.value.distance) {
+              result.closestNode = nodes[i];
+            }
           }
+        }else {
+          result.nodes = nodes;
         }
-        return result;
-      }else {
-        result.nodes = nodes;
-        return result;
       }
+      return result;
     };
     viewportNode.pub.calcRayFromMouseEvent = function(evt) {
       var elementCoords = getElementCoords(evt);
@@ -1193,7 +1229,7 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
       }
     };
     viewportNode.pub.writeData = function(sceneSaver, constructionOptions, nodeData) {
-      nodeData.camera = sceneSaver.wrapQuotes(cameraNode.name);
+      nodeData.camera = cameraNode.getName();
     };
     viewportNode.pub.readData = function(sceneLoader, nodeData) {
       if (nodeData.camera) {
@@ -1263,7 +1299,7 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
             if (mouseOverNode == undefined ||
                 mouseOverNode.pub.getName() !== hitNode.pub.getName()) {
               if (mouseOverNode) {
-                evt.toElement = hitNode;
+                evt.toNode = hitNode;
                 evt.hitData = mouseOverNodeData;
                 fireGeomEvent('mouseout_geom', evt, mouseOverNode);
               }
@@ -1491,7 +1527,8 @@ FABRIC.SceneGraph.registerNodeType('Camera', {
     fovY: 'The vertical (Y) field of view angle for this camera.',
     focalDistance: 'The focal distance for the camera.',
     orthographic: 'Set to true the camera is rendered in orthographic more, otherwise perspective mode is used.',
-    transformNode: 'The type of transformNode to use, typically \'Transform\''
+    transformNode: 'The type of transformNode to use, typically \'Transform\'',
+    screenOffset: 'Viewport center offset'
   },
   factoryFn: function(options, scene) {
 
@@ -1501,7 +1538,8 @@ FABRIC.SceneGraph.registerNodeType('Camera', {
         fovY: Math.degToRad(60),
         focalDistance: 160,
         orthographic: false,
-        transformNode: 'Transform'
+        transformNode: 'Transform',
+        screenOffset: new FABRIC.RT.Vec2(0.0, 0.0)
       });
 
     var cameraNode = scene.constructNode('SceneGraphNode', options),
@@ -1517,6 +1555,14 @@ FABRIC.SceneGraph.registerNodeType('Camera', {
     dgnode.addMember('cameraMat44', 'Mat44');
     dgnode.addMember('orthographic', 'Boolean', options.orthographic);
     dgnode.addMember('projectionMat44', 'Mat44');
+    dgnode.addMember('screenOffset', 'Vec2', options.screenOffset);
+
+    cameraNode.addMemberInterface(dgnode, 'nearDistance', true);
+    cameraNode.addMemberInterface(dgnode, 'farDistance', true);
+    cameraNode.addMemberInterface(dgnode, 'fovY', true);
+    cameraNode.addMemberInterface(dgnode, 'focalDistance', true);
+    cameraNode.addMemberInterface(dgnode, 'orthographic', true);
+    cameraNode.addMemberInterface(dgnode, 'screenOffset', true);
 
     redrawEventHandler.setScope('camera', dgnode);
 
@@ -1531,7 +1577,8 @@ FABRIC.SceneGraph.registerNodeType('Camera', {
         'camera.nearDistance',
         'camera.farDistance',
         'camera.fovY',
-        'camera.orthographic'
+        'camera.orthographic',
+        'camera.screenOffset'
       ]
     }));
 
@@ -1575,6 +1622,34 @@ FABRIC.SceneGraph.registerNodeType('Camera', {
     cameraNode.addMemberInterface(dgnode, 'focalDistance', true);
 
     scene.addEventHandlingFunctions(cameraNode);
+    
+    
+    var parentWriteData = cameraNode.writeData;
+    var parentReadData = cameraNode.readData;
+    cameraNode.writeData = function(sceneSaver, constructionOptions, nodeData) {
+      if(transformNodeMember){
+        nodeData.transformNodeMember = transformNodeMember;
+      }
+      sceneSaver.addNode(transformNode.pub);
+      nodeData.transformNode = transformNode.pub.getName();
+      
+      nodeData.nearDistance = cameraNode.pub.getNearDistance();
+      nodeData.farDistance = cameraNode.pub.getFarDistance();
+      nodeData.fovY = cameraNode.pub.getFovY();
+      nodeData.focalDistance = cameraNode.pub.getFocalDistance();
+      
+      parentWriteData(sceneSaver, constructionOptions, nodeData);
+    };
+    cameraNode.readData = function(sceneLoader, nodeData) {
+      cameraNode.pub.setTransformNode(sceneLoader.getNode(nodeData.transformNode), nodeData.transformNodeMember);
+      
+      cameraNode.pub.setNearDistance(nodeData.nearDistance);
+      cameraNode.pub.setFarDistance(nodeData.farDistance);
+      cameraNode.pub.setFovY(nodeData.fovY);
+      cameraNode.pub.setFocalDistance(nodeData.focalDistance);
+      
+      parentReadData(sceneLoader, nodeData);
+    };
 
     if (typeof options.transformNode == 'string') {
       cameraNode.pub.setTransformNode(scene.constructNode(options.transformNode, { hierarchical: false }).pub);

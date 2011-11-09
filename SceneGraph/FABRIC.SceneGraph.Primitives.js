@@ -753,5 +753,3 @@ FABRIC.SceneGraph.registerNodeType('Teapot', {
   }});
 
 
-
-
