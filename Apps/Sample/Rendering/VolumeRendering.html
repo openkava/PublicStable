@@ -169,13 +169,6 @@ FABRIC.SceneGraph.registerNodeType('CropVolumeManipulator', {
     var cropVolumeManipulator = scene.constructNode('SceneGraphNode', options);
     var volumeSlicesNode = scene.getPrivateInterface(volumeInstanceNode.pub.getVolumeSlicesNode());
     
-    
-    var cropVolumeManipulatorTransform = scene.pub.constructNode('Transform', {
-        hierarchical: true,
-        parentTransformNode: volumeInstanceNode.getTransformNode(),
-        localXfo: new FABRIC.RT.Xfo({ sc: new FABRIC.RT.Vec3(1.01, 1.01, 1.01) })
-      });
-    
     var cropMin, cropMax;
     var invxfo, xfo;
     var lineShaderNode;
@@ -206,7 +199,7 @@ FABRIC.SceneGraph.registerNodeType('CropVolumeManipulator', {
             
       var manipulatorNode = scene.constructNode('Manipulator', {
         name: name+"Manipulator",
-        transformNode: cropVolumeManipulatorTransform,
+        transformNode: volumeInstanceNode.getTransformNode(),
         geometryNode: lineGeom.pub,
         materialNode: lineMaterial
       });
@@ -235,12 +228,12 @@ FABRIC.SceneGraph.registerNodeType('CropVolumeManipulator', {
         var newCropMin = cropMin.clone();
         var newCropMax = cropMax.clone();
         modifierFn(newCropMin, newCropMax, delta);
-        newCropMin.x = Math.clamp(newCropMin.x, -1, 1);
-        newCropMin.y = Math.clamp(newCropMin.y, -1, 1);
-        newCropMin.z = Math.clamp(newCropMin.z, -1, 1);
-        newCropMax.x = Math.clamp(newCropMax.x, -1, 1);
-        newCropMax.y = Math.clamp(newCropMax.y, -1, 1);
-        newCropMax.z = Math.clamp(newCropMax.z, -1, 1);
+        newCropMin.x = Math.clamp(newCropMin.x, -1, cropMax.x);
+        newCropMin.y = Math.clamp(newCropMin.y, -1, cropMax.y);
+        newCropMin.z = Math.clamp(newCropMin.z, -1, cropMax.z);
+        newCropMax.x = Math.clamp(newCropMax.x, cropMin.x, 1);
+        newCropMax.y = Math.clamp(newCropMax.y, cropMin.y, 1);
+        newCropMax.z = Math.clamp(newCropMax.z, cropMin.z, 1);
         volumeSlicesNode.pub.setCropMin(newCropMin);
         volumeSlicesNode.pub.setCropMax(newCropMax);
       }
@@ -249,8 +242,8 @@ FABRIC.SceneGraph.registerNodeType('CropVolumeManipulator', {
     
     constructEdgeManipulator( 'xaxis1', 'use Vec3;\
 operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){\
-  positions[0] = Vec3(min.x, min.y, min.z);\
-  positions[1] = Vec3(max.x, min.y, min.z);\
+  positions[0] = Vec3(min.x-0.025, min.y-0.025, min.z-0.025);\
+  positions[1] = Vec3(max.x+0.025, min.y-0.025, min.z-0.025);\
 }',
     function(cropMin, cropMax, delta){
       cropMin.y += delta.y;
@@ -259,8 +252,8 @@ operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){
     
     constructEdgeManipulator( 'xaxis2', 'use Vec3;\
 operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){\
-  positions[0] = Vec3(min.x, max.y, min.z);\
-  positions[1] = Vec3(max.x, max.y, min.z);\
+  positions[0] = Vec3(min.x-0.025, max.y+0.025, min.z-0.025);\
+  positions[1] = Vec3(max.x+0.025, max.y+0.025, min.z-0.025);\
 }',
     function(cropMin, cropMax, delta){
       cropMax.y += delta.y;
@@ -269,8 +262,8 @@ operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){
     
     constructEdgeManipulator( 'xaxis3', 'use Vec3;\
 operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){\
-  positions[0] = Vec3(min.x, min.y, max.z);\
-  positions[1] = Vec3(max.x, min.y, max.z);\
+  positions[0] = Vec3(min.x-0.025, min.y-0.025, max.z+0.025);\
+  positions[1] = Vec3(max.x+0.025, min.y-0.025, max.z+0.025);\
 }',
     function(cropMin, cropMax, delta){
       cropMin.y += delta.y;
@@ -279,8 +272,8 @@ operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){
     
     constructEdgeManipulator( 'xaxis4', 'use Vec3;\
 operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){\
-  positions[0] = Vec3(min.x, max.y, max.z);\
-  positions[1] = Vec3(max.x, max.y, max.z);\
+  positions[0] = Vec3(min.x-0.025, max.y+0.025, max.z+0.025);\
+  positions[1] = Vec3(max.x+0.025, max.y+0.025, max.z+0.025);\
 }',
     function(cropMin, cropMax, delta){
       cropMax.y += delta.y;
@@ -290,8 +283,8 @@ operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){
     
     constructEdgeManipulator( 'yaxis1', 'use Vec3;\
 operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){\
-  positions[0] = Vec3(min.x, min.y, min.z);\
-  positions[1] = Vec3(min.x, max.y, min.z);\
+  positions[0] = Vec3(min.x-0.025, min.y-0.025, min.z-0.025);\
+  positions[1] = Vec3(min.x-0.025, max.y+0.025, min.z-0.025);\
 }',
     function(cropMin, cropMax, delta){
       cropMin.x += delta.x;
@@ -300,8 +293,8 @@ operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){
     
     constructEdgeManipulator( 'yaxis2', 'use Vec3;\
 operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){\
-  positions[0] = Vec3(min.x, min.y, max.z);\
-  positions[1] = Vec3(min.x, max.y, max.z);\
+  positions[0] = Vec3(min.x-0.025, min.y-0.025, max.z+0.025);\
+  positions[1] = Vec3(min.x-0.025, max.y+0.025, max.z+0.025);\
 }',
     function(cropMin, cropMax, delta){
       cropMin.x += delta.x;
@@ -310,8 +303,8 @@ operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){
     
     constructEdgeManipulator( 'yaxis3', 'use Vec3;\
 operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){\
-  positions[0] = Vec3(max.x, min.y, min.z);\
-  positions[1] = Vec3(max.x, max.y, min.z);\
+  positions[0] = Vec3(max.x+0.025, min.y-0.025, min.z-0.025);\
+  positions[1] = Vec3(max.x+0.025, max.y+0.025, min.z-0.025);\
 }',
     function(cropMin, cropMax, delta){
       cropMax.x += delta.x;
@@ -320,8 +313,8 @@ operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){
     
     constructEdgeManipulator( 'yaxis4', 'use Vec3;\
 operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){\
-  positions[0] = Vec3(max.x, min.y, max.z);\
-  positions[1] = Vec3(max.x, max.y, max.z);\
+  positions[0] = Vec3(max.x+0.025, min.y-0.025, max.z+0.025);\
+  positions[1] = Vec3(max.x+0.025, max.y+0.025, max.z+0.025);\
 }',
     function(cropMin, cropMax, delta){
       cropMax.x += delta.x;
@@ -330,8 +323,8 @@ operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){
     
     constructEdgeManipulator( 'zaxis1', 'use Vec3;\
 operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){\
-  positions[0] = Vec3(min.x, min.y, min.z);\
-  positions[1] = Vec3(min.x, min.y, max.z);\
+  positions[0] = Vec3(min.x-0.025, min.y-0.025, min.z-0.025);\
+  positions[1] = Vec3(min.x-0.025, min.y-0.025, max.z+0.025);\
 }',
     function(cropMin, cropMax, delta){
       cropMin.x += delta.x;
@@ -340,8 +333,8 @@ operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){
     
     constructEdgeManipulator( 'zaxis2', 'use Vec3;\
 operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){\
-  positions[0] = Vec3(min.x, max.y, min.z);\
-  positions[1] = Vec3(min.x, max.y, max.z);\
+  positions[0] = Vec3(min.x-0.025, max.y+0.025, min.z-0.025);\
+  positions[1] = Vec3(min.x-0.025, max.y+0.025, max.z+0.025);\
 }',
     function(cropMin, cropMax, delta){
       cropMin.x += delta.x;
@@ -350,8 +343,8 @@ operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){
     
     constructEdgeManipulator( 'zaxis3', 'use Vec3;\
 operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){\
-  positions[0] = Vec3(max.x, min.y, min.z);\
-  positions[1] = Vec3(max.x, min.y, max.z);\
+  positions[0] = Vec3(max.x+0.025, min.y-0.025, min.z-0.025);\
+  positions[1] = Vec3(max.x+0.025, min.y-0.025, max.z+0.025);\
 }',
     function(cropMin, cropMax, delta){
       cropMax.x += delta.x;
@@ -360,8 +353,8 @@ operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){
     
     constructEdgeManipulator( 'zaxis4', 'use Vec3;\
 operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){\
-  positions[0] = Vec3(max.x, max.y, min.z);\
-  positions[1] = Vec3(max.x, max.y, max.z);\
+  positions[0] = Vec3(max.x+0.025, max.y+0.025, min.z-0.025);\
+  positions[1] = Vec3(max.x+0.025, max.y+0.025, max.z+0.025);\
 }',
     function(cropMin, cropMax, delta){
       cropMax.x += delta.x;
@@ -533,13 +526,6 @@ $(document).ready(function() {
   for( i = 0; i < 3; ++i ) {
     $sliders2D[i].slider('value', texture2DSlice[i].getRatio());
     $sliders2D[i].bind('slide', sliders2DBindFunction(i) );
-    
-    var cropMax = volumeNode.getCropMax();
-    var cropMin = volumeNode.getCropMin();
-
-    if(cropMin > cropMax) {
-      cropMin = cropMax;
-    }
   }
 
   $resolutionFactorSlider.slider('value', volumeNode.getResolutionFactor());
@@ -601,7 +587,7 @@ $(document).ready(function() {
       volumeNode.setCropMax( new FABRIC.RT.Vec3( 1, 1, 1));
       cropManipulator.disable();
       viewport.disableRaycasting();
-    } else {
+    } else if(savedCropMin) {
       volumeNode.setCropMin( savedCropMin );
       volumeNode.setCropMax( savedCropMax );
       cropManipulator.enable();
@@ -742,6 +728,9 @@ $(document).ready(function() {
   var initialLoad = true;
 
   var loadPreset = function(){
+
+    savedCropMin = undefined;
+    savedCropMax = undefined;
 
     var loadPresetTask;
     if(!initialLoad) {//Make sure there is at least 1 asynch task ongoing...
