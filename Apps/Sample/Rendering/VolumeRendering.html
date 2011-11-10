@@ -169,13 +169,6 @@ FABRIC.SceneGraph.registerNodeType('CropVolumeManipulator', {
     var cropVolumeManipulator = scene.constructNode('SceneGraphNode', options);
     var volumeSlicesNode = scene.getPrivateInterface(volumeInstanceNode.pub.getVolumeSlicesNode());
     
-    
-    var cropVolumeManipulatorTransform = scene.pub.constructNode('Transform', {
-        hierarchical: true,
-        parentTransformNode: volumeInstanceNode.getTransformNode(),
-        localXfo: new FABRIC.RT.Xfo({ sc: new FABRIC.RT.Vec3(1.01, 1.01, 1.01) })
-      });
-    
     var cropMin, cropMax;
     var invxfo, xfo;
     var lineShaderNode;
@@ -206,7 +199,7 @@ FABRIC.SceneGraph.registerNodeType('CropVolumeManipulator', {
             
       var manipulatorNode = scene.constructNode('Manipulator', {
         name: name+"Manipulator",
-        transformNode: cropVolumeManipulatorTransform,
+        transformNode: volumeInstanceNode.getTransformNode(),
         geometryNode: lineGeom.pub,
         materialNode: lineMaterial
       });
@@ -235,12 +228,12 @@ FABRIC.SceneGraph.registerNodeType('CropVolumeManipulator', {
         var newCropMin = cropMin.clone();
         var newCropMax = cropMax.clone();
         modifierFn(newCropMin, newCropMax, delta);
-        newCropMin.x = Math.clamp(newCropMin.x, -1, 1);
-        newCropMin.y = Math.clamp(newCropMin.y, -1, 1);
-        newCropMin.z = Math.clamp(newCropMin.z, -1, 1);
-        newCropMax.x = Math.clamp(newCropMax.x, -1, 1);
-        newCropMax.y = Math.clamp(newCropMax.y, -1, 1);
-        newCropMax.z = Math.clamp(newCropMax.z, -1, 1);
+        newCropMin.x = Math.clamp(newCropMin.x, -1, cropMax.x);
+        newCropMin.y = Math.clamp(newCropMin.y, -1, cropMax.y);
+        newCropMin.z = Math.clamp(newCropMin.z, -1, cropMax.z);
+        newCropMax.x = Math.clamp(newCropMax.x, cropMin.x, 1);
+        newCropMax.y = Math.clamp(newCropMax.y, cropMin.y, 1);
+        newCropMax.z = Math.clamp(newCropMax.z, cropMin.z, 1);
         volumeSlicesNode.pub.setCropMin(newCropMin);
         volumeSlicesNode.pub.setCropMax(newCropMax);
       }
@@ -249,8 +242,8 @@ FABRIC.SceneGraph.registerNodeType('CropVolumeManipulator', {
     
     constructEdgeManipulator( 'xaxis1', 'use Vec3;\
 operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){\
-  positions[0] = Vec3(min.x, min.y, min.z);\
-  positions[1] = Vec3(max.x, min.y, min.z);\
+  positions[0] = Vec3(min.x-0.025, min.y-0.025, min.z-0.025);\
+  positions[1] = Vec3(max.x+0.025, min.y-0.025, min.z-0.025);\
 }',
     function(cropMin, cropMax, delta){
       cropMin.y += delta.y;
@@ -259,8 +252,8 @@ operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){
     
     constructEdgeManipulator( 'xaxis2', 'use Vec3;\
 operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){\
-  positions[0] = Vec3(min.x, max.y, min.z);\
-  positions[1] = Vec3(max.x, max.y, min.z);\
+  positions[0] = Vec3(min.x-0.025, max.y+0.025, min.z-0.025);\
+  positions[1] = Vec3(max.x+0.025, max.y+0.025, min.z-0.025);\
 }',
     function(cropMin, cropMax, delta){
       cropMax.y += delta.y;
@@ -269,8 +262,8 @@ operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){
     
     constructEdgeManipulator( 'xaxis3', 'use Vec3;\
 operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){\
-  positions[0] = Vec3(min.x, min.y, max.z);\
-  positions[1] = Vec3(max.x, min.y, max.z);\
+  positions[0] = Vec3(min.x-0.025, min.y-0.025, max.z+0.025);\
+  positions[1] = Vec3(max.x+0.025, min.y-0.025, max.z+0.025);\
 }',
     function(cropMin, cropMax, delta){
       cropMin.y += delta.y;
@@ -279,8 +272,8 @@ operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){
     
     constructEdgeManipulator( 'xaxis4', 'use Vec3;\
 operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){\
-  positions[0] = Vec3(min.x, max.y, max.z);\
-  positions[1] = Vec3(max.x, max.y, max.z);\
+  positions[0] = Vec3(min.x-0.025, max.y+0.025, max.z+0.025);\
+  positions[1] = Vec3(max.x+0.025, max.y+0.025, max.z+0.025);\
 }',
     function(cropMin, cropMax, delta){
       cropMax.y += delta.y;
@@ -290,8 +283,8 @@ operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){
     
     constructEdgeManipulator( 'yaxis1', 'use Vec3;\
 operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){\
-  positions[0] = Vec3(min.x, min.y, min.z);\
-  positions[1] = Vec3(min.x, max.y, min.z);\
+  positions[0] = Vec3(min.x-0.025, min.y-0.025, min.z-0.025);\
+  positions[1] = Vec3(min.x-0.025, max.y+0.025, min.z-0.025);\
 }',
     function(cropMin, cropMax, delta){
       cropMin.x += delta.x;
@@ -300,8 +293,8 @@ operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){
     
     constructEdgeManipulator( 'yaxis2', 'use Vec3;\
 operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){\
-  positions[0] = Vec3(min.x, min.y, max.z);\
-  positions[1] = Vec3(min.x, max.y, max.z);\
+  positions[0] = Vec3(min.x-0.025, min.y-0.025, max.z+0.025);\
+  positions[1] = Vec3(min.x-0.025, max.y+0.025, max.z+0.025);\
 }',
     function(cropMin, cropMax, delta){
       cropMin.x += delta.x;
@@ -310,8 +303,8 @@ operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){
     
     constructEdgeManipulator( 'yaxis3', 'use Vec3;\
 operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){\
-  positions[0] = Vec3(max.x, min.y, min.z);\
-  positions[1] = Vec3(max.x, max.y, min.z);\
+  positions[0] = Vec3(max.x+0.025, min.y-0.025, min.z-0.025);\
+  positions[1] = Vec3(max.x+0.025, max.y+0.025, min.z-0.025);\
 }',
     function(cropMin, cropMax, delta){
       cropMax.x += delta.x;
@@ -320,8 +313,8 @@ operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){
     
     constructEdgeManipulator( 'yaxis4', 'use Vec3;\
 operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){\
-  positions[0] = Vec3(max.x, min.y, max.z);\
-  positions[1] = Vec3(max.x, max.y, max.z);\
+  positions[0] = Vec3(max.x+0.025, min.y-0.025, max.z+0.025);\
+  positions[1] = Vec3(max.x+0.025, max.y+0.025, max.z+0.025);\
 }',
     function(cropMin, cropMax, delta){
       cropMax.x += delta.x;
@@ -330,8 +323,8 @@ operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){
     
     constructEdgeManipulator( 'zaxis1', 'use Vec3;\
 operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){\
-  positions[0] = Vec3(min.x, min.y, min.z);\
-  positions[1] = Vec3(min.x, min.y, max.z);\
+  positions[0] = Vec3(min.x-0.025, min.y-0.025, min.z-0.025);\
+  positions[1] = Vec3(min.x-0.025, min.y-0.025, max.z+0.025);\
 }',
     function(cropMin, cropMax, delta){
       cropMin.x += delta.x;
@@ -340,8 +333,8 @@ operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){
     
     constructEdgeManipulator( 'zaxis2', 'use Vec3;\
 operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){\
-  positions[0] = Vec3(min.x, max.y, min.z);\
-  positions[1] = Vec3(min.x, max.y, max.z);\
+  positions[0] = Vec3(min.x-0.025, max.y+0.025, min.z-0.025);\
+  positions[1] = Vec3(min.x-0.025, max.y+0.025, max.z+0.025);\
 }',
     function(cropMin, cropMax, delta){
       cropMin.x += delta.x;
@@ -350,8 +343,8 @@ operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){
     
     constructEdgeManipulator( 'zaxis3', 'use Vec3;\
 operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){\
-  positions[0] = Vec3(max.x, min.y, min.z);\
-  positions[1] = Vec3(max.x, min.y, max.z);\
+  positions[0] = Vec3(max.x+0.025, min.y-0.025, min.z-0.025);\
+  positions[1] = Vec3(max.x+0.025, min.y-0.025, max.z+0.025);\
 }',
     function(cropMin, cropMax, delta){
       cropMax.x += delta.x;
@@ -360,8 +353,8 @@ operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){
     
     constructEdgeManipulator( 'zaxis4', 'use Vec3;\
 operator setLineSegmentPositions(io Vec3 min, io Vec3 max, io Vec3 positions<>){\
-  positions[0] = Vec3(max.x, max.y, min.z);\
-  positions[1] = Vec3(max.x, max.y, max.z);\
+  positions[0] = Vec3(max.x+0.025, max.y+0.025, min.z-0.025);\
+  positions[1] = Vec3(max.x+0.025, max.y+0.025, max.z+0.025);\
 }',
     function(cropMin, cropMax, delta){
       cropMax.x += delta.x;
@@ -393,6 +386,27 @@ $(document).ready(function() {
   var $savePresetButton = $('#savePreset').button({ text: true });
   var $newPresetButton = $('#newPreset').button({ text: true });
   
+  $('#aboutDialog').dialog({
+    autoOpen: false,
+    modal: true
+  });
+  var $aboutButton = $('#aboutButton').button({ text: true })
+    .click(function() {
+      viewport.hide();
+      $('#aboutDialog').dialog({
+        autoOpen: true,
+        modal: true,
+        buttons: {
+          Ok: function() {
+            $(this).dialog( "close" );
+          }
+        },
+        closeOnEscape: true,
+        close: function(ev, ui) { viewport.show(); },
+      });
+    });
+  
+              
   var $opacityRangeSlider = $('#opacityRange').slider({min: 0, max: 1, step: 0.005, range: true, values: [0.1,1] });
   var $brightnessSlider = $('#brightness').slider({min: 0, max: 1, step: 0.01, value: 0.5 });
   var $transparencySlider = $('#transparency').slider({min: 0, max: 1, step: 0.01, value: 0.8 });
@@ -479,12 +493,13 @@ $(document).ready(function() {
   var layoutRectangle = scene.constructNode('DrawRectangle', {color: new FABRIC.RT.RGBA(255,255,255,255), tl: new FABRIC.RT.Vec2(2.0/3.0, 1.0), br: new FABRIC.RT.Vec2(1.0, -1.0), forceRefresh: true, createDgNode: true });
   var borderSize = 0.01;
 
-  var opacityTexture = scene.constructNode('Image3DWithHistogram',  { url: 'Resources/ChestMid.nrrd', glRepeat: false, histogramResolution: 1024 });
-//  var opacityTexture = scene.constructNode('Image3DWithHistogram',  { url: 'Resources/HeadHigh.nrrd', resourceTargetTransformNode: transform, glRepeat: false, histogramResolution: 1024 });
+  var opacityTexture = scene.constructNode('Image3DWithHistogram',  { url: '', glRepeat: false, histogramResolution: 1024 });
 
-  opacityTexture.getResourceLoadNode().addOnLoadSuccessCallback(function (){
-    histogram.setData(opacityTexture.getHistogram(), 0.4);
-  });
+  var addOnLoadCallback = function (){
+   opacityTexture.getResourceLoadNode().addOnLoadSuccessCallback(function(){
+     histogram.setData(opacityTexture.getHistogram(), 0.4);
+     viewport.redraw();
+  })};
 
   var volumeNode = scene.constructNode('VolumeOpacityInstance', {
       viewportNode: viewport,
@@ -532,13 +547,6 @@ $(document).ready(function() {
   for( i = 0; i < 3; ++i ) {
     $sliders2D[i].slider('value', texture2DSlice[i].getRatio());
     $sliders2D[i].bind('slide', sliders2DBindFunction(i) );
-    
-    var cropMax = volumeNode.getCropMax();
-    var cropMin = volumeNode.getCropMin();
-
-    if(cropMin > cropMax) {
-      cropMin = cropMax;
-    }
   }
 
   $resolutionFactorSlider.slider('value', volumeNode.getResolutionFactor());
@@ -600,7 +608,7 @@ $(document).ready(function() {
       volumeNode.setCropMax( new FABRIC.RT.Vec3( 1, 1, 1));
       cropManipulator.disable();
       viewport.disableRaycasting();
-    } else {
+    } else if(savedCropMin) {
       volumeNode.setCropMin( savedCropMin );
       volumeNode.setCropMax( savedCropMax );
       cropManipulator.enable();
@@ -649,24 +657,25 @@ $(document).ready(function() {
     ajustViewportLayout();
   });
   
-  $('#loadingDialog').dialog({
-    modal: true
-  });
-  FABRIC.appendOnResolveAsyncTaskCallback(function(label, nbRemaining, doneWeight, totalWeight) {
-    $('#loadingProgressBar').progressbar({
-      value: (1.0-(doneWeight/totalWeight))*100
+  var displayProgressBar = function() {
+    $('#loadingDialog').dialog({
+      modal: true
     });
-    if (nbRemaining===0) {
-      $('#loadingDialog').dialog('close');
-      var errors = scene.getErrors();
-      if (errors.length > 0) {
-        throw (errors.toString());
+    FABRIC.appendOnResolveAsyncTaskCallback(function(label, nbRemaining, doneWeight, totalWeight) {
+      $('#loadingProgressBar').progressbar({
+        value: (1.0-(doneWeight/totalWeight))*100
+      });
+      if (nbRemaining===0) {
+        $('#loadingDialog').dialog('close');
+        var errors = scene.getErrors();
+        if (errors.length > 0) {
+          throw (errors.toString());
+        }
+        ajustViewportLayout();
+        return true;
       }
-      ajustViewportLayout();
-      return true;
-    }
-  });
-
+  })};
+  displayProgressBar();
 
   window.scene = scene;
 
@@ -729,23 +738,42 @@ $(document).ready(function() {
     presetSaver.addNode(opacityKeyAnimationLibrary);
     presetSaver.addNode(gradientKeyTrackLibrary);
     presetSaver.addNode(volumeNode);
-
+    presetSaver.addNode(opacityTexture);
+    
     var storage = new FABRIC.SceneGraph.LocalStorage('VolumeRenderingPresets.'+currPresetName);
     presetSaver.save(storage);
     
     localStorage.setItem('VolumeRenderingSelectedPreset', currPresetName);
   }
   
+  var initialLoad = true;
+
   var loadPreset = function(){
+
+    savedCropMin = undefined;
+    savedCropMax = undefined;
+
+    var loadPresetTask;
+    if(!initialLoad) {//Make sure there is at least 1 asynch task ongoing...
+      loadPresetTask = FABRIC.addAsyncTask("Loading preset");
+      viewport.startLoadMode();
+      displayProgressBar();
+      loadPresetTask( true );
+    }
+
     var presetLoader = scene.constructManager('SceneLoader', { preLoadScene: true } );
     var storage = new FABRIC.SceneGraph.LocalStorage('VolumeRenderingPresets.'+currPresetName);
     var nodeMap = presetLoader.load(storage);
+    addOnLoadCallback();
     
     $resolutionFactorSlider.slider('value', volumeNode.getResolutionFactor());
     curveEditor.redraw();
     colorGradient.redraw();
     viewport.redraw();
+    viewport.redraw();
     localStorage.setItem('VolumeRenderingSelectedPreset', currPresetName);
+
+    initialLoad = false;
   }
   
   $("#resourceSelector").change(function() {
@@ -788,14 +816,16 @@ $(document).ready(function() {
       });
     });
     
-  
   // On startup....
+
   rebuildPresetNamesList();
   FABRIC.appendOnResolveAsyncTaskCallback(function(label, nbRemaining) {
     if (nbRemaining===0) {
       if(!presetsFound){
-        currPresetName = 'Default';
-        savePreset();
+        localStorage.setItem('VolumeRenderingPresets.Chest', FABRIC.loadResourceURL('Resources/ChestPreset.txt'));
+        localStorage.setItem('VolumeRenderingPresets.Head', FABRIC.loadResourceURL('Resources/HeadPreset.txt'));
+        currPresetName = 'Chest';
+        loadPreset();
         rebuildPresetNamesList();
       }else{
         currPresetName = localStorage.getItem('VolumeRenderingSelectedPreset');
@@ -819,6 +849,10 @@ $(document).ready(function() {
     <div id="presetNameDialog" title="Preset Name">
       <input type="text" id="presetName" style="border:0; font-weight:bold;" />
     </div>
+    <div id="aboutDialog" title="About">
+      Volume Rendering demo by Fabric Engine Inc.</br>
+      Data used under license from  <a href='http://www.slicer.org/pages/LicenseText'>http://www.slicer.org/</a></br>
+    </div>
     <div id="wrapper">
       <div id="editor">
         <div id="viewer">
@@ -832,7 +866,7 @@ $(document).ready(function() {
               <div class="box" style="margin-top:5px;margin-left:10px;margin-bottom:10px;">
               <button id="newPreset" style="margin-top:10px;">New Preset</button>
               <button id="savePreset" style="margin-top:10px;">Save</button>
-              
+              <button id="aboutButton" style="margin-top:10px;">About</button>
               </br>
               <select id='resourceSelector' style="width: 380px; margin-top:10px;">
               </select>
