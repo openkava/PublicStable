@@ -123,7 +123,6 @@ operator evaluateLocomotionPoseVariables(
     // Clip Evaluation
     t += timestep * clipFrequencyMultiplier;
     
-      
     trackcontroller.time = t;
     
     poseVariables.evaluateKeyframeTracks(
@@ -244,13 +243,14 @@ operator evaluateLocomotionPoseVariables(
       FootStep currStep = footStepTrack.footSteps[stepId];
       Scalar stepRatio = (t - currStep.liftTime) / (currStep.plantTime - currStep.liftTime);
       
-      Xfo footXfo, hubComXfo;
+      Xfo footXfo, hubComXfo, hubXfo;
       Vec3 displacementDir;
       if(leg.hubId >= 0 && controllerparams.trail.size > 0){
         hubComXfo = hubComs[leg.hubId];
+        hubXfo = controllerXfo * poseVariables.xfoValues[hubs[leg.hubId].xfoId];
         displacementDir = hubComXfo.ori.rotateVector(Vec3(0.0,0.0,1.0));
       }else{
-        hubComXfo = controllerXfo;
+        hubComXfo = hubXfo = controllerXfo;
         displacementDir = controllerparams.displacementDir;
       }
       footXfo = hubComXfo * poseVariables.xfoValues[leg.ikGoalXfoId];
@@ -260,8 +260,12 @@ operator evaluateLocomotionPoseVariables(
       
       footXfo.tr -= controllerparams.balanceXfo.tr;
       
-      
-      Xfo footPlantXfo = hubComXfo * leg.ikGoalReferenceXfo;
+      // TODO: this is a bit hackey, and innacurate.
+      // One day we should store the plant position
+      // relative to the foot positison as an extra track.
+      Xfo footPlantXfo = hubXfo * leg.ikGoalReferenceXfo;
+      debugGeometry.drawLine(hubComXfo.tr, footPlantXfo.tr, Color(0.0, 0.0, 0.0, 1.0));
+        
       Vec3 lift = footPlantXfo.tr - (displacementDir * (strideLength * 0.25 * strideLengthMultiplier));
       footPlantXfo.tr += displacementDir * (strideLength * 0.25 * strideLengthMultiplier);
       footXfo.tr += displacementDir * stepValue * strideLengthMultiplier;
