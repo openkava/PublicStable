@@ -34,6 +34,7 @@ namespace Fabric
   
   namespace CG
   {
+    class CompileOptions;
     class Context;
   };
   
@@ -52,7 +53,13 @@ namespace Fabric
     
       typedef void (*FunctionPtr)( ... );
     
-      static RC::ConstHandle<Code> Create( RC::ConstHandle<Context> const &context, std::string const &filename, std::string const &sourceCode, bool optimizeSynchronously );
+      static RC::ConstHandle<Code> Create(
+        RC::ConstHandle<Context> const &context,
+        std::string const &filename,
+        std::string const &sourceCode,
+        bool optimizeSynchronously,
+        CG::CompileOptions const *compileOptions
+        );
       
       std::string const &getFilename() const;
       std::string const &getSourceCode() const;
@@ -68,7 +75,13 @@ namespace Fabric
 
     protected:
     
-      Code( RC::ConstHandle<Context> const &context, std::string const &filename, std::string const &sourceCode, bool optimizeSynchronously );
+      Code(
+        RC::ConstHandle<Context> const &context,
+        std::string const &filename,
+        std::string const &sourceCode,
+        bool optimizeSynchronously,
+        CG::CompileOptions const *compileOptions
+        );
       ~Code();
       
       void compileSourceCode();
@@ -99,6 +112,8 @@ namespace Fabric
       mutable RegisteredFunctionSet m_registeredFunctionSet;
       
       bool m_optimizeSynchronously;
+      
+      CG::CompileOptions const *m_compileOptions;
     };
   };
 };

@@ -46,18 +46,31 @@ namespace Fabric
 {
   namespace DG
   {
-    RC::ConstHandle<Code> Code::Create( RC::ConstHandle<Context> const &context, std::string const &filename, std::string const &sourceCode, bool optimizeSynchronously )
+    RC::ConstHandle<Code> Code::Create(
+      RC::ConstHandle<Context> const &context,
+      std::string const &filename,
+      std::string const &sourceCode,
+      bool optimizeSynchronously,
+      CG::CompileOptions const *compileOptions
+      )
     {
-      return new Code( context, filename, sourceCode, optimizeSynchronously );
+      return new Code( context, filename, sourceCode, optimizeSynchronously, compileOptions );
     }
 
-    Code::Code( RC::ConstHandle<Context> const &context, std::string const &filename, std::string const &sourceCode, bool optimizeSynchronously )
+    Code::Code(
+      RC::ConstHandle<Context> const &context,
+      std::string const &filename,
+      std::string const &sourceCode,
+      bool optimizeSynchronously,
+      CG::CompileOptions const *compileOptions
+      )
       : m_contextWeakRef( context )
       , m_mutex( "DG::Code" )
       , m_filename( filename )
       , m_sourceCode( sourceCode )
       , m_registeredFunctionSetMutex( "DG::Code::m_registeredFunctionSet" )
       , m_optimizeSynchronously( optimizeSynchronously )
+      , m_compileOptions( compileOptions )
     {
       compileSourceCode();
     }
@@ -126,7 +139,7 @@ namespace Fabric
         RC::Handle<CG::Manager> cgManager = context->getCGManager();
         RC::Handle<CG::Context> cgContext = CG::Context::Create();
         llvm::OwningPtr<llvm::Module> module( new llvm::Module( "DG::Code", cgContext->getLLVMContext() ) );
-        CG::ModuleBuilder moduleBuilder( cgManager, cgContext, module.get() );
+        CG::ModuleBuilder moduleBuilder( cgManager, cgContext, module.get(), m_compileOptions );
 #if defined(FABRIC_MODULE_OPENCL)
         OCL::llvmPrepareModule( moduleBuilder, context->getRTManager() );
 #endif
@@ -137,8 +150,9 @@ namespace Fabric
         llvm::NoFramePointerElim = true;
         llvm::JITExceptionHandling = true;
         
-        std::string irCacheKeyForAST = IRCache::Instance()->keyForAST( ast );
-        std::string ir = IRCache::Instance()->get( irCacheKeyForAST );
+        RC::Handle<IRCache> irCache =  IRCache::Instance( m_compileOptions ); 
+        std::string irCacheKeyForAST = irCache->keyForAST( ast );
+        std::string ir = irCache->get( irCacheKeyForAST );
         if ( ir.length() > 0 )
         {
           RC::Handle<CG::Manager> cgManager = context->getCGManager();
@@ -193,7 +207,7 @@ namespace Fabric
             llvm::raw_string_ostream irStream( ir );
             module->print( irStream, 0 );
             irStream.flush();
-            IRCache::Instance()->put( irCacheKeyForAST, ir );
+            irCache->put( irCacheKeyForAST, ir );
           }
 
           linkModule( cgContext, module, optimize );

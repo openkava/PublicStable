@@ -13,6 +13,11 @@
 
 namespace Fabric
 {
+  namespace CG
+  {
+    class CompileOptions;
+  };
+  
   namespace AST
   {
     class GlobalList;
@@ -29,7 +34,7 @@ namespace Fabric
     {
     public:
     
-      static RC::Handle<IRCache> Instance();
+      static RC::Handle<IRCache> Instance( CG::CompileOptions const *compileOptions );
       
       std::string keyForAST( RC::ConstHandle<AST::GlobalList> const &ast ) const;
       
@@ -38,7 +43,7 @@ namespace Fabric
       
     protected:
     
-      IRCache();
+      IRCache( std::string const &compileOptionsString );
       
       void subDirAndEntryFromKey( std::string const &key, RC::ConstHandle<IO::Dir> &subDir, std::string &entry ) const;
       
