@@ -594,14 +594,16 @@ Build/.teem.build: Build/.teem.configure
 ifeq ($(BUILD_PLATFORM),Darwin)
 	for ARCH in $(ARCHS); do \
 		if [ $$ARCH = "x86_64" ]; then \
+                        CFLAGS=-m64; \
 			TEEM_ARCH="darwin.64"; \
 		else \
+                        CFLAGS=-m32; \
 			TEEM_ARCH="darwin.32"; \
 		fi; \
 		( mkdir -p Build/teem-$(TEEM_VERSION)-$$ARCH/arch/$$TEEM_ARCH/obj ); \
 		( mkdir -p Build/teem-$(TEEM_VERSION)-$$ARCH/arch/$$TEEM_ARCH/lib ); \
 		( mkdir -p Build/teem-$(TEEM_VERSION)-$$ARCH/arch/$$TEEM_ARCH/bin ); \
-		( cd Build/teem-$(TEEM_VERSION)-$$ARCH/src && make -e TEEM_ARCH=$$TEEM_ARCH -e TEEM_ZLIB.IPATH="include/zlib" ); \
+		( cd Build/teem-$(TEEM_VERSION)-$$ARCH/src && CFLAGS=$$CFLAGS make TEEM_ARCH=$$TEEM_ARCH TEEM_ZLIB.IPATH="include/zlib" ); \
 	done
 else ifeq ($(BUILD_PLATFORM),Linux)
 	for ARCH in $(ARCHS); do \
