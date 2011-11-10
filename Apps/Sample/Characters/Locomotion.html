@@ -90,6 +90,8 @@ $(document).ready(function() {
       primary: 'ui-icon-step'
     }
   });
+  $("#displayControllerDebugging").attr('checked', true);
+  $("#displayLocomotionFootMotionDebugging").attr('checked', true);
 
   // Create the scene.
   var scene = FABRIC.SceneGraph.createScene();
@@ -307,6 +309,16 @@ $(document).ready(function() {
   });
   */
   
+  
+  $("#displayControllerDebugging").change(function() {
+    locomotionControllerNode.setDrawDebuggingToggle($("#displayControllerDebugging").is(":checked"));
+    viewport.redraw();
+  });
+  $("#displayLocomotionFootMotionDebugging").change(function() {
+    locomotionVariables.setDrawDebuggingToggle($("#displayLocomotionFootMotionDebugging").is(":checked"));
+    viewport.redraw();
+  });
+  
   var togglePlay = function(){
     if ($('#play').text() == 'Play') {
       $('#play').button('option', {
@@ -487,6 +499,10 @@ $(document).ready(function() {
           <div class="box">
             <h2>CONTROLS</h2>
             <div class="content">
+              <input type="checkbox" id="displayControllerDebugging" style="margin-top:10px;"/><label for="displayControllerDebugging">Display Controller Debugging:</label>
+              </br>
+              <input type="checkbox" id="displayLocomotionFootMotionDebugging" style="margin-top:10px;"/><label for="displayLocomotionFootMotionDebugging">Display Locomotion Foot Motion Debugging:</label>
+              </br>
               <button id="play" style="margin-top:10px;">Play</button>
               <button id="step" style="margin-top:10px;">Step</button>
             </div><!--content-->

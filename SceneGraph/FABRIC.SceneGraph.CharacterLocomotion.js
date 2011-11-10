@@ -322,15 +322,19 @@ FABRIC.SceneGraph.registerNodeType('LocomotionCharacterController', {
     dgnode.addMember('maxAngularAcceleration', 'Scalar', options.maxAngularAcceleration);
     
     dgnode.addMember('debugGeometry1', 'DebugGeometry' );
-    var debugGeometryDraw = scene.constructNode('DebugGeometryDraw', {
+    var debugGeometryDraw1 = scene.constructNode('DebugGeometryDraw', {
         dgnode: dgnode,
         debugGemetryMemberName: 'debugGeometry1'
     });
     dgnode.addMember('debugGeometry2', 'DebugGeometry' );
-    var debugGeometryDraw = scene.constructNode('DebugGeometryDraw', {
+    var debugGeometryDraw2 = scene.constructNode('DebugGeometryDraw', {
         dgnode: dgnode,
         debugGemetryMemberName: 'debugGeometry2'
     });
+    characterControllerNode.pub.setDrawDebuggingToggle = function(tf){
+      debugGeometryDraw1.pub.setDrawToggle(tf);
+      debugGeometryDraw2.pub.setDrawToggle(tf);
+    }
   
     dgnode.bindings.append(scene.constructOperator({
       operatorName: 'evaluateCharacterController',
@@ -498,6 +502,11 @@ FABRIC.SceneGraph.registerNodeType('LocomotionPoseVariables', {
     locomotionVariables.pub.getSkeletonNode = function() {
       return scene.getPublicInterface(skeletonNode);
     };
+    
+    
+    locomotionVariables.pub.setDrawDebuggingToggle = function(tf){
+      debugGeometryDraw.pub.setDrawToggle(tf);
+    }
     
     return locomotionVariables;
   }});
