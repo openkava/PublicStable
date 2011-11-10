@@ -1410,6 +1410,9 @@ function clone_obj(obj, deepclone) {
       createPolygon: function() {
         var points = [];
         return this.appendAndReturnChild(this.extend(this.create('polygon'), {
+          removeAllPoints: function(){
+            points = [];
+          },
           addPoint: function() {
             if (arguments.length === 1) {
               points.push(arguments[0]);
