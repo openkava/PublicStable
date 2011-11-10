@@ -136,7 +136,8 @@ operator evaluateCharacterController(
     }
     
     for(Integer i=0; i < controllerparams.trail.size; i++){
-      debugGeometry1.drawPoint(controllerparams.trail[i].tr, Color(1.0,1.0,0.0,1.0));
+      debugGeometry1.drawAxis(controllerparams.trail[i], 1.0, Color(0.0,0.0,0.0,1.0));
+      debugGeometry1.drawPoint(controllerparams.trail[i].tr, Color(0.0,0.0,0.0,1.0));
     }
   }
 
