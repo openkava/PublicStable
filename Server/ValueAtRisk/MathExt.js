@@ -1,36 +1,30 @@
 module.exports = {
-  randomNormal: function(mean, dev) {
-    if (mean === undefined)
-      mean = 0.0;
-    if (dev === undefined)
-      dev = 1.0;
+  random: {
+    JSBuiltinGenerator: function () {
+      this.seed = function (index) {
+      };
+      this.nextUniform01 = function () {
+        return Math.random();
+      };
+    },
 
-    var result;
-    if ("randomNormalCache" in this) {
-      result = this.randomNormalCache;
-      delete this.randomNormalCache;
-    }
-    else {
+    normal: function (generator) {
       var x1, x2, w;
       do {
-        x1 = 2.0 * Math.random() - 1.0;
-        x2 = 2.0 * Math.random() - 1.0;
+        x1 = 2.0 * generator.nextUniform01() - 1.0;
+        x2 = 2.0 * generator.nextUniform01() - 1.0;
         w = x1 * x1 + x2 * x2;
       } while (w >= 1.0);
       w = Math.sqrt( (-2.0 * Math.log(w)) / w );
-      result = x1 * w;
-      this.randomNormalCache = x2 * w;
-    }
-    return result * dev + mean;
-  },
+      return x1 * w;
+    },
 
-  randomNormalVec: function (n, mean, dev) {
-    if (n === undefined)
-      throw "vec.randomNormal: missing length";
-    var v = [];
-    for (var i=0; i<n; ++i)
-      v[i] = this.randomNormal(mean, dev);
-    return v;
+    normalVec: function (n, generator) {
+      var v = [];
+      for (var i=0; i<n; ++i)
+        v[i] = this.normal(generator);
+      return v;
+    }
   },
 
   mat: {
@@ -83,14 +77,14 @@ module.exports = {
     }
   },
 
-  randomCorrelation: function (n) {
+  randomCorrelation: function (n, prng) {
     var T = [];
 
     // Generate n uniform random columns
     for (var i=0; i<n; ++i) {
       T[i] = [];
       for (var j=0; j<n; ++j) {
-        T[i][j] = this.randomNormal();
+        T[i][j] = this.random.normal(prng);
       }
     }
 
