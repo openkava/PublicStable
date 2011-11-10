@@ -14,6 +14,11 @@
 
 namespace Fabric
 {
+  namespace CG
+  {
+    class CompileOptions;
+  };
+  
   namespace AST
   {
     class GlobalList;
@@ -29,20 +34,27 @@ namespace Fabric
       
     public:
     
-      static RC::Handle<CodeManager> Create( bool optimizeSynchonrously )
+      static RC::Handle<CodeManager> Create(
+        CG::CompileOptions const *compileOptions,
+        bool optimizeSynchronously
+        )
       {
-        return new CodeManager( optimizeSynchonrously );
+        return new CodeManager( compileOptions, optimizeSynchronously );
       }
       
       RC::ConstHandle<Code> compileSourceCode( RC::ConstHandle<Context> const &context, std::string const &filename, std::string const &sourceCode );
       
     protected:
     
-      CodeManager( bool optimizeSynchonrously );
+      CodeManager(
+        CG::CompileOptions const *compileOptions,
+        bool optimizeSynchronously
+        );
       
     private:
     
       SourceCodeToCodeMap m_sourceCodeToCodeMap;
+      CG::CompileOptions const *m_compileOptions;
       bool m_optimizeSynchonrously;
     };
   };
