@@ -108,6 +108,16 @@ FABRIC = (function() {
         );
       debuggerWindow.context = context;
     };
+
+    FABRIC.getLicenses = function(ctx) {
+      if(!ctx) ctx = context;
+      return context.getLicenses();
+    };
+
+    FABRIC.getVersion = function(ctx) {
+      if(!ctx) ctx = context;
+      return context.build.getPureVersion();
+    };
     
     FABRIC.flush = function() {
       context.flush();
@@ -160,9 +170,6 @@ FABRIC = (function() {
         IO: context.IO,
         getContextID: function() {
           return context.getContextID();
-        },
-        getLicenses: function() {
-          return context.getLicenses();
         },
         domElement: embedTag,
         windowNode: context.VP.viewPort.getWindowNode(),
