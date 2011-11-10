@@ -739,6 +739,9 @@ $(document).ready(function() {
     presetSaver.addNode(gradientKeyTrackLibrary);
     presetSaver.addNode(volumeNode);
     presetSaver.addNode(opacityTexture);
+    presetSaver.addNode(texture2DSlice[0]);
+    presetSaver.addNode(texture2DSlice[1]);
+    presetSaver.addNode(texture2DSlice[2]);
     
     var storage = new FABRIC.SceneGraph.LocalStorage('VolumeRenderingPresets.'+currPresetName);
     presetSaver.save(storage);

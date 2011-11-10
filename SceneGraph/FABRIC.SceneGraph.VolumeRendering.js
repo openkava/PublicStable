@@ -832,6 +832,19 @@ FABRIC.SceneGraph.registerNodeType('VolumeSliceRender', {
       return volumeMaterialNodePub;
     };
 
+    var parentWriteData = sliceNode.writeData;
+    var parentReadData = sliceNode.readData;
+    sliceNode.writeData = function(sceneSaver, constructionOptions, nodeData) {
+      nodeData.axis = sliceNode.pub.getAxis();
+      nodeData.ratio = sliceNode.pub.getRatio();
+      parentWriteData(sceneSaver, constructionOptions, nodeData);
+    };
+    sliceNode.readData = function(sceneLoader, nodeData) {
+      sliceNode.pub.setAxis(nodeData.axis);
+      sliceNode.pub.setRatio(nodeData.ratio);
+      parentReadData(sceneLoader, nodeData);
+    };
+
     return sliceNode;
   }
 });
