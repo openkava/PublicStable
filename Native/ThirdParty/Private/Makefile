@@ -158,7 +158,7 @@ ifeq ($(BUILD_PLATFORM),Darwin)
 endif
 	for ARCH in $(ARCHS); do \
 		( cd Build/openexr-$(OPENEXR_VERSION)-$$ARCH && patch -p1 <../../Patches/openexr-linux-mem.diff ); \
-		( cd Build && patch -p1 <../Patches/openexr-universal-memset.diff ); \
+		( cd Build/openexr-$(OPENEXR_VERSION)-$$ARCH && patch -p1 <../../Patches/openexr-universal-memset.diff ); \
 	done
 	touch $@
 
@@ -615,7 +615,7 @@ else ifeq ($(BUILD_PLATFORM),Linux)
 		( mkdir -p Build/teem-$(TEEM_VERSION)-$$ARCH/arch/$$TEEM_ARCH/obj ); \
 		( mkdir -p Build/teem-$(TEEM_VERSION)-$$ARCH/arch/$$TEEM_ARCH/lib ); \
 		( mkdir -p Build/teem-$(TEEM_VERSION)-$$ARCH/arch/$$TEEM_ARCH/bin ); \
-		( cd Build/teem-$(TEEM_VERSION)-$$ARCH/src && make -e TEEM_ARCH=$$TEEM_ARCH -e TEEM_ZLIB.IPATH="include/zlib" ); \
+		( cd Build/teem-$(TEEM_VERSION)-$$ARCH && cmake . -DTEEM_ARCH=$$TEEM_ARCH -DCMAKE_C_FLAGS="-fPIC" && make -e TEEM_ARCH=$$TEEM_ARCH ); \
 	done
 endif
 	touch $@
@@ -624,6 +624,9 @@ Build/.teem.configure: Build/.teem.patch
 	touch $@
 
 Build/.teem.patch: Build/.teem.unpack
+	for ARCH in $(ARCHS); do \
+		( cd Build/teem-$(TEEM_VERSION)-$$ARCH && patch -p1 <../../Patches/teem_cmakelists.diff ); \
+	done
 	touch $@
 
 Build/.teem.unpack:
@@ -830,7 +833,7 @@ else ifeq ($(BUILD_PLATFORM),Linux)
 		else \
 			TEEM_ARCH="linux.32"; \
 		fi; \
-		cp Build/teem-$(TEEM_VERSION)-$$ARCH/arch/$$TEEM_ARCH/lib/libteem.a $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/lib/teem/; \
+		cp Build/teem-$(TEEM_VERSION)-$$ARCH/bin/libteem.a $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/lib/teem/; \
 	done
 endif
 
