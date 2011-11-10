@@ -594,16 +594,14 @@ Build/.teem.build: Build/.teem.configure
 ifeq ($(BUILD_PLATFORM),Darwin)
 	for ARCH in $(ARCHS); do \
 		if [ $$ARCH = "x86_64" ]; then \
-                        CFLAGS=-m64; \
-			TEEM_ARCH="darwin.64"; \
+                        CFLAGS="-m64 -DTEEM_32BIT=0 -UTEEM_BZIP2"; \
 		else \
-                        CFLAGS=-m32; \
-			TEEM_ARCH="darwin.32"; \
+                        CFLAGS="-m32 -DTEEM_32BIT=1 -UTEEM_BZIP2"; \
 		fi; \
 		( mkdir -p Build/teem-$(TEEM_VERSION)-$$ARCH/arch/$$TEEM_ARCH/obj ); \
 		( mkdir -p Build/teem-$(TEEM_VERSION)-$$ARCH/arch/$$TEEM_ARCH/lib ); \
 		( mkdir -p Build/teem-$(TEEM_VERSION)-$$ARCH/arch/$$TEEM_ARCH/bin ); \
-		( cd Build/teem-$(TEEM_VERSION)-$$ARCH/src && CFLAGS=$$CFLAGS make TEEM_ARCH=$$TEEM_ARCH TEEM_ZLIB.IPATH="include/zlib" ); \
+		( cd Build/teem-$(TEEM_VERSION)-$$ARCH && cmake . -DCMAKE_C_FLAGS="-fPIC $$CFLAGS -I$$(pwd)/../../include/zlib -I$$(pwd)/../../include/libpng/libpng" && make VERBOSE=1 ); \
 	done
 else ifeq ($(BUILD_PLATFORM),Linux)
 	for ARCH in $(ARCHS); do \
@@ -621,6 +619,9 @@ endif
 	touch $@
 
 Build/.teem.configure: Build/.teem.patch
+	for ARCH in $(ARCHS); do \
+		( cd Build/teem-$(TEEM_VERSION)-$$ARCH && patch -p1 <../../Patches/teem-libpng-set-enable-gray.diff ); \
+	done
 	touch $@
 
 Build/.teem.patch: Build/.teem.unpack
@@ -818,12 +819,7 @@ install_teem_libs:
 ifeq ($(BUILD_PLATFORM),Darwin)
 	for ARCH in $(ARCHS); do \
 		mkdir -p $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/lib/teem; \
-		if [ $$ARCH = "x86_64" ]; then \
-			TEEM_ARCH="darwin.64"; \
-		else \
-			TEEM_ARCH="darwin.32"; \
-		fi; \
-		cp Build/teem-$(TEEM_VERSION)-$$ARCH/arch/$$TEEM_ARCH/lib/libteem.a $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/lib/teem/; \
+		cp Build/teem-$(TEEM_VERSION)-$$ARCH/bin/libteem.a $(TARGET_BASE)/$(BUILD_PLATFORM)/$$ARCH/Release/lib/teem/; \
 	done
 else ifeq ($(BUILD_PLATFORM),Linux)
 	for ARCH in $(ARCHS); do \
