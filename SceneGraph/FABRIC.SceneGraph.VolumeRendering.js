@@ -102,6 +102,19 @@ FABRIC.SceneGraph.registerNodeType('VolumeSlices', {
 
     volumeSlicesNode.getTransformNode = function(){return transformWithTextureNode;};
 
+    var parentWriteData = volumeSlicesNode.writeData;
+    var parentReadData = volumeSlicesNode.readData;
+    volumeSlicesNode.writeData = function(sceneSaver, constructionOptions, nodeData) {
+      nodeData.cropMin = volumeSlicesNode.pub.getCropMin();
+      nodeData.cropMax = volumeSlicesNode.pub.getCropMax();
+      parentWriteData(sceneSaver, constructionOptions, nodeData);
+    };
+    volumeSlicesNode.readData = function(sceneLoader, nodeData) {
+      volumeSlicesNode.pub.setCropMin(nodeData.cropMin);
+      volumeSlicesNode.pub.setCropMax(nodeData.cropMax);
+      parentReadData(sceneLoader, nodeData);
+    };
+
     return volumeSlicesNode;
   }});
 
@@ -202,7 +215,8 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
           'self.newCount'
         ],
         entryFunctionName: 'initCount',
-        srcCode: 'operator initCount(io Size depth, io Size newCount){newCount = depth;}'
+        srcCode: 'operator initCount(io Size depth, io Size newCount){newCount = depth;}',
+        mainThreadOnly: true
       }));
 
       dgnodeSlicedGradient.bindings.append(scene.constructOperator({
@@ -391,27 +405,6 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
           ]
         }));
 
-/*
-    offscreenNodeRedrawEventHandler.postDescendBindings.append(
-      scene.constructOperator({
-          operatorName: 'drawVolumeRenderTargetToView',
-          srcFile: 'FABRIC_ROOT/SceneGraph/KL/renderTarget.kl',
-          entryFunctionName: 'drawRenderTargetToView_progID',
-          parameterLayout: [
-            'self.renderTarget',
-            'self.renderTargetToViewShaderProgram'
-          ]
-        }));*/
-
-/*
-operator bindShadowMapBuffer(
-  io Size textureUnit,
-  io OGLRenderTarget depthRenderTarget
-) {
-  Integer depthTextureID = depthRenderTarget.textures[depthRenderTarget.depthBuffer].texture.bufferID;
-  glActiveTexture(GL_TEXTURE0 + textureUnit);
-  glBindTexture(GL_TEXTURE_2D, depthTextureID);
-}*/
     //Create transfer function images
     var transferFunctionImageNode = scene.constructNode('Image', {
       wantHDR: true,
@@ -550,6 +543,29 @@ operator bindShadowMapBuffer(
     volumeNode.getLightNode = function(){return options.lightNode;}
     volumeNode.getTransformNode = function(){return options.transformNode;}
 
+    var parentWriteData = volumeNode.writeData;
+    var parentReadData = volumeNode.readData;
+    volumeNode.writeData = function(sceneSaver, constructionOptions, nodeData) {
+      nodeData.transparency = volumeNode.pub.getTransparency();
+      nodeData.specularFactor = volumeNode.pub.getSpecularFactor();
+      nodeData.brightnessFactor = volumeNode.pub.getBrightnessFactor();
+      nodeData.invertColor = volumeNode.pub.getInvertColor();
+     
+      nodeData.minOpacity = volumeNode.pub.getMinOpacity();
+      nodeData.maxOpacity = volumeNode.pub.getMaxOpacity();
+     
+      parentWriteData(sceneSaver, constructionOptions, nodeData);
+    };
+    volumeNode.readData = function(sceneLoader, nodeData) {
+      volumeNode.pub.setTransparency(nodeData.transparency);
+      volumeNode.pub.setSpecularFactor(nodeData.specularFactor);
+      volumeNode.pub.setBrightnessFactor(nodeData.brightnessFactor);
+      volumeNode.pub.setInvertColor(nodeData.invertColor);
+     
+      volumeNode.pub.setMinOpacity(nodeData.minOpacity);
+      volumeNode.pub.setMaxOpacity(nodeData.maxOpacity);
+      parentReadData(sceneLoader, nodeData);
+    };
     return volumeNode;
   }
 });
