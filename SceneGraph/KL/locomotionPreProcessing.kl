@@ -615,8 +615,8 @@ operator locomotionPreProcessing(
       debugGeometry.drawLine(footXfo.tr, footComXfo.tr, Color(1.0, 0.0, 0.0, 1.0));
       footInCOMSpace = footComXfo.inverse() * footXfo;
       
-      Scalar stepValue = footInCOMSpace.tr.z - leg.ikGoalReferenceXfo.tr.z;
-      footInCOMSpace.tr.z -= stepValue;
+      Scalar stepValue = footInCOMSpace.tr.z;
+      footInCOMSpace.tr.z = 0.0;
       poseVariables.scalarValues[foot.stepTimeVarId] = stepValue;
       poseVariables.xfoValues[leg.ikGoalXfoId] = footInCOMSpace;
     }

@@ -408,7 +408,7 @@ operator evaluateLocomotionPoseVariables(
       footXfo = invcontrollerXfo * footXfo;
       // Apply the error in COM space. 
       footError.y = 0.0;
-    //  footXfo.tr += footError;
+      footXfo.tr += footError;
       
       poseVariables.xfoValues[leg.ikGoalXfoId] = footXfo;
       
