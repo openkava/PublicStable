@@ -45,7 +45,11 @@ FABRIC_EXT_EXPORT void FabricTeemNRRDLoadUShort(
   file = NULL;
 
   Nrrd* nin = nrrdNew();
-  nrrdLoad(nin, fileName.data(), NULL);
+  if(nrrdLoad(nin, fileName.data(), NULL))
+  {
+    char * err = biffGetDone(NRRD);
+    Fabric::EDK::throwException("FabricTeemNRRDLoadUShort: Exception caught: %s",err);
+  }
 
   if(nin->dim != 3)
     Fabric::EDK::throwException("FabricTeemNRRDLoadUShort: only images of 3 dimensions are supported");
