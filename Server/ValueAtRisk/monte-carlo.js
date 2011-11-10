@@ -3,7 +3,7 @@ MathExt = require('./MathExt.js');
 FABRIC = require('Fabric').createClient();
 
 var useFabric = false;
-var prng = new MathExt.random.JSBuiltinGenerator;
+var prng = new MathExt.random.ExpGenerator;
 prng.seed(0);
 
 var numStocks = 10;
@@ -108,7 +108,7 @@ if (useFabric) {
 else {
   trialResults = [];
   for (var trial=0; trial<numTrials; ++trial) {
-    prng.seed(1+trial);
+    prng.seed(4096*(1+trial));
 
     //console.log("trial="+trial+" numTradingDays="+numTradingDays+" dt="+dt+" sqrtDT="+sqrtDT);
     //console.log("choleskyTrans="+choleskyTrans);
