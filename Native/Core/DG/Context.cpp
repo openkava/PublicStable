@@ -12,6 +12,7 @@
 #include <Fabric/Core/DG/EventHandler.h>
 #include <Fabric/Core/DG/Operator.h>
 #include <Fabric/Core/DG/LogCollector.h>
+#include <Fabric/Core/CG/CompileOptions.h>
 #include <Fabric/Core/RT/OpaqueDesc.h>
 #include <Fabric/Core/RT/IntegerDesc.h>
 #include <Fabric/Core/RT/StringDesc.h>
@@ -46,9 +47,14 @@ namespace Fabric
   {
     Context::ContextMap Context::s_contextMap;
     
-    RC::Handle<Context> Context::Create( RC::Handle<IO::Manager> const &ioManager, std::vector<std::string> const &pluginDirs, bool optimizeSynchronously )
+    RC::Handle<Context> Context::Create(
+      RC::Handle<IO::Manager> const &ioManager,
+      std::vector<std::string> const &pluginDirs,
+      CG::CompileOptions const &compileOptions,
+      bool optimizeSynchronously
+      )
     {
-       return new Context( ioManager, pluginDirs, optimizeSynchronously );
+       return new Context( ioManager, pluginDirs, compileOptions, optimizeSynchronously );
     }
     
     RC::Handle<Context> Context::Bind( std::string const &contextID )
@@ -59,12 +65,18 @@ namespace Fabric
       return it->second;
     }
     
-    Context::Context( RC::Handle<IO::Manager> const &ioManager, std::vector<std::string> const &pluginDirs, bool optimizeSynchronously )
+    Context::Context(
+      RC::Handle<IO::Manager> const &ioManager,
+      std::vector<std::string> const &pluginDirs,
+      CG::CompileOptions const &compileOptions,
+      bool optimizeSynchronously
+      )
       : m_logCollector( LogCollector::Create( this ) )
       , m_rtManager( RT::Manager::Create( KL::Compiler::Create() ) )
       , m_ioManager( ioManager )
       , m_cgManager( CG::Manager::Create( m_rtManager ) )
-      , m_codeManager( CodeManager::Create( optimizeSynchronously ) )
+      , m_compileOptions( compileOptions )
+      , m_codeManager( CodeManager::Create( &m_compileOptions, optimizeSynchronously ) )
       , m_notificationBracketCount( 0 )
       , m_pendingNotificationsMutex( "pending notifications" )
       , m_pendingNotificationsJSON( 0 )
