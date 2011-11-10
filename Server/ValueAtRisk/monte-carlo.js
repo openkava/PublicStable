@@ -2,24 +2,24 @@ fs = require('fs');
 MathExt = require('./MathExt.js');
 FABRIC = require('Fabric').createClient();
 
-var useFabric = true;
+var useFabric = false;
+var prng = new MathExt.random.JSBuiltinGenerator;
+prng.seed(0);
 
 var numStocks = 10;
 var numTradingDays = 252;
 var dt = 1.0/numTradingDays;
 var sqrtDT = Math.sqrt(dt);
 
-//var priceMeans = MathExt.randomNormalVec(numStocks,5.0/numTradingDays,1.0/numTradingDays);
 var priceMeans = [];
 for (var i=0; i<numStocks; ++i)
   priceMeans[i] = 25.0/numTradingDays;
 
-//var priceDevs = MathExt.randomNormalVec(numStocks,1.0/numTradingDays,0.1/numTradingDays);
 var priceDevs = [];
 for (var i=0; i<numStocks; ++i)
   priceDevs[i] = 25.0/numTradingDays;
 
-var priceCorrelations = MathExt.randomCorrelation(numStocks);
+var priceCorrelations = MathExt.randomCorrelation(numStocks, prng);
 console.log("priceCorrelations:");
 console.log(priceCorrelations);
 
@@ -39,8 +39,8 @@ var drifts = [];
 for (var i=0; i<numStocks; ++i)
   drifts[i] = priceMeans[i] - priceCovariance[i][i]/2;
 
-var numTrials = 65536;
-//var numTrials = 256;
+var numTrials = 256;
+//var numTrials = 65536;
 
 var valueAtRisk;
 if (useFabric) {
@@ -108,6 +108,8 @@ if (useFabric) {
 else {
   trialResults = [];
   for (var trial=0; trial<numTrials; ++trial) {
+    prng.seed(1+trial);
+
     //console.log("trial="+trial+" numTradingDays="+numTradingDays+" dt="+dt+" sqrtDT="+sqrtDT);
     //console.log("choleskyTrans="+choleskyTrans);
     //console.log("drifts="+drifts);
@@ -116,7 +118,7 @@ else {
       amounts[i] = 100;
 
     for (var day=1; day<=numTradingDays; ++day) {
-      var Z = MathExt.randomNormalVec(numStocks);
+      var Z = MathExt.random.normalVec(numStocks, prng);
       //console.log("Z = "+Z);
       var X = MathExt.mat.mulVec(choleskyTrans, Z);
       //console.log("X = "+X);
