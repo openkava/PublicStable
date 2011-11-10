@@ -8,6 +8,36 @@ module.exports = {
       };
     },
 
+    ExpGenerator: function () {
+      var base = { lo: 300773&0x7FFF, hi: 300773>>15 };
+      var mul = function (lhs, rhs) {
+        return {
+          lo: (lhs.lo * rhs.lo)&0x7FFF,
+          hi: (
+              ((lhs.lo*rhs.lo)>>15)
+              + lhs.lo * rhs.hi
+              + lhs.hi * rhs.lo
+              )&0x7FFF
+        };
+      };
+      var cur;
+      this.seed = function (index) {
+        cur = { lo: base.lo, hi: base.hi };
+        var mask = 1;
+        var mult = { lo: base.lo, hi: base.hi };
+        for (var i=0; i<30; ++i) {
+          if ( index & mask )
+            cur = mul(cur, mult);
+          mult = mul(mult, mult);
+          mask <<= 1;
+        }
+      };
+      this.nextUniform01 = function () {
+        cur = mul(cur, base);
+        return ((cur.lo + cur.hi<<15)&0x3FFFFFFF) / 1073741824.0;
+      }
+    },
+
     normal: function (generator) {
       var x1, x2, w;
       do {
