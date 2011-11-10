@@ -34,7 +34,9 @@ module.exports = {
       };
       this.nextUniform01 = function () {
         cur = mul(cur, base);
-        return ((cur.lo + cur.hi<<15)&0x3FFFFFFF) / 1073741824.0;
+        var seed = ((cur.lo + (cur.hi<<15))&0x3FFFFFFF);
+        //console.log("seed = " + seed);
+        return seed / 1073741824.0;
       }
     },
 

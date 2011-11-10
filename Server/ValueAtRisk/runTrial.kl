@@ -1,11 +1,11 @@
 function Size initialSeed(Size index) {
-  Size result = 1;
+  Size result = 300773;
   Size mult = 300773;
   Size mask = 1;
   while (mask != 0) {
     if (index & mask)
-      result *= mult;
-    mult *= mult;
+      result = (result * mult) % 1073741824;
+    mult = (mult * mult) % 1073741824;
     mask *= 2;
   }
   return result;
@@ -13,6 +13,7 @@ function Size initialSeed(Size index) {
 
 function Scalar random(io Size seed) {
   seed = (seed * 300773) % 1073741824;
+  //report "seed = " + seed;
   Scalar result = Scalar(seed) / 1073741824.0;
   return result;
 }
@@ -63,7 +64,7 @@ operator runTrial(
   //report "choleskyTrans="+choleskyTrans;
   //report "drifts="+drifts;
 
-  Size seed = initialSeed(4096 * index);
+  Size seed = initialSeed(4096 * (1+index));
 
   Vec amounts;
   for (Size i=0; i<%NS%; ++i)
