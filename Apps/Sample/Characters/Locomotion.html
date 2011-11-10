@@ -208,7 +208,7 @@ $(document).ready(function() {
   });
   */
     
-  var rigName = 'walker';
+  var rigName = 'centipede';
   var locomotionControllerNode;
   switch(rigName){
   case 'walker':
@@ -224,10 +224,18 @@ $(document).ready(function() {
         circleSize: 1.6
       });
   case 'centipede':
-    var maxLinearVelocity = new FABRIC.RT.Vec2(80, 80);
-    var maxLinearAcceleration = 15.0;
-    var maxAngularVelocity = new FABRIC.RT.Euler(0,1,0);
-    var numTrailSegments = 12;
+    var locomotionControllerNode = scene.constructNode('LocomotionCharacterController', {
+        cameraNode: camera,
+        maxLinearVelocity: new FABRIC.RT.Vec2(15, 15),
+        maxLinearAcceleration: 0.45,
+        maxAngularVelocity:  new FABRIC.RT.Euler(0, 2, 0),
+        bulletWorldNode: bulletWorldNode,
+        numTrailSegments: 12,
+        trailLength: 12.0,
+        gravity: -1.0,
+        comHeight: 1.8,
+        circleSize: 1.6
+      });
     break;
   case 'marama':
     var locomotionControllerNode = scene.constructNode('LocomotionCharacterController', {
@@ -264,7 +272,6 @@ $(document).ready(function() {
   }
   var skeletonNode = ikrig.getSkeletonNode();
   
-    
   
   var locomotionVariables = scene.constructNode('LocomotionPoseVariables', {
     baseVariables: characterVariables,
@@ -291,7 +298,6 @@ $(document).ready(function() {
     geometryNode: characterMesh,
     materialNode: materialNode
   });
-  
   
   /*
   var skeletonGeometryNode = scene.constructNode("CharacterSkeletonDebug", {

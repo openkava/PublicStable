@@ -86,15 +86,19 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('LocomotionFeetSolver', {
 
 FABRIC.RT.LocomotionMarker = function() {
   this.time = 0.0;
-  this.stepId = 0;
+//  this.stepId = 0;
+  // When we activate the clip using this marker,
+  // we should set all the step Ids to this set of values. 
+  this.stepIds = []; 
   this.params = [];
 };
 
 FABRIC.appendOnCreateContextCallback(function(context) {
   context.RegisteredTypesManager.registerType('LocomotionMarker', {
     members: {
-      time: 'Scalar',
-      stepId: 'Integer',
+      time: 'Scalar',/*
+      stepId: 'Integer',*/
+      stepIds: 'Integer[]',
       params: 'Scalar[]'
     },
     constructor: FABRIC.RT.LocomotionMarker

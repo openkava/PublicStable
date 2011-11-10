@@ -169,7 +169,7 @@ $(document).ready(function() {
   //////////////////////////////////////////////
   // 
   
-  var rigName = 'walker';
+  var rigName = 'centipede';
   var assetNodes, bindPoseRig, fkrigNode, rigInstanceNode, skeletonNode, characterMesh;
   switch(rigName){
   case 'hopper':
@@ -211,7 +211,10 @@ $(document).ready(function() {
       limbs: [ { bones:['WalkerLFLeg1', 'WalkerLFLeg2', 'WalkerLFLeg3'] },
                { bones:['WalkerRFLeg1', 'WalkerRFLeg2', 'WalkerRFLeg3'] },
                { bones:['WalkerLRLeg1', 'WalkerLRLeg2', 'WalkerLRLeg3'] },
-               { bones:['WalkerRRLeg1', 'WalkerRRLeg2', 'WalkerRRLeg3'] } ]
+               { bones:['WalkerRRLeg1', 'WalkerRRLeg2', 'WalkerRRLeg3'] } ],
+      hubIds: [
+        0, 0
+      ]
     });
     
 
@@ -293,12 +296,13 @@ $(document).ready(function() {
       }
     });
     
-    var animationAssetNodes = scene.importAssetFile('Assets/Centipede_Walk.DAE');
-    libraryFKAnimations = animationAssetNodes.AnimationLibrary;
+    fkrigNode.setName("FKRig");
+    var fkRigVariablesNode = fkrigNode.constructVariablesNode('FKRigVariables', true);
+    var ikRigVariablesNode = ikrigNode.invertSolvers(fkrigNode, true);
     
-    var invertedVariablesNode = ikrigNode.invertSolvers(animationAssetNodes.CentipedeHub010CharacterRig1, true);
-  
     rigInstanceNode.setRigNode(ikrigNode);
+    
+    loadAnimationFile('Assets/Centipede_Walk.DAE', fkrigNode);
     
     break;
   case 'marama':
