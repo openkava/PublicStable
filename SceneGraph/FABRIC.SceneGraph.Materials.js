@@ -51,6 +51,8 @@ FABRIC.SceneGraph.registerNodeType('Image', {
       glRepeat: true
     });
     
+    var resourceLoadNode, resourceloaddgnode;
+
     var imageNode = scene.constructNode('Texture', options);
     if(options.createDgNode){
       var dgnode = imageNode.constructDGNode('DGNode')
@@ -64,8 +66,8 @@ FABRIC.SceneGraph.registerNodeType('Image', {
     }
 
     if (options.createResourceLoadNode) {
-      var resourceLoadNode = scene.constructNode('ResourceLoad', options);
-      var resourceloaddgnode = resourceLoadNode.getDGLoadNode();
+      resourceLoadNode = scene.constructNode('ResourceLoad', options);
+      resourceloaddgnode = resourceLoadNode.getDGLoadNode();
       if(options.createDgNode){
         dgnode.setDependency(resourceloaddgnode, 'resource');
         dgnode.bindings.append(scene.constructOperator({
@@ -189,9 +191,9 @@ FABRIC.SceneGraph.registerNodeType('Image3D', {
       createResourceLoadNode: true,
       createLoadTextureEventHandler: true,
       initImage: true,
-      width: 16,
-      height: 16,
-      depth: 16,
+      width: 0,
+      height: 0,
+      depth: 0,
       url: undefined,
       glRepeat: true
     });
@@ -203,6 +205,7 @@ FABRIC.SceneGraph.registerNodeType('Image3D', {
       else
         options.color = 0;
     }
+    var resourceLoadNode, resourceloaddgnode;
     
     var imageNode = scene.constructNode('Texture', options);
     if(options.createDgNode){
@@ -224,8 +227,8 @@ FABRIC.SceneGraph.registerNodeType('Image3D', {
       if(options.format !== 'UShort')
         throw ('Only UShort 3D textures are currently supported');
 
-      var resourceLoadNode = scene.constructNode('ResourceLoad', options);
-      var resourceloaddgnode = resourceLoadNode.getDGLoadNode();
+      resourceLoadNode = scene.constructNode('ResourceLoad', options);
+      resourceloaddgnode = resourceLoadNode.getDGLoadNode();
       if(options.createDgNode){
         dgnode.addMember('xfoMat', 'Mat44');
         dgnode.setDependency(resourceloaddgnode, 'resource');
@@ -274,9 +277,10 @@ FABRIC.SceneGraph.registerNodeType('Image3D', {
       };
     }
 
+    var redrawEventHandler;
     if (options.createLoadTextureEventHandler) {
       // Construct the handler for loading the image into texture memory.
-      var redrawEventHandler = imageNode.constructEventHandlerNode('Redraw');
+      redrawEventHandler = imageNode.constructEventHandlerNode('Redraw');
       var oglTexture;
 
       if(options.format === 'Byte')
@@ -296,7 +300,28 @@ FABRIC.SceneGraph.registerNodeType('Image3D', {
         oglTexture.wrapR = FABRIC.SceneGraph.OpenGLConstants.GL_CLAMP;
       }
       redrawEventHandler.addMember('oglTexture3D', 'OGLTexture3D', oglTexture);
+      redrawEventHandler.addMember('forceSingleRefresh', 'Boolean', false);
+
       if(options.createDgNode){
+
+        if(resourceLoadNode) {
+          redrawEventHandler.addMember('currUrl', 'String');
+          redrawEventHandler.setScope('resource', resourceloaddgnode);
+          redrawEventHandler.preDescendBindings.append(scene.constructOperator({
+            operatorName: 'detectResourceChange',
+            srcCode: 'operator detectResourceChange(io FabricResource resource, io String prevUrl, io Boolean refresh){\n' + 
+                          '  if(prevUrl != resource.url){' +
+                          '    prevUrl = resource.url;\n' +
+                          '    refresh = true;} }',
+            entryFunctionName: 'detectResourceChange',
+            parameterLayout: [
+              'resource.resource',
+              'self.currUrl',
+              'self.forceSingleRefresh'
+            ]
+          }));
+        }
+
         redrawEventHandler.setScope('image', dgnode);
         redrawEventHandler.preDescendBindings.append(scene.constructOperator({
           operatorName: 'bind' + options.format + 'Texture3D',
@@ -308,7 +333,8 @@ FABRIC.SceneGraph.registerNodeType('Image3D', {
             'image.depth',
             'image.pixels',
             'self.oglTexture3D',
-            'textureStub.textureUnit'
+            'textureStub.textureUnit',
+            'self.forceSingleRefresh'
           ]
         }));
       }
@@ -327,8 +353,32 @@ FABRIC.SceneGraph.registerNodeType('Image3D', {
       }
     }
 
-    imageNode.pub.getURL = function() {
+    imageNode.pub.getUrl = function() {
       return resourceLoadNode ? resourceLoadNode.pub.getUrl() : '';
+    };
+
+    imageNode.pub.setUrl = function(url) {
+      if(resourceLoadNode) {
+        resourceLoadNode.pub.setUrl(url);
+      }
+    };
+    
+    var parentWriteData = imageNode.writeData;
+    var parentReadData = imageNode.readData;
+    imageNode.writeData = function(sceneSaver, constructionOptions, nodeData) {
+      parentWriteData(sceneSaver, constructionOptions, nodeData);
+      constructionOptions.createDgNode = options.createDgNode;
+      constructionOptions.createResourceLoadNode = options.createResourceLoadNode;
+      constructionOptions.createLoadTextureEventHandler = options.createLoadTextureEventHandler;
+      if(resourceLoadNode){
+        nodeData.url = resourceLoadNode.pub.getUrl();
+      }
+    };
+    imageNode.readData = function(sceneLoader, nodeData) {
+      parentReadData(sceneLoader, nodeData);
+      if(nodeData.url){
+        imageNode.pub.setUrl(nodeData.url);
+      }
     };
 
     return imageNode;

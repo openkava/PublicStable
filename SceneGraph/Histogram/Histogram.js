@@ -22,6 +22,7 @@ var constructHistogram = function(domRootID, options){
   polygon.attr('fill', "#66CC00");
 
   var generateGraph = function(histogramData, maxYValue){
+    polygon.removeAllPoints();
     maxYValue = maxYValue ? maxYValue : 1.0;
     polygon.addPoint(0, windowHeight);
     polygon.addPoint(0, windowHeight*0.9);

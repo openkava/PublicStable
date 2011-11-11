@@ -528,6 +528,8 @@ FABRIC.SceneGraph.registerNodeType('XfoManipulator', {
         targetMember: 'globalXfo',
         localXfo: new FABRIC.RT.Xfo()
       });
+    if(!options.targetNode)
+      options.targetNode = options.parentNode;
     if(!options.targetNode){
       throw "Target Node not specified";
     }

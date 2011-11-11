@@ -63,7 +63,7 @@ FABRIC = (function() {
     // Check the currently installed version.
     // TODO: This code will be removed once we get to the end of beta.
     var version = context.build.getPureVersion().split('.');
-    var requiredVersion = [1,0,14];
+    var requiredVersion = [1,0,15];
     var cmpVersions = function (lhs, rhs) {
       if (lhs[0] < rhs[0])
         return -1;
@@ -107,6 +107,16 @@ FABRIC = (function() {
           'status=1,resizable=1,width=1000,height=600'
         );
       debuggerWindow.context = context;
+    };
+
+    FABRIC.getLicenses = function(ctx) {
+      if(!ctx) ctx = context;
+      return context.getLicenses();
+    };
+
+    FABRIC.getVersion = function(ctx) {
+      if(!ctx) ctx = context;
+      return context.build.getPureVersion();
     };
     
     FABRIC.flush = function() {
@@ -160,9 +170,6 @@ FABRIC = (function() {
         IO: context.IO,
         getContextID: function() {
           return context.getContextID();
-        },
-        getLicenses: function() {
-          return context.getLicenses();
         },
         domElement: embedTag,
         windowNode: context.VP.viewPort.getWindowNode(),
