@@ -138,6 +138,7 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
       var setPathCurveValues = function(curveData) {
         var val = screenXfo.toScreenSpace(new FABRIC.Vec2(0, curveData[0]))
         var path = ['M', val.x, val.y, 'L', 100, 100, 300, 200];
+        try{
         for (var i = 0; i < curveData.length; i++) {
           var t = ((i/curveData.length)*(timeRange.y - timeRange.x))+timeRange.x;
           val = screenXfo.toScreenSpace(new FABRIC.Vec2(t, curveData[i]));
@@ -145,6 +146,10 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
           path[(i * 2) + 5] = val.y;
         }
         trackCurves[trackIndex].attr('d', path.join(' '));
+        }
+        catch(e){
+          console.log("Bug: the core is sometimes returning null values e.g.:"+JSON.stringify(curveData));
+        }
       }
       setPathCurveValues(curvesData.values[trackIndex]);
   
