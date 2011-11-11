@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+#include <pthread.h>
 
 #define NS 10
 #define CORES 8
@@ -97,29 +98,29 @@ struct FixedArgs
   double drifts[NS];
 };
 
-struct VariableArgs
-{
-  size_t index;
-};
-
 struct Args
 {
   FixedArgs *fixedArgs;
-  VariableArgs const *variableArgs;
+  size_t startIndex;
+  size_t endIndex;
   double *trialResults;
 };
 
 void *threadEntry( void *_args )
 {
   Args const *args = (Args const *)_args;
-  args->trialResults[args->variableArgs->index] = runTrial(
-    args->variableArgs->index,
-    args->fixedArgs->numTradingDays,
-    args->fixedArgs->dt,
-    args->fixedArgs->sqrtDT,
-    args->fixedArgs->choleskyTrans,
-    args->fixedArgs->drifts
-  );
+  for ( size_t index = args->startIndex;
+    index != args->endIndex; ++index )
+  {
+    args->trialResults[index] = runTrial(
+      index,
+      args->fixedArgs->numTradingDays,
+      args->fixedArgs->dt,
+      args->fixedArgs->sqrtDT,
+      args->fixedArgs->choleskyTrans,
+      args->fixedArgs->drifts
+    );
+  }
   return 0;
 }
 
@@ -210,8 +211,8 @@ int doubleCompare( void const *_lhs, void const *_rhs )
 
 int main( int argc, char **argv )
 {
-  size_t const numTrials = 65536;
-  double trialResults[numTrials];
+  size_t const numTrials = 1048576;
+  double *trialResults = new double[numTrials];
 
   FixedArgs fixedArgs;
   fixedArgs.numTradingDays = 252;
@@ -245,20 +246,34 @@ int main( int argc, char **argv )
   for ( size_t i=0; i<NS; ++i )
     fixedArgs.drifts[i] = priceMeans[i] - priceCovariance[i][i]/2.0;
 
-  for ( size_t trial=0; trial<numTrials; ++trial )
+  Args args[CORES];
+  pthread_t threads[CORES-1];
+  for ( size_t core=0; core<CORES; ++core )
   {
-    VariableArgs variableArgs;
-    variableArgs.index = trial;
-    Args args;
-    args.fixedArgs = &fixedArgs;
-    args.variableArgs = &variableArgs;
-    args.trialResults = trialResults;
-    threadEntry( &args );
+    if ( core == 0 )
+      args[core].startIndex = 0;
+    else
+      args[core].startIndex = args[core-1].endIndex;
+    if ( core+1 == CORES )
+      args[core].endIndex = numTrials;
+    else
+      args[core].endIndex = args[core].startIndex + numTrials/CORES;
+    args[core].fixedArgs = &fixedArgs;
+    args[core].trialResults = trialResults;
+    if ( core+1 == CORES )
+      threadEntry( &args[core] );
+    else
+      pthread_create( &threads[core], 0, &threadEntry, &args[core] );
   }
+
+  for ( size_t core=0; core<CORES-1; ++core )
+    pthread_join( threads[core], 0 );
 
   qsort( trialResults, numTrials, sizeof(double), doubleCompare );
 
   printf( "VaR = %.16f\n", 100.0*NS - trialResults[(size_t)floor( 0.05 * numTrials )] );
+
+  delete [] trialResults;
 
   return 0;
 }
