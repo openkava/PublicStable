@@ -91,7 +91,7 @@ $(document).ready(function() {
     }
   });
   $("#displayControllerDebugging").attr('checked', true);
-  $("#displayLocomotionFootMotionDebugging").attr('checked', true);
+  $("#displayFootMotionDebugging").attr('checked', true);
 
   // Create the scene.
   var scene = FABRIC.SceneGraph.createScene();
@@ -235,6 +235,7 @@ $(document).ready(function() {
         comHeight: 1.8,
         circleSize: 1.6
       });
+    break;
   case 'centipede':
     var locomotionControllerNode = scene.constructNode('LocomotionCharacterController', {
         cameraNode: camera,
@@ -326,8 +327,8 @@ $(document).ready(function() {
     locomotionControllerNode.setDrawDebuggingToggle($("#displayControllerDebugging").is(":checked"));
     viewport.redraw();
   });
-  $("#displayLocomotionFootMotionDebugging").change(function() {
-    locomotionVariables.setDrawDebuggingToggle($("#displayLocomotionFootMotionDebugging").is(":checked"));
+  $("#displayFootMotionDebugging").change(function() {
+    locomotionVariables.setDrawDebuggingToggle($("#displayFootMotionDebugging").is(":checked"));
     viewport.redraw();
   });
   
@@ -519,7 +520,7 @@ $(document).ready(function() {
               </br>
               <input type="checkbox" id="displayControllerDebugging" style="margin-top:10px;"/><label for="displayControllerDebugging">Display Controller Debugging:</label>
               </br>
-              <input type="checkbox" id="displayLocomotionFootMotionDebugging" style="margin-top:10px;"/><label for="displayLocomotionFootMotionDebugging">Display Locomotion Foot Motion Debugging:</label>
+              <input type="checkbox" id="displayFootMotionDebugging" style="margin-top:10px;"/><label for="displayFootMotionDebugging">Display Foot Motion Debugging:</label>
               </br>
               <button id="play" style="margin-top:10px;">Play</button>
               <button id="step" style="margin-top:10px;">Step</button>

@@ -234,7 +234,7 @@ FABRIC.SceneGraph.registerNodeType('LocomotionAnimationLibrary', {
 
 FABRIC.Characters.CharacterControllerParams = function() {
   this.displacement = new FABRIC.RT.Xfo();
-  this.displacementDir = new FABRIC.RT.Vec3();
+  this.displacementDir = new FABRIC.RT.Vec3(0,0,1);
   this.trail = [];
   this.trailLength = 0;
   this.trailCircularArrayIndex = 0;
