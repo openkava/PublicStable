@@ -27,7 +27,7 @@
     "name":"VolumeOpacityInstance",
     "type":"VolumeOpacityInstance",
     "options":{"name":"VolumeOpacityInstance","drawable":true,"createBoundingBoxNode":true},
-    "data":{"transparency":0.699999988079071,"specularFactor":0.699999988079071,"brightnessFactor":0.5,"invertColor":0,"minOpacity":0,"maxOpacity":1,"cropMin":{"x":-1,"y":-0.2000000029802322,"z":-1},"cropMax":{"x":1,"y":1,"z":1}}
+    "data":{"transparency":0.699999988079071,"specularFactor":0.6,"brightnessFactor":0.5,"invertColor":0,"minOpacity":0,"maxOpacity":1,"cropMin":{"x":-1,"y":-0.2000000029802322,"z":-1},"cropMax":{"x":1,"y":1,"z":1}}
   },
   {
     "name":"Image3DWithHistogram",
