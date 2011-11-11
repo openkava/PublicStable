@@ -141,6 +141,9 @@ $(document).ready(function() {
         pointMaterial.setMinimum(min.y + (max.y - min.y) * 0.5);
         pointMaterial.setMaximum(max.y);
         
+        $('#loadingDialog').dialog('close');
+        viewport.redraw();
+        
         $('#minimum').slider({
           min: min.y,
           max: max.y,
@@ -171,8 +174,6 @@ $(document).ready(function() {
       },150);
     }
 
-    $('#loadingDialog').dialog('close');
-    viewport.redraw();
   });
 
   FABRIC.appendOnResolveAsyncTaskCallback(function(label, nbRemaining, doneWeight, totalWeight) {
