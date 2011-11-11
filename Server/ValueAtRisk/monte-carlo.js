@@ -39,19 +39,20 @@ var drifts = [];
 for (var i=0; i<numStocks; ++i)
   drifts[i] = priceMeans[i] - priceCovariance[i][i]/2;
 
-var numTrials = 1;
+//var numTrials = 1;
 //var numTrials = 256;
-//var numTrials = 65536;
+var numTrials = 65536;
+//var numTrials = 262144;
 
 var valueAtRisk;
 if (useFabric) {
   var params = FABRIC.DG.createNode("params");
   params.addMember('numTradingDays', 'Size', numTradingDays);
-  params.addMember('dt', 'Scalar', dt);
-  params.addMember('sqrtDT', 'Scalar', sqrtDT);
-  params.addMember('choleskyTrans', 'Scalar['+numStocks+']['+numStocks+']');
+  params.addMember('dt', 'Float64', dt);
+  params.addMember('sqrtDT', 'Float64', sqrtDT);
+  params.addMember('choleskyTrans', 'Float64['+numStocks+']['+numStocks+']');
   params.setData('choleskyTrans', choleskyTrans);
-  params.addMember('drifts', 'Scalar['+numStocks+']');
+  params.addMember('drifts', 'Float64['+numStocks+']');
   params.setData('drifts', drifts);
 
   var runTrialOp = FABRIC.DG.createOperator("runTrial");
@@ -95,7 +96,7 @@ if (useFabric) {
   var trials = FABRIC.DG.createNode('trials');
   trials.setCount(numTrials);
   trials.setDependency(params, 'params');
-  trials.addMember('value', 'Scalar');
+  trials.addMember('value', 'Float64');
   trials.bindings.append(runTrialBinding);
   trials.bindings.append(sortBinding);
   if (trials.getErrors().length > 0) {
