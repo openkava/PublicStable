@@ -59,6 +59,7 @@ FABRIC.SceneGraph.registerNodeType('VolumeSlices', {
     var uniforms = volumeSlicesNode.getUniformsDGNode();
     volumeSlicesNode.addMemberInterface(uniforms, 'cropMin', true);
     volumeSlicesNode.addMemberInterface(uniforms, 'cropMax', true);
+    volumeSlicesNode.addMemberInterface(uniforms, 'nbSlices', true);
 
     var attributes = volumeSlicesNode.getAttributesDGNode();
     var cameraNode = scene.getPrivateInterface(options.cameraNode);
@@ -100,8 +101,7 @@ FABRIC.SceneGraph.registerNodeType('VolumeSlices', {
     ]);
 
     volumeSlicesNode.getTransformNode = function(){return transformWithTextureNode;};
-    
-    
+
     var parentWriteData = volumeSlicesNode.writeData;
     var parentReadData = volumeSlicesNode.readData;
     volumeSlicesNode.writeData = function(sceneSaver, constructionOptions, nodeData) {
@@ -215,7 +215,8 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
           'self.newCount'
         ],
         entryFunctionName: 'initCount',
-        srcCode: 'operator initCount(io Size depth, io Size newCount){newCount = depth;}'
+        srcCode: 'operator initCount(io Size depth, io Size newCount){newCount = depth;}',
+        mainThreadOnly: true
       }));
 
       dgnodeSlicedGradient.bindings.append(scene.constructOperator({
@@ -258,6 +259,7 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
       });
       var generatorNodeGradient = scene.getPrivateInterface(generatorNodeGradientPub);
       var dgnodeGradient = generatorNodeGradient.getDGNode();
+      dgnodeGradient.addMember('version', 'Integer', 0);//Support dynamic change of source (to re-upload the texture)
       dgnodeGradient.setDependency(sourceOpacityDGNodeForGradient, 'opacity');
       dgnodeGradient.setDependency(dgnodeSlicedGradient, 'slicedGradient');
 
@@ -271,10 +273,12 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
           'self.width',
           'self.height',
           'self.depth',
-          'self.pixels'
+          'self.pixels',
+          'self.version'
         ],
         entryFunctionName: 'setGradients',
-        srcCode: 'operator setGradients(io Size inW, io Size inH, io Size inD, io RGBA sliceGradients<>[], io Size W, io Size H, io Size D, io RGBA pixels[]) {\n' +
+        srcCode: 'operator setGradients(io Size inW, io Size inH, io Size inD, io RGBA sliceGradients<>[], io Size W, io Size H, io Size D, io RGBA pixels[], io Integer version) {\n' +
+                                'version = version+1;\n' +
                                 'W = inW; H = inH; D = inD;\n' +
                                 'pixels.resize(W*H*D);\n' +
                                 'Size dst = 0, i, j;\n' +
@@ -286,6 +290,24 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
                                 '}\n' +
                               '}\n'
       }));
+
+      //Make sure we refresh dynamically. This should be automatic; dgnode dirtyness should propagate to event handlers...
+      var gradientRedrawHandler = generatorNodeGradient.getRedrawEventHandler();
+      gradientRedrawHandler.addMember('version', 'Integer', -1);
+
+      gradientRedrawHandler.preDescendBindings.insert(scene.constructOperator({
+        operatorName: 'detectChange',
+        srcCode: 'operator detectChange(io Integer srcVersion, io Integer version, io Boolean refresh){\n' + 
+                      '  if(version != srcVersion){' +
+                      '    version = srcVersion;\n' +
+                      '    refresh = true;} }',
+        entryFunctionName: 'detectChange',
+        parameterLayout: [
+          'image.version',
+          'self.version',
+          'self.forceSingleRefresh'
+        ]
+      }), 0);
 
       options.gradientTextureNode = generatorNodeGradientPub;
 
@@ -327,7 +349,7 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
         new FABRIC.RT.OGLRenderTargetTextureDesc (
             2,
             new FABRIC.RT.OGLTexture2D (
-              FABRIC.SceneGraph.OpenGLConstants.GL_RGBA16,
+              FABRIC.SceneGraph.OpenGLConstants.GL_RGBA16F,
               FABRIC.SceneGraph.OpenGLConstants.GL_RGBA,
               FABRIC.SceneGraph.OpenGLConstants.GL_FLOAT)
           )
@@ -383,27 +405,6 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
           ]
         }));
 
-/*
-    offscreenNodeRedrawEventHandler.postDescendBindings.append(
-      scene.constructOperator({
-          operatorName: 'drawVolumeRenderTargetToView',
-          srcFile: 'FABRIC_ROOT/SceneGraph/KL/renderTarget.kl',
-          entryFunctionName: 'drawRenderTargetToView_progID',
-          parameterLayout: [
-            'self.renderTarget',
-            'self.renderTargetToViewShaderProgram'
-          ]
-        }));*/
-
-/*
-operator bindShadowMapBuffer(
-  io Size textureUnit,
-  io OGLRenderTarget depthRenderTarget
-) {
-  Integer depthTextureID = depthRenderTarget.textures[depthRenderTarget.depthBuffer].texture.bufferID;
-  glActiveTexture(GL_TEXTURE0 + textureUnit);
-  glBindTexture(GL_TEXTURE_2D, depthTextureID);
-}*/
     //Create transfer function images
     var transferFunctionImageNode = scene.constructNode('Image', {
       wantHDR: true,
@@ -542,8 +543,6 @@ operator bindShadowMapBuffer(
     volumeNode.getLightNode = function(){return options.lightNode;}
     volumeNode.getTransformNode = function(){return options.transformNode;}
 
-
-    
     var parentWriteData = volumeNode.writeData;
     var parentReadData = volumeNode.readData;
     volumeNode.writeData = function(sceneSaver, constructionOptions, nodeData) {
@@ -551,10 +550,10 @@ operator bindShadowMapBuffer(
       nodeData.specularFactor = volumeNode.pub.getSpecularFactor();
       nodeData.brightnessFactor = volumeNode.pub.getBrightnessFactor();
       nodeData.invertColor = volumeNode.pub.getInvertColor();
-      
+     
       nodeData.minOpacity = volumeNode.pub.getMinOpacity();
       nodeData.maxOpacity = volumeNode.pub.getMaxOpacity();
-      
+     
       parentWriteData(sceneSaver, constructionOptions, nodeData);
     };
     volumeNode.readData = function(sceneLoader, nodeData) {
@@ -562,12 +561,11 @@ operator bindShadowMapBuffer(
       volumeNode.pub.setSpecularFactor(nodeData.specularFactor);
       volumeNode.pub.setBrightnessFactor(nodeData.brightnessFactor);
       volumeNode.pub.setInvertColor(nodeData.invertColor);
-      
+     
       volumeNode.pub.setMinOpacity(nodeData.minOpacity);
       volumeNode.pub.setMaxOpacity(nodeData.maxOpacity);
       parentReadData(sceneLoader, nodeData);
     };
-    
     return volumeNode;
   }
 });
@@ -832,6 +830,19 @@ FABRIC.SceneGraph.registerNodeType('VolumeSliceRender', {
 
     sliceNode.getMaterial = function(){
       return volumeMaterialNodePub;
+    };
+
+    var parentWriteData = sliceNode.writeData;
+    var parentReadData = sliceNode.readData;
+    sliceNode.writeData = function(sceneSaver, constructionOptions, nodeData) {
+      nodeData.axis = sliceNode.pub.getAxis();
+      nodeData.ratio = sliceNode.pub.getRatio();
+      parentWriteData(sceneSaver, constructionOptions, nodeData);
+    };
+    sliceNode.readData = function(sceneLoader, nodeData) {
+      sliceNode.pub.setAxis(nodeData.axis);
+      sliceNode.pub.setRatio(nodeData.ratio);
+      parentReadData(sceneLoader, nodeData);
     };
 
     return sliceNode;

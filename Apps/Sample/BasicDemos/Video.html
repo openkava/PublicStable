@@ -127,7 +127,7 @@ $(document).ready(function() {
     })
   });
 
-  scene.constructNode('3AxisRotationManipulator', { parentNode: instanceNode, radius: 3.0, drawOverLayed: true });
+  scene.constructNode('3AxisRotationManipulator', { targetNode: instanceNode, radius: 3.0, drawOverLayed: true });
 
   $('#globalTime').slider({
     min: 0.0,
