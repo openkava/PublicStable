@@ -169,7 +169,7 @@ $(document).ready(function() {
   //////////////////////////////////////////////
   // 
   
-  var rigName = 'centipede';
+  var rigName = 'walker';
   var assetNodes, bindPoseRig, fkrigNode, rigInstanceNode, skeletonNode, characterMesh;
   switch(rigName){
   case 'hopper':
@@ -211,10 +211,7 @@ $(document).ready(function() {
       limbs: [ { bones:['WalkerLFLeg1', 'WalkerLFLeg2', 'WalkerLFLeg3'] },
                { bones:['WalkerRFLeg1', 'WalkerRFLeg2', 'WalkerRFLeg3'] },
                { bones:['WalkerLRLeg1', 'WalkerLRLeg2', 'WalkerLRLeg3'] },
-               { bones:['WalkerRRLeg1', 'WalkerRRLeg2', 'WalkerRRLeg3'] } ],
-      hubIds: [
-        0, 0
-      ]
+               { bones:['WalkerRRLeg1', 'WalkerRRLeg2', 'WalkerRRLeg3'] } ]
     });
     
 

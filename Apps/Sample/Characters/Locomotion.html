@@ -209,8 +209,18 @@ $(document).ready(function() {
     enableRaycasting: true
   });
   */
-    
-  var rigName = 'centipede';
+  
+  var rigName;
+  try{
+    if(localStorage && localStorage.getItem("rigName")){
+      rigName = localStorage.getItem("rigName");
+    }
+    else{
+      throw "no rigName";
+    }
+  }catch(e){
+    rigName = 'walker';
+  }
   var locomotionControllerNode;
   switch(rigName){
   case 'walker':
@@ -253,14 +263,16 @@ $(document).ready(function() {
       });
     break;
   }
-  
-
-  
+  $("#selectCharacter").val(rigName);
+  $("#selectCharacter").change(function() {
+    localStorage.setItem("rigName", $("#selectCharacter :selected").attr("value"));
+    window.location.reload();
+  });
   
   var rigLoader = scene.constructManager('SceneLoader');
 //  var storage = new FABRIC.SceneGraph.LocalStorage(rigName);
 //  var nodeMap = rigLoader.load(storage);
-  var storage = new FABRIC.SceneGraph.URLReader('Assets/' + rigName + '.txt');
+  var storage = new FABRIC.SceneGraph.URLReader('Assets/' + rigName + '.json');
   var nodeMap = rigLoader.load(storage);
 
   var libraryAnimations = nodeMap.LibraryLocomotionAnimations;
@@ -499,6 +511,12 @@ $(document).ready(function() {
           <div class="box">
             <h2>CONTROLS</h2>
             <div class="content">
+              <label for="selectCharacter" style="margin-top:10px;">Select Character:</label>
+              <select id='selectCharacter' style="margin-top:10px;">
+                <option value="walker">Walker
+                <option value="centipede">Centipede
+              </select>
+              </br>
               <input type="checkbox" id="displayControllerDebugging" style="margin-top:10px;"/><label for="displayControllerDebugging">Display Controller Debugging:</label>
               </br>
               <input type="checkbox" id="displayLocomotionFootMotionDebugging" style="margin-top:10px;"/><label for="displayLocomotionFootMotionDebugging">Display Locomotion Foot Motion Debugging:</label>
