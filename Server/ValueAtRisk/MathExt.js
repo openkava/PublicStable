@@ -22,7 +22,7 @@ module.exports = {
       };
       var cur;
       this.seed = function (index) {
-        cur = { lo: base.lo, hi: base.hi };
+        cur = { lo: 1, hi: 0 };
         var mask = 1;
         var mult = { lo: base.lo, hi: base.hi };
         for (var i=0; i<30; ++i) {

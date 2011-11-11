@@ -1,30 +1,30 @@
 function Size partition(
-  io Scalar a<>,
+  io Float64 a<>,
   Size begin,
   Size end,
   Size pivot
   )
 {
-  Scalar piv = a[pivot];
+  Float64 piv = a[pivot];
   a[pivot] = a[end-1];
   a[end-1] = piv;
   Size store = begin;
   for (Size i=begin; i<end-1; ++i) {
     if (a[i] <= piv) {
-      Scalar t = a[store];
+      Float64 t = a[store];
       a[store] = a[i];
       a[i] = t;
       ++store;
     }
   }
-  Scalar t = a[end-1];
+  Float64 t = a[end-1];
   a[end-1] = a[store];
   a[store] = t;
   return store;
 }
 
 function qsort(
-  io Scalar a<>,
+  io Float64 a<>,
   Size begin,
   Size end
   )
@@ -39,7 +39,7 @@ function qsort(
 }
 
 operator sort(
-  io Scalar v<>
+  io Float64 v<>
   )
 {
   qsort(v, 0, v.size);
