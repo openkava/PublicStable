@@ -260,7 +260,6 @@ operator locomotionPreProcessing(
   for(Integer i=0; i < legs.size; i++){
     FootStep step;
     if(footSteps[i][0].x > timeRange.x){
-      report("Adding first step:"+i);
       Vec2 firstStep = footSteps[i][0];
       step.liftTime = firstStep.x - averageFootLiftedTime;
       step.plantTime = firstStep.x;
@@ -271,8 +270,6 @@ operator locomotionPreProcessing(
       step.plantTime = footSteps[i][j+1].x;
       footStepTracks[i].footSteps.push(step);
     }
-    report("lastStep lift timee:"+footSteps[i][footSteps[i].size-1].y);
-    report("delta:" + (footSteps[i][footSteps[i].size-1].y - timeRange.y));
   //  if(footSteps[i][footSteps[i].size-1].y <= timeRange.y){
       report("Adding last step:"+i);
       Vec2 lastStep = footSteps[i][footSteps[i].size-1];
@@ -355,18 +352,25 @@ operator locomotionPreProcessing(
 //  }
 
   comAlignment = bones[hubs[0].boneId].referencePose;
+  debugGeometry.drawAxis(comAlignment, 3.5, Color(1.0, 0.0, 1.0, 1.0));
   Vec3 avgFootPos;
   for(Integer j=0; j < legs.size; j++){
     Limb leg = legs[j];
-    
-    avgFootPos += leg.ikGoalReferenceXfo.tr;
-    weight += 1.0;
+    if(leg.hubId < 0){
+      debugGeometry.drawLine(comAlignment.tr, leg.ikGoalReferenceXfo.tr, Color(0.0, 0.0, 0.0, 1.0));
+      avgFootPos += leg.ikGoalReferenceXfo.tr;
+      weight += 1.0;
+    }
   }
-  avgFootPos *= 1.0/weight;
-  alignment.setFrom2Vectors(comAlignment.ori.getXaxis(), (comAlignment.tr - avgFootPos).unit());
-  comAlignment.ori = alignment * comAlignment.ori;
+  if(weight > 0.0){
+    avgFootPos *= 1.0/weight;
+    alignment.setFrom2Vectors(comAlignment.ori.getXaxis(), (comAlignment.tr - avgFootPos).unit());
+    comAlignment.ori = alignment * comAlignment.ori;
+    comAlignment.tr = avgFootPos;
+  }else{
+    comAlignment.tr.y = 0.0;
+  }
   comAlignment.ori.setUnit();
-  comAlignment.tr = avgFootPos;
 
   
 //  comAlignment = bones[hubs[0].boneId].referencePose;
@@ -410,13 +414,20 @@ operator locomotionPreProcessing(
     avgFootPos.setNull();
     for(Integer j=0; j < legs.size; j++){
       Limb leg = legs[j];
-      avgFootPos += poseVariables.xfoValues[leg.ikGoalXfoId].tr;
-      weight += 1.0;
+      if(leg.hubId < 0){
+        avgFootPos += poseVariables.xfoValues[leg.ikGoalXfoId].tr;
+        weight += 1.0;
+      }
     }
-    avgFootPos *= 1.0/weight;
-    alignment.setFrom2Vectors(comXfo.ori.getXaxis(), (comXfo.tr - avgFootPos).unit());
-    comXfo.ori = alignment * comXfo.ori;
-    comXfo.tr = avgFootPos;
+    if(weight > 0.0){
+      avgFootPos *= 1.0/weight;
+      alignment.setFrom2Vectors(comXfo.ori.getXaxis(), (comXfo.tr - avgFootPos).unit());
+      comXfo.ori = alignment * comXfo.ori;
+      comXfo.tr = avgFootPos;
+    }else{
+      comXfo.tr.y = 0.0;
+    }
+    
   //  comXfo.ori.setUnit();
   
     //////////////////////////////////////
@@ -428,6 +439,11 @@ operator locomotionPreProcessing(
    //     debugGeometry.drawAxis(comXfo, 1.0, Color(1.0, 0.0, 1.0, 1.0));
     comXfo = comXfo * comAlignment;
     comXfo.tr.y = 0;//poseVariables.xfoValues[legs[footId].ikGoalXfoId].tr.y;
+    
+    // Force the axis to point straight up. 
+      alignment.setFrom2Vectors(comXfo.ori.getYaxis(), Vec3(0.0,1.0,0.0));
+      comXfo.ori = alignment * comXfo.ori;
+      
     debugGeometry.drawAxis(comXfo, 0.7, Color(1.0, 0.0, 1.0, 1.0));
       
     if(currKeyt > startT){
@@ -604,19 +620,19 @@ operator locomotionPreProcessing(
       debugGeometry.drawLine(footXfo.tr, footComXfo.tr, Color(1.0, 0.0, 0.0, 1.0));
       footInCOMSpace = footComXfo.inverse() * footXfo;
       
-      Scalar stepValue = footInCOMSpace.tr.z - leg.ikGoalReferenceXfo.tr.z;
-      footInCOMSpace.tr.z -= stepValue;
+      Scalar stepValue = footInCOMSpace.tr.z;
+      footInCOMSpace.tr.z = 0.0;
       poseVariables.scalarValues[foot.stepTimeVarId] = stepValue;
       poseVariables.xfoValues[leg.ikGoalXfoId] = footInCOMSpace;
     }
     poseVariables.setTrackValues(time, trackSet, limbValueBindings);
-    
   }
   
   ///////////////////////////////////////////////////
   // Add Animation Markers
   locomotionMarkers.resize(legs.size);
   for(Integer i=0; i < legs.size; i++){
+        report("processing leg:"+i);
     for(Integer j=0; j < footStepTracks[i].footSteps.size; j++){
       if(footStepTracks[i].footSteps[j].liftTime < timeRange.x ||
          footStepTracks[i].footSteps[j].liftTime >= timeRange.y){
@@ -629,13 +645,38 @@ operator locomotionPreProcessing(
       LocomotionMarker marker;
       Scalar t = footStepTracks[i].footSteps[j].liftTime;
       marker.time = t;
-      marker.stepId = j;
+    //  marker.stepId = j;
       
       poseVariables.evaluateKeyframeTracks(t, trackSet, comParamBindings, currKeys);
       marker.params.resize(comParamBindings.scalarBindings.size);
       for(Integer k=0; k < comParamBindings.scalarBindings.size; k++){
         marker.params[k] = poseVariables.scalarValues[comParamBindings.scalarBindings[k].varId];
       }
+      report(marker);
+      marker.stepIds.resize(legs.size);
+      for(Integer k=0; k < legs.size; k++){
+        marker.stepIds[k] = -1;
+      }
+      // for this marker, find all the foot step ids that are valid for the other legs.
+      for(Integer k=0; k < legs.size; k++){
+        report("searching leg:"+k);
+        if(k==j){
+          marker.stepIds[j] = j;
+        }
+        else{
+          // Plant times dictate stepId increments, we must find the step that
+          // plants after the current foot lift. 
+          for(Integer l=0; l < footStepTracks[k].footSteps.size; l++){
+            report("step"+l+":"+footStepTracks[k].footSteps[l]);
+            if(footStepTracks[k].footSteps[l].plantTime > t){
+              marker.stepIds[k] = l;
+              break;
+            }
+          }
+        }
+      }
+      report("marker.stepIds:"+marker.stepIds);
+      
       locomotionMarkers[i].push(marker);
     }
   }

@@ -1101,7 +1101,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('InsectLegSolver', {
       if(options.hubIds){
         leg.hubId = options.hubIds[j];
         var hubs = skeletonNode.getData('hubs');
-        leg.ikGoalReferenceXfo = bones[hubs[leg.hubId].boneId].inverse().multiply(footPlatformXfo);
+        leg.ikGoalReferenceXfo = bones[hubs[leg.hubId].boneId].referencePose.inverse().multiply(footPlatformXfo);
       }
       legs.push(leg);
     }

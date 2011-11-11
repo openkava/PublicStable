@@ -110,12 +110,14 @@ operator evaluateCharacterController(
     
     controllerparams.displacement.ori.setFromAxisAndAngle(Vec3(0.0, 1.0, 0.0), deltaAngle);
     controllerXfo.ori = controllerparams.displacement.ori * controllerXfo.ori;
-    controllerparams.displacementDir = displacementDir;
+    controllerparams.displacementDir = controllerparams.displacementDir.linearInterpolate(displacementDir, 0.1);
   }
   else{
     controllerparams.displacement.ori.setIdentity();
   }
   controllerXfo.ori = controllerXfo.ori.unit();
+  
+  debugGeometry1.drawLine(controllerXfo.tr, controllerXfo.tr + (controllerparams.displacementDir * circleSize * 1.2), Color(0.5,0.0,0.0,1.0));
   
   ////////////////////////////
   // Trail
@@ -136,7 +138,8 @@ operator evaluateCharacterController(
     }
     
     for(Integer i=0; i < controllerparams.trail.size; i++){
-      debugGeometry1.drawPoint(controllerparams.trail[i].tr, Color(1.0,1.0,0.0,1.0));
+      debugGeometry1.drawAxis(controllerparams.trail[i], 1.0, Color(0.0,0.0,0.0,1.0));
+      debugGeometry1.drawPoint(controllerparams.trail[i].tr, Color(0.0,0.0,0.0,1.0));
     }
   }
 
