@@ -90,6 +90,8 @@ $(document).ready(function() {
       primary: 'ui-icon-step'
     }
   });
+  $("#displayControllerDebugging").attr('checked', true);
+  $("#displayFootMotionDebugging").attr('checked', true);
 
   // Create the scene.
   var scene = FABRIC.SceneGraph.createScene();
@@ -207,8 +209,18 @@ $(document).ready(function() {
     enableRaycasting: true
   });
   */
-    
-  var rigName = 'walker';
+  
+  var rigName;
+  try{
+    if(localStorage && localStorage.getItem("rigName")){
+      rigName = localStorage.getItem("rigName");
+    }
+    else{
+      throw "no rigName";
+    }
+  }catch(e){
+    rigName = 'walker';
+  }
   var locomotionControllerNode;
   switch(rigName){
   case 'walker':
@@ -223,11 +235,20 @@ $(document).ready(function() {
         comHeight: 1.8,
         circleSize: 1.6
       });
+    break;
   case 'centipede':
-    var maxLinearVelocity = new FABRIC.RT.Vec2(80, 80);
-    var maxLinearAcceleration = 15.0;
-    var maxAngularVelocity = new FABRIC.RT.Euler(0,1,0);
-    var numTrailSegments = 12;
+    var locomotionControllerNode = scene.constructNode('LocomotionCharacterController', {
+        cameraNode: camera,
+        maxLinearVelocity: new FABRIC.RT.Vec2(15, 15),
+        maxLinearAcceleration: 0.45,
+        maxAngularVelocity:  new FABRIC.RT.Euler(0, 2, 0),
+        bulletWorldNode: bulletWorldNode,
+        numTrailSegments: 12,
+        trailLength: 12.0,
+        gravity: -1.0,
+        comHeight: 1.8,
+        circleSize: 1.6
+      });
     break;
   case 'marama':
     var locomotionControllerNode = scene.constructNode('LocomotionCharacterController', {
@@ -243,14 +264,16 @@ $(document).ready(function() {
       });
     break;
   }
-  
-
-  
+  $("#selectCharacter").val(rigName);
+  $("#selectCharacter").change(function() {
+    localStorage.setItem("rigName", $("#selectCharacter :selected").attr("value"));
+    window.location.reload();
+  });
   
   var rigLoader = scene.constructManager('SceneLoader');
 //  var storage = new FABRIC.SceneGraph.LocalStorage(rigName);
 //  var nodeMap = rigLoader.load(storage);
-  var storage = new FABRIC.SceneGraph.URLReader('Assets/' + rigName + '.txt');
+  var storage = new FABRIC.SceneGraph.URLReader('Assets/' + rigName + '.json');
   var nodeMap = rigLoader.load(storage);
 
   var libraryAnimations = nodeMap.LibraryLocomotionAnimations;
@@ -264,7 +287,6 @@ $(document).ready(function() {
   }
   var skeletonNode = ikrig.getSkeletonNode();
   
-    
   
   var locomotionVariables = scene.constructNode('LocomotionPoseVariables', {
     baseVariables: characterVariables,
@@ -292,7 +314,6 @@ $(document).ready(function() {
     materialNode: materialNode
   });
   
-  
   /*
   var skeletonGeometryNode = scene.constructNode("CharacterSkeletonDebug", {
     characterRigNode:ikrig,
@@ -300,6 +321,16 @@ $(document).ready(function() {
     color: FABRIC.RT.rgba(0.0, 0.0, 1.0, 1.0)
   });
   */
+  
+  
+  $("#displayControllerDebugging").change(function() {
+    locomotionControllerNode.setDrawDebuggingToggle($("#displayControllerDebugging").is(":checked"));
+    viewport.redraw();
+  });
+  $("#displayFootMotionDebugging").change(function() {
+    locomotionVariables.setDrawDebuggingToggle($("#displayFootMotionDebugging").is(":checked"));
+    viewport.redraw();
+  });
   
   var togglePlay = function(){
     if ($('#play').text() == 'Play') {
@@ -481,6 +512,16 @@ $(document).ready(function() {
           <div class="box">
             <h2>CONTROLS</h2>
             <div class="content">
+              <label for="selectCharacter" style="margin-top:10px;">Select Character:</label>
+              <select id='selectCharacter' style="margin-top:10px;">
+                <option value="walker">Walker
+                <option value="centipede">Centipede
+              </select>
+              </br>
+              <input type="checkbox" id="displayControllerDebugging" style="margin-top:10px;"/><label for="displayControllerDebugging">Display Controller Debugging:</label>
+              </br>
+              <input type="checkbox" id="displayFootMotionDebugging" style="margin-top:10px;"/><label for="displayFootMotionDebugging">Display Foot Motion Debugging:</label>
+              </br>
               <button id="play" style="margin-top:10px;">Play</button>
               <button id="step" style="margin-top:10px;">Step</button>
             </div><!--content-->

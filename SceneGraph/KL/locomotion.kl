@@ -12,24 +12,15 @@ use FabricBULLET;
 use BulletWorld;
 
 function activateClip(
-  in LinearKeyframeTrackSet animationLibrary<>,
   io LocomotionMarker locomotionMarkers<>[][],
-  in FootStepTrack footStepTracksLibrary<>[],
   io TrackSetController trackcontroller,
 ){
-//  LinearKeyframeTrackSet trackSet = animationLibrary[trackcontroller.activeTrackSet];
   LocomotionMarker markers[][] = locomotionMarkers[trackcontroller.activeTrackSet];
-  FootStepTrack footStepTracks[] = footStepTracksLibrary[trackcontroller.activeTrackSet];
-  trackcontroller.stepIds.resize(footStepTracks.size);
-
   LocomotionMarker marker = markers[trackcontroller.pivotFoot][trackcontroller.pivotStepId];
   trackcontroller.time = marker.time;
+  trackcontroller.stepIds = marker.stepIds;
   
-  // TODO: store the other step ids in the marker.
-  for(Integer k=0; k < footStepTracks.size; k++){
-    trackcontroller.stepIds[k] = 0;
-  }
-//  report("activateClip:"+trackcontroller.activeTrackSet+" foot:"+trackcontroller.pivotFoot+ " step:"+marker.stepId + " t:"+trackcontroller.time);
+ // report("activateClip:"+trackcontroller.activeTrackSet+" foot:"+trackcontroller.pivotFoot+ " step:"+marker.stepIds[trackcontroller.pivotFoot] + " t:"+trackcontroller.time);
 }
 
 operator evaluateLocomotionPoseVariables(
@@ -83,17 +74,13 @@ operator evaluateLocomotionPoseVariables(
         }
       }
       activateClip(
-        animationLibrary,
         locomotionMarkers,
-        footStepTracksLibrary,
         trackcontroller,
       );
     }
     else if(trackcontroller.deactivate){
       activateClip(
-        animationLibrary,
         locomotionMarkers,
-        footStepTracksLibrary,
         trackcontroller,
       );
     }
@@ -111,7 +98,7 @@ operator evaluateLocomotionPoseVariables(
     Vec3 linearVelocity = controllerparams.displacement.tr / timestep;
     Scalar currSpeed = linearVelocity.length();
     Scalar clipSpeedRatio = 1.0;
-    Scalar strideLengthModulationFactor = 0.2;
+    Scalar strideLengthModulationFactor = 0.0;
     Scalar clipFrequencyMultiplier = 1.0;
     Scalar strideLengthMultiplier = 1.0;
     Scalar strideLength = 0.0;
@@ -136,7 +123,6 @@ operator evaluateLocomotionPoseVariables(
     // Clip Evaluation
     t += timestep * clipFrequencyMultiplier;
     
-      
     trackcontroller.time = t;
     
     poseVariables.evaluateKeyframeTracks(
@@ -195,6 +181,7 @@ operator evaluateLocomotionPoseVariables(
         Scalar trailSegmentDist = (controllerXfo.tr - lastTrailPoint.tr).length();
           
         Scalar trailDistance = hubXfo.tr.z;
+      //  report("trailSegmentDist "+j+":"+trailDistance);
         if(trailDistance < 0.0 && hubs.size > 1){
           
           Scalar trailLookup = ((-trailDistance-trailSegmentDist)/controllerparams.trailLength) * Scalar(controllerparams.trail.size);
@@ -244,6 +231,8 @@ operator evaluateLocomotionPoseVariables(
     Boolean displayFootPinningDebugging = true;
     Scalar numLegsScalar = Scalar(legs.size);
     
+    
+   //   report("stepIds:"+trackcontroller.stepIds);
       
     for(Integer j=0; j < locomotionFeet.size; j++){
       LocomotionFoot foot = locomotionFeet[j];
@@ -254,11 +243,15 @@ operator evaluateLocomotionPoseVariables(
       FootStep currStep = footStepTrack.footSteps[stepId];
       Scalar stepRatio = (t - currStep.liftTime) / (currStep.plantTime - currStep.liftTime);
       
-      Xfo footXfo, hubComXfo;
-      if(leg.hubId > 0 && controllerparams.trail.size > 0){
+      Xfo footXfo, hubComXfo, hubXfo;
+      Vec3 displacementDir;
+      if(leg.hubId >= 0 && controllerparams.trail.size > 0){
         hubComXfo = hubComs[leg.hubId];
+        hubXfo = controllerXfo * poseVariables.xfoValues[hubs[leg.hubId].xfoId];
+        displacementDir = hubComXfo.ori.rotateVector(Vec3(0.0,0.0,1.0));
       }else{
-        hubComXfo = controllerXfo;
+        hubComXfo = hubXfo = controllerXfo;
+        displacementDir = controllerparams.displacementDir;
       }
       footXfo = hubComXfo * poseVariables.xfoValues[leg.ikGoalXfoId];
       Scalar stepValue = poseVariables.scalarValues[foot.stepTimeVarId];
@@ -267,15 +260,12 @@ operator evaluateLocomotionPoseVariables(
       
       footXfo.tr -= controllerparams.balanceXfo.tr;
       
-      Vec3 displacementDir;
-      if(leg.hubId >= 0 && controllerparams.trail.size > 0){
-        displacementDir = hubComXfo.ori.rotateVector(Vec3(0.0,0.0,1.0));
-      }
-      else{
-        displacementDir = controllerparams.displacementDir;
-      }
-      
-      Xfo footPlantXfo = hubComXfo * leg.ikGoalReferenceXfo;
+      // TODO: this is a bit hackey, and innacurate.
+      // One day we should store the plant position
+      // relative to the foot positison as an extra track.
+      Xfo footPlantXfo = hubXfo * leg.ikGoalReferenceXfo;
+      debugGeometry.drawLine(hubComXfo.tr, footPlantXfo.tr, Color(0.0, 0.0, 0.0, 1.0));
+        
       Vec3 lift = footPlantXfo.tr - (displacementDir * (strideLength * 0.25 * strideLengthMultiplier));
       footPlantXfo.tr += displacementDir * (strideLength * 0.25 * strideLengthMultiplier);
       footXfo.tr += displacementDir * stepValue * strideLengthMultiplier;
@@ -283,7 +273,7 @@ operator evaluateLocomotionPoseVariables(
       if(displayFootPinningDebugging){
         debugGeometry.drawLine(lift, footPlantXfo.tr, Color(0.0, 1.0, 1.0, 1.0));
       }
-     //   report(j+" t:"+t+" stepId:"+stepId +" currStep:"+currStep + " stepRatio:"+stepRatio + " planted:"+plantedFeet[j]);
+      //  report(j+" t:"+t+" stepId:"+stepId +" currStep:"+currStep + " stepRatio:"+stepRatio + " planted:"+plantedFeet[j]);
       /*
       /////////////////////////////////////////////////
       // Raycasting
@@ -375,7 +365,7 @@ operator evaluateLocomotionPoseVariables(
           }
           if(!trackcontroller.deactivate && currStep.liftTime >= timeRange.y){  
             // Deactivate the current clip if a foot reaches the last step.
-          //  report("deactivate - end of clip:" + trackcontroller.time);
+          //  report("deactivate - end of clip foot:"+j+ " t:" + trackcontroller.time);
             trackcontroller.deactivate = true;
             trackcontroller.pivotFoot = j;
             trackcontroller.pivotStepId = 0;
