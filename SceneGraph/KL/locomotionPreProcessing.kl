@@ -421,9 +421,9 @@ operator locomotionPreProcessing(
     }
     if(weight > 0.0){
       avgFootPos *= 1.0/weight;
-      comXfo.tr = avgFootPos;
       alignment.setFrom2Vectors(comXfo.ori.getXaxis(), (comXfo.tr - avgFootPos).unit());
       comXfo.ori = alignment * comXfo.ori;
+      comXfo.tr = avgFootPos;
     }else{
       comXfo.tr.y = 0.0;
     }
@@ -439,6 +439,11 @@ operator locomotionPreProcessing(
    //     debugGeometry.drawAxis(comXfo, 1.0, Color(1.0, 0.0, 1.0, 1.0));
     comXfo = comXfo * comAlignment;
     comXfo.tr.y = 0;//poseVariables.xfoValues[legs[footId].ikGoalXfoId].tr.y;
+    
+    // Force the axis to point straight up. 
+      alignment.setFrom2Vectors(comXfo.ori.getYaxis(), Vec3(0.0,1.0,0.0));
+      comXfo.ori = alignment * comXfo.ori;
+      
     debugGeometry.drawAxis(comXfo, 0.7, Color(1.0, 0.0, 1.0, 1.0));
       
     if(currKeyt > startT){

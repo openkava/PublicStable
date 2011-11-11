@@ -98,7 +98,7 @@ operator evaluateLocomotionPoseVariables(
     Vec3 linearVelocity = controllerparams.displacement.tr / timestep;
     Scalar currSpeed = linearVelocity.length();
     Scalar clipSpeedRatio = 1.0;
-    Scalar strideLengthModulationFactor = 0.2;
+    Scalar strideLengthModulationFactor = 0.0;
     Scalar clipFrequencyMultiplier = 1.0;
     Scalar strideLengthMultiplier = 1.0;
     Scalar strideLength = 0.0;
