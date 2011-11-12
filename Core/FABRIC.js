@@ -357,6 +357,11 @@ FABRIC = (function() {
       if (deltaWeight > 0)
         asyncTasksMaxWeight += deltaWeight;
       fireOnResolveAsyncTaskCallbacks(label);
+      if(activeAsyncTaskCount === 0) {
+        //Reset
+        asyncTasksWeight = 0.0;
+        asyncTasksMaxWeight = 0.0;
+      }
     }
   }
   var loadResourceURL = function(url, mimeType, callback) {
