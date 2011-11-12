@@ -19,9 +19,11 @@
   <openglstateparams>
     <enableOptions>
       <option>GL_BLEND</option>
+      <option>GL_CULL_FACE</option>
     </enableOptions>
     <blendModeSfactor>GL_SRC_ALPHA</blendModeSfactor>
     <blendModeDfactor>GL_ONE_MINUS_SRC_ALPHA</blendModeDfactor>
+    <cullFace>GL_FRONT</cullFace>
   </openglstateparams>
   
   <vertexshader>
