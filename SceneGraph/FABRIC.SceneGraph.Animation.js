@@ -379,9 +379,6 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
       operatorBodySrc = '  Integer currKeys['+numEvaluatedTracks+'];\n' + operatorBodySrc;
       operatorBodySrc = '\n' + operatorBodySrc + '}';
 
-      //console.log(operatorHeaderSrc + operatorBodySrc);
-      //console.log(parameterLayout);
-      console.log(operatorHeaderSrc + operatorBodySrc);
       if (targetnode.getDGNode().bindings.length > 0) {
         targetnode.getDGNode().bindings.insert(scene.constructOperator({
           operatorName: operatorName,
