@@ -403,6 +403,49 @@ namespace Fabric
       }
       
       {
+        std::string name = methodOverloadName( "swap", this, sizeAdapter, sizeAdapter );
+        std::vector< FunctionParam > params;
+        params.push_back( FunctionParam( "thisLValue", this, USAGE_LVALUE ) );
+        params.push_back( FunctionParam( "lhsRValue", sizeAdapter, USAGE_RVALUE ) );
+        params.push_back( FunctionParam( "rhsRValue", sizeAdapter, USAGE_RVALUE ) );
+        FunctionBuilder functionBuilder( moduleBuilder, name, ExprType(), params );
+        if ( buildFunctions )
+        {
+          llvm::Value *thisLValue = functionBuilder[0];
+          llvm::Value *lhsRValue = functionBuilder[1];
+          llvm::Value *rhsRValue = functionBuilder[2];
+
+          llvm::BasicBlock *entryBB = functionBuilder.createBasicBlock( "entry" );
+          llvm::BasicBlock *unequalBB = functionBuilder.createBasicBlock( "unequal" );
+          llvm::BasicBlock *doneBB = functionBuilder.createBasicBlock( "done" );
+
+          BasicBlockBuilder basicBlockBuilder( functionBuilder );
+          basicBlockBuilder->SetInsertPoint( entryBB );
+          basicBlockBuilder->CreateCondBr(
+            basicBlockBuilder->CreateICmpEQ( lhsRValue, rhsRValue ),
+            doneBB,
+            unequalBB
+            );
+
+          basicBlockBuilder->SetInsertPoint( unequalBB );
+          llvm::Value *tmpLValue = m_memberAdapter->llvmAlloca( basicBlockBuilder, "tmp" );
+          m_memberAdapter->llvmInit( basicBlockBuilder, tmpLValue );
+          llvm::Value *lhsMemberLValue = llvmNonConstIndexOp( basicBlockBuilder, thisLValue, lhsRValue, 0 );
+          llvm::Value *lhsMemberRValue = m_memberAdapter->llvmLValueToRValue( basicBlockBuilder, lhsMemberLValue );
+          llvm::Value *rhsMemberLValue = llvmNonConstIndexOp( basicBlockBuilder, thisLValue, rhsRValue, 0 );
+          llvm::Value *rhsMemberRValue = m_memberAdapter->llvmLValueToRValue( basicBlockBuilder, rhsMemberLValue );
+          m_memberAdapter->llvmDefaultAssign( basicBlockBuilder, tmpLValue, lhsMemberRValue );
+          m_memberAdapter->llvmDefaultAssign( basicBlockBuilder, lhsMemberLValue, rhsMemberRValue );
+          m_memberAdapter->llvmDefaultAssign( basicBlockBuilder, rhsMemberLValue, m_memberAdapter->llvmLValueToRValue( basicBlockBuilder, tmpLValue ) );
+          m_memberAdapter->llvmDispose( basicBlockBuilder, tmpLValue );
+          basicBlockBuilder->CreateBr( doneBB );
+
+          basicBlockBuilder->SetInsertPoint( doneBB );
+          basicBlockBuilder->CreateRetVoid();
+        }
+      }
+      
+      {
         std::string name = methodOverloadName( "push", this, m_memberAdapter );
         std::vector< FunctionParam > params;
         params.push_back( FunctionParam( "thisLValue", this, USAGE_LVALUE ) );
