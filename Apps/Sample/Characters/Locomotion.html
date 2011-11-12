@@ -210,7 +210,8 @@ $(document).ready(function() {
   });
   */
   
-  var rigName;
+  var rigName = 'walker';
+  /*
   try{
     if(localStorage && localStorage.getItem("rigName")){
       rigName = localStorage.getItem("rigName");
@@ -221,6 +222,7 @@ $(document).ready(function() {
   }catch(e){
     rigName = 'walker';
   }
+  */
   var locomotionControllerNode;
   switch(rigName){
   case 'walker':

@@ -243,17 +243,16 @@ operator evaluateLocomotionPoseVariables(
       FootStep currStep = footStepTrack.footSteps[stepId];
       Scalar stepRatio = (t - currStep.liftTime) / (currStep.plantTime - currStep.liftTime);
       
-      Xfo footXfo, hubComXfo, hubXfo;
+      Xfo baseFootXfo;
       Vec3 displacementDir;
       if(leg.hubId >= 0 && controllerparams.trail.size > 0){
-        hubComXfo = hubComs[leg.hubId];
-        hubXfo = controllerXfo * poseVariables.xfoValues[hubs[leg.hubId].xfoId];
-        displacementDir = hubComXfo.ori.rotateVector(Vec3(0.0,0.0,1.0));
+        baseFootXfo = controllerXfo * poseVariables.xfoValues[hubs[leg.hubId].xfoId] * leg.ikGoalReferenceXfo;
+        displacementDir = hubComs[leg.hubId].ori.rotateVector(Vec3(0.0,0.0,1.0));
       }else{
-        hubComXfo = hubXfo = controllerXfo;
+        baseFootXfo = controllerXfo * leg.ikGoalReferenceXfo;
         displacementDir = controllerparams.displacementDir;
       }
-      footXfo = hubComXfo * poseVariables.xfoValues[leg.ikGoalXfoId];
+      Xfo footXfo = baseFootXfo * poseVariables.xfoValues[leg.ikGoalXfoId];
       Scalar stepValue = poseVariables.scalarValues[foot.stepTimeVarId];
     //  debugGeometry.drawLine(footXfo.tr, hubComXfo.tr, Color(1.0, 0.0, 1.0, 1.0));
     //  debugGeometry.drawAxis(footXfo, 20.0, Color(1.0, 0.0, 1.0, 1.0));
@@ -263,8 +262,8 @@ operator evaluateLocomotionPoseVariables(
       // TODO: this is a bit hackey, and innacurate.
       // One day we should store the plant position
       // relative to the foot positison as an extra track.
-      Xfo footPlantXfo = hubXfo * leg.ikGoalReferenceXfo;
-      debugGeometry.drawLine(hubComXfo.tr, footPlantXfo.tr, Color(0.0, 0.0, 0.0, 1.0));
+      Xfo footPlantXfo = baseFootXfo;
+    //  debugGeometry.drawLine(hubComXfo.tr, footPlantXfo.tr, Color(0.0, 0.0, 0.0, 1.0));
         
       Vec3 lift = footPlantXfo.tr - (displacementDir * (strideLength * 0.25 * strideLengthMultiplier));
       footPlantXfo.tr += displacementDir * (strideLength * 0.25 * strideLengthMultiplier);

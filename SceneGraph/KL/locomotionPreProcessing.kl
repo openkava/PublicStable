@@ -611,10 +611,11 @@ operator locomotionPreProcessing(
       
       Xfo footInCOMSpace, footComXfo;
       if(leg.hubId < 0){
-        footComXfo = comXfo;
+        footComXfo = comXfo * leg.ikGoalReferenceXfo;
       }else{
         footComXfo = comXfo;
         footComXfo.tr.z += poseVariables.xfoValues[hubs[leg.hubId].xfoId].tr.z;
+        footComXfo = footComXfo * leg.ikGoalReferenceXfo;
       }
     //  debugGeometry.drawAxis(footComXfo, 10.0, Color(1.0, 1.0, 0.0, 1.0));
       debugGeometry.drawLine(footXfo.tr, footComXfo.tr, Color(1.0, 0.0, 0.0, 1.0));
