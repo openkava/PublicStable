@@ -86,15 +86,19 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('LocomotionFeetSolver', {
 
 FABRIC.RT.LocomotionMarker = function() {
   this.time = 0.0;
-  this.stepId = 0;
+//  this.stepId = 0;
+  // When we activate the clip using this marker,
+  // we should set all the step Ids to this set of values. 
+  this.stepIds = []; 
   this.params = [];
 };
 
 FABRIC.appendOnCreateContextCallback(function(context) {
   context.RegisteredTypesManager.registerType('LocomotionMarker', {
     members: {
-      time: 'Scalar',
-      stepId: 'Integer',
+      time: 'Scalar',/*
+      stepId: 'Integer',*/
+      stepIds: 'Integer[]',
       params: 'Scalar[]'
     },
     constructor: FABRIC.RT.LocomotionMarker
@@ -230,7 +234,7 @@ FABRIC.SceneGraph.registerNodeType('LocomotionAnimationLibrary', {
 
 FABRIC.Characters.CharacterControllerParams = function() {
   this.displacement = new FABRIC.RT.Xfo();
-  this.displacementDir = new FABRIC.RT.Vec3();
+  this.displacementDir = new FABRIC.RT.Vec3(0,0,1);
   this.trail = [];
   this.trailLength = 0;
   this.trailCircularArrayIndex = 0;
@@ -318,15 +322,19 @@ FABRIC.SceneGraph.registerNodeType('LocomotionCharacterController', {
     dgnode.addMember('maxAngularAcceleration', 'Scalar', options.maxAngularAcceleration);
     
     dgnode.addMember('debugGeometry1', 'DebugGeometry' );
-    var debugGeometryDraw = scene.constructNode('DebugGeometryDraw', {
+    var debugGeometryDraw1 = scene.constructNode('DebugGeometryDraw', {
         dgnode: dgnode,
         debugGemetryMemberName: 'debugGeometry1'
     });
     dgnode.addMember('debugGeometry2', 'DebugGeometry' );
-    var debugGeometryDraw = scene.constructNode('DebugGeometryDraw', {
+    var debugGeometryDraw2 = scene.constructNode('DebugGeometryDraw', {
         dgnode: dgnode,
         debugGemetryMemberName: 'debugGeometry2'
     });
+    characterControllerNode.pub.setDrawDebuggingToggle = function(tf){
+      debugGeometryDraw1.pub.setDrawToggle(tf);
+      debugGeometryDraw2.pub.setDrawToggle(tf);
+    }
   
     dgnode.bindings.append(scene.constructOperator({
       operatorName: 'evaluateCharacterController',
@@ -494,6 +502,11 @@ FABRIC.SceneGraph.registerNodeType('LocomotionPoseVariables', {
     locomotionVariables.pub.getSkeletonNode = function() {
       return scene.getPublicInterface(skeletonNode);
     };
+    
+    
+    locomotionVariables.pub.setDrawDebuggingToggle = function(tf){
+      debugGeometryDraw.pub.setDrawToggle(tf);
+    }
     
     return locomotionVariables;
   }});
