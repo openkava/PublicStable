@@ -23,6 +23,7 @@
 #include <Fabric/Core/Util/Base64.h>
 #include <Fabric/Core/Util/Encoder.h>
 #include <Fabric/Core/Util/Decoder.h>
+#include <Fabric/Base/JSON/Decode.h>
 #include <Fabric/Base/Util/SimpleString.h>
 
 namespace Fabric
@@ -494,6 +495,8 @@ namespace Fabric
         jsonExecGetData( arg, resultJAG );
       else if ( cmd == "getDataJSON" )
         jsonExecGetDataJSON( arg, resultJAG );
+      else if ( cmd == "getDataJSON" )
+        jsonExecGetDataJSON( arg, resultJAG );
       else if ( cmd == "getDataSize" )
         jsonExecGetDataSize( arg, resultJAG );
       else if ( cmd == "getDataElement" )
@@ -512,6 +515,10 @@ namespace Fabric
         jsonExecGetBulkData( resultJAG );
       else if ( cmd == "setBulkData" )
         jsonExecSetBulkData( arg, resultJAG );
+      else if ( cmd == "getBulkDataJSON" )
+        jsonExecGetBulkDataJSON( resultJAG );
+      else if ( cmd == "setBulkDataJSON" )
+        jsonExecSetBulkDataJSON( arg, resultJAG );
       else if ( cmd == "getSlicesBulkData" )
         jsonExecGetSlicesBulkData( arg, resultJAG );
       else if ( cmd == "setSlicesBulkData" )
@@ -586,68 +593,49 @@ namespace Fabric
         throw Exception( "count must be non-negative" );
       setCount( size_t( newCount ) );
     }
-      
-    void Container::jsonExecGetData( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
+    
+    void Container::jsonGenerateMemberSliceJSON( RC::ConstHandle<JSON::Value> const &arg, Util::JSONGenerator &resultJG )
     {
       RC::ConstHandle<JSON::Object> argJSONObject = arg->toObject();
       
-      std::string memberName;
+      RC::ConstHandle<Member> member;
       try
       {
-        memberName = argJSONObject->get( "memberName" )->toString()->value();
+        std::string memberName = argJSONObject->get( "memberName" )->toString()->value();
+        member = getMember( memberName );
       }
       catch ( Exception e )
       {
         throw "'memberName': " + e;
       }
-      
-      RC::ConstHandle<RT::Desc> desc = getDesc( memberName );
 
       size_t sliceIndex;
       try
       {
         sliceIndex = argJSONObject->get( "sliceIndex" )->toInteger()->value();
+        if ( sliceIndex >= m_count )
+          throw Exception( "out of range" );
       }
       catch ( Exception e )
       {
         throw "'sliceIndex': " + e;
       }
+
+      member->getDesc()->generateJSON( member->getImmutableElementData( sliceIndex ), resultJG );
+    }
       
-      void const *data = getConstData( memberName, sliceIndex );
+    void Container::jsonExecGetData( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
+    {
       Util::JSONGenerator resultJG = resultJAG.makeElement();
-      desc->generateJSON( data, resultJG );
+      jsonGenerateMemberSliceJSON( arg, resultJG );
     }
       
     void Container::jsonExecGetDataJSON( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
     {
-      RC::ConstHandle<JSON::Object> argJSONObject = arg->toObject();
-      
-      std::string memberName;
-      try
-      {
-        memberName = argJSONObject->get( "memberName" )->toString()->value();
-      }
-      catch ( Exception e )
-      {
-        throw "'memberName': " + e;
-      }
-      
-      RC::ConstHandle<RT::Desc> desc = getDesc( memberName );
-
-      size_t sliceIndex;
-      try
-      {
-        sliceIndex = argJSONObject->get( "sliceIndex" )->toInteger()->value();
-      }
-      catch ( Exception e )
-      {
-        throw "'sliceIndex': " + e;
-      }
-      
       Util::SimpleString json;
       {
         Util::JSONGenerator jg( &json );
-        getDataJSON( memberName, sliceIndex, jg );
+        jsonGenerateMemberSliceJSON( arg, jg );
       }
       
       Util::JSONGenerator resultJG = resultJAG.makeElement();
@@ -777,9 +765,28 @@ namespace Fabric
       generateJSON( resultJG );
     }
       
+    void Container::jsonExecGetBulkDataJSON( Util::JSONArrayGenerator &resultJAG ) const
+    {
+      Util::SimpleString json;
+      {
+        Util::JSONGenerator jg( &json );
+        generateJSON( jg );
+      }
+      
+      Util::JSONGenerator resultJG = resultJAG.makeElement();
+      resultJG.makeString( json );
+    }
+      
     void Container::jsonExecSetBulkData( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
     {
       setJSON( arg );
+    }
+      
+    void Container::jsonExecSetBulkDataJSON( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
+    {
+      std::string jsonString = arg->toString()->value();
+      RC::ConstHandle<JSON::Value> jsonValue = JSON::decode( jsonString );
+      setJSON( jsonValue );
     }
       
     void Container::jsonExecGetSlicesBulkData( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG ) const
