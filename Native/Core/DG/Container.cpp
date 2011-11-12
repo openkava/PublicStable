@@ -379,6 +379,7 @@ namespace Fabric
       {
         RC::ConstHandle<JSON::Object> objectValue = RC::ConstHandle<JSON::Object>::StaticCast( value );
         
+        bool first = true;
         for ( JSON::Object::const_iterator it=objectValue->begin(); it!=objectValue->end(); ++it )
         {
           std::string const &name = it->first;
@@ -390,8 +391,16 @@ namespace Fabric
           try
           {
             RC::ConstHandle<JSON::Array> const &arrayValue = it->second->toArray();
-            if ( arrayValue->size() != m_count )
-              throw Exception( "array length ("+_(arrayValue->size())+") does not match slice count ("+_(m_count)+")" );
+            if ( first )
+            {
+              setCount( arrayValue->size() );
+              first = false;
+            }
+            else
+            {
+              if ( arrayValue->size() != m_count )
+                throw Exception( "inconsistent array length" );
+            }
           
             RC::ConstHandle<RT::Desc> memberDesc = member->getDesc();
             for ( size_t i=0; i<m_count; ++i )
