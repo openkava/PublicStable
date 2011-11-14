@@ -184,7 +184,7 @@ FABRIC.SceneGraph.registerNodeType('LocomotionAnimationLibrary', {
       
       dgnode.bindings.append(scene.constructOperator({
         operatorName: 'matchCount',
-        srcCode: 'operator matchCount(Size parentCount, io Size selfCount) { selfCount = parentCount; report("matchCount:"+parentCount); }',
+        srcCode: 'operator matchCount(Size parentCount, io Size selfCount) { selfCount = parentCount; }',
         entryFunctionName: 'matchCount',
         parameterLayout: [
           'sourceAnimationLibrary.count',
@@ -436,6 +436,16 @@ FABRIC.SceneGraph.registerNodeType('LocomotionPoseVariables', {
     dgnode.setDependency(scene.getGlobalsNode(), 'globals');
   
     dgnode.bindings.append(scene.constructOperator({
+      operatorName: 'matchCount',
+      srcCode: 'operator matchCount(Size parentCount, io Size selfCount) { selfCount = parentCount; }',
+      entryFunctionName: 'matchCount',
+      parameterLayout: [
+        'charactercontroller.count',
+        'self.newCount'
+      ],
+      async: false
+    }));
+    dgnode.bindings.append(scene.constructOperator({
       operatorName: 'evaluateLocomotionPoseVariables',
       srcFile: 'FABRIC_ROOT/SceneGraph/KL/locomotion.kl',
       entryFunctionName: 'evaluateLocomotionPoseVariables',
@@ -486,9 +496,6 @@ FABRIC.SceneGraph.registerNodeType('LocomotionPoseVariables', {
       }
       animationLibraryNode = scene.getPrivateInterface(animationLibraryNode);
       dgnode.setDependency(animationLibraryNode.getDGNode(), 'animationlibrary');
-    //  if(keyframeTrackBindings){
-    //    dgnode.addMember('bindings', 'KeyframeTrackBindings', keyframeTrackBindings);
-    //  }
     };
     
     var skeletonNode;
@@ -503,9 +510,25 @@ FABRIC.SceneGraph.registerNodeType('LocomotionPoseVariables', {
       return scene.getPublicInterface(skeletonNode);
     };
     
+    locomotionVariables.pub.setMatchCountNode = function(node){
+      dgnode.bindings.append(scene.constructOperator({
+        operatorName: 'matchCount',
+        srcCode: 'operator matchCount(Size parentCount, io Size selfCount) { selfCount = parentCount; report("matchCount:"+parentCount); }',
+        entryFunctionName: 'matchCount',
+        parameterLayout: [
+          'matchCountNode.count',
+          'self.newCount'
+        ],
+        async: false
+      }));
+    }
     
     locomotionVariables.pub.setDrawDebuggingToggle = function(tf){
       debugGeometryDraw.pub.setDrawToggle(tf);
+    }
+    
+    if(options.skeletonNode){
+      locomotionVariables.pub.setSkeletonNode(options.skeletonNode);
     }
     
     return locomotionVariables;

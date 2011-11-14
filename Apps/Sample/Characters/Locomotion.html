@@ -269,36 +269,25 @@ $(document).ready(function() {
   });
   
   var rigLoader = scene.constructManager('SceneLoader');
-//  var storage = new FABRIC.SceneGraph.LocalStorage(rigName);
-//  var nodeMap = rigLoader.load(storage);
   var storage = new FABRIC.SceneGraph.URLReader('Assets/' + rigName + '.json');
   var nodeMap = rigLoader.load(storage);
 
   var libraryAnimations = nodeMap.LibraryLocomotionAnimations;
   var locomotionRig = nodeMap.LocomotionRig;
-  
-  var characterVariables = nodeMap.CharacterVariables;
   var ikrig = nodeMap.IKRig;
-  var characterMesh =  nodeMap.Walker_ncl1_1;
-  if(!characterMesh){
-    characterMesh =  nodeMap.characterMesh;
-  }
+  var characterMesh =  nodeMap.characterMesh;
   var skeletonNode = ikrig.getSkeletonNode();
   
-  
   var locomotionVariables = scene.constructNode('LocomotionPoseVariables', {
-    baseVariables: characterVariables,
+    baseVariables: ikrig.getVariablesNode(),
+    skeletonNode: skeletonNode,
     bulletWorldNode: bulletWorldNode
   });
   locomotionVariables.setCharacterController(locomotionControllerNode);
   locomotionVariables.setAnimationLibrary(libraryAnimations);
-  locomotionVariables.setSkeletonNode(skeletonNode);
-  
   
   ikrig.setVariablesNode(locomotionVariables);
-  
   ikrig.setControllerNode(locomotionControllerNode);
-  
   
   var materialNode = scene.constructNode('PhongSkinningMaterial', {
     lightNode: light,
@@ -319,7 +308,6 @@ $(document).ready(function() {
     color: FABRIC.RT.rgba(0.0, 0.0, 1.0, 1.0)
   });
   */
-  
   
   $("#displayControllerDebugging").change(function() {
     locomotionControllerNode.setDrawDebuggingToggle($("#displayControllerDebugging").is(":checked"));
