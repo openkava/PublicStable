@@ -1721,11 +1721,13 @@ FABRIC.SceneGraph.registerNodeType('TargetCamera', {
         target: new FABRIC.RT.Vec3(0, 0, 0)
       });
 
-    options.transformNode = scene.pub.constructNode('AimTransform', {
-      globalXfo: options.globalXfo,
-      position: options.position,
-      target: options.target
-    });
+    if(!options.transformNode) {
+      options.transformNode = scene.pub.constructNode('AimTransform', {
+        globalXfo: options.globalXfo,
+        position: options.position,
+        target: options.target
+      });
+    }
 
     var targetCameraNode = scene.constructNode('Camera', options);
 
