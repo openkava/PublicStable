@@ -10,6 +10,9 @@ FABRIC.SceneGraph.registerNodeType('CharacterMesh', {
   optionsDesc: {
   },
   factoryFn: function(options, scene) {
+    scene.assignDefaults(options, {
+      skinningMatriciesTextureUnit: 7
+    });
 
     var characterMeshNode = scene.constructNode('Triangles', options);
     
@@ -19,18 +22,27 @@ FABRIC.SceneGraph.registerNodeType('CharacterMesh', {
     characterMeshNode.pub.addUniformValue('invmatrices', 'Mat44[]');
     characterMeshNode.pub.addUniformValue('boneMapping', 'Integer[]');
     
-    characterMeshNode.getRedrawEventHandler().preDescendBindings.append( scene.constructOperator({
-      operatorName: 'loadSkinningMatrices',
+    var redrawEventHandler = characterMeshNode.getRedrawEventHandler();
+    var tex = FABRIC.RT.oglMatrixBuffer2D();
+    tex.forceRefresh = true;
+    redrawEventHandler.addMember('oglSkinningMatriciesTexture2D', 'OGLTexture2D', tex);
+    redrawEventHandler.addMember('skinningMatriciesTextureUnit', 'Integer', options.skinningMatriciesTextureUnit);
+    
+    redrawEventHandler.preDescendBindings.append( scene.constructOperator({
+      operatorName: 'loadSkinningMatricesTexture',
       srcFile: 'FABRIC_ROOT/SceneGraph/KL/loadSkinningMatrices.kl',
       preProcessorDefinitions: {
-        SKINNING_MATRICES_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('skinningMatrices')
+        SKINNING_MATRICES_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('skinningMatrices'),
+        SKINNIMATRICIES_TEXTUREUNIT_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('skinningMatricesTextureUnit')
       },
-      entryFunctionName: 'loadSkinningMatrices',
+      entryFunctionName: 'loadSkinningMatricesTexture',
       parameterLayout: [
         'shader.shaderProgram',
         'rig.pose',
         'uniforms.invmatrices',
-        'uniforms.boneMapping'
+        'uniforms.boneMapping',
+        'self.oglSkinningMatriciesTexture2D',
+        'self.skinningMatriciesTextureUnit'
       ]
     }));
     
@@ -38,7 +50,6 @@ FABRIC.SceneGraph.registerNodeType('CharacterMesh', {
       characterMeshNode.getUniformsDGNode().setData('invmatrices', 0, invmatrices);
       characterMeshNode.getUniformsDGNode().setData('boneMapping', 0, boneMapping);
     };
-    
     
     var parentWriteData = characterMeshNode.writeData;
     var parentReadData = characterMeshNode.readData;
