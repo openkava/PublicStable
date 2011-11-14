@@ -37,6 +37,7 @@
     
     <script type="text/javascript" src="../../../SceneGraph/RT/KeyframeTrackBindings.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/RT/PoseVariables.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/HashTable.js" charset="utf-8"></script>
     
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Lights.js" charset="utf-8"></script>
@@ -54,6 +55,7 @@
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Characters.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.CharacterSolvers.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.CharacterLocomotion.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Crowds.js" charset="utf-8"></script>
     
     <script type="text/javascript" src="../../../SceneGraph/Parsers/parseCollada.js" charset="utf-8"></script>
     
@@ -223,7 +225,7 @@ $(document).ready(function() {
   var locomotionControllerNode;
   switch(rigName){
   case 'walker':
-    var locomotionControllerNode = scene.constructNode('LocomotionCharacterController', {
+    var locomotionControllerNode = scene.constructNode('Crowd', {
         cameraNode: camera,
         maxLinearVelocity: new FABRIC.RT.Vec2(15, 15),
         maxLinearAcceleration: 0.45,
@@ -236,7 +238,7 @@ $(document).ready(function() {
       });
     break;
   case 'centipede':
-    var locomotionControllerNode = scene.constructNode('LocomotionCharacterController', {
+    var locomotionControllerNode = scene.constructNode('Crowd', {
         cameraNode: camera,
         maxLinearVelocity: new FABRIC.RT.Vec2(20, 20),
         maxLinearAcceleration: 1.45,
@@ -249,7 +251,7 @@ $(document).ready(function() {
       });
     break;
   case 'marama':
-    var locomotionControllerNode = scene.constructNode('LocomotionCharacterController', {
+    var locomotionControllerNode = scene.constructNode('Crowd', {
         cameraNode: camera,
         maxLinearVelocity: new FABRIC.RT.Vec2(7, 7),
         maxLinearAcceleration: 0.2,

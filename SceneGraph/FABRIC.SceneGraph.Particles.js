@@ -36,9 +36,7 @@ FABRIC.SceneGraph.registerNodeType('Particles', {
     particlesNode.pub.addVertexAttributeValue('velocities', 'Vec3');
 
     particlesNode.pub.addUniformValue('hashtable', 'HashTable',
-      FABRIC.Simulation.hashTable(options.cellsize, options.x_count, options.y_count, options.z_count));
-    var neighborInfluenceRange = options.cellsize / 2.0;
-    particlesNode.pub.addVertexAttributeValue('neighborinfluencerange', 'Scalar', { defaultValue:neighborInfluenceRange });
+      FABRIC.RT.hashTable(options.cellsize, options.x_count, options.y_count, options.z_count));
     particlesNode.pub.addVertexAttributeValue('cellindices', 'Integer', { defaultValue:-1 });
     particlesNode.pub.addVertexAttributeValue('cellcoords', 'Vec3');
 
@@ -46,13 +44,12 @@ FABRIC.SceneGraph.registerNodeType('Particles', {
     particlesNode.pub.addVertexAttributeValue('previousframe_velocities', 'Vec3');
     particlesNode.pub.addVertexAttributeValue('previousframe_orientations', 'Vec3');
 
-
     // Display the Grid
     if (options.displayGrid){
       scene.pub.constructNode('Instance', {
         geometryNode: scene.pub.constructNode('Grid', {
           size_x: options.cellsize * options.x_count,
-          size_z: options.cellsize * options.x_count,
+          size_z: options.cellsize * options.z_count,
           sections_x: options.x_count + 1,
           sections_z: options.z_count + 1
         }),
