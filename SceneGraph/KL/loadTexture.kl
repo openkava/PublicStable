@@ -114,12 +114,6 @@ operator bindTextureHDR(
   oglTexture2D.bindImageHDR(width, height, bitmap, textureUnit);
 }
 
-operator setNumberOfMatrices(
-  io Mat44 matrices<>,
-  io OGLShaderProgram shaderProgram
-) {
-  shaderProgram.numInstances = Integer(matrices.size());
-}
 
 operator bindTextureMatrix(
   io OGLTexture2D oglTexture2D,

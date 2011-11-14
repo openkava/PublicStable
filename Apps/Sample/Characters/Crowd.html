@@ -3,7 +3,7 @@
     Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
     -->
   <head> 
-    <title>FABRIC - Character Locomotion</title> 
+    <title>FABRIC - Crowd</title> 
     
     <meta charset="iso-8859-1"/>
     <script type="text/javascript" src="../../../ThirdParty/jQuery/jquery-1.6.2.min.js"></script>
@@ -116,11 +116,12 @@ $(document).ready(function() {
   
   var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) });
   
+  var gridsize = 30.0;
     // create the scene grid
   scene.constructNode('Instance', {
     geometryNode: scene.constructNode('Grid', {
-        size_x: 30.0,
-        size_z: 30.0,
+        size_x: gridsize,
+        size_z: gridsize,
         sections_x: 20,
         sections_z: 20 }),
     materialNode: scene.constructNode('FlatMaterial')
@@ -262,6 +263,13 @@ $(document).ready(function() {
     break;
   }
   
+  var numInstances = 30;
+  var xfos = [];
+  for(var i=0; i<numInstances; i++){
+    xfos.push(new FABRIC.RT.Xfo({tr:new FABRIC.RT.Vec3((Math.random()-0.5)*gridsize, 0,(Math.random()-0.5)*gridsize)}));
+  }
+  locomotionControllerNode.setCrowdXfos(xfos);
+  
   var rigLoader = scene.constructManager('SceneLoader');
   var storage = new FABRIC.SceneGraph.URLReader('Assets/' + rigName + '.json');
   var nodeMap = rigLoader.load(storage);
@@ -278,13 +286,15 @@ $(document).ready(function() {
     characterRigNode: ikrig,
     bulletWorldNode: bulletWorldNode
   });
-  locomotionVariables.setAnimationLibrary(libraryAnimations);
   ikrig.setVariablesNode(locomotionVariables);
+  locomotionVariables.setAnimationLibrary(libraryAnimations);
   
-  var materialNode = scene.constructNode('PhongSkinningMaterial', {
+  
+  var materialNode = scene.constructNode('PhongSkinnedInstancesMaterial', {
     lightNode: light,
     diffuseColor: FABRIC.RT.rgba(1.0, 0.0, 0.0, 1.0),
-    numBones: skeletonNode.getNumBones()
+    numBonesPerInstance: ikrig.getSkeletonNode().getNumBones(),
+    instanceCount: numInstances
   });
   
   var characterInstance = scene.constructNode("CharacterInstance", {
