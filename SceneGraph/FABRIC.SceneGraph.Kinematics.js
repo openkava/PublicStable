@@ -49,9 +49,6 @@ FABRIC.SceneGraph.registerNodeType('Transform', {
 
       // use a custom getter
       transformNode.pub.setGlobalXfo = function(val) {
-        if (!val.getType || val.getType() !== 'FABRIC.RT.Xfo') {
-          throw ('Incorrect type assignment. Must assign a FABRIC.RT.Xfo');
-        }
         if (parentTransformNode) {
           var parentXfo = parentTransformNode.getGlobalXfo();
           val = val.multiply(parentXfo.inverse());
@@ -90,7 +87,7 @@ FABRIC.SceneGraph.registerNodeType('Transform', {
       }
     }else {
       transformNode.pub.setGlobalXfo = function(val) {
-        if(val.constructor.toString().indexOf("Array") != -1) {
+        if(val.constructor.name == "Array") {
           dgnode.setCount(val.length);
           dgnode.setBulkData({ globalXfo: val});
         }
