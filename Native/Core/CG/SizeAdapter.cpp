@@ -436,6 +436,40 @@ namespace Fabric
       }
       
       {
+        std::string name = binOpOverloadName( BIN_OP_SHL, this, this );
+        std::vector< FunctionParam > params;
+        params.push_back( FunctionParam( "lhsRValue", this, USAGE_RVALUE ) );
+        params.push_back( FunctionParam( "rhsRValue", this, USAGE_RVALUE ) );
+        FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( this, USAGE_RVALUE ), params );
+        if ( buildFunctions )
+        {
+          llvm::Value *lhsRValue = functionBuilder[0];
+          llvm::Value *rhsRValue = functionBuilder[1];
+          BasicBlockBuilder basicBlockBuilder( functionBuilder );
+          basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
+          llvm::Value *resultRValue = basicBlockBuilder->CreateShl( lhsRValue, rhsRValue );
+          basicBlockBuilder->CreateRet( resultRValue );
+        }
+      }
+      
+      {
+        std::string name = binOpOverloadName( BIN_OP_SHR, this, this );
+        std::vector< FunctionParam > params;
+        params.push_back( FunctionParam( "lhsRValue", this, USAGE_RVALUE ) );
+        params.push_back( FunctionParam( "rhsRValue", this, USAGE_RVALUE ) );
+        FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( this, USAGE_RVALUE ), params );
+        if ( buildFunctions )
+        {
+          llvm::Value *lhsRValue = functionBuilder[0];
+          llvm::Value *rhsRValue = functionBuilder[1];
+          BasicBlockBuilder basicBlockBuilder( functionBuilder );
+          basicBlockBuilder->SetInsertPoint( functionBuilder.createBasicBlock( "entry" ) );
+          llvm::Value *resultRValue = basicBlockBuilder->CreateLShr( lhsRValue, rhsRValue );
+          basicBlockBuilder->CreateRet( resultRValue );
+        }
+      }
+      
+      {
         std::string name = binOpOverloadName( BIN_OP_EQ, this, this );
         std::vector< FunctionParam > params;
         params.push_back( FunctionParam( "lhsRValue", this, USAGE_RVALUE ) );
