@@ -40,6 +40,7 @@
 #include <FabricThirdPartyLicenses/md5/license.h>
 #include <FabricThirdPartyLicenses/libpng/license.h>
 #include <FabricThirdPartyLicenses/liblas/license.h>
+#include <FabricThirdPartyLicenses/teem/license.h>
 
 namespace Fabric
 {
@@ -459,6 +460,13 @@ namespace Fabric
       memberJG.makeString( ThirdPartyLicenses::liblas::text );
     }
 
+    static void jsonDescLicenses_teem( Util::JSONGenerator &resultJG )
+    {
+      Util::JSONObjectGenerator resultJOG = resultJG.makeObject();
+      Util::JSONGenerator memberJG = resultJOG.makeMember( ThirdPartyLicenses::teem::filename );
+      memberJG.makeString( ThirdPartyLicenses::teem::text );
+    }
+
     static void jsonDescLicenses( Util::JSONGenerator &resultJG )
     {
       Util::JSONObjectGenerator resultJGObject = resultJG.makeObject();
@@ -476,6 +484,10 @@ namespace Fabric
       }
       {
         Util::JSONGenerator memberJG = resultJGObject.makeMember( "liblas", 6 );
+        jsonDescLicenses_liblas( memberJG );
+      }
+      {
+        Util::JSONGenerator memberJG = resultJGObject.makeMember( "teem", 4 );
         jsonDescLicenses_liblas( memberJG );
       }
     }
