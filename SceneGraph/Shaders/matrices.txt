@@ -1,4 +1,8 @@
 
+
+// Here we assume a texture of size 512 x 512 has been loaded.
+// that gives a maximum number of matrices of 65536
+// See OGLTexture2D.bindImageMatrix for the loading code.
 mat4 loadMatrixFromTexture(
   in sampler2D u_sampler,
   in int index
