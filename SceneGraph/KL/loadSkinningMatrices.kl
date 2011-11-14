@@ -27,7 +27,7 @@ operator loadSkinningMatrices(
 
 operator loadSkinningMatricesTexture(
   io OGLShaderProgram shaderProgram,
-  io Xfo pose[],
+  io Xfo poses<>[],
   io Mat44 invMatrices[],
   io Integer boneMapping[],
   io OGLTexture2D oglSkinningMatriciesTexture2D,
@@ -37,15 +37,16 @@ operator loadSkinningMatricesTexture(
 
   Integer location = shaderProgram.getUniformLocation(SKINNIMATRICIES_TEXTUREUNIT_ATTRIBUTE_ID);
   if(location!=-1){
-  
-    Mat44 skinningMatrices[];
-    skinningMatrices.resize(invMatrices.size());
-    for (var Integer i = 0; i < invMatrices.size(); i++) {
-      if(boneMapping[i] < 0)
-        continue;
-      skinningMatrices[i] = (pose[boneMapping[i]].toMat44() * invMatrices[i]).transpose();
-    }
     
+    Mat44 skinningMatrices[];
+    for (var Integer i = 0; i < poses.size(); i++) {
+      skinningMatrices.resize(skinningMatrices.size + invMatrices.size());
+      for (var Integer j = 0; j < invMatrices.size(); j++) {
+        if(boneMapping[j] < 0)
+          continue;
+        skinningMatrices[(i*invMatrices.size())+j] = (poses[i][boneMapping[j]].toMat44() * invMatrices[j]).transpose();
+      }
+    }
     shaderProgram.loadIntegerUniform(location, skinningMatriciesTextureUnit);
     oglSkinningMatriciesTexture2D.bindImageMatrixArray(skinningMatrices, skinningMatriciesTextureUnit);
   }

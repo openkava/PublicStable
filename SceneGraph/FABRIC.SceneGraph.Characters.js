@@ -38,7 +38,7 @@ FABRIC.SceneGraph.registerNodeType('CharacterMesh', {
       entryFunctionName: 'loadSkinningMatricesTexture',
       parameterLayout: [
         'shader.shaderProgram',
-        'rig.pose',
+        'rig.pose<>',
         'uniforms.invmatrices',
         'uniforms.boneMapping',
         'self.oglSkinningMatriciesTexture2D',
@@ -738,10 +738,8 @@ FABRIC.SceneGraph.registerNodeType('CharacterRigDebug', {
     characterRigDebugNode.pub.setRigNode = function(node) {
 
       rigNode = scene.getPrivateInterface(node);
-
       characterRigDebugNode.pub.addVertexAttributeValue('vertexColors', 'Color', { genVBO:true } );
       characterRigDebugNode.getUniformsDGNode().setDependency(rigNode.getDGNode(), 'rig');
-    //  characterRigDebugNode.getUniformsDGNode().setDependency(rigNode.getConstantsNode().getDGNode(), 'constants');
       characterRigDebugNode.getUniformsDGNode().setDependency(rigNode.getVariablesNode().getDGNode(), 'variables');
       characterRigDebugNode.pub.addUniformValue('debugpose', 'Xfo[]');
       characterRigDebugNode.pub.addUniformValue('singlecolor', 'Color', options.color);
@@ -749,8 +747,7 @@ FABRIC.SceneGraph.registerNodeType('CharacterRigDebug', {
 
       // now append the operator to create the lines
       var operators = characterRigDebugNode.getUniformsDGNode().bindings;
-      operators.append(scene.constructOperator(
-        {
+      operators.append(scene.constructOperator({
           operatorName: 'clearDebugXfos',
           srcFile: 'FABRIC_ROOT/SceneGraph/KL/characterDebug.kl',
           entryFunctionName: 'clearDebugXfos',
@@ -758,10 +755,6 @@ FABRIC.SceneGraph.registerNodeType('CharacterRigDebug', {
             'self.debugpose'
           ]
         }));
-
-    //  var debugOperators = rigNode.getConstantsNode().getDebugOperators();
-    //  for(var i=0;i<debugOperators.length;i++)
-    //    operators.append(debugOperators[i]);
 
       characterRigDebugNode.getAttributesDGNode().bindings.append(scene.constructOperator({
           operatorName: 'generateDebugPoints',

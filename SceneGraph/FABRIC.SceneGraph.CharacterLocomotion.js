@@ -365,6 +365,11 @@ FABRIC.SceneGraph.registerNodeType('LocomotionCharacterController', {
       ]
     }));
     
+    characterControllerNode.pub.setCrowdXfos = function(xfos){
+      dgnode.setCount(xfos.length);
+      dgnode.setBulkData({ xfo: xfos});
+    }
+    
     return characterControllerNode;
   }});
 
@@ -408,7 +413,12 @@ FABRIC.SceneGraph.registerNodeType('LocomotionPoseVariables', {
     scene.assignDefaults(options, {
       bulletWorldNode: undefined
     });
+    if(!options.characterRigNode){
+      throw "characterRigNode must be provided";
+    }
+    var characterRigNode = scene.getPrivateInterface(options.characterRigNode);
     
+    options.poseVariables = characterRigNode.getVariables();
     var locomotionVariables = scene.constructNode('CharacterVariables', options);
     var dgnode = locomotionVariables.getDGNode();
     
@@ -527,9 +537,8 @@ FABRIC.SceneGraph.registerNodeType('LocomotionPoseVariables', {
       debugGeometryDraw.pub.setDrawToggle(tf);
     }
     
-    if(options.skeletonNode){
-      locomotionVariables.pub.setSkeletonNode(options.skeletonNode);
-    }
+    locomotionVariables.pub.setSkeletonNode(characterRigNode.pub.getSkeletonNode());
+    locomotionVariables.pub.setCharacterController(characterRigNode.pub.getControllerNode());
     
     return locomotionVariables;
   }});
