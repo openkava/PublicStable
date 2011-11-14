@@ -100,30 +100,25 @@ FABRIC.SceneGraph.registerNodeType('Transform', {
       };
     }
     
-    transformNode.setupInstanceDrawing = function(dynamic) {
-      if(textureNode != undefined)
-        return true;
-      if(dgnode.getCount() <= 1)
-        return false;
-      
-      // create the operator to convert the matrices into a texture
-      dgnode.addMember('textureMatrix', 'Mat44');
-      dgnode.bindings.append(scene.constructOperator( {
-          operatorName: 'calcGlobalTransposedMatrix',
-          srcFile: 'FABRIC_ROOT/SceneGraph/KL/calcGlobalXfo.kl',
-          parameterLayout: [
-            'self.globalXfo',
-            'self.textureMatrix'
-          ],
-          entryFunctionName: 'calcGlobalTransposedMatrix'
-        }));
-
-      textureNode = scene.constructNode('TransformTexture', {transformNode: transformNode.pub, dynamic: dynamic});
-      return true;  
-    }
     
     transformNode.pub.getTransformTexture = function(dynamic) {
-      transformNode.setupInstanceDrawing(dynamic);
+      if(!textureNode){
+        if(dgnode.getCount() <= 1){
+          throw "Transform node has only 1 slices";
+        }
+        // create the operator to convert the matrices into a texture
+        dgnode.addMember('textureMatrix', 'Mat44');
+        dgnode.bindings.append(scene.constructOperator( {
+            operatorName: 'calcGlobalTransposedMatrix',
+            srcFile: 'FABRIC_ROOT/SceneGraph/KL/calcGlobalXfo.kl',
+            parameterLayout: [
+              'self.globalXfo',
+              'self.textureMatrix'
+            ],
+            entryFunctionName: 'calcGlobalTransposedMatrix'
+          }));
+        textureNode = scene.constructNode('TransformTexture', {transformNode: transformNode.pub, dynamic: dynamic});
+      }
       return textureNode.pub;
     }
     
