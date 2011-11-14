@@ -65,12 +65,12 @@ $(document).ready(function() {
             ws.sendMessage('mousemove', {x: e.pageX, y: e.pageY});
             setTimeout(function() {
               shouldSend = true;
-            }, 25);
+            }, 50);
           }
         });
         
-        $('#contextID').html("Your context is : <i>"+(getUrlVars()['context'] ? getUrlVars()['context'] : scene.getContextId())+"</i>");
-        $('#contextLink').attr('href', window.location.href.split('?')[0]+'?context='+(getUrlVars()['context'] ? getUrlVars()['context'] : scene.getContextId()));
+        $('#contextID').html("Your context is : <i>"+ws.getContextID()+"</i>");
+        $('#contextLink').attr('href', window.location.href.split('?')[0]+'?context='+ws.getContextID());
       }
     });
     

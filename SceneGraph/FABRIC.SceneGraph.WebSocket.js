@@ -12,7 +12,7 @@ FABRIC.SceneGraph.registerManagerType('WebSocketManager', {
       serverUrl: undefined,
       serverPort: 8123,
       messageCallBacks: undefined,
-      contextID: scene.pub.getContextId()
+      contextID: scene.pub.getContextId().substr(0,20)
     });
 
     // check if we have a serverUrl
@@ -22,7 +22,11 @@ FABRIC.SceneGraph.registerManagerType('WebSocketManager', {
   
     // create the basis of the manager
     var manager = {
-      pub: {}
+      pub: {
+        getContextID: function(){
+          return options.contextID
+        }
+      }
     };
     
     // setup the web socket
