@@ -30,9 +30,7 @@ FABRIC.SceneGraph.registerNodeType('CharacterMesh', {
         'shader.shaderProgram',
         'rig.pose',
         'uniforms.invmatrices',
-        'uniforms.boneMapping',
-        'self.indicesBuffer',
-        'instance.drawToggle'
+        'uniforms.boneMapping'
       ]
     }));
     
