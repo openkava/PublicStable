@@ -3,7 +3,7 @@
     Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
     -->
   <head> 
-    <title>FABRIC - Volume Rendering</title> 
+    <title>FABRIC - Medical Imaging</title> 
     
     <script type="text/javascript" src="../../../../ThirdParty/jQuery/jquery-1.6.2.min.js"></script>
     <script type="text/javascript" src="../../../../ThirdParty/jQuery/jquery-ui-1.8.16.custom.min.js"></script>
@@ -662,6 +662,7 @@ $(document).ready(function() {
     ajustViewportLayout();
   });
   
+  var initialLoad = true;
   var displayProgressBar = function() {
     $('#loadingDialog').dialog({
       modal: true
@@ -672,6 +673,7 @@ $(document).ready(function() {
       });
       if (nbRemaining===0) {
         $('#loadingDialog').dialog('close');
+        initialLoad = false;
         var errors = scene.getErrors();
         if (errors.length > 0) {
           throw (errors.toString());
@@ -754,36 +756,35 @@ $(document).ready(function() {
     localStorage.setItem('VolumeRenderingSelectedPreset', currPresetName);
   }
   
-  var initialLoad = true;
-
   var loadPreset = function(){
 
     savedCropMin = undefined;
     savedCropMax = undefined;
 
     var loadPresetTask;
+    loadPresetTask = FABRIC.addAsyncTask("Loading preset");
+
     if(!initialLoad) {//Make sure there is at least 1 asynch task ongoing...
-      loadPresetTask = FABRIC.addAsyncTask("Loading preset");
       viewport.startLoadMode();
       displayProgressBar();
-      loadPresetTask( true );
     }
 
     var presetLoader = scene.constructManager('SceneLoader', { preLoadScene: true } );
     var storage = new FABRIC.SceneGraph.LocalStorage('VolumeRenderingPresets.'+currPresetName);
     var nodeMap = presetLoader.load(storage);
+
     addOnLoadCallback();
-    
+
     $resolutionFactorSlider.slider('value', volumeNode.getResolutionFactor());
     curveEditor.redraw();
     colorGradient.redraw();
     localStorage.setItem('VolumeRenderingSelectedPreset', currPresetName);
 
-    initialLoad = false;
+    viewport.redraw();
+    viewport.redraw();
+    viewport.redraw();
 
-    viewport.redraw();
-    viewport.redraw();
-    viewport.redraw();
+    loadPresetTask( true );
   }
   
   $("#resourceSelector").change(function() {
@@ -828,9 +829,12 @@ $(document).ready(function() {
     
   // On startup....
 
+  var presetInitialized = false;
   rebuildPresetNamesList();
   FABRIC.appendOnResolveAsyncTaskCallback(function(label, nbRemaining) {
-    if (nbRemaining===0) {
+    if (nbRemaining===0 && !presetInitialized) {
+      presetInitialized = true;
+      initialLoad = false;
       if(!presetsFound){
         localStorage.setItem('VolumeRenderingPresets.Chest', FABRIC.loadResourceURL('Resources/ChestPreset.txt'));
         localStorage.setItem('VolumeRenderingPresets.Head', FABRIC.loadResourceURL('Resources/HeadPreset.txt'));
