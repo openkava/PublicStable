@@ -78,7 +78,9 @@ FABRIC.SceneGraph = {
   },
   createScene: function(sceneOptions) {
     
-    var context = FABRIC.createContext();
+    if(!sceneOptions)sceneOptions = {};
+    
+    var context = FABRIC.createContext({'contextID':sceneOptions.contextID});
     
     var assignDefaults = function(options, defaults, force) {
       if (!options) options = {};

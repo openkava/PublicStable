@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+  <meta charset="utf-8">  
+  <!--
+    Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+    -->
+    <title>FABRIC - Simple Websocket</title> 
+    
+    <script type="text/javascript" src="../../../ThirdParty/jQuery/jquery-1.6.2.min.js"></script>
+    <script type="text/javascript" src="../../../ThirdParty/jQuery/jquery-ui-1.8.16.custom.min.js"></script>
+
+    <link type="text/css" href="../../../ThirdParty/jQuery/css/fabric/main.css" rel="stylesheet" />
+    <link type="text/css" href="../../../ThirdParty/jQuery/css/fabric/jquery-ui-1.8.16.custom.css" rel="stylesheet" />
+
+    <script type="text/javascript" src="../../../Core/FABRIC.js" charset="utf-8"></script>
+
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Kinematics.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.WebSocket.js" charset="utf-8"></script>
+
+<script type="text/javascript">
+
+ var _gaq = _gaq || [];
+ _gaq.push(['_setAccount', 'UA-25833362-1']);
+ _gaq.push(['_trackPageview']);
+
+ (function() {
+   var ga = document.createElement('script'); ga.type =
+'text/javascript'; ga.async = true;
+   ga.src = ('https:' == document.location.protocol ? 'https://ssl' :
+'http://www') + '.google-analytics.com/ga.js';
+   var s = document.getElementsByTagName('script')[0];
+s.parentNode.insertBefore(ga, s);
+ })();
+
+</script>
+
+<script type="text/javascript">
+
+function getUrlVars() {
+  var vars = {};
+  var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
+    vars[key] = value;
+  });
+  return vars;
+}
+
+$(document).ready(function() {
+  
+  var scene = FABRIC.SceneGraph.createScene();
+
+  // create the websocket node
+  try{
+    var ws = scene.constructNode("WebSocketNode", {
+      serverUrl: '192.168.1.13',
+      sendFunctionNames: ['mousemove'],
+      contextID: getUrlVars()['context'],
+      onOpenCallBack: function() {
+        
+        // add a callback to our mouse move
+        var shouldSend = true;
+        $(document).mousemove(function(e){
+          if(shouldSend) {
+            shouldSend = false;
+            ws.sendMousemove({x: e.pageX, y: e.pageY});
+            setTimeout(function() {
+              shouldSend = true;
+            }, 25);
+          }
+        });
+        
+        $('#contextID').html("Your context is : <i>"+(getUrlVars()['context'] ? getUrlVars()['context'] : scene.getContextId())+"</i>");
+        $('#contextLink').attr('href', window.location.href.split('?')[0]+'?context='+(getUrlVars()['context'] ? getUrlVars()['context'] : scene.getContextId()));
+      }
+    });
+    
+    // setup the function to be called when we receive a mouse mouve event
+    var mouseDivs = {};
+    ws.addMessageCallBack('mousemove', function(message) {
+      
+      // if we don't have a div yet for this connection
+      if(mouseDivs[message.sourceID] == undefined) {
+        console.log('created new div for '+message.sourceID);
+        $('body').append('<div style="width: 26px; height: 26px; background-color: #FF0000; position: absolute" id="mouse_'+message.sourceID+'"/>');
+        mouseDivs[message.sourceID] = $('#mouse_'+message.sourceID);
+      }
+      mouseDivs[message.sourceID].css({
+        'left' : parseInt(message.data.x) + 3,
+        'top' : parseInt(message.data.y) + 3
+      })
+    });
+  }catch(e){
+    $('#contextID').html("<b style='color:#FF0000'>Error</b>: "+e+"<br>Currently only Google Chrome supports WebSocket natively.");
+    $('#contextLink').html('');
+  }
+});
+
+// jQuert UI Styling classes
+$(document).ready(function() {
+	$(".box").addClass("ui-widget");
+	$(".box h2").addClass("ui-widget-header ui-corner-all");
+	$(".content").addClass("ui-widget-content");
+});
+
+</script>
+
+  </head> 
+  <body style="padding: 10px">
+    <h2 id='contextID'>My Context ID is: aaa</h2>
+    <p2><a id="contextLink" href="">Provide this link to anothe person to see their mouse pointer.</a></p2>
+  </body> 
+  </html>
