@@ -349,7 +349,7 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
         new FABRIC.RT.OGLRenderTargetTextureDesc (
             2,
             new FABRIC.RT.OGLTexture2D (
-              FABRIC.SceneGraph.OpenGLConstants.GL_RGBA16,
+              FABRIC.SceneGraph.OpenGLConstants.GL_RGBA16F,
               FABRIC.SceneGraph.OpenGLConstants.GL_RGBA,
               FABRIC.SceneGraph.OpenGLConstants.GL_FLOAT)
           )

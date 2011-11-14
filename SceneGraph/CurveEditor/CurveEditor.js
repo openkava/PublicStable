@@ -18,6 +18,7 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
   var windowHeight = rootDomNode.clientHeight;
   var isBezier = animationLibraryNode.isTypeOf('BezierKeyAnimationLibrary');
   
+  
   var svgRoot = FABRIC.createSVGRootElem(domRootID);
   if(options.volumerenderdemohack){
     svgRoot.attr('style', "position:relative; top:-"+windowHeight+"px;z-index:0");
@@ -43,8 +44,8 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
   ///////////////
   tracksData = animationLibraryNode.getTrackSet(trackSetId);
   var trackCount = tracksData.tracks.length;
-  var timeRange, yRange = new FABRIC.Vec2(0, 0);
-  curvesData = [];
+  var yRange = new FABRIC.Vec2(0, 0);
+  var curvesData = [];
   var trackCurves = [];
   trackDisplayNode = scene.constructNode('TrackDisplay', {
       animationLibraryNode: animationLibraryNode,
@@ -137,6 +138,7 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
       var setPathCurveValues = function(curveData) {
         var val = screenXfo.toScreenSpace(new FABRIC.Vec2(0, curveData[0]))
         var path = ['M', val.x, val.y, 'L', 100, 100, 300, 200];
+        try{
         for (var i = 0; i < curveData.length; i++) {
           var t = ((i/curveData.length)*(timeRange.y - timeRange.x))+timeRange.x;
           val = screenXfo.toScreenSpace(new FABRIC.Vec2(t, curveData[i]));
@@ -144,6 +146,10 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
           path[(i * 2) + 5] = val.y;
         }
         trackCurves[trackIndex].attr('d', path.join(' '));
+        }
+        catch(e){
+          console.log("Bug: the core is sometimes returning null values e.g.:"+JSON.stringify(curveData));
+        }
       }
       setPathCurveValues(curvesData.values[trackIndex]);
   
@@ -378,13 +384,20 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
     var newWindowWidth = $('#viewer').width();
     var newWindowHeight = $('#viewer').height();
     
-    timeRange.y += ( newWindowWidth - windowWidth ) / screenXfo.sc.x;
+    // Occasionaly when the window is opened, it has a negative width and
+    // then we get sent a resize event. Here, we re-fit the curve to the screen.
+    var validWindowWidth = (windowWidth < 0);
+    if(validWindowWidth){
+      timeRange.y += ( newWindowWidth - windowWidth ) / screenXfo.sc.x;
+    }
     windowWidth = newWindowWidth;
     windowHeight = newWindowHeight;
+    if(!validWindowWidth){
+      screenXfo.fitToScreen();
+    }
     graphCenterGroup.translate(0, windowHeight * 0.5);
     graphBGRect.size(windowWidth, windowHeight);
     timeStripe.attr('d', 'M 5 0 L 5 ' + windowHeight);
-    
     updateTimeRange();
   }
   
