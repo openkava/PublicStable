@@ -8,12 +8,12 @@ mat4 loadMatrixFromTexture(
   in int index
 ){
   float factor = 1.0 / 512.0;
-  int x = (index % 128) * 4;
+  float x = mod(float(index), 128.0) * 4.0;
   float y = float(index) / 128.0;
   return mat4(texture2D(u_sampler,vec2(x,y) * factor),
-              texture2D(u_sampler,vec2(x+1,y) * factor),
-              texture2D(u_sampler,vec2(x+2,y) * factor),
-              texture2D(u_sampler,vec2(x+3,y) * factor));
+              texture2D(u_sampler,vec2(x+1.0,y) * factor),
+              texture2D(u_sampler,vec2(x+2.0,y) * factor),
+              texture2D(u_sampler,vec2(x+3.0,y) * factor));
 
 }
 
