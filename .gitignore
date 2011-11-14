@@ -3,6 +3,7 @@
 #
 
 Web/
+websocket-server/
 build/
 .DS_Store
 public-*
