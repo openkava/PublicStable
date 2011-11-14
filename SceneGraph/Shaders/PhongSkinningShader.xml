@@ -18,7 +18,7 @@
 		<uniform name="u_modelViewMatrix" constant="modelViewMatrix" type="Mat44" owner="instance"/>
 		<uniform name="u_normalMatrix" constant="normalMatrix" type="Mat33" owner="instance"/>
 		
-		<uniform name="u_skinningMatrices" constant="skinningMatrices" type="Mat44" owner="characterInstance"/>
+    <uniform name="u_samplerSkinningMatrices" constant="skinningMatricesTextureUnit" type="Integer" owner="geometry"/>
 		
 	</uniforms>
 	
@@ -46,7 +46,7 @@
 			uniform vec4 u_lightPosition;
 
 			// This is an array of all the bones in a skeleton.
-			uniform mat4 u_skinningMatrices[NUM_BONES];
+      uniform sampler2D u_samplerSkinningMatrices;
 
 			attribute vec4 a_position;
 			attribute vec3 a_normal;
@@ -62,12 +62,13 @@
 			
 			]]>
 		</source>
+    <include file="matrices.txt"/>
 		<include file="skinning.txt"/>
 		<source>
 			<![CDATA[
 			
 			void main(){
-				skinPositionsAndNormals();
+				skinPositionsAndNormals(u_samplerSkinningMatrices);
 			}
 			
 			]]>

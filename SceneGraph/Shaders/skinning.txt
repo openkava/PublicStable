@@ -1,7 +1,9 @@
 
 #ifdef SKIN_POSITIONS
 
-void skinPositions(){
+void skinPositions(
+  in sampler2D samplerSkinningMatrices
+){
 
   vec4 transformedPosition = vec4(0.0,0.0,0.0,0.0);
   
@@ -13,8 +15,9 @@ void skinPositions(){
     if(weight > 0.0){
       int idx = int(curIndex[i]);
         
-      // transform the offset by bone i
-      mat4 m44 = u_skinningMatrices[idx];
+      // load the specified bone matrix from the texture
+      mat4 m44 = loadMatrixFromTexture(samplerSkinningMatrices, idx);
+      
       transformedPosition += m44 * a_position * weight;
     }
   }
@@ -26,7 +29,9 @@ void skinPositions(){
 #else
 #ifdef SKIN_POSITIONS_AND_NORMALS
 
-void skinPositionsAndNormals(){
+void skinPositionsAndNormals(
+  in sampler2D samplerSkinningMatrices
+){
   vec4 transformedPosition = vec4(0.0,0.0,0.0,0.0);
   vec4 transformedNormal = vec4(0.0,0.0,0.0,0.0);
   
@@ -38,8 +43,9 @@ void skinPositionsAndNormals(){
     if(weight > 0.0){
       int idx = int(curIndex[i]);
         
-      // transform the offset by bone i
-      mat4 m44 = u_skinningMatrices[idx];
+      // load the specified bone matrix from the texture
+      mat4 m44 = loadMatrixFromTexture(samplerSkinningMatrices, idx);
+      
       transformedPosition += m44 * a_position * weight;
 
       // transform normal by bone i
@@ -60,8 +66,9 @@ void skinPositionsAndNormals(){
 #else
 #ifdef SKIN_POSITIONS_NORMALS_AND_TANGENTS
 
-void skinPositionsNormalsAndTangents()
-{
+void skinPositionsNormalsAndTangents(
+  in sampler2D samplerSkinningMatrices
+){
   vec4 transformedPosition = vec4(0.0,0.0,0.0,0.0);
   vec3 transformedNormal = vec3(0.0,0.0,0.0);
   vec3 transformedTangent = vec3(0.0,0.0,0.0);
@@ -74,8 +81,9 @@ void skinPositionsNormalsAndTangents()
     if(weight > 0.0){
       int idx = int(curIndex[i]);
         
-      // transform the offset by bone i
-      mat4 m44 = u_skinningMatrices[idx];
+      // load the specified bone matrix from the texture
+      mat4 m44 = loadMatrixFromTexture(samplerSkinningMatrices, idx);
+      
       transformedPosition += m44 * a_position * weight;
 
       // transform normal by bone i
