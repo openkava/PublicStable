@@ -52,9 +52,8 @@ $(document).ready(function() {
 
   // create the websocket node
   try{
-    var ws = scene.constructNode("WebSocketNode", {
-      serverUrl: '192.168.1.13',
-      sendFunctionNames: ['mousemove'],
+    var ws = scene.constructManager("WebSocketManager", {
+      serverUrl: 'ec2-50-19-205-12.compute-1.amazonaws.com',
       contextID: getUrlVars()['context'],
       onOpenCallBack: function() {
         
@@ -63,7 +62,7 @@ $(document).ready(function() {
         $(document).mousemove(function(e){
           if(shouldSend) {
             shouldSend = false;
-            ws.sendMousemove({x: e.pageX, y: e.pageY});
+            ws.sendMessage('mousemove', {x: e.pageX, y: e.pageY});
             setTimeout(function() {
               shouldSend = true;
             }, 25);
