@@ -365,10 +365,6 @@ FABRIC.SceneGraph.registerNodeType('LocomotionCharacterController', {
       ]
     }));
     
-    characterControllerNode.pub.setCrowdXfos = function(xfos){
-      dgnode.setCount(xfos.length);
-      dgnode.setBulkData({ xfo: xfos});
-    }
     
     return characterControllerNode;
   }});
