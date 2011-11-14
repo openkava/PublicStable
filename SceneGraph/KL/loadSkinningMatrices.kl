@@ -12,9 +12,7 @@ operator loadSkinningMatrices(
   io OGLShaderProgram shaderProgram,
   io Xfo pose[],
   io Mat44 invMatrices[],
-  io Integer boneMapping[],
-  io OGLBuffer indicesBuffer,
-  io Boolean drawToggle
+  io Integer boneMapping[]
 ) {
 //  report("loadSkinningMatrices");
   Integer location = shaderProgram.getUniformLocation(SKINNING_MATRICES_ATTRIBUTE_ID);
