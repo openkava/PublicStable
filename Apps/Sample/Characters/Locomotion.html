@@ -211,7 +211,6 @@ $(document).ready(function() {
   */
   
   var rigName = 'walker';
-  /*
   try{
     if(localStorage && localStorage.getItem("rigName")){
       rigName = localStorage.getItem("rigName");
@@ -219,9 +218,7 @@ $(document).ready(function() {
     else{
       throw "no rigName";
     }
-  }catch(e){
-  }
-  */
+  }catch(e){}
   var locomotionControllerNode;
   switch(rigName){
   case 'walker':
@@ -240,14 +237,13 @@ $(document).ready(function() {
   case 'centipede':
     var locomotionControllerNode = scene.constructNode('LocomotionCharacterController', {
         cameraNode: camera,
-        maxLinearVelocity: new FABRIC.RT.Vec2(15, 15),
-        maxLinearAcceleration: 0.45,
+        maxLinearVelocity: new FABRIC.RT.Vec2(20, 20),
+        maxLinearAcceleration: 1.45,
         maxAngularVelocity:  new FABRIC.RT.Euler(0, 2, 0),
         bulletWorldNode: bulletWorldNode,
         numTrailSegments: 12,
         trailLength: 12.0,
-        gravity: -1.0,
-        comHeight: 1.8,
+        gravity: 0,
         circleSize: 1.6
       });
     break;
@@ -265,13 +261,13 @@ $(document).ready(function() {
       });
     break;
   }
-  /*
+  
   $("#selectCharacter").val(rigName);
   $("#selectCharacter").change(function() {
     localStorage.setItem("rigName", $("#selectCharacter :selected").attr("value"));
     window.location.reload();
   });
-  */
+  
   var rigLoader = scene.constructManager('SceneLoader');
 //  var storage = new FABRIC.SceneGraph.LocalStorage(rigName);
 //  var nodeMap = rigLoader.load(storage);
@@ -453,29 +449,6 @@ $(document).ready(function() {
           scene.animation.step();
         });
         
-        /*
-      var controllerNode = scene.constructNode('AnimationController', {
-        timeRange: new FABRIC.RT.Vec2(0, 25/30),
-        timeControl: 1, /* 0: absolute, 1: increment * /
-        outOfRange: 1 /* 0: linear, 1: loop, 3: clamp * /
-      });
-      
-      
-    //  characterVariables.bindToAnimationTracks(libraryAnimations, controllerNode, 0);
-      
-      var locomotionRigNode = scene.constructNode('CharacterRig', {
-        name: 'LocomotionRig',
-        skeletonNode: ikrig.getSkeletonNode(),
-        baseCharacterRig: ikrig,
-        variablesNode: characterVariables
-      });
-      */
-   //   ikrig.setVariablesNode(characterVariables);
-   //   ikrig.setControllerNode(locomotionControllerNode);
-      
-      /*
-
-      */
       return true;
     }
   });
@@ -514,13 +487,11 @@ $(document).ready(function() {
           <div class="box">
             <h2>CONTROLS</h2>
             <div class="content">
-              <!--
               <label for="selectCharacter" style="margin-top:10px;">Select Character:</label>
               <select id='selectCharacter' style="margin-top:10px;">
                 <option value="walker">Walker
                 <option value="centipede">Centipede
               </select>
-            -->
               </br>
               <input type="checkbox" id="displayControllerDebugging" style="margin-top:10px;"/><label for="displayControllerDebugging">Display Controller Debugging:</label>
               </br>
