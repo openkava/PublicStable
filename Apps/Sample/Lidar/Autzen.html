@@ -131,11 +131,11 @@ $(document).ready(function() {
       camera.getTransformNode().setTarget(center);
       camera.setNearDistance(Math.abs(min.z - max.z) * 0.001);
       camera.setFarDistance(Math.abs(min.z - max.z) * 100);
+      
+      $('#loadingDialog').dialog('close');
       viewport.redraw();
     }, 150);
 
-    $('#loadingDialog').dialog('close');
-    viewport.redraw();
   });
 
   FABRIC.appendOnResolveAsyncTaskCallback(function(label, nbRemaining, doneWeight, totalWeight) {

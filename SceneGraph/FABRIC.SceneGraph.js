@@ -1452,6 +1452,7 @@ FABRIC.SceneGraph.registerNodeType('ResourceLoad', {
       
       if(incrementLoadProgressBar){
         incrementLoadProgressBar(true, -remainingTaskWeight);
+        incrementLoadProgressBar = undefined;
       }
       else if (options.redrawOnLoad) {
         // PT 09-09-2011 Note: this is a hack to force the redrawing after the resource has
@@ -1517,6 +1518,9 @@ FABRIC.SceneGraph.registerNodeType('ResourceLoad', {
     };
     
     resourceLoadNode.pub.setUrl = function(url, forceLoad) {
+      if(url !== '' && url !== dgnode.getData('url') && incrementLoadProgressBar === undefined && options.blockRedrawingTillResourceIsLoaded){
+        incrementLoadProgressBar = FABRIC.addAsyncTask("Loading: "+ options.url, remainingTaskWeight);
+      }
       dgnode.setData('url', 0, url);
       if(forceLoad!= false){
         dgnode.evaluate();

@@ -3,63 +3,63 @@
     Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
     -->
   <head> 
-    <title>FABRIC - Volume Rendering</title> 
+    <title>FABRIC - Medical Imaging</title> 
     
-    <script type="text/javascript" src="../../../ThirdParty/jQuery/jquery-1.6.2.min.js"></script>
-    <script type="text/javascript" src="../../../ThirdParty/jQuery/jquery-ui-1.8.16.custom.min.js"></script>
+    <script type="text/javascript" src="../../../../ThirdParty/jQuery/jquery-1.6.2.min.js"></script>
+    <script type="text/javascript" src="../../../../ThirdParty/jQuery/jquery-ui-1.8.16.custom.min.js"></script>
 
-    <link type="text/css" href="../../../ThirdParty/jQuery/css/fabric/main.css" rel="stylesheet" />
-    <link type="text/css" href="../../../ThirdParty/jQuery/css/fabric/jquery-ui-1.8.16.custom.css" rel="stylesheet" />
+    <link type="text/css" href="../../../../ThirdParty/jQuery/css/fabric/main.css" rel="stylesheet" />
+    <link type="text/css" href="../../../../ThirdParty/jQuery/css/fabric/jquery-ui-1.8.16.custom.css" rel="stylesheet" />
 
-    <script type="text/javascript" src="../../../ThirdParty/jQuery/colorpicker/js/colorpicker.js"></script>
-    <link href="../../../ThirdParty/jQuery/colorpicker/css/colorpicker.css" rel="stylesheet" type="text/css" />
+    <script type="text/javascript" src="../../../../ThirdParty/jQuery/colorpicker/js/colorpicker.js"></script>
+    <link href="../../../../ThirdParty/jQuery/colorpicker/css/colorpicker.css" rel="stylesheet" type="text/css" />
     
 
-    <script type="text/javascript" src="../../../Core/FABRIC.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Math.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Vec2.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Vec3.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Vec4.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Mat22.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Mat33.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Mat44.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Quat.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Xfo.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/RGBA.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Color.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Euler.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/Ray.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/OGLShaderProgram.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/OGLTexture2D.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/OGLTexture3D.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/OGLBuffer.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/OGLRenderTarget.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../../Core/FABRIC.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../../SceneGraph/RT/Math.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../../SceneGraph/RT/Vec2.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../../SceneGraph/RT/Vec3.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../../SceneGraph/RT/Vec4.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../../SceneGraph/RT/Mat22.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../../SceneGraph/RT/Mat33.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../../SceneGraph/RT/Mat44.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../../SceneGraph/RT/Quat.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../../SceneGraph/RT/Xfo.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../../SceneGraph/RT/RGBA.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../../SceneGraph/RT/Color.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../../SceneGraph/RT/Euler.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../../SceneGraph/RT/Ray.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../../SceneGraph/RT/OGLShaderProgram.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../../SceneGraph/RT/OGLTexture2D.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../../SceneGraph/RT/OGLTexture3D.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../../SceneGraph/RT/OGLBuffer.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../../SceneGraph/RT/OGLRenderTarget.js" charset="utf-8"></script>
     
-    <script type="text/javascript" src="../../../SceneGraph/RT/PoseVariables.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/KeyframeTrack.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/LinearKeyframe.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/RT/ColorKeyframe.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../../SceneGraph/RT/PoseVariables.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../../SceneGraph/RT/KeyframeTrack.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../../SceneGraph/RT/LinearKeyframe.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../../SceneGraph/RT/ColorKeyframe.js" charset="utf-8"></script>
 
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Geometry.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Primitives.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Lights.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Materials.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Manipulation.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Kinematics.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.VolumeRendering.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Geometry.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Primitives.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Lights.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Materials.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Manipulation.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Kinematics.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.VolumeRendering.js" charset="utf-8"></script>
     
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Animation.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../Core/Vec2.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../Core/Color.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../Core/FABRIC.SVG.js"></script>
-    <script type="text/javascript" src="../../../SceneGraph/CurveEditor/CurveEditor.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/ColorGradient/ColorGradient.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/Histogram/Histogram.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Animation.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../../Core/Vec2.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../../Core/Color.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../../Core/FABRIC.SVG.js"></script>
+    <script type="text/javascript" src="../../../../SceneGraph/CurveEditor/CurveEditor.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../../SceneGraph/ColorGradient/ColorGradient.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../../SceneGraph/Histogram/Histogram.js" charset="utf-8"></script>
     
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Persistence.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Persistence.js" charset="utf-8"></script>
     
-    <link href="../../../SceneGraph/CurveEditor/CurveEditor.css" rel="stylesheet" type="text/css" />
+    <link href="../../../../SceneGraph/CurveEditor/CurveEditor.css" rel="stylesheet" type="text/css" />
 
 <script type="text/javascript">
 
@@ -484,7 +484,11 @@ $(document).ready(function() {
 
   scene.constructNode("CameraManipulator", { targetNode:camera } );
   viewport.setCameraNode(camera);
-  var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(100.0, 100.0, 100.0) });
+  var light = scene.constructNode('PointLight', { transformNode: scene.constructNode('Transform', {
+    hierarchical: true,
+    parentTransformNode: camera.getTransformNode(),
+    localXfo: new FABRIC.RT.Xfo({tr: new FABRIC.RT.Vec3(100, 100, 100)})
+  })});
   var transform =  scene.constructNode('Transform', {
     hierarchical: false,
     globalXfo: new FABRIC.RT.Xfo({tr: new FABRIC.RT.Vec3(0, 0, 0), sc: new FABRIC.RT.Vec3(1.0, 1.0, 1.0)})
@@ -509,6 +513,7 @@ $(document).ready(function() {
       opacityTextureNode: opacityTexture,
       lightNode: light,
       brightnessFactor: 0.5,
+      specularFactor: 0.6,
       transparency: 0.70,
       minOpacity: 0.0,
       maxOpacity: 1.0,
@@ -657,6 +662,7 @@ $(document).ready(function() {
     ajustViewportLayout();
   });
   
+  var initialLoad = true;
   var displayProgressBar = function() {
     $('#loadingDialog').dialog({
       modal: true
@@ -667,6 +673,7 @@ $(document).ready(function() {
       });
       if (nbRemaining===0) {
         $('#loadingDialog').dialog('close');
+        initialLoad = false;
         var errors = scene.getErrors();
         if (errors.length > 0) {
           throw (errors.toString());
@@ -749,34 +756,35 @@ $(document).ready(function() {
     localStorage.setItem('VolumeRenderingSelectedPreset', currPresetName);
   }
   
-  var initialLoad = true;
-
   var loadPreset = function(){
 
     savedCropMin = undefined;
     savedCropMax = undefined;
 
     var loadPresetTask;
+    loadPresetTask = FABRIC.addAsyncTask("Loading preset");
+
     if(!initialLoad) {//Make sure there is at least 1 asynch task ongoing...
-      loadPresetTask = FABRIC.addAsyncTask("Loading preset");
       viewport.startLoadMode();
       displayProgressBar();
-      loadPresetTask( true );
     }
 
     var presetLoader = scene.constructManager('SceneLoader', { preLoadScene: true } );
     var storage = new FABRIC.SceneGraph.LocalStorage('VolumeRenderingPresets.'+currPresetName);
     var nodeMap = presetLoader.load(storage);
+
     addOnLoadCallback();
-    
+
     $resolutionFactorSlider.slider('value', volumeNode.getResolutionFactor());
     curveEditor.redraw();
     colorGradient.redraw();
-    viewport.redraw();
-    viewport.redraw();
     localStorage.setItem('VolumeRenderingSelectedPreset', currPresetName);
 
-    initialLoad = false;
+    viewport.redraw();
+    viewport.redraw();
+    viewport.redraw();
+
+    loadPresetTask( true );
   }
   
   $("#resourceSelector").change(function() {
@@ -821,9 +829,12 @@ $(document).ready(function() {
     
   // On startup....
 
+  var presetInitialized = false;
   rebuildPresetNamesList();
   FABRIC.appendOnResolveAsyncTaskCallback(function(label, nbRemaining) {
-    if (nbRemaining===0) {
+    if (nbRemaining===0 && !presetInitialized) {
+      presetInitialized = true;
+      initialLoad = false;
       if(!presetsFound){
         localStorage.setItem('VolumeRenderingPresets.Chest', FABRIC.loadResourceURL('Resources/ChestPreset.txt'));
         localStorage.setItem('VolumeRenderingPresets.Head', FABRIC.loadResourceURL('Resources/HeadPreset.txt'));
