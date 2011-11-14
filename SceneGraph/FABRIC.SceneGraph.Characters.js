@@ -498,10 +498,18 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
       
     dgnode.addMember('debug', 'Boolean', options.debug );
     dgnode.addMember('debugGeometry', 'DebugGeometry' );
-    var debugGeometryDraw = scene.constructNode('DebugGeometryDraw', {
-      dgnode: dgnode,
-      debugGemetryMemberName: 'debugGeometry'
-    });
+    
+    
+    dgnode.bindings.append(scene.constructOperator({
+      operatorName: 'matchCount',
+      srcCode: 'operator matchCount(Size parentCount, io Size selfCount) { selfCount = parentCount; }',
+      entryFunctionName: 'matchCount',
+      parameterLayout: [
+        'charactercontroller.count',
+        'self.newCount'
+      ],
+      async: false
+    }));
     // extend the public interface
     characterRigNode.addMemberInterface(dgnode, 'pose', true);
     
@@ -671,6 +679,11 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
       }
     };
   
+    var debugGeometryDraw = scene.constructNode('DebugGeometryDraw', {
+      dgnode: dgnode,
+      debugGemetryMemberName: 'debugGeometry'
+    });
+    
     if (options.skeletonNode) {
       characterRigNode.pub.setSkeletonNode(options.skeletonNode);
     }
@@ -678,9 +691,6 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
     if (options.variablesNode) {
       characterRigNode.pub.setVariablesNode(options.variablesNode);
     }
-  //  else {
-  //    characterRigNode.pub.setVariablesNode(scene.constructNode('CharacterVariables').pub);
-  //  }
     
     if (options.controllerNode) {
       characterRigNode.pub.setControllerNode(options.controllerNode);
