@@ -2,12 +2,42 @@
 use Vec3, Quat, Xfo;
 use DebugGeometry;
 
+
+operator screenSpacePlayerControls(
+  io Vec2 translationControls,
+  io Vec2 orientationControls,
+  
+  io Vec2 maxLinearVelocity,
+  io Euler maxAngularVelocity,
+  
+  io Vec3 goalLinearVelocity,
+  io Quat goalOrientation,
+  
+  io Mat44 cameraMat44,
+  io Mat44 projectionMat44
+) {
+// report("screenSpacePlayerControls:"+translationControls);
+  
+  Xfo camXfo;
+  Quat alignment;
+  
+  camXfo.setFromMat44(cameraMat44.inverse());
+  // Modify the Camera Matrix so that it faces straight down.
+  // This enables us to convert screen space vectors to world space.
+  alignment.setFrom2Vectors(camXfo.ori.rotateVector(Vec3(0.0, 0.0, -1.0)), Vec3(0.0, -1.0, 0.0));
+  camXfo.ori = alignment * camXfo.ori;
+  Vec3 translationX = camXfo.ori.rotateVector(Vec3(translationControls.x * maxLinearVelocity.x, 0.0, 0.0));
+  Vec3 translationZ = camXfo.ori.rotateVector(Vec3(0.0, translationControls.y * maxLinearVelocity.y, 0.0));
+
+  goalLinearVelocity = translationX + translationZ;
+}
+
 operator evaluateCharacterController(
   io Xfo controllerXfo,
   io CharacterControllerParams controllerparams,
   
-  io Vec2 translationControls,
-  io Vec2 orientationControls,
+  io Vec3 goalLinearVelocity,
+  io Quat goalOrientation,
   
   io Vec2 maxLinearVelocity,
   io Euler maxAngularVelocity,
@@ -22,9 +52,6 @@ operator evaluateCharacterController(
   io DebugGeometry debugGeometry1,
   io DebugGeometry debugGeometry2,
   
-  io Mat44 cameraMat44,
-  io Mat44 projectionMat44,
-  
   io Scalar timestep
 ) {
 // report("evaluateCharacterController:"+timestep);
@@ -32,21 +59,11 @@ operator evaluateCharacterController(
   if(timestep==0){
     return;
   }
- // report(translationControls);
-  Xfo camXfo;
-  camXfo.setFromMat44(cameraMat44.inverse());
-  // Ensure that the com is aligned with the 
   Quat alignment;
-  alignment.setFrom2Vectors(camXfo.ori.rotateVector(Vec3(0.0, 0.0, -1.0)), Vec3(0.0, -1.0, 0.0));
-  camXfo.ori = alignment * camXfo.ori;
-  Vec3 translationX = camXfo.ori.rotateVector(Vec3(translationControls.x * maxLinearVelocity.x, 0.0, 0.0));
-  Vec3 translationZ = camXfo.ori.rotateVector(Vec3(0.0, translationControls.y * maxLinearVelocity.y, 0.0));
-
   ////////////////////////////
   // Movement
   
   Vec3 currLinearVelocity = controllerparams.displacement.tr / timestep;
-  Vec3 goalLinearVelocity = translationX + translationZ;
   Vec3 acceleration = goalLinearVelocity - currLinearVelocity;
   
   // decompose acceleration into forwards and and non-forwards acceleration,
