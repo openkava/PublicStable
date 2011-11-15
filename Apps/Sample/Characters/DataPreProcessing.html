@@ -451,7 +451,7 @@ $(document).ready(function() {
   $('#saveData').button()
     .click(function() {
       ikRigVariablesNode.setName('CharacterVariables');
-      var rigSaver = scene.constructManager('SceneSaver');
+      var rigSaver = scene.constructManager('SceneSerializer');
       rigSaver.addNode(ikrigNode);
       rigSaver.addNode(characterMesh);
       rigSaver.addNode(libraryLocomotionAnimations);

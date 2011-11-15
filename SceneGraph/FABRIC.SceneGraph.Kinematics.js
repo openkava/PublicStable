@@ -130,23 +130,23 @@ FABRIC.SceneGraph.registerNodeType('Transform', {
     
     var parentWriteData = transformNode.writeData;
     var parentReadData = transformNode.readData;
-    transformNode.writeData = function(sceneSaver, constructionOptions, nodeData) {
+    transformNode.writeData = function(sceneSerializer, constructionOptions, nodeData) {
       constructionOptions.hierarchical = options.hierarchical;
       if(parentTransformNode){
-        sceneSaver.addNode(parentTransformNode.pub);
+        sceneSerializer.addNode(parentTransformNode.pub);
         nodeData.parentTransformNode = parentTransformNode.pub.getName();
       }
       nodeData.globalXfo = transformNode.pub.getGlobalXfo();
       
-      parentWriteData(sceneSaver, constructionOptions, nodeData);
+      parentWriteData(sceneSerializer, constructionOptions, nodeData);
     };
-    transformNode.readData = function(sceneLoader, nodeData) {
+    transformNode.readData = function(sceneDeserializer, nodeData) {
       if(nodeData.parentTransformNode){
-        transformNode.pub.setParentNode(sceneLoader.getNode(nodeData.parentTransformNode));
+        transformNode.pub.setParentNode(sceneDeserializer.getNode(nodeData.parentTransformNode));
       }
       transformNode.pub.setGlobalXfo(nodeData.globalXfo);
       
-      parentReadData(sceneLoader, nodeData);
+      parentReadData(sceneDeserializer, nodeData);
     };
 
     return transformNode;

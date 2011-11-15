@@ -104,15 +104,15 @@ FABRIC.SceneGraph.registerNodeType('VolumeSlices', {
 
     var parentWriteData = volumeSlicesNode.writeData;
     var parentReadData = volumeSlicesNode.readData;
-    volumeSlicesNode.writeData = function(sceneSaver, constructionOptions, nodeData) {
+    volumeSlicesNode.writeData = function(sceneSerializer, constructionOptions, nodeData) {
       nodeData.cropMin = volumeSlicesNode.pub.getCropMin();
       nodeData.cropMax = volumeSlicesNode.pub.getCropMax();
-      parentWriteData(sceneSaver, constructionOptions, nodeData);
+      parentWriteData(sceneSerializer, constructionOptions, nodeData);
     };
-    volumeSlicesNode.readData = function(sceneLoader, nodeData) {
+    volumeSlicesNode.readData = function(sceneDeserializer, nodeData) {
       volumeSlicesNode.pub.setCropMin(nodeData.cropMin);
       volumeSlicesNode.pub.setCropMax(nodeData.cropMax);
-      parentReadData(sceneLoader, nodeData);
+      parentReadData(sceneDeserializer, nodeData);
     };
 
     return volumeSlicesNode;
@@ -545,7 +545,7 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
 
     var parentWriteData = volumeNode.writeData;
     var parentReadData = volumeNode.readData;
-    volumeNode.writeData = function(sceneSaver, constructionOptions, nodeData) {
+    volumeNode.writeData = function(sceneSerializer, constructionOptions, nodeData) {
       nodeData.transparency = volumeNode.pub.getTransparency();
       nodeData.specularFactor = volumeNode.pub.getSpecularFactor();
       nodeData.brightnessFactor = volumeNode.pub.getBrightnessFactor();
@@ -554,9 +554,9 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
       nodeData.minOpacity = volumeNode.pub.getMinOpacity();
       nodeData.maxOpacity = volumeNode.pub.getMaxOpacity();
      
-      parentWriteData(sceneSaver, constructionOptions, nodeData);
+      parentWriteData(sceneSerializer, constructionOptions, nodeData);
     };
-    volumeNode.readData = function(sceneLoader, nodeData) {
+    volumeNode.readData = function(sceneDeserializer, nodeData) {
       volumeNode.pub.setTransparency(nodeData.transparency);
       volumeNode.pub.setSpecularFactor(nodeData.specularFactor);
       volumeNode.pub.setBrightnessFactor(nodeData.brightnessFactor);
@@ -564,7 +564,7 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
      
       volumeNode.pub.setMinOpacity(nodeData.minOpacity);
       volumeNode.pub.setMaxOpacity(nodeData.maxOpacity);
-      parentReadData(sceneLoader, nodeData);
+      parentReadData(sceneDeserializer, nodeData);
     };
     return volumeNode;
   }
@@ -834,15 +834,15 @@ FABRIC.SceneGraph.registerNodeType('VolumeSliceRender', {
 
     var parentWriteData = sliceNode.writeData;
     var parentReadData = sliceNode.readData;
-    sliceNode.writeData = function(sceneSaver, constructionOptions, nodeData) {
+    sliceNode.writeData = function(sceneSerializer, constructionOptions, nodeData) {
       nodeData.axis = sliceNode.pub.getAxis();
       nodeData.ratio = sliceNode.pub.getRatio();
-      parentWriteData(sceneSaver, constructionOptions, nodeData);
+      parentWriteData(sceneSerializer, constructionOptions, nodeData);
     };
-    sliceNode.readData = function(sceneLoader, nodeData) {
+    sliceNode.readData = function(sceneDeserializer, nodeData) {
       sliceNode.pub.setAxis(nodeData.axis);
       sliceNode.pub.setRatio(nodeData.ratio);
-      parentReadData(sceneLoader, nodeData);
+      parentReadData(sceneDeserializer, nodeData);
     };
 
     return sliceNode;
