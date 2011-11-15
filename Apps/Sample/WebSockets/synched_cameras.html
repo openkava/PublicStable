@@ -161,8 +161,8 @@ $(document).ready(function() {
     ws.addMessageCallBack('cameraManip', function(message) {
       
       // filter out messages to ourselves
-      if(message.sourceID == message.targetID)
-        return;
+      //if(message.sourceID == message.targetID)
+      //  return;
       
       // if we don't have a camera yet for this connection
       if(synchedCameras[message.sourceID] == undefined) {
