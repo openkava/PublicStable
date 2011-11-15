@@ -190,6 +190,15 @@ FABRIC.RT.Quat.prototype = {
     this.w = val / 2;
     return this;
   },
+  
+  setFromDirectionAndUpvector: function (direction, upvector) {
+    var zaxis = direction.unit();
+    var yaxis = zaxis.cross(upvector.unit()).cross(zaxis).unit();
+    var xaxis = yaxis.cross(zaxis).unit();
+    var mat = new FABRIC.RT.Mat33(xaxis, yaxis, zaxis).transpose();
+    this.setFromMat33(mat);
+    return this;
+  },
 
   equal: function(q) {
     var result = //JS bug: if the condition is directly returned it is wrong (??)
