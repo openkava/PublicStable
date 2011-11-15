@@ -134,27 +134,42 @@ $(document).ready(function() {
     });
     
     // camera primitive
-    var cameraPrimitive = scene.constructNode('CameraPrimitive');
-    var cameraMaterial = scene.constructNode('FlatMaterial', {color: FABRIC.RT.rgb(0,0,1.0,1.0)})
+    var cameraPrimitive = scene.constructNode('CameraPrimitive', {size: 0.75});
+    
+    // colors
+    var colors = [];
+    colors.push(FABRIC.RT.rgb(0.0,0.75,0.0));
+    colors.push(FABRIC.RT.rgb(0.75,0.0,0.0));
+    colors.push(FABRIC.RT.rgb(0.75,0.0,0.75));
+    colors.push(FABRIC.RT.rgb(0.0,0.75,0.75));
+    colors.push(FABRIC.RT.rgb(0.0,0.0,0.75));
 
-    // setup self in the synched camera map    
+    // setup self in the synched camera map
     var synchedCameras = {};
+    var synchedCameraCount = 0;
     synchedCameras['_self'] = {};
     synchedCameras['_self'].node = camera;
+    synchedCameras['_self'].material = scene.constructNode('FlatMaterial', {color: colors[synchedCameraCount % 5]})
     synchedCameras['_self'].instance = scene.constructNode('Instance', {
       geometryNode: cameraPrimitive,
-      materialNode: cameraMaterial,
+      materialNode: synchedCameras['_self'].material,
       transformNode: camera.getTransformNode(),
     });
     synchedCameras['_self'].instance.setDrawToggle(false);
+    synchedCameraCount++;
     
     // setup a function to fill the camera list
     function updateCameraList() {
       var html = "";
 
       for(var key in synchedCameras)
-        html += "<option value='"+key+"'>"+key+"</option>"
-        
+        html += "<option value='"+key+"' style='color: white; background-color:rgb("+
+          parseInt(synchedCameras[key].material.getColor().r * 255)+","+
+          parseInt(synchedCameras[key].material.getColor().g * 255)+","+
+          parseInt(synchedCameras[key].material.getColor().b * 255)+")'>"+key+"</option>";
+      
+      console.log(html);
+      
       // attach an on-select event to the camera list 
       $('#cameralist').html(html).change( function(ui) {
         var selectedKey = $('#cameralist').attr('value');
@@ -183,9 +198,10 @@ $(document).ready(function() {
           nearDistance: 1,
           farDistance: 200
         });
+        newCam.material = scene.constructNode('FlatMaterial', {color: colors[synchedCameraCount % 5]})
         newCam.instance = scene.constructNode('Instance', {
           geometryNode: cameraPrimitive,
-          materialNode: cameraMaterial,
+          materialNode: newCam.material,
           transformNode: newCam.node.getTransformNode()
         });
         
@@ -201,6 +217,7 @@ $(document).ready(function() {
         
         // update the camera list
         updateCameraList();
+        synchedCameraCount++;
       }
       
       // buffer the data into the storage
