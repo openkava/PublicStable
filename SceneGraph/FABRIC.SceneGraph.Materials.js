@@ -365,8 +365,8 @@ FABRIC.SceneGraph.registerNodeType('Image3D', {
     
     var parentWriteData = imageNode.writeData;
     var parentReadData = imageNode.readData;
-    imageNode.writeData = function(sceneSaver, constructionOptions, nodeData) {
-      parentWriteData(sceneSaver, constructionOptions, nodeData);
+    imageNode.writeData = function(sceneSerializer, constructionOptions, nodeData) {
+      parentWriteData(sceneSerializer, constructionOptions, nodeData);
       constructionOptions.createDgNode = options.createDgNode;
       constructionOptions.createResourceLoadNode = options.createResourceLoadNode;
       constructionOptions.createLoadTextureEventHandler = options.createLoadTextureEventHandler;
@@ -374,8 +374,8 @@ FABRIC.SceneGraph.registerNodeType('Image3D', {
         nodeData.url = resourceLoadNode.pub.getUrl();
       }
     };
-    imageNode.readData = function(sceneLoader, nodeData) {
-      parentReadData(sceneLoader, nodeData);
+    imageNode.readData = function(sceneDeserializer, nodeData) {
+      parentReadData(sceneDeserializer, nodeData);
       if(nodeData.url){
         imageNode.pub.setUrl(nodeData.url);
       }

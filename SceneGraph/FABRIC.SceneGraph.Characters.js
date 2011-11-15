@@ -44,13 +44,13 @@ FABRIC.SceneGraph.registerNodeType('CharacterMesh', {
     
     var parentWriteData = characterMeshNode.writeData;
     var parentReadData = characterMeshNode.readData;
-    characterMeshNode.writeData = function(sceneSaver, constructionOptions, nodeData) {
-      characterMeshNode.writeGeometryData(sceneSaver, constructionOptions, nodeData);
-      parentWriteData(sceneSaver, constructionOptions, nodeData);
+    characterMeshNode.writeData = function(sceneSerializer, constructionOptions, nodeData) {
+      characterMeshNode.writeGeometryData(sceneSerializer, constructionOptions, nodeData);
+      parentWriteData(sceneSerializer, constructionOptions, nodeData);
     };
-    characterMeshNode.readData = function(sceneLoader, nodeData) {
-      characterMeshNode.readGeometryData(sceneLoader, nodeData);
-      parentReadData(sceneLoader, nodeData);
+    characterMeshNode.readData = function(sceneDeserializer, nodeData) {
+      characterMeshNode.readGeometryData(sceneDeserializer, nodeData);
+      parentReadData(sceneDeserializer, nodeData);
     };
     
     return characterMeshNode;
@@ -200,12 +200,12 @@ FABRIC.SceneGraph.registerNodeType('CharacterSkeleton', {
     // Peristence
     var parentWriteData = characterSkeletonNode.writeData;
     var parentReadData = characterSkeletonNode.readData;
-    characterSkeletonNode.writeData = function(sceneSaver, constructionOptions, nodeData) {
-      parentWriteData(sceneSaver, constructionOptions, nodeData);
+    characterSkeletonNode.writeData = function(sceneSerializer, constructionOptions, nodeData) {
+      parentWriteData(sceneSerializer, constructionOptions, nodeData);
       nodeData.bones = dgnode.getData('bones');
     };
-    characterSkeletonNode.readData = function(sceneLoader, nodeData) {
-      parentReadData(sceneLoader, nodeData);
+    characterSkeletonNode.readData = function(sceneDeserializer, nodeData) {
+      parentReadData(sceneDeserializer, nodeData);
       dgnode.setData('bones', 0, nodeData.bones);
     };
 
@@ -407,14 +407,14 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
     // Persistence
     var parentWriteData = characterVariablesNode.writeData;
     var parentReadData = characterVariablesNode.readData;
-    characterVariablesNode.writeData = function(sceneSaver, constructionOptions, nodeData) {
-      parentWriteData(sceneSaver, constructionOptions, nodeData);
+    characterVariablesNode.writeData = function(sceneSerializer, constructionOptions, nodeData) {
+      parentWriteData(sceneSerializer, constructionOptions, nodeData);
       if(dgnode.getMembers().bindings){
         nodeData.bindings = dgnode.getData('bindings');
       }
     };
-    characterVariablesNode.readData = function(sceneLoader, nodeData) {
-      parentReadData(sceneLoader, nodeData);
+    characterVariablesNode.readData = function(sceneDeserializer, nodeData) {
+      parentReadData(sceneDeserializer, nodeData);
       if(nodeData.bindings){
         characterVariablesNode.setBindings(nodeData.bindings);
       }
@@ -641,11 +641,11 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
     // Persistence
     var parentWriteData = characterRigNode.writeData;
     var parentReadData = characterRigNode.readData;
-    characterRigNode.writeData = function(sceneSaver, constructionOptions, nodeData) {
-      parentWriteData(sceneSaver, constructionOptions, nodeData);
+    characterRigNode.writeData = function(sceneSerializer, constructionOptions, nodeData) {
+      parentWriteData(sceneSerializer, constructionOptions, nodeData);
       constructionOptions.debug = options.debug;
-      sceneSaver.addNode(skeletonNode.pub);
-      sceneSaver.addNode(variablesNode.pub);
+      sceneSerializer.addNode(skeletonNode.pub);
+      sceneSerializer.addNode(variablesNode.pub);
       nodeData.skeletonNode = skeletonNode.pub.getName();
       nodeData.variablesNode = variablesNode.pub.getName();
       nodeData.solvers = [];
@@ -653,10 +653,10 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
         nodeData.solvers[i] = solverParams[i];
       }
     };
-    characterRigNode.readData = function(sceneLoader, nodeData) {
-      parentReadData(sceneLoader, nodeData);
-      characterRigNode.pub.setSkeletonNode(sceneLoader.getNode(nodeData.skeletonNode));
-      characterRigNode.pub.setVariablesNode(sceneLoader.getNode(nodeData.variablesNode));
+    characterRigNode.readData = function(sceneDeserializer, nodeData) {
+      parentReadData(sceneDeserializer, nodeData);
+      characterRigNode.pub.setSkeletonNode(sceneDeserializer.getNode(nodeData.skeletonNode));
+      characterRigNode.pub.setVariablesNode(sceneDeserializer.getNode(nodeData.variablesNode));
       for (var i = 0; i < nodeData.solvers.length; i++) {
         characterRigNode.pub.addSolver(nodeData.solvers[i].name, nodeData.solvers[i].type, nodeData.solvers[i].options);
       }

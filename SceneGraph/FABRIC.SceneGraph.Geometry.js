@@ -208,21 +208,21 @@ FABRIC.SceneGraph.registerNodeType('Geometry', {
     
     var parentWriteData = geometryNode.writeData;
     var parentReadData = geometryNode.readData;
-    geometryNode.writeGeometryData = function(sceneSaver, constructionOptions, nodeData) {
+    geometryNode.writeGeometryData = function(sceneSerializer, constructionOptions, nodeData) {
       nodeData['uniformsdgnode'] = geometryNode.writeDGNode(uniformsdgnode);
       nodeData['attributesdgnode'] = geometryNode.writeDGNode(attributesdgnode);
     }
-    geometryNode.readGeometryData = function(sceneLoader, nodeData) {
+    geometryNode.readGeometryData = function(sceneDeserializer, nodeData) {
       geometryNode.readDGNode(uniformsdgnode, nodeData['uniformsdgnode']);
       geometryNode.readDGNode(attributesdgnode, nodeData['attributesdgnode']);
     }
-    geometryNode.writeData = function(sceneSaver, constructionOptions, nodeData) {
-      parentWriteData(sceneSaver, constructionOptions, nodeData);
+    geometryNode.writeData = function(sceneSerializer, constructionOptions, nodeData) {
+      parentWriteData(sceneSerializer, constructionOptions, nodeData);
       constructionOptions.drawable = options.drawable;
       constructionOptions.createBoundingBoxNode = options.createBoundingBoxNode;
     };
-    geometryNode.readData = function(sceneLoader, nodeData) {
-      parentReadData(sceneLoader, nodeData);
+    geometryNode.readData = function(sceneDeserializer, nodeData) {
+      parentReadData(sceneDeserializer, nodeData);
     };
     
     return geometryNode;
@@ -618,10 +618,10 @@ FABRIC.SceneGraph.registerNodeType('Triangles', {
     
     var parentWriteData = trianglesNode.writeData;
     var parentReadData = trianglesNode.readData;
-    trianglesNode.writeData = function(sceneSaver, constructionOptions, nodeData) {
+    trianglesNode.writeData = function(sceneSerializer, constructionOptions, nodeData) {
       if (options.uvSets) constructionOptions.uvSets = options.uvSets;
       if (options.tangentsFromUV) constructionOptions.tangentsFromUV = options.tangentsFromUV;
-      parentWriteData(sceneSaver, constructionOptions, nodeData);
+      parentWriteData(sceneSerializer, constructionOptions, nodeData);
     };
 
     trianglesNode.pub.addUniformValue('indices', 'Integer[]');
@@ -779,7 +779,7 @@ FABRIC.SceneGraph.registerNodeType('Instance', {
     }
 
     // extend private interface
-    instanceNode.writeData = function(sceneSaver, constructionOptions, nodeData) {
+    instanceNode.writeData = function(sceneSerializer, constructionOptions, nodeData) {
       constructionOptions.enableRaycasting = options.enableRaycasting;
 
       nodeData.transformNode = transformNode.name;
@@ -791,20 +791,20 @@ FABRIC.SceneGraph.registerNodeType('Instance', {
         nodeData.materialNodes.push(materialNodes[i].name);
       }
     };
-    instanceNode.readData = function(sceneLoader, nodeData) {
+    instanceNode.readData = function(sceneDeserializer, nodeData) {
       if (nodeData.transformNode) {
-        var transformNode = sceneLoader.getNode(nodeData.transformNode);
+        var transformNode = sceneDeserializer.getNode(nodeData.transformNode);
         if (transformNode) {
           this.setTransformNode(transformNode, nodeData.transformNodeMember);
         }
       }
       if (nodeData.geometryNode) {
-        var geometryNode = sceneLoader.getNode(nodeData.geometryNode);
+        var geometryNode = sceneDeserializer.getNode(nodeData.geometryNode);
         this.setGeometryNode(geometryNode);
       }
       for (i in nodeData.materialNodes) {
         if (nodeData.materialNodes.hasOwnProperty(i)) {
-          this.setMaterialNode(sceneLoader.getNode(nodeData.materialNodes[i]));
+          this.setMaterialNode(sceneDeserializer.getNode(nodeData.materialNodes[i]));
         }
       }
     };
