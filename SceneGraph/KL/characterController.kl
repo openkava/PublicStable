@@ -60,6 +60,7 @@ operator evaluateCharacterController(
     return;
   }
   Quat alignment;
+  Boolean displayDebugging = false;
   ////////////////////////////
   // Movement
   
@@ -100,11 +101,15 @@ operator evaluateCharacterController(
       Vec3 axis = Vec3(0.0, 1.0, 0.0).cross(controllerparams.balanceXfo.tr).unit();
       controllerparams.balanceXfo.ori.setFromAxisAndAngle(axis, HALF_PI - balanceAngle);
       
-      debugGeometry1.drawLine(controllerXfo.tr, controllerXfo.tr - controllerparams.balanceXfo.tr, Color(0.5,0.0,0.5,1.0));
-      debugGeometry1.drawLine(controllerXfo.tr - controllerparams.balanceXfo.tr, controllerXfo.tr - controllerparams.balanceXfo.tr + controllerparams.balanceXfo.ori.rotateVector(Vec3(0.0, comHeight, 0.0)), Color(0.5,0.0,0.5,1.0));
+      if(displayDebugging){
+        debugGeometry1.drawLine(controllerXfo.tr, controllerXfo.tr - controllerparams.balanceXfo.tr, Color(0.5,0.0,0.5,1.0));
+        debugGeometry1.drawLine(controllerXfo.tr - controllerparams.balanceXfo.tr, controllerXfo.tr - controllerparams.balanceXfo.tr + controllerparams.balanceXfo.ori.rotateVector(Vec3(0.0, comHeight, 0.0)), Color(0.5,0.0,0.5,1.0));
+      }
     }else{
       controllerparams.balanceXfo.ori.setIdentity();
-      debugGeometry1.drawLine(controllerXfo.tr, controllerXfo.tr + Vec3(0.0, comHeight, 0.0), Color(0.5,0.0,0.5,1.0));
+      if(displayDebugging){
+        debugGeometry1.drawLine(controllerXfo.tr, controllerXfo.tr + Vec3(0.0, comHeight, 0.0), Color(0.5,0.0,0.5,1.0));
+      }
     }
     Xfo balanceDisplayXfo;
     balanceDisplayXfo.tr = controllerXfo.tr + controllerparams.balanceXfo.tr;
@@ -141,8 +146,9 @@ operator evaluateCharacterController(
   }
   controllerXfo.ori = controllerXfo.ori.unit();
   
-  debugGeometry1.drawLine(controllerXfo.tr, controllerXfo.tr + (controllerparams.displacementDir * circleSize * 1.2), Color(0.5,0.0,0.0,1.0));
-  
+  if(displayDebugging){
+    debugGeometry1.drawLine(controllerXfo.tr, controllerXfo.tr + (controllerparams.displacementDir * circleSize * 1.2), Color(0.5,0.0,0.0,1.0));
+  }
   ////////////////////////////
   // Trail
   
@@ -161,15 +167,19 @@ operator evaluateCharacterController(
       controllerparams.trail[controllerparams.trailCircularArrayIndex] = newTrailPoint;
     }
     
-    for(Integer i=0; i < controllerparams.trail.size; i++){
-      debugGeometry1.drawAxis(controllerparams.trail[i], 1.0, Color(0.0,0.0,0.0,1.0));
-      debugGeometry1.drawPoint(controllerparams.trail[i].tr, Color(0.0,0.0,0.0,1.0));
+    if(displayDebugging){
+      for(Integer i=0; i < controllerparams.trail.size; i++){
+        debugGeometry1.drawAxis(controllerparams.trail[i], 1.0, Color(0.0,0.0,0.0,1.0));
+        debugGeometry1.drawPoint(controllerparams.trail[i].tr, Color(0.0,0.0,0.0,1.0));
+      }
     }
   }
 
+  if(displayDebugging){
  // debugGeometry1.drawAxis(controllerXfo, 13.0, Color(1.0,0.0,0.0,1.0));
-  debugGeometry1.drawCircle(controllerXfo, circleSize, Color(1.0,0.0,0.0,1.0));
+    debugGeometry1.drawCircle(controllerXfo, circleSize, Color(1.0,0.0,0.0,1.0));
 //  debugGeometry2.drawPoint(controllerXfo.tr, Color(0.7,0.7,0.0,1.0));
+  }
 }
 
 

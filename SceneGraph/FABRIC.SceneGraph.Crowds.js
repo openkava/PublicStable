@@ -26,7 +26,8 @@ FABRIC.SceneGraph.registerNodeType('Crowd', {
       z_count: 30,
       displayGrid: true,
       agentCount: 3,
-      xfos: undefined
+      xfos: undefined,
+      displayDebugging: false
     });
     
 
@@ -54,19 +55,7 @@ FABRIC.SceneGraph.registerNodeType('Crowd', {
         materialNode: scene.pub.constructNode('FlatMaterial', { color: FABRIC.RT.rgb(0.2, 0.2, 0.2) })
       });
     }
-/*
-    // Calculate our cell index based on the back buffer data.
-    dgnode.bindings.append(scene.constructOperator({
-      operatorName: 'calcCellIndex',
-      srcFile: 'FABRIC_ROOT/SceneGraph/KL/crowds.kl',
-      entryFunctionName: 'calcCellIndex',
-      parameterLayout: [
-        'self.xfo',
-        'self.cellcoord',
-        'self.cellindex',
-        'hashtable.hashtable'
-      ]
-    }));
+
 
     // Swap buffers. This means that the up to date buffer is now the back buffer
     // and we will calculate the front buffer this update.
@@ -76,7 +65,22 @@ FABRIC.SceneGraph.registerNodeType('Crowd', {
       entryFunctionName: 'copyCurrentFrameDataToPrevFrameData',
       parameterLayout: [
         'self.xfo',
-        'self.previousframe_position'
+        'self.previousframe_position',
+        'hashtable.hashtable'
+      ]
+    }));
+    
+    
+    // Calculate our cell index based on the back buffer data.
+    dgnode.bindings.append(scene.constructOperator({
+      operatorName: 'calcCellIndex',
+      srcFile: 'FABRIC_ROOT/SceneGraph/KL/crowds.kl',
+      entryFunctionName: 'calcCellIndex',
+      parameterLayout: [
+        'self.previousframe_position',
+        'self.cellcoord',
+        'self.cellindex',
+        'hashtable.hashtable'
       ]
     }));
 
@@ -93,9 +97,8 @@ FABRIC.SceneGraph.registerNodeType('Crowd', {
       ]
     }));
     
-*/
     
-    dgnode.addMember('goals', 'Vec3');
+    dgnode.addMember('goal', 'Vec3');
     dgnode.addMember('neighborIndices', 'Integer[]');
     dgnode.addMember('neighborDistances', 'Scalar[]');
     
@@ -103,8 +106,9 @@ FABRIC.SceneGraph.registerNodeType('Crowd', {
     dgnode.addMember('neighborinfluencerange', 'Scalar', neighborInfluenceRange );
     
     dgnode.addMember('initialized', 'Boolean', false );
-    dgnode.addMember('debugDraw', 'DebugGeometry' );
+    dgnode.addMember('debugCrowd', 'DebugGeometry' );
     hashtablenode.addMember('displayDebugging', 'Boolean', options.displayDebugging );
+    crowdNode.addMemberInterface(hashtablenode, 'displayDebugging', true);
     
     dgnode.setDependency(scene.getGlobalsNode(), 'globals');
     dgnode.bindings.append(scene.constructOperator({
@@ -115,7 +119,7 @@ FABRIC.SceneGraph.registerNodeType('Crowd', {
         'self.index',
         'self.initialized',
 
-        'self.goals',
+        'self.goal',
         'self.cellindex',
         'self.cellcoord',
 
@@ -132,10 +136,16 @@ FABRIC.SceneGraph.registerNodeType('Crowd', {
 
         'self.neighborIndices',
         'self.neighborDistances',
-        'self.debugDraw',
+        'self.debugCrowd',
         'hashtable.displayDebugging'
       ]
     }));
+    
+    
+    var debugGeometryDraw = scene.constructNode('DebugGeometryDraw', {
+        dgnode: dgnode,
+        debugGemetryMemberName: 'debugCrowd'
+    });
     
     // We always append fht econtrolelr op last, 
     // because it increments the character Xfo
@@ -144,6 +154,11 @@ FABRIC.SceneGraph.registerNodeType('Crowd', {
     crowdNode.pub.setCrowdXfos = function(xfos){
       dgnode.setCount(xfos.length);
       dgnode.setBulkData({ xfo: xfos});
+    }
+    
+    crowdNode.pub.setCrowdGoals = function(goals){
+      dgnode.setCount(goals.length);
+      dgnode.setBulkData({ goal: goals});
     }
     
     if(!options.xfos){
