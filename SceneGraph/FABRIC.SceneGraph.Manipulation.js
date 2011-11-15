@@ -31,6 +31,8 @@ FABRIC.SceneGraph.registerNodeType('CameraManipulator', {
 
     var cameraNode = options.targetNode;
     var cameraManipulatorNode = scene.constructNode('SceneGraphNode', options);
+    scene.addEventHandlingFunctions(cameraManipulatorNode);
+
     var enabled = options.enabled;
     cameraManipulatorNode.pub.enable = function(){
       enabled = true;
@@ -110,7 +112,7 @@ FABRIC.SceneGraph.registerNodeType('CameraManipulator', {
       newcameraXfo.tr = cameraTarget.subtract(newCameraOffset);
       
       cameraNode.getTransformNode().setGlobalXfo(newcameraXfo);
-      cameraManipulatorNode.pub.fireEvent('cameraManipulated',{newCameraXfo: cameraXfo});
+      cameraManipulatorNode.pub.fireEvent('cameraManipulated',{newCameraXfo: newcameraXfo});
       viewportNode.redraw(true);
       evt.stopPropagation();
     }
@@ -640,7 +642,6 @@ FABRIC.SceneGraph.registerNodeType('RotationManipulator', {
       options.geometryNode = scene.pub.constructNode('Circle', { radius: options.radius });
     }
     var manipulatorNode = scene.constructNode('XfoManipulator', options);
-
 
     var viewportNode;
     var dragStartXFo, vec1, angle, ray1, ray2, planePoint, planeNormal, hitPoint1, hitPoint2;
