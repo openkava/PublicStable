@@ -312,7 +312,7 @@ operator locomotionPreProcessing(
 //  }
 
   comAlignment = bones[hubs[0].boneId].referencePose;
-  debugGeometry.drawAxis(comAlignment, 3.5, Color(1.0, 0.0, 1.0, 1.0));
+//  debugGeometry.drawAxis(comAlignment, 3.5, Color(1.0, 0.0, 1.0, 1.0));
   Vec3 avgFootPos;
   for(Integer j=0; j < legs.size; j++){
     Limb leg = legs[j];
@@ -334,8 +334,8 @@ operator locomotionPreProcessing(
 
   
 //  comAlignment = bones[hubs[0].boneId].referencePose;
-  debugGeometry.drawAxis(comAlignment, 0.5, Color(1.0, 0.0, 1.0, 1.0));
-  debugGeometry.drawLine(comAlignment.tr, Vec3(0.0,0.0,0.0), Color(1.0, 1.0, 1.0, 1.0));
+//  debugGeometry.drawAxis(comAlignment, 0.5, Color(1.0, 0.0, 1.0, 1.0));
+//  debugGeometry.drawLine(comAlignment.tr, Vec3(0.0,0.0,0.0), Color(1.0, 1.0, 1.0, 1.0));
   comAlignment = comAlignment.inverse();
     
   comXfo.setIdentity();
@@ -404,7 +404,7 @@ operator locomotionPreProcessing(
       alignment.setFrom2Vectors(comXfo.ori.getYaxis(), Vec3(0.0,1.0,0.0));
       comXfo.ori = alignment * comXfo.ori;
       
-    debugGeometry.drawAxis(comXfo, 0.7, Color(1.0, 0.0, 1.0, 1.0));
+ //   debugGeometry.drawAxis(comXfo, 0.7, Color(1.0, 0.0, 1.0, 1.0));
       
     if(currKeyt > startT){
       
@@ -418,7 +418,7 @@ operator locomotionPreProcessing(
         poseVariables.xfoValues[com.xfoId] = prevComXfo;
         poseVariables.setTrackValues(prevKeyt, trackSet, comXfoBindings);
         
-        debugGeometry.drawAxis(prevComXfo, 5.0, Color(1.0, 0.0, 1.0, 1.0));
+    //    debugGeometry.drawAxis(prevComXfo, 5.0, Color(1.0, 0.0, 1.0, 1.0));
       }
       
       comXfo.ori.alignWith(prevComXfo.ori);
@@ -426,7 +426,7 @@ operator locomotionPreProcessing(
       comXfo.ori = alignment * prevComXfo.ori;
       poseVariables.xfoValues[com.xfoId] = comXfo;
       poseVariables.setTrackValues(currKeyt, trackSet, comXfoBindings);
-      debugGeometry.drawAxis(comXfo, 1.0, Color(1.0, 0.0, 1.0, 1.0));
+    //  debugGeometry.drawAxis(comXfo, 1.0, Color(1.0, 0.0, 1.0, 1.0));
       
       Scalar deltaT = currKeyt - prevKeyt;
       Vec3 velocity = displacement/deltaT;
@@ -568,13 +568,17 @@ operator locomotionPreProcessing(
       Xfo footXfo = poseVariables.xfoValues[leg.ikGoalXfoId];
       
       Xfo footMotionDelta, baseFootXfo;
+      baseFootXfo.setIdentity();
       if(leg.hubId < 0){
-        baseFootXfo = comXfo * leg.ikGoalReferenceXfo;
+        baseFootXfo.tr = (comXfo * leg.ikGoalReferenceXfo).tr;
+        baseFootXfo.ori = comXfo.ori;
       }else{
         Xfo hubXfo = poseVariables.xfoValues[hubs[leg.hubId].xfoId];
         hubXfo.tr.z += comXfo.tr.z;
         baseFootXfo = hubXfo * leg.ikGoalReferenceXfo;
+        baseFootXfo.ori = comXfo.ori;
       }
+      debugGeometry.drawAxis(baseFootXfo, 1.0, Color(0.0,0.0,0.0,1.0));
       debugGeometry.drawLine(footXfo.tr, baseFootXfo.tr, Color(1.0, 0.0, 0.0, 1.0));
       footMotionDelta = baseFootXfo.inverse() * footXfo;
       

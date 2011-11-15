@@ -176,9 +176,8 @@ operator evaluateCharacterController(
   }
 
   if(displayDebugging){
- // debugGeometry1.drawAxis(controllerXfo, 13.0, Color(1.0,0.0,0.0,1.0));
+    debugGeometry1.drawAxis(controllerXfo, 6.0, Color(1.0,0.0,0.0,1.0));
     debugGeometry1.drawCircle(controllerXfo, circleSize, Color(1.0,0.0,0.0,1.0));
-//  debugGeometry2.drawPoint(controllerXfo.tr, Color(0.7,0.7,0.0,1.0));
   }
 }
 
