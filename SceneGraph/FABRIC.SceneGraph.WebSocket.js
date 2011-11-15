@@ -25,7 +25,7 @@ FABRIC.SceneGraph.registerManagerType('WebSocketManager', {
       pub: {
         getContextID: function(){
           return options.contextID
-        }
+        },
       }
     };
     
@@ -99,6 +99,29 @@ FABRIC.SceneGraph.registerManagerType('WebSocketManager', {
     if(options.messageCallBacks) {
       for(var actionName in options.messageCallBacks)
         manager.pub.addMessageCallBack(name,options.messageCallBacks[name]);
+    }
+
+    // setup a storage buffer
+    var bufferedData = {};
+
+    // setup write and read for serialization
+    manager.pub.getStorage = function(actionName) {
+      if(!actionName) actionName = 'storage';
+      var storage = {
+        buffer: function(data) {
+          bufferedData[actionName] = data;
+        },
+        read: function() {
+          return bufferedData[actionName];
+        },
+        write: function(data) {
+          manager.pub.sendMessage(actionName,data);
+        },
+        log: function(instr) {
+          console.log("WebSocket Storage: "+instr);
+        }
+      };
+      return storage;
     }
     
     return manager;
