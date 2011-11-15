@@ -51,8 +51,11 @@ operator simulateCrowd(
   io Vec3 cellcoords,
 
   io Xfo xfo, /* In theory we don't modify this. Only calculate new movement contols.*/
-  io Vec2 velocity,
+  io Vec3 velocity,
   io Vec3 previousframe_positions<>,
+  io Vec2 maxLinearVelocity,
+  io Euler maxAngularVelocity,
+  
 
   io Scalar neighborInfluenceRange,
   io HashTable hashtable,
@@ -64,8 +67,9 @@ operator simulateCrowd(
   io DebugGeometry debugDraw,
   io Boolean displayDebugging
 ) {
+//  report("simulateCrowd:"+velocity);
   var Integer i;
-  
+  /*
   ///////////////////////////////////////////////
   // Broad Phase Interaction Detection
   // This function gathers all the points fomr the current cell, and neighboring cells.
@@ -81,7 +85,7 @@ operator simulateCrowd(
   for (i = 0; i < neighborIndices.size; i++) {
     neighborDistances[i] = xfo.tr.distanceTo(previousframe_positions[neighborIndices[i]]);
   }
-  
+  */
   debugDraw.reset();
 
   //////////////////////////////////////////////////////
@@ -93,14 +97,15 @@ operator simulateCrowd(
     var Scalar goalDist = goalDir.length();
 
     if (goalDist < neighborInfluenceRange) {
-      velocity = velocity.linearInterpolate(Vec2(0.0, 0.0), 0.1);
+      velocity = velocity.linearInterpolate(Vec3(0.0, 0.0, 0.0), 0.1);
     }
     else {
-      Vec2 goalDirVec2(goalDir.x, goalDir.z);
-      velocity = velocity.linearInterpolate(goalDirVec2 * (0.05 / goalDist), 0.1);
+      velocity = velocity.linearInterpolate(goalDir * Vec3((maxLinearVelocity.x*0.2) / goalDist, 0.0, (maxLinearVelocity.y*0.2) / goalDist), 0.1);
     }
   }
+    debugDraw.drawLine(xfo.tr, goal, Color(0.0, 0.5, 0.0, 1.0));
 
+/*
   if (neighborIndices.size > 0) {
     
     //////////////////////////////////////////////////////
@@ -129,12 +134,11 @@ operator simulateCrowd(
           separationVector += (xfo.tr - previousframe_positions[neighborId]) * ((1.0 / neighborDist) * (separationDistance - neighborDist));
         }
       }
-      Vec2 separationVectorVec2(separationVector.x, separationVector.z);
-      velocity += separationVectorVec2 * separationWeight;
+      velocity += separationVector * separationWeight;
     }
 
   }
-
+*/
   
   // Clamp the particle within the bounds of the hash grid
 //  hashtable.clampPosition(xfo.tr);

@@ -34,12 +34,13 @@ FABRIC.SceneGraph.registerNodeType('Crowd', {
     var dgnode = crowdNode.getDGNode();
     var hashtablenode = crowdNode.constructDGNode('hashtablenode');
     dgnode.setDependency(hashtablenode, 'hashtable');
-    hashtablenode.addMember('hashtable', 'HashTable',
-      FABRIC.RT.hashTable(options.cellsize, options.x_count, options.y_count, options.z_count));
     
-    dgnode.addMember('cellindices', 'Integer', -1 );
-    dgnode.addMember('cellcoords', 'Vec3');
-    dgnode.addMember('previousframe_positions', 'Vec3');
+    var hashTable = FABRIC.RT.hashTable(options.cellsize, options.x_count, options.y_count, options.z_count);
+    hashtablenode.addMember('hashtable', 'HashTable', hashTable);
+    
+    dgnode.addMember('cellindex', 'Integer', -1 );
+    dgnode.addMember('cellcoord', 'Vec3');
+    dgnode.addMember('previousframe_position', 'Vec3');
 
     // Display the Grid
     if (options.displayGrid){
@@ -53,7 +54,7 @@ FABRIC.SceneGraph.registerNodeType('Crowd', {
         materialNode: scene.pub.constructNode('FlatMaterial', { color: FABRIC.RT.rgb(0.2, 0.2, 0.2) })
       });
     }
-
+/*
     // Calculate our cell index based on the back buffer data.
     dgnode.bindings.append(scene.constructOperator({
       operatorName: 'calcCellIndex',
@@ -61,8 +62,8 @@ FABRIC.SceneGraph.registerNodeType('Crowd', {
       entryFunctionName: 'calcCellIndex',
       parameterLayout: [
         'self.xfo',
-        'self.cellcoords',
-        'self.cellindices',
+        'self.cellcoord',
+        'self.cellindex',
         'hashtable.hashtable'
       ]
     }));
@@ -75,7 +76,7 @@ FABRIC.SceneGraph.registerNodeType('Crowd', {
       entryFunctionName: 'copyCurrentFrameDataToPrevFrameData',
       parameterLayout: [
         'self.xfo',
-        'self.previousframe_positions'
+        'self.previousframe_position'
       ]
     }));
 
@@ -88,11 +89,11 @@ FABRIC.SceneGraph.registerNodeType('Crowd', {
       entryFunctionName: 'populateHashTable',
       parameterLayout: [
         'hashtable.hashtable',
-        'self.cellindices<>'
+        'self.cellindex<>'
       ]
     }));
     
-    
+*/
     
     dgnode.addMember('goals', 'Vec3');
     dgnode.addMember('neighborIndices', 'Integer[]');
@@ -115,12 +116,14 @@ FABRIC.SceneGraph.registerNodeType('Crowd', {
         'self.initialized',
 
         'self.goals',
-        'self.cellindices',
-        'self.cellcoords',
+        'self.cellindex',
+        'self.cellcoord',
 
         'self.xfo',
-        'self.translationControls',
-        'self.previousframe_positions<>',
+        'self.goalLinearVelocity',
+        'self.previousframe_position<>',
+        'self.maxLinearVelocity',
+        'self.maxAngularVelocity',
 
         'self.neighborinfluencerange',
         'hashtable.hashtable',
@@ -134,6 +137,9 @@ FABRIC.SceneGraph.registerNodeType('Crowd', {
       ]
     }));
     
+    // We always append fht econtrolelr op last, 
+    // because it increments the character Xfo
+    dgnode.bindings.append(crowdNode.getCharacterControllerOp());
     
     crowdNode.pub.setCrowdXfos = function(xfos){
       dgnode.setCount(xfos.length);

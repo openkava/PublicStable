@@ -110,15 +110,17 @@ $(document).ready(function() {
       position: new FABRIC.RT.Vec3(3, 2.2, 3).multiplyScalar(6.5),
       target: new FABRIC.RT.Vec3(0, -0.5, 0),
       roll: 0,
-      nearDistance: 1.0,
-      farDistance: 60
+      nearDistance: 10.0,
+      farDistance: 360
     });
   scene.constructNode('CameraManipulator', { targetNode: camera });
   viewport.setCameraNode(camera);
   
   var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) });
   
-  var gridsize = 30.0;
+  var gridsize = 130.0;
+  
+  /*
     // create the scene grid
   scene.constructNode('Instance', {
     geometryNode: scene.constructNode('Grid', {
@@ -128,7 +130,7 @@ $(document).ready(function() {
         sections_z: 20 }),
     materialNode: scene.constructNode('FlatMaterial')
   });
-  
+  */
   
   
   // create a simulation world
@@ -234,7 +236,14 @@ $(document).ready(function() {
         numTrailSegments: 0,
         gravity: -1.0,
         comHeight: 1.8,
-        circleSize: 1.6
+        circleSize: 1.6,
+        
+        cellsize: 1.0,
+        x_count: 30,
+        y_count: 1,
+        z_count: 30,
+        displayGrid: true,
+        agentCount: 3
       });
     break;
   case 'centipede':
@@ -265,7 +274,7 @@ $(document).ready(function() {
     break;
   }
   
-  var numInstances = 30;
+  var numInstances = 130;
   var xfos = [];
   for(var i=0; i<numInstances; i++){
     xfos.push(new FABRIC.RT.Xfo({tr:new FABRIC.RT.Vec3((Math.random()-0.5)*gridsize, 0,(Math.random()-0.5)*gridsize)}));
@@ -346,79 +355,6 @@ $(document).ready(function() {
       });
       scene.animation.pause();
     }
-  }
-  
-  var translationControls = new FABRIC.RT.Vec2();
-  var downKeys = [];
-  var arrowKeys = {
-    left: 37,
-    right: 39,
-    up: 38,
-    down: 40
-  }
-  var speed = 0.4;
-  window.onkeydown = function(evt) {
-    if(downKeys[evt.keyCode]){
-      return;
-    }
-    if(evt.keyCode==90){ // 'z'
-      togglePlay();
-    }
-    
-    if(evt.shiftKey){
-      speed = 1.0;
-    }
-    else{
-      speed = 0.4;
-    }
-    
-    if(evt.keyCode == arrowKeys.left) {
-      translationControls.x = -1.0;
-      downKeys[arrowKeys.left] = true;
-    } else if(evt.keyCode == arrowKeys.right) {
-      translationControls.x = 1.0;
-      downKeys[arrowKeys.right] = true;
-    } else if(evt.keyCode == arrowKeys.up) {
-      translationControls.y = 1.0;
-      downKeys[arrowKeys.up] = true;
-    } else if(evt.keyCode == arrowKeys.down) {
-      translationControls.y = -1.0;
-      downKeys[arrowKeys.down] = true;
-    }
-    
-    if(translationControls.length() > 1.0){
-      translationControls.setUnit();
-    }
-    locomotionControllerNode.setTranslationControls(translationControls.multiplyScalar(speed));
-  };
-  
-  window.onkeyup = function(evt) {
-    if(evt.shiftKey) {
-      speed = 0.4;
-    }
-    if(evt.keyCode == arrowKeys.left) {
-      if(!downKeys[arrowKeys.right]){
-        translationControls.x = 0.0;
-      }
-      downKeys[arrowKeys.left] = false;
-    } else if(evt.keyCode == arrowKeys.right) {
-      if(!downKeys[arrowKeys.left]){
-        translationControls.x = 0.0;
-      }
-      downKeys[arrowKeys.right] = false;
-    } else if(evt.keyCode == arrowKeys.up) {
-      if(!downKeys[arrowKeys.down]){
-        translationControls.y = 0.0;
-      }
-      downKeys[arrowKeys.up] = false;
-    } else if(evt.keyCode == arrowKeys.down) {
-      if(!downKeys[arrowKeys.up]){
-        translationControls.y = 0.0;
-      }
-      downKeys[arrowKeys.down] = false;
-    }
-    
-    locomotionControllerNode.setTranslationControls(translationControls.multiplyScalar(speed));
   }
   
   $('#loadingDialog').dialog({
