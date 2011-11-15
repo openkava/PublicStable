@@ -51,6 +51,7 @@ FABRIC.SceneGraph.registerNodeType('CameraManipulator', {
       if (!cameraNode.getTransformNode().getTarget) {
         cameraNode.setFocalDistance(cameraNode.getFocalDistance() - zoomDist);
       }
+      cameraManipulatorNode.pub.fireEvent('cameraManipulated',{newCameraXfo: cameraXfo});
       evt.viewportNode.redraw();
       evt.stopPropagation();
     }
@@ -109,6 +110,7 @@ FABRIC.SceneGraph.registerNodeType('CameraManipulator', {
       newcameraXfo.tr = cameraTarget.subtract(newCameraOffset);
       
       cameraNode.getTransformNode().setGlobalXfo(newcameraXfo);
+      cameraManipulatorNode.pub.fireEvent('cameraManipulated',{newCameraXfo: cameraXfo});
       viewportNode.redraw(true);
       evt.stopPropagation();
     }
@@ -133,6 +135,7 @@ FABRIC.SceneGraph.registerNodeType('CameraManipulator', {
       if (cameraNode.getTransformNode().getTarget) {
         cameraNode.getTransformNode().setTarget(cameraTarget.add(dragDist));
       }
+      cameraManipulatorNode.pub.fireEvent('cameraManipulated',{newCameraXfo: cameraXfo});
       viewportNode.redraw(true);
       evt.stopPropagation();
     }
@@ -158,6 +161,7 @@ FABRIC.SceneGraph.registerNodeType('CameraManipulator', {
       if (!cameraNode.getTransformNode().getTarget) {
         cameraNode.setFocalDistance(cameraNode.getFocalDistance() - zoomDist);
       }
+      cameraManipulatorNode.pub.fireEvent('cameraManipulated',{newCameraXfo: cameraXfo});
       viewportNode.redraw(true);
       evt.stopPropagation();
     }
@@ -566,6 +570,7 @@ FABRIC.SceneGraph.registerNodeType('XfoManipulator', {
     }
     manipulatorNode.setTargetXfo = function(xfo) {
         targetNode[targetMemberSetter](xfo);
+        manipulatorNode.pub.fireEvent('targetManipulated',{newTargetXfo: xfo});
     }
     manipulatorNode.setTargetOri = function(ori) {
       var xfo = this.getTargetXfo();
