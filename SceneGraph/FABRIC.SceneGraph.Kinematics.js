@@ -223,12 +223,9 @@ FABRIC.SceneGraph.registerNodeType('AimTransform', {
     
     if(options.position && options.target){
       options.globalXfo = new FABRIC.RT.Xfo({ tr: options.position });
-      var zaxis = options.position.subtract(options.target).unit();
-      var yaxis = zaxis.cross(new FABRIC.RT.Vec3(0, 1, 0) ).cross(zaxis).unit();
-      var xaxis = yaxis.cross(zaxis).unit();
-      options.globalXfo = new FABRIC.RT.Xfo({ tr: options.position });
-      var mat = new FABRIC.RT.Mat33(xaxis, yaxis, zaxis).transpose();
-      options.globalXfo.ori.setFromMat33(mat);
+      options.globalXfo.ori.setFromDirectionAndUpvector(
+        options.position.subtract(options.target),
+        new FABRIC.RT.Vec3(0,1,0));
     }
 
     var aimTransformNode = scene.constructNode('Transform', options);
