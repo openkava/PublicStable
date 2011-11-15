@@ -48,10 +48,16 @@ FABRIC.SceneGraph.registerNodeType('CameraManipulator', {
       var zoomDist = cameraNode.getFocalDistance() * options.mouseWheelZoomRate * evt.wheelDelta * -0.001;
       var cameraXfo = cameraNode.getTransformNode().getGlobalXfo();
       var cameraZoom = cameraXfo.ori.getZaxis().multiplyScalar(zoomDist);
-      cameraXfo.tr = cameraXfo.tr.add(cameraZoom);
-      cameraNode.getTransformNode().setGlobalXfo(cameraXfo);
-      if (!cameraNode.getTransformNode().getTarget) {
-        cameraNode.setFocalDistance(cameraNode.getFocalDistance() - zoomDist);
+      if(!evt.altKey || !cameraNode.getTransformNode().getTarget) {
+        cameraXfo.tr = cameraXfo.tr.add(cameraZoom);
+        cameraNode.getTransformNode().setGlobalXfo(cameraXfo);
+        if (!cameraNode.getTransformNode().getTarget) {
+          cameraNode.setFocalDistance(cameraNode.getFocalDistance() - zoomDist);
+        }
+      } else {
+        var targetPos = cameraNode.getTransformNode().getTarget();
+        targetPos = targetPos.add(cameraZoom);
+        cameraNode.getTransformNode().setTarget(targetPos);
       }
       cameraManipulatorNode.pub.fireEvent('cameraManipulated',{newCameraXfo: cameraXfo});
       evt.viewportNode.redraw();
