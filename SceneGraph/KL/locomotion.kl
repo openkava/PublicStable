@@ -228,7 +228,7 @@ operator evaluateLocomotionPoseVariables(
     appliedFeetRayDeltas.resize(locomotionFeet.size);
     
     Boolean displayRaycastingDebugging = false;
-    Boolean displayFootPinningDebugging = true;
+    Boolean displayFootPinningDebugging = false;
     Scalar numLegsScalar = Scalar(legs.size);
     
     

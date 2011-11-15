@@ -13,7 +13,6 @@ function Integer HashTable.calcCellIndex(
   var Vec3 num_sections(Scalar(this.x_count), Scalar(this.y_count), Scalar(this.z_count));
   var Vec3 gridDim = num_sections * this.cellsize;
   cellcoords = (((position + (gridDim * 0.5)) / gridDim) * num_sections);
-
   return Integer(cellcoords.x) + ((Integer(cellcoords.z)) * this.x_count) + ((Integer(cellcoords.y)) * this.x_count * this.z_count);
 }
 
@@ -97,20 +96,22 @@ function HashTable.getNeighboringIndices(
 
 ////////////////////////////////////////////////
 // Clamp the position value within the bounds of the hash grid
-function HashTable.clampPosition(
-  io Vec3 position,
+function Vec3 HashTable.clampPosition(
+  in Vec3 position,
 ) {
-  if (position.x > (Scalar(this.x_count)-0.25) * this.cellsize) {
-    position.x = (Scalar(this.x_count)-0.25) * this.cellsize;
+  Vec3 clampedPosition = position;
+  if (clampedPosition.x > (Scalar(this.x_count)-0.25) * this.cellsize) {
+    clampedPosition.x = (Scalar(this.x_count)-0.25) * this.cellsize;
   }
-  if (position.x < (Scalar(-this.x_count)+0.25) * this.cellsize) {
-    position.x = (Scalar(-this.x_count)+0.25) * this.cellsize;
+  if (clampedPosition.x < (Scalar(-this.x_count)+0.25) * this.cellsize) {
+    clampedPosition.x = (Scalar(-this.x_count)+0.25) * this.cellsize;
   }
-  if (position.z > (Scalar(this.z_count)-0.25) * this.cellsize) {
-    position.z = (Scalar(this.z_count)-0.25) * this.cellsize;
+  if (clampedPosition.z > (Scalar(this.z_count)-0.25) * this.cellsize) {
+    clampedPosition.z = (Scalar(this.z_count)-0.25) * this.cellsize;
   }
-  if (position.z < (Scalar(-this.z_count)+0.25) * this.cellsize) {
-    position.z = (Scalar(-this.z_count)+0.25) * this.cellsize;
+  if (clampedPosition.z < (Scalar(-this.z_count)+0.25) * this.cellsize) {
+    clampedPosition.z = (Scalar(-this.z_count)+0.25) * this.cellsize;
   }
+  return clampedPosition;
 }
 
