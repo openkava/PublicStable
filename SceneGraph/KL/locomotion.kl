@@ -250,12 +250,14 @@ operator evaluateLocomotionPoseVariables(
         displacementDir = hubComs[leg.hubId].ori.rotateVector(Vec3(0.0,0.0,1.0));
       }else{
         baseFootXfo = controllerXfo * leg.ikGoalReferenceXfo;
+        baseFootXfo.ori = controllerXfo.ori;
         displacementDir = controllerparams.displacementDir;
       }
-      Xfo footXfo = baseFootXfo * poseVariables.xfoValues[leg.ikGoalXfoId];
+      if(displayFootPinningDebugging){
+        debugGeometry.drawLine(controllerXfo.tr, baseFootXfo.tr, Color(0.0, 1.0, 1.0, 1.0));
+      }
+      Xfo footXfo = baseFootXfo;// * poseVariables.xfoValues[leg.ikGoalXfoId];
       Scalar stepValue = poseVariables.scalarValues[foot.stepTimeVarId];
-    //  debugGeometry.drawLine(footXfo.tr, hubComXfo.tr, Color(1.0, 0.0, 1.0, 1.0));
-    //  debugGeometry.drawAxis(footXfo, 20.0, Color(1.0, 0.0, 1.0, 1.0));
       
       footXfo.tr -= controllerparams.balanceXfo.tr;
       
@@ -263,7 +265,6 @@ operator evaluateLocomotionPoseVariables(
       // One day we should store the plant position
       // relative to the foot positison as an extra track.
       Xfo footPlantXfo = baseFootXfo;
-    //  debugGeometry.drawLine(hubComXfo.tr, footPlantXfo.tr, Color(0.0, 0.0, 0.0, 1.0));
         
       Vec3 lift = footPlantXfo.tr - (displacementDir * (strideLength * 0.25 * strideLengthMultiplier));
       footPlantXfo.tr += displacementDir * (strideLength * 0.25 * strideLengthMultiplier);
@@ -378,7 +379,7 @@ operator evaluateLocomotionPoseVariables(
           }
         }
         if(displayFootPinningDebugging){
-          debugGeometry.drawCircle(footPlantXfo * rot90, 0.1, Color(0.0, 1.0, 1.0, 1.0));
+          debugGeometry.drawCircle(footPlantXfo * rot90, 0.1, Color(0.0, 0.5, 0.5, 1.0));
         }
       }
       else{
@@ -400,8 +401,8 @@ operator evaluateLocomotionPoseVariables(
         }
         
         if(displayFootPinningDebugging){
-          debugGeometry.drawCircle(footXfo * rot90, 0.1, Color(1.0, 1.0, 0.0, 1.0));
-          debugGeometry.drawLine(footXfo.tr, plantLocations[j], Color(1.0, 1.0, 0.0, 1.0));
+          debugGeometry.drawCircle(footXfo * rot90, 0.1, Color(0.5, 0.5, 0.0, 1.0));
+          debugGeometry.drawLine(footXfo.tr, plantLocations[j], Color(0.5, 0.5, 0.0, 1.0));
         }
       }
       footXfo = invcontrollerXfo * footXfo;

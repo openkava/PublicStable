@@ -177,16 +177,17 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('FKHierarchySolver',{
     skeletonNode.addMember(name + 'bindings', 'FKHierarchy', binding);
     
     rigNode.addSolverOperator({
-        operatorName: 'solveFKHierarchy',
-        srcFile: 'FABRIC_ROOT/SceneGraph/KL/solveFKHierarchy.kl',
-        entryFunctionName: 'solveFKHierarchy',
-        parameterLayout: [
-          'self.pose',
-          'skeleton.bones',
-          'skeleton.' + name + 'bindings',
-          'variables.poseVariables<>'
-        ]
-      });
+      operatorName: 'solveFKHierarchy',
+      srcFile: 'FABRIC_ROOT/SceneGraph/KL/solveFKHierarchy.kl',
+      entryFunctionName: 'solveFKHierarchy',
+      parameterLayout: [
+        'self.pose',
+        'skeleton.bones',
+        'skeleton.' + name + 'bindings',
+        'self.index',
+        'variables.poseVariables<>'
+      ]
+    });
     
     solver.getXfoVarBindings = function(){
       var boneXfoVarBindings = {};
