@@ -857,7 +857,7 @@ FABRIC.SceneGraph.registerNodeType('SceneGraphNode', {
         return eventnode;
       },
       
-      writeData: function(sceneSaver, constructionOptions, nodeData) {
+      writeData: function(sceneSerializer, constructionOptions, nodeData) {
         constructionOptions.name = name;
       },
       writeDGNode: function( dgnode ){
@@ -867,7 +867,7 @@ FABRIC.SceneGraph.registerNodeType('SceneGraphNode', {
         dgnodeData.data = dgnode.getBulkData();
         return dgnodeData;
       },
-      readData: function(sceneLoader, nodeData) {
+      readData: function(sceneDeserializer, nodeData) {
       },
       readDGNode: function( dgnode, dgnodeData ){
         var members = dgnodeData.members;
@@ -1240,12 +1240,12 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
         }, 1);
       }
     };
-    viewportNode.pub.writeData = function(sceneSaver, constructionOptions, nodeData) {
+    viewportNode.pub.writeData = function(sceneSerializer, constructionOptions, nodeData) {
       nodeData.camera = cameraNode.getName();
     };
-    viewportNode.pub.readData = function(sceneLoader, nodeData) {
+    viewportNode.pub.readData = function(sceneDeserializer, nodeData) {
       if (nodeData.camera) {
-        this.setCameraNode(sceneLoader.getNode(nodeData.camera));
+        this.setCameraNode(sceneDeserializer.getNode(nodeData.camera));
       }
     };
     viewportNode.pub.getFPS = function() {
@@ -1653,11 +1653,11 @@ FABRIC.SceneGraph.registerNodeType('Camera', {
     
     var parentWriteData = cameraNode.writeData;
     var parentReadData = cameraNode.readData;
-    cameraNode.writeData = function(sceneSaver, constructionOptions, nodeData) {
+    cameraNode.writeData = function(sceneSerializer, constructionOptions, nodeData) {
       if(transformNodeMember){
         nodeData.transformNodeMember = transformNodeMember;
       }
-      sceneSaver.addNode(transformNode.pub);
+      sceneSerializer.addNode(transformNode.pub);
       nodeData.transformNode = transformNode.pub.getName();
       
       nodeData.nearDistance = cameraNode.pub.getNearDistance();
@@ -1665,17 +1665,17 @@ FABRIC.SceneGraph.registerNodeType('Camera', {
       nodeData.fovY = cameraNode.pub.getFovY();
       nodeData.focalDistance = cameraNode.pub.getFocalDistance();
       
-      parentWriteData(sceneSaver, constructionOptions, nodeData);
+      parentWriteData(sceneSerializer, constructionOptions, nodeData);
     };
-    cameraNode.readData = function(sceneLoader, nodeData) {
-      cameraNode.pub.setTransformNode(sceneLoader.getNode(nodeData.transformNode), nodeData.transformNodeMember);
+    cameraNode.readData = function(sceneDeserializer, nodeData) {
+      cameraNode.pub.setTransformNode(sceneDeserializer.getNode(nodeData.transformNode), nodeData.transformNodeMember);
       
       cameraNode.pub.setNearDistance(nodeData.nearDistance);
       cameraNode.pub.setFarDistance(nodeData.farDistance);
       cameraNode.pub.setFovY(nodeData.fovY);
       cameraNode.pub.setFocalDistance(nodeData.focalDistance);
       
-      parentReadData(sceneLoader, nodeData);
+      parentReadData(sceneDeserializer, nodeData);
     };
 
     if (typeof options.transformNode == 'string') {

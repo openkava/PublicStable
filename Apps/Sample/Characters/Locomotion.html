@@ -272,7 +272,7 @@ $(document).ready(function() {
     window.location.reload();
   });
   */
-  var rigLoader = scene.constructManager('SceneLoader');
+  var rigLoader = scene.constructManager('SceneDeserializer');
 //  var storage = new FABRIC.SceneGraph.LocalStorage(rigName);
 //  var nodeMap = rigLoader.load(storage);
   var storage = new FABRIC.SceneGraph.URLReader('Assets/' + rigName + '.json');
