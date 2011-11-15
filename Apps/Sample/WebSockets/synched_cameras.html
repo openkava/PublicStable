@@ -38,6 +38,7 @@
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Manipulation.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Kinematics.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.WebSocket.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Persistence.js" charset="utf-8"></script>
 
     <script type="text/javascript" src="../../../SceneGraph/Parsers/parseOBJ.js" charset="utf-8"></script>
 
@@ -68,23 +69,6 @@ function getUrlVars() {
   return vars;
 }
 
-FABRIC.SceneGraph.registerNodeType('AimTransformSynched', {
-  factoryFn: function(options, scene) {
-    
-    var aimTransformNode = scene.constructNode('AimTransform', options);
-    var dgnode = aimTransformNode.getDGNode();
-    
-    // override the setGlobalXfo method of the aimTransformNode
-    aimTransformNode.pub.setSynchCallback = function(callback) {
-      aimTransformNode.pub.setGlobalXfo = function(val) {
-        dgnode.setData('globalXfo',0,val);
-        callback(val);
-      }
-    };
-    
-    return aimTransformNode;
-  }});
-
 $(document).ready(function() {
   
   var scene = FABRIC.SceneGraph.createScene();
@@ -100,10 +84,8 @@ $(document).ready(function() {
   camera = scene.constructNode('TargetCamera', {
       nearDistance: 1,
       farDistance: 200,
-      transformNode: scene.constructNode('AimTransformSynched', {
-        target: new FABRIC.RT.Vec3(-10, -1.2, -0.15),
-        position: new FABRIC.RT.Vec3(-1.8, 4.77, 7.93)
-      })
+      target: new FABRIC.RT.Vec3(-10, -1.2, -0.15),
+      position: new FABRIC.RT.Vec3(-1.8, 4.77, 7.93)
     });
 
   var manipulator = scene.constructNode('CameraManipulator', { targetNode: camera });
@@ -129,25 +111,24 @@ $(document).ready(function() {
 
   // create the websocket node
   try{
-    var ws = scene.constructNode("WebSocketNode", {
-      serverUrl: '192.168.1.13',
+    var ws = scene.constructManager("WebSocketManager", {
+      serverUrl: 'ec2-50-19-205-12.compute-1.amazonaws.com',
       sendFunctionNames: ['cameraManip'],
       contextID: getUrlVars()['context'],
       onOpenCallBack: function() {
         
-        $('#collabLink').attr('href', window.location.href.split('?')[0]+'?context='+(getUrlVars()['context'] ? getUrlVars()['context'] : scene.getContextId()));
+        $('#collabLink').attr('href', window.location.href.split('?')[0]+'?context='+ws.getContextID());
         $('#collabLink').html('Collaboration Link');
-        
-        // setup a timed callback to send out camera transform
-        camera.getTransformNode().setSynchCallback(function(xfo){
-          var shouldSend = true;
-          if(shouldSend) {
-            shouldSend = false;
-            ws.sendCameraManip({'xfo': xfo});
-            setTimeout(function(){
-              shouldSend = true;
-            },50);
-          }
+
+        // create a serializer for the camera transform        
+        var serializer = scene.constructManager("SceneSerializer");
+        serializer.addNode(camera.getTransformNode());
+        var wsStorage = ws.getStorage('cameraTransform');
+
+        // create an event listener for the camera manipulation
+        manipulator.addEventListener('cameraManipulated',function(evt){
+          serializer.serialize();
+          serializer.save(wsStorage);
         });
       }
     });
@@ -155,37 +136,80 @@ $(document).ready(function() {
     // camera primitive
     var cameraPrimitive = scene.constructNode('CameraPrimitive');
     var cameraMaterial = scene.constructNode('FlatMaterial', {color: FABRIC.RT.rgb(0,0,1.0,1.0)})
-    
-    // setup the function to be called when we receive a mouse mouve event
+
+    // setup self in the synched camera map    
     var synchedCameras = {};
-    ws.addMessageCallBack('cameraManip', function(message) {
+    synchedCameras['_self'] = {};
+    synchedCameras['_self'].node = camera;
+    synchedCameras['_self'].instance = scene.constructNode('Instance', {
+      geometryNode: cameraPrimitive,
+      materialNode: cameraMaterial,
+      transformNode: camera.getTransformNode(),
+    });
+    synchedCameras['_self'].instance.setDrawToggle(false);
+    
+    // setup a function to fill the camera list
+    function updateCameraList() {
+      var html = "";
+
+      for(var key in synchedCameras)
+        html += "<option value='"+key+"'>"+key+"</option>"
+        
+      // attach an on-select event to the camera list 
+      $('#cameralist').html(html).change( function(ui) {
+        var selectedKey = $('#cameralist').attr('value');
+        for(var key in synchedCameras) {
+          synchedCameras[key].instance.setDrawToggle(key != selectedKey);
+        }
+        viewport.setCameraNode(synchedCameras[selectedKey].node);
+        viewport.redraw();
+      });
+    }
+    updateCameraList();
+
+    // setup the function to be called when we receive a mouse mouve event
+    ws.addMessageCallBack('cameraTransform', function(message) {
       
       // filter out messages to ourselves
-      //if(message.sourceID == message.targetID)
-      //  return;
+      if(message.sourceID == message.targetID)
+        return;
       
       // if we don't have a camera yet for this connection
       if(synchedCameras[message.sourceID] == undefined) {
-        synchedCameras[message.sourceID] = scene.constructNode('Instance', {
+        
+        // create a new camera + draw instance
+        var newCam = {};
+        newCam.node = scene.constructNode('FreeCamera', {
+          nearDistance: 1,
+          farDistance: 200
+        });
+        newCam.instance = scene.constructNode('Instance', {
           geometryNode: cameraPrimitive,
           materialNode: cameraMaterial,
-          transformNode: scene.constructNode('Transform', {hierarchical: false})
+          transformNode: newCam.node.getTransformNode()
         });
+        
+        // create a serializer and a websocket storage
+        newCam.deserializer = scene.constructManager('SceneDeserializer',  {preLoadScene: false});
+        newCam.storage = ws.getStorage('cameraTransform');
+        
+        // map the new instance's transform to the one from the camera
+        // this means that the other clients camera's transform will be
+        // driving the new instance's transform
+        newCam.deserializer.setPreLoadedNode(newCam.instance.getTransformNode(), camera.getTransformNode().getName());
+        synchedCameras[message.sourceID] = newCam;
+        
+        // update the camera list
+        updateCameraList();
       }
       
-      // update the camera transform
-      var xfo = new FABRIC.RT.Xfo();
-      xfo.tr.x = parseFloat(message.data.xfo.tr.x);
-      xfo.tr.y = parseFloat(message.data.xfo.tr.y);
-      xfo.tr.z = parseFloat(message.data.xfo.tr.z);
-      xfo.ori.v.x = parseFloat(message.data.xfo.ori.v.x);
-      xfo.ori.v.y = parseFloat(message.data.xfo.ori.v.y);
-      xfo.ori.v.z = parseFloat(message.data.xfo.ori.v.z);
-      xfo.ori.w = parseFloat(message.data.xfo.ori.w);
-      xfo.sc.x = 0.5;
-      xfo.sc.y = 0.5;
-      xfo.sc.z = 0.5;
-      synchedCameras[message.sourceID].getTransformNode().setGlobalXfo(xfo);
+      // buffer the data into the storage
+      synchedCameras[message.sourceID].storage.buffer(message.data);
+      
+      // deserialize it into the transform
+      synchedCameras[message.sourceID].deserializer.load(
+        synchedCameras[message.sourceID].storage
+      );
       viewport.redraw();
     });
   }catch(e){
@@ -241,6 +265,13 @@ $(document).ready(function() {
               This demo shows cameras of all participants in 3D.
               <div id='collabMessage'>The link to this demo is here:</div>
               <a id="collabLink" href=""></a>
+            </div><!--content-->
+          </div><!--box-->
+          <div class="box">
+            <h2>Cameras</h2>
+            <div class="content">
+              <select multi size=10 id='cameralist' style='width: 200px; margin-top: 10px'>
+              </select>
             </div><!--content-->
           </div><!--box-->
         </div><!--sidebar-->

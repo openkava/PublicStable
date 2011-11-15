@@ -65,6 +65,18 @@ FABRIC.SceneGraph.registerManagerType('SceneSerializer', {
         wrapQuotes: function(val) {
           return '\"' + ((typeof val === 'string') ? val : val.toString()) + '\"';
         },
+        serialize: function() {
+          for(var i=0;i<savedNodes.length;i++) {
+            var constructionOptions = {};
+            var nodeData = {};
+            var nodePrivate = scene.getPrivateInterface(savedNodes[i]);
+            nodePrivate.writeData(sceneSerializer, constructionOptions, nodeData);
+            savedData[i] = {
+              options: constructionOptions,
+              data: nodeData
+            };
+          }
+        },
         save: function(writer) {
           var str = '[';
           for (var i = 0; i < savedNodes.length; i++) {
@@ -127,9 +139,6 @@ FABRIC.SceneGraph.registerManagerType('SceneDeserializer', {
     };
       
     var sceneDeserializer = {
-      preLoadNode: function(node) {
-        preLoadedNodes[node.getName()] = node;
-      },
       getNode: function(nodeName) {
         nodeName = nodeNameRemapping[ nodeName ]
         if (constructedNodeMap[nodeName]) {
@@ -139,6 +148,10 @@ FABRIC.SceneGraph.registerManagerType('SceneDeserializer', {
         }
       },
       pub: {
+        setPreLoadedNode: function(node, nodeName) {
+          if(!nodeName) nodeName = node.getName();
+          preLoadedNodes[nodeName] = node;
+        },
         load: function(storage) {
           dataObj = JSON.parse(storage.read());
           
@@ -160,21 +173,6 @@ FABRIC.SceneGraph.registerManagerType('SceneDeserializer', {
     };
     return sceneDeserializer;
   }});
-
-/**
- * Constructor to create a logWriter object.
- * @constructor
- */
-FABRIC.SceneGraph.LogWriter = function() {
-  var str = "";
-  this.write = function(instr) {
-    str = instr;
-  }
-  this.log = function(instr) {
-    console.log(str);
-  }
-};
-
 
 /**
  * Constructor to create a logWriter object.
