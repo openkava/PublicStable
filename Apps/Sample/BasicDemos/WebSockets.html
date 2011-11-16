@@ -126,6 +126,10 @@ $(document).ready(function() {
           $('#joinDialog').dialog({
             modal: true
           });
+          $('#joinCancel').button().click(function(){
+            $('#joinDialog').dialog('close');
+            viewport.show();
+          });
           $('#joinOK').button().click(function(){
             // open the page once more
             document.location.href = document.URL.split('?')[0]+"?context="+$('#joinContext').val();
@@ -328,6 +332,7 @@ $(document).ready(function() {
     <div style="display: none" id="joinDialog" title="Joining Session...">
       <h4 id="joinDesc"></h4>
       <input id="joinContext" type=text/><br>
+      <button id="joinCancel">Cancel</button>
       <button id="joinOK">OK</button>
     </div>
     <div id="wrapper">

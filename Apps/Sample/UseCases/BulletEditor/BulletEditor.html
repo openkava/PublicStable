@@ -64,10 +64,10 @@ s.parentNode.insertBefore(ga, s);
 
 <style type="text/css">
 #sidebar {
-  width:280px;
+  width:270px;
 }  
 #viewer {
-  right:280px;
+  right:270px;
 }
 </style>
 <script type="text/javascript">
@@ -248,15 +248,32 @@ $(document).ready(function() {
   for(var id in scalings)
     worldNode.addShape(id,FABRIC.RT.BulletShape.createBox(scalings[id]));
 
-  // function to create a rigid body
+  // ====================================================
+  // BULLET CONSTRUCTION
+  var ws = false;
+  var isPlaying = false;
   var rigidBodies = {};
   var rigidBodyCount = 0;
-  function constructRigidBody(type,xfo,notify) {
+  var messagesToProcess = [];
+
+  // serialize the rigid body data
+  var getRigidBodyJsonData = function(bodies) {
+    var data = {};
+    for(var key in bodies) {
+      data[bodies[key].name] = {};
+      data[bodies[key].name].name = bodies[key].name;
+      data[bodies[key].name].type = bodies[key].type;
+      data[bodies[key].name].transform = bodies[key].transformNode.getGlobalXfo();
+    }
+    return data;
+  };
+
+  // constuct a single body
+  function constructRigidBody(type,xfo,name,notify) {
     if(!xfo) xfo = new FABRIC.RT.Xfo();
-    
-    var name = type+'_'+rigidBodyCount;
-    if(rigidBodyCount[name])
-      return rigidBodyCount[name];
+    if(!name) name = type+'_'+rigidBodyCount;
+    if(rigidBodies[name])
+      return rigidBodies[name];
     
     var body = new FABRIC.RT.BulletRigidBody({
       transform: xfo
@@ -276,6 +293,7 @@ $(document).ready(function() {
     });
     
     var instance = scene.constructNode('SelectableInstance', {
+      name: name+"_Instance",
       geometryNode: geometryNodes[type],
       materialNode: materialNodes[type],
       transformNode: transform,
@@ -289,18 +307,43 @@ $(document).ready(function() {
     rigidBodies[name] = {};
     rigidBodies[name].name = name;
     rigidBodies[name].type = type;
-    rigidBodies[name].transform = transform;
+    rigidBodies[name].transformNode = transform;
     rigidBodies[name].instance = instance;
     rigidBodies[name].world = worldNode;
-    rigidBodyCount++;
     
-    if(notify) {
-      //todo
-      console.log('websocket communication');
+    if(ws && notify) {
+      ws.sendMessage('rigidBodiesCreated', getRigidBodyJsonData({name: rigidBodies[name]}));
     }
+    
+    rigidBodyCount++;
     
     return rigidBodies[name];
   }
+  
+  var processRigidBodyMessages = function(messages){
+    for(var i=0;i<messages.length;i++) {
+      var message = messages[i];
+      if(message.action == 'rigidBodiesCreated') {
+        for(var key in message.data) {
+          constructRigidBody(
+            message.data[key].type,
+            message.data[key].transform,
+            message.data[key].name,
+            false
+          );
+        }
+      }
+      else if(message.action == 'rigidBodiesMoved') {
+        for(var key in message.data) {
+          var body = rigidBodies[message.data[key].name];
+          if(!body)
+            continue;
+          body.transformNode.setInitialTransform(message.data[key].transform);
+        }
+      }
+    }
+    viewport.redraw();
+  };
   
   // construct a couple of sample cubes
   constructRigidBody('primitiveCube',new FABRIC.RT.Xfo({
@@ -316,9 +359,152 @@ $(document).ready(function() {
     ori: new FABRIC.RT.Quat().setFromAxisAndAngle(new FABRIC.RT.Vec3(0,1,0),0.7)
   })).instance.setSelectable(true);
   
+  //===============================================================
+  // WEBSOCKETS
+  // create the websocket node
+  try{
+    ws = scene.constructManager("WebSocketManager", {
+      serverUrl: 'ec2-50-19-205-12.compute-1.amazonaws.com',
+      contextID: getUrlVars()['context'],
+      onOpenCallBack: function() {
+
+        // setup the invite link        
+        $("#contextID").html(ws.getContextID());
+        
+        // setup the join button
+        $("#join").button().click(function(){
+          viewport.hide();
+          $('#joinDialog').dialog({
+            modal: true
+          });
+          $('#joinCancel').button().click(function(){
+            $('#joinDialog').dialog('close');
+            viewport.show();
+          });
+          $('#joinOK').button().click(function(){
+            // open the page once more
+            document.location.href = document.URL.split('?')[0]+"?context="+$('#joinContext').val();
+          });
+        });
+
+        // finally, let's fire the first event to let people know we exist!
+        setTimeout(function(){
+          // also, ask for all other participant
+          ws.sendMessage('queryParticipants',{});
+        }, 50);
+      }
+    });
+    
+    // colors
+    var colors = [];
+    colors.push(FABRIC.RT.rgb(0.0,0.75,0.0));
+    colors.push(FABRIC.RT.rgb(0.75,0.0,0.0));
+    colors.push(FABRIC.RT.rgb(0.75,0.0,0.75));
+    colors.push(FABRIC.RT.rgb(0.0,0.75,0.75));
+    colors.push(FABRIC.RT.rgb(0.0,0.0,0.75));
+
+    // setup self in the participants map
+    var participants = {};
+    var participantsCount = 0;
+    participants['_self'] = {};
+    participants['_self'].name = 'Yourself';
+    participants['_self'].color = colors[participantsCount % 5];
+    participantsCount++;
+    
+    // setup a function to fill the camera list
+    function updateParticipantsList() {
+      var html = "";
+
+      for(var key in participants)
+        html += "<option value='"+key+"' style='color: white; background-color:rgb("+
+          parseInt(participants[key].color.r * 255)+","+
+          parseInt(participants[key].color.g * 255)+","+
+          parseInt(participants[key].color.b * 255)+")'>"+participants[key].name+"</option>";
+      
+      // attach an on-select event to the camera list 
+      $('#participantList').html(html);
+    }
+    updateParticipantsList();
+    
+    // setup a function to update the username
+    $('#participantName').change(function(ui){
+      participants['_self'].name = $('#participantName').val();
+      ws.sendMessage('setParticipantName',participants['_self'].name);
+      updateParticipantsList();
+    });
+    
+    // setup a function to add a participant
+    function addParticipant(id,name) {
+      if(participants[id] == undefined) {
+        
+        // create a new participant
+        var newParticipant = {};
+        newParticipant.name = name;
+        newParticipant.color = colors[participantsCount % 5];
+
+        participants[id] = newParticipant;
+        updateParticipantsList();
+        participantsCount++;
+        updateParticipantsList();
+      }
+    }
+
+    // setup the function to be called when we receive a participant name change event
+    ws.addMessageCallBack('setParticipantName', function(message) {
+
+      if(message.sourceID == message.targetID)
+        return;
+      
+      setTimeout(function(){
+        addParticipant(message.sourceID,message.data);
+        participants[message.sourceID].name = message.data;
+        updateParticipantsList();
+      }, 100);
+    });
+    
+    // setup the function to be called when we receive a queryParticipants event
+    ws.addMessageCallBack('queryParticipants', function(message) {
+      if(message.sourceID == message.targetID)
+        return;
+
+      addParticipant(message.sourceID,'unknown');
+
+      // notify the called of our name
+      if(participants['_self'].name != 'Yourself')
+        ws.sendMessage('setParticipantName',participants['_self'].name,message.sourceID);
+      else
+        ws.sendMessage('setParticipantName','unknown',message.sourceID);
+        
+      // send all rigid body data
+      ws.sendMessage('rigidBodiesCreated',getRigidBodyJsonData(rigidBodies));
+    });
+    
+    // for created rigid bodies
+    ws.addMessageCallBack('rigidBodiesCreated', function(message) {
+      if(message.sourceID == message.targetID)
+        return;
+      if(isPlaying)
+        messagesToProcess.push(message);
+      else
+        processRigidBodyMessages([message]);
+    });
+
+    // for created moved bodies
+    ws.addMessageCallBack('rigidBodiesMoved', function(message) {
+      if(message.sourceID == message.targetID)
+        return;
+      if(isPlaying)
+        messagesToProcess.push(message);
+      else
+        processRigidBodyMessages([message]);
+    });
+    
+  }catch(e){
+    $('#message').html("<b style='color:#FF0000'>Error</b>: "+e+"<br>Currently only Google Chrome supports WebSocket natively.");
+  }
+
   //==========================================================
   // PLAYBACK CONTROL
-  var isPlaying = false;
   $('#play').button({
     text: true,
     icons: {
@@ -344,12 +530,15 @@ $(document).ready(function() {
           primary: 'ui-icon-play'
         }
       });
-      isPlaying = false;
       scene.animation.pause();
       selectionManager.setEnabled(true);
+      
       setTimeout(function(){
         scene.animation.setTime(0);
         viewport.redraw();
+        processRigidBodyMessages(messagesToProcess);
+        messagesToProcess = [];
+        isPlaying = false;
       },10);
     }
   });
@@ -434,6 +623,11 @@ $(document).ready(function() {
     xfo.ori.setFromDirectionAndUpvector(new FABRIC.RT.Vec3(0,1,0),planeXfo.ori.getYaxis());
     
     worldNode.setRigidBodyInitialTransform(currentRigidBody.name,xfo);
+    currentRigidBody.transform = xfo;
+    
+    if(ws)
+      ws.sendMessage("rigidBodiesMoved",{name: currentRigidBody});
+    
     viewport.redraw();
   };
   
@@ -448,7 +642,7 @@ $(document).ready(function() {
       dragStatus[id] = 'inside';
       
       // update the evt data
-      currentRigidBody = constructRigidBody(id);
+      currentRigidBody = constructRigidBody(id,undefined,undefined,true);
       
       dragConstructedRigidBody(evt);
       document.addEventListener('mousemove',dragConstructedRigidBody);
@@ -471,12 +665,14 @@ $(document).ready(function() {
       var id = evt.srcElement.getAttribute('id');
       originalOffset[id] = $("#"+id).offset();
       dragStatus[id] = 'outside';
+      selectionManager.setEnabled(false);
     },
     deactivate: function(evt) {
       // restore the element's offset
       var id = evt.srcElement.getAttribute('id');
       $("#"+id).offset(originalOffset[id]);
       dragStatus[id] = undefined;
+      selectionManager.setEnabled(true);
     }
   });
   
@@ -514,8 +710,13 @@ $(document).ready(function() {
       <h4 id="loadingDesc"></h4>
       <div id="loadingProgressBar" class="ui-progressbar-value"></div>
     </div>
+    <div style="display: none" id="joinDialog" title="Joining Session...">
+      <h4 id="joinDesc"></h4>
+      <input id="joinContext" type=text/><br>
+      <button id="joinCancel">Cancel</button>
+      <button id="joinOK">OK</button>
+    </div>
     <div id="wrapper">
-
       <div id="editor">
         <div id="viewer">
           <div id="FabricContainer"></div> 
@@ -541,14 +742,23 @@ $(document).ready(function() {
             </div><!--content-->
             <h2>PRIMITIVES</h2>
             <div class="content">
-              <div id="primitiveCube" style="display: inline-block; margin: 5px; width: 50px; height: 50px; background-image:url(../../BasicDemos/Resources/wood1.png)"></div>
-              <div id="primitiveFlat" style="display: inline-block; margin: 5px; width: 150px; height: 25px; background-image:url(../../BasicDemos/Resources/wood2.png)"></div>
-              <div id="primitiveHigh" style="display: inline-block; margin: 5px; width: 50px; height: 100px; background-image:url(../../BasicDemos/Resources/wood3.png)"></div>
+              <div id="primitiveCube" style="display: inline-block; margin: 2px; width: 50px; height: 50px; background-image:url(../../BasicDemos/Resources/wood1.png)"></div>
+              <div id="primitiveFlat" style="display: inline-block; margin: 2px; width: 150px; height: 25px; background-image:url(../../BasicDemos/Resources/wood2.png)"></div>
+              <div id="primitiveHigh" style="display: inline-block; margin: 2px; width: 50px; height: 100px; background-image:url(../../BasicDemos/Resources/wood3.png)"></div>
             </div><!--content-->
             <h2>SIMULATION</h2>
             <div class="content button-controls">
               <button id="play">Play</button>
             </div><!--content-->
+            <h2>COLLABORATION</h2>
+            <div class="content">
+              <div id="message">
+                <input id="participantName" type=text/ value='Yourself' style='width: 194px'><br>
+                <select multi size=4 disabled id='participantList' style='width: 200px; margin-top: 10px'>
+                </select><br>
+                Session: <b id="contextID"></b><br>
+                <button id='join'>Join</button>
+              </div>
             </div><!--content-->
           </div><!--box-->
         </div><!--sidebar-->
