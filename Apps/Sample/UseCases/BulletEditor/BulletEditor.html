@@ -41,6 +41,7 @@
     <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.WebSocket.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Persistence.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Bullet.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Selection.js" charset="utf-8"></script>
 
     <script type="text/javascript" src="../../../../SceneGraph/Parsers/parseOBJ.js" charset="utf-8"></script>
 
@@ -92,7 +93,8 @@ FABRIC.SceneGraph.registerNodeType('WorkPlane', {
     if(!options.materialNode)
       options.materialNode = scene.constructNode('WorkPlaneMaterial', {
         textureNode: scene.constructNode('Image', { url: '../../BasicDemos/Resources/layout_grid.png' }).pub,
-        colorBlend: 0.3,
+        colorBlend: 0.4,
+        disableOptions: [FABRIC.SceneGraph.OpenGLConstants.GL_CULL_FACE],
         enableOptions: [FABRIC.SceneGraph.OpenGLConstants.GL_BLEND],
         blendModeSfactor: FABRIC.SceneGraph.OpenGLConstants.GL_SRC_ALPHA,
         blendModeDfactor: FABRIC.SceneGraph.OpenGLConstants.GL_ONE_MINUS_SRC_ALPHA,
@@ -107,6 +109,8 @@ FABRIC.SceneGraph.registerNodeType('WorkPlane', {
     var workPlaneNode = scene.constructNode('Instance', options);
     var workPlaneTransformNode = scene.getPrivateInterface(workPlaneNode.pub.getTransformNode());
     var workPlaneTransformDGNode = workPlaneTransformNode.getDGNode();
+    workPlaneTransformDGNode.addMember("standing","Boolean",true);
+    workPlaneNode.addMemberInterface(workPlaneTransformDGNode, 'standing', true);
 
     // connect the workplane to the camera and its transform
     var cameraPriv = scene.getPrivateInterface(options.cameraNode);
@@ -122,7 +126,8 @@ FABRIC.SceneGraph.registerNodeType('WorkPlane', {
       parameterLayout: [
         'self.globalXfo',
         'camera.globalXfo',
-        'camera.target'
+        'camera.target',
+        'self.standing'
       ]
     }));
 
@@ -167,6 +172,7 @@ $(document).ready(function() {
       color: new FABRIC.RT.rgb(0.5,0.5,0.5,1.0)
     })
   });
+  
   var workPlane = scene.constructNode('WorkPlane', {
     cameraNode: camera
   });
@@ -175,6 +181,11 @@ $(document).ready(function() {
     lightCosCutoff: 5.0,
     transformNode: cameraTransform
   });
+
+  var selectionManager = scene.constructManager('ViewportSelectionManager');
+  //var selectionManipulationManager = scene.constructManager('SelectionManipulationManager', {
+  //  selectionManager: selectionManager
+  //});
   
   //==========================================================
   // MATERIALS + GEOMETRY
@@ -209,6 +220,11 @@ $(document).ready(function() {
     lightNode: light,
     shininess: 50.0,
     diffuseTextureNode: scene.constructNode('Image', { url: '../../BasicDemos/Resources/wood3.png' })
+  });
+
+  var highlightMaterial = scene.constructNode('OutlineShader', {
+    color: FABRIC.RT.rgb(0.6, 0.6, 0.6, 0.5),
+    thickness: 0.2
   });
   
   //==========================================================
@@ -253,11 +269,13 @@ $(document).ready(function() {
       })
     });
     
-    var instance = scene.constructNode('Instance', {
+    var instance = scene.constructNode('SelectableInstance', {
       geometryNode: geometryNodes[type],
       materialNode: materialNodes[type],
       transformNode: transform,
-      enableRaycasting: true
+      enableRaycasting: true,
+      highlightMaterial: highlightMaterial,
+      selectMaterial: highlightMaterial
     });
 
     // store it to the map    
@@ -336,21 +354,21 @@ $(document).ready(function() {
   $('#workplaneXZ').button().click(function() {
     alignCameraWithAxes(true,false,true);
   });
-  $('#workplaneUnit').button().click(function() {
-    var targetPos = cameraTransform.getTarget();
-    var xfo = cameraTransform.getGlobalXfo();
-    var distance = targetPos.subtract(xfo.tr).length();
-    targetPos.x = Math.floor(targetPos.x+0.5);
-    targetPos.y = Math.floor(targetPos.y+0.5);
-    targetPos.z = Math.floor(targetPos.z+0.5);
-    xfo.tr.x = Math.floor(xfo.tr.x+0.5);
-    xfo.tr.y = Math.floor(xfo.tr.y+0.5);
-    xfo.tr.z = Math.floor(xfo.tr.z+0.5);
-    xfo.tr = xfo.tr.subtract(targetPos).unit().multiplyScalar(distance).add(targetPos);
-    cameraTransform.setGlobalXfo(xfo);
-    cameraTransform.setTarget(targetPos);
+  $('#workplaneStand').button().click(function() {
+    workPlane.setStanding(!workPlane.getStanding());
     viewport.redraw();
   });
+  $('#workplaneblend').slider({
+    min: 0.0,
+    max: 1.0,
+    step: 0.01,
+    value: workPlane.getMaterialNode().getColorBlend()
+  }).bind('slide',
+    function(event, ui) {
+      workPlane.getMaterialNode().setColorBlend(ui.value);
+      viewport.redraw();
+    }
+  );
   
   //===========================================================
   // DRAG AND DROP
@@ -376,20 +394,21 @@ $(document).ready(function() {
       }
     };
     
+    var planeXfo = workPlane.getTransformNode().getGlobalXfo();
     var cameraXfo = cameraTransform.getGlobalXfo();
     var target = cameraTransform.getTarget();
     var rayData = viewport.rayCast(rayEvt).rayData;
-    var distance = FABRIC.RT.Vec3.rayIntersectPlane(rayData.start,rayData.direction,target,cameraXfo.ori.getZaxis());
+    var distance = FABRIC.RT.Vec3.rayIntersectPlane(rayData.start,rayData.direction,target,planeXfo.ori.getYaxis());
     var xfo = new FABRIC.RT.Xfo();
     xfo.tr = rayData.start.add(rayData.direction.multiplyScalar(distance));
     if(evt.shiftKey) {
-      xfo.tr = cameraXfo.ori.inverse().rotateVector(xfo.tr.subtract(target));
+      xfo.tr = planeXfo.ori.inverse().rotateVector(xfo.tr.subtract(target));
       xfo.tr.x = Math.floor(xfo.tr.x+0.5)-0.5;
       xfo.tr.y = Math.floor(xfo.tr.y+0.5)-0.5;
-      xfo.tr = cameraXfo.ori.rotateVector(xfo.tr.add(target));
+      xfo.tr = planeXfo.ori.rotateVector(xfo.tr.add(target));
     }
     xfo.tr.y = xfo.tr.y < scalings[currentRigidBody.type].z ? scalings[currentRigidBody.type].z : xfo.tr.y;
-    xfo.ori.setFromDirectionAndUpvector(new FABRIC.RT.Vec3(0,1,0),cameraXfo.ori.getZaxis());
+    xfo.ori.setFromDirectionAndUpvector(new FABRIC.RT.Vec3(0,1,0),planeXfo.ori.getYaxis());
     
     worldNode.setRigidBodyInitialTransform(currentRigidBody.name,xfo);
     viewport.redraw();
@@ -492,7 +511,8 @@ $(document).ready(function() {
               <button id="workplaneXY">X-Y</button>
               <button id="workplaneYZ">Y-Z</button>
               <button id="workplaneXZ">X-Z</button>
-              <button id="workplaneUnit">UNIT</button>
+              <button id="workplaneStand">FIX</button><br>
+              <div id="workplaneblend" style="margin-top: 5px"></div>
             </div><!--content-->
             <h2>PRIMITIVES</h2>
             <div class="content">
