@@ -26,6 +26,7 @@
     <script type="text/javascript" src="../../../../SceneGraph/RT/RGBA.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../../SceneGraph/RT/Color.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../../SceneGraph/RT/Euler.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../../SceneGraph/RT/Ray.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../../SceneGraph/RT/OGLShaderProgram.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../../SceneGraph/RT/OGLBuffer.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../../SceneGraph/RT/OGLTexture2D.js" charset="utf-8"></script>
@@ -39,6 +40,7 @@
     <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Kinematics.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.WebSocket.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Persistence.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Bullet.js" charset="utf-8"></script>
 
     <script type="text/javascript" src="../../../../SceneGraph/Parsers/parseOBJ.js" charset="utf-8"></script>
 
@@ -121,7 +123,8 @@ $(document).ready(function() {
   
   var scene = FABRIC.SceneGraph.createScene();
   var viewport = scene.constructNode('Viewport', {
-    windowElement: document.getElementById('FabricContainer')
+    windowElement: document.getElementById('FabricContainer'),
+    enableRaycasting: true
   });
 
   viewport.setBackgroundTextureImage(scene.constructNode('Image', {
@@ -132,8 +135,8 @@ $(document).ready(function() {
   camera = scene.constructNode('TargetCamera', {
       nearDistance: 1,
       farDistance: 200,
-      target: new FABRIC.RT.Vec3(0,0,0),
-      position: new FABRIC.RT.Vec3(-1.8, 4.77, 7.93)
+      target: new FABRIC.RT.Vec3(0,2,0),
+      position: new FABRIC.RT.Vec3(-1.8, 2.1, 7.93)
     });
   var cameraTransform = camera.getTransformNode();
   scene.constructNode('CameraManipulator', { targetNode: camera });
@@ -165,10 +168,110 @@ $(document).ready(function() {
   });
 
   var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) });
-  var phongMaterial = scene.constructNode('PhongMaterial', {
-      diffuseColor: FABRIC.RT.rgb(0.8, 0, 0, 1),
-      lightNode: light
+  
+  //==========================================================
+  // MATERIALS + GEOMETRY
+  var geometryNodes = {};
+  var materialNodes = {};
+  geometryNodes['primitiveCube'] = scene.constructNode('Cuboid', {
+    length: 1.0,
+    width: 1.0,
+    height: 1.0
+  });
+  materialNodes['primitiveCube'] = scene.constructNode('PhongMaterial', {
+    diffuseColor: FABRIC.RT.rgb(0.8, 0, 0, 1),
+    lightNode: light
+  });
+  
+  //==========================================================
+  // BULLET LOGIC
+  var worldNode = scene.constructNode('BulletWorldNode', {groundPlaneSize: 100, substeps: 6});
+  
+  // create all collision shapes
+  worldNode.addShape('primitiveCube',FABRIC.RT.BulletShape.createBox(new FABRIC.RT.Vec3(0.5,0.5,0.5)));
+
+  // function to create a rigid body
+  var rigidBodies = {};
+  var rigidBodyCount = 0;
+  function constructRigidBody(type,xfo,notify) {
+    if(!xfo) xfo = new FABRIC.RT.Xfo();
+    
+    var name = type+'_'+rigidBodyCount;
+    if(rigidBodyCount[name])
+      return rigidBodyCount[name];
+    
+    var body = new FABRIC.RT.BulletRigidBody({
+      transform: xfo
     });
+    
+    var transform = scene.constructNode('BulletRigidBodyTransform', {
+      bulletWorldNode: worldNode,
+      name: name,
+      shapeName: type,
+      rigidBody: new FABRIC.RT.BulletRigidBody({
+          transform: xfo,
+          friction: 0.8,
+          restitution: 0.7
+      })
+    });
+    
+    var instance = scene.constructNode('Instance', {
+      geometryNode: geometryNodes[type],
+      materialNode: materialNodes[type],
+      transformNode: transform,
+      enableRaycasting: true
+    });
+
+    // store it to the map    
+    rigidBodies[name] = {};
+    rigidBodies[name].name = name;
+    rigidBodies[name].transform = transform;
+    rigidBodies[name].instance = instance;
+    rigidBodies[name].world = worldNode;
+    rigidBodyCount++;
+    
+    if(notify) {
+      //todo
+      console.log('websocket communication');
+    }
+    
+    return rigidBodies[name];
+  }
+  
+  //==========================================================
+  // PLAYBACK CONTROL
+  var isPlaying = false;
+  $('#play').button({
+    text: true,
+    icons: {
+      primary: 'ui-icon-play'
+    }
+  }).click(function() {
+    var options;
+    if(!isPlaying) {
+      $(this).button('option', {
+        label: 'Pause',
+        icons: {
+          primary: 'ui-icon-pause'
+        }
+      });
+      isPlaying = true;
+      scene.animation.play();
+    } else {
+      $(this).button('option', {
+        label: 'Play',
+        icons: {
+          primary: 'ui-icon-play'
+        }
+      });
+      isPlaying = false;
+      scene.animation.pause();
+      setTimeout(function(){
+        scene.animation.setTime(0);
+        viewport.redraw();
+      },10);
+    }
+  });
   
   //==========================================================
   // UI LOGIC
@@ -176,7 +279,7 @@ $(document).ready(function() {
     var targetPos = cameraTransform.getTarget();
     var xfo = cameraTransform.getGlobalXfo();
     var distance = targetPos.subtract(xfo.tr).length();
-    if(alignX) xfo.tr.x = targetPos.x;
+    if(alignX) xfo.tr.x = targetPos.x + 0.0001;
     if(alignY) xfo.tr.y = targetPos.y;
     if(alignZ) xfo.tr.z = targetPos.z;
     xfo.tr = xfo.tr.subtract(targetPos).unit().multiplyScalar(distance).add(targetPos);
@@ -194,33 +297,96 @@ $(document).ready(function() {
     alignCameraWithAxes(true,false,true);
   });
   $('#workplaneUnit').button().click(function() {
+    var targetPos = cameraTransform.getTarget();
+    var xfo = cameraTransform.getGlobalXfo();
+    var distance = targetPos.subtract(xfo.tr).length();
+    targetPos.x = Math.floor(targetPos.x+0.5);
+    targetPos.y = Math.floor(targetPos.y+0.5);
+    targetPos.z = Math.floor(targetPos.z+0.5);
+    xfo.tr.x = Math.floor(xfo.tr.x+0.5);
+    xfo.tr.y = Math.floor(xfo.tr.y+0.5);
+    xfo.tr.z = Math.floor(xfo.tr.z+0.5);
+    xfo.tr = xfo.tr.subtract(targetPos).unit().multiplyScalar(distance).add(targetPos);
+    cameraTransform.setGlobalXfo(xfo);
+    cameraTransform.setTarget(targetPos);
+    viewport.redraw();
   });
   
   //===========================================================
   // DRAG AND DROP
-  $("#primitiveSquare").draggable();
-  var originalPos = {};
+  $("#primitiveCube").draggable();
+  
+  var dragStatus = {};
+  var originalOffset = {};
+  
+  // setup a function for dragging a 3d rigid body
+  var currentRigidBody = undefined;
+  var dragConstructedRigidBody = function(evt) {
+    if(!currentRigidBody)
+      return;
+    
+    // construct an artifical rayEvent
+    var rayEvt = {
+      offsetX: evt.pageX,
+      offsetY: evt.pageY,
+      target: {
+        clientWidth: $('#FabricContainer').width()
+      }
+    };
+    
+    var cameraXfo = cameraTransform.getGlobalXfo();
+    var target = cameraTransform.getTarget();
+    var rayData = viewport.rayCast(rayEvt).rayData;
+    var distance = FABRIC.RT.Vec3.rayIntersectPlane(rayData.start,rayData.direction,target,cameraXfo.ori.getZaxis());
+    var xfo = new FABRIC.RT.Xfo();
+    xfo.tr = rayData.start.add(rayData.direction.multiplyScalar(distance));
+    xfo.tr.y = xfo.tr.y < xfo.sc.y * 0.5 ? xfo.sc.y * 0.5 : xfo.tr.y;
+    xfo.ori.setFromDirectionAndUpvector(new FABRIC.RT.Vec3(0,1,0),cameraXfo.ori.getZaxis());
+    worldNode.setRigidBodyInitialTransform(currentRigidBody.name,xfo);
+    viewport.redraw();
+  };
+  
+  // define the viewport as a drop target
   $("#FabricContainer").droppable({
     over: function(evt) {
-      // mouse enters
-      console.log(evt);
+      if(isPlaying)
+        return;
+      var id = evt.srcElement.getAttribute('id');
+      if(dragStatus[id] != 'outside')
+        return;
+      dragStatus[id] = 'inside';
+      
+      // update the evt data
+      currentRigidBody = constructRigidBody(id);
+
+      dragConstructedRigidBody(evt);
+      document.addEventListener('mousemove',dragConstructedRigidBody);
     },
     drop: function(evt) {
+      if(isPlaying)
+        return;
+      var id = evt.srcElement.getAttribute('id');
+      if(dragStatus[id] != 'inside')
+        return;
+
       // actual drop
-      console.log(evt);
+      document.removeEventListener('mousemove',dragConstructedRigidBody);
+      currentRigidBody = undefined;
     },
     activate: function(evt) {
-      // reset the element
+      // store the element's offset
       var id = evt.srcElement.getAttribute('id');
-      originalPos[id] = $("#"+id).offset();
+      originalOffset[id] = $("#"+id).offset();
+      dragStatus[id] = 'outside';
     },
     deactivate: function(evt) {
-      // reset the element
+      // restore the element's offset
       var id = evt.srcElement.getAttribute('id');
-      $("#"+id).offset(originalPos[id]);
+      $("#"+id).offset(originalOffset[id]);
+      dragStatus[id] = undefined;
     }
-  });  
-
+  });
+  
   $('#loadingDialog').dialog({
     modal: true
   });
@@ -276,11 +442,17 @@ $(document).ready(function() {
             <div class="content">
               <button id="workplaneXY">X-Y</button>
               <button id="workplaneYZ">Y-Z</button>
+              <button id="workplaneXZ">X-Z</button>
               <button id="workplaneUnit">UNIT</button>
             </div><!--content-->
             <h2>PRIMITIVES</h2>
             <div class="content">
-              <div id="primitiveSquare" style="width: 50px; height: 50px; background-color:#777777"></div>
+              <div id="primitiveCube" style="width: 50px; height: 50px; background-color:#777777"></div>
+            </div><!--content-->
+            <h2>SIMULATIOn</h2>
+            <div class="content button-controls">
+              <button id="play">Play</button>
+            </div><!--content-->
             </div><!--content-->
           </div><!--box-->
         </div><!--sidebar-->
