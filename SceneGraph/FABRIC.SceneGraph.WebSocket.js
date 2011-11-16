@@ -12,7 +12,7 @@ FABRIC.SceneGraph.registerManagerType('WebSocketManager', {
       serverUrl: undefined,
       serverPort: 8123,
       messageCallBacks: undefined,
-      contextID: scene.pub.getContextId().substr(0,20)
+      contextID: scene.pub.getContextId().substr(0,20).replace(/[^\w\s]/gi, '')
     });
 
     // check if we have a serverUrl
