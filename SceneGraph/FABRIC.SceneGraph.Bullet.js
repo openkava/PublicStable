@@ -591,7 +591,8 @@ FABRIC.SceneGraph.registerNodeType('BulletRigidBodyTransform', {
       shape: undefined,
       bulletWorldNode: undefined,
       shapeName: undefined,
-      hierarchical: false
+      hierarchical: false,
+      createBulletRaycastEventHandler: true
     });
     
     // check if we have a rigid body!
@@ -634,7 +635,7 @@ FABRIC.SceneGraph.registerNodeType('BulletRigidBodyTransform', {
     // check if we are using multiple rigid bodies
     if(options.rigidBody.constructor.toString().indexOf("Array") != -1)
       dgnode.setCount(options.rigidBody.length);
-    
+      
     // create the query transform op
     dgnode.bindings.append(scene.constructOperator({
       operatorName: 'getBulletRigidBodyTransform',
@@ -648,27 +649,33 @@ FABRIC.SceneGraph.registerNodeType('BulletRigidBodyTransform', {
     }));
     
     // setup raycasting to be driven by bullet
-    var raycastEventHandler = undefined;
-    rigidBodyTransformNode.getRaycastEventHandler = function() {
-      if(raycastEventHandler == undefined) {
-        var raycastOperator = scene.constructOperator({
-          operatorName: 'raycastBulletWorld',
-          srcFile: 'FABRIC_ROOT/SceneGraph/KL/bullet.kl',
-          entryFunctionName: 'raycastBulletWorld',
-          parameterLayout: [
-            'raycastData.ray',
-            'simulation.world',
-            'simulation.raycastEnable'
-          ],
-          async: false
-        });
+    if(options.createBulletRaycastEventHandler) {
+      var raycastEventHandler = undefined;
+      rigidBodyTransformNode.getRaycastEventHandler = function() {
+        if(raycastEventHandler == undefined) {
+          var raycastOperator = scene.constructOperator({
+            operatorName: 'raycastBulletWorld',
+            srcFile: 'FABRIC_ROOT/SceneGraph/KL/bullet.kl',
+            entryFunctionName: 'raycastBulletWorld',
+            parameterLayout: [
+              'raycastData.ray',
+              'simulation.world',
+              'simulation.raycastEnable'
+            ],
+            async: false
+          });
+  
+          raycastEventHandler = rigidBodyTransformNode.constructEventHandlerNode('Raycast');
+          bulletWorldNode.setupRaycasting();
+          raycastEventHandler.setScope('simulation', bulletWorldNode.getDGNode());
+          raycastEventHandler.setSelector('simulation', raycastOperator);
+        }
+        return raycastEventHandler;
+      };
+    }
 
-        raycastEventHandler = rigidBodyTransformNode.constructEventHandlerNode('Raycast');
-        bulletWorldNode.setupRaycasting();
-        raycastEventHandler.setScope('simulation', bulletWorldNode.getDGNode());
-        raycastEventHandler.setSelector('simulation', raycastOperator);
-      }
-      return raycastEventHandler;
+    rigidBodyTransformNode.pub.setInitialTransform = function(val) {
+      return bulletWorldNode.pub.setRigidBodyInitialTransform(bodyName,val);
     };
     
     return rigidBodyTransformNode;

@@ -491,6 +491,8 @@ FABRIC.SceneGraph.registerNodeType('Manipulator', {
 
     var mouseDownScreenPos, mouseDrag, viewportNode;
     var dragFn = function(evt) {
+      if(!evt.mouseScreenPos)
+        return;
       evt.mouseDownScreenPos = mouseDownScreenPos;
       evt.mouseDragScreenPos = evt.mouseScreenPos;
       evt.mouseDragScreenDelta = evt.mouseDragScreenPos.subtract(mouseDownScreenPos);
