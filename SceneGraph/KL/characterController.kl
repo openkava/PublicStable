@@ -57,11 +57,10 @@ operator evaluateCharacterController(
 // report("evaluateCharacterController:"+timestep);
   debugGeometry1.reset();
   if(timestep==0){
-    report("skipping");
     return;
   }
   Quat alignment;
-  Boolean displayDebugging = true;
+  Boolean displayDebugging = false;
   ////////////////////////////
   // Movement
   
