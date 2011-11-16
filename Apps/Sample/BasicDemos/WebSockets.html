@@ -5,7 +5,7 @@
   <!--
     Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
     -->
-    <title>FABRIC - Synched Cameras</title> 
+    <title>FABRIC - WebSockets</title> 
     
     <script type="text/javascript" src="../../../ThirdParty/jQuery/jquery-1.6.2.min.js"></script>
     <script type="text/javascript" src="../../../ThirdParty/jQuery/jquery-ui-1.8.16.custom.min.js"></script>
@@ -116,9 +116,21 @@ $(document).ready(function() {
       sendFunctionNames: ['cameraManip'],
       contextID: getUrlVars()['context'],
       onOpenCallBack: function() {
+
+        // setup the invite link        
+        $("#contextID").html(ws.getContextID());
         
-        $('#collabLink').attr('href', window.location.href.split('?')[0]+'?context='+ws.getContextID());
-        $('#collabLink').html('Collaboration Link');
+        // setup the join button
+        $("#join").button().click(function(){
+          viewport.hide();
+          $('#joinDialog').dialog({
+            modal: true
+          });
+          $('#joinOK').button().click(function(){
+            // open the page once more
+            document.location.href = document.URL.split('?')[0]+"?context="+$('#joinContext').val();
+          });
+        });
 
         // create a serializer for the camera transform        
         var serializer = scene.constructManager("SceneSerializer");
@@ -130,6 +142,14 @@ $(document).ready(function() {
           serializer.serialize();
           serializer.save(wsStorage);
         });
+
+        // finally, let's fire the first event to let people know we exist!
+        setTimeout(function(){
+          manipulator.fireEvent('cameraManipulated',{});
+          
+          // also, ask for all other participant
+          ws.sendMessage('queryParticipants',{});
+        }, 50);
       }
     });
     
@@ -144,45 +164,111 @@ $(document).ready(function() {
     colors.push(FABRIC.RT.rgb(0.0,0.75,0.75));
     colors.push(FABRIC.RT.rgb(0.0,0.0,0.75));
 
-    // setup self in the synched camera map
-    var synchedCameras = {};
-    var synchedCameraCount = 0;
-    synchedCameras['_self'] = {};
-    synchedCameras['_self'].node = camera;
-    synchedCameras['_self'].material = scene.constructNode('FlatMaterial', {color: colors[synchedCameraCount % 5]})
-    synchedCameras['_self'].instance = scene.constructNode('Instance', {
+    // setup self in the participants map
+    var participants = {};
+    var participantsCount = 0;
+    participants['_self'] = {};
+    participants['_self'].name = 'Yourself';
+    participants['_self'].node = camera;
+    participants['_self'].material = scene.constructNode('FlatMaterial', {color: colors[participantsCount % 5]})
+    participants['_self'].instance = scene.constructNode('Instance', {
       geometryNode: cameraPrimitive,
-      materialNode: synchedCameras['_self'].material,
+      materialNode: participants['_self'].material,
       transformNode: camera.getTransformNode(),
     });
-    synchedCameras['_self'].instance.setDrawToggle(false);
-    synchedCameraCount++;
+    participants['_self'].instance.setDrawToggle(false);
+    participantsCount++;
     
     // setup a function to fill the camera list
-    function updateCameraList() {
+    function updateParticipantsList() {
       var html = "";
 
-      for(var key in synchedCameras)
+      for(var key in participants)
         html += "<option value='"+key+"' style='color: white; background-color:rgb("+
-          parseInt(synchedCameras[key].material.getColor().r * 255)+","+
-          parseInt(synchedCameras[key].material.getColor().g * 255)+","+
-          parseInt(synchedCameras[key].material.getColor().b * 255)+")'>"+key+"</option>";
-      
-      console.log(html);
+          parseInt(participants[key].material.getColor().r * 255)+","+
+          parseInt(participants[key].material.getColor().g * 255)+","+
+          parseInt(participants[key].material.getColor().b * 255)+")'>"+participants[key].name+"</option>";
       
       // attach an on-select event to the camera list 
       $('#cameralist').html(html).change( function(ui) {
         var selectedKey = $('#cameralist').attr('value');
-        for(var key in synchedCameras) {
-          synchedCameras[key].instance.setDrawToggle(key != selectedKey);
+        for(var key in participants) {
+          participants[key].instance.setDrawToggle(key != selectedKey);
         }
-        viewport.setCameraNode(synchedCameras[selectedKey].node);
+        viewport.setCameraNode(participants[selectedKey].node);
         viewport.redraw();
       });
     }
-    updateCameraList();
+    updateParticipantsList();
+    
+    // setup a function to update the username
+    $('#participantName').change(function(ui){
+      participants['_self'].name = $('#participantName').val();
+      ws.sendMessage('setParticipantName',participants['_self'].name);
+      updateParticipantsList();
+    });
+    
+    // setup a function to add a participant
+    function addParticipant(id,name) {
+      if(participants[id] == undefined) {
+        
+        // create a new camera + draw instance
+        var newParticipant = {};
+        newParticipant.name = name;
+        newParticipant.node = scene.constructNode('FreeCamera', {
+          nearDistance: 1,
+          farDistance: 200
+        });
+        newParticipant.material = scene.constructNode('FlatMaterial', {color: colors[participantsCount % 5]})
+        newParticipant.instance = scene.constructNode('Instance', {
+          geometryNode: cameraPrimitive,
+          materialNode: newParticipant.material,
+          transformNode: newParticipant.node.getTransformNode()
+        });
+        
+        // create a serializer and a websocket storage
+        newParticipant.deserializer = scene.constructManager('SceneDeserializer',  {preLoadScene: false});
+        newParticipant.storage = ws.getStorage('cameraTransform');
+        
+        // map the new instance's transform to the one from the camera
+        // this means that the other clients camera's transform will be
+        // driving the new instance's transform
+        newParticipant.deserializer.setPreLoadedNode(newParticipant.instance.getTransformNode(), camera.getTransformNode().getName());
+        participants[id] = newParticipant;
+        
+        updateParticipantsList();
+        participantsCount++;
+      }
+    }
 
-    // setup the function to be called when we receive a mouse mouve event
+    // setup the function to be called when we receive a participant name change event
+    ws.addMessageCallBack('setParticipantName', function(message) {
+      
+      setTimeout(function(){
+        if(participants[message.sourceID] == undefined)
+          return;
+  
+        participants[message.sourceID].name = message.data;
+        updateParticipantsList();
+      }, 100);
+    });
+
+    // setup the function to be called when we receive a queryParticipants event
+    ws.addMessageCallBack('queryParticipants', function(message) {
+
+      // filter out unknown participants
+      if(!participants[message.sourceID])
+        return;
+
+      // notify the called of our name
+      if(participants['_self'].name != 'Yourself')
+        ws.sendMessage('setParticipantName',participants['_self'].name,message.sourceID);
+      
+      // notify the caller of our transform
+      manipulator.fireEvent('cameraManipulated',{});
+    });
+    
+    // finally setup the function to be called when we receive a mouse mouve event
     ws.addMessageCallBack('cameraTransform', function(message) {
       
       // filter out messages to ourselves
@@ -190,47 +276,19 @@ $(document).ready(function() {
         return;
       
       // if we don't have a camera yet for this connection
-      if(synchedCameras[message.sourceID] == undefined) {
-        
-        // create a new camera + draw instance
-        var newCam = {};
-        newCam.node = scene.constructNode('FreeCamera', {
-          nearDistance: 1,
-          farDistance: 200
-        });
-        newCam.material = scene.constructNode('FlatMaterial', {color: colors[synchedCameraCount % 5]})
-        newCam.instance = scene.constructNode('Instance', {
-          geometryNode: cameraPrimitive,
-          materialNode: newCam.material,
-          transformNode: newCam.node.getTransformNode()
-        });
-        
-        // create a serializer and a websocket storage
-        newCam.deserializer = scene.constructManager('SceneDeserializer',  {preLoadScene: false});
-        newCam.storage = ws.getStorage('cameraTransform');
-        
-        // map the new instance's transform to the one from the camera
-        // this means that the other clients camera's transform will be
-        // driving the new instance's transform
-        newCam.deserializer.setPreLoadedNode(newCam.instance.getTransformNode(), camera.getTransformNode().getName());
-        synchedCameras[message.sourceID] = newCam;
-        
-        // update the camera list
-        updateCameraList();
-        synchedCameraCount++;
-      }
+      addParticipant(message.sourceID, 'Unknown');
       
       // buffer the data into the storage
-      synchedCameras[message.sourceID].storage.buffer(message.data);
+      participants[message.sourceID].storage.buffer(message.data);
       
       // deserialize it into the transform
-      synchedCameras[message.sourceID].deserializer.load(
-        synchedCameras[message.sourceID].storage
+      participants[message.sourceID].deserializer.load(
+        participants[message.sourceID].storage
       );
       viewport.redraw();
     });
   }catch(e){
-    $('#collabMessage').html("<b style='color:#FF0000'>Error</b>: "+e+"<br>Currently only Google Chrome supports WebSocket natively.");
+    $('#message').html("<b style='color:#FF0000'>Error</b>: "+e+"<br>Currently only Google Chrome supports WebSocket natively.");
   }
 
   $('#loadingDialog').dialog({
@@ -267,6 +325,11 @@ $(document).ready(function() {
       <h4 id="loadingDesc"></h4>
       <div id="loadingProgressBar" class="ui-progressbar-value"></div>
     </div>
+    <div style="display: none" id="joinDialog" title="Joining Session...">
+      <h4 id="joinDesc"></h4>
+      <input id="joinContext" type=text/><br>
+      <button id="joinOK">OK</button>
+    </div>
     <div id="wrapper">
 
       <div id="editor">
@@ -278,15 +341,21 @@ $(document).ready(function() {
           <div class="box">
             <h2>INFO</h2>
             <div class="content">
-              Synched Cameras.<br>
-              This demo shows cameras of all participants in 3D.
-              <div id='collabMessage'>The link to this demo is here:</div>
-              <a id="collabLink" href=""></a>
+              WebSockets.<br>
+              <div id="message">
+                In this demo, we synchronize camera motion of all participants through
+                WebSockets, a HTML5 feature for peer to peer communication. To invite other
+                people to this session, share this session context:<br>
+                <b id="contextID"></b><br>
+                To join an existing session, click here:<br>
+                <button id='join'>Join</button>
+              </div>
             </div><!--content-->
           </div><!--box-->
           <div class="box">
-            <h2>Cameras</h2>
+            <h2>Participants</h2>
             <div class="content">
+              <input id="participantName" type=text/ value='Yourself' style='width: 194px'><br>
               <select multi size=10 id='cameralist' style='width: 200px; margin-top: 10px'>
               </select>
             </div><!--content-->
