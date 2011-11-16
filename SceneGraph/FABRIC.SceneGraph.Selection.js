@@ -108,24 +108,35 @@ FABRIC.SceneGraph.registerManagerType('ViewportSelectionManager', {
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
       addToSelectionKeyName: 'ctrlKey',
-      removeFromSelectionKeyName: 'altKey'
+      removeFromSelectionKeyName: 'altKey',
+      enabled: true
     });
     
     var selectionManager = scene.constructManager('SelectionManager', options);
+    var enabled = options.enabled;
+    selectionManager.pub.setEnabled = function(val) {
+      enabled = val;
+    };
     
     scene.pub.addEventListener('mouseover_geom', function(evt){
+      if(!enabled)
+        return;
       if(evt.targetNode.fireEvent){
         evt.targetNode.fireEvent('highlight');
         scene.pub.redrawAllViewports();
       }
     });
     scene.pub.addEventListener('mouseout_geom', function(evt){
+      if(!enabled)
+        return;
       if(evt.targetNode.fireEvent){
         evt.targetNode.fireEvent('unhighlight');
         scene.pub.redrawAllViewports();
       }
     });
     scene.pub.addEventListener('mousedown_geom', function(evt){
+      if(!enabled)
+        return;
       if(evt[options.addToSelectionKeyName]){
         selectionManager.pub.addToSelection(evt.targetNode);
       }else if(evt[options.removeFromSelectionKeyName]){
@@ -138,11 +149,15 @@ FABRIC.SceneGraph.registerManagerType('ViewportSelectionManager', {
     });
     var mouseDownScreenPos;
     scene.pub.addEventListener('mousedown', function(evt){
+      if(!enabled)
+        return;
       if(!evt.targetNode){
         mouseDownScreenPos = evt.mouseScreenPos;
       }
     });
     scene.pub.addEventListener('mouseup', function(evt){
+      if(!enabled)
+        return;
       if(mouseDownScreenPos && evt.mouseScreenPos.subtract(mouseDownScreenPos).length() < 0.01){
         selectionManager.pub.clearSelection();
         scene.pub.redrawAllViewports();
@@ -167,17 +182,24 @@ FABRIC.SceneGraph.registerManagerType('SelectionManipulationManager', {
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
       selectionManager: undefined,
-      rotationManipulators: [],
-      translationManipulators: []
+      rotationManipulators: undefined,
+      translationManipulators: undefined,
+      transformSetter: 'setGlobalXfo',
+      screenTranslationRadius: 2.0,
+      rotationRadius: 8.0
       });
     var rotationManipulators = options.rotationManipulators;
     var translationManipulators = options.translationManipulators;
     var toggleRotatonManipulatorsDisplay = function(drawToggle){
+      if(!rotationManipulators)
+        return;
       for(var i=0; i<rotationManipulators.length; i++){
         rotationManipulators[i].setDrawToggle(drawToggle);
       }
     }
     var toggleTranslationManipulatorsDisplay = function(drawToggle){
+      if(!translationManipulators)
+        return;
       for(var i=0; i<translationManipulators.length; i++){
         translationManipulators[i].setDrawToggle(drawToggle);
       }
@@ -269,15 +291,38 @@ FABRIC.SceneGraph.registerManagerType('SelectionManipulationManager', {
       var xform = xfo.multiply(dragStartGlobalXfo.inverse());
       var selection = selectionManager.getSelection();
       for(var i=0; i<selection.length; i++){
-        selection[i].getTransformNode().setGlobalXfo( xform.multiply(dragStartSelGlobalXfos[i]) );
+        selection[i].getTransformNode()[options.transformSetter]( xform.multiply(dragStartSelGlobalXfos[i]) );
       }
     };
     
-    if(rotationManipulators.length == 0){
+    if(!rotationManipulators){
+      rotationManipulators = [];
       var rotManip = scene.pub.constructNode('RotationManipulator', {
-          name: options.name + 'RotateYaxisManipulator',
+          name: options.name + 'XRotationManipulator',
+          color: FABRIC.RT.rgb(0.8, 0, 0, 1),
+          radius: options.rotationRadius,
+          localXfo: new FABRIC.RT.Xfo({ ori: new FABRIC.RT.Quat().setFromAxisAndAngle(new FABRIC.RT.Vec3(0, 0, 1), -Math.HALF_PI) }),
+          parentNode: groupTransform.pub,
+          drawToggle: false
+        });
+      rotManip.addEventListener('dragstart', dragStartFn);
+      rotManip.addEventListener('drag', dragFn);
+      rotationManipulators.push(rotManip);
+      rotManip = scene.pub.constructNode('RotationManipulator', {
+          name: options.name + 'YRotationManipulator',
           color: FABRIC.RT.rgb(0, 0.8, 0, 1),
-          radius: 8,
+          radius: options.rotationRadius,
+          parentNode: groupTransform.pub,
+          drawToggle: false
+        });
+      rotManip.addEventListener('dragstart', dragStartFn);
+      rotManip.addEventListener('drag', dragFn);
+      rotationManipulators.push(rotManip);
+      rotManip = scene.pub.constructNode('RotationManipulator', {
+          name: options.name + 'ZRotationManipulator',
+          color: FABRIC.RT.rgb(0, 0, 0.8, 1),
+          radius: options.rotationRadius,
+          localXfo: new FABRIC.RT.Xfo({ ori: new FABRIC.RT.Quat().setFromAxisAndAngle(new FABRIC.RT.Vec3(1, 0, 0), Math.HALF_PI) }),
           parentNode: groupTransform.pub,
           drawToggle: false
         });
@@ -285,17 +330,18 @@ FABRIC.SceneGraph.registerManagerType('SelectionManipulationManager', {
       rotManip.addEventListener('drag', dragFn);
       rotationManipulators.push(rotManip);
     }
-    if(translationManipulators.length == 0){
+    if(!translationManipulators){
       var transManip2 = scene.pub.constructNode('ScreenTranslationManipulator', {
           name: options.name + 'ScreenTranslationManipulator',
           color: FABRIC.RT.rgb(0, 0.8, 0, 1),
           parentNode: groupTransform.pub,
-          geometryNode: scene.pub.constructNode('Sphere', {radius: 2.0, detail: 8.0}),
+          geometryNode: scene.pub.constructNode('Sphere', {radius: options.screenTranslationRadius, detail: 8.0}),
           drawToggle: false,
           drawOverlaid: true
         });
       transManip2.addEventListener('dragstart', dragStartFn);
       transManip2.addEventListener('drag', dragFn);
+      translationManipulators = [];
       translationManipulators.push(transManip2);
     }
     
@@ -342,7 +388,7 @@ FABRIC.SceneGraph.registerNodeType('SelectableInstance', {
     var highglighted = false;
     var selected = false;
     selectableInstance.pub.addEventListener('highlight', function(evt) {
-      if(!selected){
+      if(!selected && selectable){
         selectableInstance.pub.setMaterialNode( options.highlightMaterial );
         highglighted = true;
       }
@@ -354,6 +400,8 @@ FABRIC.SceneGraph.registerNodeType('SelectableInstance', {
       }
     });
     selectableInstance.pub.addEventListener('selected', function(evt) {
+      if(!selectable)
+        return;
       if(highglighted){
         selectableInstance.pub.removeMaterialNode( options.highlightMaterial );
         highglighted = false;

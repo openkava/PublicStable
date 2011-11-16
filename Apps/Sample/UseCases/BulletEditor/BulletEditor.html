@@ -93,7 +93,7 @@ FABRIC.SceneGraph.registerNodeType('WorkPlane', {
     if(!options.materialNode)
       options.materialNode = scene.constructNode('WorkPlaneMaterial', {
         textureNode: scene.constructNode('Image', { url: '../../BasicDemos/Resources/layout_grid.png' }).pub,
-        colorBlend: 0.4,
+        colorBlend: 0.0,
         disableOptions: [FABRIC.SceneGraph.OpenGLConstants.GL_CULL_FACE],
         enableOptions: [FABRIC.SceneGraph.OpenGLConstants.GL_BLEND],
         blendModeSfactor: FABRIC.SceneGraph.OpenGLConstants.GL_SRC_ALPHA,
@@ -183,9 +183,12 @@ $(document).ready(function() {
   });
 
   var selectionManager = scene.constructManager('ViewportSelectionManager');
-  //var selectionManipulationManager = scene.constructManager('SelectionManipulationManager', {
-  //  selectionManager: selectionManager
-  //});
+  var selectionManipulationManager = scene.constructManager('SelectionManipulationManager', {
+    selectionManager: selectionManager,
+    transformSetter: 'setInitialTransform',
+    screenTranslationRadius: 0.35,
+    rotationRadius: 1.0
+  });
   
   //==========================================================
   // MATERIALS + GEOMETRY
@@ -209,22 +212,24 @@ $(document).ready(function() {
   materialNodes['primitiveCube'] = scene.constructNode('PhongTextureSimpleMaterial', {
     lightNode: light,
     shininess: 50.0,
+    specularColor: FABRIC.RT.rgb(0.0,0.0,0.0),
     diffuseTextureNode: scene.constructNode('Image', { url: '../../BasicDemos/Resources/wood1.png' })
   });
   materialNodes['primitiveFlat'] = scene.constructNode('PhongTextureSimpleMaterial', {
     lightNode: light,
     shininess: 50.0,
+    specularColor: FABRIC.RT.rgb(0.0,0.0,0.0),
     diffuseTextureNode: scene.constructNode('Image', { url: '../../BasicDemos/Resources/wood2.png' })
   });
   materialNodes['primitiveHigh'] = scene.constructNode('PhongTextureSimpleMaterial', {
     lightNode: light,
     shininess: 50.0,
+    specularColor: FABRIC.RT.rgb(0.0,0.0,0.0),
     diffuseTextureNode: scene.constructNode('Image', { url: '../../BasicDemos/Resources/wood3.png' })
   });
 
-  var highlightMaterial = scene.constructNode('OutlineShader', {
-    color: FABRIC.RT.rgb(0.6, 0.6, 0.6, 0.5),
-    thickness: 0.2
+  var highlightMaterial = scene.constructNode('FlatMaterial', {
+    color: FABRIC.RT.rgb(102/255,173/255,71/255),
   });
   
   //==========================================================
@@ -266,7 +271,8 @@ $(document).ready(function() {
           friction: 0.99,
           restitution: 0.05,
           mass: masses[type]
-      })
+      }),
+      createBulletRaycastEventHandler: false
     });
     
     var instance = scene.constructNode('SelectableInstance', {
@@ -277,6 +283,7 @@ $(document).ready(function() {
       highlightMaterial: highlightMaterial,
       selectMaterial: highlightMaterial
     });
+    instance.setSelectable(false);
 
     // store it to the map    
     rigidBodies[name] = {};
@@ -294,6 +301,20 @@ $(document).ready(function() {
     
     return rigidBodies[name];
   }
+  
+  // construct a couple of sample cubes
+  constructRigidBody('primitiveCube',new FABRIC.RT.Xfo({
+    tr: new FABRIC.RT.Vec3(-3,0.5,0),
+    ori: new FABRIC.RT.Quat().setFromAxisAndAngle(new FABRIC.RT.Vec3(0,1,0),0.3)
+  })).instance.setSelectable(true);
+  constructRigidBody('primitiveCube',new FABRIC.RT.Xfo({
+    tr: new FABRIC.RT.Vec3(-3,1.5,0),
+    ori: new FABRIC.RT.Quat().setFromAxisAndAngle(new FABRIC.RT.Vec3(0,1,0),1.4)
+  })).instance.setSelectable(true);
+  constructRigidBody('primitiveCube',new FABRIC.RT.Xfo({
+    tr: new FABRIC.RT.Vec3(-3,2.5,0),
+    ori: new FABRIC.RT.Quat().setFromAxisAndAngle(new FABRIC.RT.Vec3(0,1,0),0.7)
+  })).instance.setSelectable(true);
   
   //==========================================================
   // PLAYBACK CONTROL
@@ -314,6 +335,7 @@ $(document).ready(function() {
         }
       });
       isPlaying = true;
+      selectionManager.setEnabled(false);
       scene.animation.play();
     } else {
       $(this).button('option', {
@@ -324,6 +346,7 @@ $(document).ready(function() {
       });
       isPlaying = false;
       scene.animation.pause();
+      selectionManager.setEnabled(true);
       setTimeout(function(){
         scene.animation.setTime(0);
         viewport.redraw();
@@ -426,7 +449,7 @@ $(document).ready(function() {
       
       // update the evt data
       currentRigidBody = constructRigidBody(id);
-
+      
       dragConstructedRigidBody(evt);
       document.addEventListener('mousemove',dragConstructedRigidBody);
     },
@@ -439,6 +462,8 @@ $(document).ready(function() {
 
       // actual drop
       document.removeEventListener('mousemove',dragConstructedRigidBody);
+      if(currentRigidBody)
+        currentRigidBody.instance.setSelectable(true);
       currentRigidBody = undefined;
     },
     activate: function(evt) {
@@ -518,7 +543,7 @@ $(document).ready(function() {
             <div class="content">
               <div id="primitiveCube" style="display: inline-block; margin: 5px; width: 50px; height: 50px; background-image:url(../../BasicDemos/Resources/wood1.png)"></div>
               <div id="primitiveFlat" style="display: inline-block; margin: 5px; width: 150px; height: 25px; background-image:url(../../BasicDemos/Resources/wood2.png)"></div>
-              <div id="primitiveHigh" style="display: inline-block; margin: 5px; width: 13px; height: 100px; background-image:url(../../BasicDemos/Resources/wood3.png)"></div>
+              <div id="primitiveHigh" style="display: inline-block; margin: 5px; width: 50px; height: 100px; background-image:url(../../BasicDemos/Resources/wood3.png)"></div>
             </div><!--content-->
             <h2>SIMULATION</h2>
             <div class="content button-controls">
