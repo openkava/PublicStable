@@ -12,6 +12,7 @@ namespace Fabric
   namespace RT
   {
     class VariableArrayDesc;
+    class VariableArrayImpl;
   };
   
   namespace CG
@@ -25,7 +26,6 @@ namespace Fabric
 
       // Adapter
     
-      virtual void llvmInit( BasicBlockBuilder &basicBlockBuilder, llvm::Value *value ) const;
       virtual void llvmDefaultAssign( BasicBlockBuilder &basicBlockBuilder, llvm::Value *dstLValue, llvm::Value *srcRValue ) const;
       virtual void llvmDisposeImpl( BasicBlockBuilder &basicBlockBuilder, llvm::Value *lValue ) const;
 
@@ -53,7 +53,6 @@ namespace Fabric
 
       // VariableArrayAdapter
 
-      llvm::Value *llvmConstIndexOp_NoCheckLValue( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *arrayRValue, llvm::Value *indexRValue ) const;
       llvm::Value *llvmConstIndexOp_NoCheck( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *arrayRValue, llvm::Value *indexRValue ) const;
       llvm::Value *llvmNonConstIndexOp_NoCheck( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *arrayLValue, llvm::Value *indexRValue ) const;
 
@@ -62,25 +61,24 @@ namespace Fabric
       VariableArrayAdapter( RC::ConstHandle<Manager> const &manager, RC::ConstHandle<RT::VariableArrayDesc> const &variableArrayDesc );
       
       virtual llvm::Type const *buildLLVMRawType( RC::Handle<Context> const &context ) const;
-
-      llvm::Type const *getLLVMImplType( RC::Handle<Context> const &context ) const;
-
-      void llvmRetain( BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const;
-      void llvmRelease( BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const;
       
     private:
     
       static void Append( VariableArrayAdapter const *inst, void *dstLValue, void const *srcRValue );
       static void Pop( VariableArrayAdapter const *inst, void *dst, void *result );
       static void Resize( VariableArrayAdapter const *inst, void *dst, size_t newSize );
-      static void Split( VariableArrayAdapter const *inst, void *data );
+      static void DefaultAssign( VariableArrayAdapter const *inst, void const *srcData, void *dstData );
  
       void llvmCallPop( BasicBlockBuilder &basicBlockBuilder, llvm::Value *arrayLValue, llvm::Value *memberLValue ) const;
       llvm::Value *llvmCallSize( BasicBlockBuilder &basicBlockBuilder, llvm::Value *arrayRValue ) const;
       void llvmCallResize( BasicBlockBuilder &basicBlockBuilder, llvm::Value *arrayLValue, llvm::Value *newSize ) const;
+      
+      static const uint8_t AllocSizeIndex = 0;
+      static const uint8_t SizeIndex = 1;
+      static const uint8_t MemberDatasIndex = 2;
  
       RC::ConstHandle<RT::VariableArrayDesc> m_variableArrayDesc;
-      bool m_isCopyOnWrite;
+      RC::ConstHandle<RT::VariableArrayImpl> m_variableArrayImpl;
       RC::ConstHandle<Adapter> m_memberAdapter;
    };
   };

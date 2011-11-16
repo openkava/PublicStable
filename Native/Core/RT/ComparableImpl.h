@@ -11,6 +11,10 @@ namespace Fabric
     {
     public:
     
+      // Impl
+      
+      virtual int compareData( void const *lhs, void const *rhs ) const;
+    
       // ComparableImpl
     
       virtual size_t hash( void const *data ) const = 0;

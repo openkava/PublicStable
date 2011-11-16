@@ -55,15 +55,14 @@ namespace Fabric
       return fixedArrayImpl;
     }
 
-    RC::ConstHandle<VariableArrayImpl> Impl::getVariableArrayImpl( size_t flags ) const
+    RC::ConstHandle<VariableArrayImpl> Impl::getVariableArrayImpl() const
     {
-      RC::WeakConstHandle<VariableArrayImpl> &variableArrayImplWeakHandle = m_variableArrayImpls[flags];
+      RC::WeakConstHandle<VariableArrayImpl> &variableArrayImplWeakHandle = m_variableArrayImpl;
       RC::ConstHandle<VariableArrayImpl> variableArrayImpl = variableArrayImplWeakHandle.makeStrong();
       if ( !variableArrayImpl )
       {
-        std::string name = m_codeName + "_VA_";
-        name += (flags & VariableArrayImpl::FLAG_COPY_ON_WRITE)? "CopyOnWrite": "Shared";
-        variableArrayImpl = new VariableArrayImpl( name, flags, this );
+        std::string name = m_codeName + "_VA";
+        variableArrayImpl = new VariableArrayImpl( name, this );
         variableArrayImplWeakHandle = variableArrayImpl;
       }
       return variableArrayImpl;

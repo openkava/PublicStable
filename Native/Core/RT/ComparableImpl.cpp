@@ -12,5 +12,10 @@ namespace Fabric
       : Impl( codeName, type )
     {
     }
+    
+    int ComparableImpl::compareData( void const *lhs, void const *rhs ) const
+    {
+      return compare( lhs, rhs );
+    }
   };
 };

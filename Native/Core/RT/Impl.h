@@ -51,6 +51,7 @@ namespace Fabric
       void disposeDatas( void *data, size_t count, size_t stride ) const;
       virtual void disposeDatasImpl( void *data, size_t count, size_t stride ) const = 0;
       virtual std::string descData( void const *data ) const = 0;
+      virtual int compareData( void const *lhs, void const *rhs ) const = 0;
       
       virtual RC::Handle<JSON::Value> getJSONValue( void const *data ) const = 0;
       virtual void setDataFromJSONValue( RC::ConstHandle<JSON::Value> const &value, void *data ) const = 0;
@@ -60,7 +61,7 @@ namespace Fabric
       virtual bool isShallow() const = 0;
       
       RC::ConstHandle<FixedArrayImpl> getFixedArrayImpl( size_t length ) const;
-      RC::ConstHandle<VariableArrayImpl> getVariableArrayImpl( size_t flags ) const;
+      RC::ConstHandle<VariableArrayImpl> getVariableArrayImpl() const;
       RC::ConstHandle<SlicedArrayImpl> getSlicedArrayImpl() const;
       RC::ConstHandle<DictImpl> getDictImpl( RC::ConstHandle<ComparableImpl> const &comparableImpl ) const;
       
@@ -78,7 +79,7 @@ namespace Fabric
       ImplType m_implType;
       size_t m_size;
       
-      mutable Util::UnorderedMap< size_t, RC::WeakConstHandle<VariableArrayImpl> > m_variableArrayImpls;
+      mutable RC::WeakConstHandle<VariableArrayImpl> m_variableArrayImpl;
       mutable RC::WeakConstHandle<SlicedArrayImpl> m_slicedArrayImpl;
       mutable Util::UnorderedMap< size_t, RC::WeakConstHandle<FixedArrayImpl> > m_fixedArrayImpls;
       mutable std::map< RC::WeakConstHandle<ComparableImpl>, RC::WeakConstHandle<DictImpl> > m_dictImpls;
