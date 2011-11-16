@@ -33,6 +33,17 @@ namespace Fabric
     {
       memcpy( dst, src, getAllocSize() );
     }
+    
+    int ConstStringImpl::compareData( void const *lhs, void const *rhs ) const
+    {
+      bits_t const *lhsBits = reinterpret_cast<bits_t const *>(lhs);
+      bits_t const *rhsBits = reinterpret_cast<bits_t const *>(rhs);
+      if ( lhsBits->length < rhsBits->length )
+        return -1;
+      else if ( lhsBits->length > rhsBits->length )
+        return 1;
+      else return memcmp( lhsBits->data, rhsBits->data, lhsBits->length );
+    }
 
     RC::Handle<JSON::Value> ConstStringImpl::getJSONValue( void const *data ) const
     {
