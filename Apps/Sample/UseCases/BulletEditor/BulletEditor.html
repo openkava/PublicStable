@@ -146,17 +146,18 @@ $(document).ready(function() {
     sections_x: 101,
     sections_z: 101
   });
-  var workPlaneGridNode = scene.constructNode('Grid', {
-    size_x: 16.0,
-    size_z: 10.0,
-    sections_x: 17,
-    sections_z: 11
-  });
   scene.constructNode('Instance', {
     geometryNode: worldGridNode,
     materialNode: scene.constructNode('FlatMaterial', {
       color: new FABRIC.RT.rgb(0.5,0.5,0.5,1.0)
     } )
+  });
+  // create the work plane
+  var workPlaneGridNode = scene.constructNode('Grid', {
+    size_x: 16.0,
+    size_z: 10.0,
+    sections_x: 17,
+    sections_z: 11
   });
   scene.constructNode('WorkPlane', {
     cameraNode: camera,
@@ -194,6 +195,31 @@ $(document).ready(function() {
   });
   $('#workplaneUnit').button().click(function() {
   });
+  
+  //===========================================================
+  // DRAG AND DROP
+  $("#primitiveSquare").draggable();
+  var originalPos = {};
+  $("#FabricContainer").droppable({
+    over: function(evt) {
+      // mouse enters
+      console.log(evt);
+    },
+    drop: function(evt) {
+      // actual drop
+      console.log(evt);
+    },
+    activate: function(evt) {
+      // reset the element
+      var id = evt.srcElement.getAttribute('id');
+      originalPos[id] = $("#"+id).offset();
+    },
+    deactivate: function(evt) {
+      // reset the element
+      var id = evt.srcElement.getAttribute('id');
+      $("#"+id).offset(originalPos[id]);
+    }
+  });  
 
   $('#loadingDialog').dialog({
     modal: true
@@ -251,6 +277,10 @@ $(document).ready(function() {
               <button id="workplaneXY">X-Y</button>
               <button id="workplaneYZ">Y-Z</button>
               <button id="workplaneUnit">UNIT</button>
+            </div><!--content-->
+            <h2>PRIMITIVES</h2>
+            <div class="content">
+              <div id="primitiveSquare" style="width: 50px; height: 50px; background-color:#777777"></div>
             </div><!--content-->
           </div><!--box-->
         </div><!--sidebar-->
