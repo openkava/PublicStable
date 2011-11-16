@@ -179,5 +179,17 @@ namespace Fabric
       
       return true;
     }
+    
+    int StructImpl::compareData( void const *lhs, void const *rhs ) const
+    {
+      for ( size_t i=0; i<m_numMembers; ++i )
+      {
+        StructMemberInfo const &memberInfo = m_memberInfos[i];
+        int memberResult = memberInfo.desc->compareData( getMemberData_NoCheck( lhs, i ), getMemberData_NoCheck( rhs, i ) );
+        if ( memberResult )
+          return memberResult;
+      }
+      return 0;
+    }
   };
 };

@@ -5,6 +5,7 @@
 #include "Adapter.h"
 #include "Context.h"
 #include "IntegerAdapter.h"
+#include "SizeAdapter.h"
 #include "StringAdapter.h"
 #include "Manager.h"
 #include "ModuleBuilder.h"
@@ -67,11 +68,10 @@ namespace Fabric
     
     llvm::Value *Adapter::llvmCallMalloc( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *size ) const
     {
-      
-      RC::ConstHandle< IntegerAdapter > integerAdapter = basicBlockBuilder.getManager()->getIntegerAdapter();
+      RC::ConstHandle<SizeAdapter> sizeAdapter = basicBlockBuilder.getManager()->getSizeAdapter();
 
       std::vector< llvm::Type const * > argTypes;
-      argTypes.push_back( integerAdapter->llvmRType( basicBlockBuilder.getContext() ) );
+      argTypes.push_back( sizeAdapter->llvmRType( basicBlockBuilder.getContext() ) );
       llvm::FunctionType const *funcType = llvm::FunctionType::get( basicBlockBuilder->getInt8PtrTy(), argTypes, false );
 
       llvm::AttributeWithIndex AWI[1];
@@ -85,11 +85,11 @@ namespace Fabric
     
     llvm::Value *Adapter::llvmCallRealloc( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *data, llvm::Value *newSize ) const
     {
-      RC::ConstHandle< IntegerAdapter > integerAdapter = basicBlockBuilder.getManager()->getIntegerAdapter();
+      RC::ConstHandle<SizeAdapter> sizeAdapter = basicBlockBuilder.getManager()->getSizeAdapter();
 
       std::vector< llvm::Type const * > argTypes;
       argTypes.push_back( basicBlockBuilder->getInt8PtrTy() );
-      argTypes.push_back( integerAdapter->llvmRType( basicBlockBuilder.getContext() ) );
+      argTypes.push_back( sizeAdapter->llvmRType( basicBlockBuilder.getContext() ) );
       llvm::FunctionType const *funcType = llvm::FunctionType::get( basicBlockBuilder->getInt8PtrTy(), argTypes, false );
 
       llvm::AttributeWithIndex AWI[1];
