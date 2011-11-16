@@ -7,46 +7,6 @@ use PoseVariables, KeyframeTrackBindings;
 use DebugGeometry;
 
 
-function addCOMTracks(
-  io LinearKeyframeTrackSet trackSet,
-  io KeyframeTrackBindings bindings,
-  in COM com,
-){
-  Integer trackIds[];
-  trackSet.addXfoTracks('com', false, trackIds);
-  bindings.addXfoBinding(com.xfoId, trackIds);
-  
-  Integer trackId;
-  Color yellow(1.0, 1.0, 0.0, 1.0);
-  
-  trackSet.addTrack('stepFrequency', yellow, trackId);
-  bindings.addScalarBinding(com.parameterVarIds[0], trackId);
-  
-  trackSet.addTrack('speed', yellow, trackId);
-  bindings.addScalarBinding(com.parameterVarIds[1], trackId);
-  
-  trackSet.addTrack('gradient', yellow, trackId);
-  bindings.addScalarBinding(com.parameterVarIds[2], trackId);
-  
-  trackSet.addTrack('direction', yellow, trackId);
-  bindings.addScalarBinding(com.parameterVarIds[3], trackId);
-}
-
-
-function addLegTracks(
-  io LinearKeyframeTrackSet trackSet,
-  io KeyframeTrackBindings bindings,
-  io LocomotionFoot feet[]
-){
-  Color yellow(1.0, 1.0, 0.0, 1.0);
-  
-  Integer trackId;
-  for(Integer i=0; i<feet.size; i++){
-    trackSet.addTrack('foot'+i+'StepTime', yellow, trackId);
-    bindings.addScalarBinding(feet[i].stepTimeVarId, trackId);
-  }
-}
-
 function Vec2[][] calcFootPlantTimes(
   in Limb legs[],
   io Vec2 timeRange,
@@ -352,7 +312,7 @@ operator locomotionPreProcessing(
 //  }
 
   comAlignment = bones[hubs[0].boneId].referencePose;
-  debugGeometry.drawAxis(comAlignment, 3.5, Color(1.0, 0.0, 1.0, 1.0));
+//  debugGeometry.drawAxis(comAlignment, 3.5, Color(1.0, 0.0, 1.0, 1.0));
   Vec3 avgFootPos;
   for(Integer j=0; j < legs.size; j++){
     Limb leg = legs[j];
@@ -374,8 +334,8 @@ operator locomotionPreProcessing(
 
   
 //  comAlignment = bones[hubs[0].boneId].referencePose;
-  debugGeometry.drawAxis(comAlignment, 0.5, Color(1.0, 0.0, 1.0, 1.0));
-  debugGeometry.drawLine(comAlignment.tr, Vec3(0.0,0.0,0.0), Color(1.0, 1.0, 1.0, 1.0));
+//  debugGeometry.drawAxis(comAlignment, 0.5, Color(1.0, 0.0, 1.0, 1.0));
+//  debugGeometry.drawLine(comAlignment.tr, Vec3(0.0,0.0,0.0), Color(1.0, 1.0, 1.0, 1.0));
   comAlignment = comAlignment.inverse();
     
   comXfo.setIdentity();
@@ -444,7 +404,7 @@ operator locomotionPreProcessing(
       alignment.setFrom2Vectors(comXfo.ori.getYaxis(), Vec3(0.0,1.0,0.0));
       comXfo.ori = alignment * comXfo.ori;
       
-    debugGeometry.drawAxis(comXfo, 0.7, Color(1.0, 0.0, 1.0, 1.0));
+ //   debugGeometry.drawAxis(comXfo, 0.7, Color(1.0, 0.0, 1.0, 1.0));
       
     if(currKeyt > startT){
       
@@ -458,7 +418,7 @@ operator locomotionPreProcessing(
         poseVariables.xfoValues[com.xfoId] = prevComXfo;
         poseVariables.setTrackValues(prevKeyt, trackSet, comXfoBindings);
         
-        debugGeometry.drawAxis(prevComXfo, 5.0, Color(1.0, 0.0, 1.0, 1.0));
+    //    debugGeometry.drawAxis(prevComXfo, 5.0, Color(1.0, 0.0, 1.0, 1.0));
       }
       
       comXfo.ori.alignWith(prevComXfo.ori);
@@ -466,7 +426,7 @@ operator locomotionPreProcessing(
       comXfo.ori = alignment * prevComXfo.ori;
       poseVariables.xfoValues[com.xfoId] = comXfo;
       poseVariables.setTrackValues(currKeyt, trackSet, comXfoBindings);
-      debugGeometry.drawAxis(comXfo, 1.0, Color(1.0, 0.0, 1.0, 1.0));
+    //  debugGeometry.drawAxis(comXfo, 1.0, Color(1.0, 0.0, 1.0, 1.0));
       
       Scalar deltaT = currKeyt - prevKeyt;
       Vec3 velocity = displacement/deltaT;
@@ -597,8 +557,6 @@ operator locomotionPreProcessing(
     for(Integer i=0; i < hubs.size; i++){
       Hub hub = hubs[i];
       Xfo hubXfo = poseVariables.xfoValues[hub.xfoId];
-    //  debugGeometry.drawPoint(hubXfo.tr, Color(1.0, 1.0, 0.0, 1.0));
-    //  debugGeometry.drawLine(hubXfo.tr, comXfo.tr, Color(1.0, 0.0, 0.0, 1.0));
       poseVariables.xfoValues[hub.xfoId] = comXfo.inverse() * hubXfo;
       poseVariables.setTrackValues(time, trackSet, hubValueBindings);
     }
@@ -609,22 +567,25 @@ operator locomotionPreProcessing(
       Limb leg = legs[foot.limbId];
       Xfo footXfo = poseVariables.xfoValues[leg.ikGoalXfoId];
       
-      Xfo footInCOMSpace, footComXfo;
+      Xfo footMotionDelta, baseFootXfo;
+      baseFootXfo.setIdentity();
       if(leg.hubId < 0){
-        footComXfo = comXfo * leg.ikGoalReferenceXfo;
+        baseFootXfo.tr = (comXfo * leg.ikGoalReferenceXfo).tr;
+        baseFootXfo.ori = comXfo.ori;
       }else{
-        footComXfo = comXfo;
-        footComXfo.tr.z += poseVariables.xfoValues[hubs[leg.hubId].xfoId].tr.z;
-        footComXfo = footComXfo * leg.ikGoalReferenceXfo;
+        Xfo hubXfo = poseVariables.xfoValues[hubs[leg.hubId].xfoId];
+        hubXfo.tr.z += comXfo.tr.z;
+        baseFootXfo = hubXfo * leg.ikGoalReferenceXfo;
+        baseFootXfo.ori = comXfo.ori;
       }
-    //  debugGeometry.drawAxis(footComXfo, 10.0, Color(1.0, 1.0, 0.0, 1.0));
-      debugGeometry.drawLine(footXfo.tr, footComXfo.tr, Color(1.0, 0.0, 0.0, 1.0));
-      footInCOMSpace = footComXfo.inverse() * footXfo;
+      debugGeometry.drawAxis(baseFootXfo, 1.0, Color(0.0,0.0,0.0,1.0));
+      debugGeometry.drawLine(footXfo.tr, baseFootXfo.tr, Color(1.0, 0.0, 0.0, 1.0));
+      footMotionDelta = baseFootXfo.inverse() * footXfo;
       
-      Scalar stepValue = footInCOMSpace.tr.z;
-      footInCOMSpace.tr.z = 0.0;
+      Scalar stepValue = footMotionDelta.tr.z;
+      footMotionDelta.tr.z = 0.0;
       poseVariables.scalarValues[foot.stepTimeVarId] = stepValue;
-      poseVariables.xfoValues[leg.ikGoalXfoId] = footInCOMSpace;
+      poseVariables.xfoValues[leg.ikGoalXfoId] = footMotionDelta;
     }
     poseVariables.setTrackValues(time, trackSet, limbValueBindings);
   }

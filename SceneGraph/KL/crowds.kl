@@ -1,0 +1,169 @@
+//
+// Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+//
+
+use FabricMath;
+use Vec2, Vec3, Quat, Xfo;
+use Color;
+use HashTable;
+use DebugGeometry;
+
+operator calcCellIndex(
+  io Vec3 position,
+  io Vec3 cellcoords,
+  io Integer cellindex,
+  io HashTable hashtable
+) {
+  // determine the cell that this particle belongs to.
+  cellindex = hashtable.calcCellIndex(hashtable.clampPosition(position), cellcoords);
+}
+
+operator populateHashTable(
+  io HashTable hashtable,
+  io Integer cellIndices<>
+) {
+  // Reset the hash table, and re-accumulate the ids.
+  Size numCells = hashtable.x_count * hashtable.y_count * hashtable.z_count;
+  hashtable.cells.resize(numCells);
+  for (var Index i = 0; i < numCells; ++ i)
+    hashtable.cells[i].resize(0);
+
+  for (var Integer i = 0; i < cellIndices.size; i++) {
+    var Integer cellIndex = cellIndices[i];
+    hashtable.cells[cellIndex].push(i);
+  }
+}
+
+operator copyCurrentFrameDataToPrevFrameData(
+  io Xfo xfo,
+  io Vec3 previousframe_position,
+  io HashTable hashtable
+) {
+  // Clamp the particle within the bounds of the hash grid
+  previousframe_position = hashtable.clampPosition(xfo.tr);
+}
+
+
+
+operator simulateCrowd(
+  in Size index,
+  io Boolean initialized,
+  io Vec3 goal,
+  io Integer cellindex,
+  io Vec3 cellcoords,
+
+  io Xfo xfo, /* In theory we don't modify this. Only calculate new movement contols.*/
+  io Vec3 velocity,
+  io Vec3 previousframe_positions<>,
+  io Vec2 maxLinearVelocity,
+  io Euler maxAngularVelocity,
+  
+
+  io Scalar neighborInfluenceRange,
+  io HashTable hashtable,
+
+  io Scalar timestep,
+
+  io Integer neighborIndices[],
+  io Scalar neighborDistances[],
+  io DebugGeometry debugDraw,
+  io Boolean displayDebugging
+) {
+  if(timestep==0.0){
+    return;
+  }
+  var Integer i;
+  
+  
+  
+  // We start with our previous frame position, and simulate using the pevious
+  // frame data to calculate the new current frame data. This happens in parallal
+  // across many particles at once.
+  xfo.tr = previousframe_positions[index];
+  
+  ///////////////////////////////////////////////
+  // Broad Phase Interaction Detection
+  // This function gathers all the points fomr the current cell, and neighboring cells.
+  hashtable.getNeighboringIndices(
+    cellindex,
+    cellcoords,
+    neighborIndices
+  );
+  
+  ///////////////////////////////////////////////
+  // Narrow Phase Interaction Detection
+  neighborDistances.resize(neighborIndices.size());
+  for (i = 0; i < neighborIndices.size; i++) {
+    neighborDistances[i] = xfo.tr.distanceTo(previousframe_positions[neighborIndices[i]]);
+  }
+  
+  debugDraw.reset();
+  
+  
+  //////////////////////////////////////////////////////
+  // Now we do some simulation
+  // Goal Seek
+  {
+    if(displayDebugging){
+      debugDraw.drawLine(xfo.tr, goal, Color(0.0, 0.25, 0.0, 1.0));
+    }
+    var Vec3 goalDir = goal - xfo.tr;
+    var Scalar goalDist = goalDir.length();
+
+    if (goalDist < neighborInfluenceRange) {
+      velocity = Vec3(0.0, 0.0, 0.0);
+    }
+    else {
+      velocity = goalDir * Vec3((maxLinearVelocity.x) / goalDist, 0.0, (maxLinearVelocity.y) / goalDist);
+    }
+  }
+
+  if (neighborIndices.size > 0) {
+    
+    //////////////////////////////////////////////////////
+    // Separation
+    {
+      var Scalar separationWeight = 0.2;
+      var Scalar separationDistance = neighborInfluenceRange;// * 0.65;
+      var Vec3 separationVector(0.0, 0.0, 0.0);
+      var Vec3 separationVelocity(0.0, 0.0, 0.0);
+      for (i = 0; i < neighborIndices.size; i++) {
+        var Integer neighborId = neighborIndices[i];
+        if (neighborId == index) {
+          continue;
+        }
+        var Scalar neighborDist = neighborDistances[i];
+        if (neighborDist < separationDistance) {
+          separationVector += (xfo.tr - previousframe_positions[neighborId]) * ((1.0 / neighborDist) * (separationDistance - neighborDist));
+        }
+      }
+      if(displayDebugging){
+        debugDraw.drawLine(xfo.tr, xfo.tr+separationVector, Color(0.5, 0.25, 0.0, 1.0));
+      }
+      separationVelocity = separationVector * (separationWeight / timestep);
+      if(velocity.length() < 0.001){
+        velocity = separationVelocity;
+      }else{
+        Vec3 velocityDir = velocity.unit();
+        velocity += separationVelocity - (velocityDir * separationVelocity.dot(velocityDir));
+      }
+    }
+  }
+  
+  /*
+  if(displayDebugging){
+    for (i = 0; i < neighborIndices.size; i++) {
+      var Integer neighborId = neighborIndices[i];
+      var Scalar neighborDist = neighborDistances[i];
+      if( neighborDist > 0.0 && neighborDist < neighborInfluenceRange){
+        debugDraw.drawLine(xfo.tr, xfo.tr + ((previousframe_positions[neighborId]-xfo.tr) * 0.47), Color(0.0, 0.25, 0.75, 1.0));
+      }
+    }
+    
+    debugDraw.drawLine(previousframe_positions[index], xfo.tr, Color(0.75, 0.0, 0.0, 1.0));
+    debugDraw.drawCircle(Xfo(previousframe_positions[index], Quat()), neighborInfluenceRange, Color(1.0, 0.25, 0.0, 0.5));
+  }
+  */
+}
+
+

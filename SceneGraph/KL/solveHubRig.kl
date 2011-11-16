@@ -5,13 +5,16 @@
 use Xfo;
 
 operator solveHubRigs(
-  io Xfo controllerXfo,
+  io Xfo controllerXfoSlices<>,
   io Xfo pose[],
   io Bone bones[],
   io Hub hubs[],
-  io PoseVariables poseVariables,
+  io PoseVariables poseVariableSlices<>,
+  Size index,
   io DebugGeometry debugGeometry
 ) {
+  Xfo controllerXfo = controllerXfoSlices[index];
+  PoseVariables poseVariables = poseVariableSlices[index];
   for(Integer i=0; i < hubs.size; i++){
     Hub hub = hubs[i];
   //  pose[hub.boneId] = hubCOM * poseVariables.xfoValues[hub.xfoId];
