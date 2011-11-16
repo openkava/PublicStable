@@ -263,8 +263,8 @@ FABRIC.SceneGraph.registerNodeType('LocomotionCharacterController', {
   },
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
-      maxLinearVelocity: new FABRIC.RT.Vec2(10.0, 10.0),
-      maxAngularVelocity: new FABRIC.RT.Euler(0.0,0.1,0.0),
+      maxLinearVelocity: 10.0,
+      maxAngularVelocity: 0.1,
       maxLinearAcceleration: 1.0,
       maxAngularAcceleration: 1.0,
       
@@ -297,10 +297,12 @@ FABRIC.SceneGraph.registerNodeType('LocomotionCharacterController', {
     dgnode.addMember('goalLinearVelocity', 'Vec3');
     dgnode.addMember('goalOrientation', 'Quat');
     
-    dgnode.addMember('maxLinearVelocity', 'Vec2', options.maxLinearVelocity);
-    dgnode.addMember('maxAngularVelocity', 'Euler', options.maxAngularVelocity);
+    dgnode.addMember('maxLinearVelocity', 'Scalar', options.maxLinearVelocity);
+    dgnode.addMember('maxAngularVelocity', 'Scalar', options.maxAngularVelocity);
     dgnode.addMember('maxLinearAcceleration', 'Scalar', options.maxLinearAcceleration);
     dgnode.addMember('maxAngularAcceleration', 'Scalar', options.maxAngularAcceleration);
+    dgnode.addMember('linearVelocity', 'Vec3');
+    dgnode.addMember('angularVelocity', 'Quat');
     
     dgnode.addMember('controllerparams', 'CharacterControllerParams', controllerparams);
     dgnode.addMember('liftVec', 'Vec3');
@@ -339,6 +341,9 @@ FABRIC.SceneGraph.registerNodeType('LocomotionCharacterController', {
           'self.maxAngularVelocity',
           'self.maxLinearAcceleration',
           'self.maxAngularAcceleration',
+          
+          'self.linearVelocity',
+          'self.angularVelocity',
           
           'self.gravity',
           'self.comHeight',
