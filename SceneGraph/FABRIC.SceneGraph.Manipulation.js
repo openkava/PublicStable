@@ -109,7 +109,7 @@ FABRIC.SceneGraph.registerNodeType('CameraManipulator', {
       newcameraXfo.tr = cameraTarget.subtract(newCameraOffset);
       
       cameraNode.getTransformNode().setGlobalXfo(newcameraXfo);
-      viewportNode.redraw(true);
+      viewportNode.redraw();
       evt.stopPropagation();
     }
 
@@ -133,7 +133,7 @@ FABRIC.SceneGraph.registerNodeType('CameraManipulator', {
       if (cameraNode.getTransformNode().getTarget) {
         cameraNode.getTransformNode().setTarget(cameraTarget.add(dragDist));
       }
-      viewportNode.redraw(true);
+      viewportNode.redraw();
       evt.stopPropagation();
     }
     var releasePanFn = function(evt) {
@@ -158,7 +158,7 @@ FABRIC.SceneGraph.registerNodeType('CameraManipulator', {
       if (!cameraNode.getTransformNode().getTarget) {
         cameraNode.setFocalDistance(cameraNode.getFocalDistance() - zoomDist);
       }
-      viewportNode.redraw(true);
+      viewportNode.redraw();
       evt.stopPropagation();
     }
     var releaseZoomFn = function(evt) {

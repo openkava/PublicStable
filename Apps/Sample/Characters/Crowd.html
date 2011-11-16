@@ -3,7 +3,7 @@
     Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
     -->
   <head> 
-    <title>FABRIC - Character Locomotion</title> 
+    <title>FABRIC - Crowd</title> 
     
     <meta charset="iso-8859-1"/>
     <script type="text/javascript" src="../../../ThirdParty/jQuery/jquery-1.6.2.min.js"></script>
@@ -37,6 +37,7 @@
     
     <script type="text/javascript" src="../../../SceneGraph/RT/KeyframeTrackBindings.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/RT/PoseVariables.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/HashTable.js" charset="utf-8"></script>
     
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Lights.js" charset="utf-8"></script>
@@ -54,6 +55,7 @@
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Characters.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.CharacterSolvers.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.CharacterLocomotion.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Crowds.js" charset="utf-8"></script>
     
     <script type="text/javascript" src="../../../SceneGraph/Parsers/parseCollada.js" charset="utf-8"></script>
     
@@ -105,27 +107,32 @@ $(document).ready(function() {
   }));
   
   var camera = scene.constructNode('TargetCamera', {
-      position: new FABRIC.RT.Vec3(3, 2.2, 3).multiplyScalar(6.5),
+      position: new FABRIC.RT.Vec3(3, 7.2, 3).multiplyScalar(56.5),
       target: new FABRIC.RT.Vec3(0, -0.5, 0),
       roll: 0,
-      nearDistance: 1.0,
-      farDistance: 60
+      nearDistance: 10.0,
+      farDistance: 1360
     });
   scene.constructNode('CameraManipulator', { targetNode: camera });
   viewport.setCameraNode(camera);
   
   var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) });
   
+  var cellSize = 10.0;
+  var gridSize = 600.0;
+  var agentCount = 5000;
+  
+  /*
     // create the scene grid
   scene.constructNode('Instance', {
     geometryNode: scene.constructNode('Grid', {
-        size_x: 30.0,
-        size_z: 30.0,
+        size_x: gridSize,
+        size_z: gridSize,
         sections_x: 20,
         sections_z: 20 }),
     materialNode: scene.constructNode('FlatMaterial')
   });
-  
+  */
   
   
   // create a simulation world
@@ -222,7 +229,7 @@ $(document).ready(function() {
   var locomotionControllerNode;
   switch(rigName){
   case 'walker':
-    var locomotionControllerNode = scene.constructNode('ScreenSpacePlayerCharacterController', {
+    var locomotionControllerNode = scene.constructNode('Crowd', {
         cameraNode: camera,
         maxLinearVelocity: new FABRIC.RT.Vec2(15, 15),
         maxLinearAcceleration: 0.45,
@@ -231,11 +238,18 @@ $(document).ready(function() {
         numTrailSegments: 0,
         gravity: -1.0,
         comHeight: 1.8,
-        circleSize: 1.6
+        circleSize: 1.6,
+        
+        cellsize: cellSize,
+        x_count: Math.ceil(gridSize/cellSize)+2,
+        y_count: 1,
+        z_count: Math.ceil(gridSize/cellSize)+2,
+        displayGrid: true,
+        agentCount: agentCount
       });
     break;
   case 'centipede':
-    var locomotionControllerNode = scene.constructNode('ScreenSpacePlayerCharacterController', {
+    var locomotionControllerNode = scene.constructNode('Crowd', {
         cameraNode: camera,
         maxLinearVelocity: new FABRIC.RT.Vec2(20, 20),
         maxLinearAcceleration: 1.45,
@@ -248,7 +262,7 @@ $(document).ready(function() {
       });
     break;
   case 'marama':
-    var locomotionControllerNode = scene.constructNode('ScreenSpacePlayerCharacterController', {
+    var locomotionControllerNode = scene.constructNode('Crowd', {
         cameraNode: camera,
         maxLinearVelocity: new FABRIC.RT.Vec2(7, 7),
         maxLinearAcceleration: 0.2,
@@ -261,6 +275,15 @@ $(document).ready(function() {
       });
     break;
   }
+  
+  var xfos = [];
+  var goals = [];
+  for(var i=0; i<agentCount; i++){
+    xfos.push(new FABRIC.RT.Xfo({tr:new FABRIC.RT.Vec3((Math.random()-0.5)*gridSize, 0,(Math.random()-0.5)*gridSize)}));
+    goals.push(new FABRIC.RT.Vec3((Math.random()-0.5)*gridSize, 0,(Math.random()-0.5)*gridSize));
+  }
+  locomotionControllerNode.setCrowdXfos(xfos);
+  locomotionControllerNode.setCrowdGoals(goals);
   
   var rigLoader = scene.constructManager('SceneLoader');
   var storage = new FABRIC.SceneGraph.URLReader('Assets/' + rigName + '.json');
@@ -278,13 +301,15 @@ $(document).ready(function() {
     characterRigNode: ikrig,
     bulletWorldNode: bulletWorldNode
   });
-  locomotionVariables.setAnimationLibrary(libraryAnimations);
   ikrig.setVariablesNode(locomotionVariables);
+  locomotionVariables.setAnimationLibrary(libraryAnimations);
   
-  var materialNode = scene.constructNode('PhongSkinningMaterial', {
+  
+  var materialNode = scene.constructNode('PhongSkinnedInstancesMaterial', {
     lightNode: light,
     diffuseColor: FABRIC.RT.rgba(1.0, 0.0, 0.0, 1.0),
-    numBones: skeletonNode.getNumBones()
+    numBonesPerInstance: ikrig.getSkeletonNode().getNumBones(),
+    instanceCount: agentCount
   });
   
   var characterInstance = scene.constructNode("CharacterInstance", {
@@ -334,79 +359,6 @@ $(document).ready(function() {
       });
       scene.animation.pause();
     }
-  }
-  
-  var translationControls = new FABRIC.RT.Vec2();
-  var downKeys = [];
-  var arrowKeys = {
-    left: 37,
-    right: 39,
-    up: 38,
-    down: 40
-  }
-  var speed = 0.4;
-  window.onkeydown = function(evt) {
-    if(downKeys[evt.keyCode]){
-      return;
-    }
-    if(evt.keyCode==90){ // 'z'
-      togglePlay();
-    }
-    
-    if(evt.shiftKey){
-      speed = 1.0;
-    }
-    else{
-      speed = 0.4;
-    }
-    
-    if(evt.keyCode == arrowKeys.left) {
-      translationControls.x = -1.0;
-      downKeys[arrowKeys.left] = true;
-    } else if(evt.keyCode == arrowKeys.right) {
-      translationControls.x = 1.0;
-      downKeys[arrowKeys.right] = true;
-    } else if(evt.keyCode == arrowKeys.up) {
-      translationControls.y = 1.0;
-      downKeys[arrowKeys.up] = true;
-    } else if(evt.keyCode == arrowKeys.down) {
-      translationControls.y = -1.0;
-      downKeys[arrowKeys.down] = true;
-    }
-    
-    if(translationControls.length() > 1.0){
-      translationControls.setUnit();
-    }
-    locomotionControllerNode.setTranslationControls(translationControls.multiplyScalar(speed));
-  };
-  
-  window.onkeyup = function(evt) {
-    if(evt.shiftKey) {
-      speed = 0.4;
-    }
-    if(evt.keyCode == arrowKeys.left) {
-      if(!downKeys[arrowKeys.right]){
-        translationControls.x = 0.0;
-      }
-      downKeys[arrowKeys.left] = false;
-    } else if(evt.keyCode == arrowKeys.right) {
-      if(!downKeys[arrowKeys.left]){
-        translationControls.x = 0.0;
-      }
-      downKeys[arrowKeys.right] = false;
-    } else if(evt.keyCode == arrowKeys.up) {
-      if(!downKeys[arrowKeys.down]){
-        translationControls.y = 0.0;
-      }
-      downKeys[arrowKeys.up] = false;
-    } else if(evt.keyCode == arrowKeys.down) {
-      if(!downKeys[arrowKeys.up]){
-        translationControls.y = 0.0;
-      }
-      downKeys[arrowKeys.down] = false;
-    }
-    
-    locomotionControllerNode.setTranslationControls(translationControls.multiplyScalar(speed));
   }
   
   $('#loadingDialog').dialog({

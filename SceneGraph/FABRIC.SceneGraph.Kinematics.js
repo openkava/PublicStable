@@ -177,12 +177,12 @@ FABRIC.SceneGraph.registerNodeType('TransformTexture', {
 
     redrawEventHandler.setScope('transform', transformdgnode);
     redrawEventHandler.preDescendBindings.append(scene.constructOperator({
-      operatorName: 'setNumberOfMatrices',
-      srcFile: 'FABRIC_ROOT/SceneGraph/KL/loadTexture.kl',
-      entryFunctionName: 'setNumberOfMatrices',
+      operatorName: 'setInstanceCount',
+      srcCode: 'operator setInstanceCount(io OGLShaderProgram shaderProgram, io Mat44 matrices<>) { shaderProgram.numInstances = Integer(matrices.size()); }',
+      entryFunctionName: 'setInstanceCount',
       parameterLayout: [
-        'transform.textureMatrix<>',
-        'shader.shaderProgram'
+        'shader.shaderProgram',
+        'transform.textureMatrix<>'
       ]
     }));
     redrawEventHandler.preDescendBindings.append(scene.constructOperator({
