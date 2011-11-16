@@ -95,6 +95,14 @@ $(document).ready(function() {
   $("#displayControllerDebugging").attr('checked', true);
   $("#displayFootMotionDebugging").attr('checked', true);
 
+  var agentRadius = 3.0;
+  var cellSize = 20.0;
+  
+  var gridSize = 400.0;
+  var agentCount = 2000;
+  var cameraDist = 20;
+  var displayDebugging = false;
+
   // Create the scene.
   var scene = FABRIC.SceneGraph.createScene();
   var viewport = scene.constructNode('Viewport', {
@@ -107,7 +115,7 @@ $(document).ready(function() {
   }));
   
   var camera = scene.constructNode('TargetCamera', {
-      position: new FABRIC.RT.Vec3(3, 7.2, 3).multiplyScalar(56.5),
+      position: new FABRIC.RT.Vec3(3, 7.2, 3).multiplyScalar(cameraDist),
       target: new FABRIC.RT.Vec3(0, -0.5, 0),
       roll: 0,
       nearDistance: 10.0,
@@ -118,9 +126,6 @@ $(document).ready(function() {
   
   var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) });
   
-  var cellSize = 10.0;
-  var gridSize = 600.0;
-  var agentCount = 5000;
   
   /*
     // create the scene grid
@@ -231,9 +236,9 @@ $(document).ready(function() {
   case 'walker':
     var locomotionControllerNode = scene.constructNode('Crowd', {
         cameraNode: camera,
-        maxLinearVelocity: new FABRIC.RT.Vec2(15, 15),
-        maxLinearAcceleration: 0.45,
-        maxAngularVelocity:  new FABRIC.RT.Euler(0, 2, 0),
+        maxLinearVelocity: 15,
+        maxLinearAcceleration: 2.45,
+        maxAngularVelocity:  1,
         bulletWorldNode: bulletWorldNode,
         numTrailSegments: 0,
         gravity: -1.0,
@@ -241,11 +246,13 @@ $(document).ready(function() {
         circleSize: 1.6,
         
         cellsize: cellSize,
+        agentRadius: agentRadius,
         x_count: Math.ceil(gridSize/cellSize)+2,
         y_count: 1,
         z_count: Math.ceil(gridSize/cellSize)+2,
         displayGrid: true,
-        agentCount: agentCount
+        agentCount: agentCount,
+        displayDebugging: displayDebugging
       });
     break;
   case 'centipede':

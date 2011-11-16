@@ -25,11 +25,11 @@ operator populateHashTable(
   // Reset the hash table, and re-accumulate the ids.
   Size numCells = hashtable.x_count * hashtable.y_count * hashtable.z_count;
   hashtable.cells.resize(numCells);
-  for (var Index i = 0; i < numCells; ++ i)
+  for (Index i = 0; i < numCells; ++ i)
     hashtable.cells[i].resize(0);
 
-  for (var Integer i = 0; i < cellIndices.size; i++) {
-    var Integer cellIndex = cellIndices[i];
+  for (Integer i = 0; i < cellIndices.size; i++) {
+    Integer cellIndex = cellIndices[i];
     hashtable.cells[cellIndex].push(i);
   }
 }
@@ -53,13 +53,15 @@ operator simulateCrowd(
   io Vec3 cellcoords,
 
   io Xfo xfo, /* In theory we don't modify this. Only calculate new movement contols.*/
-  io Vec3 velocity,
+  io Vec3 goalVelocity,
   io Vec3 previousframe_positions<>,
-  io Vec2 maxLinearVelocity,
-  io Euler maxAngularVelocity,
+  io Scalar maxLinearVelocity,
+  io Scalar maxAngularVelocity,
+  io Vec3 linearVelocity,
   
 
   io Scalar neighborInfluenceRange,
+  io Scalar agentRadius,
   io HashTable hashtable,
 
   io Scalar timestep,
@@ -72,7 +74,7 @@ operator simulateCrowd(
   if(timestep==0.0){
     return;
   }
-  var Integer i;
+  Integer i;
   
   
   
@@ -98,7 +100,7 @@ operator simulateCrowd(
   }
   
   debugDraw.reset();
-  
+  goalVelocity.setNull();
   
   //////////////////////////////////////////////////////
   // Now we do some simulation
@@ -107,63 +109,71 @@ operator simulateCrowd(
     if(displayDebugging){
       debugDraw.drawLine(xfo.tr, goal, Color(0.0, 0.25, 0.0, 1.0));
     }
-    var Vec3 goalDir = goal - xfo.tr;
-    var Scalar goalDist = goalDir.length();
-
-    if (goalDist < neighborInfluenceRange) {
-      velocity = Vec3(0.0, 0.0, 0.0);
+    Vec3 goalDir = goal - xfo.tr;
+    Scalar goalDist = goalDir.length();
+    
+    
+    if (goalDist > neighborInfluenceRange) {
+      goalVelocity = goalDir * Vec3(maxLinearVelocity / goalDist, 0.0, maxLinearVelocity / goalDist);
     }
-    else {
-      velocity = goalDir * Vec3((maxLinearVelocity.x) / goalDist, 0.0, (maxLinearVelocity.y) / goalDist);
+    else if (goalDist > agentRadius) {
+      Scalar weight = (goalDist - agentRadius)/(neighborInfluenceRange - agentRadius);
+      goalVelocity = goalDir * Vec3((maxLinearVelocity * weight) / goalDist, 0.0, (maxLinearVelocity * weight) / goalDist);
     }
   }
-
+  
   if (neighborIndices.size > 0) {
     
     //////////////////////////////////////////////////////
     // Separation
     {
-      var Scalar separationWeight = 0.2;
-      var Scalar separationDistance = neighborInfluenceRange;// * 0.65;
-      var Vec3 separationVector(0.0, 0.0, 0.0);
-      var Vec3 separationVelocity(0.0, 0.0, 0.0);
+      Scalar separationWeight = 1.0;
+      Scalar separationDistance = neighborInfluenceRange;// * 0.65;
+      Scalar neighborInfluenceWeight = 0.0;
+      Vec3 separationVector(0.0, 0.0, 0.0);
+      Vec3 separationVelocity(0.0, 0.0, 0.0);
       for (i = 0; i < neighborIndices.size; i++) {
-        var Integer neighborId = neighborIndices[i];
+        Integer neighborId = neighborIndices[i];
         if (neighborId == index) {
           continue;
         }
-        var Scalar neighborDist = neighborDistances[i];
+        Scalar neighborDist = neighborDistances[i];
         if (neighborDist < separationDistance) {
-          separationVector += (xfo.tr - previousframe_positions[neighborId]) * ((1.0 / neighborDist) * (separationDistance - neighborDist));
+          Scalar weight = 1.0 - (neighborDist - agentRadius)/(neighborInfluenceRange - agentRadius);
+          separationVector += (xfo.tr - previousframe_positions[neighborId]) * ((1.0 / neighborDist) * (separationDistance - neighborDist) * weight);
+          neighborInfluenceWeight += 1.0;
         }
       }
       if(displayDebugging){
         debugDraw.drawLine(xfo.tr, xfo.tr+separationVector, Color(0.5, 0.25, 0.0, 1.0));
       }
-      separationVelocity = separationVector * (separationWeight / timestep);
-      if(velocity.length() < 0.001){
-        velocity = separationVelocity;
-      }else{
-        Vec3 velocityDir = velocity.unit();
-        velocity += separationVelocity - (velocityDir * separationVelocity.dot(velocityDir));
+      if(neighborInfluenceWeight > 0.0){
+        separationVector /= neighborInfluenceWeight;
+        separationVelocity = separationVector * (separationWeight / timestep);
+        goalVelocity += separationVelocity;
       }
     }
   }
   
-  /*
+  Scalar goalSpeed = goalVelocity.length();
+  if(goalSpeed > maxLinearVelocity){
+    goalVelocity = goalVelocity * (maxLinearVelocity/goalSpeed);
+  }
+  
   if(displayDebugging){
-    for (i = 0; i < neighborIndices.size; i++) {
-      var Integer neighborId = neighborIndices[i];
-      var Scalar neighborDist = neighborDistances[i];
-      if( neighborDist > 0.0 && neighborDist < neighborInfluenceRange){
-        debugDraw.drawLine(xfo.tr, xfo.tr + ((previousframe_positions[neighborId]-xfo.tr) * 0.47), Color(0.0, 0.25, 0.75, 1.0));
-      }
-    }
+  //  for (i = 0; i < neighborIndices.size; i++) {
+  //    Integer neighborId = neighborIndices[i];
+  //    Scalar neighborDist = neighborDistances[i];
+  //    if( neighborDist > 0.0 && neighborDist < neighborInfluenceRange){
+  //      debugDraw.drawLine(xfo.tr, xfo.tr + ((previousframe_positions[neighborId]-xfo.tr) * 0.47), Color(0.0, 0.25, 0.75, 1.0));
+  //    }
+  //  }
     
-    debugDraw.drawLine(previousframe_positions[index], xfo.tr, Color(0.75, 0.0, 0.0, 1.0));
+  //  debugDraw.drawLine(previousframe_positions[index], xfo.tr, Color(0.75, 0.0, 0.0, 1.0));
+    debugDraw.drawCircle(Xfo(previousframe_positions[index], Quat()), agentRadius, Color(0.5, 0.25, 0.0, 0.5));
     debugDraw.drawCircle(Xfo(previousframe_positions[index], Quat()), neighborInfluenceRange, Color(1.0, 0.25, 0.0, 0.5));
   }
-  */
+  
 }
 
 

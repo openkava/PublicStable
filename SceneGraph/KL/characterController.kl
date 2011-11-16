@@ -7,8 +7,8 @@ operator screenSpacePlayerControls(
   io Vec2 translationControls,
   io Vec2 orientationControls,
   
-  io Vec2 maxLinearVelocity,
-  io Euler maxAngularVelocity,
+  io Scalar maxLinearVelocity,
+  io Scalar maxAngularVelocity,
   
   io Vec3 goalLinearVelocity,
   io Quat goalOrientation,
@@ -26,8 +26,8 @@ operator screenSpacePlayerControls(
   // This enables us to convert screen space vectors to world space.
   alignment.setFrom2Vectors(camXfo.ori.rotateVector(Vec3(0.0, 0.0, -1.0)), Vec3(0.0, -1.0, 0.0));
   camXfo.ori = alignment * camXfo.ori;
-  Vec3 translationX = camXfo.ori.rotateVector(Vec3(translationControls.x * maxLinearVelocity.x, 0.0, 0.0));
-  Vec3 translationZ = camXfo.ori.rotateVector(Vec3(0.0, translationControls.y * maxLinearVelocity.y, 0.0));
+  Vec3 translationX = camXfo.ori.rotateVector(Vec3(translationControls.x * maxLinearVelocity, 0.0, 0.0));
+  Vec3 translationZ = camXfo.ori.rotateVector(Vec3(0.0, translationControls.y * maxLinearVelocity, 0.0));
 
   goalLinearVelocity = translationX + translationZ;
 }
@@ -39,11 +39,15 @@ operator evaluateCharacterController(
   io Vec3 goalLinearVelocity,
   io Quat goalOrientation,
   
-  io Vec2 maxLinearVelocity,
-  io Euler maxAngularVelocity,
+  io Scalar maxLinearVelocity,
+  io Scalar maxAngularVelocity,
   
   io Scalar maxLinearAcceleration,
   io Scalar maxAngularAcceleration,
+  
+  io Vec3 linearVelocity,
+  io Quat angularVelocity,
+  
   
   io Scalar gravity,
   io Scalar comHeight,
@@ -63,9 +67,7 @@ operator evaluateCharacterController(
   Boolean displayDebugging = false;
   ////////////////////////////
   // Movement
-  
-  Vec3 currLinearVelocity = controllerparams.displacement.tr / timestep;
-  Vec3 acceleration = goalLinearVelocity - currLinearVelocity;
+  Vec3 acceleration = goalLinearVelocity - linearVelocity;
   
   // decompose acceleration into forwards and and non-forwards acceleration,
   // and apply different limits basedon the direction.
@@ -84,8 +86,8 @@ operator evaluateCharacterController(
   }
   acceleration = (facingDir * fwAccelerationStrength) + nonFwAcceleration;
     
-  currLinearVelocity += acceleration;
-  controllerparams.displacement.tr = currLinearVelocity * timestep;
+  linearVelocity += acceleration;
+  controllerparams.displacement.tr = linearVelocity * timestep;
   controllerXfo.tr += controllerparams.displacement.tr;
   
   ////////////////////////////
@@ -119,13 +121,13 @@ operator evaluateCharacterController(
   ////////////////////////////
   // Alignment
   
-  if(currLinearVelocity.length() > 0.001){
+  if(linearVelocity.length() > 0.001){
     Vec3 currDir = controllerXfo.ori.rotateVector(Vec3(0.0, 0.0, 1.0));
-    Vec3 displacementDir = currLinearVelocity.unit();
+    Vec3 displacementDir = linearVelocity.unit();
     Scalar deltaAngle = currDir.angleTo(displacementDir);
     
-    if(deltaAngle > maxAngularVelocity.y * timestep){
-      deltaAngle = maxAngularVelocity.y * timestep;
+    if(deltaAngle > maxAngularVelocity * timestep){
+      deltaAngle = maxAngularVelocity * timestep;
     }
     if(currDir.cross(displacementDir).y < 0.0){
       deltaAngle = -deltaAngle;

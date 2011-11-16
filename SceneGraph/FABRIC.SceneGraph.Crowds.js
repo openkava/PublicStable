@@ -26,6 +26,7 @@ FABRIC.SceneGraph.registerNodeType('Crowd', {
       z_count: 30,
       displayGrid: true,
       agentCount: 3,
+      agentRadius: (this.cellsize*0.3),
       xfos: undefined,
       displayDebugging: false
     });
@@ -104,6 +105,7 @@ FABRIC.SceneGraph.registerNodeType('Crowd', {
     
     var neighborInfluenceRange = options.cellsize / 2.0;
     dgnode.addMember('neighborinfluencerange', 'Scalar', neighborInfluenceRange );
+    dgnode.addMember('agentRadius', 'Scalar', options.agentRadius );
     
     dgnode.addMember('initialized', 'Boolean', false );
     dgnode.addMember('debugCrowd', 'DebugGeometry' );
@@ -128,8 +130,11 @@ FABRIC.SceneGraph.registerNodeType('Crowd', {
         'self.previousframe_position<>',
         'self.maxLinearVelocity',
         'self.maxAngularVelocity',
+        
+        'self.linearVelocity',
 
         'self.neighborinfluencerange',
+        'self.agentRadius',
         'hashtable.hashtable',
 
         'globals.timestep',
