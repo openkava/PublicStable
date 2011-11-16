@@ -842,14 +842,18 @@ FABRIC_EXT_EXPORT void FabricBULLET_RigidBody_SetTransform(
 )
 {
   if(body.localData != NULL) {
-    if(body.localData->mBody->getInvMass() == 0.0f && body.localData->mWorld != NULL) {
+    if(body.localData->mWorld != NULL) {
 #ifndef NDEBUG
       printf("  { FabricBULLET } : FabricBULLET_RigidBody_SetTransform called.\n");
 #endif
       btTransform bulletTransform;
       bulletTransform.setOrigin(btVector3(transform.tr.x,transform.tr.y,transform.tr.z));
       bulletTransform.setRotation(btQuaternion(transform.ori.v.x,transform.ori.v.y,transform.ori.v.z,transform.ori.w));
-      body.localData->mBody->getMotionState()->setWorldTransform(bulletTransform);
+      if(body.localData->mBody->getInvMass() == 0.0f) {
+        body.localData->mBody->getMotionState()->setWorldTransform(bulletTransform);
+      } else {
+        body.localData->mBody->proceedToTransform(bulletTransform);
+      }      
       body.localData->mShape->mShape->setLocalScaling(btVector3(transform.sc.x,transform.sc.y,transform.sc.z));
 #ifndef NDEBUG
       printf("  { FabricBULLET } : FabricBULLET_RigidBody_SetTransform completed.\n");
