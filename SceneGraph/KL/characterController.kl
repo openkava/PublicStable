@@ -57,10 +57,11 @@ operator evaluateCharacterController(
 // report("evaluateCharacterController:"+timestep);
   debugGeometry1.reset();
   if(timestep==0){
+    report("skipping");
     return;
   }
   Quat alignment;
-  Boolean displayDebugging = false;
+  Boolean displayDebugging = true;
   ////////////////////////////
   // Movement
   
@@ -124,7 +125,7 @@ operator evaluateCharacterController(
     Vec3 displacementDir = currLinearVelocity.unit();
     Scalar deltaAngle = currDir.angleTo(displacementDir);
     
-    if((deltaAngle/timestep) > maxAngularVelocity.y){
+    if(deltaAngle > maxAngularVelocity.y * timestep){
       deltaAngle = maxAngularVelocity.y * timestep;
     }
     if(currDir.cross(displacementDir).y < 0.0){
@@ -144,7 +145,6 @@ operator evaluateCharacterController(
   else{
     controllerparams.displacement.ori.setIdentity();
   }
-  controllerXfo.ori = controllerXfo.ori.unit();
   
   if(displayDebugging){
     debugGeometry1.drawLine(controllerXfo.tr, controllerXfo.tr + (controllerparams.displacementDir * circleSize * 1.2), Color(0.5,0.0,0.0,1.0));
