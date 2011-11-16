@@ -94,14 +94,51 @@ $(document).ready(function() {
   });
   $("#displayControllerDebugging").attr('checked', true);
   $("#displayFootMotionDebugging").attr('checked', true);
+  
+  
+  $('#openDebugger').button();
+  
+  try{
+    if(localStorage && localStorage.getItem("crowdParams")){
+      crowdParams = JSON.parse(localStorage.getItem("crowdParams"));
+    }
+    else{
+      throw "no flockparams";
+    }
+  }catch(e){
+    crowdParams = { sceneSize:'medium', displayDebugging: true };
+  }
+        
+  $("#numAgents").val(crowdParams.sceneSize);
+  $("#displayDebugging").attr('checked', crowdParams.displayDebugging);
+  
 
   var agentRadius = 3.0;
   var cellSize = 20.0;
   
-  var gridSize = 400.0;
-  var agentCount = 2000;
-  var cameraDist = 20;
-  var displayDebugging = false;
+  var gridSize, agentCount, cameraDist = 20;
+  
+  switch(crowdParams.sceneSize){
+    case 'tiny':
+      agentCount = 10;
+      gridSize = 40;
+      cameraDist = 6;
+      break;
+    case 'small':
+      agentCount = 50;
+      gridSize = 80;
+      cameraDist = 10;
+      break;
+    case 'medium':
+      agentCount = 2000;
+      gridSize = 400;
+      cameraDist = 20;
+      break;
+    case 'huge':
+      agentCount = 5000;
+      gridSize = 800;
+      break;
+  }
 
   // Create the scene.
   var scene = FABRIC.SceneGraph.createScene();
@@ -231,14 +268,14 @@ $(document).ready(function() {
       throw "no rigName";
     }
   }catch(e){}
-  var locomotionControllerNode;
+  var crowdNode;
   switch(rigName){
   case 'walker':
-    var locomotionControllerNode = scene.constructNode('Crowd', {
+    var crowdNode = scene.constructNode('Crowd', {
         cameraNode: camera,
         maxLinearVelocity: 15,
         maxLinearAcceleration: 2.45,
-        maxAngularVelocity:  1,
+        maxAngularVelocity:  2,
         bulletWorldNode: bulletWorldNode,
         numTrailSegments: 0,
         gravity: -1.0,
@@ -252,11 +289,11 @@ $(document).ready(function() {
         z_count: Math.ceil(gridSize/cellSize)+2,
         displayGrid: true,
         agentCount: agentCount,
-        displayDebugging: displayDebugging
+        displayDebugging: crowdParams.displayDebugging
       });
     break;
   case 'centipede':
-    var locomotionControllerNode = scene.constructNode('Crowd', {
+    var crowdNode = scene.constructNode('Crowd', {
         cameraNode: camera,
         maxLinearVelocity: new FABRIC.RT.Vec2(20, 20),
         maxLinearAcceleration: 1.45,
@@ -269,7 +306,7 @@ $(document).ready(function() {
       });
     break;
   case 'marama':
-    var locomotionControllerNode = scene.constructNode('Crowd', {
+    var crowdNode = scene.constructNode('Crowd', {
         cameraNode: camera,
         maxLinearVelocity: new FABRIC.RT.Vec2(7, 7),
         maxLinearAcceleration: 0.2,
@@ -289,8 +326,8 @@ $(document).ready(function() {
     xfos.push(new FABRIC.RT.Xfo({tr:new FABRIC.RT.Vec3((Math.random()-0.5)*gridSize, 0,(Math.random()-0.5)*gridSize)}));
     goals.push(new FABRIC.RT.Vec3((Math.random()-0.5)*gridSize, 0,(Math.random()-0.5)*gridSize));
   }
-  locomotionControllerNode.setCrowdXfos(xfos);
-  locomotionControllerNode.setCrowdGoals(goals);
+  crowdNode.setCrowdXfos(xfos);
+  crowdNode.setCrowdGoals(goals);
   
   var rigLoader = scene.constructManager('SceneLoader');
   var storage = new FABRIC.SceneGraph.URLReader('Assets/' + rigName + '.json');
@@ -302,7 +339,7 @@ $(document).ready(function() {
   var characterMesh =  nodeMap.characterMesh;
   var skeletonNode = ikrig.getSkeletonNode();
   
-  ikrig.setControllerNode(locomotionControllerNode);
+  ikrig.setControllerNode(crowdNode);
   
   var locomotionVariables = scene.constructNode('LocomotionPoseVariables', {
     characterRigNode: ikrig,
@@ -339,15 +376,6 @@ $(document).ready(function() {
     window.location.reload();
   });
   
-  $("#displayControllerDebugging").change(function() {
-    locomotionControllerNode.setDrawDebuggingToggle($("#displayControllerDebugging").is(":checked"));
-    viewport.redraw();
-  });
-  $("#displayFootMotionDebugging").change(function() {
-    locomotionVariables.setDrawDebuggingToggle($("#displayFootMotionDebugging").is(":checked"));
-    viewport.redraw();
-  });
-  
   var togglePlay = function(){
     if ($('#play').text() == 'Play') {
       $('#play').button('option', {
@@ -368,6 +396,10 @@ $(document).ready(function() {
     }
   }
   
+  var storeCrowdParams = function(){
+    localStorage.setItem("crowdParams", JSON.stringify(crowdParams));
+  }
+  
   $('#loadingDialog').dialog({
     modal: true
   });
@@ -382,6 +414,25 @@ $(document).ready(function() {
         throw (errors.toString());
       }
       viewport.redraw();
+      
+      $("#numAgents").change(function() {
+        sceneSize = $("#numAgents :selected").attr("value");
+        crowdParams.sceneSize = sceneSize;
+        storeCrowdParams();
+        window.location.reload();
+      });
+      
+      $("#displayDebugging").change(function() {
+        var displayDebugging = $("#displayDebugging").is(":checked");
+        crowdNode.setDisplayDebugging(displayDebugging);
+        crowdParams.displayDebugging = displayDebugging;
+        storeCrowdParams();
+      });
+  
+      $('#openDebugger').button()
+        .click(function() {
+          FABRIC.displayDebugger();
+        });
       
       
       $('#play').button()
@@ -432,6 +483,7 @@ $(document).ready(function() {
           <div class="box">
             <h2>CONTROLS</h2>
             <div class="content">
+              <!--
               <label for="selectCharacter" style="margin-top:10px;">Select Character:</label>
               <select id='selectCharacter' style="margin-top:10px;">
                 <option value="walker">Walker
@@ -441,6 +493,17 @@ $(document).ready(function() {
               <input type="checkbox" id="displayControllerDebugging" style="margin-top:10px;"/><label for="displayControllerDebugging">Display Controller Debugging:</label>
               </br>
               <input type="checkbox" id="displayFootMotionDebugging" style="margin-top:10px;"/><label for="displayFootMotionDebugging">Display Foot Motion Debugging:</label>
+              </br>
+            -->
+              <label for="numAgents" style="margin-top:10px;">Num Agents:</label>
+              <select id='numAgents' style="margin-top:10px;">
+                <option value="small">Small:100
+                <option value="medium">Medium:2000
+                <option value="huge">Huge:5000
+              </select>
+              </br>
+              <input type="checkbox" id="displayDebugging" style="margin-top:10px;"/><label for="displayDebugging">Display Debugging:</label>
+              <button id="openDebugger">Open Debugger</button>
               </br>
               <button id="play" style="margin-top:10px;">Play</button>
               <button id="step" style="margin-top:10px;">Step</button>
