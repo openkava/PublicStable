@@ -192,14 +192,9 @@ function OGLRenderTarget.bind() {
   glViewport(0,0, this.width, this.height);
   glClear(options);
   
-  if(this.numColorBuffers > 0){
-    Size renderTargetBuffers[];
-    for(Integer i=0; i<this.numColorBuffers; i++){
-      renderTargetBuffers.push(Size(GL_COLOR_ATTACHMENT0+i));
-    }
-    glDrawBuffers(this.numColorBuffers, renderTargetBuffers);
-  }
-  else{
+  // Note: I'm not sure if I need to do this every frame
+  //Depth buffer only
+  if(this.numColorBuffers <= 0){
     glDrawBuffer(GL_NONE);
     glReadBuffer(GL_NONE);
   }

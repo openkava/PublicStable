@@ -141,6 +141,47 @@ FABRIC.SceneGraph.defineEffectFromFile('ToonMaterial', 'ToonShader.xml');
 FABRIC.SceneGraph.defineEffectFromFile('WorkPlaneMaterial', 'WorkPlaneShader.xml');
 FABRIC.SceneGraph.defineEffectFromFile('GroundPlaneMaterial', 'GroundPlaneShader.xml');
 
+// setup our custom post process effect
+FABRIC.SceneGraph.registerNodeType('ToonPostProcessEffect', {
+  factoryFn: function(options, scene) {
+    options.fragmentShader = FABRIC.loadResourceURL('ToonPostProcessEffectShader.glsl');
+
+    options.shaderUniforms = {
+      //width: { name: 'u_width', owner: 'window', type:'Integer' },
+      //height: { name: 'u_height', owner: 'window', type:'Integer' }
+    };
+    options.renderTarget = new FABRIC.RT.OGLRenderTarget(
+      0,
+      0,
+      [
+        new FABRIC.RT.OGLRenderTargetTextureDesc(
+          1,
+          new FABRIC.RT.OGLTexture2D(
+            FABRIC.SceneGraph.OpenGLConstants.GL_DEPTH_COMPONENT,
+            FABRIC.SceneGraph.OpenGLConstants.GL_DEPTH_COMPONENT,
+            FABRIC.SceneGraph.OpenGLConstants.GL_FLOAT)
+        ),
+        new FABRIC.RT.OGLRenderTargetTextureDesc(
+          2,
+          new FABRIC.RT.OGLTexture2D(
+            FABRIC.SceneGraph.OpenGLConstants.GL_RGBA8,
+            FABRIC.SceneGraph.OpenGLConstants.GL_RGBA,
+            FABRIC.SceneGraph.OpenGLConstants.GL_UNSIGNED_BYTE)
+        ),
+        new FABRIC.RT.OGLRenderTargetTextureDesc(
+          2,
+          new FABRIC.RT.OGLTexture2D(
+            FABRIC.SceneGraph.OpenGLConstants.GL_RGBA8,
+            FABRIC.SceneGraph.OpenGLConstants.GL_RGBA,
+            FABRIC.SceneGraph.OpenGLConstants.GL_UNSIGNED_BYTE)
+        )
+      ]
+    );
+
+    var toonEffect = scene.constructNode('PostProcessEffect', options);
+    return toonEffect;
+  }});
+
 $(document).ready(function() {
   
   var scene = FABRIC.SceneGraph.createScene();
@@ -149,8 +190,7 @@ $(document).ready(function() {
     enableRaycasting: true,
     backgroundColor: FABRIC.RT.rgb(0.5,0.5,0.5)
   });
-  //viewport.addPostProcessEffectShader(scene.constructNode('EdgeDetectionPostProcessEffect', {
-  //}));
+  //viewport.addPostProcessEffectShader(scene.constructNode('ToonPostProcessEffect',{}));
   
   // Create a camera to draw the scene from
   camera = scene.constructNode('TargetCamera', {
@@ -164,10 +204,11 @@ $(document).ready(function() {
   viewport.setCameraNode(camera);
 
   var light = scene.constructNode('SpotLight', {
-    position: new FABRIC.RT.Vec3(5,5,5),
+    position: new FABRIC.RT.Vec3(5,15,5),
     target: new FABRIC.RT.Vec3(0,0,0),
     farDistance: 50,
-    coneAngle: Math.degToRad(30.0),
+    resolution: 2048,
+    coneAngle: Math.degToRad(60.0),
     castShadows: true
   });
   var shadowMapMaterial = scene.constructNode('ShadowMaterial');

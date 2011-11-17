@@ -92,7 +92,7 @@
         vec4 shadowCoordinateWdivide = shadowCoord / shadowCoord.w;
       
         // Used to lower moir√© pattern and self-shadowing
-        shadowCoordinateWdivide.z -= 0.0002;
+        shadowCoordinateWdivide.z -= 0.0001;
       
         float distanceFromLight = texture2D(shadowMapSampler,shadowCoordinateWdivide.st).z;
       
@@ -120,6 +120,8 @@
         intensity = floor(intensity * u_materialColorSteps + 0.5) / u_materialColorSteps;
         
         gl_FragColor = lightFactor * (u_materialBrightColor * intensity + u_materialDarkColor * (1.0 - intensity));
+        //gl_FragData[0] = vec4(1.0, 0.0, 0.0, 1.0);
+        //gl_FragData[1] = vec4(0.0, 0.0, 1.0, 1.0);
       }
 
       ]]>
