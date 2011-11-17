@@ -369,6 +369,35 @@ FABRIC.SceneGraph.registerNodeType('BulletWorldNode', {
       var transforms = isArray ? transform : [transform];
       rbddgnode.setData(rbdInitialTransforms[bodyName], 0, transforms);
     }
+    bulletWorldNode.pub.getRigidBodyInitialTransform = function(bodyName) {
+      var result = [];
+      if(!rbdInitialTransforms[bodyName]) {
+        var body = rbddgnode.getData(bodyName+'Rbd',0);
+        for(var i=0;i<body.length;i++)
+          result.push(new FABRIC.RT.Xfo({
+            sc: new FABRIC.RT.Vec3(
+              parseFloat(body[i].transform.sc.x),
+              parseFloat(body[i].transform.sc.y),
+              parseFloat(body[i].transform.sc.z)
+            ),
+            ori: new FABRIC.RT.Quat(
+              parseFloat(body[i].transform.ori.w),
+              new FABRIC.RT.Vec3(
+                parseFloat(body[i].transform.ori.v.x),
+                parseFloat(body[i].transform.ori.v.y),
+                parseFloat(body[i].transform.ori.v.z)
+            )),
+            tr: new FABRIC.RT.Vec3(
+              parseFloat(body[i].transform.tr.x),
+              parseFloat(body[i].transform.tr.y),
+              parseFloat(body[i].transform.tr.z)
+            )
+          }));
+      } else {
+        result = rbddgnode.getData(bodyName+'Transform',0);
+      }
+      return result;
+    }
 
     bulletWorldNode.pub.addSoftBody = function(bodyName,body) {
       if(bodyName == undefined)
@@ -676,6 +705,9 @@ FABRIC.SceneGraph.registerNodeType('BulletRigidBodyTransform', {
 
     rigidBodyTransformNode.pub.setInitialTransform = function(val) {
       return bulletWorldNode.pub.setRigidBodyInitialTransform(bodyName,val);
+    };
+    rigidBodyTransformNode.pub.getInitialTransform = function(val) {
+      return bulletWorldNode.pub.getRigidBodyInitialTransform(bodyName,val)[0];
     };
     
     return rigidBodyTransformNode;
