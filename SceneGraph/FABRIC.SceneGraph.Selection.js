@@ -182,28 +182,16 @@ FABRIC.SceneGraph.registerManagerType('SelectionManipulationManager', {
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
       selectionManager: undefined,
-      rotationManipulators: undefined,
-      translationManipulators: undefined,
+      manipulators: undefined,
+      transformGetter: 'getGlobalXfo',
       transformSetter: 'setGlobalXfo',
       screenTranslationRadius: 2.0,
-      rotationRadius: 8.0
       });
-    var rotationManipulators = options.rotationManipulators;
-    var translationManipulators = options.translationManipulators;
-    var toggleRotatonManipulatorsDisplay = function(drawToggle){
-      if(!rotationManipulators)
-        return;
-      for(var i=0; i<rotationManipulators.length; i++){
-        rotationManipulators[i].setDrawToggle(drawToggle);
-      }
-    }
-    var toggleTranslationManipulatorsDisplay = function(drawToggle){
-      if(!translationManipulators)
-        return;
-      for(var i=0; i<translationManipulators.length; i++){
-        translationManipulators[i].setDrawToggle(drawToggle);
-      }
-    }
+    
+    var selectionManager = options.selectionManager;
+    if(!selectionManager)
+      throw("options.selectionManager is not defined!");
+    
     // Construct a 'Transform' node that is used as the parent of the Maipulators.
     // This transform node aligns its self with the average of the selected objects.
     // an event is fired on the node when it is manipulated, and it uses this
@@ -212,9 +200,32 @@ FABRIC.SceneGraph.registerManagerType('SelectionManipulationManager', {
       name: 'SelectionManipulationManagerGroupTransform',
       hierarchical: false
     } );
+
+    /////
+    // Propagate the manipulation to all selected members.
+    var dragStartGlobalXfo, dragStartSelGlobalXfos;
+    var dragStartFn = function(evt) {
+      dragStartGlobalXfo = groupTransform.pub.getGlobalXfo();
+      var selection = selectionManager.getSelection();
+      dragStartSelGlobalXfos = [];
+      for(var i=0; i<selection.length; i++){
+        dragStartSelGlobalXfos.push(selection[i].getTransformNode()[options.transformGetter]());
+      }
+    }
+    var dragFn = function(evt) {
+    }
+    var dragEndFn = function(evt) {
+    }
     
-    
-    var selectionManager = options.selectionManager;
+    groupTransform.pub.setGlobalXfo = function(xfo){
+      var xform = xfo.multiply(dragStartGlobalXfo.inverse());
+      var selection = selectionManager.getSelection();
+      for(var i=0; i<selection.length; i++){
+        selection[i].getTransformNode()[options.transformSetter]( xform.multiply(dragStartSelGlobalXfos[i]) );
+      }
+    };
+
+    // Create a list of known operators for each selection count    
     var operatorAssigned = false;
     var generatedOperators = {};
     var generateTransformOperator = function(selection){
@@ -230,6 +241,7 @@ FABRIC.SceneGraph.registerManagerType('SelectionManipulationManager', {
         srcCodeHeader += ',\n  io Xfo obj' + i;
         srcCodeBody  += '  xfo.tr += obj' + i + '.tr * weight;\n';
         srcCodeBody  += '  xfo.ori += obj' + i + '.ori * weight;\n';
+        //srcCodeBody  += '  report(obj' + i + '.ori+" - "+weight);\n';
         parameterLayout.push('obj' + i +'.globalXfo');
       }
       srcCodeBody += '  xfo.ori.setUnit(); \n}';
@@ -252,12 +264,10 @@ FABRIC.SceneGraph.registerManagerType('SelectionManipulationManager', {
         operatorAssigned = false;
       }
       if(evt.selection.length==0){
-        toggleRotatonManipulatorsDisplay(false);
-        toggleTranslationManipulatorsDisplay(false);
+        toggleManipulatorsDisplay(false);
       }
       else{
-        toggleRotatonManipulatorsDisplay(true);
-        toggleTranslationManipulatorsDisplay(true);
+        toggleManipulatorsDisplay(true);
         
         for(var i=0; i<evt.selection.length; i++){
           var obj = scene.getPrivateInterface(evt.selection[i].getTransformNode());
@@ -272,66 +282,18 @@ FABRIC.SceneGraph.registerManagerType('SelectionManipulationManager', {
         operatorAssigned = true;
       }
     });
-    
-    /////
-    // Propagate the manipulation to all selected members.
-    var dragStartGlobalXfo, dragStartSelGlobalXfos = [];
-    var dragStartFn = function(evt) {
-      dragStartGlobalXfo = groupTransform.pub.getGlobalXfo();//.inverse();
-      var selection = selectionManager.getSelection();
-      dragStartSelGlobalXfos = [];
-      for(var i=0; i<selection.length; i++){
-        dragStartSelGlobalXfos.push(selection[i].getTransformNode().getGlobalXfo());
+
+    // retrieve the list of manipulators    
+    var manipulators = options.manipulators;
+    var toggleManipulatorsDisplay = function(drawToggle){
+      if(!manipulators)
+        return;
+      for(var i=0; i<manipulators.length; i++){
+        manipulators[i].setDrawToggle(drawToggle);
       }
     }
-    var dragFn = function(evt) {
-      
-    }
-    groupTransform.pub.setGlobalXfo = function(xfo){
-      var xform = xfo.multiply(dragStartGlobalXfo.inverse());
-      var selection = selectionManager.getSelection();
-      for(var i=0; i<selection.length; i++){
-        selection[i].getTransformNode()[options.transformSetter]( xform.multiply(dragStartSelGlobalXfos[i]) );
-      }
-    };
-    
-    if(!rotationManipulators){
-      rotationManipulators = [];
-      var rotManip = scene.pub.constructNode('RotationManipulator', {
-          name: options.name + 'XRotationManipulator',
-          color: FABRIC.RT.rgb(0.8, 0, 0, 1),
-          radius: options.rotationRadius,
-          localXfo: new FABRIC.RT.Xfo({ ori: new FABRIC.RT.Quat().setFromAxisAndAngle(new FABRIC.RT.Vec3(0, 0, 1), -Math.HALF_PI) }),
-          parentNode: groupTransform.pub,
-          drawToggle: false
-        });
-      rotManip.addEventListener('dragstart', dragStartFn);
-      rotManip.addEventListener('drag', dragFn);
-      rotationManipulators.push(rotManip);
-      rotManip = scene.pub.constructNode('RotationManipulator', {
-          name: options.name + 'YRotationManipulator',
-          color: FABRIC.RT.rgb(0, 0.8, 0, 1),
-          radius: options.rotationRadius,
-          parentNode: groupTransform.pub,
-          drawToggle: false
-        });
-      rotManip.addEventListener('dragstart', dragStartFn);
-      rotManip.addEventListener('drag', dragFn);
-      rotationManipulators.push(rotManip);
-      rotManip = scene.pub.constructNode('RotationManipulator', {
-          name: options.name + 'ZRotationManipulator',
-          color: FABRIC.RT.rgb(0, 0, 0.8, 1),
-          radius: options.rotationRadius,
-          localXfo: new FABRIC.RT.Xfo({ ori: new FABRIC.RT.Quat().setFromAxisAndAngle(new FABRIC.RT.Vec3(1, 0, 0), Math.HALF_PI) }),
-          parentNode: groupTransform.pub,
-          drawToggle: false
-        });
-      rotManip.addEventListener('dragstart', dragStartFn);
-      rotManip.addEventListener('drag', dragFn);
-      rotationManipulators.push(rotManip);
-    }
-    if(!translationManipulators){
-      var transManip2 = scene.pub.constructNode('ScreenTranslationManipulator', {
+    if(!manipulators){
+      var manipulator = scene.pub.constructNode('ScreenTranslationManipulator', {
           name: options.name + 'ScreenTranslationManipulator',
           color: FABRIC.RT.rgb(0, 0.8, 0, 1),
           parentNode: groupTransform.pub,
@@ -339,33 +301,39 @@ FABRIC.SceneGraph.registerManagerType('SelectionManipulationManager', {
           drawToggle: false,
           drawOverlaid: true
         });
-      transManip2.addEventListener('dragstart', dragStartFn);
-      transManip2.addEventListener('drag', dragFn);
-      translationManipulators = [];
-      translationManipulators.push(transManip2);
-    }
-    
-    var selectionManipulationManager = {
-      pub:{
-        setMode: function(mode){
-          switch(mode){
-          case 0:
-            toggleRotatonManipulatorsDisplay(false);
-            toggleTranslationManipulatorsDisplay(false);
-            break
-          case 1:
-            toggleRotatonManipulatorsDisplay(true);
-            toggleTranslationManipulatorsDisplay(false);
-            break
-          case 2:
-            toggleRotatonManipulatorsDisplay(false);
-            toggleTranslationManipulatorsDisplay(true);
-            break
-          }
-        }
+      manipulator.addEventListener('dragstart', dragStartFn);
+      manipulator.addEventListener('drag', dragFn);
+      manipulator.addEventListener('dragend', dragEndFn);
+      manipulators = [];
+      manipulators.push(manipulator);
+    } else {
+      for(var i=0;i<manipulators.length;i++) {
+        manipulators[i].addEventListener('dragstart', dragStartFn);
+        manipulators[i].addEventListener('drag', dragFn);
+        manipulators[i].addEventListener('dragend', dragEndFn);
       }
     }
-    selectionManipulationManager.pub.setMode(0);
+    
+    // setup the public interface
+    var selectionManipulationManager = {
+      pub:{
+        getTransformNode : function() {
+          return groupTransform.pub;
+        },
+        addManipulator: function(manipulator) {
+          manipulator.addEventListener('dragstart', dragStartFn);
+          manipulator.addEventListener('drag', dragFn);
+          manipulator.addEventListener('dragend', dragEndFn);
+          if(manipulators.length > 0)
+            manipulator.setDrawToggle(manipulators[manipulators.length-1].getDrawToggle());
+          manipulators.push(manipulator);
+        },
+        toggleManipulatorsDisplay: function(value) {
+          toggleManipulatorsDisplay(value);
+        }
+      }
+    };
+    toggleManipulatorsDisplay(false);
     return selectionManipulationManager;
   }});
 

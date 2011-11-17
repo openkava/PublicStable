@@ -182,13 +182,20 @@ $(document).ready(function() {
     transformNode: cameraTransform
   });
 
+  //==========================================================
+  // SELECTION
   var selectionManager = scene.constructManager('ViewportSelectionManager');
   var selectionManipulationManager = scene.constructManager('SelectionManipulationManager', {
     selectionManager: selectionManager,
+    transformGetter: 'getInitialTransform',
     transformSetter: 'setInitialTransform',
     screenTranslationRadius: 0.35,
-    rotationRadius: 1.0
   });
+  selectionManipulationManager.addManipulator(scene.constructNode('RotationManipulator',{
+    parentNode: selectionManipulationManager.getTransformNode(),
+    color: FABRIC.RT.rgb(0, 0.8, 0, 1),
+    radius: 2.0
+  }));
   
   //==========================================================
   // MATERIALS + GEOMETRY
@@ -227,14 +234,17 @@ $(document).ready(function() {
     specularColor: FABRIC.RT.rgb(0.0,0.0,0.0),
     diffuseTextureNode: scene.constructNode('Image', { url: '../../BasicDemos/Resources/wood3.png' })
   });
-
   var highlightMaterial = scene.constructNode('FlatMaterial', {
     color: FABRIC.RT.rgb(102/255,173/255,71/255),
   });
   
   //==========================================================
   // BULLET LOGIC
-  var worldNode = scene.constructNode('BulletWorldNode', {groundPlaneSize: 100, substeps: 6});
+  var worldNode = scene.constructNode('BulletWorldNode', {
+    groundPlaneSize: 100,
+    substeps: 6,
+    createGroundPlaneGrid: false
+  });
   
   // create all collision shapes
   var scalings = {};
@@ -248,8 +258,6 @@ $(document).ready(function() {
   for(var id in scalings)
     worldNode.addShape(id,FABRIC.RT.BulletShape.createBox(scalings[id]));
 
-  // ====================================================
-  // BULLET CONSTRUCTION
   var ws = false;
   var isPlaying = false;
   var rigidBodies = {};
@@ -257,11 +265,12 @@ $(document).ready(function() {
   var messagesToProcess = [];
 
   // serialize the rigid body data
-  var getRigidBodyJsonData = function(bodies) {
+  var getRigidBodyJsonData = function(bodies, skipName) {
     var data = {};
     for(var key in bodies) {
       data[bodies[key].name] = {};
-      data[bodies[key].name].name = bodies[key].name;
+      if(!skipName)
+        data[bodies[key].name].name = bodies[key].name;
       data[bodies[key].name].type = bodies[key].type;
       data[bodies[key].name].transform = bodies[key].transformNode.getGlobalXfo();
     }
@@ -269,8 +278,9 @@ $(document).ready(function() {
   };
 
   // constuct a single body
-  function constructRigidBody(type,xfo,name,notify) {
+  function constructRigidBody(type,xfo,name) {
     if(!xfo) xfo = new FABRIC.RT.Xfo();
+    var notify = !name;
     if(!name) name = type+'_'+rigidBodyCount;
     if(rigidBodies[name])
       return rigidBodies[name];
@@ -321,16 +331,18 @@ $(document).ready(function() {
   }
   
   var processRigidBodyMessages = function(messages){
+    var result = [];
     for(var i=0;i<messages.length;i++) {
       var message = messages[i];
       if(message.action == 'rigidBodiesCreated') {
         for(var key in message.data) {
-          constructRigidBody(
+          var newBody = constructRigidBody(
             message.data[key].type,
             message.data[key].transform,
-            message.data[key].name,
-            false
+            message.data[key].name
           );
+          newBody.instance.setSelectable(true);
+          result.push(newBody);
         }
       }
       else if(message.action == 'rigidBodiesMoved') {
@@ -343,6 +355,7 @@ $(document).ready(function() {
       }
     }
     viewport.redraw();
+    return result;
   };
   
   // construct a couple of sample cubes
@@ -361,7 +374,7 @@ $(document).ready(function() {
   
   //===============================================================
   // WEBSOCKETS
-  // create the websocket node
+  $("#join").button();
   try{
     ws = scene.constructManager("WebSocketManager", {
       serverUrl: 'ec2-50-19-205-12.compute-1.amazonaws.com',
@@ -369,7 +382,7 @@ $(document).ready(function() {
       onOpenCallBack: function() {
 
         // setup the invite link        
-        $("#contextID").html(ws.getContextID());
+        $("#joinSession").html(ws.getContextID());
         
         // setup the join button
         $("#join").button().click(function(){
@@ -382,8 +395,10 @@ $(document).ready(function() {
             viewport.show();
           });
           $('#joinOK').button().click(function(){
-            // open the page once more
-            document.location.href = document.URL.split('?')[0]+"?context="+$('#joinContext').val();
+            if($('#joinContext').val())
+              document.location.href = document.URL.split('?')[0]+"?context="+$('#joinContext').val();
+            $('#joinDialog').dialog('close');
+            viewport.show();
           });
         });
 
@@ -500,7 +515,23 @@ $(document).ready(function() {
     });
     
   }catch(e){
-    $('#message').html("<b style='color:#FF0000'>Error</b>: "+e+"<br>Currently only Google Chrome supports WebSocket natively.");
+    // setup the join button
+    $('#participants').html('');
+    $('#joinMessage').html("<b style='color:#FF0000'>Error</b>: "+e+"<br>Currently only Google Chrome supports WebSocket natively.");
+    $("#join").button().click(function(){
+      viewport.hide();
+      $('#joinDialog').dialog({
+        modal: true
+      });
+      $('#joinCancel').button().click(function(){
+        $('#joinDialog').dialog('close');
+        viewport.show();
+      });
+      $('#joinOK').button().click(function(){
+        $('#joinDialog').dialog('close');
+        viewport.show();
+      });
+    });
   }
 
   //==========================================================
@@ -582,6 +613,68 @@ $(document).ready(function() {
     }
   );
   
+  // setup the help dialog
+  $("#help").button().click(function(){
+    viewport.hide();
+    $('#helpDialog').dialog({
+      modal: true
+    });
+    $('#helpOK').button().click(function(){
+      $('#helpDialog').dialog('close');
+      viewport.show();
+    });
+  });
+
+  // setup load and save
+  $("#presetSave").button().click(function(){
+    var bodiesToSave = {};
+    if(selectionManager.getSelection().length == 0) {
+      bodiesToSave = getRigidBodyJsonData(rigidBodies,true);
+    } else {
+      for(var i=0;i<selectionManager.getSelection().length;i++) {
+        var key = selectionManager.getSelection()[i].getTransformNode().getName();
+        bodiesToSave[key] = {};
+        bodiesToSave[key].type = rigidBodies[key].type,
+        bodiesToSave[key].transform = rigidBodies[key].transformNode.getGlobalXfo()
+      }
+    }
+
+    var path = scene.IO.queryUserFileAndFolderHandle(scene.IO.forOpenWithWriteAccess, "Bullet Editor Data", "json", "bulletScene");
+    scene.IO.putTextFile(JSON.stringify(bodiesToSave), path);
+  });
+  $("#presetLoad").button().click(function(){
+    var path = scene.IO.queryUserFileAndFolderHandle(scene.IO.forOpen, "Bullet Editor Data", "json", "bulletScene");
+    var jsonData = JSON.parse(scene.IO.getTextFile(path));
+    var newBodies = processRigidBodyMessages([{action: 'rigidBodiesCreated', data: jsonData}]);
+    selectionManager.clearSelection();
+    var selection = [];
+    for(var i=0;i<newBodies.length;i++) {
+      selection.push(newBodies[i].instance);
+    }
+    selectionManager.select(selection);
+    viewport.redraw();
+  });
+  $("#presetDuplicate").button().click(function(){
+    if(selectionManager.getSelection().length == 0)
+      return;
+    var bodiesToSave = {};
+    for(var i=0;i<selectionManager.getSelection().length;i++) {
+      var key = selectionManager.getSelection()[i].getTransformNode().getName();
+      bodiesToSave[key] = {};
+      bodiesToSave[key].type = rigidBodies[key].type,
+      bodiesToSave[key].transform = rigidBodies[key].transformNode.getGlobalXfo()
+    }
+    var newBodies = processRigidBodyMessages([{action: 'rigidBodiesCreated', data: bodiesToSave}]);
+    selectionManager.clearSelection();
+    var selection = [];
+    for(var i=0;i<newBodies.length;i++) {
+      selection.push(newBodies[i].instance);
+    }
+    selectionManager.select(selection);
+    viewport.redraw();
+  });
+  
+  
   //===========================================================
   // DRAG AND DROP
   $("#primitiveCube").draggable();
@@ -620,7 +713,9 @@ $(document).ready(function() {
       xfo.tr = planeXfo.ori.rotateVector(xfo.tr.add(target));
     }
     xfo.tr.y = xfo.tr.y < scalings[currentRigidBody.type].z ? scalings[currentRigidBody.type].z : xfo.tr.y;
+
     xfo.ori.setFromDirectionAndUpvector(new FABRIC.RT.Vec3(0,1,0),planeXfo.ori.getYaxis());
+    // TODO: this is not working right
     
     worldNode.setRigidBodyInitialTransform(currentRigidBody.name,xfo);
     currentRigidBody.transform = xfo;
@@ -642,7 +737,7 @@ $(document).ready(function() {
       dragStatus[id] = 'inside';
       
       // update the evt data
-      currentRigidBody = constructRigidBody(id,undefined,undefined,true);
+      currentRigidBody = constructRigidBody(id,undefined,undefined);
       
       dragConstructedRigidBody(evt);
       document.addEventListener('mousemove',dragConstructedRigidBody);
@@ -712,9 +807,26 @@ $(document).ready(function() {
     </div>
     <div style="display: none" id="joinDialog" title="Joining Session...">
       <h4 id="joinDesc"></h4>
-      <input id="joinContext" type=text/><br>
+      <div id='joinMessage'>
+        Your current sessionID is: <b id="joinSession"></b><br>
+        <input id="joinContext" type=text/><br>
+        Enter the new sessionID and click OK to join a new session (restart appplication)<br>
+      </div>
       <button id="joinCancel">Cancel</button>
       <button id="joinOK">OK</button>
+    </div>
+    <div style="display: none; width: 200px; height: 340px" id="helpDialog" title="Help">
+      <h4>Bullet Editor Help</h4>
+      Drag and drop the primitives on the side panel slowly onto the 3D viewport to create new rigid bodies.
+      They will be places on the working plane. You can move the working plane by scrolling your mousewheel
+      and pressing ALT at the same time.<br><br>
+      IconA: asdasdasdadad<br>
+      IconB: asdasdasdadad<br>
+      IconC: asdasdasdadad<br>
+      IconD: asdasdasdadad<br>
+      IconE: asdasdasdadad<br>
+      IconF: asdasdasdadad<br>
+      <button id="helpOK">OK</button>
     </div>
     <div id="wrapper">
       <div id="editor">
@@ -722,23 +834,20 @@ $(document).ready(function() {
           <div id="FabricContainer"></div> 
         </div><!--viewer-->
         <div id="sidebar">
-          <p class="box">&larr; <a href="../../../index.html">back to Demo list</a></p>
           <div class="box">
-            <h2>INFO</h2>
+            <h2>CONTROLS</h2>
             <div class="content">
-              Bullet Editor.<br>
-              You can use the primitives below to create a bullet simulation world. Use Drag&Drop to place
-              primitives on the working plane. You can also drive the distance of the working plane by holding
-              Alt and using the mouse wheel. Furthermore use the buttons below to align the camera to on of the
-              axes.
-            </div><!--content-->
-            <h2>WORKPLANE</h2>
-            <div class="content">
+              <div id="workplaneblend" style="margin-bottom: 5px"></div>
               <button id="workplaneXY">X-Y</button>
               <button id="workplaneYZ">Y-Z</button>
               <button id="workplaneXZ">X-Z</button>
-              <button id="workplaneStand">FIX</button><br>
-              <div id="workplaneblend" style="margin-top: 5px"></div>
+              <button id="workplaneStand">FIX</button><br><br>
+              <button id="play">Play</button>
+              <button id="help">Help</button>
+              <button id='join'>Join</button><br>
+              <button id='presetSave'>Save</button>
+              <button id='presetLoad'>Load</button>
+              <button id='presetDuplicate'>Dupl</button>
             </div><!--content-->
             <h2>PRIMITIVES</h2>
             <div class="content">
@@ -746,20 +855,14 @@ $(document).ready(function() {
               <div id="primitiveFlat" style="display: inline-block; margin: 2px; width: 150px; height: 25px; background-image:url(../../BasicDemos/Resources/wood2.png)"></div>
               <div id="primitiveHigh" style="display: inline-block; margin: 2px; width: 50px; height: 100px; background-image:url(../../BasicDemos/Resources/wood3.png)"></div>
             </div><!--content-->
-            <h2>SIMULATION</h2>
-            <div class="content button-controls">
-              <button id="play">Play</button>
-            </div><!--content-->
-            <h2>COLLABORATION</h2>
-            <div class="content">
-              <div id="message">
+            <div id="participants">
+              <h2>PARTICIPANTS</h2>
+              <div class="content">
                 <input id="participantName" type=text/ value='Yourself' style='width: 194px'><br>
                 <select multi size=4 disabled id='participantList' style='width: 200px; margin-top: 10px'>
                 </select><br>
-                Session: <b id="contextID"></b><br>
-                <button id='join'>Join</button>
-              </div>
-            </div><!--content-->
+              </div><!--content-->
+            </div>
           </div><!--box-->
         </div><!--sidebar-->
       </div> <!--editor-->
