@@ -587,7 +587,7 @@ FABRIC.SceneGraph.registerNodeType('XfoManipulator', {
           member: targetMember,
           getter: targetMemberGetter,
           setter: targetMemberSetter,
-          value: manipulatorNode.getTargetXfo().clone(),
+          value: targetNode[targetMemberGetter]().clone(),
           prevValue: prevXfo.clone()
         });  
       });
