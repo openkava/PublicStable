@@ -257,7 +257,8 @@ $(document).ready(function() {
   selectionManipulationManager.addManipulator(scene.constructNode('RotationManipulator',{
     parentNode: selectionManipulationManager.getTransformNode(),
     color: FABRIC.RT.rgb(0, 0.8, 0, 1),
-    radius: 2.0
+    radius: 2.0,
+    undoManager: undoManager
   }));
   
   //==========================================================
