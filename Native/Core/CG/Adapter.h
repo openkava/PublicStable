@@ -68,6 +68,8 @@ namespace Fabric
       llvm::Value *llvmCallMalloc( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *size ) const;
       llvm::Value *llvmCallRealloc( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *data, llvm::Value *newSize ) const;
       void llvmCallFree( BasicBlockBuilder &basicBlockBuilder, llvm::Value *data ) const;
+      llvm::Value *llvmCallMax( BasicBlockBuilder &basicBlockBuilder, llvm::Value *lhsRValue, llvm::Value *rhsRValue ) const;
+      llvm::Value *llvmCallNextPowTwoMinusOne( BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const;
   
       virtual llvm::Type const *buildLLVMRawType( RC::Handle<Context> const &context ) const = 0;
       llvm::Type const *llvmRawType( RC::Handle<Context> const &context ) const;
