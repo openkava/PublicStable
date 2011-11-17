@@ -286,11 +286,12 @@ FABRIC.SceneGraph.registerManagerType('SelectionManipulationManager', {
       for(var i=0; i<selection.length; i++){
         srcCodeHeader += ',\n  io Xfo obj' + i;
         srcCodeBody  += '  xfo.tr += obj' + i + '.tr * weight;\n';
-        srcCodeBody  += '  xfo.ori += obj' + i + '.ori * weight;\n';
-        //srcCodeBody  += '  report(obj' + i + '.ori+" - "+weight);\n';
+        if(selection.length==1){
+          srcCodeBody  += '  xfo.ori = obj' + i + '.ori;\n';
+        }
         parameterLayout.push('obj' + i +'.globalXfo');
       }
-      srcCodeBody += '  xfo.ori.setUnit(); \n}';
+      srcCodeBody += '  \n}';
       
       var operatorName = 'calcAverageXfo' + selection.length;
       generatedOperators[selection.length] = scene.constructOperator( {
