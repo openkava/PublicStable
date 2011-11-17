@@ -30,6 +30,7 @@
     <script type="text/javascript" src="../../../../SceneGraph/RT/OGLShaderProgram.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../../SceneGraph/RT/OGLBuffer.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../../SceneGraph/RT/OGLTexture2D.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../../SceneGraph/RT/OGLRenderTarget.js" charset="utf-8"></script>
 
     <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Geometry.js" charset="utf-8"></script>
@@ -136,19 +137,20 @@ FABRIC.SceneGraph.registerNodeType('WorkPlane', {
   }});
 
 // load out custom shaders
+FABRIC.SceneGraph.defineEffectFromFile('ToonMaterial', 'ToonShader.xml');
 FABRIC.SceneGraph.defineEffectFromFile('WorkPlaneMaterial', 'WorkPlaneShader.xml');
+FABRIC.SceneGraph.defineEffectFromFile('GroundPlaneMaterial', 'GroundPlaneShader.xml');
 
 $(document).ready(function() {
   
   var scene = FABRIC.SceneGraph.createScene();
   var viewport = scene.constructNode('Viewport', {
     windowElement: document.getElementById('FabricContainer'),
-    enableRaycasting: true
+    enableRaycasting: true,
+    backgroundColor: FABRIC.RT.rgb(0.5,0.5,0.5)
   });
-
-  viewport.setBackgroundTextureImage(scene.constructNode('Image', {
-    url: '../../BasicDemos/Resources/fabric-demo-gradient.png'
-  }));
+  //viewport.addPostProcessEffectShader(scene.constructNode('EdgeDetectionPostProcessEffect', {
+  //}));
   
   // Create a camera to draw the scene from
   camera = scene.constructNode('TargetCamera', {
@@ -161,26 +163,32 @@ $(document).ready(function() {
   scene.constructNode('CameraManipulator', { targetNode: camera });
   viewport.setCameraNode(camera);
 
+  var light = scene.constructNode('SpotLight', {
+    position: new FABRIC.RT.Vec3(5,5,5),
+    target: new FABRIC.RT.Vec3(0,0,0),
+    farDistance: 50,
+    coneAngle: Math.degToRad(30.0),
+    castShadows: true
+  });
+  var shadowMapMaterial = scene.constructNode('ShadowMaterial');
+
   // create the world grid
   scene.constructNode('Instance', {
-    geometryNode: scene.constructNode('Grid', {
-      size_x: 100.0,
-      size_z: 100.0,
-      sections_x: 101,
-      sections_z: 101
+    geometryNode: scene.constructNode('Plane', {
+      width: 100.0,
+      length: 100.0,
     }),
-    materialNode: scene.constructNode('FlatMaterial', {
-      color: new FABRIC.RT.rgb(0.5,0.5,0.5,1.0)
+    materialNode: scene.constructNode('GroundPlaneMaterial', {
+      color: FABRIC.RT.rgb(0.7,0.7,0.7),
+      lightNode: light,
+      step: 0.02,
+      brightColor: FABRIC.RT.rgba(0.6,0.6,0.6,1),
+      darkColor: FABRIC.RT.rgba(0.4,0.4,0.4,1),
     })
   });
   
   var workPlane = scene.constructNode('WorkPlane', {
     cameraNode: camera
-  });
-
-  var light = scene.constructNode('PointLight', {
-    lightCosCutoff: 5.0,
-    transformNode: cameraTransform
   });
 
   //==========================================================
@@ -232,26 +240,30 @@ $(document).ready(function() {
     width: 2.0,
     height: 0.25
   });
-  materialNodes['primitiveCube'] = scene.constructNode('PhongTextureSimpleMaterial', {
+  materialNodes['primitiveCube'] = scene.constructNode('ToonMaterial', {
     lightNode: light,
-    shininess: 50.0,
-    specularColor: FABRIC.RT.rgb(0.0,0.0,0.0),
-    diffuseTextureNode: scene.constructNode('Image', { url: '../../BasicDemos/Resources/wood1.png' })
+    darkColor: FABRIC.RT.rgb(165/255,118/255,74/255),
+    brightColor: FABRIC.RT.rgb(201/255,168/255,117/255),
+    colorSteps: 8.0
   });
-  materialNodes['primitiveFlat'] = scene.constructNode('PhongTextureSimpleMaterial', {
+  materialNodes['primitiveFlat'] = scene.constructNode('ToonMaterial', {
     lightNode: light,
-    shininess: 50.0,
-    specularColor: FABRIC.RT.rgb(0.0,0.0,0.0),
-    diffuseTextureNode: scene.constructNode('Image', { url: '../../BasicDemos/Resources/wood2.png' })
+    darkColor: FABRIC.RT.rgb(35/255,52/255,72/255),
+    brightColor: FABRIC.RT.rgb(81/255,96/255,115/255),
+    colorSteps: 8.0
   });
-  materialNodes['primitiveHigh'] = scene.constructNode('PhongTextureSimpleMaterial', {
+  materialNodes['primitiveHigh'] = scene.constructNode('ToonMaterial', {
     lightNode: light,
-    shininess: 50.0,
-    specularColor: FABRIC.RT.rgb(0.0,0.0,0.0),
-    diffuseTextureNode: scene.constructNode('Image', { url: '../../BasicDemos/Resources/wood3.png' })
+    darkColor: FABRIC.RT.rgb(127/255,49/255,45/255),
+    brightColor: FABRIC.RT.rgb(176/255,125/255,122/255),
+    colorSteps: 8.0
   });
-  var highlightMaterial = scene.constructNode('FlatMaterial', {
-    color: FABRIC.RT.rgb(102/255,173/255,71/255),
+
+  var highlightMaterial = scene.constructNode('ToonMaterial', {
+    lightNode: light,
+    darkColor: FABRIC.RT.rgb(77/255,159/255,70/255),
+    brightColor: FABRIC.RT.rgb(207/255,255/255,203/255),
+    colorSteps: 8.0
   });
   
   //==========================================================
@@ -326,9 +338,11 @@ $(document).ready(function() {
       transformNode: transform,
       enableRaycasting: true,
       highlightMaterial: highlightMaterial,
-      selectMaterial: highlightMaterial
+      selectMaterial: highlightMaterial,
+      removeMainMaterial: true
     });
     instance.setSelectable(false);
+    instance.setMaterialNode(shadowMapMaterial);
 
     // store it to the map    
     rigidBodies[name] = {};

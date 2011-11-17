@@ -398,10 +398,13 @@ FABRIC.SceneGraph.registerNodeType('SelectableInstance', {
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
       highlightMaterial: undefined,
-      selectMaterial: undefined
+      selectMaterial: undefined,
+      removeMainMaterial: false
     });
     
     var selectableInstance = scene.constructNode('Instance', options);
+    var mainMaterialNode = options.materialNode;
+    options.removeMainMaterial = mainMaterialNode ? options.removeMainMaterial : false;
     
     var selectable = true;
     selectableInstance.pub.isSelectable = function(){
@@ -412,8 +415,13 @@ FABRIC.SceneGraph.registerNodeType('SelectableInstance', {
     }
     var highglighted = false;
     var selected = false;
+    var removedMainMaterial = undefined;
     selectableInstance.pub.addEventListener('highlight', function(evt) {
       if(!selected && selectable){
+        if(options.removeMainMaterial) {
+          selectableInstance.pub.removeMaterialNode( mainMaterialNode );
+          removedMainMaterial = true;
+        }
         selectableInstance.pub.setMaterialNode( options.highlightMaterial );
         highglighted = true;
       }
@@ -421,6 +429,10 @@ FABRIC.SceneGraph.registerNodeType('SelectableInstance', {
     selectableInstance.pub.addEventListener('unhighlight', function(evt) {
       if(highglighted){
         selectableInstance.pub.removeMaterialNode( options.highlightMaterial );
+        if(removedMainMaterial) {
+          selectableInstance.pub.setMaterialNode( mainMaterialNode );
+          removedMainMaterial = undefined;
+        }
         highglighted = false;
       }
     });
@@ -430,12 +442,19 @@ FABRIC.SceneGraph.registerNodeType('SelectableInstance', {
       if(highglighted){
         selectableInstance.pub.removeMaterialNode( options.highlightMaterial );
         highglighted = false;
+      } else if(options.removeMainMaterial) {
+        selectableInstance.pub.removeMaterialNode( mainMaterialNode );
+        removedMainMaterial = true;
       }
       selectableInstance.pub.setMaterialNode( options.selectMaterial );
       selected = true;
     });
     selectableInstance.pub.addEventListener('deselected', function(evt) {
       selectableInstance.pub.removeMaterialNode( options.selectMaterial );
+      if(removedMainMaterial) {
+        selectableInstance.pub.setMaterialNode( mainMaterialNode );
+        removedMainMaterial = undefined;
+      }
       selected = false;
     });
     
