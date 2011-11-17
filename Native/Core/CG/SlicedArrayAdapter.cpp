@@ -14,6 +14,7 @@
 #include "FunctionBuilder.h"
 #include "BasicBlockBuilder.h"
 #include "OverloadNames.h"
+#include "CompileOptions.h"
 
 #include <Fabric/Core/RT/SlicedArrayDesc.h>
 #include <Fabric/Core/RT/SlicedArrayImpl.h>
@@ -77,6 +78,7 @@ namespace Fabric
       m_variableArrayAdapter->llvmCompileToModule( moduleBuilder );
       
       static const bool buildFunctions = true;
+      bool const guarded = moduleBuilder.getCompileOptions()->getGuarded();
 
       {
         std::vector< FunctionParam > params;
@@ -191,7 +193,8 @@ namespace Fabric
         std::vector< FunctionParam > params;
         params.push_back( FunctionParam( "array", this, CG::USAGE_RVALUE ) );
         params.push_back( FunctionParam( "index", sizeAdapter, CG::USAGE_RVALUE ) );
-        params.push_back( FunctionParam( "errorDesc", constStringAdapter, CG::USAGE_RVALUE ) );
+        if ( guarded )
+          params.push_back( FunctionParam( "errorDesc", constStringAdapter, CG::USAGE_RVALUE ) );
         FunctionBuilder functionBuilder( moduleBuilder, "__"+getCodeName()+"__ConstIndex", ExprType( m_memberAdapter, USAGE_RVALUE ), params, false, 0, true );
         if ( buildFunctions )
         {
@@ -199,20 +202,31 @@ namespace Fabric
 
           llvm::Value *arrayRValue = functionBuilder[0];
           llvm::Value *indexRValue = functionBuilder[1];
-          llvm::Value *errorDescRValue = functionBuilder[2];
+          llvm::Value *errorDescRValue;
+          if ( guarded )
+            errorDescRValue = functionBuilder[2];
 
           llvm::BasicBlock *entryBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "entry" );
-          llvm::BasicBlock *inRangeBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "inRange" );
-          llvm::BasicBlock *outOfRangeBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "outOfRange" );
+          llvm::BasicBlock *inRangeBB;
+          llvm::BasicBlock *outOfRangeBB;
+          if ( guarded )
+          {
+            inRangeBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "inRange" );
+            outOfRangeBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "outOfRange" );
+          }
 
           basicBlockBuilder->SetInsertPoint( entryBB );
           llvm::Value *arrayLValue = llvmRValueToLValue( basicBlockBuilder, arrayRValue );
-          llvm::Value *sizeLValue = basicBlockBuilder->CreateStructGEP( arrayLValue, 1 );
-          llvm::Value *sizeRValue = sizeAdapter->llvmLValueToRValue( basicBlockBuilder, sizeLValue );
-          llvm::Value *inRangeCond = basicBlockBuilder->CreateICmpULT( indexRValue, sizeRValue );
-          basicBlockBuilder->CreateCondBr( inRangeCond, inRangeBB, outOfRangeBB );
-          
-          basicBlockBuilder->SetInsertPoint( inRangeBB );
+          llvm::Value *sizeRValue;
+          if ( guarded )
+          {
+            llvm::Value *sizeLValue = basicBlockBuilder->CreateStructGEP( arrayLValue, 1 );
+            sizeRValue = sizeAdapter->llvmLValueToRValue( basicBlockBuilder, sizeLValue );
+            llvm::Value *inRangeCond = basicBlockBuilder->CreateICmpULT( indexRValue, sizeRValue );
+            basicBlockBuilder->CreateCondBr( inRangeCond, inRangeBB, outOfRangeBB );
+            
+            basicBlockBuilder->SetInsertPoint( inRangeBB );
+          }
           llvm::Value *offsetLValue = basicBlockBuilder->CreateStructGEP( arrayLValue, 0 );
           llvm::Value *offsetRValue = sizeAdapter->llvmLValueToRValue( basicBlockBuilder, offsetLValue );
           llvm::Value *absoluteIndexRValue = basicBlockBuilder->CreateAdd( offsetRValue, indexRValue );
@@ -222,19 +236,22 @@ namespace Fabric
           llvm::Value *variableArrayRValue = m_variableArrayAdapter->llvmLValueToRValue( basicBlockBuilder, variableArrayLValue );
           basicBlockBuilder->CreateRet( m_variableArrayAdapter->llvmConstIndexOp_NoCheck( basicBlockBuilder, variableArrayRValue, absoluteIndexRValue ) );
           
-          basicBlockBuilder->SetInsertPoint( outOfRangeBB );
-          llvmThrowOutOfRangeException(
-            basicBlockBuilder,
-            "index",
-            constStringAdapter,
-            stringAdapter,
-            sizeAdapter,
-            indexRValue,
-            sizeRValue,
-            errorDescRValue
-            );
-          llvm::Value *defaultRValue = m_memberAdapter->llvmDefaultRValue( basicBlockBuilder );
-          basicBlockBuilder->CreateRet( defaultRValue );
+          if ( guarded )
+          {
+            basicBlockBuilder->SetInsertPoint( outOfRangeBB );
+            llvmThrowOutOfRangeException(
+              basicBlockBuilder,
+              "index",
+              constStringAdapter,
+              stringAdapter,
+              sizeAdapter,
+              indexRValue,
+              sizeRValue,
+              errorDescRValue
+              );
+            llvm::Value *defaultRValue = m_memberAdapter->llvmDefaultRValue( basicBlockBuilder );
+            basicBlockBuilder->CreateRet( defaultRValue );
+          }
         }
       }
 
@@ -242,7 +259,8 @@ namespace Fabric
         std::vector< FunctionParam > params;
         params.push_back( FunctionParam( "array", this, CG::USAGE_LVALUE ) );
         params.push_back( FunctionParam( "index", sizeAdapter, CG::USAGE_RVALUE ) );
-        params.push_back( FunctionParam( "errorDesc", constStringAdapter, CG::USAGE_RVALUE ) );
+        if ( guarded )
+          params.push_back( FunctionParam( "errorDesc", constStringAdapter, CG::USAGE_RVALUE ) );
         FunctionBuilder functionBuilder( moduleBuilder, "__"+getCodeName()+"__NonConstIndex", ExprType( m_memberAdapter, USAGE_LVALUE ), params, false, 0, true );
         if ( buildFunctions )
         {
@@ -250,19 +268,30 @@ namespace Fabric
 
           llvm::Value *arrayLValue = functionBuilder[0];
           llvm::Value *indexRValue = functionBuilder[1];
-          llvm::Value *errorDescRValue = functionBuilder[2];
+          llvm::Value *errorDescRValue;
+          if ( guarded )
+            errorDescRValue = functionBuilder[2];
 
           llvm::BasicBlock *entryBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "entry" );
-          llvm::BasicBlock *inRangeBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "inRange" );
-          llvm::BasicBlock *outOfRangeBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "outOfRange" );
+          llvm::BasicBlock *inRangeBB;
+          llvm::BasicBlock *outOfRangeBB;
+          if ( guarded )
+          {
+            inRangeBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "inRange" );
+            outOfRangeBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "outOfRange" );
+          }
 
           basicBlockBuilder->SetInsertPoint( entryBB );
-          llvm::Value *sizeLValue = basicBlockBuilder->CreateConstGEP2_32( arrayLValue, 0, 1 );
-          llvm::Value *sizeRValue = sizeAdapter->llvmLValueToRValue( basicBlockBuilder, sizeLValue );
-          llvm::Value *inRangeCond = basicBlockBuilder->CreateICmpULT( indexRValue, sizeRValue );
-          basicBlockBuilder->CreateCondBr( inRangeCond, inRangeBB, outOfRangeBB );
-          
-          basicBlockBuilder->SetInsertPoint( inRangeBB );
+          llvm::Value *sizeRValue;
+          if ( guarded )
+          {
+            llvm::Value *sizeLValue = basicBlockBuilder->CreateConstGEP2_32( arrayLValue, 0, 1 );
+            sizeRValue = sizeAdapter->llvmLValueToRValue( basicBlockBuilder, sizeLValue );
+            llvm::Value *inRangeCond = basicBlockBuilder->CreateICmpULT( indexRValue, sizeRValue );
+            basicBlockBuilder->CreateCondBr( inRangeCond, inRangeBB, outOfRangeBB );
+            
+            basicBlockBuilder->SetInsertPoint( inRangeBB );
+          }
           llvm::Value *offsetLValue = basicBlockBuilder->CreateConstGEP2_32( arrayLValue, 0, 0 );
           llvm::Value *offsetRValue = sizeAdapter->llvmLValueToRValue( basicBlockBuilder, offsetLValue );
           llvm::Value *absoluteIndexRValue = basicBlockBuilder->CreateAdd( offsetRValue, indexRValue );
@@ -271,19 +300,22 @@ namespace Fabric
           llvm::Value *variableArrayLValue = basicBlockBuilder->CreateStructGEP( rcvaRValue, 1 );
           basicBlockBuilder->CreateRet( m_variableArrayAdapter->llvmNonConstIndexOp_NoCheck( basicBlockBuilder, variableArrayLValue, absoluteIndexRValue ) );
           
-          basicBlockBuilder->SetInsertPoint( outOfRangeBB );
-          llvmThrowOutOfRangeException(
-            basicBlockBuilder,
-            "index",
-            constStringAdapter,
-            stringAdapter,
-            sizeAdapter,
-            indexRValue,
-            sizeRValue,
-            errorDescRValue
-            );
-          llvm::Constant *defaultLValue = m_memberAdapter->llvmDefaultLValue( basicBlockBuilder );
-          basicBlockBuilder->CreateRet( defaultLValue );
+          if ( guarded )
+          {
+            basicBlockBuilder->SetInsertPoint( outOfRangeBB );
+            llvmThrowOutOfRangeException(
+              basicBlockBuilder,
+              "index",
+              constStringAdapter,
+              stringAdapter,
+              sizeAdapter,
+              indexRValue,
+              sizeRValue,
+              errorDescRValue
+              );
+            llvm::Constant *defaultLValue = m_memberAdapter->llvmDefaultLValue( basicBlockBuilder );
+            basicBlockBuilder->CreateRet( defaultLValue );
+          }
         }
       }
 
@@ -403,16 +435,21 @@ namespace Fabric
       CG::Location const *location
       ) const
     {
+      bool const guarded = basicBlockBuilder.getModuleBuilder().getCompileOptions()->getGuarded();
       RC::ConstHandle<SizeAdapter> sizeAdapter = basicBlockBuilder.getManager()->getSizeAdapter();
       RC::ConstHandle<ConstStringAdapter> constStringAdapter = basicBlockBuilder.getManager()->getConstStringAdapter();
       std::vector< FunctionParam > params;
       params.push_back( FunctionParam( "array", this, CG::USAGE_RVALUE ) );
       params.push_back( FunctionParam( "index", sizeAdapter, CG::USAGE_RVALUE ) );
-      params.push_back( FunctionParam( "constString", constStringAdapter, CG::USAGE_RVALUE ) );
+      if ( guarded )
+        params.push_back( FunctionParam( "constString", constStringAdapter, CG::USAGE_RVALUE ) );
       FunctionBuilder functionBuilder( basicBlockBuilder.getModuleBuilder(), "__"+getCodeName()+"__ConstIndex", ExprType( m_memberAdapter, USAGE_RVALUE ), params, false, 0, true );
-      return basicBlockBuilder->CreateCall3( functionBuilder.getLLVMFunction(), arrayRValue, indexRValue,
-        llvmLocationConstStringRValue( basicBlockBuilder, constStringAdapter, location )
-        );
+      std::vector<llvm::Value *> args;
+      args.push_back( arrayRValue );
+      args.push_back( indexRValue );
+      if ( guarded )
+        args.push_back( llvmLocationConstStringRValue( basicBlockBuilder, constStringAdapter, location ) );
+      return basicBlockBuilder->CreateCall( functionBuilder.getLLVMFunction(), args.begin(), args.end() );
     }
 
 
@@ -423,16 +460,21 @@ namespace Fabric
       CG::Location const *location
       ) const
     {
+      bool const guarded = basicBlockBuilder.getModuleBuilder().getCompileOptions()->getGuarded();
       RC::ConstHandle<SizeAdapter> sizeAdapter = basicBlockBuilder.getManager()->getSizeAdapter();
       RC::ConstHandle<ConstStringAdapter> constStringAdapter = basicBlockBuilder.getManager()->getConstStringAdapter();
       std::vector< FunctionParam > params;
       params.push_back( FunctionParam( "array", this, CG::USAGE_LVALUE ) );
       params.push_back( FunctionParam( "index", sizeAdapter, CG::USAGE_RVALUE ) );
-      params.push_back( FunctionParam( "constString", constStringAdapter, CG::USAGE_RVALUE ) );
+      if ( guarded )
+        params.push_back( FunctionParam( "constString", constStringAdapter, CG::USAGE_RVALUE ) );
       FunctionBuilder functionBuilder( basicBlockBuilder.getModuleBuilder(), "__"+getCodeName()+"__NonConstIndex", ExprType( m_memberAdapter, USAGE_LVALUE ), params, false, 0, true );
-      return basicBlockBuilder->CreateCall3( functionBuilder.getLLVMFunction(), exprLValue, indexRValue,
-        llvmLocationConstStringRValue( basicBlockBuilder, constStringAdapter, location )
-        );
+      std::vector<llvm::Value *> args;
+      args.push_back( exprLValue );
+      args.push_back( indexRValue );
+      if ( guarded )
+        args.push_back( llvmLocationConstStringRValue( basicBlockBuilder, constStringAdapter, location ) );
+      return basicBlockBuilder->CreateCall( functionBuilder.getLLVMFunction(), args.begin(), args.end() );
     }
 
     void SlicedArrayAdapter::llvmDisposeImpl( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *lValue ) const
