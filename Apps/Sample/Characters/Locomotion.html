@@ -96,7 +96,7 @@ $(document).ready(function() {
   // Create the scene.
   var scene = FABRIC.SceneGraph.createScene();
   var viewport = scene.constructNode('Viewport', {
-    enableRaycasting: true,
+    enableRaycasting: false,
     windowElement: document.getElementById('FabricContainer')
   });
   
@@ -115,6 +115,11 @@ $(document).ready(function() {
   viewport.setCameraNode(camera);
   
   var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) });
+  var phongMaterial = scene.constructNode('PhongMaterial', {
+      diffuseColor: FABRIC.RT.rgb(0.3, 0.3, 0.3, 1),
+      lightNode: light
+    });
+
   
     // create the scene grid
   scene.constructNode('Instance', {
@@ -129,86 +134,110 @@ $(document).ready(function() {
   
   
   // create a simulation world
-  var bulletWorldNode;/* = scene.constructNode('BulletWorldNode', {
-    createGroundPlaneGrid:false,
+  var bulletWorldNode = scene.constructNode('BulletWorldNode', {
+    createGroundPlane:false,
     groundPlanseSize: 30,
   } );
-  // add a box shape
-  bulletWorldNode.addShape('Box',new FABRIC.RT.BulletShape.createBox());
   
-  var materialNode = scene.constructNode('PhongMaterial', {
-    diffuseColor: FABRIC.RT.rgb255(10,10,255),
-    lightNode: light
-  });
+  var createBoxes = true;
+  if(createBoxes){
+    // add a box shape
+    bulletWorldNode.addShape('Box',new FABRIC.RT.BulletShape.createBox());
+    
+    // create a cube to draw it
+    var cuboidNode = scene.constructNode('Cuboid', {
+      length: 2.0,
+      width: 2.0,
+      height: 2.0
+    });
+    
+    scene.constructNode('Instance', {
+      geometryNode: cuboidNode,
+      materialNode: phongMaterial,
+      transformNode: scene.constructNode('BulletRigidBodyTransform', {
+        bulletWorldNode: bulletWorldNode,
+        shapeName: 'Box',
+        rigidBody: new FABRIC.RT.BulletRigidBody({
+          transform: FABRIC.RT.xfo({
+            tr: new FABRIC.RT.Vec3(0, -2, 0),
+            sc: new FABRIC.RT.Vec3(20, 2, 20),
+          }),
+          mass: 0.0
+        })
+      })
+    });
+    
+    scene.constructNode('Instance', {
+      geometryNode: cuboidNode,
+      materialNode: phongMaterial,
+      transformNode: scene.constructNode('BulletRigidBodyTransform', {
+        bulletWorldNode: bulletWorldNode,
+        shapeName: 'Box',
+        rigidBody: new FABRIC.RT.BulletRigidBody({
+          transform: FABRIC.RT.xfo({
+            tr: new FABRIC.RT.Vec3(-12, -2, 6),
+            ori: new FABRIC.RT.Quat().setFromAxisAndAngle(new FABRIC.RT.Vec3(0,1,0),0.0),
+            sc: new FABRIC.RT.Vec3(4.0, 4, 4),
+          }),
+          mass: 0.0
+        })
+      })
+    });
+    
+    scene.constructNode('Instance', {
+      geometryNode: cuboidNode,
+      materialNode: phongMaterial,
+      transformNode: scene.constructNode('BulletRigidBodyTransform', {
+        bulletWorldNode: bulletWorldNode,
+        shapeName: 'Box',
+        rigidBody: new FABRIC.RT.BulletRigidBody({
+          transform: FABRIC.RT.xfo({
+            tr: new FABRIC.RT.Vec3(-12,-3.0,1),
+            ori: new FABRIC.RT.Quat().setFromAxisAndAngle(new FABRIC.RT.Vec3(0,1,0),0.0),
+            sc: new FABRIC.RT.Vec3(4.0,4.0,4),
+          }),
+          mass: 0.0
+        })
+      })
+    });
+    
+    scene.constructNode('Instance', {
+      geometryNode: cuboidNode,
+      materialNode: phongMaterial,
+      transformNode: scene.constructNode('BulletRigidBodyTransform', {
+        bulletWorldNode: bulletWorldNode,
+        shapeName: 'Box',
+        rigidBody: new FABRIC.RT.BulletRigidBody({
+          transform: FABRIC.RT.xfo({
+            tr: new FABRIC.RT.Vec3(-6.5, -3, 6),
+            ori: new FABRIC.RT.Quat().setFromAxisAndAngle(new FABRIC.RT.Vec3(0,0,1),-0.3),
+            sc: new FABRIC.RT.Vec3(3, 4, 4),
+          }),
+          mass: 0.0
+        })
+      })
+    });
+  }
+  else{
+    var scaleFactor = 0.1;
+    var assetNodes = scene.importAssetFile('Assets/Level.DAE', { scaleFactor: scaleFactor });
+    var floorInstance = assetNodes.Plane001;
+    var floorMesh = assetNodes.Plane001Mesh0;
+    
+    floorInstance.setMaterialNode(phongMaterial);
   
-  // create a cube to draw it
-  var cuboidNode = scene.constructNode('Cuboid', {
-    length: 2.0,
-    width: 2.0,
-    height: 2.0
-  });
-  
-  var nonslicedTransform = scene.constructNode('BulletRigidBodyTransform', {
-    bulletWorldNode: bulletWorldNode,
-    shapeName: 'Box',
-    rigidBody: new FABRIC.RT.BulletRigidBody({
-      transform: FABRIC.RT.xfo({
-        tr: new FABRIC.RT.Vec3(-12,1,6),
-        ori: new FABRIC.RT.Quat().setFromAxisAndAngle(new FABRIC.RT.Vec3(0,1,0),0.0),
-        sc: new FABRIC.RT.Vec3(4.0,1,4),
-      }),
-      mass: 0.0
-    })
-  });
-  
-  scene.constructNode('Instance', {
-    geometryNode: cuboidNode,
-    materialNode: materialNode,
-    transformNode: nonslicedTransform,
-    enableRaycasting: true
-  });
-  
-   
-  var nonslicedTransform2 = scene.constructNode('BulletRigidBodyTransform', {
-    bulletWorldNode: bulletWorldNode,
-    shapeName: 'Box',
-    rigidBody: new FABRIC.RT.BulletRigidBody({
-      transform: FABRIC.RT.xfo({
-        tr: new FABRIC.RT.Vec3(-12,0.5,1),
-        ori: new FABRIC.RT.Quat().setFromAxisAndAngle(new FABRIC.RT.Vec3(0,1,0),0.0),
-        sc: new FABRIC.RT.Vec3(4.0,0.5,4),
-      }),
-      mass: 0.0
-    })
-  });
-  
-  scene.constructNode('Instance', {
-    geometryNode: cuboidNode,
-    materialNode: materialNode,
-    transformNode: nonslicedTransform2,
-    enableRaycasting: true
-  });
-  
-  var nonslicedTransform3 = scene.constructNode('BulletRigidBodyTransform', {
-    bulletWorldNode: bulletWorldNode,
-    shapeName: 'Box',
-    rigidBody: new FABRIC.RT.BulletRigidBody({
-      transform: FABRIC.RT.xfo({
-        tr: new FABRIC.RT.Vec3(-5.5,0,6),
-        ori: new FABRIC.RT.Quat().setFromAxisAndAngle(new FABRIC.RT.Vec3(0,0,1),-0.3),
-        sc: new FABRIC.RT.Vec3(3,1,4),
-      }),
-      mass: 0.0
-    })
-  });
-  
-  scene.constructNode('Instance', {
-    geometryNode: cuboidNode,
-    materialNode: materialNode,
-    transformNode: nonslicedTransform3,
-    enableRaycasting: true
-  });
-  */
+    bulletWorldNode.addShape('Floor',new FABRIC.RT.BulletShape.createGImpact(floorMesh));
+    scene.constructNode('BulletRigidBodyTransform', {
+      bulletWorldNode: bulletWorldNode,
+      shapeName: 'Floor',
+      rigidBody: new FABRIC.RT.BulletRigidBody({
+        transform: FABRIC.RT.xfo(),
+        friction: 0.8,
+        restitution: 0.7,
+        mass: 0.0
+      })
+    });
+  }
   
   var rigName = 'walker';
   try{
@@ -224,9 +253,9 @@ $(document).ready(function() {
   case 'walker':
     var locomotionControllerNode = scene.constructNode('ScreenSpacePlayerCharacterController', {
         cameraNode: camera,
-        maxLinearVelocity: new FABRIC.RT.Vec2(15, 15),
-        maxLinearAcceleration: 0.45,
-        maxAngularVelocity:  new FABRIC.RT.Euler(0, 2, 0),
+        maxLinearVelocity: 35,
+        maxLinearAcceleration: 6,
+        maxAngularVelocity: 5,
         bulletWorldNode: bulletWorldNode,
         numTrailSegments: 0,
         gravity: -1.0,
@@ -237,9 +266,9 @@ $(document).ready(function() {
   case 'centipede':
     var locomotionControllerNode = scene.constructNode('ScreenSpacePlayerCharacterController', {
         cameraNode: camera,
-        maxLinearVelocity: new FABRIC.RT.Vec2(20, 20),
+        maxLinearVelocity: 20,
         maxLinearAcceleration: 1.45,
-        maxAngularVelocity:  new FABRIC.RT.Euler(0, 2, 0),
+        maxAngularVelocity:  2,
         bulletWorldNode: bulletWorldNode,
         numTrailSegments: 12,
         trailLength: 12.0,
@@ -250,9 +279,9 @@ $(document).ready(function() {
   case 'marama':
     var locomotionControllerNode = scene.constructNode('ScreenSpacePlayerCharacterController', {
         cameraNode: camera,
-        maxLinearVelocity: new FABRIC.RT.Vec2(7, 7),
+        maxLinearVelocity: 7,
         maxLinearAcceleration: 0.2,
-        maxAngularVelocity:  new FABRIC.RT.Euler(0, 4, 0),
+        maxAngularVelocity:  4,
         bulletWorldNode: bulletWorldNode,
         numTrailSegments: 0,
         gravity: -1.0,
@@ -281,7 +310,7 @@ $(document).ready(function() {
   locomotionVariables.setAnimationLibrary(libraryAnimations);
   ikrig.setVariablesNode(locomotionVariables);
   
-  var materialNode = scene.constructNode('PhongSkinningMaterial', {
+  var phongSkinningMaterial = scene.constructNode('PhongSkinningMaterial', {
     lightNode: light,
     diffuseColor: FABRIC.RT.rgba(1.0, 0.0, 0.0, 1.0),
     numBones: skeletonNode.getNumBones()
@@ -290,16 +319,17 @@ $(document).ready(function() {
   var characterInstance = scene.constructNode("CharacterInstance", {
     rigNode:ikrig,
     geometryNode: characterMesh,
-    materialNode: materialNode
+    materialNode: phongSkinningMaterial
   });
   
-  /*
+  
   var skeletonGeometryNode = scene.constructNode("CharacterSkeletonDebug", {
     characterRigNode:ikrig,
     boneradius: 0.2,
-    color: FABRIC.RT.rgba(0.0, 0.0, 1.0, 1.0)
+    color: FABRIC.RT.rgba(0.5, 0.0, 0.5, 1.0)
   });
-  */
+  
+    
   
   $("#selectCharacter").val(rigName);
   $("#selectCharacter").change(function() {
