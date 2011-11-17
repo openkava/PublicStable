@@ -99,7 +99,7 @@ FABRIC.SceneGraph.registerManagerType('UndoManager', {
     }
 
     // do a typical set data task
-    undoManager.pub.doSetDataTask = function(taskOptions) {
+    undoManager.pub.setDataTask = function(taskOptions) {
       scene.assignDefaults(taskOptions, {
         node: undefined,
         member: undefined,
@@ -107,7 +107,8 @@ FABRIC.SceneGraph.registerManagerType('UndoManager', {
         name: undefined,
         getter: undefined,
         setter: undefined,
-        prevValue: undefined
+        prevValue: undefined,
+        doTask: true
       });
       
       // check and extend the options
@@ -147,12 +148,16 @@ FABRIC.SceneGraph.registerManagerType('UndoManager', {
         }
       };
       
-      // if we are blocking tasks, simply execute,
-      // otherwise, stack it
-      if(blockTasks)
-        taskOptions.onDo();
-      else
-        undoManager.pub.doTask(taskOptions);
+      if(taskOptions.doTask) {
+        // if we are blocking tasks, simply execute,
+        // otherwise, stack it
+        if(blockTasks)
+          taskOptions.onDo();
+        else
+          undoManager.pub.doTask(taskOptions);
+      } else if(!blockTasks) {
+        undoManager.pub.addTask(taskOptions);
+      }
     }
 
     scene.addEventHandlingFunctions(undoManager);

@@ -581,14 +581,12 @@ FABRIC.SceneGraph.registerNodeType('XfoManipulator', {
         prevXfo = manipulatorNode.getTargetXfo().clone();
       });
       manipulatorNode.pub.addEventListener('dragend', function() {
-        undoManager.doSetDataTask({
+        undoManager.setDataTask({
           name: 'XfoManipulation',
           node: targetNode,
           member: targetMember,
-          getter: targetMemberGetter,
-          setter: targetMemberSetter,
-          value: targetNode[targetMemberGetter]().clone(),
-          prevValue: prevXfo.clone()
+          value: manipulatorNode.getTargetXfoCached().clone(),
+          prevValue: prevXfo.clone(),
         });  
       });
     }
@@ -603,8 +601,13 @@ FABRIC.SceneGraph.registerNodeType('XfoManipulator', {
     manipulatorNode.getTargetXfo = function() {
       return targetNode[targetMemberGetter]();
     }
+    var localTargetXfo = undefined;
+    manipulatorNode.getTargetXfoCached = function() {
+      return localTargetXfo;
+    }
     manipulatorNode.setTargetXfo = function(xfo) {
         targetNode[targetMemberSetter](xfo);
+        localTargetXfo = xfo.clone();
         manipulatorNode.pub.fireEvent('targetManipulated',{newTargetXfo: xfo});
     }
     manipulatorNode.setTargetOri = function(ori) {
