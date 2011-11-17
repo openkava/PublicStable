@@ -253,14 +253,12 @@ $(document).ready(function() {
     transformSetter: 'setInitialTransform',
     screenTranslationRadius: 0.35
   });
-  /*
   // TODO: ROTATION MANIPULATOR IS BROKEN, SEE SECOND TODO COMMENT IN HERE
   selectionManipulationManager.addManipulator(scene.constructNode('RotationManipulator',{
     parentNode: selectionManipulationManager.getTransformNode(),
     color: FABRIC.RT.rgb(0, 0.8, 0, 1),
     radius: 2.0
   }));
-  */
   
   //==========================================================
   // MATERIALS + GEOMETRY
@@ -806,7 +804,7 @@ $(document).ready(function() {
     }
     xfo.tr.y = xfo.tr.y < scalings[currentRigidBody.type].z ? scalings[currentRigidBody.type].z : xfo.tr.y;
 
-    xfo.ori.setFromDirectionAndUpvector(new FABRIC.RT.Vec3(0,1,0),planeXfo.ori.getYaxis());
+    //xfo.ori.setFromDirectionAndUpvector(new FABRIC.RT.Vec3(0,1,0),planeXfo.ori.getYaxis());
     // TODO: this is not working right
     
     worldNode.setRigidBodyInitialTransform(currentRigidBody.name,xfo);
