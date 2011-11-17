@@ -272,8 +272,9 @@ $(document).ready(function() {
     var data = {};
     for(var key in bodies) {
       data[bodies[key].name] = {};
-      if(!skipName)
+      if(!skipName) {
         data[bodies[key].name].name = bodies[key].name;
+      }
       data[bodies[key].name].type = bodies[key].type;
       data[bodies[key].name].transform = bodies[key].transformNode.getGlobalXfo();
     }
@@ -281,9 +282,8 @@ $(document).ready(function() {
   };
 
   // constuct a single body
-  function constructRigidBody(type,xfo,name) {
+  function constructRigidBody(type,xfo,name,notify) {
     if(!xfo) xfo = new FABRIC.RT.Xfo();
-    var notify = !name;
     if(!name) name = type+'_'+rigidBodyCount;
     if(rigidBodies[name])
       return rigidBodies[name];
@@ -304,6 +304,7 @@ $(document).ready(function() {
       }),
       createBulletRaycastEventHandler: false
     });
+    transform.setInitialTransform(xfo);
     
     var instance = scene.constructNode('SelectableInstance', {
       name: name+"_Instance",
@@ -321,20 +322,20 @@ $(document).ready(function() {
     rigidBodies[name].name = name;
     rigidBodies[name].type = type;
     rigidBodies[name].transformNode = transform;
+    rigidBodies[name].transform = xfo;
     rigidBodies[name].instance = instance;
     rigidBodies[name].world = worldNode;
     
     if(ws && notify) {
       ws.sendMessage('rigidBodiesCreated', getRigidBodyJsonData({name: rigidBodies[name]}));
     }
-    
     rigidBodyCount++;
     
     return rigidBodies[name];
   }
   
   var processRigidBodyMessages = function(messages){
-    var result = [];
+    var result = {};
     for(var i=0;i<messages.length;i++) {
       var message = messages[i];
       if(message.action == 'rigidBodiesCreated') {
@@ -342,10 +343,11 @@ $(document).ready(function() {
           var newBody = constructRigidBody(
             message.data[key].type,
             message.data[key].transform,
-            message.data[key].name
+            message.data[key].name,
+            false
           );
           newBody.instance.setSelectable(true);
-          result.push(newBody);
+          result[key] = newBody;
         }
       }
       else if(message.action == 'rigidBodiesMoved') {
@@ -495,6 +497,7 @@ $(document).ready(function() {
         
       // send all rigid body data
       ws.sendMessage('rigidBodiesCreated',getRigidBodyJsonData(rigidBodies));
+      ws.sendMessage('rigidBodiesMoved',getRigidBodyJsonData(rigidBodies));
     });
     
     // for created rigid bodies
@@ -515,6 +518,19 @@ $(document).ready(function() {
         messagesToProcess.push(message);
       else
         processRigidBodyMessages([message]);
+    });
+    
+    // ensure to send message for manipulated rigid bodies
+    selectionManager.addEventListener('groupTransformChanged', function(evt){
+      var bodiesToSave = {};
+      for(var i=0;i<evt.selection.length;i++) {
+        var key = evt.selection[i].getTransformNode().getName();
+        bodiesToSave[key] = {};
+        bodiesToSave[key].name = rigidBodies[key].name,
+        bodiesToSave[key].type = rigidBodies[key].type,
+        bodiesToSave[key].transform = rigidBodies[key].transformNode.getInitialTransform()
+      }
+      ws.sendMessage("rigidBodiesMoved",bodiesToSave);
     });
     
   }catch(e){
@@ -651,10 +667,13 @@ $(document).ready(function() {
     var newBodies = processRigidBodyMessages([{action: 'rigidBodiesCreated', data: jsonData}]);
     selectionManager.clearSelection();
     var selection = [];
-    for(var i=0;i<newBodies.length;i++) {
-      selection.push(newBodies[i].instance);
+    for(var key in newBodies) {
+      selection.push(newBodies[key].instance);
     }
     selectionManager.select(selection);
+    if(ws) {
+      ws.sendMessage("rigidBodiesCreated",newBodies);
+    }
     viewport.redraw();
   });
   $("#presetDuplicate").button().click(function(){
@@ -670,10 +689,13 @@ $(document).ready(function() {
     var newBodies = processRigidBodyMessages([{action: 'rigidBodiesCreated', data: bodiesToSave}]);
     selectionManager.clearSelection();
     var selection = [];
-    for(var i=0;i<newBodies.length;i++) {
-      selection.push(newBodies[i].instance);
+    for(var key in newBodies) {
+      selection.push(newBodies[key].instance);
     }
     selectionManager.select(selection);
+    if(ws) {
+      ws.sendMessage("rigidBodiesCreated",newBodies);
+    }
     viewport.redraw();
   });
   
@@ -740,7 +762,7 @@ $(document).ready(function() {
       dragStatus[id] = 'inside';
       
       // update the evt data
-      currentRigidBody = constructRigidBody(id,undefined,undefined);
+      currentRigidBody = constructRigidBody(id,undefined,undefined,true);
       
       dragConstructedRigidBody(evt);
       document.addEventListener('mousemove',dragConstructedRigidBody);
