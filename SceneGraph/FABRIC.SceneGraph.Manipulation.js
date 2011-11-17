@@ -681,7 +681,6 @@ FABRIC.SceneGraph.registerNodeType('RotationManipulator', {
     var dragStartFn = function(evt) {
       viewportNode = evt.viewportNode;
       dragStartXFo = manipulatorNode.getTargetXfo();
-      manipulatorNode.startManipulation(dragStartXFo);
       ray1 = evt.rayData;
 
       planePoint = dragStartXFo.tr;
