@@ -88,14 +88,14 @@ FABRIC.RT.oglDepthRenderTarget = function(size){
     size,
     [
       new FABRIC.RT.OGLRenderTargetTextureDesc(
-        1,
+        1, // DEPTH_BUFFER
         new FABRIC.RT.OGLTexture2D(
           FABRIC.SceneGraph.OpenGLConstants.GL_DEPTH_COMPONENT,
           FABRIC.SceneGraph.OpenGLConstants.GL_DEPTH_COMPONENT,
           FABRIC.SceneGraph.OpenGLConstants.GL_FLOAT)
       ),
       new FABRIC.RT.OGLRenderTargetTextureDesc(
-        2,
+        2, // COLOR_BUFFER
         new FABRIC.RT.OGLTexture2D(
           FABRIC.SceneGraph.OpenGLConstants.GL_RGBA8,
           FABRIC.SceneGraph.OpenGLConstants.GL_RGBA,
@@ -107,13 +107,14 @@ FABRIC.RT.oglDepthRenderTarget = function(size){
 
 
 
+
 FABRIC.RT.oglPostProcessingRenderTarget = function(){
   return new FABRIC.RT.OGLRenderTarget(
     0,
     0,
     [
       new FABRIC.RT.OGLRenderTargetTextureDesc(
-        2,
+        2, // COLOR_BUFFER
         new FABRIC.RT.OGLTexture2D(
           FABRIC.SceneGraph.OpenGLConstants.GL_RGBA16F_ARB,
           FABRIC.SceneGraph.OpenGLConstants.GL_RGBA,
@@ -122,4 +123,5 @@ FABRIC.RT.oglPostProcessingRenderTarget = function(){
     ]
   )
 }
+
 
