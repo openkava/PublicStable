@@ -223,6 +223,7 @@ FABRIC.SceneGraph.registerManagerType('SelectionManipulationManager', {
       for(var i=0; i<selection.length; i++){
         selection[i].getTransformNode()[options.transformSetter]( xform.multiply(dragStartSelGlobalXfos[i]) );
       }
+      selectionManager.fireEvent('groupTransformChanged',{selection: selection});
     };
 
     // Create a list of known operators for each selection count    
