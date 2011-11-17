@@ -358,7 +358,6 @@ FABRIC.SceneGraph.registerManagerType('SelectionManipulationManager', {
         manipulators[i].addEventListener('dragstart', dragStartFn);
         manipulators[i].addEventListener('drag', dragFn);
         manipulators[i].addEventListener('dragend', dragEndFn);
-        manipulators[i].setUndoManager(selectionManager.getUndoManager());
       }
     }
     
@@ -374,7 +373,6 @@ FABRIC.SceneGraph.registerManagerType('SelectionManipulationManager', {
           manipulator.addEventListener('dragend', dragEndFn);
           if(manipulators.length > 0)
             manipulator.setDrawToggle(manipulators[manipulators.length-1].getDrawToggle());
-          manipulators.setUndoManager(selectionManager.getUndoManager());
           manipulators.push(manipulator);
         },
         toggleManipulatorsDisplay: function(value) {
