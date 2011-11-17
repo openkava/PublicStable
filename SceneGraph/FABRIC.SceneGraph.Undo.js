@@ -15,6 +15,7 @@ FABRIC.SceneGraph.registerManagerType('UndoManager', {
   },
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
+      maxTasks: 50
     });
 
     var blockTasks = false;
@@ -23,6 +24,9 @@ FABRIC.SceneGraph.registerManagerType('UndoManager', {
     
     var undoManager = {
       pub:{
+        getTasks: function() {
+          return undoTasks;
+        }
       }
     };
     
@@ -51,6 +55,8 @@ FABRIC.SceneGraph.registerManagerType('UndoManager', {
         for(var key in taskOptions.additionCallBacks)
           task[key] = taskOptions.additionCallBacks;
       }
+      if(undoTasks >= options.maxTasks)
+        undoTasks.splice(0,1 + undoTasks.length - options.maxTasks);
       undoTasks.push(task);
       redoTasks = [];
       undoManager.pub.fireEvent('taskAdded',{task: task});
