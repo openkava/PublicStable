@@ -98,8 +98,8 @@ FABRIC.RT.BulletShape.createPlane = function(normal) {
 };
 
 FABRIC.RT.BulletShape.createConvexHull = function(geometryNode) {
-  if(geometryNode == undefined) {
-    throw('You need to specify the '+geometryNode+' for createConvexHull.');
+  if(geometryNode == undefined || !geometryNode.isTypeOf('Geometry')) {
+    throw('You need to specify the geometryNode for createConvexHull.');
   }
   var shape = new FABRIC.RT.BulletShape();
   shape.type = FABRIC.RT.BulletShape.BULLET_CONVEX_HULL_SHAPE;
@@ -108,8 +108,8 @@ FABRIC.RT.BulletShape.createConvexHull = function(geometryNode) {
 };
 
 FABRIC.RT.BulletShape.createGImpact = function(geometryNode) {
-  if(geometryNode == undefined) {
-    throw('You need to specify the '+geometryNode+' for createGImpact.');
+  if(geometryNode == undefined || !geometryNode.isTypeOf('Geometry')) {
+    throw('You need to specify the geometryNode for createGImpact.');
   }
   var shape = new FABRIC.RT.BulletShape();
   shape.type = FABRIC.RT.BulletShape.BULLET_GIMPACT_SHAPE;

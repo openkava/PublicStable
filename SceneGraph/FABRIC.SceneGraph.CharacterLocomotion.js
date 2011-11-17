@@ -495,9 +495,9 @@ FABRIC.SceneGraph.registerNodeType('LocomotionPoseVariables', {
       entryFunctionName: 'evaluateLocomotionPoseVariables',
       parameterLayout: [
         'globals.timestep',
-        /*
+        
         'bulletworld.world',
-        */
+        
         'animationlibrary.trackSet<>',
         'animationlibrary.markers<>',
         'animationlibrary.footStepTracks<>',

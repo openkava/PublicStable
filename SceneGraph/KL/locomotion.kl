@@ -25,9 +25,9 @@ function activateClip(
 
 operator evaluateLocomotionPoseVariables(
   io Scalar timestep,
-  /*
+  
   io BulletWorld  bulletworld,
-  */
+  
   io LinearKeyframeTrackSet animationLibrary<>,
   io LocomotionMarker locomotionMarkers<>[][],
   io FootStepTrack footStepTracksLibrary<>[],
@@ -59,6 +59,9 @@ operator evaluateLocomotionPoseVariables(
     return;
   }
   debugGeometry.reset();
+  
+  Boolean displayRaycastingDebugging = true;
+  Boolean displayFootPinningDebugging = true;
   
   Xfo controllerXfo = controllerXfoSet[index];
   CharacterControllerParams controllerparams = controllerparamsSet[index];
@@ -115,7 +118,7 @@ operator evaluateLocomotionPoseVariables(
         clipFrequencyMultiplier = clipSpeedRatio / strideLengthMultiplier;
         
         // When turning, speed up the playback a little to stop the legs getting tangled. 
-        clipFrequencyMultiplier += abs(controllerparams.displacement.ori.getAngle()) * 10.0;
+        clipFrequencyMultiplier += abs(controllerparams.displacement.ori.getAngle()) * 7.0;
       }
     }
     
@@ -227,8 +230,6 @@ operator evaluateLocomotionPoseVariables(
     Scalar appliedFeetRayDeltas[];
     appliedFeetRayDeltas.resize(locomotionFeet.size);
     
-    Boolean displayRaycastingDebugging = false;
-    Boolean displayFootPinningDebugging = false;
     Scalar numLegsScalar = Scalar(legs.size);
     
     
@@ -254,7 +255,7 @@ operator evaluateLocomotionPoseVariables(
         displacementDir = controllerparams.displacementDir;
       }
       if(displayFootPinningDebugging){
-        debugGeometry.drawLine(controllerXfo.tr, baseFootXfo.tr, Color(0.0, 1.0, 1.0, 1.0));
+        debugGeometry.drawLine(controllerXfo.tr, baseFootXfo.tr, Color(0.0, 0.5, 0.5, 1.0));
       }
       Xfo footXfo = baseFootXfo;// * poseVariables.xfoValues[leg.ikGoalXfoId];
       Scalar stepValue = poseVariables.scalarValues[foot.stepTimeVarId];
@@ -271,10 +272,10 @@ operator evaluateLocomotionPoseVariables(
       footXfo.tr += displacementDir * stepValue * strideLengthMultiplier;
       
       if(displayFootPinningDebugging){
-        debugGeometry.drawLine(lift, footPlantXfo.tr, Color(0.0, 1.0, 1.0, 1.0));
+        debugGeometry.drawLine(lift, footPlantXfo.tr, Color(0.0, 0.25, 0.25, 1.0));
       }
       //  report(j+" t:"+t+" stepId:"+stepId +" currStep:"+currStep + " stepRatio:"+stepRatio + " planted:"+plantedFeet[j]);
-      /*
+      
       /////////////////////////////////////////////////
       // Raycasting
       Vec3 rayStart, rayEnd, refPos, hitPosition;
@@ -283,8 +284,8 @@ operator evaluateLocomotionPoseVariables(
       }else{
         refPos = footPlantXfo.tr;
       }
-      rayStart = refPos + (upvector * 1.5);
-      rayEnd = refPos - (upvector * 1.5);
+      rayStart = refPos + (upvector * 2.5);
+      rayEnd = refPos - (upvector * 2.5);
       
       Boolean filterPassiveObjects = false;
       bulletworld.raycast(rayStart,rayEnd, filterPassiveObjects);
@@ -313,6 +314,7 @@ operator evaluateLocomotionPoseVariables(
         appliedComRayDelta += appliedDelta /= numLegsScalar;
       }
       else{
+        report("missed");
         appliedFeetRayDeltas[j] = (hitPositions[j] - controllerXfo.tr).dot(upvector);
         appliedComRayDelta += appliedFeetRayDeltas[j] /= numLegsScalar;
       }
@@ -320,7 +322,6 @@ operator evaluateLocomotionPoseVariables(
         // at lift time, store the hit delta.
         hitPositions[j] = hitPosition;
       }
-      */
       
       /////////////////////////////////////////////////
       // Foot Pinning
@@ -422,6 +423,8 @@ operator evaluateLocomotionPoseVariables(
       Limb leg = legs[foot.limbId];
       poseVariables.xfoValues[leg.ikGoalXfoId].tr += upvector * (appliedFeetRayDeltas[j] - appliedComRayDelta);
     }
+    // Note: this is highly illegal. We are copying data back to one of our dependencies.
+    controllerXfoSet[index] = controllerXfo;
     
     trackcontroller.tick++;
 }
