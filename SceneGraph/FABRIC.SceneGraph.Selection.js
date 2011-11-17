@@ -304,6 +304,19 @@ FABRIC.SceneGraph.registerManagerType('SelectionManipulationManager', {
       
       return generatedOperators[selection.length];
     }
+
+    // retrieve the list of manipulators    
+    var manipulators = options.manipulators;
+    var manipulatorsDrawToggle = true;
+    var toggleManipulatorsDisplay = function(drawToggle){
+      if(!manipulators)
+        return;
+      manipulatorsDrawToggle = drawToggle;
+      for(var i=0; i<manipulators.length; i++){
+        manipulators[i].setDrawToggle(drawToggle);
+      }
+    }
+
     var prevSelectionCount = 0;
     selectionManager.addEventListener('selectionChanged', function(evt){
       if(operatorAssigned){
@@ -330,15 +343,6 @@ FABRIC.SceneGraph.registerManagerType('SelectionManipulationManager', {
       }
     });
 
-    // retrieve the list of manipulators    
-    var manipulators = options.manipulators;
-    var toggleManipulatorsDisplay = function(drawToggle){
-      if(!manipulators)
-        return;
-      for(var i=0; i<manipulators.length; i++){
-        manipulators[i].setDrawToggle(drawToggle);
-      }
-    }
     if(!manipulators){
       var manipulator = scene.pub.constructNode('ScreenTranslationManipulator', {
           name: options.name + 'ScreenTranslationManipulator',
@@ -378,6 +382,9 @@ FABRIC.SceneGraph.registerManagerType('SelectionManipulationManager', {
         },
         toggleManipulatorsDisplay: function(value) {
           toggleManipulatorsDisplay(value);
+        },
+        getManipulatorsDrawToggle: function() {
+          return manipulatorsDrawToggle;
         }
       }
     };
