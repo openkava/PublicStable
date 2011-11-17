@@ -16,7 +16,8 @@ FABRIC.SceneGraph.registerManagerType('SelectionManager', {
   },
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
-      });
+      undoManager: undefined
+    });
 
     var selection = [];
     var listeners = [];
@@ -27,35 +28,47 @@ FABRIC.SceneGraph.registerManagerType('SelectionManager', {
           return selection.indexOf(obj) != -1;
         },
         select:function( obj ){
+          var prevSelection = selectionManager.pub.getSelectionCopy();
           this.clearSelection(false);
           if(obj.constructor.name == 'Array'){
             for(var i=0; i<obj.length; i++){
               this.addToSelection(obj[i], false);
             }
-            selectionManager.pub.fireEvent('selectionChanged', { selection:selection });
+            selectionManager.pub.fireEvent('selectionChanged', {
+              selection: selectionManager.pub.getSelectionCopy(),
+              prevSelection: prevSelection
+            });
           }
           else{
-            if(!this.isSelected(obj)){ 
-              this.addToSelection(obj);
-            }
+            this.addToSelection(obj, false);
+            selectionManager.pub.fireEvent('selectionChanged', {
+              selection: selectionManager.pub.getSelectionCopy(),
+              prevSelection: prevSelection
+            });
           }
         },
         addToSelection:function(obj, fireevents){
           if(selection.indexOf(obj)!=-1)
             return;
+          var prevSelection = selectionManager.pub.getSelectionCopy();
           selection.push(obj);
           if(obj.fireEvent){
             obj.fireEvent('selected');
           }
           if(fireevents!=false){
-            selectionManager.pub.fireEvent('selectionChanged', { selection:selection });
+            selectionManager.pub.fireEvent('selectionChanged', {
+              selection: selectionManager.pub.getSelectionCopy(),
+              prevSelection: prevSelection
+            });
           }
         },
-        removeFromSelection:function( obj, firevents ){ 
+        removeFromSelection:function( obj, firevents ){
           if(selection.length == 0)
             return;
           var id = selection.indexOf(obj);
           if(id != -1){
+            var prevSelection = selectionManager.pub.getSelectionCopy();
+
             // Put the color back. 
             if(obj.fireEvent){
               obj.fireEvent('deselected');
@@ -66,23 +79,36 @@ FABRIC.SceneGraph.registerManagerType('SelectionManager', {
             }else{
               selection.splice(id,1);
             }
-          }
-          if(firevents!=false){
-            selectionManager.pub.fireEvent('selectionChanged', { selection:selection });
+            if(firevents!=false){
+              selectionManager.pub.fireEvent('selectionChanged', {
+                selection: selectionManager.pub.getSelectionCopy(),
+                prevSelection: prevSelection
+              });
+            }
           }
         },
         clearSelection:function(firevents){ 
           if(selection.length > 0){
+            var prevSelection = selectionManager.pub.getSelectionCopy();
             for (var i = selection.length-1; i >=0 ; i--) {
               this.removeFromSelection(selection[i], false);
             }
-          }
-          if(firevents!=false){
-            selectionManager.pub.fireEvent('selectionChanged', { selection:selection });
+            if(firevents!=false){
+              selectionManager.pub.fireEvent('selectionChanged', {
+                selection: selectionManager.pub.getSelectionCopy(),
+                prevSelection: prevSelection
+              });
+            }
           }
         },
         getSelection: function(){
           return selection;
+        },
+        getSelectionCopy: function(){
+          var result = [];
+          for(var i=0;i<selection.length;i++)
+            result.push(selection[i]);
+          return result;
         },
         addListener: function(listener){
           if(!listener.fireEvent){
@@ -93,6 +119,25 @@ FABRIC.SceneGraph.registerManagerType('SelectionManager', {
       }
     }
     scene.addEventHandlingFunctions(selectionManager);
+
+    // deal with undo
+    var undoManager = options.undoManager;
+    selectionManager.pub.getUndoManager = function() {
+      return undoManager;
+    };
+    if(undoManager) {
+      selectionManager.pub.addEventListener('selectionChanged', function(evt){
+        undoManager.addTask({
+          name: 'SelectionChanged',
+          onDo: function(){
+            selectionManager.pub.select(evt.selection);
+          },
+          onUndo: function(){
+            selectionManager.pub.select(evt.prevSelection);
+          }
+        });
+      });
+    }
     
     return selectionManager;
   }});
@@ -300,7 +345,8 @@ FABRIC.SceneGraph.registerManagerType('SelectionManipulationManager', {
           parentNode: groupTransform.pub,
           geometryNode: scene.pub.constructNode('Sphere', {radius: options.screenTranslationRadius, detail: 8.0}),
           drawToggle: false,
-          drawOverlaid: true
+          drawOverlaid: true,
+          undoManager: selectionManager.getUndoManager()
         });
       manipulator.addEventListener('dragstart', dragStartFn);
       manipulator.addEventListener('drag', dragFn);
@@ -312,6 +358,7 @@ FABRIC.SceneGraph.registerManagerType('SelectionManipulationManager', {
         manipulators[i].addEventListener('dragstart', dragStartFn);
         manipulators[i].addEventListener('drag', dragFn);
         manipulators[i].addEventListener('dragend', dragEndFn);
+        manipulators[i].setUndoManager(selectionManager.getUndoManager());
       }
     }
     
@@ -327,6 +374,7 @@ FABRIC.SceneGraph.registerManagerType('SelectionManipulationManager', {
           manipulator.addEventListener('dragend', dragEndFn);
           if(manipulators.length > 0)
             manipulator.setDrawToggle(manipulators[manipulators.length-1].getDrawToggle());
+          manipulators.setUndoManager(selectionManager.getUndoManager());
           manipulators.push(manipulator);
         },
         toggleManipulatorsDisplay: function(value) {
@@ -335,6 +383,14 @@ FABRIC.SceneGraph.registerManagerType('SelectionManipulationManager', {
       }
     };
     toggleManipulatorsDisplay(false);
+    
+    selectionManipulationManager.pub.getSelectionManager = function(){
+      return selectionManager;
+    };
+    selectionManipulationManager.pub.getUndoManager = function(){
+      return selectionManager.getUndoManager();
+    };
+    
     return selectionManipulationManager;
   }});
 

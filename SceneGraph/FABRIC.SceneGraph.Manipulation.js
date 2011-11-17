@@ -540,7 +540,8 @@ FABRIC.SceneGraph.registerNodeType('XfoManipulator', {
     scene.assignDefaults(options, {
         targetNode: undefined,
         targetMember: 'globalXfo',
-        localXfo: new FABRIC.RT.Xfo()
+        localXfo: new FABRIC.RT.Xfo(),
+        undoManager: undefined
       });
     if(!options.targetNode)
       options.targetNode = options.parentNode;
@@ -567,6 +568,30 @@ FABRIC.SceneGraph.registerNodeType('XfoManipulator', {
     
     options.transformNode = transformNode;
     var manipulatorNode = scene.constructNode('Manipulator', options );
+    
+    // take care of undo
+    var undoManager = options.undoManager;
+    manipulatorNode.pub.setUndoManager = function(manager) {
+      undoManager = manager;
+    };
+    if(undoManager) {
+      var prevXfo = undefined;
+      var isManipulating = false;
+      manipulatorNode.pub.addEventListener('dragstart', function() {
+        prevXfo = manipulatorNode.getTargetXfo().clone();
+      });
+      manipulatorNode.pub.addEventListener('dragend', function() {
+        undoManager.doSetDataTask({
+          name: 'XfoManipulation',
+          node: targetNode,
+          member: targetMember,
+          getter: targetMemberGetter,
+          setter: targetMemberSetter,
+          value: manipulatorNode.getTargetXfo().clone(),
+          prevValue: prevXfo.clone()
+        });  
+      });
+    }
     
     ///////////////////////////////////////////////////////////
     manipulatorNode.getTargetNode = function() {
@@ -656,6 +681,7 @@ FABRIC.SceneGraph.registerNodeType('RotationManipulator', {
     var dragStartFn = function(evt) {
       viewportNode = evt.viewportNode;
       dragStartXFo = manipulatorNode.getTargetXfo();
+      manipulatorNode.startManipulation(dragStartXFo);
       ray1 = evt.rayData;
 
       planePoint = dragStartXFo.tr;
@@ -720,18 +746,21 @@ FABRIC.SceneGraph.registerNodeType('3AxisRotationManipulator', {
 
     var xaxisGizmoNode = scene.pub.constructNode('RotationManipulator', scene.assignDefaults(options, {
         name: name + 'XAxis',
+        undoManager: options.undoManager,
         color: FABRIC.RT.rgb(0.8, 0, 0, 1),
         localXfo: new FABRIC.RT.Xfo({ ori: new FABRIC.RT.Quat().setFromAxisAndAngle(new FABRIC.RT.Vec3(0, 0, 1), -Math.HALF_PI) }),
         geometryNode: circle
       }, true));
     var yaxisGizmoNode = scene.pub.constructNode('RotationManipulator', scene.assignDefaults(options, {
         name: name + 'YAxis',
+        undoManager: options.undoManager,
         color: FABRIC.RT.rgb(0, 0.8, 0, 1),
         localXfo: new FABRIC.RT.Xfo(),
         geometryNode: circle
       }, true));
     var zaxisGizmoNode = scene.pub.constructNode('RotationManipulator', scene.assignDefaults(options, {
         name: name + 'ZAxis',
+        undoManager: options.undoManager,
         color: FABRIC.RT.rgb(0, 0, 0.8, 1),
         localXfo: new FABRIC.RT.Xfo({ ori: new FABRIC.RT.Quat().setFromAxisAndAngle(new FABRIC.RT.Vec3(1, 0, 0), Math.HALF_PI) }),
         geometryNode: circle
@@ -906,6 +935,7 @@ FABRIC.SceneGraph.registerNodeType('3AxisTranslationManipulator', {
 
     scene.pub.constructNode('LinearTranslationManipulator', scene.assignDefaults(options, {
         name: name + '_XAxis',
+        undoManager: options.undoManager,
         color: FABRIC.RT.rgb(0.8, 0, 0, 1),
         localXfo: new FABRIC.RT.Xfo({
           ori: new FABRIC.RT.Quat().setFromAxisAndAngle(new FABRIC.RT.Vec3(0, 0, 1), -Math.HALF_PI)
@@ -914,6 +944,7 @@ FABRIC.SceneGraph.registerNodeType('3AxisTranslationManipulator', {
       }, true));
     scene.pub.constructNode('LinearTranslationManipulator', scene.assignDefaults(options, {
         name: name + '_XAxisArrowHead',
+        undoManager: options.undoManager,
         color: FABRIC.RT.rgb(0.8, 0, 0, 1),
         localXfo: new FABRIC.RT.Xfo({
           ori: new FABRIC.RT.Quat().setFromAxisAndAngle(new FABRIC.RT.Vec3(0, 0, 1), -Math.HALF_PI),
@@ -924,12 +955,14 @@ FABRIC.SceneGraph.registerNodeType('3AxisTranslationManipulator', {
 
     scene.pub.constructNode('LinearTranslationManipulator', scene.assignDefaults(options, {
         name: name + '_YAxis',
+        undoManager: options.undoManager,
         color: FABRIC.RT.rgb(0, 0.8, 0),
         localXfo: new FABRIC.RT.Xfo(),
         geometryNode: lineVector
       }, true));
     scene.pub.constructNode('LinearTranslationManipulator', scene.assignDefaults(options, {
         name: name + '_YAxisArrowHead',
+        undoManager: options.undoManager,
         color: FABRIC.RT.rgb(0, 0.8, 0),
         localXfo: new FABRIC.RT.Xfo({
           tr: new FABRIC.RT.Vec3(0, options.size, 0)
@@ -939,6 +972,7 @@ FABRIC.SceneGraph.registerNodeType('3AxisTranslationManipulator', {
 
     scene.pub.constructNode('LinearTranslationManipulator', scene.assignDefaults(options, {
         name: name + '_ZAxis',
+        undoManager: options.undoManager,
         color: FABRIC.RT.rgb(0, 0, 0.8),
         localXfo: new FABRIC.RT.Xfo({
           ori: new FABRIC.RT.Quat().setFromAxisAndAngle(new FABRIC.RT.Vec3(1, 0, 0), Math.HALF_PI)
@@ -947,6 +981,7 @@ FABRIC.SceneGraph.registerNodeType('3AxisTranslationManipulator', {
       }, true));
     scene.pub.constructNode('LinearTranslationManipulator', scene.assignDefaults(options, {
         name: name + '_ZAxisArrowHead',
+        undoManager: options.undoManager,
         color: FABRIC.RT.rgb(0, 0, 0.8),
         localXfo: new FABRIC.RT.Xfo({
           ori: new FABRIC.RT.Quat().setFromAxisAndAngle(new FABRIC.RT.Vec3(1, 0, 0), Math.HALF_PI),
@@ -965,6 +1000,7 @@ FABRIC.SceneGraph.registerNodeType('3AxisTranslationManipulator', {
 
     scene.pub.constructNode('PlanarTranslationManipulator', scene.assignDefaults(options, {
         name: name + '_YZPlane',
+        undoManager: options.undoManager,
         color: FABRIC.RT.rgb(0.8, 0, 0, 1),
         localXfo: new FABRIC.RT.Xfo({
           ori: new FABRIC.RT.Quat().setFromAxisAndAngle(new FABRIC.RT.Vec3(0, 0, 1), Math.HALF_PI)
@@ -973,12 +1009,14 @@ FABRIC.SceneGraph.registerNodeType('3AxisTranslationManipulator', {
       }, true));
     scene.pub.constructNode('PlanarTranslationManipulator', scene.assignDefaults(options, {
         name: name + '_XZPlane',
+        undoManager: options.undoManager,
         color: FABRIC.RT.rgb(0, 0.8, 0, 1),
         localXfo: new FABRIC.RT.Xfo(),
         geometryNode: drawTriangle
       }, true));
     scene.pub.constructNode('PlanarTranslationManipulator', scene.assignDefaults(options, {
         name: name + '_XYPlane',
+        undoManager: options.undoManager,
         color: FABRIC.RT.rgb(0, 0, 0.8, 1),
         localXfo: new FABRIC.RT.Xfo({
           ori: new FABRIC.RT.Quat().setFromAxisAndAngle(new FABRIC.RT.Vec3(1, 0, 0), -Math.HALF_PI)

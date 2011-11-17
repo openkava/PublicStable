@@ -42,6 +42,7 @@
     <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Persistence.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Bullet.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Selection.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Undo.js" charset="utf-8"></script>
 
     <script type="text/javascript" src="../../../../SceneGraph/Parsers/parseOBJ.js" charset="utf-8"></script>
 
@@ -183,13 +184,25 @@ $(document).ready(function() {
   });
 
   //==========================================================
+  // UNDO
+  var undoManager = scene.constructManager('UndoManager');
+  $("#undo").button().click(function(){
+    undoManager.undo();
+    viewport.redraw();
+  });
+  $("#redo").button().click(function(){
+    undoManager.redo();
+    viewport.redraw();
+  });
+
+  //==========================================================
   // SELECTION
-  var selectionManager = scene.constructManager('ViewportSelectionManager');
+  var selectionManager = scene.constructManager('ViewportSelectionManager', { undoManager: undoManager} );
   var selectionManipulationManager = scene.constructManager('SelectionManipulationManager', {
     selectionManager: selectionManager,
     transformGetter: 'getInitialTransform',
     transformSetter: 'setInitialTransform',
-    screenTranslationRadius: 0.35,
+    screenTranslationRadius: 0.35
   });
   /*
   // TODO: ROTATION MANIPULATOR IS BROKEN, SEE SECOND TODO COMMENT IN HERE
@@ -699,7 +712,6 @@ $(document).ready(function() {
     viewport.redraw();
   });
   
-  
   //===========================================================
   // DRAG AND DROP
   $("#primitiveCube").draggable();
@@ -872,7 +884,9 @@ $(document).ready(function() {
               <button id='join'>Join</button><br>
               <button id='presetSave'>Save</button>
               <button id='presetLoad'>Load</button>
-              <button id='presetDuplicate'>Dupl</button>
+              <button id='presetDuplicate'>Dupl</button><br>
+              <button id='undo'>Undo</button>
+              <button id='redo'>Redo</button>
             </div><!--content-->
             <h2>PRIMITIVES</h2>
             <div class="content">
