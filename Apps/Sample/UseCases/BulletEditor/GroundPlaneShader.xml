@@ -3,7 +3,6 @@
   <name>GroundPlaneMaterial</name>
   
   <uniforms>
-    <uniform name="u_sampler0" constant="texture" type="Integer" owner="texture"/>
     <uniform name="u_modelViewProjectionMatrix" constant="modelViewProjectionMatrix" type="Mat44" owner="instance"/>
     <uniform name="u_modelViewMatrix" constant="modelViewMatrix" type="Mat44" owner="instance"/>
 
