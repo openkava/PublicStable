@@ -300,27 +300,29 @@ operator evaluateLocomotionPoseVariables(
         }
         Scalar appliedDelta;
         if(plantedFeet[j]){
-          appliedDelta = (bulletworld.hitPosition - controllerXfo.tr).dot(upvector);
+          appliedDelta = (hitPosition - controllerXfo.tr).dot(upvector);
+          
+          if(stepRatio > 0.0){
+            // at lift time, store the hit delta.
+            hitPositions[j] = hitPosition;
+          }
         }
         else{
           if(displayRaycastingDebugging){
-            debugGeometry.drawLine(hitPositions[j], bulletworld.hitPosition, Color(0.0, 1.0, 0.0, 1.0));
+            debugGeometry.drawLine(hitPositions[j], hitPosition, Color(1.0, 1.0, 0.5, 1.0));
+            debugGeometry.drawLine(controllerXfo.tr, hitPosition, Color(0.0, 1.0, 0.0, 1.0));
           }
           Scalar liftDelta = (hitPositions[j] - controllerXfo.tr).dot(upvector);
-          Scalar plantDelta = (bulletworld.hitPosition - controllerXfo.tr).dot(upvector);
+          Scalar plantDelta = (hitPosition - controllerXfo.tr).dot(upvector);
           appliedDelta = liftDelta + ((plantDelta - liftDelta) * stepRatio);
         }
         appliedFeetRayDeltas[j] = appliedDelta;
         appliedComRayDelta += appliedDelta /= numLegsScalar;
+        
       }
       else{
         report("missed");
-        appliedFeetRayDeltas[j] = (hitPositions[j] - controllerXfo.tr).dot(upvector);
-        appliedComRayDelta += appliedFeetRayDeltas[j] /= numLegsScalar;
-      }
-      if(plantedFeet[j] && stepRatio > 0.0){
-        // at lift time, store the hit delta.
-        hitPositions[j] = hitPosition;
+        debugGeometry.drawLine(rayStart, rayEnd, Color(1.0, 0.0, 0.0, 1.0));
       }
       
       /////////////////////////////////////////////////
