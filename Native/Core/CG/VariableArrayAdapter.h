@@ -66,7 +66,6 @@ namespace Fabric
     
       static void Append( VariableArrayAdapter const *inst, void *dstLValue, void const *srcRValue );
       static void Pop( VariableArrayAdapter const *inst, void *dst, void *result );
-      static void Resize( VariableArrayAdapter const *inst, void *dst, size_t newSize );
  
       void llvmCallPop( BasicBlockBuilder &basicBlockBuilder, llvm::Value *arrayLValue, llvm::Value *memberLValue ) const;
       llvm::Value *llvmCallSize( BasicBlockBuilder &basicBlockBuilder, llvm::Value *arrayRValue ) const;

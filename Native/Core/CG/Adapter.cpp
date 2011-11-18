@@ -474,7 +474,7 @@ namespace Fabric
         llvm::BasicBlock *entryBB = fb.createBasicBlock( "entry" );
         
         bbb->SetInsertPoint( entryBB );
-        llvm::Value *value = bbb->CreateSub( rValue, sizeAdapter->llvmConst( context, 1 ) );
+        llvm::Value *value = rValue;
         value = bbb->CreateOr( value, bbb->CreateLShr( value, sizeAdapter->llvmConst( context, 1 ) ) );
         value = bbb->CreateOr( value, bbb->CreateLShr( value, sizeAdapter->llvmConst( context, 2 ) ) );
         value = bbb->CreateOr( value, bbb->CreateLShr( value, sizeAdapter->llvmConst( context, 4 ) ) );
