@@ -2,19 +2,14 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
-use Mat44;
-use Xfo;
-use OGLBuffer;
-use OGLShaderProgram;
-use FabricOGL;
+use Mat44, Xfo;
+use FabricOGL, OGLBuffer, OGLShaderProgram, OGLTexture2D;
 
 operator loadSkinningMatrices(
   io OGLShaderProgram shaderProgram,
   io Xfo pose[],
   io Mat44 invMatrices[],
-  io Integer boneMapping[],
-  io OGLBuffer indicesBuffer,
-  io Boolean drawToggle
+  io Integer boneMapping[]
 ) {
 //  report("loadSkinningMatrices");
   Integer location = shaderProgram.getUniformLocation(SKINNING_MATRICES_ATTRIBUTE_ID);
@@ -27,5 +22,32 @@ operator loadSkinningMatrices(
       skinningMatrices[i] = (pose[boneMapping[i]].toMat44() * invMatrices[i]).transpose();
     }
     shaderProgram.loadMat44TransposedUniformArray(location, skinningMatrices);
+  }
+}
+
+operator loadSkinningMatricesTexture(
+  io OGLShaderProgram shaderProgram,
+  io Xfo poses<>[],
+  io Mat44 invMatrices[],
+  io Integer boneMapping[],
+  io OGLTexture2D oglSkinningMatriciesTexture2D,
+  io Integer skinningMatriciesTextureUnit
+) {
+//  report("loadSkinningMatrices");
+
+  Integer location = shaderProgram.getUniformLocation(SKINNIMATRICIES_TEXTUREUNIT_ATTRIBUTE_ID);
+  if(location!=-1){
+    
+    Mat44 skinningMatrices[];
+    for (var Integer i = 0; i < poses.size(); i++) {
+      skinningMatrices.resize(skinningMatrices.size + invMatrices.size());
+      for (var Integer j = 0; j < invMatrices.size(); j++) {
+        if(boneMapping[j] < 0)
+          continue;
+        skinningMatrices[(i*invMatrices.size())+j] = (poses[i][boneMapping[j]].toMat44() * invMatrices[j]).transpose();
+      }
+    }
+    shaderProgram.loadIntegerUniform(location, skinningMatriciesTextureUnit);
+    oglSkinningMatriciesTexture2D.bindImageMatrixArray(skinningMatrices, skinningMatriciesTextureUnit);
   }
 }
