@@ -458,30 +458,51 @@ $(document).ready(function() {
     width: 0.25,
     height: 2.0
   });
+  geometryNodes['primitiveSphere'] = scene.constructNode('Sphere', {
+    radius:0.5,
+    detail: 8
+  });
+  geometryNodes['primitiveBall'] = scene.constructNode('Sphere', {
+    radius:1.0,
+    detail: 8
+  });
+  var colorSteps = 2.0;
   materialNodes['primitiveCube'] = toonRenderer.constructMaterial('ToonMaterial', {
     lightNode: light,
     darkColor: FABRIC.RT.rgb(165/255,118/255,74/255),
     brightColor: FABRIC.RT.rgb(201/255,168/255,117/255),
-    colorSteps: 8.0
+    colorSteps: colorSteps
   });
   materialNodes['primitiveFlat'] = toonRenderer.constructMaterial('ToonMaterial', {
     lightNode: light,
     darkColor: FABRIC.RT.rgb(35/255,52/255,72/255),
     brightColor: FABRIC.RT.rgb(81/255,96/255,115/255),
-    colorSteps: 8.0
+    colorSteps: colorSteps
   });
   materialNodes['primitiveHigh'] = toonRenderer.constructMaterial('ToonMaterial', {
     lightNode: light,
     darkColor: FABRIC.RT.rgb(127/255,49/255,45/255),
     brightColor: FABRIC.RT.rgb(176/255,125/255,122/255),
-    colorSteps: 8.0
+    colorSteps: colorSteps
+  });
+  materialNodes['primitiveSphere'] = toonRenderer.constructMaterial('ToonMaterial', {
+    lightNode: light,
+    darkColor: FABRIC.RT.rgb(128/255,142/255,0/255),
+    brightColor: FABRIC.RT.rgb(230/255,255/255,0/255),
+    colorSteps: colorSteps
+  });
+  materialNodes['primitiveBall'] = toonRenderer.constructMaterial('ToonMaterial', {
+    lightNode: light,
+    darkColor: FABRIC.RT.rgb(128/255,0/255,0/255),
+    brightColor: FABRIC.RT.rgb(255/255,0/255,0/255),
+    colorSteps: colorSteps
   });
 
   var highlightMaterial = toonRenderer.constructMaterial('ToonMaterial', {
     lightNode: light,
     darkColor: FABRIC.RT.rgb(77/255,159/255,70/255),
     brightColor: FABRIC.RT.rgb(207/255,255/255,203/255),
-    colorSteps: 8.0
+    colorSteps: colorSteps
   });
   
   //==========================================================
@@ -497,12 +518,21 @@ $(document).ready(function() {
   scalings['primitiveCube'] = new FABRIC.RT.Vec3(0.5,0.5,0.5);
   scalings['primitiveFlat'] = new FABRIC.RT.Vec3(1.5,0.25,0.5);
   scalings['primitiveHigh'] = new FABRIC.RT.Vec3(0.125,1.0,0.125);
+  scalings['primitiveSphere'] = new FABRIC.RT.Vec3(0.5,0.5,0.5);
+  scalings['primitiveBall'] = new FABRIC.RT.Vec3(1.0,1.0,1.0);
   var masses = {};
   masses['primitiveCube'] = 1.0;
   masses['primitiveFlat'] = 2.0;
   masses['primitiveHigh'] = 0.25;
-  for(var id in scalings)
-    worldNode.addShape(id,FABRIC.RT.BulletShape.createBox(scalings[id]));
+  masses['primitiveSphere'] = 1.0;
+  masses['primitiveBall'] = 3.0;
+
+  // create all shapes
+  worldNode.addShape('primitiveCube',FABRIC.RT.BulletShape.createBox(scalings['primitiveCube']));
+  worldNode.addShape('primitiveFlat',FABRIC.RT.BulletShape.createBox(scalings['primitiveFlat']));
+  worldNode.addShape('primitiveHigh',FABRIC.RT.BulletShape.createBox(scalings['primitiveHigh']));
+  worldNode.addShape('primitiveSphere',FABRIC.RT.BulletShape.createSphere(scalings['primitiveSphere'].y));
+  worldNode.addShape('primitiveBall',FABRIC.RT.BulletShape.createSphere(scalings['primitiveBall'].y));
 
   var ws = false;
   var isPlaying = false;
@@ -967,6 +997,8 @@ $(document).ready(function() {
   $("#primitiveCube").draggable();
   $("#primitiveFlat").draggable();
   $("#primitiveHigh").draggable();
+  $("#primitiveSphere").draggable();
+  $("#primitiveBall").draggable();
   
   var dragStatus = {};
   var originalOffset = {};
@@ -1152,9 +1184,11 @@ $(document).ready(function() {
             </div><!--content-->
             <h2>PRIMITIVES</h2>
             <div class="content">
-              <div id="primitiveCube" style="display: inline-block; margin: 2px; width: 50px; height: 50px; background-image:url(../../BasicDemos/Resources/wood1.png)"></div>
-              <div id="primitiveFlat" style="display: inline-block; margin: 2px; width: 150px; height: 25px; background-image:url(../../BasicDemos/Resources/wood2.png)"></div>
-              <div id="primitiveHigh" style="display: inline-block; margin: 2px; width: 50px; height: 100px; background-image:url(../../BasicDemos/Resources/wood3.png)"></div>
+              <div id="primitiveCube" style="display: inline-block; margin: 2px; width: 50px; height: 50px; background-color:rgb(201,168,117)"></div>
+              <div id="primitiveFlat" style="display: inline-block; margin: 2px; width: 150px; height: 25px; background-color:rgb(81,96,115)"></div>
+              <div id="primitiveHigh" style="display: inline-block; margin: 2px; width: 50px; height: 100px; background-color:rgb(176,125,122)"></div>
+              <div id="primitiveSphere" style="display: inline-block; margin: 2px; width: 50px; height: 50px; background-color:rgb(230,255,0)"></div>
+              <div id="primitiveBall" style="display: inline-block; margin: 2px; width: 75px; height: 75px; background-color:rgb(255,0,0)"></div>
             </div><!--content-->
             <div id="participants">
               <h2>PARTICIPANTS</h2>
