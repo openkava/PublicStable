@@ -567,23 +567,31 @@ operator locomotionPreProcessing(
       Limb leg = legs[foot.limbId];
       Xfo footXfo = poseVariables.xfoValues[leg.ikGoalXfoId];
       
-      Xfo footMotionDelta, baseFootXfo;
-      baseFootXfo.setIdentity();
+      // TODO: calculate the displacementDir based on the com movement;
+      Vec3 displacementDir(0.0,0.0,1.0);
+      Xfo footParentSpaceXfo;
       if(leg.hubId < 0){
-        baseFootXfo.tr = (comXfo * leg.ikGoalReferenceXfo).tr;
-        baseFootXfo.ori = comXfo.ori;
-      }else{
+        footParentSpaceXfo = comXfo;
+      }
+      else{
         Xfo hubXfo = poseVariables.xfoValues[hubs[leg.hubId].xfoId];
         hubXfo.tr.z += comXfo.tr.z;
-        baseFootXfo = hubXfo * leg.ikGoalReferenceXfo;
-        baseFootXfo.ori = comXfo.ori;
+        footParentSpaceXfo = hubXfo;
       }
-      debugGeometry.drawAxis(baseFootXfo, 1.0, Color(0.0,0.0,0.0,1.0));
-      debugGeometry.drawLine(footXfo.tr, baseFootXfo.tr, Color(1.0, 0.0, 0.0, 1.0));
-      footMotionDelta = baseFootXfo.inverse() * footXfo;
+    
+      debugGeometry.drawLine(footXfo.tr, footParentSpaceXfo.tr, Color(1.0, 0.0, 0.0, 1.0));
       
-      Scalar stepValue = footMotionDelta.tr.z;
-      footMotionDelta.tr.z = 0.0;
+      Xfo baseFootXfo = footParentSpaceXfo * leg.ikGoalReferenceXfo;
+      baseFootXfo.ori = comXfo.ori;
+      debugGeometry.drawLine(footXfo.tr, baseFootXfo.tr, Color(0.5, 0.5, 0.75, 1.0));
+      
+      Scalar stepValue = (footXfo.tr - baseFootXfo.tr).dot(displacementDir);
+      
+      footXfo.tr -= displacementDir * stepValue;
+      debugGeometry.drawLine(footXfo.tr, comXfo.tr, Color(0.0, 0.0, 0.0, 1.0));
+      
+      Xfo footMotionDelta = footParentSpaceXfo.inverse() * footXfo;
+      
       poseVariables.scalarValues[foot.stepTimeVarId] = stepValue;
       poseVariables.xfoValues[leg.ikGoalXfoId] = footMotionDelta;
     }

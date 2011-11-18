@@ -138,7 +138,7 @@ $(document).ready(function() {
     createGroundPlane:false,
     groundPlanseSize: 30,
   } );
-  
+  /*
   var createBoxes = true;
   if(createBoxes){
     // add a box shape
@@ -217,6 +217,42 @@ $(document).ready(function() {
         })
       })
     });
+    
+    scene.constructNode('Instance', {
+      geometryNode: cuboidNode,
+      materialNode: phongMaterial,
+      transformNode: scene.constructNode('BulletRigidBodyTransform', {
+        bulletWorldNode: bulletWorldNode,
+        shapeName: 'Box',
+        rigidBody: new FABRIC.RT.BulletRigidBody({
+          transform: FABRIC.RT.xfo({
+            tr: new FABRIC.RT.Vec3(-4, 10, 0),
+            ori: new FABRIC.RT.Quat().setFromAxisAndAngle(new FABRIC.RT.Vec3(1,0,0),-0.3),
+            sc: new FABRIC.RT.Vec3(0.1, 0.1, 0.1),
+          }),
+          friction: 0.8,
+          restitution: 0.7,
+        })
+      })
+    });
+    
+    scene.constructNode('Instance', {
+      geometryNode: cuboidNode,
+      materialNode: phongMaterial,
+      transformNode: scene.constructNode('BulletRigidBodyTransform', {
+        bulletWorldNode: bulletWorldNode,
+        shapeName: 'Box',
+        rigidBody: new FABRIC.RT.BulletRigidBody({
+          transform: FABRIC.RT.xfo({
+            tr: new FABRIC.RT.Vec3(4, 10, 0),
+            ori: new FABRIC.RT.Quat().setFromAxisAndAngle(new FABRIC.RT.Vec3(1,0,0),0.3),
+            sc: new FABRIC.RT.Vec3(0.1, 0.1, 0.1),
+          }),
+          friction: 0.8,
+          restitution: 0.7,
+        })
+      })
+    });
   }
   else{
     var scaleFactor = 0.1;
@@ -238,6 +274,8 @@ $(document).ready(function() {
       })
     });
   }
+  */
+  
   
   var rigName = 'walker';
   try{
