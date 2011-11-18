@@ -344,7 +344,6 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
     var offscreenNodeRedrawEventHandler = offscreenNode.constructEventHandlerNode('Redraw');
     rootRedrawEventHandler.appendChildEventHandler(offscreenNodeRedrawEventHandler);
 
-    offscreenNodeRedrawEventHandler.addMember('renderTargetToViewShaderProgram', 'Integer');
     offscreenNodeRedrawEventHandler.addMember('renderTarget', 'OGLRenderTarget', FABRIC.RT.oglRenderTarget(0,0,[
         new FABRIC.RT.OGLRenderTargetTextureDesc (
             2,
