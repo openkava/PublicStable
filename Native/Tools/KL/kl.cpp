@@ -269,8 +269,9 @@ void handleFile( std::string const &filename, FILE *fp, unsigned int runFlags )
 
       llvm::OwningPtr<llvm::PassManager> passManager( new llvm::PassManager );
       passManager->add( llvm::createVerifierPass() );
-      llvm::createStandardFunctionPasses( passManager.get(), 2 );
-      llvm::createStandardModulePasses( passManager.get(), 2, false, true, true, true, false, llvm::createFunctionInliningPass() );
+      llvm::createStandardAliasAnalysisPasses( passManager.get() );
+      llvm::createStandardFunctionPasses( passManager.get(), 3 );
+      llvm::createStandardModulePasses( passManager.get(), 3, false, true, true, true, false, llvm::createFunctionInliningPass() );
       llvm::createStandardLTOPasses( passManager.get(), true, true, false );
       passManager->run( *module );
 
