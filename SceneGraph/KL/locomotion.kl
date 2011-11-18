@@ -62,7 +62,7 @@ operator evaluateLocomotionPoseVariables(
   
   Boolean displayRaycastingDebugging = true;
   Boolean displayFootPinningDebugging = true;
-  Boolean performRaycasting = false;
+  Boolean performRaycasting = true;
   
   Xfo controllerXfo = controllerXfoSet[index];
   CharacterControllerParams controllerparams = controllerparamsSet[index];
@@ -292,17 +292,19 @@ operator evaluateLocomotionPoseVariables(
         rayEnd = refPos - (upvector * 2.5);
         
         Boolean filterPassiveObjects = false;
-        bulletworld.raycast(rayStart,rayEnd, filterPassiveObjects);
-        if(bulletworld.hit) {
-          hitPosition = bulletworld.hitPosition;
+        BulletContact contacts[];
+        bulletworld.raycast(rayStart,rayEnd, filterPassiveObjects,contacts);
+        if(contacts.size() > 0) {
+          hitPosition = rayStart + (rayEnd - rayStart) * contacts[0].fraction;
           Xfo tmp = footPlantXfo;
-          tmp.tr = bulletworld.hitPosition;
+          tmp.tr = hitPosition;
           
           if(displayRaycastingDebugging){
             debugGeometry.drawCircle(tmp * rot90, 0.03, Color(0.0, 1.0, 1.0, 1.0));
-            debugGeometry.drawLine(rayStart, bulletworld.hitPosition, Color(0.0, 1.0, 1.0, 1.0));
+            debugGeometry.drawLine(rayStart, hitPosition, Color(0.0, 1.0, 1.0, 1.0));
           }
           Scalar appliedDelta;
+          
           if(plantedFeet[j]){
             appliedDelta = (hitPosition - controllerXfo.tr).dot(upvector);
             
@@ -325,7 +327,6 @@ operator evaluateLocomotionPoseVariables(
           
         }
         else{
-          report("missed");
           debugGeometry.drawLine(rayStart, rayEnd, Color(1.0, 0.0, 0.0, 1.0));
         }
       }
