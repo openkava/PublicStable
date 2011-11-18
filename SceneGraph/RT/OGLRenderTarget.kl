@@ -195,10 +195,7 @@ function OGLRenderTarget.bind() {
   Size nbColor = 0;
   for(Size i=0; i<this.textures.size(); i++){
     if(this.textures[i].texture.bufferID!=0){
-      if(this.textures[i].type == 1)
-          drawBufferIDs.push(GL_DEPTH_ATTACHMENT);
-      else
-          drawBufferIDs.push(GL_COLOR_ATTACHMENT0 + nbColor++);
+      drawBufferIDs.push(GL_COLOR_ATTACHMENT0 + nbColor++);
     }
   }
   glDrawBuffers(this.textures.size, drawBufferIDs);
