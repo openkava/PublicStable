@@ -76,6 +76,7 @@ namespace Fabric
       llvm::Type const *llvmLType( RC::Handle<Context> const &context ) const;
       llvm::Type const *llvmRType( RC::Handle<Context> const &context ) const;
       bool usesReturnLValue() const { return m_flags & FL_PASS_BY_REFERENCE; }
+      bool isPassByReference() const { return m_flags & FL_PASS_BY_REFERENCE; }
       
       llvm::Value *llvmLValueToRValue( BasicBlockBuilder &basicBlockBuilder, llvm::Value *lValue ) const;
       llvm::Value *llvmRValueToLValue( BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const;
