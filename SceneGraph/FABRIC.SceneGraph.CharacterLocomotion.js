@@ -471,10 +471,16 @@ FABRIC.SceneGraph.registerNodeType('LocomotionPoseVariables', {
     dgnode.addMember('prevUpdatePose', 'PoseVariables', poseError);
     dgnode.addMember('clipActivationTime', 'Scalar', -1.0);
     
-    dgnode.addMember('debugGeometry', 'DebugGeometry' );
-    var debugGeometryDraw = scene.constructNode('DebugGeometryDraw', {
+    dgnode.addMember('debugFootMotion', 'DebugGeometry' );
+    var debugFootMotionDraw = scene.constructNode('DebugGeometryDraw', {
         dgnode: dgnode,
-        debugGemetryMemberName: 'debugGeometry'
+        debugGemetryMemberName: 'debugFootMotion'
+    });
+    
+    dgnode.addMember('debugRaycasting', 'DebugGeometry' );
+    var debugRaycastingDraw = scene.constructNode('DebugGeometryDraw', {
+        dgnode: dgnode,
+        debugGemetryMemberName: 'debugRaycasting'
     });
     
     dgnode.setDependency(scene.getGlobalsNode(), 'globals');
@@ -522,7 +528,8 @@ FABRIC.SceneGraph.registerNodeType('LocomotionPoseVariables', {
         'self.clipActivationTime',
         'self.index',
         
-        'self.debugGeometry'
+        'self.debugFootMotion',
+        'self.debugRaycasting'
       ]
     }));
     
@@ -567,8 +574,11 @@ FABRIC.SceneGraph.registerNodeType('LocomotionPoseVariables', {
       }));
     }
     
-    locomotionVariables.pub.setDrawDebuggingToggle = function(tf){
-      debugGeometryDraw.pub.setDrawToggle(tf);
+    locomotionVariables.pub.setDrawFootMotionDebuggingToggle = function(tf){
+      debugFootMotionDraw.pub.setDrawToggle(tf);
+    }
+    locomotionVariables.pub.setDrawRaycastingDebuggingToggle = function(tf){
+      debugRaycastingDraw.pub.setDrawToggle(tf);
     }
     
     locomotionVariables.pub.setSkeletonNode(characterRigNode.pub.getSkeletonNode());

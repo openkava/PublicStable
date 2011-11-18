@@ -52,17 +52,20 @@ operator evaluateLocomotionPoseVariables(
   io Scalar clipActivationTime,
   in Size index,
   
-  io DebugGeometry debugGeometry
+  io DebugGeometry debugFootMotion,
+  io DebugGeometry debugRaycasting
 ) {
 //  report("evaluateLocomotionPoseVariables:"+index);
   if(timestep==0){
     return;
   }
-  debugGeometry.reset();
+  debugFootMotion.reset();
+  debugRaycasting.reset();
   
+  // Constants that mean LLVM optimize our all unused code.
   Boolean displayRaycastingDebugging = true;
   Boolean displayFootPinningDebugging = true;
-  Boolean performRaycasting = true;
+  Boolean performRaycasting = false;
   
   Xfo controllerXfo = controllerXfoSet[index];
   CharacterControllerParams controllerparams = controllerparamsSet[index];
@@ -256,8 +259,8 @@ operator evaluateLocomotionPoseVariables(
       Xfo footXfo = footParentSpaceXfo * poseVariables.xfoValues[leg.ikGoalXfoId];
       Xfo baseFootXfo = footParentSpaceXfo * leg.ikGoalReferenceXfo;
       if(displayFootPinningDebugging){
-        debugGeometry.drawLine(controllerXfo.tr, baseFootXfo.tr, Color(0.0, 0.5, 0.5, 1.0));
-        debugGeometry.drawAxis(footParentSpaceXfo, 3.0, Color(0.0, 0.5, 0.5, 1.0));
+        debugFootMotion.drawLine(controllerXfo.tr, baseFootXfo.tr, Color(0.0, 0.5, 0.5, 1.0));
+        debugFootMotion.drawAxis(footParentSpaceXfo, 3.0, Color(0.0, 0.5, 0.5, 1.0));
       }
       Scalar stepValue = poseVariables.scalarValues[foot.stepTimeVarId];
       
@@ -273,7 +276,7 @@ operator evaluateLocomotionPoseVariables(
       footXfo.tr += displacementDir * stepValue * strideLengthMultiplier;
       
       if(displayFootPinningDebugging){
-        debugGeometry.drawLine(lift, footPlantXfo.tr, Color(0.0, 0.25, 0.25, 1.0));
+        debugFootMotion.drawLine(lift, footPlantXfo.tr, Color(0.0, 0.25, 0.25, 1.0));
       }
       //  report(j+" t:"+t+" stepId:"+stepId +" currStep:"+currStep + " stepRatio:"+stepRatio + " planted:"+plantedFeet[j]);
       
@@ -298,8 +301,8 @@ operator evaluateLocomotionPoseVariables(
           tmp.tr = hitPosition;
           
           if(displayRaycastingDebugging){
-            debugGeometry.drawCircle(tmp * rot90, 0.03, Color(0.0, 1.0, 1.0, 1.0));
-            debugGeometry.drawLine(rayStart, hitPosition, Color(0.0, 1.0, 1.0, 1.0));
+            debugRaycasting.drawCircle(tmp * rot90, 0.03, Color(0.0, 1.0, 1.0, 1.0));
+            debugRaycasting.drawLine(rayStart, hitPosition, Color(0.0, 1.0, 1.0, 1.0));
           }
           Scalar appliedDelta;
           
@@ -313,8 +316,8 @@ operator evaluateLocomotionPoseVariables(
           }
           else{
             if(displayRaycastingDebugging){
-              debugGeometry.drawLine(hitPositions[j], hitPosition, Color(1.0, 1.0, 0.5, 1.0));
-              debugGeometry.drawLine(controllerXfo.tr, hitPosition, Color(0.0, 1.0, 0.0, 1.0));
+              debugRaycasting.drawLine(hitPositions[j], hitPosition, Color(1.0, 1.0, 0.5, 1.0));
+              debugRaycasting.drawLine(controllerXfo.tr, hitPosition, Color(0.0, 1.0, 0.0, 1.0));
             }
             Scalar liftDelta = (hitPositions[j] - controllerXfo.tr).dot(upvector);
             Scalar plantDelta = (hitPosition - controllerXfo.tr).dot(upvector);
@@ -325,13 +328,13 @@ operator evaluateLocomotionPoseVariables(
           
         }
         else{
-          debugGeometry.drawLine(rayStart, rayEnd, Color(1.0, 0.0, 0.0, 1.0));
+          debugRaycasting.drawLine(rayStart, rayEnd, Color(1.0, 0.0, 0.0, 1.0));
         }
       }
       /////////////////////////////////////////////////
       // Foot Pinning
       if(displayFootPinningDebugging){
-        debugGeometry.drawCircle(footXfo * rot90, 0.1, Color(0.0, 0.5, 0.5, 1.0));
+        debugFootMotion.drawCircle(footXfo * rot90, 0.1, Color(0.0, 0.5, 0.5, 1.0));
       }
       Vec3 footError;
       if(stepRatio > 0.0 && stepRatio < 1.0){
@@ -380,12 +383,12 @@ operator evaluateLocomotionPoseVariables(
         else{
           // Interpolate the error across the step.
           if(stepRatio < 0.5){
-            Scalar errorDissipation = 1.0 - sin(stepRatio * 2.0 * HALF_PI);
+            Scalar errorDissipation = cos(stepRatio * TWO_PI) * 0.5 + 0.5;
             footError = plantLocations[j] * errorDissipation;
           }
         }
         if(displayFootPinningDebugging){
-          debugGeometry.drawCircle(footPlantXfo * rot90, 0.1, Color(0.0, 0.5, 0.5, 1.0));
+          debugFootMotion.drawCircle(footPlantXfo * rot90, 0.1, Color(0.0, 0.5, 0.5, 1.0));
         }
       }
       else{
@@ -411,8 +414,8 @@ operator evaluateLocomotionPoseVariables(
         }
         
         if(displayFootPinningDebugging){
-          debugGeometry.drawCircle(footXfo * rot90, 0.1, Color(0.5, 0.5, 0.0, 1.0));
-          debugGeometry.drawLine(footXfo.tr, plantLocations[j], Color(0.5, 0.5, 0.0, 1.0));
+          debugFootMotion.drawCircle(footXfo * rot90, 0.1, Color(0.5, 0.5, 0.0, 1.0));
+          debugFootMotion.drawLine(footXfo.tr, plantLocations[j], Color(0.5, 0.5, 0.0, 1.0));
         }
       }
       footXfo = invcontrollerXfo * footXfo;

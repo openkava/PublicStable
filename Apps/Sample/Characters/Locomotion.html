@@ -92,6 +92,9 @@ $(document).ready(function() {
   });
   $("#displayControllerDebugging").attr('checked', true);
   $("#displayFootMotionDebugging").attr('checked', true);
+  $("#displayFootRaycastingDebugging").attr('checked', true);
+  
+  
 
   // Create the scene.
   var scene = FABRIC.SceneGraph.createScene();
@@ -346,9 +349,15 @@ $(document).ready(function() {
     viewport.redraw();
   });
   $("#displayFootMotionDebugging").change(function() {
-    locomotionVariables.setDrawDebuggingToggle($("#displayFootMotionDebugging").is(":checked"));
+    locomotionVariables.setDrawFootMotionDebuggingToggle($("#displayFootMotionDebugging").is(":checked"));
     viewport.redraw();
   });
+  $("#displayFootRaycastingDebugging").change(function() {
+    locomotionVariables.setDrawRaycastingDebuggingToggle($("#displayFootRaycastingDebugging").is(":checked"));
+    viewport.redraw();
+  });
+  
+  displayFootRaycastingDebugging
   
   var togglePlay = function(){
     if ($('#play').text() == 'Play') {
@@ -516,6 +525,8 @@ $(document).ready(function() {
               <input type="checkbox" id="displayControllerDebugging" style="margin-top:10px;"/><label for="displayControllerDebugging">Display Controller Debugging:</label>
               </br>
               <input type="checkbox" id="displayFootMotionDebugging" style="margin-top:10px;"/><label for="displayFootMotionDebugging">Display Foot Motion Debugging:</label>
+              </br>
+              <input type="checkbox" id="displayFootRaycastingDebugging" style="margin-top:10px;"/><label for="displayFootRaycastingDebugging">Display Foot Raycasting Debugging:</label>
               </br>
               <button id="play" style="margin-top:10px;">Play</button>
               <button id="step" style="margin-top:10px;">Step</button>
