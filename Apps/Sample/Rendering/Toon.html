@@ -73,6 +73,7 @@ FABRIC.SceneGraph.registerNodeType('ToonRenderer', {
   },
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
+      lightNode: undefined
     });
 
     var renderNode = scene.constructNode('SceneGraphNode');
@@ -166,7 +167,8 @@ FABRIC.SceneGraph.registerNodeType('ToonRenderer', {
         }));
 
     var toonDemoMaterialPub = scene.pub.constructNode('ToonDemoMaterial', {
-      parentEventHandler: renderTargetRedrawEventHandler
+      parentEventHandler: renderTargetRedrawEventHandler,
+      lightNode: options.lightNode
     });
     
     var compositingMaterial = scene.constructNode('Material', {
@@ -190,11 +192,11 @@ FABRIC.SceneGraph.registerNodeType('ToonRenderer', {
     var compositingRedrawEventHandler = compositingMaterial.getRedrawEventHandler();
     
     // create an operator to draw one of the textures full screen
-    compositingRedrawEventHandler.preDescendBindings.append(
+    compositingRedrawEventHandler.postDescendBindings.append(
       scene.constructOperator({
-          operatorName: 'drawCompositing',
+          operatorName: 'drawToonCompositing',
           srcCode:'use OGLTexture2D;\nuse OGLShaderProgram;\n' +
-                  'operator drawCompositing(io Integer t[' + nbRenderTargets + '], io OGLShaderProgram shaderProgram){ \n' +
+                  'operator drawToonCompositing(io Integer t[' + nbRenderTargets + '], io OGLShaderProgram shaderProgram){ \n' +
                   '  glMatrixMode(GL_MODELVIEW);\n' + 
                   '  glPushMatrix();\n' + 
                   '  glLoadIdentity();\n' +
@@ -215,7 +217,7 @@ FABRIC.SceneGraph.registerNodeType('ToonRenderer', {
                   '  glEnd();\n' + 
                   '  glPopMatrix();\n' + 
                   '  return;\n  }\n',
-          entryFunctionName: 'drawCompositing',
+          entryFunctionName: 'drawToonCompositing',
           parameterLayout: [
             'toonDraw.textureIDs',
             'shader.shaderProgram'
@@ -277,7 +279,7 @@ $(document).ready(function() {
   var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(2.0, 10.0, 5.0) });
   var teapot = scene.constructNode('Teapot', { detail: 8 });
   
-  var toonRenderer = scene.constructNode('ToonRenderer');
+  var toonRenderer = scene.constructNode('ToonRenderer', {lightNode: light});
 
   var instance = scene.constructNode('Instance', {
       transformNode: scene.constructNode('Transform', {
