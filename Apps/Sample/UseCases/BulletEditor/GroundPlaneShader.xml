@@ -5,6 +5,7 @@
   <uniforms>
     <uniform name="u_modelViewProjectionMatrix" constant="modelViewProjectionMatrix" type="Mat44" owner="instance"/>
     <uniform name="u_modelViewMatrix" constant="modelViewMatrix" type="Mat44" owner="instance"/>
+    <uniform name="u_normalMatrix" constant="normalMatrix" type="Mat33" owner="instance"/>
 
     <uniform name="u_materialBrightColor" constant="darkColor" type="Color" defaultValue="FABRIC.RT.rgba(1,1,1,1)"/>
     <uniform name="u_materialDarkColor" constant="brightColor" type="Color" defaultValue="FABRIC.RT.rgba(0,0,0,1)"/>
@@ -17,10 +18,13 @@
     <uniform name="u_lightPosition" constant="lightPosition" type="Vec3" owner="light"/>
     <uniform name="u_lightDir" constant="lightDir" type="Vec3" owner="light"/>
     <uniform name="u_lightCosCutoff" constant="lightCosCutoff" type="Scalar" owner="light"/>
+
+    <uniform name="u_colorBlend" constant="colorBlend" type="Scalar" defaultValue="1.0"/>
   </uniforms>
   
   <attributes>
     <attribute name="a_position" binding="positions"/>
+    <attribute name="a_normal" binding="normals"/>
     <attribute name="a_texCoord" binding="uvs0"/>
   </attributes>
   
@@ -37,13 +41,16 @@
       <![CDATA[
       uniform mat4 u_modelViewProjectionMatrix;
       uniform mat4 u_modelViewMatrix;
+      uniform mat3 u_normalMatrix;
       uniform mat4 u_shadowMapMatrix;
       uniform vec4 u_lightPosition;
       
       attribute vec4 a_position;
+      attribute vec3 a_normal;
       attribute vec2 a_texCoord;
       varying vec4 shadowCoord;
       varying vec3 lightDir;
+      varying vec3 normal;
       
       void main()
       {
@@ -52,6 +59,7 @@
 
         gl_TexCoord[0].xy = a_texCoord;
         gl_Position =  u_modelViewProjectionMatrix * a_position;
+        normal = u_normalMatrix * a_normal;
         shadowCoord =  u_shadowMapMatrix * u_modelViewMatrix * a_position;
       }
       ]]>
@@ -67,10 +75,12 @@
       uniform float u_shadowIntensity;
       uniform vec3 u_lightDir;
       uniform float u_lightCosCutoff;
+      uniform float u_colorBlend;
 
       varying vec4 shadowCoord;
       varying vec2 a_texCoord;
       varying vec3 lightDir;
+      varying vec3 normal;
       ]]>
       </source>
       <include file="../../../../../SceneGraph/Shaders/shadows.txt"/>
@@ -95,9 +105,11 @@
         int modX = int(floor(gl_TexCoord[0].x / u_materialStep));
         int modY = int(floor(gl_TexCoord[0].y / u_materialStep));
         if(modX % 2 == modY % 2)
-          gl_FragColor = u_materialBrightColor * lightFactor;
+          gl_FragData[0] = u_materialBrightColor * lightFactor;
         else
-          gl_FragColor = u_materialDarkColor * lightFactor;
+          gl_FragData[0] = u_materialDarkColor * lightFactor;
+        gl_FragData[0].a = u_colorBlend;
+        gl_FragData[2].xyz = normalize(normal);
       }
       ]]>
     </source>

@@ -90,18 +90,8 @@ FABRIC.SceneGraph.registerNodeType('WorkPlane', {
 
     if(!options.cameraNode)
       throw("Options.cameraNode is not specified!");
-
-    // create a color if there's nothing
     if(!options.materialNode)
-      options.materialNode = scene.constructNode('WorkPlaneMaterial', {
-        textureNode: scene.constructNode('Image', { url: '../../BasicDemos/Resources/layout_grid.png' }).pub,
-        colorBlend: 0.0,
-        disableOptions: [FABRIC.SceneGraph.OpenGLConstants.GL_CULL_FACE],
-        enableOptions: [FABRIC.SceneGraph.OpenGLConstants.GL_BLEND],
-        blendModeSfactor: FABRIC.SceneGraph.OpenGLConstants.GL_SRC_ALPHA,
-        blendModeDfactor: FABRIC.SceneGraph.OpenGLConstants.GL_ONE_MINUS_SRC_ALPHA,
-        parentEventHandler: scene.getSceneRedrawTransparentObjectsEventHandler()
-      }).pub;
+      throw("Options.materialNode is not specified!");
     if(!options.geometryNode)
       options.geometryNode = scene.constructNode('Plane', {
         width: 16.0,
@@ -132,6 +122,8 @@ FABRIC.SceneGraph.registerNodeType('WorkPlane', {
         'self.standing'
       ]
     }));
+    
+    workPlaneNode.pub.setDrawToggle(false);
 
     return workPlaneNode;    
   }});
@@ -141,45 +133,203 @@ FABRIC.SceneGraph.defineEffectFromFile('ToonMaterial', 'ToonShader.xml');
 FABRIC.SceneGraph.defineEffectFromFile('WorkPlaneMaterial', 'WorkPlaneShader.xml');
 FABRIC.SceneGraph.defineEffectFromFile('GroundPlaneMaterial', 'GroundPlaneShader.xml');
 
-// setup our custom post process effect
-FABRIC.SceneGraph.registerNodeType('ToonPostProcessEffect', {
+// register our custom renderer
+FABRIC.SceneGraph.registerNodeType('ToonRenderer', {
+  briefDesc: '',
+  detailedDesc: '',
+  parentNodeDesc: '',
+  optionsDesc: {
+  },
   factoryFn: function(options, scene) {
-    options.fragmentShader = FABRIC.loadResourceURL('ToonPostProcessEffectShader.glsl');
+    scene.assignDefaults(options, {
+    });
 
-    options.shaderUniforms = {
-      //width: { name: 'u_width', owner: 'window', type:'Integer' },
-      //height: { name: 'u_height', owner: 'window', type:'Integer' }
-    };
-    options.renderTarget = new FABRIC.RT.OGLRenderTarget(
-      0,
-      0,
-      [
+    var renderNode = scene.constructNode('SceneGraphNode');
+    var redrawEventHandler = renderNode.constructEventHandlerNode('ToonDraw');
+    redrawEventHandler.setScopeName('toonDraw');
+
+    scene.getSceneRedrawOpaqueObjectsEventHandler().appendChildEventHandler(redrawEventHandler);
+
+    var renderTargetRedrawEventHandler = renderNode.constructEventHandlerNode('RenderTargetRedraw');
+    renderTargetRedrawEventHandler.setScopeName('toonRenderTarget');
+    redrawEventHandler.appendChildEventHandler(renderTargetRedrawEventHandler);
+    var opaqueRedrawEventHandler = renderNode.constructEventHandlerNode('RenderTargetOpaqueRedraw');
+    var transparentRedrawEventHandler = renderNode.constructEventHandlerNode('RenderTargetTransparentRedraw');
+    renderTargetRedrawEventHandler.appendChildEventHandler(opaqueRedrawEventHandler);
+    renderTargetRedrawEventHandler.appendChildEventHandler(transparentRedrawEventHandler);
+
+    var oglRenderTargetTextureDescs = [];
+    var oglRenderTargetTextureNames = [];
+
+    oglRenderTargetTextureDescs.push(
+        new FABRIC.RT.OGLRenderTargetTextureDesc (
+            2, // COLOR_BUFFER
+            new FABRIC.RT.OGLTexture2D (
+              FABRIC.SceneGraph.OpenGLConstants.GL_RGB16F,
+              FABRIC.SceneGraph.OpenGLConstants.GL_RGBA,
+              FABRIC.SceneGraph.OpenGLConstants.GL_FLOAT)
+          ));
+    oglRenderTargetTextureNames.push('colors');
+
+    oglRenderTargetTextureDescs.push(
+        new FABRIC.RT.OGLRenderTargetTextureDesc (
+            2, // COLOR_BUFFER
+            new FABRIC.RT.OGLTexture2D (
+              FABRIC.SceneGraph.OpenGLConstants.GL_RGB16F,
+              FABRIC.SceneGraph.OpenGLConstants.GL_RGBA,
+              FABRIC.SceneGraph.OpenGLConstants.GL_FLOAT)
+          ));
+    oglRenderTargetTextureNames.push('normals');
+
+    oglRenderTargetTextureDescs.push(
         new FABRIC.RT.OGLRenderTargetTextureDesc(
-          1,
+          1, // DEPTH_BUFFER
           new FABRIC.RT.OGLTexture2D(
             FABRIC.SceneGraph.OpenGLConstants.GL_DEPTH_COMPONENT,
             FABRIC.SceneGraph.OpenGLConstants.GL_DEPTH_COMPONENT,
             FABRIC.SceneGraph.OpenGLConstants.GL_FLOAT)
-        ),
-        new FABRIC.RT.OGLRenderTargetTextureDesc(
-          2,
-          new FABRIC.RT.OGLTexture2D(
-            FABRIC.SceneGraph.OpenGLConstants.GL_RGBA8,
-            FABRIC.SceneGraph.OpenGLConstants.GL_RGBA,
-            FABRIC.SceneGraph.OpenGLConstants.GL_UNSIGNED_BYTE)
-        ),
-        new FABRIC.RT.OGLRenderTargetTextureDesc(
-          2,
-          new FABRIC.RT.OGLTexture2D(
-            FABRIC.SceneGraph.OpenGLConstants.GL_RGBA8,
-            FABRIC.SceneGraph.OpenGLConstants.GL_RGBA,
-            FABRIC.SceneGraph.OpenGLConstants.GL_UNSIGNED_BYTE)
-        )
-      ]
-    );
+        ));
+    oglRenderTargetTextureNames.push('depth');
 
-    var toonEffect = scene.constructNode('PostProcessEffect', options);
-    return toonEffect;
+    var nbRenderTargets = oglRenderTargetTextureNames.length;
+
+    redrawEventHandler.addMember('textureIDs', 'Integer['+ nbRenderTargets + ']');
+
+    renderTargetRedrawEventHandler.addMember('renderTarget', 'OGLRenderTarget', FABRIC.RT.oglRenderTarget(0,0,
+      oglRenderTargetTextureDescs,
+      {
+        clearColor: FABRIC.RT.rgba(0.5,0.5,0.5,1.0)
+      }
+    ));
+
+    renderTargetRedrawEventHandler.preDescendBindings.append(
+      scene.constructOperator({
+          operatorName: 'bindScreenRenderTarget',
+          srcFile: 'FABRIC_ROOT/SceneGraph/KL/renderTarget.kl',
+          entryFunctionName: 'bindScreenRenderTarget',
+          parameterLayout: [
+            'window.width',
+            'window.height',
+            'self.renderTarget'
+          ]
+        }));
+
+    renderTargetRedrawEventHandler.postDescendBindings.insert(
+      scene.constructOperator({
+          operatorName: 'unbindRenderTarget',
+          srcFile: 'FABRIC_ROOT/SceneGraph/KL/renderTarget.kl',
+          entryFunctionName: 'unbindRenderTarget',
+          parameterLayout: [
+            'self.renderTarget'
+          ]
+        }), 0);
+
+    renderTargetRedrawEventHandler.postDescendBindings.append(
+      scene.constructOperator({
+          operatorName: 'saveTextureIDs',
+          srcCode: 'use OGLRenderTarget; operator saveTextureIDs(io OGLRenderTarget renderTarget, io Integer t[' + nbRenderTargets + ']){ \n' +
+                  'Size i;\n' +
+                  'for(i = 0; i < renderTarget.textures.size; ++i)\n' +
+                  '  t[i] = renderTarget.textures[i].texture.bufferID;}',
+          entryFunctionName: 'saveTextureIDs',
+          parameterLayout: [
+            'self.renderTarget',
+            'toonDraw.textureIDs'
+          ]
+        }));
+
+    var compositingMaterial = scene.constructNode('Material', {
+      name: 'ToonCompositing',
+      parentEventHandler: redrawEventHandler,
+      vertexShader: undefined,
+      fragmentShader: FABRIC.loadResourceURL('ToonCompositing.glsl'),
+      shaderUniforms: {
+        colorTexture: { name: 'u_colorImage', owner: 'renderTarget' },
+        normalTexture: { name: 'u_normalImage', owner: 'renderTarget' },
+        depthTexture: { name: 'u_depthImage', owner: 'renderTarget' },
+        width: { name: 'u_width', owner: 'window', type:'Integer' },
+        height: { name: 'u_height', owner: 'window', type:'Integer' },
+        outlineWidth: { name: 'u_outlineWidth', type:'Scalar', defaultValue: 1.0},
+        outlineColor: { name: 'u_outlineColor', type:'Color', defaultValue: FABRIC.RT.rgba(0.0,0.0,0.0,1.0)},
+      },
+    });
+    renderNode.addMemberInterface(compositingMaterial.getRedrawEventHandler(),'outlineWidth',true);
+    renderNode.addMemberInterface(compositingMaterial.getRedrawEventHandler(),'outlineColor',true);
+    
+    var compositingRedrawEventHandler = compositingMaterial.getRedrawEventHandler();
+    
+    // create an operator to draw one of the textures full screen
+    compositingRedrawEventHandler.postDescendBindings.append(
+      scene.constructOperator({
+          operatorName: 'drawToonCompositing',
+          srcCode:'use OGLTexture2D;\nuse OGLShaderProgram;\n' +
+                  'operator drawToonCompositing(io Integer t[' + nbRenderTargets + '], io OGLShaderProgram shaderProgram){ \n' +
+                  '  glMatrixMode(GL_MODELVIEW);\n' + 
+                  '  glPushMatrix();\n' + 
+                  '  glLoadIdentity();\n' +
+                  '  glActiveTexture(GL_TEXTURE0 + 0);\n' +
+                  '  glBindTexture(GL_TEXTURE_2D, t[0]);\n' +
+                  '  glActiveTexture(GL_TEXTURE0 + 1);\n' +
+                  '  glBindTexture(GL_TEXTURE_2D, t[1]);\n' +
+                  '  glActiveTexture(GL_TEXTURE0 + 2);\n' +
+                  '  glBindTexture(GL_TEXTURE_2D, t[2]);\n' +
+                  '  shaderProgram.loadIntegerUniform(shaderProgram.uniformValues[0].location, 0);\n' +
+                  '  shaderProgram.loadIntegerUniform(shaderProgram.uniformValues[1].location, 1);\n' +
+                  '  shaderProgram.loadIntegerUniform(shaderProgram.uniformValues[2].location, 2);\n' +
+                  '  glBegin(GL_QUADS);\n' + 
+                  '  glTexCoord2f(0.0, 0.0); glVertex3f(-1.0,-1.0, -1.0);\n' + 
+                  '  glTexCoord2f(1.0, 0.0); glVertex3f( 1.0,-1.0, -1.0);\n' + 
+                  '  glTexCoord2f(1.0, 1.0); glVertex3f( 1.0, 1.0, -1.0);\n' + 
+                  '  glTexCoord2f(0.0, 1.0); glVertex3f(-1.0, 1.0, -1.0);\n' + 
+                  '  glEnd();\n' + 
+                  '  glPopMatrix();\n' + 
+                  '  return;\n  }\n',
+          entryFunctionName: 'drawToonCompositing',
+          parameterLayout: [
+            'toonDraw.textureIDs',
+            'shader.shaderProgram'
+          ]
+      }));
+
+    //Debug display render targets
+    redrawEventHandler.addMember('debugDrawToggle', 'Boolean', false);
+    redrawEventHandler.addMember('debugShaderProgID', 'Integer', 0);
+    renderNode.addMemberInterface(redrawEventHandler, 'debugDrawToggle', true);
+
+    redrawEventHandler.postDescendBindings.append(
+      scene.constructOperator({
+          operatorName: 'debugDrawRenderTargets',
+          srcCode:'use OGLTexture2D;\n' +
+                  'operator debugDrawRenderTargets(io Boolean debugDrawToggle, io Integer t[' + nbRenderTargets + '], io Integer progId){ \n' +
+                  'if(!debugDrawToggle) return;\n' +
+                  'Size i, j, n = ' + oglRenderTargetTextureNames.length + ', curr = 0;\n' +
+                  'for(i = 0; i < 3; ++i){\n' +
+                  '  for(j = 0; j < 3; ++j){\n' +
+                  '    Scalar x = -1.0 + Scalar(i)/1.5;\n' +
+                  '    Scalar y = 1.0 - Scalar(j)/1.5;\n' +
+                  '    glActiveTexture(GL_TEXTURE0);\n' +
+                  '    glBindTexture(GL_TEXTURE_2D, t[curr++]);\n' +
+                  '    drawTexture(0, progId, Vec2(x,y), Vec2(x+0.66666,y-0.66666), false);\n' +
+                  '    if(curr == n)\n' +
+                  '      return;}}}\n',
+          entryFunctionName: 'debugDrawRenderTargets',
+          parameterLayout: [
+            'self.debugDrawToggle',
+            'self.textureIDs',
+            'self.debugShaderProgID'
+          ]
+      }));
+
+    renderNode.pub.constructMaterial = function(materialName, materialOptions){
+      materialOptions.parentEventHandler = opaqueRedrawEventHandler;
+      return scene.constructNode(materialName,materialOptions).pub;
+    }
+    renderNode.pub.constructTransparentMaterial = function(materialName, materialOptions){
+      materialOptions.parentEventHandler = transparentRedrawEventHandler;
+      return scene.constructNode(materialName,materialOptions).pub;
+    }
+    
+    return renderNode;
   }});
 
 $(document).ready(function() {
@@ -190,7 +340,6 @@ $(document).ready(function() {
     enableRaycasting: true,
     backgroundColor: FABRIC.RT.rgb(0.5,0.5,0.5)
   });
-  //viewport.addPostProcessEffectShader(scene.constructNode('ToonPostProcessEffect',{}));
   
   // Create a camera to draw the scene from
   camera = scene.constructNode('TargetCamera', {
@@ -203,11 +352,13 @@ $(document).ready(function() {
   scene.constructNode('CameraManipulator', { targetNode: camera });
   viewport.setCameraNode(camera);
 
+  var toonRenderer = scene.constructNode('ToonRenderer', {lightNode: light});
+
   var light = scene.constructNode('SpotLight', {
     position: new FABRIC.RT.Vec3(5,15,5),
     target: new FABRIC.RT.Vec3(0,0,0),
     farDistance: 50,
-    resolution: 2048,
+    resolution: 1024,
     coneAngle: Math.degToRad(60.0),
     castShadows: true
   });
@@ -219,8 +370,7 @@ $(document).ready(function() {
       width: 100.0,
       length: 100.0,
     }),
-    materialNode: scene.constructNode('GroundPlaneMaterial', {
-      color: FABRIC.RT.rgb(0.7,0.7,0.7),
+    materialNode: toonRenderer.constructMaterial('GroundPlaneMaterial', {
       lightNode: light,
       step: 0.02,
       brightColor: FABRIC.RT.rgba(0.6,0.6,0.6,1),
@@ -229,7 +379,18 @@ $(document).ready(function() {
   });
   
   var workPlane = scene.constructNode('WorkPlane', {
-    cameraNode: camera
+    cameraNode: camera,
+    materialNode: toonRenderer.constructTransparentMaterial('GroundPlaneMaterial', {
+      lightNode: light,
+      colorBlend: 0.0,
+      step: 0.02,
+      brightColor: FABRIC.RT.rgba(0.9,0.9,0.9,1),
+      darkColor: FABRIC.RT.rgba(0.7,0.7,0.7,1),
+      disableOptions: [FABRIC.SceneGraph.OpenGLConstants.GL_CULL_FACE],
+      enableOptions: [FABRIC.SceneGraph.OpenGLConstants.GL_BLEND],
+      blendModeSfactor: FABRIC.SceneGraph.OpenGLConstants.GL_SRC_ALPHA,
+      blendModeDfactor: FABRIC.SceneGraph.OpenGLConstants.GL_ONE_MINUS_SRC_ALPHA
+    })
   });
 
   //==========================================================
@@ -291,26 +452,26 @@ $(document).ready(function() {
     width: 0.25,
     height: 2.0
   });
-  materialNodes['primitiveCube'] = scene.constructNode('ToonMaterial', {
+  materialNodes['primitiveCube'] = toonRenderer.constructMaterial('ToonMaterial', {
     lightNode: light,
     darkColor: FABRIC.RT.rgb(165/255,118/255,74/255),
     brightColor: FABRIC.RT.rgb(201/255,168/255,117/255),
     colorSteps: 8.0
   });
-  materialNodes['primitiveFlat'] = scene.constructNode('ToonMaterial', {
+  materialNodes['primitiveFlat'] = toonRenderer.constructMaterial('ToonMaterial', {
     lightNode: light,
     darkColor: FABRIC.RT.rgb(35/255,52/255,72/255),
     brightColor: FABRIC.RT.rgb(81/255,96/255,115/255),
     colorSteps: 8.0
   });
-  materialNodes['primitiveHigh'] = scene.constructNode('ToonMaterial', {
+  materialNodes['primitiveHigh'] = toonRenderer.constructMaterial('ToonMaterial', {
     lightNode: light,
     darkColor: FABRIC.RT.rgb(127/255,49/255,45/255),
     brightColor: FABRIC.RT.rgb(176/255,125/255,122/255),
     colorSteps: 8.0
   });
 
-  var highlightMaterial = scene.constructNode('ToonMaterial', {
+  var highlightMaterial = toonRenderer.constructMaterial('ToonMaterial', {
     lightNode: light,
     darkColor: FABRIC.RT.rgb(77/255,159/255,70/255),
     brightColor: FABRIC.RT.rgb(207/255,255/255,203/255),
@@ -634,6 +795,7 @@ $(document).ready(function() {
   //==========================================================
   // PLAYBACK CONTROL
   var manipulatorsDrawn = false;
+  var workPlaneDrawn = false;
   $('#play').button({
     text: true,
     icons: {
@@ -641,7 +803,6 @@ $(document).ready(function() {
     }
   }).click(function() {
     var options;
-    workPlane.setDrawToggle(isPlaying);
     if(!isPlaying) {
       $(this).button('option', {
         label: 'Pause',
@@ -649,6 +810,9 @@ $(document).ready(function() {
           primary: 'ui-icon-pause'
         }
       });
+      workPlaneDrawn = workPlane.getDrawToggle();
+      if(workPlaneDrawn)
+        workPlane.getDrawToggle(false);
       isPlaying = true;
       manipulatorsDrawn = selectionManipulationManager.getManipulatorsDrawToggle();
       selectionManager.setEnabled(false);
@@ -663,6 +827,8 @@ $(document).ready(function() {
         }
       });
       scene.animation.pause();
+      if(workPlaneDrawn)
+        workPlane.getDrawToggle(true);
       selectionManager.setEnabled(true);
       if(manipulatorsDrawn)
         selectionManipulationManager.toggleManipulatorsDisplay(true);
@@ -704,6 +870,8 @@ $(document).ready(function() {
     workPlane.setStanding(!workPlane.getStanding());
     viewport.redraw();
   });
+  console.log( workPlane.getMaterialNode());
+  /*
   $('#workplaneblend').slider({
     min: 0.0,
     max: 1.0,
@@ -714,7 +882,7 @@ $(document).ready(function() {
       workPlane.getMaterialNode().setColorBlend(ui.value);
       viewport.redraw();
     }
-  );
+  );//*/
   
   // setup the help dialog
   $("#help").button().click(function(){
@@ -820,7 +988,7 @@ $(document).ready(function() {
       xfo.tr.y = Math.floor(xfo.tr.y+0.5)-0.5;
       xfo.tr = planeXfo.ori.rotateVector(xfo.tr.add(target));
     }
-    xfo.tr.y = xfo.tr.y < scalings[currentRigidBody.type].z ? scalings[currentRigidBody.type].z : xfo.tr.y;
+    xfo.tr.y = xfo.tr.y < scalings[currentRigidBody.type].y ? scalings[currentRigidBody.type].y : xfo.tr.y;
 
     xfo.ori.setFromDirectionAndUpvector(new FABRIC.RT.Vec3(0,-1,0),planeXfo.ori.getYaxis());
     var offset = new FABRIC.RT.Quat();
