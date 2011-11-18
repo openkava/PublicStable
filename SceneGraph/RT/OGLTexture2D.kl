@@ -36,7 +36,7 @@ function OGLTexture2D.configure(
 }
 
 
-function OGLTexture2D.bind(io Integer textureUnit){
+function OGLTexture2D.bind(in Integer textureUnit){
 //  report("OGLTexture2D.bind bufferID:"+this.bufferID + " textureUnit:"+textureUnit  + " nbPixels:"+ this.nbPixels );
   glActiveTexture(GL_TEXTURE0 + textureUnit);
   glBindTexture(GL_TEXTURE_2D, this.bufferID);
@@ -121,9 +121,7 @@ function OGLTexture2D.genTexture(
   this.nbPixels = width * height;
 }
 
-
-function drawTexture(
-  Integer textureUnit,
+function drawScreenQuad(
   io Integer program,
   Vec2 tl,
   Vec2 br,
@@ -131,54 +129,18 @@ function drawTexture(
 ) {
   //report("drawTexture: textureUnit=" + textureUnit);
 
-  if (!program) {
-    OGLShaderSource pixelShader;
-    OGLShaderSource fragmentShader;
-    pixelShader.type = GL_VERTEX_SHADER;
-    pixelShader.code = '\
-      attribute vec4 a_position; \
-      attribute vec2 a_texCoord; \
-      void main() { \
-        gl_TexCoord[0].st = a_texCoord; \
-        gl_Position = a_position; \
-      }';
-
-    fragmentShader.type = GL_FRAGMENT_SHADER;
-    fragmentShader.code = '\
-      uniform sampler2D u_rgbaImage; \
-      void main() \
-      { \
-        gl_FragColor = texture2D( u_rgbaImage, gl_TexCoord[0].st ); \
-      }';
-    
-    OGLShaderProgram shaderProgram('renderTextureToView');
-    shaderProgram.debug = false;
-    shaderProgram.shaderSources.push(pixelShader);
-    shaderProgram.shaderSources.push(fragmentShader);
-    shaderProgram.loadShader();
-    if (!shaderProgram.programId) {
-      report('Error in renderTextureToView');
-      return;
-    }
-    program = shaderProgram.programId;
-  }else{
-    glUseProgram(program);
-  }
-
   var String name = 'a_position';
   var Integer posLocation = glGetAttribLocation(program, name);
   name = 'a_texCoord';
   var Integer texLocation = glGetAttribLocation(program, name);
-  name = 'u_rgbaImage';
-  var Integer smpLocation = glGetUniformLocation(program, name);
 
-  glUniform1i( smpLocation, textureUnit );
   glPushAttrib(GL_TEXTURE_BIT | GL_ENABLE_BIT | GL_DEPTH_BUFFER_BIT);
   glPushClientAttrib(GL_CLIENT_VERTEX_ARRAY_BIT);
 
   glEnable(GL_TEXTURE_2D);
   glDisable(GL_DEPTH_TEST);
   glDisable(GL_CULL_FACE); 
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);//Required to render properly depth textures
 
   // Draw a quad in the upper left with debugging info
   var Vec3 p[4];
@@ -228,8 +190,8 @@ function drawTexture(
   glBindBuffer(GL_ARRAY_BUFFER, bufferID2);
   glBufferData(GL_ARRAY_BUFFER, idx.dataSize(), idx.data(), GL_STATIC_DRAW);
   glBindBuffer(GL_ARRAY_BUFFER, 0);
-  
-  glUniform1i( smpLocation, textureUnit );
+
+
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferID2);
   glDrawElements(GL_QUADS, idx.size(), GL_UNSIGNED_INT, NULL);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -242,6 +204,58 @@ function drawTexture(
   bufferIDArray[0] = bufferID2; glDeleteBuffers(1, bufferIDArray);
   
   glBindTexture( GL_TEXTURE_2D, 0 );
+//  report("<<<drawTexture");
+}
+
+function drawTexture(
+  Integer textureUnit,
+  io Integer program,
+  Vec2 tl,
+  Vec2 br,
+  Boolean flipY
+) {
+  //report("drawTexture: textureUnit=" + textureUnit);
+
+  if (!program) {
+    OGLShaderSource pixelShader;
+    OGLShaderSource fragmentShader;
+    pixelShader.type = GL_VERTEX_SHADER;
+    pixelShader.code = '\
+      attribute vec4 a_position; \
+      attribute vec2 a_texCoord; \
+      void main() { \
+        gl_TexCoord[0].st = a_texCoord; \
+        gl_Position = a_position; \
+      }';
+
+    fragmentShader.type = GL_FRAGMENT_SHADER;
+    fragmentShader.code = '\
+      uniform sampler2D u_rgbaImage; \
+      void main() \
+      { \
+        gl_FragColor = texture2D( u_rgbaImage, gl_TexCoord[0].st ); \
+      }';
+    
+    OGLShaderProgram shaderProgram('renderTextureToView');
+    shaderProgram.debug = false;
+    shaderProgram.shaderSources.push(pixelShader);
+    shaderProgram.shaderSources.push(fragmentShader);
+    shaderProgram.loadShader();
+    if (!shaderProgram.programId) {
+      report('Error in renderTextureToView');
+      return;
+    }
+    program = shaderProgram.programId;
+  }else{
+    glUseProgram(program);
+  }
+
+  String name = 'u_rgbaImage';
+  var Integer smpLocation = glGetUniformLocation(program, name);
+
+  glUniform1i( smpLocation, textureUnit );
+
+  drawScreenQuad( program, tl, br, flipY );
 //  report("<<<drawTexture");
 }
 
