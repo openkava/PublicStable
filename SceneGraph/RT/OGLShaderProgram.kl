@@ -12,6 +12,7 @@ function OGLShaderProgram(String name) {
 }
 
 function Integer OGLShaderProgram.createAndCompileShader(OGLShaderSource shadersrc) {
+
   var Integer shaderID = glCreateShader(shadersrc.type);
   if (shaderID == 0) {
     report(this.name + ' : glCreateShader failed');

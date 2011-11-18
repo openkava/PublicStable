@@ -948,14 +948,18 @@ FABRIC.SceneGraph.registerNodeType('Material', {
         }));
 
         // Now add a method to assign the texture to the material
+        var setTextureRedrawEventHandlerFn = function(handler) {
+          textureStub.appendChildEventHandler(handler);
+        };
         var setTextureFn = function(node) {
           if (!node.isTypeOf('Texture')) {
             throw ('Incorrect type assignment. Must assign a Texture');
           }
           node = scene.getPrivateInterface(node);
-          textureStub.appendChildEventHandler(node.getRedrawEventHandler());
+          setTextureRedrawEventHandlerFn(node.getRedrawEventHandler());
         };
         materialNode.pub['set' + capitalizeFirstLetter(textureName) + 'Node'] = setTextureFn;
+        materialNode['set' + capitalizeFirstLetter(textureName) + 'RedrawEventHandler'] = setTextureRedrawEventHandlerFn;
 
         if (textureDef.node !== undefined) {
           setTextureFn(textureDef.node);
