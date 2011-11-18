@@ -192,8 +192,9 @@ namespace Fabric
           llvm::OwningPtr<llvm::PassManager> passManager( new llvm::PassManager );
           if ( optimize )
           {
-            llvm::createStandardFunctionPasses( passManager.get(), 2 );
-            llvm::createStandardModulePasses( passManager.get(), 2, false, true, true, true, false, llvm::createFunctionInliningPass() );
+            llvm::createStandardAliasAnalysisPasses( passManager.get() );
+            llvm::createStandardFunctionPasses( passManager.get(), 3 );
+            llvm::createStandardModulePasses( passManager.get(), 3, false, true, true, true, false, llvm::createFunctionInliningPass() );
             llvm::createStandardLTOPasses( passManager.get(), true, true, false );
           }
 #if defined(FABRIC_BUILD_DEBUG)
