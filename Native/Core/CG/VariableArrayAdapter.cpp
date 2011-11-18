@@ -1027,8 +1027,10 @@ namespace Fabric
       RC::ConstHandle<SizeAdapter> sizeAdapter = getManager()->getSizeAdapter();
       
       CG::FunctionBuilder &functionBuilder = basicBlockBuilder.getFunctionBuilder();
-      llvm::BasicBlock *checkBB = functionBuilder.createBasicBlock( "vaDisposeCheck" );
-      llvm::BasicBlock *nextBB = functionBuilder.createBasicBlock( "vaDisposeNext" );
+      llvm::BasicBlock *checkBB = functionBuilder.createBasicBlock( "vaDisposeLoopCheck" );
+      llvm::BasicBlock *nextBB = functionBuilder.createBasicBlock( "vaDisposeLoopNext" );
+      llvm::BasicBlock *disposeDoneBB = functionBuilder.createBasicBlock( "vaDisposeLoopDone" );
+      llvm::BasicBlock *freeBB = functionBuilder.createBasicBlock( "vaDisposeFree" );
       llvm::BasicBlock *doneBB = functionBuilder.createBasicBlock( "vaDisposeDone" );
 
       llvm::Value *sizeLValue = basicBlockBuilder->CreateStructGEP( lValue, SizeIndex );
@@ -1054,8 +1056,19 @@ namespace Fabric
       sizeAdapter->llvmDefaultAssign( basicBlockBuilder, indexLValue, nextIndexRValue );
       basicBlockBuilder->CreateBr( checkBB );
         
-      basicBlockBuilder->SetInsertPoint( doneBB );
+      basicBlockBuilder->SetInsertPoint( disposeDoneBB );
+      basicBlockBuilder->CreateCondBr(
+        basicBlockBuilder->CreateIsNotNull( memberDatasRValue ),
+        freeBB,
+        doneBB
+        );
+      
+      basicBlockBuilder->SetInsertPoint( freeBB );
       llvmCallFree( basicBlockBuilder, memberDatasRValue );
+      basicBlockBuilder->CreateBr( doneBB );
+
+      basicBlockBuilder->SetInsertPoint( doneBB );
+      basicBlockBuilder->CreateRetVoid();
     }
 
     void VariableArrayAdapter::llvmDefaultAssign( BasicBlockBuilder &basicBlockBuilder, llvm::Value *dstLValue, llvm::Value *srcRValue ) const
