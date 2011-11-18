@@ -12,6 +12,7 @@ namespace Fabric
   namespace RT
   {
     class SlicedArrayDesc;
+    class SlicedArrayImpl;
   };
   
   namespace CG
@@ -34,6 +35,7 @@ namespace Fabric
       virtual llvm::Constant *llvmDefaultLValue( BasicBlockBuilder &basicBlockBuilder ) const;
       
       virtual void llvmCompileToModule( ModuleBuilder &moduleBuilder ) const;
+      virtual void *llvmResolveExternalFunction( std::string const &functionName ) const;
 
       // ArrayAdapter
 
@@ -55,10 +57,13 @@ namespace Fabric
       SlicedArrayAdapter( RC::ConstHandle<Manager> const &manager, RC::ConstHandle<RT::SlicedArrayDesc> const &slicedArrayDesc );
       
       virtual llvm::Type const *buildLLVMRawType( RC::Handle<Context> const &context ) const;
+
+      static void DefaultAssign( SlicedArrayAdapter const *inst, void const *srcData, void *dstData );
       
     private:
     
       RC::ConstHandle<RT::SlicedArrayDesc> m_slicedArrayDesc;
+      RC::ConstHandle<RT::SlicedArrayImpl> m_slicedArrayImpl;
       RC::ConstHandle<Adapter> m_memberAdapter;
       RC::ConstHandle<VariableArrayAdapter> m_variableArrayAdapter;
    };

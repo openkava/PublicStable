@@ -31,7 +31,7 @@ namespace Fabric
       memberInfos.resize(NB_FABRIC_RESOURCE_MEMBERS);
 
       memberInfos[FABRIC_RESOURCE_DATA_MEMBER_INDEX].name = "data";
-      memberInfos[FABRIC_RESOURCE_DATA_MEMBER_INDEX].desc = rtManager->getVariableArrayOf( rtManager->getByteDesc(), RT::VariableArrayImpl::FLAG_COPY_ON_WRITE );
+      memberInfos[FABRIC_RESOURCE_DATA_MEMBER_INDEX].desc = rtManager->getVariableArrayOf( rtManager->getByteDesc() );
       memberInfos[FABRIC_RESOURCE_MIMETYPE_MEMBER_INDEX].name = "mimeType";
       memberInfos[FABRIC_RESOURCE_MIMETYPE_MEMBER_INDEX].desc = stringDesc;
       memberInfos[FABRIC_RESOURCE_EXTENSION_MEMBER_INDEX].name = "extension";
@@ -94,23 +94,12 @@ namespace Fabric
 
     bool FabricResourceWrapper::isEqualTo( const void *other ) const
     {
-      size_t dataSize = getDataSize();
-      if( !m_dataMemberDesc->getImpl()->areSameData( m_desc->getMemberData( m_resource, FABRIC_RESOURCE_DATA_MEMBER_INDEX ), m_desc->getMemberData( other, FABRIC_RESOURCE_DATA_MEMBER_INDEX ) ) 
-          && ( dataSize != getFabricResourceDataSize( m_desc, m_dataMemberDesc, other ) || memcmp( getDataPtr(), getFabricResourceDataPtr( m_desc, m_dataMemberDesc, other ), dataSize ) != 0 ) )
-        return false;
-      else if( !areStringDatasEqual( m_desc->getMemberData( m_resource, FABRIC_RESOURCE_URL_MEMBER_INDEX),  m_desc->getMemberData( other, FABRIC_RESOURCE_URL_MEMBER_INDEX ) ) )
-        return false;
-      else if( !areStringDatasEqual( m_desc->getMemberData( m_resource, FABRIC_RESOURCE_MIMETYPE_MEMBER_INDEX),  m_desc->getMemberData( other, FABRIC_RESOURCE_MIMETYPE_MEMBER_INDEX ) ) )
-        return false;
-      else if( !areStringDatasEqual( m_desc->getMemberData( m_resource, FABRIC_RESOURCE_EXTENSION_MEMBER_INDEX),  m_desc->getMemberData( other, FABRIC_RESOURCE_EXTENSION_MEMBER_INDEX ) ) )
-        return false;
-
-      return true;
+      return m_dataMemberDesc->compareData( m_resource, other ) == 0;
     }
 
     bool FabricResourceWrapper::isURLEqualTo( const void *otherStringData ) const
     {
-      return areStringDatasEqual( m_desc->getMemberData( m_resource, FABRIC_RESOURCE_URL_MEMBER_INDEX), otherStringData );
+      return m_rtManager->getStringDesc()->compareData( m_desc->getMemberData( m_resource, FABRIC_RESOURCE_URL_MEMBER_INDEX), otherStringData ) == 0;
     }
 
     void FabricResourceWrapper::setExtension( std::string const &value )
@@ -178,15 +167,6 @@ namespace Fabric
     void FabricResourceWrapper::setStringMember( size_t index, std::string const &value )
     {
       m_rtManager->getStringDesc()->setValue( value.data(), value.length(), m_desc->getMemberData( m_resource, index ) );
-    }
-
-    bool FabricResourceWrapper::areStringDatasEqual( const void* string1, const void* string2 ) const
-    {
-      FABRIC_ASSERT( string1 );
-      FABRIC_ASSERT( string2 );
-
-      RC::ConstHandle<RT::StringDesc> stringDesc = m_rtManager->getStringDesc();
-      return stringDesc->getValueLength( string1 ) == stringDesc->getValueLength( string2 ) && memcmp( stringDesc->getValueData( string1 ), stringDesc->getValueData( string2 ), stringDesc->getValueLength( string2 ) ) == 0;
     }
   };
 };

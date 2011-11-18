@@ -7,11 +7,16 @@
 #include <Fabric/Core/CG/BasicBlockBuilder.h>
 #include <Fabric/Core/CG/ConstStringAdapter.h>
 #include <Fabric/Core/CG/ExprValue.h>
+#include <Fabric/Core/CG/FunctionBuilder.h>
 #include <Fabric/Core/CG/Location.h>
+#include <Fabric/Core/CG/ModuleBuilder.h>
 #include <Fabric/Core/CG/SizeAdapter.h>
 #include <Fabric/Core/CG/Scope.h>
 #include <Fabric/Core/CG/StringAdapter.h>
 #include <Fabric/Core/RT/ArrayDesc.h>
+
+#include <llvm/Module.h>
+#include <llvm/Support/IRBuilder.h>
 
 namespace Fabric
 {
@@ -39,109 +44,199 @@ namespace Fabric
 
     void ArrayAdapter::llvmThrowOutOfRangeException(
       BasicBlockBuilder &basicBlockBuilder,
-      std::string const &item,
-      RC::ConstHandle<ConstStringAdapter> const &constStringAdapter,
-      RC::ConstHandle<StringAdapter> const &stringAdapter,
-      RC::ConstHandle<SizeAdapter> const &sizeAdapter,
+      llvm::Value *itemDescRValue,
       llvm::Value *indexRValue,
       llvm::Value *sizeRValue,
       llvm::Value *errorDescRValue
       ) const
     {
       RC::Handle<Context> context = basicBlockBuilder.getContext();
+      RC::ConstHandle<SizeAdapter> sizeAdapter = basicBlockBuilder.getManager()->getSizeAdapter();
+      RC::ConstHandle<StringAdapter> stringAdapter = basicBlockBuilder.getManager()->getStringAdapter();
+      RC::ConstHandle<ConstStringAdapter> constStringAdapter = basicBlockBuilder.getManager()->getConstStringAdapter();
+
+      std::vector<llvm::Type const *> argTypes;
+      argTypes.push_back( constStringAdapter->llvmRType( context ) );
+      argTypes.push_back( sizeAdapter->llvmRType( context ) );
+      argTypes.push_back( sizeAdapter->llvmRType( context ) );
+      argTypes.push_back( constStringAdapter->llvmRType( context ) );
+      llvm::FunctionType const *funcType = llvm::FunctionType::get( basicBlockBuilder->getVoidTy(), argTypes, false );
       
-      llvm::Value *errorMsg1PlusIndexPlusErrorMsg2PlusSizePlusErrorMsg3LValue;
+      llvm::AttributeWithIndex AWI[1];
+      AWI[0] = llvm::AttributeWithIndex::get( ~0u, 0 /*llvm::Attribute::InlineHint | llvm::Attribute::NoUnwind*/ );
+      llvm::AttrListPtr attrListPtr = llvm::AttrListPtr::get( AWI, 1 );
+
+      std::string name = "__ThrowOutOfRangeException";
+      llvm::Function *func = llvm::cast<llvm::Function>( basicBlockBuilder.getModuleBuilder()->getFunction( name ) );
+      if ( !func )
       {
-        Scope subScope( basicBlockBuilder.getScope() );
-        BasicBlockBuilder subBasicBlockBuilder( basicBlockBuilder, subScope );
+        ModuleBuilder &mb = basicBlockBuilder.getModuleBuilder();
+        
+        func = llvm::cast<llvm::Function>( mb->getOrInsertFunction( name, funcType, attrListPtr ) ); 
+        func->setLinkage( llvm::GlobalValue::PrivateLinkage );
+        
+        FunctionBuilder fb( mb, funcType, func );
+        llvm::Argument *itemRValue = fb[0];
+        itemRValue->setName( "itemRValue" );
+        itemRValue->addAttr( llvm::Attribute::NoCapture );
+        llvm::Argument *indexRValue = fb[1];
+        indexRValue->setName( "indexRValue" );
+        llvm::Argument *sizeRValue = fb[2];
+        sizeRValue->setName( "sizeRValue" );
+        llvm::Argument *errorDescRValue = fb[3];
+        errorDescRValue->setName( "errorDescRValue" );
+        errorDescRValue->addAttr( llvm::Attribute::NoCapture );
+        
+        BasicBlockBuilder bbb( fb );
+        llvm::BasicBlock *entryBB = fb.createBasicBlock( "entry" );
+        bbb->SetInsertPoint( entryBB );
 
-        llvm::Value *errorMsg0RValue = stringAdapter->llvmCast(
-          subBasicBlockBuilder,
-          ExprValue( constStringAdapter, USAGE_RVALUE, context,
-            errorDescRValue? errorDescRValue: constStringAdapter->llvmConst( subBasicBlockBuilder, "KL" )
-            )
-          );
-        
-        std::string errorMsg1 = ": "+getUserName()+" "+item+" (";
-        llvm::Value *_errorMsg1RValue = stringAdapter->llvmCast( subBasicBlockBuilder,
-          ExprValue( constStringAdapter, USAGE_RVALUE, context, constStringAdapter->llvmConst( subBasicBlockBuilder, errorMsg1 ) )
-          );
-        
-        llvm::Value *errorMsg1LValue = stringAdapter->llvmAlloca( subBasicBlockBuilder, "errorMsg1" );
-        stringAdapter->llvmInit( subBasicBlockBuilder, errorMsg1LValue );
-        stringAdapter->llvmCallConcat(
-          subBasicBlockBuilder,
-          errorMsg0RValue,
-          _errorMsg1RValue,
-          errorMsg1LValue
-          );
-        
-        llvm::Value *indexStringRValue = stringAdapter->llvmCast(
-          subBasicBlockBuilder,
-          ExprValue( sizeAdapter, USAGE_RVALUE, context, indexRValue )
-          );
-          
-        llvm::Value *errorMsg1PlusIndexLValue = stringAdapter->llvmAlloca( subBasicBlockBuilder, "errorMsg1PlusIndex" );
-        stringAdapter->llvmInit( subBasicBlockBuilder, errorMsg1PlusIndexLValue );
-        stringAdapter->llvmCallConcat(
-          subBasicBlockBuilder,
-          stringAdapter->llvmLValueToRValue( subBasicBlockBuilder, errorMsg1LValue ),
-          indexStringRValue,
-          errorMsg1PlusIndexLValue
-          );
-        stringAdapter->llvmDispose( subBasicBlockBuilder, errorMsg1LValue );
-        
-        std::string errorMsg2 = ") out of range (";
-        llvm::Value *errorMsg2RValue = stringAdapter->llvmCast(
-          subBasicBlockBuilder,
-          ExprValue( constStringAdapter, USAGE_RVALUE, context, constStringAdapter->llvmConst( subBasicBlockBuilder, errorMsg2 ) )
-          );
-          
-        llvm::Value *errorMsg1PlusIndexPlusErrorMsg2LValue = stringAdapter->llvmAlloca( subBasicBlockBuilder, "errorMsg1PlusIndexPlusErrorMsg2" );
-        stringAdapter->llvmInit( subBasicBlockBuilder, errorMsg1PlusIndexPlusErrorMsg2LValue );
-        stringAdapter->llvmCallConcat(
-          subBasicBlockBuilder,
-          stringAdapter->llvmLValueToRValue( subBasicBlockBuilder, errorMsg1PlusIndexLValue ),
-          errorMsg2RValue,
-          errorMsg1PlusIndexPlusErrorMsg2LValue
-          );
-        stringAdapter->llvmDispose( subBasicBlockBuilder, errorMsg1PlusIndexLValue );
+        llvm::Value *errorMsg1PlusIndexPlusErrorMsg2PlusSizePlusErrorMsg3LValue;
+        {
+          Scope subScope( bbb.getScope() );
+          BasicBlockBuilder subBasicBlockBuilder( bbb, subScope );
 
-        llvm::Value *sizeStringRValue = stringAdapter->llvmCast(
-          subBasicBlockBuilder,
-          ExprValue( sizeAdapter, USAGE_RVALUE, context, sizeRValue )
-          );
-          
-        llvm::Value *errorMsg1PlusIndexPlusErrorMsg2PlusSizeLValue = stringAdapter->llvmAlloca( subBasicBlockBuilder, "errorMsg1PlusIndexPlusErrorMsg2PlusSize" );
-        stringAdapter->llvmInit( subBasicBlockBuilder, errorMsg1PlusIndexPlusErrorMsg2PlusSizeLValue );
-        stringAdapter->llvmCallConcat(
-          subBasicBlockBuilder,
-          stringAdapter->llvmLValueToRValue( subBasicBlockBuilder, errorMsg1PlusIndexPlusErrorMsg2LValue ),
-          sizeStringRValue,
-          errorMsg1PlusIndexPlusErrorMsg2PlusSizeLValue
-          );
-        stringAdapter->llvmDispose( subBasicBlockBuilder, errorMsg1PlusIndexPlusErrorMsg2LValue );
+          llvm::BasicBlock *haveErrorDescBB = fb.createBasicBlock( "haveErrorDescBB" );
+          llvm::BasicBlock *noErrorDescBB = fb.createBasicBlock( "noErrorDescBB" );
+          llvm::BasicBlock *goBB = fb.createBasicBlock( "goBB" );
 
-        std::string errorMsg3 = ")";
-        llvm::Value *errorMsg3RValue = stringAdapter->llvmCast(
-          subBasicBlockBuilder,
-          ExprValue( constStringAdapter, USAGE_RVALUE, context, constStringAdapter->llvmConst( subBasicBlockBuilder, errorMsg3 ) )
-          );
+          subBasicBlockBuilder->CreateCondBr(
+            subBasicBlockBuilder->CreateIsNotNull( errorDescRValue ),
+            haveErrorDescBB,
+            noErrorDescBB
+            );
+            
+          subBasicBlockBuilder->SetInsertPoint( haveErrorDescBB );
+          llvm::Value *haveErrorDescConstStringRValue = errorDescRValue;
+          subBasicBlockBuilder->CreateBr( goBB );
+            
+          subBasicBlockBuilder->SetInsertPoint( noErrorDescBB );
+          llvm::Value *noErrorDescConstStringRValue = constStringAdapter->llvmConst( subBasicBlockBuilder, "KL" );
+          subBasicBlockBuilder->CreateBr( goBB );
+
+          subBasicBlockBuilder->SetInsertPoint( goBB );
+          llvm::PHINode *errorDescConstStringRValue = subBasicBlockBuilder->CreatePHI( haveErrorDescConstStringRValue->getType(), "errorDescConstStringRValue" );
+          errorDescConstStringRValue->addIncoming( haveErrorDescConstStringRValue, haveErrorDescBB );
+          errorDescConstStringRValue->addIncoming( noErrorDescConstStringRValue, noErrorDescBB );
+
+          llvm::Value *errorMsg0RValue = stringAdapter->llvmCast(
+            subBasicBlockBuilder,
+            ExprValue( constStringAdapter, USAGE_RVALUE, context, errorDescConstStringRValue )
+            );
           
-        errorMsg1PlusIndexPlusErrorMsg2PlusSizePlusErrorMsg3LValue = stringAdapter->llvmAlloca( subBasicBlockBuilder, "errorMsg1PlusIndexPlusErrorMsg2PlusSizePlusErrorMsg3" );
-        stringAdapter->llvmInit( subBasicBlockBuilder, errorMsg1PlusIndexPlusErrorMsg2PlusSizePlusErrorMsg3LValue );
-        stringAdapter->llvmCallConcat(
-          subBasicBlockBuilder,
-          stringAdapter->llvmLValueToRValue( subBasicBlockBuilder, errorMsg1PlusIndexPlusErrorMsg2PlusSizeLValue ),
-          errorMsg3RValue,
-          errorMsg1PlusIndexPlusErrorMsg2PlusSizePlusErrorMsg3LValue
-          );
-        stringAdapter->llvmDispose( subBasicBlockBuilder, errorMsg1PlusIndexPlusErrorMsg2PlusSizeLValue );
-        
-        subScope.llvmUnwind( subBasicBlockBuilder );
+          llvm::Value *errorMsgARValue = stringAdapter->llvmCast( subBasicBlockBuilder,
+            ExprValue( constStringAdapter, USAGE_RVALUE, context, constStringAdapter->llvmConst( subBasicBlockBuilder, ": " ) )
+            );
+          
+          llvm::Value *errorMsgALValue = stringAdapter->llvmAlloca( subBasicBlockBuilder, "errorMsgA" );
+          stringAdapter->llvmInit( subBasicBlockBuilder, errorMsgALValue );
+          stringAdapter->llvmCallConcat(
+            subBasicBlockBuilder,
+            errorMsg0RValue,
+            errorMsgARValue,
+            errorMsgALValue
+            );
+          
+          llvm::Value *errorMsgBRValue = stringAdapter->llvmCast( subBasicBlockBuilder,
+            ExprValue( constStringAdapter, USAGE_RVALUE, context, itemRValue )
+            );
+          
+          llvm::Value *errorMsgBLValue = stringAdapter->llvmAlloca( subBasicBlockBuilder, "errorMsgB" );
+          stringAdapter->llvmInit( subBasicBlockBuilder, errorMsgBLValue );
+          stringAdapter->llvmCallConcat(
+            subBasicBlockBuilder,
+            stringAdapter->llvmLValueToRValue( subBasicBlockBuilder, errorMsgALValue ),
+            errorMsgBRValue,
+            errorMsgBLValue
+            );
+          stringAdapter->llvmDispose( subBasicBlockBuilder, errorMsgALValue );
+          
+          llvm::Value *errorMsgCRValue = stringAdapter->llvmCast( subBasicBlockBuilder,
+            ExprValue( constStringAdapter, USAGE_RVALUE, context, constStringAdapter->llvmConst( subBasicBlockBuilder, " (" ) )
+            );
+          
+          llvm::Value *errorMsgCLValue = stringAdapter->llvmAlloca( subBasicBlockBuilder, "errorMsgC" );
+          stringAdapter->llvmInit( subBasicBlockBuilder, errorMsgCLValue );
+          stringAdapter->llvmCallConcat(
+            subBasicBlockBuilder,
+            stringAdapter->llvmLValueToRValue( subBasicBlockBuilder, errorMsgBLValue ),
+            errorMsgCRValue,
+            errorMsgCLValue
+            );
+          stringAdapter->llvmDispose( subBasicBlockBuilder, errorMsgBLValue );
+          
+          llvm::Value *indexStringRValue = stringAdapter->llvmCast(
+            subBasicBlockBuilder,
+            ExprValue( sizeAdapter, USAGE_RVALUE, context, indexRValue )
+            );
+            
+          llvm::Value *errorMsg1PlusIndexLValue = stringAdapter->llvmAlloca( subBasicBlockBuilder, "errorMsg1PlusIndex" );
+          stringAdapter->llvmInit( subBasicBlockBuilder, errorMsg1PlusIndexLValue );
+          stringAdapter->llvmCallConcat(
+            subBasicBlockBuilder,
+            stringAdapter->llvmLValueToRValue( subBasicBlockBuilder, errorMsgCLValue ),
+            indexStringRValue,
+            errorMsg1PlusIndexLValue
+            );
+          stringAdapter->llvmDispose( subBasicBlockBuilder, errorMsgCLValue );
+          
+          llvm::Value *errorMsg2RValue = stringAdapter->llvmCast(
+            subBasicBlockBuilder,
+            ExprValue( constStringAdapter, USAGE_RVALUE, context, constStringAdapter->llvmConst( subBasicBlockBuilder, ") out of range (" ) )
+            );
+            
+          llvm::Value *errorMsg1PlusIndexPlusErrorMsg2LValue = stringAdapter->llvmAlloca( subBasicBlockBuilder, "errorMsg1PlusIndexPlusErrorMsg2" );
+          stringAdapter->llvmInit( subBasicBlockBuilder, errorMsg1PlusIndexPlusErrorMsg2LValue );
+          stringAdapter->llvmCallConcat(
+            subBasicBlockBuilder,
+            stringAdapter->llvmLValueToRValue( subBasicBlockBuilder, errorMsg1PlusIndexLValue ),
+            errorMsg2RValue,
+            errorMsg1PlusIndexPlusErrorMsg2LValue
+            );
+          stringAdapter->llvmDispose( subBasicBlockBuilder, errorMsg1PlusIndexLValue );
+
+          llvm::Value *sizeStringRValue = stringAdapter->llvmCast(
+            subBasicBlockBuilder,
+            ExprValue( sizeAdapter, USAGE_RVALUE, context, sizeRValue )
+            );
+            
+          llvm::Value *errorMsg1PlusIndexPlusErrorMsg2PlusSizeLValue = stringAdapter->llvmAlloca( subBasicBlockBuilder, "errorMsg1PlusIndexPlusErrorMsg2PlusSize" );
+          stringAdapter->llvmInit( subBasicBlockBuilder, errorMsg1PlusIndexPlusErrorMsg2PlusSizeLValue );
+          stringAdapter->llvmCallConcat(
+            subBasicBlockBuilder,
+            stringAdapter->llvmLValueToRValue( subBasicBlockBuilder, errorMsg1PlusIndexPlusErrorMsg2LValue ),
+            sizeStringRValue,
+            errorMsg1PlusIndexPlusErrorMsg2PlusSizeLValue
+            );
+          stringAdapter->llvmDispose( subBasicBlockBuilder, errorMsg1PlusIndexPlusErrorMsg2LValue );
+
+          llvm::Value *errorMsg3RValue = stringAdapter->llvmCast(
+            subBasicBlockBuilder,
+            ExprValue( constStringAdapter, USAGE_RVALUE, context, constStringAdapter->llvmConst( subBasicBlockBuilder, ")" ) )
+            );
+            
+          errorMsg1PlusIndexPlusErrorMsg2PlusSizePlusErrorMsg3LValue = stringAdapter->llvmAlloca( subBasicBlockBuilder, "errorMsg1PlusIndexPlusErrorMsg2PlusSizePlusErrorMsg3" );
+          stringAdapter->llvmInit( subBasicBlockBuilder, errorMsg1PlusIndexPlusErrorMsg2PlusSizePlusErrorMsg3LValue );
+          stringAdapter->llvmCallConcat(
+            subBasicBlockBuilder,
+            stringAdapter->llvmLValueToRValue( subBasicBlockBuilder, errorMsg1PlusIndexPlusErrorMsg2PlusSizeLValue ),
+            errorMsg3RValue,
+            errorMsg1PlusIndexPlusErrorMsg2PlusSizePlusErrorMsg3LValue
+            );
+          stringAdapter->llvmDispose( subBasicBlockBuilder, errorMsg1PlusIndexPlusErrorMsg2PlusSizeLValue );
+          
+          subScope.llvmUnwind( subBasicBlockBuilder );
+        }
+        llvmThrowException( bbb, errorMsg1PlusIndexPlusErrorMsg2PlusSizePlusErrorMsg3LValue );
+        bbb->CreateRetVoid();
       }
       
-      llvmThrowException( basicBlockBuilder, errorMsg1PlusIndexPlusErrorMsg2PlusSizePlusErrorMsg3LValue );
+      std::vector<llvm::Value *> args;
+      args.push_back( itemDescRValue );
+      args.push_back( indexRValue );
+      args.push_back( sizeRValue );
+      args.push_back( errorDescRValue );
+      basicBlockBuilder->CreateCall( func, args.begin(), args.end() );
     }
 
     llvm::Value *ArrayAdapter::llvmLocationConstStringRValue(
