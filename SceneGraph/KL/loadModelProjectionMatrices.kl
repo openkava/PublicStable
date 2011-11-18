@@ -82,6 +82,8 @@ operator loadIndexedModelProjectionMatrices(
   io Mat44 cameraMatrix,
   io Mat44 projectionMatrix
 ) {
+if(modelXfoIndex==10)
+  report modelXfos[10];
   loadModelProjectionMatricesFn(
     shaderProgram,
     modelXfos[modelXfoIndex],

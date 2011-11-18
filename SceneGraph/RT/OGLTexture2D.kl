@@ -139,6 +139,7 @@ function drawScreenQuad(
 
   glEnable(GL_TEXTURE_2D);
   glDisable(GL_DEPTH_TEST);
+  glDepthMask(GL_TRUE);
   glDisable(GL_CULL_FACE); 
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);//Required to render properly depth textures
 

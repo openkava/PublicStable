@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<shader>
+  <name>PhongInstancingExtMaterial</name>
+  
+  <uniforms>
+    <uniform name="u_materialDiffuseColor" constant="diffuseColor" type="Color" defaultValue="FABRIC.RT.rgba(0.8,0,0,1)"/>
+
+    <uniform name="u_viewMatrix" constant="viewMatrix" type="Mat44" owner="instance"/>
+    <uniform name="u_projectionMatrix" constant="projectionMatrix" type="Mat44" owner="instance"/>
+    <uniform name="u_samplerTransformMap" constant="transformTexture" type="Integer" owner="texture"/>
+
+  </uniforms>
+  
+  <attributes>
+    <attribute name="a_position" binding="positions"/>
+    <attribute name="a_normal" binding="normals"/>
+  </attributes>
+  
+	<textures>
+		<texture binding="transformTexture"/>
+	</textures>
+  
+  <vertexshader>
+    <source>
+      <![CDATA[
+      #version 140
+
+      uniform mat4 u_viewMatrix;
+      uniform mat4 u_projectionMatrix;
+      uniform mat4 u_modelMatrix;
+      uniform vec4 u_lightPosition;
+      uniform sampler2D u_samplerTransformMap;
+      
+      in vec4 a_position;
+      in vec3 a_normal;
+      in int a_instanceID;
+
+      out vec3 normal;
+      out vec3 position;
+
+      mat3 inverseAndTransposeMat33(in mat3 m)
+      {
+        float det = m[0].x * m[1].y * m[2].z
+                  + m[0].y * m[1].z * m[2].x
+                  + m[0].z * m[1].x * m[2].y
+                  - m[0].x * m[1].z * m[2].y
+                  - m[0].y * m[1].x * m[2].z
+                  - m[0].z * m[1].y * m[2].x;
+        float invDet = 1.0 / det;
+
+        mat3 result;
+
+        result[0].x = (m[1].y * m[2].z - m[1].z * m[2].y) * invDet;
+        result[1].x = (m[0].z * m[2].y - m[0].y * m[2].z) * invDet;
+        result[2].x = (m[0].y * m[1].z - m[0].z * m[1].y) * invDet;
+
+        result[0].y = (m[1].z * m[2].x - m[1].x * m[2].z) * invDet;
+        result[1].y = (m[0].x * m[2].z - m[0].z * m[2].x) * invDet;
+        result[2].y = (m[0].z * m[1].x - m[0].x * m[1].z) * invDet;
+
+        result[0].z = (m[1].x * m[2].y - m[1].y * m[2].x) * invDet;
+        result[1].z = (m[0].y * m[2].x - m[0].x * m[2].y) * invDet;
+        result[2].z = (m[0].x * m[1].y - m[0].y * m[1].x) * invDet;
+        return result;
+      }
+
+      void main(){
+        int instanceID = gl_InstanceID;
+        float factor = 1.0 / 512.0;
+        int x = (instanceID % 128) * 4;
+        float y = float(instanceID) / 128.0;
+        mat4 mvp = mat4(texture2D(u_samplerTransformMap,vec2(x,y) * factor),
+            texture2D(u_samplerTransformMap,vec2(x+1,y) * factor),
+            texture2D(u_samplerTransformMap,vec2(x+2,y) * factor),
+            texture2D(u_samplerTransformMap,vec2(x+3,y) * factor));
+
+        mat4 modelViewMatrix = u_viewMatrix * mvp;
+        mat4 modelViewProjectionMatrix = u_projectionMatrix * modelViewMatrix;
+        mat3 normalMatrix = inverseAndTransposeMat33(mat3(modelViewMatrix[0].xyz, modelViewMatrix[1].xyz, modelViewMatrix[2].xyz));
+    
+        normal = normalMatrix * a_normal;
+        position = (modelViewMatrix * a_position).xyz;
+        gl_Position = modelViewProjectionMatrix * a_position;
+      }
+      ]]>
+    </source>
+  </vertexshader>
+  
+  <fragmentshader>
+    <source>
+      <![CDATA[
+      uniform vec4 u_materialDiffuseColor;
+      varying vec3 normal;
+      varying vec3 position;
+
+      void main(){
+        gl_FragData[0].xyz = position;
+        gl_FragData[1].xyz = normalize(normal);
+        gl_FragData[2].rgb = u_materialDiffuseColor.rgb;
+       }
+      ]]>
+    </source>
+  </fragmentshader>
+</shader>

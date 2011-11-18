@@ -6,6 +6,7 @@
     <uniform name="u_samplerPositionsMap" constant="positionsTexture" type="Integer" owner="texture"/>
     <uniform name="u_samplerNormalsMap" constant="normalsTexture" type="Integer" owner="texture"/>
     <uniform name="u_samplerDiffuseColorsMap" constant="diffuseColorsTexture" type="Integer" owner="texture"/>
+    <uniform name="u_projectionMatrix" constant="projectionMatrix" type="Mat44"/>
 
     <uniform name="u_lightPosition" constant="lightPosition" type="Vec3" owner="light"/>
     <uniform name="u_lightType" constant="lightType" type="Integer" owner="light"/>
@@ -62,14 +63,15 @@
 			uniform sampler2D u_samplerPositionsMap;
 			uniform sampler2D u_samplerNormalsMap;
 			uniform sampler2D u_samplerDiffuseColorsMap;
-
+      
+      uniform mat4 u_projectionMatrix;
+      
       ]]>
       </source>
       <include file="lighting.txt"/>
       <source>
       <![CDATA[
-      
-      
+            
       void main(){
         
         vec3 pos = texture2D( u_samplerPositionsMap, gl_TexCoord[0].st ).xyz;
@@ -90,7 +92,12 @@
                         u_materialSpecularColor,
                         u_materialShininess,
                         u_materialAmbientColor );
-
+              
+        //This should restore properly the depth buffer, but for some very
+        //mysterious reason, the values are always off by some amount when
+        //mixing with non-deferred rendered objects...???
+        //vec4 posW = u_projectionMatrix * vec4(pos, 1.0);
+        //gl_FragDepth = posW.z / posW.w;
       }
 
       ]]>
