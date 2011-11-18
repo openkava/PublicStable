@@ -6,6 +6,7 @@
 #include <Fabric/Base/RC/Object.h>
 
 #include <string>
+#include <map>
 
 #include <btBulletDynamicsCommon.h>
 #include <BulletCollision/Gimpact/btGImpactShape.h>
@@ -49,9 +50,15 @@ FABRIC_EXT_KL_STRUCT( BulletWorld, {
   KL::Vec3 gravity;
   KL::Size step;
   KL::Size substeps;
-  KL::Boolean hit;
-  KL::Vec3 hitPosition;
-  KL::Vec3 hitNormal;
+} );
+
+FABRIC_EXT_KL_STRUCT( BulletContact, {
+  KL::Scalar fraction;
+  KL::Vec3 normal;
+  KL::Scalar mass;
+  KL::Xfo transform;
+  KL::Vec3 linearVelocity;
+  KL::Vec3 angularVelocity;
 } );
 
 FABRIC_EXT_KL_STRUCT( BulletShape, {
@@ -372,11 +379,73 @@ FABRIC_EXT_EXPORT void FabricBULLET_World_Reset(
   }
 }
 
+struct fabricRayResultCallback : public btCollisionWorld::RayResultCallback
+{
+  typedef std::map<btScalar,BulletContact> ContactMap;
+  typedef std::map<btScalar,BulletContact>::iterator ContactIt;
+  
+  bool mFilterPassiveObjects;
+  std::map<btScalar,BulletContact> mContacts;
+  size_t mNbContacts;
+  fabricRayResultCallback(bool filterPassiveObjects)
+  {
+    mFilterPassiveObjects = filterPassiveObjects;
+    mNbContacts = 0;
+  }
+  
+  virtual btScalar addSingleResult(btCollisionWorld::LocalRayResult& rayResult, bool normalInWorldSpace)
+  {
+    btScalar result = rayResult.m_hitFraction;
+    btRigidBody * body = static_cast<btRigidBody*>(rayResult.m_collisionObject);
+    if(!body)
+      return result;
+    if(mFilterPassiveObjects && body->getInvMass() == 0.0f)
+      return result;;
+    
+    // add the contact
+    BulletContact contact;
+    contact.fraction = rayResult.m_hitFraction;
+    contact.normal.x = rayResult.m_hitNormalLocal.getX();
+    contact.normal.y = rayResult.m_hitNormalLocal.getY();
+    contact.normal.z = rayResult.m_hitNormalLocal.getZ();
+    contact.mass = body->getInvMass();
+    if(contact.mass != 0.0f)
+      contact.mass = 1.0f / contact.mass;
+    btTransform & bodyTransform = body->getWorldTransform();
+    contact.transform.tr.x = bodyTransform.getOrigin().getX();
+    contact.transform.tr.y = bodyTransform.getOrigin().getY();
+    contact.transform.tr.z = bodyTransform.getOrigin().getZ();
+    contact.transform.ori.v.x = bodyTransform.getRotation().getX();
+    contact.transform.ori.v.y = bodyTransform.getRotation().getY();
+    contact.transform.ori.v.z = bodyTransform.getRotation().getZ();
+    contact.transform.ori.w = bodyTransform.getRotation().getW();
+    contact.transform.sc.x = body->getCollisionShape()->getLocalScaling().getX();
+    contact.transform.sc.y = body->getCollisionShape()->getLocalScaling().getY();
+    contact.transform.sc.z = body->getCollisionShape()->getLocalScaling().getZ();
+    contact.linearVelocity.x = body->getLinearVelocity().getX();
+    contact.linearVelocity.y = body->getLinearVelocity().getY();
+    contact.linearVelocity.z = body->getLinearVelocity().getZ();
+    contact.angularVelocity.x = body->getAngularVelocity().getX();
+    contact.angularVelocity.y = body->getAngularVelocity().getY();
+    contact.angularVelocity.z = body->getAngularVelocity().getZ();
+    
+    mContacts.insert(std::pair<btScalar,BulletContact>(rayResult.m_hitFraction,contact));
+    mNbContacts++;
+    
+    return rayResult.m_hitFraction;
+  }
+  
+  size_t getNbContacts() { return mNbContacts; }
+  ContactIt begin() { return mContacts.begin(); }
+  ContactIt end() { return mContacts.end(); }
+};
+
 FABRIC_EXT_EXPORT void FabricBULLET_World_Raycast(
   BulletWorld & world,
   KL::Vec3 & from,
   KL::Vec3 & to,
-  KL::Boolean & filterPassiveObjects
+  KL::Boolean & filterPassiveObjects,
+  KL::VariableArray<BulletContact> & contacts
 )
 {
   if(world.localData != NULL) {
@@ -385,30 +454,17 @@ FABRIC_EXT_EXPORT void FabricBULLET_World_Raycast(
 #endif
     btVector3 fromVec(from.x,from.y,from.z);
     btVector3 toVec(to.x,to.y,to.z);
-    btCollisionWorld::ClosestRayResultCallback callback(fromVec,toVec);
+
+    // setup our custom callback
+    fabricRayResultCallback callback(filterPassiveObjects);
     world.localData->mDynamicsWorld->rayTest(fromVec,toVec,callback);
-    world.hit = callback.hasHit();
-    if(world.hit) {
-      // filter out passive object
-      if(callback.m_collisionObject) {
-        btRigidBody * body = static_cast<btRigidBody*>(callback.m_collisionObject);
-        if(body) {
-          if(body->getInvMass() == 0.0f && filterPassiveObjects) {
-            world.hit = false;
-#ifndef NDEBUG
-            printf("  { FabricBULLET } : FabricBULLET_World_Raycast completed.\n");
-#endif
-            return;
-          }
-        }
-      }
-      world.hitPosition.x = callback.m_hitPointWorld.getX();
-      world.hitPosition.y = callback.m_hitPointWorld.getY();
-      world.hitPosition.z = callback.m_hitPointWorld.getZ();
-      world.hitNormal.x = callback.m_hitNormalWorld.getX();
-      world.hitNormal.y = callback.m_hitNormalWorld.getY();
-      world.hitNormal.z = callback.m_hitNormalWorld.getZ();
-    }
+
+    // copy the contacts over    
+    contacts.resize(callback.getNbContacts());
+    fabricRayResultCallback::ContactIt it = callback.begin();
+    for(size_t i=0;i<contacts.size();i++, it++)
+      contacts[i] = it->second;
+    
 #ifndef NDEBUG
     printf("  { FabricBULLET } : FabricBULLET_World_Raycast completed.\n");
 #endif
