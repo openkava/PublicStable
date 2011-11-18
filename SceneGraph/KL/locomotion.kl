@@ -20,7 +20,7 @@ function activateClip(
   trackcontroller.time = marker.time;
   trackcontroller.stepIds = marker.stepIds;
   
- // report("activateClip:"+trackcontroller.activeTrackSet+" foot:"+trackcontroller.pivotFoot+ " step:"+marker.stepIds[trackcontroller.pivotFoot] + " t:"+trackcontroller.time);
+//  report("activateClip:"+trackcontroller.activeTrackSet+" foot:"+trackcontroller.pivotFoot+ " stepIds:"+marker.stepIds + " t:"+trackcontroller.time);
 }
 
 operator evaluateLocomotionPoseVariables(
@@ -233,8 +233,6 @@ operator evaluateLocomotionPoseVariables(
     
     Scalar numLegsScalar = Scalar(legs.size);
     
-    
-   //   report("stepIds:"+trackcontroller.stepIds);
       
     for(Integer j=0; j < locomotionFeet.size; j++){
       LocomotionFoot foot = locomotionFeet[j];
@@ -396,8 +394,12 @@ operator evaluateLocomotionPoseVariables(
           plantLocations[j] = footXfo.tr;
           plantedFeet[j] = true;
           
-          // Increment the step id if we havn't just activated. 
-          if(trackcontroller.tick != 0 && footStepTrack.footSteps.size > 1){
+          // Increment the step id if we havn't just activated.
+          // Sometimes during a loop, one foot is planting while another is lifting, and
+          // and there are cases where a foot is planting as the cycle it looped,
+          // ausing it to increment its setp counter even though it is already been reset to
+          // the beginning of the clip, and its stepRatio is actuall negative
+          if(trackcontroller.tick != 0 && footStepTrack.footSteps.size > 1 && stepRatio > 1.0){
             if(trackcontroller.stepIds[j] < footStepTrack.footSteps.size - 1){
               trackcontroller.stepIds[j]++;
             }
