@@ -85,17 +85,17 @@ $(document).ready(function() {
 
   var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) });
 
-  var redPhongMaterial = scene.constructNode('DeferredRenderMaterial', {
+  var redMaterial = scene.constructNode('DeferredRenderMaterial', {
     diffuseColor: FABRIC.RT.rgb(0.8, 0, 0)
   });
-  var greenPhongMaterial = scene.constructNode('DeferredRenderMaterial', {
+  var greenMaterial = scene.constructNode('DeferredRenderMaterial', {
     diffuseColor: FABRIC.RT.rgb(0, 0.8, 0)
   });
-  var bluePhongMaterial = scene.constructNode('DeferredRenderMaterial', {
+  var blueMaterial = scene.constructNode('DeferredRenderMaterial', {
     diffuseColor: FABRIC.RT.rgb(0, 0, 0.8)
   });
 
-  // Phong Cuboid
+  // Cuboid
   scene.constructNode('Instance', {
       transformNode: scene.constructNode('Transform', {
         hierarchical: false,
@@ -106,10 +106,10 @@ $(document).ready(function() {
         width: 15,
         height: 30
       }),
-      materialNode: redPhongMaterial
+      materialNode: redMaterial
     });
 
-  // Phong Cone
+  // Cone
   scene.constructNode('Instance', {
       transformNode: scene.constructNode('Transform', {
         hierarchical: false,
@@ -120,10 +120,10 @@ $(document).ready(function() {
         height: 30.0,
         detail: 10
       }),
-      materialNode: greenPhongMaterial
+      materialNode: greenMaterial
     });
 
-  // Phong Sphere
+  // Sphere
   scene.constructNode('Instance', {
       transformNode: scene.constructNode('Transform', {
         hierarchical: false,
@@ -133,9 +133,10 @@ $(document).ready(function() {
         radius: 10,
         detail: 10
       }),
-      materialNode: bluePhongMaterial
+      materialNode: blueMaterial
     });
-  
+
+  deferredRenderer.addPhongShader({lightNode: light});
 
   $('#loadingDialog').dialog({
     modal: true

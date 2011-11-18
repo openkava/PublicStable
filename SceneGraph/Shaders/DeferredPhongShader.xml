@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<shader>
+  <name>PhongMaterial</name>
+  
+  <uniforms>
+    <uniform name="u_samplerPositionsMap" constant="positionsTexture" type="Integer" owner="texture"/>
+    <uniform name="u_samplerNormalsMap" constant="normalsTexture" type="Integer" owner="texture"/>
+    <uniform name="u_samplerDiffuseColorsMap" constant="diffuseColorsTexture" type="Integer" owner="texture"/>
+
+    <uniform name="u_lightPosition" constant="lightPosition" type="Vec3" owner="light"/>
+    <uniform name="u_lightType" constant="lightType" type="Integer" owner="light"/>
+    <uniform name="u_lightDir" constant="lightDir" type="Vec3" owner="light"/>
+    <uniform name="u_lightColor" constant="lightColor" type="Color" owner="light"/>
+    <uniform name="u_lightCosCutoff" constant="lightCosCutoff" type="Scalar" owner="light"/>
+    <uniform name="u_materialShininess" constant="shininess" type="Scalar" defaultValue="20.7"/>
+    <uniform name="u_materialAmbientColor" constant="ambientColor" type="Color" defaultValue="FABRIC.RT.rgba(0.0,0.0,0.0,1)"/>
+    <uniform name="u_materialSpecularColor" constant="specularColor" type="Color" defaultValue="FABRIC.RT.rgba(0.5,0.5,0.5,1)"/>
+  </uniforms>
+
+  <attributes>
+    <attribute name="a_position" binding="positions"/>
+    <attribute name="a_texCoord" binding="uvs0"/>
+  </attributes>
+
+  <lights>
+    <light type="Light" binding="light"/>
+  </lights>
+
+  <textures>
+    <texture binding="positionsTexture"/>
+    <texture binding="normalsTexture"/>
+    <texture binding="diffuseColorsTexture"/>
+  </textures>
+
+  <vertexshader>
+    <source>
+      <![CDATA[
+      attribute vec4 a_position;
+      attribute vec3 a_texCoord;
+
+      void main(){
+        gl_TexCoord[0].st = a_texCoord.st;
+        gl_Position = a_position;
+      }
+      ]]>
+    </source>
+  </vertexshader>
+  
+  <fragmentshader>
+    <source>
+      <![CDATA[
+      uniform vec4 u_lightPosition;
+      uniform int u_lightType;
+      uniform vec3 u_lightDir;
+      uniform vec4 u_lightColor;
+      uniform float u_lightCosCutoff;
+
+      uniform float u_materialShininess;
+      uniform vec4 u_materialAmbientColor;
+      uniform vec4 u_materialSpecularColor;
+
+			uniform sampler2D u_samplerPositionsMap;
+			uniform sampler2D u_samplerNormalsMap;
+			uniform sampler2D u_samplerDiffuseColorsMap;
+
+      ]]>
+      </source>
+      <include file="lighting.txt"/>
+      <source>
+      <![CDATA[
+      
+      
+      void main(){
+        
+        vec3 pos = texture2D( u_samplerPositionsMap, gl_TexCoord[0].st ).xyz;
+        vec3 Ln = normalize(u_lightPosition.xyz-pos);
+        vec3 Vn = normalize(-pos);
+        vec3 Nn = normalize(texture2D( u_samplerNormalsMap, gl_TexCoord[0].st ).xyz);
+        
+        float lightFactor = 1.0;
+        gl_FragColor = phong_shading(  Nn, 
+                        Ln, 
+                        Vn, 
+                        u_lightType,
+                        u_lightDir,
+                        lightFactor,
+                        u_lightCosCutoff,
+                        u_lightColor,
+												texture2D( u_samplerDiffuseColorsMap, gl_TexCoord[0].st ), 
+                        u_materialSpecularColor,
+                        u_materialShininess,
+                        u_materialAmbientColor );
+
+      }
+
+      ]]>
+    </source>
+  </fragmentshader>
+</shader>
