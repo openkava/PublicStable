@@ -1,9 +1,0 @@
-struct Foo {
-  Size s;
-};
-
-function ~Foo() = "myFooDestructor";
-
-operator entry() {
-  Foo foo;
-}
