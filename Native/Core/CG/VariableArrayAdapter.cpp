@@ -214,7 +214,6 @@ namespace Fabric
               ),
             dstMemberDatasRValue->getType()
             );
-          basicBlockBuilder->CreateStore( dstMemberDatasRValue, dstMemberDatasLValue );
           basicBlockBuilder->CreateBr( allocDoneBB );
           
           basicBlockBuilder->SetInsertPoint( mallocBB );
@@ -263,6 +262,208 @@ namespace Fabric
           basicBlockBuilder->CreateBr( copyCheckBB );
           
           basicBlockBuilder->SetInsertPoint( copyDoneBB );
+          basicBlockBuilder->CreateBr( doneBB );
+          
+          basicBlockBuilder->SetInsertPoint( doneBB );
+          basicBlockBuilder->CreateRetVoid();
+        }
+      }
+      
+      {
+        std::vector<FunctionParam> params;
+        params.push_back( FunctionParam( "selfLValue", this, CG::USAGE_LVALUE ) );
+        params.push_back( FunctionParam( "newSizeRValue", sizeAdapter, CG::USAGE_RVALUE ) );
+        std::string name = methodOverloadName( "resize", this, sizeAdapter );
+        FunctionBuilder functionBuilder( moduleBuilder, name, ExprType(), params, false, 0, true );
+        if ( buildFunctions )
+        {
+          BasicBlockBuilder basicBlockBuilder( functionBuilder );
+
+          llvm::Value *selfLValue = functionBuilder[0];
+          llvm::Value *newSizeRValue = functionBuilder[1];
+
+          llvm::BasicBlock *entryBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "entry" );
+          llvm::BasicBlock *resizeBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "resizeBB" );
+          llvm::BasicBlock *disposeCheckBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "disposeCheckBB" );
+          llvm::BasicBlock *disposeNextBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "disposeNextBB" );
+          llvm::BasicBlock *disposeDoneBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "disposeDoneBB" );
+          llvm::BasicBlock *zeroBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "zeroBB" );
+          llvm::BasicBlock *freeBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "freeBB" );
+          llvm::BasicBlock *zeroDoneBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "zeroDoneBB" );
+          llvm::BasicBlock *nonZeroBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "nonZeroBB" );
+          llvm::BasicBlock *expandBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "expandBB" );
+          llvm::BasicBlock *reallocBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "reallocBB" );
+          llvm::BasicBlock *mallocBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "mallocBB" );
+          llvm::BasicBlock *allocDoneBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "allocDoneBB" );
+          llvm::BasicBlock *expandDoneBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "expandDoneBB" );
+          llvm::BasicBlock *initCheckBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "initCheckBB" );
+          llvm::BasicBlock *initNextBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "initNextBB" );
+          llvm::BasicBlock *initDoneBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "initDoneBB" );
+          llvm::BasicBlock *resizeDoneBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "resizeDoneBB" );
+          llvm::BasicBlock *doneBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "doneBB" );
+
+          basicBlockBuilder->SetInsertPoint( entryBB );
+          llvm::Value *sizeLValue = basicBlockBuilder->CreateStructGEP( selfLValue, SizeIndex );
+          llvm::Value *oldSizeRValue = sizeAdapter->llvmLValueToRValue( basicBlockBuilder, sizeLValue );
+          basicBlockBuilder->CreateCondBr(
+            basicBlockBuilder->CreateICmpNE( newSizeRValue, oldSizeRValue ),
+            resizeBB,
+            doneBB
+            );
+
+          basicBlockBuilder->SetInsertPoint( resizeBB );
+          sizeAdapter->llvmDefaultAssign( basicBlockBuilder, sizeLValue, newSizeRValue );
+          llvm::Value *allocSizeLValue = basicBlockBuilder->CreateStructGEP( selfLValue, AllocSizeIndex );
+          llvm::Value *memberDatasLValue = basicBlockBuilder->CreateStructGEP( selfLValue, MemberDatasIndex, "memberDatasLValue" );
+          llvm::Value *memberDatasRValue = basicBlockBuilder->CreateLoad( memberDatasLValue, "memberDatasRValue" );
+          llvm::Value *indexLValue = sizeAdapter->llvmAlloca( basicBlockBuilder, "indexLValue" );
+          sizeAdapter->llvmDefaultAssign( basicBlockBuilder, indexLValue, newSizeRValue );
+          basicBlockBuilder->CreateBr( disposeCheckBB );
+          
+          basicBlockBuilder->SetInsertPoint( disposeCheckBB );
+          llvm::Value *indexRValue = sizeAdapter->llvmLValueToRValue( basicBlockBuilder, indexLValue );
+          basicBlockBuilder->CreateCondBr(
+            basicBlockBuilder->CreateICmpULT( indexRValue, oldSizeRValue ),
+            disposeNextBB,
+            disposeDoneBB
+            );
+          
+          basicBlockBuilder->SetInsertPoint( disposeNextBB );
+          llvm::Value *memberLValue = basicBlockBuilder->CreateGEP( memberDatasRValue, indexRValue );
+          m_memberAdapter->llvmDispose( basicBlockBuilder, memberLValue );
+          sizeAdapter->llvmDefaultAssign(
+            basicBlockBuilder,
+            indexLValue,
+            basicBlockBuilder->CreateAdd(
+              indexRValue,
+              sizeAdapter->llvmConst( context, 1 )
+              )
+            );
+          basicBlockBuilder->CreateBr( disposeCheckBB );
+          
+          basicBlockBuilder->SetInsertPoint( disposeDoneBB );
+          basicBlockBuilder->CreateCondBr(
+            basicBlockBuilder->CreateICmpEQ( newSizeRValue, sizeAdapter->llvmConst( context, 0 ) ),
+            zeroBB,
+            nonZeroBB
+            );
+            
+          basicBlockBuilder->SetInsertPoint( zeroBB );
+          sizeAdapter->llvmDefaultAssign( basicBlockBuilder, allocSizeLValue, sizeAdapter->llvmConst( context, 0 ) );
+          basicBlockBuilder->CreateCondBr(
+            basicBlockBuilder->CreateIsNotNull( memberDatasRValue ),
+            freeBB,
+            doneBB
+            );
+           
+          basicBlockBuilder->SetInsertPoint( freeBB );
+          llvmCallFree(
+            basicBlockBuilder,
+            basicBlockBuilder->CreatePointerCast(
+              memberDatasRValue,
+              basicBlockBuilder->getInt8PtrTy()
+              )
+            );
+          basicBlockBuilder->CreateStore(
+            llvm::ConstantPointerNull::get( static_cast<llvm::PointerType const *>( memberDatasRValue->getType() ) ),
+            memberDatasLValue
+            );
+          basicBlockBuilder->CreateBr( zeroDoneBB );
+           
+          basicBlockBuilder->SetInsertPoint( zeroDoneBB );
+          basicBlockBuilder->CreateBr( resizeDoneBB );
+           
+          basicBlockBuilder->SetInsertPoint( nonZeroBB );
+          llvm::Value *oldAllocSizeRValue = sizeAdapter->llvmLValueToRValue( basicBlockBuilder, allocSizeLValue );
+          basicBlockBuilder->CreateCondBr(
+            basicBlockBuilder->CreateICmpUGT( newSizeRValue, oldAllocSizeRValue ),
+            expandBB,
+            expandDoneBB
+            );
+          
+          basicBlockBuilder->SetInsertPoint( expandBB );
+          llvm::Value *newAllocSizeRValue = llvmCallMax(
+            basicBlockBuilder,
+            llvmCallNextPowTwoMinusOne(
+              basicBlockBuilder,
+              newSizeRValue
+              ),
+            sizeAdapter->llvmConst( context, 15 )
+            );
+          sizeAdapter->llvmDefaultAssign( basicBlockBuilder, allocSizeLValue, newAllocSizeRValue );
+          llvm::Value *totalSizeRValue = basicBlockBuilder->CreateMul(
+            newAllocSizeRValue, 
+            sizeAdapter->llvmConst( context, m_memberAdapter->getDesc()->getAllocSize() )
+            );
+          basicBlockBuilder->CreateCondBr(
+            basicBlockBuilder->CreateIsNotNull( memberDatasRValue ),
+            reallocBB,
+            mallocBB
+            );
+          
+          basicBlockBuilder->SetInsertPoint( reallocBB );
+          llvm::Value *reallocMemberDatasRValue = basicBlockBuilder->CreatePointerCast(
+            llvmCallRealloc(
+              basicBlockBuilder,
+              basicBlockBuilder->CreatePointerCast(
+                memberDatasRValue,
+                basicBlockBuilder->getInt8PtrTy()
+                ),
+              totalSizeRValue
+              ),
+            memberDatasRValue->getType()
+            );
+          basicBlockBuilder->CreateBr( allocDoneBB );
+          
+          basicBlockBuilder->SetInsertPoint( mallocBB );
+          llvm::Value *mallocMemberDatasRValue = basicBlockBuilder->CreatePointerCast(
+            llvmCallMalloc(
+              basicBlockBuilder,
+              totalSizeRValue
+              ),
+            memberDatasRValue->getType()
+            );
+          basicBlockBuilder->CreateBr( allocDoneBB );
+          
+          basicBlockBuilder->SetInsertPoint( allocDoneBB );
+          llvm::PHINode *allocMemberDatasRValue = basicBlockBuilder->CreatePHI( memberDatasRValue->getType(), "allocMemberDatasRValue" );
+          allocMemberDatasRValue->addIncoming( reallocMemberDatasRValue, reallocBB );
+          allocMemberDatasRValue->addIncoming( mallocMemberDatasRValue, mallocBB );
+          basicBlockBuilder->CreateStore( allocMemberDatasRValue, memberDatasLValue );
+          basicBlockBuilder->CreateBr( expandDoneBB );
+          
+          basicBlockBuilder->SetInsertPoint( expandDoneBB );
+          llvm::PHINode *expandMemberDatasRValue = basicBlockBuilder->CreatePHI( memberDatasRValue->getType(), "expandMemberDatasRValue" );
+          expandMemberDatasRValue->addIncoming( allocMemberDatasRValue, allocDoneBB );
+          expandMemberDatasRValue->addIncoming( memberDatasRValue, nonZeroBB );
+          sizeAdapter->llvmDefaultAssign( basicBlockBuilder, indexLValue, oldSizeRValue );
+          basicBlockBuilder->CreateBr( initCheckBB );
+          
+          basicBlockBuilder->SetInsertPoint( initCheckBB );
+          indexRValue = sizeAdapter->llvmLValueToRValue( basicBlockBuilder, indexLValue );
+          basicBlockBuilder->CreateCondBr(
+            basicBlockBuilder->CreateICmpULT( indexRValue, newSizeRValue ),
+            initNextBB,
+            initDoneBB
+            );
+          
+          basicBlockBuilder->SetInsertPoint( initNextBB );
+          memberLValue = basicBlockBuilder->CreateGEP( expandMemberDatasRValue, indexRValue );
+          m_memberAdapter->llvmInit( basicBlockBuilder, memberLValue );
+          sizeAdapter->llvmDefaultAssign(
+            basicBlockBuilder,
+            indexLValue,
+            basicBlockBuilder->CreateAdd(
+              indexRValue,
+              sizeAdapter->llvmConst( context, 1 )
+              )
+            );
+          basicBlockBuilder->CreateBr( initCheckBB );
+          
+          basicBlockBuilder->SetInsertPoint( initDoneBB );
+          basicBlockBuilder->CreateBr( resizeDoneBB );
+          
+          basicBlockBuilder->SetInsertPoint( resizeDoneBB );
           basicBlockBuilder->CreateBr( doneBB );
           
           basicBlockBuilder->SetInsertPoint( doneBB );
@@ -697,8 +898,6 @@ namespace Fabric
         return (void *)&VariableArrayAdapter::Pop;
       else if ( functionName == "__"+getCodeName()+"__Append" )
         return (void *)&VariableArrayAdapter::Append;
-      else if ( functionName == "__"+getCodeName()+"__Resize" )
-        return (void *)&VariableArrayAdapter::Resize;
       else return ArrayAdapter::llvmResolveExternalFunction( functionName );
     }
 
@@ -780,35 +979,16 @@ namespace Fabric
     {
       inst->m_variableArrayDesc->pop( dst, result );
     }
-    
-    void VariableArrayAdapter::Resize( VariableArrayAdapter const *inst, void *dst, size_t newSize )
-    {
-      inst->m_variableArrayDesc->setNumMembers( dst, newSize );
-    }
 
-    void VariableArrayAdapter::llvmCallResize( BasicBlockBuilder &basicBlockBuilder, llvm::Value *arrayLValue, llvm::Value *newSize ) const
+    void VariableArrayAdapter::llvmCallResize( BasicBlockBuilder &basicBlockBuilder, llvm::Value *arrayLValue, llvm::Value *newSizeRValue ) const
     {
-      RC::Handle<Context> context = basicBlockBuilder.getContext();
-      
-      RC::ConstHandle<SizeAdapter> sizeAdapter = getManager()->getSizeAdapter();
-      
-      std::vector< llvm::Type const * > argTypes;
-      argTypes.push_back( basicBlockBuilder->getInt8PtrTy() );
-      argTypes.push_back( llvmLType( context ) );
-      argTypes.push_back( sizeAdapter->llvmRType( context ) );
-      llvm::FunctionType const *funcType = llvm::FunctionType::get( basicBlockBuilder->getVoidTy(), argTypes, false );
-      
-      llvm::AttributeWithIndex AWI[1];
-      AWI[0] = llvm::AttributeWithIndex::get( ~0u, llvm::Attribute::InlineHint | llvm::Attribute::NoUnwind );
-      llvm::AttrListPtr attrListPtr = llvm::AttrListPtr::get( AWI, 1 );
-      
-      llvm::Function *func = llvm::cast<llvm::Function>( basicBlockBuilder.getModuleBuilder()->getOrInsertFunction( "__"+getCodeName()+"__Resize", funcType, attrListPtr ) ); 
-
-      std::vector< llvm::Value * > args;
-      args.push_back( llvmAdapterPtr( basicBlockBuilder ) );
-      args.push_back( arrayLValue );
-      args.push_back( newSize );
-      basicBlockBuilder->CreateCall( func, args.begin(), args.end() );
+      RC::ConstHandle<SizeAdapter> sizeAdapter = basicBlockBuilder.getManager()->getSizeAdapter();
+      std::vector< FunctionParam > params;
+      params.push_back( FunctionParam( "arrayLValue", this, CG::USAGE_LVALUE ) );
+      params.push_back( FunctionParam( "newSizeRValue", sizeAdapter, CG::USAGE_RVALUE ) );
+      std::string name = methodOverloadName( "resize", this, sizeAdapter );
+      FunctionBuilder functionBuilder( basicBlockBuilder.getModuleBuilder(), name, ExprType(), params, false, 0, true );
+      basicBlockBuilder->CreateCall2( functionBuilder.getLLVMFunction(), arrayLValue, newSizeRValue );
     }
 
     void VariableArrayAdapter::llvmCallPop( BasicBlockBuilder &basicBlockBuilder, llvm::Value *arrayLValue, llvm::Value *memberLValue ) const
