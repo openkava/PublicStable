@@ -216,6 +216,7 @@ function OGLRenderTarget.unbind() {
     report("Error: FBO not generated");
   }
   // restore the OpenGL state
+
   glPopAttrib();
   glBindFramebuffer(GL_FRAMEBUFFER, this.prevFbo);
 }
