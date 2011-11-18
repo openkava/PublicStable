@@ -6,6 +6,7 @@
 #define _FABRIC_RT_SLICED_ARRAY_IMPL_H
 
 #include <Fabric/Core/RT/ArrayImpl.h>
+#include <Fabric/Core/RT/VariableArrayImpl.h>
 #include <Fabric/Base/Util/Bits.h>
 #include <Fabric/Base/Util/AtomicSize.h>
 
@@ -14,6 +15,11 @@
 
 namespace Fabric
 {
+  namespace CG
+  {
+    class SlicedArrayAdapter;
+  };
+  
   namespace RT
   {
     class VariableArrayImpl;
@@ -22,12 +28,19 @@ namespace Fabric
     {
       friend class Manager;
       friend class Impl;
+      friend class CG::SlicedArrayAdapter;
+      
+      struct ref_counted_va_t
+      {
+        size_t refCount;
+        VariableArrayImpl::bits_t varArray;
+      };
       
       struct bits_t
       {
         size_t offset;
         size_t size;
-        void *variableArrayBits;
+        ref_counted_va_t *rcva;
       };
     
     public:

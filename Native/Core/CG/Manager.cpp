@@ -240,9 +240,9 @@ namespace Fabric
       return m_constStringAdapter;
     }
       
-    RC::ConstHandle<VariableArrayAdapter> Manager::getVariableArrayOf( RC::ConstHandle<Adapter> const &adapter, size_t flags ) const
+    RC::ConstHandle<VariableArrayAdapter> Manager::getVariableArrayOf( RC::ConstHandle<Adapter> const &adapter ) const
     {
-      RC::ConstHandle<RT::Desc> variableArrayDesc = m_rtManager->getVariableArrayOf( adapter->getDesc(), flags );
+      RC::ConstHandle<RT::Desc> variableArrayDesc = m_rtManager->getVariableArrayOf( adapter->getDesc() );
       return RC::ConstHandle<VariableArrayAdapter>::StaticCast( getAdapter( variableArrayDesc ) );
     }
       
@@ -273,6 +273,7 @@ namespace Fabric
       // [pzion 20110923] Special case: several internal LLVM functions use
       // the String and ConstString adapters, so make sure they exist for when pulling 
       // optimized IR out of the cache
+      getSizeAdapter();
       getStringAdapter();
       getConstStringAdapter();
 
@@ -292,6 +293,7 @@ namespace Fabric
       // [pzion 20110923] Special case: several internal LLVM functions use
       // the String and ConstString adapters, so make sure they exist for when pulling 
       // optimized IR out of the cache
+      getSizeAdapter();
       getStringAdapter();
       getConstStringAdapter();
 

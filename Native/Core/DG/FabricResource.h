@@ -55,7 +55,6 @@ namespace Fabric
 
       void setStringMember( size_t index, std::string const &value );
       std::string getStringMember( size_t index ) const;
-      bool areStringDatasEqual( const void* string1, const void* string2 ) const;
 
       void *m_resource;
       bool m_alloc;
