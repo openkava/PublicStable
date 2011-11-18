@@ -273,6 +273,7 @@ namespace Fabric
       // [pzion 20110923] Special case: several internal LLVM functions use
       // the String and ConstString adapters, so make sure they exist for when pulling 
       // optimized IR out of the cache
+      getSizeAdapter();
       getStringAdapter();
       getConstStringAdapter();
 
@@ -292,6 +293,7 @@ namespace Fabric
       // [pzion 20110923] Special case: several internal LLVM functions use
       // the String and ConstString adapters, so make sure they exist for when pulling 
       // optimized IR out of the cache
+      getSizeAdapter();
       getStringAdapter();
       getConstStringAdapter();
 
