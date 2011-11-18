@@ -547,9 +547,9 @@ FABRIC.SceneGraph = {
       }
     };
     scene.pub.IO = context.IO;
-    scene.pub.redrawAllViewports = function() {
+    scene.pub.redrawAllViewports = function(force) {
       for (var i=0; i<viewports.length; i++) {
-        viewports[i].pub.redraw();
+        viewports[i].pub.redraw(force);
       }
     };
     scene.pub.getErrors = function() {
@@ -667,13 +667,12 @@ FABRIC.SceneGraph = {
         var prevTime, onAdvanceCallback;
         var setTime = function(t, redraw) {
           time = Math.round(t/sceneOptions.timeStep) * sceneOptions.timeStep;
-          globalsNode.setData('time', 0, t);
-          
+          globalsNode.setData('time', 0, time);
           if( onAdvanceCallback){
             onAdvanceCallback.call();
           }
           if(redraw !== false){
-            scene.pub.redrawAllViewports();
+            scene.pub.redrawAllViewports(true);
           }
         }
         var advanceTime = function() {
@@ -1228,9 +1227,10 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
       var ray = viewPortRayCastDgNode.getData('ray');
       return ray;
     };
-    viewportNode.pub.redraw = function() {
+    viewportNode.pub.redraw = function(force) {
       if(scene.pub.animation.isPlaying()){
-        fabricwindow.needsRedraw();
+        if(force)
+          fabricwindow.needsRedraw();
       }else{
         // If we give the browser a millisecond pause, then the redraw will
         // occur. Otherwist this message gets lost, causing a blank screen when

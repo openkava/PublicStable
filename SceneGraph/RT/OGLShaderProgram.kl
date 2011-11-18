@@ -519,6 +519,9 @@ function OGLShaderProgram.loadMat44TransposedUniformArray(
     report("ERROR: Shader not in use");
     return;
   }
+  if(values.size() > 62){
+    report("WARNING: Loading more than 62 Matrices will exceed the limit of 1024 uniforms supported by ATI GPUs.");
+  }
   if (location != - 1) {
     glUniformMatrix4fv(location, values.size(), false, values);
   }

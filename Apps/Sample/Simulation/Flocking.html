@@ -86,10 +86,14 @@ FABRIC.SceneGraph.registerNodeType('Flock', {
     flockNode.pub.addVertexAttributeValue('neighborIndices', 'Integer[]');
     flockNode.pub.addVertexAttributeValue('neighborDistances', 'Scalar[]');
     
+    var neighborInfluenceRange = options.cellsize / 2.0;
+    flockNode.pub.addVertexAttributeValue('neighborinfluencerange', 'Scalar', { defaultValue:neighborInfluenceRange });
+    
     flockNode.pub.addVertexAttributeValue('initialized', 'Boolean', false );
     flockNode.pub.addVertexAttributeValue('debugDraw', 'DebugGeometry' );
     flockNode.pub.addUniformValue('displayDebugging', 'Boolean', options.displayDebugging, true );
     
+    flockNode.getAttributesDGNode().setDependency(scene.getGlobalsNode(), 'globals');
     flockNode.getAttributesDGNode().bindings.append(scene.constructOperator({
       operatorName: 'simulateParticles',
       srcFile: 'KL/flocking.kl',
