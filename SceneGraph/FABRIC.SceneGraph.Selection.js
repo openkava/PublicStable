@@ -331,7 +331,7 @@ FABRIC.SceneGraph.registerManagerType('SelectionManipulationManager', {
 
     // retrieve the list of manipulators    
     var manipulators = options.manipulators;
-    var manipulatorsDrawToggle = true;
+    var manipulatorsDrawToggle = false;
     var toggleManipulatorsDisplay = function(drawToggle){
       if(!manipulators)
         return;
@@ -399,8 +399,7 @@ FABRIC.SceneGraph.registerManagerType('SelectionManipulationManager', {
           manipulator.addEventListener('dragstart', dragStartFn);
           manipulator.addEventListener('drag', dragFn);
           manipulator.addEventListener('dragend', dragEndFn);
-          if(manipulators.length > 0)
-            manipulator.setDrawToggle(manipulators[manipulators.length-1].getDrawToggle());
+          manipulator.setDrawToggle(manipulatorsDrawToggle);
           manipulators.push(manipulator);
         },
         toggleManipulatorsDisplay: function(value) {

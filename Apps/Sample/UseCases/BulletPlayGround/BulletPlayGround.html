@@ -5,7 +5,7 @@
   <!--
     Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
     -->
-    <title>FABRIC - Bullet Editor</title> 
+    <title>FABRIC - Bullet Playground</title> 
     
     <script type="text/javascript" src="../../../../ThirdParty/jQuery/jquery-1.6.2.min.js"></script>
     <script type="text/javascript" src="../../../../ThirdParty/jQuery/jquery-ui-1.8.16.custom.min.js"></script>
@@ -132,6 +132,7 @@ FABRIC.SceneGraph.registerNodeType('WorkPlane', {
 FABRIC.SceneGraph.defineEffectFromFile('ToonMaterial', 'ToonShader.xml');
 FABRIC.SceneGraph.defineEffectFromFile('WorkPlaneMaterial', 'WorkPlaneShader.xml');
 FABRIC.SceneGraph.defineEffectFromFile('GroundPlaneMaterial', 'GroundPlaneShader.xml');
+FABRIC.SceneGraph.defineEffectFromFile('ManipulatorMaterial', 'ManipulatorShader.xml');
 
 // register our custom renderer
 FABRIC.SceneGraph.registerNodeType('ToonRenderer', {
@@ -359,7 +360,7 @@ $(document).ready(function() {
     target: new FABRIC.RT.Vec3(0,0,0),
     farDistance: 50,
     resolution: 1024,
-    coneAngle: Math.degToRad(60.0),
+    coneAngle: Math.degToRad(85.0),
     castShadows: true
   });
   var shadowMapMaterial = scene.constructNode('ShadowMaterial');
@@ -409,26 +410,31 @@ $(document).ready(function() {
   // SELECTION
   var selectionManager = scene.constructManager('ViewportSelectionManager', { undoManager: undoManager} );
   var selectionManipulationManager = scene.constructManager('SelectionManipulationManager', {
+    manipulators: [],
     selectionManager: selectionManager,
     transformGetter: 'getInitialTransform',
     transformSetter: 'setInitialTransform',
-    screenTranslationRadius: 0.35
   });
-  // TODO: ROTATION MANIPULATOR IS BROKEN, SEE SECOND TODO COMMENT IN HERE
-  selectionManipulationManager.addManipulator(scene.constructNode('RotationManipulator',{
+  selectionManipulationManager.addManipulator(scene.constructNode('ScreenTranslationManipulator',{
     parentNode: selectionManipulationManager.getTransformNode(),
-    color: FABRIC.RT.rgb(0, 0.8, 0, 1),
-    radius: 2.0
+    materialNode: toonRenderer.constructMaterial('ManipulatorMaterial', {color: FABRIC.RT.rgb(0, 0.8, 0, 1), drawOverlaid: true}),
+    radius: 0.35
   }));
   selectionManipulationManager.addManipulator(scene.constructNode('RotationManipulator',{
     parentNode: selectionManipulationManager.getTransformNode(),
-    color: FABRIC.RT.rgb(0.8, 0, 0, 1),
+    materialNode: toonRenderer.constructMaterial('ManipulatorMaterial', {color: FABRIC.RT.rgb(0.8, 0, 0, 1), drawOverlaid: true}),
     localXfo: new FABRIC.RT.Xfo({ ori: new FABRIC.RT.Quat().setFromAxisAndAngle(new FABRIC.RT.Vec3(0, 0, 1), -Math.HALF_PI) }),
     radius: 2.0
   }));
   selectionManipulationManager.addManipulator(scene.constructNode('RotationManipulator',{
     parentNode: selectionManipulationManager.getTransformNode(),
-    color: FABRIC.RT.rgb(0, 0, 0.8, 1),
+    materialNode: toonRenderer.constructMaterial('ManipulatorMaterial', {color: FABRIC.RT.rgb(0, 0.8, 0, 1), drawOverlaid: true}),
+    color: FABRIC.RT.rgb(0, 0.8, 0, 1),
+    radius: 2.0
+  }));
+  selectionManipulationManager.addManipulator(scene.constructNode('RotationManipulator',{
+    parentNode: selectionManipulationManager.getTransformNode(),
+    materialNode: toonRenderer.constructMaterial('ManipulatorMaterial', {color: FABRIC.RT.rgb(0, 0, 0.8, 1), drawOverlaid: true}),
     localXfo: new FABRIC.RT.Xfo({ ori: new FABRIC.RT.Quat().setFromAxisAndAngle(new FABRIC.RT.Vec3(1, 0, 0), Math.HALF_PI) }),
     radius: 2.0
   }));
@@ -870,7 +876,6 @@ $(document).ready(function() {
     workPlane.setStanding(!workPlane.getStanding());
     viewport.redraw();
   });
-  console.log( workPlane.getMaterialNode());
   /*
   $('#workplaneblend').slider({
     min: 0.0,
@@ -898,6 +903,8 @@ $(document).ready(function() {
 
   // setup load and save
   $("#presetSave").button().click(function(){
+    if(isPlaying)
+      return;
     var bodiesToSave = {};
     if(selectionManager.getSelection().length == 0) {
       bodiesToSave = getRigidBodyJsonData(rigidBodies,true);
@@ -914,6 +921,8 @@ $(document).ready(function() {
     scene.IO.putTextFile(JSON.stringify(bodiesToSave), path);
   });
   $("#presetLoad").button().click(function(){
+    if(isPlaying)
+      return;
     var path = scene.IO.queryUserFileAndFolderHandle(scene.IO.forOpen, "Bullet Editor Data", "json", "bulletScene");
     var jsonData = JSON.parse(scene.IO.getTextFile(path));
     var newBodies = processRigidBodyMessages([{action: 'rigidBodiesCreated', data: jsonData}]);
@@ -929,6 +938,8 @@ $(document).ready(function() {
     viewport.redraw();
   });
   $("#presetDuplicate").button().click(function(){
+    if(isPlaying)
+      return;
     if(selectionManager.getSelection().length == 0)
       return;
     var bodiesToSave = {};
@@ -1007,19 +1018,21 @@ $(document).ready(function() {
     
     viewport.redraw();
   };
+  var currentDraggedId = undefined;
   
   // define the viewport as a drop target
   $("#FabricContainer").droppable({
     over: function(evt) {
       if(isPlaying)
         return;
-      var id = evt.srcElement.getAttribute('id');
-      if(dragStatus[id] != 'outside')
+      if(!currentDraggedId)
         return;
-      dragStatus[id] = 'inside';
+      if(dragStatus[currentDraggedId] != 'outside')
+        return;
+      dragStatus[currentDraggedId] = 'inside';
       
       // update the evt data
-      currentRigidBody = constructRigidBody(id,undefined,undefined,true);
+      currentRigidBody = constructRigidBody(currentDraggedId,undefined,undefined,true);
       
       dragConstructedRigidBody(evt);
       document.addEventListener('mousemove',dragConstructedRigidBody);
@@ -1027,8 +1040,9 @@ $(document).ready(function() {
     drop: function(evt) {
       if(isPlaying)
         return;
-      var id = evt.srcElement.getAttribute('id');
-      if(dragStatus[id] != 'inside')
+      if(!currentDraggedId)
+        return;
+      if(dragStatus[currentDraggedId] != 'inside')
         return;
 
       // actual drop
@@ -1039,16 +1053,19 @@ $(document).ready(function() {
     },
     activate: function(evt) {
       // store the element's offset
-      var id = evt.srcElement.getAttribute('id');
-      originalOffset[id] = $("#"+id).offset();
-      dragStatus[id] = 'outside';
+      currentDraggedId = evt.srcElement.getAttribute('id');
+      originalOffset[currentDraggedId] = $("#"+currentDraggedId).offset();
+      dragStatus[currentDraggedId] = 'outside';
       selectionManager.setEnabled(false);
     },
     deactivate: function(evt) {
+      if(!currentDraggedId)
+        return;
+      
       // restore the element's offset
-      var id = evt.srcElement.getAttribute('id');
-      $("#"+id).offset(originalOffset[id]);
-      dragStatus[id] = undefined;
+      $("#"+currentDraggedId).offset(originalOffset[currentDraggedId]);
+      dragStatus[currentDraggedId] = undefined;
+      currentDraggedId = undefined;
       selectionManager.setEnabled(true);
     }
   });
