@@ -257,22 +257,19 @@ $(document).ready(function() {
   selectionManipulationManager.addManipulator(scene.constructNode('RotationManipulator',{
     parentNode: selectionManipulationManager.getTransformNode(),
     color: FABRIC.RT.rgb(0, 0.8, 0, 1),
-    radius: 2.0,
-    undoManager: undoManager
+    radius: 2.0
   }));
   selectionManipulationManager.addManipulator(scene.constructNode('RotationManipulator',{
     parentNode: selectionManipulationManager.getTransformNode(),
     color: FABRIC.RT.rgb(0.8, 0, 0, 1),
     localXfo: new FABRIC.RT.Xfo({ ori: new FABRIC.RT.Quat().setFromAxisAndAngle(new FABRIC.RT.Vec3(0, 0, 1), -Math.HALF_PI) }),
-    radius: 2.0,
-    undoManager: undoManager
+    radius: 2.0
   }));
   selectionManipulationManager.addManipulator(scene.constructNode('RotationManipulator',{
     parentNode: selectionManipulationManager.getTransformNode(),
     color: FABRIC.RT.rgb(0, 0, 0.8, 1),
     localXfo: new FABRIC.RT.Xfo({ ori: new FABRIC.RT.Quat().setFromAxisAndAngle(new FABRIC.RT.Vec3(1, 0, 0), Math.HALF_PI) }),
-    radius: 2.0,
-    undoManager: undoManager
+    radius: 2.0
   }));
 
   //==========================================================

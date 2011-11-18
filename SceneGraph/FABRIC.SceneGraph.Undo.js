@@ -55,7 +55,7 @@ FABRIC.SceneGraph.registerManagerType('UndoManager', {
         for(var key in taskOptions.additionCallBacks)
           task[key] = taskOptions.additionCallBacks;
       }
-      if(undoTasks >= options.maxTasks)
+      if(undoTasks.length >= options.maxTasks)
         undoTasks.splice(0,1 + undoTasks.length - options.maxTasks);
       undoTasks.push(task);
       redoTasks = [];
