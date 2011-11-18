@@ -158,3 +158,158 @@ FABRIC.SceneGraph.registerNodeType('OffscreenViewport', {
     return offscreenNode;
   }});
 
+FABRIC.SceneGraph.defineEffectFromFile('DeferredRenderMaterial', 'FABRIC_ROOT/SceneGraph/Shaders/DeferredRender.xml');
+
+FABRIC.SceneGraph.registerNodeType('DeferredRenderer', {
+  briefDesc: '',
+  detailedDesc: '',
+  parentNodeDesc: '',
+  optionsDesc: {
+    //Eventually: compute normals, compute specular, compute diffuse, compute depth...
+  },
+  factoryFn: function(options, scene) {
+    scene.assignDefaults(options, {
+      });
+
+    var deferredRenderNode = scene.constructNode('SceneGraphNode');
+    var redrawEventHandler = deferredRenderNode.constructEventHandlerNode('DeferredDraw');
+    redrawEventHandler.setScopeName('deferredDraw');
+
+    scene.getSceneRedrawOpaqueObjectsEventHandler().appendChildEventHandler(redrawEventHandler);
+
+    var renderTargetRedrawEventHandler = deferredRenderNode.constructEventHandlerNode('RenderTargetRedraw');
+    redrawEventHandler.appendChildEventHandler(renderTargetRedrawEventHandler);
+
+    var oglRenderTargetTextureDescs = [];
+    var oglRenderTargetTextureNames = [];
+
+    oglRenderTargetTextureDescs.push(
+        new FABRIC.RT.OGLRenderTargetTextureDesc (
+            2, // COLOR_BUFFER
+            new FABRIC.RT.OGLTexture2D (
+              FABRIC.SceneGraph.OpenGLConstants.GL_RGB16F,
+              FABRIC.SceneGraph.OpenGLConstants.GL_RGB,
+              FABRIC.SceneGraph.OpenGLConstants.GL_FLOAT)
+          ));
+    oglRenderTargetTextureNames.push('positions');
+
+    oglRenderTargetTextureDescs.push(
+        new FABRIC.RT.OGLRenderTargetTextureDesc (
+            2, // COLOR_BUFFER
+            new FABRIC.RT.OGLTexture2D (
+              FABRIC.SceneGraph.OpenGLConstants.GL_RGB16F,
+              FABRIC.SceneGraph.OpenGLConstants.GL_RGB,
+              FABRIC.SceneGraph.OpenGLConstants.GL_FLOAT)
+          ));
+    oglRenderTargetTextureNames.push('normals');
+
+    oglRenderTargetTextureDescs.push(
+        new FABRIC.RT.OGLRenderTargetTextureDesc (
+            2, // COLOR_BUFFER
+            new FABRIC.RT.OGLTexture2D (
+              FABRIC.SceneGraph.OpenGLConstants.GL_RGB16F,
+              FABRIC.SceneGraph.OpenGLConstants.GL_RGB,
+              FABRIC.SceneGraph.OpenGLConstants.GL_FLOAT)
+          ));
+    oglRenderTargetTextureNames.push('diffusecolors');
+
+    var nbRenderTargets = oglRenderTargetTextureNames.length;
+
+    redrawEventHandler.addMember('textureIDs', 'Integer['+ nbRenderTargets + ']');
+
+    renderTargetRedrawEventHandler.addMember('renderTarget', 'OGLRenderTarget', FABRIC.RT.oglRenderTarget(0,0,
+      oglRenderTargetTextureDescs,
+      {
+        clearColor: FABRIC.RT.rgba(0,0,0,0)
+      }
+    ));
+
+    renderTargetRedrawEventHandler.preDescendBindings.append(
+      scene.constructOperator({
+          operatorName: 'bindScreenRenderTarget',
+          srcFile: 'FABRIC_ROOT/SceneGraph/KL/renderTarget.kl',
+          entryFunctionName: 'bindScreenRenderTarget',
+          parameterLayout: [
+            'window.width',
+            'window.height',
+            'self.renderTarget'
+          ]
+        }));
+
+    renderTargetRedrawEventHandler.postDescendBindings.insert(
+      scene.constructOperator({
+          operatorName: 'unbindRenderTarget',
+          srcFile: 'FABRIC_ROOT/SceneGraph/KL/renderTarget.kl',
+          entryFunctionName: 'unbindRenderTarget',
+          parameterLayout: [
+            'self.renderTarget'
+          ]
+        }), 0);
+
+    renderTargetRedrawEventHandler.postDescendBindings.append(
+      scene.constructOperator({
+          operatorName: 'saveTextureIDs',
+          srcCode: 'use OGLRenderTarget; operator saveTextureIDs(io OGLRenderTarget renderTarget, io Integer t[' + nbRenderTargets + ']){ \n' +
+                  'Size i;\n' +
+                  'for(i = 0; i < renderTarget.textures.size; ++i)\n' +
+                  '  t[i] = renderTarget.textures[i].texture.bufferID;}',
+          entryFunctionName: 'saveTextureIDs',
+          parameterLayout: [
+            'self.renderTarget',
+            'deferredDraw.textureIDs'
+          ]
+        }));
+
+    var deferredRenderMaterialNodePub = scene.pub.constructNode('DeferredRenderMaterial', {
+      parentEventHandler: renderTargetRedrawEventHandler
+    });
+
+    var showDebug = true;
+    if(showDebug) {
+      //Debug display render targets
+      redrawEventHandler.addMember('debugShaderProgID', 'Integer', 0);
+
+      redrawEventHandler.postDescendBindings.append(
+        scene.constructOperator({
+            operatorName: 'debugDrawRenderTargets',
+            srcCode:'use OGLTexture2D;\n' +
+                    'operator debugDrawRenderTargets(io Integer t[' + nbRenderTargets + '], io Integer progId){ \n' +
+                    'Size i, j, n = ' + oglRenderTargetTextureNames.length + ', curr = 0;\n' +
+                    'for(i = 0; i < 3; ++i){\n' +
+                    '  for(j = 0; j < 3; ++j){\n' +
+                    '    Scalar x = -1.0 + Scalar(i)/1.5;\n' +
+                    '    Scalar y = 1.0 - Scalar(j)/1.5;\n' +
+                    '    glActiveTexture(GL_TEXTURE0);\n' +
+                    '    glBindTexture(GL_TEXTURE_2D, t[curr++]);\n' +
+                    '    drawTexture(0, progId, Vec2(x,y), Vec2(x+0.66666,y-0.66666), false);\n' +
+                    '    if(curr == n)\n' +
+                    '      return;}}}\n',
+            entryFunctionName: 'debugDrawRenderTargets',
+            parameterLayout: [
+              'self.textureIDs',
+              'self.debugShaderProgID'
+            ]
+        }));
+      }
+    deferredRenderNode.pub.getMaterial = function(){return deferredRenderMaterialNodePub;}
+    return deferredRenderNode;
+  }});
+
+  //TODO: add deferred phong
+  
+/*
+        textureStub.preDescendBindings.append(scene.constructOperator({
+          operatorName: 'load' + textureName + 'TextureUnit',
+          srcFile: 'FABRIC_ROOT/SceneGraph/KL/loadUniforms.kl',
+          preProcessorDefinitions: {
+            ATTRIBUTE_NAME: capitalizeFirstLetter(textureName),
+            ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID(textureName),
+            DATA_TYPE: 'Integer'
+          },
+          entryFunctionName: 'loadUniform',
+          parameterLayout: [
+            'shader.shaderProgram',
+            'self.textureUnit'
+          ]
+        }));
+*/
