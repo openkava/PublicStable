@@ -115,9 +115,6 @@ namespace Fabric
           llvm::BasicBlock *zeroBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "zeroBB" );
           llvm::BasicBlock *nonZeroBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "nonZeroBB" );
           llvm::BasicBlock *freeBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "freeBB" );
-          llvm::BasicBlock *reallocBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "reallocBB" );
-          llvm::BasicBlock *mallocBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "mallocBB" );
-          llvm::BasicBlock *allocDoneBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "allocDoneBB" );
           llvm::BasicBlock *copyCheckBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "copyCheckBB" );
           llvm::BasicBlock *copyNextBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "copyNextBB" );
           llvm::BasicBlock *copyDoneBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "copyDoneBB" );
@@ -196,14 +193,7 @@ namespace Fabric
             dstAllocSizeRValue, 
             sizeAdapter->llvmConst( context, m_memberAdapter->getDesc()->getAllocSize() )
             );
-          basicBlockBuilder->CreateCondBr(
-            basicBlockBuilder->CreateIsNotNull( dstMemberDatasRValue ),
-            reallocBB,
-            mallocBB
-            );
-          
-          basicBlockBuilder->SetInsertPoint( reallocBB );
-          llvm::Value *reallocDstMemberDatasRValue = basicBlockBuilder->CreatePointerCast(
+          dstMemberDatasRValue = basicBlockBuilder->CreatePointerCast(
             llvmCallRealloc(
               basicBlockBuilder,
               basicBlockBuilder->CreatePointerCast(
@@ -214,23 +204,6 @@ namespace Fabric
               ),
             dstMemberDatasRValue->getType()
             );
-          basicBlockBuilder->CreateBr( allocDoneBB );
-          
-          basicBlockBuilder->SetInsertPoint( mallocBB );
-          llvm::Value *mallocDstMemberDatasRValue = basicBlockBuilder->CreatePointerCast(
-            llvmCallMalloc(
-              basicBlockBuilder,
-              allocSizeRValue
-              ),
-            dstMemberDatasRValue->getType()
-            );
-          basicBlockBuilder->CreateBr( allocDoneBB );
-          
-          basicBlockBuilder->SetInsertPoint( allocDoneBB );
-          llvm::PHINode *dstMemberDatasPHIRValue = basicBlockBuilder->CreatePHI( reallocDstMemberDatasRValue->getType() );
-          dstMemberDatasPHIRValue->addIncoming( reallocDstMemberDatasRValue, reallocBB );
-          dstMemberDatasPHIRValue->addIncoming( mallocDstMemberDatasRValue, mallocBB );
-          dstMemberDatasRValue = dstMemberDatasPHIRValue;
           basicBlockBuilder->CreateStore( dstMemberDatasRValue, dstMemberDatasLValue );
           sizeAdapter->llvmDefaultAssign( basicBlockBuilder, indexLValue, sizeAdapter->llvmConst( context, 0 ) );
           llvm::Value *srcMemberDatasLValue = basicBlockBuilder->CreateStructGEP( srcLValue, MemberDatasIndex );
@@ -292,9 +265,6 @@ namespace Fabric
           llvm::BasicBlock *zeroDoneBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "zeroDoneBB" );
           llvm::BasicBlock *nonZeroBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "nonZeroBB" );
           llvm::BasicBlock *expandBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "expandBB" );
-          llvm::BasicBlock *reallocBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "reallocBB" );
-          llvm::BasicBlock *mallocBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "mallocBB" );
-          llvm::BasicBlock *allocDoneBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "allocDoneBB" );
           llvm::BasicBlock *expandDoneBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "expandDoneBB" );
           llvm::BasicBlock *initCheckBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "initCheckBB" );
           llvm::BasicBlock *initNextBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "initNextBB" );
@@ -395,14 +365,7 @@ namespace Fabric
             newAllocSizeRValue, 
             sizeAdapter->llvmConst( context, m_memberAdapter->getDesc()->getAllocSize() )
             );
-          basicBlockBuilder->CreateCondBr(
-            basicBlockBuilder->CreateIsNotNull( memberDatasRValue ),
-            reallocBB,
-            mallocBB
-            );
-          
-          basicBlockBuilder->SetInsertPoint( reallocBB );
-          llvm::Value *reallocMemberDatasRValue = basicBlockBuilder->CreatePointerCast(
+          llvm::Value *expandedMemberDatasRValue = basicBlockBuilder->CreatePointerCast(
             llvmCallRealloc(
               basicBlockBuilder,
               basicBlockBuilder->CreatePointerCast(
@@ -413,28 +376,12 @@ namespace Fabric
               ),
             memberDatasRValue->getType()
             );
-          basicBlockBuilder->CreateBr( allocDoneBB );
-          
-          basicBlockBuilder->SetInsertPoint( mallocBB );
-          llvm::Value *mallocMemberDatasRValue = basicBlockBuilder->CreatePointerCast(
-            llvmCallMalloc(
-              basicBlockBuilder,
-              totalSizeRValue
-              ),
-            memberDatasRValue->getType()
-            );
-          basicBlockBuilder->CreateBr( allocDoneBB );
-          
-          basicBlockBuilder->SetInsertPoint( allocDoneBB );
-          llvm::PHINode *allocMemberDatasRValue = basicBlockBuilder->CreatePHI( memberDatasRValue->getType(), "allocMemberDatasRValue" );
-          allocMemberDatasRValue->addIncoming( reallocMemberDatasRValue, reallocBB );
-          allocMemberDatasRValue->addIncoming( mallocMemberDatasRValue, mallocBB );
-          basicBlockBuilder->CreateStore( allocMemberDatasRValue, memberDatasLValue );
+          basicBlockBuilder->CreateStore( expandedMemberDatasRValue, memberDatasLValue );
           basicBlockBuilder->CreateBr( expandDoneBB );
           
           basicBlockBuilder->SetInsertPoint( expandDoneBB );
           llvm::PHINode *expandMemberDatasRValue = basicBlockBuilder->CreatePHI( memberDatasRValue->getType(), "expandMemberDatasRValue" );
-          expandMemberDatasRValue->addIncoming( allocMemberDatasRValue, allocDoneBB );
+          expandMemberDatasRValue->addIncoming( expandedMemberDatasRValue, expandBB );
           expandMemberDatasRValue->addIncoming( memberDatasRValue, nonZeroBB );
           sizeAdapter->llvmDefaultAssign( basicBlockBuilder, indexLValue, oldSizeRValue );
           basicBlockBuilder->CreateBr( initCheckBB );
