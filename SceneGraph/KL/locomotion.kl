@@ -62,6 +62,7 @@ operator evaluateLocomotionPoseVariables(
   
   Boolean displayRaycastingDebugging = true;
   Boolean displayFootPinningDebugging = true;
+  Boolean performRaycasting = false;
   
   Xfo controllerXfo = controllerXfoSet[index];
   CharacterControllerParams controllerparams = controllerparamsSet[index];
@@ -244,20 +245,22 @@ operator evaluateLocomotionPoseVariables(
       FootStep currStep = footStepTrack.footSteps[stepId];
       Scalar stepRatio = (t - currStep.liftTime) / (currStep.plantTime - currStep.liftTime);
       
-      Xfo baseFootXfo;
+      Xfo footParentSpaceXfo;
       Vec3 displacementDir;
-      if(leg.hubId >= 0 && controllerparams.trail.size > 0){
-        baseFootXfo = controllerXfo * poseVariables.xfoValues[hubs[leg.hubId].xfoId] * leg.ikGoalReferenceXfo;
-        displacementDir = hubComs[leg.hubId].ori.rotateVector(Vec3(0.0,0.0,1.0));
-      }else{
-        baseFootXfo = controllerXfo * leg.ikGoalReferenceXfo;
-        baseFootXfo.ori = controllerXfo.ori;
+      if(leg.hubId < 0){
+        footParentSpaceXfo = controllerXfo;
         displacementDir = controllerparams.displacementDir;
       }
+      else{
+        footParentSpaceXfo = controllerXfo * poseVariables.xfoValues[hubs[leg.hubId].xfoId];
+        displacementDir = hubComs[leg.hubId].ori.rotateVector(Vec3(0.0,0.0,1.0));
+      }
+      Xfo footXfo = footParentSpaceXfo * poseVariables.xfoValues[leg.ikGoalXfoId];
+      Xfo baseFootXfo = footParentSpaceXfo * leg.ikGoalReferenceXfo;
       if(displayFootPinningDebugging){
         debugGeometry.drawLine(controllerXfo.tr, baseFootXfo.tr, Color(0.0, 0.5, 0.5, 1.0));
+        debugGeometry.drawAxis(footParentSpaceXfo, 3.0, Color(0.0, 0.5, 0.5, 1.0));
       }
-      Xfo footXfo = baseFootXfo;// * poseVariables.xfoValues[leg.ikGoalXfoId];
       Scalar stepValue = poseVariables.scalarValues[foot.stepTimeVarId];
       
       footXfo.tr -= controllerparams.balanceXfo.tr;
@@ -278,53 +281,54 @@ operator evaluateLocomotionPoseVariables(
       
       /////////////////////////////////////////////////
       // Raycasting
-      Vec3 rayStart, rayEnd, refPos, hitPosition;
-      if(plantedFeet[j]){
-        refPos = footXfo.tr;
-      }else{
-        refPos = footPlantXfo.tr;
-      }
-      rayStart = refPos + (upvector * 2.5);
-      rayEnd = refPos - (upvector * 2.5);
-      
-      Boolean filterPassiveObjects = false;
-      bulletworld.raycast(rayStart,rayEnd, filterPassiveObjects);
-      if(bulletworld.hit) {
-        hitPosition = bulletworld.hitPosition;
-        Xfo tmp = footPlantXfo;
-        tmp.tr = bulletworld.hitPosition;
-        
-        if(displayRaycastingDebugging){
-          debugGeometry.drawCircle(tmp * rot90, 0.03, Color(0.0, 1.0, 1.0, 1.0));
-          debugGeometry.drawLine(rayStart, bulletworld.hitPosition, Color(0.0, 1.0, 1.0, 1.0));
-        }
-        Scalar appliedDelta;
+      if(performRaycasting){
+        Vec3 rayStart, rayEnd, refPos, hitPosition;
         if(plantedFeet[j]){
-          appliedDelta = (hitPosition - controllerXfo.tr).dot(upvector);
+          refPos = footXfo.tr;
+        }else{
+          refPos = footPlantXfo.tr;
+        }
+        rayStart = refPos + (upvector * 2.5);
+        rayEnd = refPos - (upvector * 2.5);
+        
+        Boolean filterPassiveObjects = false;
+        bulletworld.raycast(rayStart,rayEnd, filterPassiveObjects);
+        if(bulletworld.hit) {
+          hitPosition = bulletworld.hitPosition;
+          Xfo tmp = footPlantXfo;
+          tmp.tr = bulletworld.hitPosition;
           
-          if(stepRatio > 0.0){
-            // at lift time, store the hit delta.
-            hitPositions[j] = hitPosition;
+          if(displayRaycastingDebugging){
+            debugGeometry.drawCircle(tmp * rot90, 0.03, Color(0.0, 1.0, 1.0, 1.0));
+            debugGeometry.drawLine(rayStart, bulletworld.hitPosition, Color(0.0, 1.0, 1.0, 1.0));
           }
+          Scalar appliedDelta;
+          if(plantedFeet[j]){
+            appliedDelta = (hitPosition - controllerXfo.tr).dot(upvector);
+            
+            if(stepRatio > 0.0){
+              // at lift time, store the hit delta.
+              hitPositions[j] = hitPosition;
+            }
+          }
+          else{
+            if(displayRaycastingDebugging){
+              debugGeometry.drawLine(hitPositions[j], hitPosition, Color(1.0, 1.0, 0.5, 1.0));
+              debugGeometry.drawLine(controllerXfo.tr, hitPosition, Color(0.0, 1.0, 0.0, 1.0));
+            }
+            Scalar liftDelta = (hitPositions[j] - controllerXfo.tr).dot(upvector);
+            Scalar plantDelta = (hitPosition - controllerXfo.tr).dot(upvector);
+            appliedDelta = liftDelta + ((plantDelta - liftDelta) * stepRatio);
+          }
+          appliedFeetRayDeltas[j] = appliedDelta;
+          appliedComRayDelta += appliedDelta /= numLegsScalar;
+          
         }
         else{
-          if(displayRaycastingDebugging){
-            debugGeometry.drawLine(hitPositions[j], hitPosition, Color(1.0, 1.0, 0.5, 1.0));
-            debugGeometry.drawLine(controllerXfo.tr, hitPosition, Color(0.0, 1.0, 0.0, 1.0));
-          }
-          Scalar liftDelta = (hitPositions[j] - controllerXfo.tr).dot(upvector);
-          Scalar plantDelta = (hitPosition - controllerXfo.tr).dot(upvector);
-          appliedDelta = liftDelta + ((plantDelta - liftDelta) * stepRatio);
+          report("missed");
+          debugGeometry.drawLine(rayStart, rayEnd, Color(1.0, 0.0, 0.0, 1.0));
         }
-        appliedFeetRayDeltas[j] = appliedDelta;
-        appliedComRayDelta += appliedDelta /= numLegsScalar;
-        
       }
-      else{
-        report("missed");
-        debugGeometry.drawLine(rayStart, rayEnd, Color(1.0, 0.0, 0.0, 1.0));
-      }
-      
       /////////////////////////////////////////////////
       // Foot Pinning
       if(displayFootPinningDebugging){
@@ -416,18 +420,18 @@ operator evaluateLocomotionPoseVariables(
       poseVariables.xfoValues[leg.ikGoalXfoId] = footXfo;
       
     }
-    
-    // Now apply the foot ray deltas now that we know how much will be
-    // applied to the COM.
-    controllerXfo.tr += upvector * appliedComRayDelta;
-    for(Integer j=0; j < locomotionFeet.size; j++){
-      LocomotionFoot foot = locomotionFeet[j];
-      Limb leg = legs[foot.limbId];
-      poseVariables.xfoValues[leg.ikGoalXfoId].tr += upvector * (appliedFeetRayDeltas[j] - appliedComRayDelta);
+    if(performRaycasting){
+      // Now apply the foot ray deltas now that we know how much will be
+      // applied to the COM.
+      controllerXfo.tr += upvector * appliedComRayDelta;
+      for(Integer j=0; j < locomotionFeet.size; j++){
+        LocomotionFoot foot = locomotionFeet[j];
+        Limb leg = legs[foot.limbId];
+        poseVariables.xfoValues[leg.ikGoalXfoId].tr += upvector * (appliedFeetRayDeltas[j] - appliedComRayDelta);
+      }
+      // Note: this is highly illegal. We are copying data back to one of our dependencies.
+      controllerXfoSet[index] = controllerXfo;
     }
-    // Note: this is highly illegal. We are copying data back to one of our dependencies.
-    controllerXfoSet[index] = controllerXfo;
-    
     trackcontroller.tick++;
 }
 
