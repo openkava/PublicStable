@@ -260,6 +260,30 @@ FABRIC.SceneGraph.registerManagerType('SelectionManipulationManager', {
     var dragFn = function(evt) {
     }
     var dragEndFn = function(evt) {
+      
+      // if we support undo, let's create a task for this
+      if(selectionManager.getUndoManager()) {
+        
+        // store previous and current transforms into arrays
+        var selection = selectionManager.getSelectionCopy()
+        var previousTransforms = [];
+        var currentTransforms = [];
+        for(var i=0;i<dragStartSelGlobalXfos.length;i++) {
+          previousTransforms.push(dragStartSelGlobalXfos[i].clone());
+          currentTransforms.push(selection[i].getTransformNode()[options.transformGetter]());
+        }
+        selectionManager.getUndoManager().addTask({
+          name: "ViewPortManipulationManager",
+          onUndo: function (){
+            for(var i=0;i<selection.length;i++)
+              selection[i].getTransformNode()[options.transformSetter](previousTransforms[i]);
+          },
+          onDo: function (){
+            for(var i=0;i<selection.length;i++)
+              selection[i].getTransformNode()[options.transformSetter](currentTransforms[i]);
+          },
+        });
+      }
     }
     
     groupTransform.pub.setGlobalXfo = function(xfo){
@@ -351,7 +375,6 @@ FABRIC.SceneGraph.registerManagerType('SelectionManipulationManager', {
           geometryNode: scene.pub.constructNode('Sphere', {radius: options.screenTranslationRadius, detail: 8.0}),
           drawToggle: false,
           drawOverlaid: true,
-          undoManager: selectionManager.getUndoManager()
         });
       manipulator.addEventListener('dragstart', dragStartFn);
       manipulator.addEventListener('drag', dragFn);
@@ -392,9 +415,6 @@ FABRIC.SceneGraph.registerManagerType('SelectionManipulationManager', {
     
     selectionManipulationManager.pub.getSelectionManager = function(){
       return selectionManager;
-    };
-    selectionManipulationManager.pub.getUndoManager = function(){
-      return selectionManager.getUndoManager();
     };
     
     return selectionManipulationManager;
