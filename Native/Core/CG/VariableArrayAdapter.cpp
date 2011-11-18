@@ -514,10 +514,7 @@ namespace Fabric
             basicBlockBuilder->SetInsertPoint( outOfRangeBB );
             llvmThrowOutOfRangeException(
               basicBlockBuilder,
-              "index",
-              constStringAdapter,
-              stringAdapter,
-              sizeAdapter,
+              constStringAdapter->llvmConst( basicBlockBuilder, "index" ),
               indexRValue,
               sizeRValue,
               errorDescRValue
@@ -572,10 +569,7 @@ namespace Fabric
             basicBlockBuilder->SetInsertPoint( outOfRangeBB );
             llvmThrowOutOfRangeException(
               basicBlockBuilder,
-              "index",
-              constStringAdapter,
-              stringAdapter,
-              sizeAdapter,
+              constStringAdapter->llvmConst( basicBlockBuilder, "index" ),
               indexRValue,
               sizeRValue,
               errorDescRValue
