@@ -178,12 +178,10 @@ namespace Fabric
           basicBlockBuilder->SetInsertPoint( offsetPlusSizeOutOfRangeBB );
           llvmThrowOutOfRangeException(
             basicBlockBuilder,
-            "offset+size",
-            constStringAdapter,
-            stringAdapter,
-            sizeAdapter,
+            constStringAdapter->llvmConst( basicBlockBuilder, "offset+size" ),
             offsetPlusSizeRValue,
-            srcSizeRValue
+            srcSizeRValue,
+            llvm::ConstantPointerNull::get( static_cast<llvm::PointerType const *>( constStringAdapter->llvmRType( context ) ) )
             );
           basicBlockBuilder->CreateRetVoid();
         }
@@ -241,10 +239,7 @@ namespace Fabric
             basicBlockBuilder->SetInsertPoint( outOfRangeBB );
             llvmThrowOutOfRangeException(
               basicBlockBuilder,
-              "index",
-              constStringAdapter,
-              stringAdapter,
-              sizeAdapter,
+              constStringAdapter->llvmConst( basicBlockBuilder, "index" ),
               indexRValue,
               sizeRValue,
               errorDescRValue
@@ -305,10 +300,7 @@ namespace Fabric
             basicBlockBuilder->SetInsertPoint( outOfRangeBB );
             llvmThrowOutOfRangeException(
               basicBlockBuilder,
-              "index",
-              constStringAdapter,
-              stringAdapter,
-              sizeAdapter,
+              constStringAdapter->llvmConst( basicBlockBuilder, "index" ),
               indexRValue,
               sizeRValue,
               errorDescRValue
