@@ -1021,54 +1021,82 @@ namespace Fabric
       return basicBlockBuilder->CreateCall( functionBuilder.getLLVMFunction(), arrayRValue );
     }
 
-    void VariableArrayAdapter::llvmDisposeImpl( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *lValue ) const
+    void VariableArrayAdapter::llvmDisposeImpl( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *selfLValue ) const
     {
       RC::Handle<Context> context = basicBlockBuilder.getContext();
       RC::ConstHandle<SizeAdapter> sizeAdapter = getManager()->getSizeAdapter();
-      
-      CG::FunctionBuilder &functionBuilder = basicBlockBuilder.getFunctionBuilder();
-      llvm::BasicBlock *checkBB = functionBuilder.createBasicBlock( "vaDisposeLoopCheck" );
-      llvm::BasicBlock *nextBB = functionBuilder.createBasicBlock( "vaDisposeLoopNext" );
-      llvm::BasicBlock *disposeDoneBB = functionBuilder.createBasicBlock( "vaDisposeLoopDone" );
-      llvm::BasicBlock *freeBB = functionBuilder.createBasicBlock( "vaDisposeFree" );
-      llvm::BasicBlock *doneBB = functionBuilder.createBasicBlock( "vaDisposeDone" );
 
-      llvm::Value *sizeLValue = basicBlockBuilder->CreateStructGEP( lValue, SizeIndex );
-      llvm::Value *sizeRValue = sizeAdapter->llvmLValueToRValue( basicBlockBuilder, sizeLValue );
-      llvm::Value *memberDatasLValue = basicBlockBuilder->CreateStructGEP( lValue, MemberDatasIndex );
-      llvm::Value *memberDatasRValue = basicBlockBuilder->CreateLoad( memberDatasLValue );
-      llvm::Value *indexLValue = sizeAdapter->llvmAlloca( basicBlockBuilder, "index" );
-      sizeAdapter->llvmInit( basicBlockBuilder, indexLValue );
-      basicBlockBuilder->CreateBr( checkBB );
+      std::vector<llvm::Type const *> argTypes;
+      argTypes.push_back( llvmLType( context ) );
+      llvm::FunctionType const *funcType = llvm::FunctionType::get( basicBlockBuilder->getVoidTy(), argTypes, false );
       
-      basicBlockBuilder->SetInsertPoint( checkBB );
-      llvm::Value *indexRValue = sizeAdapter->llvmLValueToRValue( basicBlockBuilder, indexLValue );
-      basicBlockBuilder->CreateCondBr(
-        basicBlockBuilder->CreateICmpULT( indexRValue, sizeRValue ),
-        nextBB,
-        doneBB
-        );
-        
-      basicBlockBuilder->SetInsertPoint( nextBB );
-      llvm::Value *memberLValue = basicBlockBuilder->CreateGEP( memberDatasRValue, indexRValue );
-      m_memberAdapter->llvmDispose( basicBlockBuilder, memberLValue );
-      llvm::Value *nextIndexRValue = basicBlockBuilder->CreateAdd( indexRValue, sizeAdapter->llvmConst( context, 1 ) );
-      sizeAdapter->llvmDefaultAssign( basicBlockBuilder, indexLValue, nextIndexRValue );
-      basicBlockBuilder->CreateBr( checkBB );
-        
-      basicBlockBuilder->SetInsertPoint( disposeDoneBB );
-      basicBlockBuilder->CreateCondBr(
-        basicBlockBuilder->CreateIsNotNull( memberDatasRValue ),
-        freeBB,
-        doneBB
-        );
-      
-      basicBlockBuilder->SetInsertPoint( freeBB );
-      llvmCallFree( basicBlockBuilder, memberDatasRValue );
-      basicBlockBuilder->CreateBr( doneBB );
+      llvm::AttributeWithIndex AWI[1];
+      AWI[0] = llvm::AttributeWithIndex::get( ~0u, llvm::Attribute::InlineHint | llvm::Attribute::NoUnwind );
+      llvm::AttrListPtr attrListPtr = llvm::AttrListPtr::get( AWI, 1 );
 
-      basicBlockBuilder->SetInsertPoint( doneBB );
-      basicBlockBuilder->CreateRetVoid();
+      std::string name = "__" + getCodeName() + "__Dispose";
+      llvm::Function *func = llvm::cast<llvm::Function>( basicBlockBuilder.getModuleBuilder()->getFunction( name ) );
+      if ( !func )
+      {
+        ModuleBuilder &mb = basicBlockBuilder.getModuleBuilder();
+        
+        func = llvm::cast<llvm::Function>( mb->getOrInsertFunction( name, funcType, attrListPtr ) ); 
+        func->setLinkage( llvm::GlobalValue::PrivateLinkage );
+        
+        FunctionBuilder fb( mb, funcType, func );
+        llvm::Argument *selfLValue = fb[0];
+        selfLValue->setName( "selfLValue" );
+        selfLValue->addAttr( llvm::Attribute::NoCapture );
+        selfLValue->addAttr( llvm::Attribute::NoAlias );
+        
+        BasicBlockBuilder bbb( fb );
+        llvm::BasicBlock *entryBB = fb.createBasicBlock( "entry" );
+        llvm::BasicBlock *checkBB = fb.createBasicBlock( "membersCheck" );
+        llvm::BasicBlock *nextBB = fb.createBasicBlock( "membersNext" );
+        llvm::BasicBlock *disposeDoneBB = fb.createBasicBlock( "membersDone" );
+        llvm::BasicBlock *freeBB = fb.createBasicBlock( "free" );
+        llvm::BasicBlock *doneBB = fb.createBasicBlock( "done" );
+        
+        bbb->SetInsertPoint( entryBB );
+        llvm::Value *sizeLValue = bbb->CreateStructGEP( selfLValue, SizeIndex );
+        llvm::Value *sizeRValue = sizeAdapter->llvmLValueToRValue( bbb, sizeLValue );
+        llvm::Value *memberDatasLValue = bbb->CreateStructGEP( selfLValue, MemberDatasIndex );
+        llvm::Value *memberDatasRValue = bbb->CreateLoad( memberDatasLValue );
+        llvm::Value *indexLValue = sizeAdapter->llvmAlloca( bbb, "index" );
+        sizeAdapter->llvmInit( bbb, indexLValue );
+        bbb->CreateBr( checkBB );
+        
+        bbb->SetInsertPoint( checkBB );
+        llvm::Value *indexRValue = sizeAdapter->llvmLValueToRValue( bbb, indexLValue );
+        bbb->CreateCondBr(
+          bbb->CreateICmpULT( indexRValue, sizeRValue ),
+          nextBB,
+          disposeDoneBB
+          );
+          
+        bbb->SetInsertPoint( nextBB );
+        llvm::Value *memberLValue = bbb->CreateGEP( memberDatasRValue, indexRValue );
+        m_memberAdapter->llvmDispose( bbb, memberLValue );
+        llvm::Value *nextIndexRValue = bbb->CreateAdd( indexRValue, sizeAdapter->llvmConst( context, 1 ) );
+        sizeAdapter->llvmDefaultAssign( bbb, indexLValue, nextIndexRValue );
+        bbb->CreateBr( checkBB );
+          
+        bbb->SetInsertPoint( disposeDoneBB );
+        bbb->CreateCondBr(
+          bbb->CreateIsNotNull( memberDatasRValue ),
+          freeBB,
+          doneBB
+          );
+        
+        bbb->SetInsertPoint( freeBB );
+        llvmCallFree( bbb, memberDatasRValue );
+        bbb->CreateBr( doneBB );
+
+        bbb->SetInsertPoint( doneBB );
+        bbb->CreateRetVoid();
+      }
+      
+      basicBlockBuilder->CreateCall( func, selfLValue );
     }
 
     void VariableArrayAdapter::llvmDefaultAssign( BasicBlockBuilder &basicBlockBuilder, llvm::Value *dstLValue, llvm::Value *srcRValue ) const
@@ -1107,6 +1135,50 @@ namespace Fabric
         defaultValue,
         "__" + getCodeName() + "__DefaultValue"
         );
+    }
+    
+    void VariableArrayAdapter::llvmInit( BasicBlockBuilder &basicBlockBuilder, llvm::Value *selfLValue ) const
+    {
+      RC::Handle<Context> context = basicBlockBuilder.getContext();
+      RC::ConstHandle<SizeAdapter> sizeAdapter = getManager()->getSizeAdapter();
+
+      std::vector<llvm::Type const *> argTypes;
+      argTypes.push_back( llvmLType( context ) );
+      llvm::FunctionType const *funcType = llvm::FunctionType::get( basicBlockBuilder->getVoidTy(), argTypes, false );
+      
+      llvm::AttributeWithIndex AWI[1];
+      AWI[0] = llvm::AttributeWithIndex::get( ~0u, llvm::Attribute::InlineHint | llvm::Attribute::NoUnwind );
+      llvm::AttrListPtr attrListPtr = llvm::AttrListPtr::get( AWI, 1 );
+
+      std::string name = "__" + getCodeName() + "__Init";
+      llvm::Function *func = llvm::cast<llvm::Function>( basicBlockBuilder.getModuleBuilder()->getFunction( name ) );
+      if ( !func )
+      {
+        ModuleBuilder &mb = basicBlockBuilder.getModuleBuilder();
+        
+        func = llvm::cast<llvm::Function>( mb->getOrInsertFunction( name, funcType, attrListPtr ) ); 
+        func->setLinkage( llvm::GlobalValue::PrivateLinkage );
+        
+        FunctionBuilder fb( mb, funcType, func );
+        llvm::Argument *selfLValue = fb[0];
+        selfLValue->setName( "selfLValue" );
+        selfLValue->addAttr( llvm::Attribute::NoCapture );
+        selfLValue->addAttr( llvm::Attribute::NoAlias );
+        
+        BasicBlockBuilder bbb( fb );
+        llvm::BasicBlock *entryBB = fb.createBasicBlock( "entry" );
+        bbb->SetInsertPoint( entryBB );
+        
+        llvm::Value *allocSizeLValue = bbb->CreateStructGEP( selfLValue, AllocSizeIndex );
+        sizeAdapter->llvmDefaultAssign( bbb, allocSizeLValue, sizeAdapter->llvmConst( context, 0 ) );
+        llvm::Value *sizeLValue = bbb->CreateStructGEP( selfLValue, SizeIndex );
+        sizeAdapter->llvmDefaultAssign( bbb, sizeLValue, sizeAdapter->llvmConst( context, 0 ) );
+        llvm::Value *memberDatasLValue = bbb->CreateStructGEP( selfLValue, MemberDatasIndex );
+        bbb->CreateStore( llvm::ConstantPointerNull::get( static_cast<llvm::PointerType const *>( m_memberAdapter->llvmLType( context ) ) ), memberDatasLValue );
+        bbb->CreateRetVoid();
+      }
+      
+      basicBlockBuilder->CreateCall( func, selfLValue );
     }
   };
 };
