@@ -190,6 +190,18 @@ function OGLRenderTarget.bind() {
     glClearColor(this.clearColor.r, this.clearColor.g, this.clearColor.b, this.clearColor.a);
   }
   glViewport(0,0, this.width, this.height);
+
+  Size drawBufferIDs[];
+  Size nbColor = 0;
+  for(Size i=0; i<this.textures.size(); i++){
+    if(this.textures[i].texture.bufferID!=0){
+      if(this.textures[i].type == 1)
+          drawBufferIDs.push(GL_DEPTH_ATTACHMENT);
+      else
+          drawBufferIDs.push(GL_COLOR_ATTACHMENT0 + nbColor++);
+    }
+  }
+  glDrawBuffers(this.textures.size, drawBufferIDs);
   glClear(options);
   
   // Note: I'm not sure if I need to do this every frame
