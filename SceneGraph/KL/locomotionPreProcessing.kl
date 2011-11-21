@@ -3,7 +3,7 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 use Math;
-use Vec2, Vec3, Quat, Xfo;
+use Vec2, Vec3, Quat, Xfo, Ray;
 use PoseVariables, KeyframeTrackBindings;
 use DebugGeometry;
 
@@ -293,47 +293,32 @@ operator locomotionPreProcessing(
   Scalar weight = 0.0;
   comAlignment.setIdentity();
   
-
-//  for(Integer i=0; i < hubs.size; i++){
-//    Hub hub = hubs[i];
-//    
-//  //  solveHubRig(pose, bones, hub, poseVariables);
-//  
-//  //  comAlignment.tr += bones[hub.boneId].referencePose.tr;
-//  //  weight += 1.0;
-//    comAlignment.ori = bones[hub.boneId].referencePose.ori;
-//  }
-
   comAlignment = bones[hubs[0].boneId].referencePose;
-//  debugGeometry.drawAxis(comAlignment, 3.5, Color(1.0, 0.0, 1.0, 1.0));
   Vec3 avgFootPos;
-  if(legs.size==2){
-    Vec3 bodyVec = poseVariables.xfoValues[hubs[1].xfoId].tr - poseVariables.xfoValues[hubs[0].xfoId].tr;
+  
+  for(Integer j=0; j < legs.size; j++){
+    Limb leg = legs[j];
+    if(leg.hubId < 0){
+      debugGeometry.drawLine(comAlignment.tr, leg.ikGoalReferenceXfo.tr, Color(0.0, 0.0, 0.0, 1.0));
+      avgFootPos += leg.ikGoalReferenceXfo.tr;
+    //  weight += 1.0;
+    }
+  }
+  if(weight > 0.0){
+    avgFootPos *= 1.0/weight;
+    alignment.setFrom2Vectors(comAlignment.ori.getXaxis(), Vec3(0.0, 1.0, 0.0));
+    comAlignment.ori = alignment * comAlignment.ori;
+    comAlignment.tr = avgFootPos;
+  }else{
+    comAlignment.tr.y = 0.0;
+  }
     
-  }
-  else{
-    for(Integer j=0; j < legs.size; j++){
-      Limb leg = legs[j];
-      if(leg.hubId < 0){
-        debugGeometry.drawLine(comAlignment.tr, leg.ikGoalReferenceXfo.tr, Color(0.0, 0.0, 0.0, 1.0));
-        avgFootPos += leg.ikGoalReferenceXfo.tr;
-        weight += 1.0;
-      }
-    }
-    if(weight > 0.0){
-      avgFootPos *= 1.0/weight;
-      alignment.setFrom2Vectors(comAlignment.ori.getXaxis(), (comAlignment.tr - avgFootPos).unit());
-      comAlignment.ori = alignment * comAlignment.ori;
-      comAlignment.tr = avgFootPos;
-    }else{
-      comAlignment.tr.y = 0.0;
-    }
-  }
   
   comAlignment = comAlignment.inverse();
     
   comXfo.setIdentity();
-  
+  Xfo comXfos[];
+  Scalar comXfoKeyTimes[];
   while(true){
     report("currKeyt:"+currKeyt + " footId:" + footId + " stepId:"+ stepId);
     poseVariables.evaluateKeyframeTracks(currKeyt, trackSet, bindings, currKeys);
@@ -343,62 +328,40 @@ operator locomotionPreProcessing(
     weight = 0.0;
     comXfo = poseVariables.xfoValues[hubs[0].xfoId];
     avgFootPos.setNull();
-    if(legs.size==2){
-      avgFootPos += poseVariables.xfoValues[legs[footId].ikGoalXfoId].tr;
-      weight = 1.0;
-    }else{
-      for(Integer j=0; j < legs.size; j++){
-        Limb leg = legs[j];
-        if(leg.hubId < 0){
-          avgFootPos += poseVariables.xfoValues[leg.ikGoalXfoId].tr;
-          weight += 1.0;
-        }
+    for(Integer j=0; j < legs.size; j++){
+      Limb leg = legs[j];
+      if(leg.hubId < 0){
+        avgFootPos += poseVariables.xfoValues[leg.ikGoalXfoId].tr;
+      //  weight += 1.0;
       }
     }
     if(weight > 0.0){
       avgFootPos *= 1.0/weight;
-      alignment.setFrom2Vectors(comXfo.ori.getXaxis(), (comXfo.tr - avgFootPos).unit());
-      comXfo.ori = alignment * comXfo.ori;
       comXfo.tr = avgFootPos;
+      alignment.setFrom2Vectors(comXfo.ori.getXaxis(), Vec3(0.0, 1.0, 0.0));
+      comXfo.ori = alignment * comXfo.ori;
     }else{
       comXfo.tr.y = 0.0;
     }
+    
   
     //////////////////////////////////////
     
-    
     debugGeometry.drawLine(poseVariables.xfoValues[hubs[0].xfoId].tr, comXfo.tr, Color(1.0, 1.0, 1.0, 1.0));
-  //  debugGeometry.drawAxis(comXfo, 1.0, Color(1.0, 0.0, 1.0, 1.0));
+    
     comXfo = comXfo * comAlignment;
+    // TODO: raycast the groud plane here. 
     comXfo.tr.y = 0;//poseVariables.xfoValues[legs[footId].ikGoalXfoId].tr.y;
     
     // Force the axis to point straight up. 
-      alignment.setFrom2Vectors(comXfo.ori.getYaxis(), Vec3(0.0,1.0,0.0));
-      comXfo.ori = alignment * comXfo.ori;
-      
+    alignment.setFrom2Vectors(comXfo.ori.getYaxis(), Vec3(0.0,1.0,0.0));
+    comXfo.ori = alignment * comXfo.ori;
+    
+    comXfos.push(comXfo);
+    comXfoKeyTimes.push(currKeyt);
       
     if(currKeyt > startT){
-      
-      Vec3 displacement = (comXfo.tr - prevComXfo.tr);
-      Vec3 horizontalDisplacement = displacement;
-      horizontalDisplacement.y = 0.0;
-    
-      if(prevKeyt == startT){
-        alignment.setFrom2Vectors(prevComXfo.ori.getZaxis(), horizontalDisplacement.unit());
-        prevComXfo.ori = alignment * prevComXfo.ori;
-        poseVariables.xfoValues[com.xfoId] = prevComXfo;
-        poseVariables.setTrackValues(prevKeyt, trackSet, comXfoBindings);
-        
-        debugGeometry.drawAxis(prevComXfo, 1.0, Color(1.0, 0.0, 1.0, 1.0));
-      }
-      
-      comXfo.ori.alignWith(prevComXfo.ori);
-      alignment.setFrom2Vectors(prevComXfo.ori.getZaxis(), horizontalDisplacement.unit());
-      comXfo.ori = alignment * prevComXfo.ori;
-      poseVariables.xfoValues[com.xfoId] = comXfo;
-      poseVariables.setTrackValues(currKeyt, trackSet, comXfoBindings);
-      
-      debugGeometry.drawAxis(comXfo, 1.0, Color(1.0, 0.0, 1.0, 1.0));
+      Vec3 displacement = comXfo.tr - prevComXfo.tr;
       
       Scalar deltaT = currKeyt - prevKeyt;
       Vec3 velocity = displacement/deltaT;
@@ -444,7 +407,6 @@ operator locomotionPreProcessing(
       
       poseVariables.setTrackValues(prevKeyt, trackSet, comParamBindings);
     }
-    
     prevComXfo = comXfo;
     
     // Search for the next midplant for any foot.
@@ -471,6 +433,47 @@ operator locomotionPreProcessing(
       }
     }
   }
+  
+  Vec3 displacement;
+  Vec3 alignmentVec;
+  Vec3 smoothedComPos;
+  Scalar smoothedComPosWeight;
+  for(Integer i=0; i < comXfoKeyTimes.size; i++){
+    if(i==0){
+      displacement = (comXfos[i+1].tr - comXfos[i].tr);
+    }else{
+      displacement = (comXfos[i].tr - comXfos[i-1].tr);
+      comXfos[i].ori.alignWith(comXfos[i-1].ori);
+      alignmentVec += (comXfos[i].tr - comXfos[i-1].tr);
+    }
+    Vec3 horizontalDisplacement = displacement;
+    horizontalDisplacement.y = 0.0;
+    
+    alignmentVec.setNull();
+    smoothedComPos = comXfos[i].tr;
+    smoothedComPosWeight = 1.0;
+    if(i>0){
+      alignmentVec += (comXfos[i].tr - comXfos[i-1].tr);
+      smoothedComPos += comXfos[i-1].tr;
+      smoothedComPosWeight += 1.0;
+    }
+    if(i<comXfoKeyTimes.size-1){
+      alignmentVec += (comXfos[i+1].tr - comXfos[i].tr);
+      smoothedComPos += comXfos[i+1].tr;
+      smoothedComPosWeight += 1.0;
+    }
+    smoothedComPos /= smoothedComPosWeight;
+    
+    comXfo = comXfos[i];
+    comXfo.tr = smoothedComPos;
+    alignment.setFrom2Vectors(comXfos[i].ori.getZaxis(), alignmentVec.unit());
+    comXfo.ori = alignment * comXfos[i].ori;
+      
+    debugGeometry.drawAxis(comXfo, 1.0, Color(1.0, 0.0, 1.0, 1.0));
+    poseVariables.xfoValues[com.xfoId] = comXfo;
+    poseVariables.setTrackValues(comXfoKeyTimes[i], trackSet, comXfoBindings);
+  }
+  
   
   report("com.parameterVarIds:"+com.parameterVarIds);
   report("bindings.scalarBindings:"+bindings.scalarBindings);
@@ -532,6 +535,9 @@ operator locomotionPreProcessing(
       Xfo hubXfo = poseVariables.xfoValues[hub.xfoId];
       poseVariables.xfoValues[hub.xfoId] = comXfo.inverse() * hubXfo;
       poseVariables.setTrackValues(time, trackSet, hubValueBindings);
+      
+      
+        debugGeometry.drawPoint(hubXfo.tr, Color(1.0, 0.0, 0.0, 1.0));
     }
     
     
