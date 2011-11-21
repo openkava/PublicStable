@@ -10,7 +10,9 @@
     <uniform name="u_lightCosCutoff" constant="lightCosCutoff" type="Scalar"/>
     <uniform name="u_lightDistCutoff" constant="lightDistCutoff" type="Scalar"/>
     <uniform name="u_materialShininess" constant="shininess" type="Scalar" defaultValue="20.0"/>
-    
+
+    <uniform name="u_windowInvSize" constant="windowInvSize" type="Vec2"/>
+
     <uniform name="u_viewMatrix" constant="viewMatrix" type="Mat44" owner="instance"/>
     <uniform name="u_projectionMatrix" constant="projectionMatrix" type="Mat44" owner="instance"/>
 
@@ -79,6 +81,7 @@
       uniform vec4 u_lightColor;
       uniform float u_lightCosCutoff;
       uniform float u_lightDistCutoff;
+      uniform vec2 u_windowInvSize;
 
       uniform float u_materialShininess;
 
@@ -98,7 +101,11 @@
       
       void main(){
       
-        gl_FragColor = vec4(1.0, 0.0, 0.0, 0.5);
+        vec2 windowCoord = gl_FragCoord*u_windowInvSize;
+        vec3 pos = texture2D( u_samplerPositionsMap, windowCoord ).xyz;
+      
+      
+        gl_FragColor = vec4(pos, 0.5);
         
 /*        vec3 Ln = normalize(lightDir);
         vec3 Vn = normalize(viewDir);

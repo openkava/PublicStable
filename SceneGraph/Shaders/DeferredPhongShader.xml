@@ -7,6 +7,8 @@
     <uniform name="u_samplerNormalsMap" constant="normalsTexture" type="Integer" owner="texture"/>
     <uniform name="u_samplerDiffuseColorsMap" constant="diffuseColorsTexture" type="Integer" owner="texture"/>
 
+    <uniform name="u_windowInvSize" constant="windowInvSize" type="Vec2"/>
+    
     <uniform name="u_lightPosition" constant="lightPosition" type="Vec3" owner="light"/>
     <uniform name="u_lightType" constant="lightType" type="Integer" owner="light"/>
     <uniform name="u_lightDir" constant="lightDir" type="Vec3" owner="light"/>
@@ -19,7 +21,6 @@
 
   <attributes>
     <attribute name="a_position" binding="positions"/>
-    <attribute name="a_texCoord" binding="uvs0"/>
   </attributes>
 
   <lights>
@@ -36,10 +37,8 @@
     <source>
       <![CDATA[
       attribute vec4 a_position;
-      attribute vec3 a_texCoord;
 
       void main(){
-        gl_TexCoord[0].st = a_texCoord.st;
         gl_Position = a_position;
       }
       ]]>
@@ -58,6 +57,7 @@
       uniform float u_materialShininess;
       uniform vec4 u_materialAmbientColor;
       uniform vec4 u_materialSpecularColor;
+      uniform vec2 u_windowInvSize;
 
 			uniform sampler2D u_samplerPositionsMap;
 			uniform sampler2D u_samplerNormalsMap;
@@ -70,12 +70,12 @@
       <![CDATA[
             
       void main(){
-        
-        vec3 pos = texture2D( u_samplerPositionsMap, gl_TexCoord[0].st ).xyz;
+        vec2 windowCoord = gl_FragCoord*u_windowInvSize;
+        vec3 pos = texture2D( u_samplerPositionsMap, windowCoord ).xyz;
         vec3 Ln = normalize(u_lightPosition.xyz-pos);
         vec3 Vn = normalize(-pos);
-        vec3 Nn = normalize(texture2D( u_samplerNormalsMap, gl_TexCoord[0].st ).xyz);
-        
+        vec3 Nn = normalize(texture2D( u_samplerNormalsMap, windowCoord ).xyz);
+
         float lightFactor = 1.0;
         gl_FragColor = phong_shading(  Nn, 
                         Ln, 
@@ -85,7 +85,7 @@
                         lightFactor,
                         u_lightCosCutoff,
                         u_lightColor,
-												texture2D( u_samplerDiffuseColorsMap, gl_TexCoord[0].st ), 
+												texture2D( u_samplerDiffuseColorsMap, windowCoord ), 
                         u_materialSpecularColor,
                         u_materialShininess,
                         u_materialAmbientColor );

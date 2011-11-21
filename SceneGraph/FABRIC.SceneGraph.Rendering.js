@@ -369,24 +369,26 @@ FABRIC.SceneGraph.registerNodeType('DeferredRenderer', {
 
       var materialRedrawHandler = material.getRedrawEventHandler();
 
-/*      var camera = scene.getPrivateInterface(cameraNode);
-      materialRedrawHandler.setScope('camera',camera.getDGNode());
+console.log(FABRIC.SceneGraph.getShaderParamID('windowInvSize'));
       materialRedrawHandler.preDescendBindings.append(scene.constructOperator({
-          operatorName: 'loadCameraProjectionMatrix',
+          operatorName: 'loadWindowSize',
           preProcessorDefinitions: {
-            PROJECTION_MATRIX_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('projectionMatrix')
+            WINDOW_INV_SIZE_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('windowInvSize')
           },
-          srcCode: 'use OGLShaderProgram; operator loadCameraProjectionMatrix( io OGLShaderProgram shaderProgram, io Mat44 cameraProjMat ) {\n' +
-                   '  Integer location = shaderProgram.getUniformLocation( PROJECTION_MATRIX_ATTRIBUTE_ID );\n' +
-                   '  if(location!=-1)\n' +
-                   '    shaderProgram.loadMat44Uniform(location, cameraProjMat);}\n',
-          entryFunctionName: 'loadCameraProjectionMatrix',
+          srcCode: 'use OGLShaderProgram; operator loadWindowSize( io OGLShaderProgram shaderProgram, io Integer width, io Integer heigth ) {\n' +
+                   '  Integer location = shaderProgram.getUniformLocation( WINDOW_INV_SIZE_ATTRIBUTE_ID );\n' +
+                   '  if(location!=-1) {\n' +
+                   '    Vec2 size;\n' +
+                   '    size.x = 1.0/Scalar(width);\n' +
+                   '    size.y = 1.0/Scalar(heigth);\n' +
+                   '    shaderProgram.loadVec2Uniform(location, size);}}\n',
+          entryFunctionName: 'loadWindowSize',
           parameterLayout: [
             'shader.shaderProgram',
-            'camera.projectionMat44'
+            'window.width',
+            'window.height',
           ]
         }));
-        */
 
       if(options.shadeFullScreen !== undefined && options.shadeFullScreen) {
         materialRedrawHandler.postDescendBindings.insert(
