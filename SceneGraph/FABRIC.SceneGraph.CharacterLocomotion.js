@@ -108,13 +108,15 @@ FABRIC.appendOnCreateContextCallback(function(context) {
 FABRIC.RT.FootStep = function() {
   this.liftTime = 0.0;
   this.plantTime = 0.0;
+  this.midPlantTime = 0.0;
 };
 
 FABRIC.appendOnCreateContextCallback(function(context) {
   context.RegisteredTypesManager.registerType('FootStep', {
     members: {
       liftTime: 'Scalar',
-      plantTime: 'Scalar'
+      plantTime: 'Scalar',
+      midPlantTime: 'Scalar'
     },
     constructor: FABRIC.RT.FootStep
   });
