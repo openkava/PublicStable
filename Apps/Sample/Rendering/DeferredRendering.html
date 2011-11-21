@@ -102,7 +102,6 @@ FABRIC.SceneGraph.registerNodeType('MoveCarsNode', {
                                  '  position.z = zMinMax.x;\n' +
                                  'if(direction.z < -0.99 && position.z < zMinMax.x)\n' +
                                  '  position.z = zMinMax.y;\n' +
-'if(index == 300 && direction.z > 0.9)report "300 pos " + position + " dir " + direction;\n'+
                                  'globalXfo.tr = position;\n}',
       entryFunctionName: 'moveCars',
       parameterLayout: [
@@ -140,7 +139,7 @@ $(document).ready(function() {
 
   scene.constructNode('CameraManipulator', { targetNode: camera });
   viewport.setCameraNode(camera);
-  var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 100.0, 600.0) });
+  var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) });
 
   var deferredRenderer = scene.constructNode('DeferredRenderer', {cameraNode: camera, lightNode: light, shininess: 20});
 
@@ -155,7 +154,7 @@ $(document).ready(function() {
   scene.constructNode('Instance', {
       transformNode: scene.constructNode('Transform', {
         hierarchical: false,
-        globalXfo: new FABRIC.RT.Xfo({ tr: new FABRIC.RT.Vec3(0, -1, 0) })
+        globalXfo: new FABRIC.RT.Xfo({ tr: new FABRIC.RT.Vec3(0, -0.25, 0) })
       }),
       geometryNode: scene.constructNode('Plane', {
         length: streetLength,
@@ -203,8 +202,10 @@ $(document).ready(function() {
 
   /////////////////////////////////
   //Cars
-  var numCars = (128 * 8)/2;
+  var numCars = 1000;
   var numCarsPerStreetSide = Math.floor(numCars/(nbStreets*4));
+  if(numCarsPerStreetSide == 0)
+    numCarsPerStreetSide = 1;
   var numCarsPerStreet = numCarsPerStreetSide*2;
   numCars = numCarsPerStreet * (nbStreets*2);
 
@@ -297,7 +298,7 @@ $(document).ready(function() {
     }),
     transformNode: lightSlicedTransform
   });
-  
+
   scene.constructNode('MoveCarsNode', {
     carSliceTransformNode: carSlicedTransform,
     lightSliceTransformNode: lightSlicedTransform,
@@ -305,7 +306,6 @@ $(document).ready(function() {
     zMinMax: new FABRIC.RT.Vec2(-streetLength/2, streetLength/2),
     speed: 5.0
       });
-
 
   $('#loadingDialog').dialog({
     modal: true
