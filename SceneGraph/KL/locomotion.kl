@@ -302,42 +302,6 @@ operator evaluateLocomotionPoseVariables(
           footError = invcontrollerXfo.ori.rotateVector(plantLocations[j] - footXfo.tr);
           plantLocations[j] = footError;
           plantedFeet[j] = false;
-          
-          /////////////////////////////////////////////////
-          // Clip Deactivation
-          if(animationLibrary.size > 1){
-            Scalar buffer = 0.3;
-            Scalar speedDelta = (currSpeed - trackcontroller.comParams[1]);
-            if(abs(speedDelta) > buffer){
-              report("speedDelta:"+trackcontroller.activeTrackSet+":"+j+":"+speedDelta);
-              for(Integer clipId=0; clipId<locomotionMarkers.size; clipId++){
-              // Note: here we block blending from a clip onto its self, but soon we will enable this.
-                if(trackcontroller.activeTrackSet == clipId){
-                  continue;
-                }
-                for(Integer l=0; l<locomotionMarkers[clipId][j].size; l++){
-                  Scalar speedDelta2 = (currSpeed - locomotionMarkers[clipId][j][l].params[1]);
-                //  report("speedDelta2 "+clipId+":"+l+":"+speedDelta2);
-                  if(abs(speedDelta2) < abs(speedDelta)){
-                  //  report("deactivate fromClip:" +trackcontroller.activeTrackSet + " toClip:"+ clipId + " foot:"+j+ " fromStep:"+stepId+ " toStep:"+l);
-                    trackcontroller.deactivate = true;
-                    trackcontroller.pivotFoot = j;
-                    trackcontroller.pivotStepId = l;
-                    trackcontroller.activeTrackSet = clipId;
-                    
-                    break;
-                  }
-                }
-              }
-            }
-          }
-          if(!trackcontroller.deactivate && currStep.liftTime >= timeRange.y){  
-            // Deactivate the current clip if a foot reaches the last step.
-          //  report("deactivate - end of clip foot:"+j+ " t:" + trackcontroller.time);
-            trackcontroller.deactivate = true;
-            trackcontroller.pivotFoot = j;
-            trackcontroller.pivotStepId = 0;
-          }
         }
         else{
         
@@ -406,16 +370,6 @@ operator evaluateLocomotionPoseVariables(
           plantLocations[j] = footXfo.tr;
           plantedFeet[j] = true;
           
-          // Increment the step id if we havn't just activated.
-          // Sometimes during a loop, one foot is planting while another is lifting, and
-          // and there are cases where a foot is planting as the cycle it looped,
-          // ausing it to increment its setp counter even though it is already been reset to
-          // the beginning of the clip, and its stepRatio is actuall negative
-          if(trackcontroller.tick != 0 && footStepTrack.footSteps.size > 1 && stepRatio > 1.0){
-            if(trackcontroller.stepIds[j] < footStepTrack.footSteps.size - 1){
-              trackcontroller.stepIds[j]++;
-            }
-          }
         }
         else{
           // Calculate the error each update to hold the foot in place while planted.
@@ -426,6 +380,48 @@ operator evaluateLocomotionPoseVariables(
         if(displayFootPinningDebugging){
           debugFootMotion.drawCircle(footXfo * rot90, 0.1, Color(0.5, 0.5, 0.0, 1.0));
           debugFootMotion.drawLine(footXfo.tr, plantLocations[j], Color(0.5, 0.5, 0.0, 1.0));
+        }
+        
+        if(t >= currStep.midPlantTime){
+          /////////////////////////////////////////////////
+          // Clip Deactivation
+          if(animationLibrary.size > 1){
+            Scalar buffer = 0.3;
+            Scalar speedDelta = (currSpeed - trackcontroller.comParams[1]);
+            if(abs(speedDelta) > buffer){
+              report("speedDelta:"+trackcontroller.activeTrackSet+":"+j+":"+speedDelta);
+              for(Integer clipId=0; clipId<locomotionMarkers.size; clipId++){
+              // Note: here we block blending from a clip onto its self, but soon we will enable this.
+                if(trackcontroller.activeTrackSet == clipId){
+                  continue;
+                }
+                for(Integer l=0; l<locomotionMarkers[clipId][j].size; l++){
+                  Scalar speedDelta2 = (currSpeed - locomotionMarkers[clipId][j][l].params[1]);
+                //  report("speedDelta2 "+clipId+":"+l+":"+speedDelta2);
+                  if(abs(speedDelta2) < abs(speedDelta)){
+                  //  report("deactivate fromClip:" +trackcontroller.activeTrackSet + " toClip:"+ clipId + " foot:"+j+ " fromStep:"+stepId+ " toStep:"+l);
+                    trackcontroller.deactivate = true;
+                    trackcontroller.pivotFoot = j;
+                    trackcontroller.pivotStepId = l;
+                    trackcontroller.activeTrackSet = clipId;
+                    
+                    break;
+                  }
+                }
+              }
+            }
+          }
+          if(!trackcontroller.deactivate && currStep.midPlantTime >= timeRange.y){  
+            // Deactivate the current clip if a foot reaches the last step.
+          //  report("deactivate - end of clip foot:"+j+ " t:" + trackcontroller.time);
+            trackcontroller.deactivate = true;
+            trackcontroller.pivotFoot = j;
+            trackcontroller.pivotStepId = 0;
+          }
+          
+          if(!trackcontroller.deactivate){
+            trackcontroller.stepIds[j]++;
+          }
         }
       }
       footXfo = invcontrollerXfo * footXfo;
