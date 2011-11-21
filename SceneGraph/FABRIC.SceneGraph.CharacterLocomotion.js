@@ -463,7 +463,9 @@ FABRIC.SceneGraph.registerNodeType('LocomotionPoseVariables', {
     dgnode.addMember('trackcontroller', 'TrackSetController');
     dgnode.addMember('plantedFeet', 'Boolean[]');
     dgnode.addMember('plantLocations', 'Vec3[]');
-    dgnode.addMember('rayDeltas', 'Vec3[]');
+    dgnode.addMember('hitPositions', 'Vec3[]');
+    dgnode.addMember('hitPositionsPrevStep', 'Vec3[]');
+    
     
     var poseError = locomotionVariables.getVariables();
     poseError.setIdentity();
@@ -520,7 +522,8 @@ FABRIC.SceneGraph.registerNodeType('LocomotionPoseVariables', {
         'self.trackcontroller',
         'self.plantedFeet',
         'self.plantLocations',
-        'self.rayDeltas',
+        'self.hitPositions',
+        'self.hitPositionsPrevStep',
         
         'self.poseVariables',
         'self.prevUpdatePose',

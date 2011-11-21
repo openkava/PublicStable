@@ -64,7 +64,7 @@ operator evaluateCharacterController(
     return;
   }
   Quat alignment;
-  Boolean displayDebugging = false;
+  Boolean displayDebugging = true;
   ////////////////////////////
   // Movement
   Vec3 acceleration = goalLinearVelocity - linearVelocity;
