@@ -124,10 +124,11 @@ operator setNumberOfMatrices(
 operator bindTextureMatrix(
   io OGLTexture2D oglTexture2D,
   io Integer textureUnit,
+  io Mat44 matricesTempBuffer[],//Avoid reallocating at each frame if dynamic; has a very important cost
   io Mat44 matrices<>
 ) {
   if(textureUnit > -1) {
-    oglTexture2D.bindImageMatrix(matrices, textureUnit);
+    oglTexture2D.bindImageMatrix(matrices, matricesTempBuffer, textureUnit);
   } else {
     report('debugging instance matrices: ');
     for(Size i=0;i<10;i++) {

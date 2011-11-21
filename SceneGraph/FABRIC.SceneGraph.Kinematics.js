@@ -182,6 +182,7 @@ FABRIC.SceneGraph.registerNodeType('TransformTexture', {
     if(!options.dynamic)
       tex.forceRefresh = false;
     redrawEventHandler.addMember('oglTexture2D', 'OGLTexture2D', tex);
+    redrawEventHandler.addMember('matricesTempBuffer', 'Mat44[]');
 
     redrawEventHandler.setScope('transform', transformdgnode);
     redrawEventHandler.preDescendBindings.append(scene.constructOperator({
@@ -200,6 +201,7 @@ FABRIC.SceneGraph.registerNodeType('TransformTexture', {
       parameterLayout: [
         'self.oglTexture2D',
         'textureStub.textureUnit',
+        'self.matricesTempBuffer',
         'transform.textureMatrix<>'
       ]
     }));
