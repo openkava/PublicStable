@@ -96,7 +96,13 @@ namespace Fabric
         terminate();
     }
 
-    void ThreadPool::executeParallel( RC::Handle<LogCollector> const &logCollector, size_t count, void (*callback)( void *userdata, size_t index ), void *userdata, bool mainThreadOnly )
+    void ThreadPool::executeParallel(
+      RC::Handle<LogCollector> const &logCollector,
+      size_t count,
+      void (*callback)( void *userdata, size_t index ),
+      void *userdata,
+      bool mainThreadOnly
+      )
     {
       if ( count == 0 )
         return;
@@ -117,6 +123,35 @@ namespace Fabric
         
         while ( !task.completed_CRITICAL_SECTION() )
           executeOneTaskIfPossible_CRITICAL_SECTION();
+        
+        m_stateMutex.release();
+      }
+    }
+
+    void ThreadPool::executeParallelAsync(
+      RC::Handle<LogCollector> const &logCollector,
+      size_t count,
+      void (*callback)( void *userdata, size_t index ),
+      void *userdata,
+      bool mainThreadOnly,
+      void (*finishedCallback)( void *finishedUserdata ),
+      void *finishedUserdata
+      )
+    {
+      if ( count == 0 )
+        finishedCallback( finishedUserdata );
+      else
+      {
+        Task *task = new Task( logCollector, count, callback, userdata, finishedCallback, finishedUserdata );
+        
+        m_stateMutex.acquire();
+        
+        if ( mainThreadOnly )
+          m_mainThreadTasks.push_back( task );
+        else m_tasks.push_back( task );
+        
+        // [pzion 20101108] Must wake waiter because there is work to do
+        m_stateCond.broadcast();
         
         m_stateMutex.release();
       }
@@ -165,6 +200,13 @@ namespace Fabric
         task->postExecute_CRITICAL_SECTION();
         if ( task->completed_CRITICAL_SECTION() )
         {
+          void (*finishedCallback)( void * ) = task->getFinishedCallback();
+          if ( finishedCallback )
+          {
+            finishedCallback( task->getFinishedUserdata() );
+            delete task;
+          }
+          
           // [pzion 20101108] Must wake waiter because they might be
           // waiting on the task completion
           m_stateCond.broadcast();

@@ -13,9 +13,9 @@
 #include <Fabric/Core/MT/LogCollector.h>
 #include <Fabric/Core/RT/NumericDesc.h>
 #include <Fabric/Core/RT/Manager.h>
-#include <Fabric/Base/JSON/Value.h>
-#include <Fabric/Base/JSON/Object.h>
 #include <Fabric/Base/JSON/Array.h>
+#include <Fabric/Base/JSON/Integer.h>
+#include <Fabric/Base/JSON/Object.h>
 #include <Fabric/Base/JSON/String.h>
 #include <Fabric/Core/Util/Base64.h>
 #include <Fabric/Core/Util/Encoder.h>
@@ -218,6 +218,45 @@ namespace Fabric
         logCollector->flush();
     }
 
+    void Node::evaluateAsync(
+      void (*finishedCallback)( void * ),
+      void *finishedUserdata
+      )
+    {
+      PrepareForExecution();
+      ensureRunState();
+      if ( !m_runState->canEvaluate )
+        throw Exception( "cannot execute because of errors" );
+      
+      retain();
+      MT::ThreadPool::Instance()->executeParallelAsync(
+        m_context->getLogCollector(),
+        1,
+        &Node::EvaluateAsyncCallback,
+        this,
+        false,
+        finishedCallback,
+        finishedUserdata
+        );
+    }
+    
+    void Node::EvaluateAsyncCallback(
+      void *userdata,
+      size_t index
+      )
+    {
+      Node *node = static_cast<Node *>( userdata );
+      
+      RC::Handle<Context> context = node->m_context;
+      RC::Handle<MT::LogCollector> logCollector( context->getLogCollector() );
+      ExecutionEngine::ContextSetter contextSetter( context );
+      node->m_runState->taskGroupStream.execute( logCollector, 0 );
+      if ( logCollector )
+        logCollector->flush();
+      
+      node->release();
+    }
+    
     void Node::evaluateLocal( void *userdata )
     {
       if ( m_dirty )
@@ -477,6 +516,8 @@ namespace Fabric
         jsonExecRemoveDependency( arg, resultJAG );
       else if ( cmd == "evaluate" )
         jsonExecEvaluate( resultJAG );
+      else if ( cmd == "evaluateAsync" )
+        jsonExecEvaluateAsync( arg, resultJAG );
       else Container::jsonExec( cmd, arg, resultJAG );
     }
     
@@ -525,7 +566,30 @@ namespace Fabric
     {
       evaluate();
     }
+    
+    void Node::jsonExecEvaluateAsync( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
+    {
+      int32_t serial = arg->toInteger()->value();
       
+      JSONEvaluateAsyncUserdata *jsonEvaluateAsyncUserdata = new JSONEvaluateAsyncUserdata;
+      jsonEvaluateAsyncUserdata->node = this;
+      {
+        Util::JSONGenerator jg( &jsonEvaluateAsyncUserdata->notifyJSONArg );
+        jg.makeInteger( serial );
+      }
+        
+      evaluateAsync( &Node::JSONExecEvaluateAsyncFinishedCallback, jsonEvaluateAsyncUserdata );
+    }
+    
+    void Node::JSONExecEvaluateAsyncFinishedCallback( void *userdata )
+    {
+      JSONEvaluateAsyncUserdata *jsonEvaluateAsyncUserdata = static_cast<JSONEvaluateAsyncUserdata *>( userdata );
+      
+      jsonEvaluateAsyncUserdata->node->jsonNotify( "evaluateAsyncFinished", 21, &jsonEvaluateAsyncUserdata->notifyJSONArg );
+      
+      delete jsonEvaluateAsyncUserdata;
+    }
+    
     void Node::jsonDesc( Util::JSONGenerator &resultJG ) const
     {
       Container::jsonDesc( resultJG );

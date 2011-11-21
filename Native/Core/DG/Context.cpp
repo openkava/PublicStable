@@ -181,7 +181,6 @@ namespace Fabric
     void Context::closeNotificationBracket()
     {
       if ( m_notificationBracketCount.decrementAndGetValue() == 0
-        && MT::ThreadPool::Instance()->isMainThread()
         && m_pendingNotificationsJSON )
       {
         Util::SimpleString *pendingNotificationJSON;
