@@ -6,7 +6,10 @@
 #define _FABRIC_V8_CLIENT_H
 
 #include <Fabric/Core/DG/Client.h>
-#include <v8/v8.h>
+
+#include <v8.h>
+#include <uv.h>
+#include <handle_wrap.h>
 
 namespace Fabric
 {
@@ -16,29 +19,44 @@ namespace Fabric
     {
     public:
     
-      static RC::Handle<Client> Create( RC::Handle<DG::Context> const &context );
+      static RC::Handle<Client> Create( RC::Handle<DG::Context> const &context, v8::Handle<v8::Object> clientWrap );
       
       virtual void notify( Util::SimpleString const &jsonEncodedNotifications ) const;
-      
-      v8::Handle<v8::Value> v8JSONExec( v8::Arguments const &args );
-      static v8::Handle<v8::Value> V8JSONExec( v8::Arguments const &args );
-      
-      v8::Handle<v8::Value> v8SetJSONNotifyCallback( v8::Arguments const &args );
-      static v8::Handle<v8::Value> V8SetJSONNotifyCallback( v8::Arguments const &args );
-
-      v8::Handle<v8::Value> v8WrapFabricClient( v8::Arguments const &args );
-      static v8::Handle<v8::Value> V8WrapFabricClient( v8::Arguments const &args );
-
-      static v8::Handle<v8::Value> V8Dispose( v8::Arguments const &args );
+      void notifyInitialState() const
+      {
+        DG::Client::notifyInitialState();
+      }
       
     protected:
     
-      Client( RC::Handle<DG::Context> const &context );
+      Client( RC::Handle<DG::Context> const &context, v8::Handle<v8::Object> clientWrap );
       ~Client();
       
     private:
     
-      v8::Persistent<v8::Function> m_v8Callback;
+      v8::Persistent<v8::Object> m_clientWrap;
+    };
+    
+    class ClientWrap : public node::HandleWrap
+    {
+    public:
+    
+      static void Initialize( v8::Handle<v8::Object> target );
+      
+    protected:
+    
+      ClientWrap( v8::Handle<v8::Object> target );
+      ~ClientWrap();
+      
+      static v8::Handle<v8::Value> New( v8::Arguments const &args );
+      static v8::Handle<v8::Value> JSONExec( v8::Arguments const &args );
+      static v8::Handle<v8::Value> SetJSONNotifyCallback( v8::Arguments const &args );
+      static v8::Handle<v8::Value> Dispose( v8::Arguments const &args );
+    
+    private:
+    
+      RC::Handle<Client> m_client;
+      uv_timer_t m_uvHandle;
     };
   };
 };

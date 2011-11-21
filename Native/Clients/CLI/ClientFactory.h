@@ -7,7 +7,7 @@
 
 #include <Fabric/Base/RC/Object.h>
 #include <Fabric/Base/RC/Handle.h>
-#include <v8/v8.h>
+#include <v8.h>
 
 namespace Fabric
 {

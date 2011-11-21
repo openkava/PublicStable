@@ -814,12 +814,20 @@ function (fabricClient, logCallback, debugLogCallback) {
         if ('bindings' in diff)
           result.bindings.patch(diff.bindings);
       };
+      
+      var evaluateAsyncFinishedSerial = 0;
+      var evaluateAsyncFinishedCallbacks = {};
 
       var parentRoute = result.route;
       result.route = function(src, cmd, arg) {
         if (src.length == 1 && src[0] == 'bindings') {
           src.shift();
           result.bindings.route(src, cmd, arg);
+        }
+        else if (cmd == "evaluateAsyncFinished") {
+          var callback = evaluateAsyncFinishedCallbacks[arg];
+          delete evaluateAsyncFinishedCallbacks[arg];
+          callback();
         }
         else
           parentRoute(src, cmd, arg);
@@ -886,6 +894,13 @@ function (fabricClient, logCallback, debugLogCallback) {
 
       result.pub.evaluate = function() {
         result.queueCommand('evaluate');
+        executeQueuedCommands();
+      };
+
+      result.pub.evaluateAsync = function(callback) {
+        var serial = evaluateAsyncFinishedSerial++;
+        evaluateAsyncFinishedCallbacks[serial] = callback;
+        result.queueCommand('evaluateAsync', serial);
         executeQueuedCommands();
       };
 
