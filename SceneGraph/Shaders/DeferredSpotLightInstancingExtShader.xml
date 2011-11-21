@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<shader>
+  <name>DeferredSpotLightInstancingExtMaterial</name>
+  
+  <uniforms>
+    <uniform name="u_samplerPositionsMap" constant="positionsTexture" type="Integer" owner="texture"/>
+    <uniform name="u_samplerNormalsMap" constant="normalsTexture" type="Integer" owner="texture"/>
+    <uniform name="u_samplerDiffuseColorsMap" constant="diffuseColorsTexture" type="Integer" owner="texture"/>
+    <uniform name="u_lightColor" constant="lightColor" type="Color"/>
+    <uniform name="u_lightCosCutoff" constant="lightCosCutoff" type="Scalar"/>
+    <uniform name="u_lightDistCutoff" constant="lightDistCutoff" type="Scalar"/>
+    <uniform name="u_materialShininess" constant="shininess" type="Scalar" defaultValue="20.0"/>
+    
+    <uniform name="u_viewMatrix" constant="viewMatrix" type="Mat44" owner="instance"/>
+    <uniform name="u_projectionMatrix" constant="projectionMatrix" type="Mat44" owner="instance"/>
+
+		<uniform name="u_samplerTransformMap" constant="transformTexture" type="Integer" owner="texture"/>
+  </uniforms>
+  
+  <attributes>
+    <attribute name="a_position" binding="positions"/>
+  </attributes>
+  
+  <lights>
+    <light type="Light" binding="light"/>
+  </lights>
+
+	<textures>
+    <texture binding="positionsTexture"/>
+    <texture binding="normalsTexture"/>
+    <texture binding="diffuseColorsTexture"/>
+    <texture binding="transformTexture"/>
+	</textures>
+  
+  <vertexshader>
+    <source>
+      <![CDATA[
+      #version 140
+
+      uniform float u_lightDistCutoff;
+      uniform mat4 u_viewMatrix;
+      uniform mat4 u_projectionMatrix;
+      uniform sampler2D u_samplerTransformMap;
+      
+      in vec4 a_position;
+      in int a_instanceID;
+
+      out vec3 lightDir;
+      out vec3 lightPos;
+
+      void main(){
+        int instanceID = gl_InstanceID;
+        float factor = 1.0 / 512.0;
+        int x = (instanceID % 128) * 4;
+        float y = float(instanceID) / 128.0;
+        mat4 mvp = mat4(texture2D(u_samplerTransformMap,vec2(x,y) * factor),
+            texture2D(u_samplerTransformMap,vec2(x+1,y) * factor),
+            texture2D(u_samplerTransformMap,vec2(x+2,y) * factor),
+            texture2D(u_samplerTransformMap,vec2(x+3,y) * factor));
+
+        mat4 modelViewMatrix = u_viewMatrix * mvp;
+    
+        //We assume the cone has a height of u_lightDistCutoff in Y,
+        //and its Y center is at mid-height (based on generateCone.kl local coords)
+        lightPos = (modelViewMatrix * vec4(0.0, u_lightDistCutoff*0.5, 0.0, 1.0)).zyx;
+        vec3 lightCutoffPos = (modelViewMatrix * vec4(0.0, -u_lightDistCutoff*0.5, 0.0, 1.0)).zyx;
+        lightDir = vec3(lightCutoffPos - lightPos);
+
+        mat4 modelViewProjectionMatrix = u_projectionMatrix * modelViewMatrix;
+        gl_Position = modelViewProjectionMatrix * a_position;
+      }
+      ]]>
+    </source>
+  </vertexshader>
+  
+  <fragmentshader>
+    <source>
+      <![CDATA[
+      uniform vec4 u_lightColor;
+      uniform float u_lightCosCutoff;
+      uniform float u_lightDistCutoff;
+
+      uniform float u_materialShininess;
+
+      varying vec3 lightDir;
+      varying vec3 lightPos;
+
+			uniform sampler2D u_samplerPositionsMap;
+			uniform sampler2D u_samplerNormalsMap;
+			uniform sampler2D u_samplerDiffuseColorsMap;
+
+      ]]>
+      </source>
+      <include file="FABRIC_ROOT/SceneGraph/Shaders/lighting.txt"/>
+      <source>
+      <![CDATA[
+      
+      
+      void main(){
+      
+        gl_FragColor = vec4(1.0, 0.0, 0.0, 0.5);
+        
+/*        vec3 Ln = normalize(lightDir);
+        vec3 Vn = normalize(viewDir);
+        vec3 Nn = normalize(normal);
+        
+        float lightFactor = 1.0;
+        gl_FragColor = phong_shading(  Nn, 
+                        Ln, 
+                        Vn, 
+                        u_lightType,
+                        u_lightDir,
+                        lightFactor,
+                        u_lightCosCutoff,
+                        u_lightColor,
+                        u_materialDiffuseColor, 
+                        u_materialSpecularColor,
+                        u_materialShininess,
+                        u_materialAmbientColor );*/
+
+      }
+
+      ]]>
+    </source>
+  </fragmentshader>
+</shader>

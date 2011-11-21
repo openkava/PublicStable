@@ -39,6 +39,7 @@
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Manipulation.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Kinematics.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Rendering.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/Parsers/parseOBJ.js" charset="utf-8"></script>
     
 <script type="text/javascript">
 
@@ -117,7 +118,7 @@ FABRIC.SceneGraph.registerNodeType('MoveCarsNode', {
   return moveCarsNode;
 }});
 
-    
+FABRIC.SceneGraph.defineEffectFromFile('DeferredSpotLightInstancingExtMaterial', 'FABRIC_ROOT/SceneGraph/Shaders/DeferredSpotLightInstancingExtShader.xml');
     
 $(document).ready(function() {
   
@@ -139,16 +140,9 @@ $(document).ready(function() {
 
   scene.constructNode('CameraManipulator', { targetNode: camera });
   viewport.setCameraNode(camera);
-  var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 5000.0, 600.0) });
-  
-  var deferredRenderer = scene.constructNode('DeferredRenderer', {cameraNode: camera, lightNode: light, shininess: 20});
+  var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 100.0, 600.0) });
 
-  var redMaterial = deferredRenderer.constructDiffuseMaterial('DeferredRenderMaterial', {
-    diffuseColor: FABRIC.RT.rgb(0.8, 0, 0)
-  });
-  var darkGreyMaterial = deferredRenderer.constructDiffuseMaterial('DeferredRenderMaterial', {
-    diffuseColor: FABRIC.RT.rgb(0.3, 0.3, 0.3)
-  });
+  var deferredRenderer = scene.constructNode('DeferredRenderer', {cameraNode: camera, lightNode: light, shininess: 20});
 
   var streetWidth = 3.0;
   var streetDistance = 15.0;
@@ -171,7 +165,9 @@ $(document).ready(function() {
         doubleSided: false,
         tangentsFromUV: 0
       }),
-      materialNode: darkGreyMaterial
+      materialNode: deferredRenderer.constructDiffuseMaterial('DeferredRenderMaterial', {
+        diffuseColor: FABRIC.RT.rgb(0.3, 0.3, 0.3)
+      })
     });
 
   /////////////////////////////////
@@ -242,7 +238,6 @@ $(document).ready(function() {
 
           var carTr = new FABRIC.RT.Vec3(dir==0?carX:carZ, carWidth*0.7, dir==0?carZ:carX);
           var carOri = new FABRIC.RT.Quat().setFromAxisAndAngle( new FABRIC.RT.Vec3(0,1,0), carRotAngle );
-//console.log('dir ' + dir + ' side ' + streetSide + ' Xori ' + carOri.getXaxis() + ' tr ' + carTr);
           carInstanceTransforms.push(new FABRIC.RT.Xfo( {
             tr: carTr,
             ori: carOri
@@ -250,14 +245,14 @@ $(document).ready(function() {
 
           var lightOri = rotateLightsUp.multiply(carOri);
           var invLightOri = lightOri.inverse();
-          lightTr = new FABRIC.RT.Vec3(0,carLength*1.5,carWidth/3);
+          lightTr = new FABRIC.RT.Vec3(-carWidth/3,carLength*1.45,carWidth/3);
           if(dir==1)
             swapDir(lightTr);
           lightInstanceTransforms.push(new FABRIC.RT.Xfo( {
             tr: carTr.add(invLightOri.rotateVector(lightTr)),
             ori: carOri.multiply(rotateLightsUp)
           }));
-          lightTr = new FABRIC.RT.Vec3(0,carLength*1.5,-carWidth/3);
+          lightTr = new FABRIC.RT.Vec3(-carWidth/3,carLength*1.45,-carWidth/3);
           if(dir==1)
             swapDir(lightTr);
           lightInstanceTransforms.push(new FABRIC.RT.Xfo( {
@@ -273,13 +268,9 @@ $(document).ready(function() {
   carSlicedTransform.setGlobalXfo(carInstanceTransforms);
   
   scene.constructNode('Instance', {
-    geometryNode: scene.constructNode('Cuboid', {
-        length: carLength,
-        width: carHeight,
-        height: carWidth,
-      }),
+    geometryNode: scene.importAssetFile('Models/carmod2.obj')['carmod2'],//Note: already scaled according to carLength, carHeight, carWidth
     materialNode: deferredRenderer.constructDiffuseMaterial('DeferredInstancingExtRenderMaterial', {
-      diffuseColor: FABRIC.RT.rgb(0.8, 0.5, 0.4),
+      diffuseColor: FABRIC.RT.rgb(0.7, 0.7, 0.7),
       transformTextureNode: carSlicedTransform.getTransformTexture(true)
     }),
     transformNode: carSlicedTransform
@@ -287,20 +278,26 @@ $(document).ready(function() {
 
   var lightSlicedTransform = scene.constructNode("Transform");
   lightSlicedTransform.setGlobalXfo(lightInstanceTransforms);
-  
+  var carLightConeRadius = carWidth*0.5;
+  var carLightConeLength = carLength*2;
+
+  var carLightConeBox = scene.constructNode('Cone', {
+    coneRadius: carLightConeRadius*1.24,//5 sided cone completely embedding real cone of that radius
+    coneLength: carLightConeLength,
+    detail: 2
+  });
+
   scene.constructNode('Instance', {
-    geometryNode: scene.constructNode('Cone', {
-        coneRadius: carWidth*0.5,
-        coneLength: carLength*2,
-        detail: 2
-      }),
-    materialNode: deferredRenderer.constructDiffuseMaterial('DeferredInstancingExtRenderMaterial', {
-      diffuseColor: FABRIC.RT.rgb(1.0, 1.0, 0.7),
+    geometryNode: carLightConeBox,
+    materialNode: deferredRenderer.addShadingMaterialLayer('DeferredSpotLightInstancingExtMaterial', {
+      lightColor: FABRIC.RT.rgb255(240,240,255),
+      lightCosCutoff: carLightConeLength / Math.sqrt(carLightConeRadius*carLightConeRadius+carLightConeLength*carLightConeLength),
+      lightDistCutoff: carLightConeLength,
       transformTextureNode: lightSlicedTransform.getTransformTexture(true)
     }),
     transformNode: lightSlicedTransform
   });
-
+  
   scene.constructNode('MoveCarsNode', {
     carSliceTransformNode: carSlicedTransform,
     lightSliceTransformNode: lightSlicedTransform,
@@ -308,29 +305,6 @@ $(document).ready(function() {
     zMinMax: new FABRIC.RT.Vec2(-streetLength/2, streetLength/2),
     speed: 5.0
       });
-
-  //Note: right now we can't mix with proper Z-sorting
-  //objects that are not drawn using the depth buffer.
-  //I've tried during a few hours to make it work by writing
-  //gl_FragDepth in the deferred renderers without success.
-
-  //test
-  var redPhongMaterial = scene.constructNode('PhongMaterial', {
-    diffuseColor: FABRIC.RT.rgb(0.8, 0, 0),
-    lightNode: light
-  });
-  // Phong Sphere
-  scene.constructNode('Instance', {
-      transformNode: scene.constructNode('Transform', {
-        hierarchical: false,
-        globalXfo: new FABRIC.RT.Xfo({ tr: new FABRIC.RT.Vec3(0, 0, 0) })
-      }),
-      geometryNode: scene.constructNode('Sphere', {
-        radius: 40,
-        detail: 40
-      }),
-      materialNode: redPhongMaterial
-    });
 
 
   $('#loadingDialog').dialog({
@@ -348,6 +322,11 @@ $(document).ready(function() {
       }
       viewport.redraw();
       scene.animation.play();
+
+      setInterval(function() {
+          document.getElementById('frameRate').childNodes[0].data = 'Frame Rate:' + viewport.getFPS().toFixed(2);
+        }, 600);
+
       return true;
     }
   });
@@ -382,7 +361,10 @@ $(document).ready(function() {
               Deferred rendering.<br>
             </div><!--content-->
           </div><!--box-->
-          
+          <div class="box">
+            <h2 id="agents">PERFORMANCE</h2>
+            <div class="content" id="frameRate">Frame Rate:</div><p></p>
+          </div><!--box-->
         </div><!--sidebar-->
       </div> <!--editor-->
     </div><!--wrapper-->

@@ -369,7 +369,7 @@ FABRIC.SceneGraph.registerNodeType('DeferredRenderer', {
 
       var materialRedrawHandler = material.getRedrawEventHandler();
 
-      var camera = scene.getPrivateInterface(cameraNode);
+/*      var camera = scene.getPrivateInterface(cameraNode);
       materialRedrawHandler.setScope('camera',camera.getDGNode());
       materialRedrawHandler.preDescendBindings.append(scene.constructOperator({
           operatorName: 'loadCameraProjectionMatrix',
@@ -386,22 +386,28 @@ FABRIC.SceneGraph.registerNodeType('DeferredRenderer', {
             'camera.projectionMat44'
           ]
         }));
+        */
 
-      materialRedrawHandler.postDescendBindings.insert(
-        scene.constructOperator({
-            operatorName: 'drawShaderQuad',
-            srcCode:'use OGLTexture2D, OGLShaderProgram;\n' +
-                    'operator drawShaderQuad(io OGLShaderProgram program){ \n' +
-                    '  drawScreenQuad(program.programId, Vec2(-1.0,1.0), Vec2(1.0,-1.0), false);}',
-            entryFunctionName: 'drawShaderQuad',
-            parameterLayout: [
-              'shader.shaderProgram'
-            ]
-      }),0);
+      if(options.shadeFullScreen !== undefined && options.shadeFullScreen) {
+        materialRedrawHandler.postDescendBindings.insert(
+          scene.constructOperator({
+              operatorName: 'drawShaderQuad',
+              srcCode:'use OGLTexture2D, OGLShaderProgram;\n' +
+                      'operator drawShaderQuad(io OGLShaderProgram program){ \n' +
+                      '  drawScreenQuad(program.programId, Vec2(-1.0,1.0), Vec2(1.0,-1.0), false);}',
+              entryFunctionName: 'drawShaderQuad',
+              parameterLayout: [
+                'shader.shaderProgram'
+              ]
+        }),0);
+      }
+      return materialNodePub;
     };
    
     deferredRenderNode.pub.addPhongShadingLayer = function(options) {
+      options.shadeFullScreen = true;
       deferredRenderNode.pub.addShadingMaterialLayer('DeferredPhongMaterial', options);
+      options.shadeFullScreen = undefined;
     };
 
     if(options.addPhongShadingLayer) {
