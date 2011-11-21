@@ -723,8 +723,14 @@ install_llvm_libraries:
 install_node: install_node_inc install_node_bin
 
 install_node_inc:
-	mkdir -p include/v8/v8
-	$(RSYNC) --progress --recursive --delete --include='*/' --include='*.h' --exclude='*' Build/node-$(NODE_VERSION)-$(FIRST_ARCH)/deps/v8/include/ $(TARGET_BASE)/include/v8/v8/
+	mkdir -p include/node/node
+	cp Build/node-$(NODE_VERSION)-$(FIRST_ARCH)/src/*.h $(TARGET_BASE)/include/node/node
+	mkdir -p include/node/uv
+	cp Build/node-$(NODE_VERSION)-$(FIRST_ARCH)/deps/uv/include/*.h $(TARGET_BASE)/include/node/uv
+	mkdir -p include/node/uv/uv-private
+	cp Build/node-$(NODE_VERSION)-$(FIRST_ARCH)/deps/uv/include/uv-private/*.h $(TARGET_BASE)/include/node/uv/uv-private
+	mkdir -p include/node/v8
+	$(RSYNC) --progress --recursive --delete --include='*/' --include='*.h' --exclude='*' Build/node-$(NODE_VERSION)-$(FIRST_ARCH)/deps/v8/include/ $(TARGET_BASE)/include/node/v8/
 
 install_node_bin:
 	for ARCH in $(ARCHS); do \

@@ -73,6 +73,10 @@ namespace Fabric
       RC::Handle<BindingList> getBindingList() const;
       void addScopeList( RC::Handle<BindingList> const &opList );
       void evaluate();
+      void evaluateAsync(
+        void (*finishedCallback)( void * ),
+        void *finishedUserdata
+        );
       
       void addEventHandler( EventHandler *eventHandler );
       void removeEventHandler( EventHandler *eventHandler );
@@ -85,6 +89,7 @@ namespace Fabric
       void jsonExecAddDependency( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
       void jsonExecRemoveDependency( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
       void jsonExecEvaluate( Util::JSONArrayGenerator &resultJAG );
+      void jsonExecEvaluateAsync( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
       void jsonDesc( Util::JSONGenerator &resultJG ) const;
       virtual void jsonDesc( Util::JSONObjectGenerator &resultJOG ) const;
       virtual void jsonDescType( Util::JSONGenerator &resultJG ) const;
@@ -127,7 +132,20 @@ namespace Fabric
       bool canBeDependency( RC::Handle<Node> const &node ) const;
       void colorSelfAndDependencies( size_t colorGeneration );
 
+      static void EvaluateAsyncCallback(
+        void *userdata,
+        size_t index
+        );
+
+      static void JSONExecEvaluateAsyncFinishedCallback( void *userdata );
+      
     private:
+    
+      struct JSONEvaluateAsyncUserdata
+      {
+        RC::Handle<Node> node;
+        Util::SimpleString notifyJSONArg;
+      };
     
       Context *m_context;
       

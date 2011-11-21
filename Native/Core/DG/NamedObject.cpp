@@ -81,9 +81,9 @@ namespace Fabric
       }
     }
     
-    void NamedObject::jsonNotify( char const *cmdData, size_t cmdLength, Util::SimpleString const *arg ) const
+    void NamedObject::jsonNotify( char const *cmdData, size_t cmdLength, Util::SimpleString const *argJSON ) const
     {
-      m_context->jsonNotify( m_notificationSrc, cmdData, cmdLength, arg );
+      m_context->jsonNotify( m_notificationSrc, cmdData, cmdLength, argJSON );
     }
     
     void NamedObject::jsonNotifyDelta( Util::SimpleString const &delta ) const
