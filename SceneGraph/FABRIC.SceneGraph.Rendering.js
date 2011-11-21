@@ -169,14 +169,14 @@ FABRIC.SceneGraph.registerNodeType('DeferredRenderer', {
   optionsDesc: {
     cameraNode: "Active camera (used only to load projection matrix in order to restor ZBuffer)",
     showDebug: "Display view of the render targets",
-    addPhongShadingPass: "Adds a global Phong shading by default",
+    addPhongShadingLayer: "Adds a global Phong shading by default",
     lightNode: "to be used by the Phong shading pass",
     //To add eventually: choose which components we want to render; compute normals, compute specular, compute diffuse, compute depth...
   },
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
       showDebug: false,
-      addPhongShadingPass: true
+      addPhongShadingLayer: true
       });
 
     var deferredRenderNode = scene.constructNode('SceneGraphNode');
@@ -252,7 +252,7 @@ FABRIC.SceneGraph.registerNodeType('DeferredRenderer', {
           ]
         }));
 
-    renderTargetRedrawEventHandler.postDescendBindings.insert(
+    renderTargetRedrawEventHandler.postDescendBindings.append(
       scene.constructOperator({
           operatorName: 'unbindRenderTarget',
           srcFile: 'FABRIC_ROOT/SceneGraph/KL/renderTarget.kl',
@@ -260,10 +260,21 @@ FABRIC.SceneGraph.registerNodeType('DeferredRenderer', {
           parameterLayout: [
             'deferredDraw.renderTarget'
           ]
-        }), 0);
+        }));
 
-    var shaderPassRedrawEventHandler = deferredRenderNode.constructEventHandlerNode('ShaderPass');
-    redrawEventHandler.appendChildEventHandler(shaderPassRedrawEventHandler);
+    renderTargetRedrawEventHandler.postDescendBindings.append(
+      scene.constructOperator({
+          operatorName: 'copyDepth',
+          srcCode: 'use OGLRenderTarget; operator copyDepth(io Integer width, io Integer height, io OGLRenderTarget renderTarget){\n'+
+                      'glBindFramebuffer(GL_READ_FRAMEBUFFER, renderTarget.fbo);\n' +
+                      'glBlitFramebuffer(0,0,width-1,height-1,0,0,width-1,height-1,GL_DEPTH_BUFFER_BIT, GL_NEAREST);}',
+          entryFunctionName: 'copyDepth',
+          parameterLayout: [
+            'window.width',
+            'window.height',
+            'deferredDraw.renderTarget'
+          ]
+        }));
 
     if(options.showDebug) {
       //Debug display render targets
@@ -291,6 +302,32 @@ FABRIC.SceneGraph.registerNodeType('DeferredRenderer', {
       }));
     }
     
+    //Shading pass
+    var shaderPassRedrawEventHandler = deferredRenderNode.constructEventHandlerNode('ShaderPass');
+    redrawEventHandler.appendChildEventHandler(shaderPassRedrawEventHandler);
+
+    shaderPassRedrawEventHandler.preDescendBindings.append(
+      scene.constructOperator({
+          operatorName: 'preDeferredRenderShading',
+          srcCode: 'use FabricOGL; operator preDeferredRenderShading(){\n'+
+                      'glPushAttrib(GL_DEPTH_BUFFER_BIT | GL_ENABLE_BIT);\n' +
+                      'glDepthMask(GL_FALSE);\n' +
+                      'glEnable(GL_BLEND);\n' +
+                      'glBlendFunc(GL_SRC_ALPHA, GL_ONE);\n' +
+                      '}',
+          entryFunctionName: 'preDeferredRenderShading',
+          parameterLayout: []
+        }));
+
+    shaderPassRedrawEventHandler.postDescendBindings.append(
+      scene.constructOperator({
+          operatorName: 'postDeferredRenderShading',
+          srcCode: 'use FabricOGL; operator postDeferredRenderShading(){\n'+
+                      'glPopAttrib();}',
+          entryFunctionName: 'postDeferredRenderShading',
+          parameterLayout: []
+        }));
+
     //Build event handlers for loading each render target
     var renderTargetTextureRedrawEventHandler = [];
     for(i = 0; i < nbRenderTargets; ++i) {
@@ -317,7 +354,7 @@ FABRIC.SceneGraph.registerNodeType('DeferredRenderer', {
 
     var cameraNode = options.cameraNode;
 
-    deferredRenderNode.pub.constructShaderMaterial = function(materialName, options) {
+    deferredRenderNode.pub.addShadingMaterialLayer = function(materialName, options) {
 
       options.parentEventHandler = shaderPassRedrawEventHandler;
       var materialNodePub = scene.pub.constructNode(materialName, options);
@@ -363,12 +400,12 @@ FABRIC.SceneGraph.registerNodeType('DeferredRenderer', {
       }),0);
     };
    
-    //TODO: support other type of passes...
-    deferredRenderNode.pub.addPhongShadingPass = function(options) {
-      deferredRenderNode.pub.constructShaderMaterial('DeferredPhongMaterial', options);
+    deferredRenderNode.pub.addPhongShadingLayer = function(options) {
+      deferredRenderNode.pub.addShadingMaterialLayer('DeferredPhongMaterial', options);
     };
-    if(options.addPhongShadingPass) {
-      deferredRenderNode.pub.addPhongShadingPass(options);
+
+    if(options.addPhongShadingLayer) {
+      deferredRenderNode.pub.addPhongShadingLayer(options);
     }
 
     deferredRenderNode.pub.constructDiffuseMaterial = function(materialName, options) {
