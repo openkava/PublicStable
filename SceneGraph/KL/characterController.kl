@@ -65,6 +65,10 @@ operator evaluateCharacterController(
   }
   Quat alignment;
   Boolean displayDebugging = true;
+  
+  controllerXfo.tr += controllerXfo.ori.rotateVector(Vec3(0.0, controllerparams.lift, 0.0));
+  controllerparams.lift = 0.0;
+  
   ////////////////////////////
   // Movement
   Vec3 acceleration = goalLinearVelocity - linearVelocity;

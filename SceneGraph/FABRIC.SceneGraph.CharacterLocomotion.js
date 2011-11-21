@@ -239,6 +239,7 @@ FABRIC.Characters.CharacterControllerParams = function() {
   this.trailLength = 0;
   this.trailCircularArrayIndex = 0;
   this.balanceXfo = new FABRIC.RT.Xfo();
+  this.lift = 0;
 };
 
 FABRIC.appendOnCreateContextCallback(function(context) {
@@ -249,7 +250,8 @@ FABRIC.appendOnCreateContextCallback(function(context) {
       trail: 'Xfo[]',
       trailLength: 'Scalar',
       trailCircularArrayIndex: 'Integer',
-      balanceXfo: 'Xfo'
+      balanceXfo: 'Xfo',
+      lift: 'Scalar'
     },
     constructor: FABRIC.Characters.CharacterControllerParams
   });
