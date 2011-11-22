@@ -66,10 +66,12 @@ s.parentNode.insertBefore(ga, s);
 
 <style type="text/css">
 #sidebar {
+  left: 0px;
   width:270px;
 }  
 #viewer {
-  right:270px;
+  left: 270px;
+  right:0px;
 }
 </style>
 <script type="text/javascript">
@@ -397,11 +399,11 @@ $(document).ready(function() {
   //==========================================================
   // UNDO
   var undoManager = scene.constructManager('UndoManager');
-  $("#undo").button().click(function(){
+  $("#undo").click(function(){
     undoManager.undo();
     viewport.redraw();
   });
-  $("#redo").button().click(function(){
+  $("#redo").click(function(){
     undoManager.redo();
     viewport.redraw();
   });
@@ -934,7 +936,7 @@ $(document).ready(function() {
   );//*/
   
   // setup the help dialog
-  $("#help").button().click(function(){
+  $("#help").click(function(){
     viewport.hide();
     $('#helpDialog').dialog({
       modal: true
@@ -946,7 +948,7 @@ $(document).ready(function() {
   });
 
   // setup load and save
-  $("#presetSave").button().click(function(){
+  $("#presetSave").click(function(){
     if(isPlaying)
       return;
     var bodiesToSave = {};
@@ -990,7 +992,7 @@ $(document).ready(function() {
       viewport.show();
     });
   });
-  $("#presetLoad").button().click(function(){
+  $("#presetLoad").click(function(){
     if(isPlaying)
       return;
 
@@ -1038,8 +1040,8 @@ $(document).ready(function() {
       viewport.show();
     });
   });
-  // setup load and save
-  $("#presetExport").button().click(function(){
+  /*
+  $("#presetExport").click(function(){
     if(isPlaying)
       return;
     var bodiesToSave = {};
@@ -1057,7 +1059,7 @@ $(document).ready(function() {
     var path = scene.IO.queryUserFileAndFolderHandle(scene.IO.forOpenWithWriteAccess, "Bullet Editor Data", "json", "bulletScene");
     scene.IO.putTextFile(JSON.stringify(bodiesToSave), path);
   });
-  $("#presetImport").button().click(function(){
+  $("#presetImport").click(function(){
     if(isPlaying)
       return;
     var path = scene.IO.queryUserFileAndFolderHandle(scene.IO.forOpen, "Bullet Editor Data", "json", "bulletScene");
@@ -1074,7 +1076,8 @@ $(document).ready(function() {
     }
     viewport.redraw();
   });
-  $("#presetDuplicate").button().click(function(){
+  */
+  $("#presetDuplicate").click(function(){
     if(isPlaying)
       return;
     if(selectionManager.getSelection().length == 0)
@@ -1119,7 +1122,7 @@ $(document).ready(function() {
     
     // construct an artifical rayEvent
     var rayEvt = {
-      offsetX: evt.pageX,
+      offsetX: evt.pageX - 270,
       offsetY: evt.pageY,
       target: {
         clientWidth: $('#FabricContainer').width()
@@ -1279,43 +1282,41 @@ $(document).ready(function() {
           <div id="FabricContainer"></div> 
         </div><!--viewer-->
         <div id="sidebar">
-          <div class="box">
-            <h2>CONTROLS</h2>
-            <div class="content">
-              <div id="workplaneblend" style="margin-bottom: 5px"></div>
-              <button id="workplaneXY">X-Y</button>
-              <button id="workplaneYZ">Y-Z</button>
-              <button id="workplaneXZ">X-Z</button>
-              <button id="workplaneStand">FIX</button><br><br>
-              <button id="play">Play</button>
-              <button id="help">Help</button>
-              <button id='join'>Join</button><br>
-              <button id='presetExport'>Export</button>
-              <button id='presetImport'>Import</button>
-              <button id='presetSave'>Save</button>
-              <button id='presetLoad'>Load</button>
-              <button id='presetDuplicate'>Dupl</button><br>
-              <button id='undo'>Undo</button>
-              <button id='redo'>Redo</button>
-            </div><!--content-->
-            <h2>PRIMITIVES</h2>
-            <div class="content">
-              <div id="primitiveCube" style="display: inline-block; margin: 2px; width: 50px; height: 50px; background-color:rgb(201,168,117)"></div>
-              <div id="primitiveFlat" style="display: inline-block; margin: 2px; width: 150px; height: 25px; background-color:rgb(81,96,115)"></div>
-              <div id="primitiveHigh" style="display: inline-block; margin: 2px; width: 50px; height: 100px; background-color:rgb(176,125,122)"></div>
-              <div id="primitiveSphere" style="display: inline-block; margin: 2px; width: 50px; height: 50px; background-color:rgb(230,255,0)"></div>
-              <div id="primitiveBall" style="display: inline-block; margin: 2px; width: 75px; height: 75px; background-color:rgb(255,0,0)"></div>
-              <div id="primitiveCoin" style="display: inline-block; margin: 2px; width: 150px; height: 25px; background-color:rgb(0,0,255)"></div>
-            </div><!--content-->
-            <div id="participants">
-              <h2>PARTICIPANTS</h2>
-              <div class="content">
-                <input id="participantName" type=text/ value='Yourself' style='width: 194px'><br>
-                <select multi size=4 disabled id='participantList' style='width: 200px; margin-top: 10px'>
-                </select><br>
-              </div><!--content-->
-            </div>
-          </div><!--box-->
+          <button id="play">Play</button><br><br>
+
+          <div style="background-color:rgb(102,172,70); padding-left: 9px; padding-top: 4px">
+            <div id="help" style="display: inline-block; margin: 2px; width: 32px; height: 32px; background-image:url(Resources/controls-help-128.png); background-size:32px 32px"></div>
+            <!-- <div id="presetExport" style="display: inline-block; margin: 2px; width: 32px; height: 32px; background-image:url(Resources/controls-save-128.png); background-size:32px 32px"></div> -->
+            <!-- <div id="presetImport" style="display: inline-block; margin: 2px; width: 32px; height: 32px; background-image:url(Resources/controls-load-128.png); background-size:32px 32px"></div> -->
+            <div id="presetSave" style="display: inline-block; margin: 2px; width: 32px; height: 32px; background-image:url(Resources/controls-save-128.png); background-size:32px 32px"></div>
+            <div id="presetLoad" style="display: inline-block; margin: 2px; width: 32px; height: 32px; background-image:url(Resources/controls-load-128.png); background-size:32px 32px"></div>
+            <div id="presetDuplicate" style="display: inline-block; margin: 2px; width: 32px; height: 32px; background-image:url(Resources/controls-duplicate-128.png); background-size:32px 32px"></div>
+            <div id="undo" style="display: inline-block; margin: 2px; width: 32px; height: 32px; background-image:url(Resources/controls-undo-128.png); background-size:32px 32px"></div>
+            <div id="redo" style="display: inline-block; margin: 2px; width: 32px; height: 32px; background-image:url(Resources/controls-redo-128.png); background-size:32px 32px"></div>
+          </div>
+          <br><br>
+
+          <div style="padding-left: 9px">
+            <h2>Add Primitives</h2>
+            <div id="primitiveCube" style="display: inline-block; margin: 2px; width: 64px; height: 64px; background-image:url(Resources/primitives-cube-128.png); background-size:64px 64px"></div>
+            <div id="primitiveFlat" style="display: inline-block; margin: 2px; width: 64px; height: 64px; background-image:url(Resources/primitives-flat-plank-128.png); background-size:64px 64px"></div>
+            <div id="primitiveHigh" style="display: inline-block; margin: 2px; width: 64px; height: 64px; background-image:url(Resources/primitives-thin-pole-128.png); background-size:64px 64px"></div>
+            <div id="primitiveSphere" style="display: inline-block; margin: 2px; width: 64px; height: 64px; background-image:url(Resources/primitives-circle-128.png); background-size:64px 64px"></div>
+            <div id="primitiveBall" style="display: inline-block; margin: 2px; width: 64px; height: 64px; background-image:url(Resources/primitives-ball-128.png); background-size:64px 64px"></div>
+            <div id="primitiveCoin" style="display: inline-block; margin: 2px; width: 64px; height: 64px; background-image:url(Resources/primitives-coin-128.png); background-size:64px 64px"></div>
+          </div>
+          <br><br>
+
+          <button id="workplaneXY">X-Y</button>
+          <button id="workplaneYZ">Y-Z</button>
+          <button id="workplaneXZ">X-Z</button>
+          <button id="workplaneStand">FIX</button>
+          <br><br>
+          
+          <input id="participantName" type=text/ value='Yourself' style='width: 194px'><br>
+          <select multi size=4 disabled id='participantList' style='width: 200px; margin-top: 10px'>
+          </select><br>
+          <button id='join'>Join</button><br>
         </div><!--sidebar-->
       </div> <!--editor-->
     </div><!--wrapper-->  </body> 
