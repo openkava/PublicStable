@@ -128,26 +128,33 @@ $(document).ready(function() {
     windowElement: document.getElementById('FabricContainer'),
     backgroundColor: FABRIC.RT.rgb(0, 0, 0),//Important: deferred shading is additive!
   });
-  
+
+
+  ///////////////////////////////////
+  // Main parameters
+  var nbBlocs = 20;
+  var numCars = 1500;
+  var nbStreetLightsPerBloc = 2;
+
+  ///////////////////////////////////////
+
+  var streetWidth = 3.0;
+  var streetDistance = 15.0;
+  var nbStreets = nbBlocs-1;
+  var streetLength = streetDistance * nbBlocs;
+
   // Create a camera to draw the scene from
   var camera = scene.constructNode('TargetCamera', {
       position: new FABRIC.RT.Vec3(15, 25, 50),
       target: new FABRIC.RT.Vec3(0, 5, 0),
-      nearDistance: 5,
-      farDistance: 200
+      nearDistance: 3,
+      farDistance: streetLength*3
     });
-
   scene.constructNode('CameraManipulator', { targetNode: camera });
   viewport.setCameraNode(camera);
   var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0), color: FABRIC.RT.rgb(0.5, 0.5, 0.5) });
 
   var deferredRenderer = scene.constructNode('DeferredRenderer', {cameraNode: camera, lightNode: light, shininess: 20});
-
-  var streetWidth = 3.0;
-  var streetDistance = 15.0;
-  var nbBlocs = 11;
-  var nbStreets = nbBlocs-1;
-  var streetLength = streetDistance * nbBlocs;
 
   /////////////////////////////////
   // Ground
@@ -173,7 +180,7 @@ $(document).ready(function() {
   /////////////////////////////////
   //Streets
   var streetInstanceTransforms = [];
-  var i, j, dir;
+  var i, j, k, dir;
   for(dir = 0; dir < 2; ++dir) {
     for(i = 1; i < nbBlocs; ++i) {
       streetInstanceTransforms.push(new FABRIC.RT.Xfo( {
@@ -204,7 +211,6 @@ $(document).ready(function() {
 
   /////////////////////////////////
   //Cars
-  var numCars = 200;
   var numCarsPerStreetSide = Math.floor(numCars/(nbStreets*4));
   if(numCarsPerStreetSide == 0)
     numCarsPerStreetSide = 1;
@@ -283,39 +289,94 @@ $(document).ready(function() {
     transformNode: carSlicedTransform
   });
 
-  var lightSlicedTransform = scene.constructNode("Transform");
-  lightSlicedTransform.setGlobalXfo(lightInstanceTransforms);
+  var streetLightSlicedTransform = scene.constructNode("Transform");
+  streetLightSlicedTransform.setGlobalXfo(lightInstanceTransforms);
 
   var carLightConeBox = scene.constructNode('Cone', {
-    radius: carLightConeRadius*1.24,//5 sided cone completely embedding real cone of that radius
+    radius: carLightConeRadius*1.5,//5 sided cone completely embedding real cone of that radius
     height: carLightConeLength,
     detail: 2
   });
 
-  var lightCosCutoff = carLightConeLength / Math.sqrt(carLightConeRadius*carLightConeRadius+carLightConeLength*carLightConeLength);
-  var lightCosCutoffStart = carLightConeLength / Math.sqrt(carLightConeRadius*0.7*carLightConeRadius*0.7+carLightConeLength*carLightConeLength);
+  var carLightCosCutoff = carLightConeLength / Math.sqrt(carLightConeRadius*carLightConeRadius+carLightConeLength*carLightConeLength);
+  var carLightCosCutoffStart = carLightConeLength / Math.sqrt(carLightConeRadius*0.5*carLightConeRadius*0.5+carLightConeLength*carLightConeLength);
 
   scene.constructNode('Instance', {
     geometryNode: carLightConeBox,
     materialNode: deferredRenderer.addShadingMaterialLayer('DeferredSpotLightInstancingExtMaterial', {
-      lightColor: FABRIC.RT.rgb255(180,180,255),
-      lightCosCutoff: lightCosCutoff,
-      lightIntensity: 2.0,
-      lightCosCutoffStart: lightCosCutoffStart,
+      lightColor: FABRIC.RT.rgb255(140,140,255),
+      lightCosCutoff: carLightCosCutoff,
+      lightIntensity: 4.0,
+      lightCosCutoffStart: carLightCosCutoffStart,
       lightDistCutoff: carLightConeLength,
       lightDistCutoffStart: carLightConeLength*0.66,
-      transformTextureNode: lightSlicedTransform.getTransformTexture(true)
+      transformTextureNode: streetLightSlicedTransform.getTransformTexture(true)
     }),
-    transformNode: lightSlicedTransform
+    transformNode: streetLightSlicedTransform
   });
+
+  /////////////////////////////////
+  //Car movement
 
   scene.constructNode('MoveCarsNode', {
     carSliceTransformNode: carSlicedTransform,
-    lightSliceTransformNode: lightSlicedTransform,
+    lightSliceTransformNode: streetLightSlicedTransform,
     xMinMax: new FABRIC.RT.Vec2(-streetLength/2, streetLength/2),
     zMinMax: new FABRIC.RT.Vec2(-streetLength/2, streetLength/2),
     speed: 5.0
       });
+
+  /////////////////////////////////
+  //Street lights
+
+  var streetLightConeRadius = carLength*1.1;
+  var streetLightConeLength = carLength*1.5;
+  var streetLightDist = (streetDistance-streetWidth)/nbStreetLightsPerBloc;
+
+  var streetLightInstanceTransforms = [];
+  for(dir = 0; dir < 2; ++dir) {
+    for(i = 1; i < nbBlocs; ++i) {
+      for(j = 0; j < nbBlocs; ++j) {
+        for(k = 0; k < nbStreetLightsPerBloc; ++k) {
+          var xCoord = streetDistance*(i-nbBlocs/2.0)+streetWidth*0.25;
+          var zCoord = streetDistance*(j-nbBlocs/2.0)+streetWidth/2+streetLightDist*(k+0.5);
+          streetLightInstanceTransforms.push(new FABRIC.RT.Xfo( {
+            tr: new FABRIC.RT.Vec3(
+              dir==1 ? zCoord : xCoord,
+              streetLightConeLength*0.4,
+              dir==0 ? zCoord : xCoord)
+          }));
+        }
+      }
+    }
+  }
+
+  var streetLightSlicedTransform = scene.constructNode("Transform");
+  streetLightSlicedTransform.setGlobalXfo(streetLightInstanceTransforms);
+  
+  var streetLightConeBox = scene.constructNode('Cone', {
+    radius: streetLightConeRadius*1.5,//5 sided cone completely embedding real cone of that radius
+    height: streetLightConeLength,
+    detail: 2
+  });
+
+  var streetLightCosCutoff = streetLightConeLength / Math.sqrt(streetLightConeRadius*streetLightConeRadius+streetLightConeLength*streetLightConeLength);
+  var streetLightCosCutoffStart = streetLightConeLength / Math.sqrt(streetLightConeRadius*0.25*streetLightConeRadius*0.25+streetLightConeLength*streetLightConeLength);
+
+  scene.constructNode('Instance', {
+    geometryNode: streetLightConeBox,
+    materialNode: deferredRenderer.addShadingMaterialLayer('DeferredSpotLightInstancingExtMaterial', {
+      lightColor: FABRIC.RT.rgb255(255,150,90),
+      lightCosCutoff: streetLightCosCutoff,
+      lightIntensity: 0.65,
+      lightCosCutoffStart: streetLightCosCutoffStart,
+      lightDistCutoff: streetLightConeLength*1.5,
+      lightDistCutoffStart: streetLightConeLength*1.5,
+      transformTextureNode: streetLightSlicedTransform.getTransformTexture(true)
+    }),
+    transformNode: streetLightSlicedTransform
+  });
+
 
   $('#loadingDialog').dialog({
     modal: true
