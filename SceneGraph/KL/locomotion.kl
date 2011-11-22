@@ -8,8 +8,10 @@ use PoseVariables;
 use CharacterControllerParams;
 use DebugGeometry;
 
+BULLLETWORLD_OPENBLOCKCOMMENT
 use FabricBULLET;
 use BulletWorld;
+BULLLETWORLD_CLOSEBLOCKCOMMENT
 
 function activateClip(
   io LocomotionMarker locomotionMarkers<>[][],
@@ -25,8 +27,6 @@ function activateClip(
 
 operator evaluateLocomotionPoseVariables(
   io Scalar timestep,
-  
-  io BulletWorld  bulletworld,
   
   io LinearKeyframeTrackSet animationLibrary<>,
   io LocomotionMarker locomotionMarkers<>[][],
@@ -54,7 +54,10 @@ operator evaluateLocomotionPoseVariables(
   in Size index,
   
   io DebugGeometry debugFootMotion,
-  io DebugGeometry debugRaycasting
+  io DebugGeometry debugRaycastingBULLLETWORLD_OPENBLOCKCOMMENT,
+  
+  io BulletWorld  bulletworld
+  BULLLETWORLD_CLOSEBLOCKCOMMENT
 ) {
 //  report("evaluateLocomotionPoseVariables:"+timestep);
   if(timestep==0.0){
@@ -64,8 +67,8 @@ operator evaluateLocomotionPoseVariables(
   debugRaycasting.reset();
   
   // Constants that mean LLVM optimize our all unused code.
-  Boolean displayRaycastingDebugging = true;
-  Boolean displayFootPinningDebugging = true;
+  Boolean displayRaycastingDebugging = ENABLE_DEBUGGING;
+  Boolean displayFootPinningDebugging = ENABLE_DEBUGGING;
   Boolean performRaycasting = false;
   
   Xfo controllerXfo = controllerXfoSet[index];
@@ -310,14 +313,14 @@ operator evaluateLocomotionPoseVariables(
       Vec3 footError;
       if(stepRatio > 0.0 && stepRatio < 1.0){
         if(plantedFeet[j]){
-        
-          Scalar lift = (hitPositionsPrevStep[j] - footParentSpaceXfo.tr).dot(upvector);
-          footXfo.tr += Vec3(0.0, lift, 0.0);
-          if(leg.hubId < 0 || leg.hubId == hubs.size-1){
-            controllerparams.lift += lift;
-            numLegsScalar += 1.0;
+          if(performRaycasting){
+            Scalar lift = (hitPositionsPrevStep[j] - footParentSpaceXfo.tr).dot(upvector);
+            footXfo.tr += Vec3(0.0, lift, 0.0);
+            if(leg.hubId < 0 || leg.hubId == hubs.size-1){
+              controllerparams.lift += lift;
+              numLegsScalar += 1.0;
+            }
           }
-        
           // Record the error at lift time.
           footError = invcontrollerXfo.ori.rotateVector(plantLocations[j] - footXfo.tr);
           plantLocations[j] = footError;
@@ -333,6 +336,7 @@ operator evaluateLocomotionPoseVariables(
           }
           /////////////////////////////////////////////////
           // Raycasting
+          BULLLETWORLD_OPENBLOCKCOMMENT
           if(performRaycasting){
             Vec3 rayStart, rayEnd, refPos, hitPosition;
             refPos = footPlantXfo.tr;
@@ -372,17 +376,20 @@ operator evaluateLocomotionPoseVariables(
               debugRaycasting.drawLine(rayStart, rayEnd, Color(1.0, 0.0, 0.0, 1.0));
             }
           }
+          BULLLETWORLD_CLOSEBLOCKCOMMENT
         }
         if(displayFootPinningDebugging){
           debugFootMotion.drawCircle(footPlantXfo * rot90, 0.1, Color(0.0, 0.5, 0.5, 1.0));
         }
       }
       else{
-        Scalar lift = (hitPositionsPrevStep[j] - footParentSpaceXfo.tr).dot(upvector);
-        footXfo.tr += Vec3(0.0, lift, 0.0);
-        if(leg.hubId < 0 || leg.hubId == hubs.size-1){
-          controllerparams.lift += lift;
-          numLegsScalar += 1.0;
+        if(performRaycasting){
+          Scalar lift = (hitPositionsPrevStep[j] - footParentSpaceXfo.tr).dot(upvector);
+          footXfo.tr += Vec3(0.0, lift, 0.0);
+          if(leg.hubId < 0 || leg.hubId == hubs.size-1){
+            controllerparams.lift += lift;
+            numLegsScalar += 1.0;
+          }
         }
         if(!plantedFeet[j]){
               
