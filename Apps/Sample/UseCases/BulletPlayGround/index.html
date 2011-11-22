@@ -6,6 +6,7 @@
   Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
   -->
   <title>FABRIC - Bullet Playground</title> 
+  <link media="all" rel="stylesheet" type="text/css" href="../../../../ThirdParty/jQuery/css/fabric/jquery-ui-1.8.16.custom.css">
   <link media="all" rel="stylesheet" type="text/css" href="css/all.css">
 
   <script type="text/javascript" src="../../../../ThirdParty/jQuery/jquery-1.6.2.min.js"></script>
@@ -1230,21 +1231,54 @@
 
 </head>
 <body>
+  <div id="loadingDialog" title="Loading...">
+    <h4 id="loadingDesc"></h4>
+    <div id="loadingProgressBar" class="ui-progressbar-value"></div>
+  </div>
+  <div style="display: none" id="joinDialog" title="Joining Session...">
+    <h4 id="joinDesc"></h4>
+    <div id='joinMessage'>
+      Your current sessionID is: <b id="joinSession"></b><br>
+      <input id="joinContext" type=text/><br>
+      Enter the new sessionID and click OK to join a new session (restart appplication)<br>
+    </div>
+    <button id="joinCancel">Cancel</button>
+    <button id="joinOK">OK</button>
+  </div>
+  <div style="display: none" id="localStorageDialog" title="Preset Storage">
+    <h4 id="localStorageDescr"></h4>
+    <div id='localStorageContent'></div>
+    <button id="localStorageCancel">Cancel</button>
+    <button id="localStorageOK">OK</button>
+  </div>
+  <div style="display: none; width: 200px; height: 340px" id="helpDialog" title="Help">
+    <h4>Bullet Editor Help</h4>
+    Drag and drop the primitives on the side panel slowly onto the 3D viewport to create new rigid bodies.
+    They will be places on the working plane. You can move the working plane by scrolling your mousewheel
+    and pressing ALT at the same time.<br><br>
+    IconA: asdasdasdadad<br>
+    IconB: asdasdasdadad<br>
+    IconC: asdasdasdadad<br>
+    IconD: asdasdasdadad<br>
+    IconE: asdasdasdadad<br>
+    IconF: asdasdasdadad<br>
+    <button id="helpOK">OK</button>
+  </div>
   <div class="page">
     <aside id="sidebar">
       <article class="intro">
-        <h1>Bullet <span>The Play Ground</span></h1>
-        <p>Control the 3D scene in multiple users access mode.</p>
-        <a class="play" href="#">Play</a>
+        <h1>Bullet <span>The Playground</span></h1>
+        <p>Build a physics scene with your friends</p>
+        <a id="play" class="play" href="#">Play</a>
       </article>
       <nav class="controls">
         <ul>
-          <li><a class="open" href="#">Open</a></li>
-          <li><a class="save" href="#">Save</a></li>
-          <li><a class="duplicate" href="#">Duplicate</a></li>
-          <li><a class="undo" href="#">Undo</a></li>
-          <li><a class="redo" href="#">Redo</a></li>
-          <li><a class="help" href="#">?</a></li>
+          <li><a id="presetLoad" class="load" href="#">Load</a></li>
+          <li><a id="presetSave" class="save" href="#">Save</a></li>
+          <li><a id="presetDuplicate" class="duplicate" href="#">Duplicate</a></li>
+          <li><a id="undo" class="undo" href="#">Undo</a></li>
+          <li><a id="redo" class="redo" href="#">Redo</a></li>
+          <li><a id="help" class="help" href="#">?</a></li>
         </ul>
       </nav>
       <nav class="tools">
@@ -1252,14 +1286,16 @@
           <li>
             <h2>Add Primitives</h2>
             <ul class="primitives">
-              <li><a class="cube" href="#">Cube</a></li>
-              <li><a class="circle" href="#">Circle</a></li>
-              <li><a class="plank" href="#">Flat Plank</a></li>
-              <li><a class="pole" href="#">Thin Pole</a></li>
+              <li><a id="primitiveCube" class="cube" href="#">Cube</a></li>
+              <li><a id="primitiveSphere" class="circle" href="#">Circle</a></li>
+              <li><a id="primitiveFlat" class="plank" href="#">Flat Plank</a></li>
+              <li><a id="primitiveHigh" class="pole" href="#">Thin Pole</a></li>
+              <li><a id="primitiveBall" class="ball" href="#">Ball</a></li>
+              <li><a id="primitiveCoin" class="coin" href="#">Coin</a></li>
             </ul>
           </li>
         </ul>
-        <ul>
+        <!-- <ul>
           <li>
             <h2>Camera Position</h2>
             <ul>
@@ -1269,7 +1305,7 @@
               <li><a href="#">Fix</a></li>
             </ul>
           </li>
-        </ul>
+        </ul> -->
       </nav>
       <article class="participants">
         <div class="heading">
@@ -1278,8 +1314,8 @@
         </div>
         <form class="search" action="#">
           <fieldset>
-            <input type="text" value="Yourself" >
-            <input type="submit" value="Join" >
+            <input id="participantName" type="text" value="Yourself" >
+            <input id="join" type="submit" value="Join" >
           </fieldset>
         </form>
         <div class="list">
@@ -1302,6 +1338,7 @@
     <section id="FabricContainer">
 
     </section>
+
   </div>
   <script type="text/javascript">
 
