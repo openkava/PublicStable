@@ -180,7 +180,7 @@ $(document).ready(function() {
     });
   scene.constructNode('CameraManipulator', { targetNode: camera });
   viewport.setCameraNode(camera);
-  var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0), color: FABRIC.RT.rgb(0.5, 0.5, 0.5) });
+  var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0), color: FABRIC.RT.rgb(0.4, 0.4, 0.6) });
 
   var deferredRenderer = scene.constructNode('DeferredRenderer', {cameraNode: camera, lightNode: light, shininess: 20});
 
@@ -230,7 +230,7 @@ $(document).ready(function() {
         width: streetWidth
       }),
     materialNode: deferredRenderer.constructDiffuseMaterial('DeferredInstancingExtRenderMaterial', {
-      diffuseColor: FABRIC.RT.rgb(0.8, 0.8, 0.8),
+      diffuseColor: FABRIC.RT.rgb(0.6, 0.6, 0.6),
       transformTextureNode: streetSlicedTransform.getTransformTexture(false),
       specularFactor: 0.1
     }),
@@ -351,7 +351,7 @@ $(document).ready(function() {
     lightSliceTransformNode: streetLightSlicedTransform,
     xMinMax: new FABRIC.RT.Vec2(-streetLength/2, streetLength/2),
     zMinMax: new FABRIC.RT.Vec2(-streetLength/2, streetLength/2),
-    speed: 5.0
+    speed: 8.0
       });
 
   /////////////////////////////////
