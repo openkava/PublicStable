@@ -525,6 +525,16 @@ $(document).ready(function() {
     substeps: 6,
     createGroundPlaneGrid: false
   });
+
+  // create a force manipulator
+  var forceManipulatorNode = scene.constructNode('BulletForceManipulator', {
+    bulletWorldNode: worldNode,
+    cameraNode: camera,
+    radius: 1.0,
+    factor: 250,
+    useFalloff: false,
+    enabled: false
+  });
   
   // create all collision shapes
   var scalings = {};
@@ -607,6 +617,7 @@ $(document).ready(function() {
     });
     instance.setSelectable(false);
     instance.setMaterialNode(shadowMapMaterial);
+    instance.addEventListener("mousedown_geom",forceManipulatorNode.getMouseDownFn());
 
     // store it to the map    
     rigidBodies[name] = {};
@@ -655,18 +666,20 @@ $(document).ready(function() {
   };
   
   // construct a couple of sample cubes
-  constructRigidBody('primitiveCube',new FABRIC.RT.Xfo({
-    tr: new FABRIC.RT.Vec3(-3,0.5,0),
-    ori: new FABRIC.RT.Quat().setFromAxisAndAngle(new FABRIC.RT.Vec3(0,1,0),0.3)
-  })).instance.setSelectable(true);
-  constructRigidBody('primitiveCube',new FABRIC.RT.Xfo({
-    tr: new FABRIC.RT.Vec3(-3,1.5,0),
-    ori: new FABRIC.RT.Quat().setFromAxisAndAngle(new FABRIC.RT.Vec3(0,1,0),1.4)
-  })).instance.setSelectable(true);
-  constructRigidBody('primitiveCube',new FABRIC.RT.Xfo({
-    tr: new FABRIC.RT.Vec3(-3,2.5,0),
-    ori: new FABRIC.RT.Quat().setFromAxisAndAngle(new FABRIC.RT.Vec3(0,1,0),0.7)
-  })).instance.setSelectable(true);
+  if(true) {
+    constructRigidBody('primitiveCube',new FABRIC.RT.Xfo({
+      tr: new FABRIC.RT.Vec3(-3,0.5,0),
+      ori: new FABRIC.RT.Quat().setFromAxisAndAngle(new FABRIC.RT.Vec3(0,1,0),0.3)
+    })).instance.setSelectable(true);
+    constructRigidBody('primitiveCube',new FABRIC.RT.Xfo({
+      tr: new FABRIC.RT.Vec3(-3,1.5,0),
+      ori: new FABRIC.RT.Quat().setFromAxisAndAngle(new FABRIC.RT.Vec3(0,1,0),1.4)
+    })).instance.setSelectable(true);
+    constructRigidBody('primitiveCube',new FABRIC.RT.Xfo({
+      tr: new FABRIC.RT.Vec3(-3,2.5,0),
+      ori: new FABRIC.RT.Quat().setFromAxisAndAngle(new FABRIC.RT.Vec3(0,1,0),0.7)
+    })).instance.setSelectable(true);
+  }
   
   //===============================================================
   // WEBSOCKETS
@@ -868,6 +881,7 @@ $(document).ready(function() {
       isPlaying = true;
       manipulatorsDrawn = selectionManipulationManager.getManipulatorsDrawToggle();
       selectionManager.setEnabled(false);
+      forceManipulatorNode.enable();
       if(manipulatorsDrawn)
         selectionManipulationManager.toggleManipulatorsDisplay(false);
       scene.animation.play();
@@ -882,6 +896,7 @@ $(document).ready(function() {
       if(workPlaneDrawn)
         workPlane.getDrawToggle(true);
       selectionManager.setEnabled(true);
+      forceManipulatorNode.disable();
       if(manipulatorsDrawn)
         selectionManipulationManager.toggleManipulatorsDisplay(true);
       
