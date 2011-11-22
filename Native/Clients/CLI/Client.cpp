@@ -161,14 +161,8 @@ namespace Fabric
     
     void Client::notify( Util::SimpleString const &jsonEncodedNotifications ) const
     {
-      v8::HandleScope v8HandleScope;
-      v8::Handle<v8::Value> v8CallbackValue = m_clientWrap->Get( v8::String::New("notifyCallback") );
-      if ( v8CallbackValue->IsFunction() )
-      {
-        v8::Handle<v8::Function> v8CallbackFunction = v8::Handle<v8::Function>::Cast( v8CallbackValue );
-        v8::Handle<v8::Value> jsonEncodedNotificationsV8String = v8::String::New( jsonEncodedNotifications.data(), jsonEncodedNotifications.length() );
-        v8CallbackFunction->Call( v8CallbackFunction, 1, &jsonEncodedNotificationsV8String );
-      }
+      ClientWrap *clientWrap = static_cast<ClientWrap *>( m_clientWrap->GetPointerFromInternalField(0) );
+      clientWrap->notify( jsonEncodedNotifications.data(), jsonEncodedNotifications.length() );
     }
     
     void ClientWrap::Initialize( v8::Handle<v8::Object> target )
@@ -203,7 +197,8 @@ namespace Fabric
     }
     
     ClientWrap::ClientWrap( v8::Handle<v8::Object> object )
-      : node::HandleWrap( object, (uv_handle_t *)&m_uvHandle )
+      : node::HandleWrap( object, (uv_handle_t *)&m_uvAsync )
+      , m_mutex("Node.js ClientWrap")
     {
       std::vector<std::string> pluginPaths;
 #if defined(FABRIC_OS_MACOSX)
@@ -244,8 +239,9 @@ namespace Fabric
       
       m_client = Client::Create( dgContext, object );
 
-      uv_timer_init( uv_default_loop(), &m_uvHandle );
-      m_uvHandle.data = this;
+      m_mainThreadTLS = true;
+      uv_async_init( uv_default_loop(), &m_uvAsync, &ClientWrap::AsyncCallback );
+      m_uvAsync.data = this;
 
       //// uv_timer_init adds a loop reference. (That is, it calls uv_ref.) This
       //// is not the behavior we want in Node. Timers should not increase the
@@ -257,6 +253,17 @@ namespace Fabric
     {
       //if (!active_)
       //  uv_ref( uv_default_loop() );
+
+      m_notifyCallback.Dispose();
+    }
+    
+    void ClientWrap::AsyncCallback( uv_async_t *async, int status )
+    {
+      ClientWrap *clientWrap = static_cast<ClientWrap *>( async->data );
+      Util::Mutex::Lock lock( clientWrap->m_mutex );
+      for ( std::vector<std::string>::const_iterator it=clientWrap->m_bufferedNotifications.begin(); it!=clientWrap->m_bufferedNotifications.end(); ++it )
+        clientWrap->notify( it->data(), it->length() );
+      clientWrap->m_bufferedNotifications.clear();
     }
     
 #define UNWRAP \
@@ -305,8 +312,7 @@ namespace Fabric
         return v8::ThrowException( v8::String::New( "setJSONNotifyCallback: takes 1 function parameter (notificationCallback)" ) );
       v8::Handle<v8::Function> v8Callback = v8::Handle<v8::Function>::Cast( args[0] );
 
-      v8::Handle<v8::Object> v8This = args.This();
-      v8This->Set( v8::String::New("notifyCallback"), v8Callback );
+      wrap->m_notifyCallback = v8::Persistent<v8::Function>::New( v8Callback );
 
       wrap->m_client->notifyInitialState();
       
@@ -318,6 +324,22 @@ namespace Fabric
       v8::HandleScope v8HandleScope;
       UNWRAP
       return v8HandleScope.Close( v8::Handle<v8::Value>() );
+    }
+    
+    void ClientWrap::notify( char const *data, size_t length )
+    {
+      Util::Mutex::Lock lock(m_mutex);
+      if ( m_mainThreadTLS )
+      {
+        v8::HandleScope v8HandleScope;
+        v8::Handle<v8::Value> jsonEncodedNotificationsV8String = v8::String::New( data, length );
+        m_notifyCallback->Call( m_notifyCallback, 1, &jsonEncodedNotificationsV8String );
+      }
+      else
+      {
+        m_bufferedNotifications.push_back( std::string( data, length ) );
+        uv_async_send( &m_uvAsync );
+      }
     }
   };
 };
