@@ -183,30 +183,43 @@ FABRIC.SceneGraph.registerNodeType('TransformTexture', {
       tex.forceRefresh = false;
     redrawEventHandler.addMember('oglTexture2D', 'OGLTexture2D', tex);
     redrawEventHandler.addMember('matricesTempBuffer', 'Mat44[]');
+    redrawEventHandler.addMember('textureHeight', 'Size');
 
     redrawEventHandler.setScope('transform', transformdgnode);
     redrawEventHandler.preDescendBindings.append(scene.constructOperator({
-      operatorName: 'setNumberOfMatrices',
-      srcFile: 'FABRIC_ROOT/SceneGraph/KL/loadTexture.kl',
-      entryFunctionName: 'setNumberOfMatrices',
+      operatorName: 'prepareTextureMatrix',
+      preProcessorDefinitions: {
+        TRANSFORM_TEXTURE_HEIGHT_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('transformTextureHeight')
+      },
+      srcCode: 'use OGLShaderProgram, OGLTexture2D;\n'+
+               'operator prepareTextureMatrix(io Mat44 matrices<>, io Mat44 matricesTempBuffer[], io Size textureHeight, io OGLTexture2D oglTexture2D, io OGLShaderProgram shaderProgram, io Integer textureUnit){\n' +
+               '  if(textureUnit > -1) {\n' +
+               '    Size height = 0;\n' +
+               '    oglTexture2D.bindImageMatrix(matrices, matricesTempBuffer, textureUnit, height);\n' +
+               '    if(height != 0)//height == 0 if texture is already bound\n' +
+               '      textureHeight = height;\n' +
+               '  }else{\n' +
+               '    report("debugging instance matrices: ");\n' +
+               '    for(Size i=0;i<10;i++)\n' +
+               '      report("matrix "+i+": "+matrices[i]);\n' +
+               '    report("matrix "+(matrices.size()-1)+": "+matrices[matrices.size()-1]);\n' +
+               '   }\n'+
+               '  shaderProgram.numInstances = Integer(matrices.size());\n' +
+               '  Integer location = shaderProgram.getUniformLocation( TRANSFORM_TEXTURE_HEIGHT_ATTRIBUTE_ID );\n' +
+               '  if(location != -1)\n' +
+               '    shaderProgram.loadScalarUniform(location, Scalar(textureHeight));\n' +
+               '}',
+      entryFunctionName: 'prepareTextureMatrix',
       parameterLayout: [
         'transform.textureMatrix<>',
-        'shader.shaderProgram'
-      ]
-    }));
-    redrawEventHandler.preDescendBindings.append(scene.constructOperator({
-      operatorName: 'bindTextureMatrix',
-      srcFile: 'FABRIC_ROOT/SceneGraph/KL/loadTexture.kl',
-      entryFunctionName: 'bindTextureMatrix',
-      parameterLayout: [
-        'self.oglTexture2D',
-        'textureStub.textureUnit',
         'self.matricesTempBuffer',
-        'transform.textureMatrix<>'
+        'self.textureHeight',
+        'self.oglTexture2D',
+        'shader.shaderProgram',
+        'textureStub.textureUnit'
       ]
     }));
-    
-    
+
     return textureNode;
   }});
 

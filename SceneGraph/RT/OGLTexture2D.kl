@@ -68,22 +68,58 @@ function OGLTexture2D.bindImageHDR(
   this.bind(textureUnit);
 }
 
+function toUpperPowerOfTwo(io Size size) {
+  //Would be nice to support bit decal ops in KL: << >>
+  //The optimizer should transform those divisions to >> anyway.
+  Size remainingSize = size;
+  Size upperSize = 1;
+  if(remainingSize >= 65536){
+    upperSize = 65536;
+    remainingSize /= 65536;
+  }
+  if(remainingSize >= 256){
+    upperSize *= 256;
+    remainingSize /= 256;
+  }
+  if(remainingSize >= 16){
+    upperSize *= 16;
+    remainingSize /= 16;
+  }
+  if(remainingSize >= 4){
+    upperSize *= 4;
+    remainingSize /= 4;
+  }
+  if(remainingSize >= 2){
+    upperSize *= 2;
+    remainingSize /= 2;
+  }
+  if(upperSize < size)
+    upperSize *= 2;
+  //report("next power of two: " + size + " -> " + upperSize);
+  size = upperSize;
+}
+
 function OGLTexture2D.bindImageMatrix(
   io Mat44 matrices<>,
   io Mat44 matricesTempBuffer[],//Avoid reallocating at each frame if dynamic; has a very important cost
-  io Integer textureUnit
+  io Integer textureUnit,
+  io Size textureHeightIfLoaded//else: 0
 ) {
   if (this.bufferID == 0 || this.forceRefresh) {
     if(this.glInternalFormat != GL_RGBA32F)
       report('bindImageMatrix: unexpected texture format');
-    matricesTempBuffer.resize((512*512)/4);
+    textureHeightIfLoaded = (matrices.size()+127)/128;
+    toUpperPowerOfTwo(textureHeightIfLoaded);
+    matricesTempBuffer.resize(128*textureHeightIfLoaded);
     for( Size i = 0; i < matrices.size(); ++i ) {
       matricesTempBuffer[i] = matrices[i];
     }
-    this.configure(Size(512), Size(512), matricesTempBuffer.data(), Size(512 * 512), textureUnit);
+    this.configure(Size(128*4), Size(textureHeightIfLoaded), matricesTempBuffer.data(), Size(128*4 * textureHeightIfLoaded), textureUnit);
     if(!this.forceRefresh)
       matricesTempBuffer.resize(0);
   }
+  else
+    textureHeightIfLoaded = 0;
   this.bind(textureUnit);
 }
 
