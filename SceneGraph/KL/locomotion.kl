@@ -104,7 +104,11 @@ operator evaluateLocomotionPoseVariables(
     Vec2 timeRange = trackSet.timeRange;
     Scalar t = trackcontroller.time;
     
+    
+    
     Vec3 linearVelocity = controllerparams.displacement.tr / timestep;
+    
+    Scalar stepFrequency, clipSpeed;
     Scalar currSpeed = linearVelocity.length();
     Scalar clipSpeedRatio = 1.0;
     Scalar strideLengthModulationFactor = 0.0;
@@ -113,19 +117,18 @@ operator evaluateLocomotionPoseVariables(
     Scalar strideLength = 0.0;
     if(trackcontroller.tick > 0){
       // Get the com params from the previous update.
-      Scalar stepFrequency = trackcontroller.comParams[0];
-      Scalar clipSpeed = trackcontroller.comParams[1];
+      stepFrequency = trackcontroller.comParams[0];
+      clipSpeed = trackcontroller.comParams[1];
       strideLength = stepFrequency * clipSpeed;
       
       if(clipSpeed > 0.001){
         clipSpeedRatio = (currSpeed / clipSpeed);
 
-        strideLengthMultiplier = 1.0;//clipSpeedRatio + ((1.0 - clipSpeedRatio) * (1.0 - strideLengthModulationFactor));
+        strideLengthMultiplier = clipSpeedRatio + ((1.0 - clipSpeedRatio) * (1.0 - strideLengthModulationFactor));
         clipFrequencyMultiplier = clipSpeedRatio / strideLengthMultiplier;
-        
-        // When turning, speed up the playback a little to stop the legs getting tangled. 
-      //  clipFrequencyMultiplier += abs(controllerparams.displacement.ori.getAngle()) * 5.0;
       }
+      // When turning, speed up the playback a little to stop the legs getting tangled. 
+      clipFrequencyMultiplier += abs(controllerparams.displacement.ori.getAngle()) * 5.0;
     }
     
     /////////////////////////////////////////////////
@@ -143,6 +146,14 @@ operator evaluateLocomotionPoseVariables(
     );
     
     /////////////////////////////////////////////////
+    trackcontroller.comParams.resize(com.parameterVarIds.size);
+    for(Integer j=0; j < com.parameterVarIds.size; j++){
+      trackcontroller.comParams[j] = poseVariables.scalarValues[com.parameterVarIds[j]];
+    }
+    stepFrequency = trackcontroller.comParams[0];
+    clipSpeed = trackcontroller.comParams[1];
+      
+    /////////////////////////////////////////////////
     // Error dissapation
     if(trackcontroller.tick > 0){
       if(trackcontroller.deactivate){
@@ -151,7 +162,7 @@ operator evaluateLocomotionPoseVariables(
       }
       if(clipActivationTime > 0.0){
         // Blend off the error across the first half a stride. 
-        Scalar blendTime = (trackcontroller.comParams[0] * clipFrequencyMultiplier) * 0.5;
+        Scalar blendTime = (trackcontroller.comParams[0] * clipFrequencyMultiplier);
         if(t - clipActivationTime < blendTime){
           Scalar weight = 1.0 - ((t - clipActivationTime) / blendTime);
           poseVariables.addWeighted(poseError, weight);
@@ -161,12 +172,6 @@ operator evaluateLocomotionPoseVariables(
     prevUpdatePose = poseVariables;
     trackcontroller.deactivate = false;
     
-    /////////////////////////////////////////////////
-    
-    trackcontroller.comParams.resize(com.parameterVarIds.size);
-    for(Integer j=0; j < com.parameterVarIds.size; j++){
-      trackcontroller.comParams[j] = poseVariables.scalarValues[com.parameterVarIds[j]];
-    }
     /////////////////////////////////////////////////
   //  report(trackcontroller.tick);
     
@@ -256,6 +261,11 @@ operator evaluateLocomotionPoseVariables(
       // then we reapply it after foot pinning. 
       Scalar footLift = footMotion.tr.y;
       footMotion.tr.y = 0.0;
+      
+      if(footLift < 0.0){
+        footLift = 0.0;
+      }
+      
       
       Xfo footParentSpaceXfo;
       Vec3 displacementDir;
@@ -398,20 +408,19 @@ operator evaluateLocomotionPoseVariables(
           if(animationLibrary.size > 1){
            //   report("currSpeed:"+currSpeed);
             Scalar buffer = 2.0;
-            Scalar speedMultipler = 1.0;
-            Scalar speedDelta = (currSpeed - (trackcontroller.comParams[1] * speedMultipler));
+            Scalar speedMultipler = 1.6;
+            Scalar speedDelta = (currSpeed - clipSpeed);
             if(abs(speedDelta) > buffer){
-            //  report("currclipSpeed:"+ (trackcontroller.comParams[1] * speedMultipler) +" speedDelta:"+trackcontroller.activeTrackSet+":"+j+":"+speedDelta);
+            //  report("currclipSpeed:"+ clipSpeed +" speedDelta:"+trackcontroller.activeTrackSet+":"+j+":"+speedDelta);
               for(Integer clipId=0; clipId<locomotionMarkers.size; clipId++){
               // Note: here we block blending from a clip onto its self, but soon we will enable this.
                 if(trackcontroller.activeTrackSet == clipId){
                   continue;
                 }
                 for(Integer l=0; l<locomotionMarkers[clipId][j].size; l++){
-                  Scalar speedDelta2 = (currSpeed - (locomotionMarkers[clipId][j][l].params[1] * speedMultipler));
-                //  report("clipSpeed:"+ (locomotionMarkers[clipId][j][l].params[1] * speedMultipler) +"speedDelta2 "+clipId+":"+l+":"+speedDelta2);
-                  if(abs(speedDelta2) < abs(speedDelta)){
-                  //  report("deactivate fromClip:" +trackcontroller.activeTrackSet + " toClip:"+ clipId + " foot:"+j+ " fromStep:"+stepId+ " toStep:"+l);
+                  Scalar targetClipSpeed = locomotionMarkers[clipId][j][l].params[1];
+                  Scalar ratio = (currSpeed - clipSpeed) / (targetClipSpeed - clipSpeed);
+                  if(ratio > 0.85){
                     trackcontroller.deactivate = true;
                     trackcontroller.pivotFoot = j;
                     trackcontroller.pivotStepId = l;
@@ -426,7 +435,7 @@ operator evaluateLocomotionPoseVariables(
           
           if(!trackcontroller.deactivate && currStep.midPlantTime >= timeRange.y){  
             // Deactivate the current clip if a foot reaches the last step.
-          //  report("deactivate - end of clip foot:"+j+ " t:" + trackcontroller.time);
+         //   report("deactivate - end of clip foot:"+j+ " t:" + trackcontroller.time);
             trackcontroller.deactivate = true;
             trackcontroller.pivotFoot = j;
             trackcontroller.pivotStepId = 0;
@@ -438,6 +447,7 @@ operator evaluateLocomotionPoseVariables(
           }
         }
       }
+      
       footXfo = invcontrollerXfo * footXfo;
       // Apply the error in COM space. 
       footXfo.tr += footError;
