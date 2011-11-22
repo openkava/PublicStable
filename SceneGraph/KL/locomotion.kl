@@ -66,7 +66,7 @@ operator evaluateLocomotionPoseVariables(
   // Constants that mean LLVM optimize our all unused code.
   Boolean displayRaycastingDebugging = true;
   Boolean displayFootPinningDebugging = true;
-  Boolean performRaycasting = true;
+  Boolean performRaycasting = false;
   
   Xfo controllerXfo = controllerXfoSet[index];
   CharacterControllerParams controllerparams = controllerparamsSet[index];
@@ -74,6 +74,7 @@ operator evaluateLocomotionPoseVariables(
     /////////////////////////////////////////////////
     // Clip Activation
     if(trackcontroller.tick == 0){
+      trackcontroller.activeTrackSet = 1;
       Scalar firstFootLift = 9999.0;
       for(Integer k=0; k < locomotionMarkers[trackcontroller.activeTrackSet].size; k++){
         if(locomotionMarkers[trackcontroller.activeTrackSet][k][0].time < firstFootLift){
@@ -179,8 +180,10 @@ operator evaluateLocomotionPoseVariables(
     for(Integer j=0; j < hubs.size; j++){
       Hub hub = hubs[j];
       Xfo hubXfo = poseVariables.xfoValues[hub.xfoId];
-      hubXfo.tr -= invcontrollerXfo.ori.rotateVector(controllerparams.balanceXfo.tr);
-      hubXfo.ori = invcontrollerXfo.ori * controllerparams.balanceXfo.ori * controllerXfo.ori * hubXfo.ori;
+      
+      hubXfo.tr = invcontrollerXfo.ori.rotateVector(controllerparams.balanceXfo.ori.rotateVector(controllerXfo.ori.rotateVector(hubXfo.tr))) -
+                  invcontrollerXfo.ori.rotateVector(controllerparams.balanceXfo.tr);
+      hubXfo.ori =  invcontrollerXfo.ori * controllerparams.balanceXfo.ori * controllerXfo.ori * hubXfo.ori;
       
       if(controllerparams.trail.size > 0){
         hubComs.resize(hubs.size);
@@ -387,20 +390,22 @@ operator evaluateLocomotionPoseVariables(
           // Clip Deactivation
           /*
           if(animationLibrary.size > 1){
-            Scalar buffer = 0.3;
-            Scalar speedDelta = (currSpeed - trackcontroller.comParams[1]);
+              report("currSpeed:"+currSpeed);
+            Scalar buffer = 2.0;
+            Scalar speedMultipler = 2.5;
+            Scalar speedDelta = (currSpeed - (trackcontroller.comParams[1] * speedMultipler));
             if(abs(speedDelta) > buffer){
-              report("speedDelta:"+trackcontroller.activeTrackSet+":"+j+":"+speedDelta);
+              report("currclipSpeed:"+ (trackcontroller.comParams[1] * speedMultipler) +" speedDelta:"+trackcontroller.activeTrackSet+":"+j+":"+speedDelta);
               for(Integer clipId=0; clipId<locomotionMarkers.size; clipId++){
               // Note: here we block blending from a clip onto its self, but soon we will enable this.
                 if(trackcontroller.activeTrackSet == clipId){
                   continue;
                 }
                 for(Integer l=0; l<locomotionMarkers[clipId][j].size; l++){
-                  Scalar speedDelta2 = (currSpeed - locomotionMarkers[clipId][j][l].params[1]);
-                //  report("speedDelta2 "+clipId+":"+l+":"+speedDelta2);
+                  Scalar speedDelta2 = (currSpeed - (locomotionMarkers[clipId][j][l].params[1] * speedMultipler));
+                  report("clipSpeed:"+ (locomotionMarkers[clipId][j][l].params[1] * speedMultipler) +"speedDelta2 "+clipId+":"+l+":"+speedDelta2);
                   if(abs(speedDelta2) < abs(speedDelta)){
-                  //  report("deactivate fromClip:" +trackcontroller.activeTrackSet + " toClip:"+ clipId + " foot:"+j+ " fromStep:"+stepId+ " toStep:"+l);
+                    report("deactivate fromClip:" +trackcontroller.activeTrackSet + " toClip:"+ clipId + " foot:"+j+ " fromStep:"+stepId+ " toStep:"+l);
                     trackcontroller.deactivate = true;
                     trackcontroller.pivotFoot = j;
                     trackcontroller.pivotStepId = l;
@@ -428,7 +433,7 @@ operator evaluateLocomotionPoseVariables(
       }
       footXfo = invcontrollerXfo * footXfo;
       // Apply the error in COM space. 
-      footXfo.tr += footError;
+    //  footXfo.tr += footError;
       
       poseVariables.xfoValues[leg.ikGoalXfoId] = footXfo;
       

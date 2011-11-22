@@ -286,12 +286,12 @@ $(document).ready(function() {
   case 'marama':
     var locomotionControllerNode = scene.constructNode('ScreenSpacePlayerCharacterController', {
         cameraNode: camera,
-        maxLinearVelocity: 20,
-        maxLinearAcceleration: 4,
+        maxLinearVelocity: 50,
+        maxLinearAcceleration: 1.5,
         maxAngularVelocity:  8,
         bulletWorldNode: bulletWorldNode,
         numTrailSegments: 0,
-        gravity: -1.0,
+        gravity: -4.8,
         comHeight: 1.8,
         circleSize: 0.6
       });
