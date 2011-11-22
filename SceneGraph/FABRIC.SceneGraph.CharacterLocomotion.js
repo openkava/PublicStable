@@ -365,6 +365,47 @@ FABRIC.SceneGraph.registerNodeType('LocomotionCharacterController', {
   }});
 
 
+
+FABRIC.SceneGraph.registerNodeType('WorldSpacePlayerCharacterController', {
+  parentNodeDesc: 'CharacterController',
+  optionsDesc: {
+  },
+  factoryFn: function(options, scene) {
+    scene.assignDefaults(options, {
+    });
+    var characterControllerNode = scene.constructNode('LocomotionCharacterController', options);
+    var dgnode = characterControllerNode.getDGNode();
+    dgnode.addMember('translationControls', 'Vec2', options.translationControls);
+    dgnode.addMember('orientationControls', 'Vec2', options.orientationControls);
+    
+    characterControllerNode.addMemberInterface(dgnode, 'translationControls', true);
+    characterControllerNode.addMemberInterface(dgnode, 'orientationControls', true);
+    
+    dgnode.bindings.insert(scene.constructOperator({
+      operatorName: 'worldSpacePlayerControls',
+      srcFile: 'FABRIC_ROOT/SceneGraph/KL/characterController.kl',
+      entryFunctionName: 'worldSpacePlayerControls',
+      parameterLayout: [
+        'self.translationControls',
+        'self.orientationControls',
+        
+        'self.maxLinearVelocity',
+        'self.maxAngularVelocity',
+        
+        'self.goalLinearVelocity',
+        'self.goalOrientation'
+      ]
+    }), 0);
+    
+    // We always append the controller op last, 
+    // because it increments the character Xfo
+    dgnode.bindings.append(characterControllerNode.getCharacterControllerOp());
+    
+    return characterControllerNode;
+  }
+});
+  
+
 FABRIC.SceneGraph.registerNodeType('ScreenSpacePlayerCharacterController', {
   parentNodeDesc: 'CharacterController',
   optionsDesc: {
@@ -403,7 +444,7 @@ FABRIC.SceneGraph.registerNodeType('ScreenSpacePlayerCharacterController', {
       ]
     }), 0);
     
-    // We always append fht econtrolelr op last, 
+    // We always append the controller op last, 
     // because it increments the character Xfo
     dgnode.bindings.append(characterControllerNode.getCharacterControllerOp());
     

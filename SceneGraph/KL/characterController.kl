@@ -3,6 +3,22 @@ use Vec3, Quat, Xfo;
 use DebugGeometry;
 
 
+
+operator worldSpacePlayerControls(
+  io Vec2 translationControls,
+  io Vec2 orientationControls,
+  
+  io Scalar maxLinearVelocity,
+  io Scalar maxAngularVelocity,
+  
+  io Vec3 goalLinearVelocity,
+  io Quat goalOrientation
+) {
+// report("worldSpacePlayerControls:"+translationControls);
+  
+  goalLinearVelocity = Vec3(translationControls.x, 0.0, translationControls.y) * maxLinearVelocity;
+}
+
 operator screenSpacePlayerControls(
   io Vec2 translationControls,
   io Vec2 orientationControls,
