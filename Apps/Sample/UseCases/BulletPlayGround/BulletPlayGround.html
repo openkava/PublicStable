@@ -466,6 +466,11 @@ $(document).ready(function() {
     radius:1.0,
     detail: 8
   });
+  geometryNodes['primitiveCoin'] = scene.constructNode('Cylinder', {
+    radius:1.0,
+    height:0.1,
+    detail: 12
+  });
   var colorSteps = 2.0;
   materialNodes['primitiveCube'] = toonRenderer.constructMaterial('ToonMaterial', {
     lightNode: light,
@@ -497,6 +502,12 @@ $(document).ready(function() {
     brightColor: FABRIC.RT.rgb(255/255,0/255,0/255),
     colorSteps: colorSteps
   });
+  materialNodes['primitiveCoin'] = toonRenderer.constructMaterial('ToonMaterial', {
+    lightNode: light,
+    darkColor: FABRIC.RT.rgb(56/255,121/255,88/255),
+    brightColor: FABRIC.RT.rgb(119/255,255/255,185/255),
+    colorSteps: colorSteps
+  });
 
   var highlightMaterial = toonRenderer.constructMaterial('ToonMaterial', {
     lightNode: light,
@@ -520,12 +531,14 @@ $(document).ready(function() {
   scalings['primitiveHigh'] = new FABRIC.RT.Vec3(0.125,1.0,0.125);
   scalings['primitiveSphere'] = new FABRIC.RT.Vec3(0.5,0.5,0.5);
   scalings['primitiveBall'] = new FABRIC.RT.Vec3(1.0,1.0,1.0);
+  scalings['primitiveCoin'] = new FABRIC.RT.Vec3(1.0,0.1,1.0);
   var masses = {};
   masses['primitiveCube'] = 1.0;
   masses['primitiveFlat'] = 2.0;
   masses['primitiveHigh'] = 0.25;
   masses['primitiveSphere'] = 1.0;
   masses['primitiveBall'] = 3.0;
+  masses['primitiveCoin'] = 0.1;
 
   // create all shapes
   worldNode.addShape('primitiveCube',FABRIC.RT.BulletShape.createBox(scalings['primitiveCube']));
@@ -533,6 +546,7 @@ $(document).ready(function() {
   worldNode.addShape('primitiveHigh',FABRIC.RT.BulletShape.createBox(scalings['primitiveHigh']));
   worldNode.addShape('primitiveSphere',FABRIC.RT.BulletShape.createSphere(scalings['primitiveSphere'].y));
   worldNode.addShape('primitiveBall',FABRIC.RT.BulletShape.createSphere(scalings['primitiveBall'].y));
+  worldNode.addShape('primitiveCoin',FABRIC.RT.BulletShape.createCylinder(scalings['primitiveCoin'].x,scalings['primitiveCoin'].y));
 
   var ws = false;
   var isPlaying = false;
@@ -999,6 +1013,7 @@ $(document).ready(function() {
   $("#primitiveHigh").draggable();
   $("#primitiveSphere").draggable();
   $("#primitiveBall").draggable();
+  $("#primitiveCoin").draggable();
   
   var dragStatus = {};
   var originalOffset = {};
@@ -1189,6 +1204,7 @@ $(document).ready(function() {
               <div id="primitiveHigh" style="display: inline-block; margin: 2px; width: 50px; height: 100px; background-color:rgb(176,125,122)"></div>
               <div id="primitiveSphere" style="display: inline-block; margin: 2px; width: 50px; height: 50px; background-color:rgb(230,255,0)"></div>
               <div id="primitiveBall" style="display: inline-block; margin: 2px; width: 75px; height: 75px; background-color:rgb(255,0,0)"></div>
+              <div id="primitiveCoin" style="display: inline-block; margin: 2px; width: 150px; height: 25px; background-color:rgb(119,255,185)"></div>
             </div><!--content-->
             <div id="participants">
               <h2>PARTICIPANTS</h2>

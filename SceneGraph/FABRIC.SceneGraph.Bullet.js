@@ -84,6 +84,20 @@ FABRIC.RT.BulletShape.createSphere = function(radius) {
   return shape;
 };
 
+FABRIC.RT.BulletShape.createCylinder = function(radius,height) {
+  if(radius == undefined) {
+    radius = 0.5;
+  }
+  if(height == undefined) {
+    height = 1.0;
+  }
+  var shape = new FABRIC.RT.BulletShape();
+  shape.type = FABRIC.RT.BulletShape.BULLET_CYLINDER_SHAPE;
+  shape.parameters.push(radius);
+  shape.parameters.push(height * 0.5);
+  return shape;
+};
+
 FABRIC.RT.BulletShape.createPlane = function(normal) {
   if(normal == undefined) {
     normal = new FABRIC.RT.Vec3(0.0,1.0,0.0);
