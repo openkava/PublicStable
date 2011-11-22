@@ -434,38 +434,39 @@ operator locomotionPreProcessing(
     }
   }
   
+  
+  Vec3 smoothedComPos[];
+  smoothedComPos.resize(comXfoKeyTimes.size);
+  for(Integer i=0; i < comXfoKeyTimes.size; i++){
+    smoothedComPos[i] = comXfos[i].tr;
+    if(i>0 && i<comXfoKeyTimes.size-1){
+      smoothedComPos[i] += comXfos[i-1].tr;
+      smoothedComPos[i] += comXfos[i+1].tr;
+      smoothedComPos[i] /= 3.0;
+    }
+  }
+  
   Vec3 displacement;
   Vec3 alignmentVec;
-  Vec3 smoothedComPos;
-  Scalar smoothedComPosWeight;
   for(Integer i=0; i < comXfoKeyTimes.size; i++){
     if(i==0){
-      displacement = (comXfos[i+1].tr - comXfos[i].tr);
+      displacement = (smoothedComPos[i+1] - smoothedComPos[i]);
     }else{
-      displacement = (comXfos[i].tr - comXfos[i-1].tr);
+      displacement = (smoothedComPos[i] - smoothedComPos[i-1]);
       comXfos[i].ori.alignWith(comXfos[i-1].ori);
-      alignmentVec += (comXfos[i].tr - comXfos[i-1].tr);
     }
     Vec3 horizontalDisplacement = displacement;
     horizontalDisplacement.y = 0.0;
     
     alignmentVec.setNull();
-    smoothedComPos = comXfos[i].tr;
-    smoothedComPosWeight = 1.0;
     if(i>0){
-      alignmentVec += (comXfos[i].tr - comXfos[i-1].tr);
-      smoothedComPos += comXfos[i-1].tr;
-      smoothedComPosWeight += 1.0;
+      alignmentVec += (smoothedComPos[i] - smoothedComPos[i-1]);
     }
     if(i<comXfoKeyTimes.size-1){
-      alignmentVec += (comXfos[i+1].tr - comXfos[i].tr);
-      smoothedComPos += comXfos[i+1].tr;
-      smoothedComPosWeight += 1.0;
+      alignmentVec += (smoothedComPos[i+1] - smoothedComPos[i]);
     }
-    smoothedComPos /= smoothedComPosWeight;
-    
     comXfo = comXfos[i];
-    comXfo.tr = smoothedComPos;
+    comXfo.tr = smoothedComPos[i];
     alignment.setFrom2Vectors(comXfos[i].ori.getZaxis(), alignmentVec.unit());
     comXfo.ori = alignment * comXfos[i].ori;
       
@@ -598,21 +599,18 @@ operator locomotionPreProcessing(
       LocomotionMarker marker;
       Scalar t = footStepTracks[i].footSteps[j].midPlantTime;
       marker.time = t;
-    //  marker.stepId = j;
       
       poseVariables.evaluateKeyframeTracks(t, trackSet, comParamBindings, currKeys);
       marker.params.resize(comParamBindings.scalarBindings.size);
       for(Integer k=0; k < comParamBindings.scalarBindings.size; k++){
         marker.params[k] = poseVariables.scalarValues[comParamBindings.scalarBindings[k].varId];
       }
-      report(marker);
       marker.stepIds.resize(legs.size);
       for(Integer k=0; k < legs.size; k++){
         marker.stepIds[k] = -1;
       }
       // for this marker, find all the foot step ids that are valid for the other legs.
       for(Integer k=0; k < legs.size; k++){
-        report("searching leg:"+k);
         if(k==j){
           marker.stepIds[j] = j;
         }
@@ -628,7 +626,7 @@ operator locomotionPreProcessing(
           }
         }
       }
-      report("marker.stepIds:"+marker.stepIds);
+      report("marker:"+marker);
       
       locomotionMarkers[i].push(marker);
     }

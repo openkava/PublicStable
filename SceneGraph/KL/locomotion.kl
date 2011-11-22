@@ -385,6 +385,7 @@ operator evaluateLocomotionPoseVariables(
         if(t >= currStep.midPlantTime){
           /////////////////////////////////////////////////
           // Clip Deactivation
+          /*
           if(animationLibrary.size > 1){
             Scalar buffer = 0.3;
             Scalar speedDelta = (currSpeed - trackcontroller.comParams[1]);
@@ -411,6 +412,7 @@ operator evaluateLocomotionPoseVariables(
               }
             }
           }
+          */
           if(!trackcontroller.deactivate && currStep.midPlantTime >= timeRange.y){  
             // Deactivate the current clip if a foot reaches the last step.
           //  report("deactivate - end of clip foot:"+j+ " t:" + trackcontroller.time);

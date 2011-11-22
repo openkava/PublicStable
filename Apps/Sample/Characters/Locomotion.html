@@ -286,9 +286,9 @@ $(document).ready(function() {
   case 'marama':
     var locomotionControllerNode = scene.constructNode('ScreenSpacePlayerCharacterController', {
         cameraNode: camera,
-        maxLinearVelocity: 7,
-        maxLinearAcceleration: 0.2,
-        maxAngularVelocity:  4,
+        maxLinearVelocity: 20,
+        maxLinearAcceleration: 4,
+        maxAngularVelocity:  8,
         bulletWorldNode: bulletWorldNode,
         numTrailSegments: 0,
         gravity: -1.0,
@@ -520,6 +520,7 @@ $(document).ready(function() {
               <select id='selectCharacter' style="margin-top:10px;">
                 <option value="walker">Walker
                 <option value="centipede">Centipede
+                <option value="marama">Human
               </select>
               </br>
               <input type="checkbox" id="displayControllerDebugging" style="margin-top:10px;"/><label for="displayControllerDebugging">Display Controller Debugging:</label>
