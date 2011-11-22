@@ -132,8 +132,8 @@ $(document).ready(function() {
 
   ///////////////////////////////////
   // Main parameters
-  var nbBlocs = 20;
-  var numCars = 1500;
+  var nbBlocs = 15;
+  var nbCars = nbBlocs*nbBlocs*4;
   var nbStreetLightsPerBloc = 2;
 
   ///////////////////////////////////////
@@ -211,11 +211,11 @@ $(document).ready(function() {
 
   /////////////////////////////////
   //Cars
-  var numCarsPerStreetSide = Math.floor(numCars/(nbStreets*4));
-  if(numCarsPerStreetSide == 0)
-    numCarsPerStreetSide = 1;
-  var numCarsPerStreet = numCarsPerStreetSide*2;
-  numCars = numCarsPerStreet * (nbStreets*2);
+  var nbCarsPerStreetSide = Math.floor(nbCars/(nbStreets*4));
+  if(nbCarsPerStreetSide == 0)
+    nbCarsPerStreetSide = 1;
+  var nbCarsPerStreet = nbCarsPerStreetSide*2;
+  nbCars = nbCarsPerStreet * (nbStreets*2);
 
   var carWidth = streetWidth/3;
   var carHeight = carWidth;
@@ -237,8 +237,8 @@ $(document).ready(function() {
   for(dir = 0; dir < 2; ++dir) {
     for(i = 1; i < nbStreets+1; ++i) {
       for(streetSide = 0; streetSide < 2; ++streetSide) {
-        for(j = 0; j < numCarsPerStreetSide; ++j) {
-          var carDist = streetLength / numCarsPerStreetSide
+        for(j = 0; j < nbCarsPerStreetSide; ++j) {
+          var carDist = streetLength / nbCarsPerStreetSide
           var carX = carDist * j - streetLength/2 + carDist*Math.random()*0.75;
           var carZ = (streetSide==0?1:-1)*carHeight*0.75 + streetDistance*(i-nbBlocs/2.0);
 
@@ -398,6 +398,9 @@ $(document).ready(function() {
           document.getElementById('frameRate').childNodes[0].data = 'Frame Rate:' + viewport.getFPS().toFixed(2);
         }, 600);
 
+      document.getElementById('nbSpotLights').childNodes[0].data = 'Nb spot lights:' + (nbCars*2 + nbStreets*nbStreets*2*nbStreetLightsPerBloc);
+      document.getElementById('nbCars').childNodes[0].data = 'Nb cars:' + nbCars;
+
       return true;
     }
   });
@@ -434,7 +437,9 @@ $(document).ready(function() {
           </div><!--box-->
           <div class="box">
             <h2 id="agents">PERFORMANCE</h2>
-            <div class="content" id="frameRate">Frame Rate:</div><p></p>
+            <div class="content" id="frameRate">Frame Rate:</div>
+            <div class="content" id="nbSpotLights">Nb spot lights:</div>
+            <div class="content" id="nbCars">Nb cars:</div><p></p>
           </div><!--box-->
         </div><!--sidebar-->
       </div> <!--editor-->
