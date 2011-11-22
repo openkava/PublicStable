@@ -68,56 +68,49 @@ FABRIC.SceneGraph.registerNodeType('MoveCarsNode', {
   },
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
+      mainAxis : 0
     });
 
   var moveCarsNode = scene.constructNode('SceneGraphNode', options);//dummy
-  var carSliceTransformNode = options.carSliceTransformNode;
-  var lightSliceTransformNode = options.lightSliceTransformNode;
 
-  var sliceTransformDGNodes = [
-            scene.getPrivateInterface(carSliceTransformNode).getDGNode(),
-            scene.getPrivateInterface(lightSliceTransformNode).getDGNode()];
+  var dgNode = scene.getPrivateInterface(options.transformNode).getDGNode();
+  dgNode.addMember('xMinMax', 'Vec2', options.xMinMax);
+  dgNode.addMember('zMinMax', 'Vec2', options.zMinMax);
+  dgNode.addMember('speed', 'Scalar', options.speed);
+  dgNode.setDependency(scene.getGlobalsNode(), 'globals');
 
-  var i;
-  for( i = 0; i < 2; ++i ) {
+  var mainAxis = options.mainAxis==0 ? 'X' : 'Y';
 
-    sliceTransformDGNodes[i].addMember('xMinMax', 'Vec2', options.xMinMax);
-    sliceTransformDGNodes[i].addMember('zMinMax', 'Vec2', options.zMinMax);
-    sliceTransformDGNodes[i].addMember('speed', 'Scalar', options.speed);
-    sliceTransformDGNodes[i].setDependency(scene.getGlobalsNode(), 'globals');
-
-    var mainAxis = i==0 ? 'X' : 'Y';
-
-    sliceTransformDGNodes[i].bindings.append(scene.constructOperator({
-      operatorName: 'moveCars'+mainAxis,
-      srcCode: 'use Xfo, Vec2; operator moveCars(io Scalar timeStep, io Vec2 xMinMax, io Vec2 zMinMax, io Scalar speed, io Xfo globalXfo, in Size index) {\n' +
-                                 'Vec3 direction = -1.0*globalXfo.ori.get' + mainAxis + 'axis();\n' +
-                                 'Scalar delta = timeStep*speed;\n' +
-                                 'Vec3 position = globalXfo.tr+direction*delta;\n' +
-                                 'if(direction.x > 0.99 && position.x > xMinMax.y)\n' +
-                                 '  position.x = xMinMax.x;\n' +
-                                 'if(direction.x < -0.99 && position.x < xMinMax.x)\n' +
-                                 '  position.x = xMinMax.y;\n' +
-                                 'if(direction.z > 0.99 && position.z > zMinMax.y)\n' +
-                                 '  position.z = zMinMax.x;\n' +
-                                 'if(direction.z < -0.99 && position.z < zMinMax.x)\n' +
-                                 '  position.z = zMinMax.y;\n' +
-                                 'globalXfo.tr = position;\n}',
-      entryFunctionName: 'moveCars',
-      parameterLayout: [
-        'globals.timestep',
-        'self.xMinMax',
-        'self.zMinMax',
-        'self.speed',
-        'self.globalXfo',
-        'self.index'
-        ]
-      }));
-  }
+  dgNode.bindings.append(scene.constructOperator({
+    operatorName: 'moveCars'+mainAxis,
+    srcCode: 'use Xfo, Vec2; operator moveCars(io Scalar timeStep, io Vec2 xMinMax, io Vec2 zMinMax, io Scalar speed, io Xfo globalXfo, in Size index) {\n' +
+                                'Vec3 direction = -1.0*globalXfo.ori.get' + mainAxis + 'axis();\n' +
+                                'Scalar delta = timeStep*speed;\n' +
+                                'Vec3 position = globalXfo.tr+direction*delta;\n' +
+                                'if(direction.x > 0.99 && position.x > xMinMax.y)\n' +
+                                '  position.x = xMinMax.x;\n' +
+                                'if(direction.x < -0.99 && position.x < xMinMax.x)\n' +
+                                '  position.x = xMinMax.y;\n' +
+                                'if(direction.z > 0.99 && position.z > zMinMax.y)\n' +
+                                '  position.z = zMinMax.x;\n' +
+                                'if(direction.z < -0.99 && position.z < zMinMax.x)\n' +
+                                '  position.z = zMinMax.y;\n' +
+                                'globalXfo.tr = position;\n}',
+    entryFunctionName: 'moveCars',
+    parameterLayout: [
+      'globals.timestep',
+      'self.xMinMax',
+      'self.zMinMax',
+      'self.speed',
+      'self.globalXfo',
+      'self.index'
+      ]
+  }));
   return moveCarsNode;
 }});
 
 FABRIC.SceneGraph.defineEffectFromFile('DeferredSpotLightInstancingExtMaterial', 'FABRIC_ROOT/SceneGraph/Shaders/DeferredSpotLightInstancingExtShader.xml');
+FABRIC.SceneGraph.defineEffectFromFile('FlatInstancingExtMaterial', 'FABRIC_ROOT/SceneGraph/Shaders/FlatInstancingExtShader.xml');
     
 $(document).ready(function() {
   
@@ -148,6 +141,7 @@ $(document).ready(function() {
     params = { gridSize:'15' };
   }
   $("#gridSize").val(params.gridSize);
+  var buildLightSources = true;
 
   var storeParams = function(){
     localStorage.setItem("deferredRenderCarsGridSize", JSON.stringify(params));
@@ -175,7 +169,7 @@ $(document).ready(function() {
   var camera = scene.constructNode('TargetCamera', {
       position: new FABRIC.RT.Vec3(15, 25, 50),
       target: new FABRIC.RT.Vec3(0, 5, 0),
-      nearDistance: 3,
+      nearDistance: 1.5,
       farDistance: streetLength*3
     });
   scene.constructNode('CameraManipulator', { targetNode: camera });
@@ -251,12 +245,10 @@ $(document).ready(function() {
 
   var carInstanceTransforms = [];
   var lightInstanceTransforms = [];
+  var carBackLightInstanceTransforms = [];
+  var carFrontLightInstanceTransforms = [];
 
   var rotateLightsUp = new FABRIC.RT.Quat().setFromAxisAndAngle( new FABRIC.RT.Vec3(0,0,1), -Math.PI/2 );
-
-  var swapDir = function(tr){
-    tr.y = -tr.y;
-  }
 
   var carLightConeRadius = carWidth*3;
   var carLightConeLength = carLength*4;
@@ -283,27 +275,48 @@ $(document).ready(function() {
             ori: carOri
           }));
 
-          var lightOri = rotateLightsUp.multiply(carOri);
-          var invLightOri = lightOri.inverse();
-          lightTr = new FABRIC.RT.Vec3(-carWidth*0.3,carLightConeLength/2+carLength*0.4,carWidth/3);
-          if(dir==1)
-            swapDir(lightTr);
-          lightInstanceTransforms.push(new FABRIC.RT.Xfo( {
-            tr: carTr.add(invLightOri.rotateVector(lightTr)),
-            ori: carOri.multiply(rotateLightsUp)
-          }));
-          lightTr = new FABRIC.RT.Vec3(-carWidth*0.3,carLightConeLength/2+carLength*0.4,-carWidth/3);
-          if(dir==1)
-            swapDir(lightTr);
-          lightInstanceTransforms.push(new FABRIC.RT.Xfo( {
-            tr: carTr.add(invLightOri.rotateVector(lightTr)),
-            ori: carOri.multiply(rotateLightsUp)
-          }));
+          var lightOri = carOri.multiply(rotateLightsUp);
+          var invLightOri = rotateLightsUp.multiply(carOri).inverse();
+          lightTr = new FABRIC.RT.Vec3(-carWidth*0.3,carLightConeLength/2+carLength*0.4,carWidth/3.5);
+
+          var deltaFrontLightTr = new FABRIC.RT.Vec3(0,-carLightConeLength/2+carLength*0.13,0);
+          var deltaBackLightTr = new FABRIC.RT.Vec3(0,-carLightConeLength/2-carLength*1.07,0);
+
+          if(dir==1) {
+            lightTr.y = -lightTr.y;
+            deltaFrontLightTr.y = -deltaFrontLightTr.y;
+            deltaBackLightTr.y = -deltaBackLightTr.y;
+          }
+          var deltaFrontLightSc = new FABRIC.RT.Vec3(-1.0,1.0,1.0);//inverse
+
+          for(k = 0; k < 2; ++k) {
+            lightInstanceTransforms.push(new FABRIC.RT.Xfo( {
+              tr: carTr.add(invLightOri.rotateVector(lightTr)),
+              ori: lightOri
+            }));
+
+            if(buildLightSources) {
+              carFrontLightInstanceTransforms.push(new FABRIC.RT.Xfo( {
+                tr: carTr.add(invLightOri.rotateVector(lightTr.add(deltaFrontLightTr))),
+                ori: lightOri,
+                sc: deltaFrontLightSc
+              }));
+              carBackLightInstanceTransforms.push(new FABRIC.RT.Xfo( {
+                tr: carTr.add(invLightOri.rotateVector(lightTr.add(deltaBackLightTr))),
+                ori: lightOri
+              }));
+            }
+            lightTr.z = -lightTr.z;
+          }
         }
       }
     }
   }
 
+  var moveMinMax = new FABRIC.RT.Vec2(-streetLength/2, streetLength/2);
+  var speed = 8.0;
+
+  ////////// Car geometry
   var carSlicedTransform = scene.constructNode("Transform");
   carSlicedTransform.setGlobalXfo(carInstanceTransforms);
   
@@ -317,11 +330,19 @@ $(document).ready(function() {
     transformNode: carSlicedTransform
   });
 
-  var streetLightSlicedTransform = scene.constructNode("Transform");
-  streetLightSlicedTransform.setGlobalXfo(lightInstanceTransforms);
+  scene.constructNode('MoveCarsNode', {
+    transformNode: carSlicedTransform,
+    xMinMax: moveMinMax,
+    zMinMax: moveMinMax,
+    speed: speed
+      });
+
+  ////////// Car spotlights
+  var carLightSlicedTransform = scene.constructNode("Transform");
+  carLightSlicedTransform.setGlobalXfo(lightInstanceTransforms);
 
   var carLightConeBox = scene.constructNode('Cone', {
-    radius: carLightConeRadius*1.5,//5 sided cone completely embedding real cone of that radius
+    radius: carLightConeRadius*1.55,//5 sided cone completely embedding real cone of that radius
     height: carLightConeLength,
     detail: 2
   });
@@ -338,30 +359,85 @@ $(document).ready(function() {
       lightCosCutoffStart: carLightCosCutoffStart,
       lightDistCutoff: carLightConeLength,
       lightDistCutoffStart: carLightConeLength*0.66,
-      transformTextureNode: streetLightSlicedTransform.getTransformTexture(true)
+      transformTextureNode: carLightSlicedTransform.getTransformTexture(true)
     }),
-    transformNode: streetLightSlicedTransform
+    transformNode: carLightSlicedTransform
   });
 
-  /////////////////////////////////
-  //Car movement
-
   scene.constructNode('MoveCarsNode', {
-    carSliceTransformNode: carSlicedTransform,
-    lightSliceTransformNode: streetLightSlicedTransform,
-    xMinMax: new FABRIC.RT.Vec2(-streetLength/2, streetLength/2),
-    zMinMax: new FABRIC.RT.Vec2(-streetLength/2, streetLength/2),
-    speed: 8.0
+    transformNode: carLightSlicedTransform,
+    xMinMax: moveMinMax,
+    zMinMax: moveMinMax,
+    speed: speed,
+    mainAxis: 1
       });
+
+  if(buildLightSources) {
+
+    ////////// Car front lights
+    var carFrontLightSlicedTransform = scene.constructNode("Transform");
+    carFrontLightSlicedTransform.setGlobalXfo(carFrontLightInstanceTransforms);
+  
+    scene.constructNode('Instance', {
+      geometryNode: scene.constructNode('Plane', {
+          width: carWidth/12,
+          length: carWidth/7,
+          lengthSections: 1,
+          widthSections: 1
+      }),
+      materialNode: scene.constructNode('FlatInstancingExtMaterial', {
+        color: FABRIC.RT.rgb255(245,245,255),
+        transformTextureNode: carFrontLightSlicedTransform.getTransformTexture(true)
+      }),
+      transformNode: carFrontLightSlicedTransform
+    });
+
+    scene.constructNode('MoveCarsNode', {
+      transformNode: carFrontLightSlicedTransform,
+      xMinMax: moveMinMax,
+      zMinMax: moveMinMax,
+      speed: speed,
+      mainAxis: 1
+        });
+
+    ////////// Car back lights
+    var carBackLightSlicedTransform = scene.constructNode("Transform");
+    carBackLightSlicedTransform.setGlobalXfo(carBackLightInstanceTransforms);
+  
+    scene.constructNode('Instance', {
+      geometryNode: scene.constructNode('Plane', {
+          width: carWidth/12,
+          length: carWidth/7,
+          lengthSections: 1,
+          widthSections: 1
+      }),
+      materialNode: scene.constructNode('FlatInstancingExtMaterial', {
+        color: FABRIC.RT.rgb255(255,20,20),
+        transformTextureNode: carBackLightSlicedTransform.getTransformTexture(true)
+      }),
+      transformNode: carBackLightSlicedTransform
+    });
+
+    scene.constructNode('MoveCarsNode', {
+      transformNode: carBackLightSlicedTransform,
+      xMinMax: moveMinMax,
+      zMinMax: moveMinMax,
+      speed: speed,
+      mainAxis: 1
+        });
+  }
 
   /////////////////////////////////
   //Street lights
 
-  var streetLightConeRadius = carLength*1.1;
-  var streetLightConeLength = carLength*1.5;
+  var streetLightConeRadius = carLength*0.9;
+  var streetLightConeLength = carLength*1.4;
   var streetLightDist = (streetDistance-streetWidth)/nbStreetLightsPerBloc;
 
   var streetLightInstanceTransforms = [];
+  var streetLightConeInstanceTransforms = [];
+  var streetLightBulbInstanceTransforms = [];
+
   for(dir = 0; dir < 2; ++dir) {
     for(i = 1; i < nbBlocs; ++i) {
       for(j = 0; j < nbBlocs; ++j) {
@@ -374,29 +450,46 @@ $(document).ready(function() {
               streetLightConeLength*0.4,
               dir==0 ? zCoord : xCoord)
           }));
+
+          if(buildLightSources) {
+            streetLightConeInstanceTransforms.push(new FABRIC.RT.Xfo( {
+              tr: new FABRIC.RT.Vec3(
+                dir==1 ? zCoord : xCoord,
+                streetLightConeLength*0.75,
+                dir==0 ? zCoord : xCoord)
+            }));
+            streetLightBulbInstanceTransforms.push(new FABRIC.RT.Xfo( {
+              tr: new FABRIC.RT.Vec3(
+                dir==1 ? zCoord : xCoord,
+                streetLightConeLength*0.7,
+                dir==0 ? zCoord : xCoord),
+              sc: new FABRIC.RT.Vec3(1.0, 0.5, 1.0)
+            }));
+          }
         }
       }
     }
   }
 
+  //Street spotlight
   var streetLightSlicedTransform = scene.constructNode("Transform");
   streetLightSlicedTransform.setGlobalXfo(streetLightInstanceTransforms);
   
   var streetLightConeBox = scene.constructNode('Cone', {
-    radius: streetLightConeRadius*1.5,//5 sided cone completely embedding real cone of that radius
+    radius: streetLightConeRadius*1.55,//5 sided cone completely embedding real cone of that radius
     height: streetLightConeLength,
     detail: 2
   });
 
   var streetLightCosCutoff = streetLightConeLength / Math.sqrt(streetLightConeRadius*streetLightConeRadius+streetLightConeLength*streetLightConeLength);
-  var streetLightCosCutoffStart = streetLightConeLength / Math.sqrt(streetLightConeRadius*0.25*streetLightConeRadius*0.25+streetLightConeLength*streetLightConeLength);
+  var streetLightCosCutoffStart = streetLightConeLength / Math.sqrt(streetLightConeRadius*0.15*streetLightConeRadius*0.15+streetLightConeLength*streetLightConeLength);
 
   scene.constructNode('Instance', {
     geometryNode: streetLightConeBox,
     materialNode: deferredRenderer.addShadingMaterialLayer('DeferredSpotLightInstancingExtMaterial', {
       lightColor: FABRIC.RT.rgb255(255,150,90),
       lightCosCutoff: streetLightCosCutoff,
-      lightIntensity: 0.65,
+      lightIntensity: 1,
       lightCosCutoffStart: streetLightCosCutoffStart,
       lightDistCutoff: streetLightConeLength*1.5,
       lightDistCutoffStart: streetLightConeLength*1.5,
@@ -404,6 +497,43 @@ $(document).ready(function() {
     }),
     transformNode: streetLightSlicedTransform
   });
+
+  if(buildLightSources) {
+    //Street light cone
+    var streetLightConeSlicedTransform = scene.constructNode("Transform");
+    streetLightConeSlicedTransform.setGlobalXfo(streetLightConeInstanceTransforms);
+
+    scene.constructNode('Instance', {
+      geometryNode: scene.constructNode('Cone', {
+        radius: carWidth*0.25,
+        height: carWidth*0.35,
+        detail: 5
+      }),
+      materialNode: scene.constructNode('PhongInstancingExtMaterial', {
+        diffuseColor: FABRIC.RT.rgb255(200,200,200),
+        ambientColor: FABRIC.RT.rgb255(80,80,80),
+        lightNode: light,
+        transformTextureNode: streetLightConeSlicedTransform.getTransformTexture(false)
+      }),
+      transformNode: streetLightConeSlicedTransform
+    });
+
+    //Street light bulb
+    var streetLightBulbSlicedTransform = scene.constructNode("Transform");
+    streetLightBulbSlicedTransform.setGlobalXfo(streetLightBulbInstanceTransforms);
+
+    scene.constructNode('Instance', {
+      geometryNode: scene.constructNode('Sphere', {
+        radius: carWidth*0.15,
+        detail: 2
+      }),
+      materialNode: scene.constructNode('FlatInstancingExtMaterial', {
+        color: FABRIC.RT.rgb255(255,230,200),
+        transformTextureNode: streetLightBulbSlicedTransform.getTransformTexture(false)
+      }),
+      transformNode: streetLightBulbSlicedTransform
+    });
+  }
 
   $('#play').button().click(function(){
       var options;
