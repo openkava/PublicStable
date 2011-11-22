@@ -800,6 +800,7 @@ FABRIC.SceneGraph.registerNodeType('BulletForceManipulator', {
     
     var eventListenersAdded = false;
     var mouseDownFn = function(evt) {
+      console.log('bullet force...');
       if(!enabled){
         return;
       }
@@ -815,6 +816,7 @@ FABRIC.SceneGraph.registerNodeType('BulletForceManipulator', {
       }
     }
     bulletWorldNode.pub.addEventListener('mousedown_geom', mouseDownFn);
+    forceManipulatorNode.pub.getMouseDownFn = function() { return mouseDownFn; }
 
     var dragForceFn = function(evt) {
       if(!enabled || !eventListenersAdded){
