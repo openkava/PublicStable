@@ -588,17 +588,20 @@ operator locomotionPreProcessing(
   for(Integer i=0; i < legs.size; i++){
         report("processing leg:"+i);
     for(Integer j=0; j < footStepTracks[i].footSteps.size; j++){
-      if(footStepTracks[i].footSteps[j].midPlantTime < timeRange.x ||
-         footStepTracks[i].footSteps[j].midPlantTime >= timeRange.y){
+      if(footStepTracks[i].footSteps[j].midPlantTime < timeRange.x){
         continue;
       }
       // This is just temporary. Only enable one marker per foot.
       if(locomotionMarkers[i].size > 0){
         continue;
       }
+      // 
+      Integer merkerStepId = j;
       LocomotionMarker marker;
-      Scalar t = footStepTracks[i].footSteps[j].midPlantTime;
+      Scalar t = footStepTracks[i].footSteps[merkerStepId].midPlantTime;
       marker.time = t;
+      report("time:"+t);
+      report("stepId:"+merkerStepId);
       
       poseVariables.evaluateKeyframeTracks(t, trackSet, comParamBindings, currKeys);
       marker.params.resize(comParamBindings.scalarBindings.size);
@@ -611,16 +614,19 @@ operator locomotionPreProcessing(
       }
       // for this marker, find all the foot step ids that are valid for the other legs.
       for(Integer k=0; k < legs.size; k++){
-        if(k==j){
-          marker.stepIds[j] = j;
+        report("marker:"+marker);
+        if(k==i){
+          marker.stepIds[k] = merkerStepId;
         }
         else{
+        report("searching leg:"+k);
           // Plant times dictate stepId increments, we must find the step that
           // plants after the current foot lift. 
-          for(Integer l=0; l < footStepTracks[k].footSteps.size; l++){
+          for(Integer l=0; i<footStepTracks[k].footSteps.size; l++){
             report("step"+l+":"+footStepTracks[k].footSteps[l]);
             if(footStepTracks[k].footSteps[l].midPlantTime > t){
               marker.stepIds[k] = l;
+              report("breaking:"+marker.stepIds[k]);
               break;
             }
           }
