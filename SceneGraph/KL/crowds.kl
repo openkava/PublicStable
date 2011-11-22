@@ -139,7 +139,8 @@ operator simulateCrowd(
         }
         Scalar neighborDist = neighborDistances[i];
         if (neighborDist < separationDistance) {
-          Scalar weight = 1.0 - (neighborDist - agentRadius)/(neighborInfluenceRange - agentRadius);
+          Scalar weight = (neighborDist - neighborInfluenceRange)/(agentRadius - neighborInfluenceRange);
+          weight = weight * weight;
           separationVector += (xfo.tr - previousframe_positions[neighborId]) * ((1.0 / neighborDist) * (separationDistance - neighborDist) * weight);
           neighborInfluenceWeight += 1.0;
         }
