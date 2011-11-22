@@ -20,7 +20,7 @@ function activateClip(
   trackcontroller.time += marker.time;
   trackcontroller.stepIds = marker.stepIds;
   
-  report("activateClip:"+trackcontroller.activeTrackSet+" foot:"+trackcontroller.pivotFoot+ " stepIds:"+marker.stepIds + " t:"+trackcontroller.time);
+//  report("activateClip:"+trackcontroller.activeTrackSet+" foot:"+trackcontroller.pivotFoot+ " stepIds:"+marker.stepIds + " t:"+trackcontroller.time);
 }
 
 operator evaluateLocomotionPoseVariables(
@@ -146,7 +146,6 @@ operator evaluateLocomotionPoseVariables(
     // Error dissapation
     if(trackcontroller.tick > 0){
       if(trackcontroller.deactivate){
-        report("Activated Clip t:"+ t);
         poseError = prevUpdatePose.subtract(poseVariables);
         clipActivationTime = t-timestep;
       }
@@ -389,14 +388,13 @@ operator evaluateLocomotionPoseVariables(
         if(t >= currStep.midPlantTime){
           /////////////////////////////////////////////////
           // Clip Deactivation
-          /*
           if(animationLibrary.size > 1){
-              report("currSpeed:"+currSpeed);
+           //   report("currSpeed:"+currSpeed);
             Scalar buffer = 2.0;
-            Scalar speedMultipler = 2.5;
+            Scalar speedMultipler = 1.0;
             Scalar speedDelta = (currSpeed - (trackcontroller.comParams[1] * speedMultipler));
             if(abs(speedDelta) > buffer){
-              report("currclipSpeed:"+ (trackcontroller.comParams[1] * speedMultipler) +" speedDelta:"+trackcontroller.activeTrackSet+":"+j+":"+speedDelta);
+            //  report("currclipSpeed:"+ (trackcontroller.comParams[1] * speedMultipler) +" speedDelta:"+trackcontroller.activeTrackSet+":"+j+":"+speedDelta);
               for(Integer clipId=0; clipId<locomotionMarkers.size; clipId++){
               // Note: here we block blending from a clip onto its self, but soon we will enable this.
                 if(trackcontroller.activeTrackSet == clipId){
@@ -404,24 +402,24 @@ operator evaluateLocomotionPoseVariables(
                 }
                 for(Integer l=0; l<locomotionMarkers[clipId][j].size; l++){
                   Scalar speedDelta2 = (currSpeed - (locomotionMarkers[clipId][j][l].params[1] * speedMultipler));
-                  report("clipSpeed:"+ (locomotionMarkers[clipId][j][l].params[1] * speedMultipler) +"speedDelta2 "+clipId+":"+l+":"+speedDelta2);
+                //  report("clipSpeed:"+ (locomotionMarkers[clipId][j][l].params[1] * speedMultipler) +"speedDelta2 "+clipId+":"+l+":"+speedDelta2);
                   if(abs(speedDelta2) < abs(speedDelta)){
-                    report("deactivate fromClip:" +trackcontroller.activeTrackSet + " toClip:"+ clipId + " foot:"+j+ " fromStep:"+stepId+ " toStep:"+l);
+                  //  report("deactivate fromClip:" +trackcontroller.activeTrackSet + " toClip:"+ clipId + " foot:"+j+ " fromStep:"+stepId+ " toStep:"+l);
                     trackcontroller.deactivate = true;
                     trackcontroller.pivotFoot = j;
                     trackcontroller.pivotStepId = l;
                     trackcontroller.activeTrackSet = clipId;
-                    
+                    trackcontroller.time -= currStep.midPlantTime;
                     break;
                   }
                 }
               }
             }
           }
-          */
+          
           if(!trackcontroller.deactivate && currStep.midPlantTime >= timeRange.y){  
             // Deactivate the current clip if a foot reaches the last step.
-            report("deactivate - end of clip foot:"+j+ " t:" + trackcontroller.time);
+          //  report("deactivate - end of clip foot:"+j+ " t:" + trackcontroller.time);
             trackcontroller.deactivate = true;
             trackcontroller.pivotFoot = j;
             trackcontroller.pivotStepId = 0;
@@ -435,7 +433,7 @@ operator evaluateLocomotionPoseVariables(
       }
       footXfo = invcontrollerXfo * footXfo;
       // Apply the error in COM space. 
-    //  footXfo.tr += footError;
+      footXfo.tr += footError;
       
       poseVariables.xfoValues[leg.ikGoalXfoId] = footXfo;
       

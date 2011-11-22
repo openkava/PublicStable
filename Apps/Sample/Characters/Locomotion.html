@@ -98,7 +98,7 @@ $(document).ready(function() {
 
   // Create the scene.
   var scene = FABRIC.SceneGraph.createScene({
-        timeStep: 1/40 /* 30 fps */
+        timeStep: 1/20 /* 30 fps */
       });
   var viewport = scene.constructNode('Viewport', {
     enableRaycasting: false,
@@ -288,7 +288,7 @@ $(document).ready(function() {
   case 'marama':
     var locomotionControllerNode = scene.constructNode('ScreenSpacePlayerCharacterController', {
         cameraNode: camera,
-        maxLinearVelocity: 20,
+        maxLinearVelocity: 7,
         maxLinearAcceleration: 1.5,
         maxAngularVelocity:  5,
         bulletWorldNode: bulletWorldNode,
