@@ -277,7 +277,9 @@ FABRIC.SceneGraph.registerNodeType('LocomotionCharacterController', {
       
       gravity: -25.0,
       comHeight: 15,
-      circleSize: 20
+      circleSize: 20,
+      
+      enableDebugging: true
     });
     var characterControllerNode = scene.constructNode('CharacterController', options);
     var dgnode = characterControllerNode.getDGNode();
@@ -357,7 +359,10 @@ FABRIC.SceneGraph.registerNodeType('LocomotionCharacterController', {
           'self.debugGeometry2',
           
           'globals.timestep'
-        ]
+        ],
+        preProcessorDefinitions: {
+          ENABLE_DEBUGGING: options.enableDebugging ? 'true': 'false'
+        }
       });
     }
     
@@ -412,7 +417,6 @@ FABRIC.SceneGraph.registerNodeType('ScreenSpacePlayerCharacterController', {
   },
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
-      
       cameraNode: undefined
     });
     var cameraNode = scene.getPrivateInterface(options.cameraNode);
@@ -441,7 +445,10 @@ FABRIC.SceneGraph.registerNodeType('ScreenSpacePlayerCharacterController', {
     
         'camera.cameraMat44',
         'camera.projectionMat44'
-      ]
+      ],
+      preProcessorDefinitions: {
+        ENABLE_DEBUGGING: 'true'
+      }
     }), 0);
     
     // We always append the controller op last, 
@@ -490,7 +497,8 @@ FABRIC.SceneGraph.registerNodeType('LocomotionPoseVariables', {
   },
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
-      bulletWorldNode: undefined
+      bulletWorldNode: undefined,
+      enableDebugging: true
     });
     if(!options.characterRigNode){
       throw "characterRigNode must be provided";
@@ -542,14 +550,8 @@ FABRIC.SceneGraph.registerNodeType('LocomotionPoseVariables', {
       ],
       async: false
     }));
-    dgnode.bindings.append(scene.constructOperator({
-      operatorName: 'evaluateLocomotionPoseVariables',
-      srcFile: 'FABRIC_ROOT/SceneGraph/KL/locomotion.kl',
-      entryFunctionName: 'evaluateLocomotionPoseVariables',
-      parameterLayout: [
+    var parameterLayout = [
         'globals.timestep',
-        
-        'bulletworld.world',
         
         'animationlibrary.trackSet<>',
         'animationlibrary.markers<>',
@@ -578,7 +580,20 @@ FABRIC.SceneGraph.registerNodeType('LocomotionPoseVariables', {
         
         'self.debugFootMotion',
         'self.debugRaycasting'
-      ]
+      ];
+    if(options.bulletWorldNode){
+      parameterLayout.push('bulletworld.world');
+    }
+    dgnode.bindings.append(scene.constructOperator({
+      operatorName: 'evaluateLocomotionPoseVariables',
+      srcFile: 'FABRIC_ROOT/SceneGraph/KL/locomotion.kl',
+      entryFunctionName: 'evaluateLocomotionPoseVariables',
+      parameterLayout: parameterLayout,
+      preProcessorDefinitions: {
+        BULLLETWORLD_OPENBLOCKCOMMENT: options.bulletWorldNode ? '' : '/*',
+        BULLLETWORLD_CLOSEBLOCKCOMMENT: options.bulletWorldNode ? '' : '*/',
+        ENABLE_DEBUGGING: options.enableDebugging ? 'true' : 'false'
+      }
     }));
     
     locomotionVariables.pub.setCharacterController = function(characterController){
