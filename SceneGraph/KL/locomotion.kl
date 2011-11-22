@@ -17,10 +17,10 @@ function activateClip(
 ){
   LocomotionMarker markers[][] = locomotionMarkers[trackcontroller.activeTrackSet];
   LocomotionMarker marker = markers[trackcontroller.pivotFoot][trackcontroller.pivotStepId];
-  trackcontroller.time = marker.time;
+  trackcontroller.time += marker.time;
   trackcontroller.stepIds = marker.stepIds;
   
-//  report("activateClip:"+trackcontroller.activeTrackSet+" foot:"+trackcontroller.pivotFoot+ " stepIds:"+marker.stepIds + " t:"+trackcontroller.time);
+  report("activateClip:"+trackcontroller.activeTrackSet+" foot:"+trackcontroller.pivotFoot+ " stepIds:"+marker.stepIds + " t:"+trackcontroller.time);
 }
 
 operator evaluateLocomotionPoseVariables(
@@ -56,8 +56,8 @@ operator evaluateLocomotionPoseVariables(
   io DebugGeometry debugFootMotion,
   io DebugGeometry debugRaycasting
 ) {
-//  report("evaluateLocomotionPoseVariables:"+index);
-  if(timestep==0){
+//  report("evaluateLocomotionPoseVariables:"+timestep);
+  if(timestep==0.0){
     return;
   }
   debugFootMotion.reset();
@@ -120,11 +120,11 @@ operator evaluateLocomotionPoseVariables(
       if(clipSpeed > 0.001){
         clipSpeedRatio = (currSpeed / clipSpeed);
 
-        strideLengthMultiplier = clipSpeedRatio + ((1.0 - clipSpeedRatio) * (1.0 - strideLengthModulationFactor));
+        strideLengthMultiplier = 1.0;//clipSpeedRatio + ((1.0 - clipSpeedRatio) * (1.0 - strideLengthModulationFactor));
         clipFrequencyMultiplier = clipSpeedRatio / strideLengthMultiplier;
         
         // When turning, speed up the playback a little to stop the legs getting tangled. 
-        clipFrequencyMultiplier += abs(controllerparams.displacement.ori.getAngle()) * 7.0;
+      //  clipFrequencyMultiplier += abs(controllerparams.displacement.ori.getAngle()) * 5.0;
       }
     }
     
@@ -146,6 +146,7 @@ operator evaluateLocomotionPoseVariables(
     // Error dissapation
     if(trackcontroller.tick > 0){
       if(trackcontroller.deactivate){
+        report("Activated Clip t:"+ t);
         poseError = prevUpdatePose.subtract(poseVariables);
         clipActivationTime = t-timestep;
       }
@@ -420,10 +421,11 @@ operator evaluateLocomotionPoseVariables(
           */
           if(!trackcontroller.deactivate && currStep.midPlantTime >= timeRange.y){  
             // Deactivate the current clip if a foot reaches the last step.
-          //  report("deactivate - end of clip foot:"+j+ " t:" + trackcontroller.time);
+            report("deactivate - end of clip foot:"+j+ " t:" + trackcontroller.time);
             trackcontroller.deactivate = true;
             trackcontroller.pivotFoot = j;
             trackcontroller.pivotStepId = 0;
+            trackcontroller.time -= currStep.midPlantTime;
           }
           
           if(!trackcontroller.deactivate){
