@@ -504,8 +504,8 @@ $(document).ready(function() {
   });
   materialNodes['primitiveCoin'] = toonRenderer.constructMaterial('ToonMaterial', {
     lightNode: light,
-    darkColor: FABRIC.RT.rgb(56/255,121/255,88/255),
-    brightColor: FABRIC.RT.rgb(119/255,255/255,185/255),
+    darkColor: FABRIC.RT.rgb(0/255,0/255,123/255),
+    brightColor: FABRIC.RT.rgb(0/255,0/255,255/255),
     colorSteps: colorSteps
   });
 
@@ -961,10 +961,103 @@ $(document).ready(function() {
       }
     }
 
+    $('#localStorageDescr').html('Save Preset');
+    $('#localStorageContent').html('<input id="localStorageName" type=text style="width:100px"/>');
+
+    viewport.hide();
+    $('#localStorageDialog').dialog({
+      modal: true
+    });
+    $('#localStorageCancel').button().click(function(){
+      
+      $('#localStorageDialog').dialog('close');
+      viewport.show();
+    });
+    $('#localStorageOK').button().click(function(){
+      var presetName = $('#localStorageName').val();
+      if(presetName) {
+        // add this to our preset list
+        var presets = localStorage.getItem('playgroundPresetNames');
+        if(!presets)
+          presets = {};
+        else
+          presets = JSON.parse(presets);
+        presets[presetName] = 'playgroundPresetNames_'+presetName;
+        localStorage.setItem('playgroundPresetNames',JSON.stringify(presets));
+        localStorage.setItem(presets[presetName],JSON.stringify(bodiesToSave));
+      }
+      $('#localStorageDialog').dialog('close');
+      viewport.show();
+    });
+  });
+  $("#presetLoad").button().click(function(){
+    if(isPlaying)
+      return;
+
+    $('#localStorageDescr').html('Load Preset');
+    var presets = localStorage.getItem('playgroundPresetNames');
+    if(!presets)
+      return;
+    presets = JSON.parse(presets);
+    var html = '<select id="localStorageName" style="width:100px">';
+    for(var name in presets) {
+      html += '<option value="'+presets[name]+'">'+name+'</option>';
+    }
+    html += '</select>';
+    $('#localStorageContent').html(html);
+
+    viewport.hide();
+    $('#localStorageDialog').dialog({
+      modal: true
+    });
+    $('#localStorageCancel').button().click(function(){
+      
+      $('#localStorageDialog').dialog('close');
+      viewport.show();
+    });
+    $('#localStorageOK').button().click(function(){
+      var presetName = $('#localStorageName').val();
+      if(presetName) {
+        var bodiesToLoad = localStorage.getItem(presetName);
+        if(bodiesToLoad) {
+          bodiesToLoad = JSON.parse(bodiesToLoad);
+          
+          var newBodies = processRigidBodyMessages([{action: 'rigidBodiesCreated', data: bodiesToLoad}]);
+          selectionManager.clearSelection();
+          var selection = [];
+          for(var key in newBodies) {
+            selection.push(newBodies[key].instance);
+          }
+          selectionManager.select(selection);
+          if(ws) {
+            ws.sendMessage("rigidBodiesCreated",newBodies);
+          }
+        }
+      }
+      $('#localStorageDialog').dialog('close');
+      viewport.show();
+    });
+  });
+  // setup load and save
+  $("#presetExport").button().click(function(){
+    if(isPlaying)
+      return;
+    var bodiesToSave = {};
+    if(selectionManager.getSelection().length == 0) {
+      bodiesToSave = getRigidBodyJsonData(rigidBodies,true);
+    } else {
+      for(var i=0;i<selectionManager.getSelection().length;i++) {
+        var key = selectionManager.getSelection()[i].getTransformNode().getName();
+        bodiesToSave[key] = {};
+        bodiesToSave[key].type = rigidBodies[key].type,
+        bodiesToSave[key].transform = rigidBodies[key].transformNode.getGlobalXfo()
+      }
+    }
+
     var path = scene.IO.queryUserFileAndFolderHandle(scene.IO.forOpenWithWriteAccess, "Bullet Editor Data", "json", "bulletScene");
     scene.IO.putTextFile(JSON.stringify(bodiesToSave), path);
   });
-  $("#presetLoad").button().click(function(){
+  $("#presetImport").button().click(function(){
     if(isPlaying)
       return;
     var path = scene.IO.queryUserFileAndFolderHandle(scene.IO.forOpen, "Bullet Editor Data", "json", "bulletScene");
@@ -1161,6 +1254,12 @@ $(document).ready(function() {
       <button id="joinCancel">Cancel</button>
       <button id="joinOK">OK</button>
     </div>
+    <div style="display: none" id="localStorageDialog" title="Preset Storage">
+      <h4 id="localStorageDescr"></h4>
+      <div id='localStorageContent'></div>
+      <button id="localStorageCancel">Cancel</button>
+      <button id="localStorageOK">OK</button>
+    </div>
     <div style="display: none; width: 200px; height: 340px" id="helpDialog" title="Help">
       <h4>Bullet Editor Help</h4>
       Drag and drop the primitives on the side panel slowly onto the 3D viewport to create new rigid bodies.
@@ -1191,6 +1290,8 @@ $(document).ready(function() {
               <button id="play">Play</button>
               <button id="help">Help</button>
               <button id='join'>Join</button><br>
+              <button id='presetExport'>Export</button>
+              <button id='presetImport'>Import</button>
               <button id='presetSave'>Save</button>
               <button id='presetLoad'>Load</button>
               <button id='presetDuplicate'>Dupl</button><br>
@@ -1204,7 +1305,7 @@ $(document).ready(function() {
               <div id="primitiveHigh" style="display: inline-block; margin: 2px; width: 50px; height: 100px; background-color:rgb(176,125,122)"></div>
               <div id="primitiveSphere" style="display: inline-block; margin: 2px; width: 50px; height: 50px; background-color:rgb(230,255,0)"></div>
               <div id="primitiveBall" style="display: inline-block; margin: 2px; width: 75px; height: 75px; background-color:rgb(255,0,0)"></div>
-              <div id="primitiveCoin" style="display: inline-block; margin: 2px; width: 150px; height: 25px; background-color:rgb(119,255,185)"></div>
+              <div id="primitiveCoin" style="display: inline-block; margin: 2px; width: 150px; height: 25px; background-color:rgb(0,0,255)"></div>
             </div><!--content-->
             <div id="participants">
               <h2>PARTICIPANTS</h2>
