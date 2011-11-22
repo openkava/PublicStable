@@ -121,6 +121,40 @@ FABRIC.SceneGraph.defineEffectFromFile('DeferredSpotLightInstancingExtMaterial',
     
 $(document).ready(function() {
   
+  $('#play').button({
+    text: true,
+    icons: {
+      primary: 'ui-icon-play'
+    }
+  });
+
+  $('#step').button({
+    text: true,
+    icons: {
+      primary: 'ui-icon-step'
+    }
+  });
+
+  var params;
+
+  try{
+    if(localStorage && localStorage.getItem("deferredRenderCarsGridSize")){
+      params = JSON.parse(localStorage.getItem("deferredRenderCarsGridSize"));
+    }
+    else{
+      throw "no grid size";
+    }
+  }catch(e){
+    params = { gridSize:'15' };
+  }
+  $("#gridSize").val(params.gridSize);
+
+  var storeParams = function(){
+    localStorage.setItem("deferredRenderCarsGridSize", JSON.stringify(params));
+  }
+
+  var nbBlocs = params.gridSize;
+
   var scene = FABRIC.SceneGraph.createScene();
   
   var viewport = scene.constructNode('Viewport', {
@@ -129,15 +163,9 @@ $(document).ready(function() {
     backgroundColor: FABRIC.RT.rgb(0, 0, 0),//Important: deferred shading is additive!
   });
 
-
-  ///////////////////////////////////
-  // Main parameters
-  var nbBlocs = 15;
+  ///////////////////////////////////////
   var nbCars = nbBlocs*nbBlocs*4;
   var nbStreetLightsPerBloc = 2;
-
-  ///////////////////////////////////////
-
   var streetWidth = 3.0;
   var streetDistance = 15.0;
   var nbStreets = nbBlocs-1;
@@ -306,7 +334,7 @@ $(document).ready(function() {
     materialNode: deferredRenderer.addShadingMaterialLayer('DeferredSpotLightInstancingExtMaterial', {
       lightColor: FABRIC.RT.rgb255(140,140,255),
       lightCosCutoff: carLightCosCutoff,
-      lightIntensity: 4.0,
+      lightIntensity: 3.5,
       lightCosCutoffStart: carLightCosCutoffStart,
       lightDistCutoff: carLightConeLength,
       lightDistCutoffStart: carLightConeLength*0.66,
@@ -377,6 +405,26 @@ $(document).ready(function() {
     transformNode: streetLightSlicedTransform
   });
 
+  $('#play').button().click(function(){
+      var options;
+      if ($(this).text() == 'Play') {
+        $(this).button('option', {
+          label: 'Pause',
+          icons: {
+            primary: 'ui-icon-pause'
+          }
+        });
+        scene.animation.play();
+      } else {
+        $(this).button('option', {
+          label: 'Play',
+          icons: {
+            primary: 'ui-icon-play'
+          }
+        });
+        scene.animation.pause();
+      }
+  });
 
   $('#loadingDialog').dialog({
     modal: true
@@ -391,8 +439,14 @@ $(document).ready(function() {
       if (errors.length > 0) {
         throw (errors.toString());
       }
+
+      $("#gridSize").change(function() {
+        params.gridSize = $("#gridSize :selected").attr("value");
+        storeParams();
+        window.location.reload();
+      });
+
       viewport.redraw();
-      scene.animation.play();
 
       setInterval(function() {
           document.getElementById('frameRate').childNodes[0].data = 'Frame Rate:' + viewport.getFPS().toFixed(2);
@@ -400,6 +454,8 @@ $(document).ready(function() {
 
       document.getElementById('nbSpotLights').childNodes[0].data = 'Nb spot lights:' + (nbCars*2 + nbStreets*nbStreets*2*nbStreetLightsPerBloc);
       document.getElementById('nbCars').childNodes[0].data = 'Nb cars:' + nbCars;
+
+      scene.animation.play();
 
       return true;
     }
@@ -432,7 +488,18 @@ $(document).ready(function() {
           <div class="box">
             <h2>INFO</h2>
               <div class="content">
-              Deferred rendering.<br>
+              This sample shows how the deferred technique rendering enables to efficiently layer many lights in a second shading pass. The many spot lights are drawn only on their area of influence.<br>
+              <button id="play">Pause</button>
+              </br>
+              <label for="gridSize" style="margin-top:10px;">Grid size:</label>
+              <select id='gridSize' style="margin-top:10px;">
+                <option value="10">10 X 10 (1116 spot lights)
+                <option value="15">15 X 15 (2576 spot lights)
+                <option value="20">20 X 20 (4636 spot lights)
+                <option value="30">30 X 30 (10556 spot lights)
+                <option value="40">40 X 40 (18876 spot lights)
+              </select>
+              </br>
             </div><!--content-->
           </div><!--box-->
           <div class="box">
