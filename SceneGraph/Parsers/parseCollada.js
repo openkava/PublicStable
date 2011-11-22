@@ -9,6 +9,8 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
   if(options.scaleFactor == undefined) options.scaleFactor = 1.0;
   if(options.logWarnings == undefined) options.logWarnings = false;
   if(options.constructScene == undefined) options.constructScene = true;
+  
+  
 
   var assetNodes = {};
   var warn = function( warningText ){
@@ -1234,8 +1236,13 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
           transformNodeOptions.localXfo = instanceData.xfo;
           transformNodeOptions.parentTransformNode = parentTransformNode;
         }else{
-          transformNodeOptions.hierarchical = false;
-          transformNodeOptions.globalXfo = instanceData.xfo;
+          if(options.parentTransformNode){
+            transformNodeOptions.hierarchical = true;
+            transformNodeOptions.parentTransformNode = options.parentTransformNode;
+          }else{
+            transformNodeOptions.hierarchical = false;
+            transformNodeOptions.globalXfo = instanceData.xfo;
+          }
         }
         var transformNode = scene.constructNode('Transform', transformNodeOptions );
         if(geometryNode/* && materialNode*/){

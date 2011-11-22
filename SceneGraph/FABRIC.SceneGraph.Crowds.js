@@ -28,10 +28,10 @@ FABRIC.SceneGraph.registerNodeType('Crowd', {
       agentCount: 3,
       agentRadius: (this.cellsize*0.3),
       xfos: undefined,
-      displayDebugging: false
+      displayDebugging: false,
+      enableDebugging: false
     });
     
-
     var crowdNode = scene.constructNode('LocomotionCharacterController', options);
     var dgnode = crowdNode.getDGNode();
     var hashtablenode = crowdNode.constructDGNode('hashtablenode');
