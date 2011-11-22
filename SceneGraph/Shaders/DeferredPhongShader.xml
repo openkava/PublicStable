@@ -5,7 +5,7 @@
   <uniforms>
     <uniform name="u_samplerPositionsMap" constant="positionsTexture" type="Integer" owner="texture"/>
     <uniform name="u_samplerNormalsMap" constant="normalsTexture" type="Integer" owner="texture"/>
-    <uniform name="u_samplerDiffuseColorsMap" constant="diffuseColorsTexture" type="Integer" owner="texture"/>
+    <uniform name="u_samplerDiffuseAndSpecularFactorMap" constant="diffuseAndSpecularFactorTexture" type="Integer" owner="texture"/>
 
     <uniform name="u_windowInvSize" constant="windowInvSize" type="Vec2"/>
     
@@ -30,7 +30,7 @@
   <textures>
     <texture binding="positionsTexture"/>
     <texture binding="normalsTexture"/>
-    <texture binding="diffuseColorsTexture"/>
+    <texture binding="diffuseAndSpecularFactorTexture"/>
   </textures>
 
   <vertexshader>
@@ -61,7 +61,7 @@
 
 			uniform sampler2D u_samplerPositionsMap;
 			uniform sampler2D u_samplerNormalsMap;
-			uniform sampler2D u_samplerDiffuseColorsMap;
+			uniform sampler2D u_samplerDiffuseAndSpecularFactorMap;
       
       ]]>
       </source>
@@ -70,11 +70,12 @@
       <![CDATA[
             
       void main(){
-        vec2 windowCoord = gl_FragCoord*u_windowInvSize;
+        vec2 windowCoord = gl_FragCoord.xy * u_windowInvSize;
         vec3 pos = texture2D( u_samplerPositionsMap, windowCoord ).xyz;
         vec3 Ln = normalize(u_lightPosition.xyz-pos);
         vec3 Vn = normalize(-pos);
         vec3 Nn = normalize(texture2D( u_samplerNormalsMap, windowCoord ).xyz);
+        vec4 diffuseAndSpecularFactor = texture2D( u_samplerDiffuseAndSpecularFactorMap, windowCoord );
 
         float lightFactor = 1.0;
         gl_FragColor = phong_shading(  Nn, 
@@ -85,8 +86,8 @@
                         lightFactor,
                         u_lightCosCutoff,
                         u_lightColor,
-												texture2D( u_samplerDiffuseColorsMap, windowCoord ), 
-                        u_materialSpecularColor,
+												vec4(diffuseAndSpecularFactor.rgb, 1.0), 
+                        u_materialSpecularColor * diffuseAndSpecularFactor.a,
                         u_materialShininess,
                         u_materialAmbientColor );
       }
