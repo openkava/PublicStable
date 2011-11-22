@@ -662,7 +662,12 @@ FABRIC_EXT_EXPORT void FabricBULLET_Shape_Create(
 
     //} else if(shape.type  == CAPSULE_SHAPE_PROXYTYPE) {
     //} else if(shape.type  == CONE_SHAPE_PROXYTYPE) {
-    //} else if(shape.type  == CYLINDER_SHAPE_PROXYTYPE) {
+    } else if(shape.type  == CYLINDER_SHAPE_PROXYTYPE) {
+      if(shape.parameters.size() != 2) {
+        throwException( "{FabricBULLET} ERROR: For the cylinder shape you need to specify two parameters." );
+        return;
+      }
+      collisionShape = new btCylinderShape(btVector3(shape.parameters[0],shape.parameters[1],shape.parameters[0]));
     } else if(shape.type  == GIMPACT_SHAPE_PROXYTYPE) {
 
       if(shape.parameters.size() != 0) {
