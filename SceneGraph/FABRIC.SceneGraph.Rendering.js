@@ -215,11 +215,11 @@ FABRIC.SceneGraph.registerNodeType('DeferredRenderer', {
         new FABRIC.RT.OGLRenderTargetTextureDesc (
             2, // COLOR_BUFFER
             new FABRIC.RT.OGLTexture2D (
-              FABRIC.SceneGraph.OpenGLConstants.GL_RGB16F,
-              FABRIC.SceneGraph.OpenGLConstants.GL_RGB,
+              FABRIC.SceneGraph.OpenGLConstants.GL_RGBA16F,
+              FABRIC.SceneGraph.OpenGLConstants.GL_RGBA,
               FABRIC.SceneGraph.OpenGLConstants.GL_FLOAT)
           ));
-    oglRenderTargetTextureNames.push('diffuseColors');
+    oglRenderTargetTextureNames.push('diffuseAndSpecularFactor');
 
     oglRenderTargetTextureDescs.push(
         new FABRIC.RT.OGLRenderTargetTextureDesc (

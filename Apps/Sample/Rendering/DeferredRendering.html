@@ -139,7 +139,7 @@ $(document).ready(function() {
 
   scene.constructNode('CameraManipulator', { targetNode: camera });
   viewport.setCameraNode(camera);
-  var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) });
+  var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0), color: FABRIC.RT.rgb(0.5, 0.5, 0.5) });
 
   var deferredRenderer = scene.constructNode('DeferredRenderer', {cameraNode: camera, lightNode: light, shininess: 20});
 
@@ -165,7 +165,8 @@ $(document).ready(function() {
         tangentsFromUV: 0
       }),
       materialNode: deferredRenderer.constructDiffuseMaterial('DeferredRenderMaterial', {
-        diffuseColor: FABRIC.RT.rgb(0.3, 0.3, 0.3)
+        diffuseColor: FABRIC.RT.rgb(0.3, 0.3, 0.3),
+        specularFactor: 0.1
       })
     });
 
@@ -195,14 +196,15 @@ $(document).ready(function() {
       }),
     materialNode: deferredRenderer.constructDiffuseMaterial('DeferredInstancingExtRenderMaterial', {
       diffuseColor: FABRIC.RT.rgb(0.8, 0.8, 0.8),
-      transformTextureNode: streetSlicedTransform.getTransformTexture(false)
+      transformTextureNode: streetSlicedTransform.getTransformTexture(false),
+      specularFactor: 0.1
     }),
     transformNode: streetSlicedTransform
   });
 
   /////////////////////////////////
   //Cars
-  var numCars = 1000;
+  var numCars = 200;
   var numCarsPerStreetSide = Math.floor(numCars/(nbStreets*4));
   if(numCarsPerStreetSide == 0)
     numCarsPerStreetSide = 1;
@@ -221,6 +223,9 @@ $(document).ready(function() {
   var swapDir = function(tr){
     tr.y = -tr.y;
   }
+
+  var carLightConeRadius = carWidth*3;
+  var carLightConeLength = carLength*4;
 
   var streetSide;
   for(dir = 0; dir < 2; ++dir) {
@@ -246,14 +251,14 @@ $(document).ready(function() {
 
           var lightOri = rotateLightsUp.multiply(carOri);
           var invLightOri = lightOri.inverse();
-          lightTr = new FABRIC.RT.Vec3(-carWidth/3,carLength*1.45,carWidth/3);
+          lightTr = new FABRIC.RT.Vec3(-carWidth*0.3,carLightConeLength/2+carLength*0.4,carWidth/3);
           if(dir==1)
             swapDir(lightTr);
           lightInstanceTransforms.push(new FABRIC.RT.Xfo( {
             tr: carTr.add(invLightOri.rotateVector(lightTr)),
             ori: carOri.multiply(rotateLightsUp)
           }));
-          lightTr = new FABRIC.RT.Vec3(-carWidth/3,carLength*1.45,-carWidth/3);
+          lightTr = new FABRIC.RT.Vec3(-carWidth*0.3,carLightConeLength/2+carLength*0.4,-carWidth/3);
           if(dir==1)
             swapDir(lightTr);
           lightInstanceTransforms.push(new FABRIC.RT.Xfo( {
@@ -271,29 +276,34 @@ $(document).ready(function() {
   scene.constructNode('Instance', {
     geometryNode: scene.importAssetFile('Models/carmod2.obj')['carmod2'],//Note: already scaled according to carLength, carHeight, carWidth
     materialNode: deferredRenderer.constructDiffuseMaterial('DeferredInstancingExtRenderMaterial', {
-      diffuseColor: FABRIC.RT.rgb(0.7, 0.7, 0.7),
-      transformTextureNode: carSlicedTransform.getTransformTexture(true)
+      diffuseColor: FABRIC.RT.rgb(0.8, 0.4, 0.4),
+      transformTextureNode: carSlicedTransform.getTransformTexture(true),
+      specularFactor: 1.0
     }),
     transformNode: carSlicedTransform
   });
 
   var lightSlicedTransform = scene.constructNode("Transform");
   lightSlicedTransform.setGlobalXfo(lightInstanceTransforms);
-  var carLightConeRadius = carWidth*0.5;
-  var carLightConeLength = carLength*2;
 
   var carLightConeBox = scene.constructNode('Cone', {
-    coneRadius: carLightConeRadius*1.24,//5 sided cone completely embedding real cone of that radius
-    coneLength: carLightConeLength,
+    radius: carLightConeRadius*1.24,//5 sided cone completely embedding real cone of that radius
+    height: carLightConeLength,
     detail: 2
   });
+
+  var lightCosCutoff = carLightConeLength / Math.sqrt(carLightConeRadius*carLightConeRadius+carLightConeLength*carLightConeLength);
+  var lightCosCutoffStart = carLightConeLength / Math.sqrt(carLightConeRadius*0.7*carLightConeRadius*0.7+carLightConeLength*carLightConeLength);
 
   scene.constructNode('Instance', {
     geometryNode: carLightConeBox,
     materialNode: deferredRenderer.addShadingMaterialLayer('DeferredSpotLightInstancingExtMaterial', {
-      lightColor: FABRIC.RT.rgb255(240,240,255),
-      lightCosCutoff: carLightConeLength / Math.sqrt(carLightConeRadius*carLightConeRadius+carLightConeLength*carLightConeLength),
+      lightColor: FABRIC.RT.rgb255(180,180,255),
+      lightCosCutoff: lightCosCutoff,
+      lightIntensity: 2.0,
+      lightCosCutoffStart: lightCosCutoffStart,
       lightDistCutoff: carLightConeLength,
+      lightDistCutoffStart: carLightConeLength*0.66,
       transformTextureNode: lightSlicedTransform.getTransformTexture(true)
     }),
     transformNode: lightSlicedTransform

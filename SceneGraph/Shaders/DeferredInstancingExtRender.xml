@@ -4,6 +4,7 @@
   
   <uniforms>
     <uniform name="u_materialDiffuseColor" constant="diffuseColor" type="Color" defaultValue="FABRIC.RT.rgba(0.8,0,0,1)"/>
+    <uniform name="u_materialSpecularFactor" constant="specularFactor" type="Scalar" defaultValue="1.0"/>
 
     <uniform name="u_viewMatrix" constant="viewMatrix" type="Mat44" owner="instance"/>
     <uniform name="u_projectionMatrix" constant="projectionMatrix" type="Mat44" owner="instance"/>
@@ -90,13 +91,14 @@
     <source>
       <![CDATA[
       uniform vec4 u_materialDiffuseColor;
+      uniform float u_materialSpecularFactor;
       varying vec3 normal;
       varying vec3 position;
 
       void main(){
         gl_FragData[0].xyz = position;
         gl_FragData[1].xyz = normalize(normal);
-        gl_FragData[2].rgb = u_materialDiffuseColor.rgb;
+        gl_FragData[2] = vec4(u_materialDiffuseColor.rgb, u_materialSpecularFactor);
        }
       ]]>
     </source>
