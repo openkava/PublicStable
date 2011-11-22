@@ -9,4 +9,5 @@ zip -qr js-scene-graph-resources-$DATE.zip \
   Apps/Sample/Tutorials/Resources \
   Apps/Sample/Alembic/Models \
   Apps/Sample/Lidar/Models \
-  Apps/Sample/UseCases/V8Engine/Models
+  Apps/Sample/UseCases/V8Engine/Models \
+  Apps/Sample/UseCases/BulletPlayGround/Resources
