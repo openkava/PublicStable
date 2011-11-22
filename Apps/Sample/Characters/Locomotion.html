@@ -97,7 +97,9 @@ $(document).ready(function() {
   
 
   // Create the scene.
-  var scene = FABRIC.SceneGraph.createScene();
+  var scene = FABRIC.SceneGraph.createScene({
+        timeStep: 1/40 /* 30 fps */
+      });
   var viewport = scene.constructNode('Viewport', {
     enableRaycasting: false,
     windowElement: document.getElementById('FabricContainer')
@@ -286,9 +288,9 @@ $(document).ready(function() {
   case 'marama':
     var locomotionControllerNode = scene.constructNode('ScreenSpacePlayerCharacterController', {
         cameraNode: camera,
-        maxLinearVelocity: 50,
+        maxLinearVelocity: 20,
         maxLinearAcceleration: 1.5,
-        maxAngularVelocity:  8,
+        maxAngularVelocity:  5,
         bulletWorldNode: bulletWorldNode,
         numTrailSegments: 0,
         gravity: -4.8,
@@ -478,6 +480,9 @@ $(document).ready(function() {
           scene.animation.step();
         });
         
+      setInterval(function() {
+          document.getElementById('frameRate').childNodes[0].data = 'Frame Rate:' + viewport.getFPS().toFixed(2);
+        }, 600);
       return true;
     }
   });
@@ -534,6 +539,12 @@ $(document).ready(function() {
             </div><!--content-->
           </div><!--box-->
 
+
+          <div class="box">
+            <h2 id="agents">PERFORMANCE</h2>
+            <div class="content" id="frameRate">Frame Rate:</div><p></p>
+          </div><!--box-->
+          
         </div><!--sidebar-->
       </div> <!--editor-->
     </div><!--wrapper-->
