@@ -369,7 +369,6 @@ FABRIC.SceneGraph.registerNodeType('DeferredRenderer', {
 
       var materialRedrawHandler = material.getRedrawEventHandler();
 
-console.log(FABRIC.SceneGraph.getShaderParamID('windowInvSize'));
       materialRedrawHandler.preDescendBindings.append(scene.constructOperator({
           operatorName: 'loadWindowSize',
           preProcessorDefinitions: {
