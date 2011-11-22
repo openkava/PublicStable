@@ -64,7 +64,7 @@ operator evaluateCharacterController(
     return;
   }
   Quat alignment;
-  Boolean displayDebugging = true;
+  Boolean displayDebugging = ENABLE_DEBUGGING;
   
   controllerXfo.tr += controllerXfo.ori.rotateVector(Vec3(0.0, controllerparams.lift, 0.0));
   controllerparams.lift = 0.0;
