@@ -74,7 +74,7 @@ operator evaluateLocomotionPoseVariables(
     /////////////////////////////////////////////////
     // Clip Activation
     if(trackcontroller.tick == 0){
-      trackcontroller.activeTrackSet = 1;
+      trackcontroller.activeTrackSet = 0;
       Scalar firstFootLift = 9999.0;
       for(Integer k=0; k < locomotionMarkers[trackcontroller.activeTrackSet].size; k++){
         if(locomotionMarkers[trackcontroller.activeTrackSet][k][0].time < firstFootLift){
@@ -251,6 +251,12 @@ operator evaluateLocomotionPoseVariables(
       FootStep currStep = footStepTrack.footSteps[stepId];
       Scalar stepRatio = (t - currStep.liftTime) / (currStep.plantTime - currStep.liftTime);
       
+      Xfo footMotion = poseVariables.xfoValues[leg.ikGoalXfoId];
+      // We remove the foot lift, so that it is not effected the foot pinning,
+      // then we reapply it after foot pinning. 
+      Scalar footLift = footMotion.tr.y;
+      footMotion.tr.y = 0.0;
+      
       Xfo footParentSpaceXfo;
       Vec3 displacementDir;
       if(leg.hubId < 0){
@@ -261,7 +267,8 @@ operator evaluateLocomotionPoseVariables(
         footParentSpaceXfo = controllerXfo * poseVariables.xfoValues[hubs[leg.hubId].xfoId];
         displacementDir = hubComs[leg.hubId].ori.rotateVector(Vec3(0.0,0.0,1.0));
       }
-      Xfo footXfo = footParentSpaceXfo * poseVariables.xfoValues[leg.ikGoalXfoId];
+      Xfo footXfo = footParentSpaceXfo * footMotion;
+      
       Xfo baseFootXfo = footParentSpaceXfo * leg.ikGoalReferenceXfo;
       if(displayFootPinningDebugging){
         debugFootMotion.drawLine(controllerXfo.tr, baseFootXfo.tr, Color(0.0, 0.5, 0.5, 1.0));
@@ -434,6 +441,7 @@ operator evaluateLocomotionPoseVariables(
       footXfo = invcontrollerXfo * footXfo;
       // Apply the error in COM space. 
       footXfo.tr += footError;
+      footXfo.tr.y += footLift;
       
       poseVariables.xfoValues[leg.ikGoalXfoId] = footXfo;
       
