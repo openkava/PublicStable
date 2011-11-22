@@ -141,13 +141,14 @@ $(document).ready(function() {
     params = { gridSize:'15' };
   }
   $("#gridSize").val(params.gridSize);
-  var buildLightSources = true;
 
   var storeParams = function(){
     localStorage.setItem("deferredRenderCarsGridSize", JSON.stringify(params));
   }
 
+  //Set main params
   var nbBlocs = params.gridSize;
+  var buildLightSources = true;
 
   var scene = FABRIC.SceneGraph.createScene();
   
@@ -535,6 +536,15 @@ $(document).ready(function() {
     });
   }
 
+  nbInstances =   streetInstanceTransforms.length 
+                + carInstanceTransforms.length
+                + lightInstanceTransforms.length
+                + carBackLightInstanceTransforms.length
+                + carFrontLightInstanceTransforms.length
+                + streetLightInstanceTransforms.length
+                + streetLightConeInstanceTransforms.length
+                + streetLightBulbInstanceTransforms.length;
+
   $('#play').button().click(function(){
       var options;
       if ($(this).text() == 'Play') {
@@ -582,8 +592,9 @@ $(document).ready(function() {
           document.getElementById('frameRate').childNodes[0].data = 'Frame Rate:' + viewport.getFPS().toFixed(2);
         }, 600);
 
-      document.getElementById('nbSpotLights').childNodes[0].data = 'Nb spot lights:' + (nbCars*2 + nbStreets*nbStreets*2*nbStreetLightsPerBloc);
-      document.getElementById('nbCars').childNodes[0].data = 'Nb cars:' + nbCars;
+      document.getElementById('nbSpotLights').childNodes[0].data = 'Nb spot lights: ' + (nbCars*2 + nbStreets*nbStreets*2*nbStreetLightsPerBloc);
+      document.getElementById('nbCars').childNodes[0].data = 'Nb cars: ' + nbCars;
+      document.getElementById('nbInstances').childNodes[0].data = 'Total geometry instances: ' + nbInstances;
 
       scene.animation.play();
 
@@ -636,7 +647,8 @@ $(document).ready(function() {
             <h2 id="agents">PERFORMANCE</h2>
             <div class="content" id="frameRate">Frame Rate:</div>
             <div class="content" id="nbSpotLights">Nb spot lights:</div>
-            <div class="content" id="nbCars">Nb cars:</div><p></p>
+            <div class="content" id="nbCars">Nb cars:</div>
+            <div class="content" id="nbInstances">Total geometry instances:</div><p></p>
           </div><!--box-->
         </div><!--sidebar-->
       </div> <!--editor-->
