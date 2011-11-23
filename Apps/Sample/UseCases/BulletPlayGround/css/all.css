@@ -229,6 +229,12 @@ font-family:Arial, Helvetica, sans-serif;
 .tools .primitives .pole {
   background:url(../Resources/primitives-thin-pole-128.png) no-repeat;
 }
+.tools .primitives .coin {
+  background:url(../Resources/primitives-coin-128.png) no-repeat;
+}
+.tools .primitives .ball {
+  background:url(../Resources/primitives-sphere-128.png) no-repeat;
+}
 
 /*.tools .primitives .cube {background-position:0 0;}
 .tools .primitives .circle {background-position:-50px 0;}
