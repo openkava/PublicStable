@@ -399,7 +399,10 @@ FABRIC.SceneGraph.registerNodeType('WorldSpacePlayerCharacterController', {
         
         'self.goalLinearVelocity',
         'self.goalOrientation'
-      ]
+      ],
+      preProcessorDefinitions: {
+        ENABLE_DEBUGGING: 'true'
+      }
     }), 0);
     
     // We always append the controller op last, 
