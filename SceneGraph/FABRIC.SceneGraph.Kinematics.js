@@ -122,23 +122,23 @@ FABRIC.SceneGraph.registerNodeType('Transform', {
     
     var parentWriteData = transformNode.writeData;
     var parentReadData = transformNode.readData;
-    transformNode.writeData = function(sceneSaver, constructionOptions, nodeData) {
+    transformNode.writeData = function(sceneSerializer, constructionOptions, nodeData) {
       constructionOptions.hierarchical = options.hierarchical;
       if(parentTransformNode){
-        sceneSaver.addNode(parentTransformNode.pub);
+        sceneSerializer.addNode(parentTransformNode.pub);
         nodeData.parentTransformNode = parentTransformNode.pub.getName();
       }
       nodeData.globalXfo = transformNode.pub.getGlobalXfo();
       
-      parentWriteData(sceneSaver, constructionOptions, nodeData);
+      parentWriteData(sceneSerializer, constructionOptions, nodeData);
     };
-    transformNode.readData = function(sceneLoader, nodeData) {
+    transformNode.readData = function(sceneDeserializer, nodeData) {
       if(nodeData.parentTransformNode){
-        transformNode.pub.setParentNode(sceneLoader.getNode(nodeData.parentTransformNode));
+        transformNode.pub.setParentNode(sceneDeserializer.getNode(nodeData.parentTransformNode));
       }
       transformNode.pub.setGlobalXfo(nodeData.globalXfo);
       
-      parentReadData(sceneLoader, nodeData);
+      parentReadData(sceneDeserializer, nodeData);
     };
 
     return transformNode;
@@ -174,29 +174,44 @@ FABRIC.SceneGraph.registerNodeType('TransformTexture', {
     if(!options.dynamic)
       tex.forceRefresh = false;
     redrawEventHandler.addMember('oglTexture2D', 'OGLTexture2D', tex);
+    redrawEventHandler.addMember('matricesTempBuffer', 'Mat44[]');
+    redrawEventHandler.addMember('textureHeight', 'Size');
 
     redrawEventHandler.setScope('transform', transformdgnode);
     redrawEventHandler.preDescendBindings.append(scene.constructOperator({
-      operatorName: 'setInstanceCount',
-      srcCode: 'operator setInstanceCount(io OGLShaderProgram shaderProgram, io Mat44 matrices<>) { shaderProgram.numInstances = Integer(matrices.size()); }',
-      entryFunctionName: 'setInstanceCount',
+      operatorName: 'prepareTextureMatrix',
+      preProcessorDefinitions: {
+        TRANSFORM_TEXTURE_HEIGHT_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('transformTextureHeight')
+      },
+      srcCode: 'use OGLShaderProgram, OGLTexture2D;\n'+
+               'operator prepareTextureMatrix(io Mat44 matrices<>, io Mat44 matricesTempBuffer[], io Size textureHeight, io OGLTexture2D oglTexture2D, io OGLShaderProgram shaderProgram, io Integer textureUnit){\n' +
+               '  if(textureUnit > -1) {\n' +
+               '    Size height = 0;\n' +
+               '    oglTexture2D.bindImageMatrix(matrices, matricesTempBuffer, textureUnit, height);\n' +
+               '    if(height != 0)//height == 0 if texture is already bound\n' +
+               '      textureHeight = height;\n' +
+               '  }else{\n' +
+               '    report("debugging instance matrices: ");\n' +
+               '    for(Size i=0;i<10;i++)\n' +
+               '      report("matrix "+i+": "+matrices[i]);\n' +
+               '    report("matrix "+(matrices.size()-1)+": "+matrices[matrices.size()-1]);\n' +
+               '   }\n'+
+               '  shaderProgram.numInstances = Integer(matrices.size());\n' +
+               '  Integer location = shaderProgram.getUniformLocation( TRANSFORM_TEXTURE_HEIGHT_ATTRIBUTE_ID );\n' +
+               '  if(location != -1)\n' +
+               '    shaderProgram.loadScalarUniform(location, Scalar(textureHeight));\n' +
+               '}',
+      entryFunctionName: 'prepareTextureMatrix',
       parameterLayout: [
-        'shader.shaderProgram',
-        'transform.textureMatrix<>'
-      ]
-    }));
-    redrawEventHandler.preDescendBindings.append(scene.constructOperator({
-      operatorName: 'bindTextureMatrix',
-      srcFile: 'FABRIC_ROOT/SceneGraph/KL/loadTexture.kl',
-      entryFunctionName: 'bindTextureMatrix',
-      parameterLayout: [
+        'transform.textureMatrix<>',
+        'self.matricesTempBuffer',
+        'self.textureHeight',
         'self.oglTexture2D',
-        'textureStub.textureUnit',
-        'transform.textureMatrix<>'
+        'shader.shaderProgram',
+        'textureStub.textureUnit'
       ]
     }));
-    
-    
+
     return textureNode;
   }});
 
@@ -215,12 +230,9 @@ FABRIC.SceneGraph.registerNodeType('AimTransform', {
     
     if(options.position && options.target){
       options.globalXfo = new FABRIC.RT.Xfo({ tr: options.position });
-      var zaxis = options.position.subtract(options.target).unit();
-      var yaxis = zaxis.cross(new FABRIC.RT.Vec3(0, 1, 0) ).cross(zaxis).unit();
-      var xaxis = yaxis.cross(zaxis).unit();
-      options.globalXfo = new FABRIC.RT.Xfo({ tr: options.position });
-      var mat = new FABRIC.RT.Mat33(xaxis, yaxis, zaxis).transpose();
-      options.globalXfo.ori.setFromMat33(mat);
+      options.globalXfo.ori.setFromDirectionAndUpvector(
+        options.position.subtract(options.target),
+        new FABRIC.RT.Vec3(0,1,0));
     }
 
     var aimTransformNode = scene.constructNode('Transform', options);

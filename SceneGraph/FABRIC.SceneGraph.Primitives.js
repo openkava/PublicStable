@@ -425,6 +425,8 @@ FABRIC.SceneGraph.registerNodeType('Cuboid', {
     if (typeof options.size === 'number') {
       options.length = options.height = options.width = options.size;
     }
+    options.uvSets = 1;
+
 
     var cubeNode = scene.constructNode('Triangles', options);
     cubeNode.pub.addUniformValue('length', 'Scalar', options.length);
@@ -446,6 +448,7 @@ FABRIC.SceneGraph.registerNodeType('Cuboid', {
         parameterLayout: [
           'self.positions<>',
           'self.normals<>',
+          'self.uvs0<>',
           'uniforms.indices',
           'uniforms.length',
           'uniforms.height',

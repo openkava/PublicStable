@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+  <meta charset="utf-8">  
+  <!--
+    Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+    -->
+    <title>FABRIC - Toon Rendering</title> 
+    
+    <script type="text/javascript" src="../../../ThirdParty/jQuery/jquery-1.6.2.min.js"></script>
+    <script type="text/javascript" src="../../../ThirdParty/jQuery/jquery-ui-1.8.16.custom.min.js"></script>
+
+    <link type="text/css" href="../../../ThirdParty/jQuery/css/fabric/main.css" rel="stylesheet" />
+    <link type="text/css" href="../../../ThirdParty/jQuery/css/fabric/jquery-ui-1.8.16.custom.css" rel="stylesheet" />
+
+    <script type="text/javascript" src="../../../Core/FABRIC.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Math.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Vec2.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Vec3.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Vec4.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Mat22.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Mat33.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Mat44.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Quat.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Xfo.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/RGBA.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Color.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Euler.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/Ray.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/OGLShaderProgram.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/OGLBuffer.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/OGLTexture2D.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/OGLRenderTarget.js" charset="utf-8"></script>
+
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Geometry.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Primitives.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Lights.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Materials.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Manipulation.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Kinematics.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Undo.js" charset="utf-8"></script>
+    
+<script type="text/javascript">
+
+ var _gaq = _gaq || [];
+ _gaq.push(['_setAccount', 'UA-25833362-1']);
+ _gaq.push(['_trackPageview']);
+
+ (function() {
+   var ga = document.createElement('script'); ga.type =
+'text/javascript'; ga.async = true;
+   ga.src = ('https:' == document.location.protocol ? 'https://ssl' :
+'http://www') + '.google-analytics.com/ga.js';
+   var s = document.getElementsByTagName('script')[0];
+s.parentNode.insertBefore(ga, s);
+ })();
+
+</script>
+
+
+<script type="text/javascript">
+
+// load our custom shaders
+FABRIC.SceneGraph.defineEffectFromFile('ToonDemoMaterial', 'ToonDemoShader.xml');
+
+// register our custom renderer
+FABRIC.SceneGraph.registerNodeType('ToonRenderer', {
+  briefDesc: '',
+  detailedDesc: '',
+  parentNodeDesc: '',
+  optionsDesc: {
+  },
+  factoryFn: function(options, scene) {
+    scene.assignDefaults(options, {
+      lightNode: undefined
+    });
+
+    var renderNode = scene.constructNode('SceneGraphNode');
+    var redrawEventHandler = renderNode.constructEventHandlerNode('ToonDraw');
+    redrawEventHandler.setScopeName('toonDraw');
+
+    scene.getSceneRedrawOpaqueObjectsEventHandler().appendChildEventHandler(redrawEventHandler);
+
+    var renderTargetRedrawEventHandler = renderNode.constructEventHandlerNode('RenderTargetRedraw');
+    renderTargetRedrawEventHandler.setScopeName('toonRenderTarget');
+    redrawEventHandler.appendChildEventHandler(renderTargetRedrawEventHandler);
+
+    var oglRenderTargetTextureDescs = [];
+    var oglRenderTargetTextureNames = [];
+
+    oglRenderTargetTextureDescs.push(
+        new FABRIC.RT.OGLRenderTargetTextureDesc (
+            2, // COLOR_BUFFER
+            new FABRIC.RT.OGLTexture2D (
+              FABRIC.SceneGraph.OpenGLConstants.GL_RGB16F,
+              FABRIC.SceneGraph.OpenGLConstants.GL_RGB,
+              FABRIC.SceneGraph.OpenGLConstants.GL_FLOAT)
+          ));
+    oglRenderTargetTextureNames.push('colors');
+
+    oglRenderTargetTextureDescs.push(
+        new FABRIC.RT.OGLRenderTargetTextureDesc (
+            2, // COLOR_BUFFER
+            new FABRIC.RT.OGLTexture2D (
+              FABRIC.SceneGraph.OpenGLConstants.GL_RGB16F,
+              FABRIC.SceneGraph.OpenGLConstants.GL_RGB,
+              FABRIC.SceneGraph.OpenGLConstants.GL_FLOAT)
+          ));
+    oglRenderTargetTextureNames.push('normals');
+
+    oglRenderTargetTextureDescs.push(
+        new FABRIC.RT.OGLRenderTargetTextureDesc(
+          1, // DEPTH_BUFFER
+          new FABRIC.RT.OGLTexture2D(
+            FABRIC.SceneGraph.OpenGLConstants.GL_DEPTH_COMPONENT,
+            FABRIC.SceneGraph.OpenGLConstants.GL_DEPTH_COMPONENT,
+            FABRIC.SceneGraph.OpenGLConstants.GL_FLOAT)
+        ));
+    oglRenderTargetTextureNames.push('depth');
+
+    var nbRenderTargets = oglRenderTargetTextureNames.length;
+
+    redrawEventHandler.addMember('textureIDs', 'Integer['+ nbRenderTargets + ']');
+
+    renderTargetRedrawEventHandler.addMember('renderTarget', 'OGLRenderTarget', FABRIC.RT.oglRenderTarget(0,0,
+      oglRenderTargetTextureDescs,
+      {
+        clearColor: FABRIC.RT.rgba(0.5,0.5,0.5,1.0)
+      }
+    ));
+
+    renderTargetRedrawEventHandler.preDescendBindings.append(
+      scene.constructOperator({
+          operatorName: 'bindScreenRenderTarget',
+          srcFile: 'FABRIC_ROOT/SceneGraph/KL/renderTarget.kl',
+          entryFunctionName: 'bindScreenRenderTarget',
+          parameterLayout: [
+            'window.width',
+            'window.height',
+            'self.renderTarget'
+          ]
+        }));
+
+    renderTargetRedrawEventHandler.postDescendBindings.insert(
+      scene.constructOperator({
+          operatorName: 'unbindRenderTarget',
+          srcFile: 'FABRIC_ROOT/SceneGraph/KL/renderTarget.kl',
+          entryFunctionName: 'unbindRenderTarget',
+          parameterLayout: [
+            'self.renderTarget'
+          ]
+        }), 0);
+
+    renderTargetRedrawEventHandler.postDescendBindings.append(
+      scene.constructOperator({
+          operatorName: 'saveTextureIDs',
+          srcCode: 'use OGLRenderTarget; operator saveTextureIDs(io OGLRenderTarget renderTarget, io Integer t[' + nbRenderTargets + ']){ \n' +
+                  'Size i;\n' +
+                  'for(i = 0; i < renderTarget.textures.size; ++i)\n' +
+                  '  t[i] = renderTarget.textures[i].texture.bufferID;}',
+          entryFunctionName: 'saveTextureIDs',
+          parameterLayout: [
+            'self.renderTarget',
+            'toonDraw.textureIDs'
+          ]
+        }));
+
+    var toonDemoMaterialPub = scene.pub.constructNode('ToonDemoMaterial', {
+      parentEventHandler: renderTargetRedrawEventHandler,
+      lightNode: options.lightNode
+    });
+    
+    var compositingMaterial = scene.constructNode('Material', {
+      name: 'ToonCompositing',
+      parentEventHandler: redrawEventHandler,
+      vertexShader: undefined,
+      fragmentShader: FABRIC.loadResourceURL('ToonCompositing.glsl'),
+      shaderUniforms: {
+        colorTexture: { name: 'u_colorImage', owner: 'renderTarget' },
+        normalTexture: { name: 'u_normalImage', owner: 'renderTarget' },
+        depthTexture: { name: 'u_depthImage', owner: 'renderTarget' },
+        width: { name: 'u_width', owner: 'window', type:'Integer' },
+        height: { name: 'u_height', owner: 'window', type:'Integer' },
+        outlineWidth: { name: 'u_outlineWidth', type:'Scalar', defaultValue: 1.0},
+        outlineColor: { name: 'u_outlineColor', type:'Color', defaultValue: FABRIC.RT.rgba(0.0,0.0,0.0,1.0)},
+      },
+    });
+    renderNode.addMemberInterface(compositingMaterial.getRedrawEventHandler(),'outlineWidth',true);
+    renderNode.addMemberInterface(compositingMaterial.getRedrawEventHandler(),'outlineColor',true);
+    
+    var compositingRedrawEventHandler = compositingMaterial.getRedrawEventHandler();
+    
+    // create an operator to draw one of the textures full screen
+    compositingRedrawEventHandler.postDescendBindings.append(
+      scene.constructOperator({
+          operatorName: 'drawToonCompositing',
+          srcCode:'use OGLTexture2D;\nuse OGLShaderProgram;\n' +
+                  'operator drawToonCompositing(io Integer t[' + nbRenderTargets + '], io OGLShaderProgram shaderProgram){ \n' +
+                  '  glMatrixMode(GL_MODELVIEW);\n' + 
+                  '  glPushMatrix();\n' + 
+                  '  glLoadIdentity();\n' +
+                  '  glActiveTexture(GL_TEXTURE0 + 0);\n' +
+                  '  glBindTexture(GL_TEXTURE_2D, t[0]);\n' +
+                  '  glActiveTexture(GL_TEXTURE0 + 1);\n' +
+                  '  glBindTexture(GL_TEXTURE_2D, t[1]);\n' +
+                  '  glActiveTexture(GL_TEXTURE0 + 2);\n' +
+                  '  glBindTexture(GL_TEXTURE_2D, t[2]);\n' +
+                  '  shaderProgram.loadIntegerUniform(shaderProgram.uniformValues[0].location, 0);\n' +
+                  '  shaderProgram.loadIntegerUniform(shaderProgram.uniformValues[1].location, 1);\n' +
+                  '  shaderProgram.loadIntegerUniform(shaderProgram.uniformValues[2].location, 2);\n' +
+                  '  glBegin(GL_QUADS);\n' + 
+                  '  glTexCoord2f(0.0, 0.0); glVertex3f(-1.0,-1.0, -1.0);\n' + 
+                  '  glTexCoord2f(1.0, 0.0); glVertex3f( 1.0,-1.0, -1.0);\n' + 
+                  '  glTexCoord2f(1.0, 1.0); glVertex3f( 1.0, 1.0, -1.0);\n' + 
+                  '  glTexCoord2f(0.0, 1.0); glVertex3f(-1.0, 1.0, -1.0);\n' + 
+                  '  glEnd();\n' + 
+                  '  glPopMatrix();\n' + 
+                  '  return;\n  }\n',
+          entryFunctionName: 'drawToonCompositing',
+          parameterLayout: [
+            'toonDraw.textureIDs',
+            'shader.shaderProgram'
+          ]
+      }));
+
+    //Debug display render targets
+    redrawEventHandler.addMember('debugDrawToggle', 'Boolean', false);
+    redrawEventHandler.addMember('debugShaderProgID', 'Integer', 0);
+    renderNode.addMemberInterface(redrawEventHandler, 'debugDrawToggle', true);
+
+    redrawEventHandler.postDescendBindings.append(
+      scene.constructOperator({
+          operatorName: 'debugDrawRenderTargets',
+          srcCode:'use OGLTexture2D;\n' +
+                  'operator debugDrawRenderTargets(io Boolean debugDrawToggle, io Integer t[' + nbRenderTargets + '], io Integer progId){ \n' +
+                  'if(!debugDrawToggle) return;\n' +
+                  'Size i, j, n = ' + oglRenderTargetTextureNames.length + ', curr = 0;\n' +
+                  'for(i = 0; i < 3; ++i){\n' +
+                  '  for(j = 0; j < 3; ++j){\n' +
+                  '    Scalar x = -1.0 + Scalar(i)/1.5;\n' +
+                  '    Scalar y = 1.0 - Scalar(j)/1.5;\n' +
+                  '    glActiveTexture(GL_TEXTURE0);\n' +
+                  '    glBindTexture(GL_TEXTURE_2D, t[curr++]);\n' +
+                  '    drawTexture(0, progId, Vec2(x,y), Vec2(x+0.66666,y-0.66666), false);\n' +
+                  '    if(curr == n)\n' +
+                  '      return;}}}\n',
+          entryFunctionName: 'debugDrawRenderTargets',
+          parameterLayout: [
+            'self.debugDrawToggle',
+            'self.textureIDs',
+            'self.debugShaderProgID'
+          ]
+      }));
+
+    renderNode.pub.getMaterial = function(){return toonDemoMaterialPub;}
+    return renderNode;
+  }});
+
+$(document).ready(function() {
+  ///////////////////////////////////////////////////////////////
+  // Create the scene.
+  var scene = FABRIC.SceneGraph.createScene();
+  var viewport = scene.constructNode('Viewport', {
+    windowElement: document.getElementById('FabricContainer'),
+    rayIntersectionThreshold: 0.8
+  });
+
+  // Create a camera to draw the scene from
+  var camera = scene.constructNode('TargetCamera', {
+      nearDistance: 5,
+      farDistance: 30,
+      position: new FABRIC.RT.Vec3(2, 6, 12).multiplyScalar(1.5),
+      target: new FABRIC.RT.Vec3(0, 0, 0)
+    });
+  scene.constructNode('CameraManipulator', { targetNode: camera });
+  viewport.setCameraNode(camera);
+  
+  var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(2.0, 10.0, 5.0) });
+  var teapot = scene.constructNode('Teapot', { detail: 8 });
+  
+  var toonRenderer = scene.constructNode('ToonRenderer', {lightNode: light});
+
+  var instance = scene.constructNode('Instance', {
+      transformNode: scene.constructNode('Transform', {
+        hierarchical: false,
+        globalXfo: new FABRIC.RT.Xfo({ tr: new FABRIC.RT.Vec3(0, 0, 0) })
+      }),
+      geometryNode: teapot,
+      materialNode: toonRenderer.getMaterial()
+    });
+  
+  // ========================================
+  // UI LOGIC
+  $('#colorSteps').slider({
+    min: 2.0,
+    max: 10.0,
+    step: 1.0,
+    value: toonRenderer.getMaterial().getColorSteps()
+  }).bind('slide',
+    function(event, ui) {
+      toonRenderer.getMaterial().setColorSteps(ui.value);
+      viewport.redraw();
+    }
+  );
+
+  $('#outlineWidth').slider({
+    min: 1.0,
+    max: 4.0,
+    step: 1.0,
+    value: toonRenderer.getOutlineWidth()
+  }).bind('slide',
+    function(event, ui) {
+      toonRenderer.setOutlineWidth(ui.value);
+      viewport.redraw();
+    }
+  );
+
+  $('#toggleDebug').button().click(function(){
+    toonRenderer.setDebugDrawToggle(!toonRenderer.getDebugDrawToggle());
+    viewport.redraw();
+  });
+  
+  $('#loadingDialog').dialog({
+    modal: true
+  });
+  FABRIC.appendOnResolveAsyncTaskCallback(function(label, nbRemaining, doneWeight, totalWeight) {
+    $('#loadingProgressBar').progressbar({
+      value: (1.0-(doneWeight/totalWeight))*100
+    });
+    if (nbRemaining===0) {
+      $('#loadingDialog').dialog('close');
+      var errors = scene.getErrors();
+      if (errors.length > 0) {
+        throw (errors.toString());
+      }
+      viewport.redraw();
+      return true;
+    }
+  });
+  
+});
+
+// jQuert UI Styling classes
+$(document).ready(function() {
+	$(".box").addClass("ui-widget");
+	$(".box h2").addClass("ui-widget-header ui-corner-all");
+	$(".content").addClass("ui-widget-content");
+});
+
+</script>
+
+  </head> 
+  <body>
+    <div id="loadingDialog" title="Loading...">
+      <h4 id="loadingDesc"></h4>
+      <div id="loadingProgressBar" class="ui-progressbar-value"></div>
+    </div>
+    <div id="wrapper">
+
+      <div id="editor">
+        <div id="viewer">
+          <div id="FabricContainer"></div> 
+        </div><!--viewer-->
+        <div id="sidebar">
+          <p class="box">&larr; <a href="../../../index.html">back to Demo list</a></p>
+          <div class="box">
+            <h2>INFO</h2>
+            <div class="content">
+              Toon Rendering.<br>
+              The Toon Renderer uses a complex rendering pipeline, which renders to render targets.
+              It renders color, normal and depth information. Then it uses a post effect shader to
+              compute outlines from the normal and depth render target, and composites the output.<br>
+              Since the outlines are computed as a post process, they also work with clipped geometry.
+            </div><!--content-->
+          </div><!--box-->
+          <div class="box">
+            <h2>CONTROLS</h2>
+            <div class="content">
+              <div>Color Steps:</div>
+              <div id="colorSteps" style="margin-bottom: 10px; margin-top: 10px"></div>
+              <div>Outline Width:</div>
+              <div id="outlineWidth" style="margin-bottom: 10px; margin-top: 10px"></div>
+              <button id="toggleDebug">Toggle Debug</div>
+            </div><!--content-->
+          </div><!--box-->
+        </div><!--sidebar-->
+      </div> <!--editor-->
+    </div><!--wrapper-->
+  </body> 
+</html>
