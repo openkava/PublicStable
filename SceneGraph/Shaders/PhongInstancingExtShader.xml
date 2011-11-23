@@ -55,43 +55,15 @@
       out vec3 lightDir;
       out vec3 viewDir;
 
-      mat3 inverseAndTransposeMat33(in mat3 m)
-      {
-        float det = m[0].x * m[1].y * m[2].z
-                  + m[0].y * m[1].z * m[2].x
-                  + m[0].z * m[1].x * m[2].y
-                  - m[0].x * m[1].z * m[2].y
-                  - m[0].y * m[1].x * m[2].z
-                  - m[0].z * m[1].y * m[2].x;
-        float invDet = 1.0 / det;
-
-        mat3 result;
-
-        result[0].x = (m[1].y * m[2].z - m[1].z * m[2].y) * invDet;
-        result[1].x = (m[0].z * m[2].y - m[0].y * m[2].z) * invDet;
-        result[2].x = (m[0].y * m[1].z - m[0].z * m[1].y) * invDet;
-
-        result[0].y = (m[1].z * m[2].x - m[1].x * m[2].z) * invDet;
-        result[1].y = (m[0].x * m[2].z - m[0].z * m[2].x) * invDet;
-        result[2].y = (m[0].z * m[1].x - m[0].x * m[1].z) * invDet;
-
-        result[0].z = (m[1].x * m[2].y - m[1].y * m[2].x) * invDet;
-        result[1].z = (m[0].y * m[2].x - m[0].x * m[2].y) * invDet;
-        result[2].z = (m[0].x * m[1].y - m[0].y * m[1].x) * invDet;
-        return result;
-      }
-
+      ]]>
+      </source>
+      <include file="matrices.txt"/>
+      <source>
+      <![CDATA[
+			
       void main(){
-        int instanceID = gl_InstanceID;
+				mat4 modelMatrix = loadMatrixFromTexture(u_samplerTransformMap, gl_InstanceID);
         vec2 factor = vec2(1.0 / 512.0, 1.0 / u_transformTextureHeight);
-        int x = (instanceID % 128) * 4;
-        float y = float(instanceID) / 128.0;
-        mat4 mvp = mat4(texture2D(u_samplerTransformMap,vec2(x,y) * factor),
-            texture2D(u_samplerTransformMap,vec2(x+1,y) * factor),
-            texture2D(u_samplerTransformMap,vec2(x+2,y) * factor),
-            texture2D(u_samplerTransformMap,vec2(x+3,y) * factor));
-
-        mat4 modelViewMatrix = u_viewMatrix * mvp;
         mat4 modelViewProjectionMatrix = u_projectionMatrix * modelViewMatrix;
         mat3 normalMatrix = inverseAndTransposeMat33(mat3(modelViewMatrix[0].xyz, modelViewMatrix[1].xyz, modelViewMatrix[2].xyz));
     

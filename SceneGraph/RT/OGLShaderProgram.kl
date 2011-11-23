@@ -261,8 +261,10 @@ function OGLShaderProgram.loadShader() {
 }
 
 function OGLShaderProgram.unloadShader() {
-  if(this.disableOptions.size() > 0 || this.enableOptions.size() > 0){
-    glPopAttrib();
+  if(this.programId != 0){
+    if(this.disableOptions.size() > 0 || this.enableOptions.size() > 0){
+      glPopAttrib();
+    }
   }
   this.loadedAttributes.resize(0);
   if(this.debug){
@@ -518,6 +520,9 @@ function OGLShaderProgram.loadMat44TransposedUniformArray(
   if(this.programId==0){
     report("ERROR: Shader not in use");
     return;
+  }
+  if(values.size() > 62){
+    report("WARNING: Loading more than 62 Matrices will exceed the limit of 1024 uniforms supported by ATI GPUs.");
   }
   if (location != - 1) {
     glUniformMatrix4fv(location, values.size(), false, values);

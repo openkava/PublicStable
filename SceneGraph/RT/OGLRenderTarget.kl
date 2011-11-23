@@ -8,17 +8,18 @@ use FabricOGL, OGLTexture2D;
 function OGLRenderTarget.genTextures() {
 //  report("OGLTexture2D.genTextures width:" + this.width + " height:" + this.height);
 
+  Integer ints[]; ints.resize(1);
   Integer i, maxColorBuffers;
-//  glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS, maxColorBuffers);
-//  this.numColorBuffers = 0;
-//  for(i=0; i<this.textures.size(); i++){
-//    if(this.textures[i].type == COLOR_BUFFER)
-//      this.numColorBuffers++;
-//  }
-//  if(maxColorBuffers < this.numColorBuffers){
-//    report("Your OpenGL implementation supports only " + maxColorBuffers + " but " + this.numColorBuffers + " are needed");
-//    return;
-//  }
+  glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS, ints); maxColorBuffers = ints[0];
+  this.numColorBuffers = 0;
+  for(i=0; i<this.textures.size(); i++){
+    if(this.textures[i].type == 2)//COLOR_BUFFER:
+      this.numColorBuffers++;
+  }
+  if(maxColorBuffers < this.numColorBuffers){
+    report("ERROR: Your OpenGL implementation supports only " + maxColorBuffers + " but " + this.numColorBuffers + " are needed");
+    return;
+  }
 
   //Create Frame Buffer Object
   Size fbos[];
@@ -38,7 +39,7 @@ function OGLRenderTarget.genTextures() {
       break;
     }
     switch(this.textures[i].type){
-      case 1://this.DEPTH_BUFFER:
+      case 1://DEPTH_BUFFER:
         {
           if(this.depthBuffer != -1){
             report( "Creating 2 or more depth buffers is not possible!");
@@ -69,7 +70,7 @@ function OGLRenderTarget.genTextures() {
           this.hasDepthBufferTexture = true;
         }
         break;
-      case 2://this.COLOR_BUFFER:
+      case 2://COLOR_BUFFER:
         {
           this.textures[i].texture.genTexture(this.width, this.height);
           if(this.textures[i].texture.bufferID==0){

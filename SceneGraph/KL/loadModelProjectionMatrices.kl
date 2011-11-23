@@ -5,23 +5,15 @@
 use Xfo, Mat33, Mat44;
 use OGLShaderProgram;
 
-function loadModelProjectionMatricesFn(
+
+operator loadProjectionMatrices(
   io OGLShaderProgram shaderProgram,
-  Xfo modelXfo,
-  Mat44 cameraMatrix,
-  Mat44 projectionMatrix
+  io Mat44 cameraMatrix,
+  io Mat44 projectionMatrix
 ) {
-//  report("loadModelProjectionMatrices");
+//  report("loadProjectionMatricesFn");
   Integer location;
 
-  location = shaderProgram.getUniformLocation(MODELMATRIX_ATTRIBUTE_ID);
-  if(location!=-1){
-    shaderProgram.loadMat44Uniform(location, modelXfo.toMat44());
-  }
-  location = shaderProgram.getUniformLocation(MODELMATRIXINVERSE_ATTRIBUTE_ID);
-  if(location!=-1){
-    shaderProgram.loadMat44Uniform(location, modelXfo.toMat44().inverse());
-  }
   location = shaderProgram.getUniformLocation(VIEWMATRIX_ATTRIBUTE_ID);
   if(location!=-1){
     shaderProgram.loadMat44Uniform(location, cameraMatrix);
@@ -40,15 +32,35 @@ function loadModelProjectionMatricesFn(
   if(location!=-1){
     shaderProgram.loadMat44Uniform(location, projectionMatrix);
   }
+  location = shaderProgram.getUniformLocation(PROJECTIONMATRIXINV_ATTRIBUTE_ID);
+  if(location!=-1){
+    shaderProgram.loadMat44Uniform(location, projectionMatrix.inverse());
+  }
+}
+
+
+function loadModelProjectionMatricesFn(
+  io OGLShaderProgram shaderProgram,
+  Xfo modelXfo,
+  Mat44 cameraMatrix,
+  Mat44 projectionMatrix
+) {
+//  report("loadModelProjectionMatrices");
+  Integer location;
+
+  location = shaderProgram.getUniformLocation(MODELMATRIX_ATTRIBUTE_ID);
+  if(location!=-1){
+    shaderProgram.loadMat44Uniform(location, modelXfo.toMat44());
+  }
+  location = shaderProgram.getUniformLocation(MODELMATRIXINVERSE_ATTRIBUTE_ID);
+  if(location!=-1){
+    shaderProgram.loadMat44Uniform(location, modelXfo.toMat44().inverse());
+  }
   location = shaderProgram.getUniformLocation(NORMALMATRIX_ATTRIBUTE_ID);
   if(location!=-1){
     Mat44 modelViewMatrix = cameraMatrix * modelXfo.toMat44();
     Mat33 normalMatrix = modelViewMatrix.upperLeft().inverse().transpose();
     shaderProgram.loadMat33Uniform(location, normalMatrix);
-  }
-  location = shaderProgram.getUniformLocation(PROJECTIONMATRIXINV_ATTRIBUTE_ID);
-  if(location!=-1){
-    shaderProgram.loadMat44Uniform(location, projectionMatrix.inverse());
   }
   location = shaderProgram.getUniformLocation(MODELVIEW_MATRIX_ATTRIBUTE_ID);
   if(location!=-1){
@@ -75,6 +87,7 @@ operator loadModelProjectionMatrices(
     projectionMatrix
   );
 }
+
 operator loadIndexedModelProjectionMatrices(
   io OGLShaderProgram shaderProgram,
   io Xfo modelXfos<>,

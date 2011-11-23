@@ -184,7 +184,7 @@ FABRIC.SceneGraph.registerNodeType('LocomotionAnimationLibrary', {
       
       dgnode.bindings.append(scene.constructOperator({
         operatorName: 'matchCount',
-        srcCode: 'operator matchCount(Size parentCount, io Size selfCount) { selfCount = parentCount; report("matchCount:"+parentCount); }',
+        srcCode: 'operator matchCount(Size parentCount, io Size selfCount) { selfCount = parentCount; }',
         entryFunctionName: 'matchCount',
         parameterLayout: [
           'sourceAnimationLibrary.count',
@@ -263,18 +263,10 @@ FABRIC.SceneGraph.registerNodeType('LocomotionCharacterController', {
   },
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
-      controllerXfo: new FABRIC.RT.Xfo(),
-      controllerLinearVelocity: new FABRIC.RT.Vec3(),
-      controllerAngularVelocity: new FABRIC.RT.Euler(),
-      translationControls: new FABRIC.RT.Vec2(),
-      orientationControls: new FABRIC.RT.Vec2(),
-    
-      maxLinearVelocity: new FABRIC.RT.Vec2(10.0, 10.0),
-      maxAngularVelocity: new FABRIC.RT.Euler(0.0,0.1,0.0),
+      maxLinearVelocity: 10.0,
+      maxAngularVelocity: 0.1,
       maxLinearAcceleration: 1.0,
       maxAngularAcceleration: 1.0,
-      
-      cameraNode: undefined,
       
       trailLength: 120.0,
       numTrailSegments: 0,
@@ -283,7 +275,6 @@ FABRIC.SceneGraph.registerNodeType('LocomotionCharacterController', {
       comHeight: 15,
       circleSize: 20
     });
-    var cameraNode = scene.getPrivateInterface(options.cameraNode);
     var characterControllerNode = scene.constructNode('CharacterController', options);
     var dgnode = characterControllerNode.getDGNode();
     
@@ -300,26 +291,24 @@ FABRIC.SceneGraph.registerNodeType('LocomotionCharacterController', {
       controllerparams.trailLength = options.trailLength;
       controllerparams.trailCircularArrayIndex = options.numTrailSegments-1;
     }
-    dgnode.addMember('controllerparams', 'CharacterControllerParams', controllerparams);
-    dgnode.addMember('liftVec', 'Vec3');
     
     dgnode.setDependency(scene.getGlobalsNode(), 'globals');
-    dgnode.setDependency(cameraNode.getDGNode(), 'camera');
     
+    dgnode.addMember('goalLinearVelocity', 'Vec3');
+    dgnode.addMember('goalOrientation', 'Quat');
+    
+    dgnode.addMember('maxLinearVelocity', 'Scalar', options.maxLinearVelocity);
+    dgnode.addMember('maxAngularVelocity', 'Scalar', options.maxAngularVelocity);
+    dgnode.addMember('maxLinearAcceleration', 'Scalar', options.maxLinearAcceleration);
+    dgnode.addMember('maxAngularAcceleration', 'Scalar', options.maxAngularAcceleration);
+    dgnode.addMember('linearVelocity', 'Vec3');
+    dgnode.addMember('angularVelocity', 'Quat');
+    
+    dgnode.addMember('controllerparams', 'CharacterControllerParams', controllerparams);
+    dgnode.addMember('liftVec', 'Vec3');
     dgnode.addMember('gravity', 'Scalar', options.gravity);
     dgnode.addMember('comHeight', 'Scalar', options.comHeight);
     dgnode.addMember('circleSize', 'Scalar', options.circleSize);
-    
-    dgnode.addMember('translationControls', 'Vec2', options.translationControls);
-    dgnode.addMember('orientationControls', 'Vec2', options.orientationControls);
-    
-    characterControllerNode.addMemberInterface(dgnode, 'translationControls', true);
-    characterControllerNode.addMemberInterface(dgnode, 'orientationControls', true);
-    
-    dgnode.addMember('maxLinearVelocity', 'Vec2', options.maxLinearVelocity);
-    dgnode.addMember('maxAngularVelocity', 'Euler', options.maxAngularVelocity);
-    dgnode.addMember('maxLinearAcceleration', 'Scalar', options.maxLinearAcceleration);
-    dgnode.addMember('maxAngularAcceleration', 'Scalar', options.maxAngularAcceleration);
     
     dgnode.addMember('debugGeometry1', 'DebugGeometry' );
     var debugGeometryDraw1 = scene.constructNode('DebugGeometryDraw', {
@@ -336,39 +325,89 @@ FABRIC.SceneGraph.registerNodeType('LocomotionCharacterController', {
       debugGeometryDraw2.pub.setDrawToggle(tf);
     }
   
-    dgnode.bindings.append(scene.constructOperator({
-      operatorName: 'evaluateCharacterController',
-      srcFile: 'FABRIC_ROOT/SceneGraph/KL/characterController.kl',
-      entryFunctionName: 'evaluateCharacterController',
-      parameterLayout: [
-        'self.xfo',
-        'self.controllerparams',
-        'self.translationControls',
-        'self.orientationControls',
-    
-        'self.maxLinearVelocity',
-        'self.maxAngularVelocity',
-        'self.maxLinearAcceleration',
-        'self.maxAngularAcceleration',
-        
-        'self.gravity',
-        'self.comHeight',
-        'self.circleSize',
-        
-        'self.debugGeometry1',
-        'self.debugGeometry2',
-        
-        'camera.cameraMat44',
-        'camera.projectionMat44',
-        
-        'globals.timestep'
-      ]
-    }));
+    characterControllerNode.getCharacterControllerOp = function(){
+      return scene.constructOperator({
+        operatorName: 'evaluateCharacterController',
+        srcFile: 'FABRIC_ROOT/SceneGraph/KL/characterController.kl',
+        entryFunctionName: 'evaluateCharacterController',
+        parameterLayout: [
+          'self.xfo',
+          'self.controllerparams',
+          
+          'self.goalLinearVelocity',
+          'self.goalOrientation',
+      
+          'self.maxLinearVelocity',
+          'self.maxAngularVelocity',
+          'self.maxLinearAcceleration',
+          'self.maxAngularAcceleration',
+          
+          'self.linearVelocity',
+          'self.angularVelocity',
+          
+          'self.gravity',
+          'self.comHeight',
+          'self.circleSize',
+          
+          'self.debugGeometry1',
+          'self.debugGeometry2',
+          
+          'globals.timestep'
+        ]
+      });
+    }
     
     return characterControllerNode;
   }});
 
 
+FABRIC.SceneGraph.registerNodeType('ScreenSpacePlayerCharacterController', {
+  parentNodeDesc: 'CharacterController',
+  optionsDesc: {
+  },
+  factoryFn: function(options, scene) {
+    scene.assignDefaults(options, {
+      
+      cameraNode: undefined
+    });
+    var cameraNode = scene.getPrivateInterface(options.cameraNode);
+    var characterControllerNode = scene.constructNode('LocomotionCharacterController', options);
+    var dgnode = characterControllerNode.getDGNode();
+    dgnode.setDependency(cameraNode.getDGNode(), 'camera');
+    dgnode.addMember('translationControls', 'Vec2', options.translationControls);
+    dgnode.addMember('orientationControls', 'Vec2', options.orientationControls);
+    
+    characterControllerNode.addMemberInterface(dgnode, 'translationControls', true);
+    characterControllerNode.addMemberInterface(dgnode, 'orientationControls', true);
+    
+    dgnode.bindings.insert(scene.constructOperator({
+      operatorName: 'screenSpacePlayerControls',
+      srcFile: 'FABRIC_ROOT/SceneGraph/KL/characterController.kl',
+      entryFunctionName: 'screenSpacePlayerControls',
+      parameterLayout: [
+        'self.translationControls',
+        'self.orientationControls',
+        
+        'self.maxLinearVelocity',
+        'self.maxAngularVelocity',
+        
+        'self.goalLinearVelocity',
+        'self.goalOrientation',
+    
+        'camera.cameraMat44',
+        'camera.projectionMat44'
+      ]
+    }), 0);
+    
+    // We always append fht econtrolelr op last, 
+    // because it increments the character Xfo
+    dgnode.bindings.append(characterControllerNode.getCharacterControllerOp());
+    
+    return characterControllerNode;
+  }
+});
+  
+  
 FABRIC.RT.TrackSetController = function( activeTrackSet ) {
   this.activeTrackSet = activeTrackSet != undefined ? activeTrackSet : 0;
   this.time = 0.0;
@@ -408,7 +447,12 @@ FABRIC.SceneGraph.registerNodeType('LocomotionPoseVariables', {
     scene.assignDefaults(options, {
       bulletWorldNode: undefined
     });
+    if(!options.characterRigNode){
+      throw "characterRigNode must be provided";
+    }
+    var characterRigNode = scene.getPrivateInterface(options.characterRigNode);
     
+    options.poseVariables = characterRigNode.getVariables();
     var locomotionVariables = scene.constructNode('CharacterVariables', options);
     var dgnode = locomotionVariables.getDGNode();
     
@@ -436,14 +480,24 @@ FABRIC.SceneGraph.registerNodeType('LocomotionPoseVariables', {
     dgnode.setDependency(scene.getGlobalsNode(), 'globals');
   
     dgnode.bindings.append(scene.constructOperator({
+      operatorName: 'matchCount',
+      srcCode: 'operator matchCount(Size parentCount, io Size selfCount) { selfCount = parentCount; }',
+      entryFunctionName: 'matchCount',
+      parameterLayout: [
+        'charactercontroller.count',
+        'self.newCount'
+      ],
+      async: false
+    }));
+    dgnode.bindings.append(scene.constructOperator({
       operatorName: 'evaluateLocomotionPoseVariables',
       srcFile: 'FABRIC_ROOT/SceneGraph/KL/locomotion.kl',
       entryFunctionName: 'evaluateLocomotionPoseVariables',
       parameterLayout: [
         'globals.timestep',
-        /*
+        
         'bulletworld.world',
-        */
+        
         'animationlibrary.trackSet<>',
         'animationlibrary.markers<>',
         'animationlibrary.footStepTracks<>',
@@ -486,9 +540,6 @@ FABRIC.SceneGraph.registerNodeType('LocomotionPoseVariables', {
       }
       animationLibraryNode = scene.getPrivateInterface(animationLibraryNode);
       dgnode.setDependency(animationLibraryNode.getDGNode(), 'animationlibrary');
-    //  if(keyframeTrackBindings){
-    //    dgnode.addMember('bindings', 'KeyframeTrackBindings', keyframeTrackBindings);
-    //  }
     };
     
     var skeletonNode;
@@ -503,10 +554,25 @@ FABRIC.SceneGraph.registerNodeType('LocomotionPoseVariables', {
       return scene.getPublicInterface(skeletonNode);
     };
     
+    locomotionVariables.pub.setMatchCountNode = function(node){
+      dgnode.bindings.append(scene.constructOperator({
+        operatorName: 'matchCount',
+        srcCode: 'operator matchCount(Size parentCount, io Size selfCount) { selfCount = parentCount; report("matchCount:"+parentCount); }',
+        entryFunctionName: 'matchCount',
+        parameterLayout: [
+          'matchCountNode.count',
+          'self.newCount'
+        ],
+        async: false
+      }));
+    }
     
     locomotionVariables.pub.setDrawDebuggingToggle = function(tf){
       debugGeometryDraw.pub.setDrawToggle(tf);
     }
+    
+    locomotionVariables.pub.setSkeletonNode(characterRigNode.pub.getSkeletonNode());
+    locomotionVariables.pub.setCharacterController(characterRigNode.pub.getControllerNode());
     
     return locomotionVariables;
   }});
