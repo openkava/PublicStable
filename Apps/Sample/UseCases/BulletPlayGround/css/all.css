@@ -155,7 +155,7 @@ font-family:Arial, Helvetica, sans-serif;
 .tools .primitives a:hover {opacity:.7;}
 .tools {
   width:287px;
-  height: 150px;
+  height: 180px;
   padding:0 1px;
   background:#ffffea;
   position:relative;
@@ -205,23 +205,39 @@ font-family:Arial, Helvetica, sans-serif;
   border-radius:2px;
   text-decoration:none;
 }
-.tools .primitives {padding:3px 0 0;}
-.tools .primitives li {margin:0 0 0 14px;}
+.tools .primitives {padding:5px 0 0;}
+.tools .primitives li {margin:0 0 10px 14px;}
+
 .tools .primitives a {
   text-indent:-9999px;
-  overflow:hidden;
-  width:33px;
-  height:34px;
-  background:url(../Resources/ico-primitives.png) no-repeat;
+  width:40px;
+  height:40px;
+  background-size: 40px;
+/*  background:url(../Resources/ico-primitives.png) no-repeat;*/
 }
-.tools .primitives .cube {background-position:0 0;}
+
+
+.tools .primitives .cube {
+  background:url(../Resources/primitives-cube-128.png) no-repeat;
+}
+.tools .primitives .circle {
+  background:url(../Resources/primitives-circle-128.png) no-repeat;
+}
+.tools .primitives .plank {
+  background:url(../Resources/primitives-flat-plank-128.png) no-repeat;
+}
+.tools .primitives .pole {
+  background:url(../Resources/primitives-thin-pole-128.png) no-repeat;
+}
+
+/*.tools .primitives .cube {background-position:0 0;}
 .tools .primitives .circle {background-position:-50px 0;}
 .tools .primitives .plank {
   background-position:-102px 0;
   width:35px;
 }
 .tools .primitives .pole {background-position:-152px 0;}
-
+*/
 .participants {
   width:240px;
   overflow:hidden;
@@ -279,7 +295,7 @@ font-family:Arial, Helvetica, sans-serif;
 .participants .list {
   width:263px;
   margin:0 -23px 0 0;
-  max-height:144px;
+/*  max-height:144px;*/
   overflow:auto;
 }
 .participants .list ul {
