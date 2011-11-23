@@ -69,6 +69,7 @@
   <fragmentshader>
     <source>
       <![CDATA[
+      
       uniform vec4 u_materialBrightColor;
       uniform vec4 u_materialDarkColor;
       uniform float u_materialStep;
@@ -104,7 +105,7 @@
 
         int modX = int(floor(gl_TexCoord[0].x / u_materialStep));
         int modY = int(floor(gl_TexCoord[0].y / u_materialStep));
-        if(modX % 2 == modY % 2)
+        if((modX - (modX/2*2)) == (modY - (modY/2*2)))
           gl_FragData[0] = u_materialBrightColor * lightFactor;
         else
           gl_FragData[0] = u_materialDarkColor * lightFactor;
