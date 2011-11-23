@@ -46,6 +46,7 @@ namespace Fabric
 {
   namespace DG
   {
+    Util::Mutex Context::s_contextMapMutex("Context::s_contextMapMutex");
     Context::ContextMap Context::s_contextMap;
     
     RC::Handle<Context> Context::Create(
@@ -60,6 +61,7 @@ namespace Fabric
     
     RC::Handle<Context> Context::Bind( std::string const &contextID )
     {
+      Util::Mutex::Lock contextMapLock( s_contextMapMutex );
       ContextMap::const_iterator it = s_contextMap.find( contextID );
       if ( it == s_contextMap.end() )
         throw Exception( "no context with ID " + _(contextID) );
@@ -72,12 +74,14 @@ namespace Fabric
       CG::CompileOptions const &compileOptions,
       bool optimizeSynchronously
       )
-      : m_logCollector( LogCollector::Create( this ) )
+      : m_mutex( "Context::Context" )
+      , m_logCollector( LogCollector::Create( this ) )
       , m_rtManager( RT::Manager::Create( KL::Compiler::Create() ) )
       , m_ioManager( ioManager )
       , m_cgManager( CG::Manager::Create( m_rtManager ) )
       , m_compileOptions( compileOptions )
       , m_codeManager( CodeManager::Create( &m_compileOptions, optimizeSynchronously ) )
+      , m_clientsMutex( "Context::m_clients" )
       , m_notificationBracketCount( 0 )
       , m_pendingNotificationsMutex( "pending notifications" )
       , m_pendingNotificationsJSON( 0 )
@@ -89,8 +93,9 @@ namespace Fabric
       static const size_t contextIDByteCount = 96;
       uint8_t contextIDBytes[contextIDByteCount];
       Util::generateSecureRandomBytes( contextIDByteCount, contextIDBytes );
-      std::string contextID = Util::encodeBase64( contextIDBytes, contextIDByteCount );
-      m_contextMapIterator = s_contextMap.insert( ContextMap::value_type( contextID, this ) ).first;
+      m_contextID = Util::encodeBase64( contextIDBytes, contextIDByteCount );
+      Util::Mutex::Lock contextMapLock( s_contextMapMutex );
+      s_contextMap.insert( ContextMap::value_type( m_contextID, this ) ).first;
     }
     
     Context::~Context()
@@ -98,19 +103,24 @@ namespace Fabric
       FABRIC_ASSERT( !m_pendingNotificationsJSON );
       
       FABRIC_ASSERT( m_clients.empty() );
-      
-      s_contextMap.erase( m_contextMapIterator );
 
+      {
+        Util::Mutex::Lock contextMapLock( s_contextMapMutex );
+        
+        s_contextMap.erase( s_contextMap.find( m_contextID ) );
+      }
+      
       m_rtManager->setJSONCommandChannel( 0 );
     }
     
     std::string const &Context::getContextID() const
     {
-      return m_contextMapIterator->first;
+      return m_contextID;
     }
     
     void Context::registerClient( Client *client )
     {
+      Util::Mutex::Lock clientLock( m_clientsMutex );
       FABRIC_CONFIRM( m_clients.insert( client ).second );
     }
 
@@ -168,6 +178,7 @@ namespace Fabric
     
     void Context::unregisterClient( Client *client )
     {
+      Util::Mutex::Lock clientLock( m_clientsMutex );
       Clients::iterator it = m_clients.find( client );
       FABRIC_ASSERT( it != m_clients.end() );
       m_clients.erase( it );
@@ -192,8 +203,11 @@ namespace Fabric
           m_pendingNotificationsJSON = 0;
         }
         
-        for ( Clients::const_iterator it=m_clients.begin(); it!=m_clients.end(); ++it )
-          (*it)->notify( *pendingNotificationJSON );
+        {
+          Util::Mutex::Lock clientLock( m_clientsMutex );
+          for ( Clients::const_iterator it=m_clients.begin(); it!=m_clients.end(); ++it )
+            (*it)->notify( *pendingNotificationJSON );
+        }
         
         delete pendingNotificationJSON;
       }
@@ -349,6 +363,8 @@ namespace Fabric
         FABRIC_LOG( expiryMessage );
         throw Exception( expiryMessage );
       }
+      
+      Util::Mutex::Lock mutexLock( m_mutex );
 
       if ( dst.size() - dstOffset == 0 )
       {

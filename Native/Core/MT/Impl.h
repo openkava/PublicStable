@@ -25,7 +25,7 @@ namespace Fabric
       class Task 
       {
       public:
-        
+      
         typedef void (*FinishedCallback)( void * );
       
         Task(
@@ -108,6 +108,9 @@ namespace Fabric
       
     public:
 
+      static const size_t Idle = 1;
+      static const size_t MainThreadOnly = 2;
+      
       static ThreadPool *Instance();
 
       ThreadPool();
@@ -118,7 +121,7 @@ namespace Fabric
         size_t count,
         void (*callback)( void *userdata, size_t index ),
         void *userdata,
-        bool mainThreadOnly
+        size_t flags
         );
       
       void executeParallelAsync(
@@ -126,7 +129,7 @@ namespace Fabric
         size_t count,
         void (*callback)( void *userdata, size_t index ),
         void *userdata,
-        bool mainThreadOnly,
+        size_t flags,
         void (*finishedCallback)( void * ),
         void *finishedUserdata
         );
@@ -154,6 +157,7 @@ namespace Fabric
       std::vector<Task *> m_tasks;
       Util::TLSVar<bool> m_isMainThread;
       std::vector<Task *> m_mainThreadTasks;
+      std::vector<Task *> m_idleTasks;
       bool m_running;
     };
     

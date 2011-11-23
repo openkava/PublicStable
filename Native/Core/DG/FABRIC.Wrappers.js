@@ -1804,8 +1804,8 @@ function (fabricClient, logCallback, debugLogCallback) {
     flush: function() {
       executeQueuedCommands();
     },
-    dispose: function() {
-      fabricClient.dispose();
+    close: function() {
+      fabricClient.close();
     }
   };
 }
