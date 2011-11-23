@@ -75,8 +75,6 @@
       var workPlaneNode = scene.constructNode('Instance', options);
       var workPlaneTransformNode = scene.getPrivateInterface(workPlaneNode.pub.getTransformNode());
       var workPlaneTransformDGNode = workPlaneTransformNode.getDGNode();
-      workPlaneTransformDGNode.addMember("standing","Boolean",true);
-      workPlaneNode.addMemberInterface(workPlaneTransformDGNode, 'standing', true);
 
       // connect the workplane to the camera and its transform
       var cameraPriv = scene.getPrivateInterface(options.cameraNode);
@@ -92,8 +90,7 @@
         parameterLayout: [
           'self.globalXfo',
           'camera.globalXfo',
-          'camera.target',
-          'self.standing'
+          'camera.target'
         ]
       }));
 
@@ -307,7 +304,7 @@
       return renderNode;
     }});
 
-  $(document).ready(function() {
+$(document).ready(function() {
 
     var scene = FABRIC.SceneGraph.createScene();
     var viewport = scene.constructNode('Viewport', {
@@ -340,7 +337,7 @@
     var shadowMapMaterial = scene.constructNode('ShadowMaterial');
 
     // create the world grid
-    scene.constructNode('Instance', {
+    var worldGrid = scene.constructNode('Instance', {
       geometryNode: scene.constructNode('Plane', {
         width: 100.0,
         length: 100.0,
@@ -355,19 +352,9 @@
 
     var workPlane = scene.constructNode('WorkPlane', {
       cameraNode: camera,
-      materialNode: toonRenderer.constructTransparentMaterial('GroundPlaneMaterial', {
-        lightNode: light,
-        colorBlend: 0.0,
-        step: 0.02,
-        brightColor: FABRIC.RT.rgba(0.9,0.9,0.9,1),
-        darkColor: FABRIC.RT.rgba(0.7,0.7,0.7,1),
-        disableOptions: [FABRIC.SceneGraph.OpenGLConstants.GL_CULL_FACE],
-        enableOptions: [FABRIC.SceneGraph.OpenGLConstants.GL_BLEND],
-        blendModeSfactor: FABRIC.SceneGraph.OpenGLConstants.GL_SRC_ALPHA,
-        blendModeDfactor: FABRIC.SceneGraph.OpenGLConstants.GL_ONE_MINUS_SRC_ALPHA
-      })
+      materialNode: worldGrid.getMaterialNode()
     });
-
+    
     //==========================================================
     // UNDO
     var undoManager = scene.constructManager('UndoManager');
@@ -702,8 +689,12 @@
       function updateParticipantsList() {
         var html = "";
 
-        for(var key in participants)
-          html += '<li><a href="#">'+participants[key].name+'</a></li>';
+        for(var key in participants) {
+          if(key == '_self')
+            html += '<li class="active"><a href="#">'+participants[key].name+'</a></li>';
+          else
+            html += '<li><a href="#">'+participants[key].name+'</a></li>';
+        }
 
         // attach an on-select event to the camera list 
         $('#participantList').html(html);
@@ -884,19 +875,6 @@
       cameraTransform.setGlobalXfo(xfo);
       viewport.redraw();
     }
-    $('#workplaneXY').button().click(function() {
-      alignCameraWithAxes(true,true,false);
-    });
-    $('#workplaneYZ').button().click(function() {
-      alignCameraWithAxes(false,true,true);
-    });
-    $('#workplaneXZ').button().click(function() {
-      alignCameraWithAxes(true,false,true);
-    });
-    $('#workplaneStand').button().click(function() {
-      workPlane.setStanding(!workPlane.getStanding());
-      viewport.redraw();
-    });
     /*
     $('#workplaneblend').slider({
       min: 0.0,
@@ -914,7 +892,8 @@
     $("#help").click(function(){
       viewport.hide();
       $('#helpDialog').dialog({
-        modal: true
+        modal: true,
+        width: 600
       });
       $('#helpOK').button().click(function(){
         $('#helpDialog').dialog('close');
@@ -939,7 +918,7 @@
       }
 
       $('#localStorageDescr').html('Save Preset');
-      $('#localStorageContent').html('<input id="localStorageName" type=text style="width:100px"/>');
+      $('#localStorageContent').html('<input id="localStorageName" type=text style="width:250px"/>');
 
       viewport.hide();
       $('#localStorageDialog').dialog({
@@ -976,7 +955,8 @@
       if(!presets)
         return;
       presets = JSON.parse(presets);
-      var html = '<select id="localStorageName" style="width:100px">';
+      var html = "Please choose the preset to load in the list below:<br><br>";
+      html += '<select id="localStorageName" style="width:250px">';
       for(var name in presets) {
         html += '<option value="'+presets[name]+'">'+name+'</option>';
       }
@@ -1239,17 +1219,22 @@
     <button id="localStorageCancel">Cancel</button>
     <button id="localStorageOK">OK</button>
   </div>
-  <div style="display: none; width: 200px; height: 340px" id="helpDialog" title="Help">
+  <div style="display: none" id="helpDialog" title="Help">
     <h4>Bullet Editor Help</h4>
-    Drag and drop the primitives on the side panel slowly onto the 3D viewport to create new rigid bodies.
-    They will be places on the working plane. You can move the working plane by scrolling your mousewheel
+    Drag and drop the primitives from the side panel slowly onto the 3D viewport to create new rigid bodies.
+    They will be placed on a working plane. You can move the working plane by scrolling your mousewheel
     and pressing ALT at the same time.<br><br>
-    IconA: asdasdasdadad<br>
-    IconB: asdasdasdadad<br>
-    IconC: asdasdasdadad<br>
-    IconD: asdasdasdadad<br>
-    IconE: asdasdasdadad<br>
-    IconF: asdasdasdadad<br>
+    You can save the selected rigid bodies to a preset. Simply name the preset as you wish. You can then
+    later load the preset to recover a copy of the previously selected rigid bodies. Use the first and second
+    controls for this.<br><br>
+    Furthermore you can duplicate the selected rigid bodies, by clicking on the third control icon.<br><br>
+    You can multi select rigid bodies by holding down the CTRL key while clicking on objects. The manipulators
+    will then be applied to all objects in the selection.<br><br>
+    You have an Undo and Redo feature for your disposal, which works for manipulation as well as selection (not
+    for creation of rigid bodies).<br><br>
+    To invite other people to your session, click the 'join' button, write down the session ID and click cancel.
+    Share the session ID with other people (for example through email). They will then have to click on 'join'
+    as well, enter the shared session ID and click 'OK' to join in.<br><br>
     <button id="helpOK">OK</button>
   </div>
   <div class="page">
@@ -1292,7 +1277,7 @@
         <form class="search" action="#">
           <fieldset>
             <input id="participantName" type="text" value="Yourself" >
-            <button id="join">Join</button>
+            <input type=submit id="join" value='Join'/>
           </fieldset>
         </form>
         <div class="list">
