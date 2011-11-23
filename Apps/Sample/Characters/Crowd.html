@@ -265,7 +265,7 @@ $(document).ready(function() {
   crowdNode.setCrowdXfos(xfos);
   crowdNode.setCrowdGoals(goals);
   
-  var rigLoader = scene.constructManager('SceneLoader');
+  var rigLoader = scene.constructManager('SceneDeserializer');
   var storage = new FABRIC.SceneGraph.URLReader('Assets/' + rigName + '.json');
   var nodeMap = rigLoader.load(storage);
 

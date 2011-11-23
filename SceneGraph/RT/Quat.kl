@@ -179,6 +179,13 @@ function Quat.setFrom2Vectors(in Vec3 sourceDirVec, in Vec3 destDirVec) {
   this.setFrom2Vectors(sourceDirVec, destDirVec, false);
 }
 
+function Quat.setFromDirectionAndUpvector(in Vec3 direction, in Vec3 upvector) {
+    Vec3 zaxis = direction.unit();
+    Vec3 yaxis = zaxis.cross(upvector.unit()).cross(zaxis).unit();
+    Vec3 xaxis = yaxis.cross(zaxis).unit();
+    this.setFromMat33(Mat33(xaxis, yaxis, zaxis).transpose());
+}
+
 function Boolean Quat.equal (in Quat other) {
   return this.v.equal(other.v) && this.w == other.w;
 }

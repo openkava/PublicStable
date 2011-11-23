@@ -114,17 +114,6 @@ operator bindTextureHDR(
   oglTexture2D.bindImageHDR(width, height, bitmap, textureUnit);
 }
 
-
-operator bindTextureMatrix(
-  io OGLTexture2D oglTexture2D,
-  io Integer textureUnit,
-  io Mat44 matrices<>
-) {
-  if(textureUnit > -1) {
-    oglTexture2D.bindImageMatrix(matrices, textureUnit);
-  }
-}
-
 operator unbindTextures(
   io Size numTextures
 ){

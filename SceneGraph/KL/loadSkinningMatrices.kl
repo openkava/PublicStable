@@ -31,7 +31,8 @@ operator loadSkinningMatricesTexture(
   io Mat44 invMatrices[],
   io Integer boneMapping[],
   io OGLTexture2D oglSkinningMatriciesTexture2D,
-  io Integer skinningMatriciesTextureUnit
+  io Integer skinningMatriciesTextureUnit,
+  io Size textureHeight
 ) {
 //  report("loadSkinningMatrices");
 
@@ -48,6 +49,14 @@ operator loadSkinningMatricesTexture(
       }
     }
     shaderProgram.loadIntegerUniform(location, skinningMatriciesTextureUnit);
-    oglSkinningMatriciesTexture2D.bindImageMatrixArray(skinningMatrices, skinningMatriciesTextureUnit);
+
+    Size height = 0;
+    oglSkinningMatriciesTexture2D.bindImageMatrixArray(skinningMatrices, skinningMatriciesTextureUnit, height);
+    if(height != 0)//height == 0 if texture is already bound
+      textureHeight = height;
+
+    location = shaderProgram.getUniformLocation( TRANSFORM_TEXTURE_HEIGHT_ATTRIBUTE_ID );
+    if(location != -1)
+      shaderProgram.loadScalarUniform(location, Scalar(textureHeight));
   }
 }

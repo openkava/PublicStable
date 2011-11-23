@@ -113,6 +113,18 @@ operator getBulletRigidBodyTransform(
   }
 }
 
+operator setBulletRigidBodyTransform(
+  io BulletRigidBody body[],
+  io Xfo transform[],
+  io Scalar time
+){
+  if(body.size() == transform.size() && time == 0.0) {
+    for(var Size i=0;i<body.size();i++) {
+      body[i].setTransform(transform[i]);
+    }
+  }
+}
+
 operator createBulletSoftBody(
   io BulletWorld world,
   io BulletSoftBody body,

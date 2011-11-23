@@ -69,60 +69,6 @@ s.parentNode.insertBefore(ga, s);
 
     <script type="text/javascript">
     
-    
-    
-    
-    
-    
-// These Node definitions are inlined for now, but will
-// be moved to a separate file once they are stabilized. 
-FABRIC.SceneGraph.registerNodeType('SelectableInstance', {
-  factoryFn: function(options, scene) {
-    scene.assignDefaults(options, {
-      highlightMaterial: undefined,
-      selectMaterial: undefined
-    });
-    
-    var selectableInstance = scene.constructNode('Instance', options);
-    
-    var selectable = true;
-    selectableInstance.pub.isSelectable = function(){
-      return selectable;
-    }
-    selectableInstance.pub.setSelectable = function(val){
-      selectable = val;
-    }
-    var highglighted = false;
-    var selected = false;
-    selectableInstance.pub.addEventListener('highlight', function(evt) {
-      if(!selected){
-        selectableInstance.pub.setMaterialNode( options.highlightMaterial );
-        highglighted = true;
-      }
-    });
-    selectableInstance.pub.addEventListener('unhighlight', function(evt) {
-      if(highglighted){
-        selectableInstance.pub.removeMaterialNode( options.highlightMaterial );
-        highglighted = false;
-      }
-    });
-    selectableInstance.pub.addEventListener('selected', function(evt) {
-      if(highglighted){
-        selectableInstance.pub.removeMaterialNode( options.highlightMaterial );
-        highglighted = false;
-      }
-      selectableInstance.pub.setMaterialNode( options.selectMaterial );
-      selected = true;
-    });
-    selectableInstance.pub.addEventListener('deselected', function(evt) {
-      selectableInstance.pub.removeMaterialNode( options.selectMaterial );
-      selected = false;
-    });
-    
-    return selectableInstance;
-  }});
-    
-    
 $(document).ready(function() {
   
   var scene = FABRIC.SceneGraph.createScene();
@@ -142,8 +88,6 @@ $(document).ready(function() {
   }));
 
   scene.constructNode('CameraManipulator', { targetNode: camera });
-  
-  
   
   var selectionManager = scene.constructManager('ViewportSelectionManager');
   var selectionManipulationManager = scene.constructManager('SelectionManipulationManager', {
