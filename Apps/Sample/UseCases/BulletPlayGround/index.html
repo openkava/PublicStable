@@ -674,7 +674,7 @@ $(document).ready(function() {
           setTimeout(function(){
             // also, ask for all other participant
             ws.sendMessage('queryParticipants',{});
-          }, 50);
+          }, 1000);
         }
       });
 
@@ -734,7 +734,7 @@ $(document).ready(function() {
           addParticipant(message.sourceID,message.data);
           participants[message.sourceID].name = message.data;
           updateParticipantsList();
-        }, 100);
+        }, 500);
       });
 
       // setup the function to be called when we receive a queryParticipants event
@@ -1277,7 +1277,7 @@ $(document).ready(function() {
         <form class="search" action="#">
           <fieldset>
             <input id="participantName" type="text" value="Yourself" >
-            <input type=submit id="join" value='Join'/>
+            <input style="width: 30px; margin-left: 5px" id="join" value='Join'/>
           </fieldset>
         </form>
         <div class="list">
