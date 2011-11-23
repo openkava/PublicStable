@@ -257,10 +257,10 @@ $(document).ready(function() {
       throw "no rigName";
     }
   }catch(e){}
-  var locomotionControllerNode;
+//  var locomotionControllerNode;
   switch(rigName){
   case 'walker':
-    var locomotionControllerNode = scene.constructNode('ScreenSpacePlayerCharacterController', {
+    locomotionControllerNode = scene.constructNode('ScreenSpacePlayerCharacterController', {
         cameraNode: camera,
         maxLinearVelocity: 35,
         maxLinearAcceleration: 6,
@@ -273,7 +273,7 @@ $(document).ready(function() {
       });
     break;
   case 'centipede':
-    var locomotionControllerNode = scene.constructNode('WorldSpacePlayerCharacterController', {
+    locomotionControllerNode = scene.constructNode('WorldSpacePlayerCharacterController', {
         cameraNode: camera,
         maxLinearVelocity: 20,
         maxLinearAcceleration: 1.45,
@@ -286,7 +286,7 @@ $(document).ready(function() {
       });
     break;
   case 'marama':
-    var locomotionControllerNode = scene.constructNode('ScreenSpacePlayerCharacterController', {
+    locomotionControllerNode = scene.constructNode('ScreenSpacePlayerCharacterController', {
         cameraNode: camera,
         maxLinearVelocity: 7,
         maxLinearAcceleration: 0.2,

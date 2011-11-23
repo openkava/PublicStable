@@ -295,15 +295,28 @@ operator evaluateLocomotionPoseVariables(
       // One day we should store the plant position
       // relative to the foot positison as an extra track.
       Xfo footPlantXfo = baseFootXfo;
-        
-      Vec3 liftPos = footPlantXfo.tr - (displacementDir * (strideLength * 0.25 * strideLengthMultiplier));
       footPlantXfo.tr += displacementDir * (strideLength * 0.25 * strideLengthMultiplier);
+      
+      Scalar footPlantRatio = stepRatio;
+      if(footPlantRatio < 0.0) footPlantRatio += 2.0;
+      
+      Vec3 plantPos = baseFootXfo.tr - (displacementDir * ((strideLength * 0.5 * strideLengthMultiplier * footPlantRatio) - (strideLength * 0.75 * strideLengthMultiplier)));
+      
+      Scalar footLiftRatio = stepRatio;
+      Vec3 liftPos = baseFootXfo.tr - (displacementDir * ((strideLength * 0.5 * strideLengthMultiplier * footLiftRatio) + (strideLength * 0.25 * strideLengthMultiplier)));
       footXfo.tr += displacementDir * stepValue * strideLengthMultiplier;
       
       if(displayFootPinningDebugging){
-        debugFootMotion.drawLine(liftPos, footPlantXfo.tr, Color(0.0, 0.25, 0.25, 1.0));
+     //  debugFootMotion.drawLine(liftPos, footPlantXfo.tr, Color(0.0, 0.25, 0.25, 1.0));
+        Xfo liftXfo = footPlantXfo;
+        liftXfo.tr = liftPos;
+        debugFootMotion.drawCircle(liftXfo * rot90, 0.2, Color(0.5, 0.5, 1.0, 1.0));
+        
+        Xfo plantXfo = footPlantXfo;
+        plantXfo.tr = plantPos;
+        debugFootMotion.drawCircle(plantXfo * rot90, 0.2, Color(1.0, 0.5, 0.5, 1.0));
       }
-      //  report(j+" t:"+t+" stepId:"+stepId +" currStep:"+currStep + " stepRatio:"+stepRatio + " planted:"+plantedFeet[j]);
+    //  report(j+" t:"+t+" stepId:"+stepId +" currStep:"+currStep + " stepRatio:"+stepRatio + " planted:"+plantedFeet[j]);
       
       /////////////////////////////////////////////////
       // Foot Pinning
@@ -322,7 +335,7 @@ operator evaluateLocomotionPoseVariables(
             }
           }
           // Record the error at lift time.
-          footError = invcontrollerXfo.ori.rotateVector(plantLocations[j] - footXfo.tr);
+          footError = invcontrollerXfo.ori.rotateVector(plantLocations[j] - liftPos);
           plantLocations[j] = footError;
           plantedFeet[j] = false;
         }
@@ -339,7 +352,7 @@ operator evaluateLocomotionPoseVariables(
           BULLLETWORLD_OPENBLOCKCOMMENT
           if(performRaycasting){
             Vec3 rayStart, rayEnd, refPos, hitPosition;
-            refPos = footPlantXfo.tr;
+            refPos = plantPos;
             rayStart = refPos + (upvector * 2.5);
             rayEnd = refPos - (upvector * 2.5);
             
@@ -394,13 +407,14 @@ operator evaluateLocomotionPoseVariables(
         if(!plantedFeet[j]){
               
           // Record the foot plant pos.
-          plantLocations[j] = footXfo.tr;
+          plantLocations[j] = plantPos;
           plantedFeet[j] = true;
           
         }
         else{
           // Calculate the error each update to hold the foot in place while planted.
-          footError = invcontrollerXfo.ori.rotateVector(plantLocations[j] - footXfo.tr);
+          Vec3 footErrorWorldSpace = plantLocations[j] - footXfo.tr;
+          footError = invcontrollerXfo.ori.rotateVector(plantLocations[j] - plantPos);
           footError.y = 0.0;
         }
         
