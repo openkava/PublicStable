@@ -137,6 +137,15 @@ namespace Fabric
         return s_wrapFabricClientJSSource;
       }
       
+      void acquireMutex()
+      {
+        m_mutex.acquire();
+      }
+      void releaseMutex()
+      {
+        m_mutex.release();
+      }
+      
     protected:
     
       Context(
@@ -151,9 +160,11 @@ namespace Fabric
       
     private:
     
+      static Util::Mutex s_contextMapMutex;
       static ContextMap s_contextMap;
-      ContextMap::iterator m_contextMapIterator;
+      std::string m_contextID;
     
+      Util::Mutex m_mutex;
       RC::Handle<MT::LogCollector> m_logCollector;
       RC::Handle<RT::Manager> m_rtManager;
       RC::Handle<IO::Manager> m_ioManager;
@@ -163,6 +174,7 @@ namespace Fabric
       
       mutable NamedObjectMap m_namedObjectRegistry;
       
+      Util::Mutex m_clientsMutex;
       Clients m_clients;
       
       Util::AtomicSize m_notificationBracketCount;
