@@ -106,11 +106,31 @@ function OGLTexture2D.bindImageMatrix(
   io Size textureHeightIfLoaded//else: 0
 ) {
   if (this.bufferID == 0 || this.forceRefresh) {
-    if(this.glInternalFormat != GL_RGBA32F)
-      report('bindImageMatrix: unexpected texture format');
+    if(this.glInternalFormat != GL_RGBA32F){
+      report('ERROR in bindImageMatrix: unexpected texture format. Expected GL_RGBA32F');
     textureHeightIfLoaded = (matrices.size()+127)/128;
     toUpperPowerOfTwo(textureHeightIfLoaded);
     matricesTempBuffer.resize(128*textureHeightIfLoaded);
+    for( Size i = 0; i < matrices.size(); ++i ) {
+      matricesWithPadding[i] = matrices[i];
+    }
+    this.configure(Size(512), Size(512), matricesWithPadding.data(), Size(512 * 512), textureUnit);
+  }
+  this.bind(textureUnit);
+}
+
+// Specifying 2 functions that do exactly the same thing is annoying
+// and only required because Mat44 matrices[] != Mat44 matrices<>
+function OGLTexture2D.bindImageMatrixArray(
+  io Mat44 matrices[],
+  io Integer textureUnit
+) {
+  if (this.bufferID == 0 || this.forceRefresh) {
+    Mat44 matricesWithPadding[];
+    if(this.glInternalFormat != GL_RGBA32F){
+      report('ERROR in bindImageMatrix: unexpected texture format. Expected GL_RGBA32F');
+      return;
+    }
     for( Size i = 0; i < matrices.size(); ++i ) {
       matricesTempBuffer[i] = matrices[i];
     }
@@ -122,6 +142,7 @@ function OGLTexture2D.bindImageMatrix(
     textureHeightIfLoaded = 0;
   this.bind(textureUnit);
 }
+
 
 function OGLTexture2D.genTexture(
   Size width,
