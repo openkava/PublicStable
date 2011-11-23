@@ -199,6 +199,7 @@ $(document).ready(function() {
         maxLinearVelocity: 15,
         maxLinearAcceleration: 2.45,
         maxAngularVelocity:  3,
+        maxAngularAcceleration: 3,
         bulletWorldNode: bulletWorldNode,
         numTrailSegments: 0,
         gravity: -1.0,
@@ -217,9 +218,10 @@ $(document).ready(function() {
     break;
   case 'centipede':
     var crowdNode = scene.constructNode('Crowd', {
-        maxLinearVelocity: new FABRIC.RT.Vec2(20, 20),
+        maxLinearVelocity: 20,
         maxLinearAcceleration: 1.45,
-        maxAngularVelocity:  new FABRIC.RT.Euler(0, 2, 0),
+        maxAngularVelocity:  2,
+        maxAngularAcceleration: 2,
         bulletWorldNode: bulletWorldNode,
         numTrailSegments: 12,
         trailLength: 12.0,
@@ -231,10 +233,10 @@ $(document).ready(function() {
   var agentRadius = 0.7;
   var cellSize = 6.0;
     var crowdNode = scene.constructNode('Crowd', {
-        maxLinearVelocity: 4,
+        maxLinearVelocity: 3.5,
         maxLinearAcceleration: 0.2,
-        maxAngularVelocity:  5.0,
-        maxAngularAcceleration: 2.0,
+        maxAngularVelocity:  3,
+        maxAngularAcceleration: 3,
         bulletWorldNode: bulletWorldNode,
         numTrailSegments: 0,
         gravity: -4.8,
