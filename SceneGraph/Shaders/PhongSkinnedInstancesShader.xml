@@ -20,7 +20,8 @@
 		<uniform name="u_normalMatrix" constant="normalMatrix" type="Mat33" owner="instance"/>
 		
     <uniform name="u_samplerSkinningMatrices" constant="skinningMatricesTextureUnit" type="Integer" owner="geometry"/>
-		<uniform name="u_numBonesPerInstance" constant="numBonesPerInstance" type="Integer"/>
+    <uniform name="u_transformTextureHeight" constant="transformTextureHeight" type="Scalar"/>
+    <uniform name="u_numBonesPerInstance" constant="numBonesPerInstance" type="Integer"/>
 		
 	</uniforms>
 	
@@ -47,8 +48,8 @@
 
 			// This is an array of all the bones in a skeleton.
       uniform sampler2D u_samplerSkinningMatrices;
+      uniform float u_transformTextureHeight;
 			uniform int u_numBonesPerInstance;
-
 
 			attribute vec4 a_position;
 			attribute vec3 a_normal;
@@ -86,7 +87,7 @@ void skinInstancePositionsAndNormals(
       int idx = int(curIndex[i]);
         
       // load the specified bone matrix from the texture
-      mat4 m44 = loadMatrixFromTexture(samplerSkinningMatrices, (instanceId * numBonesPerInstance) + idx);
+      mat4 m44 = loadMatrixFromTexture(samplerSkinningMatrices, u_transformTextureHeight, (instanceId * numBonesPerInstance) + idx);
       
       transformedPosition += m44 * a_position * weight;
 

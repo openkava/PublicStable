@@ -361,6 +361,7 @@ FABRIC.SceneGraph.registerNodeType('InstancedGeometry', {
     }));
  
     // setup the instanceIDs
+//TODO: this needs to be updated with matrix texture height changes...
     geometryInstancingNode.pub.addVertexAttributeValue('instanceIDs','Integer',{ genVBO:true });
     geometryInstancingNode.getAttributesDGNode().bindings.append( scene.constructOperator({
       operatorName: 'instantiateInstanceIDs',
