@@ -92,9 +92,14 @@ $(document).ready(function() {
   });
   $("#displayControllerDebugging").attr('checked', true);
   $("#displayFootMotionDebugging").attr('checked', true);
+  $("#displayFootRaycastingDebugging").attr('checked', true);
+  
+  
 
   // Create the scene.
-  var scene = FABRIC.SceneGraph.createScene();
+  var scene = FABRIC.SceneGraph.createScene({
+        timeStep: 1/30 /* 30 fps */
+      });
   var viewport = scene.constructNode('Viewport', {
     enableRaycasting: false,
     windowElement: document.getElementById('FabricContainer')
@@ -131,116 +136,116 @@ $(document).ready(function() {
     materialNode: scene.constructNode('FlatMaterial')
   });
   
-  
-  
-  // create a simulation world
-  var bulletWorldNode = scene.constructNode('BulletWorldNode', {
-    createGroundPlane:false,
-    groundPlanseSize: 30,
-  } );
-  
-  var createBoxes = true;
-  if(createBoxes){
-    // create several shapes. in bullet multiple instance of the same
-    // shape share the scaling, so we have to create several shapes.
-    bulletWorldNode.addShape('Box0',new FABRIC.RT.BulletShape.createBox());
-    bulletWorldNode.addShape('Box1',new FABRIC.RT.BulletShape.createBox());
-    bulletWorldNode.addShape('Box2',new FABRIC.RT.BulletShape.createBox());
-    bulletWorldNode.addShape('Box3',new FABRIC.RT.BulletShape.createBox());
+  var constructBulletScene = false;
+  if(constructBulletScene){
     
-    // create a cube to draw it
-    var cuboidNode = scene.constructNode('Cuboid', {
-      length: 2.0,
-      width: 2.0,
-      height: 2.0
-    });
-
-    scene.constructNode('Instance', {
-      geometryNode: cuboidNode,
-      materialNode: phongMaterial,
-      transformNode: scene.constructNode('BulletRigidBodyTransform', {
+    // create a simulation world
+    var bulletWorldNode = scene.constructNode('BulletWorldNode', {
+      createGroundPlane:false,
+      groundPlanseSize: 30,
+    } );
+    var createBoxes = false;
+    if(createBoxes){
+      // create several shapes. in bullet multiple instance of the same
+      // shape share the scaling, so we have to create several shapes.
+      bulletWorldNode.addShape('Box0',new FABRIC.RT.BulletShape.createBox());
+      bulletWorldNode.addShape('Box1',new FABRIC.RT.BulletShape.createBox());
+      bulletWorldNode.addShape('Box2',new FABRIC.RT.BulletShape.createBox());
+      bulletWorldNode.addShape('Box3',new FABRIC.RT.BulletShape.createBox());
+      
+      // create a cube to draw it
+      var cuboidNode = scene.constructNode('Cuboid', {
+        length: 2.0,
+        width: 2.0,
+        height: 2.0
+      });
+  
+      scene.constructNode('Instance', {
+        geometryNode: cuboidNode,
+        materialNode: phongMaterial,
+        transformNode: scene.constructNode('BulletRigidBodyTransform', {
+          bulletWorldNode: bulletWorldNode,
+          shapeName: 'Box0',
+          rigidBody: new FABRIC.RT.BulletRigidBody({
+            transform: FABRIC.RT.xfo({
+              tr: new FABRIC.RT.Vec3(0, -2, 0),
+              sc: new FABRIC.RT.Vec3(30, 2, 30),
+            }),
+            mass: 0.0
+          })
+        })
+      });
+      
+      scene.constructNode('Instance', {
+        geometryNode: cuboidNode,
+        materialNode: phongMaterial,
+        transformNode: scene.constructNode('BulletRigidBodyTransform', {
+          bulletWorldNode: bulletWorldNode,
+          shapeName: 'Box1',
+          rigidBody: new FABRIC.RT.BulletRigidBody({
+            transform: FABRIC.RT.xfo({
+              tr: new FABRIC.RT.Vec3(-24, -1, 6),
+              sc: new FABRIC.RT.Vec3(8, 4, 8),
+            }),
+            mass: 0.0
+          })
+        })
+      });
+      
+      scene.constructNode('Instance', {
+        geometryNode: cuboidNode,
+        materialNode: phongMaterial,
+        transformNode: scene.constructNode('BulletRigidBodyTransform', {
+          bulletWorldNode: bulletWorldNode,
+          shapeName: 'Box2',
+          rigidBody: new FABRIC.RT.BulletRigidBody({
+            transform: FABRIC.RT.xfo({
+              tr: new FABRIC.RT.Vec3(-21,-2.5,-2),
+              sc: new FABRIC.RT.Vec3(8,4,8),
+            }),
+            mass: 0.0
+          })
+        })
+      });
+      
+      scene.constructNode('Instance', {
+        geometryNode: cuboidNode,
+        materialNode: phongMaterial,
+        transformNode: scene.constructNode('BulletRigidBodyTransform', {
+          bulletWorldNode: bulletWorldNode,
+          shapeName: 'Box3',
+          rigidBody: new FABRIC.RT.BulletRigidBody({
+            transform: FABRIC.RT.xfo({
+              tr: new FABRIC.RT.Vec3(-11.5, -3, 6),
+              ori: new FABRIC.RT.Quat().setFromAxisAndAngle(new FABRIC.RT.Vec3(0,0,1),-0.3),
+              sc: new FABRIC.RT.Vec3(6, 4, 8),
+            }),
+            mass: 0.0
+          })
+        })
+      });
+      
+    }
+    else{
+      var scaleFactor = 0.1;
+      var assetNodes = scene.importAssetFile('Assets/Level.DAE', { scaleFactor: scaleFactor });
+      var floorInstance = assetNodes.Plane001;
+      var floorMesh = assetNodes.Plane001Mesh0;
+      
+      floorInstance.setMaterialNode(phongMaterial);
+    
+      bulletWorldNode.addShape('Floor',new FABRIC.RT.BulletShape.createGImpact(floorMesh));
+      scene.constructNode('BulletRigidBodyTransform', {
         bulletWorldNode: bulletWorldNode,
-        shapeName: 'Box0',
+        shapeName: 'Floor',
         rigidBody: new FABRIC.RT.BulletRigidBody({
-          transform: FABRIC.RT.xfo({
-            tr: new FABRIC.RT.Vec3(0, -2, 0),
-            sc: new FABRIC.RT.Vec3(20, 2, 20),
-          }),
+          transform: FABRIC.RT.xfo(),
+          friction: 0.8,
+          restitution: 0.7,
           mass: 0.0
         })
-      })
-    });
-    
-    scene.constructNode('Instance', {
-      geometryNode: cuboidNode,
-      materialNode: phongMaterial,
-      transformNode: scene.constructNode('BulletRigidBodyTransform', {
-        bulletWorldNode: bulletWorldNode,
-        shapeName: 'Box1',
-        rigidBody: new FABRIC.RT.BulletRigidBody({
-          transform: FABRIC.RT.xfo({
-            tr: new FABRIC.RT.Vec3(-12, -2, 6),
-            ori: new FABRIC.RT.Quat().setFromAxisAndAngle(new FABRIC.RT.Vec3(0,1,0),0.0),
-            sc: new FABRIC.RT.Vec3(4.0, 4, 4),
-          }),
-          mass: 0.0
-        })
-      })
-    });
-    
-    scene.constructNode('Instance', {
-      geometryNode: cuboidNode,
-      materialNode: phongMaterial,
-      transformNode: scene.constructNode('BulletRigidBodyTransform', {
-        bulletWorldNode: bulletWorldNode,
-        shapeName: 'Box2',
-        rigidBody: new FABRIC.RT.BulletRigidBody({
-          transform: FABRIC.RT.xfo({
-            tr: new FABRIC.RT.Vec3(-12,-3.0,1),
-            ori: new FABRIC.RT.Quat().setFromAxisAndAngle(new FABRIC.RT.Vec3(0,1,0),0.0),
-            sc: new FABRIC.RT.Vec3(4.0,4.0,4),
-          }),
-          mass: 0.0
-        })
-      })
-    });
-    
-    scene.constructNode('Instance', {
-      geometryNode: cuboidNode,
-      materialNode: phongMaterial,
-      transformNode: scene.constructNode('BulletRigidBodyTransform', {
-        bulletWorldNode: bulletWorldNode,
-        shapeName: 'Box3',
-        rigidBody: new FABRIC.RT.BulletRigidBody({
-          transform: FABRIC.RT.xfo({
-            tr: new FABRIC.RT.Vec3(-6.5, -3, 6),
-            ori: new FABRIC.RT.Quat().setFromAxisAndAngle(new FABRIC.RT.Vec3(0,0,1),-0.3),
-            sc: new FABRIC.RT.Vec3(3, 4, 4),
-          }),
-          mass: 0.0
-        })
-      })
-    });
-  }
-  else{
-    var scaleFactor = 0.1;
-    var assetNodes = scene.importAssetFile('Assets/Level.DAE', { scaleFactor: scaleFactor });
-    var floorInstance = assetNodes.Plane001;
-    var floorMesh = assetNodes.Plane001Mesh0;
-    
-    floorInstance.setMaterialNode(phongMaterial);
-  
-    bulletWorldNode.addShape('Floor',new FABRIC.RT.BulletShape.createGImpact(floorMesh));
-    scene.constructNode('BulletRigidBodyTransform', {
-      bulletWorldNode: bulletWorldNode,
-      shapeName: 'Floor',
-      rigidBody: new FABRIC.RT.BulletRigidBody({
-        transform: FABRIC.RT.xfo(),
-        friction: 0.8,
-        restitution: 0.7,
-        mass: 0.0
-      })
-    });
+      });
+    }
   }
   
   var rigName = 'walker';
@@ -252,23 +257,24 @@ $(document).ready(function() {
       throw "no rigName";
     }
   }catch(e){}
-  var locomotionControllerNode;
+//  var locomotionControllerNode;
   switch(rigName){
   case 'walker':
-    var locomotionControllerNode = scene.constructNode('ScreenSpacePlayerCharacterController', {
+    locomotionControllerNode = scene.constructNode('ScreenSpacePlayerCharacterController', {
         cameraNode: camera,
-        maxLinearVelocity: 35,
-        maxLinearAcceleration: 6,
-        maxAngularVelocity: 5,
+        maxLinearVelocity: 15,
+        maxLinearAcceleration: 1,
+        maxAngularVelocity: 2,
+        maxAngularAcceleration: 2,
         bulletWorldNode: bulletWorldNode,
         numTrailSegments: 0,
-        gravity: -1.0,
+        gravity: 0,
         comHeight: 1.8,
         circleSize: 1.6
       });
     break;
   case 'centipede':
-    var locomotionControllerNode = scene.constructNode('ScreenSpacePlayerCharacterController', {
+    locomotionControllerNode = scene.constructNode('WorldSpacePlayerCharacterController', {
         cameraNode: camera,
         maxLinearVelocity: 20,
         maxLinearAcceleration: 1.45,
@@ -281,14 +287,15 @@ $(document).ready(function() {
       });
     break;
   case 'marama':
-    var locomotionControllerNode = scene.constructNode('ScreenSpacePlayerCharacterController', {
+    locomotionControllerNode = scene.constructNode('ScreenSpacePlayerCharacterController', {
         cameraNode: camera,
         maxLinearVelocity: 7,
         maxLinearAcceleration: 0.2,
-        maxAngularVelocity:  4,
+        maxAngularVelocity:  3,
+        maxAngularAcceleration: 3.0,
         bulletWorldNode: bulletWorldNode,
         numTrailSegments: 0,
-        gravity: -1.0,
+        gravity: -4.8,
         comHeight: 1.8,
         circleSize: 0.6
       });
@@ -346,9 +353,15 @@ $(document).ready(function() {
     viewport.redraw();
   });
   $("#displayFootMotionDebugging").change(function() {
-    locomotionVariables.setDrawDebuggingToggle($("#displayFootMotionDebugging").is(":checked"));
+    locomotionVariables.setDrawFootMotionDebuggingToggle($("#displayFootMotionDebugging").is(":checked"));
     viewport.redraw();
   });
+  $("#displayFootRaycastingDebugging").change(function() {
+    locomotionVariables.setDrawRaycastingDebuggingToggle($("#displayFootRaycastingDebugging").is(":checked"));
+    viewport.redraw();
+  });
+  
+  displayFootRaycastingDebugging
   
   var togglePlay = function(){
     if ($('#play').text() == 'Play') {
@@ -369,6 +382,8 @@ $(document).ready(function() {
       scene.animation.pause();
     }
   }
+  
+//  locomotionControllerNode.setTranslationControls(new FABRIC.RT.Vec2(0, 1.0));
   
   var translationControls = new FABRIC.RT.Vec2();
   var downKeys = [];
@@ -469,6 +484,9 @@ $(document).ready(function() {
           scene.animation.step();
         });
         
+      setInterval(function() {
+          document.getElementById('frameRate').childNodes[0].data = 'Frame Rate:' + viewport.getFPS().toFixed(2);
+        }, 600);
       return true;
     }
   });
@@ -511,17 +529,26 @@ $(document).ready(function() {
               <select id='selectCharacter' style="margin-top:10px;">
                 <option value="walker">Walker
                 <option value="centipede">Centipede
+                <option value="marama">Human
               </select>
               </br>
               <input type="checkbox" id="displayControllerDebugging" style="margin-top:10px;"/><label for="displayControllerDebugging">Display Controller Debugging:</label>
               </br>
               <input type="checkbox" id="displayFootMotionDebugging" style="margin-top:10px;"/><label for="displayFootMotionDebugging">Display Foot Motion Debugging:</label>
               </br>
+              <input type="checkbox" id="displayFootRaycastingDebugging" style="margin-top:10px;"/><label for="displayFootRaycastingDebugging">Display Foot Raycasting Debugging:</label>
+              </br>
               <button id="play" style="margin-top:10px;">Play</button>
               <button id="step" style="margin-top:10px;">Step</button>
             </div><!--content-->
           </div><!--box-->
 
+
+          <div class="box">
+            <h2 id="agents">PERFORMANCE</h2>
+            <div class="content" id="frameRate">Frame Rate:</div><p></p>
+          </div><!--box-->
+          
         </div><!--sidebar-->
       </div> <!--editor-->
     </div><!--wrapper-->
