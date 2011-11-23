@@ -62,7 +62,7 @@ operator evaluateCharacterController(
   io Scalar maxAngularAcceleration,
   
   io Vec3 linearVelocity,
-  io Quat angularVelocity,
+  io Scalar angularVelocity,
   
   
   io Scalar gravity,
@@ -88,24 +88,7 @@ operator evaluateCharacterController(
   ////////////////////////////
   // Movement
   Vec3 acceleration = goalLinearVelocity - linearVelocity;
-  /*
-  // decompose acceleration into forwards and and non-forwards acceleration,
-  // and apply different limits basedon the direction.
-  Vec3 facingDir = controllerXfo.ori.rotateVector(Vec3(0.0, 0.0, 1.0));
-  Scalar fwAccelerationStrength = acceleration.dot(facingDir);
   
-  if(fwAccelerationStrength < 0.0){
-    fwAccelerationStrength = 0.0;
-  }
-  else if(fwAccelerationStrength > maxLinearAcceleration){
-    fwAccelerationStrength = maxLinearAcceleration;
-  }
-  Vec3 nonFwAcceleration = acceleration - (facingDir * fwAccelerationStrength);
-  if(nonFwAcceleration.length() > (maxLinearAcceleration * 0.65)){
-    nonFwAcceleration = nonFwAcceleration.unit() * (maxLinearAcceleration * 0.65);
-  }
-  acceleration = (facingDir * fwAccelerationStrength) + nonFwAcceleration;
-    */
   Scalar accel = acceleration.length();
   if(accel > maxLinearAcceleration){
     acceleration *= maxLinearAcceleration/accel;
@@ -154,22 +137,26 @@ operator evaluateCharacterController(
   if(linearVelocity.length() > 0.001){
     Vec3 currDir = controllerXfo.ori.rotateVector(Vec3(0.0, 0.0, 1.0));
     Vec3 displacementDir = linearVelocity.unit();
-    Scalar deltaAngle = currDir.angleTo(displacementDir);
+    Scalar sign = currDir.cross(displacementDir).y < 0.0 ? -1.0 : 1.0;
+    Scalar newAngularVelocity = currDir.angleTo(displacementDir) * sign / timestep;
     
-    if(deltaAngle > maxAngularVelocity * timestep){
-      deltaAngle = maxAngularVelocity * timestep;
+    Scalar angularAcceleration = (newAngularVelocity - angularVelocity);
+    if(abs(angularAcceleration) > maxAngularAcceleration){
+      angularAcceleration = maxAngularAcceleration * sign;
     }
-    if(currDir.cross(displacementDir).y < 0.0){
-      deltaAngle = -deltaAngle;
+    newAngularVelocity = angularVelocity + angularAcceleration;
+    if(abs(newAngularVelocity) > maxAngularVelocity){
+      newAngularVelocity = maxAngularVelocity * sign;
     }
-    
-    controllerparams.displacement.ori.setFromAxisAndAngle(Vec3(0.0, 1.0, 0.0), deltaAngle);
+    angularVelocity = newAngularVelocity;
+    controllerparams.displacement.ori.setFromAxisAndAngle(Vec3(0.0, 1.0, 0.0), angularVelocity * timestep);
     controllerXfo.ori = controllerparams.displacement.ori * controllerXfo.ori;
    
+    // Smooth changes in direction
     // TODO: provide a parameter to ramp this.
     if(controllerparams.trail.size == 0){
       controllerparams.displacementDir = controllerparams.displacementDir.linearInterpolate(displacementDir, 0.1);
-    }{
+    }else{
       controllerparams.displacementDir = displacementDir;
     }
   }
