@@ -361,6 +361,7 @@ FABRIC.SceneGraph.registerNodeType('InstancedGeometry', {
     }));
  
     // setup the instanceIDs
+//TODO: this needs to be updated with matrix texture height changes...
     geometryInstancingNode.pub.addVertexAttributeValue('instanceIDs','Integer',{ genVBO:true });
     geometryInstancingNode.getAttributesDGNode().bindings.append( scene.constructOperator({
       operatorName: 'instantiateInstanceIDs',
@@ -697,28 +698,38 @@ FABRIC.SceneGraph.registerNodeType('Instance', {
     
     
     redrawEventHandler.setScope('instance', dgnode);
+    
+    var preProcessorDefinitions = {
+      MODELMATRIX_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('modelMatrix'),
+      MODELMATRIXINVERSE_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('modelMatrixInverse'),
+      VIEWMATRIX_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('viewMatrix'),
+      CAMERAMATRIX_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('cameraMatrix'),
+      CAMERAPOS_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('cameraPos'),
+      PROJECTIONMATRIX_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('projectionMatrix'),
+      PROJECTIONMATRIXINV_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('projectionMatrixInv'),
+      NORMALMATRIX_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('normalMatrix'),
+      MODELVIEW_MATRIX_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('modelViewMatrix'),
+      MODELVIEWPROJECTION_MATRIX_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('modelViewProjectionMatrix')
+    };
+    redrawEventHandler.preDescendBindings.append(scene.constructOperator({
+        operatorName: 'loadProjectionMatrices',
+        srcFile: 'FABRIC_ROOT/SceneGraph/KL/loadModelProjectionMatrices.kl',
+        entryFunctionName: 'loadProjectionMatrices',
+        preProcessorDefinitions: preProcessorDefinitions,
+        parameterLayout: [
+          'shader.shaderProgram',
+          'camera.cameraMat44',
+          'camera.projectionMat44'
+        ]
+      }));
 
-    var bindToSceneGraph = function() {
-      
+    var assignLoadTransformOperators = function() {
       // check if we have a sliced transform!
       if(options.transformNodeIndex == undefined && transformNode.getDGNode().getCount() > 1) {
         options.transformNodeIndex = 0
       }
-      
       var transformdgnode = transformNode.getDGNode();
       redrawEventHandler.setScope('transform', transformdgnode);
-      var preProcessorDefinitions = {
-        MODELMATRIX_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('modelMatrix'),
-        MODELMATRIXINVERSE_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('modelMatrixInverse'),
-        VIEWMATRIX_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('viewMatrix'),
-        CAMERAMATRIX_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('cameraMatrix'),
-        CAMERAPOS_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('cameraPos'),
-        PROJECTIONMATRIX_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('projectionMatrix'),
-        PROJECTIONMATRIXINV_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('projectionMatrixInv'),
-        NORMALMATRIX_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('normalMatrix'),
-        MODELVIEW_MATRIX_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('modelViewMatrix'),
-        MODELVIEWPROJECTION_MATRIX_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('modelViewProjectionMatrix')
-      };
       if(options.transformNodeIndex == undefined){
         redrawEventHandler.preDescendBindings.append(scene.constructOperator({
             operatorName: 'loadModelProjectionMatrices',
@@ -748,6 +759,9 @@ FABRIC.SceneGraph.registerNodeType('Instance', {
           ]
         }));
       }
+    }
+    var rayIntersectionOperatorsAssigned = false;
+    var assignRayIntersectionOperators = function() {
       ///////////////////////////////////////////////
       // Ray Cast Event Handling
       if (scene.getSceneRaycastEventHandler() &&
@@ -776,6 +790,7 @@ FABRIC.SceneGraph.registerNodeType('Instance', {
           scene.getSceneRaycastEventHandler().appendChildEventHandler(raycastEventHandler);
         }
       }
+      rayIntersectionOperatorsAssigned = true;
     }
 
     // extend private interface
@@ -819,11 +834,10 @@ FABRIC.SceneGraph.registerNodeType('Instance', {
       }
       node = scene.getPrivateInterface(node);
       geometryNode = node;
-      
-      redrawEventHandler.appendChildEventHandler(geometryNode.getRedrawEventHandler());
-      if (transformNode) {
-        bindToSceneGraph();
+      if(transformNode && !rayIntersectionOperatorsAssigned){
+        assignRayIntersectionOperators();
       }
+      redrawEventHandler.appendChildEventHandler(geometryNode.getRedrawEventHandler());
       return instanceNode.pub;
     };
     instanceNode.pub.getTransformNode = function() {
@@ -841,8 +855,9 @@ FABRIC.SceneGraph.registerNodeType('Instance', {
         throw (message);
       }
       transformNode = node;
-      if (geometryNode) {
-        bindToSceneGraph();
+      assignLoadTransformOperators();
+      if(geometryNode && !rayIntersectionOperatorsAssigned){
+        assignRayIntersectionOperators();
       }
       return instanceNode.pub;
     };

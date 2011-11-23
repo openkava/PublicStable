@@ -1135,6 +1135,29 @@ FABRIC.SceneGraph.registerNodeType('TransparentMaterial', {
     return transparentMaterial;
   }});
 
+FABRIC.SceneGraph.registerNodeType('InstancingMaterial', {
+  briefDesc: 'The InstancingMaterial is a protoype for materials drawn using "DrawInstanced".',
+  detailedDesc: 'The InstancingMaterial is a protoype for all materials drawn using "DrawInstanced". It sets the instanceCount' +
+                ' to ensure that the transparent objects are drawn last.',
+  parentNodeDesc: 'Material',
+  factoryFn: function(options, scene) {
+    options.parentEventHandler = scene.getSceneRedrawTransparentObjectsEventHandler();
+    var instancingMaterial = scene.constructNode('Material', options);
+    var redrawEventHandler = instancingMaterial.getRedrawEventHandler();
+    redrawEventHandler.addMember('instanceCount', 'Integer', options.instanceCount);
+    instancingMaterial.addMemberInterface(redrawEventHandler, 'numInstances');
+    redrawEventHandler.preDescendBindings.append(scene.constructOperator({
+      operatorName: 'setInstanceCount',
+      srcCode: 'operator setInstanceCount(io OGLShaderProgram shaderProgram, io Integer count) { shaderProgram.numInstances = count; }',
+      entryFunctionName: 'setInstanceCount',
+      parameterLayout: [
+        'shader.shaderProgram',
+        'self.instanceCount'
+      ]
+    }));
+    return instancingMaterial;
+  }});
+
 
 FABRIC.SceneGraph.registerNodeType('PostProcessEffect', {
   briefDesc: 'The PostProcessEffect node allows to compute an effect after the drawing of the viewport.',
@@ -1612,6 +1635,7 @@ FABRIC.SceneGraph.defineEffectFromFile('PhongTextureMaterial', 'FABRIC_ROOT/Scen
 FABRIC.SceneGraph.defineEffectFromFile('PhongTextureSimpleMaterial', 'FABRIC_ROOT/SceneGraph/Shaders/PhongTextureShaderSimple.xml');
 FABRIC.SceneGraph.defineEffectFromFile('PhongBumpReflectMaterial', 'FABRIC_ROOT/SceneGraph/Shaders/PhongBumpReflectShader.xml');
 FABRIC.SceneGraph.defineEffectFromFile('PhongSkinningMaterial', 'FABRIC_ROOT/SceneGraph/Shaders/PhongSkinningShader.xml');
+FABRIC.SceneGraph.defineEffectFromFile('PhongSkinnedInstancesMaterial', 'FABRIC_ROOT/SceneGraph/Shaders/PhongSkinnedInstancesShader.xml');
 
 FABRIC.SceneGraph.defineEffectFromFile('ShadowReceivingPhongMaterial', 'FABRIC_ROOT/SceneGraph/Shaders/ShadowReceivingPhongShader.xml');
 FABRIC.SceneGraph.defineEffectFromFile('PhongBumpReflectSkinningMaterial', 'FABRIC_ROOT/SceneGraph/Shaders/PhongBumpReflectSkinningShader.xml');

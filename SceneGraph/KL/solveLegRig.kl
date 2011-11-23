@@ -11,13 +11,16 @@ use SolverHelperFunctions;
 
 
 operator solveInsectLegRig(
-  io Xfo controllerXfo,
+  io Xfo controllerXfoSlices<>,
   io Xfo pose[],
   io Bone bones[],
   io Limb legs[],
-  io PoseVariables poseVariables,
+  io PoseVariables poseVariableSlices<>,
+  Size index,
   io DebugGeometry debugGeometry
 ) {
+  Xfo controllerXfo = controllerXfoSlices[index];
+  PoseVariables poseVariables = poseVariableSlices[index];
   for( Integer i=0; i<legs.size; i++){
     Limb leg = legs[i];
     
@@ -75,13 +78,16 @@ operator solveInsectLegRig(
 
 
 operator solveHumanoidLegRig(
-  io Xfo controllerXfo,
+  io Xfo controllerXfoSlices<>,
   io Xfo pose[],
   io Bone bones[],
   io Limb legs[],
-  io PoseVariables poseVariables,
+  io PoseVariables poseVariableSlices<>,
+  Size index,
   io DebugGeometry debugGeometry
 ) {
+  Xfo controllerXfo = controllerXfoSlices[index];
+  PoseVariables poseVariables = poseVariableSlices[index];
   for( Integer i=0; i<legs.size; i++){
     Limb leg = legs[i];
     

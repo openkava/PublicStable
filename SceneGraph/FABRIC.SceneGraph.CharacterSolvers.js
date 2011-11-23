@@ -177,16 +177,17 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('FKHierarchySolver',{
     skeletonNode.addMember(name + 'bindings', 'FKHierarchy', binding);
     
     rigNode.addSolverOperator({
-        operatorName: 'solveFKHierarchy',
-        srcFile: 'FABRIC_ROOT/SceneGraph/KL/solveFKHierarchy.kl',
-        entryFunctionName: 'solveFKHierarchy',
-        parameterLayout: [
-          'self.pose',
-          'skeleton.bones',
-          'skeleton.' + name + 'bindings',
-          'variables.poseVariables'
-        ]
-      });
+      operatorName: 'solveFKHierarchy',
+      srcFile: 'FABRIC_ROOT/SceneGraph/KL/solveFKHierarchy.kl',
+      entryFunctionName: 'solveFKHierarchy',
+      parameterLayout: [
+        'self.pose',
+        'skeleton.bones',
+        'skeleton.' + name + 'bindings',
+        'self.index',
+        'variables.poseVariables<>'
+      ]
+    });
     
     solver.getXfoVarBindings = function(){
       var boneXfoVarBindings = {};
@@ -615,7 +616,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('SpineSolver', {
           'skeleton.' + name + 'startXfoID',
           'skeleton.' + name + 'endXfoID',
           
-          'variables.poseVariables'
+          'variables.poseVariables<>'
         ]
       });
 
@@ -887,7 +888,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('NCFIKSolver', {
           'constants.' + name + 'boneIndices',
           'constants.' + name + 'targetXfoId',
           
-          'variables.poseVariables'
+          'variables.poseVariables<>'
         ]
       });
 
@@ -972,7 +973,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('ArmSolver', {
           'skeleton.' + name + 'handControlXfoId',
           'skeleton.' + name + 'ikblendId',
 
-          'variables.poseVariables'
+          'variables.poseVariables<>'
         ]
       });
 
@@ -1112,11 +1113,12 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('InsectLegSolver', {
       srcFile: 'FABRIC_ROOT/SceneGraph/KL/solveLegRig.kl',
       entryFunctionName: 'solveInsectLegRig',
       parameterLayout: [
-        'charactercontroller.xfo',
+        'charactercontroller.xfo<>',
         'self.pose',
         'skeleton.bones',
         'skeleton.legs',
-        'variables.poseVariables',
+        'variables.poseVariables<>',
+        'self.index',
         'self.debugGeometry'
       ]
     });
@@ -1209,18 +1211,19 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('HumanoidLegSolver', {
     
     skeletonNode.addMember('legs', 'Limb[]', legs);
     rigNode.addSolverOperator({
-        operatorName: 'solveHumanoidLegRig',
-        srcFile: 'FABRIC_ROOT/SceneGraph/KL/solveLegRig.kl',
-        entryFunctionName: 'solveHumanoidLegRig',
-        parameterLayout: [
-          'charactercontroller.xfo',
-          'self.pose',
-          'skeleton.bones',
-          'skeleton.legs',
-          'variables.poseVariables',
-          'self.debugGeometry'
-        ]
-      });
+      operatorName: 'solveHumanoidLegRig',
+      srcFile: 'FABRIC_ROOT/SceneGraph/KL/solveLegRig.kl',
+      entryFunctionName: 'solveHumanoidLegRig',
+      parameterLayout: [
+        'charactercontroller.xfo<>',
+        'self.pose',
+        'skeleton.bones',
+        'skeleton.legs',
+        'variables.poseVariables<>',
+        'self.index',
+        'self.debugGeometry'
+      ]
+    });
       
     if (options.createManipulators) {
       /*
@@ -1332,11 +1335,12 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('HubSolver', {
       srcFile: 'FABRIC_ROOT/SceneGraph/KL/solveHubRig.kl',
       entryFunctionName: 'solveHubRigs',
       parameterLayout: [
-        'charactercontroller.xfo',
+        'charactercontroller.xfo<>',
         'self.pose',
         'skeleton.bones',
         'skeleton.hubs',
-        'variables.poseVariables',
+        'variables.poseVariables<>',
+        'self.index',
         'self.debugGeometry'
       ]
     });
