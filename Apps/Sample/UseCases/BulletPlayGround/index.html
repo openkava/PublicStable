@@ -691,20 +691,11 @@
         }
       });
 
-      // colors
-      var colors = [];
-      colors.push(FABRIC.RT.rgb(0.0,0.75,0.0));
-      colors.push(FABRIC.RT.rgb(0.75,0.0,0.0));
-      colors.push(FABRIC.RT.rgb(0.75,0.0,0.75));
-      colors.push(FABRIC.RT.rgb(0.0,0.75,0.75));
-      colors.push(FABRIC.RT.rgb(0.0,0.0,0.75));
-
       // setup self in the participants map
       var participants = {};
       var participantsCount = 0;
       participants['_self'] = {};
       participants['_self'].name = 'Yourself';
-      participants['_self'].color = colors[participantsCount % 5];
       participantsCount++;
 
       // setup a function to fill the camera list
@@ -712,13 +703,11 @@
         var html = "";
 
         for(var key in participants)
-          html += "<option value='"+key+"' style='color: white; background-color:rgb("+
-            parseInt(participants[key].color.r * 255)+","+
-            parseInt(participants[key].color.g * 255)+","+
-            parseInt(participants[key].color.b * 255)+")'>"+participants[key].name+"</option>";
+          html += '<li><a href="#">'+participants[key].name+'</a></li>';
 
         // attach an on-select event to the camera list 
         $('#participantList').html(html);
+        $('#participantCount').html('('+participantsCount+')');
       }
       updateParticipantsList();
 
@@ -736,7 +725,6 @@
           // create a new participant
           var newParticipant = {};
           newParticipant.name = name;
-          newParticipant.color = colors[participantsCount % 5];
 
           participants[id] = newParticipant;
           updateParticipantsList();
@@ -1295,41 +1283,21 @@
             </ul>
           </li>
         </ul>
-        <!-- <ul>
-          <li>
-            <h2>Camera Position</h2>
-            <ul>
-              <li><a href="#">XY</a></li>
-              <li><a href="#">YZ</a></li>
-              <li><a href="#">XZ</a></li>
-              <li><a href="#">Fix</a></li>
-            </ul>
-          </li>
-        </ul> -->
       </nav>
       <article class="participants">
         <div class="heading">
           <h2>Participants</h2>
-          <span class="num">(6)</span>
+          <span class="num" id="participantCount">(1)</span>
         </div>
         <form class="search" action="#">
           <fieldset>
             <input id="participantName" type="text" value="Yourself" >
-            <input id="join" type="submit" value="Join" >
+            <button id="join">Join</button>
           </fieldset>
         </form>
         <div class="list">
-          <ul>
-            <li><a href="#">Paul</a></li>
-            <li><a href="#">Test User</a></li>
-            <li><a href="#">Fabric Admin</a></li>
+          <ul id="participantList">
             <li class="active"><a href="#">Yourself</a></li>
-            <li><a href="#">Paul</a></li>
-            <li><a href="#">Test User</a></li>
-            <li><a href="#">Fabric Admin</a></li>
-            <li><a href="#">Paul</a></li>
-            <li><a href="#">Test User</a></li>
-            <li><a href="#">Fabric Admin</a></li>
           </ul>
         </div>
       </article>

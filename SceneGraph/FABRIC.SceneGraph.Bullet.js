@@ -800,7 +800,6 @@ FABRIC.SceneGraph.registerNodeType('BulletForceManipulator', {
     
     var eventListenersAdded = false;
     var mouseDownFn = function(evt) {
-      console.log('bullet force...');
       if(!enabled){
         return;
       }
