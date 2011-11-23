@@ -262,12 +262,13 @@ $(document).ready(function() {
   case 'walker':
     locomotionControllerNode = scene.constructNode('ScreenSpacePlayerCharacterController', {
         cameraNode: camera,
-        maxLinearVelocity: 35,
-        maxLinearAcceleration: 6,
-        maxAngularVelocity: 5,
+        maxLinearVelocity: 15,
+        maxLinearAcceleration: 1,
+        maxAngularVelocity: 2,
+        maxAngularAcceleration: 2,
         bulletWorldNode: bulletWorldNode,
         numTrailSegments: 0,
-        gravity: -1.0,
+        gravity: 0,
         comHeight: 1.8,
         circleSize: 1.6
       });
