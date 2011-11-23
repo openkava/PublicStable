@@ -234,7 +234,7 @@ namespace Fabric
         1,
         &Node::EvaluateAsyncCallback,
         this,
-        false,
+        MT::ThreadPool::Idle,
         finishedCallback,
         finishedUserdata
         );
@@ -246,6 +246,7 @@ namespace Fabric
       )
     {
       Node *node = static_cast<Node *>( userdata );
+      node->m_context->acquireMutex();
       
       RC::Handle<Context> context = node->m_context;
       RC::Handle<MT::LogCollector> logCollector( context->getLogCollector() );
@@ -254,6 +255,7 @@ namespace Fabric
       if ( logCollector )
         logCollector->flush();
       
+      node->m_context->releaseMutex();
       node->release();
     }
     

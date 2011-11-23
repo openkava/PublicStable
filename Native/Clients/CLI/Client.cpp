@@ -143,26 +143,31 @@ namespace Fabric
       }
     };
     
-    RC::Handle<Client> Client::Create( RC::Handle<DG::Context> const &context, v8::Handle<v8::Object> clientWrap )
+    RC::Handle<Client> Client::Create( RC::Handle<DG::Context> const &context, ClientWrap *clientWrap )
     {
       return new Client( context, clientWrap );
     }
     
-    Client::Client( RC::Handle<DG::Context> const &context, v8::Handle<v8::Object> clientWrap )
+    Client::Client( RC::Handle<DG::Context> const &context, ClientWrap *clientWrap )
       : DG::Client( context )
+      , m_clientWrap( clientWrap )
     {
-      m_clientWrap = v8::Persistent<v8::Object>::New( clientWrap );
+    }
+    
+    void Client::invalidate()
+    {
+      m_clientWrap = 0;
     }
     
     Client::~Client()
     {
-      m_clientWrap.Dispose();
+      invalidate();
     }
     
     void Client::notify( Util::SimpleString const &jsonEncodedNotifications ) const
     {
-      ClientWrap *clientWrap = static_cast<ClientWrap *>( m_clientWrap->GetPointerFromInternalField(0) );
-      clientWrap->notify( jsonEncodedNotifications.data(), jsonEncodedNotifications.length() );
+      if ( m_clientWrap )
+        m_clientWrap->notify( jsonEncodedNotifications.data(), jsonEncodedNotifications.length() );
     }
     
     void ClientWrap::Initialize( v8::Handle<v8::Object> target )
@@ -177,7 +182,7 @@ namespace Fabric
       
       NODE_SET_PROTOTYPE_METHOD( v8FunctionTemplate, "jsonExec", JSONExec );
       NODE_SET_PROTOTYPE_METHOD( v8FunctionTemplate, "setJSONNotifyCallback", SetJSONNotifyCallback );
-      NODE_SET_PROTOTYPE_METHOD( v8FunctionTemplate, "dispose", Dispose );
+      NODE_SET_PROTOTYPE_METHOD( v8FunctionTemplate, "close", Close );
       
       target->Set( v8::String::New( "Client" ), v8FunctionTemplate->GetFunction() );
     }
@@ -197,7 +202,7 @@ namespace Fabric
     }
     
     ClientWrap::ClientWrap( v8::Handle<v8::Object> object )
-      : node::HandleWrap( object, (uv_handle_t *)&m_uvAsync )
+      : node::HandleWrap( object, 0 )
       , m_mutex("Node.js ClientWrap")
     {
       std::vector<std::string> pluginPaths;
@@ -237,12 +242,12 @@ namespace Fabric
 
       Plug::Manager::Instance()->loadBuiltInPlugins( pluginPaths, dgContext->getCGManager() );
       
-      m_client = Client::Create( dgContext, object );
+      m_client = Client::Create( dgContext, this );
 
       m_mainThreadTLS = true;
       uv_async_init( uv_default_loop(), &m_uvAsync, &ClientWrap::AsyncCallback );
-      m_uvAsync.data = this;
-
+      SetHandle( (uv_handle_t *)&m_uvAsync );
+      
       //// uv_timer_init adds a loop reference. (That is, it calls uv_ref.) This
       //// is not the behavior we want in Node. Timers should not increase the
       //// ref count of the loop except when active.
@@ -267,26 +272,22 @@ namespace Fabric
     }
     
 #define UNWRAP \
-  assert(!args.Holder().IsEmpty()); \
-  assert(args.Holder()->InternalFieldCount() > 0); \
-  ClientWrap* wrap =  \
-      static_cast<ClientWrap*>(args.Holder()->GetPointerFromInternalField(0)); \
-  if (!wrap) { \
-    node::SetErrno(UV_EBADF); \
-    return v8HandleScope.Close(v8::Integer::New(-1)); \
-  }
+  FABRIC_ASSERT( !args.Holder().IsEmpty() ); \
+  FABRIC_ASSERT( args.Holder()->InternalFieldCount() > 0 ); \
+  ClientWrap* wrap = static_cast<ClientWrap *>( args.Holder()->GetPointerFromInternalField(0) ); \
+  if ( !wrap ) \
+    return v8::ThrowException( v8::String::New( "client has already been closed" ) );
 
     v8::Handle<v8::Value> ClientWrap::JSONExec( v8::Arguments const &args )
     {
-      v8::HandleScope v8HandleScope;
-      
       UNWRAP
       
       if ( args.Length() != 1 || !args[0]->IsString() )
         return v8::ThrowException( v8::String::New( "jsonExec: takes one string parameter (jsonEncodedCommands)" ) );
+      
+      v8::HandleScope v8HandleScope;
       v8::Handle<v8::String> v8JSONEncodedCommands = v8::Handle<v8::String>::Cast( args[0] );
       v8::String::Utf8Value v8JSONEncodedCommandsUtf8Value( v8JSONEncodedCommands );
-      
       Util::SimpleString jsonEncodedResults;
       {
         v8::Handle<v8::Object> v8This = args.This();
@@ -297,33 +298,31 @@ namespace Fabric
           resultJSON
           );
       }
-      
       v8::Handle<v8::String> v8JSONEncodedResults = v8::String::New( jsonEncodedResults.data(), jsonEncodedResults.length() );
       return v8HandleScope.Close( v8JSONEncodedResults );
     }
       
     v8::Handle<v8::Value> ClientWrap::SetJSONNotifyCallback( v8::Arguments const &args )
     {
-      v8::HandleScope v8HandleScope;
-      
       UNWRAP
       
       if ( args.Length() != 1 || !args[0]->IsFunction() )
         return v8::ThrowException( v8::String::New( "setJSONNotifyCallback: takes 1 function parameter (notificationCallback)" ) );
       v8::Handle<v8::Function> v8Callback = v8::Handle<v8::Function>::Cast( args[0] );
 
+      v8::HandleScope v8HandleScope;
       wrap->m_notifyCallback = v8::Persistent<v8::Function>::New( v8Callback );
-
       wrap->m_client->notifyInitialState();
-      
       return v8HandleScope.Close( v8::Handle<v8::Value>() );
     }
     
-    v8::Handle<v8::Value> ClientWrap::Dispose( v8::Arguments const &args )
+    v8::Handle<v8::Value> ClientWrap::Close( v8::Arguments const &args )
     {
-      v8::HandleScope v8HandleScope;
       UNWRAP
-      return v8HandleScope.Close( v8::Handle<v8::Value>() );
+      node::HandleWrap::Close( args );
+      wrap->m_client->invalidate();
+      wrap->m_client = 0;
+      return v8::Handle<v8::Value>();
     }
     
     void ClientWrap::notify( char const *data, size_t length )

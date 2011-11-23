@@ -71,7 +71,7 @@ namespace Fabric
       
       m_stateMutex.acquire();
       size_t numCores = getNumCores();
-      m_workerThreads.resize( numCores - 1 );
+      m_workerThreads.resize( numCores );
       for ( size_t i=0; i<m_workerThreads.size(); ++i )
         m_workerThreads[i].start( &ThreadPool::WorkerMainCallback, this );
       m_stateMutex.release();
@@ -101,12 +101,12 @@ namespace Fabric
       size_t count,
       void (*callback)( void *userdata, size_t index ),
       void *userdata,
-      bool mainThreadOnly
+      size_t flags
       )
     {
       if ( count == 0 )
         return;
-      else if ( count == 1 && (!mainThreadOnly || m_isMainThread.get()) )
+      else if ( count == 1 && (!(flags & MainThreadOnly) || m_isMainThread.get()) )
         callback( userdata, 0 );
       else
       {
@@ -114,8 +114,10 @@ namespace Fabric
         
         m_stateMutex.acquire();
         
-        if ( mainThreadOnly )
+        if ( (flags & MainThreadOnly) )
           m_mainThreadTasks.push_back( &task );
+        else if ( (flags & Idle) )
+          m_idleTasks.push_back( &task );
         else m_tasks.push_back( &task );
         
         // [pzion 20101108] Must wake waiter because there is work to do
@@ -133,7 +135,7 @@ namespace Fabric
       size_t count,
       void (*callback)( void *userdata, size_t index ),
       void *userdata,
-      bool mainThreadOnly,
+      size_t flags,
       void (*finishedCallback)( void *finishedUserdata ),
       void *finishedUserdata
       )
@@ -146,8 +148,10 @@ namespace Fabric
         
         m_stateMutex.acquire();
         
-        if ( mainThreadOnly )
+        if ( (flags & MainThreadOnly) )
           m_mainThreadTasks.push_back( task );
+        else if ( (flags & Idle) )
+          m_idleTasks.push_back( task );
         else m_tasks.push_back( task );
         
         // [pzion 20101108] Must wake waiter because there is work to do
@@ -159,14 +163,16 @@ namespace Fabric
 
     void ThreadPool::executeOneTaskIfPossible_CRITICAL_SECTION()
     {
-      if ( m_tasks.empty() && (!m_isMainThread.get() || m_mainThreadTasks.empty()) )
+      if ( m_tasks.empty() && m_idleTasks.empty() && (!m_isMainThread.get() || m_mainThreadTasks.empty()) )
         m_stateCond.wait( m_stateMutex );
       else
       {
         std::vector<Task *> *taskQueue;
         if ( m_isMainThread.get() && !m_mainThreadTasks.empty() )
           taskQueue = &m_mainThreadTasks;
-        else taskQueue = &m_tasks;
+        else if ( !m_tasks.empty() )
+          taskQueue = &m_tasks;
+        else taskQueue = &m_idleTasks;
         
         Task *task = taskQueue->back();
         

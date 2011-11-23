@@ -37,12 +37,12 @@ namespace Fabric
       MT::tlsLogCollector.get()->add( buffer );
     }
 
-    Util::Mutex ExecutionEngine::s_currentContextMutex( "DG::ExecutionEngine::s_currentContext" );
-    RC::ConstHandle<Context> ExecutionEngine::s_currentContext;
+    Util::TLSVar< RC::ConstHandle<Context> > ExecutionEngine::s_currentContext;
     
     void ExecutionEngine::Report( char const *data, size_t length )
     {
-      s_currentContext->getLogCollector()->add( data, length );
+      RC::ConstHandle<Context> context = s_currentContext;
+      context->getLogCollector()->add( data, length );
     }
     
     void *ExecutionEngine::LazyFunctionCreator( std::string const &functionName )
@@ -61,8 +61,11 @@ namespace Fabric
           result = OCL::llvmResolveExternalFunction( functionName );
 #endif
         if ( !result )
-          result = s_currentContext->getCGManager()->llvmResolveExternalFunction( functionName );
-
+        {
+          RC::ConstHandle<Context> context = s_currentContext;
+          result = context->getCGManager()->llvmResolveExternalFunction( functionName );
+        }
+        
         // We should *always* return a valid symbol. Otherwise something's
         // wrong in the KL compiler/support.
         if( !result )
@@ -115,7 +118,6 @@ namespace Fabric
 
     ExecutionEngine::ContextSetter::ContextSetter( RC::ConstHandle<Context> const &context )
     {
-      s_currentContextMutex.acquire();
       m_oldContext = s_currentContext;
       s_currentContext = context;
     }
@@ -123,7 +125,6 @@ namespace Fabric
     ExecutionEngine::ContextSetter::~ContextSetter()
     {
       s_currentContext = m_oldContext;
-      s_currentContextMutex.release();
     }
   };
 };

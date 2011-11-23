@@ -12,7 +12,6 @@
 #include <Fabric/Core/DG/Debug.h>
 #include <Fabric/Core/RT/NumericDesc.h>
 #include <Fabric/Core/RT/StructDesc.h>
-#include <Fabric/Core/MT/IdleTaskQueue.h>
 #include <Fabric/Core/OCL/OCL.h>
 #include <Fabric/Core/Util/Log.h>
 
