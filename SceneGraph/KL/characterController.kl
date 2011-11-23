@@ -3,6 +3,22 @@ use Vec3, Quat, Xfo;
 use DebugGeometry;
 
 
+
+operator worldSpacePlayerControls(
+  io Vec2 translationControls,
+  io Vec2 orientationControls,
+  
+  io Scalar maxLinearVelocity,
+  io Scalar maxAngularVelocity,
+  
+  io Vec3 goalLinearVelocity,
+  io Quat goalOrientation
+) {
+// report("worldSpacePlayerControls:"+translationControls);
+  
+  goalLinearVelocity = Vec3(translationControls.x, 0.0, translationControls.y) * maxLinearVelocity;
+}
+
 operator screenSpacePlayerControls(
   io Vec2 translationControls,
   io Vec2 orientationControls,
@@ -46,7 +62,7 @@ operator evaluateCharacterController(
   io Scalar maxAngularAcceleration,
   
   io Vec3 linearVelocity,
-  io Quat angularVelocity,
+  io Scalar angularVelocity,
   
   
   io Scalar gravity,
@@ -64,27 +80,19 @@ operator evaluateCharacterController(
     return;
   }
   Quat alignment;
-  Boolean displayDebugging = false;
+  Boolean displayDebugging = ENABLE_DEBUGGING;
+  
+  controllerXfo.tr += controllerXfo.ori.rotateVector(Vec3(0.0, controllerparams.lift, 0.0));
+  controllerparams.lift = 0.0;
+  
   ////////////////////////////
   // Movement
   Vec3 acceleration = goalLinearVelocity - linearVelocity;
   
-  // decompose acceleration into forwards and and non-forwards acceleration,
-  // and apply different limits basedon the direction.
-  Vec3 facingDir = controllerXfo.ori.rotateVector(Vec3(0.0, 0.0, 1.0));
-  Scalar fwAccelerationStrength = acceleration.dot(facingDir);
-  
-  if(fwAccelerationStrength < 0.0){
-    fwAccelerationStrength = 0.0;
+  Scalar accel = acceleration.length();
+  if(accel > maxLinearAcceleration){
+    acceleration *= maxLinearAcceleration/accel;
   }
-  else if(fwAccelerationStrength > maxLinearAcceleration){
-    fwAccelerationStrength = maxLinearAcceleration;
-  }
-  Vec3 nonFwAcceleration = acceleration - (facingDir * fwAccelerationStrength);
-  if(nonFwAcceleration.length() > (maxLinearAcceleration * 0.65)){
-    nonFwAcceleration = nonFwAcceleration.unit() * (maxLinearAcceleration * 0.65);
-  }
-  acceleration = (facingDir * fwAccelerationStrength) + nonFwAcceleration;
     
   linearVelocity += acceleration;
   controllerparams.displacement.tr = linearVelocity * timestep;
@@ -92,11 +100,15 @@ operator evaluateCharacterController(
   
   ////////////////////////////
   // Ballance
-  if(gravity > 0.0){
-    Vec3 balanceVector = acceleration + Vec3(0.0, gravity, 0.0);
-    balanceVector.unit() * -comHeight;
-    balanceVector.y = 0.0;
-    controllerparams.balanceXfo.tr = controllerparams.balanceXfo.tr.linearInterpolate(balanceVector, 0.1);
+  if(gravity < 0.0){
+    if(acceleration.length() > 0.001){
+      Vec3 balanceVector = acceleration + Vec3(0.0, gravity, 0.0);
+      balanceVector = balanceVector.unit() * comHeight;
+      balanceVector.y = 0.0;
+      controllerparams.balanceXfo.tr = controllerparams.balanceXfo.tr.linearInterpolate(balanceVector, 0.2);
+    }else{
+      controllerparams.balanceXfo.tr = controllerparams.balanceXfo.tr.linearInterpolate(Vec3(0.0,0.0,0.0), 0.2);
+    }
     Scalar len = controllerparams.balanceXfo.tr.length();
     if(len > 0.001){
       Scalar balanceAngle = acos(len / comHeight);
@@ -104,13 +116,14 @@ operator evaluateCharacterController(
       controllerparams.balanceXfo.ori.setFromAxisAndAngle(axis, HALF_PI - balanceAngle);
       
       if(displayDebugging){
-        debugGeometry1.drawLine(controllerXfo.tr, controllerXfo.tr - controllerparams.balanceXfo.tr, Color(0.5,0.0,0.5,1.0));
-        debugGeometry1.drawLine(controllerXfo.tr - controllerparams.balanceXfo.tr, controllerXfo.tr - controllerparams.balanceXfo.tr + controllerparams.balanceXfo.ori.rotateVector(Vec3(0.0, comHeight, 0.0)), Color(0.5,0.0,0.5,1.0));
+        debugGeometry1.drawLine(controllerXfo.tr, controllerXfo.tr - controllerparams.balanceXfo.tr, Color(0.5, 1.0, 0.5,1.0));
+        debugGeometry1.drawLine(controllerXfo.tr - controllerparams.balanceXfo.tr, controllerXfo.tr - controllerparams.balanceXfo.tr + controllerparams.balanceXfo.ori.rotateVector(Vec3(0.0, comHeight, 0.0)), Color(0.5, 1.0, 0.5, 1.0));
       }
-    }else{
+    }
+    else{
       controllerparams.balanceXfo.ori.setIdentity();
       if(displayDebugging){
-        debugGeometry1.drawLine(controllerXfo.tr, controllerXfo.tr + Vec3(0.0, comHeight, 0.0), Color(0.5,0.0,0.5,1.0));
+        debugGeometry1.drawLine(controllerXfo.tr, controllerXfo.tr + Vec3(0.0, comHeight, 0.0), Color(0.5, 1.0,0.5,1.0));
       }
     }
     Xfo balanceDisplayXfo;
@@ -124,22 +137,26 @@ operator evaluateCharacterController(
   if(linearVelocity.length() > 0.001){
     Vec3 currDir = controllerXfo.ori.rotateVector(Vec3(0.0, 0.0, 1.0));
     Vec3 displacementDir = linearVelocity.unit();
-    Scalar deltaAngle = currDir.angleTo(displacementDir);
+    Scalar sign = currDir.cross(displacementDir).y < 0.0 ? -1.0 : 1.0;
+    Scalar newAngularVelocity = currDir.angleTo(displacementDir) * sign / timestep;
     
-    if(deltaAngle > maxAngularVelocity * timestep){
-      deltaAngle = maxAngularVelocity * timestep;
+    Scalar angularAcceleration = (newAngularVelocity - angularVelocity);
+    if(abs(angularAcceleration) > maxAngularAcceleration){
+      angularAcceleration = maxAngularAcceleration * sign;
     }
-    if(currDir.cross(displacementDir).y < 0.0){
-      deltaAngle = -deltaAngle;
+    newAngularVelocity = angularVelocity + angularAcceleration;
+    if(abs(newAngularVelocity) > maxAngularVelocity){
+      newAngularVelocity = maxAngularVelocity * sign;
     }
-    
-    controllerparams.displacement.ori.setFromAxisAndAngle(Vec3(0.0, 1.0, 0.0), deltaAngle);
+    angularVelocity = newAngularVelocity;
+    controllerparams.displacement.ori.setFromAxisAndAngle(Vec3(0.0, 1.0, 0.0), angularVelocity * timestep);
     controllerXfo.ori = controllerparams.displacement.ori * controllerXfo.ori;
    
+    // Smooth changes in direction
     // TODO: provide a parameter to ramp this.
     if(controllerparams.trail.size == 0){
       controllerparams.displacementDir = controllerparams.displacementDir.linearInterpolate(displacementDir, 0.1);
-    }{
+    }else{
       controllerparams.displacementDir = displacementDir;
     }
   }
@@ -177,7 +194,7 @@ operator evaluateCharacterController(
   }
 
   if(displayDebugging){
-    debugGeometry1.drawAxis(controllerXfo, 6.0, Color(1.0,0.0,0.0,1.0));
+    debugGeometry1.drawAxis(controllerXfo, 1.0, Color(1.0,0.0,0.0,1.0));
     debugGeometry1.drawCircle(controllerXfo, circleSize, Color(1.0,0.0,0.0,1.0));
   }
 }

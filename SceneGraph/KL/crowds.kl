@@ -116,8 +116,8 @@ operator simulateCrowd(
     if (goalDist > neighborInfluenceRange) {
       goalVelocity = goalDir * Vec3(maxLinearVelocity / goalDist, 0.0, maxLinearVelocity / goalDist);
     }
-    else if (goalDist > agentRadius) {
-      Scalar weight = (goalDist - agentRadius)/(neighborInfluenceRange - agentRadius);
+    else if (goalDist > (agentRadius*2.0)) {
+      Scalar weight = 1.0;//(goalDist - agentRadius)/(neighborInfluenceRange - agentRadius);
       goalVelocity = goalDir * Vec3((maxLinearVelocity * weight) / goalDist, 0.0, (maxLinearVelocity * weight) / goalDist);
     }
   }
@@ -139,7 +139,8 @@ operator simulateCrowd(
         }
         Scalar neighborDist = neighborDistances[i];
         if (neighborDist < separationDistance) {
-          Scalar weight = 1.0 - (neighborDist - agentRadius)/(neighborInfluenceRange - agentRadius);
+          Scalar weight = (neighborDist - neighborInfluenceRange)/(agentRadius - neighborInfluenceRange);
+          weight = weight * weight;
           separationVector += (xfo.tr - previousframe_positions[neighborId]) * ((1.0 / neighborDist) * (separationDistance - neighborDist) * weight);
           neighborInfluenceWeight += 1.0;
         }
@@ -158,6 +159,11 @@ operator simulateCrowd(
   Scalar goalSpeed = goalVelocity.length();
   if(goalSpeed > maxLinearVelocity){
     goalVelocity = goalVelocity * (maxLinearVelocity/goalSpeed);
+  }
+  else if(goalSpeed < (maxLinearVelocity * 0.3)){
+    // To reduce small trivial movements when being bumped
+    // by other agents, we prune small forces here.
+    goalVelocity.setNull();
   }
   
   if(displayDebugging){

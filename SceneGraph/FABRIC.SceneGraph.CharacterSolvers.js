@@ -1215,7 +1215,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('HumanoidLegSolver', {
       srcFile: 'FABRIC_ROOT/SceneGraph/KL/solveLegRig.kl',
       entryFunctionName: 'solveHumanoidLegRig',
       parameterLayout: [
-        'charactercontroller.xfo',
+        'charactercontroller.xfo<>',
         'self.pose',
         'skeleton.bones',
         'skeleton.legs',
