@@ -156,18 +156,16 @@ operator evaluateLocomotionPoseVariables(
       
     /////////////////////////////////////////////////
     // Error dissapation
-    if(trackcontroller.tick > 0){
-      if(trackcontroller.deactivate){
-        poseError = prevUpdatePose.subtract(poseVariables);
-        clipActivationTime = t-timestep;
-      }
-      if(clipActivationTime > 0.0){
-        // Blend off the error across the first half a stride. 
-        Scalar blendTime = (stepFrequency * clipFrequencyMultiplier * 0.25);
-        if(t - clipActivationTime < blendTime){
-          Scalar weight = 1.0 - ((t - clipActivationTime) / blendTime);
-          poseVariables.addWeighted(poseError, weight);
-        }
+    if(trackcontroller.deactivate){
+      poseError = prevUpdatePose.subtract(poseVariables);
+      clipActivationTime = t-timestep;
+    }
+    if(clipActivationTime > 0.0){
+      // Blend off the error across the first half a stride. 
+      Scalar blendTime = (stepFrequency * clipFrequencyMultiplier * 0.25);
+      if(t - clipActivationTime < blendTime){
+        Scalar weight = 1.0 - ((t - clipActivationTime) / blendTime);
+        poseVariables.addWeighted(poseError, weight);
       }
     }
     prevUpdatePose = poseVariables;
