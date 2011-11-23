@@ -233,7 +233,8 @@ $(document).ready(function() {
     var crowdNode = scene.constructNode('Crowd', {
         maxLinearVelocity: 4,
         maxLinearAcceleration: 0.2,
-        maxAngularVelocity:  5,
+        maxAngularVelocity:  5.0,
+        maxAngularAcceleration: 2.0,
         bulletWorldNode: bulletWorldNode,
         numTrailSegments: 0,
         gravity: -4.8,

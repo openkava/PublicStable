@@ -308,7 +308,7 @@ FABRIC.SceneGraph.registerNodeType('LocomotionCharacterController', {
     dgnode.addMember('maxLinearAcceleration', 'Scalar', options.maxLinearAcceleration);
     dgnode.addMember('maxAngularAcceleration', 'Scalar', options.maxAngularAcceleration);
     dgnode.addMember('linearVelocity', 'Vec3');
-    dgnode.addMember('angularVelocity', 'Quat');
+    dgnode.addMember('angularVelocity', 'Scalar');
     
     dgnode.addMember('controllerparams', 'CharacterControllerParams', controllerparams);
     dgnode.addMember('liftVec', 'Vec3');
