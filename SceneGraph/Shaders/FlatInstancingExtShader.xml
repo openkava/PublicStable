@@ -9,7 +9,7 @@
     <uniform name="u_projectionMatrix" constant="projectionMatrix" type="Mat44" owner="instance"/>
 
     <uniform name="u_samplerTransformMap" constant="transformTexture" type="Integer" owner="texture"/>
-    <uniform name="u_transformTextureHeight" constant="transformTextureHeight" type="Scalar" defaultValue="512.0"/>
+    <uniform name="u_transformTextureHeight" constant="transformTextureHeight" type="Scalar"/>
   </uniforms>
   
   <attributes>
@@ -34,17 +34,14 @@
       in vec4 a_position;
       in int a_instanceID;
 
-      void main(){
-        int instanceID = gl_InstanceID;
-        vec2 factor = vec2(1.0 / 512.0, 1.0 / u_transformTextureHeight);
-        int x = (instanceID % 128) * 4;
-        float y = float(instanceID) / 128.0;
-        mat4 mvp = mat4(texture2D(u_samplerTransformMap,vec2(x,y) * factor),
-            texture2D(u_samplerTransformMap,vec2(x+1,y) * factor),
-            texture2D(u_samplerTransformMap,vec2(x+2,y) * factor),
-            texture2D(u_samplerTransformMap,vec2(x+3,y) * factor));
+      ]]>
+      </source>
+      <include file="matrices.txt"/>
+      <source>
+      <![CDATA[
 
-        mat4 modelViewMatrix = u_viewMatrix * mvp;
+      void main(){
+				mat4 modelViewMatrix = u_viewMatrix * loadMatrixFromTexture(u_samplerTransformMap, u_transformTextureHeight, gl_InstanceID);
         mat4 modelViewProjectionMatrix = u_projectionMatrix * modelViewMatrix;
         gl_Position = modelViewProjectionMatrix * a_position;
       }

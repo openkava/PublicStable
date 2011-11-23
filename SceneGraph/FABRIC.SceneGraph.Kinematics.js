@@ -203,7 +203,7 @@ FABRIC.SceneGraph.registerNodeType('TransformTexture', {
                '}',
       entryFunctionName: 'prepareTextureMatrix',
       parameterLayout: [
-        'shader.shaderProgram',
+        'transform.textureMatrix<>',
         'self.matricesTempBuffer',
         'self.textureHeight',
         'self.oglTexture2D',

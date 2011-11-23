@@ -18,7 +18,7 @@
     <uniform name="u_projectionMatrix" constant="projectionMatrix" type="Mat44" owner="instance"/>
 
 		<uniform name="u_samplerTransformMap" constant="transformTexture" type="Integer" owner="texture"/>
-    <uniform name="u_transformTextureHeight" constant="transformTextureHeight" type="Scalar" defaultValue="512.0"/>
+    <uniform name="u_transformTextureHeight" constant="transformTextureHeight" type="Scalar"/>
   </uniforms>
   
   <attributes>
@@ -62,8 +62,7 @@
       <![CDATA[
 			
       void main(){
-				mat4 modelMatrix = loadMatrixFromTexture(u_samplerTransformMap, gl_InstanceID);
-        vec2 factor = vec2(1.0 / 512.0, 1.0 / u_transformTextureHeight);
+				mat4 modelViewMatrix = u_viewMatrix * loadMatrixFromTexture(u_samplerTransformMap, u_transformTextureHeight, gl_InstanceID);
         mat4 modelViewProjectionMatrix = u_projectionMatrix * modelViewMatrix;
         mat3 normalMatrix = inverseAndTransposeMat33(mat3(modelViewMatrix[0].xyz, modelViewMatrix[1].xyz, modelViewMatrix[2].xyz));
     

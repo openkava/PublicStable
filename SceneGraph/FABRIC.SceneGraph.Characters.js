@@ -27,13 +27,15 @@ FABRIC.SceneGraph.registerNodeType('CharacterMesh', {
     tex.forceRefresh = true;
     redrawEventHandler.addMember('oglSkinningMatriciesTexture2D', 'OGLTexture2D', tex);
     redrawEventHandler.addMember('skinningMatriciesTextureUnit', 'Integer', options.skinningMatriciesTextureUnit);
+    redrawEventHandler.addMember('textureHeight', 'Size');
     
     redrawEventHandler.preDescendBindings.append( scene.constructOperator({
       operatorName: 'loadSkinningMatricesTexture',
       srcFile: 'FABRIC_ROOT/SceneGraph/KL/loadSkinningMatrices.kl',
       preProcessorDefinitions: {
         SKINNING_MATRICES_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('skinningMatrices'),
-        SKINNIMATRICIES_TEXTUREUNIT_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('skinningMatricesTextureUnit')
+        SKINNIMATRICIES_TEXTUREUNIT_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('skinningMatricesTextureUnit'),
+        TRANSFORM_TEXTURE_HEIGHT_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('transformTextureHeight')
       },
       entryFunctionName: 'loadSkinningMatricesTexture',
       parameterLayout: [
@@ -42,7 +44,8 @@ FABRIC.SceneGraph.registerNodeType('CharacterMesh', {
         'uniforms.invmatrices',
         'uniforms.boneMapping',
         'self.oglSkinningMatriciesTexture2D',
-        'self.skinningMatriciesTextureUnit'
+        'self.skinningMatriciesTextureUnit',
+        'self.textureHeight'
       ]
     }));
     
