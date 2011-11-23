@@ -177,7 +177,9 @@ $(document).ready(function() {
   viewport.setCameraNode(camera);
   var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0), color: FABRIC.RT.rgb(0.4, 0.4, 0.6) });
 
-  var deferredRenderer = scene.constructNode('DeferredRenderer', {cameraNode: camera, lightNode: light, shininess: 20});
+  var deferredRenderer = scene.constructNode('DeferredRenderer', {cameraNode: camera, lightNode: light, shininess: 20
+     //, showDebug: true
+  });
 
   /////////////////////////////////
   // Ground
