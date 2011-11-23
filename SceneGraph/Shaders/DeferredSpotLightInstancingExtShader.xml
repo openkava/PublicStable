@@ -21,7 +21,7 @@
     <uniform name="u_projectionMatrix" constant="projectionMatrix" type="Mat44" owner="instance"/>
 
 		<uniform name="u_samplerTransformMap" constant="transformTexture" type="Integer" owner="texture"/>
-    <uniform name="u_transformTextureHeight" constant="transformTextureHeight" type="Scalar" defaultValue="512.0"/>
+    <uniform name="u_transformTextureHeight" constant="transformTextureHeight" type="Scalar"/>
   </uniforms>
   
   <attributes>
@@ -56,18 +56,14 @@
       out vec3 lightDir;
       out vec3 lightPos;
 
-      void main(){
-        int instanceID = gl_InstanceID;
-        vec2 factor = vec2(1.0 / 512.0, 1.0 / u_transformTextureHeight);
-        int x = (instanceID % 128) * 4;
-        float y = float(instanceID) / 128.0;
-        mat4 mvp = mat4(texture2D(u_samplerTransformMap,vec2(x,y) * factor),
-            texture2D(u_samplerTransformMap,vec2(x+1,y) * factor),
-            texture2D(u_samplerTransformMap,vec2(x+2,y) * factor),
-            texture2D(u_samplerTransformMap,vec2(x+3,y) * factor));
+      ]]>
+      </source>
+      <include file="matrices.txt"/>
+      <source>
+      <![CDATA[
 
-        mat4 modelViewMatrix = u_viewMatrix * mvp;
-    
+      void main(){
+				mat4 modelViewMatrix = u_viewMatrix * loadMatrixFromTexture(u_samplerTransformMap, u_transformTextureHeight, gl_InstanceID);
         //We assume the cone has a height of u_lightDistCutoff in Y,
         //and its Y center is at mid-height (based on generateCone.kl local coords)
         lightPos = (modelViewMatrix * vec4(0.0, u_lightDistCutoff*0.5, 0.0, 1.0)).xyz;

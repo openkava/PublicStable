@@ -3,7 +3,7 @@
     Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
     -->
   <head> 
-    <title>FABRIC - Character Locomotion</title> 
+    <title>FABRIC - Crowd</title> 
     
     <meta charset="iso-8859-1"/>
     <script type="text/javascript" src="../../../ThirdParty/jQuery/jquery-1.6.2.min.js"></script>
@@ -37,6 +37,7 @@
     
     <script type="text/javascript" src="../../../SceneGraph/RT/KeyframeTrackBindings.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/RT/PoseVariables.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/HashTable.js" charset="utf-8"></script>
     
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Lights.js" charset="utf-8"></script>
@@ -54,6 +55,7 @@
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Characters.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.CharacterSolvers.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.CharacterLocomotion.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Crowds.js" charset="utf-8"></script>
     
     <script type="text/javascript" src="../../../SceneGraph/Parsers/parseCollada.js" charset="utf-8"></script>
     
@@ -92,16 +94,56 @@ $(document).ready(function() {
   });
   $("#displayControllerDebugging").attr('checked', true);
   $("#displayFootMotionDebugging").attr('checked', true);
-  $("#displayFootRaycastingDebugging").attr('checked', true);
   
   
+  $('#openDebugger').button();
+  
+  try{
+    if(localStorage && localStorage.getItem("crowdParams")){
+      crowdParams = JSON.parse(localStorage.getItem("crowdParams"));
+    }
+    else{
+      throw "no flockparams";
+    }
+  }catch(e){
+    crowdParams = { sceneSize:'medium', displayDebugging: true };
+  }
+        
+  $("#numAgents").val(crowdParams.sceneSize);
+  $("#displayDebugging").attr('checked', crowdParams.displayDebugging);
+  
+
+  
+  var gridSize, agentCount, cameraDist = 20;
+  
+  switch(crowdParams.sceneSize){
+    case 'tiny':
+      agentCount = 10;
+      gridSize = 40;
+      cameraDist = 6;
+      break;
+    case 'small':
+      agentCount = 50;
+      gridSize = 80;
+      cameraDist = 10;
+      break;
+    case 'medium':
+      agentCount = 1000;
+      gridSize = 200;
+      cameraDist = 20;
+      break;
+    case 'huge':
+      agentCount = 5000;
+      gridSize = 800;
+      break;
+  }
 
   // Create the scene.
   var scene = FABRIC.SceneGraph.createScene({
         timeStep: 1/30 /* 30 fps */
       });
   var viewport = scene.constructNode('Viewport', {
-    enableRaycasting: false,
+    enableRaycasting: true,
     windowElement: document.getElementById('FabricContainer')
   });
   
@@ -110,145 +152,35 @@ $(document).ready(function() {
   }));
   
   var camera = scene.constructNode('TargetCamera', {
-      position: new FABRIC.RT.Vec3(3, 2.2, 3).multiplyScalar(6.5),
+      position: new FABRIC.RT.Vec3(3, 7.2, 3).multiplyScalar(cameraDist),
       target: new FABRIC.RT.Vec3(0, -0.5, 0),
       roll: 0,
-      nearDistance: 1.0,
-      farDistance: 60
+      nearDistance: 10.0,
+      farDistance: 1360
     });
   scene.constructNode('CameraManipulator', { targetNode: camera });
   viewport.setCameraNode(camera);
   
   var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) });
-  var phongMaterial = scene.constructNode('PhongMaterial', {
-      diffuseColor: FABRIC.RT.rgb(0.3, 0.3, 0.3, 1),
-      lightNode: light
-    });
-
   
+  
+  /*
     // create the scene grid
   scene.constructNode('Instance', {
     geometryNode: scene.constructNode('Grid', {
-        size_x: 30.0,
-        size_z: 30.0,
+        size_x: gridSize,
+        size_z: gridSize,
         sections_x: 20,
         sections_z: 20 }),
     materialNode: scene.constructNode('FlatMaterial')
   });
+  */
   
-  var constructBulletScene = false;
-  if(constructBulletScene){
-    
-    // create a simulation world
-    var bulletWorldNode = scene.constructNode('BulletWorldNode', {
-      createGroundPlane:false,
-      groundPlanseSize: 30,
-    } );
-    var createBoxes = false;
-    if(createBoxes){
-      // create several shapes. in bullet multiple instance of the same
-      // shape share the scaling, so we have to create several shapes.
-      bulletWorldNode.addShape('Box0',new FABRIC.RT.BulletShape.createBox());
-      bulletWorldNode.addShape('Box1',new FABRIC.RT.BulletShape.createBox());
-      bulletWorldNode.addShape('Box2',new FABRIC.RT.BulletShape.createBox());
-      bulletWorldNode.addShape('Box3',new FABRIC.RT.BulletShape.createBox());
-      
-      // create a cube to draw it
-      var cuboidNode = scene.constructNode('Cuboid', {
-        length: 2.0,
-        width: 2.0,
-        height: 2.0
-      });
+  // create a simulation world
+  var bulletWorldNode;
   
-      scene.constructNode('Instance', {
-        geometryNode: cuboidNode,
-        materialNode: phongMaterial,
-        transformNode: scene.constructNode('BulletRigidBodyTransform', {
-          bulletWorldNode: bulletWorldNode,
-          shapeName: 'Box0',
-          rigidBody: new FABRIC.RT.BulletRigidBody({
-            transform: FABRIC.RT.xfo({
-              tr: new FABRIC.RT.Vec3(0, -2, 0),
-              sc: new FABRIC.RT.Vec3(30, 2, 30),
-            }),
-            mass: 0.0
-          })
-        })
-      });
-      
-      scene.constructNode('Instance', {
-        geometryNode: cuboidNode,
-        materialNode: phongMaterial,
-        transformNode: scene.constructNode('BulletRigidBodyTransform', {
-          bulletWorldNode: bulletWorldNode,
-          shapeName: 'Box1',
-          rigidBody: new FABRIC.RT.BulletRigidBody({
-            transform: FABRIC.RT.xfo({
-              tr: new FABRIC.RT.Vec3(-24, -1, 6),
-              sc: new FABRIC.RT.Vec3(8, 4, 8),
-            }),
-            mass: 0.0
-          })
-        })
-      });
-      
-      scene.constructNode('Instance', {
-        geometryNode: cuboidNode,
-        materialNode: phongMaterial,
-        transformNode: scene.constructNode('BulletRigidBodyTransform', {
-          bulletWorldNode: bulletWorldNode,
-          shapeName: 'Box2',
-          rigidBody: new FABRIC.RT.BulletRigidBody({
-            transform: FABRIC.RT.xfo({
-              tr: new FABRIC.RT.Vec3(-21,-2.5,-2),
-              sc: new FABRIC.RT.Vec3(8,4,8),
-            }),
-            mass: 0.0
-          })
-        })
-      });
-      
-      scene.constructNode('Instance', {
-        geometryNode: cuboidNode,
-        materialNode: phongMaterial,
-        transformNode: scene.constructNode('BulletRigidBodyTransform', {
-          bulletWorldNode: bulletWorldNode,
-          shapeName: 'Box3',
-          rigidBody: new FABRIC.RT.BulletRigidBody({
-            transform: FABRIC.RT.xfo({
-              tr: new FABRIC.RT.Vec3(-11.5, -3, 6),
-              ori: new FABRIC.RT.Quat().setFromAxisAndAngle(new FABRIC.RT.Vec3(0,0,1),-0.3),
-              sc: new FABRIC.RT.Vec3(6, 4, 8),
-            }),
-            mass: 0.0
-          })
-        })
-      });
-      
-    }
-    else{
-      var scaleFactor = 0.1;
-      var assetNodes = scene.importAssetFile('Assets/Level.DAE', { scaleFactor: scaleFactor });
-      var floorInstance = assetNodes.Plane001;
-      var floorMesh = assetNodes.Plane001Mesh0;
-      
-      floorInstance.setMaterialNode(phongMaterial);
-    
-      bulletWorldNode.addShape('Floor',new FABRIC.RT.BulletShape.createGImpact(floorMesh));
-      scene.constructNode('BulletRigidBodyTransform', {
-        bulletWorldNode: bulletWorldNode,
-        shapeName: 'Floor',
-        rigidBody: new FABRIC.RT.BulletRigidBody({
-          transform: FABRIC.RT.xfo(),
-          friction: 0.8,
-          restitution: 0.7,
-          mass: 0.0
-        })
-      });
-    }
-  }
-  
-  var rigName = 'walker';
+  var rigName = 'marama';
+  /*
   try{
     if(localStorage && localStorage.getItem("rigName")){
       rigName = localStorage.getItem("rigName");
@@ -257,28 +189,39 @@ $(document).ready(function() {
       throw "no rigName";
     }
   }catch(e){}
-//  var locomotionControllerNode;
+  */
+  var crowdNode;
   switch(rigName){
   case 'walker':
-    locomotionControllerNode = scene.constructNode('ScreenSpacePlayerCharacterController', {
-        cameraNode: camera,
+  var agentRadius = 3.0;
+  var cellSize = 20.0;
+    var crowdNode = scene.constructNode('Crowd', {
         maxLinearVelocity: 15,
-        maxLinearAcceleration: 1,
-        maxAngularVelocity: 2,
-        maxAngularAcceleration: 2,
+        maxLinearAcceleration: 2.45,
+        maxAngularVelocity:  3,
+        maxAngularAcceleration: 3,
         bulletWorldNode: bulletWorldNode,
         numTrailSegments: 0,
-        gravity: 0,
+        gravity: -1.0,
         comHeight: 1.8,
-        circleSize: 1.6
+        circleSize: 1.6,
+        
+        cellsize: cellSize,
+        agentRadius: agentRadius,
+        x_count: Math.ceil(gridSize/cellSize)+2,
+        y_count: 1,
+        z_count: Math.ceil(gridSize/cellSize)+2,
+        displayGrid: true,
+        agentCount: agentCount,
+        displayDebugging: crowdParams.displayDebugging
       });
     break;
   case 'centipede':
-    locomotionControllerNode = scene.constructNode('WorldSpacePlayerCharacterController', {
-        cameraNode: camera,
+    var crowdNode = scene.constructNode('Crowd', {
         maxLinearVelocity: 20,
         maxLinearAcceleration: 1.45,
         maxAngularVelocity:  2,
+        maxAngularAcceleration: 2,
         bulletWorldNode: bulletWorldNode,
         numTrailSegments: 12,
         trailLength: 12.0,
@@ -287,21 +230,41 @@ $(document).ready(function() {
       });
     break;
   case 'marama':
-    locomotionControllerNode = scene.constructNode('ScreenSpacePlayerCharacterController', {
-        cameraNode: camera,
-        maxLinearVelocity: 7,
+  var agentRadius = 0.7;
+  var cellSize = 6.0;
+    var crowdNode = scene.constructNode('Crowd', {
+        maxLinearVelocity: 3.5,
         maxLinearAcceleration: 0.2,
         maxAngularVelocity:  3,
-        maxAngularAcceleration: 3.0,
+        maxAngularAcceleration: 3,
         bulletWorldNode: bulletWorldNode,
         numTrailSegments: 0,
         gravity: -4.8,
         comHeight: 1.8,
-        circleSize: 0.6
+        circleSize: 0.6,
+        
+        cellsize: cellSize,
+        agentRadius: agentRadius,
+        x_count: Math.ceil(gridSize/cellSize)+2,
+        y_count: 1,
+        z_count: Math.ceil(gridSize/cellSize)+2,
+        displayGrid: true,
+        agentCount: agentCount,
+        displayDebugging: crowdParams.displayDebugging,
+        enableDebugging: false
       });
     break;
   }
-
+  
+  var xfos = [];
+  var goals = [];
+  for(var i=0; i<agentCount; i++){
+    xfos.push(new FABRIC.RT.Xfo({tr:new FABRIC.RT.Vec3((Math.random()-0.5)*gridSize, 0,(Math.random()-0.5)*gridSize)}));
+    goals.push(new FABRIC.RT.Vec3((Math.random()-0.5)*gridSize, 0,(Math.random()-0.5)*gridSize));
+  }
+  crowdNode.setCrowdXfos(xfos);
+  crowdNode.setCrowdGoals(goals);
+  
   var rigLoader = scene.constructManager('SceneDeserializer');
   var storage = new FABRIC.SceneGraph.URLReader('Assets/' + rigName + '.json');
   var nodeMap = rigLoader.load(storage);
@@ -312,56 +275,43 @@ $(document).ready(function() {
   var characterMesh =  nodeMap.characterMesh;
   var skeletonNode = ikrig.getSkeletonNode();
   
-  ikrig.setControllerNode(locomotionControllerNode);
+  ikrig.setControllerNode(crowdNode);
   
   var locomotionVariables = scene.constructNode('LocomotionPoseVariables', {
     characterRigNode: ikrig,
-    bulletWorldNode: bulletWorldNode
+    bulletWorldNode: bulletWorldNode,
+    enableDebugging: false
   });
-  locomotionVariables.setAnimationLibrary(libraryAnimations);
   ikrig.setVariablesNode(locomotionVariables);
+  locomotionVariables.setAnimationLibrary(libraryAnimations);
   
-  var phongSkinningMaterial = scene.constructNode('PhongSkinningMaterial', {
+  
+  var materialNode = scene.constructNode('PhongSkinnedInstancesMaterial', {
     lightNode: light,
     diffuseColor: FABRIC.RT.rgba(1.0, 0.0, 0.0, 1.0),
-    numBones: skeletonNode.getNumBones()
+    numBonesPerInstance: ikrig.getSkeletonNode().getNumBones(),
+    instanceCount: agentCount
   });
   
   var characterInstance = scene.constructNode("CharacterInstance", {
     rigNode:ikrig,
     geometryNode: characterMesh,
-    materialNode: phongSkinningMaterial
+    materialNode: materialNode
   });
   
-  
+  /*
   var skeletonGeometryNode = scene.constructNode("CharacterSkeletonDebug", {
     characterRigNode:ikrig,
     boneradius: 0.2,
-    color: FABRIC.RT.rgba(0.5, 0.0, 0.5, 1.0)
+    color: FABRIC.RT.rgba(0.0, 0.0, 1.0, 1.0)
   });
-  
-    
+  */
   
   $("#selectCharacter").val(rigName);
   $("#selectCharacter").change(function() {
     localStorage.setItem("rigName", $("#selectCharacter :selected").attr("value"));
     window.location.reload();
   });
-  
-  $("#displayControllerDebugging").change(function() {
-    locomotionControllerNode.setDrawDebuggingToggle($("#displayControllerDebugging").is(":checked"));
-    viewport.redraw();
-  });
-  $("#displayFootMotionDebugging").change(function() {
-    locomotionVariables.setDrawFootMotionDebuggingToggle($("#displayFootMotionDebugging").is(":checked"));
-    viewport.redraw();
-  });
-  $("#displayFootRaycastingDebugging").change(function() {
-    locomotionVariables.setDrawRaycastingDebuggingToggle($("#displayFootRaycastingDebugging").is(":checked"));
-    viewport.redraw();
-  });
-  
-  displayFootRaycastingDebugging
   
   var togglePlay = function(){
     if ($('#play').text() == 'Play') {
@@ -383,79 +333,8 @@ $(document).ready(function() {
     }
   }
   
-//  locomotionControllerNode.setTranslationControls(new FABRIC.RT.Vec2(0, 1.0));
-  
-  var translationControls = new FABRIC.RT.Vec2();
-  var downKeys = [];
-  var arrowKeys = {
-    left: 37,
-    right: 39,
-    up: 38,
-    down: 40
-  }
-  var speed = 0.4;
-  window.onkeydown = function(evt) {
-    if(downKeys[evt.keyCode]){
-      return;
-    }
-    if(evt.keyCode==90){ // 'z'
-      togglePlay();
-    }
-    
-    if(evt.shiftKey){
-      speed = 1.0;
-    }
-    else{
-      speed = 0.4;
-    }
-    
-    if(evt.keyCode == arrowKeys.left) {
-      translationControls.x = -1.0;
-      downKeys[arrowKeys.left] = true;
-    } else if(evt.keyCode == arrowKeys.right) {
-      translationControls.x = 1.0;
-      downKeys[arrowKeys.right] = true;
-    } else if(evt.keyCode == arrowKeys.up) {
-      translationControls.y = 1.0;
-      downKeys[arrowKeys.up] = true;
-    } else if(evt.keyCode == arrowKeys.down) {
-      translationControls.y = -1.0;
-      downKeys[arrowKeys.down] = true;
-    }
-    
-    if(translationControls.length() > 1.0){
-      translationControls.setUnit();
-    }
-    locomotionControllerNode.setTranslationControls(translationControls.multiplyScalar(speed));
-  };
-  
-  window.onkeyup = function(evt) {
-    if(evt.shiftKey) {
-      speed = 0.4;
-    }
-    if(evt.keyCode == arrowKeys.left) {
-      if(!downKeys[arrowKeys.right]){
-        translationControls.x = 0.0;
-      }
-      downKeys[arrowKeys.left] = false;
-    } else if(evt.keyCode == arrowKeys.right) {
-      if(!downKeys[arrowKeys.left]){
-        translationControls.x = 0.0;
-      }
-      downKeys[arrowKeys.right] = false;
-    } else if(evt.keyCode == arrowKeys.up) {
-      if(!downKeys[arrowKeys.down]){
-        translationControls.y = 0.0;
-      }
-      downKeys[arrowKeys.up] = false;
-    } else if(evt.keyCode == arrowKeys.down) {
-      if(!downKeys[arrowKeys.up]){
-        translationControls.y = 0.0;
-      }
-      downKeys[arrowKeys.down] = false;
-    }
-    
-    locomotionControllerNode.setTranslationControls(translationControls.multiplyScalar(speed));
+  var storeCrowdParams = function(){
+    localStorage.setItem("crowdParams", JSON.stringify(crowdParams));
   }
   
   $('#loadingDialog').dialog({
@@ -472,6 +351,25 @@ $(document).ready(function() {
         throw (errors.toString());
       }
       viewport.redraw();
+      
+      $("#numAgents").change(function() {
+        sceneSize = $("#numAgents :selected").attr("value");
+        crowdParams.sceneSize = sceneSize;
+        storeCrowdParams();
+        window.location.reload();
+      });
+      
+      $("#displayDebugging").change(function() {
+        var displayDebugging = $("#displayDebugging").is(":checked");
+        crowdNode.setDisplayDebugging(displayDebugging);
+        crowdParams.displayDebugging = displayDebugging;
+        storeCrowdParams();
+      });
+  
+      $('#openDebugger').button()
+        .click(function() {
+          FABRIC.displayDebugger();
+        });
       
       
       $('#play').button()
@@ -518,31 +416,39 @@ $(document).ready(function() {
           <div class="box">
             <h2>INFO</h2>
             <div class="content">
-              Use the arrow keys to move arround, and hold down shift to run faster. 
+              A crowd of walkers, all solved using the multi-threaded graph, and drawn at once using a single draw call.
             </div><!--content-->
           </div><!--box-->
     
           <div class="box">
             <h2>CONTROLS</h2>
             <div class="content">
+              <!--
               <label for="selectCharacter" style="margin-top:10px;">Select Character:</label>
               <select id='selectCharacter' style="margin-top:10px;">
                 <option value="walker">Walker
                 <option value="centipede">Centipede
-                <option value="marama">Human
               </select>
               </br>
               <input type="checkbox" id="displayControllerDebugging" style="margin-top:10px;"/><label for="displayControllerDebugging">Display Controller Debugging:</label>
               </br>
               <input type="checkbox" id="displayFootMotionDebugging" style="margin-top:10px;"/><label for="displayFootMotionDebugging">Display Foot Motion Debugging:</label>
               </br>
-              <input type="checkbox" id="displayFootRaycastingDebugging" style="margin-top:10px;"/><label for="displayFootRaycastingDebugging">Display Foot Raycasting Debugging:</label>
+            -->
+              <label for="numAgents" style="margin-top:10px;">Num Agents:</label>
+              <select id='numAgents' style="margin-top:10px;">
+                <option value="small">Small:100
+                <option value="medium">Medium:2000
+                <option value="huge">Huge:5000
+              </select>
+              </br>
+              <input type="checkbox" id="displayDebugging" style="margin-top:10px;"/><label for="displayDebugging">Display Debugging:</label>
+              <button id="openDebugger">Open Debugger</button>
               </br>
               <button id="play" style="margin-top:10px;">Play</button>
               <button id="step" style="margin-top:10px;">Step</button>
             </div><!--content-->
           </div><!--box-->
-
 
           <div class="box">
             <h2 id="agents">PERFORMANCE</h2>

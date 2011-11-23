@@ -84,6 +84,20 @@ FABRIC.RT.BulletShape.createSphere = function(radius) {
   return shape;
 };
 
+FABRIC.RT.BulletShape.createCylinder = function(radius,height) {
+  if(radius == undefined) {
+    radius = 0.5;
+  }
+  if(height == undefined) {
+    height = 1.0;
+  }
+  var shape = new FABRIC.RT.BulletShape();
+  shape.type = FABRIC.RT.BulletShape.BULLET_CYLINDER_SHAPE;
+  shape.parameters.push(radius);
+  shape.parameters.push(height * 0.5);
+  return shape;
+};
+
 FABRIC.RT.BulletShape.createPlane = function(normal) {
   if(normal == undefined) {
     normal = new FABRIC.RT.Vec3(0.0,1.0,0.0);
@@ -98,8 +112,8 @@ FABRIC.RT.BulletShape.createPlane = function(normal) {
 };
 
 FABRIC.RT.BulletShape.createConvexHull = function(geometryNode) {
-  if(geometryNode == undefined) {
-    throw('You need to specify the '+geometryNode+' for createConvexHull.');
+  if(geometryNode == undefined || !geometryNode.isTypeOf('Geometry')) {
+    throw('You need to specify the geometryNode for createConvexHull.');
   }
   var shape = new FABRIC.RT.BulletShape();
   shape.type = FABRIC.RT.BulletShape.BULLET_CONVEX_HULL_SHAPE;
@@ -108,8 +122,8 @@ FABRIC.RT.BulletShape.createConvexHull = function(geometryNode) {
 };
 
 FABRIC.RT.BulletShape.createGImpact = function(geometryNode) {
-  if(geometryNode == undefined) {
-    throw('You need to specify the '+geometryNode+' for createGImpact.');
+  if(geometryNode == undefined || !geometryNode.isTypeOf('Geometry')) {
+    throw('You need to specify the geometryNode for createGImpact.');
   }
   var shape = new FABRIC.RT.BulletShape();
   shape.type = FABRIC.RT.BulletShape.BULLET_GIMPACT_SHAPE;
@@ -801,6 +815,7 @@ FABRIC.SceneGraph.registerNodeType('BulletForceManipulator', {
       }
     }
     bulletWorldNode.pub.addEventListener('mousedown_geom', mouseDownFn);
+    forceManipulatorNode.pub.getMouseDownFn = function() { return mouseDownFn; }
 
     var dragForceFn = function(evt) {
       if(!enabled || !eventListenersAdded){

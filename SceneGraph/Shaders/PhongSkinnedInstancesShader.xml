@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <shader>
-	<name>PhongSkinningMaterial</name>
+	<name>PhongSkinnedInstancesMaterial</name>
+  <prototypeMaterialType>InstancingMaterial</prototypeMaterialType>
 	
 	<uniforms>
 		<uniform name="u_lightPosition" constant="lightPosition" type="Vec3" owner="light"/>
@@ -19,6 +20,8 @@
 		<uniform name="u_normalMatrix" constant="normalMatrix" type="Mat33" owner="instance"/>
 		
     <uniform name="u_samplerSkinningMatrices" constant="skinningMatricesTextureUnit" type="Integer" owner="geometry"/>
+    <uniform name="u_transformTextureHeight" constant="transformTextureHeight" type="Scalar"/>
+    <uniform name="u_numBonesPerInstance" constant="numBonesPerInstance" type="Integer"/>
 		
 	</uniforms>
 	
@@ -33,9 +36,7 @@
 		<light type="Light" binding="light"/>
 	</lights>
 	
-	<preprocessordirectives>
-		<preprocessordirective name="NUM_BONES" binding="numBones"/>
-	</preprocessordirectives>
+	InstancingMaterial
 	
 	<vertexshader>
 		<source>
@@ -47,6 +48,8 @@
 
 			// This is an array of all the bones in a skeleton.
       uniform sampler2D u_samplerSkinningMatrices;
+      uniform float u_transformTextureHeight;
+			uniform int u_numBonesPerInstance;
 
 			attribute vec4 a_position;
 			attribute vec3 a_normal;
@@ -63,12 +66,48 @@
 			]]>
 		</source>
     <include file="matrices.txt"/>
-		<include file="skinning.txt"/>
 		<source>
 			<![CDATA[
 			
+			
+void skinInstancePositionsAndNormals(
+  in sampler2D samplerSkinningMatrices,
+	in int instanceId,
+	in int numBonesPerInstance
+){
+  vec4 transformedPosition = vec4(0.0,0.0,0.0,0.0);
+  vec4 transformedNormal = vec4(0.0,0.0,0.0,0.0);
+  
+  vec4 curIndex = a_index;
+  vec4 curWeight = a_weight;
+  
+  for (int i = 0; i < 4; i++){
+    float weight = curWeight[i];
+    if(weight > 0.0){
+      int idx = int(curIndex[i]);
+        
+      // load the specified bone matrix from the texture
+      mat4 m44 = loadMatrixFromTexture(samplerSkinningMatrices, u_transformTextureHeight, (instanceId * numBonesPerInstance) + idx);
+      
+      transformedPosition += m44 * a_position * weight;
+
+      // transform normal by bone i
+      mat3 m33 = mat3( m44[0].xyz, m44[1].xyz, m44[2].xyz );
+      transformedNormal.xyz += m33 * a_normal.xyz * weight;
+    }
+  }
+
+  vec4 modelCameraPosition = u_modelViewMatrix * transformedPosition;
+  lightDir = vec3(u_lightPosition.xyz - modelCameraPosition.xyz);
+  viewDir = vec3(-modelCameraPosition.xyz);
+  
+  gl_Position = u_modelViewProjectionMatrix * transformedPosition;    
+  
+  normal = u_normalMatrix * transformedNormal.xyz;
+}
+			
 			void main(){
-				skinPositionsAndNormals(u_samplerSkinningMatrices);
+				skinInstancePositionsAndNormals(u_samplerSkinningMatrices, gl_InstanceID, u_numBonesPerInstance);
 			}
 			
 			]]>

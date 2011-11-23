@@ -49,9 +49,6 @@ FABRIC.SceneGraph.registerNodeType('Transform', {
 
       // use a custom getter
       transformNode.pub.setGlobalXfo = function(val) {
-        if (!val.getType || val.getType() !== 'FABRIC.RT.Xfo') {
-          throw ('Incorrect type assignment. Must assign a FABRIC.RT.Xfo');
-        }
         if (parentTransformNode) {
           var parentXfo = parentTransformNode.getGlobalXfo();
           val = val.multiply(parentXfo.inverse());
@@ -90,7 +87,7 @@ FABRIC.SceneGraph.registerNodeType('Transform', {
       }
     }else {
       transformNode.pub.setGlobalXfo = function(val) {
-        if(val.constructor.toString().indexOf("Array") != -1) {
+        if(val.constructor.name == "Array") {
           dgnode.setCount(val.length);
           dgnode.setBulkData({ globalXfo: val});
         }
@@ -100,30 +97,25 @@ FABRIC.SceneGraph.registerNodeType('Transform', {
       };
     }
     
-    transformNode.setupInstanceDrawing = function(dynamic) {
-      if(textureNode != undefined)
-        return true;
-      if(dgnode.getCount() <= 1)
-        return false;
-      
-      // create the operator to convert the matrices into a texture
-      dgnode.addMember('textureMatrix', 'Mat44');
-      dgnode.bindings.append(scene.constructOperator( {
-          operatorName: 'calcGlobalTransposedMatrix',
-          srcFile: 'FABRIC_ROOT/SceneGraph/KL/calcGlobalXfo.kl',
-          parameterLayout: [
-            'self.globalXfo',
-            'self.textureMatrix'
-          ],
-          entryFunctionName: 'calcGlobalTransposedMatrix'
-        }));
-
-      textureNode = scene.constructNode('TransformTexture', {transformNode: transformNode.pub, dynamic: dynamic});
-      return true;  
-    }
     
     transformNode.pub.getTransformTexture = function(dynamic) {
-      transformNode.setupInstanceDrawing(dynamic);
+      if(!textureNode){
+        if(dgnode.getCount() <= 1){
+          throw "Transform node has only 1 slices";
+        }
+        // create the operator to convert the matrices into a texture
+        dgnode.addMember('textureMatrix', 'Mat44');
+        dgnode.bindings.append(scene.constructOperator( {
+            operatorName: 'calcGlobalTransposedMatrix',
+            srcFile: 'FABRIC_ROOT/SceneGraph/KL/calcGlobalXfo.kl',
+            parameterLayout: [
+              'self.globalXfo',
+              'self.textureMatrix'
+            ],
+            entryFunctionName: 'calcGlobalTransposedMatrix'
+          }));
+        textureNode = scene.constructNode('TransformTexture', {transformNode: transformNode.pub, dynamic: dynamic});
+      }
       return textureNode.pub;
     }
     
