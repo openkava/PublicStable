@@ -16,7 +16,6 @@ void main()
 
   for(int i=0;i<3;i++) {
     for(int j=0;j<3;j++) {
-    //  tc_offset[(((i*3)+j)*2)] = vec2((-1.0 * xInc) + ( float(i) * xInc), (-1.0 * yInc) + ( float(j) * yInc));
       tc_offset[((i*3)+j)] = vec2((-1.0 * xInc) + ( float(i) * xInc), (-1.0 * yInc) + ( float(j) * yInc));
     }
   }
@@ -25,8 +24,6 @@ void main()
   float depthSample[9];
   for (int i = 0; i < 9; i++){
     vec2 uv = gl_TexCoord[0].st + tc_offset[i];
-    uv.x = clamp(uv.x, 0.0, 1.0);
-    uv.y = clamp(uv.y, 0.0, 1.0);
     normalSample[i] = texture2D(u_normalImage, uv);
     depthSample[i] = texture2D(u_depthImage, uv).z;
   }
