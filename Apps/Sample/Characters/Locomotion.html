@@ -275,9 +275,9 @@ $(document).ready(function() {
       });
     break;
   case 'centipede':
-    locomotionControllerNode = scene.constructNode('WorldSpacePlayerCharacterController', {
+    locomotionControllerNode = scene.constructNode('ScreenSpacePlayerCharacterController', {
         cameraNode: camera,
-        maxLinearVelocity: 20,
+        maxLinearVelocity: 10,
         maxLinearAcceleration: 1.45,
         maxAngularVelocity:  2,
         bulletWorldNode: bulletWorldNode,
