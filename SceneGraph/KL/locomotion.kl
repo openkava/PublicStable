@@ -71,6 +71,9 @@ operator evaluateLocomotionPoseVariables(
   Boolean displayRaycastingDebugging = ENABLE_DEBUGGING;
   Boolean displayFootPinningDebugging = ENABLE_DEBUGGING;
   Boolean performRaycasting = false;
+  BULLLETWORLD_OPENBLOCKCOMMENT
+  performRaycasting = true;
+  BULLLETWORLD_CLOSEBLOCKCOMMENT
   
   Xfo controllerXfo = controllerXfoSet[index];
   CharacterControllerParams controllerparams = controllerparamsSet[index];
@@ -358,11 +361,7 @@ operator evaluateLocomotionPoseVariables(
                 debugRaycasting.drawLine(rayStart, hitPosition, Color(0.0, 1.0, 1.0, 1.0));
               }
               
-              Scalar liftIncrement = timeIncrement / (currStep.plantTime - t);
-              if(liftIncrement > 1.0){
-                liftIncrement = 1.0;
-              }
-              Scalar lift = ((hitPosition - footParentSpaceXfo.tr).dot(upvector) * liftIncrement);
+              Scalar lift = ((hitPosition - footParentSpaceXfo.tr).dot(upvector) * stepRatio);
               footError += Vec3(0.0, lift, 0.0);
               
               hitPositionsPrevStep[j] = hitPosition;
@@ -383,6 +382,9 @@ operator evaluateLocomotionPoseVariables(
       }
       else{
         if(performRaycasting){
+          // Recalculate the lift each update even when the foot is planted,
+          // because we also transfer this lift onto the controller for the
+          // next update.
           Scalar lift = (hitPositionsPrevStep[j] - plantPos).dot(upvector);
           footXfo.tr += Vec3(0.0, lift, 0.0);
           if(leg.hubId < 0 || leg.hubId == hubs.size-1){
@@ -391,16 +393,13 @@ operator evaluateLocomotionPoseVariables(
           }
         }
         if(!plantedFeet[j]){
-              
           // Record the foot plant pos.
           plantLocations[j] = plantPos;
           plantedFeet[j] = true;
-          
         }
         else{
           // Calculate the error each update to hold the foot in place while planted.
           footError = invcontrollerXfo.ori.rotateVector(plantLocations[j] - plantPos);
-          footError.y = 0.0;
         }
         
         if(displayFootPinningDebugging){
@@ -465,7 +464,7 @@ operator evaluateLocomotionPoseVariables(
       controllerparams.lift /= numLegsScalar;
       // Smooth out the com motion by scalaing the lift parameter.
       // Slightly hackey. The applied lift could be calculated better instead of this.
-      controllerparams.lift *= 0.5;
+      controllerparams.lift *= 0.4;
       // Note: this is highly illegal. We are copying data back to one of our dependencies.
       // This will be eliminated with nested sub-graphs.
       controllerparamsSet[index] = controllerparams;
