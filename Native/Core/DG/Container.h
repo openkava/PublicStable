@@ -104,6 +104,8 @@ namespace Fabric
       void jsonExecSetData( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
       void jsonExecGetBulkData( Util::JSONArrayGenerator &resultJAG ) const;
       void jsonExecSetBulkData( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
+      void jsonExecGetBulkDataJSON( Util::JSONArrayGenerator &resultJAG ) const;
+      void jsonExecSetBulkDataJSON( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
       void jsonExecGetSlicesBulkData( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG ) const;
       void jsonExecSetSlicesBulkData( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
       void jsonExecGetMembersBulkData( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG ) const;
@@ -137,6 +139,7 @@ namespace Fabric
       RC::Handle<Member> getMember( std::string const &name );
 
       void* jsonGetResourceMember( RC::ConstHandle<JSON::Value> const &arg, std::string& memberName );
+      void jsonGenerateMemberSliceJSON( RC::ConstHandle<JSON::Value> const &arg, Util::JSONGenerator &resultJG );
 
     private:
     

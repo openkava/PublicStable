@@ -165,6 +165,9 @@ namespace Fabric
       if( returnInfo.usesReturnLValue() )
       {
         ai->setName( "returnVal" );
+        ai->addAttr( llvm::Attribute::NoCapture );
+        ai->addAttr( llvm::Attribute::NoAlias );
+        ai->addAttr( llvm::Attribute::StructRet );
         returnInfo = ReturnInfo( returnExprType, ai );
         ++ai;
       }
@@ -175,8 +178,12 @@ namespace Fabric
       {
         FunctionParam const &param = params[i];
         ai->setName( param.getName() );
-        if ( param.getUsage() == USAGE_LVALUE )
+        if ( param.getUsage() == USAGE_LVALUE
+          || param.getAdapter()->isPassByReference()  )
+        {
           ai->addAttr( llvm::Attribute::NoCapture );
+          ai->addAttr( llvm::Attribute::NoAlias );
+        }
         m_functionScope->put( param.getName(), ParameterSymbol::Create( CG::ExprValue( param.getExprType(), context, ai ) ) );
       }
       

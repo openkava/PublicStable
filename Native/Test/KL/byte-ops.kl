@@ -6,6 +6,8 @@ operator entry()
   report Byte(6) * Byte(2);
   report Byte(6) / Byte(2);
   report Byte(11) % Byte(5);
+  report Byte(11) << Byte(3);
+  report Byte(11) >> Byte(2);
 
   // Assignment ops
   var Byte x = 4; report x;
@@ -15,6 +17,8 @@ operator entry()
   x *= Byte(12); report x;
   x /= Byte(2); report x;
   x %= Byte(5); report x;
+  x <<= Byte(1); report x;
+  x >>= Byte(1); report x;
   
   // Bit ops
   report Byte(7) & Byte(11);

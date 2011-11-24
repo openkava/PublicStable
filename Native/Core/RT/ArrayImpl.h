@@ -20,6 +20,7 @@ namespace Fabric
       // Impl
     
       virtual std::string descData( void const *data ) const;
+      virtual int compareData( void const *lhs, void const *rhs ) const;
 
       // ArrayImpl
 

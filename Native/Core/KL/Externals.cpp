@@ -49,21 +49,6 @@ static double fp64_tan( double x )
   return tan( x );
 }
 
-static double fp64_log10( double x )
-{
-  return log10( x );
-}
-
-static double fp64_log( double x )
-{
-  return log( x );
-}
-
-static double fp64_exp( double x )
-{
-  return exp( x );
-}
-
 static double fp64_sqrt( double x )
 {
   return sqrt( x );
@@ -158,11 +143,11 @@ namespace Fabric
         symbolNameToAddressMap["fmodf"] = (void *)&fmodf;
         symbolNameToAddressMap["fmod"] = (void *)&fp64_fmod;
         symbolNameToAddressMap["fp32_log10"] = (void *)&log10f;
-        symbolNameToAddressMap["fp64_log10"] = (void *)&fp64_log10;
+        symbolNameToAddressMap["fp64_log10"] = (void *)&log10;
         symbolNameToAddressMap["fp32_log"] = (void *)&logf;
-        symbolNameToAddressMap["fp64_log"] = (void *)&fp64_log;
+        symbolNameToAddressMap["fp64_log"] = (void *)&log;
         symbolNameToAddressMap["fp32_exp"] = (void *)&expf;
-        symbolNameToAddressMap["fp64_exp"] = (void *)&fp64_exp;
+        symbolNameToAddressMap["fp64_exp"] = (void *)&exp;
 #if defined(FABRIC_OS_WINDOWS)
         symbolNameToAddressMap["_chkstk"] = (void *)&_chkstk;
 #endif
