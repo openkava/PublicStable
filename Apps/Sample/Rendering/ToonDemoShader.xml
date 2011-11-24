@@ -82,7 +82,7 @@
         intensity = floor(intensity * u_materialColorSteps + 0.5) / u_materialColorSteps;
         
         gl_FragData[0].rgb = (u_materialBrightColor * intensity + u_materialDarkColor * (1.0 - intensity)).rgb;
-        gl_FragData[1].xyz = Nn;
+        gl_FragData[2].xyz = Nn;
       }
 
       ]]>
