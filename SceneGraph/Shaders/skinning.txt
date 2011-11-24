@@ -2,7 +2,8 @@
 #ifdef SKIN_POSITIONS
 
 void skinPositions(
-  in sampler2D samplerSkinningMatrices
+  in sampler2D samplerSkinningMatrices,
+  in float textureHeight
 ){
 
   vec4 transformedPosition = vec4(0.0,0.0,0.0,0.0);
@@ -16,7 +17,7 @@ void skinPositions(
       int idx = int(curIndex[i]);
         
       // load the specified bone matrix from the texture
-      mat4 m44 = loadMatrixFromTexture(samplerSkinningMatrices, idx);
+      mat4 m44 = loadMatrixFromTexture(samplerSkinningMatrices, textureHeight, idx);
       
       transformedPosition += m44 * a_position * weight;
     }
@@ -30,7 +31,8 @@ void skinPositions(
 #ifdef SKIN_POSITIONS_AND_NORMALS
 
 void skinPositionsAndNormals(
-  in sampler2D samplerSkinningMatrices
+  in sampler2D samplerSkinningMatrices,
+  in float textureHeight
 ){
   vec4 transformedPosition = vec4(0.0,0.0,0.0,0.0);
   vec4 transformedNormal = vec4(0.0,0.0,0.0,0.0);
@@ -44,7 +46,7 @@ void skinPositionsAndNormals(
       int idx = int(curIndex[i]);
         
       // load the specified bone matrix from the texture
-      mat4 m44 = loadMatrixFromTexture(samplerSkinningMatrices, idx);
+      mat4 m44 = loadMatrixFromTexture(samplerSkinningMatrices, textureHeight, idx);
       
       transformedPosition += m44 * a_position * weight;
 
@@ -67,7 +69,8 @@ void skinPositionsAndNormals(
 #ifdef SKIN_POSITIONS_NORMALS_AND_TANGENTS
 
 void skinPositionsNormalsAndTangents(
-  in sampler2D samplerSkinningMatrices
+  in sampler2D samplerSkinningMatrices,
+  in float textureHeight
 ){
   vec4 transformedPosition = vec4(0.0,0.0,0.0,0.0);
   vec3 transformedNormal = vec3(0.0,0.0,0.0);
@@ -82,7 +85,7 @@ void skinPositionsNormalsAndTangents(
       int idx = int(curIndex[i]);
         
       // load the specified bone matrix from the texture
-      mat4 m44 = loadMatrixFromTexture(samplerSkinningMatrices, idx);
+      mat4 m44 = loadMatrixFromTexture(samplerSkinningMatrices, textureHeight, idx);
       
       transformedPosition += m44 * a_position * weight;
 

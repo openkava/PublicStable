@@ -36,7 +36,7 @@ function OGLTexture2D.configure(
 }
 
 
-function OGLTexture2D.bind(io Integer textureUnit){
+function OGLTexture2D.bind(in Integer textureUnit){
 //  report("OGLTexture2D.bind bufferID:"+this.bufferID + " textureUnit:"+textureUnit  + " nbPixels:"+ this.nbPixels );
   glActiveTexture(GL_TEXTURE0 + textureUnit);
   glBindTexture(GL_TEXTURE_2D, this.bufferID);
@@ -68,46 +68,82 @@ function OGLTexture2D.bindImageHDR(
   this.bind(textureUnit);
 }
 
+function toUpperPowerOfTwo(io Size size) {
+  //Would be nice to support bit decal ops in KL: << >>
+  //The optimizer should transform those divisions to >> anyway.
+  Size remainingSize = size;
+  Size upperSize = 1;
+  if(remainingSize >= 65536){
+    upperSize = 65536;
+    remainingSize /= 65536;
+  }
+  if(remainingSize >= 256){
+    upperSize *= 256;
+    remainingSize /= 256;
+  }
+  if(remainingSize >= 16){
+    upperSize *= 16;
+    remainingSize /= 16;
+  }
+  if(remainingSize >= 4){
+    upperSize *= 4;
+    remainingSize /= 4;
+  }
+  if(remainingSize >= 2){
+    upperSize *= 2;
+    remainingSize /= 2;
+  }
+  if(upperSize < size)
+    upperSize *= 2;
+  //report("next power of two: " + size + " -> " + upperSize);
+  size = upperSize;
+}
+
 function OGLTexture2D.bindImageMatrix(
   io Mat44 matrices<>,
-  io Integer textureUnit
+  io Mat44 matricesTempBuffer[],//Avoid reallocating at each frame if dynamic; has a very important cost
+  io Integer textureUnit,
+  io Size textureHeightIfLoaded//else: 0
 ) {
   if (this.bufferID == 0 || this.forceRefresh) {
-    Mat44 matricesWithPadding[];
     if(this.glInternalFormat != GL_RGBA32F){
       report('ERROR in bindImageMatrix: unexpected texture format. Expected GL_RGBA32F');
       return;
     }
-    matricesWithPadding.resize((512*512)/4);
+    textureHeightIfLoaded = (matrices.size()+127)/128;
+    toUpperPowerOfTwo(textureHeightIfLoaded);
+    matricesTempBuffer.resize(128*textureHeightIfLoaded);
     for( Size i = 0; i < matrices.size(); ++i ) {
-      matricesWithPadding[i] = matrices[i];
+      matricesTempBuffer[i] = matrices[i];
     }
-    this.configure(Size(512), Size(512), matricesWithPadding.data(), Size(512 * 512), textureUnit);
+    this.configure(Size(128*4), Size(textureHeightIfLoaded), matricesTempBuffer.data(), Size(128*4 * textureHeightIfLoaded), textureUnit);
+    if(!this.forceRefresh)
+      matricesTempBuffer.resize(0);
   }
   this.bind(textureUnit);
 }
-
-// Specifying 2 functions that do exactly the same thing is annoying
-// and only required because Mat44 matrices[] != Mat44 matrices<>
+  
 function OGLTexture2D.bindImageMatrixArray(
   io Mat44 matrices[],
-  io Integer textureUnit
+  io Integer textureUnit,
+  io Size textureHeightIfLoaded//else: 0
 ) {
   if (this.bufferID == 0 || this.forceRefresh) {
-    Mat44 matricesWithPadding[];
     if(this.glInternalFormat != GL_RGBA32F){
       report('ERROR in bindImageMatrix: unexpected texture format. Expected GL_RGBA32F');
       return;
     }
-    matricesWithPadding.resize((512*512)/4);
-    for( Size i = 0; i < matrices.size(); ++i ) {
-      matricesWithPadding[i] = matrices[i];
-    }
-    this.configure(Size(512), Size(512), matricesWithPadding.data(), Size(512 * 512), textureUnit);
+    Size origSize = matrices.size();
+    textureHeightIfLoaded = (matrices.size()+127)/128;
+    toUpperPowerOfTwo(textureHeightIfLoaded);
+    matrices.resize(128*textureHeightIfLoaded);
+    this.configure(Size(128*4), Size(textureHeightIfLoaded), matrices.data(), Size(128*4 * textureHeightIfLoaded), textureUnit);
+    matrices.resize(origSize);
   }
+  else
+    textureHeightIfLoaded = 0;
   this.bind(textureUnit);
 }
-
 
 function OGLTexture2D.genTexture(
   Size width,
@@ -145,6 +181,94 @@ function OGLTexture2D.genTexture(
   this.nbPixels = width * height;
 }
 
+function drawScreenQuad(
+  io Integer program,
+  Vec2 tl,
+  Vec2 br,
+  Boolean flipY
+) {
+  //report("drawTexture: textureUnit=" + textureUnit);
+
+  var String name = 'a_position';
+  var Integer posLocation = glGetAttribLocation(program, name);
+  name = 'a_texCoord';
+  var Integer texLocation = glGetAttribLocation(program, name);
+
+  glPushAttrib(GL_TEXTURE_BIT | GL_ENABLE_BIT | GL_DEPTH_BUFFER_BIT);
+  glPushClientAttrib(GL_CLIENT_VERTEX_ARRAY_BIT);
+
+  glEnable(GL_TEXTURE_2D);
+  glDisable(GL_DEPTH_TEST);
+  glDepthMask(GL_TRUE);
+  glDisable(GL_CULL_FACE); 
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);//Required to render properly depth textures
+
+  // Draw a quad in the upper left with debugging info
+  var Vec3 p[4];
+  p[0] = Vec3(tl.x, tl.y, 0.0);
+  p[1] = Vec3(br.x, tl.y, 0.0);
+  p[2] = Vec3(br.x, br.y, 0.0);
+  p[3] = Vec3(tl.x, br.y, 0.0);
+  
+  var Vec2 t[4];
+  if(flipY){
+    t[0] = Vec2(0.0, 0.0);
+    t[1] = Vec2(1.0, 0.0);
+    t[2] = Vec2(1.0, 1.0);
+    t[3] = Vec2(0.0, 1.0);
+  }else{
+    t[0] = Vec2(0.0, 1.0);
+    t[1] = Vec2(1.0, 1.0);
+    t[2] = Vec2(1.0, 0.0);
+    t[3] = Vec2(0.0, 0.0);
+  }
+  
+  var Integer idx[4];
+  idx[0] = 0; idx[1] = 1; idx[2] = 2; idx[3] = 3;
+
+  var Data NULL;
+
+  var Size bufferIDArray[];
+  bufferIDArray.resize(1);
+
+  glGenBuffers(1, bufferIDArray);
+  var Size bufferID0 = bufferIDArray[0];
+  glGenBuffers(1, bufferIDArray);
+  var Size bufferID1 = bufferIDArray[0];
+  glGenBuffers(1, bufferIDArray);
+  var Size bufferID2 = bufferIDArray[0];
+  
+  glBindBuffer(GL_ARRAY_BUFFER, bufferID0);
+  glBufferData(GL_ARRAY_BUFFER, p.dataSize(), p.data(), GL_STATIC_DRAW);
+  glEnableVertexAttribArray(posLocation);
+  glVertexAttribPointer(posLocation, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+
+  if(texLocation != -1) {
+    glBindBuffer(GL_ARRAY_BUFFER, bufferID1);
+    glBufferData(GL_ARRAY_BUFFER, t.dataSize(), t.data(), GL_STATIC_DRAW);
+    glEnableVertexAttribArray(texLocation);
+    glVertexAttribPointer(texLocation, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+  }
+
+  glBindBuffer(GL_ARRAY_BUFFER, bufferID2);
+  glBufferData(GL_ARRAY_BUFFER, idx.dataSize(), idx.data(), GL_STATIC_DRAW);
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferID2);
+  glDrawElements(GL_QUADS, idx.size(), GL_UNSIGNED_INT, NULL);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+  glPopClientAttrib();
+  glPopAttrib();
+
+  bufferIDArray[0] = bufferID0; glDeleteBuffers(1, bufferIDArray);
+  bufferIDArray[0] = bufferID1; glDeleteBuffers(1, bufferIDArray);
+  bufferIDArray[0] = bufferID2; glDeleteBuffers(1, bufferIDArray);
+  
+  glBindTexture( GL_TEXTURE_2D, 0 );
+//  report("<<<drawTexture");
+}
 
 function drawTexture(
   Integer textureUnit,
@@ -189,83 +313,12 @@ function drawTexture(
     glUseProgram(program);
   }
 
-  var String name = 'a_position';
-  var Integer posLocation = glGetAttribLocation(program, name);
-  name = 'a_texCoord';
-  var Integer texLocation = glGetAttribLocation(program, name);
-  name = 'u_rgbaImage';
+  String name = 'u_rgbaImage';
   var Integer smpLocation = glGetUniformLocation(program, name);
 
   glUniform1i( smpLocation, textureUnit );
-  glPushAttrib(GL_TEXTURE_BIT | GL_ENABLE_BIT | GL_DEPTH_BUFFER_BIT);
-  glPushClientAttrib(GL_CLIENT_VERTEX_ARRAY_BIT);
 
-  glEnable(GL_TEXTURE_2D);
-  glDisable(GL_DEPTH_TEST);
-  glDisable(GL_CULL_FACE); 
-
-  // Draw a quad in the upper left with debugging info
-  var Vec3 p[4];
-  p[0] = Vec3(tl.x, tl.y, 0.0);
-  p[1] = Vec3(br.x, tl.y, 0.0);
-  p[2] = Vec3(br.x, br.y, 0.0);
-  p[3] = Vec3(tl.x, br.y, 0.0);
-  
-  var Vec2 t[4];
-  if(flipY){
-    t[0] = Vec2(0.0, 0.0);
-    t[1] = Vec2(1.0, 0.0);
-    t[2] = Vec2(1.0, 1.0);
-    t[3] = Vec2(0.0, 1.0);
-  }else{
-    t[0] = Vec2(0.0, 1.0);
-    t[1] = Vec2(1.0, 1.0);
-    t[2] = Vec2(1.0, 0.0);
-    t[3] = Vec2(0.0, 0.0);
-  }
-  
-  var Integer idx[4];
-  idx[0] = 0; idx[1] = 1; idx[2] = 2; idx[3] = 3;
-
-  var Data NULL;
-
-  var Size bufferIDArray[];
-  bufferIDArray.resize(1);
-
-  glGenBuffers(1, bufferIDArray);
-  var Size bufferID0 = bufferIDArray[0];
-  glGenBuffers(1, bufferIDArray);
-  var Size bufferID1 = bufferIDArray[0];
-  glGenBuffers(1, bufferIDArray);
-  var Size bufferID2 = bufferIDArray[0];
-  
-  glBindBuffer(GL_ARRAY_BUFFER, bufferID0);
-  glBufferData(GL_ARRAY_BUFFER, p.dataSize(), p.data(), GL_STATIC_DRAW);
-  glEnableVertexAttribArray(posLocation);
-  glVertexAttribPointer(posLocation, 3, GL_FLOAT, GL_FALSE, 0, NULL);
-
-  glBindBuffer(GL_ARRAY_BUFFER, bufferID1);
-  glBufferData(GL_ARRAY_BUFFER, t.dataSize(), t.data(), GL_STATIC_DRAW);
-  glEnableVertexAttribArray(texLocation);
-  glVertexAttribPointer(texLocation, 2, GL_FLOAT, GL_FALSE, 0, NULL);
-
-  glBindBuffer(GL_ARRAY_BUFFER, bufferID2);
-  glBufferData(GL_ARRAY_BUFFER, idx.dataSize(), idx.data(), GL_STATIC_DRAW);
-  glBindBuffer(GL_ARRAY_BUFFER, 0);
-  
-  glUniform1i( smpLocation, textureUnit );
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferID2);
-  glDrawElements(GL_QUADS, idx.size(), GL_UNSIGNED_INT, NULL);
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
-  glPopClientAttrib();
-  glPopAttrib();
-
-  bufferIDArray[0] = bufferID0; glDeleteBuffers(1, bufferIDArray);
-  bufferIDArray[0] = bufferID1; glDeleteBuffers(1, bufferIDArray);
-  bufferIDArray[0] = bufferID2; glDeleteBuffers(1, bufferIDArray);
-  
-  glBindTexture( GL_TEXTURE_2D, 0 );
+  drawScreenQuad( program, tl, br, flipY );
 //  report("<<<drawTexture");
 }
 

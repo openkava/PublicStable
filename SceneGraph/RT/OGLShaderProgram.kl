@@ -12,6 +12,7 @@ function OGLShaderProgram(String name) {
 }
 
 function Integer OGLShaderProgram.createAndCompileShader(OGLShaderSource shadersrc) {
+
   var Integer shaderID = glCreateShader(shadersrc.type);
   if (shaderID == 0) {
     report(this.name + ' : glCreateShader failed');
@@ -260,8 +261,10 @@ function OGLShaderProgram.loadShader() {
 }
 
 function OGLShaderProgram.unloadShader() {
-  if(this.disableOptions.size() > 0 || this.enableOptions.size() > 0){
-    glPopAttrib();
+  if(this.programId != 0){
+    if(this.disableOptions.size() > 0 || this.enableOptions.size() > 0){
+      glPopAttrib();
+    }
   }
   this.loadedAttributes.resize(0);
   if(this.debug){

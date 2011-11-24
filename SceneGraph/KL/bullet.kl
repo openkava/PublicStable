@@ -35,14 +35,16 @@ operator raycastBulletWorld(
   io BulletWorld world,
   io Boolean enable
 ) {
-  Vec3 to = ray.start + ray.direction * 10000.0;
+  Vec3 road = ray.direction * 10000.0;
+  Vec3 to = ray.start + road;
   Boolean filterPassiveObjects = true;
-  world.raycast(ray.start,to,filterPassiveObjects);
-  if(world.hit) {
+  BulletContact contacts[];
+  world.raycast(ray.start,to,filterPassiveObjects,contacts);
+  if(contacts.size() > 0) {
     select = true;
-    intersection.point = world.hitPosition;
-    intersection.normal = world.hitNormal;
-    intersection.distance = (ray.start - world.hitPosition).length();
+    intersection.point = ray.start + road * contacts[0].fraction;
+    intersection.normal = contacts[0].normal;
+    intersection.distance = (ray.start - intersection.point).length();
   }
 }
 
@@ -108,6 +110,18 @@ operator getBulletRigidBodyTransform(
   }
   else {
     body[index].setTransform(transform);
+  }
+}
+
+operator setBulletRigidBodyTransform(
+  io BulletRigidBody body[],
+  io Xfo transform[],
+  io Scalar time
+){
+  if(body.size() == transform.size() && time == 0.0) {
+    for(var Size i=0;i<body.size();i++) {
+      body[i].setTransform(transform[i]);
+    }
   }
 }
 

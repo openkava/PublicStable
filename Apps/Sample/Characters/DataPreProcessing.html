@@ -169,7 +169,7 @@ $(document).ready(function() {
   //////////////////////////////////////////////
   // 
   
-  var rigName = 'walker';
+  var rigName = 'marama';
   var assetNodes, bindPoseRig, fkrigNode, rigInstanceNode, skeletonNode, characterMesh;
   switch(rigName){
   case 'hopper':
@@ -343,8 +343,8 @@ $(document).ready(function() {
     
     rigInstanceNode.setRigNode(ikrigNode);
     
-    loadAnimationFile('Assets/Marama_Walk.DAE', fkrigNode);
-  //  loadAnimationFile('Assets/Marama_Run.DAE', fkrigNode);
+   loadAnimationFile('Assets/Marama_Walk.DAE', fkrigNode);
+   loadAnimationFile('Assets/Marama_Run.DAE', fkrigNode);
   
     break;
   }
@@ -451,7 +451,7 @@ $(document).ready(function() {
   $('#saveData').button()
     .click(function() {
       ikRigVariablesNode.setName('CharacterVariables');
-      var rigSaver = scene.constructManager('SceneSaver');
+      var rigSaver = scene.constructManager('SceneSerializer');
       rigSaver.addNode(ikrigNode);
       rigSaver.addNode(characterMesh);
       rigSaver.addNode(libraryLocomotionAnimations);

@@ -19,7 +19,8 @@
 		<uniform name="u_modelViewMatrix" constant="modelViewMatrix" type="Mat44" owner="instance"/>
 		<uniform name="u_normalMatrix" constant="normalMatrix" type="Mat33" owner="instance"/>
 		
-    <uniform name="u_samplerSkinningMatrices" constant="skinningMatricesTextureUnit" type="Integer" owner="geometry"/>
+		<uniform name="u_samplerSkinningMatrices" constant="skinningMatricesTextureUnit" type="Integer" owner="geometry"/>
+		<uniform name="u_transformTextureHeight" constant="transformTextureHeight" type="Scalar"/>
 		<uniform name="u_numBonesPerInstance" constant="numBonesPerInstance" type="Integer"/>
 		
 	</uniforms>
@@ -35,38 +36,34 @@
 		<light type="Light" binding="light"/>
 	</lights>
 	
-	InstancingMaterial
-	
 	<vertexshader>
 		<source>
 			<![CDATA[
-			uniform mat4 u_modelViewProjectionMatrix;
-			uniform mat4 u_modelViewMatrix;
-			uniform mat3 u_normalMatrix;
-			uniform vec4 u_lightPosition;
+uniform mat4 u_modelViewProjectionMatrix;
+uniform mat4 u_modelViewMatrix;
+uniform mat3 u_normalMatrix;
+uniform vec4 u_lightPosition;
 
-			// This is an array of all the bones in a skeleton.
-      uniform sampler2D u_samplerSkinningMatrices;
-			uniform int u_numBonesPerInstance;
+// This is an array of all the bones in a skeleton.
+uniform sampler2D u_samplerSkinningMatrices;
+uniform float u_transformTextureHeight;
+uniform int u_numBonesPerInstance;
 
+attribute vec4 a_position;
+attribute vec3 a_normal;
 
-			attribute vec4 a_position;
-			attribute vec3 a_normal;
-			
-			attribute vec4 a_weight;
-			attribute vec4 a_index;
-			
-			varying vec3 normal;
-			varying vec3 lightDir;
-			varying vec3 viewDir;
-			
-			#define SKIN_POSITIONS_AND_NORMALS
-			
-			]]>
+attribute vec4 a_weight;
+attribute vec4 a_index;
+
+varying vec3 normal;
+varying vec3 lightDir;
+varying vec3 viewDir;
+
+]]>
 		</source>
-    <include file="matrices.txt"/>
+                  <include file="matrices.txt"/>
 		<source>
-			<![CDATA[
+<![CDATA[
 			
 			
 void skinInstancePositionsAndNormals(
@@ -84,9 +81,10 @@ void skinInstancePositionsAndNormals(
     float weight = curWeight[i];
     if(weight > 0.0){
       int idx = int(curIndex[i]);
-        
+      int index = (instanceId * numBonesPerInstance) + idx;
       // load the specified bone matrix from the texture
-      mat4 m44 = loadMatrixFromTexture(samplerSkinningMatrices, (instanceId * numBonesPerInstance) + idx);
+      mat4 m44 = loadMatrixFromTexture(u_samplerSkinningMatrices, u_transformTextureHeight, index);
+      
       
       transformedPosition += m44 * a_position * weight;
 
