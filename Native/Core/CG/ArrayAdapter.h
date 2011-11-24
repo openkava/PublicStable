@@ -56,13 +56,10 @@ namespace Fabric
 
       void llvmThrowOutOfRangeException(
         BasicBlockBuilder &basicBlockBuilder,
-        std::string const &item,
-        RC::ConstHandle<ConstStringAdapter> const &constStringAdapter,
-        RC::ConstHandle<StringAdapter> const &stringAdapter,
-        RC::ConstHandle<SizeAdapter> const &sizeAdapter,
+        llvm::Value *itemDescRValue,
         llvm::Value *indexRValue,
         llvm::Value *sizeRValue,
-        llvm::Value *errorDescConstant = 0
+        llvm::Value *errorDescRValue
         ) const;
         
       llvm::Value *llvmLocationConstStringRValue(

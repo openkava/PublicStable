@@ -19,11 +19,6 @@ namespace Fabric
       , m_variableArrayImpl( variableArrayImpl )
     {
     }
-
-    void VariableArrayDesc::split( void *data ) const
-    {
-      m_variableArrayImpl->split( data );
-    }
     
     void VariableArrayDesc::push( void *dst, void const *src ) const
     {
@@ -60,11 +55,6 @@ namespace Fabric
       ArrayDesc::jsonDesc( resultJOG );
       resultJOG.makeMember( "internalType" ).makeString( "variableArray" );
       resultJOG.makeMember( "memberType" ).makeString( getMemberDesc()->getUserName() );
-    }
-    
-    bool VariableArrayDesc::isCopyOnWrite() const
-    {
-      return m_variableArrayImpl->isCopyOnWrite();
     }
   };
 };

@@ -240,9 +240,9 @@ namespace Fabric
       return m_constStringAdapter;
     }
       
-    RC::ConstHandle<VariableArrayAdapter> Manager::getVariableArrayOf( RC::ConstHandle<Adapter> const &adapter, size_t flags ) const
+    RC::ConstHandle<VariableArrayAdapter> Manager::getVariableArrayOf( RC::ConstHandle<Adapter> const &adapter ) const
     {
-      RC::ConstHandle<RT::Desc> variableArrayDesc = m_rtManager->getVariableArrayOf( adapter->getDesc(), flags );
+      RC::ConstHandle<RT::Desc> variableArrayDesc = m_rtManager->getVariableArrayOf( adapter->getDesc() );
       return RC::ConstHandle<VariableArrayAdapter>::StaticCast( getAdapter( variableArrayDesc ) );
     }
       
@@ -270,6 +270,13 @@ namespace Fabric
     
     void *Manager::llvmResolveExternalFunction( std::string const &functionName ) const
     {
+      // [pzion 20110923] Special case: several internal LLVM functions use
+      // the String and ConstString adapters, so make sure they exist for when pulling 
+      // optimized IR out of the cache
+      getSizeAdapter();
+      getStringAdapter();
+      getConstStringAdapter();
+
       void *result = 0;
       for ( DescToAdapterMap::const_iterator it=m_descToAdapterMap.begin(); it!=m_descToAdapterMap.end(); ++it )
       {
@@ -284,8 +291,10 @@ namespace Fabric
     void Manager::llvmAddGlobalMappingsToExecutionEngine( llvm::ExecutionEngine *executionEngine, llvm::Module &module ) const
     {
       // [pzion 20110923] Special case: several internal LLVM functions use
-      // the ConstString adapter, so make sure it exists for when pulling 
+      // the String and ConstString adapters, so make sure they exist for when pulling 
       // optimized IR out of the cache
+      getSizeAdapter();
+      getStringAdapter();
       getConstStringAdapter();
 
       for ( DescToAdapterMap::const_iterator it=m_descToAdapterMap.begin(); it!=m_descToAdapterMap.end(); ++it )
