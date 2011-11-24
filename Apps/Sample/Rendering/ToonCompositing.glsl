@@ -16,26 +16,29 @@ void main()
 
   for(int i=0;i<3;i++) {
     for(int j=0;j<3;j++) {
-      tc_offset[(((i*3)+j)*2)] = vec2((-1.0 * xInc) + ( float(i) * xInc), (-1.0 * yInc) + ( float(j) * yInc));
+    //  tc_offset[(((i*3)+j)*2)] = vec2((-1.0 * xInc) + ( float(i) * xInc), (-1.0 * yInc) + ( float(j) * yInc));
+      tc_offset[((i*3)+j)] = vec2((-1.0 * xInc) + ( float(i) * xInc), (-1.0 * yInc) + ( float(j) * yInc));
     }
   }
   
   vec4 normalSample[9];
-  vec4 depthSample[9];
-  for (int i = 0; i < 9; i++)
-  {
-    normalSample[i] = texture2D(u_normalImage, gl_TexCoord[0].st + tc_offset[i]);
-    depthSample[i] = texture2D(u_depthImage, gl_TexCoord[0].st + tc_offset[i]);
+  float depthSample[9];
+  for (int i = 0; i < 9; i++){
+    vec2 uv = gl_TexCoord[0].st + tc_offset[i];
+    uv.x = clamp(uv.x, 0.0, 1.0);
+    uv.y = clamp(uv.y, 0.0, 1.0);
+    normalSample[i] = texture2D(u_normalImage, uv);
+    depthSample[i] = texture2D(u_depthImage, uv).z;
   }
   
   vec4 normalHorizEdge = normalSample[2] + (2.0*normalSample[5]) + normalSample[8] - (normalSample[0] + (2.0*normalSample[3]) + normalSample[6]);
   vec4 normalVertEdge = normalSample[0] + (2.0*normalSample[1]) + normalSample[2] - (normalSample[6] + (2.0*normalSample[7]) + normalSample[8]);
-  vec4 depthHorizEdge = depthSample[2] + (2.0*depthSample[5]) + depthSample[8] - (depthSample[0] + (2.0*depthSample[3]) + depthSample[6]);
-  vec4 depthVertEdge = depthSample[0] + (2.0*depthSample[1]) + depthSample[2] - (depthSample[6] + (2.0*depthSample[7]) + depthSample[8]);
+  float depthHorizEdge = depthSample[2] + (2.0*depthSample[5]) + depthSample[8] - (depthSample[0] + (2.0*depthSample[3]) + depthSample[6]);
+  float depthVertEdge = depthSample[0] + (2.0*depthSample[1]) + depthSample[2] - (depthSample[6] + (2.0*depthSample[7]) + depthSample[8]);
 
   vec3 normalEdge = sqrt((normalHorizEdge.rgb * normalHorizEdge.rgb) + (normalVertEdge.rgb * normalVertEdge.rgb));
-  vec3 depthEdge = sqrt((depthHorizEdge.rgb * depthHorizEdge.rgb) + (depthVertEdge.rgb * depthVertEdge.rgb));
-  float edge = max(max(max(depthEdge.r,depthEdge.g),depthEdge.b),max(max(normalEdge.r,normalEdge.g),normalEdge.b));
+  float depthEdge = sqrt((depthHorizEdge * depthHorizEdge) + (depthVertEdge * depthVertEdge));
+  float edge = max(depthEdge,max(max(normalEdge.r,normalEdge.g),normalEdge.b));
 
   gl_FragColor = edge * u_outlineColor + (1.0 - edge) * texture2D( u_colorImage, gl_TexCoord[0].st );
 }
