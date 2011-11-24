@@ -320,7 +320,7 @@ $(document).ready(function() {
   var speed = 8.0;
 
   ////////// Car geometry
-  var carSlicedTransform = scene.constructNode("Transform");
+  var carSlicedTransform = scene.constructNode("Transform", { name:"CarsTransform" } );
   carSlicedTransform.setGlobalXfo(carInstanceTransforms);
   
   scene.constructNode('Instance', {
@@ -341,7 +341,7 @@ $(document).ready(function() {
       });
 
   ////////// Car spotlights
-  var carLightSlicedTransform = scene.constructNode("Transform");
+  var carLightSlicedTransform = scene.constructNode("Transform", { name:"SpotLightsTransform" } );
   carLightSlicedTransform.setGlobalXfo(lightInstanceTransforms);
 
   var carLightConeBox = scene.constructNode('Cone', {
@@ -378,7 +378,7 @@ $(document).ready(function() {
   if(buildLightSources) {
 
     ////////// Car front lights
-    var carFrontLightSlicedTransform = scene.constructNode("Transform");
+    var carFrontLightSlicedTransform = scene.constructNode("Transform", { name:"CarsTransform" });
     carFrontLightSlicedTransform.setGlobalXfo(carFrontLightInstanceTransforms);
   
     scene.constructNode('Instance', {
@@ -475,7 +475,7 @@ $(document).ready(function() {
   }
 
   //Street spotlight
-  var streetLightSlicedTransform = scene.constructNode("Transform");
+  var streetLightSlicedTransform = scene.constructNode("Transform", { name:"StreetLightsTransform" });
   streetLightSlicedTransform.setGlobalXfo(streetLightInstanceTransforms);
   
   var streetLightConeBox = scene.constructNode('Cone', {
