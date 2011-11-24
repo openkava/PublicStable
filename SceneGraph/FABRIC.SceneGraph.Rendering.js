@@ -376,26 +376,6 @@ FABRIC.SceneGraph.registerNodeType('DeferredRenderer', {
 
       var materialRedrawHandler = material.getRedrawEventHandler();
 
-      materialRedrawHandler.preDescendBindings.append(scene.constructOperator({
-          operatorName: 'loadWindowSize',
-          preProcessorDefinitions: {
-            WINDOW_INV_SIZE_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('windowInvSize')
-          },
-          srcCode: 'use OGLShaderProgram; operator loadWindowSize( io OGLShaderProgram shaderProgram, io Integer width, io Integer heigth ) {\n' +
-                   '  Integer location = shaderProgram.getUniformLocation( WINDOW_INV_SIZE_ATTRIBUTE_ID );\n' +
-                   '  if(location!=-1) {\n' +
-                   '    Vec2 size;\n' +
-                   '    size.x = 1.0/Scalar(width);\n' +
-                   '    size.y = 1.0/Scalar(heigth);\n' +
-                   '    shaderProgram.loadVec2Uniform(location, size);}}\n',
-          entryFunctionName: 'loadWindowSize',
-          parameterLayout: [
-            'shader.shaderProgram',
-            'window.width',
-            'window.height',
-          ]
-        }));
-
       if(options.shadeFullScreen !== undefined && options.shadeFullScreen) {
         materialRedrawHandler.postDescendBindings.insert(
           scene.constructOperator({
