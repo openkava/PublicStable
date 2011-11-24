@@ -288,13 +288,13 @@ FABRIC.SceneGraph.registerNodeType('DeferredRenderer', {
                     'Size i, j, n = renderTarget.textures.size, curr = 0;\n' +
                     'for(i = 0; i < 3; ++i){\n' +
                     '  for(j = 0; j < 3; ++j){\n' +
-                    '    while(true) {\n' +
-                    '      if(curr == n)\n' +
-                    '        return;\n' +
-                    '      if(renderTarget.textures[curr].type == 2)\n' +
-                    '        break;\n' +
-                    '      curr++;\n' +
-                    '    }\n' +
+                    '    //while(true) {\n' +
+                    '    //  if(curr == n)\n' +
+                    '    //    return;\n' +
+                    '    //  if(renderTarget.textures[curr].type == 2)\n' +
+                    '    //    break;\n' +
+                    '    //  curr++;\n' +
+                    '    //}\n' +
                     '    Scalar x = -1.0 + Scalar(i)/1.5;\n' +
                     '    Scalar y = 1.0 - Scalar(j)/1.5;\n' +
                     '    renderTarget.textures[curr++].texture.bind(0);\n' +
