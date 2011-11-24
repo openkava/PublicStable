@@ -602,6 +602,10 @@ $(document).ready(function() {
       document.getElementById('nbCars').childNodes[0].data = 'Nb cars: ' + nbCars;
       document.getElementById('nbInstances').childNodes[0].data = 'Total geometry instances: ' + nbInstances;
 
+      if(!viewport.getGlewSupported('GL_EXT_draw_instanced')){
+        alert("This demo requires OpenGL 3.2 features such as 'GL_EXT_draw_instanced' to run.\n\nIt appears that your graphics card does not support geometry instancing.");
+        throw("This demo requires OpenGL 3.2 features such as 'GL_EXT_draw_instanced' to run.\n\nIt appears that your graphics card does not support geometry instancing.");
+      }
       scene.animation.play();
 
       return true;
