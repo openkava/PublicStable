@@ -43,6 +43,7 @@ FABRIC.SceneGraph.registerNodeType('Crowd', {
     dgnode.addMember('cellindex', 'Integer', -1 );
     dgnode.addMember('cellcoord', 'Vec3');
     dgnode.addMember('previousframe_position', 'Vec3');
+    dgnode.addMember('previousframe_velocity', 'Vec3');
 
     // Display the Grid
     if (options.displayGrid){
@@ -66,7 +67,9 @@ FABRIC.SceneGraph.registerNodeType('Crowd', {
       entryFunctionName: 'copyCurrentFrameDataToPrevFrameData',
       parameterLayout: [
         'self.xfo',
+        'self.linearVelocity',
         'self.previousframe_position',
+        'self.previousframe_velocity',
         'hashtable.hashtable'
       ]
     }));
@@ -128,6 +131,7 @@ FABRIC.SceneGraph.registerNodeType('Crowd', {
         'self.xfo',
         'self.goalLinearVelocity',
         'self.previousframe_position<>',
+        'self.previousframe_velocity<>',
         'self.maxLinearVelocity',
         'self.maxAngularVelocity',
         
