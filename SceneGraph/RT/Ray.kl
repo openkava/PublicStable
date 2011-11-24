@@ -81,6 +81,30 @@ function Vec2 Ray.intersectLine(Vec3 lineP0, Vec3 lineP1) {
   return Vec2(rayT, lineT);
 }
 
+
+function Scalar Ray.intersectPlane(in Vec3 planePoint, in Vec3 planeNormal) {
+  Vec3 w;
+  Scalar D, N;
+  w = this.start - planePoint;
+  D = planeNormal.dot(this.direction);
+  N = - planeNormal.dot(w);
+  
+  if (abs(D) < DIVIDEPRECISION) {
+    // segment is parallel to plane
+    if (N == 0.0) 
+      return -1.0; // segment lies in plane
+    else
+      return -1.0; // no intersection
+  }
+  // they are not parallel
+  // compute intersect param
+  Scalar sI = N / D;
+  if (sI < 0.0) {
+    return - 1; // no intersection
+  }
+  return sI;
+}
+
 function Boolean Ray.intersectTriangle(
   Boolean cull,
   Vec3 v0,

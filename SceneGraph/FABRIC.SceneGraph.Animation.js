@@ -412,13 +412,13 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
     
     var parentWriteData = animationLibraryNode.writeData;
     var parentReadData = animationLibraryNode.readData;
-    animationLibraryNode.writeData = function(sceneSaver, constructionOptions, nodeData) {
-      parentWriteData(sceneSaver, constructionOptions, nodeData);
+    animationLibraryNode.writeData = function(sceneSerializer, constructionOptions, nodeData) {
+      parentWriteData(sceneSerializer, constructionOptions, nodeData);
       constructionOptions.keyframetype = options.keyframetype;
       nodeData['dgnode'] = animationLibraryNode.writeDGNode(dgnode);
     };
-    animationLibraryNode.readData = function(sceneLoader, nodeData) {
-      parentReadData(sceneLoader, nodeData);
+    animationLibraryNode.readData = function(sceneDeserializer, nodeData) {
+      parentReadData(sceneDeserializer, nodeData);
       animationLibraryNode.readDGNode(dgnode, nodeData['dgnode']);
     };
     

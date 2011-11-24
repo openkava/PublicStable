@@ -4,16 +4,17 @@
 // that gives a maximum number of matrices of 65536
 // See OGLTexture2D.bindImageMatrix for the loading code.
 mat4 loadMatrixFromTexture(
-  in sampler2D u_sampler,
+  in sampler2D sampler,
+  in float textureHeight,
   in int index
 ){
-  float factor = 1.0 / 512.0;
+  vec2 factor = vec2(1.0 / 512.0, 1.0 / textureHeight);
   float x = mod(float(index), 128.0) * 4.0;
   float y = float(index) / 128.0;
-  return mat4(texture2D(u_sampler,vec2(x,y) * factor),
-              texture2D(u_sampler,vec2(x+1.0,y) * factor),
-              texture2D(u_sampler,vec2(x+2.0,y) * factor),
-              texture2D(u_sampler,vec2(x+3.0,y) * factor));
+  return mat4(texture2D(sampler,vec2(x,y) * factor),
+              texture2D(sampler,vec2(x+1.0,y) * factor),
+              texture2D(sampler,vec2(x+2.0,y) * factor),
+              texture2D(sampler,vec2(x+3.0,y) * factor));
 
 }
 

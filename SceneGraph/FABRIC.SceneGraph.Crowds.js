@@ -26,11 +26,12 @@ FABRIC.SceneGraph.registerNodeType('Crowd', {
       z_count: 30,
       displayGrid: true,
       agentCount: 3,
+      agentRadius: (this.cellsize*0.3),
       xfos: undefined,
-      displayDebugging: false
+      displayDebugging: false,
+      enableDebugging: false
     });
     
-
     var crowdNode = scene.constructNode('LocomotionCharacterController', options);
     var dgnode = crowdNode.getDGNode();
     var hashtablenode = crowdNode.constructDGNode('hashtablenode');
@@ -42,6 +43,7 @@ FABRIC.SceneGraph.registerNodeType('Crowd', {
     dgnode.addMember('cellindex', 'Integer', -1 );
     dgnode.addMember('cellcoord', 'Vec3');
     dgnode.addMember('previousframe_position', 'Vec3');
+    dgnode.addMember('previousframe_velocity', 'Vec3');
 
     // Display the Grid
     if (options.displayGrid){
@@ -65,7 +67,9 @@ FABRIC.SceneGraph.registerNodeType('Crowd', {
       entryFunctionName: 'copyCurrentFrameDataToPrevFrameData',
       parameterLayout: [
         'self.xfo',
+        'self.linearVelocity',
         'self.previousframe_position',
+        'self.previousframe_velocity',
         'hashtable.hashtable'
       ]
     }));
@@ -104,6 +108,7 @@ FABRIC.SceneGraph.registerNodeType('Crowd', {
     
     var neighborInfluenceRange = options.cellsize / 2.0;
     dgnode.addMember('neighborinfluencerange', 'Scalar', neighborInfluenceRange );
+    dgnode.addMember('agentRadius', 'Scalar', options.agentRadius );
     
     dgnode.addMember('initialized', 'Boolean', false );
     dgnode.addMember('debugCrowd', 'DebugGeometry' );
@@ -126,10 +131,14 @@ FABRIC.SceneGraph.registerNodeType('Crowd', {
         'self.xfo',
         'self.goalLinearVelocity',
         'self.previousframe_position<>',
+        'self.previousframe_velocity<>',
         'self.maxLinearVelocity',
         'self.maxAngularVelocity',
+        
+        'self.linearVelocity',
 
         'self.neighborinfluencerange',
+        'self.agentRadius',
         'hashtable.hashtable',
 
         'globals.timestep',

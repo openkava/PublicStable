@@ -365,8 +365,8 @@ FABRIC.SceneGraph.registerNodeType('Image3D', {
     
     var parentWriteData = imageNode.writeData;
     var parentReadData = imageNode.readData;
-    imageNode.writeData = function(sceneSaver, constructionOptions, nodeData) {
-      parentWriteData(sceneSaver, constructionOptions, nodeData);
+    imageNode.writeData = function(sceneSerializer, constructionOptions, nodeData) {
+      parentWriteData(sceneSerializer, constructionOptions, nodeData);
       constructionOptions.createDgNode = options.createDgNode;
       constructionOptions.createResourceLoadNode = options.createResourceLoadNode;
       constructionOptions.createLoadTextureEventHandler = options.createLoadTextureEventHandler;
@@ -374,8 +374,8 @@ FABRIC.SceneGraph.registerNodeType('Image3D', {
         nodeData.url = resourceLoadNode.pub.getUrl();
       }
     };
-    imageNode.readData = function(sceneLoader, nodeData) {
-      parentReadData(sceneLoader, nodeData);
+    imageNode.readData = function(sceneDeserializer, nodeData) {
+      parentReadData(sceneDeserializer, nodeData);
       if(nodeData.url){
         imageNode.pub.setUrl(nodeData.url);
       }
@@ -948,14 +948,18 @@ FABRIC.SceneGraph.registerNodeType('Material', {
         }));
 
         // Now add a method to assign the texture to the material
+        var setTextureRedrawEventHandlerFn = function(handler) {
+          textureStub.appendChildEventHandler(handler);
+        };
         var setTextureFn = function(node) {
           if (!node.isTypeOf('Texture')) {
             throw ('Incorrect type assignment. Must assign a Texture');
           }
           node = scene.getPrivateInterface(node);
-          textureStub.appendChildEventHandler(node.getRedrawEventHandler());
+          setTextureRedrawEventHandlerFn(node.getRedrawEventHandler());
         };
         materialNode.pub['set' + capitalizeFirstLetter(textureName) + 'Node'] = setTextureFn;
+        materialNode['set' + capitalizeFirstLetter(textureName) + 'RedrawEventHandler'] = setTextureRedrawEventHandlerFn;
 
         if (textureDef.node !== undefined) {
           setTextureFn(textureDef.node);
