@@ -248,6 +248,9 @@ operator evaluateLocomotionPoseVariables(
     appliedFeetRayDeltas.resize(locomotionFeet.size);
     Scalar numLegsScalar = 0.0;
     
+    if(legs.size == 2){
+      controllerparams.lift = 99999.0;
+    }
       
     for(Integer j=0; j < locomotionFeet.size; j++){
       LocomotionFoot foot = locomotionFeet[j];
@@ -317,10 +320,15 @@ operator evaluateLocomotionPoseVariables(
       if(stepRatio > 0.0 && stepRatio < 1.0){
         if(plantedFeet[j]){
           if(performRaycasting){
-            Scalar lift = (hitPositionsPrevStep[j] - footParentSpaceXfo.tr).dot(upvector);
-            footXfo.tr += Vec3(0.0, lift, 0.0);
+            Scalar lift = (hitPositionsPrevStep[j] - liftPos).dot(upvector);
             if(leg.hubId < 0 || leg.hubId == hubs.size-1){
-              controllerparams.lift += lift;
+              if(legs.size == 2){
+                if( lift < controllerparams.lift){
+                  controllerparams.lift = lift;
+                }
+              }else{
+                controllerparams.lift += lift;
+              }
               numLegsScalar += 1.0;
             }
           }
@@ -335,7 +343,6 @@ operator evaluateLocomotionPoseVariables(
           if(stepRatio < 0.5){
             Scalar errorDissipation = cos(stepRatio * TWO_PI) * 0.5 + 0.5;
             footError = plantLocations[j] * errorDissipation;
-            footError.y = 0.0;
           }
           /////////////////////////////////////////////////
           // Raycasting
@@ -366,7 +373,13 @@ operator evaluateLocomotionPoseVariables(
               
               hitPositionsPrevStep[j] = hitPosition;
               if(leg.hubId < 0 || leg.hubId == hubs.size-1){
-                controllerparams.lift += lift;
+                if(legs.size == 2){
+                  if( lift < controllerparams.lift){
+                    controllerparams.lift = lift;
+                  }
+                }else{
+                  controllerparams.lift += lift;
+                }
                 numLegsScalar += 1.0;
               }
             }
@@ -385,10 +398,26 @@ operator evaluateLocomotionPoseVariables(
           // Recalculate the lift each update even when the foot is planted,
           // because we also transfer this lift onto the controller for the
           // next update.
+          
+          if(displayRaycastingDebugging){
+            Xfo tmp = footXfo;
+            tmp.tr = hitPositionsPrevStep[j];
+            debugRaycasting.drawCircle(tmp * rot90, 0.03, Color(0.0, 1.0, 1.0, 1.0));
+            tmp.tr = plantPos;
+            debugRaycasting.drawCircle(tmp * rot90, 0.05, Color(1.0, 1.0, 1.0, 1.0));
+            debugRaycasting.drawLine(plantPos, hitPositionsPrevStep[j], Color(0.0, 1.0, 1.0, 1.0));
+          }
+              
           Scalar lift = (hitPositionsPrevStep[j] - plantPos).dot(upvector);
           footXfo.tr += Vec3(0.0, lift, 0.0);
           if(leg.hubId < 0 || leg.hubId == hubs.size-1){
-            controllerparams.lift += lift;
+            if(legs.size == 2){
+              if( lift < controllerparams.lift){
+                controllerparams.lift = lift;
+              }
+            }else{
+              controllerparams.lift += lift;
+            }
             numLegsScalar += 1.0;
           }
         }
@@ -400,6 +429,8 @@ operator evaluateLocomotionPoseVariables(
         else{
           // Calculate the error each update to hold the foot in place while planted.
           footError = invcontrollerXfo.ori.rotateVector(plantLocations[j] - plantPos);
+          // We zero the error vector here, because the raycasting handles the y axis.
+          footError.y = 0.0;
         }
         
         if(displayFootPinningDebugging){
@@ -453,6 +484,10 @@ operator evaluateLocomotionPoseVariables(
         }
       }
       
+      if(displayRaycastingDebugging){
+        debugFootMotion.drawCircle(footXfo * rot90, 0.04, Color(0.5, 1.0, 0.0, 1.0));
+      }
+        
       footXfo = invcontrollerXfo * footXfo;
       // Apply the error in COM space. 
       footXfo.tr += footError;
@@ -461,7 +496,15 @@ operator evaluateLocomotionPoseVariables(
       
     }
     if(performRaycasting && numLegsScalar > 0.0){
-      controllerparams.lift /= numLegsScalar;
+    
+      if(legs.size != 2){
+        controllerparams.lift /= numLegsScalar;
+      }
+      
+      if(displayRaycastingDebugging){
+        debugRaycasting.drawLine(controllerXfo.tr, controllerXfo.tr + (upvector * controllerparams.lift), Color(0.0, 1.0, 1.0, 1.0));
+      }
+              
       // Smooth out the com motion by scalaing the lift parameter.
       // Slightly hackey. The applied lift could be calculated better instead of this.
       controllerparams.lift *= 0.4;

@@ -294,23 +294,27 @@ operator locomotionPreProcessing(
   comAlignment.setIdentity();
   
   comAlignment = bones[hubs[0].boneId].referencePose;
-  Vec3 avgFootPos;
-  
-  for(Integer j=0; j < legs.size; j++){
-    Limb leg = legs[j];
-    if(leg.hubId < 0){
-      debugGeometry.drawLine(comAlignment.tr, leg.ikGoalReferenceXfo.tr, Color(0.0, 0.0, 0.0, 1.0));
-      avgFootPos += leg.ikGoalReferenceXfo.tr;
-    //  weight += 1.0;
-    }
-  }
-  if(weight > 0.0){
-    avgFootPos *= 1.0/weight;
-    alignment.setFrom2Vectors(comAlignment.ori.getXaxis(), Vec3(0.0, 1.0, 0.0));
-    comAlignment.ori = alignment * comAlignment.ori;
-    comAlignment.tr = avgFootPos;
-  }else{
+  if(legs.size == 2){
     comAlignment.tr.y = 0.0;
+  }
+  else{
+    Vec3 avgFootPos;
+    for(Integer j=0; j < legs.size; j++){
+      Limb leg = legs[j];
+      if(leg.hubId < 0){
+        debugGeometry.drawLine(comAlignment.tr, leg.ikGoalReferenceXfo.tr, Color(0.0, 0.0, 0.0, 1.0));
+        avgFootPos += leg.ikGoalReferenceXfo.tr;
+        weight += 1.0;
+      }
+    }
+    if(weight > 0.0){
+      avgFootPos *= 1.0/weight;
+      alignment.setFrom2Vectors(comAlignment.ori.getXaxis(), Vec3(0.0, 1.0, 0.0));
+      comAlignment.ori = alignment * comAlignment.ori;
+      comAlignment.tr = avgFootPos;
+    }else{
+      comAlignment.tr.y = 0.0;
+    }
   }
     
   
@@ -327,23 +331,27 @@ operator locomotionPreProcessing(
     comXfo.setIdentity();
     weight = 0.0;
     comXfo = poseVariables.xfoValues[hubs[0].xfoId];
-    avgFootPos.setNull();
-    for(Integer j=0; j < legs.size; j++){
-      Limb leg = legs[j];
-      if(leg.hubId < 0){
-        avgFootPos += poseVariables.xfoValues[leg.ikGoalXfoId].tr;
-      //  weight += 1.0;
+    if(legs.size == 2){
+        comXfo.tr.y = 0.0;
+    }
+    else{
+      Vec3 avgFootPos;
+      for(Integer j=0; j < legs.size; j++){
+        Limb leg = legs[j];
+        if(leg.hubId < 0){
+          avgFootPos += poseVariables.xfoValues[leg.ikGoalXfoId].tr;
+          weight += 1.0;
+        }
+      }
+      if(weight > 0.0){
+        avgFootPos *= 1.0/weight;
+        comXfo.tr = avgFootPos;
+        alignment.setFrom2Vectors(comXfo.ori.getXaxis(), Vec3(0.0, 1.0, 0.0));
+        comXfo.ori = alignment * comXfo.ori;
+      }else{
+        comXfo.tr.y = 0.0;
       }
     }
-    if(weight > 0.0){
-      avgFootPos *= 1.0/weight;
-      comXfo.tr = avgFootPos;
-      alignment.setFrom2Vectors(comXfo.ori.getXaxis(), Vec3(0.0, 1.0, 0.0));
-      comXfo.ori = alignment * comXfo.ori;
-    }else{
-      comXfo.tr.y = 0.0;
-    }
-    
   
     //////////////////////////////////////
     
@@ -416,7 +424,8 @@ operator locomotionPreProcessing(
     }
     prevKeyt = currKeyt;
     
-    if(false && footSteps[0].size <= 2){
+    
+    if(true && footSteps[0].size <= 2){
       currKeyt = timeRange.y;
     }
     else{
@@ -439,7 +448,7 @@ operator locomotionPreProcessing(
   smoothedComPos.resize(comXfoKeyTimes.size);
   for(Integer i=0; i < comXfoKeyTimes.size; i++){
     smoothedComPos[i] = comXfos[i].tr;
-    if(i>0 && i<comXfoKeyTimes.size-1){
+    if(i>0 && i<comXfoKeyTimes.size-1 && false){
       smoothedComPos[i] += comXfos[i-1].tr;
       smoothedComPos[i] += comXfos[i+1].tr;
       smoothedComPos[i] /= 3.0;
@@ -614,17 +623,16 @@ operator locomotionPreProcessing(
       }
       // for this marker, find all the foot step ids that are valid for the other legs.
       for(Integer k=0; k < legs.size; k++){
-        report("marker:"+marker);
         if(k==i){
           marker.stepIds[k] = merkerStepId;
         }
         else{
-        report("searching leg:"+k);
+          report("searching leg:"+k + " steps:"+footStepTracks[k].footSteps.size);
           // Plant times dictate stepId increments, we must find the step that
           // plants after the current foot lift. 
-          for(Integer l=0; i<footStepTracks[k].footSteps.size; l++){
-            report("step"+l+":"+footStepTracks[k].footSteps[l]);
-            if(footStepTracks[k].footSteps[l].midPlantTime > t){
+          for(Integer l=0; l<footStepTracks[k].footSteps.size; l++){
+            report("step"+l+":"+footStepTracks[k].footSteps[l] );
+            if(t < footStepTracks[k].footSteps[l].midPlantTime){
               marker.stepIds[k] = l;
               report("breaking:"+marker.stepIds[k]);
               break;

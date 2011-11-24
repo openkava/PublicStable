@@ -169,30 +169,9 @@ $(document).ready(function() {
   //////////////////////////////////////////////
   // 
   
-  var rigName = 'marama';
+  var rigName = 'centipede';
   var assetNodes, bindPoseRig, fkrigNode, rigInstanceNode, skeletonNode, characterMesh;
   switch(rigName){
-  case 'hopper':
-    assetNodes = scene.importAssetFile('Assets/hopper.DAE', { scaleFactor: scaleFactor });
-  
-    fkrigNode = assetNodes.CATRigHub003CharacterRig;
-    rigInstanceNode = assetNodes.CATRigHub003CharacterInstance;
-    libraryFKAnimations = assetNodes.AnimationLibrary;
-    characterMesh = assetNodes.CATRigHub003Mesh;
-    
-    skeletonNode = fkrigNode.getSkeletonNode();
-    var ikrigNode = scene.constructNode('CharacterRig', {
-      name: 'IKRig',
-      skeletonNode: skeletonNode
-    });
-    
-    ikrigNode.addSolver('Hip', 'HubSolver', { bones:{ bone:['CATRigHub001'] } } );
-    ikrigNode.addSolver('Leg', 'HumanoidLegSolver', {
-      bones: { bones:['CATRigLLeg1', 'CATRigLLeg2'], ankle:'CATRigLLegAnkle' }
-    });
-    ikrigNode.invertSolvers(fkrigNode);
-  
-    break;
   case 'walker':
     assetNodes = scene.importAssetFile('Assets/Walker_Skeleton.DAE', { scaleFactor: scaleFactor });
   
