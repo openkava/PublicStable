@@ -740,6 +740,19 @@ function (fabricClient, logCallback, debugLogCallback) {
         }]);
       };
 
+      result.pub.getBulkDataJSON = function() {
+        var json;
+        result.queueCommand('getBulkDataJSON', null, function() {}, function(data) {
+          json = data;
+        });
+        executeQueuedCommands();
+        return json;
+      };
+
+      result.pub.setBulkDataJSON = function(data) {
+        result.queueCommand('setBulkDataJSON', data);
+      };
+
       result.pub.putResourceToUserFile = function(memberName, uiTitle, extension, defaultFileName) {
         result.queueCommand('putResourceToUserFile', {
           'memberName': memberName,

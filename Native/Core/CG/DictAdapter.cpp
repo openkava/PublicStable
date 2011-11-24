@@ -546,7 +546,8 @@ namespace Fabric
       AWI[0] = llvm::AttributeWithIndex::get( ~0u, llvm::Attribute::InlineHint | llvm::Attribute::NoUnwind );
       llvm::AttrListPtr attrListPtr = llvm::AttrListPtr::get( AWI, 1 );
       
-      llvm::Function *func = llvm::cast<llvm::Function>( basicBlockBuilder.getModuleBuilder()->getOrInsertFunction( "__"+getCodeName()+"_Dispose", funcType, attrListPtr ) ); 
+      llvm::Constant *funcAsConstant = basicBlockBuilder.getModuleBuilder()->getOrInsertFunction( "__"+getCodeName()+"_DefaulAssign", funcType, attrListPtr );
+      llvm::Function *func = llvm::cast<llvm::Function>( funcAsConstant ); 
 
       std::vector<llvm::Value *> args;
       args.push_back( llvmAdapterPtr( basicBlockBuilder ) );

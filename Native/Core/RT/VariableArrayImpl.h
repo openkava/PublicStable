@@ -24,16 +24,12 @@ namespace Fabric
       
       struct bits_t
       {
-        Util::AtomicSize refCount;
         size_t allocNumMembers;
         size_t numMembers;
-        uint8_t memberDatas[0];
+        uint8_t *memberDatas;
       };
     
     public:
-    
-      static const size_t FLAG_SHARED = 0;
-      static const size_t FLAG_COPY_ON_WRITE = 1 << 0;
     
       // Impl
       
@@ -57,24 +53,17 @@ namespace Fabric
       
       // VariableArrayImpl
       
-      bool isCopyOnWrite() const
-      {
-        return m_flags & FLAG_COPY_ON_WRITE;
-      }
-      
       void setNumMembers( void *data, size_t newNumMembers, void const *defaultMemberData = 0 ) const;
       void setMembers( void *data, size_t numMembers, void const *members ) const;
       void setMembers( void *data, size_t dstOffset, size_t numMembers, void const *members ) const;
-      bool areSameData( const void *data1, const void *data2 ) const;
       
-      void split( void *data ) const;
       void push( void *dst, void const *src ) const;
       void pop( void *dst, void *result ) const;
       void append( void *dst, void const *src ) const;
       
     protected:
     
-      VariableArrayImpl( std::string const &codeName, size_t flags, RC::ConstHandle<RT::Impl> const &memberImpl );
+      VariableArrayImpl( std::string const &codeName, RC::ConstHandle<RT::Impl> const &memberImpl );
       
       static size_t AllocNumMembersForNumMembers( size_t numMembers )
       {
@@ -83,25 +72,15 @@ namespace Fabric
             
       void const *getImmutableMemberData_NoCheck( void const *data, size_t index ) const
       { 
-        bits_t const *bits = *reinterpret_cast<bits_t const * const *>(data);
+        bits_t const *bits = reinterpret_cast<bits_t const *>(data);
         return bits->memberDatas + m_memberSize * index;
       }
       
       void *getMutableMemberData_NoCheck( void *data, size_t index ) const
       { 
-        if ( isCopyOnWrite() )
-          unshare( data );
-        bits_t *bits = *reinterpret_cast<bits_t **>(data);
+        bits_t *bits = reinterpret_cast<bits_t *>(data);
         return bits->memberDatas + m_memberSize * index;
       }    
-
-      void unshare( void *data ) const
-      {
-        if ( (*reinterpret_cast<bits_t **>(data))->refCount.getValue() > 1 )
-        {
-          split( data );
-        }
-      }
 
       void copyMemberDatas( bits_t *dstBits, size_t dstOffset, bits_t const *srcBits, size_t srcOffset, size_t count, bool disposeFirst ) const
       {
@@ -109,7 +88,6 @@ namespace Fabric
         {
           FABRIC_ASSERT( srcBits );
           FABRIC_ASSERT( dstBits );
-          FABRIC_ASSERT( dstBits->refCount.getValue() == 1 );
           FABRIC_ASSERT( srcOffset + count <= srcBits->numMembers );
           FABRIC_ASSERT( dstOffset + count <= dstBits->numMembers );
           
@@ -133,7 +111,6 @@ namespace Fabric
 
     private:
 
-      size_t m_flags;
       RC::ConstHandle<Impl> m_memberImpl;
       size_t m_memberSize;
       bool m_memberIsShallow;

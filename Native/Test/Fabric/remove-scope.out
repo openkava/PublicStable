@@ -19,6 +19,8 @@
      getMembersBulkData: [Function],
      setSlicesBulkData: [Function],
      setSliceBulkData: [Function],
+     getBulkDataJSON: [Function],
+     setBulkDataJSON: [Function],
      putResourceToUserFile: [Function],
      getResourceFromUserFile: [Function],
      getResourceFromFile: [Function],
