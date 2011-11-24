@@ -230,13 +230,13 @@ $(document).ready(function() {
       });
     break;
   case 'marama':
-  var agentRadius = 0.7;
-  var cellSize = 6.0;
+  var agentRadius = 0.9;
+  var cellSize = 8.0;
     var crowdNode = scene.constructNode('Crowd', {
         maxLinearVelocity: 3.5,
-        maxLinearAcceleration: 0.2,
-        maxAngularVelocity:  3,
-        maxAngularAcceleration: 3,
+        maxLinearAcceleration: 0.4,
+        maxAngularVelocity:  5,
+        maxAngularAcceleration: 5,
         bulletWorldNode: bulletWorldNode,
         numTrailSegments: 0,
         gravity: -4.8,
