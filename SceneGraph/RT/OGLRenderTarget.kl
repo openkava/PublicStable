@@ -42,21 +42,21 @@ function OGLRenderTarget.genTextures() {
       case 1://DEPTH_BUFFER:
         {
           if(this.depthBuffer != -1){
-            report( "Creating 2 or more depth buffers is not possible!");
+            report( "ERROR: Creating 2 or more depth buffers is not possible!");
             break;
           }
           if(this.hasDepthBufferTexture){
-            report( "A depth buffer texture has already been created, can not create another depth texture");
+            report( "ERROR: A depth buffer texture has already been created, can not create another depth texture");
             break;
           }
           if(this.textures[i].texture.glInternalFormat != GL_DEPTH_COMPONENT){
-            report( "A Depth Buffer must impliment a GL_DEPTH_COMPONENT internal format.");
+            report( "ERROR: A Depth Buffer must impliment a GL_DEPTH_COMPONENT internal format.");
             break;
           }
           
           this.textures[i].texture.genTexture(this.width, this.height);
           if(this.textures[i].texture.bufferID==0){
-            report("Error generating texture");
+            report("ERROR: Error generating texture");
             break;
           }
           
@@ -74,7 +74,7 @@ function OGLRenderTarget.genTextures() {
         {
           this.textures[i].texture.genTexture(this.width, this.height);
           if(this.textures[i].texture.bufferID==0){
-            report("Error generating texture");
+            report("ERROR: Error generating texture");
             continue;
           }
           glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0+this.numColorBuffers, GL_TEXTURE_2D, this.textures[i].texture.bufferID, 0);
@@ -140,14 +140,14 @@ function OGLRenderTarget.prebind(
     
       Size numTextures = (this.hasDepthBufferTexture ? 1 : 0) + this.numColorBuffers;
       Size bufferIDs[];
-      bufferIDs.resize(numTextures);
+      bufferIDs.resize(1);
       
+      // Textures need to be deleted first.;
       for(Integer i=0; i<this.textures.size(); i++){
-        bufferIDs[i] = this.textures[i].texture.bufferID;
+        bufferIDs[0] = this.textures[i].texture.bufferID;
+        glDeleteTextures(1, bufferIDs);
         this.textures[i].texture.bufferID = 0;
       }
-      // Textures need to be deleted first.;
-      glDeleteTextures(numTextures, bufferIDs);
 
       bufferIDs.resize(1);
       bufferIDs[0] = this.fbo;
@@ -192,11 +192,11 @@ function OGLRenderTarget.bind() {
   }
   glViewport(0,0, this.width, this.height);
 
-  Size drawBufferIDs[];
+  Integer drawBufferIDs[];
   Size nbColor = 0;
   for(Size i=0; i<this.textures.size(); i++){
     if(this.textures[i].texture.bufferID!=0 && this.textures[i].type == 2){
-      drawBufferIDs.push(GL_COLOR_ATTACHMENT0 + nbColor++);
+      drawBufferIDs.push(Integer(GL_COLOR_ATTACHMENT0 + nbColor++));
     }
   }
   glDrawBuffers(nbColor, drawBufferIDs);

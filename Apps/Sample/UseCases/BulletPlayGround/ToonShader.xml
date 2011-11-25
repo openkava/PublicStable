@@ -120,7 +120,7 @@
         intensity = floor(intensity * u_materialColorSteps + 0.5) / u_materialColorSteps;
         
         gl_FragData[0] = lightFactor * (u_materialBrightColor * intensity + u_materialDarkColor * (1.0 - intensity));
-        gl_FragData[2].xyz = normalize(normal);
+        gl_FragData[1].xyz = normalize(normal);
       }
 
       ]]>
