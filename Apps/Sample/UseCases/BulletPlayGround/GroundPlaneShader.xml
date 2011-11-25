@@ -110,7 +110,7 @@
         else
           gl_FragData[0] = u_materialDarkColor * lightFactor;
         gl_FragData[0].a = u_colorBlend;
-        gl_FragData[2].xyz = normalize(normal);
+        gl_FragData[1].xyz = normalize(normal);
       }
       ]]>
     </source>
