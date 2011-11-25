@@ -140,14 +140,14 @@ function OGLRenderTarget.prebind(
     
       Size numTextures = (this.hasDepthBufferTexture ? 1 : 0) + this.numColorBuffers;
       Size bufferIDs[];
-      bufferIDs.resize(numTextures);
+      bufferIDs.resize(1);
       
+      // Textures need to be deleted first.;
       for(Integer i=0; i<this.textures.size(); i++){
-        bufferIDs[i] = this.textures[i].texture.bufferID;
+        bufferIDs[0] = this.textures[i].texture.bufferID;
+        glDeleteTextures(1, bufferIDs);
         this.textures[i].texture.bufferID = 0;
       }
-      // Textures need to be deleted first.;
-      glDeleteTextures(numTextures, bufferIDs);
 
       bufferIDs.resize(1);
       bufferIDs[0] = this.fbo;
