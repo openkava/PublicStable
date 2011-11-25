@@ -334,13 +334,13 @@ $(document).ready(function() {
     materialNode: phongSkinningMaterial
   });
   
-  
+  /*
   var skeletonGeometryNode = scene.constructNode("CharacterSkeletonDebug", {
     characterRigNode:ikrig,
     boneradius: 0.2,
     color: FABRIC.RT.rgba(0.5, 0.0, 0.5, 1.0)
   });
-  
+  */
     
   
   $("#selectCharacter").val(rigName);
@@ -529,7 +529,9 @@ $(document).ready(function() {
               <label for="selectCharacter" style="margin-top:10px;">Select Character:</label>
               <select id='selectCharacter' style="margin-top:10px;">
                 <option value="walker">Walker
+                <!--
                 <option value="centipede">Centipede
+                -->
                 <option value="marama">Human
               </select>
               </br>
