@@ -106,17 +106,21 @@ FABRIC.appendOnCreateContextCallback(function(context) {
 });
 
 FABRIC.RT.FootStep = function() {
+  this.prevStepMidPlantTime = 0.0;
   this.liftTime = 0.0;
   this.plantTime = 0.0;
   this.midPlantTime = 0.0;
+  this.strideLength = 0.0;
 };
 
 FABRIC.appendOnCreateContextCallback(function(context) {
   context.RegisteredTypesManager.registerType('FootStep', {
     members: {
+      prevStepMidPlantTime: 'Scalar',
       liftTime: 'Scalar',
       plantTime: 'Scalar',
-      midPlantTime: 'Scalar'
+      midPlantTime: 'Scalar',
+      strideLength: 'Scalar'
     },
     constructor: FABRIC.RT.FootStep
   });

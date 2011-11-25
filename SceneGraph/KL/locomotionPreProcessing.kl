@@ -12,8 +12,6 @@ function Vec3[][] calcFootPlantTimes(
   in Limb legs[],
   io Vec2 timeRange,
   io Integer leadingFoot,
-  io Scalar averageFootPlantTime,
-  io Scalar averageFootLiftedTime,
   in Integer numSamples,
   io Scalar movementThreshold,
   
@@ -79,9 +77,10 @@ function Vec3[][] calcFootPlantTimes(
   
   report("Detected Footsteps:"+footSteps);
   ///////////////////////////////////////////////////
-  averageFootPlantTime = 0.0;
+  Scalar averageFootPlantTime = 0.0;
+  Scalar averageFootLiftedTime = 0.0;
+  Scalar averageStrideLength = 0.0;
   Scalar numFootPlants = 0.0;
-  averageFootLiftedTime = 0.0;
   Scalar numFootLifts = 0.0;
   for(Integer j=0; j < footSteps.size; j++){
     for(Integer i=0; i < footSteps[j].size; i++){
@@ -93,12 +92,14 @@ function Vec3[][] calcFootPlantTimes(
       if(i<footSteps[j].size-1){
         Vec3 nextStep = footSteps[j][i+1];
         averageFootLiftedTime += nextStep.x - step.z;
+        averageStrideLength += footPrints[j][i].distanceTo(footPrints[j][i+1]);
         numFootLifts += 1.0;
       }
     }
   }
   averageFootPlantTime /= numFootPlants;
   averageFootLiftedTime /= numFootLifts;
+  averageStrideLength /= numFootLifts;
   
   report("averageFootPlantTime:"+averageFootPlantTime);
   report("averageFootLiftedTime:"+averageFootLiftedTime);
@@ -157,22 +158,29 @@ function Vec3[][] calcFootPlantTimes(
     FootStep step;
     if(footSteps[i][0].y >= timeRange.x){
       Vec3 firstStep = footSteps[i][0];
+      step.prevStepMidPlantTime = firstStep.x - averageFootLiftedTime - (averageFootPlantTime * (1.0 - midStepRatio));
       step.liftTime = firstStep.x - averageFootLiftedTime;
       step.plantTime = firstStep.x;
       step.midPlantTime = firstStep.y;
+      step.strideLength = averageStrideLength;
       footStepTracks[i].footSteps.push(step);
     }
     for(Integer j=0; j < footSteps[i].size-1; j++){
+      step.prevStepMidPlantTime = footSteps[i][j].y;
       step.liftTime = footSteps[i][j].z;
       step.plantTime = footSteps[i][j+1].x;
       step.midPlantTime = footSteps[i][j+1].y;
+      step.strideLength = footPrints[i][j].distanceTo(footPrints[i][j+1]);
       footStepTracks[i].footSteps.push(step);
     }
   //  if(footSteps[i][footSteps[i].size-1].x <= timeRange.y){
       Vec3 lastStep = footSteps[i][footSteps[i].size-1];
+      
+      step.prevStepMidPlantTime = lastStep.y;
       step.liftTime = lastStep.z;
       step.plantTime = lastStep.z + averageFootLiftedTime;
       step.midPlantTime = step.plantTime + (averageFootPlantTime * midStepRatio);
+      step.strideLength = averageStrideLength;
       footStepTracks[i].footSteps.push(step);
   //  }
     report("NumSteps:"+footStepTracks[i].footSteps.size);
@@ -230,14 +238,10 @@ operator locomotionPreProcessing(
   
   Vec3 footSteps[][];
   Integer leadingFoot = 0;
-  Scalar averageFootPlantTime;
-  Scalar averageFootLiftedTime;
   footSteps = calcFootPlantTimes(
     legs,
     timeRange,
     leadingFoot,
-    averageFootPlantTime,
-    averageFootLiftedTime,
     numSamples,
     movementThreshold,
     poseVariables,
@@ -425,7 +429,7 @@ operator locomotionPreProcessing(
     prevKeyt = currKeyt;
     
     
-    if(true && footSteps[0].size <= 2){
+    if(false && footSteps[0].size <= 2){
       currKeyt = timeRange.y;
     }
     else{
