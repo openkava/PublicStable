@@ -30,5 +30,25 @@ namespace Fabric
       result += "]";
       return result;
     }
+    
+    int ArrayImpl::compareData( void const *lhs, void const *rhs ) const
+    {
+      size_t lhsSize = getNumMembers( lhs );
+      size_t rhsSize = getNumMembers( rhs );
+      if ( lhsSize < rhsSize )
+        return -1;
+      else if ( lhsSize > rhsSize )
+        return 1;
+      else
+      {
+        for ( size_t i=0; i<lhsSize; ++i )
+        {
+          int memberResult = m_memberImpl->compareData( getMemberData( lhs, i ), getMemberData( rhs, i ) );
+          if ( memberResult )
+            return memberResult;
+        }
+        return 0;
+      }
+    }
   };
 };

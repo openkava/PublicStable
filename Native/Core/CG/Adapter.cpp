@@ -5,6 +5,7 @@
 #include "Adapter.h"
 #include "Context.h"
 #include "IntegerAdapter.h"
+#include "SizeAdapter.h"
 #include "StringAdapter.h"
 #include "Manager.h"
 #include "ModuleBuilder.h"
@@ -67,11 +68,10 @@ namespace Fabric
     
     llvm::Value *Adapter::llvmCallMalloc( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *size ) const
     {
-      
-      RC::ConstHandle< IntegerAdapter > integerAdapter = basicBlockBuilder.getManager()->getIntegerAdapter();
+      RC::ConstHandle<SizeAdapter> sizeAdapter = basicBlockBuilder.getManager()->getSizeAdapter();
 
       std::vector< llvm::Type const * > argTypes;
-      argTypes.push_back( integerAdapter->llvmRType( basicBlockBuilder.getContext() ) );
+      argTypes.push_back( sizeAdapter->llvmRType( basicBlockBuilder.getContext() ) );
       llvm::FunctionType const *funcType = llvm::FunctionType::get( basicBlockBuilder->getInt8PtrTy(), argTypes, false );
 
       llvm::AttributeWithIndex AWI[1];
@@ -85,11 +85,11 @@ namespace Fabric
     
     llvm::Value *Adapter::llvmCallRealloc( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *data, llvm::Value *newSize ) const
     {
-      RC::ConstHandle< IntegerAdapter > integerAdapter = basicBlockBuilder.getManager()->getIntegerAdapter();
+      RC::ConstHandle<SizeAdapter> sizeAdapter = basicBlockBuilder.getManager()->getSizeAdapter();
 
       std::vector< llvm::Type const * > argTypes;
       argTypes.push_back( basicBlockBuilder->getInt8PtrTy() );
-      argTypes.push_back( integerAdapter->llvmRType( basicBlockBuilder.getContext() ) );
+      argTypes.push_back( sizeAdapter->llvmRType( basicBlockBuilder.getContext() ) );
       llvm::FunctionType const *funcType = llvm::FunctionType::get( basicBlockBuilder->getInt8PtrTy(), argTypes, false );
 
       llvm::AttributeWithIndex AWI[1];
@@ -386,6 +386,108 @@ namespace Fabric
 
     void Adapter::llvmDisposeImpl( BasicBlockBuilder &basicBlockBuilder, llvm::Value *lValue ) const
     {
+    }
+      
+    llvm::Value *Adapter::llvmCallMax( BasicBlockBuilder &basicBlockBuilder, llvm::Value *lhsRValue, llvm::Value *rhsRValue ) const
+    {
+      RC::Handle<Context> context = basicBlockBuilder.getContext();
+      RC::ConstHandle<SizeAdapter> sizeAdapter = basicBlockBuilder.getManager()->getSizeAdapter();
+
+      std::vector<llvm::Type const *> argTypes;
+      argTypes.push_back( sizeAdapter->llvmRType( context ) );
+      argTypes.push_back( sizeAdapter->llvmRType( context ) );
+      llvm::FunctionType const *funcType = llvm::FunctionType::get( sizeAdapter->llvmRType( context ), argTypes, false );
+      
+      llvm::AttributeWithIndex AWI[1];
+      AWI[0] = llvm::AttributeWithIndex::get( ~0u, llvm::Attribute::InlineHint | llvm::Attribute::NoUnwind );
+      llvm::AttrListPtr attrListPtr = llvm::AttrListPtr::get( AWI, 1 );
+
+      std::string name = "__Max";
+      llvm::Function *func = llvm::cast<llvm::Function>( basicBlockBuilder.getModuleBuilder()->getFunction( name ) );
+      if ( !func )
+      {
+        ModuleBuilder &mb = basicBlockBuilder.getModuleBuilder();
+        
+        func = llvm::cast<llvm::Function>( mb->getOrInsertFunction( name, funcType, attrListPtr ) ); 
+        func->setLinkage( llvm::GlobalValue::PrivateLinkage );
+        
+        FunctionBuilder fb( mb, funcType, func );
+        llvm::Argument *lhsRValue = fb[0];
+        lhsRValue->setName( "lhsRValue" );
+        llvm::Argument *rhsRValue = fb[1];
+        rhsRValue->setName( "rhsRValue" );
+        
+        BasicBlockBuilder bbb( fb );
+
+        llvm::BasicBlock *entryBB = fb.createBasicBlock( "entry" );
+        llvm::BasicBlock *lhsBB = fb.createBasicBlock( "lhs" );
+        llvm::BasicBlock *rhsBB = fb.createBasicBlock( "rhs" );
+
+        bbb->SetInsertPoint( entryBB );
+        bbb->CreateCondBr(
+          bbb->CreateICmpUGE( lhsRValue, rhsRValue ),
+          lhsBB,
+          rhsBB
+          );
+
+        bbb->SetInsertPoint( lhsBB );
+        bbb->CreateRet( lhsRValue );
+
+        bbb->SetInsertPoint( rhsBB );
+        bbb->CreateRet( rhsRValue );
+      }
+
+      std::vector<llvm::Value *> args;
+      args.push_back( lhsRValue );
+      args.push_back( rhsRValue );
+      return basicBlockBuilder->CreateCall( func, args.begin(), args.end() );
+    }
+      
+    llvm::Value *Adapter::llvmCallNextPowTwoMinusOne( BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const
+    {
+      RC::Handle<Context> context = basicBlockBuilder.getContext();
+      RC::ConstHandle<SizeAdapter> sizeAdapter = basicBlockBuilder.getManager()->getSizeAdapter();
+
+      std::vector<llvm::Type const *> argTypes;
+      argTypes.push_back( sizeAdapter->llvmRType( context ) );
+      llvm::FunctionType const *funcType = llvm::FunctionType::get( sizeAdapter->llvmRType( context ), argTypes, false );
+      
+      llvm::AttributeWithIndex AWI[1];
+      AWI[0] = llvm::AttributeWithIndex::get( ~0u, llvm::Attribute::InlineHint | llvm::Attribute::NoUnwind );
+      llvm::AttrListPtr attrListPtr = llvm::AttrListPtr::get( AWI, 1 );
+
+      std::string name = "__NextPowTwoMinusOne";
+      llvm::Function *func = llvm::cast<llvm::Function>( basicBlockBuilder.getModuleBuilder()->getFunction( name ) );
+      if ( !func )
+      {
+        ModuleBuilder &mb = basicBlockBuilder.getModuleBuilder();
+        
+        func = llvm::cast<llvm::Function>( mb->getOrInsertFunction( name, funcType, attrListPtr ) ); 
+        func->setLinkage( llvm::GlobalValue::PrivateLinkage );
+        
+        FunctionBuilder fb( mb, funcType, func );
+        llvm::Argument *rValue = fb[0];
+        rValue->setName( "rValue" );
+        
+        BasicBlockBuilder bbb( fb );
+
+        llvm::BasicBlock *entryBB = fb.createBasicBlock( "entry" );
+        
+        bbb->SetInsertPoint( entryBB );
+        llvm::Value *value = rValue;
+        value = bbb->CreateOr( value, bbb->CreateLShr( value, sizeAdapter->llvmConst( context, 1 ) ) );
+        value = bbb->CreateOr( value, bbb->CreateLShr( value, sizeAdapter->llvmConst( context, 2 ) ) );
+        value = bbb->CreateOr( value, bbb->CreateLShr( value, sizeAdapter->llvmConst( context, 4 ) ) );
+        value = bbb->CreateOr( value, bbb->CreateLShr( value, sizeAdapter->llvmConst( context, 8 ) ) );
+        value = bbb->CreateOr( value, bbb->CreateLShr( value, sizeAdapter->llvmConst( context, 16 ) ) );
+        if ( sizeof( size_t ) == 8 )
+          value = bbb->CreateOr( value, bbb->CreateLShr( value, sizeAdapter->llvmConst( context, 32 ) ) );
+        bbb->CreateRet( value );
+      }
+
+      std::vector<llvm::Value *> args;
+      args.push_back( rValue );
+      return basicBlockBuilder->CreateCall( func, args.begin(), args.end() );
     }
   };
 };

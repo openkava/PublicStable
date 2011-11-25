@@ -48,6 +48,8 @@ for f in "$@"; do
   CMD="node $f"
   
   NODE_PATH="$NODE_PATH" $VALGRIND_CMD $CMD 2>&1 \
+    | grep -v '^\[FABRIC\] Fabric Engine version' \
+    | grep -v '^\[FABRIC\] This build of Fabric' \
     | grep -v '^\[FABRIC\] .*Extension registered' \
     | grep -v '^\[FABRIC\] .*Searching extension directory' \
     | grep -v '^\[FABRIC\] .*unable to open extension directory' \
