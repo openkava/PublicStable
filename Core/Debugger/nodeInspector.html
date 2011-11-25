@@ -15,6 +15,11 @@
   <script type="text/javascript" src="../../ThirdParty/jQuery/jquery.dataTables.min.js"></script>
 
   <script type="text/javascript" src="../FABRIC.js" charset="utf-8"></script>
+
+  <script src="../../ThirdParty/ace/ace.js" type="text/javascript" charset="utf-8"></script>
+  <script src="../../ThirdParty/ace/mode-json.js" type="text/javascript" charset="utf-8"></script>
+  <script src="../../ThirdParty/ace/theme-textmate.js" type="text/javascript" charset="utf-8"></script>
+
     
   <script type="text/javascript">
 
@@ -64,24 +69,25 @@ $(document).ready(function() {
   
   displayNodeData();
   
-  $('#refresh').button()
-      .click(function() {
+  $('#refresh').button().click(function() {
         displayNodeData(true);
-      });
-  
+  });
+
+
+  var editor = ace.edit("code-editor");
+  var jsonMode = require("ace/mode/json").Mode;
+
+  editor.setTheme("ace/theme/textmate");
+  editor.getSession().setMode(new jsonMode());
+
+
 });
 
+</script>
 
-    </script>
-
-
-
-  </head> 
-  <body>
+</head> 
+<body>
     <div id="wrapper">
-      <ul id="nav">
-        <li><a href="#" id="fabric-logo"><img src="../../themes/default/_img/projects/fabric-logo.png" /></a></li>
-      </ul>
       <div id="editor">
         
         <div id="topToolbar">
@@ -93,5 +99,9 @@ $(document).ready(function() {
         
       </div> <!--editor-->
     </div><!--wrapper-->
-  </body> 
+
+    <div id="code-editor">
+{"name":"FlatMaterialShader","programId":9,"shaderSources":[{"code":"\n \r\n\r\n uniform vec4 u_materialColor;\r\n \r\n void main(){\r\n gl_FragColor = u_materialColor;\r\n }\r\n\r\n \n ","type":35632},{"code":"\n \r\n \r\n uniform mat4 u_modelViewProjectionMatrix;\r\n attribute vec4 a_position;\r\n \r\n void main(){\r\n gl_Position = u_modelViewProjectionMatrix * a_position;\r\n }\r\n\r\n \n ","type":35633}],"programParams":[],"uniformValues":[{"name":"u_materialColor","id":6,"location":0},{"name":"u_modelViewProjectionMatrix","id":7,"location":1}],"attributeValues":[{"name":"a_position","id":2,"location":0}],"disableOptions":[],"enableOptions":[],"cullFace":0,"blendModeSfactor":0,"blendModeDfactor":0,"drawMode":-1,"patchVertices":-1,"numInstances":-1,"loadedAttributes":[],"attributesElementCount":0,"debug":false}
+    </div>
+</body> 
 </html>
