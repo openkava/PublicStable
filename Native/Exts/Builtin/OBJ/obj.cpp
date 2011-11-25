@@ -238,6 +238,7 @@ FABRIC_EXT_EXPORT void FabricOBJGetTextureCoordsSliced(
   {
     ObjParser *parser = (ObjParser*)parsedDataHandle;
 
+
     size_t nbPoints = parser->NbPoints();
     if ( textureCoords.size() != nbPoints )
       throwException( "FabricOBJGetTextureCoordsSliced: sliced array size mismatch" );
@@ -245,7 +246,7 @@ FABRIC_EXT_EXPORT void FabricOBJGetTextureCoordsSliced(
     for ( size_t i = 0; i < nbPoints; ++i )
     {
       V2 texCoord = parser->GetTextureCoord( i );
-      KL::Vec2 klVec = { texCoord.v[0], texCoord.v[1] };
+      KL::Vec2 klVec = { texCoord.v[0], 1.0-texCoord.v[1] };//OBJ considers (0, 0) to be the top left of a texture, OpenGL considers it to be the bottom left
       textureCoords[i] = klVec;
     }
   }
