@@ -232,13 +232,13 @@ FABRIC.SceneGraph.registerNodeType('DeferredRenderer', {
     oglRenderTargetTextureNames.push('depth');
 
     var nbRenderTargets = oglRenderTargetTextureNames.length;
-
-    redrawEventHandler.addMember('renderTarget', 'OGLRenderTarget', FABRIC.RT.oglRenderTarget(0,0,
+    var renderTarget = FABRIC.RT.oglRenderTarget(0,0,
       oglRenderTargetTextureDescs,
       {
         clearColor: FABRIC.RT.rgba(0,0,0,0)
       }
-    ));
+    );
+    redrawEventHandler.addMember('renderTarget', 'OGLRenderTarget', renderTarget);
 
     renderTargetRedrawEventHandler.preDescendBindings.append(
       scene.constructOperator({
@@ -267,7 +267,8 @@ FABRIC.SceneGraph.registerNodeType('DeferredRenderer', {
           operatorName: 'copyDepth',
           srcCode: 'use OGLRenderTarget; operator copyDepth(io Integer width, io Integer height, io OGLRenderTarget renderTarget){\n'+
                       'glBindFramebuffer(GL_READ_FRAMEBUFFER, renderTarget.fbo);\n' +
-                      'glBlitFramebuffer(0,0,width-1,height-1,0,0,width-1,height-1,GL_DEPTH_BUFFER_BIT, GL_NEAREST);}',
+                      'glBlitFramebuffer(0,0,width-1,height-1,0,0,width-1,height-1,GL_DEPTH_BUFFER_BIT, GL_NEAREST);\n'+
+                      'glBindFramebuffer(GL_READ_FRAMEBUFFER, GL_NONE);}',
           entryFunctionName: 'copyDepth',
           parameterLayout: [
             'window.width',
@@ -375,26 +376,6 @@ FABRIC.SceneGraph.registerNodeType('DeferredRenderer', {
       }
 
       var materialRedrawHandler = material.getRedrawEventHandler();
-
-      materialRedrawHandler.preDescendBindings.append(scene.constructOperator({
-          operatorName: 'loadWindowSize',
-          preProcessorDefinitions: {
-            WINDOW_INV_SIZE_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('windowInvSize')
-          },
-          srcCode: 'use OGLShaderProgram; operator loadWindowSize( io OGLShaderProgram shaderProgram, io Integer width, io Integer heigth ) {\n' +
-                   '  Integer location = shaderProgram.getUniformLocation( WINDOW_INV_SIZE_ATTRIBUTE_ID );\n' +
-                   '  if(location!=-1) {\n' +
-                   '    Vec2 size;\n' +
-                   '    size.x = 1.0/Scalar(width);\n' +
-                   '    size.y = 1.0/Scalar(heigth);\n' +
-                   '    shaderProgram.loadVec2Uniform(location, size);}}\n',
-          entryFunctionName: 'loadWindowSize',
-          parameterLayout: [
-            'shader.shaderProgram',
-            'window.width',
-            'window.height',
-          ]
-        }));
 
       if(options.shadeFullScreen !== undefined && options.shadeFullScreen) {
         materialRedrawHandler.postDescendBindings.insert(

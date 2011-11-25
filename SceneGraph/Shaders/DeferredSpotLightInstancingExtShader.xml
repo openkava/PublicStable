@@ -15,8 +15,6 @@
     <uniform name="u_materialShininess" constant="shininess" type="Scalar" defaultValue="20.0"/>
     <uniform name="u_specularFactor" constant="specularFactor" type="Scalar" defaultValue="0.5"/>
 
-    <uniform name="u_windowInvSize" constant="windowInvSize" type="Vec2"/>
-
     <uniform name="u_viewMatrix" constant="viewMatrix" type="Mat44" owner="instance"/>
     <uniform name="u_projectionMatrix" constant="projectionMatrix" type="Mat44" owner="instance"/>
 
@@ -55,6 +53,7 @@
 
       out vec3 lightDir;
       out vec3 lightPos;
+      out vec4 position;
 
       ]]>
       </source>
@@ -71,7 +70,8 @@
         lightDir = normalize(vec3(lightCutoffPos - lightPos));
 
         mat4 modelViewProjectionMatrix = u_projectionMatrix * modelViewMatrix;
-        gl_Position = modelViewProjectionMatrix * a_position;
+        position = modelViewProjectionMatrix * a_position;
+        gl_Position = position;
       }
       ]]>
     </source>
@@ -86,13 +86,13 @@
       uniform float u_lightIntensity;
       uniform float u_lightDistCutoffStart;
       uniform float u_lightDistCutoff;
-      uniform vec2 u_windowInvSize;
 
       uniform float u_materialShininess;
       uniform float u_specularFactor;
 
       varying vec3 lightDir;
       varying vec3 lightPos;
+      varying vec4 position;
 
 			uniform sampler2D u_samplerPositionsMap;
 			uniform sampler2D u_samplerNormalsMap;
@@ -100,7 +100,7 @@
 
       void main(){
       
-        vec2 windowCoord = gl_FragCoord.xy*u_windowInvSize;
+        vec2 windowCoord = ((position.xy/position.w) + vec2(1.0, 1.0))*0.5;
         vec3 pos = texture2D( u_samplerPositionsMap, windowCoord ).xyz;
         vec3 norm = texture2D( u_samplerNormalsMap, windowCoord ).xyz;
         vec4 diffuseAndSpecularFactor = texture2D( u_samplerDiffuseAndSpecularFactorMap, windowCoord );

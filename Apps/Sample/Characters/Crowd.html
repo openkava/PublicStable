@@ -382,6 +382,10 @@ $(document).ready(function() {
           scene.animation.step();
         });
         
+      if(!viewport.getGlewSupported('GL_EXT_draw_instanced')){
+        alert("This demo requires OpenGL 3.2 features such as 'GL_EXT_draw_instanced' to run.\n\nIt appears that your graphics card does not support geometry instancing.");
+        throw("This demo requires OpenGL 3.2 features such as 'GL_EXT_draw_instanced' to run.\n\nIt appears that your graphics card does not support geometry instancing.");
+      }
       setInterval(function() {
           document.getElementById('frameRate').childNodes[0].data = 'Frame Rate:' + viewport.getFPS().toFixed(2);
         }, 600);
