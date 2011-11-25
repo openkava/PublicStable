@@ -238,7 +238,6 @@ FABRIC.SceneGraph.registerNodeType('DeferredRenderer', {
         clearColor: FABRIC.RT.rgba(0,0,0,0)
       }
     );
-    renderTarget.depthAsRenderbuffer = false;
     redrawEventHandler.addMember('renderTarget', 'OGLRenderTarget', renderTarget);
 
     renderTargetRedrawEventHandler.preDescendBindings.append(
