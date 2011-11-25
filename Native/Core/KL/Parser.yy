@@ -243,6 +243,8 @@ int kl_lex( YYSTYPE *yys, YYLTYPE *yyl, KL::Context &context );
 %token TOKEN_AST "*"
 %token TOKEN_FSLASH "/"
 %token TOKEN_PERCENT "%"
+%token TOKEN_LANGLE_LANGLE "<<"
+%token TOKEN_RANGLE_RANGLE ">>"
 
 %token TOKEN_EXCL "!"
 %token TOKEN_AMP_AMP "&&"
@@ -266,6 +268,8 @@ int kl_lex( YYSTYPE *yys, YYLTYPE *yyl, KL::Context &context );
 %token TOKEN_AMP_EQUALS "&="
 %token TOKEN_PIPE_EQUALS "|="
 %token TOKEN_CARET_EQUALS "^="
+%token TOKEN_LANGLE_LANGLE_EQUALS "<<="
+%token TOKEN_RANGLE_RANGLE_EQUALS ">>="
 
 %token TOKEN_EQUALS_EQUALS "=="
 %token TOKEN_EXCL_EQUALS "!="
@@ -323,6 +327,7 @@ int kl_lex( YYSTYPE *yys, YYLTYPE *yyl, KL::Context &context );
 %type <uniOpType> postfix_unary_operator
 %type <binOpType> binary_operator
 %type <binOpType> additive_operator
+%type <binOpType> shift_operator
 %type <binOpType> multiplicative_operator
 %type <binOpType> equality_operator
 %type <binOpType> relational_operator
@@ -390,6 +395,14 @@ binary_operator
   | TOKEN_PERCENT
   {
     $$ = CG::BIN_OP_MOD;
+  }
+  | TOKEN_LANGLE_LANGLE
+  {
+    $$ = CG::BIN_OP_SHL;
+  }
+  | TOKEN_RANGLE_RANGLE
+  {
+    $$ = CG::BIN_OP_SHR;
   }
 ;
 
@@ -1077,10 +1090,14 @@ assignment_operator
   {
     $$ = CG::ASSIGN_OP_BIT_XOR;
   }
-  /*
-	| LEFT_ASSIGN
-	| RIGHT_ASSIGN
-  */
+  | TOKEN_LANGLE_LANGLE_EQUALS
+  {
+    $$ = CG::ASSIGN_OP_SHL;
+  }
+  | TOKEN_RANGLE_RANGLE_EQUALS
+  {
+    $$ = CG::ASSIGN_OP_SHR;
+  }
 ;
 
 assignment_expression
@@ -1231,15 +1248,28 @@ relational_expression
   }
 ;
 
+shift_operator
+  : TOKEN_LANGLE_LANGLE
+  {
+    $$ = CG::BIN_OP_SHL;
+  }
+  | TOKEN_RANGLE_RANGLE
+  {
+    $$ = CG::BIN_OP_SHR;
+  }
+;
+
 shift_expression
 	: additive_expression
   {
     $$ = $1;
   }
-  /*
-	| shift_expression LEFT_OP additive_expression
-	| shift_expression RIGHT_OP additive_expression
-  */
+	| shift_expression shift_operator additive_expression
+  {
+    $$ = AST::BinOp::Create( RTLOC, $2, $1, $3 ).take();
+    $1->release();
+    $3->release();
+  }
 ;
 
 additive_operator

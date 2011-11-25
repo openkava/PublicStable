@@ -5,6 +5,7 @@
 #include <Fabric/Core/RT/SlicedArrayImpl.h>
 #include <Fabric/Core/RT/VariableArrayImpl.h>
 #include <Fabric/Base/JSON/Array.h>
+#include <Fabric/Core/Util/JSONGenerator.h>
 #include <Fabric/Core/Util/Format.h>
 #include <Fabric/Base/Exception.h>
 
@@ -17,7 +18,7 @@ namespace Fabric
       , m_memberImpl( memberImpl )
       , m_memberSize( memberImpl->getAllocSize() )
       , m_memberIsShallow( memberImpl->isShallow() )
-      , m_variableArrayImpl( memberImpl->getVariableArrayImpl( VariableArrayImpl::FLAG_SHARED ) )
+      , m_variableArrayImpl( memberImpl->getVariableArrayImpl() )
     {
       setSize( sizeof(bits_t) );
     }
@@ -34,7 +35,17 @@ namespace Fabric
       bits_t *dstBits = reinterpret_cast<bits_t *>(dst);
       dstBits->offset = srcBits->offset;
       dstBits->size = srcBits->size;
-      m_variableArrayImpl->setData( &srcBits->variableArrayBits, &dstBits->variableArrayBits );
+      if ( dstBits->rcva )
+      {
+        if ( --dstBits->rcva->refCount == 0 )
+        {
+          m_variableArrayImpl->disposeData( &dstBits->rcva->varArray );
+          free( dstBits->rcva );
+        }
+      }
+      dstBits->rcva = srcBits->rcva;
+      if ( dstBits->rcva )
+        ++dstBits->rcva->refCount;
     }
 
     RC::Handle<JSON::Value> SlicedArrayImpl::getJSONValue( void const *data ) const
@@ -42,14 +53,19 @@ namespace Fabric
       bits_t const *bits = reinterpret_cast<bits_t const *>(data);
       RC::Handle<JSON::Array> arrayValue = JSON::Array::Create( bits->size );
       for ( size_t i=0; i<bits->size; ++i )
-        arrayValue->set( i, m_variableArrayImpl->getJSONValue( m_variableArrayImpl->getImmutableMemberData_NoCheck( &bits->variableArrayBits, bits->offset + i ) ) );
+        arrayValue->set( i, m_variableArrayImpl->getJSONValue( m_variableArrayImpl->getImmutableMemberData_NoCheck( &bits->rcva->varArray, bits->offset + i ) ) );
       return arrayValue;
     }
     
     void SlicedArrayImpl::generateJSON( void const *data, Util::JSONGenerator &jsonGenerator ) const
     {
       bits_t const *bits = reinterpret_cast<bits_t const *>(data);
-      m_variableArrayImpl->generateJSON( &bits->variableArrayBits, jsonGenerator );
+      Util::JSONArrayGenerator jsonArrayGenerator = jsonGenerator.makeArray();
+      for ( size_t i=0; i<bits->size; ++i )
+      {
+        Util::JSONGenerator jsonGenerator = jsonArrayGenerator.makeElement();
+        m_memberImpl->generateJSON( m_variableArrayImpl->getImmutableMemberData_NoCheck( &bits->rcva->varArray, bits->offset + i ), jsonGenerator );
+      }
     }
     
     void SlicedArrayImpl::setDataFromJSONValue( RC::ConstHandle<JSON::Value> const &jsonValue, void *data ) const
@@ -64,13 +80,20 @@ namespace Fabric
 
       for ( size_t i=0; i<dstBits->size; ++i )
         //m_memberImpl->setDataFromJSONValue( jsonArray->get(i), m_variableArrayImpl->getMutableMemberData_NoCheck( &dstBits->variableArrayBits, dstBits->offset + i ) );
-        m_memberImpl->setDataFromJSONValue( jsonArray->get(i), (void*)m_variableArrayImpl->getImmutableMemberData_NoCheck( &dstBits->variableArrayBits, dstBits->offset + i ) );
+        m_memberImpl->setDataFromJSONValue( jsonArray->get(i), (void*)m_variableArrayImpl->getImmutableMemberData_NoCheck( &dstBits->rcva->varArray, dstBits->offset + i ) );
     }
 
     void SlicedArrayImpl::disposeDatasImpl( void *data, size_t count, size_t stride ) const
     {
       bits_t *bits = reinterpret_cast<bits_t *>(data);
-      m_variableArrayImpl->disposeDatas( &bits->variableArrayBits, count, stride );
+      if ( bits->rcva )
+      {
+        if ( --bits->rcva->refCount == 0 )
+        {
+          m_variableArrayImpl->disposeData( &bits->rcva->varArray );
+          free( bits->rcva );
+        }
+      }
     }
     
     std::string SlicedArrayImpl::descData( void const *data ) const
@@ -87,7 +110,7 @@ namespace Fabric
       {
         if ( result.length() > 1 )
           result += ",";
-        result += getMemberImpl()->descData( m_variableArrayImpl->getImmutableMemberData_NoCheck( &srcBits->variableArrayBits, srcBits->offset + i ) );
+        result += getMemberImpl()->descData( m_variableArrayImpl->getImmutableMemberData_NoCheck( &srcBits->rcva->varArray, srcBits->offset + i ) );
       }
       if ( numMembers > numMembersToDisplay )
         result += "...";
@@ -121,7 +144,7 @@ namespace Fabric
       bits_t const *srcBits = reinterpret_cast<bits_t const *>(data);
       if ( index >= srcBits->size )
         throw Exception( "index ("+_(index)+") out of range ("+_(srcBits->size)+")" );
-      return m_variableArrayImpl->getImmutableMemberData_NoCheck( &srcBits->variableArrayBits, srcBits->offset + index );
+      return m_variableArrayImpl->getImmutableMemberData_NoCheck( &srcBits->rcva->varArray, srcBits->offset + index );
     }
     
     void *SlicedArrayImpl::getMemberData( void *data, size_t index ) const
@@ -129,8 +152,7 @@ namespace Fabric
       bits_t *srcBits = reinterpret_cast<bits_t *>(data);
       if ( index >= srcBits->size )
         throw Exception( "index ("+_(index)+") out of range ("+_(srcBits->size)+")" );
-      return (void*)m_variableArrayImpl->getImmutableMemberData_NoCheck( &srcBits->variableArrayBits, srcBits->offset + index );
-      //return m_variableArrayImpl->getMutableMemberData_NoCheck( &srcBits->variableArrayBits, srcBits->offset + index );
+      return m_variableArrayImpl->getMutableMemberData_NoCheck( &srcBits->rcva->varArray, srcBits->offset + index );
     }
 
     size_t SlicedArrayImpl::getOffset( void const *data ) const
@@ -149,8 +171,14 @@ namespace Fabric
     {
       bits_t *bits = reinterpret_cast<bits_t *>(data);
       FABRIC_ASSERT( bits->offset == 0 );
-      FABRIC_ASSERT( bits->size == m_variableArrayImpl->getNumMembers( &bits->variableArrayBits ) );
-      m_variableArrayImpl->setNumMembers( &bits->variableArrayBits, numMembers, defaultMemberData );
+      FABRIC_ASSERT( bits->rcva == 0 || bits->size == m_variableArrayImpl->getNumMembers( &bits->rcva->varArray ) );
+      if ( !bits->rcva )
+      {
+        bits->rcva = static_cast<ref_counted_va_t *>( malloc( sizeof( ref_counted_va_t ) ) );
+        bits->rcva->refCount = 1;
+        memset( &bits->rcva->varArray, 0, sizeof( bits->rcva->varArray ) );
+      }
+      m_variableArrayImpl->setNumMembers( &bits->rcva->varArray, numMembers, defaultMemberData );
       bits->size = numMembers;
     }
   };
