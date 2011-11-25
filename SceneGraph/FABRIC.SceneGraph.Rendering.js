@@ -232,13 +232,14 @@ FABRIC.SceneGraph.registerNodeType('DeferredRenderer', {
     oglRenderTargetTextureNames.push('depth');
 
     var nbRenderTargets = oglRenderTargetTextureNames.length;
-
-    redrawEventHandler.addMember('renderTarget', 'OGLRenderTarget', FABRIC.RT.oglRenderTarget(0,0,
+    var renderTarget = FABRIC.RT.oglRenderTarget(0,0,
       oglRenderTargetTextureDescs,
       {
         clearColor: FABRIC.RT.rgba(0,0,0,0)
       }
-    ));
+    );
+    renderTarget.depthAsRenderbuffer = true;
+    redrawEventHandler.addMember('renderTarget', 'OGLRenderTarget', renderTarget);
 
     renderTargetRedrawEventHandler.preDescendBindings.append(
       scene.constructOperator({
@@ -267,7 +268,8 @@ FABRIC.SceneGraph.registerNodeType('DeferredRenderer', {
           operatorName: 'copyDepth',
           srcCode: 'use OGLRenderTarget; operator copyDepth(io Integer width, io Integer height, io OGLRenderTarget renderTarget){\n'+
                       'glBindFramebuffer(GL_READ_FRAMEBUFFER, renderTarget.fbo);\n' +
-                      'glBlitFramebuffer(0,0,width-1,height-1,0,0,width-1,height-1,GL_DEPTH_BUFFER_BIT, GL_NEAREST);}',
+                      'glBlitFramebuffer(0,0,width-1,height-1,0,0,width-1,height-1,GL_DEPTH_BUFFER_BIT, GL_NEAREST);\n'+
+                      'glBindFramebuffer(GL_READ_FRAMEBUFFER, GL_NONE);}',
           entryFunctionName: 'copyDepth',
           parameterLayout: [
             'window.width',
@@ -288,13 +290,13 @@ FABRIC.SceneGraph.registerNodeType('DeferredRenderer', {
                     'Size i, j, n = renderTarget.textures.size, curr = 0;\n' +
                     'for(i = 0; i < 3; ++i){\n' +
                     '  for(j = 0; j < 3; ++j){\n' +
-                    '    //while(true) {\n' +
-                    '    //  if(curr == n)\n' +
-                    '    //    return;\n' +
-                    '    //  if(renderTarget.textures[curr].type == 2)\n' +
-                    '    //    break;\n' +
-                    '    //  curr++;\n' +
-                    '    //}\n' +
+                    '    while(true) {\n' +
+                    '      if(curr == n)\n' +
+                    '        return;\n' +
+                    '      if(renderTarget.textures[curr].type == 2)\n' +
+                    '        break;\n' +
+                    '      curr++;\n' +
+                    '    }\n' +
                     '    Scalar x = -1.0 + Scalar(i)/1.5;\n' +
                     '    Scalar y = 1.0 - Scalar(j)/1.5;\n' +
                     '    renderTarget.textures[curr++].texture.bind(0);\n' +
