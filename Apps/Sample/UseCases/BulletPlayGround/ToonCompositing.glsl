@@ -16,7 +16,7 @@ void main()
 
   for(int i=0;i<3;i++) {
     for(int j=0;j<3;j++) {
-      tc_offset[(((i*3)+j)*2)] = vec2((-1.0 * xInc) + ( float(i) * xInc), (-1.0 * yInc) + ( float(j) * yInc));
+      tc_offset[((i*3)+j)] = vec2((-1.0 * xInc) + ( float(i) * xInc), (-1.0 * yInc) + ( float(j) * yInc));
     }
   }
   
