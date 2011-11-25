@@ -143,11 +143,23 @@ namespace Fabric
         symbolNameToAddressMap["fmodf"] = (void *)&fmodf;
         symbolNameToAddressMap["fmod"] = (void *)&fp64_fmod;
         symbolNameToAddressMap["fp32_log10"] = (void *)&log10f;
+#if defined(FABRIC_OS_WINDOWS)
+        symbolNameToAddressMap["fp64_log10"] = (void *)&log10l;
+#else
         symbolNameToAddressMap["fp64_log10"] = (void *)&log10;
+#endif
         symbolNameToAddressMap["fp32_log"] = (void *)&logf;
+#if defined(FABRIC_OS_WINDOWS)
+        symbolNameToAddressMap["fp64_log"] = (void *)&logl;
+#else
         symbolNameToAddressMap["fp64_log"] = (void *)&log;
+#endif
         symbolNameToAddressMap["fp32_exp"] = (void *)&expf;
+#if defined(FABRIC_OS_WINDOWS)
+        symbolNameToAddressMap["fp64_exp"] = (void *)&expl;
+#else
         symbolNameToAddressMap["fp64_exp"] = (void *)&exp;
+#endif
 #if defined(FABRIC_OS_WINDOWS)
         symbolNameToAddressMap["_chkstk"] = (void *)&_chkstk;
 #endif
