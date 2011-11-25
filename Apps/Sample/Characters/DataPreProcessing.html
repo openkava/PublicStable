@@ -169,7 +169,7 @@ $(document).ready(function() {
   //////////////////////////////////////////////
   // 
   
-  var rigName = 'centipede';
+  var rigName = 'walker';
   var assetNodes, bindPoseRig, fkrigNode, rigInstanceNode, skeletonNode, characterMesh;
   switch(rigName){
   case 'walker':
@@ -412,7 +412,7 @@ $(document).ready(function() {
       
       
       if(!bound){
-        var footMovementThreshold = 0.03;
+        var footMovementThreshold = 0.05;
         libraryLocomotionAnimations.bindToSourceAnimationLibrary(
           libraryIKAnimations,
           bindings,
