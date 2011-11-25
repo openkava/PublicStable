@@ -68,12 +68,15 @@ namespace Fabric
       llvm::Value *llvmCallMalloc( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *size ) const;
       llvm::Value *llvmCallRealloc( CG::BasicBlockBuilder &basicBlockBuilder, llvm::Value *data, llvm::Value *newSize ) const;
       void llvmCallFree( BasicBlockBuilder &basicBlockBuilder, llvm::Value *data ) const;
+      llvm::Value *llvmCallMax( BasicBlockBuilder &basicBlockBuilder, llvm::Value *lhsRValue, llvm::Value *rhsRValue ) const;
+      llvm::Value *llvmCallNextPowTwoMinusOne( BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const;
   
       virtual llvm::Type const *buildLLVMRawType( RC::Handle<Context> const &context ) const = 0;
       llvm::Type const *llvmRawType( RC::Handle<Context> const &context ) const;
       llvm::Type const *llvmLType( RC::Handle<Context> const &context ) const;
       llvm::Type const *llvmRType( RC::Handle<Context> const &context ) const;
       bool usesReturnLValue() const { return m_flags & FL_PASS_BY_REFERENCE; }
+      bool isPassByReference() const { return m_flags & FL_PASS_BY_REFERENCE; }
       
       llvm::Value *llvmLValueToRValue( BasicBlockBuilder &basicBlockBuilder, llvm::Value *lValue ) const;
       llvm::Value *llvmRValueToLValue( BasicBlockBuilder &basicBlockBuilder, llvm::Value *rValue ) const;

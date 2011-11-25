@@ -21,12 +21,9 @@ namespace Fabric
     
       RC::ConstHandle<RT::VariableArrayImpl> getImpl() const;
       
-      bool isCopyOnWrite() const;
-
       void setNumMembers( void *data, size_t newNumMembers, void const *defaultMemberData = 0 ) const;
       void setMembers( void *data, size_t numMembers, void const *members ) const;
       
-      void split( void *data ) const;
       void push( void *dst, void const *src ) const;
       void pop( void *dst, void *result ) const;
       void append( void *dst, void const *src ) const;

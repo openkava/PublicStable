@@ -252,6 +252,15 @@ namespace Fabric
             m_sourceReader.advance();
             return createToken( TOKEN_LANGLE_EQUALS, startLocation );
           }
+          if ( m_sourceReader.peek() == '<' )
+          {
+            m_sourceReader.advance();
+            if ( m_sourceReader.peek() == '=' )
+            {
+              m_sourceReader.advance();
+              return createToken( TOKEN_LANGLE_LANGLE_EQUALS, startLocation );
+            } else return createToken( TOKEN_LANGLE_LANGLE, startLocation );
+          }
           else return createToken( TOKEN_LANGLE, startLocation );
           
         case '>':
@@ -259,6 +268,15 @@ namespace Fabric
           {
             m_sourceReader.advance();
             return createToken( TOKEN_RANGLE_EQUALS, startLocation );
+          }
+          if ( m_sourceReader.peek() == '>' )
+          {
+            m_sourceReader.advance();
+            if ( m_sourceReader.peek() == '=' )
+            {
+              m_sourceReader.advance();
+              return createToken( TOKEN_RANGLE_RANGLE_EQUALS, startLocation );
+            } else return createToken( TOKEN_RANGLE_RANGLE, startLocation );
           }
           else return createToken( TOKEN_RANGLE, startLocation );
         

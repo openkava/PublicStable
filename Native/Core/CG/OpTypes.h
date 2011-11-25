@@ -80,6 +80,8 @@ namespace Fabric
       BIN_OP_BIT_OR,
       BIN_OP_BIT_AND,
       BIN_OP_BIT_XOR,
+      BIN_OP_SHL,
+      BIN_OP_SHR,
       NUM_BIN_OPS
     };
 
@@ -103,6 +105,8 @@ namespace Fabric
         binOpCodeNames[BIN_OP_BIT_OR] = "BIT_OR";
         binOpCodeNames[BIN_OP_BIT_AND] = "BIT_AND";
         binOpCodeNames[BIN_OP_BIT_XOR] = "BIT_XOR";
+        binOpCodeNames[BIN_OP_SHL] = "SHL";
+        binOpCodeNames[BIN_OP_SHR] = "SHR";
       }
       std::string const &result = binOpCodeNames[binOpType];
       FABRIC_ASSERT( result.length() > 0 );
@@ -129,6 +133,8 @@ namespace Fabric
         binOpUserNames[BIN_OP_BIT_OR] = "|";
         binOpUserNames[BIN_OP_BIT_AND] = "&";
         binOpUserNames[BIN_OP_BIT_XOR] = "^";
+        binOpUserNames[BIN_OP_SHL] = "<<";
+        binOpUserNames[BIN_OP_SHR] = ">>";
       }
       std::string const &result = binOpUserNames[binOpType];
       FABRIC_ASSERT( result.length() > 0 );
@@ -175,6 +181,8 @@ namespace Fabric
       ASSIGN_OP_BIT_OR,
       ASSIGN_OP_BIT_AND,
       ASSIGN_OP_BIT_XOR,
+      ASSIGN_OP_SHL,
+      ASSIGN_OP_SHR,
     };
     
     inline char const *assignOpTypeDesc( AssignOpType assignOpType )
@@ -190,6 +198,8 @@ namespace Fabric
         case ASSIGN_OP_BIT_OR: return "ASSIGN_OP_BIT_OR";
         case ASSIGN_OP_BIT_AND: return "ASSIGN_OP_BIT_AND";
         case ASSIGN_OP_BIT_XOR: return "ASSIGN_OP_BIT_XOR";
+        case ASSIGN_OP_SHL: return "ASSIGN_OP_SHL";
+        case ASSIGN_OP_SHR: return "ASSIGN_OP_SHR";
       }
       return "<unknown>";
     }
@@ -206,6 +216,8 @@ namespace Fabric
         case ASSIGN_OP_BIT_OR: return BIN_OP_BIT_OR;
         case ASSIGN_OP_BIT_AND: return BIN_OP_BIT_AND;
         case ASSIGN_OP_BIT_XOR: return BIN_OP_BIT_XOR;
+        case ASSIGN_OP_SHL: return BIN_OP_SHL;
+        case ASSIGN_OP_SHR: return BIN_OP_SHR;
         default: FABRIC_ASSERT( false ); return BIN_OP_ADD;
       }
     }

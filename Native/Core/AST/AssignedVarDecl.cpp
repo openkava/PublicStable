@@ -54,24 +54,35 @@ namespace Fabric
 
     void AssignedVarDecl::llvmCompileToBuilder( std::string const &baseType, CG::BasicBlockBuilder &basicBlockBuilder, CG::Diagnostics &diagnostics ) const
     {
-      CG::ExprValue result = VarDecl::llvmAllocateVariable( baseType, basicBlockBuilder, diagnostics );
-      
-      CG::ExprValue initialExprExprValue( basicBlockBuilder.getContext() );
       try
       {
-        initialExprExprValue = m_initialExpr->buildExprValue( basicBlockBuilder, CG::USAGE_RVALUE, "cannot be an l-value" );
+        CG::ExprValue result = VarDecl::llvmAllocateVariable( baseType, basicBlockBuilder, diagnostics );
+        
+        CG::ExprValue initialExprExprValue( basicBlockBuilder.getContext() );
+        try
+        {
+          initialExprExprValue = m_initialExpr->buildExprValue( basicBlockBuilder, CG::USAGE_RVALUE, "cannot be an l-value" );
+        }
+        catch ( CG::Error e )
+        {
+          addError( diagnostics, e );
+        }
+        
+        if( initialExprExprValue.isValid() )
+        {
+          llvm::Value *initialExprCastedRValue = result.getAdapter()->llvmCast( basicBlockBuilder, initialExprExprValue );
+          result.getAdapter()->llvmAssign( basicBlockBuilder, result.getValue(), initialExprCastedRValue );
+        }
+        else addError( diagnostics, "Invalid expression for variable assignment" );
       }
       catch ( CG::Error e )
       {
-        addError( diagnostics, e );
+        throw e;
       }
-      
-      if( initialExprExprValue.isValid() )
+      catch ( Exception e )
       {
-        llvm::Value *initialExprCastedRValue = result.getAdapter()->llvmCast( basicBlockBuilder, initialExprExprValue );
-        result.getAdapter()->llvmAssign( basicBlockBuilder, result.getValue(), initialExprCastedRValue );
+        throw CG::Error( getLocation(), e );
       }
-      else addError( diagnostics, "Invalid expression for variable assignment" );
     }
   };
 };

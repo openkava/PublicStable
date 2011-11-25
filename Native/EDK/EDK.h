@@ -329,63 +329,71 @@ namespace Fabric
       } );
 
       FABRIC_EXT_DECL_BEGIN //Note: FABRIC_EXT_KL_CLASS macro can't be used on templated classes
-      template< class Member, bool copyOnWrite = true > class VariableArray {
-        struct bits_t
-        {
-          Util::AtomicSize refCount;
-          size_t allocSize;
-          size_t size;
-          Member members[0];
-        };
-
+      template< class Member, bool copyOnWrite = true > class VariableArray
+      {
       public:
         
         typedef VariableArray const &IN;
         typedef VariableArray &IO;
+        
+        void init( size_t size )
+        {
+          m_allocSize = AllocSizeForSize( size );
+          m_size = size;
+          m_memberDatas = static_cast<Member *>( malloc( m_allocSize * sizeof(Member) ) );
+          memset( &m_memberDatas[0], 0, m_size * sizeof(Member) );
+        }
     
         VariableArray()
-          : m_bits(0)
+          : m_allocSize( 0 )
+          , m_size( 0 )
+          , m_memberDatas( 0 )
         {
         }
         
         VariableArray( size_t size )
         {
-          size_t newAllocSize = AllocSizeForSize( size );
-          m_bits = reinterpret_cast<bits_t *>( malloc( sizeof(bits_t) + newAllocSize * sizeof(Member) ) );
-          m_bits->refCount.setValue( 1 );
-          m_bits->allocSize = newAllocSize;
-          m_bits->size = size;
-          memset( &m_bits->members[0], 0, size * sizeof(Member) );
+          init( size );
+        }
+      
+        void assign( VariableArray const &that )
+        {
+          if ( m_memberDatas )
+            free( m_memberDatas );
+          m_allocSize = AllocSizeForSize( that.m_size );
+          m_size = that.m_size;
+          m_memberDatas = static_cast<Member *>( malloc( m_allocSize * sizeof(Member) ) );
+          memset( &m_memberDatas[0], 0, m_size * sizeof(Member) );
+          for ( size_t i=0; i<m_size; ++i )
+            m_memberDatas[i] = that.m_memberDatas[i];
         }
         
         VariableArray( VariableArray const &that )
-          : m_bits( that.m_bits )
+          : m_memberDatas( 0 )
         {
-          if ( m_bits )
-            m_bits->refCount.increment();
+          assign( that );
         }
-      
-        VariableArray &assign( VariableArray const &that )
+        
+        void dispose()
         {
-          if ( m_bits != that.m_bits )
-          {
-            if ( m_bits && m_bits->refCount.decrementAndGetValue() == 0 )
-              ( *s_callbacks.m_free )( m_bits );
-            m_bits = that.m_bits;
-            if ( m_bits )
-              m_bits->refCount.increment();
-          }
-          return *this;
+          if ( m_memberDatas )
+            free( m_memberDatas );
+        }
+        
+        ~VariableArray()
+        {
+          dispose();
         }
       
         VariableArray &operator =( VariableArray const &that )
         {
-          return assign( that );
+          assign( that );
+          *this;
         }
       
         Member const &member( size_t index ) const
         {
-          return m_bits->members[index];
+          return m_memberDatas[index];
         }
       
         Member const &operator[]( size_t index ) const        {
@@ -394,8 +402,7 @@ namespace Fabric
       
         Member &member( size_t index )
         {
-          // [pzion 20110928] FIXME: we should split here if our reference count is greater than one
-          return m_bits->members[index];
+          return m_memberDatas[index];
         }
       
         Member &operator[]( size_t index )
@@ -405,42 +412,46 @@ namespace Fabric
       
         size_t size() const
         {
-          return m_bits? m_bits->size: 0;
+          return m_size;
         }
       
-        void resize( size_t size )
+        void resize( size_t newSize )
         {
-          if ( !copyOnWrite )
-            throwException( "cannot resize a non-copy-on-write variable array" );
-            
-          if ( (!m_bits && size > 0)
-            || (m_bits && m_bits->refCount.getValue() > 1)
-            || (m_bits && size == 0)
-            || (m_bits && m_bits->allocSize < size)
-            )
+          size_t oldSize = m_size;
+          if ( oldSize != newSize )
           {
-            bits_t *newBits;
-            if ( size )
+            size_t oldAllocSize = m_allocSize;
+            if ( newSize < oldSize )
             {
-              size_t newAllocSize = AllocSizeForSize( size );
-              newBits = reinterpret_cast<bits_t *>( ( *s_callbacks.m_malloc )( sizeof(bits_t) + newAllocSize * sizeof(Member) ) );
-              newBits->refCount.setValue( 1 );
-              newBits->allocSize = newAllocSize;
-              newBits->size = size;
-              size_t oldSize = m_bits? m_bits->size: 0;
-              if ( oldSize > 0 )
-                memcpy( &newBits->members[0], &m_bits->members[0], oldSize * sizeof(Member) );
-              if ( size > oldSize )
-                memset( &newBits->members[oldSize], 0, (size - oldSize) * sizeof(Member) );
+              //getMemberImpl()->disposeDatas( bits->memberDatas + m_memberSize * newNumMembers, oldNumMembers - newNumMembers, m_memberSize );
             }
-            else newBits = 0;
-          
-            if ( m_bits && m_bits->refCount.decrementAndGetValue() == 0 )
-              ( *s_callbacks.m_free )( m_bits );
-            m_bits = newBits;
+              
+            if ( newSize == 0 )
+            {
+              free( m_memberDatas );
+              m_allocSize = 0;
+              m_memberDatas = 0;
+            }
+            else
+            {
+              if ( newSize > oldAllocSize )
+              {
+                size_t newAllocSize = AllocSizeForSize( newSize );
+                if ( oldSize )
+                {
+                  size_t size = sizeof(Member) * newAllocSize;
+                  m_memberDatas = static_cast<Member *>( realloc( m_memberDatas, size ) );
+                }
+                else
+                {
+                  size_t size = sizeof(Member) * newAllocSize;
+                  m_memberDatas = static_cast<Member *>( malloc( size ) );
+                }
+                m_allocSize = newAllocSize;
+              }
+            }
+            m_size = newSize;
           }
-          else if(m_bits)
-            m_bits->size = size;
         }
       
       protected:
@@ -452,12 +463,21 @@ namespace Fabric
       
       private:
     
-        bits_t *m_bits;
+        size_t m_allocSize;
+        size_t m_size;
+        Member *m_memberDatas;
       }
       FABRIC_EXT_DECL_END;
 
       FABRIC_EXT_DECL_BEGIN //Note: FABRIC_EXT_KL_CLASS macro can't be used on templated classes
-      template< class Member > class SlicedArray {
+      template< class Member > class SlicedArray
+      {
+        struct RCVA
+        {
+          size_t refCount;
+          VariableArray<Member> varArray;
+        };
+      
       public:
         
         typedef SlicedArray const &IN;
@@ -466,41 +486,66 @@ namespace Fabric
         SlicedArray( size_t size )
           : m_offset( 0 )
           , m_size( size )
-          , m_variableArray( size )
         {
+          m_rcva = static_cast<RCVA *>( malloc( sizeof( RCVA ) ) );
+          m_rcva->refCount = 1;
+          m_rcva->varArray.init( size );
         }
       
         SlicedArray( SlicedArray const &that )
           : m_offset( that.m_offset )
           , m_size( that.size )
-          , m_variableArray( that.m_variableArray )
+          , m_rcva( that.m_rcva )
         {
+          if ( m_rcva )
+            ++m_rcva->refCount;
         }
       
         SlicedArray( SlicedArray const &that, size_t offset, size_t size )
           : m_offset( that.m_offset )
           , m_size( that.size )
-          , m_variableArray( that.m_variableArray )
+          , m_rcva( that.m_variableArray )
         {
-          if ( offset + size > m_variableArray.size() )
+          if ( m_rcva && offset + size > m_rcva->varArray.size() )
             throw Exception( "SlicedArray: offset and/or size out of range" );
+          
+          if ( m_rcva )
+            ++m_rcva->refCount;
         }
       
         SlicedArray &operator =( SlicedArray const &that )
         {
+          if ( m_rcva && --m_rcva->refCount == 0 )
+          {
+            m_rcva->varArray.dispose();
+            free( m_rcva );
+          }
+
           m_offset = that.m_offset;
           m_size = that.m_size;
-          m_variableArray = that.m_variableArray;
+          m_rcva = that.m_rcva;
+          
+          if ( m_rcva )
+            ++m_rcva->refCount;
+        }
+        
+        ~SlicedArray()
+        {
+          if ( m_rcva && --m_rcva->refCount == 0 )
+          {
+            m_rcva->varArray.dispose();
+            free( m_rcva );
+          }
         }
       
         Member const &operator[]( size_t index ) const
         {
-          return m_variableArray[m_offset + index];
+          return m_rcva->varArray[m_offset + index];
         }
       
         Member &operator[]( size_t index )
         {
-          return m_variableArray[m_offset + index];
+          return m_rcva->varArray[m_offset + index];
         }
       
         size_t size() const
@@ -512,7 +557,7 @@ namespace Fabric
     
         size_t m_offset;
         size_t m_size;
-        VariableArray< Member, false > m_variableArray;
+        RCVA *m_rcva;
       }
       FABRIC_EXT_DECL_END;
     };
