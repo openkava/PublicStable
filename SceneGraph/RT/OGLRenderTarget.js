@@ -41,7 +41,8 @@ FABRIC.RT.OGLRenderTarget = function(width, height, textures, options) {
   this.fbo = 0;
   this.prevFbo = 0;
   this.depthBuffer = -1;
-  this.hasDepthBufferTexture = false;
+  this.hasDepthBuffer = false;
+  this.depthAsRenderbuffer = false;
   this.numColorBuffers = 0;
   this.clearDepth = true;
   this.clearColorFlag = true;
@@ -62,7 +63,8 @@ FABRIC.appendOnCreateContextCallback(function(context) {
       fbo: 'Size',
       prevFbo: 'Size',
       depthBuffer: 'Integer',
-      hasDepthBufferTexture: 'Boolean',
+      hasDepthBuffer: 'Boolean',
+      depthAsRenderbuffer: 'Boolean',
       numColorBuffers: 'Integer',
       clearDepth: 'Boolean',
       clearColorFlag: 'Boolean',
