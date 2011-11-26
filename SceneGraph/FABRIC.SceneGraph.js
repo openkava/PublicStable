@@ -407,7 +407,13 @@ FABRIC.SceneGraph = {
       }
 
       if (operatorDef.srcFile) {
-        filename = operatorDef.srcFile.split('/').pop();
+        filename = operatorDef.srcFile;
+        // PT 26-11-2011: HACK: Ideally we could store the preprocessor definitions
+        // in a separete member. The file name is parsed in the operator editor for
+        // preprocessor definitions. (used in the reload and recompile option).
+        if(operatorDef.preProcessorDefinitions){
+          filename += "$"+JSON.stringify(operatorDef.preProcessorDefinitions);
+        }
         if(operatorDef.async === false){
           var code = FABRIC.loadResourceURL(operatorDef.srcFile, 'text/plain');
           code = FABRIC.preProcessCode(code, operatorDef.preProcessorDefinitions);
