@@ -440,15 +440,15 @@ operator evaluateLocomotionPoseVariables(
             Scalar buffer = 1.0;
             Scalar speedDelta = (currSpeed - clipSpeed);
         //    report("currclipSpeed:"+ clipSpeed +" speedDelta:"+trackcontroller.activeTrackSet+":"+j+":"+speedDelta);
-            for(Integer clipId=0; clipId<locomotionMarkers.size; clipId++){
+            for(Integer clipId=0; !trackcontroller.deactivate && clipId<locomotionMarkers.size; clipId++){
             // Note: here we block blending from a clip onto its self, but soon we will enable this.
-              if(trackcontroller.activeTrackSet == clipId){
+              if(clipId == trackcontroller.activeTrackSet){
                 continue;
               }
               for(Integer l=0; l<locomotionMarkers[clipId][j].size; l++){
                 Scalar targetClipSpeed = locomotionMarkers[clipId][j][l].params[1];
                 Scalar ratio = (currSpeed - clipSpeed) / (targetClipSpeed - clipSpeed);
-               //   report(clipId + " clipSpeed:"+ clipSpeed + " targetClipSpeed:"+ targetClipSpeed + " ratio:"+ ratio);
+              //  report(trackcontroller.activeTrackSet + " to " + clipId + " clipSpeed:"+ clipSpeed + " targetClipSpeed:"+ targetClipSpeed + " ratio:"+ ratio);
                 if(ratio > 0.50){
                //   report("deactivate from:"+trackcontroller.activeTrackSet+ " to:" + clipId);
                   trackcontroller.deactivate = true;
