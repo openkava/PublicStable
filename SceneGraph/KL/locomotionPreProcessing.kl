@@ -8,7 +8,7 @@ use PoseVariables, KeyframeTrackBindings;
 use DebugGeometry;
 
 
-function Vec3[][] calcFootPlantTimes(
+function Boolean detectFootSteps(
   in Limb legs[],
   io Vec2 timeRange,
   io Integer leadingFoot,
@@ -19,6 +19,7 @@ function Vec3[][] calcFootPlantTimes(
   in KeyframeTrackBindings bindings,
   
   io LinearKeyframeTrackSet trackSet,
+  io Vec3 footSteps[][],
   io FootStepTrack footStepTracks[],
   
   io DebugGeometry debugGeometry
@@ -29,7 +30,6 @@ function Vec3[][] calcFootPlantTimes(
   Vec3 feetPositions[];
   feetPositions.resize(legs.size);
   Boolean footPlanted[];
-  Vec3 footSteps[][];
   Vec3 footPrints[][];
   footPlanted.resize(legs.size);
   footSteps.resize(legs.size);
@@ -76,6 +76,8 @@ function Vec3[][] calcFootPlantTimes(
   }
   
   report("Detected Footsteps:"+footSteps);
+  
+  
   ///////////////////////////////////////////////////
   Scalar averageFootPlantTime = 0.0;
   Scalar averageFootLiftedTime = 0.0;
@@ -97,6 +99,10 @@ function Vec3[][] calcFootPlantTimes(
       }
     }
   }
+  if(averageFootLiftedTime == 0.0){
+    return false;
+  }
+  
   averageFootPlantTime /= numFootPlants;
   averageFootLiftedTime /= numFootLifts;
   averageStrideLength /= numFootLifts;
@@ -189,98 +195,35 @@ function Vec3[][] calcFootPlantTimes(
   report("footStepTracks:"+footStepTracks);
   
   
-  return footSteps;
+  return true;
 }
 
 
-
-operator locomotionPreProcessing(
-  io LinearKeyframeTrackSet sourceAnimationLibrary<>,
-  io PoseVariables referenceVariables,
-  io KeyframeTrackBindings referenceBindings,
+function Boolean calcComStepBasedTracks(
+  in Bone bones[],
+  in Hub hubs[],
+  in Limb legs[],
+  in COM com,
+  in Vec2 timeRange,
   
-  io Bone bones[],
-  io Hub hubs[],
-  io Limb legs[],
-  io COM com,
-  io LocomotionFoot locomotionFeet[],
+  io PoseVariables poseVariables,
+  in KeyframeTrackBindings bindings,
   
-  io Scalar sampleFrequency,
-  io Scalar movementThreshold,
-  
+  in Integer leadingFoot,
   io LinearKeyframeTrackSet trackSet,
-  io KeyframeTrackBindings bindings,
+  in Vec3 footSteps[][],
+  in FootStepTrack footStepTracks[],
   
-  io LocomotionMarker locomotionMarkers[][],
-  io FootStepTrack footStepTracks[],
-  in Size index,
+  in KeyframeTrackBindings comParamBindings,
+  in KeyframeTrackBindings comXfoBindings,
   
   io DebugGeometry debugGeometry
-) {
-  report("locomotionPreProcessing <<<:" + index);
-  
-  debugGeometry.reset();
-  
-  trackSet = sourceAnimationLibrary[index];
-  PoseVariables poseVariables = referenceVariables;
-  bindings = referenceBindings;
-  
-  Xfo pose[];
-  pose.resize(bones.size);
-  for(Integer i=0; i < bones.size; i++){
-    pose[i] = bones[i].referencePose;
-  }
+){
+
   Integer currKeys[];
-  trackSet.calcTimeRange();
-  Vec2 timeRange = trackSet.getTimeRange();
-  report("timeRange:"+timeRange);
-  Integer numSamples = Integer((timeRange.y - timeRange.x) / sampleFrequency);
-  
-  Vec3 footSteps[][];
-  Integer leadingFoot = 0;
-  footSteps = calcFootPlantTimes(
-    legs,
-    timeRange,
-    leadingFoot,
-    numSamples,
-    movementThreshold,
-    poseVariables,
-    bindings,
-    trackSet,
-    footStepTracks,
-    debugGeometry);
-    
-  
-  
+
   ///////////////////////////////////////////////////
   // Calculate the COM.
-  // Here we build a bindings that will enable us to key just the COM values. 
-  KeyframeTrackBindings comParamBindings;
-  KeyframeTrackBindings comXfoBindings;
-  KeyframeTrackBinding comXfoBinding;
-  for(Integer i=0; i < bindings.xfoBindings.size; i++){
-    if(bindings.xfoBindings[i].varId == com.xfoId){
-      comXfoBindings.xfoBindings.push(bindings.xfoBindings[i]);
-      comXfoBinding = bindings.xfoBindings[i];
-      
-      for(Integer j=0; j < comXfoBinding.trackIds.size; j++){
-        trackSet.tracks[comXfoBinding.trackIds[j]].clear();
-      }
-    }
-  }
-  if(comXfoBindings.xfoBindings.size == 0){
-    report("COM Xfo variable not found");
-    return;
-  }
-  for(Integer i=0; i < com.parameterVarIds.size; i++){
-    for(Integer j=0; j < bindings.scalarBindings.size; j++){
-      if(bindings.scalarBindings[j].varId == com.parameterVarIds[i]){
-        comParamBindings.scalarBindings.push(bindings.scalarBindings[j]);
-        trackSet.tracks[bindings.scalarBindings[j].trackIds[0]].clear();
-      }
-    }
-  }
-  
   Xfo comXfo, prevComXfo;
   Scalar comParams[];
   Integer footId, stepId;
@@ -503,7 +446,31 @@ operator locomotionPreProcessing(
 //  for(Integer i=0; i < comXfoBinding.trackIds.size; i++){
 //    report(trackSet.tracks[comXfoBinding.trackIds[i]]);
 //  }
+  return true;
+}
+
+
+function Boolean modifyHubAndFootTracks(
+  in Bone bones[],
+  in Hub hubs[],
+  in Limb legs[],
+  in COM com,
+  io LocomotionFoot locomotionFeet[],
+  in Vec2 timeRange,
+  in Integer numSamples,
   
+  io PoseVariables poseVariables,
+  in KeyframeTrackBindings bindings,
+  
+  io LinearKeyframeTrackSet trackSet,
+  
+  in KeyframeTrackBindings comParamBindings,
+  in KeyframeTrackBindings comXfoBindings,
+  
+  io DebugGeometry debugGeometry
+){
+  Xfo comXfo;
+  Integer currKeys[];
   ///////////////////////////////////////////////////
   // Finally, modify the hub and foot motions
   Boolean drawFootMotionDebugging = false;
@@ -594,11 +561,29 @@ operator locomotionPreProcessing(
     }
     poseVariables.setTrackValues(time, trackSet, limbValueBindings);
   }
+  return true;
+}
+
+
+function Boolean addAnimationMarkers(
+  in Vec2 timeRange,
   
+  io PoseVariables poseVariables,
+  in KeyframeTrackBindings bindings,
+  
+  in LinearKeyframeTrackSet trackSet,
+  in FootStepTrack footStepTracks[],
+  io LocomotionMarker locomotionMarkers[][],
+  
+  in KeyframeTrackBindings comParamBindings,
+  
+  io DebugGeometry debugGeometry
+){
+  Integer currKeys[];
   ///////////////////////////////////////////////////
   // Add Animation Markers
-  locomotionMarkers.resize(legs.size);
-  for(Integer i=0; i < legs.size; i++){
+  locomotionMarkers.resize(footStepTracks.size);
+  for(Integer i=0; i < footStepTracks.size; i++){
         report("processing leg:"+i);
     for(Integer j=0; j < footStepTracks[i].footSteps.size; j++){
       if(footStepTracks[i].footSteps[j].midPlantTime < timeRange.x){
@@ -621,12 +606,12 @@ operator locomotionPreProcessing(
       for(Integer k=0; k < comParamBindings.scalarBindings.size; k++){
         marker.params[k] = poseVariables.scalarValues[comParamBindings.scalarBindings[k].varId];
       }
-      marker.stepIds.resize(legs.size);
-      for(Integer k=0; k < legs.size; k++){
+      marker.stepIds.resize(footStepTracks.size);
+      for(Integer k=0; k < footStepTracks.size; k++){
         marker.stepIds[k] = -1;
       }
       // for this marker, find all the foot step ids that are valid for the other legs.
-      for(Integer k=0; k < legs.size; k++){
+      for(Integer k=0; k < footStepTracks.size; k++){
         if(k==i){
           marker.stepIds[k] = merkerStepId;
         }
@@ -650,8 +635,156 @@ operator locomotionPreProcessing(
     }
   }
   report("locomotionMarkers:"+locomotionMarkers);
+  return true;
+}
+
+
+operator locomotionPreProcessing(
+  io LinearKeyframeTrackSet sourceAnimationLibrary<>,
+  io PoseVariables referenceVariables,
+  io KeyframeTrackBindings referenceBindings,
   
-  trackSet.timeRange = timeRange;
+  io Bone bones[],
+  io Hub hubs[],
+  io Limb legs[],
+  io COM com,
+  io LocomotionFoot locomotionFeet[],
+  
+  io Scalar sampleFrequency,
+  io Scalar movementThreshold,
+  
+  io LinearKeyframeTrackSet trackSet,
+  io KeyframeTrackBindings bindings,
+  
+  io LocomotionMarker locomotionMarkers[][],
+  io FootStepTrack footStepTracks[],
+  in Size index,
+  
+  io DebugGeometry debugGeometry
+) {
+  report("locomotionPreProcessing <<<:" + index);
+  
+  debugGeometry.reset();
+  
+  trackSet = sourceAnimationLibrary[index];
+  PoseVariables poseVariables = referenceVariables;
+  bindings = referenceBindings;
+  
+  Xfo pose[];
+  pose.resize(bones.size);
+  for(Integer i=0; i < bones.size; i++){
+    pose[i] = bones[i].referencePose;
+  }
+  Integer currKeys[];
+  trackSet.calcTimeRange();
+  Vec2 timeRange = trackSet.getTimeRange();
+  report("timeRange:"+timeRange);
+  Integer numSamples = Integer((timeRange.y - timeRange.x) / sampleFrequency);
+  
+  
+  ///////////////////////////////////////////////////
+  // COM Bindings
+  KeyframeTrackBindings comParamBindings;
+  KeyframeTrackBindings comXfoBindings;
+  KeyframeTrackBinding comXfoBinding;
+  for(Integer i=0; i < bindings.xfoBindings.size; i++){
+    if(bindings.xfoBindings[i].varId == com.xfoId){
+      comXfoBindings.xfoBindings.push(bindings.xfoBindings[i]);
+      comXfoBinding = bindings.xfoBindings[i];
+      
+      for(Integer j=0; j < comXfoBinding.trackIds.size; j++){
+        trackSet.tracks[comXfoBinding.trackIds[j]].clear();
+      }
+    }
+  }
+  if(comXfoBindings.xfoBindings.size == 0){
+    report("COM Xfo variable not found");
+    return;
+  }
+  for(Integer i=0; i < com.parameterVarIds.size; i++){
+    for(Integer j=0; j < bindings.scalarBindings.size; j++){
+      if(bindings.scalarBindings[j].varId == com.parameterVarIds[i]){
+        comParamBindings.scalarBindings.push(bindings.scalarBindings[j]);
+        trackSet.tracks[bindings.scalarBindings[j].trackIds[0]].clear();
+      }
+    }
+  }
+  
+  ///////////////////////////////////////////////////
+  // Detect Foot Steps
+  Vec3 footSteps[][];
+  Integer leadingFoot = 0;
+  if(detectFootSteps(
+    legs,
+    timeRange,
+    leadingFoot,
+    numSamples,
+    movementThreshold,
+    poseVariables,
+    bindings,
+    trackSet,
+    footSteps,
+    footStepTracks,
+    debugGeometry)){
+    
+    calcComStepBasedTracks(
+      bones,
+      hubs,
+      legs,
+      com,
+      timeRange,
+      
+      poseVariables,
+      bindings,
+      
+      leadingFoot,
+      trackSet,
+      footSteps,
+      footStepTracks,
+      
+      comParamBindings,
+      comXfoBindings,
+      
+      debugGeometry
+    );
+    
+    modifyHubAndFootTracks(
+      bones,
+      hubs,
+      legs,
+      com,
+      locomotionFeet,
+      timeRange,
+      numSamples,
+      
+      poseVariables,
+      bindings,
+      
+      trackSet,
+      
+      comParamBindings,
+      comXfoBindings,
+      
+      debugGeometry
+    );
+    
+    addAnimationMarkers(
+      timeRange,
+      poseVariables,
+      bindings,
+      trackSet,
+      footStepTracks,
+      locomotionMarkers,
+      comParamBindings,
+      debugGeometry
+    );
+    trackSet.timeRange = timeRange;
+  }
+  else{
+    report("Stationary Sequence");
+    
+  }
+  
   
   report("locomotionPreProcessing >>>:" + index);
 }
