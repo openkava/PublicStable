@@ -85,7 +85,12 @@ function Boolean detectFootSteps(
   Scalar averageStrideLength = 0.0;
   Scalar numFootPlants = 0.0;
   Scalar numFootLifts = 0.0;
+  Boolean stationaryStart = true;
   for(Integer j=0; j < footSteps.size; j++){
+  
+    if(footSteps[j][0].x > timeRange.x){
+      stationaryStart = false;
+    }
     for(Integer i=0; i < footSteps[j].size; i++){
       Vec3 step = footSteps[j][i];
       if(step.x > timeRange.x && step.z < timeRange.y){
@@ -151,6 +156,7 @@ function Boolean detectFootSteps(
   
   report("Clamped timerange:"+timeRange);
   report("leadingFoot:"+leadingFoot);
+  report("stationaryStart:"+stationaryStart);
   
   for(Integer i=0; i < footPrints.size; i++){
     for(Integer j=0; j < footPrints[i].size; j++){
@@ -165,7 +171,7 @@ function Boolean detectFootSteps(
   // Convert foot steps into strides.
   for(Integer i=0; i < legs.size; i++){
     FootStep step;
-    if(footSteps[i][0].y >= timeRange.x){
+    if(!stationaryStart && footSteps[i][0].y >= timeRange.x){
       Vec3 firstStep = footSteps[i][0];
       step.prevStepMidPlantTime = firstStep.x - averageFootLiftedTime - (averageFootPlantTime * (1.0 - midStepRatio));
       step.liftTime = firstStep.x - averageFootLiftedTime;
@@ -612,16 +618,16 @@ function Boolean addLocomotionMarkers(
   for(Integer i=0; i < footStepTracks.size; i++){
         report("processing leg:"+i);
     for(Integer j=0; j < footStepTracks[i].footSteps.size; j++){
-      if(footStepTracks[i].footSteps[j].midPlantTime < timeRange.x ||
-         footStepTracks[i].footSteps[j].midPlantTime >= timeRange.y){
+      report("step:"+footStepTracks[i].footSteps[j]);
+      if(footStepTracks[i].footSteps[j].prevStepMidPlantTime < timeRange.x){
         continue;
       }
       // 
-      Integer merkerStepId = j;
+      Integer markerStepId = j;
       LocomotionMarker marker;
-      Scalar t = footStepTracks[i].footSteps[merkerStepId].midPlantTime;
+      Scalar t = footStepTracks[i].footSteps[markerStepId].prevStepMidPlantTime;
       marker.time = t;
-    //  report("time:"+t + " stepId:"+merkerStepId);
+      report("time:"+t + " stepId:"+markerStepId);
       
       poseVariables.evaluateKeyframeTracks(t, trackSet, comParamBindings, currKeys);
       marker.params.resize(comParamBindings.scalarBindings.size);
@@ -630,12 +636,12 @@ function Boolean addLocomotionMarkers(
       }
       marker.stepIds.resize(footStepTracks.size);
       for(Integer k=0; k < footStepTracks.size; k++){
-        marker.stepIds[k] = -1;
+        marker.stepIds[k] = 0;
       }
       // for this marker, find all the foot step ids that are valid for the other legs.
       for(Integer k=0; k < footStepTracks.size; k++){
         if(k==i){
-          marker.stepIds[k] = merkerStepId;
+          marker.stepIds[k] = markerStepId;
         }
         else{
           report("searching leg:"+k + " t:"+t + " steps:"+footStepTracks[k].footSteps.size);
@@ -643,7 +649,7 @@ function Boolean addLocomotionMarkers(
           // plants after the current foot lift. 
           for(Integer l=0; l<footStepTracks[k].footSteps.size; l++){
             report("step"+l+":"+footStepTracks[k].footSteps[l] );
-            if(t >= footStepTracks[k].footSteps[l].prevStepMidPlantTime && t <= footStepTracks[k].footSteps[l].midPlantTime){
+            if(t >= footStepTracks[k].footSteps[l].prevStepMidPlantTime && t < footStepTracks[k].footSteps[l].midPlantTime){
               marker.stepIds[k] = l;
               break;
             }
