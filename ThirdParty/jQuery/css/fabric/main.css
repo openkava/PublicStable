@@ -393,5 +393,19 @@ ul#tools li a#btn-select{
 
 #nodeInspector section {
   margin:15px 20px;
-  text-shadow:0 1px 0 white;
+/*  text-shadow:0 1px 0 white;*/
 }
+
+#nodeInspector .ui-buttonset .ui-button {
+  padding: 0 10px;
+}
+
+#nodeInspector .dataTables_wrapper {
+  background: #fff;
+}
+
+
+
+
+
+
