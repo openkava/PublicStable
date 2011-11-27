@@ -13,6 +13,7 @@
   <script type="text/javascript" src="../../ThirdParty/jQuery/jquery-1.6.2.min.js"></script>
   <script type="text/javascript" src="../../ThirdParty/jQuery/jquery-ui-1.8.16.custom.min.js"></script>
   <script type="text/javascript" src="../../ThirdParty/jQuery/jquery.dataTables.min.js"></script>
+  <script type="text/javascript" src="../../ThirdParty/jQuery/jquery.jeditable.mini.js"></script>
 
   <script type="text/javascript" src="../FABRIC.js" charset="utf-8"></script>
     
@@ -30,6 +31,7 @@ $(document).ready(function() {
   
   var displayNodeData = function(clear, sliceRangeBegin, sliceRangeEnd){
     var dataTable = '<table class="display" id="nodeDataTable">\n';
+    var nodeDataTable = {};
     
     // Define the table header
     var members = dgnode.getMembers();
@@ -57,9 +59,15 @@ $(document).ready(function() {
         max: lines - 1
         });
 
-        $("#sliceRangeEnd, #sliceRangeMax").attr({ 
+      $("#sliceRangeMax").attr({ 
+        value: lines - 1
+      });
+
+      if ($("#sliceRangeEnd").val() === "99"){
+        $("#sliceRangeEnd").attr({ 
           value: lines - 1
-        });
+        });          
+      }
 
     }
     
@@ -67,14 +75,29 @@ $(document).ready(function() {
     console.log(dataTable);
     
     $('#dataContainer').html( dataTable );
-    $('#nodeDataTable').dataTable({
+    nodeDataTable = $('#nodeDataTable').dataTable({
       "bJQueryUI": true,
       "bSort": false,
       "bSearch": false,
       "sPaginationType": "full_numbers",
 //      "sDom": '<"top"i>rt<"bottom"flp>'
     });
+
+    $('td', nodeDataTable.fnGetNodes()).editable( '', {
+      "callback": function( sValue, y ) {
+        var aPos = oTable.fnGetPosition( this );
+        oTable.fnUpdate( sValue, aPos[0], aPos[1] );
+      },
+      "submitdata": function ( value, settings ) {
+        return {
+          "row_id": this.parentNode.getAttribute('id'),
+          "column": oTable.fnGetPosition( this )[2]
+        };
+      },
+      "height": "14px"
+    } );
   }
+  
   
   displayNodeData();
   
