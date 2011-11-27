@@ -37,6 +37,28 @@ function Scalar calcClipParamsDelta(
 }
 
 
+function addLift(
+  io Limb legs[],
+  io Integer legId,
+  in Scalar lift,
+  io CharacterControllerParams controllerparams,
+  io Scalar legLiftWeight
+){
+//  if(leg.hubId < 0 || leg.hubId == hubs.size-1){
+    if(legs.size == 2){
+      // Only apply the lift from the lowest leg.
+      // this prevents overstretching of legs.
+      // (important for straight legged creatures like humans).
+      if(lift < controllerparams.lift){
+        controllerparams.lift = lift;
+      }
+    }else{
+      controllerparams.lift += lift;
+    }
+    legLiftWeight += 1.0;
+ // }
+}
+
 operator evaluateLocomotionPoseVariables(
   io Scalar timestep,
   
@@ -346,7 +368,7 @@ operator evaluateLocomotionPoseVariables(
     Scalar appliedComRayDelta = 0.0;
     Scalar appliedFeetRayDeltas[];
     appliedFeetRayDeltas.resize(locomotionFeet.size);
-    Scalar numLegsScalar = 0.0;
+    Scalar legLiftWeight = 0.0;
     
     if(legs.size == 2){
       controllerparams.lift = 99999.0;
@@ -416,19 +438,8 @@ operator evaluateLocomotionPoseVariables(
         if(plantedFeet[j]){
           if(performRaycasting){
             Scalar lift = (hitPositionsPrevStep[j] - currStepPos).dot(upvector);
-            if(leg.hubId < 0 || leg.hubId == hubs.size-1){
-              if(legs.size == 2){
-                // Only apply the lift from the lowest leg.
-                // this prevents overstretching of legs.
-                // (important for straight legged creatures like humans).
-                if( lift < controllerparams.lift){
-                  controllerparams.lift = lift;
-                }
-              }else{
-                controllerparams.lift += lift;
-              }
-              numLegsScalar += 1.0;
-            }
+            plantLocations[j] += upvector * lift;
+            addLift(legs, j, lift, controllerparams, legLiftWeight);
           }
           // Record the error at lift time.
           footError = invcontrollerXfo.ori.rotateVector(plantLocations[j] - currStepPos);
@@ -441,6 +452,10 @@ operator evaluateLocomotionPoseVariables(
           if(legSwingRatio < 0.5){
             Scalar errorDissipation = cos(legSwingRatio * TWO_PI) * 0.5 + 0.5;
             footError = plantLocations[j] * errorDissipation;
+            
+            // At foot lift time, we store the lft at the end of the planted interval
+            // in the foot error vector.
+            addLift(legs, j, footError.y, controllerparams, legLiftWeight);
           }
           /////////////////////////////////////////////////
           // Raycasting
@@ -470,16 +485,7 @@ operator evaluateLocomotionPoseVariables(
               footError += Vec3(0.0, lift, 0.0);
               
               hitPositionsPrevStep[j] = hitPosition;
-              if(leg.hubId < 0 || leg.hubId == hubs.size-1){
-                if(legs.size == 2){
-                  if( lift < controllerparams.lift){
-                    controllerparams.lift = lift;
-                  }
-                }else{
-                  controllerparams.lift += lift;
-                }
-                numLegsScalar += 1.0;
-              }
+              addLift(legs, j, lift, controllerparams, legLiftWeight);
             }
             else{
               debugRaycasting.drawLine(rayStart, rayEnd, Color(1.0, 0.0, 0.0, 1.0));
@@ -505,16 +511,7 @@ operator evaluateLocomotionPoseVariables(
               
           Scalar lift = (hitPositionsPrevStep[j] - currStepPos).dot(upvector);
           footXfo.tr += Vec3(0.0, lift, 0.0);
-          if(leg.hubId < 0 || leg.hubId == hubs.size-1){
-            if(legs.size == 2){
-              if( lift < controllerparams.lift){
-                controllerparams.lift = lift;
-              }
-            }else{
-              controllerparams.lift += lift;
-            }
-            numLegsScalar += 1.0;
-          }
+          addLift(legs, j, lift, controllerparams, legLiftWeight);
         }
         if(!plantedFeet[j]){
           // Record the foot plant pos.
@@ -524,7 +521,7 @@ operator evaluateLocomotionPoseVariables(
         else{
           // Calculate the error each update to hold the foot in place while planted.
           footError = invcontrollerXfo.ori.rotateVector(plantLocations[j] - currStepPos);
-          // We zero the error vector here, because the raycasting handles the y axis.
+          // We zero the error vector here, because the raycasting (above) handles the y axis.
           footError.y = 0.0;
         }
         
@@ -585,10 +582,10 @@ operator evaluateLocomotionPoseVariables(
       poseVariables.xfoValues[leg.ikGoalXfoId] = footXfo;
       
     }
-    if(performRaycasting && numLegsScalar > 0.0){
+    if(performRaycasting && legLiftWeight > 0.0){
     
       if(legs.size != 2){
-        controllerparams.lift /= numLegsScalar;
+        controllerparams.lift /= legLiftWeight;
       }
       
       if(displayRaycastingDebugging){
