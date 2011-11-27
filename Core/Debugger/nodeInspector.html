@@ -40,7 +40,7 @@ $(document).ready(function() {
     }
     dataTable += '</tr>\n</thead>\n<tbody class="tableData">\n';
     // Define the body
-    var lines = Math.min(dgnode.getCount(), 100);
+    var lines = dgnode.getCount();
     for(var i=0; i<lines; i++){
       var slicedata = dgnode.getSliceBulkData(i);
       dataTable += '<tr>\n';
@@ -68,31 +68,14 @@ $(document).ready(function() {
         displayNodeData(true);
   });
 
-
-  var editor = ace.edit("code-editor");
-  var jsonMode = require("ace/mode/json").Mode;
-
-  editor.setTheme("ace/theme/textmate");
-  editor.getSession().setMode(new jsonMode());
-
-
 });
 
 </script>
 
 </head> 
 <body>
-    <div id="wrapper">
-      <div id="editor">
-        
-        <div id="topToolbar">
-                 <button id="refresh">Refresh</button>
-        </div><!--bottomToolbar-->
-        
         <div id="dataContainer">
         </div><!--dataContainer-->
-        
-      </div> <!--editor-->
-    </div><!--wrapper-->
+        <button id="refresh">Refresh</button>
 </body> 
 </html>
