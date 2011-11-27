@@ -98,7 +98,7 @@ $(document).ready(function() {
 
   // Create the scene.
   var scene = FABRIC.SceneGraph.createScene({
-        timeStep: 1/30 /* 30 fps */
+        timeStep: 1/50 /* 30 fps */
       });
   var viewport = scene.constructNode('Viewport', {
     enableRaycasting: false,
@@ -309,7 +309,7 @@ $(document).ready(function() {
     locomotionControllerNode = scene.constructNode('ScreenSpacePlayerCharacterController', {
         cameraNode: camera,
         maxLinearVelocity: 15,
-        maxLinearAcceleration: 1,
+        maxLinearAcceleration: 30,
         maxAngularVelocity: 2,
         maxAngularAcceleration: 2,
         bulletWorldNode: bulletWorldNode,
@@ -323,7 +323,7 @@ $(document).ready(function() {
     locomotionControllerNode = scene.constructNode('ScreenSpacePlayerCharacterController', {
         cameraNode: camera,
         maxLinearVelocity: 10,
-        maxLinearAcceleration: 1.45,
+        maxLinearAcceleration: 20,
         maxAngularVelocity:  2,
         bulletWorldNode: bulletWorldNode,
         numTrailSegments: 12,
@@ -336,12 +336,12 @@ $(document).ready(function() {
     locomotionControllerNode = scene.constructNode('ScreenSpacePlayerCharacterController', {
         cameraNode: camera,
         maxLinearVelocity: 8,
-        maxLinearAcceleration: 0.35,
+        maxLinearAcceleration: 16,
         maxAngularVelocity:  2.5,
         maxAngularAcceleration: 2.5,
         bulletWorldNode: bulletWorldNode,
         numTrailSegments: 0,
-        gravity: -3.0,
+        gravity: -98,
         comHeight: 1.8,
         circleSize: 0.6
       });

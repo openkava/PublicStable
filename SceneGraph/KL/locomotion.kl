@@ -32,7 +32,7 @@ function Scalar calcClipParamsDelta(
   in Scalar clip2[]
 ){
   Scalar delta = clip1[1] - clip2[1]; // velocity
-  delta += clip1[2] - clip2[2];       // acceleration
+ // delta += clip1[2] - clip2[2];       // acceleration
   return delta;
 }
 
@@ -139,11 +139,6 @@ operator evaluateLocomotionPoseVariables(
       for(Integer j=0; j < locomotionFeet.size; j++){
         LocomotionFoot foot = locomotionFeet[j];
         Limb leg = legs[foot.limbId];
-        if(plantedFeet[j]){
-        //  plantLocations[j] = plantLocations[j] - leg.ikGoalReferenceXfo.tr;
-        //  plantLocations[j] = prevUpdatePose.xfoValues[leg.ikGoalXfoId].tr;
-        }else{
-        }
         plantedFeet[j] = true;
         plantLocations[j] = controllerXfo.transformVector(leg.ikGoalReferenceXfo.tr);
       }
@@ -164,8 +159,8 @@ operator evaluateLocomotionPoseVariables(
         clipActivationTime = trackcontroller.time-timestep;
       }
       if(clipActivationTime > 0.0){
-        // Blend off the error over 1.5 seconds. 
-        Scalar blendTime = 1.5;
+        // Blend off the error over 0.5 seconds. 
+        Scalar blendTime = 0.5;
         if(trackcontroller.time - clipActivationTime < blendTime){
           Scalar weight = 1.0 - ((trackcontroller.time - clipActivationTime) / blendTime);
           poseVariables.addWeighted(poseError, weight);
@@ -236,7 +231,7 @@ operator evaluateLocomotionPoseVariables(
 
     strideLengthMultiplier = (currSpeed / clipSpeed) / clipFrequencyMultiplier;
     
-      
+  //  report("currSpeed:"+currSpeed + "clipSpeed:"+clipSpeed + " clipFrequencyMultiplier:"+clipFrequencyMultiplier + " strideLengthMultiplier:"+strideLengthMultiplier);
     // When turning, speed up the playback a little to stop the legs getting tangled. 
     clipFrequencyMultiplier += abs(controllerparams.displacement.ori.getAngle()) * 5.0;
     
@@ -391,7 +386,6 @@ operator evaluateLocomotionPoseVariables(
       Scalar stepValue = poseVariables.scalarValues[foot.stepTimeVarId];
       
       footXfo.tr -= controllerparams.balanceXfo.tr;
-      
       Scalar stepRatio = (t - currStep.prevStepMidPlantTime) / (currStep.midPlantTime - currStep.prevStepMidPlantTime);
       Scalar footPlantRatio = stepRatio;
       Vec3 nextStepPos = baseFootXfo.tr - (displacementDir * ((currStep.strideLength * strideLengthMultiplier * footPlantRatio) - (currStep.strideLength * strideLengthMultiplier)));
@@ -410,7 +404,7 @@ operator evaluateLocomotionPoseVariables(
         liftXfo.tr = currStepPos;
         debugFootMotion.drawCircle(liftXfo * rot90, 0.2, Color(0.5, 0.5, 1.0, 1.0));
       }
-      report(j+" t:"+t+" stepId:"+stepId +" currStep:"+currStep + " legSwingRatio:"+legSwingRatio + " planted:"+plantedFeet[j]);
+    //  report(j+" t:"+t+" stepId:"+stepId +" currStep:"+currStep + " legSwingRatio:"+legSwingRatio + " planted:"+plantedFeet[j]);
       
       /////////////////////////////////////////////////
       // Foot Pinning
@@ -424,6 +418,9 @@ operator evaluateLocomotionPoseVariables(
             Scalar lift = (hitPositionsPrevStep[j] - currStepPos).dot(upvector);
             if(leg.hubId < 0 || leg.hubId == hubs.size-1){
               if(legs.size == 2){
+                // Only apply the lift from the lowest leg.
+                // this prevents overstretching of legs.
+                // (important for straight legged creatures like humans).
                 if( lift < controllerparams.lift){
                   controllerparams.lift = lift;
                 }
