@@ -42,7 +42,7 @@ $(document).ready(function() {
     // Define the body
     var lines = dgnode.getCount();
     var sliceRangeBegin = typeof(sliceRangeBegin) != 'undefined' ? sliceRangeBegin : 0;
-    var sliceRangeEnd = typeof(sliceRangeEnd) != 'undefined' ? sliceRangeEnd : Math.min( lines, 99 );
+    var sliceRangeEnd = typeof(sliceRangeEnd) != 'undefined' ? sliceRangeEnd : Math.min( lines-1, 99 );
 
     for(var i = parseInt( sliceRangeBegin ); i <= parseInt( sliceRangeEnd ); i++){
       var slicedata = dgnode.getSliceBulkData(i);
@@ -53,9 +53,14 @@ $(document).ready(function() {
       }
       dataTable += '</tr>\n';
 
-      $("#sliceRangeBegin, #sliceRangeEnd").attr({ 
+      $("#sliceRangeBegin, #sliceRangeEnd, #sliceRangeMax").attr({ 
         max: lines - 1
-        })
+        });
+
+        $("#sliceRangeEnd, #sliceRangeMax").attr({ 
+          value: lines - 1
+        });
+
     }
     
     dataTable += '</tbody>\n';
@@ -84,9 +89,10 @@ $(document).ready(function() {
 </head> 
 <body id='nodeInspector'>
   <section id='controls'>
-    Slice ID range 
+    Slice range 
     <em>from</em> <input id='sliceRangeBegin' type='number' step='1' min='0' value='0'>
     <em>to</em> <input id='sliceRangeEnd' type='number' step='1' min='0' max='99' value='99'>
+    <em>max ID</em> <output id='sliceRangeMax' type='result'></output>
     <button id="refresh">Refresh</button>
     
   </section>
