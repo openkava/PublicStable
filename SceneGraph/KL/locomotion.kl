@@ -155,6 +155,7 @@ operator evaluateLocomotionPoseVariables(
     for(Integer j=0; j < com.parameterVarIds.size; j++){
       trackcontroller.comParams[j] = poseVariables.scalarValues[com.parameterVarIds[j]];
     }
+    // re-retrieve the values from the evaluated track.
     stepFrequency = trackcontroller.comParams[0];
     clipSpeed = trackcontroller.comParams[1];
       
