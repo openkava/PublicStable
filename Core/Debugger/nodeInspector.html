@@ -49,6 +49,10 @@ $(document).ready(function() {
         dataTable += '<td>'+JSON.stringify(slicedata[memberName])+'</td>\n';
       }
       dataTable += '</tr>\n';
+      $("#sliceRangeEnd").attr({ 
+        value: lines-1, 
+        max: lines-1
+        })
     }
     
     dataTable += '</tbody>\n';
@@ -59,6 +63,8 @@ $(document).ready(function() {
       "bJQueryUI": true,
       "bSort": false,
       "bSearch": false,
+      "sPaginationType": "full_numbers",
+      "sDom": '<"top"i>rt<"bottom"flp><"clear">'
     });
   }
   
@@ -73,9 +79,15 @@ $(document).ready(function() {
 </script>
 
 </head> 
-<body>
-        <div id="dataContainer">
-        </div><!--dataContainer-->
-        <button id="refresh">Refresh</button>
+<body id='nodeInspector'>
+  <section id='controls'>
+    Slice ID range 
+    <em>from</em> <input id='sliceRangeStart' type='number' step='1' min='0' value='0'>
+    <em>to</em> <input id='sliceRangeEnd' type='number' step='1' max='0' value='0'>
+    <button id="refresh">Refresh</button>
+    
+  </section>
+  <section id="dataContainer">
+  </section><!--dataContainer-->
 </body> 
 </html>
