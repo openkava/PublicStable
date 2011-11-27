@@ -23,7 +23,7 @@ function activateClip(
   trackcontroller.stepIds = marker.stepIds;
   trackcontroller.comParams = marker.params;
   
- // report("activateClip:"+trackcontroller.activeTrackSet+" foot:"+trackcontroller.pivotFoot+ " stepIds:"+marker.stepIds + " t:"+trackcontroller.time);
+  report("activateClip:"+trackcontroller.activeTrackSet+" foot:"+trackcontroller.pivotFoot+ " marker:"+marker);
 }
 
 operator evaluateLocomotionPoseVariables(
@@ -78,43 +78,127 @@ operator evaluateLocomotionPoseVariables(
   Xfo controllerXfo = controllerXfoSet[index];
   CharacterControllerParams controllerparams = controllerparamsSet[index];
   
-    /////////////////////////////////////////////////
-    // Clip Activation
-    if(trackcontroller.tick == 0){
-      trackcontroller.activeTrackSet = 0;
-      Scalar firstFootLift = 9999.0;
-      for(Integer k=0; k < locomotionMarkers[trackcontroller.activeTrackSet].size; k++){
-        if(locomotionMarkers[trackcontroller.activeTrackSet][k][0].time < firstFootLift){
-          trackcontroller.pivotFoot = k;
-          firstFootLift = locomotionMarkers[trackcontroller.activeTrackSet][k][0].time;
+  /////////////////////////////////////////////////
+  // Clip Activation
+  /*
+  if(trackcontroller.tick == 0){
+    trackcontroller.activeTrackSet = 0;
+    Scalar firstFootLift = 9999.0;
+    for(Integer k=0; k < locomotionMarkers[trackcontroller.activeTrackSet].size; k++){
+      if(locomotionMarkers[trackcontroller.activeTrackSet][k][0].time < firstFootLift){
+        trackcontroller.pivotFoot = k;
+        firstFootLift = locomotionMarkers[trackcontroller.activeTrackSet][k][0].time;
+      }
+    }
+    activateClip(
+      locomotionMarkers,
+      trackcontroller,
+    );
+  }
+  else */
+  if(trackcontroller.deactivate){
+    activateClip(
+      locomotionMarkers,
+      trackcontroller,
+    );
+  }
+
+  LinearKeyframeTrackSet trackSet = animationLibrary[trackcontroller.activeTrackSet];
+  FootStepTrack footStepTracks[] = footStepTracksLibrary[trackcontroller.activeTrackSet];
+  KeyframeTrackBindings bindings = bindingsLibrary[trackcontroller.activeTrackSet];
+  
+  Xfo invcontrollerXfo = controllerXfo.inverse();
+  Vec2 timeRange = trackSet.timeRange;
+  Scalar t = trackcontroller.time;
+  
+  Vec3 linearVelocity = controllerparams.displacement.tr / timestep;
+  Scalar currSpeed = linearVelocity.length();
+  Scalar clipSpeed = trackcontroller.comParams[1];
+  
+  if(clipSpeed == 0.0){
+    if(trackcontroller.deactivate){
+      plantLocations.resize(locomotionFeet.size);
+      for(Integer j=0; j < locomotionFeet.size; j++){
+        LocomotionFoot foot = locomotionFeet[j];
+        Limb leg = legs[foot.limbId];
+        if(trackcontroller.tick > 0){
+          plantLocations[j] = prevUpdatePose.xfoValues[leg.ikGoalXfoId].tr;
+        }else{
+          plantLocations[j] = leg.ikGoalReferenceXfo.tr;
         }
       }
-      activateClip(
-        locomotionMarkers,
-        trackcontroller,
-      );
     }
-    else if(trackcontroller.deactivate){
-      activateClip(
-        locomotionMarkers,
-        trackcontroller,
-      );
+    trackcontroller.time += timestep;
+    poseVariables.evaluateKeyframeTracks(
+      trackcontroller.time,
+      trackSet,
+      bindings,
+      trackcontroller.currKeys
+    );
+    
+    /////////////////////////////////////////////////
+    // Error dissapation
+    if(trackcontroller.tick > 0){
+      if(trackcontroller.deactivate){
+        poseError = prevUpdatePose.subtract(poseVariables);
+        clipActivationTime = trackcontroller.time-timestep;
+      }
+      if(clipActivationTime > 0.0){
+        // Blend off the error over 1.5 seconds. 
+        Scalar blendTime = 1.5;
+        if(trackcontroller.time - clipActivationTime < blendTime){
+          Scalar weight = 1.0 - ((trackcontroller.time - clipActivationTime) / blendTime);
+          poseVariables.addWeighted(poseError, weight);
+        }
+      }
+      if(!trackcontroller.deactivate){
+        // Hold the feet in place while stationary. 
+        for(Integer j=0; j < locomotionFeet.size; j++){
+          LocomotionFoot foot = locomotionFeet[j];
+          Limb leg = legs[foot.limbId];
+          poseVariables.xfoValues[leg.ikGoalXfoId].tr = plantLocations[j];
+        }
+      }
+      trackcontroller.deactivate = false;
     }
-
-    LinearKeyframeTrackSet trackSet = animationLibrary[trackcontroller.activeTrackSet];
-    FootStepTrack footStepTracks[] = footStepTracksLibrary[trackcontroller.activeTrackSet];
-    KeyframeTrackBindings bindings = bindingsLibrary[trackcontroller.activeTrackSet];
+    prevUpdatePose = poseVariables;
+    
+    
+    if(animationLibrary.size > 1){
+      for(Integer clipId=0; !trackcontroller.deactivate && clipId<locomotionMarkers.size; clipId++){
+      // Note: here we block blending from a clip onto its self, but soon we will enable this.
+        if(clipId == trackcontroller.activeTrackSet){
+          continue;
+        }
+        for(Integer j=0; j < locomotionFeet.size; j++){
+          for(Integer l=0; l < locomotionMarkers[clipId][j].size; l++){
+            Scalar targetClipSpeed = locomotionMarkers[clipId][j][l].params[1];
+            Scalar ratio = currSpeed / targetClipSpeed;
+          //  report(trackcontroller.activeTrackSet + " to " + clipId + " clipSpeed:"+ clipSpeed + " targetClipSpeed:"+ targetClipSpeed + " ratio:"+ ratio);
+            if(ratio > 0.50){
+              report("deactivate from:"+trackcontroller.activeTrackSet+ " to:" + clipId);
+              trackcontroller.deactivate = true;
+              trackcontroller.pivotFoot = j;
+              trackcontroller.pivotStepId = l;
+              trackcontroller.activeTrackSet = clipId;
+              trackcontroller.time = 0.0;
+              break;
+            }
+          }
+        }
+      }
+    }
+          
+    if(!trackcontroller.deactivate && trackcontroller.time >= trackSet.timeRange.y){
+      trackcontroller.time -= trackSet.timeRange.y;
+      trackcontroller.deactivate = true;
+    }
+  }
+  else{
     
     /////////////////////////////////////////////////
     // Clip Frequency and Stride Length calculation
-    Xfo invcontrollerXfo = controllerXfo.inverse();
-    Vec2 timeRange = trackSet.timeRange;
-    Scalar t = trackcontroller.time;
-    
-    Vec3 linearVelocity = controllerparams.displacement.tr / timestep;
-    
-    Scalar stepFrequency, clipSpeed;
-    Scalar currSpeed = linearVelocity.length();
+    Scalar stepFrequency;
     Scalar clipSpeedRatio = 1.0;
     Scalar strideLengthModulationFactor = 0.0;
     Scalar clipFrequencyMultiplier = 1.0;
@@ -123,7 +207,6 @@ operator evaluateLocomotionPoseVariables(
     
     // Get the com params from the previous update.
     stepFrequency = trackcontroller.comParams[0];
-    clipSpeed = trackcontroller.comParams[1];
     strideLength = stepFrequency * clipSpeed;
     
     if(clipSpeed > 0.001){
@@ -506,9 +589,8 @@ operator evaluateLocomotionPoseVariables(
       // This will be eliminated with nested sub-graphs.
       controllerparamsSet[index] = controllerparams;
     }
-
-    trackcontroller.tick++;
-    
+  }
+  trackcontroller.tick++;  
 }
 
 

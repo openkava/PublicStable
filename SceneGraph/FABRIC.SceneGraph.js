@@ -402,6 +402,7 @@ FABRIC.SceneGraph = {
         }
         var diagnostics = operator.getDiagnostics();
         if (diagnostics.length > 0) {
+          delete operatorStore[uid];
           console.error(descDiags(operator.getSourceCode(), diagnostics));
         }
       }

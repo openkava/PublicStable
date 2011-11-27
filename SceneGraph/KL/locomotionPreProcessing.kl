@@ -184,7 +184,7 @@ function Boolean detectFootSteps(
     }
   //  if(footSteps[i][footSteps[i].size-1].x <= timeRange.y){
     Vec3 lastStep = footSteps[i][footSteps[i].size-1];
-    if((lastStep.z + averageFootPlantTime) < timeRange.y){
+    if(lastStep.z < timeRange.y){
       step.prevStepMidPlantTime = lastStep.y;
       step.liftTime = lastStep.z;
       step.plantTime = lastStep.z + averageFootLiftedTime;
@@ -192,7 +192,6 @@ function Boolean detectFootSteps(
       step.strideLength = averageStrideLength;
       footStepTracks[i].footSteps.push(step);
     }
-    report("NumSteps:"+footStepTracks[i].footSteps.size);
   }
   report("----");
   report("footStepTracks:"+footStepTracks);
@@ -330,6 +329,8 @@ function Boolean calcComStepBasedTracks(
     // TODO: raycast the groud plane here. 
     comXfo.tr.y = 0;//poseVariables.xfoValues[legs[footId].ikGoalXfoId].tr.y;
     
+    
+    
     // Force the axis to point straight up. 
     alignment.setFrom2Vectors(comXfo.ori.getYaxis(), Vec3(0.0,1.0,0.0));
     comXfo.ori = alignment * comXfo.ori;
@@ -355,7 +356,7 @@ function Boolean calcComStepBasedTracks(
       if(facingVec.cross(velocity).y > 0.0){
         direction = -direction;
       }
-      
+      report("speed:"+speed);
       Scalar stepFrequency;
       if(false && footSteps[footId].size <= 2){
         stepFrequency = timeRange.y - timeRange.x;
@@ -637,12 +638,12 @@ function Boolean addLocomotionMarkers(
           marker.stepIds[k] = merkerStepId;
         }
         else{
-        //  report("searching leg:"+k + " steps:"+footStepTracks[k].footSteps.size);
+          report("searching leg:"+k + " t:"+t + " steps:"+footStepTracks[k].footSteps.size);
           // Plant times dictate stepId increments, we must find the step that
           // plants after the current foot lift. 
           for(Integer l=0; l<footStepTracks[k].footSteps.size; l++){
-          //  report("step"+l+":"+footStepTracks[k].footSteps[l] );
-            if(t >= footStepTracks[k].footSteps[l].prevStepMidPlantTime){
+            report("step"+l+":"+footStepTracks[k].footSteps[l] );
+            if(t >= footStepTracks[k].footSteps[l].prevStepMidPlantTime && t <= footStepTracks[k].footSteps[l].midPlantTime){
               marker.stepIds[k] = l;
               break;
             }
@@ -673,6 +674,8 @@ function Boolean addLocomotionMarkers(
 
 function Boolean addStationaryMarkers(
   in Vec2 timeRange,
+  in KeyframeTrackBindings comParamBindings,
+  in FootStepTrack footStepTracks[],
   io LocomotionMarker locomotionMarkers[][]
 ){
   ///////////////////////////////////////////////////
@@ -680,6 +683,12 @@ function Boolean addStationaryMarkers(
   for(Integer i=0; i < locomotionMarkers.size; i++){
     LocomotionMarker marker;
     marker.time = timeRange.x;
+    marker.params.resize(comParamBindings.scalarBindings.size);
+    
+    marker.stepIds.resize(footStepTracks.size);
+    for(Integer k=0; k < footStepTracks.size; k++){
+      marker.stepIds[k] = 0;
+    }
     locomotionMarkers[i].push(marker);
   }
   report("locomotionMarkers:"+locomotionMarkers);
@@ -835,7 +844,11 @@ operator locomotionPreProcessing(
   }
   else{
     report("Stationary Sequence");
-    addStationaryMarkers(timeRange, locomotionMarkers);
+    
+    poseVariables.xfoValues[com.xfoId].setIdentity();
+    poseVariables.setTrackValues(timeRange.x, trackSet, comXfoBindings);
+    
+    addStationaryMarkers(timeRange, comParamBindings, footStepTracks, locomotionMarkers);
   }
   
   
