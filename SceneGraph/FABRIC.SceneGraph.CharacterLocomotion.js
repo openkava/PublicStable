@@ -246,6 +246,7 @@ FABRIC.Characters.CharacterControllerParams = function() {
   this.trailCircularArrayIndex = 0;
   this.balanceXfo = new FABRIC.RT.Xfo();
   this.lift = 0;
+  this.state = 0;
 };
 
 FABRIC.appendOnCreateContextCallback(function(context) {
@@ -257,7 +258,8 @@ FABRIC.appendOnCreateContextCallback(function(context) {
       trailLength: 'Scalar',
       trailCircularArrayIndex: 'Integer',
       balanceXfo: 'Xfo',
-      lift: 'Scalar'
+      lift: 'Scalar',
+      state: 'Integer'
     },
     constructor: FABRIC.Characters.CharacterControllerParams
   });
@@ -475,7 +477,7 @@ FABRIC.RT.TrackSetController = function( activeTrackSet ) {
   this.tick = 0;
   this.comParams = [];
   this.stepIds = [];
-  this.deactivate = false;
+  this.deactivate = true;
   this.pivotFoot = 0;
   this.pivotStepId = 0;
 };

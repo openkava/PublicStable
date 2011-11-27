@@ -201,7 +201,52 @@ $(document).ready(function() {
           shapeName: 'Box2',
           rigidBody: new FABRIC.RT.BulletRigidBody({
             transform: FABRIC.RT.xfo({
-              tr: new FABRIC.RT.Vec3(-21,-2.5,-2),
+              tr: new FABRIC.RT.Vec3(-20,-3.5,-6),
+              sc: new FABRIC.RT.Vec3(8,4,8),
+            }),
+            mass: 0.0
+          })
+        })
+      });
+      scene.constructNode('Instance', {
+        geometryNode: cuboidNode,
+        materialNode: phongMaterial,
+        transformNode: scene.constructNode('BulletRigidBodyTransform', {
+          bulletWorldNode: bulletWorldNode,
+          shapeName: 'Box2',
+          rigidBody: new FABRIC.RT.BulletRigidBody({
+            transform: FABRIC.RT.xfo({
+              tr: new FABRIC.RT.Vec3(-21,-3,-4),
+              sc: new FABRIC.RT.Vec3(8,4,8),
+            }),
+            mass: 0.0
+          })
+        })
+      });
+      scene.constructNode('Instance', {
+        geometryNode: cuboidNode,
+        materialNode: phongMaterial,
+        transformNode: scene.constructNode('BulletRigidBodyTransform', {
+          bulletWorldNode: bulletWorldNode,
+          shapeName: 'Box2',
+          rigidBody: new FABRIC.RT.BulletRigidBody({
+            transform: FABRIC.RT.xfo({
+              tr: new FABRIC.RT.Vec3(-22,-2.5,-2),
+              sc: new FABRIC.RT.Vec3(8,4,8),
+            }),
+            mass: 0.0
+          })
+        })
+      });
+      scene.constructNode('Instance', {
+        geometryNode: cuboidNode,
+        materialNode: phongMaterial,
+        transformNode: scene.constructNode('BulletRigidBodyTransform', {
+          bulletWorldNode: bulletWorldNode,
+          shapeName: 'Box2',
+          rigidBody: new FABRIC.RT.BulletRigidBody({
+            transform: FABRIC.RT.xfo({
+              tr: new FABRIC.RT.Vec3(-23,-2,-0),
               sc: new FABRIC.RT.Vec3(8,4,8),
             }),
             mass: 0.0
@@ -291,9 +336,9 @@ $(document).ready(function() {
     locomotionControllerNode = scene.constructNode('ScreenSpacePlayerCharacterController', {
         cameraNode: camera,
         maxLinearVelocity: 8,
-        maxLinearAcceleration: 0.3,
-        maxAngularVelocity:  3,
-        maxAngularAcceleration: 3.0,
+        maxLinearAcceleration: 0.35,
+        maxAngularVelocity:  2.5,
+        maxAngularAcceleration: 2.5,
         bulletWorldNode: bulletWorldNode,
         numTrailSegments: 0,
         gravity: -3.0,

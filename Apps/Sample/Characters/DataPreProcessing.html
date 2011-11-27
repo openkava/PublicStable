@@ -169,7 +169,7 @@ $(document).ready(function() {
   //////////////////////////////////////////////
   // 
   
-  var rigName = 'walker';
+  var rigName = 'marama';
   var assetNodes, bindPoseRig, fkrigNode, rigInstanceNode, skeletonNode, characterMesh;
   switch(rigName){
   case 'walker':
@@ -324,7 +324,15 @@ $(document).ready(function() {
     
    loadAnimationFile('Assets/Marama_Walk.DAE', fkrigNode);
    loadAnimationFile('Assets/Marama_Run.DAE', fkrigNode);
-  
+   /*
+   loadAnimationFile('Assets/Marama_Idle.DAE', fkrigNode);
+   loadAnimationFile('Assets/Marama_StartWalking.DAE', fkrigNode);
+   loadAnimationFile('Assets/Marama_StopWalking.DAE', fkrigNode);
+   loadAnimationFile('Assets/Marama_Walk.DAE', fkrigNode);
+   loadAnimationFile('Assets/Marama_StartRunning.DAE', fkrigNode);
+   loadAnimationFile('Assets/Marama_StopRunning.DAE', fkrigNode);
+   loadAnimationFile('Assets/Marama_Run.DAE', fkrigNode);
+   */
     break;
   }
   
@@ -412,7 +420,7 @@ $(document).ready(function() {
       
       
       if(!bound){
-        var footMovementThreshold = 0.05;
+        var footMovementThreshold = 0.03;
         libraryLocomotionAnimations.bindToSourceAnimationLibrary(
           libraryIKAnimations,
           bindings,
