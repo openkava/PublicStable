@@ -42,7 +42,7 @@ $(document).ready(function() {
     // Define the body
     var lines = dgnode.getCount();
     var sliceRangeBegin = typeof(sliceRangeBegin) != 'undefined' ? sliceRangeBegin : 0;
-    var sliceRangeEnd = typeof(sliceRangeEnd) != 'undefined' ? sliceRangeEnd : lines-1;
+    var sliceRangeEnd = typeof(sliceRangeEnd) != 'undefined' ? sliceRangeEnd : Math.min( lines, 99 );
 
     for(var i = parseInt( sliceRangeBegin ); i <= parseInt( sliceRangeEnd ); i++){
       var slicedata = dgnode.getSliceBulkData(i);
@@ -54,7 +54,7 @@ $(document).ready(function() {
       dataTable += '</tr>\n';
 
       $("#sliceRangeBegin, #sliceRangeEnd").attr({ 
-        max: lines-1
+        max: lines - 1
         })
     }
     
@@ -67,7 +67,7 @@ $(document).ready(function() {
       "bSort": false,
       "bSearch": false,
       "sPaginationType": "full_numbers",
-      "sDom": '<"top"i>rt<"bottom"flp>'
+//      "sDom": '<"top"i>rt<"bottom"flp>'
     });
   }
   
