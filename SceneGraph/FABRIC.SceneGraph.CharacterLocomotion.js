@@ -316,6 +316,8 @@ FABRIC.SceneGraph.registerNodeType('LocomotionCharacterController', {
     dgnode.addMember('linearVelocity', 'Vec3');
     dgnode.addMember('angularVelocity', 'Scalar');
     
+    dgnode.addMember('comParams', 'Scalar[]');
+    
     dgnode.addMember('controllerparams', 'CharacterControllerParams', controllerparams);
     dgnode.addMember('liftVec', 'Vec3');
     dgnode.addMember('gravity', 'Scalar', options.gravity);
@@ -356,6 +358,8 @@ FABRIC.SceneGraph.registerNodeType('LocomotionCharacterController', {
           
           'self.linearVelocity',
           'self.angularVelocity',
+          
+          'self.comParams',
           
           'self.gravity',
           'self.comHeight',
@@ -574,6 +578,7 @@ FABRIC.SceneGraph.registerNodeType('LocomotionPoseVariables', {
         
         'charactercontroller.xfo<>',
         'charactercontroller.controllerparams<>',
+        'charactercontroller.comParams<>',
         
         'self.trackcontroller',
         'self.plantedFeet',

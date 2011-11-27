@@ -63,7 +63,7 @@ operator evaluateCharacterController(
   
   io Vec3 linearVelocity,
   io Scalar angularVelocity,
-  
+  io Scalar comParams[],
   
   io Scalar gravity,
   io Scalar comHeight,
@@ -197,6 +197,10 @@ operator evaluateCharacterController(
     debugGeometry1.drawAxis(controllerXfo, 1.0, Color(1.0,0.0,0.0,1.0));
     debugGeometry1.drawCircle(controllerXfo, circleSize, Color(1.0,0.0,0.0,1.0));
   }
+  
+  comParams.resize(4);
+  comParams[1] = linearVelocity.length();
+  comParams[2] = acceleration.length();
 }
 
 
