@@ -25,7 +25,12 @@ function activateClip(
   
   report("activateClip:"+trackcontroller.activeTrackSet+" foot:"+trackcontroller.pivotFoot+ " marker:"+marker);
 }
-
+function Scalar calcClipParamsDelta(
+  in Scalar clip1[],
+  in Scalar clip2[]
+){
+  return clip1[1] - clip2[1];
+}
 operator evaluateLocomotionPoseVariables(
   io Scalar timestep,
   
@@ -41,6 +46,7 @@ operator evaluateLocomotionPoseVariables(
   
   io Xfo controllerXfoSet<>,
   io CharacterControllerParams controllerparamsSet<>,
+  io Scalar comParamsSet<>[],
   
   io TrackSetController trackcontroller,
   io Boolean plantedFeet[],
@@ -77,6 +83,7 @@ operator evaluateLocomotionPoseVariables(
   
   Xfo controllerXfo = controllerXfoSet[index];
   CharacterControllerParams controllerparams = controllerparamsSet[index];
+  Scalar comParams[] = comParamsSet[index];
   
   /////////////////////////////////////////////////
   // Clip Activation
@@ -520,20 +527,16 @@ operator evaluateLocomotionPoseVariables(
           /////////////////////////////////////////////////
           // Clip Deactivation
           if(animationLibrary.size > 1){
-           //  report("currSpeed:"+currSpeed);
-            Scalar buffer = 1.0;
-            Scalar speedDelta = (currSpeed - clipSpeed);
-        //    report("currclipSpeed:"+ clipSpeed +" speedDelta:"+trackcontroller.activeTrackSet+":"+j+":"+speedDelta);
+            Scalar currClipDelta = calcClipParamsDelta(comParams, trackcontroller.comParams);
             for(Integer clipId=0; !trackcontroller.deactivate && clipId<locomotionMarkers.size; clipId++){
-            // Note: here we block blending from a clip onto its self, but soon we will enable this.
+              // Note: here we block blending from a clip onto its self, but soon we will enable this.
               if(clipId == trackcontroller.activeTrackSet){
                 continue;
               }
               for(Integer l=0; l<locomotionMarkers[clipId][j].size; l++){
-                Scalar targetClipSpeed = locomotionMarkers[clipId][j][l].params[1];
-                Scalar ratio = (currSpeed - clipSpeed) / (targetClipSpeed - clipSpeed);
-              //  report(trackcontroller.activeTrackSet + " to " + clipId + " clipSpeed:"+ clipSpeed + " targetClipSpeed:"+ targetClipSpeed + " ratio:"+ ratio);
-                if(ratio > 0.50){
+              Scalar clipDelta = calcClipParamsDelta(locomotionMarkers[clipId][j][l].params, trackcontroller.comParams);
+              Scalar ratio = currClipDelta / clipDelta;
+              if(ratio > 0.55){
                //   report("deactivate from:"+trackcontroller.activeTrackSet+ " to:" + clipId);
                   trackcontroller.deactivate = true;
                   trackcontroller.pivotFoot = j;
