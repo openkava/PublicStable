@@ -85,13 +85,13 @@ $(document).ready(function() {
 
     $('td', nodeDataTable.fnGetNodes()).editable( '', {
       "callback": function( sValue, y ) {
-        var aPos = oTable.fnGetPosition( this );
-        oTable.fnUpdate( sValue, aPos[0], aPos[1] );
+        var aPos = nodeDataTable.fnGetPosition( this );
+        nodeDataTable.fnUpdate( sValue, aPos[0], aPos[1] );
       },
       "submitdata": function ( value, settings ) {
         return {
           "row_id": this.parentNode.getAttribute('id'),
-          "column": oTable.fnGetPosition( this )[2]
+          "column": nodeDataTable.fnGetPosition( this )[2]
         };
       },
       "height": "14px"
