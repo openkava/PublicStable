@@ -437,18 +437,19 @@ namespace Fabric
               if ( newSize > oldAllocSize )
               {
                 size_t newAllocSize = AllocSizeForSize( newSize );
+                size_t size = sizeof(Member) * newAllocSize;
                 if ( oldSize )
                 {
-                  size_t size = sizeof(Member) * newAllocSize;
                   m_memberDatas = static_cast<Member *>( ( *s_callbacks.m_realloc )( m_memberDatas, size ) );
                 }
                 else
                 {
-                  size_t size = sizeof(Member) * newAllocSize;
                   m_memberDatas = static_cast<Member *>( ( *s_callbacks.m_malloc )( size ) );
                 }
                 m_allocSize = newAllocSize;
               }
+              if( newSize > oldSize )
+                  memset( m_memberDatas + oldSize, 0, (newSize - oldSize) * sizeof(Member) );
             }
             m_size = newSize;
           }
