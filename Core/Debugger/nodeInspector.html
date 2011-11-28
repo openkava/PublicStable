@@ -83,19 +83,19 @@ $(document).ready(function() {
 //      "sDom": '<"top"i>rt<"bottom"flp>'
     });
 
-    $('td', nodeDataTable.fnGetNodes()).editable( '', {
-      "callback": function( sValue, y ) {
-        var aPos = nodeDataTable.fnGetPosition( this );
-        nodeDataTable.fnUpdate( sValue, aPos[0], aPos[1] );
-      },
-      "submitdata": function ( value, settings ) {
-        return {
-          "row_id": this.parentNode.getAttribute('id'),
-          "column": nodeDataTable.fnGetPosition( this )[2]
-        };
-      },
-      "height": "14px"
-    } );
+    // $('td', nodeDataTable.fnGetNodes()).editable( '', {
+    //   "callback": function( sValue, y ) {
+    //     var aPos = nodeDataTable.fnGetPosition( this );
+    //     nodeDataTable.fnUpdate( sValue, aPos[0], aPos[1] );
+    //   },
+    //   "submitdata": function ( value, settings ) {
+    //     return {
+    //       "row_id": this.parentNode.getAttribute('id'),
+    //       "column": nodeDataTable.fnGetPosition( this )[2]
+    //     };
+    //   },
+    //   "height": "14px"
+    // } );
   }
   
   
