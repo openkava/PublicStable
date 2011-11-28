@@ -71,7 +71,11 @@ namespace Fabric
 
       m_bindingList->removeOwner( this );
     }
-    
+
+    bool Node::isDirty() const {
+      return m_dirty;
+    }
+
     void Node::setOutOfDate()
     {
       if ( !m_dirty )

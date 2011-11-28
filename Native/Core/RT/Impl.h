@@ -51,7 +51,7 @@ namespace Fabric
       void disposeDatas( void *data, size_t count, size_t stride ) const;
       virtual void disposeDatasImpl( void *data, size_t count, size_t stride ) const = 0;
       virtual std::string descData( void const *data ) const = 0;
-      virtual int compareData( void const *lhs, void const *rhs ) const = 0;
+      virtual bool equalsData( void const *lhs, void const *rhs ) const = 0;
       
       virtual RC::Handle<JSON::Value> getJSONValue( void const *data ) const = 0;
       virtual void setDataFromJSONValue( RC::ConstHandle<JSON::Value> const &value, void *data ) const = 0;
