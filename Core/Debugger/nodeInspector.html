@@ -106,7 +106,9 @@ $(document).ready(function() {
         displayNodeData(true, $("#sliceRangeBegin").val(), $("#sliceRangeEnd").val());
   });
   
-  $("#dataContainer").width( $("#nodeDataTable").width() );
+  if ($("#nodeDataTable").width() > 640){
+    $("#dataContainer").width( $("#nodeDataTable").width() );
+  }
 
 });
 
