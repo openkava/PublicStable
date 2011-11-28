@@ -81,6 +81,7 @@ $(document).ready(function() {
       "bSearch": false,
       "sPaginationType": "full_numbers",
 //      "sDom": '<"top"i>rt<"bottom"flp>'
+
     });
 
     // $('td', nodeDataTable.fnGetNodes()).editable( '', {
@@ -104,6 +105,8 @@ $(document).ready(function() {
   $('#refresh').button().click(function() {
         displayNodeData(true, $("#sliceRangeBegin").val(), $("#sliceRangeEnd").val());
   });
+  
+  $("#dataContainer").width( $("#nodeDataTable").width() );
 
 });
 
