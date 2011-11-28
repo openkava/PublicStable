@@ -60,7 +60,7 @@ namespace Fabric
       void disposeDatas( void *data, size_t count, size_t stride ) const;
       std::string descData( void const *data ) const;
       std::string toString( void const *data ) const;
-      int compareData( void const *lhs, void const *rhs ) const;
+      bool equalsData( void const *lhs, void const *rhs ) const;
       
       RC::Handle<JSON::Value> getJSONValue( void const *data ) const;
       void setDataFromJSONValue( RC::ConstHandle<JSON::Value> const &value, void *data ) const;

@@ -13,7 +13,7 @@ namespace Fabric
     
       // Impl
       
-      virtual int compareData( void const *lhs, void const *rhs ) const;
+      virtual bool equalsData( void const *lhs, void const *rhs ) const;
     
       // ComparableImpl
     
