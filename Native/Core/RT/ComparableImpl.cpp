@@ -13,9 +13,9 @@ namespace Fabric
     {
     }
     
-    int ComparableImpl::compareData( void const *lhs, void const *rhs ) const
+    bool ComparableImpl::equalsData( void const *lhs, void const *rhs ) const
     {
-      return compare( lhs, rhs );
+      return compare( lhs, rhs ) == 0;
     }
   };
 };

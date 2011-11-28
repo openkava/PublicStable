@@ -49,9 +49,9 @@ namespace Fabric
       m_impl->setData( srcData, dstData );
     }
     
-    int Desc::compareData( void const *lhs, void const *rhs ) const
+    bool Desc::equalsData( void const *lhs, void const *rhs ) const
     {
-      return m_impl->compareData( lhs, rhs );
+      return m_impl->equalsData( lhs, rhs );
     }
     
     void Desc::disposeData( void *data ) const

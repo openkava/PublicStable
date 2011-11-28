@@ -96,6 +96,8 @@ namespace Fabric
       ~Node();
       
       virtual void setOutOfDate();
+
+      bool isDirty() const;
       
       RC::Handle<MT::ParallelCall> bind(
         std::vector<std::string> &errors,

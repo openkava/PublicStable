@@ -99,7 +99,7 @@ namespace Fabric
           
           size_t srcByteOffset = m_memberSize * srcOffset;
           uint8_t const *srcMemberData = srcBits->memberDatas + srcByteOffset;
-          if ( !m_memberIsShallow )
+          if ( !isMemberShallow() )
           {
             uint8_t *dstMemberDataEnd = dstMemberDataStart + byteSize;
             for ( uint8_t *dstMemberData = dstMemberDataStart; dstMemberData != dstMemberDataEnd; srcMemberData += m_memberSize, dstMemberData += m_memberSize )
@@ -113,7 +113,6 @@ namespace Fabric
 
       RC::ConstHandle<Impl> m_memberImpl;
       size_t m_memberSize;
-      bool m_memberIsShallow;
    };
   };
 };

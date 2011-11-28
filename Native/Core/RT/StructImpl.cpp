@@ -180,16 +180,20 @@ namespace Fabric
       return true;
     }
     
-    int StructImpl::compareData( void const *lhs, void const *rhs ) const
+    bool StructImpl::equalsData( void const *lhs, void const *rhs ) const
     {
-      for ( size_t i=0; i<m_numMembers; ++i )
+      if ( m_isShallow )
+        return memcmp( lhs, rhs, getAllocSize() ) == 0;
+      else
       {
-        StructMemberInfo const &memberInfo = m_memberInfos[i];
-        int memberResult = memberInfo.desc->compareData( getMemberData_NoCheck( lhs, i ), getMemberData_NoCheck( rhs, i ) );
-        if ( memberResult )
-          return memberResult;
+        for ( size_t i=0; i<m_numMembers; ++i )
+        {
+          StructMemberInfo const &memberInfo = m_memberInfos[i];
+          if( !memberInfo.desc->equalsData( getMemberData_NoCheck( lhs, i ), getMemberData_NoCheck( rhs, i ) ) )
+            return false;
+        }
+        return true;
       }
-      return 0;
     }
   };
 };
