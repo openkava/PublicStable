@@ -190,14 +190,14 @@ function Boolean detectFootSteps(
     }
   //  if(footSteps[i][footSteps[i].size-1].x <= timeRange.y){
     Vec3 lastStep = footSteps[i][footSteps[i].size-1];
-    if(lastStep.z < timeRange.y){
+  //  if(lastStep.z < timeRange.y){
       step.prevStepMidPlantTime = lastStep.y;
       step.liftTime = lastStep.z;
       step.plantTime = lastStep.z + averageFootLiftedTime;
       step.midPlantTime = step.plantTime + (averageFootPlantTime * midStepRatio);
       step.strideLength = averageStrideLength;
       footStepTracks[i].footSteps.push(step);
-    }
+  //  }
   }
   report("----");
   report("footStepTracks:"+footStepTracks);
@@ -322,6 +322,7 @@ function Boolean calcComStepBasedTracks(
   Xfo comXfos[];
   Scalar comXfoKeyTimes[];
   Integer keyCount = 0;
+  Scalar stepFrequency;
   while(currKeyt <= timeRange.y){
   //  report("currKeyt:"+currKeyt + " footId:" + footId + " stepId:"+ stepId);
     poseVariables.evaluateKeyframeTracks(currKeyt, trackSet, bindings, currKeys);
@@ -363,7 +364,6 @@ function Boolean calcComStepBasedTracks(
         direction = -direction;
       }
       report("speed:"+speed);
-      Scalar stepFrequency;
       if(false && footSteps[footId].size <= 2){
         stepFrequency = timeRange.y - timeRange.x;
       }
@@ -378,6 +378,7 @@ function Boolean calcComStepBasedTracks(
           stepFrequency = nextstep.y - step.y;
         } 
       }
+      report("stepFrequency:"+stepFrequency);
       
       comParams[0] = stepFrequency;
       comParams[1] = speed;
