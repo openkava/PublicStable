@@ -646,7 +646,7 @@ $(document).ready(function() {
     $("#join").button();
     try{
       ws = scene.constructManager("WebSocketManager", {
-        serverUrl: 'ec2-50-19-205-12.compute-1.amazonaws.com',
+        serverUrl: 'ws.fabric-engine.com',
         contextID: getUrlVars()['context'],
         onOpenCallBack: function() {
 
