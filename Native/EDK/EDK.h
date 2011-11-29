@@ -340,7 +340,7 @@ namespace Fabric
         {
           m_allocSize = AllocSizeForSize( size );
           m_size = size;
-          m_memberDatas = static_cast<Member *>( malloc( m_allocSize * sizeof(Member) ) );
+          m_memberDatas = static_cast<Member *>( ( *s_callbacks.m_malloc )( m_allocSize * sizeof(Member) ) );
           memset( &m_memberDatas[0], 0, m_size * sizeof(Member) );
         }
     
@@ -359,10 +359,10 @@ namespace Fabric
         void assign( VariableArray const &that )
         {
           if ( m_memberDatas )
-            free( m_memberDatas );
+            ( *s_callbacks.m_free )( m_memberDatas );
           m_allocSize = AllocSizeForSize( that.m_size );
           m_size = that.m_size;
-          m_memberDatas = static_cast<Member *>( malloc( m_allocSize * sizeof(Member) ) );
+          m_memberDatas = static_cast<Member *>( ( *s_callbacks.m_malloc )( m_allocSize * sizeof(Member) ) );
           memset( &m_memberDatas[0], 0, m_size * sizeof(Member) );
           for ( size_t i=0; i<m_size; ++i )
             m_memberDatas[i] = that.m_memberDatas[i];
@@ -377,7 +377,7 @@ namespace Fabric
         void dispose()
         {
           if ( m_memberDatas )
-            free( m_memberDatas );
+            ( *s_callbacks.m_free )( m_memberDatas );
         }
         
         ~VariableArray()
@@ -428,7 +428,7 @@ namespace Fabric
               
             if ( newSize == 0 )
             {
-              free( m_memberDatas );
+              ( *s_callbacks.m_free )( m_memberDatas );
               m_allocSize = 0;
               m_memberDatas = 0;
             }
@@ -437,18 +437,19 @@ namespace Fabric
               if ( newSize > oldAllocSize )
               {
                 size_t newAllocSize = AllocSizeForSize( newSize );
+                size_t size = sizeof(Member) * newAllocSize;
                 if ( oldSize )
                 {
-                  size_t size = sizeof(Member) * newAllocSize;
-                  m_memberDatas = static_cast<Member *>( realloc( m_memberDatas, size ) );
+                  m_memberDatas = static_cast<Member *>( ( *s_callbacks.m_realloc )( m_memberDatas, size ) );
                 }
                 else
                 {
-                  size_t size = sizeof(Member) * newAllocSize;
-                  m_memberDatas = static_cast<Member *>( malloc( size ) );
+                  m_memberDatas = static_cast<Member *>( ( *s_callbacks.m_malloc )( size ) );
                 }
                 m_allocSize = newAllocSize;
               }
+              if( newSize > oldSize )
+                  memset( m_memberDatas + oldSize, 0, (newSize - oldSize) * sizeof(Member) );
             }
             m_size = newSize;
           }
@@ -487,7 +488,7 @@ namespace Fabric
           : m_offset( 0 )
           , m_size( size )
         {
-          m_rcva = static_cast<RCVA *>( malloc( sizeof( RCVA ) ) );
+          m_rcva = static_cast<RCVA *>( ( *s_callbacks.m_malloc )( sizeof( RCVA ) ) );
           m_rcva->refCount = 1;
           m_rcva->varArray.init( size );
         }
@@ -518,7 +519,7 @@ namespace Fabric
           if ( m_rcva && --m_rcva->refCount == 0 )
           {
             m_rcva->varArray.dispose();
-            free( m_rcva );
+            ( *s_callbacks.m_free )( m_rcva );
           }
 
           m_offset = that.m_offset;
@@ -534,7 +535,7 @@ namespace Fabric
           if ( m_rcva && --m_rcva->refCount == 0 )
           {
             m_rcva->varArray.dispose();
-            free( m_rcva );
+            ( *s_callbacks.m_free )( m_rcva );
           }
         }
       
