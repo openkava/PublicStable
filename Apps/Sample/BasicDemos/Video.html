@@ -36,6 +36,7 @@
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Geometry.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Primitives.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Lights.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Images.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Materials.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Manipulation.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Kinematics.js" charset="utf-8"></script>
@@ -63,7 +64,7 @@ s.parentNode.insertBefore(ga, s);
 $(document).ready(function() {
 
   // load our custom material
-  FABRIC.SceneGraph.defineEffectFromFile('VideoDemoMaterial', 'VideoDemoShader.xml');
+  FABRIC.SceneGraph.defineEffectFromFile('VideoDemoMaterial', 'Shaders/VideoDemoShader.xml');
 
   // create a scene with 25 fps  
   var scene = FABRIC.SceneGraph.createScene({timeStep: 1.0/25.0});
