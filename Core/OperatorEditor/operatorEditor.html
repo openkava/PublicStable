@@ -152,10 +152,6 @@ $(document).ready(function() {
   $('#reload').button({ disabled:operator.getFilename().indexOf('.kl')==-1 } )
   .click(function() {
     var preProcessorDefinitions, file = operator.getFilename();
-    if(file.indexOf('$')!= -1){
-      preProcessorDefinitions = JSON.parse(file.split('$').pop());
-      file = file.split('$')[0];
-    }
     FABRIC.loadResourceURL(file, 'text/plain', function(code){
       if(preProcessorDefinitions){
         code = FABRIC.preProcessCode(code, preProcessorDefinitions);
