@@ -1456,13 +1456,7 @@ FABRIC.SceneGraph.registerNodeType('ResourceLoad', {
         incrementLoadProgressBar = undefined;
       }
       else if (options.redrawOnLoad) {
-        // PT 09-09-2011 Note: this is a hack to force the redrawing after the resource has
-        // really finished loading. I'm not sure if there is a bug that means
-        // this callback is called early. For the Alpha11 release I am adding this
-        // here, but it needs to be thoroughly understood and possibly removed. 
-        setTimeout(function(){
-          scene.pub.redrawAllViewports();
-        }, 100);
+        scene.pub.redrawAllViewports();
       }
     }
 
