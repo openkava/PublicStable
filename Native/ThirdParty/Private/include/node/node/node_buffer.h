@@ -50,7 +50,7 @@ namespace node {
    Migrating code C++ Buffer code from v0.2 to v0.3 is difficult. Here are
    some tips:
     - buffer->data() calls should become Buffer::Data(buffer) calls.
-    - buffer->length() calls should become Buffer::Length(buffer) calls. 
+    - buffer->length() calls should become Buffer::Length(buffer) calls.
     - There should not be any ObjectWrap::Unwrap<Buffer>() calls. You should
       not be storing pointers to Buffer objects at all - as they are
       now considered internal structures. Instead consider making a
@@ -63,7 +63,7 @@ namespace node {
  */
 
 
-class Buffer : public ObjectWrap {
+class NODE_EXTERN Buffer: public ObjectWrap {
  public:
 
   static bool HasInstance(v8::Handle<v8::Value> val);
