@@ -27,6 +27,7 @@ FABRIC.SceneGraph.registerNodeType('VolumeSlices', {
         cropInTransformedSpace: false
       });
 
+    options.dynamicIndices = true;
     var volumeSlicesNode = scene.constructNode('Triangles', options);
     volumeSlicesNode.pub.addUniformValue('cropMin', 'Vec3', options.cropMin);
     volumeSlicesNode.pub.addUniformValue('cropMax', 'Vec3', options.cropMax);
