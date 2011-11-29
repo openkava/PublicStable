@@ -289,6 +289,7 @@ operator evaluateLocomotionPoseVariables(
     Scalar clipFrequencyMultiplier = 1.0;
     Scalar strideLengthMultiplier = 1.0;
     Scalar strideLength = 0.0;
+    Scalar gradient = 0.0;
     
     // Get the com params from the previous update.
     stepFrequency = trackcontroller.comParams[0];
@@ -337,7 +338,7 @@ operator evaluateLocomotionPoseVariables(
       }
       if(clipActivationTime > 0.0){
         // Blend off the error across the first half a stride. 
-        Scalar blendTime = (stepFrequency * clipFrequencyMultiplier * 0.25);
+        Scalar blendTime = (stepFrequency * clipFrequencyMultiplier * 0.3);
         if(t - clipActivationTime < blendTime){
           Scalar weight = 1.0 - ((t - clipActivationTime) / blendTime);
           poseVariables.addWeighted(poseError, weight);
@@ -427,6 +428,7 @@ operator evaluateLocomotionPoseVariables(
       
       FootStepTrack footStepTrack = footStepTracks[j];
       Integer stepId = trackcontroller.stepIds[j];
+      
       FootStep currStep = footStepTrack.footSteps[stepId];
       Scalar legSwingRatio = (t - currStep.liftTime) / (currStep.plantTime - currStep.liftTime);
       
@@ -450,7 +452,6 @@ operator evaluateLocomotionPoseVariables(
       Xfo baseFootXfo = footParentSpaceXfo * leg.ikGoalReferenceXfo;
       if(displayFootPinningDebugging){
         debugFootMotion.drawLine(controllerXfo.tr, baseFootXfo.tr, Color(0.0, 0.5, 0.5, 1.0));
-        debugFootMotion.drawAxis(footParentSpaceXfo, 3.0, Color(0.0, 0.5, 0.5, 1.0));
       }
       
       footXfo.tr -= controllerparams.balanceXfo.tr;
@@ -489,12 +490,11 @@ operator evaluateLocomotionPoseVariables(
         if(plantedFeet[j]){
         
           if(displayFootPinningDebugging){
-            debugFootMotion.drawCircle(footXfo * rot90, 0.1, Color(0.5, 0.5, 0.0, 1.0));
             debugFootMotion.drawLine(currStepPos, plantLocations[j], Color(0.5, 0.5, 0.0, 1.0));
             
             Xfo temp = baseFootXfo;
             temp.tr = plantLocations[j];
-            debugFootMotion.drawCircle(temp * rot90, 0.25, Color(0.0, 1.0, 1.0, 1.0));
+            debugFootMotion.drawCircle(temp * rot90, 0.15, Color(0.0, 0.5, 1.0, 1.0));
           }
           
           BULLLETWORLD_OPENBLOCKCOMMENT
@@ -575,7 +575,7 @@ operator evaluateLocomotionPoseVariables(
           
           Xfo temp = baseFootXfo;
           temp.tr = plantLocations[j];
-          debugFootMotion.drawCircle(temp * rot90, 0.25, Color(0.0, 1.0, 1.0, 1.0));
+          debugFootMotion.drawCircle(temp * rot90, 0.15, Color(0.0, 1.0, 0.5, 1.0));
         }
         
         if(t >= currStep.midPlantTime){
