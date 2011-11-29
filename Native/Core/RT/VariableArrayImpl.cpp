@@ -24,7 +24,6 @@ namespace Fabric
       : ArrayImpl( codeName, DT_VARIABLE_ARRAY, memberImpl )
       , m_memberImpl( memberImpl )
       , m_memberSize( memberImpl->getAllocSize() )
-      , m_memberIsShallow( memberImpl->isShallow() )
     {
       setSize( sizeof(bits_t) );
     }
@@ -213,7 +212,7 @@ namespace Fabric
     void VariableArrayImpl::setMembers( void *data, size_t dstOffset, size_t numMembers, void const *members ) const
     {
       FABRIC_ASSERT( numMembers + dstOffset <= getNumMembers( data ) );
-      if ( !m_memberIsShallow )
+      if ( !isMemberShallow() )
       {
         for ( size_t i=0; i<numMembers; ++i )
         {
@@ -281,7 +280,7 @@ namespace Fabric
           {
             for ( ; memberData!=memberDataEnd; memberData += m_memberSize )
             {
-              if ( !m_memberIsShallow )
+              if ( !isMemberShallow() )
                 getMemberImpl()->setData( defaultMemberData, memberData );
               else
                 memcpy( memberData, defaultMemberData, memberSize );

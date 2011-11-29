@@ -58,8 +58,11 @@ namespace Fabric
 
     void ResourceLoadNode::evaluateLocal( void *userdata )
     {
-      // [JeromeCG 20110727]Important: Url streaming task must be run in main thread only since it might use some thread-sensitive APIs such as NPAPI's stream interface
-      MT::executeParallel( m_context->getLogCollector(), 1, &ResourceLoadNode::EvaluateResource, (void *)this, true );
+      if( isDirty() )
+      {
+        // [JeromeCG 20110727]Important: Url streaming task must be run in main thread only since it might use some thread-sensitive APIs such as NPAPI's stream interface
+        MT::executeParallel( m_context->getLogCollector(), 1, &ResourceLoadNode::EvaluateResource, (void *)this, true );
+      }
       Node::evaluateLocal( userdata );
     }
 
@@ -73,7 +76,7 @@ namespace Fabric
         bool loadingFinished = !m_stream;
         if( loadingFinished )
         {
-          // [JeromeCG 20110727] The resource member might have been modified by some operators; set it back if it is the case
+          //[JeromeCG 20110727] The resource member might have been modified by some operators; set it back if it is the case
           setResourceData( 0, false );
         }
       }
