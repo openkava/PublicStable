@@ -309,7 +309,7 @@ $(document).ready(function() {
     }
   }
 
-  var locomotionControllerNode;
+  var locomotionControllerNode, diffuseColor;
   var minFrequency = 0.0;
   switch(rigName){
   case 'walker':
@@ -325,6 +325,7 @@ $(document).ready(function() {
         comHeight: 1.8,
         circleSize: 1.6
       });
+    diffuseColor = FABRIC.RT.rgba(0.8, 0.4, 0.5, 1.0);
     break;
   case 'centipede':
     locomotionControllerNode = scene.constructNode('ScreenSpacePlayerCharacterController', {
@@ -338,6 +339,7 @@ $(document).ready(function() {
         gravity: 0,
         circleSize: 1.6
       });
+    diffuseColor = FABRIC.RT.rgba(0.0, 0.5, 0.7, 1.0);
     break;
   case 'marama':
     locomotionControllerNode = scene.constructNode('ScreenSpacePlayerCharacterController', {
@@ -353,6 +355,7 @@ $(document).ready(function() {
         circleSize: 0.6
       });
     minFrequency = 0.5;
+    diffuseColor = FABRIC.RT.rgba(1.0, 0.5, 0.3, 1.0);
     break;
   }
 
@@ -378,7 +381,7 @@ $(document).ready(function() {
   
   var phongSkinningMaterial = scene.constructNode('PhongSkinningMaterial', {
     lightNode: light,
-    diffuseColor: FABRIC.RT.rgba(1.0, 0.0, 0.0, 1.0),
+    diffuseColor: diffuseColor,
     numBones: skeletonNode.getNumBones()
   });
   
