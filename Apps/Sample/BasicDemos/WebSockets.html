@@ -113,7 +113,7 @@ $(document).ready(function() {
   // create the websocket node
   try{
     var ws = scene.constructManager("WebSocketManager", {
-      serverUrl: 'ec2-50-19-205-12.compute-1.amazonaws.com',
+      serverUrl: 'ws.fabric-engine.com',
       sendFunctionNames: ['cameraManip'],
       contextID: getUrlVars()['context'],
       onOpenCallBack: function() {
