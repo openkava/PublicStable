@@ -402,12 +402,13 @@ FABRIC.SceneGraph = {
         }
         var diagnostics = operator.getDiagnostics();
         if (diagnostics.length > 0) {
+          delete operatorStore[uid];
           console.error(descDiags(operator.getSourceCode(), diagnostics));
         }
       }
 
       if (operatorDef.srcFile) {
-        filename = operatorDef.srcFile.split('/').pop();
+        filename = operatorDef.srcFile;
         if(operatorDef.async === false){
           var code = FABRIC.loadResourceURL(operatorDef.srcFile, 'text/plain');
           code = FABRIC.preProcessCode(code, operatorDef.preProcessorDefinitions);

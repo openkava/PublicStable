@@ -40,6 +40,7 @@
     
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Lights.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Images.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Materials.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Geometry.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Manipulation.js" charset="utf-8"></script>
@@ -98,7 +99,7 @@ $(document).ready(function() {
 
   // Create the scene.
   var scene = FABRIC.SceneGraph.createScene({
-        timeStep: 1/30 /* 30 fps */
+        timeStep: 1/50 /* 30 fps */
       });
   var viewport = scene.constructNode('Viewport', {
     enableRaycasting: false,
@@ -137,6 +138,20 @@ $(document).ready(function() {
   });
   
   var constructBulletScene = true;
+  
+  var rigName = 'walker';
+  try{
+    if(localStorage && localStorage.getItem("rigName")){
+      rigName = localStorage.getItem("rigName");
+    }
+    else{
+      throw "no rigName";
+    }
+  }catch(e){}
+  if(rigName =='centipede'){
+    constructBulletScene = false;
+  }
+
   if(constructBulletScene){
     
     // create a simulation world
@@ -201,7 +216,52 @@ $(document).ready(function() {
           shapeName: 'Box2',
           rigidBody: new FABRIC.RT.BulletRigidBody({
             transform: FABRIC.RT.xfo({
-              tr: new FABRIC.RT.Vec3(-21,-2.5,-2),
+              tr: new FABRIC.RT.Vec3(-20,-3.5,-6),
+              sc: new FABRIC.RT.Vec3(8,4,8),
+            }),
+            mass: 0.0
+          })
+        })
+      });
+      scene.constructNode('Instance', {
+        geometryNode: cuboidNode,
+        materialNode: phongMaterial,
+        transformNode: scene.constructNode('BulletRigidBodyTransform', {
+          bulletWorldNode: bulletWorldNode,
+          shapeName: 'Box2',
+          rigidBody: new FABRIC.RT.BulletRigidBody({
+            transform: FABRIC.RT.xfo({
+              tr: new FABRIC.RT.Vec3(-21,-3,-4),
+              sc: new FABRIC.RT.Vec3(8,4,8),
+            }),
+            mass: 0.0
+          })
+        })
+      });
+      scene.constructNode('Instance', {
+        geometryNode: cuboidNode,
+        materialNode: phongMaterial,
+        transformNode: scene.constructNode('BulletRigidBodyTransform', {
+          bulletWorldNode: bulletWorldNode,
+          shapeName: 'Box2',
+          rigidBody: new FABRIC.RT.BulletRigidBody({
+            transform: FABRIC.RT.xfo({
+              tr: new FABRIC.RT.Vec3(-22,-2.5,-2),
+              sc: new FABRIC.RT.Vec3(8,4,8),
+            }),
+            mass: 0.0
+          })
+        })
+      });
+      scene.constructNode('Instance', {
+        geometryNode: cuboidNode,
+        materialNode: phongMaterial,
+        transformNode: scene.constructNode('BulletRigidBodyTransform', {
+          bulletWorldNode: bulletWorldNode,
+          shapeName: 'Box2',
+          rigidBody: new FABRIC.RT.BulletRigidBody({
+            transform: FABRIC.RT.xfo({
+              tr: new FABRIC.RT.Vec3(-23,-2,-0),
               sc: new FABRIC.RT.Vec3(8,4,8),
             }),
             mass: 0.0
@@ -248,23 +308,15 @@ $(document).ready(function() {
       });
     }
   }
-  
-  var rigName = 'walker';
-  try{
-    if(localStorage && localStorage.getItem("rigName")){
-      rigName = localStorage.getItem("rigName");
-    }
-    else{
-      throw "no rigName";
-    }
-  }catch(e){}
-//  var locomotionControllerNode;
+
+  var locomotionControllerNode;
+  var minFrequency = 0.0;
   switch(rigName){
   case 'walker':
     locomotionControllerNode = scene.constructNode('ScreenSpacePlayerCharacterController', {
         cameraNode: camera,
         maxLinearVelocity: 15,
-        maxLinearAcceleration: 1,
+        maxLinearAcceleration: 30,
         maxAngularVelocity: 2,
         maxAngularAcceleration: 2,
         bulletWorldNode: bulletWorldNode,
@@ -278,7 +330,7 @@ $(document).ready(function() {
     locomotionControllerNode = scene.constructNode('ScreenSpacePlayerCharacterController', {
         cameraNode: camera,
         maxLinearVelocity: 10,
-        maxLinearAcceleration: 1.45,
+        maxLinearAcceleration: 20,
         maxAngularVelocity:  2,
         bulletWorldNode: bulletWorldNode,
         numTrailSegments: 12,
@@ -290,16 +342,17 @@ $(document).ready(function() {
   case 'marama':
     locomotionControllerNode = scene.constructNode('ScreenSpacePlayerCharacterController', {
         cameraNode: camera,
-        maxLinearVelocity: 7,
-        maxLinearAcceleration: 0.2,
-        maxAngularVelocity:  3,
-        maxAngularAcceleration: 3.0,
+        maxLinearVelocity: 8,
+        maxLinearAcceleration: 16,
+        maxAngularVelocity:  2.5,
+        maxAngularAcceleration: 2.5,
         bulletWorldNode: bulletWorldNode,
         numTrailSegments: 0,
-        gravity: -4.8,
+        gravity: -98,
         comHeight: 1.8,
         circleSize: 0.6
       });
+    minFrequency = 0.5;
     break;
   }
 
@@ -317,7 +370,8 @@ $(document).ready(function() {
   
   var locomotionVariables = scene.constructNode('LocomotionPoseVariables', {
     characterRigNode: ikrig,
-    bulletWorldNode: bulletWorldNode
+    bulletWorldNode: bulletWorldNode,
+    minFrequency: minFrequency
   });
   locomotionVariables.setAnimationLibrary(libraryAnimations);
   ikrig.setVariablesNode(locomotionVariables);
@@ -334,13 +388,13 @@ $(document).ready(function() {
     materialNode: phongSkinningMaterial
   });
   
-  
+  /*
   var skeletonGeometryNode = scene.constructNode("CharacterSkeletonDebug", {
     characterRigNode:ikrig,
     boneradius: 0.2,
     color: FABRIC.RT.rgba(0.5, 0.0, 0.5, 1.0)
   });
-  
+  */
     
   
   $("#selectCharacter").val(rigName);
