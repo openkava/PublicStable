@@ -511,7 +511,8 @@ FABRIC.SceneGraph.registerNodeType('LocomotionPoseVariables', {
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
       bulletWorldNode: undefined,
-      enableDebugging: true
+      enableDebugging: true,
+      minFrequency: 0.5
     });
     if(!options.characterRigNode){
       throw "characterRigNode must be provided";
@@ -538,6 +539,7 @@ FABRIC.SceneGraph.registerNodeType('LocomotionPoseVariables', {
     dgnode.addMember('poseError', 'PoseVariables', poseError);
     dgnode.addMember('prevUpdatePose', 'PoseVariables', poseError);
     dgnode.addMember('clipActivationTime', 'Scalar', -1.0);
+    dgnode.addMember('minFrequency', 'Scalar', options.minFrequency);
     
     dgnode.addMember('debugFootMotion', 'DebugGeometry' );
     var debugFootMotionDraw = scene.constructNode('DebugGeometryDraw', {
@@ -590,6 +592,7 @@ FABRIC.SceneGraph.registerNodeType('LocomotionPoseVariables', {
         'self.prevUpdatePose',
         'self.poseError',
         'self.clipActivationTime',
+        'self.minFrequency',
         'self.index',
         
         'self.debugFootMotion',

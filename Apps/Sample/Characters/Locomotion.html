@@ -310,6 +310,7 @@ $(document).ready(function() {
   }
 
   var locomotionControllerNode;
+  var minFrequency = 0.0;
   switch(rigName){
   case 'walker':
     locomotionControllerNode = scene.constructNode('ScreenSpacePlayerCharacterController', {
@@ -351,6 +352,7 @@ $(document).ready(function() {
         comHeight: 1.8,
         circleSize: 0.6
       });
+    minFrequency = 0.5;
     break;
   }
 
@@ -368,7 +370,8 @@ $(document).ready(function() {
   
   var locomotionVariables = scene.constructNode('LocomotionPoseVariables', {
     characterRigNode: ikrig,
-    bulletWorldNode: bulletWorldNode
+    bulletWorldNode: bulletWorldNode,
+    minFrequency: minFrequency
   });
   locomotionVariables.setAnimationLibrary(libraryAnimations);
   ikrig.setVariablesNode(locomotionVariables);

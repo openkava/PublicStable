@@ -127,6 +127,7 @@ operator evaluateLocomotionPoseVariables(
   io PoseVariables prevUpdatePose,
   io PoseVariables poseError,
   io Scalar clipActivationTime,
+  io Scalar minFrequency,
   in Size index,
   
   io DebugGeometry debugFootMotion,
@@ -296,11 +297,12 @@ operator evaluateLocomotionPoseVariables(
     strideLength = stepFrequency * clipSpeed;
     
     clipFrequencyMultiplier = (currSpeed / clipSpeed);
-    if(clipFrequencyMultiplier < 0.5){
-      clipFrequencyMultiplier = 0.5;
+    if(clipFrequencyMultiplier < minFrequency){
+      clipFrequencyMultiplier = minFrequency;
     }
-
-    strideLengthMultiplier = (currSpeed / clipSpeed) / clipFrequencyMultiplier;
+    if(minFrequency > 0.0){
+      strideLengthMultiplier = (currSpeed / clipSpeed) / clipFrequencyMultiplier;
+    }
     
   //  report("currSpeed:"+currSpeed + " clipSpeed:"+clipSpeed + " clipFrequencyMultiplier:"+clipFrequencyMultiplier + " strideLengthMultiplier:"+strideLengthMultiplier);
     // When turning, speed up the playback a little to stop the legs getting tangled. 
