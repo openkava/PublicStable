@@ -31,24 +31,28 @@ namespace Fabric
       return result;
     }
     
-    int ArrayImpl::compareData( void const *lhs, void const *rhs ) const
+    bool ArrayImpl::equalsData( void const *lhs, void const *rhs ) const
     {
       size_t lhsSize = getNumMembers( lhs );
       size_t rhsSize = getNumMembers( rhs );
-      if ( lhsSize < rhsSize )
-        return -1;
-      else if ( lhsSize > rhsSize )
-        return 1;
-      else
+      if ( lhsSize != rhsSize )
+        return false;
+      else if( lhsSize )
       {
-        for ( size_t i=0; i<lhsSize; ++i )
+        if( m_memberIsShallow )
+          return memcmp( getMemberData( lhs, 0 ), getMemberData( rhs, 0 ), lhsSize * m_memberImpl->getAllocSize() ) == 0;
+        else
         {
-          int memberResult = m_memberImpl->compareData( getMemberData( lhs, i ), getMemberData( rhs, i ) );
-          if ( memberResult )
-            return memberResult;
+          for ( size_t i=0; i<lhsSize; ++i )
+          {
+            if( !m_memberImpl->equalsData( getMemberData( lhs, i ), getMemberData( rhs, i ) ) )
+              return false;
+          }
+          return true;
         }
-        return 0;
       }
+      else
+        return true;
     }
   };
 };
