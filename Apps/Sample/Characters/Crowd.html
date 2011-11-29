@@ -277,7 +277,7 @@ $(document).ready(function() {
   
   var materialNode = scene.constructNode('PhongSkinnedInstancesMaterial', {
     lightNode: light,
-    diffuseColor: FABRIC.RT.rgba(1.0, 0.0, 0.0, 1.0),
+    diffuseColor: FABRIC.RT.rgba(1.0, 0.5, 0.3, 1.0),
     numBonesPerInstance: ikrig.getSkeletonNode().getNumBones(),
     instanceCount: agentCount
   });
