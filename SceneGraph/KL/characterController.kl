@@ -63,7 +63,7 @@ operator evaluateCharacterController(
   
   io Vec3 linearVelocity,
   io Scalar angularVelocity,
-  
+  io Scalar comParams[],
   
   io Scalar gravity,
   io Scalar comHeight,
@@ -84,17 +84,21 @@ operator evaluateCharacterController(
   
   controllerXfo.tr += controllerXfo.ori.rotateVector(Vec3(0.0, controllerparams.lift, 0.0));
   controllerparams.lift = 0.0;
+  Vec3 facingDir = controllerXfo.ori.rotateVector(Vec3(0.0, 0.0, 1.0));
   
   ////////////////////////////
   // Movement
-  Vec3 acceleration = goalLinearVelocity - linearVelocity;
-  
+  Vec3 acceleration = (goalLinearVelocity - linearVelocity)/timestep;
   Scalar accel = acceleration.length();
-  if(accel > maxLinearAcceleration){
-    acceleration *= maxLinearAcceleration/accel;
+  if(accel > 0.001){
+    Scalar acceleationCosAngle = acceleration.unit().dot(facingDir);
+    Scalar modulator = acceleationCosAngle > 0.0 ? (0.5 + (0.5*acceleationCosAngle)) : 0.5;
+    if(accel > maxLinearAcceleration * modulator){
+      acceleration *= (maxLinearAcceleration * modulator)/accel;
+    }
+      
+    linearVelocity += acceleration * timestep;
   }
-    
-  linearVelocity += acceleration;
   controllerparams.displacement.tr = linearVelocity * timestep;
   controllerXfo.tr += controllerparams.displacement.tr;
   
@@ -135,10 +139,9 @@ operator evaluateCharacterController(
   // Alignment
   
   if(linearVelocity.length() > 0.001){
-    Vec3 currDir = controllerXfo.ori.rotateVector(Vec3(0.0, 0.0, 1.0));
     Vec3 displacementDir = linearVelocity.unit();
-    Scalar sign = currDir.cross(displacementDir).y < 0.0 ? -1.0 : 1.0;
-    Scalar newAngularVelocity = currDir.angleTo(displacementDir) * sign / timestep;
+    Scalar sign = facingDir.cross(displacementDir).y < 0.0 ? -1.0 : 1.0;
+    Scalar newAngularVelocity = facingDir.angleTo(displacementDir) * sign / timestep;
     
     Scalar angularAcceleration = (newAngularVelocity - angularVelocity);
     if(abs(angularAcceleration) > maxAngularAcceleration){
@@ -197,6 +200,10 @@ operator evaluateCharacterController(
     debugGeometry1.drawAxis(controllerXfo, 1.0, Color(1.0,0.0,0.0,1.0));
     debugGeometry1.drawCircle(controllerXfo, circleSize, Color(1.0,0.0,0.0,1.0));
   }
+  
+  comParams.resize(4);
+  comParams[1] = linearVelocity.length();
+  comParams[2] = acceleration.length();
 }
 
 
