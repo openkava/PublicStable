@@ -48,6 +48,7 @@ namespace Fabric
       void jsonDesc( Util::JSONGenerator &resultJG ) const;
       virtual void jsonDesc( Util::JSONObjectGenerator &resultJOG ) const;
       virtual void jsonDescType( Util::JSONGenerator &resultJG ) const = 0;
+      virtual void jsonGetMemoryUsage( Util::JSONGenerator &jg ) const;
       
     protected:
     

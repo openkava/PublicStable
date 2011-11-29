@@ -1806,6 +1806,15 @@ function (fabricClient, logCallback, debugLogCallback) {
     },
     close: function() {
       fabricClient.close();
+    },
+    getMemoryUsage: function() {
+      var memoryUsage;
+      queueCommand([], "getMemoryUsage", null, function () {
+      }, function (result) {
+        memoryUsage = result;
+      });
+      executeQueuedCommands();
+      return memoryUsage;
     }
   };
 }
