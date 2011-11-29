@@ -101,10 +101,10 @@
     }});
 
   // load out custom shaders
-  FABRIC.SceneGraph.defineEffectFromFile('ToonMaterial', 'ToonShader.xml');
-  FABRIC.SceneGraph.defineEffectFromFile('WorkPlaneMaterial', 'WorkPlaneShader.xml');
-  FABRIC.SceneGraph.defineEffectFromFile('GroundPlaneMaterial', 'GroundPlaneShader.xml');
-  FABRIC.SceneGraph.defineEffectFromFile('ManipulatorMaterial', 'ManipulatorShader.xml');
+  FABRIC.SceneGraph.defineEffectFromFile('ToonMaterial', 'Shaders/ToonShader.xml');
+//  FABRIC.SceneGraph.defineEffectFromFile('WorkPlaneMaterial', 'Shaders/WorkPlaneShader.xml');
+  FABRIC.SceneGraph.defineEffectFromFile('GroundPlaneMaterial', 'Shaders/GroundPlaneShader.xml');
+  FABRIC.SceneGraph.defineEffectFromFile('ManipulatorMaterial', 'Shaders/ManipulatorShader.xml');
 
   // register our custom renderer
   FABRIC.SceneGraph.registerNodeType('ToonRenderer', {
@@ -215,7 +215,7 @@
         name: 'ToonCompositing',
         parentEventHandler: redrawEventHandler,
         vertexShader: undefined,
-        fragmentShader: FABRIC.loadResourceURL('ToonCompositing.glsl'),
+        fragmentShader: FABRIC.loadResourceURL('Shaders/ToonCompositing.glsl'),
         shaderUniforms: {
           colorTexture: { name: 'u_colorImage', owner: 'renderTarget' },
           normalTexture: { name: 'u_normalImage', owner: 'renderTarget' },
