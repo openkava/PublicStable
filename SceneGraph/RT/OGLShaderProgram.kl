@@ -45,8 +45,7 @@ function Integer OGLShaderProgram.createAndCompileShader(OGLShaderSource shaders
     var String infoLog;
     var Size bufferSize[];
     var Size bufferTotalSize = 0;
-    for(var Size i=0;i<infoLen.size();i++)
-    {
+    for(var Size i=0;i<infoLen.size();i++){
       bufferSize.push(Size(infoLen[i]));
       bufferTotalSize += bufferSize[i];
     }
@@ -251,10 +250,9 @@ function OGLShaderProgram.loadShader() {
       for(Integer i=0; i<this.disableOptions.size(); i++){
         glDisable(this.disableOptions[i]);
       }
-      // The culling value can only be modified if the draw options are also modified.
-      if(this.cullFace!=0){
-        glCullFace(this.cullFace);
-      }
+    }
+    if(this.cullFace!=0){
+      glCullFace(this.cullFace);
     }
     this.loadedAttributes.resize(0);
   }
@@ -262,6 +260,10 @@ function OGLShaderProgram.loadShader() {
 
 function OGLShaderProgram.unloadShader() {
   if(this.programId != 0){
+    // Put the cull value back to the default. 
+    if(this.cullFace!=0){
+      glCullFace(GL_BACK);
+    }
     if(this.disableOptions.size() > 0 || this.enableOptions.size() > 0){
       glPopAttrib();
     }
