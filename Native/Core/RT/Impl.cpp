@@ -103,5 +103,10 @@ namespace Fabric
     {
       m_disposeCallback = disposeCallback;
     }
+
+    size_t Impl::getIndirectMemoryUsage( void const *data ) const
+    {
+      return 0;
+    }
   };
 };

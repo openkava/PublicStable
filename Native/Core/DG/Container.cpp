@@ -77,6 +77,11 @@ namespace Fabric
       {
         m_slicedArrayDesc->setNumMembers( m_slicedArrayData, newCount, m_defaultMemberData );
       }
+      
+      size_t getMemoryUsage() const
+      {
+        return m_slicedArrayDesc->getAllocSize() + m_slicedArrayDesc->getIndirectMemoryUsage( m_slicedArrayData );
+      }
 
     protected:
       
@@ -946,6 +951,17 @@ namespace Fabric
         m_context->getIOManager()->jsonExecPutUserFile( arg, resource.getDataSize(), resource.getDataPtr(), resource.getExtension().c_str(), resultJAG );
       else
         m_context->getIOManager()->jsonExecPutFile( arg, resource.getDataSize(), resource.getDataPtr(), resultJAG );
+    }
+
+    void Container::jsonGetMemoryUsage( Util::JSONGenerator &jg ) const
+    {
+      Util::JSONObjectGenerator jog = jg.makeObject();
+      for ( Members::const_iterator it = m_members.begin(); it != m_members.end(); ++it )
+      {
+        Util::JSONGenerator memberJG = jog.makeMember( it->first );
+        RC::Handle<Member> const &member = it->second;
+        memberJG.makeInteger( int32_t( member->getMemoryUsage() ) );
+      }
     }
   };
 };

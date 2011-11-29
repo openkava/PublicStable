@@ -61,6 +61,7 @@ namespace Fabric
       std::string descData( void const *data ) const;
       std::string toString( void const *data ) const;
       int compareData( void const *lhs, void const *rhs ) const;
+      size_t getIndirectMemoryUsage( void const *data ) const;
       
       RC::Handle<JSON::Value> getJSONValue( void const *data ) const;
       void setDataFromJSONValue( RC::ConstHandle<JSON::Value> const &value, void *data ) const;

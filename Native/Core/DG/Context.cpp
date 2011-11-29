@@ -388,7 +388,9 @@ namespace Fabric
       Util::JSONArrayGenerator &resultJAG
       )
     {
-      throw Exception( "unknown command" );
+      if ( cmd == "getMemoryUsage" )
+        jsonExecGetMemoryUsage( resultJAG );
+      else throw Exception( "unknown command" );
     }
     
     static void jsonDescLicenses_llvm_projects_sample_autoconf( Util::JSONGenerator &resultJG )
@@ -579,6 +581,24 @@ namespace Fabric
       {
         Util::JSONGenerator memberJG = resultJGObject.makeMember( "build", 5 );
         jsonDescBuild( memberJG );
+      }
+    }
+    
+    void Context::jsonExecGetMemoryUsage( Util::JSONArrayGenerator &resultJAG ) const
+    {
+      Util::JSONGenerator jg = resultJAG.makeElement();
+      Util::JSONObjectGenerator jog = jg.makeObject();
+      Util::JSONGenerator dgJG = jog.makeMember( "DG" );
+      jsonDGGetMemoryUsage( dgJG );
+    }
+    
+    void Context::jsonDGGetMemoryUsage( Util::JSONGenerator &jg ) const
+    {
+      Util::JSONObjectGenerator jog = jg.makeObject();
+      for ( NamedObjectMap::const_iterator it = m_namedObjectRegistry.begin(); it != m_namedObjectRegistry.end(); ++it )
+      {
+        Util::JSONGenerator namedObjectJG = jog.makeMember( it->first );
+        it->second->jsonGetMemoryUsage( namedObjectJG );
       }
     }
 
