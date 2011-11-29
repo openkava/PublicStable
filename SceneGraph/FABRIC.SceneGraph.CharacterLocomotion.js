@@ -106,17 +106,21 @@ FABRIC.appendOnCreateContextCallback(function(context) {
 });
 
 FABRIC.RT.FootStep = function() {
+  this.prevStepMidPlantTime = 0.0;
   this.liftTime = 0.0;
   this.plantTime = 0.0;
   this.midPlantTime = 0.0;
+  this.strideLength = 0.0;
 };
 
 FABRIC.appendOnCreateContextCallback(function(context) {
   context.RegisteredTypesManager.registerType('FootStep', {
     members: {
+      prevStepMidPlantTime: 'Scalar',
       liftTime: 'Scalar',
       plantTime: 'Scalar',
-      midPlantTime: 'Scalar'
+      midPlantTime: 'Scalar',
+      strideLength: 'Scalar'
     },
     constructor: FABRIC.RT.FootStep
   });
@@ -242,6 +246,7 @@ FABRIC.Characters.CharacterControllerParams = function() {
   this.trailCircularArrayIndex = 0;
   this.balanceXfo = new FABRIC.RT.Xfo();
   this.lift = 0;
+  this.state = 0;
 };
 
 FABRIC.appendOnCreateContextCallback(function(context) {
@@ -253,7 +258,8 @@ FABRIC.appendOnCreateContextCallback(function(context) {
       trailLength: 'Scalar',
       trailCircularArrayIndex: 'Integer',
       balanceXfo: 'Xfo',
-      lift: 'Scalar'
+      lift: 'Scalar',
+      state: 'Integer'
     },
     constructor: FABRIC.Characters.CharacterControllerParams
   });
@@ -310,6 +316,8 @@ FABRIC.SceneGraph.registerNodeType('LocomotionCharacterController', {
     dgnode.addMember('linearVelocity', 'Vec3');
     dgnode.addMember('angularVelocity', 'Scalar');
     
+    dgnode.addMember('comParams', 'Scalar[]');
+    
     dgnode.addMember('controllerparams', 'CharacterControllerParams', controllerparams);
     dgnode.addMember('liftVec', 'Vec3');
     dgnode.addMember('gravity', 'Scalar', options.gravity);
@@ -350,6 +358,8 @@ FABRIC.SceneGraph.registerNodeType('LocomotionCharacterController', {
           
           'self.linearVelocity',
           'self.angularVelocity',
+          
+          'self.comParams',
           
           'self.gravity',
           'self.comHeight',
@@ -471,7 +481,7 @@ FABRIC.RT.TrackSetController = function( activeTrackSet ) {
   this.tick = 0;
   this.comParams = [];
   this.stepIds = [];
-  this.deactivate = false;
+  this.deactivate = true;
   this.pivotFoot = 0;
   this.pivotStepId = 0;
 };
@@ -568,6 +578,7 @@ FABRIC.SceneGraph.registerNodeType('LocomotionPoseVariables', {
         
         'charactercontroller.xfo<>',
         'charactercontroller.controllerparams<>',
+        'charactercontroller.comParams<>',
         
         'self.trackcontroller',
         'self.plantedFeet',
