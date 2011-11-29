@@ -138,6 +138,20 @@ $(document).ready(function() {
   });
   
   var constructBulletScene = true;
+  
+  var rigName = 'walker';
+  try{
+    if(localStorage && localStorage.getItem("rigName")){
+      rigName = localStorage.getItem("rigName");
+    }
+    else{
+      throw "no rigName";
+    }
+  }catch(e){}
+  if(rigName =='centipede'){
+    constructBulletScene = false;
+  }
+
   if(constructBulletScene){
     
     // create a simulation world
@@ -294,17 +308,8 @@ $(document).ready(function() {
       });
     }
   }
-  
-  var rigName = 'walker';
-  try{
-    if(localStorage && localStorage.getItem("rigName")){
-      rigName = localStorage.getItem("rigName");
-    }
-    else{
-      throw "no rigName";
-    }
-  }catch(e){}
-//  var locomotionControllerNode;
+
+  var locomotionControllerNode;
   switch(rigName){
   case 'walker':
     locomotionControllerNode = scene.constructNode('ScreenSpacePlayerCharacterController', {
