@@ -114,28 +114,40 @@ $(document).ready(function() {
   $("#displayDebugging").attr('checked', crowdParams.displayDebugging);
   
 
+  var rigName = 'marama';
+  /*
+  try{
+    if(localStorage && localStorage.getItem("rigName")){
+      rigName = localStorage.getItem("rigName");
+    }
+    else{
+      throw "no rigName";
+    }
+  }catch(e){}
+  */
   
   var gridSize, agentCount, cameraDist = 20;
   
   switch(crowdParams.sceneSize){
-    case 'tiny':
-      agentCount = 10;
-      gridSize = 40;
-      cameraDist = 6;
-      break;
     case 'small':
-      agentCount = 50;
+      agentCount = 100;
       gridSize = 80;
       cameraDist = 10;
       break;
     case 'medium':
-      agentCount = 1000;
-      gridSize = 200;
-      cameraDist = 20;
+      agentCount = 600;
+      gridSize = 100;
+      cameraDist = 15;
       break;
     case 'huge':
-      agentCount = 5000;
-      gridSize = 800;
+      agentCount = 1500;
+      gridSize = 150;
+      cameraDist = 20;
+      break;
+    case 'massive':
+      agentCount = 3000;
+      gridSize = 300;
+      cameraDist = 30;
       break;
   }
 
@@ -156,7 +168,7 @@ $(document).ready(function() {
       position: new FABRIC.RT.Vec3(3, 7.2, 3).multiplyScalar(cameraDist),
       target: new FABRIC.RT.Vec3(0, -0.5, 0),
       roll: 0,
-      nearDistance: 10.0,
+      nearDistance: 1.0,
       farDistance: 1360
     });
   scene.constructNode('CameraManipulator', { targetNode: camera });
@@ -180,30 +192,19 @@ $(document).ready(function() {
   // create a simulation world
   var bulletWorldNode;
   
-  var rigName = 'marama';
-  /*
-  try{
-    if(localStorage && localStorage.getItem("rigName")){
-      rigName = localStorage.getItem("rigName");
-    }
-    else{
-      throw "no rigName";
-    }
-  }catch(e){}
-  */
   var crowdNode;
   switch(rigName){
   case 'walker':
   var agentRadius = 3.0;
   var cellSize = 20.0;
     var crowdNode = scene.constructNode('Crowd', {
-        maxLinearVelocity: 15,
-        maxLinearAcceleration: 2.45,
+        maxLinearVelocity: 10,
+        maxLinearAcceleration: 30,
         maxAngularVelocity:  3,
         maxAngularAcceleration: 3,
         bulletWorldNode: bulletWorldNode,
         numTrailSegments: 0,
-        gravity: -1.0,
+        gravity: 0.0,
         comHeight: 1.8,
         circleSize: 1.6,
         
@@ -217,30 +218,17 @@ $(document).ready(function() {
         displayDebugging: crowdParams.displayDebugging
       });
     break;
-  case 'centipede':
-    var crowdNode = scene.constructNode('Crowd', {
-        maxLinearVelocity: 20,
-        maxLinearAcceleration: 1.45,
-        maxAngularVelocity:  2,
-        maxAngularAcceleration: 2,
-        bulletWorldNode: bulletWorldNode,
-        numTrailSegments: 12,
-        trailLength: 12.0,
-        gravity: 0,
-        circleSize: 1.6
-      });
-    break;
   case 'marama':
   var agentRadius = 0.9;
   var cellSize = 8.0;
     var crowdNode = scene.constructNode('Crowd', {
         maxLinearVelocity: 3.5,
-        maxLinearAcceleration: 0.4,
+        maxLinearAcceleration: 6,
         maxAngularVelocity:  5,
         maxAngularAcceleration: 5,
         bulletWorldNode: bulletWorldNode,
         numTrailSegments: 0,
-        gravity: -4.8,
+        gravity: -98,
         comHeight: 1.8,
         circleSize: 0.6,
         
@@ -443,8 +431,9 @@ $(document).ready(function() {
               <label for="numAgents" style="margin-top:10px;">Num Agents:</label>
               <select id='numAgents' style="margin-top:10px;">
                 <option value="small">Small:100
-                <option value="medium">Medium:2000
-                <option value="huge">Huge:5000
+                <option value="medium">Medium:600
+                <option value="huge">Huge:1500
+                <option value="massive">Massive:3000
               </select>
               </br>
               <input type="checkbox" id="displayDebugging" style="margin-top:10px;"/><label for="displayDebugging">Display Debugging:</label>
