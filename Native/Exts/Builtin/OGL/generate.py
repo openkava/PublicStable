@@ -381,10 +381,18 @@ def main():
                 cParameters.append('KL::Data '+varname)
                 klCast.append('('+fulltype+')'+varname)
             elif variables[i].startswith('const'):
-              # THIS CAN BE DONE BASED ON THE DIGITS
-              klParameters.append('io '+knownCTypes[type][3]+' '+klvarname+'['+digit+']')
-              cParameters.append('const KL::VariableArray<KL::'+knownCTypes[type][3]+'> & '+varname)
-              klCast.append('('+fulltype+')&'+varname+'[0]')
+                
+              if(knownCTypes[type][0] == "GLenum"):
+                print(name+" : "+str(knownCTypes[type]))
+                # THIS IS THE 64 BIT issue case
+                klParameters.append('io Integer '+klvarname+'['+digit+']')
+                cParameters.append('const KL::VariableArray<KL::Integer> & '+varname)
+                klCast.append('('+fulltype+')&'+varname+'[0]')
+              else:
+                # THIS CAN BE DONE BASED ON THE DIGITS
+                klParameters.append('io '+knownCTypes[type][3]+' '+klvarname+'['+digit+']')
+                cParameters.append('const KL::VariableArray<KL::'+knownCTypes[type][3]+'> & '+varname)
+                klCast.append('('+fulltype+')&'+varname+'[0]')
             else:
               # this is really flaky, it should be >Data, but that's not possible.
               # the rvalue is still able to write to though.

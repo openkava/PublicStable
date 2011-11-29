@@ -20,7 +20,7 @@ namespace Fabric
       // Impl
     
       virtual std::string descData( void const *data ) const;
-      virtual int compareData( void const *lhs, void const *rhs ) const;
+      virtual bool equalsData( void const *lhs, void const *rhs ) const;
 
       // ArrayImpl
 
@@ -38,12 +38,16 @@ namespace Fabric
       ArrayImpl( std::string const &codeName, ImplType implType, RC::ConstHandle<Impl> const &memberImpl )
         : Impl( codeName, implType )
         , m_memberImpl( memberImpl )
+        , m_memberIsShallow( memberImpl->isShallow() )
       {
       }
+
+      bool isMemberShallow() const{ return m_memberIsShallow; }
       
     private:
     
       RC::ConstHandle<Impl> m_memberImpl;
+      bool m_memberIsShallow;
    };
   };
 };

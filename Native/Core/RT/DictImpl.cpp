@@ -509,10 +509,10 @@ namespace Fabric
       return bits->nodeCount;
     }
     
-    int DictImpl::compareData( void const *lhs, void const *rhs ) const
+    bool DictImpl::equalsData( void const *lhs, void const *rhs ) const
     {
       FABRIC_ASSERT(false);
-      return 0;
+      return true;
     }
   };
 };

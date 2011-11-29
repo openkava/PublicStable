@@ -94,12 +94,12 @@ namespace Fabric
 
     bool FabricResourceWrapper::isEqualTo( const void *other ) const
     {
-      return m_dataMemberDesc->compareData( m_resource, other ) == 0;
+      return m_dataMemberDesc->equalsData( m_resource, other );
     }
 
     bool FabricResourceWrapper::isURLEqualTo( const void *otherStringData ) const
     {
-      return m_rtManager->getStringDesc()->compareData( m_desc->getMemberData( m_resource, FABRIC_RESOURCE_URL_MEMBER_INDEX), otherStringData ) == 0;
+      return m_rtManager->getStringDesc()->equalsData( m_desc->getMemberData( m_resource, FABRIC_RESOURCE_URL_MEMBER_INDEX), otherStringData );
     }
 
     void FabricResourceWrapper::setExtension( std::string const &value )

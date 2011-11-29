@@ -455,9 +455,7 @@ touch %CHECKPOINT_DIR%\teem_unpack
 if EXIST %CHECKPOINT_DIR%\teem_cmake goto teem_cmake_done
 echo teem - CMake - generating projects
 cd %BUILD_DIR%\%TEEM_NAME%
-cmake -G "Visual Studio 10" -DZLIB_LIBRARY=%LIB_ARCH_RELEASE_DIR%\zlib\zlib.lib -DZLIB_INCLUDE_DIR=%TOP%\include\zlib .
-rem Do it twice; first time it gives errors about no bz or png but we don't care
-cmake -G "Visual Studio 10" -DZLIB_LIBRARY=%LIB_ARCH_RELEASE_DIR%\zlib\zlib.lib -DZLIB_INCLUDE_DIR=%TOP%\include\zlib .
+cmake -G "Visual Studio 10" -DTeem_BZIP2=OFF -DTeem_PTHREAD=OFF -DTeem_PNG=OFF -DZLIB_LIBRARY=%LIB_ARCH_RELEASE_DIR%\zlib\zlib.lib -DZLIB_INCLUDE_DIR=%TOP%\include\zlib .
 touch %CHECKPOINT_DIR%\teem_cmake
 :teem_cmake_done
 
