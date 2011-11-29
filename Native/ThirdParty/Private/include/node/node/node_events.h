@@ -19,36 +19,26 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#ifndef PIPE_WRAP_H_
-#define PIPE_WRAP_H_
-#include <stream_wrap.h>
+#ifndef SRC_EVENTS_H_
+#define SRC_EVENTS_H_
+
+#include <node_object_wrap.h>
+#include <v8.h>
 
 namespace node {
 
-class PipeWrap : StreamWrap {
+class EventEmitter : public ObjectWrap {
  public:
-  uv_pipe_t* UVHandle();
+  static void Initialize(v8::Local<v8::FunctionTemplate> ctemplate);
+  static v8::Persistent<v8::FunctionTemplate> constructor_template;
 
-  static PipeWrap* Unwrap(v8::Local<v8::Object> obj);
-  static void Initialize(v8::Handle<v8::Object> target);
+  bool Emit(v8::Handle<v8::String> event,
+            int argc,
+            v8::Handle<v8::Value> argv[]);
 
- private:
-  PipeWrap(v8::Handle<v8::Object> object, bool ipc);
-
-  static v8::Handle<v8::Value> New(const v8::Arguments& args);
-  static v8::Handle<v8::Value> Bind(const v8::Arguments& args);
-  static v8::Handle<v8::Value> Listen(const v8::Arguments& args);
-  static v8::Handle<v8::Value> Connect(const v8::Arguments& args);
-  static v8::Handle<v8::Value> Open(const v8::Arguments& args);
-
-  static void OnConnection(uv_stream_t* handle, int status);
-  static void AfterConnect(uv_connect_t* req, int status);
-
-  uv_pipe_t handle_;
+ protected:
+  EventEmitter() : ObjectWrap () { }
 };
 
-
 }  // namespace node
-
-
-#endif  // PIPE_WRAP_H_
+#endif  // SRC_EVENTS_H_

@@ -26,11 +26,7 @@
 #include <node_object_wrap.h>
 
 #include <v8.h>
-#include <uv.h>
-
-#ifdef __POSIX__
-# include <uv-private/ev.h>
-#endif
+#include <ev.h>
 
 #ifdef __MINGW32__
 # include <platform_win32.h> // HANDLE type
@@ -93,8 +89,7 @@ class ChildProcess : ObjectWrap {
             int custom_uid,
             char *custom_uname,
             int custom_gid,
-            char *custom_gname,
-            int* channel);
+            char *custom_gname);
 
   // Simple syscall wrapper. Does not disable the watcher. onexit will be
   // called still.
@@ -119,10 +114,12 @@ class ChildProcess : ObjectWrap {
 #endif // __POSIX__
 
 #ifdef __MINGW32__
+  static int do_spawn(eio_req *req);
+  static int after_spawn(eio_req *req);
   static void watch(ChildProcess *child);
   static void CALLBACK watch_wait_callback(void *data, BOOLEAN didTimeout);
   static void notify_spawn_failure(ChildProcess *child);
-  static void notify_exit(uv_async_t* watcher, int status);
+  static void notify_exit(EV_P_ ev_async *ev, int revent);
   static int do_kill(ChildProcess *child, int sig);static void close_stdio_handles(ChildProcess *child);
 
   int pid_;

@@ -19,36 +19,28 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#ifndef PIPE_WRAP_H_
-#define PIPE_WRAP_H_
-#include <stream_wrap.h>
+#ifndef NODE_PLATFORM_WIN32_WINSOCK_H_
+#define NODE_PLATFORM_WIN32_WINSOCK_H_
+
+#include <platform_win32.h>
+
+#include <winsock2.h>
+#include <mswsock.h>
+#include <ws2tcpip.h>
+#include <ws2spi.h>
 
 namespace node {
 
-class PipeWrap : StreamWrap {
- public:
-  uv_pipe_t* UVHandle();
+void wsa_init();
 
-  static PipeWrap* Unwrap(v8::Local<v8::Object> obj);
-  static void Initialize(v8::Handle<v8::Object> target);
+void wsa_perror(const char* prefix = "");
 
- private:
-  PipeWrap(v8::Handle<v8::Object> object, bool ipc);
+SOCKET wsa_sync_socket(int af, int type, int proto);
 
-  static v8::Handle<v8::Value> New(const v8::Arguments& args);
-  static v8::Handle<v8::Value> Bind(const v8::Arguments& args);
-  static v8::Handle<v8::Value> Listen(const v8::Arguments& args);
-  static v8::Handle<v8::Value> Connect(const v8::Arguments& args);
-  static v8::Handle<v8::Value> Open(const v8::Arguments& args);
-
-  static void OnConnection(uv_stream_t* handle, int status);
-  static void AfterConnect(uv_connect_t* req, int status);
-
-  uv_pipe_t handle_;
-};
+int wsa_socketpair(int af, int type, int proto, SOCKET sock[2]);
+int wsa_sync_async_socketpair(int af, int type, int proto, SOCKET *syncSocket, SOCKET *asyncSocket);
 
 
-}  // namespace node
+} // namespace node
 
-
-#endif  // PIPE_WRAP_H_
+#endif  // NODE_PLATFORM_WIN32_WINSOCK_H_

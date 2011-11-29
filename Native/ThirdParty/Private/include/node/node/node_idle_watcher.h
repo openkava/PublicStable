@@ -19,36 +19,44 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#ifndef PIPE_WRAP_H_
-#define PIPE_WRAP_H_
-#include <stream_wrap.h>
+#ifndef NODE_IDLE_H_
+#define NODE_IDLE_H_
+
+#include <node_object_wrap.h>
+#include <ev.h>
 
 namespace node {
 
-class PipeWrap : StreamWrap {
+class IdleWatcher : ObjectWrap {
  public:
-  uv_pipe_t* UVHandle();
-
-  static PipeWrap* Unwrap(v8::Local<v8::Object> obj);
   static void Initialize(v8::Handle<v8::Object> target);
 
- private:
-  PipeWrap(v8::Handle<v8::Object> object, bool ipc);
+ protected:
+  static v8::Persistent<v8::FunctionTemplate> constructor_template;
+
+  IdleWatcher() : ObjectWrap() {
+    ev_idle_init(&watcher_, IdleWatcher::Callback);
+    watcher_.data = this;
+  }
+
+  ~IdleWatcher() {
+    ev_idle_stop(EV_DEFAULT_UC_ &watcher_);
+  }
 
   static v8::Handle<v8::Value> New(const v8::Arguments& args);
-  static v8::Handle<v8::Value> Bind(const v8::Arguments& args);
-  static v8::Handle<v8::Value> Listen(const v8::Arguments& args);
-  static v8::Handle<v8::Value> Connect(const v8::Arguments& args);
-  static v8::Handle<v8::Value> Open(const v8::Arguments& args);
+  static v8::Handle<v8::Value> Start(const v8::Arguments& args);
+  static v8::Handle<v8::Value> Stop(const v8::Arguments& args);
+  static v8::Handle<v8::Value> SetPriority(const v8::Arguments& args);
 
-  static void OnConnection(uv_stream_t* handle, int status);
-  static void AfterConnect(uv_connect_t* req, int status);
+ private:
+  static void Callback(EV_P_ ev_idle *watcher, int revents);
 
-  uv_pipe_t handle_;
+  void Start();
+  void Stop();
+
+  ev_idle watcher_;
 };
 
-
 }  // namespace node
+#endif  // NODE_IDLE_H_
 
-
-#endif  // PIPE_WRAP_H_
