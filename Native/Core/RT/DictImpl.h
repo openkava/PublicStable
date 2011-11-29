@@ -15,7 +15,7 @@ namespace Fabric
   {
     class ComparableImpl;
     
-#define RT_DICT_IMPL_MINIMUM_BUCKET_COUNT size_t(16)
+#define RT_DICT_IMPL_MINIMUM_BUCKET_COUNT size_t(4)
     
     class DictImpl : public Impl
     {
