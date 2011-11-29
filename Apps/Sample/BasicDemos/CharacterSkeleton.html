@@ -108,6 +108,9 @@ $(document).ready(function() {
   var assetNodes = scene.importAssetFile('Models/mocap_01.dae', {
     constructRigFromHierarchy: 'Biped_Nulls_UpperBody'
   });
+
+  var animationLibrary = assetNodes.AnimationLibrary;
+
   
   // Get the rig from the list of returned assets.
   var rig = assetNodes.Biped_Nulls_UpperBodyCharacterRig;
@@ -188,6 +191,16 @@ $(document).ready(function() {
     }
   });
 
+  $('#curveEditor').button()
+    .click(function() {
+      animationLibrary.openCurveEditor();
+  });
+
+  $('#debugger').button()
+    .click(function() {
+      FABRIC.displayDebugger();
+  });
+
 });
 
 // jQuert UI Styling classes
@@ -228,6 +241,8 @@ $(document).ready(function() {
                     <div class="content">
                       <button id="play">Play</button>
                       <button id="step">Step</button>
+                      <button id="curveEditor">Open Curve Editor</button>
+                      <button id="debugger">Open Debugger</button>
                     </div><!--content-->
                 </div><!--box-->
         </div><!--sidebar-->
