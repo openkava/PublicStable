@@ -76,9 +76,9 @@ namespace Fabric
       return getAllocSize() == impl->getAllocSize();
     }
 
-    int OpaqueImpl::compareData( void const *lhs, void const *rhs ) const
+    bool OpaqueImpl::equalsData( void const *lhs, void const *rhs ) const
     {
-      return memcmp( lhs, rhs, getAllocSize() );
+      return memcmp( lhs, rhs, getAllocSize() ) == 0;
     }
   }; // namespace RT
 }; // namespace FABRIC
