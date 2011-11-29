@@ -298,10 +298,8 @@ operator evaluateLocomotionPoseVariables(
     
     clipFrequencyMultiplier = (currSpeed / clipSpeed);
     if(clipFrequencyMultiplier < minFrequency){
+      strideLengthMultiplier = clipFrequencyMultiplier / minFrequency;
       clipFrequencyMultiplier = minFrequency;
-    }
-    if(minFrequency > 0.0){
-      strideLengthMultiplier = (currSpeed / clipSpeed) / clipFrequencyMultiplier;
     }
     
   //  report("currSpeed:"+currSpeed + " clipSpeed:"+clipSpeed + " clipFrequencyMultiplier:"+clipFrequencyMultiplier + " strideLengthMultiplier:"+strideLengthMultiplier);
