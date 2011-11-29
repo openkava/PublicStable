@@ -27,8 +27,8 @@ function OGLBuffer.genBuffer(
       glBindBuffer(this.bufferType, this.bufferID);
       glBufferData(this.bufferType, bufferSize, bufferData, this.bufferUsage);
       glBindBuffer(this.bufferType, 0);
-      this.elementCount = bufferDataElementCount;
     }
+    this.elementCount = bufferDataElementCount;
     this.reload = false;
   }
 }
