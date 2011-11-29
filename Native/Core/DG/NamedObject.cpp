@@ -116,5 +116,10 @@ namespace Fabric
       }
       jsonNotifyMemberDelta( "errors", 6, json );
     }
+
+    void NamedObject::jsonGetMemoryUsage( Util::JSONGenerator &jg ) const
+    {
+      jg.makeInteger( 0 );
+    }
   };
 };

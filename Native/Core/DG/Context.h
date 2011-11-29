@@ -157,6 +157,8 @@ namespace Fabric
       ~Context();
 
       void jsonDesc( Util::JSONObjectGenerator &resultJOG ) const;
+      void jsonExecGetMemoryUsage( Util::JSONArrayGenerator &resultJAG ) const;
+      void jsonDGGetMemoryUsage( Util::JSONGenerator &jg ) const;
       
     private:
     
