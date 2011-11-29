@@ -131,89 +131,50 @@ operator simulateCrowd(
     }
     Vec3 goalDir = goal - xfo.tr;
     Scalar goalDist = goalDir.length();
-    
-    
-    if (goalDist > neighborInfluenceRange) {
+    if (goalDist > (agentRadius*2.0)) {
       goalVelocity = goalDir * Vec3(maxLinearVelocity / goalDist, 0.0, maxLinearVelocity / goalDist);
-    }
-    else if (goalDist > (agentRadius*2.0)) {
-      Scalar weight = 1.0;//(goalDist - agentRadius)/(neighborInfluenceRange - agentRadius);
-      goalVelocity = goalDir * Vec3((maxLinearVelocity * weight) / goalDist, 0.0, (maxLinearVelocity * weight) / goalDist);
     }
   }
   
   if (neighborIndices.size > 0) {
-  
-    //////////////////////////////////////////////////////
-    // Separation
-  /*
-    Scalar separationWeight = 0.6;
-    Scalar separationDistance = neighborInfluenceRange;// * 0.65;
-    Scalar neighborInfluenceWeight = 0.0;
-    Vec3 separationVector(0.0, 0.0, 0.0);
-    Vec3 separationVelocity(0.0, 0.0, 0.0);
-    for (i = 0; i < neighborIndices.size; i++) {
-      Integer neighborId = neighborIndices[i];
-      if (neighborId == index) {
-        continue;
-      }
-      Scalar neighborDist = neighborDistances[i];
-      if (neighborDist < separationDistance) {
-        Scalar weight = (neighborDist - neighborInfluenceRange)/((agentRadius*2.0) - neighborInfluenceRange);
-        weight = weight * weight * weight;
-        separationVector += (xfo.tr - previousframe_positions[neighborId]) * ((1.0 / neighborDist) * (separationDistance - neighborDist) * weight);
-        neighborInfluenceWeight += 1.0;
-      }
-    }
-    if(displayDebugging){
-      debugDraw.drawLine(xfo.tr, xfo.tr+separationVector, Color(0.5, 0.25, 0.0, 1.0));
-    }
-    if(neighborInfluenceWeight > 0.0){
-      separationVector /= neighborInfluenceWeight;
-      separationVelocity = separationVector * (separationWeight / timestep);
-      goalVelocity += separationVelocity;
-    }
-    */
     
     //////////////////////////////////////////////////////
     // Collision avoidance
-    Scalar nearestCpaTime = 99999.0;
-    Integer cpaAgent;
+    Vec3 collisionAvoidance;
     for (i = 0; i < neighborIndices.size; i++) {
       Integer neighborId = neighborIndices[i];
       if (neighborId == index) {
         continue;
       }
+      Integer cpaAgent = neighborIndices[i];
       Scalar neighborDist = neighborDistances[i];
       if (neighborDist < neighborInfluenceRange) {
         Scalar cpaTime;
         cpaTime = cpa_time(
           xfo.tr,
           goalVelocity,
-          previousframe_positions[neighborIndices[i]],
-          previousframe_velocities[neighborIndices[i]]
+          previousframe_positions[cpaAgent],
+          previousframe_velocities[cpaAgent]
         );
-        if(abs(cpaTime) < abs(nearestCpaTime)){
-          nearestCpaTime = cpaTime;
-          cpaAgent = i;
+        if(cpaTime < 0.0){
+          continue;
+        }
+        Vec3 p1 = xfo.tr + (cpaTime * goalVelocity);
+        Vec3 p2 = previousframe_positions[cpaAgent] + (cpaTime * previousframe_velocities[cpaAgent]);
+  
+        if(displayDebugging){
+          debugDraw.drawLine(xfo.tr, previousframe_positions[cpaAgent], Color(0.75, 0.0, 1.0, 1.0));
+          debugDraw.drawLine(p1, p2, Color(0.75, 0.0, 0.0, 1.0));
+        }
+        
+        Vec3 cpaVec = p1 - p2;
+        Scalar cpaDist = cpaVec.length();  // distance at CPA
+        if(cpaDist < (agentRadius*2.0)){
+          collisionAvoidance += cpaVec * ((((agentRadius*2.0)-cpaDist)/cpaDist ) / timestep );
         }
       }
     }
-    if (nearestCpaTime < 99999.0) {
-      Vec3 p1 = xfo.tr + (nearestCpaTime * goalVelocity);
-      Vec3 p2 = previousframe_positions[neighborIndices[cpaAgent]] + (nearestCpaTime * previousframe_velocities[neighborIndices[cpaAgent]]);
-
-      if(displayDebugging){
-        debugDraw.drawLine(xfo.tr, previousframe_positions[neighborIndices[cpaAgent]], Color(0.75, 0.0, 1.0, 1.0));
-        debugDraw.drawLine(p1, p2, Color(0.75, 0.0, 0.0, 1.0));
-      }
-      
-      Vec3 cpaVec = p1 - p2;
-      Scalar cpaDist = cpaVec.length();  // distance at CPA
-      if(cpaDist < (agentRadius*2.0)){
-        goalVelocity += cpaVec * ((((agentRadius*2.0)-cpaDist)/cpaDist ) / timestep );
-      }
-    }
+    goalVelocity += collisionAvoidance;
   }
   
   Scalar goalSpeed = goalVelocity.length();

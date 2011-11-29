@@ -12,6 +12,13 @@
     <attribute name="a_normal" binding="normals"/>
   </attributes>
   
+  <openglstateparams>
+    <enableOptions>
+      <option>GL_CULL_FACE</option>
+    </enableOptions>
+    <cullFace>GL_FRONT</cullFace>
+  </openglstateparams>
+  
   <vertexshader>
     <source>
       <![CDATA[
