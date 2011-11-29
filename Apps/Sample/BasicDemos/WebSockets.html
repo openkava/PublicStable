@@ -34,6 +34,7 @@
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Geometry.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Primitives.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Lights.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Images.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Materials.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Manipulation.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Kinematics.js" charset="utf-8"></script>
@@ -112,7 +113,7 @@ $(document).ready(function() {
   // create the websocket node
   try{
     var ws = scene.constructManager("WebSocketManager", {
-      serverUrl: 'ec2-50-19-205-12.compute-1.amazonaws.com',
+      serverUrl: 'ws.fabric-engine.com',
       sendFunctionNames: ['cameraManip'],
       contextID: getUrlVars()['context'],
       onOpenCallBack: function() {

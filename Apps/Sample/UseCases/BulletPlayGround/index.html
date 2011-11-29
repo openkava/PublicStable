@@ -35,6 +35,7 @@
   <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Geometry.js" charset="utf-8"></script>
   <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Primitives.js" charset="utf-8"></script>
   <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Lights.js" charset="utf-8"></script>
+  <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Images.js" charset="utf-8"></script>
   <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Materials.js" charset="utf-8"></script>
   <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Manipulation.js" charset="utf-8"></script>
   <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Kinematics.js" charset="utf-8"></script>
@@ -100,10 +101,10 @@
     }});
 
   // load out custom shaders
-  FABRIC.SceneGraph.defineEffectFromFile('ToonMaterial', 'ToonShader.xml');
-  FABRIC.SceneGraph.defineEffectFromFile('WorkPlaneMaterial', 'WorkPlaneShader.xml');
-  FABRIC.SceneGraph.defineEffectFromFile('GroundPlaneMaterial', 'GroundPlaneShader.xml');
-  FABRIC.SceneGraph.defineEffectFromFile('ManipulatorMaterial', 'ManipulatorShader.xml');
+  FABRIC.SceneGraph.defineEffectFromFile('ToonMaterial', 'Shaders/ToonShader.xml');
+//  FABRIC.SceneGraph.defineEffectFromFile('WorkPlaneMaterial', 'Shaders/WorkPlaneShader.xml');
+  FABRIC.SceneGraph.defineEffectFromFile('GroundPlaneMaterial', 'Shaders/GroundPlaneShader.xml');
+  FABRIC.SceneGraph.defineEffectFromFile('ManipulatorMaterial', 'Shaders/ManipulatorShader.xml');
 
   // register our custom renderer
   FABRIC.SceneGraph.registerNodeType('ToonRenderer', {
@@ -214,7 +215,7 @@
         name: 'ToonCompositing',
         parentEventHandler: redrawEventHandler,
         vertexShader: undefined,
-        fragmentShader: FABRIC.loadResourceURL('ToonCompositing.glsl'),
+        fragmentShader: FABRIC.loadResourceURL('Shaders/ToonCompositing.glsl'),
         shaderUniforms: {
           colorTexture: { name: 'u_colorImage', owner: 'renderTarget' },
           normalTexture: { name: 'u_normalImage', owner: 'renderTarget' },
@@ -645,7 +646,7 @@ $(document).ready(function() {
     $("#join").button();
     try{
       ws = scene.constructManager("WebSocketManager", {
-        serverUrl: 'ec2-50-19-205-12.compute-1.amazonaws.com',
+        serverUrl: 'ws.fabric-engine.com',
         contextID: getUrlVars()['context'],
         onOpenCallBack: function() {
 

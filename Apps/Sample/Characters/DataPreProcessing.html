@@ -41,6 +41,7 @@
     
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Lights.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Images.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Materials.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Geometry.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Manipulation.js" charset="utf-8"></script>
@@ -169,7 +170,7 @@ $(document).ready(function() {
   //////////////////////////////////////////////
   // 
   
-  var rigName = 'centipede';
+  var rigName = 'marama';
   var assetNodes, bindPoseRig, fkrigNode, rigInstanceNode, skeletonNode, characterMesh;
   switch(rigName){
   case 'walker':
@@ -282,7 +283,7 @@ $(document).ready(function() {
     
     break;
   case 'marama':
-    assetNodes = scene.importAssetFile('Assets/Marama.DAE', { scaleFactor: scaleFactor } );
+    assetNodes = scene.importAssetFile('Assets/Marama2.DAE', { scaleFactor: scaleFactor } );
   
     fkrigNode = assetNodes.MaramaPelvis001CharacterRig;
     rigInstanceNode = assetNodes.MaramaPelvis001CharacterInstance;
@@ -322,9 +323,17 @@ $(document).ready(function() {
     
     rigInstanceNode.setRigNode(ikrigNode);
     
+
+   loadAnimationFile('Assets/Marama_Idle.DAE', fkrigNode);
+/*   loadAnimationFile('Assets/Marama_StartWalking.DAE', fkrigNode);
+   loadAnimationFile('Assets/Marama_StopWalking.DAE', fkrigNode);
+*/
    loadAnimationFile('Assets/Marama_Walk.DAE', fkrigNode);
    loadAnimationFile('Assets/Marama_Run.DAE', fkrigNode);
-  
+   /*
+   loadAnimationFile('Assets/Marama_StartRunning.DAE', fkrigNode);
+   loadAnimationFile('Assets/Marama_StopRunning.DAE', fkrigNode);
+   */
     break;
   }
   

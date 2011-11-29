@@ -36,8 +36,9 @@
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Geometry.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Primitives.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Kinematics.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Materials.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Lights.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Images.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Materials.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Manipulation.js" charset="utf-8"></script>
     
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Selection.js" charset="utf-8"></script>
@@ -82,16 +83,17 @@ $(document).ready(function() {
       windowElement: document.getElementById('FabricContainer'),
       cameraNode: camera
     });
-  
+  /*
   viewport.setBackgroundTextureImage(scene.constructNode('Image', {
     url: 'Resources/fabric-demo-gradient.png'
   }));
-
+  */
   scene.constructNode('CameraManipulator', { targetNode: camera });
   
   var selectionManager = scene.constructManager('ViewportSelectionManager');
   var selectionManipulationManager = scene.constructManager('SelectionManipulationManager', {
-    selectionManager: selectionManager
+    selectionManager: selectionManager,
+    screenTranslationRadius: 1
   });
   
   // create the scene grid
@@ -104,22 +106,23 @@ $(document).ready(function() {
     materialNode: scene.constructNode('FlatMaterial')
   });
   
-
   var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) });
+  
+  var highlightMaterial = scene.constructNode('OutlineShader', {
+    color: FABRIC.RT.rgb(0.7, 0.7, 0.7, 1),
+    thickness: 0.25
+  });
+  var selectedMaterial = scene.constructNode('OutlineShader', {
+    color: FABRIC.RT.rgb(0.95, 0.95, 0.95, 1),
+    thickness: 0.25
+  });
+
   var materials = [
       scene.constructNode('PhongMaterial', { diffuseColor: FABRIC.RT.rgb(0.8, 0, 0, 1), lightNode: light }),
-      scene.constructNode('PhongMaterial', { diffuseColor: FABRIC.RT.rgb(0, 0.8, 0, 1), lightNode: light }),
+      scene.constructNode('PhongMaterial', { diffuseColor: FABRIC.RT.rgb(0.6, 0.6, 0, 1), lightNode: light }),
       scene.constructNode('PhongMaterial', { diffuseColor: FABRIC.RT.rgb(0, 0, 0.8, 1), lightNode: light })
     ];
   
-  var highlightMaterial = scene.constructNode('OutlineShader', {
-    color: FABRIC.RT.rgb(0.6, 0.6, 0.6, 0.5),
-    thickness: 0.2
-  });
-  var selectedMaterial = scene.constructNode('OutlineShader', {
-    color: FABRIC.RT.rgb(0.9, 0.9, 0.9, 1),
-    thickness: 0.2
-  });
   
   var nodes = {};
   var objId = 0;

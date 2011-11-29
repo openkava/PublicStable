@@ -79,7 +79,7 @@ function PoseVariables.addWeighted(PoseVariables other, Scalar weight) {
 function PoseVariables.setTrackValues(
   in Scalar time,
   io KEYFRAMETYPETrackSet trackSet,
-  io KeyframeTrackBindings bindings
+  in KeyframeTrackBindings bindings
 ) {
   for (Integer i = 0; i < bindings.scalarBindings.size; i++) {
     KeyframeTrackBinding binding = bindings.scalarBindings[i];
