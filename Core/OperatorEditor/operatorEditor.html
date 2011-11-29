@@ -61,6 +61,14 @@
   bottom:10px;
 }
 
+#reload{
+  position:absolute;
+  right:120px;
+  bottom:10px;
+}
+
+
+
     </style>
   </head>
 
@@ -96,9 +104,7 @@ $(document).ready(function() {
     width: "100%"
   });
   
-  $('#recompile').button()
-  .click(function() {
-    var code = editor.getValue();
+  var recompile = function(code){
     try{
       operator.setSourceCode(code);
       FABRIC.flush();
@@ -136,6 +142,22 @@ $(document).ready(function() {
    //   compliationErrors.setValue(message);
    //   $( "#compliationErrorDialog" ).dialog( "open" );
     }
+  }
+  
+  $('#recompile').button()
+  .click(function() {
+    recompile(editor.getValue());
+  });
+  
+  $('#reload').button({ disabled:operator.getFilename().indexOf('.kl')==-1 } )
+  .click(function() {
+    var preProcessorDefinitions, file = operator.getFilename();
+    FABRIC.loadResourceURL(file, 'text/plain', function(code){
+      if(preProcessorDefinitions){
+        code = FABRIC.preProcessCode(code, preProcessorDefinitions);
+      }
+      editor.setValue(code);
+    });
   });
   
   $("#compliationErrorDialog").dialog({
@@ -165,6 +187,7 @@ $(document).ready(function() {
         </div><!--code-->
         
         <div id="bottomToolbar">
+          <button id="reload" style="margin-top:10px;">ReLoad</button>
           <button id="recompile" style="margin-top:10px;">Recompile</button>
         </div><!--bottomToolbar-->
       </div> <!--editor-->
