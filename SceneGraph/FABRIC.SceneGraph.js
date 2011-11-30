@@ -984,8 +984,8 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
             // during the 1st redraw.
             viewportNode.pub.getOpenGLVersion = fabricwindow.getOpenGLVersion;
             viewportNode.pub.getGlewSupported = fabricwindow.getGlewSupported;
-            viewportNode.pub.show = function(){ fabricwindow.show(); };
-            viewportNode.pub.hide = function(){ fabricwindow.hide(); };
+            viewportNode.pub.show = function(){ fabricwindow.show(); visible = true; };
+            viewportNode.pub.hide = function(){ fabricwindow.hide(); visible = false; };
 
             viewportNode.pub.getWidth = function(){ return fabricwindow.windowNode.getData('width'); };
             viewportNode.pub.getHeight = function(){ return fabricwindow.windowNode.getData('height'); };
@@ -995,8 +995,7 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
           if(options.checkOpenGL2Support && !fabricwindow.getGlewSupported('GL_VERSION_2_0')){
             alert('ERROR: Your graphics driver does not support OpenGL 2.0, which is required to run Fabric.')
           }else{
-            fabricwindow.show();
-            visible = true;
+            viewportNode.pub.show();
           }
           return true;
         }
