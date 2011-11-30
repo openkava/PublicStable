@@ -957,6 +957,7 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
     var fabricwindow = scene.bindViewportToWindow(windowElement, viewportNode);
     
     var initialLoad = true;
+    var visible = false;
     var startLoadMode = function() {
       fabricwindow.hide();
       FABRIC.appendOnResolveAsyncTaskCallback(function(label, countRemaining){
@@ -995,6 +996,7 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
             alert('ERROR: Your graphics driver does not support OpenGL 2.0, which is required to run Fabric.')
           }else{
             fabricwindow.show();
+            visible = true;
           }
           return true;
         }
@@ -1229,6 +1231,9 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
       return ray;
     };
     viewportNode.pub.redraw = function(force) {
+      if(!visible){
+        return;
+      }
       if(scene.pub.animation.isPlaying()){
         if(force)
           fabricwindow.needsRedraw();
