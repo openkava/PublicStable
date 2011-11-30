@@ -180,7 +180,7 @@ operator evaluateLocomotionPoseVariables(
   
   Vec3 linearVelocity = controllerparams.displacement.tr / timestep;
   Scalar currSpeed = linearVelocity.length();
-  Scalar clipSpeed = trackcontroller.comParams[1];
+  Scalar clipSpeed = trackcontroller.comParams[0];
   
   if(clipSpeed == 0.0){
     if(trackcontroller.deactivate){
@@ -292,9 +292,6 @@ operator evaluateLocomotionPoseVariables(
     Scalar strideLength = 0.0;
     Scalar gradient = 0.0;
     
-    // Get the com params from the previous update.
-    stepFrequency = trackcontroller.comParams[0];
-    strideLength = stepFrequency * clipSpeed;
     
     clipFrequencyMultiplier = (currSpeed / clipSpeed);
     if(clipFrequencyMultiplier < minFrequency){
@@ -325,9 +322,6 @@ operator evaluateLocomotionPoseVariables(
     for(Integer j=0; j < com.parameterVarIds.size; j++){
       trackcontroller.comParams[j] = poseVariables.scalarValues[com.parameterVarIds[j]];
     }
-    // re-retrieve the values from the evaluated track.
-    stepFrequency = trackcontroller.comParams[0];
-    clipSpeed = trackcontroller.comParams[1];
       
     /////////////////////////////////////////////////
     // Error dissapation
@@ -338,7 +332,7 @@ operator evaluateLocomotionPoseVariables(
       }
       if(clipActivationTime > 0.0){
         // Blend off the error across the first half a stride. 
-        Scalar blendTime = (stepFrequency * clipFrequencyMultiplier * 0.3);
+        Scalar blendTime = (clipFrequencyMultiplier * 0.3);
         if(t - clipActivationTime < blendTime){
           Scalar weight = 1.0 - ((t - clipActivationTime) / blendTime);
           poseVariables.addWeighted(poseError, weight);

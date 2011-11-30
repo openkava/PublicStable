@@ -4,7 +4,8 @@
 
 
 
-FABRIC.Characters.COM = function(xfoId, parameterVarIds) {
+FABRIC.Characters.COM = function(boneId, xfoId, parameterVarIds) {
+  this.boneId = boneId != undefined ? boneId : -1;
   this.xfoId = xfoId != undefined ? xfoId : -1;
   this.parameterVarIds = parameterVarIds != undefined ? parameterVarIds : [];
 };
@@ -12,6 +13,7 @@ FABRIC.Characters.COM = function(xfoId, parameterVarIds) {
 FABRIC.appendOnCreateContextCallback(function(context) {
   context.RegisteredTypesManager.registerType('COM', {
     members: {
+      boneId: 'Integer',
       xfoId: 'Integer',
       parameterVarIds: 'Integer[]'
     },
@@ -24,8 +26,10 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('COMSolver', {
   constructSolver: function(options, scene) {
     
     var rigNode = scene.getPrivateInterface(options.rigNode),
-      skeletonNode = scene.getPrivateInterface(rigNode.pub.getSkeletonNode()),
-      solver = {};
+      skeletonNode = scene.getPrivateInterface(rigNode.pub.getSkeletonNode());
+      
+    var solver = FABRIC.SceneGraph.CharacterSolvers.constructSolver('CharacterSolver', options, scene);
+    var boneId = solver.generateBoneMapping( { bone: options.bone }, ['bone']);
 
     var comXfoId = rigNode.addVariable('Xfo');
     // stepFrequency
@@ -37,8 +41,45 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('COMSolver', {
     // direction
     var comParam3VarId = rigNode.addVariable('Scalar');
     
-    var com = new FABRIC.Characters.COM(comXfoId, [comParam0VarId, comParam1VarId, comParam2VarId, comParam3VarId] );
+    var com = new FABRIC.Characters.COM(boneId.bone, comXfoId, [
+      comParam0VarId,
+      comParam1VarId,
+      comParam2VarId,
+      comParam3VarId
+    ]);
     skeletonNode.addMember('com', 'COM', com);
+      
+    rigNode.addSolverOperator({
+          operatorName: 'solveCOM',
+          srcCode: 'operator solveCOM( io Xfo pose[], io Bone bones[], io COM com, Size index, io PoseVariables poseVariableSlices<> ) {\n\
+  pose[com.boneId] = poseVariableSlices[index].xfoValues[com.xfoId];\n\
+}',
+          entryFunctionName: 'solveCOM',
+          parameterLayout: [
+        'self.pose',
+        'skeleton.bones',
+        'skeleton.com',
+        'self.index',
+        'variables.poseVariables<>'
+          ]
+        });
+    
+    
+    solver.invert = function(variablesNode){
+      variablesNode.getDGNode().bindings.append(scene.constructOperator({
+          operatorName: 'invertCOM',
+          srcCode: 'operator invertCOM( io Xfo pose[], io Bone bones[], io COM com, io PoseVariables poseVariables ) {\n\
+  poseVariables.xfoValues[com.xfoId] = pose[com.boneId];\n\
+}',
+          entryFunctionName: 'invertCOM',
+          parameterLayout: [
+            'sourcerig.pose',
+            'skeleton.bones',
+            'skeleton.com',
+            'self.poseVariables'
+          ]
+        }));
+    }
     
     return solver; 
   }
