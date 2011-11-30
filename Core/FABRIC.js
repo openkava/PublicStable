@@ -5,13 +5,14 @@
 
 FABRIC = (function() {
 
+  var requiredVersion = [1,0,17];
   // we keep an array of context ids,
   // so we can open the debugger with one
   var contextIDs = [];
   
   var displayPluginInstallPage = function( div ){
     var iframeTag = document.createElement('iframe');
-    iframeTag.setAttributeNS(null, 'src', 'http://demos.fabric-engine.com/Fabric/Core/pluginInstall.html');
+    iframeTag.setAttributeNS(null, 'src', 'http://demos.fabric-engine.com/Fabric/Core/pluginInstall.html?ver=' + requiredVersion.join('.'));
     iframeTag.setAttributeNS(null, 'style', 'position:absolute; left:0; right:0; top:0; bottom:0; z-index:10');
     iframeTag.setAttributeNS(null, 'width', '100%');
     iframeTag.setAttributeNS(null, 'height', '100%');
@@ -27,14 +28,13 @@ FABRIC = (function() {
   var createContext = function(options) {
     
     // Check to see if the plugin is loaded.
-    if(!navigator.mimeTypes["application/fabric"]){
+    if(true || !navigator.mimeTypes["application/fabric"]){
       displayPluginInstallPage();
       throw("Fabric not installed");
     }else if(!navigator.mimeTypes["application/fabric"].enabledPlugin){
       alert("Fabric plugin not enabled");
       throw("Fabric plugin not enabled");
     }
-    
     
     if (!options)
       options = {};
@@ -63,7 +63,6 @@ FABRIC = (function() {
     // Check the currently installed version.
     // TODO: This code will be removed once we get to the end of beta.
     var version = context.build.getPureVersion().split('.');
-    var requiredVersion = [1,0,16];
     var cmpVersions = function (lhs, rhs) {
       if (lhs[0] < rhs[0])
         return -1;
