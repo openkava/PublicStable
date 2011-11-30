@@ -66,13 +66,15 @@ if buildOS == 'Windows':
   llvmFlags['LIBS'] += ['Shell32']
 Export( 'llvmFlags' )
 
-# V8
-v8Flags = {
+# Node.js
+nodeFlags = {
 	'CPPPATH': [
-	  os.path.join( includeBaseDir, 'v8' ),
+	  os.path.join( includeBaseDir, 'node', 'node' ),
+	  os.path.join( includeBaseDir, 'node', 'v8' ),
+	  os.path.join( includeBaseDir, 'node', 'uv' ),
 	],
 };
-Export( 'v8Flags' )
+Export( 'nodeFlags' )
 
 # libedit
 if buildOS != 'Windows':
