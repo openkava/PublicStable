@@ -158,26 +158,27 @@ FABRIC.SceneGraph.registerNodeType('OffscreenViewport', {
     return offscreenNode;
   }});
 
-FABRIC.SceneGraph.defineEffectFromFile('DeferredRenderMaterial', 'FABRIC_ROOT/SceneGraph/Shaders/DeferredRender.xml');
-FABRIC.SceneGraph.defineEffectFromFile('DeferredInstancingExtRenderMaterial', 'FABRIC_ROOT/SceneGraph/Shaders/DeferredInstancingExtRender.xml');
-FABRIC.SceneGraph.defineEffectFromFile('DeferredPhongMaterial', 'FABRIC_ROOT/SceneGraph/Shaders/DeferredPhongShader.xml');
-
-FABRIC.SceneGraph.registerNodeType('DeferredRenderer', {
+FABRIC.SceneGraph.registerNodeType('BaseDeferredRenderer', {
   briefDesc: '',
   detailedDesc: '',
   parentNodeDesc: '',
   optionsDesc: {
-    cameraNode: "Active camera (used only to load projection matrix in order to restor ZBuffer)",
+    colorBuffers: "array of render targets specifying 'nbChannels' (1 to 4) and 'name' for each target. Note that for a target name N, it is expected that the deferred shader will have a " + 
+                  "texture parameter name NTexture. Ex: [{nbChannels: 4, name: 'diffuse'}, {nbChannels: 3, name: 'normal'}], matching params diffuseTexture and normalTexture in deferred shader material." +
+                  "Note that your prePass shaders should then write to targets of the corresponding indices: glFragData[0]=diffuseColor; glFragData[1]=normal;",
+    addDepth: "if depth should be attached",
     showDebug: "Display view of the render targets",
-    addPhongShadingLayer: "Adds a global Phong shading by default",
-    lightNode: "to be used by the Phong shading pass",
-    //To add eventually: choose which components we want to render; compute normals, compute specular, compute diffuse, compute depth...
+    lightNode: "to be used by the Phong shading pass"
   },
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
       showDebug: false,
-      addPhongShadingLayer: true
+      addDepth: true,
+      colorBuffers: []
       });
+
+    if(options.colorBuffers.length == 0)
+      throw ('Error: no render target provided');
 
     var deferredRenderNode = scene.constructNode('SceneGraphNode');
     var redrawEventHandler = deferredRenderNode.constructEventHandlerNode('DeferredDraw');
@@ -188,48 +189,42 @@ FABRIC.SceneGraph.registerNodeType('DeferredRenderer', {
     var renderTargetRedrawEventHandler = deferredRenderNode.constructEventHandlerNode('RenderTargetRedraw');
     redrawEventHandler.appendChildEventHandler(renderTargetRedrawEventHandler);
 
+    var channelToInternalFormat = [0, FABRIC.SceneGraph.OpenGLConstants.GL_R16F, FABRIC.SceneGraph.OpenGLConstants.GL_RG16F, FABRIC.SceneGraph.OpenGLConstants.GL_RGB16F, FABRIC.SceneGraph.OpenGLConstants.GL_RGBA16F];
+    var channelToFormat = [0, FABRIC.SceneGraph.OpenGLConstants.GL_RED, FABRIC.SceneGraph.OpenGLConstants.GL_RG, FABRIC.SceneGraph.OpenGLConstants.GL_RGB, FABRIC.SceneGraph.OpenGLConstants.GL_RGBA];
+
     var oglRenderTargetTextureDescs = [];
     var oglRenderTargetTextureNames = [];
 
-    oglRenderTargetTextureDescs.push(
-        new FABRIC.RT.OGLRenderTargetTextureDesc (
-            2, // COLOR_BUFFER
-            new FABRIC.RT.OGLTexture2D (
-              FABRIC.SceneGraph.OpenGLConstants.GL_RGB16F,
-              FABRIC.SceneGraph.OpenGLConstants.GL_RGB,
-              FABRIC.SceneGraph.OpenGLConstants.GL_FLOAT)
-          ));
-    oglRenderTargetTextureNames.push('positions');
+    var i;
+    for( i = 0; i < options.colorBuffers.length; ++i ) {
+      var nbChannels = options.colorBuffers[i].nbChannels;
+      if(nbChannels === undefined || nbChannels < 1 || nbChannels > 4)
+        throw ('Error: unsupported number of channels for render target ' + i);
+      if(options.colorBuffers[i].name === undefined)
+        throw ('Error: name not specified for render target ' + i);
 
-    oglRenderTargetTextureDescs.push(
-        new FABRIC.RT.OGLRenderTargetTextureDesc (
-            2, // COLOR_BUFFER
-            new FABRIC.RT.OGLTexture2D (
-              FABRIC.SceneGraph.OpenGLConstants.GL_RGB16F,
-              FABRIC.SceneGraph.OpenGLConstants.GL_RGB,
-              FABRIC.SceneGraph.OpenGLConstants.GL_FLOAT)
-          ));
-    oglRenderTargetTextureNames.push('normals');
+      oglRenderTargetTextureDescs.push(
+          new FABRIC.RT.OGLRenderTargetTextureDesc (
+              2, // COLOR_BUFFER
+              new FABRIC.RT.OGLTexture2D (
+                channelToInternalFormat[nbChannels],
+                channelToFormat[nbChannels],
+                FABRIC.SceneGraph.OpenGLConstants.GL_FLOAT)
+            ));
+      oglRenderTargetTextureNames.push(options.colorBuffers[i].name);
+    }
 
-    oglRenderTargetTextureDescs.push(
-        new FABRIC.RT.OGLRenderTargetTextureDesc (
-            2, // COLOR_BUFFER
-            new FABRIC.RT.OGLTexture2D (
-              FABRIC.SceneGraph.OpenGLConstants.GL_RGBA16F,
-              FABRIC.SceneGraph.OpenGLConstants.GL_RGBA,
-              FABRIC.SceneGraph.OpenGLConstants.GL_FLOAT)
-          ));
-    oglRenderTargetTextureNames.push('diffuseAndSpecularFactor');
-
-    oglRenderTargetTextureDescs.push(
-        new FABRIC.RT.OGLRenderTargetTextureDesc (
-            1, // DEPTH_BUFFER
-            new FABRIC.RT.OGLTexture2D (
-              FABRIC.SceneGraph.OpenGLConstants.GL_DEPTH_COMPONENT,
-              FABRIC.SceneGraph.OpenGLConstants.GL_DEPTH_COMPONENT,
-              FABRIC.SceneGraph.OpenGLConstants.GL_FLOAT)
-          ));
-    oglRenderTargetTextureNames.push('depth');
+    if(options.addDepth) {
+      oglRenderTargetTextureDescs.push(
+          new FABRIC.RT.OGLRenderTargetTextureDesc (
+              1, // DEPTH_BUFFER
+              new FABRIC.RT.OGLTexture2D (
+                FABRIC.SceneGraph.OpenGLConstants.GL_DEPTH_COMPONENT,
+                FABRIC.SceneGraph.OpenGLConstants.GL_DEPTH_COMPONENT,
+                FABRIC.SceneGraph.OpenGLConstants.GL_FLOAT)
+            ));
+      oglRenderTargetTextureNames.push('depth');
+    }
 
     var nbRenderTargets = oglRenderTargetTextureNames.length;
     var renderTarget = FABRIC.RT.oglRenderTarget(0,0,
@@ -262,20 +257,22 @@ FABRIC.SceneGraph.registerNodeType('DeferredRenderer', {
           ]
         }));
 
-    renderTargetRedrawEventHandler.postDescendBindings.append(
-      scene.constructOperator({
-          operatorName: 'copyDepth',
-          srcCode: 'use OGLRenderTarget; operator copyDepth(io Integer width, io Integer height, io OGLRenderTarget renderTarget){\n'+
-                      'glBindFramebuffer(GL_READ_FRAMEBUFFER, renderTarget.fbo);\n' +
-                      'glBlitFramebuffer(0,0,width-1,height-1,0,0,width-1,height-1,GL_DEPTH_BUFFER_BIT, GL_NEAREST);\n'+
-                      'glBindFramebuffer(GL_READ_FRAMEBUFFER, GL_NONE);}',
-          entryFunctionName: 'copyDepth',
-          parameterLayout: [
-            'window.width',
-            'window.height',
-            'deferredDraw.renderTarget'
-          ]
-        }));
+    if(options.addDepth) {
+      renderTargetRedrawEventHandler.postDescendBindings.append(
+        scene.constructOperator({
+            operatorName: 'copyDepth',
+            srcCode: 'use OGLRenderTarget; operator copyDepth(io Integer width, io Integer height, io OGLRenderTarget renderTarget){\n'+
+                        'glBindFramebuffer(GL_READ_FRAMEBUFFER, renderTarget.fbo);\n' +
+                        'glBlitFramebuffer(0,0,width-1,height-1,0,0,width-1,height-1,GL_DEPTH_BUFFER_BIT, GL_NEAREST);\n'+
+                        'glBindFramebuffer(GL_READ_FRAMEBUFFER, GL_NONE);}',
+            entryFunctionName: 'copyDepth',
+            parameterLayout: [
+              'window.width',
+              'window.height',
+              'deferredDraw.renderTarget'
+            ]
+          }));
+    }
 
     if(options.showDebug) {
       //Debug display render targets
@@ -360,9 +357,7 @@ FABRIC.SceneGraph.registerNodeType('DeferredRenderer', {
       return str[0].toUpperCase() + str.substr(1);
     };
 
-    var cameraNode = options.cameraNode;
-
-    deferredRenderNode.pub.addShadingMaterialLayer = function(materialName, options) {
+    deferredRenderNode.pub.addPostPassMaterial = function(materialName, options) {
 
       options.parentEventHandler = shaderPassRedrawEventHandler;
       var materialNodePub = scene.pub.constructNode(materialName, options);
@@ -393,20 +388,57 @@ FABRIC.SceneGraph.registerNodeType('DeferredRenderer', {
       return materialNodePub;
     };
    
+    deferredRenderNode.pub.addPrePassMaterial = function(materialName, options) {
+      options.parentEventHandler = renderTargetRedrawEventHandler;
+      return scene.pub.constructNode(materialName, options);
+    };
+
+    return deferredRenderNode;
+}});
+
+var definedDeferredPhongMaterials = false;
+
+FABRIC.SceneGraph.registerNodeType('PhongDeferredRenderer', {
+  briefDesc: '',
+  detailedDesc: '',
+  parentNodeDesc: 'BaseDeferredRenderer',
+  optionsDesc: {
+    addPhongShadingLayer: "Adds a global Phong shading by default"
+  },
+  factoryFn: function(options, scene) {
+    scene.assignDefaults(options, {
+      addPhongShadingLayer: true
+      });
+
+    if( definedDeferredPhongMaterials == false ) {
+      FABRIC.SceneGraph.defineEffectFromFile('DeferredPrePhongMaterial', 'FABRIC_ROOT/SceneGraph/Shaders/DeferredPrePhong.xml');
+      FABRIC.SceneGraph.defineEffectFromFile('DeferredPrePhongInstancingExtMaterial', 'FABRIC_ROOT/SceneGraph/Shaders/DeferredPrePhongInstancingExt.xml');
+      FABRIC.SceneGraph.defineEffectFromFile('DeferredPostPhongMaterial', 'FABRIC_ROOT/SceneGraph/Shaders/DeferredPostPhong.xml');
+      definedDeferredPhongMaterials = true;
+    }
+
+    options.colorBuffers = [{name: 'positions', nbChannels: 3}, {name: 'normals', nbChannels: 3}, {name: 'diffuseAndSpecularFactor', nbChannels: 4}];
+    options.addDepth = true;
+
+    var deferredRenderNode = scene.constructNode('BaseDeferredRenderer', options);
+   
     deferredRenderNode.pub.addPhongShadingLayer = function(options) {
       options.shadeFullScreen = true;
-      deferredRenderNode.pub.addShadingMaterialLayer('DeferredPhongMaterial', options);
+      deferredRenderNode.pub.addPostPassMaterial('DeferredPostPhongMaterial', options);
       options.shadeFullScreen = undefined;
+    };
+
+    deferredRenderNode.pub.addPrePassPhongMaterial = function(options) {
+      return deferredRenderNode.pub.addPrePassMaterial('DeferredPrePhongMaterial', options);
+    };
+
+    deferredRenderNode.pub.addPrePassPhongInstancingMaterial = function(options) {
+      return deferredRenderNode.pub.addPrePassMaterial('DeferredPrePhongInstancingExtMaterial', options);
     };
 
     if(options.addPhongShadingLayer) {
       deferredRenderNode.pub.addPhongShadingLayer(options);
     }
 
-    deferredRenderNode.pub.constructDiffuseMaterial = function(materialName, options) {
-      options.parentEventHandler = renderTargetRedrawEventHandler;
-      return scene.pub.constructNode(materialName, options);
-    };
-
     return deferredRenderNode;
-  }});
+}});

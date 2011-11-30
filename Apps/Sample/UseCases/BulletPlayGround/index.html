@@ -665,7 +665,7 @@ $(document).ready(function() {
             });
             $('#joinOK').button().click(function(){
               if($('#joinContext').val())
-                document.location.href = document.URL.split('?')[0]+"?context="+$('#joinContext').val();
+                window.location.replace(document.URL.split('?')[0]+"?context="+$('#joinContext').val());
               $('#joinDialog').dialog('close');
               viewport.show();
             });
