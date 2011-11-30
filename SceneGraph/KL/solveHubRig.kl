@@ -27,10 +27,11 @@ operator solveHubRigs(
         pose[hub.boneId] = pose[hub.hubParentSpaceId] * poseVariables.xfoValues[hub.xfoId];
     }
     else{
-      if (bones[hub.boneId].parent == -1) 
+      // TODO: Re-impliment hubs with parents. This made animation pre processing more cmoplex once I added the RigRoot node.
+    //  if (bones[hub.boneId].parent == -1) 
         pose[hub.boneId] = controllerXfo * poseVariables.xfoValues[hub.xfoId];
-      else 
-        pose[hub.boneId] = pose[bones[hub.boneId].parent] * poseVariables.xfoValues[hub.xfoId];
+   //   else 
+   //     pose[hub.boneId] = pose[bones[hub.boneId].parent] * poseVariables.xfoValues[hub.xfoId];
     }
     if(hub.inSpineBoneIds.size > 0){
       for(Integer j=0; j < hub.inSpineBoneIds.size; j++){
@@ -75,10 +76,11 @@ operator invertHubRigs(
         poseVariables.xfoValues[hub.xfoId] = pose[hub.hubParentSpaceId].inverse() * pose[hub.boneId];
     }
     else{
-      if (bones[hub.boneId].parent == -1)
+      // TODO: Re-impliment hubs with parents. This made animation pre processing more cmoplex once I added the RigRoot node.
+   //   if (bones[hub.boneId].parent == -1)
         poseVariables.xfoValues[hub.xfoId] = pose[hub.boneId];
-      else
-        poseVariables.xfoValues[hub.xfoId] = pose[bones[hub.boneId].parent].inverse() * pose[hub.boneId];
+   //   else
+   //     poseVariables.xfoValues[hub.xfoId] = pose[bones[hub.boneId].parent].inverse() * pose[hub.boneId];
     }
     for (var Integer j = 0; j < hub.inSpineBoneIds.size; j++) {
       if (bones[hub.inSpineBoneIds[j]].parent == - 1)
