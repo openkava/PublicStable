@@ -17,14 +17,16 @@ FABRIC.SceneGraph.registerNodeType('OffscreenViewport', {
     mainViewportNode: 'The viewport this OffscreenViewport will use the window and and viewport dgnode from.',
     cameraNode: 'An optional camera to be used for this OffscreenViewport. If not specified, the camera of the mainViewportNode is used.',
     eventName: 'The name of the event to be created. The OffscreenViewport will listen to this event to be fired for a redraw.',
-    textureDescription: 'An optional parameter to define the texture definition which is used to store the OffscreenViewport\'s image.'
+    textureDescription: 'An optional parameter to define the texture definition which is used to store the OffscreenViewport\'s image.',
+    clearColor: 'clear (background) color' //TODO: make this work properly by initializing colors from current ones (background texture)
   },
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
         mainViewportNode: undefined,
         cameraNode: undefined,
         eventName: undefined,
-        textureDescription: undefined
+        textureDescription: undefined,
+        clearColor: FABRIC.RT.rgba(0.0,0.0,0.0,0.0)
       });
 
     // query the main viewport
@@ -230,7 +232,7 @@ FABRIC.SceneGraph.registerNodeType('BaseDeferredRenderer', {
     var renderTarget = FABRIC.RT.oglRenderTarget(0,0,
       oglRenderTargetTextureDescs,
       {
-        clearColor: FABRIC.RT.rgba(0,0,0,0)
+        clearColor: options.clearColor
       }
     );
     redrawEventHandler.addMember('renderTarget', 'OGLRenderTarget', renderTarget);
@@ -274,38 +276,39 @@ FABRIC.SceneGraph.registerNodeType('BaseDeferredRenderer', {
           }));
     }
 
-    if(options.showDebug) {
-      //Debug display render targets
-      redrawEventHandler.addMember('debugShaderProgID', 'Integer', 0);
+    redrawEventHandler.addMember('debugDrawToggle', 'Boolean', options.showDebug);
+    redrawEventHandler.addMember('debugShaderProgID', 'Integer', 0);
+    deferredRenderNode.addMemberInterface(redrawEventHandler, 'debugDrawToggle', true);
 
-      redrawEventHandler.postDescendBindings.append(
-        scene.constructOperator({
-            operatorName: 'debugDrawRenderTargets',
-            srcCode:'use OGLTexture2D;\n' +
-                    'operator debugDrawRenderTargets(io OGLRenderTarget renderTarget, io Integer progId){ \n' +
-                    'Size i, j, n = renderTarget.textures.size, curr = 0;\n' +
-                    'for(i = 0; i < 3; ++i){\n' +
-                    '  for(j = 0; j < 3; ++j){\n' +
-                    '    while(true) {\n' +
-                    '      if(curr == n)\n' +
-                    '        return;\n' +
-                    '      if(renderTarget.textures[curr].type == 2)\n' +
-                    '        break;\n' +
-                    '      curr++;\n' +
-                    '    }\n' +
-                    '    Scalar x = -1.0 + Scalar(i)/1.5;\n' +
-                    '    Scalar y = 1.0 - Scalar(j)/1.5;\n' +
-                    '    renderTarget.textures[curr++].texture.bind(0);\n' +
-                    '    drawTexture(0, progId, Vec2(x,y), Vec2(x+0.66666,y-0.66666), false);\n' +
-                    '    if(curr == n)\n' +
-                    '      return;}}}\n',
-            entryFunctionName: 'debugDrawRenderTargets',
-            parameterLayout: [
-              'self.renderTarget',
-              'self.debugShaderProgID'
-            ]
-      }));
-    }
+    redrawEventHandler.postDescendBindings.append(
+      scene.constructOperator({
+          operatorName: 'debugDrawRenderTargets',
+          srcCode:'use OGLTexture2D;\n' +
+                  'operator debugDrawRenderTargets(io OGLRenderTarget renderTarget, io Integer progId, io Boolean draw){ \n' +
+                  'if(!draw)return;\n' +
+                  'Size i, j, n = renderTarget.textures.size, curr = 0;\n' +
+                  'for(i = 0; i < 3; ++i){\n' +
+                  '  for(j = 0; j < 3; ++j){\n' +
+                  '    while(true) {\n' +
+                  '      if(curr == n)\n' +
+                  '        return;\n' +
+                  '      if(renderTarget.textures[curr].type == 2)\n' +
+                  '        break;\n' +
+                  '      curr++;\n' +
+                  '    }\n' +
+                  '    Scalar x = -1.0 + Scalar(i)/1.5;\n' +
+                  '    Scalar y = 1.0 - Scalar(j)/1.5;\n' +
+                  '    renderTarget.textures[curr++].texture.bind(0);\n' +
+                  '    drawTexture(0, progId, Vec2(x,y), Vec2(x+0.66666,y-0.66666), false);\n' +
+                  '    if(curr == n)\n' +
+                  '      return;}}}\n',
+          entryFunctionName: 'debugDrawRenderTargets',
+          parameterLayout: [
+            'self.renderTarget',
+            'self.debugShaderProgID',
+            'self.debugDrawToggle'
+          ]
+    }));
     
     //Shading pass
     var shaderPassRedrawEventHandler = deferredRenderNode.constructEventHandlerNode('ShaderPass');
@@ -411,9 +414,9 @@ FABRIC.SceneGraph.registerNodeType('PhongDeferredRenderer', {
       });
 
     if( definedDeferredPhongMaterials == false ) {
-      FABRIC.SceneGraph.defineEffectFromFile('DeferredPrePhongMaterial', 'FABRIC_ROOT/SceneGraph/Shaders/DeferredPrePhong.xml');
-      FABRIC.SceneGraph.defineEffectFromFile('DeferredPrePhongInstancingExtMaterial', 'FABRIC_ROOT/SceneGraph/Shaders/DeferredPrePhongInstancingExt.xml');
-      FABRIC.SceneGraph.defineEffectFromFile('DeferredPostPhongMaterial', 'FABRIC_ROOT/SceneGraph/Shaders/DeferredPostPhong.xml');
+      FABRIC.SceneGraph.defineEffectFromFile('DeferredPrePhongMaterial', 'FABRIC_ROOT/SceneGraph/Shaders/DeferredPrePhongShader.xml');
+      FABRIC.SceneGraph.defineEffectFromFile('DeferredPrePhongInstancingExtMaterial', 'FABRIC_ROOT/SceneGraph/Shaders/DeferredPrePhongInstancingExtShader.xml');
+      FABRIC.SceneGraph.defineEffectFromFile('DeferredPostPhongMaterial', 'FABRIC_ROOT/SceneGraph/Shaders/DeferredPostPhongShader.xml');
       definedDeferredPhongMaterials = true;
     }
 

@@ -44,7 +44,7 @@
 
       varying vec3 normal;
       varying vec3 lightDir;
-      varying vec3 viewDir;
+      varying vec3 position;
 
       void main(){
         normal = u_normalMatrix * a_normal;
@@ -52,7 +52,6 @@
   
         lightDir = vec3(u_lightPosition - modelCameraPosition);
 
-        viewDir = vec3(-modelCameraPosition);
         gl_Position = u_modelViewProjectionMatrix * a_position;
       }
       ]]>
@@ -70,19 +69,20 @@
 
       varying vec3 normal;
       varying vec3 lightDir;
-      varying vec3 viewDir;
+      varying vec3 position;
 
       void main(){
 
         vec3 Ln = normalize(lightDir);
-        vec3 Vn = normalize(viewDir);
+        vec3 Vn = normalize(-position);
         vec3 Nn = normalize(normal);
 
         float intensity = dot(Ln,Nn);
         intensity = floor(intensity * u_materialColorSteps + 0.5) / u_materialColorSteps;
-        
-        gl_FragData[0].rgb = (u_materialBrightColor * intensity + u_materialDarkColor * (1.0 - intensity)).rgb;
+
+        gl_FragData[0].xyz = position;
         gl_FragData[1].xyz = Nn;
+        gl_FragData[2].rgb = (u_materialBrightColor * intensity + u_materialDarkColor * (1.0 - intensity)).rgb;
       }
 
       ]]>
