@@ -31,12 +31,19 @@ fabricNodePackage = cliEnv.Command(
   [
     Copy( "$TARGET", "$SOURCE" )
   ])
+Export('fabricNodePackage')
 fabricNodeAddOn = cliEnv.Command(
   fabricNodeModuleDistDir.File('Fabric.node'),
   cliLoadableModule,
   [
     Copy( "$TARGET", "$SOURCE" )
   ])
+Export('fabricNodeAddOn')
+
+nodeModuleReadMe = cliEnv.File('README.txt')
+Export('nodeModuleReadMe')
+nodeModuleLicense = cliEnv.File('LICENSE.txt')
+Export('nodeModuleLicense')
 
 binDistDir = archDistDir.Dir(packageName).Dir('bin')
 if buildOS == 'Darwin':
