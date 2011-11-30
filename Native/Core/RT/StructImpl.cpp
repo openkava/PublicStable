@@ -195,5 +195,13 @@ namespace Fabric
         return true;
       }
     }
+
+    size_t StructImpl::getIndirectMemoryUsage( void const *data ) const
+    {
+      size_t total = 0;
+      for ( size_t i=0; i<m_numMembers; ++i )
+        total += m_memberInfos[i].desc->getIndirectMemoryUsage( getMemberData_NoCheck( data, i ) );
+      return total;
+    }
   };
 };
