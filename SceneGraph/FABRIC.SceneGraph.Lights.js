@@ -224,7 +224,7 @@ FABRIC.SceneGraph.registerNodeType('DirectionalLight', {
       options.globalXfo.tr = new FABRIC.RT.Vec3(options.position);
     }
     if (options.direction) {
-      xfo.ori = new FABRIC.RT.Quat().setFrom2Vectors(
+      options.globalXfo.ori = new FABRIC.RT.Quat().setFrom2Vectors(
                   new FABRIC.RT.Vec3(0.0, 0.0, -1.0),
                   new FABRIC.RT.Vec3(options.direction).unit(),
                   true

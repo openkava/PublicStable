@@ -34,6 +34,7 @@
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Geometry.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Primitives.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Lights.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Images.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Materials.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Manipulation.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Kinematics.js" charset="utf-8"></script>
@@ -91,8 +92,11 @@ $(document).ready(function() {
   var greenFlatMaterial = scene.constructNode('FlatMaterial', {
     color: FABRIC.RT.rgb(0, 0, 0.8)
   });
-  var greyFlatMaterial = scene.constructNode('FlatMaterial', {
-    color: FABRIC.RT.rgb(0.7, 0.7, 0.7)
+  var babyBlueMaterial = scene.constructNode('FlatMaterial', {
+    color: FABRIC.RT.rgb(0.0, 1.0, 1.0)
+  });
+  var yellowMaterial = scene.constructNode('FlatMaterial', {
+    color: FABRIC.RT.rgb(1.0, 1.0, 0.0)
   });
 
   var redPhongMaterial = scene.constructNode('PhongMaterial', {
@@ -107,14 +111,14 @@ $(document).ready(function() {
     diffuseColor: FABRIC.RT.rgb(0, 0, 0.8),
     lightNode: light
   });
-  
+  /*
   var wireframeMaterial = scene.constructNode('WireframeMaterial', {
     color: FABRIC.RT.rgb(0.3, 0.3, 0.3, 0.5)
   });
   var normalMaterial = scene.constructNode('NormalMaterial', {
     color: FABRIC.RT.rgb(0.2, 0.2, 0.2, 1)
   });
-  
+  */
   // Cross
   scene.constructNode('Instance', {
     transformNode: scene.constructNode('Transform', {
@@ -149,7 +153,7 @@ $(document).ready(function() {
       length: 7,
       width: 3
     }),
-    materialNode: blueFlatMaterial
+    materialNode: yellowMaterial
   });
 
   // Axes
@@ -161,7 +165,7 @@ $(document).ready(function() {
     geometryNode: scene.constructNode('Axes', {
       size: 7.0
     }),
-    materialNode: blueFlatMaterial
+    materialNode: yellowMaterial
   });
 
   // Grid
@@ -177,7 +181,7 @@ $(document).ready(function() {
       sections_y: 1,
       sections_z: 5
     }),
-    materialNode: greyFlatMaterial
+    materialNode: babyBlueMaterial
   });
 
   // BoundingBox
@@ -190,7 +194,7 @@ $(document).ready(function() {
       length: 7,
       width: 3
     }),
-    materialNode: blueFlatMaterial
+    materialNode: yellowMaterial
   });
 
   // Phong Plane
@@ -207,7 +211,7 @@ $(document).ready(function() {
     }),
     materialNode: greenPhongMaterial
   })
-  .setMaterialNode( wireframeMaterial );
+ // .setMaterialNode( wireframeMaterial );
 
   // Phong Cuboid
   scene.constructNode('Instance', {
@@ -222,7 +226,7 @@ $(document).ready(function() {
     }),
     materialNode: redPhongMaterial
   })
-  .setMaterialNode( wireframeMaterial );
+ // .setMaterialNode( wireframeMaterial );
 
   // Phong Cone
   scene.constructNode('Instance', {
@@ -237,7 +241,7 @@ $(document).ready(function() {
     }),
     materialNode: greenPhongMaterial
   })
-  .setMaterialNode( wireframeMaterial );
+ // .setMaterialNode( wireframeMaterial );
 
   // Phong Sphere
   scene.constructNode('Instance', {
@@ -251,7 +255,7 @@ $(document).ready(function() {
     }),
     materialNode: bluePhongMaterial
   })
-  .setMaterialNode( wireframeMaterial );
+ // .setMaterialNode( wireframeMaterial );
 
   // Phong Torus
   scene.constructNode('Instance', {
@@ -266,7 +270,7 @@ $(document).ready(function() {
     }),
     materialNode: greenPhongMaterial
   })
-  .setMaterialNode( wireframeMaterial );
+//  .setMaterialNode( wireframeMaterial );
 
   // Phong Cylinder
   scene.constructNode('Instance', {
@@ -283,7 +287,7 @@ $(document).ready(function() {
     }),
     materialNode: redPhongMaterial 
   })
-  .setMaterialNode( wireframeMaterial );
+//  .setMaterialNode( wireframeMaterial );
 
   // Phong Teapot
   scene.constructNode('Instance', {
@@ -297,7 +301,7 @@ $(document).ready(function() {
     }),
     materialNode: bluePhongMaterial
   })
-  .setMaterialNode( wireframeMaterial );
+//  .setMaterialNode( wireframeMaterial );
 
   $('#loadingDialog').dialog({
     modal: true

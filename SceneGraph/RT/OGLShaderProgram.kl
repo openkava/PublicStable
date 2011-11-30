@@ -12,6 +12,7 @@ function OGLShaderProgram(String name) {
 }
 
 function Integer OGLShaderProgram.createAndCompileShader(OGLShaderSource shadersrc) {
+
   var Integer shaderID = glCreateShader(shadersrc.type);
   if (shaderID == 0) {
     report(this.name + ' : glCreateShader failed');
@@ -44,8 +45,7 @@ function Integer OGLShaderProgram.createAndCompileShader(OGLShaderSource shaders
     var String infoLog;
     var Size bufferSize[];
     var Size bufferTotalSize = 0;
-    for(var Size i=0;i<infoLen.size();i++)
-    {
+    for(var Size i=0;i<infoLen.size();i++){
       bufferSize.push(Size(infoLen[i]));
       bufferTotalSize += bufferSize[i];
     }
@@ -250,18 +250,23 @@ function OGLShaderProgram.loadShader() {
       for(Integer i=0; i<this.disableOptions.size(); i++){
         glDisable(this.disableOptions[i]);
       }
-      // The culling value can only be modified if the draw options are also modified.
-      if(this.cullFace!=0){
-        glCullFace(this.cullFace);
-      }
+    }
+    if(this.cullFace!=0){
+      glCullFace(this.cullFace);
     }
     this.loadedAttributes.resize(0);
   }
 }
 
 function OGLShaderProgram.unloadShader() {
-  if(this.disableOptions.size() > 0 || this.enableOptions.size() > 0){
-    glPopAttrib();
+  if(this.programId != 0){
+    // Put the cull value back to the default. 
+    if(this.cullFace!=0){
+      glCullFace(GL_BACK);
+    }
+    if(this.disableOptions.size() > 0 || this.enableOptions.size() > 0){
+      glPopAttrib();
+    }
   }
   this.loadedAttributes.resize(0);
   if(this.debug){
@@ -517,6 +522,9 @@ function OGLShaderProgram.loadMat44TransposedUniformArray(
   if(this.programId==0){
     report("ERROR: Shader not in use");
     return;
+  }
+  if(values.size() > 62){
+    report("WARNING: Loading more than 62 Matrices will exceed the limit of 1024 uniforms supported by ATI GPUs.");
   }
   if (location != - 1) {
     glUniformMatrix4fv(location, values.size(), false, values);

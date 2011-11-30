@@ -44,6 +44,7 @@
     <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Geometry.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Primitives.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Lights.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Images.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Materials.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Manipulation.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Kinematics.js" charset="utf-8"></script>
@@ -740,7 +741,7 @@ $(document).ready(function() {
   }
   
   var savePreset = function(){
-    var presetSaver = scene.constructManager('SceneSaver');
+    var presetSaver = scene.constructManager('SceneSerializer');
     presetSaver.addNode(camera);
     presetSaver.addNode(opacityKeyAnimationLibrary);
     presetSaver.addNode(gradientKeyTrackLibrary);
@@ -769,7 +770,7 @@ $(document).ready(function() {
       displayProgressBar();
     }
 
-    var presetLoader = scene.constructManager('SceneLoader', { preLoadScene: true } );
+    var presetLoader = scene.constructManager('SceneDeserializer', { preLoadScene: true } );
     var storage = new FABRIC.SceneGraph.LocalStorage('VolumeRenderingPresets.'+currPresetName);
     var nodeMap = presetLoader.load(storage);
 

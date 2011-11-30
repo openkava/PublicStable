@@ -39,6 +39,7 @@
     <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Geometry.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Primitives.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Lights.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Images.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Materials.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Manipulation.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Kinematics.js" charset="utf-8"></script>
@@ -495,7 +496,7 @@ $(document).ready(function() {
   var scene = FABRIC.SceneGraph.createScene();
   var viewport = scene.constructNode('Viewport', {
     windowElement: document.getElementById('FabricContainer'),
-    backgroundColor: FABRIC.RT.color(0.0, 0.0, 0.0, 0.0),
+    backgroundColor: new FABRIC.RT.Color(0.0, 0.0, 0.0, 0.0),
   });
 
   // Create a camera to draw the scene from
@@ -537,11 +538,13 @@ $(document).ready(function() {
   var cameraPrimitive = scene.constructNode('CameraPrimitive', { size: 1.2 });
   
   // create a material for all alembic content
-  var phongMaterial = scene.constructNode('PhongMaterial', {
-    diffuseColor: FABRIC.RT.rgb(0.5, 0.5, 0.5, 1),
-    specularColor: FABRIC.RT.rgb(0.15, 0.15, 0.15, 1),
-    lightNode: light,
-  });
+  var materialNode = scene.constructNode('PhongTextureSimpleMaterial', {
+      diffuseTextureNode: scene.constructNode('Image', { url: '../../Alembic/Models/frog_diffuse.png' }),
+      lightNode: scene.constructNode('PointLight', {
+        position: new FABRIC.RT.Vec3(100, 100, 0)
+      }),
+      specularColor: FABRIC.RT.rgba(0.2,0.2,0.2,1)
+    });
 
   // hook for the alembic content
   var resourceLoadNode = undefined;
@@ -606,7 +609,7 @@ $(document).ready(function() {
           parsedInstances[name] = scene.constructNode('Instance', {
             transformNode: resourceLoadNode.getCorrespondingTransform(name),
             geometryNode: parsedNode,
-            materialNode: phongMaterial
+            materialNode: materialNode
           });
         }
         else if(parsedNode.isTypeOf('Camera')) {
