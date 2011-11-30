@@ -51,11 +51,12 @@
       varying vec4 shadowCoord;
       varying vec3 lightDir;
       varying vec3 normal;
+      varying vec3 position;
       
       void main()
       {
-        vec3 vertex = vec3( u_modelViewMatrix * a_position );
-        lightDir = u_lightPosition.xyz - vertex;
+        position = vec3( u_modelViewMatrix * a_position );
+        lightDir = u_lightPosition.xyz - position;
 
         gl_TexCoord[0].xy = a_texCoord;
         gl_Position =  u_modelViewProjectionMatrix * a_position;
@@ -82,9 +83,10 @@
       varying vec2 a_texCoord;
       varying vec3 lightDir;
       varying vec3 normal;
+      varying vec3 position;
       ]]>
       </source>
-      <include file="../../../../../SceneGraph/Shaders/shadows.txt"/>
+      <include file="shadows.txt"/>
       <source>
       <![CDATA[
 
@@ -106,10 +108,11 @@
         int modX = int(floor(gl_TexCoord[0].x / u_materialStep));
         int modY = int(floor(gl_TexCoord[0].y / u_materialStep));
         if((modX - (modX/2*2)) == (modY - (modY/2*2)))
-          gl_FragData[0] = u_materialBrightColor * lightFactor;
+          gl_FragData[2] = u_materialBrightColor * lightFactor;
         else
-          gl_FragData[0] = u_materialDarkColor * lightFactor;
-        gl_FragData[0].a = u_colorBlend;
+          gl_FragData[2] = u_materialDarkColor * lightFactor;
+        gl_FragData[2].a = u_colorBlend;
+        gl_FragData[0].xyz = position;
         gl_FragData[1].xyz = normalize(normal);
       }
       ]]>

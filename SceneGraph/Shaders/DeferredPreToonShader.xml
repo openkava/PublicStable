@@ -82,7 +82,7 @@
 
         gl_FragData[0].xyz = position;
         gl_FragData[1].xyz = Nn;
-        gl_FragData[2].rgb = (u_materialBrightColor * intensity + u_materialDarkColor * (1.0 - intensity)).rgb;
+        gl_FragData[2].rgb = mix( u_materialBrightColor.rgb, u_materialDarkColor.rgb, intensity );
       }
 
       ]]>
