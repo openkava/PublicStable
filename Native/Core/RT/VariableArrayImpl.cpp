@@ -40,7 +40,7 @@ namespace Fabric
       bits_t *dst = reinterpret_cast<bits_t *>(_dst);
       
       if ( dst->numMembers > src->numMembers )
-        disposeDatas( dst->memberDatas + src->numMembers * m_memberSize, dst->numMembers - src->numMembers, m_memberSize );
+        m_memberImpl->disposeDatas( dst->memberDatas + src->numMembers * m_memberSize, dst->numMembers - src->numMembers, m_memberSize );
       dst->numMembers = src->numMembers;
 
       dst->allocNumMembers = AllocNumMembersForNumMembers( src->numMembers );
