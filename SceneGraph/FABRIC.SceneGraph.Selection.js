@@ -230,7 +230,7 @@ FABRIC.SceneGraph.registerManagerType('SelectionManipulationManager', {
       manipulators: undefined,
       transformGetter: 'getGlobalXfo',
       transformSetter: 'setGlobalXfo',
-      screenTranslationRadius: 2.0,
+      screenTranslationRadius: 2.0
       });
     
     var selectionManager = options.selectionManager;
@@ -281,7 +281,7 @@ FABRIC.SceneGraph.registerManagerType('SelectionManipulationManager', {
           onDo: function (){
             for(var i=0;i<selection.length;i++)
               selection[i].getTransformNode()[options.transformSetter](currentTransforms[i]);
-          },
+          }
         });
       }
     }
