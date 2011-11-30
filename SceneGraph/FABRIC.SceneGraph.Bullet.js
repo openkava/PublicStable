@@ -84,6 +84,20 @@ FABRIC.RT.BulletShape.createSphere = function(radius) {
   return shape;
 };
 
+FABRIC.RT.BulletShape.createCylinder = function(radius,height) {
+  if(radius == undefined) {
+    radius = 0.5;
+  }
+  if(height == undefined) {
+    height = 1.0;
+  }
+  var shape = new FABRIC.RT.BulletShape();
+  shape.type = FABRIC.RT.BulletShape.BULLET_CYLINDER_SHAPE;
+  shape.parameters.push(radius);
+  shape.parameters.push(height * 0.5);
+  return shape;
+};
+
 FABRIC.RT.BulletShape.createPlane = function(normal) {
   if(normal == undefined) {
     normal = new FABRIC.RT.Vec3(0.0,1.0,0.0);
@@ -98,8 +112,8 @@ FABRIC.RT.BulletShape.createPlane = function(normal) {
 };
 
 FABRIC.RT.BulletShape.createConvexHull = function(geometryNode) {
-  if(geometryNode == undefined) {
-    throw('You need to specify the '+geometryNode+' for createConvexHull.');
+  if(geometryNode == undefined || !geometryNode.isTypeOf('Geometry')) {
+    throw('You need to specify the geometryNode for createConvexHull.');
   }
   var shape = new FABRIC.RT.BulletShape();
   shape.type = FABRIC.RT.BulletShape.BULLET_CONVEX_HULL_SHAPE;
@@ -108,8 +122,8 @@ FABRIC.RT.BulletShape.createConvexHull = function(geometryNode) {
 };
 
 FABRIC.RT.BulletShape.createGImpact = function(geometryNode) {
-  if(geometryNode == undefined) {
-    throw('You need to specify the '+geometryNode+' for createGImpact.');
+  if(geometryNode == undefined || !geometryNode.isTypeOf('Geometry')) {
+    throw('You need to specify the geometryNode for createGImpact.');
   }
   var shape = new FABRIC.RT.BulletShape();
   shape.type = FABRIC.RT.BulletShape.BULLET_GIMPACT_SHAPE;
@@ -219,7 +233,7 @@ FABRIC.SceneGraph.registerNodeType('BulletWorldNode', {
     scene.assignDefaults(options, {
       createGroundPlane: true,
       createGroundPlaneGrid: true,
-      groundPlanseSize: 40.0,
+      groundPlaneSize: 40.0,
       connectToSceneTime: true,
       gravity: new FABRIC.RT.Vec3(0,-40,0),
       substeps: 3
@@ -347,6 +361,56 @@ FABRIC.SceneGraph.registerNodeType('BulletWorldNode', {
         entryFunctionName: 'createBulletRigidBody',
         srcFile: 'FABRIC_ROOT/SceneGraph/KL/bullet.kl'
       }));
+    }
+
+    var rbdInitialTransforms = {};
+    bulletWorldNode.pub.setRigidBodyInitialTransform = function(bodyName,transform) {
+      if(!rbdInitialTransforms[bodyName]) {
+        rbdInitialTransforms[bodyName] = bodyName+'Transform';
+        rbddgnode.addMember(rbdInitialTransforms[bodyName],'Xfo[]');
+        rbddgnode.bindings.append(scene.constructOperator({
+          operatorName: 'setBulletRigidBodyTransform',
+          parameterLayout: [
+            'self.'+bodyName+'Rbd',
+            'self.'+rbdInitialTransforms[bodyName],
+            'simulation.prevTime'
+          ],
+          entryFunctionName: 'setBulletRigidBodyTransform',
+          srcFile: 'FABRIC_ROOT/SceneGraph/KL/bullet.kl'
+        }));
+      }
+      var isArray = transform.constructor.toString().indexOf("Array") != -1;
+      var transforms = isArray ? transform : [transform];
+      rbddgnode.setData(rbdInitialTransforms[bodyName], 0, transforms);
+    }
+    bulletWorldNode.pub.getRigidBodyInitialTransform = function(bodyName) {
+      var result = [];
+      if(!rbdInitialTransforms[bodyName]) {
+        var body = rbddgnode.getData(bodyName+'Rbd',0);
+        for(var i=0;i<body.length;i++)
+          result.push(new FABRIC.RT.Xfo({
+            sc: new FABRIC.RT.Vec3(
+              parseFloat(body[i].transform.sc.x),
+              parseFloat(body[i].transform.sc.y),
+              parseFloat(body[i].transform.sc.z)
+            ),
+            ori: new FABRIC.RT.Quat(
+              parseFloat(body[i].transform.ori.w),
+              new FABRIC.RT.Vec3(
+                parseFloat(body[i].transform.ori.v.x),
+                parseFloat(body[i].transform.ori.v.y),
+                parseFloat(body[i].transform.ori.v.z)
+            )),
+            tr: new FABRIC.RT.Vec3(
+              parseFloat(body[i].transform.tr.x),
+              parseFloat(body[i].transform.tr.y),
+              parseFloat(body[i].transform.tr.z)
+            )
+          }));
+      } else {
+        result = rbddgnode.getData(bodyName+'Transform',0);
+      }
+      return result;
     }
 
     bulletWorldNode.pub.addSoftBody = function(bodyName,body) {
@@ -503,15 +567,15 @@ FABRIC.SceneGraph.registerNodeType('BulletWorldNode', {
     if(options.createGroundPlane) {
       // create a shape
       // create the ground rigid body
-      var groundTrans = FABRIC.RT.xfo({tr: new FABRIC.RT.Vec3(0,-options.groundPlanseSize,0)});
-      bulletWorldNode.pub.addShape('Ground',FABRIC.RT.BulletShape.createBox(new FABRIC.RT.Vec3(options.groundPlanseSize,options.groundPlanseSize,options.groundPlanseSize)));
+      var groundTrans = FABRIC.RT.xfo({tr: new FABRIC.RT.Vec3(0,-options.groundPlaneSize,0)});
+      bulletWorldNode.pub.addShape('Ground',FABRIC.RT.BulletShape.createBox(new FABRIC.RT.Vec3(options.groundPlaneSize,options.groundPlaneSize,options.groundPlaneSize)));
       bulletWorldNode.pub.addRigidBody('Ground',new FABRIC.RT.BulletRigidBody({mass: 0, transform: groundTrans}),'Ground');
       
       if(options.createGroundPlaneGrid){
         var instanceNode = scene.constructNode('Instance', {
           geometryNode: scene.constructNode('Grid', {
-            size_x: options.groundPlanseSize,
-            size_z: options.groundPlanseSize,
+            size_x: options.groundPlaneSize,
+            size_z: options.groundPlaneSize,
             sections_x: 20,
             sections_z: 20 }).pub,
           materialNode: scene.constructNode('FlatMaterial').pub
@@ -570,7 +634,8 @@ FABRIC.SceneGraph.registerNodeType('BulletRigidBodyTransform', {
       shape: undefined,
       bulletWorldNode: undefined,
       shapeName: undefined,
-      hierarchical: false
+      hierarchical: false,
+      createBulletRaycastEventHandler: true
     });
     
     // check if we have a rigid body!
@@ -613,7 +678,7 @@ FABRIC.SceneGraph.registerNodeType('BulletRigidBodyTransform', {
     // check if we are using multiple rigid bodies
     if(options.rigidBody.constructor.toString().indexOf("Array") != -1)
       dgnode.setCount(options.rigidBody.length);
-    
+      
     // create the query transform op
     dgnode.bindings.append(scene.constructOperator({
       operatorName: 'getBulletRigidBodyTransform',
@@ -627,27 +692,36 @@ FABRIC.SceneGraph.registerNodeType('BulletRigidBodyTransform', {
     }));
     
     // setup raycasting to be driven by bullet
-    var raycastEventHandler = undefined;
-    rigidBodyTransformNode.getRaycastEventHandler = function() {
-      if(raycastEventHandler == undefined) {
-        var raycastOperator = scene.constructOperator({
-          operatorName: 'raycastBulletWorld',
-          srcFile: 'FABRIC_ROOT/SceneGraph/KL/bullet.kl',
-          entryFunctionName: 'raycastBulletWorld',
-          parameterLayout: [
-            'raycastData.ray',
-            'simulation.world',
-            'simulation.raycastEnable'
-          ],
-          async: false
-        });
+    if(options.createBulletRaycastEventHandler) {
+      var raycastEventHandler = undefined;
+      rigidBodyTransformNode.getRaycastEventHandler = function() {
+        if(raycastEventHandler == undefined) {
+          var raycastOperator = scene.constructOperator({
+            operatorName: 'raycastBulletWorld',
+            srcFile: 'FABRIC_ROOT/SceneGraph/KL/bullet.kl',
+            entryFunctionName: 'raycastBulletWorld',
+            parameterLayout: [
+              'raycastData.ray',
+              'simulation.world',
+              'simulation.raycastEnable'
+            ],
+            async: false
+          });
+  
+          raycastEventHandler = rigidBodyTransformNode.constructEventHandlerNode('Raycast');
+          bulletWorldNode.setupRaycasting();
+          raycastEventHandler.setScope('simulation', bulletWorldNode.getDGNode());
+          raycastEventHandler.setSelector('simulation', raycastOperator);
+        }
+        return raycastEventHandler;
+      };
+    }
 
-        raycastEventHandler = rigidBodyTransformNode.constructEventHandlerNode('Raycast');
-        bulletWorldNode.setupRaycasting();
-        raycastEventHandler.setScope('simulation', bulletWorldNode.getDGNode());
-        raycastEventHandler.setSelector('simulation', raycastOperator);
-      }
-      return raycastEventHandler;
+    rigidBodyTransformNode.pub.setInitialTransform = function(val) {
+      return bulletWorldNode.pub.setRigidBodyInitialTransform(bodyName,val);
+    };
+    rigidBodyTransformNode.pub.getInitialTransform = function(val) {
+      return bulletWorldNode.pub.getRigidBodyInitialTransform(bodyName,val)[0];
     };
     
     return rigidBodyTransformNode;
@@ -741,6 +815,7 @@ FABRIC.SceneGraph.registerNodeType('BulletForceManipulator', {
       }
     }
     bulletWorldNode.pub.addEventListener('mousedown_geom', mouseDownFn);
+    forceManipulatorNode.pub.getMouseDownFn = function() { return mouseDownFn; }
 
     var dragForceFn = function(evt) {
       if(!enabled || !eventListenersAdded){

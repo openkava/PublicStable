@@ -10,6 +10,9 @@ FABRIC.SceneGraph.registerNodeType('CharacterMesh', {
   optionsDesc: {
   },
   factoryFn: function(options, scene) {
+    scene.assignDefaults(options, {
+      skinningMatriciesTextureUnit: 7
+    });
 
     var characterMeshNode = scene.constructNode('Triangles', options);
     
@@ -19,20 +22,30 @@ FABRIC.SceneGraph.registerNodeType('CharacterMesh', {
     characterMeshNode.pub.addUniformValue('invmatrices', 'Mat44[]');
     characterMeshNode.pub.addUniformValue('boneMapping', 'Integer[]');
     
-    characterMeshNode.getRedrawEventHandler().preDescendBindings.append( scene.constructOperator({
-      operatorName: 'loadSkinningMatrices',
+    var redrawEventHandler = characterMeshNode.getRedrawEventHandler();
+    var tex = FABRIC.RT.oglMatrixBuffer2D();
+    tex.forceRefresh = true;
+    redrawEventHandler.addMember('oglSkinningMatriciesTexture2D', 'OGLTexture2D', tex);
+    redrawEventHandler.addMember('skinningMatriciesTextureUnit', 'Integer', options.skinningMatriciesTextureUnit);
+    redrawEventHandler.addMember('textureHeight', 'Size');
+    
+    redrawEventHandler.preDescendBindings.append( scene.constructOperator({
+      operatorName: 'loadSkinningMatricesTexture',
       srcFile: 'FABRIC_ROOT/SceneGraph/KL/loadSkinningMatrices.kl',
       preProcessorDefinitions: {
-        SKINNING_MATRICES_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('skinningMatrices')
+        SKINNING_MATRICES_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('skinningMatrices'),
+        SKINNIMATRICIES_TEXTUREUNIT_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('skinningMatricesTextureUnit'),
+        TRANSFORM_TEXTURE_HEIGHT_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('transformTextureHeight')
       },
-      entryFunctionName: 'loadSkinningMatrices',
+      entryFunctionName: 'loadSkinningMatricesTexture',
       parameterLayout: [
         'shader.shaderProgram',
-        'rig.pose',
+        'rig.pose<>',
         'uniforms.invmatrices',
         'uniforms.boneMapping',
-        'self.indicesBuffer',
-        'instance.drawToggle'
+        'self.oglSkinningMatriciesTexture2D',
+        'self.skinningMatriciesTextureUnit',
+        'self.textureHeight'
       ]
     }));
     
@@ -41,16 +54,15 @@ FABRIC.SceneGraph.registerNodeType('CharacterMesh', {
       characterMeshNode.getUniformsDGNode().setData('boneMapping', 0, boneMapping);
     };
     
-    
     var parentWriteData = characterMeshNode.writeData;
     var parentReadData = characterMeshNode.readData;
-    characterMeshNode.writeData = function(sceneSaver, constructionOptions, nodeData) {
-      characterMeshNode.writeGeometryData(sceneSaver, constructionOptions, nodeData);
-      parentWriteData(sceneSaver, constructionOptions, nodeData);
+    characterMeshNode.writeData = function(sceneSerializer, constructionOptions, nodeData) {
+      characterMeshNode.writeGeometryData(sceneSerializer, constructionOptions, nodeData);
+      parentWriteData(sceneSerializer, constructionOptions, nodeData);
     };
-    characterMeshNode.readData = function(sceneLoader, nodeData) {
-      characterMeshNode.readGeometryData(sceneLoader, nodeData);
-      parentReadData(sceneLoader, nodeData);
+    characterMeshNode.readData = function(sceneDeserializer, nodeData) {
+      characterMeshNode.readGeometryData(sceneDeserializer, nodeData);
+      parentReadData(sceneDeserializer, nodeData);
     };
     
     return characterMeshNode;
@@ -200,12 +212,12 @@ FABRIC.SceneGraph.registerNodeType('CharacterSkeleton', {
     // Peristence
     var parentWriteData = characterSkeletonNode.writeData;
     var parentReadData = characterSkeletonNode.readData;
-    characterSkeletonNode.writeData = function(sceneSaver, constructionOptions, nodeData) {
-      parentWriteData(sceneSaver, constructionOptions, nodeData);
+    characterSkeletonNode.writeData = function(sceneSerializer, constructionOptions, nodeData) {
+      parentWriteData(sceneSerializer, constructionOptions, nodeData);
       nodeData.bones = dgnode.getData('bones');
     };
-    characterSkeletonNode.readData = function(sceneLoader, nodeData) {
-      parentReadData(sceneLoader, nodeData);
+    characterSkeletonNode.readData = function(sceneDeserializer, nodeData) {
+      parentReadData(sceneDeserializer, nodeData);
       dgnode.setData('bones', 0, nodeData.bones);
     };
 
@@ -407,14 +419,14 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
     // Persistence
     var parentWriteData = characterVariablesNode.writeData;
     var parentReadData = characterVariablesNode.readData;
-    characterVariablesNode.writeData = function(sceneSaver, constructionOptions, nodeData) {
-      parentWriteData(sceneSaver, constructionOptions, nodeData);
+    characterVariablesNode.writeData = function(sceneSerializer, constructionOptions, nodeData) {
+      parentWriteData(sceneSerializer, constructionOptions, nodeData);
       if(dgnode.getMembers().bindings){
         nodeData.bindings = dgnode.getData('bindings');
       }
     };
-    characterVariablesNode.readData = function(sceneLoader, nodeData) {
-      parentReadData(sceneLoader, nodeData);
+    characterVariablesNode.readData = function(sceneDeserializer, nodeData) {
+      parentReadData(sceneDeserializer, nodeData);
       if(nodeData.bindings){
         characterVariablesNode.setBindings(nodeData.bindings);
       }
@@ -489,10 +501,18 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
       
     dgnode.addMember('debug', 'Boolean', options.debug );
     dgnode.addMember('debugGeometry', 'DebugGeometry' );
-    var debugGeometryDraw = scene.constructNode('DebugGeometryDraw', {
-      dgnode: dgnode,
-      debugGemetryMemberName: 'debugGeometry'
-    });
+    
+    
+    dgnode.bindings.append(scene.constructOperator({
+      operatorName: 'matchCount',
+      srcCode: 'operator matchCount(Size parentCount, io Size selfCount) { selfCount = parentCount; }',
+      entryFunctionName: 'matchCount',
+      parameterLayout: [
+        'charactercontroller.count',
+        'self.newCount'
+      ],
+      async: false
+    }));
     // extend the public interface
     characterRigNode.addMemberInterface(dgnode, 'pose', true);
     
@@ -641,11 +661,11 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
     // Persistence
     var parentWriteData = characterRigNode.writeData;
     var parentReadData = characterRigNode.readData;
-    characterRigNode.writeData = function(sceneSaver, constructionOptions, nodeData) {
-      parentWriteData(sceneSaver, constructionOptions, nodeData);
+    characterRigNode.writeData = function(sceneSerializer, constructionOptions, nodeData) {
+      parentWriteData(sceneSerializer, constructionOptions, nodeData);
       constructionOptions.debug = options.debug;
-      sceneSaver.addNode(skeletonNode.pub);
-      sceneSaver.addNode(variablesNode.pub);
+      sceneSerializer.addNode(skeletonNode.pub);
+      sceneSerializer.addNode(variablesNode.pub);
       nodeData.skeletonNode = skeletonNode.pub.getName();
       nodeData.variablesNode = variablesNode.pub.getName();
       nodeData.solvers = [];
@@ -653,15 +673,20 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
         nodeData.solvers[i] = solverParams[i];
       }
     };
-    characterRigNode.readData = function(sceneLoader, nodeData) {
-      parentReadData(sceneLoader, nodeData);
-      characterRigNode.pub.setSkeletonNode(sceneLoader.getNode(nodeData.skeletonNode));
-      characterRigNode.pub.setVariablesNode(sceneLoader.getNode(nodeData.variablesNode));
+    characterRigNode.readData = function(sceneDeserializer, nodeData) {
+      parentReadData(sceneDeserializer, nodeData);
+      characterRigNode.pub.setSkeletonNode(sceneDeserializer.getNode(nodeData.skeletonNode));
+      characterRigNode.pub.setVariablesNode(sceneDeserializer.getNode(nodeData.variablesNode));
       for (var i = 0; i < nodeData.solvers.length; i++) {
         characterRigNode.pub.addSolver(nodeData.solvers[i].name, nodeData.solvers[i].type, nodeData.solvers[i].options);
       }
     };
   
+    var debugGeometryDraw = scene.constructNode('DebugGeometryDraw', {
+      dgnode: dgnode,
+      debugGemetryMemberName: 'debugGeometry'
+    });
+    
     if (options.skeletonNode) {
       characterRigNode.pub.setSkeletonNode(options.skeletonNode);
     }
@@ -669,9 +694,6 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
     if (options.variablesNode) {
       characterRigNode.pub.setVariablesNode(options.variablesNode);
     }
-  //  else {
-  //    characterRigNode.pub.setVariablesNode(scene.constructNode('CharacterVariables').pub);
-  //  }
     
     if (options.controllerNode) {
       characterRigNode.pub.setControllerNode(options.controllerNode);
@@ -719,10 +741,8 @@ FABRIC.SceneGraph.registerNodeType('CharacterRigDebug', {
     characterRigDebugNode.pub.setRigNode = function(node) {
 
       rigNode = scene.getPrivateInterface(node);
-
       characterRigDebugNode.pub.addVertexAttributeValue('vertexColors', 'Color', { genVBO:true } );
       characterRigDebugNode.getUniformsDGNode().setDependency(rigNode.getDGNode(), 'rig');
-    //  characterRigDebugNode.getUniformsDGNode().setDependency(rigNode.getConstantsNode().getDGNode(), 'constants');
       characterRigDebugNode.getUniformsDGNode().setDependency(rigNode.getVariablesNode().getDGNode(), 'variables');
       characterRigDebugNode.pub.addUniformValue('debugpose', 'Xfo[]');
       characterRigDebugNode.pub.addUniformValue('singlecolor', 'Color', options.color);
@@ -730,8 +750,7 @@ FABRIC.SceneGraph.registerNodeType('CharacterRigDebug', {
 
       // now append the operator to create the lines
       var operators = characterRigDebugNode.getUniformsDGNode().bindings;
-      operators.append(scene.constructOperator(
-        {
+      operators.append(scene.constructOperator({
           operatorName: 'clearDebugXfos',
           srcFile: 'FABRIC_ROOT/SceneGraph/KL/characterDebug.kl',
           entryFunctionName: 'clearDebugXfos',
@@ -739,10 +758,6 @@ FABRIC.SceneGraph.registerNodeType('CharacterRigDebug', {
             'self.debugpose'
           ]
         }));
-
-    //  var debugOperators = rigNode.getConstantsNode().getDebugOperators();
-    //  for(var i=0;i<debugOperators.length;i++)
-    //    operators.append(debugOperators[i]);
 
       characterRigDebugNode.getAttributesDGNode().bindings.append(scene.constructOperator({
           operatorName: 'generateDebugPoints',

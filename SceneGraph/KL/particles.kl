@@ -17,7 +17,7 @@ operator calcCellIndex(
 
 operator populateHashTable(
   io HashTable hashtable,
-  io Integer particleCellIndices<>
+  io Integer cellIndices<>
 ) {
   // Reset the hash table, and re-accumulate the ids.
   Size numCells = hashtable.x_count * hashtable.y_count * hashtable.z_count;
@@ -25,8 +25,8 @@ operator populateHashTable(
   for (var Index i = 0; i < numCells; ++ i)
     hashtable.cells[i].resize(0);
 
-  for (var Integer i = 0; i < particleCellIndices.size; i++) {
-    var Integer cellIndex = particleCellIndices[i];
+  for (var Integer i = 0; i < cellIndices.size; i++) {
+    var Integer cellIndex = cellIndices[i];
     hashtable.cells[cellIndex].push(i);
   }
 }

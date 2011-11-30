@@ -37,6 +37,7 @@
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Geometry.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Primitives.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Lights.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Images.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Materials.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Manipulation.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Particles.js" charset="utf-8"></script>
@@ -86,10 +87,14 @@ FABRIC.SceneGraph.registerNodeType('Flock', {
     flockNode.pub.addVertexAttributeValue('neighborIndices', 'Integer[]');
     flockNode.pub.addVertexAttributeValue('neighborDistances', 'Scalar[]');
     
+    var neighborInfluenceRange = options.cellsize / 2.0;
+    flockNode.pub.addVertexAttributeValue('neighborinfluencerange', 'Scalar', { defaultValue:neighborInfluenceRange });
+    
     flockNode.pub.addVertexAttributeValue('initialized', 'Boolean', false );
     flockNode.pub.addVertexAttributeValue('debugDraw', 'DebugGeometry' );
     flockNode.pub.addUniformValue('displayDebugging', 'Boolean', options.displayDebugging, true );
     
+    flockNode.getAttributesDGNode().setDependency(scene.getGlobalsNode(), 'globals');
     flockNode.getAttributesDGNode().bindings.append(scene.constructOperator({
       operatorName: 'simulateParticles',
       srcFile: 'KL/flocking.kl',

@@ -58,7 +58,7 @@ operator paintVertexColors(
   switch(paintMode){
     case 0:
       for (var Integer i = 0; i < collectedPoints.points.size(); i++) {
-    Scalar weight = (cos(PI * (collectedPoints.distances[i] / brushSize)) * 0.5) + 0.5;
+        Scalar weight = ((cos(PI * (collectedPoints.distances[i] / brushSize)) * 0.5) + 0.5) * brushStrength;
         Integer vertexId = collectedPoints.points[i];
         vertexColors[vertexId] = vertexColors[vertexId].lerp(brushColor, weight);
       }

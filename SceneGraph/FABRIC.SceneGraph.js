@@ -78,7 +78,9 @@ FABRIC.SceneGraph = {
   },
   createScene: function(sceneOptions) {
     
-    var context = FABRIC.createContext();
+    if(!sceneOptions)sceneOptions = {};
+    
+    var context = FABRIC.createContext({'contextID':sceneOptions.contextID});
     
     var assignDefaults = function(options, defaults, force) {
       if (!options) options = {};
@@ -400,12 +402,13 @@ FABRIC.SceneGraph = {
         }
         var diagnostics = operator.getDiagnostics();
         if (diagnostics.length > 0) {
+          delete operatorStore[uid];
           console.error(descDiags(operator.getSourceCode(), diagnostics));
         }
       }
 
       if (operatorDef.srcFile) {
-        filename = operatorDef.srcFile.split('/').pop();
+        filename = operatorDef.srcFile;
         if(operatorDef.async === false){
           var code = FABRIC.loadResourceURL(operatorDef.srcFile, 'text/plain');
           code = FABRIC.preProcessCode(code, operatorDef.preProcessorDefinitions);
@@ -545,9 +548,9 @@ FABRIC.SceneGraph = {
       }
     };
     scene.pub.IO = context.IO;
-    scene.pub.redrawAllViewports = function() {
+    scene.pub.redrawAllViewports = function(force) {
       for (var i=0; i<viewports.length; i++) {
-        viewports[i].pub.redraw();
+        viewports[i].pub.redraw(force);
       }
     };
     scene.pub.getErrors = function() {
@@ -665,13 +668,12 @@ FABRIC.SceneGraph = {
         var prevTime, onAdvanceCallback;
         var setTime = function(t, redraw) {
           time = Math.round(t/sceneOptions.timeStep) * sceneOptions.timeStep;
-          globalsNode.setData('time', 0, t);
-          
+          globalsNode.setData('time', 0, time);
           if( onAdvanceCallback){
             onAdvanceCallback.call();
           }
           if(redraw !== false){
-            scene.pub.redrawAllViewports();
+            scene.pub.redrawAllViewports(true);
           }
         }
         var advanceTime = function() {
@@ -855,7 +857,7 @@ FABRIC.SceneGraph.registerNodeType('SceneGraphNode', {
         return eventnode;
       },
       
-      writeData: function(sceneSaver, constructionOptions, nodeData) {
+      writeData: function(sceneSerializer, constructionOptions, nodeData) {
         constructionOptions.name = name;
       },
       writeDGNode: function( dgnode ){
@@ -865,7 +867,7 @@ FABRIC.SceneGraph.registerNodeType('SceneGraphNode', {
         dgnodeData.data = dgnode.getBulkData();
         return dgnodeData;
       },
-      readData: function(sceneLoader, nodeData) {
+      readData: function(sceneDeserializer, nodeData) {
       },
       readDGNode: function( dgnode, dgnodeData ){
         var members = dgnodeData.members;
@@ -955,6 +957,7 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
     var fabricwindow = scene.bindViewportToWindow(windowElement, viewportNode);
     
     var initialLoad = true;
+    var visible = false;
     var startLoadMode = function() {
       fabricwindow.hide();
       FABRIC.appendOnResolveAsyncTaskCallback(function(label, countRemaining){
@@ -981,8 +984,8 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
             // during the 1st redraw.
             viewportNode.pub.getOpenGLVersion = fabricwindow.getOpenGLVersion;
             viewportNode.pub.getGlewSupported = fabricwindow.getGlewSupported;
-            viewportNode.pub.show = function(){ fabricwindow.show(); };
-            viewportNode.pub.hide = function(){ fabricwindow.hide(); };
+            viewportNode.pub.show = function(){ fabricwindow.show(); visible = true; };
+            viewportNode.pub.hide = function(){ fabricwindow.hide(); visible = false; };
 
             viewportNode.pub.getWidth = function(){ return fabricwindow.windowNode.getData('width'); };
             viewportNode.pub.getHeight = function(){ return fabricwindow.windowNode.getData('height'); };
@@ -992,7 +995,7 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
           if(options.checkOpenGL2Support && !fabricwindow.getGlewSupported('GL_VERSION_2_0')){
             alert('ERROR: Your graphics driver does not support OpenGL 2.0, which is required to run Fabric.')
           }else{
-            fabricwindow.show();
+            viewportNode.pub.show();
           }
           return true;
         }
@@ -1226,9 +1229,13 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
       var ray = viewPortRayCastDgNode.getData('ray');
       return ray;
     };
-    viewportNode.pub.redraw = function() {
+    viewportNode.pub.redraw = function(force) {
+      if(!visible){
+        return;
+      }
       if(scene.pub.animation.isPlaying()){
-        fabricwindow.needsRedraw();
+        if(force)
+          fabricwindow.needsRedraw();
       }else{
         // If we give the browser a millisecond pause, then the redraw will
         // occur. Otherwist this message gets lost, causing a blank screen when
@@ -1238,12 +1245,12 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
         }, 1);
       }
     };
-    viewportNode.pub.writeData = function(sceneSaver, constructionOptions, nodeData) {
+    viewportNode.pub.writeData = function(sceneSerializer, constructionOptions, nodeData) {
       nodeData.camera = cameraNode.getName();
     };
-    viewportNode.pub.readData = function(sceneLoader, nodeData) {
+    viewportNode.pub.readData = function(sceneDeserializer, nodeData) {
       if (nodeData.camera) {
-        this.setCameraNode(sceneLoader.getNode(nodeData.camera));
+        this.setCameraNode(sceneDeserializer.getNode(nodeData.camera));
       }
     };
     viewportNode.pub.getFPS = function() {
@@ -1453,13 +1460,7 @@ FABRIC.SceneGraph.registerNodeType('ResourceLoad', {
         incrementLoadProgressBar = undefined;
       }
       else if (options.redrawOnLoad) {
-        // PT 09-09-2011 Note: this is a hack to force the redrawing after the resource has
-        // really finished loading. I'm not sure if there is a bug that means
-        // this callback is called early. For the Alpha11 release I am adding this
-        // here, but it needs to be thoroughly understood and possibly removed. 
-        setTimeout(function(){
-          scene.pub.redrawAllViewports();
-        }, 100);
+        scene.pub.redrawAllViewports();
       }
     }
 
@@ -1651,11 +1652,11 @@ FABRIC.SceneGraph.registerNodeType('Camera', {
     
     var parentWriteData = cameraNode.writeData;
     var parentReadData = cameraNode.readData;
-    cameraNode.writeData = function(sceneSaver, constructionOptions, nodeData) {
+    cameraNode.writeData = function(sceneSerializer, constructionOptions, nodeData) {
       if(transformNodeMember){
         nodeData.transformNodeMember = transformNodeMember;
       }
-      sceneSaver.addNode(transformNode.pub);
+      sceneSerializer.addNode(transformNode.pub);
       nodeData.transformNode = transformNode.pub.getName();
       
       nodeData.nearDistance = cameraNode.pub.getNearDistance();
@@ -1663,17 +1664,17 @@ FABRIC.SceneGraph.registerNodeType('Camera', {
       nodeData.fovY = cameraNode.pub.getFovY();
       nodeData.focalDistance = cameraNode.pub.getFocalDistance();
       
-      parentWriteData(sceneSaver, constructionOptions, nodeData);
+      parentWriteData(sceneSerializer, constructionOptions, nodeData);
     };
-    cameraNode.readData = function(sceneLoader, nodeData) {
-      cameraNode.pub.setTransformNode(sceneLoader.getNode(nodeData.transformNode), nodeData.transformNodeMember);
+    cameraNode.readData = function(sceneDeserializer, nodeData) {
+      cameraNode.pub.setTransformNode(sceneDeserializer.getNode(nodeData.transformNode), nodeData.transformNodeMember);
       
       cameraNode.pub.setNearDistance(nodeData.nearDistance);
       cameraNode.pub.setFarDistance(nodeData.farDistance);
       cameraNode.pub.setFovY(nodeData.fovY);
       cameraNode.pub.setFocalDistance(nodeData.focalDistance);
       
-      parentReadData(sceneLoader, nodeData);
+      parentReadData(sceneDeserializer, nodeData);
     };
 
     if (typeof options.transformNode == 'string') {
@@ -1723,11 +1724,13 @@ FABRIC.SceneGraph.registerNodeType('TargetCamera', {
         target: new FABRIC.RT.Vec3(0, 0, 0)
       });
 
-    options.transformNode = scene.pub.constructNode('AimTransform', {
-      globalXfo: options.globalXfo,
-      position: options.position,
-      target: options.target
-    });
+    if(!options.transformNode) {
+      options.transformNode = scene.pub.constructNode('AimTransform', {
+        globalXfo: options.globalXfo,
+        position: options.position,
+        target: options.target
+      });
+    }
 
     var targetCameraNode = scene.constructNode('Camera', options);
 

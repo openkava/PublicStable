@@ -4,55 +4,8 @@
 
 use OGLTexture2D;
 use OGLShaderProgram;
-use FabricOGL, FabricPNG, FabricTGA, FabricHDR;
 use Xfo;
 use Mat44;
-
-function decodeLDRImageData(
-  io FabricResource resource,
-  io Size imageWidth,
-  io Size imageHeight,
-  io RGBA imageLDR[]
-) {
-  if(resource.data.size() == 0)
-    return;
-  String ext = resource.extension ? resource.extension : resource.mimeType;
-  switch (ext) {
-    case'png':
-    case'image/png':
-      FabricPNGDecode(resource.data.data(), resource.data.dataSize(), imageWidth, imageHeight, imageLDR);
-      resource.data.resize(0);
-      break;
-    case'tga':
-    case'image/tga':
-      FabricTGADecode(resource.data.data(), resource.data.dataSize(), imageWidth, imageHeight, imageLDR);
-      resource.data.resize(0);
-      break;
-  }
-}
-
-function decodeHDRImageData(
-  io FabricResource resource,
-  io Size imageWidth,
-  io Size imageHeight,
-  io Color imageHDR[]
-) {
-  if(resource.data.size() == 0)
-    return;
-  String ext = resource.extension ? resource.extension : resource.mimeType;
-  switch (ext) {
-    case'hdr':
-    case'image/hdr':
-      FabricHDRDecode(resource.data.data(), resource.data.dataSize(), imageWidth, imageHeight, imageHDR);
-      resource.data.resize(0);
-      break;
-    case'exr':
-    case'image/exr':
-      FabricHDRDecode(resource.data.data(), resource.data.dataSize(), imageWidth, imageHeight, imageHDR);
-      resource.data.resize(0);
-      break;
-  }
-}
 
 operator loadImageHDR(
   io FabricResource resource,
@@ -92,16 +45,14 @@ operator loadAndBindTextureLDR(
   io Integer textureUnit
 ) {
 //  report("loadAndBindTextureLDR -> textureUnit:" + textureUnit);
-  if(resource.data.size() == 0)
-    return;
-  if(oglTexture2D.bufferID == 0 || oglTexture2D.forceRefresh){
+  if((oglTexture2D.bufferID == 0 || oglTexture2D.forceRefresh) && resource.data.size() != 0){
     Size width, height;
     RGBA imageLDR[];
     decodeLDRImageData(resource, width, height, imageLDR);
     oglTexture2D.configure(width, height, imageLDR.data(), imageLDR.size(), textureUnit);
-    resource.data.resize(0);
   }
-  oglTexture2D.bind(textureUnit);
+  if(oglTexture2D.bufferID != 0)
+    oglTexture2D.bind(textureUnit);
 }
 
 operator bindTextureHDR(
@@ -112,29 +63,6 @@ operator bindTextureHDR(
   io Integer textureUnit
 ) {
   oglTexture2D.bindImageHDR(width, height, bitmap, textureUnit);
-}
-
-operator setNumberOfMatrices(
-  io Mat44 matrices<>,
-  io OGLShaderProgram shaderProgram
-) {
-  shaderProgram.numInstances = Integer(matrices.size());
-}
-
-operator bindTextureMatrix(
-  io OGLTexture2D oglTexture2D,
-  io Integer textureUnit,
-  io Mat44 matrices<>
-) {
-  if(textureUnit > -1) {
-    oglTexture2D.bindImageMatrix(matrices, textureUnit);
-  } else {
-    report('debugging instance matrices: ');
-    for(Size i=0;i<10;i++) {
-      report('matrix '+i+': '+matrices[i]);
-    }
-    report('matrix '+(matrices.size()-1)+': '+matrices[matrices.size()-1]);
-  }
 }
 
 operator unbindTextures(
