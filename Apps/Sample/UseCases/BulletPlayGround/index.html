@@ -972,9 +972,10 @@ $(document).ready(function() {
           currentRigidBody.instance.setSelectable(true);
         currentRigidBody = undefined;
       },
-      activate: function(evt) {
+      activate: function(evt, ui) {
         // store the element's offset
-        currentDraggedId = evt.srcElement.getAttribute('id');
+        var draggedElem =  ui.draggable[0];
+        currentDraggedId = draggedElem.getAttribute('id');
         originalOffset[currentDraggedId] = $("#"+currentDraggedId).offset();
         dragStatus[currentDraggedId] = 'outside';
         selectionManager.setEnabled(false);
