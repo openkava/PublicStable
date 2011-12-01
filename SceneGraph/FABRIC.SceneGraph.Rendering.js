@@ -297,7 +297,6 @@ FABRIC.SceneGraph.registerNodeType('BaseDeferredRenderer', {
           }));
     }
 
-      /*
     renderTargetRedrawEventHandler.postDescendBindings.append(
       scene.constructOperator({
           operatorName: 'unbindRenderTarget',
@@ -307,7 +306,6 @@ FABRIC.SceneGraph.registerNodeType('BaseDeferredRenderer', {
             'deferredDraw.renderTarget'
           ]
         }));
-      */
 
     redrawEventHandler.addMember('debugDrawToggle', 'Boolean', options.showDebug);
     redrawEventHandler.addMember('debugShaderProgID', 'Integer', 0);
