@@ -178,7 +178,7 @@ $(document).ready(function() {
   viewport.setCameraNode(camera);
   var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0), color: FABRIC.RT.rgb(0.4, 0.4, 0.6) });
 
-  var deferredRenderer = scene.constructNode('PhongDeferredRenderer', {cameraNode: camera, lightNode: light, shininess: 20
+  var deferredRenderer = scene.constructNode('PhongDeferredRenderer', {cameraNode: camera, lightNode: light, shininess: 20, forwardRenderPass: true
      //, showDebug: true
   });
 
@@ -389,7 +389,7 @@ $(document).ready(function() {
           lengthSections: 1,
           widthSections: 1
       }),
-      materialNode: scene.constructNode('FlatInstancingExtMaterial', {
+      materialNode: deferredRenderer.addForwardRenderMaterial('FlatInstancingExtMaterial', {
         color: FABRIC.RT.rgb255(245,245,255),
         transformTextureNode: carFrontLightSlicedTransform.getTransformTexture(true)
       }),
@@ -415,7 +415,7 @@ $(document).ready(function() {
           lengthSections: 1,
           widthSections: 1
       }),
-      materialNode: scene.constructNode('FlatInstancingExtMaterial', {
+      materialNode: deferredRenderer.addForwardRenderMaterial('FlatInstancingExtMaterial', {
         color: FABRIC.RT.rgb255(255,20,20),
         transformTextureNode: carBackLightSlicedTransform.getTransformTexture(true)
       }),
@@ -513,7 +513,7 @@ $(document).ready(function() {
         height: carWidth*0.35,
         detail: 5
       }),
-      materialNode: scene.constructNode('PhongInstancingExtMaterial', {
+      materialNode: deferredRenderer.addForwardRenderMaterial('PhongInstancingExtMaterial', {
         diffuseColor: FABRIC.RT.rgb255(200,200,200),
         ambientColor: FABRIC.RT.rgb255(80,80,80),
         lightNode: light,
@@ -531,7 +531,7 @@ $(document).ready(function() {
         radius: carWidth*0.15,
         detail: 2
       }),
-      materialNode: scene.constructNode('FlatInstancingExtMaterial', {
+      materialNode: deferredRenderer.addForwardRenderMaterial('FlatInstancingExtMaterial', {
         color: FABRIC.RT.rgb255(255,230,200),
         transformTextureNode: streetLightBulbSlicedTransform.getTransformTexture(false)
       }),

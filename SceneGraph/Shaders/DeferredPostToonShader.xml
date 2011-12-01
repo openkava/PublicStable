@@ -3,7 +3,7 @@
   <name>DeferredPostPhongMaterial</name>
   
   <uniforms>
-    <uniform name="u_samplerPositionsMap" constant="positionsTexture" type="Integer" owner="texture"/>
+    <uniform name="u_samplerPositionsZMap" constant="positionsZTexture" type="Integer" owner="texture"/>
     <uniform name="u_samplerNormalsMap" constant="normalsTexture" type="Integer" owner="texture"/>
     <uniform name="u_samplerDiffuseMap" constant="diffuseTexture" type="Integer" owner="texture"/>
 
@@ -14,7 +14,7 @@
   </uniforms>
 
   <textures>
-    <texture binding="positionsTexture"/>
+    <texture binding="positionsZTexture"/>
     <texture binding="normalsTexture"/>
     <texture binding="diffuseTexture"/>
   </textures>
@@ -39,7 +39,7 @@
   <fragmentshader>
     <source>
       <![CDATA[
-			uniform sampler2D u_samplerPositionsMap;
+			uniform sampler2D u_samplerPositionsZMap;
 			uniform sampler2D u_samplerNormalsMap;
 			uniform sampler2D u_samplerDiffuseMap;
       uniform int u_width;
@@ -60,20 +60,20 @@
           }
         }
   
-        vec4 normalSample[9];
+        vec3 normalSample[9];
         float depthSample[9];
         for (int i = 0; i < 9; i++){
           vec2 uv = windowCoord + tc_offset[i];
-          normalSample[i] = texture2D(u_samplerNormalsMap, uv);
-          depthSample[i] = texture2D(u_samplerPositionsMap, uv).z;
+          normalSample[i] = texture2D(u_samplerNormalsMap, uv).xyz;
+          depthSample[i] = texture2D(u_samplerPositionsZMap, uv).r;
         }
   
-        vec4 normalHorizEdge = normalSample[2] + (2.0*normalSample[5]) + normalSample[8] - (normalSample[0] + (2.0*normalSample[3]) + normalSample[6]);
-        vec4 normalVertEdge = normalSample[0] + (2.0*normalSample[1]) + normalSample[2] - (normalSample[6] + (2.0*normalSample[7]) + normalSample[8]);
+        vec3 normalHorizEdge = normalSample[2] + (2.0*normalSample[5]) + normalSample[8] - (normalSample[0] + (2.0*normalSample[3]) + normalSample[6]);
+        vec3 normalVertEdge = normalSample[0] + (2.0*normalSample[1]) + normalSample[2] - (normalSample[6] + (2.0*normalSample[7]) + normalSample[8]);
         float depthHorizEdge = depthSample[2] + (2.0*depthSample[5]) + depthSample[8] - (depthSample[0] + (2.0*depthSample[3]) + depthSample[6]);
         float depthVertEdge = depthSample[0] + (2.0*depthSample[1]) + depthSample[2] - (depthSample[6] + (2.0*depthSample[7]) + depthSample[8]);
 
-        vec3 normalEdge = sqrt((normalHorizEdge.rgb * normalHorizEdge.rgb) + (normalVertEdge.rgb * normalVertEdge.rgb));
+        vec3 normalEdge = sqrt((normalHorizEdge * normalHorizEdge) + (normalVertEdge * normalVertEdge));
         float depthEdge = 0.1*sqrt((depthHorizEdge * depthHorizEdge) + (depthVertEdge * depthVertEdge));
         float edge = max(depthEdge,max(max(normalEdge.r,normalEdge.g),normalEdge.b));
 
