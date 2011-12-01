@@ -260,6 +260,7 @@ FABRIC.SceneGraph.registerNodeType('BaseDeferredRenderer', {
         }));
 
     if(options.addDepth) {
+      /*
       renderTargetRedrawEventHandler.postDescendBindings.append(
         scene.constructOperator({
             operatorName: 'copyDepth',
@@ -274,6 +275,7 @@ FABRIC.SceneGraph.registerNodeType('BaseDeferredRenderer', {
               'deferredDraw.renderTarget'
             ]
           }));
+      */
     }
 
     redrawEventHandler.addMember('debugDrawToggle', 'Boolean', options.showDebug);
