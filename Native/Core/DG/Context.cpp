@@ -202,13 +202,20 @@ namespace Fabric
           delete m_pendingNotificationsJSONGenerator;
           m_pendingNotificationsJSON = 0;
         }
-        
+
         {
           Util::Mutex::Lock clientLock( m_clientsMutex );
-          for ( Clients::const_iterator it=m_clients.begin(); it!=m_clients.end(); ++it )
-            (*it)->notify( *pendingNotificationJSON );
+          // [pzion 20111130] This is a bit insane: in a strange case I haven't
+          // tracked down yet, notifying a client can cause it to become
+          // unregistered.  We work around this problem by saving the next iterator.
+          Clients::const_iterator it = m_clients.begin();
+          while( it != m_clients.end() )
+          {
+            Client *client = *it++;
+            client->notify( *pendingNotificationJSON );
+          }
         }
-        
+
         delete pendingNotificationJSON;
       }
     }
