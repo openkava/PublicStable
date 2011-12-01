@@ -212,7 +212,7 @@ font-family:Arial, Helvetica, sans-serif;
   text-indent:-9999px;
   width:40px;
   height:40px;
-  background-size: 40px;
+  background-size: 40px auto !important;
 /*  background:url(../Resources/ico-primitives.png) no-repeat;*/
 }
 
