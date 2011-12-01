@@ -98,6 +98,9 @@
       
       void main()
       {
+        gl_FragData[0].r = position.z;
+        gl_FragData[1].xyz = normalize(normal);
+
         vec3 Ln = normalize(lightDir);
 
         float lightFactor = getLightFactor_Hard( u_shadowMapSampler, shadowCoord );
@@ -112,8 +115,6 @@
         else
           gl_FragData[2] = u_materialDarkColor * lightFactor;
         gl_FragData[2].a = u_colorBlend;
-        gl_FragData[0].xyz = position;
-        gl_FragData[1].xyz = normalize(normal);
       }
       ]]>
     </source>
