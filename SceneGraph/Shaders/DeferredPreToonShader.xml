@@ -48,9 +48,9 @@
 
       void main(){
         normal = u_normalMatrix * a_normal;
-        position = u_modelViewMatrix * a_position;
+        position = (u_modelViewMatrix * a_position).xyz;
   
-        lightDir = vec3(u_lightPosition - position);
+        lightDir = u_lightPosition.xyz - position;
 
         gl_Position = u_modelViewProjectionMatrix * a_position;
       }
@@ -83,6 +83,7 @@
         gl_FragData[0].xyz = position;
         gl_FragData[1].xyz = Nn;
         gl_FragData[2].rgb = mix( u_materialBrightColor.rgb, u_materialDarkColor.rgb, intensity );
+        gl_FragData[2].a = 1.0;
       }
 
       ]]>

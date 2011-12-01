@@ -121,6 +121,7 @@
         gl_FragData[0].xyz = position;
         gl_FragData[1].xyz = Nn;
         gl_FragData[2].rgb = lightFactor * mix( u_materialBrightColor.rgb, u_materialDarkColor.rgb, intensity );
+        gl_FragData[2].a = 1.0;
       }
 
       ]]>
