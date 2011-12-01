@@ -48,9 +48,9 @@
 
       void main(){
         normal = u_normalMatrix * a_normal;
-        position = u_modelViewMatrix * a_position;
+        position = (u_modelViewMatrix * a_position).xyz;
   
-        lightDir = vec3(u_lightPosition - position);
+        lightDir = u_lightPosition.xyz - position;
 
         gl_Position = u_modelViewProjectionMatrix * a_position;
       }
