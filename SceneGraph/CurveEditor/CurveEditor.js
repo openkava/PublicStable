@@ -54,17 +54,7 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
   
   for (var i = 0; i < trackCount; i++) {
     var trackData = tracksData.tracks[i];
-//    var trackColor = trackData.color.toString().substring(trackData.color.toString().indexOf("rgba"));
-    var trackColor;
-    if (trackData.color.r === 1){
-      trackColor = "red";
-    }
-    if (trackData.color.g === 1){
-      trackColor = "green";
-    }
-    if (trackData.color.b === 1){
-      trackColor = "blue";
-    }
+    var trackColor = "#"+((trackData.color.r === 1) ? "FF" : "00")+((trackData.color.g === 1) ? "FF" : "00")+((trackData.color.b === 1) ? "FF" : "00");
 
     $('#keyframeTracks').append('<li style=color:'+ trackColor +'>' + trackData.name + '</li>');
     trackCurves[i] = curvesHolderGroup.createPath().addClass('CurvePath').stroke(trackData.color);
