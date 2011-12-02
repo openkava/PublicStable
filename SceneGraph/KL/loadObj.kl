@@ -8,9 +8,14 @@ use Vec3;
 
 function loadObj(
   io FabricResource resource,
-  io Data objParseHandle
+  Boolean printDetailedInfo,
+  Boolean splitByObject,
+  Boolean splitByGroup,
+  Boolean splitByMaterial,
+  io Data objParseHandle,
 ) {
-  FabricOBJDecode(resource.data.data(), resource.data.dataSize(), objParseHandle);
+  FabricOBJDecode(resource.data.data(), resource.data.dataSize(), splitByObject, splitByGroup, splitByMaterial, objParseHandle);
+  resource.data.resize(0);//Note: this might not be safe if loadObj is called twice on the same data; maybe it should be an option?
 
   Boolean hadErrors;
   FabricOBJHadErrors( objParseHandle, hadErrors );
@@ -21,27 +26,54 @@ function loadObj(
     for( Integer i = 0; i < errors.size; i++ )
       report 'Error while parsing obj file ' + resource.url + ': ' + errors[i];
   }
+
+  if( printDetailedInfo ) {
+    Size nbEntities, nbPts, nbTris;
+    FabricOBJGetNbEntityPoints(objParseHandle, -1, nbPts);
+    FabricOBJGetNbEntityTriangles(objParseHandle, -1, nbTris);
+    FabricOBJGetNbEntities(objParseHandle, nbEntities);
+    report "OBJ " + resource.url + ": " + nbEntities + " entities: " + nbPts + " vertices, " + nbTris + "triangles";
+    String values[];
+    FabricOBJGetMaterialLibraries(objParseHandle, values);
+    report "  Materials libraries: " + values;
+    FabricOBJGetMaterialNames(objParseHandle, values);
+    report "  Materials: " + values;
+    for( Size i = 0; i < nbEntities; ++i ) {
+      String objName, groupName, matName;
+      FabricOBJGetEntityObjectName(objParseHandle, i, objName);
+      FabricOBJGetEntityGroupName(objParseHandle, i, groupName);
+      FabricOBJGetEntityMaterialName(objParseHandle, i, matName);
+      FabricOBJGetNbEntityPoints(objParseHandle, i, nbPts);
+      FabricOBJGetNbEntityTriangles(objParseHandle, i, nbTris);
+      report "  Entity #" + i + ": objName: " + (objName != "" ? objName : "(none)") + ", groupName: " + (groupName != "" ? groupName : "(none)") + ", matName: " + (matName != "" ? matName : "(none)") + ", " + nbPts + " vertices, " + nbTris + " triangles";
+    }
+  }
 }
 
 operator parseObjAndSetVertexCount(
   io FabricResource resource,
   io Data objParseHandle,
+  io Boolean splitByObject,
+  io Boolean splitByGroup,
+  io Boolean splitByMaterial,
+  io Integer entityIndex,
   io Boolean reload,
+  io Boolean printDetailedInfo,
   io Size newCount
 ) {
   if(reload){
     Boolean validHandle;
     FabricOBJIsHandleValid( objParseHandle, validHandle );
     if( !validHandle )
-      loadObj( resource, objParseHandle);
+      loadObj( resource, true, splitByObject, splitByGroup, splitByMaterial, objParseHandle);
 
-    FabricOBJGetNbPoints(objParseHandle, newCount);
-    report "OBJ " + resource.url + ": " + newCount + " vertices";
+    FabricOBJGetNbEntityPoints(objParseHandle, entityIndex, newCount);
   }
 }
 
 operator setObjGeom(
   io Data objParseHandle,
+  io Integer entityIndex,
   io Integer indices[],
   io Vec3 positions<>,
   io Vec3 normals<>,
@@ -49,15 +81,15 @@ operator setObjGeom(
   io Boolean reload
 ) {
   if(reload){
-    FabricOBJGetTriangleIndices( objParseHandle, indices );
-    FabricOBJGetPointsSliced( objParseHandle, positions );
-    FabricOBJGetNormalsSliced( objParseHandle, normals );
+    FabricOBJGetEntityTriangleIndices( objParseHandle, entityIndex, indices );
+    FabricOBJGetEntityPointsSliced( objParseHandle, entityIndex, positions );
+    FabricOBJGetEntityNormalsSliced( objParseHandle, entityIndex, normals );
   
     Boolean hasTexture = false;
     FabricOBJHasTextureCoords( objParseHandle, hasTexture );
     if( hasTexture )
     {
-      FabricOBJGetTextureCoordsSliced( objParseHandle, uvs );
+      FabricOBJGetEntityTextureCoordsSliced( objParseHandle, entityIndex, uvs );
     }
     if(positions.size()>1){
       reload = false;

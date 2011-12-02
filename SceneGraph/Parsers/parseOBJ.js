@@ -3,6 +3,12 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
+//NOTE: This is a temporary hack to test obj splitting; to be done properly; set to 0..N to load only one entity
+var hackObjEntityIndex = -1;//Set -1 to get all entities in 1 object
+var hackObjSplitObjects = false;
+var hackObjSplitMaterials = false;
+var hackObjSplitGroups = false;
+var objPrintDetailedInfo = false;
 
 FABRIC.SceneGraph.registerNodeType('ObjLoadTriangles', {
   briefDesc: 'The ObjLoadTriangles node is a resource load node able to load OBJ files.',
@@ -28,6 +34,12 @@ FABRIC.SceneGraph.registerNodeType('ObjLoadTriangles', {
     trianglesNode.pub.addUniformValue('reload', 'Boolean', true);
     trianglesNode.pub.addUniformValue('handle', 'Data');
 
+    trianglesNode.pub.addUniformValue('entity', 'Integer', hackObjEntityIndex);
+    trianglesNode.pub.addUniformValue('splitObjects', 'Boolean', hackObjSplitObjects);
+    trianglesNode.pub.addUniformValue('splitGroups', 'Boolean', hackObjSplitMaterials);
+    trianglesNode.pub.addUniformValue('splitMaterials', 'Boolean', hackObjSplitGroups);
+    trianglesNode.pub.addUniformValue('printDetailedInfo', 'Boolean', objPrintDetailedInfo);
+
     trianglesNode.setGeneratorOps([
       scene.constructOperator({
         operatorName: 'parseObjAndSetVertexCount',
@@ -36,7 +48,12 @@ FABRIC.SceneGraph.registerNodeType('ObjLoadTriangles', {
         parameterLayout: [
           'resource.resource',
           'uniforms.handle',
+          'uniforms.splitObjects',
+          'uniforms.splitGroups',
+          'uniforms.splitMaterials',
+          'uniforms.entity',
           'uniforms.reload',
+          'uniforms.printDetailedInfo',
           'self.newCount'
         ]
       }),
@@ -46,6 +63,7 @@ FABRIC.SceneGraph.registerNodeType('ObjLoadTriangles', {
         entryFunctionName: 'setObjGeom',
         parameterLayout: [
           'uniforms.handle',
+          'uniforms.entity',
           'uniforms.indices',
           'self.positions<>',
           'self.normals<>',
