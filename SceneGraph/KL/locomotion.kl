@@ -31,8 +31,8 @@ function Scalar calcClipParamsDelta(
   in Scalar clip1[],
   in Scalar clip2[]
 ){
-  Scalar delta = clip1[1] - clip2[1]; // velocity
- // delta += clip1[2] - clip2[2];       // acceleration
+  Scalar delta = clip1[0] - clip2[0]; // velocity
+ // delta += clip1[1] - clip2[1];       // acceleration
   return delta;
 }
 
@@ -181,7 +181,6 @@ operator evaluateLocomotionPoseVariables(
   Vec3 linearVelocity = controllerparams.displacement.tr / timestep;
   Scalar currSpeed = linearVelocity.length();
   Scalar clipSpeed = trackcontroller.comParams[0];
-  
   if(clipSpeed == 0.0){
     if(trackcontroller.deactivate){
       for(Integer j=0; j < locomotionFeet.size; j++){
@@ -248,7 +247,8 @@ operator evaluateLocomotionPoseVariables(
           for(Integer l=0; l < locomotionMarkers[clipId][j].size; l++){
             Scalar clipDelta = calcClipParamsDelta(locomotionMarkers[clipId][j][l].params, trackcontroller.comParams);
             Scalar ratio = currClipDelta / clipDelta;
-          //  report(activeTrackSet + " to " + clipId + " comParams:"+ trackcontroller.comParams  + " clip Params:"+ trackcontroller.comParams + " target Clip Params:"+ locomotionMarkers[clipId][j][l].params + " ratio:"+ ratio);
+            
+          //  report(activeTrackSet + " to " + clipId + " comParams:"+ comParams  + " clip Params:"+ trackcontroller.comParams + " target Clip Params:"+ locomotionMarkers[clipId][j][l].params + " ratio:"+ ratio);
             if(ratio > targetClipRatio){
             //  report("deactivate from:"+activeTrackSet+ " to:" + clipId);
               trackcontroller.deactivate = true;
@@ -343,9 +343,6 @@ operator evaluateLocomotionPoseVariables(
     trackcontroller.deactivate = false;
     
     /////////////////////////////////////////////////
-  //  report(trackcontroller.tick);
-    
-    /////////////////////////////////////////////////
     Xfo rot90;
     rot90.setIdentity();
     rot90.ori.setFromAxisAndAngle(Vec3(0.0, 0.0, 1.0), HALF_PI);
@@ -358,6 +355,7 @@ operator evaluateLocomotionPoseVariables(
       
       hubXfo.tr = invcontrollerXfo.ori.rotateVector(controllerparams.balanceXfo.ori.rotateVector(controllerXfo.ori.rotateVector(hubXfo.tr))) -
                   invcontrollerXfo.ori.rotateVector(controllerparams.balanceXfo.tr);
+      hubXfo.tr.y -= controllerparams.balanceXfo.tr.length() * 0.5;
       hubXfo.ori =  invcontrollerXfo.ori * controllerparams.balanceXfo.ori * controllerXfo.ori * hubXfo.ori;
       
       if(controllerparams.trail.size > 0){

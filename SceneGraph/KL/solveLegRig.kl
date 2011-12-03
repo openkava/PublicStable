@@ -26,8 +26,8 @@ operator solveInsectLegRig(
     
     // Calculate the FK pose of the limb.
     Xfo fkPose[];
-    fkPose.resize(leg.boneIds.size());
-    for (Integer j = 0; j < leg.boneIds.size(); j++) {
+    fkPose.resize(leg.boneIds.size);
+    for (Integer j = 0; j < leg.boneIds.size; j++) {
       if(j==0){
         if (bones[leg.boneIds[j]].parent == - 1) {
           fkPose[j] = controllerXfo * poseVariables.xfoValues[j];
@@ -65,7 +65,7 @@ operator solveInsectLegRig(
       if (ikBlend < 1.0) {
         // Now blend the IK pose with the FK pose.
         Integer j;
-        for (j = 0; j < leg.boneIds.size(); j++) {
+        for (j = 0; j < leg.boneIds.size; j++) {
           pose[leg.boneIds[j]].ori = fkPose[j].ori.sphericalLinearInterpolate(pose[leg.boneIds[j]].ori, ikBlend);
           if (j > 0) {
             pose[leg.boneIds[j]].tr = pose[leg.boneIds[j - 1]].transformVector(bones[leg.boneIds[j]].referenceLocalPose.tr);
@@ -93,10 +93,10 @@ operator solveHumanoidLegRig(
     
     // Calculate the FK pose of the limb.
     Xfo fkPose[];
-    fkPose.resize(leg.boneIds.size()+1);
-    for (Integer j = 0; j < leg.boneIds.size(); j++) {
+    fkPose.resize(leg.boneIds.size+1);
+    for (Integer j = 0; j < leg.boneIds.size; j++) {
       if(j==0){
-        if (bones[leg.boneIds[j]].parent == - 1) {
+        if (bones[leg.boneIds[j]].parent == -1) {
           fkPose[j] = controllerXfo * poseVariables.xfoValues[j];
         }
         else {
@@ -108,8 +108,8 @@ operator solveHumanoidLegRig(
       }
       pose[leg.boneIds[j]] = fkPose[j];
     }
-    fkPose[leg.boneIds.size()] = fkPose[leg.boneIds.size()-1] * poseVariables.xfoValues[leg.ankleId];
-    pose[leg.ankleId] = fkPose[leg.boneIds.size()];
+    fkPose[leg.boneIds.size] = pose[bones[leg.ankleId].parent] * poseVariables.xfoValues[leg.xfoIds[leg.boneIds.size]];
+    pose[leg.ankleId] = fkPose[leg.boneIds.size];
       
     Scalar ikBlend = poseVariables.scalarValues[leg.ikblendId];
     if (ikBlend > 0.0) {
@@ -150,13 +150,13 @@ operator solveHumanoidLegRig(
       if (ikBlend < 1.0) {
         // Now blend the IK pose with the FK pose.
         Integer j;
-        for (j = 0; j < leg.boneIds.size(); j++) {
+        for (j = 0; j < leg.boneIds.size; j++) {
           pose[leg.boneIds[j]].ori = fkPose[j].ori.sphericalLinearInterpolate(pose[leg.boneIds[j]].ori, ikBlend);
           if (j > 0) {
             pose[leg.boneIds[j]].tr = pose[leg.boneIds[j - 1]].transformVector(bones[leg.boneIds[j]].referenceLocalPose.tr);
           }
         }
-        j = leg.boneIds.size();
+        j = leg.boneIds.size;
         pose[leg.ankleId].ori = fkPose[j].ori.sphericalLinearInterpolate(pose[leg.ankleId].ori, ikBlend);
         pose[leg.ankleId].tr = pose[leg.boneIds[j - 1]].transformVector(bones[leg.ankleId].referenceLocalPose.tr);
       }
@@ -207,7 +207,8 @@ operator invertHumanoidLegRig(
         poseVariables.xfoValues[leg.xfoIds[j]] = pose[bones[leg.boneIds[j]].parent].inverse() * pose[leg.boneIds[j]];
     }
     j = leg.boneIds.size;
-    poseVariables.xfoValues[leg.ankleId] = pose[bones[leg.ankleId].parent].inverse() * pose[leg.ankleId];
+    poseVariables.xfoValues[leg.xfoIds[j]] = pose[bones[leg.ankleId].parent].inverse() * pose[leg.ankleId];
+    
     
     Xfo ankleTipXfo = pose[leg.ankleId];
     ankleTipXfo.tr = ankleTipXfo.transformVector(Vec3(bones[leg.ankleId].length, 0.0, 0.0));
