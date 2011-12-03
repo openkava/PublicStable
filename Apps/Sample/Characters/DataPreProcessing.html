@@ -170,9 +170,54 @@ $(document).ready(function() {
   //////////////////////////////////////////////
   // 
   
-  var rigName = 'marama';
+  var rigName = 'Spiedel';
   var assetNodes, bindPoseRig, fkrigNode, rigInstanceNode, skeletonNode, characterMesh;
   switch(rigName){
+  case 'Spiedel':
+    scaleFactor = 0.02;
+    assetNodes = scene.importAssetFile('Assets/Spiedel.DAE', { scaleFactor: scaleFactor });
+  
+    fkrigNode = assetNodes.SpiedelCharacterRig;
+    rigInstanceNode = assetNodes.SpiedelCharacterInstance;
+    characterMesh = assetNodes.SpiedelMesh;
+    
+    skeletonNode = fkrigNode.getSkeletonNode();
+    var ikrigNode = scene.constructNode('CharacterRig', {
+      name: 'IKRig',
+      skeletonNode: skeletonNode
+    });
+    
+    ikrigNode.addSolver('Hip', 'HubSolver', { hubs: [{ bone:['SpiedelBody'] }] } );
+    
+    ikrigNode.addSolver('upperbody', 'FKHierarchySolver', {
+      bones: {
+        bones:['SpiedelFrontRLegCollarbone', 'SpiedelFrontLLegCollarbone', 'SpiedelRearRLegCollarbone', 'SpiedelRearLLegCollarbone',
+               'SpiedelLArmCollarbone', 'SpiedelLArm1', 'SpiedelLArm2', 'SpiedelLArmPalm',
+               'SpiedelRArmCollarbone', 'SpiedelRArm1', 'SpiedelRArm2', 'SpiedelRArmPalm' ]
+      }
+    });
+    ikrigNode.addSolver('Limbs', 'InsectLegSolver', {
+      limbs: [ { bones:['SpiedelFrontRLeg1', 'SpiedelFrontRLeg2', 'SpiedelFrontRLeg3'] },
+               { bones:['SpiedelFrontLLeg1', 'SpiedelFrontLLeg2', 'SpiedelFrontLLeg3'] },
+               { bones:['SpiedelRearRLeg1', 'SpiedelRearRLeg2', 'SpiedelRearRLeg3'] },
+               { bones:['SpiedelRearLLeg1', 'SpiedelRearLLeg2', 'SpiedelRearLLeg3'] } ]
+    });
+    ikrigNode.addSolver('toes', 'FKHierarchySolver', {
+      bones: {
+        bones:['SpiedelFrontRLegAnkle', 'SpiedelFrontLLegAnkle', 'SpiedelRearLLegAnkle', 'SpiedelRearRLegAnkle' ]
+      }
+    });
+
+    fkrigNode.setName("FKRig");
+    var fkRigVariablesNode = fkrigNode.constructVariablesNode('FKRigVariables', true);
+    var ikRigVariablesNode = ikrigNode.invertSolvers(fkrigNode, true);
+    
+    rigInstanceNode.setRigNode(ikrigNode);
+    
+    loadAnimationFile('Assets/Spiedel_Walk.DAE', fkrigNode);
+  //  loadAnimationFile('Assets/Spiedel_Idle.DAE', fkrigNode);
+  
+    break;
   case 'walker':
     assetNodes = scene.importAssetFile('Assets/Walker_Skeleton.DAE', { scaleFactor: scaleFactor });
   
@@ -352,7 +397,7 @@ $(document).ready(function() {
     });
   rigInstanceNode.setMaterialNode(materialNode);
   characterMesh.setName('characterMesh');
-  
+  /*
   var animatedSkeleton = scene.constructNode("CharacterSkeletonDebug",{
     characterRigNode:fkrigNode,
     boneradius: 0.2,
@@ -364,7 +409,7 @@ $(document).ready(function() {
     boneradius: 0.2,
     color: FABRIC.RT.rgba(0.0, 0.0, 1.0, 1.0)
   });
-  
+  */
   
   var timeRange = libraryFKAnimations.getTimeRange(0);
   var $globalTimeSlider = $('#globalTime').slider({
