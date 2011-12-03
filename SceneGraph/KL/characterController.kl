@@ -202,8 +202,10 @@ operator evaluateCharacterController(
   }
   
   comParams.resize(4);
-  comParams[1] = linearVelocity.length();
-  comParams[2] = acceleration.length();
+  comParams[0] = linearVelocity.length();
+  comParams[1] = acceleration.length();
+  comParams[2] = 0.0; // gradient
+  comParams[2] = 0.0; // direction
 }
 
 

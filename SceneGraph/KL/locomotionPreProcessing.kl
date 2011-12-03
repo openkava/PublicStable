@@ -321,10 +321,11 @@ function Boolean generateCOMTracks(
       gradient = climb / velocity.length();
       
       if(speed > 0.001){
-        Vec3 facingVec = comXfo.ori.rotateVector(Vec3(0.0, 1.0, 0.0));
+        Vec3 facingVec = comXfo.ori.rotateVector(Vec3(0.0, 0.0, 1.0));
         facingVec.y = 0.0;
         facingVec.setUnit();
         velocity.setUnit();
+      //  report("velocity:"+velocity + " facingVec:"+facingVec);
         direction = facingVec.angleTo(velocity);
         if(facingVec.cross(velocity).y > 0.0){
           direction = -direction;
@@ -338,7 +339,7 @@ function Boolean generateCOMTracks(
       poseVariables.scalarValues[com.parameterVarIds[1]] = acceleration;
       poseVariables.scalarValues[com.parameterVarIds[2]] = gradient;
       poseVariables.scalarValues[com.parameterVarIds[3]] = direction;
-      
+      report(" speed:"+speed + " acceleration:"+acceleration + " gradient:"+gradient + " direction:"+direction );
       poseVariables.setTrackValues(time, trackSet, comParamBindings);
     }
     prevComXfo = comXfo;
