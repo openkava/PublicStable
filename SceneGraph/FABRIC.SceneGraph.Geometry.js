@@ -108,6 +108,7 @@ FABRIC.SceneGraph.registerNodeType('Geometry', {
         }));
       }
     };
+    var attributes = {};
     geometryNode.pub.addVertexAttributeValue = function(name, type, attributeoptions) {
       attributesdgnode.addMember(name, type, attributeoptions ? attributeoptions.defaultValue : undefined);
       if(attributeoptions){
@@ -121,7 +122,6 @@ FABRIC.SceneGraph.registerNodeType('Geometry', {
           if(attributeoptions.dynamic){
             buffer.bufferUsage = FABRIC.SceneGraph.OpenGLConstants.GL_DYNAMIC_DRAW;
           }
-          
           redrawEventHandler.addMember(bufferMemberName, 'OGLBuffer', buffer);
           redrawEventHandler.preDescendBindings.append(scene.constructOperator({
             operatorName: 'load' + capitalizeFirstLetter(type) +'VBO',
@@ -138,6 +138,7 @@ FABRIC.SceneGraph.registerNodeType('Geometry', {
           }));
         }
       }
+      attributes[name] = { type:type, attributeoptions:attributeoptions };
     };
     // Trigger a reloading of the vbo. This is useull when modifiying geometry
     // attributes that are not dynamic, but change from time to time.
@@ -211,12 +212,37 @@ FABRIC.SceneGraph.registerNodeType('Geometry', {
     var parentWriteData = geometryNode.writeData;
     var parentReadData = geometryNode.readData;
     geometryNode.writeGeometryData = function(sceneSerializer, constructionOptions, nodeData) {
-      nodeData['uniformsdgnode'] = geometryNode.writeDGNode(uniformsdgnode);
-      nodeData['attributesdgnode'] = geometryNode.writeDGNode(attributesdgnode);
+      nodeData.attributes = attributes;
+      nodeData.sliceCount = attributesdgnode.getCount();
+      nodeData.attributeData = attributesdgnode.getBulkData();
+      var uniformMembers = uniformsdgnode.getMembers();
+      if(uniformMembers.indices){
+        nodeData.indices = uniformsdgnode.getData('indices');
+      }
     }
     geometryNode.readGeometryData = function(sceneDeserializer, nodeData) {
-      geometryNode.readDGNode(uniformsdgnode, nodeData['uniformsdgnode']);
-      geometryNode.readDGNode(attributesdgnode, nodeData['attributesdgnode']);
+      var attributeMembers = attributesdgnode.getMembers();
+      if(nodeData.attributes){
+        for(var attributeName in nodeData.attributes){
+          if(!attributeMembers[attributeName]){
+            geometryNode.pub.addVertexAttributeValue(
+              attributeName,
+              nodeData.attributes[attributeName].type,
+              nodeData.attributes[attributeName].attributeoptions
+            );
+          }
+        }
+      }
+      if(nodeData.sliceCount){
+        attributesdgnode.setCount(nodeData.sliceCount);
+      }
+      if(nodeData.attributeData){
+        attributesdgnode.setBulkData(nodeData.attributeData);
+      }
+      var uniformMembers = uniformsdgnode.getMembers();
+      if(nodeData.indices){
+        uniformsdgnode.setData('indices', 0, nodeData.indices );
+      }
     }
     geometryNode.writeData = function(sceneSerializer, constructionOptions, nodeData) {
       parentWriteData(sceneSerializer, constructionOptions, nodeData);
