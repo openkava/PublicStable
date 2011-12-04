@@ -67,3 +67,30 @@ function DebugGeometry.drawCircle(Xfo xfo, Scalar radius, Color color) {
 }
 
 
+function DebugGeometry.drawSquare(Xfo xfo, Scalar length, Scalar width, Color color) {
+  Integer numSegments = 12;
+  var Integer id0 = Integer(this.positions.size());
+  
+  this.linesIndices.push(id0);
+  this.positions.push(xfo.tr + xfo.ori.rotateVector(Vec3(length * 0.5, 0.0, width * 0.5))); 
+  this.vertexColors.push(color);
+  this.linesIndices.push(Integer(this.positions.size()));
+  
+  this.linesIndices.push(Integer(this.positions.size()));
+  this.positions.push(xfo.tr + xfo.ori.rotateVector(Vec3(length *-0.5, 0.0, width * 0.5))); 
+  this.vertexColors.push(color);
+  this.linesIndices.push(Integer(this.positions.size()));
+  
+  this.linesIndices.push(Integer(this.positions.size()));
+  this.positions.push(xfo.tr + xfo.ori.rotateVector(Vec3(length *-0.5, 0.0, width *-0.5))); 
+  this.vertexColors.push(color);
+  this.linesIndices.push(Integer(this.positions.size()));
+  
+  this.linesIndices.push(Integer(this.positions.size()));
+  this.positions.push(xfo.tr + xfo.ori.rotateVector(Vec3(length * 0.5, 0.0, width *-0.5))); 
+  this.vertexColors.push(color);
+  this.linesIndices.push(id0);
+  
+}
+
+
