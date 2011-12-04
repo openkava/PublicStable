@@ -76,6 +76,9 @@ s.parentNode.insertBefore(ga, s);
 </script>
 <script type="text/javascript">
 
+
+FABRIC.SceneGraph.defineEffectFromFile('PhongSkinningVertexColorMaterial', 'Shaders/SpiedelShader.xml');
+
 $(document).ready(function() {
 
 
@@ -104,7 +107,7 @@ $(document).ready(function() {
   var viewport = scene.constructNode('Viewport', {
     enableRaycasting: false,
     windowElement: document.getElementById('FabricContainer'),
-    backgroundColor: FABRIC.RT.rgb(0.63, 0.79, .95)
+    backgroundColor: FABRIC.RT.rgb(0.3, 0.09, .3)
   });
   
   
@@ -120,7 +123,7 @@ $(document).ready(function() {
   
   var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) });
   var phongMaterial = scene.constructNode('PhongMaterial', {
-      diffuseColor: FABRIC.RT.rgb(0.6, 0.65, 0.6, 1),
+      diffuseColor: FABRIC.RT.rgb(0.4, 0.45, 0.4, 1),
       lightNode: light
     });
 
@@ -137,7 +140,8 @@ $(document).ready(function() {
   
   var constructBulletScene = true;
   
-  var rigName = 'walker';
+  var rigName = 'Spiedel';
+  /*
   try{
     if(localStorage && localStorage.getItem("rigName")){
       rigName = localStorage.getItem("rigName");
@@ -149,7 +153,7 @@ $(document).ready(function() {
   if(rigName =='centipede'){
     constructBulletScene = false;
   }
-
+  */
   if(constructBulletScene){
     
     // create a simulation world
@@ -307,9 +311,28 @@ $(document).ready(function() {
     }
   }
 
-  var locomotionControllerNode, diffuseColor;
+  var locomotionControllerNode, diffuseColor, material;
   var minFrequency = 0.0;
   switch(rigName){
+  case 'Spiedel':
+    locomotionControllerNode = scene.constructNode('ScreenSpacePlayerCharacterController', {
+        cameraNode: camera,
+        maxLinearVelocity: 15,
+        maxLinearAcceleration: 30,
+        maxAngularVelocity: 1.6,
+        maxAngularAcceleration: 1.6,
+        bulletWorldNode: bulletWorldNode,
+        numTrailSegments: 0,
+        gravity: 0,
+        comHeight: 1.8,
+        circleSize: 1.6
+      });
+    
+    material = scene.constructNode('SpiedelShader', {
+      lightNode: scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) }),
+      diffuseColor: FABRIC.RT.rgba(1.0, 0.0, 0.0, 1.0)
+    });
+    break;
   case 'walker':
     locomotionControllerNode = scene.constructNode('ScreenSpacePlayerCharacterController', {
         cameraNode: camera,
@@ -377,16 +400,17 @@ $(document).ready(function() {
   locomotionVariables.setAnimationLibrary(libraryAnimations);
   ikrig.setVariablesNode(locomotionVariables);
   
-  var phongSkinningMaterial = scene.constructNode('PhongSkinningMaterial', {
-    lightNode: light,
-    diffuseColor: diffuseColor,
-    numBones: skeletonNode.getNumBones()
-  });
-  
+  if(!material){
+    material = scene.constructNode('PhongSkinningMaterial', {
+      lightNode: light,
+      diffuseColor: diffuseColor,
+      numBones: skeletonNode.getNumBones()
+    });
+  }
   var characterInstance = scene.constructNode("CharacterInstance", {
     rigNode:ikrig,
     geometryNode: characterMesh,
-    materialNode: phongSkinningMaterial
+    materialNode: material
   });
   
   /*
