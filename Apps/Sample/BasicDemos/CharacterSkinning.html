@@ -120,8 +120,7 @@ $(document).ready(function() {
 
   var materialNode = scene.constructNode('PhongSkinningMaterial', {
       lightNode: scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) }),
-      diffuseColor: FABRIC.RT.rgba(1.0, 0.0, 0.0, 1.0),
-      numBones: rigNode.getSkeletonNode().getNumBones()
+      diffuseColor: FABRIC.RT.rgba(1.0, 0.0, 0.0, 1.0)
     });
   rigInstanceNode.setMaterialNode(materialNode);
   
