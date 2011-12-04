@@ -73,6 +73,25 @@ operator solveInsectLegRig(
         }
       }
     }
+    
+    //////////////////////////////////////////////
+    // Debugging
+    /*
+    Xfo rot90;
+    rot90.setIdentity();
+    rot90.ori.setFromAxisAndAngle(Vec3(0.0, 0.0, 1.0), HALF_PI);
+    debugGeometry.drawSquare(footPlatformXfo * rot90, 1.0, 0.8, Color(0.0, 1.0, 1.0, 1.0));
+    Integer j;
+    for (j = 1; j < leg.boneIds.size; j++) {
+      debugGeometry.drawLine(fkPose[j-1].tr, fkPose[j].tr, Color(1.0, 1.0, 0.0, 1.0));
+    }
+    debugGeometry.drawLine(fkPose[j-1].tr, fkPose[j - 1].transformVector(bones[leg.boneIds[j-1]].referenceLocalPose.tr), Color(0.0, 1.0, 1.0, 1.0));
+    for (j = 1; j < leg.boneIds.size; j++) {
+      debugGeometry.drawLine(pose[leg.boneIds[j - 1]].tr, pose[leg.boneIds[j]].tr, Color(0.0, 1.0, 1.0, 1.0));
+    }
+    debugGeometry.drawLine(pose[leg.boneIds[j-1]].tr, pose[leg.boneIds[j - 1]].transformVector(bones[leg.boneIds[j-1]].referenceLocalPose.tr), Color(0.0, 1.0, 1.0, 1.0));
+    debugGeometry.drawAxis(pose[leg.ankleId], 2.0, Color(0.0, 1.0, 1.0, 1.0));
+    */
   }
 }
 
@@ -113,10 +132,9 @@ operator solveHumanoidLegRig(
       
     Scalar ikBlend = poseVariables.scalarValues[leg.ikblendId];
     if (ikBlend > 0.0) {
-    //  debugGeometry.drawAxis(poseVariables.xfoValues[leg.ikGoalXfoId], 3.0, Color(0.0, 1.0, 1.0, 1.0));
-      
+      Xfo footPlatformXfo = controllerXfo * poseVariables.xfoValues[leg.ikGoalXfoId];
       Xfo targetXfo;
-      targetXfo = controllerXfo * poseVariables.xfoValues[leg.ikGoalXfoId] * leg.ikGoalOffsetXfo;
+      targetXfo = footPlatformXfo * leg.ikGoalOffsetXfo;
       
       Scalar maxLineLength = 0.0;
       Integer ikboneIndices[];
@@ -125,10 +143,9 @@ operator solveHumanoidLegRig(
         ikboneIndices.push(leg.boneIds[j]);
       }
     
-      Vec2 maxLineLengthSoftening(maxLineLength * 0.05, maxLineLength * 0.05);
+      Vec2 maxLineLengthSoftening(maxLineLength * 0.03, maxLineLength * 0.03);
       Integer firstBoneId = leg.boneIds[0];
       Integer lastBoneId = leg.boneIds[leg.boneIds.size-1];
-      
       applyFishingRod(
         targetXfo,
         bones[leg.ankleId].length,
@@ -160,6 +177,23 @@ operator solveHumanoidLegRig(
         pose[leg.ankleId].ori = fkPose[j].ori.sphericalLinearInterpolate(pose[leg.ankleId].ori, ikBlend);
         pose[leg.ankleId].tr = pose[leg.boneIds[j - 1]].transformVector(bones[leg.ankleId].referenceLocalPose.tr);
       }
+      
+      //////////////////////////////////////////////
+      // Debugging
+      /*
+      Xfo rot90;
+      rot90.setIdentity();
+      rot90.ori.setFromAxisAndAngle(Vec3(0.0, 0.0, 1.0), HALF_PI);
+      debugGeometry.drawSquare(footPlatformXfo * rot90, 1.0, 0.8, Color(0.0, 1.0, 1.0, 1.0));
+      for (Integer j = 1; j <= leg.boneIds.size; j++) {
+        debugGeometry.drawLine(fkPose[j-1].tr, fkPose[j].tr, Color(1.0, 1.0, 0.0, 1.0));
+      }
+      for (Integer j = 1; j < leg.boneIds.size; j++) {
+        debugGeometry.drawLine(pose[leg.boneIds[j - 1]].tr, pose[leg.boneIds[j]].tr, Color(0.0, 1.0, 1.0, 1.0));
+      }
+      debugGeometry.drawLine(pose[leg.boneIds[leg.boneIds.size - 1]].tr, pose[leg.ankleId].tr, Color(0.0, 1.0, 1.0, 1.0));
+      debugGeometry.drawAxis(pose[leg.ankleId], 2.0, Color(0.0, 1.0, 1.0, 1.0));
+      */
     }
   }
 }
