@@ -627,7 +627,7 @@ const std::string& ObjParser::GetEntityMaterialName( int entity )const{
 size_t ObjParser::GetNbEntityPoints( int entity )const
 {
   CheckEntityIndex(entity);
-  if( m_entities.empty() || entity == -1 )
+  if( m_entities.size() <= 1 || entity == -1 )
     return m_sharedPointIndices.size();
 
   return m_entities[entity]->second.m_sharedPointIndices.size();
@@ -635,7 +635,7 @@ size_t ObjParser::GetNbEntityPoints( int entity )const
 
 V3 ObjParser::GetEntityPoint(int entity, int ptIndex)const
 {
-  if( !m_entities.empty() && entity != -1 )
+  if( m_entities.size() > 1 && entity != -1 )
     ptIndex = m_entities[entity]->second.m_sharedPointIndices[ptIndex];
 
   int index = m_sharedPointIndices[ptIndex].m_point;
@@ -647,7 +647,7 @@ V3 ObjParser::GetEntityPoint(int entity, int ptIndex)const
 
 V3 ObjParser::GetEntityNormal(int entity, int ptIndex)const
 {
-  if( !m_entities.empty() && entity != -1 )
+  if( m_entities.size() > 1 && entity != -1 )
     ptIndex = m_entities[entity]->second.m_sharedPointIndices[ptIndex];
 
   int index = m_sharedPointIndices[ptIndex].m_normal;
@@ -659,7 +659,7 @@ V3 ObjParser::GetEntityNormal(int entity, int ptIndex)const
 
 V2 ObjParser::GetEntityTextureCoord(int entity, int ptIndex)const
 {
-  if( !m_entities.empty() && entity != -1 )
+  if( m_entities.size() > 1 && entity != -1 )
     ptIndex = m_entities[entity]->second.m_sharedPointIndices[ptIndex];
 
   int index = m_sharedPointIndices[ptIndex].m_texCoord;
@@ -671,7 +671,7 @@ V2 ObjParser::GetEntityTextureCoord(int entity, int ptIndex)const
 
 size_t ObjParser::GetNbEntityTriangles( int entity )const {
   CheckEntityIndex(entity);
-  if( m_entities.empty() || entity == -1 )
+  if( m_entities.size() <= 1 || entity == -1 )
     return m_triangleMaterials.size();
 
   return m_entities[entity]->second.m_sharedFaces.size();
@@ -679,7 +679,7 @@ size_t ObjParser::GetNbEntityTriangles( int entity )const {
 
 void ObjParser::GetEntityTriangleIndices(int entity, int triIndex, int& i1, int& i2, int& i3)const
 {
-  if( m_entities.empty() || entity == -1 ) {
+  if( m_entities.size() <= 1 || entity == -1 ) {
     i1 = m_triangleIndices[triIndex*3];
     i2 = m_triangleIndices[triIndex*3+1];
     i3 = m_triangleIndices[triIndex*3+2];
@@ -693,7 +693,7 @@ void ObjParser::GetEntityTriangleIndices(int entity, int triIndex, int& i1, int&
 
 int ObjParser::GetEntityTriangleMaterialIndex(int entity, int triIndex)const
 {
-  if( !m_entities.empty() && entity != -1 )
+  if( m_entities.size() > 1 && entity != -1 )
     triIndex = m_entities[entity]->second.m_sharedFaces[triIndex];
 
   return m_triangleMaterials[triIndex];
