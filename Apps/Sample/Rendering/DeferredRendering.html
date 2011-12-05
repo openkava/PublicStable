@@ -324,15 +324,20 @@ $(document).ready(function() {
   var carSlicedTransform = scene.constructNode("Transform", { name:"CarsTransform" } );
   carSlicedTransform.setGlobalXfo(carInstanceTransforms);
   
-  scene.constructNode('Instance', {
-    geometryNode: scene.importAssetFile('Models/carmod2.obj')['carmod2'],//Note: already scaled according to carLength, carHeight, carWidth
-    materialNode: deferredRenderer.addPrePassPhongInstancingMaterial({
-      diffuseColor: FABRIC.RT.rgb(0.8, 0.4, 0.4),
-      transformTextureNode: carSlicedTransform.getTransformTexture(true),
-      specularFactor: 1.0
-    }),
-    transformNode: carSlicedTransform
-  });
+  
+  var resourceLoadNode = scene.importAssetFile('Models/carmod2.obj', { loadMultipleGeometries: false });
+  resourceLoadNode.addEventListener('objparsesuccess', function(evt){
+    scene.constructNode('Instance', {
+      geometryNode: evt.loadedGeometry,//Note: already scaled according to carLength, carHeight, carWidth
+      materialNode: deferredRenderer.addPrePassPhongInstancingMaterial({
+        diffuseColor: FABRIC.RT.rgb(0.8, 0.4, 0.4),
+        transformTextureNode: carSlicedTransform.getTransformTexture(true),
+        specularFactor: 1.0
+      }),
+      transformNode: carSlicedTransform
+    });
+   });
+  
 
   scene.constructNode('MoveCarsNode', {
     transformNode: carSlicedTransform,
