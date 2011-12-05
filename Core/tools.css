@@ -34,9 +34,19 @@ html,body {
 
 #keyframeTracks {
   height: 500px;
+  width:300px;
   overflow: scroll;
 }
 
+#keyframeTracks li span {
+  float: left; 
+  width: 10px;
+  height: 3px;
+  margin: 8px 6px 0;
+}
+#keyframeTracks li input {
+  float:left;
+}
 
 /* DEBUGGER
 -------------------------------------------------------------------- */

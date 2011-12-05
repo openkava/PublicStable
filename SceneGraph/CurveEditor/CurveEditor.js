@@ -56,7 +56,7 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
     var trackData = tracksData.tracks[i];
     var trackColor = "#"+((trackData.color.r === 1) ? "FF" : "00")+((trackData.color.g === 1) ? "FF" : "00")+((trackData.color.b === 1) ? "FF" : "00");
 
-    $('#keyframeTracks').append('<li><span style=background-color:'+ trackColor +'></span>' + trackData.name + '</li>');
+    $('#keyframeTracks').append('<li><input type="checkbox" name="" /> <span style=background-color:'+ trackColor +'></span>' + trackData.name + '</li>');
     trackCurves[i] = curvesHolderGroup.createPath().addClass('CurvePath').stroke(trackData.color);
   }
   
