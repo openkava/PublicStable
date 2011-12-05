@@ -97,29 +97,53 @@ $(document).ready(function() {
 
   viewport.setCameraNode(camera);
 
-hackObjEntityIndex = -1;//Set -1 to get all entities in 1 object
-objPrintDetailedInfo = true;
-hackObjSplitObjects = true;
-hackObjSplitMaterials = true;
-hackObjSplitGroups = true;
-
-  var modelName = 'cow';
-  var assets = scene.importAssetFile('Models/' + modelName + '.obj');
-  
   var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) });
   var phongMaterial = scene.constructNode('PhongMaterial', {
       diffuseColor: FABRIC.RT.rgb(0.8, 0, 0, 1),
       lightNode: light
     });
-
-  scene.constructNode('Instance', {
+  
+  var modelName = 'cow';
+  var resourceLoadNode = scene.importAssetFile('Models/' + modelName + '.obj', { loadMultipleGeometries: false });
+  resourceLoadNode.addEventListener('objparsesuccess', function(evt){
+    scene.constructNode('Instance', {
       transformNode: scene.constructNode('Transform', {
           hierarchical: false,
           globalXfo: new FABRIC.RT.Xfo({ tr: new FABRIC.RT.Vec3(-10, 0, 0) })
         }),
-      geometryNode: assets[modelName],
+      geometryNode: evt.loadedGeometry,
       materialNode: phongMaterial
     });
+   })
+  
+  // Note: to load an obj containing multiple meshes....
+  // Note2: maybe the callback functions don't have the best names...
+  /*
+   var resourceLoadNode = scene.importAssetFile(path, objOptions);
+   resourceLoadNode.addEventListener('objparsesuccess', function(evt){
+    // Load the mtl file, which will generate an array of materials.
+    // Note: This part isn't finished. we parse the mtl file after the obj,
+    // and only construct materials that are used in the obj. currently,
+    // all materials in the mtl fe will be constructed.
+    var loadedMaterials = scene.importAssetFile(mtlpath, {
+      materialType: 'FlatTextureMaterial',
+      materialMaps: {
+        map_Kd: 'texture',
+      },
+      materialNames: evt.materialNames
+     });
+   
+    for(var i=0; i< evt.objectNames.length; i++){
+     var objectName = evt.objectNames[i];
+     var materialName = evt.materialNames[i];
+     var instance = scene.constructNode('Instance', {
+         geometryNode: evt.loadedGeometries[objectName],
+         materialNode: loadedMaterials[materialName]
+       });
+     instance.setMaterialNode(wireframeMaterial);
+    }
+   });
+  */
 
   $('#loadingDialog').dialog({
     modal: true
