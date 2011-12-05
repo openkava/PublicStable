@@ -128,9 +128,7 @@ FABRIC.SceneGraph.registerNodeType('ObjTriangles', {
 
 FABRIC.SceneGraph.registerParser('obj', function(scene, assetUrl, options) {
   options.url = assetUrl;
-  var resourceLoadNode = scene.constructNode('LoadObj', {
-    url: assetUrl
-  });
+  var resourceLoadNode = scene.constructNode('LoadObj', options );
   
   resourceLoadNode.addEventListener('objloadsuccess', function(evt){
     var loadedGeometries = {};
