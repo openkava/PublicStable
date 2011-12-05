@@ -6,6 +6,8 @@
 #include <sstream>
 #include <set>
 
+std::string ObjParser::kEmptyString;
+
 class Exception
 {
 public:
@@ -22,11 +24,11 @@ private:
   std::string m_msg;
 };
 
-void defaultExceptionThrow(const char* msg) {
+void ParseExceptionThrow(const char* msg) {
   throw Exception( msg );
 }
 
-void(*g_cStrExceptionFunc)(const char*) = defaultExceptionThrow;
+void(*g_cStrExceptionFunc)(const char*) = ParseExceptionThrow;
 
 bool ObjParser::EntityKey::operator<(const ObjParser::EntityKey& other)const{
   int cmp = strcmp(m_objName.c_str(), other.m_objName.c_str());
@@ -91,7 +93,7 @@ bool skipExpectedString( std::istream& stream, const char* str, bool throwIfDiff
     if( !stream.good() || c1 != c2 )
     {
       if(throwIfDifferent)
-        (*g_cStrExceptionFunc)( ("Expected token '" + std::string(str) + "' not found").c_str() );
+        ParseExceptionThrow( ("Expected token '" + std::string(str) + "' not found").c_str() );
       else
         return false;
     }
@@ -102,7 +104,7 @@ bool skipExpectedString( std::istream& stream, const char* str, bool throwIfDiff
 void skipMandatorySpaces( std::istream& stream )
 {
   if( !skipSpaces(stream) )
-    (*g_cStrExceptionFunc)("space expected");
+    ParseExceptionThrow("space expected");
 }
 
 void ParseName( std::istream& stream, std::string& name ) {
@@ -126,7 +128,7 @@ void getV( V<Dim>& v, std::istream& stream )
     skipMandatorySpaces( stream );
     stream >> v.v[i];
     if( parsingError( stream ) )
-      (*g_cStrExceptionFunc)("float value expected");
+      ParseExceptionThrow("float value expected");
   }
 }
 
@@ -171,19 +173,19 @@ void ObjParser::ParseF( std::istream& stream )
       break;
     }
     else if( !hadSpaces )
-      (*g_cStrExceptionFunc)("space expected");
+      ParseExceptionThrow("space expected");
 
     PointIndices indices;
 
     stream >> indices.m_point;
     if( parsingError( stream ) )
-      (*g_cStrExceptionFunc)("int value expected");
+      ParseExceptionThrow("int value expected");
     if(indices.m_point < 0)
       indices.m_point += (int)m_points.size();
     else
       --indices.m_point;
     if( indices.m_point < 0 || indices.m_point > (int)m_points.size() )
-      (*g_cStrExceptionFunc)("out of range point index");
+      ParseExceptionThrow("out of range point index");
 
     char c = 0;
     stream.get(c);
@@ -193,13 +195,13 @@ void ObjParser::ParseF( std::istream& stream )
       {
         stream >> indices.m_texCoord;
         if( parsingError( stream ) )
-          (*g_cStrExceptionFunc)("int value expected");
+          ParseExceptionThrow("int value expected");
         if(indices.m_texCoord < 0)
           indices.m_texCoord += (int)m_texCoords.size();
         else
           --indices.m_texCoord;
         if( indices.m_texCoord < 0 || indices.m_texCoord > (int)m_texCoords.size() )
-          (*g_cStrExceptionFunc)("out of range texture index");
+          ParseExceptionThrow("out of range texture index");
       }
       c = 0;
       stream.get(c);
@@ -209,13 +211,13 @@ void ObjParser::ParseF( std::istream& stream )
         {
           stream >> indices.m_normal;
           if( parsingError( stream ) )
-            (*g_cStrExceptionFunc)("int value expected");
+            ParseExceptionThrow("int value expected");
           if(indices.m_normal < 0)
             indices.m_normal += (int)m_normals.size();
           else
             --indices.m_normal;
           if( indices.m_normal < 0 || indices.m_normal > (int)m_normals.size() )
-            (*g_cStrExceptionFunc)("out of range normal index");
+            ParseExceptionThrow("out of range normal index");
         }
       }
       else
@@ -262,7 +264,7 @@ void ObjParser::ParseF( std::istream& stream )
     }
   }
   if( nbFacePts < 3 )
-    (*g_cStrExceptionFunc)("face has less than 3 points");
+    ParseExceptionThrow("face has less than 3 points");
 }
 
 int ObjParser::ParseS( std::istream& stream )
@@ -279,7 +281,7 @@ int ObjParser::ParseS( std::istream& stream )
     int smoothingGroup;
     stream >> smoothingGroup;
     if( parsingError( stream ) )
-      (*g_cStrExceptionFunc)("int value expected for smoothing group");
+      ParseExceptionThrow("int value expected for smoothing group");
     return smoothingGroup;
   }
 }
@@ -579,8 +581,47 @@ ObjParser::ObjParser( std::istream& stream, bool splitObjs, bool splitGroups, bo
 }
 
 void ObjParser::CheckEntityIndex( int entity )const {
-  if(entity != -1 && (size_t)entity >= m_entities.size())
+  if(entity != -1 && entity != 0 && (size_t)entity >= m_entities.size())
     (*g_cStrExceptionFunc)("out of range entity");
+}
+
+const std::string& ObjParser::GetEntityObjectName( int entity )const {
+  CheckEntityIndex(entity);
+  if(entity == -1) {
+     if(m_entities.size() == 1)
+       entity = 0;
+     else
+       return kEmptyString;
+  }
+  if(entity == 0 && m_entities.empty())
+    return kEmptyString;
+  return m_entities[entity]->first.m_objName;
+}
+
+const std::string& ObjParser::GetEntityGroupName( int entity )const{
+  CheckEntityIndex(entity);
+  if(entity == -1) {
+     if(m_entities.size() == 1)
+       entity = 0;
+     else
+       return kEmptyString;
+  }
+  if(entity == 0 && m_entities.empty())
+    return kEmptyString;
+  return m_entities[entity]->first.m_groupName;
+}
+
+const std::string& ObjParser::GetEntityMaterialName( int entity )const{
+  CheckEntityIndex(entity);
+  if(entity == -1) {
+     if(m_entities.size() == 1)
+       entity = 0;
+     else
+       return kEmptyString;
+  }
+  if(entity == 0 && m_entities.empty())
+    return kEmptyString;
+  return m_entities[entity]->first.m_matName;
 }
 
 size_t ObjParser::GetNbEntityPoints( int entity )const
@@ -630,7 +671,7 @@ V2 ObjParser::GetEntityTextureCoord(int entity, int ptIndex)const
 
 size_t ObjParser::GetNbEntityTriangles( int entity )const {
   CheckEntityIndex(entity);
-  if( entity == -1 )
+  if( m_entities.empty() || entity == -1 )
     return m_triangleMaterials.size();
 
   return m_entities[entity]->second.m_sharedFaces.size();
