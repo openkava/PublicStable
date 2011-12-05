@@ -27,9 +27,9 @@ public:
   const std::string& GetMaterial( size_t index )const{ return m_materials[index]; }
 
   size_t GetNbEntities()const{ return m_entities.empty() ? 1 : m_entities.size(); }
-  const std::string& GetEntityObjectName( int entity )const{ CheckEntityIndex(entity); return m_entities[entity]->first.m_objName; }
-  const std::string& GetEntityGroupName( int entity )const{ CheckEntityIndex(entity); return m_entities[entity]->first.m_groupName; }
-  const std::string& GetEntityMaterialName( int entity )const{ CheckEntityIndex(entity); return m_entities[entity]->first.m_matName; }
+  const std::string& GetEntityObjectName( int entity )const;
+  const std::string& GetEntityGroupName( int entity )const;
+  const std::string& GetEntityMaterialName( int entity )const;
 
   size_t GetNbEntityPoints( int entity )const;
 
@@ -114,4 +114,5 @@ private:
   int m_currentSmoothingGroup;
   int m_currentMaterialIndex;
   EntityFacesMap::iterator m_currentEntityIter;
+  static std::string kEmptyString;
 };
