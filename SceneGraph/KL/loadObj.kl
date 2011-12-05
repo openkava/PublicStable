@@ -6,13 +6,16 @@ use FabricOBJ;
 use Vec2;
 use Vec3;
 
-function loadObj(
+function decodeObj(
   io FabricResource resource,
   Boolean printDetailedInfo,
   Boolean splitByObject,
   Boolean splitByGroup,
   Boolean splitByMaterial,
   io Data objParseHandle,
+  
+  io String objectNames[],
+  io String materialNames[]
 ) {
   FabricOBJDecode(resource.data.data(), resource.data.dataSize(), splitByObject, splitByGroup, splitByMaterial, objParseHandle);
   resource.data.resize(0);//Note: this might not be safe if loadObj is called twice on the same data; maybe it should be an option?
@@ -25,6 +28,20 @@ function loadObj(
     FabricOBJGetErrors( objParseHandle, errors );
     for( Integer i = 0; i < errors.size; i++ )
       report 'Error while parsing obj file ' + resource.url + ': ' + errors[i];
+  }
+  else{
+    Size nbEntities;
+    FabricOBJGetNbEntities(objParseHandle, nbEntities);
+    report "nbEntities: " + nbEntities ;
+    if(nbEntities > 1){
+      for( Size i = 0; i < nbEntities; ++i ) {
+        String objName, groupName, matName;
+        FabricOBJGetEntityGroupName(objParseHandle, i, groupName);
+        objectNames.push(groupName);
+        FabricOBJGetEntityMaterialName(objParseHandle, i, matName);
+        materialNames.push(matName);
+      }
+    }
   }
 
   if( printDetailedInfo ) {
@@ -49,26 +66,32 @@ function loadObj(
     }
   }
 }
-
-operator parseObjAndSetVertexCount(
+operator parseObj(
   io FabricResource resource,
   io Data objParseHandle,
   io Boolean splitByObject,
   io Boolean splitByGroup,
   io Boolean splitByMaterial,
-  io Integer entityIndex,
   io Boolean reload,
   io Boolean printDetailedInfo,
-  io Size newCount
+  
+  io String objectNames[],
+  io String materialNames[]
 ) {
-  if(reload){
     Boolean validHandle;
     FabricOBJIsHandleValid( objParseHandle, validHandle );
     if( !validHandle )
-      loadObj( resource, true, splitByObject, splitByGroup, splitByMaterial, objParseHandle);
+      decodeObj( resource, true, splitByObject, splitByGroup, splitByMaterial, objParseHandle, objectNames, materialNames);
+}
 
+
+operator setVertexCount(
+  io Data objParseHandle,
+  io Integer entityIndex,
+  io Boolean reload,
+  io Size newCount
+) {
     FabricOBJGetNbEntityPoints(objParseHandle, entityIndex, newCount);
-  }
 }
 
 operator setObjGeom(
@@ -80,7 +103,6 @@ operator setObjGeom(
   io Vec2 uvs<>,
   io Boolean reload
 ) {
-  if(reload){
     FabricOBJGetEntityTriangleIndices( objParseHandle, entityIndex, indices );
     FabricOBJGetEntityPointsSliced( objParseHandle, entityIndex, positions );
     FabricOBJGetEntityNormalsSliced( objParseHandle, entityIndex, normals );
@@ -91,10 +113,6 @@ operator setObjGeom(
     {
       FabricOBJGetEntityTextureCoordsSliced( objParseHandle, entityIndex, uvs );
     }
-    if(positions.size()>1){
-      reload = false;
-    }
-  }
 }
 
 operator freeObjParsedData(
