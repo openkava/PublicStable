@@ -33,6 +33,7 @@ function decodeObj(
     Size nbEntities;
     FabricOBJGetNbEntities(objParseHandle, nbEntities);
     report "nbEntities: " + nbEntities ;
+    // Note Jerome: this 'if' statment avoids the assert when aon object contains only a single entity
     if(nbEntities > 1){
       for( Size i = 0; i < nbEntities; ++i ) {
         String objName, groupName, matName;
