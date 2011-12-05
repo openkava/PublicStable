@@ -34,21 +34,18 @@
       curveEditor.resize();
     };
 
-  });
+    $('ul#keyframeTracks').collapsibleCheckboxTree({
+      checkParents : true, // When checking a box, all parents are checked (Default: true)
+      checkChildren : true, // When checking a box, all children are checked (Default: false)
+      uncheckChildren : true, // When unchecking a box, all children are unchecked (Default: true)
+      initialState : 'collapse' // Options - 'expand' (fully expanded), 'collapse' (fully collapsed) or default
+    });
 
-
-  $('#keyframeTracks').collapsibleCheckboxTree({
-    checkParents : true, // When checking a box, all parents are checked (Default: true)
-    checkChildren : false, // When checking a box, all children are checked (Default: false)
-    uncheckChildren : true, // When unchecking a box, all children are unchecked (Default: true)
-    initialState : 'default' // Options - 'expand' (fully expanded), 'collapse' (fully collapsed) or default
-  });
-
-  // jQuert UI Styling classes
-  $(document).ready(function() {
+    // jQuert UI Styling classes
     $(".box").addClass("ui-widget");
     $(".box h2").addClass("ui-widget-header ui-corner-all");
     $(".content").addClass("ui-widget-content");
+
   });
 
   </script>
@@ -75,6 +72,22 @@
         <div class="box">
           <h2>KEYFRAME TRACKS</h2>
           <ul class="content" id="keyframeTracks">
+            <!-- DEBUG DATA -->
+            <li><input type="checkbox" name=""> Biped_Nulls_UpperBody
+              <ul>
+                <li><input type="checkbox" name=""> <span style="background-color:#FF0000"></span>Biped_Nulls_UpperBody.tr.x</li>
+                <li><input type="checkbox" name=""> <span style="background-color:#00FF00"></span>Biped_Nulls_UpperBody.tr.y</li>
+                <li><input type="checkbox" name=""> <span style="background-color:#0000FF"></span>Biped_Nulls_UpperBody.tr.z</li>
+              </ul>
+            </li>
+            <li><input type="checkbox" name=""> Biped_Nulls_UpperBody
+              <ul>
+                <li><input type="checkbox" name=""> <span style="background-color:#FF0000"></span>Biped_Nulls_UpperBody.ori.x</li>
+                <li><input type="checkbox" name=""> <span style="background-color:#00FF00"></span>Biped_Nulls_UpperBody.ori.y</li>
+                <li><input type="checkbox" name=""> <span style="background-color:#0000FF"></span>Biped_Nulls_UpperBody.ori.z</li>
+              </ul>
+            </li>
+            <!-- DEBUG DATA END -->
           </ul><!--content-->
         </div><!--box-->
       </div><!--sidebar-->

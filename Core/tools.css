@@ -38,6 +38,12 @@ html,body {
   overflow: scroll;
 }
 
+#keyframeTracks li ul {
+  margin:0;
+  padding:0;
+  padding-left:6px;
+}
+
 #keyframeTracks li span {
   float: left; 
   width: 10px;
