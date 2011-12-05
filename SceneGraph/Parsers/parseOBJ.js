@@ -127,21 +127,14 @@ FABRIC.SceneGraph.registerNodeType('ObjTriangles', {
 
 
 FABRIC.SceneGraph.registerParser('obj', function(scene, assetUrl, options) {
-  
-  var results = {};
-  var assetName = assetUrl.split('/').pop().split('.')[0];
-  var loadMultipleGeometries = (options.loadMultipleGeometries!=undefined) ? options.loadMultipleGeometries : false;
-  
+  options.url = assetUrl;
   var resourceLoadNode = scene.constructNode('LoadObj', {
-    url: assetUrl,
-    splitObjects: loadMultipleGeometries,
-    splitMaterials: loadMultipleGeometries,
-    splitGroups: loadMultipleGeometries
+    url: assetUrl
   });
   
   resourceLoadNode.addEventListener('objloadsuccess', function(evt){
     var loadedGeometries = {};
-    if(loadMultipleGeometries){
+    if(evt.objectNames.length > 0){
       for(var i=0; i<evt.objectNames.length; i++){
         loadedGeometries[evt.objectNames[i]] = scene.constructNode('ObjTriangles', {
           resourceLoadNode: resourceLoadNode,
@@ -149,22 +142,19 @@ FABRIC.SceneGraph.registerParser('obj', function(scene, assetUrl, options) {
           name: evt.objectNames[i]
         });
       }
-      resourceLoadNode.fireEvent('objparsesuccess', {
-        loadedGeometries: loadedGeometries,
-        objectNames: evt.objectNames,
-        materialNames: evt.materialNames
-      })
     }else{
-      resourceLoadNode.fireEvent('objparsesuccess', {
-        loadedGeometry: scene.constructNode('ObjTriangles', {
-          resourceLoadNode: resourceLoadNode,
-          entityIndex: -1,
-          name: options.baseName
-        }),
-        objectNames: evt.objectNames,
-        materialNames: evt.materialNames
+      evt.objectNames = [options.baseName];
+      loadedGeometries[options.baseName] = scene.constructNode('ObjTriangles', {
+        resourceLoadNode: resourceLoadNode,
+        entityIndex: -1,
+        name: options.baseName
       })
     }
+    resourceLoadNode.fireEvent('objparsesuccess', {
+      loadedGeometries: loadedGeometries,
+      objectNames: evt.objectNames,
+      materialNames: evt.materialNames
+    })
   });
   return resourceLoadNode;
 });

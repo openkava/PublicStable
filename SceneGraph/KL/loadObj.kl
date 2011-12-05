@@ -32,16 +32,12 @@ function decodeObj(
   else{
     Size nbEntities;
     FabricOBJGetNbEntities(objParseHandle, nbEntities);
-    report "nbEntities: " + nbEntities ;
-    // Note Jerome: this 'if' statment avoids the assert when aon object contains only a single entity
-    if(nbEntities > 1){
-      for( Size i = 0; i < nbEntities; ++i ) {
-        String objName, groupName, matName;
-        FabricOBJGetEntityGroupName(objParseHandle, i, groupName);
-        objectNames.push(groupName);
-        FabricOBJGetEntityMaterialName(objParseHandle, i, matName);
-        materialNames.push(matName);
-      }
+    for( Size i = 0; i < nbEntities; ++i ) {
+      String objName, groupName, matName;
+      FabricOBJGetEntityGroupName(objParseHandle, i, groupName);
+      objectNames.push(groupName);
+      FabricOBJGetEntityMaterialName(objParseHandle, i, matName);
+      materialNames.push(matName);
     }
   }
 
@@ -79,10 +75,10 @@ operator parseObj(
   io String objectNames[],
   io String materialNames[]
 ) {
-    Boolean validHandle;
-    FabricOBJIsHandleValid( objParseHandle, validHandle );
-    if( !validHandle )
-      decodeObj( resource, true, splitByObject, splitByGroup, splitByMaterial, objParseHandle, objectNames, materialNames);
+  Boolean validHandle;
+  FabricOBJIsHandleValid( objParseHandle, validHandle );
+  if( !validHandle )
+    decodeObj( resource, true, splitByObject, splitByGroup, splitByMaterial, objParseHandle, objectNames, materialNames);
 }
 
 
@@ -92,7 +88,7 @@ operator setVertexCount(
   io Boolean reload,
   io Size newCount
 ) {
-    FabricOBJGetNbEntityPoints(objParseHandle, entityIndex, newCount);
+  FabricOBJGetNbEntityPoints(objParseHandle, entityIndex, newCount);
 }
 
 operator setObjGeom(
@@ -104,16 +100,16 @@ operator setObjGeom(
   io Vec2 uvs<>,
   io Boolean reload
 ) {
-    FabricOBJGetEntityTriangleIndices( objParseHandle, entityIndex, indices );
-    FabricOBJGetEntityPointsSliced( objParseHandle, entityIndex, positions );
-    FabricOBJGetEntityNormalsSliced( objParseHandle, entityIndex, normals );
-  
-    Boolean hasTexture = false;
-    FabricOBJHasTextureCoords( objParseHandle, hasTexture );
-    if( hasTexture )
-    {
-      FabricOBJGetEntityTextureCoordsSliced( objParseHandle, entityIndex, uvs );
-    }
+  FabricOBJGetEntityTriangleIndices( objParseHandle, entityIndex, indices );
+  FabricOBJGetEntityPointsSliced( objParseHandle, entityIndex, positions );
+  FabricOBJGetEntityNormalsSliced( objParseHandle, entityIndex, normals );
+
+  Boolean hasTexture = false;
+  FabricOBJHasTextureCoords( objParseHandle, hasTexture );
+  if( hasTexture )
+  {
+    FabricOBJGetEntityTextureCoordsSliced( objParseHandle, entityIndex, uvs );
+  }
 }
 
 operator freeObjParsedData(
