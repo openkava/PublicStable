@@ -206,7 +206,6 @@ namespace Fabric
       , m_mutex("Node.js ClientWrap")
     {
       std::vector<std::string> pluginPaths;
-#if 0
 #if defined(FABRIC_OS_MACOSX)
       char const *home = getenv("HOME");
       if ( home && *home )
@@ -230,7 +229,6 @@ namespace Fabric
         std::string appDataDir(appData);
         pluginPaths.push_back( IO::JoinPath( appDataDir, "Fabric" , "Exts" ) );
       }
-#endif
 #endif
 
       CG::CompileOptions compileOptions;
@@ -322,8 +320,11 @@ namespace Fabric
     {
       UNWRAP
       node::HandleWrap::Close( args );
-      wrap->m_client->invalidate();
-      wrap->m_client = 0;
+      if ( wrap->m_client )
+      {
+        wrap->m_client->invalidate();
+        wrap->m_client = 0;
+      }
       return v8::Handle<v8::Value>();
     }
     

@@ -11,4 +11,4 @@ console.log(JSON.stringify(b.getOperator().getName()));
 b.setParameterLayout(["self.foo"]);
 console.log(JSON.stringify(b.getParameterLayout()));
 
-F.flush();
+F.close();

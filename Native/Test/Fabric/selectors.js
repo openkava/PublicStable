@@ -36,4 +36,4 @@ ut = new FABRIC.UnitTest;
           ut.expect( "Correct number of results", result.length, 1 );
           ut.expect( "Correct result value", result[0].value, 7 );
         } );
-FABRIC.flush();
+FABRIC.close();

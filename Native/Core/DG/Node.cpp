@@ -284,7 +284,7 @@ namespace Fabric
 
           size_t oldCount = getCount();
           m_runState->m_newCount = oldCount;
-          opParallelCall->executeParallel( m_context->getLogCollector(), binding->getMainThreadOnly() );
+          opParallelCall->executeParallel( m_context->getLogCollector(), m_context, binding->getMainThreadOnly() );
           if ( m_runState->m_newCount != oldCount )
             setCount( m_runState->m_newCount );
         }
