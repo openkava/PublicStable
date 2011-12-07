@@ -61,8 +61,8 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
 //      drawTrackCurves();
 //      fitCurveEditorToWindow();
 //      updateTimeRange();
-//curvesHolderGroup.removeAllChildren();
-fitCurveEditorToWindow();
+        curvesHolderGroup.removeAllChildren();
+        fitCurveEditorToWindow();
     });
 
     trackCurves[i] = curvesHolderGroup.createPath().addClass('CurvePath').stroke(trackData.color);
