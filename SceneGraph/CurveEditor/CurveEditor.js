@@ -56,7 +56,7 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
     var trackData = tracksData.tracks[i];
 //    var trackColor = "#"+((trackData.color.r === 1) ? "FF" : "00")+((trackData.color.g === 1) ? "FF" : "00")+((trackData.color.b === 1) ? "FF" : "00");
 // <span style=background-color:'+ trackColor +'>
-    $('#keyframeTracks').append('<li><input type="checkbox" id="trackId-' + i + '" />' + trackData.name + '</li>');
+    $('#keyframeTracks').append('<li><input type="checkbox" id="trackId-' + i + '" /><label for="trackId-' + i + '">' + trackData.name + '</label></li>');
     $('#trackId-' + i).change(function() {
 //      drawTrackCurves();
 //      fitCurveEditorToWindow();
