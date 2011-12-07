@@ -6,6 +6,7 @@
 #include <Fabric/Core/DG/Context.h>
 #include <Fabric/Core/KL/Externals.h>
 #include <Fabric/Core/MT/LogCollector.h>
+#include <Fabric/Core/MT/ParallelCall.h>
 #include <Fabric/Core/Plug/Manager.h>
 #include <Fabric/Core/CG/Context.h>
 #include <Fabric/Core/CG/Manager.h>
@@ -41,7 +42,7 @@ namespace Fabric
     
     void ExecutionEngine::Report( char const *data, size_t length )
     {
-      RC::ConstHandle<Context> context = s_currentContext;
+      Context *context = static_cast<Context *>( MT::ParallelCall::GetUserdata() );
       context->getLogCollector()->add( data, length );
     }
     

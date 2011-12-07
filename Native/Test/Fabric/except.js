@@ -24,6 +24,11 @@ eh.preDescendBindings.append( binding );
 
 e = F.DG.createEvent("e");
 e.appendEventHandler( eh );
-e.fire();
+try {
+  e.fire();
+}
+catch (e) {
+  console.log(e);
+}
 
-F.flush();
+F.close();

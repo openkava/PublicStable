@@ -280,7 +280,7 @@ namespace Fabric
         RC::Handle<Binding> binding = m_preDescendBindings->get(i);
         std::vector<std::string> errors;
         RC::Handle<MT::ParallelCall> parallelCall = binding->bind( errors, selfScope, 0 );
-        parallelCall->executeSerial();
+        parallelCall->executeSerial( m_context );
       }
       
       for ( size_t i=0; i<m_childEventHandlers.size(); ++i )
@@ -295,7 +295,7 @@ namespace Fabric
         RC::Handle<Binding> binding = m_postDescendBindings->get(i);
         std::vector<std::string> errors;
         RC::Handle<MT::ParallelCall> parallelCall = binding->bind( errors, selfScope, 0 );
-        parallelCall->executeSerial();
+        parallelCall->executeSerial( m_context );
       }
       
       if ( m_selectBinding && selectorType && selectedNodes )
@@ -308,7 +308,7 @@ namespace Fabric
         void *prefixes[2] = { &shouldSelect, &selectedNode.data[0] };
         std::vector<std::string> errors;
         RC::Handle<MT::ParallelCall> parallelCall = m_selectBinding->bind( errors, bindingsScope, 0, 2, prefixes );
-        parallelCall->executeSerial();
+        parallelCall->executeSerial( m_context );
         if ( shouldSelect )
           selectedNodes->push_back( selectedNode );
       }

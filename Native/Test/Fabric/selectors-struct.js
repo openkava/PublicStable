@@ -82,4 +82,4 @@ ut.test("Selectors (Vec3)", function() {
 	ut.expect( "Correct result value", result[0].value.x, 7 );
 });
 
-FABRIC.flush();
+FABRIC.close();

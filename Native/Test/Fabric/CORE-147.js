@@ -14,4 +14,4 @@ node.bindings.append( binding );
 node.setData( "input", 17 );
 node.evaluate();
 
-FABRIC.flush();
+FABRIC.close();
