@@ -162,9 +162,7 @@ function OGLRenderTarget.prebind(
   }
 }
 
-function OGLRenderTarget.bind() {
-//  report("OGLRenderTarget.bind()");
-  
+function OGLRenderTarget.bindFbo(Boolean clearDepth) {
   Integer prevFbos[];
   prevFbos.resize(1);
   glGetIntegerv(GL_FRAMEBUFFER_BINDING, prevFbos);
@@ -175,39 +173,38 @@ function OGLRenderTarget.bind() {
   }
   
   glBindFramebuffer(GL_FRAMEBUFFER, this.fbo);
-  Size attribs = GL_VIEWPORT_BIT | GL_TEXTURE_BIT;
-  Size options = 0;
-  if(this.clearDepth){
-    attribs = attribs | GL_DEPTH_BUFFER_BIT;
-    options = options | GL_DEPTH_BUFFER_BIT;
-  }
-  if(this.numColorBuffers > 0 && this.clearColorFlag){
-    attribs = attribs | GL_COLOR_BUFFER_BIT;
-    options = options | GL_COLOR_BUFFER_BIT;
-  }
-  
-  glPushAttrib(attribs);
-  if(attribs&GL_COLOR_BUFFER_BIT){
-    glClearColor(this.clearColor.r, this.clearColor.g, this.clearColor.b, this.clearColor.a);
-  }
   glViewport(0,0, this.width, this.height);
+  glPushAttrib(GL_VIEWPORT_BIT | GL_TEXTURE_BIT | GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+  glClearColor(this.clearColor.r, this.clearColor.g, this.clearColor.b, this.clearColor.a);
+  if(this.hasDepthBufferTexture && clearDepth)
+    glClear(GL_DEPTH_BUFFER_BIT);
+}
 
-  Integer drawBufferIDs[];
-  Size nbColor = 0;
-  for(Size i=0; i<this.textures.size(); i++){
-    if(this.textures[i].texture.bufferID!=0 && this.textures[i].type == 2){
-      drawBufferIDs.push(Integer(GL_COLOR_ATTACHMENT0 + nbColor++));
-    }
+function OGLRenderTarget.bindColorBuffers(io Integer drawBufferIDs[]) {
+  if(drawBufferIDs.size() > 0) {
+    glDrawBuffers(drawBufferIDs.size(), drawBufferIDs);
+    glClear(GL_COLOR_BUFFER_BIT);
   }
-  glDrawBuffers(nbColor, drawBufferIDs);
-  glClear(options);
-  
-  // Note: I'm not sure if I need to do this every frame
-  //Depth buffer only
-  if(this.numColorBuffers <= 0){
+  else {
     glDrawBuffer(GL_NONE);
     glReadBuffer(GL_NONE);
   }
+}
+
+function OGLRenderTarget.bindAllBuffers() {
+  Integer drawBufferIDs[];
+  for(Size i=0; i<this.textures.size(); i++){
+    if(this.textures[i].texture.bufferID!=0 && this.textures[i].type == 2){
+      drawBufferIDs.push(Integer(GL_COLOR_ATTACHMENT0 + drawBufferIDs.size()));
+    }
+  }
+  this.bindColorBuffers(drawBufferIDs);
+}
+
+function OGLRenderTarget.bind() {
+//  report("OGLRenderTarget.bind()");
+  this.bindFbo(true);
+  this.bindAllBuffers();
 }
 
 function OGLRenderTarget.unbind() {

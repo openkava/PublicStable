@@ -119,7 +119,7 @@ operator evaluateLocomotionPoseVariables(
   
   io TrackSetController trackcontroller,
   io Boolean plantedFeet[],
-  io Vec3 plantLocations[],
+  io Xfo plantLocations[],
   io Vec3 hitPositions[],
   io Vec3 hitPositionsPrevStep[],
   
@@ -187,7 +187,7 @@ operator evaluateLocomotionPoseVariables(
         LocomotionFoot foot = locomotionFeet[j];
         Limb leg = legs[foot.limbId];
         plantedFeet[j] = true;
-        plantLocations[j] = controllerXfo.transformVector(leg.ikGoalReferenceXfo.tr);
+        plantLocations[j] = controllerXfo * leg.ikGoalReferenceXfo;
       }
     }
     t += timestep;
@@ -270,7 +270,7 @@ operator evaluateLocomotionPoseVariables(
           FootStep currStep = footStepTrack.footSteps[marker.stepIds[j]];
           if(marker.time > currStep.liftTime && marker.time < currStep.plantTime ){
             plantedFeet[j] = false;
-            plantLocations[j].setNull();
+            plantLocations[j].setIdentity();
           }
         }
       }
@@ -453,11 +453,13 @@ operator evaluateLocomotionPoseVariables(
       
       Scalar stepRatio = (t - currStep.prevStepMidPlantTime) / (currStep.midPlantTime - currStep.prevStepMidPlantTime);
       Scalar footPlantRatio = stepRatio;
-      Vec3 nextStepPos = baseFootXfo.tr - (displacementDir * ((currStep.strideLength * strideLengthMultiplier * footPlantRatio) - (currStep.strideLength * strideLengthMultiplier)));
+      Xfo nextStepPos = baseFootXfo;
+      nextStepPos.tr -= (displacementDir * ((currStep.strideLength * strideLengthMultiplier * footPlantRatio) - (currStep.strideLength * strideLengthMultiplier)));
       
       Scalar footLiftRatio = stepRatio - 0.5;
       if(footLiftRatio < 0.0) footLiftRatio += 1.0;
-      Vec3 currStepPos = baseFootXfo.tr - (displacementDir * ((currStep.strideLength * strideLengthMultiplier * footLiftRatio) - (currStep.strideLength * 0.5 * strideLengthMultiplier)));
+      Xfo currStepPos = baseFootXfo;
+      currStepPos -= (displacementDir * ((currStep.strideLength * strideLengthMultiplier * footLiftRatio) - (currStep.strideLength * 0.5 * strideLengthMultiplier)));
      
     //  report(j+" footLiftRatio:"+footLiftRatio + " footPlantRatio:"+footPlantRatio);
       if(displayFootPinningDebugging){
@@ -477,31 +479,28 @@ operator evaluateLocomotionPoseVariables(
       if(displayFootPinningDebugging){
         debugFootMotion.drawCircle(footXfo * rot90, 0.1, Color(0.0, 0.5, 0.5, 1.0));
       }
-      Vec3 footError;
+      Xfo footError;
       if(legSwingRatio > 0.0 && legSwingRatio < 1.0){
         Scalar liftLift, plantLift;
         if(plantedFeet[j]){
         
           if(displayFootPinningDebugging){
-            debugFootMotion.drawLine(currStepPos, plantLocations[j], Color(0.5, 0.5, 0.0, 1.0));
-            
-            Xfo temp = baseFootXfo;
-            temp.tr = plantLocations[j];
-            debugFootMotion.drawCircle(temp * rot90, 0.15, Color(0.0, 0.5, 1.0, 1.0));
+            debugFootMotion.drawLine(currStepPos, plantLocations[j].tr, Color(0.5, 0.5, 0.0, 1.0));
+            debugFootMotion.drawCircle(plantLocations[j] * rot90, 0.15, Color(0.0, 0.5, 1.0, 1.0));
           }
           
           BULLLETWORLD_OPENBLOCKCOMMENT
           if(performRaycasting){
             Scalar dist;
-            if(fireRay(bulletworld, plantLocations[j], upvector, rayLength, dist, displayRaycastingDebugging, debugRaycasting)){
-              plantLocations[j] += upvector * dist;
+            if(fireRay(bulletworld, plantLocations[j].tr, upvector, rayLength, dist, displayRaycastingDebugging, debugRaycasting)){
+              plantLocations[j].tr += upvector * dist;
             }
           }
           BULLLETWORLD_CLOSEBLOCKCOMMENT
-          footError = invcontrollerXfo.ori.rotateVector(plantLocations[j] - currStepPos);
+          footError = invcontrollerXfo * (plantLocations[j] * currStepPos.invert());
           plantLocations[j] = footError;
           plantedFeet[j] = false;
-          liftLift = footError.y;
+          liftLift = footError.tr.y;
           plantLift = 0.0;
         }
         else{
@@ -510,9 +509,9 @@ operator evaluateLocomotionPoseVariables(
           Scalar dissipationPeriod = 1.0;
           if(legSwingRatio < dissipationPeriod){
             Scalar errorDissipation = cos((legSwingRatio/dissipationPeriod) * PI) * 0.5 + 0.5;
-            footError = plantLocations[j] * errorDissipation;
+            footError = plantLocations[j].linearInterpolate(Xfo().setIdentity(), errorDissipation);
             
-            liftLift = footError.y;
+            liftLift = footError.tr.y;
           }
           /////////////////////////////////////////////////
           // Raycasting
@@ -558,18 +557,15 @@ operator evaluateLocomotionPoseVariables(
         }
         else{
           // Calculate the error each update to hold the foot in place while planted.
-          footError = invcontrollerXfo.ori.rotateVector(plantLocations[j] - currStepPos);
+          footError = invcontrollerXfo * (plantLocations[j] * currStepPos.inverse());
           // We zero the error vector here, because the raycasting (above) handles the y axis.
-          footError.y = 0.0;
+          footError.tr.y = 0.0;
         }
         
         if(displayFootPinningDebugging){
           debugFootMotion.drawCircle(footXfo * rot90, 0.1, Color(0.5, 0.5, 0.0, 1.0));
-          debugFootMotion.drawLine(currStepPos, plantLocations[j], Color(0.5, 0.5, 0.0, 1.0));
-          
-          Xfo temp = baseFootXfo;
-          temp.tr = plantLocations[j];
-          debugFootMotion.drawCircle(temp * rot90, 0.15, Color(0.0, 1.0, 0.5, 1.0));
+          debugFootMotion.drawLine(currStepPos, plantLocations[j].tr, Color(0.5, 0.5, 0.0, 1.0));
+          debugFootMotion.drawCircle(plantLocations[j] * rot90, 0.15, Color(0.0, 1.0, 0.5, 1.0));
         }
         
         if(t >= currStep.midPlantTime){

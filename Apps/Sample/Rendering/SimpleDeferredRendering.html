@@ -83,7 +83,7 @@ $(document).ready(function() {
   viewport.setCameraNode(camera);
   var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0), color: FABRIC.RT.rgb(1.0, 1.0, 1.0) });
 
-  var deferredRenderer = scene.constructNode('DeferredRenderer', {cameraNode: camera, lightNode: light, shininess: 20, showDebug: true});
+  var deferredRenderer = scene.constructNode('PhongDeferredRenderer', {cameraNode: camera, lightNode: light, shininess: 20, showDebug: true});
 
   // Phong Cuboid
   scene.constructNode('Instance', {
@@ -96,7 +96,7 @@ $(document).ready(function() {
         width: 15,
         height: 30
       }),
-      materialNode: deferredRenderer.constructDiffuseMaterial('DeferredRenderMaterial', {
+      materialNode: deferredRenderer.addPrePassPhongMaterial({
         diffuseColor: FABRIC.RT.rgb(1.0, 0.2, 0.2),
         specularFactor: 0.5
       })
@@ -113,7 +113,7 @@ $(document).ready(function() {
         height: 30.0,
         detail: 10
       }),
-      materialNode: deferredRenderer.constructDiffuseMaterial('DeferredRenderMaterial', {
+      materialNode: deferredRenderer.addPrePassPhongMaterial({
         diffuseColor: FABRIC.RT.rgb(0.2, 1.0, 0.2),
         specularFactor: 0.2
       })
@@ -129,7 +129,7 @@ $(document).ready(function() {
         radius: 10,
         detail: 10
       }),
-      materialNode: deferredRenderer.constructDiffuseMaterial('DeferredRenderMaterial', {
+      materialNode: deferredRenderer.addPrePassPhongMaterial({
         diffuseColor: FABRIC.RT.rgb(0.2, 0.2, 1.0),
         specularFactor: 1.0
       })
