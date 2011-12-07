@@ -57,9 +57,14 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
 //    var trackColor = "#"+((trackData.color.r === 1) ? "FF" : "00")+((trackData.color.g === 1) ? "FF" : "00")+((trackData.color.b === 1) ? "FF" : "00");
 // <span style=background-color:'+ trackColor +'>
     $('#keyframeTracks').append('<li><input type="checkbox" id="trackId-' + i + '" />' + trackData.name + '</li>');
-    $('#trackId-' + i).click(function() {
-      drawTrackCurves();
+    $('#trackId-' + i).change(function() {
+//      drawTrackCurves();
+//      fitCurveEditorToWindow();
+//      updateTimeRange();
+//curvesHolderGroup.removeAllChildren();
+fitCurveEditorToWindow();
     });
+
     trackCurves[i] = curvesHolderGroup.createPath().addClass('CurvePath').stroke(trackData.color);
   }
   
