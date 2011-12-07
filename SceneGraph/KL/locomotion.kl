@@ -148,7 +148,7 @@ operator evaluateLocomotionPoseVariables(
   Boolean displayFootPinningDebugging = ENABLE_DEBUGGING;
   Boolean performRaycasting = false;
   BULLLETWORLD_OPENBLOCKCOMMENT
-  performRaycasting = true;
+  performRaycasting = false;
   BULLLETWORLD_CLOSEBLOCKCOMMENT
   
   Xfo controllerXfo = controllerXfoSet[index];
@@ -414,6 +414,7 @@ operator evaluateLocomotionPoseVariables(
       controllerparams.lift = 99999.0;
     }
       
+  
     for(Integer j=0; j < locomotionFeet.size; j++){
       LocomotionFoot foot = locomotionFeet[j];
       Limb leg = legs[foot.limbId];
@@ -459,17 +460,12 @@ operator evaluateLocomotionPoseVariables(
       Scalar footLiftRatio = stepRatio - 0.5;
       if(footLiftRatio < 0.0) footLiftRatio += 1.0;
       Xfo currStepPos = baseFootXfo;
-      currStepPos -= (displacementDir * ((currStep.strideLength * strideLengthMultiplier * footLiftRatio) - (currStep.strideLength * 0.5 * strideLengthMultiplier)));
+      currStepPos.tr -= (displacementDir * ((currStep.strideLength * strideLengthMultiplier * footLiftRatio) - (currStep.strideLength * 0.5 * strideLengthMultiplier)));
      
     //  report(j+" footLiftRatio:"+footLiftRatio + " footPlantRatio:"+footPlantRatio);
       if(displayFootPinningDebugging){
-        Xfo plantXfo = baseFootXfo;
-        plantXfo.tr = nextStepPos;
-        debugFootMotion.drawCircle(plantXfo * rot90, 0.2, Color(1.0, 0.5, 0.5, 1.0));
-        
-        Xfo liftXfo = baseFootXfo;
-        liftXfo.tr = currStepPos;
-        debugFootMotion.drawCircle(liftXfo * rot90, 0.2, Color(0.5, 0.5, 1.0, 1.0));
+        debugFootMotion.drawCircle(nextStepPos * rot90, 0.2, Color(1.0, 0.5, 0.5, 1.0));
+        debugFootMotion.drawCircle(currStepPos * rot90, 0.2, Color(0.5, 0.5, 1.0, 1.0));
       }
     //  report(j+" t:"+t+" stepId:"+stepId +" currStep:"+currStep + " legSwingRatio:"+legSwingRatio + " planted:"+plantedFeet[j]);
       
@@ -479,13 +475,14 @@ operator evaluateLocomotionPoseVariables(
       if(displayFootPinningDebugging){
         debugFootMotion.drawCircle(footXfo * rot90, 0.1, Color(0.0, 0.5, 0.5, 1.0));
       }
-      Xfo footError;
       if(legSwingRatio > 0.0 && legSwingRatio < 1.0){
+        Xfo footError;
+        footError.setIdentity();
         Scalar liftLift, plantLift;
         if(plantedFeet[j]){
         
           if(displayFootPinningDebugging){
-            debugFootMotion.drawLine(currStepPos, plantLocations[j].tr, Color(0.5, 0.5, 0.0, 1.0));
+            debugFootMotion.drawLine(currStepPos.tr, plantLocations[j].tr, Color(0.5, 0.5, 0.0, 1.0));
             debugFootMotion.drawCircle(plantLocations[j] * rot90, 0.15, Color(0.0, 0.5, 1.0, 1.0));
           }
           
@@ -497,7 +494,7 @@ operator evaluateLocomotionPoseVariables(
             }
           }
           BULLLETWORLD_CLOSEBLOCKCOMMENT
-          footError = invcontrollerXfo * (plantLocations[j] * currStepPos.invert());
+          footError = (currStepPos.inverse() * plantLocations[j]);
           plantLocations[j] = footError;
           plantedFeet[j] = false;
           liftLift = footError.tr.y;
@@ -509,8 +506,9 @@ operator evaluateLocomotionPoseVariables(
           Scalar dissipationPeriod = 1.0;
           if(legSwingRatio < dissipationPeriod){
             Scalar errorDissipation = cos((legSwingRatio/dissipationPeriod) * PI) * 0.5 + 0.5;
-            footError = plantLocations[j].linearInterpolate(Xfo().setIdentity(), errorDissipation);
-            
+            Xfo identity; identity.setIdentity();
+          //  footError = plantLocations[j].linearInterpolate(identity, errorDissipation);
+            footError.tr = plantLocations[j].tr * errorDissipation;
             liftLift = footError.tr.y;
           }
           /////////////////////////////////////////////////
@@ -518,18 +516,21 @@ operator evaluateLocomotionPoseVariables(
           BULLLETWORLD_OPENBLOCKCOMMENT
           if(performRaycasting){
             Scalar dist;
-            if(fireRay(bulletworld, nextStepPos, upvector, rayLength, dist, displayRaycastingDebugging, debugRaycasting)){
+            if(fireRay(bulletworld, nextStepPos.tr, upvector, rayLength, dist, displayRaycastingDebugging, debugRaycasting)){
               Scalar lift = dist * legSwingRatio;
-              footError.y += lift;
+              footError.tr.y += lift;
               plantLift = lift;
-              hitPositionsPrevStep[j] = nextStepPos + (upvector*dist);
+              hitPositionsPrevStep[j] = nextStepPos.tr + (upvector*dist);
             }
           }
           BULLLETWORLD_CLOSEBLOCKCOMMENT
         }
         if(performRaycasting){
-          addLift(legs, j, liftLift+plantLift, controllerparams, legLiftWeight);
+        //  addLift(legs, j, liftLift+plantLift, controllerparams, legLiftWeight);
         }
+        
+        // Apply the error in COM space. 
+        footXfo = footXfo * footError;
       }
       else{
         if(performRaycasting){
@@ -541,12 +542,11 @@ operator evaluateLocomotionPoseVariables(
             Xfo tmp = footXfo;
             tmp.tr = hitPositionsPrevStep[j];
             debugRaycasting.drawCircle(tmp * rot90, 0.03, Color(0.0, 1.0, 1.0, 1.0));
-            tmp.tr = currStepPos;
-            debugRaycasting.drawCircle(tmp * rot90, 0.05, Color(1.0, 1.0, 1.0, 1.0));
-            debugRaycasting.drawLine(currStepPos, hitPositionsPrevStep[j], Color(0.0, 1.0, 1.0, 1.0));
+            debugRaycasting.drawCircle(currStepPos * rot90, 0.05, Color(1.0, 1.0, 1.0, 1.0));
+            debugRaycasting.drawLine(currStepPos.tr, hitPositionsPrevStep[j], Color(0.0, 1.0, 1.0, 1.0));
           }
               
-          Scalar lift = (hitPositionsPrevStep[j] - currStepPos).dot(upvector);
+          Scalar lift = (hitPositionsPrevStep[j] - currStepPos.tr).dot(upvector);
           footXfo.tr += Vec3(0.0, lift, 0.0);
           addLift(legs, j, lift, controllerparams, legLiftWeight);
         }
@@ -557,17 +557,14 @@ operator evaluateLocomotionPoseVariables(
         }
         else{
           // Calculate the error each update to hold the foot in place while planted.
-          footError = invcontrollerXfo * (plantLocations[j] * currStepPos.inverse());
-          // We zero the error vector here, because the raycasting (above) handles the y axis.
-          footError.tr.y = 0.0;
+          footXfo *= (currStepPos.inverse() * plantLocations[j]);
         }
         
         if(displayFootPinningDebugging){
           debugFootMotion.drawCircle(footXfo * rot90, 0.1, Color(0.5, 0.5, 0.0, 1.0));
-          debugFootMotion.drawLine(currStepPos, plantLocations[j].tr, Color(0.5, 0.5, 0.0, 1.0));
+          debugFootMotion.drawLine(currStepPos.tr, plantLocations[j].tr, Color(0.5, 0.5, 0.0, 1.0));
           debugFootMotion.drawCircle(plantLocations[j] * rot90, 0.15, Color(0.0, 1.0, 0.5, 1.0));
         }
-        
         if(t >= currStep.midPlantTime){
           /////////////////////////////////////////////////
           // Clip Deactivation
@@ -605,7 +602,6 @@ operator evaluateLocomotionPoseVariables(
             trackcontroller.pivotStepId = 0;
             trackcontroller.time -= currStep.midPlantTime;
           }
-          
           if(!trackcontroller.deactivate){
             trackcontroller.stepIds[j]++;
           }
@@ -616,17 +612,7 @@ operator evaluateLocomotionPoseVariables(
         debugFootMotion.drawCircle(footXfo * rot90, 0.04, Color(0.5, 1.0, 0.0, 1.0));
       }
       
-      if(displayFootPinningDebugging){
-        Xfo tmp = footXfo;
-        tmp.tr += controllerXfo.ori.rotateVector(footError);
-        debugFootMotion.drawAxis(tmp, 0.5, Color(0.0, 0.5, 0.5, 1.0));
-      }
-      
       footXfo = invcontrollerXfo * footXfo;
-      // Apply the error in COM space. 
-      footXfo.tr += footError;
-      
-      
       
       poseVariables.xfoValues[leg.ikGoalXfoId] = footXfo;
       
@@ -649,7 +635,7 @@ operator evaluateLocomotionPoseVariables(
       controllerparamsSet[index] = controllerparams;
     }
   }
-  trackcontroller.tick++;  
+  trackcontroller.tick++;
 }
 
 
