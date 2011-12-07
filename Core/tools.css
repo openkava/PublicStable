@@ -44,14 +44,28 @@ html,body {
   padding-left:6px;
 }
 
-#keyframeTracks li span {
+/*#keyframeTracks li span {
   float: left; 
   width: 10px;
   height: 3px;
   margin: 8px 6px 0;
 }
+*/
+
 #keyframeTracks li input {
   float:left;
+}
+
+#keyframeTracks li ul.hide {
+	display:none;
+}
+#keyframeTracks span {
+	color:#000;
+	font-family:"Courier New", Courier, monospace;
+	cursor:default;
+}
+#keyframeTracks span.expanded, #keyframeTracks span.collapsed {
+	cursor:pointer;
 }
 
 /* DEBUGGER
