@@ -1,6 +1,2 @@
 [FABRIC] [MT] before test exception
-
-node.js:207
-        throw e; // process.nextTick error, or 'error' event on first tick
-              ^
 Fabric core exception: DG.e.fire(): command 'fire': test exception

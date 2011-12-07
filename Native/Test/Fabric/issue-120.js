@@ -21,4 +21,4 @@ n.setData("x", 2.0);
 n.evaluate();
 console.log(n.getData("y"));
 
-F.flush();
+F.close();

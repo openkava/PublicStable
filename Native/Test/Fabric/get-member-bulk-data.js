@@ -23,4 +23,4 @@ catch (e) {
   console.log('Caught exception: ' + e);
 }
 
-F.flush();
+F.close();

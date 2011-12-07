@@ -21,4 +21,4 @@ n.addMember("bar", "Size");
 n.bindings.append(b);
 console.log(JSON.stringify(n.getErrors()));
 
-F.flush();
+F.close();

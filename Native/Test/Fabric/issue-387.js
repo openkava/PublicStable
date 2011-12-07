@@ -56,4 +56,4 @@ node.evaluate();
 console.log(JSON.stringify(node.getBulkData()));
 console.log("bindings.length = " + node.bindings.getLength());
 
-FABRIC.flush();
+FABRIC.close();
