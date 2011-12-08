@@ -52,6 +52,74 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
       trackSetId: trackSetId
     });
   
+  
+  ///////////////
+  // Build the tree
+  var tree = {};
+  var currDomElement = $('#keyframeTracks');
+  for (var i = 0; i < trackCount; i++) {
+    var trackData = tracksData.tracks[i];
+    var namePath = trackData.name.split('.');
+    var currBranch = tree;
+    for (var j = 0; j < namePath.length; j++) {
+      if(!currBranch[namePath[j]]){
+        if(j<(namePath.length-1)){
+          currBranch[namePath[j]] = {};
+        }else{
+          // set the track id as the leaf value
+          currBranch[namePath[j]] = i;
+        }
+      }
+      currBranch = currBranch[namePath[j]];
+    }
+  }
+  var trackDisplayed = [];
+  var buildTree = function(el, branchName, treedata){
+    var li = $(document.createElement('li'));
+    var checkbox = $(document.createElement('input')).attr('type', "checkbox");
+    li.append(checkbox);
+    li.append(branchName);
+    el.append(li);
+    if(typeof treedata == 'number'){
+      var trackId = treedata;
+      checkbox.attr('id', tracksData.tracks[trackId].name);
+      checkbox.attr('checked', true);
+      checkbox.data('displayed', true);
+      checkbox.data('trackId', trackId)
+      var trackData = tracksData.tracks[trackId];
+      trackCurves[trackId] = curvesHolderGroup.createPath().addClass('CurvePath').stroke(trackData.color);
+      trackDisplayed[trackId] = true;
+    }else{
+      var ul = $(document.createElement('ul'));
+      li.append(ul);
+      for(var subBranchName in treedata){
+        buildTree(ul, subBranchName, treedata[subBranchName]);
+      }
+    }
+  }
+  for(var branchName in tree){
+    buildTree($('#keyframeTracks'), branchName, tree[branchName]);
+  }
+  // Not very optimal. Here we rebuild the entire graph when we hide/show tracks.
+  // TODO: only add/remove tracks that have changed.
+  $('#keyframeTracks').click( function(){
+    $(this).find("input[type='checkbox']").each(function(index, el){
+      if($(el).attr('id') != undefined){
+        var trackId = $(el).data('trackId');
+        if(!$(el).is(':checked')){
+          // remove the curve from display
+          trackCurves[trackId].attr('d', '');
+        }
+        trackDisplayed[trackId] = $(el).is(':checked');
+      }
+    });
+    // TODO: keep each tracks keys ona different group so we can easily remove
+    // only the keys for that track.
+    keysHolderGroup.removeAllChildren();
+    drawTrackCurves();
+  });
+
+  /*
   for (var i = 0; i < trackCount; i++) {
     var trackData = tracksData.tracks[i];
 //    var trackColor = "#"+((trackData.color.r === 1) ? "FF" : "00")+((trackData.color.g === 1) ? "FF" : "00")+((trackData.color.b === 1) ? "FF" : "00");
@@ -67,7 +135,7 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
 
     trackCurves[i] = curvesHolderGroup.createPath().addClass('CurvePath').stroke(trackData.color);
   }
-  
+  */
 
   if(!fitEditorToKeyRanges){
     yRange = valueRange;
@@ -109,10 +177,9 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
         yRange = valueRange;
       }
       else{
+        yRange = new FABRIC.Vec2(0, 0);
         for (var i = 0; i < trackCount; i++) {
-          if(i==0){
-            yRange = new FABRIC.Vec2(curvesData.values[i][0], curvesData.values[i][0]);
-          }
+          if(!trackDisplayed[i]) continue;
           getCurveYRange(curvesData.values[i]);
         }
       }
@@ -146,6 +213,7 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
   var drawTrackCurves = function(){
     var drawTrackCurve = function(trackIndex) {
       var setPathCurveValues = function(curveData) {
+      //  console.log('setPathCurveValues:' +curveData );
         var val = screenXfo.toScreenSpace(new FABRIC.Vec2(0, curveData[0]))
         var path = ['M', val.x, val.y, 'L', 100, 100, 300, 200];
         try{
@@ -355,7 +423,10 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
     }
     
     for (var i = 0; i < trackCount; i++) {
-      if ( $('#trackId-'+i).attr('checked') !== undefined ){
+      // Note: this array of checkboxes is a bit hackey.
+      // I couldn't get the CSS selectors to work with the 'id' I have used.
+      // (Probably bcause the id contains '.')
+      if(trackDisplayed[i]){
         drawTrackCurve(i);
       }
     }
@@ -453,6 +524,7 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
       document.removeEventListener('mousewheel', mouseWheelZoomFn, false);
     });
   }
+  
   return {
     resize: function(){
       fitCurveEditorToWindow();
