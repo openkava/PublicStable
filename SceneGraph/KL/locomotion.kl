@@ -475,8 +475,8 @@ operator evaluateLocomotionPoseVariables(
       if(displayFootPinningDebugging){
         debugFootMotion.drawCircle(footXfo * rot90, 0.1, Color(0.0, 0.5, 0.5, 1.0));
       }
+      Xfo footError;
       if(legSwingRatio > 0.0 && legSwingRatio < 1.0){
-        Xfo footError;
         footError.setIdentity();
         Scalar liftLift, plantLift;
         if(plantedFeet[j]){
@@ -494,7 +494,9 @@ operator evaluateLocomotionPoseVariables(
             }
           }
           BULLLETWORLD_CLOSEBLOCKCOMMENT
-          footError = (currStepPos.inverse() * plantLocations[j]);
+        //  footError = (currStepPos.inverse() * plantLocations[j]);
+          footError.tr = plantLocations[j].tr - currStepPos.tr;
+          footError.ori = plantLocations[j].ori * currStepPos.ori.inverse();
           plantLocations[j] = footError;
           plantedFeet[j] = false;
           liftLift = footError.tr.y;
@@ -506,9 +508,9 @@ operator evaluateLocomotionPoseVariables(
           Scalar dissipationPeriod = 1.0;
           if(legSwingRatio < dissipationPeriod){
             Scalar errorDissipation = cos((legSwingRatio/dissipationPeriod) * PI) * 0.5 + 0.5;
-            Xfo identity; identity.setIdentity();
-          //  footError = plantLocations[j].linearInterpolate(identity, errorDissipation);
             footError.tr = plantLocations[j].tr * errorDissipation;
+            Quat identity; identity.setIdentity();
+            footError.ori = identity.sphericalLinearInterpolate(plantLocations[j].ori, errorDissipation);
             liftLift = footError.tr.y;
           }
           /////////////////////////////////////////////////
@@ -529,8 +531,8 @@ operator evaluateLocomotionPoseVariables(
         //  addLift(legs, j, liftLift+plantLift, controllerparams, legLiftWeight);
         }
         
-        // Apply the error in COM space. 
-        footXfo = footXfo * footError;
+        footXfo.tr += footError.tr;
+        footXfo.ori = footError.ori * footXfo.ori;
       }
       else{
         if(performRaycasting){
@@ -557,7 +559,10 @@ operator evaluateLocomotionPoseVariables(
         }
         else{
           // Calculate the error each update to hold the foot in place while planted.
-          footXfo *= (currStepPos.inverse() * plantLocations[j]);
+          footError.tr = plantLocations[j].tr - currStepPos.tr;
+          footError.ori = plantLocations[j].ori * currStepPos.ori.inverse();
+          footXfo.tr += footError.tr;
+          footXfo.ori = footError.ori * footXfo.ori;
         }
         
         if(displayFootPinningDebugging){
