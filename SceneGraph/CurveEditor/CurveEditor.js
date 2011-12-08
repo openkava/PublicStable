@@ -12,6 +12,7 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
   var timeRange = options.timeRange!=undefined ? options.timeRange : new FABRIC.Vec2(0, 100);
   var valueRange = options.valueRange!=undefined ? options.valueRange : new FABRIC.Vec2(0, 1);
   var fitEditorToKeyRanges = options.fitEditorToKeyRanges!=undefined ? options.fitEditorToKeyRanges : true;
+  var displayTrackNames = options.displayTrackNames!=undefined ? options.displayTrackNames : true;
   
   var rootDomNode = document.getElementById(domRootID);
   var windowWidth = rootDomNode.clientWidth;
@@ -27,12 +28,9 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
 
   var graphBGRect = svgRoot.createRect().size(windowWidth, windowHeight).addClass('EventCatcher');
   var graphCenterGroup = svgRoot.createGroup().id('graphCenterGroup').translate(0, windowHeight * 0.5);
-  var curvesHolderGroup = graphCenterGroup.createGroup().id('curvesHolderGroup')
-  var keysHolderGroup = graphCenterGroup.createGroup().id('keysHolderGroup');
+  var curvesHolderGroup = graphCenterGroup.createGroup().id('curvesHolderGroup');
   svgRoot.svgRoot = svgRoot;
   svgRoot.state = 'Normal';
-  
-  
   
   var containmentRect;
   if(!fitEditorToKeyRanges){
@@ -46,96 +44,68 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
   var trackCount = tracksData.tracks.length;
   var yRange = new FABRIC.Vec2(0, 0);
   var curvesData = [];
-  var trackCurves = [];
+  var trackGroups = [];
   trackDisplayNode = scene.constructNode('TrackDisplay', {
       animationLibraryNode: animationLibraryNode,
       trackSetId: trackSetId
     });
   
-  
-  ///////////////
-  // Build the tree
-  var tree = {};
-  var currDomElement = $('#keyframeTracks');
-  for (var i = 0; i < trackCount; i++) {
-    var trackData = tracksData.tracks[i];
-    var namePath = trackData.name.split('.');
-    var currBranch = tree;
-    for (var j = 0; j < namePath.length; j++) {
-      if(!currBranch[namePath[j]]){
-        if(j<(namePath.length-1)){
-          currBranch[namePath[j]] = {};
-        }else{
-          // set the track id as the leaf value
-          currBranch[namePath[j]] = i;
+  if(displayTrackNames){
+    ///////////////
+    // Build the tree
+    var tree = {};
+    var currDomElement = $('#keyframeTracks');
+    for (var i = 0; i < trackCount; i++) {
+      var trackData = tracksData.tracks[i];
+      var namePath = trackData.name.split('.');
+      var currBranch = tree;
+      for (var j = 0; j < namePath.length; j++) {
+        if(!currBranch[namePath[j]]){
+          if(j<(namePath.length-1)){
+            currBranch[namePath[j]] = {};
+          }else{
+            // set the track id as the leaf value
+            currBranch[namePath[j]] = i;
+          }
+        }
+        currBranch = currBranch[namePath[j]];
+      }
+    }
+    var trackDisplayed = [];
+    var buildTree = function(el, branchName, treedata){
+      var li = $(document.createElement('li'));
+      var checkbox = $(document.createElement('input')).attr('type', "checkbox");
+      li.append(checkbox);
+      li.append(branchName);
+      el.append(li);
+      if(typeof treedata == 'number'){
+        var trackId = treedata;
+        checkbox.attr('id', tracksData.tracks[trackId].name);
+        checkbox.attr('checked', true);
+        checkbox.data('displayed', true);
+        checkbox.data('trackId', trackId)
+        var trackData = tracksData.tracks[trackId];
+        
+        trackGroups[trackId] = curvesHolderGroup.createGroup().id('curveGroup');
+        trackDisplayed[trackId] = true;
+      }else{
+        var ul = $(document.createElement('ul'));
+        li.append(ul);
+        for(var subBranchName in treedata){
+          buildTree(ul, subBranchName, treedata[subBranchName]);
         }
       }
-      currBranch = currBranch[namePath[j]];
+    }
+    for(var branchName in tree){
+      buildTree($('#keyframeTracks'), branchName, tree[branchName]);
     }
   }
-  var trackDisplayed = [];
-  var buildTree = function(el, branchName, treedata){
-    var li = $(document.createElement('li'));
-    var checkbox = $(document.createElement('input')).attr('type', "checkbox");
-    li.append(checkbox);
-    li.append(branchName);
-    el.append(li);
-    if(typeof treedata == 'number'){
-      var trackId = treedata;
-      checkbox.attr('id', tracksData.tracks[trackId].name);
-      checkbox.attr('checked', true);
-      checkbox.data('displayed', true);
-      checkbox.data('trackId', trackId)
-      var trackData = tracksData.tracks[trackId];
-      trackCurves[trackId] = curvesHolderGroup.createPath().addClass('CurvePath').stroke(trackData.color);
+  else{
+    trackDisplayed.length = trackCount;
+    for (var j = 0; j < trackCount; j++) {
       trackDisplayed[trackId] = true;
-    }else{
-      var ul = $(document.createElement('ul'));
-      li.append(ul);
-      for(var subBranchName in treedata){
-        buildTree(ul, subBranchName, treedata[subBranchName]);
-      }
     }
   }
-  for(var branchName in tree){
-    buildTree($('#keyframeTracks'), branchName, tree[branchName]);
-  }
-  // Not very optimal. Here we rebuild the entire graph when we hide/show tracks.
-  // TODO: only add/remove tracks that have changed.
-  $('#keyframeTracks').click( function(){
-    $(this).find("input[type='checkbox']").each(function(index, el){
-      if($(el).attr('id') != undefined){
-        var trackId = $(el).data('trackId');
-        if(!$(el).is(':checked')){
-          // remove the curve from display
-          trackCurves[trackId].attr('d', '');
-        }
-        trackDisplayed[trackId] = $(el).is(':checked');
-      }
-    });
-    // TODO: keep each tracks keys ona different group so we can easily remove
-    // only the keys for that track.
-    keysHolderGroup.removeAllChildren();
-    drawTrackCurves();
-  });
-
-  /*
-  for (var i = 0; i < trackCount; i++) {
-    var trackData = tracksData.tracks[i];
-//    var trackColor = "#"+((trackData.color.r === 1) ? "FF" : "00")+((trackData.color.g === 1) ? "FF" : "00")+((trackData.color.b === 1) ? "FF" : "00");
-// <span style=background-color:'+ trackColor +'>
-    $('#keyframeTracks').append('<li><input type="checkbox" id="trackId-' + i + '" /><label for="trackId-' + i + '">' + trackData.name + '</label></li>');
-    $('#trackId-' + i).change(function() {
-//      drawTrackCurves();
-//      fitCurveEditorToWindow();
-//      updateTimeRange();
-        curvesHolderGroup.removeAllChildren();
-        fitCurveEditorToWindow();
-    });
-
-    trackCurves[i] = curvesHolderGroup.createPath().addClass('CurvePath').stroke(trackData.color);
-  }
-  */
 
   if(!fitEditorToKeyRanges){
     yRange = valueRange;
@@ -210,30 +180,32 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
   }
   screenXfo.fitToScreen();
   
-  var drawTrackCurves = function(){
-    var drawTrackCurve = function(trackIndex) {
+    var drawTrackCurve = function(trackId) {
+      var trackData = tracksData.tracks[trackId];
+      var trackGroup = trackGroups[trackId];
+      trackGroup.removeAllChildren();
+      var path = trackGroup.createPath().addClass('CurvePath').stroke(trackData.color);
       var setPathCurveValues = function(curveData) {
-      //  console.log('setPathCurveValues:' +curveData );
         var val = screenXfo.toScreenSpace(new FABRIC.Vec2(0, curveData[0]))
-        var path = ['M', val.x, val.y, 'L', 100, 100, 300, 200];
+        var pathValues = ['M', val.x, val.y, 'L', 100, 100, 300, 200];
         try{
         for (var i = 0; i < curveData.length; i++) {
           var t = ((i/curveData.length)*(timeRange.y - timeRange.x))+timeRange.x;
           val = screenXfo.toScreenSpace(new FABRIC.Vec2(t, curveData[i]));
-          path[(i * 2) + 4] = val.x;
-          path[(i * 2) + 5] = val.y;
+          pathValues[(i * 2) + 4] = val.x;
+          pathValues[(i * 2) + 5] = val.y;
         }
-        trackCurves[trackIndex].attr('d', path.join(' '));
+        path.attr('d', pathValues.join(' '));
         }
         catch(e){
-          console.log("Bug: the core is sometimes returning null values e.g.:"+JSON.stringify(curveData));
+          console.warn("Bug: the core is sometimes returning null values e.g.:"+JSON.stringify(curveData));
         }
       }
-      setPathCurveValues(curvesData.values[trackIndex]);
+      setPathCurveValues(curvesData.values[trackId]);
   
       var updateCurve = function() {
         curvesData = trackDisplayNode.getCurveData();
-        setPathCurveValues(curvesData.values[trackIndex]);
+        setPathCurveValues(curvesData.values[trackId]);
       }
   
       var drawKey = function(keyIndex, keyData) {
@@ -251,7 +223,7 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
           var prevKey = trackData.keys[keyIndex-1],
               nextKey = trackData.keys[keyIndex+1],
               tangentNormalizedValues = [];
-          var keyGroupNode = keysHolderGroup.createGroup().translate(keySsVal)
+          var keyGroupNode = trackGroup.createGroup().translate(keySsVal)
             .draggable({ mouseButton: 0, containment:containmentRect })
             .addOnDragBeginCallback(
               function(evt){
@@ -303,9 +275,8 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
                     nextKey.setInTan(nextKey.intangent, true);
                   }
                 }
-                tracksData.tracks[trackIndex].keys[keyIndex] = keyData;
+                tracksData.tracks[trackId].keys[keyIndex] = keyData;
                 animationLibraryNode.setTrackSet(tracksData, trackSetId);
-              //  animationLibraryNode.setKeyData(trackIndex, keyIndex, keyData);
                 updateCurve();
                 scene.redrawAllViewports();
               });
@@ -340,9 +311,8 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
                       keyData.setOutTan(keyData.outtangent);
                     }
                     keyData.setInTan(keyData.intangent);
-                    tracksData.tracks[trackIndex].keys[keyIndex] = keyData;
+                    tracksData.tracks[trackId].keys[keyIndex] = keyData;
                     animationLibraryNode.setTrackSet(tracksData, trackSetId);
-                  //  animationLibraryNode.setKeyData(trackIndex, keyIndex, keyData);
                     updateCurve();
                     scene.redrawAllViewports();
                   });
@@ -355,9 +325,8 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
               }
               if(setKeyData){
                 keyData.intangent = intangent;
-                tracksData.tracks[trackIndex].keys[keyIndex] = keyData;
+                tracksData.tracks[trackId].keys[keyIndex] = keyData;
                 animationLibraryNode.setTrackSet(tracksData, trackSetId);
-              //  animationLibraryNode.setKeyData(trackIndex, keyIndex, keyData);
               }
             }
             ///////////////////////////////////////////////
@@ -390,9 +359,8 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
                     }
                     keyData.setOutTan(keyData.outtangent);
                     
-                    tracksData.tracks[trackIndex].keys[keyIndex] = keyData;
+                    tracksData.tracks[trackId].keys[keyIndex] = keyData;
                     animationLibraryNode.setTrackSet(tracksData, trackSetId);
-                  //  animationLibraryNode.setKeyData(trackIndex, keyIndex, keyData);
                     updateCurve();
                     scene.redrawAllViewports();
                   });
@@ -406,22 +374,22 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
               if(setKeyData){
                 keyData.outtangent = outtangent;
                 
-                tracksData.tracks[trackIndex].keys[keyIndex] = keyData;
+                tracksData.tracks[trackId].keys[keyIndex] = keyData;
                 animationLibraryNode.setTrackSet(tracksData, trackSetId);
-              //  animationLibraryNode.setKeyData(trackIndex, keyIndex, keyData);
               }
             }
           }
         }
       }
       if (window.drawKeys !== false) {
-        var trackData = tracksData.tracks[trackIndex];
+        var trackData = tracksData.tracks[trackId];
         for (var i = 0; i < trackData.keys.length; i++) {
           drawKey(i, trackData.keys[i]);
         }
       }
     }
     
+  var drawTrackCurves = function(){
     for (var i = 0; i < trackCount; i++) {
       // Note: this array of checkboxes is a bit hackey.
       // I couldn't get the CSS selectors to work with the 'id' I have used.
@@ -433,6 +401,32 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
   }
   
   drawTrackCurves();
+  
+  
+  if(displayTrackNames){
+    // Not very optimal. Here we rebuild the entire graph when we hide/show tracks.
+    // TODO: only add/remove tracks that have changed.
+    $('#keyframeTracks').click( function(){
+      $(this).find("input[type='checkbox']").each(function(index, el){
+        if($(el).attr('id') != undefined){
+          var trackId = $(el).data('trackId');
+          if(!$(el).is(':checked')){
+            // remove the curve from display
+            if($(el).data('displayed')){
+              trackGroups[trackId].removeAllChildren();
+              $(el).data('displayed', false);
+            }
+          }else{
+            if(!$(el).data('displayed')){
+              drawTrackCurve(trackId);
+              $(el).data('displayed', true);
+            }
+          }
+          trackDisplayed[trackId] = $(el).is(':checked');
+        }
+      });
+    });
+  }
   
   if(options.timeStripe){
     var timeStripeGroupNode = graphCenterGroup.createGroup()
@@ -459,7 +453,6 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
     if(options.timeStripe){
       updateGraphTimeStripe();
     }
-    keysHolderGroup.removeAllChildren();
     drawTrackCurves();
   }
   
