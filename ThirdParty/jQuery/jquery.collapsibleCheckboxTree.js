@@ -17,7 +17,8 @@
 			checkParents : true, // When checking a box, all parents are checked
 			checkChildren : false, // When checking a box, all children are checked
 			uncheckChildren : true, // When unchecking a box, all children are unchecked
-			initialState : 'default' // Options - 'expand' (fully expanded), 'collapse' (fully collapsed) or default
+			initialState : 'default', // Options - 'expand' (fully expanded), 'collapse' (fully collapsed) or default
+			addButtons: true
 		};
 			
 		var options = $.extend(defaults, options); 
@@ -25,10 +26,10 @@
 		this.each(function() {
 						   
 			var $root = this;
-						   
+			if(defaults.addButtons){
 			// Add button
 			$(this).before('<div id="buttons"><button id="expand">Expand All</button><button id="collapse">Collapse All</button><button id="default">Default</button></div>');
-
+			}
 			// Hide all except top level
 			$("ul", $(this)).addClass('hide');
 			// Check parents if necessary

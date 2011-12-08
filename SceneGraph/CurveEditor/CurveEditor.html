@@ -38,7 +38,8 @@
       checkParents : true, // When checking a box, all parents are checked (Default: true)
       checkChildren : true, // When checking a box, all children are checked (Default: false)
       uncheckChildren : true, // When unchecking a box, all children are unchecked (Default: true)
-      initialState : 'collapse' // Options - 'expand' (fully expanded), 'collapse' (fully collapsed) or default
+      initialState : 'collapse', // Options - 'expand' (fully expanded), 'collapse' (fully collapsed) or default
+      addButtons : true
     });
 
     // jQuert UI Styling classes
@@ -69,7 +70,7 @@
         Hold 'Alt' to break the key handles.
         </div><!--content- ->
         </div>box-->
-        <div class="box">
+        <div class="box" style="overflow-x: hidden; overflow-y: scroll;">
           <h2>KEYFRAME TRACKS</h2>
           <ul class="content" id="keyframeTracks">
           </ul><!--content-->
