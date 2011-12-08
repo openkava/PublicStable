@@ -66,6 +66,7 @@ function Boolean fireRay(
   io Vec3  upvector,
   in Scalar rayLength,
   io Scalar dist,
+  io Vec3 normal,
   io Boolean displayRaycastingDebugging,
   io DebugGeometry debugRaycasting
 ){
@@ -88,6 +89,7 @@ function Boolean fireRay(
     }
     
     dist = (hitPosition - refPos).dot(upvector);
+    normal = contacts[0].normal;
     return true;
   }
   else{
@@ -120,8 +122,8 @@ operator evaluateLocomotionPoseVariables(
   io TrackSetController trackcontroller,
   io Boolean plantedFeet[],
   io Xfo plantLocations[],
-  io Vec3 hitPositions[],
-  io Vec3 hitPositionsPrevStep[],
+  io Xfo hitPositions[],
+  io Xfo hitPositionsPrevStep[],
   
   io PoseVariables poseVariables,
   io PoseVariables prevUpdatePose,
@@ -148,7 +150,7 @@ operator evaluateLocomotionPoseVariables(
   Boolean displayFootPinningDebugging = ENABLE_DEBUGGING;
   Boolean performRaycasting = false;
   BULLLETWORLD_OPENBLOCKCOMMENT
-  performRaycasting = false;
+  performRaycasting = true;
   BULLLETWORLD_CLOSEBLOCKCOMMENT
   
   Xfo controllerXfo = controllerXfoSet[index];
@@ -156,10 +158,17 @@ operator evaluateLocomotionPoseVariables(
   Scalar comParams[] = comParamsSet[index];
   
   
-  plantedFeet.resize(locomotionFeet.size);
-  plantLocations.resize(locomotionFeet.size);
-  hitPositions.resize(locomotionFeet.size);
-  hitPositionsPrevStep.resize(locomotionFeet.size);
+  if(trackcontroller.tick == 0){
+    plantedFeet.resize(locomotionFeet.size);
+    plantLocations.resize(locomotionFeet.size);
+    hitPositions.resize(locomotionFeet.size);
+    hitPositionsPrevStep.resize(locomotionFeet.size);
+    for(Integer j=0; j < locomotionFeet.size; j++){
+      plantLocations[j].setIdentity();
+      hitPositions[j].setIdentity();
+      hitPositionsPrevStep[j].setIdentity();
+    }
+  }
   
   /////////////////////////////////////////////////
   // Clip Activation
@@ -343,10 +352,11 @@ operator evaluateLocomotionPoseVariables(
     trackcontroller.deactivate = false;
     
     /////////////////////////////////////////////////
+    Vec3 up(0.0, 1.0, 0.0);
     Xfo rot90;
     rot90.setIdentity();
     rot90.ori.setFromAxisAndAngle(Vec3(0.0, 0.0, 1.0), HALF_PI);
-    Vec3 upvector = Vec3(0.0, 1.0, 0.0);//controllerXfo.ori.rotateVector(Vec3(0.0, 1.0, 0.0));
+    Vec3 upvector = up;//controllerXfo.ori.rotateVector(Vec3(0.0, 1.0, 0.0));
     
     Xfo hubComs[];
     for(Integer j=0; j < hubs.size; j++){
@@ -488,9 +498,12 @@ operator evaluateLocomotionPoseVariables(
           
           BULLLETWORLD_OPENBLOCKCOMMENT
           if(performRaycasting){
-            Scalar dist;
-            if(fireRay(bulletworld, plantLocations[j].tr, upvector, rayLength, dist, displayRaycastingDebugging, debugRaycasting)){
+            Scalar dist; Vec3 normal;
+            if(fireRay(bulletworld, plantLocations[j].tr, upvector, rayLength, dist, normal, displayRaycastingDebugging, debugRaycasting)){
               plantLocations[j].tr += upvector * dist;
+            //  Quat alignment;
+            //  alignment.setFrom2Vectors(plantLocations[j].ori.rotateVector(up), normal);
+            //  plantLocations[j].ori = alignment * plantLocations[j].ori;
             }
           }
           BULLLETWORLD_CLOSEBLOCKCOMMENT
@@ -517,18 +530,22 @@ operator evaluateLocomotionPoseVariables(
           // Raycasting
           BULLLETWORLD_OPENBLOCKCOMMENT
           if(performRaycasting){
-            Scalar dist;
-            if(fireRay(bulletworld, nextStepPos.tr, upvector, rayLength, dist, displayRaycastingDebugging, debugRaycasting)){
+            Scalar dist; Vec3 normal;
+            if(fireRay(bulletworld, nextStepPos.tr, upvector, rayLength, dist, normal, displayRaycastingDebugging, debugRaycasting)){
               Scalar lift = dist * legSwingRatio;
+              Quat alignment;
+              alignment.setFrom2Vectors(nextStepPos.ori.rotateVector(Vec3(-1.0,0.0,0.0)), normal);
+            //  plantLocations[j].ori = alignment * plantLocations[j].ori;
               footError.tr.y += lift;
               plantLift = lift;
-              hitPositionsPrevStep[j] = nextStepPos.tr + (upvector*dist);
+              hitPositionsPrevStep[j].tr = nextStepPos.tr + (upvector*dist);
+            //  hitPositionsPrevStep[j].ori = alignment;
             }
           }
           BULLLETWORLD_CLOSEBLOCKCOMMENT
         }
         if(performRaycasting){
-        //  addLift(legs, j, liftLift+plantLift, controllerparams, legLiftWeight);
+          addLift(legs, j, liftLift+plantLift, controllerparams, legLiftWeight);
         }
         
         footXfo.tr += footError.tr;
@@ -541,15 +558,14 @@ operator evaluateLocomotionPoseVariables(
           // next update.
           
           if(displayRaycastingDebugging){
-            Xfo tmp = footXfo;
-            tmp.tr = hitPositionsPrevStep[j];
-            debugRaycasting.drawCircle(tmp * rot90, 0.03, Color(0.0, 1.0, 1.0, 1.0));
+          //  debugRaycasting.drawCircle(hitPositionsPrevStep[j] * rot90, 0.03, Color(0.0, 1.0, 1.0, 1.0));
             debugRaycasting.drawCircle(currStepPos * rot90, 0.05, Color(1.0, 1.0, 1.0, 1.0));
-            debugRaycasting.drawLine(currStepPos.tr, hitPositionsPrevStep[j], Color(0.0, 1.0, 1.0, 1.0));
+            debugRaycasting.drawLine(currStepPos.tr, hitPositionsPrevStep[j].tr, Color(0.0, 1.0, 1.0, 1.0));
           }
-              
-          Scalar lift = (hitPositionsPrevStep[j] - currStepPos.tr).dot(upvector);
-          footXfo.tr += Vec3(0.0, lift, 0.0);
+          
+          Scalar lift = (hitPositionsPrevStep[j].tr - currStepPos.tr).dot(upvector);
+          footXfo.tr += upvector * lift;
+        //  footXfo.ori = hitPositionsPrevStep[j].ori * footXfo.ori;
           addLift(legs, j, lift, controllerparams, legLiftWeight);
         }
         if(!plantedFeet[j]){
