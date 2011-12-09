@@ -67,7 +67,7 @@ function Boolean fireRay(
   in Scalar rayLength,
   io Scalar dist,
   io Vec3 normal,
-  io Boolean displayRaycastingDebugging,
+  in Boolean displayRaycastingDebugging,
   io DebugGeometry debugRaycasting
 ){
   Vec3 rayStart = refPos + (upvector * rayLength);
@@ -490,26 +490,26 @@ operator evaluateLocomotionPoseVariables(
         footError.setIdentity();
         Scalar liftLift, plantLift;
         if(plantedFeet[j]){
-        
+          Xfo liftLocation = plantLocations[j];
           if(displayFootPinningDebugging){
-            debugFootMotion.drawLine(currStepPos.tr, plantLocations[j].tr, Color(0.5, 0.5, 0.0, 1.0));
-            debugFootMotion.drawCircle(plantLocations[j] * rot90, 0.15, Color(0.0, 0.5, 1.0, 1.0));
+            debugFootMotion.drawLine(currStepPos.tr, liftLocation.tr, Color(0.5, 0.5, 0.0, 1.0));
+            debugFootMotion.drawCircle(liftLocation * rot90, 0.15, Color(0.0, 0.5, 1.0, 1.0));
           }
           
           BULLLETWORLD_OPENBLOCKCOMMENT
           if(performRaycasting){
             Scalar dist; Vec3 normal;
-            if(fireRay(bulletworld, plantLocations[j].tr, upvector, rayLength, dist, normal, displayRaycastingDebugging, debugRaycasting)){
-              plantLocations[j].tr += upvector * dist;
-            //  Quat alignment;
-            //  alignment.setFrom2Vectors(plantLocations[j].ori.rotateVector(up), normal);
-            //  plantLocations[j].ori = alignment * plantLocations[j].ori;
+            if(fireRay(bulletworld, liftLocation.tr, upvector, rayLength, dist, normal, displayRaycastingDebugging, debugRaycasting)){
+              liftLocation.tr += upvector * dist;
+              Quat alignment;
+              alignment.setFrom2Vectors(upvector, normal);
+              liftLocation.ori = alignment * liftLocation.ori;
             }
           }
           BULLLETWORLD_CLOSEBLOCKCOMMENT
-        //  footError = (currStepPos.inverse() * plantLocations[j]);
-          footError.tr = plantLocations[j].tr - currStepPos.tr;
-          footError.ori = plantLocations[j].ori * currStepPos.ori.inverse();
+          footError.tr = liftLocation.tr - currStepPos.tr;
+          footError.ori = liftLocation.ori * currStepPos.ori.inverse();
+          // Now sotre the error that we will blend off over the period of the step.
           plantLocations[j] = footError;
           plantedFeet[j] = false;
           liftLift = footError.tr.y;
@@ -534,12 +534,13 @@ operator evaluateLocomotionPoseVariables(
             if(fireRay(bulletworld, nextStepPos.tr, upvector, rayLength, dist, normal, displayRaycastingDebugging, debugRaycasting)){
               Scalar lift = dist * legSwingRatio;
               Quat alignment;
-              alignment.setFrom2Vectors(nextStepPos.ori.rotateVector(Vec3(-1.0,0.0,0.0)), normal);
-            //  plantLocations[j].ori = alignment * plantLocations[j].ori;
-              footError.tr.y += lift;
+              alignment.setFrom2Vectors(upvector, normal);
+            //  footError.tr.y += lift;
+              footError.tr = footError.tr.linearInterpolate(upvector * lift, legSwingRatio);
+              footError.ori = footError.ori.sphericalLinearInterpolate(alignment, legSwingRatio);
               plantLift = lift;
               hitPositionsPrevStep[j].tr = nextStepPos.tr + (upvector*dist);
-            //  hitPositionsPrevStep[j].ori = alignment;
+              hitPositionsPrevStep[j].ori = alignment;
             }
           }
           BULLLETWORLD_CLOSEBLOCKCOMMENT
@@ -552,33 +553,37 @@ operator evaluateLocomotionPoseVariables(
         footXfo.ori = footError.ori * footXfo.ori;
       }
       else{
-        if(performRaycasting){
-          // Recalculate the lift each update even when the foot is planted,
-          // because we also transfer this lift onto the controller for the
-          // next update.
-          
-          if(displayRaycastingDebugging){
-          //  debugRaycasting.drawCircle(hitPositionsPrevStep[j] * rot90, 0.03, Color(0.0, 1.0, 1.0, 1.0));
-            debugRaycasting.drawCircle(currStepPos * rot90, 0.05, Color(1.0, 1.0, 1.0, 1.0));
-            debugRaycasting.drawLine(currStepPos.tr, hitPositionsPrevStep[j].tr, Color(0.0, 1.0, 1.0, 1.0));
-          }
-          
-          Scalar lift = (hitPositionsPrevStep[j].tr - currStepPos.tr).dot(upvector);
-          footXfo.tr += upvector * lift;
-        //  footXfo.ori = hitPositionsPrevStep[j].ori * footXfo.ori;
-          addLift(legs, j, lift, controllerparams, legLiftWeight);
-        }
+        Scalar lift;
         if(!plantedFeet[j]){
+          if(performRaycasting){
+            // Recalculate the lift each update even when the foot is planted,
+            // because we also transfer this lift onto the controller for the
+            // next update.
+            if(displayRaycastingDebugging){
+              debugRaycasting.drawCircle(currStepPos * rot90, 0.05, Color(1.0, 1.0, 1.0, 1.0));
+              debugRaycasting.drawLine(currStepPos.tr, hitPositionsPrevStep[j].tr, Color(0.0, 1.0, 1.0, 1.0));
+            }
+            
+            lift = (hitPositionsPrevStep[j].tr - currStepPos.tr).dot(upvector);
+            currStepPos.tr += upvector * lift;
+            currStepPos.ori = hitPositionsPrevStep[j].ori * currStepPos.ori;
+          }
           // Record the foot plant pos.
           plantLocations[j] = currStepPos;
           plantedFeet[j] = true;
+          footError.tr = upvector * lift;
+          footError.ori = hitPositionsPrevStep[j].ori;
         }
         else{
           // Calculate the error each update to hold the foot in place while planted.
           footError.tr = plantLocations[j].tr - currStepPos.tr;
           footError.ori = plantLocations[j].ori * currStepPos.ori.inverse();
-          footXfo.tr += footError.tr;
-          footXfo.ori = footError.ori * footXfo.ori;
+        }
+        footXfo.tr += footError.tr;
+        footXfo.ori = footError.ori * footXfo.ori;
+        lift = footError.tr.dot(upvector);
+        if(performRaycasting){
+          addLift(legs, j, lift, controllerparams, legLiftWeight);
         }
         
         if(displayFootPinningDebugging){
