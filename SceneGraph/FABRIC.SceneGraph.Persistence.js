@@ -34,18 +34,22 @@ FABRIC.SceneGraph.registerManagerType('SceneSerializer', {
     scene.assignDefaults(options, {
       });
   
+    var filteredNodes = [];
     var savedNodes = [];
     var savedData = [];
     var currentIndex = 0;
     var isNodeBeingSaved = function(node) {
       return (savedNodes.indexOf(node) !== -1);
     };
+    var isNodeExcluded = function(node) {
+      return (filteredNodes.indexOf(node) !== -1);
+    };
     var sceneSerializer = {
       addNode: function(node) {
         if (!node || !node.isTypeOf || !node.isTypeOf('SceneGraphNode')) {
           throw 'SceneSaver can only save SceneGraphNodes';
         }
-        if(!isNodeBeingSaved(node)){
+        if(!isNodeBeingSaved(node) && !isNodeExcluded(node)){
           var constructionOptions = {};
           var nodeData = {};
           var nodePrivate = scene.getPrivateInterface(node);
@@ -59,6 +63,10 @@ FABRIC.SceneGraph.registerManagerType('SceneSerializer', {
         return node;
       },
       pub:{
+        // Add the filter nodes first, and then add the nodes you wish to save.
+        filterNode: function(node) {
+          return filteredNodes.push(node);
+        },
         addNode: function(node) {
           return sceneSerializer.addNode(node);
         },

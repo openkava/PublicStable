@@ -223,8 +223,8 @@ $(document).ready(function() {
     
     rigInstanceNode.setRigNode(ikrigNode);
     
+    loadAnimationFile('Assets/Spiedel_Idle.DAE', fkrigNode);
     loadAnimationFile('Assets/Spiedel_Walk.DAE', fkrigNode);
-  //  loadAnimationFile('Assets/Spiedel_Idle.DAE', fkrigNode);
   
     materialNode = scene.constructNode('SpiedelShader', {
       lightNode: scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) }),
@@ -499,19 +499,24 @@ $(document).ready(function() {
       viewport.redraw();
     });
   
-  $('#saveData').button()
+  $('#writeRigData').button()
     .click(function() {
       ikRigVariablesNode.setName('CharacterVariables');
       var rigSaver = scene.constructManager('SceneSerializer');
+      rigSaver.filterNode(libraryLocomotionAnimations);
       rigSaver.addNode(ikrigNode);
       rigSaver.addNode(characterMesh);
-      rigSaver.addNode(libraryLocomotionAnimations);
-    //  var storage = new FABRIC.SceneGraph.LocalStorage(rigName);
-    //  rigSaver.save(storage);
-    //  storage.log();
-    
-      var storage = new FABRIC.SceneGraph.FileWriter(scene, "Save AnimationData", rigName);
+      var storage = new FABRIC.SceneGraph.FileWriter(scene, "Write Rig Data", rigName);
       rigSaver.save(storage);
+    });
+
+  $('#writeAnimationData').button()
+    .click(function() {
+      var animationSaver = scene.constructManager('SceneSerializer');
+      animationSaver.addNode(libraryLocomotionAnimations);
+    
+      var storage = new FABRIC.SceneGraph.FileWriter(scene, "Write Animation Data", rigName);
+      animationSaver.save(storage);
     });
 
 
@@ -597,9 +602,10 @@ $(document).ready(function() {
               <label for="timeValue" >Time:</label>
               <input type="text" id="timeValue" style="border:0; font-weight:bold;" />
               <div id='globalTime' style="margin-bottom:10px;"></div>
+              
+              
+              <button id="writeRigData" style="margin-top:3px;">Write Character Definition</button>
                 
-              <button id="processTracks" style="margin-top:3px;">Process Tracks</button>
-              <button id="saveData" style="margin-top:3px;">Write Data</button>
               <!--
               <button id="curveEditor" style="margin-top:3px;">Open Curve Editor</button>
               -->
@@ -609,6 +615,8 @@ $(document).ready(function() {
           <div class="box">
             <h2>ANIMATIONS</h2>
             <div class="content">
+              <button id="processTracks" style="margin-top:3px;">Process Tracks</button>
+              <button id="writeAnimationData" style="margin-top:3px;">Write Animation Library</button>
               <ol id="animationTracksList">
               </ol>
             </div>

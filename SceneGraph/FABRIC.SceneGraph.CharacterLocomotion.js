@@ -273,8 +273,27 @@ FABRIC.SceneGraph.registerNodeType('LocomotionAnimationLibrary', {
       animationLibraryNode.pub.preProcessTracks = function(){
         dgnode.evaluate();
       }
-      
     }
+    
+    var parentWriteData = animationLibraryNode.writeData;
+    var parentReadData = animationLibraryNode.readData;
+    animationLibraryNode.writeData = function(sceneSerializer, constructionOptions, nodeData) {
+      parentWriteData(sceneSerializer, constructionOptions, nodeData);
+      nodeData.markers = [];
+      nodeData.footStepTracks = [];
+      for(var i=0; i<nodeData.numTracks; i++){
+        nodeData.markers.push(dgnode.getData('markers', i));
+        nodeData.footStepTracks.push(dgnode.getData('footStepTracks', i));
+      }
+    };
+    animationLibraryNode.readData = function(sceneDeserializer, nodeData) {
+      parentReadData(sceneDeserializer, nodeData);
+      for(var i=0; i<nodeData.numTracks; i++){
+        dgnode.setData('markers', i, nodeData.markers[i]);
+        dgnode.setData('footStepTracks', i, nodeData.footStepTracks[i]);
+      }
+    };
+    
     return animationLibraryNode;
   }});
 
