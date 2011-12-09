@@ -45,6 +45,7 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
     var animationLibraryNode = scene.constructNode('SceneGraphNode', options);
     var dgnode = animationLibraryNode.constructDGNode('DGNode');
     dgnode.addMember('trackSet', keyframeTrackSetType);
+    dgnode.addMember('bindings', 'KeyframeTrackBindings');
     
     var firstTrackAdded = false;
     animationLibraryNode.pub.addTrackSet = function(trackset) {
@@ -164,12 +165,10 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
         
         dgnode.setDependency(paramsdgnode, 'params');
         paramsdgnode.addMember('boundTrack', 'Integer', trackSetId);
-        
-        dgnode.addMember('bindings', 'KeyframeTrackBindings', trackBindings);
       }else{
         paramsdgnode.setData('boundTrack', 0, trackSetId);
-        dgnode.setData('bindings', 0, trackBindings);
       }
+      dgnode.setData('bindings', trackSetId, trackBindings);
       
       animationLibraryNode.pub.plotKeyframes = function(trackSetId, timeRange, sampleFrequency){
         var variablesNode = scene.getPrivateInterface(rigNode.pub.getVariablesNode());
@@ -415,11 +414,20 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
     animationLibraryNode.writeData = function(sceneSerializer, constructionOptions, nodeData) {
       parentWriteData(sceneSerializer, constructionOptions, nodeData);
       constructionOptions.keyframetype = options.keyframetype;
-      nodeData['dgnode'] = animationLibraryNode.writeDGNode(dgnode);
+      nodeData.numTracks = animationLibraryNode.pub.getTrackSetCount();
+      nodeData.trackSets = [];
+      nodeData.bindings = [];
+      for(var i=0; i<nodeData.numTracks; i++){
+        nodeData.trackSets.push(animationLibraryNode.pub.getTrackSet(i));
+        nodeData.bindings.push(dgnode.getData('bindings', i));
+      }
     };
     animationLibraryNode.readData = function(sceneDeserializer, nodeData) {
       parentReadData(sceneDeserializer, nodeData);
-      animationLibraryNode.readDGNode(dgnode, nodeData['dgnode']);
+      for(var i=0; i<nodeData.numTracks; i++){
+        animationLibraryNode.pub.addTrackSet(nodeData.trackSets[i]);
+        dgnode.setData('bindings', i, nodeData.bindings[i]);
+      }
     };
     
     return animationLibraryNode;

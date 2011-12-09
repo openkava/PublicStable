@@ -381,13 +381,18 @@ $(document).ready(function() {
   }
 
   var rigLoader = scene.constructManager('SceneDeserializer');
-  var storage = new FABRIC.SceneGraph.URLReader('Assets/' + rigName + '.json');
+  var storage = new FABRIC.SceneGraph.URLReader('Assets/' + rigName + 'Rig.json');
   var nodeMap = rigLoader.load(storage);
-
-  var libraryAnimations = nodeMap.LibraryLocomotionAnimations;
+  
   var locomotionRig = nodeMap.LocomotionRig;
   var ikrig = nodeMap.IKRig;
   var characterMesh =  nodeMap.characterMesh;
+
+  var animationLoader = scene.constructManager('SceneDeserializer');
+  var storage = new FABRIC.SceneGraph.URLReader('Assets/' + rigName + 'Animation.json');
+  var nodeMap = animationLoader.load(storage);
+  var libraryAnimations = nodeMap.LibraryLocomotionAnimations;
+  
   var skeletonNode = ikrig.getSkeletonNode();
   
   ikrig.setControllerNode(locomotionControllerNode);
