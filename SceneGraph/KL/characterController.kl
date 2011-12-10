@@ -95,9 +95,13 @@ operator evaluateCharacterController(
     Scalar modulator = acceleationCosAngle > 0.0 ? (0.5 + (0.5*acceleationCosAngle)) : 0.5;
     if(accel > maxLinearAcceleration * modulator){
       acceleration *= (maxLinearAcceleration * modulator)/accel;
+      accel = maxLinearAcceleration * modulator;
     }
       
     linearVelocity += acceleration * timestep;
+  }
+  if(goalLinearVelocity.length() < linearVelocity.length()){
+    accel = -accel;
   }
   controllerparams.displacement.tr = linearVelocity * timestep;
   controllerXfo.tr += controllerparams.displacement.tr;
@@ -105,7 +109,7 @@ operator evaluateCharacterController(
   ////////////////////////////
   // Ballance
   if(gravity < 0.0){
-    if(acceleration.length() > 0.001){
+    if(abs(accel) > 0.001){
       Vec3 balanceVector = acceleration + Vec3(0.0, gravity, 0.0);
       balanceVector = balanceVector.unit() * comHeight;
       balanceVector.y = 0.0;
@@ -203,9 +207,9 @@ operator evaluateCharacterController(
   
   comParams.resize(4);
   comParams[0] = linearVelocity.length();
-  comParams[1] = acceleration.length();
+  comParams[1] = accel;
   comParams[2] = 0.0; // gradient
-  comParams[2] = 0.0; // direction
+  comParams[3] = 0.0; // direction
 }
 
 

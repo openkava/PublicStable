@@ -23,7 +23,7 @@ function activateClip(
   trackcontroller.stepIds = marker.stepIds;
   trackcontroller.comParams = marker.params;
   
-//  report("trackcontroller:"+trackcontroller+ " marker:"+marker);
+//  report("activateClip track:"+trackcontroller.activeTrackSet);
 }
 
 
@@ -124,6 +124,7 @@ operator evaluateLocomotionPoseVariables(
   io Xfo plantLocations[],
   io Xfo hitPositions[],
   io Xfo hitPositionsPrevStep[],
+  io Xfo footXfos[],
   
   io PoseVariables poseVariables,
   io PoseVariables prevUpdatePose,
@@ -163,10 +164,12 @@ operator evaluateLocomotionPoseVariables(
     plantLocations.resize(locomotionFeet.size);
     hitPositions.resize(locomotionFeet.size);
     hitPositionsPrevStep.resize(locomotionFeet.size);
+    footXfos.resize(locomotionFeet.size);
     for(Integer j=0; j < locomotionFeet.size; j++){
       plantLocations[j].setIdentity();
       hitPositions[j].setIdentity();
       hitPositionsPrevStep[j].setIdentity();
+      footXfos[j] = legs[locomotionFeet[j].limbId].ikGoalReferenceXfo;
     }
   }
   
@@ -205,68 +208,69 @@ operator evaluateLocomotionPoseVariables(
   
   if(clipSpeed == 0.0){
   
-    if(trackcontroller.deactivate){
-      for(Integer j=0; j < locomotionFeet.size; j++){
-        LocomotionFoot foot = locomotionFeet[j];
-        Limb leg = legs[foot.limbId];
-        plantedFeet[j] = true;
-        plantLocations[j] = controllerXfo * leg.ikGoalReferenceXfo;
-      }
-    }  
     t += timestep;
     trackcontroller.time = t;
     poseVariables.evaluateKeyframeTracks(t, trackSet, bindings, trackcontroller.currKeys);
     
     /////////////////////////////////////////////////
     // Error dissapation
-    if(trackcontroller.tick > 0){
-      if(trackcontroller.deactivate){
-        
-        for(Integer j=0; j < locomotionFeet.size; j++){
-          LocomotionFoot foot = locomotionFeet[j];
-          Limb leg = legs[foot.limbId];
-          Xfo footXfo = controllerXfo * prevUpdatePose.xfoValues[leg.ikGoalXfoId];
-          
-          BULLLETWORLD_OPENBLOCKCOMMENT
-          if(performRaycasting){
-            Scalar dist; Vec3 normal;
-            if(fireRay(bulletworld, footXfo.tr, upvector, rayLength, dist, normal, displayRaycastingDebugging, debugRaycasting)){
-              footXfo.tr += upvector * dist;
-              Quat alignment;
-              alignment.setFrom2Vectors(footXfo.ori.rotateVector(Vec3(-1.0,0.0,0.0)), normal);
-              footXfo.ori = alignment * footXfo.ori;
-              plantLocations[j] = footXfo;
-              poseVariables.xfoValues[leg.ikGoalXfoId] = invcontrollerXfo * footXfo;
-            }
-          }
-          BULLLETWORLD_CLOSEBLOCKCOMMENT
-        }
+    if(trackcontroller.deactivate){
       
-        poseError = prevUpdatePose.subtract(poseVariables);
-        clipActivationTime = trackcontroller.time-timestep;
-      }
-      else{
-        // Hold the feet in place while stationary. 
-        for(Integer j=0; j < locomotionFeet.size; j++){
-          LocomotionFoot foot = locomotionFeet[j];
-          Limb leg = legs[foot.limbId];
-          poseVariables.xfoValues[leg.ikGoalXfoId] = invcontrollerXfo * plantLocations[j];
-          
-          if(performRaycasting){
-            Scalar lift = poseVariables.xfoValues[leg.ikGoalXfoId].tr.y;
-            addLift(legs, j, lift, controllerparams, legLiftWeight);
+      for(Integer j=0; j < locomotionFeet.size; j++){
+        Limb leg = legs[locomotionFeet[j].limbId];
+        
+        BULLLETWORLD_OPENBLOCKCOMMENT
+        if(performRaycasting){
+          Xfo plantedXfo;
+          if(plantedFeet[j]){
+            plantedXfo = controllerXfo * footXfos[j];
+          }else{
+            plantedXfo = controllerXfo * leg.ikGoalReferenceXfo;
+          }
+          Scalar dist; Vec3 normal;
+          if(fireRay(bulletworld, plantedXfo.tr, upvector, rayLength, dist, normal, displayRaycastingDebugging, debugRaycasting)){
+            plantedXfo.tr += upvector * dist;
+            Quat alignment;
+            alignment.setFrom2Vectors(plantedXfo.ori.rotateVector(Vec3(-1.0,0.0,0.0)), normal);
+            plantedXfo.ori = alignment * plantedXfo.ori;
+            plantLocations[j] = plantedXfo;
+            poseVariables.xfoValues[leg.ikGoalXfoId] = invcontrollerXfo * plantedXfo;
           }
         }
+        BULLLETWORLD_CLOSEBLOCKCOMMENT
+        prevUpdatePose.xfoValues[leg.ikGoalXfoId] = footXfos[j];
       }
-      if(clipActivationTime > 0.0){
-        // Blend off the error over 0.5 seconds. 
-        Scalar blendTime = 1.5;
-        if(trackcontroller.time - clipActivationTime < blendTime){
-          Scalar weight = 1.0 - ((trackcontroller.time - clipActivationTime) / blendTime);
-          poseVariables.addWeighted(poseError, weight);
+    }else{
+      // Hold the feet in place while stationary. 
+      for(Integer j=0; j < locomotionFeet.size; j++){
+        Limb leg = legs[locomotionFeet[j].limbId];
+        poseVariables.xfoValues[leg.ikGoalXfoId] = invcontrollerXfo * plantLocations[j];
+        
+        if(performRaycasting){
+          Scalar lift = poseVariables.xfoValues[leg.ikGoalXfoId].tr.y;
+          addLift(legs, j, lift, controllerparams, legLiftWeight);
         }
       }
     }
+    
+    
+    if(trackcontroller.deactivate){
+      if(trackcontroller.tick > 0){
+        poseError = prevUpdatePose.subtract(poseVariables);
+        clipActivationTime = trackcontroller.time-timestep;
+      }
+    }
+    
+    if(clipActivationTime > 0.0){
+      // Blend off the error over 0.5 seconds. 
+      Scalar blendTime = 0.25;
+      if(trackcontroller.time - clipActivationTime < blendTime){
+        Scalar weight = 1.0 - ((trackcontroller.time - clipActivationTime) / blendTime);
+        poseVariables.addWeighted(poseError, weight);
+      }
+    }
+    
+    
     prevUpdatePose = poseVariables;
     trackcontroller.deactivate = false;
     
@@ -391,6 +395,17 @@ operator evaluateLocomotionPoseVariables(
     prevUpdatePose = poseVariables;
     trackcontroller.deactivate = false;
     
+    /////////////////////////////////////////////////
+    // Clip Deactivation
+    if(currSpeed <= 0.001){
+      report("deactivate from:"+trackcontroller.activeTrackSet+ " to: 0 because we stopped" );
+      trackcontroller.deactivate = true;
+      trackcontroller.pivotFoot = 0;
+      trackcontroller.pivotStepId = 0;
+      trackcontroller.activeTrackSet = 0;
+      trackcontroller.time = 0.0;
+    }
+
     /////////////////////////////////////////////////
     
     Xfo hubComs[];
@@ -617,7 +632,7 @@ operator evaluateLocomotionPoseVariables(
         if(t >= currStep.midPlantTime){
           /////////////////////////////////////////////////
           // Clip Deactivation
-          if(animationLibrary.size > 1){
+          if(animationLibrary.size > 1 && !trackcontroller.deactivate){
             Scalar targetClipRatio = 0.55;
             Integer activeTrackSet = trackcontroller.activeTrackSet;
             Scalar currClipDelta = calcClipParamsDelta(comParams, trackcontroller.comParams);
@@ -683,6 +698,13 @@ operator evaluateLocomotionPoseVariables(
     // Note: this is highly illegal. We are copying data back to one of our dependencies.
     // This will be eliminated with nested sub-graphs.
     controllerparamsSet[index] = controllerparams;
+  }
+  
+    
+  // Store the final model space transforms of the feet.
+  for(Integer j=0; j < locomotionFeet.size; j++){
+    Limb leg = legs[locomotionFeet[j].limbId];
+    footXfos[j] = poseVariables.xfoValues[leg.ikGoalXfoId];
   }
   trackcontroller.tick++;
 }
