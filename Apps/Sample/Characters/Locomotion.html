@@ -317,8 +317,8 @@ $(document).ready(function() {
   case 'Spiedel':
     locomotionControllerNode = scene.constructNode('ScreenSpacePlayerCharacterController', {
         cameraNode: camera,
-        maxLinearVelocity: 15,
-        maxLinearAcceleration: 30,
+        maxLinearVelocity: 20,
+        maxLinearAcceleration: 20,
         maxAngularVelocity: 1.6,
         maxAngularAcceleration: 1.6,
         bulletWorldNode: bulletWorldNode,
@@ -332,7 +332,7 @@ $(document).ready(function() {
       lightNode: scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) }),
       diffuseColor: FABRIC.RT.rgba(1.0, 0.0, 0.0, 1.0)
     });
-    minFrequency = 0.5;
+    minFrequency = 0.75;
     break;
   case 'walker':
     locomotionControllerNode = scene.constructNode('ScreenSpacePlayerCharacterController', {
