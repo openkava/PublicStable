@@ -332,6 +332,7 @@ $(document).ready(function() {
       lightNode: scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) }),
       diffuseColor: FABRIC.RT.rgba(1.0, 0.0, 0.0, 1.0)
     });
+    minFrequency = 0.5;
     break;
   case 'walker':
     locomotionControllerNode = scene.constructNode('ScreenSpacePlayerCharacterController', {
@@ -360,6 +361,7 @@ $(document).ready(function() {
         gravity: 0,
         circleSize: 1.6
       });
+    minFrequency = 0.0;
     diffuseColor = FABRIC.RT.rgba(0.0, 0.2, 0.4, 1.0);
     break;
   case 'marama':
