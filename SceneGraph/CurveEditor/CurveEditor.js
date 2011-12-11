@@ -521,7 +521,6 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
       window.clearTimeout( resizeIntervalId );
       resizeIntervalId = window.setTimeout( function () {
           fitCurveEditorToWindow();
-          console.log("resize\n");
         }, 100 );
       
 
