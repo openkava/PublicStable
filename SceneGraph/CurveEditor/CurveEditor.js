@@ -514,9 +514,17 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
     });
   }
   
+  var resizeIntervalId;
+  
   return {
     resize: function(){
-      fitCurveEditorToWindow();
+      window.clearTimeout( resizeIntervalId );
+      resizeIntervalId = window.setTimeout( function () {
+          fitCurveEditorToWindow();
+          console.log("resize\n");
+        }, 100 );
+      
+
     },
     redraw: function(){
       tracksData = animationLibraryNode.getTrackSet(trackSetId);
