@@ -9,19 +9,17 @@ namespace Fabric
 {
   namespace MR
   {
-    bool ArrayProducer::isArrayProducer() const
+    FABRIC_GC_OBJECT_GET_CLASS_IMPL( ArrayProducer, Producer );
+    
+    ArrayProducer::ArrayProducer( GC::Object::Class const *myClass, GC::Container *container, RC::ConstHandle<RT::Desc> const &elementDesc )
+      : Producer( myClass, container )
+      , m_elementDesc( elementDesc )
     {
-      return true;
     }
 
     RC::ConstHandle<RT::Desc> ArrayProducer::getElementDesc() const
     {
       return m_elementDesc;
-    }
-    
-    ArrayProducer::ArrayProducer( RC::ConstHandle<RT::Desc> const &elementDesc )
-      : m_elementDesc( elementDesc )
-    {
     }
   };
 };

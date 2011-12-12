@@ -9,14 +9,11 @@ namespace Fabric
 {
   namespace MR
   {
-    bool Producer::isValueProducer() const
+    FABRIC_GC_OBJECT_GET_CLASS_IMPL( Producer, GC::Object );
+
+    Producer::Producer( GC::Object::Class const *myClass, GC::Container *container )
+      : GC::Object( myClass, container )
     {
-      return false;
-    }
-    
-    bool Producer::isArrayProducer() const
-    {
-      return false;
     }
 
     void Producer::toJSON( Util::JSONGenerator &jg ) const

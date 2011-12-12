@@ -25,7 +25,8 @@ SConscript(
     'KL',
     'IO',
     'Plug',
-    'MR',
+    'GC',
     'DG',
+    'MR',
   ]
   )

@@ -5,7 +5,7 @@
 #ifndef _FABRIC_MR_PRODUCER_H
 #define _FABRIC_MR_PRODUCER_H
 
-#include <Fabric/Base/RC/Object.h>
+#include <Fabric/Core/GC/Object.h>
 
 namespace Fabric
 {
@@ -17,17 +17,19 @@ namespace Fabric
   
   namespace MR
   {
-    class Producer : public RC::Object
+    class Producer : public GC::Object
     {
+      FABRIC_GC_OBJECT_GET_CLASS_DECL()
+      
       // Virtual functions: Producer
       
     public:
     
       virtual char const *getKind() const = 0;
-      virtual bool isValueProducer() const;
-      virtual bool isArrayProducer() const;
 
     protected:
+    
+      Producer( GC::Object::Class const *myClass, GC::Container *container ); 
     
       virtual void toJSONImpl( Util::JSONObjectGenerator &jog ) const = 0;
       

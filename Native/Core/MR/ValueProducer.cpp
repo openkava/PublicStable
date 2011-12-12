@@ -9,19 +9,17 @@ namespace Fabric
 {
   namespace MR
   {
-    bool ValueProducer::isValueProducer() const
+    FABRIC_GC_OBJECT_GET_CLASS_IMPL( ValueProducer, Producer );
+    
+    ValueProducer::ValueProducer( GC::Object::Class const *myClass, GC::Container *container, RC::ConstHandle<RT::Desc> const &valueDesc )
+      : Producer( myClass, container )
+      , m_valueDesc( valueDesc )
     {
-      return true;
     }
 
     RC::ConstHandle<RT::Desc> ValueProducer::getValueDesc() const
     {
       return m_valueDesc;
-    }
-    
-    ValueProducer::ValueProducer( RC::ConstHandle<RT::Desc> const &valueDesc )
-      : m_valueDesc( valueDesc )
-    {
     }
   };
 };
