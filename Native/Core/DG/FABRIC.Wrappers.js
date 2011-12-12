@@ -464,7 +464,7 @@ function (fabricClient, logCallback, debugLogCallback) {
       result.pub.getFilename = function() {
         if (!('filename' in result))
           executeQueuedCommands();
-        return result.sourceCode;
+        return result.filename;
       };
 
       result.pub.getSourceCode = function() {
