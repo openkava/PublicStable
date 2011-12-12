@@ -32,14 +32,10 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('COMSolver', {
     var boneId = solver.generateBoneMapping( { bone: options.bone }, ['bone']);
 
     var comXfoId = rigNode.addVariable('Xfo');
-    // stepFrequency
-    var comParam0VarId = rigNode.addVariable('Scalar');
-    // speed
-    var comParam1VarId = rigNode.addVariable('Scalar');
-    // gradient
-    var comParam2VarId = rigNode.addVariable('Scalar');
-    // direction
-    var comParam3VarId = rigNode.addVariable('Scalar');
+    var comParam0VarId = rigNode.addVariable('Scalar'); // stepFrequency
+    var comParam1VarId = rigNode.addVariable('Scalar'); // speed
+    var comParam2VarId = rigNode.addVariable('Scalar'); // gradient
+    var comParam3VarId = rigNode.addVariable('Scalar'); // direction
     
     var com = new FABRIC.Characters.COM(boneId.bone, comXfoId, [
       comParam0VarId,
@@ -101,8 +97,6 @@ FABRIC.appendOnCreateContextCallback(function(context) {
   });
 });
 
-
-
 FABRIC.SceneGraph.CharacterSolvers.registerSolver('LocomotionFeetSolver', {
   constructSolver: function(options, scene) {
     
@@ -112,11 +106,9 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('LocomotionFeetSolver', {
 
     var limbs = skeletonNode.getData('legs');
     var locomotionFeet = [];
-    var stepTimeVarIds = [];
     for(var i=0; i<limbs.length; i++){
       var stepTimeVarId = rigNode.addVariable('Scalar');
       locomotionFeet.push(new FABRIC.Characters.LocomotionFoot(i, stepTimeVarId));
-      stepTimeVarIds.push(stepTimeVarId);
     }
     skeletonNode.addMember('locomotionFeet', 'LocomotionFoot[]', locomotionFeet);
     
@@ -218,10 +210,8 @@ FABRIC.SceneGraph.registerNodeType('LocomotionAnimationLibrary', {
       paramsdgnode.addMember('sampleFrequency', 'Scalar', sampleFrequency);
       paramsdgnode.addMember('footMovementThreshold', 'Scalar', footMovementThreshold);
       
-      
       paramsdgnode.addMember('bindings', 'KeyframeTrackBindings', keyframeTrackBindings);
       paramsdgnode.addMember('poseVariables', 'PoseVariables', rigNode.getVariables());
-      dgnode.addMember('bindings', 'KeyframeTrackBindings');
       
       dgnode.addMember('debugGeometry', 'DebugGeometry' );
       debugGeometryDraw = scene.constructNode('DebugGeometryDraw', {
@@ -587,6 +577,7 @@ FABRIC.SceneGraph.registerNodeType('LocomotionPoseVariables', {
       var bulletWorldNode = scene.getPrivateInterface(options.bulletWorldNode);
       dgnode.setDependency(bulletWorldNode.getDGNode(), 'bulletworld');
     }
+    dgnode.addMember('state', 'Integer');
     dgnode.addMember('trackcontroller', 'TrackSetController');
     dgnode.addMember('plantedFeet', 'Boolean[]');
     dgnode.addMember('plantLocations', 'Xfo[]');
@@ -643,6 +634,7 @@ FABRIC.SceneGraph.registerNodeType('LocomotionPoseVariables', {
         'charactercontroller.controllerparams<>',
         'charactercontroller.comParams<>',
         
+        'self.state',
         'self.trackcontroller',
         'self.plantedFeet',
         'self.plantLocations',

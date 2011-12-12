@@ -236,21 +236,27 @@ function Boolean generateCOMTracks(
   Scalar acceleration = 0.0;
   Scalar gradient = 0.0;
   Scalar direction = 0.0;
+  Scalar timeSmoothing[5];
+  Scalar speedSmoothing[5];
+  Scalar gradientSmoothing[5];
+  Scalar directionSmoothing[5];
+  Integer circularArrayIndex = 0;
   for(Integer t=0; t <= numSamples; t++){
     Scalar time = ((Scalar(t)/Scalar(numSamples)) * (timeRange.y - timeRange.x)) + timeRange.x;
     poseVariables.evaluateKeyframeTracks(time, trackSet, bindings, currKeys);
     
     Xfo comXfo = poseVariables.xfoValues[com.xfoId];
-    
     if(t>0){
       Vec3 displacement = comXfo.tr - prevComXfo.tr;
       
       Scalar timestep = time - prevtime;
       Vec3 velocity = displacement/timestep;
       speed = velocity.length();
+      
       Scalar climb = velocity.y;
       velocity.y = 0.0;
       gradient = climb / velocity.length();
+      
       
       if(speed > 0.001){
         Vec3 facingVec = comXfo.ori.rotateVector(Vec3(0.0, 0.0, 1.0));
@@ -263,19 +269,44 @@ function Boolean generateCOMTracks(
           direction = -direction;
         }
       }
-      if(t > 1){
-        acceleration = (speed - prevStepSpeed)/timestep;
-      }
       
-      poseVariables.scalarValues[com.parameterVarIds[0]] = speed;
-      poseVariables.scalarValues[com.parameterVarIds[1]] = acceleration;
-      poseVariables.scalarValues[com.parameterVarIds[2]] = gradient;
-      poseVariables.scalarValues[com.parameterVarIds[3]] = direction;
-      report(" timestep:"+timestep + " speed:"+speed + " acceleration:"+acceleration + " gradient:"+gradient + " direction:"+direction );
-      poseVariables.setTrackValues(time, trackSet, comParamBindings);
+      timeSmoothing[circularArrayIndex] = time;
+      speedSmoothing[circularArrayIndex] = speed;
+      gradientSmoothing[circularArrayIndex] = gradient;
+      directionSmoothing[circularArrayIndex] = direction;
+      circularArrayIndex = (circularArrayIndex + 1) % 5;
+      
+      if(t > 4){
+        Scalar keyT = 0.0;
+        speed = 0.0;
+        gradient = 0.0;
+        direction = 0.0;
+        for(Integer i=0; i<5; i++){
+          keyT += timeSmoothing[i];
+          speed += speedSmoothing[i];
+          gradient += gradientSmoothing[i];
+          direction += directionSmoothing[i];
+        }
+        keyT /= 5.0;
+        speed /= 5.0;
+        gradient /= 5.0;
+        direction /= 5.0;
+        
+        if(t > 5){
+          acceleration = (speed - prevStepSpeed)/timestep;
+        }
+        poseVariables.scalarValues[com.parameterVarIds[0]] = speed;
+        poseVariables.scalarValues[com.parameterVarIds[1]] = acceleration;
+        poseVariables.scalarValues[com.parameterVarIds[2]] = gradient;
+        poseVariables.scalarValues[com.parameterVarIds[3]] = direction;
+        report(" t:"+keyT + " timestep:"+timestep + " smoothed speed:"+speed + " acceleration:"+acceleration + " gradient:"+gradient + " direction:"+direction );
+        poseVariables.setTrackValues(keyT, trackSet, comParamBindings);
+        
+        
+        prevStepSpeed = speed;
+      }
     }
     prevComXfo = comXfo;
-    prevStepSpeed = speed;
     prevtime = time;
   }
   
@@ -319,7 +350,7 @@ function Boolean modifyHubAndFootTracks(
   Integer currKeys2[];
   ///////////////////////////////////////////////////
   // Finally, modify the hub and foot motions
-  Boolean drawFootMotionDebugging = true;
+  Boolean drawFootMotionDebugging = false;
   LinearKeyframeTrackSet sourceTrackSet = trackSet;//sourceAnimationLibrary[index];
   KeyframeTrackBindings hubValueBindings;
   KeyframeTrackBindings limbValueBindings;
@@ -352,6 +383,7 @@ function Boolean modifyHubAndFootTracks(
     }
   }
   
+  Vec3 displacementDir = comXfo.ori.rotateVector(Vec3(0.0,0.0,1.0));
   for(Integer t=0; t <= numSamples; t++){
     Scalar time = ((Scalar(t)/Scalar(numSamples)) * (timeRange.y - timeRange.x)) + timeRange.x;
     poseVariables.evaluateKeyframeTracks(time, sourceTrackSet, bindings, currKeys);
@@ -363,23 +395,20 @@ function Boolean modifyHubAndFootTracks(
   //  debugGeometry.drawAxis(comXfo, 1.0, Color(0.0, 0.5, 0.0, 1.0));
     
     // calculate the displacementDir based on the com movement;
-    Vec3 displacementDir = poseVariables2.xfoValues[com.xfoId].tr - comXfo.tr;
-    Scalar displacement = displacementDir.length();
+    Vec3 temp = poseVariables2.xfoValues[com.xfoId].tr - comXfo.tr;
+    Scalar displacement = temp.length();
     if(displacement > 0.001){
-      displacementDir /= displacement;
+      displacementDir = temp/displacement;
     }
-    else{
-      report("ERROR: no displacement");
-      displacementDir = comXfo.ori.rotateVector(Vec3(0.0,0.0,1.0));
-    }
-    debugGeometry.drawLine(comXfo.tr, comXfo.tr + (displacementDir * 1.0), Color(0.0, 0.5, 0.0, 1.0));
+    debugGeometry.drawPoint(comXfo.tr, Color(1.0, 0.0, 0.5, 1.0));
     
     for(Integer i=0; i < hubs.size; i++){
       Hub hub = hubs[i];
       Xfo hubXfo = poseVariables.xfoValues[hub.xfoId];
         
-      debugGeometry.drawPoint(hubXfo.tr, Color(0.0, 0.0, 0.5, 1.0));
-      
+      if(drawFootMotionDebugging){
+        debugGeometry.drawPoint(hubXfo.tr, Color(0.0, 0.0, 0.5, 1.0));
+      }
       poseVariables.xfoValues[hub.xfoId] = comXfo.inverse() * hubXfo;
       poseVariables.setTrackValues(time, trackSet, hubValueBindings);
     }
@@ -456,11 +485,12 @@ function Boolean addLocomotionMarkers(
       // 
       Integer markerStepId = j;
       LocomotionMarker marker;
-      Scalar t = footStepTracks[i].footSteps[markerStepId].prevStepMidPlantTime;
+      FootStep step = footStepTracks[i].footSteps[markerStepId];
+      Scalar t = step.prevStepMidPlantTime;
       marker.time = t;
       report("time:"+t + " stepId:"+markerStepId);
       
-      poseVariables.evaluateKeyframeTracks(t, trackSet, comParamBindings, currKeys);
+      poseVariables.evaluateKeyframeTracks(step.liftTime, trackSet, comParamBindings, currKeys);
       marker.params.resize(comParamBindings.scalarBindings.size);
       for(Integer k=0; k < comParamBindings.scalarBindings.size; k++){
         marker.params[k] = poseVariables.scalarValues[comParamBindings.scalarBindings[k].varId];
