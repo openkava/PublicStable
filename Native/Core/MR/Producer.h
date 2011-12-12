@@ -23,14 +23,11 @@ namespace Fabric
       
       // Virtual functions: Producer
       
-    public:
-    
-      virtual char const *getKind() const = 0;
-
     protected:
     
       Producer( GC::Object::Class const *myClass, GC::Container *container ); 
     
+      virtual char const *getKind() const = 0;
       virtual void toJSONImpl( Util::JSONObjectGenerator &jog ) const = 0;
       
       // Non-virtual functions

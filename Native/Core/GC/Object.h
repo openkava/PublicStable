@@ -32,8 +32,6 @@ namespace Fabric
         Class const *parent;
       };
     
-    private:
-    
       FABRIC_GC_OBJECT_GET_CLASS_DECL()
       
     public:
