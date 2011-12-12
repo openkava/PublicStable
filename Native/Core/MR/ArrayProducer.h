@@ -19,13 +19,9 @@ namespace Fabric
   {
     class ArrayProducer : public Producer
     {
+      FABRIC_GC_OBJECT_GET_CLASS_DECL()
+      
       // Virtual functions: ArrayProducer
-      
-    public:
-    
-      virtual bool isArrayProducer() const;
-      
-      // Virtual functions: ValueProducer
     
     public:
     
@@ -40,7 +36,7 @@ namespace Fabric
     
     protected:
     
-      ArrayProducer( RC::ConstHandle<RT::Desc> const &elementDesc );
+      ArrayProducer( GC::Object::Class const *myClass, GC::Container *container, RC::ConstHandle<RT::Desc> const &elementDesc );
     
     private:
     
