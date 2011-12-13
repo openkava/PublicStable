@@ -266,25 +266,27 @@ FABRIC.SceneGraph.registerNodeType('BulletWorldNode', {
     }));
 
     bulletWorldNode.pub.addShape = function(shapeName,shape) {
-      if(shapeName == undefined)
+      if(shapeName == undefined){
         throw('You need to specify a shapeName when calling addShape!');
-      if(shape == undefined)
+      }
+      if(shape == undefined){
         throw('You need to specify a shape when calling addShape!');
+      }
       shape.name = shapeName;
       shapedgnode.addMember(shapeName+'Shape', 'BulletShape', shape);
 
       // copy the points for convex hulls
       if(shape.type == FABRIC.RT.BulletShape.BULLET_CONVEX_HULL_SHAPE) {
-        if(!shape.geometryNode)
-          throw('You need to specify geometryNode for a convex hull shape!')
-          
+        if(!shape.geometryNode){
+          throw('You need to specify geometryNode for a convex hull shape!');
+        }
         // create rigid body operator
         shapedgnode.setDependency(scene.getPrivateInterface(shape.geometryNode).getAttributesDGNode(),shapeName+"Shape_attributes");
         shapedgnode.bindings.append(scene.constructOperator({
           operatorName: 'copyShapeVertices',
           parameterLayout: [
             'self.'+shapeName+'Shape',
-            shapeName+"Shape_attributes.positions<>",
+            shapeName+"Shape_attributes.positions<>"
           ],
           entryFunctionName: 'copyShapeVertices',
           srcFile: 'FABRIC_ROOT/SceneGraph/KL/bullet.kl'
@@ -292,11 +294,10 @@ FABRIC.SceneGraph.registerNodeType('BulletWorldNode', {
       }
 
       // copy the points for convex hulls
-      if(shape.type == FABRIC.RT.BulletShape.BULLET_GIMPACT_SHAPE)
-      {
-        if(!shape.geometryNode)
-          throw('You need to specify geometryNode for a gimpact shape!')
-          
+      if(shape.type == FABRIC.RT.BulletShape.BULLET_GIMPACT_SHAPE){
+        if(!shape.geometryNode){
+          throw('You need to specify geometryNode for a gimpact shape!');
+        }
         // create rigid body operator
         shapedgnode.setDependency(scene.getPrivateInterface(shape.geometryNode).getAttributesDGNode(),shapeName+"Shape_attributes");
         shapedgnode.setDependency(scene.getPrivateInterface(shape.geometryNode).getUniformsDGNode(),shapeName+"Shape_uniforms");
@@ -304,7 +305,7 @@ FABRIC.SceneGraph.registerNodeType('BulletWorldNode', {
           operatorName: 'copyShapeVertices',
           parameterLayout: [
             'self.'+shapeName+'Shape',
-            shapeName+"Shape_attributes.positions<>",
+            shapeName+"Shape_attributes.positions<>"
           ],
           entryFunctionName: 'copyShapeVertices',
           srcFile: 'FABRIC_ROOT/SceneGraph/KL/bullet.kl'
@@ -313,7 +314,7 @@ FABRIC.SceneGraph.registerNodeType('BulletWorldNode', {
           operatorName: 'copyShapeIndices',
           parameterLayout: [
             'self.'+shapeName+'Shape',
-            shapeName+"Shape_uniforms.indices",
+            shapeName+"Shape_uniforms.indices"
           ],
           entryFunctionName: 'copyShapeIndices',
           srcFile: 'FABRIC_ROOT/SceneGraph/KL/bullet.kl'
@@ -329,23 +330,26 @@ FABRIC.SceneGraph.registerNodeType('BulletWorldNode', {
         entryFunctionName: 'createBulletShape',
         srcFile: 'FABRIC_ROOT/SceneGraph/KL/bullet.kl'
       }));
-    }
+    };
 
     bulletWorldNode.pub.addRigidBody = function(bodyName,body,shapeName) {
-      if(bodyName == undefined)
+      if(bodyName == undefined){
         throw('You need to specify a bodyName when calling addRigidBody!');
-      if(body == undefined)
+      }
+      if(body == undefined){
         throw('You need to specify a body when calling addRigidBody!');
-      if(shapeName == undefined)
+      }
+      if(shapeName == undefined){
         throw('You need to specify a shapeName when calling addRigidBody!');
-        
+      }
       // check if we are dealing with an array
-      var isArray = body.constructor.toString().indexOf("Array") != -1;
+      var i, isArray = (body.constructor.toString().indexOf("Array") != -1);
       if(isArray) {
-        for(var i=0;i<body.length;i++) {
+        for(i=0; i < body.length; i++) {
           body[i].name = bodyName;
         }
-      } else {
+      }
+      else {
         body.name = bodyName;
       }
       rbddgnode.addMember(bodyName+'Rbd', 'BulletRigidBody[]', isArray ? body : [body]);
@@ -361,10 +365,10 @@ FABRIC.SceneGraph.registerNodeType('BulletWorldNode', {
         entryFunctionName: 'createBulletRigidBody',
         srcFile: 'FABRIC_ROOT/SceneGraph/KL/bullet.kl'
       }));
-    }
+    };
 
     var rbdInitialTransforms = {};
-    bulletWorldNode.pub.setRigidBodyInitialTransform = function(bodyName,transform) {
+    bulletWorldNode.pub.setRigidBodyInitialTransform = function(bodyName, transform) {
       if(!rbdInitialTransforms[bodyName]) {
         rbdInitialTransforms[bodyName] = bodyName+'Transform';
         rbddgnode.addMember(rbdInitialTransforms[bodyName],'Xfo[]');
@@ -382,12 +386,13 @@ FABRIC.SceneGraph.registerNodeType('BulletWorldNode', {
       var isArray = transform.constructor.toString().indexOf("Array") != -1;
       var transforms = isArray ? transform : [transform];
       rbddgnode.setData(rbdInitialTransforms[bodyName], 0, transforms);
-    }
+    };
+    
     bulletWorldNode.pub.getRigidBodyInitialTransform = function(bodyName) {
-      var result = [];
+      var i, body, result = [];
       if(!rbdInitialTransforms[bodyName]) {
-        var body = rbddgnode.getData(bodyName+'Rbd',0);
-        for(var i=0;i<body.length;i++)
+        body = rbddgnode.getData(bodyName+'Rbd', 0);
+        for(i=0; i < body.length; i++){
           result.push(new FABRIC.RT.Xfo({
             sc: new FABRIC.RT.Vec3(
               parseFloat(body[i].transform.sc.x),
@@ -407,19 +412,24 @@ FABRIC.SceneGraph.registerNodeType('BulletWorldNode', {
               parseFloat(body[i].transform.tr.z)
             )
           }));
-      } else {
+        }
+      }
+      else {
         result = rbddgnode.getData(bodyName+'Transform',0);
       }
       return result;
-    }
+    };
 
     bulletWorldNode.pub.addSoftBody = function(bodyName,body) {
-      if(bodyName == undefined)
+      if(bodyName == undefined){
         throw('You need to specify a bodyName when calling addSoftbody!');
-      if(body == undefined)
+      }
+      if(body == undefined){
         throw('You need to specify a body when calling addSoftbody!');
-      if(body.trianglesNode == undefined)
+      }
+      if(body.trianglesNode == undefined){
         throw('You need to specify a trianglesNode for softbody when calling addSoftbody!');
+      }
 
       body.name = bodyName;
       sbddgnode.addMember(bodyName+'Sbd', 'BulletSoftBody', body);
@@ -461,25 +471,29 @@ FABRIC.SceneGraph.registerNodeType('BulletWorldNode', {
       }));
       
       return dataCopy.pub;
-    }
+    };
     
     bulletWorldNode.pub.addConstraint = function(constraintName,constraint,bodyNameA,bodyNameB) {
-      if(constraintName == undefined)
+      if(constraintName == undefined){
         throw('You need to specify a constraintName when calling addConstraint!');
-      if(constraint == undefined)
+      }
+      if(constraint == undefined){
         throw('You need to specify a constraint when calling addConstraint!');
-      if(bodyNameA == undefined)
+      }
+      if(bodyNameA == undefined){
         throw('You need to specify a bodyNameA when calling addConstraint!');
-      if(bodyNameB == undefined)
+      }
+      if(bodyNameB == undefined){
         throw('You need to specify a bodyNameB when calling addConstraint!');
-        
+      }
       // check if we are dealing with an array
-      var isArray = constraint.constructor.toString().indexOf("Array") != -1;
+      var i, isArray = constraint.constructor.toString().indexOf("Array") != -1;
       if(isArray) {
-        for(var i=0;i<constraint.length;i++) {
+        for(i=0; i<constraint.length; i++) {
           constraint[i].name = constraintName;
         }
-      } else {
+      }
+      else {
         constraint.name = constraintName;
       }
       rbddgnode.addMember(constraintName, 'BulletConstraint[]', isArray ? constraint : [constraint]);
@@ -496,25 +510,29 @@ FABRIC.SceneGraph.registerNodeType('BulletWorldNode', {
         entryFunctionName: 'createBulletConstraint',
         srcFile: 'FABRIC_ROOT/SceneGraph/KL/bullet.kl'
       }));
-    }
+    };
 
     bulletWorldNode.pub.addAnchor = function(anchorName,anchor,rigidBodyName,softBodyName) {
-      if(anchorName == undefined)
+      if(anchorName == undefined){
         throw('You need to specify a constraintName when calling addAnchor!');
-      if(anchor == undefined)
+      }
+      if(anchor == undefined){
         throw('You need to specify a anchor when calling addAnchor!');
-      if(rigidBodyName == undefined)
+      }
+      if(rigidBodyName == undefined){
         throw('You need to specify a rigidBodyName when calling addAnchor!');
-      if(softBodyName == undefined)
+      }
+      if(softBodyName == undefined){
         throw('You need to specify a softBodyName when calling addAnchor!');
-        
+      }
       // check if we are dealing with an array
-      var isArray = anchor.constructor.toString().indexOf("Array") != -1;
+      var i, isArray = anchor.constructor.toString().indexOf("Array") != -1;
       if(isArray) {
-        for(var i=0;i<anchor.length;i++) {
+        for(i=0; i<anchor.length; i++) {
           anchor[i].name = anchorName;
         }
-      } else {
+      }
+      else {
         anchor.name = anchorName;
       }
       sbddgnode.addMember(anchorName, 'BulletAnchor[]', isArray ? anchor : [anchor]);
@@ -531,21 +549,23 @@ FABRIC.SceneGraph.registerNodeType('BulletWorldNode', {
         entryFunctionName: 'createBulletAnchor',
         srcFile: 'FABRIC_ROOT/SceneGraph/KL/bullet.kl'
       }));
-    }
+    };
 
     bulletWorldNode.pub.addForce = function(forceName,force) {
-      if(forceName == undefined)
+      if(forceName == undefined){
         throw('You need to specify a forceName when calling addForce!');
-      if(force == undefined)
+      }
+      if(force == undefined){
         throw('You need to specify a force when calling addForce!');
-        
+      }
       // check if we are dealing with an array
-      var isArray = force.constructor.toString().indexOf("Array") != -1;
+      var i, isArray = force.constructor.toString().indexOf("Array") != -1;
       if(isArray) {
-        for(var i=0;i<force.length;i++) {
+        for(i=0; i<force.length; i++) {
           force[i].name = forceName;
         }
-      } else {
+      }
+      else {
         force.name = forceName;
       }
       dgnode.addMember(forceName+'Force', 'BulletForce[]', isArray ? force : [force]);
@@ -556,18 +576,18 @@ FABRIC.SceneGraph.registerNodeType('BulletWorldNode', {
         operatorName: 'applyBulletForce',
         parameterLayout: [
           'self.world',
-          'self.'+forceName+'Force',
+          'self.'+forceName+'Force'
         ],
         entryFunctionName: 'applyBulletForce',
         srcFile: 'FABRIC_ROOT/SceneGraph/KL/bullet.kl'
       }));
-    }
+    };
 
     // create the ground plane
     if(options.createGroundPlane) {
       // create a shape
       // create the ground rigid body
-      var groundTrans = FABRIC.RT.xfo({tr: new FABRIC.RT.Vec3(0,-options.groundPlaneSize,0)});
+      var groundTrans = new FABRIC.RT.XFO({tr: new FABRIC.RT.Vec3(0,-options.groundPlaneSize,0)});
       bulletWorldNode.pub.addShape('Ground',FABRIC.RT.BulletShape.createBox(new FABRIC.RT.Vec3(options.groundPlaneSize,options.groundPlaneSize,options.groundPlaneSize)));
       bulletWorldNode.pub.addRigidBody('Ground',new FABRIC.RT.BulletRigidBody({mass: 0, transform: groundTrans}),'Ground');
       
@@ -587,8 +607,9 @@ FABRIC.SceneGraph.registerNodeType('BulletWorldNode', {
     // setup raycast relevant members
     var raycastingSetup = false;
     bulletWorldNode.setupRaycasting = function() {
-      if(raycastingSetup)
+      if(raycastingSetup){
         return;
+      }
       dgnode.addMember('raycastEnable','Boolean',false);
       bulletWorldNode.addMemberInterface(dgnode, 'raycastEnable', true);
       scene.addEventHandlingFunctions(bulletWorldNode);
@@ -693,7 +714,7 @@ FABRIC.SceneGraph.registerNodeType('BulletRigidBodyTransform', {
     
     // setup raycasting to be driven by bullet
     if(options.createBulletRaycastEventHandler) {
-      var raycastEventHandler = undefined;
+      var raycastEventHandler;
       rigidBodyTransformNode.getRaycastEventHandler = function() {
         if(raycastEventHandler == undefined) {
           var raycastOperator = scene.constructOperator({
