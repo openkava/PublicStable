@@ -435,7 +435,7 @@ operator evaluateLocomotionPoseVariables(
       
       hubXfo.tr = invcontrollerXfo.ori.rotateVector(controllerparams.balanceXfo.ori.rotateVector(controllerXfo.ori.rotateVector(hubXfo.tr))) -
                   invcontrollerXfo.ori.rotateVector(controllerparams.balanceXfo.tr);
-      hubXfo.tr.y -= controllerparams.balanceXfo.tr.length() * 0.5;
+      hubXfo.tr.y -= controllerparams.balanceXfo.tr.length() * 0.01;
       hubXfo.ori =  invcontrollerXfo.ori * controllerparams.balanceXfo.ori * controllerXfo.ori * hubXfo.ori;
       
       if(controllerparams.trail.size > 0){

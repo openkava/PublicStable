@@ -140,7 +140,7 @@ $(document).ready(function() {
   
   var constructBulletScene = true;
   
-  var rigName = 'Spiedel';
+  var rigName = 'CMan0005';
   /*
   try{
     if(localStorage && localStorage.getItem("rigName")){
@@ -312,6 +312,7 @@ $(document).ready(function() {
   }
 
   var locomotionControllerNode, diffuseColor, material;
+  var rigFile, animationLibraryFile;
   var minFrequency = 0.0;
   switch(rigName){
   case 'Spiedel':
@@ -332,6 +333,25 @@ $(document).ready(function() {
       lightNode: scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) }),
       diffuseColor: FABRIC.RT.rgba(1.0, 0.0, 0.0, 1.0)
     });
+    rigFile = 'Assets/SpiedelRig.json';
+    animationLibraryFile = 'Assets/SpiedelAnimation.json';
+    minFrequency = 0.75;
+    break;
+  case 'CMan0005':
+    locomotionControllerNode = scene.constructNode('ScreenSpacePlayerCharacterController', {
+        cameraNode: camera,
+        maxLinearVelocity: 18,
+        maxLinearAcceleration: 18,
+        maxAngularVelocity:  2.5,
+        maxAngularAcceleration: 2.5,
+        bulletWorldNode: bulletWorldNode,
+        numTrailSegments: 0,
+        gravity: -48,
+        comHeight: 4.5,
+        circleSize: 0.6
+      });
+    rigFile = 'Assets/CMan0005.json';
+    animationLibraryFile = 'Assets/CMan0005_Animation.json';
     minFrequency = 0.75;
     break;
   case 'walker':
@@ -377,13 +397,15 @@ $(document).ready(function() {
         comHeight: 1.8,
         circleSize: 0.6
       });
+    rigFile = 'Assets/marama.json';
+    animationLibraryFile = 'Assets/marama.json';
     minFrequency = 0.5;
     diffuseColor = FABRIC.RT.rgba(1.0, 0.5, 0.3, 1.0);
     break;
   }
 
   var rigLoader = scene.constructManager('SceneDeserializer');
-  var storage = new FABRIC.SceneGraph.URLReader('Assets/' + rigName + 'Rig.json');
+  var storage = new FABRIC.SceneGraph.URLReader(rigFile);
   var nodeMap = rigLoader.load(storage);
   
   var locomotionRig = nodeMap.LocomotionRig;
@@ -391,7 +413,7 @@ $(document).ready(function() {
   var characterMesh =  nodeMap.characterMesh;
 
   var animationLoader = scene.constructManager('SceneDeserializer');
-  var storage = new FABRIC.SceneGraph.URLReader('Assets/' + rigName + 'Animation.json');
+  var storage = new FABRIC.SceneGraph.URLReader(animationLibraryFile);
   var nodeMap = animationLoader.load(storage);
   var libraryAnimations = nodeMap.LibraryLocomotionAnimations;
   
