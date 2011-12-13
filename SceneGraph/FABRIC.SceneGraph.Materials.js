@@ -423,7 +423,7 @@ FABRIC.SceneGraph.registerNodeType('Material', {
           nodeData.lights[lightName] = lightNode.getName();
         }
       }
-      nodeData.textures = [];
+      nodeData.textures = {};
       for (var textureName in options.textures) {
         if (materialNode.pub['get' + capitalizeFirstLetter(textureName) + 'Node']) {
           var textureNode = materialNode.pub['get' + capitalizeFirstLetter(textureName) + 'Node']();

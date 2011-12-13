@@ -918,8 +918,7 @@ FABRIC.SceneGraph.registerNodeType('Instance', {
     };
     instanceNode.readData = function(sceneDeserializer, nodeData) {
       parentReadData(sceneDeserializer, nodeData);
-    
-      /*
+      
       if (nodeData.transformNode) {
         var transformNode = sceneDeserializer.getNode(nodeData.transformNode);
         if (transformNode) {
@@ -940,7 +939,6 @@ FABRIC.SceneGraph.registerNodeType('Instance', {
           }
         }
       }
-    */
     };
     // Mouse events are fired on Instance nodes.
     // These events are generated using raycasting.
