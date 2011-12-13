@@ -113,7 +113,7 @@ operator evaluateCharacterController(
       Vec3 balanceVector = acceleration + Vec3(0.0, gravity, 0.0);
       balanceVector = balanceVector.unit() * comHeight;
       balanceVector.y = 0.0;
-      controllerparams.balanceXfo.tr = controllerparams.balanceXfo.tr.linearInterpolate(balanceVector, 0.2);
+      controllerparams.balanceXfo.tr = controllerparams.balanceXfo.tr.linearInterpolate(balanceVector, 0.05);
     }else{
       controllerparams.balanceXfo.tr = controllerparams.balanceXfo.tr.linearInterpolate(Vec3(0.0,0.0,0.0), 0.2);
     }

@@ -117,8 +117,8 @@ $(document).ready(function() {
       position: new FABRIC.RT.Vec3(6, 4.2, 6),
       target: new FABRIC.RT.Vec3(0, -1, 0),
       roll: 0,
-      nearDistance: 1.0,
-      farDistance: 120
+      nearDistance: 0.1,
+      farDistance: 500
     });
   scene.constructNode('CameraManipulator', { targetNode: camera });
   viewport.setCameraNode(camera);
@@ -173,7 +173,7 @@ $(document).ready(function() {
   //////////////////////////////////////////////
   // 
   
-  var rigName = 'Spiedel';
+  var rigName = 'CMan0005';
   var assetNodes, bindPoseRig, fkrigNode, rigInstanceNode, skeletonNode, characterMesh, materialNode;
   switch(rigName){
   case 'Spiedel':
@@ -400,20 +400,119 @@ $(document).ready(function() {
    loadAnimationFile('Assets/Marama_StopRunning.DAE', fkrigNode);
    */
     break;
+  
+  case 'CMan0005':
+    scaleFactor = 0.05;
+    assetNodes = scene.importAssetFile('Assets/CMan0005.DAE', { scaleFactor: scaleFactor } );
+  
+    fkrigNode = assetNodes.CMan0005_M3_CS_MeshCharacterRig;
+    
+    var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) });
+    var rigInstances = {
+      Cloths: assetNodes.CMan0005_M3_CS_MeshMeshCMan0005_M3_CS_Cloths_StuffCharacterInstance,
+      Eyes: assetNodes.CMan0005_M3_CS_MeshMeshCMan0005_M3_CS_Eyes_MouthCharacterInstance,
+      Hair: assetNodes.CMan0005_M3_CS_MeshMeshCMan0005_M3_CS_HairCharacterInstance,
+      Head: assetNodes.CMan0005_M3_CS_MeshMeshCMan0005_M3_CS_HeadCharacterInstance,
+      Skin: assetNodes.CMan0005_M3_CS_MeshMeshCMan0005_M3_CS_SkinCharacterInstance
+    };
+    
+    rigInstances.Cloths.setMaterialNode(
+      scene.constructNode('PhongBumpReflectSkinningMaterial', {
+        diffuseTextureNode: scene.constructNode('Image', { url: 'Textures/CMan0005-M3-Body-D.tga' }),
+        specularTextureNode: scene.constructNode('Image', { url: 'Textures/CMan0005-M3-Body-S.tga' }),
+        normalTextureNode: scene.constructNode('Image', { url: 'Textures/CMan0005-M3-Body-N.tga' }),
+        lightNode: light,
+        shininess: 5.0,
+        bumpiness: 0.5
+      }));
+    rigInstances.Eyes.setMaterialNode(
+      scene.constructNode('PhongBumpReflectSkinningMaterial', {
+        diffuseTextureNode: scene.constructNode('Image', { url: 'Textures/CMan0005-M3-Body-D.tga' }),
+        specularTextureNode: scene.constructNode('Image', { url: 'Textures/CMan0005-M3-Body-S.tga' }),
+        normalTextureNode: scene.constructNode('Image', { url: 'Textures/CMan0005-M3-Body-N.tga' }),
+        lightNode: light,
+        shininess: 5.0,
+        bumpiness: 0.5
+      }));
+    rigInstances.Hair.setMaterialNode(
+      scene.constructNode('PhongBumpReflectSkinningMaterial', {
+        diffuseTextureNode: scene.constructNode('Image', { url: 'Textures/CMan0005-M3-Hair-D.tga' }),
+        specularTextureNode: scene.constructNode('Image', { url: 'Textures/CMan0005-M3-Hair-S.tga' }),
+        normalTextureNode: scene.constructNode('Image', { url: 'Textures/CMan0005-M3-Hair-N.tga' }),
+        lightNode: light,
+        shininess: 5.0,
+        bumpiness: 0.5
+      }));
+    rigInstances.Head.setMaterialNode(
+      scene.constructNode('PhongBumpReflectSkinningMaterial', {
+        diffuseTextureNode: scene.constructNode('Image', { url: 'Textures/CMan0005-M3-Head-D.tga' }),
+        specularTextureNode: scene.constructNode('Image', { url: 'Textures/CMan0005-M3-Head-S.tga' }),
+        normalTextureNode: scene.constructNode('Image', { url: 'Textures/CMan0005-M3-Head-N.tga' }),
+        lightNode: light,
+        shininess: 5.0,
+        bumpiness: 0.5
+      }));
+    rigInstances.Skin.setMaterialNode(
+      scene.constructNode('PhongBumpReflectSkinningMaterial', {
+        diffuseTextureNode: scene.constructNode('Image', { url: 'Textures/CMan0005-M3-Body-D.tga' }),
+        specularTextureNode: scene.constructNode('Image', { url: 'Textures/CMan0005-M3-Body-S.tga' }),
+        normalTextureNode: scene.constructNode('Image', { url: 'Textures/CMan0005-M3-Body-N.tga' }),
+        lightNode: light,
+        shininess: 5.0,
+        bumpiness: 0.5
+      }));
+    
+    skeletonNode = fkrigNode.getSkeletonNode();
+    var ikrigNode = scene.constructNode('CharacterRig', {
+      name: 'IKRig',
+      skeletonNode: skeletonNode
+    });
+    
+    ikrigNode.addSolver('Pelvis', 'HubSolver', { hubs: [{ bone:['CMan0005Pelvis'] }] } );
+    ikrigNode.addSolver('Legs', 'HumanoidLegSolver', {
+      limbs: [ { bones:['CMan0005LThigh', 'CMan0005LCalf'], ankle:'CMan0005LAnkle' },
+               { bones:['CMan0005RThigh', 'CMan0005RCalf'], ankle:'CMan0005RAnkle' }]
+    });
+    
+    ikrigNode.addSolver('toes', 'FKHierarchySolver', {
+      bones: {
+        bones:['CMan0005LToe', 'CMan0005RToe' ]
+      }
+    });
+    
+    ikrigNode.addSolver('upperbody', 'FKHierarchySolver', {
+      bones: {
+        bones:['CMan0005Spine1', 'CMan0005Spine2', 'CMan0005Spine3', 'CMan0005Ribcage', 'CMan0005Neck', 'CMan0005Head',
+               'CMan0005LCollarbone', 'CMan0005LUpperArm', 'CMan0005LForeArm2', 'CMan0005LForeArm2_ncl1_1',
+               'CMan0005RCollarbone', 'CMan0005RUpperArm', 'CMan0005RForeArm2', 'CMan0005RForeArm2_ncl1_1',
+               'CMan0005LPalm', 'CMan0005LThumb1', 'CMan0005LThumb2' , 'CMan0005LIndex1', 'CMan0005LIndex2', 'CMan0005LFingers1' , 'CMan0005LFingers2',
+               'CMan0005RPalm', 'CMan0005RThumb1', 'CMan0005RThumb2' , 'CMan0005RIndex1', 'CMan0005RIndex2', 'CMan0005RFingers1' , 'CMan0005RFingers2' ]
+      }
+    });
+    ikrigNode.addSolver('COM', 'COMSolver', {
+      bone: 'CMan0005PelvisBone001'
+    });
+
+    fkrigNode.setName("FKRig");
+    var fkRigVariablesNode = fkrigNode.constructVariablesNode('FKRigVariables', true);
+    var ikRigVariablesNode = ikrigNode.invertSolvers(fkrigNode, true);
+    
+    rigInstances.Cloths.setRigNode(ikrigNode);
+    rigInstances.Eyes.setRigNode(ikrigNode);
+    rigInstances.Hair.setRigNode(ikrigNode);
+    rigInstances.Head.setRigNode(ikrigNode);
+    rigInstances.Skin.setRigNode(ikrigNode);
+    
+   loadAnimationFile('Assets/CMan0005_Idle.DAE', fkrigNode);
+   loadAnimationFile('Assets/CMan0005_Walk.DAE', fkrigNode);
+   loadAnimationFile('Assets/CMan0005_Run.DAE', fkrigNode);
+
+    break;
   }
   
   ikrigNode.addSolver('Feet', 'LocomotionFeetSolver');
   
-  if(!materialNode){
-    materialNode = scene.constructNode('PhongSkinningMaterial', {
-      lightNode: scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) }),
-      diffuseColor: FABRIC.RT.rgba(1.0, 0.0, 0.0, 1.0)
-    });
-  }
-  rigInstanceNode.setMaterialNode(materialNode);
-  characterMesh.setName('characterMesh');
   
-  /*
   var animatedSkeleton = scene.constructNode("CharacterSkeletonDebug",{
     characterRigNode:fkrigNode,
     boneradius: 0.2,
@@ -424,7 +523,7 @@ $(document).ready(function() {
     boneradius: 0.2,
     color: FABRIC.RT.rgba(0.0, 0.0, 1.0, 1.0)
   });
-  */
+  
   
   var timeRange = libraryFKAnimations.getTimeRange(0);
   var $globalTimeSlider = $('#globalTime').slider({
@@ -506,7 +605,7 @@ $(document).ready(function() {
       var rigSaver = scene.constructManager('SceneSerializer');
       rigSaver.filterNode(libraryLocomotionAnimations);
       rigSaver.addNode(ikrigNode);
-      rigSaver.addNode(characterMesh);
+    //  rigSaver.addNode(characterMesh);
       var storage = new FABRIC.SceneGraph.FileWriter(scene, "Write Rig Data", rigName);
       rigSaver.save(storage);
     });
