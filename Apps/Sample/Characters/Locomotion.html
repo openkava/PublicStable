@@ -403,14 +403,14 @@ $(document).ready(function() {
     diffuseColor = FABRIC.RT.rgba(1.0, 0.5, 0.3, 1.0);
     break;
   }
-
   var rigLoader = scene.constructManager('SceneDeserializer');
   var storage = new FABRIC.SceneGraph.URLReader(rigFile);
   var nodeMap = rigLoader.load(storage);
   
+/*
   var locomotionRig = nodeMap.LocomotionRig;
   var ikrig = nodeMap.IKRig;
-  var characterMesh =  nodeMap.characterMesh;
+//  var characterMesh =  nodeMap.characterMesh;
 
   var animationLoader = scene.constructManager('SceneDeserializer');
   var storage = new FABRIC.SceneGraph.URLReader(animationLibraryFile);
@@ -428,7 +428,8 @@ $(document).ready(function() {
   });
   locomotionVariables.setAnimationLibrary(libraryAnimations);
   ikrig.setVariablesNode(locomotionVariables);
-  
+*/
+  /*
   if(!material){
     material = scene.constructNode('PhongSkinningMaterial', {
       lightNode: light,
@@ -441,7 +442,7 @@ $(document).ready(function() {
     geometryNode: characterMesh,
     materialNode: material
   });
-  
+  */
   /*
   var skeletonGeometryNode = scene.constructNode("CharacterSkeletonDebug", {
     characterRigNode:ikrig,

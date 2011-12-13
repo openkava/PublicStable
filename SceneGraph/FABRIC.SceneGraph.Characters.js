@@ -845,10 +845,19 @@ FABRIC.SceneGraph.registerNodeType('CharacterInstance', {
       }
       parentSetGeometryNode(node);
     };
-    characterInstanceNode.pub.getTransformNode = function() {
+    
+    //////////////////////////////////////////
+    // Persistence
+    var parentWriteData = characterInstanceNode.writeData;
+    var parentReadData = characterInstanceNode.readData;
+    characterInstanceNode.writeData = function(sceneSerializer, constructionOptions, nodeData) {
+      parentWriteData(sceneSerializer, constructionOptions, nodeData);
+      sceneSerializer.addNode(rigNode.pub);
+      nodeData.rigNode = rigNode.pub.getName();
     };
-    characterInstanceNode.pub.setTransformNode = function(node, member) {
-      throw 'Character Instance does not support the transformNode';
+    characterInstanceNode.readData = function(sceneDeserializer, nodeData) {
+      parentReadData(sceneDeserializer, nodeData);
+      characterInstanceNode.pub.setRigNode(sceneDeserializer.getNode(nodeData.rigNode));
     };
 
     if (options.rigNode) {

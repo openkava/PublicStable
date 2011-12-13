@@ -158,9 +158,24 @@ FABRIC.SceneGraph.registerNodeType('Image', {
         }));
       }
     }
-
+    
     imageNode.pub.getURL = function() {
       return resourceLoadNode ? resourceLoadNode.pub.getUrl() : '';
+    };
+    
+    //////////////////////////////////////////
+    // Persistence
+    var parentWriteData = imageNode.writeData;
+    var parentReadData = imageNode.readData;
+    imageNode.writeData = function(sceneSerializer, constructionOptions, nodeData) {
+      parentWriteData(sceneSerializer, constructionOptions, nodeData);
+      for (var i in options) {
+        constructionOptions[i] = options[i];
+      }
+      constructionOptions.url = imageNode.pub.getURL();
+    };
+    imageNode.readData = function(sceneDeserializer, nodeData) {
+      parentReadData(sceneDeserializer, nodeData);
     };
 
     return imageNode;
