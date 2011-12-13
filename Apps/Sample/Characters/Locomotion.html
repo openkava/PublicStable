@@ -185,7 +185,7 @@ $(document).ready(function() {
           bulletWorldNode: bulletWorldNode,
           shapeName: 'Box0',
           rigidBody: new FABRIC.RT.BulletRigidBody({
-            transform: FABRIC.RT.xfo({
+            transform: new FABRIC.RT.Xfo({
               tr: new FABRIC.RT.Vec3(0, -2, 0),
               sc: new FABRIC.RT.Vec3(30, 2, 30),
             }),
@@ -287,7 +287,6 @@ $(document).ready(function() {
           })
         })
       });
-      
     }
     else{
       var scaleFactor = 0.1;
@@ -341,13 +340,13 @@ $(document).ready(function() {
     locomotionControllerNode = scene.constructNode('ScreenSpacePlayerCharacterController', {
         cameraNode: camera,
         maxLinearVelocity: 8,
-        maxLinearAcceleration: 6,
+        maxLinearAcceleration: 10,
         maxAngularVelocity:  2.5,
         maxAngularAcceleration: 2.5,
         bulletWorldNode: bulletWorldNode,
         numTrailSegments: 0,
         gravity: -48,
-        comHeight: 4.5,
+        comHeight: 2.0,
         circleSize: 0.6
       });
     rigFile = 'Assets/CMan0005.json';
@@ -403,14 +402,14 @@ $(document).ready(function() {
     diffuseColor = FABRIC.RT.rgba(1.0, 0.5, 0.3, 1.0);
     break;
   }
-  var rigLoader = scene.constructManager('SceneDeserializer');
+  var rigLoader = scene.constructManager('SceneDeserializer', { preLoadScene:false } );
   var storage = new FABRIC.SceneGraph.URLReader(rigFile);
   var nodeMap = rigLoader.load(storage);
   
   var ikrig = nodeMap.IKRig;
 //  var characterMesh =  nodeMap.characterMesh;
 
-  var animationLoader = scene.constructManager('SceneDeserializer');
+  var animationLoader = scene.constructManager('SceneDeserializer', { preLoadScene:false } );
   var storage = new FABRIC.SceneGraph.URLReader(animationLibraryFile);
   var nodeMap = animationLoader.load(storage);
   var libraryAnimations = nodeMap.LibraryLocomotionAnimations;
