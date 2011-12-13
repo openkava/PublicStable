@@ -821,36 +821,6 @@ FABRIC.SceneGraph.registerNodeType('Instance', {
       rayIntersectionOperatorsAssigned = true;
     }
 
-    // extend private interface
-    instanceNode.writeData = function(sceneSerializer, constructionOptions, nodeData) {
-      constructionOptions.enableRaycasting = options.enableRaycasting;
-
-      nodeData.transformNode = transformNode.name;
-      nodeData.transformNodeMember = transformNodeMember;
-
-      nodeData.geometryNode = geometryNode.name;
-      nodeData.materialNodes = [];
-      for (var i = 0; i < materialNodes.length; i++) {
-        nodeData.materialNodes.push(materialNodes[i].name);
-      }
-    };
-    instanceNode.readData = function(sceneDeserializer, nodeData) {
-      if (nodeData.transformNode) {
-        var transformNode = sceneDeserializer.getNode(nodeData.transformNode);
-        if (transformNode) {
-          this.setTransformNode(transformNode, nodeData.transformNodeMember);
-        }
-      }
-      if (nodeData.geometryNode) {
-        var geometryNode = sceneDeserializer.getNode(nodeData.geometryNode);
-        this.setGeometryNode(geometryNode);
-      }
-      for (i in nodeData.materialNodes) {
-        if (nodeData.materialNodes.hasOwnProperty(i)) {
-          this.setMaterialNode(sceneDeserializer.getNode(nodeData.materialNodes[i]));
-        }
-      }
-    };
 
     // extend public interface
     instanceNode.pub.getGeometryNode = function() {
@@ -882,8 +852,11 @@ FABRIC.SceneGraph.registerNodeType('Instance', {
         message += 'Members:' + JSON.stringify(node.getDGNode().getMembers());
         throw (message);
       }
+      var transformNodeAssigned = transformNode != undefined;
       transformNode = node;
-      assignLoadTransformOperators();
+      if(!transformNodeAssigned){
+        assignLoadTransformOperators();
+      }
       if(geometryNode && !rayIntersectionOperatorsAssigned){
         assignRayIntersectionOperators();
       }
@@ -920,7 +893,55 @@ FABRIC.SceneGraph.registerNodeType('Instance', {
       materialNodes.splice(index, 1);
       return instanceNode.pub;
     };
+    
+    //////////////////////////////////////////
+    // Persistence
+    var parentWriteData = instanceNode.writeData;
+    var parentReadData = instanceNode.readData;
+    instanceNode.writeData = function(sceneSerializer, constructionOptions, nodeData) {
+      parentWriteData(sceneSerializer, constructionOptions, nodeData);
+      // the transform node will be loaded with the instance. 
+      constructionOptions.constructDefaultTransformNode = false;
+      constructionOptions.enableRaycasting = options.enableRaycasting;
 
+      sceneSerializer.addNode(transformNode.pub);
+      nodeData.transformNode = transformNode.pub.getName();
+      nodeData.transformNodeMember = transformNodeMember;
+
+      sceneSerializer.addNode(geometryNode.pub);
+      nodeData.geometryNode = geometryNode.pub.getName();
+      nodeData.materialNodes = [];
+      for (var i = 0; i < materialNodes.length; i++) {
+        sceneSerializer.addNode(materialNodes[i].pub);
+        nodeData.materialNodes.push(materialNodes[i].pub.getName());
+      }
+    };
+    instanceNode.readData = function(sceneDeserializer, nodeData) {
+      parentReadData(sceneDeserializer, nodeData);
+    
+      /*
+      if (nodeData.transformNode) {
+        var transformNode = sceneDeserializer.getNode(nodeData.transformNode);
+        if (transformNode) {
+          instanceNode.pub.setTransformNode(transformNode, nodeData.transformNodeMember);
+        }
+      }
+      if (nodeData.geometryNode) {
+        var geometryNode = sceneDeserializer.getNode(nodeData.geometryNode);
+        if (geometryNode) {
+          instanceNode.pub.setGeometryNode(geometryNode);
+        }
+      }
+      for (var i in nodeData.materialNodes) {
+        if (nodeData.materialNodes.hasOwnProperty(i)) {
+          var materialNode = sceneDeserializer.getNode(nodeData.materialNodes[i]);
+          if (materialNode) {
+            instanceNode.pub.setMaterialNode(materialNode);
+          }
+        }
+      }
+    */
+    };
     // Mouse events are fired on Instance nodes.
     // These events are generated using raycasting.
     scene.addEventHandlingFunctions(instanceNode);

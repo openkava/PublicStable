@@ -314,13 +314,18 @@ FABRIC.SceneGraph.registerNodeType('Material', {
         var lightStub = materialNode.constructEventHandlerNode('Draw_' + lightName);
         redrawEventHandler.appendChildEventHandler(lightStub);
         
+        var lightNode;
+        var getLightNodeFn = function() {
+          return lightNode.pub;
+        };
         var setLightNodeFn = function(node) {
           if (!node.isTypeOf(lightDef.type)) {
             throw ('Incorrect type assignment. Must assign a ' + lightDef.type);
           }
-          node = scene.getPrivateInterface(node);
-          lightStub.appendChildEventHandler(node.getRedrawEventHandler());
+          lightNode = scene.getPrivateInterface(node);
+          lightStub.appendChildEventHandler(lightNode.getRedrawEventHandler());
         };
+        materialNode.pub['get' + capitalizeFirstLetter(lightName) + 'Node'] = getLightNodeFn;
         materialNode.pub['set' + capitalizeFirstLetter(lightName) + 'Node'] = setLightNodeFn;
         if (lightDef.node !== undefined) {
           setLightNodeFn(lightDef.node);
@@ -351,18 +356,22 @@ FABRIC.SceneGraph.registerNodeType('Material', {
             'self.textureUnit'
           ]
         }));
-
+        var textureNode;
         // Now add a method to assign the texture to the material
         var setTextureRedrawEventHandlerFn = function(handler) {
           textureStub.appendChildEventHandler(handler);
+        };
+        var getTextureFn = function() {
+          return textureNode.pub;
         };
         var setTextureFn = function(node) {
           if (!node.isTypeOf('Texture')) {
             throw ('Incorrect type assignment. Must assign a Texture');
           }
-          node = scene.getPrivateInterface(node);
-          setTextureRedrawEventHandlerFn(node.getRedrawEventHandler());
+          textureNode = scene.getPrivateInterface(node);
+          setTextureRedrawEventHandlerFn(textureNode.getRedrawEventHandler());
         };
+        materialNode.pub['get' + capitalizeFirstLetter(textureName) + 'Node'] = getTextureFn;
         materialNode.pub['set' + capitalizeFirstLetter(textureName) + 'Node'] = setTextureFn;
         materialNode['set' + capitalizeFirstLetter(textureName) + 'RedrawEventHandler'] = setTextureRedrawEventHandlerFn;
 
@@ -390,6 +399,54 @@ FABRIC.SceneGraph.registerNodeType('Material', {
       }));
     }
     
+
+    //////////////////////////////////////////
+    // Persistence
+    var capitalizeFirstLetter = function(str) {
+      return str[0].toUpperCase() + str.substr(1);
+    };
+    var parentWriteData = materialNode.writeData;
+    var parentReadData = materialNode.readData;
+    materialNode.writeData = function(sceneSerializer, constructionOptions, nodeData) {
+      parentWriteData(sceneSerializer, constructionOptions, nodeData);
+      
+      for (uniformName in options.shaderUniforms) {
+        if (materialNode.pub['get' + capitalizeFirstLetter(uniformName)]) {
+          constructionOptions[uniformName] = materialNode.pub['get' + capitalizeFirstLetter(uniformName)]();
+        }
+      }
+      nodeData.lights = {};
+      for (var lightName in options.lights) {
+        if (materialNode.pub['get' + capitalizeFirstLetter(lightName) + 'Node']) {
+          var lightNode = materialNode.pub['get' + capitalizeFirstLetter(lightName) + 'Node']();
+          sceneSerializer.addNode(lightNode);
+          nodeData.lights[lightName] = lightNode.getName();
+        }
+      }
+      nodeData.textures = [];
+      for (var textureName in options.textures) {
+        if (materialNode.pub['get' + capitalizeFirstLetter(textureName) + 'Node']) {
+          var textureNode = materialNode.pub['get' + capitalizeFirstLetter(textureName) + 'Node']();
+          sceneSerializer.addNode(textureNode);
+          nodeData.textures[textureName] = textureNode.getName();
+        }
+      }
+    };
+    materialNode.readData = function(sceneDeserializer, nodeData) {
+      parentReadData(sceneDeserializer, nodeData);
+      for (var lightName in nodeData.lights) {
+        var light = sceneDeserializer.getNode(nodeData.lights[lightName]);
+        if (light) {
+          materialNode.pub['set' + capitalizeFirstLetter(lightName) + 'Node'](light);
+        }
+      }
+      for (var textureName in nodeData.textures) {
+        var texture = sceneDeserializer.getNode(nodeData.textures[textureName]);
+        if (texture) {
+          materialNode.pub['set' + capitalizeFirstLetter(textureName) + 'Node'](texture);
+        }
+      }
+    };
     return materialNode;
   }});
 

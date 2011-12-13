@@ -174,7 +174,7 @@ $(document).ready(function() {
   // 
   
   var rigName = 'CMan0005';
-  var assetNodes, bindPoseRig, fkrigNode, rigInstanceNode, skeletonNode, characterMesh, materialNode;
+  var assetNodes, bindPoseRig, fkrigNode, rigInstances, skeletonNode, characterMesh, materialNode;
   switch(rigName){
   case 'Spiedel':
     scaleFactor = 0.05;
@@ -182,7 +182,7 @@ $(document).ready(function() {
     assetNodes = scene.importAssetFile('Assets/Spiedel.DAE', { scaleFactor: scaleFactor });
   
     fkrigNode = assetNodes.SpiedelCharacterRig;
-    rigInstanceNode = assetNodes.SpiedelCharacterInstance;
+    rigInstances = assetNodes.SpiedelCharacterInstance;
     characterMesh = assetNodes.SpiedelMesh;
     
     skeletonNode = fkrigNode.getSkeletonNode();
@@ -221,7 +221,7 @@ $(document).ready(function() {
     var fkRigVariablesNode = fkrigNode.constructVariablesNode('FKRigVariables', true);
     var ikRigVariablesNode = ikrigNode.invertSolvers(fkrigNode, true);
     
-    rigInstanceNode.setRigNode(ikrigNode);
+    rigInstances.setRigNode(ikrigNode);
     
     loadAnimationFile('Assets/Spiedel_Idle.DAE', fkrigNode);
     loadAnimationFile('Assets/Spiedel_StartWalking.DAE', fkrigNode);
@@ -236,7 +236,7 @@ $(document).ready(function() {
     assetNodes = scene.importAssetFile('Assets/Walker_Skeleton.DAE', { scaleFactor: scaleFactor });
   
     fkrigNode = assetNodes.Walker_ncl1_1CharacterRig;
-    rigInstanceNode = assetNodes.Walker_ncl1_1CharacterInstance;
+    rigInstances = assetNodes.Walker_ncl1_1CharacterInstance;
     characterMesh = assetNodes.Walker_ncl1_1Mesh;
     
     skeletonNode = fkrigNode.getSkeletonNode();
@@ -258,7 +258,7 @@ $(document).ready(function() {
     var fkRigVariablesNode = fkrigNode.constructVariablesNode('FKRigVariables', true);
     var ikRigVariablesNode = ikrigNode.invertSolvers(fkrigNode, true);
     
-    rigInstanceNode.setRigNode(ikrigNode);
+    rigInstances.setRigNode(ikrigNode);
     
     loadAnimationFile('Assets/Walker_Walk.DAE', fkrigNode);
   
@@ -267,7 +267,7 @@ $(document).ready(function() {
     assetNodes = scene.importAssetFile('Assets/Centipede_Skeleton.DAE', { scaleFactor: scaleFactor });
   
     fkrigNode = assetNodes.CentipedeHub010CharacterRig;
-    rigInstanceNode = assetNodes.CentipedeHub010CharacterInstance;
+    rigInstances = assetNodes.CentipedeHub010CharacterInstance;
     characterMesh = assetNodes.CentipedeHub010Mesh;
     
     skeletonNode = fkrigNode.getSkeletonNode();
@@ -336,7 +336,7 @@ $(document).ready(function() {
     var fkRigVariablesNode = fkrigNode.constructVariablesNode('FKRigVariables', true);
     var ikRigVariablesNode = ikrigNode.invertSolvers(fkrigNode, true);
     
-    rigInstanceNode.setRigNode(ikrigNode);
+    rigInstances.setRigNode(ikrigNode);
     
     loadAnimationFile('Assets/Centipede_Walk.DAE', fkrigNode);
     
@@ -345,7 +345,7 @@ $(document).ready(function() {
     assetNodes = scene.importAssetFile('Assets/Marama3.DAE', { scaleFactor: scaleFactor } );
   
     fkrigNode = assetNodes.MaramaMeshCharacterRig;
-    rigInstanceNode = assetNodes.MaramaMeshCharacterInstance;
+    rigInstances = assetNodes.MaramaMeshCharacterInstance;
     characterMesh = assetNodes.MaramaMeshMesh;
     
     skeletonNode = fkrigNode.getSkeletonNode();
@@ -383,7 +383,7 @@ $(document).ready(function() {
     var fkRigVariablesNode = fkrigNode.constructVariablesNode('FKRigVariables', true);
     var ikRigVariablesNode = ikrigNode.invertSolvers(fkrigNode, true);
     
-    rigInstanceNode.setRigNode(ikrigNode);
+    rigInstances.setRigNode(ikrigNode);
     
    loadAnimationFile('Assets/Marama3_Idle.DAE', fkrigNode);
    loadAnimationFile('Assets/Marama3_Walk.DAE', fkrigNode);
@@ -408,7 +408,7 @@ $(document).ready(function() {
     fkrigNode = assetNodes.CMan0005_M3_CS_MeshCharacterRig;
     
     var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) });
-    var rigInstances = {
+    rigInstances = {
       Cloths: assetNodes.CMan0005_M3_CS_MeshMeshCMan0005_M3_CS_Cloths_StuffCharacterInstance,
       Eyes: assetNodes.CMan0005_M3_CS_MeshMeshCMan0005_M3_CS_Eyes_MouthCharacterInstance,
       Hair: assetNodes.CMan0005_M3_CS_MeshMeshCMan0005_M3_CS_HairCharacterInstance,
@@ -605,7 +605,9 @@ $(document).ready(function() {
       var rigSaver = scene.constructManager('SceneSerializer');
       rigSaver.filterNode(libraryLocomotionAnimations);
       rigSaver.addNode(ikrigNode);
-    //  rigSaver.addNode(characterMesh);
+      for(var i in rigInstances){
+        rigSaver.addNode(rigInstances[i]);
+      }
       var storage = new FABRIC.SceneGraph.FileWriter(scene, "Write Rig Data", rigName);
       rigSaver.save(storage);
     });
