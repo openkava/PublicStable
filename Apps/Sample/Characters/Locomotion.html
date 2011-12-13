@@ -340,8 +340,8 @@ $(document).ready(function() {
   case 'CMan0005':
     locomotionControllerNode = scene.constructNode('ScreenSpacePlayerCharacterController', {
         cameraNode: camera,
-        maxLinearVelocity: 18,
-        maxLinearAcceleration: 18,
+        maxLinearVelocity: 8,
+        maxLinearAcceleration: 6,
         maxAngularVelocity:  2.5,
         maxAngularAcceleration: 2.5,
         bulletWorldNode: bulletWorldNode,
@@ -407,8 +407,6 @@ $(document).ready(function() {
   var storage = new FABRIC.SceneGraph.URLReader(rigFile);
   var nodeMap = rigLoader.load(storage);
   
-/*
-  var locomotionRig = nodeMap.LocomotionRig;
   var ikrig = nodeMap.IKRig;
 //  var characterMesh =  nodeMap.characterMesh;
 
@@ -428,21 +426,8 @@ $(document).ready(function() {
   });
   locomotionVariables.setAnimationLibrary(libraryAnimations);
   ikrig.setVariablesNode(locomotionVariables);
-*/
-  /*
-  if(!material){
-    material = scene.constructNode('PhongSkinningMaterial', {
-      lightNode: light,
-      diffuseColor: diffuseColor,
-      numBones: skeletonNode.getNumBones()
-    });
-  }
-  var characterInstance = scene.constructNode("CharacterInstance", {
-    rigNode:ikrig,
-    geometryNode: characterMesh,
-    materialNode: material
-  });
-  */
+
+
   /*
   var skeletonGeometryNode = scene.constructNode("CharacterSkeletonDebug", {
     characterRigNode:ikrig,
