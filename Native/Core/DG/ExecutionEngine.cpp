@@ -26,18 +26,6 @@ namespace Fabric
 {
   namespace DG
   {
-    extern "C" void logFromByteCode( const char *format, ... )
-    {
-      char buffer[4096];
-      va_list argList;
-      
-      va_start( argList, format );
-      vsnprintf( buffer, 4096, format, argList );
-      va_end( argList );
-      
-      MT::tlsLogCollector.get()->add( buffer );
-    }
-
     Util::TLSVar< RC::ConstHandle<Context> > ExecutionEngine::s_currentContext;
     
     void ExecutionEngine::Report( char const *data, size_t length )

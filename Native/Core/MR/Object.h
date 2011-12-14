@@ -6,52 +6,79 @@
 #define _FABRIC_MR_OBJECT_H
 
 #include <Fabric/Core/GC/Object.h>
-#include <Fabric/Base/RC/ConstHandle.h>
-
-#include <string>
-#include <vector>
 
 namespace Fabric
 {
-  namespace Util
-  {
-    class JSONArrayGenerator;
-  };
-  
-  namespace JSON
-  {
-    class Value;
-  };
-  
   namespace MR
   {
+#define FABRIC_MR_OBJECT_GET_CLASS_DECL() \
+    public: \
+      static Class const *GetClass();
+#define FABRIC_MR_OBJECT_GET_CLASS_IMPL(class_,parentClass) \
+      MR::Object::Class const *class_::GetClass() \
+      { \
+        static Class myClass = { parentClass::GetClass() }; \
+        return &myClass; \
+      }
+
     class Object : public GC::Object
     {
-      FABRIC_GC_OBJECT_GET_CLASS_DECL()
-      
-      // Virtual functions: Object
-    
-    public:
-
-      virtual void jsonRoute(
-        std::vector<std::string> const &dst,
-        size_t dstOffset,
-        std::string const &cmd,
-        RC::ConstHandle<JSON::Value> const &arg,
-        Util::JSONArrayGenerator &resultJAG
-        );
-        
-      virtual void jsonExec(
-        std::string const &cmd,
-        RC::ConstHandle<JSON::Value> const &arg,
-        Util::JSONArrayGenerator &resultJAG
-        );
-      
     protected:
     
-      Object( GC::Object::Class const *myClass, GC::Container *container, std::string const &id_ ); 
-    };
-  };
-};
+      struct Class
+      {
+        Class const *parent;
+      };
+    
+      FABRIC_MR_OBJECT_GET_CLASS_DECL()
+      
+    public:
 
-#endif //_FABRIC_MR_OBJECT_H
+      Object( Class const *myClass );
+      ~Object();
+      
+      Class const *getClass() const
+      {
+        return m_class;
+      }
+      
+    private:
+    
+      Class const *m_class;
+    };
+
+    template<class T> RC::Handle<T> DynCast( RC::Handle<Object> const &object )
+    {
+      RC::Handle<T> result = 0;
+      if ( object )
+      {
+        Object::Class const *targetClass = T::GetClass();
+        Object::Class const *objectClass = object->getClass();
+        while ( objectClass )
+        {
+          if ( objectClass == targetClass )
+          {
+            result = RC::Handle<T>::StaticCast( object );
+            break;
+          }
+          objectClass = objectClass->parent;
+        }
+      }
+      return result;
+    }
+  
+    template<class T> bool IsA( RC::Handle<Object> const &object )
+    {
+      return !!DynCast<T>( object );
+    }
+
+    template<class T> RC::Handle<T> Cast( RC::Handle<Object> const &object )
+    {
+      RC::Handle<T> result = DynCast<T>( object );
+      FABRIC_ASSERT( result );
+      return result;
+    }
+  }
+}
+
+#endif //_FABRIC_CG_OBJECT_H

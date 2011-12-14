@@ -21,7 +21,7 @@ namespace Fabric
       // that scripts forget to call dispose() on their objects...
     }
       
-    void Container::registerObject( std::string const &id_, RC::Handle<Object> const &object )
+    void Container::registerObject( std::string const &id_, Object *object )
     {
       Util::Mutex::Lock mutexLock( m_mutex );
       if ( m_idToObjectMap.find( id_ ) != m_idToObjectMap.end() )
@@ -47,13 +47,27 @@ namespace Fabric
       return result;
     }
     
-    void Container::disposeObject( std::string const &id_ )
+    void Container::disposeObject( std::string const &id_, Object *object )
     {
       Util::Mutex::Lock mutexLock( m_mutex );
       IDToObjectMap::iterator it = m_idToObjectMap.find( id_ );
       if ( it == m_idToObjectMap.end() )
         throw Exception( "GC::Object " + _(id_) + " does not exist or has already been disposed" );
+      FABRIC_ASSERT( it->second.ptr() == object );
       m_idToObjectMap.erase( it );
+    }
+
+    void Container::jsonRoute(
+      std::vector<std::string> const &dst,
+      size_t dstOffset,
+      std::string const &cmd,
+      RC::ConstHandle<JSON::Value> const &arg,
+      Util::JSONArrayGenerator &resultJAG
+      )
+    {
+      FABRIC_ASSERT( dst.size() - dstOffset > 0 );
+      std::string const &id_ = dst[dstOffset];
+      getObject( id_ )->jsonRoute( dst, dstOffset + 1, cmd, arg, resultJAG );
     }
   }
 }

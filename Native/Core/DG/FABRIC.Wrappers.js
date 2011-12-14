@@ -1524,91 +1524,74 @@ function (fabricClient, logCallback, debugLogCallback) {
     if ('contextID' in diff)
       state.contextID = diff.contextID;
   };
+  
+  var GC = (function (namespace) {
+    var nextID = 0;
+    
+    return {
+      createObject: function (namespace) {
+        var id = "MR_" + nextID++;
+        
+        var result = {
+          id: id,
+          queueCommand: function (cmd, arg, unwind, callback) {
+            if (!this.id)
+              throw "GC object has already been disposed";
+            queueCommand([namespace, this.id], cmd, arg, unwind, callback);
+          },
+          pub: {
+          }
+        };
+        result.pub.dispose = function () {
+          result.queueCommand('dispose');
+          delete result['id'];
+        };
+        return result;
+      }
+    };
+  })();
 
   var MR = (function() {
     var MR = {
-      gcObjects: {},
-      nextID: 0
-    };
-
-    MR.queueCommand = function(cmd, arg, unwind, callback) {
-      queueCommand(['MR'], cmd, arg, unwind, callback);
-    };
-
-    MR.patch = function(diff) {
-    };
-
-    MR.handleStateNotification = function(state) {
-      MR.patch(state);
-    };
-
-    MR.handle = function(cmd, arg) {
-      switch (cmd) {
-        case 'delta':
-          this.patch(arg);
-          break;
-        default:
-          throw 'unrecognized';
-      }
-    };
-
-    MR.route = function(src, cmd, arg) {
-      if (src.length == 0) {
-        try {
-          handle(cmd, arg);
-        }
-        catch (e) {
-          throw "command '" + cmd + "': " + e;
-        }
-      }
-      else
-        throw 'unroutable';
     };
 
     MR.pub = {
       createConstArrayProducer: function(elementType, data) {
-        var constArrayProducer = {
-          id: "" + MR.nextID++,
-          queueCommand: function (cmd, arg, unwind, callback) {
-            queueCommand(['MR',this.id], cmd, arg, unwind, callback);
-          }
+        var constArrayProducer = GC.createObject('MR');
+        
+        constArrayProducer.pub.getCount = function () {
+          var count;
+          constArrayProducer.queueCommand('getCount', null, null, function (result) {
+            count = result;
+          });
+          executeQueuedCommands();
+          return count;
         };
         
-        constArrayProducer.pub = {
-          getCount: function () {
-            var count;
-            constArrayProducer.queueCommand('getCount', null, null, function (result) {
-              count = result;
-            });
-            executeQueuedCommands();
-            return count;
-          },
-          produce: function (index) {
-            var result;
-            constArrayProducer.queueCommand('produce', index, null, function (_) {
-              result = _;
-            });
-            executeQueuedCommands();
-            return result;
-          },
-          getJSONDesc: function () {
-            var jsonDesc;
-            constArrayProducer.queueCommand('getJSONDesc', null, null, function (result) {
-              jsonDesc = result;
-            });
-            executeQueuedCommands();
-            return jsonDesc;
-          }
+        constArrayProducer.pub.produce = function (index) {
+          var result;
+          constArrayProducer.queueCommand('produce', index, null, function (_) {
+            result = _;
+          });
+          executeQueuedCommands();
+          return result;
         };
         
-        MR.gcObjects[constArrayProducer.id] = constArrayProducer;
+        constArrayProducer.pub.getJSONDesc = function () {
+          var jsonDesc;
+          constArrayProducer.queueCommand('getJSONDesc', null, null, function (result) {
+            jsonDesc = result;
+          });
+          executeQueuedCommands();
+          return jsonDesc;
+        };
         
-        MR.queueCommand('createConstArrayProducer', {
+        queueCommand(['MR'],'createConstArrayProducer', {
           id: constArrayProducer.id,
           elementType: elementType,
           data: data
         }, function () {
-        }, function (result) {
+          delete constArrayProducer['id'];
         });
         return constArrayProducer.pub;
       }

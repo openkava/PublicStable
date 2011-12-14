@@ -3,41 +3,24 @@
  */
  
 #include <Fabric/Core/MR/Object.h>
-#include <Fabric/Core/Util/JSONGenerator.h>
-#include <Fabric/Core/Util/Format.h>
-#include <Fabric/Base/Exception.h>
 
 namespace Fabric
 {
   namespace MR
   {
-    FABRIC_GC_OBJECT_GET_CLASS_IMPL( Object, GC::Object );
-
-    Object::Object( GC::Object::Class const *myClass, GC::Container *container, std::string const &id_ )
-      : GC::Object( myClass, container, id_ )
+    Object::Class const *Object::GetClass()
     {
+      static Class myClass = { 0 };
+      return &myClass;
     }
 
-    void Object::jsonRoute(
-      std::vector<std::string> const &dst,
-      size_t dstOffset,
-      std::string const &cmd,
-      RC::ConstHandle<JSON::Value> const &arg,
-      Util::JSONArrayGenerator &resultJAG
-      )
+    Object::Object( Class const *class_ )
+      : m_class( class_ )
     {
-      if ( dst.size() - dstOffset == 0 )
-        return jsonExec( cmd, arg, resultJAG );
-      else throw Exception( "unroutable" );
     }
-      
-    void Object::jsonExec(
-      std::string const &cmd,
-      RC::ConstHandle<JSON::Value> const &arg,
-      Util::JSONArrayGenerator &resultJAG
-      )
+
+    Object::~Object()
     {
-      throw Exception( _(cmd) + ": unknown command" );
     }
-  };
-};
+  }
+}
