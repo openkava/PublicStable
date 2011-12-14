@@ -18,22 +18,34 @@ namespace Fabric
   {
     class Container
     {
-      typedef std::map< std::string, RC::Handle<GC::Object> > IDToObjectMap;
+      typedef std::map< std::string, RC::Handle<Object> > IDToObjectMap;
+      
+      friend class Object;
       
     public:
     
       Container();
       ~Container();
       
-      void registerObject( std::string const &id_, RC::Handle<Object> const &object );
       RC::Handle<Object> maybeGetObject( std::string const &id_ ) const;
       RC::Handle<Object> getObject( std::string const &id_ ) const;
-      void disposeObject( std::string const &id_ );
+      
+      void jsonRoute(
+        std::vector<std::string> const &dst,
+        size_t dstOffset,
+        std::string const &cmd,
+        RC::ConstHandle<JSON::Value> const &arg,
+        Util::JSONArrayGenerator &resultJAG
+        );
+
+    protected:
+      
+      void registerObject( std::string const &id_, Object *object );
+      void disposeObject( std::string const &id_, Object *object );
       
     private:
     
       mutable Util::Mutex m_mutex;
-      std::string m_nextID;
       IDToObjectMap m_idToObjectMap;
     };
   }

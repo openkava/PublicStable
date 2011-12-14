@@ -19,7 +19,7 @@ namespace Fabric
   {
     class Producer : public MR::Object
     {
-      FABRIC_GC_OBJECT_GET_CLASS_DECL()
+      FABRIC_MR_OBJECT_GET_CLASS_DECL()
       
       // Virtual functions: Object
 
@@ -33,7 +33,7 @@ namespace Fabric
       
     protected:
     
-      Producer( GC::Object::Class const *myClass, GC::Container *container, std::string const &id_ ); 
+      Producer( Object::Class const *myClass ); 
     
       virtual char const *getKind() const = 0;
       virtual void toJSONImpl( Util::JSONObjectGenerator &jog ) const = 0;

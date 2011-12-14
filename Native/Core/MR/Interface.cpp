@@ -4,7 +4,7 @@
  
 #include <Fabric/Core/MR/Interface.h>
 #include <Fabric/Core/MR/ConstArrayProducer.h>
-#include <Fabric/Core/MR/Object.h>
+#include <Fabric/Core/GC/Object.h>
 #include <Fabric/Core/RT/Manager.h>
 #include <Fabric/Core/Util/JSONGenerator.h>
 #include <Fabric/Core/Util/Parse.h>
@@ -33,14 +33,7 @@ namespace Fabric
       {
         jsonExec( cmd, arg, resultJAG );
       }
-      else
-      {
-        std::string const &id_ = dst[dstOffset];
-        RC::Handle<MR::Object> object = GC::DynCast<MR::Object>( m_gcContainer.maybeGetObject( id_ ) );
-        if ( !object )
-          throw Exception( "object " + _(id_) + " does not exist or has been disposed" );
-        object->jsonRoute( dst, dstOffset+1, cmd, arg, resultJAG );
-      }
+      else m_gcContainer.jsonRoute( dst, dstOffset, cmd, arg, resultJAG );
     }
       
     void Interface::jsonExec(
@@ -92,12 +85,11 @@ namespace Fabric
       }
       
       RC::Handle<ConstArrayProducer> constArrayProducer = ConstArrayProducer::Create(
-        &m_gcContainer,
-        id_,
         m_rtManager,
         elementTypeRTDesc,
         dataJSONArray
         );
+      constArrayProducer->reg( &m_gcContainer, id_ );
     }
   };
 };

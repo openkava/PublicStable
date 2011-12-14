@@ -9,10 +9,10 @@ namespace Fabric
 {
   namespace MR
   {
-    FABRIC_GC_OBJECT_GET_CLASS_IMPL( Producer, Object );
+    FABRIC_MR_OBJECT_GET_CLASS_IMPL( Producer, Object );
 
-    Producer::Producer( GC::Object::Class const *myClass, GC::Container *container, std::string const &id_ )
-      : Object( myClass, container, id_ )
+    Producer::Producer( Object::Class const *myClass )
+      : Object( myClass )
     {
     }
 
