@@ -35,6 +35,7 @@ namespace Fabric
     
       static RC::Handle<ConstArrayProducer> Create(
         GC::Container *container,
+        std::string const &id_,
         RC::ConstHandle<RT::Manager> const &rtManager,
         RC::ConstHandle<RT::Desc> const &elementDesc,
         RC::ConstHandle<JSON::Array> const &jsonArray
@@ -48,6 +49,7 @@ namespace Fabric
       ConstArrayProducer(
         GC::Object::Class const *myClass,
         GC::Container *container,
+        std::string const &id_,
         RC::ConstHandle<RT::Manager> const &rtManager,
         RC::ConstHandle<RT::Desc> const &elementDesc,
         RC::ConstHandle<JSON::Array> const &jsonArray

@@ -9,10 +9,10 @@ namespace Fabric
 {
   namespace MR
   {
-    FABRIC_GC_OBJECT_GET_CLASS_IMPL( Producer, GC::Object );
+    FABRIC_GC_OBJECT_GET_CLASS_IMPL( Producer, Object );
 
-    Producer::Producer( GC::Object::Class const *myClass, GC::Container *container )
-      : GC::Object( myClass, container )
+    Producer::Producer( GC::Object::Class const *myClass, GC::Container *container, std::string const &id_ )
+      : Object( myClass, container, id_ )
     {
     }
 
@@ -26,6 +26,26 @@ namespace Fabric
       }
      
       toJSONImpl( jog );
+    }
+      
+    void Producer::jsonExec(
+      std::string const &cmd,
+      RC::ConstHandle<JSON::Value> const &arg,
+      Util::JSONArrayGenerator &resultJAG
+      )
+    {
+      if ( cmd == "getJSONDesc" )
+        jsonExecGetJSONDesc( arg, resultJAG );
+      else Object::jsonExec( cmd, arg, resultJAG );
+    }
+    
+    void Producer::jsonExecGetJSONDesc(
+      RC::ConstHandle<JSON::Value> const &arg,
+      Util::JSONArrayGenerator &resultJAG
+      )
+    {
+      Util::JSONGenerator jg = resultJAG.makeElement();
+      toJSON( jg );
     }
   };
 };

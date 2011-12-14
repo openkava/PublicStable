@@ -16,11 +16,12 @@ namespace Fabric
       return &myClass;
     }
 
-    Object::Object( Class const *class_, Container *container )
+    Object::Object( Class const *class_, Container *container, std::string const &id_ )
       : m_class( class_ )
       , m_container( container )
+      , m_containerObjectID( id_ )
     {
-      m_containerObjectID = m_container->registerObject( this );
+      m_container->registerObject( m_containerObjectID, this );
     }
 
     Object::~Object()

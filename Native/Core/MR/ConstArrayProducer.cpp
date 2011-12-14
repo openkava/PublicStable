@@ -16,22 +16,24 @@ namespace Fabric
     
     RC::Handle<ConstArrayProducer> ConstArrayProducer::Create(
       GC::Container *container,
+      std::string const &id_,
       RC::ConstHandle<RT::Manager> const &rtManager,
       RC::ConstHandle<RT::Desc> const &elementDesc,
       RC::ConstHandle<JSON::Array> const &jsonArray
       )
     {
-      return new ConstArrayProducer( GetClass(), container, rtManager, elementDesc, jsonArray );
+      return new ConstArrayProducer( GetClass(), container, id_, rtManager, elementDesc, jsonArray );
     }
     
     ConstArrayProducer::ConstArrayProducer(
       GC::Object::Class const *myClass,
       GC::Container *container,
+      std::string const &id_,
       RC::ConstHandle<RT::Manager> const &rtManager,
       RC::ConstHandle<RT::Desc> const &elementDesc,
       RC::ConstHandle<JSON::Array> const &jsonArray
       )
-      : ArrayProducer( myClass, container, elementDesc )
+      : ArrayProducer( myClass, container, id_, elementDesc )
       , m_variableArrayDesc( rtManager->getVariableArrayOf( elementDesc ) )
     {
       m_data.resize( m_variableArrayDesc->getAllocSize(), 0 );

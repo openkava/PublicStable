@@ -35,7 +35,12 @@ namespace Fabric
     
     protected:
     
-      ValueProducer( GC::Object::Class const *myClass, GC::Container *container, RC::ConstHandle<RT::Desc> const &valueDesc );
+      ValueProducer(
+        GC::Object::Class const *myClass,
+        GC::Container *container,
+        std::string const &id_,
+        RC::ConstHandle<RT::Desc> const &valueDesc
+        );
     
     private:
     
