@@ -4,6 +4,7 @@
  
 #include <Fabric/Core/MR/ArrayProducer.h>
 #include <Fabric/Core/RT/Desc.h>
+#include <Fabric/Base/JSON/Integer.h>
 #include <Fabric/Core/Util/JSONGenerator.h>
 
 namespace Fabric
@@ -36,6 +37,8 @@ namespace Fabric
     {
       if ( cmd == "getCount" )
         jsonExecGetCount( arg, resultJAG );
+      else if ( cmd == "produce" )
+        jsonExecProduce( arg, resultJAG );
       else Producer::jsonExec( cmd, arg, resultJAG );
     }
     
@@ -46,6 +49,17 @@ namespace Fabric
     {
       Util::JSONGenerator jg = resultJAG.makeElement();
       jg.makeInteger( count() );
+    }
+    
+    void ArrayProducer::jsonExecProduce(
+      RC::ConstHandle<JSON::Value> const &arg,
+      Util::JSONArrayGenerator &resultJAG
+      )
+    {
+      size_t index = arg->toInteger()->value();
+          
+      Util::JSONGenerator jg = resultJAG.makeElement();
+      produceJSON( index, jg );
     }
   };
 };
