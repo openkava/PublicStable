@@ -38,6 +38,7 @@ namespace Fabric
     
       virtual size_t count() const = 0;
       virtual void produce( size_t index, void *data ) const = 0;
+      virtual void produceJSON( size_t index, Util::JSONGenerator &jg ) const = 0;
             
       // Non-virtual functions
       
@@ -56,6 +57,10 @@ namespace Fabric
     
     private:
     
+      void jsonExecProduce(
+        RC::ConstHandle<JSON::Value> const &arg,
+        Util::JSONArrayGenerator &resultJAG
+        );
       void jsonExecGetCount(
         RC::ConstHandle<JSON::Value> const &arg,
         Util::JSONArrayGenerator &resultJAG

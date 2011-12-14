@@ -63,7 +63,12 @@ namespace Fabric
     
     void ConstArrayProducer::produce( size_t index, void *data ) const
     {
-      return m_variableArrayDesc->setData( m_variableArrayDesc->getMemberData( &m_data[0], index ), data );
+      return getElementDesc()->setData( m_variableArrayDesc->getMemberData( &m_data[0], index ), data );
+    }
+    
+    void ConstArrayProducer::produceJSON( size_t index, Util::JSONGenerator &jg ) const
+    {
+      return getElementDesc()->generateJSON( m_variableArrayDesc->getMemberData( &m_data[0], index ), jg );
     }
   };
 };
