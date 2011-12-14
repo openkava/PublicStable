@@ -5,7 +5,7 @@
 #ifndef _FABRIC_MR_PRODUCER_H
 #define _FABRIC_MR_PRODUCER_H
 
-#include <Fabric/Core/GC/Object.h>
+#include <Fabric/Core/MR/Object.h>
 
 namespace Fabric
 {
@@ -17,15 +17,23 @@ namespace Fabric
   
   namespace MR
   {
-    class Producer : public GC::Object
+    class Producer : public MR::Object
     {
       FABRIC_GC_OBJECT_GET_CLASS_DECL()
+      
+      // Virtual functions: Object
+
+      virtual void jsonExec(
+        std::string const &cmd,
+        RC::ConstHandle<JSON::Value> const &arg,
+        Util::JSONArrayGenerator &resultJAG
+        );
       
       // Virtual functions: Producer
       
     protected:
     
-      Producer( GC::Object::Class const *myClass, GC::Container *container ); 
+      Producer( GC::Object::Class const *myClass, GC::Container *container, std::string const &id_ ); 
     
       virtual char const *getKind() const = 0;
       virtual void toJSONImpl( Util::JSONObjectGenerator &jog ) const = 0;
@@ -35,6 +43,13 @@ namespace Fabric
     public:
     
       void toJSON( Util::JSONGenerator &jg ) const;
+      
+    private:
+
+      void jsonExecGetJSONDesc(
+        RC::ConstHandle<JSON::Value> const &arg,
+        Util::JSONArrayGenerator &resultJAG
+        );
     };
   };
 };

@@ -6,12 +6,13 @@
 #define _FABRIC_DG_CONTEXT_H
 
 #include <Fabric/Core/JSON/CommandChannel.h>
+#include <Fabric/Core/MR/Interface.h>
 #include <Fabric/Core/CG/CompileOptions.h>
-#include <Fabric/Base/RC/WeakHandleSet.h>
-#include <Fabric/Base/Util/AtomicSize.h>
 #include <Fabric/Core/Util/JSONGenerator.h>
 #include <Fabric/Core/Util/Mutex.h>
 #include <Fabric/Core/Util/UnorderedMap.h>
+#include <Fabric/Base/RC/WeakHandleSet.h>
+#include <Fabric/Base/Util/AtomicSize.h>
 
 #include <vector>
 
@@ -186,6 +187,8 @@ namespace Fabric
       Util::JSONArrayGenerator *m_pendingNotificationsJSONArrayGenerator;
       
       static std::string const s_wrapFabricClientJSSource;
+      
+      MR::Interface m_mrInterface;
     };
   };
 };

@@ -1525,6 +1525,82 @@ function (fabricClient, logCallback, debugLogCallback) {
       state.contextID = diff.contextID;
   };
 
+  var MR = (function() {
+    var MR = {
+      gcObjects: {},
+      nextID: 0
+    };
+
+    MR.queueCommand = function(cmd, arg, unwind, callback) {
+      queueCommand(['MR'], cmd, arg, unwind, callback);
+    };
+
+    MR.patch = function(diff) {
+    };
+
+    MR.handleStateNotification = function(state) {
+      MR.patch(state);
+    };
+
+    MR.handle = function(cmd, arg) {
+      switch (cmd) {
+        case 'delta':
+          this.patch(arg);
+          break;
+        default:
+          throw 'unrecognized';
+      }
+    };
+
+    MR.route = function(src, cmd, arg) {
+      if (src.length == 0) {
+        try {
+          handle(cmd, arg);
+        }
+        catch (e) {
+          throw "command '" + cmd + "': " + e;
+        }
+      }
+      else
+        throw 'unroutable';
+    };
+
+    MR.pub = {
+      createConstArrayProducer: function(elementType, data) {
+        var constArrayProducer = {
+          id: "" + MR.nextID++,
+          queueCommand: function (cmd, arg, unwind, callback) {
+            queueCommand(['MR',this.id], cmd, arg, unwind, callback);
+          }
+        };
+        
+        constArrayProducer.pub = {
+          getJSONDesc: function () {
+            var jsonDesc;
+            constArrayProducer.queueCommand('getJSONDesc', null, null, function (result) {
+              jsonDesc = result;
+            });
+            executeQueuedCommands();
+            return jsonDesc;
+          }
+        };
+        
+        MR.gcObjects[constArrayProducer.id] = constArrayProducer;
+        
+        MR.queueCommand('createConstArrayProducer', {
+          id: constArrayProducer.id,
+          elementType: elementType,
+          data: data
+        }, function () {
+        }, function (result) {
+        });
+        return constArrayProducer.pub;
+      }
+    };
+
+    return MR;
+  })();
+
   var createVP = function() {
     var VP = {
       viewPorts: {},
@@ -1794,6 +1870,7 @@ function (fabricClient, logCallback, debugLogCallback) {
     EX: EX.pub,
     IO: IO.pub,
     DependencyGraph: DG.pub,
+    MR: MR.pub,
     VP: VP.pub,
     getLicenses: function() {
       return state.licenses;

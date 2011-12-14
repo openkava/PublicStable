@@ -21,15 +21,15 @@ namespace Fabric
       // that scripts forget to call dispose() on their objects...
     }
       
-    size_t Container::registerObject( RC::Handle<Object> const &object )
+    void Container::registerObject( std::string const &id_, RC::Handle<Object> const &object )
     {
       Util::Mutex::Lock mutexLock( m_mutex );
-      size_t id_ = m_nextID++;
+      if ( m_idToObjectMap.find( id_ ) != m_idToObjectMap.end() )
+        throw Exception( "GC::Object " + _(id_) + " already in use" );
       m_idToObjectMap[id_] = object;
-      return id_;
     }
     
-    RC::Handle<Object> Container::maybeGetObject( size_t id_ ) const
+    RC::Handle<Object> Container::maybeGetObject( std::string const &id_ ) const
     {
       Util::Mutex::Lock mutexLock( m_mutex );
       RC::Handle<Object> result;
@@ -39,7 +39,7 @@ namespace Fabric
       return result;
     }
     
-    RC::Handle<Object> Container::getObject( size_t id_ ) const
+    RC::Handle<Object> Container::getObject( std::string const &id_ ) const
     {
       RC::Handle<Object> result = maybeGetObject( id_ );
       if ( !result )
@@ -47,7 +47,7 @@ namespace Fabric
       return result;
     }
     
-    void Container::disposeObject( size_t id_ )
+    void Container::disposeObject( std::string const &id_ )
     {
       Util::Mutex::Lock mutexLock( m_mutex );
       IDToObjectMap::iterator it = m_idToObjectMap.find( id_ );
