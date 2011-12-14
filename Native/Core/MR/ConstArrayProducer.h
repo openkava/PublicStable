@@ -27,15 +27,13 @@ namespace Fabric
   {
     class ConstArrayProducer : public ArrayProducer
     {
-      FABRIC_GC_OBJECT_GET_CLASS_DECL()
+      FABRIC_MR_OBJECT_GET_CLASS_DECL()
       
       // Virtual functions: ArrayProducer
     
     public:
     
       static RC::Handle<ConstArrayProducer> Create(
-        GC::Container *container,
-        std::string const &id_,
         RC::ConstHandle<RT::Manager> const &rtManager,
         RC::ConstHandle<RT::Desc> const &elementDesc,
         RC::ConstHandle<JSON::Array> const &jsonArray
@@ -48,9 +46,7 @@ namespace Fabric
     protected:
     
       ConstArrayProducer(
-        GC::Object::Class const *myClass,
-        GC::Container *container,
-        std::string const &id_,
+        Object::Class const *myClass,
         RC::ConstHandle<RT::Manager> const &rtManager,
         RC::ConstHandle<RT::Desc> const &elementDesc,
         RC::ConstHandle<JSON::Array> const &jsonArray
