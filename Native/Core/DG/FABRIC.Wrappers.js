@@ -1575,6 +1575,14 @@ function (fabricClient, logCallback, debugLogCallback) {
         };
         
         constArrayProducer.pub = {
+          getCount: function () {
+            var count;
+            constArrayProducer.queueCommand('getCount', null, null, function (result) {
+              count = result;
+            });
+            executeQueuedCommands();
+            return count;
+          },
           getJSONDesc: function () {
             var jsonDesc;
             constArrayProducer.queueCommand('getJSONDesc', null, null, function (result) {
