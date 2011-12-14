@@ -6,6 +6,7 @@
 #define _FABRIC_CG_OBJECT_H
 
 #include <Fabric/Base/RC/Object.h>
+#include <Fabric/Base/RC/Handle.h>
 
 namespace Fabric
 {
@@ -14,7 +15,7 @@ namespace Fabric
     class Container;
     
 #define FABRIC_GC_OBJECT_GET_CLASS_DECL() \
-    protected: \
+    public: \
       static Class const *GetClass();
 #define FABRIC_GC_OBJECT_GET_CLASS_IMPL(class_,parentClass) \
       GC::Object::Class const *class_::GetClass() \
@@ -35,57 +36,14 @@ namespace Fabric
       FABRIC_GC_OBJECT_GET_CLASS_DECL()
       
     public:
-    
-      template<class T> bool isa( Object *object )
-      {
-        Class const *targetClass = T::GetClass();
-        Class const *objectClass = object->m_class;
-        while ( objectClass )
-        {
-          if ( objectClass == targetClass )
-            return true;
-          objectClass = objectClass->parent;
-        }
-        return false;
-      }
 
-      template<class T> T *cast( Object *object )
-      {
-        T *result = 0;
-        Class const *targetClass = T::GetClass();
-        Class const *objectClass = object->m_class;
-        while ( objectClass )
-        {
-          if ( objectClass == targetClass )
-          {
-            result = static_cast<T *>( object );
-            break;
-          }
-          objectClass = objectClass->parent;
-        }
-        FABRIC_ASSERT( result );
-        return result;
-      }
-
-      template<class T> T *dyn_cast( Object *object )
-      {
-        T *result = 0;
-        Class const *targetClass = T::GetClass();
-        Class const *objectClass = object->m_class;
-        while ( objectClass )
-        {
-          if ( objectClass == targetClass )
-          {
-            result = static_cast<T *>( object );
-            break;
-          }
-          objectClass = objectClass->parent;
-        }
-        return result;
-      }
-
-      Object( Class const *myClass, Container *container );
+      Object( Class const *myClass, Container *container, std::string const &id_ );
       ~Object();
+      
+      Class const *getClass() const
+      {
+        return m_class;
+      }
       
       void dispose();
       
@@ -93,8 +51,40 @@ namespace Fabric
     
       Class const *m_class;
       Container *m_container;
-      size_t m_containerObjectID;
+      std::string m_containerObjectID;
     };
+
+    template<class T> RC::Handle<T> DynCast( RC::Handle<Object> const &object )
+    {
+      RC::Handle<T> result = 0;
+      if ( object )
+      {
+        Object::Class const *targetClass = T::GetClass();
+        Object::Class const *objectClass = object->getClass();
+        while ( objectClass )
+        {
+          if ( objectClass == targetClass )
+          {
+            result = RC::Handle<T>::StaticCast( object );
+            break;
+          }
+          objectClass = objectClass->parent;
+        }
+      }
+      return result;
+    }
+  
+    template<class T> bool IsA( RC::Handle<Object> const &object )
+    {
+      return !!DynCast<T>( object );
+    }
+
+    template<class T> RC::Handle<T> Cast( RC::Handle<Object> const &object )
+    {
+      RC::Handle<T> result = DynCast<T>( object );
+      FABRIC_ASSERT( result );
+      return result;
+    }
   }
 }
 

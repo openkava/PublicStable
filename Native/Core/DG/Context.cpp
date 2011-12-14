@@ -85,6 +85,7 @@ namespace Fabric
       , m_notificationBracketCount( 0 )
       , m_pendingNotificationsMutex( "pending notifications" )
       , m_pendingNotificationsJSON( 0 )
+      , m_mrInterface( m_rtManager )
     {
       registerCoreTypes();
       
@@ -385,6 +386,8 @@ namespace Fabric
           m_rtManager->jsonRoute( dst, dstOffset + 1, cmd, arg, resultJAG );
         else if ( dst[dstOffset] == "IO" )
           m_ioManager->jsonRoute( dst, dstOffset + 1, cmd, arg, resultJAG );
+        else if ( dst[dstOffset] == "MR" )
+          m_mrInterface.jsonRoute( dst, dstOffset + 1, cmd, arg, resultJAG );
         else throw Exception( "unroutable" );
       }
     }

@@ -10,6 +10,7 @@
 #include <Fabric/Base/RC/Handle.h>
 
 #include <map>
+#include <string>
 
 namespace Fabric
 {
@@ -17,22 +18,22 @@ namespace Fabric
   {
     class Container
     {
-      typedef std::map< size_t, RC::Handle<GC::Object> > IDToObjectMap;
+      typedef std::map< std::string, RC::Handle<GC::Object> > IDToObjectMap;
       
     public:
     
       Container();
       ~Container();
       
-      size_t registerObject( RC::Handle<Object> const &object );
-      RC::Handle<Object> maybeGetObject( size_t id_ ) const;
-      RC::Handle<Object> getObject( size_t id_ ) const;
-      void disposeObject( size_t id_ );
+      void registerObject( std::string const &id_, RC::Handle<Object> const &object );
+      RC::Handle<Object> maybeGetObject( std::string const &id_ ) const;
+      RC::Handle<Object> getObject( std::string const &id_ ) const;
+      void disposeObject( std::string const &id_ );
       
     private:
     
       mutable Util::Mutex m_mutex;
-      size_t m_nextID;
+      std::string m_nextID;
       IDToObjectMap m_idToObjectMap;
     };
   }

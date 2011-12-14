@@ -11,8 +11,13 @@ namespace Fabric
   {
     FABRIC_GC_OBJECT_GET_CLASS_IMPL( ValueProducer, Producer );
     
-    ValueProducer::ValueProducer( GC::Object::Class const *myClass, GC::Container *container, RC::ConstHandle<RT::Desc> const &valueDesc )
-      : Producer( myClass, container )
+    ValueProducer::ValueProducer(
+      GC::Object::Class const *myClass,
+      GC::Container *container,
+      std::string const &id_,
+      RC::ConstHandle<RT::Desc> const &valueDesc
+      )
+      : Producer( myClass, container, id_ )
       , m_valueDesc( valueDesc )
     {
     }
