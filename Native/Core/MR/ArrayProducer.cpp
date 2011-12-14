@@ -4,6 +4,7 @@
  
 #include <Fabric/Core/MR/ArrayProducer.h>
 #include <Fabric/Core/RT/Desc.h>
+#include <Fabric/Core/Util/JSONGenerator.h>
 
 namespace Fabric
 {
@@ -25,6 +26,26 @@ namespace Fabric
     RC::ConstHandle<RT::Desc> ArrayProducer::getElementDesc() const
     {
       return m_elementDesc;
+    }
+      
+    void ArrayProducer::jsonExec(
+      std::string const &cmd,
+      RC::ConstHandle<JSON::Value> const &arg,
+      Util::JSONArrayGenerator &resultJAG
+      )
+    {
+      if ( cmd == "getCount" )
+        jsonExecGetCount( arg, resultJAG );
+      else Producer::jsonExec( cmd, arg, resultJAG );
+    }
+    
+    void ArrayProducer::jsonExecGetCount(
+      RC::ConstHandle<JSON::Value> const &arg,
+      Util::JSONArrayGenerator &resultJAG
+      )
+    {
+      Util::JSONGenerator jg = resultJAG.makeElement();
+      jg.makeInteger( count() );
     }
   };
 };
