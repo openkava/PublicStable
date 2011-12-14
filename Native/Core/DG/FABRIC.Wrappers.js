@@ -1583,6 +1583,14 @@ function (fabricClient, logCallback, debugLogCallback) {
             executeQueuedCommands();
             return count;
           },
+          produce: function (index) {
+            var result;
+            constArrayProducer.queueCommand('produce', index, null, function (_) {
+              result = _;
+            });
+            executeQueuedCommands();
+            return result;
+          },
           getJSONDesc: function () {
             var jsonDesc;
             constArrayProducer.queueCommand('getJSONDesc', null, null, function (result) {
