@@ -1,0 +1,4 @@
+{ 'foo.kl': 'operator foo() {}' }
+{ 'bar.kl': 'operator bar() {}', 'foo.kl': 'operator foo() {}' }
+{ 'bar.kl': 'operator bar() {}' }
+{ 'bar.kl': 'operator bar() {}' }

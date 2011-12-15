@@ -29,6 +29,8 @@ namespace Fabric
 
     class Object : public RC::Object
     {
+      friend class Container;
+      
     public:
 
       Object();
@@ -49,6 +51,10 @@ namespace Fabric
         RC::ConstHandle<JSON::Value> const &arg,
         Util::JSONArrayGenerator &resultJAG
         );
+        
+    protected:
+    
+      void dispose();
       
     private:
     

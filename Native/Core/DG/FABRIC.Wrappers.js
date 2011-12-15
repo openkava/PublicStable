@@ -1556,16 +1556,16 @@ function (fabricClient, logCallback, debugLogCallback) {
     };
 
     KLC.pub = {
-      createCompilation: function() {
+      createCompilation: function (sourceName, sourceCode) {
         var compilation = GC.createObject('KLC');
         
         compilation.sourceCodes = {
         };
         
-        compilation.pub.add = function (sourceName, sourceCode) {
+        compilation.pub.addSource = function (sourceName, sourceCode) {
           var oldSourceCode = compilation.sourceCodes[sourceName];
           compilation.sourceCodes[sourceName] = sourceCode;
-          compilation.queueCommand('add', {
+          compilation.queueCommand('addSource', {
             sourceName: sourceName,
             sourceCode: sourceCode
           }, function () {
@@ -1573,11 +1573,37 @@ function (fabricClient, logCallback, debugLogCallback) {
           });
         };
         
-        queueCommand(['KLC'],'createCompilation', {
+        compilation.pub.removeSource = function (sourceName) {
+          var oldSourceCode = compilation.sourceCodes[sourceName];
+          delete compilation.sourceCodes[sourceName];
+          compilation.queueCommand('removeSource', {
+            sourceName: sourceName,
+          }, function () {
+            compilation.sourceCodes[sourceName] = oldSourceCode;
+          });
+        };
+        
+        compilation.pub.getSources = function (sourceName, sourceCode) {
+          var sources;
+          compilation.queueCommand('getSources', null, null, function (result) {
+            sources = result;
+          });
+          executeQueuedCommands();
+          return sources;
+        };
+        
+        var arg = {
           id: compilation.id
-        }, function () {
+        };
+        if (sourceName != undefined)
+          arg.sourceName = sourceName;
+        if (sourceCode != undefined)
+          arg.sourceCode = sourceCode;
+        
+        queueCommand(['KLC'],'createCompilation', arg, function () {
           delete compilation['id'];
         });
+        
         return compilation.pub;
       }
     };

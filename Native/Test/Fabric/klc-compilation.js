@@ -1,0 +1,11 @@
+FC = require('Fabric').createClient();
+KLC = FC.KLC.createCompilation("foo.kl", "operator foo() {}");
+console.log(KLC.getSources());
+KLC.addSource("bar.kl", "operator bar() {}");
+console.log(KLC.getSources());
+KLC.removeSource("foo.kl");
+console.log(KLC.getSources());
+KLC.addSource("bar.kl", "operator bar() {}");
+console.log(KLC.getSources());
+FC.flush();
+FC.close();

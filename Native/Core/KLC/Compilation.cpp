@@ -21,6 +21,10 @@ namespace Fabric
       , m_compileOptions( compileOptions )
     {
     }
+
+    Compilation::~Compilation()
+    {
+    }
     
     void Compilation::add( std::string const &sourceName, std::string const &sourceCode )
     {
@@ -70,12 +74,16 @@ namespace Fabric
       Util::JSONArrayGenerator &resultJAG
       )
     {
-      if ( cmd == "add" )
-        jsonExecAdd( arg, resultJAG );
+      if ( cmd == "addSource" )
+        jsonExecAddSource( arg, resultJAG );
+      else if ( cmd == "removeSource" )
+        jsonExecRemoveSource( arg, resultJAG );
+      else if ( cmd == "getSources" )
+        jsonExecGetSources( arg, resultJAG );
       else GC::Object::jsonExec( cmd, arg, resultJAG );
     }
     
-    void Compilation::jsonExecAdd(
+    void Compilation::jsonExecAddSource(
       RC::ConstHandle<JSON::Value> const &arg,
       Util::JSONArrayGenerator &resultJAG
       )
@@ -95,7 +103,7 @@ namespace Fabric
       std::string sourceCode;
       try
       {
-        sourceName = argObject->get("sourceCode")->toString()->value();
+        sourceCode = argObject->get("sourceCode")->toString()->value();
       }
       catch ( Exception e )
       {
@@ -103,6 +111,40 @@ namespace Fabric
       }
       
       add( sourceName, sourceCode );
+    }
+    
+    void Compilation::jsonExecRemoveSource(
+      RC::ConstHandle<JSON::Value> const &arg,
+      Util::JSONArrayGenerator &resultJAG
+      )
+    {
+      RC::ConstHandle<JSON::Object> argObject = arg->toObject();
+      
+      std::string sourceName;
+      try
+      {
+        sourceName = argObject->get("sourceName")->toString()->value();
+      }
+      catch ( Exception e )
+      {
+        throw "sourceName: " + e;
+      }
+      
+      remove( sourceName );
+    }
+    
+    void Compilation::jsonExecGetSources(
+      RC::ConstHandle<JSON::Value> const &arg,
+      Util::JSONArrayGenerator &resultJAG
+      )
+    {
+      Util::JSONGenerator jg = resultJAG.makeElement();
+      Util::JSONObjectGenerator jog = jg.makeObject();
+      for ( SourceMap::const_iterator it = m_sources.begin(); it != m_sources.end(); ++it )
+      {
+        Util::JSONGenerator subJG = jog.makeMember( it->first );
+        subJG.makeString( it->second.sourceCode );
+      }
     }
   }
 }

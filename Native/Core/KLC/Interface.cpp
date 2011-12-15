@@ -67,7 +67,33 @@ namespace Fabric
         throw "id: " + e;
       }
       
+      std::string sourceName;
+      try
+      {
+        RC::ConstHandle<JSON::Value> sourceNameJSONValue = argObject->maybeGet( "sourceName" );
+        if ( sourceNameJSONValue )
+          sourceName = sourceNameJSONValue->toString()->value();
+      }
+      catch ( Exception e )
+      {
+        throw "sourceName: " + e;
+      }
+      
+      std::string sourceCode;
+      try
+      {
+        RC::ConstHandle<JSON::Value> sourceCodeJSONValue = argObject->maybeGet( "sourceCode" );
+        if ( sourceCodeJSONValue )
+          sourceCode = sourceCodeJSONValue->toString()->value();
+      }
+      catch ( Exception e )
+      {
+        throw "sourceCode: " + e;
+      }
+      
       RC::Handle<Compilation> compilation = new Compilation( m_cgManager, m_compileOptions );
+      if ( sourceName.length() > 0 || sourceCode.length() > 0 )
+        compilation->add( sourceName, sourceCode );
       compilation->reg( &m_gcContainer, id_ );
     }
   };
