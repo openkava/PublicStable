@@ -83,14 +83,14 @@ $(document).ready(function() {
   scene.constructNode("CameraManipulator", { targetNode:camera } );
   viewport.setCameraNode(camera);
 
-  var spotLightNode = scene.constructNode('SpotLight', {
+  var spotLightNode = scene.constructNode('DirectionalLight', {
     position: new FABRIC.RT.Vec3(10, 20, 5),
     target: new FABRIC.RT.Vec3(0, 2, -6),
+    direction: (new FABRIC.RT.Vec3(0, 2, -6)).subtract(new FABRIC.RT.Vec3(10, 20, 5)).unit(),
     coneAngle: Math.degToRad(80.0),
     farDistance: 60,
     resolution: 2048,
     castShadows: true,
-    displayShadowDebug: true,
     display: true
   });
 

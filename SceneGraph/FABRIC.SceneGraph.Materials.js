@@ -319,8 +319,15 @@ FABRIC.SceneGraph.registerNodeType('Material', {
           return lightNode.pub;
         };
         var setLightNodeFn = function(node) {
-          if (!node.isTypeOf(lightDef.type)) {
-            throw ('Incorrect type assignment. Must assign a ' + lightDef.type);
+          var supportedLightTypes = lightDef.type.split('|');
+          var supportedLight = false;
+          for(var i=0 ;i<supportedLightTypes.length; i++){
+            if (node.isTypeOf(supportedLightTypes[i])) {
+              supportedLight = true;
+            }
+          }
+          if(!supportedLight){
+            throw ('Incorrect type assignment. Must assign one of the following: ' + lightDef.type);
           }
           lightNode = scene.getPrivateInterface(node);
           lightStub.appendChildEventHandler(lightNode.getRedrawEventHandler());
