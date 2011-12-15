@@ -111,6 +111,7 @@ const Integer BULLET_SPHERE_SHAPE = 8;
 const Integer BULLET_CAPSULE_SHAPE = 10;
 const Integer BULLET_CONE_SHAPE = 11;
 const Integer BULLET_CYLINDER_SHAPE = 13;
+const Integer BULLET_TRIANGLEMESH_SHAPE = 21;
 const Integer BULLET_GIMPACT_SHAPE = 25;
 const Integer BULLET_PLANE_SHAPE = 28;
 const Integer BULLET_COMPOUND_SHAPE = 31;
