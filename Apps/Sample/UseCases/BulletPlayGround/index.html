@@ -119,7 +119,7 @@ FABRIC.SceneGraph.registerNodeType('ToonRenderer', {
     });
 
     var renderNode = scene.constructNode('BaseDeferredRenderer', {
-      colorBuffers: [{name: 'positions', nbChannels: 3}, {name: 'normals', nbChannels: 3}, {name: 'diffuse', nbChannels: 3}],
+      colorBuffers: [{name: 'positionsZ', nbChannels: 1}, {name: 'normals', nbChannels: 3}, {name: 'diffuse', nbChannels: 4, internalFormat: FABRIC.SceneGraph.OpenGLConstants.GL_RGBA8}],
       clearColor: FABRIC.RT.rgba(0.5,0.5,0.5,1.0)
     });
     var compositingMaterial = renderNode.pub.addPostPassMaterial('DeferredPostToonMaterial', {shadeFullScreen: true});
@@ -725,9 +725,10 @@ $(document).ready(function() {
     });
 
     // setup load and save
-    $("#presetSave").click(function(){
+    $("#presetSave").click(function(evt){
       if(isPlaying)
         return;
+      
       var bodiesToSave = {};
       if(selectionManager.getSelection().length == 0) {
         bodiesToSave = getRigidBodyJsonData(rigidBodies,true);
@@ -740,121 +741,104 @@ $(document).ready(function() {
         }
       }
 
-      $('#localStorageDescr').html('Save Preset');
-      $('#localStorageContent').html('<input id="localStorageName" type=text style="width:250px"/>');
-
-      viewport.hide();
-      $('#localStorageDialog').dialog({
-        modal: true
-      });
-      $('#localStorageCancel').button().click(function(){
-
-        $('#localStorageDialog').dialog('close');
-        viewport.show();
-      });
-      $('#localStorageOK').button().click(function(){
-        var presetName = $('#localStorageName').val();
-        if(presetName) {
-          // add this to our preset list
-          var presets = localStorage.getItem('playgroundPresetNames');
-          if(!presets)
-            presets = {};
-          else
-            presets = JSON.parse(presets);
-          presets[presetName] = 'playgroundPresetNames_'+presetName;
-          localStorage.setItem('playgroundPresetNames',JSON.stringify(presets));
-          localStorage.setItem(presets[presetName],JSON.stringify(bodiesToSave));
-        }
-        $('#localStorageDialog').dialog('close');
-        viewport.show();
-      });
+      if(evt.altKey) {
+        var path = scene.IO.queryUserFileAndFolderHandle(scene.IO.forOpenWithWriteAccess, "Bullet Editor Data", "json", "bulletScene");
+        scene.IO.putTextFile(JSON.stringify(bodiesToSave), path);
+      } else {
+        $('#localStorageDescr').html('Save Preset');
+        $('#localStorageContent').html('<input id="localStorageName" type=text style="width:250px"/>');
+  
+        viewport.hide();
+        $('#localStorageDialog').dialog({
+          modal: true
+        });
+        $('#localStorageCancel').button().click(function(){
+  
+          $('#localStorageDialog').dialog('close');
+          viewport.show();
+        });
+        $('#localStorageOK').button().click(function(){
+          var presetName = $('#localStorageName').val();
+          if(presetName) {
+            // add this to our preset list
+            var presets = localStorage.getItem('playgroundPresetNames');
+            if(!presets)
+              presets = {};
+            else
+              presets = JSON.parse(presets);
+            presets[presetName] = 'playgroundPresetNames_'+presetName;
+            localStorage.setItem('playgroundPresetNames',JSON.stringify(presets));
+            localStorage.setItem(presets[presetName],JSON.stringify(bodiesToSave));
+          }
+          $('#localStorageDialog').dialog('close');
+          viewport.show();
+        });
+      }
     });
-    $("#presetLoad").click(function(){
+    $("#presetLoad").click(function(evt){
       if(isPlaying)
         return;
-
-      $('#localStorageDescr').html('Load Preset');
-      var presets = localStorage.getItem('playgroundPresetNames');
-      if(!presets)
-        return;
-      presets = JSON.parse(presets);
-      var html = "Please choose the preset to load in the list below:<br><br>";
-      html += '<select id="localStorageName" style="width:250px">';
-      for(var name in presets) {
-        html += '<option value="'+presets[name]+'">'+name+'</option>';
-      }
-      html += '</select>';
-      $('#localStorageContent').html(html);
-
-      viewport.hide();
-      $('#localStorageDialog').dialog({
-        modal: true
-      });
-      $('#localStorageCancel').button().click(function(){
-
-        $('#localStorageDialog').dialog('close');
-        viewport.show();
-      });
-      $('#localStorageOK').button().click(function(){
-        var presetName = $('#localStorageName').val();
-        if(presetName) {
-          var bodiesToLoad = localStorage.getItem(presetName);
-          if(bodiesToLoad) {
-            bodiesToLoad = JSON.parse(bodiesToLoad);
-
-            var newBodies = processRigidBodyMessages([{action: 'rigidBodiesCreated', data: bodiesToLoad}]);
-            selectionManager.clearSelection();
-            var selection = [];
-            for(var key in newBodies) {
-              selection.push(newBodies[key].instance);
-            }
-            selectionManager.select(selection);
-            if(ws) {
-              ws.sendMessage("rigidBodiesCreated",newBodies);
+      if(evt.altKey) {
+        var path = scene.IO.queryUserFileAndFolderHandle(scene.IO.forOpen, "Bullet Editor Data", "json", "bulletScene");
+        var jsonData = JSON.parse(scene.IO.getTextFile(path));
+        var newBodies = processRigidBodyMessages([{action: 'rigidBodiesCreated', data: jsonData}]);
+        selectionManager.clearSelection();
+        var selection = [];
+        for(var key in newBodies) {
+          selection.push(newBodies[key].instance);
+        }
+        selectionManager.select(selection);
+        if(ws) {
+          ws.sendMessage("rigidBodiesCreated",newBodies);
+        }
+        viewport.redraw();
+      } else {
+        $('#localStorageDescr').html('Load Preset');
+        var presets = localStorage.getItem('playgroundPresetNames');
+        if(!presets)
+          return;
+        presets = JSON.parse(presets);
+        var html = "Please choose the preset to load in the list below:<br><br>";
+        html += '<select id="localStorageName" style="width:250px">';
+        for(var name in presets) {
+          html += '<option value="'+presets[name]+'">'+name+'</option>';
+        }
+        html += '</select>';
+        $('#localStorageContent').html(html);
+  
+        viewport.hide();
+        $('#localStorageDialog').dialog({
+          modal: true
+        });
+        $('#localStorageCancel').button().click(function(){
+  
+          $('#localStorageDialog').dialog('close');
+          viewport.show();
+        });
+        $('#localStorageOK').button().click(function(){
+          var presetName = $('#localStorageName').val();
+          if(presetName) {
+            var bodiesToLoad = localStorage.getItem(presetName);
+            if(bodiesToLoad) {
+              bodiesToLoad = JSON.parse(bodiesToLoad);
+  
+              var newBodies = processRigidBodyMessages([{action: 'rigidBodiesCreated', data: bodiesToLoad}]);
+              selectionManager.clearSelection();
+              var selection = [];
+              for(var key in newBodies) {
+                selection.push(newBodies[key].instance);
+              }
+              selectionManager.select(selection);
+              if(ws) {
+                ws.sendMessage("rigidBodiesCreated",newBodies);
+              }
             }
           }
-        }
-        $('#localStorageDialog').dialog('close');
-        viewport.show();
-      });
-    });
-    /*
-    $("#presetExport").click(function(){
-      if(isPlaying)
-        return;
-      var bodiesToSave = {};
-      if(selectionManager.getSelection().length == 0) {
-        bodiesToSave = getRigidBodyJsonData(rigidBodies,true);
-      } else {
-        for(var i=0;i<selectionManager.getSelection().length;i++) {
-          var key = selectionManager.getSelection()[i].getTransformNode().getName();
-          bodiesToSave[key] = {};
-          bodiesToSave[key].type = rigidBodies[key].type,
-          bodiesToSave[key].transform = rigidBodies[key].transformNode.getGlobalXfo()
-        }
+          $('#localStorageDialog').dialog('close');
+          viewport.show();
+        });
       }
-
-      var path = scene.IO.queryUserFileAndFolderHandle(scene.IO.forOpenWithWriteAccess, "Bullet Editor Data", "json", "bulletScene");
-      scene.IO.putTextFile(JSON.stringify(bodiesToSave), path);
     });
-    $("#presetImport").click(function(){
-      if(isPlaying)
-        return;
-      var path = scene.IO.queryUserFileAndFolderHandle(scene.IO.forOpen, "Bullet Editor Data", "json", "bulletScene");
-      var jsonData = JSON.parse(scene.IO.getTextFile(path));
-      var newBodies = processRigidBodyMessages([{action: 'rigidBodiesCreated', data: jsonData}]);
-      selectionManager.clearSelection();
-      var selection = [];
-      for(var key in newBodies) {
-        selection.push(newBodies[key].instance);
-      }
-      selectionManager.select(selection);
-      if(ws) {
-        ws.sendMessage("rigidBodiesCreated",newBodies);
-      }
-      viewport.redraw();
-    });
-    */
     $("#presetDuplicate").click(function(){
       if(isPlaying)
         return;
@@ -972,9 +956,10 @@ $(document).ready(function() {
           currentRigidBody.instance.setSelectable(true);
         currentRigidBody = undefined;
       },
-      activate: function(evt) {
+      activate: function(evt, ui) {
         // store the element's offset
-        currentDraggedId = evt.srcElement.getAttribute('id');
+        var draggedElem =  ui.draggable[0];
+        currentDraggedId = draggedElem.getAttribute('id');
         originalOffset[currentDraggedId] = $("#"+currentDraggedId).offset();
         dragStatus[currentDraggedId] = 'outside';
         selectionManager.setEnabled(false);
@@ -1049,7 +1034,8 @@ $(document).ready(function() {
     and pressing ALT at the same time.<br><br>
     You can save the selected rigid bodies to a preset. Simply name the preset as you wish. You can then
     later load the preset to recover a copy of the previously selected rigid bodies. Use the first and second
-    controls for this.<br><br>
+    controls for this. When holding the 'ALT' key while clicking on save or load, you can store/restore the rigid body
+    data to an external json file on your local disk, to share it with other people through a file.<br><br>
     Furthermore you can duplicate the selected rigid bodies, by clicking on the third control icon.<br><br>
     You can multi select rigid bodies by holding down the CTRL key while clicking on objects. The manipulators
     will then be applied to all objects in the selection.<br><br>
