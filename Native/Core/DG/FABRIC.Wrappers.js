@@ -1551,6 +1551,24 @@ function (fabricClient, logCallback, debugLogCallback) {
     };
   })();
 
+  var KLC = (function() {
+    var KLC = {
+    };
+
+    KLC.pub = {
+      createCompilation: function() {
+        var compilation = GC.createObject('KLC');
+        
+        queueCommand(['KLC'],'createCompilation', null, function () {
+          delete compilation['id'];
+        });
+        return compilation.pub;
+      }
+    };
+
+    return KLC;
+  })();
+
   var MR = (function() {
     var MR = {
     };
@@ -1869,6 +1887,7 @@ function (fabricClient, logCallback, debugLogCallback) {
     EX: EX.pub,
     IO: IO.pub,
     DependencyGraph: DG.pub,
+    KLC: KLC.pub,
     MR: MR.pub,
     VP: VP.pub,
     getLicenses: function() {

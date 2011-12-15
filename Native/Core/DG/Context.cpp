@@ -86,6 +86,7 @@ namespace Fabric
       , m_pendingNotificationsMutex( "pending notifications" )
       , m_pendingNotificationsJSON( 0 )
       , m_mrInterface( m_rtManager )
+      , m_klcInterface( m_cgManager, m_compileOptions )
     {
       registerCoreTypes();
       
@@ -380,14 +381,17 @@ namespace Fabric
       }
       else
       {
-        if ( dst[dstOffset] == "DG" )
+        std::string const &first = dst[dstOffset];
+        if ( first == "DG" )
           jsonRouteDG( dst, dstOffset + 1, cmd, arg, resultJAG );
-        else if ( dst[dstOffset] == "RT" )
+        else if ( first == "RT" )
           m_rtManager->jsonRoute( dst, dstOffset + 1, cmd, arg, resultJAG );
-        else if ( dst[dstOffset] == "IO" )
+        else if ( first == "IO" )
           m_ioManager->jsonRoute( dst, dstOffset + 1, cmd, arg, resultJAG );
-        else if ( dst[dstOffset] == "MR" )
+        else if ( first == "MR" )
           m_mrInterface.jsonRoute( dst, dstOffset + 1, cmd, arg, resultJAG );
+        else if ( first == "KLC" )
+          m_klcInterface.jsonRoute( dst, dstOffset + 1, cmd, arg, resultJAG );
         else throw Exception( "unroutable" );
       }
     }
