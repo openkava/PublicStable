@@ -142,6 +142,8 @@ namespace Fabric
         return m_impl.empty();
       }
       
+      void generateJSON( Util::JSONGenerator &jg ) const;
+      
       typedef Impl::const_iterator const_iterator;
       
       const_iterator begin() const

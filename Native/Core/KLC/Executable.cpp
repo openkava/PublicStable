@@ -47,6 +47,9 @@ namespace Fabric
       , m_ast( originalAST )
       , m_diagnostics( originalDiagnostics )
     {
+      llvm::InitializeNativeTarget();
+      LLVMLinkInJIT();
+      
       RC::ConstHandle<RT::Manager> rtManager = cgManager->getRTManager();
       
       AST::UseNameToLocationMap uses;
@@ -234,6 +237,26 @@ namespace Fabric
     CG::Diagnostics const &Executable::getDiagnostics() const
     {
       return m_diagnostics;
+    }
+        
+    void Executable::jsonExec(
+      std::string const &cmd,
+      RC::ConstHandle<JSON::Value> const &arg,
+      Util::JSONArrayGenerator &resultJAG
+      )
+    {
+      if ( cmd == "getDiagnostics" )
+        jsonExecGetDiagnostics( arg, resultJAG );
+      else GC::Object::jsonExec( cmd, arg, resultJAG );
+    }
+    
+    void Executable::jsonExecGetDiagnostics(
+      RC::ConstHandle<JSON::Value> const &arg,
+      Util::JSONArrayGenerator &resultJAG
+      )
+    {
+      Util::JSONGenerator jg = resultJAG.makeElement();
+      m_diagnostics.generateJSON( jg );
     }
   }
 }

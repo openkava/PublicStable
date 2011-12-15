@@ -1555,6 +1555,17 @@ function (fabricClient, logCallback, debugLogCallback) {
     var KLC = {
     };
 
+    var populateExecutable = function (executable) {
+      executable.pub.getDiagnostics = function () {
+        var diagnostics;
+        executable.queueCommand('getDiagnostics', null, null, function (result) {
+          diagnostics = result;
+        });
+        executeQueuedCommands();
+        return diagnostics;
+      };
+    };
+    
     KLC.pub = {
       createCompilation: function (sourceName, sourceCode) {
         var compilation = GC.createObject('KLC');
@@ -1592,6 +1603,20 @@ function (fabricClient, logCallback, debugLogCallback) {
           return sources;
         };
         
+        compilation.pub.run = function () {
+          var executable = GC.createObject('KLC');
+          
+          populateExecutable(executable);
+          
+          compilation.queueCommand('run', {
+            id: executable.id
+          }, function () {
+            delete executable.id;
+          });
+          
+          return executable.pub;
+        };
+        
         var arg = {
           id: compilation.id
         };
@@ -1605,6 +1630,24 @@ function (fabricClient, logCallback, debugLogCallback) {
         });
         
         return compilation.pub;
+      },
+      
+      createExecutable: function (sourceName, sourceCode) {
+        var executable = GC.createObject('KLC');
+          
+        populateExecutable(executable);
+          
+        var arg = {
+          id: executable.id,
+          sourceName: sourceName,
+          sourceCode: sourceCode
+        };
+        
+        queueCommand(['KLC'],'createExecutable', arg, function () {
+          delete executable['id'];
+        });
+        
+        return executable.pub;
       }
     };
 
