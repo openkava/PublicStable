@@ -1555,7 +1555,27 @@ function (fabricClient, logCallback, debugLogCallback) {
     var KLC = {
     };
 
+    var populateOperator = function (operator) {
+      operator.pub.getDiagnostics = function () {
+        var diagnostics;
+        operator.queueCommand('getDiagnostics', null, null, function (result) {
+          diagnostics = result;
+        });
+        executeQueuedCommands();
+        return diagnostics;
+      };
+    };
+
     var populateExecutable = function (executable) {
+      executable.pub.getAST = function () {
+        var ast;
+        executable.queueCommand('getAST', null, null, function (result) {
+          ast = result;
+        });
+        executeQueuedCommands();
+        return ast;
+      };
+      
       executable.pub.getDiagnostics = function () {
         var diagnostics;
         executable.queueCommand('getDiagnostics', null, null, function (result) {
@@ -1563,6 +1583,18 @@ function (fabricClient, logCallback, debugLogCallback) {
         });
         executeQueuedCommands();
         return diagnostics;
+      };
+      
+      executable.pub.resolveOperator = function (operatorName) {
+        var operator = GC.createObject('KLC');
+        populateOperator(operator);
+        executable.queueCommand('resolveOperator', {
+          id: operator.id,
+          operatorName: operatorName
+        }, function () {
+          delete operator.id;
+        });
+        return operator.pub;
       };
     };
     
@@ -1648,6 +1680,25 @@ function (fabricClient, logCallback, debugLogCallback) {
         });
         
         return executable.pub;
+      },
+      
+      createOperator: function (sourceName, sourceCode, operatorName) {
+        var operator = GC.createObject('KLC');
+          
+        populateOperator(operator);
+          
+        var arg = {
+          id: operator.id,
+          sourceName: sourceName,
+          sourceCode: sourceCode,
+          operatorName: operatorName
+        };
+        
+        queueCommand(['KLC'],'createOperator', arg, function () {
+          delete operator['id'];
+        });
+        
+        return operator.pub;
       }
     };
 

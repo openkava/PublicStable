@@ -46,10 +46,8 @@ namespace Fabric
         m_sources.erase( it );
     }
     
-    RC::Handle<Executable> Compilation::run() const
+    void Compilation::compileAll() const
     {
-      CG::Diagnostics diagnostics;
-      
       for ( SourceMap::iterator it = m_sources.begin(); it != m_sources.end(); ++it )
       {
         std::string const &sourceName = it->first;
@@ -60,14 +58,23 @@ namespace Fabric
           RC::Handle<KL::Scanner> scanner = KL::Scanner::Create( stringSource );
           source.ast = KL::Parse( scanner, source.diagnostics );
         }
-        diagnostics.append( source.diagnostics );
       }
+    }
+    
+    RC::Handle<Executable> Compilation::run() const
+    {
+      compileAll();
       
       RC::ConstHandle<AST::GlobalList> globalAST;
+      CG::Diagnostics diagnostics;
       for ( SourceMap::const_iterator it = m_sources.begin(); it != m_sources.end(); ++it )
-        globalAST = AST::GlobalList::Create( globalAST, it->second.ast );
+      {
+        Source const &source = it->second;
+        globalAST = AST::GlobalList::Create( globalAST, source.ast );
+        diagnostics.append( source.diagnostics );
+      }
         
-      return new Executable( m_cgManager, globalAST, m_compileOptions, diagnostics );
+      return new Executable( m_gcContainer, m_cgManager, globalAST, m_compileOptions, diagnostics );
     }
         
     void Compilation::jsonExec(

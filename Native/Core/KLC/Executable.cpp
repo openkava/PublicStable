@@ -15,6 +15,7 @@
 #include <Fabric/Core/AST/UseInfo.h>
 #include <Fabric/Core/RT/Manager.h>
 #include <Fabric/Core/MT/LogCollector.h>
+#include <Fabric/Base/JSON/String.h>
 
 #include <llvm/Module.h>
 #include <llvm/Function.h>
@@ -38,12 +39,14 @@ namespace Fabric
     Util::TLSVar<Executable const *> Executable::s_currentExecutable;
     
     Executable::Executable(
+      GC::Container *gcContainer,
       RC::Handle<CG::Manager> const &cgManager,
       RC::ConstHandle<AST::GlobalList> const &originalAST,
       CG::CompileOptions const &compileOptions,
       CG::Diagnostics const &originalDiagnostics
       )
-      : m_cgManager( cgManager )
+      : m_gcContainer( gcContainer )
+      , m_cgManager( cgManager )
       , m_ast( originalAST )
       , m_diagnostics( originalDiagnostics )
     {
@@ -85,9 +88,9 @@ namespace Fabric
       {
         static const bool optimize = true;
       
-        RC::Handle<CG::Context> cgContext = CG::Context::Create();
-        llvm::OwningPtr<llvm::Module> module( new llvm::Module( "DG::Code", cgContext->getLLVMContext() ) );
-        CG::ModuleBuilder moduleBuilder( cgManager, cgContext, module.get(), &compileOptions );
+        m_cgContext = CG::Context::Create();
+        llvm::OwningPtr<llvm::Module> module( new llvm::Module( "Fabric", m_cgContext->getLLVMContext() ) );
+        CG::ModuleBuilder moduleBuilder( cgManager, m_cgContext, module.get(), &compileOptions );
 #if defined(FABRIC_MODULE_OPENCL)
         OCL::llvmPrepareModule( moduleBuilder, rtManager );
 #endif
@@ -101,7 +104,7 @@ namespace Fabric
         if ( ir.length() > 0 )
         {
           llvm::SMDiagnostic error;
-          llvm::ParseAssemblyString( ir.c_str(), module.get(), error, cgContext->getLLVMContext() );
+          llvm::ParseAssemblyString( ir.c_str(), module.get(), error, m_cgContext->getLLVMContext() );
           
           m_ast->registerTypes( cgManager, m_diagnostics );
           FABRIC_ASSERT( !m_diagnostics.containsError() );
@@ -152,26 +155,26 @@ namespace Fabric
               irCache->put( irCacheKeyForAST, ir );
             }
           }
-          
-          llvm::Module *llvmModule = module.take();
-
-          std::string errStr;
-          m_llvmExecutionEngine.reset(
-            llvm::EngineBuilder(llvmModule)
-              .setErrorStr(&errStr)
-              .setEngineKind(llvm::EngineKind::JIT)
-              .create()
-            );
-          if ( !m_llvmExecutionEngine )
-            throw Exception( "Failed to construct ExecutionEngine: " + errStr );
-
-          m_llvmExecutionEngine->InstallLazyFunctionCreator( &LazyFunctionCreator );
-          
-          // Make sure we don't search loaded libraries for missing symbols. 
-          // Only symbols *we* provide should be available as calling functions.
-          m_llvmExecutionEngine->DisableSymbolSearching();
-          cgManager->llvmAddGlobalMappingsToExecutionEngine( m_llvmExecutionEngine.get(), *llvmModule );
         }
+        
+        llvm::Module *llvmModule = module.take();
+
+        std::string errStr;
+        m_llvmExecutionEngine.reset(
+          llvm::EngineBuilder(llvmModule)
+            .setErrorStr(&errStr)
+            .setEngineKind(llvm::EngineKind::JIT)
+            .create()
+          );
+        if ( !m_llvmExecutionEngine )
+          throw Exception( "Failed to construct ExecutionEngine: " + errStr );
+
+        m_llvmExecutionEngine->InstallLazyFunctionCreator( &LazyFunctionCreator );
+        
+        // Make sure we don't search loaded libraries for missing symbols. 
+        // Only symbols *we* provide should be available as calling functions.
+        m_llvmExecutionEngine->DisableSymbolSearching();
+        cgManager->llvmAddGlobalMappingsToExecutionEngine( m_llvmExecutionEngine.get(), *llvmModule );
       }
     }
 
@@ -218,22 +221,26 @@ namespace Fabric
     
     RC::Handle<Operator> Executable::resolveOperator( std::string const &operatorName ) const
     {
-      if ( m_diagnostics.containsError() )
-        throw Exception( "compile errors, cannot resolve operator" );
-      
       void (*functionPtr)( ... ) = 0;
+      
+      if ( !m_diagnostics.containsError() )
       {
         CurrentExecutableSetter executableSetter( this );
         llvm::Function *llvmFunction = m_llvmExecutionEngine->FindFunctionNamed( operatorName.c_str() );
         if ( llvmFunction )
           functionPtr = (void (*)(...))( m_llvmExecutionEngine->getPointerToFunction( llvmFunction ) );
+        if ( !functionPtr )
+          throw Exception( "operator " + _(operatorName) + " not found" );
       }
-      if ( !functionPtr )
-        throw Exception( "operator " + _(operatorName) + " not found" );
       
       return new Operator( this, functionPtr );
     }
 
+    RC::ConstHandle<AST::GlobalList> Executable::getAST() const
+    {
+      return m_ast;
+    }
+  
     CG::Diagnostics const &Executable::getDiagnostics() const
     {
       return m_diagnostics;
@@ -245,8 +252,12 @@ namespace Fabric
       Util::JSONArrayGenerator &resultJAG
       )
     {
-      if ( cmd == "getDiagnostics" )
+      if ( cmd == "getAST" )
+        jsonExecGetAST( arg, resultJAG );
+      else if ( cmd == "getDiagnostics" )
         jsonExecGetDiagnostics( arg, resultJAG );
+      else if ( cmd == "resolveOperator" )
+        jsonExecResolveOperator( arg, resultJAG );
       else GC::Object::jsonExec( cmd, arg, resultJAG );
     }
     
@@ -256,7 +267,47 @@ namespace Fabric
       )
     {
       Util::JSONGenerator jg = resultJAG.makeElement();
-      m_diagnostics.generateJSON( jg );
+      getDiagnostics().generateJSON( jg );
+    }
+    
+    void Executable::jsonExecGetAST(
+      RC::ConstHandle<JSON::Value> const &arg,
+      Util::JSONArrayGenerator &resultJAG
+      )
+    {
+      Util::JSONGenerator jg = resultJAG.makeElement();
+      getAST()->generateJSON( true, jg );
+    }
+    
+    void Executable::jsonExecResolveOperator(
+      RC::ConstHandle<JSON::Value> const &arg,
+      Util::JSONArrayGenerator &resultJAG
+      )
+    {
+      RC::ConstHandle<JSON::Object> argObject = arg->toObject();
+      
+      std::string id_;
+      try
+      {
+        id_ = argObject->get( "id" )->toString()->value();
+      }
+      catch ( Exception e )
+      {
+        throw "id: " + e;
+      }
+      
+      std::string operatorName;
+      try
+      {
+        operatorName = argObject->get( "operatorName" )->toString()->value();
+      }
+      catch ( Exception e )
+      {
+        throw "operatorName: " + e;
+      }
+      
+      RC::Handle<Operator> operator_ = resolveOperator( operatorName );
+      operator_->reg( m_gcContainer, id_ );
     }
   }
 }

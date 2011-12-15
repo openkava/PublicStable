@@ -61,6 +61,8 @@ namespace Fabric
         );
       ~Compilation();
       
+      void compileAll() const;
+      
     private:
     
       void jsonExecAddSource(
