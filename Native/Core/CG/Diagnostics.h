@@ -88,6 +88,10 @@ namespace Fabric
       {
       }
       
+      Diagnostics( Diagnostics const &that );
+      
+      void append( Diagnostics const &that );
+      
       void clear()
       {
         m_impl.clear();
