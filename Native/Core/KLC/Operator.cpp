@@ -22,5 +22,30 @@ namespace Fabric
     {
       return m_functionPtr;
     }
+    
+    CG::Diagnostics const &Operator::getDiagnostics() const
+    {
+      return m_executable->getDiagnostics();
+    }
+        
+    void Operator::jsonExec(
+      std::string const &cmd,
+      RC::ConstHandle<JSON::Value> const &arg,
+      Util::JSONArrayGenerator &resultJAG
+      )
+    {
+      if ( cmd == "getDiagnostics" )
+        jsonExecGetDiagnostics( arg, resultJAG );
+      else GC::Object::jsonExec( cmd, arg, resultJAG );
+    }
+    
+    void Operator::jsonExecGetDiagnostics(
+      RC::ConstHandle<JSON::Value> const &arg,
+      Util::JSONArrayGenerator &resultJAG
+      )
+    {
+      Util::JSONGenerator jg = resultJAG.makeElement();
+      getDiagnostics().generateJSON( jg );
+    }
   }
 }

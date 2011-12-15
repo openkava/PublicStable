@@ -14,6 +14,7 @@ namespace Fabric
 {
   namespace Util
   {
+    class JSONGenerator;
     class JSONArrayGenerator;
   };
   
@@ -39,6 +40,7 @@ namespace Fabric
       static RC::ConstHandle<GlobalList> Create( RC::ConstHandle<GlobalList> const &lhs, RC::ConstHandle<GlobalList> const &rhs );
 
       Util::SimpleString toJSON( bool includeLocation ) const;
+      void generateJSON( bool includeLocation, Util::JSONGenerator &jg ) const;
 
       void collectUses( UseNameToLocationMap &uses ) const;
       void registerTypes( RC::Handle<CG::Manager> const &cgManager, CG::Diagnostics &diagnostics ) const;

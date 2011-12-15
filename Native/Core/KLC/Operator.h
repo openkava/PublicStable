@@ -11,6 +11,11 @@
 
 namespace Fabric
 {
+  namespace CG
+  {
+    class Diagnostics;
+  };
+  
   namespace KLC
   {
     class Executable;
@@ -22,6 +27,13 @@ namespace Fabric
     public:
     
       GenericFunctionPtr getGenericFunctionPtr() const;
+      CG::Diagnostics const &getDiagnostics() const;
+        
+      virtual void jsonExec(
+        std::string const &cmd,
+        RC::ConstHandle<JSON::Value> const &arg,
+        Util::JSONArrayGenerator &resultJAG
+        );
       
     protected:
     
@@ -31,6 +43,11 @@ namespace Fabric
         );
     
     private:
+    
+      void jsonExecGetDiagnostics(
+        RC::ConstHandle<JSON::Value> const &arg,
+        Util::JSONArrayGenerator &resultJAG
+        );
     
       RC::ConstHandle<Executable> m_executable;
       GenericFunctionPtr m_functionPtr;
