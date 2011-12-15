@@ -14,10 +14,12 @@ namespace Fabric
   namespace KLC
   {
     Compilation::Compilation(
+      GC::Container *gcContainer,
       RC::Handle<CG::Manager> const &cgManager,
       CG::CompileOptions const &compileOptions
       )
-      : m_cgManager( cgManager )
+      : m_gcContainer( gcContainer )
+      , m_cgManager( cgManager )
       , m_compileOptions( compileOptions )
     {
     }
@@ -44,7 +46,7 @@ namespace Fabric
         m_sources.erase( it );
     }
     
-    RC::ConstHandle<Executable> Compilation::run() const
+    RC::Handle<Executable> Compilation::run() const
     {
       CG::Diagnostics diagnostics;
       
@@ -80,6 +82,8 @@ namespace Fabric
         jsonExecRemoveSource( arg, resultJAG );
       else if ( cmd == "getSources" )
         jsonExecGetSources( arg, resultJAG );
+      else if ( cmd == "run" )
+        jsonExecRun( arg, resultJAG );
       else GC::Object::jsonExec( cmd, arg, resultJAG );
     }
     
@@ -145,6 +149,27 @@ namespace Fabric
         Util::JSONGenerator subJG = jog.makeMember( it->first );
         subJG.makeString( it->second.sourceCode );
       }
+    }
+    
+    void Compilation::jsonExecRun(
+      RC::ConstHandle<JSON::Value> const &arg,
+      Util::JSONArrayGenerator &resultJAG
+      )
+    {
+      RC::ConstHandle<JSON::Object> argObject = arg->toObject();
+      
+      std::string id_;
+      try
+      {
+        id_ = argObject->get( "id" )->toString()->value();
+      }
+      catch ( Exception e )
+      {
+        throw "id: " + e;
+      }
+      
+      RC::Handle<Executable> executable = run();
+      executable->reg( m_gcContainer, id_ );
     }
   }
 }

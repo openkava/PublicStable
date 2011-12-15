@@ -37,6 +37,14 @@ namespace Fabric
       RC::Handle<Operator> resolveOperator( std::string const &operatorName ) const;
       
       CG::Diagnostics const &getDiagnostics() const;
+      
+    public:
+        
+      virtual void jsonExec(
+        std::string const &cmd,
+        RC::ConstHandle<JSON::Value> const &arg,
+        Util::JSONArrayGenerator &resultJAG
+        );
 
     protected:
     
@@ -68,6 +76,11 @@ namespace Fabric
         );
     
     private:
+    
+      void jsonExecGetDiagnostics(
+        RC::ConstHandle<JSON::Value> const &arg,
+        Util::JSONArrayGenerator &resultJAG
+        );
     
       void *lazyFunctionCreator( std::string const &functionName ) const;
       static void *LazyFunctionCreator( std::string const &functionName );
