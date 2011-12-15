@@ -180,6 +180,7 @@ operator evaluateLocomotionPoseVariables(
   rot90.setIdentity();
   rot90.ori.setFromAxisAndAngle(Vec3(0.0, 0.0, 1.0), HALF_PI);
   Vec3 upvector = up;//controllerXfo.ori.rotateVector(Vec3(0.0, 1.0, 0.0));
+  Quat alignment;
   
   Scalar legLiftWeight = 0.0;
   if(legs.size == 2){
@@ -228,6 +229,7 @@ operator evaluateLocomotionPoseVariables(
       
       for(Integer j=0; j < locomotionFeet.size; j++){
         Limb leg = legs[locomotionFeet[j].limbId];
+        prevUpdatePose.xfoValues[leg.ikGoalXfoId] = footXfos[j];
         
         BULLLETWORLD_OPENBLOCKCOMMENT
         if(performRaycasting){
@@ -240,7 +242,6 @@ operator evaluateLocomotionPoseVariables(
           Scalar dist; Vec3 normal;
           if(fireRay(bulletworld, plantedXfo.tr, upvector, rayLength, dist, normal, displayRaycastingDebugging, debugRaycasting)){
             plantedXfo.tr += upvector * dist;
-            Quat alignment;
             alignment.setFrom2Vectors(plantedXfo.ori.rotateVector(Vec3(-1.0,0.0,0.0)), normal);
             plantedXfo.ori = alignment * plantedXfo.ori;
             plantLocations[j] = plantedXfo;
@@ -248,10 +249,9 @@ operator evaluateLocomotionPoseVariables(
           }
         }
         BULLLETWORLD_CLOSEBLOCKCOMMENT
-        prevUpdatePose.xfoValues[leg.ikGoalXfoId] = footXfos[j];
       }
     }else{
-      // Hold the feet in place while stationary. 
+      // Hold the feet in place while stationary.
       for(Integer j=0; j < locomotionFeet.size; j++){
         Limb leg = legs[locomotionFeet[j].limbId];
         poseVariables.xfoValues[leg.ikGoalXfoId] = invcontrollerXfo * plantLocations[j];
@@ -275,18 +275,12 @@ operator evaluateLocomotionPoseVariables(
       }
     }
     
-    if(clipActivationTime > 0.0){
-      // Blend off the error over 0.5 seconds. 
-      Scalar blendTime = 0.25;
-      if(trackcontroller.time - clipActivationTime < blendTime){
-        Scalar weight = 1.0 - ((trackcontroller.time - clipActivationTime) / blendTime);
-        poseVariables.addWeighted(poseError, weight);
-      }
+    // Blend off the error over 0.25 seconds. 
+    Scalar blendTime = 0.25;
+    if(trackcontroller.time - clipActivationTime < blendTime){
+      Scalar weight = 1.0 - ((trackcontroller.time - clipActivationTime) / blendTime);
+      poseVariables.addWeighted(poseError, weight);
     }
-    
-    
-        
-    
     
     prevUpdatePose = poseVariables;
     trackcontroller.deactivate = false;
@@ -350,6 +344,7 @@ operator evaluateLocomotionPoseVariables(
     }
           
     if(!trackcontroller.deactivate && trackcontroller.time >= trackSet.timeRange.y){
+      // loop the idle clip
       trackcontroller.time -= trackSet.timeRange.y;
       trackcontroller.deactivate = true;
     }
@@ -366,6 +361,7 @@ operator evaluateLocomotionPoseVariables(
     
     if(clipSpeed > 0.1){
       clipFrequencyMultiplier = (currSpeed / clipSpeed);
+      clipFrequencyMultiplier += controllerparams.balanceXfo.tr.length() * 1.0;
       if(clipFrequencyMultiplier < minFrequency){
         strideLengthMultiplier = clipFrequencyMultiplier / minFrequency;
         clipFrequencyMultiplier = minFrequency;
@@ -400,15 +396,14 @@ operator evaluateLocomotionPoseVariables(
     if(trackcontroller.tick>0){
       if(trackcontroller.deactivate){
         poseError = prevUpdatePose.subtract(poseVariables);
-        clipActivationTime = t-timestep;
+        clipActivationTime = trackcontroller.time-timestep;
       }
-      if(clipActivationTime > 0.0){
-        // Blend off the error across the first half a stride. 
-        Scalar blendTime = (clipFrequencyMultiplier * 0.3);
-        if(t - clipActivationTime < blendTime){
-          Scalar weight = 1.0 - ((t - clipActivationTime) / blendTime);
-          poseVariables.addWeighted(poseError, weight);
-        }
+      
+      // Blend off the error across the first half a stride. 
+      Scalar blendTime = (clipFrequencyMultiplier * 0.3);
+      if(trackcontroller.time - clipActivationTime < blendTime){
+        Scalar weight = 1.0 - ((trackcontroller.time - clipActivationTime) / blendTime);
+        poseVariables.addWeighted(poseError, weight);
       }
     }
     prevUpdatePose = poseVariables;
@@ -530,6 +525,8 @@ operator evaluateLocomotionPoseVariables(
     //  if(footLiftRatio < 0.0) footLiftRatio += 1.0;
       Xfo currStepPos = footXfo; //baseFootXfo;
       currStepPos.tr -= upvector * (footXfo.tr - footParentSpaceXfo.tr).dot(upvector);
+      alignment.setFrom2Vectors(footXfo.ori.rotateVector(Vec3(-1.0,0.0,0.0)), upvector);
+      currStepPos.ori = alignment * currStepPos.ori;
     //  currStepPos.tr -= (displacementDir * ((currStep.strideLength * strideLengthMultiplier * footLiftRatio) - (currStep.strideLength * 0.5 * strideLengthMultiplier)));
      
     //  report(j+" footLiftRatio:"+footLiftRatio + " footPlantRatio:"+footPlantRatio);
@@ -555,17 +552,6 @@ operator evaluateLocomotionPoseVariables(
             debugFootMotion.drawCircle(liftLocation * rot90, 0.15, Color(0.0, 0.5, 1.0, 1.0));
           }
           
-          BULLLETWORLD_OPENBLOCKCOMMENT
-          if(performRaycasting){
-            Scalar dist; Vec3 normal;
-            if(fireRay(bulletworld, liftLocation.tr, upvector, rayLength, dist, normal, displayRaycastingDebugging, debugRaycasting)){
-              liftLocation.tr += upvector * dist;
-              Quat alignment;
-              alignment.setFrom2Vectors(upvector, normal);
-              liftLocation.ori = alignment * liftLocation.ori;
-            }
-          }
-          BULLLETWORLD_CLOSEBLOCKCOMMENT
           footError.tr = liftLocation.tr - currStepPos.tr;
           footError.ori = liftLocation.ori * currStepPos.ori.inverse();
           // Now store the error that we will blend off over the period of the step.
@@ -592,7 +578,6 @@ operator evaluateLocomotionPoseVariables(
             Scalar dist; Vec3 normal;
             if(fireRay(bulletworld, nextStepPos.tr, upvector, rayLength, dist, normal, displayRaycastingDebugging, debugRaycasting)){
               Scalar lift = dist * legSwingRatio;
-              Quat alignment;
               alignment.setFrom2Vectors(upvector, normal);
             //  footError.tr.y += lift;
               footError.tr = footError.tr.linearInterpolate(upvector * lift, legSwingRatio);
@@ -655,25 +640,33 @@ operator evaluateLocomotionPoseVariables(
           /////////////////////////////////////////////////
           // Clip Deactivation
           if(animationLibrary.size > 1 && !trackcontroller.deactivate){
-            Integer activeTrackSet = trackcontroller.activeTrackSet;
-            Scalar currClipDelta = calcClipParamsDelta(comParams, trackcontroller.comParams);
+            if(currSpeed < 0.001){
+              trackcontroller.deactivate = true;
+              trackcontroller.activeTrackSet = 0;
+              trackcontroller.time = 0.0;
+            }
+            else{
+              Integer activeTrackSet = trackcontroller.activeTrackSet;
+              Scalar currClipDelta = calcClipParamsDelta(comParams, trackcontroller.comParams);
           //  report("comParams:"+ comParams  + " curr clip Params:"+ trackcontroller.comParams + " currClipDelta:"+ currClipDelta);
-            for(Integer clipId=0; !trackcontroller.deactivate && clipId<locomotionMarkers.size; clipId++){
-              // Note: here we block blending from a clip onto its self, but soon we will enable this.
-              if(clipId == activeTrackSet){
-                continue;
-              }
-              for(Integer l=0; l<locomotionMarkers[clipId][j].size; l++){
-                Scalar clipDelta = calcClipParamsDelta(comParams, locomotionMarkers[clipId][j][l].params);
-                if(clipDelta < currClipDelta){
-                //  report("deactivate from:"+activeTrackSet+ " to:" + clipId);
-                //  report(activeTrackSet + " to " + clipId + " target Clip Params:"+ locomotionMarkers[clipId][j][l].params + " clipDelta:"+ clipDelta);
-                  trackcontroller.deactivate = true;
-                  trackcontroller.pivotFoot = j;
-                  trackcontroller.pivotStepId = l;
-                  trackcontroller.activeTrackSet = clipId;
-                  trackcontroller.time = t - currStep.midPlantTime;
-                  currClipDelta = clipDelta;
+         
+              for(Integer clipId=1; !trackcontroller.deactivate && clipId<locomotionMarkers.size; clipId++){
+                // Note: here we block blending from a clip onto its self, but soon we will enable this.
+                if(clipId == activeTrackSet){
+                  continue;
+                }
+                for(Integer l=0; l<locomotionMarkers[clipId][j].size; l++){
+                  Scalar clipDelta = calcClipParamsDelta(comParams, locomotionMarkers[clipId][j][l].params);
+                  if(clipDelta < currClipDelta){
+                  //  report("deactivate from:"+activeTrackSet+ " to:" + clipId);
+                  //  report(activeTrackSet + " to " + clipId + " target Clip Params:"+ locomotionMarkers[clipId][j][l].params + " clipDelta:"+ clipDelta);
+                    trackcontroller.deactivate = true;
+                    trackcontroller.pivotFoot = j;
+                    trackcontroller.pivotStepId = l;
+                    trackcontroller.activeTrackSet = clipId;
+                    trackcontroller.time = t - currStep.midPlantTime;
+                    currClipDelta = clipDelta;
+                  }
                 }
               }
             }
