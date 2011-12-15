@@ -54,6 +54,7 @@ FABRIC.RT.BulletShape.BULLET_SPHERE_SHAPE = 8;
 FABRIC.RT.BulletShape.BULLET_CAPSULE_SHAPE = 10;
 FABRIC.RT.BulletShape.BULLET_CONE_SHAPE = 11;
 FABRIC.RT.BulletShape.BULLET_CYLINDER_SHAPE = 13;
+FABRIC.RT.BulletShape.BULLET_TRIANGLEMESH_SHAPE = 21;
 FABRIC.RT.BulletShape.BULLET_GIMPACT_SHAPE = 25;
 FABRIC.RT.BulletShape.BULLET_PLANE_SHAPE = 28;
 FABRIC.RT.BulletShape.BULLET_COMPOUND_SHAPE = 31;
@@ -117,6 +118,16 @@ FABRIC.RT.BulletShape.createConvexHull = function(geometryNode) {
   }
   var shape = new FABRIC.RT.BulletShape();
   shape.type = FABRIC.RT.BulletShape.BULLET_CONVEX_HULL_SHAPE;
+  shape.geometryNode = geometryNode;
+  return shape;
+};
+
+FABRIC.RT.BulletShape.createTriangleMesh = function(geometryNode) {
+  if(geometryNode == undefined || !geometryNode.isTypeOf('Geometry')) {
+    throw('You need to specify the geometryNode for createTriangleMesh.');
+  }
+  var shape = new FABRIC.RT.BulletShape();
+  shape.type = FABRIC.RT.BulletShape.BULLET_TRIANGLEMESH_SHAPE;
   shape.geometryNode = geometryNode;
   return shape;
 };
@@ -292,10 +303,10 @@ FABRIC.SceneGraph.registerNodeType('BulletWorldNode', {
       }
 
       // copy the points for convex hulls
-      if(shape.type == FABRIC.RT.BulletShape.BULLET_GIMPACT_SHAPE)
+      if(shape.type == FABRIC.RT.BulletShape.BULLET_GIMPACT_SHAPE || shape.type == FABRIC.RT.BulletShape.BULLET_TRIANGLEMESH_SHAPE)
       {
         if(!shape.geometryNode)
-          throw('You need to specify geometryNode for a gimpact shape!')
+          throw('You need to specify geometryNode for a gimpact or trianglemeshshape shape!')
           
         // create rigid body operator
         shapedgnode.setDependency(scene.getPrivateInterface(shape.geometryNode).getAttributesDGNode(),shapeName+"Shape_attributes");
@@ -348,7 +359,16 @@ FABRIC.SceneGraph.registerNodeType('BulletWorldNode', {
       } else {
         body.name = bodyName;
       }
-      rbddgnode.addMember(bodyName+'Rbd', 'BulletRigidBody[]', isArray ? body : [body]);
+      if(!isArray) body = [body];
+
+      // check if the shape is a collision surface (turn passive if so)
+      var shape = shapedgnode.getData(shapeName+'Shape',0);
+      if(shape.type == FABRIC.RT.BulletShape.BULLET_TRIANGLEMESH_SHAPE) {
+        for(var i=0;i<body.length;i++)
+          body[i].mass = 0.0;
+      }
+
+      rbddgnode.addMember(bodyName+'Rbd', 'BulletRigidBody[]', body);
 
       // create rigid body operator
       rbddgnode.bindings.append(scene.constructOperator({

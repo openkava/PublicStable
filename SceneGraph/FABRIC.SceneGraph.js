@@ -1529,6 +1529,8 @@ FABRIC.SceneGraph.registerNodeType('ResourceLoad', {
     resourceLoadNode.pub.getDGLoadNode = function() {
       return dgnode;
     };
+    
+    scene.addEventHandlingFunctions(resourceLoadNode);
 
     if (options.url) {
       // check if the url has a handle

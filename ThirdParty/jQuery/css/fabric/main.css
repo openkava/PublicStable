@@ -311,10 +311,6 @@ ul#tools li a#btn-select{
   margin:5px;
 }
 
-#curveEditor {
-  margin-top:30px;
-}
-
 #globalTime {
   margin-top:10px;
 }
@@ -381,31 +377,3 @@ ul#tools li a#btn-select{
   -webkit-box-shadow: rgba(0, 0, 0, 0.8) 0px 0px 3px;
   border: solid 1px #000;
 }
-
-
-
-
-/* INSPECTOR
--------------------------------------------------------------------- */
-
-#nodeInspector {
-}
-
-#nodeInspector section {
-  margin:15px 20px;
-/*  text-shadow:0 1px 0 white;*/
-}
-
-#nodeInspector .ui-buttonset .ui-button {
-  padding: 0 10px;
-}
-
-#nodeInspector .dataTables_wrapper {
-  background: #fff;
-}
-
-
-
-
-
-
