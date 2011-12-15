@@ -74,9 +74,99 @@ FABRIC.SceneGraph.registerNodeType('Light', {
         'light.lightMat44'
       ]
       }));
+      
 
+      if (options.castShadows) {
+        
+        redrawEventHandler.addMember('shadowMap', 'Size', 0);
+
+        redrawEventHandler.preDescendBindings.append(
+          scene.constructOperator({
+              operatorName: 'loadLightMatrixUniform',
+              srcFile: 'FABRIC_ROOT/SceneGraph/KL/loadLights.kl',
+              preProcessorDefinitions: {
+                LIGHTTYPE_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('lightType'),
+                LIGHTCOLOR_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('lightColor'),
+                LIGHTPOS_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('lightPosition'),
+                LIGHTDIR_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('lightDir'),
+                LIGHTCOSCUTOFF_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('lightCosCutoff'),
+                LIGHTVIEWMATRIX_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('lightShadowMapMatrix')
+              },
+              entryFunctionName: 'loadLightMatrixUniform',
+              parameterLayout: [
+                'shader.shaderProgram',
+                'light.shadowMat44',
+                'camera.cameraMat44'
+              ]
+            }));
+        
+        redrawEventHandler.preDescendBindings.append(
+          scene.constructOperator({
+              operatorName: 'bindShadowMapBufferOp',
+              srcFile: 'FABRIC_ROOT/SceneGraph/KL/shadowMaps.kl',
+              entryFunctionName: 'bindShadowMapBuffer',
+              parameterLayout: [
+                'self.shadowMap',
+                'light.depthRenderTarget'
+              ]
+            }));
+      }
       return redrawEventHandler;
     };
+    
+    if (options.castShadows) {
+    
+
+      var shadowRenderEventHandler = lightNode.constructEventHandlerNode('RenderDepthBuffer');
+
+      // Projection Values
+      dgnode.addMember('nearDistance', 'Scalar', options.nearDistance);
+      dgnode.addMember('farDistance', 'Scalar', options.farDistance);
+      dgnode.addMember('projectionMat44', 'Mat44');
+      dgnode.addMember('shadowMat44', 'Mat44');
+      dgnode.addMember('depthRenderTarget', 'OGLRenderTarget', FABRIC.RT.oglDepthRenderTarget(options.resolution));
+      
+      shadowRenderEventHandler.setScope('light', dgnode);
+      shadowRenderEventHandler.setScope('camera', dgnode);
+     
+      shadowRenderEventHandler.preDescendBindings.append(scene.constructOperator({
+          operatorName: 'bindDepthRenderTarget',
+          srcFile: 'FABRIC_ROOT/SceneGraph/KL/renderTarget.kl',
+          entryFunctionName: 'bindRenderTarget',
+          parameterLayout: [
+            'light.depthRenderTarget'
+          ]
+        }));
+      shadowRenderEventHandler.postDescendBindings.append(scene.constructOperator({
+          operatorName: 'unbindDepthRenderTarget',
+          srcFile: 'FABRIC_ROOT/SceneGraph/KL/renderTarget.kl',
+          entryFunctionName: 'unbindRenderTarget',
+          parameterLayout: [
+            'light.depthRenderTarget'
+          ]
+        }));
+       
+      if(options.displayShadowDebug === true){
+        // Display the shadow color map on screen.
+        var shadowDebugRenderEventHandler = lightNode.constructEventHandlerNode('renderDebugQuad');
+        shadowDebugRenderEventHandler.addMember('program', 'Integer');
+        scene.getScenePostRedrawEventHandler().appendChildEventHandler(shadowDebugRenderEventHandler);
+        shadowDebugRenderEventHandler.setScope('light', dgnode);
+        shadowDebugRenderEventHandler.preDescendBindings.append(
+          scene.constructOperator({
+              operatorName:"debugShadowMapBuffer",
+              srcFile:"FABRIC_ROOT/SceneGraph/KL/shadowMaps.kl",
+              entryFunctionName:"debugShadowMapBuffer",
+              parameterLayout:[
+                'light.depthRenderTarget',
+                'self.program'
+              ]
+            }));
+      }
+
+      scene.registerShadowCastingLightSourceHandler(shadowRenderEventHandler);
+    }
+    
 
     // public interface
     // TODO: try to have base class with input transform (would share with cameraNode)
@@ -213,7 +303,8 @@ FABRIC.SceneGraph.registerNodeType('DirectionalLight', {
       scene.assignDefaults(options, {
         direction: new FABRIC.RT.Vec3(0.0, 0.737, 0.737),
         position: new FABRIC.RT.Vec3(100.0, 100.0, 100.0),
-        displaySize: 5
+        displaySize: 5,
+        size: 40.0
       });
     }
 
@@ -259,13 +350,30 @@ FABRIC.SceneGraph.registerNodeType('DirectionalLight', {
     };
 
 
+    if (options.castShadows) {
+      dgnode.addMember('size', 'Scalar', options.size);
+      dgnode.bindings.append(scene.constructOperator({
+          operatorName: 'calcDirectionalLightProjectionMatrices',
+          srcFile: 'FABRIC_ROOT/SceneGraph/KL/shadowMaps.kl',
+          entryFunctionName: 'calcDirectionalLightProjectionMatrices',
+          parameterLayout: [
+            'self.nearDistance',
+            'self.farDistance',
+            'self.size',
+            'self.cameraMat44',
+            'self.projectionMat44',
+            'self.shadowMat44'
+          ]
+        }));
+    }
+    
     if (options.display === true) {
       //Ideally we should merge all these line segments together... or have a meta-geometry generator in kl (able to create circles, lines, etc)?
       var materialNode = scene.pub.constructNode('FlatMaterial', {
           color: FABRIC.RT.color(0.2, 0.5, 0.8, 1.0)
       });
       var circleNode = scene.pub.constructNode('Circle', {
-          radius: options.displaySize/2
+          radius: options.size * 0.5
       });
       scene.pub.constructNode('Instance', {
         transformNode: scene.pub.constructNode('Transform', {
@@ -281,17 +389,7 @@ FABRIC.SceneGraph.registerNodeType('DirectionalLight', {
         transformNode: scene.pub.constructNode('Transform', {
           hierarchical: true,
           parentTransformNode: directionalLightNode.pub.getTransformNode(),
-          localXfo: new FABRIC.RT.Xfo({ ori: new FABRIC.RT.Quat().setFromAxisAndAngle(FABRIC.RT.Vec3.xAxis, Math.HALF_PI), tr: new FABRIC.RT.Vec3(0, 0, -options.displaySize) })
-        }),
-        geometryNode: circleNode,
-        materialNode: materialNode
-      });
-
-      scene.pub.constructNode('Instance', {
-        transformNode: scene.pub.constructNode('Transform', {
-          hierarchical: true,
-          parentTransformNode: directionalLightNode.pub.getTransformNode(),
-          localXfo: new FABRIC.RT.Xfo({ ori: new FABRIC.RT.Quat().setFromAxisAndAngle(FABRIC.RT.Vec3.xAxis, Math.HALF_PI), tr: new FABRIC.RT.Vec3(0, 0, -options.displaySize*0.8) })
+          localXfo: new FABRIC.RT.Xfo({ ori: new FABRIC.RT.Quat().setFromAxisAndAngle(FABRIC.RT.Vec3.xAxis, Math.HALF_PI), tr: new FABRIC.RT.Vec3(0, 0, -options.size) })
         }),
         geometryNode: circleNode,
         materialNode: materialNode
@@ -363,12 +461,12 @@ FABRIC.SceneGraph.registerNodeType('SpotLight', {
           operatorName: 'loadSpotLight',
           srcFile: 'FABRIC_ROOT/SceneGraph/KL/loadLights.kl',
           preProcessorDefinitions: {
-          LIGHTTYPE_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('lightType'),
-          LIGHTCOLOR_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('lightColor'),
-          LIGHTPOS_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('lightPosition'),
-          LIGHTDIR_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('lightDir'),
-          LIGHTCOSCUTOFF_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('lightCosCutoff'),
-          LIGHTVIEWMATRIX_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('lightShadowMapMatrix')
+            LIGHTTYPE_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('lightType'),
+            LIGHTCOLOR_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('lightColor'),
+            LIGHTPOS_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('lightPosition'),
+            LIGHTDIR_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('lightDir'),
+            LIGHTCOSCUTOFF_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('lightCosCutoff'),
+            LIGHTVIEWMATRIX_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('lightShadowMapMatrix')
           },
           entryFunctionName: 'loadSpotLight',
           parameterLayout: [
@@ -378,62 +476,14 @@ FABRIC.SceneGraph.registerNodeType('SpotLight', {
             'light.lightMat44'
           ]
         }));
-
-      if (options.castShadows) {
-        
-        this.constructShadowRenderEventHandler();
-      
-        redrawEventHandler.addMember('shadowMap', 'Size', 0);
-
-        redrawEventHandler.preDescendBindings.append(
-          scene.constructOperator({
-              operatorName: 'loadLightMatrixUniform',
-              srcFile: 'FABRIC_ROOT/SceneGraph/KL/loadLights.kl',
-              preProcessorDefinitions: {
-                LIGHTTYPE_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('lightType'),
-                LIGHTCOLOR_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('lightColor'),
-                LIGHTPOS_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('lightPosition'),
-                LIGHTDIR_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('lightDir'),
-                LIGHTCOSCUTOFF_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('lightCosCutoff'),
-                LIGHTVIEWMATRIX_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('lightShadowMapMatrix')
-              },
-              entryFunctionName: 'loadLightMatrixUniform',
-              parameterLayout: [
-                'shader.shaderProgram',
-                'light.shadowMat44',
-                'camera.cameraMat44'
-              ]
-            }));
-        
-        redrawEventHandler.preDescendBindings.append(
-          scene.constructOperator({
-              operatorName: 'bindShadowMapBufferOp',
-              srcFile: 'FABRIC_ROOT/SceneGraph/KL/shadowMaps.kl',
-              entryFunctionName: 'bindShadowMapBuffer',
-              parameterLayout: [
-                'self.shadowMap',
-                'light.depthRenderTarget'
-              ]
-            }));
-     }
       return redrawEventHandler;
     };
     
-    spotLightNode.constructShadowRenderEventHandler = function() {
-
-      var shadowRenderEventHandler = spotLightNode.constructEventHandlerNode('RenderDepthBuffer');
-
-      // Projection Values
-      dgnode.addMember('nearDistance', 'Scalar', options.nearDistance);
-      dgnode.addMember('farDistance', 'Scalar', options.farDistance);
-      dgnode.addMember('projectionMat44', 'Mat44');
-      dgnode.addMember('shadowMat44', 'Mat44');
-      dgnode.addMember('depthRenderTarget', 'OGLRenderTarget', FABRIC.RT.oglDepthRenderTarget(options.resolution));
-      
+    if (options.castShadows) {
       dgnode.bindings.append(scene.constructOperator({
-          operatorName: 'calcLightProjectionMatrices',
+          operatorName: 'calcSpotLightProjectionMatrices',
           srcFile: 'FABRIC_ROOT/SceneGraph/KL/shadowMaps.kl',
-          entryFunctionName: 'calcLightProjectionMatrices',
+          entryFunctionName: 'calcSpotLightProjectionMatrices',
           parameterLayout: [
             'self.nearDistance',
             'self.farDistance',
@@ -443,47 +493,6 @@ FABRIC.SceneGraph.registerNodeType('SpotLight', {
             'self.shadowMat44'
           ]
         }));
-
-      shadowRenderEventHandler.setScope('light', dgnode);
-      shadowRenderEventHandler.setScope('camera', dgnode);
-
-     
-      shadowRenderEventHandler.preDescendBindings.append(scene.constructOperator({
-          operatorName: 'bindDepthRenderTarget',
-          srcFile: 'FABRIC_ROOT/SceneGraph/KL/renderTarget.kl',
-          entryFunctionName: 'bindRenderTarget',
-          parameterLayout: [
-            'light.depthRenderTarget'
-          ]
-        }));
-      shadowRenderEventHandler.postDescendBindings.append(scene.constructOperator({
-          operatorName: 'unbindDepthRenderTarget',
-          srcFile: 'FABRIC_ROOT/SceneGraph/KL/renderTarget.kl',
-          entryFunctionName: 'unbindRenderTarget',
-          parameterLayout: [
-            'light.depthRenderTarget'
-          ]
-        }));
-       
-      if(options.displayShadowDebug === true){
-        // Display the shadow color map on screen.
-        var shadowDebugRenderEventHandler = spotLightNode.constructEventHandlerNode('renderDebugQuad');
-        shadowDebugRenderEventHandler.addMember('program', 'Integer');
-        scene.getScenePostRedrawEventHandler().appendChildEventHandler(shadowDebugRenderEventHandler);
-        shadowDebugRenderEventHandler.setScope('light', dgnode);
-        shadowDebugRenderEventHandler.preDescendBindings.append(
-          scene.constructOperator({
-              operatorName:"debugShadowMapBuffer",
-              srcFile:"FABRIC_ROOT/SceneGraph/KL/shadowMaps.kl",
-              entryFunctionName:"debugShadowMapBuffer",
-              parameterLayout:[
-                'light.depthRenderTarget',
-                'self.program'
-              ]
-            }));
-      }
-
-      scene.registerShadowCastingLightSourceHandler(shadowRenderEventHandler);
     }
     
     spotLightNode.constructDisplay = function() {

@@ -23,7 +23,41 @@ function Mat44 symmetricFrustum(
   return result;
 }
 
-operator calcLightProjectionMatrices(
+function Mat44 symmetricOrthographicFrustum(
+  Scalar w, Scalar h,
+  Scalar n, Scalar f
+) {
+  var Scalar d = f - n;
+  var Mat44 result(
+    2.0 / w, 0.0, 0.0, 0.0,
+    0.0, 2.0 / h, 0.0, 0.0,
+    0.0, 0.0, - 2.0 / d, -(f + n) / d,
+    0.0, 0.0, 0.0, 1.0);
+  return result;
+}
+
+operator calcDirectionalLightProjectionMatrices(
+  io Scalar near,
+  io Scalar far,
+  io Scalar size,
+  io Mat44 lightInvMat,
+  io Mat44 lightProjectionMat,
+  io Mat44 shadowMat
+) {
+    report( "calcDirectionalLightProjectionMatrices" );
+
+  lightProjectionMat = symmetricOrthographicFrustum(size, size, near, far);
+
+  var Mat44 biasMat;
+  biasMat.setNull();
+  biasMat.setDiagonal(0.5);
+  biasMat.setTranslation(Vec3(0.5, 0.5, 0.5));
+  biasMat.row3.t = 1.0;
+  shadowMat = biasMat * lightProjectionMat * lightInvMat;
+}
+
+
+operator calcSpotLightProjectionMatrices(
   io Scalar near,
   io Scalar far,
   io Scalar fovY,
@@ -31,7 +65,7 @@ operator calcLightProjectionMatrices(
   io Mat44 lightProjectionMat,
   io Mat44 shadowMat
 ) {
-  //  report( "calcLightProjectionMatrices" );
+  //  report( "calcSpotLightProjectionMatrices" );
   
   var Scalar frustumH = tan(fovY / 2) * near * 2;
   var Scalar frustumW = frustumH;

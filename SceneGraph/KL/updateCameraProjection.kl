@@ -66,8 +66,8 @@ function Mat44 symmetricOrthographicFrustum(
   var Mat44 result(
     2.0 / w, 0.0, 0.0, 0.0,
     0.0, 2.0 / h, 0.0, 0.0,
-    0.0, 0.0, - 2.0 / d, 0.0,
-  0.0, 0.0, -(f + n) / d, 1.0);
+    0.0, 0.0, - 2.0 / d, -(f + n) / d,
+    0.0, 0.0, 0.0, 1.0);
   return result;
 }
 
@@ -81,7 +81,7 @@ operator updateCameraProjection(
   io Boolean orthographic,
   io Vec2 screenOffset
 ) {
-//  report( "updateCameraProjection\n" );
+ // report( "updateCameraProjection:" + orthographic);
 
   if (width < 1) width = 1;
   if (height < 1) height = 1;
