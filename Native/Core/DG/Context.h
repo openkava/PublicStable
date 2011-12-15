@@ -7,6 +7,7 @@
 
 #include <Fabric/Core/JSON/CommandChannel.h>
 #include <Fabric/Core/MR/Interface.h>
+#include <Fabric/Core/KLC/Interface.h>
 #include <Fabric/Core/CG/CompileOptions.h>
 #include <Fabric/Core/Util/JSONGenerator.h>
 #include <Fabric/Core/Util/Mutex.h>
@@ -189,6 +190,7 @@ namespace Fabric
       static std::string const s_wrapFabricClientJSSource;
       
       MR::Interface m_mrInterface;
+      KLC::Interface m_klcInterface;
     };
   };
 };
