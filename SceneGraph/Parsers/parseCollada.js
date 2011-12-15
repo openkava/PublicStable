@@ -770,11 +770,14 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
     var geometryNodes = [];
     if(geometryData.mesh){
       var meshData = geometryData.mesh;
-      var constructGeometryNode = function(triangles){
-        var name = geometryData.name + (triangles.material || "");
-        var processedData = processGeometryData(meshData, triangles);
+      var constructGeometryNode = function(polygons){
+        var name = geometryData.name;
+        if(polygons.material != null){
+          name += polygons.material;
+        }
+        var processedData = processGeometryData(meshData, polygons);
         processedData.constructionOptions.name = name;
-        var geometryNode = scene.constructNode('Triangles', processedData.constructionOptions);
+        var geometryNode = scene.constructNode('polygons', processedData.constructionOptions);
         if(processedData.geometryData.vertexColors){
           geometryNode.addVertexAttributeValue('vertexColors', 'Color', {
             genVBO:true
@@ -991,7 +994,6 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
     var boneIndicesMap = {};
     var bones = [];
     var traverseChildren = function(nodeData, parentName) {
-      console.log(nodeData.name);
       var boneOptions = { name: nodeData.name, parent: -1, length: 0 };
       boneIndicesMap[nodeData.name] = bones.length;
       if (parentName) {
@@ -1186,7 +1188,10 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
       
     
     var constructSkinnedGeometry = function(polygons){
-      var name = geometryData.name + polygons.material;
+      var name = geometryData.name;
+      if(polygons.material != null){
+        name += triangles.material;
+      }
       var processedData = processGeometryData(geometryData.mesh, polygons);
       
       // Now remap the generated arrays to the vertices in the mesh we store.

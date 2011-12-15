@@ -130,7 +130,7 @@ $(document).ready(function() {
   var constructBulletScene = true;
   
   var rigName = 'CMan0005';
-  /*
+  
   try{
     if(localStorage && localStorage.getItem("rigName")){
       rigName = localStorage.getItem("rigName");
@@ -141,8 +141,10 @@ $(document).ready(function() {
   }catch(e){}
   if(rigName =='centipede'){
     constructBulletScene = false;
+  }else if(rigName =='walker' || rigName =='walker'){
+    rigName = 'CMan0005';
   }
-  */
+  
   if(constructBulletScene){
     
     // create a simulation world
@@ -316,12 +318,13 @@ $(document).ready(function() {
         comHeight: 1.8,
         circleSize: 1.6
       });
-    
+    /*
     material = scene.constructNode('SpiedelShader', {
       lightNode: scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) }),
       diffuseColor: FABRIC.RT.rgba(1.0, 0.0, 0.0, 1.0)
     });
-    rigFile = 'Assets/SpiedelRig.json';
+    */
+    rigFile = 'Assets/Spiedel.json';
     animationLibraryFile = 'Assets/SpiedelAnimation.json';
     minFrequency = 0.75;
     break;
@@ -403,8 +406,6 @@ $(document).ready(function() {
   var nodeMap = animationLoader.load(storage);
   var libraryAnimations = nodeMap.LibraryLocomotionAnimations;
   
-  var skeletonNode = ikrig.getSkeletonNode();
-  
   ikrig.setControllerNode(locomotionControllerNode);
   
   var locomotionVariables = scene.constructNode('LocomotionPoseVariables', {
@@ -444,7 +445,6 @@ $(document).ready(function() {
     viewport.redraw();
   });
   
-  displayFootRaycastingDebugging
   
   var togglePlay = function(){
     if ($('#play').text() == 'Play') {
@@ -610,9 +610,9 @@ $(document).ready(function() {
             <div class="content">
               <label for="selectCharacter" style="margin-top:10px;">Select Character:</label>
               <select id='selectCharacter' style="margin-top:10px;">
-                <option value="walker">Walker
+                <option value="Spiedel">Quadruped
                 <option value="centipede">Centipede
-                <option value="marama">Human
+                <option value="CMan0005">Human
               </select>
               </br>
               <input type="checkbox" id="displayControllerDebugging" style="margin-top:10px;"/><label for="displayControllerDebugging">Display Controller Debugging:</label>
