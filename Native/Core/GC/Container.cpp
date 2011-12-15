@@ -19,6 +19,13 @@ namespace Fabric
     {
       // [pzion 20111212] We could report leaks here, but it will be common
       // that scripts forget to call dispose() on their objects...
+      IDToObjectMap::const_iterator it = m_idToObjectMap.begin();
+      while ( it != m_idToObjectMap.end() )
+      {
+        IDToObjectMap::const_iterator thisIT = it++;
+        thisIT->second->dispose();
+      }
+      FABRIC_ASSERT( m_idToObjectMap.empty() );
     }
       
     void Container::registerObject( std::string const &id_, Object *object )
