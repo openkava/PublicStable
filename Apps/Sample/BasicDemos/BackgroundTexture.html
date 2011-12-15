@@ -81,7 +81,7 @@ $(document).ready(function() {
     });
     if (nbRemaining===0) {
       $('#loadingDialog').dialog('close');
-      viewport.redraw();
+      viewportredraw();
       return true;
     }
   });
