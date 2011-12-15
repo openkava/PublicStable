@@ -11,11 +11,9 @@
 		
 		<uniform name="u_materialAmbientColor" constant="ambientColor" type="Color" defaultValue="FABRIC.RT.rgba(0.0,0.0,0.0,1)"/>
 		<uniform name="u_materialShininess" constant="shininess" type="Scalar" defaultValue="20.7"/>
-		<uniform name="u_materialBumpStrength" constant="bumpiness" type="Scalar" defaultValue="1.0"/>
 		
 		<uniform name="u_samplerDiffuseMap" constant="diffuseTexture" type="Integer" owner="texture"/>
 		<uniform name="u_samplerSpecularMap" constant="specularTexture" type="Integer" owner="texture"/>
-		<uniform name="u_samplerNormalMap" constant="normalTexture" type="Integer" owner="texture"/>
 		
 		<uniform name="u_modelViewProjectionMatrix" constant="modelViewProjectionMatrix" type="Mat44" owner="instance"/>
 		<uniform name="u_modelViewMatrix" constant="modelViewMatrix" type="Mat44" owner="instance"/>
@@ -26,7 +24,6 @@
 		<attribute name="a_position" binding="positions"/>
 		<attribute name="a_texCoord" binding="uvs0"/>
 		<attribute name="a_normal" binding="normals"/>
-		<attribute name="a_tangent" binding="tangents"/>
 	</attributes>
 	
 	<lights>
@@ -36,7 +33,6 @@
 	<textures>
 		<texture binding="diffuseTexture"/>
 		<texture binding="specularTexture"/>
-		<texture binding="normalTexture"/>
 	</textures>
 	
 	<vertexshader>
@@ -53,8 +49,6 @@
 			attribute vec4 a_tangent;
 			
 			varying vec3 normal;
-			varying vec3 tangent;
-			varying vec3 binormal;
 			varying vec3 lightDir;
 			varying vec3 viewDir;
 			
@@ -63,8 +57,6 @@
 				gl_TexCoord[0].xy = a_texCoord.xy;
 				
 				normal = u_normalMatrix * a_normal;
-				tangent = u_normalMatrix * vec3(a_tangent.x,a_tangent.y,a_tangent.z);
-				binormal = cross(tangent, normal);
 				
 				vec4 modelCameraPosition = u_modelViewMatrix * a_position;
 				lightDir = vec3(u_lightPosition - modelCameraPosition);
@@ -85,12 +77,9 @@
 			
 			uniform float u_materialShininess;
 			uniform vec4 u_materialAmbientColor;
-
-			uniform float u_materialBumpStrength;
 			
 			uniform sampler2D u_samplerDiffuseMap;
 			uniform sampler2D u_samplerSpecularMap;
-			uniform sampler2D u_samplerNormalMap;
 			
 			varying vec3 normal;
 			varying vec3 tangent;
