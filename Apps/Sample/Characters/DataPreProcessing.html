@@ -617,7 +617,7 @@ $(document).ready(function() {
       var animationSaver = scene.constructManager('SceneSerializer');
       animationSaver.addNode(libraryLocomotionAnimations);
     
-      var storage = new FABRIC.SceneGraph.FileWriter(scene, "Write Animation Data", rigName);
+      var storage = new FABRIC.SceneGraph.FileWriter(scene, "Write Animation Data", rigName + "Animation");
       animationSaver.save(storage);
     });
 
