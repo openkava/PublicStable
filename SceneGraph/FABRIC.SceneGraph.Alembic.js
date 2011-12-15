@@ -206,7 +206,10 @@ FABRIC.SceneGraph.registerNodeType('AlembicLoadNode', {
         }
         else if(type == 'Xform')
         {
-          var transformNode = scene.constructNode('Transform', {hierarchical: false});
+          var transformNode = scene.constructNode('Transform', {
+            hierarchical: (options.parentTransformNode!= undefined ? true : false),
+            parentTransformNode: options.parentTransformNode
+          });
           parsedNodes[identifier] = transformNode.pub;
           
           // have the transform be driven by the parser
@@ -228,7 +231,7 @@ FABRIC.SceneGraph.registerNodeType('AlembicLoadNode', {
               'alembic.handle',
               'self.identifier',
               'self.alembicTime',
-              'self.globalXfo'
+              'self.'+ (options.parentTransformNode!= undefined ? 'localXfo' : 'globalXfo')
             ],
             entryFunctionName: 'alembicParseXform',
             srcFile: 'FABRIC_ROOT/SceneGraph/KL/loadAlembic.kl'

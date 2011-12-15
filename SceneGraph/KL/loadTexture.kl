@@ -48,11 +48,14 @@ operator loadAndBindTextureLDR(
   if((oglTexture2D.bufferID == 0 || oglTexture2D.forceRefresh) && resource.data.size() != 0){
     Size width, height;
     RGBA imageLDR[];
-    decodeLDRImageData(resource, width, height, imageLDR);
-    oglTexture2D.configure(width, height, imageLDR.data(), imageLDR.size(), textureUnit);
+    if(decodeLDRImageData(resource, width, height, imageLDR)){
+      oglTexture2D.bindImageLDR(width, height, imageLDR, textureUnit);
+    }
   }
-  if(oglTexture2D.bufferID != 0)
-    oglTexture2D.bind(textureUnit);
+  else{
+    if(oglTexture2D.bufferID != 0)
+      oglTexture2D.bind(textureUnit);
+  }
 }
 
 operator bindTextureHDR(
