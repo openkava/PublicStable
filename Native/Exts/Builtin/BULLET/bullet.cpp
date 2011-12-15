@@ -668,6 +668,44 @@ FABRIC_EXT_EXPORT void FabricBULLET_Shape_Create(
         return;
       }
       collisionShape = new btCylinderShape(btVector3(shape.parameters[0],shape.parameters[1],shape.parameters[0]));
+    } else if(shape.type  == TRIANGLE_MESH_SHAPE_PROXYTYPE) {
+      
+      if(shape.parameters.size() != 0) {
+        throwException( "{FabricBULLET} ERROR: For the TriangleMesh shape you need to specify zero parameters." );
+        return;
+      }
+
+      if(shape.vertices.size() <= 3) {
+        throwException( "{FabricBULLET} ERROR: For the TriangleMesh shape you need to specify at least 3 vertices." );
+        return;
+      }
+
+      if(shape.indices.size() <= 3) {
+        throwException( "{FabricBULLET} ERROR: For the TriangleMesh shape you need to specify at least 3 indices." );
+        return;
+      }
+      
+      shape.localData = new BulletShape::LocalData();
+      shape.localData->mTriangleIDs = (int*)malloc(sizeof(int)*shape.indices.size());
+      shape.localData->mTrianglePos = (btScalar*)malloc(sizeof(btScalar)*shape.vertices.size()*3);
+
+       // copy the data
+      for(int i=0;i<shape.indices.size();i++)
+         shape.localData->mTriangleIDs[i] = shape.indices[i];
+      size_t offset = 0;
+      for(int i = 0;i<shape.vertices.size();i++)
+      {
+         shape.localData->mTrianglePos[offset++] = shape.vertices[i].x;
+         shape.localData->mTrianglePos[offset++] = shape.vertices[i].y;
+         shape.localData->mTrianglePos[offset++] = shape.vertices[i].z;
+      }
+
+      shape.localData->mTriangles = new btTriangleIndexVertexArray(
+         shape.indices.size() / 3,shape.localData->mTriangleIDs,3*sizeof(int),
+         shape.vertices.size(), shape.localData->mTrianglePos,3*sizeof(btScalar));
+
+      collisionShape = new btBvhTriangleMeshShape(shape.localData->mTriangles,true);
+      
     } else if(shape.type  == GIMPACT_SHAPE_PROXYTYPE) {
 
       if(shape.parameters.size() != 0) {
