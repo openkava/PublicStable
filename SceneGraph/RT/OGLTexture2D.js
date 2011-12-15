@@ -19,13 +19,18 @@ FABRIC.RT.OGLTexture2D = function(glInternalFormat, glFormat, glType) {
   this.wrapS = FABRIC.SceneGraph.OpenGLConstants ? FABRIC.SceneGraph.OpenGLConstants.GL_REPEAT : 0;
   this.wrapT = FABRIC.SceneGraph.OpenGLConstants ? FABRIC.SceneGraph.OpenGLConstants.GL_REPEAT : 0;
   this.forceRefresh = false;
+  this.buildMipmaps = false;
 };
 
-FABRIC.RT.oglTexture2D = function(){
-  return new FABRIC.RT.OGLTexture2D(
+FABRIC.RT.oglTexture2D = function(mipmapped){
+  var oglTexture = new FABRIC.RT.OGLTexture2D(
     FABRIC.SceneGraph.OpenGLConstants.GL_RGBA8,
     FABRIC.SceneGraph.OpenGLConstants.GL_RGBA,
     FABRIC.SceneGraph.OpenGLConstants.GL_UNSIGNED_BYTE);
+  oglTexture.buildMipmaps = true;
+  oglTexture.textureMinFilter = FABRIC.SceneGraph.OpenGLConstants.GL_LINEAR_MIPMAP_LINEAR;
+  oglTexture.textureMaxFilter = FABRIC.SceneGraph.OpenGLConstants.GL_LINEAR;
+  return oglTexture;
 }
 
 FABRIC.RT.oglTexture2D_Color = function(){
@@ -68,7 +73,8 @@ FABRIC.appendOnCreateContextCallback(function(context) {
      textureMaxFilter: 'Integer',
      wrapS: 'Integer',
      wrapT: 'Integer',
-     forceRefresh: 'Boolean'
+     forceRefresh: 'Boolean',
+     buildMipmaps: 'Boolean'
     },
     constructor: FABRIC.RT.OGLTexture2D,
     klBindings: {

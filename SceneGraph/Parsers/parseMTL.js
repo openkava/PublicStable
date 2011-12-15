@@ -7,7 +7,9 @@ FABRIC.SceneGraph.registerParser('mtl', function(scene, assetFile, options) {
 
   var materialName,
     materialData = {},
-    results = {};
+    results = {},
+    imageLibrary = options.imageLibrary ? options.imageLibrary : {},
+    materialNames = options.materialNames;
     
   if(!options.materialType){
     options.materialType = "PhongTextureMaterial";
@@ -41,10 +43,7 @@ FABRIC.SceneGraph.registerParser('mtl', function(scene, assetFile, options) {
     materialMaps[i.toLowerCase()] = options.materialMaps[i];
   }
 
-  var onMaterialParsed = function(data, assetName) {
-    if (options.skipNodes && options.skipNodes.indexOf(assetName) != -1) {
-      return;
-    }
+  var onMaterialParsed = function(materialType, data, assetName) {
     var materialOptions = {
       name: assetName 
     };
@@ -54,7 +53,7 @@ FABRIC.SceneGraph.registerParser('mtl', function(scene, assetFile, options) {
     for (i in materialMaps) {
       materialOptions[materialMaps[i]+'Node'] = data[materialMaps[i]];
     }
-    var graphNode = scene.constructNode(options.materialType, materialOptions);
+    var graphNode = scene.constructNode(materialType, materialOptions);
     results[assetName] = graphNode;
   }
 
@@ -72,10 +71,10 @@ FABRIC.SceneGraph.registerParser('mtl', function(scene, assetFile, options) {
     return;
   }
 
-  var maps = {};
   var numLines = lines.length;
   var numSubAssets = 0;
   var lineNumber = 0;
+  var materialType = options.materialType;
   while (lineNumber < numLines) {
     var line = lines[lineNumber].replace(/^\s+|\s+$/g, '');
     ++lineNumber;
@@ -87,33 +86,37 @@ FABRIC.SceneGraph.registerParser('mtl', function(scene, assetFile, options) {
     var value = line.substring(separatorPos+1);
 
     if (identifier == 'newmtl') {
-      if (materialName && (!options.skipNodes || options.skipNodes.indexOf(materialName) === -1)) {
-        onMaterialParsed(materialData, materialName);
+      if (materialName && (!materialNames || materialNames.indexOf(materialName) !== -1)) {
+        onMaterialParsed(materialType, materialData, materialName);
       }
       materialName = value;
+      materialType = options.materialType;
+    }
+    else if (identifier == 'shader') {
+      materialType = value;
     }
     // Here we map values in the MTL file with properties and maps in the material.
     else if (materialProperties[identifier] && value) {
-      if (!options.skipNodes || options.skipNodes.indexOf(materialName) === -1) {
+      if (!materialNames || materialNames.indexOf(materialName) !== -1) {
         materialData[materialProperties[identifier]] = parseFloat(value);
       }
     }
     else if (materialMaps && materialMaps[identifier.toLowerCase()] && value) {
-      if (!options.skipNodes || options.skipNodes.indexOf(materialName) === -1) {
-        if(!maps[value]){
-          console.log(value);
-          maps[value] = scene.constructNode('Image', {
+      if (!materialNames || materialNames.indexOf(materialName) !== -1) {
+        if(!imageLibrary[value]){
+        //  console.log(value);
+          imageLibrary[value] = scene.constructNode('Image', {
             name: value,
             url: options.basePath + '/' + value
           });
         }
-        materialData[materialMaps[identifier.toLowerCase()]] = maps[value];
+        materialData[materialMaps[identifier.toLowerCase()]] = imageLibrary[value];
       }
     }
   }
 
-  if (materialName && (!options.skipNodes || options.skipNodes.indexOf(materialName) === -1)) {
-    onMaterialParsed(materialData, materialName);
+  if (materialName && (!materialNames || materialNames.indexOf(materialName) !== -1)) {
+    onMaterialParsed(materialType, materialData, materialName);
   }
 
   return results;

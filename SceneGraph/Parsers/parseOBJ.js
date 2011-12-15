@@ -29,6 +29,7 @@ FABRIC.SceneGraph.registerNodeType('LoadObj', {
     resourceloaddgnode.addMember('printDetailedInfo', 'Boolean', options.printDetailedInfo);
     
     resourceloaddgnode.addMember('objectNames', 'String[]');
+    resourceloaddgnode.addMember('groupNames', 'String[]');
     resourceloaddgnode.addMember('materialNames', 'String[]');
     
     resourceloaddgnode.bindings.append(scene.constructOperator({
@@ -45,6 +46,7 @@ FABRIC.SceneGraph.registerNodeType('LoadObj', {
           'self.printDetailedInfo',
           
           'self.objectNames',
+          'self.groupNames',
           'self.materialNames'
         ]
       }));
@@ -57,6 +59,7 @@ FABRIC.SceneGraph.registerNodeType('LoadObj', {
       }
       resourceLoadNode.pub.fireEvent('objloadsuccess', {
         objectNames: resourceloaddgnode.getData('objectNames'),
+        groupNames: resourceloaddgnode.getData('groupNames'),
         materialNames: resourceloaddgnode.getData('materialNames')
       });
     });
@@ -134,11 +137,13 @@ FABRIC.SceneGraph.registerParser('obj', function(scene, assetUrl, options) {
     var loadedGeometries = {};
     if(evt.objectNames.length > 0){
       for(var i=0; i<evt.objectNames.length; i++){
-        loadedGeometries[evt.objectNames[i]] = scene.constructNode('ObjTriangles', {
+        var objectName = evt.objectNames[i].length > 0 ? evt.objectNames[i] : evt.groupNames[i];
+        loadedGeometries[objectName] = scene.constructNode('ObjTriangles', {
           resourceLoadNode: resourceLoadNode,
           entityIndex: i,
-          name: evt.objectNames[i]
+          name: objectName
         });
+        evt.objectNames[i] = objectName;
       }
     }else{
       evt.objectNames = [options.baseName];
