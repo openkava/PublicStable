@@ -15,7 +15,8 @@ FABRIC.SceneGraph.registerNodeType('Geometry', {
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
         createBoundingBoxNode: true,
-        drawable: true
+        drawable: true,
+        dynamicIndices: false
       });
   
     var geometryNode = geometryNode = scene.constructNode('SceneGraphNode', options),
@@ -90,6 +91,7 @@ FABRIC.SceneGraph.registerNodeType('Geometry', {
         var registeredTypes = scene.getContext().RegisteredTypesManager.getRegisteredTypes();
         var attributeID = FABRIC.SceneGraph.getShaderParamID(name);
         var indicesBuffer = new FABRIC.RT.OGLBuffer(name, attributeID, registeredTypes.Integer);
+        indicesBuffer.dynamic = options.dynamicIndices;
         redrawEventHandler.addMember('indicesBuffer', 'OGLBuffer', indicesBuffer);
 
         redrawEventHandler.preDescendBindings.append(scene.constructOperator({

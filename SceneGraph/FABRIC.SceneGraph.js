@@ -957,6 +957,7 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
     var fabricwindow = scene.bindViewportToWindow(windowElement, viewportNode);
     
     var initialLoad = true;
+    var visible = false;
     var startLoadMode = function() {
       fabricwindow.hide();
       FABRIC.appendOnResolveAsyncTaskCallback(function(label, countRemaining){
@@ -983,8 +984,8 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
             // during the 1st redraw.
             viewportNode.pub.getOpenGLVersion = fabricwindow.getOpenGLVersion;
             viewportNode.pub.getGlewSupported = fabricwindow.getGlewSupported;
-            viewportNode.pub.show = function(){ fabricwindow.show(); };
-            viewportNode.pub.hide = function(){ fabricwindow.hide(); };
+            viewportNode.pub.show = function(){ fabricwindow.show(); visible = true; };
+            viewportNode.pub.hide = function(){ fabricwindow.hide(); visible = false; };
 
             viewportNode.pub.getWidth = function(){ return fabricwindow.windowNode.getData('width'); };
             viewportNode.pub.getHeight = function(){ return fabricwindow.windowNode.getData('height'); };
@@ -994,7 +995,7 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
           if(options.checkOpenGL2Support && !fabricwindow.getGlewSupported('GL_VERSION_2_0')){
             alert('ERROR: Your graphics driver does not support OpenGL 2.0, which is required to run Fabric.')
           }else{
-            fabricwindow.show();
+            viewportNode.pub.show();
           }
           return true;
         }
@@ -1229,6 +1230,9 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
       return ray;
     };
     viewportNode.pub.redraw = function(force) {
+      if(!visible){
+        return;
+      }
       if(scene.pub.animation.isPlaying()){
         if(force)
           fabricwindow.needsRedraw();
@@ -1525,6 +1529,8 @@ FABRIC.SceneGraph.registerNodeType('ResourceLoad', {
     resourceLoadNode.pub.getDGLoadNode = function() {
       return dgnode;
     };
+    
+    scene.addEventHandlingFunctions(resourceLoadNode);
 
     if (options.url) {
       // check if the url has a handle

@@ -230,7 +230,7 @@ FABRIC.SceneGraph.registerManagerType('SelectionManipulationManager', {
       manipulators: undefined,
       transformGetter: 'getGlobalXfo',
       transformSetter: 'setGlobalXfo',
-      screenTranslationRadius: 2.0,
+      screenTranslationRadius: 2.0
       });
     
     var selectionManager = options.selectionManager;
@@ -248,7 +248,7 @@ FABRIC.SceneGraph.registerManagerType('SelectionManipulationManager', {
 
     /////
     // Propagate the manipulation to all selected members.
-    var dragStartGlobalXfo, dragStartSelGlobalXfos;
+    var dragStartGlobalXfo = undefined, dragStartSelGlobalXfos = undefined;
     var dragStartFn = function(evt) {
       dragStartGlobalXfo = groupTransform.pub.getGlobalXfo();
       var selection = selectionManager.getSelection();
@@ -281,12 +281,17 @@ FABRIC.SceneGraph.registerManagerType('SelectionManipulationManager', {
           onDo: function (){
             for(var i=0;i<selection.length;i++)
               selection[i].getTransformNode()[options.transformSetter](currentTransforms[i]);
-          },
+          }
         });
       }
     }
     
+    // store the original setter
+    groupTransform.originalSetGlobalXfo = groupTransform.pub.setGlobalXfo;
+    
     groupTransform.pub.setGlobalXfo = function(xfo){
+      groupTransform.originalSetGlobalXfo(xfo);
+
       var xform = xfo.multiply(dragStartGlobalXfo.inverse());
       var selection = selectionManager.getSelection();
       for(var i=0; i<selection.length; i++){
@@ -294,40 +299,6 @@ FABRIC.SceneGraph.registerManagerType('SelectionManipulationManager', {
       }
       selectionManager.fireEvent('groupTransformChanged',{selection: selection});
     };
-
-    // Create a list of known operators for each selection count    
-    var operatorAssigned = false;
-    var generatedOperators = {};
-    var generateTransformOperator = function(selection){
-      if(generatedOperators[selection.length]){
-        return generatedOperators[selection.length];
-      }
-      var parameterLayout = [
-        'self.globalXfo'
-      ]
-      var srcCodeHeader = 'use Xfo, Mat44;\noperator calcAverageXfo( \n  io Xfo xfo';
-      var srcCodeBody = '\n){ \n  xfo.setIdentity();\n  Scalar weight = 1.0/'+selection.length+'.0;\n';
-      for(var i=0; i<selection.length; i++){
-        srcCodeHeader += ',\n  io Xfo obj' + i;
-        srcCodeBody  += '  xfo.tr += obj' + i + '.tr * weight;\n';
-        if(selection.length==1){
-          srcCodeBody  += '  xfo.ori = obj' + i + '.ori;\n';
-        }
-        parameterLayout.push('obj' + i +'.globalXfo');
-      }
-      srcCodeBody += '  \n}';
-      
-      var operatorName = 'calcAverageXfo' + selection.length;
-      generatedOperators[selection.length] = scene.constructOperator( {
-          operatorName: operatorName,
-          srcCode: (srcCodeHeader + srcCodeBody),
-          parameterLayout: parameterLayout,
-          entryFunctionName: 'calcAverageXfo',
-          async: false
-        });
-      
-      return generatedOperators[selection.length];
-    }
 
     // retrieve the list of manipulators    
     var manipulators = options.manipulators;
@@ -343,27 +314,23 @@ FABRIC.SceneGraph.registerManagerType('SelectionManipulationManager', {
 
     var prevSelectionCount = 0;
     selectionManager.addEventListener('selectionChanged', function(evt){
-      if(operatorAssigned){
-        groupTransform.getDGNode().bindings.remove(0);
-        operatorAssigned = false;
-      }
       if(evt.selection.length==0){
         toggleManipulatorsDisplay(false);
       }
       else{
         toggleManipulatorsDisplay(true);
-        
+
+        var weight = 1.0 / evt.selection.length;
+        var xfo = new FABRIC.RT.Xfo();
+        xfo.ori = evt.selection[0].getTransformNode()[options.transformGetter]().ori;
         for(var i=0; i<evt.selection.length; i++){
-          var obj = scene.getPrivateInterface(evt.selection[i].getTransformNode());
-          groupTransform.getDGNode().setDependency(obj.getDGNode(), 'obj'+i);
+          var selXfo = evt.selection[i].getTransformNode()[options.transformGetter]();
+          xfo.tr = xfo.tr.add(selXfo.tr.multiplyScalar(weight));
         }
-        for(var i=evt.selection.length; i<prevSelectionCount; i++){
-          // TODO: uncomment this once we have removeDependency
-        //  groupTransform.getDGNode().removeDependency('obj'+i);
-        }
-        groupTransform.getDGNode().bindings.append(generateTransformOperator(evt.selection));
+        
+        groupTransform.originalSetGlobalXfo(xfo);
+
         prevSelectionCount = evt.selection.length;
-        operatorAssigned = true;
       }
     });
 
