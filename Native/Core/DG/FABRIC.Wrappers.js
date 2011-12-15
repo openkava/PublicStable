@@ -1559,7 +1559,23 @@ function (fabricClient, logCallback, debugLogCallback) {
       createCompilation: function() {
         var compilation = GC.createObject('KLC');
         
-        queueCommand(['KLC'],'createCompilation', null, function () {
+        compilation.sourceCodes = {
+        };
+        
+        compilation.pub.add = function (sourceName, sourceCode) {
+          var oldSourceCode = compilation.sourceCodes[sourceName];
+          compilation.sourceCodes[sourceName] = sourceCode;
+          compilation.queueCommand('add', {
+            sourceName: sourceName,
+            sourceCode: sourceCode
+          }, function () {
+            compilation.sourceCodes[sourceName] = oldSourceCode;
+          });
+        };
+        
+        queueCommand(['KLC'],'createCompilation', {
+          id: compilation.id
+        }, function () {
           delete compilation['id'];
         });
         return compilation.pub;

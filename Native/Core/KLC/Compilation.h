@@ -45,6 +45,12 @@ namespace Fabric
       void remove( std::string const &sourceName );
       
       RC::ConstHandle<Executable> run() const;
+        
+      virtual void jsonExec(
+        std::string const &cmd,
+        RC::ConstHandle<JSON::Value> const &arg,
+        Util::JSONArrayGenerator &resultJAG
+        );
 
     protected:
     
@@ -55,6 +61,11 @@ namespace Fabric
       
     private:
     
+      void jsonExecAdd(
+        RC::ConstHandle<JSON::Value> const &arg,
+        Util::JSONArrayGenerator &resultJAG
+        );
+
       RC::Handle<CG::Manager> m_cgManager;
       CG::CompileOptions m_compileOptions;
       mutable SourceMap m_sources;
