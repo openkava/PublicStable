@@ -4,6 +4,7 @@
  
 #include <Fabric/Core/KLC/Interface.h>
 #include <Fabric/Core/KLC/Compilation.h>
+#include <Fabric/Core/KLC/Executable.h>
 #include <Fabric/Core/MR/ConstArrayProducer.h>
 #include <Fabric/Core/GC/Object.h>
 #include <Fabric/Core/RT/Manager.h>
@@ -47,6 +48,8 @@ namespace Fabric
     {
       if ( cmd == "createCompilation" )
         jsonExecCreateCompilation( arg, resultJAG );
+      else if ( cmd == "createExecutable" )
+        jsonExecCreateExecutable( arg, resultJAG );
       else throw Exception( "unknown command: " + _(cmd) );
     }
     
@@ -91,10 +94,53 @@ namespace Fabric
         throw "sourceCode: " + e;
       }
       
-      RC::Handle<Compilation> compilation = new Compilation( m_cgManager, m_compileOptions );
+      RC::Handle<Compilation> compilation = new Compilation( &m_gcContainer, m_cgManager, m_compileOptions );
       if ( sourceName.length() > 0 || sourceCode.length() > 0 )
         compilation->add( sourceName, sourceCode );
       compilation->reg( &m_gcContainer, id_ );
+    }
+    
+    void Interface::jsonExecCreateExecutable(
+      RC::ConstHandle<JSON::Value> const &arg,
+      Util::JSONArrayGenerator &resultJAG
+      )
+    {
+      RC::ConstHandle<JSON::Object> argObject = arg->toObject();
+      
+      std::string id_;
+      try
+      {
+        id_ = argObject->get( "id" )->toString()->value();
+      }
+      catch ( Exception e )
+      {
+        throw "id: " + e;
+      }
+      
+      std::string sourceName;
+      try
+      {
+        sourceName = argObject->get( "sourceName" )->toString()->value();
+      }
+      catch ( Exception e )
+      {
+        throw "sourceName: " + e;
+      }
+      
+      std::string sourceCode;
+      try
+      {
+        sourceCode = argObject->get( "sourceCode" )->toString()->value();
+      }
+      catch ( Exception e )
+      {
+        throw "sourceCode: " + e;
+      }
+      
+      RC::Handle<Compilation> compilation = new Compilation( &m_gcContainer, m_cgManager, m_compileOptions );
+      compilation->add( sourceName, sourceCode );
+      RC::Handle<Executable> executable = compilation->run();
+      executable->reg( &m_gcContainer, id_ );
     }
   };
 };
