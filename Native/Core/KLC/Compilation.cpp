@@ -7,6 +7,7 @@
 #include <Fabric/Core/KL/Scanner.h>
 #include <Fabric/Core/KL/StringSource.h>
 #include <Fabric/Core/CG/Manager.h>
+#include <Fabric/Base/JSON/String.h>
 
 namespace Fabric
 {
@@ -61,6 +62,47 @@ namespace Fabric
         globalAST = AST::GlobalList::Create( globalAST, it->second.ast );
         
       return new Executable( m_cgManager, globalAST, m_compileOptions, diagnostics );
+    }
+        
+    void Compilation::jsonExec(
+      std::string const &cmd,
+      RC::ConstHandle<JSON::Value> const &arg,
+      Util::JSONArrayGenerator &resultJAG
+      )
+    {
+      if ( cmd == "add" )
+        jsonExecAdd( arg, resultJAG );
+      else GC::Object::jsonExec( cmd, arg, resultJAG );
+    }
+    
+    void Compilation::jsonExecAdd(
+      RC::ConstHandle<JSON::Value> const &arg,
+      Util::JSONArrayGenerator &resultJAG
+      )
+    {
+      RC::ConstHandle<JSON::Object> argObject = arg->toObject();
+      
+      std::string sourceName;
+      try
+      {
+        sourceName = argObject->get("sourceName")->toString()->value();
+      }
+      catch ( Exception e )
+      {
+        throw "sourceName: " + e;
+      }
+      
+      std::string sourceCode;
+      try
+      {
+        sourceName = argObject->get("sourceCode")->toString()->value();
+      }
+      catch ( Exception e )
+      {
+        throw "sourceCode: " + e;
+      }
+      
+      add( sourceName, sourceCode );
     }
   }
 }
