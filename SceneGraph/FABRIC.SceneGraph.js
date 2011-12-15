@@ -65,13 +65,13 @@ FABRIC.SceneGraph = {
   },
   registerParser: function(ext, parserFn) {
     ext = ext.toLocaleLowerCase();
-    var makeFileHandle = function(filePath) {
-      return filePath.split('/').pop().split('.')[0];
-    }
     if (!this.assetLoaders[ext]) {
       this.assetLoaders[ext] = function(scene, assetFile, options) {
         if (!options) options = {};
-        options.baseName = makeFileHandle(assetFile);
+        var pathArray = assetFile.split('/');
+        var fileName = pathArray.pop();
+        options.baseName = fileName.split('.')[0];
+        options.basePath = pathArray.join('/');
         return parserFn(scene, assetFile, options);
       }
     }
@@ -1007,7 +1007,7 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
     redrawEventHandler.appendChildEventHandler(propagationRedrawEventHandler);
 
     // Texture Stub for loading Background textures.
-    var backgroundTextureNode, textureStub, textureStubdgnode;
+    var backgroundTextureNode, textureStub;
     textureStub = viewportNode.constructEventHandlerNode('BackgroundTextureStub');
     propagationRedrawEventHandler.appendChildEventHandler(textureStub);
 
@@ -1121,7 +1121,7 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
     viewportNode.pub.disableRaycasting = disableRaycasting;
     viewportNode.pub.enableRaycasting = enableRaycasting;
     viewportNode.pub.setBackgroundTextureImage = function(textureNode) {
-      if (!textureStubdgnode) {
+      if (textureStub.postDescendBindings.getLength() == 0) {
         textureStub.setScopeName('textureStub');
         textureStub.addMember('textureUnit', 'Integer', 0);
         textureStub.addMember('program', 'Integer', 0);

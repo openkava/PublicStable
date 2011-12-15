@@ -594,6 +594,19 @@ FABRIC.SceneGraph.registerNodeType('TransparentMaterial', {
   factoryFn: function(options, scene) {
     options.parentEventHandler = scene.getSceneRedrawTransparentObjectsEventHandler();
     var transparentMaterial = scene.constructNode('Material', options);
+    var redrawEventHandler = transparentMaterial.getRedrawEventHandler();
+    redrawEventHandler.preDescendBindings.append(scene.constructOperator({
+      operatorName: 'disableDepthMask',
+      srcCode: 'use FabricOGL; operator disableDepthMask() { glDepthMask(GL_FALSE);; }',
+      entryFunctionName: 'disableDepthMask',
+      parameterLayout: []
+    }));
+    redrawEventHandler.postDescendBindings.append(scene.constructOperator({
+      operatorName: 'enableDepthMask',
+      srcCode: 'use FabricOGL; operator enableDepthMask() { glDepthMask(GL_TRUE);; }',
+      entryFunctionName: 'enableDepthMask',
+      parameterLayout: []
+    }));
     return transparentMaterial;
   }});
 

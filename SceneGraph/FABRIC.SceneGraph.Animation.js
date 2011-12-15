@@ -405,7 +405,6 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
       curveEditorWindow.animationLibraryNode = animationLibraryNode.pub;
       curveEditorWindow.trackSetId = trackSetId ? trackSetId : 0;
       curveEditorWindow.scene = scene.pub;
-      curveEditorWindow.drawKeys = (drawKeys!=undefined) ? drawKeys : true;
     }
     
     
