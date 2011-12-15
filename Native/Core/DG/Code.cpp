@@ -138,7 +138,7 @@ namespace Fabric
       {
         RC::Handle<CG::Manager> cgManager = context->getCGManager();
         RC::Handle<CG::Context> cgContext = CG::Context::Create();
-        llvm::OwningPtr<llvm::Module> module( new llvm::Module( "DG::Code", cgContext->getLLVMContext() ) );
+        llvm::OwningPtr<llvm::Module> module( new llvm::Module( "Fabric", cgContext->getLLVMContext() ) );
         CG::ModuleBuilder moduleBuilder( cgManager, cgContext, module.get(), m_compileOptions );
 #if defined(FABRIC_MODULE_OPENCL)
         OCL::llvmPrepareModule( moduleBuilder, context->getRTManager() );

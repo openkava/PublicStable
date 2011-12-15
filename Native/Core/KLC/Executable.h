@@ -26,6 +26,11 @@ namespace Fabric
     class GlobalList;
   };
   
+  namespace CG
+  {
+    class Context;
+  };
+  
   namespace KLC
   {
     class Operator;
@@ -34,11 +39,12 @@ namespace Fabric
     {
       friend class Compilation;
       
-      RC::Handle<Operator> resolveOperator( std::string const &operatorName ) const;
+    public:
       
+      RC::ConstHandle<AST::GlobalList> getAST() const;
       CG::Diagnostics const &getDiagnostics() const;
       
-    public:
+      RC::Handle<Operator> resolveOperator( std::string const &operatorName ) const;
         
       virtual void jsonExec(
         std::string const &cmd,
@@ -69,6 +75,7 @@ namespace Fabric
       };
     
       Executable(
+        GC::Container *gcContainer,
         RC::Handle<CG::Manager> const &cgManager,
         RC::ConstHandle<AST::GlobalList> const &ast,
         CG::CompileOptions const &compileOptions,
@@ -77,7 +84,17 @@ namespace Fabric
     
     private:
     
+      void jsonExecGetAST(
+        RC::ConstHandle<JSON::Value> const &arg,
+        Util::JSONArrayGenerator &resultJAG
+        );
+    
       void jsonExecGetDiagnostics(
+        RC::ConstHandle<JSON::Value> const &arg,
+        Util::JSONArrayGenerator &resultJAG
+        );
+    
+      void jsonExecResolveOperator(
         RC::ConstHandle<JSON::Value> const &arg,
         Util::JSONArrayGenerator &resultJAG
         );
@@ -87,10 +104,12 @@ namespace Fabric
 
       static void Report( char const *data, size_t length );
 
+      GC::Container *m_gcContainer;
       RC::Handle<CG::Manager> m_cgManager;
       RC::ConstHandle<AST::GlobalList> m_ast;
       CG::Diagnostics m_diagnostics;
       
+      RC::Handle<CG::Context> m_cgContext;
       llvm::OwningPtr<llvm::ExecutionEngine> m_llvmExecutionEngine;
 
       static Util::TLSVar<Executable const *> s_currentExecutable;
