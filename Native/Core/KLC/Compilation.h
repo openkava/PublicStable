@@ -58,10 +58,19 @@ namespace Fabric
         RC::Handle<CG::Manager> const &cgManager,
         CG::CompileOptions const &compileOptions
         );
+      ~Compilation();
       
     private:
     
-      void jsonExecAdd(
+      void jsonExecAddSource(
+        RC::ConstHandle<JSON::Value> const &arg,
+        Util::JSONArrayGenerator &resultJAG
+        );
+      void jsonExecRemoveSource(
+        RC::ConstHandle<JSON::Value> const &arg,
+        Util::JSONArrayGenerator &resultJAG
+        );
+      void jsonExecGetSources(
         RC::ConstHandle<JSON::Value> const &arg,
         Util::JSONArrayGenerator &resultJAG
         );

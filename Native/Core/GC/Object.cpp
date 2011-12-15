@@ -17,8 +17,7 @@ namespace Fabric
 
     Object::~Object()
     {
-      if ( m_container )
-        m_container->disposeObject( m_id, this );
+      dispose();
     }
     
     void Object::reg( Container *container, std::string const &id_ )
@@ -51,12 +50,20 @@ namespace Fabric
       )
     {
       if ( cmd == "dispose" )
-      {
-        FABRIC_ASSERT( m_container );
-        m_container->disposeObject( m_id, this );
-        m_container = 0;
-      }
+        dispose();
       else throw Exception( _(cmd) + ": unknown command" );
+    }
+    
+    void Object::dispose()
+    {
+      if ( m_container )
+      {
+        // [pzion 20111215] Note that this may end up calling the
+        // destructor so we make sure we won't get here again
+        Container *container = m_container;
+        m_container = 0;
+        container->disposeObject( m_id, this );
+      }
     }
   }
 }
