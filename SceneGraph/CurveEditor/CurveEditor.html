@@ -22,32 +22,40 @@
   <link href="CurveEditor.css" rel="stylesheet" type="text/css" />
   <script type="text/javascript">
 
-  $(document).ready(function() {
+$(document).ready(function() {
 
-    if(!animationLibraryNode){
-      alert("this page must be opened from a running demo, passing it the correct animationLibraryNode");
-    }
+  if(!animationLibraryNode){
+    alert("this page must be opened from a running demo, passing it the correct animationLibraryNode");
+  }
 
-    var curveEditor = constructCurveEditor('curveContainer', animationLibraryNode);
+  var curveEditor = constructCurveEditor('curveContainer', animationLibraryNode);
 
-    window.onresize = function () {
-      curveEditor.resize();
-    };
-
-    $('ul#keyframeTracks').collapsibleCheckboxTree({
-      checkParents : true, // When checking a box, all parents are checked (Default: true)
-      checkChildren : true, // When checking a box, all children are checked (Default: false)
-      uncheckChildren : true, // When unchecking a box, all children are unchecked (Default: true)
-      initialState : 'collapse', // Options - 'expand' (fully expanded), 'collapse' (fully collapsed) or default
-      addButtons : true
-    });
-
-    // jQuert UI Styling classes
-    $(".box").addClass("ui-widget");
-    $(".box h2").addClass("ui-widget-header ui-corner-all");
-    $(".content").addClass("ui-widget-content");
-
+  window.onresize = function () {
+    curveEditor.resize();
+  };
+  
+  
+  $("#displayKeys").attr('checked', true);
+  $("#displayKeys").change(function() {
+    curveEditor.setKeyDisplayToggle($("#displayKeys").is(":checked"));
   });
+
+  $('ul#keyframeTracks').collapsibleCheckboxTree({
+    checkParents : true, // When checking a box, all parents are checked (Default: true)
+    checkChildren : true, // When checking a box, all children are checked (Default: false)
+    uncheckChildren : true, // When unchecking a box, all children are unchecked (Default: true)
+    initialState : 'collapse', // Options - 'expand' (fully expanded), 'collapse' (fully collapsed) or default
+    addButtons : true
+  });
+  
+  
+
+  // jQuert UI Styling classes
+  $(".box").addClass("ui-widget");
+  $(".box h2").addClass("ui-widget-header ui-corner-all");
+  $(".content").addClass("ui-widget-content");
+
+});
 
   </script>
 
@@ -70,10 +78,13 @@
         Hold 'Alt' to break the key handles.
         </div><!--content- ->
         </div>box-->
-        <div class="box" style="overflow-x: hidden; overflow-y: scroll;">
+        <div class="box">
           <h2>KEYFRAME TRACKS</h2>
-          <ul class="content" id="keyframeTracks">
-          </ul><!--content-->
+          <div class="content">
+            <input type="checkbox" id="displayKeys" style="margin-top:10px;"/><label for="displayKeys">Display Keys:</label>
+            <ul id="keyframeTracks" style="overflow-x: scroll; overflow-y: scroll;">
+            </ul>
+          </div><!--content-->
         </div><!--box-->
       </div><!--sidebar-->
 
