@@ -770,33 +770,28 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
     var geometryNodes = [];
     if(geometryData.mesh){
       var meshData = geometryData.mesh;
+      var constructGeometryNode = function(triangles){
+        var name = geometryData.name + (triangles.material || "");
+        var processedData = processGeometryData(meshData, triangles);
+        processedData.constructionOptions.name = name;
+        var geometryNode = scene.constructNode('Triangles', processedData.constructionOptions);
+        if(processedData.geometryData.vertexColors){
+          geometryNode.addVertexAttributeValue('vertexColors', 'Color', {
+            genVBO:true
+          });
+        }
+        geometryNode.loadGeometryData(processedData.geometryData);
+        assetNodes[name] = geometryNode;
+        geometryNodes.push(geometryNode);
+      }
       if(meshData.triangles){
         for(var i=0; i<meshData.triangles.length; i++){
-          var triangles = meshData.triangles[i];
-          var name = geometryData.name + triangles.material;
-          var processedData = processGeometryData(meshData, triangles);
-          processedData.constructionOptions.name = name;
-          var geometryNode = scene.constructNode('Triangles', processedData.constructionOptions);
-          if(processedData.geometryData.vertexColors){
-            geometryNode.addVertexAttributeValue('vertexColors', 'Color', {
-              genVBO:true
-            });
-          }
-          geometryNode.loadGeometryData(processedData.geometryData);
-          assetNodes[name] = geometryNode;
-          geometryNodes.push(geometryNode);
+          constructGeometryNode(meshData.triangles[i]);
         }
       }
       if(meshData.polygons){
         for(var i=0; i<meshData.polygons.length; i++){
-          var polygons = meshData.polygons[i];
-          var name = geometryData.name + polygons.material;
-          var processedData = processGeometryData(meshData, polygons);
-          processedData.constructionOptions.name = name;
-          var geometryNode = scene.constructNode('Triangles', processedData.constructionOptions);
-          geometryNode.loadGeometryData(processedData.geometryData);
-          assetNodes[name] = geometryNode;
-          geometryNodes.push(geometryNode);
+          constructGeometryNode(meshData.polygons[i]);
         }
       }
     }
