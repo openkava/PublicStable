@@ -152,7 +152,7 @@ $(document).ready(function() {
       groundPlanseSize: 30,
       connectToSceneTime: false
     } );
-    var createBoxes = false;
+    var createBoxes = true;
     if(createBoxes){
       // create several shapes. in bullet multiple instance of the same
       // shape share the scaling, so we have to create several shapes.
@@ -282,7 +282,7 @@ $(document).ready(function() {
       var scaleFactor = 0.1;
       var assetNodes = scene.importAssetFile('Assets/Level.DAE', { scaleFactor: scaleFactor });
       var floorInstance = assetNodes.Plane001;
-      var floorMesh = assetNodes.Plane001Mesh0;
+      var floorMesh = assetNodes.Plane001Mesh;
       
       floorInstance.setMaterialNode(phongMaterial);
 
