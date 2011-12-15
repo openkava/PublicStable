@@ -7,6 +7,7 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
   options.timeStripe = options.timeStripe!=undefined ? options.timeStripe : true;
   options.draggable = options.draggable!=undefined ? options.draggable : true;
   options.zoomable = options.zoomable!=undefined ? options.zoomable : true;
+  options.drawKeys = options.drawKeys!=undefined ? options.drawKeys : true; 
   trackSetId =  options.trackSetId!=undefined ? options.trackSetId : 0;
   
   var timeRange = options.timeRange!=undefined ? options.timeRange : new FABRIC.Vec2(0, 100);
@@ -379,7 +380,7 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
         }
       }
     }
-    if (window.drawKeys !== false) {
+    if (options.drawKeys) {
       var trackData = tracksData.tracks[trackId];
       for (var i = 0; i < trackData.keys.length; i++) {
         drawKey(i, trackData.keys[i]);
@@ -398,6 +399,12 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
     }
   }
   
+  var clearTrackCurves = function(){
+    for (var i = 0; i < trackCount; i++) {
+      trackGroups[i].removeAllChildren();
+    }
+  }
+    
   drawTrackCurves();
   
   
@@ -458,13 +465,10 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
     
     // Occasionaly when the window is opened, it has a negative width and
     // then we get sent a resize event. Here, we re-fit the curve to the screen.
-    var validWindowWidth = (windowWidth < 0);
-    if(validWindowWidth){
-      timeRange.y += ( newWindowWidth - windowWidth ) / screenXfo.sc.x;
-    }
+    var invalidWindowWidth = (windowWidth < 0);
     windowWidth = newWindowWidth;
     windowHeight = newWindowHeight;
-    if(!validWindowWidth){
+    if(invalidWindowWidth){
       screenXfo.fitToScreen();
     }
     graphCenterGroup.translate(0, windowHeight * 0.5);
@@ -494,11 +498,12 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
   if(options.zoomable){
     var mouseWheelZoomFn = function(evt) {
       if(evt.detail != undefined) evt.wheelDelta = evt.detail * -50;
-      var zoomDist = evt.wheelDelta * 0.1;
+      var zoomDist = evt.wheelDelta * 0.5;
       timeRange.x += zoomDist / screenXfo.sc.x;
       timeRange.y -= zoomDist / screenXfo.sc.x;
-      yRange.x -= zoomDist / screenXfo.sc.y;
-      yRange.y += zoomDist / screenXfo.sc.y;
+      yRange.x -= zoomDist / (screenXfo.sc.y * (windowWidth/windowHeight));
+      yRange.y += zoomDist / (screenXfo.sc.y * (windowWidth/windowHeight));
+      // recompute the screen fitting. TODO: this code shouldn't be int he event handler
       screenXfo.sc.x = windowWidth/(timeRange.y - timeRange.x);
       screenXfo.sc.y = -(windowHeight - 40) / (yRange.y - yRange.x)
       screenXfo.tr.x = -timeRange.x;
@@ -517,13 +522,23 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
     });
   }
   
+  var resizeIntervalId;
+  
   return {
     resize: function(){
-      fitCurveEditorToWindow();
+      window.clearTimeout( resizeIntervalId );
+      resizeIntervalId = window.setTimeout( function () {
+          fitCurveEditorToWindow();
+        }, 50 );
     },
     redraw: function(){
       tracksData = animationLibraryNode.getTrackSet(trackSetId);
       updateTimeRange();
+    },
+    setKeyDisplayToggle: function(val){
+      clearTrackCurves();
+      options.drawKeys = val;
+      drawTrackCurves();
     }
   }
 };

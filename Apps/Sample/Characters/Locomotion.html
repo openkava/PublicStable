@@ -127,17 +127,6 @@ $(document).ready(function() {
       lightNode: light
     });
 
-  
-    // create the scene grid
-  scene.constructNode('Instance', {
-    geometryNode: scene.constructNode('Grid', {
-        size_x: 30.0,
-        size_z: 30.0,
-        sections_x: 20,
-        sections_z: 20 }),
-    materialNode: scene.constructNode('FlatMaterial')
-  });
-  
   var constructBulletScene = true;
   
   var rigName = 'CMan0005';
@@ -159,10 +148,11 @@ $(document).ready(function() {
     // create a simulation world
     var bulletWorldNode = scene.constructNode('BulletWorldNode', {
       createGroundPlane:false,
+      createGroundPlaneGrid: false,
       groundPlanseSize: 30,
       connectToSceneTime: false
     } );
-    var createBoxes = true;
+    var createBoxes = false;
     if(createBoxes){
       // create several shapes. in bullet multiple instance of the same
       // shape share the scaling, so we have to create several shapes.
@@ -295,18 +285,17 @@ $(document).ready(function() {
       var floorMesh = assetNodes.Plane001Mesh0;
       
       floorInstance.setMaterialNode(phongMaterial);
-    
-      bulletWorldNode.addShape('Floor',new FABRIC.RT.BulletShape.createGImpact(floorMesh));
-      scene.constructNode('BulletRigidBodyTransform', {
+
+      bulletWorldNode.addShape('Floor',new FABRIC.RT.BulletShape.createTriangleMesh(floorMesh));
+      
+      floorInstance.setTransformNode(scene.constructNode('BulletRigidBodyTransform', {
         bulletWorldNode: bulletWorldNode,
         shapeName: 'Floor',
         rigidBody: new FABRIC.RT.BulletRigidBody({
-          transform: FABRIC.RT.xfo(),
-          friction: 0.8,
-          restitution: 0.7,
+          transform: floorInstance.getTransformNode().getGlobalXfo(),
           mass: 0.0
         })
-      });
+      }));
     }
   }
 

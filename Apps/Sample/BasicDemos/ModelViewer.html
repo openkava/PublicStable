@@ -100,8 +100,9 @@ $(document).ready(function() {
   var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) });
   
   var modelName = 'cow';
-  var loadMultipleGeometries = false;
-  var resourceLoadNode = scene.importAssetFile('Models/' + modelName + '.obj', { loadMultipleGeometries: loadMultipleGeometries });
+  var resourceLoadNode = scene.importAssetFile('Models/' + modelName + '.obj', {
+   splitMaterials: true
+  });
   resourceLoadNode.addEventListener('objparsesuccess', function(evt){
     /*
       // Load the mtl file, which will generate an array of materials.
