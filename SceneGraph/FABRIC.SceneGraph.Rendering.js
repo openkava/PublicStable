@@ -17,14 +17,16 @@ FABRIC.SceneGraph.registerNodeType('OffscreenViewport', {
     mainViewportNode: 'The viewport this OffscreenViewport will use the window and and viewport dgnode from.',
     cameraNode: 'An optional camera to be used for this OffscreenViewport. If not specified, the camera of the mainViewportNode is used.',
     eventName: 'The name of the event to be created. The OffscreenViewport will listen to this event to be fired for a redraw.',
-    textureDescription: 'An optional parameter to define the texture definition which is used to store the OffscreenViewport\'s image.'
+    textureDescription: 'An optional parameter to define the texture definition which is used to store the OffscreenViewport\'s image.',
+    clearColor: 'clear (background) color' //TODO: make this work properly by initializing colors from current ones (background texture)
   },
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
         mainViewportNode: undefined,
         cameraNode: undefined,
         eventName: undefined,
-        textureDescription: undefined
+        textureDescription: undefined,
+        clearColor: FABRIC.RT.rgba(0.0,0.0,0.0,0.0)
       });
 
     // query the main viewport
@@ -158,26 +160,29 @@ FABRIC.SceneGraph.registerNodeType('OffscreenViewport', {
     return offscreenNode;
   }});
 
-FABRIC.SceneGraph.defineEffectFromFile('DeferredRenderMaterial', 'FABRIC_ROOT/SceneGraph/Shaders/DeferredRender.xml');
-FABRIC.SceneGraph.defineEffectFromFile('DeferredInstancingExtRenderMaterial', 'FABRIC_ROOT/SceneGraph/Shaders/DeferredInstancingExtRender.xml');
-FABRIC.SceneGraph.defineEffectFromFile('DeferredPhongMaterial', 'FABRIC_ROOT/SceneGraph/Shaders/DeferredPhongShader.xml');
-
-FABRIC.SceneGraph.registerNodeType('DeferredRenderer', {
+FABRIC.SceneGraph.registerNodeType('BaseDeferredRenderer', {
   briefDesc: '',
   detailedDesc: '',
   parentNodeDesc: '',
   optionsDesc: {
-    cameraNode: "Active camera (used only to load projection matrix in order to restor ZBuffer)",
+    colorBuffers: "array of render targets specifying 'nbChannels' (1 to 4) and 'name' for each target, and optionally the internal OpenGL format (by default: 16F per channel). Note that for a target name N, it is expected that the deferred shader will have a " + 
+                  "texture parameter name NTexture. Ex: [{nbChannels: 4, name: 'diffuse'}, {nbChannels: 3, name: 'normal', internalFormat: FABRIC.SceneGraph.OpenGLConstants.GL_RGB16F}], matching params diffuseTexture and normalTexture in deferred shader material." +
+                  "Note that your prePass shaders should then write to targets of the corresponding indices: glFragData[0]=diffuseColor; glFragData[1]=normal;",
+    addDepth: "if depth should be attached",
     showDebug: "Display view of the render targets",
-    addPhongShadingLayer: "Adds a global Phong shading by default",
     lightNode: "to be used by the Phong shading pass",
-    //To add eventually: choose which components we want to render; compute normals, compute specular, compute diffuse, compute depth...
+    forwardRenderPass: "enables to mix with forward rendering"
   },
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
       showDebug: false,
-      addPhongShadingLayer: true
+      addDepth: true,
+      forwardRenderPass: false,
+      colorBuffers: []
       });
+
+    if(options.colorBuffers.length == 0)
+      throw ('Error: no render target provided');
 
     var deferredRenderNode = scene.constructNode('SceneGraphNode');
     var redrawEventHandler = deferredRenderNode.constructEventHandlerNode('DeferredDraw');
@@ -185,72 +190,112 @@ FABRIC.SceneGraph.registerNodeType('DeferredRenderer', {
 
     scene.getSceneRedrawOpaqueObjectsEventHandler().appendChildEventHandler(redrawEventHandler);
 
-    var renderTargetRedrawEventHandler = deferredRenderNode.constructEventHandlerNode('RenderTargetRedraw');
+    var renderTargetRedrawEventHandler = deferredRenderNode.constructEventHandlerNode('DeferredPrePass');
     redrawEventHandler.appendChildEventHandler(renderTargetRedrawEventHandler);
+
+    var channelToInternalFormat = [0, FABRIC.SceneGraph.OpenGLConstants.GL_R16F, FABRIC.SceneGraph.OpenGLConstants.GL_RG16F, FABRIC.SceneGraph.OpenGLConstants.GL_RGB16F, FABRIC.SceneGraph.OpenGLConstants.GL_RGBA16F];
+    var channelToFormat = [0, FABRIC.SceneGraph.OpenGLConstants.GL_RED, FABRIC.SceneGraph.OpenGLConstants.GL_RG, FABRIC.SceneGraph.OpenGLConstants.GL_RGB, FABRIC.SceneGraph.OpenGLConstants.GL_RGBA];
 
     var oglRenderTargetTextureDescs = [];
     var oglRenderTargetTextureNames = [];
 
-    oglRenderTargetTextureDescs.push(
-        new FABRIC.RT.OGLRenderTargetTextureDesc (
-            2, // COLOR_BUFFER
-            new FABRIC.RT.OGLTexture2D (
-              FABRIC.SceneGraph.OpenGLConstants.GL_RGB16F,
-              FABRIC.SceneGraph.OpenGLConstants.GL_RGB,
-              FABRIC.SceneGraph.OpenGLConstants.GL_FLOAT)
-          ));
-    oglRenderTargetTextureNames.push('positions');
+    var i;
+    for( i = 0; i < options.colorBuffers.length; ++i ) {
+      var nbChannels = options.colorBuffers[i].nbChannels;
+      if(nbChannels === undefined || nbChannels < 1 || nbChannels > 4)
+        throw ('Error: unsupported number of channels for render target ' + i);
+      if(options.colorBuffers[i].name === undefined)
+        throw ('Error: name not specified for render target ' + i);
 
-    oglRenderTargetTextureDescs.push(
-        new FABRIC.RT.OGLRenderTargetTextureDesc (
-            2, // COLOR_BUFFER
-            new FABRIC.RT.OGLTexture2D (
-              FABRIC.SceneGraph.OpenGLConstants.GL_RGB16F,
-              FABRIC.SceneGraph.OpenGLConstants.GL_RGB,
-              FABRIC.SceneGraph.OpenGLConstants.GL_FLOAT)
-          ));
-    oglRenderTargetTextureNames.push('normals');
+      var internalFormat = options.colorBuffers[i].internalFormat;
+      if(internalFormat === undefined)
+        internalFormat = channelToInternalFormat[nbChannels];
 
-    oglRenderTargetTextureDescs.push(
-        new FABRIC.RT.OGLRenderTargetTextureDesc (
-            2, // COLOR_BUFFER
-            new FABRIC.RT.OGLTexture2D (
-              FABRIC.SceneGraph.OpenGLConstants.GL_RGBA16F,
-              FABRIC.SceneGraph.OpenGLConstants.GL_RGBA,
-              FABRIC.SceneGraph.OpenGLConstants.GL_FLOAT)
-          ));
-    oglRenderTargetTextureNames.push('diffuseAndSpecularFactor');
+      oglRenderTargetTextureDescs.push(
+          new FABRIC.RT.OGLRenderTargetTextureDesc (
+              2, // COLOR_BUFFER
+              new FABRIC.RT.OGLTexture2D (
+                internalFormat,
+                channelToFormat[nbChannels],
+                FABRIC.SceneGraph.OpenGLConstants.GL_FLOAT)
+            ));
+      oglRenderTargetTextureNames.push(options.colorBuffers[i].name);
+    }
 
-    oglRenderTargetTextureDescs.push(
-        new FABRIC.RT.OGLRenderTargetTextureDesc (
-            1, // DEPTH_BUFFER
-            new FABRIC.RT.OGLTexture2D (
-              FABRIC.SceneGraph.OpenGLConstants.GL_DEPTH_COMPONENT,
-              FABRIC.SceneGraph.OpenGLConstants.GL_DEPTH_COMPONENT,
-              FABRIC.SceneGraph.OpenGLConstants.GL_FLOAT)
-          ));
-    oglRenderTargetTextureNames.push('depth');
+    var forwardRenderBufferIndex = options.colorBuffers.length;
+    if(options.forwardRenderPass) {
+      oglRenderTargetTextureDescs.push(
+          new FABRIC.RT.OGLRenderTargetTextureDesc (
+              2, // COLOR_BUFFER
+              new FABRIC.RT.OGLTexture2D (
+                FABRIC.SceneGraph.OpenGLConstants.GL_RGBA8,
+                channelToFormat[4],
+                FABRIC.SceneGraph.OpenGLConstants.GL_FLOAT)
+            ));
+      oglRenderTargetTextureNames.push('forwardRender');
+    }
+
+    if(options.addDepth) {
+      oglRenderTargetTextureDescs.push(
+          new FABRIC.RT.OGLRenderTargetTextureDesc (
+              1, // DEPTH_BUFFER
+              new FABRIC.RT.OGLTexture2D (
+                FABRIC.SceneGraph.OpenGLConstants.GL_DEPTH_COMPONENT,
+                FABRIC.SceneGraph.OpenGLConstants.GL_DEPTH_COMPONENT,
+                FABRIC.SceneGraph.OpenGLConstants.GL_FLOAT)
+            ));
+      oglRenderTargetTextureNames.push('depth');
+    }
 
     var nbRenderTargets = oglRenderTargetTextureNames.length;
     var renderTarget = FABRIC.RT.oglRenderTarget(0,0,
       oglRenderTargetTextureDescs,
       {
-        clearColor: FABRIC.RT.rgba(0,0,0,0)
+        clearColor: options.clearColor
       }
     );
     redrawEventHandler.addMember('renderTarget', 'OGLRenderTarget', renderTarget);
 
-    renderTargetRedrawEventHandler.preDescendBindings.append(
-      scene.constructOperator({
-          operatorName: 'bindScreenRenderTarget',
-          srcFile: 'FABRIC_ROOT/SceneGraph/KL/renderTarget.kl',
-          entryFunctionName: 'bindScreenRenderTarget',
-          parameterLayout: [
-            'window.width',
-            'window.height',
-            'deferredDraw.renderTarget'
-          ]
-        }));
+    ///////////////////////////////
+    //Pre pass
+
+    if(!options.forwardRenderPass) {
+      renderTargetRedrawEventHandler.preDescendBindings.append(
+        scene.constructOperator({
+            operatorName: 'bindScreenRenderTarget',
+            srcFile: 'FABRIC_ROOT/SceneGraph/KL/renderTarget.kl',
+            entryFunctionName: 'bindScreenRenderTarget',
+            parameterLayout: [
+              'window.width',
+              'window.height',
+              'deferredDraw.renderTarget'
+            ]
+          }));
+    } else {
+      renderTargetRedrawEventHandler.preDescendBindings.append(
+        scene.constructOperator({
+            preProcessorDefinitions: {
+              FORWARD_RENDER_BUFFER_INDEX: forwardRenderBufferIndex
+            },
+            operatorName: 'bindPrePassRenderTargets',
+            srcCode:  'use OGLRenderTarget;\n' +
+                      'operator bindPrePassRenderTargets( io Integer width, io Integer height, io OGLRenderTarget renderTarget ) {\n' +
+                      '  renderTarget.prebind(width, height);\n' +
+                      '  renderTarget.bindFbo(true);\n' +
+                      '  Integer drawBufferIDs[];\n' +
+                      '  for(Size i=0; i < FORWARD_RENDER_BUFFER_INDEX; i++){\n' +
+                      '      drawBufferIDs.push(Integer(GL_COLOR_ATTACHMENT0 + drawBufferIDs.size()));\n' +
+                      '  }\n' +
+                      '  renderTarget.bindColorBuffers(drawBufferIDs);\n' +
+                      '}\n',
+            entryFunctionName: 'bindPrePassRenderTargets',
+            parameterLayout: [
+              'window.width',
+              'window.height',
+              'deferredDraw.renderTarget'
+            ]
+          }));
+    }
 
     renderTargetRedrawEventHandler.postDescendBindings.append(
       scene.constructOperator({
@@ -262,56 +307,43 @@ FABRIC.SceneGraph.registerNodeType('DeferredRenderer', {
           ]
         }));
 
-    renderTargetRedrawEventHandler.postDescendBindings.append(
+    redrawEventHandler.addMember('debugDrawToggle', 'Boolean', options.showDebug);
+    redrawEventHandler.addMember('debugShaderProgID', 'Integer', 0);
+    deferredRenderNode.addMemberInterface(redrawEventHandler, 'debugDrawToggle', true);
+
+    redrawEventHandler.postDescendBindings.append(
       scene.constructOperator({
-          operatorName: 'copyDepth',
-          srcCode: 'use OGLRenderTarget; operator copyDepth(io Integer width, io Integer height, io OGLRenderTarget renderTarget){\n'+
-                      'glBindFramebuffer(GL_READ_FRAMEBUFFER, renderTarget.fbo);\n' +
-                      'glBlitFramebuffer(0,0,width-1,height-1,0,0,width-1,height-1,GL_DEPTH_BUFFER_BIT, GL_NEAREST);\n'+
-                      'glBindFramebuffer(GL_READ_FRAMEBUFFER, GL_NONE);}',
-          entryFunctionName: 'copyDepth',
+          operatorName: 'debugDrawRenderTargets',
+          srcCode:'use OGLTexture2D;\n' +
+                  'operator debugDrawRenderTargets(io OGLRenderTarget renderTarget, io Integer progId, io Boolean draw){ \n' +
+                  'if(!draw)return;\n' +
+                  'Size i, j, n = renderTarget.textures.size, curr = 0;\n' +
+                  'for(i = 0; i < 3; ++i){\n' +
+                  '  for(j = 0; j < 3; ++j){\n' +
+                  '    while(true) {\n' +
+                  '      if(curr == n)\n' +
+                  '        return;\n' +
+                  '      if(renderTarget.textures[curr].type == 2)\n' +
+                  '        break;\n' +
+                  '      curr++;\n' +
+                  '    }\n' +
+                  '    Scalar x = -1.0 + Scalar(i)/1.5;\n' +
+                  '    Scalar y = 1.0 - Scalar(j)/1.5;\n' +
+                  '    renderTarget.textures[curr++].texture.bind(0);\n' +
+                  '    drawTexture(0, progId, Vec2(x,y), Vec2(x+0.66666,y-0.66666), false);\n' +
+                  '    if(curr == n)\n' +
+                  '      return;}}}\n',
+          entryFunctionName: 'debugDrawRenderTargets',
           parameterLayout: [
-            'window.width',
-            'window.height',
-            'deferredDraw.renderTarget'
+            'self.renderTarget',
+            'self.debugShaderProgID',
+            'self.debugDrawToggle'
           ]
-        }));
-
-    if(options.showDebug) {
-      //Debug display render targets
-      redrawEventHandler.addMember('debugShaderProgID', 'Integer', 0);
-
-      redrawEventHandler.postDescendBindings.append(
-        scene.constructOperator({
-            operatorName: 'debugDrawRenderTargets',
-            srcCode:'use OGLTexture2D;\n' +
-                    'operator debugDrawRenderTargets(io OGLRenderTarget renderTarget, io Integer progId){ \n' +
-                    'Size i, j, n = renderTarget.textures.size, curr = 0;\n' +
-                    'for(i = 0; i < 3; ++i){\n' +
-                    '  for(j = 0; j < 3; ++j){\n' +
-                    '    while(true) {\n' +
-                    '      if(curr == n)\n' +
-                    '        return;\n' +
-                    '      if(renderTarget.textures[curr].type == 2)\n' +
-                    '        break;\n' +
-                    '      curr++;\n' +
-                    '    }\n' +
-                    '    Scalar x = -1.0 + Scalar(i)/1.5;\n' +
-                    '    Scalar y = 1.0 - Scalar(j)/1.5;\n' +
-                    '    renderTarget.textures[curr++].texture.bind(0);\n' +
-                    '    drawTexture(0, progId, Vec2(x,y), Vec2(x+0.66666,y-0.66666), false);\n' +
-                    '    if(curr == n)\n' +
-                    '      return;}}}\n',
-            entryFunctionName: 'debugDrawRenderTargets',
-            parameterLayout: [
-              'self.renderTarget',
-              'self.debugShaderProgID'
-            ]
-      }));
-    }
+    }));
     
-    //Shading pass
-    var shaderPassRedrawEventHandler = deferredRenderNode.constructEventHandlerNode('ShaderPass');
+    ///////////////////////////////
+    //Post (shading) pass
+    var shaderPassRedrawEventHandler = deferredRenderNode.constructEventHandlerNode('DeferredPostPass');
     redrawEventHandler.appendChildEventHandler(shaderPassRedrawEventHandler);
 
     shaderPassRedrawEventHandler.preDescendBindings.append(
@@ -360,9 +392,7 @@ FABRIC.SceneGraph.registerNodeType('DeferredRenderer', {
       return str[0].toUpperCase() + str.substr(1);
     };
 
-    var cameraNode = options.cameraNode;
-
-    deferredRenderNode.pub.addShadingMaterialLayer = function(materialName, options) {
+    deferredRenderNode.pub.addPostPassMaterial = function(materialName, options) {
 
       options.parentEventHandler = shaderPassRedrawEventHandler;
       var materialNodePub = scene.pub.constructNode(materialName, options);
@@ -393,20 +423,113 @@ FABRIC.SceneGraph.registerNodeType('DeferredRenderer', {
       return materialNodePub;
     };
    
+    deferredRenderNode.pub.addPrePassMaterial = function(materialName, options) {
+      options.parentEventHandler = renderTargetRedrawEventHandler;
+      return scene.pub.constructNode(materialName, options);
+    };
+
+    ///////////////////////////////
+    //Forward render mix pass
+
+    if(options.forwardRenderPass) {
+      var forwardRenderMixRedrawEventHandler = deferredRenderNode.constructEventHandlerNode('ForwardRenderMixPass');
+      redrawEventHandler.appendChildEventHandler(forwardRenderMixRedrawEventHandler);
+      forwardRenderMixRedrawEventHandler.addMember('shaderProgID', 'Integer', 0);
+
+      forwardRenderMixRedrawEventHandler.preDescendBindings.append(
+        scene.constructOperator({
+            preProcessorDefinitions: {
+              FORWARD_RENDER_BUFFER_INDEX: forwardRenderBufferIndex
+            },
+            operatorName: 'bindForwardRenderMixRenderTarget',
+            srcCode:  'use OGLRenderTarget;\n' +
+                      'operator bindForwardRenderMixRenderTarget( io OGLRenderTarget renderTarget ) {\n' +
+                      '  renderTarget.bindFbo(false);\n' +
+                      '  Integer drawBufferIDs[];\n' +
+                      '  drawBufferIDs.push(Integer(GL_COLOR_ATTACHMENT0 + FORWARD_RENDER_BUFFER_INDEX));\n' +
+                      '  glClearColor(0.0, 0.0, 0.0, 0.0);\n' +
+                      '  renderTarget.bindColorBuffers(drawBufferIDs);\n' +
+                      '}\n',
+            entryFunctionName: 'bindForwardRenderMixRenderTarget',
+            parameterLayout: [
+              'deferredDraw.renderTarget'
+            ]
+          }));
+
+      forwardRenderMixRedrawEventHandler.postDescendBindings.append(
+        scene.constructOperator({
+            preProcessorDefinitions: {
+              FORWARD_RENDER_BUFFER_INDEX: forwardRenderBufferIndex
+            },
+            operatorName: 'unbindAndDrawForwardRenderTarget',
+            srcCode:  'use OGLRenderTarget; use OGLTexture2D;\n' +
+                      'operator unbindAndDrawForwardRenderTarget( io OGLRenderTarget renderTarget, io Integer shaderProgramID ) {\n' +
+                      '  renderTarget.unbind();\n' +
+                      '  glPushAttrib(GL_ENABLE_BIT);\n' +
+                      '  glEnable(GL_BLEND);\n' +
+                      '  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);\n' +
+                      '  renderTarget.textures[FORWARD_RENDER_BUFFER_INDEX].texture.bind(0);\n' +
+                      '  drawTexture(0, shaderProgramID, Vec2(-1.0,1.0), Vec2(1.0,-1.0), false);\n' +
+                      '  glPopAttrib();}',
+            entryFunctionName: 'unbindAndDrawForwardRenderTarget',
+            parameterLayout: [
+              'deferredDraw.renderTarget',
+              'self.shaderProgID'
+              ]
+      }));
+
+      deferredRenderNode.pub.addForwardRenderMaterial = function(materialName, options) {
+        options.parentEventHandler = forwardRenderMixRedrawEventHandler;
+        return scene.pub.constructNode(materialName, options);
+      };
+    }
+
+    return deferredRenderNode;
+}});
+
+var definedDeferredPhongMaterials = false;
+
+FABRIC.SceneGraph.registerNodeType('PhongDeferredRenderer', {
+  briefDesc: '',
+  detailedDesc: '',
+  parentNodeDesc: 'BaseDeferredRenderer',
+  optionsDesc: {
+    addPhongShadingLayer: "Adds a global Phong shading by default"
+  },
+  factoryFn: function(options, scene) {
+    scene.assignDefaults(options, {
+      addPhongShadingLayer: true
+      });
+
+    if( definedDeferredPhongMaterials == false ) {
+      FABRIC.SceneGraph.defineEffectFromFile('DeferredPrePhongMaterial', 'FABRIC_ROOT/SceneGraph/Shaders/DeferredPrePhongShader.xml');
+      FABRIC.SceneGraph.defineEffectFromFile('DeferredPrePhongInstancingExtMaterial', 'FABRIC_ROOT/SceneGraph/Shaders/DeferredPrePhongInstancingExtShader.xml');
+      FABRIC.SceneGraph.defineEffectFromFile('DeferredPostPhongMaterial', 'FABRIC_ROOT/SceneGraph/Shaders/DeferredPostPhongShader.xml');
+      definedDeferredPhongMaterials = true;
+    }
+
+    options.colorBuffers = [{name: 'positions', nbChannels: 3}, {name: 'normals', nbChannels: 3}, {name: 'diffuseAndSpecularFactor', nbChannels: 4, internalFormat: FABRIC.SceneGraph.OpenGLConstants.GL_RGBA8}];
+    options.addDepth = true;
+
+    var deferredRenderNode = scene.constructNode('BaseDeferredRenderer', options);
+   
     deferredRenderNode.pub.addPhongShadingLayer = function(options) {
       options.shadeFullScreen = true;
-      deferredRenderNode.pub.addShadingMaterialLayer('DeferredPhongMaterial', options);
+      deferredRenderNode.pub.addPostPassMaterial('DeferredPostPhongMaterial', options);
       options.shadeFullScreen = undefined;
+    };
+
+    deferredRenderNode.pub.addPrePassPhongMaterial = function(options) {
+      return deferredRenderNode.pub.addPrePassMaterial('DeferredPrePhongMaterial', options);
+    };
+
+    deferredRenderNode.pub.addPrePassPhongInstancingMaterial = function(options) {
+      return deferredRenderNode.pub.addPrePassMaterial('DeferredPrePhongInstancingExtMaterial', options);
     };
 
     if(options.addPhongShadingLayer) {
       deferredRenderNode.pub.addPhongShadingLayer(options);
     }
 
-    deferredRenderNode.pub.constructDiffuseMaterial = function(materialName, options) {
-      options.parentEventHandler = renderTargetRedrawEventHandler;
-      return scene.pub.constructNode(materialName, options);
-    };
-
     return deferredRenderNode;
-  }});
+}});

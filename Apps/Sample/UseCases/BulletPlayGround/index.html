@@ -43,6 +43,7 @@
   <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Persistence.js" charset="utf-8"></script>
   <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Bullet.js" charset="utf-8"></script>
   <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Selection.js" charset="utf-8"></script>
+  <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Rendering.js" charset="utf-8"></script>
   <script type="text/javascript" src="../../../../SceneGraph/FABRIC.SceneGraph.Undo.js" charset="utf-8"></script>
 
   <script type="text/javascript" src="../../../../SceneGraph/Parsers/parseOBJ.js" charset="utf-8"></script>
@@ -101,209 +102,30 @@
     }});
 
   // load out custom shaders
-  FABRIC.SceneGraph.defineEffectFromFile('ToonMaterial', 'Shaders/ToonShader.xml');
-//  FABRIC.SceneGraph.defineEffectFromFile('WorkPlaneMaterial', 'Shaders/WorkPlaneShader.xml');
-  FABRIC.SceneGraph.defineEffectFromFile('GroundPlaneMaterial', 'Shaders/GroundPlaneShader.xml');
-  FABRIC.SceneGraph.defineEffectFromFile('ManipulatorMaterial', 'Shaders/ManipulatorShader.xml');
+  FABRIC.SceneGraph.defineEffectFromFile('DeferredPreShadowCastingToonMaterial', 'FABRIC_ROOT/SceneGraph/Shaders/DeferredPreShadowCastingToonShader.xml');
+  FABRIC.SceneGraph.defineEffectFromFile('DeferredPreGroundPlaneMaterial', 'FABRIC_ROOT/SceneGraph/Shaders/DeferredPreGroundPlaneShader.xml');
+  FABRIC.SceneGraph.defineEffectFromFile('DeferredPostToonMaterial', 'FABRIC_ROOT/SceneGraph/Shaders/DeferredPostToonShader.xml');
 
-  // register our custom renderer
-  FABRIC.SceneGraph.registerNodeType('ToonRenderer', {
-    briefDesc: '',
-    detailedDesc: '',
-    parentNodeDesc: '',
-    optionsDesc: {
-    },
-    factoryFn: function(options, scene) {
-      scene.assignDefaults(options, {
-      });
+// register our custom renderer
+FABRIC.SceneGraph.registerNodeType('ToonRenderer', {
+  briefDesc: '',
+  detailedDesc: '',
+  parentNodeDesc: '',
+  optionsDesc: {
+  },
+  factoryFn: function(options, scene) {
+    scene.assignDefaults(options, {
+      lightNode: undefined
+    });
 
-      var renderNode = scene.constructNode('SceneGraphNode');
-      var redrawEventHandler = renderNode.constructEventHandlerNode('ToonDraw');
-      redrawEventHandler.setScopeName('toonDraw');
+    var renderNode = scene.constructNode('BaseDeferredRenderer', {
+      colorBuffers: [{name: 'positionsZ', nbChannels: 1}, {name: 'normals', nbChannels: 3}, {name: 'diffuse', nbChannels: 4, internalFormat: FABRIC.SceneGraph.OpenGLConstants.GL_RGBA8}],
+      clearColor: FABRIC.RT.rgba(0.5,0.5,0.5,1.0)
+    });
+    var compositingMaterial = renderNode.pub.addPostPassMaterial('DeferredPostToonMaterial', {shadeFullScreen: true});
 
-      scene.getSceneRedrawOpaqueObjectsEventHandler().appendChildEventHandler(redrawEventHandler);
-
-      var renderTargetRedrawEventHandler = renderNode.constructEventHandlerNode('RenderTargetRedraw');
-      renderTargetRedrawEventHandler.setScopeName('toonRenderTarget');
-      redrawEventHandler.appendChildEventHandler(renderTargetRedrawEventHandler);
-      var opaqueRedrawEventHandler = renderNode.constructEventHandlerNode('RenderTargetOpaqueRedraw');
-      var transparentRedrawEventHandler = renderNode.constructEventHandlerNode('RenderTargetTransparentRedraw');
-      renderTargetRedrawEventHandler.appendChildEventHandler(opaqueRedrawEventHandler);
-      renderTargetRedrawEventHandler.appendChildEventHandler(transparentRedrawEventHandler);
-
-      var oglRenderTargetTextureDescs = [];
-      var oglRenderTargetTextureNames = [];
-
-      oglRenderTargetTextureDescs.push(
-          new FABRIC.RT.OGLRenderTargetTextureDesc (
-              2, // COLOR_BUFFER
-              new FABRIC.RT.OGLTexture2D (
-                FABRIC.SceneGraph.OpenGLConstants.GL_RGB16F,
-                FABRIC.SceneGraph.OpenGLConstants.GL_RGBA,
-                FABRIC.SceneGraph.OpenGLConstants.GL_FLOAT)
-            ));
-      oglRenderTargetTextureNames.push('colors');
-
-      oglRenderTargetTextureDescs.push(
-          new FABRIC.RT.OGLRenderTargetTextureDesc (
-              2, // COLOR_BUFFER
-              new FABRIC.RT.OGLTexture2D (
-                FABRIC.SceneGraph.OpenGLConstants.GL_RGB16F,
-                FABRIC.SceneGraph.OpenGLConstants.GL_RGBA,
-                FABRIC.SceneGraph.OpenGLConstants.GL_FLOAT)
-            ));
-      oglRenderTargetTextureNames.push('normals');
-
-      oglRenderTargetTextureDescs.push(
-          new FABRIC.RT.OGLRenderTargetTextureDesc(
-            1, // DEPTH_BUFFER
-            new FABRIC.RT.OGLTexture2D(
-              FABRIC.SceneGraph.OpenGLConstants.GL_DEPTH_COMPONENT,
-              FABRIC.SceneGraph.OpenGLConstants.GL_DEPTH_COMPONENT,
-              FABRIC.SceneGraph.OpenGLConstants.GL_FLOAT)
-          ));
-      oglRenderTargetTextureNames.push('depth');
-
-      var nbRenderTargets = oglRenderTargetTextureNames.length;
-
-      redrawEventHandler.addMember('textureIDs', 'Integer['+ nbRenderTargets + ']');
-
-      renderTargetRedrawEventHandler.addMember('renderTarget', 'OGLRenderTarget', FABRIC.RT.oglRenderTarget(0,0,
-        oglRenderTargetTextureDescs,
-        {
-          clearColor: FABRIC.RT.rgba(0.5,0.5,0.5,1.0)
-        }
-      ));
-
-      renderTargetRedrawEventHandler.preDescendBindings.append(
-        scene.constructOperator({
-            operatorName: 'bindScreenRenderTarget',
-            srcFile: 'FABRIC_ROOT/SceneGraph/KL/renderTarget.kl',
-            entryFunctionName: 'bindScreenRenderTarget',
-            parameterLayout: [
-              'window.width',
-              'window.height',
-              'self.renderTarget'
-            ]
-          }));
-
-      renderTargetRedrawEventHandler.postDescendBindings.insert(
-        scene.constructOperator({
-            operatorName: 'unbindRenderTarget',
-            srcFile: 'FABRIC_ROOT/SceneGraph/KL/renderTarget.kl',
-            entryFunctionName: 'unbindRenderTarget',
-            parameterLayout: [
-              'self.renderTarget'
-            ]
-          }), 0);
-
-      renderTargetRedrawEventHandler.postDescendBindings.append(
-        scene.constructOperator({
-            operatorName: 'saveTextureIDs',
-            srcCode: 'use OGLRenderTarget; operator saveTextureIDs(io OGLRenderTarget renderTarget, io Integer t[' + nbRenderTargets + ']){ \n' +
-                    'Size i;\n' +
-                    'for(i = 0; i < renderTarget.textures.size; ++i)\n' +
-                    '  t[i] = renderTarget.textures[i].texture.bufferID;}',
-            entryFunctionName: 'saveTextureIDs',
-            parameterLayout: [
-              'self.renderTarget',
-              'toonDraw.textureIDs'
-            ]
-          }));
-
-      var compositingMaterial = scene.constructNode('Material', {
-        name: 'ToonCompositing',
-        parentEventHandler: redrawEventHandler,
-        vertexShader: undefined,
-        fragmentShader: FABRIC.loadResourceURL('Shaders/ToonCompositing.glsl'),
-        shaderUniforms: {
-          colorTexture: { name: 'u_colorImage', owner: 'renderTarget' },
-          normalTexture: { name: 'u_normalImage', owner: 'renderTarget' },
-          depthTexture: { name: 'u_depthImage', owner: 'renderTarget' },
-          width: { name: 'u_width', owner: 'window', type:'Integer' },
-          height: { name: 'u_height', owner: 'window', type:'Integer' },
-          outlineWidth: { name: 'u_outlineWidth', type:'Scalar', defaultValue: 1.0},
-          outlineColor: { name: 'u_outlineColor', type:'Color', defaultValue: FABRIC.RT.rgba(0.0,0.0,0.0,1.0)},
-        },
-      });
-      renderNode.addMemberInterface(compositingMaterial.getRedrawEventHandler(),'outlineWidth',true);
-      renderNode.addMemberInterface(compositingMaterial.getRedrawEventHandler(),'outlineColor',true);
-
-      var compositingRedrawEventHandler = compositingMaterial.getRedrawEventHandler();
-
-      // create an operator to draw one of the textures full screen
-      compositingRedrawEventHandler.postDescendBindings.append(
-        scene.constructOperator({
-            operatorName: 'drawToonCompositing',
-            srcCode:'use OGLTexture2D;\nuse OGLShaderProgram;\n' +
-                    'operator drawToonCompositing(io Integer t[' + nbRenderTargets + '], io OGLShaderProgram shaderProgram){ \n' +
-                    '  glMatrixMode(GL_MODELVIEW);\n' + 
-                    '  glPushMatrix();\n' + 
-                    '  glLoadIdentity();\n' +
-                    '  glActiveTexture(GL_TEXTURE0 + 0);\n' +
-                    '  glBindTexture(GL_TEXTURE_2D, t[0]);\n' +
-                    '  glActiveTexture(GL_TEXTURE0 + 1);\n' +
-                    '  glBindTexture(GL_TEXTURE_2D, t[1]);\n' +
-                    '  glActiveTexture(GL_TEXTURE0 + 2);\n' +
-                    '  glBindTexture(GL_TEXTURE_2D, t[2]);\n' +
-                    '  shaderProgram.loadIntegerUniform(shaderProgram.uniformValues[0].location, 0);\n' +
-                    '  shaderProgram.loadIntegerUniform(shaderProgram.uniformValues[1].location, 1);\n' +
-                    '  shaderProgram.loadIntegerUniform(shaderProgram.uniformValues[2].location, 2);\n' +
-                    '  glBegin(GL_QUADS);\n' + 
-                    '  glTexCoord2f(0.0, 0.0); glVertex3f(-1.0,-1.0, -1.0);\n' + 
-                    '  glTexCoord2f(1.0, 0.0); glVertex3f( 1.0,-1.0, -1.0);\n' + 
-                    '  glTexCoord2f(1.0, 1.0); glVertex3f( 1.0, 1.0, -1.0);\n' + 
-                    '  glTexCoord2f(0.0, 1.0); glVertex3f(-1.0, 1.0, -1.0);\n' + 
-                    '  glEnd();\n' + 
-                    '  glPopMatrix();\n' + 
-                    '  return;\n  }\n',
-            entryFunctionName: 'drawToonCompositing',
-            parameterLayout: [
-              'toonDraw.textureIDs',
-              'shader.shaderProgram'
-            ]
-        }));
-
-      //Debug display render targets
-      redrawEventHandler.addMember('debugDrawToggle', 'Boolean', false);
-      redrawEventHandler.addMember('debugShaderProgID', 'Integer', 0);
-      renderNode.addMemberInterface(redrawEventHandler, 'debugDrawToggle', true);
-
-      redrawEventHandler.postDescendBindings.append(
-        scene.constructOperator({
-            operatorName: 'debugDrawRenderTargets',
-            srcCode:'use OGLTexture2D;\n' +
-                    'operator debugDrawRenderTargets(io Boolean debugDrawToggle, io Integer t[' + nbRenderTargets + '], io Integer progId){ \n' +
-                    'if(!debugDrawToggle) return;\n' +
-                    'Size i, j, n = ' + oglRenderTargetTextureNames.length + ', curr = 0;\n' +
-                    'for(i = 0; i < 3; ++i){\n' +
-                    '  for(j = 0; j < 3; ++j){\n' +
-                    '    Scalar x = -1.0 + Scalar(i)/1.5;\n' +
-                    '    Scalar y = 1.0 - Scalar(j)/1.5;\n' +
-                    '    glActiveTexture(GL_TEXTURE0);\n' +
-                    '    glBindTexture(GL_TEXTURE_2D, t[curr++]);\n' +
-                    '    drawTexture(0, progId, Vec2(x,y), Vec2(x+0.66666,y-0.66666), false);\n' +
-                    '    if(curr == n)\n' +
-                    '      return;}}}\n',
-            entryFunctionName: 'debugDrawRenderTargets',
-            parameterLayout: [
-              'self.debugDrawToggle',
-              'self.textureIDs',
-              'self.debugShaderProgID'
-            ]
-        }));
-
-      renderNode.pub.constructMaterial = function(materialName, materialOptions){
-        materialOptions.parentEventHandler = opaqueRedrawEventHandler;
-        return scene.constructNode(materialName,materialOptions).pub;
-      }
-      renderNode.pub.constructTransparentMaterial = function(materialName, materialOptions){
-        materialOptions.parentEventHandler = transparentRedrawEventHandler;
-        return scene.constructNode(materialName,materialOptions).pub;
-      }
-
-      return renderNode;
-    }});
+    return renderNode;
+  }});
 
 $(document).ready(function() {
 
@@ -311,7 +133,7 @@ $(document).ready(function() {
     var viewport = scene.constructNode('Viewport', {
       windowElement: document.getElementById('FabricContainer'),
       enableRaycasting: true,
-      backgroundColor: FABRIC.RT.rgb(0.5,0.5,0.5)
+      backgroundColor: FABRIC.RT.rgb(0.0,0.0,0.0,0.0)
     });
 
     // Create a camera to draw the scene from
@@ -343,7 +165,7 @@ $(document).ready(function() {
         width: 100.0,
         length: 100.0,
       }),
-      materialNode: toonRenderer.constructMaterial('GroundPlaneMaterial', {
+      materialNode: toonRenderer.addPrePassMaterial('DeferredPreGroundPlaneMaterial', {
         lightNode: light,
         step: 0.02,
         brightColor: FABRIC.RT.rgba(0.6,0.6,0.6,1),
@@ -379,24 +201,24 @@ $(document).ready(function() {
     });
     selectionManipulationManager.addManipulator(scene.constructNode('ScreenTranslationManipulator',{
       parentNode: selectionManipulationManager.getTransformNode(),
-      materialNode: toonRenderer.constructMaterial('ManipulatorMaterial', {color: FABRIC.RT.rgb(0, 0.8, 0, 1), drawOverlaid: true}),
+      materialNode: scene.constructNode('FlatMaterial', {color: FABRIC.RT.rgb(0, 0.8, 0, 1), drawOverlaid: true}),
       radius: 0.35
     }));
     selectionManipulationManager.addManipulator(scene.constructNode('RotationManipulator',{
       parentNode: selectionManipulationManager.getTransformNode(),
-      materialNode: toonRenderer.constructMaterial('ManipulatorMaterial', {color: FABRIC.RT.rgb(0.8, 0, 0, 1), drawOverlaid: true}),
+      materialNode: scene.constructNode('FlatMaterial', {color: FABRIC.RT.rgb(0.8, 0, 0, 1), drawOverlaid: true}),
       localXfo: new FABRIC.RT.Xfo({ ori: new FABRIC.RT.Quat().setFromAxisAndAngle(new FABRIC.RT.Vec3(0, 0, 1), -Math.HALF_PI) }),
       radius: 2.0
     }));
     selectionManipulationManager.addManipulator(scene.constructNode('RotationManipulator',{
       parentNode: selectionManipulationManager.getTransformNode(),
-      materialNode: toonRenderer.constructMaterial('ManipulatorMaterial', {color: FABRIC.RT.rgb(0, 0.8, 0, 1), drawOverlaid: true}),
+      materialNode: scene.constructNode('FlatMaterial', {color: FABRIC.RT.rgb(0, 0.8, 0, 1), drawOverlaid: true}),
       color: FABRIC.RT.rgb(0, 0.8, 0, 1),
       radius: 2.0
     }));
     selectionManipulationManager.addManipulator(scene.constructNode('RotationManipulator',{
       parentNode: selectionManipulationManager.getTransformNode(),
-      materialNode: toonRenderer.constructMaterial('ManipulatorMaterial', {color: FABRIC.RT.rgb(0, 0, 0.8, 1), drawOverlaid: true}),
+      materialNode: scene.constructNode('FlatMaterial', {color: FABRIC.RT.rgb(0, 0, 0.8, 1), drawOverlaid: true}),
       localXfo: new FABRIC.RT.Xfo({ ori: new FABRIC.RT.Quat().setFromAxisAndAngle(new FABRIC.RT.Vec3(1, 0, 0), Math.HALF_PI) }),
       radius: 2.0
     }));
@@ -434,44 +256,44 @@ $(document).ready(function() {
       detail: 12
     });
     var colorSteps = 2.0;
-    materialNodes['primitiveCube'] = toonRenderer.constructMaterial('ToonMaterial', {
+    materialNodes['primitiveCube'] = toonRenderer.addPrePassMaterial('DeferredPreShadowCastingToonMaterial', {
       lightNode: light,
       darkColor: FABRIC.RT.rgb(165/255,118/255,74/255),
       brightColor: FABRIC.RT.rgb(201/255,168/255,117/255),
       colorSteps: colorSteps
     });
-    materialNodes['primitiveFlat'] = toonRenderer.constructMaterial('ToonMaterial', {
+    materialNodes['primitiveFlat'] = toonRenderer.addPrePassMaterial('DeferredPreShadowCastingToonMaterial', {
       lightNode: light,
       darkColor: FABRIC.RT.rgb(35/255,52/255,72/255),
       brightColor: FABRIC.RT.rgb(81/255,96/255,115/255),
       colorSteps: colorSteps
     });
-    materialNodes['primitiveHigh'] = toonRenderer.constructMaterial('ToonMaterial', {
+    materialNodes['primitiveHigh'] = toonRenderer.addPrePassMaterial('DeferredPreShadowCastingToonMaterial', {
       lightNode: light,
       darkColor: FABRIC.RT.rgb(127/255,49/255,45/255),
       brightColor: FABRIC.RT.rgb(176/255,125/255,122/255),
       colorSteps: colorSteps
     });
-    materialNodes['primitiveSphere'] = toonRenderer.constructMaterial('ToonMaterial', {
+    materialNodes['primitiveSphere'] = toonRenderer.addPrePassMaterial('DeferredPreShadowCastingToonMaterial', {
       lightNode: light,
       darkColor: FABRIC.RT.rgb(128/255,142/255,0/255),
       brightColor: FABRIC.RT.rgb(230/255,255/255,0/255),
       colorSteps: colorSteps
     });
-    materialNodes['primitiveBall'] = toonRenderer.constructMaterial('ToonMaterial', {
+    materialNodes['primitiveBall'] = toonRenderer.addPrePassMaterial('DeferredPreShadowCastingToonMaterial', {
       lightNode: light,
       darkColor: FABRIC.RT.rgb(128/255,0/255,0/255),
       brightColor: FABRIC.RT.rgb(255/255,0/255,0/255),
       colorSteps: colorSteps
     });
-    materialNodes['primitiveCoin'] = toonRenderer.constructMaterial('ToonMaterial', {
+    materialNodes['primitiveCoin'] = toonRenderer.addPrePassMaterial('DeferredPreShadowCastingToonMaterial', {
       lightNode: light,
       darkColor: FABRIC.RT.rgb(0/255,0/255,123/255),
       brightColor: FABRIC.RT.rgb(0/255,0/255,255/255),
       colorSteps: colorSteps
     });
 
-    var highlightMaterial = toonRenderer.constructMaterial('ToonMaterial', {
+    var highlightMaterial = toonRenderer.addPrePassMaterial('DeferredPreShadowCastingToonMaterial', {
       lightNode: light,
       darkColor: FABRIC.RT.rgb(77/255,159/255,70/255),
       brightColor: FABRIC.RT.rgb(207/255,255/255,203/255),
@@ -665,7 +487,7 @@ $(document).ready(function() {
             });
             $('#joinOK').button().click(function(){
               if($('#joinContext').val())
-                document.location.href = document.URL.split('?')[0]+"?context="+$('#joinContext').val();
+                window.location.replace(document.URL.split('?')[0]+"?context="+$('#joinContext').val());
               $('#joinDialog').dialog('close');
               viewport.show();
             });
@@ -903,9 +725,10 @@ $(document).ready(function() {
     });
 
     // setup load and save
-    $("#presetSave").click(function(){
+    $("#presetSave").click(function(evt){
       if(isPlaying)
         return;
+      
       var bodiesToSave = {};
       if(selectionManager.getSelection().length == 0) {
         bodiesToSave = getRigidBodyJsonData(rigidBodies,true);
@@ -918,121 +741,104 @@ $(document).ready(function() {
         }
       }
 
-      $('#localStorageDescr').html('Save Preset');
-      $('#localStorageContent').html('<input id="localStorageName" type=text style="width:250px"/>');
-
-      viewport.hide();
-      $('#localStorageDialog').dialog({
-        modal: true
-      });
-      $('#localStorageCancel').button().click(function(){
-
-        $('#localStorageDialog').dialog('close');
-        viewport.show();
-      });
-      $('#localStorageOK').button().click(function(){
-        var presetName = $('#localStorageName').val();
-        if(presetName) {
-          // add this to our preset list
-          var presets = localStorage.getItem('playgroundPresetNames');
-          if(!presets)
-            presets = {};
-          else
-            presets = JSON.parse(presets);
-          presets[presetName] = 'playgroundPresetNames_'+presetName;
-          localStorage.setItem('playgroundPresetNames',JSON.stringify(presets));
-          localStorage.setItem(presets[presetName],JSON.stringify(bodiesToSave));
-        }
-        $('#localStorageDialog').dialog('close');
-        viewport.show();
-      });
+      if(evt.altKey) {
+        var path = scene.IO.queryUserFileAndFolderHandle(scene.IO.forOpenWithWriteAccess, "Bullet Editor Data", "json", "bulletScene");
+        scene.IO.putTextFile(JSON.stringify(bodiesToSave), path);
+      } else {
+        $('#localStorageDescr').html('Save Preset');
+        $('#localStorageContent').html('<input id="localStorageName" type=text style="width:250px"/>');
+  
+        viewport.hide();
+        $('#localStorageDialog').dialog({
+          modal: true
+        });
+        $('#localStorageCancel').button().click(function(){
+  
+          $('#localStorageDialog').dialog('close');
+          viewport.show();
+        });
+        $('#localStorageOK').button().click(function(){
+          var presetName = $('#localStorageName').val();
+          if(presetName) {
+            // add this to our preset list
+            var presets = localStorage.getItem('playgroundPresetNames');
+            if(!presets)
+              presets = {};
+            else
+              presets = JSON.parse(presets);
+            presets[presetName] = 'playgroundPresetNames_'+presetName;
+            localStorage.setItem('playgroundPresetNames',JSON.stringify(presets));
+            localStorage.setItem(presets[presetName],JSON.stringify(bodiesToSave));
+          }
+          $('#localStorageDialog').dialog('close');
+          viewport.show();
+        });
+      }
     });
-    $("#presetLoad").click(function(){
+    $("#presetLoad").click(function(evt){
       if(isPlaying)
         return;
-
-      $('#localStorageDescr').html('Load Preset');
-      var presets = localStorage.getItem('playgroundPresetNames');
-      if(!presets)
-        return;
-      presets = JSON.parse(presets);
-      var html = "Please choose the preset to load in the list below:<br><br>";
-      html += '<select id="localStorageName" style="width:250px">';
-      for(var name in presets) {
-        html += '<option value="'+presets[name]+'">'+name+'</option>';
-      }
-      html += '</select>';
-      $('#localStorageContent').html(html);
-
-      viewport.hide();
-      $('#localStorageDialog').dialog({
-        modal: true
-      });
-      $('#localStorageCancel').button().click(function(){
-
-        $('#localStorageDialog').dialog('close');
-        viewport.show();
-      });
-      $('#localStorageOK').button().click(function(){
-        var presetName = $('#localStorageName').val();
-        if(presetName) {
-          var bodiesToLoad = localStorage.getItem(presetName);
-          if(bodiesToLoad) {
-            bodiesToLoad = JSON.parse(bodiesToLoad);
-
-            var newBodies = processRigidBodyMessages([{action: 'rigidBodiesCreated', data: bodiesToLoad}]);
-            selectionManager.clearSelection();
-            var selection = [];
-            for(var key in newBodies) {
-              selection.push(newBodies[key].instance);
-            }
-            selectionManager.select(selection);
-            if(ws) {
-              ws.sendMessage("rigidBodiesCreated",newBodies);
+      if(evt.altKey) {
+        var path = scene.IO.queryUserFileAndFolderHandle(scene.IO.forOpen, "Bullet Editor Data", "json", "bulletScene");
+        var jsonData = JSON.parse(scene.IO.getTextFile(path));
+        var newBodies = processRigidBodyMessages([{action: 'rigidBodiesCreated', data: jsonData}]);
+        selectionManager.clearSelection();
+        var selection = [];
+        for(var key in newBodies) {
+          selection.push(newBodies[key].instance);
+        }
+        selectionManager.select(selection);
+        if(ws) {
+          ws.sendMessage("rigidBodiesCreated",newBodies);
+        }
+        viewport.redraw();
+      } else {
+        $('#localStorageDescr').html('Load Preset');
+        var presets = localStorage.getItem('playgroundPresetNames');
+        if(!presets)
+          return;
+        presets = JSON.parse(presets);
+        var html = "Please choose the preset to load in the list below:<br><br>";
+        html += '<select id="localStorageName" style="width:250px">';
+        for(var name in presets) {
+          html += '<option value="'+presets[name]+'">'+name+'</option>';
+        }
+        html += '</select>';
+        $('#localStorageContent').html(html);
+  
+        viewport.hide();
+        $('#localStorageDialog').dialog({
+          modal: true
+        });
+        $('#localStorageCancel').button().click(function(){
+  
+          $('#localStorageDialog').dialog('close');
+          viewport.show();
+        });
+        $('#localStorageOK').button().click(function(){
+          var presetName = $('#localStorageName').val();
+          if(presetName) {
+            var bodiesToLoad = localStorage.getItem(presetName);
+            if(bodiesToLoad) {
+              bodiesToLoad = JSON.parse(bodiesToLoad);
+  
+              var newBodies = processRigidBodyMessages([{action: 'rigidBodiesCreated', data: bodiesToLoad}]);
+              selectionManager.clearSelection();
+              var selection = [];
+              for(var key in newBodies) {
+                selection.push(newBodies[key].instance);
+              }
+              selectionManager.select(selection);
+              if(ws) {
+                ws.sendMessage("rigidBodiesCreated",newBodies);
+              }
             }
           }
-        }
-        $('#localStorageDialog').dialog('close');
-        viewport.show();
-      });
-    });
-    /*
-    $("#presetExport").click(function(){
-      if(isPlaying)
-        return;
-      var bodiesToSave = {};
-      if(selectionManager.getSelection().length == 0) {
-        bodiesToSave = getRigidBodyJsonData(rigidBodies,true);
-      } else {
-        for(var i=0;i<selectionManager.getSelection().length;i++) {
-          var key = selectionManager.getSelection()[i].getTransformNode().getName();
-          bodiesToSave[key] = {};
-          bodiesToSave[key].type = rigidBodies[key].type,
-          bodiesToSave[key].transform = rigidBodies[key].transformNode.getGlobalXfo()
-        }
+          $('#localStorageDialog').dialog('close');
+          viewport.show();
+        });
       }
-
-      var path = scene.IO.queryUserFileAndFolderHandle(scene.IO.forOpenWithWriteAccess, "Bullet Editor Data", "json", "bulletScene");
-      scene.IO.putTextFile(JSON.stringify(bodiesToSave), path);
     });
-    $("#presetImport").click(function(){
-      if(isPlaying)
-        return;
-      var path = scene.IO.queryUserFileAndFolderHandle(scene.IO.forOpen, "Bullet Editor Data", "json", "bulletScene");
-      var jsonData = JSON.parse(scene.IO.getTextFile(path));
-      var newBodies = processRigidBodyMessages([{action: 'rigidBodiesCreated', data: jsonData}]);
-      selectionManager.clearSelection();
-      var selection = [];
-      for(var key in newBodies) {
-        selection.push(newBodies[key].instance);
-      }
-      selectionManager.select(selection);
-      if(ws) {
-        ws.sendMessage("rigidBodiesCreated",newBodies);
-      }
-      viewport.redraw();
-    });
-    */
     $("#presetDuplicate").click(function(){
       if(isPlaying)
         return;
@@ -1150,9 +956,10 @@ $(document).ready(function() {
           currentRigidBody.instance.setSelectable(true);
         currentRigidBody = undefined;
       },
-      activate: function(evt) {
+      activate: function(evt, ui) {
         // store the element's offset
-        currentDraggedId = evt.srcElement.getAttribute('id');
+        var draggedElem =  ui.draggable[0];
+        currentDraggedId = draggedElem.getAttribute('id');
         originalOffset[currentDraggedId] = $("#"+currentDraggedId).offset();
         dragStatus[currentDraggedId] = 'outside';
         selectionManager.setEnabled(false);
@@ -1227,7 +1034,8 @@ $(document).ready(function() {
     and pressing ALT at the same time.<br><br>
     You can save the selected rigid bodies to a preset. Simply name the preset as you wish. You can then
     later load the preset to recover a copy of the previously selected rigid bodies. Use the first and second
-    controls for this.<br><br>
+    controls for this. When holding the 'ALT' key while clicking on save or load, you can store/restore the rigid body
+    data to an external json file on your local disk, to share it with other people through a file.<br><br>
     Furthermore you can duplicate the selected rigid bodies, by clicking on the third control icon.<br><br>
     You can multi select rigid bodies by holding down the CTRL key while clicking on objects. The manipulators
     will then be applied to all objects in the selection.<br><br>

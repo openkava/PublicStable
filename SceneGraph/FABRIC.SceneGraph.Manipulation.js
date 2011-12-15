@@ -119,7 +119,7 @@ FABRIC.SceneGraph.registerNodeType('CameraManipulator', {
       
       cameraNode.getTransformNode().setGlobalXfo(newcameraXfo);
       cameraManipulatorNode.pub.fireEvent('cameraManipulated',{newCameraXfo: newcameraXfo});
-      viewportNode.redraw(true);
+      viewportNode.redraw();
       evt.stopPropagation();
     }
 
@@ -144,7 +144,7 @@ FABRIC.SceneGraph.registerNodeType('CameraManipulator', {
         cameraNode.getTransformNode().setTarget(cameraTarget.add(dragDist));
       }
       cameraManipulatorNode.pub.fireEvent('cameraManipulated',{newCameraXfo: cameraXfo});
-      viewportNode.redraw(true);
+      viewportNode.redraw();
       evt.stopPropagation();
     }
     var releasePanFn = function(evt) {
@@ -170,7 +170,7 @@ FABRIC.SceneGraph.registerNodeType('CameraManipulator', {
         cameraNode.setFocalDistance(cameraNode.getFocalDistance() - zoomDist);
       }
       cameraManipulatorNode.pub.fireEvent('cameraManipulated',{newCameraXfo: cameraXfo});
-      viewportNode.redraw(true);
+      viewportNode.redraw();
       evt.stopPropagation();
     }
     var releaseZoomFn = function(evt) {
@@ -498,7 +498,7 @@ FABRIC.SceneGraph.registerNodeType('Manipulator', {
       evt.mouseDragScreenDelta = evt.mouseDragScreenPos.subtract(mouseDownScreenPos);
       manipulatorNode.pub.fireEvent('drag', evt);
       evt.stopPropagation();
-      viewportNode.redraw(true);
+      viewportNode.redraw();
     }
     var releaseFn = function(evt) {
       manipulating = false;

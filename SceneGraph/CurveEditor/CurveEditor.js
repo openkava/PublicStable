@@ -497,6 +497,7 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
   
   if(options.zoomable){
     var mouseWheelZoomFn = function(evt) {
+      if(evt.detail != undefined) evt.wheelDelta = evt.detail * -50;
       var zoomDist = evt.wheelDelta * 0.5;
       timeRange.x += zoomDist / screenXfo.sc.x;
       timeRange.y -= zoomDist / screenXfo.sc.x;
@@ -512,10 +513,12 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
     
     rootDomNode.addEventListener('mouseover', function(){
       document.addEventListener('mousewheel', mouseWheelZoomFn, false);
+      document.addEventListener('DOMMouseScroll', mouseWheelZoomFn, false);
     });
     
     rootDomNode.addEventListener('mouseout', function(){
       document.removeEventListener('mousewheel', mouseWheelZoomFn, false);
+      document.removeEventListener('DOMMouseScroll', mouseWheelZoomFn, false);
     });
   }
   

@@ -59,7 +59,7 @@ FABRIC.SceneGraph.registerManagerType('UndoManager', {
         undoTasks.splice(0,1 + undoTasks.length - options.maxTasks);
       undoTasks.push(task);
       redoTasks = [];
-      undoManager.pub.fireEvent('taskAdded',{task: task});
+      undoManager.pub.fireEvent('taskAdded', { task: task });
       return task;
     };
     
