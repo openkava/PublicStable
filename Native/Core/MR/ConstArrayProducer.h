@@ -29,8 +29,6 @@ namespace Fabric
     {
       FABRIC_GC_OBJECT_CLASS_DECL()
       
-      // Virtual functions: ArrayProducer
-    
     public:
     
       static RC::Handle<ConstArrayProducer> Create(
@@ -38,6 +36,10 @@ namespace Fabric
         RC::ConstHandle<RT::Desc> const &elementDesc,
         RC::ConstHandle<JSON::Array> const &jsonArray
         );
+      
+      // Virtual functions: ArrayProducer
+    
+    public:
     
       virtual size_t count() const;
       virtual void produce( size_t index, void *data ) const;

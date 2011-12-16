@@ -33,7 +33,7 @@ namespace Fabric
   
   namespace KLC
   {
-    class Operator;
+    class MapOperator;
     
     class Executable : public GC::Object
     {
@@ -51,8 +51,9 @@ namespace Fabric
       
       RC::ConstHandle<AST::GlobalList> getAST() const;
       CG::Diagnostics const &getDiagnostics() const;
+      RC::Handle<CG::Manager> getCGManager() const;
       
-      RC::Handle<Operator> resolveOperator( std::string const &operatorName ) const;
+      RC::Handle<MapOperator> resolveMapOperator( std::string const &mapOperatorName ) const;
         
       virtual void jsonExec(
         std::string const &cmd,
@@ -103,7 +104,7 @@ namespace Fabric
         Util::JSONArrayGenerator &resultJAG
         );
     
-      void jsonExecResolveOperator(
+      void jsonExecResolveMapOperator(
         RC::ConstHandle<JSON::Value> const &arg,
         Util::JSONArrayGenerator &resultJAG
         );

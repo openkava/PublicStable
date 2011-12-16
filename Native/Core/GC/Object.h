@@ -35,7 +35,6 @@ namespace Fabric
 #define FABRIC_GC_OBJECT_CLASS_DECL() \
     public: \
       static Fabric::GC::Class const *s_class; \
-      Fabric::GC::Class const *m_class; \
     private:
       
 #define FABRIC_GC_OBJECT_CLASS_IMPL(class_,parentClass) \
@@ -85,6 +84,7 @@ namespace Fabric
       
     private:
     
+      Fabric::GC::Class const *m_class;
       Container *m_container;
       std::string m_id;
     };
