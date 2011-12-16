@@ -20,10 +20,12 @@ namespace Fabric
   namespace KLC
   {
     Interface::Interface(
+      GC::Container *gcContainer,
       RC::Handle<CG::Manager> const &cgManager,
       CG::CompileOptions const &compileOptions
       )
-      : m_cgManager( cgManager )
+      : m_gcContainer( gcContainer )
+      , m_cgManager( cgManager )
       , m_compileOptions( compileOptions )
     {
     }
@@ -38,7 +40,7 @@ namespace Fabric
     {
       if ( dst.size() - dstOffset == 0 )
         jsonExec( cmd, arg, resultJAG );
-      else m_gcContainer.jsonRoute( dst, dstOffset, cmd, arg, resultJAG );
+      else m_gcContainer->jsonRoute( dst, dstOffset, cmd, arg, resultJAG );
     }
       
     void Interface::jsonExec(
@@ -97,10 +99,10 @@ namespace Fabric
         throw "sourceCode: " + e;
       }
       
-      RC::Handle<Compilation> compilation = Compilation::Create( &m_gcContainer, m_cgManager, m_compileOptions );
+      RC::Handle<Compilation> compilation = Compilation::Create( m_gcContainer, m_cgManager, m_compileOptions );
       if ( sourceName.length() > 0 || sourceCode.length() > 0 )
         compilation->add( sourceName, sourceCode );
-      compilation->reg( &m_gcContainer, id_ );
+      compilation->reg( m_gcContainer, id_ );
     }
     
     void Interface::jsonExecCreateExecutable(
@@ -140,10 +142,10 @@ namespace Fabric
         throw "sourceCode: " + e;
       }
       
-      RC::Handle<Compilation> compilation = Compilation::Create( &m_gcContainer, m_cgManager, m_compileOptions );
+      RC::Handle<Compilation> compilation = Compilation::Create( m_gcContainer, m_cgManager, m_compileOptions );
       compilation->add( sourceName, sourceCode );
       RC::Handle<Executable> executable = compilation->run();
-      executable->reg( &m_gcContainer, id_ );
+      executable->reg( m_gcContainer, id_ );
     }
     
     void Interface::jsonExecCreateMapOperator(
@@ -193,11 +195,11 @@ namespace Fabric
         throw "mapOperatorName: " + e;
       }
       
-      RC::Handle<Compilation> compilation = Compilation::Create( &m_gcContainer, m_cgManager, m_compileOptions );
+      RC::Handle<Compilation> compilation = Compilation::Create( m_gcContainer, m_cgManager, m_compileOptions );
       compilation->add( sourceName, sourceCode );
       RC::Handle<Executable> executable = compilation->run();
       RC::Handle<MapOperator> mapOperator = executable->resolveMapOperator( mapOperatorName );
-      mapOperator->reg( &m_gcContainer, id_ );
+      mapOperator->reg( m_gcContainer, id_ );
     }
   };
 };

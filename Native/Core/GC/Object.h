@@ -34,19 +34,20 @@ namespace Fabric
 
 #define FABRIC_GC_OBJECT_CLASS_DECL() \
     public: \
-      static Fabric::GC::Class const *s_class; \
+      static Fabric::GC::Class s_class; \
     private:
       
 #define FABRIC_GC_OBJECT_CLASS_IMPL(class_,parentClass) \
-    Fabric::GC::Class const *class_::s_class = { parentClass::s_class };
+    Fabric::GC::Class class_::s_class = { &parentClass::s_class };
     
 #define FABRIC_GC_OBJECT_CLASS_PARAM Fabric::GC::Class const *__gc_object_class
 #define FABRIC_GC_OBJECT_CLASS_ARG __gc_object_class
-#define FABRIC_GC_OBJECT_MY_CLASS s_class
+#define FABRIC_GC_OBJECT_MY_CLASS &s_class
 
     class Object : public RC::Object
     {
       friend class Container;
+      template<class T> friend RC::Handle<T> DynCast( RC::Handle<Object> const &object );
       
     protected:
     
@@ -94,7 +95,7 @@ namespace Fabric
       RC::Handle<T> result = 0;
       if ( object )
       {
-        Class const *targetClass = T::s_class;
+        Class const *targetClass = &T::s_class;
         Class const *objectClass = object->m_class;
         while ( objectClass )
         {

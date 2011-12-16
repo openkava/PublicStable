@@ -189,6 +189,7 @@ namespace Fabric
       
       static std::string const s_wrapFabricClientJSSource;
       
+      GC::Container m_gcContainer;
       MR::Interface m_mrInterface;
       KLC::Interface m_klcInterface;
     };

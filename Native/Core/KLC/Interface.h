@@ -29,6 +29,7 @@ namespace Fabric
     public:
     
       Interface(
+        GC::Container *gcContainer,
         RC::Handle<CG::Manager> const &cgManager,
         CG::CompileOptions const &compileOptions
         );
@@ -64,7 +65,7 @@ namespace Fabric
         
     private:
     
-      GC::Container m_gcContainer;
+      GC::Container *m_gcContainer;
       RC::Handle<CG::Manager> m_cgManager;
       CG::CompileOptions m_compileOptions;
     };
