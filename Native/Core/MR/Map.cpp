@@ -72,7 +72,12 @@ namespace Fabric
     
     void Map::produce( size_t index, void *data ) const
     {
-      return m_inputArrayProducer->produce( index, data );
+      size_t elementSize = getElementDesc()->getAllocSize();
+      void *inputData = alloca( elementSize );
+      memset( inputData, 0, elementSize );
+      m_inputArrayProducer->produce( index, inputData );
+      
+      m_mapOperator->call( index, inputData, data );
     }
   };
 };

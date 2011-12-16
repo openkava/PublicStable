@@ -45,11 +45,6 @@ namespace Fabric
       return m_astFunction;
     }
     
-    GenericFunctionPtr Function::getGenericFunctionPtr() const
-    {
-      return m_functionPtr;
-    }
-    
     void Function::toJSON( Util::JSONGenerator &jg ) const
     {
       Util::JSONObjectGenerator jog = jg.makeObject();
