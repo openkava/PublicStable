@@ -19,7 +19,7 @@ namespace Fabric
   {
     class ValueProducer : public Producer
     {
-      FABRIC_MR_OBJECT_GET_CLASS_DECL()
+      FABRIC_GC_OBJECT_CLASS_DECL()
       
       // Virtual functions: ValueProducer
     
@@ -36,7 +36,7 @@ namespace Fabric
     protected:
     
       ValueProducer(
-        Object::Class const *myClass,
+        FABRIC_GC_OBJECT_CLASS_PARAM,
         RC::ConstHandle<RT::Desc> const &valueDesc
         );
     

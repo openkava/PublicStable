@@ -9,13 +9,13 @@ namespace Fabric
 {
   namespace MR
   {
-    FABRIC_MR_OBJECT_GET_CLASS_IMPL( ValueProducer, Producer );
+    FABRIC_GC_OBJECT_CLASS_IMPL( ValueProducer, Producer );
     
     ValueProducer::ValueProducer(
-      Object::Class const *myClass,
+      FABRIC_GC_OBJECT_CLASS_PARAM,
       RC::ConstHandle<RT::Desc> const &valueDesc
       )
-      : Producer( myClass )
+      : Producer( FABRIC_GC_OBJECT_CLASS_ARG )
       , m_valueDesc( valueDesc )
     {
     }

@@ -36,16 +36,38 @@ namespace Fabric
 {
   namespace KLC
   {
+    FABRIC_GC_OBJECT_CLASS_IMPL( Executable, GC::Object )
+      
     Util::TLSVar<Executable const *> Executable::s_currentExecutable;
     
+    RC::Handle<Executable> Executable::Create(
+      GC::Container *gcContainer,
+      RC::Handle<CG::Manager> const &cgManager,
+      RC::ConstHandle<AST::GlobalList> const &ast,
+      CG::CompileOptions const &compileOptions,
+      CG::Diagnostics const &diagnostics
+      )
+    {
+      return new Executable(
+        FABRIC_GC_OBJECT_MY_CLASS,
+        gcContainer,
+        cgManager,
+        ast,
+        compileOptions,
+        diagnostics
+        );
+    }
+    
     Executable::Executable(
+      FABRIC_GC_OBJECT_CLASS_PARAM,
       GC::Container *gcContainer,
       RC::Handle<CG::Manager> const &cgManager,
       RC::ConstHandle<AST::GlobalList> const &originalAST,
       CG::CompileOptions const &compileOptions,
       CG::Diagnostics const &originalDiagnostics
       )
-      : m_gcContainer( gcContainer )
+      : GC::Object( FABRIC_GC_OBJECT_CLASS_ARG )
+      , m_gcContainer( gcContainer )
       , m_cgManager( cgManager )
       , m_ast( originalAST )
       , m_diagnostics( originalDiagnostics )
@@ -233,7 +255,7 @@ namespace Fabric
           throw Exception( "operator " + _(operatorName) + " not found" );
       }
       
-      return new Operator( this, functionPtr );
+      return Operator::Create( this, functionPtr );
     }
 
     RC::ConstHandle<AST::GlobalList> Executable::getAST() const

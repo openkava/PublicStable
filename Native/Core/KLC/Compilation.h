@@ -28,7 +28,7 @@ namespace Fabric
     
     class Compilation : public GC::Object
     {
-      friend class Interface;
+      FABRIC_GC_OBJECT_CLASS_DECL()
       
       struct Source
       {
@@ -41,6 +41,12 @@ namespace Fabric
       
     public:
     
+      static RC::Handle<Compilation> Create(
+        GC::Container *gcContainer,
+        RC::Handle<CG::Manager> const &cgManager,
+        CG::CompileOptions const &compileOptions
+        );
+      
       void add( std::string const &sourceName, std::string const &sourceCode );
       void remove( std::string const &sourceName );
       
@@ -55,6 +61,7 @@ namespace Fabric
     protected:
     
       Compilation(
+        FABRIC_GC_OBJECT_CLASS_PARAM,
         GC::Container *gcContainer,
         RC::Handle<CG::Manager> const &cgManager,
         CG::CompileOptions const &compileOptions

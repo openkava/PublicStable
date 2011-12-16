@@ -11,13 +11,13 @@ namespace Fabric
 {
   namespace MR
   {
-    FABRIC_MR_OBJECT_GET_CLASS_IMPL( ArrayProducer, Producer );
+    FABRIC_GC_OBJECT_CLASS_IMPL( ArrayProducer, Producer )
     
     ArrayProducer::ArrayProducer(
-      Object::Class const *myClass,
+      FABRIC_GC_OBJECT_CLASS_PARAM,
       RC::ConstHandle<RT::Desc> const &elementDesc
       )
-      : Producer( myClass )
+      : Producer( FABRIC_GC_OBJECT_CLASS_ARG )
       , m_elementDesc( elementDesc )
     {
     }
