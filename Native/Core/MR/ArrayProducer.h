@@ -38,7 +38,7 @@ namespace Fabric
     
       virtual size_t count() const = 0;
       virtual void produce( size_t index, void *data ) const = 0;
-      virtual void produceJSON( size_t index, Util::JSONGenerator &jg ) const = 0;
+      virtual void produceJSON( size_t index, Util::JSONGenerator &jg ) const;
             
       // Non-virtual functions
       

@@ -5,7 +5,7 @@
 #include <Fabric/Core/KLC/Interface.h>
 #include <Fabric/Core/KLC/Compilation.h>
 #include <Fabric/Core/KLC/Executable.h>
-#include <Fabric/Core/KLC/Operator.h>
+#include <Fabric/Core/KLC/MapOperator.h>
 #include <Fabric/Core/MR/ConstArrayProducer.h>
 #include <Fabric/Core/GC/Object.h>
 #include <Fabric/Core/RT/Manager.h>
@@ -51,8 +51,8 @@ namespace Fabric
         jsonExecCreateCompilation( arg, resultJAG );
       else if ( cmd == "createExecutable" )
         jsonExecCreateExecutable( arg, resultJAG );
-      else if ( cmd == "createOperator" )
-        jsonExecCreateOperator( arg, resultJAG );
+      else if ( cmd == "createMapOperator" )
+        jsonExecCreateMapOperator( arg, resultJAG );
       else throw Exception( "unknown command: " + _(cmd) );
     }
     
@@ -146,7 +146,7 @@ namespace Fabric
       executable->reg( &m_gcContainer, id_ );
     }
     
-    void Interface::jsonExecCreateOperator(
+    void Interface::jsonExecCreateMapOperator(
       RC::ConstHandle<JSON::Value> const &arg,
       Util::JSONArrayGenerator &resultJAG
       )
@@ -183,21 +183,21 @@ namespace Fabric
         throw "sourceCode: " + e;
       }
       
-      std::string operatorName;
+      std::string mapOperatorName;
       try
       {
-        operatorName = argObject->get( "operatorName" )->toString()->value();
+        mapOperatorName = argObject->get( "mapOperatorName" )->toString()->value();
       }
       catch ( Exception e )
       {
-        throw "operatorName: " + e;
+        throw "mapOperatorName: " + e;
       }
       
       RC::Handle<Compilation> compilation = Compilation::Create( &m_gcContainer, m_cgManager, m_compileOptions );
       compilation->add( sourceName, sourceCode );
       RC::Handle<Executable> executable = compilation->run();
-      RC::Handle<Operator> operator_ = executable->resolveOperator( operatorName );
-      operator_->reg( &m_gcContainer, id_ );
+      RC::Handle<MapOperator> mapOperator = executable->resolveMapOperator( mapOperatorName );
+      mapOperator->reg( &m_gcContainer, id_ );
     }
   };
 };

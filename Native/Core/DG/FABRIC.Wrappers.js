@@ -1555,15 +1555,32 @@ function (fabricClient, logCallback, debugLogCallback) {
     var KLC = {
     };
 
-    var populateOperator = function (operator) {
-      operator.pub.getDiagnostics = function () {
+    var populateFunction = function (function_) {
+      function_.pub.getDiagnostics = function () {
         var diagnostics;
-        operator.queueCommand('getDiagnostics', null, null, function (result) {
+        function_.queueCommand('getDiagnostics', null, null, function (result) {
           diagnostics = result;
         });
         executeQueuedCommands();
         return diagnostics;
       };
+
+      function_.pub.toJSON = function () {
+        var json;
+        function_.queueCommand('toJSON', null, null, function (result) {
+          json = result;
+        });
+        executeQueuedCommands();
+        return json;
+      };
+    };
+
+    var populateOperator = function (operator) {
+      populateFunction(operator);
+    };
+
+    var populateMapOperator = function (mapOperator) {
+      populateOperator(mapOperator);
     };
 
     var populateExecutable = function (executable) {
@@ -1585,16 +1602,16 @@ function (fabricClient, logCallback, debugLogCallback) {
         return diagnostics;
       };
       
-      executable.pub.resolveOperator = function (operatorName) {
-        var operator = GC.createObject('KLC');
-        populateOperator(operator);
-        executable.queueCommand('resolveOperator', {
+      executable.pub.resolveMapOperator = function (mapOperatorName) {
+        var mapOperator = GC.createObject('KLC');
+        populateMapOperator(mapOperator);
+        executable.queueCommand('resolveMapOperator', {
           id: operator.id,
-          operatorName: operatorName
+          mapOperatorName: mapOperatorName
         }, function () {
-          delete operator.id;
+          delete mapOperator.id;
         });
-        return operator.pub;
+        return mapOperator.pub;
       };
     };
     
@@ -1682,23 +1699,23 @@ function (fabricClient, logCallback, debugLogCallback) {
         return executable.pub;
       },
       
-      createOperator: function (sourceName, sourceCode, operatorName) {
-        var operator = GC.createObject('KLC');
+      createMapOperator: function (sourceName, sourceCode, mapOperatorName) {
+        var mapOperator = GC.createObject('KLC');
           
-        populateOperator(operator);
+        populateMapOperator(mapOperator);
           
         var arg = {
-          id: operator.id,
+          id: mapOperator.id,
           sourceName: sourceName,
           sourceCode: sourceCode,
-          operatorName: operatorName
+          mapOperatorName: mapOperatorName
         };
         
-        queueCommand(['KLC'],'createOperator', arg, function () {
-          delete operator['id'];
+        queueCommand(['KLC'],'createMapOperator', arg, function () {
+          delete mapOperator['id'];
         });
         
-        return operator.pub;
+        return mapOperator.pub;
       }
     };
 
