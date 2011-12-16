@@ -27,7 +27,10 @@ namespace Fabric
     {
     public:
     
-      Interface( RC::ConstHandle<RT::Manager> const &rtManager );
+      Interface(
+        GC::Container *gcContainer,
+        RC::ConstHandle<RT::Manager> const &rtManager
+        );
     
       void jsonRoute(
         std::vector<std::string> const &dst,
@@ -47,10 +50,15 @@ namespace Fabric
         RC::ConstHandle<JSON::Value> const &arg,
         Util::JSONArrayGenerator &resultJAG
         );
+      
+      void jsonExecCreateMap(
+        RC::ConstHandle<JSON::Value> const &arg,
+        Util::JSONArrayGenerator &resultJAG
+        );
         
     private:
     
-      GC::Container m_gcContainer;
+      GC::Container *m_gcContainer;
       RC::ConstHandle<RT::Manager> m_rtManager;
     };
   };
