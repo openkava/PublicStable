@@ -1,4 +1,10 @@
-{ 'foo.kl': 'operator foo() {}' }
-{ 'bar.kl': 'operator bar() {}', 'foo.kl': 'operator foo() {}' }
+{ 'foo.kl': 'operator foo() { bad }' }
+{ 'bar.kl': 'operator bar() {}',
+  'foo.kl': 'operator foo() { bad }' }
+[ { filename: 'foo.kl',
+    line: 1,
+    column: 22,
+    level: 'error',
+    desc: 'syntax error, unexpected }, expecting ;' } ]
 { 'bar.kl': 'operator bar() {}' }
-{ 'bar.kl': 'operator bar() {}' }
+[]

@@ -12,7 +12,7 @@ namespace Fabric
 {
   namespace MR
   {
-    FABRIC_MR_OBJECT_GET_CLASS_IMPL( ConstArrayProducer, ArrayProducer );
+    FABRIC_GC_OBJECT_CLASS_IMPL( ConstArrayProducer, ArrayProducer );
     
     RC::Handle<ConstArrayProducer> ConstArrayProducer::Create(
       RC::ConstHandle<RT::Manager> const &rtManager,
@@ -20,16 +20,16 @@ namespace Fabric
       RC::ConstHandle<JSON::Array> const &jsonArray
       )
     {
-      return new ConstArrayProducer( GetClass(), rtManager, elementDesc, jsonArray );
+      return new ConstArrayProducer( FABRIC_GC_OBJECT_MY_CLASS, rtManager, elementDesc, jsonArray );
     }
     
     ConstArrayProducer::ConstArrayProducer(
-      Object::Class const *myClass,
+      FABRIC_GC_OBJECT_CLASS_PARAM,
       RC::ConstHandle<RT::Manager> const &rtManager,
       RC::ConstHandle<RT::Desc> const &elementDesc,
       RC::ConstHandle<JSON::Array> const &jsonArray
       )
-      : ArrayProducer( myClass, elementDesc )
+      : ArrayProducer( FABRIC_GC_OBJECT_CLASS_ARG, elementDesc )
       , m_variableArrayDesc( rtManager->getVariableArrayOf( elementDesc ) )
     {
       m_data.resize( m_variableArrayDesc->getAllocSize(), 0 );

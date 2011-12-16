@@ -22,9 +22,14 @@ namespace Fabric
     
     class Operator : public GC::Object
     {
-      friend class Executable;
+      FABRIC_GC_OBJECT_CLASS_DECL()
       
     public:
+    
+      static RC::Handle<Operator> Create(
+        RC::ConstHandle<Executable> const &executable,
+        GenericFunctionPtr functionPtr
+        );
     
       GenericFunctionPtr getGenericFunctionPtr() const;
       CG::Diagnostics const &getDiagnostics() const;
@@ -38,6 +43,7 @@ namespace Fabric
     protected:
     
       Operator(
+        FABRIC_GC_OBJECT_CLASS_PARAM,
         RC::ConstHandle<Executable> const &executable,
         GenericFunctionPtr functionPtr
         );

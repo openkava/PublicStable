@@ -97,7 +97,7 @@ namespace Fabric
         throw "sourceCode: " + e;
       }
       
-      RC::Handle<Compilation> compilation = new Compilation( &m_gcContainer, m_cgManager, m_compileOptions );
+      RC::Handle<Compilation> compilation = Compilation::Create( &m_gcContainer, m_cgManager, m_compileOptions );
       if ( sourceName.length() > 0 || sourceCode.length() > 0 )
         compilation->add( sourceName, sourceCode );
       compilation->reg( &m_gcContainer, id_ );
@@ -140,7 +140,7 @@ namespace Fabric
         throw "sourceCode: " + e;
       }
       
-      RC::Handle<Compilation> compilation = new Compilation( &m_gcContainer, m_cgManager, m_compileOptions );
+      RC::Handle<Compilation> compilation = Compilation::Create( &m_gcContainer, m_cgManager, m_compileOptions );
       compilation->add( sourceName, sourceCode );
       RC::Handle<Executable> executable = compilation->run();
       executable->reg( &m_gcContainer, id_ );
@@ -193,7 +193,7 @@ namespace Fabric
         throw "operatorName: " + e;
       }
       
-      RC::Handle<Compilation> compilation = new Compilation( &m_gcContainer, m_cgManager, m_compileOptions );
+      RC::Handle<Compilation> compilation = Compilation::Create( &m_gcContainer, m_cgManager, m_compileOptions );
       compilation->add( sourceName, sourceCode );
       RC::Handle<Executable> executable = compilation->run();
       RC::Handle<Operator> operator_ = executable->resolveOperator( operatorName );

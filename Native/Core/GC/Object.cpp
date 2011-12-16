@@ -10,8 +10,11 @@ namespace Fabric
 {
   namespace GC
   {
-    Object::Object()
-      : m_container( 0 )
+    Class const *Object::s_class = { 0 };
+
+    Object::Object( FABRIC_GC_OBJECT_CLASS_PARAM )
+      : m_class( FABRIC_GC_OBJECT_CLASS_ARG )
+      , m_container( 0 )
     {
     }
 
