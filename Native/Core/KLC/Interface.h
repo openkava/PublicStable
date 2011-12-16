@@ -57,7 +57,7 @@ namespace Fabric
         Util::JSONArrayGenerator &resultJAG
         );
       
-      void jsonExecCreateOperator(
+      void jsonExecCreateMapOperator(
         RC::ConstHandle<JSON::Value> const &arg,
         Util::JSONArrayGenerator &resultJAG
         );

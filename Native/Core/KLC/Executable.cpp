@@ -3,7 +3,7 @@
  */
  
 #include <Fabric/Core/KLC/Executable.h>
-#include <Fabric/Core/KLC/Operator.h>
+#include <Fabric/Core/KLC/MapOperator.h>
 #include <Fabric/Core/DG/IRCache.h>
 #include <Fabric/Core/Plug/Manager.h>
 #include <Fabric/Core/KL/Externals.h>
@@ -241,21 +241,45 @@ namespace Fabric
       return currentExecutable->lazyFunctionCreator( functionName );
     }
     
-    RC::Handle<Operator> Executable::resolveOperator( std::string const &operatorName ) const
+    RC::Handle<MapOperator> Executable::resolveMapOperator( std::string const &mapOperatorName ) const
     {
       void (*functionPtr)( ... ) = 0;
+      RC::ConstHandle<AST::Operator> astOperator;
       
       if ( !m_diagnostics.containsError() )
       {
         CurrentExecutableSetter executableSetter( this );
-        llvm::Function *llvmFunction = m_llvmExecutionEngine->FindFunctionNamed( operatorName.c_str() );
+        llvm::Function *llvmFunction = m_llvmExecutionEngine->FindFunctionNamed( mapOperatorName.c_str() );
         if ( llvmFunction )
+        {
           functionPtr = (void (*)(...))( m_llvmExecutionEngine->getPointerToFunction( llvmFunction ) );
+          
+          std::vector< RC::ConstHandle<AST::Function> > functions;
+          m_ast->collectFunctions( functions );
+          
+          for ( std::vector< RC::ConstHandle<AST::Function> >::const_iterator it=functions.begin(); it!=functions.end(); ++it )
+          {
+            RC::ConstHandle<AST::Function> const &function = *it;
+            
+            std::string const *friendlyName = function->getFriendlyName( m_cgManager );
+            if ( friendlyName && *friendlyName == mapOperatorName )
+            {
+              if( !function->isOperator() )
+                throw Exception( _(mapOperatorName) + " is not an operator" );
+              astOperator = RC::ConstHandle<AST::Operator>::StaticCast( function );
+            }
+          }
+        }
+          
         if ( !functionPtr )
-          throw Exception( "operator " + _(operatorName) + " not found" );
+          throw Exception( "map operator " + _(mapOperatorName) + " not found" );
       }
       
-      return Operator::Create( this, functionPtr );
+      return MapOperator::Create(
+        this,
+        astOperator,
+        functionPtr
+        );
     }
 
     RC::ConstHandle<AST::GlobalList> Executable::getAST() const
@@ -268,6 +292,11 @@ namespace Fabric
       return m_diagnostics;
     }
         
+    RC::Handle<CG::Manager> Executable::getCGManager() const
+    {
+      return m_cgManager;
+    }
+    
     void Executable::jsonExec(
       std::string const &cmd,
       RC::ConstHandle<JSON::Value> const &arg,
@@ -278,8 +307,8 @@ namespace Fabric
         jsonExecGetAST( arg, resultJAG );
       else if ( cmd == "getDiagnostics" )
         jsonExecGetDiagnostics( arg, resultJAG );
-      else if ( cmd == "resolveOperator" )
-        jsonExecResolveOperator( arg, resultJAG );
+      else if ( cmd == "resolveMapOperator" )
+        jsonExecResolveMapOperator( arg, resultJAG );
       else GC::Object::jsonExec( cmd, arg, resultJAG );
     }
     
@@ -301,7 +330,7 @@ namespace Fabric
       getAST()->generateJSON( true, jg );
     }
     
-    void Executable::jsonExecResolveOperator(
+    void Executable::jsonExecResolveMapOperator(
       RC::ConstHandle<JSON::Value> const &arg,
       Util::JSONArrayGenerator &resultJAG
       )
@@ -318,18 +347,18 @@ namespace Fabric
         throw "id: " + e;
       }
       
-      std::string operatorName;
+      std::string mapOperatorName;
       try
       {
-        operatorName = argObject->get( "operatorName" )->toString()->value();
+        mapOperatorName = argObject->get( "mapOperatorName" )->toString()->value();
       }
       catch ( Exception e )
       {
-        throw "operatorName: " + e;
+        throw "mapOperatorName: " + e;
       }
       
-      RC::Handle<Operator> operator_ = resolveOperator( operatorName );
-      operator_->reg( m_gcContainer, id_ );
+      RC::Handle<MapOperator> mapOperator = resolveMapOperator( mapOperatorName );
+      mapOperator->reg( m_gcContainer, id_ );
     }
   }
 }

@@ -27,6 +27,16 @@ namespace Fabric
       return m_elementDesc;
     }
       
+    void ArrayProducer::produceJSON( size_t index, Util::JSONGenerator &jg ) const
+    {
+      size_t allocSize = m_elementDesc->getAllocSize();
+      void *valueData = alloca( allocSize );
+      memset( valueData, 0, allocSize );
+      produce( index, valueData );
+      m_elementDesc->generateJSON( valueData, jg );
+      m_elementDesc->disposeData( valueData );
+    }
+    
     void ArrayProducer::jsonExec(
       std::string const &cmd,
       RC::ConstHandle<JSON::Value> const &arg,
