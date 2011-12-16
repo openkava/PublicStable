@@ -9,11 +9,27 @@ namespace Fabric
 {
   namespace KLC
   {
-    Operator::Operator(
+    FABRIC_GC_OBJECT_CLASS_IMPL( Operator, GC::Object )
+      
+    RC::Handle<Operator> Operator::Create(
       RC::ConstHandle<Executable> const &executable,
       GenericFunctionPtr functionPtr
       )
-      : m_executable( executable )
+    {
+      return new Operator(
+        FABRIC_GC_OBJECT_MY_CLASS,
+        executable,
+        functionPtr
+        );
+    }
+
+    Operator::Operator(
+      FABRIC_GC_OBJECT_CLASS_PARAM,
+      RC::ConstHandle<Executable> const &executable,
+      GenericFunctionPtr functionPtr
+      )
+      : GC::Object( FABRIC_GC_OBJECT_CLASS_ARG )
+      , m_executable( executable )
       , m_functionPtr( functionPtr )
     {
     }

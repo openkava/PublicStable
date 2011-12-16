@@ -19,9 +19,11 @@ namespace Fabric
   {
     class Producer : public MR::Object
     {
-      FABRIC_MR_OBJECT_GET_CLASS_DECL()
+      FABRIC_GC_OBJECT_CLASS_DECL()
       
       // Virtual functions: Object
+    
+    public:
 
       virtual void jsonExec(
         std::string const &cmd,
@@ -33,7 +35,7 @@ namespace Fabric
       
     protected:
     
-      Producer( Object::Class const *myClass ); 
+      Producer( FABRIC_GC_OBJECT_CLASS_PARAM ); 
     
       virtual char const *getKind() const = 0;
       virtual void toJSONImpl( Util::JSONObjectGenerator &jog ) const = 0;

@@ -19,7 +19,7 @@ namespace Fabric
   {
     class ArrayProducer : public Producer
     {
-      FABRIC_MR_OBJECT_GET_CLASS_DECL()
+      FABRIC_GC_OBJECT_CLASS_DECL()
       
       // Virtual functions: Object
       
@@ -49,7 +49,7 @@ namespace Fabric
     protected:
     
       ArrayProducer(
-        Object::Class const *myClass,
+        FABRIC_GC_OBJECT_CLASS_PARAM,
         RC::ConstHandle<RT::Desc> const &elementDesc
         );
     

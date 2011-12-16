@@ -37,9 +37,17 @@ namespace Fabric
     
     class Executable : public GC::Object
     {
-      friend class Compilation;
+      FABRIC_GC_OBJECT_CLASS_DECL()
       
     public:
+    
+      static RC::Handle<Executable> Create(
+        GC::Container *gcContainer,
+        RC::Handle<CG::Manager> const &cgManager,
+        RC::ConstHandle<AST::GlobalList> const &ast,
+        CG::CompileOptions const &compileOptions,
+        CG::Diagnostics const &diagnostics
+        );
       
       RC::ConstHandle<AST::GlobalList> getAST() const;
       CG::Diagnostics const &getDiagnostics() const;
@@ -75,6 +83,7 @@ namespace Fabric
       };
     
       Executable(
+        FABRIC_GC_OBJECT_CLASS_PARAM,
         GC::Container *gcContainer,
         RC::Handle<CG::Manager> const &cgManager,
         RC::ConstHandle<AST::GlobalList> const &ast,

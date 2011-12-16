@@ -13,12 +13,30 @@ namespace Fabric
 {
   namespace KLC
   {
-    Compilation::Compilation(
+    FABRIC_GC_OBJECT_CLASS_IMPL( Compilation, GC::Object )
+      
+    RC::Handle<Compilation> Compilation::Create(
       GC::Container *gcContainer,
       RC::Handle<CG::Manager> const &cgManager,
       CG::CompileOptions const &compileOptions
       )
-      : m_gcContainer( gcContainer )
+    {
+      return new Compilation(
+        FABRIC_GC_OBJECT_MY_CLASS,
+        gcContainer,
+        cgManager,
+        compileOptions
+        );
+    }
+
+    Compilation::Compilation(
+      FABRIC_GC_OBJECT_CLASS_PARAM,
+      GC::Container *gcContainer,
+      RC::Handle<CG::Manager> const &cgManager,
+      CG::CompileOptions const &compileOptions
+      )
+      : GC::Object( FABRIC_GC_OBJECT_CLASS_ARG )
+      , m_gcContainer( gcContainer )
       , m_cgManager( cgManager )
       , m_compileOptions( compileOptions )
     {
@@ -74,7 +92,7 @@ namespace Fabric
         diagnostics.append( source.diagnostics );
       }
         
-      return new Executable( m_gcContainer, m_cgManager, globalAST, m_compileOptions, diagnostics );
+      return Executable::Create( m_gcContainer, m_cgManager, globalAST, m_compileOptions, diagnostics );
     }
         
     void Compilation::jsonExec(

@@ -8,14 +8,10 @@ namespace Fabric
 {
   namespace MR
   {
-    Object::Class const *Object::GetClass()
-    {
-      static Class myClass = { 0 };
-      return &myClass;
-    }
-
-    Object::Object( Class const *class_ )
-      : m_class( class_ )
+    FABRIC_GC_OBJECT_CLASS_IMPL( Object, GC::Object )
+    
+    Object::Object( FABRIC_GC_OBJECT_CLASS_PARAM )
+      : GC::Object( FABRIC_GC_OBJECT_CLASS_ARG )
     {
     }
 
