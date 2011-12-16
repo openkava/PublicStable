@@ -14,6 +14,11 @@ namespace Fabric
     class Desc;
   };
   
+  namespace CG
+  {
+    class Adapter;
+  };
+  
   namespace KLC
   {
     class MapOperator : public Operator
@@ -33,6 +38,12 @@ namespace Fabric
       RC::ConstHandle<RT::Desc> getInputDesc() const;
       RC::ConstHandle<RT::Desc> getOutputDesc() const;
       
+      void call(
+        size_t index,
+        void const *inputData,
+        void *outputData
+        ) const;
+      
     protected:
     
       MapOperator(
@@ -44,8 +55,24 @@ namespace Fabric
     
     private:
     
-      RC::ConstHandle<RT::Desc> m_inputDesc;
-      RC::ConstHandle<RT::Desc> m_outputDesc;
+      void callBoolean( size_t index, void const *inputData, void *outputData );
+      void callUInt8( size_t index, void const *inputData, void *outputData );
+      void callSInt8( size_t index, void const *inputData, void *outputData );
+      void callUInt16( size_t index, void const *inputData, void *outputData );
+      void callSInt16( size_t index, void const *inputData, void *outputData );
+      void callUInt32( size_t index, void const *inputData, void *outputData );
+      void callSInt32( size_t index, void const *inputData, void *outputData );
+      void callUInt64( size_t index, void const *inputData, void *outputData );
+      void callSInt64( size_t index, void const *inputData, void *outputData );
+      void callFloat32( size_t index, void const *inputData, void *outputData );
+      void callFloat64( size_t index, void const *inputData, void *outputData );
+      void callString( size_t index, void const *inputData, void *outputData );
+      void callRef( size_t index, void const *inputData, void *outputData );
+    
+      RC::ConstHandle<CG::Adapter> m_inputAdapter;
+      RC::ConstHandle<CG::Adapter> m_outputAdapter;
+      
+      void (MapOperator::*m_call)( size_t index, void const *inputData, void *outputData );
     };
   }
 }

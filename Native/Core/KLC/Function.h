@@ -47,7 +47,6 @@ namespace Fabric
       RC::ConstHandle<AST::GlobalList> getAST() const;
       CG::Diagnostics const &getDiagnostics() const;
       RC::ConstHandle<AST::Function> getASTFunction() const;
-      GenericFunctionPtr getGenericFunctionPtr() const;
       
       void toJSON( Util::JSONGenerator &jg ) const;
         
@@ -68,6 +67,11 @@ namespace Fabric
        
       virtual char const *getKind() const;
       virtual void toJSONImpl( Util::JSONObjectGenerator &jog ) const;
+
+      GenericFunctionPtr getGenericFunctionPtr() const
+      {
+        return m_functionPtr;
+      }
    
     private:
     
