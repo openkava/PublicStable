@@ -608,7 +608,7 @@ FABRIC.SceneGraph.registerNodeType('BulletWorldNode', {
     if(options.createGroundPlane) {
       // create a shape
       // create the ground rigid body
-      var groundTrans = new FABRIC.RT.XFO({tr: new FABRIC.RT.Vec3(0,-options.groundPlaneSize,0)});
+      var groundTrans = new FABRIC.RT.Xfo({tr: new FABRIC.RT.Vec3(0,-options.groundPlaneSize,0)});
       bulletWorldNode.pub.addShape('Ground',FABRIC.RT.BulletShape.createBox(new FABRIC.RT.Vec3(options.groundPlaneSize,options.groundPlaneSize,options.groundPlaneSize)));
       bulletWorldNode.pub.addRigidBody('Ground',new FABRIC.RT.BulletRigidBody({mass: 0, transform: groundTrans}),'Ground');
       
