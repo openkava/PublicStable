@@ -1530,7 +1530,7 @@ function (fabricClient, logCallback, debugLogCallback) {
     
     return {
       createObject: function (namespace) {
-        var id = "MR_" + nextID++;
+        var id = "GC_" + nextID++;
         
         var result = {
           id: id,
@@ -1542,10 +1542,16 @@ function (fabricClient, logCallback, debugLogCallback) {
           pub: {
           }
         };
+        
+        result.pub.getID = function () {
+          return result.id;
+        };
+        
         result.pub.dispose = function () {
           result.queueCommand('dispose');
-          delete result['id'];
+          delete result.id;
         };
+        
         return result;
       }
     };
@@ -1725,44 +1731,75 @@ function (fabricClient, logCallback, debugLogCallback) {
   var MR = (function() {
     var MR = {
     };
+    
+    var populateProducer = function (producer) {
+      producer.pub.getJSONDesc = function () {
+        var jsonDesc;
+        producer.queueCommand('getJSONDesc', null, null, function (result) {
+          jsonDesc = result;
+        });
+        executeQueuedCommands();
+        return jsonDesc;
+      };
+    };
+    
+    var populateArrayProducer = function (arrayProducer) {
+      populateProducer(arrayProducer);
+      
+      arrayProducer.pub.getCount = function () {
+        var count;
+        arrayProducer.queueCommand('getCount', null, null, function (result) {
+          count = result;
+        });
+        executeQueuedCommands();
+        return count;
+      };
+      
+      arrayProducer.pub.produce = function (index) {
+        var result;
+        arrayProducer.queueCommand('produce', index, null, function (_) {
+          result = _;
+        });
+        executeQueuedCommands();
+        return result;
+      };
+    };
+    
+    var populateMap = function (map) {
+      populateArrayProducer(map);
+    };
+    
+    var populateConstArrayProducer = function (constArrayProducer) {
+      populateArrayProducer(constArrayProducer);
+    };
 
     MR.pub = {
+      createMap: function(inputArrayProducer, mapOperator) {
+        var map = GC.createObject('MR');
+        
+        populateMap(map);
+        
+        queueCommand(['MR'], 'createMap', {
+          id: map.id,
+          inputArrayProducerID: inputArrayProducer.getID(),
+          mapOperatorID: mapOperator.getID()
+        }, function () {
+          delete map.id;
+        });
+        return map.pub;
+      },
+      
       createConstArrayProducer: function(elementType, data) {
         var constArrayProducer = GC.createObject('MR');
         
-        constArrayProducer.pub.getCount = function () {
-          var count;
-          constArrayProducer.queueCommand('getCount', null, null, function (result) {
-            count = result;
-          });
-          executeQueuedCommands();
-          return count;
-        };
+        populateConstArrayProducer(constArrayProducer);
         
-        constArrayProducer.pub.produce = function (index) {
-          var result;
-          constArrayProducer.queueCommand('produce', index, null, function (_) {
-            result = _;
-          });
-          executeQueuedCommands();
-          return result;
-        };
-        
-        constArrayProducer.pub.getJSONDesc = function () {
-          var jsonDesc;
-          constArrayProducer.queueCommand('getJSONDesc', null, null, function (result) {
-            jsonDesc = result;
-          });
-          executeQueuedCommands();
-          return jsonDesc;
-        };
-        
-        queueCommand(['MR'],'createConstArrayProducer', {
+        queueCommand(['MR'], 'createConstArrayProducer', {
           id: constArrayProducer.id,
           elementType: elementType,
           data: data
         }, function () {
-          delete constArrayProducer['id'];
+          delete constArrayProducer.id;
         });
         return constArrayProducer.pub;
       }
