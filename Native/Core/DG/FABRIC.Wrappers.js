@@ -1612,12 +1612,24 @@ function (fabricClient, logCallback, debugLogCallback) {
         var mapOperator = GC.createObject('KLC');
         populateMapOperator(mapOperator);
         executable.queueCommand('resolveMapOperator', {
-          id: operator.id,
+          id: mapOperator.id,
           mapOperatorName: mapOperatorName
         }, function () {
           delete mapOperator.id;
         });
         return mapOperator.pub;
+      };
+      
+      executable.pub.resolveArrayGeneratorOperator = function (arrayGeneratorOperatorName) {
+        var arrayGeneratorOperator = GC.createObject('KLC');
+        populateArrayGeneratorOperator(arrayGeneratorOperator);
+        executable.queueCommand('resolveArrayGeneratorOperator', {
+          id: arrayGeneratorOperator.id,
+          arrayGeneratorOperatorName: arrayGeneratorOperatorName
+        }, function () {
+          delete arrayGeneratorOperator.id;
+        });
+        return arrayGeneratorOperator.pub;
       };
     };
     
@@ -1722,6 +1734,25 @@ function (fabricClient, logCallback, debugLogCallback) {
         });
         
         return mapOperator.pub;
+      },
+      
+      createArrayGeneratorOperator: function (sourceName, sourceCode, arrayGeneratorOperatorName) {
+        var arrayGeneratorOperator = GC.createObject('KLC');
+          
+        populateMapOperator(arrayGeneratorOperator);
+          
+        var arg = {
+          id: arrayGeneratorOperator.id,
+          sourceName: sourceName,
+          sourceCode: sourceCode,
+          arrayGeneratorOperatorName: arrayGeneratorOperatorName
+        };
+        
+        queueCommand(['KLC'],'createArrayGeneratorOperator', arg, function () {
+          delete arrayGeneratorOperator['id'];
+        });
+        
+        return arrayGeneratorOperator.pub;
       }
     };
 
