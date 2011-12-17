@@ -46,12 +46,22 @@ namespace Fabric
         Util::JSONArrayGenerator &resultJAG
         );
       
+      void jsonExecCreateConstValue(
+        RC::ConstHandle<JSON::Value> const &arg,
+        Util::JSONArrayGenerator &resultJAG
+        );
+      
       void jsonExecCreateConstArrayProducer(
         RC::ConstHandle<JSON::Value> const &arg,
         Util::JSONArrayGenerator &resultJAG
         );
       
       void jsonExecCreateMap(
+        RC::ConstHandle<JSON::Value> const &arg,
+        Util::JSONArrayGenerator &resultJAG
+        );
+      
+      void jsonExecCreateArrayGenerator(
         RC::ConstHandle<JSON::Value> const &arg,
         Util::JSONArrayGenerator &resultJAG
         );

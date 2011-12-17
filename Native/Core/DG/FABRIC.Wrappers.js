@@ -1774,6 +1774,23 @@ function (fabricClient, logCallback, debugLogCallback) {
       };
     };
     
+    var populateValueProducer = function (valueProducer) {
+      populateProducer(valueProducer);
+      
+      valueProducer.pub.produce = function () {
+        var result;
+        valueProducer.queueCommand('produce', null, null, function (_) {
+          result = _;
+        });
+        executeQueuedCommands();
+        return result;
+      };
+    };
+
+    var populateConstValue = function (constValue) {
+      populateValueProducer(constValue);
+    };
+    
     var populateArrayProducer = function (arrayProducer) {
       populateProducer(arrayProducer);
       
@@ -1800,6 +1817,10 @@ function (fabricClient, logCallback, debugLogCallback) {
       populateArrayProducer(map);
     };
     
+    var populateArrayGenerator = function (map) {
+      populateArrayProducer(map);
+    };
+    
     var populateConstArrayProducer = function (constArrayProducer) {
       populateArrayProducer(constArrayProducer);
     };
@@ -1820,6 +1841,21 @@ function (fabricClient, logCallback, debugLogCallback) {
         return map.pub;
       },
       
+      createArrayGenerator: function(countValueProducer, arrayGeneratorOperator) {
+        var arrayGenerator = GC.createObject('MR');
+        
+        populateArrayGenerator(arrayGenerator);
+        
+        queueCommand(['MR'], 'createArrayGenerator', {
+          id: arrayGenerator.id,
+          countValueProducerID: countValueProducer.getID(),
+          arrayGeneratorOperatorID: arrayGeneratorOperator.getID()
+        }, function () {
+          delete arrayGenerator.id;
+        });
+        return arrayGenerator.pub;
+      },
+      
       createConstArrayProducer: function(elementType, data) {
         var constArrayProducer = GC.createObject('MR');
         
@@ -1833,6 +1869,21 @@ function (fabricClient, logCallback, debugLogCallback) {
           delete constArrayProducer.id;
         });
         return constArrayProducer.pub;
+      },
+      
+      createConstValue: function(valueType, data) {
+        var constValue = GC.createObject('MR');
+        
+        populateConstValue(constValue);
+        
+        queueCommand(['MR'], 'createConstValue', {
+          id: constValue.id,
+          valueType: valueType,
+          data: data
+        }, function () {
+          delete constValue.id;
+        });
+        return constValue.pub;
       }
     };
 
