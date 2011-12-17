@@ -66,5 +66,5 @@ namespace Fabric
     {
       return getElementDesc()->generateJSON( m_variableArrayDesc->getMemberData( &m_data[0], index ), jg );
     }
-  };
-};
+  }
+}

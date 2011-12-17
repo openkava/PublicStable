@@ -21,11 +21,22 @@ namespace Fabric
     {
       FABRIC_GC_OBJECT_CLASS_DECL()
       
+      // Virtual functions: Object
+      
+    public:
+
+      virtual void jsonExec(
+        std::string const &cmd,
+        RC::ConstHandle<JSON::Value> const &arg,
+        Util::JSONArrayGenerator &resultJAG
+        );
+      
       // Virtual functions: ValueProducer
     
     public:
     
       virtual void produce( void *data ) const = 0;
+      virtual void produceJSON( Util::JSONGenerator &jg ) const;
       
       // Non-virtual functions
       
@@ -41,6 +52,11 @@ namespace Fabric
         );
     
     private:
+    
+      void jsonExecProduce(
+        RC::ConstHandle<JSON::Value> const &arg,
+        Util::JSONArrayGenerator &resultJAG
+        );
     
       RC::ConstHandle<RT::Desc> m_valueDesc;
     };

@@ -3,8 +3,11 @@
  */
  
 #include <Fabric/Core/MR/Interface.h>
+#include <Fabric/Core/MR/ArrayGenerator.h>
 #include <Fabric/Core/MR/ConstArrayProducer.h>
 #include <Fabric/Core/MR/Map.h>
+#include <Fabric/Core/MR/ConstValue.h>
+#include <Fabric/Core/KLC/ArrayGeneratorOperator.h>
 #include <Fabric/Core/KLC/MapOperator.h>
 #include <Fabric/Core/GC/Object.h>
 #include <Fabric/Core/RT/Manager.h>
@@ -52,6 +55,10 @@ namespace Fabric
         jsonExecCreateConstArrayProducer( arg, resultJAG );
       else if ( cmd == "createMap" )
         jsonExecCreateMap( arg, resultJAG );
+      else if ( cmd == "createArrayGenerator" )
+        jsonExecCreateArrayGenerator( arg, resultJAG );
+      else if ( cmd == "createConstValue" )
+        jsonExecCreateConstValue( arg, resultJAG );
       else throw Exception( "unknown command: " + _(cmd) );
     }
     
@@ -146,6 +153,100 @@ namespace Fabric
         mapOperator
         );
       map->reg( m_gcContainer, id_ );
+    }
+    
+    void Interface::jsonExecCreateArrayGenerator(
+      RC::ConstHandle<JSON::Value> const &arg,
+      Util::JSONArrayGenerator &resultJAG
+      )
+    {
+      RC::ConstHandle<JSON::Object> argObject = arg->toObject();
+      
+      std::string id_;
+      try
+      {
+        id_ = argObject->get( "id" )->toString()->value();
+      }
+      catch ( Exception e )
+      {
+        throw "id: " + e;
+      }
+      
+      RC::Handle<ValueProducer> countValueProducer;
+      try
+      {
+        countValueProducer = GC::DynCast<ValueProducer>( m_gcContainer->getObject( argObject->get( "countValueProducerID" )->toString()->value() ) );
+        if ( !countValueProducer )
+          throw "must be a value producer";
+      }
+      catch ( Exception e )
+      {
+        throw "countValueProducerID: " + e;
+      }
+      
+      RC::Handle<KLC::ArrayGeneratorOperator> arrayGeneratorOperator;
+      try
+      {
+        arrayGeneratorOperator = GC::DynCast<KLC::ArrayGeneratorOperator>( m_gcContainer->getObject( argObject->get( "arrayGeneratorOperatorID" )->toString()->value() ) );
+        if ( !arrayGeneratorOperator )
+          throw "must be an array generator operator";
+      }
+      catch ( Exception e )
+      {
+        throw "arrayGeneratorOperatorID: " + e;
+      }
+      
+      RC::Handle<ArrayGenerator> arrayGenerator = ArrayGenerator::Create(
+        m_rtManager,
+        countValueProducer,
+        arrayGeneratorOperator
+        );
+      arrayGenerator->reg( m_gcContainer, id_ );
+    }
+    
+    void Interface::jsonExecCreateConstValue(
+      RC::ConstHandle<JSON::Value> const &arg,
+      Util::JSONArrayGenerator &resultJAG
+      )
+    {
+      RC::ConstHandle<JSON::Object> argObject = arg->toObject();
+      
+      std::string id_;
+      try
+      {
+        id_ = argObject->get( "id" )->toString()->value();
+      }
+      catch ( Exception e )
+      {
+        throw "id: " + e;
+      }
+      
+      RC::ConstHandle<RT::Desc> valueTypeRTDesc;
+      try
+      {
+        valueTypeRTDesc = m_rtManager->getDesc( argObject->get( "valueType" )->toString()->value() );
+      }
+      catch ( Exception e )
+      {
+        throw "valueType: " + e;
+      }
+      
+      RC::ConstHandle<JSON::Value> dataJSONValue;
+      try
+      {
+        dataJSONValue = argObject->get( "data" );
+      }
+      catch ( Exception e )
+      {
+        throw "data: " + e;
+      }
+      
+      RC::Handle<ConstValue> constValue = ConstValue::Create(
+        m_rtManager,
+        valueTypeRTDesc,
+        dataJSONValue
+        );
+      constValue->reg( m_gcContainer, id_ );
     }
   };
 };
