@@ -30,8 +30,7 @@ namespace Fabric
         RC::ConstHandle<JSON::Value> const &arg,
         Util::JSONArrayGenerator &resultJAG
         );
-      
-      
+            
       // Virtual functions: ArrayProducer
     
     public:
