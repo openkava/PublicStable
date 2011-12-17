@@ -7,7 +7,7 @@
 #include <Fabric/Core/KLC/Compilation.h>
 #include <Fabric/Core/KLC/Executable.h>
 #include <Fabric/Core/KLC/MapOperator.h>
-#include <Fabric/Core/MR/ConstArrayProducer.h>
+#include <Fabric/Core/MR/ConstArray.h>
 #include <Fabric/Core/GC/Object.h>
 #include <Fabric/Core/RT/Manager.h>
 #include <Fabric/Core/Util/JSONGenerator.h>
