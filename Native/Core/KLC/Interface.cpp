@@ -3,6 +3,7 @@
  */
  
 #include <Fabric/Core/KLC/Interface.h>
+#include <Fabric/Core/KLC/ArrayGeneratorOperator.h>
 #include <Fabric/Core/KLC/Compilation.h>
 #include <Fabric/Core/KLC/Executable.h>
 #include <Fabric/Core/KLC/MapOperator.h>
@@ -55,6 +56,8 @@ namespace Fabric
         jsonExecCreateExecutable( arg, resultJAG );
       else if ( cmd == "createMapOperator" )
         jsonExecCreateMapOperator( arg, resultJAG );
+      else if ( cmd == "createArrayGeneratorOperator" )
+        jsonExecCreateArrayGeneratorOperator( arg, resultJAG );
       else throw Exception( "unknown command: " + _(cmd) );
     }
     
@@ -200,6 +203,60 @@ namespace Fabric
       RC::Handle<Executable> executable = compilation->run();
       RC::Handle<MapOperator> mapOperator = executable->resolveMapOperator( mapOperatorName );
       mapOperator->reg( m_gcContainer, id_ );
+    }
+    
+    void Interface::jsonExecCreateArrayGeneratorOperator(
+      RC::ConstHandle<JSON::Value> const &arg,
+      Util::JSONArrayGenerator &resultJAG
+      )
+    {
+      RC::ConstHandle<JSON::Object> argObject = arg->toObject();
+      
+      std::string id_;
+      try
+      {
+        id_ = argObject->get( "id" )->toString()->value();
+      }
+      catch ( Exception e )
+      {
+        throw "id: " + e;
+      }
+      
+      std::string sourceName;
+      try
+      {
+        sourceName = argObject->get( "sourceName" )->toString()->value();
+      }
+      catch ( Exception e )
+      {
+        throw "sourceName: " + e;
+      }
+      
+      std::string sourceCode;
+      try
+      {
+        sourceCode = argObject->get( "sourceCode" )->toString()->value();
+      }
+      catch ( Exception e )
+      {
+        throw "sourceCode: " + e;
+      }
+      
+      std::string arrayGeneratorOperatorName;
+      try
+      {
+        arrayGeneratorOperatorName = argObject->get( "arrayGeneratorOperatorName" )->toString()->value();
+      }
+      catch ( Exception e )
+      {
+        throw "arrayGeneratorOperatorName: " + e;
+      }
+      
+      RC::Handle<Compilation> compilation = Compilation::Create( m_gcContainer, m_cgManager, m_compileOptions );
+      compilation->add( sourceName, sourceCode );
+      RC::Handle<Executable> executable = compilation->run();
+      RC::Handle<ArrayGeneratorOperator> arrayGeneratorOperator = executable->resolveArrayGeneratorOperator( arrayGeneratorOperatorName );
+      arrayGeneratorOperator->reg( m_gcContainer, id_ );
     }
   };
 };
