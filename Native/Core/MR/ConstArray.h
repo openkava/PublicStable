@@ -25,13 +25,13 @@ namespace Fabric
   
   namespace MR
   {
-    class ConstArrayProducer : public ArrayProducer
+    class ConstArray : public ArrayProducer
     {
       FABRIC_GC_OBJECT_CLASS_DECL()
       
     public:
     
-      static RC::Handle<ConstArrayProducer> Create(
+      static RC::Handle<ConstArray> Create(
         RC::ConstHandle<RT::Manager> const &rtManager,
         RC::ConstHandle<RT::Desc> const &elementDesc,
         RC::ConstHandle<JSON::Array> const &jsonArray
@@ -47,13 +47,13 @@ namespace Fabric
             
     protected:
     
-      ConstArrayProducer(
+      ConstArray(
         FABRIC_GC_OBJECT_CLASS_PARAM,
         RC::ConstHandle<RT::Manager> const &rtManager,
         RC::ConstHandle<RT::Desc> const &elementDesc,
         RC::ConstHandle<JSON::Array> const &jsonArray
         );
-      ~ConstArrayProducer();
+      ~ConstArray();
     
       virtual char const *getKind() const;
       virtual void toJSONImpl( Util::JSONObjectGenerator &jog ) const;

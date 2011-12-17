@@ -1821,8 +1821,8 @@ function (fabricClient, logCallback, debugLogCallback) {
       populateArrayProducer(map);
     };
     
-    var populateConstArrayProducer = function (constArrayProducer) {
-      populateArrayProducer(constArrayProducer);
+    var populateConstArray = function (constArray) {
+      populateArrayProducer(constArray);
     };
 
     MR.pub = {
@@ -1856,19 +1856,19 @@ function (fabricClient, logCallback, debugLogCallback) {
         return arrayGenerator.pub;
       },
       
-      createConstArrayProducer: function(elementType, data) {
-        var constArrayProducer = GC.createObject('MR');
+      createConstArray: function(elementType, data) {
+        var constArray = GC.createObject('MR');
         
-        populateConstArrayProducer(constArrayProducer);
+        populateConstArray(constArray);
         
-        queueCommand(['MR'], 'createConstArrayProducer', {
-          id: constArrayProducer.id,
+        queueCommand(['MR'], 'createConstArray', {
+          id: constArray.id,
           elementType: elementType,
           data: data
         }, function () {
-          delete constArrayProducer.id;
+          delete constArray.id;
         });
-        return constArrayProducer.pub;
+        return constArray.pub;
       },
       
       createConstValue: function(valueType, data) {

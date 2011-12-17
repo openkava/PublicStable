@@ -4,7 +4,7 @@
  
 #include <Fabric/Core/MR/Interface.h>
 #include <Fabric/Core/MR/ArrayGenerator.h>
-#include <Fabric/Core/MR/ConstArrayProducer.h>
+#include <Fabric/Core/MR/ConstArray.h>
 #include <Fabric/Core/MR/Map.h>
 #include <Fabric/Core/MR/ConstValue.h>
 #include <Fabric/Core/KLC/ArrayGeneratorOperator.h>
@@ -51,8 +51,8 @@ namespace Fabric
       Util::JSONArrayGenerator &resultJAG
       )
     {
-      if ( cmd == "createConstArrayProducer" )
-        jsonExecCreateConstArrayProducer( arg, resultJAG );
+      if ( cmd == "createConstArray" )
+        jsonExecCreateConstArray( arg, resultJAG );
       else if ( cmd == "createMap" )
         jsonExecCreateMap( arg, resultJAG );
       else if ( cmd == "createArrayGenerator" )
@@ -62,7 +62,7 @@ namespace Fabric
       else throw Exception( "unknown command: " + _(cmd) );
     }
     
-    void Interface::jsonExecCreateConstArrayProducer(
+    void Interface::jsonExecCreateConstArray(
       RC::ConstHandle<JSON::Value> const &arg,
       Util::JSONArrayGenerator &resultJAG
       )
@@ -99,12 +99,12 @@ namespace Fabric
         throw "data: " + e;
       }
       
-      RC::Handle<ConstArrayProducer> constArrayProducer = ConstArrayProducer::Create(
+      RC::Handle<ConstArray> constArray = ConstArray::Create(
         m_rtManager,
         elementTypeRTDesc,
         dataJSONArray
         );
-      constArrayProducer->reg( m_gcContainer, id_ );
+      constArray->reg( m_gcContainer, id_ );
     }
     
     void Interface::jsonExecCreateMap(
