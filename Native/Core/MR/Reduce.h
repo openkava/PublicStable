@@ -6,6 +6,7 @@
 #define _FABRIC_MR_REDUCE_H
 
 #include <Fabric/Core/MR/ValueProducer.h>
+#include <Fabric/Core/Util/Mutex.h>
 
 namespace Fabric
 {
@@ -21,6 +22,8 @@ namespace Fabric
     class Reduce : public ValueProducer
     {
       FABRIC_GC_OBJECT_CLASS_DECL()
+      
+      class Execution;
 
     public:
     
@@ -51,6 +54,8 @@ namespace Fabric
     
       RC::ConstHandle<ArrayProducer> m_inputArrayProducer;
       RC::ConstHandle<KLC::ReduceOperator> m_reduceOperator;
+      
+      mutable Util::Mutex m_mutex;
     };
   };
 };

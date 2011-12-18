@@ -23,6 +23,7 @@
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/RT/Manager.h>
 #include <Fabric/Core/IO/Manager.h>
+#include <Fabric/Core/MT/LogCollector.h>
 #include <Fabric/Base/JSON/Boolean.h>
 #include <Fabric/Base/JSON/String.h>
 #include <Fabric/Base/JSON/Object.h>
@@ -390,9 +391,15 @@ namespace Fabric
         else if ( first == "IO" )
           m_ioManager->jsonRoute( dst, dstOffset + 1, cmd, arg, resultJAG );
         else if ( first == "MR" )
+        {
+          MT::TLSLogCollectorAutoSet logCollector( m_logCollector );
           m_mrInterface.jsonRoute( dst, dstOffset + 1, cmd, arg, resultJAG );
+        }
         else if ( first == "KLC" )
+        {
+          MT::TLSLogCollectorAutoSet logCollector( m_logCollector );
           m_klcInterface.jsonRoute( dst, dstOffset + 1, cmd, arg, resultJAG );
+        }
         else throw Exception( "unroutable" );
       }
     }
