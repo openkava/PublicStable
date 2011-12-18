@@ -21,20 +21,23 @@ namespace Fabric
     
     RC::Handle<Reduce> Reduce::Create(
       RC::ConstHandle<ArrayProducer> const &inputArrayProducer,
-      RC::ConstHandle<KLC::ReduceOperator> const &reduceOperator
+      RC::ConstHandle<KLC::ReduceOperator> const &reduceOperator,
+      RC::ConstHandle<ValueProducer> const &sharedValueProducer
       )
     {
-      return new Reduce( FABRIC_GC_OBJECT_MY_CLASS, inputArrayProducer, reduceOperator );
+      return new Reduce( FABRIC_GC_OBJECT_MY_CLASS, inputArrayProducer, reduceOperator, sharedValueProducer );
     }
     
     Reduce::Reduce(
       FABRIC_GC_OBJECT_CLASS_PARAM,
       RC::ConstHandle<ArrayProducer> const &inputArrayProducer,
-      RC::ConstHandle<KLC::ReduceOperator> const &reduceOperator
+      RC::ConstHandle<KLC::ReduceOperator> const &reduceOperator,
+      RC::ConstHandle<ValueProducer> const &sharedValueProducer
       )
       : ValueProducer( FABRIC_GC_OBJECT_CLASS_ARG, reduceOperator->getOutputDesc() )
       , m_inputArrayProducer( inputArrayProducer )
       , m_reduceOperator( reduceOperator )
+      , m_sharedValueProducer( sharedValueProducer )
       , m_mutex( "Reduce" )
     {
       RC::ConstHandle<RT::Desc> inputArrayProducerElementDesc = inputArrayProducer->getElementDesc();
@@ -50,6 +53,20 @@ namespace Fabric
           + ") is not equivalent to reduce operator input type ("
           + _(reduceOperatorInputDesc->getUserName()) + ")"
           );
+      RC::ConstHandle<RT::Desc> reduceOperatorSharedDesc = reduceOperator->getSharedDesc();
+      if ( reduceOperatorSharedDesc )
+      {
+        RC::ConstHandle<RT::Desc> sharedValueProducerValueDesc = sharedValueProducer->getValueDesc();
+        if ( !sharedValueProducerValueDesc )
+          throw Exception( "reduce operator requires a shared value but no shared value producer is provided" );
+        if ( !sharedValueProducerValueDesc->isEquivalentTo( reduceOperatorSharedDesc ) )
+          throw Exception(
+            "shared value type ("
+            + _(sharedValueProducerValueDesc->getUserName())
+            + ") is not equivalent to reduce operator shared type ("
+            + _(reduceOperatorSharedDesc->getUserName()) + ")"
+            );
+      }
     }
     
     Reduce::~Reduce()
@@ -71,6 +88,12 @@ namespace Fabric
       {
         Util::JSONGenerator jg = jog.makeMember( "reduceOperator" );
         m_reduceOperator->toJSON( jg );
+      }
+      
+      if ( m_sharedValueProducer )
+      {
+        Util::JSONGenerator jg = jog.makeMember( "sharedValueProducer" );
+        m_sharedValueProducer->toJSON( jg );
       }
     }
     
@@ -113,9 +136,23 @@ namespace Fabric
         
         RC::ConstHandle<ArrayProducer> inputArrayProducer = m_reduce->m_inputArrayProducer;
         RC::ConstHandle<KLC::ReduceOperator> reduceOperator = m_reduce->m_reduceOperator;
+        RC::ConstHandle<ValueProducer> sharedValueProducer = m_reduce->m_sharedValueProducer;
         
         bool takesIndex = reduceOperator->takesIndex();
         bool takesCount = reduceOperator->takesCount();
+        bool takesSharedValue = reduceOperator->takesSharedValue();
+        
+        void *sharedData;
+        RC::ConstHandle<RT::Desc> sharedDesc;
+        if ( takesSharedValue )
+        {
+          sharedDesc = sharedValueProducer->getValueDesc();
+          size_t sharedDataSize = sharedDesc->getAllocSize();
+          sharedData = alloca( sharedDataSize );
+          memset( sharedData, 0, sharedDataSize );
+          
+          sharedValueProducer->produce( sharedData );
+        }
         
         static const size_t maxGroupSize = 256;
         
@@ -142,7 +179,9 @@ namespace Fabric
             for ( size_t i=0; i<groupSize; ++i )
             {
               void *inputData = &inputDatas[i * inputElementSize];
-              if ( takesCount )
+              if ( takesSharedValue )
+                reduceOperator->call( inputData, m_outputData, index + i, m_count, sharedData );
+              else if ( takesCount )
                 reduceOperator->call( inputData, m_outputData, index + i, m_count );
               else if ( takesIndex )
                 reduceOperator->call( inputData, m_outputData, index + i );
@@ -155,6 +194,9 @@ namespace Fabric
         }
       
         inputElementDesc->disposeDatas( inputDatas, maxGroupSize, inputElementSize );
+        
+        if ( takesSharedValue )
+          sharedDesc->disposeData( sharedData );
       }
       
       static void Callback( void *userdata, size_t jobIndex )
