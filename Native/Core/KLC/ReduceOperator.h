@@ -21,6 +21,11 @@ namespace Fabric
   
   namespace KLC
   {
+#define FABRIC_KLC_REDUCE_OPERATOR_CALL_DECL( typeName ) \
+      void call2_##typeName( void const *inputData, void *outputData ); \
+      void call3_##typeName( void const *inputData, void *outputData, size_t index ); \
+      void call4_##typeName( void const *inputData, void *outputData, size_t index, size_t count ); \
+  
     class ReduceOperator : public Operator
     {
       FABRIC_GC_OBJECT_CLASS_DECL()
@@ -38,10 +43,29 @@ namespace Fabric
       RC::ConstHandle<RT::Desc> getInputDesc() const;
       RC::ConstHandle<RT::Desc> getOutputDesc() const;
       
+      bool takesIndex() const
+      {
+        return m_call3 != 0;
+      }
+      bool takesCount() const
+      {
+        return m_call4 != 0;
+      }
+      
       void call(
-        size_t index,
         void const *inputData,
         void *outputData
+        ) const;
+      void call(
+        void const *inputData,
+        void *outputData,
+        size_t index
+        ) const;
+      void call(
+        void const *inputData,
+        void *outputData,
+        size_t index,
+        size_t count
         ) const;
       
     protected:
@@ -55,24 +79,26 @@ namespace Fabric
     
     private:
     
-      void callBoolean( size_t index, void const *inputData, void *outputData );
-      void callUInt8( size_t index, void const *inputData, void *outputData );
-      void callSInt8( size_t index, void const *inputData, void *outputData );
-      void callUInt16( size_t index, void const *inputData, void *outputData );
-      void callSInt16( size_t index, void const *inputData, void *outputData );
-      void callUInt32( size_t index, void const *inputData, void *outputData );
-      void callSInt32( size_t index, void const *inputData, void *outputData );
-      void callUInt64( size_t index, void const *inputData, void *outputData );
-      void callSInt64( size_t index, void const *inputData, void *outputData );
-      void callFloat32( size_t index, void const *inputData, void *outputData );
-      void callFloat64( size_t index, void const *inputData, void *outputData );
-      void callString( size_t index, void const *inputData, void *outputData );
-      void callRef( size_t index, void const *inputData, void *outputData );
+      FABRIC_KLC_REDUCE_OPERATOR_CALL_DECL( Boolean )
+      FABRIC_KLC_REDUCE_OPERATOR_CALL_DECL( UInt8 )
+      FABRIC_KLC_REDUCE_OPERATOR_CALL_DECL( SInt8 )
+      FABRIC_KLC_REDUCE_OPERATOR_CALL_DECL( UInt16 )
+      FABRIC_KLC_REDUCE_OPERATOR_CALL_DECL( SInt16 )
+      FABRIC_KLC_REDUCE_OPERATOR_CALL_DECL( UInt32 )
+      FABRIC_KLC_REDUCE_OPERATOR_CALL_DECL( SInt32 )
+      FABRIC_KLC_REDUCE_OPERATOR_CALL_DECL( UInt64 )
+      FABRIC_KLC_REDUCE_OPERATOR_CALL_DECL( SInt64 )
+      FABRIC_KLC_REDUCE_OPERATOR_CALL_DECL( Float32 )
+      FABRIC_KLC_REDUCE_OPERATOR_CALL_DECL( Float64 )
+      FABRIC_KLC_REDUCE_OPERATOR_CALL_DECL( String )
+      FABRIC_KLC_REDUCE_OPERATOR_CALL_DECL( Default )
     
       RC::ConstHandle<CG::Adapter> m_inputAdapter;
       RC::ConstHandle<CG::Adapter> m_outputAdapter;
       
-      void (ReduceOperator::*m_call)( size_t index, void const *inputData, void *outputData );
+      void (ReduceOperator::*m_call2)( void const *inputData, void *outputData );
+      void (ReduceOperator::*m_call3)( void const *inputData, void *outputData, size_t index );
+      void (ReduceOperator::*m_call4)( void const *inputData, void *outputData, size_t index, size_t count );
     };
   }
 }
