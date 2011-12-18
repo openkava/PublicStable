@@ -5,6 +5,7 @@
 #include <Fabric/Core/KLC/Executable.h>
 #include <Fabric/Core/KLC/ArrayGeneratorOperator.h>
 #include <Fabric/Core/KLC/MapOperator.h>
+#include <Fabric/Core/KLC/ReduceOperator.h>
 #include <Fabric/Core/DG/IRCache.h>
 #include <Fabric/Core/Plug/Manager.h>
 #include <Fabric/Core/KL/Externals.h>
@@ -283,6 +284,47 @@ namespace Fabric
         );
     }
     
+    RC::Handle<ReduceOperator> Executable::resolveReduceOperator( std::string const &reduceOperatorName ) const
+    {
+      void (*functionPtr)( ... ) = 0;
+      RC::ConstHandle<AST::Operator> astOperator;
+      
+      if ( !m_diagnostics.containsError() )
+      {
+        CurrentExecutableSetter executableSetter( this );
+        llvm::Function *llvmFunction = m_llvmExecutionEngine->FindFunctionNamed( reduceOperatorName.c_str() );
+        if ( llvmFunction )
+        {
+          functionPtr = (void (*)(...))( m_llvmExecutionEngine->getPointerToFunction( llvmFunction ) );
+          
+          std::vector< RC::ConstHandle<AST::Function> > functions;
+          m_ast->collectFunctions( functions );
+          
+          for ( std::vector< RC::ConstHandle<AST::Function> >::const_iterator it=functions.begin(); it!=functions.end(); ++it )
+          {
+            RC::ConstHandle<AST::Function> const &function = *it;
+            
+            std::string const *friendlyName = function->getFriendlyName( m_cgManager );
+            if ( friendlyName && *friendlyName == reduceOperatorName )
+            {
+              if( !function->isOperator() )
+                throw Exception( _(reduceOperatorName) + " is not an operator" );
+              astOperator = RC::ConstHandle<AST::Operator>::StaticCast( function );
+            }
+          }
+        }
+          
+        if ( !functionPtr )
+          throw Exception( "reduce operator " + _(reduceOperatorName) + " not found" );
+      }
+      
+      return ReduceOperator::Create(
+        this,
+        astOperator,
+        functionPtr
+        );
+    }
+    
     RC::Handle<ArrayGeneratorOperator> Executable::resolveArrayGeneratorOperator( std::string const &arrayGeneratorOperatorName ) const
     {
       void (*functionPtr)( ... ) = 0;
@@ -351,6 +393,8 @@ namespace Fabric
         jsonExecGetDiagnostics( arg, resultJAG );
       else if ( cmd == "resolveMapOperator" )
         jsonExecResolveMapOperator( arg, resultJAG );
+      else if ( cmd == "resolveReduceOperator" )
+        jsonExecResolveReduceOperator( arg, resultJAG );
       else if ( cmd == "resolvArrayGeneratorOperator" )
         jsonExecResolveArrayGeneratorOperator( arg, resultJAG );
       else GC::Object::jsonExec( cmd, arg, resultJAG );
@@ -403,6 +447,37 @@ namespace Fabric
       
       RC::Handle<MapOperator> mapOperator = resolveMapOperator( mapOperatorName );
       mapOperator->reg( m_gcContainer, id_ );
+    }
+    
+    void Executable::jsonExecResolveReduceOperator(
+      RC::ConstHandle<JSON::Value> const &arg,
+      Util::JSONArrayGenerator &resultJAG
+      )
+    {
+      RC::ConstHandle<JSON::Object> argObject = arg->toObject();
+      
+      std::string id_;
+      try
+      {
+        id_ = argObject->get( "id" )->toString()->value();
+      }
+      catch ( Exception e )
+      {
+        throw "id: " + e;
+      }
+      
+      std::string reduceOperatorName;
+      try
+      {
+        reduceOperatorName = argObject->get( "reduceOperatorName" )->toString()->value();
+      }
+      catch ( Exception e )
+      {
+        throw "reduceOperatorName: " + e;
+      }
+      
+      RC::Handle<ReduceOperator> reduceOperator = resolveReduceOperator( reduceOperatorName );
+      reduceOperator->reg( m_gcContainer, id_ );
     }
     
     void Executable::jsonExecResolveArrayGeneratorOperator(
