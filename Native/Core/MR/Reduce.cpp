@@ -88,15 +88,16 @@ namespace Fabric
         , m_count( count )
         , m_outputData( outputData )
         , m_mutex( mutex )
+        , m_logCollector( MT::tlsLogCollector.get() )
         , m_numJobs( std::min( m_count, 4 * MT::getNumCores() ) )
-        , m_indicesPerJob( m_count / m_numJobs )
+        , m_indicesPerJob( (m_count + m_numJobs - 1) / m_numJobs )
       {
       }
       
       void run()
       {
         MT::executeParallel(
-          MT::tlsLogCollector.get(),
+          m_logCollector,
           m_numJobs,
           &Callback,
           this,
@@ -108,26 +109,40 @@ namespace Fabric
       
       void callback( size_t jobIndex )
       {
+        MT::TLSLogCollectorAutoSet logCollector( m_logCollector );
+        
         RC::ConstHandle<ArrayProducer> inputArrayProducer = m_reduce->m_inputArrayProducer;
         RC::ConstHandle<KLC::ReduceOperator> reduceOperator = m_reduce->m_reduceOperator;
         
+        static const size_t maxGroupSize = 256;
+        
         RC::ConstHandle<RT::Desc> inputElementDesc = inputArrayProducer->getElementDesc();
         size_t inputElementSize = inputElementDesc->getAllocSize();
-        void *inputData = alloca( inputElementSize );
-        memset( inputData, 0, inputElementSize );
+        size_t allInputElementsSize = maxGroupSize * inputElementSize;
+        uint8_t *inputData = (uint8_t *)alloca( allInputElementsSize );
+        memset( inputData, 0, allInputElementsSize );
 
-        size_t startIndex = jobIndex * m_indicesPerJob;
-        size_t endIndex = std::min( startIndex + m_indicesPerJob, m_count );
-        for ( size_t index = startIndex; index < endIndex; ++index )
+        size_t index = jobIndex * m_indicesPerJob;
+        size_t endIndex = std::min( index + m_indicesPerJob, m_count );
+        while ( index < endIndex )
         {
-          inputArrayProducer->produce( index, inputData );
+          size_t groupSize = 0;
+          while ( groupSize < maxGroupSize && index + groupSize < endIndex )
+          {
+            inputArrayProducer->produce( index + groupSize, &inputData[groupSize * inputElementSize] );
+            ++groupSize;
+          }
+          
           {
             Util::Mutex::Lock mutexLock( m_mutex );
-            reduceOperator->call( index, inputData, m_outputData );
+            for ( size_t i=0; i<groupSize; ++i )
+              reduceOperator->call( index + i, &inputData[i * inputElementSize], m_outputData );
           }
+          
+          index += groupSize;
         }
       
-        inputElementDesc->disposeData( inputData );
+        inputElementDesc->disposeDatas( inputData, maxGroupSize, inputElementSize );
       }
       
       static void Callback( void *userdata, size_t jobIndex )
@@ -141,6 +156,8 @@ namespace Fabric
       size_t m_count;
       void *m_outputData;
       Util::Mutex &m_mutex;
+      RC::Handle<MT::LogCollector> m_logCollector;
+      
       size_t m_numJobs;
       size_t m_indicesPerJob;
     };
