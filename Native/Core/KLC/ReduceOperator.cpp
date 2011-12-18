@@ -208,7 +208,7 @@ namespace Fabric
         
           if ( numParams >= 4 )
           {
-            RC::ConstHandle<AST::Param> countParam = params->get(4);
+            RC::ConstHandle<AST::Param> countParam = params->get(3);
             if ( countParam->getUsage() != CG::USAGE_RVALUE
               || countParam->getAdapter( cgManager ) != cgManager->getSizeAdapter()
               )

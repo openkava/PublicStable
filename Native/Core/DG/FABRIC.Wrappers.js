@@ -1884,16 +1884,20 @@ function (fabricClient, logCallback, debugLogCallback) {
         return map.pub;
       },
       
-      createReduce: function(inputArrayProducer, reduceOperator) {
+      createReduce: function(inputArrayProducer, reduceOperator, sharedValueProducer) {
         var reduce = GC.createObject('MR');
         
         populateReduce(reduce);
         
-        queueCommand(['MR'], 'createReduce', {
+        var arg = {
           id: reduce.id,
           inputArrayProducerID: inputArrayProducer.getID(),
           reduceOperatorID: reduceOperator.getID()
-        }, function () {
+        };
+        if (sharedValueProducer)
+          arg.sharedValueProducerID = sharedValueProducer.getID();
+        
+        queueCommand(['MR'], 'createReduce', arg, function () {
           delete reduce.id;
         });
         return reduce.pub;

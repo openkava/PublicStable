@@ -29,7 +29,8 @@ namespace Fabric
     
       static RC::Handle<Reduce> Create(
         RC::ConstHandle<ArrayProducer> const &inputArrayProducer,
-        RC::ConstHandle<KLC::ReduceOperator> const &reduceOperator
+        RC::ConstHandle<KLC::ReduceOperator> const &reduceOperator,
+        RC::ConstHandle<ValueProducer> const &sharedValueProducer
         );
       
       // Virtual functions: ValueProducer
@@ -43,7 +44,8 @@ namespace Fabric
       Reduce(
         FABRIC_GC_OBJECT_CLASS_PARAM,
         RC::ConstHandle<ArrayProducer> const &inputArrayProducer,
-         RC::ConstHandle<KLC::ReduceOperator> const &reduceOperator
+        RC::ConstHandle<KLC::ReduceOperator> const &reduceOperator,
+        RC::ConstHandle<ValueProducer> const &sharedValueProducer
         );
       ~Reduce();
     
@@ -54,6 +56,7 @@ namespace Fabric
     
       RC::ConstHandle<ArrayProducer> m_inputArrayProducer;
       RC::ConstHandle<KLC::ReduceOperator> m_reduceOperator;
+      RC::ConstHandle<ValueProducer> m_sharedValueProducer;
       
       mutable Util::Mutex m_mutex;
     };
