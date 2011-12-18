@@ -33,6 +33,17 @@ namespace Fabric
         );
     }
 
+#define FABRIC_KLC_REDUCE_OPERATOR_PICK( typeName ) \
+          do \
+          { \
+            if ( numParams == 4 ) \
+              m_call4 = &ReduceOperator::call4_##typeName; \
+            else if ( numParams == 3 ) \
+              m_call3 = &ReduceOperator::call3_##typeName; \
+            else \
+              m_call2 = &ReduceOperator::call2_##typeName; \
+          } while ( false )
+
     ReduceOperator::ReduceOperator(
       FABRIC_GC_OBJECT_CLASS_PARAM,
       RC::ConstHandle<Executable> const &executable,
@@ -45,39 +56,44 @@ namespace Fabric
         astOperator,
         functionPtr
         )
+      , m_call2( 0 )
+      , m_call3( 0 )
+      , m_call4( 0 )
     {
-      static const Exception exception("operator must take 3 parameters: in Size index, in InputType inputData, io OutputType outputData");
+      static const Exception exception("operator must have prototype: in InputType inputData, io OutputType outputData[, in Size index[, in Size count]]");
       
       if ( astOperator )
       {
         RC::Handle<CG::Manager> cgManager = executable->getCGManager();
         
         RC::ConstHandle<AST::ParamVector> params = astOperator->getParams( cgManager );
-        if ( params->size() != 3 )
+        size_t numParams = params->size();
+        if ( numParams < 2 || numParams > 4 )
           throw exception;
         
-        RC::ConstHandle<AST::Param> sizeParam = params->get(0);
-        if ( sizeParam->getUsage() != CG::USAGE_RVALUE
-          || sizeParam->getAdapter( cgManager ) != cgManager->getSizeAdapter()
-          )
-          throw exception;
-        
-        RC::ConstHandle<AST::Param> inputParam = params->get(1);
+        RC::ConstHandle<AST::Param> inputParam = params->get(0);
         if ( inputParam->getUsage() != CG::USAGE_RVALUE )
           throw exception;
         m_inputAdapter = inputParam->getAdapter( cgManager );
         
-        RC::ConstHandle<AST::Param> outputParam = params->get(2);
+        RC::ConstHandle<AST::Param> outputParam = params->get(1);
         if ( outputParam->getUsage() != CG::USAGE_LVALUE )
           throw exception;
         m_outputAdapter = outputParam->getAdapter( cgManager );
+        
+        if ( numParams >= 3 )
+        {
+          RC::ConstHandle<AST::Param> sizeParam = params->get(2);
+          if ( sizeParam->getUsage() != CG::USAGE_RVALUE
+            || sizeParam->getAdapter( cgManager ) != cgManager->getSizeAdapter()
+            )
+            throw exception;
+        }
 
         RC::ConstHandle<RT::Desc> inputDesc = m_inputAdapter->getDesc();
         RT::ImplType inputType = inputDesc->getType();
         if ( RT::isBoolean(inputType) )
-        {
-          m_call = &ReduceOperator::callBoolean;
-        }
+          FABRIC_KLC_REDUCE_OPERATOR_PICK( Boolean );
         else if ( RT::isInteger(inputType) )
         {
           size_t size = inputDesc->getAllocSize();
@@ -85,16 +101,28 @@ namespace Fabric
           switch ( size )
           {
             case 1:
-              m_call = isSigned? &ReduceOperator::callSInt8: &ReduceOperator::callUInt8;
+              if ( isSigned )
+                FABRIC_KLC_REDUCE_OPERATOR_PICK( SInt8 );
+              else
+                FABRIC_KLC_REDUCE_OPERATOR_PICK( UInt8 );
               break;
             case 2:
-              m_call = isSigned? &ReduceOperator::callSInt16: &ReduceOperator::callUInt16;
+              if ( isSigned )
+                FABRIC_KLC_REDUCE_OPERATOR_PICK( SInt16 );
+              else
+                FABRIC_KLC_REDUCE_OPERATOR_PICK( UInt16 );
               break;
             case 4:
-              m_call = isSigned? &ReduceOperator::callSInt32: &ReduceOperator::callUInt32;
+              if ( isSigned )
+                FABRIC_KLC_REDUCE_OPERATOR_PICK( SInt32 );
+              else
+                FABRIC_KLC_REDUCE_OPERATOR_PICK( UInt32 );
               break;
             case 8:
-              m_call = isSigned? &ReduceOperator::callSInt64: &ReduceOperator::callUInt64;
+              if ( isSigned )
+                FABRIC_KLC_REDUCE_OPERATOR_PICK( SInt64 );
+              else
+                FABRIC_KLC_REDUCE_OPERATOR_PICK( UInt64 );
               break;
             default:
               FABRIC_ASSERT( false && "Unsupported integer size" );
@@ -103,11 +131,13 @@ namespace Fabric
         else if ( RT::isFloat( m_inputAdapter->getType() ) )
         {
           if ( m_inputAdapter->getImpl()->getAllocSize() == 8 )
-            m_call = &ReduceOperator::callFloat64;
+            FABRIC_KLC_REDUCE_OPERATOR_PICK( Float64 );
           else
-            m_call = &ReduceOperator::callFloat32;
+            FABRIC_KLC_REDUCE_OPERATOR_PICK( Float32 );
         }
-        else m_call = &ReduceOperator::callRef;
+        else if ( RT::isString( m_inputAdapter->getType() ) )
+          FABRIC_KLC_REDUCE_OPERATOR_PICK( String );
+        else FABRIC_KLC_REDUCE_OPERATOR_PICK( Default );
       }
     }
     
@@ -131,79 +161,74 @@ namespace Fabric
         result = m_outputAdapter->getDesc();
       return result;
     }
+    
+#define FABRIC_KLC_REDUCE_OPERATOR_CALL_IMPL(typeName, typeType) \
+    void ReduceOperator::call2_##typeName( void const *inputData, void *outputData ) \
+    { \
+      ((void (*)( typeType, void * ))getGenericFunctionPtr())( *(typeType const *)inputData, outputData ); \
+    } \
+    void ReduceOperator::call3_##typeName( void const *inputData, void *outputData, size_t index ) \
+    { \
+      ((void (*)( typeType, void *, size_t ))getGenericFunctionPtr())( *(typeType const *)inputData, outputData, index ); \
+    } \
+    void ReduceOperator::call4_##typeName( void const *inputData, void *outputData, size_t index, size_t count ) \
+    { \
+      ((void (*)( typeType, void *, size_t, size_t ))getGenericFunctionPtr())( *(typeType const *)inputData, outputData, index, count ); \
+    }
 
-    void ReduceOperator::callRef( size_t index, void const *inputData, void *outputData )
+    FABRIC_KLC_REDUCE_OPERATOR_CALL_IMPL( Boolean, bool )
+    FABRIC_KLC_REDUCE_OPERATOR_CALL_IMPL( UInt8, uint8_t )
+    FABRIC_KLC_REDUCE_OPERATOR_CALL_IMPL( SInt8, int8_t )
+    FABRIC_KLC_REDUCE_OPERATOR_CALL_IMPL( UInt16, uint16_t )
+    FABRIC_KLC_REDUCE_OPERATOR_CALL_IMPL( SInt16, int16_t )
+    FABRIC_KLC_REDUCE_OPERATOR_CALL_IMPL( UInt32, uint32_t )
+    FABRIC_KLC_REDUCE_OPERATOR_CALL_IMPL( SInt32, int32_t )
+    FABRIC_KLC_REDUCE_OPERATOR_CALL_IMPL( UInt64, uint64_t )
+    FABRIC_KLC_REDUCE_OPERATOR_CALL_IMPL( SInt64, int64_t )
+    FABRIC_KLC_REDUCE_OPERATOR_CALL_IMPL( Float32, float )
+    FABRIC_KLC_REDUCE_OPERATOR_CALL_IMPL( Float64, double )
+    FABRIC_KLC_REDUCE_OPERATOR_CALL_IMPL( String, void * )
+    
+    void ReduceOperator::call2_Default( void const *inputData, void *outputData )
     {
-      getGenericFunctionPtr()( index, inputData, outputData );
+      getGenericFunctionPtr()( inputData, outputData );
     }
     
-    void ReduceOperator::callBoolean( size_t index, void const *inputData, void *outputData )
+    void ReduceOperator::call3_Default( void const *inputData, void *outputData, size_t index )
     {
-      ((void (*)( size_t, bool, void * ))getGenericFunctionPtr())( index, *(bool const *)inputData, outputData );
+      getGenericFunctionPtr()( inputData, outputData, index );
     }
     
-    void ReduceOperator::callUInt8( size_t index, void const *inputData, void *outputData )
+    void ReduceOperator::call4_Default( void const *inputData, void *outputData, size_t index, size_t count )
     {
-      ((void (*)( size_t, uint8_t, void * ))getGenericFunctionPtr())( index, *(uint8_t const *)inputData, outputData );
-    }
-    
-    void ReduceOperator::callSInt8( size_t index, void const *inputData, void *outputData )
-    {
-      ((void (*)( size_t, int8_t, void * ))getGenericFunctionPtr())( index, *(int8_t const *)inputData, outputData );
-    }
-    
-    void ReduceOperator::callUInt16( size_t index, void const *inputData, void *outputData )
-    {
-      ((void (*)( size_t, uint16_t, void * ))getGenericFunctionPtr())( index, *(uint16_t const *)inputData, outputData );
-    }
-    
-    void ReduceOperator::callSInt16( size_t index, void const *inputData, void *outputData )
-    {
-      ((void (*)( size_t, int16_t, void * ))getGenericFunctionPtr())( index, *(int16_t const *)inputData, outputData );
-    }
-    
-    void ReduceOperator::callUInt32( size_t index, void const *inputData, void *outputData )
-    {
-      ((void (*)( size_t, uint32_t, void * ))getGenericFunctionPtr())( index, *(uint32_t const *)inputData, outputData );
-    }
-    
-    void ReduceOperator::callSInt32( size_t index, void const *inputData, void *outputData )
-    {
-      ((void (*)( size_t, int32_t, void * ))getGenericFunctionPtr())( index, *(int32_t const *)inputData, outputData );
-    }
-    
-    void ReduceOperator::callUInt64( size_t index, void const *inputData, void *outputData )
-    {
-      ((void (*)( size_t, uint64_t, void * ))getGenericFunctionPtr())( index, *(uint64_t const *)inputData, outputData );
-    }
-    
-    void ReduceOperator::callSInt64( size_t index, void const *inputData, void *outputData )
-    {
-      ((void (*)( size_t, int64_t, void * ))getGenericFunctionPtr())( index, *(int64_t const *)inputData, outputData );
-    }
-    
-    void ReduceOperator::callFloat32( size_t index, void const *inputData, void *outputData )
-    {
-      ((void (*)( size_t, float, void * ))getGenericFunctionPtr())( index, *(float const *)inputData, outputData );
-    }
-    
-    void ReduceOperator::callFloat64( size_t index, void const *inputData, void *outputData )
-    {
-      ((void (*)( size_t, double, void * ))getGenericFunctionPtr())( index, *(double const *)inputData, outputData );
-    }
-    
-    void ReduceOperator::callString( size_t index, void const *inputData, void *outputData )
-    {
-      ((void (*)( size_t, void *, void * ))getGenericFunctionPtr())( index, *(void * const *)inputData, outputData );
+      getGenericFunctionPtr()( inputData, outputData, index, count );
     }
     
     void ReduceOperator::call(
-      size_t index,
       void const *inputData,
       void *outputData
       ) const
     {
-      (const_cast<ReduceOperator *>(this)->*m_call)( index, inputData, outputData );
+      (const_cast<ReduceOperator *>(this)->*m_call2)( inputData, outputData );
+    }
+    
+    void ReduceOperator::call(
+      void const *inputData,
+      void *outputData,
+      size_t index
+      ) const
+    {
+      (const_cast<ReduceOperator *>(this)->*m_call3)( inputData, outputData, index );
+    }
+    
+    void ReduceOperator::call(
+      void const *inputData,
+      void *outputData,
+      size_t index,
+      size_t count
+      ) const
+    {
+      (const_cast<ReduceOperator *>(this)->*m_call4)( inputData, outputData, index, count );
     }
   }
 }

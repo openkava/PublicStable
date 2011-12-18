@@ -8,7 +8,7 @@ ag = FC.MR.createArrayGenerator(cv, ago);
 mo = FC.KLC.createMapOperator("bar.kl", "operator bar(Size index, Float64 input, io Float64 output) { output = 1.0 / (input * input); }", "bar");
 m = FC.MR.createMap(ag, mo);
 
-ro = FC.KLC.createReduceOperator("reduce.kl", "operator reduce(Size index, Float64 input, io Float64 result) { result += input; }", "reduce");
+ro = FC.KLC.createReduceOperator("reduce.kl", "operator reduce(Float64 input, io Float64 result) { result += input; }", "reduce");
 r = FC.MR.createReduce(m, ro);
 
 console.log(r.produce());
