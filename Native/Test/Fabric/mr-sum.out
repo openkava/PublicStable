@@ -1,0 +1,201 @@
+[FABRIC] [MT] 0
+[FABRIC] [01] 4
+[FABRIC] [MT] 1
+[FABRIC] [02] 8
+[FABRIC] [03] 12
+[FABRIC] [01] 5
+[FABRIC] [04] 16
+[FABRIC] [05] 20
+[FABRIC] [MT] 2
+[FABRIC] [06] 28
+[FABRIC] [07] 24
+[FABRIC] [02] 9
+[FABRIC] [08] 32
+[FABRIC] [03] 13
+[FABRIC] [01] 6
+[FABRIC] [04] 17
+[FABRIC] [05] 21
+[FABRIC] [MT] 3
+[FABRIC] [06] 29
+[FABRIC] [07] 25
+[FABRIC] [02] 10
+[FABRIC] [08] 33
+[FABRIC] [03] 14
+[FABRIC] [01] 7
+[FABRIC] [04] 18
+[FABRIC] [05] 22
+[FABRIC] [MT] index=0 count=100
+[FABRIC] [06] 30
+[FABRIC] [07] 26
+[FABRIC] [02] 11
+[FABRIC] [08] 34
+[FABRIC] [03] 15
+[FABRIC] [04] 19
+[FABRIC] [05] 23
+[FABRIC] [MT] index=1 count=100
+[FABRIC] [06] 31
+[FABRIC] [07] 27
+[FABRIC] [08] 35
+[FABRIC] [MT] index=2 count=100
+[FABRIC] [MT] index=3 count=100
+[FABRIC] [MT] 36
+[FABRIC] [MT] 37
+[FABRIC] [01] index=4 count=100
+[FABRIC] [MT] 38
+[FABRIC] [01] index=5 count=100
+[FABRIC] [MT] 39
+[FABRIC] [01] index=6 count=100
+[FABRIC] [01] index=7 count=100
+[FABRIC] [01] 40
+[FABRIC] [02] index=8 count=100
+[FABRIC] [01] 41
+[FABRIC] [02] index=9 count=100
+[FABRIC] [01] 42
+[FABRIC] [02] index=10 count=100
+[FABRIC] [01] 43
+[FABRIC] [02] index=11 count=100
+[FABRIC] [02] 44
+[FABRIC] [03] index=12 count=100
+[FABRIC] [02] 45
+[FABRIC] [03] index=13 count=100
+[FABRIC] [02] 46
+[FABRIC] [03] index=14 count=100
+[FABRIC] [02] 47
+[FABRIC] [03] index=15 count=100
+[FABRIC] [03] 48
+[FABRIC] [03] 49
+[FABRIC] [04] index=16 count=100
+[FABRIC] [03] 50
+[FABRIC] [04] index=17 count=100
+[FABRIC] [03] 51
+[FABRIC] [04] index=18 count=100
+[FABRIC] [04] index=19 count=100
+[FABRIC] [04] 52
+[FABRIC] [05] index=20 count=100
+[FABRIC] [04] 53
+[FABRIC] [05] index=21 count=100
+[FABRIC] [04] 54
+[FABRIC] [05] index=22 count=100
+[FABRIC] [04] 55
+[FABRIC] [05] index=23 count=100
+[FABRIC] [05] 56
+[FABRIC] [06] index=28 count=100
+[FABRIC] [05] 57
+[FABRIC] [06] index=29 count=100
+[FABRIC] [05] 58
+[FABRIC] [06] index=30 count=100
+[FABRIC] [05] 59
+[FABRIC] [06] index=31 count=100
+[FABRIC] [06] 60
+[FABRIC] [06] 61
+[FABRIC] [07] index=24 count=100
+[FABRIC] [06] 62
+[FABRIC] [07] index=25 count=100
+[FABRIC] [06] 63
+[FABRIC] [07] index=26 count=100
+[FABRIC] [07] index=27 count=100
+[FABRIC] [07] 64
+[FABRIC] [08] index=32 count=100
+[FABRIC] [07] 65
+[FABRIC] [08] index=33 count=100
+[FABRIC] [07] 66
+[FABRIC] [08] index=34 count=100
+[FABRIC] [07] 67
+[FABRIC] [08] index=35 count=100
+[FABRIC] [08] 68
+[FABRIC] [MT] index=36 count=100
+[FABRIC] [08] 69
+[FABRIC] [MT] index=37 count=100
+[FABRIC] [08] 70
+[FABRIC] [MT] index=38 count=100
+[FABRIC] [08] 71
+[FABRIC] [MT] index=39 count=100
+[FABRIC] [MT] 72
+[FABRIC] [01] index=40 count=100
+[FABRIC] [MT] 73
+[FABRIC] [01] index=41 count=100
+[FABRIC] [MT] 74
+[FABRIC] [01] index=42 count=100
+[FABRIC] [MT] 75
+[FABRIC] [01] index=43 count=100
+[FABRIC] [01] 76
+[FABRIC] [02] index=44 count=100
+[FABRIC] [01] 77
+[FABRIC] [02] index=45 count=100
+[FABRIC] [01] 78
+[FABRIC] [02] index=46 count=100
+[FABRIC] [01] 79
+[FABRIC] [02] index=47 count=100
+[FABRIC] [02] 80
+[FABRIC] [02] 81
+[FABRIC] [03] index=48 count=100
+[FABRIC] [02] 82
+[FABRIC] [03] index=49 count=100
+[FABRIC] [02] 83
+[FABRIC] [03] index=50 count=100
+[FABRIC] [03] index=51 count=100
+[FABRIC] [03] 84
+[FABRIC] [03] 85
+[FABRIC] [04] index=52 count=100
+[FABRIC] [03] 86
+[FABRIC] [04] index=53 count=100
+[FABRIC] [03] 87
+[FABRIC] [04] index=54 count=100
+[FABRIC] [04] index=55 count=100
+[FABRIC] [04] 88
+[FABRIC] [04] 89
+[FABRIC] [05] index=56 count=100
+[FABRIC] [04] 90
+[FABRIC] [05] index=57 count=100
+[FABRIC] [04] 91
+[FABRIC] [05] index=58 count=100
+[FABRIC] [05] index=59 count=100
+[FABRIC] [05] 92
+[FABRIC] [06] index=60 count=100
+[FABRIC] [05] 93
+[FABRIC] [06] index=61 count=100
+[FABRIC] [05] 94
+[FABRIC] [06] index=62 count=100
+[FABRIC] [05] 95
+[FABRIC] [06] index=63 count=100
+[FABRIC] [06] 96
+[FABRIC] [07] index=64 count=100
+[FABRIC] [06] 97
+[FABRIC] [07] index=65 count=100
+[FABRIC] [06] 98
+[FABRIC] [07] index=66 count=100
+[FABRIC] [06] 99
+[FABRIC] [07] index=67 count=100
+[FABRIC] [08] index=68 count=100
+[FABRIC] [08] index=69 count=100
+[FABRIC] [08] index=70 count=100
+[FABRIC] [08] index=71 count=100
+[FABRIC] [MT] index=72 count=100
+[FABRIC] [MT] index=73 count=100
+[FABRIC] [MT] index=74 count=100
+[FABRIC] [MT] index=75 count=100
+[FABRIC] [01] index=76 count=100
+[FABRIC] [01] index=77 count=100
+[FABRIC] [01] index=78 count=100
+[FABRIC] [01] index=79 count=100
+[FABRIC] [02] index=80 count=100
+[FABRIC] [02] index=81 count=100
+[FABRIC] [02] index=82 count=100
+[FABRIC] [02] index=83 count=100
+[FABRIC] [03] index=84 count=100
+[FABRIC] [03] index=85 count=100
+[FABRIC] [03] index=86 count=100
+[FABRIC] [03] index=87 count=100
+[FABRIC] [04] index=88 count=100
+[FABRIC] [04] index=89 count=100
+[FABRIC] [04] index=90 count=100
+[FABRIC] [04] index=91 count=100
+[FABRIC] [05] index=92 count=100
+[FABRIC] [05] index=93 count=100
+[FABRIC] [05] index=94 count=100
+[FABRIC] [05] index=95 count=100
+[FABRIC] [06] index=96 count=100
+[FABRIC] [06] index=97 count=100
+[FABRIC] [06] index=98 count=100
+[FABRIC] [06] index=99 count=100
+5050
