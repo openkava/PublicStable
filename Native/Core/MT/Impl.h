@@ -161,7 +161,13 @@ namespace Fabric
       bool m_running;
     };
     
-    inline void executeParallel( RC::Handle<LogCollector> const &logCollector, size_t count, void (*callback)( void *userdata, size_t index ), void *userdata, bool mainThreadOnly )
+    inline void executeParallel(
+      RC::Handle<LogCollector> const &logCollector,
+      size_t count,
+      void (*callback)( void *userdata, size_t index ),
+      void *userdata,
+      bool mainThreadOnly
+      )
     {
       ThreadPool::Instance()->executeParallel( logCollector, count, callback, userdata, mainThreadOnly? ThreadPool::MainThreadOnly: 0 );
     }
