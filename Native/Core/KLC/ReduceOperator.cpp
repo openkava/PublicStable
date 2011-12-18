@@ -118,12 +118,18 @@ namespace Fabric
         
     RC::ConstHandle<RT::Desc> ReduceOperator::getInputDesc() const
     {
-      return m_inputAdapter->getDesc();
+      RC::ConstHandle<RT::Desc> result;
+      if ( m_inputAdapter )
+        result = m_inputAdapter->getDesc();
+      return result;
     }
     
     RC::ConstHandle<RT::Desc> ReduceOperator::getOutputDesc() const
     {
-      return m_outputAdapter->getDesc();
+      RC::ConstHandle<RT::Desc> result;
+      if ( m_outputAdapter )
+        result = m_outputAdapter->getDesc();
+      return result;
     }
 
     void ReduceOperator::callRef( size_t index, void const *inputData, void *outputData )

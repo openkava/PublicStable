@@ -47,6 +47,9 @@ namespace Fabric
     
     void Function::toJSON( Util::JSONGenerator &jg ) const
     {
+      if ( !m_astFunction || !m_functionPtr )
+        throw Exception("function is unresolved");
+    
       Util::JSONObjectGenerator jog = jg.makeObject();
       
       {
