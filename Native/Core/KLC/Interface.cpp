@@ -7,6 +7,7 @@
 #include <Fabric/Core/KLC/Compilation.h>
 #include <Fabric/Core/KLC/Executable.h>
 #include <Fabric/Core/KLC/MapOperator.h>
+#include <Fabric/Core/KLC/ReduceOperator.h>
 #include <Fabric/Core/MR/ConstArray.h>
 #include <Fabric/Core/GC/Object.h>
 #include <Fabric/Core/RT/Manager.h>
@@ -56,6 +57,8 @@ namespace Fabric
         jsonExecCreateExecutable( arg, resultJAG );
       else if ( cmd == "createMapOperator" )
         jsonExecCreateMapOperator( arg, resultJAG );
+      else if ( cmd == "createReduceOperator" )
+        jsonExecCreateReduceOperator( arg, resultJAG );
       else if ( cmd == "createArrayGeneratorOperator" )
         jsonExecCreateArrayGeneratorOperator( arg, resultJAG );
       else throw Exception( "unknown command: " + _(cmd) );
@@ -203,6 +206,60 @@ namespace Fabric
       RC::Handle<Executable> executable = compilation->run();
       RC::Handle<MapOperator> mapOperator = executable->resolveMapOperator( mapOperatorName );
       mapOperator->reg( m_gcContainer, id_ );
+    }
+    
+    void Interface::jsonExecCreateReduceOperator(
+      RC::ConstHandle<JSON::Value> const &arg,
+      Util::JSONArrayGenerator &resultJAG
+      )
+    {
+      RC::ConstHandle<JSON::Object> argObject = arg->toObject();
+      
+      std::string id_;
+      try
+      {
+        id_ = argObject->get( "id" )->toString()->value();
+      }
+      catch ( Exception e )
+      {
+        throw "id: " + e;
+      }
+      
+      std::string sourceName;
+      try
+      {
+        sourceName = argObject->get( "sourceName" )->toString()->value();
+      }
+      catch ( Exception e )
+      {
+        throw "sourceName: " + e;
+      }
+      
+      std::string sourceCode;
+      try
+      {
+        sourceCode = argObject->get( "sourceCode" )->toString()->value();
+      }
+      catch ( Exception e )
+      {
+        throw "sourceCode: " + e;
+      }
+      
+      std::string reduceOperatorName;
+      try
+      {
+        reduceOperatorName = argObject->get( "reduceOperatorName" )->toString()->value();
+      }
+      catch ( Exception e )
+      {
+        throw "reduceOperatorName: " + e;
+      }
+      
+      RC::Handle<Compilation> compilation = Compilation::Create( m_gcContainer, m_cgManager, m_compileOptions );
+      compilation->add( sourceName, sourceCode );
+      RC::Handle<Executable> executable = compilation->run();
+      RC::Handle<ReduceOperator> reduceOperator = executable->resolveReduceOperator( reduceOperatorName );
+      reduceOperator->reg( m_gcContainer, id_ );
     }
     
     void Interface::jsonExecCreateArrayGeneratorOperator(

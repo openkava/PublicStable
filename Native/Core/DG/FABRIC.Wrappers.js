@@ -1589,6 +1589,10 @@ function (fabricClient, logCallback, debugLogCallback) {
       populateOperator(mapOperator);
     };
 
+    var populateReduceOperator = function (mapOperator) {
+      populateOperator(mapOperator);
+    };
+
     var populateExecutable = function (executable) {
       executable.pub.getAST = function () {
         var ast;
@@ -1618,6 +1622,18 @@ function (fabricClient, logCallback, debugLogCallback) {
           delete mapOperator.id;
         });
         return mapOperator.pub;
+      };
+      
+      executable.pub.resolveReduceOperator = function (reduceOperatorName) {
+        var reduceOperator = GC.createObject('KLC');
+        populateReduceOperator(reduceOperator);
+        executable.queueCommand('resolveReduceOperator', {
+          id: reduceOperator.id,
+          reduceOperatorName: reduceOperatorName
+        }, function () {
+          delete reduceOperator.id;
+        });
+        return reduceOperator.pub;
       };
       
       executable.pub.resolveArrayGeneratorOperator = function (arrayGeneratorOperatorName) {
@@ -1739,7 +1755,7 @@ function (fabricClient, logCallback, debugLogCallback) {
       createArrayGeneratorOperator: function (sourceName, sourceCode, arrayGeneratorOperatorName) {
         var arrayGeneratorOperator = GC.createObject('KLC');
           
-        populateMapOperator(arrayGeneratorOperator);
+        populateArrayGeneratorOperator(arrayGeneratorOperator);
           
         var arg = {
           id: arrayGeneratorOperator.id,
@@ -1753,7 +1769,26 @@ function (fabricClient, logCallback, debugLogCallback) {
         });
         
         return arrayGeneratorOperator.pub;
-      }
+      },
+      
+      createReduceOperator: function (sourceName, sourceCode, reduceOperatorName) {
+        var reduceOperator = GC.createObject('KLC');
+          
+        populateReduceOperator(reduceOperator);
+          
+        var arg = {
+          id: reduceOperator.id,
+          sourceName: sourceName,
+          sourceCode: sourceCode,
+          reduceOperatorName: reduceOperatorName
+        };
+        
+        queueCommand(['KLC'],'createReduceOperator', arg, function () {
+          delete reduceOperator['id'];
+        });
+        
+        return reduceOperator.pub;
+      },
     };
 
     return KLC;
