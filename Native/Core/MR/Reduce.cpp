@@ -114,13 +114,16 @@ namespace Fabric
         RC::ConstHandle<ArrayProducer> inputArrayProducer = m_reduce->m_inputArrayProducer;
         RC::ConstHandle<KLC::ReduceOperator> reduceOperator = m_reduce->m_reduceOperator;
         
+        bool takesIndex = reduceOperator->takesIndex();
+        bool takesCount = reduceOperator->takesCount();
+        
         static const size_t maxGroupSize = 256;
         
         RC::ConstHandle<RT::Desc> inputElementDesc = inputArrayProducer->getElementDesc();
         size_t inputElementSize = inputElementDesc->getAllocSize();
         size_t allInputElementsSize = maxGroupSize * inputElementSize;
-        uint8_t *inputData = (uint8_t *)alloca( allInputElementsSize );
-        memset( inputData, 0, allInputElementsSize );
+        uint8_t *inputDatas = (uint8_t *)alloca( allInputElementsSize );
+        memset( inputDatas, 0, allInputElementsSize );
 
         size_t index = jobIndex * m_indicesPerJob;
         size_t endIndex = std::min( index + m_indicesPerJob, m_count );
@@ -129,20 +132,29 @@ namespace Fabric
           size_t groupSize = 0;
           while ( groupSize < maxGroupSize && index + groupSize < endIndex )
           {
-            inputArrayProducer->produce( index + groupSize, &inputData[groupSize * inputElementSize] );
+            void *inputData = &inputDatas[groupSize * inputElementSize];
+            inputArrayProducer->produce( index + groupSize, inputData );
             ++groupSize;
           }
           
           {
             Util::Mutex::Lock mutexLock( m_mutex );
             for ( size_t i=0; i<groupSize; ++i )
-              reduceOperator->call( index + i, &inputData[i * inputElementSize], m_outputData );
+            {
+              void *inputData = &inputDatas[i * inputElementSize];
+              if ( takesCount )
+                reduceOperator->call( inputData, m_outputData, index + i, m_count );
+              else if ( takesIndex )
+                reduceOperator->call( inputData, m_outputData, index + i );
+              else
+                reduceOperator->call( inputData, m_outputData );
+            }
           }
           
           index += groupSize;
         }
       
-        inputElementDesc->disposeDatas( inputData, maxGroupSize, inputElementSize );
+        inputElementDesc->disposeDatas( inputDatas, maxGroupSize, inputElementSize );
       }
       
       static void Callback( void *userdata, size_t jobIndex )
