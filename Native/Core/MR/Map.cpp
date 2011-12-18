@@ -33,7 +33,11 @@ namespace Fabric
       , m_mapOperator( mapOperator )
     {
       RC::ConstHandle<RT::Desc> inputArrayProducerElementDesc = inputArrayProducer->getElementDesc();
+      if ( !inputArrayProducerElementDesc )
+        throw Exception("input array producer is invalid");
       RC::ConstHandle<RT::Desc> mapOperatorInputDesc = mapOperator->getInputDesc();
+      if ( !mapOperatorInputDesc )
+        throw Exception("map operator is invalid");
       if ( !mapOperatorInputDesc->isEquivalentTo( inputArrayProducerElementDesc ) )
         throw Exception(
           "input element type ("
