@@ -83,7 +83,7 @@ namespace Fabric
       {
         return m_call4 != 0;
       }
-      bool takesSharedData() const
+      bool takesSharedValue() const
       {
         return m_call5 != 0;
       }

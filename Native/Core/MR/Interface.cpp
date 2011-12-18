@@ -200,9 +200,26 @@ namespace Fabric
         throw "reduceOperatorID: " + e;
       }
       
+      RC::Handle<ValueProducer> sharedValueProducer;
+      RC::ConstHandle<JSON::Value> sharedValueProducerIDValue = argObject->maybeGet( "sharedValueProducerID" );
+      if ( sharedValueProducerIDValue )
+      {
+        try
+        {
+          sharedValueProducer = GC::DynCast<ValueProducer>( m_gcContainer->getObject( sharedValueProducerIDValue->toString()->value() ) );
+          if ( !sharedValueProducer )
+            throw "must be a value producer";
+        }
+        catch ( Exception e )
+        {
+          throw "sharedValueProducerID: " + e;
+        }
+      }
+      
       RC::Handle<Reduce> reduce = Reduce::Create(
         inputArrayProducer,
-        reduceOperator
+        reduceOperator,
+        sharedValueProducer
         );
       reduce->reg( m_gcContainer, id_ );
     }
