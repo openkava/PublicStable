@@ -1589,8 +1589,12 @@ function (fabricClient, logCallback, debugLogCallback) {
       populateOperator(mapOperator);
     };
 
-    var populateReduceOperator = function (mapOperator) {
-      populateOperator(mapOperator);
+    var populateArrayGeneratorOperator = function (arrayGeneratorOperator) {
+      populateOperator(arrayGeneratorOperator);
+    };
+
+    var populateReduceOperator = function (reduceOperator) {
+      populateOperator(reduceOperator);
     };
 
     var populateExecutable = function (executable) {
@@ -1826,6 +1830,10 @@ function (fabricClient, logCallback, debugLogCallback) {
       populateValueProducer(constValue);
     };
     
+    var populateReduce = function (reduce) {
+      populateValueProducer(reduce);
+    };
+    
     var populateArrayProducer = function (arrayProducer) {
       populateProducer(arrayProducer);
       
@@ -1848,16 +1856,16 @@ function (fabricClient, logCallback, debugLogCallback) {
       };
     };
     
-    var populateMap = function (map) {
-      populateArrayProducer(map);
-    };
-    
-    var populateArrayGenerator = function (map) {
-      populateArrayProducer(map);
-    };
-    
     var populateConstArray = function (constArray) {
       populateArrayProducer(constArray);
+    };
+    
+    var populateArrayGenerator = function (arrayGenerator) {
+      populateArrayProducer(arrayGenerator);
+    };
+    
+    var populateMap = function (map) {
+      populateArrayProducer(map);
     };
 
     MR.pub = {
@@ -1874,6 +1882,21 @@ function (fabricClient, logCallback, debugLogCallback) {
           delete map.id;
         });
         return map.pub;
+      },
+      
+      createReduce: function(inputArrayProducer, reduceOperator) {
+        var reduce = GC.createObject('MR');
+        
+        populateReduce(reduce);
+        
+        queueCommand(['MR'], 'createReduce', {
+          id: reduce.id,
+          inputArrayProducerID: inputArrayProducer.getID(),
+          reduceOperatorID: reduceOperator.getID()
+        }, function () {
+          delete reduce.id;
+        });
+        return reduce.pub;
       },
       
       createArrayGenerator: function(countValueProducer, arrayGeneratorOperator) {

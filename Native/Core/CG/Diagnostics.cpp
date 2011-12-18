@@ -9,12 +9,14 @@ namespace Fabric
   namespace CG
   {
     Diagnostics::Diagnostics( Diagnostics const &that )
+      : m_containsError( false )
     {
       append( that );
     }
     
     void Diagnostics::append( Diagnostics const &that )
     {
+      m_containsError = m_containsError || that.m_containsError;
       for ( Impl::const_iterator it = that.m_impl.begin(); it != that.m_impl.end(); ++it )
         m_impl.push_back( *it );
     }

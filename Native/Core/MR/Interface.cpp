@@ -5,10 +5,12 @@
 #include <Fabric/Core/MR/Interface.h>
 #include <Fabric/Core/MR/ArrayGenerator.h>
 #include <Fabric/Core/MR/ConstArray.h>
-#include <Fabric/Core/MR/Map.h>
 #include <Fabric/Core/MR/ConstValue.h>
+#include <Fabric/Core/MR/Map.h>
+#include <Fabric/Core/MR/Reduce.h>
 #include <Fabric/Core/KLC/ArrayGeneratorOperator.h>
 #include <Fabric/Core/KLC/MapOperator.h>
+#include <Fabric/Core/KLC/ReduceOperator.h>
 #include <Fabric/Core/GC/Object.h>
 #include <Fabric/Core/RT/Manager.h>
 #include <Fabric/Core/Util/JSONGenerator.h>
@@ -55,6 +57,8 @@ namespace Fabric
         jsonExecCreateConstArray( arg, resultJAG );
       else if ( cmd == "createMap" )
         jsonExecCreateMap( arg, resultJAG );
+      else if ( cmd == "createReduce" )
+        jsonExecCreateReduce( arg, resultJAG );
       else if ( cmd == "createArrayGenerator" )
         jsonExecCreateArrayGenerator( arg, resultJAG );
       else if ( cmd == "createConstValue" )
@@ -153,6 +157,54 @@ namespace Fabric
         mapOperator
         );
       map->reg( m_gcContainer, id_ );
+    }
+    
+    void Interface::jsonExecCreateReduce(
+      RC::ConstHandle<JSON::Value> const &arg,
+      Util::JSONArrayGenerator &resultJAG
+      )
+    {
+      RC::ConstHandle<JSON::Object> argObject = arg->toObject();
+      
+      std::string id_;
+      try
+      {
+        id_ = argObject->get( "id" )->toString()->value();
+      }
+      catch ( Exception e )
+      {
+        throw "id: " + e;
+      }
+      
+      RC::Handle<ArrayProducer> inputArrayProducer;
+      try
+      {
+        inputArrayProducer = GC::DynCast<ArrayProducer>( m_gcContainer->getObject( argObject->get( "inputArrayProducerID" )->toString()->value() ) );
+        if ( !inputArrayProducer )
+          throw "must be an array producer";
+      }
+      catch ( Exception e )
+      {
+        throw "inputArrayProducerID: " + e;
+      }
+      
+      RC::Handle<KLC::ReduceOperator> reduceOperator;
+      try
+      {
+        reduceOperator = GC::DynCast<KLC::ReduceOperator>( m_gcContainer->getObject( argObject->get( "reduceOperatorID" )->toString()->value() ) );
+        if ( !reduceOperator )
+          throw "must be a reduce operator";
+      }
+      catch ( Exception e )
+      {
+        throw "reduceOperatorID: " + e;
+      }
+      
+      RC::Handle<Reduce> reduce = Reduce::Create(
+        inputArrayProducer,
+        reduceOperator
+        );
+      reduce->reg( m_gcContainer, id_ );
     }
     
     void Interface::jsonExecCreateArrayGenerator(
