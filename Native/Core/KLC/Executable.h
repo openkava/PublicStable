@@ -35,6 +35,7 @@ namespace Fabric
   {
     class ArrayGeneratorOperator;
     class MapOperator;
+    class ReduceOperator;
     
     class Executable : public GC::Object
     {
@@ -55,6 +56,7 @@ namespace Fabric
       RC::Handle<CG::Manager> getCGManager() const;
       
       RC::Handle<MapOperator> resolveMapOperator( std::string const &mapOperatorName ) const;
+      RC::Handle<ReduceOperator> resolveReduceOperator( std::string const &reduceOperatorName ) const;
       RC::Handle<ArrayGeneratorOperator> resolveArrayGeneratorOperator( std::string const &arrayGeneratorOperatorName ) const;
         
       virtual void jsonExec(
@@ -107,6 +109,11 @@ namespace Fabric
         );
     
       void jsonExecResolveMapOperator(
+        RC::ConstHandle<JSON::Value> const &arg,
+        Util::JSONArrayGenerator &resultJAG
+        );
+    
+      void jsonExecResolveReduceOperator(
         RC::ConstHandle<JSON::Value> const &arg,
         Util::JSONArrayGenerator &resultJAG
         );

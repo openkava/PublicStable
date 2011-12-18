@@ -52,6 +52,11 @@ namespace Fabric
     void ArrayGenerator::toJSONImpl( Util::JSONObjectGenerator &jog ) const
     {
       {
+        Util::JSONGenerator jg = jog.makeMember( "countValueProducer" );
+        m_countValueProducer->toJSON( jg );
+      }
+      
+      {
         Util::JSONGenerator jg = jog.makeMember( "arrayGeneratorOperator" );
         m_arrayGeneratorOperator->toJSON( jg );
       }
