@@ -16,6 +16,8 @@ namespace Fabric
   
   namespace MR
   {
+    class ValueProducer;
+    
     class Map : public ArrayProducer
     {
       FABRIC_GC_OBJECT_CLASS_DECL()
@@ -24,7 +26,8 @@ namespace Fabric
     
       static RC::Handle<Map> Create(
         RC::ConstHandle<ArrayProducer> const &inputArrayProducer,
-        RC::ConstHandle<KLC::MapOperator> const &mapOperator
+        RC::ConstHandle<KLC::MapOperator> const &mapOperator,
+        RC::ConstHandle<ValueProducer> const &sharedValueProducer
         );
       
       // Virtual functions: ArrayProducer
@@ -39,7 +42,8 @@ namespace Fabric
       Map(
         FABRIC_GC_OBJECT_CLASS_PARAM,
         RC::ConstHandle<ArrayProducer> const &inputArrayProducer,
-        RC::ConstHandle<KLC::MapOperator> const &mapOperator
+        RC::ConstHandle<KLC::MapOperator> const &mapOperator,
+        RC::ConstHandle<ValueProducer> const &sharedValueProducer
         );
       ~Map();
     
@@ -50,6 +54,7 @@ namespace Fabric
     
       RC::ConstHandle<ArrayProducer> m_inputArrayProducer;
       RC::ConstHandle<KLC::MapOperator> m_mapOperator;
+      RC::ConstHandle<ValueProducer> m_sharedValueProducer;
     };
   };
 };

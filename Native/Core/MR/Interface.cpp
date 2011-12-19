@@ -152,9 +152,26 @@ namespace Fabric
         throw "mapOperatorID: " + e;
       }
       
+      RC::Handle<ValueProducer> sharedValueProducer;
+      RC::ConstHandle<JSON::Value> sharedValueProducerIDValue = argObject->maybeGet( "sharedValueProducerID" );
+      if ( sharedValueProducerIDValue )
+      {
+        try
+        {
+          sharedValueProducer = GC::DynCast<ValueProducer>( m_gcContainer->getObject( sharedValueProducerIDValue->toString()->value() ) );
+          if ( !sharedValueProducer )
+            throw "must be a value producer";
+        }
+        catch ( Exception e )
+        {
+          throw "sharedValueProducerID: " + e;
+        }
+      }
+      
       RC::Handle<Map> map = Map::Create(
         inputArrayProducer,
-        mapOperator
+        mapOperator,
+        sharedValueProducer
         );
       map->reg( m_gcContainer, id_ );
     }

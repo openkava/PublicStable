@@ -1869,16 +1869,20 @@ function (fabricClient, logCallback, debugLogCallback) {
     };
 
     MR.pub = {
-      createMap: function(inputArrayProducer, mapOperator) {
+      createMap: function(inputArrayProducer, mapOperator, sharedValueProducer) {
         var map = GC.createObject('MR');
         
         populateMap(map);
         
-        queueCommand(['MR'], 'createMap', {
+        var arg = {
           id: map.id,
           inputArrayProducerID: inputArrayProducer.getID(),
           mapOperatorID: mapOperator.getID()
-        }, function () {
+        };
+        if (sharedValueProducer)
+          arg.sharedValueProducerID = sharedValueProducer.getID();
+        
+        queueCommand(['MR'], 'createMap', arg, function () {
           delete map.id;
         });
         return map.pub;
