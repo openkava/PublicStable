@@ -137,7 +137,7 @@ FABRIC.SceneGraph.registerParser('obj', function(scene, assetUrl, options) {
     var loadedGeometries = {};
     if(evt.objectNames.length > 0){
       for(var i=0; i<evt.objectNames.length; i++){
-        var objectName = evt.objectNames[i].length > 0 ? evt.objectNames[i] : evt.groupNames[i];
+        var objectName = evt.objectNames[i].length > 0 ? evt.objectNames[i] : (evt.groupNames[i].length > 0 ? evt.groupNames[i] : options.baseName);
         loadedGeometries[objectName] = scene.constructNode('ObjTriangles', {
           resourceLoadNode: resourceLoadNode,
           entityIndex: i,
