@@ -22,6 +22,7 @@ operator rayIntersectLines(
   io Vec3 bboxmin,
   io Vec3 bboxmax
 ) {
+  select = false;
   if(!drawToggle){
     return;
   }
