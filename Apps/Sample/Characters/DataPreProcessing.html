@@ -30,6 +30,7 @@
     <script type="text/javascript" src="../../../SceneGraph/RT/Bone.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/RT/OGLShaderProgram.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/RT/OGLTexture2D.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../SceneGraph/RT/OGLTextureCube.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/RT/OGLBuffer.js" charset="utf-8"></script>
     
     <script type="text/javascript" src="../../../SceneGraph/RT/KeyframeTrack.js" charset="utf-8"></script>
@@ -169,6 +170,35 @@ $(document).ready(function() {
     trackCount++;
   }
   
+  var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) });
+  var sphere = scene.constructNode('Sphere', { radius: 2, detail: 10, needUVs: true, tangentsFromUV: 0 });
+  
+    // Transparency Shader
+  var cubeTextureMap = scene.constructNode('CubeMap', {
+    urls: [
+      'Textures/Teide/posx.png',
+      'Textures/Teide/negx.png',
+      'Textures/Teide/posy.png',
+      'Textures/Teide/negy.png',
+      'Textures/Teide/posz.png',
+      'Textures/Teide/negz.png'
+    ]
+  });
+  
+  var reflectionMaterial = scene.constructNode('GlassMaterial', {
+    diffuseColor: FABRIC.RT.rgba(0.0, 0.75, 1, 0.25),
+    cubeMapTextureNode: cubeTextureMap,
+    lightNode: light
+  });
+
+  scene.constructNode('Instance', {
+    transformNode: scene.constructNode('Transform', {
+      hierarchical: false,
+      globalXfo: new FABRIC.RT.Xfo({ tr: new FABRIC.RT.Vec3(0, 0, 0) })
+    }),
+    geometryNode: sphere,
+    materialNode: reflectionMaterial
+  });
   
   //////////////////////////////////////////////
   // 
@@ -182,9 +212,8 @@ $(document).ready(function() {
     assetNodes = scene.importAssetFile('Assets/Spiedel.DAE', { scaleFactor: scaleFactor });
   
     fkrigNode = assetNodes.SpiedelCharacterRig;
-    rigInstances = assetNodes.SpiedelCharacterInstance;
-    characterMesh = assetNodes.SpiedelMesh;
-    
+    rigInstances.rig = assetNodes.SpiedelMeshCharacterInstance;
+    /*
     skeletonNode = fkrigNode.getSkeletonNode();
     var ikrigNode = scene.constructNode('CharacterRig', {
       name: 'IKRig',
@@ -206,13 +235,13 @@ $(document).ready(function() {
                { bones:['SpiedelRearRLeg1', 'SpiedelRearRLeg2', 'SpiedelRearRLeg3'], ankle:'SpiedelRearRLegAnkle' },
                { bones:['SpiedelRearLLeg1', 'SpiedelRearLLeg2', 'SpiedelRearLLeg3'], ankle:'SpiedelRearLLegAnkle' } ]
     });
-    /*
-    ikrigNode.addSolver('toes', 'FKHierarchySolver', {
-      bones: {
-        bones:['SpiedelFrontRLegAnkle', 'SpiedelFrontLLegAnkle', 'SpiedelRearLLegAnkle', 'SpiedelRearRLegAnkle' ]
-      }
-    });
-    */
+    
+  //  ikrigNode.addSolver('toes', 'FKHierarchySolver', {
+  //    bones: {
+  //      bones:['SpiedelFrontRLegAnkle', 'SpiedelFrontLLegAnkle', 'SpiedelRearLLegAnkle', 'SpiedelRearRLegAnkle' ]
+  //    }
+  //  });
+  
     ikrigNode.addSolver('COM', 'COMSolver', {
       bone: 'SpiedelCOM'
     });
@@ -226,11 +255,15 @@ $(document).ready(function() {
     loadAnimationFile('Assets/Spiedel_Idle.DAE', fkrigNode);
     loadAnimationFile('Assets/Spiedel_StartWalking.DAE', fkrigNode);
     loadAnimationFile('Assets/Spiedel_Walk.DAE', fkrigNode);
-  
-    materialNode = scene.constructNode('SpiedelShader', {
-      lightNode: scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) }),
-      diffuseColor: FABRIC.RT.rgba(1.0, 0.0, 0.0, 1.0)
-    });
+
+  */
+    rigInstances.rig.setMaterialNode(
+      scene.constructNode('SpiedelShader', {
+        lightNode: scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) }),
+        diffuseColor: FABRIC.RT.rgba(1.0, 0.0, 0.0, 1.0),
+        cubeMapTextureNode: cubeTextureMap
+      }));
+    
     break;
   case 'walker':
     assetNodes = scene.importAssetFile('Assets/Walker_Skeleton.DAE', { scaleFactor: scaleFactor });
@@ -407,7 +440,6 @@ $(document).ready(function() {
   
     fkrigNode = assetNodes.CMan0005_M3_CS_MeshCharacterRig;
     
-    var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) });
     rigInstances = {
       Cloths: assetNodes.CMan0005_M3_CS_MeshMeshCMan0005_M3_CS_Cloths_StuffCharacterInstance,
       Eyes: assetNodes.CMan0005_M3_CS_MeshMeshCMan0005_M3_CS_Eyes_MouthCharacterInstance,
@@ -509,8 +541,9 @@ $(document).ready(function() {
 
     break;
   }
-  
+  /*
   ikrigNode.addSolver('Feet', 'LocomotionFeetSolver');
+  */
   
   
   var animatedSkeleton = scene.constructNode("CharacterSkeletonDebug",{
@@ -524,13 +557,14 @@ $(document).ready(function() {
     color: FABRIC.RT.rgba(0.0, 0.0, 1.0, 1.0)
   });
   
-  
+  /*
   var timeRange = libraryFKAnimations.getTimeRange(0);
   var $globalTimeSlider = $('#globalTime').slider({
       min: timeRange.x,
       max: timeRange.y,
       step: 0.01
     });
+  */
   
   $globalTimeSlider.slider('value', 0.0);
   $globalTimeSlider.bind('slide',
@@ -546,7 +580,7 @@ $(document).ready(function() {
       scene.animation.setTime(parseFloat($(this).val()));
       viewport.redraw();
     });
-
+    
   $( "#animationTracksList" ).selectable({
     stop: function(event, ui) {
       var selectedChildren = $("#animationTracksList").children('.ui-selected');
@@ -640,7 +674,7 @@ $(document).ready(function() {
     riggedSkeleton.getInstanceNode().setDrawToggle($("#displayRiggedSkeleton").is(":checked"));
     viewport.redraw();
   });
-  
+
   $('#loadingDialog').dialog({
     modal: true
   });
