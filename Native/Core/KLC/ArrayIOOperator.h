@@ -69,11 +69,11 @@ namespace Fabric
       
       bool takesIndex() const
       {
-        return m_call3 != 0;
+        return m_call3 != 0 || m_call4 != 0 || m_call5 != 0;
       }
       bool takesCount() const
       {
-        return m_call4 != 0;
+        return m_call4 != 0 || m_call5 != 0;
       }
       bool takesSharedValue() const
       {

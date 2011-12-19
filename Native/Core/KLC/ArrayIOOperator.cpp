@@ -342,7 +342,9 @@ namespace Fabric
       void *outputData
       ) const
     {
-      (const_cast<ArrayIOOperator *>(this)->*m_call2)( inputData, outputData );
+      if ( m_call2 )
+        (const_cast<ArrayIOOperator *>(this)->*m_call2)( inputData, outputData );
+      else throw Exception( "operator is invalid" );
     }
     
     void ArrayIOOperator::call(
@@ -351,7 +353,9 @@ namespace Fabric
       size_t index
       ) const
     {
-      (const_cast<ArrayIOOperator *>(this)->*m_call3)( inputData, outputData, index );
+      if ( m_call3 )
+        (const_cast<ArrayIOOperator *>(this)->*m_call3)( inputData, outputData, index );
+      else throw Exception( "operator is invalid" );
     }
     
     void ArrayIOOperator::call(
@@ -361,7 +365,9 @@ namespace Fabric
       size_t count
       ) const
     {
-      (const_cast<ArrayIOOperator *>(this)->*m_call4)( inputData, outputData, index, count );
+      if ( m_call4 )
+        (const_cast<ArrayIOOperator *>(this)->*m_call4)( inputData, outputData, index, count );
+      else throw Exception( "operator is invalid" );
     }
     
     void ArrayIOOperator::call(
@@ -372,7 +378,9 @@ namespace Fabric
       void const *sharedData
       ) const
     {
-      (const_cast<ArrayIOOperator *>(this)->*m_call5)( inputData, outputData, index, count, sharedData );
+      if ( m_call5 )
+        (const_cast<ArrayIOOperator *>(this)->*m_call5)( inputData, outputData, index, count, sharedData );
+      else throw Exception( "operator is invalid" );
     }
   }
 }
