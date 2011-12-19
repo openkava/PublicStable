@@ -162,25 +162,10 @@ $(document).ready(function() {
   var cameraManipulator = scene.constructNode('CameraManipulator', { targetNode: camera });
 
   viewport.setCameraNode(camera);
-
-  //constraint a pointLight to the camera
-  var light = scene.constructNode('PointLight', { transformNode: camera.getTransformNode() });
-  var material = scene.constructNode('PhongVertexColorMaterial', { lightNode: light });
-
-  var assets = scene.importAssetFile('Models/bunny.obj');
-  geometry = assets['bunny'];
-
-  var baseColor = FABRIC.RT.rgb(0.0, 0.6, 0.0);
-  geometry.addVertexAttributeValue('vertexColors', 'Color', {
-    defaultValue:baseColor,
-    genVBO:true
-  });
-
-  var instanceNode = scene.constructNode('Instance', { geometryNode: geometry, materialNode: material });
-
-
+  
   /////////////////////////////////////////////////
   // Set up the painting manipulator
+  var baseColor = FABRIC.RT.rgb(0.0, 0.6, 0.0);
   var brushSize = 0.1;
   var brushColor = FABRIC.RT.rgb(0.8, 0.0, 0.0);
   var paintManipulator = scene.constructNode('PaintVertexColorsManipulator', {
@@ -189,15 +174,37 @@ $(document).ready(function() {
       brushColor: brushColor,
       baseColor: baseColor
     });
-  paintManipulator.addPaintableNode(instanceNode);
+    
+  //constraint a pointLight to the camera
+  var light = scene.constructNode('PointLight', { transformNode: camera.getTransformNode() });
+  var material = scene.constructNode('PhongVertexColorMaterial', { lightNode: light });
 
-  var onPaintFn = function(evt) {
-    if( evt.paintData.points.length == 0 ){
-      return;
-    }
-    geometry.reloadVBO('vertexColors');
-  };
-  paintManipulator.addEventListener('onpaint', onPaintFn);
+  var resourceLoadNode = scene.importAssetFile('Models/bunny.obj', {
+   splitMaterials: false
+  });
+  resourceLoadNode.addEventListener('objparsesuccess', function(evt){
+    var geometry = evt.loadedGeometries['bunny'];
+    geometry.addVertexAttributeValue('vertexColors', 'Color', {
+      defaultValue:baseColor,
+      genVBO:true
+    });
+  
+    var instanceNode = scene.constructNode('Instance', { geometryNode: geometry, materialNode: material });
+  
+  
+
+    paintManipulator.addPaintableNode(instanceNode);
+  
+    var onPaintFn = function(evt) {
+      if( evt.paintData.points.length == 0 ){
+        return;
+      }
+      geometry.reloadVBO('vertexColors');
+    };
+    paintManipulator.addEventListener('onpaint', onPaintFn);
+   });
+  
+
   
   // Switch to painting when the shiftKey key is pressed
   var painting = false;

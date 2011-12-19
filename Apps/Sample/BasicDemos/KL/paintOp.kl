@@ -35,6 +35,8 @@ operator paintVertexColors(
   Mat44 modelViewProjectionMatrix = projectionMatrix * cameraMatrix * modelMatrix;
   Mat33 normalMatrix = modelViewProjectionMatrix.upperLeft().inverse().transpose();
 
+  collectedPoints.distances.resize(0);
+  collectedPoints.points.resize(0);
   for (var Integer i = 0; i < positions.size(); i++) {
     Vec3 n = normalMatrix * normals[i];
     if (n.z > 0) {
