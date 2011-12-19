@@ -986,8 +986,17 @@ function (fabricClient, logCallback, debugLogCallback) {
         result.queueCommand('fire');
         executeQueuedCommands();
       };
+                    
+      var typeName;
+      result.pub.setSelectType = function(tn) {
+        var results = [];
+        result.queueCommand('setSelectType', tn);
+        executeQueuedCommands();
+        typeName = tn;
+        return results;
+      };
 
-      result.pub.select = function(typeName) {
+      result.pub.select = function() {
         var results = [];
         result.queueCommand('select', typeName, function() { }, function(commandResults) {
           for (var i = 0; i < commandResults.length; ++i) {
