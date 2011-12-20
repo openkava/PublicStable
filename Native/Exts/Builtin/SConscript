@@ -18,6 +18,7 @@ dirs = [
   #'OCL',
   'OGL',
   'PNG',
+  'SECURE',
   'TEEM',
   'TGA',
   'VICON',
