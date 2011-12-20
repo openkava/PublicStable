@@ -126,6 +126,10 @@ FABRIC.SceneGraph.registerNodeType('SecureStorageNode', {
         for(var i=0;i<memberNames.length;i++) {
           var name = memberNames[i];
           var type = members[name].type;
+          
+          if(type.indexOf('String')>-1)
+            throw("String members are not supported at this stage.");
+          
           var isArray = type.indexOf('[]') > -1;
           var operatorName = 'storeSecureElement'+type.replace('[]','');
           if(isArray)
