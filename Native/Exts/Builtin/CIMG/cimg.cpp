@@ -48,14 +48,38 @@ FABRIC_EXT_EXPORT void FabricCIMGDecode(
   size_t nbPixels = imageWidth * imageHeight;
   size_t offsetG = nbPixels;
   size_t offsetB = nbPixels * 2;
+  size_t offsetA = nbPixels * 3;
   
   imagePixels.resize(nbPixels);
-  for(size_t i=0;i<nbPixels;i++,offsetG++,offsetB++)
+  if(img.spectrum() == 1)
   {
-    imagePixels[i].r = imgData[i];
-    imagePixels[i].g = imgData[offsetG];
-    imagePixels[i].b = imgData[offsetB];
-    imagePixels[i].a = 255;
+    for(size_t i=0;i<nbPixels;i++)
+    {
+      imagePixels[i].r = imgData[i];
+      imagePixels[i].g = imgData[i];
+      imagePixels[i].b = imgData[i];
+      imagePixels[i].a = 255;
+    }
+  }
+  else if(img.spectrum() == 3)
+  {
+    for(size_t i=0;i<nbPixels;i++,offsetG++,offsetB++)
+    {
+      imagePixels[i].r = imgData[i];
+      imagePixels[i].g = imgData[offsetG];
+      imagePixels[i].b = imgData[offsetB];
+      imagePixels[i].a = 255;
+    }
+  }
+  else if(img.spectrum() == 4)
+  {
+    for(size_t i=0;i<nbPixels;i++,offsetG++,offsetB++,offsetA++)
+    {
+      imagePixels[i].r = imgData[i];
+      imagePixels[i].g = imgData[offsetG];
+      imagePixels[i].b = imgData[offsetB];
+      imagePixels[i].a = imgData[offsetA];
+    }
   }
 }
 
