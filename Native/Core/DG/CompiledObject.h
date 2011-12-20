@@ -7,6 +7,7 @@
 
 #include <Fabric/Base/RC/Object.h>
 #include <Fabric/Base/RC/ConstHandle.h>
+#include <Fabric/Core/Util/Mutex.h>
 
 #include <set>
 #include <vector>
@@ -83,6 +84,7 @@ namespace Fabric
       mutable unsigned m_markForRecompileGeneration;
       
       static std::set< RC::Handle<CompiledObject> > s_compiledObjectsMarkedForRefresh;
+      static Util::Mutex s_markForRefreshMutex;
       static unsigned s_markForRefreshGlobalGeneration;
       mutable unsigned m_markForRefreshGeneration;
       
