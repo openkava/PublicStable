@@ -4,6 +4,8 @@
  
 #include <Fabric/EDK/EDK.h>
 
+#define cimg_display 0
+
 #include "CImg.h"
 
 using namespace Fabric::EDK;
