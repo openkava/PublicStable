@@ -23,7 +23,7 @@ function activateClip(
   trackcontroller.stepIds = marker.stepIds;
   trackcontroller.comParams = marker.params;
   
-//  report("activateClip track:"+trackcontroller.activeTrackSet);
+//  report("activateClip track:"+trackcontroller.activeTrackSet + " at time:"+marker.time);
 }
 
 
@@ -324,25 +324,13 @@ operator evaluateLocomotionPoseVariables(
         }
       }
       if(trackcontroller.deactivate){
-        LocomotionMarker markers[][] = locomotionMarkers[trackcontroller.activeTrackSet];
-        LocomotionMarker marker = markers[trackcontroller.pivotFoot][trackcontroller.pivotStepId];
-        FootStepTrack targetFootStepTracks[] = footStepTracksLibrary[trackcontroller.activeTrackSet];
         for(Integer j=0; j < locomotionFeet.size; j++){
-          FootStepTrack footStepTrack = targetFootStepTracks[j];
-          FootStep currStep = footStepTrack.footSteps[marker.stepIds[j]];
-       //   report "t:"+marker.time + " currStep:" + currStep;
-          if(marker.time > currStep.liftTime && marker.time < currStep.plantTime ){
-            // This foot is switching to lifted.
-            plantedFeet[j] = false;
-            plantLocations[j].setIdentity();
-          }else{
-            plantedFeet[j] = true;
-          }
+          plantedFeet[j] = true;
         }
         state = 1;
       }
     }
-          
+    
     if(!trackcontroller.deactivate && trackcontroller.time >= trackSet.timeRange.y){
       // loop the idle clip
       trackcontroller.time -= trackSet.timeRange.y;
@@ -361,7 +349,6 @@ operator evaluateLocomotionPoseVariables(
     
     if(clipSpeed > 0.1){
       clipFrequencyMultiplier = (currSpeed / clipSpeed);
-      clipFrequencyMultiplier += controllerparams.balanceXfo.tr.length() * 1.0;
       if(clipFrequencyMultiplier < minFrequency){
         strideLengthMultiplier = clipFrequencyMultiplier / minFrequency;
         clipFrequencyMultiplier = minFrequency;
@@ -370,7 +357,12 @@ operator evaluateLocomotionPoseVariables(
   //  report("currSpeed:"+currSpeed + " clipSpeed:"+clipSpeed + " clipFrequencyMultiplier:"+clipFrequencyMultiplier + " strideLengthMultiplier:"+strideLengthMultiplier);
     // When turning, speed up the playback a little to stop the legs getting tangled. 
     clipFrequencyMultiplier += abs(controllerparams.displacement.ori.getAngle()) * 10.0;
+    clipFrequencyMultiplier += controllerparams.balanceXfo.tr.length() * 1.0;
     
+    Scalar maxFrequency = 2.0;
+    if(clipFrequencyMultiplier > maxFrequency){
+      clipFrequencyMultiplier = maxFrequency;
+    }
     
     /////////////////////////////////////////////////
     // Clip Evaluation
@@ -409,18 +401,7 @@ operator evaluateLocomotionPoseVariables(
     prevUpdatePose = poseVariables;
     trackcontroller.deactivate = false;
     
-    /////////////////////////////////////////////////
-    // Clip Deactivation
-    /*
-    if(currSpeed <= 0.001){
-      report("deactivate from:"+trackcontroller.activeTrackSet+ " to: 0 because we stopped" );
-      trackcontroller.deactivate = true;
-      trackcontroller.pivotFoot = 0;
-      trackcontroller.pivotStepId = 0;
-      trackcontroller.activeTrackSet = 0;
-      trackcontroller.time = 0.0;
-    }
-*/
+
     /////////////////////////////////////////////////
     
     Xfo hubComs[];

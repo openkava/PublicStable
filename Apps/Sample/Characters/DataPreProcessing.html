@@ -201,10 +201,10 @@ $(document).ready(function() {
   });
   
   //////////////////////////////////////////////
-  // 
+  //
+  var rigName = 'Spiedel';
   
-  var rigName = 'CMan0005';
-  var assetNodes, bindPoseRig, fkrigNode, rigInstances, skeletonNode, characterMesh, materialNode;
+  var assetNodes, bindPoseRig, fkrigNode, rigInstances = {}, skeletonNode, materialNode;
   switch(rigName){
   case 'Spiedel':
     scaleFactor = 0.05;
@@ -213,6 +213,7 @@ $(document).ready(function() {
   
     fkrigNode = assetNodes.SpiedelCharacterRig;
     rigInstances.rig = assetNodes.SpiedelMeshCharacterInstance;
+
     /*
     skeletonNode = fkrigNode.getSkeletonNode();
     var ikrigNode = scene.constructNode('CharacterRig', {
@@ -250,7 +251,7 @@ $(document).ready(function() {
     var fkRigVariablesNode = fkrigNode.constructVariablesNode('FKRigVariables', true);
     var ikRigVariablesNode = ikrigNode.invertSolvers(fkrigNode, true);
     
-    rigInstances.setRigNode(ikrigNode);
+    rigInstances.rig.setRigNode(ikrigNode);
     
     loadAnimationFile('Assets/Spiedel_Idle.DAE', fkrigNode);
     loadAnimationFile('Assets/Spiedel_StartWalking.DAE', fkrigNode);
@@ -269,8 +270,7 @@ $(document).ready(function() {
     assetNodes = scene.importAssetFile('Assets/Walker_Skeleton.DAE', { scaleFactor: scaleFactor });
   
     fkrigNode = assetNodes.Walker_ncl1_1CharacterRig;
-    rigInstances = assetNodes.Walker_ncl1_1CharacterInstance;
-    characterMesh = assetNodes.Walker_ncl1_1Mesh;
+    rigInstances.rig = assetNodes.Walker_ncl1_1CharacterInstance;
     
     skeletonNode = fkrigNode.getSkeletonNode();
     var ikrigNode = scene.constructNode('CharacterRig', {
@@ -291,7 +291,7 @@ $(document).ready(function() {
     var fkRigVariablesNode = fkrigNode.constructVariablesNode('FKRigVariables', true);
     var ikRigVariablesNode = ikrigNode.invertSolvers(fkrigNode, true);
     
-    rigInstances.setRigNode(ikrigNode);
+    rigInstances.rig.setRigNode(ikrigNode);
     
     loadAnimationFile('Assets/Walker_Walk.DAE', fkrigNode);
   
@@ -300,8 +300,7 @@ $(document).ready(function() {
     assetNodes = scene.importAssetFile('Assets/Centipede_Skeleton.DAE', { scaleFactor: scaleFactor });
   
     fkrigNode = assetNodes.CentipedeHub010CharacterRig;
-    rigInstances = assetNodes.CentipedeHub010CharacterInstance;
-    characterMesh = assetNodes.CentipedeHub010Mesh;
+    rigInstances.rig = assetNodes.CentipedeHub010CharacterInstance;
     
     skeletonNode = fkrigNode.getSkeletonNode();
     
@@ -369,7 +368,7 @@ $(document).ready(function() {
     var fkRigVariablesNode = fkrigNode.constructVariablesNode('FKRigVariables', true);
     var ikRigVariablesNode = ikrigNode.invertSolvers(fkrigNode, true);
     
-    rigInstances.setRigNode(ikrigNode);
+    rigInstances.rig.setRigNode(ikrigNode);
     
     loadAnimationFile('Assets/Centipede_Walk.DAE', fkrigNode);
     
@@ -378,8 +377,7 @@ $(document).ready(function() {
     assetNodes = scene.importAssetFile('Assets/Marama3.DAE', { scaleFactor: scaleFactor } );
   
     fkrigNode = assetNodes.MaramaMeshCharacterRig;
-    rigInstances = assetNodes.MaramaMeshCharacterInstance;
-    characterMesh = assetNodes.MaramaMeshMesh;
+    rigInstances.rig = assetNodes.MaramaMeshCharacterInstance;
     
     skeletonNode = fkrigNode.getSkeletonNode();
     var ikrigNode = scene.constructNode('CharacterRig', {
@@ -416,22 +414,22 @@ $(document).ready(function() {
     var fkRigVariablesNode = fkrigNode.constructVariablesNode('FKRigVariables', true);
     var ikRigVariablesNode = ikrigNode.invertSolvers(fkrigNode, true);
     
-    rigInstances.setRigNode(ikrigNode);
+    rigInstances.rig.setRigNode(ikrigNode);
     
-   loadAnimationFile('Assets/Marama3_Idle.DAE', fkrigNode);
-   loadAnimationFile('Assets/Marama3_Walk.DAE', fkrigNode);
-   loadAnimationFile('Assets/Marama3_Run.DAE', fkrigNode);
-   /*
-   loadAnimationFile('Assets/Marama_Idle.DAE', fkrigNode);
-/*   loadAnimationFile('Assets/Marama_StartWalking.DAE', fkrigNode);
-   loadAnimationFile('Assets/Marama_StopWalking.DAE', fkrigNode);
-*//*
-   loadAnimationFile('Assets/Marama_Walk.DAE', fkrigNode);
-   loadAnimationFile('Assets/Marama_Run.DAE', fkrigNode);
-   /*
-   loadAnimationFile('Assets/Marama_StartRunning.DAE', fkrigNode);
-   loadAnimationFile('Assets/Marama_StopRunning.DAE', fkrigNode);
-   */
+    loadAnimationFile('Assets/Marama3_Idle.DAE', fkrigNode);
+    loadAnimationFile('Assets/Marama3_Walk.DAE', fkrigNode);
+    loadAnimationFile('Assets/Marama3_Run.DAE', fkrigNode);
+    /*
+    loadAnimationFile('Assets/Marama_Idle.DAE', fkrigNode);
+ /*   loadAnimationFile('Assets/Marama_StartWalking.DAE', fkrigNode);
+    loadAnimationFile('Assets/Marama_StopWalking.DAE', fkrigNode);
+ *//*
+    loadAnimationFile('Assets/Marama_Walk.DAE', fkrigNode);
+    loadAnimationFile('Assets/Marama_Run.DAE', fkrigNode);
+    /*
+    loadAnimationFile('Assets/Marama_StartRunning.DAE', fkrigNode);
+    loadAnimationFile('Assets/Marama_StopRunning.DAE', fkrigNode);
+    */
     break;
   
   case 'CMan0005':
@@ -535,9 +533,9 @@ $(document).ready(function() {
     rigInstances.Head.setRigNode(ikrigNode);
     rigInstances.Skin.setRigNode(ikrigNode);
     
-   loadAnimationFile('Assets/CMan0005_Idle.DAE', fkrigNode);
-   loadAnimationFile('Assets/CMan0005_Walk.DAE', fkrigNode);
-   loadAnimationFile('Assets/CMan0005_Run.DAE', fkrigNode);
+    loadAnimationFile('Assets/CMan0005_Idle.DAE', fkrigNode);
+    loadAnimationFile('Assets/CMan0005_Walk.DAE', fkrigNode);
+    loadAnimationFile('Assets/CMan0005_Run.DAE', fkrigNode);
 
     break;
   }
@@ -545,7 +543,7 @@ $(document).ready(function() {
   ikrigNode.addSolver('Feet', 'LocomotionFeetSolver');
   */
   
-  
+  /*
   var animatedSkeleton = scene.constructNode("CharacterSkeletonDebug",{
     characterRigNode:fkrigNode,
     boneradius: 0.2,
@@ -556,6 +554,7 @@ $(document).ready(function() {
     boneradius: 0.2,
     color: FABRIC.RT.rgba(0.0, 0.0, 1.0, 1.0)
   });
+  */
   
   /*
   var timeRange = libraryFKAnimations.getTimeRange(0);
