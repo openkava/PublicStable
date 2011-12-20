@@ -311,7 +311,8 @@ void SecureContainer::LocalData::getElementData(size_t index, void**data, size_t
   size_t storedSize = (size_t)((unsigned int*)(&mData[offset]))[0];
   if(storedSize != size)
   {
-    printf("{  FabricSECURE  }: ERROR: Size (%d) does not match one in buffer (%d).\n",(int)size,(int)storedSize);
+    SecureElement element = getElementDescription(index);
+    printf("{  FabricSECURE  }: ERROR: Element (%d)'%s': Size (%d) does not match one in buffer (%d).\n",(int)index,element.name.data(),(int)size,(int)storedSize);
     *data = NULL;
     return;
   }
@@ -321,7 +322,7 @@ void SecureContainer::LocalData::getElementData(size_t index, void**data, size_t
 void SecureContainer::LocalData::addElement(SecureElement & element, void * data, size_t size)
 {
 #ifndef NDEBUG
-  printf("  { FabricSECURE } : Adding new element '%s', type '%s', slice %d.\n",element.name.data(),element.type.data(),(int)element.sliceindex);
+  printf("  { FabricSECURE } : New Element (%d)'%s', type '%s', slice %d, size %d.\n",(int)getNbElements(),element.name.data(),element.type.data(),(int)element.sliceindex,(int)size);
 #endif
 
   unsigned int nbElements = getNbElements();
