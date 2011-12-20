@@ -1190,7 +1190,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
     var constructSkinnedGeometry = function(polygons){
       var name = geometryData.name;
       if(polygons.material != null){
-        name += triangles.material;
+        name += polygons.material;
       }
       var processedData = processGeometryData(geometryData.mesh, polygons);
       

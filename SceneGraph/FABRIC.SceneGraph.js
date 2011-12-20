@@ -1445,7 +1445,7 @@ FABRIC.SceneGraph.registerNodeType('ResourceLoad', {
     
     var remainingTaskWeight = 1.0;
     var incrementLoadProgressBar;
-    if(options.blockRedrawingTillResourceIsLoaded && options.url !== ''){
+    if(options.blockRedrawingTillResourceIsLoaded && options.url){
       incrementLoadProgressBar = FABRIC.addAsyncTask("Loading: "+ options.url, remainingTaskWeight);
     }
 
