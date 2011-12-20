@@ -65,7 +65,6 @@ namespace Fabric
       void callSInt64( size_t index, void *outputData );
       void callFloat32( size_t index, void *outputData );
       void callFloat64( size_t index, void *outputData );
-      void callString( size_t index, void *outputData );
       void callRef( size_t index, void *outputData );
       */
     
