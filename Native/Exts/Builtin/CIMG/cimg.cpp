@@ -45,8 +45,6 @@ FABRIC_EXT_EXPORT void FabricCIMGDecode(
   imageWidth = img.width();
   imageHeight = img.height();
   
-  printf("width %d, height %d\n",(int)imageWidth,(int)imageHeight);
-  
   size_t nbPixels = imageWidth * imageHeight;
   size_t offsetG = nbPixels;
   size_t offsetB = nbPixels * 2;
