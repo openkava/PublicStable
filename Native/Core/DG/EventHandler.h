@@ -23,6 +23,39 @@ namespace Fabric
     class Binding;
     class BindingList;
     class Event;
+    class EventTaskGroup;
+    
+    
+    
+    class EventHandlerTask : public MT::Task<EventHandler> 
+    {
+    public:
+      
+      EventHandlerTask( EventHandler *t, MT::Task<EventHandler>::ExecuteCallback executeCallback )
+      : MT::Task<EventHandler>( t, executeCallback )
+      {
+        m_shouldSelect = false;
+        m_selectParallelCall = 0;
+      }
+      
+      EventHandlerTask( EventHandler *t, MT::Task<EventHandler>::ExecuteCallback executeCallback, RC::Handle<Node> const &node, RC::ConstHandle<RT::Desc> const &selectorType )
+      : MT::Task<EventHandler>( t, executeCallback )
+      , m_selectedNode( node, selectorType )
+      {
+        m_shouldSelect = false;
+        m_selectParallelCall = 0;
+      }
+      
+      void add( RC::Handle<MT::ParallelCall> &opParallelCall );
+      
+      virtual void execute( void *userdata ) const;
+      
+      
+      std::vector< RC::Handle<MT::ParallelCall> > m_evaluateParallelCallsPerOperator;
+      SelectedNode m_selectedNode;
+      bool m_shouldSelect;
+      RC::Handle<MT::ParallelCall> m_selectParallelCall;
+    };
     
     class EventHandler : public Container
     {
@@ -30,6 +63,7 @@ namespace Fabric
       friend class Event;
       
       typedef Util::UnorderedMap< std::string, RC::Handle<Node> > ExternalScopes;
+      
       
     public:
     
@@ -89,6 +123,9 @@ namespace Fabric
       void removeParent( EventHandler *eventHandler );
       
       void fire( Scope const *parentScope, RC::ConstHandle<RT::Desc> const &selectorType, SelectedNodeList *selectedNodes );
+      
+      void collectEventTasksImpl( EventTaskGroup &taskGroup, RC::ConstHandle<RT::Desc> const &selectorType, Scope const *parentScope );
+      
       void collectErrorsForScope( Scope const *parentScope );
     
       virtual void propagateMarkForRecompileImpl( unsigned generation );    
@@ -98,6 +135,8 @@ namespace Fabric
       virtual void refreshRunState();
       virtual void collectTasksImpl( unsigned generation, MT::TaskGroupStream &taskGroupStream ) const;
       virtual bool canExecute() const;
+      
+      virtual void evaluateLocal( void *userdata );
       
       void ensureRunState() const;
       
