@@ -1593,6 +1593,10 @@ function (fabricClient, logCallback, debugLogCallback) {
       populateOperator(arrayGeneratorOperator);
     };
 
+    var populateValueMapOperator = function (operator) {
+      populateOperator(operator);
+    };
+
     var populateReduceOperator = function (reduceOperator) {
       populateOperator(reduceOperator);
     };
@@ -1650,6 +1654,18 @@ function (fabricClient, logCallback, debugLogCallback) {
           delete arrayGeneratorOperator.id;
         });
         return arrayGeneratorOperator.pub;
+      };
+      
+      executable.pub.resolveValueMapOperator = function (operatorName) {
+        var operator = GC.createObject('KLC');
+        populateValueMapOperator(operator);
+        executable.queueCommand('resolveValueMapOperator', {
+          id: operator.id,
+          operatorName: operatorName
+        }, function () {
+          delete operator.id;
+        });
+        return operator.pub;
       };
     };
     
@@ -1770,6 +1786,25 @@ function (fabricClient, logCallback, debugLogCallback) {
         
         queueCommand(['KLC'],'createArrayGeneratorOperator', arg, function () {
           delete arrayGeneratorOperator['id'];
+        });
+        
+        return arrayGeneratorOperator.pub;
+      },
+      
+      createValueMapOperator: function (sourceName, sourceCode, operatorName) {
+        var operator = GC.createObject('KLC');
+          
+        populateValueMapOperator(operator);
+          
+        var arg = {
+          id: operator.id,
+          sourceName: sourceName,
+          sourceCode: sourceCode,
+          operatorName: operatorName
+        };
+        
+        queueCommand(['KLC'],'createValueMapOperator', arg, function () {
+          delete operator.id;
         });
         
         return arrayGeneratorOperator.pub;
