@@ -1,9 +1,0 @@
-struct RGBA {
-  Byte r;
-  Byte g;
-  Byte b;
-  Byte a;
-};
-
-function FabricJPGDecode( Data jpgData, Size jpgDataSize, io Size imageWidth, io Size imageHeight, io RGBA imagePixels[] );
-function FabricJPGEncode( Size imageWidth, Size imageHeight, Data imagePixels, io Byte jpgData[] );

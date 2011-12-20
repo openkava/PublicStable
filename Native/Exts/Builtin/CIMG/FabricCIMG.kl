@@ -1,0 +1,8 @@
+struct RGBA {
+  Byte r;
+  Byte g;
+  Byte b;
+  Byte a;
+};
+
+function FabricCIMGDecode( Data data, Size dataSize, io Size imageWidth, io Size imageHeight, io RGBA imagePixels[] );
