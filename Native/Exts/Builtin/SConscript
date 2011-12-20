@@ -10,6 +10,7 @@ dirs = [
   'BULLET',
   'EXR',
   'HDR',
+  'JPG',
   'KINECT',
   'LIDAR',
   'Math',
