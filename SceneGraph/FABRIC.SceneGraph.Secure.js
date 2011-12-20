@@ -23,6 +23,7 @@ FABRIC.SceneGraph.registerNodeType('SecureStorageNode', {
 
     var resourceLoadNode = scene.constructNode('ResourceLoad', options),
       resourceloaddgnode = resourceLoadNode.getDGLoadNode();
+    var dependencyCount = 0;
       
     // make the dependent node, well, dependent
     if(options.dependentNode != undefined) {
@@ -127,17 +128,21 @@ FABRIC.SceneGraph.registerNodeType('SecureStorageNode', {
           var name = memberNames[i];
           var type = members[name].type;
           
-          if(type.indexOf('String')>-1)
-            throw("String members are not supported at this stage.");
-          
           var isArray = type.indexOf('[]') > -1;
+          var isString = type.indexOf('String') > -1;
+          if(isArray && isString)
+          {
+            console.log("SecureStorage: Warning: Skipping member '"+name+"'. String Array members are not supported at this stage.");
+            continue;
+          }
+          
           var operatorName = 'storeSecureElement'+type.replace('[]','');
           if(isArray)
             operatorName += 'Array';
           
           var storedType = type.replace('Size','Integer');
 
-          resourceloaddgnode.setDependency(dgnode,dgnodeName);
+          resourceloaddgnode.setDependency(dgnode,dgnodeName+'_'+dependencyCount);
           resourceloaddgnode.addMember(dgnodeName+'_'+name+'_name','String',dgnodeName+'.'+name);
           resourceloaddgnode.addMember(dgnodeName+'_'+name+'_type','String',storedType);
           resourceloaddgnode.addMember(dgnodeName+'_'+name+'_version','Integer',storeOptions.version);
@@ -170,6 +175,12 @@ FABRIC.SceneGraph.registerNodeType('SecureStorageNode', {
               srcCode += '    container.addElement(element,member[i].data(),member[i].dataSize());\n'
             }
             srcCode += '  }\n'
+          } else if(isString) {
+            srcCode += '  for(Size i=0;i<member.size();i++){\n';
+            srcCode += '    element.sliceindex = Integer(i);\n';
+            srcCode += '    element.datacount = member[i].length();\n';
+            srcCode += '    container.addElement(element,member[i].data(),member[i].length());\n'
+            srcCode += '  }\n'
           } else {
             srcCode += '  element.sliceindex = -1;\n';
             srcCode += '  element.datacount = member.size();\n';
@@ -186,7 +197,7 @@ FABRIC.SceneGraph.registerNodeType('SecureStorageNode', {
           }
           srcCode += '  elements.push(element);\n';
           srcCode += '}\n';
-
+          
           resourceloaddgnode.bindings.insert(scene.constructOperator({
             operatorName: operatorName,
             srcCode: srcCode,
@@ -197,12 +208,13 @@ FABRIC.SceneGraph.registerNodeType('SecureStorageNode', {
               'self.'+dgnodeName+'_'+name+'_name',
               'self.'+dgnodeName+'_'+name+'_type',
               'self.'+dgnodeName+'_'+name+'_version',
-              dgnodeName+'.'+name+'<>'
+              dgnodeName+'_'+dependencyCount+'.'+name+'<>'
             ],
             mainThreadOnly: true
           }),nbOps-1);
           nbOps++;
         }
+        dependencyCount++;
       };
 
       resourceLoadNode.pub.storeNode = function(storeOptions) {
@@ -276,14 +288,17 @@ FABRIC.SceneGraph.registerNodeType('SecureStorageNode', {
         var dgnodeMembers = dgnode.getMembers();
         if(!dgnodeMembers[tokens[1]])
         {
-          console.log('SecureStorage: Warning: Unknown Member '+tokens[1]+' on DGNode : '+dgnodeName);
-          continue;
+          console.log("SecureStorage: Warning: Adding missing member '"+tokens[1]+"'.")
+          dgnode.addMember(tokens[1],elements[i].type);
+          dgnodeMembers[tokens[1]] = {};
+          dgnodeMembers[tokens[1]].type = elements[i].type;
         }
         
         // check if the member has the right type
         var originalType = dgnodeMembers[tokens[1]].type;
         var type = elements[i].type;
         var isArray = type.indexOf('[]') > -1;
+        var isString = type.indexOf('String') > -1;
         var storedType = originalType.replace('Size','Integer');
         if(storedType != type) {
           console.log('SecureStorage: Warning: Member '+tokens[1]+' has wrong type: '+originalType);
@@ -338,6 +353,23 @@ FABRIC.SceneGraph.registerNodeType('SecureStorageNode', {
             srcCode += '    member[outIndex].resize(elements[i].datacount);\n';
             srcCode += '    container.getElementData(i,member[outIndex].data(),member[outIndex].dataSize());\n'
           }
+          srcCode += '    outIndex++;\n'
+          srcCode += '  }\n'
+        } else if(isString) {
+          srcCode += '  Integer outIndex = 0;\n';
+          srcCode += '  for(Integer i=first;i<=last;i++) {\n';
+          srcCode += '    Size length = Size(elements[i].datacount);\n';
+          srcCode += '    member[outIndex] = "";\n';
+          srcCode += '    while(length > 0) {\n';
+          srcCode += '      if(length > 9) {\n';
+          srcCode += '        member[outIndex] += "0000000000";\n';
+          srcCode += '        length -= 10;\n';
+          srcCode += '      } else {\n';
+          srcCode += '        member[outIndex] += "0";\n';
+          srcCode += '        length -= 1;\n';
+          srcCode += '      }\n';
+          srcCode += '    }\n';
+          srcCode += '    container.getElementData(i,member[outIndex].data(),member[outIndex].length());\n'
           srcCode += '    outIndex++;\n'
           srcCode += '  }\n'
         } else {
