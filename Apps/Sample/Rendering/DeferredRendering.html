@@ -323,12 +323,11 @@ $(document).ready(function() {
   ////////// Car geometry
   var carSlicedTransform = scene.constructNode("Transform", { name:"CarsTransform" } );
   carSlicedTransform.setGlobalXfo(carInstanceTransforms);
-  
-  
-  var resourceLoadNode = scene.importAssetFile('Models/carmod2.obj', { loadMultipleGeometries: false });
+    
+  var resourceLoadNode = scene.importAssetFile('Models/carmod2.obj');
   resourceLoadNode.addEventListener('objparsesuccess', function(evt){
     scene.constructNode('Instance', {
-      geometryNode: evt.loadedGeometry,//Note: already scaled according to carLength, carHeight, carWidth
+      geometryNode: evt.loadedGeometries[""],//Note: already scaled according to carLength, carHeight, carWidth
       materialNode: deferredRenderer.addPrePassPhongInstancingMaterial({
         diffuseColor: FABRIC.RT.rgb(0.8, 0.4, 0.4),
         transformTextureNode: carSlicedTransform.getTransformTexture(true),
