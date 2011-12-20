@@ -20,6 +20,28 @@ namespace Fabric
 {
   namespace DG
   {
+    
+    void EventHandlerTask::execute( void *userdata ) const
+    {
+      size_t numBindings = m_evaluateParallelCallsPerOperator.size();
+      for ( size_t i=0; i<numBindings; ++i )
+      {
+        RC::Handle<MT::ParallelCall> opParallelCall = m_evaluateParallelCallsPerOperator[i];
+        opParallelCall->executeSerial();
+      }
+      
+      SelectedNodeList *selectedNodes = (SelectedNodeList*)userdata;
+      if(m_selectParallelCall && selectedNodes )
+      {
+        m_selectParallelCall->executeSerial();
+        if ( m_shouldSelect ){
+          selectedNodes->push_back( m_selectedNode );
+        }
+      }
+    }
+    
+    
+    
     RC::Handle<EventHandler> EventHandler::Create( std::string const &name, RC::Handle<Context> const &context )
     {
       RC::Handle<EventHandler> eventHandler = new EventHandler( name, context );
@@ -269,51 +291,70 @@ namespace Fabric
     
     void EventHandler::fire( Scope const *parentScope, RC::ConstHandle<RT::Desc> const &selectorType, SelectedNodeList *selectedNodes )
     {
+    }
+    
+    void EventHandler::collectEventTasksImpl( EventTaskGroup &taskGroup, RC::ConstHandle<RT::Desc> const &selectorType, Scope const *parentScope )
+    {
       BindingsScope bindingsScope( m_bindings, parentScope );
       SelfScope selfScope( this, &bindingsScope );
       NamedScope bindingNameScope( m_bindingName, this, &bindingsScope );
       Scope *childScope = m_bindingName.length()>0? (Scope *)&bindingNameScope: (Scope *)&bindingsScope;
       
       size_t numPreDescendBindings = m_preDescendBindings->size();
-      for ( size_t i=0; i<numPreDescendBindings; ++i )
-      {
-        RC::Handle<Binding> binding = m_preDescendBindings->get(i);
-        std::vector<std::string> errors;
-        RC::Handle<MT::ParallelCall> parallelCall = binding->bind( errors, selfScope, 0 );
-        parallelCall->executeSerial();
+      if(numPreDescendBindings > 0){
+        EventHandlerTask* task = new EventHandlerTask( this, &EventHandler::evaluateLocal );
+        
+        task->m_evaluateParallelCallsPerOperator.resize(numPreDescendBindings);
+        
+        for ( size_t i=0; i<numPreDescendBindings; ++i )
+        {
+          RC::Handle<Binding> binding = m_preDescendBindings->get(i);
+          std::vector<std::string> errors;
+          task->m_evaluateParallelCallsPerOperator[ i ] = binding->bind( errors, selfScope, 0 );
+        }
+        taskGroup.add(task);
       }
       
       for ( size_t i=0; i<m_childEventHandlers.size(); ++i )
       {
         RC::Handle<EventHandler> const &childEventHandler = m_childEventHandlers[i];
-        childEventHandler->fire( childScope, selectorType, selectedNodes );
-      }
-    
-      size_t numPostDescendBindings = m_postDescendBindings->size();
-      for ( size_t i=0; i<numPostDescendBindings; ++i )
-      {
-        RC::Handle<Binding> binding = m_postDescendBindings->get(i);
-        std::vector<std::string> errors;
-        RC::Handle<MT::ParallelCall> parallelCall = binding->bind( errors, selfScope, 0 );
-        parallelCall->executeSerial();
+        childEventHandler->collectEventTasksImpl( taskGroup, selectorType, childScope );
       }
       
-      if ( m_selectBinding && selectorType && selectedNodes )
+      size_t numPostDescendBindings = m_postDescendBindings->size();
+      if(numPostDescendBindings > 0){
+        EventHandlerTask* task = new EventHandlerTask( this, &EventHandler::evaluateLocal );
+        task->m_evaluateParallelCallsPerOperator.resize(numPostDescendBindings);
+        
+        for ( size_t i=0; i<numPostDescendBindings; ++i )
+        {
+          RC::Handle<Binding> binding = m_postDescendBindings->get(i);
+          std::vector<std::string> errors;
+          task->m_evaluateParallelCallsPerOperator[ i ] = binding->bind( errors, selfScope, 0 );
+        }
+        taskGroup.add(task);
+      }
+      
+      if ( m_selectBinding && selectorType )
       {
         Bindings::const_iterator it = m_bindings.find( m_selectNodeBindingName );
         FABRIC_ASSERT( it != m_bindings.end() );
         RC::Handle<Node> const &node = it->second;
-        bool shouldSelect = false;
-        SelectedNode selectedNode( node, selectorType );
-        void *prefixes[2] = { &shouldSelect, &selectedNode.data[0] };
+        
+        EventHandlerTask* task = new EventHandlerTask( this, &EventHandler::evaluateLocal, node, selectorType );
+        void *prefixes[2] = { &task->m_shouldSelect, &task->m_selectedNode.data[0] };
         std::vector<std::string> errors;
-        RC::Handle<MT::ParallelCall> parallelCall = m_selectBinding->bind( errors, bindingsScope, 0, 2, prefixes );
-        parallelCall->executeSerial();
-        if ( shouldSelect )
-          selectedNodes->push_back( selectedNode );
+        task->m_selectParallelCall = m_selectBinding->bind( errors, bindingsScope, 0, 2, prefixes );
+        taskGroup.add(task);
       }
     }
-      
+    
+    void EventHandler::evaluateLocal( void *userdata )
+    {
+
+    }
+    
+    
     void EventHandler::collectErrorsForScope( Scope const *parentScope )
     {
       BindingsScope bindingsScope( m_bindings, parentScope );
@@ -374,6 +415,7 @@ namespace Fabric
         childEventHandler->collectTasks( generation, taskGroupStream );
       }
     }
+      
     
     void EventHandler::propagateMarkForRecompileImpl( unsigned generation )
     {
