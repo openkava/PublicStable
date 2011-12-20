@@ -1,0 +1,57 @@
+struct SecureElement {
+  Integer index;
+  String name;
+  String type;
+  Integer slicecount;
+  Integer sliceindex;
+  Integer datacount;
+  Integer version;
+};
+
+struct SecureContainer {
+  Data localData;
+};
+
+function FabricSECUREContainerEncode( io SecureContainer container, io Byte data[], Integer level, String key );
+function FabricSECUREContainerDecode( io SecureContainer container, in Data data, in Size size, String key );
+function FabricSECUREContainerGetNbElements( io SecureContainer container, io Size count );
+function FabricSECUREContainerGetElement( io SecureContainer container, io Integer index, io SecureElement element );
+function FabricSECUREContainerGetElementData( io SecureContainer container, io Integer index, in Data data, in Size size );
+function FabricSECUREContainerAddElement( io SecureContainer container, io SecureElement element, in Data data, in Size size );
+function FabricSECUREContainerFree( io SecureContainer container );
+
+function ~SecureContainer() = "FabricSECUREContainerFree";
+
+function SecureContainer.clear(){
+  FabricSECUREContainerFree(this);
+}
+
+function SecureContainer.saveResource(io FabricResource resource, Integer level, String key){
+  if(!this.localData)
+    return;
+  FabricSECUREContainerEncode(this,resource.data, level, key);
+}
+
+function SecureContainer.loadResource(io FabricResource resource, String key){
+  if(this.localData)
+    return;
+  if(resource.data.dataSize() == 0)
+    return;
+  FabricSECUREContainerDecode(this,resource.data.data(), resource.data.dataSize(), key);
+}
+
+function SecureContainer.getNbElements( io Size count ){
+  FabricSECUREContainerGetNbElements(this,count);
+}
+
+function SecureContainer.getElement( io Integer index, io SecureElement element ){
+  FabricSECUREContainerGetElement(this, index, element);
+}
+
+function SecureContainer.getElementData( io Integer index, in Data data, in Size size){
+  FabricSECUREContainerGetElementData(this, index, data, size);
+}
+
+function SecureContainer.addElement( io SecureElement element, in Data data, in Size size ){
+  FabricSECUREContainerAddElement(this, element, data, size);
+}
