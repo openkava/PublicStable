@@ -39,7 +39,6 @@ namespace Fabric
       FABRIC_KLC_ARRAY_IO_OPERATOR_CALL_DECL_ITN_STN( inputTypeName, SInt64 ); \
       FABRIC_KLC_ARRAY_IO_OPERATOR_CALL_DECL_ITN_STN( inputTypeName, Float32 ); \
       FABRIC_KLC_ARRAY_IO_OPERATOR_CALL_DECL_ITN_STN( inputTypeName, Float64 ); \
-      FABRIC_KLC_ARRAY_IO_OPERATOR_CALL_DECL_ITN_STN( inputTypeName, String ); \
       FABRIC_KLC_ARRAY_IO_OPERATOR_CALL_DECL_ITN_STN( inputTypeName, Default ); \
       
 #define FABRIC_KLC_ARRAY_IO_OPERATOR_CALL_DECL() \
@@ -54,7 +53,6 @@ namespace Fabric
       FABRIC_KLC_ARRAY_IO_OPERATOR_CALL_DECL_ITN( SInt64 ); \
       FABRIC_KLC_ARRAY_IO_OPERATOR_CALL_DECL_ITN( Float32 ); \
       FABRIC_KLC_ARRAY_IO_OPERATOR_CALL_DECL_ITN( Float64 ); \
-      FABRIC_KLC_ARRAY_IO_OPERATOR_CALL_DECL_ITN( String ); \
       FABRIC_KLC_ARRAY_IO_OPERATOR_CALL_DECL_ITN( Default ); \
 
     class ArrayIOOperator : public Operator

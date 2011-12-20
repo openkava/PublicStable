@@ -87,8 +87,6 @@ namespace Fabric
               else \
                 FABRIC_KLC_ARRAY_IO_OPERATOR_PICK_ITN_STN( inputTypeName, Float32 ); \
             } \
-            else if ( RT::isString( m_inputAdapter->getType() ) ) \
-              FABRIC_KLC_ARRAY_IO_OPERATOR_PICK_ITN_STN( inputTypeName, String ); \
             else FABRIC_KLC_ARRAY_IO_OPERATOR_PICK_ITN_STN( inputTypeName, Default ); \
           } \
           else FABRIC_KLC_ARRAY_IO_OPERATOR_PICK_ITN( inputTypeName ); \
@@ -141,8 +139,6 @@ namespace Fabric
             else \
               FABRIC_KLC_ARRAY_IO_OPERATOR_PICK_ITN_SD( Float32, sharedDesc ); \
           } \
-          else if ( RT::isString( m_inputAdapter->getType() ) ) \
-            FABRIC_KLC_ARRAY_IO_OPERATOR_PICK_ITN_SD( String, sharedDesc ); \
           else FABRIC_KLC_ARRAY_IO_OPERATOR_PICK_ITN_SD( Default, sharedDesc ); \
         } while ( false )
 
@@ -278,7 +274,6 @@ namespace Fabric
     FABRIC_KLC_ARRAY_IO_OPERATOR_CALL_IMPL_IT_ST( inputTypeName, inputTypeCType, SInt64, int64_t ) \
     FABRIC_KLC_ARRAY_IO_OPERATOR_CALL_IMPL_IT_ST( inputTypeName, inputTypeCType, Float32, float ) \
     FABRIC_KLC_ARRAY_IO_OPERATOR_CALL_IMPL_IT_ST( inputTypeName, inputTypeCType, Float64, double ) \
-    FABRIC_KLC_ARRAY_IO_OPERATOR_CALL_IMPL_IT_ST( inputTypeName, inputTypeCType, String, void * ) \
     FABRIC_KLC_ARRAY_IO_OPERATOR_CALL_IMPL_IT_DEFAULT( inputTypeName, inputTypeCType ) \
     
 #define FABRIC_KLC_ARRAY_IO_OPERATOR_CALL_IMPL_DEFAULT_ST( sharedTypeName, sharedTypeCType ) \
@@ -317,7 +312,6 @@ namespace Fabric
     FABRIC_KLC_ARRAY_IO_OPERATOR_CALL_IMPL_DEFAULT_ST( SInt64, int64_t ) \
     FABRIC_KLC_ARRAY_IO_OPERATOR_CALL_IMPL_DEFAULT_ST( Float32, float ) \
     FABRIC_KLC_ARRAY_IO_OPERATOR_CALL_IMPL_DEFAULT_ST( Float64, double ) \
-    FABRIC_KLC_ARRAY_IO_OPERATOR_CALL_IMPL_DEFAULT_ST( String, void * ) \
     FABRIC_KLC_ARRAY_IO_OPERATOR_CALL_IMPL_DEFAULT_DEFAULT() \
 
 #define FABRIC_KLC_ARRAY_IO_OPERATOR_CALL_IMPL() \
@@ -332,7 +326,6 @@ namespace Fabric
     FABRIC_KLC_ARRAY_IO_OPERATOR_CALL_IMPL_IT( SInt64, int64_t ) \
     FABRIC_KLC_ARRAY_IO_OPERATOR_CALL_IMPL_IT( Float32, float ) \
     FABRIC_KLC_ARRAY_IO_OPERATOR_CALL_IMPL_IT( Float64, double ) \
-    FABRIC_KLC_ARRAY_IO_OPERATOR_CALL_IMPL_IT( String, void * ) \
     FABRIC_KLC_ARRAY_IO_OPERATOR_CALL_IMPL_DEFAULT() \
     
     FABRIC_KLC_ARRAY_IO_OPERATOR_CALL_IMPL()
