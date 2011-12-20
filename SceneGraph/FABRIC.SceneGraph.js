@@ -1050,6 +1050,7 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
           viewPortRaycastEventHandler = viewportNode.constructEventHandlerNode('Raycast');
           viewPortRaycastEventHandler.setScope('raycastData', viewPortRayCastDgNode);
           viewPortRaycastEvent = viewportNode.constructEventNode('RaycastEvent');
+          viewPortRaycastEvent.setSelectType('RayIntersection');
 
           // Raycast events are fired from the viewport. As the event
           // propagates down the tree it collects scopes and fires operators.
@@ -1206,7 +1207,7 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
         var elementCoords = getElementCoords(evt);
         viewPortRayCastDgNode.setData('x', elementCoords.x);
         viewPortRayCastDgNode.setData('y', elementCoords.y);
-        var nodes = viewPortRaycastEvent.select('RayIntersection');
+        var nodes = viewPortRaycastEvent.select();
         result.rayData = viewPortRayCastDgNode.getData('ray');
 
         if (options.returnOnlyClosestNode) {

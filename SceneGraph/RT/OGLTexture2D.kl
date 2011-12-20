@@ -2,7 +2,7 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
-use FabricOGL, FabricPNG, FabricTGA, FabricHDR;
+use FabricOGL, FabricPNG, FabricTGA, FabricHDR, FabricCIMG;
 use Vec2, Vec3, OGLShaderProgram;
 
 function OGLTexture2D.configure(
@@ -204,7 +204,17 @@ function Boolean decodeLDRImageData(
   if(resource.data.size() == 0)
     return false;
   String ext = resource.extension ? resource.extension : resource.mimeType;
+  
   switch (ext) {
+    case 'jpg':
+    case 'jpeg':
+    case 'image/jpg':
+    case 'tif':
+    case 'tiff':
+    case 'image/tif':
+      FabricCIMGDecode(resource.data.data(), resource.data.dataSize(), imageWidth, imageHeight, imageLDR);
+      resource.data.resize(0);
+      break;
     case 'png':
     case 'image/png':
       FabricPNGDecode(resource.data.data(), resource.data.dataSize(), imageWidth, imageHeight, imageLDR);
@@ -259,7 +269,7 @@ function drawScreenQuad(
   name = 'a_texCoord';
   var Integer texLocation = glGetAttribLocation(program, name);
 
-  glPushAttrib(GL_TEXTURE_BIT | GL_ENABLE_BIT | GL_DEPTH_BUFFER_BIT);
+  glPushAttrib(GL_TEXTURE_BIT | GL_ENABLE_BIT | GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
   glPushClientAttrib(GL_CLIENT_VERTEX_ARRAY_BIT);
 
   glEnable(GL_TEXTURE_2D);
