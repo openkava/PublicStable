@@ -231,6 +231,7 @@ FABRIC.SceneGraph.registerNodeType('PaintManipulator', {
     // propagates down the tree it collects scopes and fires operators.
     // The operators us the collected scopes to calculate the ray.
     paintEvent = paintManipulatorNode.constructEventNode('Event');
+    paintEvent.setSelectType('CollectedPoints');
     paintEvent.appendEventHandler(paintEventHandler);
     
     var brushMaterial = scene.constructNode('FlatScreenSpaceMaterial', { color: FABRIC.RT.rgb(0.8, 0, 0) });
@@ -250,7 +251,7 @@ FABRIC.SceneGraph.registerNodeType('PaintManipulator', {
       paintEventHandler.setData('cameraMatrix', cameraMatrix);
       paintEventHandler.setData('projectionMatrix', projectionMatrix);
       paintEventHandler.setData('aspectRatio', aspectRatio);
-      return paintEvent.select('CollectedPoints');
+      return paintEvent.select();
     };
     
     paintManipulatorNode.pub.setBrushSize = function(val){
