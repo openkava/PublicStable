@@ -68,7 +68,7 @@ FABRIC.SceneGraph.registerNodeType('Image', {
     if (options.createResourceLoadNode) {
       resourceLoadNode = scene.constructNode('ResourceLoad', options);
       resourceloaddgnode = resourceLoadNode.getDGLoadNode();
-      if(options.createDgNode){
+      if(options.createDgNode && options.url){
         dgnode.setDependency(resourceloaddgnode, 'resource');
         dgnode.bindings.append(scene.constructOperator({
           operatorName: (options.wantHDR ? 'loadImageHDR' : 'loadImageLDR'),
