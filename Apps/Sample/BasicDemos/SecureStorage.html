@@ -102,6 +102,10 @@ $(document).ready(function() {
     backgroundColor: FABRIC.RT.rgb(0.0, 0.05, 0.15)
   });
 
+  viewport.setBackgroundTextureImage(scene.constructNode('Image', {
+    url: 'Resources/fabric-demo-gradient.png'
+  }));
+
   // Create a camera to draw the scene from
   var camera = scene.constructNode('TargetCamera', {
       nearDistance: 1,
@@ -122,7 +126,7 @@ $(document).ready(function() {
     // once the archive is loaded, construct a Triangles node from it
     var fezNode = secureLoadNode.constructNode('Triangles', {uvSets: 1});
     var material = scene.constructNode('PhongMaterial', {
-      diffuseColor: FABRIC.RT.rgb(Math.random(), Math.random(), Math.random(), 1),
+      diffuseColor: FABRIC.RT.rgb(255/255,6/255,6/255),
       lightNode: light
     });
     var instance = scene.constructNode('Instance', {
@@ -146,7 +150,7 @@ $(document).ready(function() {
     var secureSaveNode = scene.constructNode('SecureStorageNode', {dependentNode: viewport, secureKey: 'secureKey'});
     for(var name in evt.loadedGeometries){
       var material = scene.constructNode('PhongMaterial', {
-        diffuseColor: FABRIC.RT.rgb(Math.random(), Math.random(), Math.random(), 1),
+        diffuseColor: FABRIC.RT.rgb(255/255,183/255,48/255),
         lightNode: light
       });
       var instance = scene.constructNode('Instance', {
@@ -240,7 +244,7 @@ $(document).ready(function() {
           <div class="box">
             <h2>CONTROLS</h2>
             <div class="content">
-              <button id="saveResource" style="margin-top:10px;">Save Securve Resource</button>
+              <button id="saveResource" style="margin-top:10px;">Save Secure Resource</button>
             </div><!--content-->
           </div><!--box-->
             
