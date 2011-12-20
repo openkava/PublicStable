@@ -4688,10 +4688,13 @@ namespace cimg_library_suffixed {
     // Convert filename as a Windows-style filename (short path name).
     inline void winformat_string(char *const str) {
       if (str && *str) {
+      /* PT 20-12-2011 : commented out this code to make CIMG compile under windows 7.
+         We will not be using any of the file system functionality of this library anyway.
 #if cimg_OS==2
         char *const ns = new char[MAX_PATH];
         if (GetShortPathNameA(s,ns,MAX_PATH)) std::strcpy(str,ns);
 #endif
+     */
       }
     }
 
@@ -4801,6 +4804,8 @@ namespace cimg_library_suffixed {
 #if cimg_OS==2
     inline const char* programfiles_path(const char *const user_path=0, const bool reinit_path=false) {
       static char *st_path = 0;
+      /* PT 20-12-2011 : commented out this code to make CIMG compile under windows 7.
+         We will not be using any of the file system functionality of this library anyway.
       if (reinit_path) { delete[] st_path; st_path = 0; }
       if (user_path) {
         if (!st_path) st_path = new char[1024];
@@ -4820,6 +4825,7 @@ namespace cimg_library_suffixed {
         std::strcpy(st_path,"C:\\PROGRA~1");
 #endif
       }
+      */
       return st_path;
     }
 #endif
