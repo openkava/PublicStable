@@ -1,0 +1,14 @@
+#
+# Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+#
+
+Import( 'extsEnv', 'storageFlags', 'ExtSLName' )
+
+storagePluginEnv = extsEnv.Clone()
+storagePluginEnv.MergeFlags( storageFlags )
+storagePlugin = storagePluginEnv.SharedLibrary( ExtSLName('FabricSTORAGE'), Glob('*.cpp') ),
+storageManifest = storagePluginEnv.File('FabricSTORAGE.fpm.json'),
+storageKL = storagePluginEnv.File('FabricSTORAGE.kl'),
+storageFiles = [storageManifest, storagePlugin, storageKL]
+
+Return( 'storageFiles' )
