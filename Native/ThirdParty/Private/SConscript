@@ -176,6 +176,15 @@ alembicFlags = {
 }
 Export( 'alembicFlags' )
 
+# storage
+storageFlags = {
+    'CPPPATH': [
+      os.path.join( includeBaseDir, 'boost' )
+    ],
+    'LIBS': []
+}
+Export( 'storageFlags' )
+
 # secure serializers
 secureFlags = {
     'CPPPATH': [],

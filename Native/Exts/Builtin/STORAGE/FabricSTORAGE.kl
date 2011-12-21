@@ -1,0 +1,96 @@
+struct FileHandle {
+  Data localData;
+};
+
+function FabricSTORAGE_Handle_Free( io FileHandle handle );
+function FabricSTORAGE_Handle_Init( io FileHandle handle, io String path );
+function Boolean FabricSTORAGE_Handle_Valid( in FileHandle handle );
+function Boolean FabricSTORAGE_Handle_Exists( in FileHandle handle );
+function Boolean FabricSTORAGE_Handle_IsFolder( in FileHandle handle );
+function Size FabricSTORAGE_Handle_Size( in FileHandle handle );
+function String FabricSTORAGE_Handle_Absolute( in FileHandle handle );
+function String FabricSTORAGE_Handle_FileName( in FileHandle handle );
+function String FabricSTORAGE_Handle_FileBaseName( in FileHandle handle );
+function String FabricSTORAGE_Handle_FileExtension( in FileHandle handle );
+function String FabricSTORAGE_Handle_FileExtensionLower( in FileHandle handle );
+function FabricSTORAGE_Handle_Push( io FileHandle handle, io String segment );
+function FabricSTORAGE_Handle_Pop( io FileHandle handle );
+function FabricSTORAGE_Handle_LoadBinary( io FileHandle handle, io Byte data[] );
+function FabricSTORAGE_Handle_SaveBinary( io FileHandle handle, io Byte data[] );
+function FabricSTORAGE_Handle_LoadAscii( io FileHandle handle, io String data );
+function FabricSTORAGE_Handle_SaveAscii( io FileHandle handle, io String data );
+function FabricSTORAGE_Handle_GetSubHandles( io FileHandle handle, io FileHandle subhandles[] );
+
+function ~FileHandle() = "FabricSTORAGE_Handle_Free";
+
+function FileHandle.init(io String path) {
+  FabricSTORAGE_Handle_Init(this,path);
+}
+
+function Boolean FileHandle.valid() {
+  return FabricSTORAGE_Handle_Valid(this);
+}
+
+function Boolean FileHandle.exists() {
+  return FabricSTORAGE_Handle_Exists(this);
+}
+
+function Boolean FileHandle.isFolder() {
+  return FabricSTORAGE_Handle_IsFolder(this);
+}
+
+function Size FileHandle.size() {
+  return FabricSTORAGE_Handle_Size(this);
+}
+
+function Boolean FileHandle.valid() {
+  return FabricSTORAGE_Handle_Valid(this);
+}
+
+function String FileHandle.filePath() {
+  return FabricSTORAGE_Handle_Absolute(this);
+}
+
+function String FileHandle.fileName() {
+  return FabricSTORAGE_Handle_FileName(this);
+}
+
+function String FileHandle.baseName() {
+  return FabricSTORAGE_Handle_FileBaseName(this);
+}
+
+function String FileHandle.extension() {
+  return FabricSTORAGE_Handle_FileExtension(this);
+}
+
+function String FileHandle.extensionLower() {
+  return FabricSTORAGE_Handle_FileExtensionLower(this);
+}
+
+function FileHandle.push(io String segment) {
+  FabricSTORAGE_Handle_Push(this,segment);
+}
+
+function FileHandle.pop() {
+  FabricSTORAGE_Handle_Pop(this);
+}
+
+function FileHandle.loadResource(io FabricResource resource) {
+  FabricSTORAGE_Handle_LoadBinary(this,resource.data);
+}
+
+function FileHandle.saveResource(io FabricResource resource) {
+  FabricSTORAGE_Handle_SaveBinary(this,resource.data);
+}
+
+function FileHandle.loadAscii(io String data) {
+  FabricSTORAGE_Handle_LoadAscii(this,data);
+}
+
+function FileHandle.saveAscii(io String data) {
+  FabricSTORAGE_Handle_SaveAscii(this,data);
+}
+
+function FileHandle.subHandles(io FileHandle subhandles[] ) {
+  FabricSTORAGE_Handle_GetSubHandles( this, subhandles );
+}
