@@ -2,6 +2,76 @@
 //
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
+FABRIC.SceneGraph.registerNodeType('LocalStorageNode', {
+  briefDesc: 'The LocalStorageNode node is a ResourceLoad node able to load or save local files.',
+  detailedDesc: 'The LocalStorageNode node is a ResourceLoad node able to load or save local files. It utilizes the optional FabricSTORAGE extension, '+
+                'which is only available on local installations of Fabric Engine, not on www based ones.',
+  parentNodeDesc: 'ResourceLoad',
+  optionsDesc: {
+  },
+  factoryFn: function(options, scene) {
+    scene.assignDefaults(options, {
+      dependentNode: undefined,
+      path: undefined
+    });
+    // force the url off...
+    options.localPath = true;
+
+    var resourceLoadNode = scene.constructNode('ResourceLoad', options),
+      resourceloaddgnode = resourceLoadNode.getDGLoadNode();
+      
+    // create a global utility storage node
+    // this should be done with extension function inside javascript
+    // once fabric supports that.
+    if(!scene.localStorage) {
+      scene.localStorage = {};
+      scene.localStorage.utilitydgnode = resourceLoadNode.constructDGNode('DGUtilityNode');
+        
+      // create the utility operators
+      scene.localStorage.utilitydgnode.addMember('parentpath','String');
+      scene.localStorage.utilitydgnode.addMember('childrenpaths','String[]');
+      scene.localStorage.utilitydgnode.addMember('asciipath','String');
+      scene.localStorage.utilitydgnode.addMember('asciidata','String');
+      scene.localStorage.utilitydgnode.bindings.append(scene.constructOperator({
+        operatorName: 'getStorageSubHandles',
+        parameterLayout: [
+          'self.parentpath',
+          'self.childrenpaths'
+        ],
+        entryFunctionName: 'getStorageSubHandles',
+        srcFile: 'FABRIC_ROOT/SceneGraph/KL/localStorage.kl',
+        async: false,
+        mainThreadOnly: true
+      }));
+      scene.localStorage.utilitydgnode.bindings.append(scene.constructOperator({
+        operatorName: 'getStorageAsciiContent',
+        parameterLayout: [
+          'self.asciipath',
+          'self.asciidata'
+        ],
+        entryFunctionName: 'getStorageAsciiContent',
+        srcFile: 'FABRIC_ROOT/SceneGraph/KL/localStorage.kl',
+        async: false,
+        mainThreadOnly: true
+      }));
+    }
+    
+    // public interface
+    resourceLoadNode.pub.getFilesInFolder = function(folder) {
+      scene.localStorage.utilitydgnode.setData('parentpath',0,folder);
+      scene.localStorage.utilitydgnode.evaluate();
+      return scene.localStorage.utilitydgnode.getData('childrenpaths',0);
+    };
+    resourceLoadNode.pub.getFileTextContent = function(file) {
+      scene.localStorage.utilitydgnode.setData('asciipath',0,file);
+      scene.localStorage.utilitydgnode.evaluate();
+      return scene.localStorage.utilitydgnode.getData('asciidata',0);
+    };
+
+    return resourceLoadNode;
+  }
+});
+
 FABRIC.SceneGraph.registerParser('fez', function(scene, assetUrl, options) {
   options.url = assetUrl;
   return scene.constructNode('SecureStorageNode', options);

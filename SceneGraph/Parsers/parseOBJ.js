@@ -48,21 +48,27 @@ FABRIC.SceneGraph.registerNodeType('LoadObj', {
           'self.objectNames',
           'self.groupNames',
           'self.materialNames'
-        ]
+        ],
+        async: !resourceLoadNode.pub.isLoaded()
       }));
-    
+
+    resourceLoadNode.pub.fireLoadSuccessEvent = function() {
+      resourceLoadNode.pub.fireEvent('objloadsuccess', {
+        objectNames: resourceloaddgnode.getData('objectNames'),
+        groupNames: resourceloaddgnode.getData('groupNames'),
+        materialNames: resourceloaddgnode.getData('materialNames')
+      });
+    };
+
     resourceLoadNode.pub.addOnLoadSuccessCallback(function(){
       try{
         resourceloaddgnode.evaluate();
       }catch(e){
         console.warn(e);
       }
-      resourceLoadNode.pub.fireEvent('objloadsuccess', {
-        objectNames: resourceloaddgnode.getData('objectNames'),
-        groupNames: resourceloaddgnode.getData('groupNames'),
-        materialNames: resourceloaddgnode.getData('materialNames')
-      });
+      resourceLoadNode.pub.fireLoadSuccessEvent();
     });
+    
 
     return resourceLoadNode;
   }
