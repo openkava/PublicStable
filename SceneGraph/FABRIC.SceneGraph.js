@@ -1429,7 +1429,8 @@ FABRIC.SceneGraph.registerNodeType('ResourceLoad', {
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
       blockRedrawingTillResourceIsLoaded:true,
-      redrawOnLoad: true
+      redrawOnLoad: true,
+      localPath: false
     });
 
     var onloadSuccessCallbacks = [];
@@ -1438,14 +1439,22 @@ FABRIC.SceneGraph.registerNodeType('ResourceLoad', {
     lastLoadCallbackURL = '';
 
     var resourceLoadNode = scene.constructNode('SceneGraphNode', options);
-    var dgnode = resourceLoadNode.constructResourceLoadNode('DGLoadNode');
+    var dgnode;
+    if(options.localPath)
+    {
+      dgnode = resourceLoadNode.constructDGNode('DGLoadNode');
+      dgnode.addMember('url','String');
+      dgnode.addMember('resource','FabricResource');
+    }
+    else
+      dgnode = resourceLoadNode.constructResourceLoadNode('DGLoadNode');
 
     resourceLoadNode.addMemberInterface(dgnode, 'url');
     resourceLoadNode.addMemberInterface(dgnode, 'resource');
     
     var remainingTaskWeight = 1.0;
     var incrementLoadProgressBar;
-    if(options.blockRedrawingTillResourceIsLoaded && options.url){
+    if(options.blockRedrawingTillResourceIsLoaded && options.url && !options.localPath){
       incrementLoadProgressBar = FABRIC.addAsyncTask("Loading: "+ options.url, remainingTaskWeight);
     }
 
@@ -1485,11 +1494,15 @@ FABRIC.SceneGraph.registerNodeType('ResourceLoad', {
       onLoadCallbackFunction(onloadFailureCallbacks);
     }
 
-    dgnode.addOnLoadSuccessCallback(onLoadSuccessCallbackFunction);
-    dgnode.addOnLoadProgressCallback(onLoadProgressCallbackFunction);
-    dgnode.addOnLoadFailureCallback(onLoadFailureCallbackFunction);
+    if(!options.localPath) {
+      dgnode.addOnLoadSuccessCallback(onLoadSuccessCallbackFunction);
+      dgnode.addOnLoadProgressCallback(onLoadProgressCallbackFunction);
+      dgnode.addOnLoadFailureCallback(onLoadFailureCallbackFunction);
+    }
 
     resourceLoadNode.pub.isLoaded = function() {
+      if(options.localPath)
+        return true;
       return lastLoadCallbackURL !== '' && lastLoadCallbackURL === resourceLoadNode.pub.getUrl();
     }
 
@@ -1518,10 +1531,26 @@ FABRIC.SceneGraph.registerNodeType('ResourceLoad', {
     };
     
     resourceLoadNode.pub.setUrl = function(url, forceLoad) {
-      if(url !== '' && url !== dgnode.getData('url') && incrementLoadProgressBar === undefined && options.blockRedrawingTillResourceIsLoaded){
-        incrementLoadProgressBar = FABRIC.addAsyncTask("Loading: "+ options.url, remainingTaskWeight);
+      if(options.localPath) {
+        dgnode.setData('url', 0, url);
+        dgnode.bindings.append(scene.constructOperator({
+          operatorName: 'loadStorageResource',
+          parameterLayout: [
+            'self.resource',
+            'self.url'
+          ],
+          entryFunctionName: 'loadStorageResource',
+          srcFile: 'FABRIC_ROOT/SceneGraph/KL/localStorage.kl',
+          async: false
+        }));
+        dgnode.evaluate();
+        return;
+      } else {
+        if(url !== '' && url !== dgnode.getData('url') && incrementLoadProgressBar === undefined && options.blockRedrawingTillResourceIsLoaded){
+          incrementLoadProgressBar = FABRIC.addAsyncTask("Loading: "+ options.url, remainingTaskWeight);
+        }
+        dgnode.setData('url', 0, url);
       }
-      dgnode.setData('url', 0, url);
       if(forceLoad!= false){
         dgnode.evaluate();
       }

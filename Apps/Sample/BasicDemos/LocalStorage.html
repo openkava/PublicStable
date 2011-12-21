@@ -5,7 +5,7 @@
   <!--
     Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
     -->
-    <title>FABRIC - Secure Storage</title> 
+    <title>FABRIC - Local Storage</title> 
         
     <script type="text/javascript" src="../../../ThirdParty/jQuery/jquery-1.6.2.min.js"></script>
     <script type="text/javascript" src="../../../ThirdParty/jQuery/jquery-ui-1.8.16.custom.min.js"></script>
@@ -70,28 +70,6 @@ s.parentNode.insertBefore(ga, s);
 
 <script type="text/javascript">
 
-FABRIC.SceneGraph.registerNodeType('MixedDataNode', {
-  optionsDesc: {
-  },
-  factoryFn: function(options, scene) {
-    
-    var mixedDataNode = scene.constructNode('SceneGraphNode');
-    
-    var dgnodes = {};
-    dgnodes['uniforms'] = mixedDataNode.constructDGNode('UniformsDGNode');
-    dgnodes['attributes'] = mixedDataNode.constructDGNode('AttributesDGNode');
-    dgnodes['attributes'].setCount(12);
-    
-    for(var name in dgnodes) {
-      dgnodes[name].addMember("integers","Integer[]",[10,11,12]);
-      dgnodes[name].addMember("sizes","Size[]",[10,11,12]);
-      dgnodes[name].addMember("string","String","four");
-    }
-    
-    return mixedDataNode;
-  }
-});
-
 $(document).ready(function() {
 
   $('#saveResource').button()
@@ -105,88 +83,44 @@ $(document).ready(function() {
   viewport.setBackgroundTextureImage(scene.constructNode('Image', {
     url: 'Resources/fabric-demo-gradient.png'
   }));
-
-  // Create a camera to draw the scene from
-  var camera = scene.constructNode('TargetCamera', {
+  
+ camera = scene.constructNode('TargetCamera', {
       nearDistance: 1,
       farDistance: 300,
-      target: new FABRIC.RT.Vec3(0,0,0),
-      position: new FABRIC.RT.Vec3(15,5,1).multiplyScalar(1.5)
+      target: new FABRIC.RT.Vec3(-10, -1.2, -0.15),
+      position: new FABRIC.RT.Vec3(-1.8, 4.77, 7.93)
     });
+
   scene.constructNode('CameraManipulator', { targetNode: camera });
+
   viewport.setCameraNode(camera);
-  
-  // create a light
+
   var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) });
-
-  // open a secure archive
-  var secureLoadNode = scene.importAssetFile('Models/cow.fez', {secureKey: 'secureKey'});
-  secureLoadNode.addOnLoadSuccessCallback(function(){
-    
-    // once the archive is loaded, construct a Triangles node from it
-    var fezNode = secureLoadNode.constructNode('Triangles', {uvSets: 1});
-    var material = scene.constructNode('PhongMaterial', {
-      diffuseColor: FABRIC.RT.rgb(255/255,6/255,6/255),
-      lightNode: light
-    });
-    var instance = scene.constructNode('Instance', {
-      geometryNode: fezNode,
-      materialNode: material,
-      transformNode: scene.constructNode('Transform', {
-        hierarchical: false,
-        globalXfo: new FABRIC.RT.Xfo({ tr: new FABRIC.RT.Vec3(0, 0, -5) })
-      }),
-    });
+  var material = scene.constructNode('PhongMaterial', {
+    diffuseColor: FABRIC.RT.rgb(Math.random(), Math.random(), Math.random(), 1),
+    lightNode: light
   });
 
-  var modelName = 'cow';
-  var objResource = scene.importAssetFile('Models/' + modelName + '.obj', {
-   splitMaterials: false
+  var resourceLoadNode = scene.importAssetFile('/development/Fabric/Web/Apps/Sample/BasicDemos/Models/cow.obj', {
+    localPath: true
   });
-  objResource.addEventListener('objparsesuccess', function(evt){
-    
-    // once we have parsed the OBJ file, create a SecureStorageNode
-    // to save the Triangles node.
-    var secureSaveNode = scene.constructNode('SecureStorageNode', {dependentNode: viewport, secureKey: 'secureKey'});
-    for(var name in evt.loadedGeometries){
-      var material = scene.constructNode('PhongMaterial', {
-        diffuseColor: FABRIC.RT.rgb(255/255,183/255,48/255),
-        lightNode: light
-      });
-      var instance = scene.constructNode('Instance', {
+  resourceLoadNode.addEventListener('objparsesuccess', function(evt){
+    for(var name in evt.loadedGeometries) {
+      scene.constructNode('Instance', {
         geometryNode: evt.loadedGeometries[name],
         materialNode: material,
         transformNode: scene.constructNode('Transform', {
           hierarchical: false,
-          globalXfo: new FABRIC.RT.Xfo({ tr: new FABRIC.RT.Vec3(0, 0, 5) })
+          globalXfo: new FABRIC.RT.Xfo({ tr: new FABRIC.RT.Vec3(-10, 0, 0) })
         }),
       });
-      setTimeout(function() {
-        viewport.redraw();
-        
-        // after a small time treshold,
-        // for the first redraw, let's store the triangles node.
-        // we specify the DGNode names to store, since we want to avoid
-        // to store the bbox DGNode.
-        secureSaveNode.storeNode({
-          node: evt.loadedGeometries[name],
-          dgnodeNames: ['UniformsDGNode', 'AttributesDGNode']
-        });
-        
-        // also store the mixed data node,
-        // for testing purposes
-        secureSaveNode.storeNode({
-          node: scene.constructNode('MixedDataNode')
-        });
-        viewport.redraw();
-        $('#saveResource').button()
-          .click(function() {
-            var path = scene.IO.queryUserFileAndFolderHandle(scene.IO.forOpenWithWriteAccess, "Secure ", "fez", "cow");
-            secureSaveNode.putResourceToFile('resource',path);
-          });
-      }, 1000);
     }
   });
+  resourceLoadNode.fireLoadSuccessEvent();
+  
+  var localStorageNode = scene.constructNode('LocalStorageNode');
+  console.log(localStorageNode.getFilesInFolder('/yourfolder'));
+  console.log(localStorageNode.getFileTextContent('/yourfolder/yourtextfile.txt'));
   
   $('#loadingDialog').dialog({
     modal: true
@@ -230,21 +164,16 @@ $(document).ready(function() {
           <div class="box">
             <h2>INFO</h2>
             <div class="content">
-              Secure Storage.<br>
-              This very basic sample shows how to load and save data into the so called SecureStorage node,
-              a ResourceLoadNode which utilizes the FabricSECURE extension. The data is zipped and encrypted
-              using a secure key, and can only be retrieved using the same key. Furthermore the data is using
-              the Fabric memory layout directly, so it is much faster to load fez data than any other format.<br><br>
-              The left cow model used in this demo is using an OBJ parser, size 326773 bytes.<br>
-              The right cow model uses the fez SecureStorage, encrypted size 72776.<br><br>
-              Click the button below to save a copy of the fez file to your disk. The data is encrypted though,
-              so you won't be able to read the file.
+              Local Storage.<br>
+              This very basic sample shows how to load and save local files using the so called LocalStorage node.
+              This node is only available on local deployments of Fabric Engine, not on the ones deployed in the
+              world wide web.
             </div><!--content-->
           </div><!--box-->
           <div class="box">
             <h2>CONTROLS</h2>
             <div class="content">
-              <button id="saveResource" style="margin-top:10px;">Save Secure Resource</button>
+              <button id="loadAsciiFile" style="margin-top:10px;">Load Ascii File</button>
             </div><!--content-->
           </div><!--box-->
             
