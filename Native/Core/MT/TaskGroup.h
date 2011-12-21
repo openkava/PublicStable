@@ -40,7 +40,7 @@ namespace Fabric
       
       std::string desc() const;
     
-    private:
+    protected:
     
       struct Context
       {

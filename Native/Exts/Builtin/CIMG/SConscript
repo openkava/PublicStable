@@ -1,0 +1,13 @@
+#
+# Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+#
+
+Import( 'extsEnv', 'ExtSLName' )
+
+cimgPluginEnv = extsEnv.Clone()
+cimgPlugin = cimgPluginEnv.SharedLibrary( ExtSLName('FabricCIMG'), Glob('*.cpp') ),
+cimgManifest = cimgPluginEnv.File('FabricCIMG.fpm.json'),
+cimgKL = cimgPluginEnv.File('FabricCIMG.kl'),
+cimgFiles = [cimgManifest, cimgPlugin, cimgKL]
+
+Return( 'cimgFiles' )
