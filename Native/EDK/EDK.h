@@ -182,8 +182,8 @@ namespace Fabric
               newBits->refCount.setValue( 1 );
               newBits->allocSize = newAllocSize;
               if ( m_bits )
-                memcpy( newBits->cStr, m_bits->cStr, newBits->length = m_bits->length );
-              else newBits->length = 0;
+                memcpy( newBits->cStr, m_bits->cStr, m_bits->length );
+              newBits->length = capacity;
             }
             else newBits = 0;
           
@@ -205,7 +205,6 @@ namespace Fabric
           reserve( length );
           if ( m_bits )
           {
-            m_bits->length = length;
             memcpy( m_bits->cStr, data, length );
             m_bits->cStr[length] = '\0';
           }
@@ -219,7 +218,6 @@ namespace Fabric
           reserve( newLength );
           if ( m_bits )
           {
-            m_bits->length = newLength;
             m_bits->cStr[newLength] = '\0';
             return &m_bits->cStr[oldLength];
           }
