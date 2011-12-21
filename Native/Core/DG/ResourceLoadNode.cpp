@@ -9,6 +9,7 @@
 #include <Fabric/Core/IO/Manager.h>
 #include <Fabric/Core/RT/StructDesc.h>
 #include <Fabric/Core/RT/StringDesc.h>
+#include <Fabric/Core/RT/BooleanDesc.h>
 #include <Fabric/Core/RT/ImplType.h>
 #include <Fabric/Core/MT/LogCollector.h>
 #include <Fabric/Base/JSON/Value.h>
@@ -37,14 +38,18 @@ namespace Fabric
     ResourceLoadNode::ResourceLoadNode( std::string const &name, RC::Handle<Context> const &context )
       : Node( name, context )
       , m_context( context.ptr() )
-      , m_fabricResourceStreamData( context->getRTManager() )
       , m_streamGeneration( 0 )
+      , m_fabricResourceStreamData( context->getRTManager() )
       , m_nbStreamed( 0 )
+      , m_keepMemoryCache( false )
+      , m_firstEvalAfterLoad( false )
     {
       RC::ConstHandle<RT::StringDesc> stringDesc = context->getRTManager()->getStringDesc();
+      RC::ConstHandle<RT::BooleanDesc> booleanDesc = context->getRTManager()->getBooleanDesc();
 
       addMember( "url", stringDesc, stringDesc->getDefaultData() );
       addMember( "resource", m_fabricResourceStreamData.getDesc(), m_fabricResourceStreamData.getDesc()->getDefaultData() );
+      addMember( "keepMemoryCache", booleanDesc, booleanDesc->getDefaultData() );
     }
 
     void ResourceLoadNode::jsonExecCreate(
@@ -71,43 +76,48 @@ namespace Fabric
       void const *urlMemberData = getConstData( "url", 0 );
       bool sameURL = m_fabricResourceStreamData.isURLEqualTo( urlMemberData );
 
-      if( sameURL )
+      bool isFirstEvalAfterLoad = m_firstEvalAfterLoad;
+      m_firstEvalAfterLoad = false;
+
+      bool loadingFinished = !m_stream;
+      if( sameURL && !loadingFinished )
+        return;
+
+      if( sameURL && isFirstEvalAfterLoad )
+        return;//[JeromeCG 20111221] The data was already set asynchronously, during setResourceData, so the work is already done.
+
+      if( sameURL && m_keepMemoryCache )
       {
-        bool loadingFinished = !m_stream;
-        if( loadingFinished )
-        {
-          //[JeromeCG 20110727] The resource member might have been modified by some operators; set it back if it is the case
-          setResourceData( 0, false );
-        }
+        setResourceData( 0, false );
+        return;
       }
-      else
+
+      // [JeromeCG 20110727] Note: we use a generation because if there was a previous stream created for a previous URL we cannot destroy it; 
+      // we create a new one in parallel instead of waiting its completion.
+      ++m_streamGeneration;
+      m_fabricResourceStreamData.setURL( urlMemberData );
+      m_fabricResourceStreamData.setMIMEType( "" );
+      m_fabricResourceStreamData.resizeData( 0 );
+      m_keepMemoryCache = false;
+
+      setResourceData( 0, false );
+
+      m_keepMemoryCache = getContext()->getRTManager()->getBooleanDesc()->getValue( getConstData( "keepMemoryCache", 0 ) );
+
+      std::string url = m_fabricResourceStreamData.getURL();
+      if( !url.empty() )
       {
-        // [JeromeCG 20110727] Note: we use a generation because if there was a previous stream created for a previous URL we cannot destroy it; 
-        // we create a new one in parallel instead of waiting its completion.
-        ++m_streamGeneration;
-        m_fabricResourceStreamData.setURL( urlMemberData );
-        m_fabricResourceStreamData.resizeData( 0 );
-        m_fabricResourceStreamData.setMIMEType( "" );
+        m_nbStreamed = 0;
+        m_progressNotifTimer.reset();
 
-        std::string url = m_fabricResourceStreamData.getURL();
-        if( url.empty() )
-        {
-          setResourceData( 0, false );
-        }
-        else
-        {
-          m_nbStreamed = 0;
-          m_progressNotifTimer.reset();
-
-          m_stream = getContext()->getIOManager()->createStream(
-            url,
-            &ResourceLoadNode::StreamData,
-            &ResourceLoadNode::StreamEnd,
-            &ResourceLoadNode::StreamFailure,
-            this,
-            (void*)m_streamGeneration
-            );
-        }
+        m_stream = getContext()->getIOManager()->createStream(
+          url,
+          &ResourceLoadNode::StreamData,
+          &ResourceLoadNode::StreamEnd,
+          &ResourceLoadNode::StreamFailure,
+          this,
+          (void*)m_streamGeneration
+          );
       }
     }
 
@@ -160,8 +170,8 @@ namespace Fabric
         return;
 
       m_fabricResourceStreamData.setMIMEType( mimeType );
+      m_stream = NULL;//[JeromeCG 20111221] Important: set stream to NULL (loadingFinished status) since setResourceData's notifications can trigger an evaluation
       setResourceData( 0, true );
-      m_stream = NULL;
     }
 
     void ResourceLoadNode::streamFailure( std::string const &url, std::string const &errorDesc, void *userData )
@@ -170,6 +180,7 @@ namespace Fabric
         return;
 
       m_fabricResourceStreamData.resizeData( 0 );
+      m_stream = NULL;
       setResourceData( &errorDesc, true );
     }
 
@@ -178,6 +189,7 @@ namespace Fabric
       bool notify
       )
     {
+      m_firstEvalAfterLoad = true;
       std::string url = m_fabricResourceStreamData.getURL();
       std::string extension = IO::GetURLExtension( url );
       size_t extensionPos = url.rfind('.');
@@ -196,6 +208,9 @@ namespace Fabric
       {
         void *resourceDataMember = getMutableData( "resource", 0 );
         m_fabricResourceStreamData.getDesc()->setData( m_fabricResourceStreamData.get(), resourceDataMember );
+
+        if( !m_keepMemoryCache )
+          m_fabricResourceStreamData.resizeData( 0 );
 
         if( errorDesc )
         {
