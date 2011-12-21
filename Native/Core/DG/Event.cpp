@@ -26,6 +26,28 @@ namespace Fabric
 
   namespace DG
   {
+    
+    void EventTaskGroup::clear()
+    {
+      for ( size_t i=0; i<m_tasks.size(); ++i )
+      {
+        delete m_tasks[i];
+      }
+      m_tasks.resize(0);
+    }
+    
+    void EventTaskGroup::execute( RC::Handle<MT::LogCollector> const &logCollector, void *userdata ) const
+    {
+      if ( !m_tasks.empty() )
+      {
+        for ( size_t i=0; i<m_tasks.size(); ++i )
+        {
+          m_tasks[i]->execute(userdata);
+        }
+      }
+    }
+    
+    
     RC::Handle<Event> Event::Create( std::string const &name, RC::Handle<Context> const &context )
     {
       RC::Handle<Event> event = new Event( name, context );
@@ -88,16 +110,25 @@ namespace Fabric
     void Event::fire() const
     {
       PrepareForExecution();
-      fire( 0, 0, 0 );
+      fire( 0, 0 );
     }
     
-    void Event::select( RC::ConstHandle<RT::Desc> selectorType, SelectedNodeList &selectedNodes ) const
+    void Event::setSelectType( RC::ConstHandle<RT::Desc> const &selectorType )
     {
-      PrepareForExecution();
-      fire( 0, selectorType, &selectedNodes );
+      m_selectorType = selectorType;
+      markForRecompile();
     }
     
-    void Event::fire( Scope const *parentScope, RC::ConstHandle<RT::Desc> const &selectorType, SelectedNodeList *selectedNodes ) const
+    void Event::select( SelectedNodeList &selectedNodes ) const
+    {
+      if(!m_selectorType){
+        throw Exception( "select type not defined" );
+      }
+      PrepareForExecution();
+      fire( 0, &selectedNodes );
+    }
+    
+    void Event::fire( Scope const *parentScope, SelectedNodeList *selectedNodes ) const
     {
       ensureRunState();
       if ( !m_runState->canExecute )
@@ -105,16 +136,14 @@ namespace Fabric
  
       ExecutionEngine::ContextSetter contextSetter( m_context );
       m_runState->taskGroupStream.execute( m_context->getLogCollector(), 0 );
-      for ( EventHandlers::const_iterator it=m_eventHandlers.begin(); it!=m_eventHandlers.end(); ++it )
-      {
-        RC::Handle<EventHandler> const &eventHandler = *it;
-        eventHandler->fire( parentScope, selectorType, selectedNodes );
-      }
+      m_runState->taskGroup.execute( m_context->getLogCollector(), selectedNodes );
+        
       if ( m_context->getLogCollector() )
         m_context->getLogCollector()->flush();
       
       jsonNotify( "didFire", 7 );
     }
+    
       
     void Event::collectTasksImpl( unsigned generation, MT::TaskGroupStream &taskGroupStream ) const
     {
@@ -122,6 +151,16 @@ namespace Fabric
       {
         RC::Handle<EventHandler> const &eventHandler = *it;
         eventHandler->collectTasks( generation, taskGroupStream );
+      }
+    }
+    
+    
+    void Event::collectEventTasksImpl( EventTaskGroup &taskGroup ) const
+    {
+      for ( EventHandlers::const_iterator it=m_eventHandlers.begin(); it!=m_eventHandlers.end(); ++it )
+      {
+        RC::Handle<EventHandler> const &eventHandler = *it;
+        eventHandler->collectEventTasksImpl( taskGroup, m_selectorType, 0 );
       }
     }
     
@@ -183,8 +222,13 @@ namespace Fabric
           }
         }
 
-        if ( m_runState->canExecute )
+        if ( m_runState->canExecute ){
           collectTasks( m_runState->taskGroupStream );
+          
+          // Now collect the tasks for the entire event tree.
+          m_runState->taskGroup.clear();
+          collectEventTasksImpl( m_runState->taskGroup );
+        }
       }
     }
 
@@ -200,8 +244,10 @@ namespace Fabric
         jsonExecAppendEventHandler( arg, resultJAG );
       else if ( cmd == "fire" )
         jsonExecFire( resultJAG );
+      else if ( cmd == "setSelectType" )
+        jsonExecSetSelectType( arg );
       else if ( cmd == "select" )
-        jsonExecSelect( arg, resultJAG );
+        jsonExecSelect( resultJAG );
       else Container::jsonExec( cmd, arg, resultJAG );
     }
 
@@ -220,12 +266,20 @@ namespace Fabric
       fire();
     }
     
-    void Event::jsonExecSelect( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG )
+    
+    void Event::jsonExecSetSelectType( RC::ConstHandle<JSON::Value> const &arg )
     {
       RC::ConstHandle<RT::Desc> desc = m_context->getRTManager()->getDesc( arg->toString()->value() );
-      
+      if(!desc){
+        throw Exception( "Type not a valid selector type:" + arg->toString() );
+      }
+      setSelectType(desc);
+    }
+    
+    void Event::jsonExecSelect( Util::JSONArrayGenerator &resultJAG )
+    {
       SelectedNodeList selectedNodeList;
-      select( desc, selectedNodeList );
+      select( selectedNodeList );
       
       Util::JSONGenerator resultJG = resultJAG.makeElement();
       Util::JSONArrayGenerator elementsJAG = resultJG.makeArray();
@@ -240,7 +294,7 @@ namespace Fabric
         }
         {
           Util::JSONGenerator dataJG = elementJOG.makeMember( "data", 4 );
-          desc->generateJSON( &selectedNode.data[0], dataJG );
+          m_selectorType->generateJSON( &selectedNode.data[0], dataJG );
         }
       }
     }

@@ -135,18 +135,13 @@ function (fabricClient, logCallback, debugLogCallback) {
           this.patch(arg);
           break;
         default:
-          throw 'unrecognized';
+          throw "command '" + cmd + "': unrecognized";
       }
     };
 
     RT.route = function(src, cmd, arg) {
       if (src.length == 0) {
-        try {
-          handle(cmd, arg);
-        }
-        catch (e) {
-          throw "command '" + cmd + "': " + e;
-        }
+        handle(cmd, arg);
       }
       else if (src.length == 1) {
         var typeName = src[0];
@@ -261,18 +256,13 @@ function (fabricClient, logCallback, debugLogCallback) {
             result.patch(arg);
             break;
           default:
-            throw 'unrecognized';
+            throw "command '" + cmd + "': unrecognized";
         }
       };
 
       result.route = function(src, cmd, arg) {
         if (src.length == 0) {
-          try {
-            result.handle(cmd, arg);
-          }
-          catch (e) {
-            throw "command '" + cmd + "': " + e;
-          }
+          result.handle(cmd, arg);
         }
         else
           throw 'unroutable';
@@ -389,18 +379,13 @@ function (fabricClient, logCallback, debugLogCallback) {
             result.patch(arg);
             break;
           default:
-            throw 'unrecognized';
+            throw "command '" + cmd + "': unrecognized";
         }
       };
 
       result.route = function(src, cmd, arg) {
         if (src.length == 0) {
-          try {
-            result.handle(cmd, arg);
-          }
-          catch (e) {
-            throw "command '" + cmd + "': " + e;
-          }
+          result.handle(cmd, arg);
         }
         else
           throw 'unroutable';
@@ -986,8 +971,17 @@ function (fabricClient, logCallback, debugLogCallback) {
         result.queueCommand('fire');
         executeQueuedCommands();
       };
+                    
+      var typeName;
+      result.pub.setSelectType = function(tn) {
+        var results = [];
+        result.queueCommand('setSelectType', tn);
+        executeQueuedCommands();
+        typeName = tn;
+        return results;
+      };
 
-      result.pub.select = function(typeName) {
+      result.pub.select = function() {
         var results = [];
         result.queueCommand('select', typeName, function() { }, function(commandResults) {
           for (var i = 0; i < commandResults.length; ++i) {
@@ -1209,18 +1203,13 @@ function (fabricClient, logCallback, debugLogCallback) {
           }
           break;
         default:
-          throw 'unrecognized';
+          throw "command '" + cmd + "': unrecognized";
       }
     };
 
     DG.route = function(src, cmd, arg) {
       if (src.length == 0) {
-        try {
-          DG.handle(cmd, arg);
-        }
-        catch (e) {
-          throw "command '" + cmd + "': " + e;
-        }
+        DG.handle(cmd, arg);
       }
       else {
         var namedObjectName = src.shift();
@@ -1312,18 +1301,13 @@ function (fabricClient, logCallback, debugLogCallback) {
           EX.patch(arg);
           break;
         default:
-          throw 'unrecognized';
+          throw "command '" + cmd + "': unrecognized";
       }
     };
 
     EX.route = function(src, cmd, arg) {
       if (src.length == 0) {
-        try {
-          EX.handle(cmd, arg);
-        }
-        catch (e) {
-          throw "command '" + cmd + "': " + e;
-        }
+        EX.handle(cmd, arg);
       }
       else
         throw 'unroutable';
@@ -1443,18 +1427,13 @@ function (fabricClient, logCallback, debugLogCallback) {
           build.patch(arg);
           break;
         default:
-          throw 'unrecognized';
+          throw "command '" + cmd + "': unrecognized";
       }
     };
 
     build.route = function(src, cmd, arg) {
       if (src.length == 0) {
-        try {
-          build.handle(cmd, arg);
-        }
-        catch (e) {
-          throw "command '" + cmd + "': " + e;
-        }
+        build.handle(cmd, arg);
       }
       else
         throw 'unroutable';
@@ -1549,18 +1528,13 @@ function (fabricClient, logCallback, debugLogCallback) {
               viewPort.popUpMenuItems[arg]();
             break;
           default:
-            throw 'unrecognized';
+            throw "command '" + cmd + "': unrecognized";
         }
       };
 
       viewPort.route = function(src, cmd, arg) {
         if (src.length == 0) {
-          try {
-            viewPort.handle(cmd, arg);
-          }
-          catch (e) {
-            throw "command '" + cmd + "': " + e;
-          }
+          viewPort.handle(cmd, arg);
         }
         else
           throw 'unroutable';
@@ -1643,20 +1617,10 @@ function (fabricClient, logCallback, debugLogCallback) {
       if (src.length > 0) {
         var viewPortName = src.shift();
         var viewPort = VP.getOrCreateViewPort(viewPortName);
-        try {
-          viewPort.route(src, cmd, arg);
-        }
-        catch (e) {
-          throw "viewport '" + viewPortName + "': " + e;
-        }
+        viewPort.route(src, cmd, arg);
       }
       else {
-        try {
-          VP.handle(cmd, arg);
-        }
-        catch (e) {
-          throw "command '" + cmd + "': " + e;
-        }
+        VP.handle(cmd, arg);
       }
     };
 
@@ -1699,44 +1663,19 @@ function (fabricClient, logCallback, debugLogCallback) {
 
       switch (firstSrc) {
         case 'RT':
-          try {
-            RT.route(src, cmd, arg);
-          }
-          catch (e) {
-            throw 'RT: ' + e;
-          }
+          RT.route(src, cmd, arg);
           break;
         case 'DG':
-          try {
-            DG.route(src, cmd, arg);
-          }
-          catch (e) {
-            throw 'DG: ' + e;
-          }
+          DG.route(src, cmd, arg);
           break;
         case 'EX':
-          try {
-            EX.route(src, cmd, arg);
-          }
-          catch (e) {
-            throw 'EX: ' + e;
-          }
+          EX.route(src, cmd, arg);
           break;
         case 'IO':
-          try {
-            IO.route(src, cmd, arg);
-          }
-          catch (e) {
-            throw 'IO: ' + e;
-          }
+          IO.route(src, cmd, arg);
           break;
         case 'VP':
-          try {
-            VP.route(src, cmd, arg);
-          }
-          catch (e) {
-            throw 'VP: ' + e;
-          }
+          VP.route(src, cmd, arg);
           break;
         default:
           throw 'unroutable';
@@ -1759,15 +1698,10 @@ function (fabricClient, logCallback, debugLogCallback) {
     var size = notifications.length;
     for (var i = 0; i < size; ++i) {
       var notification = notifications[i];
-      try {
-        var src = notification.src;
-        var cmd = notification.cmd;
-        var arg = notification.arg;
-        route(src, cmd, arg);
-      }
-      catch (e) {
-        throw 'notification ' + i + ': ' + e;
-      }
+      var src = notification.src;
+      var cmd = notification.cmd;
+      var arg = notification.arg;
+      route(src, cmd, arg);
     }
   });
 

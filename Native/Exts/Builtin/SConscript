@@ -8,6 +8,7 @@ Import( 'baseEnv', 'buildOS' )
 dirs = [
   'ALEMBIC',
   'BULLET',
+  'CIMG',
   'EXR',
   'HDR',
   'KINECT',
@@ -17,6 +18,7 @@ dirs = [
   #'OCL',
   'OGL',
   'PNG',
+  'SECURE',
   'TEEM',
   'TGA',
   'VICON',

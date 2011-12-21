@@ -176,6 +176,18 @@ alembicFlags = {
 }
 Export( 'alembicFlags' )
 
+# secure serializers
+secureFlags = {
+    'CPPPATH': [],
+    'LIBS': []
+}
+if buildOS == 'Windows':
+  secureFlags['CPPPATH'].append( os.path.join( includeBaseDir, 'zlib' ) )
+  secureFlags['LIBS'].append( archLibs( 'zlib', ['zlib'] ) )
+else:  
+  secureFlags['LIBS'].append( 'z' )
+Export( 'secureFlags' )
+
 # lidar
 lidarLibs = []
 
