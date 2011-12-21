@@ -45,12 +45,12 @@ namespace Fabric
   {
     static Callbacks s_callbacks;
     
-    void throwException( size_t length, char const *data )
+    inline void throwException( size_t length, char const *data )
     {
       s_callbacks.m_throwException( length, data );
     }
     
-    void throwException( char const *cStrFormat, ... )
+    inline void throwException( char const *cStrFormat, ... )
     {
       char cStr[4096];
       va_list argList;
@@ -65,7 +65,7 @@ namespace Fabric
       else throwException( vsnprintfResult, cStr );
     }
     
-    void throwException( std::string const &string )
+    inline void throwException( std::string const &string )
     {
       throwException( string.length(), string.data() );
     }

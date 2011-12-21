@@ -29,10 +29,10 @@ FABRIC_COPYRIGHT='Copyright 2010-2011 ' + FABRIC_COMPANY_NAME + '  All rights re
 FABRIC_URL="http://fabric-engine.com"
 FABRIC_VERSION_MAJ='1'
 FABRIC_VERSION_MIN='0'
-FABRIC_VERSION_REV='17'
+FABRIC_VERSION_REV='18'
 FABRIC_VERSION_SUFFIX='-beta'
 # To generate expiry 30 days from now: echo $(($(date +%s) + 30*24*60*60))
-FABRIC_EXPIRY='1326124276'
+FABRIC_EXPIRY='1327006123'
 FABRIC_CACHE_GENERATION='13'
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 

@@ -23,6 +23,20 @@ namespace Fabric
     class Operator;
     class EventHandler;
     
+    
+    class EventTaskGroup : public MT::TaskGroup
+    {
+    public:
+      
+      void clear();
+      
+      void execute( RC::Handle<MT::LogCollector> const &logCollector, void *userdata ) const;
+      
+    private:
+      
+      
+    };
+    
     class Event : public Container
     {
       friend class EventHandler;
@@ -39,13 +53,15 @@ namespace Fabric
       EventHandlers const &getEventHandlers() const;
       
       void fire() const;
-      void select( RC::ConstHandle<RT::Desc> selectorType, SelectedNodeList &selectedNodes ) const;
+      void setSelectType( RC::ConstHandle<RT::Desc> const &selectorType );
+      void select( SelectedNodeList &selectedNodes ) const;
       
       virtual void jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
       static void jsonExecCreate( RC::ConstHandle<JSON::Value> const &arg, RC::Handle<Context> const &context, Util::JSONArrayGenerator &resultJAG );
       void jsonExecAppendEventHandler( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
       void jsonExecFire( Util::JSONArrayGenerator &resultJAG );
-      void jsonExecSelect( RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
+      void jsonExecSetSelectType( RC::ConstHandle<JSON::Value> const &arg );
+      void jsonExecSelect( Util::JSONArrayGenerator &resultJAG );
       void jsonDesc( Util::JSONGenerator &resultJG ) const;
       virtual void jsonDesc( Util::JSONObjectGenerator &resultJOG ) const;
       virtual void jsonDescType( Util::JSONGenerator &resultJG ) const;
@@ -64,11 +80,14 @@ namespace Fabric
       virtual void invalidateRunState();
       virtual void refreshRunState();
       virtual void collectTasksImpl( unsigned generation, MT::TaskGroupStream &taskGroupStream ) const;
+      
+      virtual void collectEventTasksImpl( EventTaskGroup &taskGroup ) const;
+      
       virtual bool canExecute() const;
       
       void ensureRunState() const;
       
-      void fire( Scope const *parentScope, RC::ConstHandle<RT::Desc> const &selectorType, SelectedNodeList *selectedNodes ) const;
+      void fire( Scope const *parentScope, SelectedNodeList *selectedNodes ) const;
 
       void collectErrors( Scope *scope );
 
@@ -77,11 +96,13 @@ namespace Fabric
       Context *m_context;
     
       EventHandlers m_eventHandlers;
+      RC::ConstHandle<RT::Desc> m_selectorType;
       
       struct RunState
       {
         bool canExecute;
         MT::TaskGroupStream taskGroupStream;
+        EventTaskGroup taskGroup;
       };
 
       mutable RunState *m_runState;
