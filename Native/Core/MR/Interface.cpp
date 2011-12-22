@@ -9,10 +9,12 @@
 #include <Fabric/Core/MR/Map.h>
 #include <Fabric/Core/MR/Reduce.h>
 #include <Fabric/Core/MR/ValueMap.h>
+#include <Fabric/Core/MR/ValueTransform.h>
 #include <Fabric/Core/KLC/ArrayGeneratorOperator.h>
 #include <Fabric/Core/KLC/MapOperator.h>
 #include <Fabric/Core/KLC/ReduceOperator.h>
 #include <Fabric/Core/KLC/ValueMapOperator.h>
+#include <Fabric/Core/KLC/ValueTransformOperator.h>
 #include <Fabric/Core/GC/Object.h>
 #include <Fabric/Core/RT/Manager.h>
 #include <Fabric/Core/Util/JSONGenerator.h>
@@ -61,6 +63,8 @@ namespace Fabric
         jsonExecCreateMap( arg, resultJAG );
       else if ( cmd == "createValueMap" )
         jsonExecCreateValueMap( arg, resultJAG );
+      else if ( cmd == "createValueTransform" )
+        jsonExecCreateValueTransform( arg, resultJAG );
       else if ( cmd == "createReduce" )
         jsonExecCreateReduce( arg, resultJAG );
       else if ( cmd == "createArrayGenerator" )
@@ -240,6 +244,70 @@ namespace Fabric
       ValueMap::Create(
         inputValueProducer,
         valueMapOperator,
+        sharedValueProducer
+        )->reg( m_gcContainer, id_ );
+    }
+    
+    void Interface::jsonExecCreateValueTransform(
+      RC::ConstHandle<JSON::Value> const &arg,
+      Util::JSONArrayGenerator &resultJAG
+      )
+    {
+      RC::ConstHandle<JSON::Object> argObject = arg->toObject();
+      
+      std::string id_;
+      try
+      {
+        id_ = argObject->get( "id" )->toString()->value();
+      }
+      catch ( Exception e )
+      {
+        throw "id: " + e;
+      }
+      
+      RC::Handle<ValueProducer> inputValueProducer;
+      try
+      {
+        inputValueProducer = GC::DynCast<ValueProducer>( m_gcContainer->getObject( argObject->get( "inputValueProducerID" )->toString()->value() ) );
+        if ( !inputValueProducer )
+          throw "must be a value producer";
+      }
+      catch ( Exception e )
+      {
+        throw "inputValueProducerID: " + e;
+      }
+      
+      RC::Handle<KLC::ValueTransformOperator> operator_;
+      try
+      {
+        operator_ = GC::DynCast<KLC::ValueTransformOperator>( m_gcContainer->getObject( argObject->get( "operatorID" )->toString()->value() ) );
+        if ( !operator_ )
+          throw "must be a value transform operator";
+      }
+      catch ( Exception e )
+      {
+        throw "operatorID: " + e;
+      }
+      
+      RC::Handle<ValueProducer> sharedValueProducer;
+      RC::ConstHandle<JSON::Value> sharedValueProducerIDValue = argObject->maybeGet( "sharedValueProducerID" );
+      if ( sharedValueProducerIDValue )
+      {
+        try
+        {
+          sharedValueProducer = GC::DynCast<ValueProducer>( m_gcContainer->getObject( sharedValueProducerIDValue->toString()->value() ) );
+          if ( !sharedValueProducer )
+            throw "must be a value producer";
+        }
+        catch ( Exception e )
+        {
+          throw "sharedValueProducerID: " + e;
+        }
+      }
+      
+      ValueTransform::Create(
+        inputValueProducer,
+        operator_,
         sharedValueProducer
         )->reg( m_gcContainer, id_ );
     }

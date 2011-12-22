@@ -1620,46 +1620,58 @@ function (fabricClient, logCallback, debugLogCallback) {
         return diagnostics;
       };
       
-      executable.pub.resolveMapOperator = function (mapOperatorName) {
-        var mapOperator = GC.createObject('KLC');
-        populateMapOperator(mapOperator);
+      executable.pub.resolveMapOperator = function (operatorName) {
+        var operator = GC.createObject('KLC');
+        populateMapOperator(operator);
         executable.queueCommand('resolveMapOperator', {
-          id: mapOperator.id,
-          mapOperatorName: mapOperatorName
+          id: operator.id,
+          mapOperatorName: operatorName
         }, function () {
-          delete mapOperator.id;
+          delete operator.id;
         });
-        return mapOperator.pub;
+        return operator.pub;
       };
       
-      executable.pub.resolveReduceOperator = function (reduceOperatorName) {
-        var reduceOperator = GC.createObject('KLC');
-        populateReduceOperator(reduceOperator);
+      executable.pub.resolveReduceOperator = function (operatorName) {
+        var operator = GC.createObject('KLC');
+        populateReduceOperator(operator);
         executable.queueCommand('resolveReduceOperator', {
-          id: reduceOperator.id,
-          reduceOperatorName: reduceOperatorName
+          id: operator.id,
+          reduceOperatorName: operatorName
         }, function () {
-          delete reduceOperator.id;
+          delete operator.id;
         });
-        return reduceOperator.pub;
+        return operator.pub;
       };
       
-      executable.pub.resolveArrayGeneratorOperator = function (arrayGeneratorOperatorName) {
-        var arrayGeneratorOperator = GC.createObject('KLC');
-        populateArrayGeneratorOperator(arrayGeneratorOperator);
+      executable.pub.resolveArrayGeneratorOperator = function (operatorName) {
+        var operator = GC.createObject('KLC');
+        populateArrayGeneratorOperator(operator);
         executable.queueCommand('resolveArrayGeneratorOperator', {
-          id: arrayGeneratorOperator.id,
-          arrayGeneratorOperatorName: arrayGeneratorOperatorName
+          id: operator.id,
+          arrayGeneratorOperatorName: operatorName
         }, function () {
-          delete arrayGeneratorOperator.id;
+          delete operator.id;
         });
-        return arrayGeneratorOperator.pub;
+        return operator.pub;
       };
       
       executable.pub.resolveValueMapOperator = function (operatorName) {
         var operator = GC.createObject('KLC');
         populateValueMapOperator(operator);
         executable.queueCommand('resolveValueMapOperator', {
+          id: operator.id,
+          operatorName: operatorName
+        }, function () {
+          delete operator.id;
+        });
+        return operator.pub;
+      };
+      
+      executable.pub.resolveValueTransformOperator = function (operatorName) {
+        var operator = GC.createObject('KLC');
+        populateValueTransformOperator(operator);
+        executable.queueCommand('resolveValueTransformOperator', {
           id: operator.id,
           operatorName: operatorName
         }, function () {
@@ -1810,6 +1822,25 @@ function (fabricClient, logCallback, debugLogCallback) {
         return operator.pub;
       },
       
+      createValueTransformOperator: function (sourceName, sourceCode, operatorName) {
+        var operator = GC.createObject('KLC');
+          
+        populateValueMapOperator(operator);
+          
+        var arg = {
+          id: operator.id,
+          sourceName: sourceName,
+          sourceCode: sourceCode,
+          operatorName: operatorName
+        };
+        
+        queueCommand(['KLC'],'createValueTransformOperator', arg, function () {
+          delete operator.id;
+        });
+        
+        return operator.pub;
+      },
+      
       createReduceOperator: function (sourceName, sourceCode, reduceOperatorName) {
         var reduceOperator = GC.createObject('KLC');
           
@@ -1871,6 +1902,10 @@ function (fabricClient, logCallback, debugLogCallback) {
     
     var populateValueMap = function (valueMap) {
       populateValueProducer(valueMap);
+    };
+    
+    var populateValueTransform = function (valueTransform) {
+      populateValueProducer(valueTransform);
     };
     
     var populateArrayProducer = function (arrayProducer) {
@@ -1963,6 +1998,25 @@ function (fabricClient, logCallback, debugLogCallback) {
           delete valueMap.id;
         });
         return valueMap.pub;
+      },
+      
+      createValueTransform: function(inputValueProducer, operator, sharedValueProducer) {
+        var result = GC.createObject('MR');
+        
+        populateValueMap(result);
+        
+        var arg = {
+          id: result.id,
+          inputValueProducerID: inputValueProducer.getID(),
+          operatorID: operator.getID()
+        };
+        if (sharedValueProducer)
+          arg.sharedValueProducerID = sharedValueProducer.getID();
+        
+        queueCommand(['MR'], 'createValueTransform', arg, function () {
+          delete result.id;
+        });
+        return result.pub;
       },
       
       createArrayGenerator: function(countValueProducer, arrayGeneratorOperator) {
