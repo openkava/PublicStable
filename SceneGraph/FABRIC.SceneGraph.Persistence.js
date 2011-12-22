@@ -107,22 +107,31 @@ FABRIC.SceneGraph.registerManagerType('SceneSerializer', {
         },
         save: function(writer) {
           this.serialize();
-          //var binaryStorageNode = scene.getPrivateInterface(options.binaryStorageNode);
-          var str = '[';
+          var binaryStorageNode;
+          if(writer.getBinaryStorageNode){
+            binaryStorageNode = scene.getPrivateInterface(writer.getBinaryStorageNode());
+          }
+          var str = '{';
+          str +=  '\n  \"metadata\":{';
+          if(binaryStorageNode){
+            str +=  '\n    \"binaryFilePath\":' + this.wrapQuotes(writer.getBinaryFilePath().fileName);
+          }
+          str +=  '\n  },';
+          str +=  '\n  \"sceneGraphNodes\":[';
           for (var i = 0; i < savedNodes.length; i++) {
             if (i > 0) {
               str += ',';
             }
             var name = savedNodes[i].getName();
             var type = sceneSerializer.getTypeRemapping(savedNodes[i].getType());
-            str +=  '\n  {';
-            str +=  '\n    \"name\":' + this.wrapQuotes(name);
-            str += ',\n    \"type\":' + this.wrapQuotes(type);
-            str += ',\n    \"options\":' + JSON.stringify(savedData[i].options);
-            str += ',\n    \"data\":' + JSON.stringify(savedData[i].data);
+            str +=  '\n    {';
+            str +=  '\n      \"name\":' + this.wrapQuotes(name);
+            str += ',\n      \"type\":' + this.wrapQuotes(type);
+            str += ',\n      \"options\":' + JSON.stringify(savedData[i].options);
+            str += ',\n      \"data\":' + JSON.stringify(savedData[i].data);
             
             if(storedDGNodes[name]){
-              str += ',\n    \"dgnodedata\":{';
+              str += ',\n      \"dgnodedata\":{';
               var nodecnt = 0;
               for(var dgnodename in storedDGNodes[name]){
                 var dgnodeDataDesc = storedDGNodes[name][dgnodename];
@@ -130,26 +139,31 @@ FABRIC.SceneGraph.registerManagerType('SceneSerializer', {
                 if (nodecnt > 0) {
                   str += ',';
                 }
-                str += '\n      \"'+dgnodename+'\":{';
+                str += '\n        \"'+dgnodename+'\":{';
                 if(dgnodeDataDesc.members){
-                  str += '\n        \"members\":' + JSON.stringify(dgnodeDataDesc.members);
+                  str += '\n          \"members\":' + JSON.stringify(dgnodeDataDesc.members);
                 }
-                if(false){
-                  
+                if(binaryStorageNode){
+                  str += ',\n          \"binaryStorage\":' + true;
+                  binaryStorageNode.storeDGNode( dgnode, {
+                    dgnodeName: dgnodename,
+                    members: dgnodeDataDesc.members
+                  });
                 }else{
-                  str += ',\n        \"sliceCount\":' + dgnode.getCount();
-                  str += ',\n        \"memberData\":' + JSON.stringify(dgnode.getBulkData());
+                  str += ',\n          \"sliceCount\":' + dgnode.getCount();
+                  str += ',\n          \"memberData\":' + JSON.stringify(dgnode.getBulkData());
                 }
-                str +=  '\n      }';
+                str +=  '\n        }';
                 nodecnt++;
               }
               
-              str +=  '\n    }';
+              str +=  '\n      }';
               storedDGNodes[name] = {};
             }
-            str +=  '\n  }';
+            str +=  '\n    }';
           }
-          str += '\n]';
+          str += '\n  ]';
+          str += '\n}';
           writer.write(str);
           return true;
         }
@@ -197,6 +211,7 @@ FABRIC.SceneGraph.registerManagerType('SceneDeserializer', {
       }
     };
     var nodeData;
+    var loadNodeBinaryFileNode;
     var sceneDeserializer = {
       getNode: function(nodeName) {
         nodeName = nodeNameRemapping[ nodeName ]
@@ -208,15 +223,25 @@ FABRIC.SceneGraph.registerManagerType('SceneDeserializer', {
       },
       loadDGNodeData: function(dgnode, dgnodename) {
         var data = nodeData.dgnodedata[dgnodename];
-        dgnode.setCount(data.sliceCount);
-        var members = dgnode.getMembers();
-        var memberData = {};
-        for(var memberName in members){
-          if(data.memberData[memberName]){
-            memberData[memberName] = data.memberData[memberName];
-          }
+        if(data.binaryStorage){
+          loadNodeBinaryFileNode.pub.addOnLoadSuccessCallback(function(){
+            // once the archive is loaded, construct a Triangles node from it
+            var nodemap = {};
+            nodemap[dgnodename] = dgnode;
+            loadNodeBinaryFileNode.pub.loadDGNodes(nodemap);
+          });
         }
-        dgnode.setBulkData(memberData);
+        else{
+          dgnode.setCount(data.sliceCount);
+          var members = dgnode.getMembers();
+          var memberData = {};
+          for(var memberName in members){
+            if(data.memberData[memberName]){
+              memberData[memberName] = data.memberData[memberName];
+            }
+          }
+          dgnode.setBulkData(memberData);
+        }
       },
       pub: {
         setPreLoadedNode: function(node, nodeName) {
@@ -228,9 +253,22 @@ FABRIC.SceneGraph.registerManagerType('SceneDeserializer', {
           if(typeof dataObj == 'string'){
             dataObj = JSON.parse(dataObj);
           }
+          if(dataObj.metadata.binaryFilePath){
+            
+            var binaryFilePath = dataObj.metadata.binaryFilePath;
+            if(storage.getUrl){
+              var pathArray = storage.getUrl().split('/');
+              pathArray.pop();
+              binaryFilePath = pathArray.join('/') + '/' + binaryFilePath;
+            }
+            loadNodeBinaryFileNode = scene.constructNode('LoadBinaryDataNode', {
+              url: binaryFilePath,
+              secureKey: 'secureKey'
+            });
+          }
           
-          for (var i = 0; i < dataObj.length; i++) {
-            nodeData = dataObj[i];
+          for (var i = 0; i < dataObj.sceneGraphNodes.length; i++) {
+            nodeData = dataObj.sceneGraphNodes[i];
             var node = preLoadedNodes[nodeData.name];
             if (!node) {
               node = scene.pub.constructNode(nodeData.type, nodeData.options);
@@ -293,6 +331,34 @@ FABRIC.SceneGraph.FileWriter = function(scene, title, suggestedFileName) {
   }
 };
 
+FABRIC.SceneGraph.FileWriterWithBinary = function(scene, title, suggestedFileName) {
+  
+  var path = scene.IO.queryUserFileAndFolderHandle(scene.IO.forOpenWithWriteAccess, title, "json", suggestedFileName);
+  var binarydatapath = scene.IO.queryUserFileAndFolderHandle(scene.IO.forOpenWithWriteAccess, "Secure ", "fez", "cow");
+  
+  var writeBinaryDataNode = scene.constructNode('WriteBinaryDataNode', {
+    secureKey: 'secureKey'
+  });
+      
+  var str = "";
+  this.getBinaryStorageNode = function(){
+    return writeBinaryDataNode;
+  }
+  
+  this.getBinaryFilePath = function(){
+    return binarydatapath;
+  }
+  
+  this.write = function(instr) {
+    str = instr;
+    scene.IO.putTextFile(str, path);
+    writeBinaryDataNode.putResourceToFile('resource',binarydatapath);
+  }
+  this.log = function(instr) {
+    console.log(str);
+  }
+};
+
 /**
  * Constructor to create a FileReader object.
  * @constructor
@@ -313,6 +379,9 @@ FABRIC.SceneGraph.FileReader = function(scene, title, suggestedFileName) {
  */
 FABRIC.SceneGraph.XHRReader = function(url) {
   var file = FABRIC.loadResourceURL(url);
+  this.getUrl = function() {
+    return url;
+  }
   this.read = function() {
     return JSON.parse(file);
   }
@@ -360,7 +429,6 @@ FABRIC.SceneGraph.registerNodeType('LoadBinaryDataNode', {
     resourceloaddgnode.addMember('container', 'SecureContainer');
     resourceloaddgnode.addMember('elements', 'SecureElement[]');
     resourceloaddgnode.addMember('secureKey', 'String', options.secureKey);
-    resourceloaddgnode.addMember('compressionLevel', 'Integer', options.compressionLevel);
     
     resourceloaddgnode.bindings.append(scene.constructOperator({
       operatorName: 'secureContainerLoad',
