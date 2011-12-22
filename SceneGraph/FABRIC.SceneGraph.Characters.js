@@ -57,10 +57,10 @@ FABRIC.SceneGraph.registerNodeType('CharacterMesh', {
     var parentWriteData = characterMeshNode.writeData;
     var parentReadData = characterMeshNode.readData;
     characterMeshNode.writeData = function(sceneSerializer, constructionOptions, nodeData) {
+      parentWriteData(sceneSerializer, constructionOptions, nodeData);
       characterMeshNode.writeGeometryData(sceneSerializer, constructionOptions, nodeData);
       nodeData.invmatrices = characterMeshNode.getUniformsDGNode().getData('invmatrices');
       nodeData.boneMapping = characterMeshNode.getUniformsDGNode().getData('boneMapping');
-      parentWriteData(sceneSerializer, constructionOptions, nodeData);
     };
     characterMeshNode.readData = function(sceneDeserializer, nodeData) {
       parentReadData(sceneDeserializer, nodeData);
@@ -663,13 +663,18 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
     
     //////////////////////////////////////////
     // Persistence
+    var parentAddDependencies = characterRigNode.addDependencies;
+    characterRigNode.addDependencies = function(sceneSerializer) {
+      parentAddDependencies(sceneSerializer);
+      sceneSerializer.addNode(skeletonNode.pub);
+      sceneSerializer.addNode(variablesNode.pub);
+    };
+    
     var parentWriteData = characterRigNode.writeData;
     var parentReadData = characterRigNode.readData;
     characterRigNode.writeData = function(sceneSerializer, constructionOptions, nodeData) {
       parentWriteData(sceneSerializer, constructionOptions, nodeData);
       constructionOptions.debug = options.debug;
-      sceneSerializer.addNode(skeletonNode.pub);
-      sceneSerializer.addNode(variablesNode.pub);
       nodeData.skeletonNode = skeletonNode.pub.getName();
       nodeData.variablesNode = variablesNode.pub.getName();
       nodeData.solvers = [];

@@ -61,11 +61,7 @@ FABRIC.SceneGraph.registerManagerType('SceneSerializer', {
           var constructionOptions = {};
           var nodeData = {};
           var nodePrivate = scene.getPrivateInterface(node);
-          nodePrivate.writeData(sceneSerializer, constructionOptions, nodeData);
-          savedData.push({
-            options: constructionOptions,
-            data: nodeData
-          });
+          nodePrivate.addDependencies(sceneSerializer);
           savedNodes.push(node);
         };
       },
@@ -104,7 +100,7 @@ FABRIC.SceneGraph.registerManagerType('SceneSerializer', {
           }
         },
         save: function(writer) {
-          
+          this.serialize();
           //var binaryStorageNode = scene.getPrivateInterface(options.binaryStorageNode);
           var str = '[';
           for (var i = 0; i < savedNodes.length; i++) {
@@ -200,7 +196,7 @@ FABRIC.SceneGraph.registerManagerType('SceneDeserializer', {
         if (constructedNodeMap[nodeName]) {
           return constructedNodeMap[nodeName];
         }else {
-          return scene.getSceneGraphNode(nodeName);
+          return scene.pub.getSceneGraphNode(nodeName);
         }
       },
       pub: {
