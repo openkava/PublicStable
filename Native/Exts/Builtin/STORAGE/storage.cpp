@@ -49,7 +49,7 @@ FABRIC_EXT_KL_STRUCT( FileHandle, {
   
     virtual ~LocalData();
 
-    std::vector<std::string> mParts;
+    boost::filesystem::path mPath;
     int mIsFolder;
   };
 
@@ -63,12 +63,12 @@ FileHandle::LocalData::LocalData()
 
 FileHandle::LocalData::~LocalData()
 {
-  mParts.clear();
+  mPath.clear();
 }
 
 void FileHandle::LocalData::init(const std::string & path)
 {
-  mParts.clear();
+  mPath.clear();
   mIsFolder = -1;
 
   if(path.length() < 2)
@@ -79,7 +79,7 @@ void FileHandle::LocalData::init(const std::string & path)
 
 bool FileHandle::LocalData::valid() const
 {
-  return mParts.size() > 0;
+  return !mPath.empty();
 }
 
 bool FileHandle::LocalData::isFolder()
@@ -87,13 +87,12 @@ bool FileHandle::LocalData::isFolder()
   // we will cache the result of this
   if(mIsFolder == -1 && valid())
   {
-    std::string path = absolute();
-    if(path.length() == 0)
+    if(!valid())
       return false;
 
-    if(boost::filesystem::is_directory(path.c_str()))
+    if(boost::filesystem::is_directory(mPath))
       mIsFolder = 1;
-    else if(boost::filesystem::is_regular_file(path.c_str()))
+    else if(boost::filesystem::is_regular_file(mPath))
       mIsFolder = 0;
     else
       mIsFolder = -1;
@@ -104,81 +103,44 @@ bool FileHandle::LocalData::isFolder()
 
 size_t FileHandle::LocalData::size()
 {
-  // we will cache the result of this
-  std::string path = absolute();
-  if(path.length() == 0)
-    return 0;
-  
   if(!exists())
     return 0;
   if(isFolder())
     return 0;
-  
-  return (size_t)boost::filesystem::file_size(path.c_str());
+  return (size_t)boost::filesystem::file_size(mPath);
 }
 
 bool FileHandle::LocalData::exists() const
 {
-  std::string path = absolute();
-  if(path.length() == 0)
+  if(!valid())
     return false;
-  
-  return boost::filesystem::exists(path.c_str());
+  return boost::filesystem::exists(mPath);
 }
 
 std::string FileHandle::LocalData::absolute() const
 {
-  if(!valid())
-    return std::string();
-    
-  std::string result;
-#if defined(FABRIC_OS_WINDOWS)
-  if(mParts[0].length() > 1)
-  {
-    if(mParts[0][1] != ':') // UNC
-    {
-      result += SEPARATOR;
-      result += SEPARATOR;
-    }
-  }
-#else
-  result += SEPARATOR;
-#endif
-  result += mParts[0];
-  for(size_t i=1;i<mParts.size();i++) {
-    result += SEPARATOR;
-    result += mParts[i];
-  }
-  return result;
+  return mPath.string();
 }
 
 std::string FileHandle::LocalData::filename() const
 {
   if(!valid())
     return std::string();
-  return mParts[mParts.size()-1];
+  return mPath.filename().string();
 }
 
 std::string FileHandle::LocalData::filebasename()
 {
   if(!valid())
     return std::string();
-  if(isFolder())
-    return mParts[mParts.size()-1];
-
-  std::vector<std::string> parts;
-  boost::split(parts, mParts[mParts.size()-1], boost::is_any_of("."));
-  parts.pop_back();
-  return boost::join(parts,".");
+  return mPath.stem().string();
 }
 
 std::string FileHandle::LocalData::fileextension()
 {
-  if(!valid() || isFolder())
+  if(!valid())
     return std::string();
-  std::vector<std::string> parts;
-  boost::split(parts, mParts[mParts.size()-1], boost::is_any_of("."));
-  return parts[parts.size()-1];
+  return mPath.extension().string();
 }
 
 std::string FileHandle::LocalData::fileextensionlower()
@@ -190,43 +152,17 @@ std::string FileHandle::LocalData::fileextensionlower()
 
 void FileHandle::LocalData::push(const std::string & segment)
 {
-  std::string osPath = segment;
-  for(size_t i=0;i<osPath.length();i++)
-  {
-    if(osPath[i] == WRONGSEPARATOR)
-      osPath[i] = SEPARATOR;
-  }
-  
-#if defined(FABRIC_OS_WINDOWS)
-  // check UNC path
-  if(mParts.size() == 0 && osPath[0] == SEPARATOR)
-  {
-    // if the first is a separator,
-    // the second has to be one too
-    if(osPath[1] != SEPARATOR)
-      return;
-  }
-#endif
-
-  std::vector<std::string> parts;
-  boost::split(parts, osPath, boost::is_any_of("/\\"));
-  for(size_t i=0;i<parts.size();i++)
-  {
-    if(parts[i].length() > 0)
-      mParts.push_back(parts[i]);
-  }
+  if(!valid())
+    mPath = segment;
+  else
+    mPath /= segment;
   mIsFolder = -1;
 }
 
 void FileHandle::LocalData::pop()
 {
-  if(!valid())
-    return;
-  mParts.pop_back();
-  if(mParts.size() > 0)
-    mIsFolder = 1;
-  else
-    mIsFolder = -1;
+  mPath = mPath.parent_path();
+  mIsFolder = -1;
 }
 
 void FileHandle::LocalData::getSubHandles(KL::VariableArray<FileHandle> & handles)
