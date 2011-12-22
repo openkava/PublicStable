@@ -6,6 +6,7 @@
 #define _FABRIC_MR_CONST_VALUE_H
 
 #include <Fabric/Core/MR/ValueProducer.h>
+#include <stdint.h>
 
 namespace Fabric
 {
