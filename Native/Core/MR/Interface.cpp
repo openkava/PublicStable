@@ -20,6 +20,7 @@
 #include <Fabric/Core/Util/JSONGenerator.h>
 #include <Fabric/Core/Util/Parse.h>
 #include <Fabric/Base/JSON/Array.h>
+#include <Fabric/Base/JSON/Decode.h>
 #include <Fabric/Base/JSON/Object.h>
 #include <Fabric/Base/JSON/String.h>
 
@@ -104,12 +105,29 @@ namespace Fabric
       RC::ConstHandle<JSON::Array> dataJSONArray;
       try
       {
-        dataJSONArray = argObject->get( "data" )->toArray();
+        RC::ConstHandle<JSON::Value> dataJSONValue = argObject->maybeGet("data");
+        if ( dataJSONValue )
+          dataJSONArray = dataJSONValue->toArray();
       }
       catch ( Exception e )
       {
         throw "data: " + e;
       }
+      try
+      {
+        RC::ConstHandle<JSON::Value> jsonDataJSONValue = argObject->maybeGet("jsonData");
+        if ( jsonDataJSONValue )
+        {
+          RC::ConstHandle<JSON::String> jsonDataJSONString = jsonDataJSONValue->toString();
+          dataJSONArray = JSON::decode( jsonDataJSONString->data(), jsonDataJSONString->length() )->toArray();
+        }
+      }
+      catch ( Exception e )
+      {
+        throw "jsonData: " + e;
+      }
+      if ( !dataJSONArray )
+        throw Exception("missing data");
       
       RC::Handle<ConstArray> constArray = ConstArray::Create(
         m_rtManager,

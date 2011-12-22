@@ -2039,11 +2039,24 @@ function (fabricClient, logCallback, debugLogCallback) {
         
         populateConstArray(constArray);
         
-        queueCommand(['MR'], 'createConstArray', {
-          id: constArray.id,
-          elementType: elementType,
-          data: data
-        }, function () {
+        var arg = {
+          id: constArray.id
+        };
+        if (typeof elementType === "string") {
+          arg.elementType = elementType;
+          arg.data = data;
+        }
+        else if (typeof elementType === "object") {
+          var inputArg = elementType;
+          arg.elementType = inputArg.elementType;
+          if (inputArg.data)
+            arg.data = inputArg.data;
+          if (inputArg.jsonData)
+            arg.jsonData = inputArg.jsonData;
+        }
+        else throw "createConstArray: first argumenet must be string or object";
+        
+        queueCommand(['MR'], 'createConstArray', arg, function () {
           delete constArray.id;
         });
         return constArray.pub;
