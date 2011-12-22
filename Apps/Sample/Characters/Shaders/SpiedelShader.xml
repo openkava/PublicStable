@@ -13,7 +13,10 @@
     
     <uniform name="u_modelViewProjectionMatrix" constant="modelViewProjectionMatrix" type="Mat44" owner="instance"/>
     <uniform name="u_modelViewMatrix" constant="modelViewMatrix" type="Mat44" owner="instance"/>
+    <uniform name="u_modelMatrix" constant="modelMatrix" type="Mat44" owner="instance"/>
     <uniform name="u_normalMatrix" constant="normalMatrix" type="Mat33" owner="instance"/>
+    <uniform name="u_cameraPos" constant="cameraPosition" type="Vec3" owner="instance"/>
+    
     
     <uniform name="u_samplerCube" constant="cubeMapTexture" type="Integer" owner="cubeMapTexture"/>
     
@@ -40,8 +43,10 @@
 <![CDATA[
 uniform mat4 u_modelViewProjectionMatrix;
 uniform mat4 u_modelViewMatrix;
+uniform mat4 u_modelMatrix;
 uniform mat3 u_normalMatrix;
 uniform vec4 u_lightPosition;
+uniform vec3 u_cameraPos;
 
 // This is an array of all the bones in a skeleton.
 uniform sampler2D u_samplerSkinningMatrices;
@@ -70,14 +75,22 @@ varying vec3 reflectDir;
 <![CDATA[
 
 void main(){
-  vec4 transformedNormal;
-  skinPositionsAndNormals(u_samplerSkinningMatrices, u_transformTextureHeight);
-  vertexColor = a_color;
-  
 
+  vec4 transformedPosition;
+  vec4 transformedNormal;
+  skinPositionsAndNormalsWithTransformedPositionsAndNormal(
+    u_samplerSkinningMatrices,
+    u_transformTextureHeight,
+    transformedPosition,
+    transformedNormal
+  );
+  
+  
   // Calculate reflected vector
-  vec3 modelViewDir = normalize((u_modelMatrix * a_position).xyz - u_cameraPos);
-  reflectDir = reflect(viewDir, mat3(u_modelMatrix[0].xyz, u_modelMatrix[1].xyz, u_modelMatrix[2].xyz) * transformedNormal);
+  vec3 modelViewDir = normalize((u_modelMatrix * transformedPosition).xyz - u_cameraPos);
+  reflectDir = reflect(viewDir, mat3(u_modelMatrix[0].xyz, u_modelMatrix[1].xyz, u_modelMatrix[2].xyz) * transformedNormal.xyz);
+  
+  vertexColor = a_color;
 }
 
 ]]>
@@ -120,15 +133,15 @@ void main(){
   vec3 Nn = normalize(normal);
   vec3 Rn = normalize(reflectDir);
   
-  /*
-  float reflectFactor = mix(dot( Vn, Rn ), 1.0, 0.8);
+  float reflectFactor = 1.0 - dot( Vn, Nn );
   
+ // vec4 color = mix(vec4(1.0, 0.0, 0.0, 1.0), vec4(0.0, 0.0, 1.0, 1.0), reflectFactor);
 
   // Perform a cube map look up.
   vec4 cubeColor = textureCube(u_samplerCube, Rn);
   cubeColor.a = 1.0;
   vec4 color = mix(vertexColor, cubeColor, reflectFactor);
-
+/*
   float lightFactor = 1.0;
   gl_FragColor = phong_shading(
     Nn, 
@@ -144,7 +157,7 @@ void main(){
     u_materialShininess,
     vec4(0.0, 0.0, 0.0, 1.0) );
 */
-	gl_FragColor = vertexColor;
+	gl_FragColor = color;
 }
 
 ]]>

@@ -30,12 +30,14 @@ void skinPositions(
 #else
 #ifdef SKIN_POSITIONS_AND_NORMALS
 
-void skinPositionsAndNormals(
+void skinPositionsAndNormalsWithTransformedPositionsAndNormal(
   in sampler2D samplerSkinningMatrices,
-  in float textureHeight
+  in float textureHeight,
+  out vec4 transformedPosition,
+  out vec4 transformedNormal
 ){
-  vec4 transformedPosition = vec4(0.0,0.0,0.0,0.0);
-  vec4 transformedNormal = vec4(0.0,0.0,0.0,0.0);
+  transformedPosition = vec4(0.0,0.0,0.0,0.0);
+  transformedNormal = vec4(0.0,0.0,0.0,0.0);
   
   vec4 curIndex = a_index;
   vec4 curWeight = a_weight;
@@ -63,6 +65,21 @@ void skinPositionsAndNormals(
   gl_Position = u_modelViewProjectionMatrix * transformedPosition;    
   
   normal = u_normalMatrix * transformedNormal.xyz;
+}
+
+
+void skinPositionsAndNormals(
+  in sampler2D samplerSkinningMatrices,
+  in float textureHeight
+){
+  vec4 transformedPosition;
+  vec4 transformedNormal;
+  skinPositionsAndNormalsWithTransformedPositionsAndNormal(
+    samplerSkinningMatrices,
+    textureHeight,
+    transformedPosition,
+    transformedNormal
+  );
 }
 
 #else
