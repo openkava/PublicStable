@@ -8,9 +8,11 @@
 #include <Fabric/Core/MR/ConstValue.h>
 #include <Fabric/Core/MR/Map.h>
 #include <Fabric/Core/MR/Reduce.h>
+#include <Fabric/Core/MR/ValueMap.h>
 #include <Fabric/Core/KLC/ArrayGeneratorOperator.h>
 #include <Fabric/Core/KLC/MapOperator.h>
 #include <Fabric/Core/KLC/ReduceOperator.h>
+#include <Fabric/Core/KLC/ValueMapOperator.h>
 #include <Fabric/Core/GC/Object.h>
 #include <Fabric/Core/RT/Manager.h>
 #include <Fabric/Core/Util/JSONGenerator.h>
@@ -57,6 +59,8 @@ namespace Fabric
         jsonExecCreateConstArray( arg, resultJAG );
       else if ( cmd == "createMap" )
         jsonExecCreateMap( arg, resultJAG );
+      else if ( cmd == "createValueMap" )
+        jsonExecCreateValueMap( arg, resultJAG );
       else if ( cmd == "createReduce" )
         jsonExecCreateReduce( arg, resultJAG );
       else if ( cmd == "createArrayGenerator" )
@@ -174,6 +178,70 @@ namespace Fabric
         sharedValueProducer
         );
       map->reg( m_gcContainer, id_ );
+    }
+    
+    void Interface::jsonExecCreateValueMap(
+      RC::ConstHandle<JSON::Value> const &arg,
+      Util::JSONArrayGenerator &resultJAG
+      )
+    {
+      RC::ConstHandle<JSON::Object> argObject = arg->toObject();
+      
+      std::string id_;
+      try
+      {
+        id_ = argObject->get( "id" )->toString()->value();
+      }
+      catch ( Exception e )
+      {
+        throw "id: " + e;
+      }
+      
+      RC::Handle<ValueProducer> inputValueProducer;
+      try
+      {
+        inputValueProducer = GC::DynCast<ValueProducer>( m_gcContainer->getObject( argObject->get( "inputValueProducerID" )->toString()->value() ) );
+        if ( !inputValueProducer )
+          throw "must be a value producer";
+      }
+      catch ( Exception e )
+      {
+        throw "inputValueProducerID: " + e;
+      }
+      
+      RC::Handle<KLC::ValueMapOperator> valueMapOperator;
+      try
+      {
+        valueMapOperator = GC::DynCast<KLC::ValueMapOperator>( m_gcContainer->getObject( argObject->get( "valueMapOperatorID" )->toString()->value() ) );
+        if ( !valueMapOperator )
+          throw "must be a value map operator";
+      }
+      catch ( Exception e )
+      {
+        throw "valueMapOperatorID: " + e;
+      }
+      
+      RC::Handle<ValueProducer> sharedValueProducer;
+      RC::ConstHandle<JSON::Value> sharedValueProducerIDValue = argObject->maybeGet( "sharedValueProducerID" );
+      if ( sharedValueProducerIDValue )
+      {
+        try
+        {
+          sharedValueProducer = GC::DynCast<ValueProducer>( m_gcContainer->getObject( sharedValueProducerIDValue->toString()->value() ) );
+          if ( !sharedValueProducer )
+            throw "must be a value producer";
+        }
+        catch ( Exception e )
+        {
+          throw "sharedValueProducerID: " + e;
+        }
+      }
+      
+      ValueMap::Create(
+        inputValueProducer,
+        valueMapOperator,
+        sharedValueProducer
+        )->reg( m_gcContainer, id_ );
     }
     
     void Interface::jsonExecCreateReduce(

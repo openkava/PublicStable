@@ -1807,7 +1807,7 @@ function (fabricClient, logCallback, debugLogCallback) {
           delete operator.id;
         });
         
-        return arrayGeneratorOperator.pub;
+        return operator.pub;
       },
       
       createReduceOperator: function (sourceName, sourceCode, reduceOperatorName) {
@@ -1867,6 +1867,10 @@ function (fabricClient, logCallback, debugLogCallback) {
     
     var populateReduce = function (reduce) {
       populateValueProducer(reduce);
+    };
+    
+    var populateValueMap = function (valueMap) {
+      populateValueProducer(valueMap);
     };
     
     var populateArrayProducer = function (arrayProducer) {
@@ -1940,6 +1944,25 @@ function (fabricClient, logCallback, debugLogCallback) {
           delete reduce.id;
         });
         return reduce.pub;
+      },
+      
+      createValueMap: function(inputValueProducer, valueMapOperator, sharedValueProducer) {
+        var valueMap = GC.createObject('MR');
+        
+        populateValueMap(valueMap);
+        
+        var arg = {
+          id: valueMap.id,
+          inputValueProducerID: inputValueProducer.getID(),
+          valueMapOperatorID: valueMapOperator.getID()
+        };
+        if (sharedValueProducer)
+          arg.sharedValueProducerID = sharedValueProducer.getID();
+        
+        queueCommand(['MR'], 'createValueMap', arg, function () {
+          delete valueMap.id;
+        });
+        return valueMap.pub;
       },
       
       createArrayGenerator: function(countValueProducer, arrayGeneratorOperator) {

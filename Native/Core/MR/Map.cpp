@@ -54,12 +54,12 @@ namespace Fabric
       {
         RC::ConstHandle<RT::Desc> sharedValueProducerValueDesc = sharedValueProducer->getValueDesc();
         if ( !sharedValueProducerValueDesc )
-          throw Exception( "reduce operator requires a shared value but no shared value producer is provided" );
+          throw Exception( "map operator requires a shared value but no shared value producer is provided" );
         if ( !sharedValueProducerValueDesc->isEquivalentTo( reduceOperatorSharedDesc ) )
           throw Exception(
             "shared value type ("
             + _(sharedValueProducerValueDesc->getUserName())
-            + ") is not equivalent to reduce operator shared type ("
+            + ") is not equivalent to map operator shared type ("
             + _(reduceOperatorSharedDesc->getUserName()) + ")"
             );
       }
