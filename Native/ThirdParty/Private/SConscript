@@ -177,12 +177,21 @@ alembicFlags = {
 Export( 'alembicFlags' )
 
 # storage
+storageLibs = []
+if buildOS == 'Windows':
+  if buildType == 'Debug':
+    storageLibs.extend(archLibs( 'boost', ['libboost_program_options-vc100-mt-sgd-1_47', 'libboost_serialization-vc100-mt-sgd-1_47', 'libboost_thread-vc100-mt-sgd-1_47', 'libboost_system-vc100-mt-sgd-1_47', 'libboost_filesystem-vc100-mt-sgd-1_47'] ))
+  else:
+    storageLibs.extend(archLibs( 'boost', ['libboost_program_options-vc100-mt-s-1_47', 'libboost_serialization-vc100-mt-s-1_47', 'libboost_thread-vc100-mt-s-1_47', 'libboost_system-vc100-mt-s-1_47', 'libboost_filesystem-vc100-mt-s-1_47'] ))
+else:  
+  storageLibs.extend(archLibs( 'boost', ['boost_program_options', 'boost_serialization', 'boost_thread', 'boost_system', 'boost_filesystem'] ))
 storageFlags = {
     'CPPPATH': [
       os.path.join( includeBaseDir, 'boost' )
     ],
-    'LIBS': []
+    'LIBS': storageLibs
 }
+
 Export( 'storageFlags' )
 
 # secure serializers
