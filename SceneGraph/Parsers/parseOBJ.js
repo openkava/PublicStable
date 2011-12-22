@@ -147,14 +147,18 @@ FABRIC.SceneGraph.registerNodeType('ObjTriangles', {
     var parentAddDependencies = trianglesNode.addDependencies;
     trianglesNode.addDependencies = function(sceneSerializer) {
       parentAddDependencies(sceneSerializer);
-      sceneSerializer.addNode(resourceLoadNode.pub);
+      if(sceneSerializer.getTypeRemapping(trianglesNode.pub.getType()) == trianglesNode.pub.getType()){
+        sceneSerializer.addNode(resourceLoadNode.pub);
+      }
     };
     
     var parentWriteData = trianglesNode.writeData;
     var parentReadData = trianglesNode.readData;
     trianglesNode.writeData = function(sceneSerializer, constructionOptions, nodeData) {
-      constructionOptions.entityIndex = options.entityIndex;
-      nodeData.resourceLoadNode = resourceLoadNode.pub.getName();
+      if(sceneSerializer.getTypeRemapping(trianglesNode.pub.getType()) == trianglesNode.pub.getType()){
+        constructionOptions.entityIndex = options.entityIndex;
+        nodeData.resourceLoadNode = resourceLoadNode.pub.getName();
+      }
       parentWriteData(sceneSerializer, constructionOptions, nodeData);
     };
     trianglesNode.readData = function(sceneDeserializer, nodeData) {
