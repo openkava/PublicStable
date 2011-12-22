@@ -68,6 +68,8 @@ namespace Fabric
       Context *m_context;
       RC::Handle<IO::Stream> m_stream;
       FabricResourceWrapper m_fabricResourceStreamData;
+      bool m_firstEvalAfterLoad;
+      bool m_keepMemoryCache;
       size_t m_streamGeneration;
 
       size_t m_nbStreamed;
