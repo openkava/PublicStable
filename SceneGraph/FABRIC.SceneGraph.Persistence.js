@@ -76,6 +76,12 @@ FABRIC.SceneGraph.registerManagerType('SceneSerializer', {
           storedDGNodes[sgnodename][dgnodename].members = members;
         }
       },
+      getTypeRemapping: function(type){
+        if(options.typeRemappings[type]){
+          return options.typeRemappings[type];
+        }
+        return type;
+      },
       pub:{
         // Add the filter nodes first, and then add the nodes you wish to save.
         filterNode: function(node) {
@@ -89,9 +95,9 @@ FABRIC.SceneGraph.registerManagerType('SceneSerializer', {
         },
         serialize: function() {
           for(var i=0;i<savedNodes.length;i++) {
-            var constructionOptions = {};
-            var nodeData = {};
             var nodePrivate = scene.getPrivateInterface(savedNodes[i]);
+            var constructionOptions = { };
+            var nodeData = {};
             nodePrivate.writeData(sceneSerializer, constructionOptions, nodeData);
             savedData[i] = {
               options: constructionOptions,
@@ -108,10 +114,7 @@ FABRIC.SceneGraph.registerManagerType('SceneSerializer', {
               str += ',';
             }
             var name = savedNodes[i].getName();
-            var type = savedNodes[i].getType();
-            if(options.typeRemappings[type]){
-              type = options.typeRemappings[type];
-            }
+            var type = sceneSerializer.getTypeRemapping(savedNodes[i].getType());
             str +=  '\n  {';
             str +=  '\n    \"name\":' + this.wrapQuotes(name);
             str += ',\n    \"type\":' + this.wrapQuotes(type);
@@ -120,21 +123,25 @@ FABRIC.SceneGraph.registerManagerType('SceneSerializer', {
             
             if(storedDGNodes[name]){
               str += ',\n    \"dgnodedata\":{';
-              
+              var nodecnt = 0;
               for(var dgnodename in storedDGNodes[name]){
-                var dgnode = storedDGNodes[name].dgnode;
-                var dgnodeDataDesc = storedDGNodes[name];
-                str += ',\n      \"'+dgnodename+'\":{';
+                var dgnodeDataDesc = storedDGNodes[name][dgnodename];
+                var dgnode = dgnodeDataDesc.dgnode;
+                if (nodecnt > 0) {
+                  str += ',';
+                }
+                str += '\n      \"'+dgnodename+'\":{';
                 if(dgnodeDataDesc.members){
-                  str += ',\n    \"members\":' + JSON.stringify(dgnodeDataDesc.members);
+                  str += '\n        \"members\":' + JSON.stringify(dgnodeDataDesc.members);
                 }
                 if(false){
                   
                 }else{
-                  str += ',\n    \"sliceCount\":' + dgnodeDataDesc.sliceCount;
-                  str += ',\n    \"memberData\":' + JSON.stringify(dgnode.getBulkData());
+                  str += ',\n        \"sliceCount\":' + dgnode.getCount();
+                  str += ',\n        \"memberData\":' + JSON.stringify(dgnode.getBulkData());
                 }
                 str +=  '\n      }';
+                nodecnt++;
               }
               
               str +=  '\n    }';
@@ -189,7 +196,7 @@ FABRIC.SceneGraph.registerManagerType('SceneDeserializer', {
         preLoadedNodes[name] = sceneNodes[name].pub;
       }
     };
-      
+    var nodeData;
     var sceneDeserializer = {
       getNode: function(nodeName) {
         nodeName = nodeNameRemapping[ nodeName ]
@@ -198,6 +205,18 @@ FABRIC.SceneGraph.registerManagerType('SceneDeserializer', {
         }else {
           return scene.pub.getSceneGraphNode(nodeName);
         }
+      },
+      loadDGNodeData: function(dgnode, dgnodename) {
+        var data = nodeData.dgnodedata[dgnodename];
+        dgnode.setCount(data.sliceCount);
+        var members = dgnode.getMembers();
+        var memberData = {};
+        for(var memberName in members){
+          if(data.memberData[memberName]){
+            memberData[memberName] = data.memberData[memberName];
+          }
+        }
+        dgnode.setBulkData(memberData);
       },
       pub: {
         setPreLoadedNode: function(node, nodeName) {
@@ -211,7 +230,7 @@ FABRIC.SceneGraph.registerManagerType('SceneDeserializer', {
           }
           
           for (var i = 0; i < dataObj.length; i++) {
-            var nodeData = dataObj[i];
+            nodeData = dataObj[i];
             var node = preLoadedNodes[nodeData.name];
             if (!node) {
               node = scene.pub.constructNode(nodeData.type, nodeData.options);

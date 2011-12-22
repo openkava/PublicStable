@@ -117,22 +117,22 @@ $(document).ready(function() {
         materialNames: evt.materialNames
        });
      */
-    for(var i=0; i< evt.objectNames.length; i++){
-     var objectName = evt.objectNames[i];
-     var materialName = evt.materialNames[i];
-     var material = scene.constructNode('PhongMaterial', {
-       diffuseColor: FABRIC.RT.rgb(Math.random(), Math.random(), Math.random(), 1),
-       lightNode: light
-     });
-     var instance = scene.constructNode('Instance', {
-      geometryNode: evt.loadedGeometries[objectName],
-      materialNode: material,
-      transformNode: scene.constructNode('Transform', {
-          hierarchical: false,
-          globalXfo: new FABRIC.RT.Xfo({ tr: new FABRIC.RT.Vec3(-10, 0, 0) })
-        }),
-     });
-    }
+     for(var i=0; i< evt.objectNames.length; i++){
+       var objectName = evt.objectNames[i];
+       var materialName = evt.materialNames[i];
+       var material = scene.constructNode('PhongMaterial', {
+         diffuseColor: FABRIC.RT.rgb(Math.random(), Math.random(), Math.random(), 1),
+         lightNode: light
+       });
+       var instance = scene.constructNode('Instance', {
+         geometryNode: evt.loadedGeometries[objectName],
+         materialNode: material,
+         transformNode: scene.constructNode('Transform', {
+             hierarchical: false,
+             globalXfo: new FABRIC.RT.Xfo({ tr: new FABRIC.RT.Vec3(-10, 0, 0) })
+           }),
+       });
+      }
    });
   
 

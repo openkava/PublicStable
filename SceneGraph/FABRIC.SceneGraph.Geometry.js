@@ -246,13 +246,34 @@ FABRIC.SceneGraph.registerNodeType('Geometry', {
       }
     }
     */
+    var writeGeometryAttributes = true;
     geometryNode.writeData = function(sceneSerializer, constructionOptions, nodeData) {
       parentWriteData(sceneSerializer, constructionOptions, nodeData);
       constructionOptions.drawable = options.drawable;
       constructionOptions.createBoundingBoxNode = options.createBoundingBoxNode;
+      nodeData.attributes = attributes;
+      if(writeGeometryAttributes){
+        var attributeMembers = [];
+        for(var i in attributes) attributeMembers.push(i);
+        sceneSerializer.writeDGNodeData(geometryNode.pub.getName(), 'attributes', attributesdgnode, attributeMembers);
+        sceneSerializer.writeDGNodeData(geometryNode.pub.getName(), 'uniforms', uniformsdgnode, ['indices']);
+      }
     };
     geometryNode.readData = function(sceneDeserializer, nodeData) {
       parentReadData(sceneDeserializer, nodeData);
+      
+      var attributeMembers = attributesdgnode.getMembers();
+      for(var attributeName in nodeData.attributes){
+        if(!attributeMembers[attributeName]){
+          geometryNode.pub.addVertexAttributeValue(
+            attributeName,
+            nodeData.attributes[attributeName].type,
+            nodeData.attributes[attributeName].attributeoptions
+          );
+        }
+      }
+      sceneDeserializer.loadDGNodeData(attributesdgnode, 'attributes');
+      sceneDeserializer.loadDGNodeData(uniformsdgnode, 'uniforms');
     };
     
     return geometryNode;
@@ -274,25 +295,9 @@ FABRIC.SceneGraph.registerNodeType('GeometryDataCopy', {
         createBoundingBoxNode: false
       });
     
-    if(!options.baseGeometryNode){
-      throw 'A baseGeometryNode must be specified'
-    }
-    if (!options.baseGeometryNode.isTypeOf('Geometry')) {
-      throw ('Incorrect type assignment. Must assign a Geometry');
-    }
-    var baseGeometryNode = scene.getPrivateInterface(options.baseGeometryNode);
     options.createDrawOperator = false;
     var geometryDataCopyNode = scene.constructNode('Geometry', options);
     
-    geometryDataCopyNode.getUniformsDGNode().setDependency(baseGeometryNode.getUniformsDGNode(), 'parentuniforms');
-    geometryDataCopyNode.getUniformsDGNode().setDependency(baseGeometryNode.getAttributesDGNode(), 'parentattributes');
-    geometryDataCopyNode.getAttributesDGNode().setDependency(baseGeometryNode.getUniformsDGNode(), 'parentuniforms');
-    geometryDataCopyNode.getAttributesDGNode().setDependency(baseGeometryNode.getAttributesDGNode(), 'parentattributes');
-    if(baseGeometryNode.getBoundingBoxDGNode){
-      geometryDataCopyNode.getUniformsDGNode().setDependency(baseGeometryNode.getBoundingBoxDGNode(), 'parentboundingbox');
-      geometryDataCopyNode.getAttributesDGNode().setDependency(baseGeometryNode.getBoundingBoxDGNode(), 'parentboundingbox');
-    }
-
     // The data copy must always have the same count on the attributes node,
     // as the original geometry node.
     geometryDataCopyNode.getAttributesDGNode().bindings.append(
@@ -309,11 +314,52 @@ FABRIC.SceneGraph.registerNodeType('GeometryDataCopy', {
         ]
       }));
     
-    var redrawEventHandler = geometryDataCopyNode.getRedrawEventHandler();
-    redrawEventHandler.appendChildEventHandler(baseGeometryNode.getRedrawEventHandler());
-
+    var baseGeometryNode;
     geometryDataCopyNode.pub.getBaseGeometry = function(){
       return baseGeometryNode.pub;
+    }
+    geometryDataCopyNode.pub.setBaseGeometryNode = function(node) {
+      if (!node || !node.isTypeOf('Geometry')) {
+        throw ('Incorrect type assignment. Must assign a Geometry');
+      }
+      baseGeometryNode = scene.getPrivateInterface(node);
+    
+      geometryDataCopyNode.getUniformsDGNode().setDependency(baseGeometryNode.getUniformsDGNode(), 'parentuniforms');
+      geometryDataCopyNode.getUniformsDGNode().setDependency(baseGeometryNode.getAttributesDGNode(), 'parentattributes');
+      geometryDataCopyNode.getAttributesDGNode().setDependency(baseGeometryNode.getUniformsDGNode(), 'parentuniforms');
+      geometryDataCopyNode.getAttributesDGNode().setDependency(baseGeometryNode.getAttributesDGNode(), 'parentattributes');
+      if(baseGeometryNode.getBoundingBoxDGNode){
+        geometryDataCopyNode.getUniformsDGNode().setDependency(baseGeometryNode.getBoundingBoxDGNode(), 'parentboundingbox');
+        geometryDataCopyNode.getAttributesDGNode().setDependency(baseGeometryNode.getBoundingBoxDGNode(), 'parentboundingbox');
+      }
+    
+      var redrawEventHandler = geometryDataCopyNode.getRedrawEventHandler();
+      redrawEventHandler.appendChildEventHandler(baseGeometryNode.getRedrawEventHandler());
+    }
+    
+    //////////////////////////////////////////
+    // Persistence
+    var parentAddDependencies = geometryDataCopyNode.addDependencies;
+    geometryDataCopyNode.addDependencies = function(sceneSerializer) {
+      parentAddDependencies(sceneSerializer);
+      sceneSerializer.addNode(baseGeometryNode.pub);
+    };
+    
+    var parentWriteData = geometryDataCopyNode.writeData;
+    var parentReadData = geometryDataCopyNode.readData;
+    geometryDataCopyNode.writeData = function(sceneSerializer, constructionOptions, nodeData) {
+      parentWriteData(sceneSerializer, constructionOptions, nodeData);
+      constructionOptions.createBoundingBoxNode = options.createBoundingBoxNode;
+      nodeData.geometryDataCopyNode = geometryDataCopyNode.pub.getName();
+    };
+    geometryDataCopyNode.readData = function(sceneDeserializer, nodeData) {
+      parentReadData(sceneDeserializer, nodeData);
+      geometryDataCopyNode.pub.setBaseGeometryNode(sceneDeserializer.getNode(nodeData.geometryDataCopyNode));
+    };
+    
+    
+    if(options.baseGeometryNode){
+      geometryDataCopyNode.pub.setBaseGeometryNode(options.baseGeometryNode);
     }
     return geometryDataCopyNode;
   }});

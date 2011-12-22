@@ -120,7 +120,7 @@ $(document).ready(function() {
   // create a light
   var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) });
   
-  /*
+  
   var modelName = 'cow';
   var objResource = scene.importAssetFile('Models/' + modelName + '.obj', {
    splitMaterials: false
@@ -138,7 +138,7 @@ $(document).ready(function() {
         materialNode: material,
         transformNode: scene.constructNode('Transform', {
           hierarchical: false,
-          globalXfo: new FABRIC.RT.Xfo({ tr: new FABRIC.RT.Vec3(0, 0, 5) })
+          globalXfo: new FABRIC.RT.Xfo({ tr: new FABRIC.RT.Vec3(0, 0, -5) })
         }),
       });
       instances.push(instance);
@@ -146,7 +146,7 @@ $(document).ready(function() {
     
     viewport.redraw();
   });
-  */
+  
   
 /*
   var fezNode = scene.constructNode('Triangles', {uvSets: 1});
@@ -172,7 +172,7 @@ $(document).ready(function() {
 */
   
   
-  var presetLoader = scene.constructManager('SceneDeserializer', { preLoadScene: true } );
+  var presetLoader = scene.constructManager('SceneDeserializer', { preLoadScene: false } );
   var storage = new FABRIC.SceneGraph.XHRReader('Models/cow.json');
   var nodeMap = presetLoader.load(storage);
   
@@ -209,7 +209,7 @@ $(document).ready(function() {
      // var path = scene.IO.queryUserFileAndFolderHandle(scene.IO.forOpenWithWriteAccess, "Secure ", "fez", "cow");
       
       var presetSaver = scene.constructManager('SceneSerializer',{
-       /* typeRemappings: { ObjTriangles: 'Triangles' } */
+        typeRemappings: { ObjTriangles: 'Triangles' } 
       });
       for(var i=0; i<instances.length; i++){
         // let's store the triangles node.
@@ -219,6 +219,8 @@ $(document).ready(function() {
       }
       
       presetSaver.save(storage);
+      storage.log();
+      
     });
   
   $('#loadingDialog').dialog({
