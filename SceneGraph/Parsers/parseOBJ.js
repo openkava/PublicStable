@@ -63,7 +63,16 @@ FABRIC.SceneGraph.registerNodeType('LoadObj', {
         materialNames: resourceloaddgnode.getData('materialNames')
       });
     });
-
+    
+    
+    var parentWriteData = resourceLoadNode.writeData;
+    resourceLoadNode.writeData = function(sceneSerializer, constructionOptions, nodeData) {
+      constructionOptions.splitObjects = options.splitObjects;
+      constructionOptions.splitMaterials = options.splitMaterials;
+      constructionOptions.splitGroups = options.splitGroups;
+      parentWriteData(sceneSerializer, constructionOptions, nodeData);
+    };
+    
     return resourceLoadNode;
   }
 });
@@ -77,16 +86,14 @@ FABRIC.SceneGraph.registerNodeType('ObjTriangles', {
   },
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
+      resourceLoadNode: undefined,
       removeParsersOnLoad: false,
       entityIndex: -1
     });
+    
 
     options.uvSets = 1; //To refine... what if there is no UV set??
     var trianglesNode = scene.constructNode('Triangles', options);
-    var resourceLoadNode = scene.getPrivateInterface(options.resourceLoadNode);
-
-    trianglesNode.getAttributesDGNode().setDependency( resourceLoadNode.getDGLoadNode(), 'resource');
-    trianglesNode.getUniformsDGNode().setDependency( resourceLoadNode.getDGLoadNode(), 'resource');
 
     trianglesNode.pub.addUniformValue('entityIndex', 'Integer', options.entityIndex);
 
@@ -118,11 +125,40 @@ FABRIC.SceneGraph.registerNodeType('ObjTriangles', {
         ]
       })
     ]);
-    /////////////////////////////////////////////////////////////////////
-
+    
+    var resourceLoadNode;
+    
     trianglesNode.pub.getResourceLoadNode = function() {
       return resourceLoadNode;
     };
+    trianglesNode.pub.setResourceLoadNode = function(node) {
+      if (!node || !node.isTypeOf('LoadObj')) {
+        throw ('Must pass in a LoadObj resource loader');
+      }
+
+      resourceLoadNode = scene.getPrivateInterface(node);
+      trianglesNode.getAttributesDGNode().setDependency( resourceLoadNode.getDGLoadNode(), 'resource');
+    //  trianglesNode.getUniformsDGNode().setDependency( resourceLoadNode.getDGLoadNode(), 'resource');
+    }
+    
+    var parentWriteData = trianglesNode.writeData;
+    var parentReadData = trianglesNode.readData;
+    trianglesNode.writeData = function(sceneSerializer, constructionOptions, nodeData) {
+      constructionOptions.entityIndex = options.entityIndex;
+      sceneSerializer.addNode(resourceLoadNode.pub);
+      nodeData.resourceLoadNode = resourceLoadNode.pub.getName();
+      parentWriteData(sceneSerializer, constructionOptions, nodeData);
+    };
+    trianglesNode.readData = function(sceneDeserializer, nodeData) {
+      parentReadData(sceneDeserializer, nodeData);
+      trianglesNode.pub.setResourceLoadNode(sceneDeserializer.getNode(nodeData.resourceLoadNode));
+    };
+    
+    /////////////////////////////////////////////////////////////////////
+
+    if(options.resourceLoadNode){
+      trianglesNode.pub.setResourceLoadNode(options.resourceLoadNode);
+    }
     
     return trianglesNode;
   }

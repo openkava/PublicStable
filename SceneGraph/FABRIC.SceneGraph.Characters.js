@@ -63,10 +63,10 @@ FABRIC.SceneGraph.registerNodeType('CharacterMesh', {
       parentWriteData(sceneSerializer, constructionOptions, nodeData);
     };
     characterMeshNode.readData = function(sceneDeserializer, nodeData) {
+      parentReadData(sceneDeserializer, nodeData);
       characterMeshNode.readGeometryData(sceneDeserializer, nodeData);
       characterMeshNode.getUniformsDGNode().setData('invmatrices', 0, nodeData.invmatrices);
       characterMeshNode.getUniformsDGNode().setData('boneMapping', 0, nodeData.boneMapping);
-      parentReadData(sceneDeserializer, nodeData);
     };
     
     return characterMeshNode;

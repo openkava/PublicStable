@@ -1429,7 +1429,8 @@ FABRIC.SceneGraph.registerNodeType('ResourceLoad', {
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
       blockRedrawingTillResourceIsLoaded:true,
-      redrawOnLoad: true
+      redrawOnLoad: true,
+      url: undefined
     });
 
     var onloadSuccessCallbacks = [];
@@ -1528,6 +1529,14 @@ FABRIC.SceneGraph.registerNodeType('ResourceLoad', {
 
     resourceLoadNode.pub.getDGLoadNode = function() {
       return dgnode;
+    };
+    
+    
+    
+    var parentWriteData = resourceLoadNode.writeData;
+    resourceLoadNode.writeData = function(sceneSerializer, constructionOptions, nodeData) {
+      constructionOptions.url = options.url;
+      parentWriteData(sceneSerializer, constructionOptions, nodeData);
     };
     
     scene.addEventHandlingFunctions(resourceLoadNode);

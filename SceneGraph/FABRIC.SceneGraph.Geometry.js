@@ -211,6 +211,7 @@ FABRIC.SceneGraph.registerNodeType('Geometry', {
     
     var parentWriteData = geometryNode.writeData;
     var parentReadData = geometryNode.readData;
+    /*
     geometryNode.writeGeometryData = function(sceneSerializer, constructionOptions, nodeData) {
       nodeData.attributes = attributes;
       nodeData.sliceCount = attributesdgnode.getCount();
@@ -244,6 +245,7 @@ FABRIC.SceneGraph.registerNodeType('Geometry', {
         uniformsdgnode.setData('indices', 0, nodeData.indices );
       }
     }
+    */
     geometryNode.writeData = function(sceneSerializer, constructionOptions, nodeData) {
       parentWriteData(sceneSerializer, constructionOptions, nodeData);
       constructionOptions.drawable = options.drawable;
