@@ -123,22 +123,22 @@ $(document).ready(function() {
   
   var modelName = 'cow';
   var objResource = scene.importAssetFile('Models/' + modelName + '.obj', {
-   splitMaterials: false
+   splitMaterials: true
   });
   var instances = [];
   objResource.addEventListener('objparsesuccess', function(evt){
     
     for(var name in evt.loadedGeometries){
-      var material = scene.constructNode('PhongMaterial', {
-        diffuseColor: FABRIC.RT.rgb(255/255,183/255,48/255),
-        lightNode: light
-      });
+       var material = scene.constructNode('PhongMaterial', {
+         diffuseColor: FABRIC.RT.rgb(Math.random(), Math.random(), Math.random(), 1),
+         lightNode: light
+       });
       var instance = scene.constructNode('Instance', {
         geometryNode: evt.loadedGeometries[name],
         materialNode: material,
         transformNode: scene.constructNode('Transform', {
           hierarchical: false,
-          globalXfo: new FABRIC.RT.Xfo({ tr: new FABRIC.RT.Vec3(0, 0, -5) })
+          globalXfo: new FABRIC.RT.Xfo({ tr: new FABRIC.RT.Vec3(0, 0, 5) })
         }),
       });
       instances.push(instance);
@@ -147,78 +147,26 @@ $(document).ready(function() {
     viewport.redraw();
   });
   
-  
-/*
-  var fezNode = scene.constructNode('Triangles', {uvSets: 1});
-  var material = scene.constructNode('PhongMaterial', {
-    diffuseColor: FABRIC.RT.rgb(255/255,6/255,6/255),
-    lightNode: light
-  });
-  var instance = scene.constructNode('Instance', {
-    geometryNode: fezNode,
-    materialNode: material,
-    transformNode: scene.constructNode('Transform', {
-      hierarchical: false,
-      globalXfo: new FABRIC.RT.Xfo({ tr: new FABRIC.RT.Vec3(0, 0, -5) })
-    }),
-  });
-
-  // open a secure archive
-  var secureLoadNode = scene.importAssetFile('Models/cow.fez', {secureKey: 'secureKey'});
-  secureLoadNode.addOnLoadSuccessCallback(function(){
-    // once the archive is loaded, construct a Triangles node from it
-    secureLoadNode.loadNode(fezNode);
-  });
-*/
-  
-  
   var presetLoader = scene.constructManager('SceneDeserializer', { preLoadScene: false } );
   var storage = new FABRIC.SceneGraph.XHRReader('Models/cow.json');
   var nodeMap = presetLoader.load(storage);
   
+  
   $('#saveResource').button()
     .click(function() {
      
-     /*
-      var path = scene.IO.queryUserFileAndFolderHandle(scene.IO.forOpenWithWriteAccess, "Secure ", "fez", "cow");
-      
-      
-      // once we have parsed the OBJ file, create a SecureStorageNode
-      // to save the Triangles node.
-      var writeBinaryDataNode = scene.constructNode('WriteBinaryDataNode', {
-        secureKey: 'secureKey'
-      });
-      
-      for(var i=0; i<instances.length; i++){
-        // let's store the triangles node.
-        // we specify the DGNode names to store, since we want to avoid
-        // to store the bbox DGNode.
-        writeBinaryDataNode.storeNode( instances[i].getGeometryNode(), {
-          dgnodeNames: ['UniformsDGNode', 'AttributesDGNode']
-        });
-      }
-      // also store the mixed data node,
-      // for testing purposes
-    //  writeBinaryDataNode.storeNode(
-    //    scene.constructNode('MixedDataNode')
-    //  );
-      writeBinaryDataNode.putResourceToFile('resource',path);
-     */
-     
-      var storage = new FABRIC.SceneGraph.FileWriter(scene, 'PersistenceDemo', 'cow.json');
-     // var path = scene.IO.queryUserFileAndFolderHandle(scene.IO.forOpenWithWriteAccess, "Secure ", "fez", "cow");
+      var storage = new FABRIC.SceneGraph.FileWriterWithBinary(scene, 'PersistenceDemo', 'cow');
       
       var presetSaver = scene.constructManager('SceneSerializer',{
         typeRemappings: { ObjTriangles: 'Triangles' } 
       });
+      
       for(var i=0; i<instances.length; i++){
-        // let's store the triangles node.
-        // we specify the DGNode names to store, since we want to avoid
-        // to store the bbox DGNode.
         presetSaver.addNode(instances[i]);
       }
       
       presetSaver.save(storage);
+      // log the generated JSON files to the console.
       storage.log();
       
     });
