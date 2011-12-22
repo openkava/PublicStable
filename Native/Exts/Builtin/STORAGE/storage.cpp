@@ -6,9 +6,8 @@
 #include <Fabric/Base/RC/Object.h>
 #include <boost/algorithm/string.hpp>
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <dirent.h>
+#include <iostream>
+#include <boost/filesystem.hpp>
 
 using namespace Fabric::EDK;
 IMPLEMENT_FABRIC_EDK_ENTRIES
@@ -91,10 +90,13 @@ bool FileHandle::LocalData::isFolder()
     std::string path = absolute();
     if(path.length() == 0)
       return false;
-    
-    struct stat st;
-    if(stat(path.c_str(),&st) == 0)
-      mIsFolder = (st.st_mode & S_IFDIR) ? 1 : 0;
+
+    if(boost::filesystem::is_directory(path.c_str()))
+      mIsFolder = 1;
+    else if(boost::filesystem::is_regular_file(path.c_str()))
+      mIsFolder = 0;
+    else
+      mIsFolder = -1;
   }
   
   return mIsFolder == 1;
@@ -106,13 +108,13 @@ size_t FileHandle::LocalData::size()
   std::string path = absolute();
   if(path.length() == 0)
     return 0;
-    
-  struct stat st;
-  if(stat(path.c_str(),&st) != 0)
+  
+  if(!exists())
     return 0;
-  if(st.st_mode & S_IFDIR)
+  if(isFolder())
     return 0;
-  return st.st_size;
+  
+  return (size_t)boost::filesystem::file_size(path.c_str());
 }
 
 bool FileHandle::LocalData::exists() const
@@ -121,8 +123,7 @@ bool FileHandle::LocalData::exists() const
   if(path.length() == 0)
     return false;
   
-  struct stat st;
-  return stat(path.c_str(),&st) == 0;
+  return boost::filesystem::exists(path.c_str());
 }
 
 std::string FileHandle::LocalData::absolute() const
@@ -233,30 +234,17 @@ void FileHandle::LocalData::getSubHandles(KL::VariableArray<FileHandle> & handle
   handles.resize(0);
   if(!exists())
     return;
+  if(!isFolder())
+    return;
   
   std::string parent = absolute();
-  DIR *dp;
-  struct dirent *dirp;
-  if((dp  = opendir(parent.c_str())) == NULL)
-    return;
-
-#ifndef NDEBUG
-  printf("  { FabricSTORAGE } : getSubHandles for '%s'\n",parent.c_str());
-#endif
-  
+  boost::filesystem::directory_iterator it(parent.c_str()), end;
   std::vector<std::string> paths;
-  while ((dirp = readdir(dp)) != NULL)
+  while(it != end)
   {
-    std::string path = dirp->d_name;
-    if(path.length() > 0 && path != "." && path != "..")
-    {
-#ifndef NDEBUG
-      printf("  { FabricSTORAGE } : New subHandle '%s'\n",path.c_str());
-#endif
-      paths.push_back(path);
-    }
+    paths.push_back(it->path().string());
+    it++;
   }
-  closedir(dp);
   
   handles.resize(paths.size());
   for(size_t i=0;i<handles.size();i++)
@@ -277,22 +265,22 @@ void FileHandle::LocalData::loadBinary(KL::VariableArray<KL::Byte> & data)
     return;
 
   // get the file size
-  struct stat st;
-  if(stat( absolute().c_str(), &st) != 0)
+  if(!exists())
   {
 #ifndef NDEBUG
-    printf("  { FabricSTORAGE } : ERROR loadBinary: Stat on '%s' failed.\n",absolute().c_str());
+    printf("  { FabricSTORAGE } : ERROR loadBinary: '%s' does not exist.\n",absolute().c_str());
 #endif
     return;
   }
-  if(st.st_mode & S_IFDIR)
+  if(isFolder())
   {
 #ifndef NDEBUG
     printf("  { FabricSTORAGE } : ERROR loadBinary: '%s' is a directory.\n",absolute().c_str());
 #endif
     return;
   }
-  if(st.st_size == 0)
+  size_t fileSize = size();
+  if(fileSize == 0)
   {
 #ifndef NDEBUG
     printf("  { FabricSTORAGE } : ERROR loadBinary: '%s' has zero size.\n",absolute().c_str());
@@ -311,10 +299,10 @@ void FileHandle::LocalData::loadBinary(KL::VariableArray<KL::Byte> & data)
 #ifndef NDEBUG
   printf("  { FabricSTORAGE } : loadBinary: File size is '%d'.\n",(int)st.st_size);
 #endif
-  data.resize(st.st_size);
-  size_t result = fread(&data[0],1,st.st_size,file);
+  data.resize(fileSize);
+  size_t result = fread(&data[0],1,fileSize,file);
   fclose(file);
-  if(result != st.st_size)
+  if(result != fileSize)
   {
 #ifndef NDEBUG
     printf("  { FabricSTORAGE } : ERROR loadBinary: '%s', incorrect amount of bytes read.\n",absolute().c_str());
@@ -332,22 +320,22 @@ void FileHandle::LocalData::loadAscii(KL::String::IO data)
     return;
 
   // get the file size
-  struct stat st;
-  if(stat( absolute().c_str(), &st) != 0)
+  if(!exists())
   {
 #ifndef NDEBUG
-    printf("  { FabricSTORAGE } : ERROR loadAscii: Stat on '%s' failed.\n",absolute().c_str());
+    printf("  { FabricSTORAGE } : ERROR loadAscii: '%s' does not exist.\n",absolute().c_str());
 #endif
     return;
   }
-  if(st.st_mode & S_IFDIR)
+  if(isFolder())
   {
 #ifndef NDEBUG
     printf("  { FabricSTORAGE } : ERROR loadAscii: '%s' is a directory.\n",absolute().c_str());
 #endif
     return;
   }
-  if(st.st_size == 0)
+  size_t fileSize = size();
+  if(fileSize == 0)
   {
 #ifndef NDEBUG
     printf("  { FabricSTORAGE } : ERROR loadAscii: '%s' has zero size.\n",absolute().c_str());
@@ -366,10 +354,10 @@ void FileHandle::LocalData::loadAscii(KL::String::IO data)
 #ifndef NDEBUG
   printf("  { FabricSTORAGE } : loadAscii: File size is '%d'.\n",(int)st.st_size);
 #endif
-  data.reserve(st.st_size);
-  size_t result = fread((void*)data.data(),1,st.st_size,file);
+  data.reserve(fileSize);
+  size_t result = fread((void*)data.data(),1,fileSize,file);
   fclose(file);
-  if(result != st.st_size)
+  if(result != fileSize)
   {
 #ifndef NDEBUG
     printf("  { FabricSTORAGE } : ERROR loadAscii: '%s', incorrect amount of bytes read.\n",absolute().c_str());
