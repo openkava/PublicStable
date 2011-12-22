@@ -32,12 +32,15 @@ FABRIC.SceneGraph.registerManagerType('SceneSerializer', {
   },
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
-      });
+      filteredNodeTypes: [],
+      typeRemappings: {}
+    });
   
     var filteredNodes = [];
     var savedNodes = [];
     var savedData = [];
     var currentIndex = 0;
+    var storedDGNodes = {};
     var isNodeBeingSaved = function(node) {
       return (savedNodes.indexOf(node) !== -1);
     };
@@ -48,6 +51,11 @@ FABRIC.SceneGraph.registerManagerType('SceneSerializer', {
       addNode: function(node) {
         if (!node || !node.isTypeOf || !node.isTypeOf('SceneGraphNode')) {
           throw 'SceneSaver can only save SceneGraphNodes';
+        }
+        for(var i=0; i<options.filteredNodeTypes; i++){
+          if (node.isTypeOf(options.filteredNodeTypes[i])) {
+            return;
+          }
         }
         if(!isNodeBeingSaved(node) && !isNodeExcluded(node)){
           var constructionOptions = {};
@@ -60,7 +68,17 @@ FABRIC.SceneGraph.registerManagerType('SceneSerializer', {
           });
           savedNodes.push(node);
         };
-        return node;
+      },
+      writeDGNodeData: function(sgnodename, dgnodename, dgnode, members) {
+        if(!storedDGNodes[sgnodename]){
+          storedDGNodes[sgnodename] = {};
+        }
+        storedDGNodes[sgnodename][dgnodename] = {
+          dgnode: dgnode
+        }
+        if(members){
+          storedDGNodes[sgnodename][dgnodename].members = members;
+        }
       },
       pub:{
         // Add the filter nodes first, and then add the nodes you wish to save.
@@ -86,17 +104,47 @@ FABRIC.SceneGraph.registerManagerType('SceneSerializer', {
           }
         },
         save: function(writer) {
+          
+          //var binaryStorageNode = scene.getPrivateInterface(options.binaryStorageNode);
           var str = '[';
           for (var i = 0; i < savedNodes.length; i++) {
             if (i > 0) {
               str += ',';
             }
-            str += '\n  {';
-            str += '\n    \"name\":' + this.wrapQuotes(savedNodes[i].getName());
-            str += ',\n    \"type\":' + this.wrapQuotes(savedNodes[i].getType());
-            str += ',\n\    "options\":' + JSON.stringify(savedData[i].options);
-            str += ',\n\    "data\":' + JSON.stringify(savedData[i].data);
-            str += '\n  }';
+            var name = savedNodes[i].getName();
+            var type = savedNodes[i].getType();
+            if(options.typeRemappings[type]){
+              type = options.typeRemappings[type];
+            }
+            str +=  '\n  {';
+            str +=  '\n    \"name\":' + this.wrapQuotes(name);
+            str += ',\n    \"type\":' + this.wrapQuotes(type);
+            str += ',\n    \"options\":' + JSON.stringify(savedData[i].options);
+            str += ',\n    \"data\":' + JSON.stringify(savedData[i].data);
+            
+            if(storedDGNodes[name]){
+              str += ',\n    \"dgnodedata\":{';
+              
+              for(var dgnodename in storedDGNodes[name]){
+                var dgnode = storedDGNodes[name].dgnode;
+                var dgnodeDataDesc = storedDGNodes[name];
+                str += ',\n      \"'+dgnodename+'\":{';
+                if(dgnodeDataDesc.members){
+                  str += ',\n    \"members\":' + JSON.stringify(dgnodeDataDesc.members);
+                }
+                if(false){
+                  
+                }else{
+                  str += ',\n    \"sliceCount\":' + dgnodeDataDesc.sliceCount;
+                  str += ',\n    \"memberData\":' + JSON.stringify(dgnode.getBulkData());
+                }
+                str +=  '\n      }';
+              }
+              
+              str +=  '\n    }';
+              storedDGNodes[name] = {};
+            }
+            str +=  '\n  }';
           }
           str += '\n]';
           writer.write(str);
@@ -161,7 +209,10 @@ FABRIC.SceneGraph.registerManagerType('SceneDeserializer', {
           preLoadedNodes[nodeName] = node;
         },
         load: function(storage) {
-          dataObj = JSON.parse(storage.read());
+          dataObj = storage.read();
+          if(typeof dataObj == 'string'){
+            dataObj = JSON.parse(dataObj);
+          }
           
           for (var i = 0; i < dataObj.length; i++) {
             var nodeData = dataObj[i];
@@ -190,6 +241,7 @@ FABRIC.SceneGraph.LogWriter = function() {
   var str = "";
   this.write = function(instr) {
     str = instr;
+    console.log(str);
   }
   this.log = function(instr) {
     console.log(str);
@@ -221,13 +273,9 @@ FABRIC.SceneGraph.FileWriter = function(scene, title, suggestedFileName) {
     str = instr;
     scene.IO.putTextFile(str, path);
   }
-  this.read = function(){
-    return localStorage.getItem(name);
-  }
   this.log = function(instr) {
     console.log(str);
   }
-
 };
 
 /**
@@ -236,7 +284,6 @@ FABRIC.SceneGraph.FileWriter = function(scene, title, suggestedFileName) {
  * @param {string} filepath The path to the file to read from.
  */
 FABRIC.SceneGraph.FileReader = function(scene, title, suggestedFileName) {
-
   var path = scene.IO.queryUserFileAndFolderHandle(scene.IO.forOpen, title, "json", suggestedFileName);
 
   this.read = function() {
@@ -244,6 +291,17 @@ FABRIC.SceneGraph.FileReader = function(scene, title, suggestedFileName) {
   }
 };
 
+/**
+ * Constructor to create a FileReader object.
+ * @constructor
+ * @param {string} filepath The path to the file to read from.
+ */
+FABRIC.SceneGraph.XHRReader = function(url) {
+  var file = FABRIC.loadResourceURL(url);
+  this.read = function() {
+    return JSON.parse(file);
+  }
+};
 
 /**
  * Constructor to create a FileReader object.
@@ -321,20 +379,20 @@ FABRIC.SceneGraph.registerNodeType('LoadBinaryDataNode', {
       for(var i=0;i<elements.length;i++) {
         var tokens = elements[i].name.split('.');
         var dgnodeName = tokens[0];
-        if(!dgnodes[dgnodeName])
-        {
+        if(!dgnodes[dgnodeName]){
           console.log('Warning: SecureStorage: Unknown DGNode: '+dgnodeName);
           continue;
         }
-        if(!bounds[dgnodeName])
-        {
+        if(!bounds[dgnodeName]){
           bounds[dgnodeName] = {};
           bounds[dgnodeName].slices = elements[i].slicecount
         }
-        if(!bounds[dgnodeName][tokens[1]])
+        if(!bounds[dgnodeName][tokens[1]]){
           bounds[dgnodeName][tokens[1]] = {};
-        if(bounds[dgnodeName][tokens[1]].first == undefined)
+        }
+        if(bounds[dgnodeName][tokens[1]].first == undefined){
           bounds[dgnodeName][tokens[1]].first = i;
+        }
         bounds[dgnodeName][tokens[1]].last = i;
       }
       
@@ -548,8 +606,8 @@ FABRIC.SceneGraph.registerNodeType('WriteBinaryDataNode', {
     // methods to store nodes
     writeBinaryDataNode.storeDGNode = function(dgnode, storeOptions) {
       scene.assignDefaults(storeOptions, {
-        members: undefined,
         dgnodeName: undefined,
+        members: undefined,
         version: 1
       });
       dgnode.evaluate();
