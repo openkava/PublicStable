@@ -64,6 +64,7 @@ namespace Fabric
         void const *srcKeyData = immutableKeyData( node );
         void const *srcValueData = immutableValueData( node );
         m_valueImpl->setData( srcValueData, getMutable( dstData, srcKeyData ) );
+        node = node->bitsNextNode;
       }
     }
     
