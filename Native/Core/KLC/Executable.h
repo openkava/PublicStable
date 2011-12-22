@@ -37,6 +37,7 @@ namespace Fabric
     class MapOperator;
     class ReduceOperator;
     class ValueMapOperator;
+    class ValueTransformOperator;
     
     class Executable : public GC::Object
     {
@@ -60,6 +61,7 @@ namespace Fabric
       RC::Handle<ReduceOperator> resolveReduceOperator( std::string const &reduceOperatorName ) const;
       RC::Handle<ArrayGeneratorOperator> resolveArrayGeneratorOperator( std::string const &arrayGeneratorOperatorName ) const;
       RC::Handle<ValueMapOperator> resolveValueMapOperator( std::string const &operatorName ) const;
+      RC::Handle<ValueTransformOperator> resolveValueTransformOperator( std::string const &operatorName ) const;
         
       virtual void jsonExec(
         std::string const &cmd,
@@ -126,6 +128,11 @@ namespace Fabric
         );
     
       void jsonExecResolveValueMapOperator(
+        RC::ConstHandle<JSON::Value> const &arg,
+        Util::JSONArrayGenerator &resultJAG
+        );
+    
+      void jsonExecResolveValueTransformOperator(
         RC::ConstHandle<JSON::Value> const &arg,
         Util::JSONArrayGenerator &resultJAG
         );

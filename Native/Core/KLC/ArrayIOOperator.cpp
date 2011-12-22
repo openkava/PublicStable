@@ -46,7 +46,7 @@ namespace Fabric
             RT::ImplType sharedType = sharedDesc->getType(); \
             if ( RT::isBoolean(sharedType) ) \
               FABRIC_KLC_ARRAY_IO_OPERATOR_PICK_ITN_STN( inputTypeName, Boolean ); \
-            else if ( RT::isInteger(inputType) ) \
+            else if ( RT::isInteger(sharedType) ) \
             { \
               size_t size = inputDesc->getAllocSize(); \
               bool isSigned = RC::ConstHandle<RT::IntegerDesc>::StaticCast( inputDesc )->isSigned(); \
@@ -80,7 +80,7 @@ namespace Fabric
                   FABRIC_ASSERT( false && "Unsupported integer size" ); \
               } \
             } \
-            else if ( RT::isFloat( m_inputAdapter->getType() ) ) \
+            else if ( RT::isFloat(sharedType) ) \
             { \
               if ( m_inputAdapter->getImpl()->getAllocSize() == 8 ) \
                 FABRIC_KLC_ARRAY_IO_OPERATOR_PICK_ITN_STN( inputTypeName, Float64 ); \
@@ -100,8 +100,8 @@ namespace Fabric
             FABRIC_KLC_ARRAY_IO_OPERATOR_PICK_ITN_SD( Boolean, sharedDesc ); \
           else if ( RT::isInteger(inputType) ) \
           { \
-            size_t size = inputDesc->getAllocSize(); \
-            bool isSigned = RC::ConstHandle<RT::IntegerDesc>::StaticCast( inputDesc )->isSigned(); \
+            size_t size = sharedDesc->getAllocSize(); \
+            bool isSigned = RC::ConstHandle<RT::IntegerDesc>::StaticCast( sharedDesc )->isSigned(); \
             switch ( size ) \
             { \
               case 1: \
@@ -132,9 +132,9 @@ namespace Fabric
                 FABRIC_ASSERT( false && "Unsupported integer size" ); \
             } \
           } \
-          else if ( RT::isFloat( m_inputAdapter->getType() ) ) \
+          else if ( RT::isFloat(inputType) ) \
           { \
-            if ( m_inputAdapter->getImpl()->getAllocSize() == 8 ) \
+            if ( sharedDesc->getAllocSize() == 8 ) \
               FABRIC_KLC_ARRAY_IO_OPERATOR_PICK_ITN_SD( Float64, sharedDesc ); \
             else \
               FABRIC_KLC_ARRAY_IO_OPERATOR_PICK_ITN_SD( Float32, sharedDesc ); \
