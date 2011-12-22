@@ -9,6 +9,7 @@
 #include <Fabric/Core/KLC/MapOperator.h>
 #include <Fabric/Core/KLC/ReduceOperator.h>
 #include <Fabric/Core/KLC/ValueMapOperator.h>
+#include <Fabric/Core/KLC/ValueTransformOperator.h>
 #include <Fabric/Core/MR/ConstArray.h>
 #include <Fabric/Core/GC/Object.h>
 #include <Fabric/Core/RT/Manager.h>
@@ -64,6 +65,8 @@ namespace Fabric
         jsonExecCreateArrayGeneratorOperator( arg, resultJAG );
       else if ( cmd == "createValueMapOperator" )
         jsonExecCreateValueMapOperator( arg, resultJAG );
+      else if ( cmd == "createValueTransformOperator" )
+        jsonExecCreateValueTransformOperator( arg, resultJAG );
       else throw Exception( "unknown command: " + _(cmd) );
     }
     
@@ -370,6 +373,59 @@ namespace Fabric
       compilation->add( sourceName, sourceCode );
       RC::Handle<Executable> executable = compilation->run();
       executable->resolveValueMapOperator( operatorName )->reg( m_gcContainer, id_ );
+    }
+    
+    void Interface::jsonExecCreateValueTransformOperator(
+      RC::ConstHandle<JSON::Value> const &arg,
+      Util::JSONArrayGenerator &resultJAG
+      )
+    {
+      RC::ConstHandle<JSON::Object> argObject = arg->toObject();
+      
+      std::string id_;
+      try
+      {
+        id_ = argObject->get( "id" )->toString()->value();
+      }
+      catch ( Exception e )
+      {
+        throw "id: " + e;
+      }
+      
+      std::string sourceName;
+      try
+      {
+        sourceName = argObject->get( "sourceName" )->toString()->value();
+      }
+      catch ( Exception e )
+      {
+        throw "sourceName: " + e;
+      }
+      
+      std::string sourceCode;
+      try
+      {
+        sourceCode = argObject->get( "sourceCode" )->toString()->value();
+      }
+      catch ( Exception e )
+      {
+        throw "sourceCode: " + e;
+      }
+      
+      std::string operatorName;
+      try
+      {
+        operatorName = argObject->get( "operatorName" )->toString()->value();
+      }
+      catch ( Exception e )
+      {
+        throw "operatorName: " + e;
+      }
+      
+      RC::Handle<Compilation> compilation = Compilation::Create( m_gcContainer, m_cgManager, m_compileOptions );
+      compilation->add( sourceName, sourceCode );
+      RC::Handle<Executable> executable = compilation->run();
+      executable->resolveValueTransformOperator( operatorName )->reg( m_gcContainer, id_ );
     }
   };
 };

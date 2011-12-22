@@ -3,7 +3,7 @@
  */
  
 #ifndef _FABRIC_KL_VALUE_MAP_OPERATOR_H
-#define _FABRIC_KL_MAP_OPERATOR_H
+#define _FABRIC_KL_VALUE_MAP_OPERATOR_H
 
 #include <Fabric/Core/KLC/ValueIOOperator.h>
 

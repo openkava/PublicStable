@@ -7,6 +7,7 @@
 #include <Fabric/Core/KLC/MapOperator.h>
 #include <Fabric/Core/KLC/ReduceOperator.h>
 #include <Fabric/Core/KLC/ValueMapOperator.h>
+#include <Fabric/Core/KLC/ValueTransformOperator.h>
 #include <Fabric/Core/DG/IRCache.h>
 #include <Fabric/Core/Plug/Manager.h>
 #include <Fabric/Core/KL/Externals.h>
@@ -398,10 +399,51 @@ namespace Fabric
         }
           
         if ( !functionPtr )
-          throw Exception( "array generator operator " + _(operatorName) + " not found" );
+          throw Exception( "value map operator " + _(operatorName) + " not found" );
       }
       
       return ValueMapOperator::Create(
+        this,
+        astOperator,
+        functionPtr
+        );
+    }
+    
+    RC::Handle<ValueTransformOperator> Executable::resolveValueTransformOperator( std::string const &operatorName ) const
+    {
+      void (*functionPtr)( ... ) = 0;
+      RC::ConstHandle<AST::Operator> astOperator;
+      
+      if ( !m_diagnostics.containsError() )
+      {
+        CurrentExecutableSetter executableSetter( this );
+        llvm::Function *llvmFunction = m_llvmExecutionEngine->FindFunctionNamed( operatorName.c_str() );
+        if ( llvmFunction )
+        {
+          functionPtr = (void (*)(...))( m_llvmExecutionEngine->getPointerToFunction( llvmFunction ) );
+          
+          std::vector< RC::ConstHandle<AST::Function> > functions;
+          m_ast->collectFunctions( functions );
+          
+          for ( std::vector< RC::ConstHandle<AST::Function> >::const_iterator it=functions.begin(); it!=functions.end(); ++it )
+          {
+            RC::ConstHandle<AST::Function> const &function = *it;
+            
+            std::string const *friendlyName = function->getFriendlyName( m_cgManager );
+            if ( friendlyName && *friendlyName == operatorName )
+            {
+              if( !function->isOperator() )
+                throw Exception( _(operatorName) + " is not an operator" );
+              astOperator = RC::ConstHandle<AST::Operator>::StaticCast( function );
+            }
+          }
+        }
+          
+        if ( !functionPtr )
+          throw Exception( "value transform operator " + _(operatorName) + " not found" );
+      }
+      
+      return ValueTransformOperator::Create(
         this,
         astOperator,
         functionPtr
@@ -583,6 +625,36 @@ namespace Fabric
       }
       
       resolveValueMapOperator( operatorName )->reg( m_gcContainer, id_ );
+    }
+    
+    void Executable::jsonExecResolveValueTransformOperator(
+      RC::ConstHandle<JSON::Value> const &arg,
+      Util::JSONArrayGenerator &resultJAG
+      )
+    {
+      RC::ConstHandle<JSON::Object> argObject = arg->toObject();
+      
+      std::string id_;
+      try
+      {
+        id_ = argObject->get( "id" )->toString()->value();
+      }
+      catch ( Exception e )
+      {
+        throw "id: " + e;
+      }
+      
+      std::string operatorName;
+      try
+      {
+        operatorName = argObject->get( "operatorName" )->toString()->value();
+      }
+      catch ( Exception e )
+      {
+        throw "operatorName: " + e;
+      }
+      
+      resolveValueTransformOperator( operatorName )->reg( m_gcContainer, id_ );
     }
   }
 }
