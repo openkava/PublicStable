@@ -21,7 +21,7 @@ FABRIC.SceneGraph.registerNodeType('LoadObj', {
     resourceloaddgnode = resourceLoadNode.getDGLoadNode();
     
     resourceloaddgnode.addMember('reload', 'Boolean', true);
-    resourceloaddgnode.addMember('handle', 'Data');
+    resourceloaddgnode.addMember('handle', 'OBJDataHandle');
   
     resourceloaddgnode.addMember('splitObjects', 'Boolean', options.splitObjects);
     resourceloaddgnode.addMember('splitGroups', 'Boolean', options.splitMaterials);

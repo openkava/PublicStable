@@ -12,7 +12,7 @@ function decodeObj(
   Boolean splitByObject,
   Boolean splitByGroup,
   Boolean splitByMaterial,
-  io Data objParseHandle,
+  io OBJDataHandle objParseHandle,
   
   io String objectNames[],
   io String groupNames[],
@@ -70,7 +70,7 @@ function decodeObj(
 }
 operator parseObj(
   io FabricResource resource,
-  io Data objParseHandle,
+  io OBJDataHandle objParseHandle,
   io Boolean splitByObject,
   io Boolean splitByGroup,
   io Boolean splitByMaterial,
@@ -89,7 +89,7 @@ operator parseObj(
 
 
 operator setVertexCount(
-  io Data objParseHandle,
+  io OBJDataHandle objParseHandle,
   io Integer entityIndex,
   io Boolean reload,
   io Size newCount
@@ -98,7 +98,7 @@ operator setVertexCount(
 }
 
 operator setObjGeom(
-  io Data objParseHandle,
+  io OBJDataHandle objParseHandle,
   io Integer entityIndex,
   io Integer indices[],
   io Vec3 positions<>,
@@ -119,7 +119,7 @@ operator setObjGeom(
 }
 
 operator freeObjParsedData(
-  io Data objParseHandle
+  io OBJDataHandle objParseHandle
 ) {
   FabricOBJFreeParsedData(objParseHandle);
 }
