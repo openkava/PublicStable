@@ -119,35 +119,34 @@ $(document).ready(function() {
   // create a light
   var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) });
 
+  var fezNode = scene.constructNode('Triangles', {uvSets: 1});
+  var material = scene.constructNode('PhongMaterial', {
+    diffuseColor: FABRIC.RT.rgb(255/255,6/255,6/255),
+    lightNode: light
+  });
+  var instance = scene.constructNode('Instance', {
+    geometryNode: fezNode,
+    materialNode: material,
+    transformNode: scene.constructNode('Transform', {
+      hierarchical: false,
+      globalXfo: new FABRIC.RT.Xfo({ tr: new FABRIC.RT.Vec3(0, 0, -5) })
+    }),
+  });
+
   // open a secure archive
   var secureLoadNode = scene.importAssetFile('Models/cow.fez', {secureKey: 'secureKey'});
   secureLoadNode.addOnLoadSuccessCallback(function(){
-    
     // once the archive is loaded, construct a Triangles node from it
-    var fezNode = secureLoadNode.constructNode('Triangles', {uvSets: 1});
-    var material = scene.constructNode('PhongMaterial', {
-      diffuseColor: FABRIC.RT.rgb(255/255,6/255,6/255),
-      lightNode: light
-    });
-    var instance = scene.constructNode('Instance', {
-      geometryNode: fezNode,
-      materialNode: material,
-      transformNode: scene.constructNode('Transform', {
-        hierarchical: false,
-        globalXfo: new FABRIC.RT.Xfo({ tr: new FABRIC.RT.Vec3(0, 0, -5) })
-      }),
-    });
+    secureLoadNode.loadNode(fezNode);
   });
 
   var modelName = 'cow';
   var objResource = scene.importAssetFile('Models/' + modelName + '.obj', {
    splitMaterials: false
   });
+  var instances = [];
   objResource.addEventListener('objparsesuccess', function(evt){
     
-    // once we have parsed the OBJ file, create a SecureStorageNode
-    // to save the Triangles node.
-    var secureSaveNode = scene.constructNode('SecureStorageNode', {dependentNode: viewport, secureKey: 'secureKey'});
     for(var name in evt.loadedGeometries){
       var material = scene.constructNode('PhongMaterial', {
         diffuseColor: FABRIC.RT.rgb(255/255,183/255,48/255),
@@ -161,32 +160,41 @@ $(document).ready(function() {
           globalXfo: new FABRIC.RT.Xfo({ tr: new FABRIC.RT.Vec3(0, 0, 5) })
         }),
       });
-      setTimeout(function() {
-        viewport.redraw();
-        
-        // after a small time treshold,
-        // for the first redraw, let's store the triangles node.
-        // we specify the DGNode names to store, since we want to avoid
-        // to store the bbox DGNode.
-        secureSaveNode.storeNode({
-          node: evt.loadedGeometries[name],
-          dgnodeNames: ['UniformsDGNode', 'AttributesDGNode']
-        });
-        
-        // also store the mixed data node,
-        // for testing purposes
-        secureSaveNode.storeNode({
-          node: scene.constructNode('MixedDataNode')
-        });
-        viewport.redraw();
-        $('#saveResource').button()
-          .click(function() {
-            var path = scene.IO.queryUserFileAndFolderHandle(scene.IO.forOpenWithWriteAccess, "Secure ", "fez", "cow");
-            secureSaveNode.putResourceToFile('resource',path);
-          });
-      }, 1000);
+      instances.push(instance);
     }
+    
+    viewport.redraw();
   });
+  
+  
+  $('#saveResource').button()
+    .click(function() {
+      var path = scene.IO.queryUserFileAndFolderHandle(scene.IO.forOpenWithWriteAccess, "Secure ", "fez", "cow");
+      
+      
+      // once we have parsed the OBJ file, create a SecureStorageNode
+      // to save the Triangles node.
+      var writeBinaryDataNode = scene.constructNode('WriteBinaryDataNode', {
+       secureKey: 'secureKey'
+      });
+      
+      for(var i=0; i<instances.length; i++){
+       // let's store the triangles node.
+       // we specify the DGNode names to store, since we want to avoid
+       // to store the bbox DGNode.
+       writeBinaryDataNode.storeNode( instances[i].getGeometryNode(), {
+         dgnodeNames: ['UniformsDGNode', 'AttributesDGNode']
+       });
+      }
+      /*
+      // also store the mixed data node,
+      // for testing purposes
+      writeBinaryDataNode.storeNode(
+        scene.constructNode('MixedDataNode')
+      );
+      */
+      writeBinaryDataNode.putResourceToFile('resource',path);
+    });
   
   $('#loadingDialog').dialog({
     modal: true

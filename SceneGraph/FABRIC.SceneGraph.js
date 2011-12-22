@@ -1441,7 +1441,6 @@ FABRIC.SceneGraph.registerNodeType('ResourceLoad', {
     var dgnode = resourceLoadNode.constructResourceLoadNode('DGLoadNode');
 
     resourceLoadNode.addMemberInterface(dgnode, 'url');
-    resourceLoadNode.addMemberInterface(dgnode, 'resource');
     
     var remainingTaskWeight = 1.0;
     var incrementLoadProgressBar;
