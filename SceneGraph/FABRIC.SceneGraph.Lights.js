@@ -60,7 +60,7 @@ FABRIC.SceneGraph.registerNodeType('Light', {
         preProcessorDefinitions: {
           LIGHTTYPE_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('lightType'),
           LIGHTCOLOR_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('lightColor'),
-          LIGHTPOS_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('lightPosition'),
+          LIGHTPOSITION_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('lightPosition'),
           LIGHTDIR_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('lightDir'),
           LIGHTCOSCUTOFF_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('lightCosCutoff'),
           LIGHTVIEWMATRIX_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('lightShadowMapMatrix')
@@ -243,7 +243,7 @@ FABRIC.SceneGraph.registerNodeType('DirectionalLight', {
         preProcessorDefinitions: {
           LIGHTTYPE_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('lightType'),
           LIGHTCOLOR_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('lightColor'),
-          LIGHTPOS_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('lightPosition'),
+          LIGHTPOSITION_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('lightPosition'),
           LIGHTDIR_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('lightDir'),
           LIGHTCOSCUTOFF_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('lightCosCutoff'),
           LIGHTVIEWMATRIX_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('lightShadowMapMatrix')
@@ -365,7 +365,7 @@ FABRIC.SceneGraph.registerNodeType('SpotLight', {
           preProcessorDefinitions: {
           LIGHTTYPE_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('lightType'),
           LIGHTCOLOR_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('lightColor'),
-          LIGHTPOS_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('lightPosition'),
+          LIGHTPOSITION_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('lightPosition'),
           LIGHTDIR_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('lightDir'),
           LIGHTCOSCUTOFF_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('lightCosCutoff'),
           LIGHTVIEWMATRIX_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('lightShadowMapMatrix')
@@ -392,7 +392,7 @@ FABRIC.SceneGraph.registerNodeType('SpotLight', {
               preProcessorDefinitions: {
                 LIGHTTYPE_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('lightType'),
                 LIGHTCOLOR_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('lightColor'),
-                LIGHTPOS_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('lightPosition'),
+                LIGHTPOSITION_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('lightPosition'),
                 LIGHTDIR_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('lightDir'),
                 LIGHTCOSCUTOFF_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('lightCosCutoff'),
                 LIGHTVIEWMATRIX_ATTRIBUTE_ID: FABRIC.SceneGraph.getShaderParamID('lightShadowMapMatrix')

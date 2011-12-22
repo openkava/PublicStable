@@ -771,7 +771,7 @@ FABRIC.SceneGraph.defineEffectFromFile = function(effectName, effectfile) {
       effectParameters.shaderUniforms = {};
       len = node.childNodes.length;
       for (j = 0; j < len; j++) {
-        if (node.childNodes[j].nodeName === '#text') {
+        if (node.childNodes[j].nodeName === '#text' || node.childNodes[j].nodeName === '#comment') {
           continue;
         }
         uniformNode = node.childNodes[j];
@@ -803,7 +803,7 @@ FABRIC.SceneGraph.defineEffectFromFile = function(effectName, effectfile) {
       effectParameters.shaderAttributes = {};
       len = node.childNodes.length;
       for (j = 0; j < len; j++) {
-        if (node.childNodes[j].nodeName === '#text') {
+        if (node.childNodes[j].nodeName === '#text' || node.childNodes[j].nodeName === '#comment') {
           continue;
         }
         attributeNode = node.childNodes[j];
@@ -818,7 +818,7 @@ FABRIC.SceneGraph.defineEffectFromFile = function(effectName, effectfile) {
       effectParameters.lights = {};
       len = node.childNodes.length;
       for (j = 0; j < len; j++) {
-        if (node.childNodes[j].nodeName === '#text') {
+        if (node.childNodes[j].nodeName === '#text' || node.childNodes[j].nodeName === '#comment') {
           continue;
         }
         lightNode = node.childNodes[j];
@@ -836,7 +836,7 @@ FABRIC.SceneGraph.defineEffectFromFile = function(effectName, effectfile) {
       effectParameters.textures = {};
       len = node.childNodes.length;
       for (j = 0; j < len; j++) {
-        if (node.childNodes[j].nodeName === '#text') {
+        if (node.childNodes[j].nodeName === '#text' || node.childNodes[j].nodeName === '#comment') {
           continue;
         }
         textureNode = node.childNodes[j];
@@ -855,7 +855,7 @@ FABRIC.SceneGraph.defineEffectFromFile = function(effectName, effectfile) {
       effectParameters.programParams = {};
       len = node.childNodes.length;
       for (j = 0; j < len; j++) {
-        if (node.childNodes[j].nodeName === '#text') {
+        if (node.childNodes[j].nodeName === '#text' || node.childNodes[j].nodeName === '#comment') {
           continue;
         }
         paramNode = node.childNodes[j];
@@ -877,6 +877,7 @@ FABRIC.SceneGraph.defineEffectFromFile = function(effectName, effectfile) {
         paramNode = node.childNodes[j];
         switch (node.childNodes[j].nodeName ) {
           case '#text':
+          case '#comment':
             continue;
           case 'drawMode':
             effectParameters.drawParams.drawMode = paramNode.getAttribute('value');
@@ -897,6 +898,7 @@ FABRIC.SceneGraph.defineEffectFromFile = function(effectName, effectfile) {
           paramNode = node.childNodes[j];
           switch (paramNode.nodeName ) {
             case '#text':
+            case '#comment':
               continue;
             default:
               vals.push(FABRIC.SceneGraph.OpenGLConstants[paramNode.firstChild.data]);
@@ -913,6 +915,7 @@ FABRIC.SceneGraph.defineEffectFromFile = function(effectName, effectfile) {
         paramNode = node.childNodes[j];
         switch (paramNode.nodeName ) {
           case '#text':
+          case '#comment':
             continue;
           case 'disableOptions':
             effectParameters.disableOptions = collectParamArray(paramNode);
@@ -937,7 +940,7 @@ FABRIC.SceneGraph.defineEffectFromFile = function(effectName, effectfile) {
       var len, j, directiveNode;
       len = node.childNodes.length;
       for (j = 0; j < len; j++) {
-        if (node.childNodes[j].nodeName === '#text') {
+        if (node.childNodes[j].nodeName === '#text' || node.childNodes[j].nodeName === '#comment') {
           continue;
         }
         directiveNode = node.childNodes[j];
@@ -969,6 +972,7 @@ FABRIC.SceneGraph.defineEffectFromFile = function(effectName, effectfile) {
       childNode = xmlRoot.childNodes[i];
       switch (childNode.nodeName) {
         case '#text':
+        case '#comment':
           continue;
         case 'name':
           effectParameters.name = childNode.firstChild.data;
