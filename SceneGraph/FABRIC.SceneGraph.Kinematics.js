@@ -120,12 +120,21 @@ FABRIC.SceneGraph.registerNodeType('Transform', {
     }
     
     
+    //////////////////////////////////////////
+    // Persistence
+    var parentAddDependencies = transformNode.addDependencies;
+    transformNode.addDependencies = function(sceneSerializer) {
+      parentAddDependencies(sceneSerializer);
+      if(parentTransformNode){
+        sceneSerializer.addNode(parentTransformNode.pub);
+      }
+    };
+    
     var parentWriteData = transformNode.writeData;
     var parentReadData = transformNode.readData;
     transformNode.writeData = function(sceneSerializer, constructionOptions, nodeData) {
       constructionOptions.hierarchical = options.hierarchical;
       if(parentTransformNode){
-        sceneSerializer.addNode(parentTransformNode.pub);
         nodeData.parentTransformNode = parentTransformNode.pub.getName();
       }
       nodeData.globalXfo = transformNode.pub.getGlobalXfo();

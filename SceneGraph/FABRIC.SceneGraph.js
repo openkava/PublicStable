@@ -857,6 +857,8 @@ FABRIC.SceneGraph.registerNodeType('SceneGraphNode', {
         return eventnode;
       },
       
+      addDependencies: function(sceneSerializer) {
+      },
       writeData: function(sceneSerializer, constructionOptions, nodeData) {
         constructionOptions.name = name;
       },

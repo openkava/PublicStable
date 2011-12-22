@@ -898,6 +898,16 @@ FABRIC.SceneGraph.registerNodeType('Instance', {
     
     //////////////////////////////////////////
     // Persistence
+    var parentAddDependencies = instanceNode.addDependencies;
+    instanceNode.addDependencies = function(sceneSerializer) {
+      parentAddDependencies(sceneSerializer);
+      sceneSerializer.addNode(transformNode.pub);
+      sceneSerializer.addNode(geometryNode.pub);
+      for (var i = 0; i < materialNodes.length; i++) {
+        sceneSerializer.addNode(materialNodes[i].pub);
+      }
+    };
+    
     var parentWriteData = instanceNode.writeData;
     var parentReadData = instanceNode.readData;
     instanceNode.writeData = function(sceneSerializer, constructionOptions, nodeData) {
@@ -906,15 +916,11 @@ FABRIC.SceneGraph.registerNodeType('Instance', {
       constructionOptions.constructDefaultTransformNode = false;
       constructionOptions.enableRaycasting = options.enableRaycasting;
 
-      sceneSerializer.addNode(transformNode.pub);
       nodeData.transformNode = transformNode.pub.getName();
       nodeData.transformNodeMember = transformNodeMember;
-
-      sceneSerializer.addNode(geometryNode.pub);
       nodeData.geometryNode = geometryNode.pub.getName();
       nodeData.materialNodes = [];
       for (var i = 0; i < materialNodes.length; i++) {
-        sceneSerializer.addNode(materialNodes[i].pub);
         nodeData.materialNodes.push(materialNodes[i].pub.getName());
       }
     };
