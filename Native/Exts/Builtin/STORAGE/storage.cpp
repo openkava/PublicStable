@@ -251,9 +251,7 @@ void FileHandle::LocalData::getSubHandles(KL::VariableArray<FileHandle> & handle
   {
     handles[i].localData = new FileHandle::LocalData();
     handles[i].localData->retain();
-    handles[i].localData->mIsFolder = -1;
-    handles[i].localData->mParts = mParts;
-    handles[i].localData->mParts.push_back(paths[i]);
+    handles[i].localData->init(paths[i]);
   }
 }
 
@@ -297,7 +295,7 @@ void FileHandle::LocalData::loadBinary(KL::VariableArray<KL::Byte> & data)
     return;
   }
 #ifndef NDEBUG
-  printf("  { FabricSTORAGE } : loadBinary: File size is '%d'.\n",(int)st.st_size);
+  printf("  { FabricSTORAGE } : loadBinary: File size is '%d'.\n",(int)fileSize);
 #endif
   data.resize(fileSize);
   size_t result = fread(&data[0],1,fileSize,file);
@@ -352,7 +350,7 @@ void FileHandle::LocalData::loadAscii(KL::String::IO data)
     return;
   }
 #ifndef NDEBUG
-  printf("  { FabricSTORAGE } : loadAscii: File size is '%d'.\n",(int)st.st_size);
+  printf("  { FabricSTORAGE } : loadAscii: File size is '%d'.\n",(int)fileSize);
 #endif
   data.reserve(fileSize);
   size_t result = fread((void*)data.data(),1,fileSize,file);
