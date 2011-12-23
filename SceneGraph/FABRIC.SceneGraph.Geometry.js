@@ -255,8 +255,16 @@ FABRIC.SceneGraph.registerNodeType('Geometry', {
       if(writeGeometryAttributes){
         var attributeMembers = [];
         for(var i in attributes) attributeMembers.push(i);
-        sceneSerializer.writeDGNodeData(geometryNode.pub.getName(), 'attributes', attributesdgnode, attributeMembers);
-        sceneSerializer.writeDGNodeData(geometryNode.pub.getName(), 'uniforms', uniformsdgnode, ['indices']);
+        sceneSerializer.writeDGNodesData(geometryNode.pub.getName(), {
+          uniforms:{
+            dgnode: uniformsdgnode,
+            members: ['indices']
+          },
+          attributes:{
+            dgnode: attributesdgnode,
+            members: attributeMembers
+          }
+        });
       }
     };
     geometryNode.readData = function(sceneDeserializer, nodeData) {
@@ -962,12 +970,18 @@ FABRIC.SceneGraph.registerNodeType('Instance', {
       constructionOptions.constructDefaultTransformNode = false;
       constructionOptions.enableRaycasting = options.enableRaycasting;
 
-      nodeData.transformNode = transformNode.pub.getName();
-      nodeData.transformNodeMember = transformNodeMember;
-      nodeData.geometryNode = geometryNode.pub.getName();
+      if(sceneSerializer.isNodeBeingSaved(transformNode.pub)){
+        nodeData.transformNode = transformNode.pub.getName();
+        nodeData.transformNodeMember = transformNodeMember;
+      }
+      if(sceneSerializer.isNodeBeingSaved(geometryNode.pub)){
+        nodeData.geometryNode = geometryNode.pub.getName();
+      }
       nodeData.materialNodes = [];
       for (var i = 0; i < materialNodes.length; i++) {
-        nodeData.materialNodes.push(materialNodes[i].pub.getName());
+        if(sceneSerializer.isNodeBeingSaved(materialNodes[i].pub)){
+          nodeData.materialNodes.push(materialNodes[i].pub.getName());
+        }
       }
     };
     instanceNode.readData = function(sceneDeserializer, nodeData) {
