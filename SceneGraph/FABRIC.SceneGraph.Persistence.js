@@ -361,7 +361,7 @@ FABRIC.SceneGraph.FileWriterWithBinary = function(scene, title, suggestedFileNam
     str = instr;
   //  console.log(str);
     scene.IO.putTextFile(str, path);
-  //  writeBinaryDataNode.write('resource',binarydatapath);
+    writeBinaryDataNode.write('resource', binarydatapath);
   }
   this.log = function(instr) {
     console.log(str);
@@ -669,12 +669,22 @@ FABRIC.SceneGraph.registerNodeType('WriteBinaryDataNode', {
     
     var writeBinaryDataNodeEvent = writeBinaryDataNode.constructEventNode('WriteBinaryEvent');
     var binarydatadgnode = writeBinaryDataNode.constructResourceLoadNode('DGLoadNode');
+    var eventHandlers = {};
     
     writeBinaryDataNode.pub.write = function(resource, path){
       var dgErrors = writeBinaryDataNodeEvent.getErrors();
       if(dgErrors.length > 0){
         throw dgErrors;
       }
+      for (var ehname in eventHandlers) {
+        if (eventHandlers.hasOwnProperty(ehname)) {
+          var dgErrors = eventHandlers[ehname].getErrors();
+          if (dgErrors.length > 0) {
+            errors.push(ehname + ':' + JSON.stringify(dgErrors));
+          }
+        }
+      }
+      
       writeBinaryDataNodeEvent.fire();
       binarydatadgnode.putResourceToFile(resource, path);
     }
@@ -718,12 +728,13 @@ FABRIC.SceneGraph.registerNodeType('WriteBinaryDataNode', {
     nbOps++;
     
     writeBinaryDataNodeEvent.appendEventHandler(writeEventHandler);
+    eventHandlers['writeEventHandler'] = writeEventHandler;
     
     // methods to store nodes
     writeBinaryDataNode.storeDGNodes = function(sgnodename, dgnodeDescs) {
       var writeDGNodesEventHandler = writeBinaryDataNode.constructEventHandlerNode('Write'+sgnodename);
       writeEventHandler.appendChildEventHandler(writeDGNodesEventHandler);
-      
+      eventHandlers['Write'+sgnodename] = writeDGNodesEventHandler;
       for(dgnodeName in dgnodeDescs){
         var dgnode = dgnodeDescs[dgnodeName].dgnode;
         var memberNames = dgnodeDescs[dgnodeName].members;
@@ -820,10 +831,10 @@ FABRIC.SceneGraph.registerNodeType('WriteBinaryDataNode', {
             parameterLayout: [
               'container.container',
               'container.elements',
-              'self.'+name+'_name',
-              'self.'+name+'_type',
-              'self.'+name+'_version',
-              dgnodeName+'.'+name+'<>'
+              'self.'+memberName+'_name',
+              'self.'+memberName+'_type',
+              'self.'+memberName+'_version',
+              dgnodeName+'.'+memberName+'<>'
             ],
             async: false
           }));
