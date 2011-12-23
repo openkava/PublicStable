@@ -26,10 +26,6 @@ namespace Fabric
 {
   namespace Plug
   {
-    static void throwException( size_t length, char const *data )
-    {
-      throw Exception( length, data );
-    }
     
     //typedef void (*OnLoadFn)( SDK::Value FABRIC );
     //typedef void (*OnUnloadFn)( SDK::Value FABRIC );
@@ -40,10 +36,11 @@ namespace Fabric
       std::string const &jsonDesc,
       std::vector<std::string> const &pluginDirs,
       RC::Handle<CG::Manager> const &cgManager,
+      EDK::Callbacks const &callbacks,
       std::map< std::string, void (*)( void * ) > &implNameToDestructorMap
       )
     {
-      return new Inst( extensionDir, extensionName, jsonDesc, pluginDirs, cgManager, implNameToDestructorMap );
+      return new Inst( extensionDir, extensionName, jsonDesc, pluginDirs, cgManager, callbacks, implNameToDestructorMap );
     }
       
     Inst::Inst(
@@ -52,6 +49,7 @@ namespace Fabric
       std::string const &jsonDesc,
       std::vector<std::string> const &pluginDirs,
       RC::Handle<CG::Manager> const &cgManager,
+      EDK::Callbacks const &callbacks,
       std::map< std::string, void (*)( void * ) > &implNameToDestructorMap
       )
       : m_name( extensionName )
@@ -96,12 +94,6 @@ namespace Fabric
       }
       if ( !resolvedFabricEDKInitFunction )
         throw Exception( "error: extension doesn't implement function FabricEDKInit through macro IMPLEMENT_FABRIC_EDK_ENTRIES" );
-
-      Fabric::EDK::Callbacks callbacks;
-      callbacks.m_malloc = malloc;
-      callbacks.m_realloc = realloc;
-      callbacks.m_free = free;
-      callbacks.m_throwException = throwException;
 
       ( *( FabricEDKInitPtr )resolvedFabricEDKInitFunction )( callbacks );
       

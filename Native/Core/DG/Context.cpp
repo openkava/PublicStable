@@ -8,6 +8,7 @@
 #include <Fabric/Core/DG/NamedObject.h>
 #include <Fabric/Core/DG/Node.h>
 #include <Fabric/Core/DG/ResourceLoadNode.h>
+#include <Fabric/Core/DG/FabricFileHandle.h>
 #include <Fabric/Core/DG/Event.h>
 #include <Fabric/Core/DG/EventHandler.h>
 #include <Fabric/Core/DG/Operator.h>
@@ -33,6 +34,7 @@
 #include <Fabric/Core/Util/Base64.h>
 #include <Fabric/Core/Util/Timer.h>
 #include <Fabric/Core/Build.h>
+#include <Fabric/EDK/Common.h>
 #include <FabricThirdPartyLicenses/llvm/license.h>
 #include <FabricThirdPartyLicenses/llvm/autoconf/license.h>
 #include <FabricThirdPartyLicenses/llvm/lib/Support/license.h>
@@ -116,8 +118,8 @@ namespace Fabric
 
     void Context::registerCoreTypes()
     {
-      //FabricResource type: used by ResourceLoadNode
-      RegisterFabricResource( m_rtManager );
+      RegisterFabricResourceType( m_rtManager );
+      RegisterFabricFileHandleType( m_rtManager );
     }
     
     void Context::jsonNotify(
@@ -622,5 +624,25 @@ namespace Fabric
     std::string const Context::s_wrapFabricClientJSSource(
 #include <Fabric/Core/DG/FABRIC.Wrappers.js.inc>
 );
+
+    static void throwException( size_t length, char const *data )
+    {
+      throw Exception( length, data );
+    }
+
+    EDK::Callbacks Context::GetCallbackStruct()
+    {
+      Fabric::EDK::Callbacks callbacks;
+      callbacks.m_malloc = malloc;
+      callbacks.m_realloc = realloc;
+      callbacks.m_free = free;
+      callbacks.m_throwException = throwException;
+      callbacks.m_fabricFileHandleCopy = FabricFileHandleCopy;
+      callbacks.m_fabricFileHandleDelete = FabricFileHandleDelete;
+      callbacks.m_fabricFileHandleSetFromPath = FabricFileHandleSetFromPath;
+      callbacks.m_fabricFileHandleGetFullPath = FabricFileHandleGetFullPath;
+      callbacks.m_fabricFileHandleHasReadWriteAccess = FabricFileHandleHasReadWriteAccess;
+      return callbacks;
+    }
   };
 };

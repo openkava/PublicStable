@@ -261,6 +261,55 @@ namespace Fabric
         typedef StringBase &IO;
       });
     
+      FABRIC_EXT_KL_CLASS( FabricFileHandle, {
+
+      public:
+        FabricFileHandle() : m_data(NULL) {}
+
+        ~FabricFileHandle()
+        {
+          ( *s_callbacks.m_fabricFileHandleDelete)( &m_data );
+        }
+
+        typedef FabricFileHandle const &IN;
+        typedef FabricFileHandle &IO;
+
+        FabricFileHandle(const FabricFileHandle& other) : m_data(NULL)
+        {
+          *this = other;
+        }
+
+        FabricFileHandle& operator=(const FabricFileHandle& other)
+        {
+          ( *s_callbacks.m_fabricFileHandleCopy)( &m_data, other.m_data );
+          return *this;
+        }
+
+        bool setFromPath( char const *pathData, size_t pathLength, bool readWriteAccess )
+        {
+          return ( *s_callbacks.m_fabricFileHandleSetFromPath )( &m_data, pathData, pathLength, readWriteAccess );
+        }
+
+        bool setFromPath( char const *cString, bool readWriteAccess )
+        {
+          return setFromPath( cString, strlen(cString), readWriteAccess );
+        }
+
+        char const *getFullPath() const
+        {
+          return ( *s_callbacks.m_fabricFileHandleGetFullPath )( m_data );
+        }
+
+        bool hasReadWriteAccess() const
+        {
+          return ( *s_callbacks.m_fabricFileHandleHasReadWriteAccess )( m_data );
+        }
+
+      private:
+
+        void *m_data;
+      } );
+
       FABRIC_EXT_KL_STRUCT( RGBA, {
         Byte r;
         Byte g;
