@@ -175,6 +175,20 @@ namespace Fabric
       return result;
     }
 
+    bool FileExists( std::string const &fullPath )
+    {
+      bool result;
+#if defined(FABRIC_POSIX)
+      struct stat st;
+      result = stat( fullPath.c_str(), &st ) == 0 && !S_ISDIR(st.st_mode);
+#elif defined(FABRIC_WIN32)
+      DWORD dwAttrib = ::GetFileAttributesA( fullPath.c_str() );
+      result = (dwAttrib != INVALID_FILE_ATTRIBUTES)
+      	&& !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY);
+#endif 
+      return result;
+    }
+
     bool IsLink( std::string const &fullPath )
     {
 #if defined(FABRIC_POSIX)

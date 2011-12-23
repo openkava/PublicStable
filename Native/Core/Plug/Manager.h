@@ -29,6 +29,11 @@ namespace Fabric
     class Manager;
   };
   
+  namespace EDK
+  {
+    struct Callbacks;
+  };
+
   namespace CG
   {
     class Manager;
@@ -62,7 +67,7 @@ namespace Fabric
     
       static RC::Handle<Manager> Instance();
       
-      void loadBuiltInPlugins( std::vector<std::string> const &pluginDirs, RC::Handle<CG::Manager> const &cgManager );
+      void loadBuiltInPlugins( std::vector<std::string> const &pluginDirs, RC::Handle<CG::Manager> const &cgManager, EDK::Callbacks const &callbacks );
       
       NameToInstMap const &getRegisteredPlugins() const
       {
@@ -80,7 +85,7 @@ namespace Fabric
       Manager();
       ~Manager();
       
-      RC::ConstHandle<Inst> registerPlugin( RC::ConstHandle<IO::Dir> const &extensionDir, std::string const &name, std::string const &jsonDesc, std::vector<std::string> const &pluginDirs, RC::Handle<CG::Manager> const &cgManager );
+      RC::ConstHandle<Inst> registerPlugin( RC::ConstHandle<IO::Dir> const &extensionDir, std::string const &name, std::string const &jsonDesc, std::vector<std::string> const &pluginDirs, RC::Handle<CG::Manager> const &cgManager, EDK::Callbacks const &callbacks );
       
     private:
     
