@@ -29,6 +29,7 @@
 #include <Fabric/Base/JSON/Object.h>
 #include <Fabric/Core/Util/Debug.h>
 #include <Fabric/Core/Build.h>
+#include <Fabric/EDK/Common.h>
 
 #include <assert.h>
 #include <stdio.h>
@@ -292,7 +293,7 @@ namespace Fabric
         RC::Handle<IOManager> ioManager = IOManager::Create( npp );
         context = Context::Create( ioManager, pluginPaths );
         ioManager->setContext( context );
-        Plug::Manager::Instance()->loadBuiltInPlugins( pluginPaths, context->getCGManager() );
+        Plug::Manager::Instance()->loadBuiltInPlugins( pluginPaths, context->getCGManager(), DG::Context::GetCallbackStruct() );
         
         contextID = context->getContextID();
         FABRIC_DEBUG_LOG( "Created new context '%s'", contextID.c_str() );

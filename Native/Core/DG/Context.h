@@ -40,6 +40,11 @@ namespace Fabric
     class Manager;
   };
   
+  namespace EDK
+  {
+    struct Callbacks;
+  };
+
   namespace IO
   {
     class Manager;
@@ -137,6 +142,8 @@ namespace Fabric
         return s_wrapFabricClientJSSource;
       }
       
+      static EDK::Callbacks GetCallbackStruct();
+
     protected:
     
       Context(
