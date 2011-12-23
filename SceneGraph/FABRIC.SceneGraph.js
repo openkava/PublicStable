@@ -1466,10 +1466,67 @@ FABRIC.SceneGraph.registerNodeType('ResourceLoad', {
         scene.pub.redrawAllViewports();
       }
     }
+    
+    var traceStack = function(inputFunction) {
+      var callstack = [];
+      var isCallstackPopulated = false;
+      try {
+        inputFunction();
+      } catch(e) {
+        if (e.stack) { // Firefox
+          var lines = e.stack.split('\n');
+          for (var i=0, len=lines.length; i<len; i++) {
+            callstack.push(lines[i]);
+          }
+          isCallstackPopulated = true;
+        }
+        else if (window.opera && e.message) { //Opera
+          var lines = e.message.split('\n');
+          for (var i=0, len=lines.length; i<len; i++) {
+            var entry = lines[i];
+            if (lines[i+1]) {
+              entry += ' at ' + lines[i+1];
+              i++;
+            }
+            callstack.push(entry);
+          }
+          isCallstackPopulated = true;
+        }
+        if (!isCallstackPopulated) { //IE and Safari
+          var currentFunction = arguments.callee.caller;
+          while (currentFunction) {
+            var fn = currentFunction.toString();
+            var fname = fn.substring(fn.indexOf("function") + 8, fn.indexOf('')) || 'anonymous';
+            callstack.push(fname);
+            currentFunction = currentFunction.caller;
+          }
+        } else {
+          var coreCount = 2;
+          while(coreCount && callstack.length) {
+            var line = callstack[callstack.length-1];
+            callstack.pop();
+            if(line.indexOf('/Core/FABRIC.js') > 0)
+              coreCount--;
+          }
+        }
+        if(isCallstackPopulated) {
+          for(var i=0;i<callstack.length;i++)
+          {
+            if(console.error)
+              console.error('StackTrace: '+callstack[i]);
+            else
+              console.log('StackTrace: '+callstack[i]);
+          }
+          throw(callstack[0]);
+        }
+      }
+    };
 
     var onLoadSuccessCallbackFunction = function(node) {
       lastLoadCallbackURL = resourceLoadNode.pub.getUrl();
-      onLoadCallbackFunction(onloadSuccessCallbacks);
+      traceStack(function(){
+        onLoadCallbackFunction(onloadSuccessCallbacks);
+      });
     }
     var onLoadProgressCallbackFunction = function(node, progress) {
       prevRemainingTaskWeight = remainingTaskWeight;
@@ -1480,7 +1537,9 @@ FABRIC.SceneGraph.registerNodeType('ResourceLoad', {
 
       var i;
       for (i = 0; i < onloadProgressCallbacks.length; i++) {
-        onloadProgressCallbacks[i](resourceLoadNode.pub, progress);
+        traceStack(function(){
+          onloadProgressCallbacks[i](resourceLoadNode.pub, progress);
+        });
       }
     }
     var onLoadFailureCallbackFunction = function(node) {
