@@ -24,7 +24,7 @@ namespace Fabric
       NB_FABRIC_RESOURCE_MEMBERS
     };
 
-    void RegisterFabricResource( RC::Handle<RT::Manager> const &rtManager )
+    void RegisterFabricResourceType( RC::Handle<RT::Manager> const &rtManager )
     {
       RT::StructMemberInfoVector memberInfos;
       RC::ConstHandle<RT::StringDesc> stringDesc = rtManager->getStringDesc();
