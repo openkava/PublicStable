@@ -67,10 +67,10 @@ FABRIC.SceneGraph.registerNodeType('LoadObj', {
     
     var parentWriteData = resourceLoadNode.writeData;
     resourceLoadNode.writeData = function(sceneSerializer, constructionOptions, nodeData) {
+      parentWriteData(sceneSerializer, constructionOptions, nodeData);
       constructionOptions.splitObjects = options.splitObjects;
       constructionOptions.splitMaterials = options.splitMaterials;
       constructionOptions.splitGroups = options.splitGroups;
-      parentWriteData(sceneSerializer, constructionOptions, nodeData);
     };
     
     return resourceLoadNode;
@@ -147,23 +147,23 @@ FABRIC.SceneGraph.registerNodeType('ObjTriangles', {
     var parentAddDependencies = trianglesNode.addDependencies;
     trianglesNode.addDependencies = function(sceneSerializer) {
       parentAddDependencies(sceneSerializer);
-      if(sceneSerializer.getTypeRemapping(trianglesNode.pub.getType()) == trianglesNode.pub.getType()){
-        sceneSerializer.addNode(resourceLoadNode.pub);
-      }
+      sceneSerializer.addNode(resourceLoadNode.pub);
     };
     
     var parentWriteData = trianglesNode.writeData;
     var parentReadData = trianglesNode.readData;
     trianglesNode.writeData = function(sceneSerializer, constructionOptions, nodeData) {
-      if(sceneSerializer.getTypeRemapping(trianglesNode.pub.getType()) == trianglesNode.pub.getType()){
+      parentWriteData(sceneSerializer, constructionOptions, nodeData);
+      if(sceneSerializer.isNodeBeingSaved(resourceLoadNode.pub)){
         constructionOptions.entityIndex = options.entityIndex;
         nodeData.resourceLoadNode = resourceLoadNode.pub.getName();
       }
-      parentWriteData(sceneSerializer, constructionOptions, nodeData);
     };
     trianglesNode.readData = function(sceneDeserializer, nodeData) {
       parentReadData(sceneDeserializer, nodeData);
-      trianglesNode.pub.setResourceLoadNode(sceneDeserializer.getNode(nodeData.resourceLoadNode));
+      if(nodeData.resourceLoadNode){
+        trianglesNode.pub.setResourceLoadNode(sceneDeserializer.getNode(nodeData.resourceLoadNode));
+      }
     };
     
     /////////////////////////////////////////////////////////////////////
