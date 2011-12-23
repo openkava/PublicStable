@@ -20,7 +20,7 @@ namespace Fabric
   namespace DG
   {
 
-    void RegisterFabricResource( RC::Handle<RT::Manager> const &rtManager );
+    void RegisterFabricResourceType( RC::Handle<RT::Manager> const &rtManager );
     RC::ConstHandle<RT::StructDesc> getFabricResourceDesc( RC::ConstHandle<RT::Manager> const &rtManager );
 
     class FabricResourceWrapper

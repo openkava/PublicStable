@@ -17,13 +17,18 @@ namespace Fabric
   {
     class CommandChannel;
   };
-  
+
   namespace RT
   {
     class Impl;
     class Manager;
   };
-  
+
+  namespace EDK
+  {
+    struct Callbacks;
+  };
+
   namespace CG
   {
     class Manager;
@@ -67,6 +72,7 @@ namespace Fabric
         std::string const &jsonDesc,
         std::vector<std::string> const &pluginDirs,
         RC::Handle<CG::Manager> const &cgManager,
+        EDK::Callbacks const &callbacks,
         std::map< std::string, void (*)( void * ) > &implToDestructorMap
         );
       
@@ -99,6 +105,7 @@ namespace Fabric
         std::string const &jsonDesc,
         std::vector<std::string> const &pluginDirs,
         RC::Handle<CG::Manager> const &cgManager,
+        EDK::Callbacks const &callbacks,
         std::map< std::string, void (*)( void * ) > &implToDestructorMap
         );
       ~Inst();
