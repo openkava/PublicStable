@@ -4,8 +4,8 @@
  
 #include <Fabric/Core/KLC/Executable.h>
 #include <Fabric/Core/KLC/ArrayGeneratorOperator.h>
+#include <Fabric/Core/KLC/ArrayMapOperator.h>
 #include <Fabric/Core/KLC/ArrayTransformOperator.h>
-#include <Fabric/Core/KLC/MapOperator.h>
 #include <Fabric/Core/KLC/ReduceOperator.h>
 #include <Fabric/Core/KLC/ValueMapOperator.h>
 #include <Fabric/Core/KLC/ValueTransformOperator.h>
@@ -273,7 +273,7 @@ namespace Fabric
       else if ( cmd == "getDiagnostics" )
         jsonExecGetDiagnostics( arg, resultJAG );
       else if ( cmd == "resolveMapOperator" )
-        jsonExecResolveOperator<MapOperator>( arg, resultJAG );
+        jsonExecResolveOperator<ArrayMapOperator>( arg, resultJAG );
       else if ( cmd == "resolveReduceOperator" )
         jsonExecResolveOperator<ReduceOperator>( arg, resultJAG );
       else if ( cmd == "resolveArrayGeneratorOperator" )

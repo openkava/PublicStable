@@ -2,9 +2,9 @@
  *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
  */
  
-#include <Fabric/Core/MR/Map.h>
+#include <Fabric/Core/MR/ArrayMap.h>
 #include <Fabric/Core/MR/ValueProducer.h>
-#include <Fabric/Core/KLC/MapOperator.h>
+#include <Fabric/Core/KLC/ArrayMapOperator.h>
 #include <Fabric/Core/RT/Desc.h>
 #include <Fabric/Core/Util/Format.h>
 #include <Fabric/Core/Util/JSONGenerator.h>
@@ -14,21 +14,21 @@ namespace Fabric
 {
   namespace MR
   {
-    FABRIC_GC_OBJECT_CLASS_IMPL( Map, ArrayProducer );
+    FABRIC_GC_OBJECT_CLASS_IMPL( ArrayMap, ArrayProducer );
     
-    RC::Handle<Map> Map::Create(
+    RC::Handle<ArrayMap> ArrayMap::Create(
       RC::ConstHandle<ArrayProducer> const &inputArrayProducer,
-      RC::ConstHandle<KLC::MapOperator> const &mapOperator,
+      RC::ConstHandle<KLC::ArrayMapOperator> const &mapOperator,
       RC::ConstHandle<ValueProducer> const &sharedValueProducer
       )
     {
-      return new Map( FABRIC_GC_OBJECT_MY_CLASS, inputArrayProducer, mapOperator, sharedValueProducer );
+      return new ArrayMap( FABRIC_GC_OBJECT_MY_CLASS, inputArrayProducer, mapOperator, sharedValueProducer );
     }
     
-    Map::Map(
+    ArrayMap::ArrayMap(
       FABRIC_GC_OBJECT_CLASS_PARAM,
       RC::ConstHandle<ArrayProducer> const &inputArrayProducer,
-      RC::ConstHandle<KLC::MapOperator> const &mapOperator,
+      RC::ConstHandle<KLC::ArrayMapOperator> const &mapOperator,
       RC::ConstHandle<ValueProducer> const &sharedValueProducer
       )
       : ArrayProducer( FABRIC_GC_OBJECT_CLASS_ARG, mapOperator->getOutputDesc() )
@@ -65,16 +65,16 @@ namespace Fabric
       }
     }
     
-    Map::~Map()
+    ArrayMap::~ArrayMap()
     {
     }
 
-    char const *Map::getKind() const
+    char const *ArrayMap::getKind() const
     {
-      return "Map";
+      return "ArrayMap";
     }
     
-    void Map::toJSONImpl( Util::JSONObjectGenerator &jog ) const
+    void ArrayMap::toJSONImpl( Util::JSONObjectGenerator &jog ) const
     {
       {
         Util::JSONGenerator jg = jog.makeMember( "inputArrayProvider" );
@@ -93,12 +93,12 @@ namespace Fabric
       }
     }
 
-    size_t Map::count() const
+    size_t ArrayMap::count() const
     {
       return m_inputArrayProducer->count();
     }
     
-    void Map::produce( size_t index, void *data ) const
+    void ArrayMap::produce( size_t index, void *data ) const
     {
       RC::ConstHandle<RT::Desc> inputElementDesc = m_inputArrayProducer->getElementDesc();
       

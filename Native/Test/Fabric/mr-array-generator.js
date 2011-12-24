@@ -5,8 +5,8 @@ cv = FC.MR.createConstValue("Size", 10);
 ago = FC.KLC.createArrayGeneratorOperator("foo.kl", "operator foo(Size index, io Scalar output) { output = Scalar(index); }", "foo");
 ag = FC.MR.createArrayGenerator(cv, ago);
 
-mo = FC.KLC.createMapOperator("bar.kl", "operator bar(Scalar input, io Scalar output) { output = input * input; }", "bar");
-m = FC.MR.createMap(ag, mo);
+mo = FC.KLC.createArrayMapOperator("bar.kl", "operator bar(Scalar input, io Scalar output) { output = input * input; }", "bar");
+m = FC.MR.createArrayMap(ag, mo);
 
 var count = m.getCount();
 console.log("count = " + count);

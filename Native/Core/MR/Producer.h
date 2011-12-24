@@ -24,7 +24,7 @@ namespace Fabric
       // Virtual functions: Object
     
     public:
-
+    
       virtual void jsonExec(
         std::string const &cmd,
         RC::ConstHandle<JSON::Value> const &arg,
