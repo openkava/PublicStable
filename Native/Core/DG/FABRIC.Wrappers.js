@@ -1585,8 +1585,8 @@ function (fabricClient, logCallback, debugLogCallback) {
       populateFunction(operator);
     };
 
-    var populateMapOperator = function (mapOperator) {
-      populateOperator(mapOperator);
+    var populateArrayMapOperator = function (operator) {
+      populateOperator(operator);
     };
 
     var populateArrayGeneratorOperator = function (arrayGeneratorOperator) {
@@ -1777,23 +1777,23 @@ function (fabricClient, logCallback, debugLogCallback) {
         return executable.pub;
       },
       
-      createMapOperator: function (sourceName, sourceCode, operatorName) {
-        var mapOperator = GC.createObject('KLC');
+      createArrayMapOperator: function (sourceName, sourceCode, operatorName) {
+        var operator = GC.createObject('KLC');
           
-        populateMapOperator(mapOperator);
+        populateArrayMapOperator(operator);
           
         var arg = {
-          id: mapOperator.id,
+          id: operator.id,
           sourceName: sourceName,
           sourceCode: sourceCode,
           operatorName: operatorName
         };
         
-        queueCommand(['KLC'],'createMapOperator', arg, function () {
-          delete mapOperator['id'];
+        queueCommand(['KLC'],'createArrayMapOperator', arg, function () {
+          delete operator['id'];
         });
         
-        return mapOperator.pub;
+        return operator.pub;
       },
       
       createArrayGeneratorOperator: function (sourceName, sourceCode, operatorName) {
@@ -1969,28 +1969,32 @@ function (fabricClient, logCallback, debugLogCallback) {
       populateArrayProducer(arrayGenerator);
     };
     
-    var populateMap = function (map) {
-      populateArrayProducer(map);
+    var populateArrayMap = function (object) {
+      populateArrayProducer(object);
+    };
+    
+    var populateArrayTransform = function (object) {
+      populateArrayProducer(object);
     };
 
     MR.pub = {
-      createMap: function(inputArrayProducer, mapOperator, sharedValueProducer) {
-        var map = GC.createObject('MR');
+      createArrayMap: function(input, operator, shared) {
+        var result = GC.createObject('MR');
         
-        populateMap(map);
+        populateArrayMap(result);
         
         var arg = {
-          id: map.id,
-          inputArrayProducerID: inputArrayProducer.getID(),
-          mapOperatorID: mapOperator.getID()
+          id: result.id,
+          inputID: input.getID(),
+          operatorID: operator.getID()
         };
-        if (sharedValueProducer)
-          arg.sharedValueProducerID = sharedValueProducer.getID();
+        if (shared)
+          arg.sharedID = shared.getID();
         
-        queueCommand(['MR'], 'createMap', arg, function () {
-          delete map.id;
+        queueCommand(['MR'], 'createArrayMap', arg, function () {
+          delete result.id;
         });
-        return map.pub;
+        return result.pub;
       },
       
       createReduce: function(inputArrayProducer, reduceOperator, sharedValueProducer) {

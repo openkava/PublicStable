@@ -2,8 +2,8 @@
  *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
  */
  
-#ifndef _FABRIC_MR_MAP_H
-#define _FABRIC_MR_MAP_H
+#ifndef _FABRIC_MR_ARRAY_MAP_H
+#define _FABRIC_MR_ARRAY_MAP_H
 
 #include <Fabric/Core/MR/ArrayProducer.h>
 
@@ -11,22 +11,22 @@ namespace Fabric
 {
   namespace KLC
   {
-    class MapOperator;
+    class ArrayMapOperator;
   };
   
   namespace MR
   {
     class ValueProducer;
     
-    class Map : public ArrayProducer
+    class ArrayMap : public ArrayProducer
     {
       FABRIC_GC_OBJECT_CLASS_DECL()
     
     public:
     
-      static RC::Handle<Map> Create(
+      static RC::Handle<ArrayMap> Create(
         RC::ConstHandle<ArrayProducer> const &inputArrayProducer,
-        RC::ConstHandle<KLC::MapOperator> const &mapOperator,
+        RC::ConstHandle<KLC::ArrayMapOperator> const &mapOperator,
         RC::ConstHandle<ValueProducer> const &sharedValueProducer
         );
       
@@ -39,13 +39,13 @@ namespace Fabric
             
     protected:
     
-      Map(
+      ArrayMap(
         FABRIC_GC_OBJECT_CLASS_PARAM,
         RC::ConstHandle<ArrayProducer> const &inputArrayProducer,
-        RC::ConstHandle<KLC::MapOperator> const &mapOperator,
+        RC::ConstHandle<KLC::ArrayMapOperator> const &mapOperator,
         RC::ConstHandle<ValueProducer> const &sharedValueProducer
         );
-      ~Map();
+      ~ArrayMap();
     
       virtual char const *getKind() const;
       virtual void toJSONImpl( Util::JSONObjectGenerator &jog ) const;
@@ -53,10 +53,10 @@ namespace Fabric
     private:
     
       RC::ConstHandle<ArrayProducer> m_inputArrayProducer;
-      RC::ConstHandle<KLC::MapOperator> m_mapOperator;
+      RC::ConstHandle<KLC::ArrayMapOperator> m_mapOperator;
       RC::ConstHandle<ValueProducer> m_sharedValueProducer;
     };
   };
 };
 
-#endif //_FABRIC_MR_MAP_H
+#endif //_FABRIC_MR_ARRAY_MAP_H

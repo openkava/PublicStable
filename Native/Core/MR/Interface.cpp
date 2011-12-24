@@ -4,16 +4,16 @@
  
 #include <Fabric/Core/MR/Interface.h>
 #include <Fabric/Core/MR/ArrayGenerator.h>
+#include <Fabric/Core/MR/ArrayMap.h>
 #include <Fabric/Core/MR/ArrayTransform.h>
 #include <Fabric/Core/MR/ConstArray.h>
 #include <Fabric/Core/MR/ConstValue.h>
-#include <Fabric/Core/MR/Map.h>
 #include <Fabric/Core/MR/Reduce.h>
 #include <Fabric/Core/MR/ValueMap.h>
 #include <Fabric/Core/MR/ValueTransform.h>
 #include <Fabric/Core/KLC/ArrayGeneratorOperator.h>
+#include <Fabric/Core/KLC/ArrayMapOperator.h>
 #include <Fabric/Core/KLC/ArrayTransformOperator.h>
-#include <Fabric/Core/KLC/MapOperator.h>
 #include <Fabric/Core/KLC/ReduceOperator.h>
 #include <Fabric/Core/KLC/ValueMapOperator.h>
 #include <Fabric/Core/KLC/ValueTransformOperator.h>
@@ -62,8 +62,8 @@ namespace Fabric
     {
       if ( cmd == "createConstArray" )
         jsonExecCreateConstArray( arg, resultJAG );
-      else if ( cmd == "createMap" )
-        jsonExecCreateMap( arg, resultJAG );
+      else if ( cmd == "createArrayMap" )
+        jsonExecCreateArrayMap( arg, resultJAG );
       else if ( cmd == "createValueMap" )
         jsonExecCreateValueMap( arg, resultJAG );
       else if ( cmd == "createValueTransform" )
@@ -141,7 +141,7 @@ namespace Fabric
       constArray->reg( m_gcContainer, id_ );
     }
     
-    void Interface::jsonExecCreateMap(
+    void Interface::jsonExecCreateArrayMap(
       RC::ConstHandle<JSON::Value> const &arg,
       Util::JSONArrayGenerator &resultJAG
       )
@@ -161,19 +161,19 @@ namespace Fabric
       RC::Handle<ArrayProducer> inputArrayProducer;
       try
       {
-        inputArrayProducer = GC::DynCast<ArrayProducer>( m_gcContainer->getObject( argObject->get( "inputArrayProducerID" )->toString()->value() ) );
+        inputArrayProducer = GC::DynCast<ArrayProducer>( m_gcContainer->getObject( argObject->get( "inputID" )->toString()->value() ) );
         if ( !inputArrayProducer )
           throw "must be an array producer";
       }
       catch ( Exception e )
       {
-        throw "inputArrayProducerID: " + e;
+        throw "inputID: " + e;
       }
       
-      RC::Handle<KLC::MapOperator> mapOperator;
+      RC::Handle<KLC::ArrayMapOperator> mapOperator;
       try
       {
-        mapOperator = GC::DynCast<KLC::MapOperator>( m_gcContainer->getObject( argObject->get( "mapOperatorID" )->toString()->value() ) );
+        mapOperator = GC::DynCast<KLC::ArrayMapOperator>( m_gcContainer->getObject( argObject->get( "operatorID" )->toString()->value() ) );
         if ( !mapOperator )
           throw "must be a map operator";
       }
@@ -183,7 +183,7 @@ namespace Fabric
       }
       
       RC::Handle<ValueProducer> sharedValueProducer;
-      RC::ConstHandle<JSON::Value> sharedValueProducerIDValue = argObject->maybeGet( "sharedValueProducerID" );
+      RC::ConstHandle<JSON::Value> sharedValueProducerIDValue = argObject->maybeGet( "sharedID" );
       if ( sharedValueProducerIDValue )
       {
         try
@@ -194,16 +194,15 @@ namespace Fabric
         }
         catch ( Exception e )
         {
-          throw "sharedValueProducerID: " + e;
+          throw "sharedID: " + e;
         }
       }
       
-      RC::Handle<Map> map = Map::Create(
+      ArrayMap::Create(
         inputArrayProducer,
         mapOperator,
         sharedValueProducer
-        );
-      map->reg( m_gcContainer, id_ );
+        )->reg( m_gcContainer, id_ );
     }
     
     void Interface::jsonExecCreateValueMap(
