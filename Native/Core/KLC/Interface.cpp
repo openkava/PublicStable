@@ -4,6 +4,7 @@
  
 #include <Fabric/Core/KLC/Interface.h>
 #include <Fabric/Core/KLC/ArrayGeneratorOperator.h>
+#include <Fabric/Core/KLC/ArrayTransformOperator.h>
 #include <Fabric/Core/KLC/Compilation.h>
 #include <Fabric/Core/KLC/Executable.h>
 #include <Fabric/Core/KLC/MapOperator.h>
@@ -67,6 +68,8 @@ namespace Fabric
         jsonExecCreateValueMapOperator( arg, resultJAG );
       else if ( cmd == "createValueTransformOperator" )
         jsonExecCreateValueTransformOperator( arg, resultJAG );
+      else if ( cmd == "createArrayTransformOperator" )
+        jsonExecCreateArrayTransformOperator( arg, resultJAG );
       else throw Exception( "unknown command: " + _(cmd) );
     }
     
@@ -426,6 +429,59 @@ namespace Fabric
       compilation->add( sourceName, sourceCode );
       RC::Handle<Executable> executable = compilation->run();
       executable->resolveValueTransformOperator( operatorName )->reg( m_gcContainer, id_ );
+    }
+    
+    void Interface::jsonExecCreateArrayTransformOperator(
+      RC::ConstHandle<JSON::Value> const &arg,
+      Util::JSONArrayGenerator &resultJAG
+      )
+    {
+      RC::ConstHandle<JSON::Object> argObject = arg->toObject();
+      
+      std::string id_;
+      try
+      {
+        id_ = argObject->get( "id" )->toString()->value();
+      }
+      catch ( Exception e )
+      {
+        throw "id: " + e;
+      }
+      
+      std::string sourceName;
+      try
+      {
+        sourceName = argObject->get( "sourceName" )->toString()->value();
+      }
+      catch ( Exception e )
+      {
+        throw "sourceName: " + e;
+      }
+      
+      std::string sourceCode;
+      try
+      {
+        sourceCode = argObject->get( "sourceCode" )->toString()->value();
+      }
+      catch ( Exception e )
+      {
+        throw "sourceCode: " + e;
+      }
+      
+      std::string operatorName;
+      try
+      {
+        operatorName = argObject->get( "operatorName" )->toString()->value();
+      }
+      catch ( Exception e )
+      {
+        throw "operatorName: " + e;
+      }
+      
+      RC::Handle<Compilation> compilation = Compilation::Create( m_gcContainer, m_cgManager, m_compileOptions );
+      compilation->add( sourceName, sourceCode );
+      RC::Handle<Executable> executable = compilation->run();
+      executable->resolveArrayTransformOperator( operatorName )->reg( m_gcContainer, id_ );
     }
   };
 };
