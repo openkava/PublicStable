@@ -1625,7 +1625,7 @@ function (fabricClient, logCallback, debugLogCallback) {
         populateMapOperator(operator);
         executable.queueCommand('resolveMapOperator', {
           id: operator.id,
-          mapOperatorName: operatorName
+          operatorName: operatorName
         }, function () {
           delete operator.id;
         });
@@ -1637,7 +1637,7 @@ function (fabricClient, logCallback, debugLogCallback) {
         populateReduceOperator(operator);
         executable.queueCommand('resolveReduceOperator', {
           id: operator.id,
-          reduceOperatorName: operatorName
+          operatorName: operatorName
         }, function () {
           delete operator.id;
         });
@@ -1649,7 +1649,7 @@ function (fabricClient, logCallback, debugLogCallback) {
         populateArrayGeneratorOperator(operator);
         executable.queueCommand('resolveArrayGeneratorOperator', {
           id: operator.id,
-          arrayGeneratorOperatorName: operatorName
+          operatorName: operatorName
         }, function () {
           delete operator.id;
         });
@@ -1777,7 +1777,7 @@ function (fabricClient, logCallback, debugLogCallback) {
         return executable.pub;
       },
       
-      createMapOperator: function (sourceName, sourceCode, mapOperatorName) {
+      createMapOperator: function (sourceName, sourceCode, operatorName) {
         var mapOperator = GC.createObject('KLC');
           
         populateMapOperator(mapOperator);
@@ -1786,7 +1786,7 @@ function (fabricClient, logCallback, debugLogCallback) {
           id: mapOperator.id,
           sourceName: sourceName,
           sourceCode: sourceCode,
-          mapOperatorName: mapOperatorName
+          operatorName: operatorName
         };
         
         queueCommand(['KLC'],'createMapOperator', arg, function () {
@@ -1796,7 +1796,7 @@ function (fabricClient, logCallback, debugLogCallback) {
         return mapOperator.pub;
       },
       
-      createArrayGeneratorOperator: function (sourceName, sourceCode, arrayGeneratorOperatorName) {
+      createArrayGeneratorOperator: function (sourceName, sourceCode, operatorName) {
         var arrayGeneratorOperator = GC.createObject('KLC');
           
         populateArrayGeneratorOperator(arrayGeneratorOperator);
@@ -1805,7 +1805,7 @@ function (fabricClient, logCallback, debugLogCallback) {
           id: arrayGeneratorOperator.id,
           sourceName: sourceName,
           sourceCode: sourceCode,
-          arrayGeneratorOperatorName: arrayGeneratorOperatorName
+          operatorName: operatorName
         };
         
         queueCommand(['KLC'],'createArrayGeneratorOperator', arg, function () {
@@ -1872,7 +1872,7 @@ function (fabricClient, logCallback, debugLogCallback) {
         return operator.pub;
       },
       
-      createReduceOperator: function (sourceName, sourceCode, reduceOperatorName) {
+      createReduceOperator: function (sourceName, sourceCode, operatorName) {
         var reduceOperator = GC.createObject('KLC');
           
         populateReduceOperator(reduceOperator);
@@ -1881,7 +1881,7 @@ function (fabricClient, logCallback, debugLogCallback) {
           id: reduceOperator.id,
           sourceName: sourceName,
           sourceCode: sourceCode,
-          reduceOperatorName: reduceOperatorName
+          operatorName: operatorName
         };
         
         queueCommand(['KLC'],'createReduceOperator', arg, function () {
