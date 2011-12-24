@@ -71,6 +71,11 @@ namespace Fabric
         Util::JSONArrayGenerator &resultJAG
         );
       
+      void jsonExecCreateArrayTransform(
+        RC::ConstHandle<JSON::Value> const &arg,
+        Util::JSONArrayGenerator &resultJAG
+        );
+      
       void jsonExecCreateReduce(
         RC::ConstHandle<JSON::Value> const &arg,
         Util::JSONArrayGenerator &resultJAG
