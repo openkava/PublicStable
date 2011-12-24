@@ -1679,6 +1679,18 @@ function (fabricClient, logCallback, debugLogCallback) {
         });
         return operator.pub;
       };
+      
+      executable.pub.resolveArrayTransformOperator = function (operatorName) {
+        var operator = GC.createObject('KLC');
+        populateArrayTransformOperator(operator);
+        executable.queueCommand('resolveArrayTransformOperator', {
+          id: operator.id,
+          operatorName: operatorName
+        }, function () {
+          delete operator.id;
+        });
+        return operator.pub;
+      };
     };
     
     KLC.pub = {
@@ -1835,6 +1847,25 @@ function (fabricClient, logCallback, debugLogCallback) {
         };
         
         queueCommand(['KLC'],'createValueTransformOperator', arg, function () {
+          delete operator.id;
+        });
+        
+        return operator.pub;
+      },
+      
+      createArrayTransformOperator: function (sourceName, sourceCode, operatorName) {
+        var operator = GC.createObject('KLC');
+          
+        populateArrayMapOperator(operator);
+          
+        var arg = {
+          id: operator.id,
+          sourceName: sourceName,
+          sourceCode: sourceCode,
+          operatorName: operatorName
+        };
+        
+        queueCommand(['KLC'],'createArrayTransformOperator', arg, function () {
           delete operator.id;
         });
         
