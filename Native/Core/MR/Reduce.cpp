@@ -179,12 +179,13 @@ namespace Fabric
         size_t inputElementSize = m_inputDesc->getAllocSize();
         size_t allInputElementsSize = maxGroupSize * inputElementSize;
         uint8_t *inputDatas = (uint8_t *)alloca( allInputElementsSize );
-        memset( inputDatas, 0, allInputElementsSize );
 
         size_t index = jobIndex * m_indicesPerJob;
         size_t endIndex = std::min( index + m_indicesPerJob, m_count );
         while ( index < endIndex )
         {
+          memset( inputDatas, 0, allInputElementsSize );
+          
           size_t groupSize = 0;
           while ( groupSize < maxGroupSize && index + groupSize < endIndex )
           {
@@ -208,11 +209,11 @@ namespace Fabric
                 m_operator->call( inputData, m_outputData );
             }
           }
+        
+          m_inputDesc->disposeDatas( inputDatas, groupSize, inputElementSize );
           
           index += groupSize;
         }
-      
-        m_inputDesc->disposeDatas( inputDatas, maxGroupSize, inputElementSize );
       }
       
       static void Callback( void *userdata, size_t jobIndex )
