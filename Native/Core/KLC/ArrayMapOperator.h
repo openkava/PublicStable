@@ -2,8 +2,8 @@
  *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
  */
  
-#ifndef _FABRIC_KL_MAP_OPERATOR_H
-#define _FABRIC_KL_MAP_OPERATOR_H
+#ifndef _FABRIC_KL_ARRAY_MAP_OPERATOR_H
+#define _FABRIC_KL_ARRAY_MAP_OPERATOR_H
 
 #include <Fabric/Core/KLC/ArrayIOOperator.h>
 
@@ -11,13 +11,13 @@ namespace Fabric
 {
   namespace KLC
   {
-    class MapOperator : public ArrayIOOperator
+    class ArrayMapOperator : public ArrayIOOperator
     {
       FABRIC_GC_OBJECT_CLASS_DECL()
       
     public:
     
-      static RC::Handle<MapOperator> Create(
+      static RC::Handle<ArrayMapOperator> Create(
         RC::ConstHandle<Executable> const &executable,
         RC::ConstHandle<AST::Operator> const &astOperator,
         GenericFunctionPtr functionPtr
@@ -27,7 +27,7 @@ namespace Fabric
       
     protected:
     
-      MapOperator(
+      ArrayMapOperator(
         FABRIC_GC_OBJECT_CLASS_PARAM,
         RC::ConstHandle<Executable> const &executable,
         RC::ConstHandle<AST::Operator> const &astOperator,
@@ -37,4 +37,4 @@ namespace Fabric
   }
 }
 
-#endif //_FABRIC_KL_MAP_OPERATOR_H
+#endif //_FABRIC_KL_ARRAY_MAP_OPERATOR_H
