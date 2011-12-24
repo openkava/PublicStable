@@ -73,6 +73,11 @@ namespace Fabric
     {
       return "ArrayMap";
     }
+
+    size_t ArrayMap::getCount() const
+    {
+      return m_inputArrayProducer->getCount();
+    }
     
     void ArrayMap::toJSONImpl( Util::JSONObjectGenerator &jog ) const
     {
@@ -92,43 +97,62 @@ namespace Fabric
         m_sharedValueProducer->toJSON( jg );
       }
     }
-
-    size_t ArrayMap::count() const
+      
+    const RC::Handle<ArrayProducer::ComputeState> ArrayMap::createComputeState() const
     {
-      return m_inputArrayProducer->count();
+      return ComputeState::Create( this );
     }
     
-    void ArrayMap::produce( size_t index, void *data ) const
+    RC::Handle<ArrayMap::ComputeState> ArrayMap::ComputeState::Create( RC::ConstHandle<ArrayMap> const &arrayMap )
     {
-      RC::ConstHandle<RT::Desc> inputElementDesc = m_inputArrayProducer->getElementDesc();
+      return new ComputeState( arrayMap );
+    }
+    
+    ArrayMap::ComputeState::ComputeState( RC::ConstHandle<ArrayMap> const &arrayMap )
+      : ArrayProducer::ComputeState( arrayMap )
+      , m_arrayMap( arrayMap )
+      , m_inputArrayProducerComputeState( arrayMap->m_inputArrayProducer->createComputeState() )
+    {
+      if ( m_arrayMap->m_mapOperator->takesSharedValue() )
+      {
+        RC::ConstHandle<ValueProducer> sharedValueProducer = m_arrayMap->m_sharedValueProducer;
+        m_sharedData.resize( sharedValueProducer->getValueDesc()->getAllocSize(), 0 );
+        sharedValueProducer->createComputeState()->produce( &m_sharedData[0] );
+      }
+    }
+    
+    ArrayMap::ComputeState::~ComputeState()
+    {
+      if ( m_arrayMap->m_mapOperator->takesSharedValue() )
+      {
+        RC::ConstHandle<ValueProducer> sharedValueProducer = m_arrayMap->m_sharedValueProducer;
+        sharedValueProducer->getValueDesc()->disposeData( &m_sharedData[0] );
+      }
+    }
+    
+    void ArrayMap::ComputeState::produce( size_t index, void *data ) const
+    {
+      RC::ConstHandle<RT::Desc> inputElementDesc = m_arrayMap->m_inputArrayProducer->getElementDesc();
       
       size_t elementSize = inputElementDesc->getAllocSize();
       void *inputData = alloca( elementSize );
       memset( inputData, 0, elementSize );
-      m_inputArrayProducer->produce( index, inputData );
+      m_inputArrayProducerComputeState->produce( index, inputData );
       
-      if ( m_mapOperator->takesIndex() )
+      RC::ConstHandle<KLC::ArrayMapOperator> operator_ = m_arrayMap->m_mapOperator;
+      if ( operator_->takesIndex() )
       {
-        if ( m_mapOperator->takesCount() )
+        if ( operator_->takesCount() )
         {
-          if ( m_mapOperator->takesSharedValue() )
-          {
-            RC::ConstHandle<RT::Desc> sharedDesc = m_sharedValueProducer->getValueDesc();
-            size_t sharedDataSize = sharedDesc->getAllocSize();
-            void *sharedData = alloca( sharedDataSize );
-            memset( sharedData, 0, sharedDataSize );
-            
-            m_sharedValueProducer->produce( sharedData );
-
-            m_mapOperator->call( inputData, data, index, count(), sharedData );
-            
-            sharedDesc->disposeData( sharedData );
-          }
-          else m_mapOperator->call( inputData, data, index, count() );
+          size_t count = getCount();
+          
+          if ( operator_->takesSharedValue() )
+            operator_->call( inputData, data, index, count, &m_sharedData[0] );
+          else operator_->call( inputData, data, index, count );
         }
-        else m_mapOperator->call( inputData, data, index );
+        else operator_->call( inputData, data, index );
       }
-      else m_mapOperator->call( inputData, data );
+      else operator_->call( inputData, data );
       
       inputElementDesc->disposeData( inputData );
     }

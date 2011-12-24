@@ -32,12 +32,30 @@ namespace Fabric
       // Virtual functions: ValueProducer
     
     public:
-    
-      virtual void produce( void *data ) const;
-      virtual void produceJSON( Util::JSONGenerator &jg ) const;
       
+      virtual const RC::Handle<ValueProducer::ComputeState> createComputeState() const;
+            
     protected:
     
+      class ComputeState : public ValueProducer::ComputeState
+      {
+      public:
+      
+        static RC::Handle<ComputeState> Create( RC::ConstHandle<ConstValue> const &valueMap );
+      
+        virtual void produce( void *data ) const;
+        virtual void produceJSON( Util::JSONGenerator &jg ) const;
+      
+      protected:
+      
+        ComputeState( RC::ConstHandle<ConstValue> const &valueMap );
+        ~ComputeState();
+        
+      private:
+      
+        RC::ConstHandle<ConstValue> m_constValue;
+      };
+      
       ConstValue(
         FABRIC_GC_OBJECT_CLASS_PARAM,
         RC::ConstHandle<RT::Manager> const &rtManager,

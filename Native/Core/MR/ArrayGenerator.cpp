@@ -48,6 +48,18 @@ namespace Fabric
     {
       return "ArrayGenerator";
     }
+
+    size_t ArrayGenerator::getCount() const
+    {
+      size_t result;
+      m_countValueProducer->createComputeState()->produce( &result );
+      return result;
+    }
+      
+    const RC::Handle<ArrayProducer::ComputeState> ArrayGenerator::createComputeState() const
+    {
+      return ComputeState::Create( this );
+    }
     
     void ArrayGenerator::toJSONImpl( Util::JSONObjectGenerator &jog ) const
     {
@@ -61,17 +73,21 @@ namespace Fabric
         m_arrayGeneratorOperator->toJSON( jg );
       }
     }
-
-    size_t ArrayGenerator::count() const
+    
+    RC::Handle<ArrayGenerator::ComputeState> ArrayGenerator::ComputeState::Create( RC::ConstHandle<ArrayGenerator> const &arrayGenerator )
     {
-      size_t result;
-      m_countValueProducer->produce( &result );
-      return result;
+      return new ComputeState( arrayGenerator );
     }
     
-    void ArrayGenerator::produce( size_t index, void *data ) const
+    ArrayGenerator::ComputeState::ComputeState( RC::ConstHandle<ArrayGenerator> const &arrayGenerator )
+      : ArrayProducer::ComputeState( arrayGenerator )
+      , m_arrayGenerator( arrayGenerator )
     {
-      m_arrayGeneratorOperator->call( index, data );
+    }
+    
+    void ArrayGenerator::ComputeState::produce( size_t index, void *data ) const
+    {
+      m_arrayGenerator->m_arrayGeneratorOperator->call( index, data );
     }
   };
 };

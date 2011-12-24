@@ -26,16 +26,6 @@ namespace Fabric
     {
       return m_elementDesc;
     }
-      
-    void ArrayProducer::produceJSON( size_t index, Util::JSONGenerator &jg ) const
-    {
-      size_t allocSize = m_elementDesc->getAllocSize();
-      void *valueData = alloca( allocSize );
-      memset( valueData, 0, allocSize );
-      produce( index, valueData );
-      m_elementDesc->generateJSON( valueData, jg );
-      m_elementDesc->disposeData( valueData );
-    }
     
     void ArrayProducer::jsonExec(
       std::string const &cmd,
@@ -56,7 +46,7 @@ namespace Fabric
       )
     {
       Util::JSONGenerator jg = resultJAG.makeElement();
-      jg.makeInteger( count() );
+      jg.makeInteger( getCount() );
     }
     
     void ArrayProducer::jsonExecProduce(
@@ -67,7 +57,25 @@ namespace Fabric
       size_t index = arg->toInteger()->value();
           
       Util::JSONGenerator jg = resultJAG.makeElement();
-      produceJSON( index, jg );
+      createComputeState()->produceJSON( index, jg );
+    }
+    
+    ArrayProducer::ComputeState::ComputeState( RC::ConstHandle<ArrayProducer> const &arrayProducer )
+      : m_arrayProducer( arrayProducer )
+      , m_count( arrayProducer->getCount() )
+    {
+    }
+      
+    void ArrayProducer::ComputeState::produceJSON( size_t index, Util::JSONGenerator &jg ) const
+    {
+      RC::ConstHandle<RT::Desc> elementDesc = m_arrayProducer->m_elementDesc;
+      
+      size_t allocSize = elementDesc->getAllocSize();
+      void *valueData = alloca( allocSize );
+      memset( valueData, 0, allocSize );
+      produce( index, valueData );
+      elementDesc->generateJSON( valueData, jg );
+      elementDesc->disposeData( valueData );
     }
   };
 };

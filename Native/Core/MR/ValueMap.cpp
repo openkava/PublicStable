@@ -91,32 +91,49 @@ namespace Fabric
         m_sharedValueProducer->toJSON( jg );
       }
     }
-    
-    void ValueMap::produce( void *data ) const
-    {
-      RC::ConstHandle<RT::Desc> inputValueDesc = m_inputValueProducer->getValueDesc();
       
-      size_t elementSize = inputValueDesc->getAllocSize();
+    const RC::Handle<ValueProducer::ComputeState> ValueMap::createComputeState() const
+    {
+      return ComputeState::Create( this );
+    }
+    
+    RC::Handle<ValueMap::ComputeState> ValueMap::ComputeState::Create( RC::ConstHandle<ValueMap> const &valueMap )
+    {
+      return new ComputeState( valueMap );
+    }
+    
+    ValueMap::ComputeState::ComputeState( RC::ConstHandle<ValueMap> const &valueMap )
+      : ValueProducer::ComputeState( valueMap )
+      , m_inputComputeState( valueMap->m_inputValueProducer->createComputeState() )
+      , m_inputDesc( valueMap->getValueDesc() )
+      , m_operator( valueMap->m_valueMapOperator )
+      , m_shared( valueMap->m_sharedValueProducer )
+    {
+      if ( m_operator->takesSharedValue() )
+      {
+        m_sharedData.resize( m_shared->getValueDesc()->getAllocSize(), 0 );
+        m_shared->createComputeState()->produce( &m_sharedData[0] );
+      }
+    }
+    
+    ValueMap::ComputeState::~ComputeState()
+    {
+      if ( m_operator->takesSharedValue() )
+        m_shared->getValueDesc()->disposeData( &m_sharedData[0] );
+    }
+    
+    void ValueMap::ComputeState::produce( void *data ) const
+    {
+      size_t elementSize = m_inputDesc->getAllocSize();
       void *inputData = alloca( elementSize );
       memset( inputData, 0, elementSize );
-      m_inputValueProducer->produce( inputData );
+      m_inputComputeState->produce( inputData );
       
-      if ( m_valueMapOperator->takesSharedValue() )
-      {
-        RC::ConstHandle<RT::Desc> sharedDesc = m_sharedValueProducer->getValueDesc();
-        size_t sharedDataSize = sharedDesc->getAllocSize();
-        void *sharedData = alloca( sharedDataSize );
-        memset( sharedData, 0, sharedDataSize );
-        
-        m_sharedValueProducer->produce( sharedData );
-
-        m_valueMapOperator->call( inputData, data, sharedData );
-        
-        sharedDesc->disposeData( sharedData );
-      }
-      else m_valueMapOperator->call( inputData, data );
+      if ( m_operator->takesSharedValue() )
+        m_operator->call( inputData, data, &m_sharedData[0] );
+      else m_operator->call( inputData, data );
       
-      inputValueDesc->disposeData( inputData );
+      m_inputDesc->disposeData( inputData );
     }
   };
 };
