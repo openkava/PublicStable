@@ -7,6 +7,8 @@
 
 #include <Fabric/Core/MR/ValueProducer.h>
 
+#include <stdint.h>
+
 namespace Fabric
 {
   namespace KLC
