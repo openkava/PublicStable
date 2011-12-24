@@ -72,6 +72,11 @@ namespace Fabric
     {
       return "ArrayTransform";
     }
+
+    size_t ArrayTransform::getCount() const
+    {
+      return m_inputArrayProducer->getCount();
+    }
     
     void ArrayTransform::toJSONImpl( Util::JSONObjectGenerator &jog ) const
     {
@@ -91,40 +96,57 @@ namespace Fabric
         m_sharedValueProducer->toJSON( jg );
       }
     }
-
-    size_t ArrayTransform::count() const
+      
+    const RC::Handle<ArrayProducer::ComputeState> ArrayTransform::createComputeState() const
     {
-      return m_inputArrayProducer->count();
+      return ComputeState::Create( this );
     }
     
-    void ArrayTransform::produce( size_t index, void *data ) const
+    RC::Handle<ArrayTransform::ComputeState> ArrayTransform::ComputeState::Create( RC::ConstHandle<ArrayTransform> const &arrayTransform )
     {
-      m_inputArrayProducer->produce( index, data );
-      
-      if ( m_operator->takesIndex() )
+      return new ComputeState( arrayTransform );
+    }
+    
+    ArrayTransform::ComputeState::ComputeState( RC::ConstHandle<ArrayTransform> const &arrayTransform )
+      : ArrayProducer::ComputeState( arrayTransform )
+      , m_arrayTransform( arrayTransform )
+      , m_inputArrayProducerComputeState( arrayTransform->m_inputArrayProducer->createComputeState() )
+    {
+      if ( m_arrayTransform->m_operator->takesSharedValue() )
       {
-        if ( m_operator->takesCount() )
-        {
-          size_t count = m_inputArrayProducer->count();
-              
-          if ( m_operator->takesSharedValue() )
-          {
-            RC::ConstHandle<RT::Desc> sharedDesc = m_sharedValueProducer->getValueDesc();
-            size_t sharedDataSize = sharedDesc->getAllocSize();
-            void *sharedData = alloca( sharedDataSize );
-            memset( sharedData, 0, sharedDataSize );
-            
-            m_sharedValueProducer->produce( sharedData );
-
-            m_operator->call( data, index, count, sharedData );
-            
-            sharedDesc->disposeData( sharedData );
-          }
-          else m_operator->call( data, index, count );
-        }
-        else m_operator->call( data, index );
+        RC::ConstHandle<ValueProducer> sharedValueProducer = m_arrayTransform->m_sharedValueProducer;
+        m_sharedData.resize( sharedValueProducer->getValueDesc()->getAllocSize(), 0 );
+        sharedValueProducer->createComputeState()->produce( &m_sharedData[0] );
       }
-      else m_operator->call( data );
+    }
+    
+    ArrayTransform::ComputeState::~ComputeState()
+    {
+      if ( m_arrayTransform->m_operator->takesSharedValue() )
+      {
+        RC::ConstHandle<ValueProducer> sharedValueProducer = m_arrayTransform->m_sharedValueProducer;
+        sharedValueProducer->getValueDesc()->disposeData( &m_sharedData[0] );
+      }
+    }
+    
+    void ArrayTransform::ComputeState::produce( size_t index, void *data ) const
+    {
+      m_inputArrayProducerComputeState->produce( index, data );
+      
+      RC::ConstHandle<KLC::ArrayTransformOperator> operator_ = m_arrayTransform->m_operator;
+      if ( operator_->takesIndex() )
+      {
+        if ( operator_->takesCount() )
+        {
+          size_t count = getCount();
+              
+          if ( operator_->takesSharedValue() )
+            operator_->call( data, index, count, &m_sharedData[0] );
+          else operator_->call( data, index, count );
+        }
+        else operator_->call( data, index );
+      }
+      else operator_->call( data );
     }
   };
 };

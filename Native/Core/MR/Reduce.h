@@ -6,6 +6,7 @@
 #define _FABRIC_MR_REDUCE_H
 
 #include <Fabric/Core/MR/ValueProducer.h>
+#include <Fabric/Core/MR/ArrayProducer.h>
 #include <Fabric/Core/Util/Mutex.h>
 
 namespace Fabric
@@ -17,8 +18,6 @@ namespace Fabric
   
   namespace MR
   {
-    class ArrayProducer;
-    
     class Reduce : public ValueProducer
     {
       FABRIC_GC_OBJECT_CLASS_DECL()
@@ -36,11 +35,34 @@ namespace Fabric
       // Virtual functions: ValueProducer
     
     public:
-    
-      virtual void produce( void *data ) const;
       
+      virtual const RC::Handle<ValueProducer::ComputeState> createComputeState() const;
+            
     protected:
     
+      class ComputeState : public ValueProducer::ComputeState
+      {
+      public:
+      
+        static RC::Handle<ComputeState> Create( RC::ConstHandle<Reduce> const &reduce );
+      
+        virtual void produce( void *data ) const;
+      
+      protected:
+      
+        ComputeState( RC::ConstHandle<Reduce> const &reduce );
+        ~ComputeState();
+        
+      private:
+      
+        RC::ConstHandle<ArrayProducer::ComputeState> m_inputComputeState;
+        RC::ConstHandle<RT::Desc> m_inputDesc;
+        RC::ConstHandle<KLC::ReduceOperator> m_operator;
+        RC::ConstHandle<ValueProducer> m_shared;
+        std::vector<uint8_t> m_sharedData;
+        Util::Mutex &m_mutex;
+      };
+      
       Reduce(
         FABRIC_GC_OBJECT_CLASS_PARAM,
         RC::ConstHandle<ArrayProducer> const &inputArrayProducer,

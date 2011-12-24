@@ -49,14 +49,34 @@ namespace Fabric
       getValueDesc()->generateJSON( &m_data[0], jg );
     }
     
-    void ConstValue::produce( void *data ) const
+    const RC::Handle<ValueProducer::ComputeState> ConstValue::createComputeState() const
     {
-      return getValueDesc()->setData( &m_data[0], data );
+      return ComputeState::Create( this );
     }
     
-    void ConstValue::produceJSON( Util::JSONGenerator &jg ) const
+    RC::Handle<ConstValue::ComputeState> ConstValue::ComputeState::Create( RC::ConstHandle<ConstValue> const &constValue )
     {
-      return getValueDesc()->generateJSON( &m_data[0], jg );
+      return new ComputeState( constValue );
+    }
+    
+    ConstValue::ComputeState::ComputeState( RC::ConstHandle<ConstValue> const &constValue )
+      : ValueProducer::ComputeState( constValue )
+      , m_constValue( constValue )
+    {
+    }
+    
+    ConstValue::ComputeState::~ComputeState()
+    {
+    }
+    
+    void ConstValue::ComputeState::produce( void *data ) const
+    {
+      return m_constValue->getValueDesc()->setData( &m_constValue->m_data[0], data );
+    }
+    
+    void ConstValue::ComputeState::produceJSON( Util::JSONGenerator &jg ) const
+    {
+      return m_constValue->getValueDesc()->generateJSON( &m_constValue->m_data[0], jg );
     }
   }
 }

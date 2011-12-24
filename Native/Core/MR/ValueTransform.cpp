@@ -91,25 +91,47 @@ namespace Fabric
         m_sharedValueProducer->toJSON( jg );
       }
     }
-    
-    void ValueTransform::produce( void *data ) const
-    {
-      m_inputValueProducer->produce( data );
       
-      if ( m_valueTransformOperator->takesSharedValue() )
+    const RC::Handle<ValueProducer::ComputeState> ValueTransform::createComputeState() const
+    {
+      return ComputeState::Create( this );
+    }
+    
+    RC::Handle<ValueTransform::ComputeState> ValueTransform::ComputeState::Create( RC::ConstHandle<ValueTransform> const &valueTransform )
+    {
+      return new ComputeState( valueTransform );
+    }
+    
+    ValueTransform::ComputeState::ComputeState( RC::ConstHandle<ValueTransform> const &valueTransform )
+      : ValueProducer::ComputeState( valueTransform )
+      , m_valueTransform( valueTransform )
+      , m_inputValueProducerComputeState( valueTransform->m_inputValueProducer->createComputeState() )
+    {
+      if ( m_valueTransform->m_valueTransformOperator->takesSharedValue() )
       {
-        RC::ConstHandle<RT::Desc> sharedDesc = m_sharedValueProducer->getValueDesc();
-        size_t sharedDataSize = sharedDesc->getAllocSize();
-        void *sharedData = alloca( sharedDataSize );
-        memset( sharedData, 0, sharedDataSize );
-        
-        m_sharedValueProducer->produce( sharedData );
-
-        m_valueTransformOperator->call( data, sharedData );
-        
-        sharedDesc->disposeData( sharedData );
+        RC::ConstHandle<ValueProducer> sharedValueProducer = m_valueTransform->m_sharedValueProducer;
+        m_sharedData.resize( sharedValueProducer->getValueDesc()->getAllocSize(), 0 );
+        sharedValueProducer->createComputeState()->produce( &m_sharedData[0] );
       }
-      else m_valueTransformOperator->call( data );
+    }
+    
+    ValueTransform::ComputeState::~ComputeState()
+    {
+      if ( m_valueTransform->m_valueTransformOperator->takesSharedValue() )
+      {
+        RC::ConstHandle<ValueProducer> sharedValueProducer = m_valueTransform->m_sharedValueProducer;
+        sharedValueProducer->getValueDesc()->disposeData( &m_sharedData[0] );
+      }
+    }
+    
+    void ValueTransform::ComputeState::produce( void *data ) const
+    {
+      m_inputValueProducerComputeState->produce( data );
+      
+      RC::ConstHandle<KLC::ValueTransformOperator> valueTransformOperator = m_valueTransform->m_valueTransformOperator;
+      if ( valueTransformOperator->takesSharedValue() )
+        valueTransformOperator->call( data, &m_sharedData[0] );
+      else valueTransformOperator->call( data );
     }
   };
 };

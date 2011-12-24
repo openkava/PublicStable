@@ -31,8 +31,6 @@ namespace Fabric
         Util::JSONArrayGenerator &resultJAG
         );
       
-      // Virtual functions: Producer
-      
     protected:
     
       Producer( FABRIC_GC_OBJECT_CLASS_PARAM ); 

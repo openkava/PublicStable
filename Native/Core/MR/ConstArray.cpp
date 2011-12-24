@@ -46,25 +46,41 @@ namespace Fabric
       return "ConstArray";
     }
     
+    size_t ConstArray::getCount() const
+    {
+      return m_variableArrayDesc->getNumMembers( &m_data[0] );
+    }
+      
+    const RC::Handle<ArrayProducer::ComputeState> ConstArray::createComputeState() const
+    {
+      return ComputeState::Create( this );
+    }
+    
     void ConstArray::toJSONImpl( Util::JSONObjectGenerator &jog ) const
     {
       Util::JSONGenerator jg = jog.makeMember( "data" );
       m_variableArrayDesc->generateJSON( &m_data[0], jg );
     }
 
-    size_t ConstArray::count() const
+    RC::Handle<ConstArray::ComputeState> ConstArray::ComputeState::Create( RC::ConstHandle<ConstArray> const &constArray )
     {
-      return m_variableArrayDesc->getNumMembers( &m_data[0] );
+      return new ComputeState( constArray );
     }
     
-    void ConstArray::produce( size_t index, void *data ) const
+    ConstArray::ComputeState::ComputeState( RC::ConstHandle<ConstArray> const &constArray )
+      : ArrayProducer::ComputeState( constArray )
+      , m_constArray( constArray )
     {
-      return getElementDesc()->setData( m_variableArrayDesc->getMemberData( &m_data[0], index ), data );
     }
     
-    void ConstArray::produceJSON( size_t index, Util::JSONGenerator &jg ) const
+    void ConstArray::ComputeState::produce( size_t index, void *data ) const
     {
-      return getElementDesc()->generateJSON( m_variableArrayDesc->getMemberData( &m_data[0], index ), jg );
+      return m_constArray->getElementDesc()->setData( m_constArray->m_variableArrayDesc->getMemberData( &m_constArray->m_data[0], index ), data );
+    }
+    
+    void ConstArray::ComputeState::produceJSON( size_t index, Util::JSONGenerator &jg ) const
+    {
+      return m_constArray->getElementDesc()->generateJSON( m_constArray->m_variableArrayDesc->getMemberData( &m_constArray->m_data[0], index ), jg );
     }
   }
 }

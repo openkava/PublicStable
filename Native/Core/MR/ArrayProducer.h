@@ -24,6 +24,27 @@ namespace Fabric
       // Virtual functions: Object
       
     public:
+    
+      class ComputeState : public RC::Object
+      {
+      public:
+      
+        size_t getCount() const
+        {
+          return m_count;
+        }
+        virtual void produce( size_t index, void *data ) const = 0;
+        virtual void produceJSON( size_t index, Util::JSONGenerator &jg ) const;
+      
+      protected:
+      
+        ComputeState( RC::ConstHandle<ArrayProducer> const &arrayProducer );
+        
+      private:
+      
+        RC::ConstHandle<ArrayProducer> m_arrayProducer;
+        size_t m_count;
+      };
 
       virtual void jsonExec(
         std::string const &cmd,
@@ -34,10 +55,9 @@ namespace Fabric
       // Virtual functions: ArrayProducer
     
     public:
-    
-      virtual size_t count() const = 0;
-      virtual void produce( size_t index, void *data ) const = 0;
-      virtual void produceJSON( size_t index, Util::JSONGenerator &jg ) const;
+      
+      virtual size_t getCount() const = 0;
+      virtual const RC::Handle<ComputeState> createComputeState() const = 0;
             
       // Non-virtual functions
       
