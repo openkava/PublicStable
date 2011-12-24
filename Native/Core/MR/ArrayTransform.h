@@ -8,6 +8,8 @@
 #include <Fabric/Core/MR/ArrayProducer.h>
 #include <Fabric/Core/MR/ValueProducer.h>
 
+#include <stdint.h>
+
 namespace Fabric
 {
   namespace KLC
