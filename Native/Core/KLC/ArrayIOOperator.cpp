@@ -100,8 +100,8 @@ namespace Fabric
             FABRIC_KLC_ARRAY_IO_OPERATOR_PICK_ITN_SD( Boolean, sharedDesc ); \
           else if ( RT::isInteger(inputType) ) \
           { \
-            size_t size = sharedDesc->getAllocSize(); \
-            bool isSigned = RC::ConstHandle<RT::IntegerDesc>::StaticCast( sharedDesc )->isSigned(); \
+            size_t size = inputDesc->getAllocSize(); \
+            bool isSigned = RC::ConstHandle<RT::IntegerDesc>::StaticCast( inputDesc )->isSigned(); \
             switch ( size ) \
             { \
               case 1: \
@@ -134,7 +134,7 @@ namespace Fabric
           } \
           else if ( RT::isFloat(inputType) ) \
           { \
-            if ( sharedDesc->getAllocSize() == 8 ) \
+            if ( inputDesc->getAllocSize() == 8 ) \
               FABRIC_KLC_ARRAY_IO_OPERATOR_PICK_ITN_SD( Float64, sharedDesc ); \
             else \
               FABRIC_KLC_ARRAY_IO_OPERATOR_PICK_ITN_SD( Float32, sharedDesc ); \
