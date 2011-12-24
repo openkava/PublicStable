@@ -2034,7 +2034,7 @@ function (fabricClient, logCallback, debugLogCallback) {
       createValueTransform: function(inputValueProducer, operator, sharedValueProducer) {
         var result = GC.createObject('MR');
         
-        populateValueMap(result);
+        populateValueTransform(result);
         
         var arg = {
           id: result.id,
@@ -2045,6 +2045,25 @@ function (fabricClient, logCallback, debugLogCallback) {
           arg.sharedValueProducerID = sharedValueProducer.getID();
         
         queueCommand(['MR'], 'createValueTransform', arg, function () {
+          delete result.id;
+        });
+        return result.pub;
+      },
+      
+      createArrayTransform: function(input, operator, shared) {
+        var result = GC.createObject('MR');
+        
+        populateArrayTransform(result);
+        
+        var arg = {
+          id: result.id,
+          inputID: input.getID(),
+          operatorID: operator.getID()
+        };
+        if (shared)
+          arg.sharedID = shared.getID();
+        
+        queueCommand(['MR'], 'createArrayTransform', arg, function () {
           delete result.id;
         });
         return result.pub;
