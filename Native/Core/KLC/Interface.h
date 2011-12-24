@@ -5,10 +5,14 @@
 #ifndef _FABRIC_KLC_INTERFACE_H
 #define _FABRIC_KLC_INTERFACE_H
 
+#include <Fabric/Core/KLC/Compilation.h>
+#include <Fabric/Core/KLC/Executable.h>
 #include <Fabric/Core/GC/Object.h>
 #include <Fabric/Core/GC/Container.h>
 #include <Fabric/Core/CG/CompileOptions.h>
 #include <Fabric/Core/CG/Manager.h>
+#include <Fabric/Base/JSON/Object.h>
+#include <Fabric/Base/JSON/String.h>
 
 namespace Fabric
 {
@@ -58,35 +62,58 @@ namespace Fabric
         Util::JSONArrayGenerator &resultJAG
         );
       
-      void jsonExecCreateMapOperator(
+      template<class T> void jsonExecCreateOperator(
         RC::ConstHandle<JSON::Value> const &arg,
         Util::JSONArrayGenerator &resultJAG
-        );
-      
-      void jsonExecCreateReduceOperator(
-        RC::ConstHandle<JSON::Value> const &arg,
-        Util::JSONArrayGenerator &resultJAG
-        );
-      
-      void jsonExecCreateArrayGeneratorOperator(
-        RC::ConstHandle<JSON::Value> const &arg,
-        Util::JSONArrayGenerator &resultJAG
-        );
-      
-      void jsonExecCreateValueMapOperator(
-        RC::ConstHandle<JSON::Value> const &arg,
-        Util::JSONArrayGenerator &resultJAG
-        );
-      
-      void jsonExecCreateValueTransformOperator(
-        RC::ConstHandle<JSON::Value> const &arg,
-        Util::JSONArrayGenerator &resultJAG
-        );
-      
-      void jsonExecCreateArrayTransformOperator(
-        RC::ConstHandle<JSON::Value> const &arg,
-        Util::JSONArrayGenerator &resultJAG
-        );
+        )
+      {
+        RC::ConstHandle<JSON::Object> argObject = arg->toObject();
+        
+        std::string id_;
+        try
+        {
+          id_ = argObject->get( "id" )->toString()->value();
+        }
+        catch ( Exception e )
+        {
+          throw "id: " + e;
+        }
+        
+        std::string sourceName;
+        try
+        {
+          sourceName = argObject->get( "sourceName" )->toString()->value();
+        }
+        catch ( Exception e )
+        {
+          throw "sourceName: " + e;
+        }
+        
+        std::string sourceCode;
+        try
+        {
+          sourceCode = argObject->get( "sourceCode" )->toString()->value();
+        }
+        catch ( Exception e )
+        {
+          throw "sourceCode: " + e;
+        }
+        
+        std::string operatorName;
+        try
+        {
+          operatorName = argObject->get( "operatorName" )->toString()->value();
+        }
+        catch ( Exception e )
+        {
+          throw "operatorName: " + e;
+        }
+        
+        RC::Handle<Compilation> compilation = Compilation::Create( m_gcContainer, m_cgManager, m_compileOptions );
+        compilation->add( sourceName, sourceCode );
+        RC::Handle<Executable> executable = compilation->run();
+        executable->resolveOperator<T>( operatorName )->reg( m_gcContainer, id_ );
+      }
         
     private:
     

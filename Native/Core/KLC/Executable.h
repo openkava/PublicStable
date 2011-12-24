@@ -9,9 +9,14 @@
 #include <Fabric/Core/CG/Diagnostics.h>
 #include <Fabric/Core/CG/CompileOptions.h>
 #include <Fabric/Core/CG/Manager.h>
+#include <Fabric/Core/AST/GlobalList.h>
+#include <Fabric/Core/AST/Operator.h>
+#include <Fabric/Base/JSON/String.h>
 #include <Fabric/Core/Util/TLS.h>
 
 #include <llvm/ADT/OwningPtr.h>
+#include <llvm/Function.h>
+#include <llvm/ExecutionEngine/JIT.h>
 
 namespace llvm
 {
@@ -21,11 +26,6 @@ namespace llvm
 
 namespace Fabric
 {
-  namespace AST
-  {
-    class GlobalList;
-  };
-  
   namespace CG
   {
     class Context;
@@ -58,12 +58,46 @@ namespace Fabric
       CG::Diagnostics const &getDiagnostics() const;
       RC::Handle<CG::Manager> getCGManager() const;
       
-      RC::Handle<MapOperator> resolveMapOperator( std::string const &mapOperatorName ) const;
-      RC::Handle<ReduceOperator> resolveReduceOperator( std::string const &reduceOperatorName ) const;
-      RC::Handle<ArrayGeneratorOperator> resolveArrayGeneratorOperator( std::string const &arrayGeneratorOperatorName ) const;
-      RC::Handle<ValueMapOperator> resolveValueMapOperator( std::string const &operatorName ) const;
-      RC::Handle<ValueTransformOperator> resolveValueTransformOperator( std::string const &operatorName ) const;
-      RC::Handle<ArrayTransformOperator> resolveArrayTransformOperator( std::string const &operatorName ) const;
+      template<class T> RC::Handle<T> resolveOperator( std::string const &operatorName ) const
+      {
+        void (*functionPtr)( ... ) = 0;
+        RC::ConstHandle<AST::Operator> astOperator;
+        
+        if ( !m_diagnostics.containsError() )
+        {
+          CurrentExecutableSetter executableSetter( this );
+          llvm::Function *llvmFunction = m_llvmExecutionEngine->FindFunctionNamed( operatorName.c_str() );
+          if ( llvmFunction )
+          {
+            functionPtr = (void (*)(...))( m_llvmExecutionEngine->getPointerToFunction( llvmFunction ) );
+            
+            std::vector< RC::ConstHandle<AST::Function> > functions;
+            m_ast->collectFunctions( functions );
+            
+            for ( std::vector< RC::ConstHandle<AST::Function> >::const_iterator it=functions.begin(); it!=functions.end(); ++it )
+            {
+              RC::ConstHandle<AST::Function> const &function = *it;
+              
+              std::string const *friendlyName = function->getFriendlyName( m_cgManager );
+              if ( friendlyName && *friendlyName == operatorName )
+              {
+                if( !function->isOperator() )
+                  throw Exception( _(operatorName) + " is not an operator" );
+                astOperator = RC::ConstHandle<AST::Operator>::StaticCast( function );
+              }
+            }
+          }
+            
+          if ( !functionPtr )
+            throw Exception( "operator " + _(operatorName) + " not found" );
+        }
+        
+        return T::Create(
+          this,
+          astOperator,
+          functionPtr
+          );
+      }
         
       virtual void jsonExec(
         std::string const &cmd,
@@ -114,35 +148,35 @@ namespace Fabric
         Util::JSONArrayGenerator &resultJAG
         );
     
-      void jsonExecResolveMapOperator(
+      template<class T> void jsonExecResolveOperator(
         RC::ConstHandle<JSON::Value> const &arg,
         Util::JSONArrayGenerator &resultJAG
-        );
-    
-      void jsonExecResolveReduceOperator(
-        RC::ConstHandle<JSON::Value> const &arg,
-        Util::JSONArrayGenerator &resultJAG
-        );
-    
-      void jsonExecResolveArrayGeneratorOperator(
-        RC::ConstHandle<JSON::Value> const &arg,
-        Util::JSONArrayGenerator &resultJAG
-        );
-    
-      void jsonExecResolveValueMapOperator(
-        RC::ConstHandle<JSON::Value> const &arg,
-        Util::JSONArrayGenerator &resultJAG
-        );
-    
-      void jsonExecResolveValueTransformOperator(
-        RC::ConstHandle<JSON::Value> const &arg,
-        Util::JSONArrayGenerator &resultJAG
-        );
-    
-      void jsonExecResolveArrayTransformOperator(
-        RC::ConstHandle<JSON::Value> const &arg,
-        Util::JSONArrayGenerator &resultJAG
-        );
+        )
+      {
+        RC::ConstHandle<JSON::Object> argObject = arg->toObject();
+        
+        std::string id_;
+        try
+        {
+          id_ = argObject->get("id")->toString()->value();
+        }
+        catch ( Exception e )
+        {
+          throw "id: " + e;
+        }
+        
+        std::string operatorName;
+        try
+        {
+          operatorName = argObject->get("operatorName")->toString()->value();
+        }
+        catch ( Exception e )
+        {
+          throw "operatorName: " + e;
+        }
+        
+        resolveOperator<T>( operatorName )->reg( m_gcContainer, id_ );
+      }
     
       void *lazyFunctionCreator( std::string const &functionName ) const;
       static void *LazyFunctionCreator( std::string const &functionName );
