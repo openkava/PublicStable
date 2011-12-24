@@ -24,6 +24,22 @@ namespace Fabric
       // Virtual functions: Object
       
     public:
+    
+      class ComputeState : public RC::Object
+      {
+      public:
+      
+        virtual void produce( void *data ) const = 0;
+        virtual void produceJSON( Util::JSONGenerator &jg ) const;
+        
+      protected:
+      
+        ComputeState( RC::ConstHandle<ValueProducer> const &valueProducer );
+        
+      protected:
+      
+        RC::ConstHandle<ValueProducer> m_valueProducer;
+      };
 
       virtual void jsonExec(
         std::string const &cmd,
@@ -31,15 +47,12 @@ namespace Fabric
         Util::JSONArrayGenerator &resultJAG
         );
       
-      // Virtual functions: ValueProducer
-    
     public:
+      
+      // Virtual functions: ValueProducer
+      
+      virtual const RC::Handle<ComputeState> createComputeState() const = 0;
     
-      virtual void produce( void *data ) const = 0;
-      virtual void produceJSON( Util::JSONGenerator &jg ) const;
-      
-      // Non-virtual functions
-      
     public:
     
       RC::ConstHandle<RT::Desc> getValueDesc() const;

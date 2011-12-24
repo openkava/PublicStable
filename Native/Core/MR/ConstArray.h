@@ -30,7 +30,6 @@ namespace Fabric
       FABRIC_GC_OBJECT_CLASS_DECL()
       
     public:
-    
       static RC::Handle<ConstArray> Create(
         RC::ConstHandle<RT::Manager> const &rtManager,
         RC::ConstHandle<RT::Desc> const &elementDesc,
@@ -40,13 +39,30 @@ namespace Fabric
       // Virtual functions: ArrayProducer
     
     public:
+      
+      virtual size_t getCount() const;
+      virtual const RC::Handle<ArrayProducer::ComputeState> createComputeState() const;
     
-      virtual size_t count() const;
-      virtual void produce( size_t index, void *data ) const;
-      virtual void produceJSON( size_t index, Util::JSONGenerator &jg ) const;
-            
     protected:
     
+      class ComputeState : public ArrayProducer::ComputeState
+      {
+      public:
+      
+        static RC::Handle<ComputeState> Create( RC::ConstHandle<ConstArray> const &constArray );
+      
+        virtual void produce( size_t index, void *data ) const;
+        virtual void produceJSON( size_t index, Util::JSONGenerator &jg ) const;
+      
+      protected:
+      
+        ComputeState( RC::ConstHandle<ConstArray> const &constArray );
+        
+      private:
+      
+        RC::ConstHandle<ConstArray> m_constArray;
+      };
+        
       ConstArray(
         FABRIC_GC_OBJECT_CLASS_PARAM,
         RC::ConstHandle<RT::Manager> const &rtManager,

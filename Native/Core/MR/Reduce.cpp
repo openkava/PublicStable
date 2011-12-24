@@ -96,22 +96,58 @@ namespace Fabric
         m_sharedValueProducer->toJSON( jg );
       }
     }
+      
+    const RC::Handle<ValueProducer::ComputeState> Reduce::createComputeState() const
+    {
+      return ComputeState::Create( this );
+    }
+    
+    RC::Handle<Reduce::ComputeState> Reduce::ComputeState::Create( RC::ConstHandle<Reduce> const &reduce )
+    {
+      return new ComputeState( reduce );
+    }
+    
+    Reduce::ComputeState::ComputeState( RC::ConstHandle<Reduce> const &reduce )
+      : ValueProducer::ComputeState( reduce )
+      , m_inputComputeState( reduce->m_inputArrayProducer->createComputeState() )
+      , m_inputDesc( reduce->getValueDesc() )
+      , m_operator( reduce->m_reduceOperator )
+      , m_shared( reduce->m_sharedValueProducer )
+      , m_mutex( reduce->m_mutex )
+    {
+      if ( m_operator->takesSharedValue() )
+      {
+        m_sharedData.resize( m_shared->getValueDesc()->getAllocSize(), 0 );
+        m_shared->createComputeState()->produce( &m_sharedData[0] );
+      }
+    }
+    
+    Reduce::ComputeState::~ComputeState()
+    {
+      if ( m_operator->takesSharedValue() )
+        m_shared->getValueDesc()->disposeData( &m_sharedData[0] );
+    }
     
     class Reduce::Execution
     {
     public:
     
       Execution(
-        RC::ConstHandle<Reduce> const &reduce,
-        size_t count,
+        RC::ConstHandle<ArrayProducer::ComputeState> const &inputComputeState,
+        RC::ConstHandle<RT::Desc> const &inputDesc,
+        RC::ConstHandle<KLC::ReduceOperator> const &operator_,
         void *outputData,
+        void const *sharedData,
         Util::Mutex &mutex
         )
-        : m_reduce( reduce )
-        , m_count( count )
+        : m_inputComputeState( inputComputeState )
+        , m_inputDesc( inputDesc )
+        , m_operator( operator_ )
         , m_outputData( outputData )
+        , m_sharedData( sharedData )
         , m_mutex( mutex )
         , m_logCollector( MT::tlsLogCollector.get() )
+        , m_count( inputComputeState->getCount() )
         , m_numJobs( std::min( m_count, 4 * MT::getNumCores() ) )
         , m_indicesPerJob( (m_count + m_numJobs - 1) / m_numJobs )
       {
@@ -134,30 +170,13 @@ namespace Fabric
       {
         MT::TLSLogCollectorAutoSet logCollector( m_logCollector );
         
-        RC::ConstHandle<ArrayProducer> inputArrayProducer = m_reduce->m_inputArrayProducer;
-        RC::ConstHandle<KLC::ReduceOperator> reduceOperator = m_reduce->m_reduceOperator;
-        RC::ConstHandle<ValueProducer> sharedValueProducer = m_reduce->m_sharedValueProducer;
-        
-        bool takesIndex = reduceOperator->takesIndex();
-        bool takesCount = reduceOperator->takesCount();
-        bool takesSharedValue = reduceOperator->takesSharedValue();
-        
-        void *sharedData;
-        RC::ConstHandle<RT::Desc> sharedDesc;
-        if ( takesSharedValue )
-        {
-          sharedDesc = sharedValueProducer->getValueDesc();
-          size_t sharedDataSize = sharedDesc->getAllocSize();
-          sharedData = alloca( sharedDataSize );
-          memset( sharedData, 0, sharedDataSize );
-          
-          sharedValueProducer->produce( sharedData );
-        }
+        bool takesIndex = m_operator->takesIndex();
+        bool takesCount = m_operator->takesCount();
+        bool takesSharedValue = m_operator->takesSharedValue();
         
         static const size_t maxGroupSize = 256;
         
-        RC::ConstHandle<RT::Desc> inputElementDesc = inputArrayProducer->getElementDesc();
-        size_t inputElementSize = inputElementDesc->getAllocSize();
+        size_t inputElementSize = m_inputDesc->getAllocSize();
         size_t allInputElementsSize = maxGroupSize * inputElementSize;
         uint8_t *inputDatas = (uint8_t *)alloca( allInputElementsSize );
         memset( inputDatas, 0, allInputElementsSize );
@@ -170,7 +189,7 @@ namespace Fabric
           while ( groupSize < maxGroupSize && index + groupSize < endIndex )
           {
             void *inputData = &inputDatas[groupSize * inputElementSize];
-            inputArrayProducer->produce( index + groupSize, inputData );
+            m_inputComputeState->produce( index + groupSize, inputData );
             ++groupSize;
           }
           
@@ -180,23 +199,20 @@ namespace Fabric
             {
               void *inputData = &inputDatas[i * inputElementSize];
               if ( takesSharedValue )
-                reduceOperator->call( inputData, m_outputData, index + i, m_count, sharedData );
+                m_operator->call( inputData, m_outputData, index + i, m_count, m_sharedData );
               else if ( takesCount )
-                reduceOperator->call( inputData, m_outputData, index + i, m_count );
+                m_operator->call( inputData, m_outputData, index + i,m_count );
               else if ( takesIndex )
-                reduceOperator->call( inputData, m_outputData, index + i );
+                m_operator->call( inputData, m_outputData, index + i );
               else
-                reduceOperator->call( inputData, m_outputData );
+                m_operator->call( inputData, m_outputData );
             }
           }
           
           index += groupSize;
         }
       
-        inputElementDesc->disposeDatas( inputDatas, maxGroupSize, inputElementSize );
-        
-        if ( takesSharedValue )
-          sharedDesc->disposeData( sharedData );
+        m_inputDesc->disposeDatas( inputDatas, maxGroupSize, inputElementSize );
       }
       
       static void Callback( void *userdata, size_t jobIndex )
@@ -206,23 +222,27 @@ namespace Fabric
       
     private:
     
-      RC::ConstHandle<Reduce> m_reduce;
-      size_t m_count;
+      RC::ConstHandle<ArrayProducer::ComputeState> m_inputComputeState;
+      RC::ConstHandle<RT::Desc> m_inputDesc;
+      RC::ConstHandle<KLC::ReduceOperator> m_operator;
       void *m_outputData;
+      void const *m_sharedData;
       Util::Mutex &m_mutex;
       RC::Handle<MT::LogCollector> m_logCollector;
       
+      size_t m_count;
       size_t m_numJobs;
       size_t m_indicesPerJob;
     };
-        
-    
-    void Reduce::produce( void *data ) const
+            
+    void Reduce::ComputeState::produce( void *data ) const
     {
       Execution(
-        this,
-        m_inputArrayProducer->count(),
+        m_inputComputeState,
+        m_inputDesc,
+        m_operator,
         data,
+        &m_sharedData[0],
         m_mutex
         ).run();
     }

@@ -31,10 +31,30 @@ namespace Fabric
       // Virtual functions: ValueProducer
     
     public:
-    
-      virtual void produce( void *data ) const;
+      
+      virtual const RC::Handle<ValueProducer::ComputeState> createComputeState() const;
             
     protected:
+    
+      class ComputeState : public ValueProducer::ComputeState
+      {
+      public:
+      
+        static RC::Handle<ComputeState> Create( RC::ConstHandle<ValueTransform> const &valueTransform );
+      
+        virtual void produce( void *data ) const;
+      
+      protected:
+      
+        ComputeState( RC::ConstHandle<ValueTransform> const &valueTransform );
+        ~ComputeState();
+        
+      private:
+      
+        RC::ConstHandle<ValueTransform> m_valueTransform;
+        RC::ConstHandle<ValueProducer::ComputeState> m_inputValueProducerComputeState;
+        std::vector<uint8_t> m_sharedData;
+      };
     
       ValueTransform(
         FABRIC_GC_OBJECT_CLASS_PARAM,

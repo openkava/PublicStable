@@ -32,11 +32,31 @@ namespace Fabric
       // Virtual functions: ArrayProducer
     
     public:
-    
-      virtual size_t count() const;
-      virtual void produce( size_t index, void *data ) const;
+      
+      virtual size_t getCount() const;
+      virtual const RC::Handle<ArrayProducer::ComputeState> createComputeState() const;
             
     protected:
+    
+      class ComputeState : public ArrayProducer::ComputeState
+      {
+      public:
+      
+        static RC::Handle<ComputeState> Create( RC::ConstHandle<ArrayTransform> const &arrayTransform );
+      
+        virtual void produce( size_t index, void *data ) const;
+      
+      protected:
+      
+        ComputeState( RC::ConstHandle<ArrayTransform> const &arrayTransform );
+        ~ComputeState();
+        
+      private:
+      
+        RC::ConstHandle<ArrayTransform> m_arrayTransform;
+        RC::ConstHandle<ArrayProducer::ComputeState> m_inputArrayProducerComputeState;
+        std::vector<uint8_t> m_sharedData;
+      };
     
       ArrayTransform(
         FABRIC_GC_OBJECT_CLASS_PARAM,
