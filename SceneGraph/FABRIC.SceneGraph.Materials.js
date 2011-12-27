@@ -314,15 +314,13 @@ FABRIC.SceneGraph.registerNodeType('Material', {
         var lightStub = materialNode.constructEventHandlerNode('Draw_' + lightName);
         redrawEventHandler.appendChildEventHandler(lightStub);
         
-        var lightNode;
         var setLightNodeFn = materialNode.addReferenceInterface(lightName, lightDef.type,
           function(nodePrivate){
-            lightNode = nodePrivate;
-            lightStub.appendChildEventHandler(lightNode.getRedrawEventHandler());
+            lightStub.appendChildEventHandler(nodePrivate.getRedrawEventHandler());
           });
-        if (lightDef.node !== undefined) {
-          setLightNodeFn(lightDef.node);
-        }
+      //  if (lightDef.node !== undefined) {
+      //    setLightNodeFn(lightDef.node);
+      //  }
       };
       for (i in options.lights) {
         addLightInterface(i, options.lights[i]);
@@ -349,19 +347,13 @@ FABRIC.SceneGraph.registerNodeType('Material', {
             'self.textureUnit'
           ]
         }));
-        var textureNode;
-        materialNode.addReferenceInterface(textureName, 'Texture',
+        var setTextureFn = materialNode.addReferenceInterface(textureName, 'Texture',
           function(nodePrivate){
-            textureNode = nodePrivate;
-            textureStub.appendChildEventHandler(textureNode.getRedrawEventHandler());
+            textureStub.appendChildEventHandler(nodePrivate.getRedrawEventHandler());
           });
-        // PT 27-12-11 Why do we expose the private data of the materil like this?
-        // this bypasses the layer of abstraction that the scenegraph provides.
-      //  materialNode['set' + capitalizeFirstLetter(textureName) + 'RedrawEventHandler'] = setTextureRedrawEventHandlerFn;
-
-        if (textureDef.node !== undefined) {
-          setTextureFn(textureDef.node);
-        }
+      //  if (textureDef.node !== undefined) {
+      //    setTextureFn(textureDef.node);
+      //  }
       };
       var textureUnit = 0;
       for (i in options.textures) {

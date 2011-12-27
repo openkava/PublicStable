@@ -247,13 +247,11 @@ FABRIC.SceneGraph = {
     scene.constructEventHandlerNode = function(name) {
       return context.DependencyGraph.createEventHandler(name);
     };
+    scene.constructResourceLoadNode = function(name) {
+      return context.DependencyGraph.createResourceLoadNode(name);
+    };
     scene.constructDependencyGraphNode = function(name, isResourceLoad) {
-      if (isResourceLoad) {
-        return context.DependencyGraph.createResourceLoadNode(name);
-      }
-      else {
-        return context.DependencyGraph.createNode(name);
-      }
+      return context.DependencyGraph.createNode(name);
     };
     
     scene.constructManager = function(type, options) {
@@ -759,6 +757,7 @@ FABRIC.SceneGraph.registerNodeType('SceneGraphNode', {
     var dgnodes = {};
     var eventnodes = {};
     var eventhandlernodes = {};
+    var nodeReferences = {};
 
     var capitalizeFirstLetter = function(str) {
       return str[0].toUpperCase() + str.substr(1);
@@ -802,33 +801,33 @@ FABRIC.SceneGraph.registerNodeType('SceneGraphNode', {
         }
       },
       addReferenceInterface : function(referenceName, typeConstraint, setterCallback) {
-        var nodeReference;
         var getterName = 'get' + capitalizeFirstLetter(referenceName) + 'Node';
         sceneGraphNode.pub[getterName] = function(){
-          return nodeReference;
+          return nodeReferences[referenceName];
         }
         var setterName = 'set' + capitalizeFirstLetter(referenceName) + 'Node';
         sceneGraphNode.pub[setterName] = function(node, option){
           if (node && !node.isTypeOf(typeConstraint)) {
             throw ('Incorrect type assignment. Must assign a '+typeConstraint);
           }
-          nodeReference = node;
+          nodeReferences[referenceName] = node;
           setterCallback(node ? scene.getPrivateInterface(node) : undefined, option);
           return sceneGraphNode.pub;
         }
+        return sceneGraphNode.pub[setterName];
       },
       addReferenceListInterface : function(referenceName, typeConstraint, setterCallback) {
-        var nodeReferenceList = [];
+        nodeReferences[referenceName] = [];
         var getterName = 'get' + capitalizeFirstLetter(referenceName) + 'Node';
         sceneGraphNode.pub[getterName] = function(index){
-          return nodeReferenceList[index ? index : 0];
+          return nodeReferences[referenceName][index ? index : 0];
         }
         var setterName = 'set' + capitalizeFirstLetter(referenceName) + 'Node';
         sceneGraphNode.pub[setterName] = function(node, index){
           if (node && !node.isTypeOf(typeConstraint)) {
             throw ('Incorrect type assignment. Must assign a '+typeConstraint);
           }
-          nodeReferenceList[index ? index : 0] = node;
+          nodeReferences[referenceName][index ? index : 0] = node;
           setterCallback(node ? scene.getPrivateInterface(node) : undefined, index);
           return sceneGraphNode.pub;
         }
@@ -844,40 +843,35 @@ FABRIC.SceneGraph.registerNodeType('SceneGraphNode', {
           if (index === -1) {
             throw ( typeConstraint + ' not assigned');
           }
-          nodeReference = node;
-          materialNodes.splice(index, 1);
           sceneGraphNode.pub[setterName](undefined, index);
+          nodeReferences[referenceName].splice(index, 1);
           return sceneGraphNode.pub;
         }
+        return sceneGraphNode.pub[setterName];
       },
       constructDGNode: function(dgnodename, isResourceLoad) {
         if(dgnodes[dgnodename]){
           throw "SceneGraphNode already has a " + dgnodename;
         }
-        var dgnode = scene.constructDependencyGraphNode(name + '_' + dgnodename, isResourceLoad);
+        var dgnode;
+        if(isResourceLoad){
+          dgnode = scene.constructResourceLoadNode(name + '_' + dgnodename);
+        }
+        else{
+          dgnode = scene.constructDependencyGraphNode(name + '_' + dgnodename);
+        }
         dgnode.sceneGraphNode = sceneGraphNode;
         sceneGraphNode['get' + dgnodename] = function() {
           return dgnode;
         };
-        sceneGraphNode['add' + dgnodename + 'Member'] = function(
-            memberName,
-            memberType,
-            defaultValue,
-            defineGetter,
-            defineSetter) {
-          dgnode.addMember(memberName, memberType, defaultValue);
-          if(defineGetter){
-            sceneGraphNode.addMemberInterface(dgnode, memberName, defineSetter);
-          };
-        };
         dgnodes[dgnodename] = dgnode;
         return dgnode;
       },
+      constructResourceLoadNode: function(dgnodename) {
+        return constructDGNode(dgnodename, true);
+      },
       getDGNodes: function() {
         return dgnodes;
-      },
-      constructResourceLoadNode: function(dgnodename) {
-        return sceneGraphNode.constructDGNode(dgnodename, true);
       },
       constructEventHandlerNode: function(ehname) {
         var eventhandlernode = scene.constructEventHandlerNode(name + '_' + ehname);
