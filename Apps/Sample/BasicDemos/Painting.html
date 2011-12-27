@@ -147,7 +147,7 @@ $(document).ready(function() {
     backgroundColor: FABRIC.RT.rgb(0.3, 0.5, 0.7)
   });
   
-  viewport.setBackgroundTextureImage(scene.constructNode('Image', {
+  viewport.setBackgroundTextureNode(scene.constructNode('Image', {
     url: 'Resources/fabric-demo-gradient.png'
   }));
 
@@ -193,7 +193,7 @@ $(document).ready(function() {
   
   
 
-    paintManipulator.addPaintableNode(instanceNode);
+    paintManipulator.setPaintableNode(instanceNode);
   
     var onPaintFn = function(evt) {
       if( evt.paintData.points.length == 0 ){
