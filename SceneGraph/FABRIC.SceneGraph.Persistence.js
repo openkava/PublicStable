@@ -344,15 +344,13 @@ FABRIC.SceneGraph.FileWriter = function(scene, title, suggestedFileName) {
   }
 };
 
-FABRIC.SceneGraph.FileWriterWithBinary = function(scene, title, suggestedFileName) {
+FABRIC.SceneGraph.FileWriterWithBinary = function(scene, title, suggestedFileName, options) {
   
   var path = scene.IO.queryUserFileAndFolderHandle(scene.IO.forOpenWithWriteAccess, title, "json", suggestedFileName);
   var jsonFilename = path.fileName.split('.')[0];
   var binarydatapath = scene.IO.queryUserFileAndFolderHandle(scene.IO.forOpenWithWriteAccess, "Secure ", "fez", jsonFilename);
   
-  var writeBinaryDataNode = scene.constructNode('WriteBinaryDataNode', {
-    secureKey: 'secureKey'
-  });
+  var writeBinaryDataNode = scene.constructNode('WriteBinaryDataNode', options);
       
   var str = "";
   this.getBinaryStorageNode = function(){
@@ -645,7 +643,7 @@ FABRIC.SceneGraph.registerNodeType('WriteBinaryDataNode', {
   },
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
-      compressionLevel: 9, // 0 - 9
+      compressionLevel: 0, // 0 - 9
       secureKey: undefined
     });
       
