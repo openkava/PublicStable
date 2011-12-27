@@ -280,8 +280,14 @@ FABRIC.SceneGraph.registerNodeType('Geometry', {
           );
         }
       }
-      sceneDeserializer.loadDGNodeData(attributesdgnode, 'attributes');
-      sceneDeserializer.loadDGNodeData(uniformsdgnode, 'uniforms');
+      sceneDeserializer.loadDGNodesData(geometryNode.pub.getName(), {
+        uniforms:{
+          dgnode: uniformsdgnode
+        },
+        attributes:{
+          dgnode: attributesdgnode
+        }
+      });
     };
     
     return geometryNode;
