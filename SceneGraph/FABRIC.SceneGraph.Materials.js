@@ -315,18 +315,11 @@ FABRIC.SceneGraph.registerNodeType('Material', {
         redrawEventHandler.appendChildEventHandler(lightStub);
         
         var lightNode;
-        var getLightNodeFn = function() {
-          return lightNode.pub;
-        };
-        var setLightNodeFn = function(node) {
-          if (!node.isTypeOf(lightDef.type)) {
-            throw ('Incorrect type assignment. Must assign a ' + lightDef.type);
-          }
-          lightNode = scene.getPrivateInterface(node);
-          lightStub.appendChildEventHandler(lightNode.getRedrawEventHandler());
-        };
-        materialNode.pub['get' + capitalizeFirstLetter(lightName) + 'Node'] = getLightNodeFn;
-        materialNode.pub['set' + capitalizeFirstLetter(lightName) + 'Node'] = setLightNodeFn;
+        var setLightNodeFn = materialNode.addReferenceInterface(lightName, lightDef.type,
+          function(nodePrivate){
+            lightNode = nodePrivate;
+            lightStub.appendChildEventHandler(lightNode.getRedrawEventHandler());
+          });
         if (lightDef.node !== undefined) {
           setLightNodeFn(lightDef.node);
         }
@@ -357,23 +350,14 @@ FABRIC.SceneGraph.registerNodeType('Material', {
           ]
         }));
         var textureNode;
-        // Now add a method to assign the texture to the material
-        var setTextureRedrawEventHandlerFn = function(handler) {
-          textureStub.appendChildEventHandler(handler);
-        };
-        var getTextureFn = function() {
-          return textureNode.pub;
-        };
-        var setTextureFn = function(node) {
-          if (!node.isTypeOf('Texture')) {
-            throw ('Incorrect type assignment. Must assign a Texture');
-          }
-          textureNode = scene.getPrivateInterface(node);
-          setTextureRedrawEventHandlerFn(textureNode.getRedrawEventHandler());
-        };
-        materialNode.pub['get' + capitalizeFirstLetter(textureName) + 'Node'] = getTextureFn;
-        materialNode.pub['set' + capitalizeFirstLetter(textureName) + 'Node'] = setTextureFn;
-        materialNode['set' + capitalizeFirstLetter(textureName) + 'RedrawEventHandler'] = setTextureRedrawEventHandlerFn;
+        materialNode.addReferenceInterface(textureName, 'Texture',
+          function(nodePrivate){
+            textureNode = nodePrivate;
+            textureStub.appendChildEventHandler(textureNode.getRedrawEventHandler());
+          });
+        // PT 27-12-11 Why do we expose the private data of the materil like this?
+        // this bypasses the layer of abstraction that the scenegraph provides.
+      //  materialNode['set' + capitalizeFirstLetter(textureName) + 'RedrawEventHandler'] = setTextureRedrawEventHandlerFn;
 
         if (textureDef.node !== undefined) {
           setTextureFn(textureDef.node);

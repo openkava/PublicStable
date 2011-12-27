@@ -801,6 +801,55 @@ FABRIC.SceneGraph.registerNodeType('SceneGraphNode', {
           }
         }
       },
+      addReferenceInterface : function(referenceName, typeConstraint, setterCallback) {
+        var nodeReference;
+        var getterName = 'get' + capitalizeFirstLetter(referenceName) + 'Node';
+        sceneGraphNode.pub[getterName] = function(){
+          return nodeReference;
+        }
+        var setterName = 'set' + capitalizeFirstLetter(referenceName) + 'Node';
+        sceneGraphNode.pub[setterName] = function(node, option){
+          if (node && !node.isTypeOf(typeConstraint)) {
+            throw ('Incorrect type assignment. Must assign a '+typeConstraint);
+          }
+          nodeReference = node;
+          setterCallback(node ? scene.getPrivateInterface(node) : undefined, option);
+          return sceneGraphNode.pub;
+        }
+      },
+      addReferenceListInterface : function(referenceName, typeConstraint, setterCallback) {
+        var nodeReferenceList = [];
+        var getterName = 'get' + capitalizeFirstLetter(referenceName) + 'Node';
+        sceneGraphNode.pub[getterName] = function(index){
+          return nodeReferenceList[index ? index : 0];
+        }
+        var setterName = 'set' + capitalizeFirstLetter(referenceName) + 'Node';
+        sceneGraphNode.pub[setterName] = function(node, index){
+          if (node && !node.isTypeOf(typeConstraint)) {
+            throw ('Incorrect type assignment. Must assign a '+typeConstraint);
+          }
+          nodeReferenceList[index ? index : 0] = node;
+          setterCallback(node ? scene.getPrivateInterface(node) : undefined, index);
+          return sceneGraphNode.pub;
+        }
+        var removerName = 'remove' + capitalizeFirstLetter(referenceName) + 'Node';
+        sceneGraphNode.pub[removerName] = function(val){
+          var index = -1;
+          if(typeof val == 'number'){
+            index = val;
+          }else{
+            node = scene.getPrivateInterface(val);
+            index = materialNodes.indexOf(node);
+          }
+          if (index === -1) {
+            throw ( typeConstraint + ' not assigned');
+          }
+          nodeReference = node;
+          materialNodes.splice(index, 1);
+          sceneGraphNode.pub[setterName](undefined, index);
+          return sceneGraphNode.pub;
+        }
+      },
       constructDGNode: function(dgnodename, isResourceLoad) {
         if(dgnodes[dgnodename]){
           throw "SceneGraphNode already has a " + dgnodename;
@@ -1103,71 +1152,63 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
     // public interface
     
     viewportNode.addMemberInterface(dgnode, 'backgroundColor', true);
-    viewportNode.pub.setCameraNode = function(node) {
-      if (!node || !node.isTypeOf('Camera')) {
-        throw ('Incorrect type assignment. Must assign a Camera');
-      }
+    viewportNode.addReferenceInterface('Camera', 'Camera',
+      function(nodePrivate){
       // remove the child event handler first
-      if(cameraNode != undefined) {
-        propagationRedrawEventHandler.removeChildEventHandler(cameraNode.getRedrawEventHandler());
-      }
-      cameraNode = scene.getPrivateInterface(node);
-      propagationRedrawEventHandler.appendChildEventHandler(cameraNode.getRedrawEventHandler());
-      if (viewPortRayCastDgNode) {
-        viewPortRayCastDgNode.setDependency(cameraNode.getDGNode(), 'camera');
-      }
-    };
-    viewportNode.pub.getCameraNode = function() {
-      return cameraNode.pub;
-    };
+        if(cameraNode != undefined) {
+          propagationRedrawEventHandler.removeChildEventHandler(cameraNode.getRedrawEventHandler());
+        }
+        cameraNode = nodePrivate;
+        propagationRedrawEventHandler.appendChildEventHandler(cameraNode.getRedrawEventHandler());
+        if (viewPortRayCastDgNode) {
+          viewPortRayCastDgNode.setDependency(cameraNode.getDGNode(), 'camera');
+        }
+      });
+    
     viewportNode.pub.startLoadMode = startLoadMode;
     viewportNode.pub.disableRaycasting = disableRaycasting;
     viewportNode.pub.enableRaycasting = enableRaycasting;
-    viewportNode.pub.setBackgroundTextureImage = function(textureNode) {
-      if (textureStub.postDescendBindings.getLength() == 0) {
-        textureStub.setScopeName('textureStub');
-        textureStub.addMember('textureUnit', 'Integer', 0);
-        textureStub.addMember('program', 'Integer', 0);
-        textureStub.postDescendBindings.append(
-          scene.constructOperator({
-              operatorName: 'drawTextureFullScreen',
-              srcFile: 'FABRIC_ROOT/SceneGraph/KL/drawTexture.kl',
-              entryFunctionName: 'drawTextureFullScreen',
-              parameterLayout: [
-                'self.textureUnit',
-                'self.program'
-              ]
-            }
-         ));
-      }
-      if (!textureNode.isTypeOf('Texture')) {
-        throw ('Incorrect type assignment. Must assign a Texture');
-      }
-      if (backgroundTextureNode) {
-        textureStub.removeChildEventHandler(backgroundTextureNode.getRedrawEventHandler());
-      }
-      backgroundTextureNode = scene.getPrivateInterface(textureNode);
-      textureStub.appendChildEventHandler(backgroundTextureNode.getRedrawEventHandler());
-    };
-    viewportNode.pub.addPostProcessEffectShader = function(postProcessEffect) {
-      if (!postProcessEffect.isTypeOf('PostProcessEffect')) {
-        throw 'Object is not a PostProcessEffect node.';
-      }
-      postProcessEffect = scene.getPrivateInterface(postProcessEffect);
-
-      var parentEventHandler;
-      if (postProcessEffects.length > 0) {
-        parentEventHandler = postProcessEffects[postProcessEffects.length - 1].getRedrawEventHandler();
-      }
-      else {
-        parentEventHandler = redrawEventHandler;
-      }
-      parentEventHandler.removeChildEventHandler(propagationRedrawEventHandler);
-      parentEventHandler.appendChildEventHandler(postProcessEffect.getRedrawEventHandler());
-
-      postProcessEffect.getRedrawEventHandler().appendChildEventHandler(propagationRedrawEventHandler);
-      postProcessEffects.push(postProcessEffect);
-    };
+    
+    viewportNode.addReferenceInterface('BackgroundTexture', 'Texture',
+      function(nodePrivate){
+        if (textureStub.postDescendBindings.getLength() == 0) {
+          textureStub.setScopeName('textureStub');
+          textureStub.addMember('textureUnit', 'Integer', 0);
+          textureStub.addMember('program', 'Integer', 0);
+          textureStub.postDescendBindings.append(
+            scene.constructOperator({
+                operatorName: 'drawTextureFullScreen',
+                srcFile: 'FABRIC_ROOT/SceneGraph/KL/drawTexture.kl',
+                entryFunctionName: 'drawTextureFullScreen',
+                parameterLayout: [
+                  'self.textureUnit',
+                  'self.program'
+                ]
+              }
+           ));
+        }
+        if (backgroundTextureNode) {
+          textureStub.removeChildEventHandler(backgroundTextureNode.getRedrawEventHandler());
+        }
+        backgroundTextureNode = nodePrivate;
+        textureStub.appendChildEventHandler(backgroundTextureNode.getRedrawEventHandler());
+      });
+    viewportNode.addReferenceInterface('PostProcessEffect', 'PostProcessEffect',
+      function(nodePrivate){
+        var postProcessEffect = nodePrivate;
+        var parentEventHandler;
+        if (postProcessEffects.length > 0) {
+          parentEventHandler = postProcessEffects[postProcessEffects.length - 1].getRedrawEventHandler();
+        }
+        else {
+          parentEventHandler = redrawEventHandler;
+        }
+        parentEventHandler.removeChildEventHandler(propagationRedrawEventHandler);
+        parentEventHandler.appendChildEventHandler(postProcessEffect.getRedrawEventHandler());
+  
+        postProcessEffect.getRedrawEventHandler().appendChildEventHandler(propagationRedrawEventHandler);
+        postProcessEffects.push(postProcessEffect);
+      });
     viewportNode.pub.removePostProcessEffectShader = function(postProcessEffect) {
       postProcessEffect = scene.getPrivateInterface(postProcessEffect);
       var filterIndex = postProcessEffects.indexOf(postProcessEffect);
