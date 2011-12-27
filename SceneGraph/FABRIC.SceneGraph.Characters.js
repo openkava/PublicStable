@@ -520,47 +520,29 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
     // extend the public interface
     characterRigNode.addMemberInterface(dgnode, 'pose', true);
     
-    characterRigNode.pub.setSkeletonNode = function(node) {
-      if (!node.isTypeOf('CharacterSkeleton')) {
-        throw ('Incorrect type assignment. Must assign a CharacterSkeleton');
-      }
-      skeletonNode = scene.getPrivateInterface(node);
-      dgnode.setDependency(skeletonNode.getDGNode(), 'skeleton');
+    characterRigNode.addReferenceInterface('Skeleton', 'CharacterSkeleton',
+      function(nodePrivate){
+        skeletonNode = nodePrivate;
+        dgnode.setDependency(skeletonNode.getDGNode(), 'skeleton');
+  
+        // This member will store the computed pose.
+        var referencePose = skeletonNode.pub.getReferencePose();
+        dgnode.addMember('pose', 'Xfo[]', referencePose);
+      });
 
-      // This member will store the computed pose.
-      var referencePose = skeletonNode.pub.getReferencePose();
-      dgnode.addMember('pose', 'Xfo[]', referencePose);
-    }
-    characterRigNode.pub.getSkeletonNode = function() {
-      return scene.getPublicInterface(skeletonNode);
-    };
-
-    characterRigNode.pub.setControllerNode = function(node) {
-      if (!node || !node.isTypeOf('CharacterController')) {
-        throw ('Incorrect type assignment. Must assign a CharacterController');
-      }
-      controllerNode = scene.getPrivateInterface(node);
-      dgnode.setDependency(controllerNode.getDGNode(), 'charactercontroller');
-    };
-    characterRigNode.pub.getControllerNode = function() {
-      return scene.getPublicInterface(controllerNode);
-    };
+    characterRigNode.addReferenceInterface('Controller', 'CharacterController',
+      function(nodePrivate){
+        controllerNode = nodePrivate;
+        dgnode.setDependency(controllerNode.getDGNode(), 'charactercontroller');
+      });
     
     //////////////////////////////////////////
     // Variables
-    characterRigNode.pub.setVariablesNode = function(node) {
-      if (!node || !node.isTypeOf('CharacterVariables')) {
-        throw ('Incorrect type assignment. Must assign a CharacterVariables');
-      }
-      variablesNode = scene.getPrivateInterface(node);
-      dgnode.setDependency(variablesNode.getDGNode(), 'variables');
-    };
-    characterRigNode.pub.getVariablesNode = function() {
-      if(variablesNode){
-        return scene.getPublicInterface(variablesNode);
-      }
-      return undefined;
-    };
+    characterRigNode.addReferenceInterface('Variables', 'CharacterVariables',
+      function(nodePrivate){
+        variablesNode = nodePrivate;
+        dgnode.setDependency(variablesNode.getDGNode(), 'variables');
+      });
     characterRigNode.addVariable = function(type, value) {
       var id = poseVariables.addVariable(type, value);
       if(variablesNode){
@@ -833,23 +815,16 @@ FABRIC.SceneGraph.registerNodeType('CharacterInstance', {
     var rigNode;
 
     // extend public interface
-    characterInstanceNode.pub.setRigNode = function(node) {
-      if (!node.isTypeOf('CharacterRig')) {
-        throw ('Incorrect type assignment. Must assign a CharacterRig');
-      }
-      rigNode = scene.getPrivateInterface(node);
-      characterInstanceNode.getRedrawEventHandler().setScope('rig', rigNode.getDGNode());
-    };
-    characterInstanceNode.pub.getRigNode = function() {
-      return scene.getPublicInterface(rigNode);
-    };
+    characterInstanceNode.addReferenceInterface('Rig', 'CharacterRig',
+      function(nodePrivate){
+        rigNode = nodePrivate;
+        characterInstanceNode.getRedrawEventHandler().setScope('rig', rigNode.getDGNode());
+      });
     var parentSetGeometryNode = characterInstanceNode.pub.setGeometryNode;
-    characterInstanceNode.pub.setGeometryNode = function(node) {
-      if (!node.isTypeOf('CharacterMesh')) {
-        throw ('Incorrect type assignment. Must assign a CharacterMesh.');
-      }
-      parentSetGeometryNode(node);
-    };
+    characterInstanceNode.addReferenceInterface('Geometry', 'CharacterMesh',
+      function(nodePrivate){
+        parentSetGeometryNode(nodePrivate.pub);
+      });
     
     //////////////////////////////////////////
     // Persistence

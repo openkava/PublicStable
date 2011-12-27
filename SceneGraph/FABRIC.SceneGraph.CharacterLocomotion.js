@@ -667,33 +667,20 @@ FABRIC.SceneGraph.registerNodeType('LocomotionPoseVariables', {
       }
     }));
     
-    locomotionVariables.pub.setCharacterController = function(characterController){
-      if (!characterController.isTypeOf('LocomotionCharacterController')) {
-        throw ('Incorrect type assignment. Must assign a LocomotionCharacterController');
-      }
-      characterController = scene.getPrivateInterface(characterController);
-      dgnode.setDependency(characterController.getDGNode(), 'charactercontroller');
-    };
+    locomotionVariables.addReferenceInterface('CharacterController', 'LocomotionCharacterController',
+      function(nodePrivate){
+        dgnode.setDependency(characterController.getDGNode(), 'charactercontroller');
+      });
     
-    locomotionVariables.pub.setAnimationLibrary = function(animationLibraryNode, keyframeTrackBindings){
-      if (!animationLibraryNode.isTypeOf('AnimationLibrary')) {
-        throw ('Incorrect type assignment. Must assign a AnimationLibrary');
-      }
-      animationLibraryNode = scene.getPrivateInterface(animationLibraryNode);
-      dgnode.setDependency(animationLibraryNode.getDGNode(), 'animationlibrary');
-    };
+    locomotionVariables.addReferenceInterface('AnimationLibrary', 'AnimationLibrary',
+      function(nodePrivate){
+        dgnode.setDependency(nodePrivate.getDGNode(), 'animationlibrary');
+      });
     
-    var skeletonNode;
-    locomotionVariables.pub.setSkeletonNode = function(node) {
-      if (!node.isTypeOf('CharacterSkeleton')) {
-        throw ('Incorrect type assignment. Must assign a CharacterSkeleton');
-      }
-      skeletonNode = scene.getPrivateInterface(node);
-      dgnode.setDependency(skeletonNode.getDGNode(), 'skeleton');
-    }
-    locomotionVariables.pub.getSkeletonNode = function() {
-      return scene.getPublicInterface(skeletonNode);
-    };
+    locomotionVariables.addReferenceInterface('Skeleton', 'CharacterSkeleton',
+      function(nodePrivate){
+      dgnode.setDependency(nodePrivate.getDGNode(), 'skeleton');
+    });
     
     locomotionVariables.pub.setMatchCountNode = function(node){
       dgnode.bindings.append(scene.constructOperator({

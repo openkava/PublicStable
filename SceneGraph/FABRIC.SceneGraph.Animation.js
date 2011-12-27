@@ -555,24 +555,20 @@ FABRIC.SceneGraph.registerNodeType('TrackDisplay', {
 
 
     // extend the public interface
-    trackDisplayNode.pub.setAnimationLibraryNode = function(node, trackSetId) {
-      if(animationLibraryNode){
-        throw "Animation Library node already assigned.";
-      }
-      if (!node.isTypeOf('AnimationLibrary')) {
-        throw ('Incorrect type assignment. Must assign a AnimationLibrary');
-      }
-      animationLibraryNode = scene.getPrivateInterface(node);
-      var trackDataType = animationLibraryNode.pub.getValueType();
-      var trackSet = animationLibraryNode.pub.getTrackSet(trackSetId);
-      dgnode.setDependency(animationLibraryNode.getDGNode(), 'animationlibrary');
-
-      dgnode.addMember('values', trackDataType+'[]');
-      parametersdgnode.setData('trackSetId', trackSetId ? trackSetId : 0);
-      dgnode.setCount(trackSet.tracks.length);
-
-      dgnode.bindings.append(animationLibraryNode.getEvaluateCurveOperator());
-    };
+    
+    trackDisplayNode.addReferenceInterface('AnimationLibrary', 'AnimationLibrary',
+      function(nodePrivate){
+        animationLibraryNode = nodePrivate;
+        var trackDataType = animationLibraryNode.pub.getValueType();
+        var trackSet = animationLibraryNode.pub.getTrackSet(trackSetId);
+        dgnode.setDependency(animationLibraryNode.getDGNode(), 'animationlibrary');
+  
+        dgnode.addMember('values', trackDataType+'[]');
+        parametersdgnode.setData('trackSetId', trackSetId ? trackSetId : 0);
+        dgnode.setCount(trackSet.tracks.length);
+  
+        dgnode.bindings.append(animationLibraryNode.getEvaluateCurveOperator());
+      });
     trackDisplayNode.pub.setTimeRange = function(timeRange) {
       parametersdgnode.setData('timeRange', timeRange);
     };

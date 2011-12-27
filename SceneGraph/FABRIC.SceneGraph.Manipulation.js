@@ -357,56 +357,57 @@ FABRIC.SceneGraph.registerNodeType('PaintManipulator', {
       document.removeEventListener('mouseup', releasePaintFn, false);
     }
     
+    paintManipulatorNode.addReferenceListInterface('Paintable', 'Instance',
+      function(nodePrivate){
+        if(nodePrivate){
+          var paintInstanceEventHandler,
+            instanceNode = nodePrivate,
+            geometryNode = scene.getPrivateInterface(instanceNode.pub.getGeometryNode()),
+            transformNode = scene.getPrivateInterface(instanceNode.pub.getTransformNode()),
+            paintOperator;
     
-    paintManipulatorNode.pub.addPaintableNode = function(node) {
-      if (!node.isTypeOf || !node.isTypeOf('Instance')) {
-        throw ('Incorrect type. Must assign a Instance');
-      }
-
-      var paintInstanceEventHandler,
-        instanceNode = scene.getPrivateInterface(node),
-        geometryNode = scene.getPrivateInterface(instanceNode.pub.getGeometryNode()),
-        transformNode = scene.getPrivateInterface(instanceNode.pub.getTransformNode()),
-        paintOperator;
-
-      paintInstanceEventHandler = paintManipulatorNode.constructEventHandlerNode('Paint' + node.getName());
-      paintInstanceEventHandler.setScope('geometryattributes', geometryNode.getAttributesDGNode());
-      paintInstanceEventHandler.setScope('geometryuniforms', geometryNode.getAttributesDGNode());
-      paintInstanceEventHandler.setScope('transform', transformNode.getDGNode());
-      paintInstanceEventHandler.setScope('instance', instanceNode.getDGNode());
-
-      // The selector will return the node bound with the given binding name.
-      var paintingOpDef = options.paintingOpDef;
-      if(!paintingOpDef){
-        paintingOpDef = {
-          operatorName: 'collectPointsInsideBrush',
-          srcFile: 'FABRIC_ROOT/SceneGraph/KL/collectPointsInsideVolume.kl',
-          entryFunctionName: 'collectPointsInsideBrush',
-          parameterLayout: [
-            'paintData.cameraMatrix',
-            'paintData.projectionMatrix',
-            'paintData.aspectRatio',
-  
-            'paintData.brushPos',
-            'paintData.brushSize',
-  
-            'transform.' + instanceNode.pub.getTransformNodeMember(),
-            'geometryattributes.positions<>',
-            'geometryattributes.normals<>'
-          ],
-          async: false
-        };
-      }
-      // At this moment, the operators bindings are checked and the binding with the
-      // given name is searched for. (instance). This is why the operator must be
-      // constructed synchronously.
-      paintInstanceEventHandler.setSelector('instance', scene.constructOperator(paintingOpDef));
+          paintInstanceEventHandler = paintManipulatorNode.constructEventHandlerNode('Paint' + instanceNode.pub.getName());
+          paintInstanceEventHandler.setScope('geometryattributes', geometryNode.getAttributesDGNode());
+          paintInstanceEventHandler.setScope('geometryuniforms', geometryNode.getAttributesDGNode());
+          paintInstanceEventHandler.setScope('transform', transformNode.getDGNode());
+          paintInstanceEventHandler.setScope('instance', instanceNode.getDGNode());
+    
+          // The selector will return the node bound with the given binding name.
+          var paintingOpDef = options.paintingOpDef;
+          if(!paintingOpDef){
+            paintingOpDef = {
+              operatorName: 'collectPointsInsideBrush',
+              srcFile: 'FABRIC_ROOT/SceneGraph/KL/collectPointsInsideVolume.kl',
+              entryFunctionName: 'collectPointsInsideBrush',
+              parameterLayout: [
+                'paintData.cameraMatrix',
+                'paintData.projectionMatrix',
+                'paintData.aspectRatio',
       
-      paintEventHandler.appendChildEventHandler(paintInstanceEventHandler);
-
-      paintableNodes.push(instanceNode);
-      paintableNodePaintHandlers.push(paintInstanceEventHandler);
-    };
+                'paintData.brushPos',
+                'paintData.brushSize',
+      
+                'transform.' + instanceNode.pub.getTransformNodeMember(),
+                'geometryattributes.positions<>',
+                'geometryattributes.normals<>'
+              ],
+              async: false
+            };
+          }
+          // At this moment, the operators bindings are checked and the binding with the
+          // given name is searched for. (instance). This is why the operator must be
+          // constructed synchronously.
+          paintInstanceEventHandler.setSelector('instance', scene.constructOperator(paintingOpDef));
+          
+          paintEventHandler.appendChildEventHandler(paintInstanceEventHandler);
+    
+          paintableNodes.push(instanceNode);
+          paintableNodePaintHandlers.push(paintInstanceEventHandler);
+        }
+        else{
+          
+        }
+      });
 
     paintManipulatorNode.pub.enable = function(){
       enabled = true;
@@ -567,7 +568,7 @@ FABRIC.SceneGraph.registerNodeType('XfoManipulator', {
       localXfo: options.localXfo
     });
     
-    options.transformNode = transformNode;
+    options.transformNode = transformNode.pub;
     var manipulatorNode = scene.constructNode('Manipulator', options );
     
     // take care of undo
@@ -1291,18 +1292,14 @@ FABRIC.SceneGraph.registerNodeType('BoneManipulator', {
     manipulatorNode.pub.addEventListener('drag', dragFn);
     manipulatorNode.pub.addEventListener('dragend', dragendFn);
     
-    manipulatorNode.setParentManipulatorNode = function(node) {
-      if (!node.isTypeOf('BoneManipulator')) {
-        throw ('Incorrect type assignment. Must assign a BoneManipulator');
-      }
-      parentManipulator = scene.getPrivateInterface(node);
-    };
-    manipulatorNode.setChildManipulatorNode = function(node) {
-      if (!node.isTypeOf('BoneManipulator')) {
-        throw ('Incorrect type assignment. Must assign a BoneManipulator');
-      }
-      childManipulator = scene.getPrivateInterface(node);
-    };
+    manipulatorNode.addReferenceInterface('ParentManipulator', 'BoneManipulator',
+      function(nodePrivate){
+        parentManipulator = nodePrivate;
+      });
+    manipulatorNode.addReferenceInterface('ChildManipulator', 'BoneManipulator',
+      function(nodePrivate){
+        childManipulator = nodePrivate;
+      });
     manipulatorNode.getBoneLength = function() {
       return options.length;
     }

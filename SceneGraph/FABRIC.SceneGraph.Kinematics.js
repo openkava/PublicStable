@@ -59,19 +59,14 @@ FABRIC.SceneGraph.registerNodeType('Transform', {
         }
       };
 
-      transformNode.pub.getParentNode = function() {
-        return scene.getPublicInterface(parentTransformNode);
-      };
-      transformNode.pub.setParentNode = function(node, reciprocate) {
-        if (!node.isTypeOf('Transform')) {
-          throw ('Incorrect type assignment. Must assign a Transform');
-        }
-        parentTransformNode = scene.getPrivateInterface(node);
-        dgnode.setDependency(parentTransformNode.getDGNode(), 'parent');
-        if (reciprocate !== false && node.addChild) {
-          node.addChild(this, false);
-        }
-      };
+      transformNode.addReferenceInterface('Parent', 'Transform',
+        function(nodePrivate, reciprocate){
+          parentTransformNode = nodePrivate;
+          dgnode.setDependency(parentTransformNode.getDGNode(), 'parent');
+          if (reciprocate !== false && nodePrivate.pub.addChild) {
+            nodePrivate.pub.addChild(this, false);
+          }
+      });
       transformNode.pub.addChild = function(node, reciprocate) {
         children.push(node);
         if (reciprocate !== false) {
