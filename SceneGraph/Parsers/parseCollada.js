@@ -777,7 +777,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
         }
         var processedData = processGeometryData(meshData, polygons);
         processedData.constructionOptions.name = name;
-        var geometryNode = scene.constructNode('polygons', processedData.constructionOptions);
+        var geometryNode = scene.constructNode('Triangles', processedData.constructionOptions);
         if(processedData.geometryData.vertexColors){
           geometryNode.addVertexAttributeValue('vertexColors', 'Color', {
             genVBO:true
