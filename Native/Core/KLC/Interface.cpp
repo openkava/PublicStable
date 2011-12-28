@@ -3,15 +3,14 @@
  */
  
 #include <Fabric/Core/KLC/Interface.h>
-#include <Fabric/Core/KLC/ArrayGeneratorOperator.h>
-#include <Fabric/Core/KLC/ArrayMapOperator.h>
-#include <Fabric/Core/KLC/ArrayTransformOperator.h>
+#include <Fabric/Core/KLC/ArrayGeneratorOperatorWrapper.h>
+#include <Fabric/Core/KLC/ArrayMapOperatorWrapper.h>
+#include <Fabric/Core/KLC/ArrayTransformOperatorWrapper.h>
 #include <Fabric/Core/KLC/Compilation.h>
 #include <Fabric/Core/KLC/Executable.h>
-#include <Fabric/Core/KLC/ReduceOperator.h>
-#include <Fabric/Core/KLC/ValueMapOperator.h>
-#include <Fabric/Core/KLC/ValueTransformOperator.h>
-#include <Fabric/Core/MR/ConstArray.h>
+#include <Fabric/Core/KLC/ReduceOperatorWrapper.h>
+#include <Fabric/Core/KLC/ValueMapOperatorWrapper.h>
+#include <Fabric/Core/KLC/ValueTransformOperatorWrapper.h>
 #include <Fabric/Core/GC/Object.h>
 #include <Fabric/Core/RT/Manager.h>
 #include <Fabric/Core/Util/JSONGenerator.h>
@@ -57,18 +56,18 @@ namespace Fabric
         jsonExecCreateCompilation( arg, resultJAG );
       else if ( cmd == "createExecutable" )
         jsonExecCreateExecutable( arg, resultJAG );
-      else if ( cmd == "createArrayMapOperator" )
-        jsonExecCreateOperator<ArrayMapOperator>( arg, resultJAG );
-      else if ( cmd == "createReduceOperator" )
-        jsonExecCreateOperator<ReduceOperator>( arg, resultJAG );
-      else if ( cmd == "createArrayGeneratorOperator" )
-        jsonExecCreateOperator<ArrayGeneratorOperator>( arg, resultJAG );
       else if ( cmd == "createValueMapOperator" )
-        jsonExecCreateOperator<ValueMapOperator>( arg, resultJAG );
+        jsonExecCreateOperator<ValueMapOperatorWrapper>( arg, resultJAG );
+      else if ( cmd == "createArrayGeneratorOperator" )
+        jsonExecCreateOperator<ArrayGeneratorOperatorWrapper>( arg, resultJAG );
       else if ( cmd == "createValueTransformOperator" )
-        jsonExecCreateOperator<ValueTransformOperator>( arg, resultJAG );
+        jsonExecCreateOperator<ValueTransformOperatorWrapper>( arg, resultJAG );
+      else if ( cmd == "createArrayMapOperator" )
+        jsonExecCreateOperator<ArrayMapOperatorWrapper>( arg, resultJAG );
       else if ( cmd == "createArrayTransformOperator" )
-        jsonExecCreateOperator<ArrayTransformOperator>( arg, resultJAG );
+        jsonExecCreateOperator<ArrayTransformOperatorWrapper>( arg, resultJAG );
+      else if ( cmd == "createReduceOperator" )
+        jsonExecCreateOperator<ReduceOperatorWrapper>( arg, resultJAG );
       else throw Exception( "unknown command: " + _(cmd) );
     }
     

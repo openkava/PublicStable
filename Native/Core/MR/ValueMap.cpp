@@ -3,93 +3,65 @@
  */
  
 #include <Fabric/Core/MR/ValueMap.h>
-#include <Fabric/Core/KLC/ValueMapOperator.h>
+#include <Fabric/Core/MR/ValueMapOperator.h>
 #include <Fabric/Core/RT/Desc.h>
 #include <Fabric/Core/Util/Format.h>
-#include <Fabric/Core/Util/JSONGenerator.h>
 #include <Fabric/Base/Exception.h>
 
 namespace Fabric
 {
   namespace MR
   {
-    FABRIC_GC_OBJECT_CLASS_IMPL( ValueMap, ValueProducer );
-    
     RC::Handle<ValueMap> ValueMap::Create(
-      RC::ConstHandle<ValueProducer> const &inputValueProducer,
-      RC::ConstHandle<KLC::ValueMapOperator> const &valueMapOperator,
-      RC::ConstHandle<ValueProducer> const &sharedValueProducer
+      RC::ConstHandle<ValueProducer> const &input,
+      RC::ConstHandle<ValueIOOperator> const &operator_,
+      RC::ConstHandle<ValueProducer> const &shared
       )
     {
-      return new ValueMap( FABRIC_GC_OBJECT_MY_CLASS, inputValueProducer, valueMapOperator, sharedValueProducer );
+      return new ValueMap( input, operator_, shared );
     }
     
     ValueMap::ValueMap(
-      FABRIC_GC_OBJECT_CLASS_PARAM,
-      RC::ConstHandle<ValueProducer> const &inputValueProducer,
-      RC::ConstHandle<KLC::ValueMapOperator> const &valueMapOperator,
-      RC::ConstHandle<ValueProducer> const &sharedValueProducer
+      RC::ConstHandle<ValueProducer> const &input,
+      RC::ConstHandle<ValueIOOperator> const &operator_,
+      RC::ConstHandle<ValueProducer> const &shared
       )
-      : ValueProducer( FABRIC_GC_OBJECT_CLASS_ARG, valueMapOperator->getOutputDesc() )
-      , m_inputValueProducer( inputValueProducer )
-      , m_valueMapOperator( valueMapOperator )
-      , m_sharedValueProducer( sharedValueProducer )
+      : m_input( input )
+      , m_operator( operator_ )
+      , m_shared( shared )
     {
-      RC::ConstHandle<RT::Desc> inputValueProducerValueDesc = inputValueProducer->getValueDesc();
-      if ( !inputValueProducerValueDesc )
-        throw Exception("input value producer is invalid");
-      RC::ConstHandle<RT::Desc> valueMapOperatorInputDesc = valueMapOperator->getInputDesc();
-      if ( !valueMapOperatorInputDesc )
-        throw Exception("value map operator is invalid");
-      if ( !valueMapOperatorInputDesc->isEquivalentTo( inputValueProducerValueDesc ) )
+      RC::ConstHandle<RT::Desc> inputValueDesc = input->getValueDesc();
+      if ( !inputValueDesc )
+        throw Exception("input is invalid");
+      RC::ConstHandle<RT::Desc> operatorInputDesc = operator_->getInputDesc();
+      if ( !operatorInputDesc )
+        throw Exception("operator is invalid");
+      if ( !operatorInputDesc->isEquivalentTo( inputValueDesc ) )
         throw Exception(
           "input value type ("
-          + _(inputValueProducerValueDesc->getUserName())
+          + _(inputValueDesc->getUserName())
           + ") is not equivalent to value map operator input type ("
-          + _(valueMapOperatorInputDesc->getUserName()) + ")"
+          + _(operatorInputDesc->getUserName()) + ")"
           );
-      RC::ConstHandle<RT::Desc> valueMapOperatorSharedDesc = valueMapOperator->getSharedDesc();
-      if ( valueMapOperatorSharedDesc )
+      RC::ConstHandle<RT::Desc> operatorSharedDesc = operator_->getSharedDesc();
+      if ( operatorSharedDesc )
       {
-        RC::ConstHandle<RT::Desc> sharedValueProducerValueDesc = sharedValueProducer->getValueDesc();
-        if ( !sharedValueProducerValueDesc )
-          throw Exception( "value map operator requires a shared value but no shared value producer is provided" );
-        if ( !sharedValueProducerValueDesc->isEquivalentTo( valueMapOperatorSharedDesc ) )
+        RC::ConstHandle<RT::Desc> sharedValueDesc = shared->getValueDesc();
+        if ( !sharedValueDesc )
+          throw Exception( "operator requires a shared value but no shared value producer is provided" );
+        if ( !sharedValueDesc->isEquivalentTo( operatorSharedDesc ) )
           throw Exception(
             "shared value type ("
-            + _(sharedValueProducerValueDesc->getUserName())
+            + _(sharedValueDesc->getUserName())
             + ") is not equivalent to value map operator shared type ("
-            + _(valueMapOperatorSharedDesc->getUserName()) + ")"
+            + _(operatorSharedDesc->getUserName()) + ")"
             );
       }
     }
     
-    ValueMap::~ValueMap()
+    RC::ConstHandle<RT::Desc> ValueMap::getValueDesc() const
     {
-    }
-
-    char const *ValueMap::getKind() const
-    {
-      return "ValueMap";
-    }
-    
-    void ValueMap::toJSONImpl( Util::JSONObjectGenerator &jog ) const
-    {
-      {
-        Util::JSONGenerator jg = jog.makeMember( "inputValueProvider" );
-        m_inputValueProducer->toJSON( jg );
-      }
-
-      {
-        Util::JSONGenerator jg = jog.makeMember( "valueMapOperator" );
-        m_valueMapOperator->toJSON( jg );
-      }
-      
-      if ( m_sharedValueProducer )
-      {
-        Util::JSONGenerator jg = jog.makeMember( "sharedValueProducer" );
-        m_sharedValueProducer->toJSON( jg );
-      }
+      return m_operator->getOutputDesc();
     }
       
     const RC::Handle<ValueProducer::ComputeState> ValueMap::createComputeState() const
@@ -104,10 +76,10 @@ namespace Fabric
     
     ValueMap::ComputeState::ComputeState( RC::ConstHandle<ValueMap> const &valueMap )
       : ValueProducer::ComputeState( valueMap )
-      , m_inputComputeState( valueMap->m_inputValueProducer->createComputeState() )
+      , m_inputComputeState( valueMap->m_input->createComputeState() )
       , m_inputDesc( valueMap->getValueDesc() )
-      , m_operator( valueMap->m_valueMapOperator )
-      , m_shared( valueMap->m_sharedValueProducer )
+      , m_operator( valueMap->m_operator )
+      , m_shared( valueMap->m_shared )
     {
       if ( m_operator->takesSharedValue() )
       {
@@ -135,5 +107,5 @@ namespace Fabric
       
       m_inputDesc->disposeData( inputData );
     }
-  };
-};
+  }
+}

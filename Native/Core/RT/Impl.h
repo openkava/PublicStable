@@ -30,12 +30,14 @@ namespace Fabric
   
   namespace RT
   {
+    class ArrayProducerImpl;
     class VariableArrayImpl;
     class SlicedArrayImpl;
     class FixedArrayImpl;
     class FixedArrayImpl;
     class ComparableImpl;
     class DictImpl;
+    class ValueProducerImpl;
     
     class Impl : public RC::Object
     {
@@ -65,6 +67,8 @@ namespace Fabric
       RC::ConstHandle<VariableArrayImpl> getVariableArrayImpl() const;
       RC::ConstHandle<SlicedArrayImpl> getSlicedArrayImpl() const;
       RC::ConstHandle<DictImpl> getDictImpl( RC::ConstHandle<ComparableImpl> const &comparableImpl ) const;
+      RC::ConstHandle<ValueProducerImpl> getValueProducerImpl() const;
+      RC::ConstHandle<ArrayProducerImpl> getArrayProducerImpl() const;
       
       void setDisposeCallback( void (*disposeCallback)( void * ) ) const;
       
@@ -84,6 +88,8 @@ namespace Fabric
       mutable RC::WeakConstHandle<SlicedArrayImpl> m_slicedArrayImpl;
       mutable Util::UnorderedMap< size_t, RC::WeakConstHandle<FixedArrayImpl> > m_fixedArrayImpls;
       mutable std::map< RC::WeakConstHandle<ComparableImpl>, RC::WeakConstHandle<DictImpl> > m_dictImpls;
+      mutable RC::WeakConstHandle<ValueProducerImpl> m_valueProducerImpl;
+      mutable RC::WeakConstHandle<ArrayProducerImpl> m_arrayProducerImpl;
       
       mutable void (*m_disposeCallback)( void *lValue );
     };

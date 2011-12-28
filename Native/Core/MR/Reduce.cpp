@@ -4,46 +4,42 @@
  
 #include <Fabric/Core/MR/Reduce.h>
 #include <Fabric/Core/MR/ArrayProducer.h>
-#include <Fabric/Core/KLC/ReduceOperator.h>
+#include <Fabric/Core/MR/ArrayIOOperator.h>
 #include <Fabric/Core/RT/Desc.h>
 #include <Fabric/Core/MT/Impl.h>
 #include <Fabric/Core/MT/LogCollector.h>
 #include <Fabric/Core/MT/Util.h>
 #include <Fabric/Core/Util/Format.h>
-#include <Fabric/Core/Util/JSONGenerator.h>
+#include <Fabric/Core/Util/Log.h>
 #include <Fabric/Base/Exception.h>
 
 namespace Fabric
 {
   namespace MR
   {
-    FABRIC_GC_OBJECT_CLASS_IMPL( Reduce, ValueProducer );
-    
     RC::Handle<Reduce> Reduce::Create(
       RC::ConstHandle<ArrayProducer> const &inputArrayProducer,
-      RC::ConstHandle<KLC::ReduceOperator> const &reduceOperator,
+      RC::ConstHandle<ArrayIOOperator> const &operator_,
       RC::ConstHandle<ValueProducer> const &sharedValueProducer
       )
     {
-      return new Reduce( FABRIC_GC_OBJECT_MY_CLASS, inputArrayProducer, reduceOperator, sharedValueProducer );
+      return new Reduce( inputArrayProducer, operator_, sharedValueProducer );
     }
     
     Reduce::Reduce(
-      FABRIC_GC_OBJECT_CLASS_PARAM,
       RC::ConstHandle<ArrayProducer> const &inputArrayProducer,
-      RC::ConstHandle<KLC::ReduceOperator> const &reduceOperator,
+      RC::ConstHandle<ArrayIOOperator> const &operator_,
       RC::ConstHandle<ValueProducer> const &sharedValueProducer
       )
-      : ValueProducer( FABRIC_GC_OBJECT_CLASS_ARG, reduceOperator->getOutputDesc() )
-      , m_inputArrayProducer( inputArrayProducer )
-      , m_reduceOperator( reduceOperator )
+      : m_inputArrayProducer( inputArrayProducer )
+      , m_operator( operator_ )
       , m_sharedValueProducer( sharedValueProducer )
       , m_mutex( "Reduce" )
     {
       RC::ConstHandle<RT::Desc> inputArrayProducerElementDesc = inputArrayProducer->getElementDesc();
       if ( !inputArrayProducerElementDesc )
         throw Exception("input array producer is invalid");
-      RC::ConstHandle<RT::Desc> reduceOperatorInputDesc = reduceOperator->getInputDesc();
+      RC::ConstHandle<RT::Desc> reduceOperatorInputDesc = operator_->getInputDesc();
       if ( !reduceOperatorInputDesc )
         throw Exception("reduce operator is invalid");
       if ( !reduceOperatorInputDesc->isEquivalentTo( inputArrayProducerElementDesc ) )
@@ -53,7 +49,7 @@ namespace Fabric
           + ") is not equivalent to reduce operator input type ("
           + _(reduceOperatorInputDesc->getUserName()) + ")"
           );
-      RC::ConstHandle<RT::Desc> reduceOperatorSharedDesc = reduceOperator->getSharedDesc();
+      RC::ConstHandle<RT::Desc> reduceOperatorSharedDesc = operator_->getSharedDesc();
       if ( reduceOperatorSharedDesc )
       {
         RC::ConstHandle<RT::Desc> sharedValueProducerValueDesc = sharedValueProducer->getValueDesc();
@@ -69,34 +65,11 @@ namespace Fabric
       }
     }
     
-    Reduce::~Reduce()
+    RC::ConstHandle<RT::Desc> Reduce::getValueDesc() const
     {
+      return m_operator->getOutputDesc();
     }
-
-    char const *Reduce::getKind() const
-    {
-      return "Reduce";
-    }
-    
-    void Reduce::toJSONImpl( Util::JSONObjectGenerator &jog ) const
-    {
-      {
-        Util::JSONGenerator jg = jog.makeMember( "inputArrayProducer" );
-        m_inputArrayProducer->toJSON( jg );
-      }
-      
-      {
-        Util::JSONGenerator jg = jog.makeMember( "reduceOperator" );
-        m_reduceOperator->toJSON( jg );
-      }
-      
-      if ( m_sharedValueProducer )
-      {
-        Util::JSONGenerator jg = jog.makeMember( "sharedValueProducer" );
-        m_sharedValueProducer->toJSON( jg );
-      }
-    }
-      
+          
     const RC::Handle<ValueProducer::ComputeState> Reduce::createComputeState() const
     {
       return ComputeState::Create( this );
@@ -111,7 +84,7 @@ namespace Fabric
       : ValueProducer::ComputeState( reduce )
       , m_inputComputeState( reduce->m_inputArrayProducer->createComputeState() )
       , m_inputDesc( reduce->getValueDesc() )
-      , m_operator( reduce->m_reduceOperator )
+      , m_operator( reduce->m_operator )
       , m_shared( reduce->m_sharedValueProducer )
       , m_mutex( reduce->m_mutex )
     {
@@ -135,7 +108,7 @@ namespace Fabric
       Execution(
         RC::ConstHandle<ArrayProducer::ComputeState> const &inputComputeState,
         RC::ConstHandle<RT::Desc> const &inputDesc,
-        RC::ConstHandle<KLC::ReduceOperator> const &operator_,
+        RC::ConstHandle<ArrayIOOperator> const &operator_,
         void *outputData,
         void const *sharedData,
         Util::Mutex &mutex
@@ -225,7 +198,7 @@ namespace Fabric
     
       RC::ConstHandle<ArrayProducer::ComputeState> m_inputComputeState;
       RC::ConstHandle<RT::Desc> m_inputDesc;
-      RC::ConstHandle<KLC::ReduceOperator> m_operator;
+      RC::ConstHandle<ArrayIOOperator> m_operator;
       void *m_outputData;
       void const *m_sharedData;
       Util::Mutex &m_mutex;

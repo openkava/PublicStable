@@ -3,10 +3,8 @@
  */
  
 #include <Fabric/Core/MR/ArrayGenerator.h>
-#include <Fabric/Core/MR/ValueProducer.h>
-#include <Fabric/Core/KLC/ArrayGeneratorOperator.h>
-#include <Fabric/Core/RT/IntegerDesc.h>
-#include <Fabric/Core/RT/Manager.h>
+#include <Fabric/Core/MR/ArrayOutputOperator.h>
+#include <Fabric/Core/RT/Desc.h>
 #include <Fabric/Core/Util/Format.h>
 #include <Fabric/Core/Util/JSONGenerator.h>
 #include <Fabric/Base/Exception.h>
@@ -15,63 +13,65 @@ namespace Fabric
 {
   namespace MR
   {
-    FABRIC_GC_OBJECT_CLASS_IMPL( ArrayGenerator, ArrayProducer );
-    
     RC::Handle<ArrayGenerator> ArrayGenerator::Create(
-      RC::ConstHandle<RT::Manager> const &rtManager,
       RC::ConstHandle<ValueProducer> const &countValueProducer,
-      RC::ConstHandle<KLC::ArrayGeneratorOperator> const &arrayGeneratorOperator
+      RC::ConstHandle<ArrayOutputOperator> const &operator_,
+      RC::ConstHandle<ValueProducer> const &sharedValueProducer
       )
     {
-      return new ArrayGenerator( FABRIC_GC_OBJECT_MY_CLASS, rtManager, countValueProducer, arrayGeneratorOperator );
+      return new ArrayGenerator( countValueProducer, operator_, sharedValueProducer );
     }
     
     ArrayGenerator::ArrayGenerator(
-      FABRIC_GC_OBJECT_CLASS_PARAM,
-      RC::ConstHandle<RT::Manager> const &rtManager,
       RC::ConstHandle<ValueProducer> const &countValueProducer,
-      RC::ConstHandle<KLC::ArrayGeneratorOperator> const &arrayGeneratorOperator
+      RC::ConstHandle<ArrayOutputOperator> const &operator_,
+      RC::ConstHandle<ValueProducer> const &sharedValueProducer
       )
-      : ArrayProducer( FABRIC_GC_OBJECT_CLASS_ARG, arrayGeneratorOperator->getOutputDesc() )
-      , m_countValueProducer( countValueProducer )
-      , m_arrayGeneratorOperator( arrayGeneratorOperator )
+      : m_countValueProducer( countValueProducer )
+      , m_operator( operator_ )
+      , m_sharedValueProducer( sharedValueProducer )
     {
-      if ( !m_countValueProducer->getValueDesc()->isEquivalentTo( rtManager->getSizeDesc() ) )
-        throw Exception("count value producer must produce a value of type Size");
+      RC::ConstHandle<RT::Desc> countValueDesc = countValueProducer->getValueDesc();
+      if ( !countValueDesc )
+        throw Exception("count is invalid");
+      if ( !RT::isInteger( countValueDesc->getType() )
+        || countValueDesc->getAllocSize() != sizeof(size_t) )
+        throw Exception(
+          "count value producer type ("
+          + _(countValueDesc->getUserName())
+          + ") must be 'Size')"
+          );
+      RC::ConstHandle<RT::Desc> operatorSharedDesc = m_operator->getSharedDesc();
+      if ( operatorSharedDesc )
+      {
+        RC::ConstHandle<RT::Desc> sharedValueDesc = m_sharedValueProducer->getValueDesc();
+        if ( !sharedValueDesc )
+          throw Exception( "operator requires a shared value but no shared value producer is provided" );
+        if ( !sharedValueDesc->isEquivalentTo( operatorSharedDesc ) )
+          throw Exception(
+            "shared value type ("
+            + _(operatorSharedDesc->getUserName())
+            + ") is not equivalent to operator shared type ("
+            + _(sharedValueDesc->getUserName()) + ")"
+            );
+      }
     }
     
-    ArrayGenerator::~ArrayGenerator()
+    RC::ConstHandle<RT::Desc> ArrayGenerator::getElementDesc() const
     {
-    }
-
-    char const *ArrayGenerator::getKind() const
-    {
-      return "ArrayGenerator";
+      return m_operator->getValueDesc();
     }
 
     size_t ArrayGenerator::getCount() const
     {
-      size_t result;
-      m_countValueProducer->createComputeState()->produce( &result );
-      return result;
+      size_t count;
+      m_countValueProducer->createComputeState()->produce( &count );
+      return count;
     }
       
     const RC::Handle<ArrayProducer::ComputeState> ArrayGenerator::createComputeState() const
     {
       return ComputeState::Create( this );
-    }
-    
-    void ArrayGenerator::toJSONImpl( Util::JSONObjectGenerator &jog ) const
-    {
-      {
-        Util::JSONGenerator jg = jog.makeMember( "countValueProducer" );
-        m_countValueProducer->toJSON( jg );
-      }
-      
-      {
-        Util::JSONGenerator jg = jog.makeMember( "arrayGeneratorOperator" );
-        m_arrayGeneratorOperator->toJSON( jg );
-      }
     }
     
     RC::Handle<ArrayGenerator::ComputeState> ArrayGenerator::ComputeState::Create( RC::ConstHandle<ArrayGenerator> const &arrayGenerator )
@@ -83,11 +83,39 @@ namespace Fabric
       : ArrayProducer::ComputeState( arrayGenerator )
       , m_arrayGenerator( arrayGenerator )
     {
+      if ( m_arrayGenerator->m_operator->takesSharedValue() )
+      {
+        RC::ConstHandle<ValueProducer> sharedValueProducer = m_arrayGenerator->m_sharedValueProducer;
+        m_sharedData.resize( sharedValueProducer->getValueDesc()->getAllocSize(), 0 );
+        sharedValueProducer->createComputeState()->produce( &m_sharedData[0] );
+      }
+    }
+    
+    ArrayGenerator::ComputeState::~ComputeState()
+    {
+      if ( m_arrayGenerator->m_operator->takesSharedValue() )
+      {
+        RC::ConstHandle<ValueProducer> sharedValueProducer = m_arrayGenerator->m_sharedValueProducer;
+        sharedValueProducer->getValueDesc()->disposeData( &m_sharedData[0] );
+      }
     }
     
     void ArrayGenerator::ComputeState::produce( size_t index, void *data ) const
     {
-      m_arrayGenerator->m_arrayGeneratorOperator->call( index, data );
+      RC::ConstHandle<ArrayOutputOperator> operator_ = m_arrayGenerator->m_operator;
+      if ( operator_->takesIndex() )
+      {
+        if ( operator_->takesCount() )
+        {
+          size_t count = getCount();
+              
+          if ( operator_->takesSharedValue() )
+            operator_->call( data, index, count, &m_sharedData[0] );
+          else operator_->call( data, index, count );
+        }
+        else operator_->call( data, index );
+      }
+      else operator_->call( data );
     }
   };
 };

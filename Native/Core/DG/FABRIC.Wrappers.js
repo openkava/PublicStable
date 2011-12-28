@@ -1620,10 +1620,10 @@ function (fabricClient, logCallback, debugLogCallback) {
         return diagnostics;
       };
       
-      executable.pub.resolveMapOperator = function (operatorName) {
+      executable.pub.resolveArrayMapOperator = function (operatorName) {
         var operator = GC.createObject('KLC');
         populateMapOperator(operator);
-        executable.queueCommand('resolveMapOperator', {
+        executable.queueCommand('resolveArrayMapOperator', {
           id: operator.id,
           operatorName: operatorName
         }, function () {
@@ -2016,37 +2016,37 @@ function (fabricClient, logCallback, debugLogCallback) {
         return reduce.pub;
       },
       
-      createValueMap: function(inputValueProducer, valueMapOperator, sharedValueProducer) {
-        var valueMap = GC.createObject('MR');
+      createValueMap: function(input, operator, shared) {
+        var result = GC.createObject('MR');
         
         populateValueMap(valueMap);
         
         var arg = {
-          id: valueMap.id,
-          inputValueProducerID: inputValueProducer.getID(),
-          valueMapOperatorID: valueMapOperator.getID()
+          id: result.id,
+          inputID: input.getID(),
+          operatorID: operator.getID()
         };
-        if (sharedValueProducer)
-          arg.sharedValueProducerID = sharedValueProducer.getID();
+        if (shared)
+          arg.sharedID = shared.getID();
         
         queueCommand(['MR'], 'createValueMap', arg, function () {
-          delete valueMap.id;
+          delete result.id;
         });
-        return valueMap.pub;
+        return result.pub;
       },
       
-      createValueTransform: function(inputValueProducer, operator, sharedValueProducer) {
+      createValueTransform: function(input, operator, shared) {
         var result = GC.createObject('MR');
         
         populateValueTransform(result);
         
         var arg = {
           id: result.id,
-          inputValueProducerID: inputValueProducer.getID(),
+          inputID: input.getID(),
           operatorID: operator.getID()
         };
-        if (sharedValueProducer)
-          arg.sharedValueProducerID = sharedValueProducer.getID();
+        if (shared)
+          arg.sharedID = shared.getID();
         
         queueCommand(['MR'], 'createValueTransform', arg, function () {
           delete result.id;

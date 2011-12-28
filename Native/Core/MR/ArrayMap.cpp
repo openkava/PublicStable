@@ -3,53 +3,50 @@
  */
  
 #include <Fabric/Core/MR/ArrayMap.h>
+#include <Fabric/Core/MR/ArrayProducer.h>
 #include <Fabric/Core/MR/ValueProducer.h>
-#include <Fabric/Core/KLC/ArrayMapOperator.h>
+#include <Fabric/Core/MR/ArrayIOOperator.h>
 #include <Fabric/Core/RT/Desc.h>
+#include <Fabric/Core/Util/Log.h>
 #include <Fabric/Core/Util/Format.h>
-#include <Fabric/Core/Util/JSONGenerator.h>
 #include <Fabric/Base/Exception.h>
 
 namespace Fabric
 {
   namespace MR
   {
-    FABRIC_GC_OBJECT_CLASS_IMPL( ArrayMap, ArrayProducer );
-    
     RC::Handle<ArrayMap> ArrayMap::Create(
       RC::ConstHandle<ArrayProducer> const &inputArrayProducer,
-      RC::ConstHandle<KLC::ArrayMapOperator> const &mapOperator,
+      RC::ConstHandle<ArrayIOOperator> const &arrayIOOperator,
       RC::ConstHandle<ValueProducer> const &sharedValueProducer
       )
     {
-      return new ArrayMap( FABRIC_GC_OBJECT_MY_CLASS, inputArrayProducer, mapOperator, sharedValueProducer );
+      return new ArrayMap( inputArrayProducer, arrayIOOperator, sharedValueProducer );
     }
     
     ArrayMap::ArrayMap(
-      FABRIC_GC_OBJECT_CLASS_PARAM,
       RC::ConstHandle<ArrayProducer> const &inputArrayProducer,
-      RC::ConstHandle<KLC::ArrayMapOperator> const &mapOperator,
+      RC::ConstHandle<ArrayIOOperator> const &arrayIOOperator,
       RC::ConstHandle<ValueProducer> const &sharedValueProducer
       )
-      : ArrayProducer( FABRIC_GC_OBJECT_CLASS_ARG, mapOperator->getOutputDesc() )
-      , m_inputArrayProducer( inputArrayProducer )
-      , m_mapOperator( mapOperator )
+      : m_inputArrayProducer( inputArrayProducer )
+      , m_arrayIOOperator( arrayIOOperator )
       , m_sharedValueProducer( sharedValueProducer )
     {
       RC::ConstHandle<RT::Desc> inputArrayProducerElementDesc = inputArrayProducer->getElementDesc();
       if ( !inputArrayProducerElementDesc )
         throw Exception("input array producer is invalid");
-      RC::ConstHandle<RT::Desc> mapOperatorInputDesc = mapOperator->getInputDesc();
+      RC::ConstHandle<RT::Desc> mapOperatorInputDesc = arrayIOOperator->getInputDesc();
       if ( !mapOperatorInputDesc )
-        throw Exception("map operator is invalid");
+        throw Exception("operator is invalid");
       if ( !mapOperatorInputDesc->isEquivalentTo( inputArrayProducerElementDesc ) )
         throw Exception(
           "input element type ("
           + _(inputArrayProducerElementDesc->getUserName())
-          + ") is not equivalent to map operator input type ("
+          + ") is not equivalent to operator input type ("
           + _(mapOperatorInputDesc->getUserName()) + ")"
           );
-      RC::ConstHandle<RT::Desc> reduceOperatorSharedDesc = mapOperator->getSharedDesc();
+      RC::ConstHandle<RT::Desc> reduceOperatorSharedDesc = arrayIOOperator->getSharedDesc();
       if ( reduceOperatorSharedDesc )
       {
         RC::ConstHandle<RT::Desc> sharedValueProducerValueDesc = sharedValueProducer->getValueDesc();
@@ -65,37 +62,14 @@ namespace Fabric
       }
     }
     
-    ArrayMap::~ArrayMap()
+    RC::ConstHandle<RT::Desc> ArrayMap::getElementDesc() const
     {
-    }
-
-    char const *ArrayMap::getKind() const
-    {
-      return "ArrayMap";
+      return m_arrayIOOperator->getOutputDesc();
     }
 
     size_t ArrayMap::getCount() const
     {
       return m_inputArrayProducer->getCount();
-    }
-    
-    void ArrayMap::toJSONImpl( Util::JSONObjectGenerator &jog ) const
-    {
-      {
-        Util::JSONGenerator jg = jog.makeMember( "inputArrayProvider" );
-        m_inputArrayProducer->toJSON( jg );
-      }
-
-      {
-        Util::JSONGenerator jg = jog.makeMember( "mapOperator" );
-        m_mapOperator->toJSON( jg );
-      }
-      
-      if ( m_sharedValueProducer )
-      {
-        Util::JSONGenerator jg = jog.makeMember( "sharedValueProducer" );
-        m_sharedValueProducer->toJSON( jg );
-      }
     }
       
     const RC::Handle<ArrayProducer::ComputeState> ArrayMap::createComputeState() const
@@ -113,7 +87,7 @@ namespace Fabric
       , m_arrayMap( arrayMap )
       , m_inputArrayProducerComputeState( arrayMap->m_inputArrayProducer->createComputeState() )
     {
-      if ( m_arrayMap->m_mapOperator->takesSharedValue() )
+      if ( m_arrayMap->m_arrayIOOperator->takesSharedValue() )
       {
         RC::ConstHandle<ValueProducer> sharedValueProducer = m_arrayMap->m_sharedValueProducer;
         m_sharedData.resize( sharedValueProducer->getValueDesc()->getAllocSize(), 0 );
@@ -123,7 +97,7 @@ namespace Fabric
     
     ArrayMap::ComputeState::~ComputeState()
     {
-      if ( m_arrayMap->m_mapOperator->takesSharedValue() )
+      if ( m_arrayMap->m_arrayIOOperator->takesSharedValue() )
       {
         RC::ConstHandle<ValueProducer> sharedValueProducer = m_arrayMap->m_sharedValueProducer;
         sharedValueProducer->getValueDesc()->disposeData( &m_sharedData[0] );
@@ -139,20 +113,20 @@ namespace Fabric
       memset( inputData, 0, elementSize );
       m_inputArrayProducerComputeState->produce( index, inputData );
       
-      RC::ConstHandle<KLC::ArrayMapOperator> operator_ = m_arrayMap->m_mapOperator;
-      if ( operator_->takesIndex() )
+      RC::ConstHandle<ArrayIOOperator> arrayIOOperator = m_arrayMap->m_arrayIOOperator;
+      if ( arrayIOOperator->takesIndex() )
       {
-        if ( operator_->takesCount() )
+        if ( arrayIOOperator->takesCount() )
         {
           size_t count = getCount();
           
-          if ( operator_->takesSharedValue() )
-            operator_->call( inputData, data, index, count, &m_sharedData[0] );
-          else operator_->call( inputData, data, index, count );
+          if ( arrayIOOperator->takesSharedValue() )
+            arrayIOOperator->call( inputData, data, index, count, &m_sharedData[0] );
+          else arrayIOOperator->call( inputData, data, index, count );
         }
-        else operator_->call( inputData, data, index );
+        else arrayIOOperator->call( inputData, data, index );
       }
-      else operator_->call( inputData, data );
+      else arrayIOOperator->call( inputData, data );
       
       inputElementDesc->disposeData( inputData );
     }

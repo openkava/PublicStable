@@ -3,13 +3,13 @@
  */
  
 #include <Fabric/Core/KLC/Executable.h>
-#include <Fabric/Core/KLC/ArrayGeneratorOperator.h>
-#include <Fabric/Core/KLC/ArrayMapOperator.h>
-#include <Fabric/Core/KLC/ArrayTransformOperator.h>
-#include <Fabric/Core/KLC/ReduceOperator.h>
-#include <Fabric/Core/KLC/ValueMapOperator.h>
-#include <Fabric/Core/KLC/ValueTransformOperator.h>
-#include <Fabric/Core/KLC/ArrayTransformOperator.h>
+#include <Fabric/Core/KLC/ArrayGeneratorOperatorWrapper.h>
+#include <Fabric/Core/KLC/ArrayTransformOperatorWrapper.h>
+#include <Fabric/Core/KLC/ArrayMapOperatorWrapper.h>
+#include <Fabric/Core/KLC/ArrayTransformOperatorWrapper.h>
+#include <Fabric/Core/KLC/ReduceOperatorWrapper.h>
+#include <Fabric/Core/KLC/ValueMapOperatorWrapper.h>
+#include <Fabric/Core/KLC/ValueTransformOperatorWrapper.h>
 #include <Fabric/Core/DG/IRCache.h>
 #include <Fabric/Core/Plug/Manager.h>
 #include <Fabric/Core/KL/Externals.h>
@@ -272,18 +272,18 @@ namespace Fabric
         jsonExecGetAST( arg, resultJAG );
       else if ( cmd == "getDiagnostics" )
         jsonExecGetDiagnostics( arg, resultJAG );
-      else if ( cmd == "resolveMapOperator" )
-        jsonExecResolveOperator<ArrayMapOperator>( arg, resultJAG );
-      else if ( cmd == "resolveReduceOperator" )
-        jsonExecResolveOperator<ReduceOperator>( arg, resultJAG );
       else if ( cmd == "resolveArrayGeneratorOperator" )
-        jsonExecResolveOperator<ArrayGeneratorOperator>( arg, resultJAG );
+        jsonExecResolveOperator<ArrayGeneratorOperatorWrapper>( arg, resultJAG );
       else if ( cmd == "resolveValueMapOperator" )
-        jsonExecResolveOperator<ValueMapOperator>( arg, resultJAG );
+        jsonExecResolveOperator<ValueMapOperatorWrapper>( arg, resultJAG );
       else if ( cmd == "resolveValueTransformOperator" )
-        jsonExecResolveOperator<ValueTransformOperator>( arg, resultJAG );
+        jsonExecResolveOperator<ValueTransformOperatorWrapper>( arg, resultJAG );
+      else if ( cmd == "resolveArrayMapOperator" )
+        jsonExecResolveOperator<ArrayMapOperatorWrapper>( arg, resultJAG );
       else if ( cmd == "resolveArrayTransformOperator" )
-        jsonExecResolveOperator<ArrayTransformOperator>( arg, resultJAG );
+        jsonExecResolveOperator<ArrayTransformOperatorWrapper>( arg, resultJAG );
+      else if ( cmd == "resolveReduceOperator" )
+        jsonExecResolveOperator<ReduceOperatorWrapper>( arg, resultJAG );
       else GC::Object::jsonExec( cmd, arg, resultJAG );
     }
     

@@ -8,27 +8,22 @@
 #include <Fabric/Core/MR/ArrayProducer.h>
 
 #include <stdint.h>
+#include <vector>
 
 namespace Fabric
 {
-  namespace KLC
-  {
-    class ArrayMapOperator;
-  };
-  
   namespace MR
   {
+    class ArrayIOOperator;
     class ValueProducer;
     
     class ArrayMap : public ArrayProducer
     {
-      FABRIC_GC_OBJECT_CLASS_DECL()
-    
     public:
     
       static RC::Handle<ArrayMap> Create(
         RC::ConstHandle<ArrayProducer> const &inputArrayProducer,
-        RC::ConstHandle<KLC::ArrayMapOperator> const &mapOperator,
+        RC::ConstHandle<ArrayIOOperator> const &arrayIOOperator,
         RC::ConstHandle<ValueProducer> const &sharedValueProducer
         );
       
@@ -36,6 +31,7 @@ namespace Fabric
     
     public:
       
+      virtual RC::ConstHandle<RT::Desc> getElementDesc() const;
       virtual size_t getCount() const;
       virtual const RC::Handle<ArrayProducer::ComputeState> createComputeState() const;
             
@@ -62,20 +58,15 @@ namespace Fabric
       };
     
       ArrayMap(
-        FABRIC_GC_OBJECT_CLASS_PARAM,
         RC::ConstHandle<ArrayProducer> const &inputArrayProducer,
-        RC::ConstHandle<KLC::ArrayMapOperator> const &mapOperator,
+        RC::ConstHandle<ArrayIOOperator> const &arrayIOOperator,
         RC::ConstHandle<ValueProducer> const &sharedValueProducer
         );
-      ~ArrayMap();
-    
-      virtual char const *getKind() const;
-      virtual void toJSONImpl( Util::JSONObjectGenerator &jog ) const;
     
     private:
     
       RC::ConstHandle<ArrayProducer> m_inputArrayProducer;
-      RC::ConstHandle<KLC::ArrayMapOperator> m_mapOperator;
+      RC::ConstHandle<ArrayIOOperator> m_arrayIOOperator;
       RC::ConstHandle<ValueProducer> m_sharedValueProducer;
     };
   };

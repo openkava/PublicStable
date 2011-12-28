@@ -8,6 +8,8 @@
 #include <Fabric/Core/RT/SlicedArrayImpl.h>
 #include <Fabric/Core/RT/ComparableImpl.h>
 #include <Fabric/Core/RT/DictImpl.h>
+#include <Fabric/Core/RT/ValueProducerImpl.h>
+#include <Fabric/Core/RT/ArrayProducerImpl.h>
 #include <Fabric/Core/Util/Encoder.h>
 #include <Fabric/Base/Util/Bits.h>
 #include <Fabric/Base/Exception.h>
@@ -77,6 +79,32 @@ namespace Fabric
         m_slicedArrayImpl = slicedArrayImpl;
       }
       return slicedArrayImpl;
+    }
+
+    RC::ConstHandle<ValueProducerImpl> Impl::getValueProducerImpl() const
+    {
+      RC::WeakConstHandle<ValueProducerImpl> &valueProducerImplWeakHandle = m_valueProducerImpl;
+      RC::ConstHandle<ValueProducerImpl> valueProducerImpl = valueProducerImplWeakHandle.makeStrong();
+      if ( !valueProducerImpl )
+      {
+        std::string name = m_codeName + "_VP";
+        valueProducerImpl = new ValueProducerImpl( name, this );
+        valueProducerImplWeakHandle = valueProducerImpl;
+      }
+      return valueProducerImpl;
+    }
+
+    RC::ConstHandle<ArrayProducerImpl> Impl::getArrayProducerImpl() const
+    {
+      RC::WeakConstHandle<ArrayProducerImpl> &arrayProducerImplWeakHandle = m_arrayProducerImpl;
+      RC::ConstHandle<ArrayProducerImpl> arrayProducerImpl = arrayProducerImplWeakHandle.makeStrong();
+      if ( !arrayProducerImpl )
+      {
+        std::string name = m_codeName + "_AP";
+        arrayProducerImpl = new ArrayProducerImpl( name, this );
+        arrayProducerImplWeakHandle = arrayProducerImpl;
+      }
+      return arrayProducerImpl;
     }
     
     void Impl::disposeData( void *lValue ) const

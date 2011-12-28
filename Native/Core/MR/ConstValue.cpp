@@ -10,48 +10,66 @@ namespace Fabric
 {
   namespace MR
   {
-    FABRIC_GC_OBJECT_CLASS_IMPL( ConstValue, ValueProducer );
-    
     RC::Handle<ConstValue> ConstValue::Create(
       RC::ConstHandle<RT::Manager> const &rtManager,
       RC::ConstHandle<RT::Desc> const &valueDesc,
       RC::ConstHandle<JSON::Value> const &jsonValue
       )
     {
-      return new ConstValue( FABRIC_GC_OBJECT_MY_CLASS, rtManager, valueDesc, jsonValue );
+      return new ConstValue( rtManager, valueDesc, jsonValue );
     }
     
     ConstValue::ConstValue(
-      FABRIC_GC_OBJECT_CLASS_PARAM,
       RC::ConstHandle<RT::Manager> const &rtManager,
       RC::ConstHandle<RT::Desc> const &valueDesc,
       RC::ConstHandle<JSON::Value> const &jsonValue
       )
-      : ValueProducer( FABRIC_GC_OBJECT_CLASS_ARG, valueDesc )
+      : ValueProducer()
+      , m_valueDesc( valueDesc )
     {
-      m_data.resize( valueDesc->getAllocSize(), 0 );
-      valueDesc->setDataFromJSONValue( jsonValue, &m_data[0] );
+      m_data.resize( m_valueDesc->getAllocSize(), 0 );
+      m_valueDesc->setDataFromJSONValue( jsonValue, &m_data[0] );
+    }
+    
+    RC::Handle<ConstValue> ConstValue::Create(
+      RC::ConstHandle<RT::Manager> const &rtManager,
+      RC::ConstHandle<RT::Desc> const &valueDesc,
+      void const *data
+      )
+    {
+      return new ConstValue( rtManager, valueDesc, data );
+    }
+    
+    ConstValue::ConstValue(
+      RC::ConstHandle<RT::Manager> const &rtManager,
+      RC::ConstHandle<RT::Desc> const &valueDesc,
+      void const *data
+      )
+      : ValueProducer()
+      , m_valueDesc( valueDesc )
+    {
+      m_data.resize( m_valueDesc->getAllocSize(), 0 );
+      m_valueDesc->setData( data, &m_data[0] );
     }
     
     ConstValue::~ConstValue()
     {
-      getValueDesc()->disposeData( &m_data[0] );
+      m_valueDesc->disposeData( &m_data[0] );
+    }
+    
+    RC::ConstHandle<RT::Desc> ConstValue::getValueDesc() const
+    {
+      return m_valueDesc;
     }
 
-    char const *ConstValue::getKind() const
-    {
-      return "ConstValue";
-    }
-    
-    void ConstValue::toJSONImpl( Util::JSONObjectGenerator &jog ) const
-    {
-      Util::JSONGenerator jg = jog.makeMember( "data" );
-      getValueDesc()->generateJSON( &m_data[0], jg );
-    }
-    
     const RC::Handle<ValueProducer::ComputeState> ConstValue::createComputeState() const
     {
       return ComputeState::Create( this );
+    }
+    
+    void const *ConstValue::getImmutableData() const
+    {
+      return &m_data[0];
     }
     
     RC::Handle<ConstValue::ComputeState> ConstValue::ComputeState::Create( RC::ConstHandle<ConstValue> const &constValue )
@@ -71,12 +89,12 @@ namespace Fabric
     
     void ConstValue::ComputeState::produce( void *data ) const
     {
-      return m_constValue->getValueDesc()->setData( &m_constValue->m_data[0], data );
+      return m_constValue->m_valueDesc->setData( &m_constValue->m_data[0], data );
     }
     
     void ConstValue::ComputeState::produceJSON( Util::JSONGenerator &jg ) const
     {
-      return m_constValue->getValueDesc()->generateJSON( &m_constValue->m_data[0], jg );
+      return m_constValue->m_valueDesc->generateJSON( &m_constValue->m_data[0], jg );
     }
   }
 }

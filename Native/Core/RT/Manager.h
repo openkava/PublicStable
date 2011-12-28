@@ -34,6 +34,7 @@ namespace Fabric
   namespace RT
   {
     class Desc;
+    class ArrayProducerDesc;
     class BooleanDesc;
     class ByteDesc;
     class ComparableDesc;
@@ -43,6 +44,7 @@ namespace Fabric
     class SizeDesc;
     class FloatDesc;
     class StringDesc;
+    class ValueProducerDesc;
     class StructDesc;
     class FixedArrayDesc;
     class VariableArrayDesc;
@@ -92,6 +94,8 @@ namespace Fabric
       RC::ConstHandle<SlicedArrayDesc> getSlicedArrayOf( RC::ConstHandle<Desc> const &memberDesc ) const;
       RC::ConstHandle<FixedArrayDesc> getFixedArrayOf( RC::ConstHandle<Desc> const &memberDesc, size_t length ) const;
       RC::ConstHandle<DictDesc> getDictOf( RC::ConstHandle<ComparableDesc> const &keyDesc, RC::ConstHandle<Desc> const &valueDesc ) const;
+      RC::ConstHandle<ValueProducerDesc> getValueProducerOf( RC::ConstHandle<Desc> const &valueDesc ) const;
+      RC::ConstHandle<ArrayProducerDesc> getArrayProducerOf( RC::ConstHandle<Desc> const &elementDesc ) const;
       
       void jsonRoute( std::vector<std::string> const &dst, size_t dstOffset, std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
       void jsonExec( std::string const &cmd, RC::ConstHandle<JSON::Value> const &arg, Util::JSONArrayGenerator &resultJAG );
