@@ -1,0 +1,49 @@
+cap.getCount() = 10
+ValueProducer<Scalar>
+map2: input=0
+map2: input=1
+map2: input=2
+map2: input=3
+map2: input=4
+map2: input=5
+map2: input=6
+map2: input=7
+map2: input=8
+map2: input=9
+45
+ValueProducer<Scalar>
+map3: input=0 index=0
+map3: input=1 index=1
+map3: input=2 index=2
+map3: input=3 index=3
+map3: input=4 index=4
+map3: input=5 index=5
+map3: input=6 index=6
+map3: input=7 index=7
+map3: input=8 index=8
+map3: input=9 index=9
+45
+ValueProducer<Scalar>
+map4: input=0 index=0 count=10
+map4: input=1 index=1 count=10
+map4: input=2 index=2 count=10
+map4: input=3 index=3 count=10
+map4: input=4 index=4 count=10
+map4: input=5 index=5 count=10
+map4: input=6 index=6 count=10
+map4: input=7 index=7 count=10
+map4: input=8 index=8 count=10
+map4: input=9 index=9 count=10
+45
+ValueProducer<Scalar>
+map5: input=0 index=0 count=10 shared=hello
+map5: input=1 index=1 count=10 shared=hello
+map5: input=2 index=2 count=10 shared=hello
+map5: input=3 index=3 count=10 shared=hello
+map5: input=4 index=4 count=10 shared=hello
+map5: input=5 index=5 count=10 shared=hello
+map5: input=6 index=6 count=10 shared=hello
+map5: input=7 index=7 count=10 shared=hello
+map5: input=8 index=8 count=10 shared=hello
+map5: input=9 index=9 count=10 shared=hello
+45

@@ -5,11 +5,17 @@
 #ifndef _FABRIC_MR_VALUE_PRODUCER_H
 #define _FABRIC_MR_VALUE_PRODUCER_H
 
-#include <Fabric/Core/MR/Producer.h>
+#include <Fabric/Base/RC/Object.h>
+#include <Fabric/Base/RC/Handle.h>
 #include <Fabric/Base/RC/ConstHandle.h>
 
 namespace Fabric
 {
+  namespace Util
+  {
+    class JSONGenerator;
+  };
+  
   namespace RT
   {
     class Desc;
@@ -17,12 +23,8 @@ namespace Fabric
   
   namespace MR
   {
-    class ValueProducer : public Producer
+    class ValueProducer : public RC::Object
     {
-      FABRIC_GC_OBJECT_CLASS_DECL()
-      
-      // Virtual functions: Object
-      
     public:
     
       class ComputeState : public RC::Object
@@ -41,39 +43,14 @@ namespace Fabric
         RC::ConstHandle<ValueProducer> m_valueProducer;
       };
 
-      virtual void jsonExec(
-        std::string const &cmd,
-        RC::ConstHandle<JSON::Value> const &arg,
-        Util::JSONArrayGenerator &resultJAG
-        );
-      
-    public:
-      
-      // Virtual functions: ValueProducer
-      
+      virtual RC::ConstHandle<RT::Desc> getValueDesc() const = 0;
       virtual const RC::Handle<ComputeState> createComputeState() const = 0;
-    
-    public:
-    
-      RC::ConstHandle<RT::Desc> getValueDesc() const;
     
     protected:
     
-      ValueProducer(
-        FABRIC_GC_OBJECT_CLASS_PARAM,
-        RC::ConstHandle<RT::Desc> const &valueDesc
-        );
-    
-    private:
-    
-      void jsonExecProduce(
-        RC::ConstHandle<JSON::Value> const &arg,
-        Util::JSONArrayGenerator &resultJAG
-        );
-    
-      RC::ConstHandle<RT::Desc> m_valueDesc;
+      ValueProducer();
     };
-  };
-};
+  }
+}
 
 #endif //_FABRIC_MR_VALUE_PRODUCER_H

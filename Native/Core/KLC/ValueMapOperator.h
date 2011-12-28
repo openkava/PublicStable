@@ -2,19 +2,24 @@
  *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
  */
  
-#ifndef _FABRIC_KL_VALUE_MAP_OPERATOR_H
-#define _FABRIC_KL_VALUE_MAP_OPERATOR_H
+#ifndef _FABRIC_KLC_VALUE_MAP_OPERATOR_H
+#define _FABRIC_KLC_VALUE_MAP_OPERATOR_H
 
 #include <Fabric/Core/KLC/ValueIOOperator.h>
 
 namespace Fabric
 {
+  namespace AST
+  {
+    class Operator;
+  }
+  
   namespace KLC
   {
+    class Executable;
+
     class ValueMapOperator : public ValueIOOperator
     {
-      FABRIC_GC_OBJECT_CLASS_DECL()
-      
     public:
     
       static RC::Handle<ValueMapOperator> Create(
@@ -23,12 +28,9 @@ namespace Fabric
         GenericFunctionPtr functionPtr
         );
       
-      virtual char const *getKind() const;
-      
     protected:
     
       ValueMapOperator(
-        FABRIC_GC_OBJECT_CLASS_PARAM,
         RC::ConstHandle<Executable> const &executable,
         RC::ConstHandle<AST::Operator> const &astOperator,
         GenericFunctionPtr functionPtr
@@ -37,4 +39,4 @@ namespace Fabric
   }
 }
 
-#endif //_FABRIC_KL_VALUE_MAP_OPERATOR_H
+#endif //_FABRIC_KLC_VALUE_MAP_OPERATOR_H

@@ -13,22 +13,21 @@ namespace Fabric
 {
   namespace KLC
   {
-    class ReduceOperator;
   };
   
   namespace MR
   {
+    class ArrayIOOperator;
+
     class Reduce : public ValueProducer
     {
-      FABRIC_GC_OBJECT_CLASS_DECL()
-      
       class Execution;
-
+      
     public:
     
       static RC::Handle<Reduce> Create(
         RC::ConstHandle<ArrayProducer> const &inputArrayProducer,
-        RC::ConstHandle<KLC::ReduceOperator> const &reduceOperator,
+        RC::ConstHandle<ArrayIOOperator> const &operator_,
         RC::ConstHandle<ValueProducer> const &sharedValueProducer
         );
       
@@ -36,6 +35,7 @@ namespace Fabric
     
     public:
       
+      virtual RC::ConstHandle<RT::Desc> getValueDesc() const;
       virtual const RC::Handle<ValueProducer::ComputeState> createComputeState() const;
             
     protected:
@@ -57,27 +57,22 @@ namespace Fabric
       
         RC::ConstHandle<ArrayProducer::ComputeState> m_inputComputeState;
         RC::ConstHandle<RT::Desc> m_inputDesc;
-        RC::ConstHandle<KLC::ReduceOperator> m_operator;
+        RC::ConstHandle<ArrayIOOperator> m_operator;
         RC::ConstHandle<ValueProducer> m_shared;
         std::vector<uint8_t> m_sharedData;
         Util::Mutex &m_mutex;
       };
       
       Reduce(
-        FABRIC_GC_OBJECT_CLASS_PARAM,
         RC::ConstHandle<ArrayProducer> const &inputArrayProducer,
-        RC::ConstHandle<KLC::ReduceOperator> const &reduceOperator,
+        RC::ConstHandle<ArrayIOOperator> const &reduceOperator,
         RC::ConstHandle<ValueProducer> const &sharedValueProducer
         );
-      ~Reduce();
-    
-      virtual char const *getKind() const;
-      virtual void toJSONImpl( Util::JSONObjectGenerator &jog ) const;
     
     private:
     
       RC::ConstHandle<ArrayProducer> m_inputArrayProducer;
-      RC::ConstHandle<KLC::ReduceOperator> m_reduceOperator;
+      RC::ConstHandle<ArrayIOOperator> m_operator;
       RC::ConstHandle<ValueProducer> m_sharedValueProducer;
       
       mutable Util::Mutex m_mutex;

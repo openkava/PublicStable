@@ -6,34 +6,47 @@
 #define _FABRIC_MR_CONST_VALUE_H
 
 #include <Fabric/Core/MR/ValueProducer.h>
+
 #include <stdint.h>
+#include <vector>
 
 namespace Fabric
 {
+  namespace JSON
+  {
+    class Value;
+  }
+  
   namespace RT
   {
     class Manager;
-  };
+  }
   
   namespace MR
   {
     class ConstValue : public ValueProducer
     {
-      FABRIC_GC_OBJECT_CLASS_DECL()
-
     public:
     
       static RC::Handle<ConstValue> Create(
         RC::ConstHandle<RT::Manager> const &rtManager,
-        RC::ConstHandle<RT::Desc> const &elementDesc,
+        RC::ConstHandle<RT::Desc> const &valueDesc,
         RC::ConstHandle<JSON::Value> const &jsonValue
+        );
+      static RC::Handle<ConstValue> Create(
+        RC::ConstHandle<RT::Manager> const &rtManager,
+        RC::ConstHandle<RT::Desc> const &valueDesc,
+        void const *data
         );
       
       // Virtual functions: ValueProducer
     
     public:
       
+      virtual RC::ConstHandle<RT::Desc> getValueDesc() const;
       virtual const RC::Handle<ValueProducer::ComputeState> createComputeState() const;
+      
+      virtual void const *getImmutableData() const;
             
     protected:
     
@@ -57,21 +70,23 @@ namespace Fabric
       };
       
       ConstValue(
-        FABRIC_GC_OBJECT_CLASS_PARAM,
         RC::ConstHandle<RT::Manager> const &rtManager,
-        RC::ConstHandle<RT::Desc> const &elementDesc,
+        RC::ConstHandle<RT::Desc> const &valueDesc,
         RC::ConstHandle<JSON::Value> const &jsonValue
+        );
+      ConstValue(
+        RC::ConstHandle<RT::Manager> const &rtManager,
+        RC::ConstHandle<RT::Desc> const &valueDesc,
+        void const *data
         );
       ~ConstValue();
     
-      virtual char const *getKind() const;
-      virtual void toJSONImpl( Util::JSONObjectGenerator &jog ) const;
-    
     private:
     
+      RC::ConstHandle<RT::Desc> m_valueDesc;
       std::vector<uint8_t> m_data;
     };
-  };
-};
+  }
+}
 
 #endif //_FABRIC_MR_CONST_VALUE_H

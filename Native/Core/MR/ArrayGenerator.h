@@ -6,39 +6,32 @@
 #define _FABRIC_MR_ARRAY_GENERATOR_H
 
 #include <Fabric/Core/MR/ArrayProducer.h>
+#include <Fabric/Core/MR/ValueProducer.h>
+
+#include <stdint.h>
+#include <vector>
 
 namespace Fabric
 {
-  namespace RT
-  {
-    class Manager;
-  };
-  
-  namespace KLC
-  {
-    class ArrayGeneratorOperator;
-  };
-  
   namespace MR
   {
-    class ValueProducer;
+    class ArrayOutputOperator;
     
     class ArrayGenerator : public ArrayProducer
     {
-      FABRIC_GC_OBJECT_CLASS_DECL()
-    
     public:
     
       static RC::Handle<ArrayGenerator> Create(
-        RC::ConstHandle<RT::Manager> const &rtManager,
         RC::ConstHandle<ValueProducer> const &countValueProducer,
-        RC::ConstHandle<KLC::ArrayGeneratorOperator> const &mapOperator
+        RC::ConstHandle<ArrayOutputOperator> const &operator_,
+        RC::ConstHandle<ValueProducer> const &sharedValueProducer
         );
       
       // Virtual functions: ArrayProducer
     
     public:
       
+      virtual RC::ConstHandle<RT::Desc> getElementDesc() const;
       virtual size_t getCount() const;
       virtual const RC::Handle<ArrayProducer::ComputeState> createComputeState() const;
             
@@ -55,27 +48,25 @@ namespace Fabric
       protected:
       
         ComputeState( RC::ConstHandle<ArrayGenerator> const &arrayGenerator );
+        ~ComputeState();
         
       private:
       
         RC::ConstHandle<ArrayGenerator> m_arrayGenerator;
+        std::vector<uint8_t> m_sharedData;
       };
     
       ArrayGenerator(
-        FABRIC_GC_OBJECT_CLASS_PARAM,
-        RC::ConstHandle<RT::Manager> const &rtManager,
         RC::ConstHandle<ValueProducer> const &countValueProducer,
-        RC::ConstHandle<KLC::ArrayGeneratorOperator> const &mapOperator
+        RC::ConstHandle<ArrayOutputOperator> const &operator_,
+        RC::ConstHandle<ValueProducer> const &sharedValueProducer
         );
-      ~ArrayGenerator();
-    
-      virtual char const *getKind() const;
-      virtual void toJSONImpl( Util::JSONObjectGenerator &jog ) const;
     
     private:
     
       RC::ConstHandle<ValueProducer> m_countValueProducer;
-      RC::ConstHandle<KLC::ArrayGeneratorOperator> m_arrayGeneratorOperator;
+      RC::ConstHandle<ArrayOutputOperator> m_operator;
+      RC::ConstHandle<ValueProducer> m_sharedValueProducer;
     };
   };
 };

@@ -2,21 +2,21 @@
  *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
  */
  
-#include <Fabric/Core/MR/Producer.h>
+#include <Fabric/Core/MR/ProducerWrapper.h>
 #include <Fabric/Core/Util/JSONGenerator.h>
 
 namespace Fabric
 {
   namespace MR
   {
-    FABRIC_GC_OBJECT_CLASS_IMPL( Producer, Object );
+    FABRIC_GC_OBJECT_CLASS_IMPL( ProducerWrapper, GC::Object );
 
-    Producer::Producer( FABRIC_GC_OBJECT_CLASS_PARAM )
-      : Object( FABRIC_GC_OBJECT_CLASS_ARG )
+    ProducerWrapper::ProducerWrapper( FABRIC_GC_OBJECT_CLASS_PARAM )
+      : GC::Object( FABRIC_GC_OBJECT_CLASS_ARG )
     {
     }
 
-    void Producer::toJSON( Util::JSONGenerator &jg ) const
+    void ProducerWrapper::toJSON( Util::JSONGenerator &jg ) const
     {
       Util::JSONObjectGenerator jog = jg.makeObject();
       
@@ -28,7 +28,7 @@ namespace Fabric
       toJSONImpl( jog );
     }
       
-    void Producer::jsonExec(
+    void ProducerWrapper::jsonExec(
       std::string const &cmd,
       RC::ConstHandle<JSON::Value> const &arg,
       Util::JSONArrayGenerator &resultJAG
@@ -36,10 +36,10 @@ namespace Fabric
     {
       if ( cmd == "getJSONDesc" )
         jsonExecGetJSONDesc( arg, resultJAG );
-      else Object::jsonExec( cmd, arg, resultJAG );
+      else GC::Object::jsonExec( cmd, arg, resultJAG );
     }
     
-    void Producer::jsonExecGetJSONDesc(
+    void ProducerWrapper::jsonExecGetJSONDesc(
       RC::ConstHandle<JSON::Value> const &arg,
       Util::JSONArrayGenerator &resultJAG
       )
@@ -47,5 +47,5 @@ namespace Fabric
       Util::JSONGenerator jg = resultJAG.makeElement();
       toJSON( jg );
     }
-  };
-};
+  }
+}

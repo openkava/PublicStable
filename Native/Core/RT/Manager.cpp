@@ -3,6 +3,8 @@
  */
  
 #include "Manager.h"
+#include "ArrayProducerDesc.h"
+#include "ArrayProducerImpl.h"
 #include "BooleanDesc.h"
 #include "BooleanImpl.h"
 #include "ConstStringDesc.h"
@@ -17,6 +19,8 @@
 #include "IntegerImpl.h"
 #include "StringDesc.h"
 #include "StringImpl.h"
+#include "ValueProducerDesc.h"
+#include "ValueProducerImpl.h"
 #include "VariableArrayDesc.h"
 #include "VariableArrayImpl.h"
 #include "SlicedArrayDesc.h"
@@ -101,6 +105,26 @@ namespace Fabric
       RC::ConstHandle<DictImpl> dictImpl = valueDesc->getImpl()->getDictImpl( keyDesc->getImpl() );
       RC::ConstHandle<DictDesc> dictDesc = new DictDesc( dictName, dictImpl, keyDesc, valueDesc );
       return RC::ConstHandle<DictDesc>::StaticCast( registerDesc( dictDesc ) );
+    }
+
+    RC::ConstHandle<ValueProducerDesc> Manager::getValueProducerOf(
+      RC::ConstHandle<RT::Desc> const &valueDesc
+      ) const
+    {
+      std::string valueProducerName = "ValueProducer<" + valueDesc->getUserName() + ">";
+      RC::ConstHandle<ValueProducerImpl> valueProducerImpl = valueDesc->getImpl()->getValueProducerImpl();
+      RC::ConstHandle<ValueProducerDesc> valueProducerDesc = new ValueProducerDesc( valueProducerName, valueProducerImpl, valueDesc );
+      return RC::ConstHandle<ValueProducerDesc>::StaticCast( registerDesc( valueProducerDesc ) );
+    }
+
+    RC::ConstHandle<ArrayProducerDesc> Manager::getArrayProducerOf(
+      RC::ConstHandle<RT::Desc> const &elementDesc
+      ) const
+    {
+      std::string arrayProducerName = "ArrayProducer<" + elementDesc->getUserName() + ">";
+      RC::ConstHandle<ArrayProducerImpl> arrayProducerImpl = elementDesc->getImpl()->getArrayProducerImpl();
+      RC::ConstHandle<ArrayProducerDesc> arrayProducerDesc = new ArrayProducerDesc( arrayProducerName, arrayProducerImpl, elementDesc );
+      return RC::ConstHandle<ArrayProducerDesc>::StaticCast( registerDesc( arrayProducerDesc ) );
     }
 
     Manager::Types const &Manager::getTypes() const
@@ -221,10 +245,79 @@ namespace Fabric
       char const *baseNameEnd = data;
       
       std::string baseName( baseNameStart, baseNameEnd - baseNameStart );
-      RC::ConstHandle<RT::Desc> desc = maybeGetBaseDesc( baseName );
-      if ( desc )
-        desc = getComplexDesc( desc, data, dataEnd );
-      return desc;
+      if ( baseName == "ValueProducer" )
+      {
+        if ( baseNameEnd == dataEnd || *baseNameEnd != '<' )
+          throw Exception( "malformed type expression" );
+        ++baseNameEnd;
+          
+        // [pzion 20111228] count angle brackets to get subtype
+        
+        size_t bracketCount = 0;
+        char const *type = baseNameEnd;
+        char const *typeEnd = type;
+        for (;;)
+        {
+          if ( typeEnd == dataEnd )
+            throw Exception( "malformed type expression" );
+          else if ( *typeEnd == '>' )
+          {
+            if ( bracketCount == 0 )
+              break;
+            else --bracketCount;
+          }
+          else if ( *typeEnd == '<' )
+            ++bracketCount;
+          ++typeEnd;
+        }
+        
+        RC::ConstHandle<Desc> valueDesc = maybeGetDesc( std::string( type, typeEnd - type ) );
+
+        RC::ConstHandle<RT::Desc> desc;
+        if ( valueDesc )
+          desc = getValueProducerOf( valueDesc );
+        return desc;
+      }
+      else if ( baseName == "ArrayProducer" )
+      {
+        if ( baseNameEnd == dataEnd || *baseNameEnd != '<' )
+          throw Exception( "malformed type expression" );
+        ++baseNameEnd;
+          
+        // [pzion 20111228] count angle brackets to get subtype
+        
+        size_t bracketCount = 0;
+        char const *type = baseNameEnd;
+        char const *typeEnd = type;
+        for (;;)
+        {
+          if ( typeEnd == dataEnd )
+            throw Exception( "malformed type expression" );
+          else if ( *typeEnd == '>' )
+          {
+            if ( bracketCount == 0 )
+              break;
+            else --bracketCount;
+          }
+          else if ( *typeEnd == '<' )
+            ++bracketCount;
+          ++typeEnd;
+        }
+        
+        RC::ConstHandle<Desc> valueDesc = maybeGetDesc( std::string( type, typeEnd - type ) );
+
+        RC::ConstHandle<RT::Desc> desc;
+        if ( valueDesc )
+          desc = getArrayProducerOf( valueDesc );
+        return desc;
+      }
+      else
+      {
+        RC::ConstHandle<RT::Desc> desc = maybeGetBaseDesc( baseName );
+        if ( desc )
+          desc = getComplexDesc( desc, data, dataEnd );
+        return desc;
+      }
     }
 
     RC::ConstHandle<RT::Desc> Manager::getDesc( std::string const &name ) const
@@ -302,7 +395,7 @@ namespace Fabric
           ++data;
           return getSlicedArrayOf( getComplexDesc( desc, data, dataEnd ) );
         }
-        else throw Exception( "malformed type expression" );
+        else throw "malformed type expression";
       }
       else return desc;
     }

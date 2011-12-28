@@ -8,32 +8,29 @@
 #include <Fabric/Core/MR/ValueProducer.h>
 
 #include <stdint.h>
+#include <vector>
 
 namespace Fabric
 {
-  namespace KLC
-  {
-    class ValueMapOperator;
-  };
-  
   namespace MR
   {
+    class ValueIOOperator;
+    
     class ValueMap : public ValueProducer
     {
-      FABRIC_GC_OBJECT_CLASS_DECL()
-    
     public:
     
       static RC::Handle<ValueMap> Create(
-        RC::ConstHandle<ValueProducer> const &inputValueProducer,
-        RC::ConstHandle<KLC::ValueMapOperator> const &valueMapOperator,
-        RC::ConstHandle<ValueProducer> const &sharedValueProducer
+        RC::ConstHandle<ValueProducer> const &input,
+        RC::ConstHandle<ValueIOOperator> const &operator_,
+        RC::ConstHandle<ValueProducer> const &shared
         );
       
       // Virtual functions: ValueProducer
     
     public:
       
+      virtual RC::ConstHandle<RT::Desc> getValueDesc() const;
       virtual const RC::Handle<ValueProducer::ComputeState> createComputeState() const;
             
     protected:
@@ -55,27 +52,22 @@ namespace Fabric
       
         RC::ConstHandle<ValueProducer::ComputeState> m_inputComputeState;
         RC::ConstHandle<RT::Desc> m_inputDesc;
-        RC::ConstHandle<KLC::ValueMapOperator> m_operator;
+        RC::ConstHandle<ValueIOOperator> m_operator;
         RC::ConstHandle<ValueProducer> m_shared;
         std::vector<uint8_t> m_sharedData;
       };
       
       ValueMap(
-        FABRIC_GC_OBJECT_CLASS_PARAM,
-        RC::ConstHandle<ValueProducer> const &inputValueProducer,
-        RC::ConstHandle<KLC::ValueMapOperator> const &valueMapOperator,
-        RC::ConstHandle<ValueProducer> const &sharedValueProducer
+        RC::ConstHandle<ValueProducer> const &input,
+        RC::ConstHandle<ValueIOOperator> const &operator_,
+        RC::ConstHandle<ValueProducer> const &shared
         );
-      ~ValueMap();
-    
-      virtual char const *getKind() const;
-      virtual void toJSONImpl( Util::JSONObjectGenerator &jog ) const;
     
     private:
     
-      RC::ConstHandle<ValueProducer> m_inputValueProducer;
-      RC::ConstHandle<KLC::ValueMapOperator> m_valueMapOperator;
-      RC::ConstHandle<ValueProducer> m_sharedValueProducer;
+      RC::ConstHandle<ValueProducer> m_input;
+      RC::ConstHandle<ValueIOOperator> m_operator;
+      RC::ConstHandle<ValueProducer> m_shared;
     };
   };
 };
