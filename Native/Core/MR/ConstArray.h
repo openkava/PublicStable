@@ -19,30 +19,40 @@ namespace Fabric
   
   namespace RT
   {
+    class ArrayDesc;
+    class FixedArrayDesc;
     class Manager;
-    class VariableArrayDesc;
   };
   
   namespace MR
   {
     class ConstArray : public ArrayProducer
     {
-      FABRIC_GC_OBJECT_CLASS_DECL()
-      
     public:
+
       static RC::Handle<ConstArray> Create(
         RC::ConstHandle<RT::Manager> const &rtManager,
         RC::ConstHandle<RT::Desc> const &elementDesc,
         RC::ConstHandle<JSON::Array> const &jsonArray
+        );
+
+      static RC::Handle<ConstArray> Create(
+        RC::ConstHandle<RT::Manager> const &rtManager,
+        RC::ConstHandle<RT::ArrayDesc> const &arrayDesc,
+        void const *data
         );
       
       // Virtual functions: ArrayProducer
     
     public:
       
+      virtual RC::ConstHandle<RT::Desc> getElementDesc() const;
       virtual size_t getCount() const;
       virtual const RC::Handle<ArrayProducer::ComputeState> createComputeState() const;
-    
+
+      RC::ConstHandle<RT::ArrayDesc> getArrayDesc() const;
+      void const *getImmutableData() const;
+      
     protected:
     
       class ComputeState : public ArrayProducer::ComputeState
@@ -64,19 +74,22 @@ namespace Fabric
       };
         
       ConstArray(
-        FABRIC_GC_OBJECT_CLASS_PARAM,
         RC::ConstHandle<RT::Manager> const &rtManager,
         RC::ConstHandle<RT::Desc> const &elementDesc,
         RC::ConstHandle<JSON::Array> const &jsonArray
         );
+
+      ConstArray(
+        RC::ConstHandle<RT::Manager> const &rtManager,
+        RC::ConstHandle<RT::ArrayDesc> const &arrayDesc,
+        void const *data
+        );
+      
       ~ConstArray();
-    
-      virtual char const *getKind() const;
-      virtual void toJSONImpl( Util::JSONObjectGenerator &jog ) const;
     
     private:
     
-      RC::ConstHandle<RT::VariableArrayDesc> m_variableArrayDesc;
+      RC::ConstHandle<RT::FixedArrayDesc> m_fixedArrayDesc;
       std::vector<uint8_t> m_data;
     };
   };

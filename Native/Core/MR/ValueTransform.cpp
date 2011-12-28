@@ -13,83 +13,58 @@ namespace Fabric
 {
   namespace MR
   {
-    FABRIC_GC_OBJECT_CLASS_IMPL( ValueTransform, ValueProducer );
-    
     RC::Handle<ValueTransform> ValueTransform::Create(
-      RC::ConstHandle<ValueProducer> const &inputValueProducer,
-      RC::ConstHandle<KLC::ValueTransformOperator> const &valueTransformOperator,
-      RC::ConstHandle<ValueProducer> const &sharedValueProducer
+      RC::ConstHandle<ValueProducer> const &input,
+      RC::ConstHandle<ValueTransformOperator> const &operator_,
+      RC::ConstHandle<ValueProducer> const &shared
       )
     {
-      return new ValueTransform( FABRIC_GC_OBJECT_MY_CLASS, inputValueProducer, valueTransformOperator, sharedValueProducer );
+      return new ValueTransform( input, operator_, shared );
     }
     
     ValueTransform::ValueTransform(
-      FABRIC_GC_OBJECT_CLASS_PARAM,
-      RC::ConstHandle<ValueProducer> const &inputValueProducer,
-      RC::ConstHandle<KLC::ValueTransformOperator> const &valueTransformOperator,
-      RC::ConstHandle<ValueProducer> const &sharedValueProducer
+      RC::ConstHandle<ValueProducer> const &input,
+      RC::ConstHandle<ValueTransformOperator> const &operator_,
+      RC::ConstHandle<ValueProducer> const &shared
       )
-      : ValueProducer( FABRIC_GC_OBJECT_CLASS_ARG, valueTransformOperator->getValueDesc() )
-      , m_inputValueProducer( inputValueProducer )
-      , m_valueTransformOperator( valueTransformOperator )
-      , m_sharedValueProducer( sharedValueProducer )
+      : m_input( input )
+      , m_operator( operator_ )
+      , m_shared( shared )
     {
-      RC::ConstHandle<RT::Desc> inputValueProducerValueDesc = inputValueProducer->getValueDesc();
-      if ( !inputValueProducerValueDesc )
+      RC::ConstHandle<RT::Desc> inputValueDesc = m_input->getValueDesc();
+      if ( !inputValueDesc )
         throw Exception("input value producer is invalid");
-      RC::ConstHandle<RT::Desc> valueTransformOperatorValueDesc = valueTransformOperator->getValueDesc();
-      if ( !valueTransformOperatorValueDesc )
+      RC::ConstHandle<RT::Desc> operatorValueDesc = m_operator->getValueDesc();
+      if ( !operatorValueDesc )
         throw Exception("value transform operator is invalid");
-      if ( !valueTransformOperatorValueDesc->isEquivalentTo( inputValueProducerValueDesc ) )
+      if ( !operatorValueDesc->isEquivalentTo( inputValueDesc ) )
         throw Exception(
           "input value type ("
-          + _(inputValueProducerValueDesc->getUserName())
+          + _(inputValueDesc->getUserName())
           + ") is not equivalent to value transform operator value type ("
-          + _(valueTransformOperatorValueDesc->getUserName()) + ")"
+          + _(operatorValueDesc->getUserName()) + ")"
           );
-      RC::ConstHandle<RT::Desc> valueTransformOperatorSharedDesc = valueTransformOperator->getSharedDesc();
-      if ( valueTransformOperatorSharedDesc )
+      m_valueDesc = inputValueDesc;
+      
+      RC::ConstHandle<RT::Desc> operatorSharedDesc = m_operator->getSharedDesc();
+      if ( operatorSharedDesc )
       {
-        RC::ConstHandle<RT::Desc> sharedValueProducerValueDesc = sharedValueProducer->getValueDesc();
-        if ( !sharedValueProducerValueDesc )
+        RC::ConstHandle<RT::Desc> sharedValueDesc = m_shared? m_shared->getValueDesc(): RC::ConstHandle<RT::Desc>();
+        if ( !sharedValueDesc )
           throw Exception( "value map operator requires a shared value but no shared value producer is provided" );
-        if ( !sharedValueProducerValueDesc->isEquivalentTo( valueTransformOperatorSharedDesc ) )
+        if ( !sharedValueDesc->isEquivalentTo( operatorSharedDesc ) )
           throw Exception(
             "shared value type ("
-            + _(sharedValueProducerValueDesc->getUserName())
+            + _(sharedValueDesc->getUserName())
             + ") is not equivalent to value map operator shared type ("
-            + _(valueTransformOperatorSharedDesc->getUserName()) + ")"
+            + _(operatorSharedDesc->getUserName()) + ")"
             );
       }
     }
     
-    ValueTransform::~ValueTransform()
+    RC::ConstHandle<RT::Desc> ValueTransform::getValueDesc() const
     {
-    }
-
-    char const *ValueTransform::getKind() const
-    {
-      return "ValueTransform";
-    }
-    
-    void ValueTransform::toJSONImpl( Util::JSONObjectGenerator &jog ) const
-    {
-      {
-        Util::JSONGenerator jg = jog.makeMember( "inputValueProvider" );
-        m_inputValueProducer->toJSON( jg );
-      }
-
-      {
-        Util::JSONGenerator jg = jog.makeMember( "valueTransformOperator" );
-        m_valueTransformOperator->toJSON( jg );
-      }
-      
-      if ( m_sharedValueProducer )
-      {
-        Util::JSONGenerator jg = jog.makeMember( "sharedValueProducer" );
-        m_sharedValueProducer->toJSON( jg );
-      }
+      return m_valueDesc;
     }
       
     const RC::Handle<ValueProducer::ComputeState> ValueTransform::createComputeState() const
@@ -105,11 +80,11 @@ namespace Fabric
     ValueTransform::ComputeState::ComputeState( RC::ConstHandle<ValueTransform> const &valueTransform )
       : ValueProducer::ComputeState( valueTransform )
       , m_valueTransform( valueTransform )
-      , m_inputValueProducerComputeState( valueTransform->m_inputValueProducer->createComputeState() )
+      , m_inputValueProducerComputeState( valueTransform->m_input->createComputeState() )
     {
-      if ( m_valueTransform->m_valueTransformOperator->takesSharedValue() )
+      if ( m_valueTransform->m_operator->takesSharedValue() )
       {
-        RC::ConstHandle<ValueProducer> sharedValueProducer = m_valueTransform->m_sharedValueProducer;
+        RC::ConstHandle<ValueProducer> sharedValueProducer = m_valueTransform->m_shared;
         m_sharedData.resize( sharedValueProducer->getValueDesc()->getAllocSize(), 0 );
         sharedValueProducer->createComputeState()->produce( &m_sharedData[0] );
       }
@@ -117,9 +92,9 @@ namespace Fabric
     
     ValueTransform::ComputeState::~ComputeState()
     {
-      if ( m_valueTransform->m_valueTransformOperator->takesSharedValue() )
+      if ( m_valueTransform->m_operator->takesSharedValue() )
       {
-        RC::ConstHandle<ValueProducer> sharedValueProducer = m_valueTransform->m_sharedValueProducer;
+        RC::ConstHandle<ValueProducer> sharedValueProducer = m_valueTransform->m_shared;
         sharedValueProducer->getValueDesc()->disposeData( &m_sharedData[0] );
       }
     }
@@ -128,10 +103,10 @@ namespace Fabric
     {
       m_inputValueProducerComputeState->produce( data );
       
-      RC::ConstHandle<KLC::ValueTransformOperator> valueTransformOperator = m_valueTransform->m_valueTransformOperator;
+      RC::ConstHandle<ValueTransformOperator> valueTransformOperator = m_valueTransform->m_operator;
       if ( valueTransformOperator->takesSharedValue() )
         valueTransformOperator->call( data, &m_sharedData[0] );
       else valueTransformOperator->call( data );
     }
-  };
-};
+  }
+}

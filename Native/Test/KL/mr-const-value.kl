@@ -1,0 +1,5 @@
+operator entry() {
+  ValueProducer<Integer> vp = createConstValue( 42 );
+  report vp;
+  report vp.produce();
+}

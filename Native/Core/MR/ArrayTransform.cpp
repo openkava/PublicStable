@@ -3,7 +3,7 @@
  */
  
 #include <Fabric/Core/MR/ArrayTransform.h>
-#include <Fabric/Core/KLC/ArrayTransformOperator.h>
+#include <Fabric/Core/MR/ArrayOutputOperator.h>
 #include <Fabric/Core/RT/Desc.h>
 #include <Fabric/Core/Util/Format.h>
 #include <Fabric/Core/Util/JSONGenerator.h>
@@ -13,25 +13,21 @@ namespace Fabric
 {
   namespace MR
   {
-    FABRIC_GC_OBJECT_CLASS_IMPL( ArrayTransform, ArrayProducer );
-    
     RC::Handle<ArrayTransform> ArrayTransform::Create(
       RC::ConstHandle<ArrayProducer> const &inputArrayProducer,
-      RC::ConstHandle<KLC::ArrayTransformOperator> const &operator_,
+      RC::ConstHandle<ArrayOutputOperator> const &operator_,
       RC::ConstHandle<ValueProducer> const &sharedValueProducer
       )
     {
-      return new ArrayTransform( FABRIC_GC_OBJECT_MY_CLASS, inputArrayProducer, operator_, sharedValueProducer );
+      return new ArrayTransform( inputArrayProducer, operator_, sharedValueProducer );
     }
     
     ArrayTransform::ArrayTransform(
-      FABRIC_GC_OBJECT_CLASS_PARAM,
       RC::ConstHandle<ArrayProducer> const &inputArrayProducer,
-      RC::ConstHandle<KLC::ArrayTransformOperator> const &operator_,
+      RC::ConstHandle<ArrayOutputOperator> const &operator_,
       RC::ConstHandle<ValueProducer> const &sharedValueProducer
       )
-      : ArrayProducer( FABRIC_GC_OBJECT_CLASS_ARG, operator_->getValueDesc() )
-      , m_inputArrayProducer( inputArrayProducer )
+      : m_inputArrayProducer( inputArrayProducer )
       , m_operator( operator_ )
       , m_sharedValueProducer( sharedValueProducer )
     {
@@ -64,37 +60,14 @@ namespace Fabric
       }
     }
     
-    ArrayTransform::~ArrayTransform()
+    RC::ConstHandle<RT::Desc> ArrayTransform::getElementDesc() const
     {
-    }
-
-    char const *ArrayTransform::getKind() const
-    {
-      return "ArrayTransform";
+      return m_operator->getValueDesc();
     }
 
     size_t ArrayTransform::getCount() const
     {
       return m_inputArrayProducer->getCount();
-    }
-    
-    void ArrayTransform::toJSONImpl( Util::JSONObjectGenerator &jog ) const
-    {
-      {
-        Util::JSONGenerator jg = jog.makeMember( "inputArrayProducer" );
-        m_inputArrayProducer->toJSON( jg );
-      }
-
-      {
-        Util::JSONGenerator jg = jog.makeMember( "operator" );
-        m_operator->toJSON( jg );
-      }
-      
-      if ( m_sharedValueProducer )
-      {
-        Util::JSONGenerator jg = jog.makeMember( "sharedValueProducer" );
-        m_sharedValueProducer->toJSON( jg );
-      }
     }
       
     const RC::Handle<ArrayProducer::ComputeState> ArrayTransform::createComputeState() const
@@ -133,7 +106,7 @@ namespace Fabric
     {
       m_inputArrayProducerComputeState->produce( index, data );
       
-      RC::ConstHandle<KLC::ArrayTransformOperator> operator_ = m_arrayTransform->m_operator;
+      RC::ConstHandle<ArrayOutputOperator> operator_ = m_arrayTransform->m_operator;
       if ( operator_->takesIndex() )
       {
         if ( operator_->takesCount() )

@@ -9,25 +9,21 @@
 #include <Fabric/Core/MR/ValueProducer.h>
 
 #include <stdint.h>
+#include <vector>
 
 namespace Fabric
 {
-  namespace KLC
-  {
-    class ArrayTransformOperator;
-  };
-  
   namespace MR
   {
+    class ArrayOutputOperator;
+    
     class ArrayTransform : public ArrayProducer
     {
-      FABRIC_GC_OBJECT_CLASS_DECL()
-    
     public:
     
       static RC::Handle<ArrayTransform> Create(
         RC::ConstHandle<ArrayProducer> const &inputArrayProducer,
-        RC::ConstHandle<KLC::ArrayTransformOperator> const &operator_,
+        RC::ConstHandle<ArrayOutputOperator> const &operator_,
         RC::ConstHandle<ValueProducer> const &sharedValueProducer
         );
       
@@ -35,6 +31,7 @@ namespace Fabric
     
     public:
       
+      virtual RC::ConstHandle<RT::Desc> getElementDesc() const;
       virtual size_t getCount() const;
       virtual const RC::Handle<ArrayProducer::ComputeState> createComputeState() const;
             
@@ -61,20 +58,15 @@ namespace Fabric
       };
     
       ArrayTransform(
-        FABRIC_GC_OBJECT_CLASS_PARAM,
         RC::ConstHandle<ArrayProducer> const &inputArrayProducer,
-        RC::ConstHandle<KLC::ArrayTransformOperator> const &operator_,
+        RC::ConstHandle<ArrayOutputOperator> const &operator_,
         RC::ConstHandle<ValueProducer> const &sharedValueProducer
         );
-      ~ArrayTransform();
-    
-      virtual char const *getKind() const;
-      virtual void toJSONImpl( Util::JSONObjectGenerator &jog ) const;
     
     private:
     
       RC::ConstHandle<ArrayProducer> m_inputArrayProducer;
-      RC::ConstHandle<KLC::ArrayTransformOperator> m_operator;
+      RC::ConstHandle<ArrayOutputOperator> m_operator;
       RC::ConstHandle<ValueProducer> m_sharedValueProducer;
     };
   };

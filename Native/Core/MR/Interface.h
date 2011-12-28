@@ -56,10 +56,12 @@ namespace Fabric
         Util::JSONArrayGenerator &resultJAG
         );
       
+      /*
       void jsonExecCreateArrayMap(
         RC::ConstHandle<JSON::Value> const &arg,
         Util::JSONArrayGenerator &resultJAG
         );
+      */
       
       void jsonExecCreateValueMap(
         RC::ConstHandle<JSON::Value> const &arg,
@@ -71,6 +73,7 @@ namespace Fabric
         Util::JSONArrayGenerator &resultJAG
         );
       
+      /*
       void jsonExecCreateArrayTransform(
         RC::ConstHandle<JSON::Value> const &arg,
         Util::JSONArrayGenerator &resultJAG
@@ -85,6 +88,7 @@ namespace Fabric
         RC::ConstHandle<JSON::Value> const &arg,
         Util::JSONArrayGenerator &resultJAG
         );
+      */
         
     private:
     

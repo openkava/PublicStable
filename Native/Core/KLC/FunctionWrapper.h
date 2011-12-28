@@ -2,8 +2,8 @@
  *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
  */
  
-#ifndef _FABRIC_KL_FUNCTION_H
-#define _FABRIC_KL_FUNCTION_H
+#ifndef _FABRIC_KLC_FUNCTION_WRAPPER_H
+#define _FABRIC_KLC_FUNCTION_WRAPPER_H
 
 #include <Fabric/Core/GC/Object.h>
 #include <Fabric/Core/KLC/GenericFunctionPtr.h>
@@ -32,17 +32,11 @@ namespace Fabric
   {
     class Executable;
     
-    class Function : public GC::Object
+    class FunctionWrapper : public GC::Object
     {
       FABRIC_GC_OBJECT_CLASS_DECL()
       
     public:
-    
-      static RC::Handle<Function> Create(
-        RC::ConstHandle<Executable> const &executable,
-        RC::ConstHandle<AST::Function> const &astFunction,
-        GenericFunctionPtr functionPtr
-        );
     
       RC::ConstHandle<AST::GlobalList> getAST() const;
       CG::Diagnostics const &getDiagnostics() const;
@@ -58,20 +52,15 @@ namespace Fabric
       
     protected:
     
-      Function(
+      FunctionWrapper(
         FABRIC_GC_OBJECT_CLASS_PARAM,
         RC::ConstHandle<Executable> const &executable,
         RC::ConstHandle<AST::Function> const &astFunction,
         GenericFunctionPtr functionPtr
         );
        
-      virtual char const *getKind() const;
+      virtual char const *getKind() const = 0;
       virtual void toJSONImpl( Util::JSONObjectGenerator &jog ) const;
-
-      GenericFunctionPtr getGenericFunctionPtr() const
-      {
-        return m_functionPtr;
-      }
    
     private:
     
@@ -92,4 +81,4 @@ namespace Fabric
   }
 }
 
-#endif //_FABRIC_KL_OPERATOR_H
+#endif //_FABRIC_KLC_FUNCTION_WRAPPER_H

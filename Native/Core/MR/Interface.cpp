@@ -3,20 +3,26 @@
  */
  
 #include <Fabric/Core/MR/Interface.h>
+/*
 #include <Fabric/Core/MR/ArrayGenerator.h>
 #include <Fabric/Core/MR/ArrayMap.h>
 #include <Fabric/Core/MR/ArrayTransform.h>
-#include <Fabric/Core/MR/ConstArray.h>
-#include <Fabric/Core/MR/ConstValue.h>
+*/
+#include <Fabric/Core/MR/ConstArrayWrapper.h>
+#include <Fabric/Core/MR/ConstValueWrapper.h>
+/*
 #include <Fabric/Core/MR/Reduce.h>
-#include <Fabric/Core/MR/ValueMap.h>
-#include <Fabric/Core/MR/ValueTransform.h>
+*/
+#include <Fabric/Core/MR/ValueMapWrapper.h>
+#include <Fabric/Core/MR/ValueTransformWrapper.h>
+/*
 #include <Fabric/Core/KLC/ArrayGeneratorOperator.h>
 #include <Fabric/Core/KLC/ArrayMapOperator.h>
 #include <Fabric/Core/KLC/ArrayTransformOperator.h>
 #include <Fabric/Core/KLC/ReduceOperator.h>
-#include <Fabric/Core/KLC/ValueMapOperator.h>
-#include <Fabric/Core/KLC/ValueTransformOperator.h>
+*/
+#include <Fabric/Core/KLC/ValueMapOperatorWrapper.h>
+#include <Fabric/Core/KLC/ValueTransformOperatorWrapper.h>
 #include <Fabric/Core/GC/Object.h>
 #include <Fabric/Core/RT/Manager.h>
 #include <Fabric/Core/Util/JSONGenerator.h>
@@ -62,19 +68,19 @@ namespace Fabric
     {
       if ( cmd == "createConstArray" )
         jsonExecCreateConstArray( arg, resultJAG );
-      else if ( cmd == "createArrayMap" )
+      else/* if ( cmd == "createArrayMap" )
         jsonExecCreateArrayMap( arg, resultJAG );
-      else if ( cmd == "createValueMap" )
+      else*/ if ( cmd == "createValueMap" )
         jsonExecCreateValueMap( arg, resultJAG );
       else if ( cmd == "createValueTransform" )
         jsonExecCreateValueTransform( arg, resultJAG );
-      else if ( cmd == "createArrayTransform" )
+      else /*if ( cmd == "createArrayTransform" )
         jsonExecCreateArrayTransform( arg, resultJAG );
       else if ( cmd == "createReduce" )
         jsonExecCreateReduce( arg, resultJAG );
       else if ( cmd == "createArrayGenerator" )
         jsonExecCreateArrayGenerator( arg, resultJAG );
-      else if ( cmd == "createConstValue" )
+      else*/ if ( cmd == "createConstValue" )
         jsonExecCreateConstValue( arg, resultJAG );
       else throw Exception( "unknown command: " + _(cmd) );
     }
@@ -133,14 +139,14 @@ namespace Fabric
       if ( !dataJSONArray )
         throw Exception("missing data");
       
-      RC::Handle<ConstArray> constArray = ConstArray::Create(
+      ConstArrayWrapper::Create(
         m_rtManager,
         elementTypeRTDesc,
         dataJSONArray
-        );
-      constArray->reg( m_gcContainer, id_ );
+        )->reg( m_gcContainer, id_ );
     }
     
+    /*
     void Interface::jsonExecCreateArrayMap(
       RC::ConstHandle<JSON::Value> const &arg,
       Util::JSONArrayGenerator &resultJAG
@@ -204,6 +210,7 @@ namespace Fabric
         sharedValueProducer
         )->reg( m_gcContainer, id_ );
     }
+    */
     
     void Interface::jsonExecCreateValueMap(
       RC::ConstHandle<JSON::Value> const &arg,
@@ -222,50 +229,50 @@ namespace Fabric
         throw "id: " + e;
       }
       
-      RC::Handle<ValueProducer> inputValueProducer;
+      RC::Handle<ValueProducerWrapper> inputWrapper;
       try
       {
-        inputValueProducer = GC::DynCast<ValueProducer>( m_gcContainer->getObject( argObject->get( "inputValueProducerID" )->toString()->value() ) );
-        if ( !inputValueProducer )
+        inputWrapper = GC::DynCast<ValueProducerWrapper>( m_gcContainer->getObject( argObject->get( "inputID" )->toString()->value() ) );
+        if ( !inputWrapper )
           throw "must be a value producer";
       }
       catch ( Exception e )
       {
-        throw "inputValueProducerID: " + e;
+        throw "inputID: " + e;
       }
       
-      RC::Handle<KLC::ValueMapOperator> valueMapOperator;
+      RC::Handle<KLC::ValueMapOperatorWrapper> operatorWrapper;
       try
       {
-        valueMapOperator = GC::DynCast<KLC::ValueMapOperator>( m_gcContainer->getObject( argObject->get( "valueMapOperatorID" )->toString()->value() ) );
-        if ( !valueMapOperator )
+        operatorWrapper = GC::DynCast<KLC::ValueMapOperatorWrapper>( m_gcContainer->getObject( argObject->get( "operatorID" )->toString()->value() ) );
+        if ( !operatorWrapper )
           throw "must be a value map operator";
       }
       catch ( Exception e )
       {
-        throw "valueMapOperatorID: " + e;
+        throw "operatorID: " + e;
       }
       
-      RC::Handle<ValueProducer> sharedValueProducer;
-      RC::ConstHandle<JSON::Value> sharedValueProducerIDValue = argObject->maybeGet( "sharedValueProducerID" );
-      if ( sharedValueProducerIDValue )
+      RC::Handle<ValueProducerWrapper> sharedWrapper;
+      RC::ConstHandle<JSON::Value> sharedIDValue = argObject->maybeGet( "sharedID" );
+      if ( sharedIDValue )
       {
         try
         {
-          sharedValueProducer = GC::DynCast<ValueProducer>( m_gcContainer->getObject( sharedValueProducerIDValue->toString()->value() ) );
-          if ( !sharedValueProducer )
+          sharedWrapper = GC::DynCast<ValueProducerWrapper>( m_gcContainer->getObject( sharedIDValue->toString()->value() ) );
+          if ( !sharedWrapper )
             throw "must be a value producer";
         }
         catch ( Exception e )
         {
-          throw "sharedValueProducerID: " + e;
+          throw "sharedID: " + e;
         }
       }
       
-      ValueMap::Create(
-        inputValueProducer,
-        valueMapOperator,
-        sharedValueProducer
+      ValueMapWrapper::Create(
+        inputWrapper,
+        operatorWrapper,
+        sharedWrapper
         )->reg( m_gcContainer, id_ );
     }
     
@@ -286,23 +293,23 @@ namespace Fabric
         throw "id: " + e;
       }
       
-      RC::Handle<ValueProducer> inputValueProducer;
+      RC::Handle<ValueProducerWrapper> inputWrapper;
       try
       {
-        inputValueProducer = GC::DynCast<ValueProducer>( m_gcContainer->getObject( argObject->get( "inputValueProducerID" )->toString()->value() ) );
-        if ( !inputValueProducer )
+        inputWrapper = GC::DynCast<ValueProducerWrapper>( m_gcContainer->getObject( argObject->get( "inputID" )->toString()->value() ) );
+        if ( !inputWrapper )
           throw "must be a value producer";
       }
       catch ( Exception e )
       {
-        throw "inputValueProducerID: " + e;
+        throw "inputID: " + e;
       }
       
-      RC::Handle<KLC::ValueTransformOperator> operator_;
+      RC::Handle<KLC::ValueTransformOperatorWrapper> operatorWrapper;
       try
       {
-        operator_ = GC::DynCast<KLC::ValueTransformOperator>( m_gcContainer->getObject( argObject->get( "operatorID" )->toString()->value() ) );
-        if ( !operator_ )
+        operatorWrapper = GC::DynCast<KLC::ValueTransformOperatorWrapper>( m_gcContainer->getObject( argObject->get( "operatorID" )->toString()->value() ) );
+        if ( !operatorWrapper )
           throw "must be a value transform operator";
       }
       catch ( Exception e )
@@ -310,29 +317,30 @@ namespace Fabric
         throw "operatorID: " + e;
       }
       
-      RC::Handle<ValueProducer> sharedValueProducer;
-      RC::ConstHandle<JSON::Value> sharedValueProducerIDValue = argObject->maybeGet( "sharedValueProducerID" );
-      if ( sharedValueProducerIDValue )
+      RC::Handle<ValueProducerWrapper> sharedWrapper;
+      RC::ConstHandle<JSON::Value> sharedIDValue = argObject->maybeGet( "sharedID" );
+      if ( sharedIDValue )
       {
         try
         {
-          sharedValueProducer = GC::DynCast<ValueProducer>( m_gcContainer->getObject( sharedValueProducerIDValue->toString()->value() ) );
-          if ( !sharedValueProducer )
+          sharedWrapper = GC::DynCast<ValueProducerWrapper>( m_gcContainer->getObject( sharedIDValue->toString()->value() ) );
+          if ( !sharedWrapper )
             throw "must be a value producer";
         }
         catch ( Exception e )
         {
-          throw "sharedValueProducerID: " + e;
+          throw "sharedID: " + e;
         }
       }
       
-      ValueTransform::Create(
-        inputValueProducer,
-        operator_,
-        sharedValueProducer
+      ValueTransformWrapper::Create(
+        inputWrapper,
+        operatorWrapper,
+        sharedWrapper
         )->reg( m_gcContainer, id_ );
     }
     
+    /*
     void Interface::jsonExecCreateArrayTransform(
       RC::ConstHandle<JSON::Value> const &arg,
       Util::JSONArrayGenerator &resultJAG
@@ -510,6 +518,7 @@ namespace Fabric
         );
       arrayGenerator->reg( m_gcContainer, id_ );
     }
+    */
     
     void Interface::jsonExecCreateConstValue(
       RC::ConstHandle<JSON::Value> const &arg,
@@ -548,12 +557,11 @@ namespace Fabric
         throw "data: " + e;
       }
       
-      RC::Handle<ConstValue> constValue = ConstValue::Create(
+      ConstValueWrapper::Create(
         m_rtManager,
         valueTypeRTDesc,
         dataJSONValue
-        );
-      constValue->reg( m_gcContainer, id_ );
+        )->reg( m_gcContainer, id_ );
     }
-  };
-};
+  }
+}
