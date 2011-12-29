@@ -757,6 +757,8 @@ FABRIC.SceneGraph.registerNodeType('SceneGraphNode', {
     var dgnodes = {};
     var eventnodes = {};
     var eventhandlernodes = {};
+    var memberInterfaces = {};
+    var nodeReferenceInterfaces = {};
     var nodeReferences = {};
 
     var capitalizeFirstLetter = function(str) {
@@ -790,63 +792,110 @@ FABRIC.SceneGraph.registerNodeType('SceneGraphNode', {
       },
       addMemberInterface : function(corenode, memberName, defineSetter) {
         var getterName = 'get' + capitalizeFirstLetter(memberName);
-        sceneGraphNode.pub[getterName] = function(sliceIndex){
+        var getterFn = function(sliceIndex){
           return corenode.getData(memberName, sliceIndex);
         }
+        sceneGraphNode.pub[getterName] = getterFn;
         if(defineSetter===true){
           var setterName = 'set' + capitalizeFirstLetter(memberName);
-          sceneGraphNode.pub[setterName] = function(value, sliceIndex){
+          var setterFn = function(value, sliceIndex){
+            var prevalue = corenode.getData(memberName, sliceIndex?sliceIndex:0);
             corenode.setData(memberName, sliceIndex?sliceIndex:0, value);
+            
+            scene.pub.fireEvent('valuechanged', {
+              sgnode: sceneGraphNode.pub,
+              newvalue: value,
+              prevalue: prevalue,
+              sliceIndex: sliceIndex,
+              getterFn: getterFn,
+              setterFn: setterFn
+            });
           }
+          sceneGraphNode.pub[setterName] = setterFn;
+          memberInterfaces[memberName] = { getterFn:getterFn, setterFn:setterFn };
         }
       },
       addReferenceInterface : function(referenceName, typeConstraint, setterCallback) {
         var getterName = 'get' + capitalizeFirstLetter(referenceName) + 'Node';
-        sceneGraphNode.pub[getterName] = function(){
+        var setterName = 'set' + capitalizeFirstLetter(referenceName) + 'Node';
+        var getterFn = function(){
           return nodeReferences[referenceName];
         }
-        var setterName = 'set' + capitalizeFirstLetter(referenceName) + 'Node';
-        sceneGraphNode.pub[setterName] = function(node, option){
+        var setterFn = function(node, option){
           if (node && !node.isTypeOf(typeConstraint)) {
             throw ('Incorrect type assignment. Must assign a '+typeConstraint);
           }
+          var prevnode = nodeReferences[referenceName];
           nodeReferences[referenceName] = node;
           setterCallback(node ? scene.getPrivateInterface(node) : undefined, option);
+          
+          scene.pub.fireEvent('referenceassigned', {
+            sgnode: sceneGraphNode.pub,
+            newnode: node,
+            prevnode: prevnode,
+            getterFn: getterFn,
+            setterFn: setterFn
+          });
           return sceneGraphNode.pub;
         }
+        sceneGraphNode.pub[getterName] = getterFn;
+        sceneGraphNode.pub[setterName] = setterFn;
+        nodeReferenceInterfaces[referenceName] = { getterFn:getterFn, setterFn:setterFn };
         return sceneGraphNode.pub[setterName];
       },
-      addReferenceListInterface : function(referenceName, typeConstraint, setterCallback) {
+      addReferenceListInterface : function(referenceName, typeConstraint, adderCallback, removeCallback) {
         nodeReferences[referenceName] = [];
         var getterName = 'get' + capitalizeFirstLetter(referenceName) + 'Node';
-        sceneGraphNode.pub[getterName] = function(index){
+        var adderName = 'add' + capitalizeFirstLetter(referenceName) + 'Node';
+        var removerName = 'remove' + capitalizeFirstLetter(referenceName) + 'Node';
+        var getterFn = function(index){
           return nodeReferences[referenceName][index ? index : 0];
         }
-        var setterName = 'set' + capitalizeFirstLetter(referenceName) + 'Node';
-        sceneGraphNode.pub[setterName] = function(node, index){
+        var adderFn = function(node){
           if (node && !node.isTypeOf(typeConstraint)) {
             throw ('Incorrect type assignment. Must assign a '+typeConstraint);
           }
-          nodeReferences[referenceName][index ? index : 0] = node;
-          setterCallback(node ? scene.getPrivateInterface(node) : undefined, index);
+          var index = nodeReferences[referenceName].indexOf(node);
+          if(index !== -1) return sceneGraphNode.pub;
+          nodeReferences[referenceName].push(node);
+          adderCallback(scene.getPrivateInterface(node));
+          
+          scene.pub.fireEvent('referenceadded', {
+            sgnode: sceneGraphNode.pub,
+            newnode: node,
+            getterFn: getterFn,
+            adderFn: adderFn,
+            removerFn: removerFn
+          });
           return sceneGraphNode.pub;
         }
-        var removerName = 'remove' + capitalizeFirstLetter(referenceName) + 'Node';
-        sceneGraphNode.pub[removerName] = function(val){
+        var removerFn = function(val){
           var index = -1;
           if(typeof val == 'number'){
             index = val;
           }else{
-            node = scene.getPrivateInterface(val);
-            index = materialNodes.indexOf(node);
+            node = val;
+            index = nodeReferences.indexOf(node);
           }
           if (index === -1) {
             throw ( typeConstraint + ' not assigned');
           }
-          sceneGraphNode.pub[setterName](undefined, index);
+          removeCallback(index);
           nodeReferences[referenceName].splice(index, 1);
+          
+          scene.pub.fireEvent('referenceremoved', {
+            sgnode: sceneGraphNode.pub,
+            prevnode: node,
+            getterFn: getterFn,
+            adderFn: adderFn,
+            removerFn: removerFn
+          });
           return sceneGraphNode.pub;
         }
+        sceneGraphNode.pub[getterName] = getterFn;
+        sceneGraphNode.pub[adderName] = adderFn;
+        sceneGraphNode.pub[removerName] = removerFn;
+        nodeReferenceInterfaces[referenceName] = { getterFn:getterFn, adderFn:adderFn, removerFn:removerFn };
         return sceneGraphNode.pub[setterName];
       },
       constructDGNode: function(dgnodename, isResourceLoad) {
@@ -879,17 +928,6 @@ FABRIC.SceneGraph.registerNodeType('SceneGraphNode', {
         sceneGraphNode['get' + ehname + 'EventHandler'] = function() {
           return eventhandlernode;
         };
-        sceneGraphNode['add' + ehname + 'Member'] = function(
-            memberName,
-            memberType,
-            defaultValue,
-            defineGetter,
-            defineSetter){
-          eventhandlernode.addMember(memberName, memberType, defaultValue);
-          if(defineGetter) {
-            sceneGraphNode.addMemberInterface(eventhandlernode, memberName, defineSetter);
-          }
-        };
         eventhandlernodes[ehname] = eventhandlernode;
         return eventhandlernode;
       },
@@ -899,34 +937,56 @@ FABRIC.SceneGraph.registerNodeType('SceneGraphNode', {
         eventnodes[eventname] = eventnode;
         return eventnode;
       },
-      
       addDependencies: function(sceneSerializer) {
+        for(var referenceName in nodeReferences){
+          if(typeof nodeReferences[referenceName] == 'object'){
+            sceneSerializer.addNode(nodeReferences[referenceName]);
+          }else if(typeof nodeReferences[referenceName] == 'array'){
+            for(var i=0; i<nodeReferences[referenceName].length; i++){
+              sceneSerializer.addNode(nodeReferences[referenceName]);
+            }
+          }
+        }
       },
       writeData: function(sceneSerializer, constructionOptions, nodeData) {
         constructionOptions.name = name;
-      },
-      writeDGNode: function( dgnode ){
-        var dgnodeData = {};
-        dgnodeData.members = dgnode.getMembers();
-        dgnodeData.sliceCount = dgnode.getCount();
-        dgnodeData.data = dgnode.getBulkData();
-        return dgnodeData;
-      },
-      readData: function(sceneDeserializer, nodeData) {
-      },
-      readDGNode: function( dgnode, dgnodeData ){
-        var members = dgnodeData.members;
-        var defaultMembers = dgnode.getMembers();
-        for(var memberName in members){
-          if(!defaultMembers[memberName]){
-            dgnode.addMember( memberName, members[memberName].type);
+        
+        for(var referenceName in nodeReferences){
+          if(typeof nodeReferences[referenceName] == 'object'){
+            nodeData[referenceName] =  nodeReferences[referenceName].getName();
+          }else if(typeof nodeReferences[referenceName] == 'array'){
+            nodeData[referenceName] =  [];
+            for(var i=0; i<nodeReferences[referenceName].length; i++){
+              nodeData[referenceName].push(nodeReferences[referenceName].getName());
+            }
           }
         }
-        if(dgnodeData.sliceCount){
-          dgnode.setCount(dgnodeData.sliceCount);
+        for(var memberName in memberInterfaces){
+          if(!nodeData[memberName]){
+            nodeData[memberName] = memberInterfaces.getterFn();
+          }
         }
-        if(dgnodeData.data){
-          dgnode.setBulkData(dgnodeData.data);
+      },
+      readData: function(sceneDeserializer, nodeData) {
+        for(var referenceName in nodeReferences){
+          if(typeof nodeData[referenceName] == 'string'){
+            var dgnode = sceneDeserializer.getNode(nodeData[referenceName]);
+            if(dgnode){
+              nodeReferenceInterfaces.setterFn(dgnode);
+            }
+          }else if(typeof nodeReferences[referenceName] == 'array'){
+            for(var i=0; i<nodeReferences[referenceName].length; i++){
+              var dgnode = sceneDeserializer.getNode(nodeData[referenceName][i]);
+              if(dgnode){
+                nodeReferenceInterfaces.adderFn(dgnode);
+              }
+            }
+          }
+        }
+        for(var memberName in memberInterfaces){
+          if(nodeData[memberName]){
+            memberInterfaces.setterFn(nodeData[memberName]);
+          }
         }
       }
     }
