@@ -83,9 +83,9 @@ FABRIC.SceneGraph.registerManagerType('SceneSerializer', {
       writeDGNodesData: function(sgnodeName, desc) {
         if(!storedDGNodes[sgnodeName]){
           storedDGNodes[sgnodeName] = {};
-        }
-        for(var dgnodeName in desc){
-          storedDGNodes[sgnodeName][dgnodeName] = desc[dgnodeName];
+          for(var dgnodeName in desc){
+            storedDGNodes[sgnodeName][dgnodeName] = desc[dgnodeName];
+          }
         }
       },
       getTypeRemapping: function(type){
@@ -175,10 +175,33 @@ FABRIC.SceneGraph.registerManagerType('SceneSerializer', {
               }
             }
             str += '\n    }';
+            if(i%100==0){
+              FABRIC.flush();
+            }
           }
           str += '\n  ]';
           str += '\n}';
           writer.write(str);
+          return true;
+        },
+        saveBinary: function(writer) {
+          this.serialize();
+          var binaryStorageNode;
+          if(writer.getBinaryStorageNode){
+            binaryStorageNode = scene.getPrivateInterface(writer.getBinaryStorageNode());
+          }
+          for (var i = 0; i < savedNodes.length; i++) {
+            var name = savedNodes[i].getName();
+            if(storedDGNodes[name]){
+              if(binaryStorageNode){
+                binaryStorageNode.storeDGNodes( name, storedDGNodes[name]);
+              }
+            }
+          //  if(i%100==0){
+          //    FABRIC.flush();
+          //  }
+          }
+          writer.writeBinary();
           return true;
         }
       }
@@ -209,11 +232,13 @@ FABRIC.SceneGraph.registerManagerType('SceneDeserializer', {
   },
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
-      preLoadScene: true
+      preLoadScene: false
     });
     
-    var dataObj;
+    // Preloading nodes enables data to be loaded into existing nodes.
+    // This is usefull when saving presets, rather then scenegraph descriptions.
     var preLoadedNodes = {};
+    var dataObj;
   
     var constructedNodeMap = {};
     var nodeNameRemapping = {};
@@ -292,6 +317,11 @@ FABRIC.SceneGraph.registerManagerType('SceneDeserializer', {
             nodePrivate.readData(sceneDeserializer, nodeData.data);
             constructedNodeMap[node.getName()] = node;
           }
+          if(loadNodeBinaryFileNode){
+            loadNodeBinaryFileNode.pub.addOnLoadSuccessCallback(function(){
+              loadNodeBinaryFileNode.disposeData();
+            });
+          }
           return constructedNodeMap;
         }
       }
@@ -344,15 +374,13 @@ FABRIC.SceneGraph.FileWriter = function(scene, title, suggestedFileName) {
   }
 };
 
-FABRIC.SceneGraph.FileWriterWithBinary = function(scene, title, suggestedFileName) {
+FABRIC.SceneGraph.FileWriterWithBinary = function(scene, title, suggestedFileName, options) {
   
   var path = scene.IO.queryUserFileAndFolderHandle(scene.IO.forOpenWithWriteAccess, title, "json", suggestedFileName);
   var jsonFilename = path.fileName.split('.')[0];
   var binarydatapath = scene.IO.queryUserFileAndFolderHandle(scene.IO.forOpenWithWriteAccess, "Secure ", "fez", jsonFilename);
   
-  var writeBinaryDataNode = scene.constructNode('WriteBinaryDataNode', {
-    secureKey: 'secureKey'
-  });
+  var writeBinaryDataNode = scene.constructNode('WriteBinaryDataNode', options);
       
   var str = "";
   this.getBinaryStorageNode = function(){
@@ -365,10 +393,19 @@ FABRIC.SceneGraph.FileWriterWithBinary = function(scene, title, suggestedFileNam
   
   this.write = function(instr) {
     str = instr;
-  //  console.log(str);
     scene.IO.putTextFile(str, path);
+    FABRIC.flush();
     writeBinaryDataNode.write('resource', binarydatapath);
   }
+  this.writeJSON = function(instr) {
+    str = instr;
+    scene.IO.putTextFile(str, path);
+  }
+  
+  this.writeBinary = function() {
+    writeBinaryDataNode.write('resource', binarydatapath);
+  }
+  
   this.log = function(instr) {
     console.log(str);
   }
@@ -444,6 +481,14 @@ FABRIC.SceneGraph.registerNodeType('LoadBinaryDataNode', {
     resourceloaddgnode.addMember('elements', 'SecureElement[]');
     resourceloaddgnode.addMember('secureKey', 'String', options.secureKey);
     
+    
+    loadBinaryDataNode.disposeData = function(){
+      // this frees up the memory used by the resource.
+    //  resourceloaddgnode.removeMember('resource');
+    //  resourceloaddgnode.removeMember('container');
+    //  resourceloaddgnode.removeMember('elements');
+    }
+    
     resourceloaddgnode.bindings.append(scene.constructOperator({
       operatorName: 'secureContainerLoad',
       parameterLayout: [
@@ -508,6 +553,7 @@ FABRIC.SceneGraph.registerNodeType('LoadBinaryDataNode', {
         dgnode.setDependency(binaryLoadMetadataDGNode,'metaData');
         dgnode.setDependency(resourceloaddgnode,'secureStorage');
         
+        var appendedOps = 0;
         // check if we need to resize this node
         if(dgnodeDataToc.sliceCount > 1) {
           
@@ -523,6 +569,7 @@ FABRIC.SceneGraph.registerNodeType('LoadBinaryDataNode', {
             srcFile: 'FABRIC_ROOT/SceneGraph/KL/loadSecure.kl',
             async: false
           }));
+          appendedOps++;
         }
         
         // check if the member exists
@@ -625,9 +672,18 @@ FABRIC.SceneGraph.registerNodeType('LoadBinaryDataNode', {
                 'metaData.'+dgnodeName+membername+'_first',
                 'metaData.'+dgnodeName+membername+'_last',
                 'self.'+membername+'<>'
-              ]
+              ],
+              async: false
             }));
+          appendedOps++;
         }
+        /*
+        dgnode.evaluate();
+        var numOps = dgnode.bindings.getLength();
+        for(var i=numOps-1; i>=numOps-appendedOps; i--){
+          dgnode.bindings.remove(i);
+        }
+        */
       }
     };
     
@@ -645,7 +701,7 @@ FABRIC.SceneGraph.registerNodeType('WriteBinaryDataNode', {
   },
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
-      compressionLevel: 9, // 0 - 9
+      compressionLevel: 1, // 0 - 9
       secureKey: undefined
     });
       
@@ -653,6 +709,7 @@ FABRIC.SceneGraph.registerNodeType('WriteBinaryDataNode', {
     
     var writeBinaryDataNodeEvent = writeBinaryDataNode.constructEventNode('WriteBinaryEvent');
     var binarydatadgnode = writeBinaryDataNode.constructResourceLoadNode('DGLoadNode');
+    var persistedNodes = {};
     var eventHandlers = {};
     
     writeBinaryDataNode.pub.write = function(resource, path){
@@ -716,6 +773,11 @@ FABRIC.SceneGraph.registerNodeType('WriteBinaryDataNode', {
     
     // methods to store nodes
     writeBinaryDataNode.storeDGNodes = function(sgnodeName, dgnodeDescs) {
+      if(persistedNodes[sgnodeName]){
+        console.log("Node already persisted");
+        return;
+      }
+      persistedNodes[sgnodeName] = dgnodeDescs;
       var writeDGNodesEventHandler = writeBinaryDataNode.constructEventHandlerNode('Write'+sgnodeName);
       writeEventHandler.appendChildEventHandler(writeDGNodesEventHandler);
       eventHandlers['Write'+sgnodeName] = writeDGNodesEventHandler;

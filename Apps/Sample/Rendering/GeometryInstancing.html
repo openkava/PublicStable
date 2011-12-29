@@ -110,15 +110,25 @@ $(document).ready(function() {
   var slicedTransform = scene.constructNode("Transform");
   slicedTransform.setGlobalXfo(instanceTransforms);
   
-  scene.constructNode('Instance', {
-    geometryNode: scene.importAssetFile('../BasicDemos/Models/cow.obj')['cow'],
-    materialNode: scene.constructNode('PhongInstancingExtMaterial', {
-      diffuseColor: FABRIC.RT.rgb255(139,69,19),
-      lightNode: light,
-      transformTextureNode: slicedTransform.getTransformTexture(false)
-    }),
-    constructDefaultTransformNode: false
+  
+  var resourceLoadNode = scene.importAssetFile('../BasicDemos/Models/cow.obj', {
+   splitMaterials: false
   });
+  resourceLoadNode.addEventListener('objparsesuccess', function(evt){
+     var geometry = evt.loadedGeometries[evt.objectNames[0]];
+     scene.constructNode('Instance', {
+       geometryNode: geometry,
+       materialNode: scene.constructNode('PhongInstancingExtMaterial', {
+         diffuseColor: FABRIC.RT.rgb255(139,69,19),
+         lightNode: light,
+         transformTextureNode: scene.constructNode('TransformTexture', {
+           transformNode: slicedTransform
+         })
+       }),
+       constructDefaultTransformNode: false
+     });
+   });
+
 
   /*
   //////////////////////////////////////

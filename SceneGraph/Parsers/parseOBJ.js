@@ -48,10 +48,13 @@ FABRIC.SceneGraph.registerNodeType('ObjResource', {
           'self.objectNames',
           'self.groupNames',
           'self.materialNames'
-        ]
+        ],
+        async: false
       }));
     
-    
+    // Note: this is a hack to work arround an issue in Chrome.
+    // we cannot make synchronous requests while asynch requests are in progress.
+    // so we pre-construct the operators here
     scene.constructOperator({
         operatorName: 'setVertexCount',
         srcFile: 'FABRIC_ROOT/SceneGraph/KL/loadObj.kl',
@@ -61,7 +64,8 @@ FABRIC.SceneGraph.registerNodeType('ObjResource', {
           'uniforms.entityIndex',
           'resource.reload',
           'self.newCount'
-        ]
+        ],
+        async: false
       });
     scene.constructOperator({
         operatorName: 'setObjGeom',
@@ -75,7 +79,8 @@ FABRIC.SceneGraph.registerNodeType('ObjResource', {
           'self.normals<>',
           'self.uvs0<>',
           'resource.reload'
-        ]
+        ],
+        async: false
       });
     
     resourceLoadNode.pub.addOnLoadSuccessCallback(function(){
@@ -98,12 +103,16 @@ FABRIC.SceneGraph.registerNodeType('ObjResource', {
       refCnt--;
       if(refCnt===0){
         resourceLoadNode.pub.addOnLoadSuccessCallback(function(){
-          // this frees up the memory used by the resource.
-          resourceloaddgnode.removeMember('resource');
-          resourceloaddgnode.removeMember('handle');
-          resourceloaddgnode.bindings.remove(0);
+          resourceLoadNode.disposeData();
         });
       }
+    }
+    
+    resourceLoadNode.disposeData = function(){
+      // this frees up the memory used by the resource.
+      resourceloaddgnode.removeMember('resource');
+      resourceloaddgnode.removeMember('handle');
+      resourceloaddgnode.bindings.remove(0);
     }
     
     var parentWriteData = resourceLoadNode.writeData;

@@ -505,6 +505,7 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
       
     dgnode.addMember('debug', 'Boolean', options.debug );
     dgnode.addMember('debugGeometry', 'DebugGeometry' );
+    dgnode.addMember('pose', 'Xfo[]');
     
     
     dgnode.bindings.append(scene.constructOperator({
@@ -527,7 +528,7 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
   
         // This member will store the computed pose.
         var referencePose = skeletonNode.pub.getReferencePose();
-        dgnode.addMember('pose', 'Xfo[]', referencePose);
+        dgnode.setData('pose', 0, referencePose);
       });
 
     characterRigNode.addReferenceInterface('Controller', 'CharacterController',
@@ -620,28 +621,6 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
       }
       return invertedVariablesNode.pub;
     };
-    //////////////////////////////////////////
-    characterRigNode.pub.addMember = function(name, type, value) {
-      dgnode.addMember(name, type, value);
-    };
-    characterRigNode.pub.getData = function(name, index) {
-      var xfo = dgnode.getData(name, 0);
-      if (index != undefined) {
-        xfo = xfo[index];
-      }
-      return xfo;
-    };
-    characterRigNode.pub.setData = function(name, value, index) {
-      var xfo;
-      if (index != undefined) {
-        xfo = dgnode.getData(name, 0);
-        xfo[index] = value;
-      }
-      else {
-        xfo = value;
-      }
-      dgnode.setData(name, 0, xfo);
-    }
     
     //////////////////////////////////////////
     // Persistence
@@ -846,3 +825,73 @@ FABRIC.SceneGraph.registerNodeType('CharacterInstance', {
     return characterInstanceNode;
   }});
 
+
+// The character instance draws a deformed mesh on screen.
+FABRIC.SceneGraph.registerNodeType('Attachment', {
+  briefDesc: '',
+  detailedDesc: '',
+  parentNodeDesc: 'Transform',
+  optionsDesc: {
+  },
+  factoryFn: function(options, scene) {
+    scene.assignDefaults(options, {
+      rigNode: undefined,
+      boneName: undefined
+    });
+
+    options.hierarchical = true;
+    var attachmentNode = scene.constructNode('Transform', options);
+    var dgnode = attachmentNode.getDGNode();
+    
+    
+    dgnode.addMember('localXfo', 'Xfo', options.localXfo);
+    dgnode.addMember('boneIndex', 'Size');
+    dgnode.bindings.append(scene.constructOperator( {
+        operatorName: 'calcIndexedGlobalXfo',
+        srcFile: 'FABRIC_ROOT/SceneGraph/KL/calcGlobalXfo.kl',
+        parameterLayout: [
+          'self.localXfo',
+          'characterrig.pose',
+          'self.boneIndex',
+          'self.globalXfo'
+        ],
+        entryFunctionName: 'calcIndexedGlobalXfo'
+      }));
+
+    transformNode.addMemberInterface(dgnode, 'localXfo', true, true);
+
+    // use a custom getter
+    transformNode.pub.setGlobalXfo = function(val) {
+      if (parentTransformNode) {
+        var parentXfo = parentTransformNode.getGlobalXfo();
+        val = val.multiply(parentXfo.inverse());
+        dgnode.setData('localXfo', val);
+      }
+      else {
+        dgnode.setData('globalXfo', val);
+      }
+    };
+    
+    characterInstanceNode.pub.setRigNode = function(node, boneName) {
+      if (!node.isTypeOf('CharacterRig')) {
+        throw ('Incorrect type assignment. Must assign a CharacterRig');
+      }
+      rigNode = scene.getPrivateInterface(node);
+      dgnode.setDependency(rigNode.getDGNode(), 'characterrig');
+      
+      var skeleton = rigNode.getSkeletonNode();
+      if(!skeleton){
+        throw " Skeleton not found :" + boneName;
+      }
+      var boneIndex = skeleton.getBoneIndex(boneName);
+      if(boneIndex < 0){
+        throw " Bone not found :" + boneName;
+      }
+      dgnode.setData('boneIndex', 0, boneIndex);
+      var pose = rigNode.pub.getPose();
+      // by setting the offset to the inverse of the bone global pose,
+      // the attachment will stay in place when bound.
+      dgnode.setData('localXfo', 0, pose[boneIndex].inverse());
+    };
+    return attachmentNode;
+  }});
