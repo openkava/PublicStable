@@ -1,0 +1,76 @@
+struct FabricFileStream {
+  Data m_data;
+};
+
+function FabricFileStream_Free( io FabricFileStream stream );
+function FabricFileStream_Open( io FabricFileStream stream, io FabricFileHandle file, io String mode );
+function FabricFileStream_CloseOnFullyRead( io FabricFileStream stream, in Boolean close );
+function Boolean FabricFileStream_IsValid( in FabricFileStream stream );
+function Size FabricFileStream_GetSize( in FabricFileStream stream );
+function Size FabricFileStream_GetSizeRead( in FabricFileStream stream );
+function Size FabricFileStream_GetSeek( in FabricFileStream stream );
+function FabricFileStream_SetSeek( in FabricFileStream stream, in Size seek );
+function FabricFileStream_WriteData( io FabricFileStream stream, io Data data, io Size size );
+function FabricFileStream_ReadData( io FabricFileStream stream, io Data data, io Size size );
+function FabricFileStream_WriteString( io FabricFileStream stream, io String string );
+function FabricFileStream_ReadString( io FabricFileStream stream, io String string );
+function FabricFileStream_WriteStringArray( io FabricFileStream stream, io String strings[] );
+function FabricFileStream_ReadStringArray( io FabricFileStream stream, io String strings[] );
+
+function ~FabricFileStream() = "FabricFileStream_Free";
+
+function FabricFileStream.open(io FabricFileHandle file, io String mode) {
+  FabricFileStream_Open(this,file,mode);
+}
+
+function FabricFileStream.close() {
+  FabricFileStream_Free(this);
+}
+
+function FabricFileStream.closeOnFullyRead(in Boolean close) {
+  FabricFileStream_CloseOnFullyRead(this,close);
+}
+
+function Boolean FabricFileStream.isValid(in FabricFileHandle file) {
+  return FabricFileStream_IsValid(this);
+}
+
+function Size FabricFileStream.getSize(in FabricFileHandle file) {
+  return FabricFileStream_GetSize(this);
+}
+
+function Size FabricFileStream.getSizeRead(in FabricFileHandle file) {
+  return FabricFileStream_GetSizeRead(this);
+}
+
+function Size FabricFileStream.getSeek(in FabricFileHandle file) {
+  return FabricFileStream_GetSeek(this);
+}
+
+function FabricFileStream.setSeek(in Size seek) {
+  FabricFileStream_SetSeek(this,seek);
+}
+
+function FabricFileStream.writeData(io Data data, io Size size) {
+  FabricFileStream_WriteData(this,data,size);
+}
+
+function FabricFileStream.readData(io Data data, io Size size) {
+  FabricFileStream_ReadData(this,data,size);
+}
+
+function FabricFileStream.writeString(io Data data, io String string) {
+  FabricFileStream_WriteString(this,string);
+}
+
+function FabricFileStream.readString(io Data data, io String string) {
+  FabricFileStream_ReadString(this,string);
+}
+
+function FabricFileStream.writeStringArray(io Data data, io String strings[]) {
+  FabricFileStream_WriteStringArray(this,string);
+}
+
+function FabricFileStream.readStringArray(io Data data, io String strings[]) {
+  FabricFileStream_ReadStringArray(this,string);
+}
