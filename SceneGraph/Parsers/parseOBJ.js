@@ -89,7 +89,11 @@ FABRIC.SceneGraph.registerNodeType('ObjResource', {
       }catch(e){
         console.warn(e);
       }
-      resourceLoadNode.pub.fireLoadSuccessEvent();
+      resourceLoadNode.pub.fireEvent('objloadsuccess', {
+        objectNames: resourceloaddgnode.getData('objectNames'),
+        groupNames: resourceloaddgnode.getData('groupNames'),
+        materialNames: resourceloaddgnode.getData('materialNames')
+      });
     });
     var refCnt = 0;
     resourceLoadNode.incrementRef = function(){
@@ -182,11 +186,11 @@ FABRIC.SceneGraph.registerNodeType('ObjTriangles', {
         ]
       }));
       if(options.removeParsersOnLoad){
-        resourceLoadNode.pub.addOnLoadSuccessCallback(function(){
+        var numOperators = attributesdgnode.bindings.getLength();
+        resourceLoadNode.pub.addEventListener('objparsesuccess', function(){
           attributesdgnode.evaluate();
           
           // TODO: Log an issue to enable removal of operators by object or name.
-          var numOperators = attributesdgnode.bindings.getLength();
           attributesdgnode.bindings.remove(numOperators-1);
           attributesdgnode.bindings.remove(numOperators-2);
           
