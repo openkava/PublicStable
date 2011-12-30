@@ -138,28 +138,37 @@ $(document).ready(function() {
 
   viewport.setCameraNode(camera);
 
-  var triangles = scene.importAssetFile('Models/cow.obj')['cow'];
+  var resourceLoadNode = scene.importAssetFile('Models/cow.obj');
+  resourceLoadNode.addEventListener('objparsesuccess', function(evt){
+    var objectName = evt.objectNames[0];
+    var triangles = evt.loadedGeometries[objectName];
+     
+    var twistedMesh = scene.constructNode('TwistedMesh', {
+      baseGeometryNode: triangles
+    });
   
-  var twistedMesh = scene.constructNode('TwistedMesh', { baseGeometryNode: triangles });
-
-  var material = scene.constructNode('PhongMaterial', {
+    var material = scene.constructNode('PhongMaterial', {
       diffuseColor: FABRIC.RT.rgb(0.8, 0, 0, 1),
       lightNode: light
     });
-
-  instanceNode = scene.constructNode('Instance', {
-    geometryNode: twistedMesh,
-    materialNode: material
-  });
-
-
-  $twistAmount.slider('value', twistedMesh.getTwist());
-  $twistAmount.bind('slide',
+  
+    instanceNode = scene.constructNode('Instance', {
+      geometryNode: twistedMesh,
+      materialNode: material
+    });
+     
+    $twistAmount.slider('value', twistedMesh.getTwist());
+    $twistAmount.bind('slide',
     function(event, ui) {
       twistedMesh.setTwist(ui.value);
       viewport.redraw();
       return true;
     });
+  
+   });
+
+
+
     
   $('#loadingDialog').dialog({
     modal: true

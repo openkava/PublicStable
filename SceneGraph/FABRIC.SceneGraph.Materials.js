@@ -405,6 +405,23 @@ FABRIC.SceneGraph.registerNodeType('Material', {
     var capitalizeFirstLetter = function(str) {
       return str[0].toUpperCase() + str.substr(1);
     };
+    
+    var parentAddDependencies = materialNode.addDependencies;
+    materialNode.addDependencies = function(sceneSerializer) {
+      parentAddDependencies(sceneSerializer);
+      for (var lightName in options.lights) {
+        if (materialNode.pub['get' + capitalizeFirstLetter(lightName) + 'Node']) {
+          var lightNode = materialNode.pub['get' + capitalizeFirstLetter(lightName) + 'Node']();
+          sceneSerializer.addNode(lightNode);
+        }
+      }
+      for (var textureName in options.textures) {
+        if (materialNode.pub['get' + capitalizeFirstLetter(textureName) + 'Node']) {
+          var textureNode = materialNode.pub['get' + capitalizeFirstLetter(textureName) + 'Node']();
+          sceneSerializer.addNode(textureNode);
+        }
+      }
+    };
     var parentWriteData = materialNode.writeData;
     var parentReadData = materialNode.readData;
     materialNode.writeData = function(sceneSerializer, constructionOptions, nodeData) {
@@ -419,7 +436,6 @@ FABRIC.SceneGraph.registerNodeType('Material', {
       for (var lightName in options.lights) {
         if (materialNode.pub['get' + capitalizeFirstLetter(lightName) + 'Node']) {
           var lightNode = materialNode.pub['get' + capitalizeFirstLetter(lightName) + 'Node']();
-          sceneSerializer.addNode(lightNode);
           nodeData.lights[lightName] = lightNode.getName();
         }
       }

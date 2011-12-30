@@ -118,7 +118,7 @@ $(document).ready(function() {
   var assetNodes = scene.importAssetFile('Models/envelope.dae');
   
   var rigNode = assetNodes.polymshCharacterRig;
-  var rigInstanceNode = assetNodes.polymshCharacterInstance;
+  var rigInstanceNode = assetNodes.geometries_0Scene_MaterialCharacterInstance;
 
   var materialNode = scene.constructNode('PhongSkinningMaterial', {
       lightNode: scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) }),
