@@ -5,7 +5,7 @@
   <!--
     Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
     -->
-    <title>FABRIC - Local Storage</title> 
+    <title>FABRIC - FileSystem</title> 
         
     <script type="text/javascript" src="../../../ThirdParty/jQuery/jquery-1.6.2.min.js"></script>
     <script type="text/javascript" src="../../../ThirdParty/jQuery/jquery-ui-1.8.16.custom.min.js"></script>
@@ -39,7 +39,6 @@
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Materials.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Manipulation.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Kinematics.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../../SceneGraph/FABRIC.SceneGraph.Storage.js" charset="utf-8"></script>
     <script type="text/javascript" src="../../../SceneGraph/Parsers/parseOBJ.js" charset="utf-8"></script>
     
 <script type="text/javascript">
@@ -69,6 +68,58 @@ s.parentNode.insertBefore(ga, s);
 </style>
 
 <script type="text/javascript">
+
+FABRIC.SceneGraph.registerNodeType('FileSystemNode', {
+  factoryFn: function(options, scene) {
+    scene.assignDefaults(options, {
+      baseFolder: undefined,
+      asciiFile: undefined,
+      objFile: undefined
+    });
+
+    var fsNode = scene.constructNode('SceneGraphNode', options);
+    var dgnode = fsNode.constructDGNode('DGNode');
+    dgnode.addMember('baseFolder','String', options.baseFolder);
+    dgnode.addMember('childFolders','String[]');
+    dgnode.addMember('childFiles','String[]');
+    
+    dgnode.bindings.append(scene.constructOperator({
+      operatorName: 'getFolderSubFolders',
+      srcFile: 'FABRIC_ROOT/SceneGraph/KL/fileSystem.kl',
+      parameterLayout: [
+        "self.baseFolder",
+        "self.childFolders"
+      ],
+      entryFunctionName: 'getFolderSubFolders',
+      async: false
+    }));
+    dgnode.bindings.append(scene.constructOperator({
+      operatorName: 'getFolderFiles',
+      srcFile: 'FABRIC_ROOT/SceneGraph/KL/fileSystem.kl',
+      parameterLayout: [
+        "self.baseFolder",
+        "self.childFiles"
+      ],
+      entryFunctionName: 'getFolderFiles',
+      async: false
+    }));
+    
+    fsNode.pub.getSubFolders = function(folder) {
+      if(folder)
+        dgnode.setData('baseFolder',0,folder);
+      dgnode.evaluate();
+      return dgnode.getData('childFolders',0)
+    }
+
+    fsNode.pub.getFiles= function(folder) {
+      if(folder)
+        dgnode.setData('baseFolder',0,folder);
+      dgnode.evaluate();
+      return dgnode.getData('childFiles',0)
+    }
+
+    return fsNode;
+  }});    
 
 $(document).ready(function() {
 
@@ -101,6 +152,7 @@ $(document).ready(function() {
     lightNode: light
   });
 
+  /*
   var resourceLoadNode = scene.importAssetFile('/development/Fabric/Web/Apps/Sample/BasicDemos/Models/cow.obj', {
     localPath: true
   });
@@ -117,10 +169,12 @@ $(document).ready(function() {
     }
   });
   resourceLoadNode.fireLoadSuccessEvent();
+  */
   
-  var localStorageNode = scene.constructNode('LocalStorageNode');
-  console.log(localStorageNode.getFilesInFolder('/yourfolder'));
-  console.log(localStorageNode.getFileTextContent('/yourfolder/yourtextfile.txt'));
+  var fsNode = scene.constructNode('FileSystemNode');
+  console.log(fsNode.getSubFolders('/home/helge'));
+  console.log(fsNode.getFiles('/home/helge'));
+  //console.log(localStorageNode.getFileTextContent('/yourfolder/yourtextfile.txt'));
   
   $('#loadingDialog').dialog({
     modal: true
@@ -165,7 +219,7 @@ $(document).ready(function() {
             <h2>INFO</h2>
             <div class="content">
               Local Storage.<br>
-              This very basic sample shows how to load and save local files using the so called LocalStorage node.
+              This very basic sample shows how to load and save local files using the so called FileSystem node.
               This node is only available on local deployments of Fabric Engine, not on the ones deployed in the
               world wide web.
             </div><!--content-->
