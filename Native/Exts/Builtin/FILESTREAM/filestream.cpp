@@ -131,8 +131,6 @@ FABRIC_EXT_EXPORT void FabricFileStream_SetSeek(
 {
   if(!FabricFileStream_IsValid(stream))
     return;
-  if(!stream.m_data->mReadable)
-    return;
   if(seek >= stream.m_data->mSize)
     return;
   fseek(stream.m_data->mFile,(long int)seek,SEEK_SET);
@@ -150,8 +148,9 @@ FABRIC_EXT_EXPORT void FabricFileStream_WriteData(
   if(!stream.m_data->mWriteable)
     return;
   fwrite(data,size,1,stream.m_data->mFile);
-  stream.m_data->mSize += size;
   stream.m_data->mSeek += size;
+  if(stream.m_data->mSeek > stream.m_data->mSize)
+    stream.m_data->mSize = stream.m_data->mSeek;
 }
 
 FABRIC_EXT_EXPORT void FabricFileStream_ReadData(
@@ -184,13 +183,15 @@ FABRIC_EXT_EXPORT void FabricFileStream_WriteString(
     return;
   size_t length = string.length();
   fwrite(&length,sizeof(size_t),1,stream.m_data->mFile);
-  stream.m_data->mSize += sizeof(size_t);
   stream.m_data->mSeek += sizeof(size_t);
+  if(stream.m_data->mSeek > stream.m_data->mSize)
+    stream.m_data->mSize = stream.m_data->mSeek;
   if(length > 0)
   {
     fwrite(string.data(),length,1,stream.m_data->mFile);
-    stream.m_data->mSize += length;
     stream.m_data->mSeek += length;
+    if(stream.m_data->mSeek > stream.m_data->mSize)
+      stream.m_data->mSize = stream.m_data->mSeek;
   }
 }
 
@@ -235,8 +236,9 @@ FABRIC_EXT_EXPORT void FabricFileStream_WriteStringArray(
     return;
   size_t count = strings.size();
   fwrite(&count,sizeof(size_t),1,stream.m_data->mFile);
-  stream.m_data->mSize += sizeof(size_t);
   stream.m_data->mSeek += sizeof(size_t);
+  if(stream.m_data->mSeek > stream.m_data->mSize)
+    stream.m_data->mSize = stream.m_data->mSeek;
   for(size_t i=0;i<count;i++)
     FabricFileStream_WriteString(stream,strings[i]);
 }
