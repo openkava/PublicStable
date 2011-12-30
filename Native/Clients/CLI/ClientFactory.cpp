@@ -20,6 +20,7 @@
 #include <Fabric/Core/OCL/OCL.h>
 #include <Fabric/Core/Plug/Manager.h>
 #include <Fabric/Core/Util/Log.h>
+#include <Fabric/EDK/Common.h>
 
 #include <v8/v8.h>
 #include <string>
@@ -255,7 +256,7 @@ namespace Fabric
 #endif
 
       RC::Handle<Client> client = Client::Create( dgContext );
-      Plug::Manager::Instance()->loadBuiltInPlugins( pluginPaths, dgContext->getCGManager() );
+      Plug::Manager::Instance()->loadBuiltInPlugins( pluginPaths, dgContext->getCGManager(), DG::Context::GetCallbackStruct() );
 
       v8::Persistent<v8::Object> v8ClientObject = v8::Persistent<v8::Object>::New( v8ClientObjectTemplate->NewInstance() );
       v8ClientObject->SetPointerInInternalField( 0, client.take() );

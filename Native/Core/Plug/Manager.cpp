@@ -43,7 +43,7 @@ namespace Fabric
 #endif      
     }
     
-    void Manager::loadBuiltInPlugins( std::vector<std::string> const &pluginDirs, RC::Handle<CG::Manager> const &cgManager )
+    void Manager::loadBuiltInPlugins( std::vector<std::string> const &pluginDirs, RC::Handle<CG::Manager> const &cgManager, EDK::Callbacks const &callbacks )
     {
       if ( !m_loaded )
       {
@@ -76,7 +76,7 @@ namespace Fabric
                 std::string fpmContents = pluginsDir->getFileContents( filename );
                 try
                 {
-                  registerPlugin( pluginsDir, extensionName, fpmContents, pluginDirs, cgManager );
+                  registerPlugin( pluginsDir, extensionName, fpmContents, pluginDirs, cgManager, callbacks );
                 }
                 catch ( Exception e )
                 {
@@ -114,7 +114,7 @@ namespace Fabric
       //  SOLibClose( m_fabricSDKSOLibHandle, m_fabricSDKSOLibResolvedName );
     }
     
-    RC::ConstHandle<Inst> Manager::registerPlugin( RC::ConstHandle<IO::Dir> const &extensionDir, std::string const &name, std::string const &jsonDesc, std::vector<std::string> const &pluginDirs, RC::Handle<CG::Manager> const &cgManager )
+    RC::ConstHandle<Inst> Manager::registerPlugin( RC::ConstHandle<IO::Dir> const &extensionDir, std::string const &name, std::string const &jsonDesc, std::vector<std::string> const &pluginDirs, RC::Handle<CG::Manager> const &cgManager, EDK::Callbacks const &callbacks )
     {
       RC::Handle<Inst> result;
       
@@ -126,7 +126,7 @@ namespace Fabric
       }
       else
       {
-        result = Inst::Create( extensionDir, name, jsonDesc, pluginDirs, cgManager, m_implNameToDestructorMap );
+        result = Inst::Create( extensionDir, name, jsonDesc, pluginDirs, cgManager, callbacks, m_implNameToDestructorMap );
         m_nameToInstMap.insert( NameToInstMap::value_type( name, result ) );
         FABRIC_LOG( "[%s] Extension registered", name.c_str() );
       }
