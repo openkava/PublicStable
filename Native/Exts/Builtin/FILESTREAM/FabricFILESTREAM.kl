@@ -51,6 +51,14 @@ function FabricFileStream.setSeek(in Size seek) {
   FabricFileStream_SetSeek(this,seek);
 }
 
+function FabricFileStream.setSeek(in Size seek) {
+  FabricFileStream_SetSeek(this,seek);
+}
+
+function FabricFileStream.setSeekEnd() {
+  FabricFileStream_SetSeek(this,FabricFileStream_GetSize(this));
+}
+
 function FabricFileStream.writeData(io Data data, io Size size) {
   FabricFileStream_WriteData(this,data,size);
 }
