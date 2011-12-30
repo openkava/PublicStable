@@ -1,0 +1,67 @@
+struct FabricFolderHandle {
+  Data m_data;
+};
+
+function FabricFolderHandle_Free( io FabricFolderHandle folder);
+function FabricFolderHandle_SetAbsolutePath( io FabricFolderHandle folder, io String path);
+function String FabricFolderHandle_GetAbsolutePath( in FabricFolderHandle folder);
+function String FabricFolderHandle_GetBaseName( in FabricFolderHandle folder);
+function Boolean FabricFolderHandle_IsValid( in FabricFolderHandle folder);
+function Boolean FabricFolderHandle_Exists( in FabricFolderHandle folder);
+function FabricFolderHandle FabricFolderHandle_GetParentFolder( in FabricFolderHandle folder);
+function FabricFolderHandle_GetSubFolders( io FabricFolderHandle folder, io FabricFolderHandle subfolders[]);
+function FabricFolderHandle_GetFiles( io FabricFolderHandle folder, io FabricFileHandle files[]);
+
+function FabricFileHandle_SetAbsolutePath( io FabricFileHandle file, io String path);
+function String FabricFileHandle_GetAbsolutePath( in FabricFileHandle file);
+function FabricFolderHandle FabricFileHandle_GetParentFolder( in FabricFileHandle file);
+function String FabricFileHandle_GetName( in FabricFileHandle file);
+function String FabricFileHandle_GetBaseName( in FabricFileHandle file);
+function String FabricFileHandle_GetExtension( in FabricFileHandle file);
+function String FabricFileHandle_GetExtensionLower( in FabricFileHandle file);
+function Boolean FabricFileHandle_IsValid( in FabricFileHandle file);
+function Boolean FabricFileHandle_Exists( in FabricFileHandle file);
+function Boolean FabricFileHandle_IsReadOnly( in FabricFileHandle file);
+function Size FabricFileHandle_GetSize( in FabricFileHandle file);
+
+function ~FabricFolderHandle() = "FabricFolderHandle_Free";
+
+function FabricFolderHandle.setAbsolutePath(io String path) {
+  FabricFolderHandle_SetAbsolutePath(this,path);
+}
+
+function String FabricFolderHandle.getAbsolutePath() {
+  return FabricFolderHandle_GetAbsolutePath(this);
+}
+
+function String FabricFolderHandle.getBasename() {
+  return FabricFolderHandle_GetBaseName(this);
+}
+
+function Boolean FabricFolderHandle.isValid() {
+  return FabricFolderHandle_IsValid(this);
+}
+
+function Boolean FabricFolderHandle.exists() {
+  return FabricFolderHandle_Exists(this);
+}
+
+function FabricFolderHandle FabricFolderHandle.getParentFolder() {
+  return FabricFolderHandle_GetParentFolder(this);
+}
+
+function FabricFolderHandle.getSubFolders(io FabricFolderHandle subfolders[]) {
+  FabricFolderHandle_GetSubFolders(this,subfolders);
+}
+
+function FabricFolderHandle.getFiles(io FabricFileHandle files[]) {
+  FabricFolderHandle_GetFiles(this,files);
+}
+
+function FabricFileHandle.setAbsolutePath(io String path) {
+  FabricFileHandle_SetAbsolutePath(this,path);
+}
+
+function String FabricFileHandle.getAbsolutePath() {
+  return FabricFileHandle_GetAbsolutePath(this);
+}
