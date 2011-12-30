@@ -4,6 +4,7 @@
  
 #include <Fabric/EDK/EDK.h>
 #include <Fabric/Base/RC/Object.h>
+#include <Fabric/Base/Util/Bits.h>
 
 #include <utility>
 #include <limits>
@@ -77,6 +78,9 @@ FABRIC_EXT_KL_STRUCT( SecureContainer, {
     // add a new element to the container
     void addElement(SecureElement & element, void * data, size_t size);
 
+    // Allocate more memory
+    void resizeBuffer(size_t newSize);
+
   protected:
     
     // get the offset inside the container based on an offset type
@@ -86,6 +90,7 @@ FABRIC_EXT_KL_STRUCT( SecureContainer, {
     bool mAllocated;
     char * mData;
     size_t mSize;
+    size_t mAllocatedSize;
   };
 
   LocalData * localData;
@@ -96,6 +101,7 @@ SecureContainer::LocalData::LocalData() {
   mAllocated = false;
   mData = NULL;
   mSize = 0;
+  mAllocatedSize = 0;
 }
 
 // encode based on compression level and encryption key
@@ -417,6 +423,7 @@ void SecureContainer::LocalData::addElement(SecureElement & element, void * data
   unsigned int nbElements = getNbElements();
   
   // compute the size to allocate
+  size_t oldSize = mSize;
   size_t newSize = mSize;
   if(mSize == 0)
     newSize = 8; // version + nbElements (2 x unsigned int)
@@ -429,66 +436,65 @@ void SecureContainer::LocalData::addElement(SecureElement & element, void * data
   newSize += 4 + size; //  (unsigned int) + n bytes
   
   // allocate a new buffer
-  char * newData = (char*)malloc(newSize);
-  if(mSize >= 0)
-  {
-    // if we had a buffer before, copy it
-    memcpy(newData,mData,mSize);
-    if(mAllocated)
-      free(mData);
-    mData = NULL;
-  }
+  resizeBuffer(newSize);
   
   // store the current fileformat version
-  ((unsigned int*)&newData[0])[0] = SECURECONTAINER_VERSION_CURRENT;
+  ((unsigned int*)&mData[0])[0] = SECURECONTAINER_VERSION_CURRENT;
   
   // store the number of elements + 1
-  ((unsigned int*)&newData[4])[0] = nbElements + 1;
+  ((unsigned int*)&mData[4])[0] = nbElements + 1;
   
   // get the offset for the new element
-  size_t offset = mSize == 0 ? 8 : mSize;
+  size_t offset = oldSize == 0 ? 8 : oldSize;
   
   // store the length of the element's name
-  ((unsigned int*)&newData[offset])[0] = element.name.length() + 1;
+  ((unsigned int*)&mData[offset])[0] = element.name.length() + 1;
   offset += 4;
   // store the element's name
-  memcpy(&newData[offset],element.name.data(),element.name.length());
+  memcpy(&mData[offset],element.name.data(),element.name.length());
   offset += element.name.length();
   // store a string end character
-  newData[offset] = '\0';
+  mData[offset] = '\0';
   offset += 1;
   // store the length of the element's type
-  ((unsigned int*)&newData[offset])[0] = element.type.length() + 1;
+  ((unsigned int*)&mData[offset])[0] = element.type.length() + 1;
   offset += 4;
   // store the element's type
-  memcpy(&newData[offset],element.type.data(),element.type.length());
+  memcpy(&mData[offset],element.type.data(),element.type.length());
   offset += element.type.length();
   // store a string end character
-  newData[offset] = '\0';
+  mData[offset] = '\0';
   offset += 1;
   // store the element's slicecount
-  ((unsigned int*)&newData[offset])[0] = (unsigned int)element.slicecount;
+  ((unsigned int*)&mData[offset])[0] = (unsigned int)element.slicecount;
   offset += 4;
   // store the element's sliceindex
-  ((unsigned int*)&newData[offset])[0] = (unsigned int)element.sliceindex;
+  ((unsigned int*)&mData[offset])[0] = (unsigned int)element.sliceindex;
   offset += 4;
   // store the element's datacount
-  ((unsigned int*)&newData[offset])[0] = (unsigned int)element.datacount;
+  ((unsigned int*)&mData[offset])[0] = (unsigned int)element.datacount;
   offset += 4;
   // store the element's version
-  ((unsigned int*)&newData[offset])[0] = (unsigned int)element.version;
+  ((unsigned int*)&mData[offset])[0] = (unsigned int)element.version;
   offset += 4;
   // store the element's data buffer size
-  ((unsigned int*)&newData[offset])[0] = size;
+  ((unsigned int*)&mData[offset])[0] = size;
   offset += 4;
   // store the element's data buffer
-  memcpy(&newData[offset],data,size);
-
-  // switch buffers
-  mData = newData;
-  mSize = newSize;
-  mAllocated = true;
+  memcpy(&mData[offset],data,size);
 }
+
+// Allocate more memory
+void SecureContainer::LocalData::resizeBuffer(size_t newSize) {
+  if(newSize > mAllocatedSize)
+  {
+    mAllocatedSize = std::max( size_t(15), Fabric::Util::nextPowerOfTwoMinusOne( newSize ) );
+    mData = (char*)realloc( mData, mAllocatedSize );
+    mAllocated = true;
+  }
+  mSize = newSize;
+}
+
 
 // deconstructor, deallocate if necessary
 SecureContainer::LocalData::~LocalData() {

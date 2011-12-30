@@ -92,7 +92,11 @@ namespace Fabric
     {
       if ( m_markForRefreshGeneration != generation )
       {
-        s_compiledObjectsMarkedForRefresh.insert( this );
+        {//Scope mutexLock
+          //[JCG 20111220 Container::setCount can happen in parallel and will call this function]
+          Util::Mutex::Lock mutexLock( s_markForRefreshMutex );
+          s_compiledObjectsMarkedForRefresh.insert( this );
+        }
         m_markForRefreshGeneration = generation;
         propagateMarkForRefreshImpl( generation );
       }
@@ -125,6 +129,7 @@ namespace Fabric
     unsigned CompiledObject::s_markForRecompileGlobalGeneration = 0;
     
     std::set< RC::Handle<CompiledObject> > CompiledObject::s_compiledObjectsMarkedForRefresh;
+    Util::Mutex CompiledObject::s_markForRefreshMutex( "DG::CompiledObject::MarkForRefresh" );
     unsigned CompiledObject::s_markForRefreshGlobalGeneration = 0;
     
     unsigned CompiledObject::s_collectTasksGlobalGeneration = 0;
