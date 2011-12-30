@@ -98,6 +98,15 @@ FABRIC_EXT_EXPORT KL::Boolean FabricFileStream_IsValid(
   return stream.m_data != NULL;
 }
 
+FABRIC_EXT_EXPORT KL::Boolean FabricFileStream_IsWritable(
+  FabricFileStream & stream
+)
+{
+  if(!FabricFileStream_IsValid(stream))
+    return false;
+  return stream.m_data->mWriteable;
+}
+
 FABRIC_EXT_EXPORT KL::Size FabricFileStream_GetSize(
   FabricFileStream & stream
 )
@@ -127,10 +136,12 @@ FABRIC_EXT_EXPORT KL::Size FabricFileStream_GetSeek(
 
 FABRIC_EXT_EXPORT void FabricFileStream_SetSeek(
   FabricFileStream & stream,
-  KL::Size & seek
+  KL::Size seek
 )
 {
   if(!FabricFileStream_IsValid(stream))
+    return;
+  if(seek == stream.m_data->mSeek)
     return;
   if(seek >= stream.m_data->mSize)
     return;
@@ -140,8 +151,8 @@ FABRIC_EXT_EXPORT void FabricFileStream_SetSeek(
 
 FABRIC_EXT_EXPORT void FabricFileStream_WriteData(
   FabricFileStream & stream,
-  KL::Data & data,
-  KL::Size & size
+  KL::Data data,
+  KL::Size size
 )
 {
   if(!FabricFileStream_IsValid(stream))
@@ -156,8 +167,8 @@ FABRIC_EXT_EXPORT void FabricFileStream_WriteData(
 
 FABRIC_EXT_EXPORT void FabricFileStream_ReadData(
   FabricFileStream & stream,
-  KL::Data & data,
-  KL::Size & size
+  KL::Data data,
+  KL::Size size
 )
 {
   if(!FabricFileStream_IsValid(stream))
@@ -264,7 +275,7 @@ FABRIC_EXT_EXPORT void FabricFileStream_ReadStringArray(
 
 FABRIC_EXT_EXPORT void FabricFileStream_WriteSize(
   FabricFileStream & stream,
-  KL::Size & size
+  KL::Size size
 )
 {
   if(!FabricFileStream_IsValid(stream))
