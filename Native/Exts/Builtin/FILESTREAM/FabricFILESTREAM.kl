@@ -16,6 +16,8 @@ function FabricFileStream_WriteString( io FabricFileStream stream, io String str
 function FabricFileStream_ReadString( io FabricFileStream stream, io String string );
 function FabricFileStream_WriteStringArray( io FabricFileStream stream, io String strings[] );
 function FabricFileStream_ReadStringArray( io FabricFileStream stream, io String strings[] );
+function FabricFileStream_WriteSize( io FabricFileStream stream, in Size size );
+function FabricFileStream_ReadSize( io FabricFileStream stream, io Size size );
 
 function ~FabricFileStream() = "FabricFileStream_Free";
 
@@ -81,4 +83,12 @@ function FabricFileStream.writeStringArray(io Data data, io String strings[]) {
 
 function FabricFileStream.readStringArray(io Data data, io String strings[]) {
   FabricFileStream_ReadStringArray(this,string);
+}
+
+function FabricFileStream.writeSize(io Data data, in Size size) {
+  FabricFileStream_WriteSize(this,size);
+}
+
+function FabricFileStream.readSize(io Data data, io Size size) {
+  FabricFileStream_ReadSize(this,size);
 }

@@ -3,6 +3,7 @@
  */
  
 #include "filestream.h"
+#include <stdint.h>
 
 using namespace Fabric::EDK;
 IMPLEMENT_FABRIC_EDK_ENTRIES
@@ -181,9 +182,9 @@ FABRIC_EXT_EXPORT void FabricFileStream_WriteString(
     return;
   if(!stream.m_data->mWriteable)
     return;
-  size_t length = string.length();
-  fwrite(&length,sizeof(size_t),1,stream.m_data->mFile);
-  stream.m_data->mSeek += sizeof(size_t);
+  uint32_t length = string.length();
+  fwrite(&length,sizeof(uint32_t),1,stream.m_data->mFile);
+  stream.m_data->mSeek += sizeof(uint32_t);
   if(stream.m_data->mSeek > stream.m_data->mSize)
     stream.m_data->mSize = stream.m_data->mSeek;
   if(length > 0)
@@ -204,10 +205,10 @@ FABRIC_EXT_EXPORT void FabricFileStream_ReadString(
     return;
   if(!stream.m_data->mReadable)
     return;
-  if(stream.m_data->mSeek + sizeof(size_t) > stream.m_data->mSize)
+  if(stream.m_data->mSeek + sizeof(uint32_t) > stream.m_data->mSize)
     return;
-  size_t length = 0;
-  size_t readSize = fread(&length,sizeof(size_t),1,stream.m_data->mFile);
+  uint32_t length = 0;
+  size_t readSize = fread(&length,sizeof(uint32_t),1,stream.m_data->mFile);
   stream.m_data->mSizeRead += readSize;
   stream.m_data->mSeek += readSize;
 
@@ -232,14 +233,12 @@ FABRIC_EXT_EXPORT void FabricFileStream_WriteStringArray(
 {
   if(!FabricFileStream_IsValid(stream))
     return;
-  if(!stream.m_data->mWriteable)
-    return;
-  size_t count = strings.size();
-  fwrite(&count,sizeof(size_t),1,stream.m_data->mFile);
-  stream.m_data->mSeek += sizeof(size_t);
+  uint32_t count = strings.size();
+  fwrite(&count,sizeof(uint32_t),1,stream.m_data->mFile);
+  stream.m_data->mSeek += sizeof(uint32_t);
   if(stream.m_data->mSeek > stream.m_data->mSize)
     stream.m_data->mSize = stream.m_data->mSeek;
-  for(size_t i=0;i<count;i++)
+  for(uint32_t i=0;i<count;i++)
     FabricFileStream_WriteString(stream,strings[i]);
 }
 
@@ -252,13 +251,49 @@ FABRIC_EXT_EXPORT void FabricFileStream_ReadStringArray(
     return;
   if(!stream.m_data->mReadable)
     return;
-  if(stream.m_data->mSeek + sizeof(size_t) > stream.m_data->mSize)
+  if(stream.m_data->mSeek + sizeof(uint32_t) > stream.m_data->mSize)
     return;
-  size_t count = 0;
-  size_t readSize = fread(&count,sizeof(size_t),1,stream.m_data->mFile);
+  uint32_t count = 0;
+  size_t readSize = fread(&count,sizeof(uint32_t),1,stream.m_data->mFile);
   stream.m_data->mSizeRead += readSize;
   stream.m_data->mSeek += readSize;
   strings.resize(count);
-  for(size_t i=0;i<count;i++)
+  for(uint32_t i=0;i<count;i++)
     FabricFileStream_ReadString(stream,strings[i]);
+}
+
+FABRIC_EXT_EXPORT void FabricFileStream_WriteSize(
+  FabricFileStream & stream,
+  KL::Size & size
+)
+{
+  if(!FabricFileStream_IsValid(stream))
+    return;
+  if(!stream.m_data->mWriteable)
+    return;
+  uint32_t value = size;
+  fwrite(&value,sizeof(uint32_t),1,stream.m_data->mFile);
+  stream.m_data->mSeek += sizeof(uint32_t);
+  if(stream.m_data->mSeek > stream.m_data->mSize)
+    stream.m_data->mSize = stream.m_data->mSeek;
+}
+
+FABRIC_EXT_EXPORT void FabricFileStream_ReadSize(
+  FabricFileStream & stream,
+  KL::Size & size
+)
+{
+  if(!FabricFileStream_IsValid(stream))
+    return;
+  if(!stream.m_data->mReadable)
+    return;
+  if(stream.m_data->mSeek + sizeof(uint32_t) > stream.m_data->mSize)
+    return;
+  uint32_t value = 0;
+  size_t readSize = fread(&value,sizeof(uint32_t),1,stream.m_data->mFile);
+  size = value;
+  stream.m_data->mSizeRead += readSize;
+  stream.m_data->mSeek += readSize;
+  if(stream.m_data->mCloseOnFullyRead && stream.m_data->mSizeRead >= stream.m_data->mSize)
+    FabricFileStream_Free(stream);
 }
