@@ -15,7 +15,7 @@ FABRIC.RT.KeyframeTrack.prototype = {
   setValue: function(time, value) {
     var numKeys = this.keys.length;
     if (numKeys == 0 || time > this.keys[numKeys - 1].time) {
-      this.keys.push(new this.newKey(time, value));
+      this.keys.push(this.newKey(time, value));
     }
     else {
       var keyIndex = -1;
