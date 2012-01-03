@@ -63,6 +63,15 @@ if(!FABRIC.RT.KeyframeTrack){
   throw("please include the SceneGraph/RT/KeyframeTrack.js file before this one.");
 }
 
+FABRIC.RT.BezierKeyframeTrack = function(name, color, keys) {
+  this.name = name ? name : "bezierAnimationTrack";
+  this.color = color ? color : FABRIC.RT.rgb(1.0, 0.0, 0.0);
+  this.keys = keys ? keys : [];
+  this.newKey = FABRIC.RT.bezierKeyframe;
+};
+
+FABRIC.RT.BezierKeyframeTrack.prototype = FABRIC.RT.KeyframeTrack.prototype;
+
 FABRIC.appendOnCreateContextCallback(function(context) {
   context.RegisteredTypesManager.registerType('BezierKeyframeTrack', {
     members: {
@@ -70,7 +79,7 @@ FABRIC.appendOnCreateContextCallback(function(context) {
       color: 'Color',
       keys: 'BezierKeyframe[]'
     },
-    constructor: FABRIC.RT.KeyframeTrack,
+    constructor: FABRIC.RT.BezierKeyframeTrack,
     klBindings: {
       filename: 'FABRIC_ROOT/SceneGraph/RT/KeyframeTrack.kl',
       sourceCode: FABRIC.preProcessCode(
@@ -83,6 +92,18 @@ FABRIC.appendOnCreateContextCallback(function(context) {
   });
 });
 
+FABRIC.RT.BezierKeyframeTrackSet = function(name) {
+  this.name = name ? name : 'bezierAnimationTrackSet';
+  this.timeRange = new FABRIC.RT.Vec2(0,0);
+  this.tracks = [];
+  this.newTrack = function(name, color, keys) {
+    return new FABRIC.RT.BezierKeyframeTrack(name, color, keys);
+  };
+};
+
+FABRIC.RT.BezierKeyframeTrackSet.prototype = FABRIC.RT.KeyframeTrackSet.prototype;
+
+
 FABRIC.appendOnCreateContextCallback(function(context) {
   context.RegisteredTypesManager.registerType('BezierKeyframeTrackSet', {
     members: {
@@ -90,7 +111,7 @@ FABRIC.appendOnCreateContextCallback(function(context) {
       timeRange: 'Vec2',
       tracks: 'BezierKeyframeTrack[]'
     },
-    constructor: FABRIC.RT.KeyframeTrackSet,
+    constructor: FABRIC.RT.BezierKeyframeTrackSet,
     klBindings: {
       filename: 'FABRIC_ROOT/SceneGraph/RT/KeyframeTrack.kl',
       sourceCode: FABRIC.preProcessCode(
