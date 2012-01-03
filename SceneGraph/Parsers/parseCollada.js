@@ -526,10 +526,6 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
         }
         case 'matrix':
           nodeData.xfo.setFromMat44(parseMatrix(child));
-          if(nodeData.xfo.sc.length() > 1.01 && options.logWarnings){
-            console.warn("collada file contains non uniform scaling in its matrices.");
-          }
-          nodeData.xfo.sc.set(1,1,1);
           break;
         case 'instance_geometry':
           nodeData.instance_geometry = parseInstanceGeometry(child);
@@ -992,6 +988,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
     
     // recurse on the hierarchy
     var boneIndicesMap = {};
+    var globalXfos = [];
     var bones = [];
     var traverseChildren = function(nodeData, parentName) {
       var boneOptions = { name: nodeData.name, parent: -1, length: 0 };
@@ -1002,11 +999,11 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
       boneOptions.referenceLocalPose = nodeData.xfo;
       if (boneOptions.parent !== -1) {
         boneOptions.referencePose = bones[boneOptions.parent].referencePose.multiply(nodeData.xfo);
-
+        
         // set the length of the parent bone based on the child bone local offset.
-        if(nodeData.xfo.tr.x > (Math.abs(nodeData.xfo.tr.y) + Math.abs(nodeData.xfo.tr.z)) &&
-          nodeData.xfo.tr.x > bones[boneOptions.parent].length) {
-          bones[boneOptions.parent].length = nodeData.xfo.tr.x;
+        if(Math.abs(nodeData.xfo.tr.x) > (Math.abs(nodeData.xfo.tr.y) + Math.abs(nodeData.xfo.tr.z)) &&
+           Math.abs(nodeData.xfo.tr.x) > Math.abs(bones[boneOptions.parent].length)) {
+          bones[boneOptions.parent].length = nodeData.xfo.tr.x;// * bones[boneOptions.parent].referencePose.sc.x;
         }
       }
       else {
@@ -1029,7 +1026,7 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
         // shorten the bone till it touches the floor.
         var downVec = new FABRIC.RT.Vec3(0, -1, 0);
         var boneVec = bones[i].referencePose.ori.rotateVector(new FABRIC.RT.Vec3(bones[i].length, 0, 0));
-        if(boneVec.dot(downVec) > bones[i].referencePose.tr.y){
+        if(bones[i].referencePose.tr.y > 0 && boneVec.dot(downVec) > bones[i].referencePose.tr.y){
           bones[i].length *= bones[i].referencePose.tr.y / boneVec.dot(downVec);
         }
       }
