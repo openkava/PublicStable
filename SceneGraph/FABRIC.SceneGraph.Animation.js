@@ -112,9 +112,9 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
     animationLibraryNode.pub.getTrackSetName = function(trackSetId) {
       return dgnode.getData('trackSet', trackSetId).name;
     };
-    animationLibraryNode.pub.setValues = function(trackSetId, trackIds, time, values) {
+    animationLibraryNode.pub.setValues = function(trackSetId, time, trackIds, values) {
       var trackSet = this.getTrackSet(trackSetId);
-      trackSetId.setValues(trackIds, time, values);
+      trackSet.setValues(time, trackIds, values);
       this.setTrackSet(trackSet, trackSetId);
     };
     
@@ -516,6 +516,9 @@ FABRIC.SceneGraph.registerNodeType('AnimationController', {
     animationControllerNode.addMemberInterface(dgnode, 'timeRange', true);
 
     // extend public interface
+    animationControllerNode.pub.getTime = function(time) {
+      return dgnode.getData('localTime');
+    };
     animationControllerNode.pub.setTime = function(time) {
       dgnode.setData('localTime', 0, time);
     };

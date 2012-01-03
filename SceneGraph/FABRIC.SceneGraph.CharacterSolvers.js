@@ -1257,6 +1257,23 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('HumanoidLegSolver', {
         'self.debugGeometry'
       ]
     });
+    
+    solver.generateTracks = function(trackSet, trackBindings){
+      for(j=0; j<legs.length; j++){
+        var color = FABRIC.RT.rgb(1, 0, 0);
+        var storeEulerAngles = false;
+        
+        trackSet.addXfoTrack(solver.getName()+j+'IKGoal', color, storeEulerAngles, trackBindings, legs[j].ikGoalXfoId);
+        for(i=0; i<legs[j].xfoIds.length; i++){
+          if(legs[j].ankleId > 0 && i==legs[j].xfoIds.length-1){
+            trackSet.addXfoTrack(solver.getName()+j+'Ankle', color, storeEulerAngles, trackBindings, legs[j].xfoIds[i]);
+          }else{
+            trackSet.addXfoTrack(solver.getName()+j+'Bone'+i, color, storeEulerAngles, trackBindings, legs[j].xfoIds[i]);
+          }
+        }
+        trackSet.addXfoTrack(solver.getName()+j+'IKBlend', color, storeEulerAngles, trackBindings, legs[j].ikblendId);
+      }
+    }
  
     solver.invert = function(variablesNode){
       variablesNode.getDGNode().bindings.append(scene.constructOperator({

@@ -31,9 +31,6 @@ FABRIC.RT.LinearKeyframe.prototype = {
  * @param {number} time The time of the keyframe.
  * @return {object} The linear key frame object.
  */
-FABRIC.RT.linearKeyframe = function(value, time) {
-  return new FABRIC.RT.LinearKeyframe(value, time);
-};
 
 FABRIC.appendOnCreateContextCallback(function(context) {
   context.RegisteredTypesManager.registerType('LinearKeyframe', {

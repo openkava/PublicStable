@@ -375,6 +375,7 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
     }
     var boundToAnimationTracks = false;
     var m_animationLibraryNode;
+    var m_animationControllerNode;
     var m_trackSetId;
     var m_keyframeTrackBindings;
     characterVariablesNode.pub.bindToAnimationTracks = function(animationLibraryNode, animationControllerNode, trackSetId, keyframeTrackBindings){
@@ -397,6 +398,7 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
       dgnode.addMember('trackSetId', 'Integer', trackSetId);
       characterVariablesNode.setBindings(keyframeTrackBindings);
       m_animationLibraryNode = animationLibraryNode;
+      m_animationControllerNode = animationControllerNode;
       m_keyframeTrackBindings = keyframeTrackBindings;
       m_trackSetId = trackSetId;
       
@@ -424,9 +426,9 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
     
     
     characterVariablesNode.setValue = function(value, index) {
-      var type = (typeof val == 'number') ? 'Number' : val.getType();
+      var type = (typeof value == 'number') ? 'Number' : value.getType();
       if(!boundToAnimationTracks){
-        var poseVariables = characterVariablesNode.pub.getVariables();
+        var poseVariables = characterVariablesNode.getVariables();
         switch(type){
         case 'Number':
           poseVariables.scalarValues[index] = value;
@@ -443,7 +445,7 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
         default:
           throw 'Unhandled type:' + val;
         }
-        characterVariablesNode.pub.setVariables(poseVariables);
+        characterVariablesNode.setVariables(poseVariables);
       }
       else{
         var findBinding = function(bindingsList){
@@ -461,11 +463,11 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
           values = [value];
           break;
         case 'FABRIC.RT.Vec3':
-          binding = findBinding(m_keyframeTrackBindings.scalarBindings);
+          binding = findBinding(m_keyframeTrackBindings.vec3Bindings);
           values = [value.x, value.y, value.z];
           break;
         case 'FABRIC.RT.Quat':
-          binding = findBinding(m_keyframeTrackBindings.scalarBindings);
+          binding = findBinding(m_keyframeTrackBindings.quatBindings);
           if(binding.trackIds.length == 3){
             var euler = new FABRIC.RT.Euler();
             euler.setFromQuat(value);
@@ -475,19 +477,19 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
           }
           break;
         case 'FABRIC.RT.Xfo':
-          binding = findBinding(m_keyframeTrackBindings.scalarBindings);
+          binding = findBinding(m_keyframeTrackBindings.xfoBindings);
           if(binding.trackIds.length == 6){
             var euler = new FABRIC.RT.Euler();
             euler.setFromQuat(value.ori);
             values = [value.tr.x, value.tr.y, value.tr.z, euler.x, euler.y, euler.z];
           }else if(binding.trackIds.length == 7){
-            values = [value.tr.x, value.tr.y, value.tr.z, value.w, value.x, value.y, value.z];
+            values = [value.tr.x, value.tr.y, value.tr.z, value.ori.v.x, value.ori.v.y, value.ori.v.z, value.ori.w];
           }
           break;
         default:
           throw 'Unhandled type:' + val;
         }
-        m_animationLibraryNode.setVaues(m_trackSetId, binding, values);
+        m_animationLibraryNode.pub.setValues(m_trackSetId, m_animationControllerNode.pub.getTime(), binding.trackIds, values);
       }
     }
     
@@ -1128,9 +1130,7 @@ FABRIC.SceneGraph.registerNodeType('CharacterManipulator', {
       return variablesNode.getVariables().xfoValues[xfoIndex];
     }
     manipulatorNode.setTargetXfo = function(xfo) {
-      var poseVariables = variablesNode.getVariables();
-      poseVariables.xfoValues[xfoIndex] = xfo;
-      variablesNode.setVariables(poseVariables);
+      variablesNode.setValue(xfo, xfoIndex);
     }
     manipulatorNode.setTargetOri = function(ori) {
       var xfo = this.getTargetXfo();

@@ -672,6 +672,7 @@ FABRIC.SceneGraph = {
           if( onAdvanceCallback){
             onAdvanceCallback.call();
           }
+          scene.pub.fireEvent('timechanged', { time: time, playing: isPlaying });
           if(redraw !== false){
             scene.pub.redrawAllViewports(true);
           }
@@ -709,10 +710,9 @@ FABRIC.SceneGraph = {
           getTimeStep:function() {
             return sceneOptions.timeStep;
           },
-          play: function(callback) {
+          play: function() {
             prevTime = (new Date).getTime();
             isPlaying = true;
-            onAdvanceCallback = callback;
             // Note: this is a big ugly hack to work arround the fact that
             // we have zero or more windows. What happens when we have
             // multiple viewports? Should the 'play' controls be moved to
@@ -720,9 +720,6 @@ FABRIC.SceneGraph = {
               prevTime = (new Date).getTime();
               scene.getContext().VP.viewPort.setRedrawFinishedCallback(advanceTime);
               scene.getContext().VP.viewPort.needsRedraw();
-          },
-          isPlaying: function(){
-            return isPlaying;
           },
           pause: function() {
             isPlaying = false;
@@ -737,7 +734,9 @@ FABRIC.SceneGraph = {
             advanceTime();
           }
         };
-
+        scene.isPlaying = function(){
+          return isPlaying;
+        }
       }
     }
 
@@ -1236,7 +1235,7 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
       if(!visible){
         return;
       }
-      if(scene.pub.animation.isPlaying()){
+      if(scene.isPlaying()){
         if(force)
           fabricwindow.needsRedraw();
       }else{

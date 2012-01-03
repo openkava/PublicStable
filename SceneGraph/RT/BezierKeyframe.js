@@ -41,9 +41,6 @@ FABRIC.RT.BezierKeyframe.prototype = {
  * @param {number} outtan The output tangent of the keyframe.
  * @return {object} The bezier key frame object.
  */
-FABRIC.RT.bezierKeyframe = function(value, time, intan, outtan) {
-  return new FABRIC.RT.BezierKeyframe(value, time, intan, outtan);
-};
 
 FABRIC.appendOnCreateContextCallback(function(context) {
   context.RegisteredTypesManager.registerType('BezierKeyframe', {
@@ -67,10 +64,14 @@ FABRIC.RT.BezierKeyframeTrack = function(name, color, keys) {
   this.name = name ? name : "bezierAnimationTrack";
   this.color = color ? color : FABRIC.RT.rgb(1.0, 0.0, 0.0);
   this.keys = keys ? keys : [];
-  this.newKey = FABRIC.RT.bezierKeyframe;
 };
 
-FABRIC.RT.BezierKeyframeTrack.prototype = FABRIC.RT.KeyframeTrack.prototype;
+FABRIC.RT.BezierKeyframeTrack.prototype = {
+  __proto__: FABRIC.RT.KeyframeTrack.prototype,
+  newKey: function(value, time, intan, outtan) {
+    return new FABRIC.RT.BezierKeyframe(value, time, intan, outtan);
+  }
+}
 
 FABRIC.appendOnCreateContextCallback(function(context) {
   context.RegisteredTypesManager.registerType('BezierKeyframeTrack', {
@@ -96,12 +97,14 @@ FABRIC.RT.BezierKeyframeTrackSet = function(name) {
   this.name = name ? name : 'bezierAnimationTrackSet';
   this.timeRange = new FABRIC.RT.Vec2(0,0);
   this.tracks = [];
-  this.newTrack = function(name, color, keys) {
-    return new FABRIC.RT.BezierKeyframeTrack(name, color, keys);
-  };
 };
 
-FABRIC.RT.BezierKeyframeTrackSet.prototype = FABRIC.RT.KeyframeTrackSet.prototype;
+FABRIC.RT.BezierKeyframeTrackSet.prototype = {
+  __proto__: FABRIC.RT.KeyframeTrackSet.prototype,
+  newTrack: function(name, color, keys) {
+    return new FABRIC.RT.BezierKeyframeTrack(name, color, keys);
+  }
+}
 
 
 FABRIC.appendOnCreateContextCallback(function(context) {

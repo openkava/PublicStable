@@ -963,19 +963,12 @@ $(document).ready(function() {
       }
     })
     .click(function() {
-      if(!resourceLoadNode)
-        return;
-      var options;
       if ($(this).text() == 'Play') {
         $(this).button('option', {
           label: 'Pause',
           icons: {
             primary: 'ui-icon-pause'
           }
-        });
-        var localTime = $('#localtime').slider();
-        scene.animation.play( function() {
-          localTime.slider('value', resourceLoadNode.getAnimationController().getLocalTime());
         });
       } else {
         $(this).button('option', {
@@ -987,6 +980,11 @@ $(document).ready(function() {
         scene.animation.pause();
       }
     });
+  scene.addEventListener('timechanged', function(evt){
+    if(evt.playing){
+      $('#localtime').slider().slider('value', scene.animation.getTime());
+    }
+  })
 
   $('#brushColor').ColorPicker({
       flat: true,
