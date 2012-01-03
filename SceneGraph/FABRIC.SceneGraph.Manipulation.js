@@ -453,8 +453,7 @@ FABRIC.SceneGraph.registerNodeType('Manipulator', {
       manipulating = false,
       material = manipulatorNode.pub.getMaterialNode(),
       highlightColor = options.highlightcolor;
-      
-      
+    
     if(!material){
       material = scene.pub.constructNode('FlatMaterial', {
         color: options.color,
@@ -587,7 +586,7 @@ FABRIC.SceneGraph.registerNodeType('XfoManipulator', {
           node: targetNode,
           member: targetMember,
           value: manipulatorNode.getTargetXfoCached().clone(),
-          prevValue: prevXfo.clone(),
+          prevValue: prevXfo.clone()
         });  
       });
     }
@@ -879,13 +878,14 @@ FABRIC.SceneGraph.registerNodeType('ScreenTranslationManipulator', {
     scene.assignDefaults(options, {
         radius: 0.5,
         name: 'ScreenTranslationManipulator',
-        drawOverlaid: true
+        drawOverlaid: true,
+        baseManipulatorType: 'XfoManipulator'
       });
 
     if (!options.geometryNode) {
       options.geometryNode = scene.pub.constructNode('Sphere', { radius: options.radius, detail: 8.0 });
     }
-    var manipulatorNode = scene.constructNode('XfoManipulator', options);
+    var manipulatorNode = scene.constructNode(options.baseManipulatorType, options);
 
     var viewportNode;
     var dragStartXFo, vec1, ray1, ray2, planePoint, planeNormal, hitPoint1, hitPoint2;

@@ -52,6 +52,16 @@ if(!FABRIC.RT.KeyframeTrack){
   throw("please include the SceneGraph/RT/KeyframeTrack.js file before this one.");
 }
 
+FABRIC.RT.LinearKeyframeTrack = function(name, color, keys) {
+  this.name = name ? name : "linearAnimationTrack";
+  this.color = color ? color : FABRIC.RT.rgb(1.0, 0.0, 0.0);
+  this.keys = keys ? keys : [];
+  this.newKey = FABRIC.RT.linearKeyframe;
+};
+
+FABRIC.RT.LinearKeyframeTrack.prototype = FABRIC.RT.KeyframeTrack.prototype;
+
+
 FABRIC.appendOnCreateContextCallback(function(context) {
   context.RegisteredTypesManager.registerType('LinearKeyframeTrack', {
     members: {
@@ -59,7 +69,7 @@ FABRIC.appendOnCreateContextCallback(function(context) {
       color: 'Color',
       keys: 'LinearKeyframe[]'
     },
-    constructor: FABRIC.RT.KeyframeTrack,
+    constructor: FABRIC.RT.LinearKeyframeTrack,
     klBindings: {
       filename: 'FABRIC_ROOT/SceneGraph/RT/KeyframeTrack.kl',
       sourceCode: FABRIC.preProcessCode(
@@ -72,6 +82,19 @@ FABRIC.appendOnCreateContextCallback(function(context) {
   });
 });
 
+
+FABRIC.RT.LinearKeyframeTrackSet = function(name) {
+  this.name = name ? name : 'linearAnimationTrackSet';
+  this.timeRange = new FABRIC.RT.Vec2(0,0);
+  this.tracks = [];
+  this.newTrack = function(name, color, keys) {
+    return new FABRIC.RT.LinearKeyframeTrack(name, color, keys);
+  };
+};
+
+FABRIC.RT.LinearKeyframeTrackSet.prototype = FABRIC.RT.KeyframeTrackSet.prototype;
+
+
 FABRIC.appendOnCreateContextCallback(function(context) {
   context.RegisteredTypesManager.registerType('LinearKeyframeTrackSet', {
     members: {
@@ -79,7 +102,7 @@ FABRIC.appendOnCreateContextCallback(function(context) {
       timeRange: 'Vec2',
       tracks: 'LinearKeyframeTrack[]'
     },
-    constructor: FABRIC.RT.KeyframeTrackSet,
+    constructor: FABRIC.RT.LinearKeyframeTrackSet,
     klBindings: {
       filename: 'FABRIC_ROOT/SceneGraph/RT/KeyframeTrack.kl',
       sourceCode: FABRIC.preProcessCode(

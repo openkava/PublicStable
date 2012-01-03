@@ -1356,8 +1356,15 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('HubSolver', {
         'self.debugGeometry'
       ]
     });
-      
- 
+    
+    solver.generateTracks = function(trackSet, trackBindings){
+      for(j=0; j<hubs.length; j++){
+        var color = FABRIC.RT.rgb(1, 0, 0);
+        var storeEulerAngles = false;
+        trackSet.addXfoTrack(solver.getName()+j+'Xfo', color, storeEulerAngles, trackBindings, hubs[j].xfoId);
+      }
+    }
+    
     solver.invert = function(variablesNode){
       variablesNode.getDGNode().bindings.append(scene.constructOperator({
         operatorName: 'invertHubRigs',
