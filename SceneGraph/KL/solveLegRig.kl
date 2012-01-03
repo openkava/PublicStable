@@ -5,7 +5,6 @@
 
 use Xfo;
 use Bone;
-use BezierKeyframe;
 use DebugGeometry;
 use SolverHelperFunctions;
 
@@ -146,6 +145,7 @@ operator solveHumanoidLegRig(
       Vec2 maxLineLengthSoftening(maxLineLength * 0.03, maxLineLength * 0.03);
       Integer firstBoneId = leg.boneIds[0];
       Integer lastBoneId = leg.boneIds[leg.boneIds.size-1];
+      
       applyFishingRod(
         targetXfo,
         bones[leg.ankleId].length,
@@ -157,9 +157,10 @@ operator solveHumanoidLegRig(
         maxLineLength,
         maxLineLengthSoftening
       );
-      targetXfo.tr = targetXfo.transformVector(Vec3(-bones[leg.ankleId].length, 0.0, 0.0));
+      Xfo adjustedTargetXfo = targetXfo;
+      adjustedTargetXfo.tr = targetXfo.transformVector(Vec3(-bones[leg.ankleId].length, 0.0, 0.0));
   
-      solveNCFIK(pose, bones, ikboneIndices, targetXfo, debugGeometry);
+      solveNCFIK(pose, bones, ikboneIndices, adjustedTargetXfo, debugGeometry);
       
       pose[leg.ankleId].tr = pose[lastBoneId].transformVector(Vec3(bones[lastBoneId].length, 0.0, 0.0));
       pose[leg.ankleId].ori = targetXfo.ori;
@@ -192,7 +193,8 @@ operator solveHumanoidLegRig(
         debugGeometry.drawLine(pose[leg.boneIds[j - 1]].tr, pose[leg.boneIds[j]].tr, Color(0.0, 1.0, 1.0, 1.0));
       }
       debugGeometry.drawLine(pose[leg.boneIds[leg.boneIds.size - 1]].tr, pose[leg.ankleId].tr, Color(0.0, 1.0, 1.0, 1.0));
-      debugGeometry.drawAxis(pose[leg.ankleId], 2.0, Color(0.0, 1.0, 1.0, 1.0));
+      debugGeometry.drawAxis(pose[leg.ankleId], 1.0, Color(0.0, 1.0, 1.0, 1.0));
+      debugGeometry.drawAxis(targetXfo, 1.0, Color(0.0, 1.0, 1.0, 1.0));
       */
     }
   }

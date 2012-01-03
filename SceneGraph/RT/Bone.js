@@ -3,17 +3,13 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
-/**
- * The basic characters module.
- */
-FABRIC.Characters = FABRIC.Characters ? FABRIC.Characters : {};
 
 /**
  * Constructor for a bone object.
  * @constructor
  * @param {object} options The contructor's options.
  */
-FABRIC.Characters.Bone = function(options) {
+FABRIC.RT.Bone = function(options) {
   if (!options) options = {};
 
     this.name = options.name ? '' + options.name : 'bone';
@@ -44,6 +40,6 @@ FABRIC.appendOnCreateContextCallback(function(context) {
       radius: 'Scalar',
       parent: 'Integer'
     },
-    constructor: FABRIC.Characters.Bone
+    constructor: FABRIC.RT.Bone
   });
 });

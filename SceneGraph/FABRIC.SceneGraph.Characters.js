@@ -187,7 +187,7 @@ FABRIC.SceneGraph.registerNodeType('CharacterSkeleton', {
         }
       }
 
-      var bone = new FABRIC.Characters.Bone(boneOptions);
+      var bone = new FABRIC.RT.Bone(boneOptions);
       bones.push(bone);
       dgnode.setData('bones', skeletonId ? skeletonId : 0, bones );
       return bone;
@@ -196,7 +196,7 @@ FABRIC.SceneGraph.registerNodeType('CharacterSkeleton', {
     characterSkeletonNode.pub.setBones = function(boneOptions, skeletonId) {
       var bones = [];
       for (var i = 0; i < boneOptions.length; i++) {
-        bones.push(new FABRIC.Characters.Bone(boneOptions[i]));
+        bones.push(new FABRIC.RT.Bone(boneOptions[i]));
       }
       dgnode.setData('bones', skeletonId ? skeletonId : 0, bones );
     };

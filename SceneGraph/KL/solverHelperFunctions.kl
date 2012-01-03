@@ -158,7 +158,7 @@ function solveNCFIK(
   chainRootPos = pose[boneIndices[0]].tr;
 
   for (Integer i = 0; i < boneIndices.size(); i++) {
-    remainingChainLength += bones[boneIndices[i]].length;
+    remainingChainLength += bones[boneIndices[i]].length * pose[boneIndices[i]].sc.x;
   }
 
   // Apply the soft limit to the distance to the IK goal
@@ -191,6 +191,7 @@ function solveNCFIK(
     vecToIkGoal = goalPosition - boneXfo.tr;
     distToIkGoal = vecToIkGoal.length();
     vecToIkGoal *= 1.0 / distToIkGoal;
+    Scalar boneLength = bone.length * boneXfo.sc.x;
 
     if (i == 0) {
       // For the first bone calculate and store the overall chain offset towards the ik target
@@ -209,7 +210,7 @@ function solveNCFIK(
     // Based on the bone index, select an appropriate method to solve
     if (i <= (boneIndices.size() - 2)) {
       // Remove the current bones length from the chain.
-      remainingChainLength -= bone.length;
+      remainingChainLength -= boneLength;
       Vec3 boneLengthVector = boneXfo.ori.rotateVector(Vec3(1.0, 0.0, 0.0));
       
       // this is the current angle of the bone.
@@ -226,29 +227,29 @@ function solveNCFIK(
       if (i == (boneIndices.size() - 2)) {
         // Use trigonometry to determine the ikBoneAngle
         // Law of cosines. a = BoneLength; b = Child BoneLength; c = Distance to the Ik Goal;
-        ikBoneAngle = acos(clamp((sq(bone.length) + sq(distToIkGoal) - sq(remainingChainLength)) / (2.0 * bone.length * distToIkGoal), - 1.0, 1.0));
+        ikBoneAngle = acos(clamp((sq(boneLength) + sq(distToIkGoal) - sq(remainingChainLength)) / (2.0 * boneLength * distToIkGoal), - 1.0, 1.0));
       }
       else {
         // distance from the bone tip to the ik gloal
         if (distToFkChainTip > remainingChainLength) {
           // Using the law of cosines, calculate the maximum angle of this bone using the fk Chain tip
-          maxFkBoneAngle = acos(clamp((sq(bone.length) + sq(distToFkChainTip) - sq(remainingChainLength)) / (2.0 * bone.length * distToFkChainTip), - 1.0, 1.0));
+          maxFkBoneAngle = acos(clamp((sq(boneLength) + sq(distToFkChainTip) - sq(remainingChainLength)) / (2.0 * boneLength * distToFkChainTip), - 1.0, 1.0));
         }
         else {
           // Add on the remaining chain length as radians.
-          maxFkBoneAngle = acos(clamp((bone.length * 0.5) / remainingChainLength, 0.0, 1.0));
-          maxFkBoneAngle += (remainingChainLength - distToFkChainTip) / bone.length;
+          maxFkBoneAngle = acos(clamp((boneLength * 0.5) / remainingChainLength, 0.0, 1.0));
+          maxFkBoneAngle += (remainingChainLength - distToFkChainTip) / boneLength;
         }
 
         // distance from the bone tip to the ik gloal
         if (distToIkGoal > remainingChainLength) {
           // Using the law of cosines, calculate the maximum angle of this bone using the fk Chain tip
-          maxIkBoneAngle = acos(clamp((sq(bone.length) + sq(distToIkGoal) - sq(remainingChainLength)) / (2.0 * bone.length * distToIkGoal), - 1.0, 1.0));
+          maxIkBoneAngle = acos(clamp((sq(boneLength) + sq(distToIkGoal) - sq(remainingChainLength)) / (2.0 * boneLength * distToIkGoal), - 1.0, 1.0));
         }
         else {
           // Add on the remaining chain length as radians.
-          maxIkBoneAngle = acos(clamp((bone.length * 0.5) / remainingChainLength, 0.0, 1.0));
-          maxIkBoneAngle += (remainingChainLength - distToIkGoal) / bone.length;
+          maxIkBoneAngle = acos(clamp((boneLength * 0.5) / remainingChainLength, 0.0, 1.0));
+          maxIkBoneAngle += (remainingChainLength - distToIkGoal) / boneLength;
         }
 
         ikBoneAngle = maxIkBoneAngle * (fkBoneAngle / maxFkBoneAngle);
