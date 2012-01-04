@@ -15,10 +15,12 @@ operator initFileStreamFromString
   io Size seekOffsets[]
 )
 {
-  FabricFileHandle handle;
-  handle.setAbsolutePath(path);
-  stream.open(handle,"w");
-  if(names.size() > 0) {
+  if(!stream.isWritable()) {
+    FabricFileHandle handle;
+    handle.setAbsolutePath(path);
+    stream.open(handle,"w");
+  }
+  if(stream.isWritable() && names.size() > 0) {
     seekOffsets.resize(names.size());
     stream.writeStringArray(names);
     for(Size i=0;i<names.size();i++)
@@ -33,6 +35,7 @@ operator initFileStreamFromString
 
 operator saveTrianglesToStream
 (
+  io String path,
   io FabricFileStream stream,
   io String names[],
   io Size seekOffsets[],
@@ -42,6 +45,11 @@ operator saveTrianglesToStream
   io Integer indices[]
 )
 {
+  if(!stream.isWritable()) {
+    FabricFileHandle handle;
+    handle.setAbsolutePath(path);
+    stream.open(handle,"a");
+  }
   if(stream.isWritable()) {
     stream.setSeekEnd();
     Size seekOffset = stream.getSeek();
@@ -56,5 +64,54 @@ operator saveTrianglesToStream
         stream.writeSize(seekOffset);
       }
     }
+    stream.close();
+  }
+}
+
+operator resizeTrianglesFromStream
+(
+  io String path,
+  io FabricFileStream stream,
+  io String name,
+  io Size newCount
+)
+{
+  if(!stream.isValid()) {
+    FabricFileHandle handle;
+    handle.setAbsolutePath(path);
+    stream.open(handle,"r");
+  }
+  if(stream.isValid()) {
+    String names[];
+    stream.readStringArray(names);
+    Size offset = 0;
+    for(Size i=0;i<names.size();i++) {
+      Size storedOffset = 0;
+      stream.readSize(storedOffset);
+      if(names[i] == name)
+        offset = storedOffset;
+    }
+    stream.setSeek(offset);
+    stream.readSize(newCount);
+  } else {
+    report("Cannot open file: "+path);
+  }
+}
+
+operator loadTrianglesFromStream
+(
+  io FabricFileStream stream,
+  io Vec3 positions<>,
+  io Vec3 normals<>,
+  io Integer indices[]
+)
+{
+  if(stream.isValid()) {
+    stream.readData(positions.data(),positions.dataSize());
+    stream.readData(normals.data(),normals.dataSize());
+    Size nbIndices = 0;
+    stream.readSize(nbIndices);
+    indices.resize(nbIndices);
+    stream.readData(indices.data(),indices.dataSize());
   }
 }
