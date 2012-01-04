@@ -178,8 +178,8 @@ FABRIC_EXT_EXPORT void FabricFileStream_ReadData(
   if(stream.m_data->mSeek + size > stream.m_data->mSize)
     return;
   size_t readSize = fread(data,size,1,stream.m_data->mFile);
-  stream.m_data->mSizeRead += readSize;
-  stream.m_data->mSeek += readSize;
+  stream.m_data->mSizeRead += size;
+  stream.m_data->mSeek += size;
   if(stream.m_data->mCloseOnFullyRead && stream.m_data->mSizeRead >= stream.m_data->mSize)
     FabricFileStream_Free(stream);
 }
@@ -220,8 +220,8 @@ FABRIC_EXT_EXPORT void FabricFileStream_ReadString(
     return;
   uint32_t length = 0;
   size_t readSize = fread(&length,sizeof(uint32_t),1,stream.m_data->mFile);
-  stream.m_data->mSizeRead += readSize;
-  stream.m_data->mSeek += readSize;
+  stream.m_data->mSizeRead += sizeof(uint32_t);
+  stream.m_data->mSeek += sizeof(uint32_t);
 
   if(stream.m_data->mSeek + length <= stream.m_data->mSize)
   {
@@ -229,8 +229,8 @@ FABRIC_EXT_EXPORT void FabricFileStream_ReadString(
     if(length > 0)
     {
       readSize = fread((void*)string.data(),length,1,stream.m_data->mFile);
-      stream.m_data->mSizeRead += readSize;
-      stream.m_data->mSeek += readSize;
+      stream.m_data->mSizeRead += length;
+      stream.m_data->mSeek += length;
     }
   }
   if(stream.m_data->mCloseOnFullyRead && stream.m_data->mSizeRead >= stream.m_data->mSize)
@@ -266,8 +266,8 @@ FABRIC_EXT_EXPORT void FabricFileStream_ReadStringArray(
     return;
   uint32_t count = 0;
   size_t readSize = fread(&count,sizeof(uint32_t),1,stream.m_data->mFile);
-  stream.m_data->mSizeRead += readSize;
-  stream.m_data->mSeek += readSize;
+  stream.m_data->mSizeRead += sizeof(uint32_t);
+  stream.m_data->mSeek += sizeof(uint32_t);
   strings.resize(count);
   for(uint32_t i=0;i<count;i++)
     FabricFileStream_ReadString(stream,strings[i]);
@@ -303,8 +303,8 @@ FABRIC_EXT_EXPORT void FabricFileStream_ReadSize(
   uint32_t value = 0;
   size_t readSize = fread(&value,sizeof(uint32_t),1,stream.m_data->mFile);
   size = value;
-  stream.m_data->mSizeRead += readSize;
-  stream.m_data->mSeek += readSize;
+  stream.m_data->mSizeRead += sizeof(uint32_t);
+  stream.m_data->mSeek += sizeof(uint32_t);
   if(stream.m_data->mCloseOnFullyRead && stream.m_data->mSizeRead >= stream.m_data->mSize)
     FabricFileStream_Free(stream);
 }
