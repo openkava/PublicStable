@@ -1,0 +1,18 @@
+
+//
+// Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
+//
+use Mat44, Xfo;
+use PoseVariables;
+
+
+operator calcManipulatorAttachmentXfo(
+  io Xfo localXfo,
+  io PoseVariables poseVariables,
+  io Size xfoIndex,
+  io Xfo globalXfo
+) {
+  //report( "calcGlobalXfo\n" );
+ // globalXfo = poseVariables.xfoValues[xfoIndex] * localXfo;
+  globalXfo = poseVariables.xfoValues[xfoIndex];
+}
