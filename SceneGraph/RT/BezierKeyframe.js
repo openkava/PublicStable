@@ -61,7 +61,7 @@ if(!FABRIC.RT.KeyframeTrack){
 }
 
 FABRIC.RT.BezierKeyframeTrack = function(name, color, keys) {
-  this.name = name ? name : "bezierAnimationTrack";
+  this.name = name ? name : "bezierKeyTrack";
   this.color = color ? color : FABRIC.RT.rgb(1.0, 0.0, 0.0);
   this.keys = keys ? keys : [];
 };
@@ -160,7 +160,7 @@ FABRIC.appendOnCreateContextCallback(function(context) {
 });
 
 FABRIC.RT.BezierKeyframeTrackSet = function(name) {
-  this.name = name ? name : 'bezierAnimationTrackSet';
+  this.name = name ? name : 'bezierKeyTrackSet';
   this.timeRange = new FABRIC.RT.Vec2(0,0);
   this.tracks = [];
 };
