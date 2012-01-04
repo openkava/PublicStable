@@ -71,6 +71,50 @@ FABRIC.RT.BezierKeyframeTrack.prototype = {
   newKey: function(value, time, intan, outtan) {
     return new FABRIC.RT.BezierKeyframe(value, time, intan, outtan);
   },
+  autoTangents: function(keyIndex, autoTangentsLeftandRight){
+    var numKeys = this.keys.length;
+    var intan, outtan, intdelta, outtdelta, inGradient = 0.0, outGradient = 0.0;
+    var key = this.keys[keyIndex];
+    if(keyIndex > 0){
+      prevkey = this.keys[keyIndex-1];
+      intdelta = (key.time - prevkey.time);
+      inGradient = (key.value - prevkey.value)/intdelta;
+    }
+    if(keyIndex < numKeys-1){
+      nextkey = this.keys[keyIndex+1];
+      outtdelta = (nextkey.time - key.time);
+      outGradient = (nextkey.value - key.value)/outtdelta;
+    }
+    var gradient = 0.0;
+    if(Math.sign(inGradient) === Math.sign(outGradient)){
+    //  gradient = (Math.abs(inGradient) < Math.abs(outGradient) ? inGradient : outGradient);
+      gradient = (inGradient + outGradient) * 0.5;
+      if(prevkey){
+        if(Math.abs(key.value - prevkey.value) < Math.abs(gradient * intdelta * 0.5)){
+          gradient = (key.value - prevkey.value)/(intdelta * 0.5);
+        }
+      }
+      if(nextkey){
+        if(Math.abs(nextkey.value - key.value) < Math.abs(gradient * outtdelta * 0.5)){
+          gradient = (nextkey.value - key.value)/(outtdelta * 0.5);
+        }
+      }
+    }
+    if(prevkey){
+      key.intangent.set(intdelta * -0.33, gradient * intdelta * -0.33);
+    }
+    if(keyIndex < numKeys-1){
+      key.outtangent.set(outtdelta * 0.33, gradient * outtdelta * 0.33);
+    }
+    if(autoTangentsLeftandRight!==false){
+      if(keyIndex > 0){
+        this.autoTangents(keyIndex-1, false);
+      }
+      if(keyIndex < numKeys-1){
+        this.autoTangents(keyIndex+1, false);
+      }
+    }
+  },
   setValue: function(time, value) {
     var numKeys = this.keys.length;
     if (numKeys == 0 || time > this.keys[numKeys - 1].time) {
@@ -92,50 +136,29 @@ FABRIC.RT.BezierKeyframeTrack.prototype = {
         this.keys.splice(keyIndex, 0, new this.newKey(time, value));
         numKeys = this.keys.length;
       }
-      var keys = this.keys;
-      var autoTangents = function(keyIndex){
-        var intan, outtan, intdelta, outtdelta, inGradient = 0.0, outGradient = 0.0;
-        var key = keys[keyIndex];
-        if(keyIndex > 0){
-          prevkey = keys[keyIndex-1];
-          intdelta = (key.time - prevkey.time);
-          inGradient = (key.value - prevkey.value)/intdelta;
+      this.autoTangents(keyIndex);
+    }
+  },
+  moveKey: function(keyIndex, time, value){
+    var numKeys = this.keys.length;
+    var key = this.keys[keyIndex];
+    if(keyIndex > 0){
+      if(time < this.keys[keyIndex-1].time || time > this.keys[keyIndex+1].time){
+        var newkeyIndex = keyIndex;
+        while(time < this.keys[newkeyIndex-1].time && newkeyIndex>0){
+          newkeyIndex--
         }
-        if(keyIndex < numKeys-1){
-          nextkey = keys[keyIndex+1];
-          outtdelta = (nextkey.time - key.time);
-          outGradient = (nextkey.value - key.value)/outtdelta;
+        while(time > this.keys[newkeyIndex+1].time && newkeyIndex<numKeys-1){
+          newkeyIndex++
         }
-        var gradient = 0.0;
-        if(Math.sign(inGradient) === Math.sign(outGradient)){
-        //  gradient = (Math.abs(inGradient) < Math.abs(outGradient) ? inGradient : outGradient);
-          gradient = (inGradient + outGradient) * 0.5;
-          if(prevkey){
-            if(Math.abs(key.value - prevkey.value) < Math.abs(gradient * intdelta * 0.5)){
-              gradient = (key.value - prevkey.value)/(intdelta * 0.5);
-            }
-          }
-          if(nextkey){
-            if(Math.abs(nextkey.value - key.value) < Math.abs(gradient * outtdelta * 0.5)){
-              gradient = (nextkey.value - key.value)/(outtdelta * 0.5);
-            }
-          }
-        }
-        if(prevkey){
-          key.intangent.set(intdelta * -0.33, gradient * intdelta * -0.33);
-        }
-        if(keyIndex < numKeys-1){
-          key.outtangent.set(outtdelta * 0.33, gradient * outtdelta * 0.33);
-        }
-      }
-      autoTangents(keyIndex);
-      if(keyIndex > 0){
-        autoTangents(keyIndex-1);
-      }
-      if(keyIndex < numKeys-1){
-        autoTangents(keyIndex+1);
+        this.keys.splice(keyIndex, 1);
+        this.keys.splice(newkeyIndex, 0, key);
+        keyIndex = newkeyIndex;
       }
     }
+    this.keys[keyIndex].time = time;
+    this.keys[keyIndex].value = value;
+    this.autoTangents(keyIndex);
   }
 }
 
