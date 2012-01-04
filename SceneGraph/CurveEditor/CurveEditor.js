@@ -118,7 +118,7 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
         timeRange = new FABRIC.Vec2(0, 0);
         for (var i = 0; i < trackCount; i++) {
           var keys = tracksData.tracks[i].keys;
-          if(keys.length <= 1){
+          if(keys.length < 2){
             continue;
           }
           if (timeRange.x > keys[0].time) {
@@ -152,11 +152,18 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
           getCurveYRange(curvesData.values[i]);
         }
       }
+      var vscale;
       if(!fitEditorToKeyRanges){
-        this.sc = new FABRIC.Vec2(windowWidth/(timeRange.y - timeRange.x), -(windowHeight) / (yRange.y - yRange.x));
+        vscale = -(windowHeight) / (yRange.y - yRange.x);
       }else{
-        this.sc = new FABRIC.Vec2(windowWidth/(timeRange.y - timeRange.x), -(windowHeight - 40) / (yRange.y - yRange.x));
+        vscale = -(windowHeight - 40) / (yRange.y - yRange.x);
       }
+      
+      var hscale = windowWidth;
+      if(timeRange.y > timeRange.x){
+        hscale = windowWidth/(timeRange.y - timeRange.x);
+      }
+      this.sc = new FABRIC.Vec2(hscale, vscale);
       this.tr = new FABRIC.Vec2(-timeRange.x, (yRange.y + yRange.x) * -0.5);
     },
     update: function(){
@@ -185,16 +192,24 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
     trackGroup.removeAllChildren();
     var path = trackGroup.createPath().addClass('CurvePath').stroke(trackData.color);
     var setPathCurveValues = function(curveData) {
-      var val = screenXfo.toScreenSpace(new FABRIC.Vec2(0, curveData[0]))
-      var pathValues = ['M', val.x, val.y, 'L', 100, 100, 300, 200];
       try{
-      for (var i = 0; i < curveData.length; i++) {
-        var t = ((i/curveData.length)*(timeRange.y - timeRange.x))+timeRange.x;
-        val = screenXfo.toScreenSpace(new FABRIC.Vec2(t, curveData[i]));
-        pathValues[(i * 2) + 4] = val.x;
-        pathValues[(i * 2) + 5] = val.y;
-      }
-      path.attr('d', pathValues.join(' '));
+        var pathValues;
+        if(timeRange.y > timeRange.x){
+          var val = screenXfo.toScreenSpace(new FABRIC.Vec2(0, curveData[0]));
+          pathValues = ['M', val.x, val.y, 'L'];
+          for (var i = 0; i < curveData.length; i++) {
+            var t = ((i/curveData.length)*(timeRange.y - timeRange.x))+timeRange.x;
+            val = screenXfo.toScreenSpace(new FABRIC.Vec2(t, curveData[i]));
+            pathValues[(i * 2) + 4] = val.x;
+            pathValues[(i * 2) + 5] = val.y;
+          }
+        }
+        else{
+          var val1 = screenXfo.toScreenSpace(new FABRIC.Vec2(0, curveData[0]));
+          var val2 = screenXfo.toScreenSpace(new FABRIC.Vec2(1, curveData[0]));
+          pathValues = ['M', val1.x, val1.y, 'L', val2.x, val2.y];
+        }
+        path.attr('d', pathValues.join(' '));
       }
       catch(e){
         console.warn("Bug: the core is sometimes returning null values e.g.:"+JSON.stringify(curveData));

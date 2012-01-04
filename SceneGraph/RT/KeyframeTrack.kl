@@ -94,7 +94,7 @@ function KEYFRAMETYPETrack.setValue(
 // KEYFRAMETYPETrackSet
 use Color, Vec3, Quat, Xfo;
 
-
+/*
 function KEYFRAMETYPETrackSet.addTrack(
   in String name,
   in Color color,
@@ -132,7 +132,7 @@ function KEYFRAMETYPETrackSet.addXfoTracks(
     this.addTrack(name+'ori.z', cyan, trackId);  binding.push(trackId);
   }
 }
-
+*/
 
 function Vec2 KEYFRAMETYPETrackSet.getTimeRange() {
   return this.timeRange;

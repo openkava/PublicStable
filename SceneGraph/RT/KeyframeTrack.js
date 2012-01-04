@@ -61,20 +61,20 @@ FABRIC.RT.KeyframeTrackSet.prototype = {
   },
   addXfoTrack: function(name, color, storeEulerAngles, trackBindings, varId){
     var binding = [];
-    this.addTrack(name+'tr.x', FABRIC.RT.Color.red, binding);
-    this.addTrack(name+'tr.y', FABRIC.RT.Color.green, binding);
-    this.addTrack(name+'tr.z', FABRIC.RT.Color.blue, binding);
+    this.addTrack(name+'.tr.x', FABRIC.RT.Color.red, binding);
+    this.addTrack(name+'.tr.y', FABRIC.RT.Color.green, binding);
+    this.addTrack(name+'.tr.z', FABRIC.RT.Color.blue, binding);
     
     if(storeEulerAngles == true){
-      this.addTrack(name+'euler.x', FABRIC.RT.Color.red, binding);
-      this.addTrack(name+'euler.x', FABRIC.RT.Color.green, binding);
-      this.addTrack(name+'euler.x', FABRIC.RT.Color.blue, binding);
+      this.addTrack(name+'.euler.x', FABRIC.RT.Color.red, binding);
+      this.addTrack(name+'.euler.y', FABRIC.RT.Color.green, binding);
+      this.addTrack(name+'.euler.z', FABRIC.RT.Color.blue, binding);
     }
     else{
-      this.addTrack(name+'ori.v.x', FABRIC.RT.Color.red, binding);
-      this.addTrack(name+'ori.v.x', FABRIC.RT.Color.green, binding);
-      this.addTrack(name+'ori.v.x', FABRIC.RT.Color.blue, binding);
-      this.addTrack(name+'ori.w',   FABRIC.RT.Color.cyan, binding);
+      this.addTrack(name+'.ori.v.x', FABRIC.RT.Color.red, binding);
+      this.addTrack(name+'.ori.v.y', FABRIC.RT.Color.green, binding);
+      this.addTrack(name+'.ori.v.z', FABRIC.RT.Color.blue, binding);
+      this.addTrack(name+'.ori.w',   FABRIC.RT.Color.cyan, binding);
     }
   //  return binding;
     trackBindings.addXfoBinding(varId, binding);
@@ -105,9 +105,9 @@ FABRIC.RT.KeyframeTrackSet.prototype = {
       }
       else if(binding.trackIds.length == 4){
         var q = poseVariables.quatValues[i];
-        this.tracks[binding.trackIds[0]].setValue(time, q.v.x );
-        this.tracks[binding.trackIds[1]].setValue(time, q.v.y );
-        this.tracks[binding.trackIds[2]].setValue(time, q.v.z );
+        this.tracks[binding.trackIds[0]].setValue(time, q.v.x);
+        this.tracks[binding.trackIds[1]].setValue(time, q.v.y);
+        this.tracks[binding.trackIds[2]].setValue(time, q.v.z);
         this.tracks[binding.trackIds[3]].setValue(time, q.w );
       }
     }

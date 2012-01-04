@@ -1263,7 +1263,9 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('HumanoidLegSolver', {
         var color = FABRIC.RT.rgb(1, 0, 0);
         var storeEulerAngles = false;
         
+        
         trackSet.addXfoTrack(solver.getName()+j+'IKGoal', color, storeEulerAngles, trackBindings, legs[j].ikGoalXfoId);
+        /*
         for(i=0; i<legs[j].xfoIds.length; i++){
           if(legs[j].ankleId > 0 && i==legs[j].xfoIds.length-1){
             trackSet.addXfoTrack(solver.getName()+j+'Ankle', color, storeEulerAngles, trackBindings, legs[j].xfoIds[i]);
@@ -1271,7 +1273,8 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('HumanoidLegSolver', {
             trackSet.addXfoTrack(solver.getName()+j+'Bone'+i, color, storeEulerAngles, trackBindings, legs[j].xfoIds[i]);
           }
         }
-        trackSet.addXfoTrack(solver.getName()+j+'IKBlend', color, storeEulerAngles, trackBindings, legs[j].ikblendId);
+        */
+        trackSet.addScalarTrack(solver.getName()+j+'IKBlend', color, trackBindings, legs[j].ikblendId);
       }
     }
  
