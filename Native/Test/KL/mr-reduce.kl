@@ -3,7 +3,6 @@ operator map2(
   io Scalar output
   )
 {
-  report "map2: input=" + input;
   output += input;
 }
 
@@ -13,7 +12,6 @@ operator map3(
   Size index
   )
 {
-  report "map3: input=" + input + " index=" + index;
   output += input;
 }
 
@@ -24,7 +22,7 @@ operator map4(
   Size count
   )
 {
-  report "map4: input=" + input + " index=" + index + " count=" + count;
+  report "map4: count=" + count;
   output += input;
 }
 
@@ -36,7 +34,7 @@ operator map5(
   String shared
   )
 {
-  report "map5: input=" + input + " index=" + index + " count=" + count + " shared=" + shared;
+  report "map5: count=" + count + " shared=" + shared;
   output += input;
 }
 
