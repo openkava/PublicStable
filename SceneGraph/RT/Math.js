@@ -26,6 +26,10 @@ Math.clamp = function(val, minval, maxval){
   return (val < minval ? minval : (val > maxval ? maxval : val));
 }
 
+Math.sign = function(number){
+  return (number > 0 ? 1 : number == 0 ? 0 : -1);
+}
+
 Math.linearInterpolate = function (val1, val2, t){
   return val1 + ((val2 - val1) * t);
 }
