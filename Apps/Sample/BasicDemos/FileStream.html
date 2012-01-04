@@ -69,7 +69,7 @@ s.parentNode.insertBefore(ga, s);
 
 <script type="text/javascript">
 
-FABRIC.SceneGraph.registerNodeType('FileStreamNode', {
+FABRIC.SceneGraph.registerNodeType('TrianglesIONode', {
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
       filepath: undefined
@@ -111,6 +111,7 @@ FABRIC.SceneGraph.registerNodeType('FileStreamNode', {
         operatorName: 'saveTrianglesToStream',
         srcFile: 'KL/fileStream.kl',
         parameterLayout: [
+          "streamsaver.path",
           "streamsaver.stream",
           "streamsaver.objectNames",
           "streamsaver.seekOffsets",
@@ -123,6 +124,43 @@ FABRIC.SceneGraph.registerNodeType('FileStreamNode', {
         mainThreadOnly: true,
         async: false
       }));
+      
+      // create a triangles node to load from this
+      var newTrianglesNode = scene.constructNode('Triangles');
+      var newAttributesdgnode = newTrianglesNode.getAttributesDGNode();
+      var newUniformsdgnode = newTrianglesNode.getUniformsDGNode();
+      newUniformsdgnode.addMember("stream","FabricFileStream");
+      newUniformsdgnode.addMember("path","String",options.filepath);
+      newUniformsdgnode.addMember("objectName","String",name);
+      newUniformsdgnode.setDependency(attributesdgnode,'savedAttributes');
+      newAttributesdgnode.bindings.append(scene.constructOperator({
+        operatorName: 'resizeTrianglesFromStream',
+        srcFile: 'KL/fileStream.kl',
+        parameterLayout: [
+          "uniforms.path",
+          "uniforms.stream",
+          "uniforms.objectName",
+          "self.newCount"
+        ],
+        entryFunctionName: 'resizeTrianglesFromStream',
+        mainThreadOnly: true,
+        async: false
+      }));
+      newAttributesdgnode.bindings.append(scene.constructOperator({
+        operatorName: 'loadTrianglesFromStream',
+        srcFile: 'KL/fileStream.kl',
+        parameterLayout: [
+          "uniforms.stream",
+          "self.positions<>",
+          "self.normals<>",
+          "uniforms.indices"
+        ],
+        entryFunctionName: 'loadTrianglesFromStream',
+        mainThreadOnly: true,
+        async: false
+      }));
+      
+      return newTrianglesNode.pub;
     };
 
     return sgnode;
@@ -145,7 +183,7 @@ $(document).ready(function() {
  camera = scene.constructNode('TargetCamera', {
       nearDistance: 1,
       farDistance: 300,
-      target: new FABRIC.RT.Vec3(-10, -1.2, -0.15),
+      target: new FABRIC.RT.Vec3(-10, -1.2, -10),
       position: new FABRIC.RT.Vec3(-1.8, 4.77, 7.93)
     });
 
@@ -159,7 +197,7 @@ $(document).ready(function() {
     lightNode: light
   });
 
-  var fsNode = scene.constructNode('FileStreamNode', {
+  var fsNode = scene.constructNode('TrianglesIONode', {
     filepath: '/tmp/meshes.bin'
   });
 
@@ -174,7 +212,15 @@ $(document).ready(function() {
           globalXfo: new FABRIC.RT.Xfo({ tr: new FABRIC.RT.Vec3(-10, 0, 0) })
         }),
       });
-      fsNode.addTrianglesNode(evt.loadedGeometries[name]);
+      var persistedTrianglesNode = fsNode.addTrianglesNode(evt.loadedGeometries[name]);
+      scene.constructNode('Instance', {
+        geometryNode: persistedTrianglesNode,
+        materialNode: material,
+        transformNode: scene.constructNode('Transform', {
+          hierarchical: false,
+          globalXfo: new FABRIC.RT.Xfo({ tr: new FABRIC.RT.Vec3(-10, 0, -10) })
+        }),
+      });
     }
   });
     
@@ -220,19 +266,16 @@ $(document).ready(function() {
           <div class="box">
             <h2>INFO</h2>
             <div class="content">
-              Local Storage.<br>
-              This very basic sample shows how to load and save local files using the so called FileSystem node.
-              This node is only available on local deployments of Fabric Engine, not on the ones deployed in the
-              world wide web.
+              FileStream in KL.<br>
+              This sample shows how to utilize the FileStream type in KL to access a local
+              storage with high performance. The application requires the optional filesystem
+              extension.<br>
+              You can get the <a href='http://github.com/fabric-engine/JSSceneGraph/wiki/Installing-the-filesystem-extension' target=_NEW>FabricFILESYSTEM extension here</a>.<br>
+              In KL, we persist a file called <i>/tmp/meshes.bin</i> ( you will have to change it for windows), using the FileStream. We use an offset technique, by utilizing
+              the seek features of the filestream type. This allows to search the file without loading all of the data to memory. Then, we load the same file onto a new node.
+              This demonstrates the full IO pipeline including saving and loading.
             </div><!--content-->
           </div><!--box-->
-          <div class="box">
-            <h2>CONTROLS</h2>
-            <div class="content">
-              <button id="loadAsciiFile" style="margin-top:10px;">Load Ascii File</button>
-            </div><!--content-->
-          </div><!--box-->
-            
         </div><!--sidebar-->
       </div> <!--editor-->
     </div><!--wrapper-->
