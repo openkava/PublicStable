@@ -60,10 +60,11 @@ s.parentNode.insertBefore(ga, s);
 
 <style type="text/css">
 #sidebar {
-  width:300px;
+  width:500px;
 }  
 #viewer {
-  right:300px;
+  width:1px;
+  height:1px;
 }
 </style>
 
@@ -123,8 +124,6 @@ FABRIC.SceneGraph.registerNodeType('FileSystemNode', {
 
 $(document).ready(function() {
 
-  $('#saveResource').button()
-
   var scene = FABRIC.SceneGraph.createScene({ preDraw:false, postDraw:false });
   var viewport = scene.constructNode('Viewport', {
     windowElement: document.getElementById('FabricContainer'),
@@ -135,46 +134,48 @@ $(document).ready(function() {
     url: 'Resources/fabric-demo-gradient.png'
   }));
   
- camera = scene.constructNode('TargetCamera', {
-      nearDistance: 1,
-      farDistance: 300,
-      target: new FABRIC.RT.Vec3(-10, -1.2, -0.15),
-      position: new FABRIC.RT.Vec3(-1.8, 4.77, 7.93)
-    });
-
-  scene.constructNode('CameraManipulator', { targetNode: camera });
-
-  viewport.setCameraNode(camera);
-
-  var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) });
-  var material = scene.constructNode('PhongMaterial', {
-    diffuseColor: FABRIC.RT.rgb(Math.random(), Math.random(), Math.random(), 1),
-    lightNode: light
-  });
-
-  /*
-  var resourceLoadNode = scene.importAssetFile('/development/Fabric/Web/Apps/Sample/BasicDemos/Models/cow.obj', {
-    localPath: true
-  });
-  resourceLoadNode.addEventListener('objparsesuccess', function(evt){
-    for(var name in evt.loadedGeometries) {
-      scene.constructNode('Instance', {
-        geometryNode: evt.loadedGeometries[name],
-        materialNode: material,
-        transformNode: scene.constructNode('Transform', {
-          hierarchical: false,
-          globalXfo: new FABRIC.RT.Xfo({ tr: new FABRIC.RT.Vec3(-10, 0, 0) })
-        }),
-      });
-    }
-  });
-  resourceLoadNode.fireLoadSuccessEvent();
-  */
-  
   var fsNode = scene.constructNode('FileSystemNode');
-  console.log(fsNode.getSubFolders('/home/helge'));
-  console.log(fsNode.getFiles('/home/helge'));
-  //console.log(localStorageNode.getFileTextContent('/yourfolder/yourtextfile.txt'));
+
+  document.onChange = function(path) {
+    if(typeof path != 'string')
+      path = $('#rootPath').val();
+    else {
+      $('#rootPath').val(path);
+    }
+    
+    var separator = '/';
+    if(path.indexOf(separator) < 0)
+      separator = '\\';
+    if(path.length > 1 && path.substr(path.length-1,1) == separator)
+      path = path.substr(0,path.length-1);
+    var parts = path.split(separator);
+    parts.pop();
+    var parentPath = parts.join(separator);
+    if(!parentPath && path.substr(0,1) == separator)
+      parentPath = separator;
+    
+    var htmlCode = [];
+    htmlCode.push("<b>"+path+"</b><br>");
+    htmlCode.push("<b><a href='#' onClick='onChange(\""+parentPath+"\");'>..</a></b>");
+    
+    var folders = fsNode.getSubFolders(path);
+    var files = fsNode.getFiles(path);
+
+    for(var i=0;i<folders.length;i++) {
+      var folder = folders[i];
+      var folderParts = folder.split(separator);
+      htmlCode.push("<a href='#' onClick='onChange(\""+folder+"\");'>"+folderParts[folderParts.length-1]+"</a>");
+    }
+    for(var i=0;i<files.length;i++) {
+      var file = files[i];
+      var fileParts = file.split(separator);
+      htmlCode.push(fileParts[fileParts.length-1]);
+    }
+    
+    $("#textOutput").html(htmlCode.join("<br>"));
+  };
+  $('#rootPath').change(document.onChange);
+  document.onChange();
   
   $('#loadingDialog').dialog({
     modal: true
@@ -209,25 +210,30 @@ $(document).ready(function() {
     </div>
     <div id="wrapper">
 
-      <div id="editor">
+      <div id="editor" style="overflow: auto">
         <div id="viewer">
-          <div id="FabricContainer"></div> 
+          <div id="FabricContainer"></div>
         </div><!--viewer-->
+        <div id="textOutput" style="margin: 20px"></div>
         <div id="sidebar">
           <p class="box">&larr; <a href="../../../index.html">back to Demo list</a></p>
           <div class="box">
             <h2>INFO</h2>
             <div class="content">
-              Local Storage.<br>
-              This very basic sample shows how to load and save local files using the so called FileSystem node.
-              This node is only available on local deployments of Fabric Engine, not on the ones deployed in the
-              world wide web.
+              FileSystem.<br>
+              This sample shows the use of the optional extension FabricFILESYSTEM. It allows to access
+              the local filesystem through KL, providing directory parsing features as well as generation
+              of filehandles both for reading and writing. These filehandles can then be used to create or open
+              filestream object to read binary data with high performance directly within KL.<br>
+              This sample implements its own use of the FileSystem extension in KL, just have a look at the source
+              of this page to learn more about it.<br>
+              <b>NOTE THAT YOU HAVE TO ADD THIS PAGE TO THE TRUSTED PAGES OF YOUR BROWSER TO MAKE THIS WORK.</b>
             </div><!--content-->
           </div><!--box-->
           <div class="box">
-            <h2>CONTROLS</h2>
+            <h2>INPUTS</h2>
             <div class="content">
-              <button id="loadAsciiFile" style="margin-top:10px;">Load Ascii File</button>
+              <label>Input Path: </label> <input type='text' id='rootPath' value="/tmp/"><br>
             </div><!--content-->
           </div><!--box-->
             
