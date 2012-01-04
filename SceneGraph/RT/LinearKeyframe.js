@@ -50,14 +50,17 @@ if(!FABRIC.RT.KeyframeTrack){
 }
 
 FABRIC.RT.LinearKeyframeTrack = function(name, color, keys) {
-  this.name = name ? name : "linearAnimationTrack";
+  this.name = name ? name : "linearKeyTrack";
   this.color = color ? color : FABRIC.RT.rgb(1.0, 0.0, 0.0);
   this.keys = keys ? keys : [];
-  this.newKey = FABRIC.RT.linearKeyframe;
 };
 
-FABRIC.RT.LinearKeyframeTrack.prototype = FABRIC.RT.KeyframeTrack.prototype;
-
+FABRIC.RT.LinearKeyframeTrack.prototype = {
+  __proto__: FABRIC.RT.KeyframeTrack.prototype,
+  newKey: function(value, time) {
+    return new FABRIC.RT.LinearKeyframe(value, time);
+  }
+}
 
 FABRIC.appendOnCreateContextCallback(function(context) {
   context.RegisteredTypesManager.registerType('LinearKeyframeTrack', {
@@ -81,15 +84,17 @@ FABRIC.appendOnCreateContextCallback(function(context) {
 
 
 FABRIC.RT.LinearKeyframeTrackSet = function(name) {
-  this.name = name ? name : 'linearAnimationTrackSet';
+  this.name = name ? name : 'linearKeyTrackSet';
   this.timeRange = new FABRIC.RT.Vec2(0,0);
   this.tracks = [];
-  this.newTrack = function(name, color, keys) {
-    return new FABRIC.RT.LinearKeyframeTrack(name, color, keys);
-  };
 };
 
-FABRIC.RT.LinearKeyframeTrackSet.prototype = FABRIC.RT.KeyframeTrackSet.prototype;
+FABRIC.RT.LinearKeyframeTrackSet.prototype = {
+  __proto__: FABRIC.RT.KeyframeTrackSet.prototype,
+  newTrack: function(name, color, keys) {
+    return new FABRIC.RT.LinearKeyframeTrack(name, color, keys);
+  }
+}
 
 
 FABRIC.appendOnCreateContextCallback(function(context) {

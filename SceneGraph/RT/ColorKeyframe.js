@@ -52,6 +52,21 @@ if(!FABRIC.RT.KeyframeTrack){
   throw("please include the SceneGraph/RT/KeyframeTrack.js file before this one.");
 }
 
+
+FABRIC.RT.ColorKeyframeTrack = function(name, color, keys) {
+  this.name = name ? name : "colorKeyTrack";
+  this.color = color ? color : FABRIC.RT.rgb(1.0, 0.0, 0.0);
+  this.keys = keys ? keys : [];
+};
+
+FABRIC.RT.ColorKeyframeTrack.prototype = {
+  __proto__: FABRIC.RT.KeyframeTrack.prototype,
+  newKey: function(value, time) {
+    return new FABRIC.RT.ColorKeyframe(value, time);
+  }
+}
+
+
 FABRIC.appendOnCreateContextCallback(function(context) {
   context.RegisteredTypesManager.registerType('ColorKeyframeTrack', {
     members: {
@@ -71,6 +86,21 @@ FABRIC.appendOnCreateContextCallback(function(context) {
     }
   });
 });
+
+
+FABRIC.RT.ColorKeyframeTrackSet = function(name) {
+  this.name = name ? name : 'colorKeyTrackSet';
+  this.timeRange = new FABRIC.RT.Vec2(0,0);
+  this.tracks = [];
+};
+
+FABRIC.RT.ColorKeyframeTrackSet.prototype = {
+  __proto__: FABRIC.RT.KeyframeTrackSet.prototype,
+  newTrack: function(name, color, keys) {
+    return new FABRIC.RT.ColorKeyframeTrack(name, color, keys);
+  }
+}
+
 
 FABRIC.appendOnCreateContextCallback(function(context) {
   context.RegisteredTypesManager.registerType('ColorKeyframeTrackSet', {
