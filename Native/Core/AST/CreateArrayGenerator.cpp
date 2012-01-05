@@ -72,7 +72,9 @@ namespace Fabric
       std::vector<CG::FunctionParam> const &operatorParams = operator_->getParams();
       if ( operatorParams.size() < 1 )
         throw MR::ArrayGeneratorOperator::GetPrototypeException();
-      return operatorParams[0].getAdapter();
+      RC::ConstHandle<CG::Adapter> outputAdapter = operatorParams[0].getAdapter();
+      RC::ConstHandle<CG::ArrayProducerAdapter> outputArrayProducerAdapter = basicBlockBuilder.getManager()->getArrayProducerOf( outputAdapter );
+      return outputArrayProducerAdapter;
     }
     
     CG::ExprValue CreateArrayGenerator::buildExprValue( CG::BasicBlockBuilder &basicBlockBuilder, CG::Usage usage, std::string const &lValueErrorDesc ) const
