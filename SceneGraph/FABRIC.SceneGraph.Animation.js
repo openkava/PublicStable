@@ -116,6 +116,7 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
       var trackSet = this.getTrackSet(trackSetId);
       trackSet.setValues(time, trackIds, values);
       this.setTrackSet(trackSet, trackSetId);
+      animationLibraryNode.pub.fireEvent('valuechanged', {});
     };
     
     var paramsdgnode;
@@ -429,6 +430,9 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
       curveEditorWindow.trackSetId = trackSetId ? trackSetId : 0;
       curveEditorWindow.scene = scene.pub;
     }
+    
+    
+    scene.addEventHandlingFunctions(animationLibraryNode);
     
     
     var parentWriteData = animationLibraryNode.writeData;

@@ -25,7 +25,7 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
     svgRoot.attr('style', "position:relative; top:-"+windowHeight+"px;z-index:0");
   }
 
-  var graphBGRect = svgRoot.createRect().size(windowWidth, windowHeight).addClass('EventCatcher');
+  var graphBGRect = svgRoot.createRect().size(windowWidth, windowHeight).color(FABRIC.rgb(0.5, 0.5, 0.5));
   var graphCenterGroup = svgRoot.createGroup().id('graphCenterGroup').translate(0, windowHeight * 0.5);
   var curvesHolderGroup = graphCenterGroup.createGroup().id('curvesHolderGroup');
   svgRoot.svgRoot = svgRoot;
@@ -390,18 +390,12 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
   }
     
   var drawTrackCurves = function(){
-    var drawTrackCurveDelayed = function(trackIndex){
-      // enable a redraw to occur between curves
-      setTimeout(function(){
-        drawTrackCurve(trackIndex);
-      }, 1);
-    }
     for (var i = 0; i < trackCount; i++) {
       // Note: this array of checkboxes is a bit hackey.
       // I couldn't get the CSS selectors to work with the 'id' I have used.
       // (Probably bcause the id contains '.')
       if(trackDisplayed[i]){
-        drawTrackCurveDelayed(i);
+        drawTrackCurve(i);
       }
     }
   }
@@ -413,7 +407,6 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
   }
     
   drawTrackCurves();
-  
   
   if(displayTrackNames){
     $('#keyframeTracks').click( function(){
@@ -450,10 +443,13 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
     timeStripeGroupNode.createRect().size(10, windowHeight).addClass('EventCatcher');
     var timeStripe = timeStripeGroupNode.createPath().addClass('TimeStripePath')
         .attr('d', 'M 5 0 L 5 ' + windowHeight);
-  
-    window.updateGraphTimeStripe = function() {
+    
+    var updateTimeStripe = function(){
       timeStripeGroupNode.translate((scene.animation.getTime() + screenXfo.tr.x)  * screenXfo.sc.x, windowHeight * -0.5);
     }
+    scene.addEventListener('timechanged', function(evt){
+      updateTimeStripe();
+    })
   }
   
   var updateTimeRange = function(){
@@ -461,7 +457,7 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
     curvesData = trackDisplayNode.getCurveData();
     
     if(options.timeStripe){
-      updateGraphTimeStripe();
+      updateTimeStripe();
     }
     drawTrackCurves();
   }
@@ -529,6 +525,16 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
     });
   }
   
+  var updateGraph = function(){
+    tracksData = animationLibraryNode.getTrackSet(trackSetId);
+    updateTimeRange();
+  }
+  
+  animationLibraryNode.addEventListener('valuechanged', function(evt){
+    updateGraph();
+  })
+  
+  
   var resizeIntervalId;
   
   return {
@@ -539,8 +545,7 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
         }, 50 );
     },
     redraw: function(){
-      tracksData = animationLibraryNode.getTrackSet(trackSetId);
-      updateTimeRange();
+      updateGraph();
     },
     setKeyDisplayToggle: function(val){
       clearTrackCurves();
