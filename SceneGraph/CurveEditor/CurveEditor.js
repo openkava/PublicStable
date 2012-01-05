@@ -439,7 +439,6 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
         function(evt) {
           scene.animation.setTime((evt.localPos.x / screenXfo.sc.x) - screenXfo.tr.x);
         });
-  
     timeStripeGroupNode.createRect().size(10, windowHeight).addClass('EventCatcher');
     var timeStripe = timeStripeGroupNode.createPath().addClass('TimeStripePath')
         .attr('d', 'M 5 0 L 5 ' + windowHeight);
@@ -447,9 +446,7 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
     var updateTimeStripe = function(){
       timeStripeGroupNode.translate((scene.animation.getTime() + screenXfo.tr.x)  * screenXfo.sc.x, windowHeight * -0.5);
     }
-    scene.addEventListener('timechanged', function(evt){
-      updateTimeStripe();
-    })
+    scene.addEventListener('timechanged', updateTimeStripe);
   }
   
   var updateTimeRange = function(){
@@ -530,10 +527,16 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
     updateTimeRange();
   }
   
-  animationLibraryNode.addEventListener('valuechanged', function(evt){
+  var updateGraphEventFn = function(evt){
     updateGraph();
-  })
-  
+  };
+  animationLibraryNode.addEventListener('valuechanged', updateGraphEventFn);
+  window.onunload = function(){
+    animationLibraryNode.removeEventListener('valuechanged', updateGraphEventFn);
+    if(updateTimeStripe){
+      scene.removeEventListener('timechanged', updateTimeStripe);
+    }
+  };
   
   var resizeIntervalId;
   
