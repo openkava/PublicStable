@@ -9,6 +9,7 @@
 #include <Fabric/Core/KLC/Compilation.h>
 #include <Fabric/Core/KLC/Executable.h>
 #include <Fabric/Core/KLC/ReduceOperatorWrapper.h>
+#include <Fabric/Core/KLC/ValueGeneratorOperatorWrapper.h>
 #include <Fabric/Core/KLC/ValueMapOperatorWrapper.h>
 #include <Fabric/Core/KLC/ValueTransformOperatorWrapper.h>
 #include <Fabric/Core/GC/Object.h>
@@ -58,6 +59,8 @@ namespace Fabric
         jsonExecCreateExecutable( arg, resultJAG );
       else if ( cmd == "createValueMapOperator" )
         jsonExecCreateOperator<ValueMapOperatorWrapper>( arg, resultJAG );
+      else if ( cmd == "createValueGeneratorOperator" )
+        jsonExecCreateOperator<ValueGeneratorOperatorWrapper>( arg, resultJAG );
       else if ( cmd == "createArrayGeneratorOperator" )
         jsonExecCreateOperator<ArrayGeneratorOperatorWrapper>( arg, resultJAG );
       else if ( cmd == "createValueTransformOperator" )

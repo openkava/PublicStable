@@ -8,6 +8,7 @@
 #include <Fabric/Core/KLC/ArrayMapOperatorWrapper.h>
 #include <Fabric/Core/KLC/ArrayTransformOperatorWrapper.h>
 #include <Fabric/Core/KLC/ReduceOperatorWrapper.h>
+#include <Fabric/Core/KLC/ValueGeneratorOperatorWrapper.h>
 #include <Fabric/Core/KLC/ValueMapOperatorWrapper.h>
 #include <Fabric/Core/KLC/ValueTransformOperatorWrapper.h>
 #include <Fabric/Core/DG/IRCache.h>
@@ -272,12 +273,14 @@ namespace Fabric
         jsonExecGetAST( arg, resultJAG );
       else if ( cmd == "getDiagnostics" )
         jsonExecGetDiagnostics( arg, resultJAG );
-      else if ( cmd == "resolveArrayGeneratorOperator" )
-        jsonExecResolveOperator<ArrayGeneratorOperatorWrapper>( arg, resultJAG );
+      else if ( cmd == "resolveValueGeneratorOperator" )
+        jsonExecResolveOperator<ValueGeneratorOperatorWrapper>( arg, resultJAG );
       else if ( cmd == "resolveValueMapOperator" )
         jsonExecResolveOperator<ValueMapOperatorWrapper>( arg, resultJAG );
       else if ( cmd == "resolveValueTransformOperator" )
         jsonExecResolveOperator<ValueTransformOperatorWrapper>( arg, resultJAG );
+      else if ( cmd == "resolveArrayGeneratorOperator" )
+        jsonExecResolveOperator<ArrayGeneratorOperatorWrapper>( arg, resultJAG );
       else if ( cmd == "resolveArrayMapOperator" )
         jsonExecResolveOperator<ArrayMapOperatorWrapper>( arg, resultJAG );
       else if ( cmd == "resolveArrayTransformOperator" )
