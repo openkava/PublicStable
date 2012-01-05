@@ -601,6 +601,10 @@ FABRIC.SceneGraph = {
     };
 
     scene.addEventHandlingFunctions(scene);
+    
+    window.addEventListener('unload', function(){
+      scene.pub.fireEvent('unloading');
+    }, false);
 
     ///////////////////////////////////////////////////////////////////
     // Create the root transform node.
