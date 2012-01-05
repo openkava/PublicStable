@@ -538,6 +538,12 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
     }
   };
   
+  var closeWindow = function(){
+    window.opener.removeEventListener('unload', closeWindow, true);
+    window.close();
+  }
+  window.opener.addEventListener('unload', closeWindow, true);
+  
   var resizeIntervalId;
   
   return {
