@@ -212,6 +212,25 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('FKHierarchySolver',{
         }));
     }
     
+    solver.generateTracks = function(trackSet, trackBindings){
+      var color = FABRIC.RT.rgb(1, 0, 0);
+      var storeEulerAngles = false;
+      for (var i = 0; i < binding.boneIds.length; i++) {
+        trackSet.addXfoTrack(solver.getName()+i, color, storeEulerAngles, trackBindings, xfoIds[i]);
+      }
+    }
+ 
+    solver.setPose = function(pose, variablesNode) {
+      var fkpose = [];
+      for (var i = 0; i < binding.boneIds.length; i++) {
+        if (bones[binding.boneIds[i]].parent == -1)
+          fkpose[i] = pose[binding.boneIds[i]];
+        else
+          fkpose[i] = pose[bones[binding.boneIds[i]].parent].inverse().multiply(pose[binding.boneIds[i]]);
+      }
+      variablesNode.setValues(fkpose, xfoIds);
+    };
+    
     return solver;
   }
 });
@@ -1163,6 +1182,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('HumanoidLegSolver', {
       twistManipulators = [];
 
   var legs = [];
+  var ankleOffsetXfos = [];
   for(j=0; j<options.limbs.length; j++){
       var boneIDs = solver.generateBoneMapping(options.limbs[j], [['bones'], 'ankle']);
       
@@ -1195,6 +1215,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('HumanoidLegSolver', {
       );
       footPlatformXfo.ori = alignmentQuat.multiply(footPlatformXfo.ori);
       ankleOffsetXfo = footPlatformXfo.inverse().multiply(ankleTipXfo);
+      ankleOffsetXfos.push(ankleOffsetXfo);
       
       var xfos = [];
       for(var i=0; i<boneIDs.bones.length; i++){
@@ -1278,6 +1299,29 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('HumanoidLegSolver', {
       }
     }
  
+ 
+    solver.setPose = function(pose, variablesNode) {
+      for( var i=0; i<legs.length; i++){
+        var leg = legs[i];
+      //  var xfoValues = [];
+      //  for (var j = 0; j < leg.boneIds.length; j++) {
+      //    if (bones[leg.boneIds[j]].parent == - 1)
+      //      xfoValues[j] = pose[leg.boneIds[j]];
+      //    else
+      //      xfoValues[j] = pose[bones[leg.boneIds[j]].parent].inverse().multiply(pose[leg.boneIds[j]]);
+      //  }
+      //  xfoValues[leg.boneIds.length] = pose[bones[leg.ankleId].parent].inverse().multiply(pose[leg.ankleId]);
+      //  
+      //  variablesNode.setValues(xfoValues, leg.xfoIds);
+        
+        var ankleTipXfo = pose[leg.ankleId];
+        ankleTipXfo.tr = ankleTipXfo.transformVector(new FABRIC.RT.Vec3(bones[leg.ankleId].length, 0.0, 0.0));
+        var ikGoalXfo = ankleTipXfo.multiply(leg.ikGoalOffsetXfo.inverse());
+        variablesNode.setValue(ikGoalXfo, leg.ikGoalXfoId);
+      }
+    };
+ 
+    
     solver.invert = function(variablesNode){
       variablesNode.getDGNode().bindings.append(scene.constructOperator({
           operatorName: 'invertHumanoidLegRig',
@@ -1292,6 +1336,8 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('HumanoidLegSolver', {
           ]
         }));
     }
+    
+    
     return solver; 
   }
 });
@@ -1334,8 +1380,8 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('HubSolver', {
       name = options.name;
     
     var hubs = [];
-    for(j=0; j<options.hubs.length; j++){
-      var boneIDs = solver.generateBoneMapping(options.hubs[j], ['bone', 'parentSpaceBone', ['inSpineBones']]);
+    for(i=0; i<options.hubs.length; i++){
+      var boneIDs = solver.generateBoneMapping(options.hubs[i], ['bone', 'parentSpaceBone', ['inSpineBones']]);
       var hubXfo = referencePose[boneIDs.bone];
       var hubXfoId = rigNode.addVariable('Xfo', hubXfo);
       var inSpineBoneXfos = [];
@@ -1352,7 +1398,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('HubSolver', {
       
       if (options.createManipulators) {
           // add a manipulation for target and upvector
-          solver.constructManipulator(name + 'HubTranslate'+j, 'ScreenTranslationManipulator', {
+          solver.constructManipulator(name + 'HubTranslate'+i, 'ScreenTranslationManipulator', {
             rigNode: rigNode.pub,
             xfoIndex: hubXfoId,
             geometryNode: scene.pub.constructNode('Cross', { size: hubXfo.tr.y * 0.15 }),
@@ -1378,10 +1424,41 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('HubSolver', {
     });
     
     solver.generateTracks = function(trackSet, trackBindings){
-      for(j=0; j<hubs.length; j++){
+      for(i=0; i<hubs.length; i++){
         var color = FABRIC.RT.rgb(1, 0, 0);
         var storeEulerAngles = false;
-        trackSet.addXfoTrack(solver.getName()+j+'Xfo', color, storeEulerAngles, trackBindings, hubs[j].xfoId);
+        trackSet.addXfoTrack(solver.getName()+i+'Xfo', color, storeEulerAngles, trackBindings, hubs[i].xfoId);
+      }
+    }
+    
+    solver.setPose = function(pose, variablesNode) {
+      for(var i=0; i < hubs.length; i++){
+        var hub = hubs[i];
+        var xfo;
+        if(hub.inSpineBoneIds.length > 0){
+          if(hub.hubParentSpaceId == -1)
+            xfo = pose[hub.boneId];
+          else
+            xfo = pose[hub.hubParentSpaceId].inverse() * pose[hub.boneId];
+        }
+        else{
+          // TODO: Re-impliment hubs with parents. This made animation pre processing more cmoplex once I added the RigRoot node.
+       //   if (bones[hub.boneId].parent == -1)
+            xfo = pose[hub.boneId];
+       //   else
+       //     poseVariables.xfoValues[hub.xfoId] = pose[bones[hub.boneId].parent].inverse() * pose[hub.boneId];
+        }
+        variablesNode.setValue(xfo, hub.xfoId);
+        if(hub.inSpineBoneIds.length > 0){
+          var spineXfos = [];
+          for (var j = 0; j < hub.inSpineBoneIds.size; j++) {
+            if (bones[hub.inSpineBoneIds[j]].parent == - 1)
+              spineXfos[j] = pose[hub.inSpineBoneIds[j]];
+            else
+              spineXfos[j] = pose[bones[hub.inSpineBoneIds[j]].parent].inverse().multiply(pose[hub.inSpineBoneIds[j]]);
+          }
+          variablesNode.setValues(spineXfos, hub.inSpineBoneIds);
+        }
       }
     }
     
@@ -1399,6 +1476,8 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('HubSolver', {
         ]
       }));
     }
+    
+    
     return solver; 
   }
 });

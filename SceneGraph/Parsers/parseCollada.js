@@ -9,7 +9,17 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
   if(options.scaleFactor == undefined) options.scaleFactor = 1.0;
   if(options.logWarnings == undefined) options.logWarnings = false;
   if(options.constructScene == undefined) options.constructScene = true;
+  
+  // Load animations in the collada file into an animation library using an existing rig.
+  if(options.loadAnimationUsingRig == undefined) options.loadAnimationUsingRig = false;
+  if(options.loadPoseOntoRig == undefined) options.loadPoseOntoRig = false;
+  if(options.constructRigFromHierarchy == undefined) options.constructRigFromHierarchy = false;
+  
+  // options.rigNode;
+  // options.rigHierarchyRootNodeName;
   if(options.flipUVs == undefined) options.flipUVs = true;
+  var animationLibrary = options.animationLibrary;
+  var controllerNode = options.controllerNode;
   
   
 
@@ -801,14 +811,12 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
     return geometryNodes;
   }
 
-  var libraryAnimations = options.animationLibrary;
-  var controllerNode = options.controllerNode;
   
   var loadRigAnimation = function(rigNode){
     if(colladaData.libraryAnimations){
-      if(!libraryAnimations){
-        libraryAnimations = scene.constructNode('LinearKeyAnimationLibrary');
-        assetNodes[libraryAnimations.getName()] = libraryAnimations;
+      if(!animationLibrary){
+        animationLibrary = scene.constructNode('LinearKeyAnimationLibrary');
+        assetNodes[animationLibrary.getName()] = animationLibrary;
       }
       if(!controllerNode){
         controllerNode = scene.constructNode('AnimationController');
@@ -964,13 +972,13 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
         trackBindings.addXfoBinding(xfoVarBindings[boneName], trackIds);
       }
       
-      var trackSetID = libraryAnimations.addTrackSet(trackSet);
+      var trackSetID = animationLibrary.addTrackSet(trackSet);
       var variablesNode = rigNode.getVariablesNode();
       if(!variablesNode){
         variablesNode = rigNode.constructVariablesNode(rigNode.getName() + 'Variables', true);
         assetNodes[variablesNode.getName()] = variablesNode;
       }
-      variablesNode.bindToAnimationTracks(libraryAnimations, controllerNode, trackSetID, trackBindings);
+      variablesNode.bindToAnimationTracks(animationLibrary, controllerNode, trackSetID, trackBindings);
       
     }
   }
@@ -1062,6 +1070,28 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
     libraryRigs[rootNodeName] = rigData;
     return rigData;
   }
+
+
+  var loadPoseOntoRig = function(sceneData, rigNode, rootNodeName){
+    // recurse on the hierarchy
+    var pose = [];
+    var traverseChildren = function(nodeData, parentXfo) {
+      var xfo = nodeData.xfo;
+      if (parentXfo) {
+        xfo = parentXfo.multiply(xfo);
+      }
+      pose.push(xfo);
+      if (nodeData.children) {
+        for (var i = 0; i < nodeData.children.length; i++) {
+          traverseChildren(nodeData.children[i], xfo);
+        }
+      }
+    };
+    traverseChildren(sceneData.nodeLibrary[rootNodeName]);
+    
+    rigNode.setPose(pose);
+  }
+
 
     
   var libraryControllers = {};
@@ -1322,13 +1352,16 @@ FABRIC.SceneGraph.registerParser('dae', function(scene, assetFile, options) {
       
       // The file may contain a hierarchy that can be used to generate a skeleton
       if (options.constructRigFromHierarchy) {
-        constructRigFromHierarchy(sceneData, options.constructRigFromHierarchy);
+        constructRigFromHierarchy(sceneData, options.rigHierarchyRootNodeName);
       }
     }
     else{
       
       if (options.loadAnimationUsingRig) {
-        loadRigAnimation(options.loadAnimationUsingRig);
+        loadRigAnimation(options.rigNode);
+      }
+      if (options.loadPoseOntoRig) {
+        loadPoseOntoRig(sceneData, options.rigNode, options.rigHierarchyRootNodeName);
       }
     }
   }
