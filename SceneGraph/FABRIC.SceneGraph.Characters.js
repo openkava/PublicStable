@@ -492,6 +492,11 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
         m_animationLibraryNode.pub.setValues(m_trackSetId, m_animationControllerNode.pub.getTime(), binding.trackIds, values);
       }
     }
+    characterVariablesNode.setValues = function(values, indices) {
+      for(var i in values){
+        characterVariablesNode.setValue(values[i], indices[i]);
+      }
+    }
     
     //////////////////////////////////////////
     // Persistence
@@ -593,7 +598,6 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
       async: false
     }));
     // extend the public interface
-    characterRigNode.addMemberInterface(dgnode, 'pose', true);
     
     characterRigNode.pub.setSkeletonNode = function(node) {
       if (!node.isTypeOf('CharacterSkeleton')) {
@@ -714,6 +718,15 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
       return invertedVariablesNode.pub;
     };
     
+    characterRigNode.addMemberInterface(dgnode, 'pose', false);
+    characterRigNode.pub.setPose = function(pose) {
+      for (var i = 0; i < solvers.length; i++) {
+        if(!solvers[i].setPose)
+          continue;
+        solvers[i].setPose(pose, variablesNode);
+      }
+    };
+    
     //////////////////////////////////////////
     // Animation Tracks
     
@@ -809,98 +822,6 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
   }});
 
 
-
-FABRIC.SceneGraph.registerNodeType('CharacterRigDebug', {
-  briefDesc: 'The CharacterRigDebug node is used to draw debug information of a CharacterRig on screen.',
-  detailedDesc: 'The CharacterRigDebug node is used to draw debug information of a CharacterRig on screen.',
-  parentNodeDesc: 'Points',
-  optionsDesc: {
-  },
-  factoryFn: function(options, scene) {
-
-    scene.assignDefaults(options, {
-      dynamic: true,
-      color: FABRIC.RT.rgba(0.0, 1.0, 1.0, 1.0),
-      size: 5.0,
-      offsetpose: new FABRIC.RT.Xfo(),
-      constructInstanceNode: true
-      });
-
-    var characterRigDebugNode = scene.constructNode('Points', options);
-    var rigNode,
-      instanceNode;
-
-    // extend public interface
-    characterRigDebugNode.pub.setRigNode = function(node) {
-
-      rigNode = scene.getPrivateInterface(node);
-      characterRigDebugNode.pub.addVertexAttributeValue('vertexColors', 'Color', { genVBO:true } );
-      characterRigDebugNode.getUniformsDGNode().setDependency(rigNode.getDGNode(), 'rig');
-      characterRigDebugNode.getUniformsDGNode().setDependency(rigNode.getVariablesNode().getDGNode(), 'variables');
-      characterRigDebugNode.pub.addUniformValue('debugpose', 'Xfo[]');
-      characterRigDebugNode.pub.addUniformValue('singlecolor', 'Color', options.color);
-      characterRigDebugNode.pub.addUniformValue('offsetpose', 'Xfo', options.offsetpose);
-
-      // now append the operator to create the lines
-      var operators = characterRigDebugNode.getUniformsDGNode().bindings;
-      operators.append(scene.constructOperator({
-          operatorName: 'clearDebugXfos',
-          srcFile: 'FABRIC_ROOT/SceneGraph/KL/characterDebug.kl',
-          entryFunctionName: 'clearDebugXfos',
-          parameterLayout: [
-            'self.debugpose'
-          ]
-        }));
-
-      characterRigDebugNode.getAttributesDGNode().bindings.append(scene.constructOperator({
-          operatorName: 'generateDebugPoints',
-          srcFile: 'FABRIC_ROOT/SceneGraph/KL/characterDebug.kl',
-          entryFunctionName: 'generateDebugPoints',
-          parameterLayout: [
-            'uniforms.debugpose',
-            'uniforms.offsetpose',
-            'self.positions<>',
-            'self.vertexColors[]',
-            'uniforms.singlecolor'
-          ]
-        }));
-    };
-    characterRigDebugNode.pub.getRigNode = function() {
-      return rigNode;
-    };
-    characterRigDebugNode.pub.constructInstanceNode = function() {
-      if (instanceNode)
-        return instanceNode;
-      if (!rigNode)
-        return undefined;
-
-      var material = scene.constructNode('VertexColorMaterial', {
-        prototypeMaterialType: 'PointMaterial',
-        pointSize: 10.0,
-        color: FABRIC.RT.rgb(0.8, 0, 0, 1)
-      });
-
-      instanceNode = scene.constructNode('Instance', {
-          geometryNode: characterRigDebugNode.pub,
-          materialNode: material
-        });
-      return instanceNode;
-    };
-    characterRigDebugNode.pub.getInstanceNode = function() {
-      return scene.getPublicInterface(instanceNode);
-    };
-
-    characterRigDebugNode.pub.characterRigDebugNode.setAttributeDynamic('positions');
-
-    if (options.characterRigNode) {
-      characterRigDebugNode.pub.setRigNode(options.characterRigNode);
-    }
-    if (options.constructInstanceNode) {
-      characterRigDebugNode.pub.constructInstanceNode();
-    }
-
-    return characterRigDebugNode;
-  }});
 
 // The character instance draws a deformed mesh on screen.
 FABRIC.SceneGraph.registerNodeType('CharacterInstance', {

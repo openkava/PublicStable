@@ -74,7 +74,7 @@ FABRIC.RT.BezierKeyframeTrack.prototype = {
   autoTangents: function(keyIndex, autoTangentsLeftandRight){
     var numKeys = this.keys.length;
     var intan, outtan, intdelta, outtdelta, inGradient = 0.0, outGradient = 0.0;
-    var key = this.keys[keyIndex];
+    var prevkey, nextkey, key = this.keys[keyIndex];
     if(keyIndex > 0){
       prevkey = this.keys[keyIndex-1];
       intdelta = (key.time - prevkey.time);
@@ -128,7 +128,6 @@ FABRIC.RT.BezierKeyframeTrack.prototype = {
           break;
         }
       }
-      var key, prevkey, nextkey;
       if(this.keys[i].time === time){
         this.keys[keyIndex].value = value;
       }
