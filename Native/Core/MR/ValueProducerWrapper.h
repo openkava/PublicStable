@@ -16,7 +16,7 @@ namespace Fabric
     class ValueProducerWrapper : public ProducerWrapper
     {
       FABRIC_GC_OBJECT_CLASS_DECL()
-      
+
       // Virtual functions: GC::Object
       
     public:
@@ -42,7 +42,7 @@ namespace Fabric
         Util::JSONArrayGenerator &resultJAG
         );
     };
-  };
-};
+  }
+}
 
 #endif //_FABRIC_MR_VALUE_PRODUCER_WRAPPER_H

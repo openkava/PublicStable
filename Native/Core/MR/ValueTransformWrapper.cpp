@@ -4,8 +4,11 @@
  
 #include <Fabric/Core/MR/ValueTransformWrapper.h>
 #include <Fabric/Core/MR/ValueTransform.h>
-#include <Fabric/Core/KLC/ValueTransformOperatorWrapper.h>
+#include <Fabric/Core/MR/ValueTransformOperator.h>
+#include <Fabric/Core/MR/ValueProducer.h>
+#include <Fabric/Core/MR/ValueProducerWrapper.h>
 #include <Fabric/Core/KLC/ValueTransformOperator.h>
+#include <Fabric/Core/KLC/ValueTransformOperatorWrapper.h>
 #include <Fabric/Core/Util/JSONGenerator.h>
 
 namespace Fabric
@@ -15,31 +18,31 @@ namespace Fabric
     FABRIC_GC_OBJECT_CLASS_IMPL( ValueTransformWrapper, ValueProducerWrapper );
     
     RC::Handle<ValueTransformWrapper> ValueTransformWrapper::Create(
-      RC::ConstHandle<ValueProducerWrapper> const &input,
+      RC::ConstHandle<ValueProducerWrapper> const &inputValueProducer,
       RC::ConstHandle<KLC::ValueTransformOperatorWrapper> const &operator_,
-      RC::ConstHandle<ValueProducerWrapper> const &shared
+      RC::ConstHandle<ValueProducerWrapper> const &sharedValueProducer
       )
     {
-      return new ValueTransformWrapper( FABRIC_GC_OBJECT_MY_CLASS, input, operator_, shared );
+      return new ValueTransformWrapper( FABRIC_GC_OBJECT_MY_CLASS, inputValueProducer, operator_, sharedValueProducer );
     }
     
     ValueTransformWrapper::ValueTransformWrapper(
       FABRIC_GC_OBJECT_CLASS_PARAM,
-      RC::ConstHandle<ValueProducerWrapper> const &input,
+      RC::ConstHandle<ValueProducerWrapper> const &inputValueProducer,
       RC::ConstHandle<KLC::ValueTransformOperatorWrapper> const &operator_,
-      RC::ConstHandle<ValueProducerWrapper> const &shared
+      RC::ConstHandle<ValueProducerWrapper> const &sharedValueProducer
       )
       : ValueProducerWrapper( FABRIC_GC_OBJECT_CLASS_ARG )
-      , m_input( input )
+      , m_inputValueProducer( inputValueProducer )
       , m_operator( operator_ )
-      , m_shared( shared )
+      , m_sharedValueProducer( sharedValueProducer )
       , m_unwrapped(
         ValueTransform::Create(
-          input->getUnwrapped(),
+          inputValueProducer->getUnwrapped(),
           operator_->getUnwrapped(),
-          shared? shared->getUnwrapped(): RC::ConstHandle<ValueProducer>()
+          sharedValueProducer? sharedValueProducer->getUnwrapped(): RC::ConstHandle<ValueProducer>()
+          )
         )
-      )
     {
     }
       
@@ -57,18 +60,18 @@ namespace Fabric
     {
       {
         Util::JSONGenerator jg = jog.makeMember( "input" );
-        m_input->toJSON( jg );
+        m_inputValueProducer->toJSON( jg );
       }
 
       {
         Util::JSONGenerator jg = jog.makeMember( "operator" );
         m_operator->toJSON( jg );
       }
-      
-      if ( m_shared )
+
+      if ( m_sharedValueProducer )
       {
         Util::JSONGenerator jg = jog.makeMember( "shared" );
-        m_shared->toJSON( jg );
+        m_sharedValueProducer->toJSON( jg );
       }
     }
   }
