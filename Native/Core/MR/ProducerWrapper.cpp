@@ -34,7 +34,7 @@ namespace Fabric
       Util::JSONArrayGenerator &resultJAG
       )
     {
-      if ( cmd == "getJSONDesc" )
+      if ( cmd == "toJSON" )
         jsonExecGetJSONDesc( arg, resultJAG );
       else GC::Object::jsonExec( cmd, arg, resultJAG );
     }

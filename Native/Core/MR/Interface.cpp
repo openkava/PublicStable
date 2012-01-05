@@ -9,12 +9,14 @@
 #include <Fabric/Core/MR/ConstArrayWrapper.h>
 #include <Fabric/Core/MR/ConstValueWrapper.h>
 #include <Fabric/Core/MR/ReduceWrapper.h>
+#include <Fabric/Core/MR/ValueGeneratorWrapper.h>
 #include <Fabric/Core/MR/ValueMapWrapper.h>
 #include <Fabric/Core/MR/ValueTransformWrapper.h>
 #include <Fabric/Core/KLC/ArrayGeneratorOperatorWrapper.h>
 #include <Fabric/Core/KLC/ArrayMapOperatorWrapper.h>
 #include <Fabric/Core/KLC/ArrayTransformOperatorWrapper.h>
 #include <Fabric/Core/KLC/ReduceOperatorWrapper.h>
+#include <Fabric/Core/KLC/ValueGeneratorOperatorWrapper.h>
 #include <Fabric/Core/KLC/ValueMapOperatorWrapper.h>
 #include <Fabric/Core/KLC/ValueTransformOperatorWrapper.h>
 #include <Fabric/Core/GC/Object.h>
@@ -62,6 +64,8 @@ namespace Fabric
     {
       if ( cmd == "createConstValue" )
         jsonExecCreateConstValue( arg, resultJAG );
+      else if ( cmd == "createValueGenerator" )
+        jsonExecCreateValueGenerator( arg, resultJAG );
       else if ( cmd == "createValueMap" )
         jsonExecCreateValueMap( arg, resultJAG );
       else if ( cmd == "createValueTransform" )
@@ -327,6 +331,57 @@ namespace Fabric
       
       ValueTransformWrapper::Create(
         inputWrapper,
+        operatorWrapper,
+        sharedWrapper
+        )->reg( m_gcContainer, id_ );
+    }
+    
+    void Interface::jsonExecCreateValueGenerator(
+      RC::ConstHandle<JSON::Value> const &arg,
+      Util::JSONArrayGenerator &resultJAG
+      )
+    {
+      RC::ConstHandle<JSON::Object> argObject = arg->toObject();
+      
+      std::string id_;
+      try
+      {
+        id_ = argObject->get( "id" )->toString()->value();
+      }
+      catch ( Exception e )
+      {
+        throw "id: " + e;
+      }
+      
+      RC::Handle<KLC::ValueGeneratorOperatorWrapper> operatorWrapper;
+      try
+      {
+        operatorWrapper = GC::DynCast<KLC::ValueGeneratorOperatorWrapper>( m_gcContainer->getObject( argObject->get( "operatorID" )->toString()->value() ) );
+        if ( !operatorWrapper )
+          throw "must be a value transform operator";
+      }
+      catch ( Exception e )
+      {
+        throw "operatorID: " + e;
+      }
+      
+      RC::Handle<ValueProducerWrapper> sharedWrapper;
+      RC::ConstHandle<JSON::Value> sharedIDValue = argObject->maybeGet( "sharedID" );
+      if ( sharedIDValue )
+      {
+        try
+        {
+          sharedWrapper = GC::DynCast<ValueProducerWrapper>( m_gcContainer->getObject( sharedIDValue->toString()->value() ) );
+          if ( !sharedWrapper )
+            throw "must be a value producer";
+        }
+        catch ( Exception e )
+        {
+          throw "sharedID: " + e;
+        }
+      }
+      
+      ValueGeneratorWrapper::Create(
         operatorWrapper,
         sharedWrapper
         )->reg( m_gcContainer, id_ );
