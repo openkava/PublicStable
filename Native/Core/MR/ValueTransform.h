@@ -14,7 +14,7 @@ namespace Fabric
 {
   namespace MR
   {
-    class ValueTransformOperator;
+    class ValueOutputOperator;
     
     class ValueTransform : public ValueProducer
     {
@@ -22,7 +22,7 @@ namespace Fabric
     
       static RC::Handle<ValueTransform> Create(
         RC::ConstHandle<ValueProducer> const &input,
-        RC::ConstHandle<ValueTransformOperator> const &operator_,
+        RC::ConstHandle<ValueOutputOperator> const &operator_,
         RC::ConstHandle<ValueProducer> const &shared
         );
       
@@ -57,14 +57,14 @@ namespace Fabric
     
       ValueTransform(
         RC::ConstHandle<ValueProducer> const &input,
-        RC::ConstHandle<ValueTransformOperator> const &operator_,
+        RC::ConstHandle<ValueOutputOperator> const &operator_,
         RC::ConstHandle<ValueProducer> const &shared
         );
     
     private:
     
       RC::ConstHandle<ValueProducer> m_input;
-      RC::ConstHandle<ValueTransformOperator> m_operator;
+      RC::ConstHandle<ValueOutputOperator> m_operator;
       RC::ConstHandle<ValueProducer> m_shared;
       
       RC::ConstHandle<RT::Desc> m_valueDesc;

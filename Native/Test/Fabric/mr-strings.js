@@ -4,7 +4,7 @@ ag = FC.MR.createArrayGenerator(
   FC.MR.createConstValue("Size", 100),
   FC.KLC.createArrayGeneratorOperator(
     "gen.kl",
-    "operator gen(Size index, io String output) { output = String(index+1); }",
+    "operator gen(io String output, Size index) { output = String(index+1); }",
     "gen"
     )
   );

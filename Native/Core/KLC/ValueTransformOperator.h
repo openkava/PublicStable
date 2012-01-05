@@ -5,10 +5,7 @@
 #ifndef _FABRIC_KLC_VALUE_TRANSFORM_OPERATOR_H
 #define _FABRIC_KLC_VALUE_TRANSFORM_OPERATOR_H
 
-#include <Fabric/Core/MR/ValueTransformOperator.h>
-#include <Fabric/Core/KLC/GenericFunctionPtr.h>
-#include <Fabric/Base/RC/Handle.h>
-#include <Fabric/Base/RC/ConstHandle.h>
+#include <Fabric/Core/KLC/ValueOutputOperator.h>
 
 namespace Fabric
 {
@@ -21,7 +18,7 @@ namespace Fabric
   {
     class Executable;
 
-    class ValueTransformOperator : public MR::ValueTransformOperator
+    class ValueTransformOperator : public ValueOutputOperator
     {
     public:
     
@@ -38,10 +35,6 @@ namespace Fabric
         RC::ConstHandle<AST::Operator> const &astOperator,
         GenericFunctionPtr functionPtr
         );
-    
-    private:
-    
-      RC::ConstHandle<Executable> m_executable;
     };
   }
 }
