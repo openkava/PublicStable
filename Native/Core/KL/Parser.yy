@@ -89,6 +89,7 @@ typedef struct YYLTYPE
 #include <Fabric/Core/AST/CreateConstArray.h>
 #include <Fabric/Core/AST/CreateConstValue.h>
 #include <Fabric/Core/AST/CreateReduce.h>
+#include <Fabric/Core/AST/CreateValueGenerator.h>
 #include <Fabric/Core/AST/CreateValueTransform.h>
 #include <Fabric/Core/AST/CreateValueMap.h>
 #include <Fabric/Core/AST/CStyleLoop.h>
@@ -239,6 +240,7 @@ int kl_lex( YYSTYPE *yys, YYLTYPE *yyl, KL::Context &context );
 %token TOKEN_CREATE_VALUE_MAP "createValueMap"
 %token TOKEN_CREATE_ARRAY_GENERATOR "createArrayGenerator"
 %token TOKEN_CREATE_ARRAY_TRANSFORM "createArrayTransform"
+%token TOKEN_CREATE_VALUE_GENERATOR "createValueGenerator"
 %token TOKEN_CREATE_VALUE_TRANSFORM "createValueTransform"
 
 %token TOKEN_LBRACE "{"
@@ -1534,6 +1536,17 @@ primary_expression
   {
     $$ = AST::CreateConstValue::Create( RTLOC, $3 ).take();
     $3->release();
+  }
+  | TOKEN_CREATE_VALUE_GENERATOR TOKEN_LPAREN TOKEN_IDENTIFIER TOKEN_RPAREN
+  {
+    $$ = AST::CreateValueGenerator::Create( RTLOC, *$3, 0 ).take();
+    delete $3;
+  }
+  | TOKEN_CREATE_VALUE_GENERATOR TOKEN_LPAREN TOKEN_IDENTIFIER TOKEN_COMMA assignment_expression TOKEN_RPAREN
+  {
+    $$ = AST::CreateValueGenerator::Create( RTLOC, *$3, $5 ).take();
+    delete $3;
+    $5->release();
   }
   | TOKEN_CREATE_VALUE_TRANSFORM TOKEN_LPAREN assignment_expression TOKEN_COMMA TOKEN_IDENTIFIER TOKEN_RPAREN
   {
