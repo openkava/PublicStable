@@ -509,6 +509,8 @@ namespace Fabric
             return createToken( TOKEN_CREATE_ARRAY_GENERATOR, sourceRange );
           if ( string == "createArrayTransform" )
             return createToken( TOKEN_CREATE_ARRAY_TRANSFORM, sourceRange );
+          if ( string == "createValueGenerator" )
+            return createToken( TOKEN_CREATE_VALUE_GENERATOR, sourceRange );
           if ( string == "createValueTransform" )
             return createToken( TOKEN_CREATE_VALUE_TRANSFORM, sourceRange );
           break;

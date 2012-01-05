@@ -56,6 +56,8 @@ namespace Fabric
         void const *sharedData
         ) const;
       
+      static Exception GetPrototypeException();
+      
     protected:
     
       ValueOutputOperator();
@@ -66,8 +68,6 @@ namespace Fabric
         RC::ConstHandle<RT::Desc> const &valueDesc,
         RC::ConstHandle<RT::Desc> const &sharedDesc
         );
-      
-      static Exception GetPrototypeException();
     
     private:
     
