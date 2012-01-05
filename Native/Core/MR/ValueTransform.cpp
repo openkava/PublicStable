@@ -3,7 +3,7 @@
  */
  
 #include <Fabric/Core/MR/ValueTransform.h>
-#include <Fabric/Core/KLC/ValueTransformOperator.h>
+#include <Fabric/Core/MR/ValueOutputOperator.h>
 #include <Fabric/Core/RT/Desc.h>
 #include <Fabric/Core/Util/Format.h>
 #include <Fabric/Core/Util/JSONGenerator.h>
@@ -15,7 +15,7 @@ namespace Fabric
   {
     RC::Handle<ValueTransform> ValueTransform::Create(
       RC::ConstHandle<ValueProducer> const &input,
-      RC::ConstHandle<ValueTransformOperator> const &operator_,
+      RC::ConstHandle<ValueOutputOperator> const &operator_,
       RC::ConstHandle<ValueProducer> const &shared
       )
     {
@@ -24,7 +24,7 @@ namespace Fabric
     
     ValueTransform::ValueTransform(
       RC::ConstHandle<ValueProducer> const &input,
-      RC::ConstHandle<ValueTransformOperator> const &operator_,
+      RC::ConstHandle<ValueOutputOperator> const &operator_,
       RC::ConstHandle<ValueProducer> const &shared
       )
       : m_input( input )
@@ -103,7 +103,7 @@ namespace Fabric
     {
       m_inputValueProducerComputeState->produce( data );
       
-      RC::ConstHandle<ValueTransformOperator> valueTransformOperator = m_valueTransform->m_operator;
+      RC::ConstHandle<ValueOutputOperator> valueTransformOperator = m_valueTransform->m_operator;
       if ( valueTransformOperator->takesSharedValue() )
         valueTransformOperator->call( data, &m_sharedData[0] );
       else valueTransformOperator->call( data );

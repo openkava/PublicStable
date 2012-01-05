@@ -31,33 +31,8 @@ namespace Fabric
       RC::ConstHandle<AST::Operator> const &astOperator,
       GenericFunctionPtr functionPtr
       )
-      : m_executable( executable )
+      : ValueOutputOperator( executable, astOperator, functionPtr )
     {
-      if ( astOperator )
-      {
-        RC::Handle<CG::Manager> cgManager = executable->getCGManager();
-        
-        RC::ConstHandle<AST::ParamVector> params = astOperator->getParams( cgManager );
-        size_t numParams = params->size();
-        if ( numParams < 1 || numParams > 2 )
-          throw GetPrototypeException();
-        
-        RC::ConstHandle<AST::Param> valueParam = params->get(0);
-        if ( valueParam->getUsage() != CG::USAGE_LVALUE )
-          throw GetPrototypeException();
-        RC::ConstHandle<RT::Desc> valueDesc = valueParam->getAdapter( cgManager )->getDesc();
-        
-        RC::ConstHandle<RT::Desc> sharedDesc;
-        if ( numParams >= 2 )
-        {
-          RC::ConstHandle<AST::Param> sharedParam = params->get(1);
-          if ( sharedParam->getUsage() != CG::USAGE_RVALUE )
-            throw GetPrototypeException();
-          sharedDesc = sharedParam->getAdapter( cgManager )->getDesc();
-        }
-
-        init( functionPtr, numParams, valueDesc, sharedDesc );
-      }
     }
   }
 }
