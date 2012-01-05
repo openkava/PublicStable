@@ -2019,7 +2019,7 @@ function (fabricClient, logCallback, debugLogCallback) {
       createValueMap: function(input, operator, shared) {
         var result = GC.createObject('MR');
         
-        populateValueMap(valueMap);
+        populateValueMap(result);
         
         var arg = {
           id: result.id,
@@ -2073,19 +2073,23 @@ function (fabricClient, logCallback, debugLogCallback) {
         return result.pub;
       },
       
-      createArrayGenerator: function(countValueProducer, arrayGeneratorOperator) {
-        var arrayGenerator = GC.createObject('MR');
+      createArrayGenerator: function(count, operator, shared) {
+        var result = GC.createObject('MR');
         
-        populateArrayGenerator(arrayGenerator);
+        populateArrayGenerator(result);
         
-        queueCommand(['MR'], 'createArrayGenerator', {
-          id: arrayGenerator.id,
-          countValueProducerID: countValueProducer.getID(),
-          arrayGeneratorOperatorID: arrayGeneratorOperator.getID()
-        }, function () {
-          delete arrayGenerator.id;
+        var arg = {
+          id: result.id,
+          countID: count.getID(),
+          operatorID: operator.getID()
+        };
+        if (shared)
+          arg.sharedID = shared.getID();
+        
+        queueCommand(['MR'], 'createArrayGenerator', arg, function () {
+          delete result.id;
         });
-        return arrayGenerator.pub;
+        return result.pub;
       },
       
       createConstArray: function(elementType, data) {

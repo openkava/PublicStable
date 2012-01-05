@@ -2,15 +2,12 @@ FC = require("Fabric").createClient();
 
 cv = FC.MR.createConstValue("Size", 10);
 
-ago = FC.KLC.createArrayGeneratorOperator("foo.kl", "operator foo(Size index, io Scalar output) { output = Scalar(index); }", "foo");
+ago = FC.KLC.createArrayGeneratorOperator("foo.kl", "operator foo(io Scalar output, Size index) { output = sqrt(Scalar(index)); }", "foo");
 ag = FC.MR.createArrayGenerator(cv, ago);
 
-mo = FC.KLC.createArrayMapOperator("bar.kl", "operator bar(Scalar input, io Scalar output) { output = input * input; }", "bar");
-m = FC.MR.createArrayMap(ag, mo);
-
-var count = m.getCount();
-console.log("count = " + count);
+var count = ag.getCount();
+console.log("ag.getCount() = " + count);
 for (var i=0; i<count; ++i)
-  console.log("produce("+i+") = "+m.produce(i));
+  console.log("ag.produce("+i+") = "+ag.produce(i));
 
 FC.close();

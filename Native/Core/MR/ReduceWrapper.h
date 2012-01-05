@@ -2,8 +2,8 @@
  *  Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
  */
  
-#ifndef _FABRIC_MR_VALUE_MAP_WRAPPER_H
-#define _FABRIC_MR_VALUE_MAP_WRAPPER_H
+#ifndef _FABRIC_MR_REDUCE_WRAPPER_H
+#define _FABRIC_MR_REDUCE_WRAPPER_H
 
 #include <Fabric/Core/MR/ValueProducerWrapper.h>
 #include <Fabric/Base/RC/ConstHandle.h>
@@ -12,20 +12,22 @@ namespace Fabric
 {
   namespace KLC
   {
-    class ValueMapOperatorWrapper;
+    class ReduceOperatorWrapper;
   }
   
   namespace MR
   {
-    class ValueMapWrapper : public ValueProducerWrapper
+    class ArrayProducerWrapper;
+    
+    class ReduceWrapper : public ValueProducerWrapper
     {
       FABRIC_GC_OBJECT_CLASS_DECL()
     
     public:
     
-      static RC::Handle<ValueMapWrapper> Create(
-        RC::ConstHandle<ValueProducerWrapper> const &inputWrapper,
-        RC::ConstHandle<KLC::ValueMapOperatorWrapper> const &operatorWrapper,
+      static RC::Handle<ReduceWrapper> Create(
+        RC::ConstHandle<ArrayProducerWrapper> const &inputWrapper,
+        RC::ConstHandle<KLC::ReduceOperatorWrapper> const &operatorWrapper,
         RC::ConstHandle<ValueProducerWrapper> const &sharedWrapper
         );
       
@@ -33,10 +35,10 @@ namespace Fabric
             
     protected:
       
-      ValueMapWrapper(
+      ReduceWrapper(
         FABRIC_GC_OBJECT_CLASS_PARAM,
-        RC::ConstHandle<ValueProducerWrapper> const &inputWrapper,
-        RC::ConstHandle<KLC::ValueMapOperatorWrapper> const &operatorWrapper,
+        RC::ConstHandle<ArrayProducerWrapper> const &inputWrapper,
+        RC::ConstHandle<KLC::ReduceOperatorWrapper> const &operatorWrapper,
         RC::ConstHandle<ValueProducerWrapper> const &sharedWrapper
         );
     
@@ -45,8 +47,8 @@ namespace Fabric
     
     private:
     
-      RC::ConstHandle<ValueProducerWrapper> m_inputWrapper;
-      RC::ConstHandle<KLC::ValueMapOperatorWrapper> m_operatorWrapper;
+      RC::ConstHandle<ArrayProducerWrapper> m_inputWrapper;
+      RC::ConstHandle<KLC::ReduceOperatorWrapper> m_operatorWrapper;
       RC::ConstHandle<ValueProducerWrapper> m_sharedWrapper;
       
       RC::ConstHandle<ValueProducer> m_unwrapped;
@@ -54,4 +56,4 @@ namespace Fabric
   }
 }
 
-#endif //_FABRIC_MR_VALUE_MAP_WRAPPER_H
+#endif //_FABRIC_MR_REDUCE_WRAPPER_H
