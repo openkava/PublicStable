@@ -44,10 +44,15 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
   var yRange = new FABRIC.Vec2(0, 0);
   var curvesData = [];
   var trackGroups = [];
-  trackDisplayNode = scene.constructNode('TrackDisplay', {
+  
+  var trackDisplayNode = scene.getSceneGraphNode(animationLibraryNode.getName()+'TrackDisplay');
+  if(!trackDisplayNode){
+    trackDisplayNode = scene.constructNode('TrackDisplay', {
+      name:animationLibraryNode.getName()+'TrackDisplay',
       animationLibraryNode: animationLibraryNode,
       trackSetId: trackSetId
     });
+  }
   
   if(displayTrackNames){
     ///////////////
@@ -385,12 +390,18 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
   }
     
   var drawTrackCurves = function(){
+    var drawTrackCurveDelayed = function(trackIndex){
+      // enable a redraw to occur between curves
+      setTimeout(function(){
+        drawTrackCurve(trackIndex);
+      }, 1);
+    }
     for (var i = 0; i < trackCount; i++) {
       // Note: this array of checkboxes is a bit hackey.
       // I couldn't get the CSS selectors to work with the 'id' I have used.
       // (Probably bcause the id contains '.')
       if(trackDisplayed[i]){
-        drawTrackCurve(i);
+        drawTrackCurveDelayed(i);
       }
     }
   }

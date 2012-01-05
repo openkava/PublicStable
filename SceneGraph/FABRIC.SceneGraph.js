@@ -513,7 +513,10 @@ FABRIC.SceneGraph = {
       return sceneGraphNodes;
     };
     scene.pub.getSceneGraphNode = function(name) {
-      return sceneGraphNodes[name];
+      if(sceneGraphNodes[name]){
+        return sceneGraphNodes[name].pub;
+      }
+      return undefined;
     };
     scene.setSceneGraphNode = function(name,node) {
       return sceneGraphNodes[name] = node;
