@@ -31,6 +31,7 @@ namespace Fabric
       RC::ConstHandle<JSON::Array> const &jsonArray
       )
       : ArrayProducerWrapper( FABRIC_GC_OBJECT_CLASS_ARG )
+      , m_unwrapped( ConstArray::Create( rtManager, elementDesc, jsonArray ) )
     {
     }
       
@@ -46,8 +47,15 @@ namespace Fabric
     
     void ConstArrayWrapper::toJSONImpl( Util::JSONObjectGenerator &jog ) const
     {
-      Util::JSONGenerator jg = jog.makeMember( "data" );
-      m_unwrapped->getArrayDesc()->generateJSON( m_unwrapped->getImmutableData(), jg );
+      {
+        Util::JSONGenerator jg = jog.makeMember( "elementType" );
+        jg.makeString( m_unwrapped->getElementDesc()->getUserName() );
+      }
+      
+      {
+        Util::JSONGenerator jg = jog.makeMember( "data" );
+        m_unwrapped->getArrayDesc()->generateJSON( m_unwrapped->getImmutableData(), jg );
+      }
     }
   }
 }
