@@ -17,6 +17,8 @@
 #include <Fabric/Core/MR/ConstValue.h>
 #include <Fabric/Core/MR/Reduce.h>
 #include <Fabric/Core/MR/ReduceOperator.h>
+#include <Fabric/Core/MR/ValueGenerator.h>
+#include <Fabric/Core/MR/ValueGeneratorOperator.h>
 #include <Fabric/Core/MR/ValueMap.h>
 #include <Fabric/Core/MR/ValueMapOperator.h>
 #include <Fabric/Core/MR/ValueTransform.h>
@@ -259,6 +261,47 @@ namespace Fabric
       ).take();
   }
 
+  static void MRCreateValueGenerator1(
+    void (*operator_)(...),
+    size_t numParams,
+    CG::ValueProducerAdapter *outputValueProducerAdapter,
+    MR::ValueProducer const *&outputValueProducer
+    )
+  {
+    if ( outputValueProducer )
+      outputValueProducer->release();
+    outputValueProducer = MR::ValueGenerator::Create(
+      MR::ValueGeneratorOperator::Create(
+        operator_,
+        numParams,
+        RC::ConstHandle<RT::ValueProducerDesc>::StaticCast( outputValueProducerAdapter->getDesc() )->getValueDesc(),
+        0
+        ),
+      0
+      ).take();
+  }
+
+  static void MRCreateValueGenerator2(
+    void (*operator_)(...),
+    size_t numParams,
+    MR::ValueProducer *&sharedValueProducer,
+    CG::ValueProducerAdapter *outputValueProducerAdapter,
+    MR::ValueProducer const *&outputValueProducer
+    )
+  {
+    if ( outputValueProducer )
+      outputValueProducer->release();
+    outputValueProducer = MR::ValueGenerator::Create(
+      MR::ValueGeneratorOperator::Create(
+        operator_,
+        numParams,
+        RC::ConstHandle<RT::ValueProducerDesc>::StaticCast( outputValueProducerAdapter->getDesc() )->getValueDesc(),
+        sharedValueProducer->getValueDesc()
+        ),
+      sharedValueProducer
+      ).take();
+  }
+
   static void MRCreateConstArray(
     CG::ArrayAdapter *arrayAdapter,
     void const *arrayData,
@@ -485,10 +528,12 @@ namespace Fabric
         symbolNameToAddressMap["_chkstk"] = (void *)&_chkstk;
 #endif
         symbolNameToAddressMap["__MR_CreateConstValue"] = (void *)&MRCreateConstValue;
-        symbolNameToAddressMap["__MR_CreateValueTransform_1"] = (void *)&MRCreateValueTransform1;
-        symbolNameToAddressMap["__MR_CreateValueTransform_2"] = (void *)&MRCreateValueTransform2;
+        symbolNameToAddressMap["__MR_CreateValueGenerator_1"] = (void *)&MRCreateValueGenerator1;
+        symbolNameToAddressMap["__MR_CreateValueGenerator_2"] = (void *)&MRCreateValueGenerator2;
         symbolNameToAddressMap["__MR_CreateValueMap_2"] = (void *)&MRCreateValueMap2;
         symbolNameToAddressMap["__MR_CreateValueMap_3"] = (void *)&MRCreateValueMap3;
+        symbolNameToAddressMap["__MR_CreateValueTransform_1"] = (void *)&MRCreateValueTransform1;
+        symbolNameToAddressMap["__MR_CreateValueTransform_2"] = (void *)&MRCreateValueTransform2;
         symbolNameToAddressMap["__MR_CreateConstArray"] = (void *)&MRCreateConstArray;
         symbolNameToAddressMap["__MR_CreateArrayGenerator_3"] = (void *)&MRCreateArrayGenerator3;
         symbolNameToAddressMap["__MR_CreateArrayGenerator_4"] = (void *)&MRCreateArrayGenerator4;
