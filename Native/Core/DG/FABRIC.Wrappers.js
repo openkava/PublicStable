@@ -1601,6 +1601,10 @@ function (fabricClient, logCallback, debugLogCallback) {
       populateOperator(operator);
     };
 
+    var populateValueTransformOperator = function (operator) {
+      populateOperator(operator);
+    };
+
     var populateReduceOperator = function (reduceOperator) {
       populateOperator(reduceOperator);
     };
