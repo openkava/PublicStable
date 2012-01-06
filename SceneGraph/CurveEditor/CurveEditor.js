@@ -133,7 +133,7 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
     }
   }
   
-  var drawTrackCurves;
+  var clearTrackCurves, drawTrackCurves;
   var buildCurveEditor = function(){
     
     if(displayTrackNames){
@@ -423,7 +423,7 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
       }
     }
     
-    var clearTrackCurves = function(){
+    clearTrackCurves = function(){
       for (var i = 0; i < trackCount; i++) {
         trackGroups[i].removeAllChildren();
       }
@@ -471,12 +471,16 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
         function(evt) {
           scene.animation.setTime((evt.localPos.x / screenXfo.sc.x) - screenXfo.tr.x);
         });
-    timeStripeGroupNode.createRect().size(10, windowHeight).addClass('EventCatcher');
+    var timeStripeEventCatcher = timeStripeGroupNode.createRect().size(10, windowHeight).translate(-5, 0).addClass('EventCatcher');
     var timeStripe = timeStripeGroupNode.createPath().addClass('TimeStripePath')
-        .attr('d', 'M 5 0 L 5 ' + windowHeight);
+        .attr('d', 'M 0 0 L 0 ' + windowHeight);
     
     var updateTimeStripe = function(){
       timeStripeGroupNode.translate((scene.animation.getTime() + screenXfo.tr.x)  * screenXfo.sc.x, windowHeight * -0.5);
+    }
+    var risizeTimeStripe = function(){
+      timeStripe.attr('d', 'M 0 0 L 0 ' + windowHeight);
+      timeStripeEventCatcher.size(10, windowHeight)
     }
     scene.addEventListener('timechanged', updateTimeStripe);
   }
@@ -505,7 +509,7 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
     }
     graphCenterGroup.translate(0, windowHeight * 0.5);
     graphBGRect.size(windowWidth, windowHeight);
-    timeStripe.attr('d', 'M 5 0 L 5 ' + windowHeight);
+    risizeTimeStripe();
     updateTimeRange();
   }
   
