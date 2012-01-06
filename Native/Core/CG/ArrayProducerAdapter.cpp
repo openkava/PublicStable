@@ -145,22 +145,13 @@ namespace Fabric
           llvm::BasicBlock *entryBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "entry" );
           
           basicBlockBuilder->SetInsertPoint( entryBB );
-          llvm::Value *returnLValue = functionBuilder.getScope().llvmGetReturnLValue();
-          llvm::Value *dstLValue;
-          if ( returnLValue )
-            dstLValue = returnLValue;
-          else
-          {
-            m_elementAdapter->llvmAlloca( basicBlockBuilder, "result" );
-            m_elementAdapter->llvmInit( basicBlockBuilder, dstLValue );
-          }
-          llvmProduce( basicBlockBuilder, rValue, indexRValue, dstLValue );
-          if ( returnLValue )
+          CG::FunctionScope &functionScope = functionBuilder.getScope();
+          functionScope.llvmPrepareReturnLValue( basicBlockBuilder );
+          llvmProduce( basicBlockBuilder, rValue, indexRValue, functionScope.llvmGetReturnLValue() );
+          if ( functionScope.getReturnInfo().usesReturnLValue() )
             basicBlockBuilder->CreateRetVoid();
           else
-            basicBlockBuilder->CreateRet(
-              m_elementAdapter->llvmLValueToRValue( basicBlockBuilder, dstLValue )
-              );
+            basicBlockBuilder->CreateRet( basicBlockBuilder->CreateLoad( functionScope.llvmGetReturnLValue() ) );
         }
       }
     }
