@@ -31,8 +31,8 @@ FABRIC.RT.ColorKeyframe.prototype = {
  * @param {number} time The time of the keyframe.
  * @return {object} The linear key frame object.
  */
-FABRIC.RT.colorKeyframe = function(value, time) {
-  return new FABRIC.RT.ColorKeyframe(value, time);
+FABRIC.RT.colorKeyframe = function(time, value) {
+  return new FABRIC.RT.ColorKeyframe(time, value);
 };
 
 FABRIC.appendOnCreateContextCallback(function(context) {

@@ -1236,7 +1236,8 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('HumanoidLegSolver', {
           xfoIndex: footPlatformXfoId,
           geometryNode: scene.pub.constructNode('Cross', { size: bones[boneIDs.ankle].length * 0.5 }),
           color: FABRIC.RT.rgb(1, 0, 0),
-          baseManipulatorType: 'CharacterManipulator'
+          baseManipulatorType: 'CharacterManipulator',
+          targetName: solver.getName()+j+'IKGoal'
         });
   
         /*
@@ -1397,14 +1398,15 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('HubSolver', {
       hubs.push(hub);
       
       if (options.createManipulators) {
-          // add a manipulation for target and upvector
-          solver.constructManipulator(name + 'HubTranslate'+i, 'ScreenTranslationManipulator', {
-            rigNode: rigNode.pub,
-            xfoIndex: hubXfoId,
-            geometryNode: scene.pub.constructNode('Cross', { size: hubXfo.tr.y * 0.15 }),
-            color: FABRIC.RT.rgb(1, 0, 0),
-            baseManipulatorType: 'CharacterManipulator'
-          });
+        // add a manipulation for target and upvector
+        solver.constructManipulator(name + 'HubTranslate'+i, 'ScreenTranslationManipulator', {
+          rigNode: rigNode.pub,
+          xfoIndex: hubXfoId,
+          geometryNode: scene.pub.constructNode('Cross', { size: hubXfo.tr.y * 0.15 }),
+          color: FABRIC.RT.rgb(1, 0, 0),
+          baseManipulatorType: 'CharacterManipulator',
+          targetName: solver.getName()+i+'Xfo'
+        });
       }
     }
     skeletonNode.addMember('hubs', 'Hub[]', hubs);

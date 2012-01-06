@@ -28,12 +28,25 @@ $(document).ready(function() {
     alert("this page must be opened from a running demo, passing it the correct animationLibraryNode");
   }
 
-  var curveEditor = constructCurveEditor('curveContainer', animationLibraryNode);
+  curveEditor = constructCurveEditor('curveContainer', animationLibraryNode, {
+    trackSetId: trackSetId,
+    drawKeys: drawKeys,
+    trackFilters: trackFilters
+  });
 
   window.onresize = function () {
     curveEditor.resize();
   };
   
+  if(window.opener){
+    var closeWindow = function(){
+      window.opener.removeEventListener('unload', closeWindow, true);
+      window.close();
+    }
+    window.opener.addEventListener('unload', closeWindow, true);
+    
+    window.setCurveFilters = curveEditor.setCurveFilters;
+  }
   
   $("#displayKeys").attr('checked', true);
   $("#displayKeys").change(function() {

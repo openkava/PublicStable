@@ -508,20 +508,26 @@ FABRIC.SceneGraph.registerNodeType('Manipulator', {
       document.removeEventListener('mousemove', dragFn, false);
       document.removeEventListener('mouseup', releaseFn, false);
       evt.stopPropagation();
+      scene.pub.fireEvent('endmanipulation', {
+        manipulatorNode: manipulatorNode.pub
+      });
       viewportNode.redraw();
     }
     manipulatorNode.pub.addEventListener('mousedown_geom', function(evt) {
-        manipulating = true;
-        manipulatorGlobals.manipulating = true;
-        highlightNode();
-        viewportNode = evt.viewportNode;
-        evt.mouseDownScreenPos = mouseDownScreenPos = evt.mouseScreenPos;
-        manipulatorNode.pub.fireEvent('dragstart', evt);
-        document.addEventListener('mousemove', dragFn, false);
-        document.addEventListener('mouseup', releaseFn, false);
-        evt.stopPropagation();
-        viewportNode.redraw();
+      scene.pub.fireEvent('beginmanipulation', {
+        manipulatorNode: manipulatorNode.pub
       });
+      manipulating = true;
+      manipulatorGlobals.manipulating = true;
+      highlightNode();
+      viewportNode = evt.viewportNode;
+      evt.mouseDownScreenPos = mouseDownScreenPos = evt.mouseScreenPos;
+      manipulatorNode.pub.fireEvent('dragstart', evt);
+      document.addEventListener('mousemove', dragFn, false);
+      document.addEventListener('mouseup', releaseFn, false);
+      evt.stopPropagation();
+      viewportNode.redraw();
+    });
     
     return manipulatorNode;
   }});
@@ -534,7 +540,7 @@ FABRIC.SceneGraph.registerNodeType('XfoManipulator', {
   parentNodeDesc: 'SceneGraphNode',
   optionsDesc: {
   },
-  manipulating: false,
+  manipulating: false, // Note: PT 06-01-12 I don't think we need these manipulation globals now that we disable raycasting during manipulation.
   factoryFn: function(options, scene) {
     
     scene.assignDefaults(options, {

@@ -420,17 +420,20 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
       }
     };
     
-    animationLibraryNode.pub.openCurveEditor = function(trackSetId, drawKeys) {
+    animationLibraryNode.pub.openCurveEditor = function(options) {
+      options = options ? options : undefined;
       var curveEditorWindow = window.open(
         FABRIC.processURL('FABRIC_ROOT/SceneGraph/CurveEditor/CurveEditor.html') + '?id=' + scene.pub.getContextId(),
         'Fabric Curve Editor:' + options.name,
         'status=1,resizable=1,width='+window.innerWidth+',height='+(window.innerHeight * 0.6)
       );
       curveEditorWindow.animationLibraryNode = animationLibraryNode.pub;
-      curveEditorWindow.trackSetId = trackSetId ? trackSetId : 0;
+      curveEditorWindow.trackSetId = options.trackSetId ? options.trackSetId : 0;
+      curveEditorWindow.drawKeys = options.drawKeys ? options.drawKeys : true;
+      curveEditorWindow.trackFilters = options.trackFilters ? options.trackFilters : [];
       curveEditorWindow.scene = scene.pub;
+      return curveEditorWindow;
     }
-    
     
     scene.addEventHandlingFunctions(animationLibraryNode);
     
