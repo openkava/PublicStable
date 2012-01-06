@@ -11,12 +11,15 @@ operator evaluatePoseTracks(
   io Integer trackIndex,
   io KeyframeTrackBindings bindings,
   io Integer keyIndices[],
-  io PoseVariables poseVariables
+  io PoseVariables poseVariables,
+  io Boolean enableTrackEvaluation
 ) {
-  trackSets[trackIndex].evaluate(
-    time,
-    bindings,
-    poseVariables,
-    keyIndices
-  );
+  if(enableTrackEvaluation){
+    trackSets[trackIndex].evaluate(
+      time,
+      bindings,
+      poseVariables,
+      keyIndices
+    );
+  }
 }

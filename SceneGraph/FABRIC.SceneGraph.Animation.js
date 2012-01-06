@@ -112,12 +112,27 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
     animationLibraryNode.pub.getTrackSetName = function(trackSetId) {
       return dgnode.getData('trackSet', trackSetId).name;
     };
+    // Because we store all tracks in a track set, getting and setting the
+    // tracks causes significant performance issues. So the solution for
+    // now is to disable track evaluation while manipulating, and only store
+    // the tracks once manipulaiton is complete. 
+    var m_trackSet, m_trackSetId;
     animationLibraryNode.pub.setValues = function(trackSetId, time, trackIds, values) {
-      var trackSet = this.getTrackSet(trackSetId);
-      trackSet.setValues(time, trackIds, values);
-      this.setTrackSet(trackSet, trackSetId);
-      animationLibraryNode.pub.fireEvent('valuechanged', {});
+    //  var trackSet = this.getTrackSet(trackSetId);
+    //  trackSet.setValues(time, trackIds, values);
+    //  this.setTrackSet(trackSet, trackSetId);
+    //  animationLibraryNode.pub.fireEvent('valuechanged', {});
+    
+      m_trackSet.setValues(time, trackIds, values);
     };
+    animationLibraryNode.beginManipulation = function(trackSetId) {
+      m_trackSetId = trackSetId;
+      m_trackSet = animationLibraryNode.pub.getTrackSet(trackSetId);
+    }
+    animationLibraryNode.endManipulation = function() {
+      animationLibraryNode.pub.setTrackSet(m_trackSet, m_trackSetId);
+      animationLibraryNode.pub.fireEvent('valuechanged', {});
+    }
     
     var paramsdgnode;
     animationLibraryNode.pub.bindToRig = function(rigNode, trackSetName){

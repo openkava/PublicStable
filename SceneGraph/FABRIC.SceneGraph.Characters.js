@@ -396,6 +396,10 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
       
       dgnode.addMember('keyIndices', 'Integer[]');
       dgnode.addMember('trackSetId', 'Integer', trackSetId);
+      dgnode.addMember('enableTrackEvaluation', 'Boolean', true);
+      
+      characterVariablesNode.addMemberInterface(dgnode, 'enableTrackEvaluation', true);
+    
       characterVariablesNode.setBindings(keyframeTrackBindings);
       m_animationLibraryNode = animationLibraryNode;
       m_animationControllerNode = animationControllerNode;
@@ -415,19 +419,30 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
           'self.trackSetId',
           'self.bindings',
           'self.keyIndices',
-          'self.poseVariables'
+          'self.poseVariables',
+          'self.enableTrackEvaluation'
         ]
       }));
       characterVariablesNode.pub.setBoundTrack = function(trackSetId){
         dgnode.setData('trackSetId', 0, trackSetId);
       }
+      
+      scene.pub.addEventListener('beginmanipulation', function(evt){
+        characterVariablesNode.pub.setEnableTrackEvaluation(false);
+        m_animationLibraryNode.beginManipulation(trackSetId);
+        
+      });
+      scene.pub.addEventListener('endmanipulation', function(evt){
+        m_animationLibraryNode.endManipulation();
+        characterVariablesNode.pub.setEnableTrackEvaluation(true);
+      });
       boundToAnimationTracks = true;
     }
     
     
     characterVariablesNode.setValue = function(value, index) {
       var type = (typeof value == 'number') ? 'Number' : value.getType();
-      if(!boundToAnimationTracks){
+    //  if(!boundToAnimationTracks){
         var poseVariables = characterVariablesNode.getVariables();
         switch(type){
         case 'Number':
@@ -446,8 +461,9 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
           throw 'Unhandled type:' + val;
         }
         characterVariablesNode.setVariables(poseVariables);
-      }
-      else{
+    //  }
+    //  else{
+      if(m_animationLibraryNode){
         var findBinding = function(bindingsList){
           for(var i=0; i<bindingsList.length; i++){
             if(bindingsList[i].varId == index){
@@ -497,6 +513,7 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
         characterVariablesNode.setValue(values[i], indices[i]);
       }
     }
+    
     
     //////////////////////////////////////////
     // Persistence
@@ -660,6 +677,7 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
       }
       return node;
     };
+    
     //////////////////////////////////////////
     // Solver Interfaces
     var solverParams = [];
