@@ -33,15 +33,15 @@ namespace Fabric
     {
       RC::ConstHandle<RT::Desc> inputValueDesc = m_input->getValueDesc();
       if ( !inputValueDesc )
-        throw Exception("input value producer is invalid");
+        throw Exception("input is invalid");
       RC::ConstHandle<RT::Desc> operatorValueDesc = m_operator->getValueDesc();
       if ( !operatorValueDesc )
-        throw Exception("value transform operator is invalid");
+        throw Exception("operator is invalid");
       if ( !operatorValueDesc->isEquivalentTo( inputValueDesc ) )
         throw Exception(
           "input value type ("
           + _(inputValueDesc->getUserName())
-          + ") is not equivalent to value transform operator value type ("
+          + ") is not equivalent to operator value type ("
           + _(operatorValueDesc->getUserName()) + ")"
           );
       m_valueDesc = inputValueDesc;
@@ -51,12 +51,12 @@ namespace Fabric
       {
         RC::ConstHandle<RT::Desc> sharedValueDesc = m_shared? m_shared->getValueDesc(): RC::ConstHandle<RT::Desc>();
         if ( !sharedValueDesc )
-          throw Exception( "value map operator requires a shared value but no shared value producer is provided" );
+          throw Exception( "operator requires a shared value but no shared value producer is provided" );
         if ( !sharedValueDesc->isEquivalentTo( operatorSharedDesc ) )
           throw Exception(
             "shared value type ("
             + _(sharedValueDesc->getUserName())
-            + ") is not equivalent to value map operator shared type ("
+            + ") is not equivalent to operator shared type ("
             + _(operatorSharedDesc->getUserName()) + ")"
             );
       }
