@@ -136,7 +136,7 @@ $(document).ready(function() {
   
   var fsNode = scene.constructNode('FileSystemNode');
 
-  document.onChange = function(path) {
+  var onChange = function(path) {
     if(typeof path != 'string')
       path = $('#rootPath').val();
     else {
@@ -174,8 +174,17 @@ $(document).ready(function() {
     
     $("#textOutput").html(htmlCode.join("<br>"));
   };
-  $('#rootPath').change(document.onChange);
-  document.onChange();
+  switch(FABRIC.getOS()){
+  case 'Windows':
+    $('#rootPath').val('c:\\');
+    break;
+  case 'Linux':
+  case 'Mac':
+    $('#rootPath').val('/tmp/');
+    break;
+  }
+  $('#rootPath').change(onChange);
+  onChange();
   
   $('#loadingDialog').dialog({
     modal: true
@@ -233,7 +242,7 @@ $(document).ready(function() {
           <div class="box">
             <h2>INPUTS</h2>
             <div class="content">
-              <label>Input Path: </label> <input type='text' id='rootPath' value="/tmp/"><br>
+              <label>Input Path: </label> <input type='text' id='rootPath' value=""><br>
             </div><!--content-->
           </div><!--box-->
             
