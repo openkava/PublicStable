@@ -30,7 +30,7 @@ namespace Fabric
     {
       RC::ConstHandle<RT::Desc> operatorValueDesc = m_operator->getValueDesc();
       if ( !operatorValueDesc )
-        throw Exception("value transform operator is invalid");
+        throw Exception("operator is invalid");
       m_valueDesc = operatorValueDesc;
       
       RC::ConstHandle<RT::Desc> operatorSharedDesc = m_operator->getSharedDesc();
@@ -38,12 +38,12 @@ namespace Fabric
       {
         RC::ConstHandle<RT::Desc> sharedValueDesc = m_shared? m_shared->getValueDesc(): RC::ConstHandle<RT::Desc>();
         if ( !sharedValueDesc )
-          throw Exception( "value map operator requires a shared value but no shared value producer is provided" );
+          throw Exception( "operator requires a shared value but no shared value producer is provided" );
         if ( !sharedValueDesc->isEquivalentTo( operatorSharedDesc ) )
           throw Exception(
             "shared value type ("
             + _(sharedValueDesc->getUserName())
-            + ") is not equivalent to value map operator shared type ("
+            + ") is not equivalent to operator shared type ("
             + _(operatorSharedDesc->getUserName()) + ")"
             );
       }

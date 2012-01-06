@@ -7,6 +7,7 @@
 #include <Fabric/Core/RT/Desc.h>
 #include <Fabric/Base/JSON/Integer.h>
 #include <Fabric/Core/Util/JSONGenerator.h>
+#include <Fabric/Base/Exception.h>
 
 namespace Fabric
 {
@@ -48,6 +49,8 @@ namespace Fabric
       Util::JSONArrayGenerator &resultJAG
       )
     {
+      if ( !arg )
+        throw Exception( "missing required index parameter" );
       size_t index = arg->toInteger()->value();
           
       Util::JSONGenerator jg = resultJAG.makeElement();
