@@ -1228,18 +1228,20 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('HumanoidLegSolver', {
       
       var leg = new FABRIC.RT.Limb(boneIDs.bones, boneIDs.ankle, xfoIds, footPlatformXfoId, ankleOffsetXfo, footPlatformXfo, ikblendId);
       legs.push(leg);
-      
       if (options.createManipulators) {
         // add a manipulation for target and upvector
-        solver.constructManipulator(name + 'FootTranslate'+j, 'ScreenTranslationManipulator', {
+        solver.constructManipulator(name+j+'Foot', 'XfoManipulator', {
           rigNode: rigNode.pub,
+          attachmentBone: options.limbs[j].ankle,
+          localXfo: ankleOffsetXfo.inverse(),
           xfoIndex: footPlatformXfoId,
           geometryNode: scene.pub.constructNode('Cross', { size: bones[boneIDs.ankle].length * 0.5 }),
           color: FABRIC.RT.rgb(1, 0, 0),
           baseManipulatorType: 'CharacterManipulator',
-          targetName: solver.getName()+j+'IKGoal'
+          targetName: solver.getName()+j+'IKGoal',
+          size: 1.0,
+          radius: 1.0
         });
-  
         /*
         solver.constructManipulator(name + 'FootRotate', 'PivotRotationManipulator', {
           parentNode: variablesNode.pub,
@@ -1398,15 +1400,18 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('HubSolver', {
       hubs.push(hub);
       
       if (options.createManipulators) {
-        // add a manipulation for target and upvector
-        solver.constructManipulator(name + 'HubTranslate'+i, 'ScreenTranslationManipulator', {
+        
+        solver.constructManipulator(name + 'Hub'+i, 'XfoManipulator', {
+          baseManipulatorType: 'CharacterManipulator',
           rigNode: rigNode.pub,
           xfoIndex: hubXfoId,
-          geometryNode: scene.pub.constructNode('Cross', { size: hubXfo.tr.y * 0.15 }),
+          targetName: solver.getName()+i+'Xfo',
+          attachmentBone: options.hubs[i].bone,
           color: FABRIC.RT.rgb(1, 0, 0),
-          baseManipulatorType: 'CharacterManipulator',
-          targetName: solver.getName()+i+'Xfo'
+          size: 1,
+          radius: 1
         });
+        
       }
     }
     skeletonNode.addMember('hubs', 'Hub[]', hubs);

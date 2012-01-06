@@ -84,7 +84,7 @@ FABRIC.SceneGraph = {
     
     var assignDefaults = function(options, defaults, force) {
       if (!options) options = {};
-      for (i in defaults) {
+      for (var i in defaults) {
         if (options[i] === undefined || force) options[i] = defaults[i];
       }
       return options;
@@ -216,18 +216,17 @@ FABRIC.SceneGraph = {
     };
     scene.assignDefaults = assignDefaults;
     
-    scene.cloneObj = function(obj) {
-      var newobj = {};
+    scene.cloneObj = function(obj, assignedValues) {
+      var i, clonedobj = {};
       for (i in obj) {
-        if (typeof obj[i] == 'object') {
-          newobj[i] = this.cloneObj(obj[i]);
-        }
-        else {
-          newobj[i] = obj[i];
-        }
+        clonedobj[i] = obj[i];
       }
-      return newobj;
+      for (i in assignedValues) {
+        clonedobj[i] = assignedValues[i];
+      }
+      return clonedobj;
     };
+    
     scene.loadResourceURL = function(url, mimeType, callback) {
       return FABRIC.loadResourceURL(url, mimeType, callback);
     };
@@ -942,7 +941,7 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
         mouseMoveEvents: true,
         backgroundColor: FABRIC.RT.rgb(0.5, 0.5, 0.5),
         postProcessEffect: undefined,
-        rayIntersectionThreshold: 0.2,
+        rayIntersectionThreshold: 0.1,
         checkOpenGL2Support: true
       });
 
