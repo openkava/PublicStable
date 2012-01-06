@@ -672,7 +672,7 @@ FABRIC.SceneGraph = {
         }));
         
         var isPlaying = false, time = 0;
-        var prevTime, onAdvanceCallback;
+        var onAdvanceCallback;
         var setTime = function(t, redraw) {
           time = Math.round(t/sceneOptions.timeStep) * sceneOptions.timeStep;
           globalsNode.setData('time', 0, time);
@@ -684,24 +684,36 @@ FABRIC.SceneGraph = {
             scene.pub.redrawAllViewports(true);
           }
         }
+        var timeStepMS = sceneOptions.timeStep * 1000.0;
+        var prevTime, prevFrameDuration = 0;
+      //  var frameStartTime, frameRate = 0;
         var advanceTime = function() {
-          var currTime = (new Date).getTime();
-          var deltaTime = (currTime - prevTime)/1000;
-          prevTime = currTime;
-          // The computer will attempt to play back
-          // at exactly the given frame rate. If the frame rate cannot be achieved
-          // it plays as fast as possible.
-          // The time step as used throughout the graph will always be fixed at the
-          // given rate.
           var t = time + sceneOptions.timeStep;
-          if(deltaTime < sceneOptions.timeStep){
-            var delay = (sceneOptions.timeStep - deltaTime)*1000;
+          
+          // The computer will attempt to play back
+          // at exactly the given frame rate. If the
+          // frame rate cannot be achieved it plays 
+          // as fast as possible. The time step as
+          // used throughout the graph will always 
+          // be fixed at the given rate.
+          var currTime = (new Date).getTime();
+          var prevFrameDuration = (currTime - prevTime);
+          
+          // Measuring the frame time using JavaScript gives
+          // garbage results, and I'm not sure why. 
+        //  frameRate = (currTime - frameStartTime);
+        //  console.log("frameRate:"+frameRate);
+        //  frameStartTime = currTime;
+          if(prevFrameDuration < timeStepMS){
+            var delay = (timeStepMS - prevFrameDuration);
             setTimeout(function(){
+                prevTime = currTime + delay;
                 setTime(t);
               },
               delay
             );
           }else{
+            prevTime = currTime;
             setTime(t);
           }
         }
@@ -1241,8 +1253,9 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
         return;
       }
       if(scene.isPlaying()){
-        if(force)
+        if(force){
           fabricwindow.needsRedraw();
+        }
       }else{
         // If we give the browser a millisecond pause, then the redraw will
         // occur. Otherwist this message gets lost, causing a blank screen when
