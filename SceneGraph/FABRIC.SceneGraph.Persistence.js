@@ -252,6 +252,7 @@ FABRIC.SceneGraph.registerManagerType('SceneDeserializer', {
     };
     var nodeData;
     var loadNodeBinaryFileNode;
+    var sgnodeDataMap = {};
     var sceneDeserializer = {
       getNode: function(nodeName) {
         nodeName = nodeNameRemapping[ nodeName ]
@@ -269,6 +270,11 @@ FABRIC.SceneGraph.registerManagerType('SceneDeserializer', {
         }
         else{
           // Note: this won't work no
+          var nodeData = sgnodeDataMap[sgnodeName];
+          if(!nodeData.dgnodedata){
+            console.warn("missing dgnode data for node:" + sgnodeName);
+            return;
+          }
           for(var dgnodename in desc){
             var data = nodeData.dgnodedata[dgnodename];
             desc.dgnode.setCount(data.sliceCount);
@@ -329,6 +335,8 @@ FABRIC.SceneGraph.registerManagerType('SceneDeserializer', {
               });
             }
             for (var i = 0; i < dataObj.sceneGraphNodes.length; i++) {
+              // Generate a map of the array of data that can be easily re-indexed
+              sgnodeDataMap[dataObj.sceneGraphNodes[i].name] = dataObj.sceneGraphNodes[i];
               loadDGNode(dataObj.sceneGraphNodes[i]);
             }
           });
@@ -358,7 +366,7 @@ FABRIC.SceneGraph.LocalStorage = function(name) {
     localStorage.setItem(name, instr);
   }
   this.read = function(callback){
-    callback(localStorage.getItem(name));
+    callback(JSON.parse(localStorage.getItem(name)));
   }
   this.log = function() {
     console.log(localStorage.getItem(name));
@@ -447,17 +455,6 @@ FABRIC.SceneGraph.XHRReader = function(url) {
     var file = FABRIC.loadResourceURL(url, 'text/JSON', function(fileData){
       callback(JSON.parse(fileData));
     });
-  }
-};
-
-/**
- * Constructor to create a FileReader object.
- * @constructor
- * @param {string} filepath The path to the file to read from.
- */
-FABRIC.SceneGraph.URLReader = function(url) {
-  this.read = function() {
-    return FABRIC.loadResourceURL(url);
   }
 };
 

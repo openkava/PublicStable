@@ -513,7 +513,10 @@ FABRIC.SceneGraph = {
       return sceneGraphNodes;
     };
     scene.pub.getSceneGraphNode = function(name) {
-      return sceneGraphNodes[name];
+      if(sceneGraphNodes[name]){
+        return sceneGraphNodes[name].pub;
+      }
+      return undefined;
     };
     scene.setSceneGraphNode = function(name,node) {
       return sceneGraphNodes[name] = node;
@@ -598,6 +601,10 @@ FABRIC.SceneGraph = {
     };
 
     scene.addEventHandlingFunctions(scene);
+    
+    window.addEventListener('unload', function(){
+      scene.pub.fireEvent('unloading');
+    }, false);
 
     ///////////////////////////////////////////////////////////////////
     // Create the root transform node.
@@ -665,35 +672,48 @@ FABRIC.SceneGraph = {
         }));
         
         var isPlaying = false, time = 0;
-        var prevTime, onAdvanceCallback;
+        var onAdvanceCallback;
         var setTime = function(t, redraw) {
           time = Math.round(t/sceneOptions.timeStep) * sceneOptions.timeStep;
           globalsNode.setData('time', 0, time);
           if( onAdvanceCallback){
             onAdvanceCallback.call();
           }
+          scene.pub.fireEvent('timechanged', { time: time, playing: isPlaying });
           if(redraw !== false){
             scene.pub.redrawAllViewports(true);
           }
         }
+        var timeStepMS = sceneOptions.timeStep * 1000.0;
+        var prevTime, prevFrameDuration = 0;
+      //  var frameStartTime, frameRate = 0;
         var advanceTime = function() {
-          var currTime = (new Date).getTime();
-          var deltaTime = (currTime - prevTime)/1000;
-          prevTime = currTime;
-          // The computer will attempt to play back
-          // at exactly the given frame rate. If the frame rate cannot be achieved
-          // it plays as fast as possible.
-          // The time step as used throughout the graph will always be fixed at the
-          // given rate.
           var t = time + sceneOptions.timeStep;
-          if(deltaTime < sceneOptions.timeStep){
-            var delay = (sceneOptions.timeStep - deltaTime)*1000;
+          
+          // The computer will attempt to play back
+          // at exactly the given frame rate. If the
+          // frame rate cannot be achieved it plays 
+          // as fast as possible. The time step as
+          // used throughout the graph will always 
+          // be fixed at the given rate.
+          var currTime = (new Date).getTime();
+          var prevFrameDuration = (currTime - prevTime);
+          
+          // Measuring the frame time using JavaScript gives
+          // garbage results, and I'm not sure why. 
+        //  frameRate = (currTime - frameStartTime);
+        //  console.log("frameRate:"+frameRate);
+        //  frameStartTime = currTime;
+          if(prevFrameDuration < timeStepMS){
+            var delay = (timeStepMS - prevFrameDuration);
             setTimeout(function(){
+                prevTime = currTime + delay;
                 setTime(t);
               },
               delay
             );
           }else{
+            prevTime = currTime;
             setTime(t);
           }
         }
@@ -709,10 +729,9 @@ FABRIC.SceneGraph = {
           getTimeStep:function() {
             return sceneOptions.timeStep;
           },
-          play: function(callback) {
+          play: function() {
             prevTime = (new Date).getTime();
             isPlaying = true;
-            onAdvanceCallback = callback;
             // Note: this is a big ugly hack to work arround the fact that
             // we have zero or more windows. What happens when we have
             // multiple viewports? Should the 'play' controls be moved to
@@ -720,9 +739,6 @@ FABRIC.SceneGraph = {
               prevTime = (new Date).getTime();
               scene.getContext().VP.viewPort.setRedrawFinishedCallback(advanceTime);
               scene.getContext().VP.viewPort.needsRedraw();
-          },
-          isPlaying: function(){
-            return isPlaying;
           },
           pause: function() {
             isPlaying = false;
@@ -737,7 +753,9 @@ FABRIC.SceneGraph = {
             advanceTime();
           }
         };
-
+        scene.isPlaying = function(){
+          return isPlaying;
+        }
       }
     }
 
@@ -1020,7 +1038,7 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
     var viewPortRaycastEvent, viewPortRaycastEventHandler, viewPortRayCastDgNode;
     var raycastingConstructed = false;
 
-    var enableRaycasting = function() {
+    viewportNode.pub.enableRaycasting = function() {
       if( !raycastingEnabled && scene.getSceneRaycastEventHandler() ) {
         raycastingEnabled = true;
         if( !raycastingConstructed ) {
@@ -1058,21 +1076,20 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
           // propagates down the tree it collects scopes and fires operators.
           // The operators us the collected scopes to calculate the ray.
           viewPortRaycastEvent.appendEventHandler(viewPortRaycastEventHandler);
+          
+          // During load we do not connect up the event tree,
+          // the registered callback will make the connection
+          if( !loading )
+            viewPortRaycastEventHandler.appendChildEventHandler(scene.getSceneRaycastEventHandler());
         }
-        if( !loading )
-          viewPortRaycastEventHandler.appendChildEventHandler(scene.getSceneRaycastEventHandler());
       }
     };
 
-    var disableRaycasting = function() {
+    viewportNode.pub.disableRaycasting = function() {
       if( raycastingEnabled ) {
         raycastingEnabled = false;
-        viewPortRaycastEventHandler.removeChildEventHandler(scene.getSceneRaycastEventHandler());
       }
     };
-
-    if (options.enableRaycasting)
-      enableRaycasting();
 
     var getElementCoords = function(evt) {
       var browserZoom = fabricwindow.windowNode.getData('width') / evt.target.clientWidth;
@@ -1086,8 +1103,6 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
       }
       throw("Unsupported Browser");
     }
-
-    // private interface
     
     viewportNode.getElementCoords = function(evt) {
       return getElementCoords(evt);
@@ -1099,8 +1114,6 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
     viewportNode.getFabricWindowObject = function() {
       return fabricwindow;
     };
-
-    // public interface
     
     viewportNode.addMemberInterface(dgnode, 'backgroundColor', true);
     viewportNode.pub.setCameraNode = function(node) {
@@ -1121,8 +1134,6 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
       return cameraNode.pub;
     };
     viewportNode.pub.startLoadMode = startLoadMode;
-    viewportNode.pub.disableRaycasting = disableRaycasting;
-    viewportNode.pub.enableRaycasting = enableRaycasting;
     viewportNode.pub.setBackgroundTextureImage = function(textureNode) {
       if (textureStub.postDescendBindings.getLength() == 0) {
         textureStub.setScopeName('textureStub');
@@ -1149,6 +1160,7 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
       backgroundTextureNode = scene.getPrivateInterface(textureNode);
       textureStub.appendChildEventHandler(backgroundTextureNode.getRedrawEventHandler());
     };
+    
     viewportNode.pub.addPostProcessEffectShader = function(postProcessEffect) {
       if (!postProcessEffect.isTypeOf('PostProcessEffect')) {
         throw 'Object is not a PostProcessEffect node.';
@@ -1168,6 +1180,7 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
       postProcessEffect.getRedrawEventHandler().appendChildEventHandler(propagationRedrawEventHandler);
       postProcessEffects.push(postProcessEffect);
     };
+    
     viewportNode.pub.removePostProcessEffectShader = function(postProcessEffect) {
       postProcessEffect = scene.getPrivateInterface(postProcessEffect);
       var filterIndex = postProcessEffects.indexOf(postProcessEffect);
@@ -1198,6 +1211,7 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
         parentEventHandler.appendChildEventHandler(propagationRedrawEventHandler);
       }
     };
+    
     viewportNode.pub.rayCast = function(evt, options) {
       var result = {
         rayData: undefined
@@ -1224,6 +1238,7 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
       }
       return result;
     };
+    
     viewportNode.pub.calcRayFromMouseEvent = function(evt) {
       var elementCoords = getElementCoords(evt);
       viewPortRayCastDgNode.setData('x', elementCoords.x);
@@ -1232,13 +1247,15 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
       var ray = viewPortRayCastDgNode.getData('ray');
       return ray;
     };
+    
     viewportNode.pub.redraw = function(force) {
       if(!visible){
         return;
       }
-      if(scene.pub.animation.isPlaying()){
-        if(force)
+      if(scene.isPlaying()){
+        if(force){
           fabricwindow.needsRedraw();
+        }
       }else{
         // If we give the browser a millisecond pause, then the redraw will
         // occur. Otherwist this message gets lost, causing a blank screen when
@@ -1248,19 +1265,25 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
         }, 1);
       }
     };
+    
     viewportNode.pub.writeData = function(sceneSerializer, constructionOptions, nodeData) {
       nodeData.camera = cameraNode.getName();
     };
+    
     viewportNode.pub.readData = function(sceneDeserializer, nodeData) {
       if (nodeData.camera) {
         this.setCameraNode(sceneDeserializer.getNode(nodeData.camera));
       }
     };
+    
     viewportNode.pub.getFPS = function() {
       // TODO: once we have support for multiple viewports, we should
       // re-write this function.
       return scene.getContext().VP.viewPort.getFPS();
     };
+    
+    if (options.enableRaycasting)
+      viewportNode.pub.enableRaycasting();
 
     if (options.postProcessEffect) {
       viewportNode.pub.addPostProcessEffectShader(options.postProcessEffect);
@@ -1380,6 +1403,14 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
       windowElement.addEventListener('mousemove', mouseMoveFn, false);
       windowElement.addEventListener('mousedown', mouseDownFn, false);
       windowElement.addEventListener('mouseup', mouseUpFn, false);
+      
+      scene.pub.addEventListener('beginmanipulation', function(evt){
+        // During manipulation we disable raycasting
+        viewportNode.pub.disableRaycasting();
+      });
+      scene.pub.addEventListener('endmanipulation', function(evt){
+        viewportNode.pub.enableRaycasting();
+      });
 
       // Mouse Wheel event trapping.
       // Mouse wheel events are sent to the document, not the element,

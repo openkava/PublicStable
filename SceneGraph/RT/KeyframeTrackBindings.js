@@ -28,7 +28,7 @@ FABRIC.RT.KeyframeTrackBindings = function() {
 
 FABRIC.RT.KeyframeTrackBindings.prototype = {
   addScalarBinding: function(varId, trackId){
-    this.scalarBindings.push(new FABRIC.RT.KeyframeTrackBinding(varId, [trackId]));
+    this.scalarBindings.push(new FABRIC.RT.KeyframeTrackBinding(varId, trackId));
   },
   addXfoBinding: function(varId, trackIds){
     this.xfoBindings.push(new FABRIC.RT.KeyframeTrackBinding(varId, trackIds));

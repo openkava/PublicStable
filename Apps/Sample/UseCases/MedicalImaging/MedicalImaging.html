@@ -430,7 +430,7 @@ $(document).ready(function() {
   
   ///////////////////////////////////////////////////////////
   // Opacity Mapping
-  var linearkey = FABRIC.RT.linearKeyframe;
+  var linearkey = function(time, value){ return new FABRIC.RT.LinearKeyframe(time, value); };
   var opacityKeyAnimationLibrary = scene.constructNode('LinearKeyAnimationLibrary');
   var trackSet = new FABRIC.RT.KeyframeTrackSet('LinearPosKeyAnimationTrack');
   trackSet.tracks.push(new FABRIC.RT.KeyframeTrack('opacityKeyframeTrack', FABRIC.RT.rgb(0, 1, 0), [
@@ -449,7 +449,7 @@ $(document).ready(function() {
   
   ///////////////////////////////////////////////////////////
   // Color Mapping
-  var colorkey = FABRIC.RT.colorKeyframe;
+  var colorkey = function(time, value){ return new FABRIC.RT.ColorKeyframe(time, value); };
   var gradientKeyTrackLibrary = scene.constructNode('ColorKeyAnimationLibrary', {
     name:'GradientKeyTrack'
   });
@@ -505,6 +505,7 @@ $(document).ready(function() {
   var addOnLoadCallback = function (){
    opacityTexture.getResourceLoadNode().addOnLoadSuccessCallback(function(){
      histogram.setData(opacityTexture.getHistogram(), 0.4);
+     viewport.show();
      viewport.redraw();
   })};
 
@@ -764,30 +765,32 @@ $(document).ready(function() {
     savedCropMin = undefined;
     savedCropMax = undefined;
 
-    var loadPresetTask;
-    loadPresetTask = FABRIC.addAsyncTask("Loading preset");
-
     if(!initialLoad) {//Make sure there is at least 1 asynch task ongoing...
-      viewport.startLoadMode();
+      viewport.hide();
       displayProgressBar();
     }
+    
+    var loadPresetTask;
+    loadPresetTask = FABRIC.addAsyncTask("Loading preset");
+    
+    loadPresetTask( true );
 
     var presetLoader = scene.constructManager('SceneDeserializer', { preLoadScene: true } );
     var storage = new FABRIC.SceneGraph.LocalStorage('VolumeRenderingPresets.'+currPresetName);
-    var nodeMap = presetLoader.load(storage);
+    presetLoader.load(storage, function(nodeMap){
+      
+      addOnLoadCallback();
+  
+      $resolutionFactorSlider.slider('value', volumeNode.getResolutionFactor());
+      curveEditor.redraw();
+      colorGradient.redraw();
+      localStorage.setItem('VolumeRenderingSelectedPreset', currPresetName);
+  
+      viewport.redraw();
+  
+      
+    });
 
-    addOnLoadCallback();
-
-    $resolutionFactorSlider.slider('value', volumeNode.getResolutionFactor());
-    curveEditor.redraw();
-    colorGradient.redraw();
-    localStorage.setItem('VolumeRenderingSelectedPreset', currPresetName);
-
-    viewport.redraw();
-    viewport.redraw();
-    viewport.redraw();
-
-    loadPresetTask( true );
   }
   
   $("#resourceSelector").change(function() {
