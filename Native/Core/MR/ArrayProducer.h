@@ -26,6 +26,8 @@ namespace Fabric
     {
       // Virtual functions: Object
       
+      class Execution;
+    
     public:
     
       class ComputeState : public RC::Object
@@ -36,8 +38,12 @@ namespace Fabric
         {
           return m_count;
         }
+        void produce( void *data ) const;
+        void produceJSON( Util::JSONGenerator &jg ) const;
         virtual void produce( size_t index, void *data ) const = 0;
         virtual void produceJSON( size_t index, Util::JSONGenerator &jg ) const;
+        void produce( size_t index, size_t count, void *data ) const;
+        void produceJSON( size_t index, size_t count, Util::JSONGenerator &jg ) const;
       
       protected:
       
