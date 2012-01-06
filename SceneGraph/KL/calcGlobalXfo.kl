@@ -10,6 +10,6 @@ operator calcGlobalXfo(io Xfo localXfo, io Xfo parentGlobalXfo, io Xfo globalXfo
 }
 
 operator calcIndexedGlobalXfo(io Xfo localXfo, io Xfo parentGlobalXfos[], io Size parentXfoIndex, io Xfo globalXfo) {
-  //report( "calcGlobalXfo\n" );
+  //report( "calcIndexedGlobalXfo\n" );
   globalXfo = parentGlobalXfos[parentXfoIndex] * localXfo;
 }
