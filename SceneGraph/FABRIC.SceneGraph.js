@@ -1026,7 +1026,7 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
     var viewPortRaycastEvent, viewPortRaycastEventHandler, viewPortRayCastDgNode;
     var raycastingConstructed = false;
 
-    var enableRaycasting = function() {
+    viewportNode.pub.enableRaycasting = function() {
       if( !raycastingEnabled && scene.getSceneRaycastEventHandler() ) {
         raycastingEnabled = true;
         if( !raycastingConstructed ) {
@@ -1064,21 +1064,20 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
           // propagates down the tree it collects scopes and fires operators.
           // The operators us the collected scopes to calculate the ray.
           viewPortRaycastEvent.appendEventHandler(viewPortRaycastEventHandler);
+          
+          // During load we do not connect up the event tree,
+          // the registered callback will make the connection
+          if( !loading )
+            viewPortRaycastEventHandler.appendChildEventHandler(scene.getSceneRaycastEventHandler());
         }
-        if( !loading )
-          viewPortRaycastEventHandler.appendChildEventHandler(scene.getSceneRaycastEventHandler());
       }
     };
 
-    var disableRaycasting = function() {
+    viewportNode.pub.disableRaycasting = function() {
       if( raycastingEnabled ) {
         raycastingEnabled = false;
-        viewPortRaycastEventHandler.removeChildEventHandler(scene.getSceneRaycastEventHandler());
       }
     };
-
-    if (options.enableRaycasting)
-      enableRaycasting();
 
     var getElementCoords = function(evt) {
       var browserZoom = fabricwindow.windowNode.getData('width') / evt.target.clientWidth;
@@ -1092,8 +1091,6 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
       }
       throw("Unsupported Browser");
     }
-
-    // private interface
     
     viewportNode.getElementCoords = function(evt) {
       return getElementCoords(evt);
@@ -1105,8 +1102,6 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
     viewportNode.getFabricWindowObject = function() {
       return fabricwindow;
     };
-
-    // public interface
     
     viewportNode.addMemberInterface(dgnode, 'backgroundColor', true);
     viewportNode.pub.setCameraNode = function(node) {
@@ -1127,8 +1122,6 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
       return cameraNode.pub;
     };
     viewportNode.pub.startLoadMode = startLoadMode;
-    viewportNode.pub.disableRaycasting = disableRaycasting;
-    viewportNode.pub.enableRaycasting = enableRaycasting;
     viewportNode.pub.setBackgroundTextureImage = function(textureNode) {
       if (textureStub.postDescendBindings.getLength() == 0) {
         textureStub.setScopeName('textureStub');
@@ -1155,6 +1148,7 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
       backgroundTextureNode = scene.getPrivateInterface(textureNode);
       textureStub.appendChildEventHandler(backgroundTextureNode.getRedrawEventHandler());
     };
+    
     viewportNode.pub.addPostProcessEffectShader = function(postProcessEffect) {
       if (!postProcessEffect.isTypeOf('PostProcessEffect')) {
         throw 'Object is not a PostProcessEffect node.';
@@ -1174,6 +1168,7 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
       postProcessEffect.getRedrawEventHandler().appendChildEventHandler(propagationRedrawEventHandler);
       postProcessEffects.push(postProcessEffect);
     };
+    
     viewportNode.pub.removePostProcessEffectShader = function(postProcessEffect) {
       postProcessEffect = scene.getPrivateInterface(postProcessEffect);
       var filterIndex = postProcessEffects.indexOf(postProcessEffect);
@@ -1204,6 +1199,7 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
         parentEventHandler.appendChildEventHandler(propagationRedrawEventHandler);
       }
     };
+    
     viewportNode.pub.rayCast = function(evt, options) {
       var result = {
         rayData: undefined
@@ -1230,6 +1226,7 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
       }
       return result;
     };
+    
     viewportNode.pub.calcRayFromMouseEvent = function(evt) {
       var elementCoords = getElementCoords(evt);
       viewPortRayCastDgNode.setData('x', elementCoords.x);
@@ -1238,6 +1235,7 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
       var ray = viewPortRayCastDgNode.getData('ray');
       return ray;
     };
+    
     viewportNode.pub.redraw = function(force) {
       if(!visible){
         return;
@@ -1254,19 +1252,25 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
         }, 1);
       }
     };
+    
     viewportNode.pub.writeData = function(sceneSerializer, constructionOptions, nodeData) {
       nodeData.camera = cameraNode.getName();
     };
+    
     viewportNode.pub.readData = function(sceneDeserializer, nodeData) {
       if (nodeData.camera) {
         this.setCameraNode(sceneDeserializer.getNode(nodeData.camera));
       }
     };
+    
     viewportNode.pub.getFPS = function() {
       // TODO: once we have support for multiple viewports, we should
       // re-write this function.
       return scene.getContext().VP.viewPort.getFPS();
     };
+    
+    if (options.enableRaycasting)
+      viewportNode.pub.enableRaycasting();
 
     if (options.postProcessEffect) {
       viewportNode.pub.addPostProcessEffectShader(options.postProcessEffect);
@@ -1386,6 +1390,14 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
       windowElement.addEventListener('mousemove', mouseMoveFn, false);
       windowElement.addEventListener('mousedown', mouseDownFn, false);
       windowElement.addEventListener('mouseup', mouseUpFn, false);
+      
+      scene.pub.addEventListener('beginmanipulation', function(evt){
+        // During manipulation we disable raycasting
+        viewportNode.pub.disableRaycasting();
+      });
+      scene.pub.addEventListener('endmanipulation', function(evt){
+        viewportNode.pub.enableRaycasting();
+      });
 
       // Mouse Wheel event trapping.
       // Mouse wheel events are sent to the document, not the element,

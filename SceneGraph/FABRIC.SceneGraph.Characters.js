@@ -720,10 +720,14 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
     
     characterRigNode.addMemberInterface(dgnode, 'pose', false);
     characterRigNode.pub.setPose = function(pose) {
-      for (var i = 0; i < solvers.length; i++) {
-        if(!solvers[i].setPose)
-          continue;
-        solvers[i].setPose(pose, variablesNode);
+      if(solvers.length > 0){
+        for (var i = 0; i < solvers.length; i++) {
+          if(!solvers[i].setPose)
+            continue;
+          solvers[i].setPose(pose, variablesNode);
+        }
+      }else{
+        dgnode.setData('pose', 0, pose);
       }
     };
     
@@ -1009,11 +1013,12 @@ FABRIC.SceneGraph.registerNodeType('CharacterManipulator', {
   factoryFn: function(options, scene) {
     
     scene.assignDefaults(options, {
-        rigNode: undefined,
-        boneIndex: -1,
-        xfoIndex: -1,
-        localXfo: new FABRIC.RT.Xfo()
-      });
+      rigNode: undefined,
+      boneIndex: -1,
+      xfoIndex: -1,
+      localXfo: new FABRIC.RT.Xfo(),
+      targetName: ""
+    });
     if(!options.rigNode){
       throw "Rig Node not specified";
     }
@@ -1060,6 +1065,9 @@ FABRIC.SceneGraph.registerNodeType('CharacterManipulator', {
     }
     manipulatorNode.getManipulationSpaceXfo = function() {
       return rigNode.pub.getBoneXfo(xfoIndex);
+    }
+    manipulatorNode.pub.getTargetName = function() {
+      return options.targetName;
     }
     
     // Thia function is used to find the closest local axis to
