@@ -130,7 +130,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('CharacterSolver', {
 });
 
 
-FABRIC.Characters.FKHierarchy = function(boneIds, xfoIds) {
+FABRIC.RT.FKHierarchy = function(boneIds, xfoIds) {
   this.boneIds = boneIds ? boneIds : [];
   this.xfoIds = xfoIds ? xfoIds : [];
 };
@@ -141,7 +141,7 @@ FABRIC.appendOnCreateContextCallback(function(context) {
       boneIds: 'Integer[]',
       xfoIds: 'Integer[]'
     },
-    constructor: FABRIC.Characters.FKHierarchy
+    constructor: FABRIC.RT.FKHierarchy
   });
 });
 
@@ -173,7 +173,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('FKHierarchySolver',{
     }
     var xfoIds = rigNode.addVariable('Xfo[]', defaultValues);
     
-    var binding = new FABRIC.Characters.FKHierarchy(boneIDs.bones, xfoIds);
+    var binding = new FABRIC.RT.FKHierarchy(boneIDs.bones, xfoIds);
     skeletonNode.addMember(name + 'bindings', 'FKHierarchy', binding);
     
     rigNode.addSolverOperator({
@@ -211,6 +211,25 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('FKHierarchySolver',{
           ]
         }));
     }
+    
+    solver.generateTracks = function(trackSet, trackBindings){
+      var color = FABRIC.RT.rgb(1, 0, 0);
+      var storeEulerAngles = false;
+      for (var i = 0; i < binding.boneIds.length; i++) {
+        trackSet.addXfoTrack(solver.getName()+i, color, storeEulerAngles, trackBindings, xfoIds[i]);
+      }
+    }
+ 
+    solver.setPose = function(pose, variablesNode) {
+      var fkpose = [];
+      for (var i = 0; i < binding.boneIds.length; i++) {
+        if (bones[binding.boneIds[i]].parent == -1)
+          fkpose[i] = pose[binding.boneIds[i]];
+        else
+          fkpose[i] = pose[bones[binding.boneIds[i]].parent].inverse().multiply(pose[binding.boneIds[i]]);
+      }
+      variablesNode.setValues(fkpose, xfoIds);
+    };
     
     return solver;
   }
@@ -1026,7 +1045,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('ArmSolver', {
 });
 
 
-FABRIC.Characters.Limb = function(boneIds, ankleId, xfoIds, ikGoalXfoId, ikGoalOffsetXfo, ikGoalReferenceXfo, ikblendId) {
+FABRIC.RT.Limb = function(boneIds, ankleId, xfoIds, ikGoalXfoId, ikGoalOffsetXfo, ikGoalReferenceXfo, ikblendId) {
   this.boneIds = boneIds != undefined ? boneIds : [];
   this.ankleId = ankleId != undefined ? ankleId : -1;
   this.xfoIds = xfoIds != undefined ? xfoIds : [];
@@ -1049,7 +1068,7 @@ FABRIC.appendOnCreateContextCallback(function(context) {
       ikblendId: 'Integer',
       hubId: 'Integer'
     },
-    constructor: FABRIC.Characters.Limb
+    constructor: FABRIC.RT.Limb
   });
 });
 
@@ -1098,7 +1117,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('InsectLegSolver', {
       var footPlatformXfoId = rigNode.addVariable('Xfo', footPlatformXfo);
       var ikblendId = rigNode.addVariable('Scalar', 1.0);
       
-      var leg = new FABRIC.Characters.Limb(boneIDs.bones, -1, xfoIds, footPlatformXfoId, lastBoneOffsetXfo, footPlatformXfo, ikblendId);
+      var leg = new FABRIC.RT.Limb(boneIDs.bones, -1, xfoIds, footPlatformXfoId, lastBoneOffsetXfo, footPlatformXfo, ikblendId);
       if(options.hubIds){
         leg.hubId = options.hubIds[j];
         var hubs = skeletonNode.getData('hubs');
@@ -1163,6 +1182,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('HumanoidLegSolver', {
       twistManipulators = [];
 
   var legs = [];
+  var ankleOffsetXfos = [];
   for(j=0; j<options.limbs.length; j++){
       var boneIDs = solver.generateBoneMapping(options.limbs[j], [['bones'], 'ankle']);
       
@@ -1195,6 +1215,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('HumanoidLegSolver', {
       );
       footPlatformXfo.ori = alignmentQuat.multiply(footPlatformXfo.ori);
       ankleOffsetXfo = footPlatformXfo.inverse().multiply(ankleTipXfo);
+      ankleOffsetXfos.push(ankleOffsetXfo);
       
       var xfos = [];
       for(var i=0; i<boneIDs.bones.length; i++){
@@ -1205,8 +1226,42 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('HumanoidLegSolver', {
       var footPlatformXfoId = rigNode.addVariable('Xfo', footPlatformXfo);
       var ikblendId = rigNode.addVariable('Scalar', 1.0);
       
-      var leg = new FABRIC.Characters.Limb(boneIDs.bones, boneIDs.ankle, xfoIds, footPlatformXfoId, ankleOffsetXfo, footPlatformXfo, ikblendId);
+      var leg = new FABRIC.RT.Limb(boneIDs.bones, boneIDs.ankle, xfoIds, footPlatformXfoId, ankleOffsetXfo, footPlatformXfo, ikblendId);
       legs.push(leg);
+      
+      if (options.createManipulators) {
+        // add a manipulation for target and upvector
+        solver.constructManipulator(name + 'FootTranslate'+j, 'ScreenTranslationManipulator', {
+          rigNode: rigNode.pub,
+          xfoIndex: footPlatformXfoId,
+          geometryNode: scene.pub.constructNode('Cross', { size: bones[boneIDs.ankle].length * 0.5 }),
+          color: FABRIC.RT.rgb(1, 0, 0),
+          baseManipulatorType: 'CharacterManipulator',
+          targetName: solver.getName()+j+'IKGoal'
+        });
+  
+        /*
+        solver.constructManipulator(name + 'FootRotate', 'PivotRotationManipulator', {
+          parentNode: variablesNode.pub,
+          parentMember: name + 'footPlatformXfo',
+          radius: bones[boneIDs.ankle].length,
+          geometryNode: scene.pub.constructNode('Rectangle', {
+            length: bones[boneIDs.ankle].length * 2,
+            width: bones[boneIDs.ankle].length
+          }),
+          color: FABRIC.RT.rgb(0, 0, 1)
+        });
+  
+        solver.constructManipulator(name + 'AnkleRotate', 'BoneManipulator', {
+          targetNode: variablesNode.pub,
+          targetMember: name + 'ankleIKAnimationXfo',
+          parentMember: name + 'footPlatformXfo',
+          length: bones[boneIDs.ankle].length * 2.0,
+          boneVector: new FABRIC.RT.Vec3(-1, 0, 0),
+          color: FABRIC.RT.rgb(0, 0, 1)
+        });
+        */
+      }
     }
     
     skeletonNode.addMember('legs', 'Limb[]', legs);
@@ -1224,40 +1279,50 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('HumanoidLegSolver', {
         'self.debugGeometry'
       ]
     });
-      
-    if (options.createManipulators) {
-      /*
-      // add a manipulation for target and upvector
-      solver.constructManipulator(name + 'FootTranslate', 'ScreenTranslationManipulator', {
-        parentNode: variablesNode.pub,
-        parentMember: 'poseVariables.xfoValues',
-        parentMemberIndex: 'footPlatformXfoId',
-        geometryNode: scene.pub.constructNode('Cross', { size: bones[boneIDs.ankle].length * 0.5 }),
-        color: FABRIC.RT.rgb(1, 0, 0)
-      });
-
-      solver.constructManipulator(name + 'FootRotate', 'PivotRotationManipulator', {
-        parentNode: variablesNode.pub,
-        parentMember: name + 'footPlatformXfo',
-        radius: bones[boneIDs.ankle].length,
-        geometryNode: scene.pub.constructNode('Rectangle', {
-          length: bones[boneIDs.ankle].length * 2,
-          width: bones[boneIDs.ankle].length
-        }),
-        color: FABRIC.RT.rgb(0, 0, 1)
-      });
-
-      solver.constructManipulator(name + 'AnkleRotate', 'BoneManipulator', {
-        targetNode: variablesNode.pub,
-        targetMember: name + 'ankleIKAnimationXfo',
-        parentMember: name + 'footPlatformXfo',
-        length: bones[boneIDs.ankle].length * 2.0,
-        boneVector: new FABRIC.RT.Vec3(-1, 0, 0),
-        color: FABRIC.RT.rgb(0, 0, 1)
-      });
-      */
+    
+    solver.generateTracks = function(trackSet, trackBindings){
+      for(j=0; j<legs.length; j++){
+        var color = FABRIC.RT.rgb(1, 0, 0);
+        var storeEulerAngles = false;
+        
+        
+        trackSet.addXfoTrack(solver.getName()+j+'IKGoal', color, storeEulerAngles, trackBindings, legs[j].ikGoalXfoId);
+        /*
+        for(i=0; i<legs[j].xfoIds.length; i++){
+          if(legs[j].ankleId > 0 && i==legs[j].xfoIds.length-1){
+            trackSet.addXfoTrack(solver.getName()+j+'Ankle', color, storeEulerAngles, trackBindings, legs[j].xfoIds[i]);
+          }else{
+            trackSet.addXfoTrack(solver.getName()+j+'Bone'+i, color, storeEulerAngles, trackBindings, legs[j].xfoIds[i]);
+          }
+        }
+        */
+        trackSet.addScalarTrack(solver.getName()+j+'IKBlend', color, trackBindings, legs[j].ikblendId);
+      }
     }
  
+ 
+    solver.setPose = function(pose, variablesNode) {
+      for( var i=0; i<legs.length; i++){
+        var leg = legs[i];
+      //  var xfoValues = [];
+      //  for (var j = 0; j < leg.boneIds.length; j++) {
+      //    if (bones[leg.boneIds[j]].parent == - 1)
+      //      xfoValues[j] = pose[leg.boneIds[j]];
+      //    else
+      //      xfoValues[j] = pose[bones[leg.boneIds[j]].parent].inverse().multiply(pose[leg.boneIds[j]]);
+      //  }
+      //  xfoValues[leg.boneIds.length] = pose[bones[leg.ankleId].parent].inverse().multiply(pose[leg.ankleId]);
+      //  
+      //  variablesNode.setValues(xfoValues, leg.xfoIds);
+        
+        var ankleTipXfo = pose[leg.ankleId];
+        ankleTipXfo.tr = ankleTipXfo.transformVector(new FABRIC.RT.Vec3(bones[leg.ankleId].length, 0.0, 0.0));
+        var ikGoalXfo = ankleTipXfo.multiply(leg.ikGoalOffsetXfo.inverse());
+        variablesNode.setValue(ikGoalXfo, leg.ikGoalXfoId);
+      }
+    };
+ 
+    
     solver.invert = function(variablesNode){
       variablesNode.getDGNode().bindings.append(scene.constructOperator({
           operatorName: 'invertHumanoidLegRig',
@@ -1272,12 +1337,14 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('HumanoidLegSolver', {
           ]
         }));
     }
+    
+    
     return solver; 
   }
 });
 
 
-FABRIC.Characters.Hub = function(boneId, xfoId, hubParentSpaceId, inSpineBoneIds, inSpineBoneXfoId) {
+FABRIC.RT.Hub = function(boneId, xfoId, hubParentSpaceId, inSpineBoneIds, inSpineBoneXfoId) {
   this.boneId = boneId != undefined ? boneId : -1;
   this.xfoId = xfoId != undefined ? xfoId : -1;
   this.hubParentSpaceId = hubParentSpaceId != undefined ? hubParentSpaceId : -1;
@@ -1294,7 +1361,7 @@ FABRIC.appendOnCreateContextCallback(function(context) {
       inSpineBoneIds: 'Integer[]',
       inSpineBoneXfoId: 'Integer[]'
     },
-    constructor: FABRIC.Characters.Hub
+    constructor: FABRIC.RT.Hub
   });
 });
 
@@ -1314,9 +1381,10 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('HubSolver', {
       name = options.name;
     
     var hubs = [];
-    for(j=0; j<options.hubs.length; j++){
-      var boneIDs = solver.generateBoneMapping(options.hubs[j], ['bone', 'parentSpaceBone', ['inSpineBones']]);
-      var hubXfoId = rigNode.addVariable('Xfo', referencePose[boneIDs.bone]);
+    for(i=0; i<options.hubs.length; i++){
+      var boneIDs = solver.generateBoneMapping(options.hubs[i], ['bone', 'parentSpaceBone', ['inSpineBones']]);
+      var hubXfo = referencePose[boneIDs.bone];
+      var hubXfoId = rigNode.addVariable('Xfo', hubXfo);
       var inSpineBoneXfos = [];
       var inSpineBoneXfoIds;
       if(boneIDs.inSpineBones){
@@ -1326,8 +1394,20 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('HubSolver', {
         inSpineBoneXfoIds = rigNode.addVariable('Xfo[]', inSpineBoneXfos);
       }
       
-      var hub = new FABRIC.Characters.Hub(boneIDs.bone, hubXfoId, boneIDs.parentSpaceBone, boneIDs.inSpineBones, inSpineBoneXfoIds);
+      var hub = new FABRIC.RT.Hub(boneIDs.bone, hubXfoId, boneIDs.parentSpaceBone, boneIDs.inSpineBones, inSpineBoneXfoIds);
       hubs.push(hub);
+      
+      if (options.createManipulators) {
+        // add a manipulation for target and upvector
+        solver.constructManipulator(name + 'HubTranslate'+i, 'ScreenTranslationManipulator', {
+          rigNode: rigNode.pub,
+          xfoIndex: hubXfoId,
+          geometryNode: scene.pub.constructNode('Cross', { size: hubXfo.tr.y * 0.15 }),
+          color: FABRIC.RT.rgb(1, 0, 0),
+          baseManipulatorType: 'CharacterManipulator',
+          targetName: solver.getName()+i+'Xfo'
+        });
+      }
     }
     skeletonNode.addMember('hubs', 'Hub[]', hubs);
     rigNode.addSolverOperator({
@@ -1344,10 +1424,46 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('HubSolver', {
         'self.debugGeometry'
       ]
     });
-      
-    if (options.createManipulators) {
+    
+    solver.generateTracks = function(trackSet, trackBindings){
+      for(i=0; i<hubs.length; i++){
+        var color = FABRIC.RT.rgb(1, 0, 0);
+        var storeEulerAngles = false;
+        trackSet.addXfoTrack(solver.getName()+i+'Xfo', color, storeEulerAngles, trackBindings, hubs[i].xfoId);
+      }
     }
- 
+    
+    solver.setPose = function(pose, variablesNode) {
+      for(var i=0; i < hubs.length; i++){
+        var hub = hubs[i];
+        var xfo;
+        if(hub.inSpineBoneIds.length > 0){
+          if(hub.hubParentSpaceId == -1)
+            xfo = pose[hub.boneId];
+          else
+            xfo = pose[hub.hubParentSpaceId].inverse() * pose[hub.boneId];
+        }
+        else{
+          // TODO: Re-impliment hubs with parents. This made animation pre processing more cmoplex once I added the RigRoot node.
+       //   if (bones[hub.boneId].parent == -1)
+            xfo = pose[hub.boneId];
+       //   else
+       //     poseVariables.xfoValues[hub.xfoId] = pose[bones[hub.boneId].parent].inverse() * pose[hub.boneId];
+        }
+        variablesNode.setValue(xfo, hub.xfoId);
+        if(hub.inSpineBoneIds.length > 0){
+          var spineXfos = [];
+          for (var j = 0; j < hub.inSpineBoneIds.size; j++) {
+            if (bones[hub.inSpineBoneIds[j]].parent == - 1)
+              spineXfos[j] = pose[hub.inSpineBoneIds[j]];
+            else
+              spineXfos[j] = pose[bones[hub.inSpineBoneIds[j]].parent].inverse().multiply(pose[hub.inSpineBoneIds[j]]);
+          }
+          variablesNode.setValues(spineXfos, hub.inSpineBoneIds);
+        }
+      }
+    }
+    
     solver.invert = function(variablesNode){
       variablesNode.getDGNode().bindings.append(scene.constructOperator({
         operatorName: 'invertHubRigs',
@@ -1362,6 +1478,8 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('HubSolver', {
         ]
       }));
     }
+    
+    
     return solver; 
   }
 });

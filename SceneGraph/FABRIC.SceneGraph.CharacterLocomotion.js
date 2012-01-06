@@ -4,7 +4,7 @@
 
 
 
-FABRIC.Characters.COM = function(boneId, xfoId, parameterVarIds) {
+FABRIC.RT.COM = function(boneId, xfoId, parameterVarIds) {
   this.boneId = boneId != undefined ? boneId : -1;
   this.xfoId = xfoId != undefined ? xfoId : -1;
   this.parameterVarIds = parameterVarIds != undefined ? parameterVarIds : [];
@@ -17,7 +17,7 @@ FABRIC.appendOnCreateContextCallback(function(context) {
       xfoId: 'Integer',
       parameterVarIds: 'Integer[]'
     },
-    constructor: FABRIC.Characters.COM
+    constructor: FABRIC.RT.COM
   });
 });
 
@@ -37,7 +37,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('COMSolver', {
     var comParam2VarId = rigNode.addVariable('Scalar'); // gradient
     var comParam3VarId = rigNode.addVariable('Scalar'); // direction
     
-    var com = new FABRIC.Characters.COM(boneId.bone, comXfoId, [
+    var com = new FABRIC.RT.COM(boneId.bone, comXfoId, [
       comParam0VarId,
       comParam1VarId,
       comParam2VarId,
@@ -82,7 +82,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('COMSolver', {
 });
 
 
-FABRIC.Characters.LocomotionFoot = function(limbId, stepTimeVarId) {
+FABRIC.RT.LocomotionFoot = function(limbId, stepTimeVarId) {
   this.limbId = limbId != undefined ? limbId : -1;
   this.stepTimeVarId = stepTimeVarId != undefined ? stepTimeVarId : -1;
 };
@@ -93,7 +93,7 @@ FABRIC.appendOnCreateContextCallback(function(context) {
       limbId: 'Integer',
       stepTimeVarId: 'Integer'
     },
-    constructor: FABRIC.Characters.LocomotionFoot
+    constructor: FABRIC.RT.LocomotionFoot
   });
 });
 
@@ -108,7 +108,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('LocomotionFeetSolver', {
     var locomotionFeet = [];
     for(var i=0; i<limbs.length; i++){
       var stepTimeVarId = rigNode.addVariable('Scalar');
-      locomotionFeet.push(new FABRIC.Characters.LocomotionFoot(i, stepTimeVarId));
+      locomotionFeet.push(new FABRIC.RT.LocomotionFoot(i, stepTimeVarId));
     }
     skeletonNode.addMember('locomotionFeet', 'LocomotionFoot[]', locomotionFeet);
     
@@ -288,7 +288,7 @@ FABRIC.SceneGraph.registerNodeType('LocomotionAnimationLibrary', {
   }});
 
 
-FABRIC.Characters.CharacterControllerParams = function() {
+FABRIC.RT.CharacterControllerParams = function() {
   this.displacement = new FABRIC.RT.Xfo();
   this.displacementDir = new FABRIC.RT.Vec3(0,0,1);
   this.trail = [];
@@ -311,7 +311,7 @@ FABRIC.appendOnCreateContextCallback(function(context) {
       lift: 'Scalar',
       state: 'Integer'
     },
-    constructor: FABRIC.Characters.CharacterControllerParams
+    constructor: FABRIC.RT.CharacterControllerParams
   });
 });
 
@@ -340,7 +340,7 @@ FABRIC.SceneGraph.registerNodeType('LocomotionCharacterController', {
     var characterControllerNode = scene.constructNode('CharacterController', options);
     var dgnode = characterControllerNode.getDGNode();
     
-    var controllerparams = new FABRIC.Characters.CharacterControllerParams();
+    var controllerparams = new FABRIC.RT.CharacterControllerParams();
     if(options.numTrailSegments > 0){
       var trailDir = options.controllerXfo.ori.rotateVector(new FABRIC.RT.Vec3(0,0,-1));
       var trail = [];
