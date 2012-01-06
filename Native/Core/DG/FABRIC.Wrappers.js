@@ -1998,9 +1998,16 @@ function (fabricClient, logCallback, debugLogCallback) {
         return count;
       };
       
-      arrayProducer.pub.produce = function (index) {
+      arrayProducer.pub.produce = function (index, count) {
         var result;
-        arrayProducer.queueCommand('produce', index, null, function (_) {
+        
+        var arg = {};
+        if (index !== undefined) {
+          if (count !== undefined)
+            arg.count = count;
+          arg.index = index;
+        }
+        arrayProducer.queueCommand('produce', arg, null, function (_) {
           result = _;
         });
         executeQueuedCommands();

@@ -6,6 +6,7 @@
 #include <Fabric/Core/MR/ArrayProducer.h>
 #include <Fabric/Core/RT/Desc.h>
 #include <Fabric/Base/JSON/Integer.h>
+#include <Fabric/Base/JSON/Object.h>
 #include <Fabric/Core/Util/JSONGenerator.h>
 #include <Fabric/Base/Exception.h>
 
@@ -49,12 +50,41 @@ namespace Fabric
       Util::JSONArrayGenerator &resultJAG
       )
     {
-      if ( !arg )
-        throw Exception( "missing required index parameter" );
-      size_t index = arg->toInteger()->value();
-          
+      RC::ConstHandle<JSON::Object> argObject = arg->toObject();
+      
       Util::JSONGenerator jg = resultJAG.makeElement();
-      getUnwrapped()->createComputeState()->produceJSON( index, jg );
+
+      RC::ConstHandle<JSON::Value> indexValue = argObject->maybeGet("index");
+      if ( indexValue )
+      {
+        size_t index;
+        try
+        {
+          index = indexValue->toInteger()->value();
+        }
+        catch ( Exception e )
+        {
+          throw "index: " + e;
+        }
+        
+        RC::ConstHandle<JSON::Value> countValue = argObject->maybeGet("count");
+        if ( countValue )
+        {
+          size_t count;
+          try
+          {
+            count = countValue->toInteger()->value();
+          }
+          catch ( Exception e )
+          {
+            throw "count: " + e;
+          }
+          
+          getUnwrapped()->createComputeState()->produceJSON( index, count, jg );
+        }
+        else getUnwrapped()->createComputeState()->produceJSON( index, jg );
+      }
+      else getUnwrapped()->createComputeState()->produceJSON( jg );
     }
   }
 }
