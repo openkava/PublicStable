@@ -87,7 +87,6 @@ namespace Fabric
       {
         size_t index = jobIndex * m_indicesPerJob;
         size_t endIndex = std::min( index + m_indicesPerJob, m_count );
-        FABRIC_LOG("index=%u, endIndex=%u", (unsigned)index, (unsigned)endIndex);
         
         uint8_t *data = reinterpret_cast<uint8_t *>( m_datas ) + index * m_allocSize;
         while ( index < endIndex )
