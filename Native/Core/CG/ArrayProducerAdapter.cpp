@@ -11,6 +11,7 @@
 #include "ConstStringAdapter.h"
 #include "FloatAdapter.h"
 #include "OpaqueAdapter.h"
+#include "VariableArrayAdapter.h"
 #include "Manager.h"
 #include "ModuleBuilder.h"
 #include "FunctionBuilder.h"
@@ -19,6 +20,7 @@
 
 #include <Fabric/Core/RT/ArrayProducerDesc.h>
 #include <Fabric/Core/RT/StringImpl.h>
+#include <Fabric/Core/RT/VariableArrayDesc.h>
 #include <Fabric/Core/MR/ArrayProducer.h>
 
 #include <llvm/Module.h>
@@ -37,6 +39,7 @@ namespace Fabric
       : Adapter( manager, arrayProducerDesc, FL_PASS_BY_REFERENCE )
       , m_arrayProducerDesc( arrayProducerDesc )
       , m_elementAdapter( manager->getAdapter( arrayProducerDesc->getElementDesc() ) )
+      , m_elementVariableArrayAdapter( manager->getVariableArrayOf( m_elementAdapter ) )
     {
     }
     
@@ -54,6 +57,7 @@ namespace Fabric
       RC::Handle<Context> context = moduleBuilder.getContext();
       
       m_elementAdapter->llvmCompileToModule( moduleBuilder );
+      m_elementVariableArrayAdapter->llvmCompileToModule( moduleBuilder );
       RC::ConstHandle<BooleanAdapter> booleanAdapter = getManager()->getBooleanAdapter();
       booleanAdapter->llvmCompileToModule( moduleBuilder );
       RC::ConstHandle<SizeAdapter> sizeAdapter = getManager()->getSizeAdapter();
@@ -61,7 +65,7 @@ namespace Fabric
       RC::ConstHandle<StringAdapter> stringAdapter = getManager()->getStringAdapter();
       stringAdapter->llvmCompileToModule( moduleBuilder );
       RC::ConstHandle<ConstStringAdapter> constStringAdapter = getManager()->getConstStringAdapter();
-      constStringAdapter->llvmCompileToModule( moduleBuilder );
+      constStringAdapter->llvmCompileToModule( moduleBuilder );      
       
       moduleBuilder->addTypeName( getCodeName(), llvmRawType( context ) );
       
@@ -130,10 +134,29 @@ namespace Fabric
       }
 
       {
+        std::string name = methodOverloadName( "produce", this );
+        std::vector<FunctionParam> params;
+        params.push_back( FunctionParam( "rValue", this, USAGE_RVALUE ) );
+        FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( m_elementVariableArrayAdapter, USAGE_RVALUE ), params );
+        if ( buildFunctions )
+        {
+          BasicBlockBuilder basicBlockBuilder( functionBuilder );
+
+          llvm::Value *rValue = functionBuilder[0];
+
+          llvm::BasicBlock *entryBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "entry" );
+          
+          basicBlockBuilder->SetInsertPoint( entryBB );
+          llvmProduce0( basicBlockBuilder, rValue, functionBuilder.getScope().llvmGetReturnLValue() );
+          basicBlockBuilder->CreateRetVoid();
+        }
+      }
+
+      {
         std::string name = methodOverloadName( "produce", this, sizeAdapter );
         std::vector<FunctionParam> params;
         params.push_back( FunctionParam( "rValue", this, USAGE_RVALUE ) );
-        params.push_back( FunctionParam( "rValue", sizeAdapter, USAGE_RVALUE ) );
+        params.push_back( FunctionParam( "indexRValue", sizeAdapter, USAGE_RVALUE ) );
         FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( m_elementAdapter, USAGE_RVALUE ), params );
         if ( buildFunctions )
         {
@@ -147,11 +170,34 @@ namespace Fabric
           basicBlockBuilder->SetInsertPoint( entryBB );
           CG::FunctionScope &functionScope = functionBuilder.getScope();
           functionScope.llvmPrepareReturnLValue( basicBlockBuilder );
-          llvmProduce( basicBlockBuilder, rValue, indexRValue, functionScope.llvmGetReturnLValue() );
+          llvmProduce1( basicBlockBuilder, rValue, indexRValue, functionScope.llvmGetReturnLValue() );
           if ( functionScope.getReturnInfo().usesReturnLValue() )
             basicBlockBuilder->CreateRetVoid();
           else
             basicBlockBuilder->CreateRet( basicBlockBuilder->CreateLoad( functionScope.llvmGetReturnLValue() ) );
+        }
+      }
+
+      {
+        std::string name = methodOverloadName( "produce", this, sizeAdapter, sizeAdapter );
+        std::vector<FunctionParam> params;
+        params.push_back( FunctionParam( "rValue", this, USAGE_RVALUE ) );
+        params.push_back( FunctionParam( "indexRValue", sizeAdapter, USAGE_RVALUE ) );
+        params.push_back( FunctionParam( "countRValue", sizeAdapter, USAGE_RVALUE ) );
+        FunctionBuilder functionBuilder( moduleBuilder, name, ExprType( m_elementVariableArrayAdapter, USAGE_RVALUE ), params );
+        if ( buildFunctions )
+        {
+          BasicBlockBuilder basicBlockBuilder( functionBuilder );
+
+          llvm::Value *rValue = functionBuilder[0];
+          llvm::Value *indexRValue = functionBuilder[1];
+          llvm::Value *countRValue = functionBuilder[2];
+
+          llvm::BasicBlock *entryBB = basicBlockBuilder.getFunctionBuilder().createBasicBlock( "entry" );
+          
+          basicBlockBuilder->SetInsertPoint( entryBB );
+          llvmProduce2( basicBlockBuilder, rValue, indexRValue, countRValue, functionBuilder.getScope().llvmGetReturnLValue() );
+          basicBlockBuilder->CreateRetVoid();
         }
       }
     }
@@ -195,11 +241,37 @@ namespace Fabric
       else return 0;
     }
     
-    void ArrayProducerAdapter::Produce( void const *arrayProducerRValue, size_t indexRValue, void *dstLValue )
+    void ArrayProducerAdapter::Produce0( void const *_adapter, void const *arrayProducerRValue, void *dstLValue )
+    {
+      MR::ArrayProducer *arrayProducer = *static_cast<MR::ArrayProducer * const *>( arrayProducerRValue );
+      if ( arrayProducer )
+      {
+        RC::Handle<MR::ArrayProducer::ComputeState> computeState = arrayProducer->createComputeState();
+        size_t count = computeState->getCount();
+        RC::ConstHandle<RT::VariableArrayDesc> elementVariableArrayDesc = RC::ConstHandle<RT::VariableArrayDesc>::StaticCast( static_cast<ArrayProducerAdapter const *>( _adapter )->m_elementVariableArrayAdapter->getDesc() );
+        elementVariableArrayDesc->setNumMembers( dstLValue, count );
+        void *firstMemberData = elementVariableArrayDesc->getMemberData( dstLValue, 0 );
+        computeState->produce( 0, count, firstMemberData );
+      }
+    }
+    
+    void ArrayProducerAdapter::Produce1( void const *arrayProducerRValue, size_t indexRValue, void *dstLValue )
     {
       MR::ArrayProducer *arrayProducer = *static_cast<MR::ArrayProducer * const *>( arrayProducerRValue );
       if ( arrayProducer )
         arrayProducer->createComputeState()->produce( indexRValue, dstLValue );
+    }
+    
+    void ArrayProducerAdapter::Produce2( void const *_adapter, void const *arrayProducerRValue, size_t indexRValue, size_t countRValue, void *dstLValue )
+    {
+      MR::ArrayProducer *arrayProducer = *static_cast<MR::ArrayProducer * const *>( arrayProducerRValue );
+      if ( arrayProducer )
+      {
+        RC::ConstHandle<RT::VariableArrayDesc> elementVariableArrayDesc =  RC::ConstHandle<RT::VariableArrayDesc>::StaticCast( static_cast<ArrayProducerAdapter const *>( _adapter )->m_elementVariableArrayAdapter->getDesc() );
+        elementVariableArrayDesc->setNumMembers( dstLValue, countRValue );
+        void *firstMemberData = elementVariableArrayDesc->getMemberData( dstLValue, 0 );
+        arrayProducer->createComputeState()->produce( indexRValue, countRValue, firstMemberData );
+      }
     }
     
     void *ArrayProducerAdapter::llvmResolveExternalFunction( std::string const &functionName ) const
@@ -212,8 +284,12 @@ namespace Fabric
         return (void *)&ArrayProducerAdapter::DefaultAssign;
       else if ( functionName == "__"+getCodeName()+"__GetCount" )
         return (void *)&ArrayProducerAdapter::GetCount;
-      else if ( functionName == "__"+getCodeName()+"__Produce" )
-        return (void *)&ArrayProducerAdapter::Produce;
+      else if ( functionName == "__"+getCodeName()+"__Produce0" )
+        return (void *)&ArrayProducerAdapter::Produce0;
+      else if ( functionName == "__"+getCodeName()+"__Produce1" )
+        return (void *)&ArrayProducerAdapter::Produce1;
+      else if ( functionName == "__"+getCodeName()+"__Produce2" )
+        return (void *)&ArrayProducerAdapter::Produce2;
       else return Adapter::llvmResolveExternalFunction( functionName );
     }
 
@@ -259,7 +335,23 @@ namespace Fabric
       return basicBlockBuilder->CreateCall( func, arrayProducerRValue );
     }
     
-    void ArrayProducerAdapter::llvmProduce(
+    void ArrayProducerAdapter::llvmProduce0(
+      CG::BasicBlockBuilder &basicBlockBuilder,
+      llvm::Value *arrayProducerRValue,
+      llvm::Value *dstLValue
+      ) const
+    {    
+      RC::Handle<Context> context = basicBlockBuilder.getContext();
+      std::vector<llvm::Type const *> argTypes;
+      argTypes.push_back( basicBlockBuilder->getInt8PtrTy() );
+      argTypes.push_back( llvmRType( context ) );
+      argTypes.push_back( m_elementVariableArrayAdapter->llvmLType( context ) );
+      llvm::FunctionType const *funcType = llvm::FunctionType::get( llvm::Type::getVoidTy( context->getLLVMContext() ), argTypes, false );
+      llvm::Constant *func = basicBlockBuilder.getModuleBuilder()->getOrInsertFunction( "__"+getCodeName()+"__Produce0", funcType ); 
+      basicBlockBuilder->CreateCall3( func, llvmAdapterPtr( basicBlockBuilder ), arrayProducerRValue, dstLValue );
+    }
+    
+    void ArrayProducerAdapter::llvmProduce1(
       CG::BasicBlockBuilder &basicBlockBuilder,
       llvm::Value *arrayProducerRValue,
       llvm::Value *indexRValue,
@@ -272,8 +364,28 @@ namespace Fabric
       argTypes.push_back( llvmSizeType( context ) );
       argTypes.push_back( m_elementAdapter->llvmLType( context ) );
       llvm::FunctionType const *funcType = llvm::FunctionType::get( llvm::Type::getVoidTy( context->getLLVMContext() ), argTypes, false );
-      llvm::Constant *func = basicBlockBuilder.getModuleBuilder()->getOrInsertFunction( "__"+getCodeName()+"__Produce", funcType ); 
+      llvm::Constant *func = basicBlockBuilder.getModuleBuilder()->getOrInsertFunction( "__"+getCodeName()+"__Produce1", funcType ); 
       basicBlockBuilder->CreateCall3( func, arrayProducerRValue, indexRValue, dstLValue );
+    }
+    
+    void ArrayProducerAdapter::llvmProduce2(
+      CG::BasicBlockBuilder &basicBlockBuilder,
+      llvm::Value *arrayProducerRValue,
+      llvm::Value *indexRValue,
+      llvm::Value *countRValue,
+      llvm::Value *dstLValue
+      ) const
+    {    
+      RC::Handle<Context> context = basicBlockBuilder.getContext();
+      std::vector<llvm::Type const *> argTypes;
+      argTypes.push_back( basicBlockBuilder->getInt8PtrTy() );
+      argTypes.push_back( llvmRType( context ) );
+      argTypes.push_back( llvmSizeType( context ) );
+      argTypes.push_back( llvmSizeType( context ) );
+      argTypes.push_back( m_elementVariableArrayAdapter->llvmLType( context ) );
+      llvm::FunctionType const *funcType = llvm::FunctionType::get( llvm::Type::getVoidTy( context->getLLVMContext() ), argTypes, false );
+      llvm::Constant *func = basicBlockBuilder.getModuleBuilder()->getOrInsertFunction( "__"+getCodeName()+"__Produce2", funcType ); 
+      basicBlockBuilder->CreateCall5( func, llvmAdapterPtr( basicBlockBuilder ), arrayProducerRValue, indexRValue, countRValue, dstLValue );
     }
 
     void ArrayProducerAdapter::llvmDefaultAssign( BasicBlockBuilder &basicBlockBuilder, llvm::Value *dstLValue, llvm::Value *srcRValue ) const
