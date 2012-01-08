@@ -19,6 +19,8 @@ namespace Fabric
   
   namespace CG
   {
+    class VariableArrayAdapter;
+    
     class ArrayProducerAdapter : public Adapter
     {
       friend class Manager;
@@ -44,7 +46,9 @@ namespace Fabric
 
       RC::ConstHandle<Adapter> getElementAdapter() const;
       llvm::Value *llvmGetCount( BasicBlockBuilder &basicBlockBuilder, llvm::Value *srcRValue ) const;
-      void llvmProduce( BasicBlockBuilder &basicBlockBuilder, llvm::Value *srcRValue, llvm::Value *indexRValue, llvm::Value *dstLValue ) const;
+      void llvmProduce0( BasicBlockBuilder &basicBlockBuilder, llvm::Value *srcRValue, llvm::Value *dstLValue ) const;
+      void llvmProduce1( BasicBlockBuilder &basicBlockBuilder, llvm::Value *srcRValue, llvm::Value *indexRValue, llvm::Value *dstLValue ) const;
+      void llvmProduce2( BasicBlockBuilder &basicBlockBuilder, llvm::Value *srcRValue, llvm::Value *indexRValue, llvm::Value *countRValue, llvm::Value *dstLValue ) const;
 
     protected:
       
@@ -66,10 +70,13 @@ namespace Fabric
       static void Release( void const *rValue );
       static void DefaultAssign( void const *srcRValue, void *dstLValue );
       static size_t GetCount( void const *valueProducerRValue );
-      static void Produce( void const *valueProducerRValue, size_t indexRValue, void *dstLValue );
+      static void Produce0( void const *_adapter, void const *valueProducerRValue, void *dstLValue );
+      static void Produce1( void const *valueProducerRValue, size_t indexRValue, void *dstLValue );
+      static void Produce2( void const *_adapter, void const *valueProducerRValue, size_t indexRValue, size_t countRValue, void *dstLValue );
       
       RC::ConstHandle<RT::ArrayProducerDesc> m_arrayProducerDesc;
       RC::ConstHandle<Adapter> m_elementAdapter;
+      RC::ConstHandle<VariableArrayAdapter> m_elementVariableArrayAdapter;
     };
   };
 };
