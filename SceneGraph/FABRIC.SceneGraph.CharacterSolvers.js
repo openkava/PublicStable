@@ -1232,8 +1232,6 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('HumanoidLegSolver', {
         // add a manipulation for target and upvector
         solver.constructManipulator(name+j+'Foot', 'XfoManipulator', {
           rigNode: rigNode.pub,
-          attachmentBone: options.limbs[j].ankle,
-        /*  localXfo: ankleOffsetXfo.inverse(), */
           xfoIndex: footPlatformXfoId,
           geometryNode: scene.pub.constructNode('Cross', { size: bones[boneIDs.ankle].length * 0.5 }),
           color: FABRIC.RT.rgb(1, 0, 0),
@@ -1346,12 +1344,12 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('HumanoidLegSolver', {
 });
 
 
-FABRIC.RT.Hub = function(boneId, xfoId, hubParentSpaceId, inSpineBoneIds, inSpineBoneXfoId) {
+FABRIC.RT.Hub = function(boneId, xfoId, hubParentSpaceId, spineBoneIds, spineBoneXfoId) {
   this.boneId = boneId != undefined ? boneId : -1;
   this.xfoId = xfoId != undefined ? xfoId : -1;
   this.hubParentSpaceId = hubParentSpaceId != undefined ? hubParentSpaceId : -1;
-  this.inSpineBoneIds = inSpineBoneIds != undefined ? inSpineBoneIds : [];
-  this.inSpineBoneXfoId = inSpineBoneXfoId != undefined ? inSpineBoneXfoId : [];
+  this.spineBoneIds = spineBoneIds != undefined ? spineBoneIds : [];
+  this.spineBoneXfoId = spineBoneXfoId != undefined ? spineBoneXfoId : [];
 };
 
 FABRIC.appendOnCreateContextCallback(function(context) {
@@ -1360,8 +1358,8 @@ FABRIC.appendOnCreateContextCallback(function(context) {
       boneId: 'Integer',
       xfoId: 'Integer',
       hubParentSpaceId: 'Integer',
-      inSpineBoneIds: 'Integer[]',
-      inSpineBoneXfoId: 'Integer[]'
+      spineBoneIds: 'Integer[]',
+      spineBoneXfoId: 'Integer[]'
     },
     constructor: FABRIC.RT.Hub
   });
@@ -1384,19 +1382,20 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('HubSolver', {
     
     var hubs = [];
     for(i=0; i<options.hubs.length; i++){
-      var boneIDs = solver.generateBoneMapping(options.hubs[i], ['bone', 'parentSpaceBone', ['inSpineBones']]);
+      var boneIDs = solver.generateBoneMapping(options.hubs[i], ['bone', 'parentSpaceBone', ['spineBones']]);
       var hubXfo = referencePose[boneIDs.bone];
-      var hubXfoId = rigNode.addVariable('Xfo', hubXfo);
-      var inSpineBoneXfos = [];
-      var inSpineBoneXfoIds;
-      if(boneIDs.inSpineBones){
-        for(var i=0; i<boneIDs.inSpineBones.length; i++){
-          inSpineBoneXfos.push(bones[boneIDs.inSpineBones[i]].referenceLocalPose);
+      var spineBoneXfos = [];
+      var spineBoneXfoIds;
+      if(boneIDs.spineBones){
+        for(var j=0; j<boneIDs.spineBones.length; j++){
+          spineBoneXfos.push(bones[boneIDs.spineBones[j]].referenceLocalPose);
         }
-        inSpineBoneXfoIds = rigNode.addVariable('Xfo[]', inSpineBoneXfos);
+        spineBoneXfoIds = rigNode.addVariable('Xfo[]', spineBoneXfos);
+        hubXfo = referencePose[bones[boneIDs.spineBones[0]].parent].inverse().multiply(hubXfo);
       }
       
-      var hub = new FABRIC.RT.Hub(boneIDs.bone, hubXfoId, boneIDs.parentSpaceBone, boneIDs.inSpineBones, inSpineBoneXfoIds);
+      var hubXfoId = rigNode.addVariable('Xfo', hubXfo);
+      var hub = new FABRIC.RT.Hub(boneIDs.bone, hubXfoId, boneIDs.parentSpaceBone, boneIDs.spineBones, spineBoneXfoIds);
       hubs.push(hub);
       
       if (options.createManipulators) {
@@ -1405,10 +1404,27 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('HubSolver', {
           rigNode: rigNode.pub,
           xfoIndex: hubXfoId,
           targetName: solver.getName()+i+'Xfo',
-          attachmentBone: options.hubs[i].bone,
           color: FABRIC.RT.rgb(1, 0, 0),
           size: 1,
-          radius: 1
+          radius: 1,
+          structIndex: i,
+          attachmentOperator:{
+            operatorName: 'calcHubManipulatorAttachmentXfo',
+            srcFile: 'FABRIC_ROOT/SceneGraph/KL/solveHubRig.kl',
+            entryFunctionName: 'calcHubManipulatorAttachmentXfo',
+            parameterLayout: [
+              'skeleton.bones',
+              'skeleton.hubs',
+              'rig.pose',
+              'charactercontroller.xfo',
+              'variables.poseVariables',
+              'self.structIndex',
+              'self.localXfo',
+              'self.parentXfo',
+              'self.targetXfo',
+              'self.globalXfo'
+            ]
+          }
         });
       }
     }
@@ -1440,11 +1456,13 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('HubSolver', {
       for(var i=0; i < hubs.length; i++){
         var hub = hubs[i];
         var xfo;
-        if(hub.inSpineBoneIds.length > 0){
-          if(hub.hubParentSpaceId == -1)
-            xfo = pose[hub.boneId];
+        if(hub.spineBoneIds.length > 0){
+          if(hub.hubParentSpaceId == -1){
+          //  xfo = pose[hub.boneId];
+            xfo = pose[bones[hub.spineBoneIds[0]].parent].inverse().multiply(pose[hub.boneId]);
+          }
           else
-            xfo = pose[hub.hubParentSpaceId].inverse() * pose[hub.boneId];
+            xfo = pose[hub.hubParentSpaceId].inverse().multiply(pose[hub.boneId]);
         }
         else{
           // TODO: Re-impliment hubs with parents. This made animation pre processing more cmoplex once I added the RigRoot node.
@@ -1454,15 +1472,15 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('HubSolver', {
        //     poseVariables.xfoValues[hub.xfoId] = pose[bones[hub.boneId].parent].inverse() * pose[hub.boneId];
         }
         variablesNode.setValue(xfo, hub.xfoId);
-        if(hub.inSpineBoneIds.length > 0){
+        if(hub.spineBoneIds.length > 0){
           var spineXfos = [];
-          for (var j = 0; j < hub.inSpineBoneIds.size; j++) {
-            if (bones[hub.inSpineBoneIds[j]].parent == - 1)
-              spineXfos[j] = pose[hub.inSpineBoneIds[j]];
+          for (var j = 0; j < hub.spineBoneIds.size; j++) {
+            if (bones[hub.spineBoneIds[j]].parent == - 1)
+              spineXfos[j] = pose[hub.spineBoneIds[j]];
             else
-              spineXfos[j] = pose[bones[hub.inSpineBoneIds[j]].parent].inverse().multiply(pose[hub.inSpineBoneIds[j]]);
+              spineXfos[j] = pose[bones[hub.spineBoneIds[j]].parent].inverse().multiply(pose[hub.spineBoneIds[j]]);
           }
-          variablesNode.setValues(spineXfos, hub.inSpineBoneIds);
+          variablesNode.setValues(spineXfos, hub.spineBoneIds);
         }
       }
     }
