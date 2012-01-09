@@ -221,8 +221,10 @@ FABRIC.SceneGraph = {
       for (i in obj) {
         clonedobj[i] = obj[i];
       }
-      for (i in assignedValues) {
-        clonedobj[i] = assignedValues[i];
+      if(assignedValues){
+        for (i in assignedValues) {
+          clonedobj[i] = assignedValues[i];
+        }
       }
       return clonedobj;
     };

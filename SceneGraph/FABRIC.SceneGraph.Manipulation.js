@@ -960,7 +960,7 @@ FABRIC.SceneGraph.registerNodeType('3AxisTranslationManipulator', {
           ori: new FABRIC.RT.Quat().setFromAxisAndAngle(new FABRIC.RT.Vec3(0, 0, 1), -Math.HALF_PI)
         })),
         geometryNode: lineVector
-      }, true));
+      }));
     /*
     scene.pub.constructNode('LinearTranslationManipulator', scene.cloneObj(options, {
         name: name + '_XAxisArrowHead',
@@ -977,7 +977,7 @@ FABRIC.SceneGraph.registerNodeType('3AxisTranslationManipulator', {
         color: FABRIC.RT.rgb(0, 0.8, 0),
         localXfo: options.localXfo,
         geometryNode: lineVector
-      }, true));
+      }));
     /*
     scene.pub.constructNode('LinearTranslationManipulator', scene.cloneObj(options, {
         name: name + '_YAxisArrowHead',
@@ -995,7 +995,7 @@ FABRIC.SceneGraph.registerNodeType('3AxisTranslationManipulator', {
           ori: new FABRIC.RT.Quat().setFromAxisAndAngle(new FABRIC.RT.Vec3(1, 0, 0), Math.HALF_PI)
         })),
         geometryNode: lineVector
-      }, true));
+      }));
     /*
     scene.pub.constructNode('LinearTranslationManipulator', scene.cloneObj(options, {
         name: name + '_ZAxisArrowHead',
@@ -1027,13 +1027,13 @@ FABRIC.SceneGraph.registerNodeType('3AxisTranslationManipulator', {
           ori: new FABRIC.RT.Quat().setFromAxisAndAngle(new FABRIC.RT.Vec3(0, 0, 1), Math.HALF_PI)
         })),
         geometryNode: drawTriangle
-      }, true));
+      }));
     scene.pub.constructNode('PlanarTranslationManipulator', scene.cloneObj(options, {
         name: name + '_XZPlane',
         color: FABRIC.RT.rgb(0, 0.8, 0, 1),
         localXfo: options.localXfo,
         geometryNode: drawTriangle
-      }, true));
+      }));
     scene.pub.constructNode('PlanarTranslationManipulator', scene.cloneObj(options, {
         name: name + '_XYPlane',
         color: FABRIC.RT.rgb(0, 0, 0.8, 1),
@@ -1041,7 +1041,7 @@ FABRIC.SceneGraph.registerNodeType('3AxisTranslationManipulator', {
           ori: new FABRIC.RT.Quat().setFromAxisAndAngle(new FABRIC.RT.Vec3(1, 0, 0), -Math.HALF_PI)
         })),
         geometryNode: drawTriangle
-      }, true));
+      }));
     
     return threeAxisTranslationManipulator;
   }});
@@ -1059,11 +1059,11 @@ FABRIC.SceneGraph.registerNodeType('XfoManipulator', {
     var xfoManipulator = scene.constructNode('SceneGraphNode', options);
     var name = xfoManipulator.pub.getName();
     
-    scene.pub.constructNode('3AxisTranslationManipulator', scene.assignDefaults(options, {
+    scene.pub.constructNode('3AxisTranslationManipulator', scene.cloneObj(options, {
         name: name + '_Translate'
       }, true));
     
-    scene.pub.constructNode('3AxisRotationManipulator', scene.assignDefaults(options, {
+    scene.pub.constructNode('3AxisRotationManipulator', scene.cloneObj(options, {
         name: name + '_Rotate'
       }, true));
     

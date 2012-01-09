@@ -8,11 +8,11 @@ use PoseVariables;
 
 operator calcManipulatorAttachmentXfo(
   io Xfo localXfo,
-  io Xfo pose[],
-  io Size boneIndex,
+  io PoseVariables poseVariables,
+  io Size xfoIndex,
   io Xfo globalXfo
 ) {
-  //report( "calcGlobalXfo\n" );
- // globalXfo = poseVariables.xfoValues[boneIndex] * localXfo;
-  globalXfo = pose[boneIndex];
+  //report( "calcManipulatorAttachmentXfo\n" );
+  globalXfo = poseVariables.xfoValues[xfoIndex] * localXfo;
+//  globalXfo = poseVariables.xfoValues[xfoIndex];
 }

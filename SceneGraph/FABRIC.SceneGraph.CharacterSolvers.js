@@ -1233,7 +1233,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('HumanoidLegSolver', {
         solver.constructManipulator(name+j+'Foot', 'XfoManipulator', {
           rigNode: rigNode.pub,
           attachmentBone: options.limbs[j].ankle,
-          localXfo: ankleOffsetXfo.inverse(),
+        /*  localXfo: ankleOffsetXfo.inverse(), */
           xfoIndex: footPlatformXfoId,
           geometryNode: scene.pub.constructNode('Cross', { size: bones[boneIDs.ankle].length * 0.5 }),
           color: FABRIC.RT.rgb(1, 0, 0),
@@ -1400,7 +1400,6 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('HubSolver', {
       hubs.push(hub);
       
       if (options.createManipulators) {
-        /*
         solver.constructManipulator(name + 'Hub'+i, 'XfoManipulator', {
           baseManipulatorType: 'CharacterManipulator',
           rigNode: rigNode.pub,
@@ -1411,7 +1410,6 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('HubSolver', {
           size: 1,
           radius: 1
         });
-        */
       }
     }
     skeletonNode.addMember('hubs', 'Hub[]', hubs);
