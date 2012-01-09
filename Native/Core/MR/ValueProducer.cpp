@@ -5,6 +5,9 @@
 #include <Fabric/Core/MR/ValueProducer.h>
 #include <Fabric/Core/RT/Desc.h>
 
+#include <alloca.h>
+#include <string.h>
+
 namespace Fabric
 {
   namespace MR
