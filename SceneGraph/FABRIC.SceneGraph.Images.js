@@ -325,7 +325,7 @@ FABRIC.SceneGraph.registerNodeType('Image3D', {
           redrawEventHandler.preDescendBindings.append(scene.constructOperator({
             operatorName: 'detectResourceChange',
             srcCode: 'operator detectResourceChange(io FabricResource resource, io String prevUrl, io Boolean refresh){\n' + 
-                          '  if(prevUrl != resource.url){' +
+                          '  if(prevUrl != resource.url && resource.data.size() != 0){' +
                           '    prevUrl = resource.url;\n' +
                           '    refresh = true;} }',
             entryFunctionName: 'detectResourceChange',
