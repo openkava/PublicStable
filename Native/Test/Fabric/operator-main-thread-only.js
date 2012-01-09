@@ -17,4 +17,4 @@ n.setCount(64);
 n.bindings.append(b);
 n.evaluate();
 
-F.flush();
+F.close();

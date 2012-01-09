@@ -6,6 +6,7 @@
 #include <Fabric/Core/DG/Context.h>
 #include <Fabric/Core/KL/Externals.h>
 #include <Fabric/Core/MT/LogCollector.h>
+#include <Fabric/Core/MT/ParallelCall.h>
 #include <Fabric/Core/Plug/Manager.h>
 #include <Fabric/Core/CG/Context.h>
 #include <Fabric/Core/CG/Manager.h>
@@ -25,24 +26,12 @@ namespace Fabric
 {
   namespace DG
   {
-    extern "C" void logFromByteCode( const char *format, ... )
-    {
-      char buffer[4096];
-      va_list argList;
-      
-      va_start( argList, format );
-      vsnprintf( buffer, 4096, format, argList );
-      va_end( argList );
-      
-      MT::tlsLogCollector.get()->add( buffer );
-    }
-
-    Util::Mutex ExecutionEngine::s_currentContextMutex( "DG::ExecutionEngine::s_currentContext" );
-    RC::ConstHandle<Context> ExecutionEngine::s_currentContext;
+    Util::TLSVar< RC::ConstHandle<Context> > ExecutionEngine::s_currentContext;
     
     void ExecutionEngine::Report( char const *data, size_t length )
     {
-      s_currentContext->getLogCollector()->add( data, length );
+      Context *context = static_cast<Context *>( MT::ParallelCall::GetUserdata() );
+      context->getLogCollector()->add( data, length );
     }
     
     void *ExecutionEngine::LazyFunctionCreator( std::string const &functionName )
@@ -61,8 +50,11 @@ namespace Fabric
           result = OCL::llvmResolveExternalFunction( functionName );
 #endif
         if ( !result )
-          result = s_currentContext->getCGManager()->llvmResolveExternalFunction( functionName );
-
+        {
+          RC::ConstHandle<Context> context = s_currentContext;
+          result = context->getCGManager()->llvmResolveExternalFunction( functionName );
+        }
+        
         // We should *always* return a valid symbol. Otherwise something's
         // wrong in the KL compiler/support.
         if( !result )
@@ -115,7 +107,6 @@ namespace Fabric
 
     ExecutionEngine::ContextSetter::ContextSetter( RC::ConstHandle<Context> const &context )
     {
-      s_currentContextMutex.acquire();
       m_oldContext = s_currentContext;
       s_currentContext = context;
     }
@@ -123,7 +114,6 @@ namespace Fabric
     ExecutionEngine::ContextSetter::~ContextSetter()
     {
       s_currentContext = m_oldContext;
-      s_currentContextMutex.release();
     }
   };
 };

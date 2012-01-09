@@ -10,6 +10,9 @@ quoteCString = coreEnv.File('quote-c-string.sed')
 uglifyjsOption = '-o'
 if buildOS == 'Darwin' or buildOS == 'Linux':
   uglifyjsBin = os.environ['HOME'] + '/node_modules/uglify-js/bin/uglifyjs'
+  if not os.path.exists( uglifyjsBin ):
+    uglifyjsBin = 'uglifyjs'
+
   uglifiedWrappers = coreEnv.Command(
     'FABRIC.Wrappers.uglified.js',
     'FABRIC.Wrappers.js',

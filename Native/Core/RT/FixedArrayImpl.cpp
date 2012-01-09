@@ -140,5 +140,13 @@ namespace Fabric
     {
       return m_memberIsShallow;
     }
+
+    size_t FixedArrayImpl::getIndirectMemoryUsage( void const *data ) const
+    {
+      size_t total = 0;
+      for ( size_t i=0; i<m_length; ++i )
+        total += m_memberImpl->getIndirectMemoryUsage( getImmutableMemberData_NoCheck( data, i ) );
+      return total;
+    }
   };
 };

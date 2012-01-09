@@ -30,12 +30,14 @@ namespace Fabric
   
   namespace RT
   {
+    class ArrayProducerImpl;
     class VariableArrayImpl;
     class SlicedArrayImpl;
     class FixedArrayImpl;
     class FixedArrayImpl;
     class ComparableImpl;
     class DictImpl;
+    class ValueProducerImpl;
     
     class Impl : public RC::Object
     {
@@ -52,6 +54,7 @@ namespace Fabric
       virtual void disposeDatasImpl( void *data, size_t count, size_t stride ) const = 0;
       virtual std::string descData( void const *data ) const = 0;
       virtual bool equalsData( void const *lhs, void const *rhs ) const = 0;
+      virtual size_t getIndirectMemoryUsage( void const *data ) const;
       
       virtual RC::Handle<JSON::Value> getJSONValue( void const *data ) const = 0;
       virtual void setDataFromJSONValue( RC::ConstHandle<JSON::Value> const &value, void *data ) const = 0;
@@ -64,6 +67,8 @@ namespace Fabric
       RC::ConstHandle<VariableArrayImpl> getVariableArrayImpl() const;
       RC::ConstHandle<SlicedArrayImpl> getSlicedArrayImpl() const;
       RC::ConstHandle<DictImpl> getDictImpl( RC::ConstHandle<ComparableImpl> const &comparableImpl ) const;
+      RC::ConstHandle<ValueProducerImpl> getValueProducerImpl() const;
+      RC::ConstHandle<ArrayProducerImpl> getArrayProducerImpl() const;
       
       void setDisposeCallback( void (*disposeCallback)( void * ) ) const;
       
@@ -83,6 +88,8 @@ namespace Fabric
       mutable RC::WeakConstHandle<SlicedArrayImpl> m_slicedArrayImpl;
       mutable Util::UnorderedMap< size_t, RC::WeakConstHandle<FixedArrayImpl> > m_fixedArrayImpls;
       mutable std::map< RC::WeakConstHandle<ComparableImpl>, RC::WeakConstHandle<DictImpl> > m_dictImpls;
+      mutable RC::WeakConstHandle<ValueProducerImpl> m_valueProducerImpl;
+      mutable RC::WeakConstHandle<ArrayProducerImpl> m_arrayProducerImpl;
       
       mutable void (*m_disposeCallback)( void *lValue );
     };

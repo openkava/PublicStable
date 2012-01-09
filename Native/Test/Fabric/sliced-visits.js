@@ -80,4 +80,4 @@ event = FABRIC.DependencyGraph.createEvent( "event" );
 event.appendEventHandler( childEH );
 event.fire();
 
-FABRIC.flush();
+FABRIC.close();

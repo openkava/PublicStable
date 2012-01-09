@@ -90,7 +90,7 @@ namespace Fabric
       
     private:
     
-      static void CompileOptimizedAST( void *userdata )
+      static void CompileOptimizedAST( void *userdata, size_t index )
       {
         Code *code = static_cast<Code *>( userdata );
         code->compileAST( true );

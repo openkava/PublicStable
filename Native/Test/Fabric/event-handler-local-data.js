@@ -22,4 +22,4 @@ e.appendEventHandler( eh );
 e.fire();
 console.log( eh.getData( "string" ) );
 
-F.flush();
+F.close();

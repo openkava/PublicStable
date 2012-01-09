@@ -3,6 +3,7 @@
  */
  
 #include "Manager.h"
+#include "ArrayProducerAdapter.h"
 #include "BooleanAdapter.h"
 #include "ByteAdapter.h"
 #include "ConstStringAdapter.h"
@@ -13,11 +14,13 @@
 #include "StringAdapter.h"
 #include "FixedArrayAdapter.h"
 #include "VariableArrayAdapter.h"
+#include "ValueProducerAdapter.h"
 #include "SlicedArrayAdapter.h"
 #include "StructAdapter.h"
 #include "OpaqueAdapter.h"
 #include "ModuleBuilder.h"
 
+#include <Fabric/Core/RT/ArrayProducerDesc.h>
 #include <Fabric/Core/RT/BooleanDesc.h>
 #include <Fabric/Core/RT/DictDesc.h>
 #include <Fabric/Core/RT/IntegerDesc.h>
@@ -27,6 +30,7 @@
 #include <Fabric/Core/RT/StringDesc.h>
 #include <Fabric/Core/RT/StructDesc.h>
 #include <Fabric/Core/RT/FixedArrayDesc.h>
+#include <Fabric/Core/RT/ValueProducerDesc.h>
 #include <Fabric/Core/RT/VariableArrayDesc.h>
 #include <Fabric/Core/RT/SlicedArrayDesc.h>
 #include <Fabric/Core/RT/Manager.h>
@@ -165,6 +169,20 @@ namespace Fabric
           }
           break;
           
+          case RT::DT_VALUE_PRODUCER:
+          {
+            RC::ConstHandle<RT::ValueProducerDesc> valueProducerDesc = RC::ConstHandle<RT::ValueProducerDesc>::StaticCast( desc );
+            adapter = new ValueProducerAdapter( this, valueProducerDesc );
+          }
+          break;
+          
+          case RT::DT_ARRAY_PRODUCER:
+          {
+            RC::ConstHandle<RT::ArrayProducerDesc> arrayProducerDesc = RC::ConstHandle<RT::ArrayProducerDesc>::StaticCast( desc );
+            adapter = new ArrayProducerAdapter( this, arrayProducerDesc );
+          }
+          break;
+          
           default:
             FABRIC_ASSERT( false );
             break;
@@ -256,6 +274,18 @@ namespace Fabric
     {
       RC::ConstHandle<RT::Desc> fixedArrayDesc = m_rtManager->getFixedArrayOf( adapter->getDesc(), length );
       return RC::ConstHandle<FixedArrayAdapter>::StaticCast( getAdapter( fixedArrayDesc ) );
+    }
+      
+    RC::ConstHandle<ValueProducerAdapter> Manager::getValueProducerOf( RC::ConstHandle<Adapter> const &adapter ) const
+    {
+      RC::ConstHandle<RT::Desc> valueProducerDesc = m_rtManager->getValueProducerOf( adapter->getDesc() );
+      return RC::ConstHandle<ValueProducerAdapter>::StaticCast( getAdapter( valueProducerDesc ) );
+    }
+      
+    RC::ConstHandle<ArrayProducerAdapter> Manager::getArrayProducerOf( RC::ConstHandle<Adapter> const &adapter ) const
+    {
+      RC::ConstHandle<RT::Desc> arrayProducerDesc = m_rtManager->getArrayProducerOf( adapter->getDesc() );
+      return RC::ConstHandle<ArrayProducerAdapter>::StaticCast( getAdapter( arrayProducerDesc ) );
     }
     
     RC::ConstHandle<StructAdapter> Manager::registerStruct( std::string const &name, RT::StructMemberInfoVector const &structMemberInfoVector )
