@@ -13,15 +13,35 @@ operator loadImagePIXELFORMAT(
   io Size imageWidth,
   io Size imageHeight,
   io PIXELFORMAT bitmap[],
+  io Size newCount
 ) {
-  decodePIXELFORMATImageData(resource, imageWidth, imageHeight, bitmap);
+  if(resource.data.size() > 0)
+  {
+    decodePIXELFORMATImageData(resource, imageWidth, imageHeight, bitmap);
+    newCount = bitmap.size();
+    resource.data.resize(0);
+  }
 }
 
+operator sliceImagePIXELFORMAT(
+  in Size index,
+  io PIXELFORMAT bitmap[],
+  io PIXELFORMAT pixel
+) {
+  if(bitmap.size() > 0)
+    pixel = bitmap[index];
+}
+
+operator clearImagePIXELFORMAT(
+  io PIXELFORMAT bitmap[]
+) {
+  bitmap.resize(0);
+}
 
 operator bindTexturePIXELFORMAT(
   io Size width,
   io Size height,
-  io PIXELFORMAT bitmap[],
+  io PIXELFORMAT bitmap<>,
   io OGLTexture2D oglTexture2D,
   io Integer textureUnit
 ) {
@@ -59,15 +79,20 @@ operator unbindTextures(
   }
 }
 
-operator initTexturePIXELFORMAT(
+operator resizeImagePIXELFORMAT(
   io Size width,
   io Size height,
+  io Size newCount
+) {
+  newCount = width * height;
+}
+
+operator initImageFromPIXELFORMAT(
   io PIXELFORMAT color,
-  io PIXELFORMAT pixels[],
-  io Boolean initiated
+  io Boolean initiated,
+  io PIXELFORMAT pixels<>
 ) {
   if(!initiated) {
-    pixels.resize(width * height);
     for(var Size i=0;i<pixels.size();i++)
       pixels[i] = color;
     initiated = true;

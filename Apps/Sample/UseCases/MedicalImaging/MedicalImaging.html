@@ -497,7 +497,7 @@ $(document).ready(function() {
     globalXfo: new FABRIC.RT.Xfo({tr: new FABRIC.RT.Vec3(0, 0, 0), sc: new FABRIC.RT.Vec3(1.0, 1.0, 1.0)})
   });
 
-  var layoutRectangle = scene.constructNode('DrawRectangle', {color: new FABRIC.RT.RGBA(255,255,255,255), tl: new FABRIC.RT.Vec2(2.0/3.0, 1.0), br: new FABRIC.RT.Vec2(1.0, -1.0), forceRefresh: true, createDgNode: true });
+  var layoutRectangle = scene.constructNode('DrawRectangle', {color: new FABRIC.RT.RGBA(255,255,255,255), tl: new FABRIC.RT.Vec2(2.0/3.0, 1.0), br: new FABRIC.RT.Vec2(1.0, -1.0), forceRefresh: true, createDgNodes: true });
   var borderSize = 0.01;
 
   var opacityTexture = scene.constructNode('Image3DWithHistogram',  { url: '', glRepeat: false, histogramResolution: 1024 });
