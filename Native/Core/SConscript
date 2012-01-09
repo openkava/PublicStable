@@ -20,6 +20,7 @@ SConscript(
     'MT',
     'RT',
     'CG',
+    'MR',
     'AST',
     #'OCL',
     'KL',
@@ -27,7 +28,6 @@ SConscript(
     'Plug',
     'GC',
     'KLC',
-    'MR',
     'DG',
   ]
   )
