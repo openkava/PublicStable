@@ -1140,7 +1140,7 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
             }
          ));
       }
-      if (!textureNode.isTypeOf('Texture')) {
+      if (!textureNode.isTypeOf('Image')) {
         throw ('Incorrect type assignment. Must assign a Texture');
       }
       if (backgroundTextureNode) {

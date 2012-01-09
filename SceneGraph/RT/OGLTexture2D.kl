@@ -45,7 +45,6 @@ function OGLTexture2D.configure(
   }
 }
 
-
 function OGLTexture2D.bind(in Integer textureUnit){
 //  report("OGLTexture2D.bind bufferID:"+this.bufferID + " textureUnit:"+textureUnit  + " nbPixels:"+ this.nbPixels );
   if (this.bufferID != 0) {
@@ -54,29 +53,15 @@ function OGLTexture2D.bind(in Integer textureUnit){
   }
 }
 
-
-function OGLTexture2D.bindImageLDR(
+function OGLTexture2D.bindImage(
   io Size width,
   io Size height,
-  io RGBA bitmap[],
-  io Integer textureUnit
-) {
- // report("OGLTexture2D.bindImageLDR");
-  if (this.bufferID == 0 || this.forceRefresh) {
-    this.configure(width, height, bitmap.data(), bitmap.size(), textureUnit);
-  }
-  this.bind(textureUnit);
-}
-
-
-function OGLTexture2D.bindImageHDR(
-  io Size width,
-  io Size height,
-  io Color bitmap[],
+  Data bitmapData,
+  Size bitmapSize,
   io Integer textureUnit
 ) {
   if (this.bufferID == 0 || this.forceRefresh) {
-    this.configure(width, height, bitmap.data(), bitmap.size(), textureUnit);
+    this.configure(width, height, bitmapData, bitmapSize, textureUnit);
   }
   this.bind(textureUnit);
 }
@@ -195,11 +180,11 @@ function OGLTexture2D.genTexture(
 }
 
 
-function Boolean decodeLDRImageData(
+function Boolean decodeRGBAImageData(
   io FabricResource resource,
   io Size imageWidth,
   io Size imageHeight,
-  io RGBA imageLDR[]
+  io RGBA bitmap[]
 ) {
   if(resource.data.size() == 0)
     return false;
@@ -212,17 +197,17 @@ function Boolean decodeLDRImageData(
     case 'tif':
     case 'tiff':
     case 'image/tif':
-      FabricCIMGDecode(resource.data.data(), resource.data.dataSize(), imageWidth, imageHeight, imageLDR);
+      FabricCIMGDecode(resource.data.data(), resource.data.dataSize(), imageWidth, imageHeight, bitmap);
       resource.data.resize(0);
       break;
     case 'png':
     case 'image/png':
-      FabricPNGDecode(resource.data.data(), resource.data.dataSize(), imageWidth, imageHeight, imageLDR);
+      FabricPNGDecode(resource.data.data(), resource.data.dataSize(), imageWidth, imageHeight, bitmap);
       resource.data.resize(0);
       break;
     case 'tga':
     case 'image/tga':
-      FabricTGADecode(resource.data.data(), resource.data.dataSize(), imageWidth, imageHeight, imageLDR);
+      FabricTGADecode(resource.data.data(), resource.data.dataSize(), imageWidth, imageHeight, bitmap);
       resource.data.resize(0);
       break;
     default:
@@ -233,11 +218,11 @@ function Boolean decodeLDRImageData(
   return true;
 }
 
-function decodeHDRImageData(
+function decodeColorImageData(
   io FabricResource resource,
   io Size imageWidth,
   io Size imageHeight,
-  io Color imageHDR[]
+  io Color bitmap[]
 ) {
   if(resource.data.size() == 0)
     return;
@@ -245,15 +230,35 @@ function decodeHDRImageData(
   switch (ext) {
     case'hdr':
     case'image/hdr':
-      FabricHDRDecode(resource.data.data(), resource.data.dataSize(), imageWidth, imageHeight, imageHDR);
+      FabricHDRDecode(resource.data.data(), resource.data.dataSize(), imageWidth, imageHeight, bitmap);
       resource.data.resize(0);
       break;
     case'exr':
     case'image/exr':
-      FabricHDRDecode(resource.data.data(), resource.data.dataSize(), imageWidth, imageHeight, imageHDR);
+      FabricHDRDecode(resource.data.data(), resource.data.dataSize(), imageWidth, imageHeight, bitmap);
       resource.data.resize(0);
       break;
   }
+}
+
+function decodeRGBImageData(
+  io FabricResource resource,
+  io Size imageWidth,
+  io Size imageHeight,
+  io RGB bitmap[]
+) {
+  // todo
+  return;
+}
+
+function decodeScalarImageData(
+  io FabricResource resource,
+  io Size imageWidth,
+  io Size imageHeight,
+  io Scalar bitmap[]
+) {
+  // todo
+  return;
 }
 
 function drawScreenQuad(

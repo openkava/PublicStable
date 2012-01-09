@@ -79,7 +79,7 @@ $(document).ready(function() {
     windowElement: document.getElementById('FabricContainer')
   });
   
-  viewport.setBackgroundTextureImage(scene.constructNode('Image', {
+  viewport.setBackgroundTextureImage(scene.constructNode('Image2D', {
     url: '../BasicDemos/Resources/fabric-demo-gradient.png'
   }));
 
@@ -101,7 +101,7 @@ $(document).ready(function() {
   });
 
   var flatTextureMaterial = scene.constructNode('FlatTextureMaterial', {
-    textureNode: scene.constructNode('Image', {url: '../BasicDemos/Resources/sand.png'})
+    textureNode: scene.constructNode('Image2D', {url: '../BasicDemos/Resources/sand.png'})
   });
   
   // create a simulation world
