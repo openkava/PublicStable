@@ -1400,7 +1400,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('HubSolver', {
       hubs.push(hub);
       
       if (options.createManipulators) {
-        
+        /*
         solver.constructManipulator(name + 'Hub'+i, 'XfoManipulator', {
           baseManipulatorType: 'CharacterManipulator',
           rigNode: rigNode.pub,
@@ -1411,7 +1411,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('HubSolver', {
           size: 1,
           radius: 1
         });
-        
+        */
       }
     }
     skeletonNode.addMember('hubs', 'Hub[]', hubs);

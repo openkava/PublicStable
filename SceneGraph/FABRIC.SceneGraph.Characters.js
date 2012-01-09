@@ -439,7 +439,25 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
       boundToAnimationTracks = true;
     }
     
-    
+    characterVariablesNode.getValue = function(type, index) {
+      var poseVariables = characterVariablesNode.getVariables();
+      switch(type){
+      case 'Number':
+        return poseVariables.scalarValues[index];
+        break;
+      case 'FABRIC.RT.Vec3':
+        return poseVariables.scalarValues[index];
+        break;
+      case 'FABRIC.RT.Quat':
+        return poseVariables.quatValues[index];
+        break;
+      case 'FABRIC.RT.Xfo':
+        return poseVariables.xfoValues[index];
+        break;
+      default:
+        throw 'Unhandled type:' + val;
+      }
+    }
     characterVariablesNode.setValue = function(value, index) {
       var type = (typeof value == 'number') ? 'Number' : value.getType();
     //  if(!boundToAnimationTracks){
@@ -977,73 +995,6 @@ FABRIC.SceneGraph.registerNodeType('Attachment', {
   }});
 
 
-// The character instance draws a deformed mesh on screen.
-FABRIC.SceneGraph.registerNodeType('ManipulatorAttachment', {
-  briefDesc: '',
-  detailedDesc: '',
-  parentNodeDesc: 'Transform',
-  optionsDesc: {
-  },
-  factoryFn: function(options, scene) {
-    scene.assignDefaults(options, {
-      rigNode: undefined,
-      attachmentBone: undefined
-    });
-/*
-    options.hierarchical = false;
-    var attachmentNode = scene.constructNode('Transform', options);
-    var dgnode = attachmentNode.getDGNode();
-    var xfoIndex = options.xfoIndex;
-    var variablesNode;
-    
-    dgnode.addMember('boneIndex', 'Size', -1);
-    dgnode.addMember('localXfo', 'Xfo', options.localXfo);
-    dgnode.bindings.append(scene.constructOperator( {
-        operatorName: 'calcManipulatorAttachmentXfo',
-        srcFile: 'FABRIC_ROOT/SceneGraph/KL/calcAttachmentXfo.kl',
-        parameterLayout: [
-          'self.localXfo',
-          'rig.pose',
-          'self.boneIndex',
-          'self.globalXfo'
-        ],
-        entryFunctionName: 'calcManipulatorAttachmentXfo'
-      }));
-
-    // use a custom getter
-    attachmentNode.pub.setGlobalXfo = function(val) {
-      var poseVariables = variablesNode.getPoseVariables();
-      poseVariables[xfoIndex] = val;
-      variablesNode.setPoseVariables(poseVariables);
-    };
-    
-    attachmentNode.pub.setRigNode = function(node, boneName) {
-      if (!node.isTypeOf('CharacterRig')) {
-        throw ('Incorrect type assignment. Must assign a CharacterRig');
-      }
-      var rigNode = scene.getPrivateInterface(node);
-      dgnode.setDependency(rigNode.getDGNode(), 'rig');
-      dgnode.setData('boneIndex', 0, rigNode.getSkeletonNode().getBoneIndex(options.attachmentBone));
-      
-    };
-    if(options.rigNode){
-       attachmentNode.pub.setRigNode(options.rigNode);
-    }
-*/
-
-    options.maintainInitialXfo = false;
-    var attachmentNode = scene.constructNode('Attachment', options);
-    // use a custom setter
-    attachmentNode.pub.setGlobalXfo = function(val) {
-      var poseVariables = variablesNode.getPoseVariables();
-      poseVariables[xfoIndex] = val;
-      variablesNode.setPoseVariables(poseVariables);
-    };
-    
-    return attachmentNode;
-  }});
-
-
 FABRIC.SceneGraph.registerNodeType('CharacterManipulator', {
   briefDesc: '',
   detailedDesc: '',
@@ -1069,11 +1020,12 @@ FABRIC.SceneGraph.registerNodeType('CharacterManipulator', {
     var rigNode = options.rigNode;
     var xfoIndex = options.xfoIndex;
 
-    var transformNode = scene.constructNode('ManipulatorAttachment', {
+    var transformNode = scene.constructNode('Attachment', {
       name: options.name + 'ManipulatorAttachment',
       rigNode: options.rigNode,
       attachmentBone: options.attachmentBone,
-      localXfo: options.localXfo
+      localXfo: options.localXfo,
+      maintainInitialXfo: false
     });
     
     options.transformNode = transformNode;
@@ -1090,15 +1042,23 @@ FABRIC.SceneGraph.registerNodeType('CharacterManipulator', {
       variablesNode = scene.getPrivateInterface(rigNode.pub.getVariablesNode());
     };
     
+    
+    manipulatorNode.pub.getVariableXfo = function(val) {
+      return variablesNode.getValue('FABRIC.RT.Xfo', xfoIndex);
+    };
+    manipulatorNode.pub.setVariableXfo = function(val) {
+      variablesNode.setValue(val, xfoIndex);
+    };
+    
     ///////////////////////////////////////////////////////////
     manipulatorNode.getTargetNode = function() {
       return rigNode;
     };
     manipulatorNode.getTargetXfo = function() {
-      return transformNode.pub.getAttachmentBoneXfo();
+      return manipulatorNode.pub.getVariableXfo();
     }
     manipulatorNode.setTargetXfo = function(xfo) {
-      variablesNode.setValue(xfo, xfoIndex);
+      manipulatorNode.pub.setVariableXfo(xfo);
     }
     manipulatorNode.setTargetOri = function(ori) {
       var xfo = this.getTargetXfo();
