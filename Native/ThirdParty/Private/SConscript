@@ -154,9 +154,9 @@ else:
 # Maybe there's a compile option for that...
 if buildOS == 'Windows':
   if buildType == 'Debug':
-    alembicLibs.extend(archLibs( 'boost', ['libboost_program_options-vc100-mt-sgd-1_47', 'libboost_date_time-vc100-mt-sgd-1_47', 'libboost_iostreams-vc100-mt-sgd-1_47', 'libboost_thread-vc100-mt-sgd-1_47'] ))
+    alembicLibs.extend(archLibs( 'boost', ['libboost_program_options-vc100-mt-sgd-1_47', 'libboost_date_time-vc100-mt-sgd-1_47', 'libboost_iostreams-vc100-mt-sgd-1_47', 'libboost_thread-vc100-mt-sgd-1_47', 'libboost_system-vc100-mt-sgd-1_47', 'libboost_filesystem-vc100-mt-sgd-1_47'] ))
   else:
-    alembicLibs.extend(archLibs( 'boost', ['libboost_program_options-vc100-mt-s-1_47', 'libboost_date_time-vc100-mt-s-1_47', 'libboost_iostreams-vc100-mt-s-1_47', 'libboost_thread-vc100-mt-s-1_47'] ))
+    alembicLibs.extend(archLibs( 'boost', ['libboost_program_options-vc100-mt-s-1_47', 'libboost_date_time-vc100-mt-s-1_47', 'libboost_iostreams-vc100-mt-s-1_47', 'libboost_thread-vc100-mt-s-1_47', 'libboost_system-vc100-mt-s-1_47', 'libboost_filesystem-vc100-mt-s-1_47'] ))
 else:  
   alembicLibs.extend(archLibs( 'boost', ['boost_program_options', 'boost_date_time', 'boost_iostreams', 'boost_thread'] ))
 
