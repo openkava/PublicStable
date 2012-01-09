@@ -33,11 +33,12 @@ FABRIC_EXT_EXPORT void FabricFolderHandle_SetAbsolutePath(
     folder.m_data->mPath = folder.m_data->mPath.parent_path();
 }
 
-FABRIC_EXT_EXPORT KL::String FabricFolderHandle_GetAbsolutePath(
-  FabricFolderHandle & folder
+FABRIC_EXT_EXPORT void FabricFolderHandle_GetAbsolutePath(
+  FabricFolderHandle & folder,
+  KL::String& result
 )
 {
-  KL::String result;
+  result = KL::String();
   if(folder.m_data != NULL)
   {
     std::string str = folder.m_data->mPath.string();
@@ -47,14 +48,14 @@ FABRIC_EXT_EXPORT KL::String FabricFolderHandle_GetAbsolutePath(
       memcpy((void*)result.data(),str.c_str(),str.length());
     }
   }
-  return result;
 }
 
-FABRIC_EXT_EXPORT KL::String FabricFolderHandle_GetBaseName(
-  FabricFolderHandle & folder
+FABRIC_EXT_EXPORT void FabricFolderHandle_GetBaseName(
+  FabricFolderHandle & folder,
+  KL::String& result
 )
 {
-  KL::String result;
+  result = KL::String();
   if(folder.m_data != NULL)
   {
     std::string str = folder.m_data->mPath.stem().string();
@@ -64,7 +65,6 @@ FABRIC_EXT_EXPORT KL::String FabricFolderHandle_GetBaseName(
       memcpy((void*)result.data(),str.c_str(),str.length());
     }
   }
-  return result;
 }
 
 FABRIC_EXT_EXPORT KL::Boolean FabricFolderHandle_IsValid(
@@ -167,18 +167,18 @@ FABRIC_EXT_EXPORT void FabricFileHandle_SetAbsolutePath(
   file.setFromPath(str.c_str(),true);
 }
 
-FABRIC_EXT_EXPORT KL::String FabricFileHandle_GetAbsolutePath(
-  KL::FabricFileHandle & file
+FABRIC_EXT_EXPORT void FabricFileHandle_GetAbsolutePath(
+  KL::FabricFileHandle & file,
+  KL::String& result
 )
 {
-  KL::String result;
+  result = KL::String();
   std::string str = file.getFullPath();
   if(!str.empty())
   {
     result.reserve(str.length());
     memcpy((void*)result.data(),str.c_str(),str.length());
   }
-  return result;
 }
 
 FABRIC_EXT_EXPORT FabricFolderHandle FabricFileHandle_GetParentFolder(
@@ -197,11 +197,12 @@ FABRIC_EXT_EXPORT FabricFolderHandle FabricFileHandle_GetParentFolder(
   return result;
 }
 
-FABRIC_EXT_EXPORT KL::String FabricFileHandle_GetName(
-  KL::FabricFileHandle & file
+FABRIC_EXT_EXPORT void FabricFileHandle_GetName(
+  KL::FabricFileHandle & file,
+  KL::String& result
 )
 {
-  KL::String result;
+  result = KL::String();
   std::string str = file.getFullPath();
   if(!str.empty())
   {
@@ -210,14 +211,14 @@ FABRIC_EXT_EXPORT KL::String FabricFileHandle_GetName(
     result.reserve(str.length());
     memcpy((void*)result.data(),str.c_str(),str.length());
   }
-  return result;
 }
 
-FABRIC_EXT_EXPORT KL::String FabricFileHandle_GetBaseName(
-  KL::FabricFileHandle & file
+FABRIC_EXT_EXPORT void FabricFileHandle_GetBaseName(
+  KL::FabricFileHandle & file,
+  KL::String& result
 )
 {
-  KL::String result;
+  result = KL::String();
   std::string str = file.getFullPath();
   if(!str.empty())
   {
@@ -226,14 +227,14 @@ FABRIC_EXT_EXPORT KL::String FabricFileHandle_GetBaseName(
     result.reserve(str.length());
     memcpy((void*)result.data(),str.c_str(),str.length());
   }
-  return result;
 }
 
-FABRIC_EXT_EXPORT KL::String FabricFileHandle_GetExtension(
-  KL::FabricFileHandle & file
+FABRIC_EXT_EXPORT void FabricFileHandle_GetExtension(
+  KL::FabricFileHandle & file,
+  KL::String& result
 )
 {
-  KL::String result;
+  result = KL::String();
   std::string str = file.getFullPath();
   if(!str.empty())
   {
@@ -242,14 +243,14 @@ FABRIC_EXT_EXPORT KL::String FabricFileHandle_GetExtension(
     result.reserve(str.length());
     memcpy((void*)result.data(),str.c_str(),str.length());
   }
-  return result;
 }
 
-FABRIC_EXT_EXPORT KL::String FabricFileHandle_GetExtensionLower(
-  KL::FabricFileHandle & file
+FABRIC_EXT_EXPORT void FabricFileHandle_GetExtensionLower(
+  KL::FabricFileHandle & file,
+  KL::String& result
 )
 {
-  KL::String result;
+  result = KL::String();
   std::string str = file.getFullPath();
   if(!str.empty())
   {
@@ -259,7 +260,6 @@ FABRIC_EXT_EXPORT KL::String FabricFileHandle_GetExtensionLower(
     result.reserve(str.length());
     memcpy((void*)result.data(),str.c_str(),str.length());
   }
-  return result;
 }
 
 FABRIC_EXT_EXPORT KL::Boolean FabricFileHandle_IsValid(
