@@ -1029,44 +1029,49 @@ FABRIC.SceneGraph.registerNodeType('ManipulatorAttachment', {
     if(options.xfoIndex == -1)
       throw "xfo Index not specified";
     
-  //  dgnode.addMember('boneIndex', 'Size', 1);
     dgnode.addMember('xfoIndex', 'Size', options.xfoIndex);
+    dgnode.addMember('boneIndex', 'Size', options.boneIndex);
+    dgnode.addMember('structIndex', 'Size', options.structIndex);
     dgnode.addMember('localXfo', 'Xfo', options.localXfo);
-    dgnode.bindings.append(scene.constructOperator( {
+    dgnode.addMember('targetXfo', 'Xfo');
+    dgnode.addMember('parentXfo', 'Xfo');
+    
+    attachmentNode.getTargetXfo = function(){ return dgnode.getData('targetXfo'); }
+    attachmentNode.getParentXfo = function(){ return dgnode.getData('parentXfo'); }
+    
+    dgnode.bindings.append(scene.constructOperator(
+      options.attachmentOperator ? options.attachmentOperator : {
         operatorName: 'calcManipulatorAttachmentXfo',
         srcFile: 'FABRIC_ROOT/SceneGraph/KL/calcAttachmentXfo.kl',
         parameterLayout: [
-          'self.localXfo',
+          'charactercontroller.xfo',
           'variables.poseVariables',
           'self.xfoIndex',
+          
+          'self.localXfo',
+          'self.parentXfo',
+          'self.targetXfo',
           'self.globalXfo'
         ],
         entryFunctionName: 'calcManipulatorAttachmentXfo'
       }));
 
-    // use a custom getter
-    /*
-    attachmentNode.pub.setGlobalXfo = function(val) {
-      var poseVariables = variablesNode.getPoseVariables();
-      poseVariables[xfoIndex] = val;
-      variablesNode.setPoseVariables(poseVariables);
-    };
-    */
     attachmentNode.pub.setRigNode = function(node, boneName) {
       if (!node.isTypeOf('CharacterRig')) {
         throw ('Incorrect type assignment. Must assign a CharacterRig');
       }
       var rigNode = scene.getPrivateInterface(node);
-      variablesNode = scene.getPrivateInterface(rigNode.pub.getVariablesNode());
+      dgnode.setDependency(rigNode.getDGNode(), 'rig');
+      var variablesNode = scene.getPrivateInterface(rigNode.pub.getVariablesNode());
       dgnode.setDependency(variablesNode.getDGNode(), 'variables');
-    //  dgnode.setDependency(rigNode.getDGNode(), 'rig');
-    //  dgnode.setData('boneIndex', 0, rigNode.getSkeletonNode().getBoneIndex(options.attachmentBone));
-      
+      var skeletonNode = scene.getPrivateInterface(rigNode.pub.getSkeletonNode());
+      dgnode.setDependency(skeletonNode.getDGNode(), 'skeleton');
+      var controllerNode = scene.getPrivateInterface(rigNode.pub.getControllerNode());
+      dgnode.setDependency(controllerNode.getDGNode(), 'charactercontroller');
     };
     if(options.rigNode){
        attachmentNode.pub.setRigNode(options.rigNode);
     }
-
     
     return attachmentNode;
   }});
@@ -1099,9 +1104,10 @@ FABRIC.SceneGraph.registerNodeType('CharacterManipulator', {
     var transformNode = scene.constructNode('ManipulatorAttachment', {
       name: options.name + 'ManipulatorAttachment',
       rigNode: options.rigNode,
-      attachmentBone: options.attachmentBone,
+      attachmentOperator: options.attachmentOperator,
       xfoIndex: options.xfoIndex,
       localXfo: options.localXfo,
+      structIndex: options.structIndex,
       maintainInitialXfo: false
     });
     
@@ -1121,9 +1127,11 @@ FABRIC.SceneGraph.registerNodeType('CharacterManipulator', {
     
     
     manipulatorNode.pub.getVariableXfo = function(val) {
-      return variablesNode.getValue('FABRIC.RT.Xfo', xfoIndex);
+      return transformNode.getTargetXfo();
     };
     manipulatorNode.pub.setVariableXfo = function(val) {
+      var parentXfo = transformNode.getParentXfo();
+      val = parentXfo.inverse().multiply(val);
       variablesNode.setValue(val, xfoIndex);
     };
     

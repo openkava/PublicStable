@@ -7,12 +7,16 @@ use PoseVariables;
 
 
 operator calcManipulatorAttachmentXfo(
-  io Xfo localXfo,
+  io Xfo controllerXfo,
   io PoseVariables poseVariables,
   io Size xfoIndex,
+  io Xfo localXfo,
+  io Xfo parentXfo,
+  io Xfo targetXfo,
   io Xfo globalXfo
 ) {
   //report( "calcManipulatorAttachmentXfo\n" );
-  globalXfo = poseVariables.xfoValues[xfoIndex] * localXfo;
-//  globalXfo = poseVariables.xfoValues[xfoIndex];
+  parentXfo = controllerXfo;
+  targetXfo = parentXfo * poseVariables.xfoValues[xfoIndex];
+  globalXfo = targetXfo * localXfo;
 }
