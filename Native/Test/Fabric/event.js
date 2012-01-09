@@ -23,4 +23,4 @@ e.setDidFireCallback(function () {
 console.log(e.getDidFireCallback());
 e.fire();
 
-F.flush();
+F.close();

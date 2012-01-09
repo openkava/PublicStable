@@ -45,4 +45,4 @@ n.setData("baz", 0, a);
 a = n.getData("baz", 0);
 console.log(a);
 
-F.flush();
+F.close();

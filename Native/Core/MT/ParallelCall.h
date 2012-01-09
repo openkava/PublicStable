@@ -16,6 +16,7 @@
 #include <Fabric/Core/MT/Util.h>
 #include <Fabric/Core/Util/Debug.h>
 #include <Fabric/Core/Util/Timer.h>
+#include <Fabric/Core/Util/TLS.h>
 
 #include <vector>
 #include <stdint.h>
@@ -38,6 +39,7 @@ namespace Fabric
       {
         ParallelCall const *parallelCall;
         void (*functionPtr)( ... );
+        void *userdata;
       };
       
     public:
@@ -90,31 +92,37 @@ namespace Fabric
         m_adjustments[adjustmentIndex].offsets[paramIndex] = adjustmentOffset;
       }
       
-      void executeSerial() const
+      void executeSerial( void *userdata ) const
       {
         //FABRIC_DEBUG_LOG( "executeSerial('%s')", m_debugDesc.c_str() );
         RC::ConstHandle<RC::Object> objectToAvoidFreeDuringExecution;
         void (*functionPtr)( ... ) = m_function->getFunctionPtr( objectToAvoidFreeDuringExecution );
-        execute( 0, m_baseAddresses, NULL, functionPtr );
+        execute( 0, m_baseAddresses, NULL, functionPtr, userdata );
       }
       
-      void executeParallel( RC::Handle<LogCollector> const &logCollector, bool mainThreadOnly ) const
+      void executeParallel( RC::Handle<LogCollector> const &logCollector, void *userdata, bool mainThreadOnly ) const
       {
         //FABRIC_DEBUG_LOG( "executeParallel('%s')", m_debugDesc.c_str() );
         RC::ConstHandle<RC::Object> objectToAvoidFreeDuringExecution;
         ParallelExecutionUserData parallelExecutionUserData;
         parallelExecutionUserData.parallelCall = this;
         parallelExecutionUserData.functionPtr = m_function->getFunctionPtr( objectToAvoidFreeDuringExecution );
+        parallelExecutionUserData.userdata = userdata;
         MT::executeParallel( logCollector, m_totalParallelCalls, &ParallelCall::ExecuteParallel, &parallelExecutionUserData, mainThreadOnly );
+      }
+      
+      static void *GetUserdata()
+      {
+        return s_userdataTLS;
       }
       
     protected:
     
-      void execute( size_t adjustmentIndex, void * const *addresses, size_t const *iteration, void (*functionPtr)( ... ) ) const
+      void execute( size_t adjustmentIndex, void * const *addresses, size_t const *iteration, void (*functionPtr)( ... ), void *userdata ) const
       {
         if ( adjustmentIndex == m_adjustments.size() )
         {
-          evalWithArgs( addresses, functionPtr );
+          evalWithArgs( addresses, functionPtr, userdata );
         }
         else
         {
@@ -150,26 +158,28 @@ namespace Fabric
 
           for ( size_t i=0; i<count; ++i )
           {
-            execute( adjustmentIndex + 1, newAddresses, newIterationsPtr, functionPtr );
+            execute( adjustmentIndex + 1, newAddresses, newIterationsPtr, functionPtr, userdata );
             for ( size_t j=0; j<m_paramCount; ++j )
               newAddresses[j] = (uint8_t *)newAddresses[j] + adjustment.offsets[j];
           }
         }
       }
       
-      void executeParallel( size_t iteration, void (*functionPtr)( ... ) ) const
+      void executeParallel( size_t iteration, void (*functionPtr)( ... ), void *userdata ) const
       {
-        execute( 0, m_baseAddresses, &iteration, functionPtr );
+        execute( 0, m_baseAddresses, &iteration, functionPtr, userdata );
       }
       
       static void ExecuteParallel( void *userdata, size_t iteration )
       {
         ParallelExecutionUserData const *parallelExecutionUserData = static_cast<ParallelExecutionUserData const *>( userdata );
-        parallelExecutionUserData->parallelCall->executeParallel( iteration, parallelExecutionUserData->functionPtr );
+        parallelExecutionUserData->parallelCall->executeParallel( iteration, parallelExecutionUserData->functionPtr, parallelExecutionUserData->userdata );
       }
       
-      void evalWithArgs( void * const *argv, void (*functionPtr)( ... ) ) const
+      void evalWithArgs( void * const *argv, void (*functionPtr)( ... ), void *userdata ) const
       {
+        Util::TLSVar<void *>::Setter userdataSetter( s_userdataTLS, userdata );
+        
         size_t argc = m_paramCount;
         switch ( argc )
         {
@@ -469,6 +479,7 @@ namespace Fabric
       std::vector<Adjustment> m_adjustments;
       size_t m_totalParallelCalls;
       std::string m_debugDesc;
+      static Util::TLSVar<void *> s_userdataTLS;
     };
   };
 };

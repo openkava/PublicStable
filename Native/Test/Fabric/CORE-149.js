@@ -27,4 +27,4 @@ console.log( eh1.getErrors() );
 console.log( "Errors on eh2:" );
 console.log( eh2.getErrors() );
 
-FABRIC.flush();
+FABRIC.close();

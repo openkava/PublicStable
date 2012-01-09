@@ -33,10 +33,17 @@ namespace Fabric
     Util::SimpleString GlobalList::toJSON( bool includeLocation ) const
     {
       Util::SimpleString ss;
-      Util::JSONGenerator jsonGenerator( &ss );
-      Util::JSONArrayGenerator jsonArrayGenerator = jsonGenerator.makeArray();
-      appendJSON( jsonArrayGenerator, includeLocation );
+      {
+        Util::JSONGenerator jsonGenerator( &ss );
+        generateJSON( includeLocation, jsonGenerator );
+      }
       return ss;
+    }
+    
+    void GlobalList::generateJSON( bool includeLocation, Util::JSONGenerator &jg ) const
+    {
+      Util::JSONArrayGenerator jsonArrayGenerator = jg.makeArray();
+      appendJSON( jsonArrayGenerator, includeLocation );
     }
     
     void GlobalList::appendJSON( Util::JSONArrayGenerator const &jsonArrayGenerator, bool includeLocation ) const

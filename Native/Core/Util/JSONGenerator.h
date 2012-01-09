@@ -7,6 +7,7 @@
 
 #include <Fabric/Base/Util/SimpleString.h>
 #include <Fabric/Core/Util/Assert.h>
+#include <Fabric/Base/RC/ConstHandle.h>
 #include <Fabric/Base/RC/String.h>
 
 namespace Fabric
