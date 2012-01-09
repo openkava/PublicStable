@@ -329,7 +329,7 @@ touch %CHECKPOINT_DIR%\boost_buildjam
 if EXIST %CHECKPOINT_DIR%\boost_compile goto boost_compile_done
 echo boost - Compile debug + release
 cd %BUILD_DIR%\%BOOST_NAME%
-.\tools\build\v2\engine\bin.ntx86\bjam program_options serialization date_time iostreams thread variant=debug,release toolset=msvc link=static runtime-link=static threading=multi define=_SCL_SECURE_NO_WARNINGS=1 define=_ITERATOR_DEBUG_LEVEL=0 define=_SECURE_SCL=0
+.\tools\build\v2\engine\bin.ntx86\bjam program_options serialization date_time iostreams system filesystem thread variant=debug,release toolset=msvc link=static runtime-link=static threading=multi define=_SCL_SECURE_NO_WARNINGS=1 define=_ITERATOR_DEBUG_LEVEL=0 define=_SECURE_SCL=0
 
 touch %CHECKPOINT_DIR%\boost_compile
 :boost_compile_done
@@ -344,6 +344,8 @@ copy bin.v2\libs\date_time\build\msvc-10.0\debug\link-static\runtime-link-static
 copy bin.v2\libs\iostreams\build\msvc-10.0\debug\link-static\runtime-link-static\threading-multi\libboost_iostreams-vc100-mt-sgd-1_47.lib %LIB_ARCH_DEBUG_DIR%\boost
 copy bin.v2\libs\thread\build\msvc-10.0\debug\link-static\runtime-link-static\threading-multi\libboost_thread-vc100-mt-sgd-1_47.lib %LIB_ARCH_DEBUG_DIR%\boost
 copy bin.v2\libs\serialization\build\msvc-10.0\debug\link-static\runtime-link-static\threading-multi\libboost_serialization-vc100-mt-sgd-1_47.lib %LIB_ARCH_DEBUG_DIR%\boost
+copy bin.v2\libs\system\build\msvc-10.0\debug\link-static\runtime-link-static\threading-multi\libboost_system-vc100-mt-sgd-1_47.lib %LIB_ARCH_DEBUG_DIR%\boost
+copy bin.v2\libs\filesystem\build\msvc-10.0\debug\link-static\runtime-link-static\threading-multi\libboost_filesystem-vc100-mt-sgd-1_47.lib %LIB_ARCH_DEBUG_DIR%\boost
 
 if NOT EXIST %LIB_ARCH_RELEASE_DIR%\boost mkdir %LIB_ARCH_RELEASE_DIR%\boost
 copy bin.v2\libs\program_options\build\msvc-10.0\release\link-static\runtime-link-static\threading-multi\libboost_program_options-vc100-mt-s-1_47.lib %LIB_ARCH_RELEASE_DIR%\boost
@@ -351,6 +353,8 @@ copy bin.v2\libs\date_time\build\msvc-10.0\release\link-static\runtime-link-stat
 copy bin.v2\libs\iostreams\build\msvc-10.0\release\link-static\runtime-link-static\threading-multi\libboost_iostreams-vc100-mt-s-1_47.lib %LIB_ARCH_RELEASE_DIR%\boost
 copy bin.v2\libs\thread\build\msvc-10.0\release\link-static\runtime-link-static\threading-multi\libboost_thread-vc100-mt-s-1_47.lib %LIB_ARCH_RELEASE_DIR%\boost
 copy bin.v2\libs\serialization\build\msvc-10.0\release\link-static\runtime-link-static\threading-multi\libboost_serialization-vc100-mt-s-1_47.lib %LIB_ARCH_RELEASE_DIR%\boost
+copy bin.v2\libs\system\build\msvc-10.0\release\link-static\runtime-link-static\threading-multi\libboost_system-vc100-mt-s-1_47.lib %LIB_ARCH_RELEASE_DIR%\boost
+copy bin.v2\libs\filesystem\build\msvc-10.0\release\link-static\runtime-link-static\threading-multi\libboost_filesystem-vc100-mt-s-1_47.lib %LIB_ARCH_RELEASE_DIR%\boost
 
 robocopy boost %TOP%\include\boost\boost *.* /S > NUL:
 
@@ -444,19 +448,21 @@ touch %CHECKPOINT_DIR%\alembic_install
 :alembic_install_done
 
 rem ============= TEEM ==============
-if EXIST %CHECKPOINT_DIR%\teem_unpack goto teem_unpack_done
+rem if EXIST %CHECKPOINT_DIR%\teem_unpack goto teem_unpack_done
 echo teem - Unpacking
 cd %BUILD_DIR%
 type "%TOP%\SourcePackages\%TEEM_NAME%.tar.bz2" | bzip2 -d -c | tar -x -f- 2> NUL:
 type "%TOP%\Patches\Windows\%TEEM_NAME%-patch.tar.bz2" | bzip2 -d -c | tar -x -f- 2> NUL:
-touch %CHECKPOINT_DIR%\teem_unpack
+rem touch %CHECKPOINT_DIR%\teem_unpack
 :teem_unpack_done
 
-if EXIST %CHECKPOINT_DIR%\teem_cmake goto teem_cmake_done
+rem if EXIST %CHECKPOINT_DIR%\teem_cmake goto teem_cmake_done
 echo teem - CMake - generating projects
 cd %BUILD_DIR%\%TEEM_NAME%
 cmake -G "Visual Studio 10" -DTeem_BZIP2=OFF -DTeem_PTHREAD=OFF -DTeem_PNG=OFF -DZLIB_LIBRARY=%LIB_ARCH_RELEASE_DIR%\zlib\zlib.lib -DZLIB_INCLUDE_DIR=%TOP%\include\zlib .
-touch %CHECKPOINT_DIR%\teem_cmake
+rem Do it twice; first time it gives errors about no bz or png but we don't care
+rem cmake -G "Visual Studio 10" -DZLIB_LIBRARY=%LIB_ARCH_RELEASE_DIR%\zlib\zlib.lib -DZLIB_INCLUDE_DIR=%TOP%\include\zlib .
+rem touch %CHECKPOINT_DIR%\teem_cmake
 :teem_cmake_done
 
 if EXIST %CHECKPOINT_DIR%\teem_compile_debug goto teem_compile_debug_done
