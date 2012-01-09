@@ -13,7 +13,7 @@ operator load(\n\
 {\n\
   report "Loaded " + url + " (mime type " + resource.mimeType + ")";\n\
   report "OBJ data size is " + resource.data.dataSize();\n\
-  FabricOBJDecode(resource.data.data(), resource.data.dataSize(), false, false, false, objParseHandle);\n\
+  FabricOBJDecode(resource.data.data(), resource.data.dataSize(), objParseHandle);\n\
 }\n\
 ');
 if (loadOp.getDiagnostics().length > 0 ) {
@@ -42,7 +42,7 @@ operator resize(\n\
   io Size newSize\n\
   )\n\
 {\n\
-  FabricOBJGetNbEntityPoints(objParseHandle, -1, newSize);\n\
+  FabricOBJGetNbPoints(objParseHandle, newSize);\n\
   report "rlnode: resized to " + newSize + " points";\n\
 }\n\
 ');
@@ -66,7 +66,7 @@ operator setData(\n\
   io Vec3 positions<>\n\
   )\n\
 {\n\
-  FabricOBJGetEntityPointsSliced(objParseHandle, -1, positions);\n\
+  FabricOBJGetPointsSliced(objParseHandle, positions);\n\
   report "rlnode: setData to " + positions.size + " points";\n\
   FabricOBJFreeParsedData(objParseHandle);\n\
 }\n\

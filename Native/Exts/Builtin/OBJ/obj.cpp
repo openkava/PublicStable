@@ -18,16 +18,9 @@ struct istreambuf : public std::basic_streambuf<char, std::char_traits<char> >
   }
 };
 
-void EDKExceptionThrow(const char* msg) {
-  Fabric::EDK::throwException( msg );
-}
-
 FABRIC_EXT_EXPORT void FabricOBJDecode(
   KL::Data objData,
   KL::Size objDataSize,
-  KL::Boolean splitByObjects,
-  KL::Boolean splitByGroups,
-  KL::Boolean splitByMaterials,
   KL::Data &parsedDataHandle
   )
 {
@@ -41,7 +34,7 @@ FABRIC_EXT_EXPORT void FabricOBJDecode(
     delete parser;
     parsedDataHandle = NULL;
   }
-  parsedDataHandle = new ObjParser(memstream, splitByObjects, splitByGroups, splitByMaterials, EDKExceptionThrow);
+  parsedDataHandle = new ObjParser(memstream);
 }
 
 FABRIC_EXT_EXPORT void FabricOBJFreeParsedData(
@@ -74,7 +67,7 @@ FABRIC_EXT_EXPORT void FabricOBJHadErrors(
   else
   {
     ObjParser *parser = (ObjParser*)parsedDataHandle;
-    hadErrors = parser->GetNbErrors() > 0;
+    hadErrors = parser->HadErrors();
   }
 }
 
@@ -88,10 +81,10 @@ FABRIC_EXT_EXPORT void FabricOBJGetErrors(
   else
   {
     ObjParser *parser = (ObjParser*)parsedDataHandle;
-    size_t nb = parser->GetNbErrors();
-    errors.resize( nb );
-    for( size_t i = 0; i < nb; ++i )
-      errors[i] = parser->GetError(i).c_str();
+    const std::vector<std::string>& parseErrors = parser->GetErrors();
+    errors.resize( parseErrors.size() );
+    for( size_t i = 0; i < parseErrors.size(); ++i )
+      errors[i] = parseErrors[i].c_str();
   }
 }
 
@@ -109,102 +102,8 @@ FABRIC_EXT_EXPORT void FabricOBJHasTextureCoords(
   }
 }
 
-FABRIC_EXT_EXPORT void FabricOBJGetMaterialLibraries(
+FABRIC_EXT_EXPORT void FabricOBJGetNbPoints(
   KL::Data parsedDataHandle,
-  KL::VariableArray<KL::String>& materialLibraries
-  )
-{
-  if( parsedDataHandle == NULL )
-    materialLibraries.resize(0);
-  else
-  {
-    ObjParser *parser = (ObjParser*)parsedDataHandle;
-    size_t nb = parser->GetNbMaterialLibraries();
-    materialLibraries.resize( nb );
-    for( size_t i = 0; i < nb; ++i )
-      materialLibraries[i] = parser->GetMaterialLibrary(i).c_str();
-  }
-}
-
-FABRIC_EXT_EXPORT void FabricOBJGetMaterialNames(
-  KL::Data parsedDataHandle,
-  KL::VariableArray<KL::String>& materialNames
-  )
-{
-  if( parsedDataHandle == NULL )
-    materialNames.resize(0);
-  else
-  {
-    ObjParser *parser = (ObjParser*)parsedDataHandle;
-    size_t nb = parser->GetNbMaterials();
-    materialNames.resize( nb );
-    for( size_t i = 0; i < nb; ++i )
-      materialNames[i] = parser->GetMaterial(i).c_str();
-  }
-}
-
-FABRIC_EXT_EXPORT void FabricOBJGetNbEntities(
-  KL::Data parsedDataHandle,
-  KL::Size& nbEntities
-  )
-{
-  if( parsedDataHandle == NULL )
-    nbEntities = 0;
-  else
-  {
-    ObjParser *parser = (ObjParser*)parsedDataHandle;
-    nbEntities = parser->GetNbEntities();
-  }
-}
-
-FABRIC_EXT_EXPORT void FabricOBJGetEntityObjectName(
-  KL::Data parsedDataHandle,
-  KL::Integer entityIndex,
-  KL::String& objectName
-  )
-{
-  if( parsedDataHandle == NULL )
-    objectName = "";
-  else
-  {
-    ObjParser *parser = (ObjParser*)parsedDataHandle;
-    objectName = parser->GetEntityObjectName(entityIndex).c_str();
-  }
-}
-
-FABRIC_EXT_EXPORT void FabricOBJGetEntityGroupName(
-  KL::Data parsedDataHandle,
-  KL::Integer entityIndex,
-  KL::String& objectName
-  )
-{
-  if( parsedDataHandle == NULL )
-    objectName = "";
-  else
-  {
-    ObjParser *parser = (ObjParser*)parsedDataHandle;
-    objectName = parser->GetEntityGroupName(entityIndex).c_str();
-  }
-}
-
-FABRIC_EXT_EXPORT void FabricOBJGetEntityMaterialName(
-  KL::Data parsedDataHandle,
-  KL::Integer entityIndex,
-  KL::String& objectName
-  )
-{
-  if( parsedDataHandle == NULL )
-    objectName = "";
-  else
-  {
-    ObjParser *parser = (ObjParser*)parsedDataHandle;
-    objectName = parser->GetEntityMaterialName(entityIndex).c_str();
-  }
-}
-
-FABRIC_EXT_EXPORT void FabricOBJGetNbEntityPoints(
-  KL::Data parsedDataHandle,
-  KL::Integer entityIndex,
   KL::Size& nbPoints
   )
 {
@@ -213,13 +112,12 @@ FABRIC_EXT_EXPORT void FabricOBJGetNbEntityPoints(
   else
   {
     ObjParser *parser = (ObjParser*)parsedDataHandle;
-    nbPoints = parser->GetNbEntityPoints(entityIndex);
+    nbPoints = parser->NbPoints();
   }
 }
 
-FABRIC_EXT_EXPORT void FabricOBJGetEntityPoints(
+FABRIC_EXT_EXPORT void FabricOBJGetPoints(
   KL::Data parsedDataHandle,
-  KL::Integer entityIndex,
   KL::VariableArray<KL::Vec3>& points
   )
 {
@@ -229,21 +127,20 @@ FABRIC_EXT_EXPORT void FabricOBJGetEntityPoints(
   {
     ObjParser *parser = (ObjParser*)parsedDataHandle;
 
-    size_t nbPoints = parser->GetNbEntityPoints(entityIndex);
+    size_t nbPoints = parser->NbPoints();
     points.resize( nbPoints );
 
     for( size_t i = 0; i < nbPoints; ++i )
     {
-      V3 point = parser->GetEntityPoint( entityIndex, i );
+      V3 point = parser->GetPoint( i );
       KL::Vec3 klVec = { point.v[0], point.v[1], point.v[2] };
       points[i] = klVec;
     }
   }
 }
 
-FABRIC_EXT_EXPORT void FabricOBJGetEntityPointsSliced(
+FABRIC_EXT_EXPORT void FabricOBJGetPointsSliced(
   KL::Data parsedDataHandle,
-  KL::Integer entityIndex,
   KL::SlicedArray<KL::Vec3>& points
   )
 {
@@ -251,22 +148,21 @@ FABRIC_EXT_EXPORT void FabricOBJGetEntityPointsSliced(
   {
     ObjParser *parser = (ObjParser*)parsedDataHandle;
 
-    size_t nbPoints = parser->GetNbEntityPoints(entityIndex);
+    size_t nbPoints = parser->NbPoints();
     if ( points.size() != nbPoints )
-      throwException( "FabricOBJGetEntityPointsSliced: sliced array size mismatch" );
+      throwException( "FabricOBJGetPointsSliced: sliced array size mismatch" );
 
     for( size_t i = 0; i < nbPoints; ++i )
     {
-      V3 point = parser->GetEntityPoint( entityIndex, i );
+      V3 point = parser->GetPoint( i );
       KL::Vec3 klVec = { point.v[0], point.v[1], point.v[2] };
       points[i] = klVec;
     }
   }
 }
 
-FABRIC_EXT_EXPORT void FabricOBJGetEntityNormals(
+FABRIC_EXT_EXPORT void FabricOBJGetNormals(
   KL::Data parsedDataHandle,
-  KL::Integer entityIndex,
   KL::VariableArray<KL::Vec3>& normals
   )
 {
@@ -276,21 +172,20 @@ FABRIC_EXT_EXPORT void FabricOBJGetEntityNormals(
   {
     ObjParser *parser = (ObjParser*)parsedDataHandle;
 
-    size_t nbPoints = parser->GetNbEntityPoints(entityIndex);
+    size_t nbPoints = parser->NbPoints();
     normals.resize( nbPoints );
 
     for( size_t i = 0; i < nbPoints; ++i )
     {
-      V3 normal = parser->GetEntityNormal( entityIndex, i );
+      V3 normal = parser->GetNormal( i );
       KL::Vec3 klVec = { normal.v[0], normal.v[1], normal.v[2] };
       normals[i] = klVec;
     }
   }
 }
 
-FABRIC_EXT_EXPORT void FabricOBJGetEntityNormalsSliced(
+FABRIC_EXT_EXPORT void FabricOBJGetNormalsSliced(
   KL::Data parsedDataHandle,
-  KL::Integer entityIndex,
   KL::SlicedArray<KL::Vec3>& normals
   )
 {
@@ -298,22 +193,21 @@ FABRIC_EXT_EXPORT void FabricOBJGetEntityNormalsSliced(
   {
     ObjParser *parser = (ObjParser*)parsedDataHandle;
 
-    size_t nbPoints = parser->GetNbEntityPoints(entityIndex);
+    size_t nbPoints = parser->NbPoints();
     if ( normals.size() != nbPoints )
-      throwException( "FabricOBJGetEntityNormalsSliced: sliced array size mismatch" );
+      throwException( "FabricOBJGetNormalsSliced: sliced array size mismatch" );
 
     for ( size_t i = 0; i < nbPoints; ++i )
     {
-      V3 normal = parser->GetEntityNormal( entityIndex, i );
+      V3 normal = parser->GetNormal( i );
       KL::Vec3 klVec = { normal.v[0], normal.v[1], normal.v[2] };
       normals[i] = klVec;
     }
   }
 }
 
-FABRIC_EXT_EXPORT void FabricOBJGetEntityTextureCoords(
+FABRIC_EXT_EXPORT void FabricOBJGetTextureCoords(
   KL::Data parsedDataHandle,
-  KL::Integer entityIndex,
   KL::VariableArray<KL::Vec2>& textureCoords
   )
 {
@@ -323,21 +217,20 @@ FABRIC_EXT_EXPORT void FabricOBJGetEntityTextureCoords(
   {
     ObjParser *parser = (ObjParser*)parsedDataHandle;
 
-    size_t nbPoints = parser->GetNbEntityPoints(entityIndex);
+    size_t nbPoints = parser->NbPoints();
     textureCoords.resize( nbPoints );
 
     for( size_t i = 0; i < nbPoints; ++i )
     {
-      V2 texCoord = parser->GetEntityTextureCoord( entityIndex, i );
+      V2 texCoord = parser->GetTextureCoord( i );
       KL::Vec2 klVec = { texCoord.v[0], texCoord.v[1] };
       textureCoords[i] = klVec;
     }
   }
 }
 
-FABRIC_EXT_EXPORT void FabricOBJGetEntityTextureCoordsSliced(
+FABRIC_EXT_EXPORT void FabricOBJGetTextureCoordsSliced(
   KL::Data parsedDataHandle,
-  KL::Integer entityIndex,
   KL::SlicedArray<KL::Vec2>& textureCoords
   )
 {
@@ -346,22 +239,21 @@ FABRIC_EXT_EXPORT void FabricOBJGetEntityTextureCoordsSliced(
     ObjParser *parser = (ObjParser*)parsedDataHandle;
 
 
-    size_t nbPoints = parser->GetNbEntityPoints(entityIndex);
+    size_t nbPoints = parser->NbPoints();
     if ( textureCoords.size() != nbPoints )
-      throwException( "FabricOBJGetEntityTextureCoordsSliced: sliced array size mismatch" );
+      throwException( "FabricOBJGetTextureCoordsSliced: sliced array size mismatch" );
 
     for ( size_t i = 0; i < nbPoints; ++i )
     {
-      V2 texCoord = parser->GetEntityTextureCoord( entityIndex, i );
+      V2 texCoord = parser->GetTextureCoord( i );
       KL::Vec2 klVec = { texCoord.v[0], 1.0-texCoord.v[1] };//OBJ considers (0, 0) to be the top left of a texture, OpenGL considers it to be the bottom left
       textureCoords[i] = klVec;
     }
   }
 }
 
-FABRIC_EXT_EXPORT void FabricOBJGetNbEntityTriangles(
+FABRIC_EXT_EXPORT void FabricOBJGetNbTriangles(
   KL::Data parsedDataHandle,
-  KL::Integer entityIndex,
   KL::Size& nbTriangles
   )
 {
@@ -370,13 +262,12 @@ FABRIC_EXT_EXPORT void FabricOBJGetNbEntityTriangles(
   else
   {
     ObjParser *parser = (ObjParser*)parsedDataHandle;
-    nbTriangles = parser->GetNbEntityTriangles(entityIndex);
+    nbTriangles = parser->NbTriangles();
   }
 }
 
-FABRIC_EXT_EXPORT void FabricOBJGetEntityTriangleIndices(
+FABRIC_EXT_EXPORT void FabricOBJGetTriangleIndices(
   KL::Data parsedDataHandle,
-  KL::Integer entityIndex,
   KL::VariableArray<KL::Integer>& indices
   )
 {
@@ -386,13 +277,13 @@ FABRIC_EXT_EXPORT void FabricOBJGetEntityTriangleIndices(
   {
     ObjParser *parser = (ObjParser*)parsedDataHandle;
 
-    size_t nbTriangles = parser->GetNbEntityTriangles(entityIndex);
+    size_t nbTriangles = parser->NbTriangles();
     indices.resize( nbTriangles * 3 );
 
     for( size_t i = 0; i < nbTriangles; ++i )
     {
       int t1, t2, t3;
-      parser->GetEntityTriangleIndices( entityIndex, i, t1, t2, t3 );
+      parser->GetTriangleIndices( i, t1, t2, t3 );
       indices[i*3] = t1;
       indices[i*3+1] = t2;
       indices[i*3+2] = t3;
@@ -400,9 +291,8 @@ FABRIC_EXT_EXPORT void FabricOBJGetEntityTriangleIndices(
   }
 }
 
-FABRIC_EXT_EXPORT void FabricOBJGetEntityTriangleIndicesSliced(
+FABRIC_EXT_EXPORT void FabricOBJGetTriangleIndicesSliced(
   KL::Data parsedDataHandle,
-  KL::Integer entityIndex,
   KL::SlicedArray<KL::Integer>& indices
   )
 {
@@ -410,56 +300,17 @@ FABRIC_EXT_EXPORT void FabricOBJGetEntityTriangleIndicesSliced(
   {
     ObjParser *parser = (ObjParser*)parsedDataHandle;
 
-    size_t nbTriangles = parser->GetNbEntityTriangles(entityIndex);
+    size_t nbTriangles = parser->NbTriangles();
     if ( indices.size() != nbTriangles )
-      throwException( "FabricOBJGetEntityTriangleIndicesSliced: sliced array size mismatch" );
+      throwException( "FabricOBJGetTriangleIndicesSliced: sliced array size mismatch" );
 
     for( size_t i = 0; i < nbTriangles; ++i )
     {
       int t1, t2, t3;
-      parser->GetEntityTriangleIndices( entityIndex, i, t1, t2, t3 );
+      parser->GetTriangleIndices( i, t1, t2, t3 );
       indices[i*3] = t1;
       indices[i*3+1] = t2;
       indices[i*3+2] = t3;
     }
-  }
-}
-
-FABRIC_EXT_EXPORT void FabricOBJGetEntityTriangleMaterialIndices(
-  KL::Data parsedDataHandle,
-  KL::Integer entityIndex,
-  KL::VariableArray<KL::Integer>& indices
-  )
-{
-  if( parsedDataHandle == NULL )
-    indices.resize( 0 );
-  else
-  {
-    ObjParser *parser = (ObjParser*)parsedDataHandle;
-
-    size_t nbTriangles = parser->GetNbEntityTriangles(entityIndex);
-    indices.resize( nbTriangles );
-
-    for( size_t i = 0; i < nbTriangles; ++i )
-      indices[i] = parser->GetEntityTriangleMaterialIndex( entityIndex, i );
-  }
-}
-
-FABRIC_EXT_EXPORT void FabricOBJGetEntityTriangleMaterialIndicesSliced(
-  KL::Data parsedDataHandle,
-  KL::Integer entityIndex,
-  KL::SlicedArray<KL::Integer>& indices
-  )
-{
-  if ( parsedDataHandle )
-  {
-    ObjParser *parser = (ObjParser*)parsedDataHandle;
-
-    size_t nbTriangles = parser->GetNbEntityTriangles(entityIndex);
-    if ( indices.size() != nbTriangles )
-      throwException( "FabricOBJGetEntityTriangleIndicesSliced: sliced array size mismatch" );
-
-    for( size_t i = 0; i < nbTriangles; ++i )
-      indices[i] = parser->GetEntityTriangleMaterialIndex( entityIndex, i );
   }
 }
