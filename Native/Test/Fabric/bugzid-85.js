@@ -69,4 +69,4 @@ operator reportValues(io Size a<>[]) {\n\
   e.appendEventHandler(eh);
   e.fire();
 
-F.flush();
+F.close();

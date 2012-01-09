@@ -26,16 +26,23 @@ namespace Fabric
       {
       public:
       
+        typedef void (*FinishedCallback)( void * );
+      
         Task(
           RC::Handle<LogCollector> const &logCollector,
           size_t count,
           void (*callback)( void *, size_t ),
-          void *userdata
+          void *userdata,
+          FinishedCallback finishedCallback = 0,
+          void *finishedUserdata = 0
+          
           )
           : m_logCollector( logCollector )
           , m_count( count )
           , m_callback( callback )
           , m_userdata( userdata )
+          , m_finishedCallback( finishedCallback )
+          , m_finishedUserdata( finishedUserdata )
           , m_nextIndex( 0 )
           , m_completedCount( 0 )
         {
@@ -75,12 +82,25 @@ namespace Fabric
           return m_logCollector;
         }
         
+        FinishedCallback getFinishedCallback() const
+        {
+          return m_finishedCallback;
+        }
+        
+        void *getFinishedUserdata() const
+        {
+          return m_finishedUserdata;
+        }
+        
       private:
         
         RC::Handle<LogCollector> m_logCollector;
         size_t m_count;
         void (*m_callback)( void *, size_t );
         void *m_userdata;
+        
+        FinishedCallback m_finishedCallback;
+        void *m_finishedUserdata;
 
         size_t m_nextIndex;
         size_t m_completedCount;
@@ -88,6 +108,9 @@ namespace Fabric
       
     public:
 
+      static const size_t Idle = 1;
+      static const size_t MainThreadOnly = 2;
+      
       static ThreadPool *Instance();
 
       ThreadPool();
@@ -98,7 +121,17 @@ namespace Fabric
         size_t count,
         void (*callback)( void *userdata, size_t index ),
         void *userdata,
-        bool mainThreadOnly
+        size_t flags
+        );
+      
+      void executeParallelAsync(
+        RC::Handle<LogCollector> const &logCollector,
+        size_t count,
+        void (*callback)( void *userdata, size_t index ),
+        void *userdata,
+        size_t flags,
+        void (*finishedCallback)( void * ),
+        void *finishedUserdata
         );
       
       void terminate();
@@ -124,12 +157,19 @@ namespace Fabric
       std::vector<Task *> m_tasks;
       Util::TLSVar<bool> m_isMainThread;
       std::vector<Task *> m_mainThreadTasks;
+      std::vector<Task *> m_idleTasks;
       bool m_running;
     };
     
-    inline void executeParallel( RC::Handle<LogCollector> const &logCollector, size_t count, void (*callback)( void *userdata, size_t index ), void *userdata, bool mainThreadOnly )
+    inline void executeParallel(
+      RC::Handle<LogCollector> const &logCollector,
+      size_t count,
+      void (*callback)( void *userdata, size_t index ),
+      void *userdata,
+      bool mainThreadOnly
+      )
     {
-      ThreadPool::Instance()->executeParallel( logCollector, count, callback, userdata, mainThreadOnly );
+      ThreadPool::Instance()->executeParallel( logCollector, count, callback, userdata, mainThreadOnly? ThreadPool::MainThreadOnly: 0 );
     }
   };
 };

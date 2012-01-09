@@ -79,4 +79,4 @@ console.log(JSON.stringify(FABRIC.RT.getRegisteredTypes()['ComplexType'].default
 node.addMember( 'ct', 'ComplexType' );
 console.log(JSON.stringify( node.getData( 'ct', 0 ) ));
 
-FABRIC.flush();
+FABRIC.close();

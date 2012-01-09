@@ -24,6 +24,7 @@
 #include <Fabric/Core/CG/Manager.h>
 #include <Fabric/Core/RT/Manager.h>
 #include <Fabric/Core/IO/Manager.h>
+#include <Fabric/Core/MT/LogCollector.h>
 #include <Fabric/Base/JSON/Boolean.h>
 #include <Fabric/Base/JSON/String.h>
 #include <Fabric/Base/JSON/Object.h>
@@ -48,6 +49,7 @@ namespace Fabric
 {
   namespace DG
   {
+    Util::Mutex Context::s_contextMapMutex("Context::s_contextMapMutex");
     Context::ContextMap Context::s_contextMap;
     
     RC::Handle<Context> Context::Create(
@@ -62,6 +64,7 @@ namespace Fabric
     
     RC::Handle<Context> Context::Bind( std::string const &contextID )
     {
+      Util::Mutex::Lock contextMapLock( s_contextMapMutex );
       ContextMap::const_iterator it = s_contextMap.find( contextID );
       if ( it == s_contextMap.end() )
         throw Exception( "no context with ID " + _(contextID) );
@@ -74,15 +77,20 @@ namespace Fabric
       CG::CompileOptions const &compileOptions,
       bool optimizeSynchronously
       )
-      : m_logCollector( LogCollector::Create( this ) )
+      : m_mutex( "Context::Context" )
+      , m_logCollector( LogCollector::Create( this ) )
       , m_rtManager( RT::Manager::Create( KL::Compiler::Create() ) )
       , m_ioManager( ioManager )
       , m_cgManager( CG::Manager::Create( m_rtManager ) )
       , m_compileOptions( compileOptions )
       , m_codeManager( CodeManager::Create( &m_compileOptions, optimizeSynchronously ) )
+      , m_clientsMutex( "Context::m_clients" )
       , m_notificationBracketCount( 0 )
       , m_pendingNotificationsMutex( "pending notifications" )
       , m_pendingNotificationsJSON( 0 )
+      , m_gcContainer()
+      , m_mrInterface( &m_gcContainer, m_rtManager )
+      , m_klcInterface( &m_gcContainer, m_cgManager, m_compileOptions )
     {
       registerCoreTypes();
       
@@ -91,8 +99,9 @@ namespace Fabric
       static const size_t contextIDByteCount = 96;
       uint8_t contextIDBytes[contextIDByteCount];
       Util::generateSecureRandomBytes( contextIDByteCount, contextIDBytes );
-      std::string contextID = Util::encodeBase64( contextIDBytes, contextIDByteCount );
-      m_contextMapIterator = s_contextMap.insert( ContextMap::value_type( contextID, this ) ).first;
+      m_contextID = Util::encodeBase64( contextIDBytes, contextIDByteCount );
+      Util::Mutex::Lock contextMapLock( s_contextMapMutex );
+      s_contextMap.insert( ContextMap::value_type( m_contextID, this ) ).first;
     }
     
     Context::~Context()
@@ -100,19 +109,24 @@ namespace Fabric
       FABRIC_ASSERT( !m_pendingNotificationsJSON );
       
       FABRIC_ASSERT( m_clients.empty() );
-      
-      s_contextMap.erase( m_contextMapIterator );
 
+      {
+        Util::Mutex::Lock contextMapLock( s_contextMapMutex );
+        
+        s_contextMap.erase( s_contextMap.find( m_contextID ) );
+      }
+      
       m_rtManager->setJSONCommandChannel( 0 );
     }
     
     std::string const &Context::getContextID() const
     {
-      return m_contextMapIterator->first;
+      return m_contextID;
     }
     
     void Context::registerClient( Client *client )
     {
+      Util::Mutex::Lock clientLock( m_clientsMutex );
       FABRIC_CONFIRM( m_clients.insert( client ).second );
     }
 
@@ -170,6 +184,7 @@ namespace Fabric
     
     void Context::unregisterClient( Client *client )
     {
+      Util::Mutex::Lock clientLock( m_clientsMutex );
       Clients::iterator it = m_clients.find( client );
       FABRIC_ASSERT( it != m_clients.end() );
       m_clients.erase( it );
@@ -183,7 +198,6 @@ namespace Fabric
     void Context::closeNotificationBracket()
     {
       if ( m_notificationBracketCount.decrementAndGetValue() == 0
-        && MT::ThreadPool::Instance()->isMainThread()
         && m_pendingNotificationsJSON )
       {
         Util::SimpleString *pendingNotificationJSON;
@@ -194,10 +208,20 @@ namespace Fabric
           delete m_pendingNotificationsJSONGenerator;
           m_pendingNotificationsJSON = 0;
         }
-        
-        for ( Clients::const_iterator it=m_clients.begin(); it!=m_clients.end(); ++it )
-          (*it)->notify( *pendingNotificationJSON );
-        
+
+        {
+          Util::Mutex::Lock clientLock( m_clientsMutex );
+          // [pzion 20111130] This is a bit insane: in a strange case I haven't
+          // tracked down yet, notifying a client can cause it to become
+          // unregistered.  We work around this problem by saving the next iterator.
+          Clients::const_iterator it = m_clients.begin();
+          while( it != m_clients.end() )
+          {
+            Client *client = *it++;
+            client->notify( *pendingNotificationJSON );
+          }
+        }
+
         delete pendingNotificationJSON;
       }
     }
@@ -352,6 +376,8 @@ namespace Fabric
         FABRIC_LOG( expiryMessage );
         throw Exception( expiryMessage );
       }
+      
+      Util::Mutex::Lock mutexLock( m_mutex );
 
       if ( dst.size() - dstOffset == 0 )
       {
@@ -359,12 +385,23 @@ namespace Fabric
       }
       else
       {
-        if ( dst[dstOffset] == "DG" )
+        std::string const &first = dst[dstOffset];
+        if ( first == "DG" )
           jsonRouteDG( dst, dstOffset + 1, cmd, arg, resultJAG );
-        else if ( dst[dstOffset] == "RT" )
+        else if ( first == "RT" )
           m_rtManager->jsonRoute( dst, dstOffset + 1, cmd, arg, resultJAG );
-        else if ( dst[dstOffset] == "IO" )
+        else if ( first == "IO" )
           m_ioManager->jsonRoute( dst, dstOffset + 1, cmd, arg, resultJAG );
+        else if ( first == "MR" )
+        {
+          MT::TLSLogCollectorAutoSet logCollector( m_logCollector );
+          m_mrInterface.jsonRoute( dst, dstOffset + 1, cmd, arg, resultJAG );
+        }
+        else if ( first == "KLC" )
+        {
+          MT::TLSLogCollectorAutoSet logCollector( m_logCollector );
+          m_klcInterface.jsonRoute( dst, dstOffset + 1, cmd, arg, resultJAG );
+        }
         else throw Exception( "unroutable" );
       }
     }
@@ -375,7 +412,9 @@ namespace Fabric
       Util::JSONArrayGenerator &resultJAG
       )
     {
-      throw Exception( "unknown command" );
+      if ( cmd == "getMemoryUsage" )
+        jsonExecGetMemoryUsage( resultJAG );
+      else throw Exception( "unknown command" );
     }
     
     static void jsonDescLicenses_llvm_projects_sample_autoconf( Util::JSONGenerator &resultJG )
@@ -566,6 +605,24 @@ namespace Fabric
       {
         Util::JSONGenerator memberJG = resultJGObject.makeMember( "build", 5 );
         jsonDescBuild( memberJG );
+      }
+    }
+    
+    void Context::jsonExecGetMemoryUsage( Util::JSONArrayGenerator &resultJAG ) const
+    {
+      Util::JSONGenerator jg = resultJAG.makeElement();
+      Util::JSONObjectGenerator jog = jg.makeObject();
+      Util::JSONGenerator dgJG = jog.makeMember( "DG" );
+      jsonDGGetMemoryUsage( dgJG );
+    }
+    
+    void Context::jsonDGGetMemoryUsage( Util::JSONGenerator &jg ) const
+    {
+      Util::JSONObjectGenerator jog = jg.makeObject();
+      for ( NamedObjectMap::const_iterator it = m_namedObjectRegistry.begin(); it != m_namedObjectRegistry.end(); ++it )
+      {
+        Util::JSONGenerator namedObjectJG = jog.makeMember( it->first );
+        it->second->jsonGetMemoryUsage( namedObjectJG );
       }
     }
 

@@ -20,6 +20,11 @@ node.setData('bar', 0, 42);
 node.bindings.append(binding);
 if (node.getErrors().length > 0)
   console.log(node.getErrors());
-node.evaluate();
+try {
+  node.evaluate();
+}
+catch (e) {
+  console.log(e);
+}
 
-F.flush();
+F.close();

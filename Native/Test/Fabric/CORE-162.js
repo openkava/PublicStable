@@ -51,4 +51,4 @@ else {
   node.evaluate();
 }
 
-FABRIC.flush();
+FABRIC.close();

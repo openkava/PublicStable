@@ -10,4 +10,4 @@ console.log(node.getBulkDataJSON());
 node.setCount(2);
 console.log(node.getBulkDataJSON());
 
-FABRIC.flush();
+FABRIC.close();

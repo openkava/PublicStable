@@ -59,10 +59,16 @@ for f in "$@"; do
     mv $TMPFILE ${f%.js}.out
     echo "REPL $(basename $f)"
   else
-    if ! cmp $TMPFILE ${f%.js}.out; then
+    EXPFILE=${f%.js}.$BUILD_OS.$BUILD_ARCH.out
+    [ -f "$EXPFILE" ] || EXPFILE=${f%.js}.out
+    if ! cmp $TMPFILE $EXPFILE; then
       echo "FAIL $(basename $f)"
       echo "Expected output:"
-      cat ${f%.js}.out
+      if [ -f $EXPFILE ]; then
+        cat $EXPFILE
+      else
+        echo "(missing $EXPFILE)"
+      fi
       echo "Actual output ($TMPFILE):"
       cat $TMPFILE
       echo "To debug:"

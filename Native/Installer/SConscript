@@ -140,6 +140,10 @@ Export('generateDistZip')
 
 Import( 'buildOS' )
 
-SConscript( dirs=[buildOS,"Chrome","Firefox"] )
+if 'installer' in COMMAND_LINE_TARGETS:
+  SConscript( dirs=[buildOS,"Chrome","Firefox"] )
+  Alias( 'installer', ['chromeInstaller','firefoxInstaller'] )
 
-Alias( 'installer', ['chromeInstaller','firefoxInstaller'] )
+if 'nodeInstaller' in COMMAND_LINE_TARGETS:
+  SConscript( dirs=["Node"] )
+

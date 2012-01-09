@@ -8,4 +8,4 @@ console.log(node.getData("foo", 0));
 node.setCount(2);
 console.log(node.getData("foo", 1));
 
-FABRIC.flush();
+FABRIC.close();

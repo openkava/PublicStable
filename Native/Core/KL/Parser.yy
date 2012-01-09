@@ -83,6 +83,15 @@ typedef struct YYLTYPE
 #include <Fabric/Core/AST/ConstString.h>
 #include <Fabric/Core/AST/ContainerLoop.h>
 #include <Fabric/Core/AST/ContinueStatement.h>
+#include <Fabric/Core/AST/CreateArrayGenerator.h>
+#include <Fabric/Core/AST/CreateArrayMap.h>
+#include <Fabric/Core/AST/CreateArrayTransform.h>
+#include <Fabric/Core/AST/CreateConstArray.h>
+#include <Fabric/Core/AST/CreateConstValue.h>
+#include <Fabric/Core/AST/CreateReduce.h>
+#include <Fabric/Core/AST/CreateValueGenerator.h>
+#include <Fabric/Core/AST/CreateValueTransform.h>
+#include <Fabric/Core/AST/CreateValueMap.h>
 #include <Fabric/Core/AST/CStyleLoop.h>
 #include <Fabric/Core/AST/Destructor.h>
 #include <Fabric/Core/AST/ExprStatement.h>
@@ -222,6 +231,17 @@ int kl_lex( YYSTYPE *yys, YYLTYPE *yyl, KL::Context &context );
 %token TOKEN_CONTINUE "continue"
 %token TOKEN_FUNCTION "function"
 %token TOKEN_OPERATOR "operator"
+%token TOKEN_CREATE_REDUCE "createReduce"
+%token TOKEN_ARRAY_PRODUCER "ArrayProducer"
+%token TOKEN_VALUE_PRODUCER "ValueProducer"
+%token TOKEN_CREATE_CONST_ARRAY "createConstArray"
+%token TOKEN_CREATE_CONST_VALUE "createConstValue"
+%token TOKEN_CREATE_ARRAY_MAP "createArrayMap"
+%token TOKEN_CREATE_VALUE_MAP "createValueMap"
+%token TOKEN_CREATE_ARRAY_GENERATOR "createArrayGenerator"
+%token TOKEN_CREATE_ARRAY_TRANSFORM "createArrayTransform"
+%token TOKEN_CREATE_VALUE_GENERATOR "createValueGenerator"
+%token TOKEN_CREATE_VALUE_TRANSFORM "createValueTransform"
 
 %token TOKEN_LBRACE "{"
 %token TOKEN_RBRACE "}"
@@ -321,7 +341,8 @@ int kl_lex( YYSTYPE *yys, YYLTYPE *yyl, KL::Context &context );
 %type <astStatementListPtr> statement_list
 %type <astCompoundStatementPtr> compound_statement
 %type <astArgListPtr> argument_expression_list
-%type <valueStringPtr> compound_type "type"
+%type <valueStringPtr> simple_type "simple type"
+%type <valueStringPtr> compound_type "complex type"
 
 %type <uniOpType> prefix_unary_operator
 %type <uniOpType> postfix_unary_operator
@@ -859,9 +880,33 @@ statement_list
   {
     $$ = AST::StatementVector::Create().take();
   }
+;
+
+simple_type
+  : TOKEN_IDENTIFIER
+  {
+    $$ = $1;
+  }
+  | TOKEN_VALUE_PRODUCER TOKEN_LANGLE compound_type TOKEN_RANGLE
+  {
+    std::string *result = new std::string( "ValueProducer<" );
+    result->append( *$3 );
+    delete $3;
+    result->append( ">" );
+    $$ = result;
+  }
+  | TOKEN_ARRAY_PRODUCER TOKEN_LANGLE compound_type TOKEN_RANGLE
+  {
+    std::string *result = new std::string( "ArrayProducer<" );
+    result->append( *$3 );
+    delete $3;
+    result->append( ">" );
+    $$ = result;
+  }
+;
 
 compound_type
-  : TOKEN_IDENTIFIER array_modifier
+  : simple_type array_modifier
   {
     std::string *result = new std::string( *$1 );
     delete $1;
@@ -873,7 +918,7 @@ compound_type
 ;
 
 var_decl_statement
-  : TOKEN_IDENTIFIER var_decl_list TOKEN_SEMICOLON 
+  : simple_type var_decl_list TOKEN_SEMICOLON 
   {
     $$ = AST::VarDeclStatement::Create( RTLOC, *$1, $2 ).take();
     delete $1;
@@ -1486,6 +1531,105 @@ primary_expression
     $$ = AST::Call::Create( RTLOC, *$1, $3 ).take();
     delete $1;
     $3->release();
+  }
+  | TOKEN_CREATE_CONST_VALUE TOKEN_LPAREN assignment_expression TOKEN_RPAREN
+  {
+    $$ = AST::CreateConstValue::Create( RTLOC, $3 ).take();
+    $3->release();
+  }
+  | TOKEN_CREATE_VALUE_GENERATOR TOKEN_LPAREN TOKEN_IDENTIFIER TOKEN_RPAREN
+  {
+    $$ = AST::CreateValueGenerator::Create( RTLOC, *$3, 0 ).take();
+    delete $3;
+  }
+  | TOKEN_CREATE_VALUE_GENERATOR TOKEN_LPAREN TOKEN_IDENTIFIER TOKEN_COMMA assignment_expression TOKEN_RPAREN
+  {
+    $$ = AST::CreateValueGenerator::Create( RTLOC, *$3, $5 ).take();
+    delete $3;
+    $5->release();
+  }
+  | TOKEN_CREATE_VALUE_TRANSFORM TOKEN_LPAREN assignment_expression TOKEN_COMMA TOKEN_IDENTIFIER TOKEN_RPAREN
+  {
+    $$ = AST::CreateValueTransform::Create( RTLOC, $3, *$5, 0 ).take();
+    $3->release();
+    delete $5;
+  }
+  | TOKEN_CREATE_VALUE_TRANSFORM TOKEN_LPAREN assignment_expression TOKEN_COMMA TOKEN_IDENTIFIER TOKEN_COMMA assignment_expression TOKEN_RPAREN
+  {
+    $$ = AST::CreateValueTransform::Create( RTLOC, $3, *$5, $7 ).take();
+    $3->release();
+    delete $5;
+    $7->release();
+  }
+  | TOKEN_CREATE_VALUE_MAP TOKEN_LPAREN assignment_expression TOKEN_COMMA TOKEN_IDENTIFIER TOKEN_RPAREN
+  {
+    $$ = AST::CreateValueMap::Create( RTLOC, $3, *$5, 0 ).take();
+    $3->release();
+    delete $5;
+  }
+  | TOKEN_CREATE_VALUE_MAP TOKEN_LPAREN assignment_expression TOKEN_COMMA TOKEN_IDENTIFIER TOKEN_COMMA assignment_expression TOKEN_RPAREN
+  {
+    $$ = AST::CreateValueMap::Create( RTLOC, $3, *$5, $7 ).take();
+    $3->release();
+    delete $5;
+    $7->release();
+  }
+  | TOKEN_CREATE_CONST_ARRAY TOKEN_LPAREN assignment_expression TOKEN_RPAREN
+  {
+    $$ = AST::CreateConstArray::Create( RTLOC, $3 ).take();
+    $3->release();
+  }
+  | TOKEN_CREATE_ARRAY_GENERATOR TOKEN_LPAREN assignment_expression TOKEN_COMMA TOKEN_IDENTIFIER TOKEN_RPAREN
+  {
+    $$ = AST::CreateArrayGenerator::Create( RTLOC, $3, *$5, 0 ).take();
+    $3->release();
+    delete $5;
+  }
+  | TOKEN_CREATE_ARRAY_GENERATOR TOKEN_LPAREN assignment_expression TOKEN_COMMA TOKEN_IDENTIFIER TOKEN_COMMA assignment_expression TOKEN_RPAREN
+  {
+    $$ = AST::CreateArrayGenerator::Create( RTLOC, $3, *$5, $7 ).take();
+    $3->release();
+    delete $5;
+    $7->release();
+  }
+  | TOKEN_CREATE_ARRAY_MAP TOKEN_LPAREN assignment_expression TOKEN_COMMA TOKEN_IDENTIFIER TOKEN_RPAREN
+  {
+    $$ = AST::CreateArrayMap::Create( RTLOC, $3, *$5, 0 ).take();
+    $3->release();
+    delete $5;
+  }
+  | TOKEN_CREATE_ARRAY_MAP TOKEN_LPAREN assignment_expression TOKEN_COMMA TOKEN_IDENTIFIER TOKEN_COMMA assignment_expression TOKEN_RPAREN
+  {
+    $$ = AST::CreateArrayMap::Create( RTLOC, $3, *$5, $7 ).take();
+    $3->release();
+    delete $5;
+    $7->release();
+  }
+  | TOKEN_CREATE_ARRAY_TRANSFORM TOKEN_LPAREN assignment_expression TOKEN_COMMA TOKEN_IDENTIFIER TOKEN_RPAREN
+  {
+    $$ = AST::CreateArrayTransform::Create( RTLOC, $3, *$5, 0 ).take();
+    $3->release();
+    delete $5;
+  }
+  | TOKEN_CREATE_ARRAY_TRANSFORM TOKEN_LPAREN assignment_expression TOKEN_COMMA TOKEN_IDENTIFIER TOKEN_COMMA assignment_expression TOKEN_RPAREN
+  {
+    $$ = AST::CreateArrayTransform::Create( RTLOC, $3, *$5, $7 ).take();
+    $3->release();
+    delete $5;
+    $7->release();
+  }
+  | TOKEN_CREATE_REDUCE TOKEN_LPAREN assignment_expression TOKEN_COMMA TOKEN_IDENTIFIER TOKEN_RPAREN
+  {
+    $$ = AST::CreateReduce::Create( RTLOC, $3, *$5, 0 ).take();
+    $3->release();
+    delete $5;
+  }
+  | TOKEN_CREATE_REDUCE TOKEN_LPAREN assignment_expression TOKEN_COMMA TOKEN_IDENTIFIER TOKEN_COMMA assignment_expression TOKEN_RPAREN
+  {
+    $$ = AST::CreateReduce::Create( RTLOC, $3, *$5, $7 ).take();
+    $3->release();
+    delete $5;
+    $7->release();
   }
   | TOKEN_IDENTIFIER
   {
