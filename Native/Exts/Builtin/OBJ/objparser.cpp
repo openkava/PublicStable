@@ -22,23 +22,6 @@ private:
   std::string m_msg;
 };
 
-void defaultExceptionThrow(const char* msg) {
-  throw Exception( msg );
-}
-
-void(*g_cStrExceptionFunc)(const char*) = defaultExceptionThrow;
-
-bool ObjParser::EntityKey::operator<(const ObjParser::EntityKey& other)const{
-  int cmp = strcmp(m_objName.c_str(), other.m_objName.c_str());
-  if(cmp)
-    return cmp < 0;
-  cmp = strcmp(m_groupName.c_str(), other.m_groupName.c_str());
-  if(cmp)
-    return cmp < 0;
-  cmp = strcmp(m_matName.c_str(), other.m_matName.c_str());
-  return cmp < 0;
-}
-
 bool IsSeparator( char c )
 {
   return c == ' ' || c == '\n' || c == '\r' || c == '\t';
@@ -80,7 +63,7 @@ bool skipSpaces( std::istream& stream )
   return c != 0;
 }
 
-bool skipExpectedString( std::istream& stream, const char* str, bool throwIfDifferent = true )
+void skipExpectedString( std::istream& stream, const char* str )
 {
   while( true )
   {
@@ -89,33 +72,15 @@ bool skipExpectedString( std::istream& stream, const char* str, bool throwIfDiff
       break;
     stream.get( c2 );
     if( !stream.good() || c1 != c2 )
-    {
-      if(throwIfDifferent)
-        (*g_cStrExceptionFunc)( ("Expected token '" + std::string(str) + "' not found").c_str() );
-      else
-        return false;
-    }
+      throw Exception( ("Expected token '" + std::string(str) + "' not found").c_str() );
   }
-  return true;
 }
+
 
 void skipMandatorySpaces( std::istream& stream )
 {
   if( !skipSpaces(stream) )
-    (*g_cStrExceptionFunc)("space expected");
-}
-
-void ParseName( std::istream& stream, std::string& name ) {
-  skipSpaces( stream );
-  name.clear();
-  while( stream.good() )
-  {
-    char c;
-    stream.get(c);
-    if(c == '\n' || c == '\r')
-      break;
-    name.push_back(c);
-  }
+    throw Exception("space expected");
 }
 
 template<int Dim>
@@ -126,7 +91,7 @@ void getV( V<Dim>& v, std::istream& stream )
     skipMandatorySpaces( stream );
     stream >> v.v[i];
     if( parsingError( stream ) )
-      (*g_cStrExceptionFunc)("float value expected");
+      throw Exception("float value expected");
   }
 }
 
@@ -171,19 +136,19 @@ void ObjParser::ParseF( std::istream& stream )
       break;
     }
     else if( !hadSpaces )
-      (*g_cStrExceptionFunc)("space expected");
+      throw Exception("space expected");
 
     PointIndices indices;
 
     stream >> indices.m_point;
     if( parsingError( stream ) )
-      (*g_cStrExceptionFunc)("int value expected");
+      throw Exception("int value expected");
     if(indices.m_point < 0)
       indices.m_point += (int)m_points.size();
     else
       --indices.m_point;
     if( indices.m_point < 0 || indices.m_point > (int)m_points.size() )
-      (*g_cStrExceptionFunc)("out of range point index");
+      throw Exception("out of range point index");
 
     char c = 0;
     stream.get(c);
@@ -193,13 +158,13 @@ void ObjParser::ParseF( std::istream& stream )
       {
         stream >> indices.m_texCoord;
         if( parsingError( stream ) )
-          (*g_cStrExceptionFunc)("int value expected");
+          throw Exception("int value expected");
         if(indices.m_texCoord < 0)
           indices.m_texCoord += (int)m_texCoords.size();
         else
           --indices.m_texCoord;
         if( indices.m_texCoord < 0 || indices.m_texCoord > (int)m_texCoords.size() )
-          (*g_cStrExceptionFunc)("out of range texture index");
+          throw Exception("out of range texture index");
       }
       c = 0;
       stream.get(c);
@@ -209,13 +174,13 @@ void ObjParser::ParseF( std::istream& stream )
         {
           stream >> indices.m_normal;
           if( parsingError( stream ) )
-            (*g_cStrExceptionFunc)("int value expected");
+            throw Exception("int value expected");
           if(indices.m_normal < 0)
             indices.m_normal += (int)m_normals.size();
           else
             --indices.m_normal;
           if( indices.m_normal < 0 || indices.m_normal > (int)m_normals.size() )
-            (*g_cStrExceptionFunc)("out of range normal index");
+            throw Exception("out of range normal index");
         }
       }
       else
@@ -253,16 +218,11 @@ void ObjParser::ParseF( std::istream& stream )
       m_triangleIndices.push_back( second );
       m_triangleIndices.push_back( ptIndex );
     }
-    if( nbFacePts >= 3 ) {
-       if( m_currentEntityIter != m_entityIndices.end() ) {
-         m_currentEntityIter->second.m_sharedFaces.push_back( (int)m_triangleMaterials.size() );
-       }
+    if( nbFacePts >= 3 )
        m_triangleSmoothingGroups.push_back( m_currentSmoothingGroup );
-       m_triangleMaterials.push_back( m_currentMaterialIndex );
-    }
   }
   if( nbFacePts < 3 )
-    (*g_cStrExceptionFunc)("face has less than 3 points");
+    throw Exception("face has less than 3 points");
 }
 
 int ObjParser::ParseS( std::istream& stream )
@@ -279,7 +239,7 @@ int ObjParser::ParseS( std::istream& stream )
     int smoothingGroup;
     stream >> smoothingGroup;
     if( parsingError( stream ) )
-      (*g_cStrExceptionFunc)("int value expected for smoothing group");
+      throw Exception("int value expected for smoothing group");
     return smoothingGroup;
   }
 }
@@ -418,20 +378,12 @@ void ObjParser::ComputeMissingNormals()
   }
 }
 
-ObjParser::ObjParser( std::istream& stream, bool splitObjs, bool splitGroups, bool splitMaterials, void(*cStrExceptionFunc)(const char*) )
-  : m_currentSmoothingGroup(-1),
-    m_currentMaterialIndex(-1)
+ObjParser::ObjParser( std::istream& stream )
+  : m_currentSmoothingGroup(-1)
 {
-  if(cStrExceptionFunc)
-    g_cStrExceptionFunc = cStrExceptionFunc;
-
   // [jeromecg 20110728] Right now this parser is very simple as it agglomerates all points and faces in 1 big object,
   // ignoring materials, groups, smoothing groups, etc.
   int lineCount = 0;
-
-  EntityKey currEntityKey;
-  m_currentEntityIter = m_entityIndices.end();
-  bool entityKeyChanged = false;
 
   try
   {
@@ -468,101 +420,17 @@ ObjParser::ObjParser( std::istream& stream, bool splitObjs, bool splitGroups, bo
           break;
         }
       case 'f':
-        if(entityKeyChanged) {
-          m_currentEntityIter = m_entityIndices.insert( std::make_pair( currEntityKey, EntityIndices() ) ).first;
-          entityKeyChanged = false;
-        }
         ParseF( stream );
         break;
       case 's':
         m_currentSmoothingGroup = ParseS( stream );
         break;
-      case 'o':
-        if( splitObjs ) {
-          ParseName( stream, currEntityKey.m_objName );
-          entityKeyChanged = true;
-          break;
-        }
-        skipToNextLine( stream );
-        break;
-      case 'g':
-        if( splitGroups ) {
-          ParseName( stream, currEntityKey.m_groupName );
-          entityKeyChanged = true;
-          break;
-        }
-        skipToNextLine( stream );
-        break;
-      case 'u':
-        if( skipExpectedString( stream, "semtl", false ) ) {
-          std::string matName;
-          ParseName( stream, matName );
-
-          std::pair< std::map< std::string, int >::iterator, bool > matIter = m_materialIndices.insert( std::make_pair( matName, (int)m_materials.size() ) );
-          if( matIter.second == true ) {
-            m_materials.push_back( matName );
-          }
-          m_currentMaterialIndex = matIter.first->second;
-
-          if( splitMaterials ) {
-            currEntityKey.m_matName = matName;
-            entityKeyChanged = true;
-          }
-          break;
-        }
-        skipToNextLine( stream );
-        break;
-      case 'm':
-        if( skipExpectedString( stream, "tllib", false ) ) {
-          std::string matLibName;
-          ParseName( stream, matLibName );
-          m_materialLibs.push_back(matLibName);
-        }
-        skipToNextLine( stream );
-        break;
       default:
-        skipToNextLine( stream );
+         skipToNextLine( stream );
       }
       ++lineCount;
     }
     ComputeMissingNormals();
-
-    m_entities.reserve( m_entityIndices.size() );
-    for( EntityFacesMap::const_iterator entityIter = m_entityIndices.begin(); entityIter != m_entityIndices.end(); ++entityIter )
-      m_entities.push_back( entityIter );
-
-    if( m_entities.size() > 1 ) {
-      //Define entity-relative point indices, and maintain point sharing
-
-      std::vector<int> localPtIndices;
-      localPtIndices.resize( m_sharedPointIndices.size(), -1 );
-
-      for( EntityFacesMap::iterator entityIter = m_entityIndices.begin(); entityIter != m_entityIndices.end(); ++entityIter ) {
-        EntityIndices& entityIndices = entityIter->second;
-        entityIndices.m_sharedPointIndices.reserve( entityIndices.m_sharedFaces.size()/2 );
-        entityIndices.m_localFacePoints.reserve( entityIndices.m_sharedFaces.size()*3 );
-
-        std::vector<int>::const_iterator iter;
-        for( std::vector<int>::const_iterator iter = entityIndices.m_sharedFaces.begin(); iter != entityIndices.m_sharedFaces.end(); ++iter ) {
-          int startIndex = (*iter)*3;
-          int endIndex = startIndex+3;
-          for( int i = startIndex; i < endIndex; ++i ) {
-            int sharedPointIndex = m_triangleIndices[i];
-
-            int localPointIndex = localPtIndices[sharedPointIndex];
-            if( localPointIndex == -1 ) {
-              localPointIndex = (int)entityIndices.m_sharedPointIndices.size();
-              localPtIndices[sharedPointIndex] = localPointIndex;
-              entityIndices.m_sharedPointIndices.push_back( sharedPointIndex );
-            }
-            entityIndices.m_localFacePoints.push_back( localPointIndex );
-          }
-        }
-        //clear marks
-        for( std::vector<int>::const_iterator iter = entityIndices.m_sharedPointIndices.begin(); iter != entityIndices.m_sharedPointIndices.end(); ++iter )
-          localPtIndices[*iter] = -1;
-      }
-    }
   }
   catch ( Exception e )
   {
@@ -578,25 +446,15 @@ ObjParser::ObjParser( std::istream& stream, bool splitObjs, bool splitGroups, bo
   }
 }
 
-void ObjParser::CheckEntityIndex( int entity )const {
-  if(entity != -1 && (size_t)entity >= m_entities.size())
-    (*g_cStrExceptionFunc)("out of range entity");
+void ObjParser::GetTriangleIndices(int triIndex, int& i1, int& i2, int& i3)const
+{
+  i1 = m_triangleIndices[triIndex*3];
+  i2 = m_triangleIndices[triIndex*3+1];
+  i3 = m_triangleIndices[triIndex*3+2];
 }
 
-size_t ObjParser::GetNbEntityPoints( int entity )const
+V3 ObjParser::GetPoint(int ptIndex)const
 {
-  CheckEntityIndex(entity);
-  if( m_entities.empty() || entity == -1 )
-    return m_sharedPointIndices.size();
-
-  return m_entities[entity]->second.m_sharedPointIndices.size();
-}
-
-V3 ObjParser::GetEntityPoint(int entity, int ptIndex)const
-{
-  if( !m_entities.empty() && entity != -1 )
-    ptIndex = m_entities[entity]->second.m_sharedPointIndices[ptIndex];
-
   int index = m_sharedPointIndices[ptIndex].m_point;
   if( index == INT_MAX )
     return V3( 0, 0, 0 );
@@ -604,11 +462,8 @@ V3 ObjParser::GetEntityPoint(int entity, int ptIndex)const
     return m_points[ index ];
 }
 
-V3 ObjParser::GetEntityNormal(int entity, int ptIndex)const
+V3 ObjParser::GetNormal(int ptIndex)const
 {
-  if( !m_entities.empty() && entity != -1 )
-    ptIndex = m_entities[entity]->second.m_sharedPointIndices[ptIndex];
-
   int index = m_sharedPointIndices[ptIndex].m_normal;
   if( index == INT_MAX )
     return V3( 0, 1, 0 );
@@ -616,44 +471,11 @@ V3 ObjParser::GetEntityNormal(int entity, int ptIndex)const
     return m_normals[ index ];
 }
 
-V2 ObjParser::GetEntityTextureCoord(int entity, int ptIndex)const
+V2 ObjParser::GetTextureCoord(int ptIndex)const
 {
-  if( !m_entities.empty() && entity != -1 )
-    ptIndex = m_entities[entity]->second.m_sharedPointIndices[ptIndex];
-
   int index = m_sharedPointIndices[ptIndex].m_texCoord;
   if( index == INT_MAX )
     return V2( 0, 0 );
   else
     return m_texCoords[ index ];
-}
-
-size_t ObjParser::GetNbEntityTriangles( int entity )const {
-  CheckEntityIndex(entity);
-  if( entity == -1 )
-    return m_triangleMaterials.size();
-
-  return m_entities[entity]->second.m_sharedFaces.size();
-}
-
-void ObjParser::GetEntityTriangleIndices(int entity, int triIndex, int& i1, int& i2, int& i3)const
-{
-  if( m_entities.empty() || entity == -1 ) {
-    i1 = m_triangleIndices[triIndex*3];
-    i2 = m_triangleIndices[triIndex*3+1];
-    i3 = m_triangleIndices[triIndex*3+2];
-  } else {
-    const std::vector< int >& facePoints = m_entities[entity]->second.m_localFacePoints;
-    i1 = facePoints[triIndex*3];
-    i2 = facePoints[triIndex*3+1];
-    i3 = facePoints[triIndex*3+2];
-  }
-}
-
-int ObjParser::GetEntityTriangleMaterialIndex(int entity, int triIndex)const
-{
-  if( !m_entities.empty() && entity != -1 )
-    triIndex = m_entities[entity]->second.m_sharedFaces[triIndex];
-
-  return m_triangleMaterials[triIndex];
 }
