@@ -36,7 +36,7 @@ FABRIC.SceneGraph.registerNodeType('Shader', {
       });
     var shaderNode = scene.constructNode('SceneGraphNode', options),
       redrawEventHandler = shaderNode.constructEventHandlerNode('Redraw'),
-      shaderProgram = new FABRIC.RT.OGLShaderProgram(options.name);
+      shaderProgram = new FABRIC.RT.OGLShaderProgram(options.name),
       i;
     
     redrawEventHandler.setScopeName('shader');
