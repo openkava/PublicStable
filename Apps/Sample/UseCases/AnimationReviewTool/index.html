@@ -251,7 +251,7 @@ FABRIC.SceneGraph.registerNodeType('PaintPlaneInstance', {
     });
 
     // create a texture to paint onto
-    var textureNode = scene.constructNode('Image', {
+    var textureNode = scene.constructNode('Image2D', {
       createDgNode: true,
       createResourceLoadNode: false,
       width: widthPixels,
@@ -267,9 +267,10 @@ FABRIC.SceneGraph.registerNodeType('PaintPlaneInstance', {
       
       // add a decoder for this image
       texturedgnode.bindings.append(scene.constructOperator({
-        operatorName: 'loadImageLDR',
-        entryFunctionName: 'loadImageLDR',
+        operatorName: 'loadImageRGBA',
+        entryFunctionName: 'loadImageRGBA',
         srcFile: 'FABRIC_ROOT/SceneGraph/KL/loadTexture.kl',
+        preProcessorDefinitions: { PIXELFORMAT: 'RGBA' },
         parameterLayout: [
           'self.resource',
           'self.width',
@@ -508,7 +509,7 @@ $(document).ready(function() {
   });
   viewport.setCameraNode(camera);
   
-  viewport.setBackgroundTextureImage(scene.constructNode('Image', {
+  viewport.setBackgroundTextureImage(scene.constructNode('Image2D', {
     url: '../../BasicDemos/Resources/fabric-demo-gradient.png'
   }));
   
@@ -539,7 +540,7 @@ $(document).ready(function() {
   
   // create a material for all alembic content
   var materialNode = scene.constructNode('PhongTextureSimpleMaterial', {
-      diffuseTextureNode: scene.constructNode('Image', { url: '../../Alembic/Models/frog_diffuse.png' }),
+      diffuseTextureNode: scene.constructNode('Image2D', { url: '../../Alembic/Models/frog_diffuse.png' }),
       lightNode: scene.constructNode('PointLight', {
         position: new FABRIC.RT.Vec3(100, 100, 0)
       }),

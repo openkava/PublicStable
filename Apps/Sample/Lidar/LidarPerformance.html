@@ -100,7 +100,7 @@ $(document).ready(function() {
   var filesLoaded = 0;
   $('#loadingDesc').html("Downloading "+numLasFiles+" LIDAR files...<br>This may take some time (several minutes).");
 
-  viewport.setBackgroundTextureImage(scene.constructNode('Image', {
+  viewport.setBackgroundTextureImage(scene.constructNode('Image2D', {
     url: '../BasicDemos/Resources/fabric-demo-gradient.png'
   }));
 
