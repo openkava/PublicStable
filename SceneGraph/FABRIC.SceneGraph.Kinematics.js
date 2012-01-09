@@ -141,7 +141,7 @@ FABRIC.SceneGraph.registerNodeType('TransformTexture', {
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
       transformNode: undefined,
-      dynamic: undefined
+      dynamic: true
     });
     
     var textureNode = scene.constructNode('Texture', options);
@@ -179,9 +179,8 @@ FABRIC.SceneGraph.registerNodeType('TransformTexture', {
     textureNode.getRedrawEventHandler = function() { return redrawEventHandler; }
     
     var tex = FABRIC.RT.oglMatrixBuffer2D();
-    if(!options.dynamic){
-      tex.forceRefresh = false;
-    }
+    tex.forceRefresh = options.dynamic;
+      
     redrawEventHandler.addMember('oglTexture2D', 'OGLTexture2D', tex);
     redrawEventHandler.addMember('matricesTempBuffer', 'Mat44[]');
     redrawEventHandler.addMember('textureHeight', 'Size');
