@@ -2,7 +2,7 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
-use Xfo;
+use Xfo, DebugGeometry;
 
 operator solveHubRigs(
   io Xfo controllerXfoSlices<>,
@@ -17,8 +17,6 @@ operator solveHubRigs(
   PoseVariables poseVariables = poseVariableSlices[index];
   for(Integer i=0; i < hubs.size; i++){
     Hub hub = hubs[i];
-  //  pose[hub.boneId] = hubCOM * poseVariables.xfoValues[hub.xfoId];
-    
     
     if(hub.spineBoneIds.size > 0){
       if(hub.hubParentSpaceId == -1){
@@ -30,12 +28,12 @@ operator solveHubRigs(
       }
     }
     else{
-      // TODO: Re-impliment hubs with parents. This made animation pre processing more cmoplex once I added the RigRoot node.
-    //  if (bones[hub.boneId].parent == -1) 
+      if (bones[hub.boneId].parent == -1) 
         pose[hub.boneId] = controllerXfo * poseVariables.xfoValues[hub.xfoId];
-   //   else 
-   //     pose[hub.boneId] = pose[bones[hub.boneId].parent] * poseVariables.xfoValues[hub.xfoId];
+      else 
+        pose[hub.boneId] = pose[bones[hub.boneId].parent] * poseVariables.xfoValues[hub.xfoId];
     }
+    
     if(hub.spineBoneIds.size > 0){
       // Solve the spine in FK
       for(Integer j=0; j < hub.spineBoneIds.size; j++){
@@ -61,22 +59,24 @@ operator solveHubRigs(
       }
       
       // calculate the delta translation, and apply that to correct the error.
-      Vec3 hubTr = pose[hub.spineBoneIds[hub.spineBoneIds.size-1]].transformVector(bones[hub.xfoId].referenceLocalPose.tr);
+      Vec3 hubTr = pose[hub.spineBoneIds[hub.spineBoneIds.size-1]].transformVector(bones[hub.boneId].referenceLocalPose.tr);
+    
     
       Xfo spineBaseXfo = pose[bones[hub.spineBoneIds[0]].parent];
       Quat spineTrErrorCorrection;
       spineTrErrorCorrection.setFrom2Vectors((hubTr - spineBaseXfo.tr).unit(), (pose[hub.boneId].tr - spineBaseXfo.tr).unit());
       for(Integer j=0; j < hub.spineBoneIds.size; j++){
-        Integer spineBoneId = hub.spineBoneIds[j];
-        
-        Scalar weight = cos((1.0 - Scalar(j)/Scalar(hub.spineBoneIds.size) * PI)) * -0.5 + 0.5;
-        Quat adjustment = spineTrErrorCorrection.sphericalLinearInterpolate(Quat(0.0, 0.0, 0.0, 1.0), weight);
+        Integer spineBoneId = hub.spineBoneIds[j];;
+        Scalar spineRatio  = Scalar(j+1)/Scalar(hub.spineBoneIds.size+1);
+        Scalar weight = (cos(spineRatio * TWO_PI) * -1.0) + 1.0;
+        report Scalar(j+1)/Scalar(hub.spineBoneIds.size+1) + ":"+weight;
+        Quat adjustment = Quat(0.0, 0.0, 0.0, 1.0).sphericalLinearInterpolate(spineTrErrorCorrection, weight);
         pose[spineBoneId].ori = adjustment * pose[spineBoneId].ori;
         if(j > 0){
           pose[spineBoneId].tr = pose[hub.spineBoneIds[j-1]].transformVector(poseVariables.xfoValues[hub.spineBoneXfoId[j]].tr);
         }
       }
-      pose[hub.boneId].tr = pose[hub.spineBoneIds[hub.spineBoneIds.size-1]].transformVector(bones[hub.xfoId].referenceLocalPose.tr);
+      pose[hub.boneId].tr = pose[hub.spineBoneIds[hub.spineBoneIds.size-1]].transformVector(bones[hub.boneId].referenceLocalPose.tr);
     }
   }
 }
