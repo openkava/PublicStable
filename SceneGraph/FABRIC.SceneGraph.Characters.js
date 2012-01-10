@@ -1032,6 +1032,8 @@ FABRIC.SceneGraph.registerNodeType('ManipulatorAttachment', {
     dgnode.addMember('xfoIndex', 'Size', options.xfoIndex);
     dgnode.addMember('boneIndex', 'Size', options.boneIndex);
     dgnode.addMember('structIndex', 'Size', options.structIndex);
+    dgnode.addMember('extraIndex', 'Size', options.extraIndex);
+    dgnode.addMember('extraIndexArray', 'Size[]', options.extraIndexArray);
     dgnode.addMember('localXfo', 'Xfo', options.localXfo);
     dgnode.addMember('targetXfo', 'Xfo');
     dgnode.addMember('parentXfo', 'Xfo');
@@ -1104,10 +1106,15 @@ FABRIC.SceneGraph.registerNodeType('CharacterManipulator', {
     var transformNode = scene.constructNode('ManipulatorAttachment', {
       name: options.name + 'ManipulatorAttachment',
       rigNode: options.rigNode,
-      attachmentOperator: options.attachmentOperator,
+      
       xfoIndex: options.xfoIndex,
-      localXfo: options.localXfo,
+      boneIndex: options.boneIndex,
       structIndex: options.structIndex,
+      extraIndex: options.extraIndex,
+      extraIndexArray: options.extraIndexArray,
+      localXfo: options.localXfo,
+      attachmentOperator: options.attachmentOperator,
+    
       maintainInitialXfo: false
     });
     
@@ -1139,6 +1146,9 @@ FABRIC.SceneGraph.registerNodeType('CharacterManipulator', {
     manipulatorNode.getTargetNode = function() {
       return rigNode;
     };
+    manipulatorNode.getParentXfo = function() {
+      return transformNode.getParentXfo();
+    }
     manipulatorNode.getTargetXfo = function() {
       return manipulatorNode.pub.getVariableXfo();
     }

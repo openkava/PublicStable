@@ -543,24 +543,46 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('ArmSolver', {
       xfos.push(referenceLocalPose[boneIDs.wrist]);
       var xfoIds = rigNode.addVariable('Xfo[]', xfos);
       var handControlXfoId = rigNode.addVariable('Xfo', handControlXfo);
-      var ikblendId = rigNode.addVariable('Scalar', 1.0);
+      var ikblendId = rigNode.addVariable('Scalar', 0.0);
       
       var arm = new FABRIC.RT.Limb(boneIDs.bones, boneIDs.wrist, xfoIds, handControlXfoId, wristOffsetXfo, handControlXfo, ikblendId);
       arms.push(arm);
       if (options.createManipulators) {
         // add a manipulation for target and upvector
+        /*
         solver.constructManipulator(name+j+'Foot', 'XfoManipulator', {
+          baseManipulatorType: 'CharacterManipulator',
           rigNode: rigNode.pub,
           xfoIndex: handControlXfoId,
-          geometryNode: scene.pub.constructNode('Cross', { size: bones[boneIDs.wrist].length * 0.5 }),
           color: FABRIC.RT.rgb(1, 0, 0),
-          baseManipulatorType: 'CharacterManipulator',
           targetName: solver.getName()+j+'IKGoal',
           size: 1.0,
           radius: 1.0
         });
+        */
+        
+        solver.constructManipulator(name+j+'HandTr', 'ScreenTranslationManipulator', {
+          baseManipulatorType: 'CharacterManipulator',
+          rigNode: rigNode.pub,
+          xfoIndex: handControlXfoId,
+          geometryNode: scene.pub.constructNode('Sphere', { radius: bones[boneIDs.wrist].length * 0.2 }),
+          color: FABRIC.RT.rgb(1, 0, 0),
+          targetName: solver.getName()+j+'IKGoal'
+        });
+        
+        solver.constructManipulator(name+j+'HandOri', '3AxisRotationManipulator', {
+          baseManipulatorType: 'CharacterManipulator',
+          rigNode: rigNode.pub,
+          xfoIndex: handControlXfoId,
+          color: FABRIC.RT.rgb(0, 1, 0),
+          targetName: solver.getName()+j+'IKGoal',
+          radius: 0.6
+        });
+        
+    
         /*
         solver.constructManipulator(name + 'FootRotate', 'PivotRotationManipulator', {
+          baseManipulatorType: 'CharacterManipulator',
           parentNode: variablesNode.pub,
           parentMember: name + 'handControlXfo',
           radius: bones[boneIDs.wrist].length,
@@ -571,20 +593,132 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('ArmSolver', {
           color: FABRIC.RT.rgb(0, 0, 1)
         });
   
-        solver.constructManipulator(name + 'AnkleRotate', 'BoneManipulator', {
-          targetNode: variablesNode.pub,
-          targetMember: name + 'wristIKAnimationXfo',
-          parentMember: name + 'handControlXfo',
-          length: bones[boneIDs.wrist].length * 2.0,
-          boneVector: new FABRIC.RT.Vec3(-1, 0, 0),
-          color: FABRIC.RT.rgb(0, 0, 1)
+        */
+        /*
+        solver.constructManipulator(name+j+'ClavicleOri', 'BoneManipulator', {
+          baseManipulatorType: 'CharacterManipulator',
+          rigNode: rigNode.pub,
+          xfoIndex: xfoIds[0],
+          boneIndex: boneIDs.bones[0],
+          extraIndexArray: [xfoIds[0]],
+          targetName: solver.getName()+j+'Bone'+i,
+          length: bones[boneIDs.bones[0]].length,
+          boneVector: new FABRIC.RT.Vec3(1, 0, 0),
+          color: FABRIC.RT.rgb(0, 0, 1),
+          attachmentOperator:{
+            operatorName: 'calcManipulatorChainAttachmentXfo',
+            srcFile: 'FABRIC_ROOT/SceneGraph/KL/calcAttachmentXfo.kl',
+            parameterLayout: [
+              'skeleton.bones',
+              'variables.poseVariables',
+              'rig.pose',
+              'self.boneIndex',
+              'self.extraIndexArray',
+              
+              'self.localXfo',
+              'self.parentXfo',
+              'self.targetXfo',
+              'self.globalXfo'
+            ],
+            entryFunctionName: 'calcManipulatorChainAttachmentXfo'
+          }
         });
         */
+        var xfoIndexArray = [];
+        for (i = 0; i < xfoIds.length; i++) {
+          xfoIndexArray.push(xfoIds[i]);
+          /*
+          solver.constructManipulator(name+j+'Bone'+i, 'BoneManipulator', {
+            baseManipulatorType: 'CharacterManipulator',
+            rigNode: rigNode.pub,
+            xfoIndex: xfoIds[i],
+            boneIndex: boneIDs.bones[0],
+            extraIndexArray: xfoIndexArray,
+            targetName: solver.getName()+j+'Bone'+i,
+            length: bones[boneIDs.bones[i]].length,
+            boneVector: new FABRIC.RT.Vec3(1, 0, 0),
+            color: FABRIC.RT.rgb(0, 0, 1),
+            attachmentOperator:{
+              operatorName: 'calcManipulatorChainAttachmentXfo',
+              srcFile: 'FABRIC_ROOT/SceneGraph/KL/calcAttachmentXfo.kl',
+              parameterLayout: [
+                'skeleton.bones',
+                'variables.poseVariables',
+                'rig.pose',
+                'self.boneIndex',
+                'self.extraIndexArray',
+                
+                'self.localXfo',
+                'self.parentXfo',
+                'self.targetXfo',
+                'self.globalXfo'
+              ],
+              entryFunctionName: 'calcManipulatorChainAttachmentXfo'
+            }
+          });
+          */
+          if(i<2 || i==xfoIds.length-1){
+            solver.constructManipulator(name+j+'BoneOri'+i, '3AxisRotationManipulator', {
+              baseManipulatorType: 'CharacterManipulator',
+              rigNode: rigNode.pub,
+              xfoIndex: xfoIds[i],
+              boneIndex: boneIDs.bones[0],
+              extraIndexArray: xfoIndexArray,
+              targetName: solver.getName()+j+'Bone'+i,
+              radius: i==0 ? 0.3 : 0.6,
+              attachmentOperator:{
+                operatorName: 'calcManipulatorChainAttachmentXfo',
+                srcFile: 'FABRIC_ROOT/SceneGraph/KL/calcAttachmentXfo.kl',
+                parameterLayout: [
+                  'skeleton.bones',
+                  'variables.poseVariables',
+                  'rig.pose',
+                  'self.boneIndex',
+                  'self.extraIndexArray',
+                  
+                  'self.localXfo',
+                  'self.parentXfo',
+                  'self.targetXfo',
+                  'self.globalXfo'
+                ],
+                entryFunctionName: 'calcManipulatorChainAttachmentXfo'
+              }
+            });
+          }
+          else{
+            
+            solver.constructManipulator(name+j+'BoneOri'+i, 'RotationManipulator', {
+              baseManipulatorType: 'CharacterManipulator',
+              rigNode: rigNode.pub,
+              xfoIndex: xfoIds[i],
+              boneIndex: boneIDs.bones[0],
+              extraIndexArray: xfoIndexArray,
+              targetName: solver.getName()+j+'Bone'+i,
+              color: FABRIC.RT.rgb(0, 0, 0.8, 1),
+              localXfo: new FABRIC.RT.Xfo({
+                ori: new FABRIC.RT.Quat().setFromAxisAndAngle(new FABRIC.RT.Vec3(1, 0, 0), Math.HALF_PI)
+              }),
+              radius: 0.6,
+              attachmentOperator:{
+                operatorName: 'calcManipulatorChainAttachmentXfo',
+                srcFile: 'FABRIC_ROOT/SceneGraph/KL/calcAttachmentXfo.kl',
+                parameterLayout: [
+                  'skeleton.bones',
+                  'variables.poseVariables',
+                  'rig.pose',
+                  'self.boneIndex',
+                  'self.extraIndexArray',
+                  
+                  'self.localXfo',
+                  'self.parentXfo',
+                  'self.targetXfo',
+                  'self.globalXfo'
+                ],
+                entryFunctionName: 'calcManipulatorChainAttachmentXfo'
+              }
+            });
+          }
         
-        for (i = 0; i < boneIDs.bones.length; i++) {
-          
-          
-          
         }
       }
     }
@@ -610,17 +744,12 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('ArmSolver', {
         var color = FABRIC.RT.rgb(1, 0, 0);
         var storeEulerAngles = false;
         
-        
         trackSet.addXfoTrack(solver.getName()+j+'IKGoal', color, storeEulerAngles, trackBindings, arms[j].ikGoalXfoId);
-        /*
+        
         for(i=0; i<arms[j].xfoIds.length; i++){
-          if(arms[j].wristId > 0 && i==arms[j].xfoIds.length-1){
-            trackSet.addXfoTrack(solver.getName()+j+'Ankle', color, storeEulerAngles, trackBindings, arms[j].xfoIds[i]);
-          }else{
-            trackSet.addXfoTrack(solver.getName()+j+'Bone'+i, color, storeEulerAngles, trackBindings, arms[j].xfoIds[i]);
-          }
+          trackSet.addXfoTrack(solver.getName()+j+'Bone'+i, color, storeEulerAngles, trackBindings, arms[j].xfoIds[i]);
         }
-        */
+        
         trackSet.addScalarTrack(solver.getName()+j+'IKBlend', color, trackBindings, arms[j].ikblendId);
       }
     }
@@ -825,22 +954,42 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('HumanoidLegSolver', {
       var leg = new FABRIC.RT.Limb(boneIDs.bones, boneIDs.ankle, xfoIds, footControlXfoId, ankleOffsetXfo, footControlXfo, ikblendId);
       legs.push(leg);
       if (options.createManipulators) {
-        // add a manipulation for target and upvector
+        
+        /*
         solver.constructManipulator(name+j+'Foot', 'XfoManipulator', {
+          baseManipulatorType: 'CharacterManipulator',
           rigNode: rigNode.pub,
           xfoIndex: footControlXfoId,
-          geometryNode: scene.pub.constructNode('Cross', { size: bones[boneIDs.ankle].length * 0.5 }),
           color: FABRIC.RT.rgb(1, 0, 0),
-          baseManipulatorType: 'CharacterManipulator',
           targetName: solver.getName()+j+'IKGoal',
           size: 1.0,
           radius: 1.0
         });
+        */
         
-        solver.constructManipulator(name+j+'FootRotate', 'PivotRotationManipulator', {
+        solver.constructManipulator(name+j+'FootTr', 'ScreenTranslationManipulator', {
+          baseManipulatorType: 'CharacterManipulator',
           rigNode: rigNode.pub,
           xfoIndex: footControlXfoId,
+          geometryNode: scene.pub.constructNode('Sphere', { radius: bones[boneIDs.ankle].length * 0.2 }),
+          color: FABRIC.RT.rgb(1, 0, 0),
+          targetName: solver.getName()+j+'IKGoal'
+        });
+        
+        solver.constructManipulator(name+j+'FootOri', '3AxisRotationManipulator', {
           baseManipulatorType: 'CharacterManipulator',
+          rigNode: rigNode.pub,
+          xfoIndex: footControlXfoId,
+          color: FABRIC.RT.rgb(0, 1, 0),
+          targetName: solver.getName()+j+'IKGoal',
+          radius: 0.6
+        });
+        
+        
+        solver.constructManipulator(name+j+'FootRotate', 'PivotRotationManipulator', {
+          baseManipulatorType: 'CharacterManipulator',
+          rigNode: rigNode.pub,
+          xfoIndex: footControlXfoId,
           targetName: name+j+'IKGoal',
           radius: bones[boneIDs.ankle].length,
           geometryNode: scene.pub.constructNode('Rectangle', {
@@ -855,6 +1004,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('HumanoidLegSolver', {
   
         /*
         solver.constructManipulator(name + 'AnkleRotate', 'BoneManipulator', {
+          baseManipulatorType: 'CharacterManipulator',
           rigNode: rigNode.pub,
           targetMember: name + 'ankleIKAnimationXfo',
           parentMember: name + 'footControlXfo',
@@ -1001,6 +1151,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('HubSolver', {
       hubs.push(hub);
       
       if (options.createManipulators) {
+        /*
         solver.constructManipulator(name + 'Hub'+i, 'XfoManipulator', {
           baseManipulatorType: 'CharacterManipulator',
           rigNode: rigNode.pub,
@@ -1010,6 +1161,61 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('HubSolver', {
           size: 1,
           radius: 1,
           structIndex: i,
+          attachmentOperator:{
+            operatorName: 'calcHubManipulatorAttachmentXfo',
+            srcFile: 'FABRIC_ROOT/SceneGraph/KL/solveHubRig.kl',
+            entryFunctionName: 'calcHubManipulatorAttachmentXfo',
+            parameterLayout: [
+              'skeleton.bones',
+              'skeleton.hubs',
+              'rig.pose',
+              'charactercontroller.xfo',
+              'variables.poseVariables',
+              'self.structIndex',
+              'self.localXfo',
+              'self.parentXfo',
+              'self.targetXfo',
+              'self.globalXfo'
+            ]
+          }
+        });
+        */
+        
+        solver.constructManipulator(name+'HubTr'+i, 'ScreenTranslationManipulator', {
+          baseManipulatorType: 'CharacterManipulator',
+          rigNode: rigNode.pub,
+          xfoIndex: hubXfoId,
+          structIndex: i,
+          geometryNode: scene.pub.constructNode('Sphere', { radius: 0.3*(1.0/(i+1)) }),
+          color: FABRIC.RT.rgb(1, 0, 0),
+          targetName: solver.getName()+i+'Xfo',
+          attachmentOperator:{
+            operatorName: 'calcHubManipulatorAttachmentXfo',
+            srcFile: 'FABRIC_ROOT/SceneGraph/KL/solveHubRig.kl',
+            entryFunctionName: 'calcHubManipulatorAttachmentXfo',
+            parameterLayout: [
+              'skeleton.bones',
+              'skeleton.hubs',
+              'rig.pose',
+              'charactercontroller.xfo',
+              'variables.poseVariables',
+              'self.structIndex',
+              'self.localXfo',
+              'self.parentXfo',
+              'self.targetXfo',
+              'self.globalXfo'
+            ]
+          }
+        });
+        
+        solver.constructManipulator(name+'HubOri'+i, '3AxisRotationManipulator', {
+          baseManipulatorType: 'CharacterManipulator',
+          rigNode: rigNode.pub,
+          xfoIndex: hubXfoId,
+          structIndex: i,
+          color: FABRIC.RT.rgb(0, 1, 0),
+          targetName: solver.getName()+i+'Xfo',
+          radius: 0.6,
           attachmentOperator:{
             operatorName: 'calcHubManipulatorAttachmentXfo',
             srcFile: 'FABRIC_ROOT/SceneGraph/KL/solveHubRig.kl',
