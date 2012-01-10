@@ -144,7 +144,7 @@ function applyFishingRod(
 
     // Subtract off the current angle the bone has with the vecToTarget to keep the delta
     Scalar deltaBoneAngle = (fkBoneAngle - ikBoneAngle);
-    report "deltaBoneAngle:"+deltaBoneAngle;
+    
     deltaBoneAngle = applySoftLimitBezierCurve(
       deltaBoneAngle,
       maxDeltaBoneAngle,
