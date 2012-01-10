@@ -15,6 +15,38 @@ function Scalar sq(Scalar v) {
 
 function Scalar applySoftLimitBezierCurve(
   Scalar val,
+  Scalar maxVal,
+  Vec2 maxValSoftening
+) {
+  //  report( "applySoftLimitBezierCurve val: " + val + " minVal: " + minVal + " minValSoftening: " + minValSoftening + " maxVal: " + maxVal + " maxValSoftening: " + maxValSoftening );
+
+  BezierKeyframe key1, key2;
+
+  if (val > (maxVal - maxValSoftening.x)) {
+    if (val > (maxVal + maxValSoftening.y)) {
+      return maxVal;
+    }
+
+    key1.time = maxVal - maxValSoftening.x;
+    key1.value = maxVal - maxValSoftening.x;
+    key1.outtangent.x = maxValSoftening.x * 0.5;
+    key1.outtangent.y = maxValSoftening.x * 0.5;
+
+    key2.time = maxVal + maxValSoftening.y;
+    key2.value = maxVal;
+    key2.intangent.x = maxValSoftening.y * - 0.5;
+    key2.intangent.y = 0;
+
+    return key1.interpolate(key2, val);
+  }
+  else {
+    return val;
+  }
+}
+
+
+function Scalar applySoftClampBezierCurve(
+  Scalar val,
   Scalar minVal,
   Vec2 minValSoftening,
   Scalar maxVal,
@@ -64,7 +96,6 @@ function Scalar applySoftLimitBezierCurve(
 }
 
 
-
 function applyFishingRod(
   io Xfo boneXfo,
   in Scalar boneLength,
@@ -90,7 +121,7 @@ function applyFishingRod(
   boneLengthVector = boneXfo.ori.rotateVector(boneLocalAxis);
   distBoneTipToTarget = (boneXfo.tr + (boneLengthVector * boneLength)).distanceTo(target.tr);
 
-  newDistBoneTipToTarget = applySoftLimitBezierCurve(
+  newDistBoneTipToTarget = applySoftClampBezierCurve(
     distBoneTipToTarget,
     minLineLength,
     minLineLengthSoftening,
@@ -116,8 +147,6 @@ function applyFishingRod(
     report "deltaBoneAngle:"+deltaBoneAngle;
     deltaBoneAngle = applySoftLimitBezierCurve(
       deltaBoneAngle,
-      0.0,
-      Vec2(0.0, 0.0),
       maxDeltaBoneAngle,
       Vec2(maxDeltaBoneAngle-maxDeltaBoneAngleSoftening, maxDeltaBoneAngle+maxDeltaBoneAngleSoftening)
     );
