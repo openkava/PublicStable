@@ -549,7 +549,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('ArmSolver', {
       arms.push(arm);
       if (options.createManipulators) {
         // add a manipulation for target and upvector
-        /*
+        
         solver.constructManipulator(name+j+'Foot', 'XfoManipulator', {
           baseManipulatorType: 'CharacterManipulator',
           rigNode: rigNode.pub,
@@ -557,10 +557,10 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('ArmSolver', {
           color: FABRIC.RT.rgb(1, 0, 0),
           targetName: solver.getName()+j+'IKGoal',
           size: 1.0,
-          radius: 1.0
+          radius: 0.6,
+          screenTranslationManipulators: true
         });
-        */
-        
+        /*
         solver.constructManipulator(name+j+'HandTr', 'ScreenTranslationManipulator', {
           baseManipulatorType: 'CharacterManipulator',
           rigNode: rigNode.pub,
@@ -579,6 +579,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('ArmSolver', {
           radius: 0.6
         });
         
+        */
     
         /*
         solver.constructManipulator(name + 'FootRotate', 'PivotRotationManipulator', {

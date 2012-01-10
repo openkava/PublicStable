@@ -679,7 +679,8 @@ FABRIC.SceneGraph.registerNodeType('RotationManipulator', {
         rotateRate: 0.35,
         radius: 15,
         name: 'RotationManipulator',
-        baseManipulatorType: 'InstanceManipulator'
+        baseManipulatorType: 'InstanceManipulator',
+        xfoFilter: { ori:true }
       });
     if(!options.geometryNode){ 
       options.geometryNode = scene.pub.constructNode('Circle', { radius: options.radius });
@@ -760,14 +761,16 @@ FABRIC.SceneGraph.registerNodeType('3AxisRotationManipulator', {
         localXfo: options.localXfo.multiply(new FABRIC.RT.Xfo({
           ori: new FABRIC.RT.Quat().setFromAxisAndAngle(new FABRIC.RT.Vec3(0, 0, 1), -Math.HALF_PI)
         })),
-        geometryNode: circle
+        geometryNode: circle,
+        xfoFilter: { ori:{ x: true } }
       }, true));
 
     var yaxisGizmoNode = scene.pub.constructNode('RotationManipulator', scene.cloneObj(options, {
         name: name + 'YAxis',
         color: FABRIC.RT.rgb(0, 0.8, 0, 1),
         localXfo: options.localXfo,
-        geometryNode: circle
+        geometryNode: circle,
+        xfoFilter: { ori:{ y: true } }
       }, true));
     
     var zaxisGizmoNode = scene.pub.constructNode('RotationManipulator', scene.cloneObj(options, {
@@ -776,7 +779,8 @@ FABRIC.SceneGraph.registerNodeType('3AxisRotationManipulator', {
         localXfo: options.localXfo.multiply(new FABRIC.RT.Xfo({
           ori: new FABRIC.RT.Quat().setFromAxisAndAngle(new FABRIC.RT.Vec3(1, 0, 0), Math.HALF_PI)
         })),
-        geometryNode: circle
+        geometryNode: circle,
+        xfoFilter: { ori:{ z: true } }
       }, true));
     
     return threeAxisRotationManipulator;
@@ -793,7 +797,8 @@ FABRIC.SceneGraph.registerNodeType('LinearTranslationManipulator', {
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
         size: 20,
-        name: 'LinearTranslationManipulator'
+        name: 'LinearTranslationManipulator',
+        xfoFilter: { tr:true }
       });
     if (!options.geometryNode) {
       options.geometryNode = scene.pub.constructNode('LineVector', { to: new FABRIC.RT.Vec3(0, options.size, 0) });
@@ -890,7 +895,8 @@ FABRIC.SceneGraph.registerNodeType('ScreenTranslationManipulator', {
         radius: 0.5,
         name: 'ScreenTranslationManipulator',
         drawOverlaid: true,
-        baseManipulatorType: 'InstanceManipulator'
+        baseManipulatorType: 'InstanceManipulator',
+        xfoFilter: { tr: true }
       });
 
     if (!options.geometryNode) {
@@ -932,7 +938,7 @@ FABRIC.SceneGraph.registerNodeType('3AxisTranslationManipulator', {
   optionsDesc: {
     trackRate: 'The rate of translation in relation to mouse move units.',
     size: 'The size of the linear and planar primitives of the Manipulator',
-    name: 'The name of the 3 axis translation Manipulator.',
+    name: 'The name of the 3 axis translation Manipulator.'
   },
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
@@ -941,7 +947,10 @@ FABRIC.SceneGraph.registerNodeType('3AxisTranslationManipulator', {
         name: 'threeAxisTrans',
         localXfo: new FABRIC.RT.Xfo({
           ori: new FABRIC.RT.Quat().setFromAxisAndAngle(new FABRIC.RT.Vec3(0, 0, 1), -Math.HALF_PI)
-        })
+        }),
+        linearTranslationManipulators: false,
+        planarTranslationManipulators: false,
+        screenTranslationManipulators: false
       });
     
     var threeAxisTranslationManipulator = scene.constructNode('SceneGraphNode', options);
@@ -953,63 +962,38 @@ FABRIC.SceneGraph.registerNodeType('3AxisTranslationManipulator', {
     });
   //  var arrowHead = scene.pub.constructNode('Cone', { radius: options.size * 0.04, height: options.size * 0.2 });
 
-    scene.pub.constructNode('LinearTranslationManipulator', scene.cloneObj(options, {
+    if(options.linearTranslationManipulators){
+      scene.pub.constructNode('LinearTranslationManipulator', scene.cloneObj(options, {
         name: name + '_XAxis',
         color: FABRIC.RT.rgb(0.8, 0, 0, 1),
         localXfo: options.localXfo.multiply(new FABRIC.RT.Xfo({
           ori: new FABRIC.RT.Quat().setFromAxisAndAngle(new FABRIC.RT.Vec3(0, 0, 1), -Math.HALF_PI)
         })),
-        geometryNode: lineVector
+        geometryNode: lineVector,
+        xfoFilter: { tr:{ x: true } }
       }));
-    /*
-    scene.pub.constructNode('LinearTranslationManipulator', scene.cloneObj(options, {
-        name: name + '_XAxisArrowHead',
-        color: FABRIC.RT.rgb(0.8, 0, 0, 1),
-        localXfo: new FABRIC.RT.Xfo({
-          ori: new FABRIC.RT.Quat().setFromAxisAndAngle(new FABRIC.RT.Vec3(0, 0, 1), -Math.HALF_PI),
-          tr: new FABRIC.RT.Vec3(options.size, 0, 0)
-        }),
-        geometryNode: arrowHead
-      }, true));
-    */
-    scene.pub.constructNode('LinearTranslationManipulator', scene.cloneObj(options, {
+      scene.pub.constructNode('LinearTranslationManipulator', scene.cloneObj(options, {
         name: name + '_YAxis',
         color: FABRIC.RT.rgb(0, 0.8, 0),
         localXfo: options.localXfo,
-        geometryNode: lineVector
+        geometryNode: lineVector,
+        xfoFilter: { tr:{ y: true } }
       }));
-    /*
-    scene.pub.constructNode('LinearTranslationManipulator', scene.cloneObj(options, {
-        name: name + '_YAxisArrowHead',
-        color: FABRIC.RT.rgb(0, 0.8, 0),
-        localXfo: new FABRIC.RT.Xfo({
-          tr: new FABRIC.RT.Vec3(0, options.size, 0)
-        }),
-        geometryNode: arrowHead
-      }, true));
-    */
-    scene.pub.constructNode('LinearTranslationManipulator', scene.cloneObj(options, {
+      scene.pub.constructNode('LinearTranslationManipulator', scene.cloneObj(options, {
         name: name + '_ZAxis',
         color: FABRIC.RT.rgb(0, 0, 0.8),
         localXfo: options.localXfo.multiply(new FABRIC.RT.Xfo({
           ori: new FABRIC.RT.Quat().setFromAxisAndAngle(new FABRIC.RT.Vec3(1, 0, 0), Math.HALF_PI)
         })),
-        geometryNode: lineVector
+        geometryNode: lineVector,
+        xfoFilter: { tr:{ z: true } }
       }));
-    /*
-    scene.pub.constructNode('LinearTranslationManipulator', scene.cloneObj(options, {
-        name: name + '_ZAxisArrowHead',
-        color: FABRIC.RT.rgb(0, 0, 0.8),
-        localXfo: new FABRIC.RT.Xfo({
-          ori: new FABRIC.RT.Quat().setFromAxisAndAngle(new FABRIC.RT.Vec3(1, 0, 0), Math.HALF_PI),
-          tr: new FABRIC.RT.Vec3(0, 0, options.size)
-        }),
-        geometryNode: arrowHead
-      }, true));
-    */
+    }
+    
+    if(options.planarTranslationManipulators){
     var drawTriangle = scene.pub.constructNode('Triangles');
     var planeSize = options.size * 0.3;
-    drawTriangle.loadGeometryData({
+      drawTriangle.loadGeometryData({
         positions: [
           new FABRIC.RT.Vec3(-planeSize, -planeSize, -planeSize), new FABRIC.RT.Vec3(-planeSize, -planeSize, planeSize),
           new FABRIC.RT.Vec3(planeSize, -planeSize, -planeSize), new FABRIC.RT.Vec3(planeSize, -planeSize, planeSize),
@@ -1020,29 +1004,39 @@ FABRIC.SceneGraph.registerNodeType('3AxisTranslationManipulator', {
                   6, 5, 4, 7, 5, 6]
       });
 
-    scene.pub.constructNode('PlanarTranslationManipulator', scene.cloneObj(options, {
+      scene.pub.constructNode('PlanarTranslationManipulator', scene.cloneObj(options, {
         name: name + '_YZPlane',
         color: FABRIC.RT.rgb(0.8, 0, 0, 1),
         localXfo: options.localXfo.multiply(new FABRIC.RT.Xfo({
           ori: new FABRIC.RT.Quat().setFromAxisAndAngle(new FABRIC.RT.Vec3(0, 0, 1), Math.HALF_PI)
         })),
-        geometryNode: drawTriangle
+        geometryNode: drawTriangle,
+        xfoFilter: { tr:{ y: true, z: true } }
       }));
-    scene.pub.constructNode('PlanarTranslationManipulator', scene.cloneObj(options, {
+      scene.pub.constructNode('PlanarTranslationManipulator', scene.cloneObj(options, {
         name: name + '_XZPlane',
         color: FABRIC.RT.rgb(0, 0.8, 0, 1),
         localXfo: options.localXfo,
-        geometryNode: drawTriangle
+        geometryNode: drawTriangle,
+        xfoFilter: { tr:{ x: true, z: true } }
       }));
-    scene.pub.constructNode('PlanarTranslationManipulator', scene.cloneObj(options, {
+      scene.pub.constructNode('PlanarTranslationManipulator', scene.cloneObj(options, {
         name: name + '_XYPlane',
         color: FABRIC.RT.rgb(0, 0, 0.8, 1),
         localXfo: options.localXfo.multiply(new FABRIC.RT.Xfo({
           ori: new FABRIC.RT.Quat().setFromAxisAndAngle(new FABRIC.RT.Vec3(1, 0, 0), -Math.HALF_PI)
         })),
-        geometryNode: drawTriangle
+        geometryNode: drawTriangle,
+        xfoFilter: { tr:{ x: true, y: true } }
       }));
-    
+    }
+    if(options.screenTranslationManipulators){
+      scene.pub.constructNode('ScreenTranslationManipulator', scene.cloneObj(options, {
+        name: name + '_Screen',
+        color: FABRIC.RT.rgb(1, 0, 0, 1),
+        radius: options.radius * 0.2
+      }));
+    }
     return threeAxisTranslationManipulator;
   }});
 
@@ -1085,7 +1079,8 @@ FABRIC.SceneGraph.registerNodeType('PivotRotationManipulator', {
         rotateRate: 0.35,
         radius: 15,
         name: 'RotationManipulator',
-        baseManipulatorType: 'InstanceManipulator'
+        baseManipulatorType: 'InstanceManipulator',
+        xfoFilter: { tr: true, ori: true }
       });
 
     if(!options.geometryNode){
@@ -1179,7 +1174,8 @@ FABRIC.SceneGraph.registerNodeType('BoneManipulator', {
         childManipulator: undefined,
         length: 35,
         boneVector: new FABRIC.RT.Vec3(1, 0, 0),
-        baseManipulatorType: 'InstanceManipulator'
+        baseManipulatorType: 'InstanceManipulator',
+        xfoFilter: { ori: true }
       });
     
     options.geometryNode = scene.pub.constructNode('LineVector', { to: options.boneVector.multiplyScalar(options.length) });

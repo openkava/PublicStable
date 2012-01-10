@@ -458,7 +458,7 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
         throw 'Unhandled type:' + val;
       }
     }
-    characterVariablesNode.setValue = function(value, index) {
+    characterVariablesNode.setValue = function(value, index, xfoTrackFilter) {
       var type = (typeof value == 'number') ? 'Number' : value.getType();
     //  if(!boundToAnimationTracks){
         var poseVariables = characterVariablesNode.getVariables();
@@ -491,14 +491,17 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
           throw "Binding not found";
         }
         var binding, values;
+        var trackIds;
         switch(type){
         case 'Number':
           binding = findBinding(m_keyframeTrackBindings.scalarBindings);
           values = [value];
+          trackIds = binding.trackIds;
           break;
         case 'FABRIC.RT.Vec3':
           binding = findBinding(m_keyframeTrackBindings.vec3Bindings);
           values = [value.x, value.y, value.z];
+          trackIds = binding.trackIds;
           break;
         case 'FABRIC.RT.Quat':
           binding = findBinding(m_keyframeTrackBindings.quatBindings);
@@ -509,21 +512,45 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
           }else if(binding.trackIds.length == 4){
             values = [value.w, value.x, value.y, value.z];
           }
+          trackIds = binding.trackIds;
           break;
         case 'FABRIC.RT.Xfo':
           binding = findBinding(m_keyframeTrackBindings.xfoBindings);
+          trackIds = binding.trackIds;
           if(binding.trackIds.length == 6){
             var euler = new FABRIC.RT.Euler();
             euler.setFromQuat(value.ori);
             values = [value.tr.x, value.tr.y, value.tr.z, euler.x, euler.y, euler.z];
           }else if(binding.trackIds.length == 7){
-            values = [value.tr.x, value.tr.y, value.tr.z, value.ori.v.x, value.ori.v.y, value.ori.v.z, value.ori.w];
+            
+            if(xfoTrackFilter){
+              var filteredValues = [];
+              var filteredTrackIds = [];
+              if(xfoTrackFilter.tr){
+                filteredValues = [value.tr.x, value.tr.y, value.tr.z];
+                filteredTrackIds = [trackIds[0], trackIds[1], trackIds[2]]
+              }
+              if(xfoTrackFilter.ori){
+                filteredValues = filteredValues.concat([value.ori.v.x, value.ori.v.y, value.ori.v.z, value.ori.w]);
+                filteredTrackIds = filteredTrackIds.concat([trackIds[3], trackIds[4], trackIds[5], trackIds[6]]);
+              }
+              if(xfoTrackFilter.sc){
+                filteredValues = [value.sc.x, value.sc.y, value.sc.z];
+                filteredTrackIds = [trackIds[6], trackIds[7], trackIds[8]]
+              }
+              values = filteredValues;
+              trackIds = filteredTrackIds;
+            }
+            else{
+              values = [value.tr.x, value.tr.y, value.tr.z, value.ori.v.x, value.ori.v.y, value.ori.v.z, value.ori.w];
+              trackIds = binding.trackIds;
+            }
           }
           break;
         default:
           throw 'Unhandled type:' + val;
         }
-        m_animationLibraryNode.pub.setValues(m_trackSetId, m_animationControllerNode.pub.getTime(), binding.trackIds, values);
+        m_animationLibraryNode.pub.setValues(m_trackSetId, m_animationControllerNode.pub.getTime(), trackIds, values);
       }
     }
     characterVariablesNode.setValues = function(values, indices) {
@@ -1102,6 +1129,7 @@ FABRIC.SceneGraph.registerNodeType('CharacterManipulator', {
     // get the target node (the one we are manipulating)
     var rigNode = options.rigNode;
     var xfoIndex = options.xfoIndex;
+    var xfoTrackFilter = options.xfoFilter;
 
     var transformNode = scene.constructNode('ManipulatorAttachment', {
       name: options.name + 'ManipulatorAttachment',
@@ -1139,7 +1167,7 @@ FABRIC.SceneGraph.registerNodeType('CharacterManipulator', {
     manipulatorNode.pub.setVariableXfo = function(val) {
       var parentXfo = transformNode.getParentXfo();
       val = parentXfo.inverse().multiply(val);
-      variablesNode.setValue(val, xfoIndex);
+      variablesNode.setValue(val, xfoIndex, xfoTrackFilter);
     };
     
     ///////////////////////////////////////////////////////////
