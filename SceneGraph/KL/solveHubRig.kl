@@ -69,7 +69,6 @@ operator solveHubRigs(
         Integer spineBoneId = hub.spineBoneIds[j];;
         Scalar spineRatio  = Scalar(j+1)/Scalar(hub.spineBoneIds.size+1);
         Scalar weight = (cos(spineRatio * TWO_PI) * -1.0) + 1.0;
-        report Scalar(j+1)/Scalar(hub.spineBoneIds.size+1) + ":"+weight;
         Quat adjustment = Quat(0.0, 0.0, 0.0, 1.0).sphericalLinearInterpolate(spineTrErrorCorrection, weight);
         pose[spineBoneId].ori = adjustment * pose[spineBoneId].ori;
         if(j > 0){
