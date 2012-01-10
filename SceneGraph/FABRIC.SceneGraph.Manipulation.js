@@ -1084,7 +1084,8 @@ FABRIC.SceneGraph.registerNodeType('PivotRotationManipulator', {
     scene.assignDefaults(options, {
         rotateRate: 0.35,
         radius: 15,
-        name: 'RotationManipulator'
+        name: 'RotationManipulator',
+        baseManipulatorType: 'InstanceManipulator'
       });
 
     if(!options.geometryNode){
@@ -1092,7 +1093,7 @@ FABRIC.SceneGraph.registerNodeType('PivotRotationManipulator', {
         scene.pub.constructNode('Circle', { radius: options.radius });
     }
 
-    var manipulatorNode = scene.constructNode('InstanceManipulator', options);
+    var manipulatorNode = scene.constructNode(options.baseManipulatorType, options);
 
     var viewportNode;
     var dragStartXFo, vec1, ray1, ray2, planePoint, planeNormal, hitPoint1;
@@ -1177,13 +1178,14 @@ FABRIC.SceneGraph.registerNodeType('BoneManipulator', {
         parentManipulator: undefined,
         childManipulator: undefined,
         length: 35,
-        boneVector: new FABRIC.RT.Vec3(1, 0, 0)
+        boneVector: new FABRIC.RT.Vec3(1, 0, 0),
+        baseManipulatorType: 'InstanceManipulator'
       });
     
     options.geometryNode = scene.pub.constructNode('LineVector', { to: options.boneVector.multiplyScalar(options.length) });
     options.compensation = false;
     
-    var manipulatorNode = scene.constructNode('InstanceManipulator', options),
+    var manipulatorNode = scene.constructNode(options.baseManipulatorType, options),
       parentManipulator = options.parentManipulator,
       childManipulator = options.childManipulator,
       viewportNode,
