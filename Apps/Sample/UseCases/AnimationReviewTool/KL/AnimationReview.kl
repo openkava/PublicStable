@@ -38,7 +38,7 @@ operator setFramePixels(
   io RGBA frameColor,
   io Size width,
   io Size height,
-  io RGBA pixels[]
+  io RGBA pixels<>
 ) {
   var RGBA color; 
   color.r = color.g = color.b = color.a = 0; 
@@ -61,7 +61,7 @@ operator paintPixels(
   io Scalar paintRadius,
   io Size width,
   io Size height,
-  io RGBA pixels[],
+  io RGBA pixels<>,
   io Color uvs[],
   io Color prevUvs[]
 ) {

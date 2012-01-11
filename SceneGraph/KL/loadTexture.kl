@@ -6,50 +6,62 @@ use OGLTexture2D;
 use OGLShaderProgram;
 use Xfo;
 use Mat44;
+use PIXELFORMAT;
 
-operator loadImageHDR(
+operator loadImagePIXELFORMAT(
   io FabricResource resource,
   io Size imageWidth,
   io Size imageHeight,
-  io Color imageHDR[],
+  io PIXELFORMAT bitmap[],
+  io Size newCount
 ) {
-  decodeHDRImageData(resource, imageWidth, imageHeight, imageHDR);
+  if(resource.data.size() > 0)
+  {
+    decodePIXELFORMATImageData(resource, imageWidth, imageHeight, bitmap);
+    newCount = bitmap.size();
+    resource.data.resize(0);
+  }
 }
 
-operator loadImageLDR(
-  io FabricResource resource,
-  io Size imageWidth,
-  io Size imageHeight,
-  io RGBA imageLDR[],
+operator sliceImagePIXELFORMAT(
+  in Size index,
+  io PIXELFORMAT bitmap[],
+  io PIXELFORMAT pixel
 ) {
-  decodeLDRImageData(resource, imageWidth, imageHeight, imageLDR);
+  if(bitmap.size() > 0)
+    pixel = bitmap[index];
 }
 
-operator bindTextureLDR(
+operator clearImagePIXELFORMAT(
+  io PIXELFORMAT bitmap[]
+) {
+  bitmap.resize(0);
+}
+
+operator bindTexturePIXELFORMAT(
   io Size width,
   io Size height,
-  io RGBA bitmap[],
+  io PIXELFORMAT bitmap<>,
   io OGLTexture2D oglTexture2D,
   io Integer textureUnit
 ) {
-//  report("createTextureFromImageLDR -> textureUnit:" + textureUnit + " bufferID:" + bufferID );
-  oglTexture2D.bindImageLDR(width, height, bitmap, textureUnit);
+  oglTexture2D.bindImage(width, height, bitmap.data(), bitmap.size(), textureUnit);
 }
 
 // This operator takes a resource, decodes it, and immediately
 // uploads it to the GPU. This simplifies the graph, because 
 // a node is not created to store the data in main memory. 
-operator loadAndBindTextureLDR(
+operator loadAndBindTexturePIXELFORMAT(
   io FabricResource resource,
   io OGLTexture2D oglTexture2D,
   io Integer textureUnit
 ) {
-//  report("loadAndBindTextureLDR -> textureUnit:" + textureUnit);
+//  report("loadAndBindTexturePIXELFORMAT -> textureUnit:" + textureUnit);
   if((oglTexture2D.bufferID == 0 || oglTexture2D.forceRefresh) && resource.data.size() != 0){
     Size width, height;
-    RGBA imageLDR[];
-    if(decodeLDRImageData(resource, width, height, imageLDR)){
-      oglTexture2D.bindImageLDR(width, height, imageLDR, textureUnit);
+    PIXELFORMAT bitmap[];
+    if(decodePIXELFORMATImageData(resource, width, height, bitmap)){
+      oglTexture2D.bindImage(width, height, bitmap.data(), bitmap.size(), textureUnit);
     }
   }
   else{
@@ -58,22 +70,32 @@ operator loadAndBindTextureLDR(
   }
 }
 
-operator bindTextureHDR(
-  io Size width,
-  io Size height,
-  io Color bitmap[],
-  io OGLTexture2D oglTexture2D,
-  io Integer textureUnit
-) {
-  oglTexture2D.bindImageHDR(width, height, bitmap, textureUnit);
-}
-
 operator unbindTextures(
   io Size numTextures
 ){
   for(Integer i=0; i<numTextures; i++){
     glActiveTexture(GL_TEXTURE0 + i);
     glBindTexture(GL_TEXTURE_2D, 0);
+  }
+}
+
+operator resizeImagePIXELFORMAT(
+  io Size width,
+  io Size height,
+  io Size newCount
+) {
+  newCount = width * height;
+}
+
+operator initImageFromPIXELFORMAT(
+  io PIXELFORMAT color,
+  io Boolean initiated,
+  io PIXELFORMAT pixels<>
+) {
+  if(!initiated) {
+    for(var Size i=0;i<pixels.size();i++)
+      pixels[i] = color;
+    initiated = true;
   }
 }
 
@@ -138,20 +160,5 @@ operator createErrorTexture(
   else {
     glActiveTexture(GL_TEXTURE0 + textureUnit);
     glBindTexture(GL_TEXTURE_2D, bufferID);
-  }
-}
-
-operator initImageFromColor(
-  io Size width,
-  io Size height,
-  io RGBA color,
-  io RGBA pixels[],
-  io Boolean initiated
-) {
-  if(!initiated) {
-    pixels.resize(width * height);
-    for(var Size i=0;i<pixels.size();i++)
-      pixels[i] = color;
-    initiated = true;
   }
 }

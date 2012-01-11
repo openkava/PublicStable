@@ -365,7 +365,7 @@ FABRIC.SceneGraph.registerNodeType('Material', {
           return textureNode.pub;
         };
         var setTextureFn = function(node) {
-          if (!node.isTypeOf('Texture')) {
+          if (!node.isTypeOf('Image')) {
             throw ('Incorrect type assignment. Must assign a Texture');
           }
           textureNode = scene.getPrivateInterface(node);
@@ -393,6 +393,7 @@ FABRIC.SceneGraph.registerNodeType('Material', {
         operatorName: 'unbindTextures',
         srcFile: 'FABRIC_ROOT/SceneGraph/KL/loadTexture.kl',
         entryFunctionName: 'unbindTextures',
+        preProcessorDefinitions: { PIXELFORMAT: 'RGBA' },
         parameterLayout: [
           'self.numTextures'
         ]
