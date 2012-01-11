@@ -1170,6 +1170,12 @@ FABRIC.SceneGraph.registerNodeType('CharacterManipulator', {
       variablesNode.setValue(val, xfoIndex, xfoTrackFilter);
     };
     
+    
+    manipulatorNode.pub.addEventListener('mousedblclick_geom', function(evt) {
+      // if the manipulator gets double-clicked on, we create a keyframe in place. 
+      variablesNode.setValue(variablesNode.getValue('FABRIC.RT.Xfo', xfoIndex), xfoIndex, xfoTrackFilter);
+    });
+    
     ///////////////////////////////////////////////////////////
     manipulatorNode.getTargetNode = function() {
       return rigNode;
