@@ -66,7 +66,7 @@ $(document).ready(function() {
     windowElement: document.getElementById('FabricContainer'),
   });
   
-  viewport.setBackgroundTextureImage(scene.constructNode('Image', {
+  viewport.setBackgroundTextureImage(scene.constructNode('Image2D', {
     url: 'Resources/fabric-demo-gradient.png'
   }));
   
@@ -84,7 +84,7 @@ $(document).ready(function() {
   var light = scene.constructNode('PointLight', { position: new FABRIC.RT.Vec3(420.0, 1000.0, 600.0) });
   var assetNodes = scene.importAssetFile('Models/bricks.dae');
   
-  var depthTexture = scene.constructNode('Image', { url: 'Resources/bricks_depth.png' });
+  var depthTexture = scene.constructNode('Image2D', { url: 'Resources/bricks_depth.png' });
   
   var tesselationMaterial = scene.constructNode('PhongTesselationMaterial', {
     color: FABRIC.RT.rgb(0.7, 0.7, 0.7, 1),
