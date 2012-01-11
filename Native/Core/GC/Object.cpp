@@ -68,5 +68,15 @@ namespace Fabric
         container->disposeObject( m_id, this );
       }
     }
+        
+    void Object::jsonNotify(
+      char const *cmdData,
+      size_t cmdLength,
+      Util::SimpleString const *argJSON
+      )
+    {
+      if ( m_container )
+        m_container->jsonNotify( m_id, cmdData, cmdLength, argJSON );
+    }
   }
 }

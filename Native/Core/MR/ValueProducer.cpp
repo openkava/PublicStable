@@ -4,6 +4,8 @@
  
 #include <Fabric/Core/MR/ValueProducer.h>
 #include <Fabric/Core/RT/Desc.h>
+#include <Fabric/Core/MT/Impl.h>
+#include <Fabric/Core/Util/JSONGenerator.h>
 
 #include <alloca.h>
 #include <string.h>
@@ -31,6 +33,46 @@ namespace Fabric
       produce( valueData );
       valueDesc->generateJSON( valueData, jg );
       valueDesc->disposeData( valueData );
+    }
+    
+    struct ProduceJSONAsyncCallbackData
+    {
+      RC::Handle<ValueProducer::ComputeState> computeState;
+      Util::JSONObjectGenerator *jsonObjectGenerator;
+    };
+
+    void ValueProducer::ComputeState::produceJSONAsync(
+      Util::JSONObjectGenerator &jsonObjectGenerator,
+      void (*finishedCallback)( void * ),
+      void *finishedUserdata
+      )
+    {
+      ProduceJSONAsyncCallbackData *produceJSONAsyncCallbackData = new ProduceJSONAsyncCallbackData;
+      produceJSONAsyncCallbackData->computeState = this;
+      produceJSONAsyncCallbackData->jsonObjectGenerator = &jsonObjectGenerator;
+      
+      MT::ThreadPool::Instance()->executeParallelAsync(
+        MT::tlsLogCollector.get(),
+        1,
+        &ValueProducer::ComputeState::ProduceJSONAsyncCallback,
+        produceJSONAsyncCallbackData,
+        MT::ThreadPool::Idle,
+        finishedCallback,
+        finishedUserdata
+        );
+    }
+    
+    void ValueProducer::ComputeState::ProduceJSONAsyncCallback(
+      void *userdata,
+      size_t index
+      )
+    {
+      ProduceJSONAsyncCallbackData *produceJSONAsyncCallbackData = static_cast<ProduceJSONAsyncCallbackData *>( userdata );
+      {
+        Util::JSONGenerator jg = produceJSONAsyncCallbackData->jsonObjectGenerator->makeMember( "result" );
+        produceJSONAsyncCallbackData->computeState->produceJSON( jg );
+      }
+      delete produceJSONAsyncCallbackData;
     }
   };
 };
