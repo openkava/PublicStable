@@ -20,6 +20,7 @@ FABRIC.RT.BezierKeyframe = function(time, value, intan, outtan) {
   this.outtangent = (outtan &&
     outtan.getType &&
     outtan.getType() === 'FABRIC.RT.Vec2') ? outtan : new FABRIC.RT.Vec2(0.333, 0);
+  this.flags = 0;
 };
 
 FABRIC.RT.BezierKeyframe.prototype = {
@@ -45,7 +46,7 @@ FABRIC.RT.BezierKeyframe.prototype = {
 FABRIC.appendOnCreateContextCallback(function(context) {
   context.RegisteredTypesManager.registerType('BezierKeyframe', {
     members: {
-      time: 'Scalar', value: 'Scalar', intangent: 'Vec2', outtangent: 'Vec2'
+      time: 'Scalar', value: 'Scalar', intangent: 'Vec2', outtangent: 'Vec2', flags: 'Integer'
     },
     constructor: FABRIC.RT.BezierKeyframe,
     klBindings: {
@@ -72,6 +73,9 @@ FABRIC.RT.BezierKeyframeTrack.prototype = {
     return new FABRIC.RT.BezierKeyframe(value, time, intan, outtan);
   },
   autoTangents: function(keyIndex, autoTangentsLeftandRight){
+    if(this.keys[keyIndex].flags !== 0){
+      return;
+    }
     var numKeys = this.keys.length;
     var intan, outtan, intdelta, outtdelta, inGradient = 0.0, outGradient = 0.0;
     var prevkey, nextkey, key = this.keys[keyIndex];
@@ -136,6 +140,38 @@ FABRIC.RT.BezierKeyframeTrack.prototype = {
         numKeys = this.keys.length;
       }
       this.autoTangents(keyIndex);
+    }
+  },
+  setInTangentValue: function(keyIndex, value, breakHandles) {
+    if(keyIndex > 0){
+      var deltat = this.keys[keyIndex-1].time - this.keys[keyIndex].time;
+      if(value.x < deltat){
+        value.x = deltat;
+      }
+    }
+    if(value.x > 0){
+      value.x = 0;
+    }
+    this.keys[keyIndex].intangent = value;
+    this.keys[keyIndex].flags = 1;
+    if(!breakHandles && keyIndex < this.keys.length-1){
+      this.keys[keyIndex].outtangent.y = (value.y / value.x) * this.keys[keyIndex].outtangent.x;
+    }
+  },
+  setOutTangentValue: function(keyIndex, value, breakHandles) {
+    if(keyIndex < this.keys.length - 1){
+      var deltat = this.keys[keyIndex+1].time - this.keys[keyIndex].time;
+      if(value.x > deltat){
+        value.x = deltat;
+      }
+    }
+    if(value.x < 0){
+      value.x = 0;
+    }
+    this.keys[keyIndex].outtangent = value;
+    this.keys[keyIndex].flags = 1;
+    if(!breakHandles && keyIndex < this.keys.length-1){
+      this.keys[keyIndex].intangent.y = (value.y / value.x) * this.keys[keyIndex].intangent.x;
     }
   },
   moveKey: function(keyIndex, time, value){

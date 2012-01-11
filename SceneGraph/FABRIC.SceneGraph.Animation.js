@@ -627,9 +627,9 @@ FABRIC.SceneGraph.registerNodeType('TrackDisplay', {
     trackDisplayNode.pub.getTimeRange = function(timeRange) {
       return parametersdgnode.getData('timeRange');
     };
-    trackDisplayNode.pub.getCurveData = function() {
+    trackDisplayNode.pub.getCurveData = function(trackIndex) {
       dgnode.evaluate();
-      return dgnode.getBulkData();
+      return dgnode.getData('values', trackIndex);
     }
 
     if (options.animationLibraryNode) {
