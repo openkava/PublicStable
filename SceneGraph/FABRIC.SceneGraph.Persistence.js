@@ -380,13 +380,16 @@ FABRIC.SceneGraph.LocalStorage = function(name) {
  */
 FABRIC.SceneGraph.FileWriter = function(scene, title, suggestedFileName) {
   
-  var path = scene.IO.queryUserFileAndFolderHandle(scene.IO.forOpenWithWriteAccess, title, "json", suggestedFileName);
+  var path;
   var str = "";
+  this.querySavePath = function(instr) {
+    path = scene.IO.queryUserFileAndFolderHandle(scene.IO.forOpenWithWriteAccess, title, "json", suggestedFileName);
+  }
   this.write = function(instr) {
     str = instr;
     scene.IO.putTextFile(str, path);
   }
-  this.log = function(instr) {
+  this.log = function() {
     console.log(str);
   }
 };

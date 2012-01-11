@@ -806,15 +806,14 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
     
     //////////////////////////////////////////
     // Animation Tracks
-    
     characterRigNode.pub.generateAnimationTracks = function(node, trackSetName, bindForPlayback, controllerNode){
       if (!node.isTypeOf('AnimationLibrary')) {
         throw ('Incorrect type assignment. Must assign a AnimationLibrary');
       }
-      var animationTrackSet = scene.getPrivateInterface(node);
+      var animationLibrary = scene.getPrivateInterface(node);
       
       var trackBindings = new FABRIC.RT.KeyframeTrackBindings();
-      var trackSet = animationTrackSet.newTrackSet(trackSetName);
+      var trackSet = animationLibrary.newTrackSet(trackSetName);
       for (var i = 0; i < solvers.length; i++) {
         if(solvers[i].generateTracks){
           solvers[i].generateTracks(trackSet, trackBindings);
@@ -822,7 +821,7 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
       }
       if(bindForPlayback==true){
         
-        var trackSetId = animationTrackSet.pub.addTrackSet(trackSet);
+        var trackSetId = animationLibrary.pub.addTrackSet(trackSet);
         if(!poseVariables){
           characterRigNode.constructVariablesNode('Variables', true);
         }
@@ -833,6 +832,12 @@ FABRIC.SceneGraph.registerNodeType('CharacterRig', {
         }
         variablesNode.pub.bindToAnimationTracks(node, controllerNode, trackSetId, trackBindings);
       }
+    }
+    characterRigNode.pub.setBoundTrackSet = function(trackSetId){
+      if(!poseVariables){
+        throw "animation library not configured yet.";
+      }
+      variablesNode.pub.setBoundTrack(trackSetId);
     }
     
     //////////////////////////////////////////

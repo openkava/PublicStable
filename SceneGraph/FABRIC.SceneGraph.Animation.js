@@ -48,18 +48,26 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
     dgnode.addMember('bindings', 'KeyframeTrackBindings');
     
     var firstTrackAdded = false;
-    animationLibraryNode.pub.addTrackSet = function(trackset) {
+    animationLibraryNode.pub.addTrackSet = function(trackSet) {
       if(!firstTrackAdded){
         // Nodes default to having 1 slice, so we use up the first slot here. 
-        dgnode.setData('trackSet', 0, trackset);
+        dgnode.setData('trackSet', 0, trackSet);
         firstTrackAdded = true;
         return 0;
       }
       var trackSetId = dgnode.getCount();
       dgnode.setCount(trackSetId+1);
-      dgnode.setData('trackSet', trackSetId, trackset);
+      dgnode.setData('trackSet', trackSetId, trackSet);
       return trackSetId;
     };
+    animationLibraryNode.pub.removeTrackSet = function(trackSetId) {
+      // TODO: add remove slice function to node interface
+      var numTrackSets = dgnode.getCount();
+      for(var i=trackSetId; i<(numTrackSets-1); i++){
+        dgnode.setData('trackSet', i, dgnode.getData('trackSet', i+1));
+      }
+      dgnode.setCount(numTrackSets-1);
+    }
     animationLibraryNode.pub.getTimeRange = function(trackSetId) {
       var calcTimeRange = function(trackSet){
         var range = new FABRIC.RT.Vec2();
@@ -468,8 +476,13 @@ FABRIC.SceneGraph.registerNodeType('AnimationLibrary', {
     };
     animationLibraryNode.readData = function(sceneDeserializer, nodeData) {
       parentReadData(sceneDeserializer, nodeData);
+      var prevTrackSetCount = animationLibraryNode.pub.getTrackSetCount();
       for(var i=0; i<nodeData.numTracks; i++){
-        animationLibraryNode.pub.addTrackSet(nodeData.trackSets[i]);
+        if(i<prevTrackSetCount){
+          animationLibraryNode.pub.setTrackSet(nodeData.trackSets[i]);
+        }else{
+          animationLibraryNode.pub.addTrackSet(nodeData.trackSets[i]);
+        }
         dgnode.setData('bindings', i, nodeData.bindings[i]);
       }
     };
