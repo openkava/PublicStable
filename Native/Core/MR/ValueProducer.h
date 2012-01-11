@@ -14,6 +14,7 @@ namespace Fabric
   namespace Util
   {
     class JSONGenerator;
+    class JSONObjectGenerator;
   };
   
   namespace RT
@@ -33,10 +34,20 @@ namespace Fabric
       
         virtual void produce( void *data ) const = 0;
         virtual void produceJSON( Util::JSONGenerator &jg ) const;
+        void produceJSONAsync(
+          Util::JSONObjectGenerator &jsonObjectGenerator,
+          void (*finishedCallback)( void * ),
+          void *finishedUserdata
+          );
         
       protected:
       
         ComputeState( RC::ConstHandle<ValueProducer> const &valueProducer );
+    
+        static void ProduceJSONAsyncCallback(
+          void *userdata,
+          size_t index
+          );
         
       protected:
       

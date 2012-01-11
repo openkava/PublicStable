@@ -50,9 +50,7 @@ namespace Fabric
       )
     {
       if ( dst.size() - dstOffset == 0 )
-      {
         jsonExec( cmd, arg, resultJAG );
-      }
       else m_gcContainer->jsonRoute( dst, dstOffset, cmd, arg, resultJAG );
     }
       

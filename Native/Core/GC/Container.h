@@ -14,6 +14,11 @@
 
 namespace Fabric
 {
+  namespace JSON
+  {
+    class CommandChannel;
+  }
+  
   namespace GC
   {
     class Container
@@ -24,7 +29,7 @@ namespace Fabric
       
     public:
     
-      Container();
+      Container( JSON::CommandChannel *jsonCommandChannel );
       ~Container();
       
       RC::Handle<Object> maybeGetObject( std::string const &id_ ) const;
@@ -37,6 +42,13 @@ namespace Fabric
         RC::ConstHandle<JSON::Value> const &arg,
         Util::JSONArrayGenerator &resultJAG
         );
+        
+      void jsonNotify(
+        std::string const &id_,
+        char const *cmdData,
+        size_t cmdLength,
+        Util::SimpleString const *argJSON
+        );
 
     protected:
       
@@ -47,6 +59,7 @@ namespace Fabric
     
       mutable Util::Mutex m_mutex;
       IDToObjectMap m_idToObjectMap;
+      JSON::CommandChannel *m_jsonCommandChannel;
     };
   }
 }

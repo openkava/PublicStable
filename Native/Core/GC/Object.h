@@ -16,6 +16,7 @@ namespace Fabric
   namespace Util
   {
     class JSONArrayGenerator;
+    class SimpleString;
   };
   
   namespace JSON
@@ -77,6 +78,12 @@ namespace Fabric
         std::string const &cmd,
         RC::ConstHandle<JSON::Value> const &arg,
         Util::JSONArrayGenerator &resultJAG
+        );
+        
+      void jsonNotify(
+        char const *cmdData,
+        size_t cmdLength,
+        Util::SimpleString const *argJSON
         );
         
     protected:

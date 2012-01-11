@@ -35,12 +35,19 @@ namespace Fabric
         FABRIC_GC_OBJECT_CLASS_PARAM
         );
     
-    private:
-    
       void jsonExecProduce(
         RC::ConstHandle<JSON::Value> const &arg,
         Util::JSONArrayGenerator &resultJAG
         );
+
+      void jsonExecProduceAsync(
+        RC::ConstHandle<JSON::Value> const &arg,
+        Util::JSONArrayGenerator &resultJAG
+        );
+
+    private:
+    
+      static void JSONExecProduceAsyncFinishedCallback( void *userdata );
     };
   }
 }
