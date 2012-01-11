@@ -1332,7 +1332,9 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
         if (propagateEvent) scene.pub.fireEvent(name, evt);
       }
 
+      var mouseMoveTime;
       var mouseMoveFn = function(evt) {
+        mouseMoveTime = (new Date).getTime();
         propagateEvent = true;
         if (cameraNode && viewPortRayCastDgNode && options.mouseMoveEvents) {
           var raycastResult = viewportNode.pub.rayCast(evt);
@@ -1367,8 +1369,13 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
           fireEvent('mousemove', evt);
         }
       };
-
+      var mouseDownTime;
       var mouseDownFn = function(evt) {
+        if(((new Date).getTime() - mouseDownTime) < 200){
+          // generate a double-click if the mouse goes down 2x in less than 200ms.
+          mouseDblClickFn(evt);
+          return;
+        }
         propagateEvent = true;
         if (cameraNode && viewPortRayCastDgNode) {
           var raycastResult = viewportNode.pub.rayCast(evt);
@@ -1382,6 +1389,7 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
         if(propagateEvent){
           fireEvent('mousedown', evt);
         }
+        mouseDownTime = (new Date).getTime();
       };
 
       var mouseUpFn = function(evt) {
@@ -1399,6 +1407,20 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
           fireEvent('mouseup', evt);
         }
       };
+      
+      var mouseDblClickFn = function(evt) {
+        propagateEvent = true;
+        if (cameraNode && viewPortRayCastDgNode) {
+          var raycastResult = viewportNode.pub.rayCast(evt);
+          if (raycastResult.closestNode) {
+            var hitNode = raycastResult.closestNode.node.sceneGraphNode;
+            evt.rayData = raycastResult.rayData;
+            evt.hitData = raycastResult.closestNode.value;
+            fireGeomEvent('mousedblclick_geom', evt, hitNode);
+          }
+        }
+      };
+
 
       // In cases wehre mouse events cost a lot, we can restrict firing to mouse down and moue up.
       windowElement.addEventListener('mousemove', mouseMoveFn, false);

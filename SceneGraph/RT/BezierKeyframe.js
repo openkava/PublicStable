@@ -141,19 +141,18 @@ FABRIC.RT.BezierKeyframeTrack.prototype = {
   moveKey: function(keyIndex, time, value){
     var numKeys = this.keys.length;
     var key = this.keys[keyIndex];
-    if(keyIndex > 0){
-      if(time < this.keys[keyIndex-1].time || time > this.keys[keyIndex+1].time){
-        var newkeyIndex = keyIndex;
-        while(time < this.keys[newkeyIndex-1].time && newkeyIndex>0){
-          newkeyIndex--
-        }
-        while(time > this.keys[newkeyIndex+1].time && newkeyIndex<numKeys-1){
-          newkeyIndex++
-        }
-        this.keys.splice(keyIndex, 1);
-        this.keys.splice(newkeyIndex, 0, key);
-        keyIndex = newkeyIndex;
+    if((keyIndex > 0 && time < this.keys[keyIndex-1].time) ||
+       (keyIndex < numKeys-1 && time > this.keys[keyIndex+1].time)){
+      var newkeyIndex = keyIndex;
+      while(time < this.keys[newkeyIndex-1].time && newkeyIndex>0){
+        newkeyIndex--
       }
+      while(time > this.keys[newkeyIndex+1].time && newkeyIndex<numKeys-1){
+        newkeyIndex++
+      }
+      this.keys.splice(keyIndex, 1);
+      this.keys.splice(newkeyIndex, 0, key);
+      keyIndex = newkeyIndex;
     }
     this.keys[keyIndex].time = time;
     this.keys[keyIndex].value = value;
