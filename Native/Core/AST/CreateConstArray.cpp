@@ -83,27 +83,37 @@ namespace Fabric
       llvm::FunctionType const *funcType = llvm::FunctionType::get( llvm::Type::getVoidTy( llvmContext ), argTypes, false );
       llvm::Constant *func = basicBlockBuilder.getModuleBuilder()->getOrInsertFunction( "__MR_CreateConstArray", funcType );
       
-      CG::ExprValue childExprRArray = m_child->buildExprValue( basicBlockBuilder, CG::USAGE_RVALUE, lValueErrorDesc );
-      llvm::Value *childExprLArray = arrayAdapter->llvmRValueToLValue( basicBlockBuilder, childExprRArray.getValue() );
-      llvm::Value *resultLArray = arrayProducerAdapter->llvmAlloca( basicBlockBuilder, "result" );
-      arrayProducerAdapter->llvmInit( basicBlockBuilder, resultLArray );
+      CG::ExprValue childExprRValue = m_child->buildExprValue( basicBlockBuilder, CG::USAGE_RVALUE, lValueErrorDesc );
+      llvm::Value *childExprLValue = arrayAdapter->llvmRValueToLValue( basicBlockBuilder, childExprRValue.getValue() );
+      llvm::Value *resultLValue = arrayProducerAdapter->llvmAlloca( basicBlockBuilder, "result" );
+      arrayProducerAdapter->llvmInit( basicBlockBuilder, resultLValue );
+      basicBlockBuilder.getScope().put(
+        CG::VariableSymbol::Create(
+          CG::ExprValue(
+            arrayProducerAdapter,
+            CG::USAGE_LVALUE,
+            context,
+            resultLValue
+            )
+          )
+        );
       
       basicBlockBuilder->CreateCall4(
         func,
         arrayAdapter->llvmAdapterPtr( basicBlockBuilder ),
         basicBlockBuilder->CreatePointerCast(
-          childExprLArray,
+          childExprLValue,
           llvm::Type::getInt8PtrTy( llvmContext )
           ),
         arrayProducerAdapter->llvmAdapterPtr( basicBlockBuilder ),
-        resultLArray
+        resultLValue
         );
       
       return CG::ExprValue(
         arrayProducerAdapter,
         CG::USAGE_RVALUE,
         context,
-        arrayProducerAdapter->llvmLValueToRValue( basicBlockBuilder, resultLArray )
+        arrayProducerAdapter->llvmLValueToRValue( basicBlockBuilder, resultLValue )
         );
     }
   }
