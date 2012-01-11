@@ -1,0 +1,1 @@
+require('Fabric').createClient().close();
