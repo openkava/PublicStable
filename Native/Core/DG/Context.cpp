@@ -88,7 +88,7 @@ namespace Fabric
       , m_notificationBracketCount( 0 )
       , m_pendingNotificationsMutex( "pending notifications" )
       , m_pendingNotificationsJSON( 0 )
-      , m_gcContainer()
+      , m_gcContainer( this )
       , m_mrInterface( &m_gcContainer, m_rtManager )
       , m_klcInterface( &m_gcContainer, m_cgManager, m_compileOptions )
     {

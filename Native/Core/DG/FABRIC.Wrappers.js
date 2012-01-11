@@ -1506,6 +1506,7 @@ function (fabricClient, logCallback, debugLogCallback) {
   
   var GC = (function (namespace) {
     var nextID = 0;
+    var objects = {};
     
     return {
       createObject: function (namespace) {
@@ -1513,10 +1514,22 @@ function (fabricClient, logCallback, debugLogCallback) {
         
         var result = {
           id: id,
+          nextCallbackID: 0,
+          callbacks: {},
           queueCommand: function (cmd, arg, unwind, callback) {
             if (!this.id)
               throw "GC object has already been disposed";
             queueCommand([namespace, this.id], cmd, arg, unwind, callback);
+          },
+          registerCallback: function (callback) {
+            var callbackID = this.nextCallbackID++;
+            this.callbacks[callbackID] = callback;
+            return callbackID;
+          },
+          route: function(src, cmd, arg) {
+            var callback = this.callbacks[arg.serial];
+            delete this.callbacks[arg.serial];
+            callback(arg.result);
           },
           pub: {
           }
@@ -1528,10 +1541,19 @@ function (fabricClient, logCallback, debugLogCallback) {
         
         result.pub.dispose = function () {
           result.queueCommand('dispose');
+          delete objects[id];
           delete result.id;
         };
         
+        objects[id] = result;
+        
         return result;
+      },
+      
+      route: function (src, cmd, arg) {
+        var id = src.shift();
+        var object = objects[id];
+        object.route(src, cmd, arg);
       }
     };
   })();
@@ -1938,6 +1960,11 @@ function (fabricClient, logCallback, debugLogCallback) {
         });
         executeQueuedCommands();
         return result;
+      };
+      
+      valueProducer.pub.produceAsync = function (callback) {
+        valueProducer.queueCommand('produceAsync', valueProducer.registerCallback(callback));
+        executeQueuedCommands();
       };
     };
 
@@ -2377,6 +2404,9 @@ function (fabricClient, logCallback, debugLogCallback) {
           break;
         case 'VP':
           VP.route(src, cmd, arg);
+          break;
+        case 'GC':
+          GC.route(src, cmd, arg);
           break;
         default:
           throw 'unroutable';

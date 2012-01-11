@@ -3,6 +3,7 @@
  */
  
 #include <Fabric/Core/GC/Container.h>
+#include <Fabric/Core/JSON/CommandChannel.h>
 #include <Fabric/Core/Util/Format.h>
 #include <Fabric/Base/Exception.h>
 
@@ -10,8 +11,9 @@ namespace Fabric
 {
   namespace GC
   {
-    Container::Container()
+    Container::Container( JSON::CommandChannel *jsonCommandChannel )
       : m_mutex( "GC::Container" )
+      , m_jsonCommandChannel( jsonCommandChannel )
     {
     }
       
@@ -75,6 +77,20 @@ namespace Fabric
       FABRIC_ASSERT( dst.size() - dstOffset > 0 );
       std::string const &id_ = dst[dstOffset];
       getObject( id_ )->jsonRoute( dst, dstOffset + 1, cmd, arg, resultJAG );
+    }
+        
+    void Container::jsonNotify(
+      std::string const &id_,
+      char const *cmdData,
+      size_t cmdLength,
+      Util::SimpleString const *argJSON
+      )
+    {
+      std::vector<std::string> src;
+      src.reserve( 2 );
+      src.push_back( "GC" );
+      src.push_back( id_ );
+      m_jsonCommandChannel->jsonNotify( src, cmdData, cmdLength, argJSON );
     }
   }
 }
