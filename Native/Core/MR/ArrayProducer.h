@@ -13,6 +13,7 @@ namespace Fabric
   namespace Util
   {
     class JSONGenerator;
+    class JSONObjectGenerator;
   }
   
   namespace RT
@@ -44,10 +45,42 @@ namespace Fabric
         virtual void produceJSON( size_t index, Util::JSONGenerator &jg ) const;
         void produce( size_t index, size_t count, void *data ) const;
         void produceJSON( size_t index, size_t count, Util::JSONGenerator &jg ) const;
+
+        void produceJSONAsync(
+          Util::JSONObjectGenerator &jsonObjectGenerator,
+          void (*finishedCallback)( void * ),
+          void *finishedUserdata
+          );
+        void produceJSONAsync(
+          size_t index,
+          Util::JSONObjectGenerator &jsonObjectGenerator,
+          void (*finishedCallback)( void * ),
+          void *finishedUserdata
+          );
+        void produceJSONAsync(
+          size_t index,
+          size_t count,
+          Util::JSONObjectGenerator &jsonObjectGenerator,
+          void (*finishedCallback)( void * ),
+          void *finishedUserdata
+          );
       
       protected:
       
         ComputeState( RC::ConstHandle<ArrayProducer> const &arrayProducer );
+    
+        static void ProduceJSONAsyncCallback_0(
+          void *userdata,
+          size_t index
+          );
+        static void ProduceJSONAsyncCallback_1(
+          void *userdata,
+          size_t index
+          );
+        static void ProduceJSONAsyncCallback_2(
+          void *userdata,
+          size_t index
+          );
         
       private:
       

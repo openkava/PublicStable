@@ -2019,6 +2019,30 @@ function (fabricClient, logCallback, debugLogCallback) {
         executeQueuedCommands();
         return result;
       };
+      
+      arrayProducer.pub.produceAsync = function () {
+        var arg = {};
+        var callback;
+        switch (arguments.length) {
+          case 1:
+            callback = arguments[0];
+            break;
+          case 2:
+            arg.index = arguments[0];
+            callback = arguments[1];
+            break;
+          case 3:
+            arg.index = arguments[0];
+            arg.count = arguments[1];
+            callback = arguments[2];
+            break;
+          default:
+            throw "produceAsync: invalid arguments";
+        }
+        arg.serial = arrayProducer.registerCallback(callback);
+        arrayProducer.queueCommand('produceAsync', arg);
+        executeQueuedCommands();
+      };
     };
     
     var populateConstArray = function (constArray) {
