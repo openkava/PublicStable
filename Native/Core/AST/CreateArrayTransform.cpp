@@ -98,6 +98,16 @@ namespace Fabric
 
       llvm::Value *resultLValue = ioArrayProducerAdapter->llvmAlloca( basicBlockBuilder, "result" );
       ioArrayProducerAdapter->llvmInit( basicBlockBuilder, resultLValue );
+      basicBlockBuilder.getScope().put(
+        CG::VariableSymbol::Create(
+          CG::ExprValue(
+            ioArrayProducerAdapter,
+            CG::USAGE_LVALUE,
+            context,
+            resultLValue
+            )
+          )
+        );
     
       bool needCall = true;
       if ( operatorParams.size() >= 2 )
