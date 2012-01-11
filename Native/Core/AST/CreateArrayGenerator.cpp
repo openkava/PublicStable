@@ -111,6 +111,16 @@ namespace Fabric
       RC::ConstHandle<CG::ArrayProducerAdapter> outputArrayProducerAdapter = basicBlockBuilder.getManager()->getArrayProducerOf( outputAdapter );
       llvm::Value *resultLValue = outputArrayProducerAdapter->llvmAlloca( basicBlockBuilder, "result" );
       outputArrayProducerAdapter->llvmInit( basicBlockBuilder, resultLValue );
+      basicBlockBuilder.getScope().put(
+        CG::VariableSymbol::Create(
+          CG::ExprValue(
+            outputArrayProducerAdapter,
+            CG::USAGE_LVALUE,
+            context,
+            resultLValue
+            )
+          )
+        );
     
       bool needCall = true;
       if ( operatorParams.size() >= 2 )

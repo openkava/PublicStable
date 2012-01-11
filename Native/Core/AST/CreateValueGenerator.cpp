@@ -94,6 +94,16 @@ namespace Fabric
 
       llvm::Value *resultLValue = outputValueProducerAdapter->llvmAlloca( basicBlockBuilder, "result" );
       outputValueProducerAdapter->llvmInit( basicBlockBuilder, resultLValue );
+      basicBlockBuilder.getScope().put(
+        CG::VariableSymbol::Create(
+          CG::ExprValue(
+            outputValueProducerAdapter,
+            CG::USAGE_LVALUE,
+            context,
+            resultLValue
+            )
+          )
+        );
 
       if ( !m_shared )
       {

@@ -74,6 +74,16 @@ namespace Fabric
       llvm::Value *childExprLValue = valueAdapter->llvmRValueToLValue( basicBlockBuilder, childExprRValue.getValue() );
       llvm::Value *resultLValue = valueProducerAdapter->llvmAlloca( basicBlockBuilder, "result" );
       valueProducerAdapter->llvmInit( basicBlockBuilder, resultLValue );
+      basicBlockBuilder.getScope().put(
+        CG::VariableSymbol::Create(
+          CG::ExprValue(
+            valueProducerAdapter,
+            CG::USAGE_LVALUE,
+            context,
+            resultLValue
+            )
+          )
+        );
       
       basicBlockBuilder->CreateCall3(
         func,
