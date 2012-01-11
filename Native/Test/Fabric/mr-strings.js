@@ -13,7 +13,7 @@ console.log(
   FC.MR.createReduce(ag,
     FC.KLC.createReduceOperator(
       "reduce.kl",
-      "operator reduce(String input, io String output) { if (output.length > 1) output += '-'; output += input; }",
+      "operator reduce(String input, io String output) { if (output.length > 0) output += '-'; output += input; }",
       "reduce"
       )
     ).produce().length
