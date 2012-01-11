@@ -146,5 +146,134 @@ namespace Fabric
       }
       elementDesc->disposeDatas( datas, count, allocSize );
     }
+    
+    struct ProduceJSONAsyncCallbackData_0
+    {
+      RC::Handle<ArrayProducer::ComputeState> computeState;
+      Util::JSONObjectGenerator *jsonObjectGenerator;
+    };
+
+    void ArrayProducer::ComputeState::produceJSONAsync(
+      Util::JSONObjectGenerator &jsonObjectGenerator,
+      void (*finishedCallback)( void * ),
+      void *finishedUserdata
+      )
+    {
+      ProduceJSONAsyncCallbackData_0 *produceJSONAsyncCallbackData = new ProduceJSONAsyncCallbackData_0;
+      produceJSONAsyncCallbackData->computeState = this;
+      produceJSONAsyncCallbackData->jsonObjectGenerator = &jsonObjectGenerator;
+      
+      MT::ThreadPool::Instance()->executeParallelAsync(
+        MT::tlsLogCollector.get(),
+        1,
+        &ArrayProducer::ComputeState::ProduceJSONAsyncCallback_0,
+        produceJSONAsyncCallbackData,
+        MT::ThreadPool::Idle,
+        finishedCallback,
+        finishedUserdata
+        );
+    }
+    
+    void ArrayProducer::ComputeState::ProduceJSONAsyncCallback_0(
+      void *userdata,
+      size_t index
+      )
+    {
+      ProduceJSONAsyncCallbackData_0 *produceJSONAsyncCallbackData = static_cast<ProduceJSONAsyncCallbackData_0 *>( userdata );
+      {
+        Util::JSONGenerator jg = produceJSONAsyncCallbackData->jsonObjectGenerator->makeMember( "result" );
+        produceJSONAsyncCallbackData->computeState->produceJSON( jg );
+      }
+      delete produceJSONAsyncCallbackData;
+    }
+    
+    struct ProduceJSONAsyncCallbackData_1
+    {
+      RC::Handle<ArrayProducer::ComputeState> computeState;
+      size_t index;
+      Util::JSONObjectGenerator *jsonObjectGenerator;
+    };
+
+    void ArrayProducer::ComputeState::produceJSONAsync(
+      size_t index,
+      Util::JSONObjectGenerator &jsonObjectGenerator,
+      void (*finishedCallback)( void * ),
+      void *finishedUserdata
+      )
+    {
+      ProduceJSONAsyncCallbackData_1 *produceJSONAsyncCallbackData = new ProduceJSONAsyncCallbackData_1;
+      produceJSONAsyncCallbackData->computeState = this;
+      produceJSONAsyncCallbackData->index = index;
+      produceJSONAsyncCallbackData->jsonObjectGenerator = &jsonObjectGenerator;
+      
+      MT::ThreadPool::Instance()->executeParallelAsync(
+        MT::tlsLogCollector.get(),
+        1,
+        &ArrayProducer::ComputeState::ProduceJSONAsyncCallback_1,
+        produceJSONAsyncCallbackData,
+        MT::ThreadPool::Idle,
+        finishedCallback,
+        finishedUserdata
+        );
+    }
+    
+    void ArrayProducer::ComputeState::ProduceJSONAsyncCallback_1(
+      void *userdata,
+      size_t index
+      )
+    {
+      ProduceJSONAsyncCallbackData_1 *produceJSONAsyncCallbackData = static_cast<ProduceJSONAsyncCallbackData_1 *>( userdata );
+      {
+        Util::JSONGenerator jg = produceJSONAsyncCallbackData->jsonObjectGenerator->makeMember( "result" );
+        produceJSONAsyncCallbackData->computeState->produceJSON( produceJSONAsyncCallbackData->index, jg );
+      }
+      delete produceJSONAsyncCallbackData;
+    }
+    
+    struct ProduceJSONAsyncCallbackData_2
+    {
+      RC::Handle<ArrayProducer::ComputeState> computeState;
+      size_t index;
+      size_t count;
+      Util::JSONObjectGenerator *jsonObjectGenerator;
+    };
+
+    void ArrayProducer::ComputeState::produceJSONAsync(
+      size_t index,
+      size_t count,
+      Util::JSONObjectGenerator &jsonObjectGenerator,
+      void (*finishedCallback)( void * ),
+      void *finishedUserdata
+      )
+    {
+      ProduceJSONAsyncCallbackData_2 *produceJSONAsyncCallbackData = new ProduceJSONAsyncCallbackData_2;
+      produceJSONAsyncCallbackData->computeState = this;
+      produceJSONAsyncCallbackData->index = index;
+      produceJSONAsyncCallbackData->count = count;
+      produceJSONAsyncCallbackData->jsonObjectGenerator = &jsonObjectGenerator;
+      
+      MT::ThreadPool::Instance()->executeParallelAsync(
+        MT::tlsLogCollector.get(),
+        1,
+        &ArrayProducer::ComputeState::ProduceJSONAsyncCallback_2,
+        produceJSONAsyncCallbackData,
+        MT::ThreadPool::Idle,
+        finishedCallback,
+        finishedUserdata
+        );
+    }
+    
+    void ArrayProducer::ComputeState::ProduceJSONAsyncCallback_2(
+      void *userdata,
+      size_t index
+      )
+    {
+      ProduceJSONAsyncCallbackData_2 *produceJSONAsyncCallbackData = static_cast<ProduceJSONAsyncCallbackData_2 *>( userdata );
+      {
+        Util::JSONGenerator jg = produceJSONAsyncCallbackData->jsonObjectGenerator->makeMember( "result" );
+        produceJSONAsyncCallbackData->computeState->produceJSON( produceJSONAsyncCallbackData->index, produceJSONAsyncCallbackData->count, jg );
+      }
+      delete produceJSONAsyncCallbackData;
+    }
   }
 }
