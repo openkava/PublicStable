@@ -454,8 +454,7 @@ FABRIC.SceneGraph.registerNodeType('Manipulator', {
       manipulating = false,
       material = manipulatorNode.pub.getMaterialNode(),
       highlightColor = options.highlightcolor;
-      
-      
+    
     if(!material){
       material = scene.pub.constructNode('FlatMaterial', {
         color: options.color,
@@ -510,20 +509,26 @@ FABRIC.SceneGraph.registerNodeType('Manipulator', {
       document.removeEventListener('mousemove', dragFn, false);
       document.removeEventListener('mouseup', releaseFn, false);
       evt.stopPropagation();
+      scene.pub.fireEvent('endmanipulation', {
+        manipulatorNode: manipulatorNode.pub
+      });
       viewportNode.redraw();
     }
     manipulatorNode.pub.addEventListener('mousedown_geom', function(evt) {
-        manipulating = true;
-        manipulatorGlobals.manipulating = true;
-        highlightNode();
-        viewportNode = evt.viewportNode;
-        evt.mouseDownScreenPos = mouseDownScreenPos = evt.mouseScreenPos;
-        manipulatorNode.pub.fireEvent('dragstart', evt);
-        document.addEventListener('mousemove', dragFn, false);
-        document.addEventListener('mouseup', releaseFn, false);
-        evt.stopPropagation();
-        viewportNode.redraw();
+      scene.pub.fireEvent('beginmanipulation', {
+        manipulatorNode: manipulatorNode.pub
       });
+      manipulating = true;
+      manipulatorGlobals.manipulating = true;
+      highlightNode();
+      viewportNode = evt.viewportNode;
+      evt.mouseDownScreenPos = mouseDownScreenPos = evt.mouseScreenPos;
+      manipulatorNode.pub.fireEvent('dragstart', evt);
+      document.addEventListener('mousemove', dragFn, false);
+      document.addEventListener('mouseup', releaseFn, false);
+      evt.stopPropagation();
+      viewportNode.redraw();
+    });
     
     return manipulatorNode;
   }});
@@ -536,7 +541,7 @@ FABRIC.SceneGraph.registerNodeType('XfoManipulator', {
   parentNodeDesc: 'SceneGraphNode',
   optionsDesc: {
   },
-  manipulating: false,
+  manipulating: false, // Note: PT 06-01-12 I don't think we need these manipulation globals now that we disable raycasting during manipulation.
   factoryFn: function(options, scene) {
     
     scene.assignDefaults(options, {
@@ -588,7 +593,7 @@ FABRIC.SceneGraph.registerNodeType('XfoManipulator', {
           node: targetNode,
           member: targetMember,
           value: manipulatorNode.getTargetXfoCached().clone(),
-          prevValue: prevXfo.clone(),
+          prevValue: prevXfo.clone()
         });  
       });
     }
@@ -880,13 +885,14 @@ FABRIC.SceneGraph.registerNodeType('ScreenTranslationManipulator', {
     scene.assignDefaults(options, {
         radius: 0.5,
         name: 'ScreenTranslationManipulator',
-        drawOverlaid: true
+        drawOverlaid: true,
+        baseManipulatorType: 'XfoManipulator'
       });
 
     if (!options.geometryNode) {
       options.geometryNode = scene.pub.constructNode('Sphere', { radius: options.radius, detail: 8.0 });
     }
-    var manipulatorNode = scene.constructNode('XfoManipulator', options);
+    var manipulatorNode = scene.constructNode(options.baseManipulatorType, options);
 
     var viewportNode;
     var dragStartXFo, vec1, ray1, ray2, planePoint, planeNormal, hitPoint1, hitPoint2;

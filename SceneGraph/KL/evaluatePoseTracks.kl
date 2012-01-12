@@ -3,7 +3,7 @@
 // Copyright 2010-2011 Fabric Technologies Inc. All rights reserved.
 //
 
-use PoseVariables;
+use KEYFRAMETRACKSETTYPE;
 
 operator evaluatePoseTracks(
   io KEYFRAMETRACKSETTYPE trackSets<>,
@@ -11,12 +11,15 @@ operator evaluatePoseTracks(
   io Integer trackIndex,
   io KeyframeTrackBindings bindings,
   io Integer keyIndices[],
-  io PoseVariables poseVariables
+  io PoseVariables poseVariables,
+  io Boolean enableTrackEvaluation
 ) {
-  poseVariables.evaluateKeyframeTracks(
-    time,
-    trackSets[trackIndex],
-    bindings,
-    keyIndices
-  );
+  if(enableTrackEvaluation){
+    trackSets[trackIndex].evaluate(
+      time,
+      bindings,
+      poseVariables,
+      keyIndices
+    );
+  }
 }

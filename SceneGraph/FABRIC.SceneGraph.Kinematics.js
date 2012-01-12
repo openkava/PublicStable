@@ -128,7 +128,7 @@ FABRIC.SceneGraph.registerNodeType('Transform', {
 FABRIC.SceneGraph.registerNodeType('TransformTexture', {
   briefDesc: 'The TransformTexture node is an Image node which can be used for storing matrices into a texture buffer.',
   detailedDesc: 'The TransformTexture node is an Image node which can be used for storing matrices into a texture buffer. This is used for efficient instance rendering.',
-  parentNodeDesc: 'Texture',
+  parentNodeDesc: 'Image',
   optionsDesc: {
     transformNode: 'A sliced transform node storing all of the transform to store.',
     dynamic: 'If set to true, the texture will be reloaded every frame.'
@@ -136,10 +136,10 @@ FABRIC.SceneGraph.registerNodeType('TransformTexture', {
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
       transformNode: undefined,
-      dynamic: undefined
+      dynamic: true
     });
     
-    var textureNode = scene.constructNode('Texture', options);
+    var textureNode = scene.constructNode('Image', options);
     
     var dgnode = textureNode.constructDGNode('DGNode');
     // create the operator to convert the matrices into a texture
@@ -174,9 +174,8 @@ FABRIC.SceneGraph.registerNodeType('TransformTexture', {
     textureNode.getRedrawEventHandler = function() { return redrawEventHandler; }
     
     var tex = FABRIC.RT.oglMatrixBuffer2D();
-    if(!options.dynamic){
-      tex.forceRefresh = false;
-    }
+    tex.forceRefresh = options.dynamic;
+      
     redrawEventHandler.addMember('oglTexture2D', 'OGLTexture2D', tex);
     redrawEventHandler.addMember('matricesTempBuffer', 'Mat44[]');
     redrawEventHandler.addMember('textureHeight', 'Size');

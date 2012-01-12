@@ -57,7 +57,7 @@ FABRIC = (function() {
     var context = embedTag.wrapFabricClient(embedTag, function(s) { console.log(s); } );
 
     //Enable math warnings (comment out this line if you don't want them)
-    Math.verboseLogFunction = function(s){console.log(s);};
+  //  Math.verboseLogFunction = function(s){console.log(s);};
     
     ///////////////////////////////////////////////////////////
     // Check the currently installed version.

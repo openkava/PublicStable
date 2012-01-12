@@ -181,7 +181,7 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
           name: 'ReducedOpacity',
           format: 'UShort',
           createResourceLoadNode: false,
-          createDgNode: true,
+          createDgNodes: true,
           glRepeat: false
         });
         var reducedOpacityDGNode = generatorNodeOpacity.getDGNode();
@@ -255,7 +255,7 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
         name: '3DTextureGenerator_Gradient',
         format: 'RGBA',
         createResourceLoadNode: false,
-        createDgNode: true,
+        createDgNodes: true,
         glRepeat: false
       });
       var generatorNodeGradient = scene.getPrivateInterface(generatorNodeGradientPub);
@@ -407,8 +407,8 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
 
     //Create transfer function images
     var transferFunctionImageNode = scene.constructNode('Image2D', {
-      wantHDR: true,
-      createDgNode: true,
+      format: 'Color',
+      createDgNodes: true,
       createResourceLoadNode: false,
       createLoadTextureEventHandler: true,
       width: 1024,
@@ -573,7 +573,7 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
 FABRIC.SceneGraph.registerNodeType('DrawRectangle', {
   briefDesc: '',
   detailedDesc: '',
-  parentNodeDesc: 'Image',
+  parentNodeDesc: 'Image2D',
   optionsDesc: {
     tl: 'Top left screenspace coord',
     br: 'Bottom right screenspace coord',
@@ -588,11 +588,11 @@ FABRIC.SceneGraph.registerNodeType('DrawRectangle', {
         forceRefresh: false,
         width: 1,
         height: 1,
-        createDgNode: false,
+        createDgNodes: false,
         parentEventHandler: scene.getSceneRedrawOverlayObjectsEventHandler()
       });
 
-    options.wantHDR = false;
+    options.format = 'RGBA';
     options.createResourceLoadNode = false;
     options.createLoadTextureEventHandler = true;
 

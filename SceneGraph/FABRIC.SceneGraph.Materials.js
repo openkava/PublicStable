@@ -347,6 +347,7 @@ FABRIC.SceneGraph.registerNodeType('Material', {
             'self.textureUnit'
           ]
         }));
+        
         var setTextureFn = materialNode.addReferenceInterface(textureName, 'Texture',
           function(nodePrivate){
             textureStub.appendChildEventHandler(nodePrivate.getRedrawEventHandler());
@@ -369,6 +370,7 @@ FABRIC.SceneGraph.registerNodeType('Material', {
         operatorName: 'unbindTextures',
         srcFile: 'FABRIC_ROOT/SceneGraph/KL/loadTexture.kl',
         entryFunctionName: 'unbindTextures',
+        preProcessorDefinitions: { PIXELFORMAT: 'RGBA' },
         parameterLayout: [
           'self.numTextures'
         ]
