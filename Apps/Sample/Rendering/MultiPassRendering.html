@@ -215,8 +215,6 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
       sigma: 0.6
     });
   
-  var assets = scene.importAssetFile('../BasicDemos/Models/beethovan.obj');//, { scaleFactor:0.01 } );
-  
   var resourceLoadNode = scene.importAssetFile('../BasicDemos/Models/beethovan.obj');
   resourceLoadNode.addEventListener('objparsesuccess', function(evt){
     scene.constructNode('Instance', {
