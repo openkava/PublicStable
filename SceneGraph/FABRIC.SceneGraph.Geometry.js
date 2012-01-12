@@ -831,6 +831,28 @@ FABRIC.SceneGraph.registerNodeType('Instance', {
       return instanceNode.pub;
     };
     
+    var layerManagerNode;
+    instanceNode.pub.setLayerManager = function(node, layer){
+      var dgnode = instanceNode.getDGNode();
+      if(layerManagerNode){
+        // remove operator
+      }
+      dgnode.bindings.append(scene.constructOperator({
+        operatorName: 'toggleDraw',
+        srcCode: '\n'+
+        'operator toggleDraw(io Boolean drawToggle, io Boolean layerValue) {\n' +
+        '  drawToggle = layerValue;\n' +
+        '}',
+        entryFunctionName: 'toggleDraw',
+        parameterLayout: [
+          'self.drawToggle',
+          'layerManager.'+layer
+        ]
+      }));
+        
+      layerManagerNode = scene.getPrivateInterface(node);
+      dgnode.setDependency(layerManagerNode.getDGNode(), 'layerManager');
+    }
     //////////////////////////////////////////
     // Persistence
     var parentAddDependencies = instanceNode.addDependencies;
@@ -905,6 +927,36 @@ FABRIC.SceneGraph.registerNodeType('Instance', {
     if (options.materialNode) {
       instanceNode.pub.setMaterialNode(options.materialNode);
     }
+    if(options.layerManager){
+      instanceNode.pub.setLayerManager(options.layerManager, options.layer);
+    }
     return instanceNode;
   }
 });
+
+
+// TODO: convert this to a manager
+FABRIC.SceneGraph.registerNodeType('LayerManager', {
+  briefDesc: '',
+  detailedDesc: '',
+  parentNodeDesc: 'SceneGraphNode',
+  optionsDesc: {
+  },
+  factoryFn: function(options, scene) {
+    scene.assignDefaults(options, {
+      materialName: undefined,
+      groupName: undefined
+    });
+    var layerManagerNode = scene.constructNode('SceneGraphNode', options),
+      dgnode = layerManagerNode.constructDGNode('DGNode');
+      
+    
+    layerManagerNode.pub.addLayer = function( layerName ){
+      dgnode.addMember(layerName, 'Boolean', true);
+      layerManagerNode.addMemberInterface(dgnode, layerName, true, true);
+    }
+    
+    return layerManagerNode;
+  }
+});
+

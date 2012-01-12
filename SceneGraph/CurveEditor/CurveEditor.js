@@ -47,13 +47,16 @@ var constructCurveEditor = function(domRootID, animationLibraryNode, options){
   var trackGroups = [];
   var trackDisplayed = [];
   
-  var trackDisplayNode = scene.getSceneGraphNode(animationLibraryNode.getName()+'TrackDisplay');
+  trackDisplayNode = scene.getSceneGraphNode(animationLibraryNode.getName()+'TrackDisplay');
   if(!trackDisplayNode){
     trackDisplayNode = scene.constructNode('TrackDisplay', {
       name:animationLibraryNode.getName()+'TrackDisplay',
       animationLibraryNode: animationLibraryNode,
       trackSetId: trackSetId
     });
+  }
+  else{
+    trackDisplayNode.setTrackSetId(trackSetId);
   }
   
   
