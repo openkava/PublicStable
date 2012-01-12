@@ -76,7 +76,7 @@ $(document).ready(function() {
   var scene = FABRIC.SceneGraph.createScene();
   var viewport = scene.constructNode('Viewport', { windowElement: document.getElementById('FabricContainer') });
 
-  viewport.setBackgroundTextureNode(scene.constructNode('Image', {
+  viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     url: '../BasicDemos/Resources/fabric-demo-gradient.png'
   }));
 
@@ -91,7 +91,7 @@ $(document).ready(function() {
   scene.constructNode('CameraManipulator', { targetNode: camera });
   viewport.setCameraNode(camera);
   
-  var textureNode = scene.constructNode('Image', {url: 'Models/monster_body_diffuse_half.png'});
+  var textureNode = scene.constructNode('Image2D', {url: 'Models/monster_body_diffuse_half.png'});
   var light = scene.constructNode('PointLight', { transformNode: camera.getTransformNode() });
 
   var textureMaterial = scene.constructNode('HairTextureMaterial', {
