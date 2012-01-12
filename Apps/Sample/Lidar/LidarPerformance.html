@@ -100,7 +100,7 @@ $(document).ready(function() {
   var filesLoaded = 0;
   $('#loadingDesc').html("Downloading "+numLasFiles+" LIDAR files...<br>This may take some time (several minutes).");
 
-  viewport.setBackgroundTextureImage(scene.constructNode('Image2D', {
+viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     url: '../BasicDemos/Resources/fabric-demo-gradient.png'
   }));
 
@@ -196,9 +196,9 @@ $(document).ready(function() {
           
           var useGradient = $('#useElevationShader').attr('checked');
           if(useGradient)
-            pointInstances[resourceName].setMaterialNode(gradientMaterial);
+            pointInstances[resourceName].addMaterialNode(gradientMaterial);
           else
-            pointInstances[resourceName].setMaterialNode(flatMaterial);
+            pointInstances[resourceName].addMaterialNode(flatMaterial);
         }
       }
       filesLoaded++;
@@ -217,14 +217,14 @@ $(document).ready(function() {
       {
         try{
           pointInstances[resourceName].removeMaterialNode(flatMaterial);
-          pointInstances[resourceName].setMaterialNode(gradientMaterial);
+          pointInstances[resourceName].addMaterialNode(gradientMaterial);
         }catch(e){}
       }
       else
       {
         try{
           pointInstances[resourceName].removeMaterialNode(gradientMaterial);
-          pointInstances[resourceName].setMaterialNode(flatMaterial);
+          pointInstances[resourceName].addMaterialNode(flatMaterial);
         }catch(e){}
       }
       viewport.redraw();

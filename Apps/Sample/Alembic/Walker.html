@@ -78,7 +78,7 @@ $(document).ready(function() {
         console.log($(this).val());
       var assets = scene.importAssetFile($(this).val());
       for (i in assets) {
-        assets[i].setMaterialNode(redMaterial);
+        assets[i].addMaterialNode(redMaterial);
         drawNode.setGeometryNode(assets[i]);
       }
 
@@ -91,7 +91,7 @@ $(document).ready(function() {
   var scene = FABRIC.SceneGraph.createScene();
   var viewport = scene.constructNode('Viewport', { windowElement: document.getElementById('FabricContainer') });
 
-  viewport.setBackgroundTextureImage(scene.constructNode('Image2D', {
+viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     url: '../BasicDemos/Resources/fabric-demo-gradient.png'
   }));
 

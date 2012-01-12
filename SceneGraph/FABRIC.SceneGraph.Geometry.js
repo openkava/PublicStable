@@ -327,29 +327,25 @@ FABRIC.SceneGraph.registerNodeType('GeometryDataCopy', {
           'self.newCount'
         ]
       }));
-    
+    var redrawEventHandler = geometryDataCopyNode.getRedrawEventHandler();
+    var uniformsdgnode = geometryDataCopyNode.getUniformsDGNode();
+    var attributesdgnode = geometryDataCopyNode.getAttributesDGNode();
     var baseGeometryNode;
-    geometryDataCopyNode.pub.getBaseGeometry = function(){
-      return baseGeometryNode.pub;
-    }
-    geometryDataCopyNode.pub.setBaseGeometryNode = function(node) {
-      if (!node || !node.isTypeOf('Geometry')) {
-        throw ('Incorrect type assignment. Must assign a Geometry');
-      }
-      baseGeometryNode = scene.getPrivateInterface(node);
-    
-      geometryDataCopyNode.getUniformsDGNode().setDependency(baseGeometryNode.getUniformsDGNode(), 'parentuniforms');
-      geometryDataCopyNode.getUniformsDGNode().setDependency(baseGeometryNode.getAttributesDGNode(), 'parentattributes');
-      geometryDataCopyNode.getAttributesDGNode().setDependency(baseGeometryNode.getUniformsDGNode(), 'parentuniforms');
-      geometryDataCopyNode.getAttributesDGNode().setDependency(baseGeometryNode.getAttributesDGNode(), 'parentattributes');
-      if(baseGeometryNode.getBoundingBoxDGNode){
-        geometryDataCopyNode.getUniformsDGNode().setDependency(baseGeometryNode.getBoundingBoxDGNode(), 'parentboundingbox');
-        geometryDataCopyNode.getAttributesDGNode().setDependency(baseGeometryNode.getBoundingBoxDGNode(), 'parentboundingbox');
-      }
-    
-      var redrawEventHandler = geometryDataCopyNode.getRedrawEventHandler();
-      redrawEventHandler.appendChildEventHandler(baseGeometryNode.getRedrawEventHandler());
-    }
+    geometryDataCopyNode.addReferenceInterface('BaseGeometry', 'Geometry',
+      function(nodePrivate){
+        baseGeometryNode = nodePrivate;
+        if(baseGeometryNode){
+          uniformsdgnode.setDependency(baseGeometryNode.getUniformsDGNode(), 'parentuniforms');
+          uniformsdgnode.setDependency(baseGeometryNode.getAttributesDGNode(), 'parentattributes');
+          attributesdgnode.setDependency(baseGeometryNode.getUniformsDGNode(), 'parentuniforms');
+          attributesdgnode.setDependency(baseGeometryNode.getAttributesDGNode(), 'parentattributes');
+          if(baseGeometryNode.getBoundingBoxDGNode){
+            uniformsdgnode.setDependency(baseGeometryNode.getBoundingBoxDGNode(), 'parentboundingbox');
+            attributesdgnode.setDependency(baseGeometryNode.getBoundingBoxDGNode(), 'parentboundingbox');
+          }
+          redrawEventHandler.appendChildEventHandler(baseGeometryNode.getRedrawEventHandler());
+        }
+      });
     
     //////////////////////////////////////////
     // Persistence
@@ -760,76 +756,48 @@ FABRIC.SceneGraph.registerNodeType('Instance', {
 
 
     // extend public interface
-    instanceNode.pub.getGeometryNode = function() {
-      return geometryNode;
-    };
-    instanceNode.pub.setGeometryNode = function(node) {
-      if (!node.isTypeOf('Geometry')) {
-        throw ('Incorrect type assignment. Must assign a Geometry');
-      }
-      node = scene.getPrivateInterface(node);
-      geometryNode = node;
-      if(transformNode && !rayIntersectionOperatorsAssigned){
-        assignRayIntersectionOperators();
-      }
-      redrawEventHandler.appendChildEventHandler(geometryNode.getRedrawEventHandler());
-      return instanceNode.pub;
-    };
-    instanceNode.pub.getTransformNode = function() {
-      return transformNode.pub;
-    };
-    instanceNode.pub.setTransformNode = function(node, member) {
-      if (member) {
-        transformNodeMember = member;
-      }
-      node = scene.getPrivateInterface(node);
-      if (!(node.getDGNode() && node.getDGNode().getMembers()[transformNodeMember])) {
-        var message = 'Error in Transform node assignement on :' + node.name +
-          ' \n member not found :' + transformNodeMember + '\n\n';
-        message += 'Members:' + JSON.stringify(node.getDGNode().getMembers());
-        throw (message);
-      }
-      var transformNodeAssigned = transformNode != undefined;
-      transformNode = node;
-      if(!transformNodeAssigned){
-        assignLoadTransformOperators();
-      }
-      if(geometryNode && !rayIntersectionOperatorsAssigned){
-        assignRayIntersectionOperators();
-      }
-      return instanceNode.pub;
-    };
+    instanceNode.addReferenceInterface('Geometry', 'Geometry',
+      function(nodePrivate){
+        geometryNode = nodePrivate;
+        if(transformNode && !rayIntersectionOperatorsAssigned){
+          assignRayIntersectionOperators();
+        }
+        redrawEventHandler.appendChildEventHandler(geometryNode.getRedrawEventHandler());
+      });
+    
+    instanceNode.addReferenceInterface('Transform', 'Transform',
+      function(nodePrivate, member){
+        if (member){
+          if(!nodePrivate.getDGNode().getMembers()[member]) {
+            var message = 'Error in Transform node assignement on :' + nodePrivate.name +
+              ' \n member not found :' + member + '\n\n';
+            message += ' Members:' + JSON.stringify(nodePrivate.getDGNode().getMembers());
+            throw (message);
+          }
+          transformNodeMember = member;
+        }
+        var transformNodeAssigned = (transformNode != undefined);
+        transformNode = nodePrivate;
+        if(!transformNodeAssigned){
+          assignLoadTransformOperators();
+        }
+        if(geometryNode && !rayIntersectionOperatorsAssigned){
+          assignRayIntersectionOperators();
+        }
+      });
+    
     instanceNode.pub.getTransformNodeMember = function() {
       return transformNodeMember;
     };
-    instanceNode.pub.getMaterialNode = function(index) {
-      var material = materialNodes[index ? index : 0];
-      return material ? scene.getPublicInterface(material) : undefined;
-    };
-    instanceNode.pub.setMaterialNode = function(node) {
-      if (!node.isTypeOf('Material')) {
-        throw (':Incorrect type assignment. Must assign a Material');
-      }
-      node = scene.getPrivateInterface(node);
-      node.getRedrawEventHandler().appendChildEventHandler(redrawEventHandler);
-      materialNodes.push(node);
-      return instanceNode.pub;
-    };
-    instanceNode.pub.removeMaterialNode = function(val) {
-      var index = -1;
-      if(typeof val == 'number'){
-        index = val;
-      }else{
-        node = scene.getPrivateInterface(val);
-        index = materialNodes.indexOf(node);
-      }
-      if (index === -1) {
-        throw (':Material not assigned');
-      }
-      materialNodes[index].getRedrawEventHandler().removeChildEventHandler(redrawEventHandler);
-      materialNodes.splice(index, 1);
-      return instanceNode.pub;
-    };
+    instanceNode.addReferenceListInterface('Material', 'Material',
+      function(nodePrivate, index){
+        nodePrivate.getRedrawEventHandler().appendChildEventHandler(redrawEventHandler);
+        materialNodes.push(nodePrivate);
+      },
+      function(nodePrivate, index){
+        nodePrivate.getRedrawEventHandler().removeChildEventHandler(redrawEventHandler);
+        materialNodes.splice(index, 1);
+      });
     
     //////////////////////////////////////////
     // Persistence
@@ -884,7 +852,7 @@ FABRIC.SceneGraph.registerNodeType('Instance', {
         if (nodeData.materialNodes.hasOwnProperty(i)) {
           var materialNode = sceneDeserializer.getNode(nodeData.materialNodes[i]);
           if (materialNode) {
-            instanceNode.pub.setMaterialNode(materialNode);
+            instanceNode.pub.addMaterialNode(materialNode);
           }
         }
       }
@@ -903,7 +871,7 @@ FABRIC.SceneGraph.registerNodeType('Instance', {
       instanceNode.pub.setGeometryNode(options.geometryNode);
     }
     if (options.materialNode) {
-      instanceNode.pub.setMaterialNode(options.materialNode);
+      instanceNode.pub.addMaterialNode(options.materialNode);
     }
     return instanceNode;
   }
