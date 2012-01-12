@@ -352,9 +352,6 @@ FABRIC.SceneGraph.registerNodeType('Material', {
           function(nodePrivate){
             textureStub.appendChildEventHandler(nodePrivate.getRedrawEventHandler());
           });
-      //  if (textureDef.node !== undefined) {
-      //    setTextureFn(textureDef.node);
-      //  }
       };
       var textureUnit = 0;
       for (i in options.textures) {
