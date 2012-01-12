@@ -130,7 +130,7 @@ $(document).ready(function() {
     lightNode: light,
     numBones: skeleton.getNumBones()
   });
-  assets.tuscanyCharacterInstance.setMaterialNode(material);
+  assets.tuscanyCharacterInstance.addMaterialNode(material);
 
   var debug = scene.constructNode('CharacterSkeletonDebug', {
     characterRigNode: assets.tuscanyCharacterRig,

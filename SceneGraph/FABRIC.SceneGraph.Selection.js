@@ -503,7 +503,7 @@ FABRIC.SceneGraph.registerNodeType('SelectableInstance', {
           selectableInstance.pub.removeMaterialNode( mainMaterialNode );
           removedMainMaterial = true;
         }
-        selectableInstance.pub.setMaterialNode( options.highlightMaterial );
+        selectableInstance.pub.addMaterialNode( options.highlightMaterial );
         highlighted = true;
       }
     });
@@ -511,7 +511,7 @@ FABRIC.SceneGraph.registerNodeType('SelectableInstance', {
       if(highlighted){
         selectableInstance.pub.removeMaterialNode( options.highlightMaterial );
         if(removedMainMaterial) {
-          selectableInstance.pub.setMaterialNode( mainMaterialNode );
+          selectableInstance.pub.addMaterialNode( mainMaterialNode );
           removedMainMaterial = undefined;
         }
         highlighted = false;
@@ -527,13 +527,13 @@ FABRIC.SceneGraph.registerNodeType('SelectableInstance', {
         selectableInstance.pub.removeMaterialNode( mainMaterialNode );
         removedMainMaterial = true;
       }
-      selectableInstance.pub.setMaterialNode( options.selectMaterial );
+      selectableInstance.pub.addMaterialNode( options.selectMaterial );
       selected = true;
     });
     selectableInstance.pub.addEventListener('deselected', function(evt) {
       selectableInstance.pub.removeMaterialNode( options.selectMaterial );
       if(removedMainMaterial) {
-        selectableInstance.pub.setMaterialNode( mainMaterialNode );
+        selectableInstance.pub.addMaterialNode( mainMaterialNode );
         removedMainMaterial = undefined;
       }
       selected = false;

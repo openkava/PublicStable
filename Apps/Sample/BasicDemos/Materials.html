@@ -67,7 +67,7 @@ $(document).ready(function() {
     backgroundColor: FABRIC.RT.rgb(0.0, 0.05, 0.15)
   });
   
-  viewport.setBackgroundTextureImage(scene.constructNode('Image2D', {
+viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     url: 'Resources/fabric-demo-gradient.png'
   }));
   
@@ -98,7 +98,7 @@ $(document).ready(function() {
     materialNode: flatMaterial
   });
 
-  inst.setMaterialNode( scene.constructNode('WireframeMaterial', {
+  inst.addMaterialNode( scene.constructNode('WireframeMaterial', {
     color: FABRIC.RT.rgb(0.3, 0.3, 0.3, 1)
   }));
   

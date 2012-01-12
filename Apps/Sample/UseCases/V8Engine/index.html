@@ -174,7 +174,7 @@ $(document).ready(function() {
       windowElement: document.getElementById('FabricContainer')
     });
 
-  viewport.setBackgroundTextureImage(scene.constructNode('Image2D', {
+viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     url: '../../BasicDemos/Resources/fabric-demo-gradient.png'
   }));
 
@@ -318,7 +318,7 @@ $(document).ready(function() {
 
   var assets = scene.importAssetFile( "Models/IntakeValve.obj" );
   for( i in assets ){
-    assets[i].setMaterialNode( blueMaterial );
+    assets[i].addMaterialNode( blueMaterial );
     camDrawNode.setGeometryNode( assets[i] );
   }
 
