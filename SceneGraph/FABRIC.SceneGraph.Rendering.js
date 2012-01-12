@@ -160,6 +160,10 @@ FABRIC.SceneGraph.registerNodeType('OffscreenViewport', {
     return offscreenNode;
   }});
 
+
+
+
+
 FABRIC.SceneGraph.registerNodeType('BaseDeferredRenderer', {
   briefDesc: '',
   detailedDesc: '',
@@ -369,23 +373,13 @@ FABRIC.SceneGraph.registerNodeType('BaseDeferredRenderer', {
         }));
 
     //Build event handlers for loading each render target
-    var renderTargetTextureRedrawEventHandler = [];
+    var renderTargetTextures = [];
     for(i = 0; i < nbRenderTargets; ++i) {
-      var handler = deferredRenderNode.constructEventHandlerNode(oglRenderTargetTextureNames[i]+'TextureRedraw');
-      renderTargetTextureRedrawEventHandler.push(handler);
-      handler.preDescendBindings.append(scene.constructOperator({
-        operatorName: 'bind' + oglRenderTargetTextureNames[i] + 'Image',
-        preProcessorDefinitions: {
-          TEXTURE_INDEX: i
-        },
-        srcCode: 'use OGLRenderTarget; operator bindTexture( io OGLRenderTarget renderTarget, io Integer textureUnit ) {\n' +
-                     ' renderTarget.textures[TEXTURE_INDEX].texture.bind(textureUnit);}',
-        entryFunctionName: 'bindTexture',
-        parameterLayout: [
-          'deferredDraw.renderTarget',
-          'textureStub.textureUnit'
-        ]
-      }));
+      var imageNode = scene.constructNode('RenderTargetBufferTexture', {
+        name: oglRenderTargetTextureNames[i],
+        bufferIndex: i
+      });
+      renderTargetTextures.push(imageNode);
     }
 
     var capitalizeFirstLetter = function(str) {
@@ -399,9 +393,9 @@ FABRIC.SceneGraph.registerNodeType('BaseDeferredRenderer', {
       var material = scene.getPrivateInterface(materialNodePub);
 
       for(i = 0; i < nbRenderTargets; ++i) {
-        var setTextureFuncName = 'set' + capitalizeFirstLetter(oglRenderTargetTextureNames[i]) + 'Image' + 'RedrawEventHandler';
-        if(material[setTextureFuncName] !== undefined) {
-          material[setTextureFuncName]( renderTargetTextureRedrawEventHandler[i] );
+        var setTextureFuncName = 'set' + capitalizeFirstLetter(oglRenderTargetTextureNames[i]) + 'TextureNode';
+        if(material.pub[setTextureFuncName] !== undefined) {
+          material.pub[setTextureFuncName]( renderTargetTextures[i].pub );
         }
       }
 

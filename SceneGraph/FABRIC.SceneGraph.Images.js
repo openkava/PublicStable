@@ -9,9 +9,38 @@ FABRIC.SceneGraph.registerNodeType('Image', {
   detailedDesc: 'The Texture node is an Image node which can be used for texturing of a 3D object.',
   parentNodeDesc: 'SceneGraphNode',
   factoryFn: function(options, scene) {
-    var textureNode = scene.constructNode('SceneGraphNode', options);
+    var imageNode = scene.constructNode('SceneGraphNode', options);
+    return imageNode;
+  }});
+
+
+FABRIC.SceneGraph.registerNodeType('RenderTargetBufferTexture', {
+  briefDesc: 'The RenderTargetBufferTexture is used to bind render target buffers to be used as textures.',
+  detailedDesc: 'The RenderTargetBufferTexture is used to bind render target buffers to be used as textures.',
+  parentNodeDesc: 'Image',
+  factoryFn: function(options, scene) {
+    scene.assignDefaults(options, {
+      bufferIndex: 0
+    });
+    var textureNode = scene.constructNode('Image', options);
+    var redrawEventHandler = textureNode.constructEventHandlerNode('Redraw');
+    
+    redrawEventHandler.addMember('bufferIndex', 'Integer', options.bufferIndex)
+    redrawEventHandler.preDescendBindings.append(scene.constructOperator({
+      operatorName: 'bindRenderTargetBufferAsTexture',
+      srcCode: 'use OGLRenderTarget; operator bindTexture( io OGLRenderTarget renderTarget, io Integer bufferIndex, io Integer textureUnit ) {\n' +
+                   ' renderTarget.textures[bufferIndex].texture.bind(textureUnit);\n\
+                }',
+      entryFunctionName: 'bindTexture',
+      parameterLayout: [
+        'deferredDraw.renderTarget',
+        'self.bufferIndex',
+        'textureStub.textureUnit'
+      ]
+    }));
     return textureNode;
   }});
+
 
 FABRIC.SceneGraph.registerNodeType('Image2D', {
   briefDesc: 'The Image node holds image data, and optionally creates an URL image loader and an OpenGL texture.',
