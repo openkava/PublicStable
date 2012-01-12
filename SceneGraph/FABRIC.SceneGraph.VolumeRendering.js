@@ -406,7 +406,7 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
         }));
 
     //Create transfer function images
-    var transferFunctionImageNode = scene.constructNode('Image', {
+    var transferFunctionImageNode = scene.constructNode('Image2D', {
       wantHDR: true,
       createDgNode: true,
       createResourceLoadNode: false,
@@ -596,7 +596,7 @@ FABRIC.SceneGraph.registerNodeType('DrawRectangle', {
     options.createResourceLoadNode = false;
     options.createLoadTextureEventHandler = true;
 
-    var rectangleImageNode = scene.constructNode('Image', options);
+    var rectangleImageNode = scene.constructNode('Image2D', options);
 
     var preRedrawEventHandler = rectangleImageNode.constructEventHandlerNode('PreRedraw');
     preRedrawEventHandler.appendChildEventHandler(rectangleImageNode.getRedrawEventHandler());
