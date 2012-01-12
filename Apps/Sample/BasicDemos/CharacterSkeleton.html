@@ -106,7 +106,8 @@ $(document).ready(function() {
   });
 
   var assetNodes = scene.importAssetFile('Models/mocap_01.dae', {
-    constructRigFromHierarchy: 'Biped_Nulls_UpperBody'
+    constructRigFromHierarchy: true,
+    rigHierarchyRootNodeName: 'Biped_Nulls_UpperBody'
   });
 
   var animationLibrary = assetNodes.AnimationLibrary;
