@@ -1117,11 +1117,7 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
             viewportNode.pub.getGlewSupported = fabricwindow.getGlewSupported;
           }
 
-          if(options.checkOpenGL2Support && !fabricwindow.getGlewSupported('GL_VERSION_2_0')){
-            alert('ERROR: Your graphics driver does not support OpenGL 2.0, which is required to run Fabric.')
-          }else{
-            viewportNode.pub.show();
-          }
+          viewportNode.pub.show();
           return true;
         }
       });
@@ -1259,9 +1255,8 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
         backgroundTextureNode = nodePrivate;
         textureStub.appendChildEventHandler(backgroundTextureNode.getRedrawEventHandler());
       });
-    viewportNode.addReferenceInterface('PostProcessEffect', 'PostProcessEffect',
-      function(nodePrivate){
-        var postProcessEffect = nodePrivate;
+    viewportNode.addReferenceListInterface('PostProcessEffect', 'PostProcessEffect',
+      function(nodePrivate, index){
         var parentEventHandler;
         if (postProcessEffects.length > 0) {
           parentEventHandler = postProcessEffects[postProcessEffects.length - 1].getRedrawEventHandler();
@@ -1270,42 +1265,36 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
           parentEventHandler = redrawEventHandler;
         }
         parentEventHandler.removeChildEventHandler(propagationRedrawEventHandler);
-        parentEventHandler.appendChildEventHandler(postProcessEffect.getRedrawEventHandler());
+        parentEventHandler.appendChildEventHandler(nodePrivate.getRedrawEventHandler());
   
-        postProcessEffect.getRedrawEventHandler().appendChildEventHandler(propagationRedrawEventHandler);
-        postProcessEffects.push(postProcessEffect);
+        nodePrivate.getRedrawEventHandler().appendChildEventHandler(propagationRedrawEventHandler);
+        postProcessEffects.push(nodePrivate);
+      },
+      function(nodePrivate, index) {
+        var parentEventHandler, childEventHandler;
+        postProcessEffects.splice(index, 1);
+        if(filterIndex < postProcessEffects.length){
+          childEventHandler = postProcessEffects[filterIndex].getRedrawEventHandler();
+        }
+        else{
+          childEventHandler = propagationRedrawEventHandler;
+        }
+        nodePrivate.getRedrawEventHandler().removeChildEventHandler(childEventHandler);
+        
+        if (filterIndex > 0) {
+          parentEventHandler = postProcessEffects[filterIndex - 1].getRedrawEventHandler();
+        }
+        else {
+          parentEventHandler = redrawEventHandler;
+        }
+        parentEventHandler.removeChildEventHandler(nodePrivate.getRedrawEventHandler());
+        if (filterIndex < postProcessEffects.length) {
+          parentEventHandler.appendChildEventHandler(postProcessEffects[filterIndex].getRedrawEventHandler());
+        }
+        else {
+          parentEventHandler.appendChildEventHandler(propagationRedrawEventHandler);
+        }
       });
-    
-    viewportNode.pub.removePostProcessEffectShader = function(postProcessEffect) {
-      postProcessEffect = scene.getPrivateInterface(postProcessEffect);
-      var filterIndex = postProcessEffects.indexOf(postProcessEffect);
-      if (filterIndex == -1) {
-        throw ('Filter not applied: ' + postProcessEffect.name);
-      }
-      var parentEventHandler, childEventHandler;
-      postProcessEffects.splice(filterIndex, 1);
-      if(filterIndex < postProcessEffects.length){
-        childEventHandler = postProcessEffects[filterIndex].getRedrawEventHandler();
-      }
-      else{
-        childEventHandler = propagationRedrawEventHandler;
-      }
-      postProcessEffect.getRedrawEventHandler().removeChildEventHandler(childEventHandler);
-      
-      if (filterIndex > 0) {
-        parentEventHandler = postProcessEffects[filterIndex - 1].getRedrawEventHandler();
-      }
-      else {
-        parentEventHandler = redrawEventHandler;
-      }
-      parentEventHandler.removeChildEventHandler(postProcessEffect.getRedrawEventHandler());
-      if (filterIndex < postProcessEffects.length) {
-        parentEventHandler.appendChildEventHandler(postProcessEffects[filterIndex].getRedrawEventHandler());
-      }
-      else {
-        parentEventHandler.appendChildEventHandler(propagationRedrawEventHandler);
-      }
-    };
     
     viewportNode.pub.rayCast = function(evt, options) {
       var result = {
