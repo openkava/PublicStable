@@ -374,7 +374,7 @@ FABRIC.SceneGraph.registerNodeType('BaseDeferredRenderer', {
       var handler = deferredRenderNode.constructEventHandlerNode(oglRenderTargetTextureNames[i]+'TextureRedraw');
       renderTargetTextureRedrawEventHandler.push(handler);
       handler.preDescendBindings.append(scene.constructOperator({
-        operatorName: 'bind' + oglRenderTargetTextureNames[i] + 'Texture',
+        operatorName: 'bind' + oglRenderTargetTextureNames[i] + 'Image',
         preProcessorDefinitions: {
           TEXTURE_INDEX: i
         },
@@ -399,7 +399,7 @@ FABRIC.SceneGraph.registerNodeType('BaseDeferredRenderer', {
       var material = scene.getPrivateInterface(materialNodePub);
 
       for(i = 0; i < nbRenderTargets; ++i) {
-        var setTextureFuncName = 'set' + capitalizeFirstLetter(oglRenderTargetTextureNames[i]) + 'Texture' + 'RedrawEventHandler';
+        var setTextureFuncName = 'set' + capitalizeFirstLetter(oglRenderTargetTextureNames[i]) + 'Image' + 'RedrawEventHandler';
         if(material[setTextureFuncName] !== undefined) {
           material[setTextureFuncName]( renderTargetTextureRedrawEventHandler[i] );
         }
