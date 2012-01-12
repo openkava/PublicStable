@@ -193,7 +193,7 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
   
   
 
-    paintManipulator.setPaintableNode(instanceNode);
+    paintManipulator.addPaintableNode(instanceNode);
   
     var onPaintFn = function(evt) {
       if( evt.paintData.points.length == 0 ){
