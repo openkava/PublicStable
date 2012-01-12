@@ -456,8 +456,11 @@ FABRIC.SceneGraph.registerNodeType('Manipulator', {
     
     if(!material){
       material = scene.pub.constructNode('FlatMaterial', {
+        shaderNameDecoration: 'Manipulators',
+        prototypeMaterialType: 'LineMaterial',
+        lineWidth: 2,
         color: options.color,
-        drawOverlaid: options.drawOverlaid
+        drawOverlaid: true
       });
       manipulatorNode.pub.setMaterialNode(material);
     }

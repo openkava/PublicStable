@@ -529,6 +529,12 @@ FABRIC.SceneGraph.registerNodeType('LineMaterial', {
         entryFunctionName: 'setLineWidth',
         parameterLayout: ['self.lineWidth']
       }));
+    lineMaterial.getRedrawEventHandler().postDescendBindings.append(scene.constructOperator({
+        operatorName: 'resetLineWidth',
+        srcFile: 'FABRIC_ROOT/SceneGraph/KL/drawLines.kl',
+        entryFunctionName: 'resetLineWidth',
+        parameterLayout: []
+      }));
     return lineMaterial;
   }});
 

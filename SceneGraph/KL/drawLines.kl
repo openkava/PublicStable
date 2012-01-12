@@ -47,3 +47,7 @@ operator drawLineStrip(
 operator setLineWidth(io Scalar lineWidth) {
   glLineWidth(lineWidth);
 }
+
+operator resetLineWidth() {
+  glLineWidth(1.0);
+}

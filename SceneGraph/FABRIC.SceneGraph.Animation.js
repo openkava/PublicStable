@@ -600,6 +600,7 @@ FABRIC.SceneGraph.registerNodeType('TrackDisplay', {
     scene.assignDefaults(options, {
         animationLibraryNode: undefined,
         segmentCount: 100,
+        trackSetId: 0,
         timeRange: new FABRIC.RT.Vec2(0, 1)
       });
 
@@ -608,12 +609,15 @@ FABRIC.SceneGraph.registerNodeType('TrackDisplay', {
     var parametersdgnode = trackDisplayNode.constructDGNode('ParametersDGNode');
     var animationLibraryNode;
 
-    parametersdgnode.addMember('trackSetId', 'Integer');
+    parametersdgnode.addMember('trackSetId', 'Integer', options.trackSetId);
     parametersdgnode.addMember('timeRange', 'Vec2', options.timeRange);
     parametersdgnode.addMember('segmentCount', 'Size', options.segmentCount);
 
     dgnode.setDependency(parametersdgnode, 'parameters');
-
+    
+    trackDisplayNode.addMemberInterface(parametersdgnode, 'trackSetId', true, true);
+    trackDisplayNode.addMemberInterface(parametersdgnode, 'timeRange', true, true);
+    trackDisplayNode.addMemberInterface(parametersdgnode, 'segmentCount', true, true);
 
     // extend the public interface
     trackDisplayNode.pub.setAnimationLibraryNode = function(node, trackSetId) {
@@ -634,19 +638,13 @@ FABRIC.SceneGraph.registerNodeType('TrackDisplay', {
 
       dgnode.bindings.append(animationLibraryNode.getEvaluateCurveOperator());
     };
-    trackDisplayNode.pub.setTimeRange = function(timeRange) {
-      parametersdgnode.setData('timeRange', timeRange);
-    };
-    trackDisplayNode.pub.getTimeRange = function(timeRange) {
-      return parametersdgnode.getData('timeRange');
-    };
     trackDisplayNode.pub.getCurveData = function(trackIndex) {
       dgnode.evaluate();
       return dgnode.getData('values', trackIndex);
     }
 
     if (options.animationLibraryNode) {
-      trackDisplayNode.pub.setAnimationLibraryNode(options.animationLibraryNode);
+      trackDisplayNode.pub.setAnimationLibraryNode(options.animationLibraryNode, options.trackSetId);
     }
     return trackDisplayNode;
   }});

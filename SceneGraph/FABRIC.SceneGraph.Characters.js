@@ -424,12 +424,13 @@ FABRIC.SceneGraph.registerNodeType('CharacterVariables', {
         ]
       }));
       characterVariablesNode.pub.setBoundTrack = function(trackSetId){
+        m_trackSetId = trackSetId;
         dgnode.setData('trackSetId', 0, trackSetId);
       }
       
       scene.pub.addEventListener('beginmanipulation', function(evt){
         characterVariablesNode.pub.setEnableTrackEvaluation(false);
-        m_animationLibraryNode.beginManipulation(trackSetId);
+        m_animationLibraryNode.beginManipulation(m_trackSetId);
         
       });
       scene.pub.addEventListener('endmanipulation', function(evt){

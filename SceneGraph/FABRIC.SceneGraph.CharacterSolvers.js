@@ -511,7 +511,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('ArmSolver', {
 
   var arms = [];
   for(j=0; j<options.limbs.length; j++){
-      var boneIDs = solver.generateBoneMapping(options.limbs[j], [['bones'], 'clavicle', 'wrist']);
+      var boneIDs = solver.generateBoneMapping(options.limbs[j], [['bones'], 'wrist']);
       
       // compute the target
       handControlXfo = referencePose[boneIDs.wrist].clone();
@@ -869,16 +869,18 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('HumanoidLegSolver', {
           screenTranslationManipulators: true
         });
         
-        
+        var length = options.ikGoalManipulatorSizes ? options.ikGoalManipulatorSizes[j].x : bones[boneIDs.ankle].length * 2;
+        var width = options.ikGoalManipulatorSizes ? options.ikGoalManipulatorSizes[j].y : bones[boneIDs.ankle].length;
+          
         solver.constructManipulator(name+j+'FootRotate', 'PivotRotationManipulator', {
           baseManipulatorType: 'CharacterManipulator',
           rigNode: rigNode.pub,
           xfoIndex: footControlXfoId,
           targetName: name+j+'IKGoal',
-          radius: bones[boneIDs.ankle].length,
+          radius: length*0.5,
           geometryNode: scene.pub.constructNode('Rectangle', {
-            length: bones[boneIDs.ankle].length * 2,
-            width: bones[boneIDs.ankle].length
+            length: length,
+            width: width
           }),
           color: FABRIC.RT.rgb(0, 0, 1),
           localXfo: new FABRIC.RT.Xfo({
@@ -1004,7 +1006,8 @@ FABRIC.appendOnCreateContextCallback(function(context) {
 FABRIC.SceneGraph.CharacterSolvers.registerSolver('HubSolver', {
   constructSolver: function(options, scene) {
     scene.assignDefaults(options, {
-        rigNode: undefined
+        rigNode: undefined,
+        manipulatorSizes: undefined
       });
     
     var solver = FABRIC.SceneGraph.CharacterSolvers.constructSolver('CharacterSolver', options, scene);
@@ -1062,7 +1065,7 @@ FABRIC.SceneGraph.CharacterSolvers.registerSolver('HubSolver', {
               'self.globalXfo'
             ]
           },
-          radius: 0.9*(1.0/(i+1)),
+          radius: options.manipulatorSizes ? options.manipulatorSizes[i] : 0.9*(1.0/(i+1)),
           screenTranslationManipulators: true,
           drawOverlaid: true
         });
