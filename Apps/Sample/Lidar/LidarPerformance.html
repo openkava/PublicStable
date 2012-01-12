@@ -196,9 +196,9 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
           
           var useGradient = $('#useElevationShader').attr('checked');
           if(useGradient)
-            pointInstances[resourceName].setMaterialNode(gradientMaterial);
+            pointInstances[resourceName].addMaterialNode(gradientMaterial);
           else
-            pointInstances[resourceName].setMaterialNode(flatMaterial);
+            pointInstances[resourceName].addMaterialNode(flatMaterial);
         }
       }
       filesLoaded++;
@@ -217,14 +217,14 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
       {
         try{
           pointInstances[resourceName].removeMaterialNode(flatMaterial);
-          pointInstances[resourceName].setMaterialNode(gradientMaterial);
+          pointInstances[resourceName].addMaterialNode(gradientMaterial);
         }catch(e){}
       }
       else
       {
         try{
           pointInstances[resourceName].removeMaterialNode(gradientMaterial);
-          pointInstances[resourceName].setMaterialNode(flatMaterial);
+          pointInstances[resourceName].addMaterialNode(flatMaterial);
         }catch(e){}
       }
       viewport.redraw();

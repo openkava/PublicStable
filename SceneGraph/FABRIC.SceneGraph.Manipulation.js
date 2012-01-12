@@ -460,7 +460,7 @@ FABRIC.SceneGraph.registerNodeType('Manipulator', {
         color: options.color,
         drawOverlaid: options.drawOverlaid
       });
-      manipulatorNode.pub.setMaterialNode(material);
+      manipulatorNode.pub.addMaterialNode(material);
     }
     var color = material.getColor();
       

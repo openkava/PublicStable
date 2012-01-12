@@ -294,7 +294,7 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
       diffuseColor: FABRIC.RT.rgba(0.3, 0.45, 1.0, 1.0),
       numBones: rigNode.getSkeletonNode().getNumBones()
     });
-  rigInstanceNode.setMaterialNode(materialNode);
+  rigInstanceNode.addMaterialNode(materialNode);
 
   assetNodes.AnimationController.setTimeRange(new FABRIC.RT.Vec2(0, 5));
 

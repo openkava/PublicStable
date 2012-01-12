@@ -286,7 +286,7 @@ $(document).ready(function() {
       var floorInstance = assetNodes.Plane001;
       var floorMesh = assetNodes.Plane001Mesh;
       
-      floorInstance.setMaterialNode(phongMaterial);
+      floorInstance.addMaterialNode(phongMaterial);
 
       bulletWorldNode.addShape('Floor',new FABRIC.RT.BulletShape.createTriangleMesh(floorMesh));
       

@@ -318,7 +318,7 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
 
   var assets = scene.importAssetFile( "Models/IntakeValve.obj" );
   for( i in assets ){
-    assets[i].setMaterialNode( blueMaterial );
+    assets[i].addMaterialNode( blueMaterial );
     camDrawNode.setGeometryNode( assets[i] );
   }
 

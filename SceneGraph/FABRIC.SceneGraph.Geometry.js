@@ -791,14 +791,12 @@ FABRIC.SceneGraph.registerNodeType('Instance', {
     };
     instanceNode.addReferenceListInterface('Material', 'Material',
       function(nodePrivate, index){
-        if(nodePrivate){
-          nodePrivate.getRedrawEventHandler().appendChildEventHandler(redrawEventHandler);
-          materialNodes.push(nodePrivate);
-        }
-        else{
-          materialNodes[index].getRedrawEventHandler().removeChildEventHandler(redrawEventHandler);
-          materialNodes.splice(index, 1);
-        }
+        nodePrivate.getRedrawEventHandler().appendChildEventHandler(redrawEventHandler);
+        materialNodes.push(nodePrivate);
+      },
+      function(nodePrivate, index){
+        nodePrivate.getRedrawEventHandler().removeChildEventHandler(redrawEventHandler);
+        materialNodes.splice(index, 1);
       });
     
     //////////////////////////////////////////
@@ -854,7 +852,7 @@ FABRIC.SceneGraph.registerNodeType('Instance', {
         if (nodeData.materialNodes.hasOwnProperty(i)) {
           var materialNode = sceneDeserializer.getNode(nodeData.materialNodes[i]);
           if (materialNode) {
-            instanceNode.pub.setMaterialNode(materialNode);
+            instanceNode.pub.addMaterialNode(materialNode);
           }
         }
       }
@@ -873,7 +871,7 @@ FABRIC.SceneGraph.registerNodeType('Instance', {
       instanceNode.pub.setGeometryNode(options.geometryNode);
     }
     if (options.materialNode) {
-      instanceNode.pub.setMaterialNode(options.materialNode);
+      instanceNode.pub.addMaterialNode(options.materialNode);
     }
     return instanceNode;
   }

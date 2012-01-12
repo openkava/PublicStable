@@ -845,6 +845,8 @@ FABRIC.SceneGraph.registerNodeType('SceneGraphNode', {
           }
           var prevnode = nodeReferences[referenceName];
           nodeReferences[referenceName] = node;
+          // a reference can be removed by passing in undefined for the value.
+          // the setterFn must handle undefined as a value.
           setterCallback(node ? scene.getPrivateInterface(node) : undefined, option);
           
           scene.pub.fireEvent('referenceassigned', {
@@ -892,13 +894,13 @@ FABRIC.SceneGraph.registerNodeType('SceneGraphNode', {
           if(typeof val == 'number'){
             index = val;
           }else{
-            node = val;
-            index = nodeReferences.indexOf(node);
+            index = nodeReferences[referenceName].indexOf(val);
           }
           if (index === -1) {
             throw ( typeConstraint + ' not assigned');
           }
-          removeCallback(index);
+          var node = nodeReferences[referenceName][index];
+          removeCallback(scene.getPrivateInterface(node), index);
           nodeReferences[referenceName].splice(index, 1);
           
           scene.pub.fireEvent('referenceremoved', {
@@ -914,7 +916,7 @@ FABRIC.SceneGraph.registerNodeType('SceneGraphNode', {
         sceneGraphNode.pub[adderName] = adderFn;
         sceneGraphNode.pub[removerName] = removerFn;
         nodeReferenceInterfaces[referenceName] = { getterFn:getterFn, adderFn:adderFn, removerFn:removerFn };
-        return sceneGraphNode.pub[setterName];
+        return sceneGraphNode.pub[adderName];
       },
       constructDGNode: function(dgnodename, isResourceLoad) {
         if(dgnodes[dgnodename]){
@@ -935,7 +937,7 @@ FABRIC.SceneGraph.registerNodeType('SceneGraphNode', {
         return dgnode;
       },
       constructResourceLoadNode: function(dgnodename) {
-        return constructDGNode(dgnodename, true);
+        return sceneGraphNode.constructDGNode(dgnodename, true);
       },
       getDGNodes: function() {
         return dgnodes;
@@ -1232,12 +1234,8 @@ FABRIC.SceneGraph.registerNodeType('Viewport', {
         }
       });
     
-    viewportNode.pub.startLoadMode = startLoadMode;
-
-    viewportNode.pub.disableRaycasting = disableRaycasting;
-    viewportNode.pub.enableRaycasting = enableRaycasting;
     
-    viewportNode.addReferenceInterface('BackgroundTexture', 'Texture',
+    viewportNode.addReferenceInterface('BackgroundTexture', 'Image2D',
       function(nodePrivate){
         if (textureStub.postDescendBindings.getLength() == 0) {
           textureStub.setScopeName('textureStub');
