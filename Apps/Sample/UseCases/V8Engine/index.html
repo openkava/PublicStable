@@ -101,7 +101,7 @@ FABRIC.SceneGraph.registerNodeType('CamshaftTransform', {
 
 
 
-FABRIC.SceneGraph.registerNodeType('PistonTransform', {
+FABRIC.SceneGraph.registerNodeType('Pistons', {
   factoryFn: function(options, scene) {
     scene.assignDefaults(options, {
         crankTransformNode:undefined,
@@ -113,8 +113,8 @@ FABRIC.SceneGraph.registerNodeType('PistonTransform', {
 
     var crankTransformNode = scene.getPrivateInterface(options.crankTransformNode);
     
-    var crankshaftTransform = scene.constructNode('Transform', options),
-      dgnode = crankshaftTransform.getDGNode('DGNode');
+    var crankshaftTransform = scene.constructNode('SceneGraphNode', options),
+      dgnode = crankshaftTransform.constructDGNode('DGNode');
     
     dgnode.addMember('conrodXfo', 'Xfo');
     dgnode.addMember('pistonXfo', 'Xfo');
@@ -145,6 +145,39 @@ FABRIC.SceneGraph.registerNodeType('PistonTransform', {
     }));
     
     return crankshaftTransform;
+  }});
+  
+  
+  
+FABRIC.SceneGraph.registerNodeType('PistonTransform', {
+  factoryFn: function(options, scene) {
+    scene.assignDefaults(options, {
+        pistonsNode:undefined,
+        index:1,
+        member:"",
+      });
+
+    var pistonsNode = scene.getPrivateInterface(options.pistonsNode);
+    
+    var pistonTransformNode = scene.constructNode('Transform', options),
+      dgnode = pistonTransformNode.getDGNode('DGNode');
+    dgnode.addMember('xfoIndex', 'Integer', options.index);
+    
+    dgnode.setDependency(pistonsNode.getDGNode(), 'pistons');
+    dgnode.bindings.append(scene.constructOperator({
+      operatorName: 'bindPistonOp',
+      srcCode: 'operator bindPistonOp(io Xfo globalXfo, io Integer xfoIndex,  io Xfo pistonXfos<>){\n\
+        globalXfo = pistonXfos[xfoIndex];\n\
+      }',
+      parameterLayout: [
+        'self.globalXfo',
+        'self.xfoIndex',
+        'pistons.'+options.member+'<>'
+      ],
+      entryFunctionName: 'bindPistonOp'
+    }));
+    
+    return pistonTransformNode;
   }});
   
   
@@ -255,7 +288,7 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
 
   /////////////////////////////////////////////////
   // Pistons
-  var pistonTransform = scene.constructNode('PistonTransform', {
+  var pistonsNode = scene.constructNode('Pistons', {
       crankTransformNode:crankTransformNode,
       pistonCount:8,
       cylinderAngle:[0.785398163, -0.785398163, 0.785398163, -0.785398163,
@@ -269,11 +302,13 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
   loadObjFile('Models/Piston1.obj', function(mesh){
     for (var i = 0; i < 8; i++) {
       scene.constructNode('Instance', {
-        name: 'Piston' + (i + 1),
+        name: 'PistonInstance' + (i + 1),
         geometryNode: mesh,
-        transformNode: pistonTransform,
-        transformNodeMember: 'pistonXfo',
-        transformNodeIndex: i,
+        transformNode: scene.constructNode('PistonTransform', {
+          pistonsNode: pistonsNode,
+          member: 'pistonXfo',
+          index:i
+        }),
         materialNode: pistonMaterial,
         enableRaycasting: true
       });
@@ -282,11 +317,13 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
   var conrodMesh = loadObjFile('Models/Conrod1.obj', function(mesh){
     for (var i = 0; i < 8; i++) {
       scene.constructNode('Instance', {
-        name: 'Conrod' + (i + 1),
+        name: 'ConrodInstance' + (i + 1),
         geometryNode: mesh,
-        transformNode: pistonTransform,
-        transformNodeMember: 'conrodXfo',
-        transformNodeIndex: i,
+        transformNode: scene.constructNode('PistonTransform', {
+          pistonsNode: pistonsNode,
+          member: 'conrodXfo',
+          index:i
+        }),
         materialNode: conrodMaterial,
         enableRaycasting: true
       });
@@ -400,14 +437,14 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
                  'early fuel injection systems, cams on the camshaft would operate the fuel injectors.';
           selectedMaterial = camshaftMaterial;
           break;
-        case 'Piston1':
-        case 'Piston2':
-        case 'Piston3':
-        case 'Piston4':
-        case 'Piston5':
-        case 'Piston6':
-        case 'Piston7':
-        case 'Piston8':
+        case 'PistonInstance1':
+        case 'PistonInstance2':
+        case 'PistonInstance3':
+        case 'PistonInstance4':
+        case 'PistonInstance5':
+        case 'PistonInstance6':
+        case 'PistonInstance7':
+        case 'PistonInstance8':
           text = 'A piston is a component of reciprocating engines, reciprocating pumps, gas ' +
                  'compressors and pneumatic cylinders, among other similar mechanisms. It is ' +
                  'the moving component that is contained by a cylinder and is made gas-tight ' +
@@ -419,14 +456,14 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
                  'in the cylinder wall.';
           selectedMaterial = pistonMaterial;
           break;
-        case 'Conrod1':
-        case 'Conrod2':
-        case 'Conrod3':
-        case 'Conrod4':
-        case 'Conrod5':
-        case 'Conrod6':
-        case 'Conrod7':
-        case 'Conrod8':
+        case 'ConrodInstance1':
+        case 'ConrodInstance2':
+        case 'ConrodInstance3':
+        case 'ConrodInstance4':
+        case 'ConrodInstance5':
+        case 'ConrodInstance6':
+        case 'ConrodInstance7':
+        case 'ConrodInstance8':
           text = 'In a reciprocating piston engine, the connecting rod or conrod connects the piston ' +
                  'to the crank or crankshaft. Together with the crank, they form a simple mechanism ' +
                  'that converts linear motion into rotating motion. Connecting rods may also convert ' +
