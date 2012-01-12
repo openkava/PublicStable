@@ -348,7 +348,7 @@ FABRIC.SceneGraph.registerNodeType('Material', {
           ]
         }));
         
-        var setTextureFn = materialNode.addReferenceInterface(textureName, 'Texture',
+        var setTextureFn = materialNode.addReferenceInterface(textureName, 'Image',
           function(nodePrivate){
             textureStub.appendChildEventHandler(nodePrivate.getRedrawEventHandler());
           });

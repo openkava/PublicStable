@@ -114,8 +114,8 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
       }),
       geometryNode: scene.constructNode('Teapot', { size: 4 }),
     })
-  .setMaterialNode(shadowMapMaterial)
-  .setMaterialNode(bluePhongMaterial);
+  .addMaterialNode(shadowMapMaterial)
+  .addMaterialNode(bluePhongMaterial);
 
   scene.constructNode('Instance', {
       transformNode: scene.constructNode('Transform', {
@@ -128,8 +128,8 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
         height: 16
       })
     })
-  .setMaterialNode(shadowMapMaterial)
-  .setMaterialNode(bluePhongMaterial);
+  .addMaterialNode(shadowMapMaterial)
+  .addMaterialNode(bluePhongMaterial);
 
   scene.constructNode('Instance', {
       transformNode: scene.constructNode('Transform', {
@@ -138,7 +138,7 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
       }),
       geometryNode: scene.constructNode('Plane', { length: 50, width: 50, doubleSided: false })
     })
-  .setMaterialNode(greenPhongMaterial);
+  .addMaterialNode(greenPhongMaterial);
 
   $('#loadingDialog').dialog({
     modal: true

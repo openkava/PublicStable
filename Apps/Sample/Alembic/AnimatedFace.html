@@ -78,7 +78,7 @@ $(document).ready(function() {
         console.log($(this).val());
       var assets = scene.importAssetFile($(this).val());
       for (i in assets) {
-        assets[i].setMaterialNode(redMaterial);
+        assets[i].addMaterialNode(redMaterial);
         drawNode.setGeometryNode(assets[i]);
       }
 
@@ -138,7 +138,7 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
           geometryNode: assets[resourceName].getParsedNodes()[name],
           materialNode: phongMaterial
         });
-        inst.setMaterialNode(wireMaterial);
+        inst.addMaterialNode(wireMaterial);
       }
     }
       

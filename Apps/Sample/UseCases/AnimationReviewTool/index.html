@@ -406,7 +406,7 @@ FABRIC.SceneGraph.registerNodeType('PaintPlaneInstance', {
     }));
     
     // set the material
-    instanceNode.pub.setMaterialNode(materialNode.pub);
+    instanceNode.pub.addMaterialNode(materialNode.pub);
     
     if(!uvPlaneGeometry){
       uvPlaneGeometry = scene.constructNode('Plane', {
@@ -453,8 +453,8 @@ FABRIC.SceneGraph.registerNodeType('PaintPlaneInstance', {
         return;
       height = viewportNode.getFabricWindowObject().windowNode.getData('height',0);
       // setup the flat material for drawing
-    //  instanceNode.pub.setMaterialNode( uvViewportNode.pub.getFlatUVMaterial() );
-      inst.pub.setMaterialNode( uvViewportNode.pub.getFlatUVMaterial() );
+    //  instanceNode.pub.addMaterialNode( uvViewportNode.pub.getFlatUVMaterial() );
+      inst.pub.addMaterialNode( uvViewportNode.pub.getFlatUVMaterial() );
       
       uvViewportNode.pub.redraw();
 

@@ -135,7 +135,7 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
   var mouseUpEventsText = document.getElementById('mouseUpEventsText').childNodes[0];
 
   scene.addEventListener('mouseover_geom', function(evt) {
-      evt.targetNode.setMaterialNode( outlineMaterial );
+      evt.targetNode.addMaterialNode( outlineMaterial );
       mouseOverEventsText.data = 'Mouse Over:' + evt.targetNode.getName();
       viewport.redraw();
     });

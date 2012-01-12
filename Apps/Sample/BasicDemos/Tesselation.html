@@ -94,7 +94,7 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
     depthTextureNode: depthTexture
   });
 
-  assetNodes.sphere.setMaterialNode(tesselationMaterial);
+  assetNodes.sphere.addMaterialNode(tesselationMaterial);
   
   $('#tesselationlevel')
   .slider({
