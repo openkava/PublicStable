@@ -55,16 +55,16 @@ FABRIC.SceneGraph.registerNodeType('CrankshaftTransform', {
     crankshaftTransform.addMemberInterface( dgnode, 'engineSpeed', true);
     
     dgnode.bindings.append(scene.constructOperator({
-        operatorName: 'crankOp',
-        srcFile: 'KL/v8crankOp.kl',
-        parameterLayout: [
-          'self.globalXfo',
-          'self.phase',
-          'self.engineSpeed',
-          'globals.time'
-        ],
-        entryFunctionName: 'crankOp'
-      }));
+      operatorName: 'crankOp',
+      srcFile: 'KL/v8crankOp.kl',
+      parameterLayout: [
+        'self.globalXfo',
+        'self.phase',
+        'self.engineSpeed',
+        'globals.time'
+      ],
+      entryFunctionName: 'crankOp'
+    }));
 
     return crankshaftTransform;
   }});
@@ -86,15 +86,15 @@ FABRIC.SceneGraph.registerNodeType('CamshaftTransform', {
     dgnode.setDependency(crankTransformNode.getDGNode(), 'crank');
     dgnode.addMember('phase', 'Scalar');
     dgnode.bindings.append(scene.constructOperator({
-        operatorName: 'camOp',
-        srcFile: 'KL/v8camshaftOp.kl',
-        parameterLayout: [
-          'self.globalXfo',
-          'self.phase',
-          'crank.phase'
-        ],
-        entryFunctionName: 'camshaftOp'
-      }));
+      operatorName: 'camOp',
+      srcFile: 'KL/v8camshaftOp.kl',
+      parameterLayout: [
+        'self.globalXfo',
+        'self.phase',
+        'crank.phase'
+      ],
+      entryFunctionName: 'camshaftOp'
+    }));
 
     return camshaftTransform;
   }});
@@ -113,8 +113,8 @@ FABRIC.SceneGraph.registerNodeType('PistonTransform', {
 
     var crankTransformNode = scene.getPrivateInterface(options.crankTransformNode);
     
-    var crankshaftTransform = scene.constructNode('SceneGraphNode', options),
-      dgnode = crankshaftTransform.constructDGNode('DGNode');
+    var crankshaftTransform = scene.constructNode('Transform', options),
+      dgnode = crankshaftTransform.getDGNode('DGNode');
     
     dgnode.addMember('conrodXfo', 'Xfo');
     dgnode.addMember('pistonXfo', 'Xfo');
@@ -131,18 +131,18 @@ FABRIC.SceneGraph.registerNodeType('PistonTransform', {
     
     dgnode.setDependency(crankTransformNode.getDGNode(), 'crank');
     dgnode.bindings.append(scene.constructOperator({
-          operatorName: 'cylinderOp',
-          srcFile: 'KL/v8cylinderOp.kl',
-          parameterLayout: [
-            'self.conrodXfo',
-            'self.pistonXfo',
-            'self.cylinderAngle',
-            'self.phaseOffset',
-            'self.axialShift',
-            'crank.phase'
-          ],
-          entryFunctionName: 'cylinderOp'
-        }));
+      operatorName: 'cylinderOp',
+      srcFile: 'KL/v8cylinderOp.kl',
+      parameterLayout: [
+        'self.conrodXfo',
+        'self.pistonXfo',
+        'self.cylinderAngle',
+        'self.phaseOffset',
+        'self.axialShift',
+        'crank.phase'
+      ],
+      entryFunctionName: 'cylinderOp'
+    }));
     
     return crankshaftTransform;
   }});
@@ -212,26 +212,30 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
   });
 
   /////////////////////////////////////////////////
-  var loadObjFile = function(file) {
+  var loadObjFile = function(file, callback) {
     var fileName = file.split('/').pop().split('.')[0];
-    var assets = scene.importAssetFile(file);
-    trianglesNode = assets[fileName];
-    return trianglesNode;
+    var resourceLoadNode = scene.importAssetFile(file);
+    
+    resourceLoadNode.addEventListener('objparsesuccess', function(evt){
+      trianglesNode = evt.loadedGeometries[fileName];
+      callback(trianglesNode);
+    });
   };
   /////////////////////////////////////////////////
   // Crankshaft
   
   var crankTransformNode = scene.constructNode('CrankshaftTransform');
   
-  var crankshaftMesh = loadObjFile('Models/crankshaft.obj');
-
-  var crankshaftDrawNode = scene.constructNode('Instance', {
-      name: 'CrankShaft',
-      geometryNode: crankshaftMesh,
-      transformNode: crankTransformNode,
-      materialNode: crankshaftMaterial,
-      enableRaycasting: true
+  loadObjFile('Models/crankshaft.obj', function(geometryNode){
+      scene.constructNode('Instance', {
+        name: 'CrankShaft',
+        geometryNode: geometryNode,
+        transformNode: crankTransformNode,
+        materialNode: crankshaftMaterial,
+        enableRaycasting: true
+      });
     });
+
 
   /////////////////////////////////////////////////
   // Camshaft
@@ -239,24 +243,18 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
       crankTransformNode:crankTransformNode
     });
 
-  var camshaftMesh = loadObjFile('Models/camshaft.obj');
-
-  var camDrawNode = scene.constructNode('Instance', {
-      name: 'CamShaft',
-      geometryNode: camshaftMesh,
-      transformNode: camTransformNode,
-      materialNode: camshaftMaterial,
-      enableRaycasting: true
-    });
+  loadObjFile('Models/camshaft.obj', function(geometryNode){
+    scene.constructNode('Instance', {
+        name: 'CamShaft',
+        geometryNode: geometryNode,
+        transformNode: camTransformNode,
+        materialNode: camshaftMaterial,
+        enableRaycasting: true
+      });
+  });
 
   /////////////////////////////////////////////////
   // Pistons
-
-  var pistonMesh = loadObjFile('Models/Piston1.obj');
-  var conrodMesh = loadObjFile('Models/Conrod1.obj');
-
-  /////////////////////////////////////////////////
-  // Piston Transforms
   var pistonTransform = scene.constructNode('PistonTransform', {
       crankTransformNode:crankTransformNode,
       pistonCount:8,
@@ -268,29 +266,33 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
                   -45, -68.5, -157.5, -180.5]
     });
 
-  for (var i = 0; i < 8; i++) {
-    
-    var pistonDrawNode = scene.constructNode('Instance', {
+  loadObjFile('Models/Piston1.obj', function(mesh){
+    for (var i = 0; i < 8; i++) {
+      scene.constructNode('Instance', {
         name: 'Piston' + (i + 1),
-        geometryNode: pistonMesh,
+        geometryNode: mesh,
         transformNode: pistonTransform,
         transformNodeMember: 'pistonXfo',
         transformNodeIndex: i,
         materialNode: pistonMaterial,
         enableRaycasting: true
       });
-
-    var conrodDrawNode = scene.constructNode('Instance', {
+    }
+  });
+  var conrodMesh = loadObjFile('Models/Conrod1.obj', function(mesh){
+    for (var i = 0; i < 8; i++) {
+      scene.constructNode('Instance', {
         name: 'Conrod' + (i + 1),
-        geometryNode: conrodMesh,
+        geometryNode: mesh,
         transformNode: pistonTransform,
         transformNodeMember: 'conrodXfo',
         transformNodeIndex: i,
         materialNode: conrodMaterial,
         enableRaycasting: true
       });
-  }
-
+    }
+  });
+  
   /////////////////////////////////////////////////
 /*  // IntakeValve
   window.intakeValveTransformNode = scene.constructNode("TransformNode();
@@ -311,17 +313,6 @@ viewport.setBackgroundTextureNode(scene.constructNode('Image2D', {
       ],
       entryFunctionName:"camshaftOp"
     });
-
-
-  var camDrawNode = scene.constructNode("DrawNode();
-  camDrawNode.setTransformNode( camTransformNode );
-
-  var assets = scene.importAssetFile( "Models/IntakeValve.obj" );
-  for( i in assets ){
-    assets[i].addMaterialNode( blueMaterial );
-    camDrawNode.setGeometryNode( assets[i] );
-  }
-
 
 */
 
