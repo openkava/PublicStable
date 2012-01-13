@@ -7,7 +7,10 @@
 #include <Fabric/Core/MT/Impl.h>
 #include <Fabric/Core/Util/JSONGenerator.h>
 
-#include <alloca.h>
+#if !defined(FABRIC_OS_WINDOWS)
+  #include <alloca.h>
+#endif
+
 #include <string.h>
 
 namespace Fabric
