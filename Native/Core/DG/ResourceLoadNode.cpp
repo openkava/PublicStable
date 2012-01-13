@@ -50,6 +50,7 @@ namespace Fabric
       addMember( "url", stringDesc, stringDesc->getDefaultData() );
       addMember( "resource", m_fabricResourceStreamData.getDesc(), m_fabricResourceStreamData.getDesc()->getDefaultData() );
       addMember( "keepMemoryCache", booleanDesc, booleanDesc->getDefaultData() );
+      addMember( "asFile", booleanDesc, booleanDesc->getDefaultData() );
     }
 
     void ResourceLoadNode::jsonExecCreate(
@@ -94,7 +95,7 @@ namespace Fabric
 
       // [JeromeCG 20110727] Note: we use a generation because if there was a previous stream created for a previous URL we cannot destroy it; 
       // we create a new one in parallel instead of waiting its completion.
-      ++m_streamGeneration;
+      m_streamGeneration++;
       m_fabricResourceStreamData.setURL( urlMemberData );
       m_fabricResourceStreamData.setMIMEType( "" );
       m_fabricResourceStreamData.resizeData( 0 );
@@ -103,6 +104,7 @@ namespace Fabric
       setResourceData( 0, false );
 
       m_keepMemoryCache = getContext()->getRTManager()->getBooleanDesc()->getValue( getConstData( "keepMemoryCache", 0 ) );
+      m_asFile = getContext()->getRTManager()->getBooleanDesc()->getValue( getConstData( "asFile", 0 ) );
 
       std::string url = m_fabricResourceStreamData.getURL();
       if( !url.empty() )
@@ -112,6 +114,7 @@ namespace Fabric
 
         m_stream = getContext()->getIOManager()->createStream(
           url,
+          m_asFile,
           &ResourceLoadNode::StreamData,
           &ResourceLoadNode::StreamEnd,
           &ResourceLoadNode::StreamFailure,
@@ -128,10 +131,13 @@ namespace Fabric
 
       if( size )
       {
-        size_t prevSize = m_fabricResourceStreamData.getDataSize();
-        if ( offset + size > prevSize )
-          m_fabricResourceStreamData.resizeData( offset + size );
-        m_fabricResourceStreamData.setData( offset, size, data );
+        if( !m_asFile )
+        {
+          size_t prevSize = m_fabricResourceStreamData.getDataSize();
+          if ( offset + size > prevSize )
+            m_fabricResourceStreamData.resizeData( offset + size );
+          m_fabricResourceStreamData.setData( offset, size, data );
+        }
 
         m_nbStreamed += size;
         int deltaMS = (int)m_progressNotifTimer.getElapsedMS(false);
@@ -164,11 +170,10 @@ namespace Fabric
       }
     }
 
-    void ResourceLoadNode::streamEnd( std::string const &url, std::string const &mimeType, void *userData )
+    void ResourceLoadNode::streamEnd( std::string const &url, std::string const &mimeType, std::string const *fileName, void *userData )
     {
       if( (size_t)userData != m_streamGeneration )
         return;
-
       m_fabricResourceStreamData.setMIMEType( mimeType );
       m_stream = NULL;//[JeromeCG 20111221] Important: set stream to NULL (loadingFinished status) since setResourceData's notifications can trigger an evaluation
       setResourceData( 0, true );
@@ -186,7 +191,8 @@ namespace Fabric
 
     void ResourceLoadNode::setResourceData(
       std::string const *errorDesc,
-      bool notify
+      bool notify,
+      std::string const *fileName
       )
     {
       m_firstEvalAfterLoad = true;

@@ -28,6 +28,7 @@ namespace Fabric
     
       virtual RC::Handle<IO::Stream> createStream(
         std::string const &url,
+        bool asFile,
         IO::Stream::DataCallback dataCallback,
         IO::Stream::EndCallback endCallback,
         IO::Stream::FailureCallback failureCallback,
@@ -39,6 +40,7 @@ namespace Fabric
       int32_t nppWriteReady( NPP npp, NPStream* stream );
       int32_t nppWrite( NPP npp, NPStream* stream, int32_t offset, int32_t len, void* buffer );
       NPError nppDestroyStream( NPP npp, NPStream *stream, NPReason reason );
+      NPError nppStreamAsFile( NPP npp, NPStream *stream, const char* fname );
 
       virtual std::string queryUserFilePath(
         bool existingFile,
