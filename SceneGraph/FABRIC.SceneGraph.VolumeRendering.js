@@ -417,7 +417,7 @@ FABRIC.SceneGraph.registerNodeType('VolumeOpacityInstance', {
       initImage: false,
       glRepeat: false
     });
-    var transferFunctionImageDGNode = transferFunctionImageNode.getDGNode();
+    var transferFunctionImageDGNode = transferFunctionImageNode.getUniformsDGNode();
     
     transferFunctionImageDGNode.addMember('minOpacity', 'Scalar', options.minOpacity);
     transferFunctionImageDGNode.addMember('maxOpacity', 'Scalar', options.maxOpacity);
@@ -588,14 +588,15 @@ FABRIC.SceneGraph.registerNodeType('DrawRectangle', {
         forceRefresh: false,
         width: 1,
         height: 1,
-        createDgNodes: false,
+        createDgNodes: true,
         parentEventHandler: scene.getSceneRedrawOverlayObjectsEventHandler()
       });
 
     options.format = 'RGBA';
     options.createResourceLoadNode = false;
     options.createLoadTextureEventHandler = true;
-
+    options.initImage = true;
+    
     var rectangleImageNode = scene.constructNode('Image2D', options);
 
     var preRedrawEventHandler = rectangleImageNode.constructEventHandlerNode('PreRedraw');
@@ -689,7 +690,7 @@ FABRIC.SceneGraph.registerNodeType('VolumeSliceRender', {
     options.parentEventHandler = backgroundRootEventHandler;
 
     var backgroundDrawNode = scene.constructNode('DrawRectangle', options );
-    var backgroundImageDGNode = backgroundDrawNode.getDGNode();
+ //   var backgroundImageDGNode = backgroundDrawNode.getDGNode();
 
     sliceNode.pub.setBackgroundColor = function(color) {
       backgroundDrawNode.pub.setColor( color );

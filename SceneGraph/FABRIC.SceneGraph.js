@@ -1005,7 +1005,7 @@ FABRIC.SceneGraph.registerNodeType('SceneGraphNode', {
         }
         for(var memberName in memberInterfaces){
           if(nodeData[memberName]){
-            memberInterfaces.setterFn(nodeData[memberName]);
+            memberInterfaces[memberName].setterFn(nodeData[memberName]);
           }
         }
       }

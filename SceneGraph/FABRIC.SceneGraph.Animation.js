@@ -605,7 +605,7 @@ FABRIC.SceneGraph.registerNodeType('TrackDisplay', {
     // extend the public interface
     
     trackDisplayNode.addReferenceInterface('AnimationLibrary', 'AnimationLibrary',
-      function(nodePrivate){
+      function(nodePrivate, trackSetId){
         animationLibraryNode = nodePrivate;
         var trackDataType = animationLibraryNode.pub.getValueType();
         var trackSet = animationLibraryNode.pub.getTrackSet(trackSetId);
