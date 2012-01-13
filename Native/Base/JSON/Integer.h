@@ -7,6 +7,7 @@
 
 #include <Fabric/Base/JSON/Value.h>
 #include <yajl_gen.h>
+#include <stdint.h>
 
 namespace Fabric
 {
@@ -16,14 +17,14 @@ namespace Fabric
     {
     public:
     
-      static RC::Handle<Integer> Create( long value )
+      static RC::Handle<Integer> Create( int32_t value )
       {
         return new Integer( value );
       }
       
       virtual bool isInteger() const { return true; }
       
-      long value() const
+      int32_t value() const
       {
         return m_value;
       }
@@ -42,7 +43,7 @@ namespace Fabric
     
     private:
     
-      long m_value;
+      int32_t m_value;
     };
   };
 };
