@@ -45,6 +45,7 @@ namespace Fabric
     
       virtual RC::Handle<Stream> createStream(
         std::string const &url,
+        bool asFile,
         Stream::DataCallback dataCallback,
         Stream::EndCallback endCallback,
         Stream::FailureCallback failureCallback,
